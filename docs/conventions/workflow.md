@@ -1,0 +1,84 @@
+# 작업 흐름
+
+## 첫 설정
+
+1. `corepack enable` — 꺼져 있으면 `packageManager` 고정이 무시되고 pnpm 버전이 갈린다.
+2. `nvm use` — `.nvmrc`의 Node를 맞춘다. `engines`가 `>=22.12 <23`을 막아준다.
+3. `.env.example`을 `.env`로 복사하고 `NODE_AUTH_TOKEN`을 채운다. 없으면 `pnpm install`이
+   `@libitum/*`에서 404로 죽는다.
+
+([ADR-0005 D3](../adr/0005-runtime-and-package-manager-versions.md),
+[ADR-0011 D2](../adr/0011-design-system-consumption.md))
+
+## 명령
+
+| 명령 | 하는 일 | 하지 않는 일 |
+|---|---|---|
+| `pnpm dev` | rspeedy dev 서버. Explorer가 붙을 URL/QR | 타입 검사·린트 |
+| `pnpm build` | Lynx 번들 산출 (`apps/mobile/dist/`) | **타입 검사** |
+| `pnpm preview` | 빌드 산출물을 Explorer로 확인 | 빌드 |
+| `pnpm typecheck` | `tsc --noEmit` | 코드 생성 |
+| `pnpm lint` | 정적 검사 (`oxlint`) | **자동 수정** (`lint:fix`가 따로) |
+| `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 (`format:check`가 따로) |
+| `pnpm test` | `test:unit` + `test:ui` + `test:integration` | e2e |
+| `pnpm verify` | format:check → typecheck → lint → test → build | 네이티브 빌드 |
+
+- **한 명령은 한 가지 이유로만 실패한다.** 명령이 두 가지 일을 겸하게 만들지 않는다.
+- 앱만 돌리려면 `pnpm --filter @libitums/mobile <cmd>`. 루트 스크립트는 `pnpm -r`이 아니라
+  명시적 `--filter`를 쓴다 — 범위를 넓히는 것은 명시적 결정이어야 한다.
+- CI를 붙일 때도 **같은 스크립트**를 쓴다. 차이는 인자로만 준다(`--frozen-lockfile` 등).
+- 네이티브 빌드는 `verify`에 들어가지 않는다. Xcode에서 돈다.
+
+([ADR-0006 D1·D2·D3](../adr/0006-command-interface-and-test-layers.md),
+[ADR-0012 D6](../adr/0012-native-host-app-minimal.md))
+
+## PR
+
+1. 브랜치를 판다. **`main`에 직접 push하지 않는다.**
+2. PR 전 로컬에서 `pnpm verify`를 돌린다.
+3. PR을 올리고 diff를 **사람이 읽는다.** 구현 상당 부분을 에이전트가 만들기 때문에
+   이 지점이 구조적으로 필요하다.
+4. **squash로 머지한다.** `main`의 커밋 하나 = PR 하나여야 `git revert <sha>` 하나로
+   통째로 되돌릴 수 있다. 커밋 제목은 PR 제목을 쓴다.
+
+> **이 절차는 강제되지 않는다.** CI도 브랜치 보호도 없다 — 저장소가 private이고 현재
+> 플랜에서 브랜치 보호 API가 403이며, 필수 상태 검사로 걸 CI도 아직 없다. 지키는 것은
+> 약속뿐이다. 강제되는 줄 알고 방심하는 것이 규약이 없는 것보다 나쁘다.
+> (squash 고정은 예외 — GitHub 저장소 설정에서 지금 켤 수 있는 강제 수단이다.)
+
+([ADR-0009 D4·D5·D6](../adr/0009-vcs-hygiene-ci-and-merge-gate.md))
+
+## 문서를 같은 PR에서 고친다
+
+- 규약을 바꾸는 변경 → `docs/conventions/`를 같은 PR에서 고친다
+  ([ADR-0010 D4](../adr/0010-convention-docs-and-design-done-criteria.md)).
+- 화면을 추가하거나 흐름을 바꾸는 변경 → `docs/e2e/`의 해당 흐름 파일을 같은 PR에서 고친다
+  ([ADR-0006 D6](../adr/0006-command-interface-and-test-layers.md)).
+- 결정을 바꾸는 변경 → ADR을 고친다. 새 번호를 붙일지 제자리에서 고칠지는
+  [ADR-0010 D10](../adr/0010-convention-docs-and-design-done-criteria.md)이 정한다.
+- 문서는 `[Frontend]` 이슈 외의 이슈를 링크·언급하지 않는다. 대신 사실을 적는다
+  ([ADR-0010 D9](../adr/0010-convention-docs-and-design-done-criteria.md)).
+
+## Node·pnpm·Lynx 버전을 올릴 때
+
+아래를 통과한 뒤에만 커밋한다. 생략하지 않는다.
+
+1. `pnpm install --frozen-lockfile`
+2. `pnpm verify`
+3. **자체 호스트 앱에서 앱이 실제로 뜨는 것까지 확인.** Explorer만으로는 통과가 아니다.
+
+([ADR-0005 D4](../adr/0005-runtime-and-package-manager-versions.md))
+
+## Explorer의 Lynx 런타임 버전
+
+Explorer는 남의 빌드라 잠글 수 없다. **하한은 3.9다** — 그 미만이면 `var(--token)`이
+조용히 무효가 되고, 에러도 테스트 실패도 없이 스타일만 안 먹는다.
+
+첫 화면을 띄우기 전에 버전을 확인하고 아래에 적는다.
+
+| 확인일 | Explorer 버전 | Lynx 런타임 버전 |
+|---|---|---|
+| — | — | **미확인** |
+
+([ADR-0005 D3](../adr/0005-runtime-and-package-manager-versions.md),
+[ADR-0011 D1](../adr/0011-design-system-consumption.md))

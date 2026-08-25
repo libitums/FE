@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.rspeedy/
+coverage/
+
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# iOS 호스트 (apps/ios) — ADR-0012 D7
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+Pods/
