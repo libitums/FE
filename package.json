@@ -8,8 +8,8 @@
     "test": "pnpm --filter @libitums/mobile test",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "format": "oxfmt . '!**/*.md'",
-    "format:check": "oxfmt --check . '!**/*.md'",
+    "format": "oxfmt . '!**/*.md' '!apps/ios/**'",
+    "format:check": "oxfmt --check . '!**/*.md' '!apps/ios/**'",
     "verify": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build"
   },
   "devDependencies": {
