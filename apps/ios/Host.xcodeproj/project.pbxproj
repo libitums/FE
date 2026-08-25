@@ -13,7 +13,7 @@
 		2B94A3D02D6613730060892C /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3CF2D6613730060892C /* Base */; };
 		2B94A3D22D6613740060892C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3D12D6613740060892C /* Assets.xcassets */; };
 		2B94A3D52D6613740060892C /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3D42D6613740060892C /* Base */; };
-		2B94A3DD2D6614980060892C /* BundleTemplateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D6614980060892C /* BundleTemplateProvider.swift */; };
+		2B94A3DD2D6614980060892C /* TemplateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D6614980060892C /* TemplateProvider.swift */; };
 		2B94A3DD2D6614980060892D /* StorageModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D6614980060892D /* StorageModule.swift */; };
 		2BE49E032D7720F0000D068C /* main.lynx.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 2BE49E022D7720F0000D068C /* main.lynx.bundle */; };
 		63972E0D34F86B0706325BCE /* libPods-Host.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B67B2104D0445A811952B8 /* libPods-Host.a */; };
@@ -28,7 +28,7 @@
 		2B94A3D12D6613740060892C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2B94A3D42D6613740060892C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2B94A3D62D6613740060892C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2B94A3DC2D6614980060892C /* BundleTemplateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleTemplateProvider.swift; sourceTree = "<group>"; };
+		2B94A3DC2D6614980060892C /* TemplateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateProvider.swift; sourceTree = "<group>"; };
 		2B94A3DC2D6614980060892D /* StorageModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageModule.swift; sourceTree = "<group>"; };
 		2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Host-Bridging-Header.h"; sourceTree = "<group>"; };
 		2BE49E022D7720F0000D068C /* main.lynx.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = main.lynx.bundle; sourceTree = "<group>"; };
@@ -78,7 +78,7 @@
 				2B94A3D12D6613740060892C /* Assets.xcassets */,
 				2B94A3D32D6613740060892C /* LaunchScreen.storyboard */,
 				2B94A3D62D6613740060892C /* Info.plist */,
-				2B94A3DC2D6614980060892C /* BundleTemplateProvider.swift */,
+				2B94A3DC2D6614980060892C /* TemplateProvider.swift */,
 				2B94A3DC2D6614980060892D /* StorageModule.swift */,
 				2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */,
 			);
@@ -218,7 +218,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2B94A3DD2D6614980060892C /* BundleTemplateProvider.swift in Sources */,
+				2B94A3DD2D6614980060892C /* TemplateProvider.swift in Sources */,
 				2B94A3DD2D6614980060892D /* StorageModule.swift in Sources */,
 				2B94A3CD2D6613730060892C /* ViewController.swift in Sources */,
 				2B94A3C92D6613730060892C /* AppDelegate.swift in Sources */,
