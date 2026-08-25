@@ -1,0 +1,11 @@
+/* 값은 토큰에서만 온다. 하드코딩하지 않는다 (ADR-0011 D1·D4). */
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-surface);
+  padding: var(--spacing-16);
+}
+
+.error-boundary-retry {
+  padding: var(--spacing-16);
+}

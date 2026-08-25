@@ -1,0 +1,8 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0011 D1).
+   TS 상수(`import { spacing } from '@libitum/design-tokens'`)를 쓰지 않는다. */
+.home-screen {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-surface);
+  padding: var(--spacing-16);
+}
