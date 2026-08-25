@@ -109,6 +109,19 @@ xcrun simctl install booted /tmp/dd/Build/Products/Debug-iphonesimulator/Host.ap
 xcrun simctl launch booted com.libitum.host
 ```
 
+**번들을 어디서 읽나** — 빌드 구성이 가른다 (ADR-0012 D2).
+
+| 구성 | 읽는 곳 | 언제 |
+|---|---|---|
+| Debug | dev 서버 (`http://localhost:3000/main.lynx.bundle`) | 호스트에서 화면을 만질 때. 네이티브 재빌드 없이 앱만 재시작하면 반영된다 |
+| Release | 앱 번들 안의 `main.lynx.bundle` | 시연·판정. `cp`한 사본을 읽으므로 **복사를 잊으면 옛 화면이 뜬다** |
+
+포트가 다르거나 다른 기기의 서버를 볼 때는 실행 인자로 덮어쓴다.
+
+```sh
+xcrun simctl launch booted com.libitum.host --bundle-url=http://localhost:3001/main.lynx.bundle
+```
+
 **영속성 확인** — 저장 → 완전 종료 → 재실행 → 읽기.
 
 ```sh
