@@ -76,9 +76,31 @@ Explorer는 남의 빌드라 잠글 수 없다. **하한은 3.9다** — 그 미
 
 첫 화면을 띄우기 전에 버전을 확인하고 아래에 적는다.
 
-| 확인일 | Explorer 버전 | Lynx 런타임 버전 |
-|---|---|---|
-| — | — | **미확인** |
+| 확인일 | Explorer 릴리스 | 받은 자산 | 시뮬레이터 |
+|---|---|---|---|
+| 2026-08-25 | **4.0.1** (`lynx-family/lynx`) | `LynxExplorer-arm64.app.tar.gz` | iOS 26.5 / iPhone 17 Pro |
+
+설치는 명령으로 재현된다. **번들 로드만 수동**이다 — `lynx://` 딥링크는 앱을 열기만 하고
+번들을 자동으로 불러오지 않는다(두 형식 모두 확인).
+
+```sh
+gh release download 4.0.1 --repo lynx-family/lynx \
+  --pattern 'LynxExplorer-arm64.app.tar.gz'
+mkdir -p LynxExplorer-arm64.app
+tar -zxf LynxExplorer-arm64.app.tar.gz -C LynxExplorer-arm64.app/
+xcrun simctl boot 'iPhone 17 Pro' && open -a Simulator
+xcrun simctl install booted LynxExplorer-arm64.app
+xcrun simctl launch booted com.lynx.LynxExplorer
+pnpm dev   # 나온 URL을 Explorer의 Bundle URL 칸에 붙여넣고 Go
+```
+
+> **에러 경계가 한 번 잡히면 HMR로 복구되지 않는다.** 실패 화면이 그대로 남고, 코드를
+> 고쳐도 화면이 바뀌지 않는다. **앱을 재시작하거나 화면의 재시도를 눌러야 한다.**
+> 모르면 원인을 코드에서 찾게 되고, 코드는 이미 고쳐져 있어서 한참 헤맨다.
+>
+> **Xcode 정식 설치가 필요하다.** Command Line Tools만으로는 `simctl`이 없다.
+> 설치 후 `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`와
+> iOS 시뮬레이터 런타임 다운로드(Xcode → Settings → Components)가 각각 필요하다.
 
 ([ADR-0005 D3](../adr/0005-runtime-and-package-manager-versions.md),
 [ADR-0011 D1](../adr/0011-design-system-consumption.md))
