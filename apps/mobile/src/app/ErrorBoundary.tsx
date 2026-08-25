@@ -1,6 +1,6 @@
-import { Component, Fragment, type ReactNode } from '@lynx-js/react'
+import { Component, Fragment, type ReactNode } from "@lynx-js/react";
 
-import './error-boundary.css'
+import "./error-boundary.css";
 
 // 에러 경계는 루트에 하나만 둔다 (ADR-0007 D4).
 // 여기 올라오는 것은 **예상하지 못한 렌더 예외**뿐이다.
@@ -9,24 +9,24 @@ import './error-boundary.css'
 // 확인 필요 (docs/adr/README.md): ReactLynx가 componentDidCatch를 표준대로 지원하는지.
 // 어긋나면 ADR-0007 D4를 갱신한다.
 
-type Props = { children: ReactNode }
-type State = { error: Error | null; generation: number }
+type Props = { children: ReactNode };
+type State = { error: Error | null; generation: number };
 
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { error: null, generation: 0 }
+  state: State = { error: null, generation: 0 };
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    return { error }
+    return { error };
   }
 
   componentDidCatch(error: Error) {
-    console.error('[ErrorBoundary]', error)
+    console.error("[ErrorBoundary]", error);
   }
 
   // 재시도 = 루트 화면 상태를 초기값으로 리셋. generation을 올려 하위 트리를 다시 마운트한다.
   private retry = () => {
-    this.setState((prev) => ({ error: null, generation: prev.generation + 1 }))
-  }
+    this.setState((prev) => ({ error: null, generation: prev.generation + 1 }));
+  };
 
   render() {
     if (this.state.error) {
@@ -38,9 +38,9 @@ export class ErrorBoundary extends Component<Props, State> {
             <text>다시 시도</text>
           </view>
         </view>
-      )
+      );
     }
 
-    return <Fragment key={this.state.generation}>{this.props.children}</Fragment>
+    return <Fragment key={this.state.generation}>{this.props.children}</Fragment>;
   }
 }

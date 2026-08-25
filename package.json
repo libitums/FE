@@ -1,9 +1,5 @@
 {
   "private": true,
-  "engines": {
-    "node": ">=22.12 <23"
-  },
-  "packageManager": "pnpm@10.0.0",
   "scripts": {
     "dev": "pnpm --filter @libitums/mobile dev",
     "build": "pnpm --filter @libitums/mobile build",
@@ -12,12 +8,16 @@
     "test": "pnpm --filter @libitums/mobile test",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "format": "oxfmt",
-    "format:check": "oxfmt --check",
+    "format": "oxfmt . '!**/*.md'",
+    "format:check": "oxfmt --check . '!**/*.md'",
     "verify": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build"
   },
   "devDependencies": {
     "oxfmt": "0.65.0",
     "oxlint": "1.80.0"
-  }
+  },
+  "engines": {
+    "node": ">=22.12 <23"
+  },
+  "packageManager": "pnpm@10.34.5"
 }
