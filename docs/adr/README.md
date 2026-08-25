@@ -57,6 +57,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 의존 방향 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | 런타임·패키지매니저 버전 정책 | 결정 | [0005](0005-runtime-and-package-manager-versions.md) |
 | 명령 인터페이스 | 결정 | [0006](0006-command-interface-and-test-layers.md) |
+| 린터·포매터 | 결정 (`oxlint` · `oxfmt`) | [0006](0006-command-interface-and-test-layers.md) |
 | 테스트 계층 | 결정 (3계층) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) |
 | 상태 관리 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 데이터 페칭 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
@@ -68,6 +69,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | private registry 인증 | 결정 | [0011](0011-design-system-consumption.md) |
 | 형상 관리 위생 (.gitignore) | 결정 | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
 | CI | 결정 (시점 유예) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
+| 머지 방식 | 결정 (squash 고정) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
 | 브랜치 보호·머지 게이트 | 결정 (규약) + 보류 (강제) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
 | 규약 문서 | 결정 | [0010](0010-convention-docs-and-design-done-criteria.md) |
 | 설계 완료 조건 | 결정 | [0010](0010-convention-docs-and-design-done-criteria.md) |
@@ -103,13 +105,17 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 가정 | 어긋나면 영향받는 ADR |
 |---|---|
 | ReactLynx가 React 에러 경계(`componentDidCatch`)를 표준대로 지원한다 | 0007 |
-| Android 하드웨어 뒤로가기를 Explorer가 앱에 전달한다 | 0007 |
 
 **해소됨** — `Lynx 런타임에서 fetch를 쓸 수 있다`: 쓸 수 있다. 다만 웹 `fetch`와
 차이가 있어, 가정이 아니라 **제약**으로 ADR-0007 D2에 옮겼다.
 
 **해소됨** — `rspeedy가 Node 22 LTS를 지원한다`: 지원한다. 공식 템플릿의 `engines`가
 `^20.19.0 || >=22.12.0`이다. 하한이 **22.12**라서 ADR-0005의 범위를 `>=22.12 <23`으로 좁혔다.
+
+**해소됨** — `Android 하드웨어 뒤로가기를 Explorer가 앱에 전달한다`: 가정이 아니다.
+판정 환경이 iOS이고(ADR-0012 D1) iOS에는 하드웨어 백 버튼이 없다. ADR-0007 D3에서
+**확정된 제약**(모든 화면에 화면 내 back 수단)으로 바뀌었다. Android 지원이 요구되면
+그때 다시 가정으로 올린다.
 
 **해소됨** — `디자인 토큰 값`: 보류가 아니다. 값이 design-system 저장소의
 `foundations/*.json`에 확정돼 있고, FE는 패키지로 소비한다 (ADR-0011).
