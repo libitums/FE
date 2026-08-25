@@ -94,6 +94,10 @@ xcrun simctl launch booted com.lynx.LynxExplorer
 pnpm dev   # 나온 URL을 Explorer의 Bundle URL 칸에 붙여넣고 Go
 ```
 
+> **에러 경계가 한 번 잡히면 HMR로 복구되지 않는다.** 실패 화면이 그대로 남고, 코드를
+> 고쳐도 화면이 바뀌지 않는다. **앱을 재시작하거나 화면의 재시도를 눌러야 한다.**
+> 모르면 원인을 코드에서 찾게 되고, 코드는 이미 고쳐져 있어서 한참 헤맨다.
+>
 > **Xcode 정식 설치가 필요하다.** Command Line Tools만으로는 `simctl`이 없다.
 > 설치 후 `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`와
 > iOS 시뮬레이터 런타임 다운로드(Xcode → Settings → Components)가 각각 필요하다.
