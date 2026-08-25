@@ -91,7 +91,8 @@ ADR-0001 D4-3이 *"Explorer가 로드해서 첫 화면이 뜬다"* 였다. **"�
 ### D6. `verify`에 네이티브 빌드를 넣지 않는다
 
 ADR-0006 D1의 원칙 — **한 명령은 한 가지 이유로만 실패한다** — 을 그대로 지킨다.
-`pnpm verify`는 typecheck · lint · test · build까지다. 네이티브 빌드는 Xcode에서 돈다.
+`pnpm verify`는 format:check · typecheck · lint · test · build까지다. 네이티브 빌드는
+Xcode에서 돈다.
 
 넣으면 `verify` 실패 로그에서 원인이 TypeScript인지 Swift인지 서명인지 읽히지 않고,
 Xcode가 없는 환경(에이전트 컨테이너)에서 `verify` 자체가 불가능해진다.

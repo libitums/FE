@@ -84,7 +84,8 @@
 
 1. 저장소를 처음 받은 기기에서 `pnpm install && pnpm dev`가 성공하고, Lynx Explorer가
    그 dev 서버의 번들을 로드해 첫 화면이 뜬다.
-2. `pnpm verify`(= `typecheck` + `lint` + `test` + `build`, ADR-0006)가 종료 코드 0으로 끝난다.
+2. `pnpm verify`(= `format:check` + `typecheck` + `lint` + `test` + `build`, ADR-0006)가
+   종료 코드 0으로 끝난다.
 3. **자체 호스트 앱**이 `pnpm build` 산출물을 로드해 첫 화면이 뜬다. dev에서만 되는 것은
    통과가 아니고, Explorer에서만 되는 것도 통과가 아니다 (ADR-0012 D5).
 4. 핵심 사용자 흐름(D1)을 **자체 호스트 앱에서** 처음부터 끝까지 수동으로 통과한다.
