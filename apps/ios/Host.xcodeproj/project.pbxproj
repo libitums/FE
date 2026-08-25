@@ -15,11 +15,11 @@
 		2B94A3D52D6613740060892C /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3D42D6613740060892C /* Base */; };
 		2B94A3DD2D6614980060892C /* BundleTemplateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D6614980060892C /* BundleTemplateProvider.swift */; };
 		2BE49E032D7720F0000D068C /* main.lynx.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 2BE49E022D7720F0000D068C /* main.lynx.bundle */; };
-		63972E0D34F86B0706325BCE /* libPods-LibitumHost.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B67B2104D0445A811952B8 /* libPods-LibitumHost.a */; };
+		63972E0D34F86B0706325BCE /* libPods-Host.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B67B2104D0445A811952B8 /* libPods-Host.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2B94A3C52D6613730060892C /* LibitumHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LibitumHost.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B94A3C52D6613730060892C /* Host.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Host.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B94A3C82D6613730060892C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2B94A3CA2D6613730060892C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		2B94A3CC2D6613730060892C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -28,11 +28,11 @@
 		2B94A3D42D6613740060892C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2B94A3D62D6613740060892C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2B94A3DC2D6614980060892C /* BundleTemplateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleTemplateProvider.swift; sourceTree = "<group>"; };
-		2B94A3DE2D6614DC0060892C /* LibitumHost-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LibitumHost-Bridging-Header.h"; sourceTree = "<group>"; };
+		2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Host-Bridging-Header.h"; sourceTree = "<group>"; };
 		2BE49E022D7720F0000D068C /* main.lynx.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = main.lynx.bundle; sourceTree = "<group>"; };
-		61CE2062BA0F77A3DF32F268 /* Pods-LibitumHost.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LibitumHost.release.xcconfig"; path = "Target Support Files/Pods-LibitumHost/Pods-LibitumHost.release.xcconfig"; sourceTree = "<group>"; };
-		72043EE1F9E3529358168057 /* Pods-LibitumHost.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LibitumHost.debug.xcconfig"; path = "Target Support Files/Pods-LibitumHost/Pods-LibitumHost.debug.xcconfig"; sourceTree = "<group>"; };
-		C4B67B2104D0445A811952B8 /* libPods-LibitumHost.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LibitumHost.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		61CE2062BA0F77A3DF32F268 /* Pods-Host.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Host.release.xcconfig"; path = "Target Support Files/Pods-Host/Pods-Host.release.xcconfig"; sourceTree = "<group>"; };
+		72043EE1F9E3529358168057 /* Pods-Host.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Host.debug.xcconfig"; path = "Target Support Files/Pods-Host/Pods-Host.debug.xcconfig"; sourceTree = "<group>"; };
+		C4B67B2104D0445A811952B8 /* libPods-Host.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Host.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,7 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				63972E0D34F86B0706325BCE /* libPods-LibitumHost.a in Frameworks */,
+				63972E0D34F86B0706325BCE /* libPods-Host.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,7 +51,7 @@
 			isa = PBXGroup;
 			children = (
 				2BE49E022D7720F0000D068C /* main.lynx.bundle */,
-				2B94A3C72D6613730060892C /* LibitumHost */,
+				2B94A3C72D6613730060892C /* Host */,
 				2B94A3C62D6613730060892C /* Products */,
 				C6D18F00D0E7395AB3C4C81F /* Pods */,
 				7225697D323AB6B76668D385 /* Frameworks */,
@@ -61,12 +61,12 @@
 		2B94A3C62D6613730060892C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2B94A3C52D6613730060892C /* LibitumHost.app */,
+				2B94A3C52D6613730060892C /* Host.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		2B94A3C72D6613730060892C /* LibitumHost */ = {
+		2B94A3C72D6613730060892C /* Host */ = {
 			isa = PBXGroup;
 			children = (
 				2B94A3C82D6613730060892C /* AppDelegate.swift */,
@@ -77,15 +77,15 @@
 				2B94A3D32D6613740060892C /* LaunchScreen.storyboard */,
 				2B94A3D62D6613740060892C /* Info.plist */,
 				2B94A3DC2D6614980060892C /* BundleTemplateProvider.swift */,
-				2B94A3DE2D6614DC0060892C /* LibitumHost-Bridging-Header.h */,
+				2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */,
 			);
-			path = "LibitumHost";
+			path = "Host";
 			sourceTree = "<group>";
 		};
 		7225697D323AB6B76668D385 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C4B67B2104D0445A811952B8 /* libPods-LibitumHost.a */,
+				C4B67B2104D0445A811952B8 /* libPods-Host.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -93,8 +93,8 @@
 		C6D18F00D0E7395AB3C4C81F /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				72043EE1F9E3529358168057 /* Pods-LibitumHost.debug.xcconfig */,
-				61CE2062BA0F77A3DF32F268 /* Pods-LibitumHost.release.xcconfig */,
+				72043EE1F9E3529358168057 /* Pods-Host.debug.xcconfig */,
+				61CE2062BA0F77A3DF32F268 /* Pods-Host.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -102,9 +102,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2B94A3C42D6613730060892C /* LibitumHost */ = {
+		2B94A3C42D6613730060892C /* Host */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2B94A3D92D6613740060892C /* Build configuration list for PBXNativeTarget "LibitumHost" */;
+			buildConfigurationList = 2B94A3D92D6613740060892C /* Build configuration list for PBXNativeTarget "Host" */;
 			buildPhases = (
 				1A6D9ADAF68CC04F0BA85760 /* [CP] Check Pods Manifest.lock */,
 				2B94A3C12D6613730060892C /* Sources */,
@@ -116,9 +116,9 @@
 			);
 			dependencies = (
 			);
-			name = "LibitumHost";
-			productName = "LibitumHost";
-			productReference = 2B94A3C52D6613730060892C /* LibitumHost.app */;
+			name = "Host";
+			productName = "Host";
+			productReference = 2B94A3C52D6613730060892C /* Host.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -136,7 +136,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2B94A3C02D6613730060892C /* Build configuration list for PBXProject "LibitumHost" */;
+			buildConfigurationList = 2B94A3C02D6613730060892C /* Build configuration list for PBXProject "Host" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -149,7 +149,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2B94A3C42D6613730060892C /* LibitumHost */,
+				2B94A3C42D6613730060892C /* Host */,
 			);
 		};
 /* End PBXProject section */
@@ -184,7 +184,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-LibitumHost-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Host-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -197,15 +197,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-LibitumHost/Pods-LibitumHost-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Host/Pods-Host-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-LibitumHost/Pods-LibitumHost-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Host/Pods-Host-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LibitumHost/Pods-LibitumHost-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Host/Pods-Host-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -365,7 +365,7 @@
 		};
 		2B94A3DA2D6613740060892C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 72043EE1F9E3529358168057 /* Pods-LibitumHost.debug.xcconfig */;
+			baseConfigurationReference = 72043EE1F9E3529358168057 /* Pods-Host.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -374,7 +374,7 @@
 				DEVELOPMENT_TEAM = 53DJZDK42H;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "LibitumHost/Info.plist";
+				INFOPLIST_FILE = "Host/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -388,7 +388,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.libitum.host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "LibitumHost/LibitumHost-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Host/Host-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -396,7 +396,7 @@
 		};
 		2B94A3DB2D6613740060892C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61CE2062BA0F77A3DF32F268 /* Pods-LibitumHost.release.xcconfig */;
+			baseConfigurationReference = 61CE2062BA0F77A3DF32F268 /* Pods-Host.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -405,7 +405,7 @@
 				DEVELOPMENT_TEAM = 53DJZDK42H;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "LibitumHost/Info.plist";
+				INFOPLIST_FILE = "Host/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -419,7 +419,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.libitum.host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "LibitumHost/LibitumHost-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Host/Host-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -428,7 +428,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2B94A3C02D6613730060892C /* Build configuration list for PBXProject "LibitumHost" */ = {
+		2B94A3C02D6613730060892C /* Build configuration list for PBXProject "Host" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2B94A3D72D6613740060892C /* Debug */,
@@ -437,7 +437,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2B94A3D92D6613740060892C /* Build configuration list for PBXNativeTarget "LibitumHost" */ = {
+		2B94A3D92D6613740060892C /* Build configuration list for PBXNativeTarget "Host" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2B94A3DA2D6613740060892C /* Debug */,

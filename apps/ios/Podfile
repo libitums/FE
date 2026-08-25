@@ -6,7 +6,7 @@ platform :ios, '17.4'
 # 4.0.1을 쓰는 이유: 개발 루프의 Lynx Explorer도 4.0.1이라 두 환경의 런타임이 같다.
 LYNX_VERSION = '4.0.1'
 
-target 'LibitumHost' do
+target 'Host' do
   pod 'Lynx', LYNX_VERSION, :subspecs => ['Framework']
 
   # Lynx 4.0.1의 Framework subspec이 PrimJS/quickjs 4.0.0을 못 박는다.
