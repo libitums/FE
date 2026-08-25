@@ -94,6 +94,37 @@ xcrun simctl launch booted com.lynx.LynxExplorer
 pnpm dev   # 나온 URL을 Explorer의 Bundle URL 칸에 붙여넣고 Go
 ```
 
+## 자체 호스트 앱
+
+`apps/ios`가 판정 환경이다 (ADR-0012 D5). 개발 루프는 Explorer이고, 여기서는 **빌드
+산출물 로드**와 **영속 저장소**를 확인한다 — 둘 다 Explorer에서는 확인할 수 없다.
+
+```sh
+pnpm build
+cp apps/mobile/dist/main.lynx.bundle apps/ios/main.lynx.bundle   # 사본, 추적하지 않는다
+cd apps/ios && pod install                                        # 최초 1회
+xcodebuild -workspace Host.xcworkspace -scheme Host \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath /tmp/dd build
+xcrun simctl install booted /tmp/dd/Build/Products/Debug-iphonesimulator/Host.app
+xcrun simctl launch booted com.libitum.host
+```
+
+**영속성 확인** — 저장 → 완전 종료 → 재실행 → 읽기.
+
+```sh
+xcrun simctl terminate booted com.libitum.host
+xcrun simctl launch booted com.libitum.host
+```
+
+값이 어디 있는지 보려면 (시뮬레이터를 지우지 않고 확인하는 방법):
+
+```sh
+C=$(xcrun simctl get_app_container booted com.libitum.host data)
+plutil -p "$C/Library/Preferences/com.libitum.host.plist"
+```
+
+앱 자신의 데이터 컨테이너에 `libitum.` 접두사로 들어간다. **앱을 지우면 같이 사라진다.**
+
 > **에러 경계가 한 번 잡히면 HMR로 복구되지 않는다.** 실패 화면이 그대로 남고, 코드를
 > 고쳐도 화면이 바뀌지 않는다. **앱을 재시작하거나 화면의 재시도를 눌러야 한다.**
 > 모르면 원인을 코드에서 찾게 되고, 코드는 이미 고쳐져 있어서 한참 헤맨다.
