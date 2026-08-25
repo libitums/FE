@@ -11,7 +11,11 @@ final class ViewController: UIViewController {
     view.backgroundColor = .white
 
     let lynxView = LynxView { builder in
-      builder.config = LynxConfig(provider: BundleTemplateProvider())
+      let config = LynxConfig(provider: BundleTemplateProvider())
+      // 네이티브 모듈은 이 하나뿐이다 (ADR-0012 D2).
+      // 두 번째가 필요해지면 ADR을 새 번호로 갱신해야 한다.
+      config.register(StorageModule.self)
+      builder.config = config
       builder.screenSize = UIScreen.main.bounds.size
       builder.fontScale = 1.0
     }
