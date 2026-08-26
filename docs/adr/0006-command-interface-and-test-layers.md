@@ -26,6 +26,7 @@
 | `pnpm dev` | rspeedy dev 서버. Explorer가 붙을 URL/QR을 낸다 | 타입 검사·린트 |
 | `pnpm build` | Lynx 번들 산출 (`apps/mobile/dist/`) | **타입 검사** |
 | `pnpm preview` | `rspeedy preview` — 빌드 산출물을 Explorer로 확인 | 빌드 |
+| `pnpm bundle:host` | `build` + 산출물을 `apps/ios`로 복사 | 네이티브 빌드 (ADR-0012 D6) |
 | `pnpm typecheck` | `tsc --noEmit` | 코드 생성 |
 | `pnpm lint` | 정적 검사 (`oxlint`) | **자동 수정** (`lint:fix`가 따로) |
 | `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 하기 (`format:check`가 따로) |
@@ -36,6 +37,11 @@
 > `@rsbuild/plugin-type-check`을 devDependencies에 넣는다. 그대로 두면 `build`가
 > 타입 검사를 겸하게 되어 아래 원칙과 어긋난다. **플러그인을 넣지 않는 것이 결정의
 > 일부다** — 실체화할 때 기본값이 조용히 이기지 않도록 여기 적어둔다.
+
+> **`bundle:host`는 "한 명령은 한 가지 이유로만 실패한다"의 예외처럼 보이지만 아니다.**
+> `dev`와 `build`가 **같은 `dist/main.lynx.bundle`에 쓴다.** 둘을 떼어놓으면 `build` 뒤에
+> `dev`를 한 번 돌린 것만으로 dev 번들이 Release 호스트에 실리고, **화면은 떠서 티가 나지
+> 않는다.** 복사를 사람이 기억하는 한 이 실패는 반복된다. 붙여두면 실패 모드가 하나 준다.
 
 **도구는 `oxlint`와 `oxfmt`다.** 둘 다 Oxc 프로젝트이고 설정과 무시 규칙을 공유한다.
 
