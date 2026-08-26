@@ -59,19 +59,26 @@ devDependencies에만 허용하면 **그 사고가 아무도 안 본 사이에 �
 의존을 정확 버전으로 박는다(`@lynx-js/rspeedy`가 `@rsbuild/core`를 `2.1.10`,
 `@lynx-js/rsbuild-plugin`을 `0.0.3`으로).
 
-### D2. 규칙을 `.npmrc`에 강제한다 — `save-exact=true`
+### D2. 규칙을 `pnpm-workspace.yaml`에 강제한다 — `saveExact: true`
 
 `pnpm add`의 기본은 caret이다. D1을 사람 기억에만 맡기면 **한 번 잊는 것으로 규칙이
 깨지고, 깨진 것은 다음 재해석 때까지 보이지 않는다.**
 
-```ini
-# .npmrc — 기존 두 줄(ADR-0011 D2) 아래에 더한다
-save-exact=true
+```yaml
+# pnpm-workspace.yaml — engineStrict 옆에 둔다
+saveExact: true
 ```
 
-pnpm 10이 이 설정을 읽는다 — 배포 번들에 `save-exact` 처리가 들어 있고 `@pnpm/config`가
-`'save-exact': BooleanConstructor`로 선언한다. `workspace:` 프로토콜에는 영향이 없다.
-그쪽은 `save-workspace-protocol`이 따로 다룬다(ADR-0004 D5).
+**`.npmrc`가 아니라 여기다.** pnpm은 `.npmrc`를 **cwd 기준**으로 찾는다. 루트에만 두면
+`apps/mobile`에서 `pnpm add`를 할 때 잡히지 않고 caret이 붙는다 — 그런데 **D5가 나열한
+의존 열 개가 전부 `apps/mobile` 것이다.** 규칙이 강제돼야 할 바로 그 자리에서만 강제되지
+않는 셈이었다. `pnpm-workspace.yaml`은 워크스페이스 전체를 덮으므로 그 구멍이 없다.
+
+`workspace:` 프로토콜에는 영향이 없다 — 그쪽은 `save-workspace-protocol`이 따로
+다룬다(ADR-0004 D5).
+
+ADR-0005 D3의 `engineStrict`가 같은 자리에 있다. **pnpm 10에서 설정이 어디 있어야
+먹는지는 항목마다 다르므로, 넣은 뒤 실제로 막히는지 확인하고 쓴다.**
 
 ADR-0006이 `format:check`를 `verify`에 넣은 것과 같은 태도다. **검사하지 않는 규칙은
 규칙이 아니라 의도다.**
@@ -287,11 +294,28 @@ ADR-0010 D10의 표는 네 줄 모두 **"무엇이 바뀌었나"** 를 묻는다
   `.nvmrc`가 낡는 것과 같은 종류의 부채가 된다.
 - **버전을 올리는 PR이 늘어난다.** caret이면 나지 않았을 diff가 매번 난다. 그게 이
   결정이 **의도한 것**이지만, 비용은 진짜 비용이다.
-- **`save-exact=true`가 `.npmrc`에 있다는 것을 모르면 헷갈린다.** `pnpm add`가 caret을
-  안 붙이는 이유가 그 파일에 있는데, `.npmrc`를 여는 사람은 registry 설정을 보러 온다.
+- **`saveExact`가 어디 있는지 모르면 헷갈린다.** `pnpm add`가 caret을 안 붙이는 이유가
+  `pnpm-workspace.yaml`에 있는데, 그 파일을 여는 사람은 대개 `packages` 글롭을 보러 온다.
 - **첫 설치가 실제로 성립하는지는 아직 모른다.** 이 표는 매니페스트 조회만으로 만들었다.
   peer 충돌과 전이 의존 해석은 `pnpm install`을 한 번 돌려야 확인된다. 아래 재검토 조건
   첫 줄이 그 시점이다.
+
+## 정정 기록
+
+**2026-08-26 — D2의 설정 위치가 틀렸다.** 결정(모든 의존을 정확 버전으로)은 그대로다.
+
+`save-exact=true`를 `.npmrc`에 넣었는데, pnpm이 그 파일을 **cwd 기준**으로 찾는다.
+루트에서는 먹고 `apps/mobile`에서는 안 먹었다 — 그리고 **D5의 의존 열 개가 전부
+`apps/mobile` 것이다.** 강제 수단이 정작 필요한 자리에만 없었다.
+
+`pnpm-workspace.yaml`의 `saveExact: true`로 옮기고, 양쪽에서 `pnpm add`를 돌려
+둘 다 정확 버전이 되는 것을 확인했다.
+
+**어떻게 틀렸나** — 설정이 *동작하는지*만 확인하고 *어디까지 미치는지*를 확인하지
+않았다. 루트에서 한 번 돌려보고 넘어갔다. **ADR-0005의 `engines`가 "선언만 있고 막지
+않았던" 것과 같은 모양이고, 이번엔 범위가 좁았을 뿐이다.**
+
+확인 범위에 한 줄 더한다 — **강제 수단은 그것이 걸려야 할 모든 자리에서 걸리는지 본다.**
 - **화면은 여전히 스타일 없이 뜬다.** D7의 보류가 풀리기 전까지 `var(--*)`가 전부
   무효다. 이 ADR은 그것을 고치지 않고 **왜 그런지를 적어둘 뿐이다.**
 

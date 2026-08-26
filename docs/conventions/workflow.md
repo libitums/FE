@@ -20,6 +20,7 @@
 | `pnpm typecheck` | `tsc --noEmit` | 코드 생성 |
 | `pnpm lint` | 정적 검사 (`oxlint`) | **자동 수정** (`lint:fix`가 따로) |
 | `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 (`format:check`가 따로) |
+| `pnpm bundle:host` | `build` + 호스트로 사본 복사 | 네이티브 빌드 |
 | `pnpm test` | `test:unit` + `test:ui` + `test:integration` | e2e |
 | `pnpm verify` | format:check → typecheck → lint → test → build | 네이티브 빌드 |
 
@@ -100,8 +101,7 @@ pnpm dev   # 나온 URL을 Explorer의 Bundle URL 칸에 붙여넣고 Go
 산출물 로드**와 **영속 저장소**를 확인한다 — 둘 다 Explorer에서는 확인할 수 없다.
 
 ```sh
-pnpm build
-cp apps/mobile/dist/main.lynx.bundle apps/ios/main.lynx.bundle   # 사본, 추적하지 않는다
+pnpm bundle:host                                                  # build + 사본 복사
 cd apps/ios && pod install                                        # 최초 1회
 xcodebuild -workspace Host.xcworkspace -scheme Host \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath /tmp/dd build
@@ -114,7 +114,12 @@ xcrun simctl launch booted com.libitum.host
 | 구성 | 읽는 곳 | 언제 |
 |---|---|---|
 | Debug | dev 서버 (`http://localhost:3000/main.lynx.bundle`) | 호스트에서 화면을 만질 때. 네이티브 재빌드 없이 앱만 재시작하면 반영된다 |
-| Release | 앱 번들 안의 `main.lynx.bundle` | 시연·판정. `cp`한 사본을 읽으므로 **복사를 잊으면 옛 화면이 뜬다** |
+| Release | 앱 번들 안의 `main.lynx.bundle` | 시연·판정. 사본을 읽으므로 **`pnpm bundle:host`를 거쳐야 한다** |
+
+> **`cp`를 손으로 하지 않는다.** `dev`와 `build`가 **같은 `dist/main.lynx.bundle`에 쓴다.**
+> `build` 뒤에 `dev`를 한 번이라도 돌리면 그 파일이 dev 번들(10배 크기)로 덮이고,
+> 그 상태로 복사하면 **Release 호스트가 dev 번들을 싣는다.** 화면은 떠서 티가 나지 않는다.
+> `pnpm bundle:host`가 build와 복사를 붙여둔 이유가 이것이다.
 
 포트가 다르거나 다른 기기의 서버를 볼 때는 실행 인자로 덮어쓴다.
 
