@@ -30,14 +30,14 @@ Lynx Explorer로 그 URL을 연다 — 기기는 QR 스캔, 시뮬레이터는 �
 
 ### `NODE_AUTH_TOKEN`은 아직 필요 없다
 
-`.npmrc`가 `@libitum` 스코프에 이 변수를 요구하지만, **그 패키지들이 아직 의존성에 없어서
+`.npmrc`가 `@libitums` 스코프에 이 변수를 요구하지만, **그 패키지들이 아직 의존성에 없어서
 토큰 없이도 설치가 성공한다.** `pnpm` 명령마다 나오는 다음 경고는 무시해도 된다.
 
 ```
 WARN  Issue while reading ".npmrc". Failed to replace env in config: ${NODE_AUTH_TOKEN}
 ```
 
-`@libitum/design-tokens`·`@libitum/icons`가 배포돼 의존에 들어가는 순간 이 경고는
+`@libitums/design-tokens`·`@libitums/icons`가 배포돼 의존에 들어가는 순간 이 경고는
 **404 실패로 바뀐다.** 그때 GitHub PAT(`read:packages`)를 환경 변수로 넣는다 —
 `.env` 파일에 적는 것으로는 안 된다. **pnpm은 `.env`를 읽지 않는다.**
 

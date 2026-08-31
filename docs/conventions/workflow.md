@@ -5,7 +5,7 @@
 1. `corepack enable` — 꺼져 있으면 `packageManager` 고정이 무시되고 pnpm 버전이 갈린다.
 2. `nvm use` — `.nvmrc`의 Node를 맞춘다. `engines`가 `>=22.12 <23`을 막아준다.
 3. `.env.example`을 `.env`로 복사하고 `NODE_AUTH_TOKEN`을 채운다. 없으면 `pnpm install`이
-   `@libitum/*`에서 404로 죽는다.
+   `@libitums/*`에서 404로 죽는다.
 
 ([ADR-0005 D3](../adr/0005-runtime-and-package-manager-versions.md),
 [ADR-0011 D2](../adr/0011-design-system-consumption.md))

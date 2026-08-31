@@ -17,10 +17,10 @@ ADR-0008은 **토큰을 이 저장소가 소유한다**고 전제했다. `apps/m
 foundations/*.json + components/**/*.md + assets/icons/**/*.svg   ← 원본
                           │
                           ▼  validate / build      (design-system 소유)
-        @libitum/design-tokens  +  @libitum/icons   ← GitHub Packages, private
+        @libitums/design-tokens  +  @libitums/icons   ← GitHub Packages, private
                           │
                           ▼
-              FE 모노레포 / @libitum/ui-lynx        (이 저장소 소유)
+              FE 모노레포 / @libitums/ui-lynx        (이 저장소 소유)
 ```
 
 원본에는 색 33 · 타이포 22 · 4px 리듬 간격 · layout · radius · elevation · motion ·
@@ -36,7 +36,7 @@ Bottom Navigator · Header · Indicator)도 Markdown으로 있다.
 
 ### D1. 토큰은 **CSS 커스텀 프로퍼티로만** 소비한다
 
-`@libitum/design-tokens`는 CSS 변수와 TypeScript 상수를 **둘 다** 제공한다.
+`@libitums/design-tokens`는 CSS 변수와 TypeScript 상수를 **둘 다** 제공한다.
 **첫 단계에는 CSS 변수만 쓴다.**
 
 ```tsx
@@ -48,7 +48,7 @@ Bottom Navigator · Header · Indicator)도 Markdown으로 있다.
 ```
 ```tsx
 // 안 쓴다
-import { spacing } from '@libitum/design-tokens';
+import { spacing } from '@libitums/design-tokens';
 <view style={{ padding: spacing[16] }} />
 ```
 
@@ -69,9 +69,16 @@ import { spacing } from '@libitum/design-tokens';
 
 ### D2. private registry 인증 — `.npmrc`를 **커밋하고** 토큰은 환경변수로
 
+> **스코프는 `@libitums`다 — 브랜드(`libitum`)가 아니라 GitHub 조직명(`libitums`)을 따른다.**
+> GitHub Packages가 조직명을 스코프로 강제하기 때문이고, 우리가 고를 수 있는 것이 아니다.
+>
+> 저장소 안에 `libitum`(s 없음)이 남아 있는 자리가 둘 있는데 **둘 다 맞다** —
+> iOS 번들 ID `com.libitum.host`와 저장소 키 접두사 `libitum.`은 **브랜드**를 쓴다.
+> npm 스코프만 조직을 따른다. 셋을 같게 맞추려 하지 않는다.
+
 ```ini
 # .npmrc  (커밋한다)
-@libitum:registry=https://npm.pkg.github.com
+@libitums:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 ```ini
@@ -90,12 +97,12 @@ NODE_AUTH_TOKEN=   # GitHub PAT, scope: read:packages
 저장소에 없으면 새 환경에서 왜 안 되는지 알 수 없다.** private 패키지는 인증이 없으면
 `pnpm install`이 404로 죽는데, 그 원인이 어디에도 안 적혀 있으면 매번 다시 알아내야 한다.
 
-### D3. `@libitum/ui-lynx`를 **첫 단계에 만들지 않는다**
+### D3. `@libitums/ui-lynx`를 **첫 단계에 만들지 않는다**
 
 컴포넌트는 `apps/mobile/src/components/`에 둔다. `packages/` 아래에는 아무것도 만들지
 않는다 — **ADR-0004 D2가 그대로 유효하다.** 소비자가 `apps/mobile` 하나뿐이다.
 
-LIB-108은 `@libitum/ui-lynx`의 **위치**(FE 모노레포)만 정했고, *"이 package의 배포 여부는
+LIB-108은 `@libitums/ui-lynx`의 **위치**(FE 모노레포)만 정했고, *"이 package의 배포 여부는
 FE 모노레포에서 별도로 결정"* 이라고 명시했다. 시점은 이 저장소가 정할 몫이다.
 
 **근거**: 먼저 확인해야 하는 것이 **토큰과 아이콘이 실제 화면에서 도는가**다(LIB-131).
@@ -103,7 +110,7 @@ FE 모노레포에서 별도로 결정"* 이라고 명시했다. 시점은 이 �
 가리는 데 시간이 간다.
 
 **승격 조건**: ADR-0004 D2 그대로 — **두 번째 소비자가 실제로 나타났을 때.**
-이름은 `@libitum/ui-lynx`로 예약돼 있다고 본다.
+이름은 `@libitums/ui-lynx`로 예약돼 있다고 본다.
 
 ### D4. 원본을 복사하지 않고, 값을 하드코딩하지 않는다
 
@@ -126,8 +133,23 @@ FE가 혼자 정할 수 있는 축이 아니다.
 
 | 무엇 | 왜 못 정하나 | 그때까지 |
 |---|---|---|
-| `@libitum/*` 버전 범위 (정확 vs caret) | SemVer·changelog 정책이 LIB-128에서 아직 정해지지 않았다. minor에 무엇이 들어오는지 규정이 없다 | **첫 설치는 정확 버전으로 적어둔다.** 결정이 아니라 기본값 방지용이다 — `pnpm add`가 caret을 박아버리면 그게 조용히 규칙이 된다 |
+| `@libitums/*` 버전 범위 (정확 vs caret) | SemVer·changelog 정책이 LIB-128에서 아직 정해지지 않았다. minor에 무엇이 들어오는지 규정이 없다 | **첫 설치는 정확 버전으로 적어둔다.** 결정이 아니라 기본값 방지용이다 — `pnpm add`가 caret을 박아버리면 그게 조용히 규칙이 된다 |
 | 아이콘 소비 형태 | 개별 export 생성기가 LIB-125에서 아직 나오지 않았다 | 아이콘을 실제로 쓰는 화면이 나올 때까지 미룬다 |
+
+## 정정 기록
+
+**2026-08-26 — 스코프가 틀렸다.** `@libitum`으로 적었는데 실제 배포는 **`@libitums`**다.
+결정(패키지로만 소비한다)은 그대로이고, 이름이 틀렸다.
+
+저장소 전체 **32곳**을 고쳤다 — `.npmrc`와 문서 여덟. 그대로 뒀다면 첫 설치에서
+**404가 났을 것**이고, 원인이 스코프라는 것을 알아내는 데 시간이 갔을 것이다.
+
+**어떻게 틀렸나** — LIB-108이 *"npm scope: `@libitum/*`"* 로 적은 것을 그대로 옮겼다.
+**GitHub Packages는 스코프를 조직명으로 강제한다**는 사실을 확인하지 않았다. 조직은
+`libitums`이고 브랜드는 `libitum`이라 한 글자 차이였다.
+
+확인 범위에 한 줄 더한다 — **다른 저장소가 정한 이름은 그 저장소의 실제 산출물로
+확인한다.** 이슈 본문은 결정 당시의 의도이지 배포된 사실이 아니다.
 
 ## 버린 대안
 
@@ -175,7 +197,7 @@ FE가 혼자 정할 수 있는 축이 아니다.
 
 ## 재검토 조건
 
-- **`@libitum/design-tokens`가 배포되면** → D1의 감수한 실패를 메운다. 알려진 토큰
+- **`@libitums/design-tokens`가 배포되면** → D1의 감수한 실패를 메운다. 알려진 토큰
   이름만 허용하는 CSS 검사를 `lint`에 붙인다(ADR-0006 D1이 검토했으나 토큰 목록이
   없어 만들지 못했다). **`var(--오타)`가 조용히 무시되는 것을 잡을 유일한 수단이다**
 - **JS에서 토큰 값을 계산·분기해야 하는 첫 사례**가 나오면 → D1. 그 사례를 근거로
