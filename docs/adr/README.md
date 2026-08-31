@@ -64,7 +64,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | package 경계와 책임 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | 의존 방향 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | 런타임·패키지매니저 버전 정책 | 결정 (형태) | [0005](0005-runtime-and-package-manager-versions.md) — 확정 값은 [0013](0013-dependencies-and-version-notation.md) D4 |
-| 의존 패키지 목록 | 결정 + 보류 (`@libitum/*`) | [0013](0013-dependencies-and-version-notation.md) |
+| 의존 패키지 목록 | 결정 + 보류 (`@libitums/*`) | [0013](0013-dependencies-and-version-notation.md) |
 | npm 의존의 버전 표기 | 결정 (전부 정확 버전) | [0013](0013-dependencies-and-version-notation.md) |
 | `dependencies`/`devDependencies` 경계 | 결정 | [0013](0013-dependencies-and-version-notation.md) |
 | 명령 인터페이스 | 결정 | [0006](0006-command-interface-and-test-layers.md) |
@@ -94,8 +94,8 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | `integration`의 **서버 연동 케이스** | 무엇을 목킹할지 정할 수 없다 | API 명세가 없고 백-프론트 연동이 미착수다. 계층 자체는 첫 단계에 포함된다 | **밖** | API 명세 도착 후 |
 | 브랜치 보호 강제 | 정책은 정했으나 GitHub 규칙으로 강제할 수 없다 | private 저장소 브랜치 보호 API가 현 플랜에서 403. 필수 상태 검사로 걸 CI도 아직 없다 | **밖** | CI 도입 시 (ADR-0009) |
 | `e2e` 테스트 계층 | 도구는 있으나 환경이 없다 | `@lynx-js/kitten-lynx-test-infra`(vitest)가 Explorer(Android)를 구동한다. 개발도 시연도 iOS이므로(ADR-0012) **Android는 오직 e2e만을 위해 세우는 환경**이 됐다 | **밖** (환경) | Android 에뮬레이터를 루프에 둘 수 있을 때 |
-| `@libitum/*` 버전 범위 | SemVer·changelog 정책이 아직 없다 | LIB-128 미확정 (ADR-0011). **그때까지 첫 설치는 정확 버전으로 적어둔다** — `pnpm add`의 기본값(caret)이 조용히 규칙이 되는 것을 막는 잠정 조치다. **ADR-0013 D1과 근거가 다르므로 섞어 읽지 않는다**(0013 D7) | **본인** — 다른 저장소의 내 대기열이다 | LIB-128 확정 후 |
-| `@libitum/design-tokens`·`@libitum/icons` **설치 시점** | 배포됐는지 확인할 수단이 없다 | 비공개 레지스트리는 인증 없이 **없는 것과 못 보는 것이 똑같이 404**다. 그때까지 `apps/mobile/src`의 `var(--*)`는 전부 무효이고 **앱은 스타일 없이 뜬다** (ADR-0013 D7) | **본인** — 다른 저장소의 내 대기열이다 | 배포 확인 후 첫 설치 |
+| `@libitums/*` 버전 범위 | SemVer·changelog 정책이 아직 없다 | LIB-128 미확정 (ADR-0011). **그때까지 첫 설치는 정확 버전으로 적어둔다** — `pnpm add`의 기본값(caret)이 조용히 규칙이 되는 것을 막는 잠정 조치다. **ADR-0013 D1과 근거가 다르므로 섞어 읽지 않는다**(0013 D7) | **본인** — 다른 저장소의 내 대기열이다 | LIB-128 확정 후 |
+| `@libitums/design-tokens`·`@libitums/icons` **설치 시점** | 배포됐는지 확인할 수단이 없다 | 비공개 레지스트리는 인증 없이 **없는 것과 못 보는 것이 똑같이 404**다. 그때까지 `apps/mobile/src`의 `var(--*)`는 전부 무효이고 **앱은 스타일 없이 뜬다** (ADR-0013 D7) | **본인** — 다른 저장소의 내 대기열이다 | 배포 확인 후 첫 설치 |
 | 아이콘 소비 형태 | 개별 export 생성기가 아직 없다 | LIB-125 미착수 (ADR-0011) | **본인** — 다른 저장소의 내 대기열이다 | 아이콘을 쓰는 화면이 나올 때 |
 | 배포·릴리스 경계 | 시연까지는 배포가 필요 없다 | 자체 호스트를 만들되 **스토어 배포·서명은 하지 않는다**(ADR-0012 D2). 시연은 시뮬레이터에서 직접 실행한다 | — 요구 없음 | 스토어 배포가 요구될 때 |
 | `tooling/*` 워크스페이스 글롭 | 넣을 패키지가 없다 | 두 번째 패키지가 생겨야 공유 설정이 의미를 갖는다 | — 요구 없음 | ADR-0003 재검토 조건 |

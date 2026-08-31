@@ -66,7 +66,7 @@ apps/mobile/src/
 ## 스타일
 
 - 토큰은 **CSS 커스텀 프로퍼티로만** 쓴다. `var(--color-bg-surface)`이지
-  `import { spacing } from '@libitum/design-tokens'`가 아니다.
+  `import { spacing } from '@libitums/design-tokens'`가 아니다.
 - **값을 하드코딩하지 않는다.** 새 토큰이 필요하면 design-system에 변경을 요청한다.
 - 원본 JSON·Markdown·SVG를 복사하거나 fork하지 않는다. 패키지로만 소비한다.
 - 컴포넌트 스펙과 구현이 다르면 **design-system의 스펙이 기준**이다.
