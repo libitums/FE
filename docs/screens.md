@@ -129,10 +129,10 @@ ADR-0007 D3이 정한 모양이다.
 
 ```ts
 type Nav = {
-  entry: Screen[]                     // 탭 밖 구간. 비면 앱 구간이다
-  tab: Tab
-  stacks: Record<Tab, Screen[]>
-}
+  entry: Screen[];                    // 탭 밖 구간. 비면 앱 구간이다
+  tab: Tab;
+  stacks: Record<Tab, Screen[]>;
+};
 ```
 
 스플래시부터 여정 선택까지가 `entry`에 쌓인다. `entry`가 비면 앱 구간으로 넘어간다 —
