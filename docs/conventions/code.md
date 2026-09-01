@@ -77,7 +77,7 @@ apps/mobile/src/
 |---|---|
 | 존재 기대 | `getByTestId(...)` — **쿼리 자체가 단언이다** |
 | 부재 단언 | `expect(queryByTestId(...)).not.toBeInTheDocument()` |
-| 그 요소의 속성·텍스트 | `expect(getByTestId(...)).toHaveAttribute(...)` · `toHaveTextContent(...)` |
+| 속성·텍스트 | `expect(getByTestId(...)).toHaveAttribute(...)` |
 
 `getByTestId`는 못 찾으면 예외를 던지고, 그 메시지가 **무엇을 찾으려 했는지와 그 시점에
 실제로 무엇이 있었는지를 DOM째로** 보여준다. 존재를 기대하는 자리에서는 이게 가장 좋은
