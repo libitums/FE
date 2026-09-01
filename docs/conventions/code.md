@@ -54,6 +54,50 @@ apps/mobile/src/
 
 ([ADR-0006 D4](../adr/0006-command-interface-and-test-layers.md))
 
+## jest-dom 매처는 절반만 쓴다
+
+`ui`·`integration`은 `@testing-library/jest-dom` 매처를 쓴다. Lynx 요소는
+`LynxElement extends HTMLElement`이고 실제로 jsdom 트리에 붙어서
+(`document.body.contains(el)` → true) 구조 매처가 그대로 동작한다.
+
+| 쓴다 | 쓰지 않는다 |
+|---|---|
+| `toBeInTheDocument` · `not.toBeInTheDocument` | `toBeVisible` |
+| `toHaveAttribute` | `toHaveStyle` |
+| `toHaveTextContent` | `toHaveClass` |
+| `toContainElement` | 폼 계열 (`toBeChecked` · `toHaveValue`) |
+
+오른쪽은 **계산된 스타일에 의존한다.** jsdom은 Lynx 스타일을 계산하지 않으므로 통과해도
+의미가 없고, 더 나쁘게는 **거짓 확신을 준다** — jsdom 기본값으로 항상 통과할 수 있다.
+바로 위 절이 말한 "`ui`는 어떻게 보이는지를 덮지 못한다"와 같은 선이다.
+
+### 쿼리를 무엇으로 고르나
+
+| 하려는 것 | 쓰는 것 |
+|---|---|
+| 존재 기대 | `getByTestId(...)` — **쿼리 자체가 단언이다** |
+| 부재 단언 | `expect(queryByTestId(...)).not.toBeInTheDocument()` |
+| 속성·텍스트 | `expect(getByTestId(...)).toHaveAttribute(...)` |
+
+`getByTestId`는 못 찾으면 예외를 던지고, 그 메시지가 **무엇을 찾으려 했는지와 그 시점에
+실제로 무엇이 있었는지를 DOM째로** 보여준다. 존재를 기대하는 자리에서는 이게 가장 좋은
+실패 메시지다.
+
+부재는 `getBy`로 확인할 수 없다 — 못 찾는 순간 예외가 나서 단언까지 가지 못한다.
+그때만 `queryBy`를 쓴다. 반대로 존재를 `queryBy`로 확인하면 실패 메시지가
+`Received has value: null` 한 줄로 줄어든다.
+
+**`expect(screen.getByTestId(X)).toBeTruthy()`를 쓰지 않는다.** `getByTestId`가 이미
+예외를 던지므로 아무것도 확인하지 않는다. 대신 그 요소에 대한 **실제 단언**
+(`toHaveAttribute`·`toHaveTextContent`)을 쓴다.
+
+`getBy` 뒤의 `toBeInTheDocument()`도 같은 의미에서 실패 조건을 더하지는 않는다.
+**읽는 사람에게 "이 요소가 있는지 보는 중"이라고 알리는 표시**로만 쓴다 — 검사를
+강화하는 것으로 착각하지 않는다.
+
+**강제 수단은 없다.** oxlint 규칙으로 막을 수 없어 PR diff를 읽을 때 본다.
+등록 위치는 `apps/mobile/vitest.setup.ts`이고 이유가 그 주석에 있다.
+
 ## import
 
 - 워크스페이스 내부 참조는 항상 `workspace:*`. 버전 범위를 쓰지 않는다.
