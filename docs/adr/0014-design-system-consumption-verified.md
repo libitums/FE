@@ -19,8 +19,8 @@ ADR-0011은 **패키지를 설치해 보기 전에** 쓴 결정이다. 그때 �
 1. **scope가 `@libitum`이 아니라 `@libitums`다.** 실제 GitHub 조직 owner와 맞췄다.
 2. **pnpm이 저장소 `.npmrc`의 인증 설정을 무시한다.** ADR-0011 D2가 적은 형태가
    더 이상 동작하지 않는다.
-3. **Lynx는 중첩 `var()`를 풀지 못한다.** ADR-0011 D1의 근거 *"중첩 참조"* 가 사실이
-   아니었다. 패키지 쪽을 고쳐 해소했다.
+3. **우리 번들에서 중첩 `var()`가 풀리지 않는다.** ADR-0011 D1의 근거 *"중첩 참조"* 가
+   이 스택에서는 성립하지 않았다. 패키지 쪽을 고쳐 해소했다.
 4. **Lynx `<svg>`는 CSS `color`를 읽지 않는다.** 아이콘 색만은 D1의 CSS 전용 경로로
    지정할 수 없다.
 
@@ -51,10 +51,9 @@ import "@libitums/design-tokens/css/typography.css";
 ```
 
 > **ADR-0011 D1의 근거 중 하나가 사실이 아니었다.** *"Lynx의 CSS 변수는 웹 표준과 거의
-> 같다 — … 중첩 참조 …"* 라고 적었는데, **Lynx는 중첩 `var()`를 풀지 못한다.**
-> 엔진의 `CSSVariableHandler::ResolveCSSVariables`가 치환을 **한 번만** 하고 그 결과를
-> `UnitHandler`로 다시 파싱한다. 치환 결과가 또 `var()`이면 파싱에 실패해 **선언을 통째로
-> 버린다.**
+> 같다 — … 중첩 참조 …"* 라고 적었는데, **우리 번들에서는 중첩 `var()`가 풀리지 않는다.**
+> 값이 또 `var()`인 커스텀 프로퍼티는 해석에 실패해 **선언이 통째로 버려진다.** 호스트에서
+> 확인했다 — 1단계는 되고 2단계부터 안 된다. **원인은 규명되지 않았다**(아래 `정정 기록`).
 >
 > 패키지가 내보내던 CSS는 227개 변수 중 73개가 별칭이었다. semantic layer가 통째로
 > 별칭이라 `color.fg.*`·`layout.*`·`icon.size.*`와 타이포의 `font-family`·`font-weight`가
@@ -173,8 +172,9 @@ ADR-0011의 보류 표를 닫는다.
 import house from "@libitums/icons/lynx/house";
 ```
 
-Lynx의 `<image>`는 SVG를 지원하지 않으므로 SVG XML 문자열을 그대로 받는 `<svg content>`
-경로를 쓴다. 전체 index(`@libitums/icons/lynx`)를 가져오지 않는다 — 815개가 번들에 들어간다.
+SVG XML 문자열을 그대로 받는 `<svg content>` 경로를 쓴다. `<image>`로 SVG를 쓰려면 bundler
+loader가 필요한데, ADR-0011 D4가 FE에 loader를 만들지 않기로 했다. `<svg content>`는 빌드
+설정 없이 동작한다. 전체 index(`@libitums/icons/lynx`)를 가져오지 않는다 — 815개가 번들에 들어간다.
 `withIconColor`가 필요할 때만 index에서 가져온다.
 
 padding variant가 기본이다. frame을 정확히 채워야 하면
@@ -219,14 +219,53 @@ ADR-0011 D5를 그대로 유지한다. 배포된 `color.json`이 라이트 모�
 - **`0.2.0` 미만에서는 화면이 깨진다.** D1이 패키지의 평탄화에 기대므로 하위 버전으로
   내리면 semantic token이 다시 죽는다.
 
+## 정정 기록
+
+**2026-09-01 — D1의 원인 기술이 틀렸다.** 처음 이 ADR을 쓸 때 중첩 `var()`가 안 되는 원인을
+*"엔진의 `CSSVariableHandler::ResolveCSSVariables`가 치환을 한 번만 하고 그 결과를
+`UnitHandler`로 다시 파싱한다"* 고 적었다. **사실이 아니다.**
+
+그 단일 치환은 **use-site 치환**이고, 바로 위 주석이 왜 한 번으로 충분한지를 적어 두고
+있었다 — *"custom_properties are already resolved in CollectCustomProperties"*.
+`FiberElement::CollectCustomProperties`가 `CSSValue::SubstituteAll`을 부르고, 거기서
+`CycleDetector`와 `max_depth = 10`으로 **재귀 해석**한다. **엔진은 중첩을 지원한다.**
+함수 하나만 읽고 일반화한 것이 잘못이었다.
+
+**관측은 재확인했다.** 정의 위치만 바꿔 다시 확인했다 (iOS Lynx 4.0.1, iPhone 17).
+
+| 케이스 | 결과 |
+|---|---|
+| `:root` 1단계 | 적용됨 |
+| `:root` 2단계 | 안 됨 |
+| `:root` 3단계 | 안 됨 |
+| 같은 룰 안 2단계 | 안 됨 |
+
+마지막 줄이 [Lynx 3.6 릴리스 노트](https://lynxjs.org/next/blog/lynx-3-6)가 직접 광고하는
+형태(`--ambient-shadow: 0 0 var(--blur) var(--color)`)인데 그것도 안 된다.
+`@lynx-js/react-rsbuild-plugin`의 `engineVersion` 기본값이 `'3.2'`(중첩이 들어온 3.6 미만)인
+것을 찾아 `3.9`로 올려 다시 빌드했지만 **결과가 같았다.**
+
+**런타임은 지원하는데 툴체인 산출물에서 동작하지 않는다. 정확한 지점은 규명하지 못했다.**
+D1의 결정(CSS 커스텀 프로퍼티로 소비, 패키지가 평탄화)은 바뀌지 않는다 — 그것이 이 스택에서
+화면이 나오게 하는 조치이고 실제로 나온다. 바뀐 것은 **왜 그런지를 안다고 적은 부분**이다.
+
+**같은 날 — D6의 `<image>` 서술도 부정확했다.** *"Lynx의 `<image>`는 SVG를 지원하지 않는다"*
+고 적었으나, 당근 seed-design의 `@karrotmarket/lynx-monochrome-icon`은 `<image src={svg}>`로
+렌더한다. 다만 `@karrotmarket/lynx-icon-config`라는 rspack 설정 플러그인이 필요하다.
+정확한 이유는 *"지원하지 않는다"* 가 아니라 **"loader가 필요한데 만들지 않기로 했다"** 이다.
+D6의 결론은 바뀌지 않는다.
+
 ## 재검토 조건
 
+- **중첩 `var()`가 안 되는 원인** → 규명되지 않았다. 엔진은 지원하므로 빌드/encode 경로를
+  봐야 한다. 밝혀지면 D1의 평탄화 의존을 다시 본다. upstream 보고 대상이기도 하다
 - **토큰 이름 검사를 붙일 수 있게 됐다** → 패키지가 배포됐으므로 ADR-0011의 조건이
   충족됐다. 알려진 토큰 이름만 허용하는 CSS 검사를 `lint`에 붙인다. **`var(--오타)`가
   조용히 무시되는 것을 잡을 유일한 수단이다.** D1의 감수한 실패를 갚는 자리다
 - **아이콘 색 외에 JS에서 토큰을 써야 하는 사례**가 나오면 → D1·D2. 그 사례를 근거로
   TS 상수 경로를 더 연다. D2를 선례로 쓰지 않는다 — 그것은 CSS로 **불가능**해서 연 것이다
-- **Lynx가 중첩 `var()`를 지원하면** → D1. 패키지의 평탄화가 불필요해지는지 다시 본다
+- **중첩 `var()`가 우리 번들에서 동작하게 되면** → D1. 패키지의 평탄화가 불필요해지는지
+  다시 본다
 - **`<svg>`가 CSS `color`를 읽게 되면** → D2. 아이콘 색을 CSS 경로로 되돌린다
 - **design-system이 `1.0.0`이 되면** → D5. caret 범위를 다시 검토한다. 1.0.0 이상에서는
   minor가 breaking을 담지 않는다

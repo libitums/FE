@@ -1,5 +1,6 @@
-// 아이콘은 필요한 이름의 subpath만 가져온다. Lynx는 `<image>`가 SVG를 지원하지
-// 않으므로 SVG XML 문자열을 그대로 받는 `<svg content>` 경로를 쓴다 (ADR-0014 D6).
+// 아이콘은 필요한 이름의 subpath만 가져온다. SVG XML 문자열을 그대로 받는
+// `<svg content>` 경로를 쓴다 — `<image>`로 SVG를 쓰려면 loader가 필요하고
+// FE에는 만들지 않는다 (ADR-0014 D6).
 import house from "@libitums/icons/lynx/house";
 
 // 아이콘 색에 한해 TS token 상수를 쓴다 (ADR-0014 D2). Lynx `<svg>`는 CSS
