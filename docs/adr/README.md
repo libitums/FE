@@ -74,10 +74,10 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 데이터 페칭 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 라우팅 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 에러 경계 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
-| 디자인 토큰 | 결정 | [0011](0011-design-system-consumption.md) — 0008 대체 |
-| 컴포넌트 프리미티브 | 결정 | [0011](0011-design-system-consumption.md) — 0008 대체 |
-| 아이콘 | 결정 (소비 경로) + 보류 (형태) | [0011](0011-design-system-consumption.md) |
-| private registry 인증 | 결정 | [0011](0011-design-system-consumption.md) |
+| 디자인 토큰 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
+| 컴포넌트 프리미티브 | 결정 | [0011](0011-design-system-consumption.md) D3 — 이 축만 유효 |
+| 아이콘 | 결정 (경로·형태·색) | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
+| private registry 인증 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | 형상 관리 위생 (.gitignore) | 결정 | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
 | CI | 결정 (시점 유예) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
 | 머지 방식 | 결정 (squash 고정) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
@@ -94,13 +94,15 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | `integration`의 **서버 연동 케이스** | 무엇을 목킹할지 정할 수 없다 | API 명세가 없고 백-프론트 연동이 미착수다. 계층 자체는 첫 단계에 포함된다 | **밖** | API 명세 도착 후 |
 | 브랜치 보호 강제 | 정책은 정했으나 GitHub 규칙으로 강제할 수 없다 | private 저장소 브랜치 보호 API가 현 플랜에서 403. 필수 상태 검사로 걸 CI도 아직 없다 | **밖** | CI 도입 시 (ADR-0009) |
 | `e2e` 테스트 계층 | 도구는 있으나 환경이 없다 | `@lynx-js/kitten-lynx-test-infra`(vitest)가 Explorer(Android)를 구동한다. 개발도 시연도 iOS이므로(ADR-0012) **Android는 오직 e2e만을 위해 세우는 환경**이 됐다 | **밖** (환경) | Android 에뮬레이터를 루프에 둘 수 있을 때 |
-| `@libitums/*` 버전 범위 | SemVer·changelog 정책이 아직 없다 | LIB-128 미확정 (ADR-0011). **그때까지 첫 설치는 정확 버전으로 적어둔다** — `pnpm add`의 기본값(caret)이 조용히 규칙이 되는 것을 막는 잠정 조치다. **ADR-0013 D1과 근거가 다르므로 섞어 읽지 않는다**(0013 D7) | **본인** — 다른 저장소의 내 대기열이다 | LIB-128 확정 후 |
-| `@libitums/design-tokens`·`@libitums/icons` **설치 시점** | 배포됐는지 확인할 수단이 없다 | 비공개 레지스트리는 인증 없이 **없는 것과 못 보는 것이 똑같이 404**다. 그때까지 `apps/mobile/src`의 `var(--*)`는 전부 무효이고 **앱은 스타일 없이 뜬다** (ADR-0013 D7) | **본인** — 다른 저장소의 내 대기열이다 | 배포 확인 후 첫 설치 |
-| 아이콘 소비 형태 | 개별 export 생성기가 아직 없다 | LIB-125 미착수 (ADR-0011) | **본인** — 다른 저장소의 내 대기열이다 | 아이콘을 쓰는 화면이 나올 때 |
 | 배포·릴리스 경계 | 시연까지는 배포가 필요 없다 | 자체 호스트를 만들되 **스토어 배포·서명은 하지 않는다**(ADR-0012 D2). 시연은 시뮬레이터에서 직접 실행한다 | — 요구 없음 | 스토어 배포가 요구될 때 |
 | `tooling/*` 워크스페이스 글롭 | 넣을 패키지가 없다 | 두 번째 패키지가 생겨야 공유 설정이 의미를 갖는다 | — 요구 없음 | ADR-0003 재검토 조건 |
 
 **`누가` 열이 있는 이유**: 1인 팀이라 *"LIB-128 확정 후"* 같은 문구가 **외부 대기처럼 읽히지만 실제로는 본인 대기열**이다. 둘을 구분하지 않으면 실체화 직전에 "이건 왜 아직 안 됐지"에서 시간이 간다. **밖**은 기다리는 것이고, **본인**은 순서를 정하는 것이다.
+
+**해소됨 (2026-09-01, 호스트 확인)** — `@libitums/*` 버전 범위 · 설치 시점 · 아이콘 소비 형태:
+세 항목 모두 ADR-0014에서 닫혔다. 두 패키지가 `0.2.0`으로 배포됐고 실제 화면 하나를
+`apps/ios`에 올려 확인했다. **정확 버전 고정**(D5), **이름별 subpath import**(D6),
+**아이콘 색은 `current-color` 속성 + TS token 상수**(D2). scope는 `@libitums`다.
 
 **해소됨** — `두 번째 플랫폼(Android) 호스트`: 시연을 **iOS 시뮬레이터**로 하기로 정했다. Android 호스트는 만들지 않는다 (ADR-0012 D1).
 
@@ -133,6 +135,14 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 *"토큰이 없는 것"* 이 구분되지 않는다. 리터럴이 칠해지면 원인은 **토큰 부재 하나**로 좁혀진다.
 네 번째 케이스가 ADR-0011 D1이 *"알고 감수한다"* 고 적은 실패이고, **그렇게 동작하는 것을
 눈으로 확인했다.**
+
+**정정 (2026-09-01, 호스트 확인)** — 위 `Lynx CSS 커스텀 프로퍼티` 확인은 **한 겹만
+검증했다.** Lynx는 **중첩 `var()`를 풀지 못한다** — 값이 또 `var()`이면 선언을 통째로
+버린다. 엔진이 치환을 한 번만 하고 결과를 다시 파싱하기 때문이다. 배포된 토큰 CSS의
+227개 중 73개가 별칭이라 semantic layer가 통째로 죽어 있었고, 호스트에서 padding·gap이
+사라지고 아이콘이 아예 보이지 않았다. **design-system이 별칭을 리터럴로 평탄화하도록
+고쳐 해소했다**(`0.2.0`). ADR-0011 D1이 근거로 적은 *"중첩 참조"* 는 사실이 아니었다
+— ADR-0014 D1이 이것을 기록한다.
 
 **해소됨 (2026-08-25)** — `Explorer의 Lynx 런타임이 3.9 이상이다`: Explorer **4.0.1**을 설치했다.
 버전과 재현 절차는 `docs/conventions/workflow.md`에 적혀 있다.

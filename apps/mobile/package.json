@@ -14,6 +14,8 @@
     "test:integration": "vitest run integration.test"
   },
   "dependencies": {
+    "@libitums/design-tokens": "0.2.0",
+    "@libitums/icons": "0.2.0",
     "@lynx-js/react": "0.125.0"
   },
   "devDependencies": {

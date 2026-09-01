@@ -4,11 +4,25 @@
 
 1. `corepack enable` — 꺼져 있으면 `packageManager` 고정이 무시되고 pnpm 버전이 갈린다.
 2. `nvm use` — `.nvmrc`의 Node를 맞춘다. `engines`가 `>=22.12 <23`을 막아준다.
-3. `.env.example`을 `.env`로 복사하고 `NODE_AUTH_TOKEN`을 채운다. 없으면 `pnpm install`이
-   `@libitums/*`에서 404로 죽는다.
+3. GitHub Packages 인증을 **저장소 밖**에 둔다. 없으면 `pnpm install`이 `@libitums/*`에서
+   `401`로 죽는다.
+
+   ```ini
+   # ~/.npmrc  (저장소가 아니라 홈 디렉터리다)
+   //npm.pkg.github.com/:_authToken=<GitHub PAT, scope: read:packages>
+   ```
+
+   **저장소 `.npmrc`에 넣으면 동작하지 않는다.** pnpm v10.34.2·v11.5.3부터 저장소가
+   소유한 `.npmrc`의 인증 항목을 무시한다. 무시될 때
+   ` WARN  Ignored project-level auth setting`이 뜬다. 저장소 `.npmrc`에는 registry
+   연결 한 줄(`@libitums:registry=…`)만 커밋한다. `.env`에 넣어도 동작하지 않는다 —
+   pnpm이 그 파일을 읽지 않는다.
+
+   CI에서는 `actions/setup-node`가 **사용자 수준** `.npmrc`를 쓰므로 `NODE_AUTH_TOKEN`이
+   그대로 동작한다.
 
 ([ADR-0005 D3](../adr/0005-runtime-and-package-manager-versions.md),
-[ADR-0011 D2](../adr/0011-design-system-consumption.md))
+[ADR-0014 D3](../adr/0014-design-system-consumption-verified.md))
 
 ## 명령
 
