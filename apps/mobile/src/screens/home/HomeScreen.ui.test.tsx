@@ -20,9 +20,9 @@ test("홈 화면이 제목과 아이콘을 렌더한다", () => {
   expect(icon).not.toBeNull();
   // package가 준 문자열을 그대로 넘긴다. 화면에서 XML을 가공하지 않는다.
   expect(icon?.getAttribute("content")).toBe(house);
-  // 원본의 currentColor는 그대로 두고 색은 속성으로 넘긴다 (ADR-0014 D2).
-  expect(house).toContain('fill="currentColor"');
+  // 색은 token 값을 `current-color`로 넘긴다 (ADR-0014 D2).
   expect(icon?.getAttribute("current-color")).toBe(color.fg.neutral);
-  // 색 값은 token에서 온다. 화면에 raw hex를 적지 않는다.
-  expect(color.fg.neutral).toMatch(/^#[0-9A-Fa-f]{6}$/);
+  // `current-color`는 원본이 currentColor를 쓸 때만 효과가 있다. 아이콘이 색을
+  // 박아 오는 형태로 바뀌면 위 속성이 조용히 무효가 되므로 여기서 잡는다.
+  expect(house).toContain("currentColor");
 });

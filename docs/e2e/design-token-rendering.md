@@ -16,6 +16,7 @@ xcrun simctl launch booted com.libitum.host --bundle-url=main.lynx
 - **아이콘이 보인다.** 크기는 24pt(`icon.size.md`)
 - 아이콘 색이 **검정(`#000000`)이 아니라 `#1A1C20`**(`color.fg.neutral`)이다
 - 화면 좌우에 **16pt 여백**이 있다 (`layout.screen.padding-x`)
+- 화면 위쪽 여백은 **12pt**다 (`layout.screen.padding-top`) — 좌우와 값이 다르다
 - 아이콘과 제목 사이에 **8pt 간격**이 있다 (`spacing.8`)
 - 배경이 흰색이 아니라 **크림색 `#FFFDFC`**다 (`color.background.primary`)
 
