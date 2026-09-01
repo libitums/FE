@@ -46,10 +46,14 @@ Pods/
 **`Podfile.lock`은 추적한다.** D2가 `pnpm-lock.yaml`을 추적하는 이유와 같다 — 네이티브
 의존이 환경마다 다르게 풀리면 "내 Xcode에서만 나는 실패"가 생긴다.
 
-**`.npmrc`를 여기 넣지 않는다.** private registry 설정은 추적돼야 한다 — 토큰 **값**이
-아니라 `${NODE_AUTH_TOKEN}` 참조만 들어가므로 새는 것이 없고, 넣지 않으면 새 환경에서
-`pnpm install`이 404로 죽는 이유가 저장소 어디에도 없게 된다 (ADR-0011 D2).
-`.env.example`을 예외로 추적하는 것과 같은 이유다.
+**`.npmrc`를 여기 넣지 않는다.** private registry 설정은 추적돼야 한다 — registry 연결
+한 줄만 들어가므로 새는 것이 없고, 넣지 않으면 새 환경에서 `pnpm install`이 어느
+registry를 봐야 하는지 알 수 없게 된다 (ADR-0014 D3).
+
+> **정정 (2026-09-01)** — 원래 이 자리에 *"토큰 `${NODE_AUTH_TOKEN}` 참조만 들어가므로"*
+> 라고 적었다. **인증 항목은 이제 저장소 `.npmrc`에 넣지 않는다** — pnpm이 무시한다.
+> 저장소에는 registry 연결만 커밋하고 인증은 `~/.npmrc`에 둔다. 같은 이유로
+> `.env.example`도 지웠다 — 거기 넣어도 동작하지 않아 **틀린 안내**가 된다 (ADR-0014 D3).
 
 ### D2. `pnpm-lock.yaml`은 **반드시 추적한다**
 

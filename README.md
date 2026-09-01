@@ -28,18 +28,23 @@ Lynx Explorer로 그 URL을 연다 — 기기는 QR 스캔, 시뮬레이터는 �
 > [docs/conventions/workflow.md](docs/conventions/workflow.md)에 있고, **Mac과 Xcode
 > 정식 설치가 필요하다** — Command Line Tools만으로는 `simctl`이 없다.
 
-### `NODE_AUTH_TOKEN`은 아직 필요 없다
+### GitHub Packages 인증이 필요하다
 
-`.npmrc`가 `@libitums` 스코프에 이 변수를 요구하지만, **그 패키지들이 아직 의존성에 없어서
-토큰 없이도 설치가 성공한다.** `pnpm` 명령마다 나오는 다음 경고는 무시해도 된다.
+`@libitums/design-tokens`·`@libitums/icons`가 의존에 있으므로 **토큰 없이는
+`pnpm install`이 `401`로 죽는다.** GitHub PAT(scope: `read:packages`)를
+`~/.npmrc`에 넣는다.
 
+```ini
+# ~/.npmrc  (저장소가 아니라 홈 디렉터리다)
+//npm.pkg.github.com/:_authToken=<PAT>
 ```
-WARN  Issue while reading ".npmrc". Failed to replace env in config: ${NODE_AUTH_TOKEN}
-```
 
-`@libitums/design-tokens`·`@libitums/icons`가 배포돼 의존에 들어가는 순간 이 경고는
-**404 실패로 바뀐다.** 그때 GitHub PAT(`read:packages`)를 환경 변수로 넣는다 —
-`.env` 파일에 적는 것으로는 안 된다. **pnpm은 `.env`를 읽지 않는다.**
+**저장소 `.npmrc`에 넣으면 동작하지 않는다.** pnpm v10.34.2·v11.5.3부터 저장소가 소유한
+`.npmrc`의 인증 항목을 무시한다(` WARN  Ignored project-level auth setting`). 저장소
+`.npmrc`에는 registry 연결 한 줄만 커밋한다. **`.env`에 적는 것으로도 안 된다 — pnpm은
+`.env`를 읽지 않는다.**
+
+자세한 것은 [ADR-0014 D3](docs/adr/0014-design-system-consumption-verified.md)에 있다.
 
 ## 문서
 
