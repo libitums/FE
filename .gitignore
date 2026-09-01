@@ -12,6 +12,12 @@ coverage/
 .idea/
 .vscode/
 
+# 에이전트 하네스 로컬 설정 — 개인 작업용이라 추적하지 않는다.
+# 이걸 추적하지 않는 대가: 다른 사람·다른 기계에서 하네스를 돌리면 프로파일이 없어
+# test-execution이 commandKey를 해석하지 못하고 precondition-unmet으로 되돌아간다.
+.agent-harness/
+.claude/
+
 # iOS 호스트 (apps/ios) — ADR-0012 D7
 build/
 DerivedData/

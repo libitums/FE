@@ -54,6 +54,30 @@ apps/mobile/src/
 
 ([ADR-0006 D4](../adr/0006-command-interface-and-test-layers.md))
 
+## jest-dom 매처는 절반만 쓴다
+
+`ui`·`integration`은 `@testing-library/jest-dom` 매처를 쓴다. Lynx 요소는
+`LynxElement extends HTMLElement`이고 실제로 jsdom 트리에 붙어서
+(`document.body.contains(el)` → true) 구조 매처가 그대로 동작한다.
+
+| 쓴다 | 쓰지 않는다 |
+|---|---|
+| `toBeInTheDocument` · `not.toBeInTheDocument` | `toBeVisible` |
+| `toHaveAttribute` | `toHaveStyle` |
+| `toHaveTextContent` | `toHaveClass` |
+| `toContainElement` | 폼 계열 (`toBeChecked` · `toHaveValue`) |
+
+오른쪽은 **계산된 스타일에 의존한다.** jsdom은 Lynx 스타일을 계산하지 않으므로 통과해도
+의미가 없고, 더 나쁘게는 **거짓 확신을 준다** — jsdom 기본값으로 항상 통과할 수 있다.
+바로 위 절이 말한 "`ui`는 어떻게 보이는지를 덮지 못한다"와 같은 선이다.
+
+`expect(screen.getByTestId(X)).toBeTruthy()`를 쓰지 않는다. `getByTestId`는 못 찾으면
+이미 예외를 던지므로 그 단언은 아무것도 확인하지 않는다. `toBeInTheDocument()`나
+그 요소에 대한 실제 단언(`toHaveAttribute` 등)을 쓴다.
+
+**강제 수단은 없다.** oxlint 규칙으로 막을 수 없어 PR diff를 읽을 때 본다.
+등록 위치는 `apps/mobile/vitest.setup.ts`이고 이유가 그 주석에 있다.
+
 ## import
 
 - 워크스페이스 내부 참조는 항상 `workspace:*`. 버전 범위를 쓰지 않는다.
