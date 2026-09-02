@@ -10,3 +10,13 @@ test("설정 화면이 제목을 렌더한다", () => {
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
 });
+
+// 재고정 2026-09-02: 제목 다섯이 같은 방식으로 heading이 된다 (screens.contract.ts).
+test("설정 화면 제목이 accessibility-traits header를 갖는다", () => {
+  render(<SettingsScreen />);
+
+  expect(screen.getByTestId("settings-screen-title")).toHaveAttribute(
+    "accessibility-traits",
+    "header",
+  );
+});

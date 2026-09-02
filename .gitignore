@@ -17,6 +17,7 @@ coverage/
 .agent-harness/
 .claude/
 .codex/
+.playwright-mcp/
 
 # iOS 호스트 (apps/ios) — ADR-0012 D7
 build/

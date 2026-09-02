@@ -11,3 +11,13 @@ test("여정 맵 화면이 제목을 렌더한다", () => {
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
 });
+
+// 재고정 2026-09-02: 제목 다섯이 같은 방식으로 heading이 된다 (screens.contract.ts).
+test("여정 맵 화면 제목이 accessibility-traits header를 갖는다", () => {
+  render(<JourneyMapScreen />);
+
+  expect(screen.getByTestId("journey-map-screen-title")).toHaveAttribute(
+    "accessibility-traits",
+    "header",
+  );
+});

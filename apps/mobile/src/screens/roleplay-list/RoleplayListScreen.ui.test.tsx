@@ -10,3 +10,13 @@ test("롤플레이 화면이 제목을 렌더한다", () => {
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
 });
+
+// 재고정 2026-09-02: 제목 다섯이 같은 방식으로 heading이 된다 (screens.contract.ts).
+test("롤플레이 화면 제목이 accessibility-traits header를 갖는다", () => {
+  render(<RoleplayListScreen />);
+
+  expect(screen.getByTestId("roleplay-list-screen-title")).toHaveAttribute(
+    "accessibility-traits",
+    "header",
+  );
+});
