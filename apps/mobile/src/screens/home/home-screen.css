@@ -4,6 +4,7 @@
 .home-screen {
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: var(--libitum-layout-gap-block);
   /* 화면 여백은 축마다 값이 다르다. `padding-x`를 네 방향에 쓰면 상하가 틀린다. */
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
