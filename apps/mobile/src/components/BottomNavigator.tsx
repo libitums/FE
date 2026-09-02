@@ -50,22 +50,29 @@ export function BottomNavigator({ tab, onSelectTab }: BottomNavigatorProps): Rea
             className="bottom-navigator-tab"
             data-testid={`bottom-navigator-tab-${item.tab}`}
             data-selected={selected ? "true" : "false"}
+            accessibility-element={true}
+            accessibility-label={item.label}
+            accessibility-traits="button"
+            accessibility-value={selected ? "선택됨" : undefined}
             bindtap={() => onSelectTab(item.tab)}
           >
             {/* 선택 지시선. 선택이든 아니든 항상 렌더한다 — 색만으로 상태를 전달하지
-                않기 위한 형태 채널이다 (WCAG 1.4.1, design 문서 §5.1·§5.2). */}
+                않기 위한 형태 채널이다 (WCAG 1.4.1, design 문서 §5.1·§5.2). 순수 장식이라
+                접근성 트리에서 뺀다 — 이름은 탭 전체가 이미 지고 있다. */}
             <view
               className={
                 selected
                   ? "bottom-navigator-indicator bottom-navigator-indicator-selected"
                   : "bottom-navigator-indicator"
               }
+              accessibility-elements-hidden={true}
             />
             <svg
               className="bottom-navigator-icon"
               data-testid={`bottom-navigator-icon-${item.tab}`}
               content={item.icon}
               current-color={selected ? color.fg.brand : color.fg["neutral-muted"]}
+              accessibility-elements-hidden={true}
             />
             <text
               className={

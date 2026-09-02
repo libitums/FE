@@ -8,7 +8,11 @@ import "./settings-screen.css";
 export function SettingsScreen(): ReactNode {
   return (
     <view className="settings-screen">
-      <text data-testid="settings-screen-title" className="settings-screen-title">
+      <text
+        data-testid="settings-screen-title"
+        className="settings-screen-title"
+        accessibility-traits="header"
+      >
         설정
       </text>
     </view>

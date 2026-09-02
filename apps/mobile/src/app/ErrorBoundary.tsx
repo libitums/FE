@@ -29,9 +29,22 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <view className="error-boundary">
-          <text className="error-boundary-title">문제가 생겼어요</text>
+          <text
+            className="error-boundary-title"
+            data-testid="error-boundary-title"
+            accessibility-traits="header"
+          >
+            문제가 생겼어요
+          </text>
           <text className="error-boundary-message">{this.state.error.message}</text>
-          <view className="error-boundary-retry" bindtap={this.retry}>
+          <view
+            className="error-boundary-retry"
+            data-testid="error-boundary-retry"
+            accessibility-element={true}
+            accessibility-label="다시 시도"
+            accessibility-traits="button"
+            bindtap={this.retry}
+          >
             <text className="error-boundary-retry-label">다시 시도</text>
           </view>
         </view>

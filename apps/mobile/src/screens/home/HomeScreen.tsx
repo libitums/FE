@@ -21,7 +21,11 @@ export function HomeScreen() {
           content={house}
           current-color={color.fg.neutral}
         />
-        <text data-testid="home-screen-title" className="home-screen-title">
+        <text
+          data-testid="home-screen-title"
+          className="home-screen-title"
+          accessibility-traits="header"
+        >
           홈
         </text>
       </view>

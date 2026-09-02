@@ -8,7 +8,11 @@ import "./roleplay-list-screen.css";
 export function RoleplayListScreen(): ReactNode {
   return (
     <view className="roleplay-list-screen">
-      <text data-testid="roleplay-list-screen-title" className="roleplay-list-screen-title">
+      <text
+        data-testid="roleplay-list-screen-title"
+        className="roleplay-list-screen-title"
+        accessibility-traits="header"
+      >
         롤플레이
       </text>
     </view>

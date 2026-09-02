@@ -18,6 +18,11 @@
      (design 문서 §3.3). */
   justify-content: flex-start;
   gap: var(--libitum-spacing-4);
+  /* 구분선과 지시선 사이를 띄운다 (접근성 감사 F6, design 문서 §5.2.1). 붙어 있으면
+     인접 대비가 1.42:1로 죽어 "존재 여부"였던 신호가 "두께 차이"로 깎인다. 2px을
+     띄우면 지시선의 인접색이 양쪽 다 배경이 되어 5.38:1로 오른다. margin이 아니라
+     padding이다 — 탭 상자(터치 영역)를 줄이지 않는다. */
+  padding-top: var(--libitum-spacing-2);
 }
 
 /* 선택 지시선. 비선택에서도 항상 렌더해 높이를 유지한다 — `transparent`는 토큰이

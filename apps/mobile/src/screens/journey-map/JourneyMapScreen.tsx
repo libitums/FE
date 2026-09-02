@@ -8,7 +8,11 @@ import "./journey-map-screen.css";
 export function JourneyMapScreen(): ReactNode {
   return (
     <view className="journey-map-screen">
-      <text data-testid="journey-map-screen-title" className="journey-map-screen-title">
+      <text
+        data-testid="journey-map-screen-title"
+        className="journey-map-screen-title"
+        accessibility-traits="header"
+      >
         여정 맵
       </text>
     </view>
