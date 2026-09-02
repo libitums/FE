@@ -8,7 +8,5 @@ import { SettingsScreen } from "./SettingsScreen";
 test("설정 화면이 제목을 렌더한다", () => {
   render(<SettingsScreen />);
 
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent(
-    "설정",
-  );
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
 });

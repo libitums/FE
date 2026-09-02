@@ -1,0 +1,56 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1). 값·근거는
+   scratchpad/design-lib221.md §3~§5, §8 참고. */
+.bottom-navigator {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: var(--libitum-layout-bottom-nav-height);
+  background: var(--libitum-color-background-primary);
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+.bottom-navigator-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 시각 내용은 위쪽에 모으고 아래를 비워 88px 안에서 홈 인디케이터를 피한다
+     (design 문서 §3.3). */
+  justify-content: flex-start;
+  gap: var(--libitum-spacing-4);
+}
+
+/* 선택 지시선. 비선택에서도 항상 렌더해 높이를 유지한다 — `transparent`는 토큰이
+   아니므로 배경색과 같은 토큰을 그대로 쓴다 (design 문서 §5.2). */
+.bottom-navigator-indicator {
+  width: 100%;
+  height: var(--libitum-stroke-width-strong);
+  background: var(--libitum-color-background-primary);
+}
+
+/* 상태 클래스는 base 바로 뒤, 같은 파일에 선언한다 — 특이도가 같아 순서가 결과를
+   가른다 (docs/conventions/code.md, ADR-0003 D7). */
+.bottom-navigator-indicator-selected {
+  background: var(--libitum-color-fg-brand);
+}
+
+/* 색은 여기가 아니라 `current-color` 속성으로 넘긴다 (ADR-0014 D2). `<svg>`는 CSS
+   `color`를 읽지 않아 여기에 `color`를 두면 아무 일도 하지 않는다. */
+.bottom-navigator-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.bottom-navigator-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 갈리는 속성(색)만 선언한다 — base를 대체하지 않고 더한다. */
+.bottom-navigator-label-selected {
+  color: var(--libitum-color-fg-brand);
+}

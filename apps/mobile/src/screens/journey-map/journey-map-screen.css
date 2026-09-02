@@ -1,0 +1,22 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1).
+   변수 이름은 `@libitums/design-tokens/css/variables.css`가 정의한 것만 쓴다.
+   `flex: 1`은 넣지 않는다 — `.app`/`.app-content`의 세로 flex 부모 프레임이
+   아직 없어서 지금은 아무 일도 하지 않는 선언이 된다 (루트 결선은 이 범위 밖). */
+.journey-map-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-layout-gap-block);
+  /* 화면 여백은 축마다 값이 다르다. `padding-x`를 네 방향에 쓰면 상하가 틀린다. */
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+.journey-map-screen-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}

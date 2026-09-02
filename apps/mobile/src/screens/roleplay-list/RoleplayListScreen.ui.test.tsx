@@ -8,7 +8,5 @@ import { RoleplayListScreen } from "./RoleplayListScreen";
 test("롤플레이 화면이 제목을 렌더한다", () => {
   render(<RoleplayListScreen />);
 
-  expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent(
-    "롤플레이",
-  );
+  expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
 });

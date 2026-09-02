@@ -36,10 +36,7 @@ test("아이콘 넷이 자기 패키지 모듈 문자열을 content 속성으로
     "content",
     userGroup,
   );
-  expect(screen.getByTestId("bottom-navigator-icon-settings")).toHaveAttribute(
-    "content",
-    settings,
-  );
+  expect(screen.getByTestId("bottom-navigator-icon-settings")).toHaveAttribute("content", settings);
 });
 
 test("선택 상태가 data-selected로 노출된다", () => {
@@ -49,10 +46,7 @@ test("선택 상태가 data-selected로 노출된다", () => {
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute(
-    "data-selected",
-    "false",
-  );
+  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "false");
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
     "data-selected",
     "false",
@@ -114,10 +108,7 @@ test("셸은 상태를 갖지 않는다 — 선택 표시는 tab prop에서만 �
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   // onSelectTab만 호출됐을 뿐, `tab` prop이 바뀌지 않았으므로 렌더 상태는 그대로다.
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
+  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "true");
   expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
     "data-selected",
     "false",

@@ -9,7 +9,5 @@ import { JourneyMapScreen } from "./JourneyMapScreen";
 test("여정 맵 화면이 제목을 렌더한다", () => {
   render(<JourneyMapScreen />);
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent(
-    "여정 맵",
-  );
+  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
 });

@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <text className="error-boundary-title">문제가 생겼어요</text>
           <text className="error-boundary-message">{this.state.error.message}</text>
           <view className="error-boundary-retry" bindtap={this.retry}>
-            <text>다시 시도</text>
+            <text className="error-boundary-retry-label">다시 시도</text>
           </view>
         </view>
       );

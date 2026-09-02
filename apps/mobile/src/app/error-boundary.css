@@ -11,3 +11,32 @@
 .error-boundary-retry {
   padding: var(--libitum-spacing-16);
 }
+
+/* 화면 제목·본문 텍스트 역할 둘(design-lib221.md §6)을 여기서도 그대로 쓴다 —
+   빈 탭 화면과 error-boundary가 같은 질문에 같은 답을 낸다. */
+.error-boundary-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.error-boundary-message {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.error-boundary-retry-label {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-button-l-font-family);
+  font-weight: var(--libitum-typography-button-l-font-weight);
+  font-size: var(--libitum-typography-button-l-font-size);
+  line-height: var(--libitum-typography-button-l-line-height);
+  letter-spacing: var(--libitum-typography-button-l-letter-spacing);
+}
