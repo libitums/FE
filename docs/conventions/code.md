@@ -34,12 +34,33 @@ apps/mobile/src/
 | 테스트 파일 | `*.unit.test.ts` / `*.ui.test.tsx` / `*.integration.test.tsx` | 계층이 파일명에 드러난다 |
 | CSS 파일 | 짝이 되는 컴포넌트 파일명의 kebab-case, **같은 폴더** | `HomeScreen.tsx` → `home-screen.css` |
 | CSS 클래스 | 블록 = CSS 파일명. 하위는 `블록-요소` **한 겹만**. BEM의 `__`·`--`를 쓰지 않는다 | `.home-screen-title` |
+| CSS 클래스 (상태) | `블록-요소-상태`. 상태어는 **아래 예약 목록에서만**. base 클래스에 **더해** 붙인다 | `.bottom-navigator-label-selected` |
 | `data-testid` | `블록-역할`. 클래스 블록과 **같은 접두사**를 쓰고 축약하지 않는다 | `home-screen-title` |
 | 상대 import | **확장자를 붙이지 않는다** | `./HomeScreen` (`./HomeScreen.js` 아님) |
 
 - **테스트 파일은 소스와 같은 폴더에 둔다.** `test/` 트리를 만들지 않는다 — 계층은
   파일명이 가른다.
 - `data-testid`는 **테스트가 실제로 질의하는 요소에만** 붙인다.
+
+### 상태(modifier) 클래스
+
+**예약 상태어는 지금 `selected` 하나다.** 목록에 없는 말을 쓰지 않는다 — 새 상태가
+필요하면 ADR-0003 D7의 표에 행을 먼저 더한다.
+
+| 상태어 | 뜻 |
+|---|---|
+| `selected` | 여럿 중 지금 골라진 하나 |
+
+- **읽는 규칙: 마지막 토큰이 예약 상태어면 상태, 아니면 요소다.** 예약어를 요소 이름으로
+  쓸 수 없다. 구분자를 늘리는 대신 **어휘를 닫아** 경계를 준다.
+- base를 **대체하지 않고 더해** 붙인다. base가 공통 값을, 상태 클래스는 **갈리는 속성만**
+  선언한다. 한 요소에 상태 클래스는 **최대 하나**다.
+- **상태 클래스는 base 바로 뒤에, 같은 파일에 선언한다.** 특이도가 같아 순서가 결과를
+  가른다. 뒤집으면 **에러 없이 상태가 안 보인다.**
+- **상태를 테스트가 보는 경로는 클래스가 아니다.** `toHaveClass`를 쓰지 않으므로(아래)
+  클래스는 시각 전용이다. 단언이 필요하면 `data-*` 속성을 둔다. 상태 클래스마다
+  `data-testid`를 새로 만들지 않는다.
+- **변형(variant)은 이 규칙 밖이다.** 아직 정하지 않았다 (`docs/adr/README.md` 보류 표).
 
 ([ADR-0003 D6·D7](../adr/0003-workspace-and-directory-structure.md),
 [ADR-0006 D4·D7](../adr/0006-command-interface-and-test-layers.md))
