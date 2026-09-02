@@ -66,12 +66,36 @@ apps/mobile/src/
 - **상태 클래스는 base 바로 뒤에, 같은 파일에 선언한다.** 특이도가 같아 순서가 결과를
   가른다. 뒤집으면 **에러 없이 상태가 안 보인다.**
 - **상태를 테스트가 보는 경로는 클래스가 아니다.** `toHaveClass`를 쓰지 않으므로(아래)
-  클래스는 시각 전용이다. 단언이 필요하면 `data-*` 속성을 둔다. 상태 클래스마다
-  `data-testid`를 새로 만들지 않는다.
+  클래스는 **시각 전용**이다. 단언이 필요하면 속성을 둔다 — 아래 **관찰 채널 넷**.
+  상태 클래스마다 `data-testid`를 새로 만들지 않는다.
 - **변형(variant)은 이 규칙 밖이다.** 아직 정하지 않았다 (`docs/adr/README.md` 보류 표).
 
 ([ADR-0003 D6·D7](../adr/0003-workspace-and-directory-structure.md),
 [ADR-0006 D4·D7](../adr/0006-command-interface-and-test-layers.md))
+
+### 관찰 채널 넷
+
+**클래스가 시각 전용이므로 관찰은 전부 속성으로 한다.** 지금 채널이 넷이고,
+**넷이 서로 다른 것을 본다.** 하나가 다른 하나를 대체하지 않는다 — 새 채널이
+생겼다고 옛 채널을 걷지 않는다.
+
+| 채널 | 무엇을 보나 | 예 |
+|---|---|---|
+| `data-testid` | **요소를 찾는다** | `bottom-navigator-tab-home` |
+| `data-selected` | **상태** — 리듀서가 이 탭을 선택으로 보는가 | `"true"` / `"false"` |
+| `current-color` | **결선** — 그 상태에 토큰 값이 실렸는가 | `color.fg.brand` |
+| `accessibility-*` | **보조기술**이 이름·역할·상태를 받는가 | `accessibility-value="선택됨"` |
+
+- **넷 다 속성이라 `toHaveAttribute` 하나로 본다.** 그래서 아래 매처 절의
+  "쓰지 않는다" 칸(계산된 스타일에 의존하는 `toHaveClass`·`toHaveStyle`)에
+  **걸리지 않는다.** 이것이 이 저장소에서 상태를 클래스가 아니라 속성으로 내는 이유다.
+- **`accessibility-*`는 `data-testid` 카탈로그와 별개 축이다.** 카탈로그에 없는
+  `accessibility-*`를 붙이는 것이 드리프트가 아니다
+  ([ADR-0016 D1](../adr/0016-assistive-technology-semantics.md)).
+- **`accessibility-*`는 붙었는지까지만 자동으로 판정된다.** 보조기술이 실제로 그렇게
+  읽는지는 `docs/e2e/`의 실기 확인 몫이다 — 그 경계가
+  [ADR-0016 D6](../adr/0016-assistive-technology-semantics.md)에 있다.
+  **`ui` green을 "접근성 확인됨"으로 읽지 않는다.**
 
 ## 무엇을 바꾸면 어느 테스트를 쓰나
 
@@ -107,6 +131,11 @@ apps/mobile/src/
 오른쪽은 **계산된 스타일에 의존한다.** jsdom은 Lynx 스타일을 계산하지 않으므로 통과해도
 의미가 없고, 더 나쁘게는 **거짓 확신을 준다** — jsdom 기본값으로 항상 통과할 수 있다.
 바로 위 절이 말한 "`ui`는 어떻게 보이는지를 덮지 못한다"와 같은 선이다.
+
+왼쪽의 `toHaveAttribute` 하나가 **관찰 채널 넷을 전부** 덮는다 (위 `관찰 채널 넷`).
+`accessibility-*`도 DOM 속성으로 렌더되므로 여기 들어온다 — boolean 속성의 값은
+문자열 `"true"`이고, `undefined`를 넘긴 속성은 **아예 붙지 않아**
+`not.toHaveAttribute`가 공허하지 않다.
 
 ### 쿼리를 무엇으로 고르나
 
