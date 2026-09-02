@@ -21,6 +21,7 @@ coverage/
 
 # iOS 호스트 (apps/ios) — ADR-0012 D7
 build/
+build-device/
 DerivedData/
 xcuserdata/
 *.xcuserstate

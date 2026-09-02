@@ -84,7 +84,7 @@ apps/mobile/src/
 | `data-testid` | **요소를 찾는다** | `bottom-navigator-tab-home` |
 | `data-selected` | **상태** — 리듀서가 이 탭을 선택으로 보는가 | `"true"` / `"false"` |
 | `current-color` | **결선** — 그 상태에 토큰 값이 실렸는가 | `color.fg.brand` |
-| `accessibility-*` | **보조기술**이 이름·역할·상태를 받는가 | `accessibility-value="선택됨"` |
+| `accessibility-*` | **보조기술**이 이름·역할·상태를 받는가 | `accessibility-label="홈, 선택됨"` |
 
 - **넷 다 속성이라 `toHaveAttribute` 하나로 본다.** 그래서 아래 매처 절의
   "쓰지 않는다" 칸(계산된 스타일에 의존하는 `toHaveClass`·`toHaveStyle`)에
@@ -95,7 +95,13 @@ apps/mobile/src/
 - **`accessibility-*`는 붙었는지까지만 자동으로 판정된다.** 보조기술이 실제로 그렇게
   읽는지는 `docs/e2e/`의 실기 확인 몫이다 — 그 경계가
   [ADR-0016 D6](../adr/0016-assistive-technology-semantics.md)에 있다.
-  **`ui` green을 "접근성 확인됨"으로 읽지 않는다.**
+  **`ui` green을 "접근성 확인됨"으로 읽지 않는다.** 실제로 한 번 갈렸다 —
+  `accessibility-value`는 `ui`에서 전부 green이었는데 iOS 실기에 도달하지 않았다.
+- **선택 상태는 이름 문자열 안에 실린다.** `accessibility-value`를 쓰지 않는다 — 이
+  스택의 iOS에서 낭독되지 않는다([ADR-0016 D3](../adr/0016-assistive-technology-semantics.md)의
+  `정정 기록`). 그래서 상태를 보는 채널이 둘로 보이지만 겹치는 것이 아니다:
+  `data-selected`는 **테스트가 보는 것**이고 `accessibility-label`의 접미사는
+  **보조기술이 받는 것**이다.
 
 ## 무엇을 바꾸면 어느 테스트를 쓰나
 
