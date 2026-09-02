@@ -3,7 +3,7 @@ import { render, screen } from "@lynx-js/react/testing-library";
 import house from "@libitums/icons/lynx/house";
 import { color } from "@libitums/design-tokens";
 
-import { HomeScreen } from "./HomeScreen.js";
+import { HomeScreen } from "./HomeScreen";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
 // 계산된 스타일과 레이아웃은 단언할 수 없다 — 환경이 jsdom 기반이라 여기서는
@@ -15,9 +15,9 @@ import { HomeScreen } from "./HomeScreen.js";
 test("홈 화면이 제목과 아이콘을 렌더한다", () => {
   render(<HomeScreen />);
 
-  expect(screen.getByTestId("home-title")).toHaveTextContent("홈");
+  expect(screen.getByTestId("home-screen-title")).toHaveTextContent("홈");
 
-  const icon = screen.getByTestId("home-icon");
+  const icon = screen.getByTestId("home-screen-icon");
   // package가 준 문자열을 그대로 넘긴다. 화면에서 XML을 가공하지 않는다.
   expect(icon).toHaveAttribute("content", house);
   // 색은 token 값을 `current-color`로 넘긴다 (ADR-0014 D2).

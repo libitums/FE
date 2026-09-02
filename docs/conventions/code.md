@@ -13,7 +13,7 @@ apps/mobile/src/
   styles/       전역 스타일. 토큰 값은 여기 두지 않는다 — 패키지에서 온다
 ```
 
-- 폴더는 **필요해질 때 만든다.** 지금 있는 것은 `app/`과 `screens/`뿐이다
+- 폴더는 **필요해질 때 만든다.** 지금 있는 것은 `app/` · `screens/` · `lib/` 셋이다
   ([ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md)).
 - `packages/`와 `tooling/`은 **만들지 않는다.** 두 번째 소비자가 실제로 나타날 때 만든다
   ([ADR-0004 D2](../adr/0004-package-boundaries-and-dependency-direction.md),
@@ -32,9 +32,17 @@ apps/mobile/src/
 | 화면 컴포넌트 | `~Screen` 접미사 | `HomeScreen` |
 | 훅 | `use~` 접두사, 파일은 `use-~` | `useNavigation` / `use-navigation.ts` |
 | 테스트 파일 | `*.unit.test.ts` / `*.ui.test.tsx` / `*.integration.test.tsx` | 계층이 파일명에 드러난다 |
+| CSS 파일 | 짝이 되는 컴포넌트 파일명의 kebab-case, **같은 폴더** | `HomeScreen.tsx` → `home-screen.css` |
+| CSS 클래스 | 블록 = CSS 파일명. 하위는 `블록-요소` **한 겹만**. BEM의 `__`·`--`를 쓰지 않는다 | `.home-screen-title` |
+| `data-testid` | `블록-역할`. 클래스 블록과 **같은 접두사**를 쓰고 축약하지 않는다 | `home-screen-title` |
+| 상대 import | **확장자를 붙이지 않는다** | `./HomeScreen` (`./HomeScreen.js` 아님) |
 
-([ADR-0003 D6](../adr/0003-workspace-and-directory-structure.md),
-[ADR-0006 D4](../adr/0006-command-interface-and-test-layers.md))
+- **테스트 파일은 소스와 같은 폴더에 둔다.** `test/` 트리를 만들지 않는다 — 계층은
+  파일명이 가른다.
+- `data-testid`는 **테스트가 실제로 질의하는 요소에만** 붙인다.
+
+([ADR-0003 D6·D7](../adr/0003-workspace-and-directory-structure.md),
+[ADR-0006 D4·D7](../adr/0006-command-interface-and-test-layers.md))
 
 ## 무엇을 바꾸면 어느 테스트를 쓰나
 
@@ -109,14 +117,33 @@ apps/mobile/src/
 
 ## 스타일
 
-- 토큰은 **CSS 커스텀 프로퍼티로만** 쓴다. `var(--color-bg-surface)`이지
-  `import { spacing } from '@libitums/design-tokens'`가 아니다.
-- **값을 하드코딩하지 않는다.** 새 토큰이 필요하면 design-system에 변경을 요청한다.
+- 토큰은 **CSS 커스텀 프로퍼티로 쓴다.** 변수 이름은 패키지가 정의한 것만 —
+  **접두사는 예외 없이 `--libitum-`이다.** `var(--libitum-color-background-primary)`이지
+  `var(--color-bg-surface)`가 아니다. **다른 이름 계열을 만들지 않는다.**
+- **예외는 아이콘 색 하나.** Lynx `<svg>`는 CSS `color`를 읽지 않으므로
+  `current-color` 속성에 TS 상수를 넘긴다 — `import { color } from '@libitums/design-tokens'`.
+  **이 예외를 선례로 쓰지 않는다.** 나머지 시각 값은 전부 CSS다.
+- 시각 값은 **컴포넌트와 1:1인 CSS 파일**에만 둔다. TSX에는 `className`만 두고
+  **인라인 `style`을 쓰지 않는다.**
+- **값을 하드코딩하지 않는다.** 필요한 토큰이 패키지에 없으면 이름을 지어내지 말고
+  design-system에 변경을 요청한다.
 - 원본 JSON·Markdown·SVG를 복사하거나 fork하지 않는다. 패키지로만 소비한다.
 - 컴포넌트 스펙과 구현이 다르면 **design-system의 스펙이 기준**이다.
-- `var(--오타)`는 조용히 무시된다. 테스트가 못 잡으므로 **눈으로 확인한다.**
+- `var(--오타)`는 조용히 무시된다. 접두사가 틀린 것은 **`pnpm lint`의 접두사 검사**가
+  잡는다 (ADR-0014 D8 — `lint:tokens`. `apps/mobile/src/**/*.css`를 훑는다).
+  **접두사가 맞는 오타는 여전히 눈으로만** 발견된다(`docs/e2e/`).
 
-([ADR-0011 D1·D4](../adr/0011-design-system-consumption.md))
+([ADR-0014 D1·D2·D4·D8](../adr/0014-design-system-consumption-verified.md),
+[ADR-0015 D2](../adr/0015-component-primitives-and-style-application.md))
+
+## 컴포넌트
+
+- **Lynx 내장 요소(`<view>`·`<text>`·`<svg>`)를 화면에서 직접 쓴다.** 래퍼
+  프리미티브를 만들지 않는다.
+- 승격은 사용처가 늘 때만 — **화면 1개면 그 화면 폴더, 화면 2개면 `src/components/`,
+  앱 2개면 `packages/`.** 미리 올리지 않는다. 세는 단위는 **화면**이지 렌더 횟수가 아니다.
+
+([ADR-0015 D1·D3](../adr/0015-component-primitives-and-style-application.md))
 
 ## 앱 내부
 

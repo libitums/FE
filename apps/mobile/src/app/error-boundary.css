@@ -1,11 +1,13 @@
-/* 값은 토큰에서만 온다. 하드코딩하지 않는다 (ADR-0011 D1·D4). */
+/* 값은 토큰에서만 온다. 하드코딩하지 않는다.
+   변수 이름은 `@libitums/design-tokens`가 정의한 것만 — 접두사는 예외 없이
+   `--libitum-`이다 (ADR-0014 D1·D8). */
 .error-boundary {
   display: flex;
   flex-direction: column;
-  background: var(--color-bg-surface);
-  padding: var(--spacing-16);
+  background: var(--libitum-color-background-primary);
+  padding: var(--libitum-spacing-16);
 }
 
 .error-boundary-retry {
-  padding: var(--spacing-16);
+  padding: var(--libitum-spacing-16);
 }
