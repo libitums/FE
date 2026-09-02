@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { render } from "@lynx-js/react/testing-library";
 
-import { App } from "./App.js";
+import { App } from "./App";
 
 // `integration` 계층: 여러 실제 모듈의 협력 (ADR-0006 D4).
 // 여기서는 App · navReducer · ErrorBoundary · HomeScreen 넷이 맞물린다.

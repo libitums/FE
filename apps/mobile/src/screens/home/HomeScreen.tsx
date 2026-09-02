@@ -16,12 +16,12 @@ export function HomeScreen() {
     <view className="home-screen">
       <view className="home-screen-header">
         <svg
-          data-testid="home-icon"
+          data-testid="home-screen-icon"
           className="home-screen-icon"
           content={house}
           current-color={color.fg.neutral}
         />
-        <text data-testid="home-title" className="home-screen-title">
+        <text data-testid="home-screen-title" className="home-screen-title">
           홈
         </text>
       </view>

@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 
-import { getItem, isStorageAvailable, removeItem, setItem } from "./storage.js";
+import { getItem, isStorageAvailable, removeItem, setItem } from "./storage";
 
 // 호스트가 등록하는 모듈을 대신 세운다. 테스트 환경에는 네이티브가 없다.
 function stubHost() {
