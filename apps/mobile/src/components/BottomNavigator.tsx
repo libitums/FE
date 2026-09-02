@@ -51,9 +51,8 @@ export function BottomNavigator({ tab, onSelectTab }: BottomNavigatorProps): Rea
             data-testid={`bottom-navigator-tab-${item.tab}`}
             data-selected={selected ? "true" : "false"}
             accessibility-element={true}
-            accessibility-label={item.label}
+            accessibility-label={selected ? `${item.label}, 선택됨` : item.label}
             accessibility-traits="button"
-            accessibility-value={selected ? "선택됨" : undefined}
             bindtap={() => onSelectTab(item.tab)}
           >
             {/* 선택 지시선. 선택이든 아니든 항상 렌더한다 — 색만으로 상태를 전달하지
