@@ -32,7 +32,7 @@
 | `pnpm build` | Lynx 번들 산출 (`apps/mobile/dist/`) | **타입 검사** |
 | `pnpm preview` | 빌드 산출물을 Explorer로 확인 | 빌드 |
 | `pnpm typecheck` | `tsc --noEmit` | 코드 생성 |
-| `pnpm lint` | 정적 검사 (`oxlint`) | **자동 수정** (`lint:fix`가 따로) |
+| `pnpm lint` | 정적 검사 (`oxlint`) + **CSS 토큰 접두사 검사** (`lint:tokens` — ADR-0014 D8) | **자동 수정** (`lint:fix`가 따로) |
 | `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 (`format:check`가 따로) |
 | `pnpm bundle:host` | `build` + 호스트로 사본 복사 | 네이티브 빌드 |
 | `pnpm test` | `test:unit` + `test:ui` + `test:integration` | e2e |
@@ -71,6 +71,10 @@
   ([ADR-0006 D6](../adr/0006-command-interface-and-test-layers.md)).
 - 결정을 바꾸는 변경 → ADR을 고친다. 새 번호를 붙일지 제자리에서 고칠지는
   [ADR-0010 D10](../adr/0010-convention-docs-and-design-done-criteria.md)이 정한다.
+- **ADR을 고치는 변경 → 그 ADR을 링크한 `docs/conventions/`·`docs/screens.md` 자리를
+  같은 PR에서 전부 연다.** 링크만 갈아끼우는 것이 아니라 **본문이 아직 옛 결정을
+  말하는지** 읽는다. 규약과 명세는 ADR의 재진술이라 원본이 바뀌면 함께 바뀐다
+  ([ADR-0010 D4](../adr/0010-convention-docs-and-design-done-criteria.md)).
 - 문서는 `[Frontend]` 이슈 외의 이슈를 링크·언급하지 않는다. 대신 사실을 적는다
   ([ADR-0010 D9](../adr/0010-convention-docs-and-design-done-criteria.md)).
 
@@ -166,4 +170,4 @@ plutil -p "$C/Library/Preferences/com.libitum.host.plist"
 > iOS 시뮬레이터 런타임 다운로드(Xcode → Settings → Components)가 각각 필요하다.
 
 ([ADR-0005 D3](../adr/0005-runtime-and-package-manager-versions.md),
-[ADR-0011 D1](../adr/0011-design-system-consumption.md))
+[ADR-0014 D1](../adr/0014-design-system-consumption-verified.md))

@@ -16,6 +16,7 @@ coverage/
 # test-execution이 commandKey를 해석하지 못하고 precondition-unmet으로 되돌아간다.
 .agent-harness/
 .claude/
+.codex/
 
 # iOS 호스트 (apps/ios) — ADR-0012 D7
 build/

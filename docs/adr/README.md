@@ -60,7 +60,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 호스트 경계·영속 저장소 | 결정 (최소 범위) + 보류 (두 번째 플랫폼) | [0012](0012-native-host-app-minimal.md) |
 | workspace 구성 (패키지 매니저·workspace 선언·태스크 러너) | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 폴더 구조 | 결정 | [0003](0003-workspace-and-directory-structure.md) |
-| 네이밍 | 결정 | [0003](0003-workspace-and-directory-structure.md), [0004](0004-package-boundaries-and-dependency-direction.md) |
+| 네이밍 | 결정 | [0003](0003-workspace-and-directory-structure.md) D6·**D7**, [0004](0004-package-boundaries-and-dependency-direction.md) |
 | package 경계와 책임 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | 의존 방향 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | 런타임·패키지매니저 버전 정책 | 결정 (형태) | [0005](0005-runtime-and-package-manager-versions.md) — 확정 값은 [0013](0013-dependencies-and-version-notation.md) D4 |
@@ -69,13 +69,13 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | `dependencies`/`devDependencies` 경계 | 결정 | [0013](0013-dependencies-and-version-notation.md) |
 | 명령 인터페이스 | 결정 | [0006](0006-command-interface-and-test-layers.md) |
 | 린터·포매터 | 결정 (`oxlint` · `oxfmt`) | [0006](0006-command-interface-and-test-layers.md) |
-| 테스트 계층 | 결정 (3계층) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) |
+| 테스트 계층 | 결정 (3계층 + 파일 위치) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) D4·**D7** |
 | 상태 관리 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 데이터 페칭 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 라우팅 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 에러 경계 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 디자인 토큰 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
-| 컴포넌트 프리미티브 | 결정 | [0011](0011-design-system-consumption.md) D3 — 이 축만 유효 |
+| 컴포넌트 프리미티브 | 결정 | [0015](0015-component-primitives-and-style-application.md) — 0011 D3·0008 D4를 이어받음 |
 | 아이콘 | 결정 (경로·형태·색) | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | private registry 인증 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | 형상 관리 위생 (.gitignore) | 결정 | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
@@ -93,7 +93,8 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 |---|---|---|---|---|
 | `integration`의 **서버 연동 케이스** | 무엇을 목킹할지 정할 수 없다 | API 명세가 없고 백-프론트 연동이 미착수다. 계층 자체는 첫 단계에 포함된다 | **밖** | API 명세 도착 후 |
 | 브랜치 보호 강제 | 정책은 정했으나 GitHub 규칙으로 강제할 수 없다 | private 저장소 브랜치 보호 API가 현 플랜에서 403. 필수 상태 검사로 걸 CI도 아직 없다 | **밖** | CI 도입 시 (ADR-0009) |
-| `e2e` 테스트 계층 | 도구는 있으나 환경이 없다 | `@lynx-js/kitten-lynx-test-infra`(vitest)가 Explorer(Android)를 구동한다. 개발도 시연도 iOS이므로(ADR-0012) **Android는 오직 e2e만을 위해 세우는 환경**이 됐다 | **밖** (환경) | Android 에뮬레이터를 루프에 둘 수 있을 때 |
+| `e2e` 테스트 계층 | 도구는 있으나 환경이 없다 | `@lynx-js/kitten-lynx-test-infra`(vitest)가 Explorer(Android)를 구동한다. 개발도 시연도 iOS이므로(ADR-0012) **Android는 오직 e2e만을 위해 세우는 환경**이 됐다. **그때까지 어떤 파일도 `e2e` 명령을 선언하지 않는다** — `.agent-harness/profile.yaml`이 playwright를 부르고 있었다 (ADR-0006 D3 `정정 기록`) | **밖** (환경) | Android 에뮬레이터를 루프에 둘 수 있을 때 |
+| 토큰 이름 **전체 대조** 검사 | 대조할 목록을 저장소 안에서 볼 수 없다 | 목록의 출처가 설치된 `@libitums/design-tokens`의 `css/variables.css`다. **설치 상태에 따라 통과/실패가 갈리는 검사는 `lint`에 둘 수 없다.** 접두사 검사는 ADR-0014 D8이 먼저 닫았다 | **본인** | `pnpm install`을 전제할 수 있는 자리가 생길 때 — CI 도입(ADR-0009 D3)이 가장 이른 시점 |
 | 배포·릴리스 경계 | 시연까지는 배포가 필요 없다 | 자체 호스트를 만들되 **스토어 배포·서명은 하지 않는다**(ADR-0012 D2). 시연은 시뮬레이터에서 직접 실행한다 | — 요구 없음 | 스토어 배포가 요구될 때 |
 | `tooling/*` 워크스페이스 글롭 | 넣을 패키지가 없다 | 두 번째 패키지가 생겨야 공유 설정이 의미를 갖는다 | — 요구 없음 | ADR-0003 재검토 조건 |
 
