@@ -115,16 +115,21 @@ test("셸은 상태를 갖지 않는다 — 선택 표시는 tab prop에서만 �
   );
 });
 
-// ---------------------------------------------------------------- 접근성 (재고정 2026-09-02)
+// ---------------------------------------------------------------- 접근성 (재고정 2026-09-02, 상태 채널 재고정 2026-09-02)
 // 수용 기준 8. `data-selected`·`current-color`와 같은 대우로 선택/비선택 두 상태
 // 모두에서 본다 (bottom-navigator.contract.ts 6~9번, spec.md §6.3 7·8).
+//
+// 선택 상태는 `accessibility-value`가 아니라 `accessibility-label`의 접미사
+// (`", 선택됨"`)로 실린다 — iOS 실기에서 `accessibility-value`가 낭독되지 않아 뒤집혔다
+// (ADR-0016 D3과 정정 기록). `accessibility-value`는 어느 상태에서도 붙지 않으므로
+// 부재 단언도 두지 않는다.
 
-test("선택된 탭의 accessibility-label이 자기 라벨이다", () => {
+test("선택된 탭의 accessibility-label은 라벨 뒤에 선택됨 접미사가 붙는다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
   expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
     "accessibility-label",
-    "여정",
+    "여정, 선택됨",
   );
 });
 
@@ -163,24 +168,6 @@ test("탭 넷 모두 accessibility-traits가 button이다 — 선택 여부로 �
   expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
     "accessibility-traits",
     "button",
-  );
-});
-
-test("선택된 탭만 accessibility-value가 선택됨이고 나머지 셋은 그 속성이 아예 없다", () => {
-  render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
-
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
-    "accessibility-value",
-    "선택됨",
-  );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).not.toHaveAttribute(
-    "accessibility-value",
-  );
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).not.toHaveAttribute(
-    "accessibility-value",
-  );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).not.toHaveAttribute(
-    "accessibility-value",
   );
 });
 
