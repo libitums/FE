@@ -8,13 +8,21 @@
 apps/mobile/src/
   app/          진입점. 루트 구성 — 화면 전환, 에러 경계, 프로바이더
   screens/      화면 단위. 확정된 화면 목록과 1:1
-  components/   화면 둘 이상이 쓰는 컴포넌트만
+  components/   화면 둘 이상이 쓰는 컴포넌트, 그리고 design-system 스펙 컴포넌트
   lib/          순수 로직·API 클라이언트. UI를 import하지 않는다
   styles/       전역 스타일. 토큰 값은 여기 두지 않는다 — 패키지에서 온다
 ```
 
-- 폴더는 **필요해질 때 만든다.** 지금 있는 것은 `app/` · `screens/` · `lib/` 셋이다
-  ([ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md)).
+- 폴더는 **필요해질 때 만든다.** 지금 있는 것은 `app/` · `screens/` · `components/` ·
+  `lib/` 넷이다 ([ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md)).
+- **`components/`는 뼈대 이슈에서 생겼다.** 첫 입주자는 바텀 네비게이션 셸이다 —
+  탭 넷 위에 걸려 어느 한 화면의 것이 아니다. 아래 **컴포넌트** 절의 승격 규칙
+  ([ADR-0015 D3](../adr/0015-component-primitives-and-style-application.md))이
+  **처음 발동한 사례**이고, 규칙만 있고 사례가 없던 자리를 그 판단이 채웠다
+  (ADR-0015 `정정 기록` 2026-09-02).
+- **`components/` 아래는 평평하다.** 컴포넌트마다 폴더를 만들지 않는다. 짝 CSS와
+  테스트 파일은 원래 같은 폴더에 두므로(아래 네이밍 표) 세는 대상이 아니다 —
+  **하위 파일이 여럿인 컴포넌트가 나오면 그때 폴더를 만든다.**
 - `packages/`와 `tooling/`은 **만들지 않는다.** 두 번째 소비자가 실제로 나타날 때 만든다
   ([ADR-0004 D2](../adr/0004-package-boundaries-and-dependency-direction.md),
   [ADR-0003 D2](../adr/0003-workspace-and-directory-structure.md)).
@@ -163,6 +171,10 @@ apps/mobile/src/
   프리미티브를 만들지 않는다.
 - 승격은 사용처가 늘 때만 — **화면 1개면 그 화면 폴더, 화면 2개면 `src/components/`,
   앱 2개면 `packages/`.** 미리 올리지 않는다. 세는 단위는 **화면**이지 렌더 횟수가 아니다.
+- **예외 하나 — design-system이 스펙을 가진 컴포넌트**(Button · Dialog · Bottom Sheet ·
+  Bottom Navigator · Header · Indicator)**는 두 번째 화면을 기다리지 않고 바로
+  `src/components/`에 둔다.** 스펙이 있다는 것이 두 번째 사용처가 예정돼 있다는 뜻이다.
+  `packages/`는 그대로 앱 2개일 때다 (ADR-0015 `정정 기록` 2026-09-02).
 
 ([ADR-0015 D1·D3](../adr/0015-component-primitives-and-style-application.md))
 
