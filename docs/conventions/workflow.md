@@ -75,6 +75,9 @@
   같은 PR에서 전부 연다.** 링크만 갈아끼우는 것이 아니라 **본문이 아직 옛 결정을
   말하는지** 읽는다. 규약과 명세는 ADR의 재진술이라 원본이 바뀌면 함께 바뀐다
   ([ADR-0010 D4](../adr/0010-convention-docs-and-design-done-criteria.md)).
+- **가정이 해소되는 변경 → 그 가정을 인용한 코드 주석을 같은 PR에서 걷는다.**
+  `docs/adr/README.md`의 가정을 인용한 주석도 재진술이다
+  ([ADR-0010 D4](../adr/0010-convention-docs-and-design-done-criteria.md)).
 - 문서는 `[Frontend]` 이슈 외의 이슈를 링크·언급하지 않는다. 대신 사실을 적는다
   ([ADR-0010 D9](../adr/0010-convention-docs-and-design-done-criteria.md)).
 
