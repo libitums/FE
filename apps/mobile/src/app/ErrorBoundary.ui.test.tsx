@@ -1,5 +1,5 @@
 import type { ReactNode } from "@lynx-js/react";
-import { beforeEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -22,13 +22,19 @@ function Boom(): ReactNode {
   return <text data-testid="boom-recovered">복구됨</text>;
 }
 
+// `componentDidCatch`와 React가 둘 다 잡힌 에러를 찍는다. 테스트 출력이 실패처럼
+// 보이지 않게 막되, **끝나면 되돌린다** — 복원하지 않으면 이 파일 뒤로 진짜 에러
+// 로그가 조용히 사라진다.
 beforeEach(() => {
   hasThrown = false;
+  vi.spyOn(console, "error").mockImplementation(() => {});
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 test("에러 화면 제목이 문구와 header trait을 갖는다", () => {
-  vi.spyOn(console, "error").mockImplementation(() => {});
-
   render(
     <ErrorBoundary>
       <Boom />
@@ -41,8 +47,6 @@ test("에러 화면 제목이 문구와 header trait을 갖는다", () => {
 });
 
 test("재시도 요소가 accessibility-traits button을 갖는다", () => {
-  vi.spyOn(console, "error").mockImplementation(() => {});
-
   render(
     <ErrorBoundary>
       <Boom />
@@ -56,8 +60,6 @@ test("재시도 요소가 accessibility-traits button을 갖는다", () => {
 });
 
 test("재시도 요소가 accessibility-label 다시 시도를 갖는다", () => {
-  vi.spyOn(console, "error").mockImplementation(() => {});
-
   render(
     <ErrorBoundary>
       <Boom />
@@ -71,8 +73,6 @@ test("재시도 요소가 accessibility-label 다시 시도를 갖는다", () =>
 });
 
 test("재시도 요소가 accessibility-element true를 갖는다", () => {
-  vi.spyOn(console, "error").mockImplementation(() => {});
-
   render(
     <ErrorBoundary>
       <Boom />
@@ -86,8 +86,6 @@ test("재시도 요소가 accessibility-element true를 갖는다", () => {
 });
 
 test("재시도를 tap하면 실패 화면이 사라지고 자식이 다시 렌더된다", () => {
-  vi.spyOn(console, "error").mockImplementation(() => {});
-
   render(
     <ErrorBoundary>
       <Boom />
