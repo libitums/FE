@@ -14,12 +14,21 @@ export function App() {
 }
 
 // switch의 exhaustiveness 검사가 빠진 화면을 컴파일 타임에 잡는다.
+//
+// LIB-221 뼈대(logic-scaffold): `journey-map` · `roleplay-list` · `settings`는
+// navigation.ts의 Screen union에 이제 존재하지만, 그 화면 컴포넌트는 아직 없다
+// (ui-scaffold 이후 단계 몫). 여기서는 App.tsx 타입 에러만 없애는 최소 자리
+// 표시자를 둔다 — 실제 화면 렌더는 각 화면의 ui 변형이 채운다.
 function renderScreen(screen: Screen) {
   switch (screen.name) {
     case "home":
       return <HomeScreen />;
+    case "journey-map":
+    case "roleplay-list":
+    case "settings":
+      return null;
     default: {
-      const exhaustive: never = screen.name;
+      const exhaustive: never = screen;
       return exhaustive;
     }
   }
