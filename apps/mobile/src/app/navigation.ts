@@ -1,10 +1,8 @@
 // 화면 전환은 라우터 라이브러리 없이 이 리듀서가 소유한다 (ADR-0007 D3).
 // 순수 함수이므로 unit 계층 테스트 대상이다 (ADR-0006 D4).
 //
-// LIB-221 뼈대(logic-scaffold): 타입·시그니처는 계약
-// (scratchpad/lib221/contracts/navigation.contract.ts) 그대로 실재하지만,
-// 함수 본문과 `initialNav` 값은 아직 무동작 자리 표시자다. 실제 동작은
-// 뒤이은 `logic` 변형이 채운다.
+// LIB-221 (logic): 계약(scratchpad/lib221/contracts/navigation.contract.ts)이
+// 고정한 동작을 그대로 구현한다. DOM에 의존하지 않는 순수 함수만 둔다.
 
 // 탭 목록과 1:1이다. 네 탭은 docs/screens.md의 "홈 · 여정 · 롤플레이 · 설정"에서 왔다.
 // 순서가 곧 바텀 네비게이션의 좌→우 순서다 (bottom-navigator.contract.ts).
@@ -38,32 +36,75 @@ export type NavAction =
   | { type: "switchTab"; tab: Tab }
   | { type: "enterApp" };
 
-// 자리 표시자 값. 타입은 계약대로 실재하지만 각 탭 스택을 비워 두었다 —
-// 계약이 요구하는 리터럴(각 탭 루트 화면 하나씩)은 `logic` 변형이 채운다.
-// 지금 이 값을 실제 리터럴로 채우면 아직 없는 동작(activeStack 등)이 우연히
-// 옳아 보일 수 있어, 무동작 껍데기라는 이 단계의 목적이 흐려진다.
+// 계약이 고정한 리터럴이다. 각 탭 스택은 자기 루트 화면 하나로 시작하고,
+// `entry`는 비어 있다 — 진입 화면(스플래시 등)은 아직 없다(구현 순서 11번이 채운다).
 export const initialNav: Nav = {
   entry: [],
   tab: "home",
   stacks: {
-    home: [],
-    journey: [],
-    roleplay: [],
-    settings: [],
+    home: [{ name: "home" }],
+    journey: [{ name: "journey-map" }],
+    roleplay: [{ name: "roleplay-list" }],
+    settings: [{ name: "settings" }],
   },
 };
 
-// 자리 표시자. 호출되면 실패한다 — `logic` 변형이 실동작으로 교체한다.
-export function activeStack(_nav: Nav): readonly Screen[] {
-  throw new Error("activeStack: not implemented (logic-scaffold)");
+// 활성 스택 선택 규칙: `entry`가 비어 있지 않으면 `entry`, 아니면 현재 탭의 스택이다.
+export function activeStack(nav: Nav): readonly Screen[] {
+  return nav.entry.length > 0 ? nav.entry : nav.stacks[nav.tab];
 }
 
-// 자리 표시자. 호출되면 실패한다 — `logic` 변형이 실동작으로 교체한다.
-export function currentScreen(_nav: Nav): Screen {
-  throw new Error("currentScreen: not implemented (logic-scaffold)");
+// 활성 스택의 최상단. 활성 스택은 불변식에 의해 비지 않으므로 방어 분기를 두지 않는다.
+export function currentScreen(nav: Nav): Screen {
+  const stack = activeStack(nav);
+  return stack[stack.length - 1] as Screen;
 }
 
-// 자리 표시자. 호출되면 실패한다 — `logic` 변형이 실동작으로 교체한다.
-export function navReducer(_nav: Nav, _action: NavAction): Nav {
-  throw new Error("navReducer: not implemented (logic-scaffold)");
+export function navReducer(nav: Nav, action: NavAction): Nav {
+  switch (action.type) {
+    case "push": {
+      if (nav.entry.length > 0) {
+        return { ...nav, entry: [...nav.entry, action.screen] };
+      }
+      return {
+        ...nav,
+        stacks: { ...nav.stacks, [nav.tab]: [...nav.stacks[nav.tab], action.screen] },
+      };
+    }
+    case "back": {
+      if (nav.entry.length > 0) {
+        if (nav.entry.length <= 1) {
+          return nav;
+        }
+        return { ...nav, entry: nav.entry.slice(0, -1) };
+      }
+      const stack = nav.stacks[nav.tab];
+      if (stack.length <= 1) {
+        return nav;
+      }
+      return { ...nav, stacks: { ...nav.stacks, [nav.tab]: stack.slice(0, -1) } };
+    }
+    case "replace": {
+      if (nav.entry.length > 0) {
+        return { ...nav, entry: [...nav.entry.slice(0, -1), action.screen] };
+      }
+      const stack = nav.stacks[nav.tab];
+      return {
+        ...nav,
+        stacks: { ...nav.stacks, [nav.tab]: [...stack.slice(0, -1), action.screen] },
+      };
+    }
+    case "switchTab": {
+      if (nav.tab === action.tab) {
+        return nav;
+      }
+      return { ...nav, tab: action.tab };
+    }
+    case "enterApp": {
+      if (nav.entry.length === 0) {
+        return nav;
+      }
+      return { ...nav, entry: [] };
+    }
+  }
 }
