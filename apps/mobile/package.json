@@ -11,7 +11,8 @@
     "test": "pnpm test:unit && pnpm test:ui && pnpm test:integration",
     "test:unit": "vitest run unit.test",
     "test:ui": "vitest run ui.test",
-    "test:integration": "vitest run integration.test"
+    "test:integration": "vitest run integration.test",
+    "performance:report": "node devtools/lynx-performance/cli.mjs"
   },
   "dependencies": {
     "@libitums/design-tokens": "0.2.0",
