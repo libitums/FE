@@ -1,5 +1,8 @@
 # Lynx 성능 캡처 분석
 
+> 분석과 런타임 수집을 분리한 이유와 재검토 조건은
+> [ADR-0018](adr/0018-lynx-performance-analysis-boundary.md)에 있다.
+
 이 저장소에는 Lynx PerformanceEntry와 전역 메모리 query 결과를 검증하고 평문 보고서로
 바꾸는 로컬 CLI가 있다. 이 도구는 **캡처를 수집하지 않는다.** iOS 호스트에 수집기를
 연결하는 일은 2단계 범위다. 지금 단계에서는 저장된 JSON 또는 NDJSON을 반복 가능한
