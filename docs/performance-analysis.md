@@ -3,10 +3,9 @@
 > 분석과 런타임 수집을 분리한 이유와 재검토 조건은
 > [ADR-0018](adr/0018-lynx-performance-analysis-boundary.md)에 있다.
 
-이 저장소에는 Lynx PerformanceEntry와 전역 메모리 query 결과를 검증하고 평문 보고서로
-바꾸는 로컬 CLI가 있다. 이 도구는 **캡처를 수집하지 않는다.** iOS 호스트에 수집기를
-연결하는 일은 2단계 범위다. 지금 단계에서는 저장된 JSON 또는 NDJSON을 반복 가능한
-방식으로 분석한다.
+이 저장소에는 iOS 호스트에서 Lynx PerformanceEntry와 전역 메모리 query 결과를 NDJSON으로
+수집하고, 입력을 검증해 평문 보고서로 바꾸는 로컬 CLI가 있다. 수집 결정과 opt-in 경계는
+[ADR-0019](adr/0019-lynx-ios-performance-collection.md)에 있다.
 
 ## 실행
 
@@ -18,6 +17,26 @@ pnpm --filter @libitums/mobile performance:report -- ./capture.json
 
 성공하면 stdout에 보고서를 출력하고 종료 코드 0을 반환한다. 파일 읽기·파싱·계약 오류는
 stderr와 종료 코드 1, 인자 오류는 usage와 종료 코드 2로 반환한다.
+
+### iOS 시뮬레이터에서 수집
+
+먼저 최신 `apps/mobile/dist/main.lynx.bundle`을 iOS Host에 포함해 앱을 빌드·설치하고 대상
+시뮬레이터를 boot한다. 그 뒤 저장소 루트에서 다음 순서로 실행한다.
+
+```sh
+pnpm --filter @libitums/mobile performance:capture -- start
+pnpm --filter @libitums/mobile performance:capture -- path
+pnpm --filter @libitums/mobile performance:capture -- report
+pnpm --filter @libitums/mobile performance:capture -- stop
+```
+
+`start`는 설치된 `com.libitum.host`를 종료한 뒤 `--performance-capture`와 내장
+`main.lynx`로 재실행한다. 캡처 파일은 앱 data container의
+`Library/Caches/LynxPerformance/capture.ndjson`에 있고 새 실행마다 초기화된다. `path`는
+정확한 로컬 위치를 보여주고 `report`는 그 파일을 기존 분석 계약으로 검증·출력한다.
+
+이 명령은 시뮬레이터를 고르거나 boot·install·build하지 않는다. 원시 경로와 NDJSON은
+로컬 진단 정보이므로 PR에 붙이거나 커밋하지 않는다.
 
 ## 보고서 기록 위치
 
@@ -77,8 +96,9 @@ Performance API에서 받은 객체를 `entry`에 넣는다.
 
 - `entryType: "metric"`, `name: "fcp"`: `lynxFcp.duration`과 선택적인 `fcp`,
   `totalFcp`
-- `entryType: "resource"`, `name: "LoadBundle"`: LoadBundle·pipeline·parse·MTS render·
-  resolve·layout·UI operation 구간과 LoadBundle에 포함된 FCP
+- `entryType: "pipeline"`, `name: "loadBundle"`: iOS lifecycle callback이 보내는 실제
+  LoadBundle·pipeline·parse·MTS render·resolve·layout·UI operation 구간과 포함된 FCP
+- `entryType: "resource"`, `name: "LoadBundle"`: 1단계 fixture와 이전 캡처의 호환 형식
 - `entryType: "pipeline"`: pipeline 및 렌더 단계 구간, timing flag의 `name`과
   `identifier`
 
@@ -150,16 +170,15 @@ Trace에서는 다음 흐름으로 원인을 좁힌다.
 
 ## 현재 경계와 다음 단계
 
-이번 1단계에는 다음이 없다.
+2단계는 iOS native lifecycle callback, 전역 메모리 query, 바텀 네비게이션 timing flag,
+시뮬레이터 start/path/report/stop을 연결한다. ReactLynx observer는 native event와 중복되므로
+등록하지 않는다. 다음 항목은 아직 범위 밖이다.
 
-- iOS `LynxViewClient`의 performance event 연결
-- ReactLynx `PerformanceObserver`의 조기 등록
-- 전역 메모리 query 실행 및 timeout callback 연결
-- 실제 화면의 `__lynx_timing_flag` 삽입
 - Trace 캡처 또는 파싱 자동화
+- Android와 실제 iOS 기기의 자동 설치·수집
 - 원본 캡처 또는 분석 기록의 자동 업로드
-
-이 항목들은 Screen 2 작업과 합쳐진 뒤 충돌 지점을 확인해 별도 change로 진행한다.
+- 반복 timing flag를 위한 실행별 고유 identifier
+- baseline 기반 성능 예산과 PR merge gate
 
 ## 공식 문서
 

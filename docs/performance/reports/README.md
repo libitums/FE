@@ -10,9 +10,11 @@ CLI stdout 전체, Trace 파일, Instruments export를 보관하는 곳이 아�
 문서·테스트·devtools만 바꾸고 앱 런타임과 번들에 영향을 주지 않는 PR에는 적용하지 않는다
 ([ADR-0018 D9](../../adr/0018-lynx-performance-analysis-boundary.md)).
 
-런타임 수집기가 없는 동안에도 기록을 생략하지 않는다. 얻지 못한 값은 `미측정`과 이유를
-적는다. **미측정 기록은 baseline이 아니며 성능 통과를 뜻하지 않는다.** 수집기가 연결된
-뒤에는 영향 시나리오의 측정을 `미측정`으로 대체할 수 없다.
+과거 런타임 수집기가 없던 변경도 기록을 생략하지 않는다. 얻지 못한 값은 `미측정`과
+이유를 적는다. **미측정 기록은 baseline이 아니며 성능 통과를 뜻하지 않는다.** iOS
+수집기가 연결된 뒤에는 영향 시나리오의 측정을 `미측정`으로 대체할 수 없다. 수집 절차는
+[`docs/performance-analysis.md`](../../performance-analysis.md)의 `performance:capture` 명령을
+따른다.
 
 ## 파일 규칙
 

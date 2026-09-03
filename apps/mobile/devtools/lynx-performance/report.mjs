@@ -128,26 +128,33 @@ function validatePerformanceRecord(record, recordIndex) {
     );
   }
 
+  const isLoadBundle =
+    (entry.entryType === "pipeline" && entry.name === "loadBundle") ||
+    (entry.entryType === "resource" && entry.name === "LoadBundle");
+
   if (entry.entryType === "metric" && entry.name === "fcp") {
     validateFcpMetrics(entry, recordIndex);
   }
 
-  if (entry.entryType === "pipeline") {
+  if (isLoadBundle) {
+    if (entry.identifier !== undefined) {
+      if (typeof entry.identifier !== "string") {
+        throw inputError(recordIndex, "entry.identifier", "expected a string");
+      }
+    }
+    validateFcpMetrics(entry, recordIndex);
+    for (const [, startField, endField] of LOAD_BUNDLE_TIMING_PAIRS) {
+      validateTimingPair(entry, recordIndex, startField, endField, {
+        required: startField === "loadBundleStart" || startField === "pipelineStart",
+      });
+    }
+  } else if (entry.entryType === "pipeline") {
     if (entry.identifier !== undefined) {
       requireString(entry.identifier, recordIndex, "entry.identifier");
     }
     for (const [, startField, endField] of PIPELINE_TIMING_PAIRS) {
       validateTimingPair(entry, recordIndex, startField, endField, {
         required: startField === "pipelineStart",
-      });
-    }
-  }
-
-  if (entry.entryType === "resource" && entry.name === "LoadBundle") {
-    validateFcpMetrics(entry, recordIndex);
-    for (const [, startField, endField] of LOAD_BUNDLE_TIMING_PAIRS) {
-      validateTimingPair(entry, recordIndex, startField, endField, {
-        required: startField === "loadBundleStart" || startField === "pipelineStart",
       });
     }
   }
@@ -393,9 +400,12 @@ export function buildReport(records) {
     }
 
     const { entry } = record;
+    const isLoadBundle =
+      (entry.entryType === "pipeline" && entry.name === "loadBundle") ||
+      (entry.entryType === "resource" && entry.name === "LoadBundle");
     if (entry.entryType === "metric" && entry.name === "fcp") {
       rendering.fcp.push(fcpSummary(entry));
-    } else if (entry.entryType === "resource" && entry.name === "LoadBundle") {
+    } else if (isLoadBundle) {
       rendering.fcp.push(fcpSummary(entry));
       rendering.loadBundles.push({
         name: entry.name,

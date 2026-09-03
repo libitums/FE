@@ -57,6 +57,26 @@ test("선택 상태가 data-selected로 노출된다", () => {
   );
 });
 
+test("선택된 탭만 안정적인 성능 timing flag를 갖는다", () => {
+  const { rerender } = render(<BottomNavigator tab="home" onSelectTab={() => {}} />);
+
+  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute(
+    "__lynx_timing_flag",
+    "libitum:navigation:home",
+  );
+  expect(screen.getByTestId("bottom-navigator-tab-journey")).not.toHaveAttribute(
+    "__lynx_timing_flag",
+  );
+
+  rerender(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
+
+  expect(screen.getByTestId("bottom-navigator-tab-home")).not.toHaveAttribute("__lynx_timing_flag");
+  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+    "__lynx_timing_flag",
+    "libitum:navigation:journey",
+  );
+});
+
 test("탭을 tap하면 onSelectTab이 그 탭 이름으로 정확히 한 번 불린다", () => {
   const onSelectTab = vi.fn<(tab: Tab) => void>();
   render(<BottomNavigator tab="home" onSelectTab={onSelectTab} />);

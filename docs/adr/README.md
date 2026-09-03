@@ -68,7 +68,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | npm 의존의 버전 표기 | 결정 (전부 정확 버전) | [0013](0013-dependencies-and-version-notation.md) |
 | `dependencies`/`devDependencies` 경계 | 결정 | [0013](0013-dependencies-and-version-notation.md) |
 | 명령 인터페이스 | 결정 | [0006](0006-command-interface-and-test-layers.md) |
-| 성능 관측·오프라인 분석·런타임 수집 경계 | 결정 (1단계 분석) + 보류 (2단계 수집·성능 예산) | [0018](0018-lynx-performance-analysis-boundary.md) |
+| 성능 관측·오프라인 분석·런타임 수집 경계 | 결정 (1단계 분석 + iOS 2단계 수집) + 보류 (성능 예산·추가 플랫폼) | [0018](0018-lynx-performance-analysis-boundary.md), [0019](0019-lynx-ios-performance-collection.md) |
 | 린터·포매터 | 결정 (`oxlint` · `oxfmt`) | [0006](0006-command-interface-and-test-layers.md) |
 | 테스트 계층 | 결정 (3계층 + 파일 위치) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) D4·**D7** |
 | 상태 관리 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
@@ -99,7 +99,6 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 토큰 이름 **전체 대조** 검사 | 대조할 목록을 저장소 안에서 볼 수 없다 | 목록의 출처가 설치된 `@libitums/design-tokens`의 `css/variables.css`다. **설치 상태에 따라 통과/실패가 갈리는 검사는 `lint`에 둘 수 없다.** 접두사 검사는 ADR-0014 D8이 먼저 닫았다 | **본인** | `pnpm install`을 전제할 수 있는 자리가 생길 때 — CI 도입(ADR-0009 D3)이 가장 이른 시점 |
 | 배포·릴리스 경계 | 시연까지는 배포가 필요 없다 | 자체 호스트를 만들되 **스토어 배포·서명은 하지 않는다**(ADR-0012 D2). 시연은 시뮬레이터에서 직접 실행한다 | — 요구 없음 | 스토어 배포가 요구될 때 |
 | `tooling/*` 워크스페이스 글롭 | 넣을 패키지가 없다 | 두 번째 패키지가 생겨야 공유 설정이 의미를 갖는다 | — 요구 없음 | ADR-0003 재검토 조건 |
-| Lynx 성능 **런타임 수집 연결** | 오프라인 분석 계약은 정했지만 화면 lifecycle과 호스트 callback 위치를 아직 고정하지 않았다 | Screen 2가 `apps/mobile/src/`와 `apps/ios/`를 변경 중이다 | **본인** | Screen 2가 main에 합쳐진 뒤 별도 change (ADR-0018 D1) |
 | 성능 회귀 예산 | 수집값을 pass/fail로 가를 근거가 없다 | 대표 기기·시나리오의 baseline과 허용폭 요구가 없다 | **본인** | 같은 시나리오 baseline 3회 이상 + 회귀 허용폭 요구 (ADR-0018 D5) |
 | **전환 통지(보조기술 포커스 이동)** | 호출 형태를 모른다 | `requestAccessibilityFocus`가 타입에 element method로 있지만 **이 저장소에 element ref 사용 선례가 0건**이라 부르는 형태를 모른다. 안 되면 수정 형태 자체를 다시 찾아야 한다 (ADR-0016 D8, 감사 F4·F5). **사례가 셋이 됐다 (2026-09-03)** — 탭 전환 · 에러 화면에 더해 **스텝 시트가 열렸을 때**가 붙었다. ADR-0016 **D9는 오버레이 뒤쪽을 가릴 뿐 통지를 하지 않는다** — **이 행은 닫히지 않는다.** 얼마나 불편한지는 `docs/e2e/journey-map.md` E2가 숫자로 잰다 | **본인** | element ref 선례가 하나라도 생길 때 |
 | **에러 화면의 수동 확인 흐름 파일** | 흐름을 미리 쓰면 추측이 된다 | `docs/e2e/README.md`가 *"파일 하나 = 흐름 하나"* 로 정했는데 재시도 낭독 항목이 `tab-navigation.md`에 얹혀 있다. 에러 화면은 이번 이슈가 만든 화면이 아니고 진입 경로도 아직 없다 (LIB-221 `review` Warning-1) | **본인** | 에러 화면에 도달하는 실제 경로가 생길 때 — 그때 10번 항목을 그 파일로 옮긴다 |

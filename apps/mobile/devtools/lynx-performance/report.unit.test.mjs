@@ -84,6 +84,33 @@ describe("Lynx performance capture parsing", () => {
 });
 
 describe("Lynx render timing analysis", () => {
+  it("accepts the native iOS pipeline/loadBundle entry shape", () => {
+    const records = [
+      {
+        source: "performance",
+        entry: {
+          entryType: "pipeline",
+          name: "loadBundle",
+          identifier: "",
+          loadBundleStart: 10,
+          loadBundleEnd: 50,
+          pipelineStart: 10,
+          pipelineEnd: 50,
+          lynxFcp: { duration: 40 },
+        },
+      },
+    ];
+
+    const report = buildReport(validateCapture(records));
+
+    expect(report.rendering.loadBundles).toHaveLength(1);
+    expect(report.rendering.loadBundles[0]).toMatchObject({
+      name: "loadBundle",
+      durationsMs: { loadBundle: 40, pipeline: 40 },
+    });
+    expect(report.rendering.pipelines).toHaveLength(0);
+  });
+
   it("calculates FCP, LoadBundle, and timing-flag pipeline values", () => {
     const report = buildReport(validateCapture(performanceRecords));
 
