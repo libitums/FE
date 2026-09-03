@@ -20,8 +20,13 @@ export function HomeScreen() {
           className="home-screen-icon"
           content={house}
           current-color={color.fg.neutral}
+          accessibility-elements-hidden={true}
         />
-        <text data-testid="home-screen-title" className="home-screen-title">
+        <text
+          data-testid="home-screen-title"
+          className="home-screen-title"
+          accessibility-traits="header"
+        >
           홈
         </text>
       </view>

@@ -26,3 +26,25 @@ test("홈 화면이 제목과 아이콘을 렌더한다", () => {
   // 박아 오는 형태로 바뀌면 위 속성이 조용히 무효가 되므로 여기서 잡는다.
   expect(house).toContain("currentColor");
 });
+
+// 재고정 2026-09-02: 제목 다섯이 같은 방식으로 heading이 된다 (screens.contract.ts).
+// 첫 고정의 "홈은 고치지 않는다"가 뒤집혔다 — 렌더 출력이 바뀌므로 여기서 잡는다.
+test("홈 화면 제목이 accessibility-traits header를 갖는다", () => {
+  render(<HomeScreen />);
+
+  expect(screen.getByTestId("home-screen-title")).toHaveAttribute("accessibility-traits", "header");
+});
+
+// 보정 2026-09-02: 접근성 감사 F8이 장식 아이콘 두 곳(탭·홈)을 한 지적으로 묶었다.
+// 탭 쪽은 BottomNavigator.ui.test.tsx "아이콘 넷이 접근성 트리에서 빠진다"에서 이미
+// 닫혔다 — 이 테스트가 홈 쪽을 같은 매처·같은 형태로 닫는다 (screens.contract.ts,
+// spec.md §6.3 C-3). 옆 제목 <text>가 "홈"이라는 같은 뜻을 이미 글자로 전달하므로
+// 이 아이콘은 순수 장식이다.
+test("홈 화면 아이콘이 접근성 트리에서 빠진다 — 순수 장식이다", () => {
+  render(<HomeScreen />);
+
+  expect(screen.getByTestId("home-screen-icon")).toHaveAttribute(
+    "accessibility-elements-hidden",
+    "true",
+  );
+});

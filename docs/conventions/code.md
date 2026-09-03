@@ -8,13 +8,21 @@
 apps/mobile/src/
   app/          진입점. 루트 구성 — 화면 전환, 에러 경계, 프로바이더
   screens/      화면 단위. 확정된 화면 목록과 1:1
-  components/   화면 둘 이상이 쓰는 컴포넌트만
+  components/   화면 둘 이상이 쓰는 컴포넌트, 그리고 design-system 스펙 컴포넌트
   lib/          순수 로직·API 클라이언트. UI를 import하지 않는다
   styles/       전역 스타일. 토큰 값은 여기 두지 않는다 — 패키지에서 온다
 ```
 
-- 폴더는 **필요해질 때 만든다.** 지금 있는 것은 `app/` · `screens/` · `lib/` 셋이다
-  ([ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md)).
+- 폴더는 **필요해질 때 만든다.** 지금 있는 것은 `app/` · `screens/` · `components/` ·
+  `lib/` 넷이다 ([ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md)).
+- **`components/`는 뼈대 이슈에서 생겼다.** 첫 입주자는 바텀 네비게이션 셸이다 —
+  탭 넷 위에 걸려 어느 한 화면의 것이 아니다. 아래 **컴포넌트** 절의 승격 규칙
+  ([ADR-0015 D3](../adr/0015-component-primitives-and-style-application.md))이
+  **처음 발동한 사례**이고, 규칙만 있고 사례가 없던 자리를 그 판단이 채웠다
+  (ADR-0015 `정정 기록` 2026-09-02).
+- **`components/` 아래는 평평하다.** 컴포넌트마다 폴더를 만들지 않는다. 짝 CSS와
+  테스트 파일은 원래 같은 폴더에 두므로(아래 네이밍 표) 세는 대상이 아니다 —
+  **하위 파일이 여럿인 컴포넌트가 나오면 그때 폴더를 만든다.**
 - `packages/`와 `tooling/`은 **만들지 않는다.** 두 번째 소비자가 실제로 나타날 때 만든다
   ([ADR-0004 D2](../adr/0004-package-boundaries-and-dependency-direction.md),
   [ADR-0003 D2](../adr/0003-workspace-and-directory-structure.md)).
@@ -34,6 +42,7 @@ apps/mobile/src/
 | 테스트 파일 | `*.unit.test.ts` / `*.ui.test.tsx` / `*.integration.test.tsx` | 계층이 파일명에 드러난다 |
 | CSS 파일 | 짝이 되는 컴포넌트 파일명의 kebab-case, **같은 폴더** | `HomeScreen.tsx` → `home-screen.css` |
 | CSS 클래스 | 블록 = CSS 파일명. 하위는 `블록-요소` **한 겹만**. BEM의 `__`·`--`를 쓰지 않는다 | `.home-screen-title` |
+| CSS 클래스 (상태) | `블록-요소-상태`. 상태어는 **아래 예약 목록에서만**. base 클래스에 **더해** 붙인다 | `.bottom-navigator-label-selected` |
 | `data-testid` | `블록-역할`. 클래스 블록과 **같은 접두사**를 쓰고 축약하지 않는다 | `home-screen-title` |
 | 상대 import | **확장자를 붙이지 않는다** | `./HomeScreen` (`./HomeScreen.js` 아님) |
 
@@ -41,8 +50,58 @@ apps/mobile/src/
   파일명이 가른다.
 - `data-testid`는 **테스트가 실제로 질의하는 요소에만** 붙인다.
 
+### 상태(modifier) 클래스
+
+**예약 상태어는 지금 `selected` 하나다.** 목록에 없는 말을 쓰지 않는다 — 새 상태가
+필요하면 ADR-0003 D7의 표에 행을 먼저 더한다.
+
+| 상태어 | 뜻 |
+|---|---|
+| `selected` | 여럿 중 지금 골라진 하나 |
+
+- **읽는 규칙: 마지막 토큰이 예약 상태어면 상태, 아니면 요소다.** 예약어를 요소 이름으로
+  쓸 수 없다. 구분자를 늘리는 대신 **어휘를 닫아** 경계를 준다.
+- base를 **대체하지 않고 더해** 붙인다. base가 공통 값을, 상태 클래스는 **갈리는 속성만**
+  선언한다. 한 요소에 상태 클래스는 **최대 하나**다.
+- **상태 클래스는 base 바로 뒤에, 같은 파일에 선언한다.** 특이도가 같아 순서가 결과를
+  가른다. 뒤집으면 **에러 없이 상태가 안 보인다.**
+- **상태를 테스트가 보는 경로는 클래스가 아니다.** `toHaveClass`를 쓰지 않으므로(아래)
+  클래스는 **시각 전용**이다. 단언이 필요하면 속성을 둔다 — 아래 **관찰 채널 넷**.
+  상태 클래스마다 `data-testid`를 새로 만들지 않는다.
+- **변형(variant)은 이 규칙 밖이다.** 아직 정하지 않았다 (`docs/adr/README.md` 보류 표).
+
 ([ADR-0003 D6·D7](../adr/0003-workspace-and-directory-structure.md),
 [ADR-0006 D4·D7](../adr/0006-command-interface-and-test-layers.md))
+
+### 관찰 채널 넷
+
+**클래스가 시각 전용이므로 관찰은 전부 속성으로 한다.** 지금 채널이 넷이고,
+**넷이 서로 다른 것을 본다.** 하나가 다른 하나를 대체하지 않는다 — 새 채널이
+생겼다고 옛 채널을 걷지 않는다.
+
+| 채널 | 무엇을 보나 | 예 |
+|---|---|---|
+| `data-testid` | **요소를 찾는다** | `bottom-navigator-tab-home` |
+| `data-selected` | **상태** — 리듀서가 이 탭을 선택으로 보는가 | `"true"` / `"false"` |
+| `current-color` | **결선** — 그 상태에 토큰 값이 실렸는가 | `color.fg.brand` |
+| `accessibility-*` | **보조기술**이 이름·역할·상태를 받는가 | `accessibility-label="홈, 선택됨"` |
+
+- **넷 다 속성이라 `toHaveAttribute` 하나로 본다.** 그래서 아래 매처 절의
+  "쓰지 않는다" 칸(계산된 스타일에 의존하는 `toHaveClass`·`toHaveStyle`)에
+  **걸리지 않는다.** 이것이 이 저장소에서 상태를 클래스가 아니라 속성으로 내는 이유다.
+- **`accessibility-*`는 `data-testid` 카탈로그와 별개 축이다.** 카탈로그에 없는
+  `accessibility-*`를 붙이는 것이 드리프트가 아니다
+  ([ADR-0016 D1](../adr/0016-assistive-technology-semantics.md)).
+- **`accessibility-*`는 붙었는지까지만 자동으로 판정된다.** 보조기술이 실제로 그렇게
+  읽는지는 `docs/e2e/`의 실기 확인 몫이다 — 그 경계가
+  [ADR-0016 D6](../adr/0016-assistive-technology-semantics.md)에 있다.
+  **`ui` green을 "접근성 확인됨"으로 읽지 않는다.** 실제로 한 번 갈렸다 —
+  `accessibility-value`는 `ui`에서 전부 green이었는데 iOS 실기에 도달하지 않았다.
+- **선택 상태는 이름 문자열 안에 실린다.** `accessibility-value`를 쓰지 않는다 — 이
+  스택의 iOS에서 낭독되지 않는다([ADR-0016 D3](../adr/0016-assistive-technology-semantics.md)의
+  `정정 기록`). 그래서 상태를 보는 채널이 둘로 보이지만 겹치는 것이 아니다:
+  `data-selected`는 **테스트가 보는 것**이고 `accessibility-label`의 접미사는
+  **보조기술이 받는 것**이다.
 
 ## 무엇을 바꾸면 어느 테스트를 쓰나
 
@@ -78,6 +137,11 @@ apps/mobile/src/
 오른쪽은 **계산된 스타일에 의존한다.** jsdom은 Lynx 스타일을 계산하지 않으므로 통과해도
 의미가 없고, 더 나쁘게는 **거짓 확신을 준다** — jsdom 기본값으로 항상 통과할 수 있다.
 바로 위 절이 말한 "`ui`는 어떻게 보이는지를 덮지 못한다"와 같은 선이다.
+
+왼쪽의 `toHaveAttribute` 하나가 **관찰 채널 넷을 전부** 덮는다 (위 `관찰 채널 넷`).
+`accessibility-*`도 DOM 속성으로 렌더되므로 여기 들어온다 — boolean 속성의 값은
+문자열 `"true"`이고, `undefined`를 넘긴 속성은 **아예 붙지 않아**
+`not.toHaveAttribute`가 공허하지 않다.
 
 ### 쿼리를 무엇으로 고르나
 
@@ -142,6 +206,10 @@ apps/mobile/src/
   프리미티브를 만들지 않는다.
 - 승격은 사용처가 늘 때만 — **화면 1개면 그 화면 폴더, 화면 2개면 `src/components/`,
   앱 2개면 `packages/`.** 미리 올리지 않는다. 세는 단위는 **화면**이지 렌더 횟수가 아니다.
+- **예외 하나 — design-system이 스펙을 가진 컴포넌트**(Button · Dialog · Bottom Sheet ·
+  Bottom Navigator · Header · Indicator)**는 두 번째 화면을 기다리지 않고 바로
+  `src/components/`에 둔다.** 스펙이 있다는 것이 두 번째 사용처가 예정돼 있다는 뜻이다.
+  `packages/`는 그대로 앱 2개일 때다 (ADR-0015 `정정 기록` 2026-09-02).
 
 ([ADR-0015 D1·D3](../adr/0015-component-primitives-and-style-application.md))
 

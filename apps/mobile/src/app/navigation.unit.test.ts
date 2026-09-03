@@ -1,22 +1,237 @@
 import { describe, expect, it } from "vitest";
 
-import { currentScreen, initialNav, navReducer } from "./navigation";
+import { activeStack, currentScreen, initialNav, navReducer, type Nav } from "./navigation";
+
+// 계약: scratchpad/lib221/contracts/navigation.contract.ts
+// 계획: scratchpad/lib221/spec.md §6.2 (pureFunctions)
+//
+// 픽스처는 initialNav(자리 표시자라 아직 빈 스택)에 기대지 않고, 계약이 고정한
+// 모양대로 매 테스트가 직접 Nav 리터럴을 만든다. `entry`가 있는 분기와 없는 분기를
+// 각 동작마다 짝으로 둔다.
+
+const baseStacks: Nav["stacks"] = {
+  home: [{ name: "home" }],
+  journey: [{ name: "journey-map" }],
+  roleplay: [{ name: "roleplay-list" }],
+  settings: [{ name: "settings" }],
+};
+
+function nav(overrides: Partial<Nav>): Nav {
+  return {
+    entry: [],
+    tab: "home",
+    stacks: baseStacks,
+    ...overrides,
+  };
+}
+
+describe("activeStack", () => {
+  it("entry가 비면 현재 탭 스택을 돌려준다", () => {
+    const n = nav({ tab: "roleplay", stacks: baseStacks });
+
+    expect(activeStack(n)).toEqual(baseStacks.roleplay);
+  });
+
+  it("entry가 비지 않으면 entry를 돌려준다", () => {
+    const entry = [{ name: "home" } as const];
+    const n = nav({ entry, tab: "roleplay" });
+
+    expect(activeStack(n)).toEqual(entry);
+  });
+});
+
+describe("currentScreen", () => {
+  it("entry가 비면 활성 스택(현재 탭 스택)의 최상단을 돌려준다", () => {
+    const n = nav({
+      tab: "home",
+      stacks: { ...baseStacks, home: [{ name: "home" }, { name: "settings" }] },
+    });
+
+    expect(currentScreen(n)).toEqual({ name: "settings" });
+  });
+
+  it("entry가 있으면 진입 화면(entry 최상단)을 돌려준다 — 탭 스택 최상단이 아니다", () => {
+    const n = nav({
+      entry: [{ name: "home" }, { name: "settings" }],
+      tab: "home",
+      stacks: baseStacks,
+    });
+
+    expect(currentScreen(n)).toEqual({ name: "settings" });
+  });
+});
+
+describe("initialNav", () => {
+  it("네 탭의 스택이 각각 자기 루트 화면 하나로 시작하고 entry는 비어 있다", () => {
+    expect(initialNav.entry).toEqual([]);
+    expect(initialNav.tab).toBe("home");
+    expect(initialNav.stacks).toEqual({
+      home: [{ name: "home" }],
+      journey: [{ name: "journey-map" }],
+      roleplay: [{ name: "roleplay-list" }],
+      settings: [{ name: "settings" }],
+    });
+  });
+});
 
 describe("navReducer", () => {
-  it("push는 현재 탭의 스택에 쌓는다", () => {
-    const next = navReducer(initialNav, { type: "push", screen: { name: "home" } });
+  // 1. push / entry 비었을 때 → 현재 탭 스택에 쌓인다. 다른 탭 스택은 그대로다
+  it("1. push / entry 비었을 때 → 현재 탭 스택에 쌓이고 다른 탭 스택은 그대로다", () => {
+    const n = nav({ tab: "home", stacks: baseStacks });
 
+    const next = navReducer(n, { type: "push", screen: { name: "settings" } });
+
+    expect(next.entry).toEqual([]);
+    expect(next.tab).toBe("home");
+    expect(next.stacks.home).toEqual([{ name: "home" }, { name: "settings" }]);
+    expect(next.stacks.journey).toEqual(baseStacks.journey);
+    expect(next.stacks.roleplay).toEqual(baseStacks.roleplay);
+    expect(next.stacks.settings).toEqual(baseStacks.settings);
+  });
+
+  // 2. push / entry 있을 때 → entry에 쌓이고 탭 스택은 그대로다
+  it("2. push / entry 있을 때 → entry에 쌓이고 탭 스택은 그대로다", () => {
+    const n = nav({ entry: [{ name: "home" }], tab: "home", stacks: baseStacks });
+
+    const next = navReducer(n, { type: "push", screen: { name: "settings" } });
+
+    expect(next.entry).toEqual([{ name: "home" }, { name: "settings" }]);
+    expect(next.tab).toBe("home");
+    expect(next.stacks).toEqual(baseStacks);
+  });
+
+  // 3. back / entry 비었을 때 → 현재 탭 스택에서 하나 빠진다
+  it("3. back / entry 비었을 때 → 현재 탭 스택에서 하나 빠진다", () => {
+    const n = nav({
+      tab: "home",
+      stacks: { ...baseStacks, home: [{ name: "home" }, { name: "settings" }] },
+    });
+
+    const next = navReducer(n, { type: "back" });
+
+    expect(next.entry).toEqual([]);
+    expect(next.stacks.home).toEqual([{ name: "home" }]);
+  });
+
+  // 4. back / entry 있을 때 → entry에서 하나 빠진다
+  it("4. back / entry 있을 때 → entry에서 하나 빠진다", () => {
+    const n = nav({
+      entry: [{ name: "home" }, { name: "settings" }],
+      tab: "home",
+      stacks: baseStacks,
+    });
+
+    const next = navReducer(n, { type: "back" });
+
+    expect(next.entry).toEqual([{ name: "home" }]);
+    expect(next.stacks).toEqual(baseStacks);
+  });
+
+  // 5. back / 활성 스택 길이 1 → 입력을 동일 참조로 돌려준다
+  it("5. back / 활성 스택 길이 1 → 동일 참조를 돌려준다", () => {
+    const n = nav({ tab: "home", stacks: baseStacks });
+
+    expect(navReducer(n, { type: "back" })).toBe(n);
+  });
+
+  // 6. back / entry 길이 1 → entry를 비우지 않는다. 동일 참조
+  it("6. back / entry 길이 1 → entry를 비우지 않고 동일 참조를 돌려준다", () => {
+    const n = nav({ entry: [{ name: "home" }], tab: "home", stacks: baseStacks });
+
+    const next = navReducer(n, { type: "back" });
+
+    expect(next).toBe(n);
+    expect(next.entry).toEqual([{ name: "home" }]);
+  });
+
+  // 7. replace / entry 비었을 때 → 탭 스택 최상단이 바뀌고 길이는 그대로다
+  it("7. replace / entry 비었을 때 → 탭 스택 최상단이 바뀌고 길이는 그대로다", () => {
+    const n = nav({
+      tab: "home",
+      stacks: { ...baseStacks, home: [{ name: "home" }, { name: "settings" }] },
+    });
+
+    const next = navReducer(n, { type: "replace", screen: { name: "journey-map" } });
+
+    expect(next.stacks.home).toEqual([{ name: "home" }, { name: "journey-map" }]);
     expect(next.stacks.home).toHaveLength(2);
-    expect(currentScreen(next)).toEqual({ name: "home" });
   });
 
-  it("back은 스택에 화면이 하나뿐이면 아무것도 하지 않는다", () => {
-    expect(navReducer(initialNav, { type: "back" })).toBe(initialNav);
+  // 8. replace / entry 있을 때 → entry 최상단이 바뀌고 길이는 그대로다
+  it("8. replace / entry 있을 때 → entry 최상단이 바뀌고 길이는 그대로다", () => {
+    const n = nav({
+      entry: [{ name: "home" }, { name: "settings" }],
+      tab: "home",
+      stacks: baseStacks,
+    });
+
+    const next = navReducer(n, { type: "replace", screen: { name: "journey-map" } });
+
+    expect(next.entry).toEqual([{ name: "home" }, { name: "journey-map" }]);
+    expect(next.entry).toHaveLength(2);
+    expect(next.stacks).toEqual(baseStacks);
   });
 
-  it("back은 push한 화면을 되돌린다", () => {
-    const pushed = navReducer(initialNav, { type: "push", screen: { name: "home" } });
+  // 9. switchTab → tab이 바뀌고 네 스택이 모두 보존된다 (수용 기준 4의 근거).
+  //    integration은 스택 깊이가 1이라 이걸 관찰할 수 없으므로, 여기서 깊이 2 스택을
+  //    만들고 왕복(home → journey → home)까지 확인한다.
+  it("9. switchTab → tab이 바뀌고 깊이 2 이상 스택을 포함해 네 스택이 모두 보존된다 (왕복 포함)", () => {
+    const deepStacks: Nav["stacks"] = {
+      ...baseStacks,
+      home: [{ name: "home" }, { name: "settings" }],
+    };
+    const n = nav({ tab: "home", stacks: deepStacks });
 
-    expect(navReducer(pushed, { type: "back" }).stacks.home).toHaveLength(1);
+    const away = navReducer(n, { type: "switchTab", tab: "journey" });
+
+    expect(away.tab).toBe("journey");
+    expect(away.entry).toEqual([]);
+    expect(away.stacks).toEqual(deepStacks);
+    expect(away.stacks.home).toEqual([{ name: "home" }, { name: "settings" }]);
+
+    const back = navReducer(away, { type: "switchTab", tab: "home" });
+
+    expect(back.tab).toBe("home");
+    expect(back.stacks).toEqual(deepStacks);
+    expect(back.stacks.home).toEqual([{ name: "home" }, { name: "settings" }]);
+    expect(back.stacks.journey).toEqual(deepStacks.journey);
+  });
+
+  // 10. switchTab / 같은 탭 → 동일 참조
+  it("10. switchTab / 이미 그 탭일 때 → 동일 참조를 돌려준다", () => {
+    const n = nav({ tab: "home", stacks: baseStacks });
+
+    expect(navReducer(n, { type: "switchTab", tab: "home" })).toBe(n);
+  });
+
+  // 11. enterApp → entry가 비고 tab·stacks는 그대로다. 그 뒤 activeStack이 현재 탭
+  //     스택을 돌려준다 (수용 기준 3)
+  it("11. enterApp → entry가 비고 tab·stacks는 그대로다. 이후 activeStack은 현재 탭 스택이다", () => {
+    const n = nav({ entry: [{ name: "home" }], tab: "journey", stacks: baseStacks });
+
+    const next = navReducer(n, { type: "enterApp" });
+
+    expect(next.entry).toEqual([]);
+    expect(next.tab).toBe("journey");
+    expect(next.stacks).toEqual(baseStacks);
+    expect(activeStack(next)).toEqual(baseStacks.journey);
+  });
+
+  // 12. enterApp / entry가 이미 비었을 때 → 동일 참조
+  it("12. enterApp / entry가 이미 비었을 때 → 동일 참조를 돌려준다", () => {
+    const n = nav({ entry: [], tab: "home", stacks: baseStacks });
+
+    expect(navReducer(n, { type: "enterApp" })).toBe(n);
+  });
+
+  // switchTab은 entry 상태를 보지 않는다 — entry가 채워져 있어도 tab을 바꾼다.
+  // (진입 구간에는 이 동작을 부를 자리가 없지만, 리듀서 자체는 막지 않는다)
+  it("switchTab은 entry를 보지 않는다 — entry가 있어도 tab이 바뀐다", () => {
+    const n = nav({ entry: [{ name: "home" }], tab: "home", stacks: baseStacks });
+
+    const next = navReducer(n, { type: "switchTab", tab: "settings" });
+
+    expect(next.tab).toBe("settings");
+    expect(next.entry).toEqual([{ name: "home" }]);
   });
 });

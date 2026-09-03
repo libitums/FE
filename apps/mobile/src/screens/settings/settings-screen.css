@@ -1,7 +1,8 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1).
-   TS 상수(`import { spacing } from '@libitums/design-tokens'`)를 쓰지 않는다.
-   변수 이름은 `@libitums/design-tokens/css/variables.css`가 정의한 것만 쓴다. */
-.home-screen {
+   변수 이름은 `@libitums/design-tokens/css/variables.css`가 정의한 것만 쓴다.
+   `.app`/`.app-content`가 부모 프레임을 세로 flex로 두므로 `flex: 1`로 남은
+   높이를 채워 배경이 콘텐츠 영역 전체를 덮는다 (design 문서 §6.1). */
+.settings-screen {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -12,22 +13,7 @@
   background: var(--libitum-color-background-primary);
 }
 
-.home-screen-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--libitum-spacing-8);
-}
-
-/* 아이콘 크기는 icon.size.* 변수만 쓴다. spacing 변수나 raw px로 대체하지 않는다.
-   색은 여기가 아니라 `current-color` 속성으로 넘긴다 (ADR-0014 D2).
-   `<svg>`는 CSS `color`를 읽지 않아 여기에 `color`를 두면 아무 일도 하지 않는다. */
-.home-screen-icon {
-  width: var(--libitum-icon-size-md);
-  height: var(--libitum-icon-size-md);
-}
-
-.home-screen-title {
+.settings-screen-title {
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);
