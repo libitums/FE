@@ -33,6 +33,11 @@ CLI stdout을 그대로 그 경로로 redirect하지 않는다. 먼저 로컬에
 원본 JSON/NDJSON 캡처와 검토 전 stdout은 커밋하지 않는다. 양식과 기록 전 확인 항목은
 [`docs/performance/reports/README.md`](performance/reports/README.md)에 있다.
 
+사용자 대면 기능을 추가하거나 바꾸는 PR은 영향 시나리오의 기록을 같은 PR에 남긴다.
+수집기가 없는 1단계에도 보고서를 생략하지 않고 `미측정` 사유와 다시 측정할 조건을 쓴다.
+이 기록은 baseline이나 성능 통과 증거가 아니다. 뼈대와 첫 화면의 과거 누락도 같은 규칙으로
+소급 기록하며 당시 자료에 없는 성능 수치는 만들지 않는다(ADR-0018 D9).
+
 ## 입력
 
 입력은 레코드 배열인 JSON 또는 한 줄에 레코드 하나인 NDJSON이다. 모든 레코드는
