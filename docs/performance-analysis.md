@@ -23,7 +23,8 @@ stderr와 종료 코드 1, 인자 오류는 usage와 종료 코드 2로 반환�
 
 팀이 비교할 분석 기록은 [`docs/performance/reports/`](performance/reports/)에 Markdown으로
 남긴다. 파일 하나는 기기·시나리오·실행 회차 하나이며 파일명은
-`YYYY-MM-DD-<scenario>-<device>-<run>.md`다.
+`<scenario>-<device>-<run>.md`다. 날짜는 파일명이나 제목이 아니라 본문의 `측정 일시`에만
+기록한다.
 
 CLI stdout을 그대로 그 경로로 redirect하지 않는다. 먼저 로컬에서 결과를 검토한 다음
 저장소 commit, 기기·OS·Lynx SDK, 재현 단계, 필요한 보고서 구간, 해석과 후속 작업을 양식에

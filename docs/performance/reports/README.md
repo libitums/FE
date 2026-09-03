@@ -19,17 +19,18 @@ CLI stdout 전체, Trace 파일, Instruments export를 보관하는 곳이 아�
 파일 하나는 기기·시나리오·실행 회차 하나다.
 
 ```text
-YYYY-MM-DD-<scenario>-<device>-<run>.md
+<scenario>-<device>-<run>.md
 ```
 
 영문 소문자 kebab-case를 쓰고 실행 회차는 두 자리 숫자로 적는다.
 
 ```text
-2026-09-03-journey-map-scroll-iphone-13-mini-01.md
+journey-map-scroll-iphone-13-mini-01.md
 ```
 
-같은 조건의 baseline을 여러 번 측정하면 날짜·scenario·device를 같게 두고 `01`, `02`,
-`03`처럼 회차만 올린다. 여러 회차를 한 파일에 합치지 않는다.
+날짜는 파일명이나 문서 제목에 넣지 않고 본문의 `측정 일시`에만 기록한다. 같은 조건의
+baseline을 여러 번 측정하면 scenario·device를 같게 두고 `01`, `02`, `03`처럼 회차만
+올린다. 여러 회차를 한 파일에 합치지 않는다.
 
 ## 기록 양식
 

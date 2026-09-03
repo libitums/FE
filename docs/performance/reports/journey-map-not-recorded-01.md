@@ -37,7 +37,7 @@ Bundle: 미기록 — PR #34는 pnpm verify 통과만 기록
 
 ## 비교
 
-- 기준 기록: [바텀 네비게이션 셸 누락 기록](2026-09-03-navigation-shell-not-recorded-01.md)
+- 기준 기록: [바텀 네비게이션 셸 누락 기록](navigation-shell-not-recorded-01.md)
 - 차이: 두 기록 모두 성능 미측정이므로 계산할 수 없다.
 
 ## 해석
