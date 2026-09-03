@@ -235,3 +235,65 @@ describe("navReducer", () => {
     expect(next.entry).toEqual([{ name: "home" }]);
   });
 });
+
+// ---------------------------------------------------------------- LIB-223 계약 §3.1(c)
+// `listening`이 `Screen` union에 든 뒤의 스택 동작. 리듀서는 화면의 내용을 모르므로
+// 여기서 보는 것은 둘이다 — **화면 파라미터(`stepId`)가 스택을 타고 그대로 나오는가**,
+// 그리고 **탭을 왕복해도 학습 화면이 여정 스택에 남는가**.
+//
+// `Screen` union의 exhaustiveness는 `tsc`가 진다 — App.tsx의 `const exhaustive: never`
+// 한 줄이 그 게이트다. 런타임 단언으로 흉내 내지 않는다 (계약 §3.1(c)).
+//
+// 계약 §3.1(c)의 표는 `navReducer(initialNav, push(...))`로 적었지만 `initialNav.tab`은
+// "home"이라 그대로 하면 깊어지는 것은 홈 스택이다. 표의 기대 출력 칸이 **여정 탭
+// 스택**을 말하므로 여정 탭으로 옮긴 뒤 push한다 — 실제 결선(App)도 여정 탭에서만
+// 이 push를 낸다.
+describe("navReducer — listening 화면 (LIB-223)", () => {
+  const listeningScreen = { name: "listening", stepId: "ordering" } as const;
+
+  function journeyNav(): Nav {
+    return navReducer(initialNav, { type: "switchTab", tab: "journey" });
+  }
+
+  it("push → 여정 탭 스택이 깊이 2가 되고 최상단이 listening 화면이다", () => {
+    const next = navReducer(journeyNav(), { type: "push", screen: listeningScreen });
+
+    expect(next.stacks.journey).toHaveLength(2);
+    expect(next.stacks.journey[1]).toEqual({ name: "listening", stepId: "ordering" });
+    expect(next.stacks.home).toEqual(baseStacks.home);
+    expect(next.entry).toEqual([]);
+  });
+
+  it("push 뒤 currentScreen이 그 화면을 그대로 돌려준다 — stepId가 스택을 타고 나온다", () => {
+    const next = navReducer(journeyNav(), { type: "push", screen: listeningScreen });
+
+    const current = currentScreen(next);
+
+    expect(current).toBe(listeningScreen);
+    expect(current.name).toBe("listening");
+    // union을 좁혀 파라미터를 읽는다. 화면 이름만 남고 stepId가 사라지면 여기서 갈린다.
+    expect(current.name === "listening" ? current.stepId : null).toBe("ordering");
+  });
+
+  it("push 뒤 back → 여정 탭 스택이 깊이 1로 돌아오고 최상단이 여정 맵이다", () => {
+    const pushed = navReducer(journeyNav(), { type: "push", screen: listeningScreen });
+
+    const next = navReducer(pushed, { type: "back" });
+
+    expect(next.stacks.journey).toHaveLength(1);
+    expect(currentScreen(next)).toEqual({ name: "journey-map" });
+  });
+
+  it("push 뒤 탭을 왕복해도 여정 스택에 학습 화면이 남는다", () => {
+    const pushed = navReducer(journeyNav(), { type: "push", screen: listeningScreen });
+
+    const away = navReducer(pushed, { type: "switchTab", tab: "home" });
+    const back = navReducer(away, { type: "switchTab", tab: "journey" });
+
+    expect(away.tab).toBe("home");
+    expect(away.stacks.journey).toHaveLength(2);
+    expect(back.tab).toBe("journey");
+    expect(back.stacks.journey).toHaveLength(2);
+    expect(currentScreen(back)).toEqual({ name: "listening", stepId: "ordering" });
+  });
+});
