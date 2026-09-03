@@ -142,13 +142,26 @@ pass/fail 기준으로 옮기지 않는다. 성능 예산은 실제 기기·시�
 pnpm --filter @libitums/mobile performance:report -- ./capture.json
 ```
 
-### D7. 1단계 출력은 로컬 평문뿐이다
+### D7. CLI 출력은 로컬 평문이고 공유 기록은 수동으로 정제한다
 
 원본 캡처, URL, NativeModule 파라미터를 네트워크로 전송하지 않는다. ANSI 색이나 터미널
 폭에 의미를 싣지 않고 stdout 보고서와 stderr 오류, 종료 코드만 제공한다.
 
-원격 저장·팀 대시보드가 요구되면 전송 대상의 민감정보, 보존 기간, sampling, 실패
-정책을 먼저 결정해야 한다. 지금 CLI를 telemetry SDK의 출발점으로 읽지 않는다.
+팀이 비교할 **분석 기록**은 `docs/performance/reports/`에 Markdown으로 남긴다. 파일 하나는
+기기·시나리오·실행 회차 하나다. CLI가 이 경로에 직접 쓰거나 자동으로 커밋하지 않는다.
+사람이 다음을 확인하고 정제한 뒤 기록한다.
+
+- 날짜, 대상 commit, 기기, OS, Lynx SDK, 재현 가능한 시나리오와 실행 회차
+- 필요한 보고서 구간과 해석, 비교 기준, 결론과 후속 작업
+- timing flag identifier·로컬 경로·URL·NativeModule 파라미터·사용자 콘텐츠 제거 여부
+
+원본 JSON/NDJSON 캡처와 검토 전 stdout은 커밋하지 않는다. 저장소의 Markdown은 원본
+증거가 아니라 재현 조건과 결론을 공유하는 기록이다. 파일명과 양식은
+`docs/performance/reports/README.md`가 정한다.
+
+자동 업로드·원격 원본 저장·팀 대시보드가 요구되면 전송 대상의 민감정보, 보존 기간,
+sampling, 실패 정책을 먼저 결정해야 한다. 지금 CLI와 공유 기록 폴더를 telemetry SDK의
+출발점으로 읽지 않는다.
 
 ### D8. 1단계의 자동 검증은 unit과 integration이다
 
@@ -185,13 +198,14 @@ pnpm --filter @libitums/mobile performance:report -- ./capture.json
   고쳐야 한다.
 - **Trace 원인 판정은 사람에게 남는다.** 체크리스트는 조사 누락을 줄이지만 Trace를
   해석하거나 병목을 자동 분류하지 않는다.
-- **평문 보고서만 있다.** 시계열 그래프나 비교 대시보드는 제공하지 않는다.
+- **CLI는 평문 보고서만 만든다.** 공유 Markdown은 사람이 실행 조건과 해석을 덧붙여야
+  하며 시계열 그래프나 비교 대시보드는 제공하지 않는다.
 
 ## 재검토 조건
 
 - Screen 2가 main에 합쳐지고 실제 iOS/ReactLynx 수집기를 붙이는 2단계를 시작할 때 → D1·D2·D8
 - 같은 capture envelope를 쓰는 두 번째 앱이나 자동화 소비자가 생길 때 → D6의 package 승격
 - 대표 기기·시나리오별 baseline이 3회 이상 쌓이고 회귀 허용폭 요구가 생길 때 → D5의 성능 예산
-- 캡처를 원격 저장하거나 공유해야 할 때 → D7의 privacy·보존·sampling
+- 원본 캡처를 원격 저장하거나 분석 기록을 자동 업로드해야 할 때 → D7의 privacy·보존·sampling
 - Lynx SDK를 4.0.1에서 올려 PerformanceEntry 또는 memory result 필드가 바뀔 때 → D2~D4
 - Trace 포맷을 읽는 두 번째 반복 작업이 생길 때 → D5의 자동 파싱

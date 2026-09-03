@@ -19,6 +19,20 @@ pnpm --filter @libitums/mobile performance:report -- ./capture.json
 성공하면 stdout에 보고서를 출력하고 종료 코드 0을 반환한다. 파일 읽기·파싱·계약 오류는
 stderr와 종료 코드 1, 인자 오류는 usage와 종료 코드 2로 반환한다.
 
+## 보고서 기록 위치
+
+팀이 비교할 분석 기록은 [`docs/performance/reports/`](performance/reports/)에 Markdown으로
+남긴다. 파일 하나는 기기·시나리오·실행 회차 하나이며 파일명은
+`YYYY-MM-DD-<scenario>-<device>-<run>.md`다.
+
+CLI stdout을 그대로 그 경로로 redirect하지 않는다. 먼저 로컬에서 결과를 검토한 다음
+저장소 commit, 기기·OS·Lynx SDK, 재현 단계, 필요한 보고서 구간, 해석과 후속 작업을 양식에
+옮긴다. timing flag identifier, 로컬 파일 경로, URL, NativeModule 파라미터, 사용자 콘텐츠는
+제거하거나 일반화한다.
+
+원본 JSON/NDJSON 캡처와 검토 전 stdout은 커밋하지 않는다. 양식과 기록 전 확인 항목은
+[`docs/performance/reports/README.md`](performance/reports/README.md)에 있다.
+
 ## 입력
 
 입력은 레코드 배열인 JSON 또는 한 줄에 레코드 하나인 NDJSON이다. 모든 레코드는
@@ -137,6 +151,7 @@ Trace에서는 다음 흐름으로 원인을 좁힌다.
 - 전역 메모리 query 실행 및 timeout callback 연결
 - 실제 화면의 `__lynx_timing_flag` 삽입
 - Trace 캡처 또는 파싱 자동화
+- 원본 캡처 또는 분석 기록의 자동 업로드
 
 이 항목들은 Screen 2 작업과 합쳐진 뒤 충돌 지점을 확인해 별도 change로 진행한다.
 
