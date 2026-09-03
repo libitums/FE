@@ -1,0 +1,105 @@
+/* LIB-222 (ui): design.md §5.1 · §5.3 · §5.5의 값. 계약 §1.7이 정한 이름에 값을
+   매핑한다 — `.step-sheet` = 겹침 레이어, `.step-sheet-panel` = 판, `.step-sheet-scrim`
+   = 백드롭(design의 `.step-sheet-backdrop`). 토큰은 CSS 커스텀 프로퍼티로만
+   소비한다 (ADR-0014 D1). */
+
+/* 겹침 레이어. `.journey-map-screen`(position: relative)의 padding edge를 포함
+   블록으로 삼아 화면 전체를 덮는다 (design §5.1). */
+.step-sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* 딤 토큰이 패키지에 없어 `background`를 선언하지 않는다 — 없는 선언은 하드코딩이
+   아니다(design §5.2). 존재 이유는 맵으로 가는 탭을 가로채는 것 하나다. */
+.step-sheet-scrim {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--libitum-elevation-z-floating);
+}
+
+.step-sheet-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--libitum-elevation-z-sheet);
+  background: var(--libitum-elevation-surface-floating);
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-top-left-radius: var(--libitum-radius-xl);
+  border-top-right-radius: var(--libitum-radius-xl);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-layout-gap-block);
+  padding-top: var(--libitum-spacing-24);
+  padding-left: var(--libitum-layout-screen-padding-x);
+  padding-right: var(--libitum-layout-screen-padding-x);
+  padding-bottom: var(--libitum-spacing-32);
+}
+
+.step-sheet-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.step-sheet-description {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* design §5.5 "시작 버튼" 행의 값. `brand-primary`가 아니라 `brand-strong`이다 —
+   흰 라벨이 `brand-primary` 위에서 3.02:1로 AA에 미달한다(design §4.2·§6.3). */
+.step-sheet-start {
+  background: var(--libitum-color-brand-strong);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-sheet-start-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+/* design §5.5 "닫기 히트박스" 48×48의 값을 그대로 쓴다. 계약이 아이콘이 아니라
+   텍스트 `닫기`를 요구하므로(§1.7) 라벨 색은 design의 닫기 아이콘 색과 같은 토큰을
+   쓴다. */
+.step-sheet-close {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-sheet-close-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
