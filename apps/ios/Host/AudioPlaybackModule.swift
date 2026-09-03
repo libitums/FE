@@ -45,7 +45,29 @@ final class AudioPlaybackModule: NSObject, LynxModule {
 
   private var player: AVPlayer?
   private var observers: [NSObjectProtocol] = []
+  private var statusObservation: NSKeyValueObservation?
   private var pending: PendingDone?
+
+  /// 언마운트가 돌지 않고 모듈이 사라지는 경로가 있어서 둔다.
+  ///
+  /// 정상 흐름에서는 이 자리가 비어 있다 — 화면이 언마운트되며 `stopAudio()`를 부르고
+  /// 그것이 `teardown`으로 관찰자를 걷는다. 문제는 **언마운트가 돌지 않는 경로**이고,
+  /// 이 앱에 그것이 실재한다: 등록되지 않은 태그가 `LynxCreateUIException`을 내면
+  /// `shell_->Destroy()`가 페이지를 통째로 죽인다 (ADR-0017 D2, 이번 작업이 `<video>`를
+  /// 피한 이유). 그때 재생 중이었다면 관찰자와 KVO가 남는다.
+  ///
+  /// `deinit`은 어느 스레드에서든 돌 수 있으므로 값만 옮겨 담고 메인 큐로 넘긴다 —
+  /// 위 셋은 메인 큐 전용이다.
+  deinit {
+    let tokens = observers
+    let observation = statusObservation
+    DispatchQueue.main.async {
+      for token in tokens {
+        NotificationCenter.default.removeObserver(token)
+      }
+      observation?.invalidate()
+    }
+  }
 
   // MARK: - 메서드 둘
 
@@ -77,12 +99,29 @@ final class AudioPlaybackModule: NSObject, LynxModule {
       self.player = player
       self.pending = pending
 
+      // 항목이 **알림 없이** `.failed`로 떨어지는 경로를 여기서 닫는다.
+      //
+      // 아래 알림 둘은 재생이 시작된 뒤의 일이다. **항목 로드 자체가 실패하면 둘 다
+      // 오지 않는다.** 그러면 `done`이 영영 안 불리고, JS 쪽 `playback`이 `"playing"`에
+      // 굳어 **컨트롤은 멈춤을 그리는데 소리는 나지 않는다.** 손가락은 한 번 탭해
+      // 빠져나오지만 VoiceOver에는 그 낭독이 유일한 채널이라 거짓말이 된다.
+      //
+      // 이 자리는 원래 *"깨진 자산이 필요하니 실기에서 함께 잰다"* 로 미뤄 뒀었다.
+      // **재지 않고 닫는 편이 낫다** — 미룬 것은 관찰 수단이 없어서가 아니라 재현
+      // 수단이 없어서였다 (PR #36 리뷰).
+      //
+      // `done`이 두 번 올라가지 않는 것은 `PendingDone`이 보장한다 — `fire()`가 블록을
+      // 먼저 `nil`로 만든다. 공개 메서드는 늘지 않으므로 ADR-0017 D3의 표면 제한도
+      // 그대로다.
+      self.statusObservation = item.observe(\.status, options: [.new]) { [weak self] item, _ in
+        guard let self, self.player?.currentItem === item else { return }
+        if item.status == .failed {
+          self.teardown(firing: pending)
+        }
+      }
+
       // 끝났을 때와 실패했을 때가 `done` 하나로 모인다. 어느 쪽이 먼저 오든
       // `teardown`이 나머지 관찰을 걷고 `PendingDone`이 두 번째를 막는다.
-      //
-      // **아직 재지 못한 자리**: 항목이 알림 없이 `.failed`로 떨어지는 경로는 이 둘이
-      // 잡지 않는다. 이제 `resolve`가 몸통을 가져 여기까지 닿지만, 그 경로를 실제로
-      // 밟게 하려면 깨진 자산이 필요하다 — 실기에서 함께 잰다.
       for notification in [
         AVPlayerItem.didPlayToEndTimeNotification,
         AVPlayerItem.failedToPlayToEndTimeNotification,
@@ -167,6 +206,8 @@ final class AudioPlaybackModule: NSObject, LynxModule {
       NotificationCenter.default.removeObserver(token)
     }
     observers.removeAll()
+    statusObservation?.invalidate()
+    statusObservation = nil
     player?.pause()
     player = nil
     self.pending = nil
