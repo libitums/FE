@@ -9,6 +9,10 @@
 // 않으므로 순환이 생기지 않는다 (import/no-cycle이 그것을 지킨다).
 // 스텝 id는 여정 맵의 도메인 어휘이므로 선언은 소유자(journey-map.ts)에 둔다.
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
+// LIB-227 계약 §1.8(a): 정오의 어휘를 다시 선언하지 않는다. type-only import 둘째
+// 사례이고 근거는 lib-223 §8.4와 같다 — `import type`은 emit되지 않아 런타임 결합이
+// 0이고, 어떤 화면도 `navigation.ts`를 import하지 않으므로 순환이 없다.
+import type { ListeningAnswerResult } from "../screens/listening/listening";
 
 // 탭 목록과 1:1이다. 네 탭은 docs/screens.md의 "홈 · 여정 · 롤플레이 · 설정"에서 왔다.
 // 순서가 곧 바텀 네비게이션의 좌→우 순서다 (bottom-navigator.contract.ts).
@@ -23,12 +27,17 @@ export type Tab = "home" | "journey" | "roleplay" | "settings";
 // 넣지 않는다(계약 §1.3(a) · ADR-0007 D3). 전자는 App의 것이고 후자는 화면
 // 로컬이라, 넣으면 `back` 한 번에 사라질 값이 라우팅 상태에 남는다.
 // `stepOrdinal`도 넣지 않는다 — `stepId`에서 파생 가능한 값을 따로 두면 둘이 어긋난다.
+// LIB-227: 여섯째 멤버가 는다. `results`는 진행도 문항 인덱스도 아니다 — 듣기
+// 세션이 이미 사라진 뒤라 어디에서도 파생되지 않고, 정확히 이 화면 인스턴스의
+// 것이라 `back`과 함께 죽는 것이 맞다(계약 §1.8(a)). `stepOrdinal`은 여기서도
+// 넣지 않는다 — `App`이 `journeyStepOrdinal(screen.stepId)`로 계산해 내린다.
 export type Screen =
   | { name: "home" }
   | { name: "journey-map" }
   | { name: "roleplay-list" }
   | { name: "settings" }
-  | { name: "listening"; stepId: JourneyStepId };
+  | { name: "listening"; stepId: JourneyStepId }
+  | { name: "assessment"; stepId: JourneyStepId; results: readonly ListeningAnswerResult[] };
 
 // docs/screens.md 130~136행과 ADR-0007 D3이 적은 모양 그대로다. 필드를 더하지 않는다.
 export type Nav = {
