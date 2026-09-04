@@ -4,7 +4,7 @@
 - 날짜: 2026-09-03
 - 다루는 축: 성능 관측·오프라인 분석·런타임 수집 경계
 - 관련: **ADR-0012**(최소 iOS 호스트), **ADR-0018**(분석 계약과 기록 규칙),
-  **ADR-0020**(성능 보고서 CI와 iOS smoke)
+  **ADR-0021**(성능 보고서 CI와 iOS smoke)
 
 ## 맥락
 
@@ -100,7 +100,7 @@ smoke는 bundle 생성, CocoaPods 잠금 설치, Release Simulator build, boot/i
 capture, 기존 분석기 검증과 cleanup을 조정한다. UDID가 없으면 iPhone 17 Pro/iOS 26.5
 Simulator를 만들고 끝에 삭제한다. UDID를 받으면 그 기기만 사용하고 삭제하지 않는다.
 Rendering entry와 Memory snapshot이 모두 있어야 성공하지만 성능 수치에는 threshold를
-적용하지 않는다. 구체적인 CI trigger와 비차단 경계는 ADR-0020 D3·D4가 정한다.
+적용하지 않는다. 구체적인 CI trigger와 비차단 경계는 ADR-0021 D3·D4가 정한다.
 
 ### D6. 원시는 커밋하지 않고 정제된 측정 보고서만 공유한다
 
@@ -150,7 +150,7 @@ artifact나 로그로 게시하지 않는다.
 
 - Android 호스트 또는 두 번째 수집 플랫폼을 지원할 때 → D1·D5
 - macOS smoke를 required check로 승격하거나 실기 자동 측정이 PR merge gate가 될 때 →
-  D5·D7과 ADR-0020 D4의 기기 선택·설치·반복 정책
+  D5·D7과 ADR-0021 D4의 기기 선택·설치·반복 정책
 - 동일한 timing flag를 한 실행에서 두 번 이상 비교해야 할 때 → D3의 고유 identifier
 - 원시 캡처를 원격 저장하거나 자동 업로드할 때 → D2·D6의 privacy·보존·sampling
 - 같은 시나리오·기기·빌드 baseline이 3회 이상 쌓이고 허용폭 요구가 생길 때 → 성능 예산

@@ -69,7 +69,8 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | npm 의존의 버전 표기 | 결정 (전부 정확 버전) | [0013](0013-dependencies-and-version-notation.md) |
 | `dependencies`/`devDependencies` 경계 | 결정 | [0013](0013-dependencies-and-version-notation.md) |
 | 명령 인터페이스 | 결정 | [0006](0006-command-interface-and-test-layers.md) |
-| 성능 관측·오프라인 분석·런타임 수집 경계 | 결정 (1단계 분석 + iOS 2단계 수집 + 수동·평일 정기 비차단 native smoke) + 보류 (성능 예산·추가 플랫폼) | [0018](0018-lynx-performance-analysis-boundary.md), [0019](0019-lynx-ios-performance-collection.md), [0020](0020-performance-report-ci-automation.md) |
+| 성능 관측·오프라인 분석·런타임 수집 경계 | 결정 (1단계 분석 + iOS 2단계 수집 + 수동·평일 정기 비차단 native smoke) + 보류 (성능 예산·추가 플랫폼) | [0018](0018-lynx-performance-analysis-boundary.md), [0019](0019-lynx-ios-performance-collection.md), [0021](0021-performance-report-ci-automation.md) |
+| **시스템 글자 크기(Dynamic Type) · WCAG 1.4.4** | 결정 (코어 배율 + 실시간 갱신) + 보류 (배율 상한) | [0020](0020-dynamic-type-font-scale.md) |
 | 린터·포매터 | 결정 (`oxlint` · `oxfmt`) | [0006](0006-command-interface-and-test-layers.md) |
 | 테스트 계층 | 결정 (3계층 + 파일 위치) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) D4·**D7** |
 | 상태 관리 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
@@ -82,9 +83,9 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | private registry 인증 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | 보조기술 시맨틱 (접근성) | 결정 (이름·역할·상태 + **겹침 레이어 격리** + **조작 불가 단위의 역할**) + 범위 밖 명시 (키보드·전환 통지) | [0016](0016-assistive-technology-semantics.md) D1~**D10** — 조작 불가 표기(`accessibility-traits="disabled"`)는 **D10**, 인증 수준은 [0001](0001-repository-goal-and-scope.md) D3이 뺀 그대로 |
 | 형상 관리 위생 (.gitignore) | 결정 | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
-| CI | 결정 (Linux Verify + 보고서 정책, 수동·평일 정기 비차단 macOS smoke) | [0020](0020-performance-report-ci-automation.md) — [0009](0009-vcs-hygiene-ci-and-merge-gate.md) D3의 유예 조건 충족 |
+| CI | 결정 (Linux Verify + 보고서 정책, 수동·평일 정기 비차단 macOS smoke) | [0021](0021-performance-report-ci-automation.md) — [0009](0009-vcs-hygiene-ci-and-merge-gate.md) D3의 유예 조건 충족 |
 | 머지 방식 | 결정 (squash 고정) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
-| 브랜치 보호·머지 게이트 | 결정 (PR 규약·CI 상태) + 보류 (required check 강제) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md), [0020](0020-performance-report-ci-automation.md) D6 |
+| 브랜치 보호·머지 게이트 | 결정 (PR 규약·CI 상태) + 보류 (required check 강제) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md), [0021](0021-performance-report-ci-automation.md) D6 |
 | 규약 문서 | 결정 | [0010](0010-convention-docs-and-design-done-criteria.md) |
 | 설계 완료 조건 | 결정 | [0010](0010-convention-docs-and-design-done-criteria.md) |
 
@@ -112,7 +113,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 축 | 왜 못 정하나 | 막고 있는 것 | **누가** | 푸는 시점 |
 |---|---|---|---|---|
 | `integration`의 **서버 연동 케이스** | 무엇을 목킹할지 정할 수 없다 | API 명세가 없고 백-프론트 연동이 미착수다. 계층 자체는 첫 단계에 포함된다 | **밖** | API 명세 도착 후 |
-| 브랜치 보호 강제 | 정책과 CI는 있으나 GitHub 규칙으로 required check를 강제할 수 없다 | private 저장소 브랜치 보호 API가 현 플랜에서 403이다. Linux Verify는 도입됐지만 우회 가능하다 (ADR-0020 D6) | **밖** | 플랜 또는 공개 범위가 바뀌어 branch protection API를 사용할 수 있을 때 |
+| 브랜치 보호 강제 | 정책과 CI는 있으나 GitHub 규칙으로 required check를 강제할 수 없다 | private 저장소 브랜치 보호 API가 현 플랜에서 403이다. Linux Verify는 도입됐지만 우회 가능하다 (ADR-0021 D6) | **밖** | 플랜 또는 공개 범위가 바뀌어 branch protection API를 사용할 수 있을 때 |
 | `e2e` 테스트 계층 | 도구는 있으나 환경이 없다 | `@lynx-js/kitten-lynx-test-infra`(vitest)가 Explorer(Android)를 구동한다. 개발도 시연도 iOS이므로(ADR-0012) **Android는 오직 e2e만을 위해 세우는 환경**이 됐다. **그때까지 어떤 파일도 `e2e` 명령을 선언하지 않는다** — `.agent-harness/profile.yaml`이 playwright를 부르고 있었다 (ADR-0006 D3 `정정 기록`) | **밖** (환경) | Android 에뮬레이터를 루프에 둘 수 있을 때 |
 | 토큰 이름 **전체 대조** 검사 | 대조할 목록을 저장소 안에서 볼 수 없다 | 목록의 출처가 설치된 `@libitums/design-tokens`의 `css/variables.css`다. **설치 상태에 따라 통과/실패가 갈리는 검사는 `lint`에 둘 수 없다.** 접두사 검사는 ADR-0014 D8이 먼저 닫았다 | **본인** | `pnpm install`을 전제할 수 있는 자리가 생길 때 — CI 도입(ADR-0009 D3)이 가장 이른 시점 |
 | 배포·릴리스 경계 | 시연까지는 배포가 필요 없다 | 자체 호스트를 만들되 **스토어 배포·서명은 하지 않는다**(ADR-0012 D2). 시연은 시뮬레이터에서 직접 실행한다 | — 요구 없음 | 스토어 배포가 요구될 때 |
@@ -123,6 +124,9 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | CSS 클래스의 **변형(variant)** 표기 | 사례가 없다. 상태(`selected`·`done`·`current`·`locked`)는 ADR-0003 D7이 닫힌 목록으로 덮지만 변형은 그 규칙이 덮지 않는다 | **변형이 필요한 컴포넌트가 없다.** 여정 맵의 스텝 노드가 세 모양으로 갈리지만 **그것은 변형이 아니라 상태다** — 데이터에서 파생되고 진행하면 변한다 (ADR-0003 `정정 기록` 2026-09-03). 상태어 목록에 변형을 밀어 넣으면 *"마지막 토큰이 예약어면 상태"* 라는 읽는 규칙이 깨진다 | **본인** | 같은 컴포넌트가 **런타임 데이터로 갈리지 않는** 두 가지 모양으로 필요해지는 첫 사례 (예: 버튼의 primary/secondary — 호출자가 고르고 시간에 따라 변하지 않는 것) |
 | **여정 맵이 요청한 design-system 값 넷** | 패키지에 값이 없다 | (1) 오버레이 스크림(딤) 색 `color.overlay.*`, (2) `brand-strong` 위의 눌림 색, (3) 컴포넌트 치수 토큰(노드 지름·버튼 높이·최소 터치 영역 44pt), (4) 비활성/잠김 표면의 semantic 이름 — **이 행이 막는 것은 *시각* 채널이다.** 보조기술 채널의 비활성 표기는 2026-09-03에 생겼다(`accessibility-traits="disabled"`, ADR-0016 **D10**). **지어내지 않았다**(ADR-0014 D4) — 넷 다 없는 채로 갔고, 그래서 시트에 딤이 없고 눌림 피드백이 없고 `spacing.*`이 크기 자리에 들어가 있고 잠김 노드가 원시 팔레트(`color.gray.300`)를 직접 집는다. **이번 슬라이스를 막지는 않았다** | **밖** (design-system 저장소) | 요청이 반영된 패키지 버전이 배포될 때. 그때 ADR-0014 D5대로 정확 버전을 올린다 |
 | **오디오 자산의 출처·형식** | **실제 문항 오디오가 어디서 오는지**(컨텐츠 공급 경로)가 정해지지 않았다 | **판정용 테스트 자산 15개는 생겼다 (2026-09-03).** `apps/ios/Host/audio/<audioSource>.m4a`이고 `tooling/audio/generate.sh`가 macOS `say`로 만든 **기계 음성**이다 — **컨텐츠가 아니라 판정용**이라 *소리가 나는가*는 판정되지만 *무엇을 들려줄 것인가*는 판정되지 않는다. `source`는 **확장자도 스킴도 없는 안정적 식별자 15개**로 고정됐고, `AudioPlaybackModule.resolve(_:) -> URL?`이 번들 조회 하나로 그것을 푼다. **그래서 막는 자리가 그 `resolve`의 분기 하나로 좁아졌다** — 실제 오디오가 원격으로 오면 *번들에 있으면 번들, 없으면 원격* 한 줄이 는다(반환 타입이 `URL?`인 것이 그 여지다). **이 행은 닫히지 않는다** — 닫으면 다음 사람이 기계 음성 15개를 **이 앱의 오디오 공급 방식**으로 읽는다 | **밖** | 문항 오디오의 공급 경로가 정해질 때. 그때 ADR-0017 D3에 `source` 규약 한 줄을 더한다 |
+| ~~**Dynamic Type 배율의 상한**~~ **닫힘 (2026-09-04)** | ~~무엇이 깨지는지 아직 안 봤다~~ **봤다** | ADR-0020 D4가 **상한 없이 넣고 관측하기로** 했다. Apple의 접근성 크기는 `.body` 기준 3배를 넘는데, 상한을 먼저 걸면 **깨지는 자리가 가려지고 가려진 것은 고칠 대상이 되지 못한다.** 상한은 레이아웃을 고칠 수 없다고 판정된 뒤의 수단이지 그 앞의 수단이 아니다. **훑었고 답이 나왔다** — 듣기 화면의 `다음`에 닿을 수 없었다. **상한 `2.0`(WCAG 1.4.4가 요구하는 200%)으로 정해졌다** (ADR-0020 D4). 상한을 걷는 조건은 위 「스크롤이 한 곳도 없다」 행이 진다 | — 닫힘 | — |
+| **스크롤이 한 곳도 없다** | 어느 영역이 스크롤하고 어느 것이 고정인지 화면마다 정해야 한다 | `scroll-view` 사용이 저장소 전체에 **0건**이다. 화면은 전부 고정 뷰포트의 flex 열이고 **안 들어가는 내용은 닿을 방법이 없다.** 최대 배율에서 듣기 화면의 `다음`에 닿을 수 없었고(2026-09-04 실기), **기능 상실이라 WCAG 1.4.4 위반이다.** ADR-0020 D4가 배율 상한 `2.0`으로 **막았을 뿐 고치지 않았다** — 상한을 둔 유일한 이유가 이것이고, 스크롤이 들어오면 상한을 걷는다. `scroll-view`가 Pod에 등록된 것은 확인했다(`<video>` 함정 아님) | **본인** | 화면별 스크롤 경계를 정하는 이슈가 열릴 때 |
+| **텍스트 상자의 고정 높이를 스펙이 어떻게 규정하는가** | 패키지 스펙의 의도를 모른다 | ADR-0020 D5가 **고정 높이를 하한으로 읽기로** 하고 일곱 자리를 `min-height`로 바꿨다. **Bottom Navigator는 design-system이 스펙을 가진 컴포넌트**라, 스펙이 높이를 고정으로 규정한다면 Dynamic Type 아래서 그것을 하한으로 읽는 것이 맞는지는 패키지가 답할 문제다. **토큰 값은 그대로 쓰므로 ADR-0014 D4의 「우회」에는 해당하지 않는다** — 값이 아니라 제약의 성질을 바꾼 것이다 | **밖** (design-system 저장소) | 최대 배율 훑기 결과와 함께 올릴 때 |
 
 **`누가` 열이 있는 이유**: 1인 팀이라 *"LIB-128 확정 후"* 같은 문구가 **외부 대기처럼 읽히지만 실제로는 본인 대기열**이다. 둘을 구분하지 않으면 실체화 직전에 "이건 왜 아직 안 됐지"에서 시간이 간다. **밖**은 기다리는 것이고, **본인**은 순서를 정하는 것이다.
 

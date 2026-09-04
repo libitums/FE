@@ -19,7 +19,7 @@ CLI stdout 전체, Trace 파일, Instruments export를 보관하는 곳이 아�
 Linux Verify는 이 의무를 모든 PR과 `main` push에서 자동 검사한다. 테스트 파일을 제외한
 `apps/mobile/src/**` 또는 `apps/ios/**` 변경에 이 README가 아닌 보고서 Markdown 변경이
 없으면 실패한다. CI는 보고서를 대신 만들거나 커밋하지 않는다
-([ADR-0020 D1·D2](../../adr/0020-performance-report-ci-automation.md)).
+([ADR-0021 D1·D2](../../adr/0021-performance-report-ci-automation.md)).
 
 ## 파일 규칙
 

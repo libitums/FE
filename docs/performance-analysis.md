@@ -2,7 +2,7 @@
 
 > 분석과 런타임 수집을 분리한 이유와 재검토 조건은
 > [ADR-0018](adr/0018-lynx-performance-analysis-boundary.md)에, 보고서 정책과 native smoke
-> 자동화 경계는 [ADR-0020](adr/0020-performance-report-ci-automation.md)에 있다.
+> 자동화 경계는 [ADR-0021](adr/0021-performance-report-ci-automation.md)에 있다.
 
 이 저장소에는 iOS 호스트에서 Lynx PerformanceEntry와 전역 메모리 query 결과를 NDJSON으로
 수집하고, 입력을 검증해 평문 보고서로 바꾸는 로컬 CLI가 있다. 수집 결정과 opt-in 경계는

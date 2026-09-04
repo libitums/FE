@@ -74,7 +74,7 @@ registry를 봐야 하는지 알 수 없게 된다 (ADR-0014 D3).
 
 > **후속 결정 (2026-09-04)** — 아래 유예 조건 중 프로토타입 시연일이 지났고 저장소를
 > 계속 사용하게 되어 CI를 도입했다. 현재 Linux Verify, 성능 보고서 정책, 선택적 iOS
-> smoke의 명령·trigger·비차단 경계는 [ADR-0020 D1~D5](0020-performance-report-ci-automation.md)가
+> smoke의 명령·trigger·비차단 경계는 [ADR-0021 D1~D5](0021-performance-report-ci-automation.md)가
 > 결정한다. 이 절은 첫 단계에서 유예한 근거와 도입 조건의 기록으로 남긴다.
 
 ```sh
@@ -142,10 +142,10 @@ pnpm build
 
 ### D6. 브랜치 보호로 이 규약을 **강제하는 것은 보류한다**
 
-> **후속 결정 (2026-09-04)** — CI는 [ADR-0020](0020-performance-report-ci-automation.md)으로
+> **후속 결정 (2026-09-04)** — CI는 [ADR-0021](0021-performance-report-ci-automation.md)으로
 > 도입됐다. 그러나 branch protection API의 HTTP 403은 그대로여서 검사를 required check로
 > 묶지 못한다. 아래 두 번째 장애물은 해소됐고, 첫 번째 장애물만 남았다. 강제 보류와
-> "강제되지 않는다"는 표시는 ADR-0020 D6이 이어받는다.
+> "강제되지 않는다"는 표시는 ADR-0021 D6이 이어받는다.
 
 D4·D5는 정책이고, 이 결정은 그 정책의 **강제 수단**에 관한 것이다. 강제할 수 없다.
 
@@ -155,7 +155,7 @@ D4·D5는 정책이고, 이 결정은 그 정책의 **강제 수단**에 관한 
    `repos/libitums/FE/branches/main/protection` 조회가 **HTTP 403**이다.
    설계 조사에서 확인했고, 파일 밖 설정이라 저장소를 읽어서도 확인할 수 없다.
 2. ~~필수 상태 검사로 걸 CI가 아직 없다.~~ Linux Verify가 생겨 해소됐다
-   ([ADR-0020 D1](0020-performance-report-ci-automation.md)).
+   ([ADR-0021 D1](0021-performance-report-ci-automation.md)).
 
 **푸는 시점**: GitHub 플랜 또는 저장소 공개 범위가 바뀌어 branch protection API를 사용할
 수 있게 되는 시점이다. 지금은 실제로 "CI는 있는데 우회 가능한" 상태이며 이를 문서와
@@ -200,7 +200,7 @@ PR에서 숨기지 않는다.
 
 - 두 번째 사람이 커밋하게 되는 시점 → D3(CI), D5(브랜치 보호), D2(`.vscode/`)
 - 프로토타입 시연(2026-08-31) 직후 저장소 존속 결정 → D3, D5
-- GitHub 플랜이 바뀌어 브랜치 보호 API가 열리는 시점 → D6, ADR-0020 D6
+- GitHub 플랜이 바뀌어 브랜치 보호 API가 열리는 시점 → D6, ADR-0021 D6
 
 ## 기록
 

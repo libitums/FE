@@ -71,7 +71,7 @@
 > 저장소 설정에서 켠 강제 수단이다.)
 
 ([ADR-0009 D4·D5·D6](../adr/0009-vcs-hygiene-ci-and-merge-gate.md),
-[ADR-0020](../adr/0020-performance-report-ci-automation.md))
+[ADR-0021](../adr/0021-performance-report-ci-automation.md))
 
 ## 문서를 같은 PR에서 고친다
 
@@ -170,7 +170,7 @@ pnpm --filter @libitums/mobile performance:capture:smoke -- --udid <Simulator-UD
 Rendering과 Memory 증거의 존재만 확인하고 수치 성능을 판정하지 않는다. 원시 캡처는
 로그나 artifact로 올리지 않는다. 세부 수동 수집은
 [`performance-analysis.md`](../performance-analysis.md)를 따른다
-([ADR-0020 D3~D5](../adr/0020-performance-report-ci-automation.md)).
+([ADR-0021 D3~D5](../adr/0021-performance-report-ci-automation.md)).
 
 일반 Host build·install 절차는 다음과 같다.
 
