@@ -32,13 +32,33 @@ Rendering 100 ms
 - 결론: 수집 경로가 동작한다.
 `;
 
-function evaluate({ changedFiles, trackedFiles = changedFiles, reports = {} }) {
+function evaluate({
+  changedFiles,
+  changedHeadFiles = changedFiles,
+  trackedFiles = changedFiles,
+  reports = {},
+}) {
   return evaluatePerformanceReportPolicy({
     changedFiles,
+    changedHeadFiles,
     trackedFiles,
     readFile: (path) => reports[path],
   });
 }
+
+test("changedHeadFiles를 생략하면 명시적인 계약 오류를 반환한다", () => {
+  assert.throws(
+    () =>
+      evaluatePerformanceReportPolicy({
+        changedFiles: ["docs/performance/reports/deleted-01.md"],
+        trackedFiles: [],
+        readFile: () => {
+          throw new Error("deleted report must not be read");
+        },
+      }),
+    /changedHeadFiles.*필수/,
+  );
+});
 
 test("runtime change가 없으면 명시적으로 적용 대상 아님을 반환한다", () => {
   const result = evaluate({ changedFiles: ["docs/README.md"] });

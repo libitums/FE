@@ -151,10 +151,14 @@ function validateReport(path, content) {
 
 export function evaluatePerformanceReportPolicy({
   changedFiles,
-  changedHeadFiles = changedFiles,
+  changedHeadFiles,
   trackedFiles,
   readFile,
 }) {
+  if (!Array.isArray(changedHeadFiles)) {
+    throw new TypeError("changedHeadFiles는 필수 배열입니다.");
+  }
+
   const runtimeChanges = changedFiles.filter(isUserFacingRuntimeChange);
   const changedReports = changedHeadFiles.filter(isPerformanceReport);
   const errors = [];
