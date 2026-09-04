@@ -6,13 +6,6 @@ import UIKit
 /// **커스텀 네이티브 엘리먼트도 만들지 않는다** (ADR-0017 D1이 명시로 더한 항목).
 final class ViewController: UIViewController {
   private var lynxView: LynxView?
-  private var contentSizeObserver: NSObjectProtocol?
-
-  deinit {
-    if let contentSizeObserver {
-      NotificationCenter.default.removeObserver(contentSizeObserver)
-    }
-  }
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -68,22 +61,24 @@ final class ViewController: UIViewController {
   ///
   /// **이 주석이 「그 자리에서 커진다」로 되돌아가면 그것은 거짓이다.**
   /// 2026-09-04에 실기와 시뮬레이터 양쪽에서 안 되는 것을 확인했다.
+  ///
+  /// `registerForTraitChanges`는 iOS 17+이고 이 앱의 Deployment Target이 **17.4**다
+  /// (PR #38 리뷰). `NotificationCenter` 관찰자를 손으로 등록·해제하지 않으므로
+  /// `deinit`이 필요 없고, 클로저가 `self`를 강한 타입으로 받아 `[weak self]` 가드도
+  /// 없다. **등록 해제를 잊어 새는 자리를 아예 만들지 않는 것이 요점이다.**
   private func observeContentSizeCategory() {
-    contentSizeObserver = NotificationCenter.default.addObserver(
-      forName: UIContentSizeCategory.didChangeNotification,
-      object: nil,
-      queue: .main
-    ) { [weak self] _ in
-      guard let self, let lynxView = self.lynxView else { return }
-      lynxView.updateFontScale(FontScale.current(compatibleWith: self.traitCollection))
-      // **배율만 넘기면 화면이 안 바뀐다.** `ElementManager::UpdateFontScale`
-      // (`element_manager.cc:722`)은 env를 갈고 `UpdateDynamicElementStyle`로 스타일을
-      // 다시 계산하지만 **렌더 파이프라인을 요청하지 않는다.** 바로 아래 `UpdateColorScheme`
-      // (:733)은 같은 자리에서 `RequestResolve(options)`를 부른다 — 그 한 줄이 없다.
+    registerForTraitChanges([UITraitPreferredContentSizeCategory.self]) {
+      (vc: ViewController, _) in
+      guard let lynxView = vc.lynxView else { return }
+      lynxView.updateFontScale(FontScale.current(compatibleWith: vc.traitCollection))
+      // **이 한 줄로 화면이 바뀌지는 않는다.** 위 문서 주석에 적은 그대로다 —
+      // `triggerLayout()`까지 붙여도 다시 그려지지 않았고, 실기와 시뮬레이터 양쪽에서
+      // 확인했다(ADR-0020 D2). 그래도 부르는 이유는 **레이아웃이 실제로 도는 다른
+      // 계기가 왔을 때 새 배율 위에서 돌게 하려는 것**이다.
       //
-      // 그래서 레이아웃을 우리가 걷어찬다. `SetRootOnLayout`과
-      // `UpdateLynxEnvForLayoutThread`는 이미 불렸으므로 레이아웃 스레드는 새 배율을
-      // 들고 있고, 남은 것은 그것을 돌리는 것뿐이다.
+      // **이 줄이 없어도 지금 보이는 동작은 같다.** 지우고 싶으면 지워도 되지만,
+      // 지운 뒤에 「실시간으로 안 바뀐다」를 새 결함으로 보고하지 마라 — 원래
+      // 안 바뀐다.
       lynxView.triggerLayout()
     }
   }

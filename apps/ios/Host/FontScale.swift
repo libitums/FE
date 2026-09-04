@@ -35,10 +35,9 @@ enum FontScale {
   /// 정수 pt를 받아 정수 pt를 내는 자리가 있어서 작은 수로 나누면 배율이 계단이 된다.
   static func current(compatibleWith traits: UITraitCollection?) -> CGFloat {
     let base: CGFloat = 100
-    let metrics = UIFontMetrics(forTextStyle: .body)
-    let scaled =
-      traits.map { metrics.scaledValue(for: base, compatibleWith: $0) }
-      ?? metrics.scaledValue(for: base)
+    // `compatibleWith`가 이미 `UITraitCollection?`를 받는다 — `nil`이면 현재 기기의
+    // trait을 쓴다. 손으로 언래핑하지 않는다 (PR #38 리뷰).
+    let scaled = UIFontMetrics(forTextStyle: .body).scaledValue(for: base, compatibleWith: traits)
     return min(scaled / base, cap)
   }
 }
