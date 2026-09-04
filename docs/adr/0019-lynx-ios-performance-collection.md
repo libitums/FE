@@ -3,7 +3,8 @@
 - 상태: 채택
 - 날짜: 2026-09-03
 - 다루는 축: 성능 관측·오프라인 분석·런타임 수집 경계
-- 관련: **ADR-0012**(최소 iOS 호스트), **ADR-0018**(분석 계약과 기록 규칙)
+- 관련: **ADR-0012**(최소 iOS 호스트), **ADR-0018**(분석 계약과 기록 규칙),
+  **ADR-0020**(성능 보고서 CI와 iOS smoke)
 
 ## 맥락
 
@@ -69,9 +70,9 @@ identifier에 고유 실행 ID를 공급하도록 이 결정을 재검토해야 
 공식 메모리 범주를 보존한다. timeout 또는 불완전 instance도 ADR-0018 D4에 따라 분석기가
 `partial`로 표시하며, 수집기가 누락값을 0으로 만들지 않는다.
 
-### D5. 시뮬레이터 조작은 앱 package의 하나의 CLI로 고정한다
+### D5. 수동 조작 CLI와 재사용 smoke 오케스트레이션을 분리한다
 
-명령은 다음 네 개다.
+설치·부팅이 끝난 Simulator를 세부 조작하는 명령은 다음 네 개다.
 
 ```sh
 pnpm --filter @libitums/mobile performance:capture -- start
@@ -89,6 +90,19 @@ pnpm --filter @libitums/mobile performance:capture -- stop
 CLI는 앱 설치·시뮬레이터 부팅·Lynx 번들 복사를 대신하지 않는다. 이 준비 단계가 실패했을
 때 조용히 다른 기기나 dev server로 대체하지 않는다.
 
+로컬과 CI에서 전체 연결을 한 번에 확인할 때는 별도의 저장소 소유 명령을 쓴다.
+
+```sh
+pnpm --filter @libitums/mobile performance:capture:smoke
+pnpm --filter @libitums/mobile performance:capture:smoke -- --udid <Simulator-UDID>
+```
+
+smoke는 bundle 생성, CocoaPods 잠금 설치, Release Simulator build, boot/install, opt-in
+capture, 기존 분석기 검증과 cleanup을 조정한다. UDID가 없으면 iPhone 17 Pro/iOS 26.5
+Simulator를 만들고 끝에 삭제한다. UDID를 받으면 그 기기만 사용하고 삭제하지 않는다.
+Rendering entry와 Memory snapshot이 모두 있어야 성공하지만 성능 수치에는 threshold를
+적용하지 않는다. 구체적인 CI trigger와 비차단 경계는 ADR-0020 D3·D4가 정한다.
+
 ### D6. 원시는 커밋하지 않고 정제된 측정 보고서만 공유한다
 
 NDJSON에는 로컬 시간과 runtime metadata가 포함될 수 있으므로 저장소와 PR에 올리지 않는다.
@@ -98,14 +112,18 @@ NDJSON에는 로컬 시간과 runtime metadata가 포함될 수 있으므로 저
 
 ### D7. 자동 검증과 실제 검증을 분리한다
 
-- unit: 명령 파싱, container 하위 경로, 실제 iOS `pipeline/loadBundle` 입력 계약
+- unit: 명령 파싱, container 하위 경로, 실제 iOS `pipeline/loadBundle` 입력 계약, smoke
+  인자와 Rendering/Memory 성공 조건
 - UI: 선택 탭의 timing flag와 비선택 탭의 부재
-- integration: simctl 호출 순서, 내장 번들 실행 인자, 실제 분석기 연결, 실패 전파
+- integration: simctl 호출 순서, 내장 번들 실행 인자, 실제 분석기 연결, smoke 단계·실패
+  전파·성공/실패 cleanup
 - native build: 설치된 Lynx 4.0.1 헤더에 대한 iOS Simulator 컴파일
-- runtime: 시뮬레이터에서 opt-in 실행 후 원시 NDJSON 생성과 `report` 성공
+- runtime: 로컬 smoke 또는 관련 PR·수동·정기 macOS workflow에서 opt-in 실행 후
+  Rendering/Memory 증거 검증
 
+macOS workflow는 초기에는 비차단이며 원시 캡처를 artifact나 로그로 게시하지 않는다.
 시뮬레이터 측정은 실기 baseline이나 성능 예산을 대신하지 않는다. 같은 조건의 반복값이
-세 번 이상 쌓이고 허용폭 요구가 생기기 전에는 pass/fail을 만들지 않는다.
+세 번 이상 쌓이고 허용폭 요구가 생기기 전에는 수치 pass/fail을 만들지 않는다.
 
 ## 버린 대안
 
@@ -121,7 +139,8 @@ NDJSON에는 로컬 시간과 runtime metadata가 포함될 수 있으므로 저
 ## 대가
 
 - iOS 시뮬레이터 전용 연결이며 Android와 실제 기기 자동 수집을 제공하지 않는다.
-- 앱 설치와 내장 번들 갱신은 Xcode 측정 준비 절차에 남는다.
+- 세부 `performance:capture` CLI에서는 앱 설치와 내장 번들 갱신이 여전히 준비 절차에
+  남는다. 전체 연결 검증은 smoke 명령이 대신한다.
 - 앱 시작 직후의 선택 탭 timing flag는 loadBundle identifier에 포함될 수 있지만,
   수집기는 이를 사용자 전환 메모리 snapshot으로 세지 않는다.
 - 원시 자료를 보존하지 않으므로 보고서에 옮기지 않은 필드는 세션 종료 뒤 잃을 수 있다.
@@ -130,7 +149,8 @@ NDJSON에는 로컬 시간과 runtime metadata가 포함될 수 있으므로 저
 ## 재검토 조건
 
 - Android 호스트 또는 두 번째 수집 플랫폼을 지원할 때 → D1·D5
-- 실기 자동 측정이 PR merge gate가 될 때 → D5·D7의 기기 선택·설치·반복 정책
+- macOS smoke를 required check로 승격하거나 실기 자동 측정이 PR merge gate가 될 때 →
+  D5·D7과 ADR-0020 D4의 기기 선택·설치·반복 정책
 - 동일한 timing flag를 한 실행에서 두 번 이상 비교해야 할 때 → D3의 고유 identifier
 - 원시 캡처를 원격 저장하거나 자동 업로드할 때 → D2·D6의 privacy·보존·sampling
 - 같은 시나리오·기기·빌드 baseline이 3회 이상 쌓이고 허용폭 요구가 생길 때 → 성능 예산

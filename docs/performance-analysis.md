@@ -1,7 +1,8 @@
 # Lynx 성능 캡처 분석
 
 > 분석과 런타임 수집을 분리한 이유와 재검토 조건은
-> [ADR-0018](adr/0018-lynx-performance-analysis-boundary.md)에 있다.
+> [ADR-0018](adr/0018-lynx-performance-analysis-boundary.md)에, 보고서 정책과 native smoke
+> 자동화 경계는 [ADR-0020](adr/0020-performance-report-ci-automation.md)에 있다.
 
 이 저장소에는 iOS 호스트에서 Lynx PerformanceEntry와 전역 메모리 query 결과를 NDJSON으로
 수집하고, 입력을 검증해 평문 보고서로 바꾸는 로컬 CLI가 있다. 수집 결정과 opt-in 경계는
@@ -18,7 +19,31 @@ pnpm --filter @libitums/mobile performance:report -- ./capture.json
 성공하면 stdout에 보고서를 출력하고 종료 코드 0을 반환한다. 파일 읽기·파싱·계약 오류는
 stderr와 종료 코드 1, 인자 오류는 usage와 종료 코드 2로 반환한다.
 
-### iOS 시뮬레이터에서 수집
+### iOS 시뮬레이터 smoke
+
+macOS에 Xcode 26.5, iOS 26.5 runtime, CocoaPods가 준비돼 있다면 다음 한 명령으로 전체
+수집 연결을 확인한다.
+
+```sh
+pnpm --filter @libitums/mobile performance:capture:smoke
+```
+
+명령은 iPhone 17 Pro/iOS 26.5 Simulator를 만들고 `pnpm bundle:host`,
+`pod install --deployment`, Release Host build·install, opt-in capture와 기존 분석기 검증을
+순서대로 수행한다. 60초 안에 Rendering entry와 Memory snapshot이 모두 생겨야 성공한다.
+성공·실패 모두 임시 DerivedData와 명령이 만든 Simulator를 정리한다. 원시 레코드와
+Simulator sandbox 절대 경로는 stdout에 출력하지 않는다.
+
+이미 준비한 Simulator를 정확히 지정할 수도 있다.
+
+```sh
+pnpm --filter @libitums/mobile performance:capture:smoke -- --udid <Simulator-UDID>
+```
+
+이 경우 Host는 끝에 종료하지만 전달받은 Simulator는 종료·삭제하지 않는다. smoke의
+성공은 수집과 분석 경로가 연결됐다는 뜻이며 성능 수치 통과나 실기 baseline이 아니다.
+
+### iOS 시뮬레이터에서 수동 수집
 
 먼저 최신 `apps/mobile/dist/main.lynx.bundle`을 iOS Host에 포함해 앱을 빌드·설치하고 대상
 시뮬레이터를 boot한다. 그 뒤 저장소 루트에서 다음 순서로 실행한다.
@@ -57,6 +82,29 @@ CLI stdout을 그대로 그 경로로 redirect하지 않는다. 먼저 로컬에
 수집기가 없는 1단계에도 보고서를 생략하지 않고 `미측정` 사유와 다시 측정할 조건을 쓴다.
 이 기록은 baseline이나 성능 통과 증거가 아니다. 뼈대와 첫 화면의 과거 누락도 같은 규칙으로
 소급 기록하며 당시 자료에 없는 성능 수치는 만들지 않는다(ADR-0018 D9).
+
+### 보고서 정책 검사
+
+로컬에서 두 commit 사이의 의무를 CI와 같은 스크립트로 확인한다.
+
+```sh
+pnpm performance:reports:check --base <base-commit> --head <head-commit>
+```
+
+테스트 파일을 제외한 `apps/mobile/src/**` 또는 `apps/ios/**` 변경에는 README가 아닌
+`docs/performance/reports/*.md` 변경이 하나 이상 필요하다. 변경된 보고서에 다음 문제가
+있으면 종료 코드 1을 반환한다.
+
+- 파일명 또는 첫 H1 제목에 날짜가 있음
+- 상태·대상 commit·기기·OS·Lynx SDK·빌드 메타데이터나 필수 절이 없음
+- 해석 또는 제한 사항 절에 측정 한계가 없음
+- 보고서 디렉터리에 추적된 JSON/NDJSON 원본 또는 Markdown의 로컬 절대 경로가 있음
+- `미측정`을 baseline 또는 성능 통과로 표현함
+
+앱 런타임 변경이 없으면 "적용 대상 아님"으로 성공한다. GitHub Actions의 Linux Verify는
+모든 PR과 `main` push에서 `pnpm verify` 뒤 이 명령을 실행한다. 별도 macOS workflow는 관련
+PR·수동·평일 정기 실행에서 `performance:capture:smoke`를 실행하되 초기에는 비차단이다.
+둘 다 원본 artifact를 올리거나 Markdown을 자동 작성·커밋하지 않는다.
 
 ## 입력
 
@@ -171,8 +219,9 @@ Trace에서는 다음 흐름으로 원인을 좁힌다.
 ## 현재 경계와 다음 단계
 
 2단계는 iOS native lifecycle callback, 전역 메모리 query, 바텀 네비게이션 timing flag,
-시뮬레이터 start/path/report/stop을 연결한다. ReactLynx observer는 native event와 중복되므로
-등록하지 않는다. 다음 항목은 아직 범위 밖이다.
+시뮬레이터 start/path/report/stop과 재사용 smoke를 연결한다. Linux CI는 보고서 기록 의무를,
+선택적 비차단 macOS CI는 native 수집 연결을 확인한다. ReactLynx observer는 native event와
+중복되므로 등록하지 않는다. 다음 항목은 아직 범위 밖이다.
 
 - Trace 캡처 또는 파싱 자동화
 - Android와 실제 iOS 기기의 자동 설치·수집

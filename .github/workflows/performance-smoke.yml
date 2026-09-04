@@ -1,0 +1,61 @@
+name: Performance smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 18 * * 1-5"
+  pull_request:
+    paths:
+      - ".github/workflows/performance-smoke.yml"
+      - ".npmrc"
+      - ".nvmrc"
+      - "apps/ios/**"
+      - "apps/mobile/devtools/lynx-performance/**"
+      - "apps/mobile/package.json"
+      - "apps/mobile/src/**"
+      - "package.json"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: performance-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios-simulator:
+    name: iOS 26.5 simulator
+    runs-on: macos-26
+    continue-on-error: true
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+      NODE_AUTH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://npm.pkg.github.com
+          scope: "@libitums"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.5 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Confirm arm64 runner
+        run: test "$(uname -m)" = "arm64"
+
+      - name: Run reusable performance smoke
+        run: pnpm --filter @libitums/mobile performance:capture:smoke

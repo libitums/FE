@@ -16,6 +16,11 @@ CLI stdout 전체, Trace 파일, Instruments export를 보관하는 곳이 아�
 [`docs/performance-analysis.md`](../../performance-analysis.md)의 `performance:capture` 명령을
 따른다.
 
+Linux Verify는 이 의무를 모든 PR과 `main` push에서 자동 검사한다. 테스트 파일을 제외한
+`apps/mobile/src/**` 또는 `apps/ios/**` 변경에 이 README가 아닌 보고서 Markdown 변경이
+없으면 실패한다. CI는 보고서를 대신 만들거나 커밋하지 않는다
+([ADR-0020 D1·D2](../../adr/0020-performance-report-ci-automation.md)).
+
 ## 파일 규칙
 
 파일 하나는 기기·시나리오·실행 회차 하나다.
@@ -33,6 +38,28 @@ journey-map-scroll-iphone-13-mini-01.md
 날짜는 파일명이나 문서 제목에 넣지 않고 본문의 `측정 일시`에만 기록한다. 같은 조건의
 baseline을 여러 번 측정하면 scenario·device를 같게 두고 `01`, `02`, `03`처럼 회차만
 올린다. 여러 회차를 한 파일에 합치지 않는다.
+
+## 정책 검사
+
+PR 전에 비교할 두 commit을 지정해 CI와 같은 검사를 실행할 수 있다.
+
+```sh
+pnpm performance:reports:check --base <base-commit> --head <head-commit>
+```
+
+검사는 다음을 확인한다.
+
+- 사용자 관찰 가능 앱 변경과 보고서 변경이 같은 diff에 있는가
+- 파일명과 첫 H1 제목에 날짜가 없고 날짜가 본문에만 있는가
+- 상태, 대상 commit, 기기, OS, Lynx SDK, 빌드와 실행 조건·시나리오·분석 결과·해석 또는
+  제한 사항·결론과 후속이 있는가
+- 해석에 단일 실행, 미측정, 일반화 제한처럼 아직 판정할 수 없는 한계가 적혀 있는가
+- 보고서 디렉터리에 JSON/NDJSON 원본이 추적되지 않고 Markdown에 로컬 절대 경로가 없는가
+- `미측정` 기록을 baseline 또는 성능 통과로 주장하지 않는가
+
+검사는 기록 형식과 누락만 판정한다. 수치 threshold를 적용하지 않고 raw capture를
+artifact로 올리지 않으며 Markdown을 자동 생성하지 않는다. 보고서는 아래 양식으로 사람이
+정제한다.
 
 ## 기록 양식
 

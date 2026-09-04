@@ -69,7 +69,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | npm 의존의 버전 표기 | 결정 (전부 정확 버전) | [0013](0013-dependencies-and-version-notation.md) |
 | `dependencies`/`devDependencies` 경계 | 결정 | [0013](0013-dependencies-and-version-notation.md) |
 | 명령 인터페이스 | 결정 | [0006](0006-command-interface-and-test-layers.md) |
-| 성능 관측·오프라인 분석·런타임 수집 경계 | 결정 (1단계 분석 + iOS 2단계 수집) + 보류 (성능 예산·추가 플랫폼) | [0018](0018-lynx-performance-analysis-boundary.md), [0019](0019-lynx-ios-performance-collection.md) |
+| 성능 관측·오프라인 분석·런타임 수집 경계 | 결정 (1단계 분석 + iOS 2단계 수집 + 비차단 native smoke) + 보류 (성능 예산·추가 플랫폼) | [0018](0018-lynx-performance-analysis-boundary.md), [0019](0019-lynx-ios-performance-collection.md), [0020](0020-performance-report-ci-automation.md) |
 | 린터·포매터 | 결정 (`oxlint` · `oxfmt`) | [0006](0006-command-interface-and-test-layers.md) |
 | 테스트 계층 | 결정 (3계층 + 파일 위치) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) D4·**D7** |
 | 상태 관리 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
@@ -82,9 +82,9 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | private registry 인증 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | 보조기술 시맨틱 (접근성) | 결정 (이름·역할·상태 + **겹침 레이어 격리** + **조작 불가 단위의 역할**) + 범위 밖 명시 (키보드·전환 통지) | [0016](0016-assistive-technology-semantics.md) D1~**D10** — 조작 불가 표기(`accessibility-traits="disabled"`)는 **D10**, 인증 수준은 [0001](0001-repository-goal-and-scope.md) D3이 뺀 그대로 |
 | 형상 관리 위생 (.gitignore) | 결정 | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
-| CI | 결정 (시점 유예) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
+| CI | 결정 (Linux Verify + 보고서 정책, 선택적 비차단 macOS smoke) | [0020](0020-performance-report-ci-automation.md) — [0009](0009-vcs-hygiene-ci-and-merge-gate.md) D3의 유예 조건 충족 |
 | 머지 방식 | 결정 (squash 고정) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
-| 브랜치 보호·머지 게이트 | 결정 (규약) + 보류 (강제) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
+| 브랜치 보호·머지 게이트 | 결정 (PR 규약·CI 상태) + 보류 (required check 강제) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md), [0020](0020-performance-report-ci-automation.md) D6 |
 | 규약 문서 | 결정 | [0010](0010-convention-docs-and-design-done-criteria.md) |
 | 설계 완료 조건 | 결정 | [0010](0010-convention-docs-and-design-done-criteria.md) |
 
@@ -112,7 +112,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 축 | 왜 못 정하나 | 막고 있는 것 | **누가** | 푸는 시점 |
 |---|---|---|---|---|
 | `integration`의 **서버 연동 케이스** | 무엇을 목킹할지 정할 수 없다 | API 명세가 없고 백-프론트 연동이 미착수다. 계층 자체는 첫 단계에 포함된다 | **밖** | API 명세 도착 후 |
-| 브랜치 보호 강제 | 정책은 정했으나 GitHub 규칙으로 강제할 수 없다 | private 저장소 브랜치 보호 API가 현 플랜에서 403. 필수 상태 검사로 걸 CI도 아직 없다 | **밖** | CI 도입 시 (ADR-0009) |
+| 브랜치 보호 강제 | 정책과 CI는 있으나 GitHub 규칙으로 required check를 강제할 수 없다 | private 저장소 브랜치 보호 API가 현 플랜에서 403이다. Linux Verify는 도입됐지만 우회 가능하다 (ADR-0020 D6) | **밖** | 플랜 또는 공개 범위가 바뀌어 branch protection API를 사용할 수 있을 때 |
 | `e2e` 테스트 계층 | 도구는 있으나 환경이 없다 | `@lynx-js/kitten-lynx-test-infra`(vitest)가 Explorer(Android)를 구동한다. 개발도 시연도 iOS이므로(ADR-0012) **Android는 오직 e2e만을 위해 세우는 환경**이 됐다. **그때까지 어떤 파일도 `e2e` 명령을 선언하지 않는다** — `.agent-harness/profile.yaml`이 playwright를 부르고 있었다 (ADR-0006 D3 `정정 기록`) | **밖** (환경) | Android 에뮬레이터를 루프에 둘 수 있을 때 |
 | 토큰 이름 **전체 대조** 검사 | 대조할 목록을 저장소 안에서 볼 수 없다 | 목록의 출처가 설치된 `@libitums/design-tokens`의 `css/variables.css`다. **설치 상태에 따라 통과/실패가 갈리는 검사는 `lint`에 둘 수 없다.** 접두사 검사는 ADR-0014 D8이 먼저 닫았다 | **본인** | `pnpm install`을 전제할 수 있는 자리가 생길 때 — CI 도입(ADR-0009 D3)이 가장 이른 시점 |
 | 배포·릴리스 경계 | 시연까지는 배포가 필요 없다 | 자체 호스트를 만들되 **스토어 배포·서명은 하지 않는다**(ADR-0012 D2). 시연은 시뮬레이터에서 직접 실행한다 | — 요구 없음 | 스토어 배포가 요구될 때 |

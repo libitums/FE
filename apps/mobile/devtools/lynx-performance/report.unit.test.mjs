@@ -81,6 +81,18 @@ describe("Lynx performance capture parsing", () => {
   it("reports the failing NDJSON line", () => {
     expect(() => parseCapture('{"source":"performance"}\n{broken')).toThrow(/line 2/i);
   });
+
+  it("reports malformed pretty-printed JSON as a JSON syntax error", () => {
+    const malformedJson = `{
+  "source": "performance",
+  "entry": {
+    "entryType": "metric"
+  }
+`;
+
+    expect(() => parseCapture(malformedJson)).toThrow(/JSON syntax error/i);
+    expect(() => parseCapture(malformedJson)).not.toThrow(/line 1/i);
+  });
 });
 
 describe("Lynx render timing analysis", () => {
@@ -165,6 +177,22 @@ describe("Lynx render timing analysis", () => {
 
     expect(() => validateCapture(incomplete)).toThrow(/record 1.*entry\.resolveEnd/i);
     expect(() => validateCapture(reversed)).toThrow(/record 1.*entry\.resolveEnd/i);
+  });
+
+  it("reports a required timing pair when both required fields are absent", () => {
+    const missingPipelineTiming = [
+      {
+        source: "performance",
+        entry: {
+          entryType: "pipeline",
+          name: "card",
+        },
+      },
+    ];
+
+    expect(() => validateCapture(missingPipelineTiming)).toThrow(
+      /record 1.*entry\.pipelineStart.*entry\.pipelineEnd.*timing pair is required/i,
+    );
   });
 });
 
