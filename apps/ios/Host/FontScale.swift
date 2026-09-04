@@ -16,19 +16,6 @@ import UIKit
 /// **왜 표를 손으로 안 적나.** `UIFontMetrics`가 Apple의 정본이고 OS가 매핑을
 /// 바꾸면 따라간다. 손으로 적은 표는 그날 낡는다.
 enum FontScale {
-  /// 상한. **WCAG 1.4.4가 요구하는 200%가 이 숫자다** (ADR-0020 D4).
-  ///
-  /// Apple의 최대 접근성 크기는 `.body` 기준 **약 3.1배**(17pt → 53pt)인데, 그
-  /// 배율에서 듣기 화면의 보기 넷이 액션 행을 화면 밖으로 밀어 **`다음`에 닿을 수
-  /// 없었다** — 시각 결함이 아니라 **학습 루프를 완주할 수 없는 기능 상실**이고,
-  /// 1.4.4가 정확히 금지하는 것이다 (2026-09-04 실기).
-  ///
-  /// **이 상한은 사용자 설정을 거부하는 것이 아니라 못 쓰던 것을 쓸 수 있게 하는
-  /// 것이다.** 근본 원인은 배율이 아니라 **이 앱에 스크롤이 한 곳도 없다는 것**이다
-  /// (`scroll-view` 사용 0건). 스크롤이 들어오면 이 상한은 걷힌다 — 그때까지의
-  /// 잠정값이고, 걷는 조건이 ADR-0020 재검토 조건에 숫자로 적혀 있다.
-  static let cap: CGFloat = 2.0
-
   /// `.body` 기준 배율. 기본 설정(`.large`)에서 `1.0`이다.
   ///
   /// `100`을 기준수로 두는 것은 반올림 오차를 줄이려는 것뿐이다 — `scaledValue`가
@@ -38,6 +25,6 @@ enum FontScale {
     // `compatibleWith`가 이미 `UITraitCollection?`를 받는다 — `nil`이면 현재 기기의
     // trait을 쓴다. 손으로 언래핑하지 않는다 (PR #38 리뷰).
     let scaled = UIFontMetrics(forTextStyle: .body).scaledValue(for: base, compatibleWith: traits)
-    return min(scaled / base, cap)
+    return scaled / base
   }
 }
