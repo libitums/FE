@@ -30,6 +30,11 @@
   font-size: var(--libitum-typography-heading-s-font-size);
   line-height: var(--libitum-typography-heading-s-line-height);
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어든다.
+     형제(`.assessment-screen-scroll`)는 `flex: 1`이라 basis가 0이라 shrink를
+     흡수하지 않으므로, 최대 배율에서 제목이 유일한 축소 대상이 돼 잘린다
+     (FE ADR-0020 D5 · WCAG 1.4.4). */
+  flex-shrink: 0;
 }
 
 /* design §1.2(d) — 스크롤 컨테이너. 이 문서가 새로 고르는 값이 0개다(규약값
