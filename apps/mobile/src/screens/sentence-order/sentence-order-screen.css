@@ -1,0 +1,196 @@
+/* LIB-229 W6 (ui): design.md §0 · §1.1 · §1.2 · §4의 값. 계약(§1.9 · §1.12 · §1.12.1)이
+   고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다(ADR-0014 D1) —
+   색·간격·타이포의 생값을 적지 않는다.
+
+   화면 뼈대(머리·스크롤·액션 행)는 `.listening-screen*`과 같은 값이다(design.md §1.1 —
+   "같은 스텝 안에서 연속으로 도는 화면끼리 다른 값을 쓰는 것 자체가 신호") — 일곱째
+   화면으로서 FE ADR-0022 D1의 3분할을 잇는다(design.md §1.2). */
+
+.sentence-order-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  /* Lynx의 `justify-content` 기본값은 `stretch`다. 명시하지 않으면 높이가 고정된
+     자식(헤더·액션 행)이 늘어난다(design.md §1.1과 같은 근거, `listening-screen.css:22-24`). */
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+/* design.md §1.1 「back 히트박스」 자리 — back + 제목 한 줄. */
+.sentence-order-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-layout-gap-inline);
+  flex-shrink: 0;
+}
+
+.sentence-order-screen-exit {
+  /* **고정 높이가 아니라 하한이다**(ADR-0020 D5) — 배율이 커져도 상자가 라벨을
+     넘치지 않게 자란다. */
+  min-height: var(--libitum-spacing-48);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* `flex-shrink: 0`을 **주지 않는다.** 이 행은 `flex-direction: row`이고 형제가
+     제목 `<text>`다 — 한쪽만 안 줄면 최대 배율에서 제목만 줄어 넘치고, VoiceOver가
+     프레임 위치로 순회하며 낭독 순서를 뒤집는다(계약 §1.10(c)-1 · LIB-228이 듣기
+     헤더에서 실측한 자리). **두 자식 다 기본값(`flex-shrink: 1`)으로 대칭이다** —
+     `word-choice-screen.css`와 같은 형태다. 처음 이 파일이 섰을 때 `flex-shrink: 0`이
+     들어가 있었고, 그것이 듣기의 결함을 새 화면에 그대로 재생산한 것이었다. */
+}
+
+.sentence-order-screen-exit-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.sentence-order-screen-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* design.md §1.2(d) — 남는 세로를 받는 것은 스크롤 컨테이너 하나다(`flex: 1`).
+   `display`·`flex-direction`·`gap`을 여기 두지 않는다 — `<scroll-view>`는 CSS와
+   무관하게 강제로 `linear`가 되고 linear 알고리즘에는 `gap`이 없어 무동작이다
+   (계약 §1.9(e)). 위쪽 hairline만 선이다(§1.2(d) 표). */
+.sentence-order-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+/* design.md §1.2(c) — 스크롤 컨테이너의 직계 자식은 이 상자 하나다(계약 §1.9(e)).
+   flex 어휘 전부가 여기 산다. `flex: 1`·`flex-shrink`는 여기 두지 않는다 — 부모가
+   강제 linear라 읽히지 않는다. */
+.sentence-order-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+}
+
+.sentence-order-screen-progress {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.sentence-order-screen-prompt {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+.sentence-order-screen-instruction {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* design.md §4.1 · §4.2 — 답 줄. 놓인 조각이 순서대로 세로로 쌓인다. `min-height`는
+   빈 상태(문항 시작 시점)에도 자리를 지키는 하한이다(§4.4) — 비면 높이 0이 되어 두
+   목록이 하나로 보인다. `height`는 쓰지 않는다(§8). */
+.sentence-order-screen-sentence {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-spacing-8);
+  min-height: var(--libitum-spacing-48);
+}
+
+/* design.md §4.1 · §4.2 — 조각 더미. 위쪽 hairline이 `gap`이 아니라 이 상자의 경계를
+   진다 — 배율에서 `gap`만으로는 두 목록의 분리감이 붕괴한다(§4.2 근거 1·2). */
+.sentence-order-screen-bank {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-spacing-8);
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+/* design.md §4.6(가) — 판정 표식은 답 줄 아래, 내용 상자의 자식으로 한 블록이다
+   (계약이 (나) 대신 (가)를 골랐다 — §1.12.1). `.listening-choice-mark`와 문자
+   그대로 같은 정렬 값이다. */
+.sentence-order-screen-mark {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+/* design.md §4.6 — 아이콘은 정사각형 도형이지 텍스트 상자가 아니다. 고정
+   `width`/`height`는 §8의 "텍스트를 품은 상자" 제약 밖이다(`.listening-choice-mark-icon`·
+   `.assessment-item-mark-icon`과 같은 선례). */
+.sentence-order-screen-mark-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.sentence-order-screen-mark-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.sentence-order-screen-complete {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* design.md §1.1 「액션 행 버튼 면·라벨」 — `확인`·`다음`·`결과 보기` 셋이 같은
+   값이다(서로 다른 요소이고 동시에 둘이 뜨지 않는다 — 계약 §1.8(c)). */
+.sentence-order-screen-check,
+.sentence-order-screen-next,
+.sentence-order-screen-finish {
+  background: var(--libitum-color-brand-strong);
+  /* **고정 높이가 아니라 하한이다**(ADR-0020 D5). */
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sentence-order-screen-check-label,
+.sentence-order-screen-next-label,
+.sentence-order-screen-finish-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
