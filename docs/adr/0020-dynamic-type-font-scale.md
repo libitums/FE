@@ -171,7 +171,7 @@ UIFontMetrics(forTextStyle: .body).scaledValue(for: 100) / 100
 
 **⟨당시⟩** `scroll-view` 사용이 저장소 전체에 **0건**이었다. 화면은 전부 고정 뷰포트의
 flex 열이었고, **안 들어가는 내용은 닿을 방법이 없었다.** (지금은 다섯 건 —
-[ADR-0021](0021-scroll-regions-and-fixed-affordances.md).)
+[ADR-0022](0022-scroll-regions-and-fixed-affordances.md).)
 
 `listening-screen.css`의 주석이 이미 경고하고 있었다.
 
