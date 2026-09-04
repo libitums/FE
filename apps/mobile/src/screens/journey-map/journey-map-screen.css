@@ -28,11 +28,13 @@
 /* LIB-226 (ui) — design §1.2의 3분할 표. 남는 세로를 받는 것은 이 상자다(계약 R8) —
    `flex: 1`이 `.journey-map-screen-map`에서 여기로 올라온다. `justify-content:
    flex-start`도 여기가 진다(계약 §1.11 #3) — 넘치는 상자에서 `center`는 위쪽
-   항목을 스크롤 원점 밖으로 밀어 닿을 수 없게 만든다(design §1.2f). */
+   항목을 스크롤 원점 밖으로 밀어 닿을 수 없게 만든다(design §1.2f).
+   `display: flex`·`flex-direction: column`은 지운다 — `<scroll-view>`는 CSS와
+   무관하게 강제로 `linear`가 되어 이 둘이 안 읽힌다(계약 R8.1). `justify-content`는
+   `LinearSupportFlexStyleMode()` 게이트가 이 앱에서 켜져 있는지 확인하지 못해
+   남긴다(계약 §5.1.1). */
 .journey-map-screen-scroll {
   flex: 1;
-  display: flex;
-  flex-direction: column;
   justify-content: flex-start;
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }

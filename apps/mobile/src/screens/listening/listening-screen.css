@@ -80,15 +80,29 @@
    `flex: 1`이 그것을 진다. 배경·모서리·그림자·padding은 선언하지 않는다(표의 빈 칸이
    전부 "없음"이다) — 칠해도 배경 대비가 1.05~1.13:1이라 안 보인다(design §1.2a).
    위쪽 hairline만 선이다 — 잘린 내용과 헤더가 같은 배경 위 같은 계열 글자라 경계를
-   만드는 것이 선 말고 없다(design §1.2b). 자식 간격은 `layout-gap-block`으로
-   세로 합계를 보존한다(design §3.1 — gap 개수 보존). */
+   만드는 것이 선 말고 없다(design §1.2b).
+   `display: flex`·`flex-direction: column`·`gap`은 지운다 — `<scroll-view>`는
+   CSS와 무관하게 강제로 `linear`가 되고, linear 알고리즘에는 `gap`이 없어 셋 다
+   무동작이다(계약 R7.1·R8.1). 자식 간격은 `.listening-screen-content`가
+   `layout-gap-block`으로 진다 — 세로 합계는 거기서 보존된다(design §3.1 — gap 개수
+   보존). `justify-content`는 `LinearSupportFlexStyleMode()` 게이트가 이 앱에서
+   켜져 있는지 확인하지 못해 남긴다(계약 §5.1.1). */
 .listening-screen-scroll {
   flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+/* LIB-226 (ui) — `<scroll-view>`의 직계 자식은 최대 하나다(계약 R7.1). 이 상자가
+   `.listening-screen-scroll`이 지던 흐름의 flex 어휘를 그대로 받는다 — 값은 한
+   글자도 안 바뀐다. `flex: 1`·`flex-shrink: 0`은 여기 두지 않는다: 부모
+   (`.listening-screen-scroll`)가 강제 linear라 이 상자에게 `flex-grow`·
+   `flex-shrink`가 읽히지 않는다(계약 R8.1). */
+.listening-screen-content {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   gap: var(--libitum-layout-gap-block);
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
 /* design §5.2 — 막대가 아니라 텍스트다. 트랙에 쓸 색이 없고(`gray-300`이 배경 대비

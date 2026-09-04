@@ -79,47 +79,58 @@ export function ListeningScreen({
 
       {/* [흐름] 내용 슬롯 — LIB-226 계약 §1.3. 스크롤 컨테이너 하나가 진행·제시·지시·
           보기·완료문을 감싼다. 자식의 요소·클래스·testid·accessibility-*·형제 순서는
-          한 글자도 바뀌지 않는다 (계약 R7). prop을 적지 않는다 — 기본값이 원하는 값이다
-          (계약 R5). accessibility-*를 붙이지 않는다 — 조작 단위가 아니라 상자다
-          (계약 R6). */}
-      <scroll-view className="listening-screen-scroll" data-testid="listening-screen-scroll">
-        {question === null ? null : (
-          <text className="listening-screen-progress" data-testid="listening-screen-progress">
-            {questionProgressLabel(state.questionIndex, questions.length)}
-          </text>
-        )}
+          한 글자도 바뀌지 않는다 (계약 R7). `scroll-orientation`·`scroll-bar-enable`을
+          적는다 — 안 적으면 초기값이 각각 가로·꺼짐이라 세로 스크롤이 원리적으로
+          불가능하다(계약 R5.2·R5.3). accessibility-*를 붙이지 않는다 — 조작 단위가
+          아니라 상자다(계약 R6). */}
+      <scroll-view
+        className="listening-screen-scroll"
+        data-testid="listening-screen-scroll"
+        scroll-orientation="vertical"
+        scroll-bar-enable={true}
+      >
+        {/* `<scroll-view>`의 직계 자식은 최대 하나다 — 간격은 이 상자가 진다
+            (계약 R7.1). `data-testid`는 붙이지 않는다: U10은 부모에서 자식 수를
+            세고, 아래 자식들은 여전히 `within(scroll)` 자손 질의로 닿는다. */}
+        <view className="listening-screen-content">
+          {question === null ? null : (
+            <text className="listening-screen-progress" data-testid="listening-screen-progress">
+              {questionProgressLabel(state.questionIndex, questions.length)}
+            </text>
+          )}
 
-        {/* 제시 채널. 오디오가 생기면 **이 컴포넌트만** 통째로 갈린다 (§1.7.2). */}
-        {question === null ? null : (
-          <ListeningPrompt text={question.prompt} audioSource={question.audioSource} />
-        )}
+          {/* 제시 채널. 오디오가 생기면 **이 컴포넌트만** 통째로 갈린다 (§1.7.2). */}
+          {question === null ? null : (
+            <ListeningPrompt text={question.prompt} audioSource={question.audioSource} />
+          )}
 
-        {question === null ? null : (
-          // 항상 렌더돼 실패할 수 없는 단언은 검증이 아니므로 testid를 두지 않는다 (§2.2).
-          <text className="listening-screen-instruction">말의 뜻으로 알맞은 것을 고르세요.</text>
-        )}
+          {question === null ? null : (
+            // 항상 렌더돼 실패할 수 없는 단언은 검증이 아니므로 testid를 두지 않는다 (§2.2).
+            <text className="listening-screen-instruction">말의 뜻으로 알맞은 것을 고르세요.</text>
+          )}
 
-        {question === null ? null : (
-          <view className="listening-screen-choices">
-            {question.choices.map((choiceText, choiceIndex) => (
-              <ListeningChoice
-                key={choiceIndex}
-                index={choiceIndex}
-                text={choiceText}
-                // 판정을 지는 보기는 고른 하나뿐이다 — 고르지 않은 정답 보기는 null이다
-                // (계약 §1.1 「정답을 알려 주지 않는다」).
-                result={choiceResultAt(state, question, choiceIndex)}
-                onSelect={(index) => dispatch({ type: "selectChoice", choiceIndex: index })}
-              />
-            ))}
-          </view>
-        )}
+          {question === null ? null : (
+            <view className="listening-screen-choices">
+              {question.choices.map((choiceText, choiceIndex) => (
+                <ListeningChoice
+                  key={choiceIndex}
+                  index={choiceIndex}
+                  text={choiceText}
+                  // 판정을 지는 보기는 고른 하나뿐이다 — 고르지 않은 정답 보기는 null이다
+                  // (계약 §1.1 「정답을 알려 주지 않는다」).
+                  result={choiceResultAt(state, question, choiceIndex)}
+                  onSelect={(index) => dispatch({ type: "selectChoice", choiceIndex: index })}
+                />
+              ))}
+            </view>
+          )}
 
-        {question === null ? (
-          <text className="listening-screen-complete" data-testid="listening-screen-complete">
-            문항을 모두 마쳤어요
-          </text>
-        ) : null}
+          {question === null ? (
+            <text className="listening-screen-complete" data-testid="listening-screen-complete">
+              문항을 모두 마쳤어요
+            </text>
+          ) : null}
+        </view>
       </scroll-view>
 
       {/* [고정] 액션 행. 흐르는 영역이 아니라 화면의 직계 자식으로 남는다 (계약 R1·R9).

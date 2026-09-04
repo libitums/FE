@@ -71,14 +71,20 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
 test("[U9] roleplay-list-screen-scroll에 scroll-orientation='vertical'이 붙는다", () => {
   render(<RoleplayListScreen />);
 
-  expect(screen.getByTestId("roleplay-list-screen-scroll")).toHaveAttribute("scroll-orientation", "vertical");
+  expect(screen.getByTestId("roleplay-list-screen-scroll")).toHaveAttribute(
+    "scroll-orientation",
+    "vertical",
+  );
 });
 
 // U11: scroll-bar-enable이 (JSON.stringify를 거친) 문자열 "true"로 붙어 있다.
 test("[U11] roleplay-list-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
   render(<RoleplayListScreen />);
 
-  expect(screen.getByTestId("roleplay-list-screen-scroll")).toHaveAttribute("scroll-bar-enable", "true");
+  expect(screen.getByTestId("roleplay-list-screen-scroll")).toHaveAttribute(
+    "scroll-bar-enable",
+    "true",
+  );
 });
 
 // U10: 스크롤 컨테이너의 직계 요소 자식이 하나를 넘지 않는다. RoleplayListScreen은 흐름 자식이

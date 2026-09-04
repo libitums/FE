@@ -30,9 +30,16 @@ export function HomeScreen() {
           홈
         </text>
       </view>
-      {/* [흐름] 내용 슬롯 — LIB-226 계약 §1.5. 지금은 자식이 없다. prop을 적지
-          않는다(계약 R5). accessibility-*를 붙이지 않는다(계약 R6). */}
-      <scroll-view className="home-screen-scroll" data-testid="home-screen-scroll"></scroll-view>
+      {/* [흐름] 내용 슬롯 — LIB-226 계약 §1.5. 지금은 자식이 없다. `scroll-orientation`·
+          `scroll-bar-enable`을 적는다 — 안 적으면 초기값이 각각 가로·꺼짐이라
+          세로 스크롤이 원리적으로 불가능하다(계약 R5.2·R5.3). accessibility-*를
+          붙이지 않는다(계약 R6). */}
+      <scroll-view
+        className="home-screen-scroll"
+        data-testid="home-screen-scroll"
+        scroll-orientation="vertical"
+        scroll-bar-enable={true}
+      ></scroll-view>
     </view>
   );
 }

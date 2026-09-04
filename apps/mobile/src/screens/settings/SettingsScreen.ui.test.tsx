@@ -71,7 +71,10 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
 test("[U9] settings-screen-scroll에 scroll-orientation='vertical'이 붙는다", () => {
   render(<SettingsScreen />);
 
-  expect(screen.getByTestId("settings-screen-scroll")).toHaveAttribute("scroll-orientation", "vertical");
+  expect(screen.getByTestId("settings-screen-scroll")).toHaveAttribute(
+    "scroll-orientation",
+    "vertical",
+  );
 });
 
 // U11: scroll-bar-enable이 (JSON.stringify를 거친) 문자열 "true"로 붙어 있다.

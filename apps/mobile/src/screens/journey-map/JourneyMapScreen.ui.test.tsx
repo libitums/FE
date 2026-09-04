@@ -384,7 +384,5 @@ test("[U10] 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는�
     <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
   );
 
-  expect(
-    screen.getByTestId("journey-map-screen-scroll").children.length,
-  ).toBeLessThanOrEqual(1);
+  expect(screen.getByTestId("journey-map-screen-scroll").children.length).toBeLessThanOrEqual(1);
 });
