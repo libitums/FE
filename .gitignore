@@ -23,6 +23,7 @@ coverage/
 build/
 build-device/
 build-release/
+build-sim/
 DerivedData/
 xcuserdata/
 *.xcuserstate
