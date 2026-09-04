@@ -4,8 +4,8 @@ import tick from "@libitums/icons/lynx/tick";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
+import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
 import { choiceAccessibilityLabel } from "./listening";
-import type { ListeningAnswerResult } from "./listening";
 
 import "./listening-choice.css";
 
@@ -16,7 +16,7 @@ import "./listening-choice.css";
 // design.md §3.3 · §8의 표 — 판정별 표식 아이콘. 모양이 **색과 독립인 두 번째
 // 채널**이다 (WCAG 1.4.1 · 계약 §1.7.1). 리터럴을 적지 않고 패키지 모듈을 가져온다.
 // 전체 index(`@libitums/icons/lynx`)를 import하지 않는다 — 819개가 번들에 들어간다.
-const markIconByResult: Record<ListeningAnswerResult, string> = {
+const markIconByResult: Record<AnswerResult, string> = {
   correct: tick,
   incorrect: cross,
 };
@@ -28,22 +28,19 @@ const markIconByResult: Record<ListeningAnswerResult, string> = {
 //
 // 색은 CSS가 아니라 `current-color` 속성으로 넘긴다 — Lynx `<svg>`가 CSS `color`를
 // 읽지 않는다 (ADR-0014 D2). 하이픈 키라 대괄호 표기다.
-const markIconColorByResult: Record<ListeningAnswerResult, string> = {
+const markIconColorByResult: Record<AnswerResult, string> = {
   correct: color.feedback["correct-text"],
   incorrect: color.feedback["incorrect-text"],
 };
 
 // 세 번째 채널 — 아이콘이 크기를 못 받아 안 보여도 판정이 낱말로 남는다
-// (design.md §4.3-c · `docs/e2e/design-token-rendering.md`의 선례).
-const markLabelByResult: Record<ListeningAnswerResult, string> = {
-  correct: "정답",
-  incorrect: "오답",
-};
+// (design.md §4.3-c · `docs/e2e/design-token-rendering.md`의 선례). 낱말은
+// lib/answer-result.ts의 answerResultLabel이 낸다 (LIB-229 계약 §1.4(d)).
 
 export type ListeningChoiceProps = {
   index: number;
   text: string;
-  result: ListeningAnswerResult | null;
+  result: AnswerResult | null;
   onSelect: (index: number) => void;
 };
 
@@ -93,7 +90,7 @@ export function ListeningChoice({
             current-color={markIconColorByResult[result]}
             accessibility-elements-hidden={true}
           />
-          <text className="listening-choice-mark-label">{markLabelByResult[result]}</text>
+          <text className="listening-choice-mark-label">{answerResultLabel(result)}</text>
         </view>
       )}
     </view>

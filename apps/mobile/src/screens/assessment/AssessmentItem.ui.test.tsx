@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
+import type { AnswerResult } from "../../lib/answer-result";
 import { AssessmentItem } from "./AssessmentItem";
-import type { ListeningAnswerResult } from "../listening/listening";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태를 본다 (ADR-0006 D4). 계산된 스타일을 볼 수
 // 없으므로 `toHaveClass` · `toHaveStyle`을 쓰지 않는다 (docs/conventions/code.md
@@ -18,7 +18,7 @@ import type { ListeningAnswerResult } from "../listening/listening";
 // assessment.unit.test.ts가 함수 자체를 이미 본다 — 여기서는 컴포넌트가 그 값을
 // 실제로 렌더하는지만 본다.
 
-const RESULTS: readonly { index: number; result: ListeningAnswerResult; label: string }[] = [
+const RESULTS: readonly { index: number; result: AnswerResult; label: string }[] = [
   { index: 0, result: "correct", label: "문항 1, 정답" },
   { index: 1, result: "incorrect", label: "문항 2, 오답" },
 ];

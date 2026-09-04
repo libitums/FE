@@ -1,8 +1,8 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import type { AnswerResult } from "../../lib/answer-result";
 import { AssessmentScreen } from "./AssessmentScreen";
-import type { ListeningAnswerResult } from "../listening/listening";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 본다 (ADR-0006 D4). 순수 함수
 // (assessment.ts)를 mock하지 않는다 — 화면이 그것을 실제로 부르는지가 이 파일이 보는
@@ -17,13 +17,13 @@ import type { ListeningAnswerResult } from "../listening/listening";
 // 판정을 실제로 렌더·낭독하는지만 본다. 그래서 아래 결과 배열은 assessment.unit.test.ts
 // 와 같은 조합(2/3·1/3)을 그대로 옮긴다 — 지어낸 임계값이 아니다.
 
-const PASSING_RESULTS: readonly ListeningAnswerResult[] = ["correct", "incorrect", "correct"]; // 2/3 → passed
-const FAILING_RESULTS: readonly ListeningAnswerResult[] = ["correct", "incorrect", "incorrect"]; // 1/3 → failed
+const PASSING_RESULTS: readonly AnswerResult[] = ["correct", "incorrect", "correct"]; // 2/3 → passed
+const FAILING_RESULTS: readonly AnswerResult[] = ["correct", "incorrect", "incorrect"]; // 1/3 → failed
 
 function renderScreen(
   overrides: {
     stepOrdinal?: number;
-    results?: readonly ListeningAnswerResult[];
+    results?: readonly AnswerResult[];
     onExit?: () => void;
   } = {},
 ) {

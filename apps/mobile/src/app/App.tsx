@@ -16,10 +16,11 @@ import {
   type JourneyStepId,
 } from "../screens/journey-map/journey-map";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
-import type { ListeningAnswerResult } from "../screens/listening/listening";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { ErrorBoundary } from "./ErrorBoundary";
+// LIB-229 계약 §1.4(e): 판정 어휘가 lib/answer-result.ts로 승격됐다.
+import type { AnswerResult } from "../lib/answer-result";
 import { currentScreen, initialNav, navReducer, type Screen } from "./navigation";
 
 import "./app.css";
@@ -34,7 +35,7 @@ type ScreenWiring = {
   onExitListening: () => void;
   // LIB-227 계약 §1.6(c): 듣기가 넘기는 것은 「끝났다」와 「무엇이 일어났는지」뿐이다.
   // 통과 여부는 여기서 계산하지 않는다 — 판정의 권한은 평가로 옮겨갔다(§0.4 · §1.8(b)).
-  onFinishListening: (id: JourneyStepId, results: readonly ListeningAnswerResult[]) => void;
+  onFinishListening: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
   // LIB-227 계약 §1.8(b): 평가의 `맵으로`. 중도 이탈(`onExitListening`)과 같은 형태로
   // 진행을 갱신하지 않고 `back` 하나로 맵에 닿는다.
   onExitAssessment: () => void;

@@ -15,7 +15,7 @@ import {
   judgeAssessment,
 } from "./assessment";
 import type { AssessmentVerdict } from "./assessment";
-import type { ListeningAnswerResult } from "../listening/listening";
+import type { AnswerResult } from "../../lib/answer-result";
 
 import "./assessment-screen.css";
 
@@ -41,7 +41,7 @@ const verdictIconColorByVerdict: Record<AssessmentVerdict, string> = {
 
 export type AssessmentScreenProps = {
   stepOrdinal: number;
-  results: readonly ListeningAnswerResult[];
+  results: readonly AnswerResult[];
   onExit: () => void;
 };
 

@@ -4,8 +4,8 @@ import tick from "@libitums/icons/lynx/tick";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
+import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
 import { assessmentItemAccessibilityLabel, assessmentItemTitle } from "./assessment";
-import type { ListeningAnswerResult } from "../listening/listening";
 
 import "./assessment-item.css";
 
@@ -17,27 +17,24 @@ import "./assessment-item.css";
 // design.md §10 · §3.3과 같은 표 — 판정별 표식 아이콘. 모양이 색과 독립인 채널이다
 // (WCAG 1.4.1). 전체 index를 import하지 않는다(계약 §1.10-1 · `ListeningChoice`와 같은
 // 판단).
-const markIconByResult: Record<ListeningAnswerResult, string> = {
+const markIconByResult: Record<AnswerResult, string> = {
   correct: tick,
   incorrect: cross,
 };
 
 // design.md §10 · §4.2 — `-text` 변형(6.90 / 6.76). 색은 CSS가 아니라 `current-color`
 // 속성으로 넘긴다(ADR-0014 D2).
-const markIconColorByResult: Record<ListeningAnswerResult, string> = {
+const markIconColorByResult: Record<AnswerResult, string> = {
   correct: color.feedback["correct-text"],
   incorrect: color.feedback["incorrect-text"],
 };
 
 // 세 번째 채널 — 아이콘이 크기를 못 받아 안 보여도 판정이 낱말로 남는다(design.md §4.2).
-const markLabelByResult: Record<ListeningAnswerResult, string> = {
-  correct: "정답",
-  incorrect: "오답",
-};
+// 낱말은 lib/answer-result.ts의 answerResultLabel이 낸다 (LIB-229 계약 §1.4(d)).
 
 export type AssessmentItemProps = {
   index: number;
-  result: ListeningAnswerResult;
+  result: AnswerResult;
 };
 
 export function AssessmentItem({ index, result }: AssessmentItemProps): ReactNode {
@@ -68,7 +65,7 @@ export function AssessmentItem({ index, result }: AssessmentItemProps): ReactNod
           content={markIconByResult[result]}
           current-color={markIconColorByResult[result]}
         />
-        <text className="assessment-item-mark-label">{markLabelByResult[result]}</text>
+        <text className="assessment-item-mark-label">{answerResultLabel(result)}</text>
       </view>
     </view>
   );

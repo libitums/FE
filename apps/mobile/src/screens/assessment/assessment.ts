@@ -6,7 +6,7 @@
 //
 // UI를 import하지 않는다 (계약 §1.7 표).
 
-import type { ListeningAnswerResult } from "../listening/listening";
+import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
 
 // ---------------------------------------------------------------- 도메인 타입 (계약 §1.3)
 
@@ -27,7 +27,7 @@ export const assessmentPassCriterion: AssessmentPassCriterion = { minCorrectCoun
 // 맞은 개수는 이 함수 안에서만 산다 — export하지 않는다(계약 §1.1 · §1.5). 던지지
 // 않는다: 빈 배열도 total이고 맞은 개수 0으로 판정된다.
 export function judgeAssessment(
-  results: readonly ListeningAnswerResult[],
+  results: readonly AnswerResult[],
   criterion: AssessmentPassCriterion,
 ): AssessmentVerdict {
   const correctCount = results.filter((result) => result === "correct").length;
@@ -55,19 +55,10 @@ export function assessmentItemTitle(index: number): string {
   return `문항 ${index + 1}`;
 }
 
-// 접미사 표 (계약 §1.5). export하지 않는 모듈 내부 상수 — 낱말이 listening.ts의
-// choiceResultSuffix · ListeningChoice.tsx의 markLabelByResult와 같다(계약 §1.5의
-// 「같은 두 낱말의 표가 이제 셋이다」 경고).
-const itemAccessibilitySuffix: Record<ListeningAnswerResult, string> = {
-  correct: "정답",
-  incorrect: "오답",
-};
-
-export function assessmentItemAccessibilityLabel(
-  index: number,
-  result: ListeningAnswerResult,
-): string {
-  return `${assessmentItemTitle(index)}, ${itemAccessibilitySuffix[result]}`;
+// 접미사는 lib/answer-result.ts의 answerResultLabel이 낸다 (LIB-229 계약 §1.4(d)) —
+// listening.ts의 choiceAccessibilityLabel · ListeningChoice.tsx와 같은 정본을 쓴다.
+export function assessmentItemAccessibilityLabel(index: number, result: AnswerResult): string {
+  return `${assessmentItemTitle(index)}, ${answerResultLabel(result)}`;
 }
 
 // 낭독 문자열 (계약 §3.1). 보이는 판정 낱말을 그대로 담는다 — 화면과 소리가 다른

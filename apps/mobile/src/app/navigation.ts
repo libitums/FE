@@ -12,7 +12,10 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // LIB-227 계약 §1.8(a): 정오의 어휘를 다시 선언하지 않는다. type-only import 둘째
 // 사례이고 근거는 lib-223 §8.4와 같다 — `import type`은 emit되지 않아 런타임 결합이
 // 0이고, 어떤 화면도 `navigation.ts`를 import하지 않으므로 순환이 없다.
-import type { ListeningAnswerResult } from "../screens/listening/listening";
+//
+// LIB-229 계약 §1.4(e): 판정 어휘가 lib/answer-result.ts로 승격됐다 — 화면 폴더가
+// 아니라 lib/에서 가져온다.
+import type { AnswerResult } from "../lib/answer-result";
 
 // 탭 목록과 1:1이다. 네 탭은 docs/screens.md의 "홈 · 여정 · 롤플레이 · 설정"에서 왔다.
 // 순서가 곧 바텀 네비게이션의 좌→우 순서다 (bottom-navigator.contract.ts).
@@ -37,7 +40,7 @@ export type Screen =
   | { name: "roleplay-list" }
   | { name: "settings" }
   | { name: "listening"; stepId: JourneyStepId }
-  | { name: "assessment"; stepId: JourneyStepId; results: readonly ListeningAnswerResult[] };
+  | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] };
 
 // docs/screens.md 130~136행과 ADR-0007 D3이 적은 모양 그대로다. 필드를 더하지 않는다.
 export type Nav = {
