@@ -40,3 +40,19 @@ test("[U3] roleplay-list-screen-title이 스크롤 컨테이너 밖에 있다", 
   expect(within(scroll).queryByTestId("roleplay-list-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 });
+
+// ---------------------------------------------------------------- 스크롤 영역 접근성 부재 (LIB-226 계약 §3.2.1 U8)
+//
+// R6·R6.1의 「없음」을 지키는 회귀 그물이다(계약 §2.3 · §3.2.1). 오늘의 구현은 이
+// 넷을 하나도 붙이지 않는다 — **red가 없는 것이 이 케이스의 성질이다.** 다음 편집이
+// 넷 중 하나라도 붙이면 여기서만 red가 되고, 그 red는 이 파일을 고치라는 신호가
+// 아니라 계약(§8.3)으로 되돌아가라는 신호다.
+test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는다", () => {
+  render(<RoleplayListScreen />);
+
+  const scroll = screen.getByTestId("roleplay-list-screen-scroll");
+  expect(scroll).not.toHaveAttribute("accessibility-element");
+  expect(scroll).not.toHaveAttribute("accessibility-label");
+  expect(scroll).not.toHaveAttribute("accessibility-traits");
+  expect(scroll).not.toHaveAttribute("accessibility-elements-hidden");
+});
