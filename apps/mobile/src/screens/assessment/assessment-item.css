@@ -1,2 +1,60 @@
-/* LIB-227 (ui-scaffold): 짝 CSS 파일의 존재만 세운다 (FE ADR-0003 D7). 값(색·
-   간격·타이포)은 이 단위의 몫이 아니다 — design이 채운다(계약 §1.10). */
+/* LIB-227 (ui): design.md §4.1 · §4.2의 값. 계약 §1.7·§2.1이 고정한 이름에 값을
+   매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다(ADR-0014 D1).
+
+   **판정(정답/오답)은 클래스가 되지 않는다**(계약 §1.7 「판정이 클래스가 되지
+   않는다」 · design §3.5). 이 파일에 상태 클래스가 0개다 — 판정은 표식 아이콘의
+   모양·`current-color` 속성·낱말이 낸다. */
+
+/* 목록 행 — **탭 대상이 아니다**(design §4.1). `.listening-choice`의 테두리·모서리·
+   면을 재사용하지 않는다 — 그대로 쓰면 눌리지 않는 것이 눌리게 생긴다. 구분은
+   `border-top` 하나가 진다(design §4.4). */
+.assessment-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-layout-gap-inline);
+  padding-top: var(--libitum-spacing-12);
+  padding-bottom: var(--libitum-spacing-12);
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어든다. */
+  flex-shrink: 0;
+}
+
+/* design §4.2 — `body-l`. `line-height` 24가 아이콘 24와 같아 표식이 행 높이를
+   바꾸지 않는다. */
+.assessment-item-label {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* 표식 묶음(아이콘 + 낱말). `.listening-choice-mark`와 같은 값이다(design §4.2). */
+.assessment-item-mark {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  flex-shrink: 0;
+}
+
+/* 크기만 준다. 색은 `current-color` 속성으로 넘긴다(ADR-0014 D2) — 여기 `color`를
+   적으면 `<svg>`가 읽지 않는다. */
+.assessment-item-mark-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+/* 낱말 색은 정답·오답이 같다(`fg-neutral`) — `.listening-choice-mark-label`과 같은
+   결정이다(design §4.2). */
+.assessment-item-mark-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
