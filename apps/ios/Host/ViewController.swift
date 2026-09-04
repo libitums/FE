@@ -29,7 +29,12 @@ final class ViewController: UIViewController {
       config.register(AudioPlaybackModule.self)
       builder.config = config
       builder.screenSize = UIScreen.main.bounds.size
-      builder.fontScale = 1.0
+      // 시스템 글자 크기를 코어 배율로 넘긴다 (ADR-0020 D1).
+      //
+      // 이 줄은 원래 `= 1.0`이었다. 그것은 끄는 코드가 아니라 **프레임워크 기본값을
+      // 다시 적은 것**이었고(`LynxBaseConfigurator.mm:26`), 그래서 「의도적으로 정한
+      // 값」처럼 읽혀 아무도 의심하지 않았다. **켜는 코드가 없어서 꺼져 있었다.**
+      builder.fontScale = FontScale.current(compatibleWith: nil)
     }
     lynxView.layoutWidthMode = .exact
     lynxView.layoutHeightMode = .exact
@@ -38,6 +43,44 @@ final class ViewController: UIViewController {
     self.lynxView = lynxView
 
     lynxView.loadTemplate(fromURL: Self.templateURL, initData: nil)
+    observeContentSizeCategory()
+  }
+
+  /// 배율 **값**을 최신으로 유지한다. **화면은 다음 실행에 바뀐다** (ADR-0020 D2).
+  ///
+  /// **실시간 반영은 안 된다 — 재봤고 안 됐다.** `updateFontScale:`도
+  /// `triggerLayout()`도 화면을 다시 그리지 않는다. `ElementManager::UpdateFontScale`
+  /// (`element_manager.cc:722`)이 env를 갈고 스타일을 다시 계산하지만
+  /// **렌더 파이프라인을 요청하지 않는다** — 바로 아래 `UpdateColorScheme`(:733)은
+  /// 같은 자리에서 `RequestResolve(options)`를 부른다. `element_manager.cc` 전체에서
+  /// `RequestResolve` 호출은 **그 한 자리뿐**이라 공개 API로 닿을 길이 없다.
+  ///
+  /// **그런데도 이 관찰자를 두는 이유**: 값을 안 갱신하면 나중에 무엇이든 전체
+  /// 리레이아웃을 일으켰을 때 **옛 배율로 그려진다.** 값은 맞춰 두고 그리는 것만
+  /// 못 하는 편이, 값까지 낡는 것보다 낫다.
+  ///
+  /// **이 주석이 「그 자리에서 커진다」로 되돌아가면 그것은 거짓이다.**
+  /// 2026-09-04에 실기와 시뮬레이터 양쪽에서 안 되는 것을 확인했다.
+  ///
+  /// `registerForTraitChanges`는 iOS 17+이고 이 앱의 Deployment Target이 **17.4**다
+  /// (PR #38 리뷰). `NotificationCenter` 관찰자를 손으로 등록·해제하지 않으므로
+  /// `deinit`이 필요 없고, 클로저가 `self`를 강한 타입으로 받아 `[weak self]` 가드도
+  /// 없다. **등록 해제를 잊어 새는 자리를 아예 만들지 않는 것이 요점이다.**
+  private func observeContentSizeCategory() {
+    registerForTraitChanges([UITraitPreferredContentSizeCategory.self]) {
+      (vc: ViewController, _) in
+      guard let lynxView = vc.lynxView else { return }
+      lynxView.updateFontScale(FontScale.current(compatibleWith: vc.traitCollection))
+      // **이 한 줄로 화면이 바뀌지는 않는다.** 위 문서 주석에 적은 그대로다 —
+      // `triggerLayout()`까지 붙여도 다시 그려지지 않았고, 실기와 시뮬레이터 양쪽에서
+      // 확인했다(ADR-0020 D2). 그래도 부르는 이유는 **레이아웃이 실제로 도는 다른
+      // 계기가 왔을 때 새 배율 위에서 돌게 하려는 것**이다.
+      //
+      // **이 줄이 없어도 지금 보이는 동작은 같다.** 지우고 싶으면 지워도 되지만,
+      // 지운 뒤에 「실시간으로 안 바뀐다」를 새 결함으로 보고하지 마라 — 원래
+      // 안 바뀐다.
+      lynxView.triggerLayout()
+    }
   }
 
   /// 번들을 어디서 읽을지는 **빌드 구성이 가른다** (ADR-0012 D2).

@@ -66,7 +66,10 @@
    흰 라벨이 `brand-primary` 위에서 3.02:1로 AA에 미달한다(design §4.2·§6.3). */
 .step-sheet-start {
   background: var(--libitum-color-brand-strong);
-  height: var(--libitum-spacing-48);
+  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
+     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
+     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  min-height: var(--libitum-spacing-48);
   border-radius: var(--libitum-radius-md);
   width: 100%;
   display: flex;
@@ -88,7 +91,10 @@
    쓴다. */
 .step-sheet-close {
   width: var(--libitum-spacing-48);
-  height: var(--libitum-spacing-48);
+  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
+     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
+     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  min-height: var(--libitum-spacing-48);
   border-radius: var(--libitum-radius-full);
   display: flex;
   align-items: center;
