@@ -7,11 +7,17 @@
 
 /* 목록 행 — **탭 대상이 아니다**(design §4.1). `.listening-choice`의 테두리·모서리·
    면을 재사용하지 않는다 — 그대로 쓰면 눌리지 않는 것이 눌리게 생긴다. 구분은
-   `border-top` 하나가 진다(design §4.4). */
+   `border-top` 하나가 진다(design §4.4).
+
+   **`align-items: flex-start`(FE ADR-0023 규칙 3).** 게이트 A 통과 — `body-l`
+   라벨의 `line-height` 24가 아이콘 24와 같아(위 주석) 기본 배율 Δ 0(공짜). 고치는
+   근거는 낭독 순서가 아니다 — 이 행 자체가 `accessibility-element={true}`라 정지가
+   하나다(`docs/e2e/assessment.md` E-A2 실기 확인). 근거는 **시각 순서**와
+   `.listening-choice`와의 **어휘 일관성**이다. */
 .assessment-item {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--libitum-layout-gap-inline);
   padding-top: var(--libitum-spacing-12);
   padding-bottom: var(--libitum-spacing-12);

@@ -15,11 +15,19 @@
    제시 카드가 elevated이고 보기가 primary인 것은 위계가 아니라 대비 제약이다.
 
    **`border-width`가 네 상태에서 같다.** 굵기가 상태마다 다르면 행 높이가 갈리고,
-   `box-sizing` 기본값이 이 스택에서 확인된 바 없어 어긋남이 조용히 쌓인다. */
+   `box-sizing` 기본값이 이 스택에서 확인된 바 없어 어긋남이 조용히 쌓인다.
+
+   **`align-items: flex-start`(FE ADR-0023 규칙 3).** 게이트 A 통과 — 라벨
+   (`body-l-line-height` 24)과 표식(`icon-size-md` 24 vs `label-m-line-height`
+   16의 max) 둘 다 교차 크기 24라 기본 배율 Δ 0(공짜). 고치는 근거는 낭독 순서가
+   아니다 — 이 행 자체가 `accessibility-element={true}`라 정지가 하나이고 표식은
+   `accessibility-elements-hidden`이다(낭독 순서로 얻는 것이 0). 근거는 **시각
+   순서**(최대·축소 배율에서 표식이 라벨의 세로 가운데로 어긋나지 않는다)와
+   `.assessment-item`과의 **어휘 일관성**이다. */
 .listening-choice {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--libitum-layout-gap-inline);
   padding: var(--libitum-spacing-16);
   border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
