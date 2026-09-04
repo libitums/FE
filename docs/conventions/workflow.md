@@ -51,9 +51,13 @@
 
 1. 브랜치를 판다. **`main`에 직접 push하지 않는다.**
 2. PR 전 로컬에서 `pnpm verify`를 돌린다.
-3. PR을 올리고 diff를 **사람이 읽는다.** 구현 상당 부분을 에이전트가 만들기 때문에
+3. 사용자 대면 기능을 바꿨다면 영향 시나리오의 분석 기록을
+   `docs/performance/reports/`에 같은 PR로 남긴다. 수집기가 없는 동안의 `미측정` 기록은
+   허용하지만 baseline이나 성능 통과로 세지 않는다
+   ([ADR-0018 D9](../adr/0018-lynx-performance-analysis-boundary.md)).
+4. PR을 올리고 diff를 **사람이 읽는다.** 구현 상당 부분을 에이전트가 만들기 때문에
    이 지점이 구조적으로 필요하다.
-4. **squash로 머지한다.** `main`의 커밋 하나 = PR 하나여야 `git revert <sha>` 하나로
+5. **squash로 머지한다.** `main`의 커밋 하나 = PR 하나여야 `git revert <sha>` 하나로
    통째로 되돌릴 수 있다. 커밋 제목은 PR 제목을 쓴다.
 
 > **이 절차는 강제되지 않는다.** CI도 브랜치 보호도 없다 — 저장소가 private이고 현재
@@ -69,6 +73,9 @@
   ([ADR-0010 D4](../adr/0010-convention-docs-and-design-done-criteria.md)).
 - 화면을 추가하거나 흐름을 바꾸는 변경 → `docs/e2e/`의 해당 흐름 파일을 같은 PR에서 고친다
   ([ADR-0006 D6](../adr/0006-command-interface-and-test-layers.md)).
+- 사용자 대면 기능을 추가하거나 바꾸는 변경 → `docs/performance/reports/`의 영향 시나리오
+  기록을 같은 PR에서 추가·갱신한다
+  ([ADR-0018 D9](../adr/0018-lynx-performance-analysis-boundary.md)).
 - 결정을 바꾸는 변경 → ADR을 고친다. 새 번호를 붙일지 제자리에서 고칠지는
   [ADR-0010 D10](../adr/0010-convention-docs-and-design-done-criteria.md)이 정한다.
 - **ADR을 고치는 변경 → 그 ADR을 링크한 `docs/conventions/`·`docs/screens.md` 자리를

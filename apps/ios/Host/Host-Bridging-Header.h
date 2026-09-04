@@ -1,4 +1,7 @@
 #import <Lynx/LynxConfig.h>
 #import <Lynx/LynxEnv.h>
+#import <Lynx/LynxMemoryUsageQuery.h>
+#import <Lynx/LynxPerformanceEntry.h>
 #import <Lynx/LynxTemplateProvider.h>
 #import <Lynx/LynxView.h>
+#import <Lynx/LynxViewClientV2.h>

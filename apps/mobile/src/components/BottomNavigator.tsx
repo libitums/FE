@@ -50,6 +50,7 @@ export function BottomNavigator({ tab, onSelectTab }: BottomNavigatorProps): Rea
             className="bottom-navigator-tab"
             data-testid={`bottom-navigator-tab-${item.tab}`}
             data-selected={selected ? "true" : "false"}
+            {...(selected ? { __lynx_timing_flag: `libitum:navigation:${item.tab}` } : {})}
             accessibility-element={true}
             accessibility-label={selected ? `${item.label}, 선택됨` : item.label}
             accessibility-traits="button"
