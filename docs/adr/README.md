@@ -82,7 +82,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 컴포넌트 프리미티브 | 결정 | [0015](0015-component-primitives-and-style-application.md) — 0011 D3·0008 D4를 이어받음 |
 | 아이콘 | 결정 (경로·형태·색) | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | private registry 인증 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
-| 보조기술 시맨틱 (접근성) | 결정 (이름·역할·상태 + **겹침 레이어 격리** + **조작 불가 단위의 역할**) + 범위 밖 명시 (키보드·전환 통지) | [0016](0016-assistive-technology-semantics.md) D1~**D10** — 조작 불가 표기(`accessibility-traits="disabled"`)는 **D10**, 인증 수준은 [0001](0001-repository-goal-and-scope.md) D3이 뺀 그대로 |
+| 보조기술 시맨틱 (접근성) | 결정 (이름·역할·상태 + **겹침 레이어 격리** + **조작 불가 단위의 역할** + **능동 발화**) + 범위 밖 명시 (키보드·전환 통지) | [0016](0016-assistive-technology-semantics.md) D1~**D11** — 조작 불가 표기(`accessibility-traits="disabled"`)는 **D10**, **능동 발화(`announce`)와 속성 채널의 경계는 D11**, 인증 수준은 [0001](0001-repository-goal-and-scope.md) D3이 뺀 그대로 |
 | 형상 관리 위생 (.gitignore) | 결정 | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
 | CI | 결정 (Linux Verify + 보고서 정책, 수동·평일 정기 비차단 macOS smoke) | [0021](0021-performance-report-ci-automation.md) — [0009](0009-vcs-hygiene-ci-and-merge-gate.md) D3의 유예 조건 충족 |
 | 머지 방식 | 결정 (squash 고정) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
