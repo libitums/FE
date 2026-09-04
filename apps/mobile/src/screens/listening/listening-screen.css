@@ -41,7 +41,10 @@
    아이콘이 아니라 텍스트다: 출구를 "아이콘이 크기를 못 받으면 아예 안 보인다"는
    위험에 올리지 않는다 (`docs/e2e/design-token-rendering.md`). */
 .listening-screen-exit {
-  height: var(--libitum-spacing-48);
+  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
+     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
+     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  min-height: var(--libitum-spacing-48);
   padding-left: var(--libitum-spacing-12);
   padding-right: var(--libitum-spacing-12);
   border-radius: var(--libitum-radius-md);
@@ -109,7 +112,10 @@
    3.02:1로 AA에 미달한다 (design §6.3). */
 .listening-screen-next {
   background: var(--libitum-color-brand-strong);
-  height: var(--libitum-spacing-48);
+  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
+     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
+     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  min-height: var(--libitum-spacing-48);
   border-radius: var(--libitum-radius-md);
   width: 100%;
   display: flex;
@@ -143,7 +149,10 @@
 /* design §5.4 「액션 행 — 라벨만 「맵으로 돌아가기」」. `-next`와 같은 값이다. */
 .listening-screen-finish {
   background: var(--libitum-color-brand-strong);
-  height: var(--libitum-spacing-48);
+  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
+     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
+     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  min-height: var(--libitum-spacing-48);
   border-radius: var(--libitum-radius-md);
   width: 100%;
   display: flex;

@@ -87,38 +87,44 @@ TS가 오타를 못 잡는다. **이 저장소는 정확히 그 모양으로 한
 `@libitums/design-tokens`가 내는 것이고 **이 저장소가 정하는 값이 아니다**
 (ADR-0014 D1). 단위를 바꾸려면 패키지에 요청해야 하는데, (A)면 요청 없이 닿는다.
 
-## 결정 2 — 설정 변경을 앱 재시작 없이 따라간다
+## 결정 2 — 설정 변경은 **다음 실행에 반영된다.** 실시간 갱신은 닿지 않는다
 
-`builder.fontScale`은 뷰를 만들 때 **한 번** 읽힌다. 그것만 두면 사용자가 설정을 바꿔도
-다음 실행까지 그대로다.
+**처음에는 실시간으로 정했다가 실패로 판정을 바꿨다.** 그 경위를 남긴다.
 
-**보조기술 사용자가 글자를 키우는 순간은 대개 「지금 안 보여서」다.** 다음 실행까지
-기다리라는 것은 답이 아니다.
+의도는 이랬다 — 보조기술 사용자가 글자를 키우는 순간은 대개 「지금 안 보여서」이므로
+다음 실행까지 기다리라는 것은 답이 아니다. `LynxView`가 `updateFontScale:`
+(`LynxView.h:251`)를 공개하니 뷰를 다시 만들지 않고 배율만 갈아끼우면 화면 상태
+(열린 시트·진행 중인 문항)도 살아남는다.
 
-`UIContentSizeCategory.didChangeNotification`을 받아 `LynxView.updateFontScale:`
-(`LynxView.h:251`)를 부른다. **뷰를 다시 만들지 않는다** — 그러면 열려 있던 시트나
-진행 중인 문항 같은 화면 로컬 상태가 사라진다(ADR-0007 D1).
+**안 됐다.** `updateFontScale:`을 붙였더니 실기에서 설정을 바꿔도 그대로였고 껐다
+켜야 커졌다. `triggerLayout()`을 이어 붙이고 다시 봤을 때 **되는 것으로 보고했는데,
+그것도 틀렸다** — 시뮬레이터에서 `simctl ui content_size`로 양방향(키우기·줄이기)을
+재보니 스크린샷이 **바이트 동일**이었고, 사용자도 실기에서 재확인해 안 바뀐다고 정정했다.
 
-### `updateFontScale:`만으로는 화면이 안 바뀐다 — 레이아웃을 걷어차야 한다
-
-**처음 붙였을 때 실기에서 안 커졌다.** 설정을 바꾸고 앱으로 돌아와도 그대로였고,
-**껐다 켜야 커졌다.** 즉 배율은 반영됐는데 아무도 다시 그리지 않았다.
-
-원인이 Pod 소스에 있다. `ElementManager::UpdateFontScale`
-(`core/renderer/dom/element_manager.cc:722`)과 바로 아래 `UpdateColorScheme`(:733)을
-나란히 놓으면 한 줄이 빈다.
+원인이 Pod 소스에 있다.
 
 | | 스타일 재계산 | 파이프라인 요청 |
 |---|---|---|
-| `UpdateColorScheme` | `UpdateDynamicElementStyle` | **`RequestResolve(options)`** |
-| `UpdateFontScale` | `UpdateDynamicElementStyle` | **없음** |
+| `UpdateColorScheme` (`element_manager.cc:733`) | `UpdateDynamicElementStyle` | **`RequestResolve(options)`** |
+| `UpdateFontScale` (`element_manager.cc:722`) | `UpdateDynamicElementStyle` | **없음** |
 
-`SetRootOnLayout`과 `UpdateLynxEnvForLayoutThread`는 불리므로 **레이아웃 스레드는 새
-배율을 들고 있다.** 남은 것은 그것을 돌리는 것뿐이라 `lynxView.triggerLayout()`을
-이어 붙였고, **그 한 줄로 실기에서 그 자리에서 커졌다 (2026-09-04 확인).**
+`element_manager.cc` 전체에서 `RequestResolve` 호출은 **그 한 자리뿐**이다. 공개
+API로 렌더 파이프라인을 다시 돌릴 길이 없다.
 
-**이 한 줄을 지우면 조용히 옛 동작으로 돌아간다** — `updateFontScale:`은 여전히
-성공으로 보이고 화면만 안 바뀐다. 자동 계층은 이것을 못 잡는다(ADR-0016 D6).
+**버린 대안 둘.**
+
+- **`updateColorScheme:`을 Dark→Light로 토글해 resolve를 강제한다.** 동작은 하겠지만
+  **무관한 API에 기대는 편법**이고, 다크 규칙이 생기는 날 화면이 번쩍인다
+- **`LynxView`를 다시 만든다.** 확실하지만 **열린 시트와 진행 중인 문항이 사라진다** —
+  이 결정이 애초에 피하려던 바로 그것이다
+
+**그래서 낮춰 적는다.** WCAG 1.4.4는 즉시성을 요구하지 않는다. 다만 **관찰자는
+남긴다** — 값을 안 갱신하면 나중에 무엇이든 전체 리레이아웃을 일으켰을 때 **옛
+배율로 그려진다.** 값은 맞춰 두고 그리는 것만 못 하는 편이 낫다.
+
+**교훈 하나를 함께 남긴다.** 이 항목은 *"됐다"* 로 두 번 보고됐다가 두 번 뒤집혔다.
+두 번 다 **걸어서 본 것**이었고, 뒤집은 것은 **픽셀 대조**였다. `docs/e2e/`가 *"인상으로
+판정하지 않는다"* 를 반복해 적는 이유가 이것이다.
 
 ## 결정 3 — 배율은 `UIFontMetrics`가 낸다. 표를 손으로 적지 않는다
 
@@ -147,11 +153,47 @@ Apple의 접근성 크기는 `.body` 기준 3배를 넘는다. 상한을 걸면 
 
 **이 결정은 관측 뒤에 다시 본다** — 아래 재검토 조건.
 
+## 결정 5 — Dynamic Type 아래서 **고정 높이는 하한으로 읽는다**
+
+텍스트를 품은 상자에 `height`를 쓰지 않는다. `min-height`를 쓴다. **토큰 값은 그대로
+쓰고 제약의 성질만 바꾼다** — 리터럴을 박지 않으므로 ADR-0014 D4에 걸리지 않는다.
+
+**왜 규약이어야 하나.** 이 축이 무는 자리는 **일곱이었고 전부 같은 모양**이었다.
+`bottom-navigator.css` 하나만 고쳤을 때 `fe-66` 세션이 나머지 여섯을 실측해 넘겼다.
+
+| 파일 | 셀렉터 | 라벨 |
+|---|---|---|
+| `components/bottom-navigator.css` | `.bottom-navigator` | 탭 라벨 넷 |
+| `screens/journey-map/step-sheet.css` | `.step-sheet-start` | `시작` |
+| `screens/journey-map/step-sheet.css` | `.step-sheet-close` | `닫기` |
+| `screens/listening/listening-screen.css` | `.listening-screen-exit` | 뒤로 |
+| `screens/listening/listening-screen.css` | `.listening-screen-next` | `다음` |
+| `screens/listening/listening-screen.css` | `.listening-screen-finish` | **`맵으로 돌아가기`** — 가장 긴 라벨 |
+| `screens/listening/listening-prompt.css` | `.listening-prompt-playback` | `듣기`/`멈춤` |
+
+**`min-height`가 이 저장소에 0건이었다.** 한 파일의 실수가 아니라 **규약의 공백**이다.
+하나만 고치면 나머지 여섯이 *"실기에서 깨지는 걸 볼 때까지"* 남고, 고친 하나와 안
+고친 여섯의 차이가 근거 없이 남는다. **일곱을 함께 바꾸고 여기 적는 이유가 그것이다.**
+
+**잘라내지 않는다.** `text-overflow: ellipsis`로 한 줄에 가두는 쪽을 버렸다 —
+**잘린 내용은 사라지고 그것이 WCAG 1.4.4가 금지하는 것**이다. 상자가 커지는 쪽이 맞다.
+
+**확인된 것은 일곱 중 하나다.** `.bottom-navigator`만 최대 배율 스크린샷으로
+전후를 봤다(2026-09-04). 나머지 여섯은 **같은 원인·같은 수정이라는 근거로 함께 고친
+것이지 각각 관측한 것이 아니다.** 아래 대가 절이 그것을 재판정 대상으로 든다.
+
+**design-system에 올릴 것.** Bottom Navigator는 패키지가 스펙을 가진 컴포넌트다.
+스펙이 높이를 고정으로 규정한다면 **Dynamic Type 아래서 그것을 하한으로 읽는 것이
+맞는지**는 패키지가 답할 문제다. 보류 표에 행을 둔다.
+
 ## 대가
 
 **e2e의 pt 수치 항목이 전부 재판정 대상이 된다.** `journey-map.md`의 열아홉은 이미
 쟀으므로 그 측정이 무효가 된다. `listening.md`의 스물아홉은 **아직 안 쟀으므로 한
 번만 잰다** — 이 시점을 고른 이유가 그것이다.
+
+**일곱 중 여섯은 눈으로 확인되지 않았다.** 같은 원인으로 함께 고쳤을 뿐이므로
+`journey-map.md`·`listening.md`의 최대 배율 훑기에서 각각 판정해야 한다.
 
 **`listening.md` 9번은 지금까지 공허한 통과였다.** 입력이 안 바뀌어 실패할 수 없었다.
 이 ADR이 채택되면 그 항목이 **처음으로 실패할 수 있게 된다.**
