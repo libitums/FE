@@ -14,12 +14,19 @@ import {
   playbackStateAfterPlay,
   questionProgressLabel,
   questionsForStep,
+  sessionAnswerResults,
   type ListeningQuestion,
   type ListeningSessionState,
 } from "./listening";
 
 // 계약: .agent-harness/work/lib-223/spec.md §3.1(a) (`unit` 테스트 계획, pureFunctions 표)
 // 기대값의 정본은 계약 §1.3~§1.5다 — 구현에서 베끼지 않는다.
+//
+// LIB-227 (.agent-harness/work/lib-227/spec.md §1.6(a)·(b) · §4.1 W2)이 이 파일의
+// 모양을 갱신한다 — `ListeningSessionState`에 `answeredChoiceIndexes` 필드가 늘고,
+// `nextQuestion` 전이 하나가 이력을 쌓으며, `sessionAnswerResults`가 새로 는다.
+// 아래 전이·초기값 단언은 **새 모양**이다 — 지금은 필드 부재와 `not implemented`로
+// 반드시 실패한다(계약 §1.6(a) 전이표 · §4.1 단언 목록).
 //
 // DOM·컴포넌트를 import하지 않는다 — 순수 함수 아홉 + 고정 데이터만 본다.
 // 그래서 toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없다
@@ -145,7 +152,11 @@ describe("judgeAnswer", () => {
 describe("choiceResultAt", () => {
   // 계약 §3.1(a) 표 · §1.5(b): 선택된 보기면 judgeAnswer, 아니면 null
   it("응답 전에는 어느 보기도 판정을 지지 않는다 — 전부 null", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: null };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: null,
+      answeredChoiceIndexes: [],
+    };
 
     const results = [0, 1, 2, 3].map((index) => choiceResultAt(state, questionAnswer2, index));
 
@@ -153,26 +164,42 @@ describe("choiceResultAt", () => {
   });
 
   it("고른 보기가 정답이면 correct다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 2 };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 2,
+      answeredChoiceIndexes: [],
+    };
 
     expect(choiceResultAt(state, questionAnswer2, 2)).toBe("correct");
   });
 
   it("고른 보기가 오답이면 incorrect다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 1 };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 1,
+      answeredChoiceIndexes: [],
+    };
 
     expect(choiceResultAt(state, questionAnswer2, 1)).toBe("incorrect");
   });
 
   // 계약 §1.1 「정답을 알려 주지 않는다」: 오답일 때 어느 것이 정답이었는지 표시하지 않는다
   it("고르지 않은 보기는 정답이어도 판정을 지지 않는다 — null", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 1 };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 1,
+      answeredChoiceIndexes: [],
+    };
 
     expect(choiceResultAt(state, questionAnswer2, 2)).toBeNull();
   });
 
   it("오답 응답 뒤에도 판정을 지는 보기는 고른 하나뿐이다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 1 };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 1,
+      answeredChoiceIndexes: [],
+    };
 
     const results = [0, 1, 2, 3].map((index) => choiceResultAt(state, questionAnswer2, index));
 
@@ -180,7 +207,11 @@ describe("choiceResultAt", () => {
   });
 
   it("0번 보기를 골라도 판정을 진다 — 0을 미응답으로 다루지 않는다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 0 };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 0,
+      answeredChoiceIndexes: [],
+    };
 
     expect(choiceResultAt(state, questionAnswer0, 0)).toBe("correct");
     expect(choiceResultAt(state, questionAnswer2, 0)).toBe("incorrect");
@@ -226,15 +257,21 @@ describe("choiceAccessibilityLabel", () => {
 describe("hasAnswered", () => {
   // 계약 §1.5(b): state.selectedChoiceIndex !== null — 응답 여부는 파생이다
   it("고른 보기가 없으면 false다", () => {
-    expect(hasAnswered({ questionIndex: 0, selectedChoiceIndex: null })).toBe(false);
+    expect(
+      hasAnswered({ questionIndex: 0, selectedChoiceIndex: null, answeredChoiceIndexes: [] }),
+    ).toBe(false);
   });
 
   it("고른 보기가 있으면 true다", () => {
-    expect(hasAnswered({ questionIndex: 0, selectedChoiceIndex: 2 })).toBe(true);
+    expect(
+      hasAnswered({ questionIndex: 0, selectedChoiceIndex: 2, answeredChoiceIndexes: [] }),
+    ).toBe(true);
   });
 
   it("0번 보기를 골라도 true다 — 0을 미응답으로 다루지 않는다", () => {
-    expect(hasAnswered({ questionIndex: 1, selectedChoiceIndex: 0 })).toBe(true);
+    expect(
+      hasAnswered({ questionIndex: 1, selectedChoiceIndex: 0, answeredChoiceIndexes: [] }),
+    ).toBe(true);
   });
 
   it("초기 상태는 미응답이다", () => {
@@ -245,11 +282,21 @@ describe("hasAnswered", () => {
 describe("isSessionComplete", () => {
   // 계약 §1.3(c)·§1.5(b): 완료는 상태에 적히지 않고 questionIndex >= total로 파생된다
   it("마지막 문항에 응답만 한 상태는 아직 완료가 아니다", () => {
-    expect(isSessionComplete({ questionIndex: 2, selectedChoiceIndex: 1 }, 3)).toBe(false);
+    expect(
+      isSessionComplete(
+        { questionIndex: 2, selectedChoiceIndex: 1, answeredChoiceIndexes: [0, 0] },
+        3,
+      ),
+    ).toBe(false);
   });
 
   it("questionIndex가 문항 수와 같으면 완료다", () => {
-    expect(isSessionComplete({ questionIndex: 3, selectedChoiceIndex: null }, 3)).toBe(true);
+    expect(
+      isSessionComplete(
+        { questionIndex: 3, selectedChoiceIndex: null, answeredChoiceIndexes: [0, 0, 0] },
+        3,
+      ),
+    ).toBe(true);
   });
 
   it("첫 문항에 응답하지 않은 상태는 완료가 아니다", () => {
@@ -257,20 +304,27 @@ describe("isSessionComplete", () => {
   });
 
   it("questionIndex가 문항 수를 넘어도 완료다 — 판정은 >= 다", () => {
-    expect(isSessionComplete({ questionIndex: 4, selectedChoiceIndex: null }, 3)).toBe(true);
+    expect(
+      isSessionComplete(
+        { questionIndex: 4, selectedChoiceIndex: null, answeredChoiceIndexes: [0, 0, 0, 0] },
+        3,
+      ),
+    ).toBe(true);
   });
 });
 
 describe("listeningSessionReducer", () => {
-  // 계약 §1.5(b) 전이표 네 줄이 이 describe의 정본이다.
+  // 계약(lib-227) §1.6(a) 전이표 네 줄이 이 describe의 정본이다. c는 고른 보기,
+  // a는 응답 이력이다. 바뀌는 줄은 넷째(nextQuestion — 응답했으면) 하나뿐이고,
+  // 나머지 셋은 이력이 그대로 실려 나가거나(같은 참조) 이력이 늘지 않는다.
 
-  it("selectChoice — 응답 전이면 고른 보기가 기록된다", () => {
+  it("selectChoice — 응답 전이면 고른 보기가 기록된다 — 이력은 아직 안 는다", () => {
     const next = listeningSessionReducer(initialListeningSessionState, {
       type: "selectChoice",
       choiceIndex: 2,
     });
 
-    expect(next).toEqual({ questionIndex: 0, selectedChoiceIndex: 2 });
+    expect(next).toEqual({ questionIndex: 0, selectedChoiceIndex: 2, answeredChoiceIndexes: [] });
   });
 
   it("selectChoice — 0번 보기도 기록된다", () => {
@@ -279,20 +333,32 @@ describe("listeningSessionReducer", () => {
       choiceIndex: 0,
     });
 
-    expect(next).toEqual({ questionIndex: 0, selectedChoiceIndex: 0 });
+    expect(next).toEqual({ questionIndex: 0, selectedChoiceIndex: 0, answeredChoiceIndexes: [] });
   });
 
-  it("selectChoice — 현재 문항 인덱스는 바뀌지 않는다", () => {
-    const state: ListeningSessionState = { questionIndex: 2, selectedChoiceIndex: null };
+  it("selectChoice — 현재 문항 인덱스와 이력은 바뀌지 않는다", () => {
+    const state: ListeningSessionState = {
+      questionIndex: 2,
+      selectedChoiceIndex: null,
+      answeredChoiceIndexes: [1, 3],
+    };
 
     const next = listeningSessionReducer(state, { type: "selectChoice", choiceIndex: 3 });
 
-    expect(next).toEqual({ questionIndex: 2, selectedChoiceIndex: 3 });
+    expect(next).toEqual({
+      questionIndex: 2,
+      selectedChoiceIndex: 3,
+      answeredChoiceIndexes: [1, 3],
+    });
   });
 
   // 계약 §1.5(b): 응답은 문항당 한 번뿐. 막는 자리가 리듀서 하나다 — 컴포넌트가 아니다.
   it("selectChoice — 이미 응답했으면 다른 보기를 골라도 같은 참조를 돌려준다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 2 };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 2,
+      answeredChoiceIndexes: [],
+    };
 
     const next = listeningSessionReducer(state, { type: "selectChoice", choiceIndex: 1 });
 
@@ -300,7 +366,11 @@ describe("listeningSessionReducer", () => {
   });
 
   it("selectChoice — 이미 응답한 같은 보기를 다시 골라도 같은 참조를 돌려준다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 2 };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 2,
+      answeredChoiceIndexes: [],
+    };
 
     const next = listeningSessionReducer(state, { type: "selectChoice", choiceIndex: 2 });
 
@@ -308,33 +378,77 @@ describe("listeningSessionReducer", () => {
   });
 
   it("nextQuestion — 응답 전에는 같은 참조를 돌려준다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: null };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: null,
+      answeredChoiceIndexes: [],
+    };
 
     const next = listeningSessionReducer(state, { type: "nextQuestion" });
 
     expect(next).toBe(state);
   });
 
-  it("nextQuestion — 응답했으면 다음 문항으로 가고 선택이 비워진다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 2 };
+  it("nextQuestion — 응답했으면 다음 문항으로 가고 선택이 비워지며 이력에 고른 보기가 쌓인다", () => {
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 2,
+      answeredChoiceIndexes: [],
+    };
 
     const next = listeningSessionReducer(state, { type: "nextQuestion" });
 
-    expect(next).toEqual({ questionIndex: 1, selectedChoiceIndex: null });
+    expect(next).toEqual({
+      questionIndex: 1,
+      selectedChoiceIndex: null,
+      answeredChoiceIndexes: [2],
+    });
   });
 
-  // 계약 §3.1(a) 마지막 줄: 마지막 문항을 넘기면 완료 상태가 된다
-  it("nextQuestion — 마지막 문항에서 넘기면 완료 상태가 된다", () => {
-    const state: ListeningSessionState = { questionIndex: 2, selectedChoiceIndex: 0 };
+  // 계약 §1.6(a): 이력이 느는 자리가 nextQuestion 하나다 — 이미 이력이 있는 상태에서도
+  // 새 응답이 **끝에 이어붙는다**(기존 이력을 덮어쓰지 않는다).
+  it("nextQuestion — 이미 쌓인 이력 뒤에 이번 응답이 이어붙는다", () => {
+    const state: ListeningSessionState = {
+      questionIndex: 1,
+      selectedChoiceIndex: 3,
+      answeredChoiceIndexes: [2],
+    };
 
     const next = listeningSessionReducer(state, { type: "nextQuestion" });
 
-    expect(next).toEqual({ questionIndex: 3, selectedChoiceIndex: null });
+    expect(next).toEqual({
+      questionIndex: 2,
+      selectedChoiceIndex: null,
+      answeredChoiceIndexes: [2, 3],
+    });
+  });
+
+  // 계약 §3.1(a) 마지막 줄 · lib-227 §1.6(a) 불변식: 마지막 문항을 넘기면 완료 상태가
+  // 되고, 그 시점에 answeredChoiceIndexes.length === total이다.
+  it("nextQuestion — 마지막 문항에서 넘기면 완료 상태가 되고 이력 길이가 문항 수와 같다", () => {
+    const state: ListeningSessionState = {
+      questionIndex: 2,
+      selectedChoiceIndex: 0,
+      answeredChoiceIndexes: [2, 3],
+    };
+
+    const next = listeningSessionReducer(state, { type: "nextQuestion" });
+
+    expect(next).toEqual({
+      questionIndex: 3,
+      selectedChoiceIndex: null,
+      answeredChoiceIndexes: [2, 3, 0],
+    });
     expect(isSessionComplete(next, 3)).toBe(true);
+    expect(next.answeredChoiceIndexes).toHaveLength(3);
   });
 
   it("전이가 있으면 새 객체를 돌려준다 — 같은 참조가 아니다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: null };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: null,
+      answeredChoiceIndexes: [],
+    };
 
     expect(listeningSessionReducer(state, { type: "selectChoice", choiceIndex: 1 })).not.toBe(
       state,
@@ -342,8 +456,16 @@ describe("listeningSessionReducer", () => {
   });
 
   it("부수효과 없음 — 호출 뒤 입력 state 객체가 변형되지 않는다", () => {
-    const state: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 2 };
-    const snapshot: ListeningSessionState = { questionIndex: 0, selectedChoiceIndex: 2 };
+    const state: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 2,
+      answeredChoiceIndexes: [],
+    };
+    const snapshot: ListeningSessionState = {
+      questionIndex: 0,
+      selectedChoiceIndex: 2,
+      answeredChoiceIndexes: [],
+    };
 
     listeningSessionReducer(state, { type: "selectChoice", choiceIndex: 1 });
     listeningSessionReducer(state, { type: "nextQuestion" });
@@ -360,14 +482,74 @@ describe("listeningSessionReducer", () => {
       state = listeningSessionReducer(state, { type: "nextQuestion" });
     }
 
-    expect(state).toEqual({ questionIndex: 3, selectedChoiceIndex: null });
+    expect(state).toEqual({
+      questionIndex: 3,
+      selectedChoiceIndex: null,
+      answeredChoiceIndexes: [0, 0, 0],
+    });
+    expect(isSessionComplete(state, 3)).toBe(true);
+  });
+
+  // 계약 §1.6(a) 불변식 · §4.1 「불변식: 문항 셋을 끝까지 돌면
+  // answeredChoiceIndexes.length === 3이고 순서가 응답 순서다」. 위 케이스는 매번
+  // 같은 보기(0)를 골라 순서가 드러나지 않으므로, 서로 다른 보기를 골라 순서까지 본다.
+  it("불변식 — 서로 다른 보기를 고르며 끝까지 돌면 이력이 응답 순서 그대로 셋 쌓인다", () => {
+    let state = initialListeningSessionState;
+    const picks = [1, 3, 0];
+
+    for (const choiceIndex of picks) {
+      state = listeningSessionReducer(state, { type: "selectChoice", choiceIndex });
+      state = listeningSessionReducer(state, { type: "nextQuestion" });
+    }
+
+    expect(state.answeredChoiceIndexes).toEqual(picks);
+    expect(state.answeredChoiceIndexes).toHaveLength(3);
     expect(isSessionComplete(state, 3)).toBe(true);
   });
 });
 
 describe("initialListeningSessionState (고정 데이터)", () => {
-  it("첫 문항이고 아무것도 고르지 않은 상태다", () => {
-    expect(initialListeningSessionState).toEqual({ questionIndex: 0, selectedChoiceIndex: null });
+  it("첫 문항이고 아무것도 고르지 않았고 응답 이력이 비어 있다", () => {
+    expect(initialListeningSessionState).toEqual({
+      questionIndex: 0,
+      selectedChoiceIndex: null,
+      answeredChoiceIndexes: [],
+    });
+  });
+});
+
+describe("sessionAnswerResults (계약 §1.6(b))", () => {
+  // judgeAnswer를 다시 쓰지 않고 부른다 — 리터럴로 세운 문항 둘로 판정의 정본이
+  // 하나임을 확인한다. questionAnswer0는 answerIndex 0, questionAnswer2는 answerIndex 2다.
+  const questions: readonly ListeningQuestion[] = [questionAnswer0, questionAnswer2];
+
+  it("이력과 같은 길이의 결과를 낸다 — i번째는 judgeAnswer(questions[i], a[i])와 같다", () => {
+    const results = sessionAnswerResults(questions, [0, 2]);
+
+    expect(results).toEqual(["correct", "correct"]);
+  });
+
+  it("오답을 섞어도 그 자리만 incorrect다", () => {
+    const results = sessionAnswerResults(questions, [0, 1]);
+
+    expect(results).toEqual(["correct", "incorrect"]);
+  });
+
+  it("이력이 문항 수보다 짧으면 짧은 쪽 길이로 끝난다 — 던지지 않는다", () => {
+    expect(() => sessionAnswerResults(questions, [0])).not.toThrow();
+
+    const results = sessionAnswerResults(questions, [0]);
+
+    expect(results).toEqual(["correct"]);
+  });
+
+  it("빈 이력이면 빈 배열이다", () => {
+    expect(sessionAnswerResults(questions, [])).toEqual([]);
+  });
+
+  it("문항이 없어도 던지지 않고 빈 배열이다", () => {
+    expect(() => sessionAnswerResults([], [0, 1])).not.toThrow();
+    expect(sessionAnswerResults([], [0, 1])).toEqual([]);
   });
 });
 
