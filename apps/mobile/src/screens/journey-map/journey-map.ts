@@ -19,7 +19,10 @@ export type JourneyStep = {
 };
 
 // ---------------------------------------------------------------- 고정 데이터 (계약 §1.4)
-// 계약이 값까지 고정했다 — 진실의 출처는 completedStepCount 하나이고 상태는 파생된다.
+// 계약이 값까지 고정했다. 진행의 진실의 출처는 이제 App의 상태이고, 이 상수는 그
+// **씨앗**이다 — 값(2)은 그대로이고 이름만 역할이 좁아진 것을 반영한다
+// (LIB-223 계약 §1.4(a)·§4.0 3번). 옛 이름(completedStepCount)을 남기지 않는다:
+// 남기면 다른 모듈이 그것을 읽고 낡은 진행을 보면서도 통과한다.
 
 export const journeySteps: readonly JourneyStep[] = [
   { id: "greeting", title: "첫 인사", description: "카페에서 처음 인사를 나눈다" },
@@ -29,7 +32,7 @@ export const journeySteps: readonly JourneyStep[] = [
   { id: "directions", title: "길 묻기", description: "약속 장소까지 가는 길을 묻는다" },
 ];
 
-export const completedStepCount = 2;
+export const initialCompletedStepCount = 2;
 
 // ---------------------------------------------------------------- 시트 상태 전이 (계약 §1.5)
 
@@ -112,4 +115,21 @@ export function stepSheetReducer(state: StepSheetState, action: StepSheetAction)
       return { openStepId: null };
     }
   }
+}
+
+// ------------------------------------------------- 진행 갱신 (LIB-223 계약 §1.5(a))
+
+// 스텝의 1-based 자리. journeySteps의 순서에서 **파생**한다 — 서수를 따로 표에
+// 적으면 journeySteps와 그 표가 어긋날 자리가 생긴다 (ADR-0007 D3과 같은 논리).
+// 던지지 않는다: union이 닫혀 있고 journeySteps가 다섯을 전부 갖는다 (계약 §1.5(a)).
+export function journeyStepOrdinal(id: JourneyStepId): number {
+  return journeySteps.findIndex((step) => step.id === id) + 1;
+}
+
+// 단조성이 계약이다 — 모든 입력에 대해 completeStep(c, id) >= c (계약 §1.5(a)).
+// 조건 분기(if (ordinal > c) …)로 쓰면 같은 값이 나오지만 단조성이 *분기의 결과*가
+// 되어 다음 사람이 분기를 고칠 때 조용히 깨진다. Math.max가 그 성질을 구조적으로
+// 보장한다.
+export function completeStep(completedCount: number, id: JourneyStepId): number {
+  return Math.max(completedCount, journeyStepOrdinal(id));
 }

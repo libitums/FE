@@ -1,8 +1,9 @@
 import UIKit
 
-/// 호스트가 하는 일은 셋뿐이다 (ADR-0012 D2):
-/// LynxView를 전체 화면으로 띄우고, 번들을 로드하고, 저장소 모듈을 제공한다.
+/// 호스트가 하는 일은 셋뿐이다 (ADR-0012 D2 · ADR-0017 D1):
+/// LynxView를 전체 화면으로 띄우고, 번들을 로드하고, 네이티브 모듈을 제공한다.
 /// 커스텀 UI를 만들지 않는다 — 화면은 전부 Lynx 쪽에 있다.
+/// **커스텀 네이티브 엘리먼트도 만들지 않는다** (ADR-0017 D1이 명시로 더한 항목).
 final class ViewController: UIViewController {
   private var lynxView: LynxView?
 
@@ -12,9 +13,20 @@ final class ViewController: UIViewController {
 
     let lynxView = LynxView { builder in
       let config = LynxConfig(provider: TemplateProvider())
-      // 네이티브 모듈은 이 하나뿐이다 (ADR-0012 D2).
-      // 두 번째가 필요해지면 ADR을 새 번호로 갱신해야 한다.
+      // **개수 상한은 없다. 입장 조건 셋이 있다** (ADR-0017 D1이 ADR-0012 D2의
+      // `두 번째 네이티브 모듈 금지` 한 항목을 대체했다 — 그 D2가 말한 "새 번호"가
+      // ADR-0017이고 이미 채택됐다).
+      //
+      // 하나 더 열려면 셋을 **전부** 만족해야 한다: (1) 화면 목록이 요구하고 그 능력
+      // 없이는 화면이 정체성을 잃는다, (2) 스택 안에 대체 경로가 0개임을 확인하고
+      // 훑은 자리를 적었다, (3) `docs/e2e/`에 사람이 판정할 항목으로 적을 수 있다.
+      //
+      // **목록은 `docs/adr/README.md`의 호스트 모듈 표가 든다.** 아래 줄 수를 세지
+      // 말고 그 표를 본다 — 표의 각 행이 곧 Android 이관 항목이기도 하다 (D5).
+      // 재검토 트리거는 숫자로 적혀 있다: **모듈이 넷째로 요구되는 시점**,
+      // **한 모듈의 메서드가 다섯을 넘는 시점** (D2).
       config.register(StorageModule.self)
+      config.register(AudioPlaybackModule.self)
       builder.config = config
       builder.screenSize = UIScreen.main.bounds.size
       builder.fontScale = 1.0

@@ -1,21 +1,30 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { JourneyMapScreen } from "./JourneyMapScreen";
-import { completedStepCount, journeySteps, stepStatusAt } from "./journey-map";
+import {
+  initialCompletedStepCount,
+  journeySteps,
+  stepStatusAt,
+  type JourneyStepId,
+} from "./journey-map";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
 // 이 화면은 제목 텍스트 하나만 그린다 — 탭 라벨(`여정`)과 화면 제목(`여정 맵`)은
 // 다르다 (screens.contract.ts).
 test("여정 맵 화면이 제목을 렌더한다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
 });
 
 // 재고정 2026-09-02: 제목 다섯이 같은 방식으로 heading이 된다 (screens.contract.ts).
 test("여정 맵 화면 제목이 accessibility-traits header를 갖는다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveAttribute(
     "accessibility-traits",
@@ -30,10 +39,12 @@ test("여정 맵 화면 제목이 accessibility-traits header를 갖는다", () 
 
 // 단언 7: 스텝 다섯이 전부 렌더되고 각자 data-status가 §1.4 표와 같다.
 test("스텝 다섯이 전부 렌더되고 각자 data-status가 파생 상태와 같다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   journeySteps.forEach((step, index) => {
-    const expectedStatus = stepStatusAt(index, completedStepCount);
+    const expectedStatus = stepStatusAt(index, initialCompletedStepCount);
 
     expect(screen.getByTestId(`journey-step-node-${step.id}`)).toHaveAttribute(
       "data-status",
@@ -44,14 +55,18 @@ test("스텝 다섯이 전부 렌더되고 각자 data-status가 파생 상태�
 
 // 단언 8: 처음에는 step-sheet-panel이 없다.
 test("처음에는 시트가 렌더되지 않는다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
 });
 
 // 단언 9: journey-step-node-ordering을 tap하면 시트가 나타나고 그 스텝의 정보를 낸다.
 test("스텝을 tap하면 시트가 열리고 그 스텝의 제목·설명을 낸다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
 
@@ -64,7 +79,9 @@ test("스텝을 tap하면 시트가 열리고 그 스텝의 제목·설명을 �
 
 // 단언 10: step-sheet-close를 tap하면 시트가 사라지고 화면 제목은 그대로다.
 test("닫기를 tap하면 시트가 사라지고 화면 제목은 그대로다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
@@ -78,7 +95,9 @@ test("닫기를 tap하면 시트가 사라지고 화면 제목은 그대로다",
 // 단언 11: 시트가 열린 상태에서 다른 스텝을 tap하면 시트가 그 스텝으로 바뀐다
 // (제목이 갈린다. 시트가 둘이 되지 않는다).
 test("시트가 열린 채 다른 스텝을 tap하면 시트가 그 스텝으로 바뀐다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
@@ -95,7 +114,9 @@ test("시트가 열린 채 다른 스텝을 tap하면 시트가 그 스텝으로
 // accessibility-elements-hidden도 움직이지 않는다 — 같은 tap 하나가 낸 결과를 시트의
 // 부재와 맵의 가림 여부 두 채널로 함께 본다. 형태는 단언 14~16과 같다.
 test("잠긴 스텝을 tap해도 시트가 열리지 않는다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-appointment"), {});
 
@@ -109,7 +130,9 @@ test("잠긴 스텝을 tap해도 시트가 열리지 않는다", () => {
 // 단언 12-b (계약 §1.7.2 "아무 일도 일어나지 않는다"의 나머지 절반): 열려 있던 시트가
 // 있으면 잠긴 스텝의 tap이 그 시트를 닫는 수단도 되지 않는다 — 그대로 열려 있다.
 test("시트가 열린 채로 잠긴 스텝을 tap해도 시트는 그대로 열려 있다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
@@ -120,13 +143,28 @@ test("시트가 열린 채로 잠긴 스텝을 tap해도 시트는 그대로 열
   expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
 });
 
-// 단언 13: step-sheet-start를 tap해도 시트가 그대로 열려 있다 — 무동작 계약.
-test("시작을 tap해도 시트가 그대로 열려 있다 — 무동작 계약", () => {
-  render(<JourneyMapScreen />);
+// 단언 13 (**뒤집힘** — LIB-223 계약 §3.2(e)-2): `시작`은 더 이상 무동작이 아니다.
+// lib-222에서 이 자리가 "tap해도 아무 일도 일어나지 않는다"였던 근거는 `StepSheetProps`에
+// 목적지가 없다는 것 하나였다. 계약 §1.6이 `onStart`를 채우고 §1.7이 그 목적지를
+// "열린 스텝의 id를 그대로 위로 올린다"로 고정했으므로, **같은 tap이 이제
+// `onStartStep(열린 스텝 id)`를 낸다.** 옛 단언을 그대로 두면 통과하면서 계약을
+// 거짓으로 말한다 — 시트가 열려 있는 것은 여전히 참이지만 "무동작"은 이제 거짓이다.
+//
+// 시트가 그대로 열려 있다는 관찰은 **버리지 않고 뜻만 갈아 끼운다**: 이 화면은 시트를
+// 명시적으로 닫지 않는다(§1.7 「시트를 명시적으로 닫지 않는다」). 닫히는 것은 App이
+// 학습 화면을 렌더해 이 화면이 언마운트될 때이고, 그것은 integration의 몫이다.
+test("시작을 tap하면 onStartStep이 열린 스텝의 id로 한 번 불린다", () => {
+  const onStartStep = vi.fn<(id: JourneyStepId) => void>();
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={onStartStep} />,
+  );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 
+  expect(onStartStep).toHaveBeenCalledTimes(1);
+  expect(onStartStep).toHaveBeenCalledWith("ordering");
+  // 시트를 닫는 주체는 이 화면이 아니다 — 화면 전환이 언마운트로 버린다.
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
 });
@@ -154,7 +192,9 @@ test("시작을 tap해도 시트가 그대로 열려 있다 — 무동작 계약
 
 // 단언 14: 닫혀 있을 때 맵이 가려져 있지 않다.
 test("시트가 닫혀 있을 때 맵의 accessibility-elements-hidden은 false다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   expect(screen.getByTestId("journey-map-screen-map")).toHaveAttribute(
     "accessibility-elements-hidden",
@@ -165,7 +205,9 @@ test("시트가 닫혀 있을 때 맵의 accessibility-elements-hidden은 false�
 // 단언 15: 열리면 가려진다. 언마운트가 아니라 가림이라는 것을 스텝 노드가 여전히
 // 문서에 있다는 것으로 함께 단언한다.
 test("스텝을 tap해 시트를 열면 맵의 accessibility-elements-hidden이 true가 되고 맵과 스텝은 여전히 문서에 있다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
 
@@ -181,7 +223,9 @@ test("스텝을 tap해 시트를 열면 맵의 accessibility-elements-hidden이 
 // "복원 실패"였고, B가 그 실패를 물려받지 않는다는 것을 자동 계층에서 볼 수 있는
 // 자리가 이 단언뿐이다(§1.7.1).
 test("닫기를 tap하면 맵의 accessibility-elements-hidden이 다시 false로 돌아온다", () => {
-  render(<JourneyMapScreen />);
+  render(
+    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+  );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("journey-map-screen-map")).toHaveAttribute(
@@ -195,4 +239,37 @@ test("닫기를 tap하면 맵의 accessibility-elements-hidden이 다시 false�
     "accessibility-elements-hidden",
     "false",
   );
+});
+
+// ------------------------------------------------- LIB-223 계약 §3.2(e)-1 (더하는 단언)
+// 진행이 **모듈 상수가 아니라 props**에서 온다는 것의 `ui` 쪽 관찰. 단언 7이
+// `initialCompletedStepCount`(=2)로 보는 것과 같은 채널(`data-status`)을 다른 값으로
+// 읽어, 화면이 받은 값을 실제로 소비하는지를 가른다. props를 무시하고 상수를 읽으면
+// ordering이 여전히 "current"로 나와 여기서 실패한다.
+test("completedStepCount=3으로 렌더하면 ordering이 done, appointment가 current다", () => {
+  render(<JourneyMapScreen completedStepCount={3} onStartStep={() => {}} />);
+
+  expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
+  expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
+    "data-status",
+    "current",
+  );
+  expect(screen.getByTestId("journey-step-node-directions")).toHaveAttribute(
+    "data-status",
+    "locked",
+  );
+});
+
+// 엣지 (계약 §1.5(a) 「여정이 전부 완료된다」): completedStepCount=5면 다섯 전부 done이고
+// **current인 스텝이 하나도 없는 것이 정상**이다. 새 상태어도 새 분기도 없다는 것을
+// 화면 쪽에서 한 번 못박는다.
+test("completedStepCount=5로 렌더하면 다섯 전부 done이고 current인 스텝이 없다", () => {
+  render(<JourneyMapScreen completedStepCount={5} onStartStep={() => {}} />);
+
+  journeySteps.forEach((step) => {
+    expect(screen.getByTestId(`journey-step-node-${step.id}`)).toHaveAttribute(
+      "data-status",
+      "done",
+    );
+  });
 });

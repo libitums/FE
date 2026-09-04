@@ -3,15 +3,20 @@ import type { ReactNode } from "@lynx-js/react";
 import "./step-sheet.css";
 
 // LIB-222 (ui): 계약(.agent-harness/work/lib-222/spec.md §1.7)의 속성 전부를 채운다.
-// `시작`에 bindtap을 붙이지 않는다 — 학습 화면이 범위 밖이라 목적지가 없다(§1.7).
-// 이 무동작은 §3.2(b)-6이 실행 가능한 형태로 단언한다.
+//
+// LIB-223 (ui): 계약(.agent-harness/work/lib-223/spec.md §1.6·§1.7)이 `onStart`를
+// 더했고, 이 단계가 `시작`에 `bindtap={onStart}` **한 줄**을 결선한다. 나머지
+// (`className` · `data-testid` · `accessibility-element` · `accessibility-label="시작"` ·
+// `accessibility-traits="button"`)는 한 글자도 바뀌지 않는다. 낭독 순서도 그대로다 —
+// `제목 → 설명 → 시작 → 닫기`이고 `닫기`를 시트 머리로 올리지 않는다 (§8.2).
 export type StepSheetProps = {
   title: string;
   description: string;
+  onStart: () => void;
   onClose: () => void;
 };
 
-export function StepSheet({ title, description, onClose }: StepSheetProps): ReactNode {
+export function StepSheet({ title, description, onStart, onClose }: StepSheetProps): ReactNode {
   return (
     <view className="step-sheet">
       {/* design.md §5.2 — 딤 토큰이 없어 배경을 선언하지 않는다. 존재 이유는 하나,
@@ -42,6 +47,7 @@ export function StepSheet({ title, description, onClose }: StepSheetProps): Reac
           accessibility-element={true}
           accessibility-label="시작"
           accessibility-traits="button"
+          bindtap={onStart}
         >
           <text className="step-sheet-start-label">시작</text>
         </view>

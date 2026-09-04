@@ -126,7 +126,30 @@ pnpm dev   # 나온 URL을 Explorer의 Bundle URL 칸에 붙여넣고 Go
 ## 자체 호스트 앱
 
 `apps/ios`가 판정 환경이다 (ADR-0012 D5). 개발 루프는 Explorer이고, 여기서는 **빌드
-산출물 로드**와 **영속 저장소**를 확인한다 — 둘 다 Explorer에서는 확인할 수 없다.
+산출물 로드** · **영속 저장소** · **오디오 재생**을 확인한다 — 셋 다 Explorer에서는
+확인할 수 없다.
+
+**Explorer에서 확인할 수 없는 이유가 둘로 갈린다.**
+
+| 무엇 | 왜 Explorer가 못 보나 | 그래서 |
+|---|---|---|
+| 빌드 산출물 로드 | Explorer는 dev 서버 번들을 받는다 | **Release** 호스트가 필요하다 |
+| 영속 저장소 · **오디오 재생** | **Explorer에 네이티브 모듈이 없다** (ADR-0012 D3). 호스트가 등록한 모듈은 둘이다 — `StorageModule` · `AudioPlaybackModule` (`docs/adr/README.md` 호스트 모듈 표) | **호스트**가 필요하다. **Debug 호스트로도 된다** — 모듈과 오디오 자산은 두 구성에 똑같이 들어간다 |
+
+> **오디오가 Explorer에서 안 나는 것은 고장이 아니다.** 모듈이 없을 때 조용히 재생하지
+> 않는 것이 정상 동작이다 (ADR-0017 D3) — 던지지도, 페이지가 죽지도 않는다.
+> **정상과 고장이 같아 보이는 자리**이므로, 소리는 호스트에 올려서만 판정한다
+> (`docs/e2e/listening.md` A~I).
+>
+> **네이티브 파일이나 오디오 자산이 바뀌면 호스트를 재빌드해야 한다.** `pnpm bundle:host`
+> 는 Lynx 번들만 갈아끼운다 — 네이티브 쪽은 따라오지 않는다. 자산은 `audio/` **폴더
+> 참조**라 디렉터리에 넣고 빼는 것이 자동으로 따라오지만, **등록이 어긋나도 빌드는
+> 성공하고 `pnpm verify`도 전부 green이다.** 그래서 자산이 늘거나 줄면 **빌드된 `.app`
+> 안을 직접 센다.**
+>
+> ```sh
+> find /tmp/dd/Build/Products/Debug-iphonesimulator/Host.app -name '*.m4a' | wc -l
+> ```
 
 ```sh
 pnpm bundle:host                                                  # build + 사본 복사
@@ -180,4 +203,5 @@ plutil -p "$C/Library/Preferences/com.libitum.host.plist"
 > iOS 시뮬레이터 런타임 다운로드(Xcode → Settings → Components)가 각각 필요하다.
 
 ([ADR-0005 D3](../adr/0005-runtime-and-package-manager-versions.md),
-[ADR-0014 D1](../adr/0014-design-system-consumption-verified.md))
+[ADR-0014 D1](../adr/0014-design-system-consumption-verified.md),
+[ADR-0017 D2·D3](../adr/0017-host-native-capabilities-and-audio.md))

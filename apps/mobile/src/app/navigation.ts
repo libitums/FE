@@ -4,6 +4,12 @@
 // LIB-221 (logic): 계약(scratchpad/lib221/contracts/navigation.contract.ts)이
 // 고정한 동작을 그대로 구현한다. DOM에 의존하지 않는 순수 함수만 둔다.
 
+// 계약 §8.4: `app/` -> `screens/` 방향의 **type-only** import 하나다. `import type`은
+// emit되지 않으므로 런타임 결합이 0이고, 어떤 화면도 `navigation.ts`를 import하지
+// 않으므로 순환이 생기지 않는다 (import/no-cycle이 그것을 지킨다).
+// 스텝 id는 여정 맵의 도메인 어휘이므로 선언은 소유자(journey-map.ts)에 둔다.
+import type { JourneyStepId } from "../screens/journey-map/journey-map";
+
 // 탭 목록과 1:1이다. 네 탭은 docs/screens.md의 "홈 · 여정 · 롤플레이 · 설정"에서 왔다.
 // 순서가 곧 바텀 네비게이션의 좌→우 순서다 (bottom-navigator.contract.ts).
 export type Tab = "home" | "journey" | "roleplay" | "settings";
@@ -13,11 +19,16 @@ export type Tab = "home" | "journey" | "roleplay" | "settings";
 // 빠진 화면을 컴파일 타임에 잡는다.
 //
 // 이름은 최종 화면 이름으로 고정한다 (계약 참고).
+// LIB-223: 다섯째 멤버가 는다. 필드는 `stepId` 하나다 — 진행도 문항 인덱스도
+// 넣지 않는다(계약 §1.3(a) · ADR-0007 D3). 전자는 App의 것이고 후자는 화면
+// 로컬이라, 넣으면 `back` 한 번에 사라질 값이 라우팅 상태에 남는다.
+// `stepOrdinal`도 넣지 않는다 — `stepId`에서 파생 가능한 값을 따로 두면 둘이 어긋난다.
 export type Screen =
   | { name: "home" }
   | { name: "journey-map" }
   | { name: "roleplay-list" }
-  | { name: "settings" };
+  | { name: "settings" }
+  | { name: "listening"; stepId: JourneyStepId };
 
 // docs/screens.md 130~136행과 ADR-0007 D3이 적은 모양 그대로다. 필드를 더하지 않는다.
 export type Nav = {

@@ -1,0 +1,140 @@
+/* LIB-223 (ui): design.md §2 · §2 개정(§2.1~§2.4) · §6.5의 값. 짝 CSS 파일이다
+   (ADR-0015 D2) — 시각 값은 컴포넌트와 1:1인 이 파일에만 있고 인라인 `style`을 쓰지
+   않는다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1).
+
+   **`var(--libitum-오타)`는 에러 없이 선언째 사라지고 `lint:tokens`는 접두사만 본다**
+   (ADR-0014 D8). 이 파일이 쓰는 이름 여덟은 설치된 `@libitums/design-tokens`의
+   `dist/css/variables.css` · `dist/css/typography.css`에서 선언째 직접 확인했다
+   (design 부록 A-2와 같은 방법). */
+
+/* 제시 카드 — **오디오 교체의 이음매**다 (design §2 · 계약 §1.7.2).
+   ADR-0017이 재생 능력을 열면서 이 카드가 **재생 조작 + 대본** 둘을 진다.
+
+   **카드가 남는다.** design §2.2는 대본을 걷는 안(T1)에서만 껍데기를 걷었고, 계약
+   §9.5(a)가 **대본을 남기기로**(T2) 정했으므로 개정 전 §2의 카드 값이 그대로 산다.
+   T2에서 더해지는 것은 **카드 안 세로 `gap` 하나**뿐이다 (design §2.3의 T2 행).
+
+   **경계선은 장식이 아니라 필수다.** `background-elevated`(`#FFF3EA`)와 화면
+   배경(`#FFFDFC`)의 상호 대비가 1.08:1이라 선이 없으면 카드가 배경에 녹고 발화와
+   지시문의 경계가 사라진다 (design §6.2). 실기 판정은 design §10-7.
+
+   **`box-shadow`를 두지 않는다.** 이 카드는 떠 있는 면이 아니라 본문의 한 블록이고,
+   그림자가 이 스택에서 그려지는지는 아직 판정된 적이 없다.
+
+   **아이콘 슬롯도 빈 자리도 두지 않는다** — 자리를 잡아 두면 그것이 placeholder다.
+   카드 안에 서는 것은 **실제로 누르면 `play`를 부르는 조작 하나**다. */
+.listening-prompt {
+  background: var(--libitum-color-background-elevated);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-md);
+  padding: var(--libitum-spacing-16);
+  /* 재생 조작 위 · 대본 아래. **세로 순서를 CSS로 뒤집지 않는다** — DOM 순서가
+     낭독 순서이고 그것은 접근성 계약이다 (계약 §9.5(d) · §9.8의 design 제약 1).
+     그래서 `order`도 `flex-direction: column-reverse`도 쓰지 않는다. */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-inline);
+  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어든다. */
+  flex-shrink: 0;
+}
+
+/* design §2.1 · §2.3 「컨트롤」 — **컨트롤 하나. 그것이 전부다.**
+   ADR-0017 D3이 메서드를 `play` · `stop` 둘로 못박았고 컨트롤도 하나다. 다시듣기
+   버튼을 따로 두지 않는다 — 끝난 뒤 **같은 컨트롤을 다시 누르는 것**이 `play`를 다시
+   부르는 것이다.
+
+   **여기 없는 것은 그리지 않는 것이다** (D3의 제외 목록): 일시정지 · 재개 · 시크 ·
+   배속 · 볼륨 · 페이드 · **진행바** · 동시 재생 · 잠금화면 컨트롤. 진행 표시는
+   「문항 2 / 3」 하나뿐이고 그것은 오디오가 아니라 문항의 진행이다 (design §5.2).
+
+   **「재생 중」을 뜻하는 애니메이션·파형을 넣지 않는다** (§9.8의 design 제약 3).
+   모션 선례가 0건이고, 움직이는 것은 *소리가 난다*는 약속이 된다 — 자산이 0개인 지금
+   그것은 지킬 수 없는 약속이다.
+
+   **`align-self: center` — 화면 폭을 채우지 않는다. 이것이 이 컨트롤의 유일한 판별
+   값이다** (design §2.1). 면(`brand-strong`) · 높이(48) · 모서리(`radius-md`) ·
+   라벨(`button-xl` / `fg-neutral-inverted`)이 `.listening-screen-next`(액션 행)와
+   문자 그대로 같아서, 판정 뒤 둘이 동시에 보일 때 둘을 가르는 것이 **폭과 아이콘
+   유무**뿐이다. 폭을 가르는 데 새 토큰이 필요 없다 — 채우지 않으면 된다.
+
+   **상태 클래스가 없다.** `idle`과 `playing`에서 이 선언이 한 글자도 달라지지 않고
+   갈리는 것은 아이콘 `content`와 낱말 둘뿐이다 (design 안 P-1 · 계약 §9.5(c)).
+   상태 클래스를 만들면 ADR-0003 D7의 예약 상태어가 다섯째가 되고 재검토 조건이
+   발동한다 — 그리고 **칠할 색도 없다**: `brand-primary` 2.97 · `brand-secondary`
+   2.28로 비텍스트 3:1 미달이고, `feedback-correct`는 판정 채널과 섞인다 (§6.5-a).
+
+   **폭이 두 상태에서 흔들리지 않는다.** 아이콘 상자가 `icon-size-lg`로 고정이고
+   「듣기」·「멈춤」이 둘 다 `button-xl` 2자라 실측 115.66px로 같다 — design §2.3이
+   *"`min-width`를 줄 필요가 없고 줄 토큰도 없다"* 로 계산해 둔 자리다. 생값 `min-width`를
+   적지 않는다 (ADR-0014 D1).
+
+   **최소 터치 영역**: 세로 `spacing-48` = 48pt, 가로는 `spacing-24`×2 +
+   `icon-size-lg` 32 + `layout-gap-inline` 8 = 88pt가 라벨이 비어도 남는 폭이다.
+   두 축 모두 44pt를 넘는다. 실기 판정은 design §10-18. */
+.listening-prompt-playback {
+  background: var(--libitum-color-brand-strong);
+  height: var(--libitum-spacing-48);
+  padding-left: var(--libitum-spacing-24);
+  padding-right: var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-layout-gap-inline);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* design §2.3 「아이콘 상자」 — **`icon-size-md`가 아니라 `icon-size-lg`다. 잉크를
+   쟀다.** 이 세트는 전부 `viewBox="0 0 10 10"`이고 글리프가 상자를 다 안 채운다:
+   `play`의 잉크는 4.04×5.14라 `icon-size-md`(24)에서 실잉크가 **9.7×12.3**으로
+   이 화면이 쓰는 아이콘 중 가장 좁다 (`tick`의 64%). 재생 조작은 화면의 핵심 조작이고,
+   이 저장소는 아이콘이 크기를 못 받아 **아예 안 보인** 실패를 한 번 겪었다
+   (`docs/e2e/design-token-rendering.md`). `lg`로 올려도 **세로 예산은 한 픽셀도 안
+   바뀐다** — 컨트롤 높이 48이 상자를 덮는다. 실기 판정은 design §10-14.
+
+   **크기를 CSS가 준다.** 색은 여기가 아니라 `current-color` **속성**이다 — Lynx
+   `<svg>`가 CSS `color`를 읽지 않는다 (ADR-0014 D2). 여기에 `color`를 적으면 `<svg>`가
+   읽지 않아 아무 일도 하지 않는다. */
+.listening-prompt-playback-icon {
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
+  /* Lynx flex는 자동 최소 크기를 만들지 않아 아이콘 상자도 계속 줄어든다. */
+  flex-shrink: 0;
+}
+
+/* design §2.3 「라벨」 · §6.5 — `.listening-screen-next-label`과 문자 그대로 같은
+   값이다. 시트의 `시작` · 액션 행의 `다음`과 어휘를 갈리게 하지 않는다.
+   `fg-neutral-inverted`(`#FFFFFF`)가 `brand-strong`(`#B94208`) 위에서 **5.46:1**로
+   16/600(큰 텍스트 아님) 기준 4.5를 넘는다.
+
+   **낱말은 세 번째 채널이다** (design §6.5-b(c)). 아이콘이 크기를 못 받아 안 보여도
+   「듣기」/「멈춤」이 상태를 남긴다 — 이 저장소는 그 실패를 한 번 겪었다.
+   낱말 색은 두 상태가 같다: 색이 상태 채널이 되는 순간 회색조에서 두 상태가 뭉친다. */
+.listening-prompt-playback-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+/* `dialogue-body`를 쓴다 — 패키지가 발화 제시용으로 가진 유일한 scale이고
+   (`dialogue-speaker`와 짝이다) 이 화면이 그리는 것이 발화다 (design §2).
+   화자 이름 줄(`dialogue-speaker`)을 두지 않는다: 고정 데이터에 화자가 없고,
+   넣으면 세로가 20 + gap만큼 는다 (design §1.4의 예산).
+
+   **자리가 재생 조작 뒤로 갔을 뿐 값은 한 줄도 바뀌지 않았다** (계약 §9.5(d) 3번 행).
+   자산이 도착해 이 텍스트가 **대본(transcript)**이 되는 날 감출지 접을지 남길지를
+   정하고, 그때도 이음매 두 자리는 그대로다 (§9.5(a)). */
+.listening-prompt-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-dialogue-body-font-family);
+  font-weight: var(--libitum-typography-dialogue-body-font-weight);
+  font-size: var(--libitum-typography-dialogue-body-font-size);
+  line-height: var(--libitum-typography-dialogue-body-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
+}

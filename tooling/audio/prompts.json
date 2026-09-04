@@ -1,0 +1,62 @@
+[
+  {
+    "id": "greeting-1",
+    "text": "안녕하세요, 처음 뵙겠습니다."
+  },
+  {
+    "id": "greeting-2",
+    "text": "반갑습니다."
+  },
+  {
+    "id": "greeting-3",
+    "text": "안녕히 계세요."
+  },
+  {
+    "id": "introduction-1",
+    "text": "이름이 어떻게 되세요?"
+  },
+  {
+    "id": "introduction-2",
+    "text": "저는 민준이라고 합니다."
+  },
+  {
+    "id": "introduction-3",
+    "text": "만나서 반가워요."
+  },
+  {
+    "id": "ordering-1",
+    "text": "따뜻한 아메리카노 한 잔 주세요."
+  },
+  {
+    "id": "ordering-2",
+    "text": "주문하시겠어요? 음료는 따뜻한 것과 차가운 것 중에 무엇으로 드릴까요?"
+  },
+  {
+    "id": "ordering-3",
+    "text": "카드로 결제할게요."
+  },
+  {
+    "id": "appointment-1",
+    "text": "내일 세 시에 만날까요?"
+  },
+  {
+    "id": "appointment-2",
+    "text": "그때는 좀 어려울 것 같아요."
+  },
+  {
+    "id": "appointment-3",
+    "text": "그럼 토요일 저녁은 어때요?"
+  },
+  {
+    "id": "directions-1",
+    "text": "혹시 지하철역이 어디예요?"
+  },
+  {
+    "id": "directions-2",
+    "text": "이 길로 쭉 가시면 됩니다."
+  },
+  {
+    "id": "directions-3",
+    "text": "여기서 얼마나 걸려요?"
+  }
+]
