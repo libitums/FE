@@ -663,3 +663,69 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
   expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
 });
+
+// -------------------------------------------------------------------------
+// LIB-226 — 스크롤 영역 규약. 계약 §3.3(I1·I2)을 여기서 검증한다.
+//
+// **왜 `integration`인가.** 탭 전환·스택 진입을 거쳐 다섯 화면 전부에서 스크롤
+// 컨테이너를 확인하는 것은 단일 컴포넌트를 고립 렌더해서는 성립하지 않는다 —
+// `App` · `navReducer` · `BottomNavigator` · 화면 다섯의 협력이다
+// (계약 test.integration.applicability 사유). 목킹하지 않는다 — 외부 IO가 없다.
+//
+// **왜 이 자리에 두는가.** 이 이슈의 위험은 한 화면의 버그가 아니라 **부분
+// 적용**이다 — ADR-0020 D5에서 같은 모양 여섯 곳이 남았고 우리가 아니라 다른
+// 세션이 실측해 찾아냈다(요구사항 결정 1). 다음번에는 실측이 아니라 이
+// 케이스가 찾는다. 화면이 스물 몇 개로 늘 때 여기에 행을 더하는 것이 규약을
+// 유지하는 값싼 방법이다.
+//
+// **`integration`이 못 보는 것은 `ui`와 같다** — jsdom에는 레이아웃이 없다.
+// 여기서 단언하는 것은 "스크롤 컨테이너가 testid로 존재/부재한다"까지다.
+// 실제로 스크롤되는가·고정이 지켜지는가는 실기(e2e)의 것이다(계약 §3.2 말미).
+
+// 계약 §3.3 I1 · 수용 기준 3(다섯 화면 **전부**): 탭 넷을 순회하며 각 화면에
+// 스크롤 컨테이너가 하나씩 있는지 본다. 화면을 옮길 때마다 이전 화면의 스크롤
+// 컨테이너가 사라지는 것도 함께 본다 — "어딘가에 하나 있다"가 아니라 "그
+// 화면의 것이 있다"를 확인하기 위해서다.
+test("탭 넷을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 있다", () => {
+  render(<App />);
+
+  expect(screen.getByTestId("home-screen-scroll")).toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
+  expect(screen.queryByTestId("home-screen-scroll")).not.toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  expect(screen.getByTestId("roleplay-list-screen-scroll")).toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen-scroll")).not.toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  expect(screen.getByTestId("settings-screen-scroll")).toBeInTheDocument();
+  expect(screen.queryByTestId("roleplay-list-screen-scroll")).not.toBeInTheDocument();
+});
+
+// 계약 §3.3 I2: 탭 스택이 아니라 **스택에 쌓인 화면**에도 스크롤 컨테이너가
+// 있는지 본다 — 여정 맵 → 스텝 tap → 시트 `시작` → 듣기 화면. `startStep`은
+// 위쪽 LIB-223 절이 정의한 것을 그대로 재사용한다(함수 선언은 호이스팅된다).
+test("탭이 아니라 스택에 쌓인 화면(듣기)에도 스크롤 컨테이너가 있다", () => {
+  render(<App />);
+
+  startStep("ordering");
+
+  expect(screen.getByTestId("listening-screen-scroll")).toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen-scroll")).not.toBeInTheDocument();
+});
+
+// 계약 §3.3 I3의 회귀 절반: 여정 맵 화면도 스크롤 컨테이너를 갖는다는 것을
+// 시트가 열려도 그대로 유지한다 — 시트는 스크롤 밖(계약 R9)이므로 시트가
+// 열려도 맵의 스크롤 컨테이너는 사라지지 않는다.
+test("시트가 열려 있어도 여정 맵의 스크롤 컨테이너는 그대로다", () => {
+  render(<App />);
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+
+  expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
+});
