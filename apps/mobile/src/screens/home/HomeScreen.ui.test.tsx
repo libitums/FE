@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { render, screen } from "@lynx-js/react/testing-library";
+import { render, screen, within } from "@lynx-js/react/testing-library";
 import house from "@libitums/icons/lynx/house";
 import { color } from "@libitums/design-tokens";
 
@@ -47,4 +47,27 @@ test("홈 화면 아이콘이 접근성 트리에서 빠진다 — 순수 장식
     "accessibility-elements-hidden",
     "true",
   );
+});
+
+// ---------------------------------------------------------------- 스크롤 영역 (LIB-226 계약 §3.2 U1·U3)
+//
+// 홈은 흐름 자식이 없다(계약 §1.5 — 지금 비어 있다). 고정은 머리(아이콘+제목)뿐이다.
+
+// U1: 스크롤 컨테이너가 존재한다.
+test("[U1] home-screen-scroll이 존재한다", () => {
+  render(<HomeScreen />);
+
+  expect(screen.getByTestId("home-screen-scroll")).toBeInTheDocument();
+});
+
+// U3: 고정 자식(제목·아이콘)이 스크롤 컨테이너 밖에 있다.
+test("[U3] 제목·아이콘이 스크롤 컨테이너 밖에 있다", () => {
+  render(<HomeScreen />);
+
+  const scroll = screen.getByTestId("home-screen-scroll");
+  expect(within(scroll).queryByTestId("home-screen-title")).not.toBeInTheDocument();
+  expect(within(scroll).queryByTestId("home-screen-icon")).not.toBeInTheDocument();
+
+  expect(screen.getByTestId("home-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("home-screen-icon")).toBeInTheDocument();
 });
