@@ -237,14 +237,24 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
 - **없는 슬롯을 만들지 않는다.** 액션 행이 없는 화면에 빈 컨테이너를 두지 않는다.
 - 이름은 `<블록>-scroll`이고 **클래스와 `data-testid`가 같은 문자열**이다. `scroll`은
   예약 상태어가 아니라 **요소** 자리다 (위 네이밍 표의 읽는 규칙 그대로).
-- **`scroll-view`의 prop을 적지 않는다.** `scroll-orientation`·`enable-scroll`·`bounces`·
-  `scroll-bar-enable` 넷 다 기본값이 우리가 원하는 값이다. **기본값을 다시 적으면
-  「의도적으로 정한 값」으로 읽힌다.**
+- **`scroll-view`의 prop은 소스에서 초기값을 확인한 뒤 정한다.** `@lynx-js/types`의
+  `@defaultValue`는 **리셋 값**(적었다가 지웠을 때 돌아가는 값)을 적고 있을 수 있어
+  **초기값의 근거가 못 된다** — 확인은 `createView`와 ivar 초기화에서 한다. **지금 적는
+  것은 둘이고 다섯 화면 전부다**: `scroll-orientation="vertical"`(안 적으면 초기값이
+  **가로**라 세로 스크롤이 원리적으로 불가능하다) · `scroll-bar-enable={true}`(초기값이
+  `NO`라 **적어야 켜진다**). `enable-scroll`은 초기값이 `YES`라 안 적고, `bounces`는
+  **초기값을 확인하지 못했으므로** 안 적는다 — 판정은 실기다.
 - **스크롤 컨테이너는 감싸기만 한다.** 기존 자식의 요소·클래스·`data-testid`·
   `accessibility-*`·형제 순서를 바꾸지 않는다 — **DOM 순서가 낭독 순서다.**
+- **스크롤 컨테이너의 직계 자식은 0개 또는 1개다.** `<scroll-view>`는 CSS의 `display`가
+  무엇이든 강제로 `linear`가 되고 **linear에는 `gap`이 없다** — 스크롤 컨테이너에 준 `gap`은
+  **무동작이다.** 자식이 둘 이상 필요하면 **하나로 감싸고, `display: flex`와 `gap`은 그
+  감싼 상자가 진다.**
 - **남는 세로를 받는 것은 스크롤 컨테이너 하나다.** 안쪽 자식에 `flex: 1`을 남기면
-  스크롤 영역이 뷰포트에 갇혀 **넘칠 수 없다.** 넘치는 상자를 `justify-content: center`로
-  두지 않는다 — 위쪽 항목이 스크롤 원점 밖으로 밀린다.
+  **아무 일도 안 하는 죽은 선언**이 된다 — 강제 `linear`의 자식에게는
+  `flex-grow`·`flex-shrink`가 읽히지 않는다. **스크롤 컨테이너 자신의 `flex: 1`은 살아
+  있다**(그것을 읽는 것은 부모이고, 부모는 linear가 아니다). 넘치는 상자를
+  `justify-content: center`로 두지 않는다 — 위쪽 항목이 스크롤 원점 밖으로 밀린다.
 - **겹침 레이어(오버레이·시트)는 스크롤 밖**, 화면 루트의 직계 자식이다.
 - **스크롤 컨테이너에 `accessibility-*`를 붙이지 않는다.** 조작 단위가 아니라 상자다
   ([ADR-0016 D5](../adr/0016-assistive-technology-semantics.md)).

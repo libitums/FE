@@ -732,3 +732,50 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
   expect(scroll).not.toHaveAttribute("accessibility-traits");
   expect(scroll).not.toHaveAttribute("accessibility-elements-hidden");
 });
+
+// ---------------------------------------------------------------- 스크롤 세로 동작 (LIB-226 계약 §3.2.2 U9·U10·U11, r4)
+//
+// R5 폐기 → R5.1~R5.3. `<scroll-view>`는 `scroll-orientation` prop이 없으면
+// `_enableScrollY` 초기값이 NO라 세로 스크롤이 원리적으로 불가능하다(design §8.2).
+// U9·U11은 어트리뷰트 존재/값만 본다 — jsdom은 레이아웃이 없어 실제로 스크롤되는지는
+// 이 계층이 원리적으로 못 본다(§3.2.2 말미, 실기 S8·S9가 답한다).
+//
+// U11의 기댓값이 문자열 "true"인 이유: `@lynx-js/testing-environment`의
+// `__SetAttribute`(ElementPAPI.js:87~89)가 boolean을 `JSON.stringify`로 직렬화한다.
+// `scroll-orientation`은 문자열이라 그대로 "vertical"로 간다.
+
+// U9: scroll-orientation이 "vertical"로 붙어 있다.
+test("[U9] listening-screen-scroll에 scroll-orientation='vertical'이 붙는다", () => {
+  renderOrdering();
+
+  expect(screen.getByTestId("listening-screen-scroll")).toHaveAttribute(
+    "scroll-orientation",
+    "vertical",
+  );
+});
+
+// U11: scroll-bar-enable이 (JSON.stringify를 거친) 문자열 "true"로 붙어 있다.
+test("[U11] listening-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
+  renderOrdering();
+
+  expect(screen.getByTestId("listening-screen-scroll")).toHaveAttribute(
+    "scroll-bar-enable",
+    "true",
+  );
+});
+
+// U10: 스크롤 컨테이너의 직계 요소 자식이 하나를 넘지 않는다. 듣기는 문항 상태와
+// 완료 상태 둘 다 본다 — 문항 상태는 오늘 자식이 넷(-progress·프롬프트·-instruction·
+// -choices)이라 red이고(R7.1), 완료 상태는 자식이 하나(-complete)라 green이다.
+test("[U10] 문항 상태에서 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
+  renderOrdering();
+
+  expect(screen.getByTestId("listening-screen-scroll").children.length).toBeLessThanOrEqual(1);
+});
+
+test("[U10] 완료 상태에서 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
+  renderOrdering();
+  completeAllThree();
+
+  expect(screen.getByTestId("listening-screen-scroll").children.length).toBeLessThanOrEqual(1);
+});

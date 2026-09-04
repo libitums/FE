@@ -56,3 +56,35 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
   expect(scroll).not.toHaveAttribute("accessibility-traits");
   expect(scroll).not.toHaveAttribute("accessibility-elements-hidden");
 });
+
+// ---------------------------------------------------------------- 스크롤 세로 동작 (LIB-226 계약 §3.2.2 U9·U10·U11, r4)
+//
+// R5 폐기 → R5.1~R5.3. `<scroll-view>`는 `scroll-orientation` prop이 없으면
+// `_enableScrollY` 초기값이 NO라 세로 스크롤이 원리적으로 불가능하다(design §8.2).
+// jsdom은 레이아웃이 없어 실제로 스크롤되는지는 이 계층이 원리적으로 못 본다
+// (§3.2.2 말미, 실기가 답한다).
+//
+// U11의 기댓값이 문자열 "true"인 이유: `@lynx-js/testing-environment`의
+// `__SetAttribute`(ElementPAPI.js:87~89)가 boolean을 `JSON.stringify`로 직렬화한다.
+
+// U9: scroll-orientation이 "vertical"로 붙어 있다.
+test("[U9] roleplay-list-screen-scroll에 scroll-orientation='vertical'이 붙는다", () => {
+  render(<RoleplayListScreen />);
+
+  expect(screen.getByTestId("roleplay-list-screen-scroll")).toHaveAttribute("scroll-orientation", "vertical");
+});
+
+// U11: scroll-bar-enable이 (JSON.stringify를 거친) 문자열 "true"로 붙어 있다.
+test("[U11] roleplay-list-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
+  render(<RoleplayListScreen />);
+
+  expect(screen.getByTestId("roleplay-list-screen-scroll")).toHaveAttribute("scroll-bar-enable", "true");
+});
+
+// U10: 스크롤 컨테이너의 직계 요소 자식이 하나를 넘지 않는다. RoleplayListScreen은 흐름 자식이
+// 없어(비어 있다) 오늘도 자식이 0개라 green이다(R7.1의 「나머지 넷은 안 샌다」 표).
+test("[U10] 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
+  render(<RoleplayListScreen />);
+
+  expect(screen.getByTestId("roleplay-list-screen-scroll").children.length).toBeLessThanOrEqual(1);
+});
