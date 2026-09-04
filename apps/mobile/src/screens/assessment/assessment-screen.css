@@ -1,0 +1,120 @@
+/* LIB-227 (ui): design.md §1.1 · §1.2 · §2 · §3 · §5 · §8의 값. 계약 §1.9 · §2.1이
+   고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다
+   (ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않는다.
+
+   `height`를 어디에도 쓰지 않는다 — 텍스트를 품은 상자는 전부 `min-height`다
+   (FE ADR-0020 D5 · 계약 §1.10-4). */
+
+/* 화면 상자. `.listening-screen` · `.journey-map-screen`과 같은 값이다(design §1.1) —
+   옆에 놓일 화면과 어휘를 갈리게 하지 않는다. `position: relative`를 두지 않는다:
+   이 화면에 겹침 레이어가 없다(design §1.2f). */
+.assessment-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  /* Lynx의 `justify-content` 기본값은 `stretch`다(웹은 `flex-start`). 명시하지
+     않으면 높이가 고정된 자식(제목·액션 행)이 늘어난다. */
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+/* design §2 — 제목 하나. back이 없다(D3·D5) — 같은 목적지(맵)로 가는 버튼이 둘이
+   되지 않는다. 헤더 배경·경계가 없다. */
+.assessment-screen-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어든다.
+     형제(`.assessment-screen-scroll`)는 `flex: 1`이라 basis가 0이라 shrink를
+     흡수하지 않으므로, 최대 배율에서 제목이 유일한 축소 대상이 돼 잘린다
+     (FE ADR-0020 D5 · WCAG 1.4.4). */
+  flex-shrink: 0;
+}
+
+/* design §1.2(d) — 스크롤 컨테이너. 이 문서가 새로 고르는 값이 0개다(규약값
+   그대로). `display`·`flex-direction`·`gap`을 여기 두지 않는다 — `<scroll-view>`는
+   CSS와 무관하게 강제로 `linear`가 되고, linear 알고리즘에는 `gap`이 없어 무동작으로
+   죽는다(FE ADR-0022 D4). 남는 세로는 이 상자가 `flex: 1`로 받는다. */
+.assessment-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+/* design §1.2(c) — 내용 상자 하나. `<scroll-view>`의 유일한 직계 자식이고 flex
+   어휘와 `gap`이 여기 산다. `flex: 1`은 두지 않는다 — 부모가 강제 linear라 읽히지
+   않는다(FE ADR-0022 D4). */
+.assessment-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+}
+
+/* design §3.1 — 종합 판정 블록. 화면에서 유일하게 가운데 정렬된 블록이다 — 가로
+   정렬 자체가 "이것은 목록의 한 항목이 아니다"를 낸다. 배경·경계·모서리·높이를
+   두지 않는다(§3.4) — 내용이 높이를 정한다(§8). */
+.assessment-screen-verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-layout-gap-inline);
+}
+
+/* design §3.2 · §8 — 이 앱의 첫 `icon-size-xl` 사용. 아이콘은 텍스트가 아니라
+   크기 고정이 맞다(넘칠 내용이 없다). 색은 `current-color` 속성으로 넘긴다
+   (ADR-0014 D2) — 여기 `color`를 적으면 `<svg>`가 읽지 않는다. */
+.assessment-screen-verdict-icon {
+  width: var(--libitum-icon-size-xl);
+  height: var(--libitum-icon-size-xl);
+}
+
+/* design §3.2 — 이 앱의 첫 `heading-m` 사용. 판정 낱말이 화면 제목보다 큰 유일한
+   텍스트라 위계를 한 번에 낸다. */
+.assessment-screen-verdict-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+/* design §4.3 — 목록 컨테이너. `gap`을 선언하지 않는다(0) — 행의 `border-top`이
+   간격 대신 경계를 진다(§4.4). 이 상자는 스크롤 컨테이너의 직계 자식이 아니라
+   `.assessment-screen-content`의 자식이라 `display: flex`가 살아 있다. */
+.assessment-screen-items {
+  display: flex;
+  flex-direction: column;
+}
+
+/* design §5 — 나가는 수단. `.listening-screen-finish`와 같은 값이다. 버튼이
+   하나뿐이라 보조 버튼 스타일을 정의하지 않는다. */
+.assessment-screen-exit {
+  background: var(--libitum-color-brand-strong);
+  /* **고정 높이가 아니라 하한이다**(ADR-0020 D5). Dynamic Type이 켜지면 글자만
+     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
+     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.assessment-screen-exit-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}

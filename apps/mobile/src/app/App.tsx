@@ -1,5 +1,11 @@
 import { useReducer, useState } from "@lynx-js/react";
 
+import { AssessmentScreen } from "../screens/assessment/AssessmentScreen";
+import {
+  assessmentCompletesStep,
+  assessmentPassCriterion,
+  judgeAssessment,
+} from "../screens/assessment/assessment";
 import { BottomNavigator } from "../components/BottomNavigator";
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
@@ -10,6 +16,7 @@ import {
   type JourneyStepId,
 } from "../screens/journey-map/journey-map";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
+import type { ListeningAnswerResult } from "../screens/listening/listening";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -25,7 +32,12 @@ type ScreenWiring = {
   completedStepCount: number;
   onStartStep: (id: JourneyStepId) => void;
   onExitListening: () => void;
-  onFinishListening: (id: JourneyStepId) => void;
+  // LIB-227 계약 §1.6(c): 듣기가 넘기는 것은 「끝났다」와 「무엇이 일어났는지」뿐이다.
+  // 통과 여부는 여기서 계산하지 않는다 — 판정의 권한은 평가로 옮겨갔다(§0.4 · §1.8(b)).
+  onFinishListening: (id: JourneyStepId, results: readonly ListeningAnswerResult[]) => void;
+  // LIB-227 계약 §1.8(b): 평가의 `맵으로`. 중도 이탈(`onExitListening`)과 같은 형태로
+  // 진행을 갱신하지 않고 `back` 하나로 맵에 닿는다.
+  onExitAssessment: () => void;
 };
 
 // 루트 구성 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모인다 (ADR-0003 D5).
@@ -51,13 +63,23 @@ export function App() {
     // 중도 이탈. **진행을 갱신하지 않는다** (수용 기준 10). `onFinishListening`과
     // 합치지 않는 이유가 이 한 줄의 차이다 (계약 §1.6).
     onExitListening: () => dispatch({ type: "back" }),
-    // 완료. 진행을 갱신하고 맵으로 돌아간다 (수용 기준 8·9).
-    // 단조성(되돌아가지 않는다)의 정본은 `completeStep`이다 — `Math.max`도
-    // 조건 분기도 여기서 다시 쓰지 않는다 (계약 §1.5(a)).
-    onFinishListening: (id) => {
-      setCompletedStepCount((count) => completeStep(count, id));
-      dispatch({ type: "back" });
+    // (u7) 판정은 평가가 진다 — `judgeAssessment` → `assessmentCompletesStep`. 셸에
+    // `verdict === "passed"` 리터럴을 쓰지 않는다(계약 §1.5 · §1.8(b)). 완료를 거는
+    // 조건이 생겼을 뿐 `completeStep`·`Math.max` 자체는 한 글자도 안 바뀐다 —
+    // 진행을 쓰는 자리는 여전히 여기 하나다.
+    onFinishListening: (id, results) => {
+      const verdict = judgeAssessment(results, assessmentPassCriterion);
+      if (assessmentCompletesStep(verdict)) {
+        setCompletedStepCount((count) => completeStep(count, id));
+      }
+      // `replace`이지 `push`가 아니다 — `push`면 평가의 `맵으로`가 `back` 한 번으로
+      // 끝난 듣기 세션에 닿는다. `replace`면 스택이 [journey-map, assessment]가 되어
+      // `back` 하나가 맵이다(계약 §1.8(b)).
+      dispatch({ type: "replace", screen: { name: "assessment", stepId: id, results } });
     },
+    // 평가의 `맵으로`. 중도 이탈과 마찬가지로 진행을 갱신하지 않는다 — 판정은 이미
+    // `onFinishListening`에서 끝났다(계약 §1.8(b)).
+    onExitAssessment: () => dispatch({ type: "back" }),
   };
 
   return (
@@ -100,6 +122,14 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           stepOrdinal={journeyStepOrdinal(screen.stepId)}
           onExit={wiring.onExitListening}
           onFinish={wiring.onFinishListening}
+        />
+      );
+    case "assessment":
+      return (
+        <AssessmentScreen
+          stepOrdinal={journeyStepOrdinal(screen.stepId)}
+          results={screen.results}
+          onExit={wiring.onExitAssessment}
         />
       );
     default: {

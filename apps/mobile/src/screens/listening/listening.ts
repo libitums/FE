@@ -29,9 +29,14 @@ export type ListeningQuestion = {
 
 // 세션 상태 (계약 §1.3(c)). 완료도 판정 결과도 응답 여부도 상태에 적지 않는다 —
 // 전부 파생이다 (isSessionComplete · choiceResultAt · hasAnswered).
+//
+// LIB-227 (계약 §1.6(a)): `answeredChoiceIndexes`가 응답 이력을 진다. 적는 것은
+// 「고른 보기」이지 「판정」이 아니다 — 정오는 여전히 judgeAnswer가 문항 데이터에서
+// 파생한다(sessionAnswerResults, 계약 §1.6(b)).
 export type ListeningSessionState = {
   readonly questionIndex: number;
   readonly selectedChoiceIndex: number | null;
+  readonly answeredChoiceIndexes: readonly number[];
 };
 
 export type ListeningSessionAction =
@@ -41,6 +46,7 @@ export type ListeningSessionAction =
 export const initialListeningSessionState: ListeningSessionState = {
   questionIndex: 0,
   selectedChoiceIndex: null,
+  answeredChoiceIndexes: [],
 };
 
 // ---------------------------------------------------------------- 고정 데이터 (계약 §1.4)
@@ -300,6 +306,10 @@ export function isSessionComplete(state: ListeningSessionState, total: number): 
 //
 // **막는 자리가 여기 하나다.** "이미 응답했는가"는 상태 안에 전부 있으므로
 // 컴포넌트에 두 번째 게이트를 두지 않는다 (계약 §1.5(b)).
+//
+// LIB-227 (계약 §1.6(a)): `nextQuestion`이 이력을 쌓는 넷째 줄이다
+// (`{ i, c, a } → { i+1, null, [...a, c] }`). 이력이 느는 자리는 여기 하나다 —
+// `selectChoice`에서 함께 넣으면 같은 응답이 두 곳에 산다(계약 §1.6(a)).
 export function listeningSessionReducer(
   state: ListeningSessionState,
   action: ListeningSessionAction,
@@ -309,15 +319,45 @@ export function listeningSessionReducer(
       if (hasAnswered(state)) {
         return state;
       }
-      return { questionIndex: state.questionIndex, selectedChoiceIndex: action.choiceIndex };
+      return {
+        questionIndex: state.questionIndex,
+        selectedChoiceIndex: action.choiceIndex,
+        answeredChoiceIndexes: state.answeredChoiceIndexes,
+      };
     }
     case "nextQuestion": {
-      if (!hasAnswered(state)) {
+      const { selectedChoiceIndex } = state;
+      if (selectedChoiceIndex === null) {
         return state;
       }
-      return { questionIndex: state.questionIndex + 1, selectedChoiceIndex: null };
+      return {
+        questionIndex: state.questionIndex + 1,
+        selectedChoiceIndex: null,
+        answeredChoiceIndexes: [...state.answeredChoiceIndexes, selectedChoiceIndex],
+      };
     }
   }
+}
+
+// ---------------------------------------------------------------- 이력 → 판정 (계약 §1.6(b))
+// 이력의 각 응답을 그 자리 문항으로 판정한다. judgeAnswer를 다시 쓰지 않고 부른다 —
+// 판정의 정본은 여전히 하나다. 이력이 문항 수보다 짧으면 짧은 쪽 길이로 끝난다
+// (던지지 않는다).
+export function sessionAnswerResults(
+  questions: readonly ListeningQuestion[],
+  answeredChoiceIndexes: readonly number[],
+): readonly ListeningAnswerResult[] {
+  const length = Math.min(questions.length, answeredChoiceIndexes.length);
+  const results: ListeningAnswerResult[] = [];
+  for (let index = 0; index < length; index += 1) {
+    const question = questions[index];
+    const choiceIndex = answeredChoiceIndexes[index];
+    if (question === undefined || choiceIndex === undefined) {
+      break;
+    }
+    results.push(judgeAnswer(question, choiceIndex));
+  }
+  return results;
 }
 
 // ---------------------------------------------------------------- 재생 상태 어휘 (계약 §9.5(c))

@@ -12,7 +12,9 @@ import {
   listeningSessionReducer,
   questionProgressLabel,
   questionsForStep,
+  sessionAnswerResults,
 } from "./listening";
+import type { ListeningAnswerResult } from "./listening";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 import "./listening-screen.css";
@@ -32,7 +34,7 @@ export type ListeningScreenProps = {
   stepId: JourneyStepId;
   stepOrdinal: number;
   onExit: () => void;
-  onFinish: (id: JourneyStepId) => void;
+  onFinish: (id: JourneyStepId, results: readonly ListeningAnswerResult[]) => void;
 };
 
 export function ListeningScreen({
@@ -151,17 +153,26 @@ export function ListeningScreen({
       ) : null}
 
       {/* 완료의 단일 프로브. 두 출구의 라벨이 **다른 문자열**이라 음성 제어에서 갈린다.
-          진행 갱신의 주체는 App이고, 화면은 어느 스텝을 마쳤는지만 되돌려 준다. */}
+          진행을 쓰는 자리는 여전히 App이고, 완료 여부의 판정은 평가가 진다(u7이 D4를
+          뒤집었다, 계약 §0.4 · §1.6(c)). 이 화면이 넘기는 것은 「끝났다」와 「무엇이
+          일어났는지」뿐이다 — 통과 여부를 계산하지도, 알지도 않는다.
+
+          문구가 '맵으로 돌아가기' → '결과 보기'로 바뀐다(계약 §1.6(c)) — 이 버튼의
+          목적지가 맵에서 평가 화면으로 바뀌었고, 통과든 미통과든 이 버튼이 데려가는
+          곳은 결과 화면이다(u7). `data-testid`·클래스·DOM 자리·`accessibility-traits`는
+          그대로다. */}
       {question === null ? (
         <view
           className="listening-screen-finish"
           data-testid="listening-screen-finish"
           accessibility-element={true}
-          accessibility-label="맵으로 돌아가기"
+          accessibility-label="결과 보기"
           accessibility-traits="button"
-          bindtap={() => onFinish(stepId)}
+          bindtap={() =>
+            onFinish(stepId, sessionAnswerResults(questions, state.answeredChoiceIndexes))
+          }
         >
-          <text className="listening-screen-finish-label">맵으로 돌아가기</text>
+          <text className="listening-screen-finish-label">결과 보기</text>
         </view>
       ) : null}
     </view>
