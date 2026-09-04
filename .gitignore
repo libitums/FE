@@ -24,6 +24,9 @@ build/
 build-device/
 build-release/
 build-sim/
+
+# pnpm 로컬 스토어 (설치 산출물)
+.pnpm-store/
 DerivedData/
 xcuserdata/
 *.xcuserstate
