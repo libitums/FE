@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { ListeningScreen } from "./ListeningScreen";
+import type { ListeningAnswerResult } from "./listening";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 본다 (ADR-0006 D4).
@@ -35,7 +36,13 @@ const CHOICE_TESTIDS = [
 function renderOrdering(
   overrides: {
     onExit?: () => void;
-    onFinish?: (id: JourneyStepId) => void;
+    // (계약 §1.6(c), u7 보정) onFinish가 인자 둘을 받는다 — id와 응답 순서·길이대로의
+    // 판정 결과 배열이다. 통과 여부는 듣기가 계산하지 않는다. **둘째 인자를 optional로
+    // 적는다** — 현재 소스(`ListeningScreen.tsx`)는 아직 u2의 1-인자 시그니처이고 이
+    // 화면 컴포넌트는 이 라운드가 고치지 않는다(구현은 다음 단위). optional이 아니면
+    // `onFinish={overrides.onFinish}`가 1-인자 prop 타입에 대입되지 않아 `typecheck`가
+    // red보다 먼저 죽는다 — 그것은 이 라운드가 원하는 red가 아니다.
+    onFinish?: (id: JourneyStepId, results?: readonly ListeningAnswerResult[]) => void;
   } = {},
 ) {
   return render(
@@ -377,22 +384,24 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
   expect(screen.getByTestId("listening-screen-exit")).toBeInTheDocument();
 });
 
-// 단언 12: 마치기를 탭하면 onFinish가 그 스텝 id로 정확히 한 번 불린다 —
-// 진행 갱신의 주체는 App이고, 화면은 어느 스텝을 마쳤는지만 되돌려 준다.
-test("마치기를 탭하면 onFinish가 stepId로 정확히 한 번 불린다", () => {
-  const onFinish = vi.fn<(id: JourneyStepId) => void>();
+// 단언 12: 마치기를 탭하면 onFinish가 그 스텝 id와 응답 결과 배열로 정확히 한 번
+// 불린다 — 진행 갱신의 주체는 App이고, 통과 여부는 평가가 판정한다(계약 §1.6(c),
+// u7 보정). 화면은 「끝났다」와 「무엇이 일어났는지」만 되돌려 준다.
+test("마치기를 탭하면 onFinish가 stepId와 응답 결과 배열로 정확히 한 번 불린다", () => {
+  const onFinish = vi.fn<(id: JourneyStepId, results?: readonly ListeningAnswerResult[]) => void>();
   renderOrdering({ onFinish });
 
   completeAllThree();
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith("ordering");
+  expect(onFinish).toHaveBeenCalledWith("ordering", ["correct", "correct", "correct"]);
 });
 
-// 오답으로 전부 응답해도 완료된다 — 이 슬라이스에 재시도 규칙이 없다.
-test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 불린다", () => {
-  const onFinish = vi.fn<(id: JourneyStepId) => void>();
+// 오답으로 전부 응답해도 완료된다 — 이 슬라이스에 재시도 규칙이 없다. 결과 배열도
+// 전부 incorrect로 응답 순서·길이대로 온다(계약 §1.6(a)·(b)).
+test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 배열과 함께 불린다", () => {
+  const onFinish = vi.fn<(id: JourneyStepId, results?: readonly ListeningAnswerResult[]) => void>();
   renderOrdering({ onFinish });
 
   for (const question of ORDERING_QUESTIONS) {
@@ -402,7 +411,7 @@ test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 불린다
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith("ordering");
+  expect(onFinish).toHaveBeenCalledWith("ordering", ["incorrect", "incorrect", "incorrect"]);
 });
 
 // ---------------------------------------------------------------- 중도 이탈 (단언 13)
@@ -457,15 +466,21 @@ test("다음에 element·label='다음'·traits='button'이 붙는다", () => {
   expect(next).toHaveAttribute("accessibility-traits", "button");
 });
 
-test("마치기에 element·label='맵으로 돌아가기'·traits='button'이 붙는다", () => {
+// (계약 §1.6(c), u7 보정) 완료 버튼의 문구가 '맵으로 돌아가기' → '결과 보기'로 바뀐다 —
+// testid·클래스·DOM 자리·accessibility-traits는 그대로이고 보이는 문구와
+// accessibility-label 두 문자열만 바뀐다. 목적지가 맵이 아니라 평가 화면으로
+// 바뀌었기 때문이다(§1.8). 통과든 미통과든 이 문구는 참이다 — 판정에 따라 가르지
+// 않는다.
+test("마치기에 element·label='결과 보기'·traits='button'이 붙는다", () => {
   renderOrdering();
 
   completeAllThree();
 
   const finish = screen.getByTestId("listening-screen-finish");
   expect(finish).toHaveAttribute("accessibility-element", "true");
-  expect(finish).toHaveAttribute("accessibility-label", "맵으로 돌아가기");
+  expect(finish).toHaveAttribute("accessibility-label", "결과 보기");
   expect(finish).toHaveAttribute("accessibility-traits", "button");
+  expect(finish).toHaveTextContent("결과 보기");
 });
 
 // ADR-0016 D3 `정정 기록`: 상태는 라벨 접미사이고 accessibility-value를 쓰지 않는다.
