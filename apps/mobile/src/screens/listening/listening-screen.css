@@ -4,11 +4,13 @@
 
    **design.md §7.1의 `.listening-screen-body` ⟨제안⟩을 만들지 않았다.** 계약 §1.9의
    클래스 목록이 그 이름을 채택하지 않았고, 목록에 없는 요소를 더하면 §1.7의 렌더
-   스케치(= 속성 계약)를 이 파일이 넓히는 것이 된다. design §5.3이 그 상자에 걸었던
-   `flex: 1`(액션 행을 화면 아래로 미는 구조)은 **액션 행 바로 위 블록**
-   (`-choices` / `-complete`)이 대신 진다 — 계약이 준 이름 안에서 같은 결과다.
-   실기 판정은 design §10-6이고, 어긋나면 그쪽의 대체안(`flex: 1`을 걷고 흐름을
-   따르게 둔다)으로 간다. */
+   스케치(= 속성 계약)를 이 파일이 넓히는 것이 된다.
+
+   LIB-226 (ui): `.listening-screen-scroll`이 3분할의 흐르는 영역이다
+   (.agent-harness/work/lib-226/spec.md §1.2·§1.3, design.md §1.2). design §5.3이
+   `-choices`/`-complete`에 걸었던 `flex: 1`(액션 행을 화면 아래로 미는 구조)은
+   LIB-226 계약 R8·§1.11 #2에 따라 **스크롤 컨테이너**가 진다 — 안쪽에 남기면
+   스크롤 영역이 뷰포트 높이에 갇혀 넘칠 수 없다. */
 
 /* 화면 상자. `journey-map-screen`과 같은 값을 쓴다 (design §0) — 옆에 놓일 화면과
    어휘를 갈리게 하지 않는다. `position: relative`를 두지 않는다: 이 화면에 겹침
@@ -74,6 +76,35 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
+/* LIB-226 (ui) — design §1.2의 3분할 표. 남는 세로를 받는 것은 이 상자다(계약 R8) —
+   `flex: 1`이 그것을 진다. 배경·모서리·그림자·padding은 선언하지 않는다(표의 빈 칸이
+   전부 "없음"이다) — 칠해도 배경 대비가 1.05~1.13:1이라 안 보인다(design §1.2a).
+   위쪽 hairline만 선이다 — 잘린 내용과 헤더가 같은 배경 위 같은 계열 글자라 경계를
+   만드는 것이 선 말고 없다(design §1.2b).
+   `display: flex`·`flex-direction: column`·`gap`은 지운다 — `<scroll-view>`는
+   CSS와 무관하게 강제로 `linear`가 되고, linear 알고리즘에는 `gap`이 없어 셋 다
+   무동작이다(계약 R7.1·R8.1). 자식 간격은 `.listening-screen-content`가
+   `layout-gap-block`으로 진다 — 세로 합계는 거기서 보존된다(design §3.1 — gap 개수
+   보존). `justify-content`는 `LinearSupportFlexStyleMode()` 게이트가 이 앱에서
+   켜져 있는지 확인하지 못해 남긴다(계약 §5.1.1). */
+.listening-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+/* LIB-226 (ui) — `<scroll-view>`의 직계 자식은 최대 하나다(계약 R7.1). 이 상자가
+   `.listening-screen-scroll`이 지던 흐름의 flex 어휘를 그대로 받는다 — 값은 한
+   글자도 안 바뀐다. `flex: 1`·`flex-shrink: 0`은 여기 두지 않는다: 부모
+   (`.listening-screen-scroll`)가 강제 linear라 이 상자에게 `flex-grow`·
+   `flex-shrink`가 읽히지 않는다(계약 R8.1). */
+.listening-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+}
+
 /* design §5.2 — 막대가 아니라 텍스트다. 트랙에 쓸 색이 없고(`gray-300`이 배경 대비
    1.13), 막대는 `accessibility-value`를 요구하는데 그것은 이 저장소에서 죽은
    채널이다 (ADR-0016 D3). */
@@ -96,14 +127,14 @@
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);
 }
 
-/* design §3.2 「목록 gap」 — 이 상자가 지는 값은 간격 하나다. `flex: 1`은 위 주석의
-   구조 값이고 토큰이 아니다 (액션 행을 화면 아래로 민다, design §5.3). */
+/* design §3.2 「목록 gap」 — 이 상자가 지는 값은 간격 하나다. `flex: 1`은
+   `.listening-screen-scroll`이 진다(LIB-226 계약 R8) — 안쪽에 남기면 스크롤 영역이
+   뷰포트 높이에 갇혀 넘칠 수 없다. */
 .listening-screen-choices {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   gap: var(--libitum-spacing-8);
-  flex: 1;
 }
 
 /* design §5.3 「액션 행」 — `step-sheet.css`의 `시작` 버튼과 문자 그대로 같은 값이다.
@@ -133,11 +164,9 @@
   letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
 }
 
-/* design §5.4 「완료 제목」. 완료 상태에서는 이 블록이 액션 행 바로 위이므로
-   `flex: 1`을 여기가 진다 (파일 머리 주석). 점수·정답 수를 표시하지 않는다 —
-   게임화는 범위 밖이다. */
+/* design §5.4 「완료 제목」. `flex: 1`은 `.listening-screen-scroll`이 진다
+   (LIB-226 계약 R8). 점수·정답 수를 표시하지 않는다 — 게임화는 범위 밖이다. */
 .listening-screen-complete {
-  flex: 1;
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);

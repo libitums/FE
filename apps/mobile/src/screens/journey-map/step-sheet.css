@@ -88,13 +88,21 @@
 
 /* design §5.5 "닫기 히트박스" 48×48의 값을 그대로 쓴다. 계약이 아이콘이 아니라
    텍스트 `닫기`를 요구하므로(§1.7) 라벨 색은 design의 닫기 아이콘 색과 같은 토큰을
-   쓴다. */
+   쓴다.
+
+   LIB-226 (ui, W10): **고정 치수가 아니라 하한이다 — 가로도 세로도** (ADR-0020 D5,
+   가로 축은 계약 §1.8.1 C1 · design §6.3(b)가 넓혔다). Dynamic Type이 켜지면 글자만
+   커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 치수로 두면
+   최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4).
+   `align-self: flex-start`는 그 짝이다(계약 §1.8.1 C3 · design §6.3.1) — `min-width`만
+   두면 `.step-sheet-panel`의 교차축 기본값(stretch)을 받아 판 폭짜리 알약이 된다.
+   이 선언이 하는 일은 "stretch를 안 받는 이유"를 확정 치수에서 정렬로 옮기는 것뿐이고,
+   자식 넷 중 이 상자에만 걸린다(design §6.3.1(e)) — 형제(`-title`·`-description`·
+   `-start`)는 이 선언이 닿지 않아 그대로다. */
 .step-sheet-close {
-  width: var(--libitum-spacing-48);
-  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
-     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
-     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  min-width: var(--libitum-spacing-48);
   min-height: var(--libitum-spacing-48);
+  align-self: flex-start;
   border-radius: var(--libitum-radius-full);
   display: flex;
   align-items: center;

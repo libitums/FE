@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { ListeningScreen } from "./ListeningScreen";
 import type { JourneyStepId } from "../journey-map/journey-map";
@@ -662,4 +662,120 @@ test("대역 없이도 화면이 던지지 않고 재생 조작이 '듣기'로 �
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
     ORDERING_QUESTIONS[0].prompt,
   );
+});
+
+// ---------------------------------------------------------------- 스크롤 영역 (LIB-226 계약 §3.2 U1·U2·U3·U6)
+//
+// `@lynx-js/testing-environment`이 `scroll-view`를 실제 요소로 만든다(계약 §3.2
+// 도입부) — `getByTestId`로 잡히고 `within()`으로 안쪽을 질의할 수 있다. 여기서
+// 판정하는 것은 "구조가 계약대로 짜였다"까지다 — 실제로 스크롤되는가·넘치는가·
+// 막대가 뜨는가는 이 계층이 원리적으로 못 본다(jsdom엔 레이아웃이 없다, §3.2 말미).
+
+// U1: 스크롤 컨테이너가 존재한다.
+test("[U1] listening-screen-scroll이 존재한다", () => {
+  renderOrdering();
+
+  expect(screen.getByTestId("listening-screen-scroll")).toBeInTheDocument();
+});
+
+// U2: 흐름 자식(진행·대본·보기 넷)이 스크롤 컨테이너 **안**에 있다.
+test("[U2] 진행·대본·보기 넷이 스크롤 컨테이너 안에 있다", () => {
+  renderOrdering();
+
+  const scroll = screen.getByTestId("listening-screen-scroll");
+  expect(within(scroll).getByTestId("listening-screen-progress")).toBeInTheDocument();
+  expect(within(scroll).getByTestId("listening-prompt-text")).toBeInTheDocument();
+  for (const testid of CHOICE_TESTIDS) {
+    expect(within(scroll).getByTestId(testid)).toBeInTheDocument();
+  }
+});
+
+// U3: 고정 자식(제목·나가기·다음)이 스크롤 컨테이너 **밖**에 있다 — 화면 전체에서는
+// 여전히 찾을 수 있는데 스크롤 컨테이너 안에서는 찾을 수 없다.
+test("[U3] 제목·나가기·다음이 스크롤 컨테이너 밖에 있다", () => {
+  renderOrdering();
+  fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
+
+  const scroll = screen.getByTestId("listening-screen-scroll");
+  expect(within(scroll).queryByTestId("listening-screen-title")).not.toBeInTheDocument();
+  expect(within(scroll).queryByTestId("listening-screen-exit")).not.toBeInTheDocument();
+  expect(within(scroll).queryByTestId("listening-screen-next")).not.toBeInTheDocument();
+
+  expect(screen.getByTestId("listening-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("listening-screen-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("listening-screen-next")).toBeInTheDocument();
+});
+
+// U6: 완료 상태에서 `-complete`는 스크롤 안, `-finish`는 스크롤 밖.
+test("[U6] 완료 상태에서 완료 문구는 스크롤 안, 마치기는 스크롤 밖이다", () => {
+  renderOrdering();
+  completeAllThree();
+
+  const scroll = screen.getByTestId("listening-screen-scroll");
+  expect(within(scroll).getByTestId("listening-screen-complete")).toBeInTheDocument();
+  expect(within(scroll).queryByTestId("listening-screen-finish")).not.toBeInTheDocument();
+  expect(screen.getByTestId("listening-screen-finish")).toBeInTheDocument();
+});
+
+// ---------------------------------------------------------------- 스크롤 영역 접근성 부재 (LIB-226 계약 §3.2.1 U8)
+//
+// R6·R6.1의 「없음」을 지키는 회귀 그물이다(계약 §2.3 · §3.2.1). 오늘의 구현은 이
+// 넷을 하나도 붙이지 않는다 — **red가 없는 것이 이 케이스의 성질이다.** 다음 편집이
+// 넷 중 하나라도 붙이면 여기서만 red가 되고, 그 red는 이 파일을 고치라는 신호가
+// 아니라 계약(§8.3)으로 되돌아가라는 신호다.
+test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는다", () => {
+  renderOrdering();
+
+  const scroll = screen.getByTestId("listening-screen-scroll");
+  expect(scroll).not.toHaveAttribute("accessibility-element");
+  expect(scroll).not.toHaveAttribute("accessibility-label");
+  expect(scroll).not.toHaveAttribute("accessibility-traits");
+  expect(scroll).not.toHaveAttribute("accessibility-elements-hidden");
+});
+
+// ---------------------------------------------------------------- 스크롤 세로 동작 (LIB-226 계약 §3.2.2 U9·U10·U11, r4)
+//
+// R5 폐기 → R5.1~R5.3. `<scroll-view>`는 `scroll-orientation` prop이 없으면
+// `_enableScrollY` 초기값이 NO라 세로 스크롤이 원리적으로 불가능하다(design §8.2).
+// U9·U11은 어트리뷰트 존재/값만 본다 — jsdom은 레이아웃이 없어 실제로 스크롤되는지는
+// 이 계층이 원리적으로 못 본다(§3.2.2 말미, 실기 S8·S9가 답한다).
+//
+// U11의 기댓값이 문자열 "true"인 이유: `@lynx-js/testing-environment`의
+// `__SetAttribute`(ElementPAPI.js:87~89)가 boolean을 `JSON.stringify`로 직렬화한다.
+// `scroll-orientation`은 문자열이라 그대로 "vertical"로 간다.
+
+// U9: scroll-orientation이 "vertical"로 붙어 있다.
+test("[U9] listening-screen-scroll에 scroll-orientation='vertical'이 붙는다", () => {
+  renderOrdering();
+
+  expect(screen.getByTestId("listening-screen-scroll")).toHaveAttribute(
+    "scroll-orientation",
+    "vertical",
+  );
+});
+
+// U11: scroll-bar-enable이 (JSON.stringify를 거친) 문자열 "true"로 붙어 있다.
+test("[U11] listening-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
+  renderOrdering();
+
+  expect(screen.getByTestId("listening-screen-scroll")).toHaveAttribute(
+    "scroll-bar-enable",
+    "true",
+  );
+});
+
+// U10: 스크롤 컨테이너의 직계 요소 자식이 하나를 넘지 않는다. 듣기는 문항 상태와
+// 완료 상태 둘 다 본다 — 문항 상태는 오늘 자식이 넷(-progress·프롬프트·-instruction·
+// -choices)이라 red이고(R7.1), 완료 상태는 자식이 하나(-complete)라 green이다.
+test("[U10] 문항 상태에서 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
+  renderOrdering();
+
+  expect(screen.getByTestId("listening-screen-scroll").children.length).toBeLessThanOrEqual(1);
+});
+
+test("[U10] 완료 상태에서 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
+  renderOrdering();
+  completeAllThree();
+
+  expect(screen.getByTestId("listening-screen-scroll").children.length).toBeLessThanOrEqual(1);
 });

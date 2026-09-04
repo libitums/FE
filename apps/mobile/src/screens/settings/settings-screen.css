@@ -21,3 +21,16 @@
   line-height: var(--libitum-typography-heading-s-line-height);
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
+
+/* LIB-226 (ui) — design §1.2의 3분할 표 · §6.6. 지금은 자식이 없다 — `flex: 1`로
+   남는 높이를 차지하고 배경을 그린다. 규약이 보편이면(요구사항 결정 1) 규약의
+   시각 표현도 보편이어야 한다.
+   `display: flex`·`flex-direction: column`은 지운다 — `<scroll-view>`는 CSS와
+   무관하게 강제로 `linear`가 되어 이 둘이 안 읽힌다(계약 R8.1). `justify-content`는
+   `LinearSupportFlexStyleMode()` 게이트가 이 앱에서 켜져 있는지 확인하지 못해
+   남긴다(계약 §5.1.1). */
+.settings-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
