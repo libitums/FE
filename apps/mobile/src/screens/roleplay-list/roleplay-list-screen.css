@@ -21,3 +21,14 @@
   line-height: var(--libitum-typography-heading-s-line-height);
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
+
+/* LIB-226 (ui) — design §1.2의 3분할 표 · §6.5. 지금은 자식이 없다 — `flex: 1`로
+   남는 높이를 차지하고 배경을 그린다. 규약이 보편이면(요구사항 결정 1) 규약의
+   시각 표현도 보편이어야 한다. */
+.roleplay-list-screen-scroll {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}

@@ -15,6 +15,12 @@ export function RoleplayListScreen(): ReactNode {
       >
         롤플레이
       </text>
+      {/* [흐름] 내용 슬롯 — LIB-226 계약 §1.6. 지금은 자식이 없다. prop을 적지
+          않는다(계약 R5). accessibility-*를 붙이지 않는다(계약 R6). */}
+      <scroll-view
+        className="roleplay-list-screen-scroll"
+        data-testid="roleplay-list-screen-scroll"
+      ></scroll-view>
     </view>
   );
 }

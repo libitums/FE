@@ -43,21 +43,28 @@ export function JourneyMapScreen({
       >
         여정 맵
       </text>
-      <view
-        className="journey-map-screen-map"
-        data-testid="journey-map-screen-map"
-        accessibility-elements-hidden={openStep !== undefined}
-      >
-        {journeySteps.map((step, index) => (
-          <JourneyStepNode
-            key={step.id}
-            id={step.id}
-            title={step.title}
-            status={stepStatusAt(index, completedStepCount)}
-            onSelect={(id) => dispatch({ type: "openStep", stepId: id })}
-          />
-        ))}
-      </view>
+      {/* [흐름] 내용 슬롯 — LIB-226 계약 §1.4. 스크롤 컨테이너 하나가 맵 컨테이너를
+          감싼다. 가림 속성(`accessibility-elements-hidden`)은 맵 컨테이너에 그대로
+          남는다 — 스크롤 컨테이너로 올리면 가리는 범위가 넓어진다(계약 §1.4).
+          prop을 적지 않는다(계약 R5). accessibility-*를 붙이지 않는다(계약 R6). */}
+      <scroll-view className="journey-map-screen-scroll" data-testid="journey-map-screen-scroll">
+        <view
+          className="journey-map-screen-map"
+          data-testid="journey-map-screen-map"
+          accessibility-elements-hidden={openStep !== undefined}
+        >
+          {journeySteps.map((step, index) => (
+            <JourneyStepNode
+              key={step.id}
+              id={step.id}
+              title={step.title}
+              status={stepStatusAt(index, completedStepCount)}
+              onSelect={(id) => dispatch({ type: "openStep", stepId: id })}
+            />
+          ))}
+        </view>
+      </scroll-view>
+      {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식이다(계약 R9). */}
       {openStep === undefined ? null : (
         <StepSheet
           title={openStep.title}
