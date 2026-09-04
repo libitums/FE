@@ -170,8 +170,8 @@ UIFontMetrics(forTextStyle: .body).scaledValue(for: 100) / 100
 ### 근본 원인은 배율이 아니라 **스크롤이 한 곳도 없다는 것**이다
 
 **⟨당시⟩** `scroll-view` 사용이 저장소 전체에 **0건**이었다. 화면은 전부 고정 뷰포트의
-flex 열이었고, **안 들어가는 내용은 닿을 방법이 없었다.** (지금은 다섯 건 —
-[ADR-0022](0022-scroll-regions-and-fixed-affordances.md).)
+flex 열이었고, **안 들어가는 내용은 닿을 방법이 없었다.** (지금은 여섯 건 —
+[ADR-0022](0022-scroll-regions-and-fixed-affordances.md). 평가 화면이 여섯째다.)
 
 `listening-screen.css`의 주석이 이미 경고하고 있었다.
 
@@ -253,8 +253,20 @@ Apple의 최대 접근성 크기는 `.body` 기준 **약 3.1배**(17pt → 53pt)
 | `screens/journey-map/step-sheet.css` | `.step-sheet-close` | `닫기` |
 | `screens/listening/listening-screen.css` | `.listening-screen-exit` | 뒤로 |
 | `screens/listening/listening-screen.css` | `.listening-screen-next` | `다음` |
-| `screens/listening/listening-screen.css` | `.listening-screen-finish` | **`맵으로 돌아가기`** — 가장 긴 라벨 |
+| `screens/listening/listening-screen.css` | `.listening-screen-finish` | **`결과 보기`** — 옛 라벨은 `맵으로 돌아가기`였고 **일곱 중 가장 길었다**(LIB-227이 문구와 목적지를 바꿨다). 셀렉터·값은 그대로다 |
 | `screens/listening/listening-prompt.css` | `.listening-prompt-playback` | `듣기`/`멈춤` |
+
+> **갱신 (2026-09-04, LIB-227) — 여덟째 자리가 붙었다.** 평가 화면의 나가는 수단이다.
+> **결정은 안 바뀐다** — 새 화면이 이 규약을 적용받을 뿐이다.
+>
+> | 파일 | 셀렉터 | 라벨 |
+> | --- | --- | --- |
+> | `screens/assessment/assessment-screen.css` | `.assessment-screen-exit` | `맵으로` |
+>
+> **평가 화면에서 `min-height`를 지는 상자는 이 하나다.** 문항 행
+> (`.assessment-item`)은 **하한을 걸지 않는다** — 텍스트를 품지만 높이를 내용이 정하고
+> `padding`으로만 여백을 준다(LIB-227 design §4.1). **일곱을 여덟으로 세는 근거는
+> 「`height`를 하한으로 바꾼 자리」이지 「텍스트를 품은 상자」가 아니다.**
 
 **`min-height`가 이 저장소에 0건이었다.** 한 파일의 실수가 아니라 **규약의 공백**이다.
 하나만 고치면 나머지 여섯이 *"실기에서 깨지는 걸 볼 때까지"* 남고, 고친 하나와 안
@@ -266,6 +278,8 @@ Apple의 최대 접근성 크기는 `.body` 기준 **약 3.1배**(17pt → 53pt)
 **확인된 것은 일곱 중 하나다.** `.bottom-navigator`만 최대 배율 스크린샷으로
 전후를 봤다(2026-09-04). 나머지 여섯은 **같은 원인·같은 수정이라는 근거로 함께 고친
 것이지 각각 관측한 것이 아니다.** 아래 대가 절이 그것을 재판정 대상으로 든다.
+**나중에 붙은 여덟째(`.assessment-screen-exit`)도 미확인이고, 판정 자리는
+`docs/e2e/assessment.md`의 E5다.**
 
 **design-system에 올릴 것.** Bottom Navigator는 패키지가 스펙을 가진 컴포넌트다.
 스펙이 높이를 고정으로 규정한다면 **Dynamic Type 아래서 그것을 하한으로 읽는 것이
