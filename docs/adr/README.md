@@ -69,7 +69,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | npm 의존의 버전 표기 | 결정 (전부 정확 버전) | [0013](0013-dependencies-and-version-notation.md) |
 | `dependencies`/`devDependencies` 경계 | 결정 | [0013](0013-dependencies-and-version-notation.md) |
 | 명령 인터페이스 | 결정 | [0006](0006-command-interface-and-test-layers.md) |
-| 성능 관측·오프라인 분석·런타임 수집 경계 | 결정 (1단계 분석 + iOS 2단계 수집 + 비차단 native smoke) + 보류 (성능 예산·추가 플랫폼) | [0018](0018-lynx-performance-analysis-boundary.md), [0019](0019-lynx-ios-performance-collection.md), [0020](0020-performance-report-ci-automation.md) |
+| 성능 관측·오프라인 분석·런타임 수집 경계 | 결정 (1단계 분석 + iOS 2단계 수집 + 수동·평일 정기 비차단 native smoke) + 보류 (성능 예산·추가 플랫폼) | [0018](0018-lynx-performance-analysis-boundary.md), [0019](0019-lynx-ios-performance-collection.md), [0020](0020-performance-report-ci-automation.md) |
 | 린터·포매터 | 결정 (`oxlint` · `oxfmt`) | [0006](0006-command-interface-and-test-layers.md) |
 | 테스트 계층 | 결정 (3계층 + 파일 위치) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) D4·**D7** |
 | 상태 관리 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
@@ -82,7 +82,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | private registry 인증 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | 보조기술 시맨틱 (접근성) | 결정 (이름·역할·상태 + **겹침 레이어 격리** + **조작 불가 단위의 역할**) + 범위 밖 명시 (키보드·전환 통지) | [0016](0016-assistive-technology-semantics.md) D1~**D10** — 조작 불가 표기(`accessibility-traits="disabled"`)는 **D10**, 인증 수준은 [0001](0001-repository-goal-and-scope.md) D3이 뺀 그대로 |
 | 형상 관리 위생 (.gitignore) | 결정 | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
-| CI | 결정 (Linux Verify + 보고서 정책, 선택적 비차단 macOS smoke) | [0020](0020-performance-report-ci-automation.md) — [0009](0009-vcs-hygiene-ci-and-merge-gate.md) D3의 유예 조건 충족 |
+| CI | 결정 (Linux Verify + 보고서 정책, 수동·평일 정기 비차단 macOS smoke) | [0020](0020-performance-report-ci-automation.md) — [0009](0009-vcs-hygiene-ci-and-merge-gate.md) D3의 유예 조건 충족 |
 | 머지 방식 | 결정 (squash 고정) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md) |
 | 브랜치 보호·머지 게이트 | 결정 (PR 규약·CI 상태) + 보류 (required check 강제) | [0009](0009-vcs-hygiene-ci-and-merge-gate.md), [0020](0020-performance-report-ci-automation.md) D6 |
 | 규약 문서 | 결정 | [0010](0010-convention-docs-and-design-done-criteria.md) |

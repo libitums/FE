@@ -64,10 +64,11 @@
    통째로 되돌릴 수 있다. 커밋 제목은 PR 제목을 쓴다.
 
 > **CI는 있지만 이 절차는 required check로 강제되지 않는다.** 모든 PR과 `main` push에서
-> Linux Verify가 `pnpm verify`와 보고서 정책을 실행한다. 관련 PR·수동·평일 정기 실행에는
-> iOS performance smoke도 보이지만 초기에는 비차단이다. 저장소가 private이고 현재 플랜의
-> branch protection API가 403이어서 실패한 검사도 우회할 수 있다. 강제되는 줄 알고
-> 방심하지 않는다. (squash 고정은 예외 — GitHub 저장소 설정에서 켠 강제 수단이다.)
+> Linux Verify가 `pnpm verify`와 보고서 정책을 실행한다. iOS performance smoke는 수동 실행과
+> 평일 정기 실행에서만 동작하며 관련 PR이 바뀌어도 자동 시작하지 않는다. 초기 관측 기간에는
+> 비차단이다. 저장소가 private이고 현재 플랜의 branch protection API가 403이어서 실패한
+> 검사도 우회할 수 있다. 강제되는 줄 알고 방심하지 않는다. (squash 고정은 예외 — GitHub
+> 저장소 설정에서 켠 강제 수단이다.)
 
 ([ADR-0009 D4·D5·D6](../adr/0009-vcs-hygiene-ci-and-merge-gate.md),
 [ADR-0020](../adr/0020-performance-report-ci-automation.md))

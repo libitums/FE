@@ -76,17 +76,23 @@ DerivedData는 임시 디렉터리에 두고 성공·실패 모두 삭제한다.
 종료·삭제하지만 호출자가 준 Simulator는 삭제하지 않는다. Host는 실행을 시도한 경우
 종료한다. 원시 레코드나 Simulator sandbox 절대 경로는 출력하지 않는다.
 
-### D4. macOS smoke는 선택적으로 실행하고 처음에는 비차단으로 둔다
+### D4. macOS smoke는 수동·평일 정기 관측으로만 실행한다
 
-`.github/workflows/performance-smoke.yml`은 다음 경우에 `macos-26` arm64, Xcode 26.5,
+`.github/workflows/performance-smoke.yml`은 다음 경우에만 `macos-26` arm64, Xcode 26.5,
 iOS 26.5 환경에서 D3을 실행한다.
 
 - 수동 `workflow_dispatch`
 - 평일 UTC 18:00 정기 실행
-- iOS host, 성능 devtool, 앱 runtime·package·lockfile, workflow 등 관련 경로가 바뀐 PR
 
-job에 `continue-on-error: true`를 두어 초기 관측 기간에는 실패가 머지를 차단하지 않는다.
-raw capture artifact 업로드나 Markdown 작성·커밋 단계는 두지 않는다.
+관련 경로가 바뀐 PR도 macOS smoke를 자동 시작하지 않는다. job에 `continue-on-error: true`를
+두어 초기 관측 기간의 실패를 허용한다. raw capture artifact 업로드나 Markdown 작성·커밋
+단계는 두지 않는다.
+
+2026-09-04 PR #37의 macOS smoke가 성공해 수집 연결은 확인했지만 전체 실행은 32분 41초,
+그중 Release `xcodebuild`는 약 27분 43초가 걸렸다. 이 비용은 관련 PR마다 자동 실행하기에는
+크므로 수동·평일 정기 관측으로 한정한다. 빌드 시간과 runner 비용 최적화는 별도
+[#39](https://github.com/libitums/FE/issues/39)로 분리하고, 이 결정 변경에는 최적화 구현을
+포함하지 않는다.
 
 ### D5. 원시 자료 비게시와 숫자 gate 보류를 자동화보다 우선한다
 
@@ -98,11 +104,12 @@ raw capture artifact 업로드나 Markdown 작성·커밋 단계는 두지 않�
 수치 threshold를 추가하지 않는다. 현재 smoke의 pass/fail은 수집·파싱 경로가 동작하고
 Rendering/Memory 증거가 존재하는지만 뜻한다.
 
-### D6. CI 상태는 제공하지만 branch protection 강제는 계속 보류한다
+### D6. PR에는 Linux CI 상태를 제공하지만 branch protection 강제는 계속 보류한다
 
-Linux Verify와 macOS smoke는 PR에서 보이지만 현재 플랜의 branch protection API 403 때문에
-`main`의 required check로 강제할 수 없다. ADR-0009 D4의 PR 규약과 D5의 squash 설정은
-유지한다. CI가 생겼다는 사실을 머지 게이트가 생겼다는 뜻으로 기록하지 않는다.
+Linux Verify는 PR에서 보이지만 현재 플랜의 branch protection API 403 때문에 `main`의
+required check로 강제할 수 없다. macOS smoke는 수동·평일 정기 관측 전용이라 PR마다 상태를
+만들지 않는다. ADR-0009 D4의 PR 규약과 D5의 squash 설정은 유지한다. CI가 생겼다는 사실을
+머지 게이트가 생겼다는 뜻으로 기록하지 않는다.
 
 ## 버린 대안
 
@@ -122,7 +129,8 @@ Linux Verify와 macOS smoke는 PR에서 보이지만 현재 플랜의 branch pro
 ## 대가
 
 - branch protection이 없어 Linux Verify 실패를 무시하고 머지할 수 있다.
-- macOS smoke는 비차단이므로 native 회귀가 즉시 머지를 막지는 않는다.
+- macOS smoke는 관련 PR에서 자동 실행되지 않으므로 native 회귀가 PR마다 즉시 드러나거나
+  머지를 막지는 않는다.
 - 관련 앱 변경에는 보고서 작성 비용이 매번 들고, 정책의 경로 분류가 새 구조를 자동으로
   알지는 못한다.
 - Simulator smoke는 실기 성능과 제품 성능 예산을 대표하지 않는다.
@@ -131,8 +139,9 @@ Linux Verify와 macOS smoke는 PR에서 보이지만 현재 플랜의 branch pro
 ## 재검토 조건
 
 - private 저장소에서 branch protection API를 사용할 수 있게 될 때 → D6의 required check
-- macOS smoke 20회에서 간헐 실패율이 2% 이하이고 평균 실행 시간이 예산 안에 들 때 → D4의
-  필수 검사 승격 여부
+- 별도 최적화 [#39](https://github.com/libitums/FE/issues/39)에서 실행 시간과 비용을 줄인 뒤
+  macOS smoke 20회에서 간헐 실패율이 2% 이하이고 평균 실행 시간이 예산 안에 들 때 → D4의
+  PR 자동 trigger 복원과 필수 검사 승격 여부
 - 같은 시나리오·기기·빌드 baseline이 3회 이상이고 회귀 허용폭 요구가 생길 때 → D5의 숫자
   성능 gate
 - raw capture의 원격 보존 요구가 생길 때 → D3·D5의 접근 권한·보존 기간·정제·삭제 정책

@@ -13,7 +13,6 @@ ADR-0018은 저장된 PerformanceEntry와 전역 메모리 snapshot을 검증하
 기능 보고서가 계속 `미측정`에 머문다. 이제 다음 조건을 만족하는 수집 이음매가 필요하다.
 
 - 제품 화면 위에 overlay나 개발 UI를 만들지 않는다.
-- 병렬 Screen 2 작업의 화면·내비게이션·호스트 view 파일을 수정하지 않는다.
 - 초기 이벤트를 놓치지 않고 iOS 공식 Performance API 값을 원형에 가깝게 보존한다.
 - 메모리 query는 필요한 시점에만 호출하고 reporter callback에서 UIKit을 만지지 않는다.
 - 원시 캡처는 로컬에만 두고, 검토한 수치만 ADR-0018의 보고서 위치에 기록한다.
@@ -118,16 +117,17 @@ NDJSON에는 로컬 시간과 runtime metadata가 포함될 수 있으므로 저
 - integration: simctl 호출 순서, 내장 번들 실행 인자, 실제 분석기 연결, smoke 단계·실패
   전파·성공/실패 cleanup
 - native build: 설치된 Lynx 4.0.1 헤더에 대한 iOS Simulator 컴파일
-- runtime: 로컬 smoke 또는 관련 PR·수동·정기 macOS workflow에서 opt-in 실행 후
+- runtime: 로컬 smoke 또는 수동·평일 정기 macOS workflow에서 opt-in 실행 후
   Rendering/Memory 증거 검증
 
-macOS workflow는 초기에는 비차단이며 원시 캡처를 artifact나 로그로 게시하지 않는다.
+macOS workflow는 관련 PR에서 자동 실행하지 않고 초기에는 비차단이며, 원시 캡처를
+artifact나 로그로 게시하지 않는다.
 시뮬레이터 측정은 실기 baseline이나 성능 예산을 대신하지 않는다. 같은 조건의 반복값이
 세 번 이상 쌓이고 허용폭 요구가 생기기 전에는 수치 pass/fail을 만들지 않는다.
 
 ## 버린 대안
 
-- **화면 위 분석 UI를 추가한다** — 측정 대상 렌더 비용을 바꾸고 Screen 2 작업면과 겹친다.
+- **화면 위 분석 UI를 추가한다** — 측정 대상 렌더 비용을 바꾸고 수집 도구의 범위를 벗어난다.
 - **ReactLynx observer와 native callback을 둘 다 쓴다** — 같은 event의 중복 제거 계약이
   추가되고 초기 등록 위치가 화면 코드로 번진다.
 - **항상 캡처한다** — 평소 앱 실행에도 파일 쓰기와 memory query 비용을 넣는다.

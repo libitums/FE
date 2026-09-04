@@ -102,9 +102,10 @@ pnpm performance:reports:check --base <base-commit> --head <head-commit>
 - `미측정`을 baseline 또는 성능 통과로 표현함
 
 앱 런타임 변경이 없으면 "적용 대상 아님"으로 성공한다. GitHub Actions의 Linux Verify는
-모든 PR과 `main` push에서 `pnpm verify` 뒤 이 명령을 실행한다. 별도 macOS workflow는 관련
-PR·수동·평일 정기 실행에서 `performance:capture:smoke`를 실행하되 초기에는 비차단이다.
-둘 다 원본 artifact를 올리거나 Markdown을 자동 작성·커밋하지 않는다.
+모든 PR과 `main` push에서 `pnpm verify` 뒤 이 명령을 실행한다. 별도 macOS workflow는 수동
+`workflow_dispatch`와 평일 정기 `schedule`에서만 `performance:capture:smoke`를 실행한다.
+관련 PR 변경은 자동 실행하지 않으며 초기에는 비차단이다. 둘 다 원본 artifact를 올리거나
+Markdown을 자동 작성·커밋하지 않는다.
 
 ## 입력
 
@@ -220,8 +221,8 @@ Trace에서는 다음 흐름으로 원인을 좁힌다.
 
 2단계는 iOS native lifecycle callback, 전역 메모리 query, 바텀 네비게이션 timing flag,
 시뮬레이터 start/path/report/stop과 재사용 smoke를 연결한다. Linux CI는 보고서 기록 의무를,
-선택적 비차단 macOS CI는 native 수집 연결을 확인한다. ReactLynx observer는 native event와
-중복되므로 등록하지 않는다. 다음 항목은 아직 범위 밖이다.
+수동·평일 정기 비차단 macOS CI는 native 수집 연결을 확인한다. ReactLynx observer는 native
+event와 중복되므로 등록하지 않는다. 다음 항목은 아직 범위 밖이다.
 
 - Trace 캡처 또는 파싱 자동화
 - Android와 실제 iOS 기기의 자동 설치·수집

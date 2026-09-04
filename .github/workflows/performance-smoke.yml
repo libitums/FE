@@ -4,26 +4,13 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 18 * * 1-5"
-  pull_request:
-    paths:
-      - ".github/workflows/performance-smoke.yml"
-      - ".npmrc"
-      - ".nvmrc"
-      - "apps/ios/**"
-      - "apps/mobile/devtools/lynx-performance/**"
-      - "apps/mobile/package.json"
-      - "apps/mobile/src/**"
-      - "package.json"
-      - "packages/**"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
 
 permissions:
   contents: read
   packages: read
 
 concurrency:
-  group: performance-smoke-${{ github.event.pull_request.number || github.ref }}
+  group: performance-smoke-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
