@@ -6,6 +6,13 @@ import UIKit
 /// **커스텀 네이티브 엘리먼트도 만들지 않는다** (ADR-0017 D1이 명시로 더한 항목).
 final class ViewController: UIViewController {
   private var lynxView: LynxView?
+  private var contentSizeObserver: NSObjectProtocol?
+
+  deinit {
+    if let contentSizeObserver {
+      NotificationCenter.default.removeObserver(contentSizeObserver)
+    }
+  }
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -29,7 +36,12 @@ final class ViewController: UIViewController {
       config.register(AudioPlaybackModule.self)
       builder.config = config
       builder.screenSize = UIScreen.main.bounds.size
-      builder.fontScale = 1.0
+      // 시스템 글자 크기를 코어 배율로 넘긴다 (ADR-0020 D1).
+      //
+      // 이 줄은 원래 `= 1.0`이었다. 그것은 끄는 코드가 아니라 **프레임워크 기본값을
+      // 다시 적은 것**이었고(`LynxBaseConfigurator.mm:26`), 그래서 「의도적으로 정한
+      // 값」처럼 읽혀 아무도 의심하지 않았다. **켜는 코드가 없어서 꺼져 있었다.**
+      builder.fontScale = FontScale.current(compatibleWith: nil)
     }
     lynxView.layoutWidthMode = .exact
     lynxView.layoutHeightMode = .exact
@@ -38,6 +50,36 @@ final class ViewController: UIViewController {
     self.lynxView = lynxView
 
     lynxView.loadTemplate(fromURL: Self.templateURL, initData: nil)
+    observeContentSizeCategory()
+  }
+
+  /// 설정에서 글자 크기를 바꾸면 **앱을 다시 켜지 않고** 따라간다 (ADR-0020 D2).
+  ///
+  /// `builder.fontScale`은 뷰를 만들 때 **한 번** 읽힌다. 그것만 두면 사용자가 설정을
+  /// 바꿔도 다음 실행까지 그대로다. **보조기술 사용자가 글자를 키우는 순간은 대개
+  /// 「지금 안 보여서」다** — 다음 실행까지 기다리라는 것은 답이 아니다.
+  ///
+  /// `LynxView`가 `updateFontScale:`를 공개한다(`LynxView.h:251`). 뷰를 다시 만들지
+  /// 않고 배율만 갈아끼울 수 있어서, 화면 상태(열려 있던 시트·진행 중인 문항)가
+  /// 살아남는다. **뷰를 새로 만드는 쪽을 고르지 않은 이유가 그것이다.**
+  private func observeContentSizeCategory() {
+    contentSizeObserver = NotificationCenter.default.addObserver(
+      forName: UIContentSizeCategory.didChangeNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      guard let self, let lynxView = self.lynxView else { return }
+      lynxView.updateFontScale(FontScale.current(compatibleWith: self.traitCollection))
+      // **배율만 넘기면 화면이 안 바뀐다.** `ElementManager::UpdateFontScale`
+      // (`element_manager.cc:722`)은 env를 갈고 `UpdateDynamicElementStyle`로 스타일을
+      // 다시 계산하지만 **렌더 파이프라인을 요청하지 않는다.** 바로 아래 `UpdateColorScheme`
+      // (:733)은 같은 자리에서 `RequestResolve(options)`를 부른다 — 그 한 줄이 없다.
+      //
+      // 그래서 레이아웃을 우리가 걷어찬다. `SetRootOnLayout`과
+      // `UpdateLynxEnvForLayoutThread`는 이미 불렸으므로 레이아웃 스레드는 새 배율을
+      // 들고 있고, 남은 것은 그것을 돌리는 것뿐이다.
+      lynxView.triggerLayout()
+    }
   }
 
   /// 번들을 어디서 읽을지는 **빌드 구성이 가른다** (ADR-0012 D2).
