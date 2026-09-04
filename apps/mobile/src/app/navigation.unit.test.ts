@@ -297,3 +297,90 @@ describe("navReducer — listening 화면 (LIB-223)", () => {
     expect(currentScreen(back)).toEqual({ name: "listening", stepId: "ordering" });
   });
 });
+
+// LIB-227 — 평가 화면. 계약(.agent-harness/work/lib-227/spec.md) §1.2·§1.8(a)가
+// `Screen` union에 `"assessment"` 멤버 하나(`stepId` · `results`)를 요구한다.
+//
+// ⚠ **이 describe의 케이스는 red-green으로 얻은 게 아니다.** `navReducer`는 다섯
+// 액션 어디서도 `screen.name`을 읽지 않는다 — `push`·`replace`는 `action.screen`을
+// 배열에 그대로 넣을 뿐이라 `Screen`에 대해 완전히 제네릭이다. `Screen` union에
+// 멤버가 느는 것은 **순전히 타입** 층위의 사실이고 Vitest는 실행 전에 타입을 지운다.
+// 그래서 아래 케이스는 `navigation.ts`에 `"assessment"` 멤버가 아직 없어도(구현 전)
+// **첫 실행에 통과한다.**
+//
+// 그러므로 이 케이스들의 성격은 (1) `Screen`에 평가 멤버가 있다는 것의 **타입 층위
+// 주장**을 하는 **회귀 그물**이지 (2) 관찰 가능한 동작의 판정자가 아니다. **관찰
+// 가능한 동작**(평가 화면이 실제로 뜬다 · `back` 하나로 맵에 닿는다 · 미통과면 진행이
+// 갱신되지 않는다)의 판정자는 `App.integration.test.tsx`의 **I1 · I3 · I6**이다.
+describe("navReducer — assessment 화면 (LIB-227)", () => {
+  const listeningScreen = { name: "listening", stepId: "ordering" } as const;
+  const assessmentScreen = {
+    name: "assessment",
+    stepId: "ordering",
+    results: ["correct", "incorrect", "correct"],
+  } as const;
+
+  // 실제 결선(계약 §1.8(b))이 만드는 상태를 그대로 재현한다 — 여정 탭에서 학습
+  // 화면을 push한 뒤, 평가로의 전환은 `replace`다(`push`가 아니다).
+  function journeyNavAtListening(): Nav {
+    const journey = navReducer(initialNav, { type: "switchTab", tab: "journey" });
+    return navReducer(journey, { type: "push", screen: listeningScreen });
+  }
+
+  it("replace → 여정 탭 스택 깊이가 그대로이고 최상단이 assessment 화면이다", () => {
+    const next = navReducer(journeyNavAtListening(), {
+      type: "replace",
+      screen: assessmentScreen,
+    });
+
+    expect(next.stacks.journey).toHaveLength(2);
+    expect(next.stacks.journey[1]).toEqual(assessmentScreen);
+    expect(next.stacks.home).toEqual(baseStacks.home);
+  });
+
+  it("replace 뒤 currentScreen이 assessment 화면을 그대로 돌려준다 — stepId·results가 스택을 타고 나온다", () => {
+    const next = navReducer(journeyNavAtListening(), {
+      type: "replace",
+      screen: assessmentScreen,
+    });
+
+    const current = currentScreen(next);
+
+    expect(current).toBe(assessmentScreen);
+    expect(current.name).toBe("assessment");
+    expect(current.name === "assessment" ? current.stepId : null).toBe("ordering");
+    expect(current.name === "assessment" ? current.results : null).toEqual([
+      "correct",
+      "incorrect",
+      "correct",
+    ]);
+  });
+
+  it("replace 뒤 back → 여정 탭 스택이 깊이 1로 돌아오고 최상단이 여정 맵이다 — 듣기 화면이 스택에 남지 않는다", () => {
+    const replaced = navReducer(journeyNavAtListening(), {
+      type: "replace",
+      screen: assessmentScreen,
+    });
+
+    const next = navReducer(replaced, { type: "back" });
+
+    expect(next.stacks.journey).toHaveLength(1);
+    expect(currentScreen(next)).toEqual({ name: "journey-map" });
+  });
+
+  it("replace 뒤 탭을 왕복해도 여정 스택에 평가 화면이 남는다", () => {
+    const replaced = navReducer(journeyNavAtListening(), {
+      type: "replace",
+      screen: assessmentScreen,
+    });
+
+    const away = navReducer(replaced, { type: "switchTab", tab: "home" });
+    const back = navReducer(away, { type: "switchTab", tab: "journey" });
+
+    expect(away.tab).toBe("home");
+    expect(away.stacks.journey).toHaveLength(2);
+    expect(back.tab).toBe("journey");
+    expect(back.stacks.journey).toHaveLength(2);
+    expect(currentScreen(back)).toEqual(assessmentScreen);
+  });
+});

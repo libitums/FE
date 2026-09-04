@@ -286,6 +286,11 @@ test("학습 화면에서도 탭 넷이 그대로 조작되고, 돌아오면 화
 });
 
 // 계약 §3.3-3 · **수용 기준 8**: 루프 한 판이 진행을 갱신한다.
+//
+// LIB-227: `onFinishListening`이 이제 평가 화면으로 `replace`한다
+// (.agent-harness/work/lib-227/spec.md §1.8(b)) — `결과 보기` 탭 뒤 곧장 맵이 뜨지
+// 않는다. 평가의 `맵으로`를 눌러야 맵에 닿는다. 경로가 길어질 뿐 단언의 끝은
+// 같다(같은 계약 §7.6.2).
 test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다음이 current다", () => {
   render(<App />);
   startStep("ordering");
@@ -295,6 +300,7 @@ test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다
   expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
 
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
   expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
@@ -308,22 +314,11 @@ test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다
   );
 });
 
-// 계약 §3.3-4: 오답이어도 진행한다. 이 슬라이스에 재시도 규칙이 없다는 것을 못박는다 —
-// 정답률에 따라 갈리는 분기가 생기면 여기서 갈린다.
-test("전부 오답으로 마쳐도 진행은 같은 결과로 갱신된다", () => {
-  render(<App />);
-  startStep("ordering");
-
-  answerAllQuestions("ordering", incorrectPick);
-
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
-
-  expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
-  expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
-    "data-status",
-    "current",
-  );
-});
+// (LIB-227 u7) 이 자리에 있던 "전부 오답으로 마쳐도 진행은 같은 결과로 갱신된다"는
+// u7이 뒤집은 규칙(*"미통과도 완료를 건다"*)을 그대로 못박고 있어 무효가 됐다
+// (.agent-harness/work/lib-227/spec.md §1.4 · §4.3 · §7.6.2). 대체하는 케이스는
+// 아래 "LIB-227 — 평가 화면" 절의 I6이다 — 같은 입력(전부 오답)에서 기대가
+// 반대로 뒤집힌다: 완료가 걸리지 않고 그 스텝이 여전히 `current`로 남는다.
 
 // 계약 §3.3-5 · **수용 기준 10**: 완료 전 이탈은 진행을 바꾸지 않는다.
 // 응답을 하나 남긴 채 나간다 — 아무것도 안 한 채 나가면 "진행이 안 바뀐다"가
@@ -355,11 +350,14 @@ test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
 
 // 계약 §3.3-6 · 수용 기준 9의 **결선 쪽** 관찰 (순수 함수 쪽은 journey-map.unit.test.ts).
 // 진행이 3이 된 뒤 서수 1인 스텝을 다시 돌아도 3에서 줄지 않는다.
+// LIB-227: 두 finish 탭 모두 평가 화면을 거친다 — 각 탭 뒤에 평가의 `맵으로`를 눌러야
+// 다음 단언(맵의 스텝 상태)에 닿는다.
 test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는다", () => {
   render(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
   expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
     "data-status",
     "current",
@@ -369,6 +367,7 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
   expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("1단계 · 듣기");
   answerAllQuestions("greeting", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
   expect(screen.getByTestId("journey-step-node-greeting")).toHaveAttribute("data-status", "done");
   expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
@@ -382,11 +381,13 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
 // `JourneyMapScreen`이 언마운트되며 시트 상태가 버려지는 것의 결과다 (§1.7).
 // 맵 제목을 함께 읽어 "맵이 떠 있는데 시트만 없다"를 본다 — 부재만 보면 화면이
 // 통째로 비어도 통과한다.
+// LIB-227: 완료 경로는 평가 화면을 거친다 — 평가의 `맵으로`까지 눌러야 맵에 닿는다.
 test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있다", () => {
   render(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
@@ -420,11 +421,13 @@ test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", (
 // 않는다** — 은 여기서 실행 가능하다. 진행을 3으로 만든 뒤 앱을 통째로 내리고 다시
 // 띄운다. 어딘가에 영속됐다면 새 인스턴스가 3을 복원해 여기서 갈린다.
 // (실기의 "앱 재시작 후 초기값 복귀"는 이 단언의 대체가 아니라 나머지 절반이다)
+// LIB-227: 완료를 확인하려면 평가의 맵으로까지 눌러야 맵의 스텝 상태를 읽을 수 있다.
 test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행으로 돌아온다", () => {
   render(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
   expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
 
   cleanup();
@@ -439,6 +442,134 @@ test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행
     "data-status",
     "locked",
   );
+});
+
+// -------------------------------------------------------------------------
+// LIB-227 — 평가 화면. 계약(.agent-harness/work/lib-227/spec.md) §4.3의 I1~I6을
+// 여기서 검증한다. `App` · `navReducer`(`replace`) · `JourneyMapScreen` ·
+// `ListeningScreen` · `AssessmentScreen`이 실제로 맞물릴 때만 보이는 것들이다 —
+// `Screen` union 확장 · `replace` 결선 · 듣기에서 평가로 넘어가는 데이터 · **판정이
+// 진행에 닿는 자리**(u7)는 `ui`가 못 본다(계약 §7.3). 목킹하지 않는다.
+//
+// 기존 케이스는 하나도 지우지 않는다 — 다만 `:313` 부근에 있던 구 "전부 오답으로
+// 마쳐도 진행은 같은 결과로 갱신된다"는 u7이 뒤집은 규칙을 못박고 있어 무효가 됐고,
+// 아래 I6이 그 자리를 대체한다(계약 §4.3 · §7.6.2).
+
+// I1 · 수용 기준 1 주 판정자: 마지막 문항 뒤 `결과 보기`를 누르면 평가 화면이 뜬다.
+// `mixedPick`은 가운데 문항만 오답이라 2/3 — `minCorrectCount: 2`에서 정확히
+// 통과 경로다(계약 §1.4의 경계 주석).
+test("I1: 문항 셋을 통과 경로로 마치고 결과 보기를 누르면 평가 화면이 뜨고 제목이 그 스텝의 서수다", () => {
+  render(<App />);
+  startStep("ordering");
+
+  answerAllQuestions("ordering", mixedPick);
+  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+
+  expect(screen.getByTestId("assessment-screen-title")).toHaveTextContent("3단계 · 평가");
+  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
+});
+
+// I2: 문항 행 N개의 data-result가 실제로 고른 보기의 정오와 일치한다 — 듣기의 이력이
+// 평가까지 온다. `mixedPick`은 인덱스 1만 오답이다.
+test("I2: 평가의 문항 행 data-result가 실제로 고른 보기의 정오와 일치한다", () => {
+  render(<App />);
+  startStep("ordering");
+  answerAllQuestions("ordering", mixedPick);
+  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+
+  expect(screen.getByTestId("assessment-item-0")).toHaveAttribute("data-result", "correct");
+  expect(screen.getByTestId("assessment-item-1")).toHaveAttribute("data-result", "incorrect");
+  expect(screen.getByTestId("assessment-item-2")).toHaveAttribute("data-result", "correct");
+});
+
+// I3: 평가의 `맵으로`가 `back` 하나로 맵에 닿는다 — `replace` 결선의 증거다. `push`였다면
+// `back` 한 번의 목적지가 듣기 화면이었을 것이다(계약 §1.8(b)).
+test("I3: 평가의 맵으로를 누르면 back 하나로 맵에 닿는다", () => {
+  render(<App />);
+  startStep("ordering");
+  answerAllQuestions("ordering", mixedPick);
+  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+
+  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
+});
+
+// I4 · 수용 기준 4 앞쪽 절반: 통과가 완료를 걸었다 — u7 전에는 "듣기가 걸었다"였다.
+test("I4: 통과 뒤 맵으로 돌아오면 그 스텝이 done이고 다음이 current다", () => {
+  render(<App />);
+  startStep("ordering");
+  answerAllQuestions("ordering", mixedPick);
+  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+
+  expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
+  expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
+    "data-status",
+    "current",
+  );
+});
+
+// I5: 중도 이탈에는 평가가 없다 — 문항 하나만 응답하고 헤더 `맵으로`로 나가면 진행이
+// 안 바뀌고 평가 화면 자체가 뜨지 않는다.
+test("I5: 문항 하나만 응답하고 헤더 맵으로 나가면 진행이 안 바뀌고 평가가 뜨지 않는다", () => {
+  render(<App />);
+  startStep("ordering");
+
+  const answerIndex = questionsForStep("ordering")[0].answerIndex;
+  fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
+
+  fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
+
+  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute(
+    "data-status",
+    "current",
+  );
+  expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
+    "data-status",
+    "locked",
+  );
+});
+
+// I6 (u7) · 수용 기준 4 뒤쪽 절반 · 주 판정자. `App.integration.test.tsx`에 있던 구
+// 케이스("전부 오답으로 마쳐도 진행은 같은 결과로 갱신된다")가 u7로 뒤집혀 이 케이스가
+// 그 자리를 대체한다(계약 §4.3 · §7.6.2). 셋을 한 흐름에서 본다: (1) 판정이
+// `data-verdict="failed"`다 (2) 맵의 그 스텝이 여전히 `current`이고 다음이 `locked`
+// 그대로다 — 진행이 안 늘었다 (3) 그 노드를 다시 눌러 시트의 `시작`으로 듣기에 다시
+// 들어갈 수 있다(계약 §1.8.1이 코드로 확인한 경로). `incorrectPick`은 0/3이라
+// `minCorrectCount: 2`에서 확실히 미통과다.
+test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 current로 남아 다시 들어갈 수 있다", () => {
+  render(<App />);
+  startStep("ordering");
+
+  answerAllQuestions("ordering", incorrectPick);
+  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+
+  expect(screen.getByTestId("assessment-screen-verdict")).toHaveAttribute("data-verdict", "failed");
+
+  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+
+  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute(
+    "data-status",
+    "current",
+  );
+  expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
+    "data-status",
+    "locked",
+  );
+
+  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+
+  expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("3단계 · 듣기");
+  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
 });
 
 // -------------------------------------------------------------------------
@@ -577,6 +708,10 @@ test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아�
 // **맵으로 돌아온 시점에 멎지 않은 재생이 하나도 남아 있지 않은지**를 묻는다 —
 // 그것이 §9.6이 지키려던 사실(*화면을 떠나면 소리가 계속 나지 않는다*)이다.
 // tap이 새 `play`를 만들어 내지 않는다는 것도 함께 못박는다.
+// LIB-227: `결과 보기` 탭 뒤 평가 화면이 뜬다 — 평가 화면은 오디오를 전혀 만지지
+// 않으므로(계약 §1.1 "문항 데이터를 읽지 않는다") 마운트돼도 재생 호출이 늘지 않는다.
+// 그 사실을 평가의 맵으로를 누르기 **전에** 먼저 확인하고, 맵에 닿은 뒤에도 다시
+// 확인한다 — 경로가 늘 뿐 "멎지 않은 재생이 남지 않는다"의 뜻은 그대로다.
 test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남지 않는다", () => {
   const calls = stubHost();
   render(<App />);
@@ -596,6 +731,11 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
   ]);
 
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+
+  expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
+  expect(sourcesOf(calls)).toEqual(atComplete);
+
+  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
   expect(sourcesOf(calls)).toEqual(atComplete);
@@ -637,6 +777,12 @@ test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 �
 // 빠지면 맨 식별자 접근에서 ReferenceError가 나고 렌더 경로가 통째로 죽는다.
 // 화면이 「재생 중」으로 보이지 않는 것(`듣기`에 머문다)도 함께 본다 — 모듈이 없는데
 // `멈춤`에 갇히면 고장이 정상인 척한다 (계약 §9.7).
+//
+// LIB-227: 완료 뒤 평가 화면이 뜬다. 평가 화면은 마운트 때 `announce`를 부르고
+// (.agent-harness/work/lib-227/spec.md §3.3), `lib/accessibility.ts`의
+// `typeof NativeModules === "undefined"` 가드가 그 호출을 받아 던지지 않는다(같은
+// 계약 §3.2 규칙 1·5) — 이 케이스가 그 가드가 실제로 일하는지를 보는 자리가 됐다.
+// 경로만 늘리고 판정은 그대로 "던지지 않는다"와 "맵에서 done"이다.
 test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '듣기'에 머문다", () => {
   // 이 파일의 마지막 케이스다 — 앞의 여섯이 세운 대역이 `afterEach`에서 실제로 걷혔는지를
   // 여기서 한 줄로 못박는다. 새면 위쪽 스무 케이스가 「모듈이 없는 환경」을 더 이상 돌지
@@ -658,7 +804,10 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
 
   expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
 
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  expect(() => fireEvent.tap(screen.getByTestId("listening-screen-finish"), {})).not.toThrow();
+  expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
+
+  expect(() => fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {})).not.toThrow();
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
   expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
@@ -667,9 +816,9 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
 // -------------------------------------------------------------------------
 // LIB-226 — 스크롤 영역 규약. 계약 §3.3(I1·I2)을 여기서 검증한다.
 //
-// **왜 `integration`인가.** 탭 전환·스택 진입을 거쳐 다섯 화면 전부에서 스크롤
+// **왜 `integration`인가.** 탭 전환·스택 진입을 거쳐 여섯 화면 전부에서 스크롤
 // 컨테이너를 확인하는 것은 단일 컴포넌트를 고립 렌더해서는 성립하지 않는다 —
-// `App` · `navReducer` · `BottomNavigator` · 화면 다섯의 협력이다
+// `App` · `navReducer` · `BottomNavigator` · 화면 여섯의 협력이다
 // (계약 test.integration.applicability 사유). 목킹하지 않는다 — 외부 IO가 없다.
 //
 // **왜 이 자리에 두는가.** 이 이슈의 위험은 한 화면의 버그가 아니라 **부분
