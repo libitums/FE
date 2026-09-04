@@ -204,6 +204,13 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
   **인라인 `style`을 쓰지 않는다.**
 - **값을 하드코딩하지 않는다.** 필요한 토큰이 패키지에 없으면 이름을 지어내지 말고
   design-system에 변경을 요청한다.
+- **텍스트를 품은 상자에 `width`·`height`를 쓰지 않는다. `min-width`·`min-height`를 쓴다.**
+  Dynamic Type은 **글자만** 키우고 상자는 안 키운다 — 고정 치수로 두면 최대 배율에서
+  라벨이 상자를 넘쳐 잘리고 **잘린 내용은 사라진다**(WCAG 1.4.4). 토큰 값은 그대로 쓰고
+  **제약의 성질만** 바꾸므로 하드코딩이 아니다. 아이콘·구분선처럼 **배율을 안 받는 내용**만
+  든 상자와 `width: 100%`(채움)는 그대로 둔다
+  ([ADR-0020 D5](../adr/0020-dynamic-type-font-scale.md), 가로 축은
+  [ADR-0022 D6](../adr/0022-scroll-regions-and-fixed-affordances.md)).
 - 원본 JSON·Markdown·SVG를 복사하거나 fork하지 않는다. 패키지로만 소비한다.
 - 컴포넌트 스펙과 구현이 다르면 **design-system의 스펙이 기준**이다.
 - `var(--오타)`는 조용히 무시된다. 접두사가 틀린 것은 **`pnpm lint`의 접두사 검사**가
@@ -212,6 +219,37 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
 
 ([ADR-0014 D1·D2·D4·D8](../adr/0014-design-system-consumption-verified.md),
 [ADR-0015 D2](../adr/0015-component-primitives-and-style-application.md))
+
+## 화면 골격
+
+```text
+.<화면>
+  [고정] 머리      나가는 수단 + 제목
+  [흐름] 내용      <scroll-view className="<블록>-scroll" data-testid="<블록>-scroll">
+  [고정] 액션 행   나아가는 수단          ← 있는 화면에만
+```
+
+- **내용 영역은 `<scroll-view>` 하나다.** 화면당 정확히 하나이고 **중첩하지 않는다.**
+  내용이 한두 줄뿐인 화면에도 넣는다 — *"넘칠 것 같은 화면만"* 은 화면마다 판단을
+  요구하고, **그 판단은 이미 놓친 적이 있다.**
+- **머리와 액션 행은 고정이다.** 흐르게 두면 스크롤 위치에 따라 **출구와 진행 수단이
+  사라진다.**
+- **없는 슬롯을 만들지 않는다.** 액션 행이 없는 화면에 빈 컨테이너를 두지 않는다.
+- 이름은 `<블록>-scroll`이고 **클래스와 `data-testid`가 같은 문자열**이다. `scroll`은
+  예약 상태어가 아니라 **요소** 자리다 (위 네이밍 표의 읽는 규칙 그대로).
+- **`scroll-view`의 prop을 적지 않는다.** `scroll-orientation`·`enable-scroll`·`bounces`·
+  `scroll-bar-enable` 넷 다 기본값이 우리가 원하는 값이다. **기본값을 다시 적으면
+  「의도적으로 정한 값」으로 읽힌다.**
+- **스크롤 컨테이너는 감싸기만 한다.** 기존 자식의 요소·클래스·`data-testid`·
+  `accessibility-*`·형제 순서를 바꾸지 않는다 — **DOM 순서가 낭독 순서다.**
+- **남는 세로를 받는 것은 스크롤 컨테이너 하나다.** 안쪽 자식에 `flex: 1`을 남기면
+  스크롤 영역이 뷰포트에 갇혀 **넘칠 수 없다.** 넘치는 상자를 `justify-content: center`로
+  두지 않는다 — 위쪽 항목이 스크롤 원점 밖으로 밀린다.
+- **겹침 레이어(오버레이·시트)는 스크롤 밖**, 화면 루트의 직계 자식이다.
+- **스크롤 컨테이너에 `accessibility-*`를 붙이지 않는다.** 조작 단위가 아니라 상자다
+  ([ADR-0016 D5](../adr/0016-assistive-technology-semantics.md)).
+
+([ADR-0022](../adr/0022-scroll-regions-and-fixed-affordances.md))
 
 ## 컴포넌트
 
