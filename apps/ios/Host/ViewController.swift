@@ -53,15 +53,21 @@ final class ViewController: UIViewController {
     observeContentSizeCategory()
   }
 
-  /// 설정에서 글자 크기를 바꾸면 **앱을 다시 켜지 않고** 따라간다 (ADR-0020 D2).
+  /// 배율 **값**을 최신으로 유지한다. **화면은 다음 실행에 바뀐다** (ADR-0020 D2).
   ///
-  /// `builder.fontScale`은 뷰를 만들 때 **한 번** 읽힌다. 그것만 두면 사용자가 설정을
-  /// 바꿔도 다음 실행까지 그대로다. **보조기술 사용자가 글자를 키우는 순간은 대개
-  /// 「지금 안 보여서」다** — 다음 실행까지 기다리라는 것은 답이 아니다.
+  /// **실시간 반영은 안 된다 — 재봤고 안 됐다.** `updateFontScale:`도
+  /// `triggerLayout()`도 화면을 다시 그리지 않는다. `ElementManager::UpdateFontScale`
+  /// (`element_manager.cc:722`)이 env를 갈고 스타일을 다시 계산하지만
+  /// **렌더 파이프라인을 요청하지 않는다** — 바로 아래 `UpdateColorScheme`(:733)은
+  /// 같은 자리에서 `RequestResolve(options)`를 부른다. `element_manager.cc` 전체에서
+  /// `RequestResolve` 호출은 **그 한 자리뿐**이라 공개 API로 닿을 길이 없다.
   ///
-  /// `LynxView`가 `updateFontScale:`를 공개한다(`LynxView.h:251`). 뷰를 다시 만들지
-  /// 않고 배율만 갈아끼울 수 있어서, 화면 상태(열려 있던 시트·진행 중인 문항)가
-  /// 살아남는다. **뷰를 새로 만드는 쪽을 고르지 않은 이유가 그것이다.**
+  /// **그런데도 이 관찰자를 두는 이유**: 값을 안 갱신하면 나중에 무엇이든 전체
+  /// 리레이아웃을 일으켰을 때 **옛 배율로 그려진다.** 값은 맞춰 두고 그리는 것만
+  /// 못 하는 편이, 값까지 낡는 것보다 낫다.
+  ///
+  /// **이 주석이 「그 자리에서 커진다」로 되돌아가면 그것은 거짓이다.**
+  /// 2026-09-04에 실기와 시뮬레이터 양쪽에서 안 되는 것을 확인했다.
   private func observeContentSizeCategory() {
     contentSizeObserver = NotificationCenter.default.addObserver(
       forName: UIContentSizeCategory.didChangeNotification,
