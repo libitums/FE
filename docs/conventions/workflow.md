@@ -35,13 +35,16 @@
 | `pnpm lint` | 정적 검사 (`oxlint`) + **CSS 토큰 접두사 검사** (`lint:tokens` — ADR-0014 D8) | **자동 수정** (`lint:fix`가 따로) |
 | `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 (`format:check`가 따로) |
 | `pnpm bundle:host` | `build` + 호스트로 사본 복사 | 네이티브 빌드 |
-| `pnpm test` | `test:unit` + `test:ui` + `test:integration` | e2e |
+| `pnpm test` | 앱 `test:unit` + `test:ui` + `test:integration`과 보고서 정책 테스트 | e2e |
+| `pnpm performance:reports:check --base <base> --head <head>` | 두 commit 사이의 앱 변경과 성능 보고서 정책 검사 | 보고서 생성·성능 수치 판정 |
+| `pnpm --filter @libitums/mobile performance:capture:smoke` | iOS Host 준비부터 수집·분석·cleanup까지 native 연결 확인 | 실기 baseline·수치 threshold |
 | `pnpm verify` | format:check → typecheck → lint → test → build | 네이티브 빌드 |
 
 - **한 명령은 한 가지 이유로만 실패한다.** 명령이 두 가지 일을 겸하게 만들지 않는다.
 - 앱만 돌리려면 `pnpm --filter @libitums/mobile <cmd>`. 루트 스크립트는 `pnpm -r`이 아니라
   명시적 `--filter`를 쓴다 — 범위를 넓히는 것은 명시적 결정이어야 한다.
-- CI를 붙일 때도 **같은 스크립트**를 쓴다. 차이는 인자로만 준다(`--frozen-lockfile` 등).
+- CI도 **같은 저장소 스크립트**를 쓴다. 차이는 Git 비교 commit과 frozen install 같은
+  실행 인자로만 준다.
 - 네이티브 빌드는 `verify`에 들어가지 않는다. Xcode에서 돈다.
 
 ([ADR-0006 D1·D2·D3](../adr/0006-command-interface-and-test-layers.md),
@@ -60,12 +63,15 @@
 5. **squash로 머지한다.** `main`의 커밋 하나 = PR 하나여야 `git revert <sha>` 하나로
    통째로 되돌릴 수 있다. 커밋 제목은 PR 제목을 쓴다.
 
-> **이 절차는 강제되지 않는다.** CI도 브랜치 보호도 없다 — 저장소가 private이고 현재
-> 플랜에서 브랜치 보호 API가 403이며, 필수 상태 검사로 걸 CI도 아직 없다. 지키는 것은
-> 약속뿐이다. 강제되는 줄 알고 방심하는 것이 규약이 없는 것보다 나쁘다.
-> (squash 고정은 예외 — GitHub 저장소 설정에서 지금 켤 수 있는 강제 수단이다.)
+> **CI는 있지만 이 절차는 required check로 강제되지 않는다.** 모든 PR과 `main` push에서
+> Linux Verify가 `pnpm verify`와 보고서 정책을 실행한다. iOS performance smoke는 수동 실행과
+> 평일 정기 실행에서만 동작하며 관련 PR이 바뀌어도 자동 시작하지 않는다. 초기 관측 기간에는
+> 비차단이다. 저장소가 private이고 현재 플랜의 branch protection API가 403이어서 실패한
+> 검사도 우회할 수 있다. 강제되는 줄 알고 방심하지 않는다. (squash 고정은 예외 — GitHub
+> 저장소 설정에서 켠 강제 수단이다.)
 
-([ADR-0009 D4·D5·D6](../adr/0009-vcs-hygiene-ci-and-merge-gate.md))
+([ADR-0009 D4·D5·D6](../adr/0009-vcs-hygiene-ci-and-merge-gate.md),
+[ADR-0021](../adr/0021-performance-report-ci-automation.md))
 
 ## 문서를 같은 PR에서 고친다
 
@@ -150,6 +156,23 @@ pnpm dev   # 나온 URL을 Explorer의 Bundle URL 칸에 붙여넣고 Go
 > ```sh
 > find /tmp/dd/Build/Products/Debug-iphonesimulator/Host.app -name '*.m4a' | wc -l
 > ```
+
+성능 수집 경로 전체를 재현할 때는 macOS, Xcode 26.5, iOS 26.5 runtime, CocoaPods가 있는
+환경에서 한 명령을 쓴다.
+
+```sh
+pnpm --filter @libitums/mobile performance:capture:smoke
+pnpm --filter @libitums/mobile performance:capture:smoke -- --udid <Simulator-UDID>
+```
+
+첫 명령은 iPhone 17 Pro Simulator를 만들고 bundle·pod·Release build·install·capture·분석
+뒤 삭제한다. 두 번째는 지정한 UDID만 사용하며 그 Simulator는 삭제하지 않는다. 둘 다
+Rendering과 Memory 증거의 존재만 확인하고 수치 성능을 판정하지 않는다. 원시 캡처는
+로그나 artifact로 올리지 않는다. 세부 수동 수집은
+[`performance-analysis.md`](../performance-analysis.md)를 따른다
+([ADR-0021 D3~D5](../adr/0021-performance-report-ci-automation.md)).
+
+일반 Host build·install 절차는 다음과 같다.
 
 ```sh
 pnpm bundle:host                                                  # build + 사본 복사

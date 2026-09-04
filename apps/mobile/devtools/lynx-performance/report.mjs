@@ -80,8 +80,15 @@ function validateTimingPair(entry, recordIndex, startField, endField, { required
   const hasStart = entry[startField] !== undefined;
   const hasEnd = entry[endField] !== undefined;
 
-  if (!hasStart && !hasEnd && !required) {
-    return;
+  if (!hasStart && !hasEnd) {
+    if (!required) {
+      return;
+    }
+    throw inputError(
+      recordIndex,
+      `entry.${startField}/entry.${endField}`,
+      "timing pair is required",
+    );
   }
   if (!hasStart) {
     throw inputError(
@@ -286,6 +293,16 @@ export function parseCapture(text) {
       .split(/\r?\n/)
       .map((line, index) => ({ line: line.trim(), number: index + 1 }))
       .filter(({ line }) => line !== "");
+
+    let firstLineIsRecord = false;
+    try {
+      firstLineIsRecord = isRecord(JSON.parse(lines[0]?.line));
+    } catch {
+      // A multiline capture whose first line is not a complete record cannot be NDJSON.
+    }
+    if (lines.length > 1 && !firstLineIsRecord && /^[{[]/.test(trimmed)) {
+      throw new SyntaxError(`JSON syntax error: ${error.message}`);
+    }
 
     if (lines.length <= 1 && !(trimmed.startsWith("{") && trimmed.endsWith("}"))) {
       throw new SyntaxError(`line 1: ${error.message}`);

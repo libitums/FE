@@ -13,7 +13,8 @@
     "test:ui": "vitest run ui.test",
     "test:integration": "vitest run integration.test",
     "performance:report": "node devtools/lynx-performance/cli.mjs",
-    "performance:capture": "node devtools/lynx-performance/simulator-cli.mjs"
+    "performance:capture": "node devtools/lynx-performance/simulator-cli.mjs",
+    "performance:capture:smoke": "node devtools/lynx-performance/smoke-cli.mjs"
   },
   "dependencies": {
     "@libitums/design-tokens": "0.2.0",
