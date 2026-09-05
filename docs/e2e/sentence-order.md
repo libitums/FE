@@ -8,9 +8,11 @@
 부분**은 아래 「이 파일이 화면보다 먼저 선 이유」에 있다. **돌 수 있게 되는 조건은
 둘**이다:
 
-1. **화면 파일이 선다.** 지금 `apps/mobile/src/screens/sentence-order/`에 있는 것은
-   순수 로직(`sentence-order.ts`)과 그 `unit` 테스트뿐이다. `SentenceOrderScreen.tsx` ·
-   `SentenceOrderChip.tsx` · CSS 둘이 아직 없다.
+1. ~~**화면 파일이 선다.**~~ → **섰다 (2026-09-05, `#46`).**
+   `SentenceOrderScreen.tsx` · `SentenceOrderChip.tsx` · CSS 둘이 전부 트리에 있다.
+   **다만 아직 아무도 못 연다** — `App.tsx`가 이 화면을 부르지 않아 **번들에서
+   통째로 걷혔다**(성능 회차가 확인했다: 컴포넌트 이름·화면 제목 문자열 **0건**).
+   **배선은 LIB-236이 놓는다.**
 2. **문항 데이터에 값이 들어간다.** `sentenceOrderQuestionsByStep`이 **다섯 스텝 전부
    빈 배열**이다. 문장·조각·정답 순서의 값이 아직 없고, **어느 스텝이 문장 순서인지도
    없다.** 그래서 아래 단계는 *"문항 하나를 골라"* 로 쓴다 — **여기에 예시 문항을
