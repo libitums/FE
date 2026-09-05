@@ -1,0 +1,218 @@
+/* LIB-229 (ui-d): design.md §0.1 · §1.1 · §1.2 · §3.1 · §8의 값. 계약 §1.9·§1.12가
+   고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다
+   (ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않는다.
+
+   FE ADR-0022 D1의 3분할을 일곱째·여덟째 화면으로 잇는 화면 중 여덟째다
+   (design.md §1.2). `.listening-screen`과 같은 값을 쓴다 — 옆에 놓일 화면과
+   어휘를 갈리게 하지 않는다(design.md §1.1). */
+
+/* 화면 상자. `.listening-screen`·`.journey-map-screen`과 같은 값이다(design §1.1).
+   `position: relative`를 두지 않는다 — 이 화면에 겹침 레이어가 없다(design §1.2f). */
+.word-choice-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  /* Lynx의 `justify-content` 기본값은 `stretch`다 — 명시하지 않으면 고정 자식
+     (헤더·액션 행)이 늘어난다(design §1.1). */
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  /* 화면 여백은 축마다 값이 다르다. `padding-x`를 네 방향에 쓰면 상하가 틀린다. */
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+/* design §1.1 — back + 제목이 한 줄이다. 행 자체는 세로 축에서 줄어들지 않는다
+   (`flex-shrink: 0`) — 이것은 부모(`.word-choice-screen`, column)의 자식으로서의
+   값이고, 아래 두 자식(`-exit`·`-title`) 사이의 가로 축 문제와는 다른 축이다. */
+/* `align-items: flex-start`다 — `center`가 아니다(LIB-229). 순서 역전은 셋이
+   전부 성립할 때만 생긴다(FE ADR-0023 규칙 3): 가로 행 + 자식의 교차 크기가
+   다름 + `align-items: center`. `-exit`는 `min-height: spacing-48`(48)이고
+   제목은 `heading-s` 줄높이(24)라 Δ=24가 이미 있다 — `center`가 그 둘을 서로
+   다른 y에 놓고 VoiceOver는 프레임 위치로 순회하므로 순서가 뒤집힌다.
+   `flex-start`는 그 셋 중 `center`를 지워 조건을 깬다. `flex-shrink: 0`은
+   그대로 둔다 — 이건 세로 축(부모가 column)의 값이고 이 가로 축 문제와는
+   무관하다. */
+.word-choice-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-layout-gap-inline);
+  flex-shrink: 0;
+}
+
+/* design §1.1 「back 히트박스」. 아이콘이 아니라 텍스트다 — 출구를 "아이콘이 크기를
+   못 받으면 아예 안 보인다"는 위험에 올리지 않는다(`docs/e2e/design-token-rendering.md`).
+
+   `flex-shrink: 0`을 **준다.** 순서 역전과는 무관하다 — 그건 위 헤더의
+   `align-items: flex-start`가 이미 지웠다(FE ADR-0023 규칙 3). 이건 히트박스
+   가드다: 가로 행에서 이것이 없으면 `맵으로` 상자가 가로로 눌려 최소 터치
+   영역이 깨진다(WCAG 2.5.5 / 2.5.8). `flex-shrink: 0`은 잘림을 **옮기는**
+   것이지 없애는 것이 아니다 — Lynx의 shrink는 scaled이고 총 scaled 인자가
+   0이면 아무것도 안 줄고 그대로 넘친다(`elastic_layout_utils.cc:108-115`).
+   그래서 형제인 제목(`-title`)은 반대로 기본값(`flex-shrink: 1`)을 둔다 —
+   줄어들어 줄바꿈으로 흘러야 하는 텍스트이기 때문이다. */
+.word-choice-screen-exit {
+  /* 고정 높이가 아니라 하한이다(ADR-0020 D5). Dynamic Type이 켜지면 글자만 커지고
+     상자는 안 커진다 — 잘린 내용은 사라진다(WCAG 1.4.4). */
+  min-height: var(--libitum-spacing-48);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.word-choice-screen-exit-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* design §1.1 「화면 제목」 — `journey-map-screen-title` · `listening-screen-title`과
+   같은 scale이다. `padding-top`은 `(spacing-48 − heading-s line-height) / 2 =
+   (48 − 24) / 2 = 12`의 산술 결과다 — `spacing-12`를 "12라서" 고른 게 아니라
+   값이 우연히 같다. `-exit`가 `min-height: spacing-48`로 세워지고
+   `align-items: flex-start`인 헤더에서, 이 제목의 **프레임 top**을 그만큼 내려 두
+   자식의 시각 중심을 맞춘다. */
+.word-choice-screen-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  margin-top: var(--libitum-spacing-12);
+}
+
+/* design §1.2(d) — 남는 세로를 받는 것은 이 상자다(FE ADR-0022 D4). 배경·모서리·
+   그림자·padding은 선언하지 않는다(전부 "없음") — 칠해도 배경 대비가
+   1.05~1.13:1이라 안 보인다(design §1.2(d)). 위쪽 hairline만 선이다.
+   `display: flex`·`flex-direction: column`·`gap`은 여기 두지 않는다 —
+   `<scroll-view>`는 CSS와 무관하게 강제로 `linear`가 되고, linear 알고리즘에는
+   `gap`이 아예 없어 무동작이다(design §1.2(b)). 자식 간격은
+   `.word-choice-screen-content`가 `layout-gap-block`으로 진다. */
+.word-choice-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+/* design §1.2(c) — `<scroll-view>`의 직계 자식은 최대 하나다. 이 상자가 흐름의
+   flex 어휘를 전부 진다. `flex: 1`·`flex-shrink`는 여기 두지 않는다 — 부모가 강제
+   linear라 읽히지 않는다(design §1.2(c) 표). */
+.word-choice-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+}
+
+/* design §1.1 「진행 표시」 — 막대가 아니라 텍스트다. 트랙에 쓸 색이 없고
+   (`gray-300` 배경 대비 1.13), 막대는 죽은 채널(`accessibility-value`)을
+   요구한다(ADR-0016 D3). */
+.word-choice-screen-progress {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* design §3.1 · §1.12.1 — 제시 블록은 계약이 `<text>` 하나로 고른다(카드 표면을
+   두지 않는다). `dialogue-body`(`.listening-prompt-text`와 같은 scale)를 써서
+   아래 지시문(`body-m`)과 무게를 가른다 — 이 텍스트가 문항의 실제 내용이고
+   지시문은 보조 설명이다. `fg-neutral` on `background-primary`는 16.82:1로
+   design §7.1의 카드 배경(elevated, 16.16:1)보다도 여유가 크다. */
+.word-choice-screen-prompt {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-dialogue-body-font-family);
+  font-weight: var(--libitum-typography-dialogue-body-font-weight);
+  font-size: var(--libitum-typography-dialogue-body-font-size);
+  line-height: var(--libitum-typography-dialogue-body-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
+}
+
+/* design §1.1 「지시문」 — `.listening-screen-instruction`과 같은 값(body-m +
+   fg-neutral-muted, 대비 6.53:1). */
+.word-choice-screen-instruction {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* design §3.2 「목록 gap」 — 이 상자가 지는 값은 간격 하나다. `flex: 1`은
+   `.word-choice-screen-scroll`이 진다(FE ADR-0022 D4) — 안쪽에 남기면 스크롤
+   영역이 뷰포트 높이에 갇혀 넘칠 수 없다. */
+.word-choice-screen-options {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-spacing-8);
+}
+
+/* design §1.1 「완료 제목」. 점수·정답 수를 표시하지 않는다 — 게임화는 범위 밖이다
+   (계약 §1.1). */
+.word-choice-screen-complete {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* design §1.1 「액션 행 버튼 면」 — `.listening-screen-next`와 문자 그대로 같은
+   값이다. `brand-primary`가 아니라 `brand-strong`이다: 흰 라벨이 `brand-primary`
+   위에서 3.02:1로 AA 미달이다(design §7.3). */
+.word-choice-screen-next {
+  background: var(--libitum-color-brand-strong);
+  /* 고정 높이가 아니라 하한이다(ADR-0020 D5). */
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.word-choice-screen-next-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+/* design §1.1 「액션 행」 — `-next`와 같은 값이다. */
+.word-choice-screen-finish {
+  background: var(--libitum-color-brand-strong);
+  /* 고정 높이가 아니라 하한이다(ADR-0020 D5). */
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.word-choice-screen-finish-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}

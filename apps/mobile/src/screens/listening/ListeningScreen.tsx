@@ -14,7 +14,7 @@ import {
   questionsForStep,
   sessionAnswerResults,
 } from "./listening";
-import type { ListeningAnswerResult } from "./listening";
+import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 import "./listening-screen.css";
@@ -34,7 +34,7 @@ export type ListeningScreenProps = {
   stepId: JourneyStepId;
   stepOrdinal: number;
   onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly ListeningAnswerResult[]) => void;
+  onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
 };
 
 export function ListeningScreen({

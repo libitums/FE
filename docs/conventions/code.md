@@ -189,8 +189,18 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
 - 방향은 `apps/* → packages/*` 한 쪽뿐. `packages/* → apps/*`와 `apps/* → apps/*`는 금지.
 - 패키지 진입점은 `exports`로 명시한다. `@libitums/x/src/...` 같은 내부 경로를 열지 않는다.
 - `lib/`는 UI를 import하지 않는다.
+- **화면 폴더 사이(`screens/A → screens/B`)는 `import type` 하나이고, 그 타입의 소유자가
+  그 화면일 때만이다.** 값(`const`·함수·컴포넌트)은 가져오지 않는다. 지금 있는 형태는
+  전부 `JourneyStepId` 하나를 여정 맵에서 가져오는 것이다 — 듣기 · 문장 순서 · 단어 선택.
+  **`app/`은 이 규칙 밖이다**(루트가 화면을 결선하므로 값도 가져온다).
+- **소유가 흐려지면 `src/lib/`로 승격한다.** 흐려진다는 것은 둘 중 하나다 — 그 어휘를
+  **화면 셋 이상이 쓰거나**, 타입 이름이 가리키는 화면의 것이 아니게 되거나.
+  `AnswerResult`가 그렇게 올라왔고(`lib/answer-result.ts`), `JourneyStepId`는 **올라가지
+  않는다** — 소비자가 여럿이어도 스텝 id는 여정 맵의 어휘다. **소유자가 있으면 그 자리에
+  둔다.**
 
-([ADR-0004 D3·D4·D5](../adr/0004-package-boundaries-and-dependency-direction.md))
+([ADR-0004 D3·D4·D5](../adr/0004-package-boundaries-and-dependency-direction.md) ·
+[ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md))
 
 ## 스타일
 
@@ -299,8 +309,20 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
   Bottom Navigator · Header · Indicator)**는 두 번째 화면을 기다리지 않고 바로
   `src/components/`에 둔다.** 스펙이 있다는 것이 두 번째 사용처가 예정돼 있다는 뜻이다.
   `packages/`는 그대로 앱 2개일 때다 (ADR-0015 `정정 기록` 2026-09-02).
+- **⚠ 위 세는 규칙은 컴포넌트의 것이다. 순수 모듈(타입·상수·순수 함수)은 `src/lib/`로
+  가고 저울도 다르다** — `src/components/`는 컴포넌트의 자리다(ADR-0015 D3). 순수
+  모듈이 올라가는 조건은 **화면 수가 아니라 소유가 흐려지는 것**이고, 판정은 위
+  「import」 절이 진다. 화면 하나가 소유하고 화면과 함께 움직이면 **화면 폴더에
+  남는다** — 두 화면이 쓴다는 것만으로 올리지 않는다.
+- **올린 모듈에 화면의 로직을 흘려 넣지 않는다.** 공용으로 가는 것은 **어휘**(타입과
+  그 낱말)이고 **채점·전이는 각 화면 폴더에 남는다.** `lib/answer-result.ts`가
+  `AnswerResult`와 `answerResultLabel` 둘만 갖는 것이 그 선이다 —
+  `judgeAnswer`·`judgeSentenceOrder`·`judgeWordChoice`는 화면 쪽에 있다.
+  그래서 파일 이름도 타입과 1:1이다(`feedback.ts`·`judgement.ts` 같은 상위 이름은
+  「판정에 관한 것은 다 여기」로 읽혀 로직을 끌어온다).
 
-([ADR-0015 D1·D3](../adr/0015-component-primitives-and-style-application.md))
+([ADR-0015 D1·D3](../adr/0015-component-primitives-and-style-application.md) ·
+[ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md))
 
 ## 앱 내부
 

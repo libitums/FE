@@ -9,12 +9,14 @@
 // journey-map에서 가져오는 것은 **타입 하나뿐**이다. 값(journeyStepOrdinal ·
 // completeStep · initialCompletedStepCount)은 App이 읽어 props로 내린다 (계약 §8.4).
 
+import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
 import type { AudioPlayOutcome } from "../../lib/audio";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 // ---------------------------------------------------------------- 도메인 타입 (계약 §1.3)
-
-export type ListeningAnswerResult = "correct" | "incorrect";
+//
+// 판정 어휘는 lib/answer-result.ts로 승격됐다 (LIB-229 계약 §1.4(d)). 이 파일은
+// AnswerResult를 import해서 쓴다 — 이 이름을 별칭으로 남기지 않는다.
 
 export type ListeningQuestion = {
   readonly prompt: string;
@@ -247,10 +249,7 @@ export function questionProgressLabel(index: number, total: number): string {
 
 // 계약 §1.5(b) 표 그대로. 일치 비교라 answerIndex가 0인 문항에서도 0번 보기가
 // correct로 나온다 — 0을 거짓으로 다루는 자리를 만들지 않는다.
-export function judgeAnswer(
-  question: ListeningQuestion,
-  choiceIndex: number,
-): ListeningAnswerResult {
+export function judgeAnswer(question: ListeningQuestion, choiceIndex: number): AnswerResult {
   return choiceIndex === question.answerIndex ? "correct" : "incorrect";
 }
 
@@ -264,31 +263,22 @@ export function choiceResultAt(
   state: ListeningSessionState,
   question: ListeningQuestion,
   choiceIndex: number,
-): ListeningAnswerResult | null {
+): AnswerResult | null {
   if (state.selectedChoiceIndex !== choiceIndex) {
     return null;
   }
   return judgeAnswer(question, choiceIndex);
 }
 
-// 접미사 표 (계약 §1.5(b)). export하지 않는 모듈 내부 상수 — journey-map.ts의
-// stepStatusSuffix와 같은 형태이고, 구분자는 쉼표 + 공백이다 (ADR-0016 D3).
-// 판정이 **없는** 경우는 이 표에 없다: 접미사를 붙이지 않는 것이 계약이라
-// null 칸을 만들면 빈 문자열을 이어 붙이는 자리가 생긴다.
-const choiceResultSuffix: Record<ListeningAnswerResult, string> = {
-  correct: "정답",
-  incorrect: "오답",
-};
-
-// 응답 전 네 보기가 전부 접미사를 달면 답을 미리 알려 주는 것이 된다 (계약 §1.5(b)).
-export function choiceAccessibilityLabel(
-  text: string,
-  result: ListeningAnswerResult | null,
-): string {
+// 접미사는 lib/answer-result.ts의 answerResultLabel이 낸다 (LIB-229 계약 §1.4(d)).
+// 구분자는 쉼표 + 공백이다 (ADR-0016 D3). 판정이 **없는** 경우는 접미사를 붙이지
+// 않는다 — 응답 전 네 보기가 전부 접미사를 달면 답을 미리 알려 주는 것이 된다
+// (계약 §1.5(b)).
+export function choiceAccessibilityLabel(text: string, result: AnswerResult | null): string {
   if (result === null) {
     return text;
   }
-  return `${text}, ${choiceResultSuffix[result]}`;
+  return `${text}, ${answerResultLabel(result)}`;
 }
 
 // 응답 여부는 파생이다 (계약 §1.3(c)). null 비교라 0번 보기도 응답으로 센다.
@@ -346,9 +336,9 @@ export function listeningSessionReducer(
 export function sessionAnswerResults(
   questions: readonly ListeningQuestion[],
   answeredChoiceIndexes: readonly number[],
-): readonly ListeningAnswerResult[] {
+): readonly AnswerResult[] {
   const length = Math.min(questions.length, answeredChoiceIndexes.length);
-  const results: ListeningAnswerResult[] = [];
+  const results: AnswerResult[] = [];
   for (let index = 0; index < length; index += 1) {
     const question = questions[index];
     const choiceIndex = answeredChoiceIndexes[index];

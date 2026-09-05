@@ -4,8 +4,8 @@ import tick from "@libitums/icons/lynx/tick";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
+import type { AnswerResult } from "../../lib/answer-result";
 import { ListeningChoice } from "./ListeningChoice";
-import type { ListeningAnswerResult } from "./listening";
 
 // `ui` 계층: 렌더 결과와 상호작용만 본다 (ADR-0006 D4). 계산된 스타일을 볼 수 없으므로
 // `toHaveClass` · `toHaveStyle` · `toBeVisible`을 쓰지 않는다 (docs/conventions/code.md
@@ -21,11 +21,11 @@ import type { ListeningAnswerResult } from "./listening";
 //   3) 보이는 표식        — 아이콘 모양(`content`) + `current-color` + 낱말 텍스트
 // 채널이 하나라도 조용히 빠지면 그 채널의 테스트만 빨개진다.
 
-const RESULTS: readonly (ListeningAnswerResult | null)[] = [null, "correct", "incorrect"];
+const RESULTS: readonly (AnswerResult | null)[] = [null, "correct", "incorrect"];
 
 // 아이콘 모양의 정본은 패키지 모듈이다 — 리터럴을 적지 않는다 (JourneyStepNode 선례).
 // 계약 §1.7.1 표.
-const ICON_BY_RESULT: Record<ListeningAnswerResult, string> = {
+const ICON_BY_RESULT: Record<AnswerResult, string> = {
   correct: tick,
   incorrect: cross,
 };
@@ -33,7 +33,7 @@ const ICON_BY_RESULT: Record<ListeningAnswerResult, string> = {
 // 아이콘 색의 정본은 design이 고정한 토큰 상수다 — design.md §3.3 · §8이 spec.md
 // §1.7.1의 자리표시자(`color.feedback.correct` / `.incorrect`)를 `-text` 변형으로
 // 정정했다(대비 3.03 경계값을 세 번째로 들이지 않기 위해).
-const ICON_COLOR_BY_RESULT: Record<ListeningAnswerResult, string> = {
+const ICON_COLOR_BY_RESULT: Record<AnswerResult, string> = {
   correct: color.feedback["correct-text"],
   incorrect: color.feedback["incorrect-text"],
 };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ListeningAnswerResult } from "../listening/listening";
+import type { AnswerResult } from "../../lib/answer-result";
 import {
   assessmentAnnouncement,
   assessmentCompletesStep,
@@ -21,11 +21,11 @@ import {
 
 // 계약 §1.5 표: 정오 셋이 문항 하나의 판정을 진다. 리터럴로 세운다 — 판정 함수의
 // red가 듣기 쪽 데이터 조회의 red와 섞이지 않게 (listening.unit.test.ts와 같은 판단).
-const allCorrect: readonly ListeningAnswerResult[] = ["correct", "correct", "correct"];
-const allIncorrect: readonly ListeningAnswerResult[] = ["incorrect", "incorrect", "incorrect"];
+const allCorrect: readonly AnswerResult[] = ["correct", "correct", "correct"];
+const allIncorrect: readonly AnswerResult[] = ["incorrect", "incorrect", "incorrect"];
 // 2/3 정답 — u7의 임계값(2)과 정확히 경계에 서는 조합이다.
-const twoOfThreeCorrect: readonly ListeningAnswerResult[] = ["correct", "incorrect", "correct"];
-const oneOfThreeCorrect: readonly ListeningAnswerResult[] = ["correct", "incorrect", "incorrect"];
+const twoOfThreeCorrect: readonly AnswerResult[] = ["correct", "incorrect", "correct"];
+const oneOfThreeCorrect: readonly AnswerResult[] = ["correct", "incorrect", "incorrect"];
 
 describe("assessmentPassCriterion — (u7) 상수 단언", () => {
   // 계약 §1.4 · §4.1 「상수 단언 하나」: 내려온 결정이 조용히 바뀌면 완료 규칙이

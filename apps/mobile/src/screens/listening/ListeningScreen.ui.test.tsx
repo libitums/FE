@@ -1,8 +1,8 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import type { AnswerResult } from "../../lib/answer-result";
 import { ListeningScreen } from "./ListeningScreen";
-import type { ListeningAnswerResult } from "./listening";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 본다 (ADR-0006 D4).
@@ -42,7 +42,7 @@ function renderOrdering(
     // 화면 컴포넌트는 이 라운드가 고치지 않는다(구현은 다음 단위). optional이 아니면
     // `onFinish={overrides.onFinish}`가 1-인자 prop 타입에 대입되지 않아 `typecheck`가
     // red보다 먼저 죽는다 — 그것은 이 라운드가 원하는 red가 아니다.
-    onFinish?: (id: JourneyStepId, results?: readonly ListeningAnswerResult[]) => void;
+    onFinish?: (id: JourneyStepId, results?: readonly AnswerResult[]) => void;
   } = {},
 ) {
   return render(
@@ -388,7 +388,7 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
 // 불린다 — 진행 갱신의 주체는 App이고, 통과 여부는 평가가 판정한다(계약 §1.6(c),
 // u7 보정). 화면은 「끝났다」와 「무엇이 일어났는지」만 되돌려 준다.
 test("마치기를 탭하면 onFinish가 stepId와 응답 결과 배열로 정확히 한 번 불린다", () => {
-  const onFinish = vi.fn<(id: JourneyStepId, results?: readonly ListeningAnswerResult[]) => void>();
+  const onFinish = vi.fn<(id: JourneyStepId, results?: readonly AnswerResult[]) => void>();
   renderOrdering({ onFinish });
 
   completeAllThree();
@@ -401,7 +401,7 @@ test("마치기를 탭하면 onFinish가 stepId와 응답 결과 배열로 정�
 // 오답으로 전부 응답해도 완료된다 — 이 슬라이스에 재시도 규칙이 없다. 결과 배열도
 // 전부 incorrect로 응답 순서·길이대로 온다(계약 §1.6(a)·(b)).
 test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 배열과 함께 불린다", () => {
-  const onFinish = vi.fn<(id: JourneyStepId, results?: readonly ListeningAnswerResult[]) => void>();
+  const onFinish = vi.fn<(id: JourneyStepId, results?: readonly AnswerResult[]) => void>();
   renderOrdering({ onFinish });
 
   for (const question of ORDERING_QUESTIONS) {
