@@ -82,8 +82,13 @@ ADR-0020 D4가 배율 상한 `2.0`으로 **막았을 뿐 고치지 않았다.** 
 > **여섯째부터 여덟째는 이 ADR이 선 뒤에 붙었다** (6번 2026-09-04 · 7·8번 2026-09-05).
 > **결정은 한 글자도 안 바뀌었다** — 새 화면이 규약을 적용받은 것이고, 이 표가 그
 > 「전부」의 정본이라 개수를 세는 자리가 여기 하나가 되도록 행을 더한다.
-> **7·8번의 화면 파일은 아직 서지 않았다** — 이름은 계약이 고정했고 CSS·TSX는 구현
-> 이슈가 만든다. 서고 나면 「언제 붙었나」 열이 그것을 구별할 필요가 없어진다.
+> **7·8번의 화면 파일도 섰다 (2026-09-05에 확인).** 이름을 고정한 것은 계약이고
+> CSS·TSX는 구현 이슈가 만들었다 — `screens/sentence-order/SentenceOrderScreen.tsx` ·
+> `sentence-order-screen.css` · `screens/word-choice/WordChoiceScreen.tsx` ·
+> `word-choice-screen.css`. **이제 여덟 행이 전부 실재하는 스크롤 컨테이너를
+> 가리킨다.** 둘 다 `<scroll-view>`에 `scroll-orientation="vertical"` ·
+> `scroll-bar-enable={true}` 둘만 적었고(D3), 그 상자에 `accessibility-*`는 없다(D5).
+> **「언제 붙었나」 열은 계보만 적는다** — 무엇이 섰고 안 섰나를 이 열로 읽지 않는다.
 
 블록은 그 화면 CSS 파일명(확장자 제외)이고 `scroll`은 **요소** 자리다. ADR-0003 D7의
 `블록-요소` **한 겹** 안이고, `scroll`은 예약 상태어 넷(`selected`·`done`·`current`·`locked`)

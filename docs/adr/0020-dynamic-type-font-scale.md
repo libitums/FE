@@ -268,27 +268,41 @@ Apple의 최대 접근성 크기는 `.body` 기준 **약 3.1배**(17pt → 53pt)
 > `padding`으로만 여백을 준다(LIB-227 design §4.1). **일곱을 여덟으로 세는 근거는
 > 「`height`를 하한으로 바꾼 자리」이지 「텍스트를 품은 상자」가 아니다.**
 
-> **갱신 (2026-09-05, LIB-229) — 상자 다섯 종류가 두 화면에서 더 붙는다. 결정은 안
-> 바뀐다.** 문장 순서 · 단어 선택이다. 여기서도 **새 화면이 이 규약을 적용받을 뿐이다.**
+> **갱신 (2026-09-05, LIB-229) — 상자 다섯 종류가 두 화면에서 이 축에 걸린다. 결정은
+> 안 바뀐다.** 문장 순서 · 단어 선택이다. 여기서도 **새 화면이 이 규약을 적용받을 뿐이다.**
 >
 > | # | 상자 | 셀렉터 | 라벨 |
 > | --- | --- | --- | --- |
 > | 9 | 나가는 수단 | `.sentence-order-screen-exit` · `.word-choice-screen-exit` | 머리의 back |
 > | 10 | 액션 행 버튼 | `.sentence-order-screen-check` · `-next` · `-finish` · `.word-choice-screen-next` · `-finish` | `확인` · `다음` · `결과 보기` |
-> | 11 | 조각 | `.sentence-order-chip` | 문장 조각의 낱말 |
-> | 12 | 보기 행 | `.word-choice-option` | 보기의 낱말 |
-> | 13 | 문장 줄 상자 | `.sentence-order-screen-sentence` | 없음 — **조건부다.** 빈 상태에서도 자리를 지켜야 할 때만 하한을 건다 |
+> | 11 | 조각 | `.sentence-order-chip` | 문장 조각의 낱말 — **하한이 걸리지 않았다.** `height`가 없어 하한으로 바꿀 자리가 없다 |
+> | 12 | 보기 행 | `.word-choice-option` | 보기의 낱말 — **하한이 걸리지 않았다.** 11번과 같은 이유다 |
+> | 13 | 문장 줄 상자 | `.sentence-order-screen-sentence` | 없음 — 조건부였고 **조건이 걸렸다**(`min-height: spacing-48`). 빈 상태에서 높이가 0으로 접히면 답 줄과 창고가 하나로 보인다 |
 >
 > **세는 단위가 셀렉터가 아니라 상자 종류다.** 9·10번은 두 화면에 같은 모양으로 하나씩
 > 있고, 화면별로 다르게 판단하지 않는다 — 위 일곱이 같은 이유로 함께 고쳐진 그
 > 원칙이다. 13번만 조건이 붙는데, **그 조건은 「텍스트를 품었나」가 아니라 「내용이
 > 없을 때 자리를 지켜야 하나」**다. 지킬 필요가 없으면 하한도 없다.
 >
-> **두 화면의 CSS는 아직 서지 않았다.** 이름은 고정됐고 **값은 design이 채운다** —
-> 이 갱신이 박는 것은 값이 아니라 **`height`를 쓰지 않는다**는 제약이다. 가로 축
-> (`width` → `min-width`)도 같이 걸린다(ADR-0022 D6).
+> **두 화면의 CSS가 섰다 (2026-09-05에 확인).** 네 파일이다 —
+> `sentence-order-chip.css` · `sentence-order-screen.css` · `word-choice-option.css` ·
+> `word-choice-screen.css`. **`min-height` 선언은 여섯이고 전부 9·10·13번이다**:
+> 9번이 둘(`.sentence-order-screen-exit` · `.word-choice-screen-exit`), 10번이 셋
+> (`.sentence-order-screen-check, -next, -finish` 묶음 하나 · `.word-choice-screen-next` ·
+> `.word-choice-screen-finish`), 13번이 하나. **11·12번에는 없다** — 두 상자 다 높이를
+> 내용이 정하고 `padding`만 주므로 **하한으로 바꿀 `height`가 애초에 없다.** 바로 위
+> LIB-227 갱신이 세운 세는 근거(「`height`를 하한으로 바꾼 자리」)로 읽으면
+> `.assessment-item`과 같은 자리다.
 >
-> **아홉째부터 열셋째도 미확인이다.** 판정 자리는 `docs/e2e/sentence-order.md` ·
+> **이 갱신이 박은 제약은 지켜졌다** — 네 파일의 텍스트 상자에 `height` 선언이
+> **0건**이다. `height`가 있는 둘(`.sentence-order-screen-mark-icon` ·
+> `.word-choice-option-mark-icon`)은 아이콘 치수라 이 제약 밖이고, 파일이 그렇게 적고
+> 있다. 가로 축(`width` → `min-width`)도 같이 걸린다(ADR-0022 D6) — 새 `width` 선언
+> 셋은 전부 `width: 100%`(채움)라 ADR-0022 D6 표가 *"하한이 필요 없다"* 로 판정한
+> 종류다.
+>
+> **선언이 있다는 것과 배율에서 안 잘린다는 것은 다르다.** 아홉째부터 열셋째의 **효과는
+> 여전히 미확인**이고, 판정 자리는 `docs/e2e/sentence-order.md` ·
 > `docs/e2e/word-choice.md`의 **E7**이다.
 
 **`min-height`가 이 저장소에 0건이었다.** 한 파일의 실수가 아니라 **규약의 공백**이다.

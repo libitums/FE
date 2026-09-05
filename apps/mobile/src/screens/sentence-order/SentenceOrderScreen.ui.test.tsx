@@ -1,9 +1,8 @@
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { SentenceOrderScreen } from "./SentenceOrderScreen";
-import { sentenceOrderQuestionsByStep } from "./sentence-order";
 import type { SentenceOrderQuestion } from "./sentence-order";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
@@ -20,10 +19,23 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 // 배열이다 — 이 컴포넌트는 `questions`를 prop으로 받지 않고(§1.8(b)) 내부에서
 // `sentenceOrderQuestionsForStep(stepId)`로 그 Record를 읽으므로, 이 파일이 소비할
 // 수 있는 문항은 이 Record에 값이 있을 때뿐이다. `sentence-order.ts` 파일 자체는
-// 고치지 않는다(읽기 전용) — 대신 **이 테스트 파일 안에서** `beforeEach`/`afterEach`로
-// 그 Record의 `ordering` 슬롯에 픽스처를 넣었다 뺀다. `Record` 값은 타입 수준에서
-// readonly 배열이지만 프로퍼티 자체는 얼리지 않은 평범한 객체라 대입이 된다 — 파일을
-// 수정하는 것이 아니라 런타임에 값을 주입하는 것이다.
+// 고치지 않는다(읽기 전용).
+//
+// **픽스처 주입은 `vi.mock(경로, importOriginal)`로 조회 함수 하나만 부분 대역한다**
+// (형태의 정본: `word-choice/WordChoiceScreen.ui.test.tsx`). 이전에는
+// `beforeEach`/`afterEach`로 `sentenceOrderQuestionsByStep` Record의 `ordering`
+// 슬롯을 런타임에 대입했다 — 그 방식을 걷어낸 이유 둘:
+//   1. 런타임 변형은 `readonly` 선언을 뚫는다 — 타입이 막는 것을 테스트가
+//      우회하는 것이었다.
+//   2. 모듈 전역을 변형하고 `afterEach` 정리에 의존한다 — 케이스가 실패로
+//      빠지면 원복이 스킵되어 다음 케이스로 상태가 샌다.
+// `sentenceOrderQuestionsForStep`은 Record 조회 한 줄이고 지울 가드가 없다 — 이
+// 대역이 `App.integration.test.tsx:584`의 반대 결정(`lib/audio.ts`를 `vi.mock`하지
+// 않는다)과 충돌하지 않는다. 그 결정이 막는 것은 「가드를 가진 모듈을 통째로
+// 대역해 그 가드(세대로 늦게 온 완료를 버리고 모듈 부재를 흡수하는 것)를
+// 지우는 것」이지 `vi.mock` 자체가 아니다. 나머지 export(세션 리듀서·판정·
+// 문구 합성 등)는 `importOriginal`로 그대로 통과시킨다 — `sentence-order.ts`가
+// 실제로 불리는지가 이 파일이 보는 것의 절반이라는 원칙은 바뀌지 않는다.
 
 const ORDERING_QUESTIONS: readonly SentenceOrderQuestion[] = [
   {
@@ -40,12 +52,16 @@ const ORDERING_QUESTIONS: readonly SentenceOrderQuestion[] = [
   },
 ] as const;
 
-beforeEach(() => {
-  sentenceOrderQuestionsByStep.ordering = ORDERING_QUESTIONS;
+vi.mock("./sentence-order", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./sentence-order")>();
+  return {
+    ...actual,
+    sentenceOrderQuestionsForStep: (id: JourneyStepId) =>
+      id === "ordering" ? ORDERING_QUESTIONS : [],
+  };
 });
 
 afterEach(() => {
-  sentenceOrderQuestionsByStep.ordering = [];
   // announce 대역이 세운 전역을 원복한다 — 지우지 않으면 다른 파일로 샌다
   // (계약 §3.2 「announce 대역은 테스트마다 원복한다」).
   vi.unstubAllGlobals();
