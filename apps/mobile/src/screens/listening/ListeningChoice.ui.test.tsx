@@ -271,9 +271,8 @@ for (const result of ["correct", "incorrect"] as const) {
   });
 }
 
-// 단언 8-b (계약 §1.7 「표식을 가리는 자리는 **래퍼**다」): 가림 속성은
-// `<view className="listening-choice-mark">` **하나에만** 붙는다.
-// **LIB-237 전에는 아이콘에도 붙어 있었고 그것이 죽은 선언이었다.** 이 속성의 iOS 세터는
+// 단언 8-b (계약 §1.7 「표식을 가리는 자리는 **래퍼**다」): 가림 속성은 아이콘만이 아니라
+// `<view className="listening-choice-mark">`에도 붙는다. 이 속성의 iOS 세터는
 // `view.accessibilityElementsHidden`이고 **가리는 대상은 자손**이다 — 자손이 없는
 // `<svg>`에만 붙이면 아무것도 가려지지 않는다. 정작 가려야 하는 것은
 // `<text className="listening-choice-mark-label">`(`정답`/`오답`)이고, `LynxUIText`는
