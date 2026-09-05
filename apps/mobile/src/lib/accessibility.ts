@@ -27,7 +27,8 @@ interface LynxAccessibilityModule {
 /** 낭독 **요청 한 번의 결과**다. 실제로 들렸는지를 답하지 않는다. */
 export type AnnounceOutcome = "announced" | "unavailable";
 
-// **`audio.ts`와 같은 형태 — `typeof` 가드가 앞에 있다.**
+// **`audio.ts`·`storage.ts`와 같은 형태다 — `typeof` 가드 + `null` 정규화.**
+// LIB-237 전에는 `storage.ts`에 그 가드가 없었고 셋의 형태가 갈려 있었다.
 //
 // `ui`·`integration` 테스트 환경에는 `NativeModules` 전역이 아예 없다. 이 모듈은
 // 화면이 렌더될 때마다 불리므로(계약 §3.2 규칙 1), 가드가 없으면 두 계층이 통째로
