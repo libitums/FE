@@ -239,7 +239,7 @@ test("아이콘 넷에 accessibility-elements-hidden이 붙지 않는다 — 잎
 // 가릴 것이 없다. `enableAccessibilityByDefault`가 iOS에서 기본 NO이고
 // `accessibility-element` prop이 없어 자기 자신 기준으로도 켜질 경로가 없다
 // (LynxUIView.m:116, LynxUI.m:2580~2587). 위 아이콘 잎 넷과 같은 종류의 죽은
-// 선언이므로 여기서 붙지 않는다고 단언한다. testid가 없어(:16~19) 클래스
+// 선언이므로 여기서 붙지 않는다고 단언한다. testid가 없어(:16~20) 클래스
 // 셀렉터로 찾는다 — ListeningChoice.ui.test.tsx의 `.listening-choice-mark` 선례와
 // 같은 형태다.
 test("지시선에 accessibility-elements-hidden이 붙지 않는다 — 잎이다", () => {

@@ -23,7 +23,7 @@ interface StorageModule {
 }
 
 // `NativeModules`는 `[key: string]: any`라 오타가 런타임까지 간다.
-// 이 한 줄이 그것을 막는 유일한 자리다.
+// 이 캐스트(31~33행)가 그것을 막는 유일한 자리다.
 function nativeModule(): StorageModule | undefined {
   if (typeof NativeModules === "undefined") {
     return undefined;

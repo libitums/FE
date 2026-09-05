@@ -229,7 +229,11 @@ Major 5건 · Minor 3건을 냈다. 원인은 계약 위반이 아니라 **요�
 > **남은 둘은 이름이 있다** — `JourneyStepNode.tsx:68`(래퍼이지만 자식이 `<svg>`
 > 하나뿐이라 무동작)과 `JourneyStepNode.tsx:74`(잎 `<svg>`). 여기서 안 고친 것은 판단이
 > 아니라 소유 때문이다 — **LIB-236이 그 파일을 잡고 있다.** 같은 파일을 둘이 고치면
-> 충돌한다. 고칠 것은 **두 줄 삭제**이고 **동작이 안 바뀐다.**
+> 충돌한다. 고칠 것은 **두 줄 삭제**다. `JourneyStepNode.tsx:68`은 무동작이라 동작이
+> 안 바뀌지만, `JourneyStepNode.tsx:74`를 지우면 `JourneyStepNode.ui.test.tsx:139~149`의
+> 세 테스트(`아이콘이 accessibility-elements-hidden="true"다 — done/current/locked`)가
+> 그 속성의 부착을 정답으로 못박고 있어 함께 빨개진다. LIB-237이 자기 다섯 자리를 걷을
+> 때 매번 단언을 함께 뒤집었다 — 거기서도 같은 일이 필요하다.
 > **⇒ 후속: LIB-236.**
 >
 > **이 줄이 세는 것은 「가림을 지는 래퍼」가 아니다.** 래퍼 부착
