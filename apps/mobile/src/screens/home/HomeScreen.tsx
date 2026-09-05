@@ -20,7 +20,6 @@ export function HomeScreen() {
           className="home-screen-icon"
           content={house}
           current-color={color.fg.neutral}
-          accessibility-elements-hidden={true}
         />
         <text
           data-testid="home-screen-title"

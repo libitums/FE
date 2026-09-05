@@ -141,14 +141,13 @@ export function ListeningPrompt({ text, audioSource }: ListeningPromptProps): Re
         bindtap={handleTap}
       >
         {/* 아이콘은 장식이다 — 라벨 `<text>`가 보이는 이름을 진다 (ADR-0016 D5).
-            `<svg>`는 자손이 없으므로 래퍼 가림(`listening-choice-mark`)이 필요 없고
-            자신에게만 붙는다 (계약 §9.5(d)). 조작 단위 하나 = 접근성 요소 하나다. */}
+            `<svg>`는 애초에 접근성 정지가 아니므로 아무것도 붙이지 않는다 — 가림은
+            자손을 가진 래퍼가 진다 (계약 §9.5(d)). */}
         <svg
           className="listening-prompt-playback-icon"
           data-testid="listening-prompt-playback-icon"
           content={playbackIconByState[playback]}
           current-color={playbackIconColorByState[playback]}
-          accessibility-elements-hidden={true}
         />
         {/* 보이는 이름을 지므로 가리지 않는다. `data-testid`도 붙이지 않는다 —
             루트에 대한 `toHaveTextContent`로 읽힌다 (계약 §9.8). */}

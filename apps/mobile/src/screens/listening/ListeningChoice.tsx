@@ -88,7 +88,6 @@ export function ListeningChoice({
             data-testid={`listening-choice-icon-${index}`}
             content={markIconByResult[result]}
             current-color={markIconColorByResult[result]}
-            accessibility-elements-hidden={true}
           />
           <text className="listening-choice-mark-label">{answerResultLabel(result)}</text>
         </view>

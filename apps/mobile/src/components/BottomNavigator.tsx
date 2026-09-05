@@ -72,7 +72,6 @@ export function BottomNavigator({ tab, onSelectTab }: BottomNavigatorProps): Rea
               data-testid={`bottom-navigator-icon-${item.tab}`}
               content={item.icon}
               current-color={selected ? color.fg.brand : color.fg["neutral-muted"]}
-              accessibility-elements-hidden={true}
             />
             <text
               className={
