@@ -180,6 +180,21 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
 **읽는 사람에게 "이 요소가 있는지 보는 중"이라고 알리는 표시**로만 쓴다 — 검사를
 강화하는 것으로 착각하지 않는다.
 
+**`data-testid`가 없어 클래스 셀렉터로 잡은 요소에 부정형을 걸 때는 존재 앵커를 먼저
+건다.** `querySelector`는 못 찾으면 `null`을 주고 **`null`에 건 부정형 단언은 조용히
+통과한다** — 셀렉터에 오타가 났거나 그 요소가 사라져도 초록이라 **게이트가 형식만
+남는다.**
+
+```ts
+const indicator = tab.querySelector<HTMLElement>(".bottom-navigator-indicator");
+expect(tab).toContainElement(indicator); // 존재 앵커 — 이것이 없으면 아래가 공허하다
+expect(indicator).not.toHaveAttribute("accessibility-elements-hidden");
+```
+
+**같은 종류의 함정이 하나 더 있다 — `not.toHaveAttribute`의 인자 둘짜리다.**
+`not.toHaveAttribute(name, value)`는 *"그 값이 아니다"* 만 단언하므로 **속성이 아예 없어도
+통과한다.** 부재를 보려면 **이름 하나만** 넘긴다.
+
 **강제 수단은 없다.** oxlint 규칙으로 막을 수 없어 PR diff를 읽을 때 본다.
 등록 위치는 `apps/mobile/vitest.setup.ts`이고 이유가 그 주석에 있다.
 
