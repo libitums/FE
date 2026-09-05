@@ -6,6 +6,10 @@
 // UI를 import하지 않는다 — 화면 폴더에 있지만 화면 컴포넌트를 참조하지 않는
 // 순수 모듈이다 (계약 §1.2 「왜 순수 로직이 lib/가 아니라 화면 폴더인가」).
 
+// LIB-236 계약 §1.3(a): 학습형 어휘는 lib/learning-form.ts가 갖는다. screens/ → lib/
+// 방향이므로 의존 방향에 어긋나지 않는다 (ADR-0004 D3 · code.md 「import」).
+import type { LearningForm } from "../../lib/learning-form";
+
 // ---------------------------------------------------------------- 도메인 타입 (계약 §1.3)
 
 export type JourneyStepId = "greeting" | "introduction" | "ordering" | "appointment" | "directions";
@@ -132,4 +136,20 @@ export function journeyStepOrdinal(id: JourneyStepId): number {
 // 보장한다.
 export function completeStep(completedCount: number, id: JourneyStepId): number {
   return Math.max(completedCount, journeyStepOrdinal(id));
+}
+
+// --------------------------------------------- 스텝의 학습형 (LIB-236 계약 §1.4)
+
+// **껍데기다 — 동작이 아직 없다 (logic-scaffold).** 계약이 고정한 자리·이름·시그니처만
+// 세워 다음 단위의 unit 테스트가 import를 해석할 수 있게 한다. 실제 답은 그 단위가 채운다.
+//
+// 판정 표(`learningFormByStep: Record<JourneyStepId, LearningForm>`)를 여기서 만들지
+// 않는다 — 초기 값이 계약 §8.2 보류 1b(배정)에 걸려 아직 열려 있고, 지어내면 그것이
+// 배정이 된다. 표를 모듈 내부에 두고 함수 하나만 내보내는 형태는 `stepStatusSuffix` ·
+// `stepOpensSheet`와 같다 (§1.4(b)).
+//
+// 착지하면 던지지 않는 총함수다 — `Record`가 다섯 키를 전부 덮는 것을 tsc가 지므로
+// 방어 분기도 `undefined`도 없다 (§1.8). 새 스텝이 늘면 그 `Record`가 `TS2741`로 선다.
+export function learningFormForStep(id: JourneyStepId): LearningForm {
+  throw new Error(`learningFormForStep: 아직 구현되지 않았다 — ${id}`);
 }
