@@ -34,13 +34,14 @@ interface AudioPlaybackModule {
  */
 export type AudioPlayOutcome = "started" | "unavailable";
 
-// **`storage.ts`와 정확히 한 줄 다르다 — `typeof` 가드가 앞에 있다.**
+// **`storage.ts`·`accessibility.ts`와 같은 형태다 — `typeof` 가드 + `null` 정규화.**
 //
 // `ui`·`integration` 테스트 환경에는 `NativeModules` 전역이 **아예 없다**
-// (`hasOwnProperty`가 `false`다). `storage.ts`의 형태를 그대로 쓰면 맨 식별자 접근에서
-// **`ReferenceError: NativeModules is not defined`** 가 난다. `storage.ts`는 어떤
-// 컴포넌트도 렌더하지 않아 지금까지 드러나지 않았을 뿐이고, 이 파일은 **화면이 렌더될
+// (`hasOwnProperty`가 `false`다). 가드 없이 맨 식별자 접근을 하면
+// **`ReferenceError: NativeModules is not defined`** 가 난다. 이 파일은 **화면이 렌더될
 // 때마다 불린다** — 가드가 없으면 `ui`·`integration`이 통째로 죽는다 (계약 §9.3-2).
+// LIB-237 전에는 `storage.ts`에 이 가드가 없었다 — 어떤 컴포넌트도 렌더하지 않아
+// 지금까지 드러나지 않았을 뿐이다. 지금은 셋 다 같은 형태다.
 //
 // 메인 스레드에서는 `globalThis.NativeModules`가 `undefined`로 세팅되므로, 이 가드는
 // 「호스트가 아닌 곳」과 「메인 스레드」를 같은 경로로 보낸다. 어느 쪽이든 **조용히

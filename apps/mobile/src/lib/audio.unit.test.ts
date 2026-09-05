@@ -310,9 +310,10 @@ describe("모듈 값이 null일 때", () => {
   });
 });
 
-// 계약 §9.3-2 · §9.9(a) 마지막 줄: **이 describe가 ReferenceError 함정을 잡는
-// 유일한 자리다.** `storage.unit.test.ts`에는 이 케이스가 없다 — 그 모듈은 어떤
-// 컴포넌트도 렌더하지 않아 드러나지 않았을 뿐이다.
+// 계약 §9.3-2 · §9.9(a) 마지막 줄: `storage.unit.test.ts`·`accessibility.unit.test.ts`·
+// 이 파일 셋 모두가 각자 같은 축을 갖는다 — 전역 자체가 없을 때(`typeof` 가드)의
+// 케이스다. 셋이 같은 형태이므로(storage.ts·audio.ts·accessibility.ts가 문자 단위로
+// 같은 가드를 쓴다) 이 축도 세 파일 모두에 있다 — 이 자리 하나가 유일한 것이 아니다.
 //
 // 전역을 세우지 않는다. `NativeModules`는 선언 자체가 없으므로 맨 식별자 접근이면
 // `ReferenceError: NativeModules is not defined`가 난다.
