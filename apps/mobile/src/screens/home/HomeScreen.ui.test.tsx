@@ -35,17 +35,15 @@ test("홈 화면 제목이 accessibility-traits header를 갖는다", () => {
   expect(screen.getByTestId("home-screen-title")).toHaveAttribute("accessibility-traits", "header");
 });
 
-// 보정 2026-09-02: 접근성 감사 F8이 장식 아이콘 두 곳(탭·홈)을 한 지적으로 묶었다.
-// 탭 쪽은 BottomNavigator.ui.test.tsx "아이콘 넷이 접근성 트리에서 빠진다"에서 이미
-// 닫혔다 — 이 테스트가 홈 쪽을 같은 매처·같은 형태로 닫는다 (screens.contract.ts,
-// spec.md §6.3 C-3). 옆 제목 <text>가 "홈"이라는 같은 뜻을 이미 글자로 전달하므로
-// 이 아이콘은 순수 장식이다.
-test("홈 화면 아이콘이 접근성 트리에서 빠진다 — 순수 장식이다", () => {
+// 재판정 (LIB-237): accessibility-elements-hidden의 iOS 세터는
+// view.accessibilityElementsHidden이라 가리는 대상이 자손이다. 홈 아이콘은 자손 없는
+// 잎 `<svg>`이므로 이 속성을 붙여도 아무것도 가리지 못한다 — 붙이지 않는 것이 계약이다
+// (E-A1, E-A2).
+test("홈 화면 아이콘에 accessibility-elements-hidden이 붙지 않는다 — 잎이다", () => {
   render(<HomeScreen />);
 
-  expect(screen.getByTestId("home-screen-icon")).toHaveAttribute(
+  expect(screen.getByTestId("home-screen-icon")).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
 });
 

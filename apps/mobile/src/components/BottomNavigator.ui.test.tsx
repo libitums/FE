@@ -212,23 +212,23 @@ test("탭 넷 모두 accessibility-element가 true다 — 선택 여부로 갈�
   );
 });
 
-test("아이콘 넷이 접근성 트리에서 빠진다 — 순수 장식이다", () => {
+// 재판정 (LIB-237): accessibility-elements-hidden의 iOS 세터는
+// view.accessibilityElementsHidden이라 가리는 대상이 자손이다. 탭 아이콘 넷은 자손
+// 없는 잎 `<svg>`이므로 이 속성을 붙여도 아무것도 가리지 못한다 — 붙이지 않는 것이
+// 계약이다 (E-A1, E-A2). 지시선 `<view>`(위 테스트의 대상)는 이 표적 밖이다.
+test("아이콘 넷에 accessibility-elements-hidden이 붙지 않는다 — 잎이다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  expect(screen.getByTestId("bottom-navigator-icon-home")).toHaveAttribute(
+  expect(screen.getByTestId("bottom-navigator-icon-home")).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
-  expect(screen.getByTestId("bottom-navigator-icon-journey")).toHaveAttribute(
+  expect(screen.getByTestId("bottom-navigator-icon-journey")).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
-  expect(screen.getByTestId("bottom-navigator-icon-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("bottom-navigator-icon-roleplay")).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
-  expect(screen.getByTestId("bottom-navigator-icon-settings")).toHaveAttribute(
+  expect(screen.getByTestId("bottom-navigator-icon-settings")).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
 });

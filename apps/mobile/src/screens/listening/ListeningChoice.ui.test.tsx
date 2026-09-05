@@ -251,9 +251,11 @@ test("정답과 오답의 표식이 모양·색 둘 다에서 갈린다", () => 
   expect(ICON_COLOR_BY_RESULT.correct).not.toBe(ICON_COLOR_BY_RESULT.incorrect);
 });
 
-// 단언 8: 표식 아이콘은 순수 장식이다 — 접근성 트리에서 빠진다 (ADR-0016 D5).
+// 단언 8: 표식 아이콘은 잎 `<svg>`다 — accessibility-elements-hidden의 iOS 세터는
+// view.accessibilityElementsHidden이라 가리는 대상이 자손이다. 자손 없는 잎에 붙여도
+// 아무 일도 안 하므로 이 속성을 붙이지 않는 것이 계약이다 (E-A1, E-A2).
 for (const result of ["correct", "incorrect"] as const) {
-  test(`표식 아이콘이 accessibility-elements-hidden="true"다 — ${result}`, () => {
+  test(`표식 아이콘에 accessibility-elements-hidden이 붙지 않는다 — ${result}`, () => {
     render(
       <ListeningChoice
         index={3}
@@ -263,9 +265,8 @@ for (const result of ["correct", "incorrect"] as const) {
       />,
     );
 
-    expect(screen.getByTestId("listening-choice-icon-3")).toHaveAttribute(
+    expect(screen.getByTestId("listening-choice-icon-3")).not.toHaveAttribute(
       "accessibility-elements-hidden",
-      "true",
     );
   });
 }
@@ -280,7 +281,7 @@ for (const result of ["correct", "incorrect"] as const) {
 // 판정 상태는 이미 라벨 접미사가 지고 있으므로(ADR-0016 D3) 이 `<text>`는 시각 채널이지
 // 보조기술 채널이 아니다.
 //
-// **위 단언 8(`<svg>`)을 대체하지 않는다** — 계약이 둘 다 유지한다고 적었다.
+// **위 단언 8(`<svg>`)과 짝을 이룬다** — 잎에는 붙지 않고 래퍼에만 붙는 것이 계약이다.
 //
 // 계약 §2가 test-id를 늘리지 않아 표식 래퍼에는 `data-testid`가 없다. 그래서 클래스
 // 셀렉터로 요소를 **찾는다** — 찾기는 `data-testid`와 같은 탐색 축이지 상태를 보는
