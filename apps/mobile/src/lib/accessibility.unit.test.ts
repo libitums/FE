@@ -44,6 +44,17 @@ describe("isAnnouncementAvailable", () => {
     expect(isAnnouncementAvailable()).toBe(false);
   });
 
+  // registerModule이 이 프레임에서 아직 안 끝났을 때 관찰되는 값이다
+  // (LynxTemplateRenderHelper.mm:494가 조건 없이 등록하지만, 그 완료 시점까지
+  // 이 파일의 캐스팅이 책임지지 않는다) — `undefined`가 아니라 `null`이다.
+  // `nativeModule()`의 반환 타입 `LynxAccessibilityModule | undefined`가 이 값을
+  // 감추므로, 캐스팅만 믿으면 이 축이 조용히 새나간다.
+  it("모듈 값이 null이면 false다", () => {
+    vi.stubGlobal("NativeModules", { LynxAccessibilityModule: null });
+
+    expect(isAnnouncementAvailable()).toBe(false);
+  });
+
   // 계약 §3.2 규칙 1: ui·integration 환경에는 NativeModules 전역이 아예 없다.
   // typeof 가드가 없으면 맨 식별자 접근에서 ReferenceError가 난다.
   it("전역 자체가 없어도 false이고 던지지 않는다", () => {
@@ -118,5 +129,17 @@ describe("announce — 전역 자체가 없을 때 (typeof 가드)", () => {
 
   it("isAnnouncementAvailable도 false다", () => {
     expect(isAnnouncementAvailable()).toBe(false);
+  });
+});
+
+// ADR-0016 D11 규칙 4: 모듈이 없으면 조용히 아무 일도 하지 않는다 — 던지지 않는다.
+// `null`이 그 규칙의 구멍이다. `host === undefined` 가드는 `host`가 `null`일 때
+// 거짓이 되어 `host.accessibilityAnnounce(...)`에서 TypeError가 난다.
+describe("announce — 모듈 값이 null일 때", () => {
+  it("unavailable을 돌려주고 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", { LynxAccessibilityModule: null });
+
+    expect(() => announce("평가 결과, 통과")).not.toThrow();
+    expect(announce("평가 결과, 통과")).toBe("unavailable");
   });
 });

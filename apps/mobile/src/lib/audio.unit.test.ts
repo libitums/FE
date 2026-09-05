@@ -75,6 +75,15 @@ describe("isAudioAvailable", () => {
     expect(() => isAudioAvailable()).not.toThrow();
     expect(isAudioAvailable()).toBe(false);
   });
+
+  // registerModule이 이 프레임에서 아직 안 끝났을 때 관찰되는 값이다 — `undefined`가
+  // 아니라 `null`이다. `nativeModule()`의 반환 타입 `AudioPlaybackModule | undefined`가
+  // 이 값을 감추므로, 캐스팅만 믿으면 이 축이 조용히 새나간다.
+  it("모듈 값이 null이면 false다", () => {
+    vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
+
+    expect(isAudioAvailable()).toBe(false);
+  });
 });
 
 describe("playAudio — 모듈이 있을 때", () => {
@@ -269,6 +278,33 @@ describe("모듈이 없을 때 — 전역은 있고 모듈만 없다", () => {
 
   it("stopAudio가 던지지 않는다", () => {
     vi.stubGlobal("NativeModules", {});
+
+    expect(() => stopAudio()).not.toThrow();
+  });
+});
+
+// ADR-0016 D11 규칙 4: 모듈이 없으면 조용히 아무 일도 하지 않는다 — 던지지 않는다.
+// `null`이 그 규칙의 구멍이다. `host === undefined` 가드는 `host`가 `null`일 때
+// 거짓이 되어 `host.play(...)` · `host.stop()`에서 TypeError가 난다.
+describe("모듈 값이 null일 때", () => {
+  it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
+
+    expect(() => playAudio("ordering-1", vi.fn<() => void>())).not.toThrow();
+    expect(playAudio("ordering-1", vi.fn<() => void>())).toBe("unavailable");
+  });
+
+  it("playAudio가 onFinished를 부르지 않는다 — 조용히 아무 일도 하지 않는다", () => {
+    vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
+    const onDone = vi.fn<() => void>();
+
+    playAudio("ordering-1", onDone);
+
+    expect(onDone).not.toHaveBeenCalled();
+  });
+
+  it("stopAudio가 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
 
     expect(() => stopAudio()).not.toThrow();
   });
