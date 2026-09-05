@@ -34,7 +34,7 @@
    **`align-items: flex-start`(FE ADR-0023 규칙 3, 안 B).** `-exit`(48)와 제목(24)의
    교차 크기가 달라 게이트 A를 실패한다(Δ 12) — `center`는 최대 배율에서 `-exit`와
    제목의 프레임 top이 갈려 낭독 순서를 DOM 순서와 어긋나게 만든다(LIB-227 E-S3
-   실기 관측). `.listening-screen-title`의 `padding-top`이 기본 배율의 렌더를
+   실기 관측). `.listening-screen-title`의 `margin-top`이 기본 배율의 렌더를
    오늘과 같게 되돌린다. */
 .listening-screen-header {
   display: flex;
@@ -74,7 +74,7 @@
 /* design §5.1 「화면 제목」 — `journey-map-screen-title` · `step-sheet-title`과 같은
    scale이다.
 
-   **`padding-top: var(--libitum-spacing-12)`(FE ADR-0023 규칙 3, 안 B — design.md
+   **`margin-top: var(--libitum-spacing-12)`(FE ADR-0023 규칙 3, 안 B — design.md
    §7).** `.listening-screen-header`를 `align-items: flex-start`로 바꾼 대가를
    여기서 갚는다. 담아야 할 사실 셋:
    1. **12는 토큰 이름이 아니라 산술 결과다** —
@@ -88,7 +88,7 @@
    `<text>`에 `padding`을 준 선례가 이 저장소에 0건이다 — 실기 §5 E1-b가 판정한다.
    E1-b가 부수면 대체안 B′(`align-self: center`)로 갈아탄다(계약 §2.1.1). */
 .listening-screen-title {
-  padding-top: var(--libitum-spacing-12);
+  margin-top: var(--libitum-spacing-12);
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);

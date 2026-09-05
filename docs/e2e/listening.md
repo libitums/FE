@@ -765,7 +765,7 @@ iOS VoiceOver다 (ADR-0012 D1).
 >
 > **LIB-228이 처방을 걸었다 (`f354612`).** `.listening-screen-header`에
 > `align-items: flex-start` + `.listening-screen-title`에
-> `padding-top: var(--libitum-spacing-12)`(FE ADR-0023 규칙 3, 안 B). **판정은 아래
+> `margin-top: var(--libitum-spacing-12)`(FE ADR-0023 규칙 3, 안 B). **판정은 아래
 > 새 절 「VoiceOver 낭독 순서 — 배율이 DOM 순서를 뒤집는다」의 E1-a·E1-b가 진다 —
 > 아직 안 돌았다.**
 
@@ -785,7 +785,7 @@ iOS VoiceOver다 (ADR-0012 D1).
 (`.agent-harness/work/lib-228/spec.md` §5)이 고정한 것을 옮긴 것이다.** 코드는
 `f354612`에서 이미 처방을 걸었다 — `.listening-screen-header`(①)와
 `.listening-choice`(②) 둘 다 `align-items: flex-start`, ①의 제목에는
-`padding-top`(안 B)이 더해졌다. **아래는 그 처방이 실물에서 맞는지 재는 절차이고
+`margin-top`(안 B)이 더해졌다. **아래는 그 처방이 실물에서 맞는지 재는 절차이고
 하나도 안 돌았다.**
 
 > **⚠ 「확인됨」과 「추론」을 섞지 않는다.** 위 E-S3(2026-09-04)이 **①의 역전을
@@ -830,10 +830,10 @@ iOS VoiceOver다 (ADR-0012 D1).
   보고됐다가 두 번 뒤집혔고, 뒤집은 것은 픽셀 대조였다"*). **낭독 순서는 `맵으로` →
   `1단계 · 듣기`. 고치기 전에도 이 순서였다 — 바뀌면 안 된다**
 - 어긋나면: **안 B가 실패한 것이다.** 원인은 `<text>`(`.listening-screen-title`)에
-  준 `padding-top`을 Lynx가 산술대로 안 그린 것이다 — **이 저장소에 `<text>`의
+  준 `margin-top`을 Lynx가 산술대로 안 그린 것이다 — **이 저장소에 `<text>`의
   `padding` 선례가 0건**이라 계약이 미리 이 위험을 적어 뒀다(계약 §2.1). **대체안
   B′(계약 §2.1.1)로 갈아탄다**:
-  1. `listening-screen.css`의 `.listening-screen-title`에서 `padding-top`을 지운다
+  1. `listening-screen.css`의 `.listening-screen-title`에서 `margin-top`을 지운다
   2. 대신 `align-self: center;`를 더한다
   3. `.listening-screen-header`의 `align-items: flex-start`는 그대로 둔다
   4. 이 항목을 다시 돈다
