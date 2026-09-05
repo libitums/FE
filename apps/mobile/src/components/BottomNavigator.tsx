@@ -65,7 +65,6 @@ export function BottomNavigator({ tab, onSelectTab }: BottomNavigatorProps): Rea
                   ? "bottom-navigator-indicator bottom-navigator-indicator-selected"
                   : "bottom-navigator-indicator"
               }
-              accessibility-elements-hidden={true}
             />
             <svg
               className="bottom-navigator-icon"
