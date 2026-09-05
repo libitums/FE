@@ -165,6 +165,35 @@ for (const status of STATES) {
   });
 }
 
+// 단언 7-b (계약 §3.2.3(a)): 가림 선언이 이 컴포넌트 트리 어디에도 없다.
+//
+// ① 이 단언이 지는 것은 「이 컴포넌트 트리 어디에도 가림 선언이 없다」이지 특정 노드의
+//    속성 부재가 아니다. 그래서 가림이 잎 <svg>에서 래퍼로(또는 루트로) 옮겨 붙는 것만
+//    으로는 통과하지 못한다 — 위 단언 7은 잎 하나만 보므로 그 이동을 놓친다.
+// ② 묶는 것은 render()가 돌려주는 container다. getByTestId로 잡은 루트에
+//    querySelectorAll을 걸면 루트 자신(JourneyStepNode.tsx:55)이 매치 대상에서 빠지므로,
+//    누가 루트에 가림을 붙이면 잡지 못한다. 트리 전체를 지려면 container여야 한다.
+//    셀렉터에 값을 쓰지 않는 이유도 같다 — [...="true"]로 좁히면 다른 값으로 붙은 가림을
+//    놓쳐 부재를 지지 못한다(단언 7의 인자 하나짜리 부정형과 같은 이유).
+// ③ 래퍼(JourneyStepNode.tsx:68)의 가림도 동작이 0이다 — 그 래퍼의 자식은 <svg> 하나
+//    뿐이라 가릴 접근성 자손이 0개다. 라벨 <text>는 :77, 래퍼 **밖** 형제다.
+// ④ 정본과의 구분: AssessmentItem.tsx:60의 래퍼는 안에 <svg>와 <text>가 함께 있어 그
+//    <text>를 실제로 가린다. 기준은 「래퍼냐」가 아니라 「가릴 접근성 자손이 있느냐」다 —
+//    「래퍼면 붙인다」로 일반화하지 마라.
+// ⑤ ⛔ FE ADR-0016 D5의 정정 소유는 LIB-237이다. ADR을 근거로 :68·:74의 가림을
+//    되살리지 마라.
+//
+// 선례: SentenceOrderScreen.ui.test.tsx:371·376 · ListeningScreen.ui.test.tsx:490·494.
+for (const status of STATES) {
+  test(`가림 선언이 컴포넌트 트리 어디에도 없다 — ${status}`, () => {
+    const { container } = render(
+      <JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />,
+    );
+
+    expect(container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
+  });
+}
+
 // 단언 8 (재고정, 계약 §1.7.2·§4.4·§4.3.3): tap하면 onSelect가 그 id로 정확히 한 번
 // 불린다 — done·current만. locked는 더는 이 갈래에 없다(아래 8-locked가 진짜 게이트다).
 for (const status of ["done", "current"] as const) {
