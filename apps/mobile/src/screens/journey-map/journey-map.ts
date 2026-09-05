@@ -140,16 +140,39 @@ export function completeStep(completedCount: number, id: JourneyStepId): number 
 
 // --------------------------------------------- 스텝의 학습형 (LIB-236 계약 §1.4)
 
-// **껍데기다 — 동작이 아직 없다 (logic-scaffold).** 계약이 고정한 자리·이름·시그니처만
-// 세워 다음 단위의 unit 테스트가 import를 해석할 수 있게 한다. 실제 답은 그 단위가 채운다.
+// 스텝→학습형 표. export하지 않는 모듈 내부 상수이고 나가는 것은 아래 함수 하나다 —
+// `stepStatusSuffix`(:73) · `stepOpensSheet`(:93) · `lib/answer-result.ts`와 같은
+// 형태다 (계약 §1.4(b)). 표를 내보내면 다음 사람이 직접 색인해 자기 답을 짓는다.
 //
-// 판정 표(`learningFormByStep: Record<JourneyStepId, LearningForm>`)를 여기서 만들지
-// 않는다 — 초기 값이 계약 §8.2 보류 1b(배정)에 걸려 아직 열려 있고, 지어내면 그것이
-// 배정이 된다. 표를 모듈 내부에 두고 함수 하나만 내보내는 형태는 `stepStatusSuffix` ·
-// `stepOpensSheet`와 같다 (§1.4(b)).
+// ⚠ **오른쪽 다섯 값은 배정이 아니라 2026-09-05 데이터의 전사(轉寫)다** (계약 §1.9).
+// 「이 스텝이 듣기로 정해졌다」가 아니라 「오늘 이 스텝에 있는 문항이 듣기 문항뿐이다」를
+// 적은 것이다 — `listeningQuestionsByStep`(listening.ts:55)이 다섯 키 전부에 문항 셋을
+// 갖고, `sentenceOrderQuestionsByStep`(sentence-order.ts:54) ·
+// `wordChoiceQuestionsByStep`(word-choice.ts:53)은 다섯 키가 다 빈 배열이다. 그래서 이
+// 값에서 동작 변화가 0이다.
 //
-// 착지하면 던지지 않는 총함수다 — `Record`가 다섯 키를 전부 덮는 것을 tsc가 지므로
-// 방어 분기도 `undefined`도 없다 (§1.8). 새 스텝이 늘면 그 `Record`가 `TS2741`로 선다.
+// **왜 빈 채로 둘 수 없나** — `LearningForm` union에 빈 값(`""`도 `null`도)이 없고
+// `Record`가 다섯 키를 전부 요구한다. 두 문항 표가 쓴 「빈 배열 + 사유 주석」을 이
+// 자리는 쓸 수 없다 (계약 §1.9(c)).
+//
+// **무엇이 막고 있나** — 실제 배정은 컨텐츠 판단이고 계약 §8.2 보류 1b로 아직 열려
+// 있다. **문항 값(보류 2)과 같은 시점에 온다** — 문항 없이 배정만 옮기면 그 스텝이
+// 문항 0개인 화면을 연다.
+//
+// **값이 오는 날 무엇만 바뀌나** — **이 표의 오른쪽 다섯 개**와 그 스텝의 문항 배열
+// 둘뿐이다. **형태는 한 글자도 안 바뀐다** (계약 수용 기준 5). 어긋나면 교차 불변식
+// (계약 §3.1 U4)이 먼저 빨개져 옮길 문항을 함께 옮기라고 말한다.
+const learningFormByStep: Record<JourneyStepId, LearningForm> = {
+  greeting: "listening",
+  introduction: "listening",
+  ordering: "listening",
+  appointment: "listening",
+  directions: "listening",
+};
+
+// 던지지 않는 총함수다 — `Record`가 다섯 키를 전부 덮는 것을 tsc가 지므로 방어 분기도
+// `undefined` 반환도 없다 (계약 §1.8). `sentenceOrderQuestionsForStep`이 쓴 것과 같은
+// 문장이다. 새 스텝이 늘면 위 `Record`가 `TS2741`로 선다.
 export function learningFormForStep(id: JourneyStepId): LearningForm {
-  throw new Error(`learningFormForStep: 아직 구현되지 않았다 — ${id}`);
+  return learningFormByStep[id];
 }

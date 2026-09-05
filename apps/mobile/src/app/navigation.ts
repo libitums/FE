@@ -145,16 +145,26 @@ export function navReducer(nav: Nav, action: NavAction): Nav {
 
 // ------------------------------------------- 학습형 → 화면 (LIB-236 계약 §1.6)
 
-// **껍데기다 — 동작이 아직 없다 (logic-scaffold).** 계약이 고정한 자리·이름·시그니처만
-// 세워 다음 단위의 unit 테스트가 import를 해석할 수 있게 한다. 실제 `switch`는 그
-// 단위가 채운다.
-//
 // 이 함수가 navigation.ts인 근거: `Screen`의 소유자가 여기이고 `screens/ → app/`
 // import는 금지다(위 7~9행의 불변식). 그래서 여정 맵에 둘 수 없다 (§1.6(b)).
 //
-// 착지하면 `default` 없는 `switch` 셋이고 던지지 않는다 (§1.8). `default`를 두지 않는
-// 것이 §1.6(c) 1번의 조건이다 — 넷째 학습형이 늘면 여기가 `TS2366`으로 서고, 그것을
-// 쓰려면 `Screen`에 멤버가 있어야 하고, 더하면 App.tsx의 exhaustiveness가 선다.
+// `default` 없는 `switch` 셋이고 던지지 않는다 (§1.8). `default`를 두지 않는 것이
+// §1.6(c) 1번의 조건이다 — 넷째 학습형이 늘면 여기가 `TS2366`으로 서고, 그것을 쓰려면
+// `Screen`에 멤버가 있어야 하고, 더하면 App.tsx의 exhaustiveness가 선다.
+// `navReducer`(:97) · `stepSheetReducer`가 쓰는 형태 그대로다.
+//
+// `Record<LearningForm, …>`이 아니라 `switch`인 이유는 돌려주는 것이 스칼라가 아니라
+// 필드를 가진 객체이고 `Screen` 멤버들이 균일하지 않기 때문이다 (§1.6(d)).
 export function learningScreenFor(form: LearningForm, stepId: JourneyStepId): Screen {
-  throw new Error(`learningScreenFor: 아직 구현되지 않았다 — ${form} / ${stepId}`);
+  switch (form) {
+    case "listening": {
+      return { name: "listening", stepId };
+    }
+    case "sentence-order": {
+      return { name: "sentence-order", stepId };
+    }
+    case "word-choice": {
+      return { name: "word-choice", stepId };
+    }
+  }
 }
