@@ -79,7 +79,7 @@
   font-size: var(--libitum-typography-heading-s-font-size);
   line-height: var(--libitum-typography-heading-s-line-height);
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-  padding-top: var(--libitum-spacing-12);
+  margin-top: var(--libitum-spacing-12);
 }
 
 /* design.md §1.2(d) — 남는 세로를 받는 것은 스크롤 컨테이너 하나다(`flex: 1`).

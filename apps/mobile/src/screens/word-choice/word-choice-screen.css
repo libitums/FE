@@ -78,7 +78,7 @@
    같은 scale이다. `padding-top`은 `(spacing-48 − heading-s line-height) / 2 =
    (48 − 24) / 2 = 12`의 산술 결과다 — `spacing-12`를 "12라서" 고른 게 아니라
    값이 우연히 같다. `-exit`가 `min-height: spacing-48`로 세워지고
-   `align-items: flex-start`인 헤더에서, 이 제목의 위쪽을 그만큼 내려 두
+   `align-items: flex-start`인 헤더에서, 이 제목의 **프레임 top**을 그만큼 내려 두
    자식의 시각 중심을 맞춘다. */
 .word-choice-screen-title {
   color: var(--libitum-color-fg-neutral);
@@ -87,7 +87,7 @@
   font-size: var(--libitum-typography-heading-s-font-size);
   line-height: var(--libitum-typography-heading-s-line-height);
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-  padding-top: var(--libitum-spacing-12);
+  margin-top: var(--libitum-spacing-12);
 }
 
 /* design §1.2(d) — 남는 세로를 받는 것은 이 상자다(FE ADR-0022 D4). 배경·모서리·
