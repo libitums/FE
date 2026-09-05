@@ -52,9 +52,12 @@ function nativeModule(): AudioPlaybackModule | undefined {
   if (typeof NativeModules === "undefined") {
     return undefined;
   }
-  return (NativeModules as Record<string, unknown>)["AudioPlaybackModule"] as
+  const module = (NativeModules as Record<string, unknown>)["AudioPlaybackModule"] as
     | AudioPlaybackModule
     | undefined;
+  // registerModule이 아직 안 끝났을 때는 `undefined`가 아니라 `null`이 관찰된다.
+  // 캐스팅만 믿으면 이 축이 새나가므로 여기서 `undefined`로 정규화한다.
+  return module ?? undefined;
 }
 
 // **지금 유효한 재생의 세대.** 단조 증가하고 되돌아가지 않는다.
