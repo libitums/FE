@@ -271,15 +271,15 @@ for (const result of ["correct", "incorrect"] as const) {
   });
 }
 
-// 단언 8-b (계약 §1.7 「표식을 가리는 자리는 **래퍼**다」): 가림 속성은 아이콘만이 아니라
-// `<view className="listening-choice-mark">`에도 붙는다. 이 속성의 iOS 세터는
-// `view.accessibilityElementsHidden`이고 **가리는 대상은 자손**이다 — 자손이 없는
-// `<svg>`에만 붙이면 아무것도 가려지지 않는다. 정작 가려야 하는 것은
-// `<text className="listening-choice-mark-label">`(`정답`/`오답`)이고, `LynxUIText`는
-// `enableAccessibilityByDefault`가 `YES`라 **기본이 접근성 요소**다. 가리지 않으면
-// 조작 단위 하나가 접근성 요소 둘이 되어 ADR-0016 D5를 어기고 같은 낱말이 두 번 들린다.
-// 판정 상태는 이미 라벨 접미사가 지고 있으므로(ADR-0016 D3) 이 `<text>`는 시각 채널이지
-// 보조기술 채널이 아니다.
+// 단언 8-b (계약 §1.7 「표식을 가리는 자리는 **래퍼**다」): LIB-237 전에는 가림 속성이
+// 잎 `<svg>`에도 붙어 있었다 — 지금은 `<view className="listening-choice-mark">`에만
+// 붙는다. 이 속성의 iOS 세터는 `view.accessibilityElementsHidden`이고 **가리는 대상은
+// 자손**이다 — 자손이 없는 `<svg>`에 붙여 봐야 아무것도 가려지지 않는다. 정작 가려야
+// 하는 것은 `<text className="listening-choice-mark-label">`(`정답`/`오답`)이고,
+// `LynxUIText`는 `enableAccessibilityByDefault`가 `YES`라 **기본이 접근성 요소**다.
+// 가리지 않으면 조작 단위 하나가 접근성 요소 둘이 되어 ADR-0016 D5를 어기고 같은
+// 낱말이 두 번 들린다. 판정 상태는 이미 라벨 접미사가 지고 있으므로(ADR-0016 D3)
+// 이 `<text>`는 시각 채널이지 보조기술 채널이 아니다.
 //
 // **위 단언 8(`<svg>`)과 짝을 이룬다** — 잎에는 붙지 않고 래퍼에만 붙는 것이 계약이다.
 //

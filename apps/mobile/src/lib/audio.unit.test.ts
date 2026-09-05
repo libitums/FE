@@ -284,8 +284,9 @@ describe("모듈이 없을 때 — 전역은 있고 모듈만 없다", () => {
 });
 
 // ADR-0016 D11 규칙 4: 모듈이 없으면 조용히 아무 일도 하지 않는다 — 던지지 않는다.
-// `null`이 그 규칙의 구멍이다. `host === undefined` 가드는 `host`가 `null`일 때
-// 거짓이 되어 `host.play(...)` · `host.stop()`에서 TypeError가 난다.
+// `null`이 그 규칙의 구멍이었다. LIB-237 전에는 `host === undefined` 가드가 `host`가
+// `null`일 때 거짓이 되어 `host.play(...)` · `host.stop()`에서 TypeError가 났다. 지금은
+// `audio.ts:61`의 `?? undefined`가 `null`을 `undefined`로 정규화해 막는다.
 describe("모듈 값이 null일 때", () => {
   it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
     vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
