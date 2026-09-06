@@ -340,3 +340,38 @@ describe("전역 자체가 없을 때 — typeof 가드", () => {
     expect(isAudioAvailable()).toBe(false);
   });
 });
+
+// LIB-237 PR #48 리뷰 지적: `typeof NativeModules === "undefined"` 가드는 전역이
+// **없을 때**만 막는다. `typeof null`은 `"object"`라 전역 자체가 `null`이면 이
+// 가드를 통과하고, 다음 줄 `(NativeModules as Record<string, unknown>)["…"]`의
+// 색인 접근에서 TypeError가 난다 — `storage.ts`·`accessibility.ts`와 같은 자리,
+// 같은 모양이다. 위 「전역 자체가 없을 때 — typeof 가드」와 대칭인 셋째 축이다.
+describe("전역 자체가 null일 때 — typeof 가드의 사각", () => {
+  it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", null);
+
+    expect(() => playAudio("ordering-1", vi.fn<() => void>())).not.toThrow();
+    expect(playAudio("ordering-1", vi.fn<() => void>())).toBe("unavailable");
+  });
+
+  it("playAudio가 onFinished를 부르지 않는다", () => {
+    vi.stubGlobal("NativeModules", null);
+    const onDone = vi.fn<() => void>();
+
+    playAudio("ordering-1", onDone);
+
+    expect(onDone).not.toHaveBeenCalled();
+  });
+
+  it("stopAudio가 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", null);
+
+    expect(() => stopAudio()).not.toThrow();
+  });
+
+  it("isAudioAvailable이 false다", () => {
+    vi.stubGlobal("NativeModules", null);
+
+    expect(isAudioAvailable()).toBe(false);
+  });
+});

@@ -95,3 +95,31 @@ test("전역 자체가 없으면 setItem·removeItem이 던지지 않는다 — 
   expect(() => setItem("token", "abc")).not.toThrow();
   expect(() => removeItem("token")).not.toThrow();
 });
+
+// -------------------------------------------- 전역 자체가 null일 때 (typeof 가드의 사각)
+//
+// LIB-237 PR #48 리뷰 지적: `typeof NativeModules === "undefined"` 가드는 전역이
+// **없을 때**만 막는다. `typeof null`은 `"object"`라 전역 자체가 `null`이면 이
+// 가드를 통과하고, 다음 줄 `(NativeModules as Record<string, unknown>)["StorageModule"]`의
+// 색인 접근에서 TypeError가 난다 — `audio.ts`·`accessibility.ts`와 같은 자리, 같은
+// 모양이다. 위 「전역 자체가 없을 때 (typeof 가드)」 셋과 대칭인 넷째 축이다.
+
+test("전역 자체가 null이면 isStorageAvailable이 false다 — typeof 가드의 사각", () => {
+  vi.stubGlobal("NativeModules", null);
+
+  expect(isStorageAvailable()).toBe(false);
+});
+
+test("전역 자체가 null이면 getItem이 null이고 던지지 않는다 — typeof 가드의 사각", () => {
+  vi.stubGlobal("NativeModules", null);
+
+  expect(() => getItem("token")).not.toThrow();
+  expect(getItem("token")).toBeNull();
+});
+
+test("전역 자체가 null이면 setItem·removeItem이 던지지 않는다 — typeof 가드의 사각", () => {
+  vi.stubGlobal("NativeModules", null);
+
+  expect(() => setItem("token", "abc")).not.toThrow();
+  expect(() => removeItem("token")).not.toThrow();
+});

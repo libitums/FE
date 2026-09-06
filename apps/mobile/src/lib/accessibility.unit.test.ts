@@ -132,6 +132,27 @@ describe("announce — 전역 자체가 없을 때 (typeof 가드)", () => {
   });
 });
 
+// LIB-237 PR #48 리뷰 지적: `typeof NativeModules === "undefined"` 가드는 전역이
+// **없을 때**만 막는다. `typeof null`은 `"object"`라 전역 자체가 `null`이면 이
+// 가드를 통과하고, 다음 줄 `(NativeModules as Record<string, unknown>)["…"]`의
+// 색인 접근에서 TypeError가 난다 — `audio.ts`·`storage.ts`와 같은 자리, 같은 모양이다.
+// 「전역은 있는데 모듈만 없다」·「전역 자체가 없다(typeof 가드)」 두 축과 대칭인
+// 셋째 축이다.
+describe("announce — 전역 자체가 null일 때 (typeof 가드의 사각)", () => {
+  it("isAnnouncementAvailable이 false다", () => {
+    vi.stubGlobal("NativeModules", null);
+
+    expect(isAnnouncementAvailable()).toBe(false);
+  });
+
+  it("unavailable을 돌려주고 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", null);
+
+    expect(() => announce("평가 결과, 통과")).not.toThrow();
+    expect(announce("평가 결과, 통과")).toBe("unavailable");
+  });
+});
+
 // ADR-0016 D11 규칙 4: 모듈이 없으면 조용히 아무 일도 하지 않는다 — 던지지 않는다.
 // `null`이 그 규칙의 구멍이었다. LIB-237 전에는 `host === undefined` 가드가 `host`가
 // `null`일 때 거짓이 되어 `host.accessibilityAnnounce(...)`에서 TypeError가 났다 —
