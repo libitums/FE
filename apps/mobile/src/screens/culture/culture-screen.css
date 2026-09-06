@@ -1,5 +1,5 @@
-/* LIB-238 (ui): design 원문(실행 브리프 u10)의 값. 토큰은 CSS 커스텀 프로퍼티로만
-   소비한다 (ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않는다.
+/* LIB-238 (ui): 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1) — 색·간격·
+   타이포의 생값을 적지 않는다.
 
    **이 화면에서 세로 치수를 선언하는 자리는 `.culture-screen-exit` 하나이고
    `min-height`(하한)다.** `height`를 쓰는 자리가 0개다 — Dynamic Type이 켜지면
@@ -77,16 +77,18 @@
    알고리즘에는 그 어휘가 없어 무동작으로 죽는다. 남는 세로는 `flex: 1`로 받는다.
    배경·모서리·그림자·padding이 없다 — `-content`가 그 자리를 대신 지지 않는다.
    `gap`도 `padding-bottom`도 두지 않는다 — 마지막 문단 아래 빈 띠는 「여기가
-   끝」으로 읽혀 넘침 어포던스를 스스로 지운다. 세로 중앙 정렬도 쓰지 않는다 —
-   `justify-content: center`는 위쪽 문단을 스크롤 원점 밖으로 밀어 닿을 수 없게
-   만든다. */
+   끝」으로 읽혀 넘침 어포던스를 스스로 지운다. `justify-content: flex-start`는
+   둔다 — ADR-0022 D4가 넘치는 상자 다섯 전부를 `flex-start`로 닫았고,
+   `LinearSupportFlexStyleMode()` 게이트가 이 앱에서 켜져 있는지 확인하지
+   못했다: 소스에서 초기값을 확인하지 못했으면 적는다(ADR-0022 D3). 같은 이유로
+   같은 값을 남긴 `listening-screen.css`의 `.listening-screen-scroll`과 같은
+   형태다. 세로 중앙 정렬은 쓰지 않는다 — `justify-content: center`는 위쪽
+   문단을 스크롤 원점 밖으로 밀어 닿을 수 없게 만든다. */
 .culture-screen-scroll {
   flex: 1;
+  justify-content: flex-start;
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
-
-/* `justify-content`를 여기 두지 않는다 — design 표가 `-scroll`에 거는 값은 세로
-   분배(`flex: 1`)와 위 경계뿐이다(ADR-0022 D4). */
 
 /* `<scroll-view>`의 직계 자식은 이 상자 하나다. flex 어휘와 `gap`이 여기 산다 —
    `-scroll`이 강제 linear라 그 자리에서는 무동작이기 때문이다. */
