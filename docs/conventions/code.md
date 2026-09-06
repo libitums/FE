@@ -402,5 +402,5 @@ expect(indicator).not.toHaveAttribute("accessibility-elements-hidden");
 [`docs/screens.md`](../screens.md)의 「홈은 소비자다」다.
 
 ([ADR-0010 D6](../adr/0010-convention-docs-and-design-done-criteria.md) ·
-[ADR-0007 D2](../adr/0007-app-internals-state-routing-data-errors.md) ·
+[ADR-0007 D2·D5](../adr/0007-app-internals-state-routing-data-errors.md) ·
 [ADR-0006 D4](../adr/0006-command-interface-and-test-layers.md))
