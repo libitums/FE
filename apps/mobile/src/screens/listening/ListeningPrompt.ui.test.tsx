@@ -298,7 +298,9 @@ test("재생 조작에 element·traits='button'이 붙고 label이 보이는 문
 
 // **뒤집힌 단언 1/6** — 지금까지 `<svg>`가 0개였다 (계약 §9.10(a)).
 // 지우지 않고 뒤집는다: **정확히 하나**이고 그것이 재생 아이콘이다.
-// 아이콘은 자손이 없으므로 래퍼 가림이 필요 없고 `<svg>` 자신에만 붙는다 (계약 §9.5(d)).
+// accessibility-elements-hidden의 iOS 세터는 view.accessibilityElementsHidden이라
+// 가리는 대상이 자손이다. 아이콘은 자손 없는 잎이므로 이 속성을 붙여도 아무것도
+// 가리지 못한다 — 붙이지 않는 것이 계약이다 (E-A1, E-A2).
 test("재생 컨트롤이 있다 — 트리의 <svg>가 재생 아이콘 정확히 하나다", () => {
   stubHost();
   const { container } = renderPrompt();
@@ -309,7 +311,7 @@ test("재생 컨트롤이 있다 — 트리의 <svg>가 재생 아이콘 정확�
 
   const icons = [...container.querySelectorAll("svg")].map((el) => el.getAttribute("data-testid"));
   expect(icons).toEqual(["listening-prompt-playback-icon"]);
-  expect(icon()).toHaveAttribute("accessibility-elements-hidden", "true");
+  expect(icon()).not.toHaveAttribute("accessibility-elements-hidden");
 });
 
 // **뒤집힌 단언 2/6** — 지금까지 조작 단위가 0개였다 (계약 §9.10(a)).

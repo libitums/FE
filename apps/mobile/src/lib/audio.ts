@@ -34,13 +34,14 @@ interface AudioPlaybackModule {
  */
 export type AudioPlayOutcome = "started" | "unavailable";
 
-// **`storage.ts`와 정확히 한 줄 다르다 — `typeof` 가드가 앞에 있다.**
+// **`storage.ts`·`accessibility.ts`와 같은 형태다 — `typeof` 가드 + `null` 정규화.**
 //
 // `ui`·`integration` 테스트 환경에는 `NativeModules` 전역이 **아예 없다**
-// (`hasOwnProperty`가 `false`다). `storage.ts`의 형태를 그대로 쓰면 맨 식별자 접근에서
-// **`ReferenceError: NativeModules is not defined`** 가 난다. `storage.ts`는 어떤
-// 컴포넌트도 렌더하지 않아 지금까지 드러나지 않았을 뿐이고, 이 파일은 **화면이 렌더될
+// (`hasOwnProperty`가 `false`다). 가드 없이 맨 식별자 접근을 하면
+// **`ReferenceError: NativeModules is not defined`** 가 난다. 이 파일은 **화면이 렌더될
 // 때마다 불린다** — 가드가 없으면 `ui`·`integration`이 통째로 죽는다 (계약 §9.3-2).
+// LIB-237 전에는 `storage.ts`에 이 가드가 없었다 — 어떤 컴포넌트도 렌더하지 않아
+// 지금까지 드러나지 않았을 뿐이다. 지금은 셋 다 같은 형태다.
 //
 // 메인 스레드에서는 `globalThis.NativeModules`가 `undefined`로 세팅되므로, 이 가드는
 // 「호스트가 아닌 곳」과 「메인 스레드」를 같은 경로로 보낸다. 어느 쪽이든 **조용히
@@ -48,13 +49,35 @@ export type AudioPlayOutcome = "started" | "unavailable";
 //
 // **세 export가 모두 이 함수 하나를 지나간다.** 없을 때 조용한 것이 세 자리에 흩어져
 // 있으면 한 자리만 고칠 수 있다.
+//
+// `typeof NativeModules === "undefined"`는 전역이 **없을 때**만 막는다. `typeof null`은
+// `"object"`라 전역 자체가 `null`이면 이 가드를 통과하고, 바로 아래의 색인 접근
+// (`NativeModules["…"]`)에서 TypeError가 난다. 아래 `NativeModules === null` 줄이 그
+// 사각을 막는다.
+//
+// **이 방어의 근거는 관찰이 아니다.** 전역이 `null`로 세팅되는 경로는 확인되지
+// 않았다 — `@lynx-js/types@4.1.0`의 `declare global { var NativeModules: INativeModules }`
+// 선언에 `null`이 없고, `apps/**`에 `NativeModules =` 대입이 0건이며, iOS Pod 네이티브
+// 소스가 벤더링돼 있지 않아 실제 등록 코드를 확인할 수 없다. 이 줄이 있는 이유는
+// 관찰이 아니라 **위 가드가 자기가 막는다고 주장하는 값(전역이 없거나 비정상인 경우)의
+// 부분집합만 실제로 막는다는 논리적 사실**이다 — `typeof` 가드는 "없음"만 잡고
+// "있는데 `null`"은 놓친다.
+//
+// 아래 `module ?? undefined`(모듈 값의 `null` 정규화)는 Pod 소스와
+// 실기 관찰로 근거가 섰다. 이 줄은 그렇지 않다 — 같은 파일 안에서 근거의 종류가 갈린다.
 function nativeModule(): AudioPlaybackModule | undefined {
   if (typeof NativeModules === "undefined") {
     return undefined;
   }
-  return (NativeModules as Record<string, unknown>)["AudioPlaybackModule"] as
+  if (NativeModules === null) {
+    return undefined;
+  }
+  const module = (NativeModules as Record<string, unknown>)["AudioPlaybackModule"] as
     | AudioPlaybackModule
     | undefined;
+  // registerModule이 아직 안 끝났을 때는 `undefined`가 아니라 `null`이 관찰된다.
+  // 캐스팅만 믿으면 이 축이 새나가므로 여기서 `undefined`로 정규화한다.
+  return module ?? undefined;
 }
 
 // **지금 유효한 재생의 세대.** 단조 증가하고 되돌아가지 않는다.

@@ -14,8 +14,10 @@ import type { Tab } from "../app/navigation";
 // 쓰지 않는다 (docs/conventions/code.md).
 //
 // 선택 지시선(`.bottom-navigator-indicator`)은 testid가 없고 항상 렌더되므로
-// 여기서 존재를 단언하지 않는다 — 실패할 수 없는 단언은 검증이 아니다
-// (bottom-navigator.contract.ts 5번, testids.contract.ts).
+// 존재 자체는 여기서 단언하지 않는다 — 실패할 수 없는 단언은 검증이 아니다
+// (bottom-navigator.contract.ts 5번, testids.contract.ts). 다만 그 위에 붙는
+// `accessibility-elements-hidden`의 재부착 여부는 아래에서 클래스 셀렉터로 찾아 본다
+// (LIB-237 F3).
 
 test("탭 넷이 렌더되고 각자 라벨을 갖는다", () => {
   render(<BottomNavigator tab="home" onSelectTab={() => {}} />);
@@ -212,23 +214,40 @@ test("탭 넷 모두 accessibility-element가 true다 — 선택 여부로 갈�
   );
 });
 
-test("아이콘 넷이 접근성 트리에서 빠진다 — 순수 장식이다", () => {
+// 재판정 (LIB-237): accessibility-elements-hidden의 iOS 세터는
+// view.accessibilityElementsHidden이라 가리는 대상이 자손이다. 탭 아이콘 넷은 자손
+// 없는 잎 `<svg>`이므로 이 속성을 붙여도 아무것도 가리지 못한다 — 붙이지 않는 것이
+// 계약이다 (E-A1, E-A2). 지시선 `<view>`는 이 표적 밖이다 — 아래 별도 테스트가 본다.
+test("아이콘 넷에 accessibility-elements-hidden이 붙지 않는다 — 잎이다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  expect(screen.getByTestId("bottom-navigator-icon-home")).toHaveAttribute(
+  expect(screen.getByTestId("bottom-navigator-icon-home")).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
-  expect(screen.getByTestId("bottom-navigator-icon-journey")).toHaveAttribute(
+  expect(screen.getByTestId("bottom-navigator-icon-journey")).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
-  expect(screen.getByTestId("bottom-navigator-icon-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("bottom-navigator-icon-roleplay")).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
-  expect(screen.getByTestId("bottom-navigator-icon-settings")).toHaveAttribute(
+  expect(screen.getByTestId("bottom-navigator-icon-settings")).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
+});
+
+// 재판정 (LIB-237 F3): 선택 지시선 `<view>`도 자식이 0개인 잎이다 — 자손 기준으로
+// 가릴 것이 없다. `enableAccessibilityByDefault`가 iOS에서 기본 NO이고
+// `accessibility-element` prop이 없어 자기 자신 기준으로도 켜질 경로가 없다
+// (LynxUIView.m:116, LynxUI.m:2580~2587). 위 아이콘 잎 넷과 같은 종류의 죽은
+// 선언이므로 여기서 붙지 않는다고 단언한다. testid가 없어(:16~20) 클래스
+// 셀렉터로 찾는다 — ListeningChoice.ui.test.tsx의 `.listening-choice-mark` 선례와
+// 같은 형태다.
+test("지시선에 accessibility-elements-hidden이 붙지 않는다 — 잎이다", () => {
+  render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
+
+  const tab = screen.getByTestId("bottom-navigator-tab-journey");
+  const indicator = tab.querySelector<HTMLElement>(".bottom-navigator-indicator");
+
+  expect(tab).toContainElement(indicator);
+  expect(indicator).not.toHaveAttribute("accessibility-elements-hidden");
 });

@@ -27,7 +27,7 @@ interface LynxAccessibilityModule {
 /** 낭독 **요청 한 번의 결과**다. 실제로 들렸는지를 답하지 않는다. */
 export type AnnounceOutcome = "announced" | "unavailable";
 
-// **`audio.ts`와 같은 형태 — `typeof` 가드가 앞에 있다.**
+// **`audio.ts`·`storage.ts`와 같은 형태다 — `typeof` 가드 + `null` 정규화.**
 //
 // `ui`·`integration` 테스트 환경에는 `NativeModules` 전역이 아예 없다. 이 모듈은
 // 화면이 렌더될 때마다 불리므로(계약 §3.2 규칙 1), 가드가 없으면 두 계층이 통째로
@@ -35,13 +35,36 @@ export type AnnounceOutcome = "announced" | "unavailable";
 //
 // **두 export가 모두 이 함수 하나를 지나간다.** 없을 때 조용한 것이 두 자리에
 // 흩어져 있으면 한 자리만 고칠 수 있다(계약 §3.2 규칙 2).
+//
+// `typeof NativeModules === "undefined"`는 전역이 **없을 때**만 막는다. `typeof null`은
+// `"object"`라 전역 자체가 `null`이면 이 가드를 통과하고, 바로 아래의 색인 접근
+// (`NativeModules["…"]`)에서 TypeError가 난다. 아래 `NativeModules === null` 줄이 그
+// 사각을 막는다.
+//
+// **이 방어의 근거는 관찰이 아니다.** 전역이 `null`로 세팅되는 경로는 확인되지
+// 않았다 — `@lynx-js/types@4.1.0`의 `declare global { var NativeModules: INativeModules }`
+// 선언에 `null`이 없고, `apps/**`에 `NativeModules =` 대입이 0건이며, iOS Pod 네이티브
+// 소스가 벤더링돼 있지 않아 실제 등록 코드를 확인할 수 없다. 이 줄이 있는 이유는
+// 관찰이 아니라 **위 가드가 자기가 막는다고 주장하는 값(전역이 없거나 비정상인 경우)의
+// 부분집합만 실제로 막는다는 논리적 사실**이다 — `typeof` 가드는 "없음"만 잡고
+// "있는데 `null`"은 놓친다.
+//
+// 아래 `module ?? undefined`(모듈 값의 `null` 정규화)는 Pod 4.0.1
+// 소스와 실기 관찰로 근거가 섰다(이 파일 상단 JSDoc). 이 줄은 그렇지 않다 — 같은
+// 파일 안에서 근거의 종류가 갈린다.
 function nativeModule(): LynxAccessibilityModule | undefined {
   if (typeof NativeModules === "undefined") {
     return undefined;
   }
-  return (NativeModules as Record<string, unknown>)["LynxAccessibilityModule"] as
+  if (NativeModules === null) {
+    return undefined;
+  }
+  const module = (NativeModules as Record<string, unknown>)["LynxAccessibilityModule"] as
     | LynxAccessibilityModule
     | undefined;
+  // registerModule이 아직 안 끝났을 때는 `undefined`가 아니라 `null`이 관찰된다.
+  // 캐스팅만 믿으면 이 축이 새나가므로 여기서 `undefined`로 정규화한다.
+  return module ?? undefined;
 }
 
 export function isAnnouncementAvailable(): boolean {

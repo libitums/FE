@@ -221,7 +221,12 @@ test("정답 보기를 탭하면 그 보기의 accessibility-label에 ', 정답'
   ).toHaveAttribute("accessibility-label", `${before}, 정답`);
 });
 
-test("정답 보기를 탭하면 그 보기에 표식 아이콘이 나타난다", () => {
+// 재판정 (LIB-237): accessibility-elements-hidden의 iOS 세터는
+// view.accessibilityElementsHidden이라 가리는 대상이 자손이다. 표식 아이콘은 자손 없는
+// 잎 `<svg>`이므로 이 속성을 붙여도 아무것도 가리지 못한다 — 붙이지 않는 것이 계약이다
+// (E-A1, E-A2). 가림은 `ListeningChoice.ui.test.tsx`의 래퍼(`listening-choice-mark`)
+// 단언이 진다.
+test("정답 보기를 탭하면 그 보기에 표식 아이콘이 나타나고 accessibility-elements-hidden이 붙지 않는다 — 잎이다", () => {
   renderOrdering();
 
   const answerIndex = ORDERING_QUESTIONS[0].answerIndex;
@@ -229,9 +234,8 @@ test("정답 보기를 탭하면 그 보기에 표식 아이콘이 나타난다"
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
 
-  expect(screen.getByTestId(`listening-choice-icon-${answerIndex}`)).toHaveAttribute(
+  expect(screen.getByTestId(`listening-choice-icon-${answerIndex}`)).not.toHaveAttribute(
     "accessibility-elements-hidden",
-    "true",
   );
 });
 

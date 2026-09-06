@@ -75,6 +75,15 @@ describe("isAudioAvailable", () => {
     expect(() => isAudioAvailable()).not.toThrow();
     expect(isAudioAvailable()).toBe(false);
   });
+
+  // registerModule이 이 프레임에서 아직 안 끝났을 때 관찰되는 값이다 — `undefined`가
+  // 아니라 `null`이다. `nativeModule()`의 반환 타입 `AudioPlaybackModule | undefined`가
+  // 이 값을 감추므로, 캐스팅만 믿으면 이 축이 조용히 새나간다.
+  it("모듈 값이 null이면 false다", () => {
+    vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
+
+    expect(isAudioAvailable()).toBe(false);
+  });
 });
 
 describe("playAudio — 모듈이 있을 때", () => {
@@ -274,9 +283,38 @@ describe("모듈이 없을 때 — 전역은 있고 모듈만 없다", () => {
   });
 });
 
-// 계약 §9.3-2 · §9.9(a) 마지막 줄: **이 describe가 ReferenceError 함정을 잡는
-// 유일한 자리다.** `storage.unit.test.ts`에는 이 케이스가 없다 — 그 모듈은 어떤
-// 컴포넌트도 렌더하지 않아 드러나지 않았을 뿐이다.
+// ADR-0016 D11 규칙 4: 모듈이 없으면 조용히 아무 일도 하지 않는다 — 던지지 않는다.
+// `null`이 그 규칙의 구멍이었다. LIB-237 전에는 `host === undefined` 가드가 `host`가
+// `null`일 때 거짓이 되어 `host.play(...)` · `host.stop()`에서 TypeError가 났다. 지금은
+// `audio.ts`의 `?? undefined` 줄이 `null`을 `undefined`로 정규화해 막는다.
+describe("모듈 값이 null일 때", () => {
+  it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
+
+    expect(() => playAudio("ordering-1", vi.fn<() => void>())).not.toThrow();
+    expect(playAudio("ordering-1", vi.fn<() => void>())).toBe("unavailable");
+  });
+
+  it("playAudio가 onFinished를 부르지 않는다 — 조용히 아무 일도 하지 않는다", () => {
+    vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
+    const onDone = vi.fn<() => void>();
+
+    playAudio("ordering-1", onDone);
+
+    expect(onDone).not.toHaveBeenCalled();
+  });
+
+  it("stopAudio가 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
+
+    expect(() => stopAudio()).not.toThrow();
+  });
+});
+
+// 계약 §9.3-2 · §9.9(a) 마지막 줄: `storage.unit.test.ts`·`accessibility.unit.test.ts`·
+// 이 파일 셋 모두가 각자 같은 축을 갖는다 — 전역 자체가 없을 때(`typeof` 가드)의
+// 케이스다. 셋이 같은 형태이므로(storage.ts·audio.ts·accessibility.ts가 문자 단위로
+// 같은 가드를 쓴다) 이 축도 세 파일 모두에 있다 — 이 자리 하나가 유일한 것이 아니다.
 //
 // 전역을 세우지 않는다. `NativeModules`는 선언 자체가 없으므로 맨 식별자 접근이면
 // `ReferenceError: NativeModules is not defined`가 난다.
@@ -299,6 +337,44 @@ describe("전역 자체가 없을 때 — typeof 가드", () => {
   });
 
   it("isAudioAvailable이 false다", () => {
+    expect(isAudioAvailable()).toBe(false);
+  });
+});
+
+// LIB-237 PR #48 리뷰 지적: `typeof NativeModules === "undefined"` 가드는 전역이
+// **없을 때**만 막는다. `typeof null`은 `"object"`라 전역 자체가 `null`이면 이
+// 가드를 통과하고, 다음 줄 `(NativeModules as Record<string, unknown>)["…"]`의
+// 색인 접근에서 TypeError가 난다 — `storage.ts`·`accessibility.ts`와 같은 자리,
+// 같은 모양이다. 위 「전역 자체가 없을 때 — typeof 가드」와 대칭인 셋째 축이다.
+//
+// 이 축의 가드 자체는 코드로 관측되지만, 전역이 실제로 `null`로 세팅되는 경로가
+// 관찰됐는지는 별개다 — 근거의 종류는 `audio.ts`의 `nativeModule()` 위 주석 참조.
+describe("전역 자체가 null일 때 — typeof 가드의 사각", () => {
+  it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", null);
+
+    expect(() => playAudio("ordering-1", vi.fn<() => void>())).not.toThrow();
+    expect(playAudio("ordering-1", vi.fn<() => void>())).toBe("unavailable");
+  });
+
+  it("playAudio가 onFinished를 부르지 않는다", () => {
+    vi.stubGlobal("NativeModules", null);
+    const onDone = vi.fn<() => void>();
+
+    playAudio("ordering-1", onDone);
+
+    expect(onDone).not.toHaveBeenCalled();
+  });
+
+  it("stopAudio가 던지지 않는다", () => {
+    vi.stubGlobal("NativeModules", null);
+
+    expect(() => stopAudio()).not.toThrow();
+  });
+
+  it("isAudioAvailable이 false다", () => {
+    vi.stubGlobal("NativeModules", null);
+
     expect(isAudioAvailable()).toBe(false);
   });
 });
