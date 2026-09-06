@@ -329,16 +329,30 @@ describe("여정 전부 완료 (계약 §1.5(a)의 빈칸)", () => {
 // ------------------------------------- 스텝의 학습형 (LIB-236 계약 §3.1 U1·U4)
 // 여기부터가 LIB-236이 더하는 것이다. 위의 케이스는 하나도 지우거나 뜻을 바꾸지 않는다.
 
-// 계약 §1.3의 어휘 셋. **어휘이지 배정이 아니다** — 어느 스텝이 어느 값인지는 이
+// 계약 §1.3의 어휘 넷. **어휘이지 배정이 아니다** — 어느 스텝이 어느 값인지는 이
 // 파일 어디에서도 단언하지 않는다.
-const allLearningForms: readonly LearningForm[] = ["listening", "sentence-order", "word-choice"];
+//
+// LIB-238: "culture"가 는다. journeyStepForStep이 culture를 돌려주는 스텝은 아직
+// 없다 — 배정은 여전히 열려 있다(§8.2 보류 1b). 이 어휘 배열은 그 배정과 무관하게
+// LearningForm의 네 값을 그대로 나열한다.
+const allLearningForms: readonly LearningForm[] = [
+  "listening",
+  "sentence-order",
+  "word-choice",
+  "culture",
+];
 
 // 학습형 → 그 학습형의 문항 개수. 교차 불변식을 학습형 축으로도 돌기 위한 모듈 내부
 // 표다. `Record<LearningForm, …>`이므로 넷째 학습형이 늘면 여기가 tsc로 선다.
+//
+// culture: () => 0 — 문화 학습에는 문항이 없다(LIB-238 계약 §1). 판정 축이 없고
+// 제시 형태가 서사(글) 하나뿐이라 사용자 입력이 0건이고, 채점할 문항 자체가 없다.
+// 서사는 문항이 아니다.
 const questionCountForForm: Record<LearningForm, (id: JourneyStepId) => number> = {
   listening: (id) => listeningQuestionsForStep(id).length,
   "sentence-order": (id) => sentenceOrderQuestionsForStep(id).length,
   "word-choice": (id) => wordChoiceQuestionsForStep(id).length,
+  culture: () => 0,
 };
 
 describe("learningFormForStep (계약 §3.1 U1)", () => {
@@ -417,9 +431,12 @@ describe("교차 불변식 — 학습형과 문항 표 (계약 §3.1 U4 · §1.5
     }
   });
 
-  // 위 셋을 스텝 × 학습형 격자로 한 번에 돈다. 학습형이 넷째로 늘면
-  // questionCountForForm이 tsc로 서므로 이 격자가 조용히 좁아지지 않는다.
-  it("다섯 스텝 × 학습형 셋 열다섯 칸 전부에서 ⇔가 성립한다", () => {
+  // 위 셋을 스텝 × 학습형 격자로 한 번에 돈다. LIB-238로 학습형이 넷째(culture)로
+  // 늘어 이제 스무 칸이다 — culture의 questionCountForForm이 항상 0이고
+  // learningFormForStep이 아직 culture를 돌려주는 스텝이 없으므로(§8.2 보류 1b), 이
+  // 넷째 열은 오늘 전부 false === false로 통과한다. **문화가 배정되는 날** 이 격자가
+  // 먼저 갈라진다 — questionCountForForm이 아니라 배정 쪽이 무너진 것이라는 신호다.
+  it("다섯 스텝 × 학습형 넷 스무 칸 전부에서 ⇔가 성립한다", () => {
     for (const id of allStepIds) {
       for (const form of allLearningForms) {
         expect(learningFormForStep(id) === form).toBe(questionCountForForm[form](id) > 0);
@@ -445,6 +462,11 @@ describe("교차 불변식 — 학습형과 문항 표 (계약 §3.1 U4 · §1.5
     }
   });
 
+  // ⚠ 계약이 미래에 거는 단언이다(LIB-236 계약 §6.1의 U6 주석). 오늘은 어느 스텝도
+  // culture가 아니므로 다섯 칸 전부 통과한다. **문화가 스텝에 배정되는 날** 이
+  // 단언이 먼저 빨개져 「culture는 문항 축이 아니다 — 배정하려면 questionCountForForm이
+  // 아니라 이 불변식 자체를 다시 봐야 한다」를 말해 준다. 그 전까지는 이 계약이
+  // 근거 없는 예외를 코드에 남기지 않기 위해 그대로 둔다.
   it("어느 스텝도 문항이 0개인 학습형에 배정되지 않는다", () => {
     for (const id of allStepIds) {
       expect(questionCountForForm[learningFormForStep(id)](id)).toBeGreaterThan(0);
