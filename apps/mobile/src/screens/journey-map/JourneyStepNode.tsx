@@ -65,13 +65,12 @@ export function JourneyStepNode({ id, title, status, onSelect }: JourneyStepProp
         }
       }}
     >
-      <view className={markerClassByStatus[status]} accessibility-elements-hidden={true}>
+      <view className={markerClassByStatus[status]}>
         <svg
           className="journey-step-node-icon"
           data-testid={`journey-step-node-icon-${id}`}
           content={iconByStatus[status]}
           current-color={iconColorByStatus[status]}
-          accessibility-elements-hidden={true}
         />
       </view>
       <text className="journey-step-node-label">{title}</text>

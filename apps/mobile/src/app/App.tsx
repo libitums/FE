@@ -133,6 +133,18 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onExit={wiring.onExitAssessment}
         />
       );
+    // LIB-236 (logic-scaffold): `Screen`에 학습 화면 둘이 늘어(계약 §1.6) 아래
+    // exhaustiveness가 여기서 선다 — 그것이 이 저장소가 「빠진 자리」를 잡는 방식이고,
+    // 잡힌 자리가 정확히 이 둘이다. **결선은 이 단위의 몫이 아니다** — 계약 §1.2(b)가
+    // `ScreenWiring` 필드 둘의 rename · `onStartStep` 한 줄 · 이 `case` 둘의 본문을
+    // 하나의 뒤 단위(§8.5 W5)에 묶어 두었고, 그 단위가 이 두 줄을 화면 결선으로 바꾼다.
+    // 여기서는 타입이 서는 최소 형태로만 닫는다. **닿을 수 없는 자리다** —
+    // `onStartStep`이 아직 `listening`만 push하므로 이 둘은 스택에 올라오지 않는다.
+    // 조용히 빈 화면을 그리는 대신 던지는 이유가 그것이다: 결선 전에 누가 이 화면을
+    // push하면 통과가 아니라 실패로 드러나야 한다.
+    case "sentence-order":
+    case "word-choice":
+      throw new Error(`아직 결선되지 않은 화면이다 — ${screen.name}`);
     default: {
       const exhaustive: never = screen;
       return exhaustive;

@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { activeStack, currentScreen, initialNav, navReducer, type Nav } from "./navigation";
+import type { LearningForm } from "../lib/learning-form";
+import type { JourneyStepId } from "../screens/journey-map/journey-map";
+import {
+  activeStack,
+  currentScreen,
+  initialNav,
+  learningScreenFor,
+  navReducer,
+  type Nav,
+} from "./navigation";
 
 // 계약: scratchpad/lib221/contracts/navigation.contract.ts
 // 계획: scratchpad/lib221/spec.md §6.2 (pureFunctions)
@@ -382,5 +391,105 @@ describe("navReducer — assessment 화면 (LIB-227)", () => {
     expect(back.tab).toBe("journey");
     expect(back.stacks.journey).toHaveLength(2);
     expect(currentScreen(back)).toEqual(assessmentScreen);
+  });
+});
+
+// -------------------------------- 학습형 → 화면 (LIB-236 계약 §3.1 U2·U3)
+// 여기부터가 LIB-236이 더하는 것이다. 위의 케이스는 하나도 지우거나 뜻을 바꾸지 않는다.
+
+// 계약 §1.3의 어휘 셋. 이 함수의 입력 전부다.
+const allLearningForms: readonly LearningForm[] = ["listening", "sentence-order", "word-choice"];
+
+// 여정 맵의 스텝 다섯. stepId가 인자 그대로인지를 다섯 전부에서 본다.
+const allStepIds: readonly JourneyStepId[] = [
+  "greeting",
+  "introduction",
+  "ordering",
+  "appointment",
+  "directions",
+];
+
+describe("learningScreenFor (계약 §3.1 U2)", () => {
+  it("학습형 셋 각각에서 name이 학습형 문자열과 같다", () => {
+    for (const form of allLearningForms) {
+      expect(learningScreenFor(form, "ordering").name).toBe(form);
+    }
+  });
+
+  it("학습형 셋 각각에서 stepId가 인자 그대로다", () => {
+    for (const form of allLearningForms) {
+      for (const id of allStepIds) {
+        const screen = learningScreenFor(form, id);
+
+        expect("stepId" in screen ? screen.stepId : null).toBe(id);
+      }
+    }
+  });
+
+  it("세 결과의 name이 서로 다르다", () => {
+    const names = allLearningForms.map((form) => learningScreenFor(form, "ordering").name);
+
+    expect(new Set(names).size).toBe(allLearningForms.length);
+  });
+
+  // 계약 §1.6(a): 멤버 둘의 모양은 `listening`과 문자 그대로 같다 — 필드는 `stepId`
+  // 하나이고 `stepOrdinal`도 `form`도 union에 넣지 않는다. toEqual이 그 「필드가
+  // 둘뿐」을 진다.
+  it("학습형 셋 각각이 { name, stepId } 꼴이고 필드가 그 둘뿐이다", () => {
+    for (const form of allLearningForms) {
+      expect(learningScreenFor(form, "greeting")).toEqual({ name: form, stepId: "greeting" });
+    }
+  });
+
+  it("탭 루트 화면 넷 중 어느 것도 돌려주지 않는다", () => {
+    const tabRoots = ["home", "journey-map", "roleplay-list", "settings"];
+
+    for (const form of allLearningForms) {
+      expect(tabRoots).not.toContain(learningScreenFor(form, "directions").name);
+    }
+  });
+
+  it("부수효과 없음 — 같은 인자를 두 번 불러도 같은 값이다", () => {
+    for (const form of allLearningForms) {
+      expect(learningScreenFor(form, "appointment")).toEqual(
+        learningScreenFor(form, "appointment"),
+      );
+    }
+  });
+});
+
+describe("learningScreenFor의 총성 (계약 §3.1 U3)", () => {
+  // ⚠ `switch`의 exhaustiveness는 tsc가 진다 (계약 §1.6(c) · §8.3.1의 TS2366 실측).
+  // **unit이 그것을 다시 단언하지 않는다** — 단언할 수 없는 것을 단언하는 척하지
+  // 않는다. 여기서 보는 것은 런타임 총성뿐이다: 셋 중 어느 값에도 undefined를 내지
+  // 않고 던지지 않는다.
+
+  it("학습형 셋 중 어느 값에도 undefined를 돌려주지 않는다", () => {
+    for (const form of allLearningForms) {
+      expect(learningScreenFor(form, "directions")).not.toBeUndefined();
+    }
+  });
+
+  it("학습형 셋 × 스텝 다섯 어느 칸에도 undefined를 돌려주지 않는다", () => {
+    for (const form of allLearningForms) {
+      for (const id of allStepIds) {
+        expect(learningScreenFor(form, id)).not.toBeUndefined();
+      }
+    }
+  });
+
+  it("학습형 셋 어느 것에도 던지지 않는다", () => {
+    for (const form of allLearningForms) {
+      expect(() => learningScreenFor(form, "greeting")).not.toThrow();
+    }
+  });
+
+  it("돌려준 화면은 push로 스택에 그대로 올라간다", () => {
+    for (const form of allLearningForms) {
+      const screen = learningScreenFor(form, "ordering");
+      const next = navReducer(nav({ tab: "journey" }), { type: "push", screen });
+
+      expect(currentScreen(next)).toEqual(screen);
+    }
   });
 });

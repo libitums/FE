@@ -16,6 +16,11 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // LIB-229 계약 §1.4(e): 판정 어휘가 lib/answer-result.ts로 승격됐다 — 화면 폴더가
 // 아니라 lib/에서 가져온다.
 import type { AnswerResult } from "../lib/answer-result";
+// LIB-236 계약 §1.3(a)·§1.6(b): 학습형 어휘도 lib/에서 온다. `learningScreenFor`가
+// form을 **인자로 받고 스스로 조회하지 않는** 이유가 여기 있다 — 조회하면
+// journey-map.ts에서 **값**을 가져오게 되어 위의 type-only 규약이 깨진다. 값은 App이
+// 읽어 내린다.
+import type { LearningForm } from "../lib/learning-form";
 
 // 탭 목록과 1:1이다. 네 탭은 docs/screens.md의 "홈 · 여정 · 롤플레이 · 설정"에서 왔다.
 // 순서가 곧 바텀 네비게이션의 좌→우 순서다 (bottom-navigator.contract.ts).
@@ -34,12 +39,18 @@ export type Tab = "home" | "journey" | "roleplay" | "settings";
 // 세션이 이미 사라진 뒤라 어디에서도 파생되지 않고, 정확히 이 화면 인스턴스의
 // 것이라 `back`과 함께 죽는 것이 맞다(계약 §1.8(a)). `stepOrdinal`은 여기서도
 // 넣지 않는다 — `App`이 `journeyStepOrdinal(screen.stepId)`로 계산해 내린다.
+// LIB-236: 일곱째·여덟째 멤버가 는다. 모양은 `listening`과 문자 그대로 같다 —
+// 필드는 `stepId` 하나이고 `stepOrdinal`을 넣지 않는다(계약 §1.6(a), LIB-229 §1.13이
+// 적은 그대로). 이 둘이 늘면 App.tsx의 exhaustiveness가 서고, 그것이 빠진 결선을
+// 컴파일 타임에 잡는 방식이다(§1.6(c)).
 export type Screen =
   | { name: "home" }
   | { name: "journey-map" }
   | { name: "roleplay-list" }
   | { name: "settings" }
   | { name: "listening"; stepId: JourneyStepId }
+  | { name: "sentence-order"; stepId: JourneyStepId }
+  | { name: "word-choice"; stepId: JourneyStepId }
   | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] };
 
 // docs/screens.md 130~136행과 ADR-0007 D3이 적은 모양 그대로다. 필드를 더하지 않는다.
@@ -128,6 +139,32 @@ export function navReducer(nav: Nav, action: NavAction): Nav {
         return nav;
       }
       return { ...nav, entry: [] };
+    }
+  }
+}
+
+// ------------------------------------------- 학습형 → 화면 (LIB-236 계약 §1.6)
+
+// 이 함수가 navigation.ts인 근거: `Screen`의 소유자가 여기이고 `screens/ → app/`
+// import는 금지다(위 7~9행의 불변식). 그래서 여정 맵에 둘 수 없다 (§1.6(b)).
+//
+// `default` 없는 `switch` 셋이고 던지지 않는다 (§1.8). `default`를 두지 않는 것이
+// §1.6(c) 1번의 조건이다 — 넷째 학습형이 늘면 여기가 `TS2366`으로 서고, 그것을 쓰려면
+// `Screen`에 멤버가 있어야 하고, 더하면 App.tsx의 exhaustiveness가 선다.
+// `navReducer`(:97) · `stepSheetReducer`가 쓰는 형태 그대로다.
+//
+// `Record<LearningForm, …>`이 아니라 `switch`인 이유는 돌려주는 것이 스칼라가 아니라
+// 필드를 가진 객체이고 `Screen` 멤버들이 균일하지 않기 때문이다 (§1.6(d)).
+export function learningScreenFor(form: LearningForm, stepId: JourneyStepId): Screen {
+  switch (form) {
+    case "listening": {
+      return { name: "listening", stepId };
+    }
+    case "sentence-order": {
+      return { name: "sentence-order", stepId };
+    }
+    case "word-choice": {
+      return { name: "word-choice", stepId };
     }
   }
 }
