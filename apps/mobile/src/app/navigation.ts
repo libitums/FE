@@ -171,5 +171,8 @@ export function learningScreenFor(form: LearningForm, stepId: JourneyStepId): Sc
     case "word-choice": {
       return { name: "word-choice", stepId };
     }
+    case "culture": {
+      return { name: "culture", stepId };
+    }
   }
 }
