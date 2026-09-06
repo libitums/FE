@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
 
+import type { LearningForm } from "../../lib/learning-form";
+// LIB-236 계약 §3.1 U4의 교차 불변식이 보는 조회 함수 셋. 셋 다 순수 로직 모듈이고
+// DOM·컴포넌트를 import하지 않으므로 unit 계층의 경계를 넘지 않는다 (ADR-0006 D4).
+// 듣기 쪽의 실제 이름은 `questionsForStep`이다 (listening.ts:236) — 계약 §3.1이 쓴
+// `listeningQuestionsForStep`은 뜻을 가리키는 이름이라, 저장소의 이름을 그대로 쓰고
+// 여기서 별칭을 준다.
+import { questionsForStep as listeningQuestionsForStep } from "../listening/listening";
+import { sentenceOrderQuestionsForStep } from "../sentence-order/sentence-order";
+import { wordChoiceQuestionsForStep } from "../word-choice/word-choice";
 import {
   canOpenStep,
   completeStep,
@@ -8,6 +17,7 @@ import {
   initialStepSheetState,
   journeySteps,
   journeyStepOrdinal,
+  learningFormForStep,
   stepAccessibilityLabel,
   stepSheetReducer,
   stepStatusAt,
@@ -313,5 +323,131 @@ describe("여정 전부 완료 (계약 §1.5(a)의 빈칸)", () => {
       "done",
       "done",
     ]);
+  });
+});
+
+// ------------------------------------- 스텝의 학습형 (LIB-236 계약 §3.1 U1·U4)
+// 여기부터가 LIB-236이 더하는 것이다. 위의 케이스는 하나도 지우거나 뜻을 바꾸지 않는다.
+
+// 계약 §1.3의 어휘 셋. **어휘이지 배정이 아니다** — 어느 스텝이 어느 값인지는 이
+// 파일 어디에서도 단언하지 않는다.
+const allLearningForms: readonly LearningForm[] = ["listening", "sentence-order", "word-choice"];
+
+// 학습형 → 그 학습형의 문항 개수. 교차 불변식을 학습형 축으로도 돌기 위한 모듈 내부
+// 표다. `Record<LearningForm, …>`이므로 넷째 학습형이 늘면 여기가 tsc로 선다.
+const questionCountForForm: Record<LearningForm, (id: JourneyStepId) => number> = {
+  listening: (id) => listeningQuestionsForStep(id).length,
+  "sentence-order": (id) => sentenceOrderQuestionsForStep(id).length,
+  "word-choice": (id) => wordChoiceQuestionsForStep(id).length,
+};
+
+describe("learningFormForStep (계약 §3.1 U1)", () => {
+  // ⚠ **어느 스텝이 어느 학습형인지를 단언하지 않는다** (계약 §3.1 U1). 그것은 배정이고
+  // §8.2 보류 1b로 아직 열려 있다 — 배정을 단언에 박으면 값이 오는 날 계약이 아니라
+  // 이 테스트가 배정을 잠근다. 여기서 보는 것은 「던지는가 · undefined인가 ·
+  // LearningForm의 한 값인가」뿐이다.
+
+  // 계약 §1.8: 던지지 않는다 — Record가 다섯 키를 전부 덮는 것을 tsc가 진다.
+  it("다섯 스텝 어느 것에도 던지지 않는다", () => {
+    for (const id of allStepIds) {
+      expect(() => learningFormForStep(id)).not.toThrow();
+    }
+  });
+
+  it("다섯 스텝 어느 것에도 undefined를 돌려주지 않는다", () => {
+    for (const id of allStepIds) {
+      expect(learningFormForStep(id)).not.toBeUndefined();
+    }
+  });
+
+  it("다섯 스텝 각각에 LearningForm의 한 값을 돌려준다", () => {
+    for (const id of allStepIds) {
+      expect(allLearningForms).toContain(learningFormForStep(id));
+    }
+  });
+
+  // journeySteps에서 온 id로도 같은 것을 본다 — allStepIds가 그 배열과 어긋나면
+  // 이 케이스가 먼저 말한다.
+  it("journeySteps의 다섯 스텝에도 그대로 성립한다", () => {
+    const forms = journeySteps.map((step) => learningFormForStep(step.id));
+
+    expect(forms).toHaveLength(5);
+    for (const form of forms) {
+      expect(allLearningForms).toContain(form);
+    }
+  });
+
+  it("부수효과 없음 — 같은 스텝을 두 번 불러도 같은 값이다", () => {
+    for (const id of allStepIds) {
+      expect(learningFormForStep(id)).toBe(learningFormForStep(id));
+    }
+  });
+});
+
+describe("교차 불변식 — 학습형과 문항 표 (계약 §3.1 U4 · §1.5(d))", () => {
+  // ⚠ **이 이슈가 만든 「덮지 않는다」의 유일한 판정자다** (수용 기준 2).
+  // 타입은 이것을 원리적으로 못 짓는다 — 세 문항 표가 `Record<JourneyStepId, …>`로
+  // 다섯 키를 그대로 두므로, 듣기가 아닌 스텝에 듣기 문항이 남아 있어도 tsc가 아무
+  // 말도 안 한다 (계약 §1.5(b)(d)가 좁히는 안을 버린 자리).
+  //
+  // **양방향(⇔)이다.** 한쪽만 보면 「듣기가 아닌 스텝에 듣기 문항이 남아 있는 것」을
+  // 못 잡는다. 배정이 바뀌는 날 이 단언이 먼저 빨개지고, 옮길 문항을 함께 옮기라고 말한다.
+
+  it("듣기인 스텝에만 듣기 문항이 있다 — 양방향", () => {
+    for (const id of allStepIds) {
+      expect(learningFormForStep(id) === "listening").toBe(
+        listeningQuestionsForStep(id).length > 0,
+      );
+    }
+  });
+
+  it("문장 순서인 스텝에만 문장 순서 문항이 있다 — 양방향", () => {
+    for (const id of allStepIds) {
+      expect(learningFormForStep(id) === "sentence-order").toBe(
+        sentenceOrderQuestionsForStep(id).length > 0,
+      );
+    }
+  });
+
+  it("단어 선택인 스텝에만 단어 선택 문항이 있다 — 양방향", () => {
+    for (const id of allStepIds) {
+      expect(learningFormForStep(id) === "word-choice").toBe(
+        wordChoiceQuestionsForStep(id).length > 0,
+      );
+    }
+  });
+
+  // 위 셋을 스텝 × 학습형 격자로 한 번에 돈다. 학습형이 넷째로 늘면
+  // questionCountForForm이 tsc로 서므로 이 격자가 조용히 좁아지지 않는다.
+  it("다섯 스텝 × 학습형 셋 열다섯 칸 전부에서 ⇔가 성립한다", () => {
+    for (const id of allStepIds) {
+      for (const form of allLearningForms) {
+        expect(learningFormForStep(id) === form).toBe(questionCountForForm[form](id) > 0);
+      }
+    }
+  });
+
+  // ⇔ 셋에서 따라 나오는 것이지만, 깨졌을 때 무엇이 깨졌는지를 다르게 말해 준다 —
+  // 「한 스텝이 두 학습형의 문항을 갖는다」와 「문항이 아예 없다」를 가른다.
+  it("다섯 스텝 각각에서 문항이 있는 표가 정확히 하나다", () => {
+    for (const id of allStepIds) {
+      const nonEmpty = allLearningForms.filter((form) => questionCountForForm[form](id) > 0);
+
+      expect(nonEmpty).toHaveLength(1);
+    }
+  });
+
+  it("다섯 스텝 각각에서 문항이 있는 그 하나가 그 스텝의 학습형이다", () => {
+    for (const id of allStepIds) {
+      const nonEmpty = allLearningForms.filter((form) => questionCountForForm[form](id) > 0);
+
+      expect(nonEmpty).toEqual([learningFormForStep(id)]);
+    }
+  });
+
+  it("어느 스텝도 문항이 0개인 학습형에 배정되지 않는다", () => {
+    for (const id of allStepIds) {
+      expect(questionCountForForm[learningFormForStep(id)](id)).toBeGreaterThan(0);
+    }
   });
 });
