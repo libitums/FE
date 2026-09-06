@@ -80,26 +80,23 @@ const titleTextByForm: Record<LearningForm, (ordinal: number) => string> = {
 // F다"라는 존재 명제를 주장하지 않는다** — "표가 F를 돌려주면 F의 화면이 연다"는
 // 함축만 주장한다. `listening` 행은 오늘의 실물 배정과 우연히 같아 항등 대조로
 // 통과한다 — red의 근거가 아니다.
-test.each(allForms)(
-  "learningFormForStep이 %s를 돌려주면 시작이 그 화면을 연다",
-  (form) => {
-    formStub.current = form;
-    render(<App />);
+test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화면을 연다", (form) => {
+  formStub.current = form;
+  render(<App />);
 
-    startStep("ordering");
+  startStep("ordering");
 
-    const expectedTitle = titleTextByForm[form](journeyStepOrdinal("ordering"));
-    expect(screen.getByTestId(titleTestIdByForm[form])).toHaveTextContent(expectedTitle);
+  const expectedTitle = titleTextByForm[form](journeyStepOrdinal("ordering"));
+  expect(screen.getByTestId(titleTestIdByForm[form])).toHaveTextContent(expectedTitle);
 
-    for (const other of allForms) {
-      if (other === form) {
-        continue;
-      }
-      expect(screen.queryByTestId(titleTestIdByForm[other])).not.toBeInTheDocument();
+  for (const other of allForms) {
+    if (other === form) {
+      continue;
     }
-    expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
-  },
-);
+    expect(screen.queryByTestId(titleTestIdByForm[other])).not.toBeInTheDocument();
+  }
+  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+});
 
 // I-W5-4 · AC 2 후반의 주 판정자. I-W5-1의 두 red 행(`sentence-order` · `word-choice`)과
 // 같은 경로를 다시 밟되, 학습 화면의 제목에 더해 **`case`가 던지지 않는다**는 것을
