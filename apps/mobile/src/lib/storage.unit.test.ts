@@ -51,7 +51,7 @@ test("저장소가 없으면 조용히 null이고 터지지 않는다", () => {
 // 아니라 `null`이다. `nativeModule()`의 반환 타입 `StorageModule | undefined`가
 // 이 값을 감추므로, 캐스팅만 믿으면 이 축이 조용히 새나간다. LIB-237 전에는 이
 // 정규화가 없어 `isStorageAvailable`이 이름의 주장과 반대로 `null`에 `true`를
-// 돌려줬다 — 지금은 `storage.ts:36`의 `?? undefined`가 `null`을 `undefined`로
+// 돌려줬다 — 지금은 `storage.ts`의 `?? undefined` 줄이 `null`을 `undefined`로
 // 정규화해 `false`를 돌려준다.
 
 test("모듈 값이 null이면 isStorageAvailable이 false다", () => {
@@ -76,7 +76,7 @@ test("모듈 값이 null이면 setItem·removeItem이 던지지 않는다", () =
 
 // -------------------------------------------------- 전역 자체가 없을 때 (typeof 가드)
 //
-// `accessibility.ts`·`audio.ts`·이 파일(`storage.ts:28~30`) 셋 모두 이 축을 가진다 —
+// `accessibility.ts`·`audio.ts`·이 파일(storage.ts의 `typeof` 가드) 셋 모두 이 축을 가진다 —
 // `typeof NativeModules === "undefined"` 가드가 앞을 지킨다. 가드가 있어 전역 자체가
 // 없어도 맨 식별자 접근으로 넘어가지 않고 조용히 `undefined`를 돌려준다. 아래 테스트
 // 셋은 그 가드가 실제로 지켜지는 것을 검증한다 — 전역을 세우지 않는다.
@@ -103,6 +103,9 @@ test("전역 자체가 없으면 setItem·removeItem이 던지지 않는다 — 
 // 가드를 통과하고, 다음 줄 `(NativeModules as Record<string, unknown>)["StorageModule"]`의
 // 색인 접근에서 TypeError가 난다 — `audio.ts`·`accessibility.ts`와 같은 자리, 같은
 // 모양이다. 위 「전역 자체가 없을 때 (typeof 가드)」 셋과 대칭인 넷째 축이다.
+//
+// 이 축의 가드 자체는 코드로 관측되지만, 전역이 실제로 `null`로 세팅되는 경로가
+// 관찰됐는지는 별개다 — 근거의 종류는 `storage.ts`의 `nativeModule()` 위 주석 참조.
 
 test("전역 자체가 null이면 isStorageAvailable이 false다 — typeof 가드의 사각", () => {
   vi.stubGlobal("NativeModules", null);

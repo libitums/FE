@@ -23,7 +23,7 @@ interface StorageModule {
 }
 
 // `NativeModules`는 `[key: string]: any`라 오타가 런타임까지 간다.
-// 이 캐스트(31~33행)가 그것을 막는 유일한 자리다.
+// 이 캐스트(`NativeModules as Record<string, unknown>`)가 그것을 막는 유일한 자리다.
 //
 // `typeof NativeModules === "undefined"`는 전역이 **없을 때**만 막는다. `typeof null`은
 // `"object"`라 전역 자체가 `null`이면 이 가드를 통과하고, 바로 아래의 색인 접근
@@ -38,7 +38,7 @@ interface StorageModule {
 // 부분집합만 실제로 막는다는 논리적 사실**이다 — `typeof` 가드는 "없음"만 잡고
 // "있는데 `null`"은 놓친다.
 //
-// **D2·D3와 다르다.** 아래 `module ?? undefined`(모듈 값의 `null` 정규화)는 Pod 소스와
+// 아래 `module ?? undefined`(모듈 값의 `null` 정규화)는 Pod 소스와
 // 실기 관찰로 근거가 섰다. 이 줄은 그렇지 않다 — 같은 파일 안에서 근거의 종류가 갈린다.
 function nativeModule(): StorageModule | undefined {
   if (typeof NativeModules === "undefined") {

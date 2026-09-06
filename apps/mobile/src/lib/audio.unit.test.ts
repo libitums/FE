@@ -286,7 +286,7 @@ describe("모듈이 없을 때 — 전역은 있고 모듈만 없다", () => {
 // ADR-0016 D11 규칙 4: 모듈이 없으면 조용히 아무 일도 하지 않는다 — 던지지 않는다.
 // `null`이 그 규칙의 구멍이었다. LIB-237 전에는 `host === undefined` 가드가 `host`가
 // `null`일 때 거짓이 되어 `host.play(...)` · `host.stop()`에서 TypeError가 났다. 지금은
-// `audio.ts:61`의 `?? undefined`가 `null`을 `undefined`로 정규화해 막는다.
+// `audio.ts`의 `?? undefined` 줄이 `null`을 `undefined`로 정규화해 막는다.
 describe("모듈 값이 null일 때", () => {
   it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
     vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
@@ -346,6 +346,9 @@ describe("전역 자체가 없을 때 — typeof 가드", () => {
 // 가드를 통과하고, 다음 줄 `(NativeModules as Record<string, unknown>)["…"]`의
 // 색인 접근에서 TypeError가 난다 — `storage.ts`·`accessibility.ts`와 같은 자리,
 // 같은 모양이다. 위 「전역 자체가 없을 때 — typeof 가드」와 대칭인 셋째 축이다.
+//
+// 이 축의 가드 자체는 코드로 관측되지만, 전역이 실제로 `null`로 세팅되는 경로가
+// 관찰됐는지는 별개다 — 근거의 종류는 `audio.ts`의 `nativeModule()` 위 주석 참조.
 describe("전역 자체가 null일 때 — typeof 가드의 사각", () => {
   it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
     vi.stubGlobal("NativeModules", null);

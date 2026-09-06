@@ -49,7 +49,7 @@ export type AnnounceOutcome = "announced" | "unavailable";
 // 부분집합만 실제로 막는다는 논리적 사실**이다 — `typeof` 가드는 "없음"만 잡고
 // "있는데 `null`"은 놓친다.
 //
-// **D2·D3와 다르다.** 아래 `module ?? undefined`(모듈 값의 `null` 정규화)는 Pod 4.0.1
+// 아래 `module ?? undefined`(모듈 값의 `null` 정규화)는 Pod 4.0.1
 // 소스와 실기 관찰로 근거가 섰다(이 파일 상단 JSDoc). 이 줄은 그렇지 않다 — 같은
 // 파일 안에서 근거의 종류가 갈린다.
 function nativeModule(): LynxAccessibilityModule | undefined {

@@ -138,6 +138,9 @@ describe("announce — 전역 자체가 없을 때 (typeof 가드)", () => {
 // 색인 접근에서 TypeError가 난다 — `audio.ts`·`storage.ts`와 같은 자리, 같은 모양이다.
 // 「전역은 있는데 모듈만 없다」·「전역 자체가 없다(typeof 가드)」 두 축과 대칭인
 // 셋째 축이다.
+//
+// 이 축의 가드 자체는 코드로 관측되지만, 전역이 실제로 `null`로 세팅되는 경로가
+// 관찰됐는지는 별개다 — 근거의 종류는 `accessibility.ts`의 `nativeModule()` 위 주석 참조.
 describe("announce — 전역 자체가 null일 때 (typeof 가드의 사각)", () => {
   it("isAnnouncementAvailable이 false다", () => {
     vi.stubGlobal("NativeModules", null);
@@ -158,7 +161,7 @@ describe("announce — 전역 자체가 null일 때 (typeof 가드의 사각)", 
 // `null`일 때 거짓이 되어 `host.accessibilityAnnounce(...)`에서 TypeError가 났다 —
 // 그 경로는 `AssessmentScreen.tsx:62`·`SentenceOrderScreen.tsx:83`의 `useEffect` 안이었고
 // try/catch가 없어 에러가 ErrorBoundary까지 올라가 화면이 에러 상태로 바뀌었다. 지금은
-// `accessibility.ts:47`의 `?? undefined`가 `null`을 `undefined`로 정규화해 막는다.
+// `accessibility.ts`의 `?? undefined` 줄이 `null`을 `undefined`로 정규화해 막는다.
 describe("announce — 모듈 값이 null일 때", () => {
   it("unavailable을 돌려주고 던지지 않는다", () => {
     vi.stubGlobal("NativeModules", { LynxAccessibilityModule: null });
