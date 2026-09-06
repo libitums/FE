@@ -43,6 +43,10 @@ export type Tab = "home" | "journey" | "roleplay" | "settings";
 // 필드는 `stepId` 하나이고 `stepOrdinal`을 넣지 않는다(계약 §1.6(a), LIB-229 §1.13이
 // 적은 그대로). 이 둘이 늘면 App.tsx의 exhaustiveness가 서고, 그것이 빠진 결선을
 // 컴파일 타임에 잡는 방식이다(§1.6(c)).
+// LIB-238: 아홉째 멤버가 는다. 모양은 `listening`·`sentence-order`·`word-choice`와
+// 문자 그대로 같다 — 필드는 `stepId` 하나이고 `stepOrdinal`도 `results`도 넣지
+// 않는다. 삽입 지점은 `word-choice`와 `assessment` 사이다 — 마지막에 넣으면
+// `assessment` 줄의 세미콜론을 옮겨야 해서 기존 줄이 바뀐다.
 export type Screen =
   | { name: "home" }
   | { name: "journey-map" }
@@ -51,6 +55,7 @@ export type Screen =
   | { name: "listening"; stepId: JourneyStepId }
   | { name: "sentence-order"; stepId: JourneyStepId }
   | { name: "word-choice"; stepId: JourneyStepId }
+  | { name: "culture"; stepId: JourneyStepId }
   | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] };
 
 // docs/screens.md 130~136행과 ADR-0007 D3이 적은 모양 그대로다. 필드를 더하지 않는다.
