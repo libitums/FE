@@ -24,8 +24,27 @@ interface StorageModule {
 
 // `NativeModules`는 `[key: string]: any`라 오타가 런타임까지 간다.
 // 이 캐스트(31~33행)가 그것을 막는 유일한 자리다.
+//
+// `typeof NativeModules === "undefined"`는 전역이 **없을 때**만 막는다. `typeof null`은
+// `"object"`라 전역 자체가 `null`이면 이 가드를 통과하고, 바로 아래의 색인 접근
+// (`NativeModules["…"]`)에서 TypeError가 난다. 아래 `NativeModules === null` 줄이 그
+// 사각을 막는다.
+//
+// **이 방어의 근거는 관찰이 아니다.** 전역이 `null`로 세팅되는 경로는 확인되지
+// 않았다 — `@lynx-js/types@4.1.0`의 `declare global { var NativeModules: INativeModules }`
+// 선언에 `null`이 없고, `apps/**`에 `NativeModules =` 대입이 0건이며, iOS Pod 네이티브
+// 소스가 벤더링돼 있지 않아 실제 등록 코드를 확인할 수 없다. 이 줄이 있는 이유는
+// 관찰이 아니라 **위 가드가 자기가 막는다고 주장하는 값(전역이 없거나 비정상인 경우)의
+// 부분집합만 실제로 막는다는 논리적 사실**이다 — `typeof` 가드는 "없음"만 잡고
+// "있는데 `null`"은 놓친다.
+//
+// **D2·D3와 다르다.** 아래 `module ?? undefined`(모듈 값의 `null` 정규화)는 Pod 소스와
+// 실기 관찰로 근거가 섰다. 이 줄은 그렇지 않다 — 같은 파일 안에서 근거의 종류가 갈린다.
 function nativeModule(): StorageModule | undefined {
   if (typeof NativeModules === "undefined") {
+    return undefined;
+  }
+  if (NativeModules === null) {
     return undefined;
   }
   const module = (NativeModules as Record<string, unknown>)["StorageModule"] as
