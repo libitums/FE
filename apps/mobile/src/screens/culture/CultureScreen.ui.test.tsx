@@ -10,7 +10,7 @@ import { CultureScreen } from "./CultureScreen";
 // import하지 않는다. `toHaveClass`·`toHaveStyle`·`toBeVisible`을 쓰지 않는다
 // (docs/conventions/code.md 「jest-dom 매처는 절반만 쓴다」).
 //
-// 계약: LIB-238 실행 브리프 u8 §6.2 (ui — required, X1~X8) · §3.3 · §3.4 · §2.4.
+// 계약: LIB-238 spec §6.2 (ui — required, X1~X8) · §3.3 · §3.4 · §2.4.
 
 // fixture 문자열은 culture.ts의 다섯 서사(§2.4) 어떤 값과도 겹치지 않는다 — 겹치면
 // 화면이 실제 데이터에 붙어 있어도 X4·X5가 우연히 통과해 버린다. 문단이 셋이라
