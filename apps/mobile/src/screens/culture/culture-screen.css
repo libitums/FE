@@ -1,0 +1,123 @@
+/* LIB-238 (ui): design 원문(실행 브리프 u10)의 값. 토큰은 CSS 커스텀 프로퍼티로만
+   소비한다 (ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않는다.
+
+   **이 화면에서 세로 치수를 선언하는 자리는 `.culture-screen-exit` 하나이고
+   `min-height`(하한)다.** `height`를 쓰는 자리가 0개다 — Dynamic Type이 켜지면
+   글자만 커지고 상자는 안 커진다는 전제라, 고정 높이는 최대 배율에서 라벨을
+   잘라 낸다(WCAG 1.4.4 · FE ADR-0020 D5). `width: 100%`(채움 갈래)를 쓰는 자리도
+   없다 — 그 갈래는 액션 행의 것이었고 이 화면에는 액션 행이 없다(ADR-0022 D1). */
+
+.culture-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  /* Lynx의 `justify-content` 기본값은 `stretch`다(웹은 `flex-start`). 명시하지
+     않으면 헤더가 늘어난다. */
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+/* [고정] 머리 — `맵으로` + 제목 한 줄. ADR-0022 D1: 머리는 고정(`flex-shrink: 0`),
+   남는 세로를 받는 것은 `-scroll` 하나다. */
+.culture-screen-header {
+  display: flex;
+  flex-direction: row;
+  /* FE ADR-0023 규칙 3 — `-exit`(하한 48)와 제목(`heading-s`, 줄높이 24)의 교차
+     크기가 달라 `center`는 최대 배율에서 두 프레임의 top을 갈라 낭독 순서를
+     DOM 순서와 어긋나게 만든다. `flex-start` + 제목의 `margin-top` 보상으로
+     그 조건을 깬다(`.listening-screen-header`·`.sentence-order-screen-header`와
+     같은 형태). */
+  align-items: flex-start;
+  gap: var(--libitum-layout-gap-inline);
+  flex-shrink: 0;
+}
+
+.culture-screen-exit {
+  /* 고정 높이가 아니라 하한이다(ADR-0020 D5 · ADR-0022 D6). */
+  min-height: var(--libitum-spacing-48);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 히트박스 가드 — 가로 행에서 이것이 없으면 `맵으로` 상자가 눌려 최소 터치
+     영역이 깨진다(FE ADR-0023 규칙 2). */
+  flex-shrink: 0;
+}
+
+.culture-screen-exit-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.culture-screen-title {
+  /* 헤더 세로 보정의 산술 — `12 = (spacing-48 − heading-s-line-height) / 2 =
+     (48 − 24) / 2`다. `--libitum-spacing-12`와 값이 우연히 같다. 되돌리는 조건:
+     `-exit`의 하한(현재 spacing-48)이나 이 제목의 scale(현재 heading-s)이 바뀌면
+     이 값이 조용히 틀린다. */
+  margin-top: var(--libitum-spacing-12);
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* [흐름] 내용 슬롯 — ADR-0022 D4. `display`·`flex-direction`·`gap`을 여기 두지
+   않는다: `<scroll-view>`는 CSS와 무관하게 강제로 linear가 되고, linear
+   알고리즘에는 그 어휘가 없어 무동작으로 죽는다. 남는 세로는 `flex: 1`로 받는다.
+   배경·모서리·그림자·padding이 없다 — `-content`가 그 자리를 대신 지지 않는다.
+   `gap`도 `padding-bottom`도 두지 않는다 — 마지막 문단 아래 빈 띠는 「여기가
+   끝」으로 읽혀 넘침 어포던스를 스스로 지운다. 세로 중앙 정렬도 쓰지 않는다 —
+   `justify-content: center`는 위쪽 문단을 스크롤 원점 밖으로 밀어 닿을 수 없게
+   만든다. */
+.culture-screen-scroll {
+  flex: 1;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+/* `justify-content`를 여기 두지 않는다 — design 표가 `-scroll`에 거는 값은 세로
+   분배(`flex: 1`)와 위 경계뿐이다(ADR-0022 D4). */
+
+/* `<scroll-view>`의 직계 자식은 이 상자 하나다. flex 어휘와 `gap`이 여기 산다 —
+   `-scroll`이 강제 linear라 그 자리에서는 무동작이기 때문이다. */
+.culture-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+}
+
+/* 서사 제목. 위·아래 간격은 `-content`의 `gap` 하나가 진다 — 여기서 따로
+   선언하지 않는다. 가로 행의 자식이 아니라 세로 흐름의 자식이라 헤더 제목이
+   갖는 `margin-top` 보정이 없다 — 교차 크기를 다툴 형제가 없다. */
+.culture-screen-narrative-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 서사 문단 — `dialogue-body`가 아니라 `body-l`이다. 이 화면이 그리는 것은
+   발화가 아니라 산문이고 화자 줄이 없다. 폭·높이를 선언하지 않는다 — `width`도
+   `min-width`도 `max-width`도, `height`도 `max-height`도 `line-clamp`도 없다.
+   카드(면)를 두지 않는다 — `background-elevated`도 `border`도 `padding`도 없다. */
+.culture-screen-paragraph {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}

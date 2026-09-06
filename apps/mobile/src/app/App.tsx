@@ -7,6 +7,8 @@ import {
   judgeAssessment,
 } from "../screens/assessment/assessment";
 import { BottomNavigator } from "../components/BottomNavigator";
+import { CultureScreen } from "../screens/culture/CultureScreen";
+import { cultureNarrativeForStep } from "../screens/culture/culture";
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import {
@@ -50,6 +52,10 @@ type ScreenWiring = {
   // LIB-227 계약 §1.8(b): 평가의 `맵으로`. 중도 이탈(`onExitLearning`)과 같은 형태로
   // 진행을 갱신하지 않고 `back` 하나로 맵에 닿는다.
   onExitAssessment: () => void;
+  // LIB-238 (u10): 문화의 `맵으로`. 이 화면은 나아가는 수단이 없으므로 진행을
+  // 갱신하지 않고 `back` 하나로 맵에 닿는다 — `onExitListening`·`onExitAssessment`와
+  // 같은 형태다.
+  onExitCulture: () => void;
 };
 
 // 루트 구성 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모인다 (ADR-0003 D5).
@@ -97,6 +103,7 @@ export function App() {
     // 평가의 `맵으로`. 중도 이탈과 마찬가지로 진행을 갱신하지 않는다 — 판정은 이미
     // `onFinishLearning`에서 끝났다(계약 §1.8(b)).
     onExitAssessment: () => dispatch({ type: "back" }),
+    onExitCulture: () => dispatch({ type: "back" }),
   };
 
   return (
@@ -147,6 +154,14 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           stepOrdinal={journeyStepOrdinal(screen.stepId)}
           results={screen.results}
           onExit={wiring.onExitAssessment}
+        />
+      );
+    case "culture":
+      return (
+        <CultureScreen
+          stepOrdinal={journeyStepOrdinal(screen.stepId)}
+          narrative={cultureNarrativeForStep(screen.stepId)}
+          onExit={wiring.onExitCulture}
         />
       );
     // LIB-239: 결선이 착지했다 — `onStartStep`이 `learningFormForStep`을 거쳐
