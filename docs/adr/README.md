@@ -75,7 +75,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 린터·포매터 | 결정 (`oxlint` · `oxfmt`) | [0006](0006-command-interface-and-test-layers.md) |
 | 테스트 계층 | 결정 (3계층 + 파일 위치) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) D4·**D7** |
 | 상태 관리 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
-| 데이터 페칭 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
+| 데이터 페칭 | 결정 (클라이언트 한 파일 + **컨텐츠 도착 전의 타입 모양**) | [0007](0007-app-internals-state-routing-data-errors.md) D2·**D5** |
 | 라우팅 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 에러 경계 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 디자인 토큰 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
