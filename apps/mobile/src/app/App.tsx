@@ -52,8 +52,8 @@ type ScreenWiring = {
   // LIB-227 계약 §1.8(b): 평가의 `맵으로`. 중도 이탈(`onExitLearning`)과 같은 형태로
   // 진행을 갱신하지 않고 `back` 하나로 맵에 닿는다.
   onExitAssessment: () => void;
-  // LIB-238 (u10): 문화의 `맵으로`. 이 화면은 나아가는 수단이 없으므로 진행을
-  // 갱신하지 않고 `back` 하나로 맵에 닿는다 — `onExitListening`·`onExitAssessment`와
+  // LIB-238: 문화의 `맵으로`. 이 화면은 나아가는 수단이 없으므로 진행을
+  // 갱신하지 않고 `back` 하나로 맵에 닿는다 — `onExitLearning`·`onExitAssessment`와
   // 같은 형태다.
   onExitCulture: () => void;
 };

@@ -154,8 +154,9 @@ export function navReducer(nav: Nav, action: NavAction): Nav {
 // import는 금지다(위 7~9행의 불변식). 그래서 여정 맵에 둘 수 없다 (§1.6(b)).
 //
 // `default` 없는 `switch` 셋이고 던지지 않는다 (§1.8). `default`를 두지 않는 것이
-// §1.6(c) 1번의 조건이다 — 넷째 학습형이 늘면 여기가 `TS2366`으로 서고, 그것을 쓰려면
-// `Screen`에 멤버가 있어야 하고, 더하면 App.tsx의 exhaustiveness가 선다.
+// §1.6(c) 1번의 조건이다 — 넷째 학습형(`culture`, 위 case)은 이미 왔다. 다섯째
+// 학습형이 늘면 여기가 `TS2366`으로 서고, 그것을 쓰려면 `Screen`에 멤버가 있어야
+// 하고, 더하면 App.tsx의 exhaustiveness가 선다.
 // `navReducer`(:97) · `stepSheetReducer`가 쓰는 형태 그대로다.
 //
 // `Record<LearningForm, …>`이 아니라 `switch`인 이유는 돌려주는 것이 스칼라가 아니라
