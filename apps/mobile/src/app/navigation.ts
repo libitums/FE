@@ -157,7 +157,7 @@ export function navReducer(nav: Nav, action: NavAction): Nav {
 // §1.6(c) 1번의 조건이다 — 넷째 학습형(`culture`, 위 case)은 이미 왔다. 다섯째
 // 학습형이 늘면 여기가 `TS2366`으로 서고, 그것을 쓰려면 `Screen`에 멤버가 있어야
 // 하고, 더하면 App.tsx의 exhaustiveness가 선다.
-// `navReducer`(:97) · `stepSheetReducer`가 쓰는 형태 그대로다.
+// `navReducer` · `stepSheetReducer`가 쓰는 형태 그대로다.
 //
 // `Record<LearningForm, …>`이 아니라 `switch`인 이유는 돌려주는 것이 스칼라가 아니라
 // 필드를 가진 객체이고 `Screen` 멤버들이 균일하지 않기 때문이다 (§1.6(d)).

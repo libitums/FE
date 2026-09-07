@@ -398,9 +398,9 @@ describe("navReducer — assessment 화면 (LIB-227)", () => {
 // 여기부터가 LIB-236이 더하는 것이다. 위의 케이스는 하나도 지우거나 뜻을 바꾸지 않는다.
 //
 // LIB-238: 계약 §6.1 U5 — 어휘 배열에 "culture"를 더한다. 아래의 기존 케이스
-// 아홉이 새 describe 없이 그대로 culture를 덮는다. `learningScreenFor`는 아직
-// "culture" case가 없어 런타임에 `undefined`를 돌려주므로, `.name`을 읽는 케이스와
-// `not.toBeUndefined()` 케이스가 여기서 실물로 실패한다.
+// 아홉이 새 describe 없이 그대로 culture를 덮는다. `learningScreenFor`에
+// "culture" case가 없다면 런타임에 `undefined`를 돌려주므로, `.name`을 읽는 케이스와
+// `not.toBeUndefined()` 케이스가 여기서 실물로 실패했을 것이다.
 
 // 계약 §1.3의 어휘 넷. 이 함수의 입력 전부다.
 const allLearningForms: readonly LearningForm[] = [
