@@ -7,6 +7,7 @@ import type { LearningForm } from "../lib/learning-form";
 import { listeningScreenTitle } from "../screens/listening/listening";
 import { sentenceOrderScreenTitle } from "../screens/sentence-order/sentence-order";
 import { wordChoiceScreenTitle } from "../screens/word-choice/word-choice";
+import { cultureScreenTitle } from "../screens/culture/culture";
 
 // LIB-239 (integration-design, u2): 결선(`App.tsx`)이 배정표(`learningFormForStep`)를
 // **실제로 경유하는지**를 짓는다. 오늘의 `onStartStep`은 리터럴
@@ -61,18 +62,28 @@ function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
 
-const allForms: readonly LearningForm[] = ["listening", "sentence-order", "word-choice"];
+const allForms: readonly LearningForm[] = ["listening", "sentence-order", "word-choice", "culture"];
 
+// LIB-238(u21): 아래 두 표는 `Record<LearningForm, …>`이라 `LearningForm`에 넷째
+// 멤버 `culture`가 늘면서 tsc(TS2741)가 `culture` 키를 요구한다 —
+// `journey-map.unit.test.ts`의 `questionCountForForm`이 이미 겪은 것과 같은 자리다.
+// 값은 지어낸 것이 아니라 실물이다: `culture-screen-title`은 문화 화면
+// (`CultureScreen.tsx`)의 실제 `data-testid`이고, `cultureScreenTitle(ordinal)`은
+// `${ordinal}단계 · 문화`를 돌려주는 실제 제목 함수다. 위 `allForms`는 이제 넷이고
+// `culture`를 담고 있으므로, `test.each(allForms)`가 이 두 `culture` 항목을 도는
+// 케이스가 실제로 있다 — `test.each`가 `allForms`를 그대로 순회하기 때문이다.
 const titleTestIdByForm: Record<LearningForm, string> = {
   listening: "listening-screen-title",
   "sentence-order": "sentence-order-screen-title",
   "word-choice": "word-choice-screen-title",
+  culture: "culture-screen-title",
 };
 
 const titleTextByForm: Record<LearningForm, (ordinal: number) => string> = {
   listening: listeningScreenTitle,
   "sentence-order": sentenceOrderScreenTitle,
   "word-choice": wordChoiceScreenTitle,
+  culture: cultureScreenTitle,
 };
 
 // I-W5-1 · AC 1 주 판정자. 학습형 셋 각각을 배정표가 돌려준다고 스텝(스텝은 항상

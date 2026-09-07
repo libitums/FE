@@ -162,6 +162,9 @@ export function completeStep(completedCount: number, id: JourneyStepId): number 
 // **값이 오는 날 무엇만 바뀌나** — **이 표의 오른쪽 다섯 개**와 그 스텝의 문항 배열
 // 둘뿐이다. **형태는 한 글자도 안 바뀐다** (계약 수용 기준 5). 어긋나면 교차 불변식
 // (계약 §3.1 U4)이 먼저 빨개져 옮길 문항을 함께 옮기라고 말한다.
+//
+// 문화는 다섯 키 전부에 서사를 갖지만 그 값은 임시라 배정 근거가 못 된다 —
+// 문항 표 셋과 성질이 다르다(LIB-238).
 const learningFormByStep: Record<JourneyStepId, LearningForm> = {
   greeting: "listening",
   introduction: "listening",
