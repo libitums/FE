@@ -595,19 +595,39 @@ test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 cu
 const STOP = "<stop>";
 
 type HostCall = { source: string; done: (result: unknown) => void };
+type AnnounceCall = { content: string };
 
 // 없던 전역(`NativeModules`)을 세운다. `play`와 `stop`을 **한 배열에** 적는다 —
 // 이 계층이 보는 것이 바로 둘의 **상대 순서**이기 때문이다 (stop 뒤 새 play).
 // `stop` 호출은 `source: "<stop>"` 로 표시한다. 실제 `audioSource`에는 `<`·`>`가 없다
 // (계약 §9.4의 불변식).
-function stubHost(): HostCall[] {
-  const calls: HostCall[] = [];
-  const mod = {
-    play: (source: string, done: (result: unknown) => void) => void calls.push({ source, done }),
-    stop: () => void calls.push({ source: STOP, done: () => {} }),
+//
+// ⚠ **`vi.stubGlobal("NativeModules", …)`은 전역을 통째로 덮는다.** 낭독 대역을 따로
+// 세우면 뒤에 부른 쪽이 앞의 것을 지운다 — 오디오가 죽거나(기존 케이스가 실패)
+// 발화가 안 잡힌다(새 케이스가 공허하게 통과). 그래서 이 파일의 `vi.stubGlobal`은
+// **하나**이고 그 객체가 **두 모듈을 함께** 담는다 (LIB-247 계약 §5.2).
+// 형태의 정본은 `ListeningScreen.ui.test.tsx`의 같은 이름 헬퍼다.
+//
+// 반환은 호출 배열 둘이다. `sourcesOf`·`playSources`·`stopCount`의 입력 타입은 그대로
+// `HostCall[]`이다 — 위쪽 오디오 단언이 한 줄도 흔들리지 않는다.
+function stubHost(): { audio: HostCall[]; announce: AnnounceCall[] } {
+  const audio: HostCall[] = [];
+  const announce: AnnounceCall[] = [];
+  const audioModule = {
+    play: (source: string, done: (result: unknown) => void) => void audio.push({ source, done }),
+    stop: () => void audio.push({ source: STOP, done: () => {} }),
   };
-  vi.stubGlobal("NativeModules", { AudioPlaybackModule: mod });
-  return calls;
+  const accessibilityModule = {
+    accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
+      announce.push({ content: args.content });
+      callback("announced");
+    },
+  };
+  vi.stubGlobal("NativeModules", {
+    AudioPlaybackModule: audioModule,
+    LynxAccessibilityModule: accessibilityModule,
+  });
+  return { audio, announce };
 }
 
 const sourcesOf = (calls: readonly HostCall[]): string[] => calls.map((call) => call.source);
@@ -632,7 +652,7 @@ afterEach(() => {
 // 손으로 넘겨 렌더하지만, 여기서는 **맵의 노드 tap → 시트 → `시작`** 이 그 값을
 // 실어 나른다. 중간 어디서 stepId가 상수로 굳으면 여기서만 갈린다.
 test("맵 → 시트 → 시작이면 그 스텝의 첫 문항 audioSource로 play가 불린다", () => {
-  const calls = stubHost();
+  const { audio: calls } = stubHost();
   render(<App />);
 
   startStep("ordering");
@@ -645,7 +665,7 @@ test("맵 → 시트 → 시작이면 그 스텝의 첫 문항 audioSource로 pl
 // 위 단언은 통과하고 이것만 죽는다. 두 값이 애초에 다르다는 것도 앵커로 함께 읽는다
 // (같으면 아래 단언이 공허해진다).
 test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 것으로 갈린다", () => {
-  const calls = stubHost();
+  const { audio: calls } = stubHost();
   render(<App />);
 
   startStep("ordering");
@@ -666,7 +686,7 @@ test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 �
 // prop을 갈아 끼워 이 순서를 봤다. 여기서는 보기 tap → `다음` tap이 세션 리듀서를
 // 지나 `question.audioSource`를 바꾸는 것까지가 관찰 대상이다.
 test("다음으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다", () => {
-  const calls = stubHost();
+  const { audio: calls } = stubHost();
   render(<App />);
   startStep("ordering");
 
@@ -688,7 +708,7 @@ test("다음으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다"
 // `onExit`이 화면을 스택에서 걷지 않고 맵을 그 위에 얹기만 해도 `ui`는 전부 green이다.
 // 맵이 실제로 떠 있는 것을 함께 읽어 "화면이 통째로 비었다"와 갈라 놓는다.
 test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아온다", () => {
-  const calls = stubHost();
+  const { audio: calls } = stubHost();
   render(<App />);
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
@@ -714,7 +734,7 @@ test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아�
 // 그 사실을 평가의 맵으로를 누르기 **전에** 먼저 확인하고, 맵에 닿은 뒤에도 다시
 // 확인한다 — 경로가 늘 뿐 "멎지 않은 재생이 남지 않는다"의 뜻은 그대로다.
 test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남지 않는다", () => {
-  const calls = stubHost();
+  const { audio: calls } = stubHost();
   render(<App />);
   startStep("ordering");
 
@@ -749,7 +769,7 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
 // 돌아왔을 때 세션이 버려져 문항 1부터 다시 트는 것까지 이어서 본다 — `stop`만 보면
 // "떠날 때 멈춘다"와 "다시는 안 튼다"가 갈리지 않는다.
 test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 문항으로 다시 튼다", () => {
-  const calls = stubHost();
+  const { audio: calls } = stubHost();
   render(<App />);
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
@@ -770,6 +790,56 @@ test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 �
   ]);
 });
 
+// -------------------------------------------------------------------------
+// LIB-247 — 완료 전이 발화. 계약 §6.3.
+//
+// **오디오와 같은 대역을 지난다** — `stubHost()`가 한 객체에 두 모듈을 담는다
+// (계약 §5.2). 위 오디오 절의 단언들이 그대로 통과하는 것이 그 병합이 옳다는 증거다.
+//
+// **`ui`가 원리적으로 만들 수 없는 트리에서만 볼 수 있는 것을 본다** (계약 §6.3(c)).
+// `ListeningScreen.ui.test.tsx`의 X-A·X-D는 화면 하나를 고립 렌더한다. 여기서 도는
+// 트리는 셸이 바텀 내비게이터를 **항상 함께** 렌더하고, 여정 맵의 노드 tap → 시트 →
+// `시작`으로 진입하고, 실물 문항 표를 실제로 다 지나온 합성 트리다. 그래서
+// `[accessibility-element]` 목록이 `ui`의 것과 **갈린다** — 셸의 탭이 함께 있고,
+// 「그 순간 조작 단위가 하나」는 **학습 화면 안에서** 참인 명제가 된다. 발화의 뒷절이
+// 가리키는 것이 바로 그 하나다.
+//
+// 발화 문자열을 리터럴로만 적지 않는다 — 앞절은 종료 문구 요소의 내용에서, 뒷절은
+// 그 순간 화면에 실재하는 유일한 조작 단위의 `accessibility-label`에서 파생해 짓고
+// (ADR-0016 D11-1 · 계약 §3.3(b)), 계약 §3.2가 값까지 고정한 문자열과도 대조한다.
+test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 그 낱말이 화면에 있는 것뿐이다", () => {
+  const { announce } = stubHost();
+  const { container } = render(<App />);
+
+  startStep("ordering");
+
+  expect(announce).toHaveLength(0); // 앵커 — 세션 도중에는 조용하다
+
+  answerAllQuestions("ordering", mixedPick);
+
+  // 앵커 — 셸을 지나 종료 상태에 실제로 닿았다. 안 닿으면 아래가 전부 공허해진다.
+  const complete = screen.getByTestId("listening-screen-complete");
+  expect(complete).toHaveTextContent("문항을 모두 마쳤어요");
+
+  const operable = [...container.querySelectorAll("[accessibility-element]")].map((el) =>
+    el.getAttribute("data-testid"),
+  );
+  const inShell = operable.filter((id) => id?.startsWith("bottom-navigator-tab-"));
+  const inScreen = operable.filter((id) => !id?.startsWith("bottom-navigator-tab-"));
+
+  // 셸이 함께 서 있다 — `ui`가 만들 수 없는 트리라는 것의 관측 가능한 형태다.
+  expect(inShell).toContain("bottom-navigator-tab-journey");
+  // 그리고 학습 화면 안의 조작 단위는 정확히 하나다.
+  expect(inScreen).toEqual(["listening-screen-finish"]);
+
+  const actionLabel =
+    screen.getByTestId("listening-screen-finish").getAttribute("accessibility-label") ?? "";
+
+  expect(announce).toHaveLength(1);
+  expect(announce[0]?.content).toBe(`${complete.textContent ?? ""}, ${actionLabel}`);
+  expect(announce[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+});
+
 // 계약 §9.9(e)-5 · §9.3-2의 **회귀 단언**. 위쪽 스무 케이스가 전부 대역 없이 도는 것이
 // 이미 이 사실을 지고 있지만, **이름으로 한 번 못박는다** — 그것들은 오디오를 모르고
 // 죽어도 다른 것을 가리키기 때문이다.
@@ -785,9 +855,9 @@ test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 �
 // 계약 §3.2 규칙 1·5) — 이 케이스가 그 가드가 실제로 일하는지를 보는 자리가 됐다.
 // 경로만 늘리고 판정은 그대로 "던지지 않는다"와 "맵에서 done"이다.
 test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '듣기'에 머문다", () => {
-  // 이 파일의 마지막 케이스다 — 앞의 여섯이 세운 대역이 `afterEach`에서 실제로 걷혔는지를
-  // 여기서 한 줄로 못박는다. 새면 위쪽 스무 케이스가 「모듈이 없는 환경」을 더 이상 돌지
-  // 않게 되고, §9.3-2 가드의 회귀 단언이 조용히 공허해진다.
+  // 대역을 세우는 케이스들 **뒤에** 오는 자리다 — 그것들이 세운 대역이 `afterEach`에서
+  // 실제로 걷혔는지를 여기서 한 줄로 못박는다. 새면 위쪽 스무 케이스가 「모듈이 없는
+  // 환경」을 더 이상 돌지 않게 되고, §9.3-2 가드의 회귀 단언이 조용히 공허해진다.
   expect(typeof NativeModules).toBe("undefined");
 
   render(<App />);
