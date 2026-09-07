@@ -72,6 +72,7 @@ export function CultureScreen({
           <text
             className="culture-screen-narrative-title"
             data-testid="culture-screen-narrative-title"
+            accessibility-traits="header"
           >
             {narrative.title}
           </text>
