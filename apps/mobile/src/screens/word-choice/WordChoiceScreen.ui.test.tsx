@@ -1,4 +1,4 @@
-import { expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
@@ -86,6 +86,36 @@ function completeAllThree(): void {
   answerCorrectlyAndAdvance(1);
   answerCorrectlyAndAdvance(2);
 }
+
+// ------------------------------------------------------------ announce 대역
+//
+// 형태의 정본은 `SentenceOrderScreen.ui.test.tsx`의 `stubAnnounce()`다.
+// `lib/accessibility.ts`가 만지는 접점 하나(`NativeModules.LynxAccessibilityModule`)에
+// 대역을 둔다 — `lib/accessibility.ts` 자체를 mock하지 않는다.
+//
+// **`announce`는 호스트가 없어도 던지지 않고 `"unavailable"`을 돌려준다**(ADR-0016
+// D11-4) ⇒ `not.toThrow()` 하나로는 호출 0건과 1건을 구별하지 못한다. 그래서 대역을
+// 두고 **횟수를 센다**(계약 §5.1).
+
+type AnnounceCall = { content: string };
+
+function stubAnnounce(): AnnounceCall[] {
+  const calls: AnnounceCall[] = [];
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
+        calls.push({ content: args.content });
+        callback("announced");
+      },
+    },
+  });
+  return calls;
+}
+
+// 없던 전역을 세우므로 테스트마다 원상복구한다 — 지우지 않으면 다른 파일로 샌다.
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 // ---------------------------------------------------------------- 처음 렌더
 
@@ -562,4 +592,102 @@ test("[A7] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
   expect(scroll).not.toHaveAttribute("accessibility-label");
   expect(scroll).not.toHaveAttribute("accessibility-traits");
   expect(scroll).not.toHaveAttribute("accessibility-elements-hidden");
+});
+
+// ------------------------------------------- 완료 전이 발화 (LIB-247 계약 §6.2 X-A~X-E)
+//
+// 판정(정답/오답)은 이 채널로 나가지 않는다 — 그것은 라벨 접미사(ADR-0016 D3)가
+// 이미 지고 있고 위의 판정 절이 그대로다(계약 §1.3). 이 절이 보는 것은 세션의 종료
+// 하나다.
+
+// X-A. 완료 전이 뒤 발화가 정확히 하나이고 그 내용이 계약 §3.2 표의 문자열이다.
+test("[X-A] 완료 전이 뒤 announce가 정확히 하나이고 content가 '문항을 모두 마쳤어요, 결과 보기'다", () => {
+  const calls = stubAnnounce();
+  renderOrdering();
+
+  completeAllThree();
+
+  expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument(); // 앵커
+  expect(calls).toHaveLength(1);
+  expect(calls[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+});
+
+// X-B. 전이 **전에는** 0건이다. 가드(`if (!complete) return;`)를 지우면 문항 도중에
+// 완료 발화가 나가고 이 케이스가 잡는다(계약 §6.2(h)).
+test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () => {
+  const calls = stubAnnounce();
+  renderOrdering();
+
+  expect(calls).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
+
+  expect(calls).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId("word-choice-screen-next"), {});
+
+  expect(screen.getByTestId("word-choice-screen-progress")).toHaveTextContent("문항 2 / 3"); // 앵커
+  expect(calls).toHaveLength(0);
+});
+
+// X-C. **정확히 한 번**이다. 종료 상태에 닿은 뒤 같은 props로 다시 렌더해도 호출이
+// 늘지 않는다 — dep 배열을 지워 매 렌더 실행이 되면 여기서만 잡힌다(계약 §6.2(h)).
+// props를 새로 짓지 않고 **같은 참조**를 다시 넘긴다 — 값이 갈려서 늘어난 것이
+// 아니라 렌더 자체로 늘어난 것을 보려는 것이다.
+test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 늘지 않는다", () => {
+  const calls = stubAnnounce();
+  const onExit = () => {};
+  const onFinish = () => {};
+  const view = render(
+    <WordChoiceScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+  );
+
+  completeAllThree();
+
+  expect(calls).toHaveLength(1);
+
+  view.rerender(
+    <WordChoiceScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+  );
+  view.rerender(
+    <WordChoiceScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+  );
+
+  expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument(); // 앵커
+  expect(calls).toHaveLength(1);
+});
+
+// X-D. **소리에만 있는 낱말이 0건이다**(ADR-0016 D11-1 · 수용 기준 3). 발화 문자열을
+// 리터럴로 다시 적지 않고 **DOM에서 파생해** 짓는다 — 앞절은 종료 문구 요소의 내용,
+// 뒷절은 그 순간 화면에 실재하는 유일한 조작 단위의 `accessibility-label`이다.
+test("[X-D] 완료 발화가 종료 문구와 그 순간 유일한 조작 단위의 라벨에서 그대로 나온다", () => {
+  const calls = stubAnnounce();
+  const { container } = renderOrdering();
+
+  completeAllThree();
+
+  const elements = [...container.querySelectorAll("[accessibility-element]")];
+  expect(elements.map((el) => el.getAttribute("data-testid"))).toEqual([
+    "word-choice-screen-finish",
+  ]);
+
+  const completeText = screen.getByTestId("word-choice-screen-complete").textContent ?? "";
+  const actionLabel = elements[0]?.getAttribute("accessibility-label") ?? "";
+
+  expect(calls).toHaveLength(1);
+  expect(calls[0]?.content).toBe(`${completeText}, ${actionLabel}`);
+});
+
+// X-E. **마운트가 곧 완료인 갈래**(계약 §4.2). 문항 표가 빈 스텝은 첫 렌더가 이미
+// 종료 상태다 — 전이만 발화하게 만들면 그 갈래가 조용한 채로 남는다.
+test("[X-E] 문항이 0인 스텝은 마운트가 곧 완료라 그 순간 announce가 하나 나간다", () => {
+  const calls = stubAnnounce();
+
+  render(
+    <WordChoiceScreen stepId="greeting" stepOrdinal={1} onExit={() => {}} onFinish={() => {}} />,
+  );
+
+  expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument(); // 앵커
+  expect(calls).toHaveLength(1);
+  expect(calls[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
 });

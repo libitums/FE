@@ -244,3 +244,29 @@ export function sentenceOrderSessionResults(
 export function sentenceOrderAnnouncement(result: AnswerResult): string {
   return `채점 결과, ${answerResultLabel(result)}`;
 }
+
+// ---------------------------------------------------------------- 완료 전이 발화 (LIB-247 계약 §3)
+// 계약: .agent-harness/work/lib-247/spec.md §3.1(export 목록) · §3.2(시그니처와 값).
+//
+// 위의 `sentenceOrderAnnouncement`(채점)는 **이름도 몸통도 안 바뀐다** — 아래 새 이름이
+// 두 채널을 이름으로 가른다(계약 §3.2 · §4.3).
+
+/** 종료 상태 문구. 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나온다 (ADR-0016 D11-1). */
+export const sentenceOrderCompletionText = "문항을 모두 마쳤어요";
+
+/** 완료 상태에서 화면에 남는 **유일한 조작 단위**의 라벨. 이 화면에서는 `결과 보기`다. */
+export const sentenceOrderFinishLabel = "결과 보기";
+
+/**
+ * 완료 전이의 발화 문자열. 구분자는 쉼표+공백 — D3이 고른 부호를 그대로 쓴다
+ * (`평가 결과, 통과` · `채점 결과, 정답`과 같은 형태).
+ *
+ * 인자는 **완료 상태에서 유일한 조작 단위의 라벨**이다. 발화는 떠다니므로
+ * *무엇이* 끝났는지(앞절)와 *이제 무엇이 남았는지*(뒷절)가 소리 안에 있어야 한다.
+ *
+ * 앞절은 리터럴을 다시 적지 않고 `sentenceOrderCompletionText`를 지난다 — 화면이 렌더하는
+ * 낱말과 발화가 담는 낱말이 **같은 표를 지난다**(계약 §3.4).
+ */
+export function sentenceOrderCompletionAnnouncement(nextActionLabel: string): string {
+  return `${sentenceOrderCompletionText}, ${nextActionLabel}`;
+}

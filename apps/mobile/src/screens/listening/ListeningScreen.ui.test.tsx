@@ -83,15 +83,33 @@ function completeAllThree(): void {
 const STOP = "<stop>";
 
 type HostCall = { source: string; done: (result: unknown) => void };
+type AnnounceCall = { content: string };
 
-function stubHost(): HostCall[] {
-  const calls: HostCall[] = [];
-  const mod = {
-    play: (source: string, done: (result: unknown) => void) => void calls.push({ source, done }),
-    stop: () => void calls.push({ source: STOP, done: () => {} }),
+// ⚠ **`vi.stubGlobal("NativeModules", …)`은 전역을 통째로 덮는다.** 낭독 대역을 따로
+// 세우면 뒤에 부른 쪽이 앞의 것을 지운다 — 오디오가 죽거나(기존 케이스가 실패)
+// 발화가 안 잡힌다(새 케이스가 공허하게 통과). 그래서 이 파일의 `vi.stubGlobal`은
+// **하나**이고 그 객체가 **두 모듈을 함께** 담는다(LIB-247 계약 §5.2).
+//
+// 반환은 호출 배열 둘이다. `sourcesOf`·`stopCount`의 입력 타입은 그대로 `HostCall[]`
+// 이다 — 기존 오디오 단언이 한 줄도 흔들리지 않는다.
+function stubHost(): { audio: HostCall[]; announce: AnnounceCall[] } {
+  const audio: HostCall[] = [];
+  const announce: AnnounceCall[] = [];
+  const audioModule = {
+    play: (source: string, done: (result: unknown) => void) => void audio.push({ source, done }),
+    stop: () => void audio.push({ source: STOP, done: () => {} }),
   };
-  vi.stubGlobal("NativeModules", { AudioPlaybackModule: mod });
-  return calls;
+  const accessibilityModule = {
+    accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
+      announce.push({ content: args.content });
+      callback("announced");
+    },
+  };
+  vi.stubGlobal("NativeModules", {
+    AudioPlaybackModule: audioModule,
+    LynxAccessibilityModule: accessibilityModule,
+  });
+  return { audio, announce };
 }
 
 const sourcesOf = (calls: readonly HostCall[]): string[] => calls.map((call) => call.source);
@@ -620,37 +638,37 @@ test("완료 상태에도 <svg>가 하나도 없다", () => {
 // (계약 §9.6-2). 화면이 `question.prompt`만 내리고 `audioSource`를 안 내리면
 // 여기서만 잡힌다.
 test("현재 문항의 audioSource로 play가 불리고, 다음 문항에서 stop 뒤 새 source로 불린다", () => {
-  const calls = stubHost();
+  const { audio } = stubHost();
   renderOrdering();
 
-  expect(sourcesOf(calls)).toEqual(["ordering-1"]);
+  expect(sourcesOf(audio)).toEqual(["ordering-1"]);
 
   answerCorrectlyAndAdvance(0);
 
-  expect(sourcesOf(calls)).toEqual(["ordering-1", STOP, "ordering-2"]);
+  expect(sourcesOf(audio)).toEqual(["ordering-1", STOP, "ordering-2"]);
 });
 
 // 다른 스텝으로 렌더하면 source도 갈린다 — 한 스텝의 값이 박혀 있으면 여기서 잡힌다
 // (단언 4의 오디오 축 짝).
 test("다른 스텝으로 렌더하면 play의 source가 그 스텝의 첫 문항 것이다", () => {
-  const calls = stubHost();
+  const { audio } = stubHost();
 
   render(
     <ListeningScreen stepId="greeting" stepOrdinal={1} onExit={() => {}} onFinish={() => {}} />,
   );
 
-  expect(sourcesOf(calls)).toEqual(["greeting-1"]);
+  expect(sourcesOf(audio)).toEqual(["greeting-1"]);
 });
 
 // 추가 2 — 계약 §9.6-6. 문항을 다 마치면 `ListeningPrompt`가 언마운트되고 cleanup이
 // `stop`을 부른다. **완료 화면에서 소리가 계속 나면 안 된다.**
 test("문항 셋을 마쳐 완료가 되면 stop이 불리고 재생 조작이 트리에서 사라진다", () => {
-  const calls = stubHost();
+  const { audio } = stubHost();
   renderOrdering();
 
   completeAllThree();
 
-  expect(sourcesOf(calls)).toEqual(["ordering-1", STOP, "ordering-2", STOP, "ordering-3", STOP]);
+  expect(sourcesOf(audio)).toEqual(["ordering-1", STOP, "ordering-2", STOP, "ordering-3", STOP]);
   expect(screen.getByTestId("listening-screen-finish")).toBeInTheDocument(); // 앵커
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-playback-icon")).not.toBeInTheDocument();
@@ -660,18 +678,108 @@ test("문항 셋을 마쳐 완료가 되면 stop이 불리고 재생 조작이 �
 // 언마운트하는 것**이고, 셋을 각각 손으로 잇지 않는 근거가 cleanup 하나다. 실제로
 // 언마운트를 일으키는 것은 `App`이므로 그 경로는 `integration`이 본다 (계약 §9.7).
 test("화면을 언마운트하면 stop이 불린다 — 출구 둘과 탭 전환이 지나는 자리다", () => {
-  const calls = stubHost();
+  const { audio } = stubHost();
   const { unmount } = renderOrdering();
-  expect(stopCount(calls)).toBe(0);
+  expect(stopCount(audio)).toBe(0);
 
   unmount();
 
-  expect(sourcesOf(calls)).toEqual(["ordering-1", STOP]);
+  expect(sourcesOf(audio)).toEqual(["ordering-1", STOP]);
 });
 
 // 대역이 없어도 화면이 던지지 않는다 — 위의 스무 남짓한 테스트가 전부 대역 없이
 // 도는 것이 이미 회귀 단언이지만, **그 사실을 이름으로 한 번 못박는다** (계약 §9.3-2).
 // `NativeModules` 전역이 아예 없는 환경에서 맨 식별자 접근이면 여기서 ReferenceError다.
+// ------------------------------------------- 완료 전이 발화 (LIB-247 계약 §6.2 X-A~X-D)
+//
+// 오디오와 **같은 대역**을 지난다 — `stubHost()`가 한 객체에 두 모듈을 담는다
+// (계약 §5.2). 위 오디오 절의 단언들이 그대로 통과하는 것이 그 병합이 옳다는 증거다.
+//
+// 판정(정답/오답)은 이 채널로 나가지 않는다 — 라벨 접미사(ADR-0016 D3)가 이미
+// 지고 있고 위 판정 절이 그대로다(계약 §1.3). 여기서 보는 것은 세션의 종료 하나다.
+//
+// **X-E는 이 화면에 두지 않는다**(계약 §6.2). 실물 문항 표가 다섯 스텝 전부 비어
+// 있지 않아 듣기는 마운트-완료 상태에 **원리적으로 도달하지 않는다** — 없는 상태를
+// 만들려고 이 파일에 없는 `vi.mock`을 새로 들이지 않는다.
+
+// X-A. 완료 전이 뒤 발화가 정확히 하나이고 그 내용이 계약 §3.2 표의 문자열이다.
+test("[X-A] 완료 전이 뒤 announce가 정확히 하나이고 content가 '문항을 모두 마쳤어요, 결과 보기'다", () => {
+  const { announce } = stubHost();
+  renderOrdering();
+
+  completeAllThree();
+
+  expect(screen.getByTestId("listening-screen-complete")).toBeInTheDocument(); // 앵커
+  expect(announce).toHaveLength(1);
+  expect(announce[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+});
+
+// X-B. 전이 **전에는** 0건이다. 가드(`if (!complete) return;`)를 지우면 문항 도중에
+// 완료 발화가 나가고 이 케이스가 잡는다(계약 §6.2(h)). 같은 대역이 오디오도 받고
+// 있으므로 그쪽이 도는 동안 낭독 큐는 조용하다는 것까지 함께 진다.
+test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () => {
+  const { announce, audio } = stubHost();
+  renderOrdering();
+
+  expect(announce).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
+
+  expect(announce).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
+
+  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3"); // 앵커
+  expect(sourcesOf(audio)).toEqual(["ordering-1", STOP, "ordering-2"]); // 오디오는 그대로 돈다
+  expect(announce).toHaveLength(0);
+});
+
+// X-C. **정확히 한 번**이다. 종료 상태에 닿은 뒤 같은 props로 다시 렌더해도 호출이
+// 늘지 않는다 — dep 배열을 지워 매 렌더 실행이 되면 여기서만 잡힌다(계약 §6.2(h)).
+// props를 새로 짓지 않고 **같은 참조**를 다시 넘긴다 — 값이 갈려서 늘어난 것이
+// 아니라 렌더 자체로 늘어난 것을 보려는 것이다.
+test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 늘지 않는다", () => {
+  const { announce } = stubHost();
+  const onExit = () => {};
+  const onFinish = () => {};
+  const view = render(
+    <ListeningScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+  );
+
+  completeAllThree();
+
+  expect(announce).toHaveLength(1);
+
+  view.rerender(
+    <ListeningScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+  );
+  view.rerender(
+    <ListeningScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+  );
+
+  expect(screen.getByTestId("listening-screen-complete")).toBeInTheDocument(); // 앵커
+  expect(announce).toHaveLength(1);
+});
+
+// X-D. **소리에만 있는 낱말이 0건이다**(ADR-0016 D11-1 · 수용 기준 3). 발화 문자열을
+// 리터럴로 다시 적지 않고 **DOM에서 파생해** 짓는다 — 앞절은 종료 문구 요소의 내용,
+// 뒷절은 그 순간 화면에 실재하는 유일한 조작 단위의 `accessibility-label`이다.
+test("[X-D] 완료 발화가 종료 문구와 그 순간 유일한 조작 단위의 라벨에서 그대로 나온다", () => {
+  const { announce } = stubHost();
+  const { container } = renderOrdering();
+
+  completeAllThree();
+
+  const elements = [...container.querySelectorAll("[accessibility-element]")];
+  expect(elements.map((el) => el.getAttribute("data-testid"))).toEqual(["listening-screen-finish"]);
+
+  const completeText = screen.getByTestId("listening-screen-complete").textContent ?? "";
+  const actionLabel = elements[0]?.getAttribute("accessibility-label") ?? "";
+
+  expect(announce).toHaveLength(1);
+  expect(announce[0]?.content).toBe(`${completeText}, ${actionLabel}`);
+});
+
 test("대역 없이도 화면이 던지지 않고 재생 조작이 '듣기'로 렌더된다", () => {
   expect(() => renderOrdering()).not.toThrow();
 

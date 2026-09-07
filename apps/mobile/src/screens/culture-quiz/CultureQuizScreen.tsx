@@ -1,9 +1,13 @@
-import { useReducer } from "@lynx-js/react";
+import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import { announce } from "../../lib/accessibility";
 import { CultureQuizOption } from "./CultureQuizOption";
 import {
   choiceResultAt,
+  cultureQuizCompletionAnnouncement,
+  cultureQuizCompletionText,
+  cultureQuizExitLabel,
   cultureQuizProgressLabel,
   cultureQuizQuestionsForStep,
   cultureQuizScreenTitle,
@@ -46,6 +50,22 @@ export function CultureQuizScreen({
   const complete = isCultureQuizSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
 
+  // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번 (ADR-0016 D11-2).
+  // dep이 `complete` 하나다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이 파생값은
+  // false→true로 **한 번만** 갈린다. 그래서 재렌더로는 다시 돌지 않고, 마운트 때 이미
+  // true면 그 순간이 「처음 존재하게 되는 순간」이라 거기서 한 번 돈다.
+  // cleanup이 없다 — 낭독은 취소할 수 있는 자원이 아니다 (D11-2).
+  //
+  // 뒷절이 `맵으로`다 — 이 화면의 완료 상태에 남는 **유일한 조작 단위**가 머리의
+  // 나가는 수단이고 `결과 보기`가 없다(LIB-244 D1). 판정(정답/오답)은 여전히
+  // 발화하지 않는다 — 그것은 라벨 접미사(D3)가 진다.
+  useEffect(() => {
+    if (!complete) {
+      return;
+    }
+    announce(cultureQuizCompletionAnnouncement(cultureQuizExitLabel));
+  }, [complete]);
+
   return (
     <view className="culture-quiz-screen">
       {/* [고정] 머리 — `맵으로` + 제목. `맵으로`는 어느 시점에도 렌더된다(계약 §4.3
@@ -55,11 +75,11 @@ export function CultureQuizScreen({
           className="culture-quiz-screen-exit"
           data-testid="culture-quiz-screen-exit"
           accessibility-element={true}
-          accessibility-label="맵으로"
+          accessibility-label={cultureQuizExitLabel}
           accessibility-traits="button"
           bindtap={onExit}
         >
-          <text className="culture-quiz-screen-exit-label">맵으로</text>
+          <text className="culture-quiz-screen-exit-label">{cultureQuizExitLabel}</text>
         </view>
         <text
           className="culture-quiz-screen-title"
@@ -124,7 +144,7 @@ export function CultureQuizScreen({
               className="culture-quiz-screen-complete"
               data-testid="culture-quiz-screen-complete"
             >
-              문항을 모두 마쳤어요
+              {cultureQuizCompletionText}
             </text>
           ) : null}
         </view>

@@ -15,6 +15,9 @@ import {
   initialSentenceOrderSessionState,
   isSentenceOrderSessionComplete,
   sentenceOrderAnnouncement,
+  sentenceOrderCompletionAnnouncement,
+  sentenceOrderCompletionText,
+  sentenceOrderFinishLabel,
   sentenceOrderProgressLabel,
   sentenceOrderQuestionsForStep,
   sentenceOrderResultAt,
@@ -67,9 +70,8 @@ export function SentenceOrderScreen({
   // 완료는 파생이다(§1.7(b)의 `isSentenceOrderSessionComplete`) — 완료 시점에는
   // `questionIndex`가 문항 수와 같아 조회할 문항이 없다. 한 번만 갈라 아래에서 다시
   // 묻지 않는다(듣기와 같은 규율).
-  const question = isSentenceOrderSessionComplete(state, questions.length)
-    ? null
-    : questions[state.questionIndex];
+  const complete = isSentenceOrderSessionComplete(state, questions.length);
+  const question = complete ? null : questions[state.questionIndex];
 
   const result = question === null ? null : sentenceOrderResultAt(question, state);
 
@@ -83,6 +85,22 @@ export function SentenceOrderScreen({
     announce(sentenceOrderAnnouncement(result));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- dep은 계약이 고정한 둘뿐이다
   }, [state.questionIndex, state.phase]);
+
+  // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번 (ADR-0016 D11-2).
+  // dep이 `complete` 하나다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이 파생값은
+  // false→true로 **한 번만** 갈린다. 그래서 재렌더로는 다시 돌지 않고, 마운트 때 이미
+  // true면 그 순간이 「처음 존재하게 되는 순간」이라 거기서 한 번 돈다.
+  // cleanup이 없다 — 낭독은 취소할 수 있는 자원이 아니다 (D11-2).
+  //
+  // 위 채점 effect와 **다른 dep**이다 — 두 채널이 같은 dep을 공유하면 한쪽 조건이
+  // 다른 쪽을 끌고 온다(계약 §4.3). 채점 effect의 가드(`question === null`)가 종료
+  // 상태에서 이미 원리적으로 조용하므로 한 순간에 미는 발화는 여전히 하나다.
+  useEffect(() => {
+    if (!complete) {
+      return;
+    }
+    announce(sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel));
+  }, [complete]);
 
   return (
     <view className="sentence-order-screen">
@@ -207,7 +225,7 @@ export function SentenceOrderScreen({
               className="sentence-order-screen-complete"
               data-testid="sentence-order-screen-complete"
             >
-              문항을 모두 마쳤어요
+              {sentenceOrderCompletionText}
             </text>
           ) : null}
         </view>
@@ -247,13 +265,13 @@ export function SentenceOrderScreen({
           className="sentence-order-screen-finish"
           data-testid="sentence-order-screen-finish"
           accessibility-element={true}
-          accessibility-label="결과 보기"
+          accessibility-label={sentenceOrderFinishLabel}
           accessibility-traits="button"
           bindtap={() =>
             onFinish(stepId, sentenceOrderSessionResults(questions, state.submittedOrders))
           }
         >
-          <text className="sentence-order-screen-finish-label">결과 보기</text>
+          <text className="sentence-order-screen-finish-label">{sentenceOrderFinishLabel}</text>
         </view>
       ) : null}
     </view>
