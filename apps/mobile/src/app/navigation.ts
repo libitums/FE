@@ -72,11 +72,12 @@ export type Nav = {
   stacks: Record<Tab, Screen[]>;
 };
 
-// 다섯이다. 넷에서 `enterApp`이 늘었다.
+// 여섯이다. 다섯에서 `backToRoot`가 늘었다 (ADR-0007 D6).
 export type NavAction =
   | { type: "push"; screen: Screen }
   | { type: "back" }
   | { type: "replace"; screen: Screen }
+  | { type: "backToRoot" }
   | { type: "switchTab"; tab: Tab }
   | { type: "enterApp" };
 
@@ -137,6 +138,22 @@ export function navReducer(nav: Nav, action: NavAction): Nav {
         ...nav,
         stacks: { ...nav.stacks, [nav.tab]: [...stack.slice(0, -1), action.screen] },
       };
+    }
+    case "backToRoot": {
+      // LIB-245 (logic): 목적지는 활성 스택의 루트다 (ADR-0007 D6). `entry`는
+      // 비우지 않는다 — 비우면 `enterApp`과 갈리는 자리가 사라지고, D3이 열어 둔
+      // "진입 구간으로 되돌아가기" 보류를 여기서 몰래 닫아버리게 된다.
+      if (nav.entry.length > 0) {
+        if (nav.entry.length <= 1) {
+          return nav;
+        }
+        return { ...nav, entry: nav.entry.slice(0, 1) };
+      }
+      const stack = nav.stacks[nav.tab];
+      if (stack.length <= 1) {
+        return nav;
+      }
+      return { ...nav, stacks: { ...nav.stacks, [nav.tab]: stack.slice(0, 1) } };
     }
     case "switchTab": {
       if (nav.tab === action.tab) {
