@@ -1,0 +1,244 @@
+/* LIB-244 (design): `docs/design/culture-quiz.md` §4.2의 값. 토큰은 CSS 커스텀
+   프로퍼티로만 소비한다(ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않는다.
+
+   FE ADR-0022 D1의 3분할을 잇는 **열째** 화면이다. `.word-choice-screen`과 같은 값을
+   쓴다 — 옆에 놓일 화면과 어휘를 갈리게 하지 않는다. **갈리는 자리는 제시문의
+   typography scale 하나**이고(`dialogue-body` → `body-l`) 그 이유는 아래 `-prompt`
+   주석에 있다. 0.2.0에서 두 scale은 네 값이 전부 같아 **픽셀이 한 자리도 안 움직인다.**
+
+   **`height`를 어디에도 쓰지 않는다.** 세로 치수를 적는 자리는 `-exit`와 액션 행 버튼
+   둘뿐이고 둘 다 `min-height`(하한)다(ADR-0020 D5). Dynamic Type이 켜지면 글자만
+   커지고 상자는 안 커진다 — 잘린 내용은 사라진다(WCAG 1.4.4).
+
+   **보기 개수와 문항 수를 읽는 선언이 하나도 없다**(design.md §5). 개수 분기도
+   `nth-child`도 높이 상한도 없다 — 넘치면 `-scroll`이 받는다. */
+
+/* 화면 상자. `position: relative`를 두지 않는다 — 이 화면에 겹침 레이어가 없다. */
+.culture-quiz-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  /* Lynx의 `justify-content` 기본값은 `stretch`다(웹은 `flex-start`). 명시하지
+     않으면 고정 자식(머리·액션 행)이 늘어난다. */
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  /* 화면 여백은 축마다 값이 다르다. `padding-x`를 네 방향에 쓰면 상하가 틀린다. */
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+/* [고정] 머리 — `맵으로` + 제목 한 줄. 남는 세로를 받는 것은 `-scroll` 하나다
+   (ADR-0022 D1·D4).
+
+   `align-items: flex-start`다 — `center`가 아니다(FE ADR-0023 규칙 3). 순서 역전은
+   셋이 전부 성립할 때만 생긴다: 가로 행 + 자식의 교차 크기가 다름 +
+   `align-items: center`. `-exit`는 `min-height: spacing-48`(48)이고 제목은 `heading-s`
+   줄높이(24)라 Δ=24가 이미 있다 — `center`가 그 둘을 서로 다른 y에 놓고 VoiceOver는
+   프레임 위치로 순회하므로 순서가 뒤집힌다. `flex-start`는 그 셋 중 `center`를 지워
+   조건을 깬다. 게이트 A는 Δ≠0이므로 **안 (b)로 되갚는다** — `-title`의 `margin-top`이
+   그 값이다. `flex-shrink: 0`은 그대로 둔다 — 이건 세로 축(부모가 column)의 값이고
+   이 가로 축 문제와는 무관하다. */
+.culture-quiz-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-layout-gap-inline);
+  flex-shrink: 0;
+}
+
+/* 나가는 수단. 아이콘이 아니라 텍스트다 — 출구를 "아이콘이 크기를 못 받으면 아예 안
+   보인다"는 위험에 올리지 않는다(`docs/e2e/design-token-rendering.md`).
+
+   `flex-shrink: 0`은 **히트박스 가드**다(FE ADR-0023 규칙 2). 순서 역전과는 무관하다 —
+   그건 위 헤더의 `align-items: flex-start`가 이미 지웠다. 가로 행에서 이것이 없으면
+   `맵으로` 상자가 눌려 최소 터치 영역이 깨진다(WCAG 2.5.5 / 2.5.8). 형제인 제목은
+   반대로 기본값(`flex-shrink: 1`)을 둔다 — 줄어들어 줄바꿈으로 흘러야 하는 텍스트다. */
+.culture-quiz-screen-exit {
+  /* 고정 높이가 아니라 하한이다(ADR-0020 D5). */
+  min-height: var(--libitum-spacing-48);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.culture-quiz-screen-exit-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 화면 제목 — 다른 학습 화면과 같은 scale이다. `margin-top`은
+   `(spacing-48 − heading-s-line-height) / 2 = (48 − 24) / 2 = 12`의 **산술 결과**이지
+   `spacing-12`를 "12라서" 고른 것이 아니다(FE ADR-0023 D3 안 (b)가 요구하는 주석).
+   되돌리는 조건: `-exit`의 하한(현재 `spacing-48`)이나 이 제목의 scale(현재
+   `heading-s`)이 바뀌면 이 값이 **조용히 틀린다.** */
+.culture-quiz-screen-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  margin-top: var(--libitum-spacing-12);
+}
+
+/* [흐름] 내용 슬롯 — 남는 세로를 받는 것은 이 상자다(ADR-0022 D4).
+   `display`·`flex-direction`·`gap`을 여기 두지 않는다: `<scroll-view>`는 CSS와 무관하게
+   강제로 `linear`가 되고, linear 알고리즘에는 그 어휘가 아예 없어 **무동작으로 죽는다.**
+   무동작 선언이 의도처럼 읽히는 것이 이 저장소가 이미 한 번 문 병이다.
+
+   배경·모서리·그림자·padding이 없다 — 칠해도 배경 대비가 1.05~1.13:1이라 안 보인다.
+   위쪽 hairline만 선이고 그것이 면을 가르는 유일한 수단이다(`border-default` 3.80:1).
+
+   `justify-content: flex-start`는 둔다 — ADR-0022 D4가 넘치는 상자 전부를
+   `flex-start`로 닫았고 `LinearSupportFlexStyleMode()` 게이트가 이 앱에서 켜져 있는지
+   확인하지 못했다(소스에서 초기값을 확인하지 못했으면 적는다, ADR-0022 D3).
+   세로 중앙 정렬은 쓰지 않는다 — 위쪽 내용을 스크롤 원점 밖으로 밀어 닿을 수 없게
+   만든다. */
+.culture-quiz-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+/* `<scroll-view>`의 직계 자식은 이 상자 하나다. flex 어휘와 `gap`이 여기 산다 —
+   `-scroll`이 강제 linear라 그 자리에서는 무동작이기 때문이다. `flex: 1`·`flex-shrink`를
+   여기 두지 않는다 — 두면 스크롤 영역이 뷰포트 높이에 갇혀 넘칠 수 없다. */
+.culture-quiz-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+}
+
+/* 진행 표시 — 막대가 아니라 텍스트다. 트랙에 쓸 색이 없고(`gray-300`이 배경 대비
+   1.13:1), 막대는 죽은 채널(`accessibility-value`)을 요구한다(ADR-0016 D3). **문항 수가
+   모르는 값이라는 것도 같은 방향으로 민다** — 칸 나눈 막대는 총수를 알아야 하고,
+   텍스트는 총수가 몇이든 같은 상자에 들어간다(design.md §5.2). */
+.culture-quiz-screen-progress {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 제시문 — `dialogue-body`가 아니라 `body-l`이다. **이것이 단어 선택과 갈리는 유일한
+   자리**이고, 0.2.0에서 두 scale은 네 값(16 / 500 / 24 / 0px)이 전부 같아 **렌더가
+   문자 그대로 같다.** 갈리는 것은 뜻이다: `dialogue-body`는 발화의 scale인데
+   (`.listening-prompt-text`) 문화 퀴즈가 묻는 것은 발화가 아니라 맥락이고, 짝이 되는
+   `.culture-screen-paragraph`가 같은 이유로 `body-l`을 골랐다. 대가는 패키지가 두
+   scale을 갈라 놓는 날 이 화면이 단어 선택이 아니라 **문화 학습을 따라 움직인다**는
+   것이고, 그것이 의도다(design.md §2.3).
+
+   폭·높이·줄 제한을 선언하지 않는다 — 카드(면)도 두지 않는다. */
+.culture-quiz-screen-prompt {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* 지시문 — `.word-choice-screen-instruction`과 같은 값(`body-m` +
+   `fg-neutral-muted`, 대비 6.53:1). `fg-neutral-subtle`은 3.38:1로 AA 미달이라
+   쓰지 않는다. */
+.culture-quiz-screen-instruction {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 보기 목록 — 이 상자가 지는 값은 간격 하나다. **보기 개수를 읽는 선언이 없다**:
+   그리드도 열 나눔도 `nth-child`도 높이 상한도 없고, N이 커지면 `-scroll`이 받는다
+   (design.md §5.1). `gap`은 컨테이너에 하나라 줄이면 모든 행에 동시에 걸린다 —
+   개수로 조절하지 않는다. */
+.culture-quiz-screen-options {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 완료 문구. 점수·정답 수를 표시하지 않는다 — 게임화는 범위 밖이다. 문항이 0개면
+   첫 렌더가 곧 완료라 이 문구와 출구만 선다 — **별도의 빈 상태 화면을 만들지 않는다**
+   (design.md §4.2.4). */
+.culture-quiz-screen-complete {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* [고정] 액션 행 — `.word-choice-screen-next`·`.listening-screen-next`·
+   `.step-sheet-start`·`.assessment-screen-exit`와 문자 그대로 같은 값이다. 저장소에
+   주 버튼 스타일이 하나뿐이고 보조 버튼 스타일은 정의된 적이 없다.
+
+   `brand-primary`가 아니라 `brand-strong`이다: 흰 라벨이 `brand-primary` 위에서
+   3.02:1로 AA 미달이고, `brand-strong` 위에서 5.46:1이다.
+
+   눌림(pressed) 상태를 선언하지 않는다 — `brand-strong` 위의 눌림 색이 팔레트에 없다
+   (`brand-primary-pressed`가 `brand-strong`과 문자 그대로 같은 값이다). 지어내지
+   않는다(ADR-0014 D4 · `docs/adr/README.md` 보류 표). */
+.culture-quiz-screen-next {
+  background: var(--libitum-color-brand-strong);
+  /* 고정 높이가 아니라 하한이다(ADR-0020 D5). */
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.culture-quiz-screen-next-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+/* 완료 뒤의 출구 — `-next`와 같은 값이다.
+
+   ⚠ **이 블록의 존재 여부는 계약이 정한다.** 문화 퀴즈가 진행에 거는 방식이 아직
+   미정이라(`docs/screens.md` 미정 표) 완료 뒤 출구가 `결과 보기`인지 머리의 `맵으로`
+   하나로 남는지가 정해지지 않았다. **시각은 어느 쪽이든 같고 라벨 문자열만 갈린다** —
+   출구를 머리에 두기로 하면 이 블록과 짝 라벨 블록을 지운다(design.md §4.2.3). */
+.culture-quiz-screen-finish {
+  background: var(--libitum-color-brand-strong);
+  /* 고정 높이가 아니라 하한이다(ADR-0020 D5). */
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.culture-quiz-screen-finish-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
