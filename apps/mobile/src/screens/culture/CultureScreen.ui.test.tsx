@@ -36,30 +36,12 @@ const SINGLE_PARAGRAPH_NARRATIVE: CultureNarrative = {
   paragraphs: ["단 하나뿐인 문단이다."],
 };
 
+// LIB-244 §5.4 — `onStartQuiz`는 `CultureScreenProps`의 필수 필드다(액션 행이
+// 조건 없이 렌더되므로 콜백이 비면 조용히 죽은 버튼이 된다). 헬퍼 하나로 기본값을
+// 채워 넘긴다 — 예전에는 `onStartQuiz`를 아직 없는 필드로 보고 excess-property
+// 우회(변수에 담아 스프레드)를 쓰는 헬퍼가 따로 있었다. 그 필드가 실제로 필수가
+// 된 뒤에는 우회가 필요 없다 — 걷어내고 하나로 합쳤다.
 function renderScreen(
-  overrides: {
-    stepOrdinal?: number;
-    narrative?: CultureNarrative;
-    onExit?: () => void;
-  } = {},
-) {
-  return render(
-    <CultureScreen
-      stepOrdinal={overrides.stepOrdinal ?? 3}
-      narrative={overrides.narrative ?? FIXTURE_NARRATIVE}
-      onExit={overrides.onExit ?? (() => {})}
-      onStartQuiz={() => {}}
-    />,
-  );
-}
-
-// LIB-244 D3 — `onStartQuiz`는 아직 `CultureScreenProps`에 없다(§5.4가 그 필드를
-// 더할 몫이고, 이 회차는 red를 세우는 회차라 구현을 고치지 않는다). 프로퍼티 객체를
-// 변수에 먼저 담아 스프레드로 넘긴다 — 리터럴을 그 자리에서 바로 넘기면 TS의
-// 「신선한 객체 리터럴」excess-property 검사에 걸린다. 변수를 거치면 그 검사가
-// 적용되지 않는다(TS 핸드북의 공식 우회법). 구현이 필드를 더하는 날 이 우회가
-// 필요 없어진다 — 지워도 그만이다.
-function renderScreenWithQuiz(
   overrides: {
     stepOrdinal?: number;
     narrative?: CultureNarrative;
@@ -67,13 +49,14 @@ function renderScreenWithQuiz(
     onStartQuiz?: () => void;
   } = {},
 ) {
-  const props = {
-    stepOrdinal: overrides.stepOrdinal ?? 3,
-    narrative: overrides.narrative ?? FIXTURE_NARRATIVE,
-    onExit: overrides.onExit ?? (() => {}),
-    onStartQuiz: overrides.onStartQuiz ?? (() => {}),
-  };
-  return render(<CultureScreen {...props} />);
+  return render(
+    <CultureScreen
+      stepOrdinal={overrides.stepOrdinal ?? 3}
+      narrative={overrides.narrative ?? FIXTURE_NARRATIVE}
+      onExit={overrides.onExit ?? (() => {})}
+      onStartQuiz={overrides.onStartQuiz ?? (() => {})}
+    />,
+  );
 }
 
 // ---------------------------------------------------------------- X1: 제목
@@ -184,7 +167,7 @@ test("[X8] 화면 전체에 accessibility-elements-hidden이 0건이다", () => 
 
 test("[C1] culture-screen-quiz가 조건 없이 있고 라벨 '퀴즈 풀기'·traits='button'이며 탭하면 onStartQuiz가 정확히 한 번 불린다", () => {
   const onStartQuiz = vi.fn<() => void>();
-  renderScreenWithQuiz({ onStartQuiz });
+  renderScreen({ onStartQuiz });
 
   const quiz = screen.getByTestId("culture-screen-quiz");
   expect(quiz).toHaveAttribute("accessibility-element", "true");
@@ -199,16 +182,33 @@ test("[C1] culture-screen-quiz가 조건 없이 있고 라벨 '퀴즈 풀기'·t
 // 조건 없이 렌더된다는 것을 문단이 하나뿐인 fixture에서도 짓는다 — 내용에 따라
 // 조건부로 숨는 자리가 아니다.
 test("[C1] 문단이 하나뿐인 fixture에서도 culture-screen-quiz가 있다", () => {
-  renderScreenWithQuiz({ narrative: SINGLE_PARAGRAPH_NARRATIVE });
+  renderScreen({ narrative: SINGLE_PARAGRAPH_NARRATIVE });
 
   expect(screen.getByTestId("culture-screen-quiz")).toBeInTheDocument();
 });
 
 test("[C2] 액션 행이 생겨도 '맵으로'가 여전히 있다 — 나가는 수단이 걷히지 않는다", () => {
-  renderScreenWithQuiz();
+  renderScreen();
 
   const exit = screen.getByTestId("culture-screen-exit");
   expect(exit).toHaveAttribute("accessibility-label", "맵으로");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
   expect(screen.getByTestId("culture-screen-quiz")).toBeInTheDocument();
+});
+
+// 계약 §10-5(e) — 액션 행이 `<scroll-view>` **밖**의 화면 직계 자식이다(ADR-0022
+// D1). 존재·라벨·traits·콜백만으로는 이 구조를 못 잡는다 — 누가 `culture-screen-quiz`를
+// `<scroll-view culture-screen-scroll>` 안으로 옮겨도 C1·C2는 그대로 초록으로
+// 남는다. 그러면 액션 행이 스크롤에 딸려 사라지는데(ADR-0022가 막으려는 바로 그
+// 사고) 아무도 못 잡는다. 형태의 정본은
+// `CultureQuizScreen.ui.test.tsx`의 `-scroll` 직계 자식 케이스다.
+test("[C3] culture-screen-quiz가 culture-screen-scroll 밖의 화면 직계 자식이다", () => {
+  const { container } = renderScreen();
+
+  const screenRoot = container.children[0] as HTMLElement;
+  const quiz = screen.getByTestId("culture-screen-quiz");
+  const scroll = screen.getByTestId("culture-screen-scroll");
+
+  expect(quiz.parentElement).toBe(screenRoot);
+  expect(scroll).not.toContainElement(quiz);
 });

@@ -1,4 +1,4 @@
-import { expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { JourneyStepId } from "../journey-map/journey-map";
@@ -44,6 +44,35 @@ vi.mock("./culture-quiz", async (importOriginal) => {
     cultureQuizQuestionsForStep: (id: JourneyStepId) =>
       id === "ordering" ? ORDERING_QUESTIONS : [],
   };
+});
+
+// ------------------------------------------------------------ announce 대역
+//
+// 형태의 정본은 `SentenceOrderScreen.ui.test.tsx`의 `stubAnnounce()`다.
+// `lib/accessibility.ts`가 만지는 접점 하나(`NativeModules.LynxAccessibilityModule`)에
+// 대역을 둔다 — `lib/accessibility.ts` 자체를 mock하지 않는다. 이 화면은 announce를
+// 쓰지 않으므로(계약 §4.6 「어디에도 announce 0건」) 이 대역은 항상 호출 0건을
+// 확인하는 데만 쓰인다.
+
+type AnnounceCall = { content: string };
+
+function stubAnnounce(): AnnounceCall[] {
+  const calls: AnnounceCall[] = [];
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
+        calls.push({ content: args.content });
+        callback("announced");
+      },
+    },
+  });
+  return calls;
+}
+
+afterEach(() => {
+  // announce 대역이 세운 전역을 원복한다 — 지우지 않으면 다른 파일로 샌다
+  // (계약 §3.2 「announce 대역은 테스트마다 원복한다」).
+  vi.unstubAllGlobals();
 });
 
 function renderOrdering(overrides: { onExit?: () => void } = {}) {
@@ -255,9 +284,15 @@ test("[X10] -scroll의 직계 자식이 정확히 하나이고 그 자식이 화
 // ---------------------------------------------------------------- AC14(e): announce 0건
 
 // 화면 파일이 애초에 announce를 참조하지 않는다 — 그 사실을 이 파일에서도 실행으로
-// 짓는다. 렌더·응답·완료 전체 경로에서 예외 없이 통과해야 한다(계약 §4.6 「어디에도
-// announce 0건」).
-test("전체 흐름(응답 → 다음 → 완료)에서 예외 없이 렌더된다 — announce를 쓰지 않는다", () => {
+// 짓는다. `announce`는 호스트가 없어도 던지지 않고 `"unavailable"`을 돌려주므로
+// (lib/accessibility.ts) `not.toThrow()` 하나만으로는 「호출 0건」을 못 잡는다 —
+// 화면이 announce를 부르든 안 부르든 이 단언은 그대로 초록이다. 그래서
+// `NativeModules.LynxAccessibilityModule`에 대역을 두고 실제 호출 횟수를 센다.
+// 렌더·응답·완료 전체 경로에서 예외도 없고 announce 호출도 없어야 한다(계약 §4.6
+// 「어디에도 announce 0건」).
+test("전체 흐름(응답 → 다음 → 완료)에서 예외 없이 렌더되고 announce가 한 번도 불리지 않는다", () => {
+  const calls = stubAnnounce();
+
   expect(() => {
     renderOrdering();
     fireEvent.tap(screen.getByTestId("culture-quiz-option-0"), {});
@@ -265,4 +300,6 @@ test("전체 흐름(응답 → 다음 → 완료)에서 예외 없이 렌더된�
     fireEvent.tap(screen.getByTestId("culture-quiz-option-0"), {});
     fireEvent.tap(screen.getByTestId("culture-quiz-screen-next"), {});
   }).not.toThrow();
+
+  expect(calls).toHaveLength(0);
 });
