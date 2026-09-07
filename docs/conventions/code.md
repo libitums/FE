@@ -195,6 +195,31 @@ expect(indicator).not.toHaveAttribute("accessibility-elements-hidden");
 `not.toHaveAttribute(name, value)`는 *"그 값이 아니다"* 만 단언하므로 **속성이 아예 없어도
 통과한다.** 부재를 보려면 **이름 하나만** 넘긴다.
 
+**`toHaveTextContent`도 같은 방식으로 공허해진다 — 이쪽 원인은 부분 일치다.**
+`toHaveTextContent(X)`는 *"X를 품는다"* 를 단언한다. 그래서 **다른 기대값이 X를 부분
+문자열로 품는 자리에서는 이 매처가 값을 가르지 못한다** — 값이 뒤집혀도 초록이다.
+**이 저장소에 그런 쌍이 실제로 있다**: 평가 화면의 판정 낱말이 `통과`/`미통과`이고
+**`"미통과"`가 `"통과"`를 품는다.** `toHaveTextContent("통과")`로 세운 판정 단언이
+라벨이 뒤집힌 상태에서도 통과했다.
+
+**그때의 형태는 `textContent`의 정확 비교(`toBe`)다.** 그리고 **`getByTestId`가 존재
+앵커를 겸하므로** 위의 `querySelector` 사례와 달리 앵커를 따로 걸지 않는다 — 못 찾으면
+예외가 난다.
+
+```ts
+// 부분 일치라 "미통과"에도 통과한다 — 판정을 가르지 못한다
+expect(screen.getByTestId("assessment-screen-verdict")).toHaveTextContent("통과");
+
+// 낱말을 지는 잎 노드를 정확 비교한다. getByTestId가 존재 앵커를 겸한다
+expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").toBe("통과");
+```
+
+**`toHaveTextContent`를 걷어내는 것이 아니다** — 위 표의 왼쪽에 그대로 있다.
+**기대값 집합에 서로를 품는 낱말이 있는지 먼저 보고**, 있으면 정확 비교로 간다.
+없으면 부분 일치가 읽기 쉬운 형태다. **잡는 자리를 함께 옮긴다** — 판정을 지는 것은
+낱말을 담은 **잎 노드**이지 그것을 감싼 상자가 아니다. 상자에 걸면 형제 텍스트가 섞여
+들어와 같은 종류의 거짓 초록이 다시 생긴다.
+
 **강제 수단은 없다.** oxlint 규칙으로 막을 수 없어 PR diff를 읽을 때 본다.
 등록 위치는 `apps/mobile/vitest.setup.ts`이고 이유가 그 주석에 있다.
 
