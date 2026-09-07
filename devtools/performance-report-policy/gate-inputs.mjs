@@ -1,3 +1,9 @@
+const ALL_ZERO_SHA = "0000000000000000000000000000000000000000";
+
+function isMissingRef(value) {
+  return !value || value === ALL_ZERO_SHA;
+}
+
 /**
  * 환경변수로 모드를 가른다. all-zero SHA는 값이 없는 것으로 본다
  * (GitHub이 새 브랜치 push의 `before`로 all-zero를 준다).
@@ -5,7 +11,12 @@
  * @returns {{ mode: "ci", base: string, head: string } | { mode: "local" }}
  */
 export function resolveGateMode(env) {
-  throw new Error("not implemented: resolveGateMode");
+  const base = env?.POLICY_BASE;
+  const head = env?.POLICY_HEAD;
+  if (!isMissingRef(base) && !isMissingRef(head)) {
+    return { mode: "ci", base, head };
+  }
+  return { mode: "local" };
 }
 
 /**
@@ -15,7 +26,31 @@ export function resolveGateMode(env) {
  * @returns {Array<{ status: string, path: string, oldPath?: string }>}
  */
 export function parsePorcelain(text) {
-  throw new Error("not implemented: parsePorcelain");
+  if (!text) {
+    return [];
+  }
+
+  const fields = text.split("\0");
+  if (fields.at(-1) === "") {
+    fields.pop();
+  }
+
+  const changes = [];
+  for (let index = 0; index < fields.length;) {
+    const field = fields[index++];
+    if (!field) {
+      continue;
+    }
+    const status = field.slice(0, 2);
+    const rest = field.slice(3);
+    if (status[0] === "R" || status[0] === "C") {
+      const path = fields[index++];
+      changes.push({ status, oldPath: rest, path });
+      continue;
+    }
+    changes.push({ status, path: rest });
+  }
+  return changes;
 }
 
 /**
@@ -25,5 +60,38 @@ export function parsePorcelain(text) {
  * @returns {{ changedFiles: string[], changedHeadFiles: string[], deleted: string[] }}
  */
 export function mergeChangeSets(sets) {
-  throw new Error("not implemented: mergeChangeSets");
+  const committed = sets?.committed ?? [];
+  const working = sets?.working ?? [];
+
+  const changedFiles = [];
+  const changedHeadFiles = [];
+  const deleted = [];
+  const changedFilesSeen = new Set();
+  const changedHeadFilesSeen = new Set();
+  const deletedSeen = new Set();
+
+  for (const entry of [...committed, ...working]) {
+    const isDeleted = entry.status.includes("D");
+
+    if (entry.oldPath && !changedFilesSeen.has(entry.oldPath)) {
+      changedFilesSeen.add(entry.oldPath);
+      changedFiles.push(entry.oldPath);
+    }
+    if (!changedFilesSeen.has(entry.path)) {
+      changedFilesSeen.add(entry.path);
+      changedFiles.push(entry.path);
+    }
+
+    if (isDeleted) {
+      if (!deletedSeen.has(entry.path)) {
+        deletedSeen.add(entry.path);
+        deleted.push(entry.path);
+      }
+    } else if (!changedHeadFilesSeen.has(entry.path)) {
+      changedHeadFilesSeen.add(entry.path);
+      changedHeadFiles.push(entry.path);
+    }
+  }
+
+  return { changedFiles, changedHeadFiles, deleted };
 }
