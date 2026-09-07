@@ -62,18 +62,16 @@ function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
 
-const allForms: readonly LearningForm[] = ["listening", "sentence-order", "word-choice"];
+const allForms: readonly LearningForm[] = ["listening", "sentence-order", "word-choice", "culture"];
 
 // LIB-238(u21): 아래 두 표는 `Record<LearningForm, …>`이라 `LearningForm`에 넷째
 // 멤버 `culture`가 늘면서 tsc(TS2741)가 `culture` 키를 요구한다 —
 // `journey-map.unit.test.ts`의 `questionCountForForm`이 이미 겪은 것과 같은 자리다.
 // 값은 지어낸 것이 아니라 실물이다: `culture-screen-title`은 문화 화면
 // (`CultureScreen.tsx`)의 실제 `data-testid`이고, `cultureScreenTitle(ordinal)`은
-// `${ordinal}단계 · 문화`를 돌려주는 실제 제목 함수다. 다만 위 `allForms`는 `Record`가
-// 아니라 평범한 배열이라 tsc가 넷째 값을 요구하지 않으므로, 위 두 표와 달리 자동으로
-// 늘지 않는다 — 그래서 오늘 `test.each(allForms)`는 이 두 `culture` 항목을 도는
-// 케이스가 없다. 결함이 아니라 문화를 `allForms`에 넣을지가 아직 정해지지 않았다는
-// 뜻이고(넣으면 도는 케이스가 늘어난다), 그 결정은 이 단위가 내리지 않는다.
+// `${ordinal}단계 · 문화`를 돌려주는 실제 제목 함수다. 위 `allForms`는 이제 넷이고
+// `culture`를 담고 있으므로, `test.each(allForms)`가 이 두 `culture` 항목을 도는
+// 케이스가 실제로 있다 — `test.each`가 `allForms`를 그대로 순회하기 때문이다.
 const titleTestIdByForm: Record<LearningForm, string> = {
   listening: "listening-screen-title",
   "sentence-order": "sentence-order-screen-title",
