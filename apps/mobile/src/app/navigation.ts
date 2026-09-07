@@ -72,11 +72,12 @@ export type Nav = {
   stacks: Record<Tab, Screen[]>;
 };
 
-// 다섯이다. 넷에서 `enterApp`이 늘었다.
+// 여섯이다. 다섯에서 `backToRoot`가 늘었다 (ADR-0007 D6).
 export type NavAction =
   | { type: "push"; screen: Screen }
   | { type: "back" }
   | { type: "replace"; screen: Screen }
+  | { type: "backToRoot" }
   | { type: "switchTab"; tab: Tab }
   | { type: "enterApp" };
 
@@ -137,6 +138,10 @@ export function navReducer(nav: Nav, action: NavAction): Nav {
         ...nav,
         stacks: { ...nav.stacks, [nav.tab]: [...stack.slice(0, -1), action.screen] },
       };
+    }
+    case "backToRoot": {
+      // LIB-245 (logic-scaffold): 자리만 있다. 무동작이다 — 전이는 다음 단계(logic)가 채운다.
+      return nav;
     }
     case "switchTab": {
       if (nav.tab === action.tab) {
