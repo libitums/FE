@@ -291,9 +291,9 @@ describe("cultureQuizSessionReducer", () => {
   it("전이가 있으면 새 객체를 돌려준다 — 같은 참조가 아니다", () => {
     const state: CultureQuizSessionState = { questionIndex: 0, selectedChoiceIndex: null };
 
-    expect(
-      cultureQuizSessionReducer(state, { type: "selectChoice", choiceIndex: 1 }),
-    ).not.toBe(state);
+    expect(cultureQuizSessionReducer(state, { type: "selectChoice", choiceIndex: 1 })).not.toBe(
+      state,
+    );
   });
 
   it("부수효과 없음 — 호출 뒤 입력 state 객체가 변형되지 않는다", () => {
