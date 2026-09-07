@@ -47,6 +47,10 @@ export type Tab = "home" | "journey" | "roleplay" | "settings";
 // 문자 그대로 같다 — 필드는 `stepId` 하나이고 `stepOrdinal`도 `results`도 넣지
 // 않는다. 삽입 지점은 `word-choice`와 `assessment` 사이다 — 마지막에 넣으면
 // `assessment` 줄의 세미콜론을 옮겨야 해서 기존 줄이 바뀐다.
+// LIB-244: 열째 멤버가 는다. 필드는 `stepId` 하나다 — `stepOrdinal`도 `results`도
+// 넣지 않는다(계약 §5.1). 들어오는 전이는 문화 학습의 액션 행 하나이고
+// `learningScreenFor`에는 `case`를 더하지 않는다 — 문화 퀴즈는 스텝에 배정되는
+// `LearningForm`이 아니다(D6).
 export type Screen =
   | { name: "home" }
   | { name: "journey-map" }
@@ -56,6 +60,7 @@ export type Screen =
   | { name: "sentence-order"; stepId: JourneyStepId }
   | { name: "word-choice"; stepId: JourneyStepId }
   | { name: "culture"; stepId: JourneyStepId }
+  | { name: "culture-quiz"; stepId: JourneyStepId }
   | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] };
 
 // docs/screens.md 130~136행과 ADR-0007 D3이 적은 모양 그대로다. 필드를 더하지 않는다.

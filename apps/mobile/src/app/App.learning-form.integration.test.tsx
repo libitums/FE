@@ -8,6 +8,7 @@ import { listeningScreenTitle } from "../screens/listening/listening";
 import { sentenceOrderScreenTitle } from "../screens/sentence-order/sentence-order";
 import { wordChoiceScreenTitle } from "../screens/word-choice/word-choice";
 import { cultureScreenTitle } from "../screens/culture/culture";
+import { cultureQuizScreenTitle } from "../screens/culture-quiz/culture-quiz";
 
 // LIB-239 (integration-design, u2): 결선(`App.tsx`)이 배정표(`learningFormForStep`)를
 // **실제로 경유하는지**를 짓는다. 오늘의 `onStartStep`은 리터럴
@@ -178,4 +179,37 @@ test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배�
   );
   expect(screen.queryByTestId("sentence-order-screen-title")).not.toBeInTheDocument();
   expect(screen.queryByTestId("word-choice-screen-title")).not.toBeInTheDocument();
+});
+
+// LIB-244 (integration-design) §8.3(b)(c) · AC 16 — 문화 학습의 액션 행이 문화
+// 퀴즈를 여는 전이와, 퀴즈의 `맵으로`가 문화 학습으로(맵이 아니라) 돌아오는 것을
+// 짓는다. 배정을 "culture"로 대역해 문화 학습에 닿는 것은 위 케이스들과 같은
+// seam이다 — 이 케이스는 그 뒤에 이어지는 문화 학습 → 문화 퀴즈 → 문화 학습
+// 전이 하나를 더한다. `learningFormByStep`은 손대지 않는다(D6) — 대역이 배정을
+// 대신한다.
+test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵으로가 문화 학습으로 돌아온다(맵이 아니다)", () => {
+  formStub.current = "culture";
+  render(<App />);
+
+  startStep("ordering");
+
+  // 문화 학습이 열렸다.
+  expect(screen.getByTestId("culture-screen-title")).toHaveTextContent(
+    cultureScreenTitle(journeyStepOrdinal("ordering")),
+  );
+
+  // 퀴즈 풀기 → 문화 퀴즈가 열린다.
+  fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
+  expect(screen.getByTestId("culture-quiz-screen-title")).toHaveTextContent(
+    cultureQuizScreenTitle(journeyStepOrdinal("ordering")),
+  );
+  expect(screen.queryByTestId("culture-screen-title")).not.toBeInTheDocument();
+
+  // 퀴즈의 맵으로 → 문화 학습으로 돌아온다(D3.1의 push 판정). 맵이 아니다.
+  fireEvent.tap(screen.getByTestId("culture-quiz-screen-exit"), {});
+  expect(screen.getByTestId("culture-screen-title")).toHaveTextContent(
+    cultureScreenTitle(journeyStepOrdinal("ordering")),
+  );
+  expect(screen.queryByTestId("culture-quiz-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
 });
