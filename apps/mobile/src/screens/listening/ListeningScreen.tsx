@@ -1,6 +1,7 @@
-import { useReducer } from "@lynx-js/react";
+import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import { announce } from "../../lib/accessibility";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningChoice } from "./ListeningChoice";
 import {
@@ -8,6 +9,9 @@ import {
   hasAnswered,
   initialListeningSessionState,
   isSessionComplete,
+  listeningCompletionAnnouncement,
+  listeningCompletionText,
+  listeningFinishLabel,
   listeningScreenTitle,
   listeningSessionReducer,
   questionProgressLabel,
@@ -48,9 +52,20 @@ export function ListeningScreen({
 
   // 완료는 파생이다 (계약 §1.3(c)). 완료 시점에는 `questionIndex`가 문항 수와 같아
   // 조회할 문항이 없다 — 그래서 여기서 한 번만 갈라 아래에서 다시 묻지 않는다.
-  const question = isSessionComplete(state, questions.length)
-    ? null
-    : questions[state.questionIndex];
+  const complete = isSessionComplete(state, questions.length);
+  const question = complete ? null : questions[state.questionIndex];
+
+  // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번 (ADR-0016 D11-2).
+  // dep이 `complete` 하나다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이 파생값은
+  // false→true로 **한 번만** 갈린다. 그래서 재렌더로는 다시 돌지 않고, 마운트 때 이미
+  // true면 그 순간이 「처음 존재하게 되는 순간」이라 거기서 한 번 돈다.
+  // cleanup이 없다 — 낭독은 취소할 수 있는 자원이 아니다 (D11-2).
+  useEffect(() => {
+    if (!complete) {
+      return;
+    }
+    announce(listeningCompletionAnnouncement(listeningFinishLabel));
+  }, [complete]);
 
   return (
     <view className="listening-screen">
@@ -129,7 +144,7 @@ export function ListeningScreen({
 
           {question === null ? (
             <text className="listening-screen-complete" data-testid="listening-screen-complete">
-              문항을 모두 마쳤어요
+              {listeningCompletionText}
             </text>
           ) : null}
         </view>
@@ -166,13 +181,13 @@ export function ListeningScreen({
           className="listening-screen-finish"
           data-testid="listening-screen-finish"
           accessibility-element={true}
-          accessibility-label="결과 보기"
+          accessibility-label={listeningFinishLabel}
           accessibility-traits="button"
           bindtap={() =>
             onFinish(stepId, sessionAnswerResults(questions, state.answeredChoiceIndexes))
           }
         >
-          <text className="listening-screen-finish-label">결과 보기</text>
+          <text className="listening-screen-finish-label">{listeningFinishLabel}</text>
         </view>
       ) : null}
     </view>

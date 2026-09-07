@@ -1,12 +1,16 @@
-import { useReducer } from "@lynx-js/react";
+import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import { announce } from "../../lib/accessibility";
 import { WordChoiceOption } from "./WordChoiceOption";
 import {
   choiceResultAt,
   hasAnswered,
   initialWordChoiceSessionState,
   isWordChoiceSessionComplete,
+  wordChoiceCompletionAnnouncement,
+  wordChoiceCompletionText,
+  wordChoiceFinishLabel,
   wordChoiceProgressLabel,
   wordChoiceQuestionsForStep,
   wordChoiceScreenTitle,
@@ -52,9 +56,20 @@ export function WordChoiceScreen({
 
   // 완료는 파생이다(계약 §1.3(c)와 같은 규율). 완료 시점에는 `questionIndex`가
   // 문항 수와 같아 조회할 문항이 없다 — 여기서 한 번만 갈라 아래에서 다시 묻지 않는다.
-  const question = isWordChoiceSessionComplete(state, questions.length)
-    ? null
-    : questions[state.questionIndex];
+  const complete = isWordChoiceSessionComplete(state, questions.length);
+  const question = complete ? null : questions[state.questionIndex];
+
+  // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번 (ADR-0016 D11-2).
+  // dep이 `complete` 하나다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이 파생값은
+  // false→true로 **한 번만** 갈린다. 그래서 재렌더로는 다시 돌지 않고, 마운트 때 이미
+  // true면 그 순간이 「처음 존재하게 되는 순간」이라 거기서 한 번 돈다.
+  // cleanup이 없다 — 낭독은 취소할 수 있는 자원이 아니다 (D11-2).
+  useEffect(() => {
+    if (!complete) {
+      return;
+    }
+    announce(wordChoiceCompletionAnnouncement(wordChoiceFinishLabel));
+  }, [complete]);
 
   return (
     <view className="word-choice-screen">
@@ -138,7 +153,7 @@ export function WordChoiceScreen({
 
           {question === null ? (
             <text className="word-choice-screen-complete" data-testid="word-choice-screen-complete">
-              문항을 모두 마쳤어요
+              {wordChoiceCompletionText}
             </text>
           ) : null}
         </view>
@@ -170,13 +185,13 @@ export function WordChoiceScreen({
           className="word-choice-screen-finish"
           data-testid="word-choice-screen-finish"
           accessibility-element={true}
-          accessibility-label="결과 보기"
+          accessibility-label={wordChoiceFinishLabel}
           accessibility-traits="button"
           bindtap={() =>
             onFinish(stepId, wordChoiceSessionResults(questions, state.answeredChoiceIndexes))
           }
         >
-          <text className="word-choice-screen-finish-label">결과 보기</text>
+          <text className="word-choice-screen-finish-label">{wordChoiceFinishLabel}</text>
         </view>
       ) : null}
     </view>
