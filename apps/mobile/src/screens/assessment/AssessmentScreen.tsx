@@ -101,7 +101,10 @@ export function AssessmentScreen({
               content={verdictIconByVerdict[verdict]}
               current-color={verdictIconColorByVerdict[verdict]}
             />
-            <text className="assessment-screen-verdict-label">
+            <text
+              className="assessment-screen-verdict-label"
+              data-testid="assessment-screen-verdict-label"
+            >
               {assessmentVerdictLabel(verdict)}
             </text>
           </view>

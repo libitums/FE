@@ -99,21 +99,38 @@ test("문항 행의 data-result가 각 자리의 정오와 일치한다", () => 
 });
 
 // ---------------------------------------------------------------- 종합 판정 (수용 기준 2)
+//
+// 판정 낱말 단언은 lib-251 계약(§3.1 조항 C1 · §3.2 조항 C2 · §4.2 U1~U3)이 정확 일치로
+// 세운다. `toHaveTextContent`는 부분 일치라 "미통과"가 "통과" 단언을 조용히 통과시킨다
+// (`"미통과" ⊃ "통과"`) — 그래서 판정 낱말은 상위 상자가 아니라
+// `assessment-screen-verdict-label` 노드의 `textContent`를 정확 비교(`toBe`)로 본다.
+// `data-verdict`는 별도 채널(속성)이라 그대로 남긴다 — 둘 다 지우지 않고 강화만 한다
+// (계약 §3.3 C3, 형태의 정본은 `ListeningScreen.ui.test.tsx`의 [X-D]).
 
-test("2/3 정답이면 data-verdict='passed'이고 낱말이 '통과'다", () => {
+// [U1] 계약 §4.2.
+test("[U1] 2/3 정답이면 data-verdict='passed'이고 판정 낱말이 정확히 '통과'다", () => {
   renderScreen({ results: PASSING_RESULTS });
 
   const verdict = screen.getByTestId("assessment-screen-verdict");
   expect(verdict).toHaveAttribute("data-verdict", "passed");
-  expect(verdict).toHaveTextContent("통과");
+  expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").toBe("통과");
 });
 
-test("1/3 정답이면 data-verdict='failed'이고 낱말이 '미통과'다", () => {
+// [U2] 계약 §4.2.
+test("[U2] 1/3 정답이면 data-verdict='failed'이고 판정 낱말이 정확히 '미통과'다", () => {
   renderScreen({ results: FAILING_RESULTS });
 
   const verdict = screen.getByTestId("assessment-screen-verdict");
   expect(verdict).toHaveAttribute("data-verdict", "failed");
-  expect(verdict).toHaveTextContent("미통과");
+  expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").toBe("미통과");
+});
+
+// [U3] 계약 §4.2 — 새 testid가 상자를 대체한 것이 아니라 상자 안의 잎이다.
+test("[U3] 판정 낱말 노드가 판정 상자(assessment-screen-verdict) 안에 있다", () => {
+  renderScreen({ results: PASSING_RESULTS });
+
+  const box = screen.getByTestId("assessment-screen-verdict");
+  expect(within(box).getByTestId("assessment-screen-verdict-label")).toBeInTheDocument();
 });
 
 // 종합 판정에는 accessibility-label을 붙이지 않는다 — <text>의 내용이 곧 이름이다
