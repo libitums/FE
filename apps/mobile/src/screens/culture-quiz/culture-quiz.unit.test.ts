@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
 
 import type { JourneyStepId } from "../journey-map/journey-map";
+import { listeningFinishLabel } from "../listening/listening";
+import { sentenceOrderFinishLabel } from "../sentence-order/sentence-order";
+import { wordChoiceFinishLabel } from "../word-choice/word-choice";
 import * as cultureQuizModule from "./culture-quiz";
 import {
   choiceResultAt,
+  cultureQuizCompletionAnnouncement,
+  cultureQuizCompletionText,
+  cultureQuizExitLabel,
   cultureQuizProgressLabel,
   cultureQuizQuestionsForStep,
   cultureQuizScreenTitle,
@@ -334,12 +340,23 @@ describe("D1 — 진행을 걸지 않는다 (U10, 계약 §2 D1 · §10-4의 기
   // 단어 선택의 `wordChoiceSessionResults` 같은 이력→판정 함수에 해당하는 자리를
   // 만들지 않는다는 것을, 정본 export 목록과의 열거 대조로 짓는다 — 새 export가
   // 몰래 늘면(예: `cultureQuizSessionResults`) 이 목록이 어긋나 잡힌다.
-  // 케이스 이름은 「값 export 열 개」만 말한다 — 타입은 런타임에 안 남아 이
-  // 열거(Object.keys)에 애초에 잡히지 않으므로 이름이 타입 개수를 세면 초록인
-  // 채로 이름이 거짓이 된다(계약 §8.1 U10 정정).
-  it("값 export가 정확히 열 개다 — 타입은 세지 않는다", () => {
+  // 케이스 이름은 **닫힌 목록과 같다**만 말한다 — 타입은 런타임 열거에 애초에
+  // 안 잡힌다. 이름이 타입까지 세면 초록인 채로 이름이 거짓이 된다
+  // (계약 §8.1 U10 정정).
+  // ⚠ 이름에서 **개수를 걷었다.** 단언이 보는 것은 개수가 아니라 이름 목록이고,
+  //   목록이 자랄 때마다 이름에 박힌 수가 조용히 낡는다(LIB-247 계약 §2 · §8의
+  //   「개수를 문면에 박지 않는다」). 목록이 **닫혀 있다**는 사실은 그대로다 —
+  //   toEqual이 여분의 이름도 잡는다.
+  // ⚠ LIB-247이 이 목록을 셋 넓힌다(cultureQuizCompletionAnnouncement ·
+  //   cultureQuizCompletionText · cultureQuizExitLabel). 이 케이스가 지키는 축은
+  //   그대로다 — `cultureQuizSessionResults` 같은 이력→판정 export가 몰래 끼어드는
+  //   것(D1 「진행을 걸지 않는다」)을 여전히 잡는다.
+  it("값 export가 허용목록과 정확히 같다 — 타입은 런타임 열거에 안 잡힌다", () => {
     const expectedValueExports = [
       "choiceResultAt",
+      "cultureQuizCompletionAnnouncement",
+      "cultureQuizCompletionText",
+      "cultureQuizExitLabel",
       "cultureQuizProgressLabel",
       "cultureQuizQuestionsForStep",
       "cultureQuizScreenTitle",
@@ -360,5 +377,90 @@ describe("D1 — 진행을 걸지 않는다 (U10, 계약 §2 D1 · §10-4의 기
       "questionIndex",
       "selectedChoiceIndex",
     ]);
+  });
+});
+
+// ---------------------------------------------------------------- 완료 전이 발화 (LIB-247)
+// 계약: .agent-harness/work/lib-247/spec.md §6.1 (unit — U1~U4) · §3.1(export 목록)
+// · §3.2(시그니처와 반환 문자열) · §3.3(a)(규칙은 하나이고 값이 갈린다).
+// 기대값의 정본은 계약이다 — culture-quiz.ts에서 베끼지 않는다.
+//
+// 「정확히 한 번」은 이 계층이 지지 않는다 — 그것은 `ui`의 X-C다(계약 §6.2).
+// 이 화면의 기존 「announce 0건」 케이스를 조이는 것도 `ui`의 일이다(§6.2(f)).
+
+describe("완료 전이 발화의 상수 둘 (계약 §3.1 표 · §3.2)", () => {
+  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나온다 (ADR-0016 D11-1).
+  it("완료 문구 상수가 화면에 이미 있는 `문항을 모두 마쳤어요`다", () => {
+    expect(cultureQuizCompletionText).toBe("문항을 모두 마쳤어요");
+  });
+
+  // ⚠ 둘째 상수의 **이름**이 넷 중 이 화면만 다르다(`…ExitLabel`). 이 화면의 그 낱말은
+  // 나아가는 수단이 아니라 **나가는 수단**이고(`culture-quiz-screen-exit`),
+  // 어느 시점에도 렌더된다(계약 §3.1 ⚠ · §0.6(b)).
+  it("완료 상태의 유일한 조작 단위 라벨이 `맵으로`다 — 나가는 수단이다", () => {
+    expect(cultureQuizExitLabel).toBe("맵으로");
+  });
+});
+
+describe("cultureQuizCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
+  // U1 — 오늘 호출자가 넘기는 값(계약 §4.4 표)으로 부르면 §3.2 표의 문자열과
+  // **문자 그대로** 같다. 이 화면만 뒷절이 갈린다.
+  it("U1 — cultureQuizExitLabel로 부르면 `문항을 모두 마쳤어요, 맵으로`다", () => {
+    expect(cultureQuizCompletionAnnouncement(cultureQuizExitLabel)).toBe(
+      "문항을 모두 마쳤어요, 맵으로",
+    );
+  });
+
+  // U2 — 인자가 형식을 실제로 통과한다. 이 단언이 있어야 「인자 없는 상수 반환」의
+  // 공허함을 피한 것이 지어진다(계약 §6.1 U2 · §3.4 넷째 행).
+  it("U2 — 다른 인자 둘의 반환이 다르고, 완료 문구 뒤가 쉼표+공백 하나와 그 인자다", () => {
+    const withExit = cultureQuizCompletionAnnouncement("맵으로");
+    const withFinish = cultureQuizCompletionAnnouncement("결과 보기");
+
+    expect(withExit).not.toBe(withFinish);
+    expect(withExit.slice(cultureQuizCompletionText.length)).toBe(", 맵으로");
+    expect(withFinish.slice(cultureQuizCompletionText.length)).toBe(", 결과 보기");
+  });
+
+  // U3 — 앞절이 그 화면의 완료 문구 상수를 지난다. 리터럴을 다시 적지 않는다 —
+  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡는다.
+  it("U3 — 앞절이 cultureQuizCompletionText와 같은 표를 지난다", () => {
+    expect(
+      cultureQuizCompletionAnnouncement(cultureQuizExitLabel).startsWith(cultureQuizCompletionText),
+    ).toBe(true);
+  });
+
+  // U4 — 부수효과가 없다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도 던지지 않는다.
+  it("U4 — 같은 인자로 두 번 불러도 같은 값이고 던지지 않는다", () => {
+    expect(() => cultureQuizCompletionAnnouncement(cultureQuizExitLabel)).not.toThrow();
+    expect(cultureQuizCompletionAnnouncement(cultureQuizExitLabel)).toBe(
+      cultureQuizCompletionAnnouncement(cultureQuizExitLabel),
+    );
+  });
+});
+
+describe("문화 퀴즈의 값이 나머지 셋과 갈린다 (계약 §3.3(a) · §9-6)", () => {
+  // 나머지 셋의 라벨을 **리터럴로 다시 적지 않고 그 모듈에서 읽는다** — 정본을 둘로
+  // 만들지 않는다. 셋 중 하나가 갈리는 날에도 이 단언이 그것을 본다.
+  it("앞절은 넷이 같고 뒷절만 갈린다 — 규칙은 하나다", () => {
+    expect([listeningFinishLabel, wordChoiceFinishLabel, sentenceOrderFinishLabel]).toEqual([
+      "결과 보기",
+      "결과 보기",
+      "결과 보기",
+    ]);
+    expect(cultureQuizExitLabel).not.toBe(listeningFinishLabel);
+  });
+
+  // 갈림이 예외 조항이 아니라 **그 화면이 다르기 때문**이라는 것 — 규칙
+  // 「<완료 문구>, <완료 상태에서 유일한 조작 단위의 라벨>」을 넷이 함께 지난다.
+  // ⚠ `결과 보기`는 이 화면에 **없는 낱말**이다(`onFinish`가 없다 — LIB-244 D1).
+  //    소리에만 있는 낱말을 만들지 않는 것이 이 갈림의 이유다.
+  it("이 화면의 발화가 셋의 발화와 다르다 — 소리에만 있는 낱말을 만들지 않는다", () => {
+    expect(cultureQuizCompletionAnnouncement(cultureQuizExitLabel)).not.toBe(
+      "문항을 모두 마쳤어요, 결과 보기",
+    );
+    expect(cultureQuizCompletionAnnouncement(cultureQuizExitLabel)).toBe(
+      "문항을 모두 마쳤어요, 맵으로",
+    );
   });
 });

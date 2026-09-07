@@ -8,6 +8,9 @@ import {
   initialListeningSessionState,
   isSessionComplete,
   judgeAnswer,
+  listeningCompletionAnnouncement,
+  listeningCompletionText,
+  listeningFinishLabel,
   listeningQuestionsByStep,
   listeningScreenTitle,
   listeningSessionReducer,
@@ -788,5 +791,61 @@ describe("audioSource (고정 데이터 불변식 — 계약 §9.4)", () => {
         expect(question.audioSource.endsWith(`-${index + 1}`)).toBe(true);
       });
     }
+  });
+});
+
+// ---------------------------------------------------------------- 완료 전이 발화 (LIB-247)
+// 계약: .agent-harness/work/lib-247/spec.md §6.1 (unit — U1~U4) · §3.1(export 목록)
+// · §3.2(시그니처와 반환 문자열). 기대값의 정본은 계약이다 — listening.ts에서 베끼지 않는다.
+//
+// 「정확히 한 번」은 이 계층이 지지 않는다 — 그것은 `ui`의 X-C다(계약 §6.2).
+// 여기서 보는 것은 순수 함수의 입출력 하나뿐이다.
+
+describe("완료 전이 발화의 상수 둘 (계약 §3.1 표 · §3.2)", () => {
+  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나온다 (ADR-0016 D11-1).
+  // 값이 갈리면 화면과 소리가 다른 앱이 되므로 값 자체를 여기서 못박는다.
+  it("완료 문구 상수가 화면에 이미 있는 `문항을 모두 마쳤어요`다", () => {
+    expect(listeningCompletionText).toBe("문항을 모두 마쳤어요");
+  });
+
+  it("완료 상태의 유일한 조작 단위 라벨이 `결과 보기`다", () => {
+    expect(listeningFinishLabel).toBe("결과 보기");
+  });
+});
+
+describe("listeningCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
+  // U1 — 오늘 호출자가 넘기는 값(계약 §4.4 표)으로 부르면 §3.2 표의 문자열과
+  // **문자 그대로** 같다.
+  it("U1 — listeningFinishLabel로 부르면 `문항을 모두 마쳤어요, 결과 보기`다", () => {
+    expect(listeningCompletionAnnouncement(listeningFinishLabel)).toBe(
+      "문항을 모두 마쳤어요, 결과 보기",
+    );
+  });
+
+  // U2 — 인자가 형식을 실제로 통과한다. 이 단언이 있어야 「인자 없는 상수 반환」의
+  // 공허함을 피한 것이 지어진다(계약 §6.1 U2 · §3.4 넷째 행).
+  it("U2 — 다른 인자 둘의 반환이 다르고, 완료 문구 뒤가 쉼표+공백 하나와 그 인자다", () => {
+    const withFinish = listeningCompletionAnnouncement("결과 보기");
+    const withExit = listeningCompletionAnnouncement("맵으로");
+
+    expect(withFinish).not.toBe(withExit);
+    expect(withFinish.slice(listeningCompletionText.length)).toBe(", 결과 보기");
+    expect(withExit.slice(listeningCompletionText.length)).toBe(", 맵으로");
+  });
+
+  // U3 — 앞절이 그 화면의 완료 문구 상수를 지난다. 리터럴을 다시 적지 않는다 —
+  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡는다.
+  it("U3 — 앞절이 listeningCompletionText와 같은 표를 지난다", () => {
+    expect(
+      listeningCompletionAnnouncement(listeningFinishLabel).startsWith(listeningCompletionText),
+    ).toBe(true);
+  });
+
+  // U4 — 부수효과가 없다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도 던지지 않는다.
+  it("U4 — 같은 인자로 두 번 불러도 같은 값이고 던지지 않는다", () => {
+    expect(() => listeningCompletionAnnouncement(listeningFinishLabel)).not.toThrow();
+    expect(listeningCompletionAnnouncement(listeningFinishLabel)).toBe(
+      listeningCompletionAnnouncement(listeningFinishLabel),
+    );
   });
 });
