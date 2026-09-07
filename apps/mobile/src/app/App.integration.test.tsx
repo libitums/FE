@@ -482,8 +482,9 @@ test("I2: 평가의 문항 행 data-result가 실제로 고른 보기의 정오�
   expect(screen.getByTestId("assessment-item-2")).toHaveAttribute("data-result", "correct");
 });
 
-// I3: 평가의 `맵으로`가 `back` 하나로 맵에 닿는다 — `replace` 결선의 증거다. `push`였다면
-// `back` 한 번의 목적지가 듣기 화면이었을 것이다(계약 §1.8(b)).
+// I3: 평가의 `맵으로`가 `back` 하나로 맵에 닿는다(계약 §1.8(b)). 나가기가 활성 스택의
+// 루트로 곧장 가므로(ADR-0007 D6) 이 관찰은 진입이 push였든 replace였든 같다 — 이
+// 테스트는 목적지를 짓고 진입 동작을 짓지 않는다.
 test("I3: 평가의 맵으로를 누르면 back 하나로 맵에 닿는다", () => {
   render(<App />);
   startStep("ordering");
