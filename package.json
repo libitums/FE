@@ -9,12 +9,13 @@
     "test": "pnpm --filter @libitums/mobile test && pnpm test:report-policy",
     "test:report-policy": "node --test devtools/performance-report-policy/*.test.mjs",
     "performance:reports:check": "node devtools/performance-report-policy/check.mjs",
+    "performance:reports:gate": "node devtools/performance-report-policy/gate.mjs",
     "lint": "oxlint && pnpm lint:tokens",
     "lint:tokens": "! grep -rnoE 'var\\(--[A-Za-z0-9_-]+' apps/mobile/src --include='*.css' | grep -v 'var(--libitum-'",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt . '!**/*.md' '!apps/ios/**'",
     "format:check": "oxfmt --check . '!**/*.md' '!apps/ios/**'",
-    "verify": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build"
+    "verify": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm performance:reports:gate"
   },
   "devDependencies": {
     "oxfmt": "0.65.0",

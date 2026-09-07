@@ -41,11 +41,17 @@ baseline을 여러 번 측정하면 scenario·device를 같게 두고 `01`, `02`
 
 ## 정책 검사
 
-PR 전에 비교할 두 commit을 지정해 CI와 같은 검사를 실행할 수 있다.
+**PR 전 검사는 `pnpm verify`가 이미 돈다** — 정책 게이트가 그 마지막 단계다. 정책만
+따로 다시 보고 싶으면 게이트를 직접 부른다. 비교할 두 commit을 지정해 소급 감사할
+때는 아래쪽 명령을 쓴다.
 
 ```sh
-pnpm performance:reports:check --base <base-commit> --head <head-commit>
+pnpm performance:reports:gate                                # 지금 이 브랜치. 범위를 스스로 구한다
+pnpm performance:reports:check --base <base> --head <head>   # 임의의 두 commit을 감사한다
 ```
+
+둘은 같은 정책 코드를 부르고 **범위를 구하는 방법만** 다르다
+([ADR-0021 D2](../../adr/0021-performance-report-ci-automation.md)).
 
 검사는 다음을 확인한다.
 

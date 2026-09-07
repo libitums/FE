@@ -44,9 +44,6 @@ jobs:
 
       - name: Verify code
         run: pnpm verify
-
-      - name: Check performance report policy
-        run: pnpm performance:reports:check --base "$POLICY_BASE" --head "$POLICY_HEAD"
         env:
           POLICY_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           POLICY_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
