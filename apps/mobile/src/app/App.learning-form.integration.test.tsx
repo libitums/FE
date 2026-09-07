@@ -187,9 +187,9 @@ test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배�
 // 이어지는 문화 학습 → 문화 퀴즈 → 맵 전이 하나를 더한다. `learningFormByStep`은
 // 손대지 않는다(D6) — 대역이 배정을 대신한다.
 //
-// 오늘은 결선(`App.tsx`)의 `onExitAssessment`가 여전히 `dispatch({ type: "back" })`라
-// 이 케이스의 마지막 단언이 빨갛다 — `navigation.ts`의 `backToRoot`(LIB-245)로
-// 결선이 바뀌어야 초록이 된다.
+// 문화 퀴즈의 `맵으로`는 결선(`App.tsx`)의 `wiring.onExitLearning`이 진다 — 이
+// 케이스의 마지막 단언은 그 콜백이 `dispatch({ type: "backToRoot" })`를 거는 것으로
+// 성립한다.
 test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵으로가 맵으로 돌아온다(문화 학습이 아니다)", () => {
   formStub.current = "culture";
   render(<App />);
@@ -215,10 +215,11 @@ test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵�
   expect(screen.queryByTestId("culture-screen-title")).not.toBeInTheDocument();
 });
 
-// I-B (LIB-245) — 나간 뒤 맵에서 같은 스텝을 다시 시작하면 문화 학습이 다시 뜬다.
-// 위 케이스에서 맵에 닿은 뒤, 스택에 문화 퀴즈·문화 학습의 잔재가 남아 있지
-// 않다는 것을 같은 스텝을 재시작해 확인한다 — 잔재가 있었다면 재시작이 문화
-// 퀴즈나 빈 화면을 열었을 것이다.
+// I-B (LIB-245) — 나간 뒤 맵이 꼭대기이고, 거기서 같은 스텝을 다시 시작하면 문화
+// 학습이 새로 열린다. 맵이 꼭대기라는 것은 위 케이스의 journey-map-screen-title
+// 단언이 이미 짓는다 — push는 위에 쌓고 currentScreen은 꼭대기만 읽으므로 잔재
+// 유무는 거기서 가려진다. startStep 헬퍼도 journey-step-node-*를 요구해 같은
+// 전제 위에서 재시작한다.
 test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시 시작하면 문화 학습이 다시 뜬다", () => {
   formStub.current = "culture";
   render(<App />);

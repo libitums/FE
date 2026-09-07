@@ -250,9 +250,10 @@ describe("navReducer", () => {
 // 줄인다. 어떤 분기도 깊이를 세지 않는다 — 활성 스택 길이가 1이면 동일 참조를
 // 돌려주고, 그 밖의 길이는 전부 첫 원소 하나로 준다.
 //
-// ⚠ `case "backToRoot"`는 아직 무동작(`return nav`)이다 — 전이는 다음 단계(logic)가
-// 채운다. U1·U2·U3은 지금 실패하는 것이 맞다(전이표 1·3행, 그리고 아래 U2). U4·U5·U6은
-// 무동작이 우연히 만족하므로 지금도 통과한다.
+// U1·U2는 entry가 없는 분기(전이표 1행)를, U3은 entry가 있는 분기(전이표 3행)를
+// 짓는다 — 두 분기를 짝으로 두어 어느 쪽이 활성 스택인지에 상관없이 같은 규칙이
+// 적용됨을 본다. U4·U5는 각 분기의 길이-1 동일 참조(전이표 2·4행)를, U6은
+// backToRoot가 switchTab·enterApp과 갈리는 자리(tab 유지·entry 비우지 않음)를 짓는다.
 describe("navReducer — backToRoot (LIB-245)", () => {
   // U1. entry 비었고 활성 스택(현재 탭 스택) 길이 3 → 현재 탭 스택이 루트 하나로
   //     준다. 다른 세 탭 스택·tab·entry는 그대로다 (계약 §3.2 표 1행).
@@ -418,8 +419,8 @@ describe("navReducer — listening 화면 (LIB-223)", () => {
 //
 // 그러므로 이 케이스들의 성격은 (1) `Screen`에 평가 멤버가 있다는 것의 **타입 층위
 // 주장**을 하는 **회귀 그물**이지 (2) 관찰 가능한 동작의 판정자가 아니다. **관찰
-// 가능한 동작**(평가 화면이 실제로 뜬다 · `back` 하나로 맵에 닿는다 · 미통과면 진행이
-// 갱신되지 않는다)의 판정자는 `App.integration.test.tsx`의 **I1 · I3 · I6**이다.
+// 가능한 동작**(평가 화면이 실제로 뜬다 · `backToRoot` 하나로 맵에 닿는다 · 미통과면
+// 진행이 갱신되지 않는다)의 판정자는 `App.integration.test.tsx`의 **I1 · I3 · I6**이다.
 describe("navReducer — assessment 화면 (LIB-227)", () => {
   const listeningScreen = { name: "listening", stepId: "ordering" } as const;
   const assessmentScreen = {
