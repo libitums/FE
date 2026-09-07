@@ -220,6 +220,47 @@ expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").
 낱말을 담은 **잎 노드**이지 그것을 감싼 상자가 아니다. 상자에 걸면 형제 텍스트가 섞여
 들어와 같은 종류의 거짓 초록이 다시 생긴다.
 
+**지려는 것이 「이 요소에 없다」가 아니라 「이 트리에 이것들뿐」이면, 부정형을 자리마다
+놓지 말고 닫힌 집합으로 훑는다.** 자리마다 부정형을 놓으면 **완성할 수 없는 열거**가
+된다 — 지켜야 할 자리가 늘어도 단언은 안 늘고, `data-testid`가 없는 자리는 애초에 적을
+수도 없어 **「지켜지는 자리」가 진짜 집합보다 작아 보인다.** 대신 그 축에 오른 요소를
+트리에서 쓸어 앵커 배열을 만들고 고정 목록과 `toEqual`로 대조한다. **열거하는 것은
+배제된 자리가 아니라 들어온 자리이고, 배제된 자리는 「목록에 없다」로 지켜진다.**
+
+```ts
+function headingAxis(container: HTMLElement): readonly (string | null)[] {
+  return [...container.querySelectorAll("[accessibility-traits]")]
+    .filter((el) => (el.getAttribute("accessibility-traits") ?? "").split(",").includes("header"))
+    .map((el) => el.getAttribute("data-testid") ?? el.getAttribute("class"));
+}
+
+expect(screen.getByTestId("listening-screen-complete")).toBeInTheDocument(); // 존재 앵커
+expect(headingAxis(container)).toEqual(["listening-screen-title"]);
+```
+
+- **`?? getAttribute("class")` 갈래를 빼지 않는다.** 지켜야 할 자리 중에는 `data-testid`가
+  없는 것이 있고, `null`로 찍히면 러너 출력이 **어느 자리가 끼어들었는지** 말하지 못한다.
+  이름이 찍혀야 잡힌다.
+- **`toEqual`을 `arrayContaining`으로 풀지 않는다.** 푸는 순간 「더 들어온 것」을 못 보게
+  되어 이 형태가 지려던 방향 자체가 사라지고, 남는 것은 존재 단언뿐이다.
+- **셀렉터를 속성 이름으로 열고, 값은 갈라서 「포함하는가」로 거른다.** 값이 통째로
+  일치하는 것만 찾으면(`[accessibility-traits="header"]`) **쉼표로 이은 복수값**을 못 본다
+  — 벤더된 Pod의 변환기가 이 속성을 쉼표로 갈라 역할을 OR로 합치므로 `"button,header"`는
+  실기에서 **실제로 머리말 역할을 싣는다.** 못 본 자리는 배열에 안 실려 대조가 조용히
+  통과한다. 다른 축의 값(`button`·`tab` 단독)은 **포함 검사가 걸러 내므로** 집합의 정의는
+  흐려지지 않는다.
+- **개수를 세지 않는다.** `toHaveLength`는 어긋난 **이름**을 안 알려준다. 배열째로 대조해야
+  러너 출력이 어느 자리인지 말한다.
+- **지키려는 자리가 그 트리에 있다는 것을 먼저 짓는다** — 위 절의 존재 앵커가 여기서도
+  그대로 필요하다. 닫힌 집합 대조는 배열이 **자라야** 빨개지므로, 지키려는 자리가 트리에서
+  **사라지면** 배열은 안 자라고 대조는 통과한다. 그 상태가 무대에 올리는 자리를
+  `getByTestId`로 — `data-testid`가 없으면 `querySelector` + `not.toBeNull()`로 — 먼저
+  짓는다. 없어지면 「앵커를 못 찾음」으로 그 케이스가 빨개진다.
+
+덮는 결정은 [ADR-0016 D12-4](../adr/0016-assistive-technology-semantics.md)의 「더 붙임」
+방향이고, 같은 자리가 그 반대 방향(「빠뜨림」)은 **테스트가 아니라 두 `git grep`의
+차집합**에 배정해 뒀다 — **이 형태로 그 방향을 대신 지려 하지 마라.**
+
 **강제 수단은 없다.** oxlint 규칙으로 막을 수 없어 PR diff를 읽을 때 본다.
 등록 위치는 `apps/mobile/vitest.setup.ts`이고 이유가 그 주석에 있다.
 
