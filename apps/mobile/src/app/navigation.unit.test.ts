@@ -245,6 +245,105 @@ describe("navReducer", () => {
   });
 });
 
+// -------------------------------------------------------------- LIB-245 계약 §3.2
+// `backToRoot` — 활성 스택(entry가 있으면 entry, 없으면 현재 탭 스택)을 루트 하나로
+// 줄인다. 어떤 분기도 깊이를 세지 않는다 — 활성 스택 길이가 1이면 동일 참조를
+// 돌려주고, 그 밖의 길이는 전부 첫 원소 하나로 준다.
+//
+// ⚠ `case "backToRoot"`는 아직 무동작(`return nav`)이다 — 전이는 다음 단계(logic)가
+// 채운다. U1·U2·U3은 지금 실패하는 것이 맞다(전이표 1·3행, 그리고 아래 U2). U4·U5·U6은
+// 무동작이 우연히 만족하므로 지금도 통과한다.
+describe("navReducer — backToRoot (LIB-245)", () => {
+  // U1. entry 비었고 활성 스택(현재 탭 스택) 길이 3 → 현재 탭 스택이 루트 하나로
+  //     준다. 다른 세 탭 스택·tab·entry는 그대로다 (계약 §3.2 표 1행).
+  it("U1. entry 비었고 활성 스택 길이 3 → 현재 탭 스택이 루트 하나로 준다. 다른 탭 스택은 그대로다", () => {
+    const n = nav({
+      tab: "journey",
+      stacks: {
+        ...baseStacks,
+        journey: [
+          { name: "journey-map" },
+          { name: "listening", stepId: "ordering" },
+          { name: "word-choice", stepId: "ordering" },
+        ],
+      },
+    });
+
+    const next = navReducer(n, { type: "backToRoot" });
+
+    expect(next.stacks.journey).toEqual([{ name: "journey-map" }]);
+    expect(next.tab).toBe("journey");
+    expect(next.entry).toEqual([]);
+    expect(next.stacks.home).toEqual(baseStacks.home);
+    expect(next.stacks.roleplay).toEqual(baseStacks.roleplay);
+    expect(next.stacks.settings).toEqual(baseStacks.settings);
+  });
+
+  // U2. entry 비었고 활성 스택 길이 2 → 루트 하나로 준다. 길이 2에서는 `back`(하나만
+  //     pop)과 `backToRoot`(루트까지 줄이기)의 결과가 우연히 같은 자리에 온다 —
+  //     깊이를 세지 않는 backToRoot도 새 객체를 만든다는 것을 여기서 명시적으로 짓는다
+  //     (계약 §3.2 표 1행 · "어떤 분기도 깊이를 세지 않는다").
+  it("U2. entry 비었고 활성 스택 길이 2 → 루트 하나로 준다 (back과 결과가 같은 자리)", () => {
+    const n = nav({
+      tab: "home",
+      stacks: { ...baseStacks, home: [{ name: "home" }, { name: "settings" }] },
+    });
+
+    const next = navReducer(n, { type: "backToRoot" });
+
+    expect(next.stacks.home).toEqual([{ name: "home" }]);
+    expect(next.tab).toBe("home");
+    expect(next.entry).toEqual([]);
+  });
+
+  // U3. entry 안 비었고 entry 길이 3 → entry가 첫 원소 하나로 준다. stacks·tab은
+  //     그대로다 (계약 §3.2 표 3행).
+  it("U3. entry 안 비었고 entry 길이 3 → entry가 첫 원소 하나로 준다. stacks는 그대로다", () => {
+    const n = nav({
+      entry: [{ name: "home" }, { name: "settings" }, { name: "journey-map" }],
+      tab: "roleplay",
+      stacks: baseStacks,
+    });
+
+    const next = navReducer(n, { type: "backToRoot" });
+
+    expect(next.entry).toEqual([{ name: "home" }]);
+    expect(next.tab).toBe("roleplay");
+    expect(next.stacks).toEqual(baseStacks);
+  });
+
+  // U4. entry 비었고 활성 스택 길이 1 → 동일 참조를 돌려준다 (계약 §3.2 표 2행).
+  it("U4. entry 비었고 활성 스택 길이 1 → 동일 참조를 돌려준다", () => {
+    const n = nav({ tab: "home", stacks: baseStacks });
+
+    expect(navReducer(n, { type: "backToRoot" })).toBe(n);
+  });
+
+  // U5. entry 길이 1 → 동일 참조를 돌려준다 (계약 §3.2 표 4행).
+  it("U5. entry 길이 1 → 동일 참조를 돌려준다", () => {
+    const n = nav({ entry: [{ name: "home" }], tab: "home", stacks: baseStacks });
+
+    expect(navReducer(n, { type: "backToRoot" })).toBe(n);
+  });
+
+  // U6. backToRoot는 tab을 바꾸지 않고 entry를 비우지 않는다 — switchTab·enterApp과
+  //     갈리는 자리다. entry가 있을 때도 tab은 그대로이고, entry가 []가 되지
+  //     않는다(enterApp이라면 []가 됐을 자리). 줄어든 모양(첫 원소 하나)은 U3이 진다
+  //     — 여기서는 갈리는 자리만 본다.
+  it("U6. tab을 바꾸지 않고 entry를 비우지 않는다 — switchTab·enterApp과 갈리는 자리", () => {
+    const n = nav({
+      entry: [{ name: "home" }, { name: "settings" }],
+      tab: "roleplay",
+      stacks: baseStacks,
+    });
+
+    const next = navReducer(n, { type: "backToRoot" });
+
+    expect(next.tab).toBe("roleplay");
+    expect(next.entry).not.toEqual([]);
+  });
+});
+
 // ---------------------------------------------------------------- LIB-223 계약 §3.1(c)
 // `listening`이 `Screen` union에 든 뒤의 스택 동작. 리듀서는 화면의 내용을 모르므로
 // 여기서 보는 것은 둘이다 — **화면 파라미터(`stepId`)가 스택을 타고 그대로 나오는가**,
