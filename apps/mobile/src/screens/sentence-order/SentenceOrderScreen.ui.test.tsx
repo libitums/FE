@@ -111,6 +111,22 @@ function placeAllCorrectly(question: SentenceOrderQuestion): void {
   }
 }
 
+// 문항 전부를 정답으로 배치·확인하고 넘겨 완료 상태까지 몬다.
+function completeAllQuestions(): void {
+  for (const question of ORDERING_QUESTIONS) {
+    placeAllCorrectly(question);
+    fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+    fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+  }
+}
+
+// 이 화면은 능동 채널이 둘이다 — 채점(문항 하나의 판정)과 완료(세션의 종료)다
+// (계약 §4.3). 아래 완료 전이 절이 보는 것은 둘째 채널 하나이므로, 첫째 채널이 낸
+// 발화를 걷어 내고 센다. 걷어 내는 기준을 채점 발화의 접두사 하나로 두는 것이
+// 의도다 — 완료 채널이 예상 밖의 문자열을 내면 그것도 여기 남아 잡힌다.
+const nonGradingCalls = (calls: readonly AnnounceCall[]): AnnounceCall[] =>
+  calls.filter((call) => !call.content.startsWith("채점 결과, "));
+
 // ---------------------------------------------------------------- 처음 렌더
 
 test("제목이 '3단계 · 문장 순서'이고 accessibility-traits='header'다", () => {
@@ -361,6 +377,133 @@ test("문항 둘을 각각 채점하면 announce가 문항마다 정확히 한 �
 
 test("대역이 없어도 화면이 던지지 않는다", () => {
   expect(() => renderOrdering()).not.toThrow();
+});
+
+// ------------------------------------------- 완료 전이 발화 (LIB-247 계약 §6.2 X-A~X-F)
+//
+// 이 화면이 여는 **둘째** 능동 채널이다. 위 채점 절의 케이스들이 한 글자도 안 바뀌는
+// 것이 첫째 채널이 그대로라는 증거다 — 두 채널은 다른 정보를 다른 순간에 낸다
+// (계약 §4.3). 여기서 세는 것은 `nonGradingCalls`로 걸러 낸 완료 채널 하나다.
+
+// X-A. 완료 전이 뒤 완료 발화가 정확히 하나이고 그 내용이 계약 §3.2 표의 문자열이다.
+test("[X-A] 완료 전이 뒤 완료 발화가 정확히 하나이고 content가 '문항을 모두 마쳤어요, 결과 보기'다", () => {
+  const calls = stubAnnounce();
+  renderOrdering();
+
+  completeAllQuestions();
+
+  expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument(); // 앵커
+  expect(nonGradingCalls(calls)).toHaveLength(1);
+  expect(nonGradingCalls(calls)[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+});
+
+// X-B. 전이 **전에는** 완료 발화가 0건이다. 가드(`if (!complete) return;`)를 지우면
+// 문항 도중에 완료 발화가 나가고 이 케이스가 잡는다(계약 §6.2(h)).
+// 채점 발화는 이 축이 아니다 — 그것이 그대로 나가는 것까지 함께 적어 둔다.
+test("[X-B] 첫 렌더·확인·중간 다음까지 완료 발화가 0건이다 — 채점 발화만 나간다", () => {
+  const calls = stubAnnounce();
+  renderOrdering();
+
+  expect(nonGradingCalls(calls)).toHaveLength(0);
+
+  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+
+  expect(nonGradingCalls(calls)).toHaveLength(0);
+  expect(calls.map((call) => call.content)).toEqual(["채점 결과, 정답"]);
+
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+
+  expect(screen.getByTestId("sentence-order-screen-progress")).toHaveTextContent("문항 2 / 2"); // 앵커
+  expect(nonGradingCalls(calls)).toHaveLength(0);
+});
+
+// X-C. **정확히 한 번**이다. 종료 상태에 닿은 뒤 같은 props로 다시 렌더해도 호출이
+// 늘지 않는다 — dep 배열을 지워 매 렌더 실행이 되면 여기서만 잡힌다(계약 §6.2(h)).
+// props를 새로 짓지 않고 **같은 참조**를 다시 넘긴다 — 값이 갈려서 늘어난 것이
+// 아니라 렌더 자체로 늘어난 것을 보려는 것이다.
+test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 완료 발화가 늘지 않는다", () => {
+  const calls = stubAnnounce();
+  const onExit = () => {};
+  const onFinish = () => {};
+  const view = render(
+    <SentenceOrderScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+  );
+
+  completeAllQuestions();
+
+  expect(nonGradingCalls(calls)).toHaveLength(1);
+
+  view.rerender(
+    <SentenceOrderScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+  );
+  view.rerender(
+    <SentenceOrderScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+  );
+
+  expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument(); // 앵커
+  expect(nonGradingCalls(calls)).toHaveLength(1);
+});
+
+// X-D. **소리에만 있는 낱말이 0건이다**(ADR-0016 D11-1 · 수용 기준 3). 발화 문자열을
+// 리터럴로 다시 적지 않고 **DOM에서 파생해** 짓는다 — 앞절은 종료 문구 요소의 내용,
+// 뒷절은 그 순간 화면에 실재하는 유일한 조작 단위의 `accessibility-label`이다.
+// 누군가 상수를 다시 인라인 리터럴로 흩으면 그때 잡는 회귀 증인이다.
+test("[X-D] 완료 발화가 종료 문구와 그 순간 유일한 조작 단위의 라벨에서 그대로 나온다", () => {
+  const calls = stubAnnounce();
+  const { container } = renderOrdering();
+
+  completeAllQuestions();
+
+  const elements = [...container.querySelectorAll("[accessibility-element]")];
+  expect(elements.map((el) => el.getAttribute("data-testid"))).toEqual([
+    "sentence-order-screen-finish",
+  ]);
+
+  const completeText = screen.getByTestId("sentence-order-screen-complete").textContent ?? "";
+  const actionLabel = elements[0]?.getAttribute("accessibility-label") ?? "";
+
+  expect(nonGradingCalls(calls)).toHaveLength(1);
+  expect(nonGradingCalls(calls)[0]?.content).toBe(`${completeText}, ${actionLabel}`);
+});
+
+// X-E. **마운트가 곧 완료인 갈래**(계약 §4.2). 문항 표가 빈 스텝은 첫 렌더가 이미
+// 종료 상태다 — 전이만 발화하게 만들면 그 갈래가 조용한 채로 남는다.
+test("[X-E] 문항이 0인 스텝은 마운트가 곧 완료라 그 순간 완료 발화가 하나 나간다", () => {
+  const calls = stubAnnounce();
+
+  render(
+    <SentenceOrderScreen stepId="greeting" stepOrdinal={1} onExit={() => {}} onFinish={() => {}} />,
+  );
+
+  expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument(); // 앵커
+  expect(nonGradingCalls(calls)).toHaveLength(1);
+  expect(nonGradingCalls(calls)[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+});
+
+// X-F. 두 채널이 **겹치지 않는다**(계약 §4.3(a)의 실행 증인). 마지막 문항의 `확인`
+// 뒤 `다음`까지 가는 경로 전체에서 발화의 **순서와 총수**를 본다 — 마지막 하나가
+// 완료 발화이고, 같은 순간에 채점 발화가 함께 나가지 않는다.
+test("[X-F] 전체 경로의 발화가 채점들 뒤에 완료 하나로 끝난다 — 한 순간에 미는 발화가 하나다", () => {
+  const calls = stubAnnounce();
+  renderOrdering();
+
+  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+  placeAllCorrectly(ORDERING_QUESTIONS[1]);
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+
+  // 마지막 `다음` **직전**까지는 채점 발화뿐이다.
+  expect(calls.map((call) => call.content)).toEqual(["채점 결과, 정답", "채점 결과, 정답"]);
+
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+
+  expect(calls.map((call) => call.content)).toEqual([
+    "채점 결과, 정답",
+    "채점 결과, 정답",
+    "문항을 모두 마쳤어요, 결과 보기",
+  ]);
 });
 
 // ---------------------------------------------------------------- 접근성
