@@ -352,10 +352,13 @@ expect(indicator).not.toHaveAttribute("accessibility-elements-hidden");
   한다. 셸에 `switch`나 `if` 사슬을 두지 않는다 — **망라 검사가 셸이 아니라 함수에 서야**
   값이 늘 때 `tsc`가 빠진 자리를 잡는다. 첫 자리는 `learningScreenFor(form, stepId)`이고
   대응하는 표는 화면 폴더(`journey-map.ts`의 `learningFormByStep`)에 있다.
-  **⚠ 2026-09-05 현재 이 규칙을 지킬 *형태*만 서 있고 결선은 아직이다** —
-  `App.tsx`의 `onStartStep`이 아직 `{ name: "listening", stepId }` 리터럴이라 위 두 함수의
-  **제품 코드 호출자가 0건**이다. **「이미 그렇게 돌고 있다」로 읽지 마라.** 결선이 무엇을
-  기다리는지는 `docs/adr/README.md` 보류 표의 「스텝별 학습형 배정」 행.
+  **⚠ 2026-09-07 결선이 착지했다 (LIB-239)** — `App.tsx`의 `onStartStep`이
+  `learningScreenFor(learningFormForStep(id), id)`를 부른다. 위 두 함수의 **제품 코드
+  호출자는 셸의 이 한 자리**이고 `{ name: "listening", stepId }` 리터럴은 0건이다.
+  **오늘 어느 스텝에서 시작하든 듣기가 열리는 것은 결선이 없어서가 아니라** 표의 다섯
+  값이 전부 `"listening"`이기 때문이다 — 배정 값이 오는 날 이 규칙대로 **코드 변경 없이**
+  화면이 갈린다. 배정이 무엇을 기다리는지는 `docs/adr/README.md` 보류 표의
+  「스텝별 학습형 배정」 행.
 - **에러 경계**: 루트에 하나뿐이다. 네트워크 실패는 여기로 올리지 않고 화면 안에서 재시도한다.
 - 모든 화면에 **화면 내 back 수단**을 둔다. 하드웨어 뒤로가기에만 의존하지 않는다.
 
