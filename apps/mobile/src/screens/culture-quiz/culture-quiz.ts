@@ -187,12 +187,9 @@ export const cultureQuizExitLabel = "맵으로";
  * 인자는 **완료 상태에서 유일한 조작 단위의 라벨**이다. 발화는 떠다니므로
  * *무엇이* 끝났는지(앞절)와 *이제 무엇이 남았는지*(뒷절)가 소리 안에 있어야 한다.
  *
- * ⚠ **logic-scaffold의 무동작 몸통이다** — 계약 §6.1이 정한 대로 빈 문자열을 돌려준다.
- * 던지지 않으므로 `unit`의 U1이 「빈 문자열 vs 기대값」으로 실물 red가 된다.
+ * 앞절은 리터럴을 다시 적지 않고 `cultureQuizCompletionText`를 지난다 — 화면이 렌더하는
+ * 낱말과 발화가 담는 낱말이 **같은 표를 지난다**(계약 §3.4).
  */
 export function cultureQuizCompletionAnnouncement(nextActionLabel: string): string {
-  // 인자를 계약이 고정한 이름 그대로 둔 채 무동작을 유지한다 — `logic` 단계가 이 줄을
-  // 지우고 `${cultureQuizCompletionText}, ${nextActionLabel}`을 돌려준다.
-  void nextActionLabel;
-  return "";
+  return `${cultureQuizCompletionText}, ${nextActionLabel}`;
 }
