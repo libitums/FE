@@ -224,6 +224,34 @@ test("[X10] accessibility-elements-hidden이 응답 뒤에만 나타나고 그 �
   expect(hidden[0]).toContainElement(screen.getByTestId("culture-quiz-option-icon-0"));
 });
 
+// AC14(a)가 요구하는 나머지 둘. scroll-orientation·scroll-bar-enable이 빠지면
+// 초기값이 각각 가로·꺼짐이라 세로 스크롤이 원리적으로 불가능해진다(Dynamic Type로
+// 넘친 내용에 닿을 수 없다). 형제 화면(CultureScreen 등)의 스크롤 속성 단언과
+// 형태를 맞춘다.
+test("[X10] -scroll에 scroll-orientation='vertical'·scroll-bar-enable='true'가 붙는다", () => {
+  renderOrdering();
+
+  const scroll = screen.getByTestId("culture-quiz-screen-scroll");
+  expect(scroll).toHaveAttribute("scroll-orientation", "vertical");
+  expect(scroll).toHaveAttribute("scroll-bar-enable", "true");
+});
+
+// AC14(a)의 「직계 자식이 정확히 하나」. 저장소 선례(다른 화면들의 U10류)는
+// 「하나를 넘지 않는다」(<=1, 빈 화면을 허용)까지만 재는데, 이 화면은 문항이 항상
+// 있어 내용 컨테이너가 항상 렌더된다 — 그래서 "정확히 하나"까지 잴 수 있고 그래야
+// 한다. 자식 수뿐 아니라 그 하나가 실제 내용 컨테이너인지(진행 문구·제시문을 담고
+// 있는지)까지 확인한다 — 개수만 세면 「자식 하나짜리 빈 껍데기」로도 거짓 통과한다.
+test("[X10] -scroll의 직계 자식이 정확히 하나이고 그 자식이 화면의 내용 컨테이너다", () => {
+  renderOrdering();
+
+  const scroll = screen.getByTestId("culture-quiz-screen-scroll");
+  expect(scroll.children.length).toBe(1);
+
+  const content = scroll.children[0] as HTMLElement;
+  expect(content).toContainElement(screen.getByTestId("culture-quiz-screen-progress"));
+  expect(content).toContainElement(screen.getByTestId("culture-quiz-screen-prompt"));
+});
+
 // ---------------------------------------------------------------- AC14(e): announce 0건
 
 // 화면 파일이 애초에 announce를 참조하지 않는다 — 그 사실을 이 파일에서도 실행으로
