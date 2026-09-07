@@ -227,7 +227,9 @@ test("[C3] culture-screen-quiz가 culture-screen-scroll 밖의 화면 직계 자
 // 부재 단언은 인자 하나짜리 부정형만 쓴다 — 인자 둘짜리는 속성이 다른 값으로
 // 붙어 있어도 통과해 부재를 못 짓는다(같은 파일 X7의 규율). 절 제목은 조작 단위가
 // 아니므로(`bindtap`이 없다) `accessibility-element`로 묶지 않는다(ADR-0016 D12-3).
-// `toBeInTheDocument`를 앞에 둬 대상이 없어서 통과하는 공허한 통과가 아님을 보인다.
+// 공허하지 않음을 짓는 것은 `getByTestId`다 — 대상이 없으면 거기서 던진다. 대조
+// 뒤 셋째 `expect`로 오는 `toBeInTheDocument`는 그래서 실패할 수 없다. 증거가
+// 아니라, 부재 단언의 대상이 실재한다는 것을 읽는 사람에게 드러내는 표시다.
 test("[X9] culture-screen-narrative-title이 accessibility-traits='header'를 갖고 accessibility-element로 묶이지 않는다", () => {
   renderScreen({ narrative: FIXTURE_NARRATIVE });
 
