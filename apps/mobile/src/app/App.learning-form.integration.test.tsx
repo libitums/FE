@@ -181,13 +181,16 @@ test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배�
   expect(screen.queryByTestId("word-choice-screen-title")).not.toBeInTheDocument();
 });
 
-// LIB-244 (integration-design) §8.3(b)(c) · AC 16 — 문화 학습의 액션 행이 문화
-// 퀴즈를 여는 전이와, 퀴즈의 `맵으로`가 문화 학습으로(맵이 아니라) 돌아오는 것을
-// 짓는다. 배정을 "culture"로 대역해 문화 학습에 닿는 것은 위 케이스들과 같은
-// seam이다 — 이 케이스는 그 뒤에 이어지는 문화 학습 → 문화 퀴즈 → 문화 학습
-// 전이 하나를 더한다. `learningFormByStep`은 손대지 않는다(D6) — 대역이 배정을
-// 대신한다.
-test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵으로가 문화 학습으로 돌아온다(맵이 아니다)", () => {
+// LIB-245 (integration-design) — 문화 학습의 액션 행이 문화 퀴즈를 여는 전이와,
+// 퀴즈의 `맵으로`가 맵에 닿는 것(문화 학습이 아니다)을 짓는다. 배정을 "culture"로
+// 대역해 문화 학습에 닿는 것은 위 케이스들과 같은 seam이다 — 이 케이스는 그 뒤에
+// 이어지는 문화 학습 → 문화 퀴즈 → 맵 전이 하나를 더한다. `learningFormByStep`은
+// 손대지 않는다(D6) — 대역이 배정을 대신한다.
+//
+// 오늘은 결선(`App.tsx`)의 `onExitAssessment`가 여전히 `dispatch({ type: "back" })`라
+// 이 케이스의 마지막 단언이 빨갛다 — `navigation.ts`의 `backToRoot`(LIB-245)로
+// 결선이 바뀌어야 초록이 된다.
+test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵으로가 맵으로 돌아온다(문화 학습이 아니다)", () => {
   formStub.current = "culture";
   render(<App />);
 
@@ -205,11 +208,61 @@ test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵�
   );
   expect(screen.queryByTestId("culture-screen-title")).not.toBeInTheDocument();
 
-  // 퀴즈의 맵으로 → 문화 학습으로 돌아온다(D3.1의 push 판정). 맵이 아니다.
+  // 퀴즈의 맵으로 → 맵으로 돌아온다(`backToRoot` 판정). 문화 학습이 아니다.
   fireEvent.tap(screen.getByTestId("culture-quiz-screen-exit"), {});
+  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("culture-quiz-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("culture-screen-title")).not.toBeInTheDocument();
+});
+
+// I-B (LIB-245) — 나간 뒤 맵에서 같은 스텝을 다시 시작하면 문화 학습이 다시 뜬다.
+// 위 케이스에서 맵에 닿은 뒤, 스택에 문화 퀴즈·문화 학습의 잔재가 남아 있지
+// 않다는 것을 같은 스텝을 재시작해 확인한다 — 잔재가 있었다면 재시작이 문화
+// 퀴즈나 빈 화면을 열었을 것이다.
+test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시 시작하면 문화 학습이 다시 뜬다", () => {
+  formStub.current = "culture";
+  render(<App />);
+
+  startStep("ordering");
+  fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
+  expect(screen.getByTestId("culture-quiz-screen-title")).toBeInTheDocument();
+
+  // 맵으로 나간다.
+  fireEvent.tap(screen.getByTestId("culture-quiz-screen-exit"), {});
+  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+
+  // 맵에서 같은 스텝을 다시 시작한다 — 스택에 잔재가 없다.
+  startStep("ordering");
   expect(screen.getByTestId("culture-screen-title")).toHaveTextContent(
     cultureScreenTitle(journeyStepOrdinal("ordering")),
   );
   expect(screen.queryByTestId("culture-quiz-screen-title")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+});
+
+// I-D (LIB-245) — 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 돌아오면 퀴즈가
+// 그대로 있고, 그때 `맵으로`가 맵에 닿는다. 탭 전환은 활성 스택을 바꾸지 않으므로
+// 여정 스택 위의 문화 퀴즈가 그대로 남아 있어야 하고, 그 위에서의 `맵으로`도
+// 여전히 `backToRoot`로 맵에 닿아야 한다.
+test("문화 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 돌아오면 퀴즈가 그대로 있고, 그때 맵으로가 맵에 닿는다", () => {
+  formStub.current = "culture";
+  render(<App />);
+
+  startStep("ordering");
+  fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
+  expect(screen.getByTestId("culture-quiz-screen-title")).toBeInTheDocument();
+
+  // 다른 탭으로 갔다가 여정 탭으로 돌아온다.
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+
+  // 퀴즈가 그대로 있다.
+  expect(screen.getByTestId("culture-quiz-screen-title")).toHaveTextContent(
+    cultureQuizScreenTitle(journeyStepOrdinal("ordering")),
+  );
+
+  // 그 상태에서도 맵으로 → 맵에 닿는다.
+  fireEvent.tap(screen.getByTestId("culture-quiz-screen-exit"), {});
+  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("culture-quiz-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("culture-screen-title")).not.toBeInTheDocument();
 });
