@@ -21,20 +21,17 @@ export type CultureScreenProps = {
   stepOrdinal: number;
   narrative: CultureNarrative;
   onExit: () => void;
-  // 계약 §5.4는 이 필드가 는다고만 적고 옵셔널 여부를 코드 블록으로 고정하지
-  // 않았다(CultureQuizScreenProps의 §4.2 블록과 달리 이 타입은 계약의 fenced
-  // code가 아니다). `?`를 둔 것은 이 화면의 기존 `ui` 테스트(diff 0줄 — 고치지
-  // 않는다)의 기본 렌더 헬퍼가 이 콜백 없이 호출되기 때문이다. 실기 결선
-  // (`App.tsx`)은 항상 값을 채워 넘긴다 — 액션 행은 그와 무관하게 조건 없이
-  // 렌더된다(D3.1).
-  onStartQuiz?: () => void;
+  // 계약 §5.4가 더한 필드 — 필수다. 액션 행(`culture-screen-quiz`)이 조건 없이
+  // 렌더되는데(D3.1) 콜백이 비면 조용히 죽은 버튼이 된다. 실기 결선(`App.tsx`)은
+  // 항상 값을 채워 넘긴다.
+  onStartQuiz: () => void;
 };
 
 export function CultureScreen({
   stepOrdinal,
   narrative,
   onExit,
-  onStartQuiz = () => {},
+  onStartQuiz,
 }: CultureScreenProps): ReactNode {
   return (
     <view className="culture-screen">

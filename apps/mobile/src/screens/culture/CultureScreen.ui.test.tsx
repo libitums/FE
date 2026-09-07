@@ -48,6 +48,7 @@ function renderScreen(
       stepOrdinal={overrides.stepOrdinal ?? 3}
       narrative={overrides.narrative ?? FIXTURE_NARRATIVE}
       onExit={overrides.onExit ?? (() => {})}
+      onStartQuiz={() => {}}
     />,
   );
 }
