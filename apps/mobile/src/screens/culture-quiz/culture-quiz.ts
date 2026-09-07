@@ -2,11 +2,8 @@
 //
 // 계약: .agent-harness/work/lib-244/spec.md §3(타입·모듈 계약).
 //
-// ⚠ LIB-244 (logic-scaffold) — 이 파일은 껍데기다. 계약 §3이 고정한 타입·export
-// 이름·시그니처로 이 모듈을 import 가능하게 세우고, 함수 몸통은 아직 무동작이다.
-// 실제 채점·판정 계산은 이 뒤의 logic 단계가 채운다 — 지금 채우면 그 단계의 red가
-// 서지 않는다(계약 §8.1 「red가 비-공허한 이유」). `TODO(logic)` 주석이 각 함수가
-// 실제로 계산할 식을 적어 둔다.
+// LIB-244 (logic) — 계약 §3이 고정한 타입·export 이름·시그니처대로 이 모듈이 실제
+// 계산을 한다. 전부 부수효과가 없고 하나도 던지지 않는다(§3.3).
 //
 // UI를 import하지 않는다 — 화면 폴더에 있지만 화면 컴포넌트를 참조하지 않는 순수
 // 모듈이다 (culture.ts · listening.ts · word-choice.ts와 같은 형태).
@@ -19,7 +16,7 @@
 // 겹치는 것은 의도다」) — word-choice.ts가 listening.ts에 대해 같은 판단을 이미 적어
 // 뒀다.
 
-import type { AnswerResult } from "../../lib/answer-result";
+import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 // ---------------------------------------------------------------- 도메인 타입 (계약 §3.2)
@@ -75,18 +72,15 @@ const cultureQuizQuestionsByStep: Record<JourneyStepId, readonly CultureQuizQues
 
 // ---------------------------------------------------------------- 순수 함수 (계약 §3.3)
 // 전부 부수효과가 없고 하나도 던지지 않는다.
-//
-// ⚠ logic-scaffold — 아래 몸통은 타입이 요구하는 가장 무의미한 값을 돌려줄 뿐이다
-// (호출은 되지만 정답은 내지 않는다). `TODO(logic)` 줄이 실제 계산식을 적어 둔다.
 
 export const initialCultureQuizSessionState: CultureQuizSessionState = {
   questionIndex: 0,
   selectedChoiceIndex: null,
 };
 
-// TODO(logic): `${ordinal}단계 · 문화 퀴즈` — 구분자는 가운뎃점 양옆 공백(화면 다섯과 같다).
-export function cultureQuizScreenTitle(_ordinal: number): string {
-  return "";
+// 계약 §3.3 표: `${ordinal}단계 · 문화 퀴즈` — 구분자는 가운뎃점 양옆 공백(화면 다섯과 같다).
+export function cultureQuizScreenTitle(ordinal: number): string {
+  return `${ordinal}단계 · 문화 퀴즈`;
 }
 
 // Record가 JourneyStepId 다섯을 전부 갖는 것을 tsc가 강제하므로 조회는 총함수다.
@@ -96,57 +90,79 @@ export function cultureQuizQuestionsForStep(id: JourneyStepId): readonly Culture
   return cultureQuizQuestionsByStep[id];
 }
 
-// TODO(logic): `문항 ${index + 1} / ${total}` — index는 0-based가 1-based 문구가 된다.
-export function cultureQuizProgressLabel(_index: number, _total: number): string {
-  return "";
+// 계약 §3.3 표: `문항 ${index + 1} / ${total}` — index는 0-based가 1-based 문구가 된다.
+export function cultureQuizProgressLabel(index: number, total: number): string {
+  return `문항 ${index + 1} / ${total}`;
 }
 
-// TODO(logic): answerIndex === choiceIndex 비교. 일치면 "correct". answerIndex가 0인
-// 문항에서도 0번 보기가 correct다 — 0을 falsy로 다루는 자리를 만들지 않는다(U4).
-export function judgeCultureQuiz(
-  _question: CultureQuizQuestion,
-  _choiceIndex: number,
-): AnswerResult {
-  return "incorrect";
+// 계약 §3.3 표: answerIndex === choiceIndex 비교. answerIndex가 0인 문항에서도 0번
+// 보기가 correct다 — 일치 비교라 0을 falsy로 다루는 자리가 생기지 않는다(U4).
+export function judgeCultureQuiz(question: CultureQuizQuestion, choiceIndex: number): AnswerResult {
+  return choiceIndex === question.answerIndex ? "correct" : "incorrect";
 }
 
-// TODO(logic): 고른 하나만 판정을 진다. 고르지 않은 정답 보기는 null이다. 미응답
-// 상태에서는 모든 보기가 null이다.
+// 판정을 지는 보기는 고른 하나뿐이다 — 고르지 않은 보기는 정답이어도 null이다.
+// 미응답(selectedChoiceIndex === null)은 어떤 choiceIndex와도 같지 않으므로 아래
+// 한 줄에 함께 걸린다. 0번 보기를 골랐을 때도 0 === 0이라 판정이 나온다.
 export function choiceResultAt(
-  _state: CultureQuizSessionState,
-  _question: CultureQuizQuestion,
-  _choiceIndex: number,
+  state: CultureQuizSessionState,
+  question: CultureQuizQuestion,
+  choiceIndex: number,
 ): AnswerResult | null {
-  return null;
+  if (state.selectedChoiceIndex !== choiceIndex) {
+    return null;
+  }
+  return judgeCultureQuiz(question, choiceIndex);
 }
 
-// TODO(logic): null이면 text 그대로. 아니면 `${text}, ${answerResultLabel(result)}` —
-// 구분자는 쉼표 + 공백(ADR-0016 D3).
-export function optionAccessibilityLabel(text: string, _result: AnswerResult | null): string {
-  return text;
+// 접미사는 lib/answer-result.ts의 answerResultLabel이 낸다 — 새 판정 낱말을 이 모듈에
+// 짓지 않는다. 구분자는 쉼표 + 공백(ADR-0016 D3). 판정이 없으면 접미사를 붙이지 않는다.
+export function optionAccessibilityLabel(text: string, result: AnswerResult | null): string {
+  if (result === null) {
+    return text;
+  }
+  return `${text}, ${answerResultLabel(result)}`;
 }
 
-// TODO(logic): selectedChoiceIndex !== null. `0`을 falsy로 다루는 자리를 만들지
-// 않는다(U7).
-export function hasAnswered(_state: CultureQuizSessionState): boolean {
-  return false;
+// 응답 여부는 파생이다. null 비교라 0번 보기를 골라도 응답으로 센다(U7).
+export function hasAnswered(state: CultureQuizSessionState): boolean {
+  return state.selectedChoiceIndex !== null;
 }
 
-// TODO(logic): questionIndex >= total.
+// 완료도 파생이다 — 상태에 별도 done 필드를 두지 않는다.
 export function isCultureQuizSessionComplete(
-  _state: CultureQuizSessionState,
-  _total: number,
+  state: CultureQuizSessionState,
+  total: number,
 ): boolean {
-  return false;
+  return state.questionIndex >= total;
 }
 
-// TODO(logic): 전이 넷이 정본이다 — ① selectChoice + 미응답 → selectedChoiceIndex
-// 갱신 ② selectChoice + 이미 응답 → 같은 참조(막는 자리가 여기 하나다) ③ nextQuestion
-// + 미응답 → 같은 참조 ④ nextQuestion + 응답 → questionIndex + 1,
-// selectedChoiceIndex: null. 변화 없으면 같은 참조를 돌려준다(U9).
+// 전이 넷이 정본이다(§3.3) — ① selectChoice + 미응답 → selectedChoiceIndex 갱신
+// ② selectChoice + 이미 응답 → 같은 참조(막는 자리가 여기 하나다 — 컴포넌트에 둘째
+// 게이트를 두지 않는다) ③ nextQuestion + 미응답 → 같은 참조 ④ nextQuestion + 응답 →
+// questionIndex + 1, selectedChoiceIndex: null.
 export function cultureQuizSessionReducer(
   state: CultureQuizSessionState,
-  _action: CultureQuizSessionAction,
+  action: CultureQuizSessionAction,
 ): CultureQuizSessionState {
-  return state;
+  switch (action.type) {
+    case "selectChoice": {
+      if (hasAnswered(state)) {
+        return state;
+      }
+      return {
+        questionIndex: state.questionIndex,
+        selectedChoiceIndex: action.choiceIndex,
+      };
+    }
+    case "nextQuestion": {
+      if (state.selectedChoiceIndex === null) {
+        return state;
+      }
+      return {
+        questionIndex: state.questionIndex + 1,
+        selectedChoiceIndex: null,
+      };
+    }
+  }
 }
