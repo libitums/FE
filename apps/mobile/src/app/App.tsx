@@ -51,14 +51,14 @@ type ScreenWiring = {
   // 통과 여부는 여기서 계산하지 않는다 — 판정의 권한은 평가로 옮겨갔다(§0.4 · §1.8(b)).
   onFinishLearning: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
   // LIB-227 계약 §1.8(b): 평가의 `맵으로`. 중도 이탈(`onExitLearning`)과 같은 형태로
-  // 진행을 갱신하지 않고 `back` 하나로 맵에 닿는다.
+  // 진행을 갱신하지 않고 활성 스택의 루트로 곧장 닿는다(ADR-0007 D6).
   onExitAssessment: () => void;
   // LIB-238: 문화의 `맵으로`. 이 화면은 나아가는 수단이 없으므로 진행을
-  // 갱신하지 않고 `back` 하나로 맵에 닿는다 — `onExitLearning`·`onExitAssessment`와
-  // 같은 형태다.
+  // 갱신하지 않고 활성 스택의 루트로 곧장 닿는다 — `onExitLearning`·`onExitAssessment`와
+  // 같은 형태다(ADR-0007 D6).
   onExitCulture: () => void;
   // LIB-244: 문화 학습의 액션 행 `퀴즈 풀기`. 문화 퀴즈를 push한다 — replace가
-  // 아니다. 문화 학습이 스택에 남아야 퀴즈의 `back`이 거기로 돌아온다(D3.1).
+  // 아니다. 나아가는 수단은 자기 화면을 스택에서 지우지 않는다(D3.1).
   onStartCultureQuiz: (id: JourneyStepId) => void;
 };
 
@@ -89,7 +89,7 @@ export function App() {
       dispatch({ type: "push", screen: learningScreenFor(learningFormForStep(id), id) }),
     // 중도 이탈. **진행을 갱신하지 않는다** (수용 기준 10). `onFinishLearning`과
     // 합치지 않는 이유가 이 한 줄의 차이다 (계약 §1.6).
-    onExitLearning: () => dispatch({ type: "back" }),
+    onExitLearning: () => dispatch({ type: "backToRoot" }),
     // (u7) 판정은 평가가 진다 — `judgeAssessment` → `assessmentCompletesStep`. 셸에
     // `verdict === "passed"` 리터럴을 쓰지 않는다(계약 §1.5 · §1.8(b)). 완료를 거는
     // 조건이 생겼을 뿐 `completeStep`·`Math.max` 자체는 한 글자도 안 바뀐다 —
@@ -99,15 +99,15 @@ export function App() {
       if (assessmentCompletesStep(verdict)) {
         setCompletedStepCount((count) => completeStep(count, id));
       }
-      // `replace`이지 `push`가 아니다 — `push`면 평가의 `맵으로`가 `back` 한 번으로
-      // 끝난 듣기 세션에 닿는다. `replace`면 스택이 [journey-map, assessment]가 되어
-      // `back` 하나가 맵이다(계약 §1.8(b)).
+      // `replace`이지 `push`가 아니다 — 끝난 학습 세션은 스택에 남길 자리가
+      // 아니다. 이 근거는 출구(`onExitAssessment`)의 목적지와는 무관하다 — 출구는
+      // 진입 동작이 무엇이든 활성 스택의 루트로 곧장 간다(ADR-0007 D6).
       dispatch({ type: "replace", screen: { name: "assessment", stepId: id, results } });
     },
     // 평가의 `맵으로`. 중도 이탈과 마찬가지로 진행을 갱신하지 않는다 — 판정은 이미
     // `onFinishLearning`에서 끝났다(계약 §1.8(b)).
-    onExitAssessment: () => dispatch({ type: "back" }),
-    onExitCulture: () => dispatch({ type: "back" }),
+    onExitAssessment: () => dispatch({ type: "backToRoot" }),
+    onExitCulture: () => dispatch({ type: "backToRoot" }),
     // push다 — replace가 아니다(계약 §5.2). 문화 학습이 스택에 남는다.
     onStartCultureQuiz: (id) =>
       dispatch({ type: "push", screen: { name: "culture-quiz", stepId: id } }),
