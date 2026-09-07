@@ -88,7 +88,7 @@ CSS 커스텀 프로퍼티와 SVG element가 3.9 기준으로 쓸 수 있다. �
 버전을 바꾸는 커밋은 아래를 통과한 뒤에만 만든다.
 
 1. `pnpm install --frozen-lockfile`
-2. `pnpm verify` (format:check + typecheck + lint + test + build, ADR-0006)
+2. `pnpm verify` (구성은 ADR-0006 D1의 명령 표가 정본이다 — CI 게이트 전부를 덮는다)
 3. **자체 호스트 앱에서 앱이 실제로 뜨는 것까지 한 번 확인** (ADR-0012 D5)
 
 3번이 있는 이유: 1·2는 번들을 만드는 쪽에서만 도는 검사다. **번들이 호스트에서 로드되는

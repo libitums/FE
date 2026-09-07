@@ -36,24 +36,41 @@
 | `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 (`format:check`가 따로) |
 | `pnpm bundle:host` | `build` + 호스트로 사본 복사 | 네이티브 빌드 |
 | `pnpm test` | 앱 `test:unit` + `test:ui` + `test:integration`과 보고서 정책 테스트 | e2e |
-| `pnpm performance:reports:check --base <base> --head <head>` | 두 commit 사이의 앱 변경과 성능 보고서 정책 검사 | 보고서 생성·성능 수치 판정 |
+| `pnpm performance:reports:gate` | **지금 이 브랜치가 CI의 보고서 정책을 통과하나.** 범위를 스스로 구한다 | 임의 범위 감사 (아래가 따로) |
+| `pnpm performance:reports:check --base <base> --head <head>` | **임의의 두 commit을 감사한다.** 소급 확인용 | 범위 자동 산출 (위가 따로) |
 | `pnpm --filter @libitums/mobile performance:capture:smoke` | iOS Host 준비부터 수집·분석·cleanup까지 native 연결 확인 | 실기 baseline·수치 threshold |
-| `pnpm verify` | format:check → typecheck → lint → test → build | 네이티브 빌드 |
+| `pnpm verify` | format:check → typecheck → lint → test → build → performance:reports:gate | 네이티브 빌드 |
 
 - **한 명령은 한 가지 이유로만 실패한다.** 명령이 두 가지 일을 겸하게 만들지 않는다.
+  이 규칙은 **잎 명령**에 걸린다 — `verify`는 잎이 아니라 순서기라서 단계가 여럿이다.
+- **`pnpm verify`가 CI 게이트 전부다.** 로컬에서 이 한 줄이 초록이면 CI의 검사 단계도
+  초록이다. **CI에만 있고 로컬에 없는 검사를 만들지 않는다** — 검사를 늘릴 때는
+  workflow에 단계를 더하지 말고 `verify`에 넣는다.
 - 앱만 돌리려면 `pnpm --filter @libitums/mobile <cmd>`. 루트 스크립트는 `pnpm -r`이 아니라
   명시적 `--filter`를 쓴다 — 범위를 넓히는 것은 명시적 결정이어야 한다.
-- CI도 **같은 저장소 스크립트**를 쓴다. 차이는 Git 비교 commit과 frozen install 같은
-  실행 인자로만 준다.
+- CI도 **같은 저장소 스크립트를 같은 이름으로** 쓴다. 다른 것은 **범위 산출뿐**이다 —
+  CI는 PR base/head를 `POLICY_BASE`·`POLICY_HEAD`로 받고, 로컬은 `origin/main`과의
+  merge-base부터 `HEAD`까지에 **아직 커밋 안 한 작업 트리 변경을 합쳐서** 본다.
+  그래서 **로컬이 CI보다 더 많이 본다.**
 - 네이티브 빌드는 `verify`에 들어가지 않는다. Xcode에서 돈다.
 
+> **그래서 로컬이 CI보다 먼저 빨개진다.** `apps/mobile/src/` 아래를 고치고 아직
+> 보고서를 안 썼으면 커밋 전에도 `pnpm verify`가 실패한다. **고장이 아니라 게이트가
+> 일찍 말하는 것이다.** 반대 방향(로컬 초록인데 CI 빨강)이 이 구성이 없앤 상태다.
+>
+> `origin/main`이 낡았으면 범위가 실제보다 **넓어질** 수 있다. 넓은 쪽으로만 틀리므로
+> 없는 보고서를 요구할 수는 있어도 있는 위반을 놓치지는 않는다. 요구가 이상하면
+> `git fetch origin main` 뒤에 다시 돌린다.
+
 ([ADR-0006 D1·D2·D3](../adr/0006-command-interface-and-test-layers.md),
-[ADR-0012 D6](../adr/0012-native-host-app-minimal.md))
+[ADR-0012 D6](../adr/0012-native-host-app-minimal.md),
+[ADR-0021 D1·D2](../adr/0021-performance-report-ci-automation.md))
 
 ## PR
 
 1. 브랜치를 판다. **`main`에 직접 push하지 않는다.**
-2. PR 전 로컬에서 `pnpm verify`를 돌린다.
+2. PR 전 로컬에서 `pnpm verify`를 돌린다. **이 한 줄이 CI 잡의 검사 단계 전부다** —
+   따로 돌릴 검사는 없다.
 3. 사용자 대면 기능을 바꿨다면 영향 시나리오의 분석 기록을
    `docs/performance/reports/`에 같은 PR로 남긴다. 수집기가 없는 동안의 `미측정` 기록은
    허용하지만 baseline이나 성능 통과로 세지 않는다
@@ -64,7 +81,10 @@
    통째로 되돌릴 수 있다. 커밋 제목은 PR 제목을 쓴다.
 
 > **CI는 있지만 이 절차는 required check로 강제되지 않는다.** 모든 PR과 `main` push에서
-> Linux Verify가 `pnpm verify`와 보고서 정책을 실행한다. iOS performance smoke는 수동 실행과
+> Linux Verify가 **`pnpm verify` 하나**를 실행한다 — 보고서 정책은 그 마지막 단계이지
+> 별도 단계가 아니다. 그래서 **CI 로그에서 정책 실패는 `Verify` 단계 안에 묻힌다.**
+> 단계 이름 대신 그 단계의 출력을 읽는다(실패 사유를 한국어로 찍는다).
+> iOS performance smoke는 수동 실행과
 > 평일 정기 실행에서만 동작하며 관련 PR이 바뀌어도 자동 시작하지 않는다. 초기 관측 기간에는
 > 비차단이다. 저장소가 private이고 현재 플랜의 branch protection API가 403이어서 실패한
 > 검사도 우회할 수 있다. 강제되는 줄 알고 방심하지 않는다. (squash 고정은 예외 — GitHub
@@ -156,6 +176,13 @@ pnpm dev   # 나온 URL을 Explorer의 Bundle URL 칸에 붙여넣고 Go
 > ```sh
 > find /tmp/dd/Build/Products/Debug-iphonesimulator/Host.app -name '*.m4a' | wc -l
 > ```
+>
+> **「초록인데 아무것도 안 본 것」은 이 저장소에서 두 모양으로 나왔다.** 위 자산 등록이
+> 하나고, 다른 하나는 **로컬 `pnpm verify`는 초록인데 CI가 빨간** 경우였다 — 게이트가
+> 로컬과 CI로 갈려 있어서 로컬 초록이 CI를 증언하지 못했다. 같은 계급의 함정이다.
+> 뒤엣것은 `verify`가 CI 게이트 전부를 흡수해 닫혔다(위 「명령」 절). **앞엣것은 아직
+> 안 닫혔다** — 어느 명령도 `.app` 안을 세지 않으므로 위 `find`가 유일한 판정이다.
+> 초록을 볼 때마다 **무엇에 대한 초록인지** 묻는 것이 두 경우에 공통 방어다.
 
 성능 수집 경로 전체를 재현할 때는 macOS, Xcode 26.5, iOS 26.5 runtime, CocoaPods가 있는
 환경에서 한 명령을 쓴다.

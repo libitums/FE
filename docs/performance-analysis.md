@@ -85,11 +85,18 @@ CLI stdout을 그대로 그 경로로 redirect하지 않는다. 먼저 로컬에
 
 ### 보고서 정책 검사
 
-로컬에서 두 commit 사이의 의무를 CI와 같은 스크립트로 확인한다.
+로컬에서도 CI와 같은 스크립트로 확인한다. 명령은 둘이고 **범위를 구하는 방법만** 다르다.
 
 ```sh
-pnpm performance:reports:check --base <base-commit> --head <head-commit>
+pnpm performance:reports:gate                                # 지금 이 브랜치. 범위를 스스로 구한다
+pnpm performance:reports:check --base <base> --head <head>   # 임의의 두 commit을 감사한다
 ```
+
+게이트는 `pnpm verify`의 **마지막 단계**이기도 하다 — `verify`를 돌렸으면 이미 돈 것이고,
+따로 부르는 것은 정책만 빨리 다시 보고 싶을 때다. 게이트의 범위는 `origin/main`과의
+merge-base부터 `HEAD`까지에 **아직 커밋 안 한 작업 트리 변경을 합친 것**이라, 보고서를
+쓰기 전에 런타임 파일을 고쳐 두면 커밋 전에도 걸린다
+([ADR-0021 D2](adr/0021-performance-report-ci-automation.md)).
 
 테스트 파일을 제외한 `apps/mobile/src/**` 또는 `apps/ios/**` 변경에는 README가 아닌
 `docs/performance/reports/*.md` 변경이 하나 이상 필요하다. 변경된 보고서에 다음 문제가
@@ -102,7 +109,9 @@ pnpm performance:reports:check --base <base-commit> --head <head-commit>
 - `미측정`을 baseline 또는 성능 통과로 표현함
 
 앱 런타임 변경이 없으면 "적용 대상 아님"으로 성공한다. GitHub Actions의 Linux Verify는
-모든 PR과 `main` push에서 `pnpm verify` 뒤 이 명령을 실행한다. 별도 macOS workflow는 수동
+모든 PR과 `main` push에서 **`pnpm verify` 하나**를 실행하고, 정책 검사는 그 마지막
+단계로 함께 돈다 — PR base/head는 `POLICY_BASE`·`POLICY_HEAD` 환경변수로 준다.
+별도 macOS workflow는 수동
 `workflow_dispatch`와 평일 정기 `schedule`에서만 `performance:capture:smoke`를 실행한다.
 관련 PR 변경은 자동 실행하지 않으며 초기에는 비차단이다. 둘 다 원본 artifact를 올리거나
 Markdown을 자동 작성·커밋하지 않는다.
