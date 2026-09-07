@@ -361,6 +361,10 @@ expect(indicator).not.toHaveAttribute("accessibility-elements-hidden");
   「스텝별 학습형 배정」 행.
 - **에러 경계**: 루트에 하나뿐이다. 네트워크 실패는 여기로 올리지 않고 화면 안에서 재시도한다.
 - 모든 화면에 **화면 내 back 수단**을 둔다. 하드웨어 뒤로가기에만 의존하지 않는다.
+- **나가는 수단은 라벨이 가리키는 곳으로 간다 — 스택 깊이로 목적지를 맞추지 않는다.**
+  `맵으로`는 활성 스택의 루트로 가고(`backToRoot`), `back`(한 겹 위)으로 대신하지 않는다.
+  「한 겹 위가 마침 맵이다」는 깊이가 늘면 거짓이 된다. 진입을 `push`로 할지 `replace`로
+  할지도 **출구를 맞추려고** 고르지 않는다.
 
 ([ADR-0007](../adr/0007-app-internals-state-routing-data-errors.md))
 
