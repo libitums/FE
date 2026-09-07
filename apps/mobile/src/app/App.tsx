@@ -173,7 +173,8 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
         />
       );
     // LIB-244: 문화 퀴즈. `onExit`은 학습 화면 셋이 쓰는 그 콜백을 그대로 쓴다 —
-    // 하는 일이 `back` 하나로 문자 그대로 같다(계약 §5.2). `onFinish`가 없다 — 판정이
+    // 하는 일이 문자 그대로 같다(계약 §5.2). 그 하는 일은 `back` 하나가 아니라
+    // 활성 스택의 루트로 곧장 닿는 것이다(ADR-0007 D6). `onFinish`가 없다 — 판정이
     // 화면 밖으로 나가지 않는다(D1).
     case "culture-quiz":
       return (
