@@ -334,7 +334,10 @@ describe("D1 — 진행을 걸지 않는다 (U10, 계약 §2 D1 · §10-4의 기
   // 단어 선택의 `wordChoiceSessionResults` 같은 이력→판정 함수에 해당하는 자리를
   // 만들지 않는다는 것을, 정본 export 목록과의 열거 대조로 짓는다 — 새 export가
   // 몰래 늘면(예: `cultureQuizSessionResults`) 이 목록이 어긋나 잡힌다.
-  it("export 목록이 타입 셋 + 상수 하나 + 함수 여덟, 정확히 그것뿐이다", () => {
+  // 케이스 이름은 「값 export 열 개」만 말한다 — 타입은 런타임에 안 남아 이
+  // 열거(Object.keys)에 애초에 잡히지 않으므로 이름이 타입 개수를 세면 초록인
+  // 채로 이름이 거짓이 된다(계약 §8.1 U10 정정).
+  it("값 export가 정확히 열 개다 — 타입은 세지 않는다", () => {
     const expectedValueExports = [
       "choiceResultAt",
       "cultureQuizProgressLabel",
