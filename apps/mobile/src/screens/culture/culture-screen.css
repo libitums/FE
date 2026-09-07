@@ -1,11 +1,12 @@
 /* LIB-238 (ui): 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1) — 색·간격·
    타이포의 생값을 적지 않는다.
 
-   **이 화면에서 세로 치수를 선언하는 자리는 `.culture-screen-exit` 하나이고
-   `min-height`(하한)다.** `height`를 쓰는 자리가 0개다 — Dynamic Type이 켜지면
-   글자만 커지고 상자는 안 커진다는 전제라, 고정 높이는 최대 배율에서 라벨을
-   잘라 낸다(WCAG 1.4.4 · FE ADR-0020 D5). `width: 100%`(채움 갈래)를 쓰는 자리도
-   없다 — 그 갈래는 액션 행의 것이었고 이 화면에는 액션 행이 없다(ADR-0022 D1). */
+   **이 화면에서 세로 치수를 선언하는 자리는 `.culture-screen-exit`와
+   `.culture-screen-quiz` 둘이고 둘 다 `min-height`(하한)다.** `height`를 쓰는
+   자리가 0개다 — Dynamic Type이 켜지면 글자만 커지고 상자는 안 커진다는 전제라,
+   고정 높이는 최대 배율에서 라벨을 잘라 낸다(WCAG 1.4.4 · FE ADR-0020 D5).
+   `width: 100%`(채움 갈래)가 `.culture-screen-quiz`에 정확히 들어온다 — LIB-244
+   D3(액션 행이 선다)가 그 근거를 소멸시켰다. */
 
 .culture-screen {
   display: flex;
@@ -122,4 +123,31 @@
   font-size: var(--libitum-typography-body-l-font-size);
   line-height: var(--libitum-typography-body-l-line-height);
   letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* [고정] 액션 행 — `.culture-quiz-screen-next` · `.word-choice-screen-next` ·
+   `.listening-screen-next` · `.step-sheet-start` · `.assessment-screen-exit`와
+   문자 그대로 같은 값이다(design.md §4.3 「새로 그리지 않는다 — 다섯째로 같은
+   값을 쓴다」). LIB-244 D3 — 문화 퀴즈가 서면서 나아갈 곳이 생겨 이 화면에
+   액션 행이 들어왔다. `<scroll-view>` 밖의 화면 직계 셋째 자식이다 — 안에
+   넣으면 흐름과 함께 밀려 최대 배율에서 닿을 수 없게 된다. */
+.culture-screen-quiz {
+  background: var(--libitum-color-brand-strong);
+  /* 고정 높이가 아니라 하한이다(ADR-0020 D5). */
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.culture-screen-quiz-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
 }

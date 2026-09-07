@@ -215,30 +215,3 @@
   line-height: var(--libitum-typography-button-xl-line-height);
   letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
 }
-
-/* 완료 뒤의 출구 — `-next`와 같은 값이다.
-
-   ⚠ **이 블록의 존재 여부는 계약이 정한다.** 문화 퀴즈가 진행에 거는 방식이 아직
-   미정이라(`docs/screens.md` 미정 표) 완료 뒤 출구가 `결과 보기`인지 머리의 `맵으로`
-   하나로 남는지가 정해지지 않았다. **시각은 어느 쪽이든 같고 라벨 문자열만 갈린다** —
-   출구를 머리에 두기로 하면 이 블록과 짝 라벨 블록을 지운다(design.md §4.2.3). */
-.culture-quiz-screen-finish {
-  background: var(--libitum-color-brand-strong);
-  /* 고정 높이가 아니라 하한이다(ADR-0020 D5). */
-  min-height: var(--libitum-spacing-48);
-  border-radius: var(--libitum-radius-md);
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.culture-quiz-screen-finish-label {
-  color: var(--libitum-color-fg-neutral-inverted);
-  font-family: var(--libitum-typography-button-xl-font-family);
-  font-weight: var(--libitum-typography-button-xl-font-weight);
-  font-size: var(--libitum-typography-button-xl-font-size);
-  line-height: var(--libitum-typography-button-xl-line-height);
-  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
-}

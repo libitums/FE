@@ -9,6 +9,7 @@ import {
 import { BottomNavigator } from "../components/BottomNavigator";
 import { CultureScreen } from "../screens/culture/CultureScreen";
 import { cultureNarrativeForStep } from "../screens/culture/culture";
+import { CultureQuizScreen } from "../screens/culture-quiz/CultureQuizScreen";
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import {
@@ -56,6 +57,9 @@ type ScreenWiring = {
   // 갱신하지 않고 `back` 하나로 맵에 닿는다 — `onExitLearning`·`onExitAssessment`와
   // 같은 형태다.
   onExitCulture: () => void;
+  // LIB-244: 문화 학습의 액션 행 `퀴즈 풀기`. 문화 퀴즈를 push한다 — replace가
+  // 아니다. 문화 학습이 스택에 남아야 퀴즈의 `back`이 거기로 돌아온다(D3.1).
+  onStartCultureQuiz: (id: JourneyStepId) => void;
 };
 
 // 루트 구성 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모인다 (ADR-0003 D5).
@@ -104,6 +108,9 @@ export function App() {
     // `onFinishLearning`에서 끝났다(계약 §1.8(b)).
     onExitAssessment: () => dispatch({ type: "back" }),
     onExitCulture: () => dispatch({ type: "back" }),
+    // push다 — replace가 아니다(계약 §5.2). 문화 학습이 스택에 남는다.
+    onStartCultureQuiz: (id) =>
+      dispatch({ type: "push", screen: { name: "culture-quiz", stepId: id } }),
   };
 
   return (
@@ -162,6 +169,18 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           stepOrdinal={journeyStepOrdinal(screen.stepId)}
           narrative={cultureNarrativeForStep(screen.stepId)}
           onExit={wiring.onExitCulture}
+          onStartQuiz={() => wiring.onStartCultureQuiz(screen.stepId)}
+        />
+      );
+    // LIB-244: 문화 퀴즈. `onExit`은 학습 화면 셋이 쓰는 그 콜백을 그대로 쓴다 —
+    // 하는 일이 `back` 하나로 문자 그대로 같다(계약 §5.2). `onFinish`가 없다 — 판정이
+    // 화면 밖으로 나가지 않는다(D1).
+    case "culture-quiz":
+      return (
+        <CultureQuizScreen
+          stepId={screen.stepId}
+          stepOrdinal={journeyStepOrdinal(screen.stepId)}
+          onExit={wiring.onExitLearning}
         />
       );
     // LIB-239: 결선이 착지했다 — `onStartStep`이 `learningFormForStep`을 거쳐
