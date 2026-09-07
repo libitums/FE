@@ -11,6 +11,11 @@ import { CultureScreen } from "./CultureScreen";
 // (docs/conventions/code.md 「jest-dom 매처는 절반만 쓴다」).
 //
 // 계약: LIB-238 spec §6.2 (ui — required, X1~X8) · §3.3 · §3.4 · §2.4.
+//
+// LIB-244 D3 — 「액션 행이 없다」던 LIB-238의 근거가 소멸했다(퀴즈가 서면서 나아갈
+// 곳이 생겼다). 이 파일 하단의 C1·C2가 그 뒤집힌 판정을 짓는다 — `culture-screen-quiz`가
+// 조건 없이 있고 `맵으로`가 여전히 있다(계약 .agent-harness/work/lib-244/spec.md §8.2
+// C1~C2 · D3.1).
 
 // fixture 문자열은 culture.ts의 다섯 서사(§2.4) 어떤 값과도 겹치지 않는다 — 겹치면
 // 화면이 실제 데이터에 붙어 있어도 X4·X5가 우연히 통과해 버린다. 문단이 셋이라
@@ -45,6 +50,29 @@ function renderScreen(
       onExit={overrides.onExit ?? (() => {})}
     />,
   );
+}
+
+// LIB-244 D3 — `onStartQuiz`는 아직 `CultureScreenProps`에 없다(§5.4가 그 필드를
+// 더할 몫이고, 이 회차는 red를 세우는 회차라 구현을 고치지 않는다). 프로퍼티 객체를
+// 변수에 먼저 담아 스프레드로 넘긴다 — 리터럴을 그 자리에서 바로 넘기면 TS의
+// 「신선한 객체 리터럴」excess-property 검사에 걸린다. 변수를 거치면 그 검사가
+// 적용되지 않는다(TS 핸드북의 공식 우회법). 구현이 필드를 더하는 날 이 우회가
+// 필요 없어진다 — 지워도 그만이다.
+function renderScreenWithQuiz(
+  overrides: {
+    stepOrdinal?: number;
+    narrative?: CultureNarrative;
+    onExit?: () => void;
+    onStartQuiz?: () => void;
+  } = {},
+) {
+  const props = {
+    stepOrdinal: overrides.stepOrdinal ?? 3,
+    narrative: overrides.narrative ?? FIXTURE_NARRATIVE,
+    onExit: overrides.onExit ?? (() => {}),
+    onStartQuiz: overrides.onStartQuiz ?? (() => {}),
+  };
+  return render(<CultureScreen {...props} />);
 }
 
 // ---------------------------------------------------------------- X1: 제목
@@ -144,4 +172,42 @@ test("[X8] 화면 전체에 accessibility-elements-hidden이 0건이다", () => 
   // 아님을 짓는다.
   expect(container.querySelectorAll("*").length).toBeGreaterThan(0);
   expect(container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
+});
+
+// ---------------------------------------------------------------- C1 · C2 (LIB-244 D3)
+//
+// LIB-238이 "이 화면에는 나아가는 수단이 없다"로 액션 행을 안 만든 근거가 문화
+// 퀴즈가 서면서 소멸했다(계약 §2 D3) — 뒤집힌 판정을 여기 짓는다. `culture-screen-quiz`는
+// 조건 없이 렌더되고(D3.1), `맵으로`는 액션 행이 생겨도 걷히지 않는다(둘이 동시에
+// 선다 — 이 화면이 스택에서 안 사라지므로 「나가는 수단은 하나」 규칙과 안 어긋난다).
+
+test("[C1] culture-screen-quiz가 조건 없이 있고 라벨 '퀴즈 풀기'·traits='button'이며 탭하면 onStartQuiz가 정확히 한 번 불린다", () => {
+  const onStartQuiz = vi.fn<() => void>();
+  renderScreenWithQuiz({ onStartQuiz });
+
+  const quiz = screen.getByTestId("culture-screen-quiz");
+  expect(quiz).toHaveAttribute("accessibility-element", "true");
+  expect(quiz).toHaveAttribute("accessibility-label", "퀴즈 풀기");
+  expect(quiz).toHaveAttribute("accessibility-traits", "button");
+
+  fireEvent.tap(quiz, {});
+
+  expect(onStartQuiz).toHaveBeenCalledTimes(1);
+});
+
+// 조건 없이 렌더된다는 것을 문단이 하나뿐인 fixture에서도 짓는다 — 내용에 따라
+// 조건부로 숨는 자리가 아니다.
+test("[C1] 문단이 하나뿐인 fixture에서도 culture-screen-quiz가 있다", () => {
+  renderScreenWithQuiz({ narrative: SINGLE_PARAGRAPH_NARRATIVE });
+
+  expect(screen.getByTestId("culture-screen-quiz")).toBeInTheDocument();
+});
+
+test("[C2] 액션 행이 생겨도 '맵으로'가 여전히 있다 — 나가는 수단이 걷히지 않는다", () => {
+  renderScreenWithQuiz();
+
+  const exit = screen.getByTestId("culture-screen-exit");
+  expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+  expect(exit).toHaveAttribute("accessibility-traits", "button");
+  expect(screen.getByTestId("culture-screen-quiz")).toBeInTheDocument();
 });
