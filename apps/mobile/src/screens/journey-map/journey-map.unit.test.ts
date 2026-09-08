@@ -6,7 +6,10 @@ import type { LearningForm } from "../../lib/learning-form";
 // 듣기 쪽의 실제 이름은 `questionsForStep`이다 (listening.ts:236) — 계약 §3.1이 쓴
 // `listeningQuestionsForStep`은 뜻을 가리키는 이름이라, 저장소의 이름을 그대로 쓰고
 // 여기서 별칭을 준다.
-import { questionsForStep as listeningQuestionsForStep } from "../listening/listening";
+import {
+  listeningQuestionsByStep,
+  questionsForStep as listeningQuestionsForStep,
+} from "../listening/listening";
 import { sentenceOrderQuestionsForStep } from "../sentence-order/sentence-order";
 import { wordChoiceQuestionsForStep } from "../word-choice/word-choice";
 import {
@@ -18,10 +21,13 @@ import {
   journeySteps,
   journeyStepOrdinal,
   learningFormForStep,
+  standardUnitSteps,
   stepAccessibilityLabel,
   stepSheetReducer,
   stepStatusAt,
+  type JourneyStep,
   type JourneyStepId,
+  type JourneyUnit,
   type StepSheetState,
 } from "./journey-map";
 
@@ -185,6 +191,44 @@ describe("journeySteps · initialCompletedStepCount (고정 데이터)", () => {
       { id: "ordering", status: "current" },
       { id: "appointment", status: "locked" },
       { id: "directions", status: "locked" },
+    ]);
+  });
+});
+
+// LIB-249 계약 §4.7 — 접근성 점검(u8) 지적 ②의 축을 unit이 진다.
+// 지키는 것은 「데이터가 낳는 낭독 이름」이지 렌더 표면이 아니다. 표면(속성으로 나가는
+// 것)은 JourneyStepNode.ui.test.tsx의 라벨 케이스들이 같은 리터럴로 진다.
+// ⚠ 기대값을 journeySteps에서 다시 뽑지 않는다 — 그러면 동어반복이 되어 title이 바뀌어도
+// 통과한다. 리터럴로 못 박는 것이 이 케이스의 전부다.
+describe("낭독 이름의 데이터 앵커 (계약 §4.7)", () => {
+  // U-N6
+  it("실제 journeySteps가 초기 진행에서 내는 낭독 이름 다섯이 리터럴 표와 같다", () => {
+    const labels = journeySteps.map((step, index) =>
+      stepAccessibilityLabel(step.title, stepStatusAt(index, initialCompletedStepCount)),
+    );
+
+    expect(labels).toEqual([
+      "첫 인사, 완료됨",
+      "이름 묻기, 완료됨",
+      "주문하기, 현재 스텝",
+      "약속 잡기, 잠김",
+      "길 묻기, 잠김",
+    ]);
+  });
+
+  // U-N7 — 시트가 읽는 표면. 낭독 이름과 다른 자리라 케이스를 가른다.
+  it("실제 journeySteps의 id별 description이 리터럴 표와 같다", () => {
+    const described = journeySteps.map((step) => ({
+      id: step.id,
+      description: step.description,
+    }));
+
+    expect(described).toEqual([
+      { id: "greeting", description: "카페에서 처음 인사를 나눈다" },
+      { id: "introduction", description: "상대의 이름을 묻고 자기를 소개한다" },
+      { id: "ordering", description: "카페에서 마실 것을 주문한다" },
+      { id: "appointment", description: "다음에 만날 날짜와 시간을 정한다" },
+      { id: "directions", description: "약속 장소까지 가는 길을 묻는다" },
     ]);
   });
 });
@@ -471,5 +515,85 @@ describe("교차 불변식 — 학습형과 문항 표 (계약 §3.1 U4 · §1.5
     for (const id of allStepIds) {
       expect(questionCountForForm[learningFormForStep(id)](id)).toBeGreaterThan(0);
     }
+  });
+});
+
+// ------------------------------------------------- 유닛 (LIB-249 계약 §4.1)
+// 여기부터가 LIB-249가 더하는 것이다. 위의 케이스는 하나도 지우거나 뜻을 바꾸지 않는다.
+//
+// standardUnitSteps는 픽스처로 검사한다(계약 §3.4·§4.1) — 실제 journeyUnits의 구성
+// (유닛이 몇 개인지, 어느 스텝이 어느 유닛에 속하는지)은 이음매(§3)이므로 이 파일
+// 어디에서도 단언하지 않는다. 아래 픽스처가 쓰는 id는 JourneyStepId가 닫힌 union이라
+// 실재하는 값을 빌린 것일 뿐, 그 스텝이 실제로 그 유닛에 속한다는 뜻이 아니다 — title도
+// description도 실제 값이 아닌 임의 라벨(A·B·C)을 쓴다.
+
+const fixtureStep = (id: JourneyStepId, label: string): JourneyStep => ({
+  id,
+  title: label,
+  description: label,
+});
+
+const standardUnitFixture = (...steps: readonly JourneyStep[]): JourneyUnit => ({
+  kind: "standard",
+  steps,
+});
+
+const specialUnitFixture = (): JourneyUnit => ({ kind: "special" });
+
+describe("standardUnitSteps (LIB-249 계약 §4.1)", () => {
+  const a = fixtureStep("greeting", "A");
+  const b = fixtureStep("ordering", "B");
+  const c = fixtureStep("directions", "C");
+
+  // U-N1: 일반 유닛 하나의 스텝을 순서 그대로 낸다.
+  it("일반 유닛 하나의 스텝을 순서 그대로 낸다 (U-N1)", () => {
+    const units: readonly JourneyUnit[] = [standardUnitFixture(a, b, c)];
+
+    expect(standardUnitSteps(units)).toEqual([a, b, c]);
+  });
+
+  // U-N2: 특별 유닛이 사이에 낀 목록에서 앞뒤 일반 유닛의 스텝이 이어져 나온다.
+  // ⚠ 특별 유닛을 끝이 아니라 사이에 둔다 — 끝에 두면 slice로도, 첫 유닛만 읽는
+  // 구현으로도 통과한다 (계약 §4.1 「U-N2가 왜 사이에여야 하나」).
+  it("특별 유닛이 사이에 낀 목록에서 앞뒤 일반 유닛의 스텝이 이어져 나온다 (U-N2)", () => {
+    const units: readonly JourneyUnit[] = [
+      standardUnitFixture(a, b),
+      specialUnitFixture(),
+      standardUnitFixture(c),
+    ];
+
+    expect(standardUnitSteps(units)).toEqual([a, b, c]);
+  });
+
+  // U-N3: 특별 유닛만 있는 목록은 빈 배열을 낸다 — 던지지 않는다.
+  it("특별 유닛만 있는 목록은 빈 배열을 낸다 (U-N3)", () => {
+    const units: readonly JourneyUnit[] = [specialUnitFixture(), specialUnitFixture()];
+
+    expect(standardUnitSteps(units)).toEqual([]);
+  });
+
+  // U-N4: 빈 목록은 빈 배열을 낸다.
+  it("빈 목록은 빈 배열을 낸다 (U-N4)", () => {
+    expect(standardUnitSteps([])).toEqual([]);
+  });
+});
+
+// U-N5 (파수꾼): journeySteps의 id 집합과 JourneyStepId의 런타임 열거가 양방향으로
+// 차가 없다. learningFormByStep은 export하지 않으므로, 같은 union으로 타입된
+// listeningQuestionsByStep(Record<JourneyStepId, …>)을 그 열거의 대리로 쓴다
+// (계약 §4.1).
+//
+// 집합의 차로 짓는다 — 개수를 세지 않는다. 길이만 비교하면 「하나 빠지고 하나 늘었다」를
+// 통과시킨다.
+describe("journeySteps ⇔ JourneyStepId (파수꾼, LIB-249 계약 §4.1 U-N5)", () => {
+  it("journeySteps의 id 집합과 JourneyStepId의 런타임 열거가 양방향으로 차가 없다", () => {
+    const journeyStepIds = new Set<string>(journeySteps.map((step) => step.id));
+    const enumeratedIds = new Set<string>(Object.keys(listeningQuestionsByStep));
+
+    const missingFromEnumeration = [...journeyStepIds].filter((id) => !enumeratedIds.has(id));
+    const missingFromJourneySteps = [...enumeratedIds].filter((id) => !journeyStepIds.has(id));
+
+    expect(missingFromEnumeration).toEqual([]);
+    expect(missingFromJourneySteps).toEqual([]);
   });
 });
