@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { announce, isAnnouncementAvailable } from "./accessibility";
+import { announce, announceCompletion, isAnnouncementAvailable } from "./accessibility";
 
 // 계약: .agent-harness/work/lib-227/spec.md §3.2 (JS 접점의 규칙 여섯) · §3.4 (unit이 보는 것)
 // 형태의 정본: ../../lib/audio.unit.test.ts (계약 §3.2 「타이핑은 storage.ts·audio.ts의
@@ -22,6 +22,22 @@ function stubHost(): HostCall[] {
   };
   vi.stubGlobal("NativeModules", { LynxAccessibilityModule: mod });
   return calls;
+}
+
+function stubCompletionHost(): { builtinCalls: HostCall[]; completionCalls: HostCall[] } {
+  const builtinCalls: HostCall[] = [];
+  const completionCalls: HostCall[] = [];
+  const builtin = {
+    accessibilityAnnounce: (...args: readonly unknown[]) => void builtinCalls.push({ args }),
+  };
+  const completion = {
+    announce: (...args: readonly unknown[]) => void completionCalls.push({ args }),
+  };
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: builtin,
+    CompletionAnnouncementModule: completion,
+  });
+  return { builtinCalls, completionCalls };
 }
 
 // 전역 대역을 테스트마다 원상복구한다. 이 파일은 없던 전역(NativeModules)을
@@ -168,5 +184,57 @@ describe("announce — 모듈 값이 null일 때", () => {
 
     expect(() => announce("평가 결과, 통과")).not.toThrow();
     expect(announce("평가 결과, 통과")).toBe("unavailable");
+  });
+});
+
+describe("announceCompletion — 완료 전용 모듈 경계", () => {
+  // 완료 발화는 custom 모듈만 선택하고 builtin 경로로 중복 발화하지 않는다.
+  it("custom 모듈에 원문과 콜백을 정확히 한 번 전달한다", () => {
+    const { builtinCalls, completionCalls } = stubCompletionHost();
+    const content = "문항을 모두 마쳤어요, 결과 보기";
+
+    expect(announceCompletion(content)).toBe("announced");
+
+    expect(completionCalls).toHaveLength(1);
+    expect(completionCalls[0]?.args).toHaveLength(2);
+    expect(completionCalls[0]?.args[0]).toEqual({ content });
+    expect(typeof completionCalls[0]?.args[1]).toBe("function");
+    expect(builtinCalls).toHaveLength(0);
+  });
+
+  it.each([
+    ["모듈이 없을 때", undefined],
+    ["모듈이 null일 때", null],
+  ])("%s에는 기존 builtin announce로 정확히 한 번 fallback한다", (_label, completion) => {
+    const builtinCalls: HostCall[] = [];
+    vi.stubGlobal("NativeModules", {
+      LynxAccessibilityModule: {
+        accessibilityAnnounce: (...args: readonly unknown[]) => void builtinCalls.push({ args }),
+      },
+      CompletionAnnouncementModule: completion,
+    });
+
+    expect(announceCompletion("완료 안내")).toBe("announced");
+    expect(builtinCalls).toHaveLength(1);
+    expect(builtinCalls[0]?.args[0]).toEqual({ content: "완료 안내" });
+  });
+
+  it("NativeModules 전역이 없으면 기존 unavailable fallback을 유지한다", () => {
+    expect(announceCompletion("완료 안내")).toBe("unavailable");
+  });
+
+  it("NativeModules 전역이 null이면 기존 unavailable fallback을 유지한다", () => {
+    vi.stubGlobal("NativeModules", null);
+
+    expect(announceCompletion("완료 안내")).toBe("unavailable");
+  });
+
+  it("일반 announce는 custom 모듈이 있어도 builtin만 한 번 사용한다", () => {
+    const { builtinCalls, completionCalls } = stubCompletionHost();
+
+    expect(announce("평가 결과, 통과")).toBe("announced");
+
+    expect(builtinCalls).toHaveLength(1);
+    expect(completionCalls).toHaveLength(0);
   });
 });

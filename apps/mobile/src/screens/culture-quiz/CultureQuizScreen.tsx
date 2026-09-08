@@ -1,7 +1,7 @@
 import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { announce } from "../../lib/accessibility";
+import { announceCompletion } from "../../lib/accessibility";
 import { CultureQuizOption } from "./CultureQuizOption";
 import {
   choiceResultAt,
@@ -63,7 +63,7 @@ export function CultureQuizScreen({
     if (!complete) {
       return;
     }
-    announce(cultureQuizCompletionAnnouncement(cultureQuizExitLabel));
+    announceCompletion(cultureQuizCompletionAnnouncement(cultureQuizExitLabel));
   }, [complete]);
 
   return (

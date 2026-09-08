@@ -73,6 +73,27 @@ function stubAnnounce(): AnnounceCall[] {
   return calls;
 }
 
+// 완료 전용 custom 모듈과 기존 builtin 호출을 분리해 관찰한다.
+function stubCompletionHost(): { builtin: AnnounceCall[]; completion: AnnounceCall[] } {
+  const builtin: AnnounceCall[] = [];
+  const completion: AnnounceCall[] = [];
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
+        builtin.push({ content: args.content });
+        callback("announced");
+      },
+    },
+    CompletionAnnouncementModule: {
+      announce: (args: { content: string }, callback: (result: unknown) => void) => {
+        completion.push({ content: args.content });
+        callback("announced");
+      },
+    },
+  });
+  return { builtin, completion };
+}
+
 afterEach(() => {
   // announce 대역이 세운 전역을 원복한다 — 지우지 않으면 다른 파일로 샌다
   // (계약 §3.2 「announce 대역은 테스트마다 원복한다」).
@@ -309,6 +330,23 @@ test("전체 흐름(응답 → 다음 → 완료)에서 예외 없이 렌더되�
 
   expect(calls).toHaveLength(1);
   expect(calls[0]?.content).toBe("문항을 모두 마쳤어요, 맵으로");
+});
+
+// 실제 마지막 다음 전이만 custom 완료 발화를 사용하고 builtin 중복은 만들지 않는다.
+test("마지막 다음 뒤 custom 문화 완료 발화가 한 번이고 rerender에도 늘지 않는다", () => {
+  const { builtin, completion } = stubCompletionHost();
+  const view = renderOrdering();
+
+  expect(completion).toHaveLength(0);
+  completeAllQuestions();
+
+  expect(completion).toHaveLength(1);
+  expect(completion[0]?.content).toBe("문항을 모두 마쳤어요, 맵으로");
+  expect(builtin).toHaveLength(0);
+
+  view.rerender(<CultureQuizScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} />);
+  expect(completion).toHaveLength(1);
+  expect(builtin).toHaveLength(0);
 });
 
 // ------------------------------------------- 완료 전이 발화 (LIB-247 계약 §6.2 X-A~X-E)

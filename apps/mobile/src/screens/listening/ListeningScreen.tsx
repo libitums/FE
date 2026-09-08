@@ -1,7 +1,7 @@
 import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { announce } from "../../lib/accessibility";
+import { announceCompletion } from "../../lib/accessibility";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningChoice } from "./ListeningChoice";
 import {
@@ -64,7 +64,7 @@ export function ListeningScreen({
     if (!complete) {
       return;
     }
-    announce(listeningCompletionAnnouncement(listeningFinishLabel));
+    announceCompletion(listeningCompletionAnnouncement(listeningFinishLabel));
   }, [complete]);
 
   return (

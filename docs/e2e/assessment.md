@@ -80,6 +80,14 @@
 
 ⟨2026-09-08, LIB-251⟩ **두 채널의 문자열은 1회차에 둘 다 실기로 확인됐다.**
 
+> **LIB-253 범위 확인 (2026-09-08).** 이 화면의 `평가 결과, 통과/미통과`는
+> `announceCompletion`으로 옮기지 않고 기존 builtin `announce`를 계속 정확히 한 번
+> 쓴다. 자동 UI 계층은 custom completion 모듈 0회·builtin 1회와 두 문자열을
+> 확인했다. **이 default 경로의 기존 실기 관찰은 종료 전이의 high-priority
+> 정책이나 네 화면 E10 가청성을 대신 증명하지 않는다.** 문장 순서의 문항
+> 채점 발화도 같은 default 경계에 남아 있다. LIB-253은 assessment 문구·시점·
+> 출구를 바꾸지 않았다.
+
 **「해당 없음」이 아니다.** 이 저장소의 e2e는 **없는 계층이 아니라 이
 `docs/e2e/<흐름>.md` 수동 채널**이다 — *자동* e2e를 뺀 것은
 [ADR-0006 **D4**](../adr/0006-command-interface-and-test-layers.md)가 이미 닫은

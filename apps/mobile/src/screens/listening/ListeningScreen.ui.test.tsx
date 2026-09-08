@@ -112,6 +112,29 @@ function stubHost(): { audio: HostCall[]; announce: AnnounceCall[] } {
   return { audio, announce };
 }
 
+function stubCompletionHost(): {
+  announce: AnnounceCall[];
+  completion: AnnounceCall[];
+} {
+  const announce: AnnounceCall[] = [];
+  const completion: AnnounceCall[] = [];
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
+        announce.push({ content: args.content });
+        callback("announced");
+      },
+    },
+    CompletionAnnouncementModule: {
+      announce: (args: { content: string }, callback: (result: unknown) => void) => {
+        completion.push({ content: args.content });
+        callback("announced");
+      },
+    },
+  });
+  return { announce, completion };
+}
+
 const sourcesOf = (calls: readonly HostCall[]): string[] => calls.map((call) => call.source);
 
 const stopCount = (calls: readonly HostCall[]): number =>
@@ -404,6 +427,25 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 3 / 3");
   expect(screen.queryByTestId("listening-screen-finish")).not.toBeInTheDocument();
   expect(screen.getByTestId("listening-screen-exit")).toBeInTheDocument();
+});
+
+// 완료 전이만 custom 모듈을 사용하고 builtin announce로 중복 발화하지 않는다.
+test("완료 전이에서 custom announceCompletion이 원문으로 한 번, builtin은 0번 불린다", () => {
+  const { announce, completion } = stubCompletionHost();
+
+  const view = renderOrdering();
+  expect(completion).toHaveLength(0);
+  completeAllThree();
+
+  expect(completion).toHaveLength(1);
+  expect(completion[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+  expect(announce).toHaveLength(0);
+
+  view.rerender(
+    <ListeningScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} onFinish={() => {}} />,
+  );
+  expect(completion).toHaveLength(1);
+  expect(announce).toHaveLength(0);
 });
 
 // 단언 12: 마치기를 탭하면 onFinish가 그 스텝 id와 응답 결과 배열로 정확히 한 번

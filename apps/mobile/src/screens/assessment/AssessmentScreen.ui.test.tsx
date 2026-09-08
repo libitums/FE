@@ -53,6 +53,21 @@ function stubAnnounceHost(): HostCall[] {
   return calls;
 }
 
+// 평가 결과는 완료 전용 custom 모듈로 확장되지 않고 builtin만 사용해야 한다.
+function stubCompletionHost(): { builtin: HostCall[]; completion: HostCall[] } {
+  const builtin: HostCall[] = [];
+  const completion: HostCall[] = [];
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (...args: readonly unknown[]) => builtin.push({ args }),
+    },
+    CompletionAnnouncementModule: {
+      announce: (...args: readonly unknown[]) => completion.push({ args }),
+    },
+  });
+  return { builtin, completion };
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -223,6 +238,20 @@ test("마운트 때 announce가 정확히 한 번 불리고 content가 '평가 �
 
   expect(calls).toHaveLength(1);
   expect(calls[0]?.args[0]).toEqual({ content: "평가 결과, 미통과" });
+});
+
+// assessment의 종합 결과는 completion-only high 정책의 대상이 아니다.
+test.each([
+  ["통과", PASSING_RESULTS, "평가 결과, 통과"],
+  ["미통과", FAILING_RESULTS, "평가 결과, 미통과"],
+])("%s 평가 결과는 builtin announce 1회·custom 0회다", (_label, results, content) => {
+  const { builtin, completion } = stubCompletionHost();
+
+  renderScreen({ results });
+
+  expect(builtin).toHaveLength(1);
+  expect(builtin[0]?.args[0]).toEqual({ content });
+  expect(completion).toHaveLength(0);
 });
 
 // dep 배열이 비어 있다(계약 §3.3) — 같은 인스턴스가 다시 렌더돼도 다시 밀지 않는다.

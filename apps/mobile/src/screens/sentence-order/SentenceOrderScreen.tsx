@@ -5,7 +5,7 @@ import tick from "@libitums/icons/lynx/tick";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
-import { announce } from "../../lib/accessibility";
+import { announce, announceCompletion } from "../../lib/accessibility";
 import { answerResultLabel } from "../../lib/answer-result";
 import type { AnswerResult } from "../../lib/answer-result";
 import { SentenceOrderChip } from "./SentenceOrderChip";
@@ -99,7 +99,7 @@ export function SentenceOrderScreen({
     if (!complete) {
       return;
     }
-    announce(sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel));
+    announceCompletion(sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel));
   }, [complete]);
 
   return (
