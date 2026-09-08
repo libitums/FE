@@ -1,7 +1,7 @@
 import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { announce } from "../../lib/accessibility";
+import { announceCompletion } from "../../lib/accessibility";
 import { WordChoiceOption } from "./WordChoiceOption";
 import {
   choiceResultAt,
@@ -68,7 +68,7 @@ export function WordChoiceScreen({
     if (!complete) {
       return;
     }
-    announce(wordChoiceCompletionAnnouncement(wordChoiceFinishLabel));
+    announceCompletion(wordChoiceCompletionAnnouncement(wordChoiceFinishLabel));
   }, [complete]);
 
   return (

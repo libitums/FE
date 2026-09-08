@@ -1,12 +1,12 @@
-// 낭독 접점. 호스트 앱의 네이티브 모듈 하나(`LynxAccessibilityModule`)를 감싼다
-// (ADR-0017 D3 「접점은 모듈마다 파일 하나」의 셋째 사례).
+// 낭독 접점. 일반 발화는 프레임워크 builtin 모듈을 사용하고,
+// 완료 발화만 `CompletionAnnouncementModule` 전용 호스트 모듈로 보낸다.
 //
 // LIB-227 (logic): 계약(.agent-harness/work/lib-227/spec.md §3.2)이 고정한 타입 +
 // 순수 함수 둘을 구현한다.
 //
 // **타이핑은 `storage.ts` · `audio.ts`의 「지역 인터페이스 + 캐스팅」 형태를 그대로
-// 따른다** (계약 §3.2). `LynxAccessibilityModule`은 프레임워크가 빌트인으로
-// 등록한다 — 호스트(`apps/ios/**`)를 한 줄도 바꾸지 않는다.
+// 따른다** (계약 §3.2). LIB-227의 builtin 일반 발화 경로와 LIB-253의
+// 완료 전용 호스트 모듈 경로를 구분한다.
 
 /**
  * 프레임워크가 `LynxAccessibilityModule`이라는 이름으로 빌트인 등록한다.
@@ -24,6 +24,20 @@ interface LynxAccessibilityModule {
   accessibilityAnnounce(args: { content: string }, callback: (result: unknown) => void): void;
 }
 
+// 완료 발화만 전용 호스트 모듈로 전달하기 위한 접점이다.
+interface CompletionAnnouncementModule {
+  announce(args: { content: string }, callback: (result: unknown) => void): void;
+}
+
+function completionModule(): CompletionAnnouncementModule | undefined {
+  if (typeof NativeModules === "undefined" || NativeModules === null) return undefined;
+  const module = (NativeModules as Record<string, unknown>)["CompletionAnnouncementModule"] as
+    | CompletionAnnouncementModule
+    | null
+    | undefined;
+  return module ?? undefined;
+}
+
 /** 낭독 **요청 한 번의 결과**다. 실제로 들렸는지를 답하지 않는다. */
 export type AnnounceOutcome = "announced" | "unavailable";
 
@@ -33,8 +47,8 @@ export type AnnounceOutcome = "announced" | "unavailable";
 // 화면이 렌더될 때마다 불리므로(계약 §3.2 규칙 1), 가드가 없으면 두 계층이 통째로
 // `ReferenceError`로 죽는다.
 //
-// **두 export가 모두 이 함수 하나를 지나간다.** 없을 때 조용한 것이 두 자리에
-// 흩어져 있으면 한 자리만 고칠 수 있다(계약 §3.2 규칙 2).
+// `isAnnouncementAvailable`과 `announce` 두 export가 이 함수 하나를 지난다.
+// `announceCompletion`은 전용 모듈이 없을 때만 `announce`로 fallback한다.
 //
 // `typeof NativeModules === "undefined"`는 전역이 **없을 때**만 막는다. `typeof null`은
 // `"object"`라 전역 자체가 `null`이면 이 가드를 통과하고, 바로 아래의 색인 접근
@@ -89,5 +103,12 @@ export function announce(content: string): AnnounceOutcome {
 
   host.accessibilityAnnounce({ content }, () => {});
 
+  return "announced";
+}
+
+export function announceCompletion(content: string): AnnounceOutcome {
+  const host = completionModule();
+  if (host === undefined) return announce(content);
+  host.announce({ content }, () => {});
   return "announced";
 }

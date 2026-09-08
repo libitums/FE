@@ -106,6 +106,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 |---|---|---|---|---|
 | `StorageModule` | `get` · `set` · `remove` | 로그인 (세션 유지) | [0012](0012-native-host-app-minimal.md) D2 | **있음** — `apps/ios/Host/StorageModule.swift` |
 | `AudioPlaybackModule` | `play(source, done)` · `stop()` | 듣기 (구현 순서 2번) | [0017](0017-host-native-capabilities-and-audio.md) D3 | **있음** — `apps/ios/Host/AudioPlaybackModule.swift` |
+| `CompletionAnnouncementModule` | `announce(content, callback)` | 듣기·문장 순서·단어 선택·문화 퀴즈의 완료 전이 | [0016](0016-assistive-technology-semantics.md) D11·7 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/CompletionAnnouncementModule.swift`; Android 이관 미구현 |
 
 **재검토 트리거는 숫자다** (ADR-0017 D2): 모듈이 **넷째**로 요구되는 시점, 또는
 **한 모듈의 메서드가 다섯을 넘는 시점**.

@@ -112,6 +112,27 @@ function stubAnnounce(): AnnounceCall[] {
   return calls;
 }
 
+// 완료 전용 모듈과 기존 builtin을 함께 관찰하는 대역이다.
+function stubCompletionHost(): { builtin: AnnounceCall[]; completion: AnnounceCall[] } {
+  const builtin: AnnounceCall[] = [];
+  const completion: AnnounceCall[] = [];
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
+        builtin.push({ content: args.content });
+        callback("announced");
+      },
+    },
+    CompletionAnnouncementModule: {
+      announce: (args: { content: string }, callback: (result: unknown) => void) => {
+        completion.push({ content: args.content });
+        callback("announced");
+      },
+    },
+  });
+  return { builtin, completion };
+}
+
 // 없던 전역을 세우므로 테스트마다 원상복구한다 — 지우지 않으면 다른 파일로 샌다.
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -610,6 +631,25 @@ test("[X-A] 완료 전이 뒤 announce가 정확히 하나이고 content가 '문
   expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument(); // 앵커
   expect(calls).toHaveLength(1);
   expect(calls[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+});
+
+// 완료 전이에서는 custom만 사용하고 builtin으로 중복 발화하지 않는다.
+test("마지막 다음 뒤 custom 완료 발화가 한 번이고 rerender에도 늘지 않는다", () => {
+  const { builtin, completion } = stubCompletionHost();
+  const view = renderOrdering();
+
+  expect(completion).toHaveLength(0);
+  completeAllThree();
+
+  expect(completion).toHaveLength(1);
+  expect(completion[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+  expect(builtin).toHaveLength(0);
+
+  view.rerender(
+    <WordChoiceScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} onFinish={() => {}} />,
+  );
+  expect(completion).toHaveLength(1);
+  expect(builtin).toHaveLength(0);
 });
 
 // X-B. 전이 **전에는** 0건이다. 가드(`if (!complete) return;`)를 지우면 문항 도중에

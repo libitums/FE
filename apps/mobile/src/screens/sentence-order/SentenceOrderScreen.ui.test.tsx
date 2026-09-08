@@ -104,6 +104,27 @@ function stubAnnounce(): AnnounceCall[] {
   return calls;
 }
 
+// 채점 builtin과 완료 custom 채널을 함께 세되 기존 대역은 변경하지 않는다.
+function stubCompletionHost(): { builtin: AnnounceCall[]; completion: AnnounceCall[] } {
+  const builtin: AnnounceCall[] = [];
+  const completion: AnnounceCall[] = [];
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
+        builtin.push({ content: args.content });
+        callback("announced");
+      },
+    },
+    CompletionAnnouncementModule: {
+      announce: (args: { content: string }, callback: (result: unknown) => void) => {
+        completion.push({ content: args.content });
+        callback("announced");
+      },
+    },
+  });
+  return { builtin, completion };
+}
+
 // 조각을 정답 순서대로 눌러 놓는다.
 function placeAllCorrectly(question: SentenceOrderQuestion): void {
   for (const chipIndex of question.answerOrder) {
@@ -506,6 +527,30 @@ test("[X-F] 전체 경로의 발화가 채점들 뒤에 완료 하나로 끝난�
     "채점 결과, 정답",
     "문항을 모두 마쳤어요, 결과 보기",
   ]);
+});
+
+// 실제 두 문항을 채점한 뒤 마지막 다음에서만 custom 완료 채널을 사용한다.
+test("마지막 다음 뒤 custom 완료 발화가 한 번이고 builtin 채점 발화만 유지된다", () => {
+  const { builtin, completion } = stubCompletionHost();
+  const view = renderOrdering();
+
+  expect(completion).toHaveLength(0);
+  placeAllCorrectly(ORDERING_QUESTIONS[0]!);
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+  placeAllCorrectly(ORDERING_QUESTIONS[1]!);
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+  const builtinBeforeCompletion = builtin.length;
+  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+
+  expect(completion).toHaveLength(1);
+  expect(completion[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+  expect(builtin).toHaveLength(builtinBeforeCompletion);
+
+  view.rerender(
+    <SentenceOrderScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} onFinish={() => {}} />,
+  );
+  expect(completion).toHaveLength(1);
 });
 
 // ---------------------------------------------------------------- 접근성

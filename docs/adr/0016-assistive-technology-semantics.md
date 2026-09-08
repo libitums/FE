@@ -822,6 +822,30 @@ git grep -lE 'accessibility-label=\{[a-zA-Z]+(Finish|Exit)Label\}' -- 'apps/mobi
 ⚠ 그리고 **오늘 그 실기가 열리지 않는다** — 채널 둘을 가진 화면에 사용자가 아직 닿지
 못한다. **「미확인」을 「없음」으로 읽지 않는다.**
 
+**(바) 2026-09-08, LIB-253 — 종료 전이만 high priority로 보낸다.** 위 (마)의
+「실물은 아직 못 봤다」는 LIB-247 당시의 역사 기록이고, 현재 판정은 아래와 같다.
+
+- 듣기·문장 순서·단어 선택·문화 퀴즈의 **종료 effect 네 곳만**
+  `announceCompletion(content)`을 부른다. iOS 호스트의
+  `CompletionAnnouncementModule`은 원문을 보존한 `NSAttributedString` 전체에
+  `UIAccessibilitySpeechAttributeAnnouncementPriority = UIAccessibilityPriorityHigh`를 붙여
+  발화한다. generic priority 옵션은 JS API로 열지 않는다.
+- 커스텀 모듈이 없으면 `announceCompletion`은 기존 `announce(content)`를 한 번
+  부르고 던지지 않는다. **평가의 `평가 결과, 통과/미통과`와 문장 순서의
+  문항 채점 발화는 계속 default `announce`다.** completion-only 우선순위를 그
+  발화들로 확장하지 않는다.
+- 자동 계층은 JS 선택·fallback·호출 횟수와 native attributed payload·호스트
+  등록만 증명한다. **가청성·중도 절단·중복은 사람이 iPhone 13 mini,
+  iOS 26.6.1, Release에서 실제 마지막 `다음`을 누르고 판정한다.** 정식 듣기
+  아티팩트(`988bab9a…`) 1개와 fixture 화면→호스트 아티팩트(`80c6c278…`)
+  3개 흐름에서 모두 즉시 한 번, 중복 없이 끝까지 들렸다. 뒤의 세 건은
+  **실제 제품 데이터 E2E가 아니다**; 흐름별 상세와 전체 SHA는
+  `docs/e2e/listening.md`·`sentence-order.md`·`word-choice.md`·`culture-quiz.md`가 진다.
+- 과거 임시 priority 실험의 3/3 전체 청취는 정식 수용 증거가 아니다. 그 실험에서
+  사용자 전체 청취는 3/3이었지만 UIKit `announcementDidFinish` boolean은
+  `true` 1/3이었다. 따라서 그 boolean을 **들림이나 완주의 대리 지표로 사용하지
+  않는다.** 이 정책은 delay·focus 이동·retry·Pod 패치를 추가하지 않는다.
+
 **D1을 부정하지 않는다.** D1의 *"…`accessibility-*` 속성으로만 싣는다"* 는 **요소가 지는
 이름·역할·상태**에 대한 것이다. announce가 미는 것은 요소의 속성이 아니라 **사건**이고,
 그 사건의 낱말은 화면 요소가 이미 지고 있는 것과 같다(1). **발화로 상태를 대신 싣는

@@ -27,6 +27,7 @@ final class ViewController: UIViewController {
       // **한 모듈의 메서드가 다섯을 넘는 시점** (D2).
       config.register(StorageModule.self)
       config.register(AudioPlaybackModule.self)
+      config.register(CompletionAnnouncementModule.self)
       builder.config = config
       builder.screenSize = UIScreen.main.bounds.size
       // 시스템 글자 크기를 코어 배율로 넘긴다 (ADR-0020 D1).
