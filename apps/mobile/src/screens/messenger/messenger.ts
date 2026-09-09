@@ -6,6 +6,7 @@ import type {
   MessengerSessionAction,
   MessengerSessionState,
   MessengerUnitId,
+  SelfMessage,
 } from "./messenger.contract";
 
 const conversations: Record<MessengerUnitId, MessengerConversation> = {
@@ -51,7 +52,7 @@ export const visibleMessengerMessages = (
 export const currentMessengerReply = (
   conversation: MessengerConversation,
   state: MessengerSessionState,
-): MessengerMessage | null => {
+): SelfMessage | null => {
   return state.mode === "completed" ? null : conversation.messages[state.replyIndex === 0 ? 1 : 3];
 };
 

@@ -76,10 +76,7 @@ export function MessengerScreen({
       </scroll-view>
       <view className="messenger-screen-action">
         {reply ? (
-          <ReplyButton
-            reply={reply as Extract<typeof reply, { sender: "self" }>}
-            onReply={handleReply}
-          />
+          <ReplyButton reply={reply} onReply={handleReply} />
         ) : (
           <ReplayButton onReplay={handleReplay} />
         )}

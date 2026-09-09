@@ -117,6 +117,7 @@ export function App({ messengerEventSink = null }: MessengerAppProps = {}) {
       dispatch({ type: "push", screen: { name: "messenger", unitId: id } });
     },
     onMessengerExit: (id, outcome) => {
+      // 계약상 중도 이탈만 기록한다. 완료한 세션의 이탈은 완료 이벤트에 중복 집계하지 않는다.
       if (outcome === "incomplete")
         wiring.messengerEventSink?.({ name: "messenger_unit_exited_incomplete", unitId: id });
       dispatch({ type: "backToRoot" });

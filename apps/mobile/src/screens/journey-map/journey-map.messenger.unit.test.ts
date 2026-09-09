@@ -3,6 +3,14 @@ import { describe, expect, it } from "vitest";
 import { journeyMapItems, journeySteps, standardUnitSteps, type JourneyUnit } from "./journey-map";
 
 describe("journeyMapItems (LIB-254 계약)", () => {
+  it("특별 항목은 유닛의 제목을 맵 데이터에 함께 전달한다", () => {
+    expect(journeyMapItems.find((item) => item.kind === "special")).toEqual({
+      kind: "special",
+      id: "appointment-confirmation",
+      title: "약속 확인 메시지",
+    });
+  });
+
   it("약속 잡기와 길 묻기 사이에 특별 항목을 둔다", () => {
     expect(
       journeyMapItems.map((item) => (item.kind === "standard" ? item.step.id : item.id)),
