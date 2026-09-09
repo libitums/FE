@@ -21,6 +21,7 @@ import type { AnswerResult } from "../lib/answer-result";
 // journey-map.ts에서 **값**을 가져오게 되어 위의 type-only 규약이 깨진다. 값은 App이
 // 읽어 내린다.
 import type { LearningForm } from "../lib/learning-form";
+import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 
 // 탭 목록과 1:1이다. 네 탭은 docs/screens.md의 "홈 · 여정 · 롤플레이 · 설정"에서 왔다.
 // 순서가 곧 바텀 네비게이션의 좌→우 순서다 (bottom-navigator.contract.ts).
@@ -61,7 +62,8 @@ export type Screen =
   | { name: "word-choice"; stepId: JourneyStepId }
   | { name: "culture"; stepId: JourneyStepId }
   | { name: "culture-quiz"; stepId: JourneyStepId }
-  | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] };
+  | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] }
+  | { name: "messenger"; unitId: MessengerUnitId };
 
 // docs/screens.md 130~136행과 ADR-0007 D3이 적은 모양 그대로다. 필드를 더하지 않는다.
 export type Nav = {
