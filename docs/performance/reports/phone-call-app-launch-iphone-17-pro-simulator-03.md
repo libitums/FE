@@ -95,8 +95,12 @@ Memory 수집은 complete, instances 1/1이다.
 
 timing 차이는 회차 01에서 크게 음수, 회차 02에서 양수, 회차 03에서 작게 음수였다.
 전체 실행 순서가 완전한 무작위 교차가 아니고 Simulator OS를 cold boot하거나 cache를
-초기화하지 않았으므로 개선·회귀 방향을 판정하지 않는다. 측정 전 준비한 source app
-manifest를 검증했고 조건별 app 설치·새 PID launch 절차로 raw를 배정했으나, 설치 후
+초기화하지 않았으므로 개선·회귀 방향을 판정하지 않는다.
+세 회차에는 cache와 실행 순서를 통제하지 못한 측정 한계가 있으며, candidate 초기 load
+성능의 개선 또는 회귀를 판정할 수 없다.
+
+측정 전 준비한 source app manifest를 검증했고 조건별 app 설치·새 PID launch 절차로 raw를
+배정했으나, 설치 후
 container 내부 hash는 회차별 재확인하지 않아 source 귀속은 실행 기록에 의존한다. raw에는
 capture UTC가 있지만 launch UTC와 capture producer version은 기록되지 않았다.
 

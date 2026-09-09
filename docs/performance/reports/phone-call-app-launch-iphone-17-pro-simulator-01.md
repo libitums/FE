@@ -95,6 +95,9 @@ Memory의 `totalBytes`와 `mainThreadRuntimeBytes`는 각각 23968 bytes 컸지�
 
 baseline 01은 전체 순서의 첫 실행이고 candidate 01은 그 다음 실행이다. Simulator OS를
 cold boot하거나 cache를 초기화하지 않았으므로 큰 timing 감소는 기능 개선 근거가 아니다.
+따라서 이 회차에는 cache와 실행 순서를 분리하지 못한 측정 한계가 있으며, candidate 초기
+load 성능의 개선 또는 회귀를 판정할 수 없다.
+
 측정 전 준비한 source app manifest를 검증했고 조건별 app 설치·새 PID launch 절차로 raw를
 배정했으나, 설치 후 container 내부 hash는 회차별 재확인하지 않아 source 귀속은 실행 기록에
 의존한다. raw에는 capture UTC가 있지만 launch UTC와 capture producer version은 기록되지

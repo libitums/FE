@@ -92,6 +92,8 @@ Memory 수집은 complete, instances 1/1이다.
 Simulator OS를 cold boot하거나 cache를 초기화하지 않았으므로 이 차이를 회귀 또는 기능
 효과로 판정하지 않는다. candidate의 초기 `totalBytes`와 `mainThreadRuntimeBytes`는 회차
 01과 같은 +23968 bytes지만, 초기 load에서 전화 화면·음원·답장을 실행하지 않았다.
+따라서 이 회차에는 cache와 실행 순서를 분리하지 못한 측정 한계가 있으며, candidate 초기
+load 성능의 개선 또는 회귀를 판정할 수 없다.
 
 `appBytes` 차이는 +425984 bytes이며 회차 01의 차이와 같지 않다. 전역 초기 snapshot의
 변동과 제품 payload 차이가 함께 있으므로 특정 파일이나 모듈에 귀속하지 않는다. 측정 전
