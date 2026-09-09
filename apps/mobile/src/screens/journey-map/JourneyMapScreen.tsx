@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { JourneyStepNode } from "./JourneyStepNode";
 import { MessengerMapItem } from "./MessengerMapItem";
+import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { StepSheet } from "./StepSheet";
 import {
   findStep,
@@ -15,6 +16,7 @@ import {
   type JourneyStepId,
 } from "./journey-map";
 import type { MessengerUnitId } from "../messenger/messenger.contract";
+import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
 
 import "./journey-map-screen.css";
 
@@ -26,6 +28,8 @@ export type JourneyMapScreenProps = {
   onStartStep: (id: JourneyStepId) => void;
   completedMessengerUnitIds: readonly MessengerUnitId[];
   onStartMessengerUnit: (id: MessengerUnitId) => void;
+  completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
+  onStartPhoneCallUnit: (id: PhoneCallUnitId) => void;
 };
 
 // 화면 컴포넌트: 파일명 PascalCase, export 이름과 일치, `~Screen` 접미사 (ADR-0003 D6).
@@ -36,6 +40,8 @@ export function JourneyMapScreen({
   onStartStep,
   completedMessengerUnitIds,
   onStartMessengerUnit,
+  completedPhoneCallUnitIds,
+  onStartPhoneCallUnit,
 }: JourneyMapScreenProps): ReactNode {
   const [sheetState, dispatch] = useReducer(stepSheetReducer, initialStepSheetState);
 
@@ -76,6 +82,14 @@ export function JourneyMapScreen({
                 title="약속 확인 메시지"
                 status={completedMessengerUnitIds.includes(item.id) ? "completed" : "available"}
                 onSelect={onStartMessengerUnit}
+              />
+            ) : item.kind === "phone-call" ? (
+              <PhoneCallMapItem
+                key={item.id}
+                id={item.id}
+                title="약속 확인 전화"
+                status={completedPhoneCallUnitIds.includes(item.id) ? "completed" : "available"}
+                onSelect={onStartPhoneCallUnit}
               />
             ) : (
               <JourneyStepNode

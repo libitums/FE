@@ -29,6 +29,13 @@ import type {
   MessengerEventSink,
 } from "../screens/messenger/messenger.contract";
 import { MessengerScreen } from "../screens/messenger/MessengerScreen";
+import { PhoneCallScreen } from "../screens/phone-call/PhoneCallScreen";
+import {
+  getPhoneCallConversation,
+  completePhoneCallUnit,
+  phoneCallCompletionStatus,
+} from "../screens/phone-call/phone-call";
+import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import {
   messengerCompletionStatus,
   messengerConversationFor,
@@ -67,6 +74,10 @@ type ScreenWiring = {
   onMessengerReplay: (
     id: import("../screens/messenger/messenger.contract").MessengerUnitId,
   ) => void;
+  completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
+  onStartPhoneCallUnit: (id: PhoneCallUnitId) => void;
+  onPhoneCallComplete: (id: PhoneCallUnitId) => void;
+  onPhoneCallExit: (outcome: "incomplete" | "completed") => void;
   completedStepCount: number;
   onStartStep: (id: JourneyStepId) => void;
   // (LIB-239) `onExitListening`·`onFinishListening`에서 개명. 학습 화면 셋이 같은
@@ -107,6 +118,9 @@ export function App({ messengerEventSink = null }: MessengerAppProps = {}) {
   const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
     readonly import("../screens/messenger/messenger.contract").MessengerUnitId[]
   >([]);
+  const [completedPhoneCallUnitIds, setCompletedPhoneCallUnitIds] = useState<
+    readonly PhoneCallUnitId[]
+  >([]);
 
   const wiring: ScreenWiring = {
     messengerEventSink,
@@ -129,6 +143,12 @@ export function App({ messengerEventSink = null }: MessengerAppProps = {}) {
     },
     onMessengerReplay: (id) =>
       messengerEventSink?.({ name: "messenger_unit_replay_started", unitId: id }),
+    completedPhoneCallUnitIds,
+    onStartPhoneCallUnit: (id) =>
+      dispatch({ type: "push", screen: { name: "phone-call", unitId: id } }),
+    onPhoneCallComplete: (id) =>
+      setCompletedPhoneCallUnitIds((ids) => completePhoneCallUnit(ids, id)),
+    onPhoneCallExit: () => dispatch({ type: "backToRoot" }),
     completedStepCount,
     // 시트의 `시작`이 여기로 온다. 목적지는 `learningFormForStep`이 정하고
     // `learningScreenFor`가 화면으로 옮긴다. 이 파일은 학습형 이름을 리터럴로 쓰지
@@ -194,6 +214,8 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onStartStep={wiring.onStartStep}
           completedMessengerUnitIds={wiring.completedMessengerUnitIds}
           onStartMessengerUnit={wiring.onStartMessengerUnit}
+          completedPhoneCallUnitIds={wiring.completedPhoneCallUnitIds}
+          onStartPhoneCallUnit={wiring.onStartPhoneCallUnit}
         />
       );
     case "roleplay-list":
@@ -273,6 +295,19 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
           onComplete={wiring.onMessengerComplete}
           onReplay={wiring.onMessengerReplay}
+        />
+      );
+    case "phone-call":
+      return (
+        <PhoneCallScreen
+          unitId={screen.unitId}
+          conversation={getPhoneCallConversation()}
+          completionStatus={phoneCallCompletionStatus(
+            wiring.completedPhoneCallUnitIds,
+            screen.unitId,
+          )}
+          onComplete={wiring.onPhoneCallComplete}
+          onExit={wiring.onPhoneCallExit}
         />
       );
     default: {

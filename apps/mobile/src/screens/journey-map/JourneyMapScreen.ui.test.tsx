@@ -13,6 +13,8 @@ import {
 const messengerFixture = {
   completedMessengerUnitIds: [] as const,
   onStartMessengerUnit: vi.fn(),
+  completedPhoneCallUnitIds: [] as const,
+  onStartPhoneCallUnit: vi.fn(),
 };
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
