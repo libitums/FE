@@ -117,6 +117,10 @@ boolean 모드 props, compound context, ref, render prop, audio port prop, telem
 
 ## 8. 맵·내비게이션 연결 경계
 
+전화 맵 항목의 정적 `kind`·`id`·`title`은 계약과 맵 데이터에서 전달한다. 완료 ID 목록에
+따른 동적 `status`는 App 상태를 소비하는 렌더 단계에서 합성한다. 따라서 맵 데이터에 전역
+완료 상태를 저장하거나 계약 타입에서 `status`를 삭제하지 않는다.
+
 계약 파일은 향후 연결할 `PhoneCallJourneyUnitContract`,
 `PhoneCallJourneyMapItemContract`, `PhoneCallNavigationScreenContract`를 별도
 타입으로 내보낸다. 이번 고정 단계에서는 기존 `JourneyUnit`과 `Screen` union을 확장하지

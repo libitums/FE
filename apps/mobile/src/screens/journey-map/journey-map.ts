@@ -9,10 +9,10 @@
 // LIB-236 계약 §1.3(a): 학습형 어휘는 lib/learning-form.ts가 갖는다. screens/ → lib/
 // 방향이므로 의존 방향에 어긋나지 않는다 (ADR-0004 D3 · code.md 「import」).
 import type { LearningForm } from "../../lib/learning-form";
-import type { MessengerUnitId } from "../messenger/messenger.contract";
+import type { MessengerConversation, MessengerUnitId } from "../messenger/messenger.contract";
 import type {
   PhoneCallJourneyUnitContract,
-  PhoneCallUnitId,
+  PhoneCallJourneyMapItemContract,
 } from "../phone-call/phone-call.contract";
 
 // ---------------------------------------------------------------- 도메인 타입 (계약 §1.3)
@@ -55,8 +55,12 @@ export type JourneyUnit =
 // 특별 항목 렌더링 계약을 수집하기 위한 타입 껍데기. 실제 항목 삽입·파생은 후속 구현에서 한다.
 export type JourneyMapItem =
   | { readonly kind: "standard"; readonly step: JourneyStep }
-  | { readonly kind: "special"; readonly id: MessengerUnitId }
-  | { readonly kind: "phone-call"; readonly id: PhoneCallUnitId };
+  | {
+      readonly kind: "special";
+      readonly id: MessengerUnitId;
+      readonly title: MessengerConversation["title"];
+    }
+  | Omit<PhoneCallJourneyMapItemContract, "status">;
 
 // ---------------------------------------------------------------- 고정 데이터 (계약 §1.4)
 // 계약이 값까지 고정했다. 진행의 진실의 출처는 이제 App의 상태이고, 이 상수는 그
@@ -122,8 +126,8 @@ export const journeyMapItems: readonly JourneyMapItem[] = journeyUnits.flatMap<J
     unit.kind === "standard"
       ? unit.steps.map((step) => ({ kind: "standard", step }) as const)
       : unit.screen === "messenger"
-        ? [{ kind: "special", id: unit.id } as const]
-        : [{ kind: "phone-call", id: unit.id } as const],
+        ? [{ kind: "special", id: unit.id, title: unit.title } as const]
+        : [{ kind: "phone-call", id: unit.id, title: unit.title } as const],
 );
 
 // 맵이 그리는 스텝들. **유닛 목록에서 파생한다** — 스텝을 따로 나열하면 유닛 목록과

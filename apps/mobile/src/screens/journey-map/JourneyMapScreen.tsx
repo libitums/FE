@@ -79,7 +79,7 @@ export function JourneyMapScreen({
               <MessengerMapItem
                 key={item.id}
                 id={item.id}
-                title="약속 확인 메시지"
+                title={item.title}
                 status={completedMessengerUnitIds.includes(item.id) ? "completed" : "available"}
                 onSelect={onStartMessengerUnit}
               />
@@ -87,7 +87,7 @@ export function JourneyMapScreen({
               <PhoneCallMapItem
                 key={item.id}
                 id={item.id}
-                title="약속 확인 전화"
+                title={item.title}
                 status={completedPhoneCallUnitIds.includes(item.id) ? "completed" : "available"}
                 onSelect={onStartPhoneCallUnit}
               />

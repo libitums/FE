@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import type { MessengerConversation, MessengerSessionState } from "./messenger.contract";
+import type {
+  MessengerConversation,
+  MessengerSessionState,
+  SelfMessage,
+} from "./messenger.contract";
 import {
   completeMessengerUnit,
   currentMessengerReply,
@@ -35,6 +39,22 @@ describe("messengerConversationFor", () => {
 });
 
 describe("messenger session pure functions", () => {
+  it("현재 답장은 타입 단언 없이 자기 메시지 또는 null로 소비한다", () => {
+    const conversation = messengerConversationFor(id);
+    const first: SelfMessage | null = currentMessengerReply(conversation, {
+      mode: "active",
+      replyIndex: 0,
+    });
+    const second: SelfMessage | null = currentMessengerReply(conversation, {
+      mode: "active",
+      replyIndex: 1,
+    });
+    const done: SelfMessage | null = currentMessengerReply(conversation, { mode: "completed" });
+    expect(first).toEqual(conversation.messages[1]);
+    expect(second).toEqual(conversation.messages[3]);
+    expect(done).toBeNull();
+  });
+
   const conversation = {
     id,
     title: "약속 확인 메시지",

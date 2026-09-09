@@ -87,7 +87,7 @@ literal 기대값 fixture를 별도로 둘 수 있다.
 | `initialMessengerSessionState` | `MessengerCompletionStatus` | available→active(0), completed→completed |
 | `messengerSessionReducer` | state, `reply/replay` | active 0→active 1→completed; replay는 completed→active 0; 적용 불가 action은 같은 참조 |
 | `visibleMessengerMessages` | conversation, state | active 0은 앞 1개, active 1은 앞 3개, completed는 5개 |
-| `currentMessengerReply` | conversation, state | active 0은 `self-accept`, active 1은 `self-thanks`, completed는 `null` |
+| `currentMessengerReply` | conversation, state | 반환형은 `SelfMessage \| null`; active 0은 `self-accept`, active 1은 `self-thanks`, completed는 `null` |
 | `messengerProgressLabel` | state | active 0=`대화 1 / 2`, active 1=`대화 2 / 2`, completed=`대화 완료` |
 | `messengerExitOutcome` | state | completed만 `completed`, 나머지는 `incomplete` |
 | `completeMessengerUnit` | 완료 ID 목록, ID | 이미 있으면 같은 참조, 없으면 한 번 추가; 제거 동작 없음 |
@@ -118,6 +118,21 @@ type JourneyUnit =
 standard(directions)` 순서다. `journeySteps = standardUnitSteps(journeyUnits)`는 기존 다섯
 스텝과 순서를 그대로 낸다. 맵은 새 `journeyMapItems` 파생 목록을 순회하며 step과 special을
 명시적으로 갈라 렌더한다. `journeyUnits` 자체는 export하지 않는다.
+
+
+PR #62 리뷰 반영으로 맵 파생 항목의 특별 변형은 다음 계약을 사용한다.
+제목은 `JourneyUnit.title`에서 함께 파생하며, 화면은 `item.title`을 전달한다.
+표시 문구·접근성 이름·순서·진행 상태는 바뀌지 않는다.
+
+```ts
+type JourneyMapItem =
+  | { readonly kind: "standard"; readonly step: JourneyStep }
+  | {
+      readonly kind: "special";
+      readonly id: MessengerUnitId;
+      readonly title: MessengerConversation["title"];
+    };
+```
 
 ### 3.2 ADR-0024 D9 C1~C3 — 권장안에도 필수
 
