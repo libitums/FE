@@ -24,6 +24,16 @@ import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen"
 import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
+import type {
+  MessengerAppProps,
+  MessengerEventSink,
+} from "../screens/messenger/messenger.contract";
+import { MessengerScreen } from "../screens/messenger/MessengerScreen";
+import {
+  messengerCompletionStatus,
+  messengerConversationFor,
+  completeMessengerUnit,
+} from "../screens/messenger/messenger";
 import { ErrorBoundary } from "./ErrorBoundary";
 // LIB-229 계약 §1.4(e): 판정 어휘가 lib/answer-result.ts로 승격됐다.
 import type { AnswerResult } from "../lib/answer-result";
@@ -42,6 +52,21 @@ import "./app.css";
 // (ADR-0007 D3). 화면이 받는 것은 "무엇이 일어났다"는 콜백뿐이고, 그것을 무슨
 // 네비게이션 동작으로 옮길지는 `App`이 정한다.
 type ScreenWiring = {
+  messengerEventSink: MessengerEventSink;
+  completedMessengerUnitIds: readonly import("../screens/messenger/messenger.contract").MessengerUnitId[];
+  onStartMessengerUnit: (
+    id: import("../screens/messenger/messenger.contract").MessengerUnitId,
+  ) => void;
+  onMessengerExit: (
+    id: import("../screens/messenger/messenger.contract").MessengerUnitId,
+    outcome: import("../screens/messenger/messenger.contract").MessengerExitOutcome,
+  ) => void;
+  onMessengerComplete: (
+    id: import("../screens/messenger/messenger.contract").MessengerUnitId,
+  ) => void;
+  onMessengerReplay: (
+    id: import("../screens/messenger/messenger.contract").MessengerUnitId,
+  ) => void;
   completedStepCount: number;
   onStartStep: (id: JourneyStepId) => void;
   // (LIB-239) `onExitListening`·`onFinishListening`에서 개명. 학습 화면 셋이 같은
@@ -66,7 +91,7 @@ type ScreenWiring = {
 };
 
 // 루트 구성 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모인다 (ADR-0003 D5).
-export function App() {
+export function App({ messengerEventSink = null }: MessengerAppProps = {}) {
   // 이 리듀서를 부르는 유일한 자리다. `dispatch`는 셸에 콜백으로 내려간다 —
   // 셸은 `NavAction`도 `dispatch`도 받지 않는다 (ADR-0007 D3).
   const [nav, dispatch] = useReducer(navReducer, initialNav);
@@ -79,8 +104,31 @@ export function App() {
   // (ADR-0007 D1: 저장소 모듈에 넣는 것은 로그인 토큰뿐이다). 앱을 다시 켜면
   // 진행이 `initialCompletedStepCount`로 돌아가는 것이 정상이고 계약이 그것을 적는다.
   const [completedStepCount, setCompletedStepCount] = useState(initialCompletedStepCount);
+  const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
+    readonly import("../screens/messenger/messenger.contract").MessengerUnitId[]
+  >([]);
 
   const wiring: ScreenWiring = {
+    messengerEventSink,
+    completedMessengerUnitIds,
+    onStartMessengerUnit: (id) => {
+      const entryStatus = messengerCompletionStatus(completedMessengerUnitIds, id);
+      messengerEventSink?.({ name: "messenger_unit_opened", unitId: id, entryStatus });
+      dispatch({ type: "push", screen: { name: "messenger", unitId: id } });
+    },
+    onMessengerExit: (id, outcome) => {
+      if (outcome === "incomplete")
+        wiring.messengerEventSink?.({ name: "messenger_unit_exited_incomplete", unitId: id });
+      dispatch({ type: "backToRoot" });
+    },
+    onMessengerComplete: (id) => {
+      if (!completedMessengerUnitIds.includes(id)) {
+        messengerEventSink?.({ name: "messenger_unit_completed", unitId: id });
+        setCompletedMessengerUnitIds((ids) => completeMessengerUnit(ids, id));
+      }
+    },
+    onMessengerReplay: (id) =>
+      messengerEventSink?.({ name: "messenger_unit_replay_started", unitId: id }),
     completedStepCount,
     // 시트의 `시작`이 여기로 온다. 목적지는 `learningFormForStep`이 정하고
     // `learningScreenFor`가 화면으로 옮긴다. 이 파일은 학습형 이름을 리터럴로 쓰지
@@ -139,10 +187,13 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "home":
       return <HomeScreen />;
     case "journey-map":
+      // 메신저 통합 전까지는 타입 적합성만 위한 임시 scaffold wiring입니다.
       return (
         <JourneyMapScreen
           completedStepCount={wiring.completedStepCount}
           onStartStep={wiring.onStartStep}
+          completedMessengerUnitIds={wiring.completedMessengerUnitIds}
+          onStartMessengerUnit={wiring.onStartMessengerUnit}
         />
       );
     case "roleplay-list":
@@ -209,6 +260,19 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           stepOrdinal={journeyStepOrdinal(screen.stepId)}
           onExit={wiring.onExitLearning}
           onFinish={wiring.onFinishLearning}
+        />
+      );
+    case "messenger":
+      return (
+        <MessengerScreen
+          conversation={messengerConversationFor(screen.unitId)}
+          completionStatus={messengerCompletionStatus(
+            wiring.completedMessengerUnitIds,
+            screen.unitId,
+          )}
+          onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
+          onComplete={wiring.onMessengerComplete}
+          onReplay={wiring.onMessengerReplay}
         />
       );
     default: {

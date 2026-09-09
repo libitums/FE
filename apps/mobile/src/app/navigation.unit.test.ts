@@ -84,6 +84,33 @@ describe("initialNav", () => {
 });
 
 describe("navReducer", () => {
+  describe("messenger screen contract", () => {
+    const messengerScreen = { name: "messenger", unitId: "appointment-confirmation" } as const;
+
+    it("push하면 messenger가 current screen이 되고 backToRoot은 journey-map root로 돌아간다", () => {
+      const n = nav({
+        tab: "journey",
+        stacks: { ...baseStacks, journey: [{ name: "journey-map" }] },
+      });
+      const next = navReducer(n, { type: "push", screen: messengerScreen });
+      expect(currentScreen(next)).toEqual(messengerScreen);
+      expect(currentScreen(navReducer(next, { type: "backToRoot" }))).toEqual({
+        name: "journey-map",
+      });
+    });
+
+    it("backToRoot은 messenger만 제거하고 다른 탭 스택은 보존한다", () => {
+      const n = nav({
+        tab: "journey",
+        stacks: { ...baseStacks, journey: [{ name: "journey-map" }, messengerScreen] },
+      });
+      const root = navReducer(n, { type: "backToRoot" });
+      expect(root.stacks.journey).toEqual([{ name: "journey-map" }]);
+      expect(root.stacks.home).toBe(baseStacks.home);
+      expect(root.stacks.roleplay).toBe(baseStacks.roleplay);
+      expect(root.stacks.settings).toBe(baseStacks.settings);
+    });
+  });
   // 1. push / entry 비었을 때 → 현재 탭 스택에 쌓인다. 다른 탭 스택은 그대로다
   it("1. push / entry 비었을 때 → 현재 탭 스택에 쌓이고 다른 탭 스택은 그대로다", () => {
     const n = nav({ tab: "home", stacks: baseStacks });

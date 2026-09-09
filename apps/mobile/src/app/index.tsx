@@ -7,7 +7,7 @@ import "@libitums/design-tokens/css/typography.css";
 
 import { App } from "./App";
 
-root.render(<App />);
+root.render(<App messengerEventSink={null} />);
 
 if (import.meta.webpackHot) {
   import.meta.webpackHot.accept();

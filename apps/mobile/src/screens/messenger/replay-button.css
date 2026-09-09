@@ -1,0 +1,21 @@
+/* 답장 액션과 동일한 토큰으로 완료 화면의 재생 버튼을 구성합니다. */
+.replay-button {
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--libitum-color-brand-strong);
+}
+
+.replay-button-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+  text-align: center;
+}

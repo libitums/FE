@@ -538,7 +538,12 @@ const standardUnitFixture = (...steps: readonly JourneyStep[]): JourneyUnit => (
   steps,
 });
 
-const specialUnitFixture = (): JourneyUnit => ({ kind: "special" });
+const specialUnitFixture = (): JourneyUnit => ({
+  kind: "special",
+  id: "appointment-confirmation",
+  title: "약속 확인 메시지",
+  screen: "messenger",
+});
 
 describe("standardUnitSteps (LIB-249 계약 §4.1)", () => {
   const a = fixtureStep("greeting", "A");

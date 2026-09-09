@@ -1,0 +1,65 @@
+.messenger-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+.messenger-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-layout-gap-inline);
+  flex-shrink: 0;
+}
+.messenger-screen-exit {
+  min-height: var(--libitum-spacing-48);
+  padding: 0 var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.messenger-screen-exit text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+.messenger-screen-title {
+  margin-top: var(--libitum-spacing-12);
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  flex: 1;
+}
+.messenger-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+.messenger-screen-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-layout-gap-block);
+  padding-top: var(--libitum-spacing-16);
+  padding-bottom: var(--libitum-spacing-16);
+}
+.messenger-screen-progress {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+.messenger-message-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+.messenger-screen-action {
+  flex-shrink: 0;
+}

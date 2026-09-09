@@ -2,6 +2,7 @@ import { useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { JourneyStepNode } from "./JourneyStepNode";
+import { MessengerMapItem } from "./MessengerMapItem";
 import { StepSheet } from "./StepSheet";
 import {
   findStep,
@@ -9,8 +10,11 @@ import {
   journeySteps,
   stepSheetReducer,
   stepStatusAt,
+  journeyMapItems,
+  journeyStepOrdinal,
   type JourneyStepId,
 } from "./journey-map";
+import type { MessengerUnitId } from "../messenger/messenger.contract";
 
 import "./journey-map-screen.css";
 
@@ -20,6 +24,8 @@ import "./journey-map-screen.css";
 export type JourneyMapScreenProps = {
   completedStepCount: number;
   onStartStep: (id: JourneyStepId) => void;
+  completedMessengerUnitIds: readonly MessengerUnitId[];
+  onStartMessengerUnit: (id: MessengerUnitId) => void;
 };
 
 // 화면 컴포넌트: 파일명 PascalCase, export 이름과 일치, `~Screen` 접미사 (ADR-0003 D6).
@@ -28,6 +34,8 @@ export type JourneyMapScreenProps = {
 export function JourneyMapScreen({
   completedStepCount,
   onStartStep,
+  completedMessengerUnitIds,
+  onStartMessengerUnit,
 }: JourneyMapScreenProps): ReactNode {
   const [sheetState, dispatch] = useReducer(stepSheetReducer, initialStepSheetState);
 
@@ -60,15 +68,25 @@ export function JourneyMapScreen({
           data-testid="journey-map-screen-map"
           accessibility-elements-hidden={openStep !== undefined}
         >
-          {journeySteps.map((step, index) => (
-            <JourneyStepNode
-              key={step.id}
-              id={step.id}
-              title={step.title}
-              status={stepStatusAt(index, completedStepCount)}
-              onSelect={(id) => dispatch({ type: "openStep", stepId: id })}
-            />
-          ))}
+          {journeyMapItems.map((item) =>
+            item.kind === "special" ? (
+              <MessengerMapItem
+                key={item.id}
+                id={item.id}
+                title="약속 확인 메시지"
+                status={completedMessengerUnitIds.includes(item.id) ? "completed" : "available"}
+                onSelect={onStartMessengerUnit}
+              />
+            ) : (
+              <JourneyStepNode
+                key={item.step.id}
+                id={item.step.id}
+                title={item.step.title}
+                status={stepStatusAt(journeyStepOrdinal(item.step.id) - 1, completedStepCount)}
+                onSelect={(id) => dispatch({ type: "openStep", stepId: id })}
+              />
+            ),
+          )}
         </view>
       </scroll-view>
       {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식이다(계약 R9). */}

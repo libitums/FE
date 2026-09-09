@@ -9,12 +9,22 @@ import {
   type JourneyStepId,
 } from "./journey-map";
 
+// 메신저 계약 props는 기존 여정 맵 UI fixture에서 공통으로 비워 둔다.
+const messengerFixture = {
+  completedMessengerUnitIds: [] as const,
+  onStartMessengerUnit: vi.fn(),
+};
+
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
 // 이 화면은 제목 텍스트 하나만 그린다 — 탭 라벨(`여정`)과 화면 제목(`여정 맵`)은
 // 다르다 (screens.contract.ts).
 test("여정 맵 화면이 제목을 렌더한다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
@@ -23,7 +33,11 @@ test("여정 맵 화면이 제목을 렌더한다", () => {
 // 재고정 2026-09-02: 제목 다섯이 같은 방식으로 heading이 된다 (screens.contract.ts).
 test("여정 맵 화면 제목이 accessibility-traits header를 갖는다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveAttribute(
@@ -40,7 +54,11 @@ test("여정 맵 화면 제목이 accessibility-traits header를 갖는다", () 
 // 단언 7: 스텝 다섯이 전부 렌더되고 각자 data-status가 §1.4 표와 같다.
 test("스텝 다섯이 전부 렌더되고 각자 data-status가 파생 상태와 같다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   journeySteps.forEach((step, index) => {
@@ -56,7 +74,11 @@ test("스텝 다섯이 전부 렌더되고 각자 data-status가 파생 상태�
 // 단언 8: 처음에는 step-sheet-panel이 없다.
 test("처음에는 시트가 렌더되지 않는다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
@@ -65,7 +87,11 @@ test("처음에는 시트가 렌더되지 않는다", () => {
 // 단언 9: journey-step-node-ordering을 tap하면 시트가 나타나고 그 스텝의 정보를 낸다.
 test("스텝을 tap하면 시트가 열리고 그 스텝의 제목·설명을 낸다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -80,7 +106,11 @@ test("스텝을 tap하면 시트가 열리고 그 스텝의 제목·설명을 �
 // 단언 10: step-sheet-close를 tap하면 시트가 사라지고 화면 제목은 그대로다.
 test("닫기를 tap하면 시트가 사라지고 화면 제목은 그대로다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -96,7 +126,11 @@ test("닫기를 tap하면 시트가 사라지고 화면 제목은 그대로다",
 // (제목이 갈린다. 시트가 둘이 되지 않는다).
 test("시트가 열린 채 다른 스텝을 tap하면 시트가 그 스텝으로 바뀐다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -115,7 +149,11 @@ test("시트가 열린 채 다른 스텝을 tap하면 시트가 그 스텝으로
 // 부재와 맵의 가림 여부 두 채널로 함께 본다. 형태는 단언 14~16과 같다.
 test("잠긴 스텝을 tap해도 시트가 열리지 않는다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-appointment"), {});
@@ -131,7 +169,11 @@ test("잠긴 스텝을 tap해도 시트가 열리지 않는다", () => {
 // 있으면 잠긴 스텝의 tap이 그 시트를 닫는 수단도 되지 않는다 — 그대로 열려 있다.
 test("시트가 열린 채로 잠긴 스텝을 tap해도 시트는 그대로 열려 있다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -156,7 +198,11 @@ test("시트가 열린 채로 잠긴 스텝을 tap해도 시트는 그대로 열
 test("시작을 tap하면 onStartStep이 열린 스텝의 id로 한 번 불린다", () => {
   const onStartStep = vi.fn<(id: JourneyStepId) => void>();
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={onStartStep} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={onStartStep}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -193,7 +239,11 @@ test("시작을 tap하면 onStartStep이 열린 스텝의 id로 한 번 불린�
 // 단언 14: 닫혀 있을 때 맵이 가려져 있지 않다.
 test("시트가 닫혀 있을 때 맵의 accessibility-elements-hidden은 false다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   expect(screen.getByTestId("journey-map-screen-map")).toHaveAttribute(
@@ -206,7 +256,11 @@ test("시트가 닫혀 있을 때 맵의 accessibility-elements-hidden은 false�
 // 문서에 있다는 것으로 함께 단언한다.
 test("스텝을 tap해 시트를 열면 맵의 accessibility-elements-hidden이 true가 되고 맵과 스텝은 여전히 문서에 있다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -224,7 +278,11 @@ test("스텝을 tap해 시트를 열면 맵의 accessibility-elements-hidden이 
 // 자리가 이 단언뿐이다(§1.7.1).
 test("닫기를 tap하면 맵의 accessibility-elements-hidden이 다시 false로 돌아온다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -247,7 +305,7 @@ test("닫기를 tap하면 맵의 accessibility-elements-hidden이 다시 false�
 // 읽어, 화면이 받은 값을 실제로 소비하는지를 가른다. props를 무시하고 상수를 읽으면
 // ordering이 여전히 "current"로 나와 여기서 실패한다.
 test("completedStepCount=3으로 렌더하면 ordering이 done, appointment가 current다", () => {
-  render(<JourneyMapScreen completedStepCount={3} onStartStep={() => {}} />);
+  render(<JourneyMapScreen {...messengerFixture} completedStepCount={3} onStartStep={() => {}} />);
 
   expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
   expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
@@ -264,7 +322,7 @@ test("completedStepCount=3으로 렌더하면 ordering이 done, appointment가 c
 // **current인 스텝이 하나도 없는 것이 정상**이다. 새 상태어도 새 분기도 없다는 것을
 // 화면 쪽에서 한 번 못박는다.
 test("completedStepCount=5로 렌더하면 다섯 전부 done이고 current인 스텝이 없다", () => {
-  render(<JourneyMapScreen completedStepCount={5} onStartStep={() => {}} />);
+  render(<JourneyMapScreen {...messengerFixture} completedStepCount={5} onStartStep={() => {}} />);
 
   journeySteps.forEach((step) => {
     expect(screen.getByTestId(`journey-step-node-${step.id}`)).toHaveAttribute(
@@ -283,7 +341,11 @@ test("completedStepCount=5로 렌더하면 다섯 전부 done이고 current인 �
 // U1: 스크롤 컨테이너가 존재한다.
 test("[U1] journey-map-screen-scroll이 존재한다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
@@ -292,7 +354,11 @@ test("[U1] journey-map-screen-scroll이 존재한다", () => {
 // U2: 흐름 자식(맵 컨테이너)이 스크롤 컨테이너 안에 있다.
 test("[U2] journey-map-screen-map이 스크롤 컨테이너 안에 있다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   const scroll = screen.getByTestId("journey-map-screen-scroll");
@@ -302,7 +368,11 @@ test("[U2] journey-map-screen-map이 스크롤 컨테이너 안에 있다", () =
 // U3: 고정 자식(제목)이 스크롤 컨테이너 밖에 있다.
 test("[U3] journey-map-screen-title이 스크롤 컨테이너 밖에 있다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   const scroll = screen.getByTestId("journey-map-screen-scroll");
@@ -314,7 +384,11 @@ test("[U3] journey-map-screen-title이 스크롤 컨테이너 밖에 있다", ()
 // 찾을 수 없다.
 test("[U4] 시트를 열어도 step-sheet-panel은 스크롤 컨테이너 밖이다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -332,7 +406,11 @@ test("[U4] 시트를 열어도 step-sheet-panel은 스크롤 컨테이너 밖이
 // 아니라 계약(§8.3)으로 되돌아가라는 신호다.
 test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   const scroll = screen.getByTestId("journey-map-screen-scroll");
@@ -355,7 +433,11 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
 // U9: scroll-orientation이 "vertical"로 붙어 있다.
 test("[U9] journey-map-screen-scroll에 scroll-orientation='vertical'이 붙는다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   expect(screen.getByTestId("journey-map-screen-scroll")).toHaveAttribute(
@@ -367,7 +449,11 @@ test("[U9] journey-map-screen-scroll에 scroll-orientation='vertical'이 붙는�
 // U11: scroll-bar-enable이 (JSON.stringify를 거친) 문자열 "true"로 붙어 있다.
 test("[U11] journey-map-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   expect(screen.getByTestId("journey-map-screen-scroll")).toHaveAttribute(
@@ -381,7 +467,11 @@ test("[U11] journey-map-screen-scroll에 scroll-bar-enable='true'가 붙는다",
 // 샌다」 표).
 test("[U10] 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
   render(
-    <JourneyMapScreen completedStepCount={initialCompletedStepCount} onStartStep={() => {}} />,
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
   );
 
   expect(screen.getByTestId("journey-map-screen-scroll").children.length).toBeLessThanOrEqual(1);

@@ -9,6 +9,7 @@
 // LIB-236 계약 §1.3(a): 학습형 어휘는 lib/learning-form.ts가 갖는다. screens/ → lib/
 // 방향이므로 의존 방향에 어긋나지 않는다 (ADR-0004 D3 · code.md 「import」).
 import type { LearningForm } from "../../lib/learning-form";
+import type { MessengerUnitId } from "../messenger/messenger.contract";
 
 // ---------------------------------------------------------------- 도메인 타입 (계약 §1.3)
 
@@ -39,7 +40,17 @@ export type JourneyStep = {
  */
 export type JourneyUnit =
   | { readonly kind: "standard"; readonly steps: readonly JourneyStep[] }
-  | { readonly kind: "special" };
+  | {
+      readonly kind: "special";
+      readonly id: MessengerUnitId;
+      readonly title: "약속 확인 메시지";
+      readonly screen: "messenger";
+    };
+
+// 특별 항목 렌더링 계약을 수집하기 위한 타입 껍데기. 실제 항목 삽입·파생은 후속 구현에서 한다.
+export type JourneyMapItem =
+  | { readonly kind: "standard"; readonly step: JourneyStep }
+  | { readonly kind: "special"; readonly id: MessengerUnitId };
 
 // ---------------------------------------------------------------- 고정 데이터 (계약 §1.4)
 // 계약이 값까지 고정했다. 진행의 진실의 출처는 이제 App의 상태이고, 이 상수는 그
@@ -80,10 +91,26 @@ const journeyUnits: readonly JourneyUnit[] = [
       { id: "introduction", title: "이름 묻기", description: "상대의 이름을 묻고 자기를 소개한다" },
       { id: "ordering", title: "주문하기", description: "카페에서 마실 것을 주문한다" },
       { id: "appointment", title: "약속 잡기", description: "다음에 만날 날짜와 시간을 정한다" },
-      { id: "directions", title: "길 묻기", description: "약속 장소까지 가는 길을 묻는다" },
     ],
   },
+  {
+    kind: "special",
+    id: "appointment-confirmation",
+    title: "약속 확인 메시지",
+    screen: "messenger",
+  },
+  {
+    kind: "standard",
+    steps: [{ id: "directions", title: "길 묻기", description: "약속 장소까지 가는 길을 묻는다" }],
+  },
 ];
+
+export const journeyMapItems: readonly JourneyMapItem[] = journeyUnits.flatMap<JourneyMapItem>(
+  (unit) =>
+    unit.kind === "standard"
+      ? unit.steps.map((step) => ({ kind: "standard", step }) as const)
+      : [{ kind: "special", id: unit.id } as const],
+);
 
 // 맵이 그리는 스텝들. **유닛 목록에서 파생한다** — 스텝을 따로 나열하면 유닛 목록과
 // 그 나열이 어긋날 자리가 생긴다 (journeyStepOrdinal이 서수를 따로 안 적는 것과 같은

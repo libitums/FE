@@ -1,0 +1,46 @@
+/* 메시지는 화자와 본문을 분리해 확대 배율에서도 각각 줄바꿈되도록 합니다. */
+.message-bubble {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  max-width: calc(100% - var(--libitum-spacing-48));
+  flex-shrink: 0;
+}
+
+.message-bubble-jimin {
+  align-self: flex-start;
+}
+
+.message-bubble-self {
+  align-self: flex-end;
+}
+
+.message-bubble-speaker {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-dialogue-speaker-font-family);
+  font-weight: var(--libitum-typography-dialogue-speaker-font-weight);
+  font-size: var(--libitum-typography-dialogue-speaker-font-size);
+  line-height: var(--libitum-typography-dialogue-speaker-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-speaker-letter-spacing);
+}
+
+.message-bubble-text {
+  padding: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  font-family: var(--libitum-typography-dialogue-body-font-family);
+  font-weight: var(--libitum-typography-dialogue-body-font-weight);
+  font-size: var(--libitum-typography-dialogue-body-font-size);
+  line-height: var(--libitum-typography-dialogue-body-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
+  white-space: normal;
+}
+
+.message-bubble-jimin .message-bubble-text {
+  color: var(--libitum-color-fg-neutral);
+  background: var(--libitum-color-background-elevated);
+}
+
+.message-bubble-self .message-bubble-text {
+  color: var(--libitum-color-fg-neutral-inverted);
+  background: var(--libitum-color-brand-strong);
+}
