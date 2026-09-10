@@ -184,7 +184,7 @@
 }
 
 .ui-lynx-button-outline.ui-lynx-button-loading .ui-lynx-button-spinner {
-  border-color: var(--libitum-color-border-default);
+  border-color: var(--libitum-color-fg-neutral-muted);
 }
 
 .ui-lynx-button-subtle.ui-lynx-button-loading .ui-lynx-button-spinner {
@@ -193,6 +193,10 @@
 
 .ui-lynx-button-text.ui-lynx-button-loading .ui-lynx-button-spinner {
   border-color: var(--libitum-color-fg-brand);
+}
+
+.ui-lynx-button-loading.ui-lynx-button-disabled .ui-lynx-button-label {
+  color: var(--libitum-color-border-default);
 }
 
 .ui-lynx-button-loading.ui-lynx-button-disabled .ui-lynx-button-spinner {

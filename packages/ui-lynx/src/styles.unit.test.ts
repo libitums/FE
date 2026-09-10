@@ -12,7 +12,7 @@ describe("ui-lynx styles", () => {
     );
   });
 
-  test("Brand 라벨은 white이고 loading disabled spinner는 disabled 표면과 구분된다", () => {
+  test("Brand 라벨은 white이고 loading spinner는 variant 라벨 색을 따른다", () => {
     const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
 
     expect(styles).toMatch(
@@ -24,6 +24,9 @@ describe("ui-lynx styles", () => {
     expect(styles).toMatch(
       /\.ui-lynx-button-loading\.ui-lynx-button-disabled \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-border-default\)/,
     );
+    expect(styles).toMatch(
+      /\.ui-lynx-button-loading\.ui-lynx-button-disabled \.ui-lynx-button-label\s*\{[^}]*color:\s*var\(--libitum-color-border-default\)/,
+    );
   });
 
   test("Button의 loading, pressed, size 계약은 design-system 원본 스펙을 따른다", () => {
@@ -33,7 +36,7 @@ describe("ui-lynx styles", () => {
       /\.ui-lynx-button-loading \.ui-lynx-button-surface\s*\{[^}]*column-gap:\s*var\(--libitum-spacing-6\)/,
     );
     expect(styles).toMatch(
-      /\.ui-lynx-button-outline\.ui-lynx-button-loading \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-border-default\)/,
+      /\.ui-lynx-button-outline\.ui-lynx-button-loading \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-fg-neutral-muted\)/,
     );
     expect(styles).toMatch(
       /\.ui-lynx-button-subtle\.ui-lynx-button-loading \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-fg-neutral-muted\)/,

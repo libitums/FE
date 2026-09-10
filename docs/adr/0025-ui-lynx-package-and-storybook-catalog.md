@@ -39,9 +39,10 @@ FE 제품 보정으로 Brand Button의 label은 원본 revision의 `fg.neutral` 
 `brand.primary`와 white의 3.016:1 대비는 일반 크기 label에 부족하므로 surface는
 `brand.strong`을 사용해 5.461:1을 확보하고 icon과 loading spinner도 white로 맞춘다.
 또한 `loading`과 `disabled`가 함께 주어질 수 있는 소비 API 현실을 반영해 두 상태 class를
-동시에 유지하고, disabled 표면의 `gray.50`과 겹치지 않는 `border.default` spinner를 쓴다.
-이는 사용자 확인을 거친 명시적 FE override이며 design-system 원본이 같은 계약으로 갱신되면
-예외 표기를 제거한다.
+동시에 유지한다. 모든 loading spinner는 같은 variant의 label token을 사용한다. disabled
+조합에서는 label과 spinner 모두 disabled 표면의 `gray.50`과 겹치지 않는 `border.default`를
+쓴다. 이는 사용자 확인을 거친 명시적 FE override이며 design-system 원본이 같은 계약으로
+갱신되면 예외 표기를 제거한다.
 
 ### D1. 공유 구현은 `packages/ui-lynx`, 검증 표면은 `apps/storybook-lynx`에 둔다
 
