@@ -30,7 +30,7 @@ tarball에 컴파일된 JSX·선언·CSS와 README만 들어가는지 검증한�
 48px 뒤로가기 button과 sibling title header로 분리하며, info는 별도 control로 둔다. Status
 Indicator는 점·라벨을 함께 표시하고 줄 전체를 하나의 상태로 알린다.
 
-FE override로 Brand Button은 `brand.strong` surface와 `white` label·icon·spinner를 사용한다.
+Brand Button은 design-system의 `brand.primary` #F46B18 surface와 `white` #FFFFFF label·icon·spinner를 사용한다. 이 3.016:1 조합은 design-system Accessibility 문서에서 Default·Pressed·Loading에만 승인한 예외이며, WCAG AA 통과로 기록하지 않는다.
 Neutral Button은 원본 `gray.800` 대신 `gray.900` surface를 사용한다.
 Loading spinner는 각 variant의 label 색을 따른다. `loading`과 `disabled`를 함께 주면 두
 상태를 모두 유지하고 label·spinner를 `border.default`로 표시하되 tap은 전달하지 않는다.

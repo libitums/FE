@@ -64,7 +64,7 @@
 }
 
 .ui-lynx-button-brand .ui-lynx-button-surface {
-  background-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-brand-primary);
 }
 
 .ui-lynx-button-brand .ui-lynx-button-label {

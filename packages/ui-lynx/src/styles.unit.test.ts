@@ -20,15 +20,16 @@ describe("ui-lynx styles", () => {
     );
   });
 
-  test("Brand 라벨은 white이고 loading spinner는 variant 라벨 색을 따른다", () => {
+  test("Brand surface는 brand primary이고 라벨과 loading spinner는 white를 쓴다", () => {
     const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
 
     expect(styles).toMatch(
       /\.ui-lynx-button-brand \.ui-lynx-button-label\s*\{[^}]*color:\s*var\(--libitum-color-white\)/,
     );
     expect(styles).toMatch(
-      /\.ui-lynx-button-brand \.ui-lynx-button-surface\s*\{[^}]*background-color:\s*var\(--libitum-color-brand-strong\)/,
+      /\.ui-lynx-button-brand \.ui-lynx-button-surface\s*\{[^}]*background-color:\s*var\(--libitum-color-brand-primary\)/,
     );
+    expect(styles).not.toContain("--libitum-color-background-accent");
     expect(styles).toMatch(
       /\.ui-lynx-button-loading\.ui-lynx-button-disabled \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-border-default\)/,
     );
