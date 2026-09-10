@@ -119,6 +119,7 @@ standard(directions)` 순서다. `journeySteps = standardUnitSteps(journeyUnits)
 스텝과 순서를 그대로 낸다. 맵은 새 `journeyMapItems` 파생 목록을 순회하며 step과 special을
 명시적으로 갈라 렌더한다. `journeyUnits` 자체는 export하지 않는다.
 
+
 PR #62 리뷰 반영으로 맵 파생 항목의 특별 변형은 다음 계약을 사용한다.
 제목은 `JourneyUnit.title`에서 함께 파생하며, 화면은 `item.title`을 전달한다.
 표시 문구·접근성 이름·순서·진행 상태는 바뀌지 않는다.

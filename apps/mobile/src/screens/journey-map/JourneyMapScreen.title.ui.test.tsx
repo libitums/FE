@@ -20,6 +20,8 @@ it("특별 항목의 표시와 접근성 이름에 맵 데이터의 제목을 �
       onStartStep={vi.fn()}
       completedMessengerUnitIds={[]}
       onStartMessengerUnit={vi.fn()}
+      completedPhoneCallUnitIds={[]}
+      onStartPhoneCallUnit={vi.fn()}
     />,
   );
   const item = screen.getByTestId("journey-messenger-item-appointment-confirmation");
