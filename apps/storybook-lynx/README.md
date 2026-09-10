@@ -5,6 +5,10 @@ Rspeedy가 만든 Lynx Web bundle을 `<lynx-view>`에서 실행한다. 기반 �
 [`lynx-community/storybook-lynx`](https://github.com/lynx-community/storybook-lynx)의
 `storybook-lynx-rsbuild` framework다.
 
+컴포넌트의 시각·상태 계약은 `libitums/design-system`의 `components/button.md`,
+`components/header/back-header.md`, `components/indicator/status-indicator.md`를 기준으로 하며,
+최초 보정 revision은 `87c1b0d2b745429be9b586cef772deb6c8707ab6`이다.
+
 ```sh
 nvm use
 pnpm storybook:lynx

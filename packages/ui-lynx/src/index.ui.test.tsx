@@ -49,7 +49,7 @@ describe("Button", () => {
 });
 
 describe("BackHeader", () => {
-  test("뒤로가기 묶음과 선택적 정보를 각각 하나의 control로 제공한다", () => {
+  test("전체 leading tap과 분리된 접근성 뒤로가기 control을 제공한다", () => {
     const onBack = vi.fn();
     const onInfo = vi.fn();
     render(
@@ -78,9 +78,10 @@ describe("BackHeader", () => {
     );
     expect(screen.getByTestId("ui-lynx-back-header-info-icon")).toHaveAttribute("content", info02);
 
+    fireEvent.tap(title, {});
     fireEvent.tap(back, {});
     fireEvent.tap(screen.getByTestId("ui-lynx-back-header-info"), {});
-    expect(onBack).toHaveBeenCalledTimes(1);
+    expect(onBack).toHaveBeenCalledTimes(2);
     expect(onInfo).toHaveBeenCalledTimes(1);
   });
 

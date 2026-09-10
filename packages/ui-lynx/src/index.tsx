@@ -80,6 +80,26 @@ export function getStatusIndicatorLabel(props: StatusIndicatorProps): string {
   return labels.filter((label): label is string => Boolean(label)).join(", ");
 }
 
+export function getButtonIconColor(props: ButtonProps): string {
+  if (props.disabled) {
+    return props.variant === "subtle" || props.variant === "text"
+      ? color.gray[300]
+      : color.fg.disabled;
+  }
+
+  switch (props.variant ?? "neutral") {
+    case "neutral":
+      return color.gray[50];
+    case "brand":
+      return color.fg.neutral;
+    case "outline":
+    case "subtle":
+      return color.fg["neutral-muted"];
+    case "text":
+      return color.fg.brand;
+  }
+}
+
 export function Button(props: ButtonProps) {
   const contract = getButtonContract(props);
   const interactive = !props.disabled && !props.loading;
@@ -89,7 +109,7 @@ export function Button(props: ButtonProps) {
       className="ui-lynx-button-icon"
       data-testid="ui-lynx-button-icon"
       content={props.icon}
-      current-color={color.fg.neutral}
+      current-color={getButtonIconColor(props)}
     />
   ) : null;
 
@@ -142,20 +162,25 @@ export function BackHeader(props: BackHeaderProps) {
 
   return (
     <view className="ui-lynx-back-header" data-testid="ui-lynx-back-header">
-      <view className="ui-lynx-back-header-leading">
+      <view className="ui-lynx-back-header-leading" bindtap={handleBack}>
         <view
-          className="ui-lynx-back-header-back"
+          className="ui-lynx-back-header-back-icon-area"
           data-testid="ui-lynx-back-header-back"
           accessibility-element={true}
           accessibility-label={`뒤로, ${props.title}`}
           accessibility-traits="button"
-          bindtap={handleBack}
+          catchtap={handleBack}
         >
           <svg
-            className="ui-lynx-back-header-icon"
+            className="ui-lynx-back-header-icon ui-lynx-back-header-icon-default"
             data-testid="ui-lynx-back-header-back-icon"
             content={arrowLeft03}
             current-color={color.fg["neutral-subtle"]}
+          />
+          <svg
+            className="ui-lynx-back-header-icon ui-lynx-back-header-icon-pressed"
+            content={arrowLeft03}
+            current-color={color.fg.neutral}
           />
         </view>
         <view className="ui-lynx-back-header-copy">
@@ -186,10 +211,15 @@ export function BackHeader(props: BackHeaderProps) {
           bindtap={handleInfo}
         >
           <svg
-            className="ui-lynx-back-header-icon"
+            className="ui-lynx-back-header-icon ui-lynx-back-header-icon-default"
             data-testid="ui-lynx-back-header-info-icon"
             content={info02}
             current-color={color.fg["neutral-subtle"]}
+          />
+          <svg
+            className="ui-lynx-back-header-icon ui-lynx-back-header-icon-pressed"
+            content={info02}
+            current-color={color.fg.neutral}
           />
         </view>
       ) : null}

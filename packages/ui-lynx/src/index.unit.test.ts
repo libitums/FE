@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
+import { color } from "@libitums/design-tokens";
 
-import { getButtonContract, getStatusIndicatorLabel } from "./index";
+import { getButtonContract, getButtonIconColor, getStatusIndicatorLabel } from "./index";
 import type { ButtonSize, ButtonVariant, ButtonWidth } from "./index";
 
 describe("getButtonContract", () => {
@@ -47,6 +48,27 @@ describe("getButtonContract", () => {
         "ui-lynx-button ui-lynx-button-neutral ui-lynx-button-m ui-lynx-button-hug ui-lynx-button-loading",
       traits: "button",
     });
+  });
+});
+
+describe("getButtonIconColor", () => {
+  test.each([
+    ["neutral", color.gray[50]],
+    ["brand", color.fg.neutral],
+    ["outline", color.fg["neutral-muted"]],
+    ["subtle", color.fg["neutral-muted"]],
+    ["text", color.fg.brand],
+  ] as const)("%s variant의 기본 전경색을 따른다", (variant, expected) => {
+    expect(getButtonIconColor({ label: "계속", variant })).toBe(expected);
+  });
+
+  test("disabled 전경색은 variant별 스펙을 따른다", () => {
+    expect(getButtonIconColor({ disabled: true, label: "계속", variant: "neutral" })).toBe(
+      color.fg.disabled,
+    );
+    expect(getButtonIconColor({ disabled: true, label: "계속", variant: "text" })).toBe(
+      color.gray[300],
+    );
   });
 });
 

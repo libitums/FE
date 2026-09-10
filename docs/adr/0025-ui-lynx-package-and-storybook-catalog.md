@@ -19,11 +19,32 @@ Rspeedy 변환, Lynx 요소와 이벤트 경계를 검증하지 못한다. 반�
 
 ## 결정
 
+### D0. libitums/design-system의 컴포넌트 문서를 시각 계약의 원본으로 삼는다
+
+`libitums/design-system`의 `components/button.md`, `components/header/back-header.md`,
+`components/indicator/status-indicator.md`와 이들이 참조하는 foundation을 구현 전에 읽고
+상태·크기·간격·token·접근성 계약에 사용한다. 최초 보정 기준 revision은
+`87c1b0d2b745429be9b586cef772deb6c8707ab6`이다. Storybook story는 이 계약의 대표 상태를
+보여주며, 값이 다르면 FE 구현을 임의 기준으로 유지하지 않는다.
+
+단, 원본 Back Header 문서의 64px 프레임(12 + 40 + 12)과 48px focusable hit area는 같은
+세로 box model에서 동시에 성립하지 않는다. ReactLynx 매핑은 보이는 24px 아이콘의 중심을
+그대로 유지하면서 세로 inset을 8px로 두어 `8 + 48 + 8 = 64`로 해석한다. 또한 Lynx의
+`:focus-visible` 지원은 문서화되지 않았다. 현재 CSS는 `:focus` ring을 best-effort fallback으로
+두지만 정적 CSS test나 Storybook은 실제 native focus 표시를 증명하지 않는다. 제품 route가
+이 package를 채택할 때 접근성 focus event/API를 state/class에 연결하고 native 실기 검증으로
+focused 계약을 닫는다.
+
 ### D1. 공유 구현은 `packages/ui-lynx`, 검증 표면은 `apps/storybook-lynx`에 둔다
 
 `packages/ui-lynx`는 앱을 import하지 않고 design token·icon과 ReactLynx peer만 소비한다.
 `apps/storybook-lynx`는 공개 package export만 사용한다. 기존 `apps/mobile` 화면은 이번
 변경을 이유로 강제 이관하지 않는다.
+
+design-system 저장소는 원칙적으로 플랫폼 구현과 검증도 직접 소유한다. 이번에는 이미
+진행 중인 FE 병렬 작업을 막지 않고 소비 API를 검증하기 위해 `packages/ui-lynx`를 임시
+예외로 둔다. design-system이 공식 ReactLynx package를 제공하면 FE package를 확장하지
+않고 공식 package로 교체하며, 중복 구현은 제거한다.
 
 `apps/storybook-lynx`는 제품 앱이 아니라 개발·검증 앱이다. 따라서 서비스 라우팅이나
 상태를 소유하지 않고, 공개 컴포넌트의 states와 variants만 story로 드러낸다.
@@ -58,6 +79,12 @@ Storybook도 workspace source가 아니라 공개 export를 소비한다.
 세 컴포넌트는 design-system token과 icon을 사용하고 상태·variant를 명시적 union으로
 닫는다. 필요한 token이 없으면 임의 semantic token을 만들지 않는다. 공개 컴포넌트를
 늘리는 것은 실제 제품 소비 또는 명시적 납품 요구가 생길 때 별도 결정한다.
+
+Back Header는 design-system의 아이콘·제목 묶음 전체 tap 동작을 유지한다. 다만 ReactLynx의
+iOS 접근성 트리에서 accessible button 안에 title header를 중첩하지 않도록, 48px 아이콘
+영역을 이름 있는 뒤로가기 button으로 노출하고 제목은 sibling header leaf로 둔다. 이는
+ADR-0016의 leaf semantics를 지키는 플랫폼 접근성 예외이며, pointer/tap hit 영역과 접근성
+focus node의 경계가 의도적으로 다르다.
 
 ### D5. Storybook 웹 확인과 native 확인을 구분한다
 
@@ -100,6 +127,8 @@ Storybook integration test는 이전 실행의 ignored `dist`에 의존하지 �
   없는 화면까지 범위를 넓히고, 병렬 화면 작업과 충돌한다.
 - **TSX source를 package 기본 export로 둔다** — 모든 소비 도구가 dependency 내부의
   TypeScript까지 처리해야 하므로 type-erased dist를 기본으로 둔다.
+- **design-system 소유권 규칙을 영구적으로 무시한다** — 임시 FE 검증 구현이 두 번째 원본이
+  되므로 버린다. 공식 ReactLynx package가 생기면 이 구현을 교체한다.
 
 ## 대가
 
@@ -111,6 +140,7 @@ Storybook integration test는 이전 실행의 ignored `dist`에 의존하지 �
 ## 재검토 조건
 
 - `storybook-lynx-rsbuild`가 unified dev server 또는 native preview를 공식 지원할 때 D2·D5
+- design-system 저장소가 공식 ReactLynx component package를 배포할 때 D0·D1의 임시 예외
 - 두 번째 제품 앱이 `@libitums/ui-lynx`를 소비할 때 package 공개 범위와 peer 범위
 - 공개 컴포넌트가 10개를 넘을 때 subpath export와 story 분류
 - Storybook과 native host에서 같은 state가 다르게 보이는 사례가 1건 생길 때 수동 검증 경계
