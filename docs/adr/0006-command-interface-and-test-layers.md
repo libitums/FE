@@ -17,6 +17,11 @@
 
 ## 결정
 
+> **2026-09-10 확장:** 첫 공유 package와 Storybook 검증 앱이 생겨 루트 명령이 둘을
+> 명시적으로 포함한다. `storybook:lynx`와 정적 build, package pack 검사, workspace cycle
+> 검사의 정확한 계약은 ADR-0025 D3·D6이 맡는다. 기존 unit/ui/integration 계층과 `verify`
+> 순서는 바꾸지 않는다.
+
 ### D1. 루트 명령
 
 앱이 하나이므로(ADR-0002) 루트에서 전부 돈다.

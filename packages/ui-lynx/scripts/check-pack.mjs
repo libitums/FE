@@ -29,4 +29,26 @@ const forbidden = files.find(
 );
 if (forbidden) throw new Error(`packed artifact leaks development input: ${forbidden}`);
 
-console.log(`pack contract passed: ${path.basename(archive)} (${files.length} files)`);
+const runtime = execFileSync("tar", ["-xOzf", archive, "package/dist/index.jsx"], {
+  encoding: "utf8",
+});
+
+if (!/<(?:view|text|svg)\b/.test(runtime)) {
+  throw new Error("packed runtime does not contain authored ReactLynx JSX");
+}
+
+const loweredJsx = [
+  ["React.createElement(", "classic React.createElement"],
+  ["jsx-runtime", "jsx-runtime import"],
+  ["_jsx(", "automatic _jsx helper"],
+  ["_jsxs(", "automatic _jsxs helper"],
+  ["_jsxDEV(", "automatic _jsxDEV helper"],
+].find(([pattern]) => runtime.includes(pattern));
+
+if (loweredJsx) {
+  throw new Error(`packed runtime lowered authored JSX via ${loweredJsx[1]}`);
+}
+
+console.log(
+  `pack contract passed: ${path.basename(archive)} (${files.length} files, authored JSX preserved)`,
+);

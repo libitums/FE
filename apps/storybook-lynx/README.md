@@ -14,6 +14,13 @@ pnpm storybook:lynx
 명령은 먼저 Button·Back Header·Status Indicator의 `.web.bundle`을 만들고, Rspeedy watch와
 Storybook dev server를 함께 유지한다.
 
+Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
+소비한다. `tsconfig.typecheck.json`의 source mapping은 코드 생성을 하지 않는 타입 검사에만
+쓰며 Rspeedy 기본 설정에는 적용하지 않는다.
+
+`pnpm --filter @libitums/storybook-lynx test`도 먼저 `@libitums/ui-lynx`와 정적 Storybook을
+build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없이 동작한다.
+
 ## 카탈로그
 
 - Components/Button — Default, Brand, Loading, Disabled
@@ -27,5 +34,8 @@ Storybook Actions에 돌아온다.
 ## 한계
 
 Lynx Web은 props, 상태, 레이아웃, 토큰과 bridge 상호작용을 빠르게 확인하는 카탈로그다.
-iOS/Android 고유 글꼴 렌더링, VoiceOver/TalkBack의 실제 읽기 순서, native gesture 차이,
-safe-area/host 통합은 검증하지 않는다. 그 항목은 각 native host와 실기기에서 확인한다.
+Canvas는 시각·tap 확인 표면이며 브라우저 DOM의 키보드·스크린리더 접근성 검증으로 세지
+않는다. iOS/Android 고유 글꼴 렌더링, VoiceOver/TalkBack의 실제 읽기 순서, native gesture
+차이, safe-area/host 통합도 검증하지 않는다. 현재 제품 소비 route가 없어 native 접근성은
+미검증이지만 이번 package/catalog 납품에는 비차단이다. package 채택 릴리스에서는 실제
+native host와 실기기 검증이 필수다.

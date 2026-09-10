@@ -7,10 +7,10 @@
   "scripts": {
     "build:lynx": "rspeedy build --environment web",
     "build:storybook": "storybook build -o dist/storybook",
-    "build": "pnpm build:lynx && pnpm build:storybook",
-    "storybook": "pnpm build:lynx && concurrently --kill-others \"rspeedy build --watch --environment web\" \"storybook dev -p 6006 --no-open\"",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run integration.test"
+    "build": "pnpm --filter @libitums/ui-lynx build && pnpm build:lynx && pnpm build:storybook",
+    "storybook": "pnpm --filter @libitums/ui-lynx build && pnpm build:lynx && concurrently --kill-others \"rspeedy build --watch --environment web\" \"storybook dev -p 6006 --no-open\"",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "test": "pnpm build && vitest run integration.test"
   },
   "dependencies": {
     "@libitums/ui-lynx": "workspace:*",

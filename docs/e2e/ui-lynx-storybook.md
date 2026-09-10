@@ -10,6 +10,10 @@ pnpm storybook:lynx
 
 Storybook이 출력한 localhost URL을 브라우저에서 연다.
 
+Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 control은 브라우저 DOM
+접근성 트리에서 일반 텍스트로 보일 수 있으므로 이 흐름을 웹 키보드·스크린리더 접근성
+검증으로 세지 않는다.
+
 ## 확인 흐름
 
 1. `Components/Button/Default`를 열고 Canvas 안에 `lynx-view` 요소가 있으며 내부 Lynx
@@ -33,3 +37,7 @@ Storybook이 출력한 localhost URL을 브라우저에서 연다.
 - safe area 및 `apps/ios` 호스트 통합
 
 이 문서의 통과는 native 실기기 검증을 대체하지 않는다.
+현재 제품 소비 route가 없으므로 위 native 접근성 항목은 **미검증·이번 납품에는 비차단**
+상태다. package/catalog 접근성 게이트는 정적 구조·token·배율 안전 CSS와 ReactLynx UI
+test로 닫는다. package를 제품에 채택하는 릴리스에서는 소비 route를 먼저 만들고 실기기
+검증을 필수로 완료해야 한다.

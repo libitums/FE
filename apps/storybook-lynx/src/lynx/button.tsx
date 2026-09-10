@@ -17,6 +17,7 @@ function App() {
   const width = widths.has(args.width as ButtonWidth) ? args.width : "hug";
 
   const emitTap = () => {
+    "background only";
     NativeModules.bridge?.call?.(
       "STORYBOOK_ACTION",
       { name: "onTap", args: [label] },

@@ -31,4 +31,23 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-back-header--default");
     expect(index).toContain("components-status-indicator--completed");
   });
+
+  test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
+    const baseTsconfig = JSON.parse(await readOutput("tsconfig.json")) as {
+      compilerOptions: { paths?: Record<string, string[]> };
+    };
+    const typecheckTsconfig = JSON.parse(await readOutput("tsconfig.typecheck.json")) as {
+      compilerOptions: { paths?: Record<string, string[]> };
+    };
+    const packageJson = JSON.parse(await readOutput("package.json")) as {
+      scripts: { build: string; storybook: string };
+    };
+
+    expect(baseTsconfig.compilerOptions.paths).toBeUndefined();
+    expect(typecheckTsconfig.compilerOptions.paths?.["@libitums/ui-lynx"]).toEqual([
+      "../../packages/ui-lynx/src/index.tsx",
+    ]);
+    expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
+    expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
+  });
 });

@@ -41,6 +41,13 @@ export type ButtonContract = {
   traits: "button" | "disabled";
 };
 
+const statusIndicatorNames: Record<StatusIndicatorStatus, string> = {
+  completed: "완료",
+  "in-progress": "진행 중",
+  "needs-retry": "다시 시도",
+  locked: "잠김",
+};
+
 export function getButtonContract(props: ButtonProps): ButtonContract {
   const variant = props.variant ?? "neutral";
   const size = props.size ?? "m";
@@ -63,7 +70,14 @@ export function getButtonContract(props: ButtonProps): ButtonContract {
 }
 
 export function getStatusIndicatorLabel(props: StatusIndicatorProps): string {
-  return props.contextLabel ? `${props.contextLabel}, ${props.label}` : props.label;
+  const statusName = statusIndicatorNames[props.status];
+  const labels = [props.contextLabel, props.label];
+
+  if (props.label !== statusName) {
+    labels.push(statusName);
+  }
+
+  return labels.filter((label): label is string => Boolean(label)).join(", ");
 }
 
 export function Button(props: ButtonProps) {
@@ -79,6 +93,11 @@ export function Button(props: ButtonProps) {
     />
   ) : null;
 
+  function handleTap() {
+    "background only";
+    props.bindtap?.();
+  }
+
   return (
     <view
       className={contract.className}
@@ -91,7 +110,7 @@ export function Button(props: ButtonProps) {
       accessibility-element={true}
       accessibility-label={props.loading ? `${props.label}, 로딩 중` : props.label}
       accessibility-traits={contract.traits}
-      bindtap={interactive ? props.bindtap : undefined}
+      bindtap={interactive ? handleTap : undefined}
     >
       <view className="ui-lynx-button-surface">
         {props.loading ? (
@@ -111,24 +130,40 @@ export function Button(props: ButtonProps) {
 }
 
 export function BackHeader(props: BackHeaderProps) {
+  function handleBack() {
+    "background only";
+    props.onBack();
+  }
+
+  function handleInfo() {
+    "background only";
+    props.onInfo?.();
+  }
+
   return (
     <view className="ui-lynx-back-header" data-testid="ui-lynx-back-header">
-      <view
-        className="ui-lynx-back-header-back"
-        data-testid="ui-lynx-back-header-back"
-        accessibility-element={true}
-        accessibility-label={`뒤로, ${props.title}`}
-        accessibility-traits="button"
-        bindtap={props.onBack}
-      >
-        <svg
-          className="ui-lynx-back-header-icon"
-          data-testid="ui-lynx-back-header-back-icon"
-          content={arrowLeft03}
-          current-color={color.fg["neutral-subtle"]}
-        />
+      <view className="ui-lynx-back-header-leading">
+        <view
+          className="ui-lynx-back-header-back"
+          data-testid="ui-lynx-back-header-back"
+          accessibility-element={true}
+          accessibility-label={`뒤로, ${props.title}`}
+          accessibility-traits="button"
+          bindtap={handleBack}
+        >
+          <svg
+            className="ui-lynx-back-header-icon"
+            data-testid="ui-lynx-back-header-back-icon"
+            content={arrowLeft03}
+            current-color={color.fg["neutral-subtle"]}
+          />
+        </view>
         <view className="ui-lynx-back-header-copy">
-          <text className="ui-lynx-back-header-title" data-testid="ui-lynx-back-header-title">
+          <text
+            className="ui-lynx-back-header-title"
+            data-testid="ui-lynx-back-header-title"
+            accessibility-traits="header"
+          >
             {props.title}
           </text>
           {props.subtitle ? (
@@ -148,7 +183,7 @@ export function BackHeader(props: BackHeaderProps) {
           accessibility-element={true}
           accessibility-label="화면 정보"
           accessibility-traits="button"
-          bindtap={props.onInfo}
+          bindtap={handleInfo}
         >
           <svg
             className="ui-lynx-back-header-icon"

@@ -1,0 +1,116 @@
+# ADR-0025 — UI Lynx 패키지와 Storybook Lynx 카탈로그
+
+- 상태: 채택
+- 날짜: 2026-09-10
+- 다루는 축: 공유 ReactLynx 컴포넌트 패키지, 브라우저 카탈로그 경계
+- 부분 대체: ADR-0004 D2의 첫 패키지 유예, ADR-0015 D3의 `packages/ui-lynx` 승격 유예
+
+## 맥락
+
+`@libitums/ui-lynx`를 design-system 기반의 재사용 가능한 ReactLynx 패키지로 제공하고,
+브라우저에서 컴포넌트 상태를 빠르게 확인할 수 있어야 한다. 기존 결정은 두 번째 앱이
+나오기 전에는 `packages/`를 만들지 않는다고 했다. 이번에는 패키지 자체가 납품물이고,
+그 공개 산출물을 소비하는 검증 표면도 함께 필요하므로 그 유예 조건이 실제로 발동했다.
+
+ReactLynx는 DOM React가 아니다. 일반 Storybook 컴포넌트로 다시 그리면 Lynx 번들,
+Rspeedy 변환, Lynx 요소와 이벤트 경계를 검증하지 못한다. 반대로 별도의 자체 UI Catalog
+앱을 만들면 Storybook의 story·Controls·Actions 기능을 중복 구현하고 검증 표면이 둘로
+갈린다.
+
+## 결정
+
+### D1. 공유 구현은 `packages/ui-lynx`, 검증 표면은 `apps/storybook-lynx`에 둔다
+
+`packages/ui-lynx`는 앱을 import하지 않고 design token·icon과 ReactLynx peer만 소비한다.
+`apps/storybook-lynx`는 공개 package export만 사용한다. 기존 `apps/mobile` 화면은 이번
+변경을 이유로 강제 이관하지 않는다.
+
+`apps/storybook-lynx`는 제품 앱이 아니라 개발·검증 앱이다. 따라서 서비스 라우팅이나
+상태를 소유하지 않고, 공개 컴포넌트의 states와 variants만 story로 드러낸다.
+
+### D2. 자체 UI Catalog를 만들지 않고 Storybook Lynx 하나만 둔다
+
+기반은 `lynx-community/storybook-lynx`의 `storybook-lynx-rsbuild`다. Storybook manager와
+Controls/Actions는 브라우저에서 동작하고, Canvas는 Rspeedy가 만든 `.web.bundle`을
+`<lynx-view>`에서 실행한다. 일반 DOM mock story는 같은 컴포넌트의 검증으로 세지 않는다.
+
+Controls 값은 직렬화 가능한 data로 Lynx view에 전달한다. Lynx 쪽 callback은 bridge를
+거쳐 Storybook Action으로 돌려보낸다. 이 경계를 story마다 새로 만들지 않고 공통 framework
+계약을 따른다.
+
+### D3. 패키지는 type-erased ESM과 선언을 내고 JSX를 보존한다
+
+소비자의 ReactLynx toolchain이 JSX 변환을 소유한다. `.tsx` 입력은 `.jsx`로 내고 authored
+JSX를 유지하며, `exports`의 runtime과 `types` 경로는 실제 산출물에 맞춘다. ReactLynx는
+`peerDependencies`에 호환 범위로 두고, 패키지 자체 검증 버전은 정확 버전으로 고정한다.
+
+`pack:check`는 tarball에 필요한 파일만 들어가는지, runtime 파일에 ReactLynx JSX가 실제로
+남는지, `React.createElement`나 automatic JSX helper로 낮아지지 않았는지 확인한다.
+Storybook도 workspace source가 아니라 공개 export를 소비한다.
+
+단, 코드 생성을 하지 않는 루트 `typecheck`가 깨끗한 checkout에서도 먼저 실행될 수 있도록
+`tsconfig.typecheck.json`만 workspace source를 타입 해석 대상으로 매핑한다. Rspeedy가 읽는
+기본 `tsconfig.json`에는 이 mapping을 두지 않는다. Storybook의 dev/build 명령은 package를
+먼저 build하고 공개 `dist` export를 해석한다.
+
+### D4. 첫 공개 표면은 Button, Back Header, Status Indicator다
+
+세 컴포넌트는 design-system token과 icon을 사용하고 상태·variant를 명시적 union으로
+닫는다. 필요한 token이 없으면 임의 semantic token을 만들지 않는다. 공개 컴포넌트를
+늘리는 것은 실제 제품 소비 또는 명시적 납품 요구가 생길 때 별도 결정한다.
+
+### D5. Storybook 웹 확인과 native 확인을 구분한다
+
+Storybook은 props, 상태, layout, token 적용, bridge 상호작용을 빠르게 확인한다. 다음은
+증명하지 않는다.
+
+- 브라우저 DOM 접근성 트리와 키보드 조작 (`<lynx-view>` Canvas는 시각·tap 확인 표면이다)
+- VoiceOver/TalkBack의 실제 낭독 순서와 traits
+- iOS/Android 시스템 글꼴과 Dynamic Type
+- native gesture timing, safe area, host module 통합
+
+따라서 Storybook 수동 흐름은 `docs/e2e/ui-lynx-storybook.md`가 지고, native 항목은 제품
+호스트의 수동 검증에 남긴다. 현재 제품 앱은 아직 이 package를 소비하지 않으므로 native
+접근성 실기 검증은 이번 package/catalog 납품의 비차단 후속 조건이다. 이 작업의 접근성
+게이트는 정적 구조·token·배율 안전 CSS와 ReactLynx UI test로 닫고, package를 실제 제품에
+채택하는 릴리스에서 소비 route와 실기 검증을 필수로 승격한다. 최종 리뷰 뒤에는 Storybook dev server를 실제 실행하고
+Codex 앱의 브라우저 패널에 localhost URL을 열어야 완료로 센다.
+
+### D6. 검증 명령은 기존 루트 게이트에 포함한다
+
+- `pnpm storybook:lynx`: Lynx Web bundle watch와 Storybook dev server
+- `pnpm storybook:lynx:build`: Lynx Web bundle과 정적 Storybook 생성
+- `pnpm verify`: package와 Storybook의 format, type, lint, test, build를 기존 순서에 포함
+- `pnpm cycle:check`: `packages/ui-lynx`와 `apps/storybook-lynx`의 순환 의존 검사
+
+Storybook integration test는 이전 실행의 ignored `dist`에 의존하지 않도록 먼저
+`@libitums/ui-lynx`와 자신의 정적 build를 만들고 그 산출물을 검사한다. 깨끗한 checkout과
+이미 dev server를 돌린 checkout의 결과가 같아야 한다.
+
+루트 Node 22와 pnpm 10 정책은 유지한다. Storybook 관련 의존은 이 저장소에서 확인한 정확
+버전으로 고정한다.
+
+## 버린 대안
+
+- **`apps/ui-catalog` 자체 앱을 함께 둔다** — 같은 공개 API를 보여주는 표면이 둘이 되고,
+  story·Controls·Actions 기능을 다시 구현해야 한다. 검증 기준이 갈리므로 버린다.
+- **일반 DOM Storybook으로 컴포넌트를 다시 그린다** — Lynx 요소와 Rspeedy 산출물을
+  검증하지 못한다.
+- **제품 앱 화면을 즉시 package 컴포넌트로 모두 이관한다** — 이번 변경의 소비 근거가
+  없는 화면까지 범위를 넓히고, 병렬 화면 작업과 충돌한다.
+- **TSX source를 package 기본 export로 둔다** — 모든 소비 도구가 dependency 내부의
+  TypeScript까지 처리해야 하므로 type-erased dist를 기본으로 둔다.
+
+## 대가
+
+- Storybook 시작 전에 Lynx Web bundle build가 필요하고 dev server가 둘을 함께 관리한다.
+- 브라우저에서 보인다는 사실만으로 native 접근성·host 통합을 통과했다고 말할 수 없다.
+- 첫 workspace package와 검증 앱이 생겨 root build/test 시간이 늘고 순환 검사가 필요하다.
+- upstream Storybook Lynx가 실험 단계라 framework 업데이트 때 통합 계약을 다시 확인해야 한다.
+
+## 재검토 조건
+
+- `storybook-lynx-rsbuild`가 unified dev server 또는 native preview를 공식 지원할 때 D2·D5
+- 두 번째 제품 앱이 `@libitums/ui-lynx`를 소비할 때 package 공개 범위와 peer 범위
+- 공개 컴포넌트가 10개를 넘을 때 subpath export와 story 분류
+- Storybook과 native host에서 같은 state가 다르게 보이는 사례가 1건 생길 때 수동 검증 경계

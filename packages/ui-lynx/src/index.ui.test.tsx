@@ -65,7 +65,10 @@ describe("BackHeader", () => {
     const back = screen.getByTestId("ui-lynx-back-header-back");
     expect(back).toHaveAttribute("accessibility-label", "뒤로, Episode 04");
     expect(back).toHaveAttribute("accessibility-traits", "button");
-    expect(screen.getByTestId("ui-lynx-back-header-title")).toHaveTextContent("Episode 04");
+    const title = screen.getByTestId("ui-lynx-back-header-title");
+    expect(title).toHaveTextContent("Episode 04");
+    expect(title).toHaveAttribute("accessibility-traits", "header");
+    expect(back).not.toContainElement(title);
     expect(screen.getByTestId("ui-lynx-back-header-subtitle")).toHaveTextContent(
       'Listening "저기요"',
     );
@@ -88,16 +91,18 @@ describe("BackHeader", () => {
 });
 
 describe("StatusIndicator", () => {
-  test.each(["completed", "in-progress", "needs-retry", "locked"] as const)(
-    "%s 상태를 색 외의 data-status와 라벨로 노출한다",
-    (status) => {
-      render(<StatusIndicator label="상태" status={status} />);
-      const indicator = screen.getByTestId("ui-lynx-status-indicator");
-      expect(indicator).toHaveAttribute("data-status", status);
-      expect(indicator).toHaveAttribute("accessibility-label", "상태");
-      expect(indicator).toHaveTextContent("상태");
-    },
-  );
+  test.each([
+    ["completed", "완료"],
+    ["in-progress", "진행 중"],
+    ["needs-retry", "다시 시도"],
+    ["locked", "잠김"],
+  ] as const)("%s 상태를 색 외의 data-status와 라벨로 노출한다", (status, statusName) => {
+    render(<StatusIndicator label="상태" status={status} />);
+    const indicator = screen.getByTestId("ui-lynx-status-indicator");
+    expect(indicator).toHaveAttribute("data-status", status);
+    expect(indicator).toHaveAttribute("accessibility-label", `상태, ${statusName}`);
+    expect(indicator).toHaveTextContent("상태");
+  });
 
   test("문맥 이름을 접근성 이름에 결합하고 장식 점을 자손 가림으로 묶는다", () => {
     render(<StatusIndicator contextLabel="3단계" label="완료" status="completed" />);

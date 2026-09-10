@@ -29,13 +29,15 @@
 | 명령 | 하는 일 | 하지 않는 일 |
 |---|---|---|
 | `pnpm dev` | rspeedy dev 서버. Explorer가 붙을 URL/QR | 타입 검사·린트 |
-| `pnpm build` | Lynx 번들 산출 (`apps/mobile/dist/`) | **타입 검사** |
+| `pnpm build` | UI package → mobile bundle → Storybook Lynx 정적 카탈로그 | **타입 검사** |
 | `pnpm preview` | 빌드 산출물을 Explorer로 확인 | 빌드 |
 | `pnpm typecheck` | `tsc --noEmit` | 코드 생성 |
-| `pnpm lint` | 정적 검사 (`oxlint`) + **CSS 토큰 접두사 검사** (`lint:tokens` — ADR-0014 D8) | **자동 수정** (`lint:fix`가 따로) |
+| `pnpm lint` | 정적 검사 + CSS 토큰 접두사 + UI package/Storybook 순환 검사 | **자동 수정** (`lint:fix`가 따로) |
 | `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 (`format:check`가 따로) |
 | `pnpm bundle:host` | `build` + 호스트로 사본 복사 | 네이티브 빌드 |
-| `pnpm test` | 앱 `test:unit` + `test:ui` + `test:integration`과 보고서 정책 테스트 | e2e |
+| `pnpm test` | UI package, mobile, Storybook의 자동 테스트와 보고서 정책 | native 수동 확인 |
+| `pnpm storybook:lynx` | Lynx Web bundle watch + Storybook dev server (`localhost:6006`) | native host 검증 |
+| `pnpm storybook:lynx:build` | Lynx Web bundle + 정적 Storybook 생성 | dev server 유지 |
 | `pnpm performance:reports:gate` | **지금 이 브랜치가 CI의 보고서 정책을 통과하나.** 범위를 스스로 구한다 | 임의 범위 감사 (아래가 따로) |
 | `pnpm performance:reports:check --base <base> --head <head>` | **임의의 두 commit을 감사한다.** 소급 확인용 | 범위 자동 산출 (위가 따로) |
 | `pnpm --filter @libitums/mobile performance:capture:smoke` | iOS Host 준비부터 수집·분석·cleanup까지 native 연결 확인 | 실기 baseline·수치 threshold |
@@ -46,13 +48,22 @@
 - **`pnpm verify`가 CI 게이트 전부다.** 로컬에서 이 한 줄이 초록이면 CI의 검사 단계도
   초록이다. **CI에만 있고 로컬에 없는 검사를 만들지 않는다** — 검사를 늘릴 때는
   workflow에 단계를 더하지 말고 `verify`에 넣는다.
-- 앱만 돌리려면 `pnpm --filter @libitums/mobile <cmd>`. 루트 스크립트는 `pnpm -r`이 아니라
+- 앱만 돌리려면 `pnpm --filter @libitums/mobile <cmd>`. Storybook만 돌리려면
+  `pnpm --filter @libitums/storybook-lynx <cmd>`. 루트 스크립트는 `pnpm -r`이 아니라
   명시적 `--filter`를 쓴다 — 범위를 넓히는 것은 명시적 결정이어야 한다.
 - CI도 **같은 저장소 스크립트를 같은 이름으로** 쓴다. 다른 것은 **범위 산출뿐**이다 —
   CI는 PR base/head를 `POLICY_BASE`·`POLICY_HEAD`로 받고, 로컬은 `origin/main`과의
   merge-base부터 `HEAD`까지에 **아직 커밋 안 한 작업 트리 변경을 합쳐서** 본다.
   그래서 **로컬이 CI보다 더 많이 본다.**
 - 네이티브 빌드는 `verify`에 들어가지 않는다. Xcode에서 돈다.
+
+### UI Lynx Storybook 확인
+
+`apps/storybook-lynx`는 자체 UI Catalog와 병행하지 않는다. Storybook manager는
+브라우저에서 동작하지만 Canvas는 Rspeedy가 만든 실제 `.web.bundle`을 `<lynx-view>`에서
+실행한다. 최종 리뷰 뒤에는 `pnpm storybook:lynx`를 실행한 채 localhost URL을 Codex 앱
+브라우저 패널에 연다. 세부 수동 흐름과 native에서만 확인할 항목은
+[`docs/e2e/ui-lynx-storybook.md`](../e2e/ui-lynx-storybook.md)를 따른다 (ADR-0025 D2·D5).
 
 > **그래서 로컬이 CI보다 먼저 빨개진다.** `apps/mobile/src/` 아래를 고치고 아직
 > 보고서를 안 썼으면 커밋 전에도 `pnpm verify`가 실패한다. **고장이 아니라 게이트가
@@ -64,7 +75,8 @@
 
 ([ADR-0006 D1·D2·D3](../adr/0006-command-interface-and-test-layers.md),
 [ADR-0012 D6](../adr/0012-native-host-app-minimal.md),
-[ADR-0021 D1·D2](../adr/0021-performance-report-ci-automation.md))
+[ADR-0021 D1·D2](../adr/0021-performance-report-ci-automation.md),
+[ADR-0025 D2·D5·D6](../adr/0025-ui-lynx-package-and-storybook-catalog.md))
 
 ## PR
 

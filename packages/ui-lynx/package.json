@@ -11,6 +11,9 @@
   "sideEffects": [
     "./dist/styles.css"
   ],
+  "main": "./dist/index.jsx",
+  "module": "./dist/index.jsx",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

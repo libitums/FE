@@ -166,28 +166,43 @@
   border-radius: var(--libitum-radius-full);
 }
 
+.ui-lynx-button-brand.ui-lynx-button-loading .ui-lynx-button-spinner {
+  border-color: var(--libitum-color-fg-neutral);
+}
+
 .ui-lynx-back-header {
   width: 100%;
   min-height: var(--libitum-spacing-64);
   padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   background-color: var(--libitum-color-background-elevated);
   border-bottom-left-radius: var(--libitum-radius-md);
   border-bottom-right-radius: var(--libitum-radius-md);
 }
 
-.ui-lynx-back-header-back {
-  min-height: var(--libitum-spacing-48);
+.ui-lynx-back-header-leading {
+  flex: 1;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   column-gap: var(--libitum-spacing-16);
 }
 
+.ui-lynx-back-header-back {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .ui-lynx-back-header-info {
+  flex-shrink: 0;
   width: var(--libitum-spacing-48);
   height: var(--libitum-spacing-48);
   display: flex;
@@ -201,8 +216,10 @@
 }
 
 .ui-lynx-back-header-copy {
+  min-height: var(--libitum-spacing-48);
   display: flex;
   flex-direction: column;
+  justify-content: center;
   row-gap: var(--libitum-spacing-4);
 }
 
