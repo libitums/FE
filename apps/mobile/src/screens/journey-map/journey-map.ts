@@ -14,6 +14,10 @@ import type {
   PhoneCallJourneyUnitContract,
   PhoneCallJourneyMapItemContract,
 } from "../phone-call/phone-call.contract";
+import type {
+  VisualNovelJourneyMapItemContract,
+  VisualNovelJourneyUnitContract,
+} from "../visual-novel/visual-novel.contract";
 
 // ---------------------------------------------------------------- 도메인 타입 (계약 §1.3)
 
@@ -50,7 +54,8 @@ export type JourneyUnit =
       readonly title: "약속 확인 메시지";
       readonly screen: "messenger";
     }
-  | PhoneCallJourneyUnitContract;
+  | PhoneCallJourneyUnitContract
+  | VisualNovelJourneyUnitContract;
 
 // 특별 항목 렌더링 계약을 수집하기 위한 타입 껍데기. 실제 항목 삽입·파생은 후속 구현에서 한다.
 export type JourneyMapItem =
@@ -60,7 +65,8 @@ export type JourneyMapItem =
       readonly id: MessengerUnitId;
       readonly title: MessengerConversation["title"];
     }
-  | Omit<PhoneCallJourneyMapItemContract, "status">;
+  | Omit<PhoneCallJourneyMapItemContract, "status">
+  | Omit<VisualNovelJourneyMapItemContract, "status">;
 
 // ---------------------------------------------------------------- 고정 데이터 (계약 §1.4)
 // 계약이 값까지 고정했다. 진행의 진실의 출처는 이제 App의 상태이고, 이 상수는 그
@@ -116,6 +122,12 @@ const journeyUnits: readonly JourneyUnit[] = [
     screen: "phone-call",
   },
   {
+    kind: "special",
+    id: "cafe-arrival-visual-novel",
+    title: "카페에 도착한 지민",
+    screen: "visual-novel",
+  },
+  {
     kind: "standard",
     steps: [{ id: "directions", title: "길 묻기", description: "약속 장소까지 가는 길을 묻는다" }],
   },
@@ -127,7 +139,9 @@ export const journeyMapItems: readonly JourneyMapItem[] = journeyUnits.flatMap<J
       ? unit.steps.map((step) => ({ kind: "standard", step }) as const)
       : unit.screen === "messenger"
         ? [{ kind: "special", id: unit.id, title: unit.title } as const]
-        : [{ kind: "phone-call", id: unit.id, title: unit.title } as const],
+        : unit.screen === "phone-call"
+          ? [{ kind: "phone-call", id: unit.id, title: unit.title } as const]
+          : [{ kind: "visual-novel", id: unit.id, title: unit.title } as const],
 );
 
 // 맵이 그리는 스텝들. **유닛 목록에서 파생한다** — 스텝을 따로 나열하면 유닛 목록과

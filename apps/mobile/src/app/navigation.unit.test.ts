@@ -84,6 +84,23 @@ describe("initialNav", () => {
 });
 
 describe("navReducer", () => {
+  describe("visual novel screen contract", () => {
+    const visualNovelScreen = {
+      name: "visual-novel",
+      unitId: "cafe-arrival-visual-novel",
+    } as const;
+
+    it("push하면 visual novel이 current screen이 되고 backToRoot은 journey map으로 돌아간다", () => {
+      const n = nav({ tab: "journey" });
+      const next = navReducer(n, { type: "push", screen: visualNovelScreen });
+
+      expect(currentScreen(next)).toEqual(visualNovelScreen);
+      expect(currentScreen(navReducer(next, { type: "backToRoot" }))).toEqual({
+        name: "journey-map",
+      });
+    });
+  });
+
   describe("messenger screen contract", () => {
     const messengerScreen = { name: "messenger", unitId: "appointment-confirmation" } as const;
 

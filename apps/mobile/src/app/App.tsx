@@ -42,6 +42,21 @@ import {
   completeMessengerUnit,
 } from "../screens/messenger/messenger";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { announceCompletion } from "../lib/accessibility";
+import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
+import {
+  initialVisualNovelProgress,
+  visualNovelEntrySnapshot,
+  visualNovelStoryFor,
+} from "../screens/visual-novel/visual-novel";
+import type {
+  VisualNovelAdvanceOutcome,
+  VisualNovelAppProps,
+  VisualNovelBeatId,
+  VisualNovelExitOutcome,
+  VisualNovelProgress,
+  VisualNovelUnitId,
+} from "../screens/visual-novel/visual-novel.contract";
 // LIB-229 계약 §1.4(e): 판정 어휘가 lib/answer-result.ts로 승격됐다.
 import type { AnswerResult } from "../lib/answer-result";
 import {
@@ -78,6 +93,11 @@ type ScreenWiring = {
   onStartPhoneCallUnit: (id: PhoneCallUnitId) => void;
   onPhoneCallComplete: (id: PhoneCallUnitId) => void;
   onPhoneCallExit: (outcome: "incomplete" | "completed") => void;
+  onStartVisualNovelUnit: (id: VisualNovelUnitId) => void;
+  visualNovelProgress: VisualNovelProgress;
+  onVisualNovelAdvance: (id: VisualNovelUnitId, outcome: VisualNovelAdvanceOutcome) => void;
+  onVisualNovelExit: (outcome: VisualNovelExitOutcome, beatId: VisualNovelBeatId) => void;
+  onVisualNovelReplay: (id: VisualNovelUnitId) => void;
   completedStepCount: number;
   onStartStep: (id: JourneyStepId) => void;
   // (LIB-239) `onExitListening`·`onFinishListening`에서 개명. 학습 화면 셋이 같은
@@ -102,7 +122,10 @@ type ScreenWiring = {
 };
 
 // 루트 구성 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모인다 (ADR-0003 D5).
-export function App({ messengerEventSink = null }: MessengerAppProps = {}) {
+export function App({
+  messengerEventSink = null,
+  visualNovelEventSink = null,
+}: MessengerAppProps & VisualNovelAppProps = {}) {
   // 이 리듀서를 부르는 유일한 자리다. `dispatch`는 셸에 콜백으로 내려간다 —
   // 셸은 `NavAction`도 `dispatch`도 받지 않는다 (ADR-0007 D3).
   const [nav, dispatch] = useReducer(navReducer, initialNav);
@@ -121,6 +144,9 @@ export function App({ messengerEventSink = null }: MessengerAppProps = {}) {
   const [completedPhoneCallUnitIds, setCompletedPhoneCallUnitIds] = useState<
     readonly PhoneCallUnitId[]
   >([]);
+  const [visualNovelProgress, setVisualNovelProgress] = useState<VisualNovelProgress>(
+    initialVisualNovelProgress,
+  );
 
   const wiring: ScreenWiring = {
     messengerEventSink,
@@ -145,11 +171,48 @@ export function App({ messengerEventSink = null }: MessengerAppProps = {}) {
     onMessengerReplay: (id) =>
       messengerEventSink?.({ name: "messenger_unit_replay_started", unitId: id }),
     completedPhoneCallUnitIds,
-    onStartPhoneCallUnit: (id) =>
-      dispatch({ type: "push", screen: { name: "phone-call", unitId: id } }),
-    onPhoneCallComplete: (id) =>
-      setCompletedPhoneCallUnitIds((ids) => completePhoneCallUnit(ids, id)),
-    onPhoneCallExit: () => dispatch({ type: "backToRoot" }),
+    onStartPhoneCallUnit: (id) => {
+      "background only";
+      dispatch({ type: "push", screen: { name: "phone-call", unitId: id } });
+    },
+    onPhoneCallComplete: (id) => {
+      "background only";
+      setCompletedPhoneCallUnitIds((ids) => completePhoneCallUnit(ids, id));
+    },
+    onPhoneCallExit: () => {
+      "background only";
+      dispatch({ type: "backToRoot" });
+    },
+    visualNovelProgress,
+    onStartVisualNovelUnit: (id) => {
+      "background only";
+      const entry = visualNovelEntrySnapshot(visualNovelProgress);
+      visualNovelEventSink?.({ name: "visual_novel_unit_opened", unitId: id, ...entry });
+      dispatch({ type: "push", screen: { name: "visual-novel", unitId: id } });
+    },
+    onVisualNovelAdvance: (id, outcome) => {
+      "background only";
+      if (outcome.progressChanged) setVisualNovelProgress(outcome.progress);
+      if (outcome.completedNow) {
+        if (outcome.announcement !== null) announceCompletion(outcome.announcement);
+        visualNovelEventSink?.({ name: "visual_novel_unit_completed", unitId: id });
+      }
+    },
+    onVisualNovelExit: (outcome, beatId) => {
+      "background only";
+      if (outcome === "incomplete") {
+        visualNovelEventSink?.({
+          name: "visual_novel_unit_exited_incomplete",
+          unitId: "cafe-arrival-visual-novel",
+          beatId,
+        });
+      }
+      dispatch({ type: "backToRoot" });
+    },
+    onVisualNovelReplay: (id) => {
+      "background only";
+      visualNovelEventSink?.({ name: "visual_novel_unit_replay_started", unitId: id });
+    },
     completedStepCount,
     // 시트의 `시작`이 여기로 온다. 목적지는 `learningFormForStep`이 정하고
     // `learningScreenFor`가 화면으로 옮긴다. 이 파일은 학습형 이름을 리터럴로 쓰지
@@ -217,6 +280,10 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onStartMessengerUnit={wiring.onStartMessengerUnit}
           completedPhoneCallUnitIds={wiring.completedPhoneCallUnitIds}
           onStartPhoneCallUnit={wiring.onStartPhoneCallUnit}
+          completedVisualNovelUnitIds={
+            wiring.visualNovelProgress.status === "completed" ? ["cafe-arrival-visual-novel"] : []
+          }
+          onStartVisualNovelUnit={wiring.onStartVisualNovelUnit}
         />
       );
     case "roleplay-list":
@@ -309,6 +376,16 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           )}
           onComplete={wiring.onPhoneCallComplete}
           onExit={wiring.onPhoneCallExit}
+        />
+      );
+    case "visual-novel":
+      return (
+        <VisualNovelScreen
+          story={visualNovelStoryFor(screen.unitId)}
+          progress={wiring.visualNovelProgress}
+          onAdvance={wiring.onVisualNovelAdvance}
+          onExit={wiring.onVisualNovelExit}
+          onReplay={wiring.onVisualNovelReplay}
         />
       );
     default: {

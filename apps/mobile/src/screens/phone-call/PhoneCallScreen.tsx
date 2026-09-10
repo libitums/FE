@@ -31,6 +31,7 @@ export function PhoneCallScreen({
   useEffect(() => () => stopAudio(), []);
 
   const handlePlay = () => {
+    "background only";
     if (!turn || session.mode === "completed") return;
     stopAudio();
     const next = phoneCallSessionReducer(session, { type: "play" });
@@ -43,6 +44,7 @@ export function PhoneCallScreen({
   };
 
   const handleReply = () => {
+    "background only";
     const next = phoneCallSessionReducer(session, { type: "reply" });
     if (next.mode === "completed" && session.mode !== "completed") {
       setCompletionLatched(true);
@@ -52,8 +54,15 @@ export function PhoneCallScreen({
   };
 
   const handleReplay = () => {
+    "background only";
     stopAudio();
     setSession(phoneCallSessionReducer(session, { type: "replay" }));
+  };
+
+  const handleExit = () => {
+    "background only";
+    stopAudio();
+    onExit(completionLatched ? "completed" : phoneCallExitOutcome(session));
   };
 
   return (
@@ -65,10 +74,7 @@ export function PhoneCallScreen({
           accessibility-element={true}
           accessibility-traits="button"
           accessibility-label="맵으로"
-          bindtap={() => {
-            stopAudio();
-            onExit(completionLatched ? "completed" : phoneCallExitOutcome(session));
-          }}
+          bindtap={handleExit}
         >
           <text>맵으로</text>
         </view>
