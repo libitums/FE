@@ -29,3 +29,7 @@ tarball에 컴파일된 JSX·선언·CSS와 README만 들어가는지 검증한�
 전체는 일반 tap에 반응한다. ReactLynx/iOS 접근성 트리에서는 중첩 접근성 요소를 피하기 위해
 48px 뒤로가기 button과 sibling title header로 분리하며, info는 별도 control로 둔다. Status
 Indicator는 점·라벨을 함께 표시하고 줄 전체를 하나의 상태로 알린다.
+
+FE override로 Brand Button은 `brand.strong` surface와 `white` label·icon·spinner를 사용한다.
+`loading`과 `disabled`를 함께 주면 두 상태를 모두 유지하고 `border.default` spinner를
+표시하되 tap은 전달하지 않는다.

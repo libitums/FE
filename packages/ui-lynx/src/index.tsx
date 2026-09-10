@@ -52,13 +52,13 @@ export function getButtonContract(props: ButtonProps): ButtonContract {
   const variant = props.variant ?? "neutral";
   const size = props.size ?? "m";
   const width = props.width ?? "hug";
-  const state = props.disabled ? "disabled" : props.loading ? "loading" : undefined;
   const className = [
     "ui-lynx-button",
     `ui-lynx-button-${variant}`,
     `ui-lynx-button-${size}`,
     `ui-lynx-button-${width}`,
-    state ? `ui-lynx-button-${state}` : undefined,
+    props.disabled ? "ui-lynx-button-disabled" : undefined,
+    props.loading ? "ui-lynx-button-loading" : undefined,
   ]
     .filter((value): value is string => value !== undefined)
     .join(" ");
@@ -91,7 +91,7 @@ export function getButtonIconColor(props: ButtonProps): string {
     case "neutral":
       return color.gray[50];
     case "brand":
-      return color.fg.neutral;
+      return color.white;
     case "outline":
     case "subtle":
       return color.fg["neutral-muted"];

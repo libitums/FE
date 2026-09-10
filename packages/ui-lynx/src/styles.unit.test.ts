@@ -4,11 +4,25 @@ import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
 describe("ui-lynx styles", () => {
-  test("brand loading spinner는 3:1 이상 대비를 갖는 semantic foreground token을 쓴다", () => {
+  test("brand loading spinner는 white foreground를 쓴다", () => {
     const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
 
     expect(styles).toMatch(
-      /\.ui-lynx-button-brand\.ui-lynx-button-loading \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-fg-neutral\)/,
+      /\.ui-lynx-button-brand\.ui-lynx-button-loading \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-white\)/,
+    );
+  });
+
+  test("Brand 라벨은 white이고 loading disabled spinner는 disabled 표면과 구분된다", () => {
+    const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+
+    expect(styles).toMatch(
+      /\.ui-lynx-button-brand \.ui-lynx-button-label\s*\{[^}]*color:\s*var\(--libitum-color-white\)/,
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-button-brand \.ui-lynx-button-surface\s*\{[^}]*background-color:\s*var\(--libitum-color-brand-strong\)/,
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-button-loading\.ui-lynx-button-disabled \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-border-default\)/,
     );
   });
 

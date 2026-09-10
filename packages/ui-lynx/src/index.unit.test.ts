@@ -34,10 +34,10 @@ describe("getButtonContract", () => {
     });
   });
 
-  test("disabled가 loading보다 우선하며 disabled trait을 싣는다", () => {
+  test("disabled와 loading 조합은 두 상태 class와 disabled trait을 싣는다", () => {
     expect(getButtonContract({ disabled: true, label: "계속", loading: true })).toEqual({
       className:
-        "ui-lynx-button ui-lynx-button-neutral ui-lynx-button-m ui-lynx-button-hug ui-lynx-button-disabled",
+        "ui-lynx-button ui-lynx-button-neutral ui-lynx-button-m ui-lynx-button-hug ui-lynx-button-disabled ui-lynx-button-loading",
       traits: "disabled",
     });
   });
@@ -54,7 +54,7 @@ describe("getButtonContract", () => {
 describe("getButtonIconColor", () => {
   test.each([
     ["neutral", color.gray[50]],
-    ["brand", color.fg.neutral],
+    ["brand", color.white],
     ["outline", color.fg["neutral-muted"]],
     ["subtle", color.fg["neutral-muted"]],
     ["text", color.fg.brand],
