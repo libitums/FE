@@ -34,3 +34,4 @@ Pods/
 
 # apps/mobile 빌드 산출물의 사본 — 호스트가 로드한다. 생성물이므로 추적하지 않는다
 apps/ios/main.lynx.bundle
+apps/ios/Resource/

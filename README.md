@@ -11,7 +11,8 @@
 | [`apps/ios`](apps/ios) | 그 번들을 로드해 실행하는 네이티브 호스트 | Swift · Xcode · CocoaPods |
 
 **번들을 만드는 쪽과 로드하는 쪽이 다르다** (ADR-0002 D3). 화면을 고치면 `apps/mobile`을
-빌드해 `apps/ios`로 옮겨야 실기기에 반영된다 — `pnpm bundle:host`가 그 둘을 잇는다.
+빌드해 `apps/ios`로 옮겨야 실기기에 반영된다 — `pnpm bundle:host`가 Lynx 번들과
+번들이 참조하는 `Resource/static/` 자산을 함께 복사해 그 둘을 잇는다.
 
 앱 이름은 서비스명이 아니라 **타깃**으로 짓는다 (ADR-0002 D4). 앱이 늘 때 무슨 축으로
 나뉘는지가 이름에서 읽혀야 하기 때문이다. 웹 앱과 관리자 앱은 요구사항에 없어서 첫

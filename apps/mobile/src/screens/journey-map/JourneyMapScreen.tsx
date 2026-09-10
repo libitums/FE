@@ -4,6 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { JourneyStepNode } from "./JourneyStepNode";
 import { MessengerMapItem } from "./MessengerMapItem";
 import { PhoneCallMapItem } from "./PhoneCallMapItem";
+import { VisualNovelMapItem } from "./VisualNovelMapItem";
 import { StepSheet } from "./StepSheet";
 import {
   findStep,
@@ -17,6 +18,7 @@ import {
 } from "./journey-map";
 import type { MessengerUnitId } from "../messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
+import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 
 import "./journey-map-screen.css";
 
@@ -30,6 +32,8 @@ export type JourneyMapScreenProps = {
   onStartMessengerUnit: (id: MessengerUnitId) => void;
   completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
   onStartPhoneCallUnit: (id: PhoneCallUnitId) => void;
+  completedVisualNovelUnitIds?: readonly VisualNovelUnitId[];
+  onStartVisualNovelUnit?: (id: VisualNovelUnitId) => void;
 };
 
 // 화면 컴포넌트: 파일명 PascalCase, export 이름과 일치, `~Screen` 접미사 (ADR-0003 D6).
@@ -42,6 +46,8 @@ export function JourneyMapScreen({
   onStartMessengerUnit,
   completedPhoneCallUnitIds,
   onStartPhoneCallUnit,
+  completedVisualNovelUnitIds = [],
+  onStartVisualNovelUnit = () => {},
 }: JourneyMapScreenProps): ReactNode {
   const [sheetState, dispatch] = useReducer(stepSheetReducer, initialStepSheetState);
 
@@ -90,6 +96,14 @@ export function JourneyMapScreen({
                 title={item.title}
                 status={completedPhoneCallUnitIds.includes(item.id) ? "completed" : "available"}
                 onSelect={onStartPhoneCallUnit}
+              />
+            ) : item.kind === "visual-novel" ? (
+              <VisualNovelMapItem
+                key={item.id}
+                id={item.id}
+                title={item.title}
+                status={completedVisualNovelUnitIds.includes(item.id) ? "completed" : "available"}
+                onSelect={onStartVisualNovelUnit}
               />
             ) : (
               <JourneyStepNode

@@ -289,3 +289,20 @@
 첫 사례의 구성과 진행 규칙은 이로써 닫혔다. 앞으로 다른 특별 유닛의 컨텐츠가 오면 그
 유닛의 화면·필드는 별도 판단이며, 비주얼 노벨이나 전화 통화까지 구현됐다고 확대하지
 않는다.
+
+### 2026-09-10 — 카페 도착 비주얼 노벨 특별 유닛이 같은 결정을 실체화했다
+
+이 기록도 위 결정을 바꾸지 않는다. 첫 메신저 사례를 모든 특별 유닛의 공용 화면·상태로
+일반화하지 않고, 비주얼 노벨이 자기 화면과 진행을 독립적으로 가진 결과를 남긴다.
+
+- D1·D2: `cafe-arrival-visual-novel`은 `appointment-confirmation-phone-call` 뒤이자
+  `directions` 앞의 같은 맵 줄에 서고, `JourneyStepNode`가 아닌 `VisualNovelMapItem`이
+  그린다. 선택하면 여정 스택의 별도 `VisualNovelScreen`을 연다.
+- D6: `arrive` → `find` → `enter`의 고정 세 장면 중 `find`에서 `다음`을 눌러 마지막
+  `enter` 대사가 나타나는 전이만 최초 완료를 건다. 열기나 앞선 장면 이탈에는 완료가 없다.
+- D8: App이 비주얼 노벨의 최원 진행과 완료 ID를 앱 세션 동안 별도로 소유한다. 미완료
+  재진입은 마지막 도달 장면, 완료 재진입은 `enter`에서 시작하며, replay는 화면만 처음으로
+  돌린다. 어느 경로도 일반 `completedStepCount`나 기존 메신저·전화 상태를 바꾸지 않는다.
+- 화면은 전용 `assets/temporary`의 빌드타임 로컬 이미지 세 개만 사용한다. 실제 crop,
+  Dynamic Type, VoiceOver와 완료 발화는 수동 iOS Release E2E 대상으로 남아 있으며 이번
+  구현의 자동 테스트 결과를 실기 통과로 확대하지 않는다.

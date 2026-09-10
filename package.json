@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "pnpm --filter @libitums/mobile dev",
     "build": "pnpm --filter @libitums/mobile build",
-    "bundle:host": "pnpm build && cp apps/mobile/dist/main.lynx.bundle apps/ios/main.lynx.bundle",
+    "bundle:host": "pnpm build && cp apps/mobile/dist/main.lynx.bundle apps/ios/main.lynx.bundle && mkdir -p apps/ios/Resource/static && rsync -a --delete apps/mobile/dist/static/ apps/ios/Resource/static/",
     "preview": "pnpm --filter @libitums/mobile preview",
     "typecheck": "pnpm --filter @libitums/mobile typecheck",
     "test": "pnpm --filter @libitums/mobile test && pnpm test:report-policy",

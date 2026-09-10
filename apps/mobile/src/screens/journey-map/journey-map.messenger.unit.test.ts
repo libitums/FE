@@ -21,6 +21,7 @@ describe("journeyMapItems (LIB-254 계약)", () => {
       "appointment",
       "appointment-confirmation",
       "appointment-confirmation-phone-call",
+      "cafe-arrival-visual-novel",
       "directions",
     ]);
   });
