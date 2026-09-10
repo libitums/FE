@@ -77,12 +77,7 @@ export const visiblePhoneCallEntries = (
   value: PhoneCallConversation,
   state: PhoneCallSessionState,
 ): readonly PhoneCallTranscriptEntry[] => {
-  const count =
-    state.mode === "completed"
-      ? 3
-      : state.mode === "ready" || state.mode === "playing"
-        ? state.turnIndex + 1
-        : state.turnIndex + 1;
+  const count = state.mode === "completed" ? 3 : state.turnIndex + 1;
   const entries: PhoneCallTranscriptEntry[] = [];
   for (let index = 0; index < count; index += 1) {
     const turn = value.turns[index];
