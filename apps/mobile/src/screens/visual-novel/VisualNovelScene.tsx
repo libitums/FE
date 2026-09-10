@@ -9,10 +9,14 @@ export function VisualNovelScene({
   characterArtwork,
   replaying,
 }: VisualNovelSceneProps) {
-  const [backgroundLoaded, setBackgroundLoaded] = useState(false);
-  const [characterLoaded, setCharacterLoaded] = useState(false);
-  const [backgroundError, setBackgroundError] = useState(false);
-  const [characterError, setCharacterError] = useState(false);
+  const [loadedBackgroundSource, setLoadedBackgroundSource] = useState<string | null>(null);
+  const [loadedCharacterSource, setLoadedCharacterSource] = useState<string | null>(null);
+  const [failedBackgroundSource, setFailedBackgroundSource] = useState<string | null>(null);
+  const [failedCharacterSource, setFailedCharacterSource] = useState<string | null>(null);
+  const backgroundLoaded = loadedBackgroundSource === backgroundArtwork.source;
+  const characterLoaded = loadedCharacterSource === characterArtwork.source;
+  const backgroundError = failedBackgroundSource === backgroundArtwork.source;
+  const characterError = failedCharacterSource === characterArtwork.source;
 
   return (
     <view
@@ -29,8 +33,8 @@ export function VisualNovelScene({
               : "visual-novel-background"
           }
           mode="aspectFill"
-          bindload={() => setBackgroundLoaded(true)}
-          binderror={() => setBackgroundError(true)}
+          bindload={() => setLoadedBackgroundSource(backgroundArtwork.source)}
+          binderror={() => setFailedBackgroundSource(backgroundArtwork.source)}
           data-testid={`visual-novel-background-${backgroundArtwork.id}`}
           src={backgroundArtwork.source}
         />
@@ -44,8 +48,8 @@ export function VisualNovelScene({
               : "visual-novel-character"
           }
           mode="aspectFit"
-          bindload={() => setCharacterLoaded(true)}
-          binderror={() => setCharacterError(true)}
+          bindload={() => setLoadedCharacterSource(characterArtwork.source)}
+          binderror={() => setFailedCharacterSource(characterArtwork.source)}
           data-testid={`visual-novel-character-${characterArtwork.id}`}
           src={characterArtwork.source}
         />

@@ -171,11 +171,18 @@ export function App({
     onMessengerReplay: (id) =>
       messengerEventSink?.({ name: "messenger_unit_replay_started", unitId: id }),
     completedPhoneCallUnitIds,
-    onStartPhoneCallUnit: (id) =>
-      dispatch({ type: "push", screen: { name: "phone-call", unitId: id } }),
-    onPhoneCallComplete: (id) =>
-      setCompletedPhoneCallUnitIds((ids) => completePhoneCallUnit(ids, id)),
-    onPhoneCallExit: () => dispatch({ type: "backToRoot" }),
+    onStartPhoneCallUnit: (id) => {
+      "background only";
+      dispatch({ type: "push", screen: { name: "phone-call", unitId: id } });
+    },
+    onPhoneCallComplete: (id) => {
+      "background only";
+      setCompletedPhoneCallUnitIds((ids) => completePhoneCallUnit(ids, id));
+    },
+    onPhoneCallExit: () => {
+      "background only";
+      dispatch({ type: "backToRoot" });
+    },
     visualNovelProgress,
     onStartVisualNovelUnit: (id) => {
       "background only";

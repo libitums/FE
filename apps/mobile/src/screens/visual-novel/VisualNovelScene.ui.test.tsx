@@ -13,6 +13,16 @@ const beat: VisualNovelBeat = {
   dialogue: "2번 출구 오른쪽이라 금방 찾았죠?",
 };
 
+const arriveBeat: VisualNovelBeat = {
+  index: 0,
+  id: "arrive",
+  backgroundId: "cafe-exterior-day",
+  characterId: "jimin",
+  characterPoseId: "jimin-neutral",
+  speakerName: "지민",
+  dialogue: "여기가 우리가 만나기로 한 카페예요.",
+};
+
 describe("VisualNovelScene UI", () => {
   it("renders exact scene, asset IDs, sources, and decorative image semantics", () => {
     render(
@@ -66,9 +76,105 @@ describe("VisualNovelScene UI", () => {
     );
     fireEvent(
       screen.getByTestId("visual-novel-background-cafe-exterior-day"),
-      new window.Event("error"),
+      new window.Event("bindEvent:error"),
     );
-    fireEvent(screen.getByTestId("visual-novel-character-jimin-smile"), new window.Event("error"));
+    fireEvent(
+      screen.getByTestId("visual-novel-character-jimin-smile"),
+      new window.Event("bindEvent:error"),
+    );
     expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
+  });
+
+  it("does not carry an image error into a replacement source", () => {
+    const view = render(
+      <VisualNovelScene
+        beat={arriveBeat}
+        backgroundArtwork={{
+          id: "cafe-exterior-day",
+          kind: "background",
+          source: "background.png",
+        }}
+        characterArtwork={{
+          id: "jimin-neutral",
+          kind: "character",
+          characterId: "jimin",
+          source: "neutral.png",
+        }}
+        replaying={false}
+      />,
+    );
+    fireEvent(
+      screen.getByTestId("visual-novel-character-jimin-neutral"),
+      new window.Event("bindEvent:error"),
+    );
+
+    view.rerender(
+      <VisualNovelScene
+        beat={beat}
+        backgroundArtwork={{
+          id: "cafe-exterior-day",
+          kind: "background",
+          source: "background.png",
+        }}
+        characterArtwork={{
+          id: "jimin-smile",
+          kind: "character",
+          characterId: "jimin",
+          source: "smile.png",
+        }}
+        replaying={false}
+      />,
+    );
+
+    expect(screen.getByTestId("visual-novel-character-jimin-smile")).toBeInTheDocument();
+  });
+
+  it("requires a replacement source to report its own load", () => {
+    const view = render(
+      <VisualNovelScene
+        beat={arriveBeat}
+        backgroundArtwork={{
+          id: "cafe-exterior-day",
+          kind: "background",
+          source: "background.png",
+        }}
+        characterArtwork={{
+          id: "jimin-neutral",
+          kind: "character",
+          characterId: "jimin",
+          source: "neutral.png",
+        }}
+        replaying={false}
+      />,
+    );
+    fireEvent(
+      screen.getByTestId("visual-novel-character-jimin-neutral"),
+      new window.Event("bindEvent:load"),
+    );
+    expect(screen.getByTestId("visual-novel-character-jimin-neutral")).toHaveClass(
+      "visual-novel-image-loaded",
+    );
+
+    view.rerender(
+      <VisualNovelScene
+        beat={beat}
+        backgroundArtwork={{
+          id: "cafe-exterior-day",
+          kind: "background",
+          source: "background.png",
+        }}
+        characterArtwork={{
+          id: "jimin-smile",
+          kind: "character",
+          characterId: "jimin",
+          source: "smile.png",
+        }}
+        replaying={false}
+      />,
+    );
+
+    expect(screen.getByTestId("visual-novel-character-jimin-smile")).not.toHaveClass(
+      "visual-novel-image-loaded",
+    );
   });
 });

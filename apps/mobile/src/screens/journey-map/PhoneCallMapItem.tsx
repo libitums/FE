@@ -6,6 +6,11 @@ import "./phone-call-map-item.css";
 
 // 전화 맵 항목의 계약만 먼저 연결한다. 실제 마크업과 동작은 UI red 이후 구현한다.
 export function PhoneCallMapItem({ id, title, status, onSelect }: PhoneCallMapItemProps) {
+  const handleSelect = () => {
+    "background only";
+    onSelect(id);
+  };
+
   return (
     <view
       className="phone-call-map-item"
@@ -14,7 +19,7 @@ export function PhoneCallMapItem({ id, title, status, onSelect }: PhoneCallMapIt
       accessibility-element={true}
       accessibility-traits="button"
       accessibility-label={status === "completed" ? `${title}, 완료됨` : title}
-      bindtap={() => onSelect(id)}
+      bindtap={handleSelect}
     >
       <svg className="phone-call-map-item-icon" content={phone} current-color={color.fg.brand} />
       <text className="phone-call-map-item-title">{title}</text>
