@@ -4,6 +4,14 @@ import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
 describe("ui-lynx styles", () => {
+  test("Neutral surface는 gray.900을 쓴다", () => {
+    const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+
+    expect(styles).toMatch(
+      /\.ui-lynx-button-neutral \.ui-lynx-button-surface\s*\{[^}]*background-color:\s*var\(--libitum-color-gray-900\)/,
+    );
+  });
+
   test("brand loading spinner는 white foreground를 쓴다", () => {
     const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
 

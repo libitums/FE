@@ -38,6 +38,7 @@ focused 계약을 닫는다.
 FE 제품 보정으로 Brand Button의 label은 원본 revision의 `fg.neutral` 대신 `white`를 쓴다.
 `brand.primary`와 white의 3.016:1 대비는 일반 크기 label에 부족하므로 surface는
 `brand.strong`을 사용해 5.461:1을 확보하고 icon과 loading spinner도 white로 맞춘다.
+Neutral Button의 surface는 원본 `gray.800` 대신 `gray.900`을 사용하는 FE override로 둔다.
 또한 `loading`과 `disabled`가 함께 주어질 수 있는 소비 API 현실을 반영해 두 상태 class를
 동시에 유지한다. 모든 loading spinner는 같은 variant의 label token을 사용한다. disabled
 조합에서는 label과 spinner 모두 disabled 표면의 `gray.50`과 겹치지 않는 `border.default`를
