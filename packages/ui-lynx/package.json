@@ -51,7 +51,7 @@
     "test": "pnpm test:unit && pnpm test:ui && pnpm test:integration",
     "test:unit": "vitest run unit.test",
     "test:ui": "vitest run ui.test",
-    "test:integration": "vitest run index.integration.test",
+    "test:integration": "pnpm pack:check && vitest run index.integration.test",
     "prepack": "pnpm build",
     "pack:check": "pnpm pack --pack-destination .pack && node scripts/check-pack.mjs"
   },
