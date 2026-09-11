@@ -46,7 +46,8 @@ Progress Header는 `title`, `activity`, `progress`,
 `exitAccessibilityLabel`, `motion` Controls를 직렬화해 같은 경계로 전달하고, exit tap은
 `onExit` bridge Action으로 돌아온다. Lynx entry는
 `@libitums/ui-lynx/progress-header` 공개 subpath를 import하며 Canvas는
-`progress-header.web.bundle`을 실행한다.
+`progress-header.web.bundle`을 실행한다. `NativeModules`가 없는 정적 분석·테스트 환경에서는
+guard가 bridge 호출을 건너뛴다.
 
 ## 한계
 

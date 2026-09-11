@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
-import { PageIndicator } from "./index";
+import { PageIndicator, PAGE_INDICATOR_MAX_PAGE_COUNT } from "./index";
 
 const css = readFileSync(resolve(import.meta.dirname, "page-indicator.css"), "utf8");
 
@@ -63,6 +63,18 @@ describe("PageIndicator UI contract", () => {
         .getAllByTestId("ui-lynx-page-indicator-item")
         .filter((item) => item.getAttribute("data-active") === "true"),
     ).toHaveLength(1);
+  });
+
+  test("caps excessive input before rendering indicator items", () => {
+    render(<PageIndicator currentPage={10_000} pageCount={10_000} />);
+
+    const root = screen.getByTestId("ui-lynx-page-indicator");
+    expect(root).toHaveAttribute("data-count", String(PAGE_INDICATOR_MAX_PAGE_COUNT));
+    expect(root).toHaveAttribute("data-current", String(PAGE_INDICATOR_MAX_PAGE_COUNT));
+    expect(root).toHaveAttribute("accessibility-label", "Scene 100 of 100");
+    expect(screen.getAllByTestId("ui-lynx-page-indicator-item")).toHaveLength(
+      PAGE_INDICATOR_MAX_PAGE_COUNT,
+    );
   });
 });
 

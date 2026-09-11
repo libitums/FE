@@ -31,5 +31,9 @@ export type {
   ProgressHeaderProps,
 } from "./progress-header";
 
-export { PageIndicator, getPageIndicatorModel } from "./page-indicator";
+export {
+  PageIndicator,
+  PAGE_INDICATOR_MAX_PAGE_COUNT,
+  getPageIndicatorModel,
+} from "./page-indicator";
 export type { PageIndicatorItem, PageIndicatorModel, PageIndicatorProps } from "./page-indicator";

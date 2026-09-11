@@ -63,8 +63,9 @@ type ProgressHeaderProps = {
 ```
 
 - 단일 정규화 결과가 root의 `data-progress`, percentage label, fill width를 구동한다.
-  `NaN`, `-Infinity`, 음수, 음수 0은 0이고 100 초과와 `Infinity`는 100이다. 소수는
-  반올림하지 않는다.
+  `NaN`, `-Infinity`, 음수, 음수 0은 0이고 100 초과와 `Infinity`는 100이다. fill과
+  root data는 입력 소수 정밀도를 유지하고, 사용자에게 보이는 percentage label만 소수
+  첫째 자리로 제한해 긴 부동소수 문자열이 레이아웃을 밀지 않게 한다.
 - 0은 fill node가 없다. 양수는 percentage width와 8px `min-width`를 함께 사용하고,
   100은 전체 track을 채운다. fill 색상은 `brand.primary`다.
 - exit는 진행률과 무관하게 항상 활성인 48×48 이름 있는 button이다. tap 하나는 한 handler를
@@ -94,7 +95,8 @@ type ProgressHeaderProps = {
 싣는다. Storybook Lynx entry는 workspace source나 DOM mock이 아니라
 `@libitums/ui-lynx/progress-header` 공개 subpath를 import한다. Controls의 직렬화 가능한
 `title`, `activity`, `progress`, `exitAccessibilityLabel`, `motion`은 `useInitData()`로 가고,
-exit는 `STORYBOOK_ACTION`의 `onExit` bridge로 돌아온다.
+exit는 `STORYBOOK_ACTION`의 `onExit` bridge로 돌아온다. bridge 전역이 없는 정적 분석·테스트
+환경에서는 `typeof NativeModules` guard가 호출을 건너뛴다.
 
 ## test-id와 관찰 채널
 

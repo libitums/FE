@@ -23,6 +23,8 @@ function App() {
 
   const emitExit = () => {
     "background only";
+    if (typeof NativeModules === "undefined") return;
+
     NativeModules.bridge?.call?.(
       "STORYBOOK_ACTION",
       { name: "onExit", args: [title] },

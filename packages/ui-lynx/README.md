@@ -61,7 +61,9 @@ barrel, stylesheet, unit/UI tests를 함께 관리한다. 공개 subpath는 폴�
 `@libitums/ui-lynx/progress-header`로 유지한다.
 
 `PageIndicator`도 최신 main의 컴포넌트 구조에 맞춰 `src/page-indicator/`에서 contract,
-logic, ReactLynx component, barrel, stylesheet, unit/UI tests를 함께 관리한다.
+logic, ReactLynx component, barrel, stylesheet, unit/UI tests를 함께 관리한다. 방어적 렌더
+상한은 공개 `PAGE_INDICATOR_MAX_PAGE_COUNT` 100이며 더 큰 입력은 item, 현재 위치와 접근성
+label을 같은 canonical count로 clamp한다.
 
 스타일은 소비 앱의 Lynx 진입점에서 한 번 import한다. 패키지는 ReactLynx를 번들하지 않고
 `>=0.123.0 <0.126.0` peer로 요구한다. `pnpm --filter @libitums/ui-lynx pack:check`는 실제
@@ -92,6 +94,7 @@ Round Button 원본의 고정 규격을 직접 사용한 비차단 gap이며, FE
 새로 만들거나 재해석하지 않는다.
 
 `ProgressHeader`는 `progress`를 0–100으로 한 번 정규화해 percentage와 fill에 같이 쓴다.
+fill은 입력 소수 정밀도를 유지하고 보이는 percentage 문자열만 소수 첫째 자리로 제한한다.
 0은 fill을 렌더하지 않고, 양수는 최소 8px, 100은 전체 폭이다. exit는 진행 값과 무관하게
 항상 활성인 48px button이며 tap마다 `onExit`를 한 번 호출한다. `motion`은 `"standard" |
 "reduced"`이고 생략하면 `standard`다. reduced는 progress 전환을 없애지만 host OS 설정을

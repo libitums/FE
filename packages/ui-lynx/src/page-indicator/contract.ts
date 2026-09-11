@@ -1,3 +1,5 @@
+export const PAGE_INDICATOR_MAX_PAGE_COUNT = 100;
+
 export type PageIndicatorProps = {
   pageCount: number;
   currentPage: number;

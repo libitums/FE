@@ -11,6 +11,10 @@ describe("getProgressHeaderProgress", () => {
     [0, { value: 0, percentageLabel: "0%", fillPercent: null }],
     [0.1, { value: 0.1, percentageLabel: "0.1%", fillPercent: 0.1 }],
     [33.5, { value: 33.5, percentageLabel: "33.5%", fillPercent: 33.5 }],
+    [
+      33.33333333333333,
+      { value: 33.33333333333333, percentageLabel: "33.3%", fillPercent: 33.33333333333333 },
+    ],
     [100, { value: 100, percentageLabel: "100%", fillPercent: 100 }],
     [101, { value: 100, percentageLabel: "100%", fillPercent: 100 }],
     [Infinity, { value: 100, percentageLabel: "100%", fillPercent: 100 }],
@@ -25,10 +29,10 @@ describe("getProgressHeaderProgress", () => {
     expect(result).toEqual({ value: 0, percentageLabel: "0%", fillPercent: null });
   });
 
-  test("표시 라벨은 clamp된 canonical value를 반올림 없이 사용한다", () => {
-    const result = getProgressHeaderProgress(33.5);
+  test("표시 라벨만 소수 첫째 자리로 제한하고 fill 정밀도는 유지한다", () => {
+    const result = getProgressHeaderProgress(33.33333333333333);
 
-    expect(result.percentageLabel).toBe(`${result.value}%`);
+    expect(result.percentageLabel).toBe("33.3%");
     expect(result.fillPercent).toBe(result.value);
   });
 });

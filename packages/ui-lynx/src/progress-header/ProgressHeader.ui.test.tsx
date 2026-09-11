@@ -97,6 +97,19 @@ describe("ProgressHeader UI contract", () => {
     expect(content).toHaveTextContent("다운로드 중");
     expect(content).toHaveTextContent("42.5%");
   });
+
+  test("고정밀 progress는 fill 정밀도를 유지하고 보이는 label만 한 자리로 제한한다", () => {
+    render(<ProgressHeader {...props} progress={33.33333333333333} />);
+
+    expect(screen.getByTestId("ui-lynx-progress-header-fill")).toHaveStyle({
+      width: "33.33333333333333%",
+    });
+    expect(screen.getByTestId("ui-lynx-progress-header-percentage")).toHaveTextContent("33.3%");
+    expect(screen.getByTestId("ui-lynx-progress-header-caption")).toHaveAttribute(
+      "accessibility-label",
+      "다운로드 중, 33.3%",
+    );
+  });
 });
 
 describe("ProgressHeader CSS contract", () => {

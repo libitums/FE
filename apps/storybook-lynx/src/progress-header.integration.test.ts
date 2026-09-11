@@ -44,6 +44,10 @@ describe("ProgressHeader Storybook integration contract", () => {
     expect(source).toMatch(/useInitData/);
     expect(source).toMatch(/STORYBOOK_ACTION/);
     expect(source).toMatch(/name\s*:\s*["']onExit["']/);
+    expect(source).toMatch(/typeof\s+NativeModules\s*===\s*["']undefined["']/);
+    expect(source.indexOf('typeof NativeModules === "undefined"')).toBeLessThan(
+      source.indexOf("NativeModules.bridge"),
+    );
     expect(source).not.toMatch(/\bdocument\b|\bwindow\b|createElement|<div\b|mock\s*dom/i);
   });
 

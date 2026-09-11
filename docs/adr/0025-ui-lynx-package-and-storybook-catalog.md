@@ -129,7 +129,8 @@ package subpath export와 pack 검사를 공통 통합 지점으로 한 번만 �
 
 Progress Header는 `title`, `activity`, `progress`, `exitAccessibilityLabel`, `onExit`와
 `motion?: "standard" | "reduced"`를 받는다. 하나의 정규화 결과가 root data, percentage
-label, fill width를 모두 구동하며 `NaN`과 0 이하는 0, 100 이상은 100으로 clamp한다. 0은
+label, fill width를 모두 구동하며 `NaN`과 0 이하는 0, 100 이상은 100으로 clamp한다. fill의
+소수 정밀도는 유지하고 표시 label만 소수 첫째 자리로 제한한다. 0은
 fill node가 없고, 양수 fill은 8px 최소 시각 폭을 가지며, 100은 track 전체를 채운다. 48px
 exit는 항상 활성인 이름 있는 button이고 tap 하나가 단 하나의 handler를 거쳐 `onExit`를
 한 번 호출한다. title row는 48px `min-height`와 중앙 정렬로 배율을 수용하고, exit를

@@ -1,7 +1,14 @@
-import type { PageIndicatorModel, PageIndicatorProps } from "./contract";
+import {
+  PAGE_INDICATOR_MAX_PAGE_COUNT,
+  type PageIndicatorModel,
+  type PageIndicatorProps,
+} from "./contract";
 
 export function getPageIndicatorModel(props: PageIndicatorProps): PageIndicatorModel {
-  const pageCount = Number.isFinite(props.pageCount) ? Math.max(0, Math.trunc(props.pageCount)) : 0;
+  const rawPageCount = Number.isFinite(props.pageCount)
+    ? Math.max(0, Math.trunc(props.pageCount))
+    : 0;
+  const pageCount = Math.min(rawPageCount, PAGE_INDICATOR_MAX_PAGE_COUNT);
 
   if (pageCount === 0) {
     return {

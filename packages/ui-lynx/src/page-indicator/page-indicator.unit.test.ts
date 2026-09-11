@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { getPageIndicatorModel } from "./index";
+import { getPageIndicatorModel, PAGE_INDICATOR_MAX_PAGE_COUNT } from "./index";
 
 describe("getPageIndicatorModel", () => {
   test.each([
@@ -25,6 +25,7 @@ describe("getPageIndicatorModel", () => {
     [{ pageCount: 3, currentPage: -4 }, 3, 1],
     [{ pageCount: 3, currentPage: 99 }, 3, 3],
     [{ pageCount: 3, currentPage: Number.NaN }, 3, 1],
+    [{ pageCount: 10_000, currentPage: 5_000 }, PAGE_INDICATOR_MAX_PAGE_COUNT, 100],
     [{ pageCount: Number.POSITIVE_INFINITY, currentPage: 2 }, 0, 0],
     [{ pageCount: Number.NEGATIVE_INFINITY, currentPage: Number.NaN }, 0, 0],
   ] as const)(
@@ -52,5 +53,14 @@ describe("getPageIndicatorModel", () => {
   test("uses the canonical item position and count for the spoken label", () => {
     const model = getPageIndicatorModel({ pageCount: 4.8, currentPage: 20 });
     expect(model.accessibilityLabel).toBe(`Scene ${model.currentPage} of ${model.pageCount}`);
+  });
+
+  test("caps an excessive page count before deriving render items", () => {
+    const model = getPageIndicatorModel({ pageCount: 10_000, currentPage: 10_000 });
+
+    expect(model.pageCount).toBe(PAGE_INDICATOR_MAX_PAGE_COUNT);
+    expect(model.currentPage).toBe(PAGE_INDICATOR_MAX_PAGE_COUNT);
+    expect(model.items).toHaveLength(PAGE_INDICATOR_MAX_PAGE_COUNT);
+    expect(model.accessibilityLabel).toBe("Scene 100 of 100");
   });
 });

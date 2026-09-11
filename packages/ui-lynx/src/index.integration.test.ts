@@ -54,6 +54,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
     expect(root.getProgressHeaderProgress).toBe(progressHeader.getProgressHeaderProgress);
     expect(root.getPageIndicatorModel).toBe(pageIndicator.getPageIndicatorModel);
+    expect(root.PAGE_INDICATOR_MAX_PAGE_COUNT).toBe(pageIndicator.PAGE_INDICATOR_MAX_PAGE_COUNT);
   });
 
   test("each public subpath resolves to an independent source entry", async () => {

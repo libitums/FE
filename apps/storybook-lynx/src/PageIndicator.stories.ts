@@ -12,7 +12,10 @@ const meta = {
       height: "240px",
       width: "390px",
     }),
-  argTypes: { pageCount: { control: "number" }, currentPage: { control: "number" } },
+  argTypes: {
+    pageCount: { control: { type: "number", min: 0, max: 100, step: 1 } },
+    currentPage: { control: { type: "number", min: 1, max: 100, step: 1 } },
+  },
   args: { pageCount: 4, currentPage: 2 },
 } satisfies Meta<PageIndicatorStoryArgs>;
 
