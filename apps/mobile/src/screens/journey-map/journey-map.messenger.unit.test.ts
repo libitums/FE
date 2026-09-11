@@ -20,8 +20,18 @@ describe("journeyMapItems (LIB-254 계약)", () => {
       "ordering",
       "appointment",
       "appointment-confirmation",
+      "appointment-confirmation-phone-call",
+      "cafe-arrival-visual-novel",
       "directions",
     ]);
+  });
+
+  it("전화 특별 항목은 계약의 고정 kind·ID·title을 가진다", () => {
+    expect(journeyMapItems).toContainEqual({
+      kind: "phone-call",
+      id: "appointment-confirmation-phone-call",
+      title: "약속 확인 전화",
+    });
   });
 
   it("기존 journeySteps 다섯 개와 순서를 유지한다", () => {

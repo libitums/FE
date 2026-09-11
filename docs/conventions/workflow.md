@@ -214,7 +214,7 @@ Rendering과 Memory 증거의 존재만 확인하고 수치 성능을 판정하�
 일반 Host build·install 절차는 다음과 같다.
 
 ```sh
-pnpm bundle:host                                                  # build + 사본 복사
+pnpm bundle:host                                                  # build + 번들·Resource/static 자산 사본 복사
 cd apps/ios && pod install                                        # 최초 1회
 xcodebuild -workspace Host.xcworkspace -scheme Host \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath /tmp/dd build
@@ -227,7 +227,7 @@ xcrun simctl launch booted com.libitum.host
 | 구성 | 읽는 곳 | 언제 |
 |---|---|---|
 | Debug | dev 서버 (`http://localhost:3000/main.lynx.bundle`) | 호스트에서 화면을 만질 때. 네이티브 재빌드 없이 앱만 재시작하면 반영된다 |
-| Release | 앱 번들 안의 `main.lynx.bundle` | 시연·판정. 사본을 읽으므로 **`pnpm bundle:host`를 거쳐야 한다** |
+| Release | 앱 번들 안의 `main.lynx.bundle`과 `Resource/static/` 자산 | 시연·판정. 사본을 읽으므로 **`pnpm bundle:host`를 거쳐야 한다** |
 
 > **`cp`를 손으로 하지 않는다.** `dev`와 `build`가 **같은 `dist/main.lynx.bundle`에 쓴다.**
 > `build` 뒤에 `dev`를 한 번이라도 돌리면 그 파일이 dev 번들(10배 크기)로 덮이고,

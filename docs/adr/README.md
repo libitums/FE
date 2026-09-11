@@ -79,7 +79,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 데이터 페칭 | 결정 (클라이언트 한 파일 + **컨텐츠 도착 전의 타입 모양**) | [0007](0007-app-internals-state-routing-data-errors.md) D2·**D5** |
 | 라우팅 | 결정 (전환 소유 + **나가는 수단의 목적지**) | [0007](0007-app-internals-state-routing-data-errors.md) D3·**D6** |
 | 에러 경계 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
-| **여정의 유닛 구조와 특별 유닛의 맵 자리** | 결정 및 첫 사례 실체화 (맵의 줄 = 유닛 목록 순서 + 스텝 노드와 별도 컴포넌트 + 완료 신호는 「끝까지 닿음」 + 표준 스텝 진행 세기는 유지) | [0024](0024-journey-units-and-special-unit-placement.md) — 역사적 결정 본문은 보존하고, **2026-09-09 LIB-254 실체화 기록**에서 첫 메신저 특별 유닛의 목록 위치, 별도 `MessengerMapItem`/`MessengerScreen`, 별도 완료 상태와 재진입을 연결했다. 이는 첫 사례의 D1·D2·D6·D8 및 C1–C3을 닫지만 미래의 모든 특별 유닛 구성을 일반화하지 않는다 |
+| **여정의 유닛 구조와 특별 유닛의 맵 자리** | 결정 및 사례별 실체화 (맵의 줄 = 유닛 목록 순서 + 스텝 노드와 별도 컴포넌트 + 완료 신호는 「끝까지 닿음」 + 표준 스텝 진행 세기는 유지) | [0024](0024-journey-units-and-special-unit-placement.md) — 역사적 결정 본문은 보존한다. **2026-09-09 LIB-254 기록**은 첫 메신저 특별 유닛의 목록 위치, 별도 화면·상태와 재진입 및 C1–C3을 연결했다. **2026-09-10 기록**은 전화 뒤·`directions` 앞의 비주얼 노벨 항목, 독립 3장면 화면, 마지막 장면 완료와 세션 재진입·replay, 일반 진행 및 기존 특별 유닛 상태 격리를 연결했다. 두 기록 모두 D1·D2·D6·D8의 사례이며 미래의 모든 특별 유닛 구성을 일반화하지 않는다 |
 | 디자인 토큰 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | 컴포넌트 프리미티브 | 결정 | [0015](0015-component-primitives-and-style-application.md) — 0011 D3·0008 D4를 이어받고, package 승격 시점은 [0025](0025-ui-lynx-package-and-storybook-catalog.md)이 부분 대체 |
 | 아이콘 | 결정 (경로·형태·색) | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |

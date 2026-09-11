@@ -1,0 +1,121 @@
+.phone-call-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+.phone-call-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-layout-gap-inline);
+  flex-shrink: 0;
+}
+.phone-call-screen-exit {
+  min-height: var(--libitum-spacing-48);
+  padding: 0 var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.phone-call-screen-exit text,
+.phone-call-screen-status {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+.phone-call-screen-title {
+  margin-top: var(--libitum-spacing-12);
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  flex: 1;
+}
+.phone-call-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+.phone-call-screen-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-spacing-16) 0;
+}
+.phone-call-contact-name {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-dialogue-speaker-font-family);
+  font-size: var(--libitum-typography-dialogue-speaker-font-size);
+  line-height: var(--libitum-typography-dialogue-speaker-line-height);
+}
+.phone-call-transcript-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+.phone-call-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  max-width: calc(100% - var(--libitum-spacing-48));
+}
+.phone-call-transcript-self {
+  align-self: flex-end;
+}
+.phone-call-transcript-speaker {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-dialogue-speaker-font-family);
+  font-size: var(--libitum-typography-dialogue-speaker-font-size);
+  line-height: var(--libitum-typography-dialogue-speaker-line-height);
+}
+.phone-call-transcript-text {
+  padding: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-color-background-elevated);
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-dialogue-body-font-family);
+  font-size: var(--libitum-typography-dialogue-body-font-size);
+  line-height: var(--libitum-typography-dialogue-body-line-height);
+}
+.phone-call-transcript-self .phone-call-transcript-text {
+  background: var(--libitum-color-brand-strong);
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+.phone-call-screen-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  flex-shrink: 0;
+}
+.phone-call-audio-button,
+.phone-call-reply-button,
+.phone-call-replay-button {
+  min-height: var(--libitum-spacing-48);
+  padding: 0 var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--libitum-color-brand-strong);
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+}
+.phone-call-audio-button text,
+.phone-call-reply-button text,
+.phone-call-replay-button text {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}

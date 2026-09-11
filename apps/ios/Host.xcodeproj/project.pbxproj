@@ -20,6 +20,7 @@
 		2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */; };
 		2B94A3E12D6614980060892E /* FontScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3E02D6614980060892E /* FontScale.swift */; };
 		2B94A3DD2D6614980060892F /* audio in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D6614980060892F /* audio */; };
+		2B94A3DD2D66149800608938 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608939 /* Resource */; };
 		2BE49E032D7720F0000D068C /* main.lynx.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 2BE49E022D7720F0000D068C /* main.lynx.bundle */; };
 		63972E0D34F86B0706325BCE /* libPods-Host.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B67B2104D0445A811952B8 /* libPods-Host.a */; };
 /* End PBXBuildFile section */
@@ -41,6 +42,7 @@
 		2B94A3DC2D66149800608932 /* HostTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HostTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B94A3E02D6614980060892E /* FontScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontScale.swift; sourceTree = "<group>"; };
 		2B94A3DC2D6614980060892F /* audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = audio; sourceTree = "<group>"; };
+		2B94A3DC2D66149800608939 /* Resource */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resource; sourceTree = "<group>"; };
 		2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Host-Bridging-Header.h"; sourceTree = "<group>"; };
 		2BE49E022D7720F0000D068C /* main.lynx.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = main.lynx.bundle; sourceTree = "<group>"; };
 		61CE2062BA0F77A3DF32F268 /* Pods-Host.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Host.release.xcconfig"; path = "Target Support Files/Pods-Host/Pods-Host.release.xcconfig"; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				2BE49E022D7720F0000D068C /* main.lynx.bundle */,
+				2B94A3DC2D66149800608939 /* Resource */,
 				2B94A3C72D6613730060892C /* Host */,
 				2B94A3DC2D66149800608933 /* HostTests */,
 				2B94A3C62D6613730060892C /* Products */,
@@ -197,6 +200,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2BE49E032D7720F0000D068C /* main.lynx.bundle in Resources */,
+				2B94A3DD2D66149800608938 /* Resource in Resources */,
 				2B94A3DD2D6614980060892F /* audio in Resources */,
 				2B94A3D22D6613740060892C /* Assets.xcassets in Resources */,
 				2B94A3D52D6613740060892C /* Base in Resources */,

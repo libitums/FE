@@ -1,0 +1,124 @@
+.visual-novel-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--libitum-color-background-primary);
+  position: relative;
+}
+.visual-novel-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-layout-gap-inline);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x);
+  background: var(--libitum-color-background-elevated);
+  border-bottom: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  flex-shrink: 0;
+}
+.visual-novel-exit {
+  position: absolute;
+  top: var(--libitum-layout-screen-padding-top);
+  left: var(--libitum-layout-screen-padding-x);
+  z-index: 4;
+  min-height: var(--libitum-spacing-48);
+  padding: 0 var(--libitum-spacing-12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-md);
+}
+.visual-novel-title {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  margin-left: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
+}
+.visual-novel-progress,
+.visual-novel-exit text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+.visual-novel-scene-shell {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  background: var(--libitum-color-background-primary);
+}
+.visual-novel-scene {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  background: var(--libitum-color-background-primary);
+}
+.visual-novel-background,
+.visual-novel-character {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+.visual-novel-background {
+  z-index: 0;
+}
+.visual-novel-character {
+  z-index: 1;
+  padding: var(--libitum-spacing-16) var(--libitum-layout-screen-padding-x) 0;
+}
+.visual-novel-dialogue {
+  position: absolute;
+  z-index: 2;
+  left: var(--libitum-layout-screen-padding-x);
+  right: var(--libitum-layout-screen-padding-x);
+  bottom: var(--libitum-layout-screen-padding-bottom);
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-16);
+  background: var(--libitum-color-background-elevated);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-lg);
+}
+.visual-novel-dialogue-speaker,
+.visual-novel-dialogue-body {
+  color: var(--libitum-color-fg-neutral);
+}
+.visual-novel-dialogue-action {
+  width: 100%;
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-brand-strong);
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+}
+.visual-novel-dialogue-scroll {
+  max-height: 30vh;
+  overflow-y: scroll;
+  flex-shrink: 1;
+}
+.visual-novel-dialogue-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+.visual-novel-dialogue-action-label {
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+.visual-novel-large-text-reflow {
+  flex-shrink: 0;
+}

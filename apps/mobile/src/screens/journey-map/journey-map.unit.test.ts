@@ -33,6 +33,7 @@ import {
 
 // 계약: .agent-harness/work/lib-222/spec.md §3.1 (`unit` 테스트 계획, pureFunctions 표)
 // 진행 갱신 둘(journeyStepOrdinal · completeStep)은 LIB-223 계약 §3.1(b)·§1.5(a)다.
+
 // DOM·컴포넌트를 import하지 않는다 — 순수 함수 일곱 + 고정 데이터만 본다.
 
 describe("stepStatusAt", () => {
