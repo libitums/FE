@@ -69,9 +69,9 @@ init data일 뿐 제품 데이터가 아니다.
 
 ## 3. 공개 TypeScript 계약
 
-구현 위치는 기존 관례대로 `packages/ui-lynx/src/index.tsx`다. 다음 이름은 root export와
-`@libitums/ui-lynx/round-button` subpath에서 동일한 `dist/index.jsx` / `dist/index.d.ts`로
-해석된다.
+구현 위치는 `packages/ui-lynx/src/round-button.tsx`다. `packages/ui-lynx/src/index.tsx`는
+다음 이름을 root에서 재수출하며, `@libitums/ui-lynx/round-button` subpath는 전용
+`dist/round-button.jsx` / `dist/round-button.d.ts`로 해석된다.
 
 ```ts
 export type RoundButtonVariant = "neutral" | "brand";
@@ -205,8 +205,8 @@ function dispatchRoundButtonStoryTap(
   `dist/lynx/round-button.web.bundle`이다. story는 `./lynx/round-button.web.bundle`만 사용한다.
 - Lynx entry는 `@libitums/ui-lynx/round-button`을 소비한다. source path mapping은
   `tsconfig.typecheck.json`에만 둘 수 있고 Rspeedy 기본 config에는 둘 수 없다.
-- `package.json#exports["./round-button"]`은 root와 같은 compiled runtime/declaration을
-  가리킨다. pack 검사는 subpath 존재, 선언/JSX/CSS 포함, source/test/script 비포함,
+- `package.json#exports["./round-button"]`은 전용 compiled runtime/declaration을 가리키고,
+  root entry는 이를 재수출한다. pack 검사는 subpath 존재, 선언/JSX/CSS 포함, source/test/script 비포함,
   authored ReactLynx JSX 보존을 검증한다.
 
 ## 7. 계층별 테스트 계획

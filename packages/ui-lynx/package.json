@@ -36,9 +36,9 @@
       "default": "./dist/index.jsx"
     },
     "./round-button": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.jsx",
-      "default": "./dist/index.jsx"
+      "types": "./dist/round-button.d.ts",
+      "import": "./dist/round-button.jsx",
+      "default": "./dist/round-button.jsx"
     },
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"

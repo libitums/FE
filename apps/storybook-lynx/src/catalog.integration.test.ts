@@ -112,6 +112,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(typecheckTsconfig.compilerOptions.paths?.["@libitums/ui-lynx"]).toEqual([
       "../../packages/ui-lynx/src/index.tsx",
     ]);
+    expect(typecheckTsconfig.compilerOptions.paths?.["@libitums/ui-lynx/round-button"]).toEqual([
+      "../../packages/ui-lynx/src/round-button.tsx",
+    ]);
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
   });

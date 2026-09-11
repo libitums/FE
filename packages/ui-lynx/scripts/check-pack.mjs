@@ -17,6 +17,8 @@ const required = [
   "package/README.md",
   "package/dist/index.jsx",
   "package/dist/index.d.ts",
+  "package/dist/round-button.jsx",
+  "package/dist/round-button.d.ts",
   "package/dist/styles.css",
 ];
 
@@ -29,7 +31,7 @@ const forbidden = files.find(
 );
 if (forbidden) throw new Error(`packed artifact leaks development input: ${forbidden}`);
 
-const runtime = execFileSync("tar", ["-xOzf", archive, "package/dist/index.jsx"], {
+const runtime = execFileSync("tar", ["-xOzf", archive, "package/dist/round-button.jsx"], {
   encoding: "utf8",
 });
 
@@ -43,11 +45,11 @@ if (!roundButtonExport || typeof roundButtonExport !== "object") {
   throw new Error("packed package is missing the ./round-button export");
 }
 if (
-  roundButtonExport.import !== "./dist/index.jsx" ||
-  roundButtonExport.default !== "./dist/index.jsx" ||
-  roundButtonExport.types !== "./dist/index.d.ts"
+  roundButtonExport.import !== "./dist/round-button.jsx" ||
+  roundButtonExport.default !== "./dist/round-button.jsx" ||
+  roundButtonExport.types !== "./dist/round-button.d.ts"
 ) {
-  throw new Error("./round-button must resolve the compiled runtime and declarations");
+  throw new Error("./round-button must resolve its dedicated compiled runtime and declarations");
 }
 for (const target of [roundButtonExport.import, roundButtonExport.types]) {
   const packedTarget = `package/${target.replace(/^\.\//, "")}`;
