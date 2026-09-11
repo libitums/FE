@@ -33,6 +33,29 @@ const runtime = execFileSync("tar", ["-xOzf", archive, "package/dist/index.jsx"]
   encoding: "utf8",
 });
 
+const packedPackageJson = JSON.parse(
+  execFileSync("tar", ["-xOzf", archive, "package/package.json"], {
+    encoding: "utf8",
+  }),
+);
+const roundButtonExport = packedPackageJson.exports?.["./round-button"];
+if (!roundButtonExport || typeof roundButtonExport !== "object") {
+  throw new Error("packed package is missing the ./round-button export");
+}
+if (
+  roundButtonExport.import !== "./dist/index.jsx" ||
+  roundButtonExport.default !== "./dist/index.jsx" ||
+  roundButtonExport.types !== "./dist/index.d.ts"
+) {
+  throw new Error("./round-button must resolve the compiled runtime and declarations");
+}
+for (const target of [roundButtonExport.import, roundButtonExport.types]) {
+  const packedTarget = `package/${target.replace(/^\.\//, "")}`;
+  if (!files.includes(packedTarget)) {
+    throw new Error(`./round-button export target is missing from packed artifact: ${target}`);
+  }
+}
+
 if (!/<(?:view|text|svg)\b/.test(runtime)) {
   throw new Error("packed runtime does not contain authored ReactLynx JSX");
 }

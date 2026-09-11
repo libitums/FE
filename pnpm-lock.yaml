@@ -63,6 +63,9 @@ importers:
 
   apps/storybook-lynx:
     dependencies:
+      '@libitums/icons':
+        specifier: 0.2.0
+        version: 0.2.0
       '@libitums/ui-lynx':
         specifier: workspace:*
         version: link:../../packages/ui-lynx

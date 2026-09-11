@@ -128,6 +128,23 @@ Storybook integration test는 이전 실행의 ignored `dist`에 의존하지 �
 루트 Node 22와 pnpm 10 정책은 유지한다. Storybook 관련 의존은 이 저장소에서 확인한 정확
 버전으로 고정한다.
 
+### 2026-09-10 확장 — RoundButton 공개 표면
+
+이 절은 D0·D4·D5·D6의 방향을 바꾸지 않고, 같은 package/catalog 경계에 네 번째 공개
+컴포넌트를 추가한 delta를 기록한다. D4의 Button, Back Header, Status Indicator 열거는 최초
+공개 표면의 역사로 유지한다.
+
+- D0의 시각 원본 목록에 `components/round-button.md`를 추가한다. M icon 18px과 Spinner
+  12px에는 대응 size token이 없지만 원본이 정확한 component 값을 고정했으므로 비차단 gap으로
+  기록한다. 새 FE token이나 다른 token의 재해석은 허용하지 않는다.
+- D4의 현재 공개 표면은 `RoundButton`을 포함한 네 컴포넌트다. root export와
+  `@libitums/ui-lynx/round-button` subpath는 같은 compiled runtime과 declaration으로 해석된다.
+- D5의 Storybook 확인 대상에 Default, Brand, Loading, Disabled 네 story, serializable
+  Controls, 활성 `onTap` Action 1회와 Loading·Disabled Action 0회를 추가한다. 48/56px hit area와
+  native focus·VoiceOver·TalkBack은 계속 구분하며 후자는 제품 route 채택 전까지 비차단이다.
+- D6의 build·integration 검사는 `round-button.web.bundle`을 더한 네 bundle, catalog의 네
+  Round Button story ID, 공개 subpath 소비와 Action bridge 경계를 검증한다.
+
 ## 버린 대안
 
 - **`apps/ui-catalog` 자체 앱을 함께 둔다** — 같은 공개 API를 보여주는 표면이 둘이 되고,

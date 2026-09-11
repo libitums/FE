@@ -26,8 +26,20 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
    `onBack`과 `onInfo` Actions를 확인한다.
 5. `Components/Status Indicator`의 네 story를 열고 completed, in-progress, needs-retry,
    locked가 서로 구별되는지 확인한다.
-6. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
-   `status-indicator.web.bundle`을 정상 응답으로 가져오는지 확인한다.
+6. `Components/Round Button/Default`, `Brand`, `Loading`, `Disabled` 네 story를 차례로 열어
+   Default/Brand에는 icon, Loading에는 icon 대신 Spinner, Disabled에는 disabled 표현이
+   보이는지 확인한다.
+7. Round Button Controls에서 `accessibilityLabel`, icon `info-02`, variant `neutral | brand`,
+   size `s | m | l | xl`, disabled, loading을 바꾸고 Canvas가 갱신되는지 확인한다. 빈 label은
+   유효한 소비 입력으로 사용하지 않는다.
+8. Default 또는 Brand에서 Round Button을 한 번 tap하고 Actions의 `onTap`이 label 인자와 함께
+   정확히 1회 추가되는지 확인한다. Loading과 Disabled에서 각각 tap해 새 Action이 0회인지
+   확인한다. disabled와 loading을 함께 켠 경우도 0회여야 하고 Spinner는 유지돼야 한다.
+9. 브라우저 개발자 도구의 element overlay로 Round Button의 바깥 hit area를 확인한다.
+   S/M/L은 각각 48 × 48px이고 그 안의 원형 surface는 28/36/44px, XL은 hit area와 surface가
+   모두 56 × 56px여야 한다. 이웃 control과 hit area가 겹치지 않아야 한다.
+10. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
+    `status-indicator.web.bundle`, `round-button.web.bundle`을 정상 응답으로 가져오는지 확인한다.
 
 ## native에서만 확인할 항목
 

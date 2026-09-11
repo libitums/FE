@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@libitums/ui-lynx": ["../../packages/ui-lynx/src/index.tsx"]
+      "@libitums/ui-lynx": ["../../packages/ui-lynx/src/index.tsx"],
+      "@libitums/ui-lynx/round-button": ["../../packages/ui-lynx/src/index.tsx"]
     }
   }
 }
