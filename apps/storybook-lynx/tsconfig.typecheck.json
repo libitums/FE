@@ -9,7 +9,9 @@
       "@libitums/ui-lynx/status-indicator": [
         "../../packages/ui-lynx/src/status-indicator/index.ts"
       ],
-      "@libitums/ui-lynx/round-button": ["../../packages/ui-lynx/src/round-button/index.ts"]
+      "@libitums/ui-lynx/round-button": ["../../packages/ui-lynx/src/round-button/index.ts"],
+      "@libitums/ui-lynx/progress-header": ["../../packages/ui-lynx/src/progress-header/index.ts"],
+      "@libitums/ui-lynx/page-indicator": ["../../packages/ui-lynx/src/page-indicator/index.ts"]
     }
   }
 }

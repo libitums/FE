@@ -23,3 +23,13 @@ export type {
   RoundButtonSize,
   RoundButtonVariant,
 } from "./round-button";
+
+export { ProgressHeader, getProgressHeaderProgress } from "./progress-header";
+export type {
+  ProgressHeaderMotion,
+  ProgressHeaderProgress,
+  ProgressHeaderProps,
+} from "./progress-header";
+
+export { PageIndicator, getPageIndicatorModel } from "./page-indicator";
+export type { PageIndicatorItem, PageIndicatorModel, PageIndicatorProps } from "./page-indicator";

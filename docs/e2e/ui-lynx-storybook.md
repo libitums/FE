@@ -38,13 +38,37 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 9. 브라우저 개발자 도구의 element overlay로 Round Button의 바깥 hit area를 확인한다.
    S/M/L은 각각 48 × 48px이고 그 안의 원형 surface는 28/36/44px, XL은 hit area와 surface가
    모두 56 × 56px여야 한다. 이웃 control과 hit area가 겹치지 않아야 한다.
-10. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
-    `status-indicator.web.bundle`, `round-button.web.bundle`을 정상 응답으로 가져오는지 확인한다.
+10. `Components/Progress Header/Default`를 열고 Canvas에 실제 `<lynx-view>`와
+   `progress-header.web.bundle` 응답이 있는지 확인한다. Controls의 `title`, `activity`,
+   `exitAccessibilityLabel`, `motion`을 각각 바꿔 Canvas에 반영되는지 확인한다.
+11. Controls의 `progress`를 `-1`, `0`, `0.1`, `33.5`, `100`, `101`로 차례로 설정한다.
+   기대 결과는 입력이 유효 범위로 clamp되고, `0`은 fill이 없으며, 양수는 최소 8px의
+   시각적 fill, `33.5`는 약 33.5% fill, `100`은 전체 fill, `101`은 100%와 같은
+   결과다. 표시 percentage도 clamp된 값(0–100)과 일치해야 한다.
+12. exit를 각 progress 값에서 한 번씩 tap하고 Actions의 `onExit`에 매번 정확히 한
+   entry만 기록되는지 확인한다. 표준 motion과 reduced motion을 각각 선택해 전환을
+   비교하고, 브라우저 설정만으로 OS reduced-motion 지원까지 입증된 것으로 간주하지
+   않는다.
+13. Progress Header의 `title`과 `activity`를 긴 문자열과 의사 현지화 문자열(예:
+    `[!! 오늘의 아주 긴 학습 진행 제목 ää !!]`)로 바꾼다. 제목이 말줄임 없이 여러 줄로
+    늘어나고, 48px exit hit area와 대칭 gutter가 제목을 가리지 않으며 activity와 percentage가
+    서로 겹치지 않는지 확인한다. 이 브라우저 확인은 native 최대 텍스트 크기 판정을
+    대신하지 않는다.
+14. Page Indicator의 Default, First, Last, Single, Empty story에서 현재 항목이 하나만 활성이고,
+    빈 page count에서는 전체 indicator가 렌더되지 않는지 확인한다.
+15. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
+    `status-indicator.web.bundle`, `round-button.web.bundle`, `progress-header.web.bundle`,
+    `page-indicator.web.bundle`을 정상 응답으로 가져오는지 확인한다.
 
 ## native에서만 확인할 항목
 
 - VoiceOver/TalkBack label·traits와 읽기 순서
+- Progress Header exit의 VoiceOver/TalkBack 이름·button trait, 충분한 hit area와 focus
+  동작
+- native 시스템 reduced-motion 설정이 Progress Header의 motion 설정에 매핑되는지
 - iOS/Android 시스템 글꼴과 Dynamic Type
+- Progress Header를 native 최대 텍스트 크기로 설정했을 때 긴/의사 현지화 title과
+  activity가 잘리지 않고, exit와 caption을 포함한 모든 내용에 도달할 수 있는지
 - native gesture/pressed-state timing
 - safe area 및 `apps/ios` 호스트 통합
 

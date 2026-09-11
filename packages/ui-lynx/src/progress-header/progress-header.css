@@ -1,0 +1,111 @@
+@import "@libitums/design-tokens/css/variables.css";
+@import "@libitums/design-tokens/css/typography.css";
+
+.ui-lynx-progress-header {
+  position: relative;
+  margin: 0 var(--libitum-layout-screen-padding-x);
+  padding: var(--libitum-spacing-16);
+  background-color: var(--libitum-color-background-secondary);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-lynx-progress-header-title-row {
+  position: relative;
+  min-height: var(--libitum-spacing-48);
+  padding: 0 var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-lynx-progress-header-exit {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-lynx-progress-header-exit:focus {
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+.ui-lynx-progress-header-exit-icon {
+  position: absolute;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  transition: opacity var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-progress-header-exit-icon-pressed {
+  opacity: 0;
+}
+.ui-lynx-progress-header-exit:active .ui-lynx-progress-header-exit-icon-default {
+  opacity: 0;
+}
+.ui-lynx-progress-header-exit:active .ui-lynx-progress-header-exit-icon-pressed {
+  opacity: 1;
+}
+
+.ui-lynx-progress-header-track {
+  margin-top: var(--libitum-spacing-16);
+  width: 100%;
+  height: var(--libitum-spacing-8);
+  background-color: var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-full);
+  overflow: hidden;
+}
+
+.ui-lynx-progress-header-fill {
+  height: 100%;
+  min-width: var(--libitum-spacing-8);
+  background-color: var(--libitum-color-brand-primary);
+  border-radius: var(--libitum-radius-full);
+  transition: width var(--libitum-motion-duration-progress) var(--libitum-motion-easing-enter);
+}
+
+.ui-lynx-progress-header-caption {
+  margin-top: var(--libitum-spacing-8);
+}
+
+.ui-lynx-progress-header-caption-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.ui-lynx-progress-header-title {
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  color: var(--libitum-color-fg-neutral);
+  width: 100%;
+  text-align: center;
+}
+
+.ui-lynx-progress-header-activity,
+.ui-lynx-progress-header-percentage {
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.ui-lynx-progress-header-motion-reduced .ui-lynx-progress-header-fill {
+  transition: none;
+}
+.ui-lynx-progress-header-motion-reduced .ui-lynx-progress-header-exit-icon {
+  transition: opacity var(--libitum-motion-duration-d2) var(--libitum-motion-easing-linear);
+}
