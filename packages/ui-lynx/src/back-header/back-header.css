@@ -1,0 +1,102 @@
+.ui-lynx-back-header {
+  position: sticky;
+  top: var(--libitum-spacing-0);
+  width: 100%;
+  min-height: var(--libitum-spacing-64);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  z-index: var(--libitum-elevation-z-sticky);
+  background-color: var(--libitum-color-background-elevated);
+  border-bottom-left-radius: var(--libitum-radius-md);
+  border-bottom-right-radius: var(--libitum-radius-md);
+}
+
+.ui-lynx-back-header-leading {
+  flex: 1;
+  min-width: var(--libitum-spacing-48);
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  column-gap: var(--libitum-spacing-16);
+}
+
+.ui-lynx-back-header-back-icon-area {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-lynx-back-header-back-icon-area:focus,
+.ui-lynx-back-header-info:focus {
+  border-radius: var(--libitum-radius-md);
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+.ui-lynx-back-header-info {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-lynx-back-header-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.ui-lynx-back-header-icon-pressed {
+  display: none;
+}
+
+.ui-lynx-back-header-leading:active .ui-lynx-back-header-icon-default,
+.ui-lynx-back-header-info:active .ui-lynx-back-header-icon-default {
+  display: none;
+}
+
+.ui-lynx-back-header-leading:active .ui-lynx-back-header-icon-pressed,
+.ui-lynx-back-header-info:active .ui-lynx-back-header-icon-pressed {
+  display: flex;
+}
+
+.ui-lynx-back-header-copy {
+  flex: 1;
+  min-width: var(--libitum-spacing-0);
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  row-gap: var(--libitum-spacing-4);
+}
+
+.ui-lynx-back-header-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-lynx-back-header-subtitle {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}

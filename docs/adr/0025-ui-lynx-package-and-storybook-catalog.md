@@ -97,6 +97,30 @@ iOS 접근성 트리에서 accessible button 안에 title header를 중첩하지
 ADR-0016의 leaf semantics를 지키는 플랫폼 접근성 예외이며, pointer/tap hit 영역과 접근성
 focus node의 경계가 의도적으로 다르다.
 
+### D4.1. 공개 컴포넌트는 컴포넌트 디렉터리 단위로 분리한다
+
+각 공개 컴포넌트는 `packages/ui-lynx/src/<component>/` 아래에 구현 `.tsx`, 공개 타입을
+정의하는 contract, 필요한 경우의 순수 logic, 전용 CSS, component barrel과 해당 단위의
+unit·UI test를 함께 둔다. 현재 이 구조를 적용하는 디렉터리는 `button/`, `back-header/`,
+`status-indicator/`, `round-button/`이다. 컴포넌트 구현·스타일·테스트를 다시 root 파일에
+합치지 않는다.
+
+기존 소비 호환성을 위해 `src/index.ts`는 네 component barrel의 공개 값과 타입을 재수출하는
+root barrel로 유지한다. CSS도 기존 단일 진입점인 `@libitums/ui-lynx/styles.css`를 유지한다.
+이 aggregate root CSS는 design token CSS와 각 component CSS를 import하며, 소비자가
+컴포넌트별 소스 경로를 알아야 하게 만들지 않는다.
+
+동시에 각 component barrel은 독립적으로 build되어 `dist/<component>/index.js`와 선언 파일을
+만들고, `package.json`의 `@libitums/ui-lynx/<component>` subpath export가 그 산출물을 직접
+가리킨다. JSX를 가진 구현은 D3에 따라 같은 디렉터리의 `.jsx` 산출물로 보존된다. 따라서
+Storybook을 포함한 선택적 소비자는 root barrel을 경유하지 않고 필요한 공개 subpath만
+사용할 수 있으며, root import를 쓰던 소비자는 변경 없이 유지된다.
+
+이후 공개 컴포넌트를 추가하거나 병렬 브랜치의 컴포넌트를 합칠 때는 먼저 구현·contract·logic·
+CSS·테스트를 새 component directory에 이관한다. 그 다음 root barrel, aggregate root CSS,
+package subpath export와 pack 검사를 공통 통합 지점으로 한 번만 갱신한다. 병렬 작업이 root
+파일 전체를 복사하거나 monolithic entry를 되살리는 방식으로 충돌을 해결하지 않는다.
+
 ### D5. Storybook 웹 확인과 native 확인을 구분한다
 
 Storybook은 props, 상태, layout, token 적용, bridge 상호작용을 빠르게 확인한다. 다음은
@@ -127,6 +151,24 @@ Storybook integration test는 이전 실행의 ignored `dist`에 의존하지 �
 
 루트 Node 22와 pnpm 10 정책은 유지한다. Storybook 관련 의존은 이 저장소에서 확인한 정확
 버전으로 고정한다.
+
+### 2026-09-10 확장 — RoundButton 공개 표면
+
+이 절은 D0·D4·D5·D6의 방향을 바꾸지 않고, 같은 package/catalog 경계에 네 번째 공개
+컴포넌트를 추가한 delta를 기록한다. D4의 Button, Back Header, Status Indicator 열거는 최초
+공개 표면의 역사로 유지한다.
+
+- D0의 시각 원본 목록에 `components/round-button.md`를 추가한다. M icon 18px과 Spinner
+  12px에는 대응 size token이 없지만 원본이 정확한 component 값을 고정했으므로 비차단 gap으로
+  기록한다. 새 FE token이나 다른 token의 재해석은 허용하지 않는다.
+- D4의 현재 공개 표면은 `RoundButton`을 포함한 네 컴포넌트다. 구현, 계약, CSS, 테스트,
+  barrel은 `src/round-button/`에 함께 두고 root entry에서 재수출한다.
+  `@libitums/ui-lynx/round-button` subpath는 전용 compiled runtime과 declaration으로 해석된다.
+- D5의 Storybook 확인 대상에 Default, Brand, Loading, Disabled 네 story, serializable
+  Controls, 활성 `onTap` Action 1회와 Loading·Disabled Action 0회를 추가한다. 48/56px hit area와
+  native focus·VoiceOver·TalkBack은 계속 구분하며 후자는 제품 route 채택 전까지 비차단이다.
+- D6의 build·integration 검사는 `round-button.web.bundle`을 더한 네 bundle, catalog의 네
+  Round Button story ID, 공개 subpath 소비와 Action bridge 경계를 검증한다.
 
 ## 버린 대안
 

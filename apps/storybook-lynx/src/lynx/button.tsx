@@ -1,6 +1,6 @@
 import { root, useInitData } from "@lynx-js/react";
-import { Button } from "@libitums/ui-lynx";
-import type { ButtonSize, ButtonVariant, ButtonWidth } from "@libitums/ui-lynx";
+import { Button } from "@libitums/ui-lynx/button";
+import type { ButtonSize, ButtonVariant, ButtonWidth } from "@libitums/ui-lynx/button";
 
 import type { ButtonStoryArgs } from "../story-types";
 import "./story-canvas.css";

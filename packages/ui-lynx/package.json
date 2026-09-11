@@ -9,41 +9,49 @@
   ],
   "type": "module",
   "sideEffects": [
-    "./dist/styles.css"
+    "./dist/styles.css",
+    "./dist/round-button/round-button.css"
   ],
-  "main": "./dist/index.jsx",
-  "module": "./dist/index.jsx",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.jsx",
-      "default": "./dist/index.jsx"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./button": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.jsx",
-      "default": "./dist/index.jsx"
+      "types": "./dist/button/index.d.ts",
+      "import": "./dist/button/index.js",
+      "default": "./dist/button/index.js"
     },
     "./back-header": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.jsx",
-      "default": "./dist/index.jsx"
+      "types": "./dist/back-header/index.d.ts",
+      "import": "./dist/back-header/index.js",
+      "default": "./dist/back-header/index.js"
     },
     "./status-indicator": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.jsx",
-      "default": "./dist/index.jsx"
+      "types": "./dist/status-indicator/index.d.ts",
+      "import": "./dist/status-indicator/index.js",
+      "default": "./dist/status-indicator/index.js"
     },
+    "./round-button": {
+      "types": "./dist/round-button/index.d.ts",
+      "import": "./dist/round-button/index.js",
+      "default": "./dist/round-button/index.js"
+    },
+    "./round-button/styles.css": "./dist/round-button/round-button.css",
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && cp src/styles.css dist/styles.css",
+    "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.build.json && node scripts/copy-styles.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "pnpm test:unit && pnpm test:ui",
+    "test": "pnpm test:unit && pnpm test:ui && pnpm test:integration",
     "test:unit": "vitest run unit.test",
     "test:ui": "vitest run ui.test",
+    "test:integration": "vitest run index.integration.test",
     "prepack": "pnpm build",
     "pack:check": "pnpm pack --pack-destination .pack && node scripts/check-pack.mjs"
   },

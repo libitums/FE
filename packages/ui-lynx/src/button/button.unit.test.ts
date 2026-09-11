@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
 import { color } from "@libitums/design-tokens";
 
-import { getButtonContract, getButtonIconColor, getStatusIndicatorLabel } from "./index";
+import { getButtonContract, getButtonIconColor } from "./index";
 import type { ButtonSize, ButtonVariant, ButtonWidth } from "./index";
 
-describe("getButtonContract", () => {
+describe("Button contract", () => {
   const variants: readonly ButtonVariant[] = ["neutral", "brand", "outline", "subtle", "text"];
   const sizes: readonly ButtonSize[] = ["s", "m", "l", "xl"];
   const widths: readonly ButtonWidth[] = ["hug", "fill"];
@@ -51,7 +51,7 @@ describe("getButtonContract", () => {
   });
 });
 
-describe("getButtonIconColor", () => {
+describe("Button icon color", () => {
   test.each([
     ["neutral", color.gray[50]],
     ["brand", color.white],
@@ -69,30 +69,5 @@ describe("getButtonIconColor", () => {
     expect(getButtonIconColor({ disabled: true, label: "계속", variant: "text" })).toBe(
       color.gray[300],
     );
-  });
-});
-
-describe("getStatusIndicatorLabel", () => {
-  test("보이는 라벨이 상태 이름이면 중복하지 않는다", () => {
-    expect(getStatusIndicatorLabel({ label: "완료", status: "completed" })).toBe("완료");
-  });
-
-  test.each([
-    ["completed", "완료"],
-    ["in-progress", "진행 중"],
-    ["needs-retry", "다시 시도"],
-    ["locked", "잠김"],
-  ] as const)("%s 상태를 임의 라벨과 구분되는 접근성 이름에 포함한다", (status, name) => {
-    expect(getStatusIndicatorLabel({ label: "상태", status })).toBe(`상태, ${name}`);
-  });
-
-  test("문맥, 보이는 라벨, 표준 상태 이름을 한 접근성 이름으로 결합한다", () => {
-    expect(
-      getStatusIndicatorLabel({
-        contextLabel: "3단계",
-        label: "다시 해보기",
-        status: "needs-retry",
-      }),
-    ).toBe("3단계, 다시 해보기, 다시 시도");
   });
 });

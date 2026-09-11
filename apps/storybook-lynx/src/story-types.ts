@@ -3,7 +3,20 @@ import type {
   ButtonVariant,
   ButtonWidth,
   StatusIndicatorStatus,
+  RoundButtonSize,
+  RoundButtonVariant,
 } from "@libitums/ui-lynx";
+
+export type RoundButtonIconKey = "info-02";
+export type RoundButtonStoryArgs = {
+  accessibilityLabel: string;
+  icon: RoundButtonIconKey;
+  variant: RoundButtonVariant;
+  size: RoundButtonSize;
+  disabled: boolean;
+  loading: boolean;
+  onTap: (accessibilityLabel: string) => void;
+};
 
 export type ButtonStoryArgs = {
   label: string;

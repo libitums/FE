@@ -13,6 +13,7 @@
     "test": "pnpm build && vitest run integration.test"
   },
   "dependencies": {
+    "@libitums/icons": "0.2.0",
     "@libitums/ui-lynx": "workspace:*",
     "@lynx-js/react": "0.123.0"
   },

@@ -1,5 +1,5 @@
 import { root, useInitData } from "@lynx-js/react";
-import { BackHeader } from "@libitums/ui-lynx";
+import { BackHeader } from "@libitums/ui-lynx/back-header";
 
 import type { BackHeaderStoryArgs } from "../story-types";
 import "./story-canvas.css";

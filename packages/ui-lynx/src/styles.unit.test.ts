@@ -4,8 +4,25 @@ import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
 describe("ui-lynx styles", () => {
-  test("Neutral surface는 gray.900을 쓴다", () => {
+  const readLegacyStyles = () =>
+    ["button/button.css", "back-header/back-header.css", "status-indicator/status-indicator.css"]
+      .map((file) => readFileSync(resolve(process.cwd(), "src", file), "utf8"))
+      .join("\n");
+
+  test("root stylesheet aggregates component styles", () => {
     const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+
+    expect(styles).toContain('@import "./button/button.css"');
+    expect(styles).toContain('@import "./back-header/back-header.css"');
+    expect(styles).toContain('@import "./status-indicator/status-indicator.css"');
+    expect(styles).toContain('@import "./round-button/round-button.css"');
+    expect(readLegacyStyles()).toContain(".ui-lynx-button");
+    expect(readLegacyStyles()).toContain(".ui-lynx-back-header");
+    expect(readLegacyStyles()).toContain(".ui-lynx-status-indicator");
+  });
+
+  test("Neutral surface는 gray.900을 쓴다", () => {
+    const styles = readLegacyStyles();
 
     expect(styles).toMatch(
       /\.ui-lynx-button-neutral \.ui-lynx-button-surface\s*\{[^}]*background-color:\s*var\(--libitum-color-gray-900\)/,
@@ -13,7 +30,7 @@ describe("ui-lynx styles", () => {
   });
 
   test("brand loading spinner는 white foreground를 쓴다", () => {
-    const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+    const styles = readLegacyStyles();
 
     expect(styles).toMatch(
       /\.ui-lynx-button-brand\.ui-lynx-button-loading \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-white\)/,
@@ -21,7 +38,7 @@ describe("ui-lynx styles", () => {
   });
 
   test("Brand surface는 brand primary이고 라벨과 loading spinner는 white를 쓴다", () => {
-    const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+    const styles = readLegacyStyles();
 
     expect(styles).toMatch(
       /\.ui-lynx-button-brand \.ui-lynx-button-label\s*\{[^}]*color:\s*var\(--libitum-color-white\)/,
@@ -39,7 +56,7 @@ describe("ui-lynx styles", () => {
   });
 
   test("Button의 loading, pressed, size 계약은 design-system 원본 스펙을 따른다", () => {
-    const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+    const styles = readLegacyStyles();
 
     expect(styles).toMatch(
       /\.ui-lynx-button-loading \.ui-lynx-button-surface\s*\{[^}]*column-gap:\s*var\(--libitum-spacing-6\)/,
@@ -61,7 +78,7 @@ describe("ui-lynx styles", () => {
   });
 
   test("BackHeader는 글자 배율에서도 DOM과 시각 읽기 순서를 유지한다", () => {
-    const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+    const styles = readLegacyStyles();
 
     expect(styles).toMatch(/\.ui-lynx-back-header\s*\{[^}]*align-items:\s*flex-start/);
     expect(styles).toMatch(/\.ui-lynx-back-header-leading\s*\{[^}]*align-items:\s*flex-start/);
@@ -79,7 +96,7 @@ describe("ui-lynx styles", () => {
   });
 
   test("Button과 BackHeader control은 focus fallback과 pressed 스타일을 선언한다", () => {
-    const styles = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
+    const styles = readLegacyStyles();
 
     expect(styles).toMatch(
       /\.ui-lynx-button:focus\s*\{[^}]*box-shadow:[^}]*var\(--libitum-stroke-width-strong\)[^}]*var\(--libitum-color-border-strong\)/,

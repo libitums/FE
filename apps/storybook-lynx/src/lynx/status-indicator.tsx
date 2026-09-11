@@ -1,6 +1,6 @@
 import { root, useInitData } from "@lynx-js/react";
-import { StatusIndicator } from "@libitums/ui-lynx";
-import type { StatusIndicatorStatus } from "@libitums/ui-lynx";
+import { StatusIndicator } from "@libitums/ui-lynx/status-indicator";
+import type { StatusIndicatorStatus } from "@libitums/ui-lynx/status-indicator";
 
 import type { StatusIndicatorStoryArgs } from "../story-types";
 import "./story-canvas.css";
