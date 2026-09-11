@@ -1,0 +1,76 @@
+.ui-lynx-status-indicator {
+  min-height: var(--libitum-spacing-32);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  display: flex;
+  align-items: center;
+  border-radius: var(--libitum-radius-full);
+}
+
+.ui-lynx-status-indicator-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.ui-lynx-status-indicator-dot {
+  width: var(--libitum-spacing-8);
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+}
+
+.ui-lynx-status-indicator-label {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.ui-lynx-status-indicator-completed {
+  background-color: var(--libitum-color-feedback-correct-surface);
+}
+
+.ui-lynx-status-indicator-completed .ui-lynx-status-indicator-dot {
+  background-color: var(--libitum-color-feedback-correct);
+}
+
+.ui-lynx-status-indicator-completed .ui-lynx-status-indicator-label {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.ui-lynx-status-indicator-in-progress {
+  background-color: var(--libitum-color-feedback-warning-surface);
+}
+
+.ui-lynx-status-indicator-in-progress .ui-lynx-status-indicator-dot {
+  background-color: var(--libitum-color-feedback-warning);
+}
+
+.ui-lynx-status-indicator-in-progress .ui-lynx-status-indicator-label {
+  color: var(--libitum-color-feedback-warning-text);
+}
+
+.ui-lynx-status-indicator-needs-retry {
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+}
+
+.ui-lynx-status-indicator-needs-retry .ui-lynx-status-indicator-dot {
+  background-color: var(--libitum-color-feedback-incorrect);
+}
+
+.ui-lynx-status-indicator-needs-retry .ui-lynx-status-indicator-label {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+.ui-lynx-status-indicator-locked {
+  background-color: var(--libitum-color-gray-200);
+}
+
+.ui-lynx-status-indicator-locked .ui-lynx-status-indicator-dot {
+  background-color: var(--libitum-color-gray-500);
+}
+
+.ui-lynx-status-indicator-locked .ui-lynx-status-indicator-label {
+  color: var(--libitum-color-fg-neutral-muted);
+}

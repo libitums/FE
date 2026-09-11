@@ -1,0 +1,122 @@
+.ui-lynx-round-button {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background: transparent;
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-round-button-xl {
+  width: 56px;
+  height: 56px;
+}
+
+.ui-lynx-round-button-surface {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.ui-lynx-round-button-s .ui-lynx-round-button-surface {
+  width: 28px;
+  height: 28px;
+}
+
+.ui-lynx-round-button-m .ui-lynx-round-button-surface {
+  width: 36px;
+  height: 36px;
+}
+
+.ui-lynx-round-button-l .ui-lynx-round-button-surface {
+  width: 44px;
+  height: 44px;
+}
+
+.ui-lynx-round-button-xl .ui-lynx-round-button-surface {
+  width: 56px;
+  height: 56px;
+}
+
+.ui-lynx-round-button-s .ui-lynx-round-button-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-lynx-round-button-m .ui-lynx-round-button-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.ui-lynx-round-button-l .ui-lynx-round-button-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ui-lynx-round-button-xl .ui-lynx-round-button-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.ui-lynx-round-button-spinner {
+  width: 12px;
+  height: 12px;
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-radius: var(--libitum-radius-full);
+}
+
+.ui-lynx-round-button-neutral.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
+  border-color: var(--libitum-color-fg-neutral-subtle);
+}
+
+.ui-lynx-round-button-brand.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
+  border-color: var(--libitum-color-fg-brand);
+}
+
+.ui-lynx-round-button-disabled.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
+  border-color: var(--libitum-color-border-default);
+}
+
+.ui-lynx-round-button-spinner {
+  border-top-color: transparent;
+}
+
+.ui-lynx-round-button-disabled .ui-lynx-round-button-surface {
+  background-color: var(--libitum-color-gray-50);
+}
+
+.ui-lynx-round-button-disabled .ui-lynx-round-button-icon {
+  opacity: 0.35;
+}
+
+.ui-lynx-round-button-disabled.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
+  opacity: 1;
+}
+
+.ui-lynx-round-button:not(.ui-lynx-round-button-loading):not(.ui-lynx-round-button-disabled):active
+  .ui-lynx-round-button-surface {
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+  transform: scale(0.95);
+}
+
+.ui-lynx-round-button:not(.ui-lynx-round-button-disabled):focus-visible {
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+.ui-lynx-round-button-disabled:focus-visible {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-lynx-round-button:active .ui-lynx-round-button-surface {
+    transform: none;
+  }
+}

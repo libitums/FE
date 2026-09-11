@@ -1,0 +1,38 @@
+{
+  "name": "@libitums/storybook-lynx",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Storybook catalog backed by real Rspeedy Lynx Web bundles",
+  "type": "module",
+  "scripts": {
+    "build:lynx": "rspeedy build --environment web",
+    "build:storybook": "storybook build -o dist/storybook",
+    "build": "pnpm --filter @libitums/ui-lynx build && pnpm build:lynx && pnpm build:storybook",
+    "storybook": "pnpm --filter @libitums/ui-lynx build && pnpm build:lynx && concurrently --kill-others \"rspeedy build --watch --environment web\" \"storybook dev -p 6006 --no-open\"",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "test": "pnpm build && vitest run integration.test"
+  },
+  "dependencies": {
+    "@libitums/icons": "0.2.0",
+    "@libitums/ui-lynx": "workspace:*",
+    "@lynx-js/react": "0.123.0"
+  },
+  "devDependencies": {
+    "@lynx-js/react-rsbuild-plugin": "0.18.0",
+    "@lynx-js/rspeedy": "0.16.0",
+    "@lynx-js/types": "4.1.0",
+    "@rsbuild/core": "2.1.7",
+    "@types/node": "22.20.0",
+    "@types/react": "18.3.31",
+    "concurrently": "10.0.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "storybook": "10.5.3",
+    "storybook-lynx-rsbuild": "0.1.0",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  },
+  "engines": {
+    "node": ">=22.13 <23"
+  }
+}

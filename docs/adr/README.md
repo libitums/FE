@@ -64,6 +64,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 네이밍 | 결정 | [0003](0003-workspace-and-directory-structure.md) D6·**D7**, [0004](0004-package-boundaries-and-dependency-direction.md) |
 | package 경계와 책임 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | 의존 방향 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
+| **공유 ReactLynx 패키지와 브라우저 카탈로그** | 결정 (`packages/ui-lynx` + 실제 Lynx Web bundle을 쓰는 Storybook 하나) | [0025](0025-ui-lynx-package-and-storybook-catalog.md) — 0004 D2와 0015 D3의 첫 패키지 유예를 부분 대체 |
 | 런타임·패키지매니저 버전 정책 | 결정 (형태) | [0005](0005-runtime-and-package-manager-versions.md) — 확정 값은 [0013](0013-dependencies-and-version-notation.md) D4 |
 | 의존 패키지 목록 | 결정 + 보류 (`@libitums/*`) | [0013](0013-dependencies-and-version-notation.md) |
 | npm 의존의 버전 표기 | 결정 (전부 정확 버전) | [0013](0013-dependencies-and-version-notation.md) |
@@ -80,7 +81,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 에러 경계 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | **여정의 유닛 구조와 특별 유닛의 맵 자리** | 결정 및 사례별 실체화 (맵의 줄 = 유닛 목록 순서 + 스텝 노드와 별도 컴포넌트 + 완료 신호는 「끝까지 닿음」 + 표준 스텝 진행 세기는 유지) | [0024](0024-journey-units-and-special-unit-placement.md) — 역사적 결정 본문은 보존한다. **2026-09-09 LIB-254 기록**은 첫 메신저 특별 유닛의 목록 위치, 별도 화면·상태와 재진입 및 C1–C3을 연결했다. **2026-09-10 기록**은 전화 뒤·`directions` 앞의 비주얼 노벨 항목, 독립 3장면 화면, 마지막 장면 완료와 세션 재진입·replay, 일반 진행 및 기존 특별 유닛 상태 격리를 연결했다. 두 기록 모두 D1·D2·D6·D8의 사례이며 미래의 모든 특별 유닛 구성을 일반화하지 않는다 |
 | 디자인 토큰 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
-| 컴포넌트 프리미티브 | 결정 | [0015](0015-component-primitives-and-style-application.md) — 0011 D3·0008 D4를 이어받음 |
+| 컴포넌트 프리미티브 | 결정 | [0015](0015-component-primitives-and-style-application.md) — 0011 D3·0008 D4를 이어받고, package 승격 시점은 [0025](0025-ui-lynx-package-and-storybook-catalog.md)이 부분 대체 |
 | 아이콘 | 결정 (경로·형태·색) | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | private registry 인증 | 결정 | [0014](0014-design-system-consumption-verified.md) — 0011 대체 |
 | 보조기술 시맨틱 (접근성) | 결정 (이름·역할·상태 + **겹침 레이어 격리** + **조작 불가 단위의 역할** + **능동 발화**) + 범위 밖 명시 (키보드·전환 통지) | [0016](0016-assistive-technology-semantics.md) D1~**D12** — 조작 불가 표기(`accessibility-traits="disabled"`)는 **D10**, **능동 발화(`announce`)와 속성 채널의 경계는 D11**, 인증 수준은 [0001](0001-repository-goal-and-scope.md) D3이 뺀 그대로 |

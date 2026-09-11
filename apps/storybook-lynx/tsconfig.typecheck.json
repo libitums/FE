@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@libitums/ui-lynx": ["../../packages/ui-lynx/src/index.ts"],
+      "@libitums/ui-lynx/button": ["../../packages/ui-lynx/src/button/index.ts"],
+      "@libitums/ui-lynx/back-header": ["../../packages/ui-lynx/src/back-header/index.ts"],
+      "@libitums/ui-lynx/status-indicator": [
+        "../../packages/ui-lynx/src/status-indicator/index.ts"
+      ],
+      "@libitums/ui-lynx/round-button": ["../../packages/ui-lynx/src/round-button/index.ts"]
+    }
+  }
+}

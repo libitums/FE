@@ -216,6 +216,18 @@ ADR-0011의 재검토 조건 *"패키지가 배포되면 알려진 토큰 이름
 `error-boundary.css`는 골격 커밋(#13) 이후 **어느 PR의 diff에도 나타나지 않았다.**
 diff에 안 나오는 파일은 diff로 안 잡힌다. 저장소 전체를 매번 훑는 검사만 잡는다.
 
+### D9. 공유 Lynx UI 패키지도 같은 토큰·아이콘 소비 경계를 유지한다
+
+2026-09-10에 두 번째 소비자 조건이 충족되어 `packages/ui-lynx`를 만들었다. 패키지 CSS는
+`@libitums/design-tokens/css/variables.css`와 `typography.css`를 가져오고 공개
+`styles.css` 진입점으로 내보낸다. 소비 앱은 그 진입점을 Lynx 앱 트리에서 한 번 import한다.
+아이콘은 D2·D6 그대로 이름별 Lynx subpath와 TypeScript token `current-color`를 쓴다.
+
+패키지로 이동했다고 토큰 규칙이 느슨해지지 않는다. `lint:tokens` 범위를
+`packages/ui-lynx/src`와 `apps/storybook-lynx/src`까지 넓혔고, 실제 토큰 목록과의 대조는
+이번 산출물 검토에서 별도로 수행했다. 기존 `apps/mobile` 화면은 이 조건을 이유로 자동
+이관하지 않는다(ADR-0015 D3).
+
 ## 버린 대안
 
 - **접두사 검사도 넣지 않고 PR diff에서 본다** — 이 저장소의 기본 태도이고
@@ -342,6 +354,6 @@ ADR-0010 D10의 *"실체화가 결정을 만족하지 않으면 파일을 고친
 - **`<svg>`가 CSS `color`를 읽게 되면** → D2. 아이콘 색을 CSS 경로로 되돌린다
 - **design-system이 `1.0.0`이 되면** → D5. caret 범위를 다시 검토한다. 1.0.0 이상에서는
   minor가 breaking을 담지 않는다
-- **두 번째 소비자가 나타나면** → `packages/ui-lynx` 승격 (ADR-0004 D2).
-  **컴포넌트 프리미티브 축은 이 ADR이 다루지 않는다 — [ADR-0015](0015-component-primitives-and-style-application.md)가 맡는다.**
-  ADR-0011 D3은 그 D3으로 옮겨갔다
+- ~~**두 번째 소비자가 나타나면**~~ → **2026-09-10 충족.** D9에 공유 패키지의 토큰·아이콘
+  소비 경계를 기록했다. 컴포넌트 프리미티브와 기존 화면 이관 범위는
+  [ADR-0015](0015-component-primitives-and-style-application.md)가 맡는다

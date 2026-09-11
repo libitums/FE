@@ -9,6 +9,10 @@
 |---|---|---|
 | [`apps/mobile`](apps/mobile) | 사용자 대면 화면 전부. Lynx 번들을 만든다 | ReactLynx · rspeedy · pnpm |
 | [`apps/ios`](apps/ios) | 그 번들을 로드해 실행하는 네이티브 호스트 | Swift · Xcode · CocoaPods |
+| [`apps/storybook-lynx`](apps/storybook-lynx) | 실제 Lynx Web bundle을 `<lynx-view>`로 보여주는 컴포넌트 카탈로그 | Storybook · Rspeedy |
+
+공개 재사용 컴포넌트는 [`packages/ui-lynx`](packages/ui-lynx)에 있다. 현재 Button, Back Header,
+Status Indicator를 명시적 package export로 제공한다.
 
 **번들을 만드는 쪽과 로드하는 쪽이 다르다** (ADR-0002 D3). 화면을 고치면 `apps/mobile`을
 빌드해 `apps/ios`로 옮겨야 실기기에 반영된다 — `pnpm bundle:host`가 Lynx 번들과
@@ -19,6 +23,17 @@
 단계에서 뺐고, 생기면 같은 규칙으로 들어온다.
 
 첫 단계 목표는 핵심 사용자 흐름을 처음부터 끝까지 시연할 수 있는 상태다 (ADR-0001 D1).
+
+## Storybook Lynx
+
+```sh
+nvm use
+pnpm storybook:lynx
+```
+
+기본 URL은 `http://localhost:6006`이다. Storybook의 manager와 Controls/Actions는 Web에서
+동작하고, 각 Canvas는 Rspeedy 산출물을 실제 `<lynx-view>`로 실행한다. story 목록과 native
+전용 검증 한계는 [`apps/storybook-lynx/README.md`](apps/storybook-lynx/README.md)를 본다.
 
 ## 첫 실행 — `apps/mobile`
 
