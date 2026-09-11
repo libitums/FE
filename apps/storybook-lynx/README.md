@@ -9,6 +9,8 @@ Rspeedy가 만든 Lynx Web bundle을 `<lynx-view>`에서 실행한다. 기반 �
 `components/header/back-header.md`, `components/indicator/status-indicator.md`,
 `components/round-button.md`를 기준으로 하며, 최초 보정 revision은
 `87c1b0d2b745429be9b586cef772deb6c8707ab6`이다.
+Step Indicator는 `components/indicator/step-indicator.md` revision
+`3f7ed6d17df769e37215adb40f7abfc2e1174fd1`을 기준으로 한다.
 
 ```sh
 nvm use
@@ -16,7 +18,7 @@ pnpm storybook:lynx
 ```
 
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
-명령은 먼저 Button·Back Header·Status Indicator·Round Button의 네 `.web.bundle`을 만들고,
+명령은 먼저 Button·Back Header·Status Indicator·Round Button·Step Indicator의 다섯 `.web.bundle`을 만들고,
 Rspeedy watch와 Storybook dev server를 함께 유지한다.
 
 Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
@@ -32,6 +34,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Back Header — Default, Title Only
 - Components/Status Indicator — Completed, In Progress, Needs Retry, Locked
 - Components/Round Button — Default, Brand, Loading, Disabled
+- Components/Step Indicator — First, Middle, Last
 
 Controls 변경은 `<lynx-view>.updateData()`를 통해 ReactLynx `useInitData()`에 전달된다.
 Button·Round Button tap과 Back Header back/info tap은
@@ -39,6 +42,10 @@ Button·Round Button tap과 Back Header back/info tap은
 Round Button Controls는 `accessibilityLabel`, 닫힌 icon key `info-02`, variant, size, disabled,
 loading을 제공한다. 활성 tap은 `onTap` Action을 한 번 기록하고 Loading·Disabled tap은 기록하지
 않는다. 함수와 SVG XML은 init data 직렬화 경계를 넘지 않는다.
+Step Indicator Controls는 `currentStep`과 `totalSteps` 정수만 전달하며 runtime에서 2–5단계,
+1-based 현재 단계 계약으로 정규화한다. `totalSteps`가 2–5 정수가 아니면 4를 사용하고,
+`currentStep`이 1–정규화된 `totalSteps` 정수가 아니면
+`Math.min(2, totalSteps)`를 사용한다.
 
 ## 한계
 

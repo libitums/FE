@@ -10,7 +10,8 @@
   "type": "module",
   "sideEffects": [
     "./dist/styles.css",
-    "./dist/round-button/round-button.css"
+    "./dist/round-button/round-button.css",
+    "./dist/step-indicator/step-indicator.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -42,6 +43,12 @@
       "default": "./dist/round-button/index.js"
     },
     "./round-button/styles.css": "./dist/round-button/round-button.css",
+    "./step-indicator": {
+      "types": "./dist/step-indicator/index.d.ts",
+      "import": "./dist/step-indicator/index.js",
+      "default": "./dist/step-indicator/index.js"
+    },
+    "./step-indicator/styles.css": "./dist/step-indicator/step-indicator.css",
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },

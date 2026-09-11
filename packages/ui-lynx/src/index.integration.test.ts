@@ -10,6 +10,7 @@ import * as button from "./button/index";
 import * as backHeader from "./back-header/index";
 import * as statusIndicator from "./status-indicator/index";
 import * as roundButton from "./round-button/index";
+import * as stepIndicator from "./step-indicator/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -18,6 +19,7 @@ const componentArtifacts = {
   "back-header": { implementation: "BackHeader.jsx", css: "back-header.css" },
   "status-indicator": { implementation: "StatusIndicator.jsx", css: "status-indicator.css" },
   "round-button": { implementation: "RoundButton.jsx", css: "round-button.css" },
+  "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
 } as const;
 
 const componentEntries = {
@@ -25,6 +27,7 @@ const componentEntries = {
   "back-header": "BackHeader",
   "status-indicator": "StatusIndicator",
   "round-button": "RoundButton",
+  "step-indicator": "StepIndicator",
 } as const;
 
 async function readPackageJson() {
@@ -42,8 +45,19 @@ describe("ui-lynx package boundaries", () => {
     expect(root.BackHeader).toBe(backHeader.BackHeader);
     expect(root.StatusIndicator).toBe(statusIndicator.StatusIndicator);
     expect(root.RoundButton).toBe(roundButton.RoundButton);
+    expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
     expect(root.getButtonContract).toBe(button.getButtonContract);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
+    expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+  });
+
+  test("root stylesheet aggregates StepIndicator without removing existing component styles", async () => {
+    const styles = await readFile(path.join(packageRoot, "src/styles.css"), "utf8");
+    expect(styles).toContain('@import "./button/button.css"');
+    expect(styles).toContain('@import "./back-header/back-header.css"');
+    expect(styles).toContain('@import "./status-indicator/status-indicator.css"');
+    expect(styles).toContain('@import "./round-button/round-button.css"');
+    expect(styles).toContain('@import "./step-indicator/step-indicator.css"');
   });
 
   test("each public subpath resolves to an independent source entry", async () => {
@@ -61,6 +75,10 @@ describe("ui-lynx package boundaries", () => {
         `./${componentEntries[entry as keyof typeof componentEntries]}`,
       );
     }
+    expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
+      "./dist/step-indicator/step-indicator.css",
+    );
+    expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
 
   test("package entry fields and dist outputs are component-specific", async () => {
@@ -84,6 +102,7 @@ describe("ui-lynx package boundaries", () => {
     for (const file of [
       "package/dist/index.js",
       "package/dist/index.d.ts",
+      "package/dist/styles.css",
       "package/dist/button/index.js",
       `package/dist/button/${componentArtifacts.button.implementation}`,
       "package/dist/button/index.d.ts",
@@ -100,6 +119,11 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/round-button/${componentArtifacts["round-button"].implementation}`,
       "package/dist/round-button/index.d.ts",
       `package/dist/round-button/${componentArtifacts["round-button"].css}`,
+      "package/dist/step-indicator/index.js",
+      `package/dist/step-indicator/${componentArtifacts["step-indicator"].implementation}`,
+      "package/dist/step-indicator/index.d.ts",
+      "package/dist/step-indicator/StepIndicator.d.ts",
+      `package/dist/step-indicator/${componentArtifacts["step-indicator"].css}`,
     ]) {
       expect(stdout).toContain(file);
     }

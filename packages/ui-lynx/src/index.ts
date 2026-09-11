@@ -23,3 +23,11 @@ export type {
   RoundButtonSize,
   RoundButtonVariant,
 } from "./round-button";
+
+export { StepIndicator, getStepIndicatorContract } from "./step-indicator";
+export type {
+  StepIndicatorContract,
+  StepIndicatorProps,
+  StepIndicatorStep,
+  StepIndicatorStepStatus,
+} from "./step-indicator";

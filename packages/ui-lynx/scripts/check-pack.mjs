@@ -32,6 +32,12 @@ const components = [
     component: "RoundButton",
     css: "round-button.css",
   },
+  {
+    subpath: "step-indicator",
+    directory: "step-indicator",
+    component: "StepIndicator",
+    css: "step-indicator.css",
+  },
 ];
 const required = [
   "package/package.json",

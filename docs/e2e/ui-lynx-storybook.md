@@ -38,8 +38,15 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 9. 브라우저 개발자 도구의 element overlay로 Round Button의 바깥 hit area를 확인한다.
    S/M/L은 각각 48 × 48px이고 그 안의 원형 surface는 28/36/44px, XL은 hit area와 surface가
    모두 56 × 56px여야 한다. 이웃 control과 hit area가 겹치지 않아야 한다.
-10. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
-    `status-indicator.web.bundle`, `round-button.web.bundle`을 정상 응답으로 가져오는지 확인한다.
+10. `Components/Step Indicator/First`, `Middle`, `Last`를 열어 Completed, Current, Upcoming
+    원과 왼쪽 단계 상태를 따르는 연결선이 구별되는지 확인한다. Controls에서 `totalSteps`를
+    2–5, `currentStep`을 1–`totalSteps` 범위로 바꿨을 때 숫자 원의 개수와 현재 위치가 함께
+    갱신되어야 한다. 원을 tap해도 이동이나 Action이 발생하지 않아야 한다.
+11. 브라우저 개발자 도구의 element overlay로 Step Indicator 원이 모두 32 × 32px이고 연결선이
+    2px 두께로 원의 세로 중앙에 놓이며, 남는 가로 공간을 같은 비율로 나누는지 확인한다.
+12. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
+    `status-indicator.web.bundle`, `round-button.web.bundle`, `step-indicator.web.bundle`을 정상
+    응답으로 가져오는지 확인한다.
 
 ## native에서만 확인할 항목
 
