@@ -137,9 +137,9 @@ Storybook integration test는 이전 실행의 ignored `dist`에 의존하지 �
 - D0의 시각 원본 목록에 `components/round-button.md`를 추가한다. M icon 18px과 Spinner
   12px에는 대응 size token이 없지만 원본이 정확한 component 값을 고정했으므로 비차단 gap으로
   기록한다. 새 FE token이나 다른 token의 재해석은 허용하지 않는다.
-- D4의 현재 공개 표면은 `RoundButton`을 포함한 네 컴포넌트다. 구현은
-  `src/round-button.tsx`에 격리하고 root entry에서 재수출한다. `@libitums/ui-lynx/round-button`
-  subpath는 전용 compiled runtime과 declaration으로 해석된다.
+- D4의 현재 공개 표면은 `RoundButton`을 포함한 네 컴포넌트다. 구현, 계약, CSS, 테스트,
+  barrel은 `src/round-button/`에 함께 두고 root entry에서 재수출한다.
+  `@libitums/ui-lynx/round-button` subpath는 전용 compiled runtime과 declaration으로 해석된다.
 - D5의 Storybook 확인 대상에 Default, Brand, Loading, Disabled 네 story, serializable
   Controls, 활성 `onTap` Action 1회와 Loading·Disabled Action 0회를 추가한다. 48/56px hit area와
   native focus·VoiceOver·TalkBack은 계속 구분하며 후자는 제품 route 채택 전까지 비차단이다.

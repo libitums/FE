@@ -1,13 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { color } from "@libitums/design-tokens";
 
-import {
-  getButtonContract,
-  getButtonIconColor,
-  getRoundButtonContract,
-  getRoundButtonForegroundColor,
-  getStatusIndicatorLabel,
-} from "./index";
+import { getButtonContract, getButtonIconColor, getStatusIndicatorLabel } from "./index";
 import type { ButtonSize, ButtonVariant, ButtonWidth } from "./index";
 
 describe("getButtonContract", () => {
@@ -100,77 +94,5 @@ describe("getStatusIndicatorLabel", () => {
         status: "needs-retry",
       }),
     ).toBe("3단계, 다시 해보기, 다시 시도");
-  });
-});
-
-describe("getRoundButtonContract", () => {
-  test("기본값은 neutral, m, button trait 및 interactive다", () => {
-    expect(getRoundButtonContract({ accessibilityLabel: "정보", icon: "<svg />" })).toEqual({
-      variant: "neutral",
-      size: "m",
-      className: "ui-lynx-round-button ui-lynx-round-button-neutral ui-lynx-round-button-m",
-      traits: "button",
-      accessibilityLabel: "정보",
-      interactive: true,
-    });
-  });
-
-  test.each(["neutral", "brand"] as const)(
-    "%s variant와 모든 size의 class 순서를 고정한다",
-    (variant) => {
-      for (const size of ["s", "m", "l", "xl"] as const) {
-        expect(
-          getRoundButtonContract({ accessibilityLabel: "정보", icon: "<svg />", variant, size })
-            .className,
-        ).toBe(`ui-lynx-round-button ui-lynx-round-button-${variant} ui-lynx-round-button-${size}`);
-      }
-    },
-  );
-
-  test("loading은 label에 로딩 중을 붙이고 interactive를 끈다", () => {
-    expect(
-      getRoundButtonContract({ accessibilityLabel: "정보", icon: "<svg />", loading: true }),
-    ).toMatchObject({
-      accessibilityLabel: "정보, 로딩 중",
-      traits: "button",
-      interactive: false,
-      className: expect.stringContaining("ui-lynx-round-button-loading"),
-    });
-  });
-
-  test.each([
-    [{ disabled: true }, "disabled"],
-    [{ loading: true }, "button"],
-    [{ disabled: true, loading: true }, "disabled"],
-  ] as const)("%j 상태는 interactive를 차단하고 %s semantics를 선택한다", (state, traits) => {
-    expect(
-      getRoundButtonContract({ accessibilityLabel: "정보", icon: "<svg />", ...state }),
-    ).toMatchObject({
-      traits,
-      interactive: false,
-    });
-  });
-
-  test.each(["", "   "])('빈 accessibilityLabel "%s"을 거부한다', (accessibilityLabel) => {
-    expect(() => getRoundButtonContract({ accessibilityLabel, icon: "<svg />" })).toThrow(
-      "RoundButton accessibilityLabel must not be empty",
-    );
-  });
-});
-
-describe("getRoundButtonForegroundColor", () => {
-  test.each([
-    [{ variant: "neutral" }, color.fg["neutral-subtle"]],
-    [{ variant: "brand" }, color.fg.brand],
-    [{ variant: "neutral", loading: true }, color.fg["neutral-subtle"]],
-    [{ variant: "brand", loading: true }, color.fg.brand],
-    [{ variant: "neutral", disabled: true }, color.gray[500]],
-    [{ variant: "brand", disabled: true }, color.brand["reward-disabled-surface"]],
-    [{ variant: "neutral", disabled: true, loading: true }, color.gray[500]],
-    [{ variant: "brand", disabled: true, loading: true }, color.brand["reward-disabled-surface"]],
-  ] as const)("%j 상태는 정확한 token identity를 반환한다", (state, expected) => {
-    expect(
-      getRoundButtonForegroundColor({ accessibilityLabel: "정보", icon: "<svg />", ...state }),
-    ).toBe(expected);
   });
 });

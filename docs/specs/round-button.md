@@ -69,9 +69,10 @@ init data일 뿐 제품 데이터가 아니다.
 
 ## 3. 공개 TypeScript 계약
 
-구현 위치는 `packages/ui-lynx/src/round-button.tsx`다. `packages/ui-lynx/src/index.tsx`는
-다음 이름을 root에서 재수출하며, `@libitums/ui-lynx/round-button` subpath는 전용
-`dist/round-button.jsx` / `dist/round-button.d.ts`로 해석된다.
+구현은 `packages/ui-lynx/src/round-button/` 아래에서 컴포넌트, 계약, CSS, unit/UI 테스트,
+barrel로 나뉜다. `packages/ui-lynx/src/index.tsx`는 다음 이름을 root에서 재수출하며,
+`@libitums/ui-lynx/round-button` subpath는 전용 `dist/round-button/index.js` /
+`dist/round-button/index.d.ts`로 해석된다.
 
 ```ts
 export type RoundButtonVariant = "neutral" | "brand";

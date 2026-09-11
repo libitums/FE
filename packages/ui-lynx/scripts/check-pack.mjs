@@ -17,8 +17,13 @@ const required = [
   "package/README.md",
   "package/dist/index.jsx",
   "package/dist/index.d.ts",
-  "package/dist/round-button.jsx",
-  "package/dist/round-button.d.ts",
+  "package/dist/round-button/index.js",
+  "package/dist/round-button/index.d.ts",
+  "package/dist/round-button/round-button.contract.js",
+  "package/dist/round-button/round-button.contract.d.ts",
+  "package/dist/round-button/RoundButton.jsx",
+  "package/dist/round-button/RoundButton.d.ts",
+  "package/dist/round-button/round-button.css",
   "package/dist/styles.css",
 ];
 
@@ -27,13 +32,22 @@ for (const file of required) {
 }
 
 const forbidden = files.find(
-  (file) => file.includes("/src/") || file.includes(".test.") || file.includes("/scripts/"),
+  (file) =>
+    file.includes("/src/") ||
+    file.includes(".test.") ||
+    file.includes("/scripts/") ||
+    file === "package/dist/round-button.jsx" ||
+    file === "package/dist/round-button.d.ts",
 );
 if (forbidden) throw new Error(`packed artifact leaks development input: ${forbidden}`);
 
-const runtime = execFileSync("tar", ["-xOzf", archive, "package/dist/round-button.jsx"], {
-  encoding: "utf8",
-});
+const runtime = execFileSync(
+  "tar",
+  ["-xOzf", archive, "package/dist/round-button/RoundButton.jsx"],
+  {
+    encoding: "utf8",
+  },
+);
 
 const packedPackageJson = JSON.parse(
   execFileSync("tar", ["-xOzf", archive, "package/package.json"], {
@@ -45,9 +59,9 @@ if (!roundButtonExport || typeof roundButtonExport !== "object") {
   throw new Error("packed package is missing the ./round-button export");
 }
 if (
-  roundButtonExport.import !== "./dist/round-button.jsx" ||
-  roundButtonExport.default !== "./dist/round-button.jsx" ||
-  roundButtonExport.types !== "./dist/round-button.d.ts"
+  roundButtonExport.import !== "./dist/round-button/index.js" ||
+  roundButtonExport.default !== "./dist/round-button/index.js" ||
+  roundButtonExport.types !== "./dist/round-button/index.d.ts"
 ) {
   throw new Error("./round-button must resolve its dedicated compiled runtime and declarations");
 }

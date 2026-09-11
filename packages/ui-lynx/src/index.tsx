@@ -3,13 +3,17 @@ import { color } from "@libitums/design-tokens";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import info02 from "@libitums/icons/lynx/info-02";
 
-export { RoundButton, getRoundButtonContract, getRoundButtonForegroundColor } from "./round-button";
+export {
+  RoundButton,
+  getRoundButtonContract,
+  getRoundButtonForegroundColor,
+} from "./round-button/index";
 export type {
   RoundButtonContract,
   RoundButtonProps,
   RoundButtonSize,
   RoundButtonVariant,
-} from "./round-button";
+} from "./round-button/index";
 
 export type ButtonVariant = "neutral" | "brand" | "outline" | "subtle" | "text";
 export type ButtonSize = "s" | "m" | "l" | "xl";

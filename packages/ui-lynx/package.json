@@ -9,7 +9,8 @@
   ],
   "type": "module",
   "sideEffects": [
-    "./dist/styles.css"
+    "./dist/styles.css",
+    "./dist/round-button/round-button.css"
   ],
   "main": "./dist/index.jsx",
   "module": "./dist/index.jsx",
@@ -36,15 +37,16 @@
       "default": "./dist/index.jsx"
     },
     "./round-button": {
-      "types": "./dist/round-button.d.ts",
-      "import": "./dist/round-button.jsx",
-      "default": "./dist/round-button.jsx"
+      "types": "./dist/round-button/index.d.ts",
+      "import": "./dist/round-button/index.js",
+      "default": "./dist/round-button/index.js"
     },
+    "./round-button/styles.css": "./dist/round-button/round-button.css",
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && cp src/styles.css dist/styles.css",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && cp src/styles.css dist/styles.css && mkdir -p dist/round-button && cp src/round-button/round-button.css dist/round-button/round-button.css",
     "typecheck": "tsc --noEmit",
     "test": "pnpm test:unit && pnpm test:ui",
     "test:unit": "vitest run unit.test",
