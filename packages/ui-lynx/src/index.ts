@@ -23,3 +23,20 @@ export type {
   RoundButtonSize,
   RoundButtonVariant,
 } from "./round-button";
+
+export {
+  BottomNavigator,
+  getBottomNavigatorContract,
+  getBottomNavigatorContracts,
+} from "./bottom-navigator";
+export type {
+  BottomNavigatorBadge,
+  BottomNavigatorContract,
+  BottomNavigatorCountBadge,
+  BottomNavigatorDotBadge,
+  BottomNavigatorDisabledItem,
+  BottomNavigatorEnabledItem,
+  BottomNavigatorItem,
+  BottomNavigatorItemContract,
+  BottomNavigatorProps,
+} from "./bottom-navigator";

@@ -10,6 +10,7 @@ import * as button from "./button/index";
 import * as backHeader from "./back-header/index";
 import * as statusIndicator from "./status-indicator/index";
 import * as roundButton from "./round-button/index";
+import * as bottomNavigator from "./bottom-navigator/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -18,6 +19,7 @@ const componentArtifacts = {
   "back-header": { implementation: "BackHeader.jsx", css: "back-header.css" },
   "status-indicator": { implementation: "StatusIndicator.jsx", css: "status-indicator.css" },
   "round-button": { implementation: "RoundButton.jsx", css: "round-button.css" },
+  "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
 } as const;
 
 const componentEntries = {
@@ -25,6 +27,7 @@ const componentEntries = {
   "back-header": "BackHeader",
   "status-indicator": "StatusIndicator",
   "round-button": "RoundButton",
+  "bottom-navigator": "BottomNavigator",
 } as const;
 
 async function readPackageJson() {
@@ -42,8 +45,10 @@ describe("ui-lynx package boundaries", () => {
     expect(root.BackHeader).toBe(backHeader.BackHeader);
     expect(root.StatusIndicator).toBe(statusIndicator.StatusIndicator);
     expect(root.RoundButton).toBe(roundButton.RoundButton);
+    expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
     expect(root.getButtonContract).toBe(button.getButtonContract);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
+    expect(root.getBottomNavigatorContract).toBe(bottomNavigator.getBottomNavigatorContract);
   });
 
   test("each public subpath resolves to an independent source entry", async () => {
@@ -76,6 +81,15 @@ describe("ui-lynx package boundaries", () => {
     }
   });
 
+  test("aggregate stylesheet exposes BottomNavigator without source-path imports", async () => {
+    const packageJson = await readPackageJson();
+    const styles = await readFile(path.join(packageRoot, "src/styles.css"), "utf8");
+    expect(styles).toContain('@import "./bottom-navigator/bottom-navigator.css"');
+    expect(packageJson.exports["./bottom-navigator/styles.css"]).toBe(
+      "./dist/bottom-navigator/bottom-navigator.css",
+    );
+  });
+
   test("published tarball contains root and component artifacts with preserved JSX", async () => {
     const packDir = path.join(packageRoot, ".pack");
     const archives = (await readdir(packDir)).filter((file) => file.endsWith(".tgz"));
@@ -100,6 +114,10 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/round-button/${componentArtifacts["round-button"].implementation}`,
       "package/dist/round-button/index.d.ts",
       `package/dist/round-button/${componentArtifacts["round-button"].css}`,
+      "package/dist/bottom-navigator/index.js",
+      `package/dist/bottom-navigator/${componentArtifacts["bottom-navigator"].implementation}`,
+      "package/dist/bottom-navigator/index.d.ts",
+      `package/dist/bottom-navigator/${componentArtifacts["bottom-navigator"].css}`,
     ]) {
       expect(stdout).toContain(file);
     }

@@ -6,6 +6,15 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
 } from "@libitums/ui-lynx";
+import type { BottomNavigatorPreset } from "./bottom-navigator-story";
+
+export type BottomNavigatorStoryArgs = {
+  preset: BottomNavigatorPreset;
+  selectedId: string;
+  disabledLast: boolean;
+  viewportWidth: 320 | 390;
+  onSelect: (id: string) => void;
+};
 
 export type RoundButtonIconKey = "info-02";
 export type RoundButtonStoryArgs = {

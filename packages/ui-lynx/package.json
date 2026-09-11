@@ -10,7 +10,8 @@
   "type": "module",
   "sideEffects": [
     "./dist/styles.css",
-    "./dist/round-button/round-button.css"
+    "./dist/round-button/round-button.css",
+    "./dist/bottom-navigator/bottom-navigator.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -42,6 +43,12 @@
       "default": "./dist/round-button/index.js"
     },
     "./round-button/styles.css": "./dist/round-button/round-button.css",
+    "./bottom-navigator": {
+      "types": "./dist/bottom-navigator/index.d.ts",
+      "import": "./dist/bottom-navigator/index.js",
+      "default": "./dist/bottom-navigator/index.js"
+    },
+    "./bottom-navigator/styles.css": "./dist/bottom-navigator/bottom-navigator.css",
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },

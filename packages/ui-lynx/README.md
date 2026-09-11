@@ -1,10 +1,13 @@
 # @libitums/ui-lynx
 
 libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포넌트 패키지다. 현재 공개
-컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton` 네 가지다.
+컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `BottomNavigator` 다섯
+가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
+Bottom Navigator는 2026-09-11의 `main` revision
+`2144145cd7ffb5777cf2b74e2fec5474eb0adc14`를 기준으로 추가했다.
 
 ```tsx
 import { Button } from "@libitums/ui-lynx/button";
@@ -31,6 +34,48 @@ import "@libitums/ui-lynx/styles.css";
 />;
 ```
 
+`BottomNavigator`는 3~5개의 아이콘 목적지를 표시한다. 각 item에는 비어 있지 않은
+`accessibilityLabel`이 필요하며 `selectedId`는 enabled item 하나를 가리켜야 한다. 화면에
+label을 그리지 않고 선택 상태, dot/count badge와 접근성 이름으로 상태를 전달한다.
+
+```tsx
+import home from "@libitums/icons/lynx/house";
+import map from "@libitums/icons/lynx/map";
+import settings from "@libitums/icons/lynx/settings";
+import userGroup from "@libitums/icons/lynx/user-group";
+import { BottomNavigator } from "@libitums/ui-lynx/bottom-navigator";
+import "@libitums/design-tokens/css/variables.css";
+import "@libitums/design-tokens/css/typography.css";
+import "@libitums/ui-lynx/bottom-navigator/styles.css";
+
+<BottomNavigator
+  items={[
+    { id: "home", accessibilityLabel: "홈", icon: home },
+    {
+      id: "journey",
+      accessibilityLabel: "여정",
+      icon: map,
+      badge: { kind: "dot", accessibilityLabel: "새 소식 있음" },
+    },
+    {
+      id: "roleplay",
+      accessibilityLabel: "롤플레이",
+      icon: userGroup,
+      badge: { kind: "count", count: 108 },
+    },
+    {
+      id: "settings",
+      accessibilityLabel: "설정",
+      icon: settings,
+      availability: "disabled",
+      disabledReason: "로그인 후 사용 가능",
+    },
+  ]}
+  selectedId="home"
+  bindselect={handleSelect}
+/>;
+```
+
 ## 공개 진입점
 
 - `@libitums/ui-lynx`
@@ -38,6 +83,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/back-header`
 - `@libitums/ui-lynx/status-indicator`
 - `@libitums/ui-lynx/round-button`
+- `@libitums/ui-lynx/bottom-navigator`
+- `@libitums/ui-lynx/bottom-navigator/styles.css`
 - `@libitums/ui-lynx/styles.css`
 
 스타일은 소비 앱의 Lynx 진입점에서 한 번 import한다. 패키지는 ReactLynx를 번들하지 않고
@@ -63,6 +110,17 @@ RoundButton의 focusable hit area와 접근성 node는 하나다. S/M/L은 48px,
 icon과 Spinner는 장식 자손으로 숨긴다. Loading 접근성 이름에는 `, 로딩 중`이 붙는다. Lynx Web
 Storybook은 시각·tap만 확인하므로 native focus ring과 VoiceOver/TalkBack은 제품 route 채택 때
 실기기로 검증해야 한다.
+
+BottomNavigator의 item은 최소 48 × 48px focus/tap 영역을 가지며 선택 item의 보이는 pill은
+60 × 40px이며 bar 배경은 `white` token을 사용한다. icon과 badge는 장식 자손으로 숨기고,
+접근성 이름은 목적지 label에 `선택됨`과
+badge 설명을 합친다. disabled item은 tap handler를 연결하지 않는다. 5개 item의 지원 최소
+viewport는 300px(좌우 padding 24px 포함)이며 label은 화면에 그리지 않으므로 긴 접근성 이름이
+layout을 밀지 않는다. disabled 목적지는 `availability: "disabled"`와 비어 있지 않은
+`disabledReason`을 함께 제공해야 하며, 컴포넌트가 그 이유를 같은 접근성 이름에 합친다. Lynx가
+지원하는 `button` trait를 유지하면서 tap handler와 focus 순서에서는 제외한다. PC에서는 disabled를
+건너뛰어 좌우 이동하고 양끝 focus를 유지한다. native 키보드/D-pad의
+실제 이동, safe area와 VoiceOver/TalkBack 낭독은 제품 route 채택 시 실기기에서 검증한다.
 
 디자인 시스템에는 M icon 18px과 Spinner 12px에 대응하는 size token이 아직 없다. 두 값은
 Round Button 원본의 고정 규격을 직접 사용한 비차단 gap이며, FE token이나 `spacing` token을
