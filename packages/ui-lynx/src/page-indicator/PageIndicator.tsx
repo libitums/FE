@@ -1,7 +1,7 @@
 import type {} from "@lynx-js/react";
 
-import type { PageIndicatorProps } from "./contract";
-import { getPageIndicatorModel } from "./logic";
+import { getPageIndicatorModel } from "./page-indicator.contract";
+import type { PageIndicatorProps } from "./page-indicator.contract";
 
 export function PageIndicator(props: PageIndicatorProps) {
   const model = getPageIndicatorModel(props);

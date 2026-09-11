@@ -11,47 +11,59 @@ if (archives.length === 0) throw new Error("pnpm pack did not produce a .tgz arc
 const archive = path.join(packRoot, archives.sort().at(-1));
 const files = execFileSync("tar", ["-tzf", archive], { encoding: "utf8" }).trim().split("\n");
 const components = [
-  { subpath: "button", directory: "button", component: "Button", css: "button.css" },
+  {
+    subpath: "button",
+    directory: "button",
+    component: "Button",
+    modules: ["contract", "logic"],
+    css: "button.css",
+  },
   {
     subpath: "back-header",
     directory: "back-header",
     component: "BackHeader",
+    modules: ["contract"],
     css: "back-header.css",
   },
   {
     subpath: "status-indicator",
     directory: "status-indicator",
     component: "StatusIndicator",
+    modules: ["contract", "logic"],
     css: "status-indicator.css",
   },
   {
     subpath: "round-button",
     directory: "round-button",
     component: "RoundButton",
+    modules: ["round-button.contract"],
     css: "round-button.css",
   },
   {
     subpath: "progress-header",
     directory: "progress-header",
     component: "ProgressHeader",
+    modules: ["contract"],
     css: "progress-header.css",
   },
   {
     subpath: "page-indicator",
     directory: "page-indicator",
     component: "PageIndicator",
+    modules: ["page-indicator.contract"],
     css: "page-indicator.css",
   },
 ];
 const required = [
   "package/package.json",
   "package/README.md",
+  "package/docs/component-file-conventions.md",
   "package/dist/index.js",
   "package/dist/index.d.ts",
   "package/dist/styles.css",
 ];
 
-for (const { directory, component, css } of components) {
+for (const { directory, component, modules, css } of components) {
   required.push(
     `package/dist/${directory}/index.js`,
     `package/dist/${directory}/index.d.ts`,
@@ -59,6 +71,12 @@ for (const { directory, component, css } of components) {
     `package/dist/${directory}/${component}.d.ts`,
     `package/dist/${directory}/${css}`,
   );
+  for (const module of modules) {
+    required.push(
+      `package/dist/${directory}/${module}.js`,
+      `package/dist/${directory}/${module}.d.ts`,
+    );
+  }
 }
 
 for (const file of required) {

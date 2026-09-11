@@ -65,9 +65,15 @@ logic, ReactLynx component, barrel, stylesheet, unit/UI tests를 함께 관리�
 상한은 공개 `PAGE_INDICATOR_MAX_PAGE_COUNT` 100이며 더 큰 입력은 item, 현재 위치와 접근성
 label을 같은 canonical count로 clamp한다.
 
+## 컴포넌트 파일 규칙
+
+새 컴포넌트와 기존 컴포넌트 정리는
+[`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
+규칙을 따른다. `RoundButton`과 `PageIndicator`가 현재 완성된 예시다.
+
 스타일은 소비 앱의 Lynx 진입점에서 한 번 import한다. 패키지는 ReactLynx를 번들하지 않고
 `>=0.123.0 <0.126.0` peer로 요구한다. `pnpm --filter @libitums/ui-lynx pack:check`는 실제
-tarball에 컴파일된 JSX·선언·CSS와 README만 들어가는지 검증한다.
+tarball에 컴파일된 JSX·선언·CSS, README와 docs만 들어가는지 검증한다.
 
 `disabled`와 `loading` Button은 tap을 전달하지 않는다. Back Header의 아이콘·제목 묶음
 전체는 일반 tap에 반응한다. ReactLynx/iOS 접근성 트리에서는 중첩 접근성 요소를 피하기 위해

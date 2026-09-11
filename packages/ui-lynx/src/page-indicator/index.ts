@@ -1,8 +1,8 @@
+export { PageIndicator } from "./PageIndicator";
 export {
   PAGE_INDICATOR_MAX_PAGE_COUNT,
+  getPageIndicatorModel,
   type PageIndicatorItem,
   type PageIndicatorModel,
   type PageIndicatorProps,
-} from "./contract";
-export { getPageIndicatorModel } from "./logic";
-export { PageIndicator } from "./PageIndicator";
+} from "./page-indicator.contract";
