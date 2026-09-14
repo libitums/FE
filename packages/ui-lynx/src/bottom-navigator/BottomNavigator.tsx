@@ -14,8 +14,8 @@ type BottomNavigatorCellProps = {
 };
 
 function BottomNavigatorCell({ item, contract, onSelect }: BottomNavigatorCellProps) {
-  const defaultIcon = item.icon.replaceAll("currentColor", contract.iconColor);
-  const pressedIcon = item.icon.replaceAll("currentColor", contract.pressedIconColor);
+  const defaultIcon = item.icon.replace(/currentColor/g, contract.iconColor);
+  const pressedIcon = item.icon.replace(/currentColor/g, contract.pressedIconColor);
 
   function handleTap() {
     "background only";

@@ -86,7 +86,7 @@ describe("getBottomNavigatorContracts", () => {
     expect(contracts[3]).toMatchObject({
       disabled: true,
       interactive: false,
-      traits: "button",
+      traits: "disabled",
       accessibilityLabel: "설정, 로그인 후 사용 가능",
       iconColor: color.fg.disabled,
       pressedIconColor: color.fg.disabled,
@@ -184,6 +184,43 @@ describe("getBottomNavigatorContracts", () => {
         selectedId: "home",
       })[2],
     ).toMatchObject({ accessibilityLabel: "설정, 로그인 후 사용 가능", disabled: true });
+  });
+
+  test.each([
+    ["id", undefined, "item id must not be empty"],
+    ["id", null, "item id must not be empty"],
+    ["id", 1, "item id must not be empty"],
+    ["accessibilityLabel", undefined, "item accessibilityLabel must not be empty"],
+    ["accessibilityLabel", null, "item accessibilityLabel must not be empty"],
+  ] as const)("JS 소비자의 잘못된 %s=%j 입력을 계약 오류로 거부한다", (key, value, message) => {
+    const invalid = { ...items[0]!, [key]: value } as unknown as BottomNavigatorItem;
+    expect(() =>
+      getBottomNavigatorContracts({ items: [invalid, items[1]!, items[2]!], selectedId: "home" }),
+    ).toThrow(message);
+  });
+
+  test("JS 소비자의 누락된 disabledReason과 dot label을 계약 오류로 거부한다", () => {
+    const invalidDisabled = {
+      ...items[3]!,
+      disabledReason: undefined,
+    } as unknown as BottomNavigatorItem;
+    const invalidDot = {
+      ...items[1]!,
+      badge: { kind: "dot", accessibilityLabel: null },
+    } as unknown as BottomNavigatorItem;
+
+    expect(() =>
+      getBottomNavigatorContracts({
+        items: [items[0]!, items[1]!, invalidDisabled],
+        selectedId: "home",
+      }),
+    ).toThrow("disabledReason must not be empty");
+    expect(() =>
+      getBottomNavigatorContracts({
+        items: [items[0]!, invalidDot, items[2]!],
+        selectedId: "home",
+      }),
+    ).toThrow("dot badge accessibilityLabel must not be empty");
   });
 });
 

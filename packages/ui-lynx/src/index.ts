@@ -24,6 +24,20 @@ export type {
   RoundButtonVariant,
 } from "./round-button";
 
+export { ProgressHeader, getProgressHeaderProgress } from "./progress-header";
+export type {
+  ProgressHeaderMotion,
+  ProgressHeaderProgress,
+  ProgressHeaderProps,
+} from "./progress-header";
+
+export {
+  PageIndicator,
+  PAGE_INDICATOR_MAX_PAGE_COUNT,
+  getPageIndicatorModel,
+} from "./page-indicator";
+export type { PageIndicatorItem, PageIndicatorModel, PageIndicatorProps } from "./page-indicator";
+
 export {
   BottomNavigator,
   getBottomNavigatorContract,

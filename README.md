@@ -12,7 +12,7 @@
 | [`apps/storybook-lynx`](apps/storybook-lynx) | 실제 Lynx Web bundle을 `<lynx-view>`로 보여주는 컴포넌트 카탈로그 | Storybook · Rspeedy |
 
 공개 재사용 컴포넌트는 [`packages/ui-lynx`](packages/ui-lynx)에 있다. 현재 Button, Back Header,
-Status Indicator를 명시적 package export로 제공한다.
+Status Indicator, Progress Header를 명시적 package export로 제공한다.
 
 **번들을 만드는 쪽과 로드하는 쪽이 다르다** (ADR-0002 D3). 화면을 고치면 `apps/mobile`을
 빌드해 `apps/ios`로 옮겨야 실기기에 반영된다 — `pnpm bundle:host`가 Lynx 번들과

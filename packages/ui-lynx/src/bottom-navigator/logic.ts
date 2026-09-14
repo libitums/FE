@@ -14,7 +14,7 @@ function getBadgeContract(badge: BottomNavigatorBadge | undefined): {
 } {
   if (!badge) return {};
   if (badge.kind === "dot") {
-    if (!badge.accessibilityLabel.trim()) {
+    if (typeof badge.accessibilityLabel !== "string" || !badge.accessibilityLabel.trim()) {
       throw new Error("BottomNavigator dot badge accessibilityLabel must not be empty");
     }
     return { accessibilityText: badge.accessibilityLabel.trim(), render: { kind: "dot" } };
@@ -38,13 +38,18 @@ function validateItems(items: readonly BottomNavigatorItem[], selectedId: string
 
   const ids = new Set<string>();
   for (const item of items) {
-    if (!item.id.trim()) throw new Error("BottomNavigator item id must not be empty");
-    if (!item.accessibilityLabel.trim()) {
+    if (typeof item.id !== "string" || !item.id.trim()) {
+      throw new Error("BottomNavigator item id must not be empty");
+    }
+    if (typeof item.accessibilityLabel !== "string" || !item.accessibilityLabel.trim()) {
       throw new Error("BottomNavigator item accessibilityLabel must not be empty");
     }
     if (ids.has(item.id)) throw new Error("BottomNavigator item ids must be unique");
     ids.add(item.id);
-    if (item.availability === "disabled" && !item.disabledReason.trim()) {
+    if (
+      item.availability === "disabled" &&
+      (typeof item.disabledReason !== "string" || !item.disabledReason.trim())
+    ) {
       throw new Error("BottomNavigator disabledReason must not be empty");
     }
     getBadgeContract(item.badge);
@@ -116,7 +121,7 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
         : {}),
       className,
       accessibilityLabel,
-      traits: "button",
+      traits: disabled ? "disabled" : "button",
       iconColor,
       pressedIconColor,
       ...(badge.render ? { badge: badge.render } : {}),

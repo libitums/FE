@@ -47,7 +47,7 @@ export type BottomNavigatorItemContract = {
   readonly nextFocusRight?: string;
   readonly className: string;
   readonly accessibilityLabel: string;
-  readonly traits: "button";
+  readonly traits: "button" | "disabled";
   readonly iconColor: string;
   readonly pressedIconColor: string;
   readonly badge?: { readonly kind: "dot" } | { readonly kind: "count"; readonly text: string };

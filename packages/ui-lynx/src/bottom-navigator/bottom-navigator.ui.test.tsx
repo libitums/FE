@@ -64,7 +64,7 @@ describe("BottomNavigator", () => {
     );
     expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
       "accessibility-traits",
-      "button",
+      "disabled",
     );
     expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
       "accessibility-label",
@@ -98,15 +98,15 @@ describe("BottomNavigator", () => {
     const journeyDefault = screen.getByTestId("ui-lynx-bottom-navigator-icon-journey-default");
     expect(homeDefault).toHaveAttribute(
       "content",
-      house.replaceAll("currentColor", color.fg["neutral-subtle"]),
+      house.replace(/currentColor/g, color.fg["neutral-subtle"]),
     );
     expect(homePressed).toHaveAttribute(
       "content",
-      house.replaceAll("currentColor", color.fg["neutral-muted"]),
+      house.replace(/currentColor/g, color.fg["neutral-muted"]),
     );
     expect(journeyDefault).toHaveAttribute(
       "content",
-      map.replaceAll("currentColor", color.fg["neutral-inverted"]),
+      map.replace(/currentColor/g, color.fg["neutral-inverted"]),
     );
     expect(homeDefault.parentElement).toHaveAttribute("accessibility-elements-hidden", "true");
   });

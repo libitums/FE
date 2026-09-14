@@ -23,7 +23,7 @@ export type RoundButtonContract = {
 };
 
 export function getRoundButtonContract(props: RoundButtonProps): RoundButtonContract {
-  if (!props.accessibilityLabel.trim()) {
+  if (typeof props.accessibilityLabel !== "string" || !props.accessibilityLabel.trim()) {
     throw new Error("RoundButton accessibilityLabel must not be empty");
   }
   const variant = props.variant ?? "neutral";

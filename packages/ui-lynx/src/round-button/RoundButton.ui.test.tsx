@@ -29,7 +29,7 @@ describe("RoundButton", () => {
     render(<RoundButton accessibilityLabel="정보" icon={info02} variant="brand" />);
 
     const icon = screen.getByTestId("ui-lynx-round-button-icon");
-    expect(icon).toHaveAttribute("content", info02.replaceAll("currentColor", color.fg.brand));
+    expect(icon).toHaveAttribute("content", info02.replace(/currentColor/g, color.fg.brand));
     expect(icon.getAttribute("content")).not.toContain("currentColor");
     expect(icon).toHaveAttribute("current-color", color.fg.brand);
     expect(icon.parentElement).toHaveAttribute("accessibility-elements-hidden", "true");

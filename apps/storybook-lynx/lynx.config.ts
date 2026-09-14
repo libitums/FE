@@ -11,6 +11,8 @@ export default defineConfig({
       "back-header": "./src/lynx/back-header.tsx",
       "status-indicator": "./src/lynx/status-indicator.tsx",
       "round-button": "./src/lynx/round-button.tsx",
+      "progress-header": "./src/lynx/progress-header.tsx",
+      "page-indicator": "./src/lynx/page-indicator.tsx",
       "bottom-navigator": "./src/lynx/bottom-navigator.tsx",
     },
   },

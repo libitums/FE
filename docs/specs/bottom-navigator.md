@@ -65,9 +65,8 @@ dot은 `feedback.incorrect`, count는 `feedback.incorrect-strong-surface`와
 장식으로 숨긴다.
 
 enabled cell은 PC에서 focusable이고 CSS `:focus-visible` double ring을 표시한다. disabled cell은
-button role과 `disabledReason`이 합쳐진 이름을 유지하되 focus 순서와 tap에서 제외한다. Lynx의
-`accessibility-traits`는 disabled 값을 지원하지 않으므로 유효한 `button` 값을 사용하고
-`data-disabled`, handler 부재, focus 제외로 상태를 함께 표현한다. 정적/UI test는 focus 속성과 이동 연결을 검증하지만 Storybook은 실제
+`disabled` trait와 `disabledReason`이 합쳐진 이름을 유지하되 focus 순서와 tap에서 제외한다.
+`data-disabled`, handler 부재, focus 제외도 상호작용 차단 상태를 함께 표현한다. 정적/UI test는 focus 속성과 이동 연결을 검증하지만 Storybook은 실제
 native focus 이동, VoiceOver/TalkBack 이름·trait, safe-area를 증명하지 않는다. 실제 제품 route가
 이 package를 채택할 때 iOS/Android 실기기로 동작을 검증한다.
 
