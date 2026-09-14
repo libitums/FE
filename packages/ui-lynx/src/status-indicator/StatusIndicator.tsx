@@ -1,6 +1,5 @@
 import type {} from "@lynx-js/react";
-import { getStatusIndicatorLabel } from "./logic";
-import type { StatusIndicatorProps } from "./contract";
+import { getStatusIndicatorLabel, type StatusIndicatorProps } from "./status-indicator.contract";
 
 export function StatusIndicator(props: StatusIndicatorProps) {
   return (

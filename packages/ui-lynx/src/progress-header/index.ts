@@ -4,4 +4,4 @@ export {
   type ProgressHeaderMotion,
   type ProgressHeaderProgress,
   type ProgressHeaderProps,
-} from "./contract";
+} from "./progress-header.contract";

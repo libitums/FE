@@ -1,12 +1,66 @@
-import { color } from "@libitums/design-tokens";
+export type BottomNavigatorDotBadge = {
+  readonly kind: "dot";
+  readonly accessibilityLabel: string;
+};
 
-import type {
-  BottomNavigatorBadge,
-  BottomNavigatorContract,
-  BottomNavigatorItem,
-  BottomNavigatorItemContract,
-  BottomNavigatorProps,
-} from "./contract";
+export type BottomNavigatorCountBadge = {
+  readonly kind: "count";
+  readonly count: number;
+};
+
+export type BottomNavigatorBadge = BottomNavigatorDotBadge | BottomNavigatorCountBadge;
+
+type BottomNavigatorItemBase = {
+  readonly id: string;
+  readonly accessibilityLabel: string;
+  readonly icon: string;
+  readonly badge?: BottomNavigatorBadge;
+};
+
+export type BottomNavigatorEnabledItem = BottomNavigatorItemBase & {
+  readonly availability?: "enabled";
+  readonly disabledReason?: never;
+};
+
+export type BottomNavigatorDisabledItem = BottomNavigatorItemBase & {
+  readonly availability: "disabled";
+  readonly disabledReason: string;
+};
+
+export type BottomNavigatorItem = BottomNavigatorEnabledItem | BottomNavigatorDisabledItem;
+
+export type BottomNavigatorProps = {
+  readonly items: readonly BottomNavigatorItem[];
+  readonly selectedId: string;
+  readonly bindselect?: (id: string) => void;
+};
+
+export type BottomNavigatorItemContract = {
+  readonly id: string;
+  readonly selected: boolean;
+  readonly disabled: boolean;
+  readonly interactive: boolean;
+  readonly focusable: boolean;
+  readonly focusId?: string;
+  readonly focusIndex?: string;
+  readonly nextFocusLeft?: string;
+  readonly nextFocusRight?: string;
+  readonly className: string;
+  readonly accessibilityLabel: string;
+  readonly traits: "button" | "disabled";
+  readonly iconColor: string;
+  readonly pressedIconColor: string;
+  readonly badge?: { readonly kind: "dot" } | { readonly kind: "count"; readonly text: string };
+};
+
+export type BottomNavigatorContract = {
+  readonly className: "ui-lynx-bottom-navigator";
+  readonly itemsClassName: string;
+  readonly itemCount: number;
+  readonly items: readonly BottomNavigatorItemContract[];
+};
+
+import { color } from "@libitums/design-tokens";
 
 function getBadgeContract(badge: BottomNavigatorBadge | undefined): {
   readonly accessibilityText?: string;
@@ -32,44 +86,35 @@ function getBadgeContract(badge: BottomNavigatorBadge | undefined): {
 }
 
 function validateItems(items: readonly BottomNavigatorItem[], selectedId: string): void {
-  if (items.length < 3 || items.length > 5) {
+  if (items.length < 3 || items.length > 5)
     throw new Error("BottomNavigator requires between 3 and 5 items");
-  }
-
   const ids = new Set<string>();
   for (const item of items) {
-    if (typeof item.id !== "string" || !item.id.trim()) {
+    if (typeof item.id !== "string" || !item.id.trim())
       throw new Error("BottomNavigator item id must not be empty");
-    }
-    if (typeof item.accessibilityLabel !== "string" || !item.accessibilityLabel.trim()) {
+    if (typeof item.accessibilityLabel !== "string" || !item.accessibilityLabel.trim())
       throw new Error("BottomNavigator item accessibilityLabel must not be empty");
-    }
     if (ids.has(item.id)) throw new Error("BottomNavigator item ids must be unique");
     ids.add(item.id);
     if (
       item.availability === "disabled" &&
       (typeof item.disabledReason !== "string" || !item.disabledReason.trim())
-    ) {
+    )
       throw new Error("BottomNavigator disabledReason must not be empty");
-    }
     getBadgeContract(item.badge);
   }
-
   const selectedItems = items.filter(
     (item) => item.id === selectedId && item.availability !== "disabled",
   );
-  if (selectedItems.length !== 1) {
+  if (selectedItems.length !== 1)
     throw new Error("BottomNavigator selectedId must reference exactly one enabled item");
-  }
 }
 
 export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomNavigatorContract {
   validateItems(props.items, props.selectedId);
-
   const enabledIndexes = props.items.flatMap((item, index) =>
     item.availability === "disabled" ? [] : [index],
   );
-
   const items: readonly BottomNavigatorItemContract[] = props.items.map((item, index) => {
     const selected = item.id === props.selectedId;
     const disabled = item.availability === "disabled";
@@ -89,7 +134,6 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
     ]
       .filter((value): value is string => value !== undefined)
       .join(" ");
-
     const iconColor = disabled
       ? color.fg.disabled
       : selected
@@ -104,7 +148,6 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
     const focusId = `ui-lynx-bottom-navigator-focus-${index}`;
     const previousIndex = enabledIndexes[Math.max(0, enabledPosition - 1)];
     const nextIndex = enabledIndexes[Math.min(enabledIndexes.length - 1, enabledPosition + 1)];
-
     return {
       id: item.id,
       selected,
@@ -127,7 +170,6 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
       ...(badge.render ? { badge: badge.render } : {}),
     };
   });
-
   return {
     className: "ui-lynx-bottom-navigator",
     itemsClassName: `ui-lynx-bottom-navigator-items ui-lynx-bottom-navigator-items-${props.items.length}`,

@@ -21,6 +21,16 @@
 > 명시적으로 포함한다. `storybook:lynx`와 정적 build, package pack 검사, workspace cycle
 > 검사의 정확한 계약은 ADR-0025 D3·D6이 맡는다. 기존 unit/ui/integration 계층과 `verify`
 > 순서는 바꾸지 않는다.
+>
+> **2026-09-14 정정 — 계층 멤버십:** 루트 `test:unit`은 `ui-lynx` 다음 `mobile`,
+> `test:ui`도 `ui-lynx` 다음 `mobile`, `test:integration`은 `ui-lynx` 다음 `mobile`
+> 다음 `storybook-lynx` 패키지 `test`를 명시적으로 부른다. Storybook의 `test`는
+> 자신과 `ui-lynx`를 build한 뒤 catalog integration을 검사한다. 루트 `test`는 이 세
+> 계층 스크립트를 순서대로 부르고 마지막에 `test:report-policy`를 부른다.
+> `.agent-harness/profile.yaml`의 `test.unit`/`test.ui`/`test.integration`은 각각 이 루트
+> 스크립트만 간접 호출하여 같은 repository-wide 멤버십을 공유한다.
+> 아래 D2의 mobile-only 예시와 D3의 예전 profile 표는 최초 앱 하나였던 시점의
+> 기록이며 현재 명령 범위로 읽지 않는다.
 
 ### D1. 루트 명령
 

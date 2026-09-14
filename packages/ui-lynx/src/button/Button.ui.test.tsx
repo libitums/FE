@@ -17,7 +17,7 @@ describe("Button UI", () => {
   });
 
   test("tap을 소비자 callback으로 전달한다", () => {
-    const onTap = vi.fn();
+    const onTap = vi.fn<() => void>();
     render(<Button bindtap={onTap} label="계속" />);
 
     fireEvent.tap(screen.getByTestId("ui-lynx-button"), {});
@@ -25,7 +25,7 @@ describe("Button UI", () => {
   });
 
   test("disabled는 callback을 막고 disabled trait을 노출한다", () => {
-    const onTap = vi.fn();
+    const onTap = vi.fn<() => void>();
     render(<Button bindtap={onTap} disabled={true} label="계속" />);
 
     const button = screen.getByTestId("ui-lynx-button");

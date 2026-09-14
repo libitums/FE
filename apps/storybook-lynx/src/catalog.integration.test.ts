@@ -312,7 +312,20 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('subpath: "progress-header"');
     expect(packVerifier).toContain('directory: "progress-header"');
     expect(packVerifier).toContain('component: "ProgressHeader"');
-    expect(packVerifier).toContain('modules: ["contract"]');
+    for (const directory of [
+      "back-header",
+      "bottom-navigator",
+      "button",
+      "page-indicator",
+      "progress-header",
+      "round-button",
+      "status-indicator",
+      "step-indicator",
+    ]) {
+      expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
+    }
+    expect(packVerifier).not.toContain('modules: ["contract"]');
+    expect(packVerifier).not.toContain('modules: ["logic"]');
     expect(packVerifier).toContain('subpath: "page-indicator"');
     expect(packVerifier).toContain('directory: "page-indicator"');
     expect(packVerifier).toContain('component: "PageIndicator"');
@@ -327,6 +340,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain("package/dist/${directory}/${component}.jsx");
     expect(packVerifier).toContain("package/dist/${directory}/${module}.js");
     expect(packVerifier).toContain("package/dist/${directory}/${css}");
+    expect(packVerifier).toContain('["contract.js", "contract.d.ts", "logic.js", "logic.d.ts"]');
+    expect(packVerifier).toContain("files.includes(leaked)");
+    expect(packVerifier).toContain("forbidden generic component module");
     expect(packVerifier).toContain("authored ReactLynx JSX");
   });
 });

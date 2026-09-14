@@ -4,8 +4,11 @@ import { resolve } from "node:path";
 import { color } from "@libitums/design-tokens";
 import { describe, expect, test } from "vitest";
 
-import type { BottomNavigatorItem } from "./contract";
-import { getBottomNavigatorContract, getBottomNavigatorContracts } from "./logic";
+import {
+  type BottomNavigatorItem,
+  getBottomNavigatorContract,
+  getBottomNavigatorContracts,
+} from "./bottom-navigator.contract";
 
 const icon = '<svg viewBox="0 0 24 24"><path fill="currentColor" /></svg>';
 const items: readonly BottomNavigatorItem[] = [
