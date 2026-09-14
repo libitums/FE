@@ -2,7 +2,7 @@
 
 libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포넌트 패키지다. 현재 공개
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
-`PageIndicator`, `BottomNavigator` 일곱 가지다.
+`PageIndicator`, `BottomNavigator`, `StepIndicator` 여덟 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
@@ -46,6 +46,18 @@ import "@libitums/ui-lynx/bottom-navigator/styles.css";
 />;
 ```
 
+`StepIndicator`는 2–5단계의 고정된 순서형 흐름을 표시한다. `totalSteps`는 2–5 정수이고
+`currentStep`은 1–`totalSteps` 정수다. 원은 이동 control이 아니다. 전체 줄은
+`4단계 중 2단계`처럼 하나의 상태로 노출된다. root와 전용 subpath는 같은 구현과 타입을
+내보낸다.
+
+```tsx
+import { StepIndicator } from "@libitums/ui-lynx/step-indicator";
+import "@libitums/ui-lynx/styles.css";
+
+<StepIndicator currentStep={2} totalSteps={4} />;
+```
+
 `RoundButton`은 root와 전용 subpath에서 같은 구현과 타입을 내보낸다. 아이콘 전용 control이므로
 비어 있지 않은 `accessibilityLabel`을 반드시 제공한다.
 
@@ -71,10 +83,13 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/back-header`
 - `@libitums/ui-lynx/status-indicator`
 - `@libitums/ui-lynx/round-button`
+- `@libitums/ui-lynx/round-button/styles.css`
 - `@libitums/ui-lynx/progress-header`
 - `@libitums/ui-lynx/page-indicator`
 - `@libitums/ui-lynx/bottom-navigator`
 - `@libitums/ui-lynx/bottom-navigator/styles.css`
+- `@libitums/ui-lynx/step-indicator`
+- `@libitums/ui-lynx/step-indicator/styles.css`
 - `@libitums/ui-lynx/styles.css`
 - `@libitums/ui-lynx/progress-header.css`
 - `@libitums/ui-lynx/page-indicator.css`
@@ -94,9 +109,15 @@ label을 같은 canonical count로 clamp한다.
 [`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
 규칙을 따른다. `RoundButton`과 `PageIndicator`가 현재 완성된 예시다.
 
-스타일은 소비 앱의 Lynx 진입점에서 한 번 import한다. 패키지는 ReactLynx를 번들하지 않고
-`>=0.123.0 <0.126.0` peer로 요구한다. `pnpm --filter @libitums/ui-lynx pack:check`는 실제
-tarball에 컴파일된 JSX·선언·CSS, README와 docs만 들어가는지 검증한다.
+일반 소비자는 aggregate `@libitums/ui-lynx/styles.css`를 Lynx 진입점에서 한 번 import한다.
+선택적 소비자는 목록의 component 전용 CSS 진입점을 import할 수 있다. 패키지는
+ReactLynx를 번들하지 않고 `>=0.123.0 <0.126.0` peer로 요구한다.
+`pnpm --filter @libitums/ui-lynx pack:check`는 실제 tarball에 컴파일된 JSX·선언·CSS,
+README와 docs만 들어가는지 검증한다.
+
+StepIndicator는 최신 파일 규칙에 따라 공개 타입과 `getStepIndicatorContract` 순수 로직을
+`step-indicator.contract.ts` 하나에서 소유하고 단위 테스트는
+`StepIndicator.unit.test.ts`에 둔다.
 
 `disabled`와 `loading` Button은 tap을 전달하지 않는다. Back Header의 아이콘·제목 묶음
 전체는 일반 tap에 반응한다. ReactLynx/iOS 접근성 트리에서는 중첩 접근성 요소를 피하기 위해
@@ -117,6 +138,12 @@ RoundButton의 focusable hit area와 접근성 node는 하나다. S/M/L은 48px,
 icon과 Spinner는 장식 자손으로 숨긴다. Loading 접근성 이름에는 `, 로딩 중`이 붙는다. Lynx Web
 Storybook은 시각·tap만 확인하므로 native focus ring과 VoiceOver/TalkBack은 제품 route 채택 때
 실기기로 검증해야 한다.
+
+StepIndicator는 32px 원과 남는 폭을 같은 비율로 나누는 2px 연결선을 사용한다. Completed,
+Current, Upcoming은 현재 단계에서 순수하게 파생되고 연결선은 왼쪽 원의 상태를 따른다. 단계별
+원과 선은 접근성 트리에서 숨기며 전체 줄만 현재/전체 단계를 알린다. 시각·상태 계약은
+`libitums/design-system`의 `components/indicator/step-indicator.md` revision
+`3f7ed6d17df769e37215adb40f7abfc2e1174fd1`을 기준으로 한다.
 
 BottomNavigator item은 최소 48 × 48px focus/tap 영역을 가지며 선택 pill은 60 × 40px이고 bar
 배경은 white token을 사용한다. label은 화면에 그리지 않고 선택·badge·disabled reason은

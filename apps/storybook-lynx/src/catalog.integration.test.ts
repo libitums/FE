@@ -7,6 +7,7 @@ import {
   normalizeBottomNavigatorStoryArgs,
 } from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
+import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -28,6 +29,48 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("step-indicator init data는 유효한 정수 계약으로 정규화되고 JSON 직렬화된다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(normalizeStepIndicatorStoryArgs({ currentStep: 3, totalSteps: 5 })),
+      ),
+    ).toEqual({
+      currentStep: 3,
+      totalSteps: 5,
+    });
+  });
+
+  test("step-indicator init data는 잘못된 totalSteps만 기본값으로 되돌린다", () => {
+    expect(normalizeStepIndicatorStoryArgs({ currentStep: 3, totalSteps: 9 })).toEqual({
+      currentStep: 3,
+      totalSteps: 4,
+    });
+  });
+
+  test("step-indicator init data는 잘못된 currentStep만 기본값으로 되돌린다", () => {
+    expect(normalizeStepIndicatorStoryArgs({ currentStep: 0, totalSteps: 5 })).toEqual({
+      currentStep: 2,
+      totalSteps: 5,
+    });
+  });
+
+  test("step-indicator totalSteps 축소 시 범위를 벗어난 currentStep을 새 범위로 되돌린다", () => {
+    expect(normalizeStepIndicatorStoryArgs({ currentStep: 4, totalSteps: 2 })).toEqual({
+      currentStep: 2,
+      totalSteps: 2,
+    });
+  });
+
+  test.each([null, undefined, "invalid", 3])(
+    "step-indicator init data는 object가 아니면 고정 fallback을 사용한다: %j",
+    (input) => {
+      expect(normalizeStepIndicatorStoryArgs(input)).toEqual({
+        currentStep: 2,
+        totalSteps: 4,
+      });
+    },
+  );
+
   test("bottom-navigator init data is JSON-only and normalizes every preset", () => {
     const data = normalizeBottomNavigatorStoryArgs({
       preset: "all-items",
@@ -116,6 +159,7 @@ describe("Storybook Lynx build outputs", () => {
     "progress-header",
     "page-indicator",
     "bottom-navigator",
+    "step-indicator",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -139,6 +183,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-bottom-navigator--long-accessibility-label");
     expect(index).toContain("components-bottom-navigator--all-items");
     expect(index).toContain("components-bottom-navigator--disabled");
+    expect(index).toContain("components-step-indicator--first");
+    expect(index).toContain("components-step-indicator--middle");
+    expect(index).toContain("components-step-indicator--last");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -166,6 +213,7 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/bottom-navigator": [
         "../../packages/ui-lynx/src/bottom-navigator/index.ts",
       ],
+      "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -179,6 +227,7 @@ describe("Storybook Lynx build outputs", () => {
     ["progress-header", "@libitums/ui-lynx/progress-header"],
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
+    ["step-indicator", "@libitums/ui-lynx/step-indicator"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -216,6 +265,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?page-indicator["']?\s*:\s*["']\.\/src\/lynx\/page-indicator\.tsx["']/,
     );
+    expect(config).toMatch(
+      /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
+    );
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -227,12 +279,26 @@ describe("Storybook Lynx build outputs", () => {
       import: "./dist/page-indicator/index.js",
       default: "./dist/page-indicator/index.js",
     });
+    expect(packageJson.exports["./step-indicator"]).toEqual({
+      types: "./dist/step-indicator/index.d.ts",
+      import: "./dist/step-indicator/index.js",
+      default: "./dist/step-indicator/index.js",
+    });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
       true,
     );
     expect(
       await outputExists("../../packages/ui-lynx/dist/page-indicator/page-indicator.css"),
+    ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/step-indicator/StepIndicator.jsx")).toBe(
+      true,
+    );
+    expect(
+      await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.contract.js"),
+    ).toBe(true);
+    expect(
+      await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
 
     const packVerifier = await readFile(
@@ -252,6 +318,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('component: "PageIndicator"');
     expect(packVerifier).toContain('modules: ["page-indicator.contract"]');
     expect(packVerifier).toContain('css: "page-indicator.css"');
+    expect(packVerifier).toContain('subpath: "step-indicator"');
+    expect(packVerifier).toContain('directory: "step-indicator"');
+    expect(packVerifier).toContain('component: "StepIndicator"');
+    expect(packVerifier).toContain('modules: ["step-indicator.contract"]');
+    expect(packVerifier).toContain('css: "step-indicator.css"');
     expect(packVerifier).toContain("package/dist/${directory}/index.js");
     expect(packVerifier).toContain("package/dist/${directory}/${component}.jsx");
     expect(packVerifier).toContain("package/dist/${directory}/${module}.js");

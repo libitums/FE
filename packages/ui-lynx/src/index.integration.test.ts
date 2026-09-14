@@ -13,6 +13,7 @@ import * as roundButton from "./round-button/index";
 import * as progressHeader from "./progress-header/index";
 import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
+import * as stepIndicator from "./step-indicator/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -24,6 +25,7 @@ const componentArtifacts = {
   "progress-header": { implementation: "ProgressHeader.jsx", css: "progress-header.css" },
   "page-indicator": { implementation: "PageIndicator.jsx", css: "page-indicator.css" },
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
+  "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
 } as const;
 
 const componentEntries = {
@@ -34,6 +36,7 @@ const componentEntries = {
   "progress-header": "ProgressHeader",
   "page-indicator": "PageIndicator",
   "bottom-navigator": "BottomNavigator",
+  "step-indicator": "StepIndicator",
 } as const;
 
 async function readPackageJson() {
@@ -54,12 +57,23 @@ describe("ui-lynx package boundaries", () => {
     expect(root.ProgressHeader).toBe(progressHeader.ProgressHeader);
     expect(root.PageIndicator).toBe(pageIndicator.PageIndicator);
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
+    expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
     expect(root.getButtonContract).toBe(button.getButtonContract);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
     expect(root.getProgressHeaderProgress).toBe(progressHeader.getProgressHeaderProgress);
     expect(root.getPageIndicatorModel).toBe(pageIndicator.getPageIndicatorModel);
     expect(root.PAGE_INDICATOR_MAX_PAGE_COUNT).toBe(pageIndicator.PAGE_INDICATOR_MAX_PAGE_COUNT);
     expect(root.getBottomNavigatorContract).toBe(bottomNavigator.getBottomNavigatorContract);
+    expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+  });
+
+  test("root stylesheet aggregates every component without removing existing styles", async () => {
+    const styles = await readFile(path.join(packageRoot, "src/styles.css"), "utf8");
+    for (const entry of Object.keys(componentArtifacts)) {
+      expect(styles).toContain(
+        `@import "./${entry}/${componentArtifacts[entry as keyof typeof componentArtifacts].css}"`,
+      );
+    }
   });
 
   test("each public subpath resolves to an independent source entry", async () => {
@@ -77,6 +91,10 @@ describe("ui-lynx package boundaries", () => {
         `./${componentEntries[entry as keyof typeof componentEntries]}`,
       );
     }
+    expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
+      "./dist/step-indicator/step-indicator.css",
+    );
+    expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
 
   test("package entry fields and dist outputs are component-specific", async () => {
@@ -109,6 +127,7 @@ describe("ui-lynx package boundaries", () => {
     for (const file of [
       "package/dist/index.js",
       "package/dist/index.d.ts",
+      "package/dist/styles.css",
       "package/dist/button/index.js",
       `package/dist/button/${componentArtifacts.button.implementation}`,
       "package/dist/button/index.d.ts",
@@ -137,9 +156,19 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/bottom-navigator/${componentArtifacts["bottom-navigator"].implementation}`,
       "package/dist/bottom-navigator/index.d.ts",
       `package/dist/bottom-navigator/${componentArtifacts["bottom-navigator"].css}`,
+      "package/dist/step-indicator/index.js",
+      `package/dist/step-indicator/${componentArtifacts["step-indicator"].implementation}`,
+      "package/dist/step-indicator/index.d.ts",
+      "package/dist/step-indicator/StepIndicator.d.ts",
+      "package/dist/step-indicator/step-indicator.contract.js",
+      "package/dist/step-indicator/step-indicator.contract.d.ts",
+      `package/dist/step-indicator/${componentArtifacts["step-indicator"].css}`,
     ]) {
       expect(stdout).toContain(file);
     }
+
+    expect(stdout).not.toContain("package/dist/step-indicator/contract.");
+    expect(stdout).not.toContain("package/dist/step-indicator/logic.");
 
     for (const runtime of [
       "package/dist/round-button/RoundButton.jsx",

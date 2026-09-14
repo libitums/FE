@@ -10,6 +10,8 @@ Rspeedy가 만든 Lynx Web bundle을 `<lynx-view>`에서 실행한다. 기반 �
 `components/indicator/status-indicator.md`, `components/indicator/page-indicator.md`를
 비롯해 `components/round-button.md`, `components/bottom-navigator.md`를 기준으로 하며, 최초 보정 revision은
 `87c1b0d2b745429be9b586cef772deb6c8707ab6`이다.
+Step Indicator는 `components/indicator/step-indicator.md` revision
+`3f7ed6d17df769e37215adb40f7abfc2e1174fd1`을 기준으로 한다.
 Bottom Navigator는 2026-09-11의 `main` revision
 `2144145cd7ffb5777cf2b74e2fec5474eb0adc14`를 기준으로 추가했다.
 
@@ -20,7 +22,8 @@ pnpm storybook:lynx
 
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
-Navigator의 실제 `.web.bundle` 일곱 개를 만들고, Rspeedy watch와 Storybook dev server를 함께 유지한다.
+Navigator·Step Indicator의 실제 `.web.bundle` 여덟 개를 만들고, Rspeedy watch와 Storybook dev
+server를 함께 유지한다.
 
 Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
 소비한다. `tsconfig.typecheck.json`의 source mapping은 코드 생성을 하지 않는 타입 검사에만
@@ -38,6 +41,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Progress Header — Default, Zero, Minimum Fill, Complete, Reduced Motion
 - Components/Page Indicator — Default, First, Last, Single, Empty
 - Components/Bottom Navigator — Default, Long Accessibility Label, All Items, Disabled
+- Components/Step Indicator — First, Middle, Last
 
 Controls 변경은 `<lynx-view>.updateData()`를 통해 ReactLynx `useInitData()`에 전달된다.
 Button·Round Button tap과 Back Header back/info tap은
@@ -57,6 +61,11 @@ enabled item tap은 선택 pill을 해당 item으로 옮기고 `onSelect` Action
 disabled item은 선택 상태와 Action을 변경하지 않으며 별도 `disabledReason`을 접근성 이름에
 합친다. runtime은 `@libitums/ui-lynx/bottom-navigator` 공개 subpath만 소비한다.
 
+Step Indicator Controls는 `currentStep`과 `totalSteps` 정수만 전달하며 runtime에서 2–5단계,
+1-based 현재 단계 계약으로 정규화한다. `totalSteps`가 2–5 정수가 아니면 4를 사용하고,
+`currentStep`이 1–정규화된 `totalSteps` 정수가 아니면
+`Math.min(2, totalSteps)`를 사용한다. Action bridge는 제공하지 않는다.
+
 ## 한계
 
 Lynx Web은 props, 상태, 레이아웃, 토큰과 bridge 상호작용을 빠르게 확인하는 카탈로그다.
@@ -71,3 +80,5 @@ host OS reduced-motion→`motion` prop 매핑, `accessibility-value` 대신 쓰�
 token이나 hex로 보정하지 않는다.
 Bottom Navigator의 native D-pad 이동, 양 끝 focus 유지와 선택 상태 낭독도 Storybook 통과로
 대체하지 않는다.
+Step Indicator의 단일 상태 label 낭독과 숫자 원·연결선 자손 가림도 제품 route 채택 전에는
+native VoiceOver/TalkBack 검증이 남으며 이번 package/catalog 납품에는 비차단이다.

@@ -58,7 +58,8 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
     빈 page count에서는 전체 indicator가 렌더되지 않는지 확인한다.
 15. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
     `status-indicator.web.bundle`, `round-button.web.bundle`, `progress-header.web.bundle`,
-    `page-indicator.web.bundle`, `bottom-navigator.web.bundle`을 정상 응답으로 가져오는지 확인한다.
+    `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`을 정상
+    응답으로 가져오는지 확인한다.
 16. `Components/Bottom Navigator/Default`에서 4개 icon item, 선택된 주황색 pill, dot badge와
     `99+` count badge가 보이는지 확인한다. 선택되지 않은 enabled item을 tap하면 `onSelect`가
     해당 id로 정확히 1회 기록되고 선택 pill도 누른 item으로 이동해야 한다.
@@ -69,6 +70,12 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 19. Bottom Navigator Controls에서 `selectedId`를 바꾸면 선택 pill이 정확히 하나만 이동하는지,
     320/390px viewport에서 좌우 padding과 각 item의 최소 48 × 48px hit area가 유지되는지
     확인한다. 300px 미만 viewport는 지원 범위 밖이다.
+20. `Components/Step Indicator/First`, `Middle`, `Last`를 열어 Completed, Current, Upcoming
+    원과 왼쪽 단계 상태를 따르는 연결선이 구별되는지 확인한다. Controls에서 `totalSteps`를
+    2–5, `currentStep`을 1–`totalSteps` 범위로 바꿨을 때 숫자 원의 개수와 현재 위치가 함께
+    갱신되어야 한다. 원을 tap해도 이동이나 Action이 발생하지 않아야 한다.
+21. 브라우저 개발자 도구의 element overlay로 Step Indicator 원이 모두 32 × 32px이고 연결선이
+    2px 두께로 원의 세로 중앙에 놓이며, 남는 가로 공간을 같은 비율로 나누는지 확인한다.
 
 ## native에서만 확인할 항목
 
@@ -83,6 +90,7 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 - safe area 및 `apps/ios` 호스트 통합
 - Bottom Navigator 키보드/D-pad 선형 이동과 첫·마지막 item 경계 focus 유지
 - Bottom Navigator 선택 상태와 dot/count badge에 대한 VoiceOver/TalkBack 낭독
+- Step Indicator의 `N단계 중 M단계` 단일 상태 낭독과 숫자 원·연결선 자손 가림
 
 이 문서의 통과는 native 실기기 검증을 대체하지 않는다.
 현재 제품 소비 route가 없으므로 위 native 접근성 항목은 **미검증·이번 납품에는 비차단**

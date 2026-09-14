@@ -60,6 +60,13 @@ const components = [
     modules: ["contract", "logic"],
     css: "bottom-navigator.css",
   },
+  {
+    subpath: "step-indicator",
+    directory: "step-indicator",
+    component: "StepIndicator",
+    modules: ["step-indicator.contract"],
+    css: "step-indicator.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -128,6 +135,14 @@ if (bottomNavigatorStylesExport !== "./dist/bottom-navigator/bottom-navigator.cs
 }
 if (!files.includes(`package/${bottomNavigatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the BottomNavigator CSS export target");
+}
+
+const stepIndicatorStylesExport = packedPackageJson.exports?.["./step-indicator/styles.css"];
+if (stepIndicatorStylesExport !== "./dist/step-indicator/step-indicator.css") {
+  throw new Error("packed package has an invalid ./step-indicator/styles.css export");
+}
+if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the StepIndicator CSS export target");
 }
 
 for (const { directory, component } of components) {

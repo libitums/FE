@@ -108,10 +108,11 @@ focus node의 경계가 의도적으로 다르다.
 각 공개 컴포넌트는 `packages/ui-lynx/src/<component>/` 아래에 구현 `.tsx`, 공개 타입을
 정의하는 contract, 필요한 경우의 순수 logic, 전용 CSS, component barrel과 해당 단위의
 unit·UI test를 함께 둔다. 현재 이 구조를 적용하는 디렉터리는 `button/`, `back-header/`,
-`status-indicator/`, `round-button/`, `progress-header/`, `page-indicator/`다. 컴포넌트
-구현·스타일·테스트를 다시 root 파일에 합치지 않는다.
+`status-indicator/`, `round-button/`, `progress-header/`, `page-indicator/`,
+`bottom-navigator/`, `step-indicator/`다. 컴포넌트 구현·스타일·테스트를 다시 root 파일에
+합치지 않는다.
 
-기존 소비 호환성을 위해 `src/index.ts`는 네 component barrel의 공개 값과 타입을 재수출하는
+기존 소비 호환성을 위해 `src/index.ts`는 여덟 component barrel의 공개 값과 타입을 재수출하는
 root barrel로 유지한다. CSS도 기존 단일 진입점인 `@libitums/ui-lynx/styles.css`를 유지한다.
 이 aggregate root CSS는 design token CSS와 각 component CSS를 import하며, 소비자가
 컴포넌트별 소스 경로를 알아야 하게 만들지 않는다.
@@ -148,10 +149,9 @@ best-effort fallback일 뿐 native focus 표시를 증명하지 않으며, `acce
 ### D5. Storybook 웹 확인과 native 확인을 구분한다
 
 Storybook은 공개 package subpath를 import해 Rspeedy가 만든 Button, Back Header, Status
-Indicator, Round Button, Progress Header, Page Indicator의 실제 여섯 `.web.bundle`을
-`<lynx-view>`에서 실행한다. props,
-상태, layout, token 적용, bridge 상호작용을 빠르게 확인하지만 다음은
-증명하지 않는다.
+Indicator, Round Button, Progress Header, Page Indicator, Bottom Navigator, Step Indicator의
+실제 여덟 `.web.bundle`을 `<lynx-view>`에서 실행한다. props, 상태, layout, token 적용,
+bridge 상호작용을 빠르게 확인하지만 다음은 증명하지 않는다.
 
 - 브라우저 DOM 접근성 트리와 키보드 조작 (`<lynx-view>` Canvas는 시각·tap 확인 표면이다)
 - VoiceOver/TalkBack의 실제 낭독 순서와 traits
@@ -230,6 +230,31 @@ Storybook integration test는 이전 실행의 ignored `dist`에 의존하지 �
 - Storybook은 Default, Long Accessibility Label, All Items(5개·320px), Disabled를 제공하고
   public subpath만 소비한다. enabled tap의 `onSelect(id)` bridge와 disabled 무반응을 integration
   test로 검증한다.
+
+### 2026-09-11 확장 — StepIndicator 공개 표면
+
+이 절은 같은 package/catalog 경계에 여덟 번째 공개 컴포넌트를 추가한 delta다. 시각 정본은
+`libitums/design-system/components/indicator/step-indicator.md` revision
+`3f7ed6d17df769e37215adb40f7abfc2e1174fd1`이다.
+
+- `StepIndicator`는 1-based `currentStep`과 2–5 정수 `totalSteps`를 받는다. 이전/현재/이후
+  상태는 각각 Completed/Current/Upcoming으로 순수 파생하며 잘못된 계약은 즉시 거부한다.
+- `step-indicator/`에서 `step-indicator.contract.ts`가 공개 타입과
+  `getStepIndicatorContract` 순수 로직을 함께 소유하고, 단위 테스트는
+  `StepIndicator.unit.test.ts`에 둔다. 구현·스타일·UI 테스트·barrel도 같은 디렉터리가 소유한다.
+- 32px 원과 2px 연결선을 사용하고, 연결선은 왼쪽 단계 상태의 색을 따른다. 원은 이동
+  control이 아니며 tap API를 제공하지 않는다.
+- 전체 줄 하나만 `N단계 중 M단계` 접근성 이름으로 노출하고 숫자 원·연결선 자손은 숨긴다.
+  Storybook 정적 구조 검증은 native 실청을 대신하지 않으며 제품 route 채택 전까지 비차단인
+  D5 경계를 그대로 따른다.
+- `@libitums/ui-lynx/step-indicator`는 독립 ESM·declaration을 제공하고,
+  `@libitums/ui-lynx/step-indicator/styles.css`는 전용 CSS를 공개한다. root barrel과 aggregate
+  `@libitums/ui-lynx/styles.css` 호환성을 유지하며 전용 CSS는 side effect로 보존한다. pack 검사는
+  `StepIndicator.jsx`의 authored JSX 보존도 확인한다.
+- Storybook은 First/Middle/Last story와 `step-indicator.web.bundle`을 제공하며, runtime은 공개
+  subpath만 소비한다. Controls는 JSON 직렬화 가능한 `currentStep`, `totalSteps`만 전달한다.
+  runtime normalizer는 유효하지 않은 `totalSteps`를 4로, 유효하지 않은 `currentStep`을
+  `Math.min(2, totalSteps)`로 대체한다.
 
 ## 버린 대안
 

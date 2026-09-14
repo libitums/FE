@@ -54,3 +54,11 @@ export type {
   BottomNavigatorItemContract,
   BottomNavigatorProps,
 } from "./bottom-navigator";
+
+export { StepIndicator, getStepIndicatorContract } from "./step-indicator";
+export type {
+  StepIndicatorContract,
+  StepIndicatorProps,
+  StepIndicatorStep,
+  StepIndicatorStepStatus,
+} from "./step-indicator";

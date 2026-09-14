@@ -1,0 +1,84 @@
+.ui-lynx-step-indicator {
+  width: 100%;
+}
+
+.ui-lynx-step-indicator-visual {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.ui-lynx-step-indicator-step {
+  min-width: var(--libitum-spacing-32);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.ui-lynx-step-indicator-step-last {
+  flex-grow: 0;
+}
+
+.ui-lynx-step-indicator-circle {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-radius: var(--libitum-radius-full);
+}
+
+.ui-lynx-step-indicator-number {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.ui-lynx-step-indicator-circle-completed {
+  border-width: 0;
+  border-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.ui-lynx-step-indicator-circle-completed .ui-lynx-step-indicator-number {
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
+.ui-lynx-step-indicator-circle-current {
+  border-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-white);
+}
+
+.ui-lynx-step-indicator-circle-current .ui-lynx-step-indicator-number {
+  color: var(--libitum-color-fg-brand);
+}
+
+.ui-lynx-step-indicator-circle-upcoming {
+  border-color: var(--libitum-color-fg-neutral-subtle);
+  background-color: var(--libitum-color-white);
+}
+
+.ui-lynx-step-indicator-circle-upcoming .ui-lynx-step-indicator-number {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.ui-lynx-step-indicator-connector {
+  height: var(--libitum-stroke-width-strong);
+  flex-grow: 1;
+}
+
+.ui-lynx-step-indicator-connector-completed {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.ui-lynx-step-indicator-connector-current,
+.ui-lynx-step-indicator-connector-upcoming {
+  background-color: var(--libitum-color-fg-neutral-subtle);
+}
