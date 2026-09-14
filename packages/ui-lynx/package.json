@@ -10,7 +10,9 @@
   "type": "module",
   "sideEffects": [
     "./dist/styles.css",
-    "./dist/round-button/round-button.css"
+    "./dist/round-button/round-button.css",
+    "./dist/progress-header/progress-header.css",
+    "./dist/page-indicator/page-indicator.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -42,7 +44,19 @@
       "default": "./dist/round-button/index.js"
     },
     "./round-button/styles.css": "./dist/round-button/round-button.css",
+    "./progress-header": {
+      "types": "./dist/progress-header/index.d.ts",
+      "import": "./dist/progress-header/index.js",
+      "default": "./dist/progress-header/index.js"
+    },
+    "./page-indicator": {
+      "types": "./dist/page-indicator/index.d.ts",
+      "import": "./dist/page-indicator/index.js",
+      "default": "./dist/page-indicator/index.js"
+    },
     "./styles.css": "./dist/styles.css",
+    "./progress-header.css": "./dist/progress-header/progress-header.css",
+    "./page-indicator.css": "./dist/page-indicator/page-indicator.css",
     "./package.json": "./package.json"
   },
   "scripts": {

@@ -1,16 +1,28 @@
 # @libitums/ui-lynx
 
 libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포넌트 패키지다. 현재 공개
-컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton` 네 가지다.
+컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
+`PageIndicator` 여섯 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
 
 ```tsx
 import { Button } from "@libitums/ui-lynx/button";
+import { ProgressHeader } from "@libitums/ui-lynx/progress-header";
+import { PageIndicator } from "@libitums/ui-lynx/page-indicator";
 import "@libitums/ui-lynx/styles.css";
 
 <Button label="계속하기" variant="brand" bindtap={handleContinue} />;
+<ProgressHeader
+  title="오늘의 학습"
+  activity="1단계"
+  progress={42}
+  exitAccessibilityLabel="학습 나가기"
+  motion="standard"
+  onExit={handleExit}
+/>;
+<PageIndicator pageCount={4} currentPage={2} />;
 ```
 
 `RoundButton`은 root와 전용 subpath에서 같은 구현과 타입을 내보낸다. 아이콘 전용 control이므로
@@ -38,7 +50,20 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/back-header`
 - `@libitums/ui-lynx/status-indicator`
 - `@libitums/ui-lynx/round-button`
+- `@libitums/ui-lynx/progress-header`
+- `@libitums/ui-lynx/page-indicator`
 - `@libitums/ui-lynx/styles.css`
+- `@libitums/ui-lynx/progress-header.css`
+- `@libitums/ui-lynx/page-indicator.css`
+
+`ProgressHeader` 구현은 `src/progress-header/`에서 공개 contract, ReactLynx component,
+barrel, stylesheet, unit/UI tests를 함께 관리한다. 공개 subpath는 폴더 구조와 무관하게
+`@libitums/ui-lynx/progress-header`로 유지한다.
+
+`PageIndicator`도 최신 main의 컴포넌트 구조에 맞춰 `src/page-indicator/`에서 contract,
+logic, ReactLynx component, barrel, stylesheet, unit/UI tests를 함께 관리한다. 방어적 렌더
+상한은 공개 `PAGE_INDICATOR_MAX_PAGE_COUNT` 100이며 더 큰 입력은 item, 현재 위치와 접근성
+label을 같은 canonical count로 clamp한다.
 
 스타일은 소비 앱의 Lynx 진입점에서 한 번 import한다. 패키지는 ReactLynx를 번들하지 않고
 `>=0.123.0 <0.126.0` peer로 요구한다. `pnpm --filter @libitums/ui-lynx pack:check`는 실제
@@ -67,3 +92,16 @@ Storybook은 시각·tap만 확인하므로 native focus ring과 VoiceOver/TalkB
 디자인 시스템에는 M icon 18px과 Spinner 12px에 대응하는 size token이 아직 없다. 두 값은
 Round Button 원본의 고정 규격을 직접 사용한 비차단 gap이며, FE token이나 `spacing` token을
 새로 만들거나 재해석하지 않는다.
+
+`ProgressHeader`는 `progress`를 0–100으로 한 번 정규화해 percentage와 fill에 같이 쓴다.
+fill은 입력 소수 정밀도를 유지하고 보이는 percentage 문자열만 소수 첫째 자리로 제한한다.
+0은 fill을 렌더하지 않고, 양수는 최소 8px, 100은 전체 폭이다. exit는 진행 값과 무관하게
+항상 활성인 48px button이며 tap마다 `onExit`를 한 번 호출한다. `motion`은 `"standard" |
+"reduced"`이고 생략하면 `standard`다. reduced는 progress 전환을 없애지만 host OS 설정을
+자동으로 읽지 않으므로 소비 앱이 명시적으로 매핑해야 한다.
+
+Progress Header의 `:focus` ring은 ReactLynx의 best-effort fallback이며 native focus를
+보장하지 않는다. 진행 값은 `accessibility-value` 대신 activity와 percentage를 합친 label로
+전달한다. `gray.300` track과 `background.secondary`의 대비 1.078:1은 알려진
+design-system gap이다. 계약에 없는 token이나 hex로 우회하지 않으며 native focus,
+reduced-motion 매핑, 최대 텍스트 크기는 실제 host에서 확인한다.

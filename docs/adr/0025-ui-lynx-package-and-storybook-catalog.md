@@ -22,7 +22,8 @@ Rspeedy 변환, Lynx 요소와 이벤트 경계를 검증하지 못한다. 반�
 ### D0. libitums/design-system의 컴포넌트 문서를 시각 계약의 원본으로 삼는다
 
 `libitums/design-system`의 `components/button.md`, `components/header/back-header.md`,
-`components/indicator/status-indicator.md`와 이들이 참조하는 foundation을 구현 전에 읽고
+`components/header/progress-header.md`, `components/indicator/status-indicator.md`와 이들이
+참조하는 foundation을 구현 전에 읽고
 상태·크기·간격·token·접근성 계약에 사용한다. 최초 보정 기준 revision은
 `87c1b0d2b745429be9b586cef772deb6c8707ab6`이다. Storybook story는 이 계약의 대표 상태를
 보여주며, 값이 다르면 FE 구현을 임의 기준으로 유지하지 않는다.
@@ -45,6 +46,11 @@ Neutral Button의 surface는 원본 `gray.800` 대신 `gray.900`을 사용하는
 조합에서는 label과 spinner 모두 disabled 표면의 `gray.50`과 겹치지 않는 `border.default`를
 쓴다. 이는 사용자 확인을 거친 명시적 FE override이며 design-system 원본이 같은 계약으로
 갱신되면 예외 표기를 제거한다.
+
+Progress Header의 track은 원본이 지정한 `gray.300`을 `background.secondary` 위에 그대로
+쓴다. 현재 토큰 값의 대비는 1.078:1로 시각적 진행 표시의 3:1에 못 미친다. 이는 임의 token
+또는 hex로 우회하지 않는 알려진 design-system gap이며, 원본 token 계약이 바뀌기 전에는
+미해결 minor로 기록한다.
 
 ### D1. 공유 구현은 `packages/ui-lynx`, 검증 표면은 `apps/storybook-lynx`에 둔다
 
@@ -85,9 +91,9 @@ Storybook도 workspace source가 아니라 공개 export를 소비한다.
 기본 `tsconfig.json`에는 이 mapping을 두지 않는다. Storybook의 dev/build 명령은 package를
 먼저 build하고 공개 `dist` export를 해석한다.
 
-### D4. 첫 공개 표면은 Button, Back Header, Status Indicator다
+### D4. 공개 표면은 Button, Back Header, Status Indicator, Progress Header다
 
-세 컴포넌트는 design-system token과 icon을 사용하고 상태·variant를 명시적 union으로
+네 컴포넌트는 design-system token과 icon을 사용하고 상태·variant를 명시적 union으로
 닫는다. 필요한 token이 없으면 임의 semantic token을 만들지 않는다. 공개 컴포넌트를
 늘리는 것은 실제 제품 소비 또는 명시적 납품 요구가 생길 때 별도 결정한다.
 
@@ -102,8 +108,8 @@ focus node의 경계가 의도적으로 다르다.
 각 공개 컴포넌트는 `packages/ui-lynx/src/<component>/` 아래에 구현 `.tsx`, 공개 타입을
 정의하는 contract, 필요한 경우의 순수 logic, 전용 CSS, component barrel과 해당 단위의
 unit·UI test를 함께 둔다. 현재 이 구조를 적용하는 디렉터리는 `button/`, `back-header/`,
-`status-indicator/`, `round-button/`이다. 컴포넌트 구현·스타일·테스트를 다시 root 파일에
-합치지 않는다.
+`status-indicator/`, `round-button/`, `progress-header/`, `page-indicator/`다. 컴포넌트
+구현·스타일·테스트를 다시 root 파일에 합치지 않는다.
 
 기존 소비 호환성을 위해 `src/index.ts`는 네 component barrel의 공개 값과 타입을 재수출하는
 root barrel로 유지한다. CSS도 기존 단일 진입점인 `@libitums/ui-lynx/styles.css`를 유지한다.
@@ -121,9 +127,30 @@ CSS·테스트를 새 component directory에 이관한다. 그 다음 root barre
 package subpath export와 pack 검사를 공통 통합 지점으로 한 번만 갱신한다. 병렬 작업이 root
 파일 전체를 복사하거나 monolithic entry를 되살리는 방식으로 충돌을 해결하지 않는다.
 
+Progress Header는 `title`, `activity`, `progress`, `exitAccessibilityLabel`, `onExit`와
+`motion?: "standard" | "reduced"`를 받는다. 하나의 정규화 결과가 root data, percentage
+label, fill width를 모두 구동하며 `NaN`과 0 이하는 0, 100 이상은 100으로 clamp한다. fill의
+소수 정밀도는 유지하고 표시 label만 소수 첫째 자리로 제한한다. 0은
+fill node가 없고, 양수 fill은 8px 최소 시각 폭을 가지며, 100은 track 전체를 채운다. 48px
+exit는 항상 활성인 이름 있는 button이고 tap 하나가 단 하나의 handler를 거쳐 `onExit`를
+한 번 호출한다. title row는 48px `min-height`와 중앙 정렬로 배율을 수용하고, exit를
+row의 `top: 0`에 absolute로 놓으며 48px 대칭 gutter로 제목과 exit의 세로 중심선,
+제목 중심, hit area를 함께 보존한다. fill은 `brand.primary`를 사용한다. title은 sibling `header`,
+activity와 정규화 percentage는 하나의 접근성 label인 caption leaf로 매핑한다.
+
+standard progress 전환과 exit icon crossfade는 design-system motion duration/easing token을
+쓴다. reduced는 명시적 union 값으로만 선택하며 progress 전환은 없애고 icon crossfade는
+`d2`/`linear` token으로 줄인다. ReactLynx가 host OS reduced-motion 설정을 이 prop에 자동
+매핑하는 경로는 없으므로 소비 host가 값을 연결해야 한다. `:focus` ring은 ReactLynx에서
+best-effort fallback일 뿐 native focus 표시를 증명하지 않으며, `accessibility-value`도
+현재 iOS 채널에 도달하지 않아 진행 값은 caption의 합성 label로 전달한다.
+
 ### D5. Storybook 웹 확인과 native 확인을 구분한다
 
-Storybook은 props, 상태, layout, token 적용, bridge 상호작용을 빠르게 확인한다. 다음은
+Storybook은 공개 package subpath를 import해 Rspeedy가 만든 Button, Back Header, Status
+Indicator, Round Button, Progress Header, Page Indicator의 실제 여섯 `.web.bundle`을
+`<lynx-view>`에서 실행한다. props,
+상태, layout, token 적용, bridge 상호작용을 빠르게 확인하지만 다음은
 증명하지 않는다.
 
 - 브라우저 DOM 접근성 트리와 키보드 조작 (`<lynx-view>` Canvas는 시각·tap 확인 표면이다)

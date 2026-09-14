@@ -1,0 +1,8 @@
+@import "@libitums/ui-lynx/styles.css";
+
+.progress-header-story-canvas {
+  width: 100%;
+  min-height: 100%;
+  padding-top: var(--libitum-spacing-24);
+  background-color: var(--libitum-color-background-primary);
+}

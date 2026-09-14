@@ -10,6 +10,8 @@ import * as button from "./button/index";
 import * as backHeader from "./back-header/index";
 import * as statusIndicator from "./status-indicator/index";
 import * as roundButton from "./round-button/index";
+import * as progressHeader from "./progress-header/index";
+import * as pageIndicator from "./page-indicator/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -18,6 +20,8 @@ const componentArtifacts = {
   "back-header": { implementation: "BackHeader.jsx", css: "back-header.css" },
   "status-indicator": { implementation: "StatusIndicator.jsx", css: "status-indicator.css" },
   "round-button": { implementation: "RoundButton.jsx", css: "round-button.css" },
+  "progress-header": { implementation: "ProgressHeader.jsx", css: "progress-header.css" },
+  "page-indicator": { implementation: "PageIndicator.jsx", css: "page-indicator.css" },
 } as const;
 
 const componentEntries = {
@@ -25,6 +29,8 @@ const componentEntries = {
   "back-header": "BackHeader",
   "status-indicator": "StatusIndicator",
   "round-button": "RoundButton",
+  "progress-header": "ProgressHeader",
+  "page-indicator": "PageIndicator",
 } as const;
 
 async function readPackageJson() {
@@ -42,8 +48,13 @@ describe("ui-lynx package boundaries", () => {
     expect(root.BackHeader).toBe(backHeader.BackHeader);
     expect(root.StatusIndicator).toBe(statusIndicator.StatusIndicator);
     expect(root.RoundButton).toBe(roundButton.RoundButton);
+    expect(root.ProgressHeader).toBe(progressHeader.ProgressHeader);
+    expect(root.PageIndicator).toBe(pageIndicator.PageIndicator);
     expect(root.getButtonContract).toBe(button.getButtonContract);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
+    expect(root.getProgressHeaderProgress).toBe(progressHeader.getProgressHeaderProgress);
+    expect(root.getPageIndicatorModel).toBe(pageIndicator.getPageIndicatorModel);
+    expect(root.PAGE_INDICATOR_MAX_PAGE_COUNT).toBe(pageIndicator.PAGE_INDICATOR_MAX_PAGE_COUNT);
   });
 
   test("each public subpath resolves to an independent source entry", async () => {
@@ -100,6 +111,14 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/round-button/${componentArtifacts["round-button"].implementation}`,
       "package/dist/round-button/index.d.ts",
       `package/dist/round-button/${componentArtifacts["round-button"].css}`,
+      "package/dist/progress-header/index.js",
+      `package/dist/progress-header/${componentArtifacts["progress-header"].implementation}`,
+      "package/dist/progress-header/index.d.ts",
+      `package/dist/progress-header/${componentArtifacts["progress-header"].css}`,
+      "package/dist/page-indicator/index.js",
+      `package/dist/page-indicator/${componentArtifacts["page-indicator"].implementation}`,
+      "package/dist/page-indicator/index.d.ts",
+      `package/dist/page-indicator/${componentArtifacts["page-indicator"].css}`,
     ]) {
       expect(stdout).toContain(file);
     }

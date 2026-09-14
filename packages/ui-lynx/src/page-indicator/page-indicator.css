@@ -1,0 +1,30 @@
+@import "@libitums/design-tokens/css/variables.css";
+
+.ui-lynx-page-indicator {
+  display: linear;
+  width: 100%;
+}
+
+.ui-lynx-page-indicator-track {
+  display: linear;
+  linear-orientation: horizontal;
+  justify-content: center;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  height: var(--libitum-spacing-8);
+}
+
+.ui-lynx-page-indicator-item {
+  width: var(--libitum-spacing-8);
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-fg-neutral-subtle);
+  transition:
+    width var(--libitum-motion-duration-progress) var(--libitum-motion-easing-enter),
+    background-color var(--libitum-motion-duration-progress) var(--libitum-motion-easing-enter);
+}
+
+.ui-lynx-page-indicator-item-current {
+  width: calc(var(--libitum-spacing-20) + var(--libitum-spacing-8));
+  background-color: var(--libitum-color-brand-strong);
+}

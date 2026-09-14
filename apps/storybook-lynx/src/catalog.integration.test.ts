@@ -39,16 +39,20 @@ describe("Storybook Lynx build outputs", () => {
     expect(dispatchRoundButtonStoryTap(data, (envelope) => calls.push(envelope))).toBe(true);
     expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onTap", args: ["저장"] }]);
   });
-  test.each(["button", "back-header", "status-indicator", "round-button"])(
-    "%s story는 Rspeedy Lynx Web bundle을 갖는다",
-    async (entry) => {
-      const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
-      expect(bundle.byteLength).toBeGreaterThan(1_000);
-      expect(bundle.subarray(0, 8).toString("ascii")).toBe("SDRAWROF");
-    },
-  );
+  test.each([
+    "button",
+    "back-header",
+    "status-indicator",
+    "round-button",
+    "progress-header",
+    "page-indicator",
+  ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
+    const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
+    expect(bundle.byteLength).toBeGreaterThan(1_000);
+    expect(bundle.subarray(0, 8).toString("ascii")).toBe("SDRAWROF");
+  });
 
-  test("정적 Storybook shell과 세 컴포넌트 story index를 갖는다", async () => {
+  test("정적 Storybook shell과 컴포넌트 story index를 갖는다", async () => {
     expect(await readOutput("dist/storybook/index.html")).toContain("storybook-root");
 
     const index = await readOutput("dist/storybook/index.json");
@@ -59,6 +63,8 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-round-button--brand");
     expect(index).toContain("components-round-button--loading");
     expect(index).toContain("components-round-button--disabled");
+    expect(index).toContain("components-progress-header--default");
+    expect(index).toContain("components-page-indicator--default");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -81,6 +87,8 @@ describe("Storybook Lynx build outputs", () => {
         "../../packages/ui-lynx/src/status-indicator/index.ts",
       ],
       "@libitums/ui-lynx/round-button": ["../../packages/ui-lynx/src/round-button/index.ts"],
+      "@libitums/ui-lynx/progress-header": ["../../packages/ui-lynx/src/progress-header/index.ts"],
+      "@libitums/ui-lynx/page-indicator": ["../../packages/ui-lynx/src/page-indicator/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -91,6 +99,8 @@ describe("Storybook Lynx build outputs", () => {
     ["back-header", "@libitums/ui-lynx/back-header"],
     ["status-indicator", "@libitums/ui-lynx/status-indicator"],
     ["round-button", "@libitums/ui-lynx/round-button"],
+    ["progress-header", "@libitums/ui-lynx/progress-header"],
+    ["page-indicator", "@libitums/ui-lynx/page-indicator"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);

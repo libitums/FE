@@ -5,6 +5,7 @@ import type {
   StatusIndicatorStatus,
   RoundButtonSize,
   RoundButtonVariant,
+  ProgressHeaderMotion,
 } from "@libitums/ui-lynx";
 
 export type RoundButtonIconKey = "info-02";
@@ -40,4 +41,18 @@ export type StatusIndicatorStoryArgs = {
   status: StatusIndicatorStatus;
   label: string;
   contextLabel: string;
+};
+
+export type ProgressHeaderStoryArgs = {
+  title: string;
+  activity: string;
+  progress: number;
+  exitAccessibilityLabel: string;
+  motion: ProgressHeaderMotion;
+  onExit: (title: string) => void;
+};
+
+export type PageIndicatorStoryArgs = {
+  pageCount: number;
+  currentPage: number;
 };

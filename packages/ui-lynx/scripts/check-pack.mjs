@@ -6,9 +6,7 @@ const packageRoot = path.resolve(import.meta.dirname, "..");
 const packRoot = path.join(packageRoot, ".pack");
 const archives = readdirSync(packRoot).filter((name) => name.endsWith(".tgz"));
 
-if (archives.length === 0) {
-  throw new Error("pnpm pack did not produce a .tgz archive");
-}
+if (archives.length === 0) throw new Error("pnpm pack did not produce a .tgz archive");
 
 const archive = path.join(packRoot, archives.sort().at(-1));
 const files = execFileSync("tar", ["-tzf", archive], { encoding: "utf8" }).trim().split("\n");
@@ -31,6 +29,18 @@ const components = [
     directory: "round-button",
     component: "RoundButton",
     css: "round-button.css",
+  },
+  {
+    subpath: "progress-header",
+    directory: "progress-header",
+    component: "ProgressHeader",
+    css: "progress-header.css",
+  },
+  {
+    subpath: "page-indicator",
+    directory: "page-indicator",
+    component: "PageIndicator",
+    css: "page-indicator.css",
   },
 ];
 const required = [
@@ -67,9 +77,7 @@ const forbidden = files.find(
 if (forbidden) throw new Error(`packed artifact leaks development input: ${forbidden}`);
 
 const packedPackageJson = JSON.parse(
-  execFileSync("tar", ["-xOzf", archive, "package/package.json"], {
-    encoding: "utf8",
-  }),
+  execFileSync("tar", ["-xOzf", archive, "package/package.json"], { encoding: "utf8" }),
 );
 for (const { subpath, directory } of components) {
   const componentExport = packedPackageJson.exports?.[`./${subpath}`];
@@ -80,9 +88,8 @@ for (const { subpath, directory } of components) {
     const expected = target.endsWith(".d.ts")
       ? `./dist/${directory}/index.d.ts`
       : `./dist/${directory}/index.js`;
-    if (target !== expected) {
+    if (target !== expected)
       throw new Error(`./${subpath} must resolve ${expected}, got ${target}`);
-    }
     const packedTarget = `package/${target.replace(/^\.\//, "")}`;
     if (!files.includes(packedTarget)) {
       throw new Error(`./${subpath} export target is missing from packed artifact: ${target}`);
@@ -94,9 +101,7 @@ for (const { directory, component } of components) {
   const runtime = execFileSync(
     "tar",
     ["-xOzf", archive, `package/dist/${directory}/${component}.jsx`],
-    {
-      encoding: "utf8",
-    },
+    { encoding: "utf8" },
   );
   if (!/<(?:view|text|svg)\b/.test(runtime)) {
     throw new Error(`${component} packed runtime does not contain authored ReactLynx JSX`);
