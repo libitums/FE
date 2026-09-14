@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { describe, expect, test } from "vitest";
@@ -12,6 +12,15 @@ async function readOutput(relativePath: string): Promise<string> {
 
 async function readBinaryOutput(relativePath: string): Promise<Buffer> {
   return readFile(path.join(appRoot, relativePath));
+}
+
+async function outputExists(relativePath: string): Promise<boolean> {
+  try {
+    await access(path.join(appRoot, relativePath));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 describe("Storybook Lynx build outputs", () => {
@@ -104,5 +113,72 @@ describe("Storybook Lynx build outputs", () => {
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
+  });
+  test("catalog index에는 PageIndicator의 대표 story들이 등록된다", async () => {
+    const index = await readOutput("dist/storybook/index.json");
+    for (const storyId of ["default", "first", "last", "single", "empty"]) {
+      expect(index).toContain(`components-page-indicator--${storyId}`);
+    }
+  });
+
+  test("PageIndicator story args와 controls는 직렬화 가능한 숫자 계약을 유지한다", async () => {
+    expect(await outputExists("src/PageIndicator.stories.ts")).toBe(true);
+    const story = await readOutput("src/PageIndicator.stories.ts");
+    expect(story).toMatch(/pageCount:\s*\d+/);
+    expect(story).toMatch(/currentPage:\s*\d+/);
+    expect(story).toMatch(
+      /pageCount:\s*\{\s*control:\s*\{\s*type:\s*["']number["'][^}]*max:\s*100/,
+    );
+    expect(story).toMatch(
+      /currentPage:\s*\{\s*control:\s*\{\s*type:\s*["']number["'][^}]*max:\s*100/,
+    );
+  });
+
+  test("Rspeedy entry와 package 산출물은 최신 컴포넌트 구조와 docs를 노출한다", async () => {
+    const config = await readOutput("lynx.config.ts");
+    expect(config).toMatch(
+      /["']?page-indicator["']?\s*:\s*["']\.\/src\/lynx\/page-indicator\.tsx["']/,
+    );
+
+    const packageJson = JSON.parse(
+      await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
+    ) as {
+      exports: Record<string, { types?: string; import?: string; default?: string }>;
+    };
+    expect(packageJson.exports["./page-indicator"]).toEqual({
+      types: "./dist/page-indicator/index.d.ts",
+      import: "./dist/page-indicator/index.js",
+      default: "./dist/page-indicator/index.js",
+    });
+    expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
+      true,
+    );
+    expect(
+      await outputExists("../../packages/ui-lynx/dist/page-indicator/page-indicator.css"),
+    ).toBe(true);
+
+    const packVerifier = await readFile(
+      path.resolve(appRoot, "../../packages/ui-lynx/scripts/check-pack.mjs"),
+      "utf8",
+    );
+    expect(packVerifier).toContain("package/dist/index.js");
+    expect(packVerifier).toContain("package/dist/index.d.ts");
+    expect(packVerifier).toContain("package/dist/styles.css");
+    expect(packVerifier).toContain("package/docs/component-file-conventions.md");
+    expect(packVerifier).toContain('subpath: "progress-header"');
+    expect(packVerifier).toContain('directory: "progress-header"');
+    expect(packVerifier).toContain('component: "ProgressHeader"');
+    expect(packVerifier).toContain('modules: ["contract"]');
+    expect(packVerifier).toContain('subpath: "page-indicator"');
+    expect(packVerifier).toContain('directory: "page-indicator"');
+    expect(packVerifier).toContain('component: "PageIndicator"');
+    expect(packVerifier).toContain('modules: ["page-indicator.contract"]');
+    expect(packVerifier).toContain('css: "page-indicator.css"');
+    expect(packVerifier).toContain("package/dist/${directory}/index.js");
+    expect(packVerifier).toContain("package/dist/${directory}/${component}.jsx");
+    expect(packVerifier).toContain("package/dist/${directory}/${module}.js");
+    expect(packVerifier).toContain("package/dist/${directory}/${css}");
+    expect(packVerifier).toContain("authored ReactLynx JSX");
   });
 });
