@@ -5,6 +5,6 @@ export type {
   ButtonVariant,
   ButtonWidth,
   IconPosition,
-} from "./contract";
-export { getButtonContract, getButtonIconColor } from "./logic";
+} from "./button.contract";
+export { getButtonContract, getButtonIconColor } from "./button.contract";
 export { Button } from "./Button";

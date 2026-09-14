@@ -15,21 +15,21 @@ const components = [
     subpath: "button",
     directory: "button",
     component: "Button",
-    modules: ["contract", "logic"],
+    modules: ["button.contract"],
     css: "button.css",
   },
   {
     subpath: "back-header",
     directory: "back-header",
     component: "BackHeader",
-    modules: ["contract"],
+    modules: ["back-header.contract"],
     css: "back-header.css",
   },
   {
     subpath: "status-indicator",
     directory: "status-indicator",
     component: "StatusIndicator",
-    modules: ["contract", "logic"],
+    modules: ["status-indicator.contract"],
     css: "status-indicator.css",
   },
   {
@@ -43,7 +43,7 @@ const components = [
     subpath: "progress-header",
     directory: "progress-header",
     component: "ProgressHeader",
-    modules: ["contract"],
+    modules: ["progress-header.contract"],
     css: "progress-header.css",
   },
   {
@@ -57,7 +57,7 @@ const components = [
     subpath: "bottom-navigator",
     directory: "bottom-navigator",
     component: "BottomNavigator",
-    modules: ["contract", "logic"],
+    modules: ["bottom-navigator.contract"],
     css: "bottom-navigator.css",
   },
   {
@@ -95,6 +95,15 @@ for (const { directory, component, modules, css } of components) {
 
 for (const file of required) {
   if (!files.includes(file)) throw new Error(`packed artifact is missing ${file}`);
+}
+
+for (const { directory } of components) {
+  for (const generic of ["contract.js", "contract.d.ts", "logic.js", "logic.d.ts"]) {
+    const leaked = `package/dist/${directory}/${generic}`;
+    if (files.includes(leaked)) {
+      throw new Error(`packed artifact contains forbidden generic component module: ${leaked}`);
+    }
+  }
 }
 
 const forbidden = files.find(

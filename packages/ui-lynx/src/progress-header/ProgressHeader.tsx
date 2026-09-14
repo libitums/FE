@@ -2,7 +2,7 @@ import type {} from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 import cross from "@libitums/icons/lynx/cross";
 
-import { getProgressHeaderProgress, type ProgressHeaderProps } from "./contract";
+import { getProgressHeaderProgress, type ProgressHeaderProps } from "./progress-header.contract";
 
 export function ProgressHeader(props: ProgressHeaderProps) {
   const normalized = getProgressHeaderProgress(props.progress);

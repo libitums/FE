@@ -128,6 +128,19 @@ CSS·테스트를 새 component directory에 이관한다. 그 다음 root barre
 package subpath export와 pack 검사를 공통 통합 지점으로 한 번만 갱신한다. 병렬 작업이 root
 파일 전체를 복사하거나 monolithic entry를 되살리는 방식으로 충돌을 해결하지 않는다.
 
+> **2026-09-14 정정 — canonical contract-only 구조:** 위의 `contract`와 필요한
+> `logic`을 별도 파일로 두던 구조는 현재 규칙이 아니다. 공개 컴포넌트 여덟 개는
+> 모두 `src/<component>/<component>.contract.ts` 하나에 공개 타입과 순수 계약 함수를
+> 함께 두며 generic `contract.ts`와 별도 `logic.ts`를 허용하지 않는다. component-local
+> unit/UI test는 `<Component>.unit.test.ts`/`<Component>.ui.test.tsx`를 쓴다. 순수 runtime
+> export가 없는 `BackHeader`만 unit test를 두지 않는다. 소스 트리의 여덟 디렉터리
+> 멤버십과 구현·contract·CSS·barrel·test 명명은
+> `component-file-conventions.unit.test.mjs`가, 배포 산출물의 canonical contract와
+> generic contract/logic 부재는 `check-pack.mjs`가 검증한다. package integration test도
+> 여덟 subpath의 산출물 계약을 확인한다. D4.1의 처음 소유 방식과 아래 BottomNavigator 확장의
+> `구현·contract·logic` 표현은 도입 시점의 기록으로 유지하되, 신규·현재 구조에는
+> 이 정정을 적용한다.
+
 Progress Header는 `title`, `activity`, `progress`, `exitAccessibilityLabel`, `onExit`와
 `motion?: "standard" | "reduced"`를 받는다. 하나의 정규화 결과가 root data, percentage
 label, fill width를 모두 구동하며 `NaN`과 0 이하는 0, 100 이상은 100으로 clamp한다. fill의
@@ -175,6 +188,13 @@ Codex 앱의 브라우저 패널에 localhost URL을 열어야 완료로 센다.
 Storybook integration test는 이전 실행의 ignored `dist`에 의존하지 않도록 먼저
 `@libitums/ui-lynx`와 자신의 정적 build를 만들고 그 산출물을 검사한다. 깨끗한 checkout과
 이미 dev server를 돌린 checkout의 결과가 같아야 한다.
+
+2026-09-14부터 루트 `test:unit`과 `test:ui`는 `@libitums/ui-lynx`와
+`@libitums/mobile`을 각각 명시적으로 포함한다. `test:integration`은 두 패키지의
+integration 계층 다음 `@libitums/storybook-lynx test`를 불러 package 산출물과 Storybook
+catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 멤버십을 다시
+나열하지 않고 이 루트 계층 스크립트를 간접 호출한다. 루트 `test`는
+세 계층 후 `test:report-policy`를 실행하며 `verify`는 이 전체 멤버십을 사용한다.
 
 루트 Node 22와 pnpm 10 정책은 유지한다. Storybook 관련 의존은 이 저장소에서 확인한 정확
 버전으로 고정한다.

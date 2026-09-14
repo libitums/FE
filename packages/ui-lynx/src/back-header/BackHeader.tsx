@@ -2,7 +2,7 @@ import type {} from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import info02 from "@libitums/icons/lynx/info-02";
-import type { BackHeaderProps } from "./contract";
+import type { BackHeaderProps } from "./back-header.contract";
 
 export function BackHeader(props: BackHeaderProps) {
   function handleBack() {

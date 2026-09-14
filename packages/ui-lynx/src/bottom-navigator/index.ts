@@ -1,5 +1,8 @@
 export { BottomNavigator } from "./BottomNavigator";
-export { getBottomNavigatorContract, getBottomNavigatorContracts } from "./logic";
+export {
+  getBottomNavigatorContract,
+  getBottomNavigatorContracts,
+} from "./bottom-navigator.contract";
 export type {
   BottomNavigatorBadge,
   BottomNavigatorContract,
@@ -10,4 +13,4 @@ export type {
   BottomNavigatorItem,
   BottomNavigatorItemContract,
   BottomNavigatorProps,
-} from "./contract";
+} from "./bottom-navigator.contract";

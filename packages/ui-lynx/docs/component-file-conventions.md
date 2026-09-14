@@ -14,8 +14,9 @@
 | 공개 배럴 | `index.ts` | `index.ts` |
 
 contract 파일은 props·상태·파생 모델 타입과 그 계약을 계산하는 순수 함수를 함께 소유한다.
-컴포넌트 전용 계산만 있는 경우 일반 이름의 `contract.ts`나 별도 `logic.ts`로 나누지 않는다.
-`index.ts`는 컴포넌트, 공개 타입과 공개 순수 함수를 재수출하고 구현을 중복하지 않는다.
+순수 runtime export가 없어도 타입은 같은 `<component>.contract.ts`에 둔다. 일반 이름의
+`contract.ts`나 별도 `logic.ts`는 허용하지 않는다. `index.ts`는 컴포넌트, 공개 타입과
+공개 순수 함수를 이 canonical contract에서 재수출하고 구현을 중복하지 않는다.
 
 ```text
 src/page-indicator/
@@ -27,6 +28,16 @@ src/page-indicator/
 └── page-indicator.css
 ```
 
-`RoundButton`도 같은 구조를 사용한다. 아직 `contract.ts`처럼 이전 이름을 쓰는 컴포넌트는
-해당 컴포넌트를 수정하는 작업에서 이 규칙으로 이관한다. 이름 변경 시 barrel import,
-package 산출물 검사와 관련 테스트의 경로 기대값도 함께 갱신한다.
+현재 공개 컴포넌트 여덟 개(`Button`, `BackHeader`, `StatusIndicator`, `RoundButton`,
+`ProgressHeader`, `PageIndicator`, `BottomNavigator`, `StepIndicator`)가 모두 이 구조를
+사용한다. 순수 runtime export가 없는 `BackHeader`만 빈 unit test를 두지 않고, 나머지
+일곱 개는 PascalCase unit/UI test 쌍을 둔다.
+
+`scripts/component-file-conventions.mjs`의 순수 checker는 컴포넌트 디렉터리와 파일 목록을
+받아 canonical 구현·contract·CSS·barrel·test 이름을 검사하고, generic `contract.ts`,
+`logic.ts`, kebab-case component test와 `index.ui.test.tsx`를 거부한다. 현재 여덟
+디렉터리의 멤버십은 `component-file-conventions.unit.test.mjs`가 repository tree에서
+검증한다. `scripts/check-pack.mjs`는 배포 tarball에 여덟 canonical
+`<component>.contract.{js,d.ts}`와 CSS·JSX·barrel이 있고 개발 입력이 없는지
+검사하며 generic `contract.*`/`logic.*` 산출물을 직접 거부한다. package integration
+test도 같은 부재 계약을 여덟 디렉터리 전체에서 검증한다.

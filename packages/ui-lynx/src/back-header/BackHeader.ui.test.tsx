@@ -7,8 +7,8 @@ import { BackHeader } from "./index";
 
 describe("BackHeader UI", () => {
   test("전체 leading tap과 분리된 접근성 뒤로가기 control을 제공한다", () => {
-    const onBack = vi.fn();
-    const onInfo = vi.fn();
+    const onBack = vi.fn<() => void>();
+    const onInfo = vi.fn<() => void>();
     render(
       <BackHeader
         onBack={onBack}

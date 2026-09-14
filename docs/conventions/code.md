@@ -53,6 +53,31 @@ apps/mobile/src/
   파일명이 가른다.
 - `data-testid`는 **테스트가 실제로 질의하는 요소에만** 붙인다.
 
+### `packages/ui-lynx` 컴포넌트
+
+`packages/ui-lynx/src/<component>/`는 앱의 평평한 `components/` 규칙이 아니라 배포 패키지의
+독립 subpath 단위다. 여덟 공개 컴포넌트는 다음 파일 계약을 쓴다.
+
+- 디렉터리와 contract·CSS는 kebab-case: `<component>/`, `<component>.contract.ts`,
+  `<component>.css`.
+- 구현과 component-local test는 PascalCase: `<Component>.tsx`,
+  `<Component>.unit.test.ts`, `<Component>.ui.test.tsx`. 순수 runtime export가 없는
+  `BackHeader`는 unit test를 두지 않는다.
+- 공개 props·상태·파생 모델 타입과 순수 계약 함수는
+  `<component>.contract.ts` 하나가 소유한다. generic `contract.ts`와 별도
+  `logic.ts`는 두지 않는다.
+- `index.ts`는 공개 컴포넌트·타입·순수 함수만 재수출한다. package root는
+  이 subpath barrel을 재수출하며 내부 source 경로를 공개하지 않는다.
+
+`packages/ui-lynx/scripts/component-file-conventions.mjs`는 IO 없는 순수 checker다. 디렉터리와
+파일 목록을 받아 canonical 구현·contract·CSS·barrel·test 이름과 legacy 파일 부재를
+판정하고, 실제 repository tree를 읽는 adapter는 같은 디렉터리의 unit test가 담당한다.
+배포 산출물은 `check-pack.mjs`가 여덟 canonical contract JS/선언과 CSS·JSX·barrel의
+존재와 generic `contract.*`/`logic.*`의 부재를 검증한다. package integration test도
+이 산출물 계약을 여덟 subpath 전체에서 확인한다. 세부 파일 표는
+[`packages/ui-lynx/docs/component-file-conventions.md`](../../packages/ui-lynx/docs/component-file-conventions.md)를
+단일 참조로 삼는다.
+
 ### 상태(modifier) 클래스
 
 **예약 상태어는 지금 여섯이다.** 목록에 없는 말을 쓰지 않는다 — 새 상태가 필요하면

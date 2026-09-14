@@ -94,12 +94,14 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/progress-header.css`
 - `@libitums/ui-lynx/page-indicator.css`
 
-`ProgressHeader` 구현은 `src/progress-header/`에서 공개 contract, ReactLynx component,
-barrel, stylesheet, unit/UI tests를 함께 관리한다. 공개 subpath는 폴더 구조와 무관하게
+`ProgressHeader` 구현은 `src/progress-header/`에서 공개 타입과 순수 함수를 함께
+소유하는 `progress-header.contract.ts`, ReactLynx component, barrel, stylesheet,
+PascalCase unit/UI tests를 함께 관리한다. 공개 subpath는 폴더 구조와 무관하게
 `@libitums/ui-lynx/progress-header`로 유지한다.
 
-`PageIndicator`도 최신 main의 컴포넌트 구조에 맞춰 `src/page-indicator/`에서 contract,
-logic, ReactLynx component, barrel, stylesheet, unit/UI tests를 함께 관리한다. 방어적 렌더
+`PageIndicator`도 `src/page-indicator/`에서 공개 타입과 순수 함수를 합친
+`page-indicator.contract.ts`, ReactLynx component, barrel, stylesheet, PascalCase unit/UI tests를
+함께 관리한다. 방어적 렌더
 상한은 공개 `PAGE_INDICATOR_MAX_PAGE_COUNT` 100이며 더 큰 입력은 item, 현재 위치와 접근성
 label을 같은 canonical count로 clamp한다.
 
@@ -107,13 +109,15 @@ label을 같은 canonical count로 clamp한다.
 
 새 컴포넌트와 기존 컴포넌트 정리는
 [`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
-규칙을 따른다. `RoundButton`과 `PageIndicator`가 현재 완성된 예시다.
+규칙을 따른다. 공개 컴포넌트 여덟 개 모두 `<component>.contract.ts`에 공개
+타입과 순수 계약 로직을 함께 두고 PascalCase component test 이름을 쓴다.
 
 일반 소비자는 aggregate `@libitums/ui-lynx/styles.css`를 Lynx 진입점에서 한 번 import한다.
 선택적 소비자는 목록의 component 전용 CSS 진입점을 import할 수 있다. 패키지는
 ReactLynx를 번들하지 않고 `>=0.123.0 <0.126.0` peer로 요구한다.
 `pnpm --filter @libitums/ui-lynx pack:check`는 실제 tarball에 컴파일된 JSX·선언·CSS,
-README와 docs만 들어가는지 검증한다.
+canonical contract, README와 docs만 들어가고 generic contract/logic 산출물이 없는지
+검증한다. package integration test도 이 부재 계약을 여덟 subpath 전체에서 확인한다.
 
 StepIndicator는 최신 파일 규칙에 따라 공개 타입과 `getStepIndicatorContract` 순수 로직을
 `step-indicator.contract.ts` 하나에서 소유하고 단위 테스트는

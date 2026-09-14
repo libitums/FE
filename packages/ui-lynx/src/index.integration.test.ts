@@ -167,8 +167,14 @@ describe("ui-lynx package boundaries", () => {
       expect(stdout).toContain(file);
     }
 
-    expect(stdout).not.toContain("package/dist/step-indicator/contract.");
-    expect(stdout).not.toContain("package/dist/step-indicator/logic.");
+    for (const directory of Object.keys(componentEntries)) {
+      expect(stdout).toContain(`package/dist/${directory}/${directory}.contract.js`);
+      expect(stdout).toContain(`package/dist/${directory}/${directory}.contract.d.ts`);
+      expect(stdout).not.toContain(`package/dist/${directory}/contract.js`);
+      expect(stdout).not.toContain(`package/dist/${directory}/contract.d.ts`);
+      expect(stdout).not.toContain(`package/dist/${directory}/logic.js`);
+      expect(stdout).not.toContain(`package/dist/${directory}/logic.d.ts`);
+    }
 
     for (const runtime of [
       "package/dist/round-button/RoundButton.jsx",

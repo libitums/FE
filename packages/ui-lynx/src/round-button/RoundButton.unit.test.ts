@@ -131,7 +131,7 @@ describe("round-button.css", () => {
     );
     const spinnerBlock = styles.match(/\.ui-lynx-round-button-spinner\s*\{[^}]*\}/)?.[0] ?? "";
     expect(spinnerBlock).not.toMatch(/\banimation(?:-name)?\s*:/);
-    expect(styles).not.toMatch(/@keyframes\s+[^\{]*(?:round[-_]?button[-_]?spinner)/i);
+    expect(styles).not.toMatch(/@keyframes\s+[^{}]*(?:round[-_]?button[-_]?spinner)/i);
     expect(styles).toMatch(
       /\.ui-lynx-round-button(?:-surface|-spinner)[^}]*border-radius:\s*var\(--libitum-radius-full\)/,
     );

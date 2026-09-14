@@ -50,9 +50,9 @@ describe("RoundButton", () => {
   });
 
   test("활성 tap은 정확히 한 번 전달하고 loading·disabled tap은 차단한다", () => {
-    const activeTap = vi.fn();
-    const loadingTap = vi.fn();
-    const disabledTap = vi.fn();
+    const activeTap = vi.fn<() => void>();
+    const loadingTap = vi.fn<() => void>();
+    const disabledTap = vi.fn<() => void>();
 
     const active = render(
       <RoundButton accessibilityLabel="활성" icon={info02} bindtap={activeTap} />,

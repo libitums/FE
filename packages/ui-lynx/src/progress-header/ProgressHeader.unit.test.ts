@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { getProgressHeaderProgress } from "./contract";
+import { getProgressHeaderProgress } from "./progress-header.contract";
 
 describe("getProgressHeaderProgress", () => {
   test.each([

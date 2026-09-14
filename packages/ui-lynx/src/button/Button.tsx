@@ -1,6 +1,5 @@
 import type {} from "@lynx-js/react";
-import { getButtonContract, getButtonIconColor } from "./logic";
-import type { ButtonProps } from "./contract";
+import { getButtonContract, getButtonIconColor, type ButtonProps } from "./button.contract";
 
 export function Button(props: ButtonProps) {
   const contract = getButtonContract(props);

@@ -4,8 +4,8 @@ import type {
   BottomNavigatorItem,
   BottomNavigatorItemContract,
   BottomNavigatorProps,
-} from "./contract";
-import { getBottomNavigatorContract } from "./logic";
+} from "./bottom-navigator.contract";
+import { getBottomNavigatorContract } from "./bottom-navigator.contract";
 
 type BottomNavigatorCellProps = {
   readonly item: BottomNavigatorItem;
