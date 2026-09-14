@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 import { color } from "@libitums/design-tokens";
 import { describe, expect, test } from "vitest";
 
-import type { BottomNavigatorItem } from "./bottom-navigator.contract";
 import {
+  type BottomNavigatorItem,
   getBottomNavigatorContract,
   getBottomNavigatorContracts,
 } from "./bottom-navigator.contract";

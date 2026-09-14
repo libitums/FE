@@ -11,6 +11,39 @@ const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../src");
 const entry = (directory, files) => ({ directory, files: [...files].sort() });
 
 describe("findComponentFileConventionViolations", () => {
+  test("normalizes empty directory segments without undefined in expected names", () => {
+    const violations = findComponentFileConventionViolations([
+      entry("foo--bar", []),
+      entry("foo-", []),
+    ]);
+
+    expect(violations).toEqual([
+      { code: "invalid-directory", directory: "foo-" },
+      { code: "missing-component", directory: "foo-", expected: "Foo.tsx" },
+      { code: "missing-contract", directory: "foo-", expected: "foo-.contract.ts" },
+      { code: "missing-css", directory: "foo-", expected: "foo-.css" },
+      { code: "missing-index", directory: "foo-", expected: "index.ts" },
+      { code: "missing-ui-test", directory: "foo-", expected: "Foo.ui.test.tsx" },
+      { code: "missing-unit-test", directory: "foo-", expected: "Foo.unit.test.ts" },
+      { code: "invalid-directory", directory: "foo--bar" },
+      { code: "missing-component", directory: "foo--bar", expected: "FooBar.tsx" },
+      {
+        code: "missing-contract",
+        directory: "foo--bar",
+        expected: "foo--bar.contract.ts",
+      },
+      { code: "missing-css", directory: "foo--bar", expected: "foo--bar.css" },
+      { code: "missing-index", directory: "foo--bar", expected: "index.ts" },
+      { code: "missing-ui-test", directory: "foo--bar", expected: "FooBar.ui.test.tsx" },
+      { code: "missing-unit-test", directory: "foo--bar", expected: "FooBar.unit.test.ts" },
+    ]);
+    expect(
+      violations.every(
+        ({ expected = "", actual = "" }) => !`${expected}${actual}`.includes("undefined"),
+      ),
+    ).toBe(true);
+  });
+
   test("reports every rule with deterministic directory, code, and actual values", () => {
     const entries = [
       entry("button", [

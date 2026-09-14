@@ -1,11 +1,11 @@
 import type {} from "@lynx-js/react";
 
-import type {
-  BottomNavigatorItem,
-  BottomNavigatorItemContract,
-  BottomNavigatorProps,
+import {
+  type BottomNavigatorItem,
+  type BottomNavigatorItemContract,
+  type BottomNavigatorProps,
+  getBottomNavigatorContract,
 } from "./bottom-navigator.contract";
-import { getBottomNavigatorContract } from "./bottom-navigator.contract";
 
 type BottomNavigatorCellProps = {
   readonly item: BottomNavigatorItem;

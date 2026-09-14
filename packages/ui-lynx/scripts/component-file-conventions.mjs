@@ -4,7 +4,8 @@ export function findComponentFileConventionViolations(entries) {
     const { directory, files } = entry;
     const component = directory
       .split("-")
-      .map((part) => part[0]?.toUpperCase() + part.slice(1))
+      .filter(Boolean)
+      .map((part) => part[0].toUpperCase() + part.slice(1))
       .join("");
     const has = (name) => files.includes(name);
     const add = (code, actual, expected) =>

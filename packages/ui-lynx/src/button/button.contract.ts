@@ -22,9 +22,9 @@ export type ButtonContract = {
 
 import { color } from "@libitums/design-tokens";
 export function getButtonContract(props: ButtonProps): ButtonContract {
-  const variant = props.variant ?? "neutral",
-    size = props.size ?? "m",
-    width = props.width ?? "hug";
+  const variant = props.variant ?? "neutral";
+  const size = props.size ?? "m";
+  const width = props.width ?? "hug";
   return {
     className: [
       "ui-lynx-button",
