@@ -62,6 +62,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | workspace 구성 (패키지 매니저·workspace 선언·태스크 러너) | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 폴더 구조 | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 네이밍 | 결정 | [0003](0003-workspace-and-directory-structure.md) D6·**D7**, [0004](0004-package-boundaries-and-dependency-direction.md) |
+| **서비스 사용자 표시명 · 기술 식별자 호환성** | 결정 (`Duru` + 기존 기술 이름 유지) | [0025](0025-duru-service-display-name.md) |
 | package 경계와 책임 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | 의존 방향 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | **공유 ReactLynx 패키지와 브라우저 카탈로그** | 결정 (`packages/ui-lynx` + 실제 Lynx Web bundle을 쓰는 Storybook 하나) | [0025](0025-ui-lynx-package-and-storybook-catalog.md) — 0004 D2와 0015 D3의 첫 패키지 유예를 부분 대체 |
