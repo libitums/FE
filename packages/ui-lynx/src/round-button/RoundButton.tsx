@@ -9,7 +9,7 @@ import {
 export function RoundButton(props: RoundButtonProps) {
   const contract = getRoundButtonContract(props);
   const foregroundColor = getRoundButtonForegroundColor(props);
-  const iconContent = props.icon.replaceAll("currentColor", foregroundColor);
+  const iconContent = props.icon.replace(/currentColor/g, foregroundColor);
 
   function handleTap() {
     "background only";

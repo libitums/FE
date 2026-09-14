@@ -3,11 +3,13 @@ import { resolve } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
-import { getStepIndicatorContract } from "./index";
+import { getStepIndicatorContract } from "./step-indicator.contract";
 
 describe("getStepIndicatorContract", () => {
   test("현재 단계를 기준으로 completed/current/upcoming 순서를 만든다", () => {
-    expect(getStepIndicatorContract({ currentStep: 2, totalSteps: 4 })).toEqual({
+    const contract = getStepIndicatorContract({ currentStep: 2, totalSteps: 4 });
+
+    expect(contract).toEqual({
       accessibilityLabel: "4단계 중 2단계",
       steps: [
         { number: 1, status: "completed" },
@@ -16,13 +18,18 @@ describe("getStepIndicatorContract", () => {
         { number: 4, status: "upcoming" },
       ],
     });
+    expect(contract.steps.filter(({ status }) => status === "current")).toHaveLength(1);
   });
 
   test.each([
-    { currentStep: 1, totalSteps: 2 },
-    { currentStep: 5, totalSteps: 5 },
-  ])("2–5단계 경계값을 허용한다: %j", (props) => {
-    expect(getStepIndicatorContract(props).steps).toHaveLength(props.totalSteps);
+    { currentStep: 1, totalSteps: 2, accessibilityLabel: "2단계 중 1단계" },
+    { currentStep: 5, totalSteps: 5, accessibilityLabel: "5단계 중 5단계" },
+  ])("2–5단계 경계값을 허용한다: %j", ({ accessibilityLabel, ...props }) => {
+    const contract = getStepIndicatorContract(props);
+
+    expect(contract.steps).toHaveLength(props.totalSteps);
+    expect(contract.accessibilityLabel).toBe(accessibilityLabel);
+    expect(contract.steps.filter(({ status }) => status === "current")).toHaveLength(1);
   });
 
   test.each([
@@ -37,6 +44,12 @@ describe("getStepIndicatorContract", () => {
     ],
   ] as const)("잘못된 단계 계약 %j을 거부한다", (props, message) => {
     expect(() => getStepIndicatorContract(props)).toThrow(message);
+  });
+
+  test("두 값이 모두 잘못되면 totalSteps를 먼저 검증한다", () => {
+    expect(() => getStepIndicatorContract({ currentStep: 0, totalSteps: 1 })).toThrow(
+      "totalSteps must be an integer between 2 and 5",
+    );
   });
 });
 

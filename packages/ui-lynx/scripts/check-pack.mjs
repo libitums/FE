@@ -6,48 +6,78 @@ const packageRoot = path.resolve(import.meta.dirname, "..");
 const packRoot = path.join(packageRoot, ".pack");
 const archives = readdirSync(packRoot).filter((name) => name.endsWith(".tgz"));
 
-if (archives.length === 0) {
-  throw new Error("pnpm pack did not produce a .tgz archive");
-}
+if (archives.length === 0) throw new Error("pnpm pack did not produce a .tgz archive");
 
 const archive = path.join(packRoot, archives.sort().at(-1));
 const files = execFileSync("tar", ["-tzf", archive], { encoding: "utf8" }).trim().split("\n");
 const components = [
-  { subpath: "button", directory: "button", component: "Button", css: "button.css" },
+  {
+    subpath: "button",
+    directory: "button",
+    component: "Button",
+    modules: ["contract", "logic"],
+    css: "button.css",
+  },
   {
     subpath: "back-header",
     directory: "back-header",
     component: "BackHeader",
+    modules: ["contract"],
     css: "back-header.css",
   },
   {
     subpath: "status-indicator",
     directory: "status-indicator",
     component: "StatusIndicator",
+    modules: ["contract", "logic"],
     css: "status-indicator.css",
   },
   {
     subpath: "round-button",
     directory: "round-button",
     component: "RoundButton",
+    modules: ["round-button.contract"],
     css: "round-button.css",
+  },
+  {
+    subpath: "progress-header",
+    directory: "progress-header",
+    component: "ProgressHeader",
+    modules: ["contract"],
+    css: "progress-header.css",
+  },
+  {
+    subpath: "page-indicator",
+    directory: "page-indicator",
+    component: "PageIndicator",
+    modules: ["page-indicator.contract"],
+    css: "page-indicator.css",
+  },
+  {
+    subpath: "bottom-navigator",
+    directory: "bottom-navigator",
+    component: "BottomNavigator",
+    modules: ["contract", "logic"],
+    css: "bottom-navigator.css",
   },
   {
     subpath: "step-indicator",
     directory: "step-indicator",
     component: "StepIndicator",
+    modules: ["step-indicator.contract"],
     css: "step-indicator.css",
   },
 ];
 const required = [
   "package/package.json",
   "package/README.md",
+  "package/docs/component-file-conventions.md",
   "package/dist/index.js",
   "package/dist/index.d.ts",
   "package/dist/styles.css",
 ];
 
-for (const { directory, component, css } of components) {
+for (const { directory, component, modules, css } of components) {
   required.push(
     `package/dist/${directory}/index.js`,
     `package/dist/${directory}/index.d.ts`,
@@ -55,6 +85,12 @@ for (const { directory, component, css } of components) {
     `package/dist/${directory}/${component}.d.ts`,
     `package/dist/${directory}/${css}`,
   );
+  for (const module of modules) {
+    required.push(
+      `package/dist/${directory}/${module}.js`,
+      `package/dist/${directory}/${module}.d.ts`,
+    );
+  }
 }
 
 for (const file of required) {
@@ -73,9 +109,7 @@ const forbidden = files.find(
 if (forbidden) throw new Error(`packed artifact leaks development input: ${forbidden}`);
 
 const packedPackageJson = JSON.parse(
-  execFileSync("tar", ["-xOzf", archive, "package/package.json"], {
-    encoding: "utf8",
-  }),
+  execFileSync("tar", ["-xOzf", archive, "package/package.json"], { encoding: "utf8" }),
 );
 for (const { subpath, directory } of components) {
   const componentExport = packedPackageJson.exports?.[`./${subpath}`];
@@ -86,9 +120,8 @@ for (const { subpath, directory } of components) {
     const expected = target.endsWith(".d.ts")
       ? `./dist/${directory}/index.d.ts`
       : `./dist/${directory}/index.js`;
-    if (target !== expected) {
+    if (target !== expected)
       throw new Error(`./${subpath} must resolve ${expected}, got ${target}`);
-    }
     const packedTarget = `package/${target.replace(/^\.\//, "")}`;
     if (!files.includes(packedTarget)) {
       throw new Error(`./${subpath} export target is missing from packed artifact: ${target}`);
@@ -96,13 +129,27 @@ for (const { subpath, directory } of components) {
   }
 }
 
+const bottomNavigatorStylesExport = packedPackageJson.exports?.["./bottom-navigator/styles.css"];
+if (bottomNavigatorStylesExport !== "./dist/bottom-navigator/bottom-navigator.css") {
+  throw new Error("packed package has an invalid ./bottom-navigator/styles.css export");
+}
+if (!files.includes(`package/${bottomNavigatorStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the BottomNavigator CSS export target");
+}
+
+const stepIndicatorStylesExport = packedPackageJson.exports?.["./step-indicator/styles.css"];
+if (stepIndicatorStylesExport !== "./dist/step-indicator/step-indicator.css") {
+  throw new Error("packed package has an invalid ./step-indicator/styles.css export");
+}
+if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the StepIndicator CSS export target");
+}
+
 for (const { directory, component } of components) {
   const runtime = execFileSync(
     "tar",
     ["-xOzf", archive, `package/dist/${directory}/${component}.jsx`],
-    {
-      encoding: "utf8",
-    },
+    { encoding: "utf8" },
   );
   if (!/<(?:view|text|svg)\b/.test(runtime)) {
     throw new Error(`${component} packed runtime does not contain authored ReactLynx JSX`);
@@ -116,6 +163,9 @@ for (const { directory, component } of components) {
   ].find(([pattern]) => runtime.includes(pattern));
   if (loweredJsx) {
     throw new Error(`${component} packed runtime lowered authored JSX via ${loweredJsx[1]}`);
+  }
+  if (runtime.includes("replaceAll(")) {
+    throw new Error(`${component} packed runtime uses unsupported String.prototype.replaceAll`);
   }
 }
 

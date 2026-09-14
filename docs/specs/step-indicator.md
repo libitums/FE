@@ -53,7 +53,7 @@ Storybook manager (serializable currentStep, totalSteps)
 | 단위 | 단일 책임 |
 |---|---|
 | `StepIndicator` | 순수 계약 결과를 한 접근성 상태 root와 숨겨진 시각 row로 렌더한다. |
-| `getStepIndicatorContract` | 입력을 검증하고 단계 번호·상태·접근성 이름을 순수하게 계산한다. |
+| `step-indicator.contract.ts` | 공개 타입을 정의하고 `getStepIndicatorContract`로 입력 검증, 단계 번호·상태·접근성 이름을 순수하게 계산한다. |
 | `normalizeStepIndicatorStoryArgs` | unknown Storybook init data를 유효하고 JSON 직렬화 가능한 두 정수로 기본화한다. |
 | StepIndicator Lynx story entry | 정규화 결과를 공개 package subpath의 컴포넌트에 전달한다. |
 
@@ -62,8 +62,24 @@ args는 검증 앱의 로컬 init data일 뿐 제품 데이터가 아니다.
 
 ## 3. 공개 TypeScript와 package 계약
 
-구현, contract, 순수 logic, CSS, unit/UI test와 barrel은
-`packages/ui-lynx/src/step-indicator/`에 함께 둔다.
+구현, contract, CSS, unit/UI test와 barrel은
+`packages/ui-lynx/src/step-indicator/`에 함께 둔다. 파일 소유권과 이름은
+`packages/ui-lynx/docs/component-file-conventions.md`를 따르며 다음으로 닫는다.
+
+```text
+src/step-indicator/
+├── StepIndicator.tsx
+├── StepIndicator.ui.test.tsx
+├── StepIndicator.unit.test.ts
+├── index.ts
+├── step-indicator.contract.ts
+└── step-indicator.css
+```
+
+`step-indicator.contract.ts` 하나가 props, 상태, 파생 모델 타입과
+`getStepIndicatorContract` 순수 로직을 함께 소유한다. 일반 이름의 `contract.ts`와 별도
+`logic.ts`는 두지 않는다. `StepIndicator.tsx`는 이 contract 모듈을 소비하고, `index.ts`는
+컴포넌트, 공개 타입과 공개 순수 함수를 재수출할 뿐 구현이나 상태 판정을 중복하지 않는다.
 
 ```ts
 export type StepIndicatorStepStatus = "completed" | "current" | "upcoming";
@@ -105,7 +121,9 @@ export function StepIndicator(props: StepIndicatorProps): JSX.Element;
   유지하면서 `./step-indicator/step-indicator.css`를 import한다. 일반 소비자는 aggregate
   stylesheet를 진입점에서 한 번 import한다.
 - package build는 TypeScript를 지운 ESM/declaration/CSS를 만들되 `StepIndicator.jsx`의
-  authored ReactLynx JSX를 보존한다. pack 검사는 runtime/declaration/CSS와 두 subpath target,
+  authored ReactLynx JSX를 보존한다. `step-indicator.contract.ts`는 같은 component
+  디렉터리의 ESM/declaration으로 emit되어 `index.js`/`index.d.ts`의 공개 재수출을
+  뒷받침한다. pack 검사는 runtime/declaration/CSS와 두 subpath target,
   source/test/script 비포함을 검증한다.
 
 ## 4. 렌더·접근성·상태 계약
@@ -162,9 +180,9 @@ export function StepIndicator(props: StepIndicatorProps): JSX.Element;
 
 책임: UI에서 분리된 입력 검증, 순수 상태 파생과 정적 CSS 계약을 검증한다.
 
-- `packages/ui-lynx/src/step-indicator/step-indicator.unit.test.ts`는 2/5단계 경계,
+- `packages/ui-lynx/src/step-indicator/StepIndicator.unit.test.ts`는 2/5단계 경계,
   completed/current/upcoming 순서, 정확히 하나의 current, 접근성 이름, 범위 밖·소수 입력의
-  오류와 검증 순서를 단언한다.
+  오류와 검증 순서를 `step-indicator.contract.ts`의 `getStepIndicatorContract`에 단언한다.
 - 같은 파일의 CSS 검사는 32px 원, 2px/flex-grow 연결선, label.m typography, 원의 세 상태
   token과 왼쪽 단계 상태별 connector token을 단언한다. source CSS 계약이며 실제 computed
   layout이나 native font를 증명했다고 해석하지 않는다.
@@ -201,7 +219,8 @@ producedBy: specification
 
 - `packages/ui-lynx/src/index.integration.test.ts`와 `scripts/check-pack.mjs`는 root와
   `./step-indicator` runtime/type identity, `./step-indicator/styles.css`, aggregate CSS,
-  component-specific dist, packed export target과 authored JSX 보존을 검증한다.
+  component-specific dist, consolidated contract ESM/declaration, packed export target과 authored
+  JSX 보존을 검증한다. 이전 `contract.ts`/`logic.ts` 산출물이나 소스 경로를 기대하지 않는다.
 - `apps/storybook-lynx/src/catalog.integration.test.ts`는 normalizer의 유효 값 JSON 왕복과
   위 fallback, `step-indicator.web.bundle` header/크기, First/Middle/Last story ID,
   Rspeedy entry와 공개 component subpath 소비를 검증한다.
@@ -261,7 +280,7 @@ producedBy: state-data
 ```yaml
 kind: documentation-impact
 status: required
-summary: "다섯 번째 공개 컴포넌트, 두 subpath, 세 story와 bundle, 수동 검증 흐름이 추가되어 package/catalog/ADR 문서가 낡는다."
+summary: "기존 일곱 공개 컴포넌트에 여덟 번째 StepIndicator, 두 subpath, 세 story와 여덟 번째 bundle, 수동 검증 흐름이 추가되어 package/catalog/ADR 문서가 낡는다."
 affected:
   - packages/ui-lynx/README.md
   - apps/storybook-lynx/README.md
@@ -271,10 +290,10 @@ artifact: docs/specs/step-indicator.md#9-문서-영향-판정
 producedBy: specification
 ```
 
-- package README는 다섯 번째 component, 사용 예, 공개 component/CSS subpath, aggregate CSS와
+- package README는 여덟 번째 component, 사용 예, 공개 component/CSS subpath, aggregate CSS와
   접근성·비인터랙티브 계약을 기록한다.
-- Storybook README는 다섯 bundle, First/Middle/Last, Controls와 normalizer fallback을 기록한다.
-- ADR-0025는 현재 다섯 component barrel과 StepIndicator package/catalog 확장을 기록한다.
+- Storybook README는 여덟 bundle, First/Middle/Last, Controls와 normalizer fallback을 기록한다.
+- ADR-0025는 현재 여덟 component barrel과 StepIndicator package/catalog 확장을 기록한다.
 - 수동 문서는 세 story, 2–5 Controls, 왼쪽 상태 connector, 32px/2px geometry, tap 무반응과
   bundle 응답을 기록한다.
 
@@ -283,16 +302,31 @@ producedBy: specification
 ```yaml
 kind: contract-diff
 status: recorded
-summary: "기존 네 ui-lynx 컴포넌트는 유지하고 비인터랙티브 StepIndicator, 순수 단계 파생, 두 공개 subpath와 First/Middle/Last catalog만 추가한다; 제거 0개다."
+summary: "기존 일곱 ui-lynx 컴포넌트는 유지하고 여덟 번째 StepIndicator 공개 계약을 추가하며, 최신 convention에 따라 타입·순수 로직을 step-indicator.contract.ts 하나로 합치고 unit test를 PascalCase로 바꾼다; 기능 동작과 공개 API 제거는 0개다."
 artifact: docs/specs/step-indicator.md#10-계약-차이와-고정-증거
 producedBy: specification
 before:
-  publicComponents: [Button, BackHeader, StatusIndicator, RoundButton]
+  publicComponents:
+    - Button
+    - BackHeader
+    - StatusIndicator
+    - RoundButton
+    - ProgressHeader
+    - PageIndicator
+    - BottomNavigator
   stepIndicatorSubpath: absent
   stepIndicatorStyleSubpath: absent
   stepIndicatorStoryBundle: absent
 after:
-  publicComponents: [Button, BackHeader, StatusIndicator, RoundButton, StepIndicator]
+  publicComponents:
+    - Button
+    - BackHeader
+    - StatusIndicator
+    - RoundButton
+    - ProgressHeader
+    - PageIndicator
+    - BottomNavigator
+    - StepIndicator
   stepIndicatorSubpath: "@libitums/ui-lynx/step-indicator"
   stepIndicatorStyleSubpath: "@libitums/ui-lynx/step-indicator/styles.css"
   stepIndicatorStoryBundle: "step-indicator.web.bundle"
@@ -304,10 +338,28 @@ unchanged:
   - automatic e2e exclusion
 ```
 
+최신 component-file convention에 따른 파일 계약 변화는 다음과 같다. 공개 TypeScript 이름,
+오류, 상태 파생과 렌더 결과는 변하지 않는다.
+
+```yaml
+fileConventionDiff:
+  before:
+    contractTypes: "src/step-indicator/contract.ts"
+    pureLogic: "src/step-indicator/logic.ts"
+    unitTest: "src/step-indicator/step-indicator.unit.test.ts"
+  after:
+    contractTypesAndPureLogic: "src/step-indicator/step-indicator.contract.ts"
+    unitTest: "src/step-indicator/StepIndicator.unit.test.ts"
+  removedNames:
+    - "src/step-indicator/contract.ts"
+    - "src/step-indicator/logic.ts"
+    - "src/step-indicator/step-indicator.unit.test.ts"
+```
+
 ```yaml
 kind: specification.contract
 status: frozen
-summary: "1-based 2–5 input, three derived states, left-state connectors, one accessibility label, no interaction, two public subpaths and three stories are frozen."
+summary: "한 step-indicator.contract.ts 소유권 아래 1-based 2–5 input, three derived states, left-state connectors, one accessibility label, no interaction, two public subpaths and three stories are frozen."
 artifact: docs/specs/step-indicator.md
 producedBy: specification
 ```
@@ -324,8 +376,10 @@ producedBy: specification
 
 계약 고정 뒤 다음 단위는 공개 이름과 상태 의미를 재협의하지 않고 진행할 수 있다.
 
-1. package logic/UI: contract 타입, `getStepIndicatorContract`, component JSX와 전용 CSS.
-2. package 검증: unit/UI, root 및 두 subpath, aggregate CSS, build/pack/JSX 보존 검사.
+1. package contract/UI: `step-indicator.contract.ts`가 공개 타입과
+   `getStepIndicatorContract`를 함께 소유하고, `StepIndicator.tsx`와 전용 CSS가 이를 소비한다.
+2. package 검증: `StepIndicator.unit.test.ts`, `StepIndicator.ui.test.tsx`, root 및 두
+   subpath, aggregate CSS, consolidated contract 산출물과 build/pack/JSX 보존 검사.
 3. Storybook 구현: normalizer, First/Middle/Last, Lynx entry와 Rspeedy bundle entry.
 4. Storybook 통합 검증: JSON fallback, 실제 bundle, story index와 공개 subpath 경계.
 5. documentation: 9절의 네 affected 문서와 수동 Storybook 흐름.
@@ -339,7 +393,7 @@ normalizer는 catalog 경계만 소유한다. 같은 파일에 대한 병렬 쓰
 ```yaml
 kind: changed-files
 status: recorded
-summary: "specification은 StepIndicator 고정 스펙 문서 1개만 추가했고 제품 JSX/CSS/상태 구현은 수정하지 않았다."
+summary: "specification은 StepIndicator 고정 스펙 문서 1개만 최신 component-file convention에 맞게 갱신했고 구현·테스트·충돌 파일은 수정하지 않았다."
 artifact: docs/specs/step-indicator.md
 producedBy: specification
 files:

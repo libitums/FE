@@ -4,4 +4,7 @@
 @import "./button/button.css";
 @import "./back-header/back-header.css";
 @import "./status-indicator/status-indicator.css";
+@import "./progress-header/progress-header.css";
+@import "./page-indicator/page-indicator.css";
+@import "./bottom-navigator/bottom-navigator.css";
 @import "./step-indicator/step-indicator.css";

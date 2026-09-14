@@ -1,8 +1,19 @@
-import type {
-  StepIndicatorContract,
-  StepIndicatorProps,
-  StepIndicatorStepStatus,
-} from "./contract";
+export type StepIndicatorStepStatus = "completed" | "current" | "upcoming";
+
+export type StepIndicatorProps = {
+  readonly currentStep: number;
+  readonly totalSteps: number;
+};
+
+export type StepIndicatorStep = {
+  readonly number: number;
+  readonly status: StepIndicatorStepStatus;
+};
+
+export type StepIndicatorContract = {
+  readonly accessibilityLabel: string;
+  readonly steps: readonly StepIndicatorStep[];
+};
 
 export function getStepIndicatorContract(props: StepIndicatorProps): StepIndicatorContract {
   if (!Number.isInteger(props.totalSteps) || props.totalSteps < 2 || props.totalSteps > 5) {

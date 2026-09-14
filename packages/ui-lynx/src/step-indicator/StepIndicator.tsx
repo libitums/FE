@@ -1,7 +1,6 @@
 import type {} from "@lynx-js/react";
 
-import type { StepIndicatorProps } from "./contract";
-import { getStepIndicatorContract } from "./logic";
+import { getStepIndicatorContract, type StepIndicatorProps } from "./step-indicator.contract";
 
 export function StepIndicator(props: StepIndicatorProps) {
   const contract = getStepIndicatorContract(props);
