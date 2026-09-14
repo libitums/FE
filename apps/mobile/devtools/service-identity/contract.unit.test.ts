@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  validateServiceIdentity,
-  type ServiceIdentitySnapshot,
-} from "./contract";
+import { validateServiceIdentity, type ServiceIdentitySnapshot } from "./contract";
 
 const validSnapshot: ServiceIdentitySnapshot = {
   displayName: "Duru",
@@ -12,10 +9,7 @@ const validSnapshot: ServiceIdentitySnapshot = {
   packageNames: ["@libitums/mobile", "@libitums/design-tokens", "@libitums/icons"],
   cssVariablePrefixes: ["--libitum-"],
   storageKeyPrefixes: ["libitum."],
-  performanceIdentifiers: [
-    "libitum:navigation:",
-    "com.libitum.performance-capture",
-  ],
+  performanceIdentifiers: ["libitum:navigation:", "com.libitum.performance-capture"],
 };
 
 describe("validateServiceIdentity", () => {
@@ -44,6 +38,18 @@ describe("validateServiceIdentity", () => {
     ).toContainEqual({
       code: "application-bundle-id-mismatch",
       actual: "com.duru.host",
+    });
+  });
+
+  it("reports an application bundle-id violation when the canonical value is duplicated", () => {
+    expect(
+      validateServiceIdentity({
+        ...validSnapshot,
+        applicationBundleIdentifiers: ["com.libitum.host", "com.libitum.host"],
+      }),
+    ).toContainEqual({
+      code: "application-bundle-id-mismatch",
+      actual: "com.libitum.host",
     });
   });
 
@@ -86,17 +92,17 @@ describe("validateServiceIdentity", () => {
     ).toContainEqual({ code: "storage-prefix-mismatch", actual: "duru." });
   });
 
-  it.each([
-    "duru:navigation:",
-    "com.duru.performance-capture",
-  ])("reports a performance-identifier violation when %s changes", (actual) => {
-    expect(
-      validateServiceIdentity({
-        ...validSnapshot,
-        performanceIdentifiers: [actual],
-      }),
-    ).toContainEqual({ code: "performance-identifier-mismatch", actual });
-  });
+  it.each(["duru:navigation:", "com.duru.performance-capture"])(
+    "reports a performance-identifier violation when %s changes",
+    (actual) => {
+      expect(
+        validateServiceIdentity({
+          ...validSnapshot,
+          performanceIdentifiers: [actual],
+        }),
+      ).toContainEqual({ code: "performance-identifier-mismatch", actual });
+    },
+  );
 
   it("reports every changed preserved family even when displayName is Duru", () => {
     const violations = validateServiceIdentity({

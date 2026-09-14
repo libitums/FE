@@ -33,29 +33,30 @@ export function validateServiceIdentity(
     expected: readonly string[],
   ): boolean =>
     Array.isArray(value) &&
+    value.length === expected.length &&
     value.every((identifier) => expected.includes(identifier)) &&
     expected.every((identifier) => value.includes(identifier));
 
-  if (snapshot?.displayName !== "Duru") {
+  if (snapshot.displayName !== "Duru") {
     violations.push({
       code: "display-name-mismatch",
-      actual: snapshot?.displayName ?? null,
+      actual: snapshot.displayName ?? null,
     });
   }
-  if (!containsExactly(snapshot?.applicationBundleIdentifiers, ["com.libitum.host"])) {
+  if (!containsExactly(snapshot.applicationBundleIdentifiers, ["com.libitum.host"])) {
     violations.push({
       code: "application-bundle-id-mismatch",
-      actual: first(snapshot?.applicationBundleIdentifiers),
+      actual: first(snapshot.applicationBundleIdentifiers),
     });
   }
-  if (!containsExactly(snapshot?.testBundleIdentifiers, ["com.libitum.host.tests"])) {
+  if (!containsExactly(snapshot.testBundleIdentifiers, ["com.libitum.host.tests"])) {
     violations.push({
       code: "test-bundle-id-mismatch",
-      actual: first(snapshot?.testBundleIdentifiers),
+      actual: first(snapshot.testBundleIdentifiers),
     });
   }
   if (
-    !containsExactly(snapshot?.packageNames, [
+    !containsExactly(snapshot.packageNames, [
       "@libitums/mobile",
       "@libitums/design-tokens",
       "@libitums/icons",
@@ -63,30 +64,30 @@ export function validateServiceIdentity(
   ) {
     violations.push({
       code: "package-scope-mismatch",
-      actual: first(snapshot?.packageNames),
+      actual: first(snapshot.packageNames),
     });
   }
-  if (!containsExactly(snapshot?.cssVariablePrefixes, ["--libitum-"])) {
+  if (!containsExactly(snapshot.cssVariablePrefixes, ["--libitum-"])) {
     violations.push({
       code: "css-prefix-mismatch",
-      actual: first(snapshot?.cssVariablePrefixes),
+      actual: first(snapshot.cssVariablePrefixes),
     });
   }
-  if (!containsExactly(snapshot?.storageKeyPrefixes, ["libitum."])) {
+  if (!containsExactly(snapshot.storageKeyPrefixes, ["libitum."])) {
     violations.push({
       code: "storage-prefix-mismatch",
-      actual: first(snapshot?.storageKeyPrefixes),
+      actual: first(snapshot.storageKeyPrefixes),
     });
   }
   if (
-    !containsExactly(snapshot?.performanceIdentifiers, [
+    !containsExactly(snapshot.performanceIdentifiers, [
       "libitum:navigation:",
       "com.libitum.performance-capture",
     ])
   ) {
     violations.push({
       code: "performance-identifier-mismatch",
-      actual: first(snapshot?.performanceIdentifiers),
+      actual: first(snapshot.performanceIdentifiers),
     });
   }
 
