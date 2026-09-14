@@ -58,6 +58,18 @@ describe("getRoundButtonContract", () => {
       "RoundButton accessibilityLabel must not be empty",
     );
   });
+
+  test.each([undefined, null, 1] as const)(
+    "JS 소비자의 잘못된 accessibilityLabel=%j을 계약 오류로 거부한다",
+    (accessibilityLabel) => {
+      expect(() =>
+        getRoundButtonContract({
+          accessibilityLabel,
+          icon: "<svg />",
+        } as unknown as Parameters<typeof getRoundButtonContract>[0]),
+      ).toThrow("RoundButton accessibilityLabel must not be empty");
+    },
+  );
 });
 
 describe("getRoundButtonForegroundColor", () => {

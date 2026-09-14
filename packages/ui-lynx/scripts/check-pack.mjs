@@ -53,6 +53,13 @@ const components = [
     modules: ["page-indicator.contract"],
     css: "page-indicator.css",
   },
+  {
+    subpath: "bottom-navigator",
+    directory: "bottom-navigator",
+    component: "BottomNavigator",
+    modules: ["contract", "logic"],
+    css: "bottom-navigator.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -115,6 +122,14 @@ for (const { subpath, directory } of components) {
   }
 }
 
+const bottomNavigatorStylesExport = packedPackageJson.exports?.["./bottom-navigator/styles.css"];
+if (bottomNavigatorStylesExport !== "./dist/bottom-navigator/bottom-navigator.css") {
+  throw new Error("packed package has an invalid ./bottom-navigator/styles.css export");
+}
+if (!files.includes(`package/${bottomNavigatorStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the BottomNavigator CSS export target");
+}
+
 for (const { directory, component } of components) {
   const runtime = execFileSync(
     "tar",
@@ -133,6 +148,9 @@ for (const { directory, component } of components) {
   ].find(([pattern]) => runtime.includes(pattern));
   if (loweredJsx) {
     throw new Error(`${component} packed runtime lowered authored JSX via ${loweredJsx[1]}`);
+  }
+  if (runtime.includes("replaceAll(")) {
+    throw new Error(`${component} packed runtime uses unsupported String.prototype.replaceAll`);
   }
 }
 

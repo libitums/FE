@@ -197,6 +197,40 @@ Storybook integration test는 이전 실행의 ignored `dist`에 의존하지 �
 - D6의 build·integration 검사는 `round-button.web.bundle`을 더한 네 bundle, catalog의 네
   Round Button story ID, 공개 subpath 소비와 Action bridge 경계를 검증한다.
 
+### 2026-09-11 확장 — BottomNavigator 공개 표면
+
+이 절은 기존 package/catalog 경계를 유지하면서 다섯 번째 공개 컴포넌트를 추가한 delta다.
+
+- 시각·상태 원본은 `libitums/design-system/components/bottom-navigator.md`다. 구현은 icon-only
+  3~5 item, enabled/disabled, active/inactive/pressed, dot/count badge 계약을 닫힌 union으로
+  제공한다. 기존 `apps/mobile/src/components/BottomNavigator.tsx`는 제품 화면 소유 구현이므로
+  교체하거나 삭제하지 않는다. 확인한 정본은 2026-09-11의 `main` revision
+  `2144145cd7ffb5777cf2b74e2fec5474eb0adc14`다.
+- bar 배경은 제품 요청에 따라 정본의 `background.elevated` 대신 `white` token을 사용하는 명시적
+  FE override다. 나머지 radius, shadow, spacing과 상태 token 계약은 정본을 유지한다.
+- 구현·contract·logic·CSS·unit/UI test는 `src/bottom-navigator/`가 함께 소유한다. root barrel과
+  aggregate CSS는 호환성을 위해 재수출하며, 선택 소비자는
+  `@libitums/ui-lynx/bottom-navigator`와 `@libitums/ui-lynx/bottom-navigator/styles.css`를 쓴다.
+  pack gate는 독립 runtime, declaration, CSS와 authored JSX 보존을 확인한다.
+- 원본의 40px visual cell과 최소 48px focus/tap 영역은 바깥 item 48px 안에 40px surface를
+  두는 방식으로 함께 충족한다. 선택 surface는 60 × 40px pill이고 해당 item focus 영역도
+  60px까지 넓어진다. bar의 보이는 세로 inset은 위·아래 각 20px로 해석해 safe area 전 높이는
+  `20 + 48 + 20 = 88px`다.
+- 5개 item은 각 최소 48px와 좌우 24px padding을 합친 288px에 여유를 둔 300px viewport를
+  최소 지원 폭으로 정한다. label은 시각적으로 렌더링하지 않아 긴 접근성 이름이 layout을
+  바꾸지 않는다. 300px 미만, native safe-area 조합은 현재 지원 범위 밖이다.
+- 접근성 focus node는 각 item 하나이며 icon과 badge는 장식 자손이다. 선택 상태와 badge 의미는
+  item의 접근성 이름에 합친다. disabled item은 discriminated union의 비어 있지 않은
+  `disabledReason`을 요구하고 같은 접근성 이름에 이유를 합친다. disabled item은 SDK가 지원하는
+  `disabled` trait를 사용하고 tap handler와 focus 순서에서 제외한다. enabled item은
+  PC focusable이며 disabled를 건너뛰는 좌우 연결과 첫·마지막 self-boundary,
+  `:focus-visible` double ring을 갖는다. 정적/UI test는 이 속성 계약을
+  닫지만 실제 native D-pad 이동과 VoiceOver/TalkBack 낭독은 제품 route 채택 릴리스의 실기기
+  게이트로 남긴다.
+- Storybook은 Default, Long Accessibility Label, All Items(5개·320px), Disabled를 제공하고
+  public subpath만 소비한다. enabled tap의 `onSelect(id)` bridge와 disabled 무반응을 integration
+  test로 검증한다.
+
 ## 버린 대안
 
 - **`apps/ui-catalog` 자체 앱을 함께 둔다** — 같은 공개 API를 보여주는 표면이 둘이 되고,

@@ -13,6 +13,7 @@ export default defineConfig({
       "round-button": "./src/lynx/round-button.tsx",
       "progress-header": "./src/lynx/progress-header.tsx",
       "page-indicator": "./src/lynx/page-indicator.tsx",
+      "bottom-navigator": "./src/lynx/bottom-navigator.tsx",
     },
   },
   output: {

@@ -37,3 +37,20 @@ export {
   getPageIndicatorModel,
 } from "./page-indicator";
 export type { PageIndicatorItem, PageIndicatorModel, PageIndicatorProps } from "./page-indicator";
+
+export {
+  BottomNavigator,
+  getBottomNavigatorContract,
+  getBottomNavigatorContracts,
+} from "./bottom-navigator";
+export type {
+  BottomNavigatorBadge,
+  BottomNavigatorContract,
+  BottomNavigatorCountBadge,
+  BottomNavigatorDotBadge,
+  BottomNavigatorDisabledItem,
+  BottomNavigatorEnabledItem,
+  BottomNavigatorItem,
+  BottomNavigatorItemContract,
+  BottomNavigatorProps,
+} from "./bottom-navigator";

@@ -2,10 +2,12 @@
 
 libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포넌트 패키지다. 현재 공개
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
-`PageIndicator` 여섯 가지다.
+`PageIndicator`, `BottomNavigator` 일곱 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
+Bottom Navigator는 2026-09-11의 `main` revision
+`2144145cd7ffb5777cf2b74e2fec5474eb0adc14`를 기준으로 추가했다.
 
 ```tsx
 import { Button } from "@libitums/ui-lynx/button";
@@ -23,6 +25,25 @@ import "@libitums/ui-lynx/styles.css";
   onExit={handleExit}
 />;
 <PageIndicator pageCount={4} currentPage={2} />;
+```
+
+`BottomNavigator`는 3~5개의 icon-only 목적지를 표시하며 enabled item 하나를 `selectedId`로
+가리킨다. disabled 목적지는 비어 있지 않은 `disabledReason`을 함께 제공해야 한다.
+
+```tsx
+import home from "@libitums/icons/lynx/house";
+import map from "@libitums/icons/lynx/map";
+import { BottomNavigator } from "@libitums/ui-lynx/bottom-navigator";
+import "@libitums/ui-lynx/bottom-navigator/styles.css";
+
+<BottomNavigator
+  items={[
+    { id: "home", accessibilityLabel: "홈", icon: home },
+    { id: "journey", accessibilityLabel: "여정", icon: map },
+  ]}
+  selectedId="home"
+  bindselect={handleSelect}
+/>;
 ```
 
 `RoundButton`은 root와 전용 subpath에서 같은 구현과 타입을 내보낸다. 아이콘 전용 control이므로
@@ -52,6 +73,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/round-button`
 - `@libitums/ui-lynx/progress-header`
 - `@libitums/ui-lynx/page-indicator`
+- `@libitums/ui-lynx/bottom-navigator`
+- `@libitums/ui-lynx/bottom-navigator/styles.css`
 - `@libitums/ui-lynx/styles.css`
 - `@libitums/ui-lynx/progress-header.css`
 - `@libitums/ui-lynx/page-indicator.css`
@@ -94,6 +117,11 @@ RoundButton의 focusable hit area와 접근성 node는 하나다. S/M/L은 48px,
 icon과 Spinner는 장식 자손으로 숨긴다. Loading 접근성 이름에는 `, 로딩 중`이 붙는다. Lynx Web
 Storybook은 시각·tap만 확인하므로 native focus ring과 VoiceOver/TalkBack은 제품 route 채택 때
 실기기로 검증해야 한다.
+
+BottomNavigator item은 최소 48 × 48px focus/tap 영역을 가지며 선택 pill은 60 × 40px이고 bar
+배경은 white token을 사용한다. label은 화면에 그리지 않고 선택·badge·disabled reason은
+접근성 이름에 합친다. PC에서는 disabled item을 건너뛰어 좌우 이동하며 양 끝 focus를 유지한다.
+native 키보드/D-pad 이동과 VoiceOver/TalkBack 낭독은 제품 route 채택 시 실기기로 검증한다.
 
 디자인 시스템에는 M icon 18px과 Spinner 12px에 대응하는 size token이 아직 없다. 두 값은
 Round Button 원본의 고정 규격을 직접 사용한 비차단 gap이며, FE token이나 `spacing` token을

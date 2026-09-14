@@ -2,6 +2,10 @@ import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { describe, expect, test } from "vitest";
+import {
+  dispatchBottomNavigatorStorySelect,
+  normalizeBottomNavigatorStoryArgs,
+} from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
@@ -24,6 +28,62 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("bottom-navigator init data is JSON-only and normalizes every preset", () => {
+    const data = normalizeBottomNavigatorStoryArgs({
+      preset: "all-items",
+      selectedId: "roleplay",
+      disabledLast: true,
+      viewportWidth: 320,
+      onSelect: () => undefined,
+      rawSvg: "<svg>",
+    });
+    expect(JSON.parse(JSON.stringify(data))).toEqual({
+      preset: "all-items",
+      selectedId: "roleplay",
+      disabledLast: true,
+      viewportWidth: 320,
+      items: [
+        { id: "home", accessibilityLabel: "홈", icon: "house", availability: "enabled" },
+        {
+          id: "journey",
+          accessibilityLabel: "여정",
+          icon: "map",
+          availability: "enabled",
+          badge: { kind: "dot", accessibilityLabel: "새 소식 있음" },
+        },
+        {
+          id: "roleplay",
+          accessibilityLabel: "롤플레이",
+          icon: "user-group",
+          availability: "enabled",
+          badge: { kind: "count", count: 108 },
+        },
+        { id: "settings", accessibilityLabel: "설정", icon: "settings", availability: "enabled" },
+        {
+          id: "notifications",
+          accessibilityLabel: "알림",
+          icon: "notification",
+          availability: "disabled",
+          disabledReason: "로그인 후 사용 가능",
+        },
+      ],
+    });
+    expect(data).not.toHaveProperty("onSelect");
+    expect(JSON.stringify(data)).not.toContain("<svg");
+  });
+
+  test("bottom-navigator bridge dispatches enabled selection once and blocks disabled", () => {
+    const calls: unknown[] = [];
+    const data = normalizeBottomNavigatorStoryArgs({ preset: "all-items", disabledLast: true });
+    expect(dispatchBottomNavigatorStorySelect(data, "journey", (value) => calls.push(value))).toBe(
+      true,
+    );
+    expect(
+      dispatchBottomNavigatorStorySelect(data, "notifications", (value) => calls.push(value)),
+    ).toBe(false);
+    expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onSelect", args: ["journey"] }]);
+  });
+
   test("round-button init data is JSON-roundtrip cloneable and contains no callback or raw SVG", () => {
     const data = normalizeRoundButtonStoryArgs({
       accessibilityLabel: "저장",
@@ -55,6 +115,7 @@ describe("Storybook Lynx build outputs", () => {
     "round-button",
     "progress-header",
     "page-indicator",
+    "bottom-navigator",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -74,6 +135,10 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-round-button--disabled");
     expect(index).toContain("components-progress-header--default");
     expect(index).toContain("components-page-indicator--default");
+    expect(index).toContain("components-bottom-navigator--default");
+    expect(index).toContain("components-bottom-navigator--long-accessibility-label");
+    expect(index).toContain("components-bottom-navigator--all-items");
+    expect(index).toContain("components-bottom-navigator--disabled");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -98,6 +163,9 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/round-button": ["../../packages/ui-lynx/src/round-button/index.ts"],
       "@libitums/ui-lynx/progress-header": ["../../packages/ui-lynx/src/progress-header/index.ts"],
       "@libitums/ui-lynx/page-indicator": ["../../packages/ui-lynx/src/page-indicator/index.ts"],
+      "@libitums/ui-lynx/bottom-navigator": [
+        "../../packages/ui-lynx/src/bottom-navigator/index.ts",
+      ],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -110,6 +178,7 @@ describe("Storybook Lynx build outputs", () => {
     ["round-button", "@libitums/ui-lynx/round-button"],
     ["progress-header", "@libitums/ui-lynx/progress-header"],
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
+    ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -119,6 +188,14 @@ describe("Storybook Lynx build outputs", () => {
     for (const storyId of ["default", "first", "last", "single", "empty"]) {
       expect(index).toContain(`components-page-indicator--${storyId}`);
     }
+  });
+
+  test("bottom-navigator runtime은 enabled tap 뒤 controlled selection을 갱신한다", async () => {
+    const runtime = await readOutput("src/lynx/bottom-navigator.tsx");
+
+    expect(runtime).toContain("useState(data.selectedId)");
+    expect(runtime).toContain("setSelectedId(id)");
+    expect(runtime).toContain("selectedId={selectedId}");
   });
 
   test("PageIndicator story args와 controls는 직렬화 가능한 숫자 계약을 유지한다", async () => {
