@@ -14,6 +14,8 @@ import {
   type CardProps,
 } from "./card.contract";
 
+const arrowContent = arrowRight.replace(/currentColor/g, color.fg["neutral-subtle"]);
+
 type CardContextValue = {
   readonly interactive: boolean;
 };
@@ -106,8 +108,6 @@ function CardHeader({ title, overline, trailing }: CardHeaderProps) {
     throw new Error("Interactive Card must not contain a trailing action or indicator");
   }
 
-  const arrowContent = arrowRight.replace(/currentColor/g, color.fg["neutral-subtle"]);
-
   return (
     <view className="ui-lynx-card-header" data-testid="ui-lynx-card-header">
       <view className="ui-lynx-card-title-block">
@@ -148,13 +148,14 @@ function CardBodyText({ children, languageTag }: CardBodyTextProps) {
   if (typeof children !== "string" || children.trim().length === 0) {
     throw new Error("Card BodyText must not be empty");
   }
-  const normalizedLanguageTag = languageTag?.trim();
+  const normalizedLanguageTag = typeof languageTag === "string" ? languageTag.trim() : undefined;
+  const languageAttributes = normalizedLanguageTag ? { "data-lang": normalizedLanguageTag } : {};
 
   return (
     <text
       className="ui-lynx-card-body-text"
       data-testid="ui-lynx-card-body-text"
-      data-lang={normalizedLanguageTag || undefined}
+      {...languageAttributes}
     >
       {children}
     </text>

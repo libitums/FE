@@ -99,7 +99,10 @@ export function getCardContract(props: CardProps): CardContract {
   }
 
   const accessibilityLabel = requireVisibleText(props.accessibilityLabel, "accessibilityLabel");
-  const accessibilityDescription = props.accessibilityDescription?.trim();
+  const accessibilityDescription =
+    typeof props.accessibilityDescription === "string"
+      ? props.accessibilityDescription.trim()
+      : undefined;
   if (props.accessibilityRole !== "link" && props.accessibilityRole !== "button") {
     throw new Error("Card accessibilityRole must be link or button");
   }

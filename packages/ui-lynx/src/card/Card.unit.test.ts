@@ -72,6 +72,19 @@ describe("getCardContract", () => {
     ).not.toHaveProperty("accessibilityDescription");
   });
 
+  test("문자열이 아닌 설명은 접근성 값에서 안전하게 제거한다", () => {
+    expect(
+      getCardContract({
+        children: null,
+        interaction: "interactive",
+        accessibilityLabel: "연습 시작",
+        accessibilityDescription: 5,
+        accessibilityRole: "button",
+        bindtap: () => undefined,
+      } as unknown as Parameters<typeof getCardContract>[0]),
+    ).not.toHaveProperty("accessibilityDescription");
+  });
+
   test.each([
     [{ accessibilityRole: "menu" }, "Card accessibilityRole must be link or button"],
     [{ bindtap: undefined }, "Interactive Card bindtap must be a function"],

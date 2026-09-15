@@ -130,4 +130,18 @@ describe("Card UI", () => {
       "Card.Body must be rendered inside Card",
     );
   });
+
+  test("문자열이 아닌 languageTag는 안전하게 무시한다", () => {
+    render(
+      <Card>
+        <Card.Content>
+          <Card.Body>
+            <Card.BodyText languageTag={5 as unknown as string}>본문</Card.BodyText>
+          </Card.Body>
+        </Card.Content>
+      </Card>,
+    );
+
+    expect(screen.getByTestId("ui-lynx-card-body-text")).not.toHaveAttribute("data-lang");
+  });
 });
