@@ -6,6 +6,7 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  DialogMotion,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -64,4 +65,13 @@ export type ProgressHeaderStoryArgs = {
 export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
+};
+
+export type DialogStoryArgs = {
+  title: string;
+  description: string;
+  actionCount: 1 | 2;
+  disabledLast: boolean;
+  motion: DialogMotion;
+  onAction: (id: string) => void;
 };

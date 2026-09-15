@@ -7,6 +7,7 @@ import {
   normalizeBottomNavigatorStoryArgs,
 } from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
+import { dispatchDialogStoryAction, normalizeDialogStoryArgs } from "./dialog-story";
 import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
@@ -29,6 +30,35 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("dialog init data는 직렬화 가능한 action 계약으로 정규화된다", () => {
+    const data = normalizeDialogStoryArgs({
+      title: "학습을 그만둘까요?",
+      description: "진행 내용이 사라져요",
+      actionCount: 2,
+      disabledLast: true,
+      motion: "reduced",
+      onAction: () => undefined,
+    });
+    expect(JSON.parse(JSON.stringify(data))).toEqual({
+      title: "학습을 그만둘까요?",
+      description: "진행 내용이 사라져요",
+      actions: [
+        { id: "continue", label: "계속 학습하기" },
+        { id: "quit", label: "그만두기", disabled: true },
+      ],
+      motion: "reduced",
+    });
+    expect(data).not.toHaveProperty("onAction");
+  });
+
+  test("dialog bridge는 활성 action만 전달한다", () => {
+    const calls: unknown[] = [];
+    const data = normalizeDialogStoryArgs({ actionCount: 2, disabledLast: true });
+    expect(dispatchDialogStoryAction(data, "continue", (value) => calls.push(value))).toBe(true);
+    expect(dispatchDialogStoryAction(data, "quit", (value) => calls.push(value))).toBe(false);
+    expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onAction", args: ["continue"] }]);
+  });
+
   test("step-indicator init data는 유효한 정수 계약으로 정규화되고 JSON 직렬화된다", () => {
     expect(
       JSON.parse(
@@ -160,6 +190,7 @@ describe("Storybook Lynx build outputs", () => {
     "page-indicator",
     "bottom-navigator",
     "step-indicator",
+    "dialog",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -186,6 +217,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-step-indicator--first");
     expect(index).toContain("components-step-indicator--middle");
     expect(index).toContain("components-step-indicator--last");
+    expect(index).toContain("components-dialog--default");
+    expect(index).toContain("components-dialog--single-action");
+    expect(index).toContain("components-dialog--without-description");
+    expect(index).toContain("components-dialog--disabled-secondary");
+    expect(index).toContain("components-dialog--reduced-motion");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -214,6 +250,7 @@ describe("Storybook Lynx build outputs", () => {
         "../../packages/ui-lynx/src/bottom-navigator/index.ts",
       ],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/dialog": ["../../packages/ui-lynx/src/dialog/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -228,6 +265,7 @@ describe("Storybook Lynx build outputs", () => {
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
+    ["dialog", "@libitums/ui-lynx/dialog"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -268,6 +306,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?dialog["']?\s*:\s*["']\.\/src\/lynx\/dialog\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -283,6 +322,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./dialog"]).toEqual({
+      types: "./dist/dialog/index.d.ts",
+      import: "./dist/dialog/index.js",
+      default: "./dist/dialog/index.js",
     });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
@@ -321,6 +365,7 @@ describe("Storybook Lynx build outputs", () => {
       "round-button",
       "status-indicator",
       "step-indicator",
+      "dialog",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
     }
