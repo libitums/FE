@@ -8,10 +8,12 @@ Rspeedy가 만든 Lynx Web bundle을 `<lynx-view>`에서 실행한다. 기반 �
 컴포넌트의 시각·상태 계약은 `libitums/design-system`의 `components/button.md`,
 `components/header/back-header.md`, `components/header/progress-header.md`,
 `components/indicator/status-indicator.md`, `components/indicator/page-indicator.md`를
-비롯해 `components/round-button.md`, `components/bottom-navigator.md`를 기준으로 하며, 최초 보정 revision은
+비롯해 `components/indicator/answer-label.md`, `components/round-button.md`, `components/bottom-navigator.md`를 기준으로 하며, 최초 보정 revision은
 `87c1b0d2b745429be9b586cef772deb6c8707ab6`이다.
 Step Indicator는 `components/indicator/step-indicator.md` revision
 `3f7ed6d17df769e37215adb40f7abfc2e1174fd1`을 기준으로 한다.
+Answer Label은 `components/indicator/answer-label.md` revision
+`261f525f7b4eb7c09994ef31ee40455e3e881d28`을 기준으로 한다.
 Bottom Navigator는 2026-09-11의 `main` revision
 `2144145cd7ffb5777cf2b74e2fec5474eb0adc14`를 기준으로 추가했다.
 
@@ -22,7 +24,7 @@ pnpm storybook:lynx
 
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
-Navigator·Step Indicator의 실제 `.web.bundle` 여덟 개를 만들고, Rspeedy watch와 Storybook dev
+Navigator·Step Indicator·Answer Label의 실제 `.web.bundle` 아홉 개를 만들고, Rspeedy watch와 Storybook dev
 server를 함께 유지한다.
 
 Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
@@ -42,6 +44,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Page Indicator — Default, First, Last, Single, Empty
 - Components/Bottom Navigator — Default, Long Accessibility Label, All Items, Disabled
 - Components/Step Indicator — First, Middle, Last
+- Components/Answer Label — Pending, Correct, Incorrect, Subtle, Large, Long Label
 
 Controls 변경은 `<lynx-view>.updateData()`를 통해 ReactLynx `useInitData()`에 전달된다.
 Button·Round Button tap과 Back Header back/info tap은

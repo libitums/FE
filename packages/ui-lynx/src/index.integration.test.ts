@@ -14,10 +14,12 @@ import * as progressHeader from "./progress-header/index";
 import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
 import * as stepIndicator from "./step-indicator/index";
+import * as answerLabel from "./answer-label/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
 const componentArtifacts = {
+  "answer-label": { implementation: "AnswerLabel.jsx", css: "answer-label.css" },
   button: { implementation: "Button.jsx", css: "button.css" },
   "back-header": { implementation: "BackHeader.jsx", css: "back-header.css" },
   "status-indicator": { implementation: "StatusIndicator.jsx", css: "status-indicator.css" },
@@ -29,6 +31,7 @@ const componentArtifacts = {
 } as const;
 
 const componentEntries = {
+  "answer-label": "AnswerLabel",
   button: "Button",
   "back-header": "BackHeader",
   "status-indicator": "StatusIndicator",
@@ -50,6 +53,7 @@ async function readPackageJson() {
 
 describe("ui-lynx package boundaries", () => {
   test("root import preserves value identity and type-compatible subpath values", () => {
+    expect(root.AnswerLabel).toBe(answerLabel.AnswerLabel);
     expect(root.Button).toBe(button.Button);
     expect(root.BackHeader).toBe(backHeader.BackHeader);
     expect(root.StatusIndicator).toBe(statusIndicator.StatusIndicator);
@@ -65,6 +69,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.PAGE_INDICATOR_MAX_PAGE_COUNT).toBe(pageIndicator.PAGE_INDICATOR_MAX_PAGE_COUNT);
     expect(root.getBottomNavigatorContract).toBe(bottomNavigator.getBottomNavigatorContract);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+    expect(root.getAnswerLabelContract).toBe(answerLabel.getAnswerLabelContract);
   });
 
   test("root stylesheet aggregates every component without removing existing styles", async () => {
@@ -93,6 +98,9 @@ describe("ui-lynx package boundaries", () => {
     }
     expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
       "./dist/step-indicator/step-indicator.css",
+    );
+    expect(packageJson.exports["./answer-label/styles.css"]).toBe(
+      "./dist/answer-label/answer-label.css",
     );
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
@@ -128,6 +136,10 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/index.js",
       "package/dist/index.d.ts",
       "package/dist/styles.css",
+      "package/dist/answer-label/index.js",
+      `package/dist/answer-label/${componentArtifacts["answer-label"].implementation}`,
+      "package/dist/answer-label/index.d.ts",
+      `package/dist/answer-label/${componentArtifacts["answer-label"].css}`,
       "package/dist/button/index.js",
       `package/dist/button/${componentArtifacts.button.implementation}`,
       "package/dist/button/index.d.ts",

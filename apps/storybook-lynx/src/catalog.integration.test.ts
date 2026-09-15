@@ -160,6 +160,7 @@ describe("Storybook Lynx build outputs", () => {
     "page-indicator",
     "bottom-navigator",
     "step-indicator",
+    "answer-label",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -186,6 +187,12 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-step-indicator--first");
     expect(index).toContain("components-step-indicator--middle");
     expect(index).toContain("components-step-indicator--last");
+    expect(index).toContain("components-answer-label--pending");
+    expect(index).toContain("components-answer-label--correct");
+    expect(index).toContain("components-answer-label--incorrect");
+    expect(index).toContain("components-answer-label--subtle");
+    expect(index).toContain("components-answer-label--large");
+    expect(index).toContain("components-answer-label--long-label");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -214,6 +221,7 @@ describe("Storybook Lynx build outputs", () => {
         "../../packages/ui-lynx/src/bottom-navigator/index.ts",
       ],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/answer-label": ["../../packages/ui-lynx/src/answer-label/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -228,6 +236,7 @@ describe("Storybook Lynx build outputs", () => {
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
+    ["answer-label", "@libitums/ui-lynx/answer-label"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -268,6 +277,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?answer-label["']?\s*:\s*["']\.\/src\/lynx\/answer-label\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -283,6 +293,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./answer-label"]).toEqual({
+      types: "./dist/answer-label/index.d.ts",
+      import: "./dist/answer-label/index.js",
+      default: "./dist/answer-label/index.js",
     });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
@@ -300,6 +315,15 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/answer-label/AnswerLabel.jsx")).toBe(
+      true,
+    );
+    expect(
+      await outputExists("../../packages/ui-lynx/dist/answer-label/answer-label.contract.js"),
+    ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/answer-label/answer-label.css")).toBe(
+      true,
+    );
 
     const packVerifier = await readFile(
       path.resolve(appRoot, "../../packages/ui-lynx/scripts/check-pack.mjs"),
@@ -313,6 +337,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('directory: "progress-header"');
     expect(packVerifier).toContain('component: "ProgressHeader"');
     for (const directory of [
+      "answer-label",
       "back-header",
       "bottom-navigator",
       "button",
@@ -336,6 +361,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('component: "StepIndicator"');
     expect(packVerifier).toContain('modules: ["step-indicator.contract"]');
     expect(packVerifier).toContain('css: "step-indicator.css"');
+    expect(packVerifier).toContain('subpath: "answer-label"');
+    expect(packVerifier).toContain('directory: "answer-label"');
+    expect(packVerifier).toContain('component: "AnswerLabel"');
+    expect(packVerifier).toContain('modules: ["answer-label.contract"]');
+    expect(packVerifier).toContain('css: "answer-label.css"');
     expect(packVerifier).toContain("package/dist/${directory}/index.js");
     expect(packVerifier).toContain("package/dist/${directory}/${component}.jsx");
     expect(packVerifier).toContain("package/dist/${directory}/${module}.js");

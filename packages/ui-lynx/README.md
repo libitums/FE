@@ -2,7 +2,7 @@
 
 libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포넌트 패키지다. 현재 공개
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
-`PageIndicator`, `BottomNavigator`, `StepIndicator` 여덟 가지다.
+`PageIndicator`, `BottomNavigator`, `StepIndicator`, `AnswerLabel` 아홉 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
@@ -26,6 +26,20 @@ import "@libitums/ui-lynx/styles.css";
 />;
 <PageIndicator pageCount={4} currentPage={2} />;
 ```
+
+`AnswerLabel`은 한 문제의 답안 판정을 나타내는 비조작 표시 요소다. Pending에는 과제별
+`label`이 필요하고 Correct·Incorrect는 각각 `정답이에요`, `오답이에요`를 기본으로 쓴다.
+`result`, `emphasis`, `size`는 독립적으로 조합하며 판정 tone과 icon은 component가 결정한다.
+
+```tsx
+import { AnswerLabel } from "@libitums/ui-lynx/answer-label";
+
+<AnswerLabel result="pending" label="잘 들어 보세요" />;
+<AnswerLabel result="correct" emphasis="subtle" size="s" contextLabel="3번 문제" />;
+```
+
+Correct·Incorrect로 바뀔 때의 정중한 announcement는 제품 host가 결과 전환과 함께 한 번
+호출한다. `contextLabel`은 여러 문제가 한 화면에 있을 때 판정의 접근성 문맥을 제공한다.
 
 `BottomNavigator`는 3~5개의 icon-only 목적지를 표시하며 enabled item 하나를 `selectedId`로
 가리킨다. disabled 목적지는 비어 있지 않은 `disabledReason`을 함께 제공해야 한다.
@@ -90,6 +104,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/bottom-navigator/styles.css`
 - `@libitums/ui-lynx/step-indicator`
 - `@libitums/ui-lynx/step-indicator/styles.css`
+- `@libitums/ui-lynx/answer-label`
+- `@libitums/ui-lynx/answer-label/styles.css`
 - `@libitums/ui-lynx/styles.css`
 - `@libitums/ui-lynx/progress-header.css`
 - `@libitums/ui-lynx/page-indicator.css`
@@ -109,7 +125,7 @@ label을 같은 canonical count로 clamp한다.
 
 새 컴포넌트와 기존 컴포넌트 정리는
 [`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
-규칙을 따른다. 공개 컴포넌트 여덟 개 모두 `<component>.contract.ts`에 공개
+규칙을 따른다. 공개 컴포넌트 아홉 개 모두 `<component>.contract.ts`에 공개
 타입과 순수 계약 로직을 함께 두고 PascalCase component test 이름을 쓴다.
 
 일반 소비자는 aggregate `@libitums/ui-lynx/styles.css`를 Lynx 진입점에서 한 번 import한다.
@@ -117,7 +133,13 @@ label을 같은 canonical count로 clamp한다.
 ReactLynx를 번들하지 않고 `>=0.123.0 <0.126.0` peer로 요구한다.
 `pnpm --filter @libitums/ui-lynx pack:check`는 실제 tarball에 컴파일된 JSX·선언·CSS,
 canonical contract, README와 docs만 들어가고 generic contract/logic 산출물이 없는지
-검증한다. package integration test도 이 부재 계약을 여덟 subpath 전체에서 확인한다.
+검증한다. package integration test도 이 부재 계약을 아홉 subpath 전체에서 확인한다.
+
+AnswerLabel은 `components/indicator/answer-label.md`의 Result·Emphasis·Size 독립 조합을
+따른다. Solid는 고대비 strong surface, Subtle은 semantic feedback surface를 사용하고 S/M/L은
+각각 32/40/48px 최소 높이와 16/20/24px icon을 사용한다. Pending은 icon 공간 자체를
+렌더하지 않으며 Correct·Incorrect icon은 장식 자손으로 숨긴다. 기준 design-system revision은
+`261f525f7b4eb7c09994ef31ee40455e3e881d28`이다.
 
 StepIndicator는 최신 파일 규칙에 따라 공개 타입과 `getStepIndicatorContract` 순수 로직을
 `step-indicator.contract.ts` 하나에서 소유하고 단위 테스트는

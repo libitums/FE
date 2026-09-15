@@ -6,6 +6,9 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  AnswerLabelEmphasis,
+  AnswerLabelResult,
+  AnswerLabelSize,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -64,4 +67,12 @@ export type ProgressHeaderStoryArgs = {
 export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
+};
+
+export type AnswerLabelStoryArgs = {
+  result: AnswerLabelResult;
+  emphasis: AnswerLabelEmphasis;
+  size: AnswerLabelSize;
+  label: string;
+  contextLabel: string;
 };
