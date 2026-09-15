@@ -35,14 +35,14 @@ describe("Dialog", () => {
       "지금까지의 진행 내용이 사라져요",
     );
     const buttons = screen.getAllByTestId("ui-lynx-button");
-    expect(buttons[0]).toHaveAttribute("data-variant", "neutral");
+    expect(buttons[0]).toHaveAttribute("data-variant", "brand");
     expect(buttons[1]).toHaveAttribute("data-variant", "subtle");
     expect(buttons[0]).toHaveAttribute("data-size", "m");
     expect(buttons[1]).toHaveAttribute("data-width", "fill");
     expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-cancelactionid", "quit");
   });
 
-  test("설명은 선택 사항이고 단일 action은 neutral이다", () => {
+  test("설명은 선택 사항이고 단일 action은 brand다", () => {
     render(
       <Dialog
         title="다시 시도할까요?"
@@ -51,7 +51,7 @@ describe("Dialog", () => {
       />,
     );
     expect(screen.queryByTestId("ui-lynx-dialog-description")).not.toBeInTheDocument();
-    expect(screen.getByTestId("ui-lynx-button")).toHaveAttribute("data-variant", "neutral");
+    expect(screen.getByTestId("ui-lynx-button")).toHaveAttribute("data-variant", "brand");
   });
 
   test("활성 action은 id를 전달하고 disabled action은 전달하지 않는다", () => {

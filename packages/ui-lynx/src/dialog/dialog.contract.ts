@@ -20,7 +20,7 @@ export type DialogProps = {
 };
 
 export type DialogActionContract = DialogAction & {
-  readonly variant: "neutral" | "subtle";
+  readonly variant: "brand" | "subtle";
 };
 
 export type DialogContract = {
@@ -51,7 +51,7 @@ export function getDialogContract(props: DialogProps): DialogContract {
     const label = requireNonEmpty(action.label, "action label");
     if (ids.has(id)) throw new Error("Dialog action ids must be unique");
     ids.add(id);
-    return { ...action, id, label, variant: index === 0 ? "neutral" : "subtle" };
+    return { ...action, id, label, variant: index === 0 ? "brand" : "subtle" };
   });
 
   if (!actions.some((action) => !action.disabled && !action.loading)) {

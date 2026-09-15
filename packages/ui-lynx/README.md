@@ -59,7 +59,7 @@ import "@libitums/ui-lynx/styles.css";
 ```
 
 `Dialog`는 사용자가 1~2개 action 중 하나를 선택할 때까지 진행을 막는 modal이다. Scrim
-탭으로 닫히지 않으며 두 action은 위에서부터 Neutral, Subtle 순서다. `data-cancelactionid`는
+탭으로 닫히지 않으며 두 action은 위에서부터 Brand, Subtle 순서다. `data-cancelactionid`는
 뒤로가기·ESC를 연결할 때 실행할 아래쪽 action id를 노출한다. 배경 접근성 숨김과 닫힌 뒤
 focus 복원은 Dialog를 여는 소비 화면이 소유한다.
 
@@ -147,7 +147,7 @@ StepIndicator는 최신 파일 규칙에 따라 공개 타입과 `getStepIndicat
 
 Dialog는 `components/dialog.md` revision `3f7ed6d17df769e37215adb40f7abfc2e1174fd1`의
 중앙 배치, floating surface, 1~2개 세로 action과 reduced motion 계약을 따른다. action이
-하나면 Neutral, 둘이면 Neutral/Subtle 순서이며 모든 action이 비활성인 진행 불가능한 계약은
+하나면 Brand, 둘이면 Brand/Subtle 순서이며 모든 action이 비활성인 진행 불가능한 계약은
 거부한다. Scrim에는 tap handler를 연결하지 않는다.
 
 `disabled`와 `loading` Button은 tap을 전달하지 않는다. Back Header의 아이콘·제목 묶음

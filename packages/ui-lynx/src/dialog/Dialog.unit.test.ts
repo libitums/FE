@@ -6,7 +6,7 @@ import { describe, expect, test } from "vitest";
 import { getDialogContract } from "./dialog.contract";
 
 describe("Dialog contract", () => {
-  test("한 개 action은 neutral이고 기본 motion은 standard다", () => {
+  test("한 개 action은 brand이고 기본 motion은 standard다", () => {
     expect(
       getDialogContract({
         title: "학습을 계속할까요?",
@@ -19,11 +19,11 @@ describe("Dialog contract", () => {
       motion: "standard",
       cancelActionId: "continue",
       className: "ui-lynx-dialog ui-lynx-dialog-motion-standard",
-      actions: [{ id: "continue", label: "계속 학습하기", variant: "neutral" }],
+      actions: [{ id: "continue", label: "계속 학습하기", variant: "brand" }],
     });
   });
 
-  test("두 개 action은 위 neutral, 아래 subtle이고 아래 action을 취소 경로로 노출한다", () => {
+  test("두 개 action은 위 brand, 아래 subtle이고 아래 action을 취소 경로로 노출한다", () => {
     expect(
       getDialogContract({
         title: "학습을 그만둘까요?",
@@ -39,7 +39,7 @@ describe("Dialog contract", () => {
       motion: "reduced",
       cancelActionId: "quit",
       actions: [
-        { id: "continue", variant: "neutral" },
+        { id: "continue", variant: "brand" },
         { id: "quit", variant: "subtle" },
       ],
     });
