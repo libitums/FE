@@ -144,7 +144,7 @@ export function BottomSheet(props: BottomSheetProps) {
 
         {contract.actions.length === 0 ? null : (
           <view className="ui-lynx-bottom-sheet-actions" data-testid="ui-lynx-bottom-sheet-actions">
-            {contract.actions.map((action) => (
+            {contract.actions.map((action, index) => (
               <view
                 key={action.id}
                 data-testid={`ui-lynx-bottom-sheet-action-${action.id}`}
@@ -153,7 +153,7 @@ export function BottomSheet(props: BottomSheetProps) {
               >
                 <Button
                   label={action.label}
-                  variant="brand"
+                  variant={index === 0 ? "brand" : "subtle"}
                   size="m"
                   width="fill"
                   disabled={action.disabled}

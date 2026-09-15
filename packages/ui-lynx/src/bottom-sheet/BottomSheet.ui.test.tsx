@@ -91,6 +91,24 @@ describe("BottomSheet", () => {
     expect(ondismiss).not.toHaveBeenCalled();
   });
 
+  test("multiple action은 첫 번째를 brand, 두 번째부터 subtle로 렌더한다", () => {
+    render(
+      <BottomSheet
+        title="복습"
+        closeAccessibilityLabel="복습 시트 닫기"
+        actions={[
+          { id: "primary", label: "오디오 다시 듣기" },
+          { id: "secondary", label: "문장 다시 보기" },
+        ]}
+        ondismiss={() => undefined}
+      />,
+    );
+
+    const actions = screen.getAllByTestId("ui-lynx-button");
+    expect(actions[0]).toHaveAttribute("data-variant", "brand");
+    expect(actions[1]).toHaveAttribute("data-variant", "subtle");
+  });
+
   test("draggable=false면 handle과 drag handler를 노출하지 않는다", () => {
     render(
       <BottomSheet

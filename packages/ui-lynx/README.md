@@ -30,7 +30,8 @@ import "@libitums/ui-lynx/styles.css";
 ```
 
 `BottomSheet`는 Scrim 탭, 닫기 버튼, Handle을 아래로 48px 이상 끌기로 닫을 수 있다.
-Action은 기본적으로 Brand Button M/Fill로 렌더되며 2개 이상이면 8px 간격으로 세로 배치된다.
+첫 번째 Action은 Brand Button M/Fill로 렌더되며, 두 번째 이후 Action은 Subtle Button
+M/Fill로 8px 간격을 두고 세로 배치된다.
 본문만 스크롤되고 action 영역은 safe area 위의 시트 하단에 고정된다.
 시트가 열린 동안 배경 subtree를 접근성 트리에서 숨기고 닫힌 뒤 trigger focus를 복원하는 일은
 제품 host가 맡으며, VoiceOver/TalkBack의 modal focus 이동은 제품 route에서 실기기로 검증한다.
