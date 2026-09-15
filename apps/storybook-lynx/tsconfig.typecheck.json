@@ -15,7 +15,8 @@
       "@libitums/ui-lynx/bottom-navigator": [
         "../../packages/ui-lynx/src/bottom-navigator/index.ts"
       ],
-      "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"]
+      "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"]
     }
   }
 }

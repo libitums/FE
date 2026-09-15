@@ -67,6 +67,13 @@ const components = [
     modules: ["step-indicator.contract"],
     css: "step-indicator.css",
   },
+  {
+    subpath: "chat-bubble",
+    directory: "chat-bubble",
+    component: "ChatBubble",
+    modules: ["chat-bubble.contract"],
+    css: "chat-bubble.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -149,6 +156,14 @@ if (!files.includes(`package/${bottomNavigatorStylesExport.replace(/^\.\//, "")}
 const stepIndicatorStylesExport = packedPackageJson.exports?.["./step-indicator/styles.css"];
 if (stepIndicatorStylesExport !== "./dist/step-indicator/step-indicator.css") {
   throw new Error("packed package has an invalid ./step-indicator/styles.css export");
+}
+
+const chatBubbleStylesExport = packedPackageJson.exports?.["./chat-bubble/styles.css"];
+if (chatBubbleStylesExport !== "./dist/chat-bubble/chat-bubble.css") {
+  throw new Error("packed package has an invalid ./chat-bubble/styles.css export");
+}
+if (!files.includes(`package/${chatBubbleStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the ChatBubble CSS export target");
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");
