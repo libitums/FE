@@ -59,6 +59,17 @@ describe("BottomSheet contract", () => {
     ).toThrow("unique");
   });
 
+  test("description이 없으면 action만으로 빈 body를 만들지 않는다", () => {
+    expect(
+      getBottomSheetContract({
+        title: "복습",
+        closeAccessibilityLabel: "닫기",
+        actions: [{ id: "start", label: "시작" }],
+        ondismiss: () => undefined,
+      }).hasBody,
+    ).toBe(false);
+  });
+
   test("아래 방향으로 48px 이상 끌었을 때만 닫는다", () => {
     expect(BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD).toBe(48);
     expect(shouldDismissBottomSheetDrag(100, 147)).toBe(false);

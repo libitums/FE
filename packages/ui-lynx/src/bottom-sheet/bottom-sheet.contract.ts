@@ -74,7 +74,7 @@ export function getBottomSheetContract(props: BottomSheetProps): BottomSheetCont
     closeAccessibilityLabel,
     description: props.description,
     draggable,
-    hasBody: props.description !== undefined || actions.length > 0,
+    hasBody: props.description !== undefined,
     motion,
     overline: props.overline,
     title,

@@ -86,6 +86,7 @@ describe("BottomSheet", () => {
     expect(action).toHaveAttribute("data-variant", "brand");
     expect(action).toHaveAttribute("data-size", "m");
     expect(action).toHaveAttribute("data-width", "fill");
+    expect(screen.queryByTestId("ui-lynx-bottom-sheet-body")).not.toBeInTheDocument();
     fireEvent.tap(action, {});
     expect(bindtap).toHaveBeenCalledTimes(1);
     expect(ondismiss).not.toHaveBeenCalled();
@@ -119,8 +120,9 @@ describe("BottomSheet", () => {
       />,
     );
     expect(screen.queryByTestId("ui-lynx-bottom-sheet-handle")).not.toBeInTheDocument();
-    expect(screen.getByTestId("ui-lynx-bottom-sheet-drag-area")).not.toHaveAttribute(
-      "bindtouchstart",
-    );
+    const dragArea = screen.getByTestId("ui-lynx-bottom-sheet-drag-area");
+    expect(dragArea).not.toHaveAttribute("pan-intercept-direction");
+    expect(dragArea).not.toHaveAttribute("catchtouchstart");
+    expect(dragArea).not.toHaveAttribute("catchtouchend");
   });
 });

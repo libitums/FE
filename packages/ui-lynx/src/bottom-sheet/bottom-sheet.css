@@ -10,6 +10,7 @@
   left: var(--libitum-spacing-0);
   z-index: var(--libitum-elevation-z-sheet);
   display: flex;
+  flex-direction: column;
   justify-content: flex-end;
 }
 
