@@ -10,10 +10,10 @@ import { color } from "@libitums/design-tokens";
 
 import { getTextFieldContract, type TextFieldProps } from "./text-field.contract";
 
-function renderIcon(icon: string, testId: string, currentColor: string) {
+function renderIcon(icon: string, testId: string, currentColor: string, className?: string) {
   return (
     <svg
-      className="ui-lynx-text-field-icon"
+      className={`ui-lynx-text-field-icon${className ? ` ${className}` : ""}`}
       data-testid={testId}
       content={icon}
       current-color={currentColor}
@@ -134,6 +134,7 @@ export function TextField(props: TextFieldProps) {
             <view
               className="ui-lynx-text-field-trailing-action"
               data-testid="ui-lynx-text-field-trailing-action"
+              focusable={contract.availability !== "disabled"}
               accessibility-element={true}
               accessibility-label={props.trailing.accessibilityLabel}
               accessibility-traits={contract.availability === "disabled" ? "disabled" : "button"}
@@ -143,11 +144,21 @@ export function TextField(props: TextFieldProps) {
               }
               bindblur={contract.availability === "disabled" ? undefined : handleTrailingActionBlur}
             >
-              <view accessibility-elements-hidden={true}>
+              <view
+                className="ui-lynx-text-field-trailing-action-icon-stack"
+                accessibility-elements-hidden={true}
+              >
                 {renderIcon(
                   props.trailing.icon,
-                  "ui-lynx-text-field-trailing-action-icon",
+                  "ui-lynx-text-field-trailing-action-icon-default",
                   iconColor,
+                  "ui-lynx-text-field-trailing-action-icon-default",
+                )}
+                {renderIcon(
+                  props.trailing.icon,
+                  "ui-lynx-text-field-trailing-action-icon-pressed",
+                  color.fg.neutral,
+                  "ui-lynx-text-field-trailing-action-icon-pressed",
                 )}
               </view>
             </view>

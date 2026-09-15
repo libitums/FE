@@ -91,8 +91,41 @@
   border-radius: var(--libitum-radius-full);
 }
 
-.ui-lynx-text-field-trailing-action:active .ui-lynx-text-field-icon {
-  color: var(--libitum-color-fg-neutral);
+.ui-lynx-text-field-trailing-action-icon-stack {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+  position: relative;
+}
+
+.ui-lynx-text-field-trailing-action-icon-default,
+.ui-lynx-text-field-trailing-action-icon-pressed {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+}
+
+.ui-lynx-text-field-trailing-action-icon-pressed {
+  opacity: 0;
+}
+
+.ui-lynx-text-field-trailing-action:active .ui-lynx-text-field-trailing-action-icon-default {
+  opacity: 0;
+}
+
+.ui-lynx-text-field-trailing-action:active .ui-lynx-text-field-trailing-action-icon-pressed {
+  opacity: 1;
+}
+
+.ui-lynx-text-field-disabled
+  .ui-lynx-text-field-trailing-action:active
+  .ui-lynx-text-field-trailing-action-icon-default {
+  opacity: 1;
+}
+
+.ui-lynx-text-field-disabled
+  .ui-lynx-text-field-trailing-action:active
+  .ui-lynx-text-field-trailing-action-icon-pressed {
+  opacity: 0;
 }
 
 .ui-lynx-text-field-trailing-action:focus {

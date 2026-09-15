@@ -76,6 +76,11 @@ describe("TextField UI", () => {
     const action = enabled.getByTestId("ui-lynx-text-field-trailing-action");
     fireEvent.tap(action as unknown as Element, {});
     expect(action).toHaveAttribute("accessibility-traits", "button");
+    expect(action).toHaveAttribute("focusable", "true");
+    expect(enabled.getByTestId("ui-lynx-text-field-trailing-action-icon-pressed")).toHaveAttribute(
+      "current-color",
+      "#1A1C20",
+    );
     enabled.unmount();
 
     render(
@@ -93,6 +98,7 @@ describe("TextField UI", () => {
     const disabledAction = screen.getByTestId("ui-lynx-text-field-trailing-action");
     fireEvent.tap(disabledAction as unknown as Element, {});
     expect(disabledAction).toHaveAttribute("accessibility-traits", "disabled");
+    expect(disabledAction).toHaveAttribute("focusable", "false");
     expect(enabledTap).toHaveBeenCalledTimes(1);
     expect(disabledTap).not.toHaveBeenCalled();
   });

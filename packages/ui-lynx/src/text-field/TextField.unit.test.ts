@@ -108,5 +108,11 @@ describe("text-field.css", () => {
       /\.ui-lynx-text-field-trailing-action\s*\{[^}]*width:\s*var\(--libitum-spacing-48\)[^}]*height:\s*var\(--libitum-spacing-48\)/,
     );
     expect(styles).toMatch(/\.ui-lynx-text-field-trailing-action:focus\s*\{[^}]*box-shadow:/);
+    expect(styles).toMatch(
+      /\.ui-lynx-text-field-trailing-action:active\s+\.ui-lynx-text-field-trailing-action-icon-pressed\s*\{[^}]*opacity:\s*1/,
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-text-field-disabled\s+\.ui-lynx-text-field-trailing-action:active\s+\.ui-lynx-text-field-trailing-action-icon-pressed\s*\{[^}]*opacity:\s*0/,
+    );
   });
 });
