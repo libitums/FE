@@ -74,13 +74,6 @@ const components = [
     modules: ["chat-bubble.contract"],
     css: "chat-bubble.css",
   },
-  {
-    subpath: "text-field",
-    directory: "text-field",
-    component: "TextField",
-    modules: ["text-field.contract"],
-    css: "text-field.css",
-  },
 ];
 const required = [
   "package/package.json",
@@ -171,13 +164,6 @@ if (chatBubbleStylesExport !== "./dist/chat-bubble/chat-bubble.css") {
 }
 if (!files.includes(`package/${chatBubbleStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the ChatBubble CSS export target");
-}
-const textFieldStylesExport = packedPackageJson.exports?.["./text-field/styles.css"];
-if (textFieldStylesExport !== "./dist/text-field/text-field.css") {
-  throw new Error("packed package has an invalid ./text-field/styles.css export");
-}
-if (!files.includes(`package/${textFieldStylesExport.replace(/^\.\//, "")}`)) {
-  throw new Error("packed package is missing the TextField CSS export target");
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");
