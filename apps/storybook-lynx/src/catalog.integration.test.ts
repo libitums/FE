@@ -48,7 +48,7 @@ describe("Storybook Lynx build outputs", () => {
       ),
     ).toEqual({
       accessibilityLabel: "반복 횟수",
-      defaultValue: "4",
+      defaultValue: "2",
       placeholder: "0",
       size: "l",
       error: true,
@@ -66,7 +66,13 @@ describe("Storybook Lynx build outputs", () => {
     expect(dispatchCompactNumericInputStoryInput(disabled, "4", (value) => calls.push(value))).toBe(
       false,
     );
-    expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onInput", args: ["5"] }]);
+    expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onInput", args: ["7"] }]);
+  });
+
+  test("compact numeric input runtime은 빈 defaultValue도 native input에 반영한다", async () => {
+    const runtime = await readOutput("src/lynx/compact-numeric-input.tsx");
+    expect(runtime).not.toContain("if (!data.defaultValue) return");
+    expect(runtime).toContain("params: { value: data.defaultValue }");
   });
 
   test("step-indicator init data는 유효한 정수 계약으로 정규화되고 JSON 직렬화된다", () => {

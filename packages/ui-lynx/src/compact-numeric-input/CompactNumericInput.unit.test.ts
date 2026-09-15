@@ -17,11 +17,11 @@ describe("getCompactNumericInputValue", () => {
   test.each([
     ["", ""],
     ["7", "7"],
-    ["57", "5"],
+    ["57", "7"],
     ["ab8cd", "8"],
-    ["-3.5", "3"],
+    ["-3.5", "5"],
     ["１２", ""],
-  ])("%j에서 첫 ASCII 숫자 한 자리만 반환한다", (input, expected) => {
+  ])("%j에서 마지막 ASCII 숫자 한 자리만 반환한다", (input, expected) => {
     expect(getCompactNumericInputValue(input)).toBe(expected);
   });
 });
@@ -46,14 +46,14 @@ describe("getCompactNumericInputContract", () => {
     );
   });
 
-  test("defaultValue와 placeholder는 첫 숫자 한 자리로 정규화한다", () => {
+  test("defaultValue와 placeholder는 마지막 숫자 한 자리로 정규화한다", () => {
     expect(
       getCompactNumericInputContract({
         accessibilityLabel: "수량",
         defaultValue: "a42",
         placeholder: "예: 9",
       }),
-    ).toMatchObject({ defaultValue: "4", placeholder: "9" });
+    ).toMatchObject({ defaultValue: "2", placeholder: "9" });
   });
 
   test("Error와 Disabled 상태 class를 결합하고 Disabled interaction을 차단한다", () => {

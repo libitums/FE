@@ -37,7 +37,7 @@ describe("CompactNumericInput", () => {
     expect(input).toHaveAttribute("data-disabled", "false");
   });
 
-  test("입력 경로와 관계없이 첫 숫자 한 자리만 bindinput으로 전달한다", () => {
+  test("입력 경로와 관계없이 마지막 숫자 한 자리만 bindinput으로 전달한다", () => {
     const onInput = vi.fn<(value: string) => void>();
     render(<CompactNumericInput accessibilityLabel="수량" bindinput={onInput} />);
 
@@ -46,7 +46,7 @@ describe("CompactNumericInput", () => {
     });
 
     expect(onInput).toHaveBeenCalledOnce();
-    expect(onInput).toHaveBeenCalledWith("5");
+    expect(onInput).toHaveBeenCalledWith("7");
   });
 
   test("focus와 blur를 각각 한 번 전달한다", () => {

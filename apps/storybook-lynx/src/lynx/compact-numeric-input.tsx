@@ -13,7 +13,6 @@ function App() {
   );
 
   useEffect(() => {
-    if (!data.defaultValue) return;
     lynx
       .createSelectorQuery()
       .select('[data-testid="ui-lynx-compact-numeric-input"]')

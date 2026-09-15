@@ -24,7 +24,7 @@ export type CompactNumericInputContract = {
 };
 
 export function getCompactNumericInputValue(value: string): string {
-  return value.match(/[0-9]/)?.[0] ?? "";
+  return value.match(/[0-9](?!.*[0-9])/)?.[0] ?? "";
 }
 
 export function getCompactNumericInputContract(
