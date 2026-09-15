@@ -6,6 +6,7 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  CompactNumericInputSize,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -64,4 +65,14 @@ export type ProgressHeaderStoryArgs = {
 export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
+};
+
+export type CompactNumericInputStoryArgs = {
+  accessibilityLabel: string;
+  defaultValue: string;
+  placeholder: string;
+  size: CompactNumericInputSize;
+  error: boolean;
+  disabled: boolean;
+  onInput: (value: string) => void;
 };

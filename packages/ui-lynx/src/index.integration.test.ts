@@ -10,6 +10,7 @@ import * as button from "./button/index";
 import * as backHeader from "./back-header/index";
 import * as statusIndicator from "./status-indicator/index";
 import * as roundButton from "./round-button/index";
+import * as compactNumericInput from "./compact-numeric-input/index";
 import * as progressHeader from "./progress-header/index";
 import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
@@ -22,6 +23,10 @@ const componentArtifacts = {
   "back-header": { implementation: "BackHeader.jsx", css: "back-header.css" },
   "status-indicator": { implementation: "StatusIndicator.jsx", css: "status-indicator.css" },
   "round-button": { implementation: "RoundButton.jsx", css: "round-button.css" },
+  "compact-numeric-input": {
+    implementation: "CompactNumericInput.jsx",
+    css: "compact-numeric-input.css",
+  },
   "progress-header": { implementation: "ProgressHeader.jsx", css: "progress-header.css" },
   "page-indicator": { implementation: "PageIndicator.jsx", css: "page-indicator.css" },
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
@@ -33,6 +38,7 @@ const componentEntries = {
   "back-header": "BackHeader",
   "status-indicator": "StatusIndicator",
   "round-button": "RoundButton",
+  "compact-numeric-input": "CompactNumericInput",
   "progress-header": "ProgressHeader",
   "page-indicator": "PageIndicator",
   "bottom-navigator": "BottomNavigator",
@@ -54,11 +60,16 @@ describe("ui-lynx package boundaries", () => {
     expect(root.BackHeader).toBe(backHeader.BackHeader);
     expect(root.StatusIndicator).toBe(statusIndicator.StatusIndicator);
     expect(root.RoundButton).toBe(roundButton.RoundButton);
+    expect(root.CompactNumericInput).toBe(compactNumericInput.CompactNumericInput);
     expect(root.ProgressHeader).toBe(progressHeader.ProgressHeader);
     expect(root.PageIndicator).toBe(pageIndicator.PageIndicator);
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
     expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
     expect(root.getButtonContract).toBe(button.getButtonContract);
+    expect(root.getCompactNumericInputContract).toBe(
+      compactNumericInput.getCompactNumericInputContract,
+    );
+    expect(root.getCompactNumericInputValue).toBe(compactNumericInput.getCompactNumericInputValue);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
     expect(root.getProgressHeaderProgress).toBe(progressHeader.getProgressHeaderProgress);
     expect(root.getPageIndicatorModel).toBe(pageIndicator.getPageIndicatorModel);
@@ -93,6 +104,9 @@ describe("ui-lynx package boundaries", () => {
     }
     expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
       "./dist/step-indicator/step-indicator.css",
+    );
+    expect(packageJson.exports["./compact-numeric-input/styles.css"]).toBe(
+      "./dist/compact-numeric-input/compact-numeric-input.css",
     );
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
@@ -144,6 +158,10 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/round-button/${componentArtifacts["round-button"].implementation}`,
       "package/dist/round-button/index.d.ts",
       `package/dist/round-button/${componentArtifacts["round-button"].css}`,
+      "package/dist/compact-numeric-input/index.js",
+      `package/dist/compact-numeric-input/${componentArtifacts["compact-numeric-input"].implementation}`,
+      "package/dist/compact-numeric-input/index.d.ts",
+      `package/dist/compact-numeric-input/${componentArtifacts["compact-numeric-input"].css}`,
       "package/dist/progress-header/index.js",
       `package/dist/progress-header/${componentArtifacts["progress-header"].implementation}`,
       "package/dist/progress-header/index.d.ts",
@@ -178,6 +196,7 @@ describe("ui-lynx package boundaries", () => {
 
     for (const runtime of [
       "package/dist/round-button/RoundButton.jsx",
+      "package/dist/compact-numeric-input/CompactNumericInput.jsx",
       "package/dist/bottom-navigator/BottomNavigator.jsx",
     ]) {
       const { stdout: source } = await execFileAsync("tar", [

@@ -17,6 +17,7 @@ describe("ui-lynx styles", () => {
     expect(styles).toContain('@import "./status-indicator/status-indicator.css"');
     expect(styles).toContain('@import "./round-button/round-button.css"');
     expect(styles).toContain('@import "./bottom-navigator/bottom-navigator.css"');
+    expect(styles).toContain('@import "./compact-numeric-input/compact-numeric-input.css"');
     expect(readLegacyStyles()).toContain(".ui-lynx-button");
     expect(readLegacyStyles()).toContain(".ui-lynx-back-header");
     expect(readLegacyStyles()).toContain(".ui-lynx-status-indicator");

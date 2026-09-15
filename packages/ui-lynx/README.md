@@ -2,7 +2,7 @@
 
 libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포넌트 패키지다. 현재 공개
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
-`PageIndicator`, `BottomNavigator`, `StepIndicator` 여덟 가지다.
+`PageIndicator`, `BottomNavigator`, `StepIndicator`, `CompactNumericInput` 아홉 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
@@ -25,6 +25,21 @@ import "@libitums/ui-lynx/styles.css";
   onExit={handleExit}
 />;
 <PageIndicator pageCount={4} currentPage={2} />;
+```
+
+`CompactNumericInput`은 0–9 중 한 자리 숫자만 받는 native input이다. Placeholder는 예시일
+뿐 값으로 전달되지 않으며 접근성 이름은 반드시 제공한다.
+
+```tsx
+import { CompactNumericInput } from "@libitums/ui-lynx/compact-numeric-input";
+import "@libitums/ui-lynx/styles.css";
+
+<CompactNumericInput
+  accessibilityLabel="반복 횟수"
+  placeholder="0"
+  size="m"
+  bindinput={handleInput}
+/>;
 ```
 
 `BottomNavigator`는 3~5개의 icon-only 목적지를 표시하며 enabled item 하나를 `selectedId`로
@@ -90,6 +105,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/bottom-navigator/styles.css`
 - `@libitums/ui-lynx/step-indicator`
 - `@libitums/ui-lynx/step-indicator/styles.css`
+- `@libitums/ui-lynx/compact-numeric-input`
+- `@libitums/ui-lynx/compact-numeric-input/styles.css`
 - `@libitums/ui-lynx/styles.css`
 - `@libitums/ui-lynx/progress-header.css`
 - `@libitums/ui-lynx/page-indicator.css`
@@ -109,7 +126,7 @@ label을 같은 canonical count로 clamp한다.
 
 새 컴포넌트와 기존 컴포넌트 정리는
 [`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
-규칙을 따른다. 공개 컴포넌트 여덟 개 모두 `<component>.contract.ts`에 공개
+규칙을 따른다. 공개 컴포넌트 아홉 개 모두 `<component>.contract.ts`에 공개
 타입과 순수 계약 로직을 함께 두고 PascalCase component test 이름을 쓴다.
 
 일반 소비자는 aggregate `@libitums/ui-lynx/styles.css`를 Lynx 진입점에서 한 번 import한다.
@@ -117,7 +134,7 @@ label을 같은 canonical count로 clamp한다.
 ReactLynx를 번들하지 않고 `>=0.123.0 <0.126.0` peer로 요구한다.
 `pnpm --filter @libitums/ui-lynx pack:check`는 실제 tarball에 컴파일된 JSX·선언·CSS,
 canonical contract, README와 docs만 들어가고 generic contract/logic 산출물이 없는지
-검증한다. package integration test도 이 부재 계약을 여덟 subpath 전체에서 확인한다.
+검증한다. package integration test도 이 부재 계약을 아홉 subpath 전체에서 확인한다.
 
 StepIndicator는 최신 파일 규칙에 따라 공개 타입과 `getStepIndicatorContract` 순수 로직을
 `step-indicator.contract.ts` 하나에서 소유하고 단위 테스트는

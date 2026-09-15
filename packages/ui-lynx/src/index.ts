@@ -62,3 +62,14 @@ export type {
   StepIndicatorStep,
   StepIndicatorStepStatus,
 } from "./step-indicator";
+
+export {
+  CompactNumericInput,
+  getCompactNumericInputContract,
+  getCompactNumericInputValue,
+} from "./compact-numeric-input";
+export type {
+  CompactNumericInputContract,
+  CompactNumericInputProps,
+  CompactNumericInputSize,
+} from "./compact-numeric-input";
