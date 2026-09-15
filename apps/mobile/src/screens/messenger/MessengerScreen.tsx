@@ -1,5 +1,6 @@
 import type { MessengerScreenProps } from "./messenger.contract";
 import { useState } from "@lynx-js/react";
+import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import { MessageBubble } from "./MessageBubble";
 import { ReplyButton } from "./ReplyButton";
 import { ReplayButton } from "./ReplayButton";
@@ -14,9 +15,12 @@ import {
 import "./messenger-screen.css";
 
 // 화면 세션만 로컬로 소유하고 완료 기록은 상위 경계의 콜백으로 알립니다.
+// `exitLabel`은 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받는다
+// (ADR-0007 D3). 기본값은 여정 라벨이라 기존 호출은 수정 없이 성립한다(LIB-255 §2.7).
 export function MessengerScreen({
   conversation,
   completionStatus,
+  exitLabel = specialUnitExitLabel("journey"),
   onExit,
   onComplete,
   onReplay,
@@ -44,10 +48,10 @@ export function MessengerScreen({
           data-testid="messenger-screen-exit"
           accessibility-element={true}
           accessibility-traits="button"
-          accessibility-label="맵으로"
+          accessibility-label={exitLabel}
           bindtap={() => onExit(messengerExitOutcome(session))}
         >
-          <text>맵으로</text>
+          <text>{exitLabel}</text>
         </view>
         <text
           className="messenger-screen-title"

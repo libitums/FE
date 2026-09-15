@@ -23,14 +23,21 @@ import type { AnswerResult } from "../lib/answer-result";
 import type { LearningForm } from "../lib/learning-form";
 import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
+// LIB-255 계약 §2.6: 롤플레이 route 셋의 `roleplayScreenFor`가 받는 판별 입력이다.
+// `roleplay-list` 폴더는 `screens/` 사이 값 import 금지에 걸리지 않는다 — 이 import는
+// `import type`이다.
+import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import type { VisualNovelUnitId } from "../screens/visual-novel/visual-novel.contract";
 
 // 탭 목록과 1:1이다. 네 탭은 docs/screens.md의 "홈 · 여정 · 롤플레이 · 설정"에서 왔다.
 // 순서가 곧 바텀 네비게이션의 좌→우 순서다 (bottom-navigator.contract.ts).
 export type Tab = "home" | "journey" | "roleplay" | "settings";
 
-// **화면 목록과 1:1이다.** 이번 이슈가 넣는 것은 각 탭의 루트 화면 넷뿐이다.
-// 화면이 늘면 이 union에 멤버를 더하고, App.tsx switch의 exhaustiveness 검사가
+// **route 목록과 1:1이다 — 화면 컴포넌트와는 더 이상 1:1이 아니다** (LIB-255 계약
+// §2.6 「대가」). 이번 이슈가 넣는 것은 각 탭의 루트 화면 넷뿐이었지만, LIB-255가
+// `roleplay-messenger`·`roleplay-phone-call`·`roleplay-visual-novel` 셋을 더해
+// `MessengerScreen`·`PhoneCallScreen`·`VisualNovelScreen` 각각을 route 둘(여정·롤플레이)이
+// 연다. route가 늘면 이 union에 멤버를 더하고, App.tsx switch의 exhaustiveness 검사가
 // 빠진 화면을 컴파일 타임에 잡는다.
 //
 // 이름은 최종 화면 이름으로 고정한다 (계약 참고).
@@ -67,7 +74,36 @@ export type Screen =
   | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] }
   | { name: "messenger"; unitId: MessengerUnitId }
   | { name: "phone-call"; unitId: PhoneCallUnitId }
-  | { name: "visual-novel"; unitId: VisualNovelUnitId };
+  | { name: "visual-novel"; unitId: VisualNovelUnitId }
+  // LIB-255: 롤플레이 탭에서 여는 특별 유닛 route 셋. 여정 쪽 route(`messenger` ·
+  // `phone-call` · `visual-novel`)와 컴포넌트를 공유하지만 화면 자리가 다르다
+  // (계약 §2.6 — 기존 route에 `entrySource` 필드를 더하지 않는 근거).
+  | { name: "roleplay-messenger"; unitId: MessengerUnitId }
+  | { name: "roleplay-phone-call"; unitId: PhoneCallUnitId }
+  | { name: "roleplay-visual-novel"; unitId: VisualNovelUnitId };
+
+// LIB-255 계약 §2.6: 롤플레이 route 셋만 좁힌 타입. `renderRoleplayUnitScreen`의
+// 매개변수 타입이 연습 경계를 진다(계약 §6 ②).
+export type RoleplayUnitScreen = Extract<
+  Screen,
+  { name: "roleplay-messenger" | "roleplay-phone-call" | "roleplay-visual-novel" }
+>;
+
+// LIB-255 (logic): 계약 §2.6의 `default` 없는 `switch (item.form)`. 필드는 둘뿐이고
+// 던지지 않는다 — `learningScreenFor`와 같은 자리·같은 근거다.
+export function roleplayScreenFor(item: RoleplayItem): RoleplayUnitScreen {
+  switch (item.form) {
+    case "messenger": {
+      return { name: "roleplay-messenger", unitId: item.unitId };
+    }
+    case "phone-call": {
+      return { name: "roleplay-phone-call", unitId: item.unitId };
+    }
+    case "visual-novel": {
+      return { name: "roleplay-visual-novel", unitId: item.unitId };
+    }
+  }
+}
 
 // docs/screens.md 130~136행과 ADR-0007 D3이 적은 모양 그대로다. 필드를 더하지 않는다.
 export type Nav = {
