@@ -156,7 +156,7 @@ export function BottomSheet(props: BottomSheetProps) {
                   >
                     <Button
                       label={action.label}
-                      variant={action.variant ?? "neutral"}
+                      variant="brand"
                       size="m"
                       width="fill"
                       disabled={action.disabled}

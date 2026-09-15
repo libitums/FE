@@ -79,6 +79,7 @@ describe("BottomSheet", () => {
     );
 
     const action = screen.getByTestId("ui-lynx-button");
+    expect(action).toHaveAttribute("data-variant", "brand");
     expect(action).toHaveAttribute("data-size", "m");
     expect(action).toHaveAttribute("data-width", "fill");
     fireEvent.tap(action, {});

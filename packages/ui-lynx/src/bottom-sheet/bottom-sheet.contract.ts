@@ -1,4 +1,4 @@
-import type { ButtonVariant, IconPosition } from "../button/button.contract";
+import type { IconPosition } from "../button/button.contract";
 
 export const BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD = 48;
 
@@ -8,7 +8,6 @@ export type BottomSheetMotion = "standard" | "reduced";
 export type BottomSheetAction = {
   readonly id: string;
   readonly label: string;
-  readonly variant?: ButtonVariant;
   readonly disabled?: boolean;
   readonly loading?: boolean;
   readonly icon?: string;
