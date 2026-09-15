@@ -10,11 +10,15 @@ import {
 } from "./journey-map";
 
 // 메신저 계약 props는 기존 여정 맵 UI fixture에서 공통으로 비워 둔다.
+// LIB-257 ui-scaffold: `onOpenNotifications`가 필수 prop이 됐다(계약 §2.5) — 이
+// fixture에 더하는 것으로 render 호출 전부를 한 번에 닫는다. 단언은 한 글자도
+// 바뀌지 않았다.
 const messengerFixture = {
   completedMessengerUnitIds: [] as const,
   onStartMessengerUnit: vi.fn(),
   completedPhoneCallUnitIds: [] as const,
   onStartPhoneCallUnit: vi.fn(),
+  onOpenNotifications: vi.fn(),
 };
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).

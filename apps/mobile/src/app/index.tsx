@@ -8,7 +8,12 @@ import "@libitums/design-tokens/css/typography.css";
 import { App } from "./App";
 
 root.render(
-  <App messengerEventSink={null} visualNovelEventSink={null} phoneCallEventSink={null} />,
+  <App
+    messengerEventSink={null}
+    visualNovelEventSink={null}
+    phoneCallEventSink={null}
+    notificationEventSink={null}
+  />,
 );
 
 if (import.meta.webpackHot) {
