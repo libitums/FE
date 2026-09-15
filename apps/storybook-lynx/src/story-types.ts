@@ -6,6 +6,8 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  CardDirection,
+  CardPadding,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -64,4 +66,15 @@ export type ProgressHeaderStoryArgs = {
 export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
+};
+
+export type CardStoryArgs = {
+  padding: CardPadding;
+  interaction: "static" | "interactive";
+  direction: CardDirection;
+  title: string;
+  overline: string;
+  body: string;
+  showMedia: boolean;
+  onTap: (title: string) => void;
 };

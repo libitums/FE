@@ -8,6 +8,7 @@ import {
 } from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
 import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
+import { dispatchCardStoryTap, normalizeCardStoryArgs } from "./card-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -151,6 +152,33 @@ describe("Storybook Lynx build outputs", () => {
     expect(dispatchRoundButtonStoryTap(data, (envelope) => calls.push(envelope))).toBe(true);
     expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onTap", args: ["저장"] }]);
   });
+  test("card init data는 JSON 직렬화 가능하고 interactive tap만 전달한다", () => {
+    const calls: unknown[] = [];
+    const interactive = normalizeCardStoryArgs({
+      padding: "l",
+      interaction: "interactive",
+      direction: "rtl",
+      title: "말하기 연습",
+      showMedia: true,
+      onTap: () => undefined,
+    });
+    expect(JSON.parse(JSON.stringify(interactive))).toEqual({
+      padding: "l",
+      interaction: "interactive",
+      direction: "rtl",
+      title: "말하기 연습",
+      overline: "추천",
+      body: "카페에서 자연스럽게 주문하는 표현을 연습해 보세요.",
+      showMedia: true,
+    });
+    expect(dispatchCardStoryTap(interactive, (envelope) => calls.push(envelope))).toBe(true);
+    expect(
+      dispatchCardStoryTap(normalizeCardStoryArgs({ interaction: "static" }), (envelope) =>
+        calls.push(envelope),
+      ),
+    ).toBe(false);
+    expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onTap", args: ["말하기 연습"] }]);
+  });
   test.each([
     "button",
     "back-header",
@@ -160,6 +188,7 @@ describe("Storybook Lynx build outputs", () => {
     "page-indicator",
     "bottom-navigator",
     "step-indicator",
+    "card",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -186,6 +215,10 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-step-indicator--first");
     expect(index).toContain("components-step-indicator--middle");
     expect(index).toContain("components-step-indicator--last");
+    expect(index).toContain("components-card--static");
+    expect(index).toContain("components-card--interactive");
+    expect(index).toContain("components-card--large-with-media");
+    expect(index).toContain("components-card--right-to-left");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -214,6 +247,7 @@ describe("Storybook Lynx build outputs", () => {
         "../../packages/ui-lynx/src/bottom-navigator/index.ts",
       ],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -228,6 +262,7 @@ describe("Storybook Lynx build outputs", () => {
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
+    ["card", "@libitums/ui-lynx/card"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -268,6 +303,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?card["']?\s*:\s*["']\.\/src\/lynx\/card\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -283,6 +319,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./card"]).toEqual({
+      types: "./dist/card/index.d.ts",
+      import: "./dist/card/index.js",
+      default: "./dist/card/index.js",
     });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
@@ -300,6 +341,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/card/Card.jsx")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/card/card.contract.js")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/card/card.css")).toBe(true);
 
     const packVerifier = await readFile(
       path.resolve(appRoot, "../../packages/ui-lynx/scripts/check-pack.mjs"),
@@ -321,6 +365,7 @@ describe("Storybook Lynx build outputs", () => {
       "round-button",
       "status-indicator",
       "step-indicator",
+      "card",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
     }
@@ -336,6 +381,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('component: "StepIndicator"');
     expect(packVerifier).toContain('modules: ["step-indicator.contract"]');
     expect(packVerifier).toContain('css: "step-indicator.css"');
+    expect(packVerifier).toContain('subpath: "card"');
+    expect(packVerifier).toContain('directory: "card"');
+    expect(packVerifier).toContain('component: "Card"');
+    expect(packVerifier).toContain('modules: ["card.contract"]');
+    expect(packVerifier).toContain('css: "card.css"');
     expect(packVerifier).toContain("package/dist/${directory}/index.js");
     expect(packVerifier).toContain("package/dist/${directory}/${component}.jsx");
     expect(packVerifier).toContain("package/dist/${directory}/${module}.js");

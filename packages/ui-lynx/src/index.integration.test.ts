@@ -14,6 +14,7 @@ import * as progressHeader from "./progress-header/index";
 import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
 import * as stepIndicator from "./step-indicator/index";
+import * as card from "./card/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -26,6 +27,7 @@ const componentArtifacts = {
   "page-indicator": { implementation: "PageIndicator.jsx", css: "page-indicator.css" },
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
   "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
+  card: { implementation: "Card.jsx", css: "card.css" },
 } as const;
 
 const componentEntries = {
@@ -37,6 +39,7 @@ const componentEntries = {
   "page-indicator": "PageIndicator",
   "bottom-navigator": "BottomNavigator",
   "step-indicator": "StepIndicator",
+  card: "Card",
 } as const;
 
 async function readPackageJson() {
@@ -58,6 +61,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.PageIndicator).toBe(pageIndicator.PageIndicator);
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
     expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
+    expect(root.Card).toBe(card.Card);
     expect(root.getButtonContract).toBe(button.getButtonContract);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
     expect(root.getProgressHeaderProgress).toBe(progressHeader.getProgressHeaderProgress);
@@ -65,6 +69,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.PAGE_INDICATOR_MAX_PAGE_COUNT).toBe(pageIndicator.PAGE_INDICATOR_MAX_PAGE_COUNT);
     expect(root.getBottomNavigatorContract).toBe(bottomNavigator.getBottomNavigatorContract);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+    expect(root.getCardContract).toBe(card.getCardContract);
   });
 
   test("root stylesheet aggregates every component without removing existing styles", async () => {
@@ -94,6 +99,7 @@ describe("ui-lynx package boundaries", () => {
     expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
       "./dist/step-indicator/step-indicator.css",
     );
+    expect(packageJson.exports["./card/styles.css"]).toBe("./dist/card/card.css");
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
 
@@ -163,6 +169,12 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/step-indicator/step-indicator.contract.js",
       "package/dist/step-indicator/step-indicator.contract.d.ts",
       `package/dist/step-indicator/${componentArtifacts["step-indicator"].css}`,
+      "package/dist/card/index.js",
+      `package/dist/card/${componentArtifacts.card.implementation}`,
+      "package/dist/card/index.d.ts",
+      "package/dist/card/card.contract.js",
+      "package/dist/card/card.contract.d.ts",
+      `package/dist/card/${componentArtifacts.card.css}`,
     ]) {
       expect(stdout).toContain(file);
     }
