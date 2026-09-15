@@ -8,6 +8,11 @@ import {
 } from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
 import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
+import {
+  dispatchBottomSheetStoryAction,
+  dispatchBottomSheetStoryDismiss,
+  normalizeBottomSheetStoryArgs,
+} from "./bottom-sheet-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -29,6 +34,44 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("bottom sheet init data는 직렬화 가능한 시트 계약으로 정규화된다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeBottomSheetStoryArgs({
+            title: "복습",
+            overline: "학습 도구",
+            description: "오디오를 다시 들어 보세요",
+            primaryActionLabel: "다시 듣기",
+            secondaryActionLabel: "문장 보기",
+            showSecondaryAction: true,
+            draggable: false,
+            motion: "reduced",
+          }),
+        ),
+      ),
+    ).toEqual({
+      title: "복습",
+      overline: "학습 도구",
+      description: "오디오를 다시 들어 보세요",
+      primaryActionLabel: "다시 듣기",
+      secondaryActionLabel: "문장 보기",
+      showSecondaryAction: true,
+      draggable: false,
+      motion: "reduced",
+    });
+  });
+
+  test("bottom sheet bridge는 dismiss reason과 action id를 전달한다", () => {
+    const calls: unknown[] = [];
+    dispatchBottomSheetStoryDismiss("scrim", (value) => calls.push(value));
+    dispatchBottomSheetStoryAction("primary", (value) => calls.push(value));
+    expect(calls).toEqual([
+      { channel: "STORYBOOK_ACTION", name: "onDismiss", args: ["scrim"] },
+      { channel: "STORYBOOK_ACTION", name: "onAction", args: ["primary"] },
+    ]);
+  });
+
   test("step-indicator init data는 유효한 정수 계약으로 정규화되고 JSON 직렬화된다", () => {
     expect(
       JSON.parse(
@@ -159,6 +202,7 @@ describe("Storybook Lynx build outputs", () => {
     "progress-header",
     "page-indicator",
     "bottom-navigator",
+    "bottom-sheet",
     "step-indicator",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
@@ -177,6 +221,8 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-round-button--brand");
     expect(index).toContain("components-round-button--loading");
     expect(index).toContain("components-round-button--disabled");
+    expect(index).toContain("components-bottom-sheet--default");
+    expect(index).toContain("components-bottom-sheet--multiple-actions");
     expect(index).toContain("components-progress-header--default");
     expect(index).toContain("components-page-indicator--default");
     expect(index).toContain("components-bottom-navigator--default");
@@ -213,6 +259,7 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/bottom-navigator": [
         "../../packages/ui-lynx/src/bottom-navigator/index.ts",
       ],
+      "@libitums/ui-lynx/bottom-sheet": ["../../packages/ui-lynx/src/bottom-sheet/index.ts"],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -227,6 +274,7 @@ describe("Storybook Lynx build outputs", () => {
     ["progress-header", "@libitums/ui-lynx/progress-header"],
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
+    ["bottom-sheet", "@libitums/ui-lynx/bottom-sheet"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
@@ -268,6 +316,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?bottom-sheet["']?\s*:\s*["']\.\/src\/lynx\/bottom-sheet\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -283,6 +332,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./bottom-sheet"]).toEqual({
+      types: "./dist/bottom-sheet/index.d.ts",
+      import: "./dist/bottom-sheet/index.js",
+      default: "./dist/bottom-sheet/index.js",
     });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
@@ -300,6 +354,12 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/bottom-sheet/BottomSheet.jsx")).toBe(
+      true,
+    );
+    expect(await outputExists("../../packages/ui-lynx/dist/bottom-sheet/bottom-sheet.css")).toBe(
+      true,
+    );
 
     const packVerifier = await readFile(
       path.resolve(appRoot, "../../packages/ui-lynx/scripts/check-pack.mjs"),
@@ -315,6 +375,7 @@ describe("Storybook Lynx build outputs", () => {
     for (const directory of [
       "back-header",
       "bottom-navigator",
+      "bottom-sheet",
       "button",
       "page-indicator",
       "progress-header",
