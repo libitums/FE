@@ -5,7 +5,7 @@
   overflow: visible;
   border-width: var(--libitum-spacing-0);
   border-radius: var(--libitum-radius-md);
-  background-color: var(--libitum-elevation-surface-default);
+  background-color: var(--libitum-color-white);
   box-shadow: var(--libitum-elevation-shadow-s1);
   z-index: var(--libitum-elevation-z-default);
 }

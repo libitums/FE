@@ -114,7 +114,7 @@ describe("validateCardHeader", () => {
 describe("card.css", () => {
   test("표면, radius, shadow와 padding 토큰을 사용한다", () => {
     expect(styles).toMatch(
-      /\.ui-lynx-card\s*\{[^}]*width:\s*100%[^}]*background-color:\s*var\(--libitum-elevation-surface-default\)[^}]*box-shadow:\s*var\(--libitum-elevation-shadow-s1\)/,
+      /\.ui-lynx-card\s*\{[^}]*width:\s*100%[^}]*background-color:\s*var\(--libitum-color-white\)[^}]*box-shadow:\s*var\(--libitum-elevation-shadow-s1\)/,
     );
     expect(styles).toMatch(/\.ui-lynx-card\s*\{[^}]*border-radius:\s*var\(--libitum-radius-md\)/);
     expect(styles).toMatch(
