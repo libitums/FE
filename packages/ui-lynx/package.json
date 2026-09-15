@@ -100,6 +100,7 @@
     "@lynx-js/testing-environment": "0.3.3",
     "@lynx-js/types": "4.1.0",
     "@testing-library/jest-dom": "7.0.1",
+    "@types/node": "22.20.0",
     "@types/react": "19.2.18",
     "typescript": "6.0.3",
     "vitest": "3.2.7"
