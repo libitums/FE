@@ -59,6 +59,8 @@ describe("getChatBubbleContract", () => {
   test.each([
     [{ direction: "incoming", message: "", speaker: "말랑이" }, "message must not be empty"],
     [{ direction: "incoming", message: "안녕", speaker: "  " }, "speaker must not be empty"],
+    [{ direction: "incoming", message: undefined, speaker: "말랑이" }, "message must not be empty"],
+    [{ direction: "incoming", message: "안녕", speaker: null }, "speaker must not be empty"],
     [
       {
         direction: "incoming",
@@ -69,7 +71,9 @@ describe("getChatBubbleContract", () => {
       "languageTag is required for learning content",
     ],
   ] as const)("불완전한 접근성·언어 입력을 거부한다: %j", (props, message) => {
-    expect(() => getChatBubbleContract(props)).toThrow(message);
+    expect(() =>
+      getChatBubbleContract(props as unknown as Parameters<typeof getChatBubbleContract>[0]),
+    ).toThrow(message);
   });
 });
 

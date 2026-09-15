@@ -43,7 +43,9 @@ export type ChatBubbleContract = {
 };
 
 function requireVisibleText(value: string, name: "message" | "speaker"): string {
-  if (value.trim().length === 0) throw new Error(`${name} must not be empty`);
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`${name} must not be empty`);
+  }
   return value;
 }
 
