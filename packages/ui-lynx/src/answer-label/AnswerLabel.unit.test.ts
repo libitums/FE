@@ -68,7 +68,7 @@ describe("AnswerLabel contract", () => {
       "--libitum-icon-size-md",
       "--libitum-radius-md",
       "--libitum-radius-lg",
-      "--libitum-color-brand-strong",
+      "--libitum-color-brand-primary",
       "--libitum-color-feedback-correct-text",
       "--libitum-color-feedback-incorrect-strong-surface",
       "--libitum-motion-duration-color",

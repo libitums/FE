@@ -98,7 +98,7 @@
 }
 
 .ui-lynx-answer-label-pending.ui-lynx-answer-label-solid {
-  background-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-brand-primary);
 }
 
 .ui-lynx-answer-label-correct.ui-lynx-answer-label-solid {
