@@ -1,0 +1,123 @@
+.overlay-story-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: var(--libitum-spacing-24);
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-20);
+  background-color: var(--libitum-color-background-secondary);
+  overflow: hidden;
+}
+
+.overlay-story-heading {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.overlay-story-content-card {
+  padding: var(--libitum-spacing-24);
+  row-gap: var(--libitum-spacing-8);
+  background-color: var(--libitum-color-background-elevated);
+  border-radius: var(--libitum-radius-xl);
+}
+
+.overlay-story-content-title,
+.overlay-story-surface-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.overlay-story-content-copy,
+.overlay-story-surface-copy,
+.overlay-story-caption,
+.overlay-story-area-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.overlay-story-sheet {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-sheet);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24) var(--libitum-spacing-32);
+  row-gap: var(--libitum-spacing-8);
+  background-color: var(--libitum-color-background-primary);
+  border-radius: var(--libitum-radius-xl) var(--libitum-radius-xl) 0 0;
+}
+
+.overlay-story-handle {
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-4);
+  margin: 0 auto var(--libitum-spacing-12);
+  background-color: var(--libitum-color-gray-500);
+  border-radius: var(--libitum-radius-full);
+}
+
+.overlay-story-dialog {
+  position: fixed;
+  top: 220px;
+  left: var(--libitum-spacing-24);
+  right: var(--libitum-spacing-24);
+  z-index: var(--libitum-elevation-z-dialog);
+  padding: var(--libitum-spacing-24);
+  row-gap: var(--libitum-spacing-8);
+  background-color: var(--libitum-color-background-primary);
+  border-radius: var(--libitum-radius-xl);
+}
+
+.overlay-story-media {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  background-color: var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-xl);
+  overflow: hidden;
+}
+
+.overlay-story-art {
+  position: absolute;
+  border-radius: var(--libitum-radius-full);
+}
+
+.overlay-story-art-one {
+  width: 220px;
+  height: 220px;
+  top: -48px;
+  left: -48px;
+  background-color: var(--libitum-color-brand-secondary);
+}
+
+.overlay-story-art-two {
+  width: 180px;
+  height: 180px;
+  right: -32px;
+  bottom: -32px;
+  background-color: var(--libitum-color-feedback-correct);
+}
+
+.overlay-story-area-foreground {
+  position: absolute;
+  top: 136px;
+  left: var(--libitum-spacing-16);
+  right: var(--libitum-spacing-16);
+  z-index: var(--libitum-elevation-z-floating);
+  align-items: center;
+}
+
+.overlay-story-area-label {
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  color: var(--libitum-color-fg-neutral);
+  background-color: var(--libitum-color-background-primary);
+  border-radius: var(--libitum-radius-full);
+}

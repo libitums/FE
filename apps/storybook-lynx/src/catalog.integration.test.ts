@@ -8,6 +8,7 @@ import {
 } from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
 import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
+import { dispatchOverlayStoryDismiss, normalizeOverlayStoryArgs } from "./overlay-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -29,6 +30,48 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("overlay init data는 JSON-only이고 잘못된 dismiss 조합을 none으로 보정한다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeOverlayStoryArgs({
+            scope: "area",
+            surface: "dialog",
+            blur: "on",
+            dismiss: "tap",
+            phase: "entering",
+            motion: "reduced",
+            onDismiss: () => undefined,
+          }),
+        ),
+      ),
+    ).toEqual({
+      scope: "area",
+      surface: "dialog",
+      blur: "on",
+      dismiss: "none",
+      phase: "entering",
+      motion: "reduced",
+    });
+  });
+
+  test("overlay dismiss bridge는 tap 가능한 Screen Sheet에만 Action을 보낸다", () => {
+    const calls: unknown[] = [];
+    expect(
+      dispatchOverlayStoryDismiss(
+        normalizeOverlayStoryArgs({ scope: "screen", surface: "sheet", dismiss: "tap" }),
+        (value) => calls.push(value),
+      ),
+    ).toBe(true);
+    expect(
+      dispatchOverlayStoryDismiss(
+        normalizeOverlayStoryArgs({ scope: "screen", surface: "dialog", dismiss: "tap" }),
+        (value) => calls.push(value),
+      ),
+    ).toBe(false);
+    expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onDismiss", args: [] }]);
+  });
+
   test("step-indicator init data는 유효한 정수 계약으로 정규화되고 JSON 직렬화된다", () => {
     expect(
       JSON.parse(
@@ -160,6 +203,7 @@ describe("Storybook Lynx build outputs", () => {
     "page-indicator",
     "bottom-navigator",
     "step-indicator",
+    "overlay",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -186,6 +230,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-step-indicator--first");
     expect(index).toContain("components-step-indicator--middle");
     expect(index).toContain("components-step-indicator--last");
+    expect(index).toContain("components-overlay--sheet-dismissible");
+    expect(index).toContain("components-overlay--dialog-modal");
+    expect(index).toContain("components-overlay--area");
+    expect(index).toContain("components-overlay--area-blur");
+    expect(index).toContain("components-overlay--reduced-motion");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -214,6 +263,7 @@ describe("Storybook Lynx build outputs", () => {
         "../../packages/ui-lynx/src/bottom-navigator/index.ts",
       ],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/overlay": ["../../packages/ui-lynx/src/overlay/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -228,6 +278,7 @@ describe("Storybook Lynx build outputs", () => {
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
+    ["overlay", "@libitums/ui-lynx/overlay"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -268,6 +319,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?overlay["']?\s*:\s*["']\.\/src\/lynx\/overlay\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -283,6 +335,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./overlay"]).toEqual({
+      types: "./dist/overlay/index.d.ts",
+      import: "./dist/overlay/index.js",
+      default: "./dist/overlay/index.js",
     });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
@@ -300,6 +357,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/overlay/Overlay.jsx")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/overlay/overlay.contract.js")).toBe(
+      true,
+    );
+    expect(await outputExists("../../packages/ui-lynx/dist/overlay/overlay.css")).toBe(true);
 
     const packVerifier = await readFile(
       path.resolve(appRoot, "../../packages/ui-lynx/scripts/check-pack.mjs"),
@@ -321,6 +383,7 @@ describe("Storybook Lynx build outputs", () => {
       "round-button",
       "status-indicator",
       "step-indicator",
+      "overlay",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
     }
@@ -336,6 +399,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('component: "StepIndicator"');
     expect(packVerifier).toContain('modules: ["step-indicator.contract"]');
     expect(packVerifier).toContain('css: "step-indicator.css"');
+    expect(packVerifier).toContain('subpath: "overlay"');
+    expect(packVerifier).toContain('directory: "overlay"');
+    expect(packVerifier).toContain('component: "Overlay"');
+    expect(packVerifier).toContain('modules: ["overlay.contract"]');
+    expect(packVerifier).toContain('css: "overlay.css"');
     expect(packVerifier).toContain("package/dist/${directory}/index.js");
     expect(packVerifier).toContain("package/dist/${directory}/${component}.jsx");
     expect(packVerifier).toContain("package/dist/${directory}/${module}.js");

@@ -58,7 +58,8 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
     빈 page count에서는 전체 indicator가 렌더되지 않는지 확인한다.
 15. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
     `status-indicator.web.bundle`, `round-button.web.bundle`, `progress-header.web.bundle`,
-    `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`을 정상
+    `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`,
+    `overlay.web.bundle`을 정상
     응답으로 가져오는지 확인한다.
 16. `Components/Bottom Navigator/Default`에서 4개 icon item, 선택된 주황색 pill, dot badge와
     `99+` count badge가 보이는지 확인한다. 선택되지 않은 enabled item을 tap하면 `onSelect`가
@@ -76,6 +77,17 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
     갱신되어야 한다. 원을 tap해도 이동이나 Action이 발생하지 않아야 한다.
 21. 브라우저 개발자 도구의 element overlay로 Step Indicator 원이 모두 32 × 32px이고 연결선이
     2px 두께로 원의 세로 중앙에 놓이며, 남는 가로 공간을 같은 비율로 나누는지 확인한다.
+22. `Components/Overlay/Sheet Dismissible`에서 gray.950 45% dim이 viewport 전체를 덮고
+    sheet는 dim 위에 보이는지 확인한다. dim을 tap하면 `onDismiss`가 1회 기록되고 sheet와
+    overlay가 함께 사라져야 한다.
+23. `Dialog Modal`에서 dialog가 dim 위에 보이고 dim을 tap해도 닫히거나 Action이 생기지 않는지
+    확인한다.
+24. `Area`에서 dim이 둥근 media 경계 안에서만 잘리고 중앙 foreground가 dim 위에 보이는지
+    확인한다. `Area Blur`는 지원되는 환경에서 4px blur를 더하며, Web에서 blur가 지원되지
+    않아도 같은 dim과 입력 차단은 유지되어야 한다.
+25. Overlay Controls의 scope, surface, blur, dismiss, phase, motion을 바꿔 Canvas가 갱신되는지
+    확인한다. Area 또는 Dialog에서 요청한 Tap은 None으로 보정되어야 한다.
+26. `Reduced Motion`에서 이동·확대 없이 100ms linear opacity 전환만 남는지 확인한다.
 
 ## native에서만 확인할 항목
 
@@ -91,6 +103,9 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 - Bottom Navigator 키보드/D-pad 선형 이동과 첫·마지막 item 경계 focus 유지
 - Bottom Navigator 선택 상태와 dot/count badge에 대한 VoiceOver/TalkBack 낭독
 - Step Indicator의 `N단계 중 M단계` 단일 상태 낭독과 숫자 원·연결선 자손 가림
+- Screen Overlay host의 target 접근성 제외, foreground focus trap·복귀와 safe area
+- Area Overlay target control의 접근성 제외
+- iOS/Android의 4px backdrop blur와 투명도 줄이기 설정 시 blur off fallback
 
 이 문서의 통과는 native 실기기 검증을 대체하지 않는다.
 현재 제품 소비 route가 없으므로 위 native 접근성 항목은 **미검증·이번 납품에는 비차단**

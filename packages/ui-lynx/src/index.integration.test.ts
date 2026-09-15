@@ -14,6 +14,7 @@ import * as progressHeader from "./progress-header/index";
 import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
 import * as stepIndicator from "./step-indicator/index";
+import * as overlay from "./overlay/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -26,6 +27,7 @@ const componentArtifacts = {
   "page-indicator": { implementation: "PageIndicator.jsx", css: "page-indicator.css" },
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
   "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
+  overlay: { implementation: "Overlay.jsx", css: "overlay.css" },
 } as const;
 
 const componentEntries = {
@@ -37,6 +39,7 @@ const componentEntries = {
   "page-indicator": "PageIndicator",
   "bottom-navigator": "BottomNavigator",
   "step-indicator": "StepIndicator",
+  overlay: "Overlay",
 } as const;
 
 async function readPackageJson() {
@@ -65,6 +68,8 @@ describe("ui-lynx package boundaries", () => {
     expect(root.PAGE_INDICATOR_MAX_PAGE_COUNT).toBe(pageIndicator.PAGE_INDICATOR_MAX_PAGE_COUNT);
     expect(root.getBottomNavigatorContract).toBe(bottomNavigator.getBottomNavigatorContract);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+    expect(root.Overlay).toBe(overlay.Overlay);
+    expect(root.getOverlayContract).toBe(overlay.getOverlayContract);
   });
 
   test("root stylesheet aggregates every component without removing existing styles", async () => {
@@ -94,6 +99,7 @@ describe("ui-lynx package boundaries", () => {
     expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
       "./dist/step-indicator/step-indicator.css",
     );
+    expect(packageJson.exports["./overlay/styles.css"]).toBe("./dist/overlay/overlay.css");
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
 
@@ -163,6 +169,13 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/step-indicator/step-indicator.contract.js",
       "package/dist/step-indicator/step-indicator.contract.d.ts",
       `package/dist/step-indicator/${componentArtifacts["step-indicator"].css}`,
+      "package/dist/overlay/index.js",
+      "package/dist/overlay/Overlay.jsx",
+      "package/dist/overlay/index.d.ts",
+      "package/dist/overlay/Overlay.d.ts",
+      "package/dist/overlay/overlay.contract.js",
+      "package/dist/overlay/overlay.contract.d.ts",
+      `package/dist/overlay/${componentArtifacts.overlay.css}`,
     ]) {
       expect(stdout).toContain(file);
     }

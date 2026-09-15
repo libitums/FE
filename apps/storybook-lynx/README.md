@@ -12,6 +12,8 @@ Rspeedy가 만든 Lynx Web bundle을 `<lynx-view>`에서 실행한다. 기반 �
 `87c1b0d2b745429be9b586cef772deb6c8707ab6`이다.
 Step Indicator는 `components/indicator/step-indicator.md` revision
 `3f7ed6d17df769e37215adb40f7abfc2e1174fd1`을 기준으로 한다.
+Overlay는 `components/overlay.md` revision
+`89a8fa557d94c52423d47a3a1e839a45c5f23fe7`을 기준으로 한다.
 Bottom Navigator는 2026-09-11의 `main` revision
 `2144145cd7ffb5777cf2b74e2fec5474eb0adc14`를 기준으로 추가했다.
 
@@ -22,7 +24,7 @@ pnpm storybook:lynx
 
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
-Navigator·Step Indicator의 실제 `.web.bundle` 여덟 개를 만들고, Rspeedy watch와 Storybook dev
+Navigator·Step Indicator·Overlay의 실제 `.web.bundle` 아홉 개를 만들고, Rspeedy watch와 Storybook dev
 server를 함께 유지한다.
 
 Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
@@ -42,6 +44,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Page Indicator — Default, First, Last, Single, Empty
 - Components/Bottom Navigator — Default, Long Accessibility Label, All Items, Disabled
 - Components/Step Indicator — First, Middle, Last
+- Components/Overlay — Sheet Dismissible, Dialog Modal, Area, Area Blur, Reduced Motion
 
 Controls 변경은 `<lynx-view>.updateData()`를 통해 ReactLynx `useInitData()`에 전달된다.
 Button·Round Button tap과 Back Header back/info tap은

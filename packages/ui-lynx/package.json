@@ -15,7 +15,8 @@
     "./dist/progress-header/progress-header.css",
     "./dist/page-indicator/page-indicator.css",
     "./dist/bottom-navigator/bottom-navigator.css",
-    "./dist/step-indicator/step-indicator.css"
+    "./dist/step-indicator/step-indicator.css",
+    "./dist/overlay/overlay.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -69,6 +70,12 @@
       "default": "./dist/step-indicator/index.js"
     },
     "./step-indicator/styles.css": "./dist/step-indicator/step-indicator.css",
+    "./overlay": {
+      "types": "./dist/overlay/index.d.ts",
+      "import": "./dist/overlay/index.js",
+      "default": "./dist/overlay/index.js"
+    },
+    "./overlay/styles.css": "./dist/overlay/overlay.css",
     "./styles.css": "./dist/styles.css",
     "./progress-header.css": "./dist/progress-header/progress-header.css",
     "./page-indicator.css": "./dist/page-indicator/page-indicator.css",
