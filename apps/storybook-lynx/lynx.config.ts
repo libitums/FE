@@ -15,6 +15,7 @@ export default defineConfig({
       "page-indicator": "./src/lynx/page-indicator.tsx",
       "bottom-navigator": "./src/lynx/bottom-navigator.tsx",
       "step-indicator": "./src/lynx/step-indicator.tsx",
+      "text-field": "./src/lynx/text-field.tsx",
     },
   },
   output: {

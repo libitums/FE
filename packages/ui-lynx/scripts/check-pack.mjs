@@ -67,6 +67,13 @@ const components = [
     modules: ["step-indicator.contract"],
     css: "step-indicator.css",
   },
+  {
+    subpath: "text-field",
+    directory: "text-field",
+    component: "TextField",
+    modules: ["text-field.contract"],
+    css: "text-field.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -152,6 +159,14 @@ if (stepIndicatorStylesExport !== "./dist/step-indicator/step-indicator.css") {
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");
+}
+
+const textFieldStylesExport = packedPackageJson.exports?.["./text-field/styles.css"];
+if (textFieldStylesExport !== "./dist/text-field/text-field.css") {
+  throw new Error("packed package has an invalid ./text-field/styles.css export");
+}
+if (!files.includes(`package/${textFieldStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the TextField CSS export target");
 }
 
 for (const { directory, component } of components) {

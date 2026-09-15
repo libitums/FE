@@ -62,3 +62,20 @@ export type {
   StepIndicatorStep,
   StepIndicatorStepStatus,
 } from "./step-indicator";
+
+export { TextField, getTextFieldContract } from "./text-field";
+export type {
+  TextFieldAvailability,
+  TextFieldContent,
+  TextFieldContract,
+  TextFieldCounter,
+  TextFieldInputPurpose,
+  TextFieldInteraction,
+  TextFieldLeading,
+  TextFieldProps,
+  TextFieldRuntimeState,
+  TextFieldSupporting,
+  TextFieldTrailing,
+  TextFieldValidation,
+  TextFieldVisualState,
+} from "./text-field";
