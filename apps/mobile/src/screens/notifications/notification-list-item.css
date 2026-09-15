@@ -1,0 +1,53 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1).
+   루트 레시피는 롤플레이 항목 · 여정 특별 항목과 치수(min-height · padding · gap ·
+   radius · 글 묶음)가 토큰 단위로 같다(design.md §4.1). 갈리는 것은 면과 경계
+   둘뿐이다 — 알림은 중립 카드다(`background-primary` + `border-default`), 특별
+   유닛 레시피(`brand-strong` 경계 + `background-elevated` 면)를 쓰지 않는다
+   (design.md §4.1 「특별 유닛 카드 레시피를 쓰지 않는 이유 셋」). */
+.notification-list-item {
+  width: 100%;
+  min-height: var(--libitum-spacing-64);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-layout-gap-inline);
+  padding: var(--libitum-spacing-16);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-color-background-primary);
+  flex-shrink: 0;
+}
+
+.notification-list-item-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  flex-shrink: 0;
+}
+
+/* 글 묶음 — 알림 문구 / 목적지 줄을 세로로 담는 레이아웃 래퍼. 가림 없음 — 보이는
+   이름을 지는 `<text>`는 가리지 않는다(ADR-0016 D5, LIB-255 r1). 이름은 루트의
+   `accessibility-label`이 진다. */
+.notification-list-item-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
+.notification-list-item-message {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.notification-list-item-destination {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}

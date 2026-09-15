@@ -212,7 +212,7 @@ export function App(
 
 | event | 출처 | payload | 발생 시점 | 지표 |
 |---|---|---|---|---|
-| `messenger_unit_opened` | journey | `unitId`, `entrySource: "journey"`, `entryStatus` | 맵 항목 선택으로 화면을 push하기 직전, 매 진입 | 진입 수, 완료 후 재진입 수 |
+| `messenger_unit_opened` | journey | `unitId`, `entrySource: "journey"`, `entryStatus` | 맵 항목 **또는 알림 항목(대상 메신저 — LIB-257)** 선택으로 화면을 push하기 직전, 매 진입. 알림에서 연 것도 여정 모드라 payload가 같다 — 알림 경로는 바로 앞의 `notification_item_tapped`로 가른다([알림 스펙](notifications.md) §4) | 진입 수, 완료 후 재진입 수 |
 | `messenger_unit_opened` | roleplay | `unitId`, `entrySource: "roleplay"` | 롤플레이 목록 항목 선택으로 화면을 push하기 직전, 매 진입. `entryStatus`를 싣지 않는다 — 연습은 여정 상태를 읽지 않고, 타입이 초과 속성으로 막는다 | 롤플레이 출처 비율 |
 | `messenger_unit_completed` | journey | `unitId`, `entrySource: "journey"` | available→completed가 처음 성립할 때 한 번 | 진입 대비 완료율 |
 | `messenger_unit_completed` | roleplay | `unitId`, `entrySource: "roleplay"` | 회차가 끝에 닿을 때마다 — 처음 열었을 때든 `처음부터 보기` 뒤든. 완료 기록이 없어 거를 상태도 없다 | 롤플레이 출처 완료 수 |
@@ -232,7 +232,7 @@ export function App(
 
 | event | 출처 | App의 실제 source callback | sink 호출 순서·조건 |
 |---|---|---|---|
-| `messenger_unit_opened` | journey | `JourneyMapScreen.onStartMessengerUnit` | 현재 완료 ID 목록에서 `entryStatus`를 계산하고, messenger 화면 `push` 직전에 호출 |
+| `messenger_unit_opened` | journey | `JourneyMapScreen.onStartMessengerUnit` · `NotificationsScreen.onSelectItem` → `onSelectNotification` → `onStartMessengerUnit`(LIB-257) | 현재 완료 ID 목록에서 `entryStatus`를 계산하고, messenger 화면 `push` 직전에 호출 |
 | `messenger_unit_opened` | roleplay | `RoleplayListScreen.onSelectItem` → `onStartRoleplayUnit(item)` | `item.form`이 `messenger`일 때 `roleplay-messenger` 화면 `push` 직전에 호출 |
 | `messenger_unit_completed` | journey | `MessengerScreen.onComplete` | ID가 완료 목록에 없을 때 sink 호출 후 완료 목록에 한 번 추가; replay 뒤 재완료에는 호출하지 않음 |
 | `messenger_unit_completed` | roleplay | 롤플레이에서 연 `MessengerScreen.onComplete` | 매번 호출. 완료 목록을 읽지도 쓰지도 않음 |

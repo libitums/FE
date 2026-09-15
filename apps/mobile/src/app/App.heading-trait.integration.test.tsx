@@ -255,13 +255,15 @@ test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고�
 // 잎 하나가 `header`를 잘못 지고 서도 오늘은 아무것도 안 빨개진다. 아래가 그 자리를
 // 첫 훑기 안으로 들인다 — 기대값은 그 앵커 목록에서 그 상태가 여는 것만 뽑는다.
 
-test("[I3] 제목 축 닫힌 집합이 상태 home에서 계약이 고정한 목록과 정확히 같다", () => {
+// (LIB-257) 「[I3] … 상태 home …」을 교체한다 — 홈이 걷혔다. 알림 버튼은 제목이
+// 아니므로(§4.2 · JN8) 여기서도 제목 축엔 알림 화면 제목만 오른다.
+test("[I3] 제목 축 닫힌 집합이 상태 notifications에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = render(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
-  expect(screen.getByTestId("home-screen-title")).toBeInTheDocument();
+  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["home-screen-title"]);
+  expect(headingAxis(container)).toEqual(["notifications-screen-title"]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정한 목록과 정확히 같다", () => {
