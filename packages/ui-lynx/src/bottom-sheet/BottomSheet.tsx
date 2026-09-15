@@ -139,38 +139,33 @@ export function BottomSheet(props: BottomSheetProps) {
                 {contract.description}
               </text>
             )}
-            {contract.actions.length === 0 ? null : (
-              <view
-                className={
-                  contract.description === undefined
-                    ? "ui-lynx-bottom-sheet-actions"
-                    : "ui-lynx-bottom-sheet-actions ui-lynx-bottom-sheet-actions-after-description"
-                }
-              >
-                {contract.actions.map((action) => (
-                  <view
-                    key={action.id}
-                    data-testid={`ui-lynx-bottom-sheet-action-${action.id}`}
-                    data-size="m"
-                    data-width="fill"
-                  >
-                    <Button
-                      label={action.label}
-                      variant="brand"
-                      size="m"
-                      width="fill"
-                      disabled={action.disabled}
-                      loading={action.loading}
-                      icon={action.icon}
-                      iconPosition={action.iconPosition}
-                      bindtap={action.bindtap}
-                    />
-                  </view>
-                ))}
-              </view>
-            )}
           </scroll-view>
         ) : null}
+
+        {contract.actions.length === 0 ? null : (
+          <view className="ui-lynx-bottom-sheet-actions" data-testid="ui-lynx-bottom-sheet-actions">
+            {contract.actions.map((action) => (
+              <view
+                key={action.id}
+                data-testid={`ui-lynx-bottom-sheet-action-${action.id}`}
+                data-size="m"
+                data-width="fill"
+              >
+                <Button
+                  label={action.label}
+                  variant="brand"
+                  size="m"
+                  width="fill"
+                  disabled={action.disabled}
+                  loading={action.loading}
+                  icon={action.icon}
+                  iconPosition={action.iconPosition}
+                  bindtap={action.bindtap}
+                />
+              </view>
+            ))}
+          </view>
+        )}
       </view>
     </view>
   );

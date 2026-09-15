@@ -77,6 +77,8 @@ describe("BottomSheet contract", () => {
     expect(styles).toContain("var(--libitum-radius-lg)");
     expect(styles).toContain("var(--libitum-spacing-16)");
     expect(styles).toContain("env(safe-area-inset-bottom)");
+    expect(styles).toMatch(/ui-lynx-bottom-sheet-body[\s\S]*flex:\s*1/);
+    expect(styles).toMatch(/ui-lynx-bottom-sheet-actions[\s\S]*flex-shrink:\s*0/);
     expect(styles).toContain("var(--libitum-motion-duration-sheet)");
     expect(styles).toContain("var(--libitum-motion-easing-enter)");
     expect(styles).toContain("var(--libitum-color-border-strong)");

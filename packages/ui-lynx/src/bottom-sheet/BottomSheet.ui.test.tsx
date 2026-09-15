@@ -33,6 +33,9 @@ describe("BottomSheet", () => {
     expect(screen.getByTestId("ui-lynx-bottom-sheet-action-replay")).toHaveTextContent(
       "오디오 다시 듣기",
     );
+    expect(screen.getByTestId("ui-lynx-bottom-sheet-body")).not.toContainElement(
+      screen.getByTestId("ui-lynx-bottom-sheet-actions"),
+    );
   });
 
   test("scrim과 닫기 버튼이 dismiss reason을 전달한다", () => {
@@ -79,6 +82,7 @@ describe("BottomSheet", () => {
     );
 
     const action = screen.getByTestId("ui-lynx-button");
+    expect(screen.getByTestId("ui-lynx-bottom-sheet-actions")).toContainElement(action);
     expect(action).toHaveAttribute("data-variant", "brand");
     expect(action).toHaveAttribute("data-size", "m");
     expect(action).toHaveAttribute("data-width", "fill");

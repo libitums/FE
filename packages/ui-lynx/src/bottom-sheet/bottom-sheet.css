@@ -143,7 +143,8 @@
 
 .ui-lynx-bottom-sheet-body {
   margin-top: var(--libitum-spacing-20);
-  flex-shrink: 1;
+  min-height: var(--libitum-spacing-0);
+  flex: 1;
 }
 
 .ui-lynx-bottom-sheet-description {
@@ -157,13 +158,11 @@
 
 .ui-lynx-bottom-sheet-actions {
   width: 100%;
+  margin-top: var(--libitum-spacing-20);
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   row-gap: var(--libitum-spacing-8);
-}
-
-.ui-lynx-bottom-sheet-actions-after-description {
-  margin-top: var(--libitum-spacing-20);
 }
 
 @keyframes ui-lynx-bottom-sheet-scrim-enter {
