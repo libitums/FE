@@ -1,3 +1,6 @@
+import { color } from "@libitums/design-tokens";
+import cross from "@libitums/icons/lynx/cross";
+import tick from "@libitums/icons/lynx/tick";
 import { render, screen } from "@lynx-js/react/testing-library";
 import { describe, expect, test } from "vitest";
 
@@ -19,12 +22,17 @@ describe("AnswerLabel UI", () => {
   });
 
   test.each([
-    ["correct", "정답이에요"],
-    ["incorrect", "오답이에요"],
-  ] as const)("%s는 판정 icon과 기본 Label을 함께 표시한다", (result, label) => {
+    ["correct", "정답이에요", tick],
+    ["incorrect", "오답이에요", cross],
+  ] as const)("%s는 판정 icon과 기본 Label을 같은 전경색으로 표시한다", (result, label, icon) => {
     render(<AnswerLabel result={result} />);
 
-    expect(screen.getByTestId("ui-lynx-answer-label-icon")).toBeInTheDocument();
+    const renderedIcon = screen.getByTestId("ui-lynx-answer-label-icon");
+    expect(renderedIcon).toHaveAttribute(
+      "content",
+      icon.replace(/currentColor/g, color.fg["neutral-inverted"]),
+    );
+    expect(renderedIcon).toHaveAttribute("current-color", color.fg["neutral-inverted"]);
     expect(screen.getByTestId("ui-lynx-answer-label-text")).toHaveTextContent(label);
     expect(screen.getByTestId("ui-lynx-answer-label-content")).toHaveAttribute(
       "accessibility-elements-hidden",

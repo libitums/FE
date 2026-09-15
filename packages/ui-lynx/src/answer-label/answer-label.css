@@ -102,11 +102,11 @@
 }
 
 .ui-lynx-answer-label-correct.ui-lynx-answer-label-solid {
-  background-color: var(--libitum-color-feedback-correct-text);
+  background-color: var(--libitum-color-feedback-correct);
 }
 
 .ui-lynx-answer-label-incorrect.ui-lynx-answer-label-solid {
-  background-color: var(--libitum-color-feedback-incorrect-strong-surface);
+  background-color: var(--libitum-color-feedback-incorrect);
 }
 
 .ui-lynx-answer-label-pending.ui-lynx-answer-label-subtle {

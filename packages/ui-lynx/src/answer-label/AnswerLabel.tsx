@@ -9,6 +9,10 @@ const icons = { cross, tick } as const;
 
 export function AnswerLabel(props: AnswerLabelProps) {
   const contract = getAnswerLabelContract(props);
+  const iconContent =
+    contract.icon === null
+      ? null
+      : icons[contract.icon].replace(/currentColor/g, contract.foregroundColor);
 
   return (
     <view
@@ -25,12 +29,12 @@ export function AnswerLabel(props: AnswerLabelProps) {
         data-testid="ui-lynx-answer-label-content"
         accessibility-elements-hidden={true}
       >
-        {contract.icon === null ? null : (
+        {iconContent === null ? null : (
           <view className="ui-lynx-answer-label-icon-wrap">
             <svg
               className="ui-lynx-answer-label-icon"
               data-testid="ui-lynx-answer-label-icon"
-              content={icons[contract.icon]}
+              content={iconContent}
               current-color={contract.foregroundColor}
             />
           </view>
