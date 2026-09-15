@@ -16,6 +16,7 @@ export default defineConfig({
       "bottom-navigator": "./src/lynx/bottom-navigator.tsx",
       "step-indicator": "./src/lynx/step-indicator.tsx",
       "chat-bubble": "./src/lynx/chat-bubble.tsx",
+      "text-field": "./src/lynx/text-field.tsx",
     },
   },
   output: {

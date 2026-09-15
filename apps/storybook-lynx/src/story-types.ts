@@ -10,6 +10,8 @@ import type {
   ChatBubbleDelivery,
   ChatBubbleDirection,
   ChatBubbleSize,
+  TextFieldAvailability,
+  TextFieldInputPurpose,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -78,4 +80,17 @@ export type ChatBubbleStoryArgs = {
   delivery: ChatBubbleDelivery;
   contentLanguage: ChatBubbleContentLanguage;
   languageTag: string;
+};
+
+export type TextFieldStoryArgs = {
+  label: string;
+  qualifier: string;
+  defaultValue: string;
+  placeholder: string;
+  purpose: TextFieldInputPurpose;
+  availability: TextFieldAvailability;
+  supporting: "none" | "helper" | "error";
+  supportingMessage: string;
+  counterMaxLength: number;
+  adornment: "none" | "icons" | "prefix-suffix" | "action";
 };

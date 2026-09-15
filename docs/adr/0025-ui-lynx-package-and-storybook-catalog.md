@@ -299,6 +299,26 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
   함께 확장한다. Storybook은 7개 대표 story와 `chat-bubble.web.bundle`을 제공하고 runtime은
   public subpath만 소비한다.
 
+### 2026-09-15 확장 — TextField 공개 표면
+
+이 절은 같은 package/catalog 경계에 열 번째 공개 컴포넌트를 추가한 delta다. 시각·상태
+정본은 `libitums/design-system/components/text-field.md` revision
+`1ba6b55103663c407f073f9ede3a2e700bf9b722`이다.
+
+- `TextField`는 native `<input>`을 사용하고 Label/Qualifier, Leading, Trailing,
+  Helper/Error, Counter를 독립 옵션으로 조합한다. Empty/Filled, Unfocused/Focused,
+  None/Error, Enabled/ReadOnly/Disabled 축에서 시각 우선순위를 한 상태로 정규화한다.
+- Input purpose는 Lynx가 지원하는 native type과 confirm type에 연결한다. native element가
+  uncontrolled initial value를 제공하므로 공개 값 계약은 `defaultValue + bindinput`이다.
+- Label 또는 별도 접근성 이름을 필수로 하고 오류 해결 문구와 counter 의미는 input 이름에
+  합친다. ReactLynx 0.125에 HTML과 동일한 required/invalid/description 관계가 없어 실제
+  VoiceOver/TalkBack과 host semantics는 제품 route 채택 시 native gate로 남긴다.
+- Leading/Trailing은 닫힌 union으로 빈 slot과 다중 adornment를 막는다. Trailing Action은 input
+  다음 별도 button node와 48px hit area를 가지며 Disabled에서는 handler를 연결하지 않는다.
+- `@libitums/ui-lynx/text-field`와 전용 styles subpath, root barrel, aggregate CSS, pack 검사를
+  함께 확장한다. Storybook은 8개 대표 story와 `text-field.web.bundle`을 제공하고 runtime은
+  public subpath만 소비한다.
+
 ## 버린 대안
 
 - **`apps/ui-catalog` 자체 앱을 함께 둔다** — 같은 공개 API를 보여주는 표면이 둘이 되고,

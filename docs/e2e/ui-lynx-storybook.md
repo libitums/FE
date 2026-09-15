@@ -59,7 +59,7 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 15. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
     `status-indicator.web.bundle`, `round-button.web.bundle`, `progress-header.web.bundle`,
     `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`,
-    `chat-bubble.web.bundle`을 정상
+    `chat-bubble.web.bundle`, `text-field.web.bundle`을 정상
     응답으로 가져오는지 확인한다.
 16. `Components/Bottom Navigator/Default`에서 4개 icon item, 선택된 주황색 pill, dot badge와
     `99+` count badge가 보이는지 확인한다. 선택되지 않은 enabled item을 tap하면 `onSelect`가
@@ -85,6 +85,15 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 24. `Long Content`를 320px와 390px Canvas에서 확인해 Bubble이 280px보다 넓어지지 않고 긴 URL과
     연속 문자열이 내부에서 줄바꿈되며 내용 전체가 보이는지 확인한다. `Learning Language`의
     contentLanguage와 languageTag Controls도 갱신한다.
+25. `Components/Text Field/Default`, `Filled`, `Error`, `Read Only`, `Disabled`를 열어 Label,
+    Placeholder/Value, Helper/Error와 배경·테두리·텍스트 상태가 구별되는지 확인한다. Field는
+    부모 폭을 채우고 최소 높이 56px, radius 16px, 좌우 padding 16px을 유지해야 한다.
+26. Default에서 실제 문자를 입력하고 focus/blur 시 Empty/Filled와 Focused 상태가 바뀌는지
+    확인한다. Email, Password, Search, Telephone purpose에서 native keyboard/보안 동작은
+    Storybook Web 결과만으로 통과 처리하지 않는다.
+27. `Prefix And Suffix`, `Trailing Action`, `Counter`를 열어 고정 텍스트가 value와 분리되고,
+    Action hit area가 48 × 48px이며, Counter가 오른쪽에 고정되는지 확인한다. 큰 글자에서도
+    Label, Field, Supporting row가 잘리거나 겹치지 않아야 한다.
 
 ## native에서만 확인할 항목
 
@@ -101,6 +110,7 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 - Bottom Navigator 선택 상태와 dot/count badge에 대한 VoiceOver/TalkBack 낭독
 - Step Indicator의 `N단계 중 M단계` 단일 상태 낭독과 숫자 원·연결선 자손 가림
 - Chat Bubble의 실제 speaker+Message 단일 낭독, delivery value, RTL 논리 방향과 학습 언어 발음
+- Text Field native keyboard·selection/copy·focus ring, required/invalid 관계와 Label/Error/Counter 낭독
 
 이 문서의 통과는 native 실기기 검증을 대체하지 않는다.
 현재 제품 소비 route가 없으므로 위 native 접근성 항목은 **미검증·이번 납품에는 비차단**

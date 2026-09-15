@@ -9,6 +9,7 @@ import {
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
 import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
 import { normalizeChatBubbleStoryArgs } from "./chat-bubble-story";
+import { normalizeTextFieldStoryArgs } from "./text-field-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -30,6 +31,61 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("text-field init data는 native 입력 축과 optional slot을 직렬화 가능하게 정규화한다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeTextFieldStoryArgs({
+            adornment: "action",
+            availability: "read-only",
+            counterMaxLength: 30,
+            defaultValue: "hello",
+            label: "검색",
+            placeholder: "예: 말랑",
+            purpose: "search",
+            qualifier: "선택",
+            supporting: "error",
+            supportingMessage: "검색어를 확인해 주세요.",
+          }),
+        ),
+      ),
+    ).toEqual({
+      adornment: "action",
+      availability: "read-only",
+      counterMaxLength: 30,
+      defaultValue: "hello",
+      label: "검색",
+      placeholder: "예: 말랑",
+      purpose: "search",
+      qualifier: "선택",
+      supporting: "error",
+      supportingMessage: "검색어를 확인해 주세요.",
+    });
+  });
+
+  test("text-field init data는 불완전한 값을 고정 fallback으로 바꾼다", () => {
+    expect(
+      normalizeTextFieldStoryArgs({
+        adornment: "bad",
+        availability: "bad",
+        counterMaxLength: -1,
+        label: " ",
+        purpose: "bad",
+        supporting: "bad",
+      }),
+    ).toEqual({
+      adornment: "none",
+      availability: "enabled",
+      counterMaxLength: 0,
+      defaultValue: "",
+      label: "이메일 주소",
+      placeholder: "예: name@example.com",
+      purpose: "email",
+      supporting: "helper",
+      supportingMessage: "로그인할 때 사용할 이메일 주소를 입력해 주세요.",
+    });
+  });
+
   test("chat-bubble init data는 독립 옵션을 JSON 직렬화 가능한 계약으로 정규화한다", () => {
     expect(
       JSON.parse(
@@ -210,6 +266,7 @@ describe("Storybook Lynx build outputs", () => {
     "bottom-navigator",
     "step-indicator",
     "chat-bubble",
+    "text-field",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -243,6 +300,14 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-chat-bubble--failed");
     expect(index).toContain("components-chat-bubble--learning-language");
     expect(index).toContain("components-chat-bubble--long-content");
+    expect(index).toContain("components-text-field--default");
+    expect(index).toContain("components-text-field--filled");
+    expect(index).toContain("components-text-field--error");
+    expect(index).toContain("components-text-field--read-only");
+    expect(index).toContain("components-text-field--disabled");
+    expect(index).toContain("components-text-field--prefix-and-suffix");
+    expect(index).toContain("components-text-field--trailing-action");
+    expect(index).toContain("components-text-field--counter");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -272,6 +337,7 @@ describe("Storybook Lynx build outputs", () => {
       ],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
       "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
+      "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -287,6 +353,7 @@ describe("Storybook Lynx build outputs", () => {
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
     ["chat-bubble", "@libitums/ui-lynx/chat-bubble"],
+    ["text-field", "@libitums/ui-lynx/text-field"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -327,6 +394,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?text-field["']?\s*:\s*["']\.\/src\/lynx\/text-field\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -342,6 +410,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./text-field"]).toEqual({
+      types: "./dist/text-field/index.d.ts",
+      import: "./dist/text-field/index.js",
+      default: "./dist/text-field/index.js",
     });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
