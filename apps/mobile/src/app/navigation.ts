@@ -28,6 +28,9 @@ import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract"
 // `import type`이다.
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import type { VisualNovelUnitId } from "../screens/visual-novel/visual-novel.contract";
+// LIB-261 계약 §2.7: 진입 흐름 어휘. `entryScreenAfterLogin`이 받는 판별 입력이다.
+// `import type`이라 §8.4의 불변식(app/ -> screens/는 값 import 금지)을 어기지 않는다.
+import type { EntryLoginMethod } from "../lib/entry-flow";
 
 // 탭 목록과 1:1이다. 세 탭은 docs/screens.md의 "여정 · 롤플레이 · 설정"에서 왔다 —
 // 홈은 LIB-257이 걷었다(계약 §2.1 · Q1). 순서가 곧 바텀 네비게이션의 좌→우 순서다
@@ -88,7 +91,17 @@ export type Screen =
   // (계약 §2.6 — 기존 route에 `entrySource` 필드를 더하지 않는 근거).
   | { name: "roleplay-messenger"; unitId: MessengerUnitId }
   | { name: "roleplay-phone-call"; unitId: PhoneCallUnitId }
-  | { name: "roleplay-visual-novel"; unitId: VisualNovelUnitId };
+  | { name: "roleplay-visual-novel"; unitId: VisualNovelUnitId }
+  // LIB-261: 진입 흐름 화면 여섯. 여섯 멤버는 전부 필드가 없다 — 온보딩 `step`은
+  // 화면 로컬, 언어는 App 상태, 코드 값은 화면 로컬이다(계약 §2.7). 삽입 지점은
+  // 기존 마지막 멤버 뒤다(LIB-238 선례 — 앞에 끼우면 기존 줄의 세미콜론이 움직여
+  // diff가 커진다).
+  | { name: "splash" }
+  | { name: "onboarding" }
+  | { name: "login" }
+  | { name: "verification-code" }
+  | { name: "language-select" }
+  | { name: "journey-entry" };
 
 // LIB-255 계약 §2.6: 롤플레이 route 셋만 좁힌 타입. `renderRoleplayUnitScreen`의
 // 매개변수 타입이 연습 경계를 진다(계약 §6 ②).
@@ -132,7 +145,10 @@ export type NavAction =
   | { type: "enterApp" };
 
 // 계약이 고정한 리터럴이다. 각 탭 스택은 자기 루트 화면 하나로 시작하고,
-// `entry`는 비어 있다 — 진입 화면(스플래시 등)은 아직 없다(구현 순서 11번이 채운다).
+// `entry`는 비어 있다 — **이 상수 자신은 그렇다.** 진입 화면이 있는 부팅은
+// `entryInitialNav`(아래, LIB-261 계약 §2.7)가 진다: `App`이 어느 초기값을 쓰느냐로
+// 갈리고, `initialNav`는 그 갈림과 무관하게 한 글자도 바뀌지 않는다(기존 integration
+// 아홉 파일이 계속 이 값으로 부팅한다).
 //
 // LIB-257: 첫 화면이 여정 맵이다(계약 §2.1 · Q1 — 홈 탭까지 없앤다). `stacks`에서
 // `home` 키를 지웠다 — `Tab`/`Screen` 축소와 같은 커밋 단위다(계약 §9.1 원칙 2).
@@ -145,6 +161,31 @@ export const initialNav: Nav = {
     settings: [{ name: "settings" }],
   },
 };
+
+// LIB-261 계약 §2.7: `initialNav`를 고치지 않는 것이 이 계약의 핵심 설계다(§9.3) —
+// 기존 integration 아홉 파일의 부팅 화면을 이 단위가 바꾸지 않기 위해서다. `tab`·
+// `stacks`는 `initialNav`와 같은 값이고 `entry`만 다르다(NV2).
+export const entryInitialNav: Nav = { ...initialNav, entry: [{ name: "splash" }] };
+
+// `default` 없는 switch — 수단이 늘면 TS2366으로 선다(§2.7). `phone`만 코드 검증을
+// 거친다(`requiresVerificationCode`와 같은 축, `lib/entry-flow.ts` §2.1).
+export function entryScreenAfterLogin(method: EntryLoginMethod): Screen {
+  switch (method) {
+    case "phone": {
+      return { name: "verification-code" };
+    }
+    case "google":
+    case "apple":
+    case "facebook": {
+      return { name: "language-select" };
+    }
+  }
+}
+
+// `entry`가 비어 있지 않으면 진입 구간이다(§2.7) — `phase` 필드를 만들지 않는다.
+export function isEntrySection(nav: Nav): boolean {
+  return nav.entry.length > 0;
+}
 
 // LIB-257 (logic): 계약 §0.3 D-c · §2.1. 탭을 바꾸고 그 탭 스택을 루트로 접는 동작
 // 목록을 돌려준다 — 부수효과는 없다. App이 반환값을 **순서대로** `dispatch`한다.
@@ -202,6 +243,13 @@ export function navReducer(nav: Nav, action: NavAction): Nav {
       // LIB-245 (logic): 목적지는 활성 스택의 루트다 (ADR-0007 D6). `entry`는
       // 비우지 않는다 — 비우면 `enterApp`과 갈리는 자리가 사라지고, D3이 열어 둔
       // "진입 구간으로 되돌아가기" 보류를 여기서 몰래 닫아버리게 된다.
+      //
+      // LIB-261: 아래 `entry` 분기는 이제 `entry`가 늘 비어 있다는 전제로 죽어
+      // 있지 않다 — `entryInitialNav`부터 `entry`가 실제로 채워진다(§2.7). 다만
+      // **이 분기를 부르는 호출자는 오늘도 0건이다** — 진입 구간에서 되돌아가는
+      // 수단은 `back`뿐이고(코드 검증의 "로그인으로", IE11) `backToRoot`를 진입
+      // 구간에서 dispatch하는 자리가 없다. 그래서 절반만 낡는다: "entry는 늘
+      // 비어 있다"는 거짓이 됐지만 "이 분기를 부르는 곳이 없다"는 여전히 참이다.
       if (nav.entry.length > 0) {
         if (nav.entry.length <= 1) {
           return nav;

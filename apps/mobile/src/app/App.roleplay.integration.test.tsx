@@ -5,6 +5,9 @@ import { App } from "./App";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
+// LIB-261 (integration-design) §9.5: `renderApp` 헬퍼의 토큰 스텁·타이머 값.
+import { authTokenStorageKey } from "../lib/auth-token";
+import { entrySplashDurationMs } from "../lib/entry-flow";
 
 // LIB-255 integration 계층(ADR-0006 D4): App · navReducer · BottomNavigator ·
 // RoleplayListScreen · RoleplayListItem · 세 특별 유닛 화면 · 여정 맵의 실제 결선.
@@ -72,8 +75,41 @@ type Sinks = {
   visualNovelEventSink?: VisualNovelEventSink;
 };
 
+// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
+// 헬퍼(`renderApp`). 토큰이 있는 상태를 스텁하고 가짜 타이머로
+// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다. 이 파일이 이미
+// 세운 `NativeModules` 스텁(있으면, `stubCompletionAnnouncementHost()`의 낭독
+// 모듈)을 지우지 않고 `StorageModule`만 얹는다.
+//
+// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
+// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
+// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
+// 기존 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+function renderApp(ui: Parameters<typeof render>[0]) {
+  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
+  const tokenStore = new Map<string, string>();
+  tokenStore.set(authTokenStorageKey, "existing-token");
+  vi.stubGlobal("NativeModules", {
+    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
+      ? previousNativeModules
+      : {}),
+    StorageModule: {
+      get: (key: string) => tokenStore.get(key) ?? null,
+      set: (key: string, value: string) => void tokenStore.set(key, value),
+      remove: (key: string) => void tokenStore.delete(key),
+    },
+  });
+  vi.useFakeTimers();
+  const result = render(ui);
+  act(() => {
+    vi.advanceTimersByTime(entrySplashDurationMs);
+  });
+  vi.useRealTimers();
+  return result;
+}
+
 function openRoleplayTab(sinks: Sinks = {}) {
-  render(<App {...sinks} />);
+  renderApp(<App {...sinks} />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
 }
 
@@ -159,7 +195,7 @@ test("[I1] 실제 데이터로 선 목록 — 항목 셋이 여정 순서로 서
 });
 
 test("[I1b] 여정에서 메신저를 완료해도 롤플레이 목록은 새지 않는다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
   finishMessengerConversation();
@@ -234,7 +270,7 @@ test("[I2] 비주얼 노벨 항목을 열면 롤플레이 스택에 push되고 �
 // -------------------------------------------------------------- I3 (AC3)
 
 test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   // 여정에서 메신저 완료
@@ -279,7 +315,7 @@ test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선
 });
 
 test("[I3] 여정에서 비주얼 노벨을 완료한 뒤에도 롤플레이는 arrive에서 시작한다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-map-visual-novel-${visualNovelUnitId}`), {});
   advanceVisualNovelOnce();
@@ -335,7 +371,7 @@ test("[I4] 롤플레이에서 연 비주얼 노벨의 나가기는 목록으로�
 });
 
 test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대로다(회귀)", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
@@ -353,7 +389,7 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
 // -------------------------------------------------------------- I5 (AC5) — §6 ③겹의 유일한 판정자
 
 test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 그대로다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   const before = journeyStateSnapshot();
 
@@ -497,7 +533,9 @@ test("[I6] 비주얼 노벨 롤플레이 이벤트는 entrySource: roleplay를 �
 
 test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지지 않는다", () => {
   expect(() =>
-    render(<App messengerEventSink={null} phoneCallEventSink={null} visualNovelEventSink={null} />),
+    renderApp(
+      <App messengerEventSink={null} phoneCallEventSink={null} visualNovelEventSink={null} />,
+    ),
   ).not.toThrow();
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
 

@@ -1,13 +1,51 @@
-import { expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { afterEach, expect, test, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
+// LIB-261 (integration-design) §9.5: `renderApp` 헬퍼의 토큰 스텁·타이머 값.
+import { authTokenStorageKey } from "../lib/auth-token";
+import { entrySplashDurationMs } from "../lib/entry-flow";
 
 // LIB-254 integration 계층: App · navigation · 여정 맵 · 메신저 화면의 실제 결선.
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
+// 헬퍼(`renderApp`). 토큰이 있는 상태를 스텁하고 가짜 타이머로
+// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다.
+//
+// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
+// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
+// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
+// 기존 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+function renderApp(ui: Parameters<typeof render>[0]) {
+  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
+  const tokenStore = new Map<string, string>();
+  tokenStore.set(authTokenStorageKey, "existing-token");
+  vi.stubGlobal("NativeModules", {
+    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
+      ? previousNativeModules
+      : {}),
+    StorageModule: {
+      get: (key: string) => tokenStore.get(key) ?? null,
+      set: (key: string, value: string) => void tokenStore.set(key, value),
+      remove: (key: string) => void tokenStore.delete(key),
+    },
+  });
+  vi.useFakeTimers();
+  const result = render(ui);
+  act(() => {
+    vi.advanceTimersByTime(entrySplashDurationMs);
+  });
+  vi.useRealTimers();
+  return result;
+}
+
 function openJourneyMessenger(messengerEventSink?: MessengerEventSink) {
-  render(<App messengerEventSink={messengerEventSink} />);
+  renderApp(<App messengerEventSink={messengerEventSink} />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
 }
@@ -41,7 +79,7 @@ test("두 답장을 완료하면 마지막 메시지와 맵 완료 표식이 함
 });
 
 test("메신저 완료는 일반 completedStepCount와 directions 상태를 바꾸지 않는다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   // initialCompletedStepCount=2: greeting/소개는 done, appointment/directions는 locked.
   expect(screen.getByTestId("journey-step-node-greeting")).toHaveAttribute("data-status", "done");
@@ -187,6 +225,6 @@ test("완료 후 replay를 다시 완료해도 completed 이벤트는 중복되�
 });
 
 test("명시적 null sink와 기본 null은 기능을 안전하게 유지한다", () => {
-  expect(() => render(<App messengerEventSink={null} />)).not.toThrow();
-  expect(() => render(<App />)).not.toThrow();
+  expect(() => renderApp(<App messengerEventSink={null} />)).not.toThrow();
+  expect(() => renderApp(<App />)).not.toThrow();
 });
