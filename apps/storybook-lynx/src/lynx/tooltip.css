@@ -1,0 +1,37 @@
+.story-tooltip-card {
+  overflow: visible;
+}
+
+.story-tooltip-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.story-tooltip-host {
+  position: relative;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  overflow: visible;
+}
+
+.story-tooltip-trigger {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-background-secondary);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+.story-tooltip-trigger-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}

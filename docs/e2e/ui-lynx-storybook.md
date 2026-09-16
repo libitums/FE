@@ -59,7 +59,8 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 15. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
     `status-indicator.web.bundle`, `round-button.web.bundle`, `progress-header.web.bundle`,
     `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`,
-    `chat-bubble.web.bundle`, `text-field.web.bundle`, `overlay.web.bundle`을 정상
+    `chat-bubble.web.bundle`, `text-field.web.bundle`, `overlay.web.bundle`,
+    `tooltip.web.bundle`을 정상
     응답으로 가져오는지 확인한다.
 16. `Components/Bottom Navigator/Default`에서 4개 icon item, 선택된 주황색 pill, dot badge와
     `99+` count badge가 보이는지 확인한다. 선택되지 않은 enabled item을 tap하면 `onSelect`가
@@ -105,6 +106,12 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 32. `Prefix And Suffix`, `Trailing Action`, `Counter`를 열어 고정 텍스트가 value와 분리되고,
     Action hit area가 48 × 48px이며, Counter가 오른쪽에 고정되는지 확인한다. 큰 글자에서도
     Label, Field, Supporting row가 잘리거나 겹치지 않아야 한다.
+33. `Components/Tooltip/Top`, `Bottom`, `Start`, `End`를 열어 Trigger와 Bubble 사이 8px 간격,
+    논리 방향 배치, 12×6px Arrow와 12px 모서리 여백을 확인한다.
+34. `Brand`, `No Arrow`, `Aligned Start`, `Learning Language`에서 tone·arrow·alignment·language
+    metadata가 독립적으로 반영되고 Bubble이 240px를 넘지 않는지 확인한다.
+35. Controls의 visibility를 Hidden/Visible로 바꿔 100ms opacity 전환만 사용하는지, Hidden이
+    접근성 트리에서 숨고 Tooltip이 Trigger hit area를 가로채지 않는지 확인한다.
 
 ## native에서만 확인할 항목
 
@@ -125,6 +132,8 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 - iOS/Android의 4px backdrop blur와 투명도 줄이기 설정 시 blur off fallback
 - Chat Bubble의 실제 speaker+Message 단일 낭독, delivery value, RTL 논리 방향과 학습 언어 발음
 - Text Field native keyboard·selection/copy·focus ring, required/invalid 관계와 Label/Error/Counter 낭독
+- Tooltip pointer/focus/press, ESC·뒤로가기, outside tap, Auto timer와 trigger-description 연결
+- Tooltip 스크롤·회전·글자 크기 변경 시 재측정 및 native 경계에서의 Flip·Shift
 
 이 문서의 통과는 native 실기기 검증을 대체하지 않는다.
 현재 제품 소비 route가 없으므로 위 native 접근성 항목은 **미검증·이번 납품에는 비차단**

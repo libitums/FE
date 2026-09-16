@@ -22,6 +22,7 @@ export default defineConfig({
       "bottom-sheet": "./src/lynx/bottom-sheet.tsx",
       "text-field": "./src/lynx/text-field.tsx",
       "chat-bubble": "./src/lynx/chat-bubble.tsx",
+      tooltip: "./src/lynx/tooltip.tsx",
     },
   },
   output: {
