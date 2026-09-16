@@ -1,0 +1,59 @@
+.avatar-story-card {
+  min-height: 300px;
+  justify-content: center;
+}
+
+.avatar-story-example {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.avatar-story-copy {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
+}
+
+.avatar-story-name {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.avatar-story-description,
+.avatar-story-size-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.avatar-story-sizes {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  column-gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.avatar-story-size-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-8);
+}
+
+.avatar-story-size-label {
+  text-align: center;
+}

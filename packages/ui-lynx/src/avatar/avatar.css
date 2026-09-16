@@ -1,0 +1,135 @@
+@import "@libitums/design-tokens/css/variables.css";
+@import "@libitums/design-tokens/css/typography.css";
+
+.ui-lynx-avatar {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-width: var(--libitum-spacing-0);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+  box-shadow: none;
+}
+
+.ui-lynx-avatar-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ui-lynx-avatar-image-idle,
+.ui-lynx-avatar-image-loading,
+.ui-lynx-avatar-image-error {
+  opacity: 0;
+}
+
+.ui-lynx-avatar-image-loaded {
+  opacity: 1;
+}
+
+.ui-lynx-avatar-initials {
+  color: var(--libitum-color-fg-brand);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ui-lynx-avatar-placeholder {
+  flex-shrink: 0;
+}
+
+.ui-lynx-avatar-xs {
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-24);
+}
+
+.ui-lynx-avatar-xs .ui-lynx-avatar-initials {
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}
+
+.ui-lynx-avatar-xs .ui-lynx-avatar-placeholder {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.ui-lynx-avatar-sm {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+}
+
+.ui-lynx-avatar-sm .ui-lynx-avatar-initials {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.ui-lynx-avatar-sm .ui-lynx-avatar-placeholder {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.ui-lynx-avatar-md {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+}
+
+.ui-lynx-avatar-md .ui-lynx-avatar-initials {
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.ui-lynx-avatar-md .ui-lynx-avatar-placeholder {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.ui-lynx-avatar-lg {
+  width: var(--libitum-spacing-64);
+  height: var(--libitum-spacing-64);
+}
+
+.ui-lynx-avatar-lg .ui-lynx-avatar-initials {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.ui-lynx-avatar-lg .ui-lynx-avatar-placeholder {
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
+}
+
+.ui-lynx-avatar-xl {
+  width: var(--libitum-spacing-96);
+  height: var(--libitum-spacing-96);
+}
+
+.ui-lynx-avatar-xl .ui-lynx-avatar-initials {
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.ui-lynx-avatar-xl .ui-lynx-avatar-placeholder {
+  width: var(--libitum-icon-size-xl);
+  height: var(--libitum-icon-size-xl);
+}
