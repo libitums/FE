@@ -1,0 +1,76 @@
+@keyframes ui-lynx-overlay-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ui-lynx-overlay-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.ui-lynx-overlay {
+  background-color: rgba(26, 28, 32, 0.45);
+  opacity: 1;
+}
+
+.ui-lynx-overlay-screen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.ui-lynx-overlay-area {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-default);
+}
+
+.ui-lynx-overlay-sheet {
+  z-index: var(--libitum-elevation-z-sheet);
+}
+
+.ui-lynx-overlay-dialog {
+  z-index: var(--libitum-elevation-z-dialog);
+}
+
+.ui-lynx-overlay-phase-entering {
+  animation-name: ui-lynx-overlay-enter;
+  animation-timing-function: var(--libitum-motion-easing-enter);
+  animation-fill-mode: both;
+}
+
+.ui-lynx-overlay-phase-exiting {
+  animation-name: ui-lynx-overlay-exit;
+  animation-timing-function: var(--libitum-motion-easing-exit);
+  animation-fill-mode: both;
+}
+
+.ui-lynx-overlay-area.ui-lynx-overlay-motion-standard {
+  animation-duration: var(--libitum-motion-duration-color);
+}
+
+.ui-lynx-overlay-sheet.ui-lynx-overlay-motion-standard {
+  animation-duration: var(--libitum-motion-duration-sheet);
+}
+
+.ui-lynx-overlay-dialog.ui-lynx-overlay-motion-standard {
+  animation-duration: var(--libitum-motion-duration-dialog);
+}
+
+.ui-lynx-overlay-motion-reduced {
+  animation-duration: var(--libitum-motion-duration-d2);
+  animation-timing-function: var(--libitum-motion-easing-linear);
+}

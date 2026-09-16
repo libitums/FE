@@ -16,6 +16,7 @@ import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
 import * as bottomSheet from "./bottom-sheet/index";
 import * as stepIndicator from "./step-indicator/index";
+import * as overlay from "./overlay/index";
 import * as answerLabel from "./answer-label/index";
 import * as card from "./card/index";
 import * as chatBubble from "./chat-bubble/index";
@@ -38,6 +39,7 @@ const componentArtifacts = {
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
   "bottom-sheet": { implementation: "BottomSheet.jsx", css: "bottom-sheet.css" },
   "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
+  overlay: { implementation: "Overlay.jsx", css: "overlay.css" },
   card: { implementation: "Card.jsx", css: "card.css" },
   "chat-bubble": { implementation: "ChatBubble.jsx", css: "chat-bubble.css" },
   "text-field": { implementation: "TextField.jsx", css: "text-field.css" },
@@ -55,6 +57,7 @@ const componentEntries = {
   "bottom-navigator": "BottomNavigator",
   "bottom-sheet": "BottomSheet",
   "step-indicator": "StepIndicator",
+  overlay: "Overlay",
   card: "Card",
   "chat-bubble": "ChatBubble",
   "text-field": "TextField",
@@ -98,6 +101,8 @@ describe("ui-lynx package boundaries", () => {
     expect(root.getBottomSheetContract).toBe(bottomSheet.getBottomSheetContract);
     expect(root.shouldDismissBottomSheetDrag).toBe(bottomSheet.shouldDismissBottomSheetDrag);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+    expect(root.Overlay).toBe(overlay.Overlay);
+    expect(root.getOverlayContract).toBe(overlay.getOverlayContract);
     expect(root.getAnswerLabelContract).toBe(answerLabel.getAnswerLabelContract);
     expect(root.getCardContract).toBe(card.getCardContract);
     expect(root.getChatBubbleContract).toBe(chatBubble.getChatBubbleContract);
@@ -131,6 +136,7 @@ describe("ui-lynx package boundaries", () => {
     expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
       "./dist/step-indicator/step-indicator.css",
     );
+    expect(packageJson.exports["./overlay/styles.css"]).toBe("./dist/overlay/overlay.css");
     expect(packageJson.exports["./answer-label/styles.css"]).toBe(
       "./dist/answer-label/answer-label.css",
     );
@@ -226,6 +232,13 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/step-indicator/step-indicator.contract.js",
       "package/dist/step-indicator/step-indicator.contract.d.ts",
       `package/dist/step-indicator/${componentArtifacts["step-indicator"].css}`,
+      "package/dist/overlay/index.js",
+      "package/dist/overlay/Overlay.jsx",
+      "package/dist/overlay/index.d.ts",
+      "package/dist/overlay/Overlay.d.ts",
+      "package/dist/overlay/overlay.contract.js",
+      "package/dist/overlay/overlay.contract.d.ts",
+      `package/dist/overlay/${componentArtifacts.overlay.css}`,
       "package/dist/card/index.js",
       `package/dist/card/${componentArtifacts.card.implementation}`,
       "package/dist/card/index.d.ts",

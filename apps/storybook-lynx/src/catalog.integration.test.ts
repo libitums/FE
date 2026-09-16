@@ -12,6 +12,7 @@ import {
   normalizeCompactNumericInputStoryArgs,
 } from "./compact-numeric-input-story";
 import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
+import { dispatchOverlayStoryDismiss, normalizeOverlayStoryArgs } from "./overlay-story";
 import { dispatchCardStoryTap, normalizeCardStoryArgs } from "./card-story";
 import {
   dispatchBottomSheetStoryAction,
@@ -41,6 +42,48 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("overlay init data는 JSON-only이고 잘못된 dismiss 조합을 none으로 보정한다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeOverlayStoryArgs({
+            scope: "area",
+            surface: "dialog",
+            blur: "on",
+            dismiss: "tap",
+            phase: "entering",
+            motion: "reduced",
+            onDismiss: () => undefined,
+          }),
+        ),
+      ),
+    ).toEqual({
+      scope: "area",
+      surface: "dialog",
+      blur: "on",
+      dismiss: "none",
+      phase: "entering",
+      motion: "reduced",
+    });
+  });
+
+  test("overlay dismiss bridge는 tap 가능한 Screen Sheet에만 Action을 보낸다", () => {
+    const calls: unknown[] = [];
+    expect(
+      dispatchOverlayStoryDismiss(
+        normalizeOverlayStoryArgs({ scope: "screen", surface: "sheet", dismiss: "tap" }),
+        (value) => calls.push(value),
+      ),
+    ).toBe(true);
+    expect(
+      dispatchOverlayStoryDismiss(
+        normalizeOverlayStoryArgs({ scope: "screen", surface: "dialog", dismiss: "tap" }),
+        (value) => calls.push(value),
+      ),
+    ).toBe(false);
+    expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onDismiss", args: [] }]);
+  });
+
   test("compact numeric input init data는 직렬화 가능한 한 자리 숫자 계약으로 정규화된다", () => {
     expect(
       JSON.parse(
@@ -384,6 +427,7 @@ describe("Storybook Lynx build outputs", () => {
     "bottom-navigator",
     "bottom-sheet",
     "step-indicator",
+    "overlay",
     "answer-label",
     "card",
     "chat-bubble",
@@ -420,6 +464,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-step-indicator--first");
     expect(index).toContain("components-step-indicator--middle");
     expect(index).toContain("components-step-indicator--last");
+    expect(index).toContain("components-overlay--sheet-dismissible");
+    expect(index).toContain("components-overlay--dialog-modal");
+    expect(index).toContain("components-overlay--area");
+    expect(index).toContain("components-overlay--area-blur");
+    expect(index).toContain("components-overlay--reduced-motion");
     expect(index).toContain("components-answer-label--pending");
     expect(index).toContain("components-answer-label--correct");
     expect(index).toContain("components-answer-label--incorrect");
@@ -477,6 +526,7 @@ describe("Storybook Lynx build outputs", () => {
       ],
       "@libitums/ui-lynx/bottom-sheet": ["../../packages/ui-lynx/src/bottom-sheet/index.ts"],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/overlay": ["../../packages/ui-lynx/src/overlay/index.ts"],
       "@libitums/ui-lynx/answer-label": ["../../packages/ui-lynx/src/answer-label/index.ts"],
       "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"],
       "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
@@ -497,6 +547,7 @@ describe("Storybook Lynx build outputs", () => {
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["bottom-sheet", "@libitums/ui-lynx/bottom-sheet"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
+    ["overlay", "@libitums/ui-lynx/overlay"],
     ["answer-label", "@libitums/ui-lynx/answer-label"],
     ["card", "@libitums/ui-lynx/card"],
     ["chat-bubble", "@libitums/ui-lynx/chat-bubble"],
@@ -541,6 +592,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?overlay["']?\s*:\s*["']\.\/src\/lynx\/overlay\.tsx["']/);
     expect(config).toMatch(/["']?answer-label["']?\s*:\s*["']\.\/src\/lynx\/answer-label\.tsx["']/);
     expect(config).toMatch(/["']?card["']?\s*:\s*["']\.\/src\/lynx\/card\.tsx["']/);
     expect(config).toMatch(
@@ -563,6 +615,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./overlay"]).toEqual({
+      types: "./dist/overlay/index.d.ts",
+      import: "./dist/overlay/index.js",
+      default: "./dist/overlay/index.js",
     });
     expect(packageJson.exports["./answer-label"]).toEqual({
       types: "./dist/answer-label/index.d.ts",
@@ -605,6 +662,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/overlay/Overlay.jsx")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/overlay/overlay.contract.js")).toBe(
+      true,
+    );
+    expect(await outputExists("../../packages/ui-lynx/dist/overlay/overlay.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/answer-label/AnswerLabel.jsx")).toBe(
       true,
     );
@@ -649,6 +711,7 @@ describe("Storybook Lynx build outputs", () => {
       "round-button",
       "status-indicator",
       "step-indicator",
+      "overlay",
       "text-field",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
@@ -665,6 +728,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('component: "StepIndicator"');
     expect(packVerifier).toContain('modules: ["step-indicator.contract"]');
     expect(packVerifier).toContain('css: "step-indicator.css"');
+    expect(packVerifier).toContain('subpath: "overlay"');
+    expect(packVerifier).toContain('directory: "overlay"');
+    expect(packVerifier).toContain('component: "Overlay"');
+    expect(packVerifier).toContain('modules: ["overlay.contract"]');
+    expect(packVerifier).toContain('css: "overlay.css"');
     expect(packVerifier).toContain('subpath: "answer-label"');
     expect(packVerifier).toContain('directory: "answer-label"');
     expect(packVerifier).toContain('component: "AnswerLabel"');

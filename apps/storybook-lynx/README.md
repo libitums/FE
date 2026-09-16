@@ -12,6 +12,8 @@ Rspeedy가 만든 Lynx Web bundle을 `<lynx-view>`에서 실행한다. 기반 �
 `87c1b0d2b745429be9b586cef772deb6c8707ab6`이다.
 Step Indicator는 `components/indicator/step-indicator.md` revision
 `3f7ed6d17df769e37215adb40f7abfc2e1174fd1`을 기준으로 한다.
+Overlay는 `components/overlay.md` revision
+`89a8fa557d94c52423d47a3a1e839a45c5f23fe7`을 기준으로 한다.
 Answer Label은 `components/indicator/answer-label.md` revision
 `261f525f7b4eb7c09994ef31ee40455e3e881d28`을 기준으로 한다.
 Bottom Navigator는 2026-09-11의 `main` revision
@@ -29,7 +31,7 @@ pnpm storybook:lynx
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
 Navigator·Step Indicator·Answer Label·Bottom Sheet·Card·Compact Numeric Input·Chat Bubble·Text
-Field의 실제 `.web.bundle` 열네 개를 만들고, Rspeedy watch와 Storybook dev
+Field·Overlay의 실제 `.web.bundle` 열다섯 개를 만들고, Rspeedy watch와 Storybook dev
 server를 함께 유지한다.
 
 Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
@@ -50,6 +52,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Bottom Navigator — Default, Long Accessibility Label, All Items, Disabled
 - Components/Bottom Sheet — Default, Multiple Actions
 - Components/Step Indicator — First, Middle, Last
+- Components/Overlay — Sheet Dismissible, Dialog Modal, Area, Area Blur, Reduced Motion
 - Components/Answer Label — Pending, Correct, Incorrect, Subtle, Large, Long Label
 - Components/Card — Static, Interactive, Large With Media, Right To Left
 - Components/Compact Numeric Input — Empty, Filled, Error, Disabled

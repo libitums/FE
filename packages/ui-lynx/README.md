@@ -3,7 +3,7 @@
 libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포넌트 패키지다. 현재 공개
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
 `PageIndicator`, `BottomNavigator`, `StepIndicator`, `BottomSheet`, `CompactNumericInput`,
-`Card`, `ChatBubble`, `TextField`, `AnswerLabel` 열네 가지다.
+`Card`, `ChatBubble`, `TextField`, `AnswerLabel`, `Overlay` 열다섯 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
@@ -113,6 +113,17 @@ import "@libitums/ui-lynx/styles.css";
 <StepIndicator currentStep={2} totalSteps={4} />;
 ```
 
+`Overlay`는 dim/blur와 입력 차단만 소유한다. foreground surface는 sibling으로 두며 Screen은
+`sheet | dialog`, Area는 부모의 bounded 영역을 따른다. Area 부모는 `position: relative`와
+`overflow: hidden`을 제공해야 한다.
+
+```tsx
+import { Overlay } from "@libitums/ui-lynx/overlay";
+import "@libitums/ui-lynx/overlay/styles.css";
+
+<Overlay scope="screen" surface="sheet" dismiss="tap" binddismiss={handleDismiss} />;
+```
+
 `Card`는 Media, Content, Header, Body, BodyText, Footer를 필요한 만큼 조합하는 compound
 component다. Interactive Card는 접근성 이름과 role, tap handler가 필수이며 Header에 이동
 화살표를 자동으로 표시한다. Interactive 안에는 Footer나 별도 trailing control을 둘 수 없다.
@@ -198,6 +209,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/bottom-sheet/styles.css`
 - `@libitums/ui-lynx/step-indicator`
 - `@libitums/ui-lynx/step-indicator/styles.css`
+- `@libitums/ui-lynx/overlay`
+- `@libitums/ui-lynx/overlay/styles.css`
 - `@libitums/ui-lynx/answer-label`
 - `@libitums/ui-lynx/answer-label/styles.css`
 - `@libitums/ui-lynx/card`
@@ -227,7 +240,7 @@ label을 같은 canonical count로 clamp한다.
 
 새 컴포넌트와 기존 컴포넌트 정리는
 [`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
-규칙을 따른다. 공개 컴포넌트 열네 개 모두 `<component>.contract.ts`에 공개
+규칙을 따른다. 공개 컴포넌트 열다섯 개 모두 `<component>.contract.ts`에 공개
 타입과 순수 계약 로직을 함께 두고 PascalCase component test 이름을 쓴다.
 
 일반 소비자는 aggregate `@libitums/ui-lynx/styles.css`를 Lynx 진입점에서 한 번 import한다.
@@ -235,7 +248,7 @@ label을 같은 canonical count로 clamp한다.
 ReactLynx를 번들하지 않고 `>=0.123.0 <0.126.0` peer로 요구한다.
 `pnpm --filter @libitums/ui-lynx pack:check`는 실제 tarball에 컴파일된 JSX·선언·CSS,
 canonical contract, README와 docs만 들어가고 generic contract/logic 산출물이 없는지
-검증한다. package integration test도 이 부재 계약을 열네 subpath 전체에서 확인한다.
+검증한다. package integration test도 이 부재 계약을 열다섯 subpath 전체에서 확인한다.
 
 AnswerLabel은 `components/indicator/answer-label.md`의 Result·Emphasis·Size 독립 조합을
 따른다. Solid는 고대비 strong surface, Subtle은 semantic feedback surface를 사용하고 S/M/L은

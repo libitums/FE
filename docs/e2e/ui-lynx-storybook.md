@@ -59,7 +59,7 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 15. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
     `status-indicator.web.bundle`, `round-button.web.bundle`, `progress-header.web.bundle`,
     `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`,
-    `chat-bubble.web.bundle`, `text-field.web.bundle`을 정상
+    `chat-bubble.web.bundle`, `text-field.web.bundle`, `overlay.web.bundle`을 정상
     응답으로 가져오는지 확인한다.
 16. `Components/Bottom Navigator/Default`에서 4개 icon item, 선택된 주황색 pill, dot badge와
     `99+` count badge가 보이는지 확인한다. 선택되지 않은 enabled item을 tap하면 `onSelect`가
@@ -77,21 +77,32 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
     갱신되어야 한다. 원을 tap해도 이동이나 Action이 발생하지 않아야 한다.
 21. 브라우저 개발자 도구의 element overlay로 Step Indicator 원이 모두 32 × 32px이고 연결선이
     2px 두께로 원의 세로 중앙에 놓이며, 남는 가로 공간을 같은 비율로 나누는지 확인한다.
-22. `Components/Chat Bubble/Incoming`, `Outgoing`, `Small`, `Large`를 열어 방향별 정렬과 한쪽
+22. `Components/Overlay/Sheet Dismissible`에서 gray.950 45% dim이 viewport 전체를 덮고
+    sheet는 dim 위에 보이는지 확인한다. dim을 tap하면 `onDismiss`가 1회 기록되고 sheet와
+    overlay가 함께 사라져야 한다.
+23. `Dialog Modal`에서 dialog가 dim 위에 보이고 dim을 tap해도 닫히거나 Action이 생기지 않는지
+    확인한다.
+24. `Area`에서 dim이 둥근 media 경계 안에서만 잘리고 중앙 foreground가 dim 위에 보이는지
+    확인한다. `Area Blur`는 지원되는 환경에서 4px blur를 더하며, Web에서 blur가 지원되지
+    않아도 같은 dim과 입력 차단은 유지되어야 한다.
+25. Overlay Controls의 scope, surface, blur, dismiss, phase, motion을 바꿔 Canvas가 갱신되는지
+    확인한다. Area 또는 Dialog에서 요청한 Tap은 None으로 보정되어야 한다.
+26. `Reduced Motion`에서 이동·확대 없이 100ms linear opacity 전환만 남는지 확인한다.
+27. `Components/Chat Bubble/Incoming`, `Outgoing`, `Small`, `Large`를 열어 방향별 정렬과 한쪽
     아래 0px 모서리, S/M/L padding·typography가 구별되는지 확인한다. Bubble 안에는 Message만
     보이고 speaker·delivery 문구가 시각 자손으로 추가되지 않아야 한다.
-23. `Failed`에서 Outgoing surface와 Message 색은 유지되는지, Controls를 Incoming으로 바꾸면
+28. `Failed`에서 Outgoing surface와 Message 색은 유지되는지, Controls를 Incoming으로 바꾸면
     delivery가 Default로 돌아가는지 확인한다. Bubble 자체를 tap해도 Action이 생기지 않아야 한다.
-24. `Long Content`를 320px와 390px Canvas에서 확인해 Bubble이 280px보다 넓어지지 않고 긴 URL과
+29. `Long Content`를 320px와 390px Canvas에서 확인해 Bubble이 280px보다 넓어지지 않고 긴 URL과
     연속 문자열이 내부에서 줄바꿈되며 내용 전체가 보이는지 확인한다. `Learning Language`의
     contentLanguage와 languageTag Controls도 갱신한다.
-25. `Components/Text Field/Default`, `Filled`, `Error`, `Read Only`, `Disabled`를 열어 Label,
+30. `Components/Text Field/Default`, `Filled`, `Error`, `Read Only`, `Disabled`를 열어 Label,
     Placeholder/Value, Helper/Error와 배경·테두리·텍스트 상태가 구별되는지 확인한다. Field는
     부모 폭을 채우고 최소 높이 56px, radius 16px, 좌우 padding 16px을 유지해야 한다.
-26. Default에서 실제 문자를 입력하고 focus/blur 시 Empty/Filled와 Focused 상태가 바뀌는지
+31. Default에서 실제 문자를 입력하고 focus/blur 시 Empty/Filled와 Focused 상태가 바뀌는지
     확인한다. Email, Password, Search, Telephone purpose에서 native keyboard/보안 동작은
     Storybook Web 결과만으로 통과 처리하지 않는다.
-27. `Prefix And Suffix`, `Trailing Action`, `Counter`를 열어 고정 텍스트가 value와 분리되고,
+32. `Prefix And Suffix`, `Trailing Action`, `Counter`를 열어 고정 텍스트가 value와 분리되고,
     Action hit area가 48 × 48px이며, Counter가 오른쪽에 고정되는지 확인한다. 큰 글자에서도
     Label, Field, Supporting row가 잘리거나 겹치지 않아야 한다.
 
@@ -109,6 +120,9 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 - Bottom Navigator 키보드/D-pad 선형 이동과 첫·마지막 item 경계 focus 유지
 - Bottom Navigator 선택 상태와 dot/count badge에 대한 VoiceOver/TalkBack 낭독
 - Step Indicator의 `N단계 중 M단계` 단일 상태 낭독과 숫자 원·연결선 자손 가림
+- Screen Overlay host의 target 접근성 제외, foreground focus trap·복귀와 safe area
+- Area Overlay target control의 접근성 제외
+- iOS/Android의 4px backdrop blur와 투명도 줄이기 설정 시 blur off fallback
 - Chat Bubble의 실제 speaker+Message 단일 낭독, delivery value, RTL 논리 방향과 학습 언어 발음
 - Text Field native keyboard·selection/copy·focus ring, required/invalid 관계와 Label/Error/Counter 낭독
 

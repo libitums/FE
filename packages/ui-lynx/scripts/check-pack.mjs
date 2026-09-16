@@ -68,6 +68,13 @@ const components = [
     css: "step-indicator.css",
   },
   {
+    subpath: "overlay",
+    directory: "overlay",
+    component: "Overlay",
+    modules: ["overlay.contract"],
+    css: "overlay.css",
+  },
+  {
     subpath: "answer-label",
     directory: "answer-label",
     component: "AnswerLabel",
@@ -191,6 +198,14 @@ if (!files.includes(`package/${bottomNavigatorStylesExport.replace(/^\.\//, "")}
 const stepIndicatorStylesExport = packedPackageJson.exports?.["./step-indicator/styles.css"];
 if (stepIndicatorStylesExport !== "./dist/step-indicator/step-indicator.css") {
   throw new Error("packed package has an invalid ./step-indicator/styles.css export");
+}
+
+const overlayStylesExport = packedPackageJson.exports?.["./overlay/styles.css"];
+if (overlayStylesExport !== "./dist/overlay/overlay.css") {
+  throw new Error("packed package has an invalid ./overlay/styles.css export");
+}
+if (!files.includes(`package/${overlayStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the Overlay CSS export target");
 }
 
 const cardStylesExport = packedPackageJson.exports?.["./card/styles.css"];
