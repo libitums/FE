@@ -21,6 +21,7 @@
     "./dist/answer-label/answer-label.css",
     "./dist/card/card.css",
     "./dist/compact-numeric-input/compact-numeric-input.css",
+    "./dist/fog/fog.css",
     "./dist/chat-bubble/chat-bubble.css",
     "./dist/text-field/text-field.css"
   ],
@@ -106,6 +107,12 @@
       "default": "./dist/compact-numeric-input/index.js"
     },
     "./compact-numeric-input/styles.css": "./dist/compact-numeric-input/compact-numeric-input.css",
+    "./fog": {
+      "types": "./dist/fog/index.d.ts",
+      "import": "./dist/fog/index.js",
+      "default": "./dist/fog/index.js"
+    },
+    "./fog/styles.css": "./dist/fog/fog.css",
     "./chat-bubble": {
       "types": "./dist/chat-bubble/index.d.ts",
       "import": "./dist/chat-bubble/index.js",

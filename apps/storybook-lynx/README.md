@@ -22,6 +22,8 @@ Chat Bubble은 `components/chat-bubble.md` revision
 `979e57fec7b38533129da65166109984d2f16686`을 기준으로 한다.
 Text Field는 `components/text-field.md` revision
 `1ba6b55103663c407f073f9ede3a2e700bf9b722`을 기준으로 한다.
+Fog는 최신 `main`의 `components/fog.md` revision
+`456a121fdfee60dfceaba2ac8f9e989a1275c066`을 기준으로 한다.
 
 ```sh
 nvm use
@@ -31,7 +33,7 @@ pnpm storybook:lynx
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
 Navigator·Step Indicator·Answer Label·Bottom Sheet·Card·Compact Numeric Input·Chat Bubble·Text
-Field·Overlay의 실제 `.web.bundle` 열다섯 개를 만들고, Rspeedy watch와 Storybook dev
+Field·Overlay·Fog의 실제 `.web.bundle` 열여섯 개를 만들고, Rspeedy watch와 Storybook dev
 server를 함께 유지한다.
 
 Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
@@ -56,6 +58,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Answer Label — Pending, Correct, Incorrect, Subtle, Large, Long Label
 - Components/Card — Static, Interactive, Large With Media, Right To Left
 - Components/Compact Numeric Input — Empty, Filled, Error, Disabled
+- Components/Fog — Bottom, Top, Horizontal RTL, Hidden, Full
 - Components/Chat Bubble — Incoming, Outgoing, Small, Large, Failed, Learning Language, Long Content
 - Components/Text Field — Default, Filled, Error, ReadOnly, Disabled, Prefix And Suffix, Trailing Action, Counter
 
@@ -90,6 +93,10 @@ Chat Bubble Controls는 message, speaker, direction, size, delivery, contentLang
 Text Field Controls는 label, qualifier, defaultValue, placeholder, purpose, availability,
 supporting, counter와 adornment를 JSON 값으로 전달한다. icon과 Trailing Action callback은 Lynx
 runtime 안에서 조립하며 실제 입력은 native `<input>`이 소유한다.
+
+Fog Controls는 direction, size, color, visibility, layoutDirection만 직렬화한다. Fog는 Action을
+만들지 않고 pointer event를 통과시키며, ScrollView의 현재 offset을 visibility로 바꾸는 일은
+소비 host가 맡는다.
 
 ## 한계
 
