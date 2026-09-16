@@ -15,6 +15,8 @@ import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
 import * as bottomSheet from "./bottom-sheet/index";
 import * as stepIndicator from "./step-indicator/index";
+import * as chatBubble from "./chat-bubble/index";
+import * as textField from "./text-field/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -28,6 +30,8 @@ const componentArtifacts = {
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
   "bottom-sheet": { implementation: "BottomSheet.jsx", css: "bottom-sheet.css" },
   "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
+  "chat-bubble": { implementation: "ChatBubble.jsx", css: "chat-bubble.css" },
+  "text-field": { implementation: "TextField.jsx", css: "text-field.css" },
 } as const;
 
 const componentEntries = {
@@ -40,6 +44,8 @@ const componentEntries = {
   "bottom-navigator": "BottomNavigator",
   "bottom-sheet": "BottomSheet",
   "step-indicator": "StepIndicator",
+  "chat-bubble": "ChatBubble",
+  "text-field": "TextField",
 } as const;
 
 async function readPackageJson() {
@@ -62,6 +68,8 @@ describe("ui-lynx package boundaries", () => {
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
     expect(root.BottomSheet).toBe(bottomSheet.BottomSheet);
     expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
+    expect(root.ChatBubble).toBe(chatBubble.ChatBubble);
+    expect(root.TextField).toBe(textField.TextField);
     expect(root.getButtonContract).toBe(button.getButtonContract);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
     expect(root.getProgressHeaderProgress).toBe(progressHeader.getProgressHeaderProgress);
@@ -71,6 +79,8 @@ describe("ui-lynx package boundaries", () => {
     expect(root.getBottomSheetContract).toBe(bottomSheet.getBottomSheetContract);
     expect(root.shouldDismissBottomSheetDrag).toBe(bottomSheet.shouldDismissBottomSheetDrag);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+    expect(root.getChatBubbleContract).toBe(chatBubble.getChatBubbleContract);
+    expect(root.getTextFieldContract).toBe(textField.getTextFieldContract);
   });
 
   test("root stylesheet aggregates every component without removing existing styles", async () => {
@@ -103,6 +113,10 @@ describe("ui-lynx package boundaries", () => {
     expect(packageJson.exports["./bottom-sheet/styles.css"]).toBe(
       "./dist/bottom-sheet/bottom-sheet.css",
     );
+    expect(packageJson.exports["./chat-bubble/styles.css"]).toBe(
+      "./dist/chat-bubble/chat-bubble.css",
+    );
+    expect(packageJson.exports["./text-field/styles.css"]).toBe("./dist/text-field/text-field.css");
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
 
@@ -176,6 +190,20 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/step-indicator/step-indicator.contract.js",
       "package/dist/step-indicator/step-indicator.contract.d.ts",
       `package/dist/step-indicator/${componentArtifacts["step-indicator"].css}`,
+      "package/dist/chat-bubble/index.js",
+      `package/dist/chat-bubble/${componentArtifacts["chat-bubble"].implementation}`,
+      "package/dist/chat-bubble/index.d.ts",
+      "package/dist/chat-bubble/ChatBubble.d.ts",
+      "package/dist/chat-bubble/chat-bubble.contract.js",
+      "package/dist/chat-bubble/chat-bubble.contract.d.ts",
+      `package/dist/chat-bubble/${componentArtifacts["chat-bubble"].css}`,
+      "package/dist/text-field/index.js",
+      `package/dist/text-field/${componentArtifacts["text-field"].implementation}`,
+      "package/dist/text-field/index.d.ts",
+      "package/dist/text-field/TextField.d.ts",
+      "package/dist/text-field/text-field.contract.js",
+      "package/dist/text-field/text-field.contract.d.ts",
+      `package/dist/text-field/${componentArtifacts["text-field"].css}`,
     ]) {
       expect(stdout).toContain(file);
     }

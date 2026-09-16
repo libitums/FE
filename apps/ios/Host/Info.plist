@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDisplayName</key>
+	<string>Duru</string>
 	<!-- dev 서버가 localhost 평문 HTTP다. 임의 HTTP를 여는 NSAllowsArbitraryLoads가
 	     아니라 로컬 네트워킹만 여는 좁은 키를 쓴다 (ADR-0012 D2). -->
 	<key>NSAppTransportSecurity</key>

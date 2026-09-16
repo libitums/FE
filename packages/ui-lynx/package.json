@@ -16,7 +16,9 @@
     "./dist/page-indicator/page-indicator.css",
     "./dist/bottom-navigator/bottom-navigator.css",
     "./dist/bottom-sheet/bottom-sheet.css",
-    "./dist/step-indicator/step-indicator.css"
+    "./dist/step-indicator/step-indicator.css",
+    "./dist/chat-bubble/chat-bubble.css",
+    "./dist/text-field/text-field.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -76,6 +78,18 @@
       "default": "./dist/step-indicator/index.js"
     },
     "./step-indicator/styles.css": "./dist/step-indicator/step-indicator.css",
+    "./chat-bubble": {
+      "types": "./dist/chat-bubble/index.d.ts",
+      "import": "./dist/chat-bubble/index.js",
+      "default": "./dist/chat-bubble/index.js"
+    },
+    "./chat-bubble/styles.css": "./dist/chat-bubble/chat-bubble.css",
+    "./text-field": {
+      "types": "./dist/text-field/index.d.ts",
+      "import": "./dist/text-field/index.js",
+      "default": "./dist/text-field/index.js"
+    },
+    "./text-field/styles.css": "./dist/text-field/text-field.css",
     "./styles.css": "./dist/styles.css",
     "./progress-header.css": "./dist/progress-header/progress-header.css",
     "./page-indicator.css": "./dist/page-indicator/page-indicator.css",
