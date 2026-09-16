@@ -328,8 +328,8 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
 - Tooltip은 Message와 배치 표현만 소유하며 trigger와 open/dismiss 상태는 제품 host가 소유한다.
 - Placement·Alignment·Arrow·Tone·Visibility를 독립 옵션으로 제공하고 Start/End는 RTL 논리
   방향을 따른다. Bubble은 240px, 8×12px padding, body.m, radius.md와 floating z-index를 쓴다.
-- Brand는 `brand.strong`, Neutral은 `gray.950`, 전경은 `fg.neutral-inverted`를 사용한다.
-  `brand.primary`의 Button 전용 대비 예외는 적용하지 않는다.
+- Brand는 제품 결정에 따라 `brand.primary`, Neutral은 `gray.950`, 전경은
+  `fg.neutral-inverted`를 사용한다. Bubble과 Arrow는 동일한 surface token을 공유한다.
 - `resolveTooltipLayout`은 측정 geometry로 Flip·Shift와 Arrow edge fallback을 순수 계산한다.
   측정·스크롤/회전 listener와 trigger-description 접근성 결선은 host 경계로 남긴다.
 - `@libitums/ui-lynx/tooltip`과 전용 styles subpath, root barrel, aggregate CSS, pack 검사를 함께

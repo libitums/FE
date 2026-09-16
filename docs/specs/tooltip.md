@@ -14,8 +14,8 @@
    Tone `brand | neutral`을 독립 조합한다. Start/End는 direction에 따라 논리 방향으로 배치한다.
 2. Bubble은 최대 240px, padding 8×12px, `body.m`, radius 12px, floating z-index를 사용하고
    Message 외 interactive child를 받지 않는다.
-3. Brand는 `brand.strong`, Neutral은 `gray.950`, Message와 Arrow는
-   `fg.neutral-inverted`를 사용한다. `brand.primary` Button 예외를 Tooltip에 적용하지 않는다.
+3. Brand는 제품 결정에 따라 `brand.primary`, Neutral은 `gray.950`, Message와 Arrow는
+   `fg.neutral-inverted`를 사용한다. Brand Bubble과 Arrow는 동일한 surface token을 공유한다.
 4. Arrow는 밑변 12px × 높이 6px이며 Bubble 모서리에서 최소 12px 떨어진다. Arrow 끝과
    Trigger 사이에는 2px가 남도록 Bubble과 Trigger를 8px 띄운다.
 5. `resolveTooltipLayout`은 trigger/bubble/boundary 측정값으로 기본 위치를 계산하고, 주축이

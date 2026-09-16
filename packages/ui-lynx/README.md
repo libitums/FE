@@ -297,8 +297,8 @@ code point 단위로 계산하며 native `maxlength`와 같은 최댓값을 공�
 Lynx input type 지원 범위 때문에 text로, Search는 text와 `confirm-type="search"`로 매핑한다.
 
 Tooltip은 Top/Bottom/Start/End와 Start/Center/End alignment를 논리 방향으로 제공한다. 기본
-Bubble ↔ Trigger 간격은 8px이고 최대 너비는 240px이다. Brand는 `brand.strong`, Neutral은
-`gray.950`을 사용하며 `brand.primary` 예외는 적용하지 않는다. `resolveTooltipLayout`은 16px
+Bubble ↔ Trigger 간격은 8px이고 최대 너비는 240px이다. Brand는 `brand.primary`, Neutral은
+`gray.950`을 사용한다. Bubble과 Arrow는 동일한 surface token을 공유한다. `resolveTooltipLayout`은 16px
 경계 안에서 Flip·Shift하고 Arrow가 모서리 12px 여백을 지킬 수 없으면 Arrow를 끈다.
 
 `disabled`와 `loading` Button은 tap을 전달하지 않는다. Back Header의 아이콘·제목 묶음

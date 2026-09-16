@@ -131,11 +131,11 @@ describe("tooltip.css", () => {
     expect(styles).toContain("var(--libitum-typography-body-m-line-height)");
   });
 
-  test("Brand와 Neutral은 승인된 고대비 surface와 inverted foreground를 사용한다", () => {
-    expect(styles).toContain("var(--libitum-color-brand-strong)");
+  test("Brand와 Neutral은 지정된 surface와 inverted foreground를 사용한다", () => {
+    expect(styles).toContain("var(--libitum-color-brand-primary)");
     expect(styles).toContain("var(--libitum-color-gray-950)");
     expect(styles).toContain("var(--libitum-color-fg-neutral-inverted)");
-    expect(styles).not.toContain("var(--libitum-color-brand-primary)");
+    expect(styles).not.toContain("var(--libitum-color-brand-strong)");
   });
 
   test("Arrow는 12 × 6px token 크기와 모서리 12px 여백을 사용한다", () => {

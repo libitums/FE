@@ -31,7 +31,7 @@
 }
 
 .ui-lynx-tooltip-tone-brand .ui-lynx-tooltip-bubble {
-  background-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-brand-primary);
 }
 
 .ui-lynx-tooltip-tone-neutral .ui-lynx-tooltip-bubble {
@@ -147,21 +147,21 @@
 }
 
 .ui-lynx-tooltip-tone-brand.ui-lynx-tooltip-top .ui-lynx-tooltip-arrow {
-  border-top-color: var(--libitum-color-brand-strong);
+  border-top-color: var(--libitum-color-brand-primary);
 }
 
 .ui-lynx-tooltip-tone-brand.ui-lynx-tooltip-bottom .ui-lynx-tooltip-arrow {
-  border-bottom-color: var(--libitum-color-brand-strong);
+  border-bottom-color: var(--libitum-color-brand-primary);
 }
 
 .ui-lynx-tooltip-tone-brand.ui-lynx-tooltip-start.ui-lynx-tooltip-ltr .ui-lynx-tooltip-arrow,
 .ui-lynx-tooltip-tone-brand.ui-lynx-tooltip-end.ui-lynx-tooltip-rtl .ui-lynx-tooltip-arrow {
-  border-left-color: var(--libitum-color-brand-strong);
+  border-left-color: var(--libitum-color-brand-primary);
 }
 
 .ui-lynx-tooltip-tone-brand.ui-lynx-tooltip-end.ui-lynx-tooltip-ltr .ui-lynx-tooltip-arrow,
 .ui-lynx-tooltip-tone-brand.ui-lynx-tooltip-start.ui-lynx-tooltip-rtl .ui-lynx-tooltip-arrow {
-  border-right-color: var(--libitum-color-brand-strong);
+  border-right-color: var(--libitum-color-brand-primary);
 }
 
 .ui-lynx-tooltip-tone-neutral.ui-lynx-tooltip-top .ui-lynx-tooltip-arrow {
