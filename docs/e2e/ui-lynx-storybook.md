@@ -59,7 +59,8 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 15. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
     `status-indicator.web.bundle`, `round-button.web.bundle`, `progress-header.web.bundle`,
     `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`,
-    `chat-bubble.web.bundle`, `text-field.web.bundle`, `overlay.web.bundle`을 정상
+    `chat-bubble.web.bundle`, `text-field.web.bundle`, `visual-novel-dialog.web.bundle`,
+    `overlay.web.bundle`을 정상
     응답으로 가져오는지 확인한다.
 16. `Components/Bottom Navigator/Default`에서 4개 icon item, 선택된 주황색 pill, dot badge와
     `99+` count badge가 보이는지 확인한다. 선택되지 않은 enabled item을 tap하면 `onSelect`가
@@ -105,6 +106,13 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 32. `Prefix And Suffix`, `Trailing Action`, `Counter`를 열어 고정 텍스트가 value와 분리되고,
     Action hit area가 48 × 48px이며, Counter가 오른쪽에 고정되는지 확인한다. 큰 글자에서도
     Label, Field, Supporting row가 잘리거나 겹치지 않아야 한다.
+33. `Components/Visual Novel Dialog/Speech`, `Narration`, `Thought`를 열어 화자 행 조건,
+    variant별 본문·이름·테두리 색과 2줄 최소 높이를 확인한다. Avatar on/off에서도 화자 행
+    간격과 32px slot이 유지되어야 한다.
+34. `Translucent`, `Revealing`, `Auto Advance`에서 0.9 surface, 일부 문자열, Ready에서만 보이는
+    Continue indicator를 확인한다. 패널을 tap해도 자체 Action이 생기지 않아야 한다.
+35. `Learning Language`, `Right To Left`, `Long Content`에서 전체 문장이 잘리지 않고 RTL 논리
+    끝 indicator와 긴 문장의 reflow가 유지되는지 확인한다.
 
 ## native에서만 확인할 항목
 
@@ -125,6 +133,7 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 - iOS/Android의 4px backdrop blur와 투명도 줄이기 설정 시 blur off fallback
 - Chat Bubble의 실제 speaker+Message 단일 낭독, delivery value, RTL 논리 방향과 학습 언어 발음
 - Text Field native keyboard·selection/copy·focus ring, required/invalid 관계와 Label/Error/Counter 낭독
+- Visual Novel Dialog의 Typewriter 중 전체 문장 낭독, 학습 언어 발음과 host의 tap/keyboard/auto pause 연결
 
 이 문서의 통과는 native 실기기 검증을 대체하지 않는다.
 현재 제품 소비 route가 없으므로 위 native 접근성 항목은 **미검증·이번 납품에는 비차단**

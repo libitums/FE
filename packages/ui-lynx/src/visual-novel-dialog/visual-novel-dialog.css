@@ -1,0 +1,141 @@
+@import "@libitums/design-tokens/css/variables.css";
+@import "@libitums/design-tokens/css/typography.css";
+
+.ui-lynx-visual-novel-dialog {
+  position: relative;
+  width: 100%;
+  min-width: var(--libitum-spacing-0);
+  padding: var(--libitum-spacing-20) var(--libitum-spacing-24);
+  overflow: hidden;
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: transparent;
+  border-radius: var(--libitum-radius-lg);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+  z-index: var(--libitum-elevation-z-floating);
+  transition-property: border-color;
+  transition-duration: var(--libitum-motion-duration-color);
+  transition-timing-function: var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-visual-novel-dialog-surface {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  background-color: var(--libitum-color-gray-950);
+  border-radius: var(--libitum-radius-lg);
+}
+
+.ui-lynx-visual-novel-dialog-translucent .ui-lynx-visual-novel-dialog-surface {
+  opacity: var(--libitum-opacity-surface, 0.9);
+}
+
+.ui-lynx-visual-novel-dialog-content {
+  position: relative;
+  z-index: var(--libitum-elevation-z-default);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-lynx-visual-novel-dialog-speaker-row {
+  width: 100%;
+  margin-bottom: var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.ui-lynx-visual-novel-dialog-avatar {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--libitum-radius-full);
+}
+
+.ui-lynx-visual-novel-dialog-speaker {
+  min-width: var(--libitum-spacing-0);
+  flex: 1;
+  color: var(--libitum-color-gray-50);
+  font-family: var(--libitum-typography-dialogue-speaker-font-family);
+  font-size: var(--libitum-typography-dialogue-speaker-font-size);
+  font-weight: var(--libitum-typography-dialogue-speaker-font-weight);
+  line-height: var(--libitum-typography-dialogue-speaker-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-speaker-letter-spacing);
+  white-space: normal;
+  transition-property: color;
+  transition-duration: var(--libitum-motion-duration-color);
+  transition-timing-function: var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-visual-novel-dialog-line-row {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+.ui-lynx-visual-novel-dialog-line {
+  min-width: var(--libitum-spacing-0);
+  min-height: var(--libitum-spacing-48);
+  flex: 1;
+  color: var(--libitum-color-gray-300);
+  font-family: var(--libitum-typography-dialogue-body-font-family);
+  font-size: var(--libitum-typography-dialogue-body-font-size);
+  font-weight: var(--libitum-typography-dialogue-body-font-weight);
+  line-height: var(--libitum-typography-dialogue-body-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
+  white-space: normal;
+  word-break: break-all;
+  transition-property: color;
+  transition-duration: var(--libitum-motion-duration-color);
+  transition-timing-function: var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-visual-novel-dialog-indicator-frame {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-spacing-24);
+  margin-inline-start: var(--libitum-spacing-8);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-lynx-visual-novel-dialog-indicator {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.ui-lynx-visual-novel-dialog-narration .ui-lynx-visual-novel-dialog-line {
+  color: var(--libitum-color-gray-600);
+}
+
+.ui-lynx-visual-novel-dialog-thought {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-visual-novel-dialog-thought .ui-lynx-visual-novel-dialog-speaker {
+  color: var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-visual-novel-dialog-thought .ui-lynx-visual-novel-dialog-line {
+  color: var(--libitum-color-brand-reward-disabled-surface);
+}
+
+.ui-lynx-visual-novel-dialog-thought.ui-lynx-visual-novel-dialog-translucent {
+  border-color: var(--libitum-color-brand-secondary);
+}
+
+.ui-lynx-visual-novel-dialog-thought.ui-lynx-visual-novel-dialog-translucent
+  .ui-lynx-visual-novel-dialog-speaker {
+  color: var(--libitum-color-brand-secondary);
+}
+
+.ui-lynx-visual-novel-dialog-rtl {
+  direction: rtl;
+}

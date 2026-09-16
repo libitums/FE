@@ -19,6 +19,14 @@ import type {
   ChatBubbleSize,
   TextFieldAvailability,
   TextFieldInputPurpose,
+  VisualNovelDialogAdvance,
+  VisualNovelDialogContentLanguage,
+  VisualNovelDialogContinueIndicator,
+  VisualNovelDialogDirection,
+  VisualNovelDialogReveal,
+  VisualNovelDialogStatus,
+  VisualNovelDialogSurface,
+  VisualNovelDialogVariant,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -141,4 +149,21 @@ export type TextFieldStoryArgs = {
   supportingMessage: string;
   counterMaxLength: number;
   adornment: "none" | "icons" | "prefix-suffix" | "action";
+};
+
+export type VisualNovelDialogStoryArgs = {
+  variant: VisualNovelDialogVariant;
+  surface: VisualNovelDialogSurface;
+  reveal: VisualNovelDialogReveal;
+  status: VisualNovelDialogStatus;
+  advance: VisualNovelDialogAdvance;
+  continueIndicator: VisualNovelDialogContinueIndicator;
+  contentLanguage: VisualNovelDialogContentLanguage;
+  direction: VisualNovelDialogDirection;
+  line: string;
+  speakerName: string;
+  languageTag: string;
+  visibleCharacterCount: number;
+  showAvatar: boolean;
+  reducedMotion: boolean;
 };

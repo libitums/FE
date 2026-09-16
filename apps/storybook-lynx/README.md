@@ -22,6 +22,8 @@ Chat Bubble은 `components/chat-bubble.md` revision
 `979e57fec7b38533129da65166109984d2f16686`을 기준으로 한다.
 Text Field는 `components/text-field.md` revision
 `1ba6b55103663c407f073f9ede3a2e700bf9b722`을 기준으로 한다.
+Visual Novel Dialog는 `components/visual-novel-dialog.md` revision
+`99d1bfbef981d3cdf225a0bad337f3aa3a7b0d55`를 기준으로 한다.
 
 ```sh
 nvm use
@@ -31,7 +33,7 @@ pnpm storybook:lynx
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
 Navigator·Step Indicator·Answer Label·Bottom Sheet·Card·Compact Numeric Input·Chat Bubble·Text
-Field·Overlay의 실제 `.web.bundle` 열다섯 개를 만들고, Rspeedy watch와 Storybook dev
+Field·Visual Novel Dialog·Overlay의 실제 `.web.bundle` 열여섯 개를 만들고, Rspeedy watch와 Storybook dev
 server를 함께 유지한다.
 
 Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
@@ -57,6 +59,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Card — Static, Interactive, Large With Media, Right To Left
 - Components/Compact Numeric Input — Empty, Filled, Error, Disabled
 - Components/Chat Bubble — Incoming, Outgoing, Small, Large, Failed, Learning Language, Long Content
+- Components/Visual Novel Dialog — Speech, Narration, Thought, Translucent, Revealing, Auto Advance, Learning Language, Right To Left, Long Content
 - Components/Text Field — Default, Filled, Error, ReadOnly, Disabled, Prefix And Suffix, Trailing Action, Counter
 
 Controls 변경은 `<lynx-view>.updateData()`를 통해 ReactLynx `useInitData()`에 전달된다.

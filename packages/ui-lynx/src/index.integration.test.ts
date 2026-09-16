@@ -20,6 +20,7 @@ import * as overlay from "./overlay/index";
 import * as answerLabel from "./answer-label/index";
 import * as card from "./card/index";
 import * as chatBubble from "./chat-bubble/index";
+import * as visualNovelDialog from "./visual-novel-dialog/index";
 import * as textField from "./text-field/index";
 
 const execFileAsync = promisify(execFile);
@@ -42,6 +43,10 @@ const componentArtifacts = {
   overlay: { implementation: "Overlay.jsx", css: "overlay.css" },
   card: { implementation: "Card.jsx", css: "card.css" },
   "chat-bubble": { implementation: "ChatBubble.jsx", css: "chat-bubble.css" },
+  "visual-novel-dialog": {
+    implementation: "VisualNovelDialog.jsx",
+    css: "visual-novel-dialog.css",
+  },
   "text-field": { implementation: "TextField.jsx", css: "text-field.css" },
 } as const;
 
@@ -60,6 +65,7 @@ const componentEntries = {
   overlay: "Overlay",
   card: "Card",
   "chat-bubble": "ChatBubble",
+  "visual-novel-dialog": "VisualNovelDialog",
   "text-field": "TextField",
 } as const;
 
@@ -87,6 +93,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
     expect(root.Card).toBe(card.Card);
     expect(root.ChatBubble).toBe(chatBubble.ChatBubble);
+    expect(root.VisualNovelDialog).toBe(visualNovelDialog.VisualNovelDialog);
     expect(root.TextField).toBe(textField.TextField);
     expect(root.getButtonContract).toBe(button.getButtonContract);
     expect(root.getCompactNumericInputContract).toBe(
@@ -106,6 +113,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.getAnswerLabelContract).toBe(answerLabel.getAnswerLabelContract);
     expect(root.getCardContract).toBe(card.getCardContract);
     expect(root.getChatBubbleContract).toBe(chatBubble.getChatBubbleContract);
+    expect(root.getVisualNovelDialogContract).toBe(visualNovelDialog.getVisualNovelDialogContract);
     expect(root.getTextFieldContract).toBe(textField.getTextFieldContract);
   });
 
@@ -149,6 +157,9 @@ describe("ui-lynx package boundaries", () => {
     );
     expect(packageJson.exports["./chat-bubble/styles.css"]).toBe(
       "./dist/chat-bubble/chat-bubble.css",
+    );
+    expect(packageJson.exports["./visual-novel-dialog/styles.css"]).toBe(
+      "./dist/visual-novel-dialog/visual-novel-dialog.css",
     );
     expect(packageJson.exports["./text-field/styles.css"]).toBe("./dist/text-field/text-field.css");
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
@@ -252,6 +263,13 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/chat-bubble/chat-bubble.contract.js",
       "package/dist/chat-bubble/chat-bubble.contract.d.ts",
       `package/dist/chat-bubble/${componentArtifacts["chat-bubble"].css}`,
+      "package/dist/visual-novel-dialog/index.js",
+      `package/dist/visual-novel-dialog/${componentArtifacts["visual-novel-dialog"].implementation}`,
+      "package/dist/visual-novel-dialog/index.d.ts",
+      "package/dist/visual-novel-dialog/VisualNovelDialog.d.ts",
+      "package/dist/visual-novel-dialog/visual-novel-dialog.contract.js",
+      "package/dist/visual-novel-dialog/visual-novel-dialog.contract.d.ts",
+      `package/dist/visual-novel-dialog/${componentArtifacts["visual-novel-dialog"].css}`,
       "package/dist/text-field/index.js",
       `package/dist/text-field/${componentArtifacts["text-field"].implementation}`,
       "package/dist/text-field/index.d.ts",

@@ -116,6 +116,13 @@ const components = [
     modules: ["text-field.contract"],
     css: "text-field.css",
   },
+  {
+    subpath: "visual-novel-dialog",
+    directory: "visual-novel-dialog",
+    component: "VisualNovelDialog",
+    modules: ["visual-novel-dialog.contract"],
+    css: "visual-novel-dialog.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -229,6 +236,14 @@ if (textFieldStylesExport !== "./dist/text-field/text-field.css") {
 }
 if (!files.includes(`package/${textFieldStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the TextField CSS export target");
+}
+const visualNovelDialogStylesExport =
+  packedPackageJson.exports?.["./visual-novel-dialog/styles.css"];
+if (visualNovelDialogStylesExport !== "./dist/visual-novel-dialog/visual-novel-dialog.css") {
+  throw new Error("packed package has an invalid ./visual-novel-dialog/styles.css export");
+}
+if (!files.includes(`package/${visualNovelDialogStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the VisualNovelDialog CSS export target");
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");

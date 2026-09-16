@@ -22,6 +22,7 @@
     "./dist/card/card.css",
     "./dist/compact-numeric-input/compact-numeric-input.css",
     "./dist/chat-bubble/chat-bubble.css",
+    "./dist/visual-novel-dialog/visual-novel-dialog.css",
     "./dist/text-field/text-field.css"
   ],
   "main": "./dist/index.js",
@@ -112,6 +113,12 @@
       "default": "./dist/chat-bubble/index.js"
     },
     "./chat-bubble/styles.css": "./dist/chat-bubble/chat-bubble.css",
+    "./visual-novel-dialog": {
+      "types": "./dist/visual-novel-dialog/index.d.ts",
+      "import": "./dist/visual-novel-dialog/index.js",
+      "default": "./dist/visual-novel-dialog/index.js"
+    },
+    "./visual-novel-dialog/styles.css": "./dist/visual-novel-dialog/visual-novel-dialog.css",
     "./text-field": {
       "types": "./dist/text-field/index.d.ts",
       "import": "./dist/text-field/index.js",

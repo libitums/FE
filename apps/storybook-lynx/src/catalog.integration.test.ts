@@ -21,6 +21,7 @@ import {
 } from "./bottom-sheet-story";
 import { normalizeChatBubbleStoryArgs } from "./chat-bubble-story";
 import { normalizeTextFieldStoryArgs } from "./text-field-story";
+import { normalizeVisualNovelDialogStoryArgs } from "./visual-novel-dialog-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -42,6 +43,41 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("visual novel dialog init data는 독립 옵션을 직렬화 가능한 계약으로 정규화한다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeVisualNovelDialogStoryArgs({
+            advance: "auto",
+            contentLanguage: "learning",
+            direction: "rtl",
+            languageTag: " ar-SA ",
+            line: "مرحبا",
+            reveal: "typewriter",
+            showAvatar: true,
+            speakerName: "آريا",
+            status: "revealing",
+            surface: "translucent",
+            variant: "thought",
+            visibleCharacterCount: 99,
+          }),
+        ),
+      ),
+    ).toMatchObject({
+      advance: "auto",
+      contentLanguage: "learning",
+      direction: "rtl",
+      languageTag: "ar-SA",
+      line: "مرحبا",
+      reveal: "typewriter",
+      showAvatar: true,
+      speakerName: "آريا",
+      status: "revealing",
+      surface: "translucent",
+      variant: "thought",
+      visibleCharacterCount: 5,
+    });
+  });
   test("overlay init data는 JSON-only이고 잘못된 dismiss 조합을 none으로 보정한다", () => {
     expect(
       JSON.parse(
@@ -431,6 +467,7 @@ describe("Storybook Lynx build outputs", () => {
     "answer-label",
     "card",
     "chat-bubble",
+    "visual-novel-dialog",
     "text-field",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
@@ -486,6 +523,15 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-chat-bubble--failed");
     expect(index).toContain("components-chat-bubble--learning-language");
     expect(index).toContain("components-chat-bubble--long-content");
+    expect(index).toContain("components-visual-novel-dialog--speech");
+    expect(index).toContain("components-visual-novel-dialog--narration");
+    expect(index).toContain("components-visual-novel-dialog--thought");
+    expect(index).toContain("components-visual-novel-dialog--translucent");
+    expect(index).toContain("components-visual-novel-dialog--revealing");
+    expect(index).toContain("components-visual-novel-dialog--auto-advance");
+    expect(index).toContain("components-visual-novel-dialog--learning-language");
+    expect(index).toContain("components-visual-novel-dialog--right-to-left");
+    expect(index).toContain("components-visual-novel-dialog--long-content");
     expect(index).toContain("components-text-field--default");
     expect(index).toContain("components-text-field--filled");
     expect(index).toContain("components-text-field--error");
@@ -530,6 +576,9 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/answer-label": ["../../packages/ui-lynx/src/answer-label/index.ts"],
       "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"],
       "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
+      "@libitums/ui-lynx/visual-novel-dialog": [
+        "../../packages/ui-lynx/src/visual-novel-dialog/index.ts",
+      ],
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -551,6 +600,7 @@ describe("Storybook Lynx build outputs", () => {
     ["answer-label", "@libitums/ui-lynx/answer-label"],
     ["card", "@libitums/ui-lynx/card"],
     ["chat-bubble", "@libitums/ui-lynx/chat-bubble"],
+    ["visual-novel-dialog", "@libitums/ui-lynx/visual-novel-dialog"],
     ["text-field", "@libitums/ui-lynx/text-field"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
@@ -600,6 +650,9 @@ describe("Storybook Lynx build outputs", () => {
     );
     expect(config).toMatch(/["']?bottom-sheet["']?\s*:\s*["']\.\/src\/lynx\/bottom-sheet\.tsx["']/);
     expect(config).toMatch(/["']?text-field["']?\s*:\s*["']\.\/src\/lynx\/text-field\.tsx["']/);
+    expect(config).toMatch(
+      /["']?visual-novel-dialog["']?\s*:\s*["']\.\/src\/lynx\/visual-novel-dialog\.tsx["']/,
+    );
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -645,6 +698,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/text-field/index.d.ts",
       import: "./dist/text-field/index.js",
       default: "./dist/text-field/index.js",
+    });
+    expect(packageJson.exports["./visual-novel-dialog"]).toEqual({
+      types: "./dist/visual-novel-dialog/index.d.ts",
+      import: "./dist/visual-novel-dialog/index.js",
+      default: "./dist/visual-novel-dialog/index.js",
     });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
@@ -713,6 +771,7 @@ describe("Storybook Lynx build outputs", () => {
       "step-indicator",
       "overlay",
       "text-field",
+      "visual-novel-dialog",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
     }
