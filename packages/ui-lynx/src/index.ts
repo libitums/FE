@@ -62,6 +62,19 @@ export type {
   StepIndicatorStep,
   StepIndicatorStepStatus,
 } from "./step-indicator";
+export {
+  BottomSheet,
+  BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD,
+  getBottomSheetContract,
+  shouldDismissBottomSheetDrag,
+} from "./bottom-sheet";
+export type {
+  BottomSheetAction,
+  BottomSheetContract,
+  BottomSheetDismissReason,
+  BottomSheetMotion,
+  BottomSheetProps,
+} from "./bottom-sheet";
 
 export { ChatBubble, chatBubbleDeliveryLabels, getChatBubbleContract } from "./chat-bubble";
 export type {

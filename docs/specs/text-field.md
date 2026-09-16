@@ -60,4 +60,3 @@ runtime 안에서 조립한다.
 - 검증 시점·검증 규칙·오류 summary announcement
 - Text Area, Select, Search Field, 날짜·OTP 같은 형식 전용 입력
 - 제품 화면 이관, analytics, persistence
-

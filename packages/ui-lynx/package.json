@@ -15,6 +15,7 @@
     "./dist/progress-header/progress-header.css",
     "./dist/page-indicator/page-indicator.css",
     "./dist/bottom-navigator/bottom-navigator.css",
+    "./dist/bottom-sheet/bottom-sheet.css",
     "./dist/step-indicator/step-indicator.css",
     "./dist/chat-bubble/chat-bubble.css",
     "./dist/text-field/text-field.css"
@@ -65,6 +66,12 @@
       "default": "./dist/bottom-navigator/index.js"
     },
     "./bottom-navigator/styles.css": "./dist/bottom-navigator/bottom-navigator.css",
+    "./bottom-sheet": {
+      "types": "./dist/bottom-sheet/index.d.ts",
+      "import": "./dist/bottom-sheet/index.js",
+      "default": "./dist/bottom-sheet/index.js"
+    },
+    "./bottom-sheet/styles.css": "./dist/bottom-sheet/bottom-sheet.css",
     "./step-indicator": {
       "types": "./dist/step-indicator/index.d.ts",
       "import": "./dist/step-indicator/index.js",

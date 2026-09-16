@@ -13,6 +13,7 @@ import * as roundButton from "./round-button/index";
 import * as progressHeader from "./progress-header/index";
 import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
+import * as bottomSheet from "./bottom-sheet/index";
 import * as stepIndicator from "./step-indicator/index";
 import * as chatBubble from "./chat-bubble/index";
 import * as textField from "./text-field/index";
@@ -27,6 +28,7 @@ const componentArtifacts = {
   "progress-header": { implementation: "ProgressHeader.jsx", css: "progress-header.css" },
   "page-indicator": { implementation: "PageIndicator.jsx", css: "page-indicator.css" },
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
+  "bottom-sheet": { implementation: "BottomSheet.jsx", css: "bottom-sheet.css" },
   "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
   "chat-bubble": { implementation: "ChatBubble.jsx", css: "chat-bubble.css" },
   "text-field": { implementation: "TextField.jsx", css: "text-field.css" },
@@ -40,6 +42,7 @@ const componentEntries = {
   "progress-header": "ProgressHeader",
   "page-indicator": "PageIndicator",
   "bottom-navigator": "BottomNavigator",
+  "bottom-sheet": "BottomSheet",
   "step-indicator": "StepIndicator",
   "chat-bubble": "ChatBubble",
   "text-field": "TextField",
@@ -63,6 +66,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.ProgressHeader).toBe(progressHeader.ProgressHeader);
     expect(root.PageIndicator).toBe(pageIndicator.PageIndicator);
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
+    expect(root.BottomSheet).toBe(bottomSheet.BottomSheet);
     expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
     expect(root.ChatBubble).toBe(chatBubble.ChatBubble);
     expect(root.TextField).toBe(textField.TextField);
@@ -72,6 +76,8 @@ describe("ui-lynx package boundaries", () => {
     expect(root.getPageIndicatorModel).toBe(pageIndicator.getPageIndicatorModel);
     expect(root.PAGE_INDICATOR_MAX_PAGE_COUNT).toBe(pageIndicator.PAGE_INDICATOR_MAX_PAGE_COUNT);
     expect(root.getBottomNavigatorContract).toBe(bottomNavigator.getBottomNavigatorContract);
+    expect(root.getBottomSheetContract).toBe(bottomSheet.getBottomSheetContract);
+    expect(root.shouldDismissBottomSheetDrag).toBe(bottomSheet.shouldDismissBottomSheetDrag);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
     expect(root.getChatBubbleContract).toBe(chatBubble.getChatBubbleContract);
     expect(root.getTextFieldContract).toBe(textField.getTextFieldContract);
@@ -103,6 +109,9 @@ describe("ui-lynx package boundaries", () => {
     }
     expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
       "./dist/step-indicator/step-indicator.css",
+    );
+    expect(packageJson.exports["./bottom-sheet/styles.css"]).toBe(
+      "./dist/bottom-sheet/bottom-sheet.css",
     );
     expect(packageJson.exports["./chat-bubble/styles.css"]).toBe(
       "./dist/chat-bubble/chat-bubble.css",
@@ -170,6 +179,10 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/bottom-navigator/${componentArtifacts["bottom-navigator"].implementation}`,
       "package/dist/bottom-navigator/index.d.ts",
       `package/dist/bottom-navigator/${componentArtifacts["bottom-navigator"].css}`,
+      "package/dist/bottom-sheet/index.js",
+      `package/dist/bottom-sheet/${componentArtifacts["bottom-sheet"].implementation}`,
+      "package/dist/bottom-sheet/index.d.ts",
+      `package/dist/bottom-sheet/${componentArtifacts["bottom-sheet"].css}`,
       "package/dist/step-indicator/index.js",
       `package/dist/step-indicator/${componentArtifacts["step-indicator"].implementation}`,
       "package/dist/step-indicator/index.d.ts",

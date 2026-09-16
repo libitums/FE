@@ -6,6 +6,7 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  BottomSheetMotion,
   ChatBubbleContentLanguage,
   ChatBubbleDelivery,
   ChatBubbleDirection,
@@ -70,6 +71,18 @@ export type ProgressHeaderStoryArgs = {
 export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
+};
+export type BottomSheetStoryArgs = {
+  title: string;
+  overline: string;
+  description: string;
+  primaryActionLabel: string;
+  secondaryActionLabel: string;
+  showSecondaryAction: boolean;
+  draggable: boolean;
+  motion: BottomSheetMotion;
+  onDismiss: (reason: string) => void;
+  onAction: (id: string) => void;
 };
 
 export type ChatBubbleStoryArgs = {

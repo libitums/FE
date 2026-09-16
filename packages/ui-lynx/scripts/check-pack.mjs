@@ -68,6 +68,13 @@ const components = [
     css: "step-indicator.css",
   },
   {
+    subpath: "bottom-sheet",
+    directory: "bottom-sheet",
+    component: "BottomSheet",
+    modules: ["bottom-sheet.contract"],
+    css: "bottom-sheet.css",
+  },
+  {
     subpath: "chat-bubble",
     directory: "chat-bubble",
     component: "ChatBubble",
@@ -183,6 +190,13 @@ if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)
   throw new Error("packed package is missing the StepIndicator CSS export target");
 }
 
+const bottomSheetStylesExport = packedPackageJson.exports?.["./bottom-sheet/styles.css"];
+if (bottomSheetStylesExport !== "./dist/bottom-sheet/bottom-sheet.css") {
+  throw new Error("packed package has an invalid ./bottom-sheet/styles.css export");
+}
+if (!files.includes(`package/${bottomSheetStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the BottomSheet CSS export target");
+}
 for (const { directory, component } of components) {
   const runtime = execFileSync(
     "tar",
