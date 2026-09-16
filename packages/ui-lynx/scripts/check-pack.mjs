@@ -123,6 +123,13 @@ const components = [
     modules: ["text-field.contract"],
     css: "text-field.css",
   },
+  {
+    subpath: "tooltip",
+    directory: "tooltip",
+    component: "Tooltip",
+    modules: ["tooltip.contract"],
+    css: "tooltip.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -236,6 +243,13 @@ if (textFieldStylesExport !== "./dist/text-field/text-field.css") {
 }
 if (!files.includes(`package/${textFieldStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the TextField CSS export target");
+}
+const tooltipStylesExport = packedPackageJson.exports?.["./tooltip/styles.css"];
+if (tooltipStylesExport !== "./dist/tooltip/tooltip.css") {
+  throw new Error("packed package has an invalid ./tooltip/styles.css export");
+}
+if (!files.includes(`package/${tooltipStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the Tooltip CSS export target");
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");

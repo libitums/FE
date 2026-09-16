@@ -168,3 +168,20 @@ export type {
   TextFieldValidation,
   TextFieldVisualState,
 } from "./text-field";
+
+export { Tooltip, getTooltipContract, resolveTooltipLayout } from "./tooltip";
+export type {
+  TooltipAlignment,
+  TooltipArrow,
+  TooltipContentLanguage,
+  TooltipContract,
+  TooltipDirection,
+  TooltipLayout,
+  TooltipLayoutInput,
+  TooltipPlacement,
+  TooltipProps,
+  TooltipRect,
+  TooltipSize,
+  TooltipTone,
+  TooltipVisibility,
+} from "./tooltip";

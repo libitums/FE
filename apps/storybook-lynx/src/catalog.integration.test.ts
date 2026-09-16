@@ -21,6 +21,7 @@ import {
 } from "./bottom-sheet-story";
 import { normalizeChatBubbleStoryArgs } from "./chat-bubble-story";
 import { normalizeTextFieldStoryArgs } from "./text-field-story";
+import { normalizeTooltipStoryArgs } from "./tooltip-story";
 import { normalizeFogStoryArgs } from "./fog-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
@@ -43,6 +44,59 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("tooltip init data는 독립 옵션을 JSON 직렬화 가능한 계약으로 정규화한다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeTooltipStoryArgs({
+            alignment: "end",
+            arrow: "off",
+            contentLanguage: "learning",
+            direction: "rtl",
+            languageTag: " en-US ",
+            message: "Try again",
+            placement: "start",
+            tone: "brand",
+            visibility: "visible",
+          }),
+        ),
+      ),
+    ).toEqual({
+      alignment: "end",
+      arrow: "off",
+      contentLanguage: "learning",
+      direction: "rtl",
+      languageTag: "en-US",
+      message: "Try again",
+      placement: "start",
+      tone: "brand",
+      visibility: "visible",
+    });
+  });
+
+  test("tooltip init data는 불완전한 값을 안전한 기본값으로 바꾼다", () => {
+    expect(
+      normalizeTooltipStoryArgs({
+        alignment: "bad",
+        arrow: "bad",
+        direction: "bad",
+        message: " ",
+        placement: "bad",
+        tone: "bad",
+        visibility: "bad",
+      }),
+    ).toEqual({
+      alignment: "center",
+      arrow: "on",
+      contentLanguage: "ui",
+      direction: "ltr",
+      message: "이 기능에 대한 짧은 설명",
+      placement: "top",
+      tone: "neutral",
+      visibility: "visible",
+    });
+  });
+
   test("fog init data는 직렬화 가능한 유효 옵션으로 정규화된다", () => {
     expect(
       JSON.parse(
@@ -463,6 +517,7 @@ describe("Storybook Lynx build outputs", () => {
     "card",
     "chat-bubble",
     "text-field",
+    "tooltip",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -529,6 +584,14 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-text-field--prefix-and-suffix");
     expect(index).toContain("components-text-field--trailing-action");
     expect(index).toContain("components-text-field--counter");
+    expect(index).toContain("components-tooltip--top");
+    expect(index).toContain("components-tooltip--bottom");
+    expect(index).toContain("components-tooltip--start");
+    expect(index).toContain("components-tooltip--end");
+    expect(index).toContain("components-tooltip--brand");
+    expect(index).toContain("components-tooltip--no-arrow");
+    expect(index).toContain("components-tooltip--aligned-start");
+    expect(index).toContain("components-tooltip--learning-language");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -567,6 +630,7 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"],
       "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
+      "@libitums/ui-lynx/tooltip": ["../../packages/ui-lynx/src/tooltip/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -589,6 +653,7 @@ describe("Storybook Lynx build outputs", () => {
     ["card", "@libitums/ui-lynx/card"],
     ["chat-bubble", "@libitums/ui-lynx/chat-bubble"],
     ["text-field", "@libitums/ui-lynx/text-field"],
+    ["tooltip", "@libitums/ui-lynx/tooltip"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -638,6 +703,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(/["']?fog["']?\s*:\s*["']\.\/src\/lynx\/fog\.tsx["']/);
     expect(config).toMatch(/["']?bottom-sheet["']?\s*:\s*["']\.\/src\/lynx\/bottom-sheet\.tsx["']/);
     expect(config).toMatch(/["']?text-field["']?\s*:\s*["']\.\/src\/lynx\/text-field\.tsx["']/);
+    expect(config).toMatch(/["']?tooltip["']?\s*:\s*["']\.\/src\/lynx\/tooltip\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -689,6 +755,11 @@ describe("Storybook Lynx build outputs", () => {
       import: "./dist/text-field/index.js",
       default: "./dist/text-field/index.js",
     });
+    expect(packageJson.exports["./tooltip"]).toEqual({
+      types: "./dist/tooltip/index.d.ts",
+      import: "./dist/tooltip/index.js",
+      default: "./dist/tooltip/index.js",
+    });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
       true,
@@ -705,6 +776,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/tooltip/Tooltip.jsx")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/tooltip/tooltip.contract.js")).toBe(
+      true,
+    );
+    expect(await outputExists("../../packages/ui-lynx/dist/tooltip/tooltip.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/overlay/Overlay.jsx")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/overlay/overlay.contract.js")).toBe(
       true,
@@ -760,6 +836,7 @@ describe("Storybook Lynx build outputs", () => {
       "step-indicator",
       "overlay",
       "text-field",
+      "tooltip",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
     }
