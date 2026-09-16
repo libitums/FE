@@ -240,6 +240,9 @@ describe("bottom-navigator.css", () => {
       /border-radius:\s*var\(--libitum-radius-md\) var\(--libitum-radius-md\) 0 0/,
     );
     expect(styles).toMatch(
+      /box-shadow:\s*0 -4px 4px rgba\(26, 28, 32, var\(--libitum-opacity-8, 0\.08\)\)/,
+    );
+    expect(styles).toMatch(
       /\.ui-lynx-bottom-navigator-item\s*\{[^}]*min-width:\s*var\(--libitum-spacing-48\)[^}]*height:\s*var\(--libitum-spacing-48\)/,
     );
     expect(styles).toMatch(
