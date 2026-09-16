@@ -58,7 +58,8 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
     빈 page count에서는 전체 indicator가 렌더되지 않는지 확인한다.
 15. 브라우저 개발자 도구에서 각 Canvas가 `button.web.bundle`, `back-header.web.bundle`,
     `status-indicator.web.bundle`, `round-button.web.bundle`, `progress-header.web.bundle`,
-    `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`을 정상
+    `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`,
+    `chat-bubble.web.bundle`을 정상
     응답으로 가져오는지 확인한다.
 16. `Components/Bottom Navigator/Default`에서 4개 icon item, 선택된 주황색 pill, dot badge와
     `99+` count badge가 보이는지 확인한다. 선택되지 않은 enabled item을 tap하면 `onSelect`가
@@ -76,6 +77,14 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
     갱신되어야 한다. 원을 tap해도 이동이나 Action이 발생하지 않아야 한다.
 21. 브라우저 개발자 도구의 element overlay로 Step Indicator 원이 모두 32 × 32px이고 연결선이
     2px 두께로 원의 세로 중앙에 놓이며, 남는 가로 공간을 같은 비율로 나누는지 확인한다.
+22. `Components/Chat Bubble/Incoming`, `Outgoing`, `Small`, `Large`를 열어 방향별 정렬과 한쪽
+    아래 0px 모서리, S/M/L padding·typography가 구별되는지 확인한다. Bubble 안에는 Message만
+    보이고 speaker·delivery 문구가 시각 자손으로 추가되지 않아야 한다.
+23. `Failed`에서 Outgoing surface와 Message 색은 유지되는지, Controls를 Incoming으로 바꾸면
+    delivery가 Default로 돌아가는지 확인한다. Bubble 자체를 tap해도 Action이 생기지 않아야 한다.
+24. `Long Content`를 320px와 390px Canvas에서 확인해 Bubble이 280px보다 넓어지지 않고 긴 URL과
+    연속 문자열이 내부에서 줄바꿈되며 내용 전체가 보이는지 확인한다. `Learning Language`의
+    contentLanguage와 languageTag Controls도 갱신한다.
 
 ## native에서만 확인할 항목
 
@@ -91,6 +100,7 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 - Bottom Navigator 키보드/D-pad 선형 이동과 첫·마지막 item 경계 focus 유지
 - Bottom Navigator 선택 상태와 dot/count badge에 대한 VoiceOver/TalkBack 낭독
 - Step Indicator의 `N단계 중 M단계` 단일 상태 낭독과 숫자 원·연결선 자손 가림
+- Chat Bubble의 실제 speaker+Message 단일 낭독, delivery value, RTL 논리 방향과 학습 언어 발음
 
 이 문서의 통과는 native 실기기 검증을 대체하지 않는다.
 현재 제품 소비 route가 없으므로 위 native 접근성 항목은 **미검증·이번 납품에는 비차단**

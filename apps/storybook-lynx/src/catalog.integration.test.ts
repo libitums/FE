@@ -8,6 +8,7 @@ import {
 } from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
 import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
+import { normalizeChatBubbleStoryArgs } from "./chat-bubble-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -29,6 +30,54 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("chat-bubble init data는 독립 옵션을 JSON 직렬화 가능한 계약으로 정규화한다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeChatBubbleStoryArgs({
+            contentLanguage: "learning",
+            delivery: "failed",
+            direction: "outgoing",
+            languageTag: " en-US ",
+            message: "See you tomorrow.",
+            size: "l",
+            speaker: "Mina",
+          }),
+        ),
+      ),
+    ).toEqual({
+      contentLanguage: "learning",
+      delivery: "failed",
+      direction: "outgoing",
+      languageTag: "en-US",
+      message: "See you tomorrow.",
+      size: "l",
+      speaker: "Mina",
+    });
+  });
+
+  test("chat-bubble incoming은 delivery를 Default로 고정하고 불완전한 값을 기본화한다", () => {
+    expect(
+      normalizeChatBubbleStoryArgs({
+        contentLanguage: "learning",
+        delivery: "read",
+        direction: "incoming",
+        languageTag: " ",
+        message: " ",
+        size: "xl",
+        speaker: " ",
+      }),
+    ).toEqual({
+      contentLanguage: "learning",
+      delivery: "default",
+      direction: "incoming",
+      languageTag: "en",
+      message: "오늘 하루는 어땠어?",
+      size: "m",
+      speaker: "말랑이",
+    });
+  });
+
   test("step-indicator init data는 유효한 정수 계약으로 정규화되고 JSON 직렬화된다", () => {
     expect(
       JSON.parse(
@@ -160,6 +209,7 @@ describe("Storybook Lynx build outputs", () => {
     "page-indicator",
     "bottom-navigator",
     "step-indicator",
+    "chat-bubble",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -186,6 +236,13 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-step-indicator--first");
     expect(index).toContain("components-step-indicator--middle");
     expect(index).toContain("components-step-indicator--last");
+    expect(index).toContain("components-chat-bubble--incoming");
+    expect(index).toContain("components-chat-bubble--outgoing");
+    expect(index).toContain("components-chat-bubble--small");
+    expect(index).toContain("components-chat-bubble--large");
+    expect(index).toContain("components-chat-bubble--failed");
+    expect(index).toContain("components-chat-bubble--learning-language");
+    expect(index).toContain("components-chat-bubble--long-content");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -214,6 +271,7 @@ describe("Storybook Lynx build outputs", () => {
         "../../packages/ui-lynx/src/bottom-navigator/index.ts",
       ],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -228,6 +286,7 @@ describe("Storybook Lynx build outputs", () => {
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
+    ["chat-bubble", "@libitums/ui-lynx/chat-bubble"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
