@@ -15,7 +15,8 @@
     "./dist/progress-header/progress-header.css",
     "./dist/page-indicator/page-indicator.css",
     "./dist/bottom-navigator/bottom-navigator.css",
-    "./dist/step-indicator/step-indicator.css"
+    "./dist/step-indicator/step-indicator.css",
+    "./dist/fog/fog.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -69,6 +70,12 @@
       "default": "./dist/step-indicator/index.js"
     },
     "./step-indicator/styles.css": "./dist/step-indicator/step-indicator.css",
+    "./fog": {
+      "types": "./dist/fog/index.d.ts",
+      "import": "./dist/fog/index.js",
+      "default": "./dist/fog/index.js"
+    },
+    "./fog/styles.css": "./dist/fog/fog.css",
     "./styles.css": "./dist/styles.css",
     "./progress-header.css": "./dist/progress-header/progress-header.css",
     "./page-indicator.css": "./dist/page-indicator/page-indicator.css",

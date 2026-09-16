@@ -67,6 +67,13 @@ const components = [
     modules: ["step-indicator.contract"],
     css: "step-indicator.css",
   },
+  {
+    subpath: "fog",
+    directory: "fog",
+    component: "Fog",
+    modules: ["fog.contract"],
+    css: "fog.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -152,6 +159,14 @@ if (stepIndicatorStylesExport !== "./dist/step-indicator/step-indicator.css") {
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");
+}
+
+const fogStylesExport = packedPackageJson.exports?.["./fog/styles.css"];
+if (fogStylesExport !== "./dist/fog/fog.css") {
+  throw new Error("packed package has an invalid ./fog/styles.css export");
+}
+if (!files.includes(`package/${fogStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the Fog CSS export target");
 }
 
 for (const { directory, component } of components) {

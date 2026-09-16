@@ -8,6 +8,7 @@ import {
 } from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
 import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
+import { normalizeFogStoryArgs } from "./fog-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -29,6 +30,35 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("fog init data는 직렬화 가능한 유효 옵션으로 정규화된다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeFogStoryArgs({
+            direction: "start",
+            size: "full",
+            color: "surface-floating",
+            visibility: "hidden",
+            layoutDirection: "rtl",
+          }),
+        ),
+      ),
+    ).toEqual({
+      direction: "start",
+      size: "full",
+      color: "surface-floating",
+      visibility: "hidden",
+      layoutDirection: "rtl",
+    });
+    expect(normalizeFogStoryArgs({ direction: "invalid", size: "xl" })).toEqual({
+      direction: "bottom",
+      size: "m",
+      color: "surface-default",
+      visibility: "visible",
+      layoutDirection: "ltr",
+    });
+  });
+
   test("step-indicator init data는 유효한 정수 계약으로 정규화되고 JSON 직렬화된다", () => {
     expect(
       JSON.parse(
@@ -160,6 +190,7 @@ describe("Storybook Lynx build outputs", () => {
     "page-indicator",
     "bottom-navigator",
     "step-indicator",
+    "fog",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -186,6 +217,10 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-step-indicator--first");
     expect(index).toContain("components-step-indicator--middle");
     expect(index).toContain("components-step-indicator--last");
+    expect(index).toContain("components-fog--bottom");
+    expect(index).toContain("components-fog--horizontal-rtl");
+    expect(index).toContain("components-fog--hidden");
+    expect(index).toContain("components-fog--full");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -214,6 +249,7 @@ describe("Storybook Lynx build outputs", () => {
         "../../packages/ui-lynx/src/bottom-navigator/index.ts",
       ],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/fog": ["../../packages/ui-lynx/src/fog/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -228,6 +264,7 @@ describe("Storybook Lynx build outputs", () => {
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
+    ["fog", "@libitums/ui-lynx/fog"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -268,6 +305,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?fog["']?\s*:\s*["']\.\/src\/lynx\/fog\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -283,6 +321,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./fog"]).toEqual({
+      types: "./dist/fog/index.d.ts",
+      import: "./dist/fog/index.js",
+      default: "./dist/fog/index.js",
     });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
@@ -300,6 +343,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/fog/Fog.jsx")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/fog/fog.contract.js")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/fog/fog.css")).toBe(true);
 
     const packVerifier = await readFile(
       path.resolve(appRoot, "../../packages/ui-lynx/scripts/check-pack.mjs"),
@@ -321,6 +367,7 @@ describe("Storybook Lynx build outputs", () => {
       "round-button",
       "status-indicator",
       "step-indicator",
+      "fog",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
     }

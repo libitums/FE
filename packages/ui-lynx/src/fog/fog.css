@@ -1,0 +1,118 @@
+.ui-lynx-fog {
+  position: absolute;
+  z-index: var(--libitum-elevation-z-default);
+  transition: opacity var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-fog-top,
+.ui-lynx-fog-bottom {
+  right: 0;
+  left: 0;
+}
+
+.ui-lynx-fog-start,
+.ui-lynx-fog-end {
+  top: 0;
+  bottom: 0;
+}
+
+.ui-lynx-fog-top {
+  top: 0;
+  background-image: linear-gradient(
+    to top,
+    var(--libitum-ui-lynx-fog-transparent),
+    var(--libitum-ui-lynx-fog-opaque)
+  );
+}
+
+.ui-lynx-fog-bottom {
+  bottom: 0;
+  background-image: linear-gradient(
+    to bottom,
+    var(--libitum-ui-lynx-fog-transparent),
+    var(--libitum-ui-lynx-fog-opaque)
+  );
+}
+
+.ui-lynx-fog-start.ui-lynx-fog-ltr,
+.ui-lynx-fog-end.ui-lynx-fog-rtl {
+  left: 0;
+  background-image: linear-gradient(
+    to left,
+    var(--libitum-ui-lynx-fog-transparent),
+    var(--libitum-ui-lynx-fog-opaque)
+  );
+}
+
+.ui-lynx-fog-start.ui-lynx-fog-rtl,
+.ui-lynx-fog-end.ui-lynx-fog-ltr {
+  right: 0;
+  background-image: linear-gradient(
+    to right,
+    var(--libitum-ui-lynx-fog-transparent),
+    var(--libitum-ui-lynx-fog-opaque)
+  );
+}
+
+.ui-lynx-fog-top.ui-lynx-fog-size-s,
+.ui-lynx-fog-bottom.ui-lynx-fog-size-s {
+  height: var(--libitum-spacing-40);
+}
+
+.ui-lynx-fog-top.ui-lynx-fog-size-m,
+.ui-lynx-fog-bottom.ui-lynx-fog-size-m {
+  height: var(--libitum-spacing-80);
+}
+
+.ui-lynx-fog-top.ui-lynx-fog-size-full,
+.ui-lynx-fog-bottom.ui-lynx-fog-size-full {
+  height: 100%;
+}
+
+.ui-lynx-fog-start.ui-lynx-fog-size-s,
+.ui-lynx-fog-end.ui-lynx-fog-size-s {
+  width: var(--libitum-spacing-40);
+}
+
+.ui-lynx-fog-start.ui-lynx-fog-size-m,
+.ui-lynx-fog-end.ui-lynx-fog-size-m {
+  width: var(--libitum-spacing-80);
+}
+
+.ui-lynx-fog-start.ui-lynx-fog-size-full,
+.ui-lynx-fog-end.ui-lynx-fog-size-full {
+  width: 100%;
+}
+
+.ui-lynx-fog-color-white {
+  --libitum-ui-lynx-fog-transparent: rgba(255, 255, 255, 0);
+  --libitum-ui-lynx-fog-opaque: var(--libitum-color-white);
+}
+
+.ui-lynx-fog-color-surface-default {
+  --libitum-ui-lynx-fog-transparent: rgba(255, 253, 252, 0);
+  --libitum-ui-lynx-fog-opaque: var(--libitum-elevation-surface-default);
+}
+
+.ui-lynx-fog-color-surface-basement {
+  --libitum-ui-lynx-fog-transparent: rgba(250, 247, 244, 0);
+  --libitum-ui-lynx-fog-opaque: var(--libitum-elevation-surface-basement);
+}
+
+.ui-lynx-fog-color-surface-floating {
+  --libitum-ui-lynx-fog-transparent: rgba(255, 243, 234, 0);
+  --libitum-ui-lynx-fog-opaque: var(--libitum-elevation-surface-floating);
+}
+
+.ui-lynx-fog-color-dark {
+  --libitum-ui-lynx-fog-transparent: rgba(26, 28, 32, 0);
+  --libitum-ui-lynx-fog-opaque: var(--libitum-color-gray-950);
+}
+
+.ui-lynx-fog-hidden {
+  opacity: 0;
+}
+
+.ui-lynx-fog-visible {
+  opacity: 1;
+}

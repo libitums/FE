@@ -14,6 +14,7 @@ import * as progressHeader from "./progress-header/index";
 import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
 import * as stepIndicator from "./step-indicator/index";
+import * as fog from "./fog/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -26,6 +27,7 @@ const componentArtifacts = {
   "page-indicator": { implementation: "PageIndicator.jsx", css: "page-indicator.css" },
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
   "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
+  fog: { implementation: "Fog.jsx", css: "fog.css" },
 } as const;
 
 const componentEntries = {
@@ -37,6 +39,7 @@ const componentEntries = {
   "page-indicator": "PageIndicator",
   "bottom-navigator": "BottomNavigator",
   "step-indicator": "StepIndicator",
+  fog: "Fog",
 } as const;
 
 async function readPackageJson() {
@@ -58,6 +61,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.PageIndicator).toBe(pageIndicator.PageIndicator);
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
     expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
+    expect(root.Fog).toBe(fog.Fog);
     expect(root.getButtonContract).toBe(button.getButtonContract);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
     expect(root.getProgressHeaderProgress).toBe(progressHeader.getProgressHeaderProgress);
@@ -65,6 +69,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.PAGE_INDICATOR_MAX_PAGE_COUNT).toBe(pageIndicator.PAGE_INDICATOR_MAX_PAGE_COUNT);
     expect(root.getBottomNavigatorContract).toBe(bottomNavigator.getBottomNavigatorContract);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+    expect(root.getFogContract).toBe(fog.getFogContract);
   });
 
   test("root stylesheet aggregates every component without removing existing styles", async () => {
@@ -94,6 +99,7 @@ describe("ui-lynx package boundaries", () => {
     expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
       "./dist/step-indicator/step-indicator.css",
     );
+    expect(packageJson.exports["./fog/styles.css"]).toBe("./dist/fog/fog.css");
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
 
@@ -163,6 +169,13 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/step-indicator/step-indicator.contract.js",
       "package/dist/step-indicator/step-indicator.contract.d.ts",
       `package/dist/step-indicator/${componentArtifacts["step-indicator"].css}`,
+      "package/dist/fog/index.js",
+      `package/dist/fog/${componentArtifacts.fog.implementation}`,
+      "package/dist/fog/index.d.ts",
+      "package/dist/fog/Fog.d.ts",
+      "package/dist/fog/fog.contract.js",
+      "package/dist/fog/fog.contract.d.ts",
+      `package/dist/fog/${componentArtifacts.fog.css}`,
     ]) {
       expect(stdout).toContain(file);
     }

@@ -62,3 +62,14 @@ export type {
   StepIndicatorStep,
   StepIndicatorStepStatus,
 } from "./step-indicator";
+
+export { Fog, getFogContract } from "./fog";
+export type {
+  FogColor,
+  FogContract,
+  FogDirection,
+  FogLayoutDirection,
+  FogProps,
+  FogSize,
+  FogVisibility,
+} from "./fog";
