@@ -30,7 +30,7 @@ const visualNovelItem: RoleplayItem = {
 
 const items: readonly RoleplayItem[] = [messengerItem, phoneCallItem, visualNovelItem];
 
-// 이 화면은 제목 텍스트 하나만 그린다 (screens.contract.ts).
+// 이 화면은 제목 텍스트 하나와 흐름 영역의 목록 상자를 그린다 (screens.contract.ts).
 test("롤플레이 화면이 제목을 렌더한다", () => {
   render(<RoleplayListScreen items={items} onSelectItem={vi.fn()} />);
 
@@ -49,7 +49,7 @@ test("롤플레이 화면 제목이 accessibility-traits header를 갖는다", (
 
 // ---------------------------------------------------------------- 스크롤 영역 (LIB-226 계약 §3.2 U1·U3)
 //
-// 롤플레이는 흐름 자식이 없다(계약 §1.6 — 지금 비어 있다). 고정은 제목 <text> 하나다.
+// 롤플레이의 흐름 자식은 목록 상자 하나다(계약 §1.6). 고정은 제목 <text> 하나다.
 
 // U1: 스크롤 컨테이너가 존재한다.
 test("[U1] roleplay-list-screen-scroll이 존재한다", () => {
