@@ -60,7 +60,7 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
     `status-indicator.web.bundle`, `round-button.web.bundle`, `progress-header.web.bundle`,
     `page-indicator.web.bundle`, `bottom-navigator.web.bundle`, `step-indicator.web.bundle`,
     `chat-bubble.web.bundle`, `text-field.web.bundle`, `visual-novel-dialog.web.bundle`,
-    `overlay.web.bundle`을 정상
+    `overlay.web.bundle`, `fog.web.bundle`, `tooltip.web.bundle`을 정상
     응답으로 가져오는지 확인한다.
 16. `Components/Bottom Navigator/Default`에서 4개 icon item, 선택된 주황색 pill, dot badge와
     `99+` count badge가 보이는지 확인한다. 선택되지 않은 enabled item을 tap하면 `onSelect`가
@@ -113,6 +113,18 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
     Continue indicator를 확인한다. 패널을 tap해도 자체 Action이 생기지 않아야 한다.
 35. `Learning Language`, `Right To Left`, `Long Content`에서 전체 문장이 잘리지 않고 RTL 논리
     끝 indicator와 긴 문장의 reflow가 유지되는지 확인한다.
+36. `Components/Tooltip/Top`, `Bottom`, `Start`, `End`를 열어 Trigger와 Bubble 사이 8px 간격,
+    논리 방향 배치, 12×6px Arrow와 12px 모서리 여백을 확인한다.
+37. `Brand`, `No Arrow`, `Aligned Start`, `Learning Language`에서 tone·arrow·alignment·language
+    metadata가 독립적으로 반영되고 Bubble이 240px를 넘지 않는지 확인한다.
+38. Controls의 visibility를 Hidden/Visible로 바꿔 100ms opacity 전환만 사용하는지, Hidden이
+    접근성 트리에서 숨고 Tooltip이 Trigger hit area를 가로채지 않는지 확인한다.
+39. `Components/Fog/Bottom`과 `Top`을 열어 80px gradient가 각각 해당 가장자리에서 같은 RGB의
+    완전 투명 색으로 사라지는지 확인한다. Controls에서 S는 40px, M은 80px인지 비교한다.
+40. `Horizontal RTL`에서 Start가 오른쪽에 놓이고 gradient가 안쪽으로 사라지는지 확인한다.
+    layoutDirection을 LTR로 바꾸면 같은 Start가 왼쪽으로 이동해야 한다.
+41. `Hidden`은 opacity 0이되 레이아웃을 제거하지 않고, `Full`은 진행 축 전체를 채워야 한다.
+    Fog 위의 입력/스크롤 조작이 그대로 통과하며 Fog 자체에 Action이나 focus가 생기지 않아야 한다.
 
 ## native에서만 확인할 항목
 
@@ -134,6 +146,9 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 - Chat Bubble의 실제 speaker+Message 단일 낭독, delivery value, RTL 논리 방향과 학습 언어 발음
 - Text Field native keyboard·selection/copy·focus ring, required/invalid 관계와 Label/Error/Counter 낭독
 - Visual Novel Dialog의 Typewriter 중 전체 문장 낭독, 학습 언어 발음과 host의 tap/keyboard/auto pause 연결
+- Tooltip pointer/focus/press, ESC·뒤로가기, outside tap, Auto timer와 trigger-description 연결
+- Tooltip 스크롤·회전·글자 크기 변경 시 재측정 및 native 경계에서의 Flip·Shift
+- Fog의 실제 ScrollView offset 기반 visibility 전환과 native RTL 배치
 
 이 문서의 통과는 native 실기기 검증을 대체하지 않는다.
 현재 제품 소비 route가 없으므로 위 native 접근성 항목은 **미검증·이번 납품에는 비차단**

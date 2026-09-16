@@ -27,6 +27,13 @@ import type {
   VisualNovelDialogStatus,
   VisualNovelDialogSurface,
   VisualNovelDialogVariant,
+  TooltipAlignment,
+  TooltipArrow,
+  TooltipContentLanguage,
+  TooltipDirection,
+  TooltipPlacement,
+  TooltipTone,
+  TooltipVisibility,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -152,6 +159,7 @@ export type TextFieldStoryArgs = {
 };
 
 export type VisualNovelDialogStoryArgs = {
+  accessibilityLabel: string;
   variant: VisualNovelDialogVariant;
   surface: VisualNovelDialogSurface;
   reveal: VisualNovelDialogReveal;
@@ -166,4 +174,16 @@ export type VisualNovelDialogStoryArgs = {
   visibleCharacterCount: number;
   showAvatar: boolean;
   reducedMotion: boolean;
+};
+
+export type TooltipStoryArgs = {
+  message: string;
+  placement: TooltipPlacement;
+  alignment: TooltipAlignment;
+  arrow: TooltipArrow;
+  tone: TooltipTone;
+  visibility: TooltipVisibility;
+  direction: TooltipDirection;
+  contentLanguage: TooltipContentLanguage;
+  languageTag: string;
 };

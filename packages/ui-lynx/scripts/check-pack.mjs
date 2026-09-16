@@ -96,6 +96,13 @@ const components = [
     css: "compact-numeric-input.css",
   },
   {
+    subpath: "fog",
+    directory: "fog",
+    component: "Fog",
+    modules: ["fog.contract"],
+    css: "fog.css",
+  },
+  {
     subpath: "bottom-sheet",
     directory: "bottom-sheet",
     component: "BottomSheet",
@@ -122,6 +129,13 @@ const components = [
     component: "VisualNovelDialog",
     modules: ["visual-novel-dialog.contract"],
     css: "visual-novel-dialog.css",
+  },
+  {
+    subpath: "tooltip",
+    directory: "tooltip",
+    component: "Tooltip",
+    modules: ["tooltip.contract"],
+    css: "tooltip.css",
   },
 ];
 const required = [
@@ -245,6 +259,13 @@ if (visualNovelDialogStylesExport !== "./dist/visual-novel-dialog/visual-novel-d
 if (!files.includes(`package/${visualNovelDialogStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the VisualNovelDialog CSS export target");
 }
+const tooltipStylesExport = packedPackageJson.exports?.["./tooltip/styles.css"];
+if (tooltipStylesExport !== "./dist/tooltip/tooltip.css") {
+  throw new Error("packed package has an invalid ./tooltip/styles.css export");
+}
+if (!files.includes(`package/${tooltipStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the Tooltip CSS export target");
+}
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");
 }
@@ -272,6 +293,14 @@ if (bottomSheetStylesExport !== "./dist/bottom-sheet/bottom-sheet.css") {
 }
 if (!files.includes(`package/${bottomSheetStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the BottomSheet CSS export target");
+}
+
+const fogStylesExport = packedPackageJson.exports?.["./fog/styles.css"];
+if (fogStylesExport !== "./dist/fog/fog.css") {
+  throw new Error("packed package has an invalid ./fog/styles.css export");
+}
+if (!files.includes(`package/${fogStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the Fog CSS export target");
 }
 for (const { directory, component } of components) {
   const runtime = execFileSync(

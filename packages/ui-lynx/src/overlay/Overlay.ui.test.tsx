@@ -55,7 +55,9 @@ describe("Overlay UI", () => {
 
   test("원본 dim, scope z-index와 motion token 계약을 고정한다", () => {
     const styles = readFileSync(resolve(process.cwd(), "src/overlay/overlay.css"), "utf8");
-    expect(styles).toMatch(/background-color:\s*rgba\(26, 28, 32, 0\.45\)/);
+    expect(styles).toMatch(
+      /background-color:\s*rgba\(26, 28, 32, var\(--libitum-opacity-scrim, 0\.45\)\)/,
+    );
     expect(styles).toMatch(/\.ui-lynx-overlay-screen\s*\{[^}]*position:\s*fixed/s);
     expect(styles).toMatch(/\.ui-lynx-overlay-area\s*\{[^}]*position:\s*absolute/s);
     expect(styles).toMatch(

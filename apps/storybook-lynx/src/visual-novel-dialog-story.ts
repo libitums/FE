@@ -10,6 +10,7 @@ import type {
 } from "@libitums/ui-lynx/visual-novel-dialog";
 
 export type VisualNovelDialogStoryData = {
+  readonly accessibilityLabel?: string;
   readonly advance: VisualNovelDialogAdvance;
   readonly contentLanguage: VisualNovelDialogContentLanguage;
   readonly continueIndicator: VisualNovelDialogContinueIndicator;
@@ -45,8 +46,13 @@ export function normalizeVisualNovelDialogStoryArgs(input: unknown): VisualNovel
   const visibleCharacterCount = Number.isInteger(args.visibleCharacterCount)
     ? Math.max(0, Math.min(args.visibleCharacterCount as number, Array.from(line).length))
     : 0;
+  const accessibilityLabel =
+    typeof args.accessibilityLabel === "string" && args.accessibilityLabel.trim()
+      ? args.accessibilityLabel.trim()
+      : undefined;
 
   return {
+    ...(accessibilityLabel ? { accessibilityLabel } : {}),
     advance: allowed(["tap", "auto"] as const, args.advance, "tap"),
     contentLanguage,
     continueIndicator: allowed(["on", "off"] as const, args.continueIndicator, "on"),

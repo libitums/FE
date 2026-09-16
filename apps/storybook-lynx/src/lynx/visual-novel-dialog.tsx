@@ -16,6 +16,7 @@ function DemoAvatar() {
 function App() {
   const args = normalizeVisualNovelDialogStoryArgs(useInitData());
   const shared = {
+    accessibilityLabel: args.accessibilityLabel,
     contentLanguage: args.contentLanguage,
     continueIndicator: args.continueIndicator,
     direction: args.direction,
@@ -28,48 +29,43 @@ function App() {
     visibleCharacterCount: args.visibleCharacterCount,
   };
 
-  const dialog =
-    args.advance === "auto" ? (
-      args.variant === "narration" ? (
-        <VisualNovelDialog {...shared} advance="auto" autoControlAvailable variant="narration" />
-      ) : args.variant === "thought" ? (
+  const avatar = args.showAvatar ? <DemoAvatar /> : undefined;
+
+  function renderDialog() {
+    if (args.variant === "narration") {
+      if (args.advance === "auto") {
+        return (
+          <VisualNovelDialog {...shared} advance="auto" autoControlAvailable variant="narration" />
+        );
+      }
+      return <VisualNovelDialog {...shared} advance="tap" variant="narration" />;
+    }
+
+    if (args.advance === "auto") {
+      return (
         <VisualNovelDialog
           {...shared}
           advance="auto"
           autoControlAvailable
-          variant="thought"
+          variant={args.variant}
           speakerName={args.speakerName}
-          avatar={args.showAvatar ? <DemoAvatar /> : undefined}
+          avatar={avatar}
         />
-      ) : (
-        <VisualNovelDialog
-          {...shared}
-          advance="auto"
-          autoControlAvailable
-          variant="speech"
-          speakerName={args.speakerName}
-          avatar={args.showAvatar ? <DemoAvatar /> : undefined}
-        />
-      )
-    ) : args.variant === "narration" ? (
-      <VisualNovelDialog {...shared} advance="tap" variant="narration" />
-    ) : args.variant === "thought" ? (
+      );
+    }
+
+    return (
       <VisualNovelDialog
         {...shared}
         advance="tap"
-        variant="thought"
+        variant={args.variant}
         speakerName={args.speakerName}
-        avatar={args.showAvatar ? <DemoAvatar /> : undefined}
-      />
-    ) : (
-      <VisualNovelDialog
-        {...shared}
-        advance="tap"
-        variant="speech"
-        speakerName={args.speakerName}
-        avatar={args.showAvatar ? <DemoAvatar /> : undefined}
+        avatar={avatar}
       />
     );
+  }
+
+  const dialog = renderDialog();
 
   return (
     <view className="story-visual-novel-scene">

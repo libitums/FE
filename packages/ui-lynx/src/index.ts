@@ -115,6 +115,17 @@ export type {
   CompactNumericInputSize,
 } from "./compact-numeric-input";
 
+export { Fog, getFogContract } from "./fog";
+export type {
+  FogColor,
+  FogContract,
+  FogDirection,
+  FogLayoutDirection,
+  FogProps,
+  FogSize,
+  FogVisibility,
+} from "./fog";
+
 export {
   BottomSheet,
   BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD,
@@ -171,3 +182,20 @@ export type {
   TextFieldValidation,
   TextFieldVisualState,
 } from "./text-field";
+
+export { Tooltip, getTooltipContract, resolveTooltipLayout } from "./tooltip";
+export type {
+  TooltipAlignment,
+  TooltipArrow,
+  TooltipContentLanguage,
+  TooltipContract,
+  TooltipDirection,
+  TooltipLayout,
+  TooltipLayoutInput,
+  TooltipPlacement,
+  TooltipProps,
+  TooltipRect,
+  TooltipSize,
+  TooltipTone,
+  TooltipVisibility,
+} from "./tooltip";

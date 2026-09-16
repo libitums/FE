@@ -14,6 +14,7 @@ const meta = {
       width: "390px",
     }),
   argTypes: {
+    accessibilityLabel: { control: "text" },
     variant: { control: "inline-radio", options: ["speech", "narration", "thought"] },
     surface: { control: "inline-radio", options: ["opaque", "translucent"] },
     reveal: { control: "inline-radio", options: ["instant", "typewriter"] },
@@ -30,6 +31,7 @@ const meta = {
     reducedMotion: { control: "boolean" },
   },
   args: {
+    accessibilityLabel: "",
     variant: "speech",
     surface: "opaque",
     reveal: "instant",

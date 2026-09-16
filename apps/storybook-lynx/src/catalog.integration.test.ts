@@ -22,6 +22,8 @@ import {
 import { normalizeChatBubbleStoryArgs } from "./chat-bubble-story";
 import { normalizeTextFieldStoryArgs } from "./text-field-story";
 import { normalizeVisualNovelDialogStoryArgs } from "./visual-novel-dialog-story";
+import { normalizeTooltipStoryArgs } from "./tooltip-story";
+import { normalizeFogStoryArgs } from "./fog-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -48,6 +50,7 @@ describe("Storybook Lynx build outputs", () => {
       JSON.parse(
         JSON.stringify(
           normalizeVisualNovelDialogStoryArgs({
+            accessibilityLabel: " Aria's thought: مرحبا ",
             advance: "auto",
             contentLanguage: "learning",
             direction: "rtl",
@@ -64,6 +67,7 @@ describe("Storybook Lynx build outputs", () => {
         ),
       ),
     ).toMatchObject({
+      accessibilityLabel: "Aria's thought: مرحبا",
       advance: "auto",
       contentLanguage: "learning",
       direction: "rtl",
@@ -78,6 +82,89 @@ describe("Storybook Lynx build outputs", () => {
       visibleCharacterCount: 5,
     });
   });
+
+  test("tooltip init data는 독립 옵션을 JSON 직렬화 가능한 계약으로 정규화한다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeTooltipStoryArgs({
+            alignment: "end",
+            arrow: "off",
+            contentLanguage: "learning",
+            direction: "rtl",
+            languageTag: " en-US ",
+            message: "Try again",
+            placement: "start",
+            tone: "brand",
+            visibility: "visible",
+          }),
+        ),
+      ),
+    ).toEqual({
+      alignment: "end",
+      arrow: "off",
+      contentLanguage: "learning",
+      direction: "rtl",
+      languageTag: "en-US",
+      message: "Try again",
+      placement: "start",
+      tone: "brand",
+      visibility: "visible",
+    });
+  });
+
+  test("tooltip init data는 불완전한 값을 안전한 기본값으로 바꾼다", () => {
+    expect(
+      normalizeTooltipStoryArgs({
+        alignment: "bad",
+        arrow: "bad",
+        direction: "bad",
+        message: " ",
+        placement: "bad",
+        tone: "bad",
+        visibility: "bad",
+      }),
+    ).toEqual({
+      alignment: "center",
+      arrow: "on",
+      contentLanguage: "ui",
+      direction: "ltr",
+      message: "이 기능에 대한 짧은 설명",
+      placement: "top",
+      tone: "neutral",
+      visibility: "visible",
+    });
+  });
+
+  test("fog init data는 직렬화 가능한 유효 옵션으로 정규화된다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeFogStoryArgs({
+            direction: "start",
+            size: "full",
+            color: "surface-floating",
+            visibility: "hidden",
+            layoutDirection: "rtl",
+          }),
+        ),
+      ),
+    ).toEqual({
+      direction: "start",
+      size: "full",
+      color: "surface-floating",
+      visibility: "hidden",
+      layoutDirection: "rtl",
+    });
+    expect(normalizeFogStoryArgs({ direction: "invalid", size: "xl" })).toEqual({
+      direction: "bottom",
+      size: "m",
+      color: "surface-default",
+      visibility: "visible",
+      layoutDirection: "ltr",
+    });
+  });
+
   test("overlay init data는 JSON-only이고 잘못된 dismiss 조합을 none으로 보정한다", () => {
     expect(
       JSON.parse(
@@ -458,6 +545,7 @@ describe("Storybook Lynx build outputs", () => {
     "status-indicator",
     "round-button",
     "compact-numeric-input",
+    "fog",
     "progress-header",
     "page-indicator",
     "bottom-navigator",
@@ -469,6 +557,7 @@ describe("Storybook Lynx build outputs", () => {
     "chat-bubble",
     "visual-novel-dialog",
     "text-field",
+    "tooltip",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -490,6 +579,10 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-compact-numeric-input--filled");
     expect(index).toContain("components-compact-numeric-input--error");
     expect(index).toContain("components-compact-numeric-input--disabled");
+    expect(index).toContain("components-fog--bottom");
+    expect(index).toContain("components-fog--horizontal-rtl");
+    expect(index).toContain("components-fog--hidden");
+    expect(index).toContain("components-fog--full");
     expect(index).toContain("components-bottom-sheet--default");
     expect(index).toContain("components-bottom-sheet--multiple-actions");
     expect(index).toContain("components-progress-header--default");
@@ -540,6 +633,14 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-text-field--prefix-and-suffix");
     expect(index).toContain("components-text-field--trailing-action");
     expect(index).toContain("components-text-field--counter");
+    expect(index).toContain("components-tooltip--top");
+    expect(index).toContain("components-tooltip--bottom");
+    expect(index).toContain("components-tooltip--start");
+    expect(index).toContain("components-tooltip--end");
+    expect(index).toContain("components-tooltip--brand");
+    expect(index).toContain("components-tooltip--no-arrow");
+    expect(index).toContain("components-tooltip--aligned-start");
+    expect(index).toContain("components-tooltip--learning-language");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -565,6 +666,7 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/compact-numeric-input": [
         "../../packages/ui-lynx/src/compact-numeric-input/index.ts",
       ],
+      "@libitums/ui-lynx/fog": ["../../packages/ui-lynx/src/fog/index.ts"],
       "@libitums/ui-lynx/progress-header": ["../../packages/ui-lynx/src/progress-header/index.ts"],
       "@libitums/ui-lynx/page-indicator": ["../../packages/ui-lynx/src/page-indicator/index.ts"],
       "@libitums/ui-lynx/bottom-navigator": [
@@ -580,6 +682,7 @@ describe("Storybook Lynx build outputs", () => {
         "../../packages/ui-lynx/src/visual-novel-dialog/index.ts",
       ],
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
+      "@libitums/ui-lynx/tooltip": ["../../packages/ui-lynx/src/tooltip/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -591,6 +694,7 @@ describe("Storybook Lynx build outputs", () => {
     ["status-indicator", "@libitums/ui-lynx/status-indicator"],
     ["round-button", "@libitums/ui-lynx/round-button"],
     ["compact-numeric-input", "@libitums/ui-lynx/compact-numeric-input"],
+    ["fog", "@libitums/ui-lynx/fog"],
     ["progress-header", "@libitums/ui-lynx/progress-header"],
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
@@ -602,6 +706,7 @@ describe("Storybook Lynx build outputs", () => {
     ["chat-bubble", "@libitums/ui-lynx/chat-bubble"],
     ["visual-novel-dialog", "@libitums/ui-lynx/visual-novel-dialog"],
     ["text-field", "@libitums/ui-lynx/text-field"],
+    ["tooltip", "@libitums/ui-lynx/tooltip"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -648,11 +753,13 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?compact-numeric-input["']?\s*:\s*["']\.\/src\/lynx\/compact-numeric-input\.tsx["']/,
     );
+    expect(config).toMatch(/["']?fog["']?\s*:\s*["']\.\/src\/lynx\/fog\.tsx["']/);
     expect(config).toMatch(/["']?bottom-sheet["']?\s*:\s*["']\.\/src\/lynx\/bottom-sheet\.tsx["']/);
     expect(config).toMatch(/["']?text-field["']?\s*:\s*["']\.\/src\/lynx\/text-field\.tsx["']/);
     expect(config).toMatch(
       /["']?visual-novel-dialog["']?\s*:\s*["']\.\/src\/lynx\/visual-novel-dialog\.tsx["']/,
     );
+    expect(config).toMatch(/["']?tooltip["']?\s*:\s*["']\.\/src\/lynx\/tooltip\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -689,6 +796,11 @@ describe("Storybook Lynx build outputs", () => {
       import: "./dist/compact-numeric-input/index.js",
       default: "./dist/compact-numeric-input/index.js",
     });
+    expect(packageJson.exports["./fog"]).toEqual({
+      types: "./dist/fog/index.d.ts",
+      import: "./dist/fog/index.js",
+      default: "./dist/fog/index.js",
+    });
     expect(packageJson.exports["./bottom-sheet"]).toEqual({
       types: "./dist/bottom-sheet/index.d.ts",
       import: "./dist/bottom-sheet/index.js",
@@ -703,6 +815,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/visual-novel-dialog/index.d.ts",
       import: "./dist/visual-novel-dialog/index.js",
       default: "./dist/visual-novel-dialog/index.js",
+    });
+    expect(packageJson.exports["./tooltip"]).toEqual({
+      types: "./dist/tooltip/index.d.ts",
+      import: "./dist/tooltip/index.js",
+      default: "./dist/tooltip/index.js",
     });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
@@ -720,6 +837,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/tooltip/Tooltip.jsx")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/tooltip/tooltip.contract.js")).toBe(
+      true,
+    );
+    expect(await outputExists("../../packages/ui-lynx/dist/tooltip/tooltip.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/overlay/Overlay.jsx")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/overlay/overlay.contract.js")).toBe(
       true,
@@ -737,6 +859,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(await outputExists("../../packages/ui-lynx/dist/card/Card.jsx")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/card/card.contract.js")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/card/card.css")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/fog/Fog.jsx")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/fog/fog.contract.js")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/fog/fog.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/bottom-sheet/BottomSheet.jsx")).toBe(
       true,
     );
@@ -764,6 +889,7 @@ describe("Storybook Lynx build outputs", () => {
       "card",
       "chat-bubble",
       "compact-numeric-input",
+      "fog",
       "page-indicator",
       "progress-header",
       "round-button",
@@ -772,6 +898,7 @@ describe("Storybook Lynx build outputs", () => {
       "overlay",
       "text-field",
       "visual-novel-dialog",
+      "tooltip",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
     }

@@ -11,6 +11,8 @@ it("C1: special 항목은 appointment와 directions 사이에 삽입된다", () 
     onStartMessengerUnit: vi.fn(),
     completedPhoneCallUnitIds: [] as const,
     onStartPhoneCallUnit: vi.fn(),
+    // LIB-257 ui-scaffold: 필수 prop(계약 §2.5) — 단언은 바뀌지 않는다.
+    onOpenNotifications: vi.fn(),
   };
   render(<JourneyMapScreen {...props} />);
 
@@ -48,6 +50,7 @@ it("C2: special 뒤 directions는 자기 스텝 서수의 기존 상태와 조�
     onStartMessengerUnit,
     completedPhoneCallUnitIds: [] as const,
     onStartPhoneCallUnit: vi.fn(),
+    onOpenNotifications: vi.fn(),
   };
   render(<JourneyMapScreen {...fixture} />);
   const directions = screen.getByTestId("journey-step-node-directions");
@@ -68,6 +71,7 @@ it("C3: directions의 실제 접근성 이름과 조작 불가 trait를 리터�
     onStartMessengerUnit: vi.fn(),
     completedPhoneCallUnitIds: [] as const,
     onStartPhoneCallUnit: vi.fn(),
+    onOpenNotifications: vi.fn(),
   };
   render(<JourneyMapScreen {...fixture} />);
   const directions = screen.getByTestId("journey-step-node-directions");

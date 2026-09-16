@@ -14,6 +14,7 @@ import {
   messengerExitOutcome,
   messengerProgressLabel,
   messengerSessionReducer,
+  practiceMessengerCompletionStatus,
   visibleMessengerMessages,
 } from "./messenger";
 
@@ -111,5 +112,23 @@ describe("messenger session pure functions", () => {
     expect(completeMessengerUnit(completed, id)).toBe(completed);
     expect(messengerCompletionStatus(empty, id)).toBe("available");
     expect(messengerCompletionStatus(completed, id)).toBe("completed");
+  });
+});
+
+// -------------------------------- 롤플레이 연습 입력 (LIB-255 계약 §2.7 · §3)
+// 계획: .agent-harness/work/lib-255/test-plan.md unit § `messenger.unit.test.ts`
+// (추가). 케이스 ID는 계획의 M1 그대로다 — 여정 상태를 읽지 않는 시작 입력이
+// `initialMessengerSessionState`와 합성해 처음 상태를 만드는 것을 본다(계약 §6 ①).
+
+describe("practiceMessengerCompletionStatus (LIB-255)", () => {
+  // M1
+  it("M1. 연습 시작 입력이 처음 활성 상태를 만든다 — 공개 1개·대화 1 / 2·답장 self-accept", () => {
+    const conversation = messengerConversationFor(id);
+    const state = initialMessengerSessionState(practiceMessengerCompletionStatus());
+
+    expect(state).toEqual({ mode: "active", replyIndex: 0 });
+    expect(visibleMessengerMessages(conversation, state)).toHaveLength(1);
+    expect(messengerProgressLabel(state)).toBe("대화 1 / 2");
+    expect(currentMessengerReply(conversation, state)?.id).toBe("self-accept");
   });
 });

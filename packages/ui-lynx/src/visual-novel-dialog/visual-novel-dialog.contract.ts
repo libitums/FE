@@ -11,6 +11,7 @@ export type VisualNovelDialogDirection = "ltr" | "rtl";
 
 type VisualNovelDialogBaseProps = {
   readonly line: string;
+  readonly accessibilityLabel?: string;
   readonly surface?: VisualNovelDialogSurface;
   readonly reveal?: VisualNovelDialogReveal;
   readonly status?: VisualNovelDialogStatus;
@@ -128,14 +129,9 @@ export function getVisualNovelDialogContract(
   }
 
   const characterCount = Array.from(line).length;
-  const visibleCharacterCount = props.visibleCharacterCount ?? 0;
-  if (
-    !Number.isInteger(visibleCharacterCount) ||
-    visibleCharacterCount < 0 ||
-    visibleCharacterCount > characterCount
-  ) {
-    throw new Error("VisualNovelDialog visibleCharacterCount must be within the line length");
-  }
+  const visibleCharacterCount = Number.isInteger(props.visibleCharacterCount)
+    ? Math.max(0, Math.min(props.visibleCharacterCount as number, characterCount))
+    : 0;
   if (requestedReveal === "instant" && props.status === "revealing") {
     throw new Error("VisualNovelDialog instant reveal cannot be revealing");
   }
@@ -145,12 +141,16 @@ export function getVisualNovelDialogContract(
       ? getVisibleLine(line, visibleCharacterCount)
       : line;
   const avatar = variant !== "narration" && props.avatar !== undefined ? "on" : "off";
-  const accessibilityLabel =
+  const defaultAccessibilityLabel =
     variant === "narration"
       ? line
       : variant === "thought"
         ? `${speakerName}, 속마음: ${line}`
         : `${speakerName}: ${line}`;
+  const accessibilityLabel =
+    props.accessibilityLabel === undefined
+      ? defaultAccessibilityLabel
+      : requireVisibleText(props.accessibilityLabel, "accessibilityLabel");
 
   return {
     accessibilityLabel,

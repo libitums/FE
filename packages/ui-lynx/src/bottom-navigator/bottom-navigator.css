@@ -11,7 +11,7 @@
   padding-bottom: calc(var(--libitum-spacing-20) + env(safe-area-inset-bottom));
   border-radius: var(--libitum-radius-md) var(--libitum-radius-md) 0 0;
   background-color: var(--libitum-color-white);
-  box-shadow: 0 -4px 4px rgba(26, 28, 32, 0.08);
+  box-shadow: 0 -4px 4px rgba(26, 28, 32, var(--libitum-opacity-8, 0.08));
 }
 
 .ui-lynx-bottom-navigator-items {

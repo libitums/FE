@@ -16,7 +16,7 @@ apps/mobile/src/
 - 폴더는 **필요해질 때 만든다.** 지금 있는 것은 `app/` · `screens/` · `components/` ·
   `lib/` 넷이다 ([ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md)).
 - **`components/`는 뼈대 이슈에서 생겼다.** 첫 입주자는 바텀 네비게이션 셸이다 —
-  탭 넷 위에 걸려 어느 한 화면의 것이 아니다. 아래 **컴포넌트** 절의 승격 규칙
+  모든 탭 위에 걸려 어느 한 화면의 것이 아니다. 아래 **컴포넌트** 절의 승격 규칙
   ([ADR-0015 D3](../adr/0015-component-primitives-and-style-application.md))이
   **처음 발동한 사례**이고, 규칙만 있고 사례가 없던 자리를 그 판단이 채웠다
   (ADR-0015 `정정 기록` 2026-09-02).
@@ -40,14 +40,14 @@ apps/mobile/src/
 | 디렉터리 | kebab-case | `src/screens/order-detail/` |
 | React 컴포넌트 파일 | PascalCase, **export 이름과 일치** | `OrderDetailScreen.tsx` |
 | 그 외 파일 | kebab-case | `api-client.ts`, `use-navigation.ts` |
-| 화면 컴포넌트 | `~Screen` 접미사 | `HomeScreen` |
+| 화면 컴포넌트 | `~Screen` 접미사 | `SettingsScreen` |
 | 훅 | `use~` 접두사, 파일은 `use-~` | `useNavigation` / `use-navigation.ts` |
 | 테스트 파일 | `*.unit.test.ts` / `*.ui.test.tsx` / `*.integration.test.tsx` | 계층이 파일명에 드러난다 |
-| CSS 파일 | 짝이 되는 컴포넌트 파일명의 kebab-case, **같은 폴더** | `HomeScreen.tsx` → `home-screen.css` |
-| CSS 클래스 | 블록 = CSS 파일명. 하위는 `블록-요소` **한 겹만**. BEM의 `__`·`--`를 쓰지 않는다 | `.home-screen-title` |
+| CSS 파일 | 짝이 되는 컴포넌트 파일명의 kebab-case, **같은 폴더** | `SettingsScreen.tsx` → `settings-screen.css` |
+| CSS 클래스 | 블록 = CSS 파일명. 하위는 `블록-요소` **한 겹만**. BEM의 `__`·`--`를 쓰지 않는다 | `.settings-screen-title` |
 | CSS 클래스 (상태) | `블록-요소-상태`. 상태어는 **아래 예약 목록에서만**. base 클래스에 **더해** 붙인다 | `.bottom-navigator-label-selected` |
-| `data-testid` | `블록-역할`. 클래스 블록과 **같은 접두사**를 쓰고 축약하지 않는다 | `home-screen-title` |
-| 상대 import | **확장자를 붙이지 않는다** | `./HomeScreen` (`./HomeScreen.js` 아님) |
+| `data-testid` | `블록-역할`. 클래스 블록과 **같은 접두사**를 쓰고 축약하지 않는다 | `settings-screen-title` |
+| 상대 import | **확장자를 붙이지 않는다** | `./SettingsScreen` (`./SettingsScreen.js` 아님) |
 
 - **테스트 파일은 소스와 같은 폴더에 둔다.** `test/` 트리를 만들지 않는다 — 계층은
   파일명이 가른다.
@@ -119,10 +119,10 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
 
 | 채널 | 무엇을 보나 | 예 |
 |---|---|---|
-| `data-testid` | **요소를 찾는다** | `bottom-navigator-tab-home` |
+| `data-testid` | **요소를 찾는다** | `bottom-navigator-tab-journey` |
 | 상태 `data-*` | **상태** — 로직이 이 요소를 어떤 상태로 보는가 | `data-selected="true"` · `data-status="current"` |
 | `current-color` | **결선** — 그 상태에 토큰 값이 실렸는가 | `color.fg.brand` |
-| `accessibility-*` | **보조기술**이 이름·역할·상태를 받는가 | `accessibility-label="홈, 선택됨"` |
+| `accessibility-*` | **보조기술**이 이름·역할·상태를 받는가 | `accessibility-label="여정, 선택됨"` |
 
 - **상태 채널에 속성이 여럿 있어도 채널은 하나다.** boolean 하나로 끝나는 상태는
   `data-selected`(탭의 선택 여부), 값이 셋 이상인 상태는 `data-status`(스텝의
@@ -458,9 +458,14 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 - **에러 경계**: 루트에 하나뿐이다. 네트워크 실패는 여기로 올리지 않고 화면 안에서 재시도한다.
 - 모든 화면에 **화면 내 back 수단**을 둔다. 하드웨어 뒤로가기에만 의존하지 않는다.
 - **나가는 수단은 라벨이 가리키는 곳으로 간다 — 스택 깊이로 목적지를 맞추지 않는다.**
-  `맵으로`는 활성 스택의 루트로 가고(`backToRoot`), `back`(한 겹 위)으로 대신하지 않는다.
-  「한 겹 위가 마침 맵이다」는 깊이가 늘면 거짓이 된다. 진입을 `push`로 할지 `replace`로
-  할지도 **출구를 맞추려고** 고르지 않는다.
+  나가는 라벨은 둘이고 액션은 하나다. 여정 탭의 `맵으로`와 롤플레이 탭의 `목록으로`는 둘 다
+  활성 스택의 루트를 가리키므로 둘 다 `backToRoot`로 가고, `back`(한 겹 위)으로 대신하지
+  않는다. 「한 겹 위가 마침 맵이다」는 깊이가 늘면 거짓이 된다. 진입을 `push`로 할지
+  `replace`로 할지도 **출구를 맞추려고** 고르지 않는다.
+  **같은 화면이 두 탭에서 열리면 라벨을 화면이 고르지 않는다** — 진입 출처에서
+  `specialUnitExitLabel(source)`(`src/lib/special-unit-entry-source.ts`)가 정하고 App이
+  `exitLabel` prop으로 내린다. 화면은 자기가 어느 탭에서 열렸는지 모른다. `맵으로`는 여정 탭
+  스택 위에서만 쓴다.
 
 ([ADR-0007](../adr/0007-app-internals-state-routing-data-errors.md))
 
@@ -481,7 +486,7 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 - **주석이 교체 지점을 적는다 — 무엇이 임시이고, 무엇이 막고 있고, 진짜가 오는 날 무엇만
   바뀌나.**
 
-**새로 만든 규칙이 아니다. 이미 선 자리가 넷 있다.** 아래 인용은 원문 주석의 **발췌**다 —
+**새로 만든 규칙이 아니다. 이미 선 자리들이 있다.** 아래 인용은 원문 주석의 **발췌**다 —
 원문에는 계약 절 번호가 함께 달려 있고 그 번호는 이 문서에서 풀리지 않는다.
 
 - **`listening.ts`의 `ListeningQuestion.audioSource` — 한 필드가 「격리」 · 「옵셔널 금지」 ·
@@ -517,6 +522,14 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   문화 퀴즈는 스텝에 배정되지 않는다 — 들어오는 전이는 문화 학습의 액션 행 하나다"* 로
   **표를 배정으로 읽는 길을 막는다.** 표는 **export하지 않는다** — *"표를 내보내면 다음
   사람이 직접 색인해 자기 답을 짓는다."*
+- **`notification-items.ts`의 알림 목록 — 「격리」 · 「주석이 교체 지점을 적는다」를 한 모듈이
+  지고, 「옵셔널 금지」는 항목 타입이 진다** ⟨2026-09-15, LIB-257⟩. 주석이 *"**무엇이 임시인가** —
+  아래 네 항목의 `id` · `message` · `target` 전부와 개수(4)"* 로 **개수까지 임시**라고 적고,
+  *"**진짜가 오는 날 무엇만 바뀌나** — 이 함수의 본문(값과 그 출처)뿐이다. 형태 · 화면 · App 결선은
+  안 바뀐다"* 로 **교체 지점**을 적는다. 항목 타입(`NotificationItem`)은 필드 셋이 전부 필수라
+  「아직 없는 알림」이나 읽음 상태를 둘 자리가 없다. 표는 `culture-quiz.ts`처럼 **export하지 않고
+  함수 하나로만 내보낸다.** 셋째 규칙도 선다 — 알림 화면 · 항목의 `ui` 테스트가 이 모듈을
+  import하지 않고 자기 fixture를 쓴다.
 
 **셋째 규칙(「화면이 내용에 의존하지 않는다」)이 선 자리는 주석이 아니라 테스트다.**
 문장 순서 · 단어 선택 · **문화 퀴즈**의 문항 `Record`는 **다섯 스텝 전부 빈 배열**인데도
@@ -532,7 +545,7 @@ fixture로도 통과한다」의 실물이다. 형태의 정본은
 **파생값에는 적용되지 않는다.** 파생값은 **임시로 채울 수 있는 종류가 아니다** — 채우면
 값이 아니라 **계산 규칙**이 굳고, 교체 지점이 한 곳으로 좁혀지지 않는다. **그런 화면은
 이음매를 만드는 것이 아니라 뒤로 미룬다.** 그 판정의 자리는
-[`docs/screens.md`](../screens.md)의 「홈은 소비자다」다.
+[`docs/screens.md`](../screens.md)의 「파생값은 임시로 채우지 않는다」다.
 
 ([ADR-0010 D6](../adr/0010-convention-docs-and-design-done-criteria.md) ·
 [ADR-0007 D2·D5](../adr/0007-app-internals-state-routing-data-errors.md) ·

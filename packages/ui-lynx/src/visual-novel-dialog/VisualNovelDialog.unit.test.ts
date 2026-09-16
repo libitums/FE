@@ -57,6 +57,17 @@ describe("getVisualNovelDialogContract", () => {
     ).toBe("아리아, 속마음: 이번에는 꼭 말해야 해.");
   });
 
+  test("호스트가 번역한 접근성 이름을 기본 포맷보다 우선한다", () => {
+    expect(
+      getVisualNovelDialogContract({
+        variant: "thought",
+        line: "I have to say it this time.",
+        speakerName: "Aria",
+        accessibilityLabel: "Aria's thought: I have to say it this time.",
+      }).accessibilityLabel,
+    ).toBe("Aria's thought: I have to say it this time.");
+  });
+
   test("Typewriter Revealing은 Unicode code point 단위로 시각 문자열만 줄인다", () => {
     expect(
       getVisualNovelDialogContract({
@@ -131,6 +142,25 @@ describe("getVisualNovelDialogContract", () => {
   });
 
   test.each([
+    [-1, ""],
+    [4, "짧음"],
+    [1.5, ""],
+  ])(
+    "visibleCharacterCount %s를 안전한 범위로 정규화한다",
+    (visibleCharacterCount, visibleLine) => {
+      expect(
+        getVisualNovelDialogContract({
+          line: "짧음",
+          speakerName: "아리아",
+          reveal: "typewriter",
+          status: "revealing",
+          visibleCharacterCount,
+        }).visibleLine,
+      ).toBe(visibleLine);
+    },
+  );
+
+  test.each([
     [{ line: "", speakerName: "아리아" }, "VisualNovelDialog line must not be empty"],
     [
       { line: "대사", speakerName: "", variant: "speech" },
@@ -153,8 +183,8 @@ describe("getVisualNovelDialogContract", () => {
       "VisualNovelDialog auto advance requires an available pause control",
     ],
     [
-      { line: "짧음", speakerName: "아리아", visibleCharacterCount: 4 },
-      "VisualNovelDialog visibleCharacterCount must be within the line length",
+      { line: "대사", speakerName: "아리아", accessibilityLabel: " " },
+      "VisualNovelDialog accessibilityLabel must not be empty",
     ],
     [
       { line: "즉시", speakerName: "아리아", reveal: "instant", status: "revealing" },

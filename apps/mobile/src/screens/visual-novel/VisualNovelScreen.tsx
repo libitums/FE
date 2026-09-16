@@ -1,5 +1,6 @@
 import { useReducer } from "@lynx-js/react";
 
+import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import { DialoguePanel } from "./DialoguePanel";
 import { VisualNovelScene } from "./VisualNovelScene";
 import {
@@ -14,9 +15,16 @@ import { artworkFor } from "./visual-novel-artwork";
 import type { VisualNovelScreenProps } from "./visual-novel.contract";
 import "./visual-novel.css";
 
+// `exitLabel`은 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받는다
+// (ADR-0007 D3). 기본값은 여정 라벨이라 기존 호출은 수정 없이 성립한다(LIB-255 §2.7).
+//
+// LIB-255 (ui, r1 R2): 머리 재배치 — 나가기가 머리의 첫 흐름 자식이고, 제목·진행을
+// 제목 묶음 `<view className="visual-novel-header-text">`(testid·접근성 속성 없음)로
+// 감싼다. 여정·롤플레이 두 경로 공통(.agent-harness/work/lib-255/spec.md §2.9).
 export function VisualNovelScreen({
   story,
   progress,
+  exitLabel = specialUnitExitLabel("journey"),
   onAdvance,
   onExit,
   onReplay,
@@ -49,16 +57,28 @@ export function VisualNovelScreen({
       data-testid="visual-novel-screen"
     >
       <view className="visual-novel-header visual-novel-large-text-reflow">
-        <text
-          className="visual-novel-title"
-          data-testid="visual-novel-title"
-          accessibility-traits="header"
+        <view
+          className="visual-novel-exit"
+          data-testid="visual-novel-exit-button"
+          accessibility-element={true}
+          accessibility-traits="button"
+          accessibility-label={exitLabel}
+          bindtap={handleExit}
         >
-          {story.title}
-        </text>
-        <text className="visual-novel-progress" data-testid="visual-novel-progress">
-          {visualNovelProgressLabel(session)}
-        </text>
+          <text accessibility-element={false}>{exitLabel}</text>
+        </view>
+        <view className="visual-novel-header-text">
+          <text
+            className="visual-novel-title"
+            data-testid="visual-novel-title"
+            accessibility-traits="header"
+          >
+            {story.title}
+          </text>
+          <text className="visual-novel-progress" data-testid="visual-novel-progress">
+            {visualNovelProgressLabel(session)}
+          </text>
+        </view>
       </view>
       <view className="visual-novel-scene-shell">
         <VisualNovelScene
@@ -77,16 +97,6 @@ export function VisualNovelScreen({
               : { kind: "advance", label: "다음", onSelect: handleAdvance }
           }
         />
-      </view>
-      <view
-        className="visual-novel-exit"
-        data-testid="visual-novel-exit-button"
-        accessibility-element={true}
-        accessibility-traits="button"
-        accessibility-label="맵으로"
-        bindtap={handleExit}
-      >
-        <text accessibility-element={false}>맵으로</text>
       </view>
     </view>
   );

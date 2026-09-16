@@ -21,10 +21,13 @@
    gray.600 본문, Thought는 brand 색 이름·테두리와 reward-disabled-surface 본문을 쓴다.
 5. Continue indicator는 Ready이며 `continueIndicator="on"`일 때만 논리 끝에 표시한다.
 6. Typewriter는 `visibleCharacterCount`만큼 Unicode code point를 화면에 표시하지만 접근성 이름은
-   항상 전체 문장이다. reduced motion이면 Instant/Ready/full text로 정규화한다.
+   항상 전체 문장이다. 문자 수는 `0..line.length`로 clamp하며 reduced motion이면
+   Instant/Ready/full text로 정규화한다.
 7. Auto는 `autoControlAvailable={true}`가 함께 있어야 한다. 컴포넌트가 timer를 만들지는 않는다.
 8. learning content는 `languageTag`가 필요하며 `data-language`와 `data-lang`으로 보존한다.
 9. root는 text 접근성 node 하나이고 이벤트를 통과시킨다. tap handler나 button trait을 만들지 않는다.
+   호스트는 선택적 `accessibilityLabel`로 번역된 전체 접근성 이름을 주입할 수 있으며, 비어 있는
+   값은 허용하지 않는다.
 
 ## 공개 표면과 검증
 
