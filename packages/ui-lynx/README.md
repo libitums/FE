@@ -3,7 +3,7 @@
 libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포넌트 패키지다. 현재 공개
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
 `PageIndicator`, `BottomNavigator`, `StepIndicator`, `BottomSheet`, `CompactNumericInput`,
-`Card`, `ChatBubble`, `TextField`, `AnswerLabel`, `Overlay` 열다섯 가지다.
+`Card`, `ChatBubble`, `TextField`, `AnswerLabel`, `Overlay`, `Fog`, `Tooltip` 열일곱 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
@@ -15,6 +15,10 @@ Text Field는 `components/text-field.md` revision
 `1ba6b55103663c407f073f9ede3a2e700bf9b722`을 기준으로 한다.
 Round Button·Bottom Navigator·Bottom Sheet·Overlay의 불투명도는 `foundations/opacity.json`과
 각 컴포넌트 문서를 갱신한 revision `133322d7b080e464303a38456f4da45c8accdda9`를 기준으로 한다.
+Tooltip은 `components/tooltip.md` revision
+`5c7bce3eb2c0d214de78bcec0c52d7b7395e8a19`을 기준으로 한다.
+Fog는 최신 `main`의 `components/fog.md` revision
+`456a121fdfee60dfceaba2ac8f9e989a1275c066`을 기준으로 한다.
 
 ```tsx
 import { Button } from "@libitums/ui-lynx/button";
@@ -126,6 +130,17 @@ import "@libitums/ui-lynx/overlay/styles.css";
 <Overlay scope="screen" surface="sheet" dismiss="tap" binddismiss={handleDismiss} />;
 ```
 
+`Fog`는 스크롤 영역 가장자리의 콘텐츠가 이어짐을 알리는 비조작 gradient다. 표시 여부와
+스크롤 가능성 판단은 host가 소유하며, Start/End는 `layoutDirection`에 따라 논리 방향으로
+배치된다.
+
+```tsx
+import { Fog } from "@libitums/ui-lynx/fog";
+import "@libitums/ui-lynx/fog/styles.css";
+
+<Fog direction="bottom" size="m" color="surface-default" visibility="visible" />;
+```
+
 `Card`는 Media, Content, Header, Body, BodyText, Footer를 필요한 만큼 조합하는 compound
 component다. Interactive Card는 접근성 이름과 role, tap handler가 필수이며 Header에 이동
 화살표를 자동으로 표시한다. Interactive 안에는 Footer나 별도 trailing control을 둘 수 없다.
@@ -177,6 +192,19 @@ import "@libitums/ui-lynx/text-field/styles.css";
 />;
 ```
 
+`Tooltip`은 Message와 배치 표현만 소유한다. 트리거와 pointer/focus/press/programmatic 열기,
+ESC·뒤로가기·outside tap dismiss, Auto timer는 제품 host가 소유한다. host가 trigger, bubble,
+boundary의 측정을 모두 완료한 뒤 geometry를 `resolveTooltipLayout`에 넘기면 Flip·Shift와 Arrow
+fallback 결과를 `layout`으로 전달할 수 있다. 측정 전에는 resolver를 호출하지 않고 CSS 배치를 쓴다.
+
+```tsx
+import { Tooltip, resolveTooltipLayout } from "@libitums/ui-lynx/tooltip";
+import "@libitums/ui-lynx/tooltip/styles.css";
+
+const layout = resolveTooltipLayout({ trigger, bubble, boundary, placement: "top" });
+<Tooltip message="힌트를 확인해 보세요" placement="top" tone="brand" layout={layout} />;
+```
+
 `RoundButton`은 root와 전용 subpath에서 같은 구현과 타입을 내보낸다. 아이콘 전용 control이므로
 비어 있지 않은 `accessibilityLabel`을 반드시 제공한다.
 
@@ -219,10 +247,14 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/card/styles.css`
 - `@libitums/ui-lynx/compact-numeric-input`
 - `@libitums/ui-lynx/compact-numeric-input/styles.css`
+- `@libitums/ui-lynx/fog`
+- `@libitums/ui-lynx/fog/styles.css`
 - `@libitums/ui-lynx/chat-bubble`
 - `@libitums/ui-lynx/chat-bubble/styles.css`
 - `@libitums/ui-lynx/text-field`
 - `@libitums/ui-lynx/text-field/styles.css`
+- `@libitums/ui-lynx/tooltip`
+- `@libitums/ui-lynx/tooltip/styles.css`
 - `@libitums/ui-lynx/styles.css`
 - `@libitums/ui-lynx/progress-header.css`
 - `@libitums/ui-lynx/page-indicator.css`
@@ -242,7 +274,7 @@ label을 같은 canonical count로 clamp한다.
 
 새 컴포넌트와 기존 컴포넌트 정리는
 [`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
-규칙을 따른다. 공개 컴포넌트 열다섯 개 모두 `<component>.contract.ts`에 공개
+규칙을 따른다. 공개 컴포넌트 열일곱 개 모두 `<component>.contract.ts`에 공개
 타입과 순수 계약 로직을 함께 두고 PascalCase component test 이름을 쓴다.
 
 일반 소비자는 aggregate `@libitums/ui-lynx/styles.css`를 Lynx 진입점에서 한 번 import한다.
@@ -250,7 +282,7 @@ label을 같은 canonical count로 clamp한다.
 ReactLynx를 번들하지 않고 `>=0.123.0 <0.126.0` peer로 요구한다.
 `pnpm --filter @libitums/ui-lynx pack:check`는 실제 tarball에 컴파일된 JSX·선언·CSS,
 canonical contract, README와 docs만 들어가고 generic contract/logic 산출물이 없는지
-검증한다. package integration test도 이 부재 계약을 열다섯 subpath 전체에서 확인한다.
+검증한다. package integration test도 이 부재 계약을 열일곱 subpath 전체에서 확인한다.
 
 AnswerLabel은 `components/indicator/answer-label.md`의 Result·Emphasis·Size 독립 조합을
 따른다. Solid는 고대비 strong surface, Subtle은 semantic feedback surface를 사용하고 S/M/L은
@@ -281,6 +313,11 @@ TextField는 uncontrolled `defaultValue`를 시작값으로 사용하고 native 
 `bindinput`, `bindfocus`, `bindblur`, `bindconfirm` callback으로 전달한다. Counter는 Unicode
 code point 단위로 계산하며 native `maxlength`와 같은 최댓값을 공유한다. URL purpose는 현재
 Lynx input type 지원 범위 때문에 text로, Search는 text와 `confirm-type="search"`로 매핑한다.
+
+Tooltip은 Top/Bottom/Start/End와 Start/Center/End alignment를 논리 방향으로 제공한다. 기본
+Bubble ↔ Trigger 간격은 8px이고 최대 너비는 240px이다. Brand는 `brand.primary`, Neutral은
+`gray.950`을 사용한다. Bubble과 Arrow는 동일한 surface token을 공유한다. `resolveTooltipLayout`은 16px
+경계 안에서 Flip·Shift하고 Arrow가 모서리 12px 여백을 지킬 수 없으면 Arrow를 끈다.
 
 `disabled`와 `loading` Button은 tap을 전달하지 않는다. Back Header의 아이콘·제목 묶음
 전체는 일반 tap에 반응한다. ReactLynx/iOS 접근성 트리에서는 중첩 접근성 요소를 피하기 위해

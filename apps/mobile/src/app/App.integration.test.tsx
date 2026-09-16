@@ -6,7 +6,7 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import { questionsForStep } from "../screens/listening/listening";
 
 // `integration` 계층: 여러 실제 모듈의 협력 (ADR-0006 D4).
-// 여기서는 App · navReducer · BottomNavigator · 화면 넷 · ErrorBoundary가 맞물린다.
+// 여기서는 App · navReducer · BottomNavigator · 화면 셋 · ErrorBoundary가 맞물린다.
 // 목킹하지 않는다 — 외부 IO가 생기면 그 경계에서만 대체한다.
 //
 // 텍스트 질의(`getByText`)는 쓰지 않는다 — 화면 제목과 탭 라벨이 같은 문자열을
@@ -16,11 +16,10 @@ import { questionsForStep } from "../screens/listening/listening";
 test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", () => {
   render(<App />);
 
-  expect(screen.getByTestId("home-screen-title")).toHaveTextContent("홈");
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "true");
+  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
   expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
     "data-selected",
-    "false",
+    "true",
   );
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
     "data-selected",
@@ -30,61 +29,83 @@ test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", () => {
     "data-selected",
     "false",
   );
+  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
 });
 
-test("여정 탭으로 전환하면 여정 맵 화면이 나오고 홈 화면은 사라진다", () => {
+test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오고 설정 화면은 사라진다", () => {
   render(<App />);
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
-  expect(screen.queryByTestId("home-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("settings-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "false");
+  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+    "data-selected",
+    "false",
+  );
 });
 
-test("롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 홈 화면은 사라진다", () => {
+test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 여정 맵 화면은 사라진다", () => {
   render(<App />);
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
-  expect(screen.queryByTestId("home-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "false");
+  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+    "data-selected",
+    "false",
+  );
 });
 
-test("설정 탭으로 전환하면 설정 화면이 나오고 홈 화면은 사라진다", () => {
+test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 여정 맵 화면은 사라진다", () => {
   render(<App />);
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
-  expect(screen.queryByTestId("home-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "false");
+  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+    "data-selected",
+    "false",
+  );
 });
 
-test("홈 → 여정 → 홈으로 왕복하면 홈의 루트 화면이 그대로 다시 나온다", () => {
+test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이 그대로 다시 나온다", () => {
   render(<App />);
+
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
 
-  expect(screen.getByTestId("home-screen-title")).toHaveTextContent("홈");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "true");
+  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
 });
 
 // -------------------------------------------------------------------------
@@ -105,7 +126,7 @@ test("여정 탭으로 전환하면 스텝 다섯이 전부 렌더된다", () =>
 });
 
 // 계약 §3.3-2 · 수용 기준 5(스택 깊이 불변)의 **대리 관찰**이다. `Nav` 스택 깊이는 밖으로
-// 노출되지 않으므로 직접 셀 수 없다 — 시트가 열려도 셸(탭 넷 · 여정 탭의 선택 상태)이
+// 노출되지 않으므로 직접 셀 수 없다 — 시트가 열려도 셸(탭 셋 · 여정 탭의 선택 상태)이
 // 그대로라는 것으로 대신 본다. 셸이 사라지거나 선택이 바뀌면 스택이 깊어졌다는 신호다.
 test("스텝을 누르면 시트가 열리고 셸이 그대로다", () => {
   render(<App />);
@@ -118,9 +139,9 @@ test("스텝을 누르면 시트가 열리고 셸이 그대로다", () => {
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-settings")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
 });
 
 test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대로다", () => {
@@ -133,21 +154,21 @@ test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대�
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-settings")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
 });
 
 // 시트 상태는 `Nav`가 아니라 화면 로컬 상태다(ADR-0007 D1) — 탭을 떠나면 `JourneyMapScreen`이
 // 언마운트되며 `useReducer` 상태가 버려진다. 그래서 되돌아왔을 때 시트는 닫혀 있는 것이
-// 정상이다. 기대를 뒤집지 않는다(계약 §3.3-4).
+// 정상이다. 기대를 뒤집지 않는다(계약 §3.3-4). 「다른 탭」 = 설정(LIB-257 홈 제거).
 test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 시트가 닫혀 있다", () => {
   render(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
@@ -255,7 +276,7 @@ test("서로 다른 두 스텝에서 시작하면 제목과 문항 텍스트가 
 // 계약 §3.3-2 · 수용 기준 2 후반: 학습 화면은 셸을 가리지도 잠그지도 않는다.
 // 되돌아왔을 때 화면은 스택에 남고 **세션만** 버려진다는 것을 함께 본다 (§0.2) —
 // 그래서 먼저 문항을 하나 넘겨 버려질 로컬 상태를 만든다.
-test("학습 화면에서도 탭 넷이 그대로 조작되고, 돌아오면 화면은 남되 문항은 처음부터다", () => {
+test("학습 화면에서도 탭 셋이 그대로 조작되고, 돌아오면 화면은 남되 문항은 처음부터다", () => {
   render(<App />);
   startStep("ordering");
 
@@ -263,9 +284,9 @@ test("학습 화면에서도 탭 넷이 그대로 조작되고, 돌아오면 화
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-settings")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
 
   fireEvent.tap(
     screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
@@ -274,9 +295,9 @@ test("학습 화면에서도 탭 넷이 그대로 조작되고, 돌아오면 화
   fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3");
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
 
-  expect(screen.getByTestId("home-screen-title")).toHaveTextContent("홈");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
@@ -774,9 +795,9 @@ test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 �
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
 
-  expect(screen.getByTestId("home-screen-title")).toHaveTextContent("홈");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0), STOP]);
 
@@ -902,18 +923,15 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
 // 여기서 단언하는 것은 "스크롤 컨테이너가 testid로 존재/부재한다"까지다.
 // 실제로 스크롤되는가·고정이 지켜지는가는 실기(e2e)의 것이다(계약 §3.2 말미).
 
-// 계약 §3.3 I1 · 수용 기준 3(다섯 화면 **전부**): 탭 넷을 순회하며 각 화면에
+// 계약 §3.3 I1 · 수용 기준 3(다섯 화면 **전부**): 탭 셋을 순회하며 각 화면에
 // 스크롤 컨테이너가 하나씩 있는지 본다. 화면을 옮길 때마다 이전 화면의 스크롤
 // 컨테이너가 사라지는 것도 함께 본다 — "어딘가에 하나 있다"가 아니라 "그
-// 화면의 것이 있다"를 확인하기 위해서다.
-test("탭 넷을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 있다", () => {
+// 화면의 것이 있다"를 확인하기 위해서다. 첫 화면이 여정 맵이라(LIB-257) 순회는
+// 여정 맵 → 롤플레이 → 설정이다.
+test("탭 셋을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 있다", () => {
   render(<App />);
 
-  expect(screen.getByTestId("home-screen-scroll")).toBeInTheDocument();
-
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
-  expect(screen.queryByTestId("home-screen-scroll")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-screen-scroll")).toBeInTheDocument();

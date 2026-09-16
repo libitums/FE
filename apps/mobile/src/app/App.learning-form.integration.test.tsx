@@ -243,7 +243,8 @@ test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시
 // I-D (LIB-245) — 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 돌아오면 퀴즈가
 // 그대로 있고, 그때 `맵으로`가 맵에 닿는다. 탭 전환은 활성 스택을 바꾸지 않으므로
 // 여정 스택 위의 문화 퀴즈가 그대로 남아 있어야 하고, 그 위에서의 `맵으로`도
-// 여전히 `backToRoot`로 맵에 닿아야 한다.
+// 여전히 `backToRoot`로 맵에 닿아야 한다. 「다른 탭」 = 설정(LIB-257 홈 제거 —
+// 설정 제목으로 실제로 떠난 것을 확인한다).
 test("문화 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 돌아오면 퀴즈가 그대로 있고, 그때 맵으로가 맵에 닿는다", () => {
   formStub.current = "culture";
   render(<App />);
@@ -252,8 +253,8 @@ test("문화 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 �
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
   expect(screen.getByTestId("culture-quiz-screen-title")).toBeInTheDocument();
 
-  // 다른 탭으로 갔다가 여정 탭으로 돌아온다.
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  // 다른 탭(설정)으로 갔다가 여정 탭으로 돌아온다.
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   // 퀴즈가 그대로 있다.

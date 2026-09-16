@@ -270,7 +270,7 @@ ReactLynx 0.125.0의 native element property parser가 임의의 `data-asset-id`
 
 | event | 출처 | payload | 정확한 발생 시점 | 지표 |
 |---|---|---|---|---|
-| `visual_novel_unit_opened` | journey | `unitId`, `entrySource: "journey"`, `entryStatus`, `entryBeatId` | map 선택 후 push 직전, 매 진입 | entries, completed re-entry |
+| `visual_novel_unit_opened` | journey | `unitId`, `entrySource: "journey"`, `entryStatus`, `entryBeatId` | map **또는 알림**(LIB-257) 선택 후 push 직전, 매 진입 | entries, completed re-entry |
 | `visual_novel_unit_opened` | roleplay | `unitId`, `entrySource: "roleplay"` | 롤플레이 목록 항목 선택 후 push 직전, 매 진입. `entryStatus`·`entryBeatId`를 싣지 않는다 — 연습 진입은 언제나 `arrive`라 정보가 없고, 실으면 여정 상태로 오독된다 | roleplay share |
 | `visual_novel_unit_completed` | journey | `unitId`, `entrySource: "journey"` | active(1)→completed(2)가 최초 성립할 때, progress write와 같은 handler에서 한 번 | completions, completion rate |
 | `visual_novel_unit_completed` | roleplay | `unitId`, `entrySource: "roleplay"` | `find`에서 `다음`으로 `enter`에 닿는 전이마다 — 연습 진행값이 늘 처음이라 **회차마다**(replay 뒤 재완료 포함). 같은 handler에서 `이야기 완료` 능동 발화 뒤 | roleplay completions |
