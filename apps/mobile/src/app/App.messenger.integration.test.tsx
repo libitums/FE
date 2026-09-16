@@ -121,6 +121,7 @@ test("sink는 열린 시점에 정확한 opened payload를 한 번 받는다", (
     name: "messenger_unit_opened",
     unitId: "appointment-confirmation",
     entryStatus: "available",
+    entrySource: "journey",
   });
 });
 
@@ -134,12 +135,39 @@ test("sink는 incomplete exit과 replay를 정확한 순서·payload로 받는�
   fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
   fireEvent.tap(screen.getByTestId("messenger-replay"), {});
   expect(sink.mock.calls.map(([event]) => event)).toEqual([
-    { name: "messenger_unit_opened", unitId: "appointment-confirmation", entryStatus: "available" },
-    { name: "messenger_unit_exited_incomplete", unitId: "appointment-confirmation" },
-    { name: "messenger_unit_opened", unitId: "appointment-confirmation", entryStatus: "available" },
-    { name: "messenger_unit_completed", unitId: "appointment-confirmation" },
-    { name: "messenger_unit_opened", unitId: "appointment-confirmation", entryStatus: "completed" },
-    { name: "messenger_unit_replay_started", unitId: "appointment-confirmation" },
+    {
+      name: "messenger_unit_opened",
+      unitId: "appointment-confirmation",
+      entryStatus: "available",
+      entrySource: "journey",
+    },
+    {
+      name: "messenger_unit_exited_incomplete",
+      unitId: "appointment-confirmation",
+      entrySource: "journey",
+    },
+    {
+      name: "messenger_unit_opened",
+      unitId: "appointment-confirmation",
+      entryStatus: "available",
+      entrySource: "journey",
+    },
+    {
+      name: "messenger_unit_completed",
+      unitId: "appointment-confirmation",
+      entrySource: "journey",
+    },
+    {
+      name: "messenger_unit_opened",
+      unitId: "appointment-confirmation",
+      entryStatus: "completed",
+      entrySource: "journey",
+    },
+    {
+      name: "messenger_unit_replay_started",
+      unitId: "appointment-confirmation",
+      entrySource: "journey",
+    },
   ]);
 });
 

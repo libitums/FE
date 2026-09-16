@@ -71,3 +71,7 @@ export const messengerCompletionStatus = (
   completedIds: readonly MessengerUnitId[],
   id: MessengerUnitId,
 ): MessengerCompletionStatus => (completedIds.includes(id) ? "completed" : "available");
+
+// LIB-255 계약 §2.7: 롤플레이 출처의 시작 입력 — 여정 상태를 읽을 매개변수가 없다
+// (계약 §6 ①). 연습은 늘 처음부터 선다.
+export const practiceMessengerCompletionStatus = (): MessengerCompletionStatus => "available";

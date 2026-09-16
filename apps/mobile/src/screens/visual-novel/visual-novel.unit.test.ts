@@ -13,6 +13,8 @@ import {
   didVisualNovelComplete,
   initialVisualNovelProgress,
   initialVisualNovelSessionState,
+  practiceVisualNovelExitOutcome,
+  practiceVisualNovelProgress,
   visualNovelCompletionAnnouncement,
   visualNovelCompletionStatus,
   visualNovelExitOutcome,
@@ -178,5 +180,51 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
       "이야기 완료",
     );
     expect(visualNovelCompletionAnnouncement(active1, completed)).toBe("이야기 완료");
+  });
+});
+
+// -------------------------------- 롤플레이 연습 입력 (LIB-255 계약 §2.7 · §3)
+// 계획: .agent-harness/work/lib-255/test-plan.md unit § `visual-novel.unit.test.ts`
+// (추가). 케이스 ID는 계획의 V1~V4 그대로다. `practiceVisualNovelProgress`는
+// 여정 상태를 읽을 매개변수가 없다(계약 §6 ①) — 연습은 늘 처음부터 선다.
+
+describe("연습 비주얼 노벨 시작 입력 (LIB-255)", () => {
+  // V1
+  it("V1. 연습 시작 입력이 처음 viewing 상태를 만든다 — arrive·장면 1 / 3", () => {
+    const story = visualNovelStoryFor(id);
+    const progress = practiceVisualNovelProgress();
+    const session = initialVisualNovelSessionState(progress);
+
+    expect(session).toEqual({ mode: "viewing", beatIndex: 0, replaying: false });
+    expect(currentVisualNovelBeat(story, session).id).toBe("arrive");
+    expect(visualNovelProgressLabel(session)).toBe("장면 1 / 3");
+  });
+
+  // V2
+  it("V2. 연습 progress로 마지막 beat에 닿으면 completedNow가 true이고 이야기 완료를 발화한다", () => {
+    const viewingLastBeat = { mode: "viewing", beatIndex: 1, replaying: false } as const;
+
+    const outcome = advanceVisualNovel(viewingLastBeat, practiceVisualNovelProgress());
+
+    expect(outcome.completedNow).toBe(true);
+    expect(outcome.announcement).toBe("이야기 완료");
+  });
+
+  // V3
+  it("V3. 같은 호출을 replaying: true로 해도 회차마다 completedNow가 true다", () => {
+    const viewingLastBeatReplay = { mode: "viewing", beatIndex: 1, replaying: true } as const;
+
+    const outcome = advanceVisualNovel(viewingLastBeatReplay, practiceVisualNovelProgress());
+
+    expect(outcome.completedNow).toBe(true);
+  });
+});
+
+describe("practiceVisualNovelExitOutcome (LIB-255)", () => {
+  // V4
+  it("V4. arrive·find는 incomplete이고 enter는 completed다", () => {
+    expect(practiceVisualNovelExitOutcome("arrive")).toBe("incomplete");
+    expect(practiceVisualNovelExitOutcome("find")).toBe("incomplete");
+    expect(practiceVisualNovelExitOutcome("enter")).toBe("completed");
   });
 });

@@ -16,9 +16,9 @@
 | `target` | 기존 앱 사용자와 기존 mobile Lynx Host 지원 범위 |
 | `design_ref` | ADR-0014의 토큰 소비 규칙과 ADR-0015의 내장 요소·CSS 규칙 |
 | `scope_in` | 전화 특별 항목, 고정 3턴, 로컬 임시 음원, 수동 듣기·다시 듣기, 완료·재진입·replay, 접근 가능한 transcript |
-| `scope_out` | 실제 전화·녹음·인식·서버·AI·런타임 TTS·pause·상세 오류 UI·telemetry·영속 저장 |
+| `scope_out` | 실제 전화·녹음·인식·서버·AI·런타임 TTS·pause·상세 오류 UI·telemetry·영속 저장 — telemetry는 LIB-255의 열림 이벤트 하나가 예외다(§13) |
 | `acceptance_criteria` | 아래 10개 기준 |
-| `measurement` | 없음. 이벤트, sink, API를 만들지 않음 |
+| `measurement` | 없음. 이벤트, sink, API를 만들지 않음 — **LIB-255에서 바뀌었다**: 열림 이벤트 하나와 App sink가 생겼다(§13). API는 여전히 없다 |
 
 필수 슬롯 7/7이 채워졌고 미승인 추론과 미해결 모순은 없다.
 
@@ -152,7 +152,8 @@ boolean 모드 props, compound context, ref, render prop, audio port prop, telem
 7. 일반 여정과 기존 메신저 완료·이벤트 계약은 변하지 않는다.
 8. 현재 오디오 API 위에서 성공·오류 메시지를 만들지 않고 transcript 경로를 유지한다.
 9. 이름·button/header 역할과 읽기 순서를 UI 테스트로 고정한다.
-10. 제외 범위 기능과 이벤트·API·영속 저장이 추가되지 않는다.
+10. 제외 범위 기능과 이벤트·API·영속 저장이 추가되지 않는다. — LIB-255 이후 이벤트는
+    §13의 `phone_call_unit_opened` 하나가 예외다. API·영속 저장은 여전히 없다.
 
 ## 11. 구현 및 검증 분해
 
@@ -174,3 +175,32 @@ boolean 모드 props, compound context, ref, render prop, audio port prop, telem
   `docs/adr/README.md` 및 새 `docs/e2e/phone-call.md`를 실제 동작과 함께 갱신한다.
 
 이 스펙과 타입 계약을 바꾸려면 제품 선택을 다시 승인하고 contract-diff를 갱신해야 한다.
+
+## 13. 진입 출처와 열림 이벤트 — LIB-255 재고정
+
+> 2026-09-15. 롤플레이 목록(LIB-255)이 이 유닛을 롤플레이 탭에서도 연다. 그 측정(유닛별
+> 롤플레이 출처 비율)을 위해 **열림 이벤트 하나**를 새로 만들었다. 2절 `measurement`와 10절
+> 기준 10의 「이벤트 없음」은 이 절이 대체한다. 목록과 연습 모드는
+> [롤플레이 목록 스펙](roleplay-list.md)에 있다.
+
+타입은 `phone-call.contract.ts`의 `PhoneCallEvent` · `PhoneCallEventSink` · `PhoneCallAppProps`다.
+
+| event | 출처 | payload | 발생 시점 |
+|---|---|---|---|
+| `phone_call_unit_opened` | journey | `unitId`, `entrySource: "journey"`, `entryStatus: PhoneCallCompletionStatus` | 맵의 전화 항목 선택(`onStartPhoneCallUnit`)으로 화면을 `push`하기 직전, 매 진입. `entryStatus`는 `phoneCallCompletionStatus(completedPhoneCallUnitIds, id)` |
+| `phone_call_unit_opened` | roleplay | `unitId`, `entrySource: "roleplay"` | 롤플레이 목록 항목 선택(`onStartRoleplayUnit`)으로 `roleplay-phone-call` 화면을 `push`하기 직전, 매 진입. `entryStatus`를 싣지 않는다 — 연습은 여정 상태를 읽지 않고, 타입이 초과 속성으로 막는다 |
+
+- **완료·이탈·다시 보기 이벤트는 만들지 않는다.** 그래서 전화의 롤플레이 완료 수는 측정되지
+  않는다. 필요해지면 `phone_call_unit_completed`를 후속으로 연다.
+- payload에 transcript·답장·음원 source·사용자 식별자를 넣지 않는다.
+- sink 주입은 메신저·비주얼 노벨과 같다 — `App`의 optional `phoneCallEventSink`를 기본값
+  `null`로 정규화하고, 제품 진입점 `index.tsx`는 `phoneCallEventSink={null}`을 명시한다. 화면
+  props에는 sink가 없다(7절의 「telemetry prop을 추가하지 않는다」는 그대로다). **운영 sink가
+  없으므로 실제 집계는 아직 0건이다.** sink가 `null`이어도 세션·오디오·완료 기록·navigation
+  결과는 같다.
+- 나가기 라벨: `PhoneCallScreenProps.exitLabel?`가 생겼다. 기본값은 `맵으로`이고, 롤플레이에서
+  연 화면만 `목록으로`를 받는다. 동작은 둘 다 `backToRoot`다.
+- 연습 모드: 롤플레이에서 연 화면은 `practicePhoneCallCompletionStatus()`(= `available`)로
+  `ready(0)`에서 시작하고, 끝까지 가도 `completedPhoneCallUnitIds`를 바꾸지 않는다.
+- 검증: `App.phone-call.integration.test.tsx`(여정 열림), `App.roleplay.integration.test.tsx`
+  (롤플레이 열림 · 연습 경계).
