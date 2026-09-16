@@ -21,7 +21,7 @@
   right: var(--libitum-spacing-0);
   bottom: var(--libitum-spacing-0);
   left: var(--libitum-spacing-0);
-  background-color: rgba(26, 28, 32, 0.45);
+  background-color: rgba(26, 28, 32, var(--libitum-opacity-scrim, 0.45));
   animation: ui-lynx-dialog-scrim-enter var(--libitum-motion-duration-dialog)
     var(--libitum-motion-easing-enter);
 }

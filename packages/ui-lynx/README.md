@@ -145,7 +145,7 @@ StepIndicator는 최신 파일 규칙에 따라 공개 타입과 `getStepIndicat
 `step-indicator.contract.ts` 하나에서 소유하고 단위 테스트는
 `StepIndicator.unit.test.ts`에 둔다.
 
-Dialog는 `components/dialog.md` revision `3f7ed6d17df769e37215adb40f7abfc2e1174fd1`의
+Dialog는 `components/dialog.md` revision `133322d7b080e464303a38456f4da45c8accdda9`의
 중앙 배치, floating surface, 1~2개 세로 action과 reduced motion 계약을 따른다. action이
 하나면 Brand, 둘이면 Brand/Subtle 순서이며 모든 action이 비활성인 진행 불가능한 계약은
 거부한다. Scrim에는 tap handler를 연결하지 않는다.
