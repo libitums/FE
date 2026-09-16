@@ -34,4 +34,21 @@ describe("Fog contract", () => {
       visibility: "hidden",
     });
   });
+
+  test.each([
+    [undefined, "Fog props must be an object"],
+    [{}, "Fog direction must be top, bottom, start, or end"],
+    [{ direction: "left" }, "Fog direction must be top, bottom, start, or end"],
+  ] as const)("JS 소비자의 잘못된 필수 입력을 계약 오류로 거부한다: %j", (props, message) => {
+    expect(() => getFogContract(props as never)).toThrow(message);
+  });
+
+  test.each([
+    [{ direction: "bottom", size: "l" }, "Fog size must be s, m, or full"],
+    [{ direction: "bottom", color: "transparent" }, "Fog color must match a supported surface"],
+    [{ direction: "bottom", visibility: "collapsed" }, "Fog visibility must be hidden or visible"],
+    [{ direction: "bottom", layoutDirection: "auto" }, "Fog layoutDirection must be ltr or rtl"],
+  ] as const)("JS 소비자의 잘못된 옵션을 계약 오류로 거부한다: %j", (props, message) => {
+    expect(() => getFogContract(props as never)).toThrow(message);
+  });
 });
