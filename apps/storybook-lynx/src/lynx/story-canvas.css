@@ -38,3 +38,20 @@
   line-height: var(--libitum-typography-heading-m-line-height);
   letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
 }
+
+.story-card-media-demo {
+  width: 100%;
+  height: var(--libitum-spacing-96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--libitum-color-brand-reward-disabled-surface);
+}
+
+.story-card-media-label {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}

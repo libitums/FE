@@ -1,0 +1,154 @@
+.ui-lynx-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  border-width: var(--libitum-spacing-0);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s1);
+  z-index: var(--libitum-elevation-z-default);
+}
+
+.ui-lynx-card-regions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-lynx-card-interactive {
+  min-height: var(--libitum-spacing-48);
+  transition-property: background-color;
+  transition-duration: var(--libitum-motion-duration-pressed);
+  transition-timing-function: var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-card-interactive:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.ui-lynx-card-interactive:focus-visible,
+.ui-lynx-card-interactive:focus {
+  box-shadow:
+    var(--libitum-elevation-shadow-s1),
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+.ui-lynx-card-media {
+  width: 100%;
+  overflow: hidden;
+  border-start-start-radius: var(--libitum-radius-md);
+  border-start-end-radius: var(--libitum-radius-md);
+  border-end-start-radius: var(--libitum-spacing-0);
+  border-end-end-radius: var(--libitum-spacing-0);
+}
+
+.ui-lynx-card-media-content {
+  width: 100%;
+}
+
+.ui-lynx-card-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.ui-lynx-card-m .ui-lynx-card-content {
+  padding: var(--libitum-spacing-16);
+}
+
+.ui-lynx-card-l .ui-lynx-card-content {
+  padding: var(--libitum-spacing-24);
+}
+
+.ui-lynx-card-header {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.ui-lynx-card-title-block {
+  min-width: var(--libitum-spacing-0);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
+}
+
+.ui-lynx-card-overline {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.ui-lynx-card-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  white-space: normal;
+}
+
+.ui-lynx-card-trailing {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.ui-lynx-card-arrow {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.ui-lynx-card-rtl .ui-lynx-card-arrow {
+  transform: scaleX(-1);
+}
+
+.ui-lynx-card-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-lynx-card-header + .ui-lynx-card-body {
+  margin-top: var(--libitum-spacing-12);
+}
+
+.ui-lynx-card-body-text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+  white-space: normal;
+}
+
+.ui-lynx-card-footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+}
+
+.ui-lynx-card-body + .ui-lynx-card-footer,
+.ui-lynx-card-header + .ui-lynx-card-footer {
+  margin-top: var(--libitum-spacing-20);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-lynx-card-interactive {
+    transition-duration: var(--libitum-motion-duration-d2);
+    transition-timing-function: var(--libitum-motion-easing-linear);
+  }
+}
