@@ -1,0 +1,125 @@
+@import "@libitums/design-tokens/css/variables.css";
+@import "@libitums/design-tokens/css/typography.css";
+
+.ui-lynx-answer-label {
+  width: fit-content;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  border-width: var(--libitum-spacing-0);
+  box-shadow: none;
+  transition:
+    background-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing),
+    color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-answer-label-content {
+  max-width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.ui-lynx-answer-label-icon-wrap,
+.ui-lynx-answer-label-icon {
+  flex-shrink: 0;
+}
+
+.ui-lynx-answer-label-text {
+  min-width: var(--libitum-spacing-0);
+  flex-shrink: 1;
+  color: inherit;
+  white-space: normal;
+}
+
+.ui-lynx-answer-label-s {
+  min-height: var(--libitum-spacing-32);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+}
+
+.ui-lynx-answer-label-s .ui-lynx-answer-label-icon-wrap,
+.ui-lynx-answer-label-s .ui-lynx-answer-label-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.ui-lynx-answer-label-s .ui-lynx-answer-label-text {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.ui-lynx-answer-label-m {
+  min-height: var(--libitum-spacing-40);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+}
+
+.ui-lynx-answer-label-m .ui-lynx-answer-label-icon-wrap,
+.ui-lynx-answer-label-m .ui-lynx-answer-label-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.ui-lynx-answer-label-m .ui-lynx-answer-label-text {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.ui-lynx-answer-label-l {
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+}
+
+.ui-lynx-answer-label-l .ui-lynx-answer-label-icon-wrap,
+.ui-lynx-answer-label-l .ui-lynx-answer-label-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.ui-lynx-answer-label-l .ui-lynx-answer-label-text {
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  line-height: var(--libitum-typography-label-xl-line-height);
+  letter-spacing: var(--libitum-typography-label-xl-letter-spacing);
+}
+
+.ui-lynx-answer-label-solid {
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
+.ui-lynx-answer-label-pending.ui-lynx-answer-label-solid {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-answer-label-correct.ui-lynx-answer-label-solid {
+  background-color: var(--libitum-color-feedback-correct);
+}
+
+.ui-lynx-answer-label-incorrect.ui-lynx-answer-label-solid {
+  background-color: var(--libitum-color-feedback-incorrect);
+}
+
+.ui-lynx-answer-label-pending.ui-lynx-answer-label-subtle {
+  color: var(--libitum-color-fg-brand);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.ui-lynx-answer-label-correct.ui-lynx-answer-label-subtle {
+  color: var(--libitum-color-feedback-correct-text);
+  background-color: var(--libitum-color-feedback-correct-surface);
+}
+
+.ui-lynx-answer-label-incorrect.ui-lynx-answer-label-subtle {
+  color: var(--libitum-color-feedback-incorrect-text);
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+}

@@ -384,6 +384,7 @@ describe("Storybook Lynx build outputs", () => {
     "bottom-navigator",
     "bottom-sheet",
     "step-indicator",
+    "answer-label",
     "card",
     "chat-bubble",
     "text-field",
@@ -419,6 +420,12 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-step-indicator--first");
     expect(index).toContain("components-step-indicator--middle");
     expect(index).toContain("components-step-indicator--last");
+    expect(index).toContain("components-answer-label--pending");
+    expect(index).toContain("components-answer-label--correct");
+    expect(index).toContain("components-answer-label--incorrect");
+    expect(index).toContain("components-answer-label--subtle");
+    expect(index).toContain("components-answer-label--large");
+    expect(index).toContain("components-answer-label--long-label");
     expect(index).toContain("components-card--static");
     expect(index).toContain("components-card--interactive");
     expect(index).toContain("components-card--large-with-media");
@@ -470,6 +477,7 @@ describe("Storybook Lynx build outputs", () => {
       ],
       "@libitums/ui-lynx/bottom-sheet": ["../../packages/ui-lynx/src/bottom-sheet/index.ts"],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/answer-label": ["../../packages/ui-lynx/src/answer-label/index.ts"],
       "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"],
       "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
@@ -489,6 +497,7 @@ describe("Storybook Lynx build outputs", () => {
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["bottom-sheet", "@libitums/ui-lynx/bottom-sheet"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
+    ["answer-label", "@libitums/ui-lynx/answer-label"],
     ["card", "@libitums/ui-lynx/card"],
     ["chat-bubble", "@libitums/ui-lynx/chat-bubble"],
     ["text-field", "@libitums/ui-lynx/text-field"],
@@ -532,6 +541,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?answer-label["']?\s*:\s*["']\.\/src\/lynx\/answer-label\.tsx["']/);
     expect(config).toMatch(/["']?card["']?\s*:\s*["']\.\/src\/lynx\/card\.tsx["']/);
     expect(config).toMatch(
       /["']?compact-numeric-input["']?\s*:\s*["']\.\/src\/lynx\/compact-numeric-input\.tsx["']/,
@@ -553,6 +563,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./answer-label"]).toEqual({
+      types: "./dist/answer-label/index.d.ts",
+      import: "./dist/answer-label/index.js",
+      default: "./dist/answer-label/index.js",
     });
     expect(packageJson.exports["./card"]).toEqual({
       types: "./dist/card/index.d.ts",
@@ -590,6 +605,15 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/step-indicator/step-indicator.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/answer-label/AnswerLabel.jsx")).toBe(
+      true,
+    );
+    expect(
+      await outputExists("../../packages/ui-lynx/dist/answer-label/answer-label.contract.js"),
+    ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/answer-label/answer-label.css")).toBe(
+      true,
+    );
     expect(await outputExists("../../packages/ui-lynx/dist/card/Card.jsx")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/card/card.contract.js")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/card/card.css")).toBe(true);
@@ -612,17 +636,19 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('directory: "progress-header"');
     expect(packVerifier).toContain('component: "ProgressHeader"');
     for (const directory of [
+      "answer-label",
       "back-header",
       "bottom-navigator",
       "bottom-sheet",
       "button",
+      "card",
+      "chat-bubble",
       "compact-numeric-input",
       "page-indicator",
       "progress-header",
       "round-button",
       "status-indicator",
       "step-indicator",
-      "card",
       "text-field",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
@@ -639,6 +665,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('component: "StepIndicator"');
     expect(packVerifier).toContain('modules: ["step-indicator.contract"]');
     expect(packVerifier).toContain('css: "step-indicator.css"');
+    expect(packVerifier).toContain('subpath: "answer-label"');
+    expect(packVerifier).toContain('directory: "answer-label"');
+    expect(packVerifier).toContain('component: "AnswerLabel"');
+    expect(packVerifier).toContain('modules: ["answer-label.contract"]');
+    expect(packVerifier).toContain('css: "answer-label.css"');
     expect(packVerifier).toContain('subpath: "card"');
     expect(packVerifier).toContain('directory: "card"');
     expect(packVerifier).toContain('component: "Card"');

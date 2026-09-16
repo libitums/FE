@@ -68,6 +68,13 @@ const components = [
     css: "step-indicator.css",
   },
   {
+    subpath: "answer-label",
+    directory: "answer-label",
+    component: "AnswerLabel",
+    modules: ["answer-label.contract"],
+    css: "answer-label.css",
+  },
+  {
     subpath: "card",
     directory: "card",
     component: "Card",
@@ -210,6 +217,14 @@ if (!files.includes(`package/${textFieldStylesExport.replace(/^\.\//, "")}`)) {
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");
+}
+
+const answerLabelStylesExport = packedPackageJson.exports?.["./answer-label/styles.css"];
+if (answerLabelStylesExport !== "./dist/answer-label/answer-label.css") {
+  throw new Error("packed package has an invalid ./answer-label/styles.css export");
+}
+if (!files.includes(`package/${answerLabelStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the AnswerLabel CSS export target");
 }
 
 const compactNumericInputStylesExport =

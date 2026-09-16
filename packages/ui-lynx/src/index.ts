@@ -62,6 +62,17 @@ export type {
   StepIndicatorStep,
   StepIndicatorStepStatus,
 } from "./step-indicator";
+export { AnswerLabel, getAnswerLabelContract } from "./answer-label";
+export type {
+  AnswerLabelContract,
+  AnswerLabelEmphasis,
+  AnswerLabelIcon,
+  AnswerLabelProps,
+  AnswerLabelResult,
+  AnswerLabelSize,
+  AnswerLabelTone,
+} from "./answer-label";
+
 export { Card, getCardContract, validateCardHeader } from "./card";
 export type {
   CardAccessibilityRole,

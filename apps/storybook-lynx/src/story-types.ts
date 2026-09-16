@@ -6,6 +6,9 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  AnswerLabelEmphasis,
+  AnswerLabelResult,
+  AnswerLabelSize,
   CardDirection,
   CardPadding,
   CompactNumericInputSize,
@@ -75,6 +78,14 @@ export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
 };
+export type AnswerLabelStoryArgs = {
+  result: AnswerLabelResult;
+  emphasis: AnswerLabelEmphasis;
+  size: AnswerLabelSize;
+  label: string;
+  contextLabel: string;
+};
+
 export type CardStoryArgs = {
   padding: CardPadding;
   interaction: "static" | "interactive";

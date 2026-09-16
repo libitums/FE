@@ -17,6 +17,7 @@
     "./dist/bottom-navigator/bottom-navigator.css",
     "./dist/bottom-sheet/bottom-sheet.css",
     "./dist/step-indicator/step-indicator.css",
+    "./dist/answer-label/answer-label.css",
     "./dist/card/card.css",
     "./dist/compact-numeric-input/compact-numeric-input.css",
     "./dist/chat-bubble/chat-bubble.css",
@@ -80,6 +81,12 @@
       "default": "./dist/step-indicator/index.js"
     },
     "./step-indicator/styles.css": "./dist/step-indicator/step-indicator.css",
+    "./answer-label": {
+      "types": "./dist/answer-label/index.d.ts",
+      "import": "./dist/answer-label/index.js",
+      "default": "./dist/answer-label/index.js"
+    },
+    "./answer-label/styles.css": "./dist/answer-label/answer-label.css",
     "./card": {
       "types": "./dist/card/index.d.ts",
       "import": "./dist/card/index.js",
