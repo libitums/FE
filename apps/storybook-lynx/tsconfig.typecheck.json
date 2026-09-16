@@ -16,7 +16,13 @@
         "../../packages/ui-lynx/src/bottom-navigator/index.ts"
       ],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
-      "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"]
+      "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"],
+      "@libitums/ui-lynx/compact-numeric-input": [
+        "../../packages/ui-lynx/src/compact-numeric-input/index.ts"
+      ],
+      "@libitums/ui-lynx/bottom-sheet": ["../../packages/ui-lynx/src/bottom-sheet/index.ts"],
+      "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
+      "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"]
     }
   }
 }

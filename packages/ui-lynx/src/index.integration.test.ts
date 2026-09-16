@@ -10,11 +10,15 @@ import * as button from "./button/index";
 import * as backHeader from "./back-header/index";
 import * as statusIndicator from "./status-indicator/index";
 import * as roundButton from "./round-button/index";
+import * as compactNumericInput from "./compact-numeric-input/index";
 import * as progressHeader from "./progress-header/index";
 import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
+import * as bottomSheet from "./bottom-sheet/index";
 import * as stepIndicator from "./step-indicator/index";
 import * as card from "./card/index";
+import * as chatBubble from "./chat-bubble/index";
+import * as textField from "./text-field/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -23,11 +27,18 @@ const componentArtifacts = {
   "back-header": { implementation: "BackHeader.jsx", css: "back-header.css" },
   "status-indicator": { implementation: "StatusIndicator.jsx", css: "status-indicator.css" },
   "round-button": { implementation: "RoundButton.jsx", css: "round-button.css" },
+  "compact-numeric-input": {
+    implementation: "CompactNumericInput.jsx",
+    css: "compact-numeric-input.css",
+  },
   "progress-header": { implementation: "ProgressHeader.jsx", css: "progress-header.css" },
   "page-indicator": { implementation: "PageIndicator.jsx", css: "page-indicator.css" },
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
+  "bottom-sheet": { implementation: "BottomSheet.jsx", css: "bottom-sheet.css" },
   "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
   card: { implementation: "Card.jsx", css: "card.css" },
+  "chat-bubble": { implementation: "ChatBubble.jsx", css: "chat-bubble.css" },
+  "text-field": { implementation: "TextField.jsx", css: "text-field.css" },
 } as const;
 
 const componentEntries = {
@@ -35,11 +46,15 @@ const componentEntries = {
   "back-header": "BackHeader",
   "status-indicator": "StatusIndicator",
   "round-button": "RoundButton",
+  "compact-numeric-input": "CompactNumericInput",
   "progress-header": "ProgressHeader",
   "page-indicator": "PageIndicator",
   "bottom-navigator": "BottomNavigator",
+  "bottom-sheet": "BottomSheet",
   "step-indicator": "StepIndicator",
   card: "Card",
+  "chat-bubble": "ChatBubble",
+  "text-field": "TextField",
 } as const;
 
 async function readPackageJson() {
@@ -57,19 +72,31 @@ describe("ui-lynx package boundaries", () => {
     expect(root.BackHeader).toBe(backHeader.BackHeader);
     expect(root.StatusIndicator).toBe(statusIndicator.StatusIndicator);
     expect(root.RoundButton).toBe(roundButton.RoundButton);
+    expect(root.CompactNumericInput).toBe(compactNumericInput.CompactNumericInput);
     expect(root.ProgressHeader).toBe(progressHeader.ProgressHeader);
     expect(root.PageIndicator).toBe(pageIndicator.PageIndicator);
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
+    expect(root.BottomSheet).toBe(bottomSheet.BottomSheet);
     expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
     expect(root.Card).toBe(card.Card);
+    expect(root.ChatBubble).toBe(chatBubble.ChatBubble);
+    expect(root.TextField).toBe(textField.TextField);
     expect(root.getButtonContract).toBe(button.getButtonContract);
+    expect(root.getCompactNumericInputContract).toBe(
+      compactNumericInput.getCompactNumericInputContract,
+    );
+    expect(root.getCompactNumericInputValue).toBe(compactNumericInput.getCompactNumericInputValue);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
     expect(root.getProgressHeaderProgress).toBe(progressHeader.getProgressHeaderProgress);
     expect(root.getPageIndicatorModel).toBe(pageIndicator.getPageIndicatorModel);
     expect(root.PAGE_INDICATOR_MAX_PAGE_COUNT).toBe(pageIndicator.PAGE_INDICATOR_MAX_PAGE_COUNT);
     expect(root.getBottomNavigatorContract).toBe(bottomNavigator.getBottomNavigatorContract);
+    expect(root.getBottomSheetContract).toBe(bottomSheet.getBottomSheetContract);
+    expect(root.shouldDismissBottomSheetDrag).toBe(bottomSheet.shouldDismissBottomSheetDrag);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
     expect(root.getCardContract).toBe(card.getCardContract);
+    expect(root.getChatBubbleContract).toBe(chatBubble.getChatBubbleContract);
+    expect(root.getTextFieldContract).toBe(textField.getTextFieldContract);
   });
 
   test("root stylesheet aggregates every component without removing existing styles", async () => {
@@ -100,6 +127,16 @@ describe("ui-lynx package boundaries", () => {
       "./dist/step-indicator/step-indicator.css",
     );
     expect(packageJson.exports["./card/styles.css"]).toBe("./dist/card/card.css");
+    expect(packageJson.exports["./compact-numeric-input/styles.css"]).toBe(
+      "./dist/compact-numeric-input/compact-numeric-input.css",
+    );
+    expect(packageJson.exports["./bottom-sheet/styles.css"]).toBe(
+      "./dist/bottom-sheet/bottom-sheet.css",
+    );
+    expect(packageJson.exports["./chat-bubble/styles.css"]).toBe(
+      "./dist/chat-bubble/chat-bubble.css",
+    );
+    expect(packageJson.exports["./text-field/styles.css"]).toBe("./dist/text-field/text-field.css");
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
 
@@ -150,6 +187,10 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/round-button/${componentArtifacts["round-button"].implementation}`,
       "package/dist/round-button/index.d.ts",
       `package/dist/round-button/${componentArtifacts["round-button"].css}`,
+      "package/dist/compact-numeric-input/index.js",
+      `package/dist/compact-numeric-input/${componentArtifacts["compact-numeric-input"].implementation}`,
+      "package/dist/compact-numeric-input/index.d.ts",
+      `package/dist/compact-numeric-input/${componentArtifacts["compact-numeric-input"].css}`,
       "package/dist/progress-header/index.js",
       `package/dist/progress-header/${componentArtifacts["progress-header"].implementation}`,
       "package/dist/progress-header/index.d.ts",
@@ -162,6 +203,10 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/bottom-navigator/${componentArtifacts["bottom-navigator"].implementation}`,
       "package/dist/bottom-navigator/index.d.ts",
       `package/dist/bottom-navigator/${componentArtifacts["bottom-navigator"].css}`,
+      "package/dist/bottom-sheet/index.js",
+      `package/dist/bottom-sheet/${componentArtifacts["bottom-sheet"].implementation}`,
+      "package/dist/bottom-sheet/index.d.ts",
+      `package/dist/bottom-sheet/${componentArtifacts["bottom-sheet"].css}`,
       "package/dist/step-indicator/index.js",
       `package/dist/step-indicator/${componentArtifacts["step-indicator"].implementation}`,
       "package/dist/step-indicator/index.d.ts",
@@ -175,6 +220,20 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/card/card.contract.js",
       "package/dist/card/card.contract.d.ts",
       `package/dist/card/${componentArtifacts.card.css}`,
+      "package/dist/chat-bubble/index.js",
+      `package/dist/chat-bubble/${componentArtifacts["chat-bubble"].implementation}`,
+      "package/dist/chat-bubble/index.d.ts",
+      "package/dist/chat-bubble/ChatBubble.d.ts",
+      "package/dist/chat-bubble/chat-bubble.contract.js",
+      "package/dist/chat-bubble/chat-bubble.contract.d.ts",
+      `package/dist/chat-bubble/${componentArtifacts["chat-bubble"].css}`,
+      "package/dist/text-field/index.js",
+      `package/dist/text-field/${componentArtifacts["text-field"].implementation}`,
+      "package/dist/text-field/index.d.ts",
+      "package/dist/text-field/TextField.d.ts",
+      "package/dist/text-field/text-field.contract.js",
+      "package/dist/text-field/text-field.contract.d.ts",
+      `package/dist/text-field/${componentArtifacts["text-field"].css}`,
     ]) {
       expect(stdout).toContain(file);
     }
@@ -190,6 +249,7 @@ describe("ui-lynx package boundaries", () => {
 
     for (const runtime of [
       "package/dist/round-button/RoundButton.jsx",
+      "package/dist/compact-numeric-input/CompactNumericInput.jsx",
       "package/dist/bottom-navigator/BottomNavigator.jsx",
     ]) {
       const { stdout: source } = await execFileAsync("tar", [

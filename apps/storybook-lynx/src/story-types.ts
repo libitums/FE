@@ -8,6 +8,14 @@ import type {
   ProgressHeaderMotion,
   CardDirection,
   CardPadding,
+  CompactNumericInputSize,
+  BottomSheetMotion,
+  ChatBubbleContentLanguage,
+  ChatBubbleDelivery,
+  ChatBubbleDirection,
+  ChatBubbleSize,
+  TextFieldAvailability,
+  TextFieldInputPurpose,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -67,7 +75,6 @@ export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
 };
-
 export type CardStoryArgs = {
   padding: CardPadding;
   interaction: "static" | "interactive";
@@ -77,4 +84,50 @@ export type CardStoryArgs = {
   body: string;
   showMedia: boolean;
   onTap: (title: string) => void;
+};
+
+export type CompactNumericInputStoryArgs = {
+  accessibilityLabel: string;
+  defaultValue: string;
+  placeholder: string;
+  size: CompactNumericInputSize;
+  error: boolean;
+  disabled: boolean;
+  onInput: (value: string) => void;
+};
+
+export type BottomSheetStoryArgs = {
+  title: string;
+  overline: string;
+  description: string;
+  primaryActionLabel: string;
+  secondaryActionLabel: string;
+  showSecondaryAction: boolean;
+  draggable: boolean;
+  motion: BottomSheetMotion;
+  onDismiss: (reason: string) => void;
+  onAction: (id: string) => void;
+};
+
+export type ChatBubbleStoryArgs = {
+  message: string;
+  speaker: string;
+  direction: ChatBubbleDirection;
+  size: ChatBubbleSize;
+  delivery: ChatBubbleDelivery;
+  contentLanguage: ChatBubbleContentLanguage;
+  languageTag: string;
+};
+
+export type TextFieldStoryArgs = {
+  label: string;
+  qualifier: string;
+  defaultValue: string;
+  placeholder: string;
+  purpose: TextFieldInputPurpose;
+  availability: TextFieldAvailability;
+  supporting: "none" | "helper" | "error";
+  supportingMessage: string;
+  counterMaxLength: number;
+  adornment: "none" | "icons" | "prefix-suffix" | "action";
 };

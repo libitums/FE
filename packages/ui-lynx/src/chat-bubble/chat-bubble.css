@@ -1,0 +1,69 @@
+.ui-lynx-chat-bubble {
+  width: max-content;
+  max-width: 280px;
+  flex-shrink: 1;
+  border-radius: var(--libitum-radius-md);
+  border-width: var(--libitum-spacing-0);
+  overflow: visible;
+}
+
+.ui-lynx-chat-bubble-incoming {
+  align-self: flex-start;
+  border-end-start-radius: var(--libitum-spacing-0);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.ui-lynx-chat-bubble-outgoing {
+  align-self: flex-end;
+  border-end-end-radius: var(--libitum-spacing-0);
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.ui-lynx-chat-bubble-s {
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+}
+
+.ui-lynx-chat-bubble-m {
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+}
+
+.ui-lynx-chat-bubble-l {
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-20);
+}
+
+.ui-lynx-chat-bubble-message {
+  white-space: normal;
+  word-break: break-all;
+}
+
+.ui-lynx-chat-bubble-incoming .ui-lynx-chat-bubble-message {
+  color: var(--libitum-color-fg-neutral);
+}
+
+.ui-lynx-chat-bubble-outgoing .ui-lynx-chat-bubble-message {
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
+.ui-lynx-chat-bubble-s .ui-lynx-chat-bubble-message {
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.ui-lynx-chat-bubble-m .ui-lynx-chat-bubble-message {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.ui-lynx-chat-bubble-l .ui-lynx-chat-bubble-message {
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
