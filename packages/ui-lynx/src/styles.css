@@ -9,5 +9,6 @@
 @import "./bottom-navigator/bottom-navigator.css";
 @import "./bottom-sheet/bottom-sheet.css";
 @import "./step-indicator/step-indicator.css";
+@import "./compact-numeric-input/compact-numeric-input.css";
 @import "./chat-bubble/chat-bubble.css";
 @import "./text-field/text-field.css";

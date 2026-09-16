@@ -17,6 +17,7 @@
     "./dist/bottom-navigator/bottom-navigator.css",
     "./dist/bottom-sheet/bottom-sheet.css",
     "./dist/step-indicator/step-indicator.css",
+    "./dist/compact-numeric-input/compact-numeric-input.css",
     "./dist/chat-bubble/chat-bubble.css",
     "./dist/text-field/text-field.css"
   ],
@@ -78,6 +79,12 @@
       "default": "./dist/step-indicator/index.js"
     },
     "./step-indicator/styles.css": "./dist/step-indicator/step-indicator.css",
+    "./compact-numeric-input": {
+      "types": "./dist/compact-numeric-input/index.d.ts",
+      "import": "./dist/compact-numeric-input/index.js",
+      "default": "./dist/compact-numeric-input/index.js"
+    },
+    "./compact-numeric-input/styles.css": "./dist/compact-numeric-input/compact-numeric-input.css",
     "./chat-bubble": {
       "types": "./dist/chat-bubble/index.d.ts",
       "import": "./dist/chat-bubble/index.js",

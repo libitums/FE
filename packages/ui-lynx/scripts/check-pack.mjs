@@ -68,6 +68,13 @@ const components = [
     css: "step-indicator.css",
   },
   {
+    subpath: "compact-numeric-input",
+    directory: "compact-numeric-input",
+    component: "CompactNumericInput",
+    modules: ["compact-numeric-input.contract"],
+    css: "compact-numeric-input.css",
+  },
+  {
     subpath: "bottom-sheet",
     directory: "bottom-sheet",
     component: "BottomSheet",
@@ -190,6 +197,15 @@ if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)
   throw new Error("packed package is missing the StepIndicator CSS export target");
 }
 
+const compactNumericInputStylesExport =
+  packedPackageJson.exports?.["./compact-numeric-input/styles.css"];
+if (compactNumericInputStylesExport !== "./dist/compact-numeric-input/compact-numeric-input.css") {
+  throw new Error("packed package has an invalid ./compact-numeric-input/styles.css export");
+}
+if (!files.includes(`package/${compactNumericInputStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the CompactNumericInput CSS export target");
+}
+
 const bottomSheetStylesExport = packedPackageJson.exports?.["./bottom-sheet/styles.css"];
 if (bottomSheetStylesExport !== "./dist/bottom-sheet/bottom-sheet.css") {
   throw new Error("packed package has an invalid ./bottom-sheet/styles.css export");
@@ -203,7 +219,7 @@ for (const { directory, component } of components) {
     ["-xOzf", archive, `package/dist/${directory}/${component}.jsx`],
     { encoding: "utf8" },
   );
-  if (!/<(?:view|text|svg)\b/.test(runtime)) {
+  if (!/<(?:view|text|svg|input)\b/.test(runtime)) {
     throw new Error(`${component} packed runtime does not contain authored ReactLynx JSX`);
   }
   const loweredJsx = [

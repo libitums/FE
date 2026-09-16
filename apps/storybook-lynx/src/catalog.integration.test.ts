@@ -7,6 +7,10 @@ import {
   normalizeBottomNavigatorStoryArgs,
 } from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
+import {
+  dispatchCompactNumericInputStoryInput,
+  normalizeCompactNumericInputStoryArgs,
+} from "./compact-numeric-input-story";
 import { normalizeStepIndicatorStoryArgs } from "./step-indicator-story";
 import {
   dispatchBottomSheetStoryAction,
@@ -36,6 +40,48 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("compact numeric input init data는 직렬화 가능한 한 자리 숫자 계약으로 정규화된다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeCompactNumericInputStoryArgs({
+            accessibilityLabel: "반복 횟수",
+            defaultValue: "a42",
+            placeholder: "예: 0",
+            size: "l",
+            error: true,
+          }),
+        ),
+      ),
+    ).toEqual({
+      accessibilityLabel: "반복 횟수",
+      defaultValue: "2",
+      placeholder: "0",
+      size: "l",
+      error: true,
+      disabled: false,
+    });
+  });
+
+  test("compact numeric input bridge는 활성 입력만 한 자리로 전달한다", () => {
+    const calls: unknown[] = [];
+    const active = normalizeCompactNumericInputStoryArgs({});
+    const disabled = normalizeCompactNumericInputStoryArgs({ disabled: true });
+    expect(dispatchCompactNumericInputStoryInput(active, "x57", (value) => calls.push(value))).toBe(
+      true,
+    );
+    expect(dispatchCompactNumericInputStoryInput(disabled, "4", (value) => calls.push(value))).toBe(
+      false,
+    );
+    expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onInput", args: ["7"] }]);
+  });
+
+  test("compact numeric input runtime은 빈 defaultValue도 native input에 반영한다", async () => {
+    const runtime = await readOutput("src/lynx/compact-numeric-input.tsx");
+    expect(runtime).not.toContain("if (!data.defaultValue) return");
+    expect(runtime).toContain("params: { value: data.defaultValue }");
+  });
+
   test("bottom sheet init data는 직렬화 가능한 시트 계약으로 정규화된다", () => {
     expect(
       JSON.parse(
@@ -304,6 +350,7 @@ describe("Storybook Lynx build outputs", () => {
     "back-header",
     "status-indicator",
     "round-button",
+    "compact-numeric-input",
     "progress-header",
     "page-indicator",
     "bottom-navigator",
@@ -328,6 +375,10 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-round-button--brand");
     expect(index).toContain("components-round-button--loading");
     expect(index).toContain("components-round-button--disabled");
+    expect(index).toContain("components-compact-numeric-input--empty");
+    expect(index).toContain("components-compact-numeric-input--filled");
+    expect(index).toContain("components-compact-numeric-input--error");
+    expect(index).toContain("components-compact-numeric-input--disabled");
     expect(index).toContain("components-bottom-sheet--default");
     expect(index).toContain("components-bottom-sheet--multiple-actions");
     expect(index).toContain("components-progress-header--default");
@@ -376,6 +427,9 @@ describe("Storybook Lynx build outputs", () => {
         "../../packages/ui-lynx/src/status-indicator/index.ts",
       ],
       "@libitums/ui-lynx/round-button": ["../../packages/ui-lynx/src/round-button/index.ts"],
+      "@libitums/ui-lynx/compact-numeric-input": [
+        "../../packages/ui-lynx/src/compact-numeric-input/index.ts",
+      ],
       "@libitums/ui-lynx/progress-header": ["../../packages/ui-lynx/src/progress-header/index.ts"],
       "@libitums/ui-lynx/page-indicator": ["../../packages/ui-lynx/src/page-indicator/index.ts"],
       "@libitums/ui-lynx/bottom-navigator": [
@@ -395,6 +449,7 @@ describe("Storybook Lynx build outputs", () => {
     ["back-header", "@libitums/ui-lynx/back-header"],
     ["status-indicator", "@libitums/ui-lynx/status-indicator"],
     ["round-button", "@libitums/ui-lynx/round-button"],
+    ["compact-numeric-input", "@libitums/ui-lynx/compact-numeric-input"],
     ["progress-header", "@libitums/ui-lynx/progress-header"],
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
@@ -442,6 +497,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(
+      /["']?compact-numeric-input["']?\s*:\s*["']\.\/src\/lynx\/compact-numeric-input\.tsx["']/,
+    );
     expect(config).toMatch(/["']?bottom-sheet["']?\s*:\s*["']\.\/src\/lynx\/bottom-sheet\.tsx["']/);
     expect(config).toMatch(/["']?text-field["']?\s*:\s*["']\.\/src\/lynx\/text-field\.tsx["']/);
 
@@ -459,6 +517,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./compact-numeric-input"]).toEqual({
+      types: "./dist/compact-numeric-input/index.d.ts",
+      import: "./dist/compact-numeric-input/index.js",
+      default: "./dist/compact-numeric-input/index.js",
     });
     expect(packageJson.exports["./bottom-sheet"]).toEqual({
       types: "./dist/bottom-sheet/index.d.ts",
@@ -509,6 +572,7 @@ describe("Storybook Lynx build outputs", () => {
       "bottom-navigator",
       "bottom-sheet",
       "button",
+      "compact-numeric-input",
       "page-indicator",
       "progress-header",
       "round-button",

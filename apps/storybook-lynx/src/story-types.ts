@@ -6,6 +6,7 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  CompactNumericInputSize,
   BottomSheetMotion,
   ChatBubbleContentLanguage,
   ChatBubbleDelivery,
@@ -72,6 +73,16 @@ export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
 };
+export type CompactNumericInputStoryArgs = {
+  accessibilityLabel: string;
+  defaultValue: string;
+  placeholder: string;
+  size: CompactNumericInputSize;
+  error: boolean;
+  disabled: boolean;
+  onInput: (value: string) => void;
+};
+
 export type BottomSheetStoryArgs = {
   title: string;
   overline: string;
