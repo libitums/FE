@@ -62,7 +62,6 @@ export type {
   StepIndicatorStep,
   StepIndicatorStepStatus,
 } from "./step-indicator";
-
 export {
   CompactNumericInput,
   getCompactNumericInputContract,
@@ -73,3 +72,46 @@ export type {
   CompactNumericInputProps,
   CompactNumericInputSize,
 } from "./compact-numeric-input";
+
+export {
+  BottomSheet,
+  BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD,
+  getBottomSheetContract,
+  shouldDismissBottomSheetDrag,
+} from "./bottom-sheet";
+export type {
+  BottomSheetAction,
+  BottomSheetContract,
+  BottomSheetDismissReason,
+  BottomSheetMotion,
+  BottomSheetProps,
+} from "./bottom-sheet";
+
+export { ChatBubble, chatBubbleDeliveryLabels, getChatBubbleContract } from "./chat-bubble";
+export type {
+  ChatBubbleContentLanguage,
+  ChatBubbleContract,
+  ChatBubbleDelivery,
+  ChatBubbleDirection,
+  ChatBubbleProps,
+  ChatBubbleSize,
+  IncomingChatBubbleProps,
+  OutgoingChatBubbleProps,
+} from "./chat-bubble";
+
+export { TextField, getTextFieldContract } from "./text-field";
+export type {
+  TextFieldAvailability,
+  TextFieldContent,
+  TextFieldContract,
+  TextFieldCounter,
+  TextFieldInputPurpose,
+  TextFieldInteraction,
+  TextFieldLeading,
+  TextFieldProps,
+  TextFieldRuntimeState,
+  TextFieldSupporting,
+  TextFieldTrailing,
+  TextFieldValidation,
+  TextFieldVisualState,
+} from "./text-field";

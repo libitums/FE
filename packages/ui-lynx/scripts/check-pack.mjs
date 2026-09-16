@@ -74,6 +74,27 @@ const components = [
     modules: ["compact-numeric-input.contract"],
     css: "compact-numeric-input.css",
   },
+  {
+    subpath: "bottom-sheet",
+    directory: "bottom-sheet",
+    component: "BottomSheet",
+    modules: ["bottom-sheet.contract"],
+    css: "bottom-sheet.css",
+  },
+  {
+    subpath: "chat-bubble",
+    directory: "chat-bubble",
+    component: "ChatBubble",
+    modules: ["chat-bubble.contract"],
+    css: "chat-bubble.css",
+  },
+  {
+    subpath: "text-field",
+    directory: "text-field",
+    component: "TextField",
+    modules: ["text-field.contract"],
+    css: "text-field.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -157,6 +178,21 @@ const stepIndicatorStylesExport = packedPackageJson.exports?.["./step-indicator/
 if (stepIndicatorStylesExport !== "./dist/step-indicator/step-indicator.css") {
   throw new Error("packed package has an invalid ./step-indicator/styles.css export");
 }
+
+const chatBubbleStylesExport = packedPackageJson.exports?.["./chat-bubble/styles.css"];
+if (chatBubbleStylesExport !== "./dist/chat-bubble/chat-bubble.css") {
+  throw new Error("packed package has an invalid ./chat-bubble/styles.css export");
+}
+if (!files.includes(`package/${chatBubbleStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the ChatBubble CSS export target");
+}
+const textFieldStylesExport = packedPackageJson.exports?.["./text-field/styles.css"];
+if (textFieldStylesExport !== "./dist/text-field/text-field.css") {
+  throw new Error("packed package has an invalid ./text-field/styles.css export");
+}
+if (!files.includes(`package/${textFieldStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the TextField CSS export target");
+}
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");
 }
@@ -170,6 +206,13 @@ if (!files.includes(`package/${compactNumericInputStylesExport.replace(/^\.\//, 
   throw new Error("packed package is missing the CompactNumericInput CSS export target");
 }
 
+const bottomSheetStylesExport = packedPackageJson.exports?.["./bottom-sheet/styles.css"];
+if (bottomSheetStylesExport !== "./dist/bottom-sheet/bottom-sheet.css") {
+  throw new Error("packed package has an invalid ./bottom-sheet/styles.css export");
+}
+if (!files.includes(`package/${bottomSheetStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the BottomSheet CSS export target");
+}
 for (const { directory, component } of components) {
   const runtime = execFileSync(
     "tar",
