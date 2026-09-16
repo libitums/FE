@@ -5,6 +5,11 @@
  * discriminant는 구현 단계에서 함께 연결할 수 있도록 별도 통합 형태로만 기록한다.
  */
 
+// LIB-255 계약 §2.7: `PhoneCallScreenProps.exitLabel?`의 타입. 전화 계약에서
+// `SpecialUnitEntrySource`는 쓰지 않는다 — 아래 `PhoneCallEvent`의 두 변형이 리터럴
+// `"journey"`·`"roleplay"`라 오늘은 `SpecialUnitExitLabel`만 필요하다.
+import type { SpecialUnitExitLabel } from "../../lib/special-unit-entry-source";
+
 export type PhoneCallUnitId = "appointment-confirmation-phone-call";
 
 export type PhoneCallTurnIndex = 0 | 1 | 2;
@@ -114,6 +119,31 @@ export type PhoneCallScreenProps = {
   readonly completionStatus: PhoneCallCompletionStatus;
   readonly onComplete: (id: PhoneCallUnitId) => void;
   readonly onExit: (outcome: PhoneCallExitOutcome) => void;
+  readonly exitLabel?: SpecialUnitExitLabel;
+};
+
+// LIB-255 계약 §2.7·§7 — Q9: 전화에 열림 이벤트를 신설한다. 열림 이벤트만 있다(A5) —
+// 완료·다시보기 이벤트는 만들지 않는다.
+export type PhoneCallEvent =
+  | {
+      readonly name: "phone_call_unit_opened";
+      readonly unitId: PhoneCallUnitId;
+      readonly entrySource: "journey";
+      readonly entryStatus: PhoneCallCompletionStatus;
+    }
+  | {
+      readonly name: "phone_call_unit_opened";
+      readonly unitId: PhoneCallUnitId;
+      readonly entrySource: "roleplay";
+    };
+
+// null은 출시 집계 sink가 없다는 사실을 타입으로 드러낸다(MessengerEventSink와 같은 규약).
+export type PhoneCallEventSink = ((event: PhoneCallEvent) => void) | null;
+
+// App의 유일한 외부 전화 계측 주입 surface다. prop 생략은 App 경계에서 null로
+// 정규화하므로 기존 <App /> 호출부를 깨지 않고, 테스트만 callback spy를 주입할 수 있다.
+export type PhoneCallAppProps = {
+  readonly phoneCallEventSink?: PhoneCallEventSink;
 };
 
 /**

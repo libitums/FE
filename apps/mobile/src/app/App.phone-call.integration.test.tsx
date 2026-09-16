@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { App } from "./App";
+import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
 
 const audio = vi.hoisted(() => ({ playAudio: vi.fn(), stopAudio: vi.fn() }));
 vi.mock("../lib/audio", () => audio);
@@ -137,5 +138,55 @@ describe("App · phone-call integration", () => {
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
     fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
     expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+  });
+
+  // LIB-255 계약 §2.8 「콜백 구현」: 여정 전화 진입(`onStartPhoneCallUnit`)에 열림
+  // 이벤트가 새로 는다 — `push` 직전에 `entrySource: "journey"` · `entryStatus`.
+  // 계획: test-plan.md integration § `App.phone-call.integration.test.tsx`(추가).
+  it("맵 항목 tap마다 push 전에 phone_call_unit_opened(journey)이 entryStatus와 함께 1건 온다", () => {
+    const phoneCallEventSink = vi.fn<NonNullable<PhoneCallEventSink>>();
+    render(<App phoneCallEventSink={phoneCallEventSink} />);
+    fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+
+    fireEvent.tap(
+      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      {},
+    );
+    expect(phoneCallEventSink).toHaveBeenCalledTimes(1);
+    expect(phoneCallEventSink).toHaveBeenNthCalledWith(1, {
+      name: "phone_call_unit_opened",
+      unitId: "appointment-confirmation-phone-call",
+      entrySource: "journey",
+      entryStatus: "available",
+    });
+
+    // 완료 뒤 재진입은 entryStatus가 completed로 바뀐다.
+    let finish: (() => void) | undefined;
+    playAudio.mockImplementation((_source: string, done: () => void) => {
+      finish = done;
+      return "started";
+    });
+    for (const [, reply] of [
+      ["phone-call-confirm-01", "phone-call-reply-confirm-time-reply"],
+      ["phone-call-confirm-02", "phone-call-reply-confirm-place-reply"],
+      ["phone-call-confirm-03", "phone-call-reply-goodbye-reply"],
+    ] as const) {
+      fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
+      act(() => finish?.());
+      fireEvent.tap(screen.getByTestId(reply), {});
+    }
+    fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
+    fireEvent.tap(
+      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      {},
+    );
+
+    expect(phoneCallEventSink).toHaveBeenCalledTimes(2);
+    expect(phoneCallEventSink).toHaveBeenNthCalledWith(2, {
+      name: "phone_call_unit_opened",
+      unitId: "appointment-confirmation-phone-call",
+      entrySource: "journey",
+      entryStatus: "completed",
+    });
   });
 });
