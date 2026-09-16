@@ -6,6 +6,10 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  ChatBubbleContentLanguage,
+  ChatBubbleDelivery,
+  ChatBubbleDirection,
+  ChatBubbleSize,
   TextFieldAvailability,
   TextFieldInputPurpose,
 } from "@libitums/ui-lynx";
@@ -66,6 +70,16 @@ export type ProgressHeaderStoryArgs = {
 export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
+};
+
+export type ChatBubbleStoryArgs = {
+  message: string;
+  speaker: string;
+  direction: ChatBubbleDirection;
+  size: ChatBubbleSize;
+  delivery: ChatBubbleDelivery;
+  contentLanguage: ChatBubbleContentLanguage;
+  languageTag: string;
 };
 
 export type TextFieldStoryArgs = {

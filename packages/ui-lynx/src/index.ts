@@ -63,6 +63,18 @@ export type {
   StepIndicatorStepStatus,
 } from "./step-indicator";
 
+export { ChatBubble, chatBubbleDeliveryLabels, getChatBubbleContract } from "./chat-bubble";
+export type {
+  ChatBubbleContentLanguage,
+  ChatBubbleContract,
+  ChatBubbleDelivery,
+  ChatBubbleDirection,
+  ChatBubbleProps,
+  ChatBubbleSize,
+  IncomingChatBubbleProps,
+  OutgoingChatBubbleProps,
+} from "./chat-bubble";
+
 export { TextField, getTextFieldContract } from "./text-field";
 export type {
   TextFieldAvailability,

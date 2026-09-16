@@ -278,7 +278,7 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
 
 ### 2026-09-15 확장 — TextField 공개 표면
 
-이 절은 같은 package/catalog 경계에 아홉 번째 공개 컴포넌트를 추가한 delta다. 시각·상태
+이 절은 같은 package/catalog 경계에 TextField 공개 컴포넌트를 추가한 delta다. 시각·상태
 정본은 `libitums/design-system/components/text-field.md` revision
 `1ba6b55103663c407f073f9ede3a2e700bf9b722`이다.
 
@@ -294,6 +294,29 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
   다음 별도 button node와 48px hit area를 가지며 Disabled에서는 handler를 연결하지 않는다.
 - `@libitums/ui-lynx/text-field`와 전용 styles subpath, root barrel, aggregate CSS, pack 검사를
   함께 확장한다. Storybook은 8개 대표 story와 `text-field.web.bundle`을 제공하고 runtime은
+  public subpath만 소비한다.
+
+### 2026-09-15 확장 — ChatBubble 공개 표면
+
+이 절은 같은 package/catalog 경계에 ChatBubble 공개 컴포넌트를 추가한 delta다. 시각·상태
+정본은 `libitums/design-system/components/chat-bubble.md` revision
+`979e57fec7b38533129da65166109984d2f16686`이다.
+
+- `ChatBubble`은 Bubble 안에 Message text만 렌더한다. Speaker, Avatar, Timestamp, Delivery
+  status와 Action은 상위 Message item의 composition 책임으로 남긴다. 기존 제품 화면의
+  `MessageBubble`은 D1 원칙대로 강제 이관하지 않는다.
+- direction, S/M/L size, Outgoing delivery와 UI/learning content language를 닫힌 union으로
+  제공한다. Incoming delivery는 항상 Default이고, learning content는 비어 있지 않은
+  `languageTag`를 요구한다.
+- 최대 너비 280px, `radius.md`, 논리 방향의 0px 아래 모서리, direction surface/foreground,
+  size별 body typography와 padding은 정본 token을 그대로 쓴다. 긴 연속 문자열은 Lynx가
+  지원하는 `word-break: break-all`로 Bubble 안에 유지한다.
+- 실제 speaker와 message는 하나의 접근성 text node 이름으로 합친다. Outgoing non-default
+  delivery는 `accessibility-value`에 상태 문구로 연결한다. ReactLynx 0.125 공식 props에
+  native language 매핑이 없어 language metadata까지만 보존하며 실제 학습 언어 발음은 제품
+  route 채택 시 native gate로 남긴다.
+- `@libitums/ui-lynx/chat-bubble`과 전용 styles subpath, root barrel, aggregate CSS, pack 검사를
+  함께 확장한다. Storybook은 7개 대표 story와 `chat-bubble.web.bundle`을 제공하고 runtime은
   public subpath만 소비한다.
 
 ## 버린 대안
