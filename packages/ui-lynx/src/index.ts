@@ -62,7 +62,6 @@ export type {
   StepIndicatorStep,
   StepIndicatorStepStatus,
 } from "./step-indicator";
-
 export { Overlay, getOverlayContract } from "./overlay";
 export type {
   AreaOverlayProps,
@@ -76,3 +75,85 @@ export type {
   OverlaySurface,
   SheetOverlayProps,
 } from "./overlay";
+
+export { AnswerLabel, getAnswerLabelContract } from "./answer-label";
+export type {
+  AnswerLabelContract,
+  AnswerLabelEmphasis,
+  AnswerLabelIcon,
+  AnswerLabelProps,
+  AnswerLabelResult,
+  AnswerLabelSize,
+  AnswerLabelTone,
+} from "./answer-label";
+
+export { Card, getCardContract, validateCardHeader } from "./card";
+export type {
+  CardAccessibilityRole,
+  CardBodyProps,
+  CardBodyTextProps,
+  CardContentProps,
+  CardContract,
+  CardDirection,
+  CardFooterProps,
+  CardHeaderProps,
+  CardMediaProps,
+  CardPadding,
+  CardProps,
+  InteractiveCardProps,
+  StaticCardProps,
+} from "./card";
+
+export {
+  CompactNumericInput,
+  getCompactNumericInputContract,
+  getCompactNumericInputValue,
+} from "./compact-numeric-input";
+export type {
+  CompactNumericInputContract,
+  CompactNumericInputProps,
+  CompactNumericInputSize,
+} from "./compact-numeric-input";
+
+export {
+  BottomSheet,
+  BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD,
+  getBottomSheetContract,
+  shouldDismissBottomSheetDrag,
+} from "./bottom-sheet";
+export type {
+  BottomSheetAction,
+  BottomSheetContract,
+  BottomSheetDismissReason,
+  BottomSheetMotion,
+  BottomSheetProps,
+} from "./bottom-sheet";
+
+export { ChatBubble, chatBubbleDeliveryLabels, getChatBubbleContract } from "./chat-bubble";
+export type {
+  ChatBubbleContentLanguage,
+  ChatBubbleContract,
+  ChatBubbleDelivery,
+  ChatBubbleDirection,
+  ChatBubbleProps,
+  ChatBubbleSize,
+  IncomingChatBubbleProps,
+  OutgoingChatBubbleProps,
+} from "./chat-bubble";
+
+export { TextField, getTextFieldContract } from "./text-field";
+export type {
+  TextFieldAvailability,
+  TextFieldContent,
+  TextFieldContract,
+  TextFieldCounter,
+  TextFieldInputPurpose,
+  TextFieldInteraction,
+  TextFieldLeading,
+  TextFieldProps,
+  TextFieldRuntimeState,
+  TextFieldSupporting,
+  TextFieldTrailing,
+  TextFieldValidation,
+  TextFieldVisualState,
+} from "./text-field";
