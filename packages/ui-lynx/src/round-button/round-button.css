@@ -92,7 +92,7 @@
 }
 
 .ui-lynx-round-button-disabled .ui-lynx-round-button-icon {
-  opacity: 0.35;
+  opacity: var(--libitum-opacity-disabled, 0.35);
 }
 
 .ui-lynx-round-button-disabled.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {

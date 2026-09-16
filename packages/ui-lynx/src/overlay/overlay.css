@@ -17,7 +17,7 @@
 }
 
 .ui-lynx-overlay {
-  background-color: rgba(26, 28, 32, 0.45);
+  background-color: rgba(26, 28, 32, var(--libitum-opacity-scrim, 0.45));
   opacity: 1;
 }
 

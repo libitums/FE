@@ -22,6 +22,8 @@ Chat Bubble은 `components/chat-bubble.md` revision
 `979e57fec7b38533129da65166109984d2f16686`을 기준으로 한다.
 Text Field는 `components/text-field.md` revision
 `1ba6b55103663c407f073f9ede3a2e700bf9b722`을 기준으로 한다.
+Round Button·Bottom Navigator·Bottom Sheet·Overlay의 불투명도는 `foundations/opacity.json`과
+각 컴포넌트 문서를 갱신한 revision `133322d7b080e464303a38456f4da45c8accdda9`를 기준으로 한다.
 
 ```sh
 nvm use
