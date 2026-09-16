@@ -10,7 +10,7 @@ import {
 } from "../../lib/session-options";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
-// 이 화면은 제목 텍스트 하나만 그린다 (screens.contract.ts).
+// 이 화면은 제목 텍스트 하나와 흐름 영역의 목록 상자를 그린다 (screens.contract.ts).
 //
 // LIB-259 (ui-design): `SettingsScreenProps`가 필수 prop 셋을 요구한다(계약 §2.3).
 // 기존 8케이스는 단언을 한 글자도 안 바꾸고 `render(<SettingsScreen />)`에
@@ -39,7 +39,7 @@ test("설정 화면 제목이 accessibility-traits header를 갖는다", () => {
 
 // ---------------------------------------------------------------- 스크롤 영역 (LIB-226 계약 §3.2 U1·U3)
 //
-// 설정은 흐름 자식이 없다(계약 §1.7 — 지금 비어 있다). 고정은 제목 <text> 하나다.
+// 설정의 흐름 자식은 목록 상자 하나다(계약 §1.7). 고정은 제목 <text> 하나다.
 
 // U1: 스크롤 컨테이너가 존재한다.
 test("[U1] settings-screen-scroll이 존재한다", () => {

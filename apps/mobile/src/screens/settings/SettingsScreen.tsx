@@ -9,8 +9,8 @@ import { sessionOptionKeys } from "../../lib/session-options";
 import "./settings-screen.css";
 
 // 화면 컴포넌트: 파일명 PascalCase, export 이름과 일치, `~Screen` 접미사 (ADR-0003 D6).
-// 이 화면이 그리는 것은 제목 텍스트 하나뿐이다 — 아이콘은 바텀 네비게이션의 것이고,
-// 같은 헤더 덩어리를 화면마다 복사하지 않는다 (screens.contract.ts).
+// 이 화면은 제목 텍스트 하나와 흐름 영역의 목록 상자를 그린다 — 아이콘은 바텀 네비게이션의
+// 것이고, 같은 헤더 덩어리를 화면마다 복사하지 않는다 (screens.contract.ts).
 //
 // LIB-259 (ui-implementation): 계약(.agent-harness/work/lib-259/spec.md §2.5 · §4.2)
 // 그대로. 흐름 영역의 유일한 직계 자식은 목록 상자(`settings-screen-list`) 하나다
