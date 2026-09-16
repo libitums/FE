@@ -68,6 +68,13 @@ const components = [
     css: "step-indicator.css",
   },
   {
+    subpath: "card",
+    directory: "card",
+    component: "Card",
+    modules: ["card.contract"],
+    css: "card.css",
+  },
+  {
     subpath: "compact-numeric-input",
     directory: "compact-numeric-input",
     component: "CompactNumericInput",
@@ -177,6 +184,14 @@ if (!files.includes(`package/${bottomNavigatorStylesExport.replace(/^\.\//, "")}
 const stepIndicatorStylesExport = packedPackageJson.exports?.["./step-indicator/styles.css"];
 if (stepIndicatorStylesExport !== "./dist/step-indicator/step-indicator.css") {
   throw new Error("packed package has an invalid ./step-indicator/styles.css export");
+}
+
+const cardStylesExport = packedPackageJson.exports?.["./card/styles.css"];
+if (cardStylesExport !== "./dist/card/card.css") {
+  throw new Error("packed package has an invalid ./card/styles.css export");
+}
+if (!files.includes(`package/${cardStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the Card CSS export target");
 }
 
 const chatBubbleStylesExport = packedPackageJson.exports?.["./chat-bubble/styles.css"];

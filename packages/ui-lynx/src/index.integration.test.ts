@@ -16,6 +16,7 @@ import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
 import * as bottomSheet from "./bottom-sheet/index";
 import * as stepIndicator from "./step-indicator/index";
+import * as card from "./card/index";
 import * as chatBubble from "./chat-bubble/index";
 import * as textField from "./text-field/index";
 
@@ -35,6 +36,7 @@ const componentArtifacts = {
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
   "bottom-sheet": { implementation: "BottomSheet.jsx", css: "bottom-sheet.css" },
   "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
+  card: { implementation: "Card.jsx", css: "card.css" },
   "chat-bubble": { implementation: "ChatBubble.jsx", css: "chat-bubble.css" },
   "text-field": { implementation: "TextField.jsx", css: "text-field.css" },
 } as const;
@@ -50,6 +52,7 @@ const componentEntries = {
   "bottom-navigator": "BottomNavigator",
   "bottom-sheet": "BottomSheet",
   "step-indicator": "StepIndicator",
+  card: "Card",
   "chat-bubble": "ChatBubble",
   "text-field": "TextField",
 } as const;
@@ -75,6 +78,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
     expect(root.BottomSheet).toBe(bottomSheet.BottomSheet);
     expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
+    expect(root.Card).toBe(card.Card);
     expect(root.ChatBubble).toBe(chatBubble.ChatBubble);
     expect(root.TextField).toBe(textField.TextField);
     expect(root.getButtonContract).toBe(button.getButtonContract);
@@ -90,6 +94,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.getBottomSheetContract).toBe(bottomSheet.getBottomSheetContract);
     expect(root.shouldDismissBottomSheetDrag).toBe(bottomSheet.shouldDismissBottomSheetDrag);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+    expect(root.getCardContract).toBe(card.getCardContract);
     expect(root.getChatBubbleContract).toBe(chatBubble.getChatBubbleContract);
     expect(root.getTextFieldContract).toBe(textField.getTextFieldContract);
   });
@@ -121,6 +126,7 @@ describe("ui-lynx package boundaries", () => {
     expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
       "./dist/step-indicator/step-indicator.css",
     );
+    expect(packageJson.exports["./card/styles.css"]).toBe("./dist/card/card.css");
     expect(packageJson.exports["./compact-numeric-input/styles.css"]).toBe(
       "./dist/compact-numeric-input/compact-numeric-input.css",
     );
@@ -208,6 +214,12 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/step-indicator/step-indicator.contract.js",
       "package/dist/step-indicator/step-indicator.contract.d.ts",
       `package/dist/step-indicator/${componentArtifacts["step-indicator"].css}`,
+      "package/dist/card/index.js",
+      `package/dist/card/${componentArtifacts.card.implementation}`,
+      "package/dist/card/index.d.ts",
+      "package/dist/card/card.contract.js",
+      "package/dist/card/card.contract.d.ts",
+      `package/dist/card/${componentArtifacts.card.css}`,
       "package/dist/chat-bubble/index.js",
       `package/dist/chat-bubble/${componentArtifacts["chat-bubble"].implementation}`,
       "package/dist/chat-bubble/index.d.ts",

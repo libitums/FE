@@ -17,6 +17,7 @@
     "./dist/bottom-navigator/bottom-navigator.css",
     "./dist/bottom-sheet/bottom-sheet.css",
     "./dist/step-indicator/step-indicator.css",
+    "./dist/card/card.css",
     "./dist/compact-numeric-input/compact-numeric-input.css",
     "./dist/chat-bubble/chat-bubble.css",
     "./dist/text-field/text-field.css"
@@ -79,6 +80,12 @@
       "default": "./dist/step-indicator/index.js"
     },
     "./step-indicator/styles.css": "./dist/step-indicator/step-indicator.css",
+    "./card": {
+      "types": "./dist/card/index.d.ts",
+      "import": "./dist/card/index.js",
+      "default": "./dist/card/index.js"
+    },
+    "./card/styles.css": "./dist/card/card.css",
     "./compact-numeric-input": {
       "types": "./dist/compact-numeric-input/index.d.ts",
       "import": "./dist/compact-numeric-input/index.js",
@@ -121,6 +128,7 @@
     "@lynx-js/testing-environment": "0.3.3",
     "@lynx-js/types": "4.1.0",
     "@testing-library/jest-dom": "7.0.1",
+    "@types/node": "22.20.0",
     "@types/react": "19.2.18",
     "typescript": "6.0.3",
     "vitest": "3.2.7"

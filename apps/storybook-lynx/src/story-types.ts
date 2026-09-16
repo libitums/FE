@@ -6,6 +6,8 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  CardDirection,
+  CardPadding,
   CompactNumericInputSize,
   BottomSheetMotion,
   ChatBubbleContentLanguage,
@@ -73,6 +75,17 @@ export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
 };
+export type CardStoryArgs = {
+  padding: CardPadding;
+  interaction: "static" | "interactive";
+  direction: CardDirection;
+  title: string;
+  overline: string;
+  body: string;
+  showMedia: boolean;
+  onTap: (title: string) => void;
+};
+
 export type CompactNumericInputStoryArgs = {
   accessibilityLabel: string;
   defaultValue: string;

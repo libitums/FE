@@ -62,6 +62,23 @@ export type {
   StepIndicatorStep,
   StepIndicatorStepStatus,
 } from "./step-indicator";
+export { Card, getCardContract, validateCardHeader } from "./card";
+export type {
+  CardAccessibilityRole,
+  CardBodyProps,
+  CardBodyTextProps,
+  CardContentProps,
+  CardContract,
+  CardDirection,
+  CardFooterProps,
+  CardHeaderProps,
+  CardMediaProps,
+  CardPadding,
+  CardProps,
+  InteractiveCardProps,
+  StaticCardProps,
+} from "./card";
+
 export {
   CompactNumericInput,
   getCompactNumericInputContract,
