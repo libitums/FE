@@ -5,6 +5,9 @@ import { App } from "./App";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { LearningForm } from "../lib/learning-form";
 import { questionsForStep } from "../screens/listening/listening";
+// LIB-259 (integration-design) — HT1 · HT2. `termsSections()`가 절 id 목록의
+// 데이터 앵커다(리터럴을 쓰지 않는다).
+import { termsSections } from "../screens/terms/terms-sections";
 
 // LIB-243 (integration-design) §6.3.3 — `I1` · `I2`.
 //
@@ -322,3 +325,41 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-question에서 계약이
 
 // ErrorBoundary 오류 상태(`error-boundary-title`)는 이 회차에서 열지 않는다 — 던지는
 // 자식이 필요해 이 계층이 아니라 `ui`가 맞는 자리다(후속으로 보고한다).
+
+// -------------------------------------------------------------- HT1 · HT2 (LIB-259)
+//
+// 위 `[I3]` 「상태 settings」 케이스는 **불변** — 새 화면이 기존 상태의 제목 축을
+// 건드리지 않는다(회귀 가드, test-plan.md). 여기서는 설정 탭 아래에서 새로 여는
+// 프로필·약관 상태의 제목 축을 짓는다. 형태는 위 `[I3]` 계열과 같다
+// (`headingAxis` → `toEqual` 닫힌 집합).
+//
+// 기대 red(test-plan.md): 이 시점의 `onSelectNavTarget`이 no-op이라 이동 항목
+// tap이 프로필·약관 화면을 열지 않는다 — `getByTestId("profile-screen-title")`이
+// 요소 부재로 던진다(수집·import 오류가 아니라 단언 대상인 요소 부재다).
+
+test("[HT1] 제목 축 닫힌 집합이 상태 profile에서 계약이 고정한 목록과 정확히 같다", () => {
+  const { container } = render(<App />);
+
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
+  expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
+
+  expect(headingAxis(container)).toEqual(["profile-screen-title"]);
+});
+
+// 절 제목 넷이 `header`다(ADR-0016 D12 G1) — 그래서 약관 상태의 제목 축 닫힌
+// 집합은 화면 제목 + 절 제목 넷, **다섯**이다(계약 §0.3 D-c). 절 id는
+// `termsSections()`에서 뽑는다 — 리터럴 넷을 여기 다시 쓰지 않는다(데이터 앵커).
+test("[HT2] 제목 축 닫힌 집합이 상태 terms에서 계약이 고정한 목록과 정확히 같다", () => {
+  const sections = termsSections();
+  const { container } = render(<App />);
+
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("settings-nav-item-terms"), {});
+  expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
+
+  expect(headingAxis(container)).toEqual([
+    "terms-screen-title",
+    ...sections.map((section) => `terms-section-title-${section.id}`),
+  ]);
+});

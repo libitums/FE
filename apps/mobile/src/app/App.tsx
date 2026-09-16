@@ -27,11 +27,24 @@ import type {
   NotificationAppProps,
   NotificationItem,
 } from "../screens/notifications/notifications.contract";
+// LIB-259 계약 §9.1 원칙 2: App props 확장은 `logic-scaffold`가 한다(LIB-257 r0.1의
+// 교훈 — 뒤로 미루면 `integration-design`에서 테스트 파일 tsc가 빨개진다). 선택
+// prop이라 기존 호출처가 안 깨진다.
+import type { SettingsAppProps, SettingsNavTarget } from "../screens/settings/settings.contract";
+// LIB-259 계약 §2.11: 세션 옵션의 진실의 출처는 App의 `useState` 하나다(D-b) —
+// 저장소 모듈을 import하지도 부르지도 않는다(ADR-0007 D1, 수용 기준 7).
+import { initialSessionOptions, toggleSessionOption } from "../lib/session-options";
+import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+import { ProfileScreen } from "../screens/profile/ProfileScreen";
+import { profileItems } from "../screens/profile/profile-items";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { roleplayItemsFrom } from "../screens/roleplay-list/roleplay-list";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
+import { sessionOptionChangedEvent, settingsNavOpenedEvent } from "../screens/settings/settings";
+import { TermsScreen } from "../screens/terms/TermsScreen";
+import { termsSections } from "../screens/terms/terms-sections";
 import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
 import type {
   MessengerAppProps,
@@ -100,6 +113,11 @@ const roleplayItems: readonly RoleplayItem[] = roleplayItemsFrom(journeyMapItems
 // LIB-257 계약 §2.9 2번: `roleplayItems` 선례 그대로 — 모듈 로드 때 한 번만
 // `notificationItems()`를 읽어 모듈 상수로 둔다. 알림 화면에는 로컬 상태가 없다(A4).
 const notificationList: readonly NotificationItem[] = notificationItems();
+
+// LIB-259 계약 §2.11 3번: `roleplayItems` · `notificationList`와 같은 선례 —
+// 모듈 로드 때 한 번만 읽는다. 프로필·약관 화면에는 로컬 상태가 없다(계약 §6).
+const profileList = profileItems();
+const termsSectionList = termsSections();
 
 // LIB-255 계약 §2.8 · §6 ③겹: 롤플레이 route 셋의 App 쪽 콜백 여덟. 연습 모드
 // 경계(계약 §6)의 판정 자리다 — 이 타입의 구현부는 여정 상태 넷
@@ -181,6 +199,12 @@ type ScreenWiring = {
   onOpenNotifications: () => void;
   onSelectNotification: (item: NotificationItem) => void;
   onExitNotifications: () => void;
+  // LIB-259 계약 §2.11 4번: 세션 옵션의 진실의 출처(D-b)와 설정 탭의 이동·토글·
+  // 나가기 콜백 셋. 화면은 스택도 `dispatch`도 모른다(위 원칙 그대로).
+  sessionOptions: SessionOptions;
+  onSelectNavTarget: (target: SettingsNavTarget) => void;
+  onToggleSessionOption: (key: SessionOptionKey) => void;
+  onExitSettingsStack: () => void;
 };
 
 // 루트 구성 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모인다 (ADR-0003 D5).
@@ -192,7 +216,12 @@ export function App({
   visualNovelEventSink = null,
   phoneCallEventSink = null,
   notificationEventSink = null,
-}: MessengerAppProps & VisualNovelAppProps & PhoneCallAppProps & NotificationAppProps = {}) {
+  settingsEventSink = null,
+}: MessengerAppProps &
+  VisualNovelAppProps &
+  PhoneCallAppProps &
+  NotificationAppProps &
+  SettingsAppProps = {}) {
   // 이 리듀서를 부르는 유일한 자리다. `dispatch`는 셸에 콜백으로 내려간다 —
   // 셸은 `NavAction`도 `dispatch`도 받지 않는다 (ADR-0007 D3).
   const [nav, dispatch] = useReducer(navReducer, initialNav);
@@ -214,6 +243,10 @@ export function App({
   const [visualNovelProgress, setVisualNovelProgress] = useState<VisualNovelProgress>(
     initialVisualNovelProgress,
   );
+  // LIB-259 계약 §2.11 2번 · §6 · D-b: 세션 옵션의 진실의 출처. **저장소 모듈을
+  // import하지도 부르지도 않는다**(ADR-0007 D1, 수용 기준 7) — 앱을 다시 켜면
+  // `initialSessionOptions`로 돌아간다.
+  const [sessionOptions, setSessionOptions] = useState<SessionOptions>(initialSessionOptions);
 
   const wiring: ScreenWiring = {
     messengerEventSink,
@@ -501,6 +534,23 @@ export function App({
     onExitNotifications: () => {
       dispatch({ type: "backToRoot" });
     },
+    // LIB-259 계약 §2.11 5번: 흐름 하나(이동) — 열림 이벤트 → `push({ name: target })`.
+    // `SettingsNavTarget`이 route 이름과 같은 문자열이라 사상 표 없이 곧장 옮긴다.
+    sessionOptions,
+    onSelectNavTarget: (target) => {
+      settingsEventSink?.(settingsNavOpenedEvent(target));
+      dispatch({ type: "push", screen: { name: target } });
+    },
+    // LIB-259 계약 §2.11 5번: 흐름 하나(토글) — sink 먼저, `setSessionOptions` 나중
+    // (계약 §7.2 순서). `value`는 바뀐 뒤 값이다.
+    onToggleSessionOption: (key) => {
+      const next = toggleSessionOption(sessionOptions, key);
+      settingsEventSink?.(sessionOptionChangedEvent(key, next[key]));
+      setSessionOptions(next);
+    },
+    // LIB-259 계약 §2.11 5번: 흐름 셋(나가기) — 프로필·약관의 `설정으로` → 설정
+    // 탭 스택의 루트(ADR-0007 D6).
+    onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
   };
 
   return (
@@ -509,7 +559,13 @@ export function App({
         <view className="app-content">{renderScreen(currentScreen(nav), wiring)}</view>
         <BottomNavigator
           tab={nav.tab}
-          onSelectTab={(tab) => dispatch({ type: "switchTab", tab })}
+          onSelectTab={(tab) => {
+            // LIB-259 계약 §2.11 6번: 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가
+            // 선다(계약 §7.2) — 이미 그 탭인 무동작 재탭을 열람으로 세지 않는다.
+            if (tab === "settings" && nav.tab !== "settings")
+              settingsEventSink?.({ name: "settings_opened" });
+            dispatch({ type: "switchTab", tab });
+          }}
         />
       </view>
     </ErrorBoundary>
@@ -546,7 +602,20 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
       // `onStartRoleplayUnit`으로 올린다(계약 §2.8).
       return <RoleplayListScreen items={roleplayItems} onSelectItem={wiring.onStartRoleplayUnit} />;
     case "settings":
-      return <SettingsScreen />;
+      // LIB-259 (integration): 계약 §2.11 7번 — props 셋을 결선한다.
+      return (
+        <SettingsScreen
+          sessionOptions={wiring.sessionOptions}
+          onSelectNavTarget={wiring.onSelectNavTarget}
+          onToggleSessionOption={wiring.onToggleSessionOption}
+        />
+      );
+    // LIB-259 (integration): 모듈 상수(`profileList`·`termsSectionList`)를 그대로
+    // 그리고, 나가기는 설정 탭 스택의 루트로 곧장 닿는다(D-d).
+    case "profile":
+      return <ProfileScreen items={profileList} onExit={wiring.onExitSettingsStack} />;
+    case "terms":
+      return <TermsScreen sections={termsSectionList} onExit={wiring.onExitSettingsStack} />;
     case "notifications":
       // LIB-257 (integration): 모듈 상수 `notificationList`를 그대로 그리고, 선택·
       // 나가기는 결선으로 올린다(계약 §2.9 5번).
@@ -564,6 +633,9 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           stepOrdinal={journeyStepOrdinal(screen.stepId)}
           onExit={wiring.onExitLearning}
           onFinish={wiring.onFinishLearning}
+          // LIB-259 (integration): 계약 §2.11 7번 — App의 `sessionOptions` 상태로
+          // 결선한다(D-b — 이 경로가 유일한 소비자다).
+          sessionOptions={wiring.sessionOptions}
         />
       );
     case "assessment":

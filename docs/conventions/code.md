@@ -139,12 +139,14 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
   [ADR-0016 D6](../adr/0016-assistive-technology-semantics.md)에 있다.
   **`ui` green을 "접근성 확인됨"으로 읽지 않는다.** 실제로 한 번 갈렸다 —
   `accessibility-value`는 `ui`에서 전부 green이었는데 iOS 실기에 도달하지 않았다.
-- **선택 상태는 이름 문자열 안에 실린다.** `accessibility-value`를 쓰지 않는다 — 이
+- **상태는 이름 문자열 안에 실린다.** `accessibility-value`를 쓰지 않는다 — 이
   스택의 iOS에서 낭독되지 않는다([ADR-0016 D3](../adr/0016-assistive-technology-semantics.md)의
   `정정 기록`). 그래서 상태를 보는 채널이 둘로 보이지만 겹치는 것이 아니다:
   상태 `data-*`는 **테스트가 보는 것**이고 `accessibility-label`의 접미사는
   **보조기술이 받는 것**이다. 여정 맵의 스텝도 같은 모양이다 —
   `data-status="current"`가 테스트의 것, `"주문하기, 현재 스텝"` 이 보조기술의 것이다.
+  **어느 값에 접미사를 붙이는지는 [ADR-0016 D13](../adr/0016-assistive-technology-semantics.md)의
+  게이트가 가른다** — 탭의 비선택처럼 안 붙이는 자리와 토글의 꺼짐처럼 붙이는 자리가 갈린다.
 
 ## 무엇을 바꾸면 어느 테스트를 쓰나
 
@@ -387,7 +389,9 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 - **`scroll-view`의 prop은 소스에서 초기값을 확인한 뒤 정한다.** `@lynx-js/types`의
   `@defaultValue`는 **리셋 값**(적었다가 지웠을 때 돌아가는 값)을 적고 있을 수 있어
   **초기값의 근거가 못 된다** — 확인은 `createView`와 ivar 초기화에서 한다. **지금 적는
-  것은 둘이고 여섯 화면 전부다**: `scroll-orientation="vertical"`(안 적으면 초기값이
+  것은 둘이고 스크롤 화면 전부다**(개수를 여기서 세지 않는다 — 목록의 정본은
+  [ADR-0022](../adr/0022-scroll-regions-and-fixed-affordances.md) **D2 표**다):
+  `scroll-orientation="vertical"`(안 적으면 초기값이
   **가로**라 세로 스크롤이 원리적으로 불가능하다) · `scroll-bar-enable={true}`(초기값이
   `NO`라 **적어야 켜진다**). `enable-scroll`은 초기값이 `YES`라 안 적고, `bounces`도
   안 적는다 — **UIKit 기본값이 `YES`이고 그것이 우리가 원하는 값임을 실기로 확인했다**
@@ -530,6 +534,18 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   「아직 없는 알림」이나 읽음 상태를 둘 자리가 없다. 표는 `culture-quiz.ts`처럼 **export하지 않고
   함수 하나로만 내보낸다.** 셋째 규칙도 선다 — 알림 화면 · 항목의 `ui` 테스트가 이 모듈을
   import하지 않고 자기 fixture를 쓴다.
+
+- **`profile-items.ts`의 프로필 항목 셋과 `terms-sections.ts`의 약관 절 넷 — 넷을 한
+  모듈씩 진다** ⟨2026-09-16, LIB-259⟩. 둘 다 표를 **export하지 않고** 조회 함수 하나
+  (`profileItems()` · `termsSections()`)만 내보내고, 값 타입의 필드가 전부 필수다.
+  **갈리는 것은 「무엇이 임시인가」의 범위다** — 프로필은 **`value` 셋만** 임시이고
+  (`id`·`label`과 항목이 셋이라는 것은 임시가 아니다), 약관은 **문구만** 임시이며
+  **분량은 임시가 아니다**: 절 4 · 문단 8 · 문단마다 문장 2 이상 · 본문 600자 이상이
+  `unit`으로 지어져 있다. 그 하한이 있는 이유는 **약관 화면의 스크롤이 실제로 걸려야
+  하기 때문**이고(ADR-0022), 그래서 이 자리는 **「값이 임시여도 값의 크기는 계약일 수
+  있다」는 첫 사례**다. ⚠ **프로필에서 더 중요한 것은 안 넣은 쪽이다** — 연속 학습일 ·
+  완료 스텝 수 · 진행률 같은 **파생값은 항목으로도 타입으로도 두지 않았다.** 그것은
+  이 절이 아니라 아래 「파생값에는 적용되지 않는다」가 가르는 자리다.
 
 **셋째 규칙(「화면이 내용에 의존하지 않는다」)이 선 자리는 주석이 아니라 테스트다.**
 문장 순서 · 단어 선택 · **문화 퀴즈**의 문항 `Record`는 **다섯 스텝 전부 빈 배열**인데도

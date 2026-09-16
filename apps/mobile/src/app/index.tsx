@@ -13,6 +13,7 @@ root.render(
     visualNovelEventSink={null}
     phoneCallEventSink={null}
     notificationEventSink={null}
+    settingsEventSink={null}
   />,
 );
 
