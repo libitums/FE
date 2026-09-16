@@ -10,7 +10,6 @@ import { BottomNavigator } from "../components/BottomNavigator";
 import { CultureScreen } from "../screens/culture/CultureScreen";
 import { cultureNarrativeForStep } from "../screens/culture/culture";
 import { CultureQuizScreen } from "../screens/culture-quiz/CultureQuizScreen";
-import { HomeScreen } from "../screens/home/HomeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import {
   completeStep,
@@ -21,6 +20,13 @@ import {
   type JourneyStepId,
 } from "../screens/journey-map/journey-map";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
+import { NotificationsScreen } from "../screens/notifications/NotificationsScreen";
+import { notificationItems } from "../screens/notifications/notification-items";
+import { notificationTappedEvent } from "../screens/notifications/notifications";
+import type {
+  NotificationAppProps,
+  NotificationItem,
+} from "../screens/notifications/notifications.contract";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { roleplayItemsFrom } from "../screens/roleplay-list/roleplay-list";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
@@ -79,6 +85,7 @@ import {
   learningScreenFor,
   navReducer,
   roleplayScreenFor,
+  tabRootActions,
   type RoleplayUnitScreen,
   type Screen,
 } from "./navigation";
@@ -89,6 +96,10 @@ import "./app.css";
 // 폴더 사이 값 import는 금지지만(`code.md` 「import」), `roleplay-list` 폴더는 이
 // 표를 직접 볼 수 없다. 그래서 App이 모듈 로드 시 한 번 변환해 모듈 상수로 둔다.
 const roleplayItems: readonly RoleplayItem[] = roleplayItemsFrom(journeyMapItems);
+
+// LIB-257 계약 §2.9 2번: `roleplayItems` 선례 그대로 — 모듈 로드 때 한 번만
+// `notificationItems()`를 읽어 모듈 상수로 둔다. 알림 화면에는 로컬 상태가 없다(A4).
+const notificationList: readonly NotificationItem[] = notificationItems();
 
 // LIB-255 계약 §2.8 · §6 ③겹: 롤플레이 route 셋의 App 쪽 콜백 여덟. 연습 모드
 // 경계(계약 §6)의 판정 자리다 — 이 타입의 구현부는 여정 상태 넷
@@ -165,6 +176,11 @@ type ScreenWiring = {
   // LIB-255 계약 §2.8 · §6: 롤플레이 route 셋의 콜백 묶음. 연습 경계는 이 타입의
   // 매개변수 모양과 구현부 둘 다가 진다.
   roleplay: RoleplayUnitWiring;
+  // LIB-257 계약 §2.9 3번: 여정 맵 머리 알림 버튼 · 알림 항목 선택 · 알림 화면
+  // 나가기. `dispatch`도 `NavAction`도 여기 들어가지 않는다(위 원칙 그대로).
+  onOpenNotifications: () => void;
+  onSelectNotification: (item: NotificationItem) => void;
+  onExitNotifications: () => void;
 };
 
 // 루트 구성 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모인다 (ADR-0003 D5).
@@ -175,7 +191,8 @@ export function App({
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
-}: MessengerAppProps & VisualNovelAppProps & PhoneCallAppProps = {}) {
+  notificationEventSink = null,
+}: MessengerAppProps & VisualNovelAppProps & PhoneCallAppProps & NotificationAppProps = {}) {
   // 이 리듀서를 부르는 유일한 자리다. `dispatch`는 셸에 콜백으로 내려간다 —
   // 셸은 `NavAction`도 `dispatch`도 받지 않는다 (ADR-0007 D3).
   const [nav, dispatch] = useReducer(navReducer, initialNav);
@@ -443,6 +460,47 @@ export function App({
         });
       },
     },
+    // LIB-257 계약 §2.9 4번: 여정 맵 머리 알림 버튼. 열림 이벤트 → `push` 직전 1회
+    // (계약 §7.2 순서).
+    onOpenNotifications: () => {
+      notificationEventSink?.({ name: "notifications_opened" });
+      dispatch({ type: "push", screen: { name: "notifications" } });
+    },
+    // LIB-257 계약 §2.9 4번: 알림 항목 선택. **먼저** 탭 이벤트를 올리고, 그 뒤
+    // 대상별로 분기한다. 특별 유닛 셋은 **기존 여정 콜백을 부를 뿐** 이벤트·`push`를
+    // 다시 쓰지 않는다(D-a · D-b) — 그 콜백들이 이미 `entrySource: "journey"` 변형과
+    // `push`를 한 자리에서 한다. 롤플레이 목록은 `tabRootActions("roleplay")`를
+    // **순서대로** `dispatch`한다(D-c) — 여정 스택은 건드리지 않는다.
+    onSelectNotification: (item) => {
+      notificationEventSink?.(notificationTappedEvent(item));
+      switch (item.target.kind) {
+        case "messenger": {
+          wiring.onStartMessengerUnit(item.target.unitId);
+          break;
+        }
+        case "phone-call": {
+          wiring.onStartPhoneCallUnit(item.target.unitId);
+          break;
+        }
+        case "visual-novel": {
+          wiring.onStartVisualNovelUnit(item.target.unitId);
+          break;
+        }
+        case "roleplay-list": {
+          for (const action of tabRootActions("roleplay")) dispatch(action);
+          break;
+        }
+        default: {
+          const exhaustive: never = item.target;
+          return exhaustive;
+        }
+      }
+    },
+    // LIB-257 계약 §2.9 4번: 알림 화면의 `맵으로`. `onExitAssessment`·`onExitCulture`와
+    // 같은 형태 — 활성 스택의 루트로 곧장 닿는다(ADR-0007 D6).
+    onExitNotifications: () => {
+      dispatch({ type: "backToRoot" });
+    },
   };
 
   return (
@@ -465,8 +523,6 @@ export function App({
 // `stepOrdinal`을 계산하지 않고 받는다.
 function renderScreen(screen: Screen, wiring: ScreenWiring) {
   switch (screen.name) {
-    case "home":
-      return <HomeScreen />;
     case "journey-map":
       // 메신저 통합 전까지는 타입 적합성만 위한 임시 scaffold wiring입니다.
       return (
@@ -481,6 +537,8 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
             wiring.visualNovelProgress.status === "completed" ? ["cafe-arrival-visual-novel"] : []
           }
           onStartVisualNovelUnit={wiring.onStartVisualNovelUnit}
+          // LIB-257 (integration): 여정 맵 머리 알림 버튼 결선(계약 §2.9 5번).
+          onOpenNotifications={wiring.onOpenNotifications}
         />
       );
     case "roleplay-list":
@@ -489,6 +547,16 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return <RoleplayListScreen items={roleplayItems} onSelectItem={wiring.onStartRoleplayUnit} />;
     case "settings":
       return <SettingsScreen />;
+    case "notifications":
+      // LIB-257 (integration): 모듈 상수 `notificationList`를 그대로 그리고, 선택·
+      // 나가기는 결선으로 올린다(계약 §2.9 5번).
+      return (
+        <NotificationsScreen
+          items={notificationList}
+          onSelectItem={wiring.onSelectNotification}
+          onExit={wiring.onExitNotifications}
+        />
+      );
     case "listening":
       return (
         <ListeningScreen

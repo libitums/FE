@@ -187,7 +187,7 @@ boolean 모드 props, compound context, ref, render prop, audio port prop, telem
 
 | event | 출처 | payload | 발생 시점 |
 |---|---|---|---|
-| `phone_call_unit_opened` | journey | `unitId`, `entrySource: "journey"`, `entryStatus: PhoneCallCompletionStatus` | 맵의 전화 항목 선택(`onStartPhoneCallUnit`)으로 화면을 `push`하기 직전, 매 진입. `entryStatus`는 `phoneCallCompletionStatus(completedPhoneCallUnitIds, id)` |
+| `phone_call_unit_opened` | journey | `unitId`, `entrySource: "journey"`, `entryStatus: PhoneCallCompletionStatus` | 맵의 전화 항목 **또는 알림의 전화 항목**(LIB-257) 선택(둘 다 `onStartPhoneCallUnit`)으로 화면을 `push`하기 직전, 매 진입. `entryStatus`는 `phoneCallCompletionStatus(completedPhoneCallUnitIds, id)` |
 | `phone_call_unit_opened` | roleplay | `unitId`, `entrySource: "roleplay"` | 롤플레이 목록 항목 선택(`onStartRoleplayUnit`)으로 `roleplay-phone-call` 화면을 `push`하기 직전, 매 진입. `entryStatus`를 싣지 않는다 — 연습은 여정 상태를 읽지 않고, 타입이 초과 속성으로 막는다 |
 
 - **완료·이탈·다시 보기 이벤트는 만들지 않는다.** 그래서 전화의 롤플레이 완료 수는 측정되지
