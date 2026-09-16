@@ -5,6 +5,13 @@
  * belong in this file. Changes require specification re-freeze and a contract diff.
  */
 
+// LIB-255 계약 §2.7: `VisualNovelScreenProps.exitLabel?`와 `VisualNovelEvent`의 진입
+// 출처 속성 타입.
+import type {
+  SpecialUnitEntrySource,
+  SpecialUnitExitLabel,
+} from "../../lib/special-unit-entry-source";
+
 export type VisualNovelUnitId = "cafe-arrival-visual-novel";
 export type VisualNovelTitle = "카페에 도착한 지민";
 
@@ -157,25 +164,36 @@ export type VisualNovelEntrySnapshot = {
   readonly entryBeatId: VisualNovelBeatId;
 };
 
+// LIB-255 계약 §2.7·§7.2: 열림 이벤트는 출처별 변형이 둘이다(A4 — 롤플레이 출처는
+// `entryStatus`·`entryBeatId`를 싣지 않는다). 그 밖 세 이벤트는 두 출처 모두 같은 모양이다.
 export type VisualNovelEvent =
   | {
       readonly name: "visual_novel_unit_opened";
       readonly unitId: VisualNovelUnitId;
+      readonly entrySource: "journey";
       readonly entryStatus: VisualNovelCompletionStatus;
       readonly entryBeatId: VisualNovelBeatId;
     }
   | {
+      readonly name: "visual_novel_unit_opened";
+      readonly unitId: VisualNovelUnitId;
+      readonly entrySource: "roleplay";
+    }
+  | {
       readonly name: "visual_novel_unit_completed";
       readonly unitId: VisualNovelUnitId;
+      readonly entrySource: SpecialUnitEntrySource;
     }
   | {
       readonly name: "visual_novel_unit_exited_incomplete";
       readonly unitId: VisualNovelUnitId;
       readonly beatId: VisualNovelBeatId;
+      readonly entrySource: SpecialUnitEntrySource;
     }
   | {
       readonly name: "visual_novel_unit_replay_started";
       readonly unitId: VisualNovelUnitId;
+      readonly entrySource: SpecialUnitEntrySource;
     };
 
 export type VisualNovelEventSink = ((event: VisualNovelEvent) => void) | null;
@@ -197,6 +215,7 @@ export type VisualNovelScreenProps = {
   readonly onAdvance: (id: VisualNovelUnitId, outcome: VisualNovelAdvanceOutcome) => void;
   readonly onExit: (outcome: VisualNovelExitOutcome, beatId: VisualNovelBeatId) => void;
   readonly onReplay: (id: VisualNovelUnitId) => void;
+  readonly exitLabel?: SpecialUnitExitLabel;
 };
 
 export type VisualNovelSceneProps = {

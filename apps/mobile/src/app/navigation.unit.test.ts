@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import type { LearningForm } from "../lib/learning-form";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
+import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import {
   activeStack,
   currentScreen,
   initialNav,
   learningScreenFor,
   navReducer,
+  roleplayScreenFor,
   type Nav,
 } from "./navigation";
 
@@ -645,5 +647,102 @@ describe("learningScreenFor의 총성 (계약 §3.1 U3)", () => {
 
       expect(currentScreen(next)).toEqual(screen);
     }
+  });
+});
+
+// -------------------------------- 롤플레이 route 사상 (LIB-255 계약 §2.6)
+// 계획: .agent-harness/work/lib-255/test-plan.md unit § `navigation.unit.test.ts`
+// (추가 — 기존 케이스 불변). 케이스 ID는 계획의 N1~N4 그대로다.
+
+describe("roleplayScreenFor (LIB-255)", () => {
+  const messengerRoleplayItem: RoleplayItem = {
+    form: "messenger",
+    unitId: "appointment-confirmation",
+    title: "약속 확인 메시지",
+  };
+  const phoneCallRoleplayItem: RoleplayItem = {
+    form: "phone-call",
+    unitId: "appointment-confirmation-phone-call",
+    title: "약속 확인 전화",
+  };
+  const visualNovelRoleplayItem: RoleplayItem = {
+    form: "visual-novel",
+    unitId: "cafe-arrival-visual-novel",
+    title: "카페에 도착한 지민",
+  };
+  const allRoleplayItems: readonly RoleplayItem[] = [
+    messengerRoleplayItem,
+    phoneCallRoleplayItem,
+    visualNovelRoleplayItem,
+  ];
+
+  // N1
+  it("N1. 세 형태 각각이 대응하는 롤플레이 route + 인자의 unitId를 낸다. 필드는 둘뿐이다", () => {
+    expect(roleplayScreenFor(messengerRoleplayItem)).toEqual({
+      name: "roleplay-messenger",
+      unitId: "appointment-confirmation",
+    });
+    expect(roleplayScreenFor(phoneCallRoleplayItem)).toEqual({
+      name: "roleplay-phone-call",
+      unitId: "appointment-confirmation-phone-call",
+    });
+    expect(roleplayScreenFor(visualNovelRoleplayItem)).toEqual({
+      name: "roleplay-visual-novel",
+      unitId: "cafe-arrival-visual-novel",
+    });
+    for (const item of allRoleplayItems) {
+      expect(Object.keys(roleplayScreenFor(item)).sort()).toEqual(["name", "unitId"]);
+    }
+  });
+
+  // N2
+  it("N2. 어느 결과도 여정 route나 탭 루트 넷이 아니다", () => {
+    const forbiddenNames = [
+      "messenger",
+      "phone-call",
+      "visual-novel",
+      "home",
+      "journey-map",
+      "roleplay-list",
+      "settings",
+    ];
+
+    for (const item of allRoleplayItems) {
+      expect(forbiddenNames).not.toContain(roleplayScreenFor(item).name);
+    }
+  });
+
+  // N3 — 기대 화면은 roleplayScreenFor를 다시 불러 만들지 않는다(자기참조 오라클을
+  // 피한다). phone-call 항목을 골라, 스텁이 언제나 돌려주는 roleplay-messenger와
+  // 어긋나야 이 케이스가 화면 사상 자체의 정확성도 함께 걸게 한다.
+  it("N3. roleplay 탭에서 push(roleplayScreenFor(item)) → 롤플레이 스택에만 쌓이고 다른 세 스택은 동일 참조다", () => {
+    const n = nav({ tab: "roleplay", stacks: baseStacks });
+    const expectedScreen = {
+      name: "roleplay-phone-call",
+      unitId: "appointment-confirmation-phone-call",
+    } as const;
+
+    const next = navReducer(n, {
+      type: "push",
+      screen: roleplayScreenFor(phoneCallRoleplayItem),
+    });
+
+    expect(next.stacks.roleplay).toEqual([{ name: "roleplay-list" }, expectedScreen]);
+    expect(currentScreen(next)).toEqual(expectedScreen);
+    expect(next.stacks.journey).toBe(baseStacks.journey);
+    expect(next.stacks.home).toBe(baseStacks.home);
+    expect(next.stacks.settings).toBe(baseStacks.settings);
+  });
+
+  // N4
+  it("N4. 이어서 backToRoot → 롤플레이 스택이 루트 하나로 돌아오고 여정 스택은 여전히 동일 참조다", () => {
+    const n = nav({ tab: "roleplay", stacks: baseStacks });
+    const screen = roleplayScreenFor(messengerRoleplayItem);
+    const pushed = navReducer(n, { type: "push", screen });
+
+    const next = navReducer(pushed, { type: "backToRoot" });
+
+    expect(next.stacks.roleplay).toEqual([{ name: "roleplay-list" }]);
+    expect(next.stacks.journey).toBe(baseStacks.journey);
   });
 });

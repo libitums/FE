@@ -157,26 +157,38 @@ test("sink는 opened, incomplete exit, completion, completed re-entry, replay를
       unitId: "cafe-arrival-visual-novel",
       entryStatus: "available",
       entryBeatId: "arrive",
+      entrySource: "journey",
     },
     {
       name: "visual_novel_unit_exited_incomplete",
       unitId: "cafe-arrival-visual-novel",
       beatId: "find",
+      entrySource: "journey",
     },
     {
       name: "visual_novel_unit_opened",
       unitId: "cafe-arrival-visual-novel",
       entryStatus: "available",
       entryBeatId: "find",
+      entrySource: "journey",
     },
-    { name: "visual_novel_unit_completed", unitId: "cafe-arrival-visual-novel" },
+    {
+      name: "visual_novel_unit_completed",
+      unitId: "cafe-arrival-visual-novel",
+      entrySource: "journey",
+    },
     {
       name: "visual_novel_unit_opened",
       unitId: "cafe-arrival-visual-novel",
       entryStatus: "completed",
       entryBeatId: "enter",
+      entrySource: "journey",
     },
-    { name: "visual_novel_unit_replay_started", unitId: "cafe-arrival-visual-novel" },
+    {
+      name: "visual_novel_unit_replay_started",
+      unitId: "cafe-arrival-visual-novel",
+      entrySource: "journey",
+    },
   ]);
 });
 

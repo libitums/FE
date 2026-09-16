@@ -91,11 +91,11 @@ describe("VisualNovelScreen UI", () => {
     expect(scene.parentElement).toHaveClass("visual-novel-scene-shell");
     expect(dialogue.parentElement).toBe(scene.parentElement);
     const order = [
+      screen.getByTestId("visual-novel-exit-button"),
       screen.getByTestId("visual-novel-title"),
       screen.getByTestId("visual-novel-progress"),
       screen.getByTestId("visual-novel-dialogue-arrive"),
       screen.getByTestId("visual-novel-advance-button"),
-      screen.getByTestId("visual-novel-exit-button"),
     ];
     expect(order.every((node) => root.contains(node))).toBe(true);
     for (let i = 1; i < order.length; i += 1) {

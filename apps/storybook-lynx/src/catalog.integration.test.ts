@@ -22,6 +22,7 @@ import {
 import { normalizeChatBubbleStoryArgs } from "./chat-bubble-story";
 import { normalizeTextFieldStoryArgs } from "./text-field-story";
 import { normalizeTooltipStoryArgs } from "./tooltip-story";
+import { normalizeFogStoryArgs } from "./fog-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -93,6 +94,35 @@ describe("Storybook Lynx build outputs", () => {
       placement: "top",
       tone: "neutral",
       visibility: "visible",
+    });
+  });
+
+  test("fog init data는 직렬화 가능한 유효 옵션으로 정규화된다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeFogStoryArgs({
+            direction: "start",
+            size: "full",
+            color: "surface-floating",
+            visibility: "hidden",
+            layoutDirection: "rtl",
+          }),
+        ),
+      ),
+    ).toEqual({
+      direction: "start",
+      size: "full",
+      color: "surface-floating",
+      visibility: "hidden",
+      layoutDirection: "rtl",
+    });
+    expect(normalizeFogStoryArgs({ direction: "invalid", size: "xl" })).toEqual({
+      direction: "bottom",
+      size: "m",
+      color: "surface-default",
+      visibility: "visible",
+      layoutDirection: "ltr",
     });
   });
 
@@ -476,6 +506,7 @@ describe("Storybook Lynx build outputs", () => {
     "status-indicator",
     "round-button",
     "compact-numeric-input",
+    "fog",
     "progress-header",
     "page-indicator",
     "bottom-navigator",
@@ -508,6 +539,10 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-compact-numeric-input--filled");
     expect(index).toContain("components-compact-numeric-input--error");
     expect(index).toContain("components-compact-numeric-input--disabled");
+    expect(index).toContain("components-fog--bottom");
+    expect(index).toContain("components-fog--horizontal-rtl");
+    expect(index).toContain("components-fog--hidden");
+    expect(index).toContain("components-fog--full");
     expect(index).toContain("components-bottom-sheet--default");
     expect(index).toContain("components-bottom-sheet--multiple-actions");
     expect(index).toContain("components-progress-header--default");
@@ -582,6 +617,7 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/compact-numeric-input": [
         "../../packages/ui-lynx/src/compact-numeric-input/index.ts",
       ],
+      "@libitums/ui-lynx/fog": ["../../packages/ui-lynx/src/fog/index.ts"],
       "@libitums/ui-lynx/progress-header": ["../../packages/ui-lynx/src/progress-header/index.ts"],
       "@libitums/ui-lynx/page-indicator": ["../../packages/ui-lynx/src/page-indicator/index.ts"],
       "@libitums/ui-lynx/bottom-navigator": [
@@ -606,6 +642,7 @@ describe("Storybook Lynx build outputs", () => {
     ["status-indicator", "@libitums/ui-lynx/status-indicator"],
     ["round-button", "@libitums/ui-lynx/round-button"],
     ["compact-numeric-input", "@libitums/ui-lynx/compact-numeric-input"],
+    ["fog", "@libitums/ui-lynx/fog"],
     ["progress-header", "@libitums/ui-lynx/progress-header"],
     ["page-indicator", "@libitums/ui-lynx/page-indicator"],
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
@@ -663,6 +700,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?compact-numeric-input["']?\s*:\s*["']\.\/src\/lynx\/compact-numeric-input\.tsx["']/,
     );
+    expect(config).toMatch(/["']?fog["']?\s*:\s*["']\.\/src\/lynx\/fog\.tsx["']/);
     expect(config).toMatch(/["']?bottom-sheet["']?\s*:\s*["']\.\/src\/lynx\/bottom-sheet\.tsx["']/);
     expect(config).toMatch(/["']?text-field["']?\s*:\s*["']\.\/src\/lynx\/text-field\.tsx["']/);
     expect(config).toMatch(/["']?tooltip["']?\s*:\s*["']\.\/src\/lynx\/tooltip\.tsx["']/);
@@ -701,6 +739,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/compact-numeric-input/index.d.ts",
       import: "./dist/compact-numeric-input/index.js",
       default: "./dist/compact-numeric-input/index.js",
+    });
+    expect(packageJson.exports["./fog"]).toEqual({
+      types: "./dist/fog/index.d.ts",
+      import: "./dist/fog/index.js",
+      default: "./dist/fog/index.js",
     });
     expect(packageJson.exports["./bottom-sheet"]).toEqual({
       types: "./dist/bottom-sheet/index.d.ts",
@@ -755,6 +798,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(await outputExists("../../packages/ui-lynx/dist/card/Card.jsx")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/card/card.contract.js")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/card/card.css")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/fog/Fog.jsx")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/fog/fog.contract.js")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/fog/fog.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/bottom-sheet/BottomSheet.jsx")).toBe(
       true,
     );
@@ -782,6 +828,7 @@ describe("Storybook Lynx build outputs", () => {
       "card",
       "chat-bubble",
       "compact-numeric-input",
+      "fog",
       "page-indicator",
       "progress-header",
       "round-button",

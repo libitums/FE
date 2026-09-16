@@ -1,40 +1,76 @@
+/* LIB-255 (ui, r1 R2): `position: relative`를 지운다 — 기준 상자로 쓰던 절대 배치
+   자식이 `.visual-novel-exit` 하나였고, 그 자식이 흐름으로 돌아가 기준이 필요 없다
+   (.agent-harness/work/lib-255/design.md §6.3.2). */
 .visual-novel-screen {
   flex: 1;
   display: flex;
   flex-direction: column;
   background: var(--libitum-color-background-primary);
-  position: relative;
 }
+/* LIB-255 (ui, r1 R2): `align-items: flex-start`(이전 `center`) — ADR-0023 규칙 3
+   안 B, 메신저·전화·듣기 머리와 값·근거가 같다. `center`는 최대 배율에서 나가기와
+   제목 묶음의 프레임 top이 갈려 낭독 순서를 DOM 순서와 어긋나게 만든다(design §6.3.4).
+   대가는 `.visual-novel-header-text`의 `margin-top`이 갚는다. */
 .visual-novel-header {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--libitum-layout-gap-inline);
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x);
   background: var(--libitum-color-background-elevated);
   border-bottom: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
   flex-shrink: 0;
 }
+/* LIB-255 (ui, r1 R2): 머리의 첫 흐름 자식으로 옮겼다 — `position`·`top`·`left`·
+   `z-index`(흐름 밖 배치)를 지우고 `flex-shrink: 0`(`.messenger-screen-exit` ·
+   `.phone-call-screen-exit`와 같은 선언)을 더한다. 나머지 선언(하한·padding·radius·
+   가운데 정렬·폭 선언 없음)은 그대로다. */
 .visual-novel-exit {
-  position: absolute;
-  top: var(--libitum-layout-screen-padding-top);
-  left: var(--libitum-layout-screen-padding-x);
-  z-index: 4;
   min-height: var(--libitum-spacing-48);
   padding: 0 var(--libitum-spacing-12);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--libitum-radius-md);
+  flex-shrink: 0;
 }
-.visual-novel-title {
+/* LIB-255 (ui, r1 R2): 제목 묶음(신설, 요소 이름 `visual-novel-header-text`) — 머리의
+   둘째이자 마지막 자식. 제목·진행을 세로로 품는다(design §6.3.2, 롤플레이 항목 글
+   묶음과 같은 레시피). `flex: 1`은 제목이 지던 것을 이 묶음으로 옮긴 것이다.
+
+   **`margin-top: var(--libitum-spacing-12)`(FE ADR-0023 규칙 3, 안 B —
+   `.visual-novel-header`를 `flex-start`로 바꾼 대가를 여기서 갚는다. `listening-screen.css`
+   `.listening-screen-title`과 같은 형식).** 담아야 할 사실 셋:
+   1. **12는 토큰 이름이 아니라 산술 결과다** —
+      `12 = (spacing-48 − heading-s-line-height) / 2 = (48 − 24) / 2`이고
+      `--libitum-spacing-12`와 값이 **우연히** 같다.
+   2. **되돌리는 조건**: `.visual-novel-exit`의 `min-height` 하한(현재 `spacing-48`)이나
+      제목의 typography scale(현재 `heading-s`)이 바뀌면 이 값이 조용히 틀린다.
+   3. `margin`은 배율을 받지 않는다(ADR-0020 D5) — 어느 배율에서도 묶음 top이 나가기보다
+      `spacing-12` 아래다. */
+.visual-novel-header-text {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  margin-top: var(--libitum-spacing-12);
+}
+/* LIB-255 (ui, r1 R2): `flex: 1`·`margin-left`(고정 여백 112px)를 지운다 — 가로 몫과
+   여백은 이제 부모 `.visual-novel-header-text`가 진다. `flex-shrink: 0`을 더한다 —
+   세로 열의 자식이라 줄어들지 않는다(design §6.3.2). typography·색·여러 줄은 그대로다. */
+.visual-novel-title {
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);
   font-size: var(--libitum-typography-heading-s-font-size);
   line-height: var(--libitum-typography-heading-s-line-height);
-  margin-left: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
+  flex-shrink: 0;
+}
+/* LIB-255 (ui, r1 R2): `flex-shrink: 0`을 더한다 — 세로 열의 자식이라 줄어들지 않는다.
+   `.visual-novel-exit text`는 design §6.3.2 표에 변경 행이 없다 — 기존 그대로 갈래를
+   나눈다. */
+.visual-novel-progress {
+  flex-shrink: 0;
 }
 .visual-novel-progress,
 .visual-novel-exit text {

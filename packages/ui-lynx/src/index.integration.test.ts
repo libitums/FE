@@ -11,6 +11,7 @@ import * as backHeader from "./back-header/index";
 import * as statusIndicator from "./status-indicator/index";
 import * as roundButton from "./round-button/index";
 import * as compactNumericInput from "./compact-numeric-input/index";
+import * as fog from "./fog/index";
 import * as progressHeader from "./progress-header/index";
 import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
@@ -35,6 +36,7 @@ const componentArtifacts = {
     implementation: "CompactNumericInput.jsx",
     css: "compact-numeric-input.css",
   },
+  fog: { implementation: "Fog.jsx", css: "fog.css" },
   "progress-header": { implementation: "ProgressHeader.jsx", css: "progress-header.css" },
   "page-indicator": { implementation: "PageIndicator.jsx", css: "page-indicator.css" },
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
@@ -54,6 +56,7 @@ const componentEntries = {
   "status-indicator": "StatusIndicator",
   "round-button": "RoundButton",
   "compact-numeric-input": "CompactNumericInput",
+  fog: "Fog",
   "progress-header": "ProgressHeader",
   "page-indicator": "PageIndicator",
   "bottom-navigator": "BottomNavigator",
@@ -83,6 +86,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.StatusIndicator).toBe(statusIndicator.StatusIndicator);
     expect(root.RoundButton).toBe(roundButton.RoundButton);
     expect(root.CompactNumericInput).toBe(compactNumericInput.CompactNumericInput);
+    expect(root.Fog).toBe(fog.Fog);
     expect(root.ProgressHeader).toBe(progressHeader.ProgressHeader);
     expect(root.PageIndicator).toBe(pageIndicator.PageIndicator);
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
@@ -97,6 +101,7 @@ describe("ui-lynx package boundaries", () => {
       compactNumericInput.getCompactNumericInputContract,
     );
     expect(root.getCompactNumericInputValue).toBe(compactNumericInput.getCompactNumericInputValue);
+    expect(root.getFogContract).toBe(fog.getFogContract);
     expect(root.getStatusIndicatorLabel).toBe(statusIndicator.getStatusIndicatorLabel);
     expect(root.getProgressHeaderProgress).toBe(progressHeader.getProgressHeaderProgress);
     expect(root.getPageIndicatorModel).toBe(pageIndicator.getPageIndicatorModel);
@@ -150,6 +155,7 @@ describe("ui-lynx package boundaries", () => {
     expect(packageJson.exports["./compact-numeric-input/styles.css"]).toBe(
       "./dist/compact-numeric-input/compact-numeric-input.css",
     );
+    expect(packageJson.exports["./fog/styles.css"]).toBe("./dist/fog/fog.css");
     expect(packageJson.exports["./bottom-sheet/styles.css"]).toBe(
       "./dist/bottom-sheet/bottom-sheet.css",
     );
@@ -216,6 +222,13 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/compact-numeric-input/${componentArtifacts["compact-numeric-input"].implementation}`,
       "package/dist/compact-numeric-input/index.d.ts",
       `package/dist/compact-numeric-input/${componentArtifacts["compact-numeric-input"].css}`,
+      "package/dist/fog/index.js",
+      `package/dist/fog/${componentArtifacts.fog.implementation}`,
+      "package/dist/fog/index.d.ts",
+      "package/dist/fog/Fog.d.ts",
+      "package/dist/fog/fog.contract.js",
+      "package/dist/fog/fog.contract.d.ts",
+      `package/dist/fog/${componentArtifacts.fog.css}`,
       "package/dist/progress-header/index.js",
       `package/dist/progress-header/${componentArtifacts["progress-header"].implementation}`,
       "package/dist/progress-header/index.d.ts",

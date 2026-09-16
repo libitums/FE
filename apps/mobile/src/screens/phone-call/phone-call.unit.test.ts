@@ -11,6 +11,7 @@ import {
   phoneCallPlayLabel,
   phoneCallSessionReducer,
   phoneCallStatusLabel,
+  practicePhoneCallCompletionStatus,
   visiblePhoneCallEntries,
 } from "./phone-call";
 
@@ -118,5 +119,21 @@ describe("약속 확인 전화 순수 계약", () => {
     expect(phoneCallExitOutcome(ready0)).toBe("incomplete");
     expect(phoneCallExitOutcome({ mode: "completed" })).toBe("completed");
     expect(phoneCallSessionReducer({ mode: "completed" }, { type: "replay" })).toEqual(ready0);
+  });
+});
+
+// -------------------------------- 롤플레이 연습 입력 (LIB-255 계약 §2.7 · §3)
+// 계획: .agent-harness/work/lib-255/test-plan.md unit § `phone-call.unit.test.ts`
+// (추가). 케이스 ID는 계획의 P1 그대로다.
+
+describe("practicePhoneCallCompletionStatus (LIB-255)", () => {
+  // P1
+  it("P1. 연습 시작 입력이 처음 ready 상태를 만든다 — 통화 준비·통화 시작·transcript 1개", () => {
+    const state = initialPhoneCallSessionState(practicePhoneCallCompletionStatus());
+
+    expect(state).toEqual({ mode: "ready", turnIndex: 0 });
+    expect(phoneCallStatusLabel(state)).toBe("통화 준비");
+    expect(phoneCallPlayLabel(state)).toBe("통화 시작");
+    expect(visiblePhoneCallEntries(conversation, state)).toHaveLength(1);
   });
 });

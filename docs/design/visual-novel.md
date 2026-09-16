@@ -84,7 +84,8 @@ Host의 Lynx view는 iOS `safeAreaLayoutGuide.layoutFrame` 안에 배치된다. 
 
 ```text
 ┌──────────────────────────────────────┐  ← Host safe-area 안 app-content
-│ [맵으로] 카페에 도착한 지민  장면 1/3 │  불투명 상단 정보 행
+│ [맵으로] 카페에 도착한 지민          │  불투명 상단 정보 행 — 나가기 │ 제목 묶음
+│          장면 1 / 3                  │  (제목 묶음: 제목 위 · 진행 아래)
 ├──────────────────────────────────────┤
 │                                      │
 │      cafe-exterior-day (aspectFill)  │
@@ -106,7 +107,8 @@ Lynx가 지원하는 속성만 사용한다. 배경과 캐릭터는 load/error �
 `background-image`가 아니라 resolved size를 가진 `<image>`로 렌더한다.
 
 - 상단 정보 행은 화면의 `screen-padding-top`/`-x`를 적용하고, row +
-  `gap: layout-gap-inline`, `background-elevated`, 아래 `stroke-width-thin` 경계다.
+  `gap: layout-gap-inline`, `background-elevated`, 아래 `stroke-width-thin` 경계다. 흐름 자식은
+  나가기와 제목 묶음 둘이다(§4.1).
 - scene은 `position: relative`, `flex: 1`, `overflow: hidden`, fallback 면
   `background-primary`다. 이미지의 고유 크기로 scene 높이를 정하지 않는다.
 - scene의 네 가장자리는 이미 Host safe area 안이다. 대화 패널은 좌우·아래
@@ -134,14 +136,31 @@ Lynx가 지원하는 속성만 사용한다. 배경과 캐릭터는 load/error �
 
 ### 4.1 상단 정보 행
 
-- `맵으로`: 항목 전체가 단일 button, `min-height: spacing-48`, 좌우 `spacing-12`,
-  `radius-md`, 가운데 정렬, 축소 금지. 라벨은 `label-m + fg-neutral-muted`다.
-- 제목: `heading-s + fg-neutral`, 남은 폭에서 여러 줄, header trait. 기존 화면과 같은
-  `margin-top: spacing-12`를 쓰되 나가기 하한이나 heading scale이 바뀌면 재검토한다.
-- 진행: 끝쪽 `label-m + fg-neutral-muted`, 축소 금지. `장면 1 / 3`, `장면 2 / 3`,
-  완료 전이 뒤에는 `이야기 완료`다. 숫자만으로 완료를 표현하지 않는다.
-- 375pt 폭이나 최대 배율에서 한 행에 안 들어가면 제목과 진행 묶음이 세로로 늘어난다.
-  고정 높이·말줄임·가로 스크롤은 금지한다. 상단이 커진 만큼 scene만 줄어든다.
+> **2026-09-15 LIB-255 재배치.** 나가기를 머리 위 절대 배치에서 머리 행의 첫 흐름 자식으로
+> 옮기고 제목의 고정 여백을 지웠다. 큰 글자 배율에서 나가기 글자가 제목과 겹치지 않게 하려는
+> 것이고, 메신저·전화 머리와 같은 모양이다. 여정(`맵으로`)과 롤플레이(`목록으로`)는 같은 요소 ·
+> 같은 선언이고 라벨 문자열만 다르다. 새 토큰은 0건이다.
+
+- 행: row, `align-items: flex-start`, `gap: layout-gap-inline`. 흐름 자식은 둘뿐이다 — `맵으로`,
+  그리고 제목과 진행을 세로로 품는 제목 묶음. 절대 배치 · 고정 여백 · `z-index`가 없다.
+- `맵으로`: 행의 첫 자식. 항목 전체가 단일 button, `min-height: spacing-48`, 좌우 `spacing-12`,
+  `radius-md`, 가운데 정렬, 축소 금지(`flex-shrink: 0`). 라벨은 `label-m + fg-neutral-muted`다.
+- 제목 묶음: 행의 둘째이자 마지막 자식. `flex: 1`, column, `gap: spacing-4`,
+  `margin-top: spacing-12`. 면·경계·radius 없음. `margin-top`은
+  [ADR-0023](../adr/0023-scale-mismatch-in-flex-boxes.md) 규칙 3의 안 B(사례 표 ⑳)로,
+  `(spacing-48 − heading-s line-height) / 2`의 산술 결과가 `spacing-12`와 값이 같은 것이다 —
+  나가기 하한이나 heading scale이 바뀌면 재검토한다. 기본 배율에서 제목 첫 줄의 가운데가 나가기
+  라벨의 가운데와 같은 높이에 선다.
+- 제목: 묶음의 첫 자식. `heading-s + fg-neutral`, 남은 폭에서 여러 줄, header trait, 축소 금지.
+- 진행: 묶음의 둘째 자식으로 제목 아래에 선다. `label-m + fg-neutral-muted`, 축소 금지.
+  `장면 1 / 3`, `장면 2 / 3`, 완료 전이 뒤에는 `이야기 완료`다. 숫자만으로 완료를 표현하지 않는다.
+- 375pt 폭이나 최대 배율에서는 제목과 진행이 묶음 안에서 줄바꿈해 세로로 늘어난다. 나가기는
+  줄지 않고 제목은 나가기 반대쪽으로만 줄바꿈하므로 두 글자가 겹칠 방향이 없다. 고정 높이·
+  말줄임·가로 스크롤은 금지한다. 상단이 커진 만큼 scene만 줄어든다.
+- 기본 배율에서는 머리가 이전보다 높아져(묶음 여백과 진행 한 줄) scene이 그만큼 낮아지고, 최대
+  배율에서는 제목 칸이 넓어져 머리가 이전보다 낮아진다 ⟨추정⟩. 새 머리에서의 배경 crop · 캐릭터 ·
+  대사 패널이 덮는 몫은 [비주얼 노벨 e2e](../e2e/visual-novel.md) 「자산·레이아웃·Dynamic Type」이
+  다시 판정한다.
 
 ### 4.2 상태
 
@@ -211,8 +230,9 @@ beat를 전진시킨다. 완료 패널에서는 `처음부터 보기`만 button�
 
 `DialoguePanel`은 `지민, {대사}` 한 낭독 단위이며 button trait를 갖지 않는다. 보이는 `다음`은
 별도 button이고 접근성 이름도 `다음`이다. 완료 패널은 같은 대사 단위 뒤에 `처음부터 보기`
-button을 둔다. 이미지 레이어를 접근성 순서로 쓰지 않고, 제목 → 진행 → 화자와 대사 → 현재
-action → `맵으로`의 specification 논리 순서를 VoiceOver 실기에서 확인한다.
+button을 둔다. 이미지 레이어를 접근성 순서로 쓰지 않고, `맵으로` → 제목 → 진행 → 화자와
+대사 → 현재 action의 specification 논리 순서를 VoiceOver 실기에서 확인한다 — 나가기가 머리 행의
+첫 자식이라 먼저 온다(§4.1).
 
 Dynamic Type 최대 배율에서는 패널이 위로 커지고 이미지 가시 영역이 줄어든다. 대사나 버튼을
 줄이지 않는다. ReactLynx는 렌더 시점에 Dynamic Type 배율을 동기적으로 분기하는 API가 없어,
