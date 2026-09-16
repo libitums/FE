@@ -19,6 +19,13 @@ import type {
   ChatBubbleSize,
   TextFieldAvailability,
   TextFieldInputPurpose,
+  TooltipAlignment,
+  TooltipArrow,
+  TooltipContentLanguage,
+  TooltipDirection,
+  TooltipPlacement,
+  TooltipTone,
+  TooltipVisibility,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -141,4 +148,16 @@ export type TextFieldStoryArgs = {
   supportingMessage: string;
   counterMaxLength: number;
   adornment: "none" | "icons" | "prefix-suffix" | "action";
+};
+
+export type TooltipStoryArgs = {
+  message: string;
+  placement: TooltipPlacement;
+  alignment: TooltipAlignment;
+  arrow: TooltipArrow;
+  tone: TooltipTone;
+  visibility: TooltipVisibility;
+  direction: TooltipDirection;
+  contentLanguage: TooltipContentLanguage;
+  languageTag: string;
 };

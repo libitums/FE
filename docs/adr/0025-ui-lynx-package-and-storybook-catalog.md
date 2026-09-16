@@ -319,6 +319,22 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
   함께 확장한다. Storybook은 7개 대표 story와 `chat-bubble.web.bundle`을 제공하고 runtime은
   public subpath만 소비한다.
 
+### 2026-09-16 확장 — Tooltip 공개 표면
+
+이 절은 같은 package/catalog 경계에 Tooltip 공개 컴포넌트를 추가한 delta다. 시각·상태 정본은
+`libitums/design-system/components/tooltip.md` revision
+`5c7bce3eb2c0d214de78bcec0c52d7b7395e8a19`이다.
+
+- Tooltip은 Message와 배치 표현만 소유하며 trigger와 open/dismiss 상태는 제품 host가 소유한다.
+- Placement·Alignment·Arrow·Tone·Visibility를 독립 옵션으로 제공하고 Start/End는 RTL 논리
+  방향을 따른다. Bubble은 240px, 8×12px padding, body.m, radius.md와 floating z-index를 쓴다.
+- Brand는 `brand.strong`, Neutral은 `gray.950`, 전경은 `fg.neutral-inverted`를 사용한다.
+  `brand.primary`의 Button 전용 대비 예외는 적용하지 않는다.
+- `resolveTooltipLayout`은 측정 geometry로 Flip·Shift와 Arrow edge fallback을 순수 계산한다.
+  측정·스크롤/회전 listener와 trigger-description 접근성 결선은 host 경계로 남긴다.
+- `@libitums/ui-lynx/tooltip`과 전용 styles subpath, root barrel, aggregate CSS, pack 검사를 함께
+  확장한다. Storybook은 8개 대표 story와 `tooltip.web.bundle`을 제공한다.
+
 ## 버린 대안
 
 - **`apps/ui-catalog` 자체 앱을 함께 둔다** — 같은 공개 API를 보여주는 표면이 둘이 되고,
