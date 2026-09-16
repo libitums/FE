@@ -49,9 +49,30 @@ describe("AnswerLabel contract", () => {
   test.each([
     { result: "pending", label: "" },
     { result: "pending", label: "   " },
-    { result: "correct", label: "" },
-  ] as const)("빈 Label을 거부한다: %#", (props) => {
+  ] as const)("기본 문구가 없는 Pending은 빈 Label을 거부한다: %#", (props) => {
     expect(() => getAnswerLabelContract(props)).toThrow(/AnswerLabel label/);
+  });
+
+  test.each([
+    ["correct", "정답이에요"],
+    ["incorrect", "오답이에요"],
+  ] as const)("%s의 빈 사용자 문구는 기본 문구를 사용한다", (result, label) => {
+    expect(getAnswerLabelContract({ result, label: "   " })).toMatchObject({ label });
+  });
+
+  test("사용자 문구의 앞뒤 공백을 제거한다", () => {
+    expect(getAnswerLabelContract({ result: "correct", label: "  맞았어요  " })).toMatchObject({
+      label: "맞았어요",
+      accessibilityLabel: "맞았어요",
+    });
+  });
+
+  test("지원하지 않는 Result를 명확한 오류로 거부한다", () => {
+    const props = { result: "unknown" } as unknown as Parameters<typeof getAnswerLabelContract>[0];
+
+    expect(() => getAnswerLabelContract(props)).toThrow(
+      "AnswerLabel result must be pending, correct, or incorrect",
+    );
   });
 
   test("크기, 색과 전환은 디자인 토큰만 사용한다", () => {

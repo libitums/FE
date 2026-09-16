@@ -50,8 +50,9 @@ const foregroundColors = {
 } as const;
 
 function requireLabel(value: string | undefined, fallback: string | null): string {
-  const label = value ?? fallback;
-  if (typeof label !== "string" || !label.trim()) {
+  const normalizedValue = typeof value === "string" ? value.trim() : "";
+  const label = normalizedValue || fallback;
+  if (typeof label !== "string") {
     throw new Error("AnswerLabel label must not be empty");
   }
   return label;
@@ -61,8 +62,12 @@ export function getAnswerLabelContract(props: AnswerLabelProps): AnswerLabelCont
   const emphasis = props.emphasis ?? "solid";
   const size = props.size ?? "m";
   const result = resultDefaults[props.result];
+  if (!result) {
+    throw new Error("AnswerLabel result must be pending, correct, or incorrect");
+  }
   const label = requireLabel(props.label, result.label);
-  const contextLabel = props.contextLabel?.trim();
+  const contextLabel =
+    typeof props.contextLabel === "string" ? props.contextLabel.trim() : undefined;
   const accessibilityLabel = contextLabel ? `${contextLabel}, ${label}` : label;
 
   return {
