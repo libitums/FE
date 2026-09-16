@@ -7,7 +7,7 @@ import { RoleplayListScreen } from "./RoleplayListScreen";
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
 //
 // LIB-255 `ui-design`: 화면 계약이 `RoleplayListScreenProps`(`items`·`onSelectItem`)로
-// 바뀌어(spec §2.5) 기존 render 호출에 fixture props를 더한다 — 단언은 그대로다.
+// 바뀌어(spec §2.5) 기존 render 호출에 fixture props를 더한다 — 기존 단언은 그대로 두고 목록 상자·항목 렌더 단언(S 계열)을 새로 더한다.
 // 계획: .agent-harness/work/lib-255/test-plan.md ui § `RoleplayListScreen.ui.test.tsx`.
 
 const messengerItem: RoleplayItem = {
