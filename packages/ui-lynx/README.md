@@ -178,8 +178,9 @@ import "@libitums/ui-lynx/text-field/styles.css";
 ```
 
 `Tooltip`은 Message와 배치 표현만 소유한다. 트리거와 pointer/focus/press/programmatic 열기,
-ESC·뒤로가기·outside tap dismiss, Auto timer는 제품 host가 소유한다. host가 측정한 geometry를
-`resolveTooltipLayout`에 넘기면 Flip·Shift와 Arrow fallback 결과를 `layout`으로 전달할 수 있다.
+ESC·뒤로가기·outside tap dismiss, Auto timer는 제품 host가 소유한다. host가 trigger, bubble,
+boundary의 측정을 모두 완료한 뒤 geometry를 `resolveTooltipLayout`에 넘기면 Flip·Shift와 Arrow
+fallback 결과를 `layout`으로 전달할 수 있다. 측정 전에는 resolver를 호출하지 않고 CSS 배치를 쓴다.
 
 ```tsx
 import { Tooltip, resolveTooltipLayout } from "@libitums/ui-lynx/tooltip";

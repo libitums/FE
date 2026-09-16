@@ -16,11 +16,6 @@
   transition-timing-function: var(--libitum-motion-easing-enter);
 }
 
-.ui-lynx-tooltip-positioned {
-  margin: 0;
-  transform: none;
-}
-
 .ui-lynx-tooltip-bubble {
   width: max-content;
   max-width: 240px;
@@ -198,6 +193,18 @@
   right: var(--libitum-spacing-12);
 }
 
+.ui-lynx-tooltip-rtl.ui-lynx-tooltip-top.ui-lynx-tooltip-align-start .ui-lynx-tooltip-arrow,
+.ui-lynx-tooltip-rtl.ui-lynx-tooltip-bottom.ui-lynx-tooltip-align-start .ui-lynx-tooltip-arrow {
+  right: var(--libitum-spacing-12);
+  left: auto;
+}
+
+.ui-lynx-tooltip-rtl.ui-lynx-tooltip-top.ui-lynx-tooltip-align-end .ui-lynx-tooltip-arrow,
+.ui-lynx-tooltip-rtl.ui-lynx-tooltip-bottom.ui-lynx-tooltip-align-end .ui-lynx-tooltip-arrow {
+  right: auto;
+  left: var(--libitum-spacing-12);
+}
+
 .ui-lynx-tooltip-start.ui-lynx-tooltip-align-start .ui-lynx-tooltip-arrow,
 .ui-lynx-tooltip-end.ui-lynx-tooltip-align-start .ui-lynx-tooltip-arrow {
   top: var(--libitum-spacing-12);
@@ -212,4 +219,10 @@
 .ui-lynx-tooltip-start.ui-lynx-tooltip-align-end .ui-lynx-tooltip-arrow,
 .ui-lynx-tooltip-end.ui-lynx-tooltip-align-end .ui-lynx-tooltip-arrow {
   bottom: var(--libitum-spacing-12);
+}
+
+/* Measured coordinates must override every unmeasured placement/alignment fallback. */
+.ui-lynx-tooltip.ui-lynx-tooltip-positioned {
+  margin: 0;
+  transform: none;
 }

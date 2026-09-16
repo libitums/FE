@@ -145,6 +145,23 @@ describe("tooltip.css", () => {
     expect(styles).toMatch(/right:\s*var\(--libitum-spacing-12\)/);
   });
 
+  test("측정 좌표 override는 fallback transform·margin보다 높은 우선순위를 갖는다", () => {
+    const fallbackTransform = styles.indexOf(".ui-lynx-tooltip-top.ui-lynx-tooltip-align-center");
+    const positionedOverride = styles.indexOf(".ui-lynx-tooltip.ui-lynx-tooltip-positioned");
+
+    expect(positionedOverride).toBeGreaterThan(fallbackTransform);
+    expect(styles.slice(positionedOverride)).toMatch(/margin:\s*0;[\s\S]*transform:\s*none;/);
+  });
+
+  test("RTL의 Top·Bottom Arrow는 논리 Start와 End 위치를 반전한다", () => {
+    expect(styles).toMatch(
+      /\.ui-lynx-tooltip-rtl\.ui-lynx-tooltip-top\.ui-lynx-tooltip-align-start[\s\S]*right:\s*var\(--libitum-spacing-12\);[\s\S]*left:\s*auto;/,
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-tooltip-rtl\.ui-lynx-tooltip-top\.ui-lynx-tooltip-align-end[\s\S]*right:\s*auto;[\s\S]*left:\s*var\(--libitum-spacing-12\);/,
+    );
+  });
+
   test("표시 전환은 opacity와 d2 enter·exit easing만 사용한다", () => {
     expect(styles).toMatch(/transition-property:\s*opacity/);
     expect(styles).toMatch(/transition-duration:\s*var\(--libitum-motion-duration-d2\)/);

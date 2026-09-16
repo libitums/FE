@@ -18,9 +18,9 @@
    `fg.neutral-inverted`를 사용한다. Brand Bubble과 Arrow는 동일한 surface token을 공유한다.
 4. Arrow는 밑변 12px × 높이 6px이며 Bubble 모서리에서 최소 12px 떨어진다. Arrow 끝과
    Trigger 사이에는 2px가 남도록 Bubble과 Trigger를 8px 띄운다.
-5. `resolveTooltipLayout`은 trigger/bubble/boundary 측정값으로 기본 위치를 계산하고, 주축이
+5. `resolveTooltipLayout`은 host가 모두 확보한 trigger/bubble/boundary 측정값으로 기본 위치를 계산하고, 주축이
    경계를 벗어나면 반대 placement로 Flip하며 교차 축은 16px 경계 안으로 Shift한다. Shift 뒤
-   Arrow가 모서리 여백을 지키지 못하면 Arrow를 끈다.
+   Arrow가 모서리 여백을 지키지 못하면 Arrow를 끈다. 측정 전에는 호출하지 않고 CSS fallback을 쓴다.
 6. `visibility="hidden | visible"` 전환은 100ms opacity만 사용한다. Hidden은 접근성 트리에서도
    숨고 Visible Bubble은 focusable하지 않으며 trigger pointer를 가로채지 않는다.
 7. 학습 콘텐츠는 비어 있지 않은 `languageTag`를 요구하고 metadata로 보존한다.
