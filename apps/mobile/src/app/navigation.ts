@@ -66,6 +66,11 @@ export type Screen =
   | { name: "journey-map" }
   | { name: "roleplay-list" }
   | { name: "settings" }
+  // LIB-259: 설정 탭의 화면 둘. 필드가 없다 — 프로필·약관에 진행도 파라미터도
+  // 없고, 내용은 App이 넘긴다(계약 §2.2). `{ name: "settings" }` 바로 뒤에 둔다 —
+  // 설정 탭의 화면들이 모여 읽힌다.
+  | { name: "profile" }
+  | { name: "terms" }
   // LIB-257: route "notifications". 필드가 없다 — 목록은 App이 넘기고 알림
   // 화면에는 진행이 없다(계약 §2.1). 홈 탭의 화면 멤버는 LIB-257이 걷었다(Q1).
   | { name: "notifications" }

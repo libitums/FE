@@ -4,6 +4,9 @@ import { fireEvent, render, screen, within } from "@lynx-js/react/testing-librar
 import type { AnswerResult } from "../../lib/answer-result";
 import { ListeningScreen } from "./ListeningScreen";
 import type { JourneyStepId } from "../journey-map/journey-map";
+// LIB-259 계약 §2.10: sessionOptions가 필수 prop이 됐다. 이 파일의 fixture는
+// 언제나 초기값(둘 다 켜짐)을 준다 — 단언은 한 글자도 바꾸지 않는다(spec §9.3).
+import { initialSessionOptions } from "../../lib/session-options";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 본다 (ADR-0006 D4).
 // 순수 함수(listening.ts)를 mock하지 않는다 — 화면이 그것을 실제로 부르는지가
@@ -51,6 +54,7 @@ function renderOrdering(
       stepOrdinal={3}
       onExit={overrides.onExit ?? (() => {})}
       onFinish={overrides.onFinish ?? (() => {})}
+      sessionOptions={initialSessionOptions}
     />,
   );
 }
@@ -179,14 +183,26 @@ test("첫 문항이 제시되고 보기가 네 개 렌더된다", () => {
 // 제목도 문항도 스텝마다 갈린다. 한 스텝의 데이터가 박혀 있으면 여기서 잡힌다.
 test("다른 스텝으로 렌더하면 제목과 문항이 둘 다 갈린다", () => {
   const ordering = render(
-    <ListeningScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} onFinish={() => {}} />,
+    <ListeningScreen
+      stepId="ordering"
+      stepOrdinal={3}
+      onExit={() => {}}
+      onFinish={() => {}}
+      sessionOptions={initialSessionOptions}
+    />,
   );
   const orderingTitle = screen.getByTestId("listening-screen-title").textContent;
   const orderingPrompt = screen.getByTestId("listening-prompt-text").textContent;
   ordering.unmount();
 
   render(
-    <ListeningScreen stepId="greeting" stepOrdinal={1} onExit={() => {}} onFinish={() => {}} />,
+    <ListeningScreen
+      stepId="greeting"
+      stepOrdinal={1}
+      onExit={() => {}}
+      onFinish={() => {}}
+      sessionOptions={initialSessionOptions}
+    />,
   );
 
   const greetingTitle = screen.getByTestId("listening-screen-title");
@@ -350,7 +366,13 @@ test("응답 뒤 다른 보기를 탭해도 첫 응답이 그대로다", () => {
 // 응답으로 기록되지 않으면 여기서만 잡힌다 — 판정도 안 나오고 `다음`도 안 뜬다.
 test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () => {
   render(
-    <ListeningScreen stepId="greeting" stepOrdinal={1} onExit={() => {}} onFinish={() => {}} />,
+    <ListeningScreen
+      stepId="greeting"
+      stepOrdinal={1}
+      onExit={() => {}}
+      onFinish={() => {}}
+      sessionOptions={initialSessionOptions}
+    />,
   );
 
   fireEvent.tap(screen.getByTestId("listening-choice-0"), {});
@@ -442,7 +464,13 @@ test("완료 전이에서 custom announceCompletion이 원문으로 한 번, bui
   expect(announce).toHaveLength(0);
 
   view.rerender(
-    <ListeningScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} onFinish={() => {}} />,
+    <ListeningScreen
+      stepId="ordering"
+      stepOrdinal={3}
+      onExit={() => {}}
+      onFinish={() => {}}
+      sessionOptions={initialSessionOptions}
+    />,
   );
   expect(completion).toHaveLength(1);
   expect(announce).toHaveLength(0);
@@ -696,7 +724,13 @@ test("다른 스텝으로 렌더하면 play의 source가 그 스텝의 첫 문�
   const { audio } = stubHost();
 
   render(
-    <ListeningScreen stepId="greeting" stepOrdinal={1} onExit={() => {}} onFinish={() => {}} />,
+    <ListeningScreen
+      stepId="greeting"
+      stepOrdinal={1}
+      onExit={() => {}}
+      onFinish={() => {}}
+      sessionOptions={initialSessionOptions}
+    />,
   );
 
   expect(sourcesOf(audio)).toEqual(["greeting-1"]);
@@ -785,7 +819,13 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   const onExit = () => {};
   const onFinish = () => {};
   const view = render(
-    <ListeningScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+    <ListeningScreen
+      stepId="ordering"
+      stepOrdinal={3}
+      onExit={onExit}
+      onFinish={onFinish}
+      sessionOptions={initialSessionOptions}
+    />,
   );
 
   completeAllThree();
@@ -793,10 +833,22 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   expect(announce).toHaveLength(1);
 
   view.rerender(
-    <ListeningScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+    <ListeningScreen
+      stepId="ordering"
+      stepOrdinal={3}
+      onExit={onExit}
+      onFinish={onFinish}
+      sessionOptions={initialSessionOptions}
+    />,
   );
   view.rerender(
-    <ListeningScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+    <ListeningScreen
+      stepId="ordering"
+      stepOrdinal={3}
+      onExit={onExit}
+      onFinish={onFinish}
+      sessionOptions={initialSessionOptions}
+    />,
   );
 
   expect(screen.getByTestId("listening-screen-complete")).toBeInTheDocument(); // 앵커

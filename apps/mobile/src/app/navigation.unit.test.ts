@@ -855,3 +855,45 @@ describe("tabRootActions (LIB-257)", () => {
     expect(n).toEqual(before);
   });
 });
+
+// -------------------------------- 설정 탭의 새 route — profile · terms (LIB-259)
+// 계약: .agent-harness/work/lib-259/spec.md §2.2. 계획:
+// .agent-harness/work/lib-259/test-plan.md unit § `app/navigation.unit.test.ts`
+// (수정 — 기존 케이스 유지 + 추가). 케이스 id는 계획의 NV1~NV3 그대로다 — 위
+// "알림 route (LIB-257)"·"tabRootActions (LIB-257)" 구역의 NV1~NV7과 이름이
+// 겹치지만 각자 자기 describe 안에서만 유효한 지역 라벨이고 이 리듀서는 화면
+// 이름을 모르는 제네릭 함수라 별도 스텁 없이 처음부터 통과한다(기대 red 0 —
+// test-plan.md unit red 기대 표).
+describe("navReducer — 설정 탭의 새 route (LIB-259)", () => {
+  // NV1
+  it("NV1. push(profile) → 설정 탭 스택에 쌓이고 다른 두 스택은 동일 참조다", () => {
+    const n = nav({ tab: "settings", stacks: baseStacks });
+
+    const next = navReducer(n, { type: "push", screen: { name: "profile" } });
+
+    expect(next.stacks.settings).toEqual([{ name: "settings" }, { name: "profile" }]);
+    expect(next.stacks.journey).toBe(baseStacks.journey);
+    expect(next.stacks.roleplay).toBe(baseStacks.roleplay);
+  });
+
+  // NV2
+  it("NV2. push(terms) → 설정 탭 스택에 쌓이고 다른 두 스택은 동일 참조다", () => {
+    const n = nav({ tab: "settings", stacks: baseStacks });
+
+    const next = navReducer(n, { type: "push", screen: { name: "terms" } });
+
+    expect(next.stacks.settings).toEqual([{ name: "settings" }, { name: "terms" }]);
+    expect(next.stacks.journey).toBe(baseStacks.journey);
+    expect(next.stacks.roleplay).toBe(baseStacks.roleplay);
+  });
+
+  // NV3
+  it("NV3. 프로필을 push한 뒤 backToRoot → 설정 탭 스택이 [{ name: settings }]다", () => {
+    const n = nav({ tab: "settings", stacks: baseStacks });
+    const pushed = navReducer(n, { type: "push", screen: { name: "profile" } });
+
+    const next = navReducer(pushed, { type: "backToRoot" });
+
+    expect(next.stacks.settings).toEqual([{ name: "settings" }]);
+  });
+});

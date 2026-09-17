@@ -20,6 +20,10 @@ import {
 } from "./listening";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
+// LIB-259 계약 §2.10: 이 화면은 값을 읽지 않고 그대로 `ListeningPrompt`로 넘긴다 —
+// 유일한 소비자는 거기다. `ListeningPrompt.sessionOptions`가 필수 prop이 됐으므로
+// `ui-scaffold`도 이 결선만은 최소 편집으로 채운다(계약 §9.1 원칙 1 · §9.2).
+import type { SessionOptions } from "../../lib/session-options";
 
 import "./listening-screen.css";
 
@@ -39,6 +43,7 @@ export type ListeningScreenProps = {
   stepOrdinal: number;
   onExit: () => void;
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
+  sessionOptions: SessionOptions;
 };
 
 export function ListeningScreen({
@@ -46,6 +51,7 @@ export function ListeningScreen({
   stepOrdinal,
   onExit,
   onFinish,
+  sessionOptions,
 }: ListeningScreenProps): ReactNode {
   const questions = questionsForStep(stepId);
   const [state, dispatch] = useReducer(listeningSessionReducer, initialListeningSessionState);
@@ -118,7 +124,11 @@ export function ListeningScreen({
 
           {/* 제시 채널. 오디오가 생기면 **이 컴포넌트만** 통째로 갈린다 (§1.7.2). */}
           {question === null ? null : (
-            <ListeningPrompt text={question.prompt} audioSource={question.audioSource} />
+            <ListeningPrompt
+              text={question.prompt}
+              audioSource={question.audioSource}
+              sessionOptions={sessionOptions}
+            />
           )}
 
           {question === null ? null : (
