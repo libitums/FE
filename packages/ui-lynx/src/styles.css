@@ -15,5 +15,6 @@
 @import "./compact-numeric-input/compact-numeric-input.css";
 @import "./fog/fog.css";
 @import "./chat-bubble/chat-bubble.css";
+@import "./visual-novel-dialog/visual-novel-dialog.css";
 @import "./text-field/text-field.css";
 @import "./tooltip/tooltip.css";

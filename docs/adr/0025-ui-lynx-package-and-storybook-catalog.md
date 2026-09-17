@@ -319,6 +319,19 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
   함께 확장한다. Storybook은 7개 대표 story와 `chat-bubble.web.bundle`을 제공하고 runtime은
   public subpath만 소비한다.
 
+### 2026-09-16 확장 — VisualNovelDialog 공개 표면
+
+정본은 `libitums/design-system/components/visual-novel-dialog.md` revision
+`99d1bfbef981d3cdf225a0bad337f3aa3a7b0d55`이다.
+
+- 컴포넌트는 panel/text만 소유하고 장면, 선택지, timer와 진행 입력은 host에 남긴다.
+- Speech/Narration/Thought와 surface/reveal/advance를 닫힌 독립 축으로 제공한다. Avatar는
+  32px composition slot이다.
+- Typewriter의 시각 부분 문자열과 전체 접근성 문장을 분리한다. Auto는 pause control이
+  존재한다는 명시적 계약을 요구한다.
+- 공개 subpath, styles, root barrel, aggregate CSS와 pack 검사를 확장하고 Storybook은 9개
+  대표 story와 실제 `visual-novel-dialog.web.bundle`을 제공한다.
+
 ### 2026-09-16 확장 — Tooltip 공개 표면
 
 이 절은 같은 package/catalog 경계에 Tooltip 공개 컴포넌트를 추가한 delta다. 시각·상태 정본은

@@ -26,6 +26,9 @@
       "@libitums/ui-lynx/bottom-sheet": ["../../packages/ui-lynx/src/bottom-sheet/index.ts"],
       "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
+      "@libitums/ui-lynx/visual-novel-dialog": [
+        "../../packages/ui-lynx/src/visual-novel-dialog/index.ts"
+      ],
       "@libitums/ui-lynx/tooltip": ["../../packages/ui-lynx/src/tooltip/index.ts"]
     }
   }
