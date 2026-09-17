@@ -83,7 +83,7 @@ describe("BottomSheet contract", () => {
       "utf8",
     );
     expect(styles).toContain("var(--libitum-elevation-z-sheet)");
-    expect(styles).toContain("rgba(26, 28, 32, 0.45)");
+    expect(styles).toContain("rgba(26, 28, 32, var(--libitum-opacity-scrim, 0.45))");
     expect(styles).toContain("var(--libitum-color-background-elevated)");
     expect(styles).toContain("var(--libitum-radius-lg)");
     expect(styles).toContain("var(--libitum-spacing-16)");

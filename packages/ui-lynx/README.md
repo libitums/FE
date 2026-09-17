@@ -3,7 +3,8 @@
 libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포넌트 패키지다. 현재 공개
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
 `PageIndicator`, `BottomNavigator`, `StepIndicator`, `BottomSheet`, `CompactNumericInput`,
-`Card`, `ChatBubble`, `TextField`, `AnswerLabel`, `Overlay`, `Fog`, `Tooltip` 열일곱 가지다.
+`Card`, `ChatBubble`, `VisualNovelDialog`, `TextField`, `AnswerLabel`, `Overlay`, `Fog`, `Tooltip`
+열여덟 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
@@ -13,6 +14,10 @@ Bottom Sheet는 `components/bottom-sheet.md` revision
 `3f7ed6d17df769e37215adb40f7abfc2e1174fd1`을 기준으로 추가했다.
 Text Field는 `components/text-field.md` revision
 `1ba6b55103663c407f073f9ede3a2e700bf9b722`을 기준으로 한다.
+Visual Novel Dialog는 `components/visual-novel-dialog.md` revision
+`99d1bfbef981d3cdf225a0bad337f3aa3a7b0d55`를 기준으로 한다.
+Round Button·Bottom Navigator·Bottom Sheet·Overlay의 불투명도는 `foundations/opacity.json`과
+각 컴포넌트 문서를 갱신한 revision `133322d7b080e464303a38456f4da45c8accdda9`를 기준으로 한다.
 Tooltip은 `components/tooltip.md` revision
 `5c7bce3eb2c0d214de78bcec0c52d7b7395e8a19`을 기준으로 한다.
 Fog는 최신 `main`의 `components/fog.md` revision
@@ -173,6 +178,24 @@ import "@libitums/ui-lynx/chat-bubble/styles.css";
 <ChatBubble direction="outgoing" message="곧 도착해요" speaker="나" size="m" delivery="sent" />;
 ```
 
+`VisualNovelDialog`는 장면 위의 대사 패널과 텍스트만 소유한다. 진행 timer, tap/keyboard
+입력, 선택지와 장면 이미지는 제품 host가 소유하며, Avatar는 32px slot으로 조합한다.
+
+```tsx
+import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
+import "@libitums/ui-lynx/visual-novel-dialog/styles.css";
+
+<VisualNovelDialog
+  variant="speech"
+  speakerName="Aria"
+  line="We meet again under the moonlight."
+  accessibilityLabel="Aria: We meet again under the moonlight."
+/>;
+```
+
+Typewriter의 `visibleCharacterCount`는 대사 전환 시점의 상태 경합에도 안전하도록 현재 문장 길이
+범위로 clamp한다. 번역된 접근성 문장 형식이 필요하면 호스트가 `accessibilityLabel`을 제공한다.
+
 `TextField`는 native 단일 행 입력을 사용하며 label 또는 `accessibilityLabel` 중 하나를
 필수로 받는다. Prefix/Suffix/Icon/Action, Helper/Error, Counter를 선택적으로 조합하고
 Disabled → ReadOnly → Error → Focused → Content 순서로 시각 상태를 결정한다.
@@ -249,6 +272,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/fog/styles.css`
 - `@libitums/ui-lynx/chat-bubble`
 - `@libitums/ui-lynx/chat-bubble/styles.css`
+- `@libitums/ui-lynx/visual-novel-dialog`
+- `@libitums/ui-lynx/visual-novel-dialog/styles.css`
 - `@libitums/ui-lynx/text-field`
 - `@libitums/ui-lynx/text-field/styles.css`
 - `@libitums/ui-lynx/tooltip`
@@ -272,7 +297,7 @@ label을 같은 canonical count로 clamp한다.
 
 새 컴포넌트와 기존 컴포넌트 정리는
 [`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
-규칙을 따른다. 공개 컴포넌트 열일곱 개 모두 `<component>.contract.ts`에 공개
+규칙을 따른다. 공개 컴포넌트 열여덟 개 모두 `<component>.contract.ts`에 공개
 타입과 순수 계약 로직을 함께 두고 PascalCase component test 이름을 쓴다.
 
 일반 소비자는 aggregate `@libitums/ui-lynx/styles.css`를 Lynx 진입점에서 한 번 import한다.
@@ -280,7 +305,7 @@ label을 같은 canonical count로 clamp한다.
 ReactLynx를 번들하지 않고 `>=0.123.0 <0.126.0` peer로 요구한다.
 `pnpm --filter @libitums/ui-lynx pack:check`는 실제 tarball에 컴파일된 JSX·선언·CSS,
 canonical contract, README와 docs만 들어가고 generic contract/logic 산출물이 없는지
-검증한다. package integration test도 이 부재 계약을 열일곱 subpath 전체에서 확인한다.
+검증한다. package integration test도 이 부재 계약을 열여덟 subpath 전체에서 확인한다.
 
 AnswerLabel은 `components/indicator/answer-label.md`의 Result·Emphasis·Size 독립 조합을
 따른다. Solid는 고대비 strong surface, Subtle은 semantic feedback surface를 사용하고 S/M/L은
@@ -306,6 +331,12 @@ Default/Sending/Sent/Read/Failed를 닫힌 계약으로 제공하며 Incoming de
 학습 콘텐츠는 비어 있지 않은 `languageTag`를 요구하지만 현재 ReactLynx 0.125 타입과 공식
 element API에는 native `lang` 매핑이 없어 `data-language`/`data-lang` metadata까지만 보존한다. 제품
 route 채택 때 host의 언어 semantics 연결과 VoiceOver/TalkBack 발음을 별도로 검증해야 한다.
+
+VisualNovelDialog는 Speech/Narration/Thought, Opaque/Translucent, Instant/Typewriter,
+Tap/Auto를 독립 축으로 제공한다. Narration은 화자와 Avatar를 허용하지 않고 Auto는 사용자가
+멈출 수 있는 host control이 있을 때만 허용한다. Typewriter 중에도 접근성 이름은 전체 문장을
+유지한다. 현재 배포 토큰 0.2.0에는 새 `opacity.surface` 변수가 없어
+`var(--libitum-opacity-surface, 0.9)` fallback을 사용한다.
 
 TextField는 uncontrolled `defaultValue`를 시작값으로 사용하고 native input event를
 `bindinput`, `bindfocus`, `bindblur`, `bindconfirm` callback으로 전달한다. Counter는 Unicode

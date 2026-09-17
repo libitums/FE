@@ -152,6 +152,20 @@ export type {
   OutgoingChatBubbleProps,
 } from "./chat-bubble";
 
+export { VisualNovelDialog, getVisualNovelDialogContract } from "./visual-novel-dialog";
+export type {
+  VisualNovelDialogAdvance,
+  VisualNovelDialogContentLanguage,
+  VisualNovelDialogContinueIndicator,
+  VisualNovelDialogContract,
+  VisualNovelDialogDirection,
+  VisualNovelDialogProps,
+  VisualNovelDialogReveal,
+  VisualNovelDialogStatus,
+  VisualNovelDialogSurface,
+  VisualNovelDialogVariant,
+} from "./visual-novel-dialog";
+
 export { TextField, getTextFieldContract } from "./text-field";
 export type {
   TextFieldAvailability,

@@ -22,6 +22,10 @@ Chat Bubble은 `components/chat-bubble.md` revision
 `979e57fec7b38533129da65166109984d2f16686`을 기준으로 한다.
 Text Field는 `components/text-field.md` revision
 `1ba6b55103663c407f073f9ede3a2e700bf9b722`을 기준으로 한다.
+Visual Novel Dialog는 `components/visual-novel-dialog.md` revision
+`99d1bfbef981d3cdf225a0bad337f3aa3a7b0d55`를 기준으로 한다.
+Round Button·Bottom Navigator·Bottom Sheet·Overlay의 불투명도는 `foundations/opacity.json`과
+각 컴포넌트 문서를 갱신한 revision `133322d7b080e464303a38456f4da45c8accdda9`를 기준으로 한다.
 Tooltip은 `components/tooltip.md` revision
 `5c7bce3eb2c0d214de78bcec0c52d7b7395e8a19`을 기준으로 한다.
 Fog는 최신 `main`의 `components/fog.md` revision
@@ -35,7 +39,7 @@ pnpm storybook:lynx
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
 Navigator·Step Indicator·Answer Label·Bottom Sheet·Card·Compact Numeric Input·Chat Bubble·Text
-Field·Overlay·Fog·Tooltip의 실제 `.web.bundle` 열일곱 개를 만들고, Rspeedy watch와 Storybook dev
+Field·Visual Novel Dialog·Overlay·Fog·Tooltip의 실제 `.web.bundle` 열여덟 개를 만들고, Rspeedy watch와 Storybook dev
 server를 함께 유지한다.
 
 Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
@@ -62,6 +66,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Compact Numeric Input — Empty, Filled, Error, Disabled
 - Components/Fog — Bottom, Top, Horizontal RTL, Hidden, Full
 - Components/Chat Bubble — Incoming, Outgoing, Small, Large, Failed, Learning Language, Long Content
+- Components/Visual Novel Dialog — Speech, Narration, Thought, Translucent, Revealing, Auto Advance, Learning Language, Right To Left, Long Content
 - Components/Text Field — Default, Filled, Error, ReadOnly, Disabled, Prefix And Suffix, Trailing Action, Counter
 - Components/Tooltip — Top, Bottom, Start, End, Brand, No Arrow, Aligned Start, Learning Language
 
