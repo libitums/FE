@@ -1,0 +1,82 @@
+/* LIB-261 (ui-implementation): design.md §2.2(공통 레시피) · §8.2(값)의 값. 계약
+   §0.5 A5 · §4.2~§4.5가 고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀
+   프로퍼티로만 소비한다(ADR-0014 D1).
+
+   고르는 수단을 두지 않는다(design §8.2) — 단순 입장 화면이다. 목록·카드·선택
+   표식이 0건이다. */
+
+.journey-entry-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+.journey-entry-screen-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  flex-shrink: 0;
+}
+
+.journey-entry-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+.journey-entry-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding-top: var(--libitum-spacing-16);
+}
+
+/* 폭·높이·줄 제한 선언 없음(design §8.2). */
+.journey-entry-screen-body {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* 고른 언어의 라벨 그대로 한 줄(§0.5 A5) — 새 문장을 짓지 않는다. */
+.journey-entry-screen-language {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* design §2.2 「액션 행」 — 다른 화면의 액션 행과 같은 값이다. */
+.journey-entry-screen-start {
+  background: var(--libitum-color-brand-strong);
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.journey-entry-screen-start-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}

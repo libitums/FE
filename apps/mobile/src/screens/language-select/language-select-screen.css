@@ -1,0 +1,119 @@
+/* LIB-261 (ui-implementation): design.md §2.2(공통 레시피) · §7.2(값)의 값. 계약
+   §4.2~§4.5가 고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만
+   소비한다(ADR-0014 D1). `.listening-choice` 어휘를 그대로 잇는다(design §7.2).
+
+   선택은 색 하나로 가르지 않는다 — 채널이 둘이다(design §7.2): ① 표식(아이콘 +
+   낱말)이 있다/없다, ② 경계색. 상태 클래스는 `-selected` 하나(예약어 안). */
+
+.language-select-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+.language-select-screen-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  flex-shrink: 0;
+}
+
+.language-select-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+.language-select-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding-top: var(--libitum-spacing-16);
+}
+
+.language-select-screen-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 높이를 선언하지 않는다(기본 배율 58, design §7.2) — 표식이 있든 없든 같다. */
+.language-select-option {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-layout-gap-inline);
+  padding: var(--libitum-spacing-16);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-background-primary);
+  flex-shrink: 0;
+}
+
+/* 면을 칠하지 않는다 — 칠할 색이 없다(design §7.2). 선언이 `border-color`
+   하나다. */
+.language-select-option-selected {
+  border-color: var(--libitum-color-brand-strong);
+}
+
+.language-select-option-label {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+.language-select-option-mark {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  flex-shrink: 0;
+}
+
+.language-select-option-mark-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.language-select-option-mark-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* design §2.2 「액션 행」 — 다른 화면의 액션 행과 같은 값이다. */
+.language-select-screen-next {
+  background: var(--libitum-color-brand-strong);
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.language-select-screen-next-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}

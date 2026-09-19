@@ -6,7 +6,10 @@ import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contra
 import {
   activeStack,
   currentScreen,
+  entryInitialNav,
+  entryScreenAfterLogin,
   initialNav,
+  isEntrySection,
   learningScreenFor,
   navReducer,
   roleplayScreenFor,
@@ -287,7 +290,9 @@ describe("navReducer", () => {
   });
 
   // switchTab은 entry 상태를 보지 않는다 — entry가 채워져 있어도 tab을 바꾼다.
-  // (진입 구간에는 이 동작을 부를 자리가 없지만, 리듀서 자체는 막지 않는다)
+  // (switchTab은 여전히 진입 구간에서 부를 자리가 없다 — LIB-261부터 `back`은
+  // 코드 검증의 "로그인으로" 나가기가 실제로 부른다(§9.4 #3). 리듀서 자체는
+  // 어느 쪽도 막지 않는다)
   it("switchTab은 entry를 보지 않는다 — entry가 있어도 tab이 바뀐다", () => {
     const n = nav({ entry: [{ name: "roleplay-list" }], tab: "journey", stacks: baseStacks });
 
@@ -895,5 +900,42 @@ describe("navReducer — 설정 탭의 새 route (LIB-259)", () => {
     const next = navReducer(pushed, { type: "backToRoot" });
 
     expect(next.stacks.settings).toEqual([{ name: "settings" }]);
+  });
+});
+
+// -------------------------------------------- 진입 흐름 (LIB-261 계약 §2.7)
+// 계획: .agent-harness/work/lib-261/test-plan.md unit § `app/navigation.unit.test.ts`
+// (수정 — 기존 케이스는 한 줄도 고치지 않는다). 케이스 id는 계획의 NV1~NV4
+// 그대로다 — 위 "알림 route (LIB-257)"·"tabRootActions (LIB-257)"·"설정 탭의 새
+// route (LIB-259)" 구역의 NV1~NV7과 이름이 겹치지만, 이 파일의 기존 관행처럼
+// 각자 자기 describe 안에서만 유효한 지역 라벨이다.
+//
+// ⭐ 기존 I3(`initialNav.entry`가 `[]`)은 이 구역이 건드리지 않는다 — 이 계약이
+// `initialNav`를 고치지 않기 때문이다(계약 §9.3).
+describe("진입 흐름 (LIB-261)", () => {
+  // NV1
+  it("NV1. entryInitialNav.entry가 길이 1이고 최상단이 splash다", () => {
+    expect(entryInitialNav.entry).toHaveLength(1);
+    expect(entryInitialNav.entry[0]).toEqual({ name: "splash" });
+  });
+
+  // NV2
+  it("NV2. entryInitialNav의 tab·stacks가 initialNav와 같다", () => {
+    expect(entryInitialNav.tab).toBe(initialNav.tab);
+    expect(entryInitialNav.stacks).toEqual(initialNav.stacks);
+  });
+
+  // NV3
+  it("NV3. entryScreenAfterLogin이 phone→verification-code, 나머지 셋→language-select다", () => {
+    expect(entryScreenAfterLogin("phone")).toEqual({ name: "verification-code" });
+    expect(entryScreenAfterLogin("google")).toEqual({ name: "language-select" });
+    expect(entryScreenAfterLogin("apple")).toEqual({ name: "language-select" });
+    expect(entryScreenAfterLogin("facebook")).toEqual({ name: "language-select" });
+  });
+
+  // NV4
+  it("NV4. isEntrySection이 entryInitialNav에서 참, initialNav에서 거짓이다", () => {
+    expect(isEntrySection(entryInitialNav)).toBe(true);
+    expect(isEntrySection(initialNav)).toBe(false);
   });
 });

@@ -35,6 +35,27 @@ import type { SettingsAppProps, SettingsNavTarget } from "../screens/settings/se
 // 저장소 모듈을 import하지도 부르지도 않는다(ADR-0007 D1, 수용 기준 7).
 import { initialSessionOptions, toggleSessionOption } from "../lib/session-options";
 import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+// LIB-261 계약 §9.1 원칙 2: App props 확장은 `logic-scaffold`가 한다(LIB-259·LIB-257
+// r0.1의 교훈 — 뒤로 미루면 `integration-design`에서 테스트 파일 tsc가 빨개진다).
+// 선택 prop이라 기존 호출처가 안 깨진다.
+//
+// LIB-261 (integration-implementation) 계약 §2.8: 진입 흐름 결선이 쓰는 값·함수 —
+// 이벤트 생성자 셋 · 화면 다섯을 여는 전이 판별(`requiresVerificationCode`) ·
+// 진입 어휘 타입 둘.
+import {
+  entryCompletedEvent,
+  entryLoginMethodSelectedEvent,
+  entryScreenViewedEvent,
+  requiresVerificationCode,
+} from "../lib/entry-flow";
+import type { EntryAppProps, EntryLoginMethod } from "../lib/entry-flow";
+// LIB-261 계약 §2.2 · §6: 언어 세션 상태의 초기값과 타입. 라벨 조회는 화면이 진다 —
+// App은 값만 들고 있는다(§6 D-b, 화면 3 미달로 `useState` 유지).
+import { initialEntryLanguage } from "../lib/entry-language";
+import type { EntryLanguage } from "../lib/entry-language";
+// LIB-261 계약 §2.3: 임시 토큰의 생성·저장과 존재 판정. 저장소 키를 아는 유일한
+// 자리는 `lib/auth-token.ts`다 — App은 값을 들지 않는다.
+import { createTemporaryAuthToken, hasAuthToken, saveAuthToken } from "../lib/auth-token";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { profileItems } from "../screens/profile/profile-items";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
@@ -92,9 +113,19 @@ import type {
 } from "../screens/visual-novel/visual-novel.contract";
 // LIB-229 계약 §1.4(e): 판정 어휘가 lib/answer-result.ts로 승격됐다.
 import type { AnswerResult } from "../lib/answer-result";
+// LIB-261 (integration-implementation) 계약 §2.8: 진입 흐름 화면 여섯. 순서는
+// 전이 순서(스플래시 → 온보딩 → 로그인 → 코드 검증 → 언어 선택 → 여정 입장)와 같다.
+import { SplashScreen } from "../screens/splash/SplashScreen";
+import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
+import { LoginScreen } from "../screens/login/LoginScreen";
+import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
+import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
+import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
 import {
   currentScreen,
-  initialNav,
+  entryInitialNav,
+  entryScreenAfterLogin,
+  isEntrySection,
   learningScreenFor,
   navReducer,
   roleplayScreenFor,
@@ -205,6 +236,17 @@ type ScreenWiring = {
   onSelectNavTarget: (target: SettingsNavTarget) => void;
   onToggleSessionOption: (key: SessionOptionKey) => void;
   onExitSettingsStack: () => void;
+  // LIB-261 계약 §2.8 · §5.1: 진입 흐름 화면 여섯의 결선. `entryLanguage`만 App
+  // 상태를 그대로 내리고(§6), 나머지는 전이·이벤트·토큰 저장을 여는 콜백이다.
+  onSplashTimeout: () => void;
+  onOnboardingComplete: () => void;
+  onSelectLoginMethod: (method: EntryLoginMethod) => void;
+  onVerificationCodeSubmit: () => void;
+  onVerificationCodeExit: () => void;
+  entryLanguage: EntryLanguage;
+  onSelectEntryLanguage: (language: EntryLanguage) => void;
+  onContinueLanguageSelect: () => void;
+  onEnterJourney: () => void;
 };
 
 // 루트 구성 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모인다 (ADR-0003 D5).
@@ -217,22 +259,34 @@ export function App({
   phoneCallEventSink = null,
   notificationEventSink = null,
   settingsEventSink = null,
+  entryEventSink = null,
 }: MessengerAppProps &
   VisualNovelAppProps &
   PhoneCallAppProps &
   NotificationAppProps &
-  SettingsAppProps = {}) {
+  SettingsAppProps &
+  EntryAppProps = {}) {
   // 이 리듀서를 부르는 유일한 자리다. `dispatch`는 셸에 콜백으로 내려간다 —
   // 셸은 `NavAction`도 `dispatch`도 받지 않는다 (ADR-0007 D3).
-  const [nav, dispatch] = useReducer(navReducer, initialNav);
+  //
+  // LIB-261 계약 §2.8: 초기값이 `entryInitialNav`다 — 부팅이 진입 스택
+  // `[{ name: "splash" }]`로 시작한다(§5.1). `initialNav` 자신은 안 바뀐다(§9.3) —
+  // 그래서 이 한 줄이 부팅 화면을 바꾸는 유일한 자리다.
+  const [nav, dispatch] = useReducer(navReducer, entryInitialNav);
+
+  // LIB-261 계약 §6: 고른 언어의 세션 상태 — App `useState`가 소유한다(D-b, 화면
+  // 둘·깊이 1단계로 ADR-0007 D1 도입 조건 미달). 화면을 새로 렌더하면
+  // `initialEntryLanguage`로 돌아간다(영속 0, IE12).
+  const [entryLanguage, setEntryLanguage] = useState<EntryLanguage>(initialEntryLanguage);
 
   // **진행(완료 스텝 수)의 진실의 출처다** (계약 §0.2). 스텝 상태는 여기서 파생되고
   // (`stepStatusAt`), 데이터에도 `Nav`에도 적지 않는다 — 진행은 라우팅 상태가
   // 아니므로 `Nav`에 필드를 더하지 않는다 (ADR-0007 D3).
   //
-  // **영속하지 않는다** — 저장소 모듈을 import하지도 호출하지도 않는다
-  // (ADR-0007 D1: 저장소 모듈에 넣는 것은 로그인 토큰뿐이다). 앱을 다시 켜면
-  // 진행이 `initialCompletedStepCount`로 돌아가는 것이 정상이고 계약이 그것을 적는다.
+  // **영속하지 않는다** — 저장소 모듈을 import하지도 호출하지도 않는다 (ADR-0007
+  // D1: 저장소 모듈에 넣는 것은 로그인 토큰뿐이다 — LIB-261부터 그 토큰이 실재한다,
+  // `lib/auth-token.ts`). 앱을 다시 켜면 진행이 `initialCompletedStepCount`로
+  // 돌아가는 것이 정상이고 계약이 그것을 적는다.
   const [completedStepCount, setCompletedStepCount] = useState(initialCompletedStepCount);
   const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
     readonly import("../screens/messenger/messenger.contract").MessengerUnitId[]
@@ -551,22 +605,85 @@ export function App({
     // LIB-259 계약 §2.11 5번: 흐름 셋(나가기) — 프로필·약관의 `설정으로` → 설정
     // 탭 스택의 루트(ADR-0007 D6).
     onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
+    // LIB-261 계약 §5.1 · §7.2: 스플래시 시간 종료. 토큰이 있으면(재실행) 이벤트
+    // 없이 곧장 `enterApp` — 완주가 아니다(§7.2 「발생하지 않는 때」). 없으면
+    // 「onboarding」 열람을 올리고 `replace`한다(§5.2 — 스플래시는 스택에 남지 않는다).
+    onSplashTimeout: () => {
+      if (hasAuthToken()) {
+        dispatch({ type: "enterApp" });
+        return;
+      }
+      entryEventSink?.(entryScreenViewedEvent("onboarding"));
+      dispatch({ type: "replace", screen: { name: "onboarding" } });
+    },
+    // 온보딩 완료 → 로그인 열람 → push (§5.1).
+    onOnboardingComplete: () => {
+      entryEventSink?.(entryScreenViewedEvent("login"));
+      dispatch({ type: "push", screen: { name: "login" } });
+    },
+    // 수단 선택 — 한 tap 안에서 이벤트 → 저장 → 전이 순서다(§7.2). 다음 화면의
+    // 열람 이벤트도 이 전이가 여는 것이라 같은 tap 안에서 함께 오른다.
+    // `requiresVerificationCode`로 다음 화면을 가르는 이유: `entryScreenAfterLogin`이
+    // 돌려주는 값은 `Screen`(넓은 타입)이라 `EntryViewedScreenName`으로 다시 좁히지
+    // 않는다 — 이미 있는 판별 함수를 그대로 쓴다(계약 §2.1).
+    onSelectLoginMethod: (method) => {
+      entryEventSink?.(entryLoginMethodSelectedEvent(method));
+      saveAuthToken(createTemporaryAuthToken());
+      entryEventSink?.(
+        entryScreenViewedEvent(
+          requiresVerificationCode(method) ? "verification-code" : "language-select",
+        ),
+      );
+      dispatch({ type: "push", screen: entryScreenAfterLogin(method) });
+    },
+    // 코드 검증의 `확인` — 화면이 이미 완성 여부를 걸러 완성일 때만 부른다(§2.5,
+    // `VerificationCodeScreen`). 여기서 다시 판정하지 않는다.
+    onVerificationCodeSubmit: () => {
+      entryEventSink?.(entryScreenViewedEvent("language-select"));
+      dispatch({ type: "push", screen: { name: "language-select" } });
+    },
+    // 코드 검증의 `로그인으로` — `back`이다(`backToRoot`가 아니다, §5.3 ⭐). 새
+    // 열람이 아니라 이벤트를 올리지 않는다(§7.2 「발생하지 않는 때」).
+    onVerificationCodeExit: () => {
+      dispatch({ type: "back" });
+    },
+    entryLanguage,
+    // 언어 선택은 이벤트를 만들지 않는다(§7.2 — 지표 셋에 없다). 세션 상태만 바뀐다.
+    onSelectEntryLanguage: (language) => {
+      setEntryLanguage(language);
+    },
+    // 언어 선택의 `다음` — 여정 입장 열람 → push (§5.1).
+    onContinueLanguageSelect: () => {
+      entryEventSink?.(entryScreenViewedEvent("journey-entry"));
+      dispatch({ type: "push", screen: { name: "journey-entry" } });
+    },
+    // 여정 입장의 `여정 시작하기` — 완주 이벤트 → `enterApp`(§5.1 · §7.2). 이
+    // 진입 구간을 비우는 순간이 바텀 네비게이션이 처음 보이는 순간이다(§5.4, IE8).
+    onEnterJourney: () => {
+      entryEventSink?.(entryCompletedEvent());
+      dispatch({ type: "enterApp" });
+    },
   };
 
   return (
     <ErrorBoundary>
       <view className="app">
         <view className="app-content">{renderScreen(currentScreen(nav), wiring)}</view>
-        <BottomNavigator
-          tab={nav.tab}
-          onSelectTab={(tab) => {
-            // LIB-259 계약 §2.11 6번: 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가
-            // 선다(계약 §7.2) — 이미 그 탭인 무동작 재탭을 열람으로 세지 않는다.
-            if (tab === "settings" && nav.tab !== "settings")
-              settingsEventSink?.({ name: "settings_opened" });
-            dispatch({ type: "switchTab", tab });
-          }}
-        />
+        {/* LIB-261 계약 §5.4 · 수용 기준 6: 진입 구간(`entry`가 비지 않은 동안)에는
+            탭 전환 수단을 보이지 않는다 — `enterApp`이 `entry`를 비운 뒤에야 처음
+            선다(IE1·IE8). */}
+        {isEntrySection(nav) ? null : (
+          <BottomNavigator
+            tab={nav.tab}
+            onSelectTab={(tab) => {
+              // LIB-259 계약 §2.11 6번: 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가
+              // 선다(계약 §7.2) — 이미 그 탭인 무동작 재탭을 열람으로 세지 않는다.
+              if (tab === "settings" && nav.tab !== "settings")
+                settingsEventSink?.({ name: "settings_opened" });
+              dispatch({ type: "switchTab", tab });
+            }}
+          />
+        )}
       </view>
     </ErrorBoundary>
   );
@@ -736,6 +853,32 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "roleplay-phone-call":
     case "roleplay-visual-novel":
       return renderRoleplayUnitScreen(screen, wiring.roleplay);
+    // LIB-261 (integration-implementation): 진입 흐름 화면 여섯. 전이·이벤트·토큰
+    // 저장은 `wiring`의 콜백이 진다 — 화면은 결과를 그리고 조작을 올릴 뿐이다
+    // (계약 §9.2, test-plan.md 「책임」).
+    case "splash":
+      return <SplashScreen onTimeout={wiring.onSplashTimeout} />;
+    case "onboarding":
+      return <OnboardingScreen onComplete={wiring.onOnboardingComplete} />;
+    case "login":
+      return <LoginScreen onSelectMethod={wiring.onSelectLoginMethod} />;
+    case "verification-code":
+      return (
+        <VerificationCodeScreen
+          onSubmit={wiring.onVerificationCodeSubmit}
+          onExit={wiring.onVerificationCodeExit}
+        />
+      );
+    case "language-select":
+      return (
+        <LanguageSelectScreen
+          selected={wiring.entryLanguage}
+          onSelect={wiring.onSelectEntryLanguage}
+          onContinue={wiring.onContinueLanguageSelect}
+        />
+      );
+    case "journey-entry":
+      return <JourneyEntryScreen language={wiring.entryLanguage} onEnter={wiring.onEnterJourney} />;
     default: {
       const exhaustive: never = screen;
       return exhaustive;

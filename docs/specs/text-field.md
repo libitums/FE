@@ -35,6 +35,14 @@
     `aria-describedby`, `required`, `autocomplete`, `inputmode`에 해당하는 공개 속성이 없으므로
     제품 route 채택 시 host 연결과 VoiceOver/TalkBack 실청으로 남긴다.
 
+    > ⟨2026-09-17, LIB-261⟩ **이 항목이 처음 실물이 됐다.** 진입 흐름의 코드 검증 칸이
+    > `supporting: { kind: "error" }`를 제품에서 처음 넘긴다. **그래서 이 설계의 대가도 처음
+    > 실물이 된다 — 오류 문구는 입력 칸의 이름에 합성되고 보이는 `<text>`는 가려지므로 그 칸에
+    > 포커스해야 들린다.** 입력 직후의 사용자는 이미 그 칸에 있어 닿지만 포커스를 옮긴 뒤에는
+    > 안 들린다. **결함이 아니라 이 설계가 고른 대가**이고, 관측 자리는
+    > [진입 흐름 e2e](../e2e/entry-flow.md)의 **K2**(오류 문구가 서는가)와 **K5**(미완성의 이유가
+    > 그 이름 채널로 전달되는가)다.
+
 ## 공개 package 계약
 
 `text-field/`은 `TextField.tsx`, `text-field.contract.ts`, `text-field.css`, PascalCase unit/UI
@@ -53,6 +61,24 @@ runtime 안에서 조립한다.
 - integration: root/subpath identity, export map, dist/tarball, authored JSX, Storybook bundle/story
 - manual: Empty/Filled/Error/ReadOnly/Disabled, 입력/focus, affix, action, counter, 큰 글자
 - native deferred: 키보드 종류, selection/copy, focus ring, VoiceOver/TalkBack, required/invalid 연결
+
+⟨2026-09-17, LIB-261⟩ **위 `native deferred` 줄의 「제품 route 채택 시」 조건이 발동했다.**
+`apps/mobile`의 진입 흐름이 이 컴포넌트를 제품에서 처음 소비한다(로그인 전화번호 칸 · 코드 검증 칸).
+**항목을 하나도 지우지 않는다 — 미확인은 실기가 답하기 전까지 미확인이다.** 바뀐 것은 **판정 자리가
+이름을 얻었다**는 것뿐이고, 그 자리는 [진입 흐름 e2e](../e2e/entry-flow.md)다.
+
+| `native deferred`의 항목 | 판정 자리 |
+|---|---|
+| 키보드 종류 | **K1** |
+| required/invalid 연결 — **오류 채널** | **K2**(오류 문구가 서는가) · **K5**(미완성의 이유가 이름으로 전달되는가) |
+| focus ring | **V1**의 기록 절 — 이 스택에서 `:focus`가 실제로 서는지는 미확인이다 |
+| VoiceOver/TalkBack | **V1**(입력 칸 위에서 들리는 것 전부) · **V5** |
+| selection/copy | **판정 자리가 없다** — 이 소비가 그 축을 열지 않는다. 미확인인 채로 남는다 |
+
+**이 줄에 없던 축이 하나 함께 열렸다** — **소프트 키보드가 화면을 가리는가**(**K3**)다. `native deferred`의
+「키보드 종류」는 *어떤 키보드가 뜨는가*이고 이 축은 *뜬 키보드가 무엇을 덮는가*라 서로 다른 물음이다.
+회피 프롭이 `@lynx-js/types`의 `InputProps`에 없어 이 컴포넌트가 넘기지 못하므로 **결정이 아직 없고**,
+그 자리는 [ADR 보류 표](../adr/README.md)의 「소프트 키보드가 화면을 가리는 축」 행이 진다.
 
 ## 범위 밖
 

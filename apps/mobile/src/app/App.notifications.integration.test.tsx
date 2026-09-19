@@ -1,5 +1,5 @@
-import { expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { afterEach, expect, test, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { notificationItems } from "../screens/notifications/notification-items";
@@ -13,6 +13,9 @@ import type {
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
+// LIB-261 (integration-design) §9.5: `renderApp` 헬퍼의 토큰 스텁·타이머 값.
+import { authTokenStorageKey } from "../lib/auth-token";
+import { entrySplashDurationMs } from "../lib/entry-flow";
 
 // LIB-257 integration 계층: App · navigation · 여정 맵 머리 알림 버튼 · 알림 화면 ·
 // 알림 항목 · 대상 분기(기존 여정 콜백 재사용 · tabRootActions)의 실제 결선.
@@ -28,8 +31,43 @@ import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.
 // IN14는 가드라 이 상태에서도 그대로 녹색이다(아래 헬퍼가 요소가 없으면 그
 // 항목은 건너뛴다).
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
+// 헬퍼(`renderApp`). 토큰이 있는 상태를 스텁하고 가짜 타이머로
+// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다.
+//
+// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
+// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
+// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
+// 기존 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+function renderApp(ui: Parameters<typeof render>[0]) {
+  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
+  const tokenStore = new Map<string, string>();
+  tokenStore.set(authTokenStorageKey, "existing-token");
+  vi.stubGlobal("NativeModules", {
+    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
+      ? previousNativeModules
+      : {}),
+    StorageModule: {
+      get: (key: string) => tokenStore.get(key) ?? null,
+      set: (key: string, value: string) => void tokenStore.set(key, value),
+      remove: (key: string) => void tokenStore.delete(key),
+    },
+  });
+  vi.useFakeTimers();
+  const result = render(ui);
+  act(() => {
+    vi.advanceTimersByTime(entrySplashDurationMs);
+  });
+  vi.useRealTimers();
+  return result;
+}
+
 function openNotificationsScreen() {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
 }
 
@@ -190,7 +228,7 @@ test("[IN8] 롤플레이 대상 항목을 tap하면 롤플레이 탭 루트로 �
 
 test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하면 롤플레이 스택이 목록 루트로 걷힌다(D-c, 연속 dispatch 둘의 합성)", () => {
   const messengerItem = messengerNotificationItem();
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
   fireEvent.tap(screen.getByTestId(`roleplay-list-item-${messengerItem.target.unitId}`), {});
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
@@ -215,7 +253,7 @@ test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하�
 
 test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재마운트로는 늘지 않는다(A3)", () => {
   const notificationEventSink = vi.fn<NonNullable<NotificationEventSink>>();
-  render(<App notificationEventSink={notificationEventSink} />);
+  renderApp(<App notificationEventSink={notificationEventSink} />);
   fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
 
   expect(notificationEventSink.mock.calls.map(([event]) => event)).toEqual([
@@ -236,7 +274,7 @@ test("[IN11] 메신저 대상 tap의 공용 로그 순서는 알림 탭 이벤�
   const messengerEventSink: NonNullable<MessengerEventSink> = (event) => log.push(event);
   const item = messengerNotificationItem();
 
-  render(
+  renderApp(
     <App notificationEventSink={notificationEventSink} messengerEventSink={messengerEventSink} />,
   );
   fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
@@ -261,7 +299,7 @@ test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이고 세 특별 �
   const visualNovelEventSink = vi.fn<NonNullable<VisualNovelEventSink>>();
   const item = roleplayListNotificationItem();
 
-  render(
+  renderApp(
     <App
       notificationEventSink={notificationEventSink}
       messengerEventSink={messengerEventSink}
@@ -289,7 +327,7 @@ test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 �
   const visualNovelEventSink: NonNullable<VisualNovelEventSink> = (event) => log.push(event);
   const item = visualNovelNotificationItem();
 
-  render(
+  renderApp(
     <App
       notificationEventSink={notificationEventSink}
       visualNovelEventSink={visualNovelEventSink}
@@ -320,7 +358,7 @@ test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 �
 test("[IN14] sink 없이도 버튼·항목 tap이 던지지 않는다(가드)", () => {
   notificationItems().forEach((item) => {
     cleanup();
-    expect(() => render(<App />)).not.toThrow();
+    expect(() => renderApp(<App />)).not.toThrow();
     expect(() =>
       fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {}),
     ).not.toThrow();
