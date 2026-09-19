@@ -21,8 +21,12 @@
 
 **도달 경로가 0건이라 의도적인 한 줄 수정이 필요하다.** 이 수정은 커밋하지 않는다.
 
-1. `apps/mobile/src/app/App.tsx`에서 `useReducer(navReducer, initialNav)`의 **둘째 인자**를
+1. `apps/mobile/src/app/App.tsx`에서 `useReducer(navReducer, entryInitialNav)`의 **둘째 인자**를
    `handwritingProbeNav`로 바꾼다. 그 이름을 `./navigation`에서 함께 import한다.
+   ⚠ **`initialNav`가 아니다** ⟨2026-09-17, LIB-261⟩ — 제품 부팅 상태가 진입 스택을 실은
+   `entryInitialNav`로 바뀌었다. **절차의 효과는 그대로다**: `handwritingProbeNav`는
+   `entry`를 비워 두는 것이 불변식이라, 바꿔 끼우면 진입 구간을 건너뛰고 여정 탭 자리에
+   탐침이 바로 뜬다.
 2. `pnpm --filter @libitums/mobile dev` — Debug 빌드는 dev 서버 번들을 읽는다.
 3. 호스트 앱(Debug)을 실행한다. **여정 탭 자리에 탐침 화면이 뜬다** —
    `handwriting-probe-screen-title`의 본문이 `손글씨 탐침`이다.

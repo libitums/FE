@@ -26,6 +26,9 @@ importers:
       '@libitums/icons':
         specifier: 0.2.0
         version: 0.2.0
+      '@libitums/ui-lynx':
+        specifier: workspace:*
+        version: link:../../packages/ui-lynx
       '@lynx-js/react':
         specifier: 0.125.0
         version: 0.125.0(@lynx-js/types@4.1.0)(@types/react@19.2.18)

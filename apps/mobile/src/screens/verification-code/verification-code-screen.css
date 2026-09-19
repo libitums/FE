@@ -1,0 +1,109 @@
+/* LIB-261 (ui-implementation): design.md §2.2(공통 레시피) · §6.2(값)의 값. 계약
+   §2.5 · §4.2~§4.5가 고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만
+   소비한다(ADR-0014 D1).
+
+   머리는 나가기 + 제목(안 B, design §6.1~§6.2) — 교차축 게이트 A가 실패해(Δ 12:
+   `-exit` 48 vs 제목 24) `align-items: flex-start` + 제목
+   `margin-top: spacing-12`로 갚는다(design §11). */
+
+.verification-code-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+.verification-code-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-layout-gap-inline);
+  flex-shrink: 0;
+}
+
+.verification-code-screen-exit {
+  min-height: var(--libitum-spacing-48);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.verification-code-screen-exit-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 텍스트 갈래(design §11) — `flex: 1`, `flex-shrink: 0` 없음. 주면 잘린다. */
+.verification-code-screen-title {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  margin-top: var(--libitum-spacing-12);
+}
+
+.verification-code-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+.verification-code-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding-top: var(--libitum-spacing-16);
+}
+
+.verification-code-screen-description {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* `TextField`가 폭·높이·색을 전부 진다(design §6.2 안 B) — 이 상자는 testid
+   자리와 세로 흐름에서 줄지 않는 값만 준다. */
+.verification-code-screen-input {
+  flex-shrink: 0;
+}
+
+/* design §2.2 「액션 행」 — 다른 화면의 액션 행과 같은 값이다. `disabled` trait을
+   붙이지 않는다(ADR-0016 D10 · §4.3) — 미완성은 일시 상태다. */
+.verification-code-screen-submit {
+  background: var(--libitum-color-brand-strong);
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.verification-code-screen-submit-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}

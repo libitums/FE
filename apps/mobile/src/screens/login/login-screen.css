@@ -1,0 +1,103 @@
+/* LIB-261 (ui-implementation): design.md §2.2(공통 레시피) · §5.4(값)의 값. 계약
+   §2.5-1 · §4.2~§4.5가 고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만
+   소비한다(ADR-0014 D1).
+
+   액션 행이 없다(design §5.2) — 나아가는 수단이 넷이라 하나만 고정할 수 없다.
+   전화번호(`phone`)는 흐름 안에서 브랜드 면 제출 행으로, 나머지 셋은 경계 +
+   흰 면 행으로 선다(design §5.1 · §5.4) — 주 수단과 보조 셋을 가르는 채널은
+   「면이 찼나」다. */
+
+.login-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+/* 머리가 제목 하나일 때는 세로 열의 자식이다(design §2.2) — 나가기가 없어
+   머리 행으로 감싸지 않는다. */
+.login-screen-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  flex-shrink: 0;
+}
+
+.login-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+}
+
+.login-screen-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-layout-gap-block);
+  padding-top: var(--libitum-spacing-16);
+}
+
+/* `TextField`가 폭·높이·색을 전부 진다(design §5.4) — 이 상자는 testid 자리와
+   세로 흐름에서 줄지 않는 값만 준다. */
+.login-screen-phone-field {
+  flex-shrink: 0;
+}
+
+/* 제출(「전화번호로 계속하기」) — 액션 행과 같은 값이되 흐름 안에 있다(design §5.4). */
+.login-screen-submit {
+  background: var(--libitum-color-brand-strong);
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.login-screen-submit-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+/* `layout-gap-section`이 주 수단과 보조 셋을 가른다(design §5.4) — 구분선·낱말을
+   두지 않는다. */
+.login-screen-methods {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-layout-gap-block);
+  margin-top: var(--libitum-layout-gap-section);
+}
+
+.login-screen-method {
+  width: 100%;
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-white);
+}
+
+.login-screen-method-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
