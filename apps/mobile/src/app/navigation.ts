@@ -88,7 +88,12 @@ export type Screen =
   // (계약 §2.6 — 기존 route에 `entrySource` 필드를 더하지 않는 근거).
   | { name: "roleplay-messenger"; unitId: MessengerUnitId }
   | { name: "roleplay-phone-call"; unitId: PhoneCallUnitId }
-  | { name: "roleplay-visual-novel"; unitId: VisualNovelUnitId };
+  | { name: "roleplay-visual-novel"; unitId: VisualNovelUnitId }
+  // LIB-263 계약 §5.2: 손글씨 탐침 route. 필드가 없다 — 탐침 화면은 스텝도 유닛도
+  // 받지 않는다. **어느 코드도 이 화면을 push하지 않는다**(계약 §5.1 후보 B) —
+  // 멤버가 여기 서는 이유는 `App.tsx`의 `never` 망라가 case를 강제해서 개발자가
+  // `handwritingProbeNav`로 부팅 상태만 바꿔 끼우면 닿게 하기 위해서다.
+  | { name: "handwriting-probe" };
 
 // LIB-255 계약 §2.6: 롤플레이 route 셋만 좁힌 타입. `renderRoleplayUnitScreen`의
 // 매개변수 타입이 연습 경계를 진다(계약 §6 ②).
@@ -144,6 +149,23 @@ export const initialNav: Nav = {
     roleplay: [{ name: "roleplay-list" }],
     settings: [{ name: "settings" }],
   },
+};
+
+/**
+ * 개발용 탐침 부팅 상태 (LIB-263 계약 §5.2). **제품 경로가 이것을 읽지 않는다** —
+ * `App.tsx`에 이 이름이 한 자리도 없다는 것이 도달 경로 0건의 직접 증거다(§5.3).
+ *
+ * 탐침을 보려면 `App.tsx`의 `useReducer(navReducer, initialNav)` 한 자리를
+ * `handwritingProbeNav`로 바꾸고 dev 서버를 다시 읽힌다. 확인 뒤 되돌린다 —
+ * `git diff -- apps/mobile/src/app/App.tsx`가 0줄인 것이 되돌아왔다는 증거다.
+ *
+ * `initialNav`를 고치지 않고 **둘째 초기값**을 세우는 근거: 첫 렌더의 여정 맵을
+ * 단언하는 기존 integration 파일들이 부팅 상태를 공유한다. 한 자리를 고치면 그
+ * 구간이 통째로 빨개지고, 초기값을 나누면 그 구간이 0이 된다.
+ */
+export const handwritingProbeNav: Nav = {
+  ...initialNav,
+  stacks: { ...initialNav.stacks, journey: [{ name: "handwriting-probe" }] },
 };
 
 // LIB-257 (logic): 계약 §0.3 D-c · §2.1. 탭을 바꾸고 그 탭 스택을 루트로 접는 동작

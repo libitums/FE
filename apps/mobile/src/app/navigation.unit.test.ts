@@ -6,6 +6,7 @@ import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contra
 import {
   activeStack,
   currentScreen,
+  handwritingProbeNav,
   initialNav,
   learningScreenFor,
   navReducer,
@@ -895,5 +896,37 @@ describe("navReducer — 설정 탭의 새 route (LIB-259)", () => {
     const next = navReducer(pushed, { type: "backToRoot" });
 
     expect(next.stacks.settings).toEqual([{ name: "settings" }]);
+  });
+});
+
+// 계약: .agent-harness/work/lib-263/spec.md §5.3 · §6.1 unit 표의 NP2.
+//
+// 탐침 화면은 **도달 불가**라는 것이 그 정의다(§5.1 후보 B). 소스 grep 셋(§5.3의
+// 1~3번)은 사람이 diff를 읽을 때 돌리는 것이고, 이 케이스가 그 판정의 **파수꾼**이다 —
+// 누가 나중에 탐침을 제품 부팅에 끼워 넣으면 러너가 운다.
+//
+// NP2는 `Screen` union에 탐침 멤버가 없을 때도 성립한다 — 부팅 상태에 실린 화면 이름을
+// 모아 그 중에 탐침이 없다는 것만 보기 때문이고, 멤버가 생긴 뒤에도 같은 글자로 남는다.
+// 그래서 그 케이스는 처음부터 초록이었다 — **구현이 없어서가 아니라 부재가 곧 기대값
+// 이라서**다. NP1·NP3은 `handwritingProbeNav` export가 선 지금 함께 올린다.
+describe("탐침 route 도달 경로 (LIB-263)", () => {
+  // NP1
+  it("NP1. handwritingProbeNav는 여정 탭 스택에 탐침 하나만 세우고 entry가 비어 있다", () => {
+    expect(handwritingProbeNav.stacks.journey).toEqual([{ name: "handwriting-probe" }]);
+    expect(handwritingProbeNav.tab).toBe("journey");
+    expect(handwritingProbeNav.entry).toEqual([]);
+  });
+
+  // NP2
+  it("NP2. initialNav의 entry와 세 탭 스택 어디에도 탐침 route가 없다", () => {
+    const booted = [...initialNav.entry, ...Object.values(initialNav.stacks).flat()];
+
+    expect(booted.map((screen) => screen.name)).not.toContain("handwriting-probe");
+  });
+
+  // NP3
+  it("NP3. 나머지 탭 스택은 initialNav와 같다 — 부팅 상태를 여정 탭 한 자리만 바꾼다", () => {
+    expect(handwritingProbeNav.stacks.roleplay).toEqual(initialNav.stacks.roleplay);
+    expect(handwritingProbeNav.stacks.settings).toEqual(initialNav.stacks.settings);
   });
 });
