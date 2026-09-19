@@ -107,6 +107,116 @@ D2 스스로 `대가`에 *"그 목록이 압력에 맞서는 유일한 수단"* 
 등록했다. 메서드는 하나이고, 완료 문구에만 high priority를 붙인다. 모듈이
 없는 환경에서는 기존 builtin `announce`로 복귀하므로 화면은 던지지 않는다.
 
+**2026-09-19, LIB-263에서 세 조건을 다시 통과한 넷째 사례가 생겼다.** 손으로 쓴 글자를
+읽는 능력이고, iOS 호스트가 `HandwritingRecognitionModule.recognize`를 넷째 모듈로
+등록했다(`apps/ios/Host/HandwritingRecognitionModule.swift` · 등록은
+`apps/ios/Host/ViewController.swift`). 메서드는 하나다.
+
+1. **화면 목록이 요구한다** — `docs/screens.md` 구현 순서 **13번 「쓰기」**다. 쓰게 하고도
+   쓴 것을 판정할 수단이 0이면 그 학습형은 정체성을 잃는다. ⚠ **정직하게 적는다: 이번에
+   선 것은 화면이 아니라 탐침이다.** 쓰기 화면은 아직 서지 않았고, 이 모듈에 닿는 것은
+   **도달 경로 0건인 개발용 탐침 화면 하나**다
+   (`apps/mobile/src/screens/handwriting-probe/HandwritingProbeScreen.tsx` — 어느 코드도 이
+   화면을 push하지 않는다). 조건 1이 묻는 것은 *"목록이 요구하는가"* 이지 *"화면이 이미
+   섰는가"* 가 아니므로 통과로 읽지만, **경로가 확인됐다는 것과 화면이 섰다는 것을 같은
+   것으로 읽지 않는다.**
+
+2. **훑은 자리 — 조건 2가 든 축을 전부 적는다.** 설치된 Lynx·XElement pod이 바이너리가
+   아니라 **소스 배포**라, 심볼 덤프 없이 등록 지점을 직접 읽었다.
+
+   - **타입 정의** (`@lynx-js/types@4.1.0`) — 패키지 전체에 `canvas` 선언 **0건**이고
+     `OffscreenCanvas` · `ImageData` · `btoa`/`atob` · `Blob` · `FileReader` ·
+     `URL.createObjectURL`도 전부 **0건**이다. `declare global` 블록은
+     `types/common/global.d.ts`와 `types/common/element/attributes.d.ts` 둘뿐이고 뒤의
+     것은 값 전역을 더하지 않는다.
+   - **설치된 Pod의 등록 목록 — 네이티브 모듈.** 등록 지점은
+     `apps/ios/Pods/Lynx/platform/darwin/ios/lynx/LynxTemplateRenderHelper.mm`의
+     `-setUpBuiltModuleWithFactory:`이고, 거기서 무조건 등록되는 것이
+     `IntersectionObserverModule` · `LynxUIMethodModule` · `LynxTextInfoModule` ·
+     `LynxResourceModule` · `LynxAccessibilityModule` · `LynxExposureModule` ·
+     `LynxFetchModule` · `LynxSetModule`이다. 조건부는 `LynxEmbeddedModule`
+     (`LynxViewGroup`을 쓸 때만)이고, `NavigationModule`은 클래스만 있고 등록하는 자리가
+     없다. **XElement pod은 네이티브 모듈을 하나도 등록하지 않는다.** ⇒ **이 목록의 어느
+     모듈도 이미지·문자 인식 메서드를 내지 않는다** — 노출 메서드 전체가 관찰(intersection
+     ·exposure) · UI 메서드 호출 · 텍스트 **측정**(`getTextInfo`는 폰트 기준 폭 계산이지
+     인식이 아니다) · 리소스 프리페치 · 접근성 안내 · 네트워크 `fetch` · 설정 토글이다.
+   - **설치된 Pod의 등록 목록 — 엘리먼트 태그.** `LYNX_REGISTER_UI`/`LYNX_LAZY_REGISTER_UI`
+     호출을 전부 읽었다. Lynx pod이 `view` · `component` · `text` · `image` ·
+     `inline-image` · `filter-image` · `scroll-view` · `scroll-view-new-arch` ·
+     `bounce-view` · `impression-view` · `frame` · `list-container` · `list-item`을,
+     XElement pod이 `input` · `textarea` · `svg` · `markdown` · `webview` · `blur-view` ·
+     `overlay` · `refresh` · `refresh-header` · `viewpager` · `viewpager-item` ·
+     `scroll-coordinator` 계열을 등록한다. XElement 쪽 근거는
+     `behavior/` 아래의 `*AutoRegistry.m`들이다
+     (`apps/ios/Pods/XElement/platform/darwin/ios/lynx_xelement/behavior/`).
+     ⇒ **`canvas`를 태그로 등록하는 곳이
+     Pods 트리 전체에 0건**이고 **`x-` 접두 태그는 iOS 등록부에 하나도 없다.** 이 목록에
+     그리기 표면인 태그가 없다. `canvas`라는 낱말이 파일에 나오는 pod은 있으나(ServalSVG ·
+     ServalMarkdown · LynxTextra · libwebp) 전부 **C++ 내부 렌더링 추상화의 클래스
+     이름**이고 JS에 노출되는 표면이 아니다.
+   - **설치된 Pod — Vision·OCR 심볼.** `VNRecognizeText` · `VisionKit` · `import Vision` ·
+     `<Vision/` · `recognizeText`를 Pods 트리 전체에서 훑어 **0건**이다.
+   - **JS 런타임 전역 셋.** ① 타입이 선언하는 것(`types/common/global.d.ts`): `SystemInfo` ·
+     `lynx` · `getElementById` · `NativeModules` · `TextCodecHelper` ·
+     `requestAnimationFrame` · `cancelAnimationFrame` · `getNapiLoader`, 그리고 블록 밖의
+     `setTimeout`/`setInterval`/`clearTimeout`/`clearInterval`. ② 네이티브가 실제로 심는
+     것(`apps/ios/Pods/Lynx/core/runtime/js/bindings/global.cc`의 `Global::Init` ·
+     `Global::EnsureConsole`): `nativeConsole` · `__lynxDisableModuleCache` · `SystemInfo` ·
+     `LynxJSBI` · `TextCodecHelper` · `console`, 조건부로 `groupId`(DevTool) ·
+     `enableDebugMode`(디버그). ③ 메인 스레드의 Element PAPI `__*` 전역 —
+     `__CreateElement` · `__SetAttribute` · `__AddEvent` · `__FlushElementTree` ·
+     `__InvokeUIMethod` 계열로 **엘리먼트 트리 조작 전용**이다. ⇒ **판정: 그리기·이미지
+     인코딩·OCR에 쓸 수 있는 전역이 하나도 없다.** 비트맵·픽셀·경로 누적 API가 `__*`
+     집합에 없고, 바이트를 다룰 수 있는 유일한 전역은 `TextCodecHelper`(UTF-8 문자열 ↔
+     `ArrayBuffer`)라 이미지 디코딩에 쓸 수 없다. 전역 `fetch`도 없다 — `lynx.fetch`로만
+     있다. ⚠ **이 축은 정적 근거만으로 닫지 않는다**: 탐침 화면의 스크롤 영역이
+     `[...Object.keys(globalThis)].sort()`를 나열하므로 실기에서 눈으로 확인한다
+     (`docs/e2e/handwriting-probe.md`). **화면이 찍는 것은 백그라운드 스레드의 전역**이고
+     메인 스레드가 보는 셋과 다르다.
+
+   ⭐ **「대체 경로 0개」를 무조건으로 적지 않는다 — 축마다 답이 다르다.**
+
+   | 축 | 판정 |
+   |---|---|
+   | **문자 인식·OCR** | **0개다.** 설치된 Pod에 Vision·OCR 심볼이 0건이고, 등록된 어느 네이티브 모듈도 인식 메서드를 내지 않으며, JS 전역 축에도 우회 수단이 없다 |
+   | **캔버스·드로잉 API** | **0개다.** 명령형 드로잉(`beginPath`/`lineTo`/`stroke`)도 픽셀 버퍼 접근(`getImageData`/`putImageData` 상당)도, 그리기 표면인 태그도, 그에 해당하는 전역도 없다 |
+   | **이미지 바이트 획득** | ⚠ **0개가 아니다. 찾았다.** `takeScreenshot`이 **모든 `LynxUI`에** 붙어 그 뷰를 PNG/JPEG `data:` base64로 돌려준다(`apps/ios/Pods/Lynx/platform/darwin/ios/lynx/ui/LynxUI.m`; 타입에도 있다 — `@lynx-js/types`의 `types/common/element/methods.d.ts`). `svg` 엘리먼트의 `content`가 임의의 SVG XML을 받으므로, **`svg content` + `takeScreenshot`** 을 이으면 스택 안에서 "경로 누적 → 표시 → PNG 바이트"가 성립한다 |
+
+   **찾았는데 쓰지 않았다 — 그 사유를 함께 적는다.** 조건 2가 *"찾아봤는데 없더라는
+   근거가 아니다"* 라고 못박은 이유가 정확히 이런 자리다. `takeScreenshot` 경로를
+   버린 근거는 아래와 같다. ① **모듈이 뷰 참조를 들어야 한다** — 네이티브 모듈이 `LynxView`를
+   스냅샷하려면 뷰 계층을 만지게 되고, 아래 「금지 목록에 걸리지 않는 근거」가 그 자리에서
+   그대로 무너진다. 저장소에 그런 선례도 0건이다. ② **캡처 대상이 뷰 계층 전체**라 배경·
+   오버레이가 함께 찍히고, 인식 입력의 내용을 우리가 통제하지 못한다. ③ **렌더 형식이
+   인식 계약이 된다** — 화면이 그리는 SVG의 속성 순서·스케일·DPR을 고치면 인식 결과가
+   함께 흔들리고, 실패했을 때 그리기 실패인지 인식 실패인지 갈리지 않는다. 채택한 것은
+   **좌표를 넘기고 네이티브가 오프스크린으로 래스터화하는 경로**다.
+
+3. **`docs/e2e/`의 흐름 파일에 항목으로 적을 수 있다** — `docs/e2e/handwriting-probe.md`가
+   신설됐고, 획이 보이는가 · 위치가 맞는가 · 핸들러가 불리는가 · 스크롤과 다투는가를
+   갈라 적은 항목들과, 몇 획까지 견디는지를 숫자로 적는 항목, 한글 한 글자를 Vision이
+   읽는지 적는 항목, 전역 목록을 눈으로 확인하는 항목이 거기 있다. **전부 사람이 눈으로
+   판정한다** — 자동 계층은 원리적으로 못 본다(jsdom이 래스터화하지 않고,
+   `getBoundingClientRect()`가 전부 0이며, Vision이 없다).
+
+**⚠ 이것이 「여전히 하지 않는 것」에 걸리지 않는 근거.** 오프스크린 래스터화는 이 D1이
+이어받은 **「커스텀 UI」**에도, 명시로 더한 **「커스텀 네이티브 엘리먼트」**에도 걸리지
+않는다. 걸리는지를 가르는 것은 *네이티브가 그림을 그리는가*가 아니라 **뷰 계층에 무언가가
+서는가**다. `UIGraphicsImageRenderer`는 비트맵 컨텍스트 하나를 만들어 거기에 베지어 경로를
+칠하고 `CGImage`를 돌려준 뒤 그 컨텍스트를 버린다 — **`UIView`를 만들지 않고, 어떤 뷰의
+자식으로도 붙지 않으며, 화면에 한 픽셀도 그리지 않는다.** 사용자가 보는 획은 처음부터
+끝까지 Lynx 쪽 `<svg content>`가 그리는 것이고, 네이티브가 만든 이미지는 Vision에 넣은 뒤
+즉시 버려진다. 커스텀 네이티브 엘리먼트 쪽은 더 분명하다 — 그 경로가 요구하는 다섯 겹
+(`LynxUI` 상속 · 뷰 생성 · props 처리 · 레이아웃 · 이벤트/UIMethod) 중 **어느 하나도 짓지
+않고**, `LYNX_REGISTER_UI` 호출이 **0건**이라 Lynx가 아는 태그 목록이 한 글자도 늘지
+않는다. 이 모듈이 내는 표면은 앞의 셋과 같은 모양 — **딕셔너리 인자 하나와 콜백 하나**다.
+
+**⚠ 권한 요청이 0건이다 — 마이크 경로와 갈리는 결정적 지점이다.** 우리가 메모리에서 만든
+이미지를 그 자리에서 읽는 것이라 카메라·사진 라이브러리에 닿지 않는다. `Info.plist`에
+usage description을 더하지 않았고 `AVCaptureDevice`·`PHPhotoLibrary` 계열 호출이 0건이다.
+**마이크(말하기)는 여전히 다르다** — 권한까지 여는 것이라 이 조건 셋을 처음부터 다시
+통과해야 하고, 이번 판정은 그 자리를 한 글자도 건드리지 않는다(D3의 「녹음」 제외 그대로).
+
 **여전히 하지 않는 것** (ADR-0012 D2에서 그대로 이어받고 하나 더한다):
 푸시 · 딥링크 · **권한 요청** · 코드 서명 · 스토어 배포 · 커스텀 UI ·
 **커스텀 네이티브 엘리먼트**.
@@ -136,6 +246,18 @@ D2 스스로 `대가`에 *"그 목록이 압력에 맞서는 유일한 수단"* 
 - **한 모듈의 메서드가 다섯을 넘는 시점.** `StorageModule`이 셋, 오디오가 둘이다.
   다섯을 넘으면 그것은 능력 하나가 아니라 **하위 시스템**이고, 호스트가 자라는 실제
   모양은 모듈 수보다 이쪽이다.
+
+**⭐ 앞 트리거 중 첫째가 2026-09-19에 발동했다 (LIB-263).** 넷째 모듈
+(`HandwritingRecognitionModule`)이 실제로 요구됐다 — 위 첫 항목의 *"지금 셋이고"* 는 이
+문장을 쓸 당시의 상태이고, 그 시점이 왔다. **트리거가 요구하는 재검토를 돌렸고, 그
+재검토의 결론은 D1의 입장 조건 셋을 다시 통과시키는 것이었다** (근거는 D1의 넷째 사례
+기록). 둘째 트리거(한 모듈의 메서드가 다섯을 넘는 시점)에는 닿지 않는다 — 새 모듈의
+메서드는 하나다.
+
+⚠ **트리거 문면을 고치지 않는다. 숫자를 다섯째로 옮기지 않는다.** 옮기는 것은 결정
+변경이고, 이번을 새 ADR 번호가 아니라 **제자리 기록**으로 판정한 근거 — *"바뀌는 결정이
+없다"* — 가 그 자리에서 뒤집힌다. 여기서 는 것은 결정이 아니라 **조건 게이트가 설계대로
+작동한 사례**다. 다음에 다섯째가 요구되면 같은 트리거가 같은 자리에서 다시 발동한다.
 
 ### D3. 오디오 모듈의 경계 — 메서드는 **둘**
 
@@ -201,6 +323,14 @@ ADR-0016 D6의 *"속성이 붙은 것과 보조기술이 읽는 것은 다르다
 
 LIB-253이 더한 셋째 항목은 **종료 발화 priority API**다. Android에는
 `CompletionAnnouncementModule` 구현이 없다.
+
+**LIB-263이 더한 넷째 항목은 손글씨 인식 API다 (2026-09-19).** Android에는
+`HandwritingRecognitionModule` 구현이 없다. ⚠ **이 항목은 1:1 이관이 아니다** — 앞의
+것들은 Android에 대응 API가 있는데(`SharedPreferences` · 미디어 재생 · 접근성 발화)
+이쪽은 그렇지 않다. `VNRecognizeTextRequest`에 해당하는 것이 없어 **무엇으로 인식할지를
+먼저 고르는 일**이 이관 앞에 붙고, 고른 스택에 따라 인식 품질과 온디바이스 여부가 갈린다.
+**빚의 크기가 앞의 행들과 같지 않다는 것을 여기 적어 둔다** — 세는 자리(D2의 호스트 모듈
+표)는 행 하나를 한 항목으로 세지만, 그 행들이 같은 무게라는 뜻은 아니다.
 
 **빚을 세는 자리는 D2의 호스트 모듈 표다.** 표의 각 행이 곧 이관 항목이다. 빚이
 보이지 않으면 Android 판단을 근거 없이 하게 된다.

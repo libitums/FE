@@ -8,6 +8,7 @@ import {
   currentScreen,
   entryInitialNav,
   entryScreenAfterLogin,
+  handwritingProbeNav,
   initialNav,
   isEntrySection,
   learningScreenFor,
@@ -926,7 +927,7 @@ describe("진입 흐름 (LIB-261)", () => {
   });
 
   // NV3
-  it("NV3. entryScreenAfterLogin이 phone→verification-code, 나머지 셋→language-select다", () => {
+  it("NV3. entryScreenAfterLogin이 phone→verification-code, 나머지 수단→language-select다", () => {
     expect(entryScreenAfterLogin("phone")).toEqual({ name: "verification-code" });
     expect(entryScreenAfterLogin("google")).toEqual({ name: "language-select" });
     expect(entryScreenAfterLogin("apple")).toEqual({ name: "language-select" });
@@ -937,5 +938,46 @@ describe("진입 흐름 (LIB-261)", () => {
   it("NV4. isEntrySection이 entryInitialNav에서 참, initialNav에서 거짓이다", () => {
     expect(isEntrySection(entryInitialNav)).toBe(true);
     expect(isEntrySection(initialNav)).toBe(false);
+  });
+});
+
+// 계약: .agent-harness/work/lib-263/spec.md §5.3 · §6.1 unit 표의 NP2.
+//
+// 탐침 화면은 **도달 불가**라는 것이 그 정의다(§5.1 후보 B). 소스 grep 셋(§5.3의
+// 1~3번)은 사람이 diff를 읽을 때 돌리는 것이고, 이 케이스가 그 판정의 **파수꾼**이다 —
+// 누가 나중에 탐침을 제품 부팅에 끼워 넣으면 러너가 운다.
+//
+// NP2는 `Screen` union에 탐침 멤버가 없을 때도 성립한다 — 부팅 상태에 실린 화면 이름을
+// 모아 그 중에 탐침이 없다는 것만 보기 때문이고, 멤버가 생긴 뒤에도 같은 글자로 남는다.
+// 그래서 그 케이스는 처음부터 초록이었다 — **구현이 없어서가 아니라 부재가 곧 기대값
+// 이라서**다. NP1·NP3은 `handwritingProbeNav` export가 선 지금 함께 올린다.
+//
+// ⭐ LIB-261이 들어온 뒤 NP2의 단언 대상이 늘었다: 앱이 실제로 부팅하는 상태는
+// `initialNav`가 아니라 `entryInitialNav`다(`App.tsx`의 `useReducer` 둘째 인자).
+// 하나만 훑으면 파수꾼이 낡아 아무것도 안 지키므로 제품 부팅 상태를 모두 훑는다.
+describe("탐침 route 도달 경로 (LIB-263)", () => {
+  // NP1
+  it("NP1. handwritingProbeNav는 여정 탭 스택에 탐침 하나만 세우고 entry가 비어 있다", () => {
+    expect(handwritingProbeNav.stacks.journey).toEqual([{ name: "handwriting-probe" }]);
+    expect(handwritingProbeNav.tab).toBe("journey");
+    // `activeStack`이 `entry`를 먼저 고르므로, 여기가 비어 있지 않으면 이 부팅
+    // 상태로도 탐침에 닿지 못한다 — 그 불변식을 이 줄이 진다.
+    expect(handwritingProbeNav.entry).toEqual([]);
+    expect(currentScreen(handwritingProbeNav)).toEqual({ name: "handwriting-probe" });
+  });
+
+  // NP2
+  it("NP2. 제품 부팅 상태의 entry와 모든 탭 스택 어디에도 탐침 route가 없다", () => {
+    const bootedScreenNames = (booted: Nav) =>
+      [...booted.entry, ...Object.values(booted.stacks).flat()].map((screen) => screen.name);
+
+    expect(bootedScreenNames(initialNav)).not.toContain("handwriting-probe");
+    expect(bootedScreenNames(entryInitialNav)).not.toContain("handwriting-probe");
+  });
+
+  // NP3
+  it("NP3. 나머지 탭 스택은 initialNav와 같다 — 부팅 상태를 여정 탭 한 자리만 바꾼다", () => {
+    expect(handwritingProbeNav.stacks.roleplay).toEqual(initialNav.stacks.roleplay);
+    expect(handwritingProbeNav.stacks.settings).toEqual(initialNav.stacks.settings);
   });
 });

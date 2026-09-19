@@ -25,9 +25,16 @@ final class ViewController: UIViewController {
       // 말고 그 표를 본다 — 표의 각 행이 곧 Android 이관 항목이기도 하다 (D5).
       // 재검토 트리거는 숫자로 적혀 있다: **모듈이 넷째로 요구되는 시점**,
       // **한 모듈의 메서드가 다섯을 넘는 시점** (D2).
+      //
+      // **앞엣것은 이미 당겨졌다.** 손글씨 인식(LIB-263 탐침)이 그 시점이었고, 입장
+      // 조건 셋을 통과해 아래에 섰다 — 손으로 쓴 글자를 읽는 능력 없이는 그 탐침이
+      // 물음 자체를 잃고, Lynx 쪽에 래스터화 수단이 0개이며(`canvas` 선언 없음),
+      // 사람이 눈으로 판정할 수 있다. 다음에 하나 더 여는 사람은 **트리거가 이미
+      // 당겨진 뒤**라는 것을 알고 연다.
       config.register(StorageModule.self)
       config.register(AudioPlaybackModule.self)
       config.register(CompletionAnnouncementModule.self)
+      config.register(HandwritingRecognitionModule.self)
       builder.config = config
       builder.screenSize = UIScreen.main.bounds.size
       // 시스템 글자 크기를 코어 배율로 넘긴다 (ADR-0020 D1).

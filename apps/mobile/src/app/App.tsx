@@ -10,6 +10,10 @@ import { BottomNavigator } from "../components/BottomNavigator";
 import { CultureScreen } from "../screens/culture/CultureScreen";
 import { cultureNarrativeForStep } from "../screens/culture/culture";
 import { CultureQuizScreen } from "../screens/culture-quiz/CultureQuizScreen";
+// LIB-263: 개발용 탐침 화면. 이 파일이 탐침에서 가져오는 것은 화면 컴포넌트 하나뿐
+// 이고 `navigation.ts`의 개발용 부팅 상태는 **가져오지 않는다** — 제품 부팅이 탐침을
+// 안 쓴다는 것을 이 파일이 스스로 보인다(계약 §5.3의 grep 1이 그것을 센다).
+import { HandwritingProbeScreen } from "../screens/handwriting-probe/HandwritingProbeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import {
   completeStep,
@@ -853,7 +857,7 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "roleplay-phone-call":
     case "roleplay-visual-novel":
       return renderRoleplayUnitScreen(screen, wiring.roleplay);
-    // LIB-261 (integration-implementation): 진입 흐름 화면 여섯. 전이·이벤트·토큰
+    // LIB-261 (integration-implementation): 진입 흐름 화면들. 전이·이벤트·토큰
     // 저장은 `wiring`의 콜백이 진다 — 화면은 결과를 그리고 조작을 올릴 뿐이다
     // (계약 §9.2, test-plan.md 「책임」).
     case "splash":
@@ -879,6 +883,13 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
       );
     case "journey-entry":
       return <JourneyEntryScreen language={wiring.entryLanguage} onEnter={wiring.onEnterJourney} />;
+    // LIB-263 (개발용 탐침, 계약 §5.2): `never` 망라가 이 case를 강제한다. 결선이
+    // 없다 — 탐침 화면은 props도 콜백도 받지 않고 자기 상태를 스스로 든다(계약 §5.5).
+    // **아무 코드도 이 화면을 push하지 않는다**(§5.1 후보 B): 위 진입 흐름 case들과
+    // 달리 여기로 오는 전이가 한 자리도 없다 — 여기 닿으려면 `navigation.ts`가 둔
+    // 개발용 부팅 상태(`handwritingProbeNav`)를 손수 바꿔 끼워야 한다.
+    case "handwriting-probe":
+      return <HandwritingProbeScreen />;
     default: {
       const exhaustive: never = screen;
       return exhaustive;

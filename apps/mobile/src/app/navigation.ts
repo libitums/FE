@@ -92,16 +92,21 @@ export type Screen =
   | { name: "roleplay-messenger"; unitId: MessengerUnitId }
   | { name: "roleplay-phone-call"; unitId: PhoneCallUnitId }
   | { name: "roleplay-visual-novel"; unitId: VisualNovelUnitId }
-  // LIB-261: 진입 흐름 화면 여섯. 여섯 멤버는 전부 필드가 없다 — 온보딩 `step`은
-  // 화면 로컬, 언어는 App 상태, 코드 값은 화면 로컬이다(계약 §2.7). 삽입 지점은
-  // 기존 마지막 멤버 뒤다(LIB-238 선례 — 앞에 끼우면 기존 줄의 세미콜론이 움직여
-  // diff가 커진다).
+  // LIB-261: 진입 흐름 화면들. 전부 필드가 없다 — 온보딩 `step`은 화면 로컬,
+  // 언어는 App 상태, 코드 값은 화면 로컬이다(계약 §2.7). 삽입 지점은 기존 마지막
+  // 멤버 뒤다(LIB-238 선례 — 앞에 끼우면 기존 줄의 세미콜론이 움직여 diff가 커진다).
   | { name: "splash" }
   | { name: "onboarding" }
   | { name: "login" }
   | { name: "verification-code" }
   | { name: "language-select" }
-  | { name: "journey-entry" };
+  | { name: "journey-entry" }
+  // LIB-263 계약 §5.2: 손글씨 탐침 route. 필드가 없다 — 탐침 화면은 스텝도 유닛도
+  // 받지 않는다. **어느 코드도 이 화면을 push하지 않는다**(계약 §5.1 후보 B) —
+  // 멤버가 여기 서는 이유는 `App.tsx`의 `never` 망라가 case를 강제해서 개발자가
+  // `handwritingProbeNav`로 부팅 상태만 바꿔 끼우면 닿게 하기 위해서다. 제품 화면
+  // 뒤 맨 끝에 둔다 — 진입 흐름 멤버들과 달리 제품 경로가 없는 개발용이다.
+  | { name: "handwriting-probe" };
 
 // LIB-255 계약 §2.6: 롤플레이 route 셋만 좁힌 타입. `renderRoleplayUnitScreen`의
 // 매개변수 타입이 연습 경계를 진다(계약 §6 ②).
@@ -147,8 +152,9 @@ export type NavAction =
 // 계약이 고정한 리터럴이다. 각 탭 스택은 자기 루트 화면 하나로 시작하고,
 // `entry`는 비어 있다 — **이 상수 자신은 그렇다.** 진입 화면이 있는 부팅은
 // `entryInitialNav`(아래, LIB-261 계약 §2.7)가 진다: `App`이 어느 초기값을 쓰느냐로
-// 갈리고, `initialNav`는 그 갈림과 무관하게 한 글자도 바뀌지 않는다(기존 integration
-// 아홉 파일이 계속 이 값으로 부팅한다).
+// 갈리고, `initialNav`는 그 갈림과 무관하게 한 글자도 바뀌지 않는다. **이 상수가
+// 곧 앱의 부팅 상태라는 뜻은 아니다** — `App`은 `entryInitialNav`로 부팅하고, 앱
+// 구간만 보려는 기존 integration 파일들은 `renderApp` 헬퍼로 진입 구간을 통과한다.
 //
 // LIB-257: 첫 화면이 여정 맵이다(계약 §2.1 · Q1 — 홈 탭까지 없앤다). `stacks`에서
 // `home` 키를 지웠다 — `Tab`/`Screen` 축소와 같은 커밋 단위다(계약 §9.1 원칙 2).
@@ -163,9 +169,34 @@ export const initialNav: Nav = {
 };
 
 // LIB-261 계약 §2.7: `initialNav`를 고치지 않는 것이 이 계약의 핵심 설계다(§9.3) —
-// 기존 integration 아홉 파일의 부팅 화면을 이 단위가 바꾸지 않기 위해서다. `tab`·
-// `stacks`는 `initialNav`와 같은 값이고 `entry`만 다르다(NV2).
+// 기존 integration 파일들의 부팅 화면을 이 단위가 바꾸지 않기 위해서다. `tab`·
+// `stacks`는 `initialNav`와 같은 값이고 `entry`만 다르다(NV2). **App이 실제로
+// `useReducer`에 넘기는 부팅 상태가 이것이다** — `initialNav`가 아니다.
 export const entryInitialNav: Nav = { ...initialNav, entry: [{ name: "splash" }] };
+
+/**
+ * 개발용 탐침 부팅 상태 (LIB-263 계약 §5.2). **제품 경로가 이것을 읽지 않는다** —
+ * `App.tsx`에 이 이름이 한 자리도 없다는 것이 도달 경로 0건의 직접 증거다(§5.3).
+ *
+ * 탐침을 보려면 `App.tsx`의 `useReducer(navReducer, entryInitialNav)` 한 자리를
+ * `handwritingProbeNav`로 바꾸고 dev 서버를 다시 읽힌다. 확인 뒤 되돌린다 —
+ * `git diff -- apps/mobile/src/app/App.tsx`가 0줄인 것이 되돌아왔다는 증거다.
+ *
+ * `initialNav`를 고치지 않고 **별도 초기값**을 세우는 근거: 첫 렌더의 여정 맵을
+ * 단언하는 기존 integration 파일들이 부팅 상태를 공유한다. 한 자리를 고치면 그
+ * 구간이 통째로 빨개지고, 초기값을 나누면 그 구간이 0이 된다.
+ *
+ * ⭐ `entry`를 비운 채로 세우는 것이 이 값의 불변식이다. `activeStack`은 `entry`가
+ * 비어 있지 않으면 `entry`를 **먼저** 고르므로, 진입 구간이 실린 부팅 상태(위의
+ * `entryInitialNav`)를 바탕으로 펼치면 부팅이 진입 흐름으로 가고 탐침에는 영영
+ * 닿지 못한다. 그래서 바탕은 `initialNav`이고 `entry: []`를 문면에 적어 둔다 —
+ * 바탕이 바뀌어도 이 한 줄이 불변식을 지킨다.
+ */
+export const handwritingProbeNav: Nav = {
+  ...initialNav,
+  entry: [],
+  stacks: { ...initialNav.stacks, journey: [{ name: "handwriting-probe" }] },
+};
 
 // `default` 없는 switch — 수단이 늘면 TS2366으로 선다(§2.7). `phone`만 코드 검증을
 // 거친다(`requiresVerificationCode`와 같은 축, `lib/entry-flow.ts` §2.1).
