@@ -21,6 +21,7 @@
 		2B94A3DD2D66149800608943 /* SpeechRecognitionModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */; };
 		2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */; };
 		2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */; };
+		2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608950 /* BundledMediaResourceFetcherTests.swift */; };
 		2B94A3E12D6614980060892E /* FontScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3E02D6614980060892E /* FontScale.swift */; };
 		2B94A3DD2D6614980060892F /* audio in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D6614980060892F /* audio */; };
 		2B94A3DD2D66149800608938 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608939 /* Resource */; };
@@ -45,6 +46,7 @@
 		2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionAnnouncementModuleTests.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionModuleTests.swift; sourceTree = "<group>"; };
+		2B94A3DC2D66149800608950 /* BundledMediaResourceFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledMediaResourceFetcherTests.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608932 /* HostTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HostTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B94A3E02D6614980060892E /* FontScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontScale.swift; sourceTree = "<group>"; };
 		2B94A3DC2D6614980060892F /* audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = audio; sourceTree = "<group>"; };
@@ -115,7 +117,7 @@
 		};
 		2B94A3DC2D66149800608933 /* HostTests */ = {
 			isa = PBXGroup;
-			children = (2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */, 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */);
+			children = (2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */, 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */, 2B94A3DC2D66149800608950 /* BundledMediaResourceFetcherTests.swift */);
 			path = HostTests;
 			sourceTree = "<group>";
 		};
@@ -278,7 +280,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2B94A3C12D66149800608935 /* Sources */ = { isa = PBXSourcesBuildPhase; files = (2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */, 2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */); };
+		2B94A3C12D66149800608935 /* Sources */ = { isa = PBXSourcesBuildPhase; files = (2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */, 2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */, 2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */); };
 		2B94A3C22D66149800608936 /* Frameworks */ = { isa = PBXFrameworksBuildPhase; files = (); };
 		2B94A3C32D66149800608937 /* Resources */ = { isa = PBXResourcesBuildPhase; files = (); };
 /* End PBXSourcesBuildPhase section */

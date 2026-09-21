@@ -58,3 +58,31 @@ final class TemplateProvider: NSObject, LynxTemplateProvider {
             userInfo: [NSLocalizedDescriptionKey: message])
   }
 }
+
+/// 번들 안 이미지의 경로를 앱 번들 파일로 돌린다.
+///
+/// Release 번들은 `pnpm build`가 낸 이미지를 `/static/image/…`처럼 **호스트 없는 절대
+/// 경로**로 가리킨다. dev 서버에서는 그 앞에 `http://…:3000`이 붙어 풀리지만, 앱 번들에서
+/// 읽을 때는 붙일 것이 없어 iOS가 `unsupported URL`로 거절했다 — 이미지가 그려지지 않고
+/// `<image>`에 `binderror`만 온다. 그 파일들은 `pnpm bundle:host`가 `Resource/static/`에
+/// 복사해 두므로(ADR-0012 D2) 경로를 그 자리의 `file://` URL로 바꿔 준다.
+///
+/// `/static/` 로 시작하지 않는 URL(dev 서버의 `http://…`, 원격 이미지)은 **그대로** 둔다.
+final class BundledMediaResourceFetcher: NSObject, LynxMediaResourceFetcher {
+  private let resourceRoot: URL?
+
+  init(resourceRoot: URL? = Bundle.main.resourceURL?.appendingPathComponent("Resource")) {
+    self.resourceRoot = resourceRoot
+  }
+
+  func shouldRedirectUrl(_ request: LynxResourceRequest) -> String {
+    Self.redirect(request.url, resourceRoot: resourceRoot)
+  }
+
+  /// 판정만 하는 순수 함수. 파일이 실제로 있는지는 보지 않는다 — 없으면 이미지 쪽이
+  /// 평소처럼 `binderror`를 낸다.
+  static func redirect(_ url: String, resourceRoot: URL?) -> String {
+    guard let resourceRoot, url.hasPrefix("/static/") else { return url }
+    return resourceRoot.appendingPathComponent(String(url.dropFirst())).absoluteString
+  }
+}

@@ -37,6 +37,11 @@ final class ViewController: UIViewController {
       config.register(HandwritingRecognitionModule.self)
       config.register(SpeechRecognitionModule.self)
       builder.config = config
+      // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).
+      // 이미지 서비스는 generic resource fetcher가 켜져 있을 때만 `shouldRedirectUrl`을
+      // 부른다. 템플릿 fetcher는 두지 않으므로 번들 로드는 그대로 `TemplateProvider`가 맡는다.
+      builder.enableGenericResourceFetcher = .true
+      builder.mediaResourceFetcher = BundledMediaResourceFetcher()
       builder.screenSize = UIScreen.main.bounds.size
       // 시스템 글자 크기를 코어 배율로 넘긴다 (ADR-0020 D1).
       //
