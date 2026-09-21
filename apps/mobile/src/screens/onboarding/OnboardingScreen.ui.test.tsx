@@ -149,7 +149,7 @@ describe("OnboardingScreen (LIB-261)", () => {
 
     next();
     const back = within(header).getByTestId("ui-lynx-round-button");
-    expect(back).toHaveAttribute("accessibility-label", "이전 단계");
+    expect(back).toHaveAttribute("accessibility-label", "Back");
 
     fireEvent.tap(back, {});
     expect(root).toHaveAttribute("data-step", "0");
@@ -171,7 +171,7 @@ describe("OnboardingScreen (LIB-261)", () => {
         screen.getByTestId("onboarding-screen-quiz-text").getAttribute("data-filled");
 
       expect(filled()).toBe("0");
-      fireEvent.tap(roundButton("재생"), {});
+      fireEvent.tap(roundButton("Play"), {});
       act(() => {
         vi.advanceTimersByTime(350);
       });
@@ -182,9 +182,9 @@ describe("OnboardingScreen (LIB-261)", () => {
       });
       // "선크림 있어요?" — 띄어쓰기·물음표까지 8칸.
       expect(filled()).toBe("8");
-      expect(roundButton("재생")).toBeDefined();
+      expect(roundButton("Play")).toBeDefined();
 
-      fireEvent.tap(roundButton("다시 듣기"), {});
+      fireEvent.tap(roundButton("Replay"), {});
       expect(filled()).toBe("0");
       act(() => {
         vi.advanceTimersByTime(350);
@@ -226,5 +226,29 @@ describe("OnboardingScreen (LIB-261)", () => {
     const hero = screen.getByTestId("onboarding-screen-hero");
     expect(hero).toHaveAttribute("accessibility-elements-hidden", "true");
     expect(hero.querySelectorAll("image").length).toBeGreaterThan(0);
+  });
+
+  // OB-U12 — 화면 문구가 영어라 보조기술 이름도 영어로 맞춘다.
+  it("[OB-U12] 진행 표시·학습 유닛 상태의 보조기술 이름이 화면 문구와 같은 영어다", () => {
+    vi.useFakeTimers();
+    try {
+      render(<OnboardingScreen onComplete={vi.fn()} />);
+      expect(screen.getByTestId("onboarding-screen-progress")).toHaveAttribute(
+        "accessibility-label",
+        "Step 1 of 3",
+      );
+      next();
+      next();
+      const status = within(screen.getByTestId("onboarding-screen-unit")).getByTestId(
+        "ui-lynx-status-indicator",
+      );
+      expect(status).toHaveAttribute("accessibility-label", "Learning, In progress");
+      act(() => {
+        vi.advanceTimersByTime(1500);
+      });
+      expect(status).toHaveAttribute("accessibility-label", "Clear, Completed");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

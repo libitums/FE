@@ -44,7 +44,8 @@ const unitClearDelayMs = 1500;
 // 스텝에서 `nextOnboardingStep`이 `null`을 돌려주면 `onComplete`를 부른다.
 //
 // LIB-261 (ui-implementation r0.3, M-4 · §0.10 (3)): 진행 점 묶음 래퍼는 보조기술
-// 채널을 가진 접근성 요소다 — 이름은 §8의 `${총}단계 중 ${현재}단계` 형태를
+// 채널을 가진 접근성 요소다 — 이름은 `Step ${현재} of ${총}` 형태를(화면 문구가 영어라
+// 2026-09-21 디자인 반영에서 §8의 한국어 형태에서 옮겼다)
 // 스텝 수(`onboardingSteps.length`)에서 뽑는다(리터럴로 고정하지 않는다).
 // `accessibility-traits`는 붙이지 않는다(조작 단위가 아니다).
 export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNode {
@@ -112,7 +113,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
       <view className="onboarding-screen-header" data-testid="onboarding-screen-header">
         {previous === null ? null : (
           <RoundButton
-            accessibilityLabel="이전 단계"
+            accessibilityLabel="Back"
             icon={arrowLeft}
             variant="neutral"
             size="xl"
@@ -139,6 +140,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
                     <StatusIndicator
                       status={unitCleared ? "completed" : "in-progress"}
                       label={unitCleared ? "Clear" : "Learning"}
+                      statusName={unitCleared ? "Completed" : "In progress"}
                     />
                     <text className="onboarding-screen-unit-title">Shopping at a beauty store</text>
                     <text className="onboarding-screen-unit-meta">Unit 1 · 5 min</text>
@@ -200,14 +202,14 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
                               빈 자리를 다시 듣기와 같은 크기로 둬 재생 버튼이 정확히 가운데에 선다. */}
                           <view className="onboarding-screen-quiz-controls">
                             <RoundButton
-                              accessibilityLabel="다시 듣기"
+                              accessibilityLabel="Replay"
                               icon={refresh}
                               variant="brand"
                               size="l"
                               bindtap={replay}
                             />
                             <RoundButton
-                              accessibilityLabel={playing ? "정지" : "재생"}
+                              accessibilityLabel={playing ? "Stop" : "Play"}
                               icon={playing ? stop : play}
                               variant="brand"
                               size="xl"
@@ -271,7 +273,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
                       <view className="onboarding-screen-chat-list">
                         <ChatBubble
                           direction="incoming"
-                          speaker="직원"
+                          speaker="Staff"
                           message="어서 오세요! 찾으시는 거 있으세요?"
                           translation="Welcome! Are you looking for anything?"
                           size="s"
@@ -280,7 +282,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
                         />
                         <ChatBubble
                           direction="outgoing"
-                          speaker="나"
+                          speaker="Me"
                           message="선크림 있어요?"
                           translation="Do you have sunscreen?"
                           size="s"
@@ -289,7 +291,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
                         />
                         <ChatBubble
                           direction="incoming"
-                          speaker="직원"
+                          speaker="Staff"
                           message="네, 이쪽으로 오세요."
                           translation="Yes, come this way."
                           size="s"
@@ -319,7 +321,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
               className="onboarding-screen-progress"
               data-testid="onboarding-screen-progress"
               accessibility-element={true}
-              accessibility-label={`${onboardingSteps.length}단계 중 ${step + 1}단계`}
+              accessibility-label={`Step ${step + 1} of ${onboardingSteps.length}`}
             >
               <PageIndicator pageCount={onboardingSteps.length} currentPage={step + 1} />
             </view>
