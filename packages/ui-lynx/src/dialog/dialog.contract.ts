@@ -65,11 +65,12 @@ export function getDialogContract(props: DialogProps): DialogContract {
 
   const motion = props.motion ?? "standard";
   const phase = props.phase ?? "entering";
+  const description = props.description?.trim() ? props.description : undefined;
   return {
     actions,
     cancelActionId: actions[actions.length - 1]!.id,
     className: `ui-lynx-dialog ui-lynx-dialog-motion-${motion} ui-lynx-dialog-phase-${phase}`,
-    description: props.description,
+    description,
     motion,
     phase,
     title,

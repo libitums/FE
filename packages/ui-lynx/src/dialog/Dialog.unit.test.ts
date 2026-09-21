@@ -47,6 +47,17 @@ describe("Dialog contract", () => {
     });
   });
 
+  test.each(["", "   ", "\n\t"])("빈 설명 %j은 undefined로 정규화한다", (description) => {
+    expect(
+      getDialogContract({
+        title: "학습을 계속할까요?",
+        description,
+        actions: [{ id: "continue", label: "계속 학습하기" }],
+        bindaction: () => undefined,
+      }).description,
+    ).toBeUndefined();
+  });
+
   test.each([
     { title: "", actions: [{ id: "continue", label: "계속" }] },
     { title: "제목", actions: [] },

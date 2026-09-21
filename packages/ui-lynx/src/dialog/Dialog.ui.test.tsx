@@ -55,6 +55,18 @@ describe("Dialog", () => {
     expect(screen.getByTestId("ui-lynx-button")).toHaveAttribute("data-variant", "brand");
   });
 
+  test("공백 설명은 빈 text와 여백을 만들지 않는다", () => {
+    render(
+      <Dialog
+        title="다시 시도할까요?"
+        description="   "
+        actions={[{ id: "retry", label: "다시 시도하기" }]}
+        bindaction={() => undefined}
+      />,
+    );
+    expect(screen.queryByTestId("ui-lynx-dialog-description")).not.toBeInTheDocument();
+  });
+
   test("활성 action은 id를 전달하고 disabled action은 전달하지 않는다", () => {
     const bindaction = vi.fn<(id: string) => void>();
     render(
