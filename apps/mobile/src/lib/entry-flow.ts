@@ -25,9 +25,11 @@ export const entryLoginMethods: readonly EntryLoginMethod[] = [
   "facebook",
 ];
 
-// 계약값 1200(§0.3 D-a) — 화면 체류 시간이고 모션 토큰이 아니다. 화면·테스트가
-// 이 상수를 리터럴로 복제하지 않고 import한다.
-export const entrySplashDurationMs = 1200;
+// 스플래시의 **최대** 체류 시간이다. 전이는 로고 애니메이션(약 2.4초)이 끝날 때
+// 일어나고, 이 값은 그 신호가 오지 않을 때의 안전 타이머다 — 애니메이션 길이에
+// 로드 여유를 더했다. 모션 토큰이 아니다. 화면·테스트가 이 상수를 리터럴로 복제하지
+// 않고 import한다. (이전 계약값 1200 — §0.3 D-a — 은 2026-09-21 디자인 반영으로 대체됐다.)
+export const entrySplashDurationMs = 4000;
 
 // `default` 없는 switch — 수단이 늘면 TS2366으로 선다(§2.1).
 export function requiresVerificationCode(method: EntryLoginMethod): boolean {

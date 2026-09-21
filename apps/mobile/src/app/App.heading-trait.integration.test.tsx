@@ -450,7 +450,7 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계�
   // 아니다(A2, SP5) ⇒ 닫힌 집합이 비어 있다. 앵커로 먼저 스플래시 자신을 짓는다 —
   // 그래야 이 빈 배열이 「스플래시 상태에서 실제로 0개」이지 「아직 아무 화면도
   // 없어서 0개」가 아니라고 말할 수 있다.
-  expect(screen.getByTestId("splash-screen-service-name")).toBeInTheDocument();
+  expect(screen.getByTestId("splash-screen-logo")).toBeInTheDocument();
   expect(headingAxis(container)).toEqual([]);
 
   act(() => {
