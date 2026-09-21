@@ -11,7 +11,7 @@
 - OS: iOS 26.5
 - Lynx SDK: 4.0.1 — 측정 Host의 `Podfile.lock` 고정값
 - 빌드: Release / iphonesimulator / `CODE_SIGNING_ALLOWED=NO`, 내장
-  `main.lynx.bundle`과 `Resource/static/image`의 로고 animated WebP(516,444 bytes, 89 frames,
+  `main.lynx.bundle`과 Host `Resource` 폴더의 로고 animated WebP(516,444 bytes, 89 frames,
   1142×523); `--performance-capture`로 실행
 - 실행 회차: 01
 
@@ -48,7 +48,7 @@ Memory
 
 - 기준 기록: [앱 아이콘 · WebP 디코더 등록 후 앱 초기 로드 — 01](app-icon-webp-decoder-app-launch-iphone-17-pro-simulator-01.md)
   — 같은 기기·OS·SDK·Release 조건이지만 첫 화면이 텍스트 스플래시였다.
-- 참고 관측(기록 파일 없음): 같은 PR에서 `/static/…` 이미지 redirect를 넣기 **전** Release
+- 참고 관측(기록 파일 없음): 같은 PR에서 번들 안 static 이미지 redirect를 넣기 **전** Release
   Host는 로고를 불러오지 못해(`unsupported URL`) `viewBytes` 3,072 bytes, totalBytes
   860,480 bytes였다. redirect 뒤 이번 실행은 `viewBytes` 2,392,136 bytes다.
 - 차이: 계산하지 않음. 모두 단일 실행의 관측값이며 성능 개선·회귀나 예산 통과 여부를
