@@ -251,4 +251,38 @@ describe("OnboardingScreen (LIB-261)", () => {
       vi.useRealTimers();
     }
   });
+
+  // OB-U13 — PR #97 리뷰: 재생 중에 스텝을 떠나면 재생·칠하기가 멈추고 초기화된다.
+  it("[OB-U13] 재생 중에 다른 스텝으로 갔다 돌아오면 재생이 멈춰 있고 칠하기가 처음부터다", () => {
+    vi.useFakeTimers();
+    try {
+      render(<OnboardingScreen onComplete={vi.fn()} />);
+      next(); // 0 → 1
+
+      const roundButton = (label: string) =>
+        screen
+          .getAllByTestId("ui-lynx-round-button")
+          .find((button) => button.getAttribute("accessibility-label") === label);
+      const filled = () =>
+        screen.getByTestId("onboarding-screen-quiz-text").getAttribute("data-filled");
+
+      fireEvent.tap(roundButton("Play")!, {});
+      act(() => {
+        vi.advanceTimersByTime(350);
+      });
+      expect(filled()).toBe("1");
+
+      next(); // 1 → 2 (재생 중에 떠난다)
+      act(() => {
+        vi.advanceTimersByTime(350 * 3);
+      });
+      fireEvent.tap(roundButton("Back")!, {}); // 2 → 1
+
+      expect(filled()).toBe("0");
+      expect(roundButton("Play")).toBeDefined();
+      expect(roundButton("Stop")).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

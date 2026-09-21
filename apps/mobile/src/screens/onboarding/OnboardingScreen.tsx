@@ -73,6 +73,13 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
     if (playing && filled >= quizSyllables.length) setPlaying(false);
   }, [playing, filled]);
 
+  // 스텝을 떠나면 재생을 멈추고 칠하기를 처음으로 돌린다 — 다른 스텝에서 타이머가 계속 돌거나
+  // 돌아왔을 때 반쯤 칠해진 채로 남지 않게 한다(PR #97 리뷰).
+  useEffect(() => {
+    setPlaying(false);
+    setFilled(0);
+  }, [step]);
+
   // 셋째 스텝: 들어오면 유닛이 학습 중으로 보이다가 잠시 뒤 완료로 바뀐다(시연용).
   const [unitCleared, setUnitCleared] = useState(false);
   useEffect(() => {
