@@ -1,3 +1,4 @@
+import type { ReactNode } from "@lynx-js/react";
 import type { IconPosition } from "../button/button.contract";
 
 export const BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD = 48;
@@ -24,6 +25,9 @@ export type BottomSheetProps = {
   readonly draggable?: boolean;
   readonly motion?: BottomSheetMotion;
   readonly ondismiss: (reason: BottomSheetDismissReason) => void;
+  /** 설명 아래·액션 위에 두는 임의 내용(예: 스크롤 목록). 이 자리는 스스로 스크롤하지 않는다 —
+   *  스크롤과 가장자리 Fog는 소비자가 함께 둔다(Fog가 스크롤 밖에 있어야 따라 움직이지 않는다). */
+  readonly children?: ReactNode;
 };
 
 export type BottomSheetContract = {

@@ -26,7 +26,7 @@ describe("CompactNumericInput", () => {
     expect(input).toHaveClass("ui-lynx-compact-numeric-input", "ui-lynx-compact-numeric-input-s");
     expect(input).toHaveAttribute("type", "digit");
     expect(input).toHaveAttribute("maxlength", "1");
-    expect(input).toHaveAttribute("input-filter", "[^0-9]");
+    expect(input).toHaveAttribute("input-filter", "[0-9]");
     expect(input).toHaveAttribute("confirm-type", "done");
     expect(input).toHaveAttribute("default-value", "8");
     expect(input).toHaveAttribute("placeholder", "0");
@@ -47,6 +47,26 @@ describe("CompactNumericInput", () => {
 
     expect(onInput).toHaveBeenCalledOnce();
     expect(onInput).toHaveBeenCalledWith("7");
+  });
+
+  // Lynx가 input의 `:focus`를 칠하지 않아 포커스를 클래스로 낸다(2026-09-21).
+  test("포커스 동안만 focused 클래스를 붙인다", () => {
+    render(<CompactNumericInput accessibilityLabel="수량" />);
+    const inputRef = lynx
+      .createSelectorQuery()
+      .select('[data-testid="ui-lynx-compact-numeric-input"]');
+    const input = screen.getByTestId("ui-lynx-compact-numeric-input");
+    expect(input.className).not.toContain("ui-lynx-compact-numeric-input-focused");
+
+    fireEvent.focus(inputRef as unknown as Element, { detail: { value: "" } });
+    expect(screen.getByTestId("ui-lynx-compact-numeric-input").className).toContain(
+      "ui-lynx-compact-numeric-input-focused",
+    );
+
+    fireEvent.blur(inputRef as unknown as Element, { detail: { value: "" } });
+    expect(screen.getByTestId("ui-lynx-compact-numeric-input").className).not.toContain(
+      "ui-lynx-compact-numeric-input-focused",
+    );
   });
 
   test("focus와 blur를 각각 한 번 전달한다", () => {

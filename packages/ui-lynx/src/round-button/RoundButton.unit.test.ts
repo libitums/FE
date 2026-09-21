@@ -20,7 +20,7 @@ describe("getRoundButtonContract", () => {
     });
   });
 
-  test.each(["neutral", "brand"] as const)(
+  test.each(["neutral", "brand", "overlay"] as const)(
     "%s variant와 모든 size의 class 순서를 고정한다",
     (variant) => {
       for (const size of ["s", "m", "l", "xl"] as const) {
@@ -82,6 +82,7 @@ describe("getRoundButtonForegroundColor", () => {
     [{ variant: "brand", disabled: true }, color.brand["reward-disabled-surface"]],
     [{ variant: "neutral", disabled: true, loading: true }, color.gray[500]],
     [{ variant: "brand", disabled: true, loading: true }, color.brand["reward-disabled-surface"]],
+    [{ variant: "overlay" }, color.white],
   ] as const)("%j 상태는 정확한 token identity를 반환한다", (state, expected) => {
     expect(
       getRoundButtonForegroundColor({ accessibilityLabel: "정보", icon: "<svg />", ...state }),

@@ -68,11 +68,13 @@ describe("Fog UI", () => {
       /\.ui-lynx-fog-(?:start|end)\.ui-lynx-fog-size-full\s*\{[^}]*width:\s*100%/s,
     );
     expect(styles).toMatch(
-      /\.ui-lynx-fog-color-white\s*\{[^}]*--libitum-ui-lynx-fog-transparent:\s*rgba\(255, 255, 255, 0\)[^}]*--libitum-ui-lynx-fog-opaque:\s*var\(--libitum-color-white\)/s,
+      /\.ui-lynx-fog-color-white\s*\{[^}]*--libitum-ui-lynx-fog-transparent:\s*rgba\(255, 255, 255, 0\)[^}]*--libitum-ui-lynx-fog-opaque:\s*rgba\(255, 255, 255, 1\)/s,
     );
     expect(styles).toMatch(
-      /\.ui-lynx-fog-color-surface-default\s*\{[^}]*--libitum-ui-lynx-fog-transparent:\s*rgba\(255, 253, 252, 0\)[^}]*--libitum-ui-lynx-fog-opaque:\s*var\(--libitum-elevation-surface-default\)/s,
+      /\.ui-lynx-fog-color-surface-default\s*\{[^}]*--libitum-ui-lynx-fog-transparent:\s*rgba\(255, 253, 252, 0\)[^}]*--libitum-ui-lynx-fog-opaque:\s*rgba\(255, 253, 252, 1\)/s,
     );
+    // 값이 또 var()인 커스텀 프로퍼티는 ReactLynx 번들에서 선언째 버려진다 — Fog 색이 사라진다.
+    expect(styles).not.toMatch(/--libitum-ui-lynx-fog-[a-z-]+:\s*var\(/);
     expect(styles).toMatch(/\.ui-lynx-fog-hidden\s*\{[^}]*opacity:\s*0/s);
     expect(styles).toMatch(/\.ui-lynx-fog-visible\s*\{[^}]*opacity:\s*1/s);
   });

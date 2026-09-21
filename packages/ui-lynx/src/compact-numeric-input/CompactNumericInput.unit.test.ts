@@ -108,7 +108,7 @@ describe("compact-numeric-input.css", () => {
       /\.ui-lynx-compact-numeric-input\s*\{[^}]*background-color:\s*var\(--libitum-color-gray-100\)[^}]*color:\s*var\(--libitum-color-fg-neutral\)/,
     );
     expect(styles).toMatch(
-      /\.ui-lynx-compact-numeric-input:focus\s*\{[^}]*background-color:\s*var\(--libitum-color-white\)[^}]*border-width:\s*var\(--libitum-stroke-width-thin\)[^}]*border-color:\s*var\(--libitum-color-brand-strong\)/,
+      /\.ui-lynx-compact-numeric-input:focus,\s*\.ui-lynx-compact-numeric-input-focused\s*\{[^}]*background-color:\s*var\(--libitum-color-white\)[^}]*border-width:\s*var\(--libitum-stroke-width-thin\)[^}]*border-color:\s*var\(--libitum-color-brand-strong\)/,
     );
     expect(styles).toMatch(
       /\.ui-lynx-compact-numeric-input-error(?:,|\s*\{)[\s\S]*background-color:\s*var\(--libitum-color-feedback-incorrect-surface\)[^}]*color:\s*var\(--libitum-color-feedback-incorrect-text\)[^}]*border-color:\s*var\(--libitum-color-feedback-incorrect\)/,
