@@ -6,6 +6,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   private var performanceCapture: LynxPerformanceCapture?
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    // WebP 디코더는 Podfile에 들어 있지만(LynxService/Image) 등록하지 않으면 쓰이지 않는다.
+    // 등록이 없으면 `<image>`가 WebP를 받아 캐시까지 해 놓고 **아무것도 그리지 않는다** —
+    // 오류 이벤트도 없다. Explorer는 이 등록을 스스로 하므로 개발 루프에서는 드러나지 않는다.
+    // 스플래시 로고 애니메이션(animated WebP)이 이것에 기대고 있다.
+    SDImageCodersManager.shared.addCoder(SDImageWebPCoder.shared)
+
     let environment = LynxEnv.sharedInstance()
     performanceCapture = LynxPerformanceCapture.makeIfEnabled(
       arguments: ProcessInfo.processInfo.arguments
