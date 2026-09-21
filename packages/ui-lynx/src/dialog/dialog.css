@@ -16,7 +16,7 @@
   justify-content: center;
 }
 
-.ui-lynx-dialog > .ui-lynx-overlay {
+.ui-lynx-dialog .ui-lynx-overlay {
   z-index: 0;
 }
 
