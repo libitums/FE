@@ -20,6 +20,7 @@
     "./dist/bottom-sheet/bottom-sheet.css",
     "./dist/overlay/overlay.css",
     "./dist/answer-label/answer-label.css",
+    "./dist/avatar/avatar.css",
     "./dist/card/card.css",
     "./dist/compact-numeric-input/compact-numeric-input.css",
     "./dist/fog/fog.css",
@@ -104,6 +105,12 @@
       "default": "./dist/answer-label/index.js"
     },
     "./answer-label/styles.css": "./dist/answer-label/answer-label.css",
+    "./avatar": {
+      "types": "./dist/avatar/index.d.ts",
+      "import": "./dist/avatar/index.js",
+      "default": "./dist/avatar/index.js"
+    },
+    "./avatar/styles.css": "./dist/avatar/avatar.css",
     "./card": {
       "types": "./dist/card/index.d.ts",
       "import": "./dist/card/index.js",

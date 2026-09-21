@@ -19,6 +19,7 @@ describe("ui-lynx styles", () => {
     expect(styles).toContain('@import "./bottom-navigator/bottom-navigator.css"');
     expect(styles).toContain('@import "./dialog/dialog.css"');
     expect(styles).toContain('@import "./answer-label/answer-label.css"');
+    expect(styles).toContain('@import "./avatar/avatar.css"');
     expect(styles).toContain('@import "./compact-numeric-input/compact-numeric-input.css"');
     expect(styles).toContain('@import "./bottom-sheet/bottom-sheet.css"');
     expect(styles).toContain('@import "./text-field/text-field.css"');

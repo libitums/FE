@@ -22,6 +22,7 @@ import {
 } from "./bottom-sheet-story";
 import { normalizeChatBubbleStoryArgs } from "./chat-bubble-story";
 import { normalizeTextFieldStoryArgs } from "./text-field-story";
+import { normalizeAvatarStoryArgs } from "./avatar-story";
 import { normalizeVisualNovelDialogStoryArgs } from "./visual-novel-dialog-story";
 import { normalizeTooltipStoryArgs } from "./tooltip-story";
 import { normalizeFogStoryArgs } from "./fog-story";
@@ -75,6 +76,49 @@ describe("Storybook Lynx build outputs", () => {
     expect(dispatchDialogStoryAction(data, "continue", (value) => calls.push(value))).toBe(true);
     expect(dispatchDialogStoryAction(data, "quit", (value) => calls.push(value))).toBe(false);
     expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onAction", args: ["continue"] }]);
+  });
+
+  test("avatar init data는 직렬화 가능한 유효 옵션으로 정규화된다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeAvatarStoryArgs({
+            content: "image",
+            name: "김말랑",
+            size: "xl",
+            accessibility: "hidden",
+            showAllSizes: true,
+          }),
+        ),
+      ),
+    ).toEqual({
+      content: "image",
+      name: "김말랑",
+      size: "xl",
+      accessibility: "hidden",
+      showAllSizes: true,
+    });
+    expect(normalizeAvatarStoryArgs({ content: "bad" as never, size: "xxl" as never })).toEqual({
+      content: "initials",
+      name: "Kim Ray",
+      size: "md",
+      accessibility: "label",
+      showAllSizes: false,
+    });
+    expect(normalizeAvatarStoryArgs(null)).toEqual({
+      content: "initials",
+      name: "Kim Ray",
+      size: "md",
+      accessibility: "label",
+      showAllSizes: false,
+    });
+    expect(normalizeAvatarStoryArgs(undefined)).toEqual({
+      content: "initials",
+      name: "Kim Ray",
+      size: "md",
+      accessibility: "label",
+      showAllSizes: false,
+    });
   });
 
   test("visual novel dialog init data는 독립 옵션을 직렬화 가능한 계약으로 정규화한다", () => {
@@ -586,6 +630,7 @@ describe("Storybook Lynx build outputs", () => {
     "dialog",
     "overlay",
     "answer-label",
+    "avatar",
     "card",
     "chat-bubble",
     "visual-novel-dialog",
@@ -644,6 +689,13 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-answer-label--subtle");
     expect(index).toContain("components-answer-label--large");
     expect(index).toContain("components-answer-label--long-label");
+    expect(index).toContain("components-avatar--image");
+    expect(index).toContain("components-avatar--initials");
+    expect(index).toContain("components-avatar--cjk-initials");
+    expect(index).toContain("components-avatar--placeholder");
+    expect(index).toContain("components-avatar--broken-image");
+    expect(index).toContain("components-avatar--all-sizes");
+    expect(index).toContain("components-avatar--decorative");
     expect(index).toContain("components-card--static");
     expect(index).toContain("components-card--interactive");
     expect(index).toContain("components-card--large-with-media");
@@ -716,6 +768,7 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/dialog": ["../../packages/ui-lynx/src/dialog/index.ts"],
       "@libitums/ui-lynx/overlay": ["../../packages/ui-lynx/src/overlay/index.ts"],
       "@libitums/ui-lynx/answer-label": ["../../packages/ui-lynx/src/answer-label/index.ts"],
+      "@libitums/ui-lynx/avatar": ["../../packages/ui-lynx/src/avatar/index.ts"],
       "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"],
       "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
       "@libitums/ui-lynx/visual-novel-dialog": [
@@ -743,6 +796,7 @@ describe("Storybook Lynx build outputs", () => {
     ["dialog", "@libitums/ui-lynx/dialog"],
     ["overlay", "@libitums/ui-lynx/overlay"],
     ["answer-label", "@libitums/ui-lynx/answer-label"],
+    ["avatar", "@libitums/ui-lynx/avatar"],
     ["card", "@libitums/ui-lynx/card"],
     ["chat-bubble", "@libitums/ui-lynx/chat-bubble"],
     ["visual-novel-dialog", "@libitums/ui-lynx/visual-novel-dialog"],
@@ -791,6 +845,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(/["']?dialog["']?\s*:\s*["']\.\/src\/lynx\/dialog\.tsx["']/);
     expect(config).toMatch(/["']?overlay["']?\s*:\s*["']\.\/src\/lynx\/overlay\.tsx["']/);
     expect(config).toMatch(/["']?answer-label["']?\s*:\s*["']\.\/src\/lynx\/answer-label\.tsx["']/);
+    expect(config).toMatch(/["']?avatar["']?\s*:\s*["']\.\/src\/lynx\/avatar\.tsx["']/);
     expect(config).toMatch(/["']?card["']?\s*:\s*["']\.\/src\/lynx\/card\.tsx["']/);
     expect(config).toMatch(
       /["']?compact-numeric-input["']?\s*:\s*["']\.\/src\/lynx\/compact-numeric-input\.tsx["']/,
@@ -832,6 +887,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/answer-label/index.d.ts",
       import: "./dist/answer-label/index.js",
       default: "./dist/answer-label/index.js",
+    });
+    expect(packageJson.exports["./avatar"]).toEqual({
+      types: "./dist/avatar/index.d.ts",
+      import: "./dist/avatar/index.js",
+      default: "./dist/avatar/index.js",
     });
     expect(packageJson.exports["./card"]).toEqual({
       types: "./dist/card/index.d.ts",
@@ -903,6 +963,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(await outputExists("../../packages/ui-lynx/dist/answer-label/answer-label.css")).toBe(
       true,
     );
+    expect(await outputExists("../../packages/ui-lynx/dist/avatar/Avatar.jsx")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/avatar/avatar.contract.js")).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/avatar/avatar.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/card/Card.jsx")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/card/card.contract.js")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/card/card.css")).toBe(true);
@@ -929,6 +992,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('component: "ProgressHeader"');
     for (const directory of [
       "answer-label",
+      "avatar",
       "back-header",
       "bottom-navigator",
       "bottom-sheet",

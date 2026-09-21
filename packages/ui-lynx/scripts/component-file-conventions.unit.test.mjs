@@ -118,6 +118,7 @@ describe("findComponentFileConventionViolations", () => {
 
     expect(directories).toEqual([
       "answer-label",
+      "avatar",
       "back-header",
       "bottom-navigator",
       "bottom-sheet",

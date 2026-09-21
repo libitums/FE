@@ -106,7 +106,12 @@ export type Screen =
   // 멤버가 여기 서는 이유는 `App.tsx`의 `never` 망라가 case를 강제해서 개발자가
   // `handwritingProbeNav`로 부팅 상태만 바꿔 끼우면 닿게 하기 위해서다. 제품 화면
   // 뒤 맨 끝에 둔다 — 진입 흐름 멤버들과 달리 제품 경로가 없는 개발용이다.
-  | { name: "handwriting-probe" };
+  | { name: "handwriting-probe" }
+  // LIB-267: 말하기 탐침 route. 손글씨 탐침과 같은 성질이라 그 바로 뒤에 둔다 —
+  // 필드가 없고, **어느 코드도 이 화면을 push하지 않는다.** 멤버가 여기 서는 이유도
+  // 같다: `App.tsx`의 `never` 망라가 case를 강제해서, 개발자가 `speechProbeNav`로
+  // 부팅 상태만 바꿔 끼우면 닿는다. 제품 화면 뒤 맨 끝이 탐침들의 자리다.
+  | { name: "speech-probe" };
 
 // LIB-255 계약 §2.6: 롤플레이 route 셋만 좁힌 타입. `renderRoleplayUnitScreen`의
 // 매개변수 타입이 연습 경계를 진다(계약 §6 ②).
@@ -196,6 +201,27 @@ export const handwritingProbeNav: Nav = {
   ...initialNav,
   entry: [],
   stacks: { ...initialNav.stacks, journey: [{ name: "handwriting-probe" }] },
+};
+
+/**
+ * 개발용 말하기 탐침 부팅 상태 (LIB-267). 위 `handwritingProbeNav`와 같은 모양이고
+ * 같은 근거다 — **제품 경로가 이것을 읽지 않는다.** `App.tsx`에 이 이름이 한 자리도
+ * 없다는 것이 도달 경로 0건의 직접 증거다.
+ *
+ * 탐침을 보려면 `App.tsx`의 `useReducer(navReducer, entryInitialNav)` 한 자리를
+ * `speechProbeNav`로 바꾸고 dev 서버를 다시 읽힌다. 확인 뒤 되돌린다 —
+ * `git diff -- apps/mobile/src/app/App.tsx`가 0줄인 것이 되돌아왔다는 증거다.
+ *
+ * ⭐ `entry`를 비운 채로 세우는 것이 이 값의 불변식이다. `activeStack`은 `entry`가
+ * 비어 있지 않으면 `entry`를 **먼저** 고르므로, 진입 구간이 실린 부팅 상태
+ * (`entryInitialNav`)를 바탕으로 펼치면 부팅이 진입 흐름으로 가고 탐침에는 영영 닿지
+ * 못한다. 그래서 바탕은 `initialNav`이고 `entry: []`를 문면에 적어 둔다 — 바탕이
+ * 바뀌어도 이 한 줄이 불변식을 지킨다.
+ */
+export const speechProbeNav: Nav = {
+  ...initialNav,
+  entry: [],
+  stacks: { ...initialNav.stacks, journey: [{ name: "speech-probe" }] },
 };
 
 // `default` 없는 switch — 수단이 늘면 TS2366으로 선다(§2.7). `phone`만 코드 검증을

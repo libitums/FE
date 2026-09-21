@@ -35,6 +35,7 @@ final class ViewController: UIViewController {
       config.register(AudioPlaybackModule.self)
       config.register(CompletionAnnouncementModule.self)
       config.register(HandwritingRecognitionModule.self)
+      config.register(SpeechRecognitionModule.self)
       builder.config = config
       builder.screenSize = UIScreen.main.bounds.size
       // 시스템 글자 크기를 코어 배율로 넘긴다 (ADR-0020 D1).

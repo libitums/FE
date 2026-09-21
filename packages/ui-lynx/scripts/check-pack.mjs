@@ -89,6 +89,13 @@ const components = [
     css: "answer-label.css",
   },
   {
+    subpath: "avatar",
+    directory: "avatar",
+    component: "Avatar",
+    modules: ["avatar.contract"],
+    css: "avatar.css",
+  },
+  {
     subpath: "card",
     directory: "card",
     component: "Card",
@@ -290,6 +297,14 @@ if (answerLabelStylesExport !== "./dist/answer-label/answer-label.css") {
 }
 if (!files.includes(`package/${answerLabelStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the AnswerLabel CSS export target");
+}
+
+const avatarStylesExport = packedPackageJson.exports?.["./avatar/styles.css"];
+if (avatarStylesExport !== "./dist/avatar/avatar.css") {
+  throw new Error("packed package has an invalid ./avatar/styles.css export");
+}
+if (!files.includes(`package/${avatarStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the Avatar CSS export target");
 }
 
 const compactNumericInputStylesExport =

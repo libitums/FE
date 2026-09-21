@@ -222,6 +222,37 @@ xcrun simctl install booted /tmp/dd/Build/Products/Debug-iphonesimulator/Host.ap
 xcrun simctl launch booted com.libitum.host
 ```
 
+**호스트 네이티브 테스트는 `pnpm verify` 밖이다.** `HostTests`(XCTest)는 macOS와 Xcode가
+있어야 돌고, Linux CI가 도는 `verify`의 세 계층은 전부 JS 쪽이다
+([ADR-0006 D4](../adr/0006-command-interface-and-test-layers.md)). **적히지 않으면 아무도
+돌리지 않는다** — 그래서 여기 적는다. 호스트의 네이티브 파일을 고쳤으면 이것을 돌린다.
+
+```sh
+cd apps/ios
+xcodebuild test -workspace Host.xcworkspace -scheme Host \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+```
+
+> ⛔ **지뢰 — 바로 위의 `pod install`이 이 테스트를 깬다.** `apps/ios/Podfile`에
+> **`HostTests` 타깃 선언이 없다.** 그런데 커밋된 `Host.xcodeproj/project.pbxproj`는
+> HostTests의 Debug 설정에 `Pods-Host.debug.xcconfig` 참조를 **손으로** 들고 있고,
+> 테스트 타깃에 Lynx 헤더 검색 경로를 주는 것이 그 한 줄이다.
+>
+> **`pod install`을 돌리면 그 참조가 지워진다** — Podfile이 선언하지 않은 타깃이라
+> CocoaPods가 자기 관리 대상으로 보지 않는다. 지워진 뒤에는 `xcodebuild test`가
+> **`'Lynx/LynxConfig.h' file not found`** 로 깨진다. 빌드·설치 절차가 `pod install`을
+> 지시하므로 **이 둘은 같은 자리에 산다.**
+>
+> **깨졌으면** 그 참조를 되돌린다 — 커밋된 `project.pbxproj`가 정본이다. 단
+> `git checkout -- apps/ios/Host.xcodeproj/project.pbxproj`는 **그 파일의 다른 변경까지
+> 함께 되돌린다.** 먼저 `git diff`로 무엇이 딸려 가는지 보고 판단한다.
+>
+> **근본 수정은 `Podfile`에 테스트 타깃을 선언하는 것**이다 —
+> `target 'HostTests' do inherit! :search_paths end`. 그러면 CocoaPods가 전용 xcconfig를
+> 만들어 스스로 붙이고, 손으로 든 참조가 필요 없어진다. **아직 안 했다** — 무엇이 막고
+> 있는지만 여기 적어 둔다.
+
 **번들을 어디서 읽나** — 빌드 구성이 가른다 (ADR-0012 D2).
 
 | 구성 | 읽는 곳 | 언제 |
