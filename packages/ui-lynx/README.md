@@ -4,7 +4,7 @@ libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
 `PageIndicator`, `BottomNavigator`, `StepIndicator`, `BottomSheet`, `CompactNumericInput`,
 `Card`, `ChatBubble`, `VisualNovelDialog`, `TextField`, `AnswerLabel`, `Overlay`, `Fog`, `Tooltip`,
-`Avatar` 열아홉 가지다.
+`Avatar`, `Dialog` 스무 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
@@ -132,6 +132,28 @@ import { StepIndicator } from "@libitums/ui-lynx/step-indicator";
 import "@libitums/ui-lynx/styles.css";
 
 <StepIndicator currentStep={2} totalSteps={4} />;
+```
+
+`Dialog`는 사용자가 1~2개 action 중 하나를 선택할 때까지 진행을 막는 modal이다. Scrim
+탭으로 닫히지 않으며 공용 `Overlay`의 Screen · Dialog · Dismiss None 조합을 사용한다. 두
+action은 제품 결정에 따라 위에서부터 Brand, Subtle 순서다. `phase`는 진입·표시·퇴장 전환을
+명시하고 `data-cancelactionid`는
+뒤로가기·ESC를 연결할 때 실행할 아래쪽 action id를 노출한다. 배경 접근성 숨김과 닫힌 뒤
+focus 복원은 Dialog를 여는 소비 화면이 소유한다.
+
+```tsx
+import { Dialog } from "@libitums/ui-lynx/dialog";
+import "@libitums/ui-lynx/dialog/styles.css";
+
+<Dialog
+  title="학습을 그만둘까요?"
+  description="지금까지의 진행 내용이 사라져요"
+  actions={[
+    { id: "continue", label: "계속 학습하기" },
+    { id: "quit", label: "그만두기" },
+  ]}
+  bindaction={handleDialogAction}
+/>;
 ```
 
 `Overlay`는 dim/blur와 입력 차단만 소유한다. foreground surface는 sibling으로 두며 Screen은
@@ -272,6 +294,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/bottom-sheet/styles.css`
 - `@libitums/ui-lynx/step-indicator`
 - `@libitums/ui-lynx/step-indicator/styles.css`
+- `@libitums/ui-lynx/dialog`
+- `@libitums/ui-lynx/dialog/styles.css`
 - `@libitums/ui-lynx/overlay`
 - `@libitums/ui-lynx/overlay/styles.css`
 - `@libitums/ui-lynx/answer-label`
@@ -311,7 +335,7 @@ label을 같은 canonical count로 clamp한다.
 
 새 컴포넌트와 기존 컴포넌트 정리는
 [`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
-규칙을 따른다. 공개 컴포넌트 열아홉 개 모두 `<component>.contract.ts`에 공개
+규칙을 따른다. 공개 컴포넌트 스무 개 모두 `<component>.contract.ts`에 공개
 타입과 순수 계약 로직을 함께 두고 PascalCase component test 이름을 쓴다.
 
 일반 소비자는 aggregate `@libitums/ui-lynx/styles.css`를 Lynx 진입점에서 한 번 import한다.
@@ -319,7 +343,7 @@ label을 같은 canonical count로 clamp한다.
 ReactLynx를 번들하지 않고 `>=0.123.0 <0.126.0` peer로 요구한다.
 `pnpm --filter @libitums/ui-lynx pack:check`는 실제 tarball에 컴파일된 JSX·선언·CSS,
 canonical contract, README와 docs만 들어가고 generic contract/logic 산출물이 없는지
-검증한다. package integration test도 이 부재 계약을 열아홉 subpath 전체에서 확인한다.
+검증한다. package integration test도 이 부재 계약을 스무 subpath 전체에서 확인한다.
 
 AnswerLabel은 `components/indicator/answer-label.md`의 Result·Emphasis·Size 독립 조합을
 따른다. Solid는 고대비 strong surface, Subtle은 semantic feedback surface를 사용하고 S/M/L은
@@ -331,6 +355,12 @@ StepIndicator는 최신 파일 규칙에 따라 공개 타입과 `getStepIndicat
 `step-indicator.contract.ts` 하나에서 소유하고 단위 테스트는
 `StepIndicator.unit.test.ts`에 둔다.
 
+Dialog는 `components/dialog.md` revision `133322d7b080e464303a38456f4da45c8accdda9`의
+중앙 배치, 1~2개 세로 action과 reduced motion 계약을 따른다. surface는 제품 결정에 따라
+원본 floating surface 대신 `color.white`를 사용한다. action이
+하나면 Brand, 둘이면 Brand/Subtle 순서이며 이는 main action을 `brand.primary`로 사용하라는
+제품 결정을 원본 Neutral 규칙보다 우선한 예외다. 모든 action이 비활성인 진행 불가능한 계약은
+거부한다. Scrim은 공용 Overlay를 사용하고 tap handler를 연결하지 않는다.
 Card는 design-system `components/card.md` revision
 `b53b03ac887bd89ab246f8de1c1d4716900d1c4d`를 따른다. M/L content padding, surface/shadow,
 Header·Body·Footer 간격, optional Media clipping과 Interactive pressed/focus 상태를 토큰으로

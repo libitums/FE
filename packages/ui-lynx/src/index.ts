@@ -62,6 +62,16 @@ export type {
   StepIndicatorStep,
   StepIndicatorStepStatus,
 } from "./step-indicator";
+
+export { Dialog, getDialogContract } from "./dialog";
+export type {
+  DialogAction,
+  DialogActionContract,
+  DialogContract,
+  DialogMotion,
+  DialogPhase,
+  DialogProps,
+} from "./dialog";
 export { Overlay, getOverlayContract } from "./overlay";
 export type {
   AreaOverlayProps,

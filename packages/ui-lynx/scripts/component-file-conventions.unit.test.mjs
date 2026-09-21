@@ -126,6 +126,7 @@ describe("findComponentFileConventionViolations", () => {
       "card",
       "chat-bubble",
       "compact-numeric-input",
+      "dialog",
       "fog",
       "overlay",
       "page-indicator",

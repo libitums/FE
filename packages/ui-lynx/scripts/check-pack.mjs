@@ -68,6 +68,13 @@ const components = [
     css: "step-indicator.css",
   },
   {
+    subpath: "dialog",
+    directory: "dialog",
+    component: "Dialog",
+    modules: ["dialog.contract"],
+    css: "dialog.css",
+  },
+  {
     subpath: "overlay",
     directory: "overlay",
     component: "Overlay",
@@ -228,6 +235,13 @@ if (stepIndicatorStylesExport !== "./dist/step-indicator/step-indicator.css") {
   throw new Error("packed package has an invalid ./step-indicator/styles.css export");
 }
 
+const dialogStylesExport = packedPackageJson.exports?.["./dialog/styles.css"];
+if (dialogStylesExport !== "./dist/dialog/dialog.css") {
+  throw new Error("packed package has an invalid ./dialog/styles.css export");
+}
+if (!files.includes(`package/${dialogStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the Dialog CSS export target");
+}
 const overlayStylesExport = packedPackageJson.exports?.["./overlay/styles.css"];
 if (overlayStylesExport !== "./dist/overlay/overlay.css") {
   throw new Error("packed package has an invalid ./overlay/styles.css export");

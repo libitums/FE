@@ -15,8 +15,9 @@
     "./dist/progress-header/progress-header.css",
     "./dist/page-indicator/page-indicator.css",
     "./dist/bottom-navigator/bottom-navigator.css",
-    "./dist/bottom-sheet/bottom-sheet.css",
     "./dist/step-indicator/step-indicator.css",
+    "./dist/dialog/dialog.css",
+    "./dist/bottom-sheet/bottom-sheet.css",
     "./dist/overlay/overlay.css",
     "./dist/answer-label/answer-label.css",
     "./dist/avatar/avatar.css",
@@ -86,6 +87,12 @@
       "default": "./dist/step-indicator/index.js"
     },
     "./step-indicator/styles.css": "./dist/step-indicator/step-indicator.css",
+    "./dialog": {
+      "types": "./dist/dialog/index.d.ts",
+      "import": "./dist/dialog/index.js",
+      "default": "./dist/dialog/index.js"
+    },
+    "./dialog/styles.css": "./dist/dialog/dialog.css",
     "./overlay": {
       "types": "./dist/overlay/index.d.ts",
       "import": "./dist/overlay/index.js",

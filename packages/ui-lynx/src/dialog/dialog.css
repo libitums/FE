@@ -1,0 +1,146 @@
+@import "@libitums/design-tokens/css/variables.css";
+@import "@libitums/design-tokens/css/typography.css";
+@import "../button/button.css";
+@import "../overlay/overlay.css";
+
+.ui-lynx-dialog {
+  position: fixed;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-lynx-dialog .ui-lynx-overlay {
+  z-index: 0;
+}
+
+.ui-lynx-dialog-container {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - var(--libitum-spacing-64));
+  max-width: 320px;
+  padding: var(--libitum-spacing-20);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--libitum-color-white);
+  border-radius: var(--libitum-radius-lg);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.ui-lynx-dialog-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.ui-lynx-dialog-description {
+  margin-top: var(--libitum-spacing-8);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.ui-lynx-dialog-actions {
+  width: 100%;
+  margin-top: var(--libitum-spacing-20);
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+}
+
+.ui-lynx-dialog-action {
+  width: 100%;
+}
+
+@keyframes ui-lynx-dialog-fade-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ui-lynx-dialog-container-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ui-lynx-dialog-container-exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes ui-lynx-dialog-fade-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.ui-lynx-dialog-phase-entering .ui-lynx-dialog-container {
+  animation: ui-lynx-dialog-container-enter var(--libitum-motion-duration-dialog)
+    var(--libitum-motion-easing-enter) both;
+}
+
+.ui-lynx-dialog-phase-exiting .ui-lynx-dialog-container {
+  animation: ui-lynx-dialog-container-exit var(--libitum-motion-duration-dialog)
+    var(--libitum-motion-easing-exit) both;
+}
+
+.ui-lynx-dialog-motion-reduced.ui-lynx-dialog-phase-entering .ui-lynx-dialog-container {
+  animation-name: ui-lynx-dialog-fade-enter;
+  animation-duration: var(--libitum-motion-duration-d2);
+  animation-timing-function: var(--libitum-motion-easing-linear);
+}
+
+.ui-lynx-dialog-motion-reduced.ui-lynx-dialog-phase-exiting .ui-lynx-dialog-container {
+  animation-name: ui-lynx-dialog-fade-exit;
+  animation-duration: var(--libitum-motion-duration-d2);
+  animation-timing-function: var(--libitum-motion-easing-linear);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-lynx-dialog-phase-entering .ui-lynx-dialog-container {
+    animation-name: ui-lynx-dialog-fade-enter;
+    animation-duration: var(--libitum-motion-duration-d2);
+    animation-timing-function: var(--libitum-motion-easing-linear);
+  }
+
+  .ui-lynx-dialog-phase-exiting .ui-lynx-dialog-container {
+    animation-name: ui-lynx-dialog-fade-exit;
+    animation-duration: var(--libitum-motion-duration-d2);
+    animation-timing-function: var(--libitum-motion-easing-linear);
+  }
+
+  .ui-lynx-dialog .ui-lynx-overlay {
+    animation-duration: var(--libitum-motion-duration-d2);
+    animation-timing-function: var(--libitum-motion-easing-linear);
+  }
+}

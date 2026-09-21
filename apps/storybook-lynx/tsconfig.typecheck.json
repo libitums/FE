@@ -16,6 +16,7 @@
         "../../packages/ui-lynx/src/bottom-navigator/index.ts"
       ],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/dialog": ["../../packages/ui-lynx/src/dialog/index.ts"],
       "@libitums/ui-lynx/overlay": ["../../packages/ui-lynx/src/overlay/index.ts"],
       "@libitums/ui-lynx/answer-label": ["../../packages/ui-lynx/src/answer-label/index.ts"],
       "@libitums/ui-lynx/avatar": ["../../packages/ui-lynx/src/avatar/index.ts"],

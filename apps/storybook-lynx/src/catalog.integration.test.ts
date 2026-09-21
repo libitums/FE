@@ -7,6 +7,7 @@ import {
   normalizeBottomNavigatorStoryArgs,
 } from "./bottom-navigator-story";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "./round-button-story";
+import { dispatchDialogStoryAction, normalizeDialogStoryArgs } from "./dialog-story";
 import {
   dispatchCompactNumericInputStoryInput,
   normalizeCompactNumericInputStoryArgs,
@@ -46,6 +47,37 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("dialog init data는 직렬화 가능한 action 계약으로 정규화된다", () => {
+    const data = normalizeDialogStoryArgs({
+      title: "학습을 그만둘까요?",
+      description: "진행 내용이 사라져요",
+      actionCount: 2,
+      disabledLast: true,
+      motion: "reduced",
+      phase: "entering",
+      onAction: () => undefined,
+    });
+    expect(JSON.parse(JSON.stringify(data))).toEqual({
+      title: "학습을 그만둘까요?",
+      description: "진행 내용이 사라져요",
+      actions: [
+        { id: "continue", label: "계속 학습하기" },
+        { id: "quit", label: "그만두기", disabled: true },
+      ],
+      motion: "reduced",
+      phase: "entering",
+    });
+    expect(data).not.toHaveProperty("onAction");
+  });
+
+  test("dialog bridge는 활성 action만 전달한다", () => {
+    const calls: unknown[] = [];
+    const data = normalizeDialogStoryArgs({ actionCount: 2, disabledLast: true });
+    expect(dispatchDialogStoryAction(data, "continue", (value) => calls.push(value))).toBe(true);
+    expect(dispatchDialogStoryAction(data, "quit", (value) => calls.push(value))).toBe(false);
+    expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onAction", args: ["continue"] }]);
+  });
+
   test("avatar init data는 직렬화 가능한 유효 옵션으로 정규화된다", () => {
     expect(
       JSON.parse(
@@ -595,6 +627,7 @@ describe("Storybook Lynx build outputs", () => {
     "bottom-navigator",
     "bottom-sheet",
     "step-indicator",
+    "dialog",
     "overlay",
     "answer-label",
     "avatar",
@@ -639,6 +672,12 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-step-indicator--first");
     expect(index).toContain("components-step-indicator--middle");
     expect(index).toContain("components-step-indicator--last");
+    expect(index).toContain("components-dialog--default");
+    expect(index).toContain("components-dialog--single-action");
+    expect(index).toContain("components-dialog--without-description");
+    expect(index).toContain("components-dialog--disabled-secondary");
+    expect(index).toContain("components-dialog--reduced-motion");
+    expect(index).toContain("components-dialog--entering");
     expect(index).toContain("components-overlay--sheet-dismissible");
     expect(index).toContain("components-overlay--dialog-modal");
     expect(index).toContain("components-overlay--area");
@@ -726,6 +765,7 @@ describe("Storybook Lynx build outputs", () => {
       ],
       "@libitums/ui-lynx/bottom-sheet": ["../../packages/ui-lynx/src/bottom-sheet/index.ts"],
       "@libitums/ui-lynx/step-indicator": ["../../packages/ui-lynx/src/step-indicator/index.ts"],
+      "@libitums/ui-lynx/dialog": ["../../packages/ui-lynx/src/dialog/index.ts"],
       "@libitums/ui-lynx/overlay": ["../../packages/ui-lynx/src/overlay/index.ts"],
       "@libitums/ui-lynx/answer-label": ["../../packages/ui-lynx/src/answer-label/index.ts"],
       "@libitums/ui-lynx/avatar": ["../../packages/ui-lynx/src/avatar/index.ts"],
@@ -753,6 +793,7 @@ describe("Storybook Lynx build outputs", () => {
     ["bottom-navigator", "@libitums/ui-lynx/bottom-navigator"],
     ["bottom-sheet", "@libitums/ui-lynx/bottom-sheet"],
     ["step-indicator", "@libitums/ui-lynx/step-indicator"],
+    ["dialog", "@libitums/ui-lynx/dialog"],
     ["overlay", "@libitums/ui-lynx/overlay"],
     ["answer-label", "@libitums/ui-lynx/answer-label"],
     ["avatar", "@libitums/ui-lynx/avatar"],
@@ -801,6 +842,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?step-indicator["']?\s*:\s*["']\.\/src\/lynx\/step-indicator\.tsx["']/,
     );
+    expect(config).toMatch(/["']?dialog["']?\s*:\s*["']\.\/src\/lynx\/dialog\.tsx["']/);
     expect(config).toMatch(/["']?overlay["']?\s*:\s*["']\.\/src\/lynx\/overlay\.tsx["']/);
     expect(config).toMatch(/["']?answer-label["']?\s*:\s*["']\.\/src\/lynx\/answer-label\.tsx["']/);
     expect(config).toMatch(/["']?avatar["']?\s*:\s*["']\.\/src\/lynx\/avatar\.tsx["']/);
@@ -830,6 +872,11 @@ describe("Storybook Lynx build outputs", () => {
       types: "./dist/step-indicator/index.d.ts",
       import: "./dist/step-indicator/index.js",
       default: "./dist/step-indicator/index.js",
+    });
+    expect(packageJson.exports["./dialog"]).toEqual({
+      types: "./dist/dialog/index.d.ts",
+      import: "./dist/dialog/index.js",
+      default: "./dist/dialog/index.js",
     });
     expect(packageJson.exports["./overlay"]).toEqual({
       types: "./dist/overlay/index.d.ts",
@@ -959,6 +1006,7 @@ describe("Storybook Lynx build outputs", () => {
       "round-button",
       "status-indicator",
       "step-indicator",
+      "dialog",
       "overlay",
       "text-field",
       "visual-novel-dialog",

@@ -6,6 +6,8 @@ import type {
   RoundButtonSize,
   RoundButtonVariant,
   ProgressHeaderMotion,
+  DialogMotion,
+  DialogPhase,
   AnswerLabelEmphasis,
   AnswerLabelResult,
   AnswerLabelSize,
@@ -92,6 +94,16 @@ export type ProgressHeaderStoryArgs = {
 export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
+};
+
+export type DialogStoryArgs = {
+  title: string;
+  description: string;
+  actionCount: 1 | 2;
+  disabledLast: boolean;
+  motion: DialogMotion;
+  phase: DialogPhase;
+  onAction: (id: string) => void;
 };
 export type AnswerLabelStoryArgs = {
   result: AnswerLabelResult;

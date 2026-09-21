@@ -17,6 +17,7 @@ import * as pageIndicator from "./page-indicator/index";
 import * as bottomNavigator from "./bottom-navigator/index";
 import * as bottomSheet from "./bottom-sheet/index";
 import * as stepIndicator from "./step-indicator/index";
+import * as dialog from "./dialog/index";
 import * as overlay from "./overlay/index";
 import * as answerLabel from "./answer-label/index";
 import * as avatar from "./avatar/index";
@@ -45,6 +46,7 @@ const componentArtifacts = {
   "bottom-navigator": { implementation: "BottomNavigator.jsx", css: "bottom-navigator.css" },
   "bottom-sheet": { implementation: "BottomSheet.jsx", css: "bottom-sheet.css" },
   "step-indicator": { implementation: "StepIndicator.jsx", css: "step-indicator.css" },
+  dialog: { implementation: "Dialog.jsx", css: "dialog.css" },
   overlay: { implementation: "Overlay.jsx", css: "overlay.css" },
   card: { implementation: "Card.jsx", css: "card.css" },
   "chat-bubble": { implementation: "ChatBubble.jsx", css: "chat-bubble.css" },
@@ -70,6 +72,7 @@ const componentEntries = {
   "bottom-navigator": "BottomNavigator",
   "bottom-sheet": "BottomSheet",
   "step-indicator": "StepIndicator",
+  dialog: "Dialog",
   overlay: "Overlay",
   card: "Card",
   "chat-bubble": "ChatBubble",
@@ -102,6 +105,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.BottomNavigator).toBe(bottomNavigator.BottomNavigator);
     expect(root.BottomSheet).toBe(bottomSheet.BottomSheet);
     expect(root.StepIndicator).toBe(stepIndicator.StepIndicator);
+    expect(root.Dialog).toBe(dialog.Dialog);
     expect(root.Card).toBe(card.Card);
     expect(root.ChatBubble).toBe(chatBubble.ChatBubble);
     expect(root.VisualNovelDialog).toBe(visualNovelDialog.VisualNovelDialog);
@@ -121,6 +125,7 @@ describe("ui-lynx package boundaries", () => {
     expect(root.getBottomSheetContract).toBe(bottomSheet.getBottomSheetContract);
     expect(root.shouldDismissBottomSheetDrag).toBe(bottomSheet.shouldDismissBottomSheetDrag);
     expect(root.getStepIndicatorContract).toBe(stepIndicator.getStepIndicatorContract);
+    expect(root.getDialogContract).toBe(dialog.getDialogContract);
     expect(root.Overlay).toBe(overlay.Overlay);
     expect(root.getOverlayContract).toBe(overlay.getOverlayContract);
     expect(root.getAnswerLabelContract).toBe(answerLabel.getAnswerLabelContract);
@@ -161,6 +166,7 @@ describe("ui-lynx package boundaries", () => {
     expect(packageJson.exports["./step-indicator/styles.css"]).toBe(
       "./dist/step-indicator/step-indicator.css",
     );
+    expect(packageJson.exports["./dialog/styles.css"]).toBe("./dist/dialog/dialog.css");
     expect(packageJson.exports["./overlay/styles.css"]).toBe("./dist/overlay/overlay.css");
     expect(packageJson.exports["./answer-label/styles.css"]).toBe(
       "./dist/answer-label/answer-label.css",
@@ -277,6 +283,13 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/step-indicator/step-indicator.contract.js",
       "package/dist/step-indicator/step-indicator.contract.d.ts",
       `package/dist/step-indicator/${componentArtifacts["step-indicator"].css}`,
+      "package/dist/dialog/index.js",
+      `package/dist/dialog/${componentArtifacts.dialog.implementation}`,
+      "package/dist/dialog/index.d.ts",
+      "package/dist/dialog/Dialog.d.ts",
+      "package/dist/dialog/dialog.contract.js",
+      "package/dist/dialog/dialog.contract.d.ts",
+      `package/dist/dialog/${componentArtifacts.dialog.css}`,
       "package/dist/overlay/index.js",
       "package/dist/overlay/Overlay.jsx",
       "package/dist/overlay/index.d.ts",

@@ -15,6 +15,7 @@ export default defineConfig({
       "page-indicator": "./src/lynx/page-indicator.tsx",
       "bottom-navigator": "./src/lynx/bottom-navigator.tsx",
       "step-indicator": "./src/lynx/step-indicator.tsx",
+      dialog: "./src/lynx/dialog.tsx",
       overlay: "./src/lynx/overlay.tsx",
       "answer-label": "./src/lynx/answer-label.tsx",
       avatar: "./src/lynx/avatar.tsx",
