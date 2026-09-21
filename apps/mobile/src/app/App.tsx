@@ -1,4 +1,4 @@
-import { useReducer, useState } from "@lynx-js/react";
+import { useGlobalProps, useReducer, useState } from "@lynx-js/react";
 
 import { AssessmentScreen } from "../screens/assessment/AssessmentScreen";
 import {
@@ -56,6 +56,7 @@ import type { EntryAppProps, EntryLoginMethod } from "../lib/entry-flow";
 // LIB-261 계약 §2.2 · §6: 언어 세션 상태의 초기값과 타입. 라벨 조회는 화면이 진다 —
 // App은 값만 들고 있는다(§6 D-b, 화면 3 미달로 `useState` 유지).
 import { initialEntryLanguage } from "../lib/entry-language";
+import { safeAreaInsetsFrom } from "../lib/safe-area";
 import type { EntryLanguage } from "../lib/entry-language";
 // LIB-261 계약 §2.3: 임시 토큰의 생성·저장과 존재 판정. 저장소 키를 아는 유일한
 // 자리는 `lib/auth-token.ts`다 — App은 값을 들지 않는다.
@@ -673,10 +674,24 @@ export function App({
     },
   };
 
+  // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼 안쪽 여백을
+  // 잡는다. 여백은 셸 배경이 칠하고, 스플래시일 때만 그 배경이 브랜드색이다
+  // (lib/safe-area.ts).
+  const insets = safeAreaInsetsFrom(useGlobalProps());
+  const screenNow = currentScreen(nav);
+
   return (
     <ErrorBoundary>
-      <view className="app">
-        <view className="app-content">{renderScreen(currentScreen(nav), wiring)}</view>
+      <view
+        className={screenNow.name === "splash" ? "app app-splash" : "app"}
+        style={{
+          paddingTop: `${insets.top}px`,
+          paddingBottom: `${insets.bottom}px`,
+          paddingLeft: `${insets.left}px`,
+          paddingRight: `${insets.right}px`,
+        }}
+      >
+        <view className="app-content">{renderScreen(screenNow, wiring)}</view>
         {/* LIB-261 계약 §5.4 · 수용 기준 6: 진입 구간(`entry`가 비지 않은 동안)에는
             탭 전환 수단을 보이지 않는다 — `enterApp`이 `entry`를 비운 뒤에야 처음
             선다(IE1·IE8). */}

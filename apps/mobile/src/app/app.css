@@ -15,3 +15,9 @@
   flex-direction: column;
   flex: 1;
 }
+
+/* 스플래시는 가장자리(상태바 · 홈 인디케이터 뒤)까지 브랜드색이다. 셸의 safe area 여백을
+   셸 배경이 칠하므로 스플래시일 때만 배경을 바꾼다(lib/safe-area.ts). */
+.app-splash {
+  background: var(--libitum-color-brand-primary);
+}

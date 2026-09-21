@@ -114,14 +114,36 @@ final class ViewController: UIViewController {
 
   /// 크기를 `viewDidLoad`가 아니라 여기서 잡는다.
   /// `viewDidLoad` 시점의 `view.frame`은 최종 크기가 아니라서 레이아웃이 어긋난다.
+  ///
+  /// **LynxView는 전체 화면이다.** 예전에는 safe area 안에만 두었는데, 그러면 상태바와
+  /// 홈 인디케이터 뒤는 호스트 배경(흰색)이 칠해져 화면이 가장자리 색을 정할 수 없었다
+  /// (브랜드색 스플래시가 위아래 흰 띠를 달고 떴다). 이제 가려지는 크기를 globalProps
+  /// `safeAreaInsets`로 넘기고, 앱 셸이 그만큼 안쪽 여백을 잡는다(mobile `lib/safe-area.ts`).
+  /// Lynx에는 `env(safe-area-inset-*)`가 없어 이 경로가 유일하다.
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
     guard let lynxView else { return }
-    let safe = view.safeAreaLayoutGuide.layoutFrame
-    guard lynxView.frame != safe else { return }
-    lynxView.frame = safe
-    lynxView.preferredLayoutWidth = safe.width
-    lynxView.preferredLayoutHeight = safe.height
+
+    let insets = view.safeAreaInsets
+    if insets != lastSafeAreaInsets {
+      lastSafeAreaInsets = insets
+      lynxView.updateGlobalProps(with: [
+        "safeAreaInsets": [
+          "top": insets.top,
+          "bottom": insets.bottom,
+          "left": insets.left,
+          "right": insets.right,
+        ],
+      ])
+    }
+
+    let bounds = view.bounds
+    guard lynxView.frame != bounds else { return }
+    lynxView.frame = bounds
+    lynxView.preferredLayoutWidth = bounds.width
+    lynxView.preferredLayoutHeight = bounds.height
     lynxView.triggerLayout()
   }
+
+  private var lastSafeAreaInsets: UIEdgeInsets?
 }
