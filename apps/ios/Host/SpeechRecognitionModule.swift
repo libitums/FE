@@ -337,8 +337,8 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
       try activateRecordingSession()
       try startEngine(current)
     } catch let error as NSError {
-      // 엔진이 시작에서 죽었어도 탭은 이미 걸려 있을 수 있다. `teardown`이 탭까지
-      // 걷는 유일한 자리라 여기서도 그것을 지난다 — 걷는 절차를 두 벌 두지 않는다.
+      // 엔진이 시작에서 죽었어도 탭은 이미 걸려 있을 수 있다. 탭을 걷는 절차는
+      // `stopCapture` 한 벌이고 `teardown`이 그것을 지나므로 여기서도 그것을 부른다.
       session = nil
       current.error = error
       teardown(current)
@@ -453,10 +453,7 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
   /// 필요하다. 확정이 오면 `recognitionTask` 콜백이 끝내고, 안 오면 아래 타임아웃이 끝낸다.
   private static func end() {
     guard let current = session, !current.stopping else { return }
-    current.stopping = true
-    current.engine.stop()
-    current.engine.inputNode.removeTap(onBus: 0)
-    current.request.endAudio()
+    stopCapture(current)
 
     queue.asyncAfter(deadline: .now() + finalizeTimeout) {
       guard session === current else { return }
@@ -472,13 +469,18 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
 
   /// 엔진·탭·오디오 세션을 걷는다. 여러 번 불려도 안전하다.
   private static func teardown(_ current: Session) {
-    if !current.stopping {
-      current.stopping = true
-      current.engine.stop()
-      current.engine.inputNode.removeTap(onBus: 0)
-      current.request.endAudio()
-    }
+    stopCapture(current)
     deactivateRecordingSession()
+  }
+
+  /// 엔진을 멈추고 탭을 걷고 인식기에 「더 없다」를 알린다. **걷는 절차는 여기 한 벌뿐이다** —
+  /// `end()`와 `teardown()`이 함께 지난다. `stopping`이 두 번째 호출을 막는다.
+  private static func stopCapture(_ current: Session) {
+    guard !current.stopping else { return }
+    current.stopping = true
+    current.engine.stop()
+    current.engine.inputNode.removeTap(onBus: 0)
+    current.request.endAudio()
   }
 
   /// 콜백을 **정확히 한 번** 올린다. 올리는 자리가 여기 하나뿐이고, 올린 즉시 콜백을
