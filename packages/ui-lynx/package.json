@@ -11,6 +11,7 @@
   "type": "module",
   "sideEffects": [
     "./dist/styles.css",
+    "./dist/button/button.css",
     "./dist/round-button/round-button.css",
     "./dist/progress-header/progress-header.css",
     "./dist/page-indicator/page-indicator.css",
@@ -27,7 +28,8 @@
     "./dist/chat-bubble/chat-bubble.css",
     "./dist/visual-novel-dialog/visual-novel-dialog.css",
     "./dist/text-field/text-field.css",
-    "./dist/tooltip/tooltip.css"
+    "./dist/tooltip/tooltip.css",
+    "./dist/status-indicator/status-indicator.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -43,6 +45,7 @@
       "import": "./dist/button/index.js",
       "default": "./dist/button/index.js"
     },
+    "./button/styles.css": "./dist/button/button.css",
     "./back-header": {
       "types": "./dist/back-header/index.d.ts",
       "import": "./dist/back-header/index.js",
@@ -53,6 +56,7 @@
       "import": "./dist/status-indicator/index.js",
       "default": "./dist/status-indicator/index.js"
     },
+    "./status-indicator/styles.css": "./dist/status-indicator/status-indicator.css",
     "./round-button": {
       "types": "./dist/round-button/index.d.ts",
       "import": "./dist/round-button/index.js",

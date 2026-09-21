@@ -100,4 +100,24 @@ describe("AnswerLabel contract", () => {
     expect(styles).toContain("width: fit-content");
     expect(styles).not.toMatch(/#[0-9a-f]{3,8}/i);
   });
+
+  test("글자색은 상속에 기대지 않고 상태마다 직접 선언한다", () => {
+    const styles = readFileSync(
+      resolve(process.cwd(), "src/answer-label/answer-label.css"),
+      "utf8",
+    );
+    expect(styles).not.toMatch(/color:\s*inherit/);
+    expect(styles).toMatch(
+      /\.ui-lynx-answer-label-solid \.ui-lynx-answer-label-text\s*\{[^}]*color:\s*var\(--libitum-color-fg-neutral-inverted\)/,
+    );
+    for (const [result, token] of [
+      ["pending", "--libitum-color-fg-brand"],
+      ["correct", "--libitum-color-feedback-correct-text"],
+      ["incorrect", "--libitum-color-feedback-incorrect-text"],
+    ] as const) {
+      expect(styles).toContain(
+        `.ui-lynx-answer-label-${result}.ui-lynx-answer-label-subtle .ui-lynx-answer-label-text {\n  color: var(${token});`,
+      );
+    }
+  });
 });

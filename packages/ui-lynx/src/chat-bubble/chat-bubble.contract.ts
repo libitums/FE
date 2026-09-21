@@ -9,6 +9,8 @@ type ChatBubbleBaseProps = {
   readonly size?: ChatBubbleSize;
   readonly contentLanguage?: ChatBubbleContentLanguage;
   readonly languageTag?: string;
+  /** 본문 아래 한 줄 더 싣는 번역. 비어 있으면 그리지 않는다. */
+  readonly translation?: string;
 };
 
 export type IncomingChatBubbleProps = ChatBubbleBaseProps & {
@@ -40,6 +42,7 @@ export type ChatBubbleContract = {
   readonly direction: ChatBubbleDirection;
   readonly languageTag?: string;
   readonly size: ChatBubbleSize;
+  readonly translation?: string;
 };
 
 function requireVisibleText(value: string, name: "message" | "speaker"): string {
@@ -62,9 +65,12 @@ export function getChatBubbleContract(props: ChatBubbleProps): ChatBubbleContrac
 
   const delivery = props.direction === "incoming" ? "default" : (props.delivery ?? "default");
   const deliveryLabel = chatBubbleDeliveryLabels[delivery];
+  const translation = props.translation?.trim() || undefined;
 
   return {
-    accessibilityLabel: `${speaker}: ${message}`,
+    accessibilityLabel: translation
+      ? `${speaker}: ${message}, ${translation}`
+      : `${speaker}: ${message}`,
     className: [
       "ui-lynx-chat-bubble",
       `ui-lynx-chat-bubble-${props.direction}`,
@@ -77,5 +83,6 @@ export function getChatBubbleContract(props: ChatBubbleProps): ChatBubbleContrac
     direction: props.direction,
     ...(languageTag ? { languageTag } : {}),
     size,
+    ...(translation ? { translation } : {}),
   };
 }

@@ -461,9 +461,18 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계�
   expect(screen.getByTestId("onboarding-screen")).toBeInTheDocument();
   expect(headingAxis(container)).toEqual(["onboarding-screen-title"]);
 
-  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
-  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
-  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  fireEvent.tap(
+    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  fireEvent.tap(
+    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    {},
+  );
 
   // 상태 login
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();

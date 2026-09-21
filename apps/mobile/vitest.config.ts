@@ -14,6 +14,27 @@ export default defineConfig({
       "@libitums/ui-lynx/text-field": fileURLToPath(
         new URL("../../packages/ui-lynx/src/text-field/index.ts", import.meta.url),
       ),
+      "@libitums/ui-lynx/button": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/button/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/card": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/card/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/page-indicator": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/page-indicator/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/round-button": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/round-button/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/chat-bubble": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/chat-bubble/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/answer-label": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/answer-label/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/status-indicator": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/status-indicator/index.ts", import.meta.url),
+      ),
     },
   },
   test: {

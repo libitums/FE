@@ -5,9 +5,10 @@
   width: 100%;
 }
 
+/* flex로 둔다 — Lynx linear 레이아웃에는 gap이 없어 점이 붙어 그려졌다(FE ADR-0022 D4). */
 .ui-lynx-page-indicator-track {
-  display: linear;
-  linear-orientation: horizontal;
+  display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
   gap: var(--libitum-spacing-8);
@@ -18,7 +19,8 @@
   width: var(--libitum-spacing-8);
   height: var(--libitum-spacing-8);
   border-radius: var(--libitum-radius-full);
-  background-color: var(--libitum-color-fg-neutral-subtle);
+  /* FE override(2026-09-21 디자인 반영): 정본의 fg.neutral.subtle 대신 gray.400. */
+  background-color: var(--libitum-color-gray-400);
   transition:
     width var(--libitum-motion-duration-progress) var(--libitum-motion-easing-enter),
     background-color var(--libitum-motion-duration-progress) var(--libitum-motion-easing-enter);
@@ -26,5 +28,6 @@
 
 .ui-lynx-page-indicator-item-current {
   width: calc(var(--libitum-spacing-20) + var(--libitum-spacing-8));
-  background-color: var(--libitum-color-brand-strong);
+  /* FE override(2026-09-21 디자인 반영): 정본의 brand.strong 대신 brand.primary. */
+  background-color: var(--libitum-color-brand-primary);
 }

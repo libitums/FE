@@ -25,4 +25,20 @@ describe("StatusIndicator label", () => {
       }),
     ).toBe("3단계, 다시 해보기, 다시 시도");
   });
+
+  test("statusName이 있으면 기본 한국어 상태 이름 대신 그것을 읽는다", () => {
+    expect(
+      getStatusIndicatorLabel({
+        label: "Learning",
+        status: "in-progress",
+        statusName: "In progress",
+      }),
+    ).toBe("Learning, In progress");
+    expect(
+      getStatusIndicatorLabel({ label: "Completed", status: "completed", statusName: "Completed" }),
+    ).toBe("Completed");
+    expect(
+      getStatusIndicatorLabel({ label: "Learning", status: "in-progress", statusName: "  " }),
+    ).toBe("Learning, 진행 중");
+  });
 });

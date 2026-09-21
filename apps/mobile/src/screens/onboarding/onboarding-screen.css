@@ -2,8 +2,9 @@
    §2.4 · §4.2~§4.5가 고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만
    소비한다(ADR-0014 D1).
 
-   진행 점 셋이 머리다(design §4.1) — `step`이 바뀌어도 레이아웃은 한 글자도
-   바뀌지 않는다. 갈리는 것은 현재 점의 길이·위치와 문구뿐이다. */
+   2026-09-21 디자인 반영: 스크롤 안에 카드 영역 → (32) → 페이지 표시 · 제목 · 본문이 서고,
+   액션 버튼만 아래에 고정된다. `step`이 바뀌어도 레이아웃은 그대로이고 갈리는 것은
+   현재 페이지와 문구뿐이다. */
 
 .onboarding-screen {
   display: flex;
@@ -16,48 +17,73 @@
   background: var(--libitum-color-background-primary);
 }
 
-/* design §4.2 — 점은 텍스트가 아니라 배율을 받지 않는다. 자식 셋이 전부 배율을
-   안 받아 이 행은 FE ADR-0023의 대상이 아니다(design §11). */
-.onboarding-screen-progress {
+/* 뒤로가기 행. RoundButton xl(56)만큼 높이를 늘 잡아 둔다. spacing에 56이 없어 48 + 8로 짓는다. */
+.onboarding-screen-header {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: var(--libitum-spacing-8);
-  min-height: var(--libitum-spacing-8);
+  justify-content: flex-start;
+  height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
   flex-shrink: 0;
-}
-
-/* 상태는 색 하나로 가르지 않는다 — 길이(8 ↔ 28)가 둘째 채널이다(design §4.2). */
-.onboarding-screen-progress-dot {
-  width: var(--libitum-spacing-8);
-  height: var(--libitum-spacing-8);
-  border-radius: var(--libitum-radius-full);
-  background: var(--libitum-color-fg-neutral-subtle);
-  flex-shrink: 0;
-}
-
-.onboarding-screen-progress-dot-current {
-  width: calc(var(--libitum-spacing-20) + var(--libitum-spacing-8));
-  background: var(--libitum-color-brand-strong);
 }
 
 .onboarding-screen-scroll {
   flex: 1;
   justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
+/* 카드 영역과 텍스트 묶음(페이지 표시부터) 사이는 layout-gap-section(32). 72로 두면 본문이
+   화면 아래로 밀려나 32로 줄였다.
+   위쪽 48은 첫 카드에서 튀어나오는 인물이 스크롤 영역 위 끝에 잘리지 않게 비워 둔 자리다. */
 .onboarding-screen-content {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: var(--libitum-layout-gap-block);
-  padding-top: var(--libitum-spacing-16);
+  padding-top: var(--libitum-spacing-48);
+  overflow: visible;
+  gap: var(--libitum-layout-gap-section);
 }
 
-.onboarding-screen-title {
-  color: var(--libitum-color-fg-neutral);
+/* 2026-09-21 디자인 반영: 카드 컨테이너 둘을 위아래로 두는 400 높이 영역.
+   400은 spacing 토큰(최대 96)에 없는 디자인 지정값이라 생값으로 둔다. */
+.onboarding-screen-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  height: 400px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.onboarding-screen-card-slot {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* 셋째 스텝: 카드 하나가 400 높이 영역을 가득 채운다. */
+.onboarding-screen-unit-area {
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  flex-shrink: 0;
+}
+
+.onboarding-screen-unit-area .ui-lynx-card,
+.onboarding-screen-unit-area .ui-lynx-card-regions,
+.onboarding-screen-unit-area .ui-lynx-card-content {
+  flex: 1;
+}
+
+.onboarding-screen-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-8);
+}
+
+.onboarding-screen-unit-title {
+  color: var(--libitum-color-gray-950);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);
   font-size: var(--libitum-typography-heading-s-font-size);
@@ -65,33 +91,275 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* 폭·높이·줄 제한을 선언하지 않는다(design §4.2) — 줄바꿈으로 흐른다. */
-.onboarding-screen-body {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-body-l-font-family);
-  font-weight: var(--libitum-typography-body-l-font-weight);
-  font-size: var(--libitum-typography-body-l-font-size);
-  line-height: var(--libitum-typography-body-l-line-height);
-  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+.onboarding-screen-unit-meta {
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
 }
 
-/* design §2.2 「액션 행」 — `.word-choice-screen-next` 등과 같은 값이다. */
-.onboarding-screen-next {
-  background: var(--libitum-color-brand-strong);
-  min-height: var(--libitum-spacing-48);
-  border-radius: var(--libitum-radius-md);
-  width: 100%;
+/* 둘째 스텝: 카드 셋이 겹쳐 쌓이는 400 높이 영역. 카드마다 높이는 400 - 48이고,
+   뒤로 갈수록 24씩 위로 올라가 앞 카드 위로 24만 보인다. */
+.onboarding-screen-stack {
+  position: relative;
+  height: 400px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.onboarding-screen-stack-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(100% - var(--libitum-spacing-48));
   display: flex;
+  flex-direction: column;
+}
+
+.onboarding-screen-stack-card .ui-lynx-card {
+  flex: 1;
+}
+
+/* 쌓임 순서는 z-index가 진다 — 맨 앞이 가장 위다. */
+.onboarding-screen-stack-card-back {
+  top: 0;
+  z-index: var(--libitum-elevation-z-basement);
+}
+
+.onboarding-screen-stack-card-middle {
+  top: var(--libitum-spacing-24);
+  z-index: var(--libitum-elevation-z-default);
+}
+
+.onboarding-screen-stack-card-front {
+  top: var(--libitum-spacing-48);
+  z-index: var(--libitum-elevation-z-sticky);
+}
+
+/* 맨 앞 카드 내용이 카드 높이를 채운다. */
+.onboarding-screen-stack-card .ui-lynx-card-regions,
+.onboarding-screen-stack-card .ui-lynx-card-content {
+  flex: 1;
+}
+
+.onboarding-screen-quiz {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* 위 행: 정답 배지는 가로 가운데, 정보 아이콘은 오른쪽 끝(절대 위치). */
+.onboarding-screen-quiz-top {
+  position: relative;
+  display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+}
+
+.onboarding-screen-quiz-info {
+  position: absolute;
+  right: 0;
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+/* 가운데: 듣기 문항 — display 크기 표현과 로마자 표기. 남는 높이를 먹는다. */
+.onboarding-screen-quiz-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-12);
+  flex: 1;
+}
+
+/* 재생에 맞춰 한 글자씩 gray.400 → brand.primary로 칠한다. CSS 상속이 꺼져 있어 안쪽
+   글자마다 타이포를 다시 적는다. */
+.onboarding-screen-quiz-syllable {
+  color: var(--libitum-color-gray-400);
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+.onboarding-screen-quiz-syllable-filled {
+  color: var(--libitum-color-brand-primary);
+}
+
+/* 로마자 표기: heading-s 타이포 · fg.neutral-muted. heading-s(18px Bold)는 큰 텍스트
+   기준(18.67px Bold)에 못 미쳐 4.5:1이 필요하다 — gray.600(2.1:1)·gray.700(3.4:1)은 미달이라
+   design-system이 밝은 표면 일반 텍스트의 하한으로 정한 fg.neutral-muted(6.6:1)를 쓴다. */
+.onboarding-screen-quiz-romanization {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 카드 아래 끝의 재생(정지) · 다시 듣기 RoundButton 행. prompt가 남는 높이를 먹어
+   이 행이 카드 바닥에 붙는다. */
+.onboarding-screen-quiz-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-16);
+}
+
+/* 다시 듣기(RoundButton l, 터치 영역 48)와 같은 폭의 빈 자리. */
+.onboarding-screen-quiz-controls-spacer {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+}
+
+/* 표현과 로마자 표기 묶음. */
+.onboarding-screen-quiz-word {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.onboarding-screen-quiz-text {
+  text-align: center;
+  color: var(--libitum-color-gray-400);
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+/* Card는 className을 받지 않으므로 슬롯 안에서 남은 높이를 채우게 한다. */
+.onboarding-screen-card-slot .ui-lynx-card {
+  flex: 1;
+}
+
+/* 첫 스텝 첫 카드(그림 카드). 인물이 카드 밖으로 나가므로 슬롯이 자르지 않는다. */
+.onboarding-screen-hero {
+  position: relative;
+  overflow: visible;
+}
+
+/* Media를 카드 전체 높이로 늘리고 네 모서리를 카드처럼 둥글게 자른다
+   (Media의 기본은 윗모서리만 둥근 상단 영역이다). */
+.onboarding-screen-hero .ui-lynx-card-regions,
+.onboarding-screen-hero .ui-lynx-card-media {
+  flex: 1;
+}
+
+.onboarding-screen-hero .ui-lynx-card-media {
+  border-radius: var(--libitum-radius-md);
+}
+
+.onboarding-screen-hero .ui-lynx-card-media-content {
+  height: 100%;
+}
+
+.onboarding-screen-hero-background {
+  width: 100%;
+  height: 100%;
+}
+
+/* 첫 스텝 둘째 카드(대화 카드). 버블 묶음이 카드 높이를 채우고 세로 가운데에 선다. */
+.onboarding-screen-chat .ui-lynx-card-regions,
+.onboarding-screen-chat .ui-lynx-card-content {
+  flex: 1;
+}
+
+.onboarding-screen-chat-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+  flex: 1;
+}
+
+/* 인물: 바닥을 카드 아래 끝에 맞추고 카드보다 48 크게 그려 위로 튀어나오게 한다.
+   원본 540×810(2:3) 비율을 지킨다. */
+.onboarding-screen-hero-character {
+  position: absolute;
+  right: var(--libitum-spacing-16);
+  bottom: 0;
+  height: calc(100% + var(--libitum-spacing-48));
+  aspect-ratio: 540 / 810;
+  /* Card가 elevation z-default(1)로 떠 있어 그보다 한 단계 위에 둔다. */
+  z-index: var(--libitum-elevation-z-sticky);
+}
+
+/* 페이지 표시 · 제목 · 본문 묶음. 가로 가운데 정렬이다. */
+.onboarding-screen-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-layout-gap-block);
+}
+
+/* 제목 ↔ 본문 간격 4. */
+.onboarding-screen-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  width: 100%;
+}
+
+.onboarding-screen-progress {
+  width: 100%;
   flex-shrink: 0;
 }
 
-.onboarding-screen-next-label {
-  color: var(--libitum-color-fg-neutral-inverted);
-  font-family: var(--libitum-typography-button-xl-font-family);
-  font-weight: var(--libitum-typography-button-xl-font-weight);
-  font-size: var(--libitum-typography-button-xl-font-size);
-  line-height: var(--libitum-typography-button-xl-line-height);
-  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+/* 2026-09-21 디자인 반영: accent-display 타이포. 앞말은 gray.950, 강조어는 brand.primary.
+   ⚠ accent 계열 폰트에는 한글 글리프가 없어 한글 제목은 폴백 폰트로 그려진다. */
+.onboarding-screen-title {
+  text-align: center;
+  color: var(--libitum-color-gray-950);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+}
+
+/* 이 앱은 Lynx CSS 상속을 켜지 않아(enableCSSInheritance) 안쪽 text가 부모 글꼴을 물려받지
+   않는다 — 타이포를 다시 적는다. */
+.onboarding-screen-title-emphasis {
+  color: var(--libitum-color-brand-primary);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+}
+
+/* 2026-09-21 디자인 반영: caption 타이포 · gray.500. 폭·줄 제한 없이 줄바꿈으로 흐른다.
+   ⚠ 알려진 대비 미달: gray.500(#D1D3D8)은 배경 대비 약 1.5:1이다. caption(11px)은 큰 텍스트
+   예외가 없어 4.5:1이 필요하고 design-system에 caption 예외도 없다. 피그마 값을 유지하기로
+   했다(2026-09-21) — 예외가 필요하면 design-system accessibility에 먼저 제안한다. */
+.onboarding-screen-body {
+  text-align: center;
+  color: var(--libitum-color-gray-500);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
+}
+
+/* 버튼 모양은 ui-lynx Button(neutral · xl(56) · hug)이 진다. 이 행은 자리만 잡는다 —
+   내용 폭 버튼을 가로 가운데에 둔다. */
+.onboarding-screen-next {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  flex-shrink: 0;
 }

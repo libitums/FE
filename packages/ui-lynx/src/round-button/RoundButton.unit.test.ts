@@ -75,9 +75,9 @@ describe("getRoundButtonContract", () => {
 describe("getRoundButtonForegroundColor", () => {
   test.each([
     [{ variant: "neutral" }, color.fg["neutral-subtle"]],
-    [{ variant: "brand" }, color.fg.brand],
+    [{ variant: "brand" }, color.brand.primary],
     [{ variant: "neutral", loading: true }, color.fg["neutral-subtle"]],
-    [{ variant: "brand", loading: true }, color.fg.brand],
+    [{ variant: "brand", loading: true }, color.brand.primary],
     [{ variant: "neutral", disabled: true }, color.gray[500]],
     [{ variant: "brand", disabled: true }, color.brand["reward-disabled-surface"]],
     [{ variant: "neutral", disabled: true, loading: true }, color.gray[500]],
@@ -139,7 +139,7 @@ describe("round-button.css", () => {
       /\.ui-lynx-round-button-neutral\.ui-lynx-round-button-loading\s+\.ui-lynx-round-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-fg-neutral-subtle\)/,
     );
     expect(styles).toMatch(
-      /\.ui-lynx-round-button-brand\.ui-lynx-round-button-loading\s+\.ui-lynx-round-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-fg-brand\)/,
+      /\.ui-lynx-round-button-brand\.ui-lynx-round-button-loading\s+\.ui-lynx-round-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-brand-primary\)/,
     );
     expect(styles).toMatch(
       /\.ui-lynx-round-button-disabled\.ui-lynx-round-button-loading\s+\.ui-lynx-round-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-border-default\)/,

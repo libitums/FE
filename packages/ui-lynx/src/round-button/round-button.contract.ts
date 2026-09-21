@@ -54,5 +54,6 @@ export function getRoundButtonForegroundColor(props: RoundButtonProps): string {
   if (props.disabled) {
     return props.variant === "brand" ? color.brand["reward-disabled-surface"] : color.gray[500];
   }
-  return props.variant === "brand" ? color.fg.brand : color.fg["neutral-subtle"];
+  // FE override(2026-09-21 디자인 반영): brand 아이콘은 정본의 fg.brand 대신 brand.primary.
+  return props.variant === "brand" ? color.brand.primary : color.fg["neutral-subtle"];
 }

@@ -112,8 +112,41 @@ describe("chat-bubble.css", () => {
   test("direction surface와 message 전경은 design-system semantic token을 사용한다", () => {
     expect(styles).toContain("var(--libitum-color-gray-100)");
     expect(styles).toContain("var(--libitum-color-fg-neutral)");
-    expect(styles).toContain("var(--libitum-color-brand-strong)");
+    expect(styles).toMatch(
+      /\.ui-lynx-chat-bubble-outgoing\s*\{[^}]*background-color:\s*var\(--libitum-color-brand-primary\)/,
+    );
     expect(styles).toContain("var(--libitum-color-fg-neutral-inverted)");
     expect(styles).toMatch(/word-break:\s*break-all/);
+  });
+
+  test("번역이 있으면 계약에 싣고 접근성 이름 뒤에 잇는다", () => {
+    const contract = getChatBubbleContract({
+      direction: "incoming",
+      speaker: "직원",
+      message: "어서 오세요",
+      translation: "  Welcome  ",
+    });
+    expect(contract.translation).toBe("Welcome");
+    expect(contract.accessibilityLabel).toBe("직원: 어서 오세요, Welcome");
+  });
+
+  test("공백뿐인 번역은 없는 것으로 본다", () => {
+    const contract = getChatBubbleContract({
+      direction: "incoming",
+      speaker: "직원",
+      message: "어서 오세요",
+      translation: "   ",
+    });
+    expect(contract.translation).toBeUndefined();
+    expect(contract.accessibilityLabel).toBe("직원: 어서 오세요");
+  });
+
+  test("번역 색은 incoming gray.700, outgoing gray.200이다", () => {
+    expect(styles).toMatch(
+      /\.ui-lynx-chat-bubble-translation\s*\{[^}]*color:\s*var\(--libitum-color-gray-700\)/,
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-chat-bubble-outgoing \.ui-lynx-chat-bubble-translation\s*\{[^}]*color:\s*var\(--libitum-color-gray-200\)/,
+    );
   });
 });

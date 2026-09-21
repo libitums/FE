@@ -84,9 +84,18 @@ function submitVerificationCode(value: string): void {
 // 온보딩 세 스텝을 끝까지 넘긴다(0→1→2→onComplete). `onboarding-screen-next`는
 // 스텝마다 같은 testid다(계약 §4.5) — 세 번 누르면 로그인에 닿는다.
 function completeOnboarding(): void {
-  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
-  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
-  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  fireEvent.tap(
+    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  fireEvent.tap(
+    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    {},
+  );
 }
 
 function selectLoginMethod(method: EntryLoginMethod): void {
