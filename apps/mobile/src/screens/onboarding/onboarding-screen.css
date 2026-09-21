@@ -191,10 +191,12 @@
   color: var(--libitum-color-brand-primary);
 }
 
-/* 로마자 표기: heading-s 타이포 · gray.600. */
+/* 로마자 표기: heading-s 타이포 · fg.neutral-muted. heading-s(18px Bold)는 큰 텍스트
+   기준(18.67px Bold)에 못 미쳐 4.5:1이 필요하다 — gray.600(2.1:1)·gray.700(3.4:1)은 미달이라
+   design-system이 밝은 표면 일반 텍스트의 하한으로 정한 fg.neutral-muted(6.6:1)를 쓴다. */
 .onboarding-screen-quiz-romanization {
   text-align: center;
-  color: var(--libitum-color-gray-600);
+  color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);
   font-size: var(--libitum-typography-heading-s-font-size);
@@ -339,7 +341,9 @@
 }
 
 /* 2026-09-21 디자인 반영: caption 타이포 · gray.500. 폭·줄 제한 없이 줄바꿈으로 흐른다.
-   ⚠ gray.500(#D1D3D8)은 배경 대비 약 1.5:1로 본문 기준(4.5:1)에 못 미친다. */
+   ⚠ 알려진 대비 미달: gray.500(#D1D3D8)은 배경 대비 약 1.5:1이다. caption(11px)은 큰 텍스트
+   예외가 없어 4.5:1이 필요하고 design-system에 caption 예외도 없다. 피그마 값을 유지하기로
+   했다(2026-09-21) — 예외가 필요하면 design-system accessibility에 먼저 제안한다. */
 .onboarding-screen-body {
   text-align: center;
   color: var(--libitum-color-gray-500);
