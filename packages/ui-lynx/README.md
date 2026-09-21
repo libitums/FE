@@ -342,7 +342,8 @@ StepIndicator는 최신 파일 규칙에 따라 공개 타입과 `getStepIndicat
 `StepIndicator.unit.test.ts`에 둔다.
 
 Dialog는 `components/dialog.md` revision `133322d7b080e464303a38456f4da45c8accdda9`의
-중앙 배치, floating surface, 1~2개 세로 action과 reduced motion 계약을 따른다. action이
+중앙 배치, 1~2개 세로 action과 reduced motion 계약을 따른다. surface는 제품 결정에 따라
+원본 floating surface 대신 `color.white`를 사용한다. action이
 하나면 Brand, 둘이면 Brand/Subtle 순서이며 이는 main action을 `brand.primary`로 사용하라는
 제품 결정을 원본 Neutral 규칙보다 우선한 예외다. 모든 action이 비활성인 진행 불가능한 계약은
 거부한다. Scrim은 공용 Overlay를 사용하고 tap handler를 연결하지 않는다.

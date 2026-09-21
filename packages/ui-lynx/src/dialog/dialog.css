@@ -28,7 +28,7 @@
   padding: var(--libitum-spacing-20);
   display: flex;
   flex-direction: column;
-  background-color: var(--libitum-elevation-surface-floating);
+  background-color: var(--libitum-color-white);
   border-radius: var(--libitum-radius-lg);
   box-shadow: var(--libitum-elevation-shadow-s3);
 }

@@ -74,11 +74,12 @@ describe("Dialog contract", () => {
     );
   });
 
-  test("원본 디자인의 surface, radius, spacing, elevation과 motion 토큰을 사용한다", () => {
+  test("제품 결정의 white surface와 원본 radius, spacing, elevation, motion 토큰을 사용한다", () => {
     const styles = readFileSync(resolve(process.cwd(), "src/dialog/dialog.css"), "utf8");
     expect(styles).toContain("var(--libitum-elevation-z-dialog)");
     expect(styles).toContain('@import "../overlay/overlay.css"');
-    expect(styles).toContain("var(--libitum-elevation-surface-floating)");
+    expect(styles).toContain("background-color: var(--libitum-color-white)");
+    expect(styles).not.toContain("background-color: var(--libitum-elevation-surface-floating)");
     expect(styles).toContain("var(--libitum-elevation-shadow-s3)");
     expect(styles).toContain("var(--libitum-radius-lg)");
     expect(styles).toContain("var(--libitum-spacing-20)");
