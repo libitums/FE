@@ -1,0 +1,31 @@
+/* playground 틀만 정의한다. 컴포넌트 시각은 전부 ui-lynx가 소유한다. */
+.playground {
+  width: 100%;
+  height: 100vh;
+  padding: var(--libitum-spacing-20);
+  background-color: var(--libitum-color-background-secondary);
+}
+
+.playground-section {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-12);
+  margin-bottom: var(--libitum-spacing-32);
+}
+
+.playground-section-title {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.playground-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+  row-gap: var(--libitum-spacing-8);
+}

@@ -1,20 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { entrySplashDurationMs } from "../../lib/entry-flow";
 import { SplashScreen } from "./SplashScreen";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 타이머 전이·접근성 속성을 본다 (ADR-0006 D4).
+// `ui` 계층: 실제 컴포넌트를 렌더하고 전이·접근성 속성을 본다 (ADR-0006 D4).
 // 스플래시는 나가는 수단이 없다 — 유일한 전이 채널은 `onTimeout` 콜백이다(계약 §4.2).
 //
-// 계약: .agent-harness/work/lib-261/spec.md §0.3 D-a(고정 시간) · §4.2~§4.5(구조·testid) ·
-//       §4.4(접근성 — 서비스 이름은 `header`가 아니다, A2).
-// 계획: .agent-harness/work/lib-261/test-plan.md ui § `SplashScreen.ui.test.tsx` SP1~SP5.
+// 계약: .agent-harness/work/lib-261/spec.md §4.2~§4.5, 2026-09-21 디자인 반영으로 전이
+// 계기가 「로고 애니메이션 종료」가 되고 `entrySplashDurationMs`는 최대 체류 시간이 됐다
+// (splash.contract.ts).
 //
-// 문구(서비스 이름 `Duru` · 보조 문구)는 §8이 정본이지만, 보조 문구는 자리표라 이 파일은
-// 리터럴을 단언하지 않는다 — 존재와 접근성 속성만 본다.
+// 테스트 환경에서는 애니메이션이 재생되지 않으므로 종료 신호는 `bindEvent:finalloopcomplete`를
+// 직접 쏴서 만든다.
 
-describe("SplashScreen (LIB-261)", () => {
+describe("SplashScreen", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -23,51 +23,56 @@ describe("SplashScreen (LIB-261)", () => {
     vi.useRealTimers();
   });
 
-  // SP1 — 부재 단언(스크롤 상자에 accessibility-*가 0건)이다. 상자 자체가 없어 질의가
-  // 닿지 않는 쪽으로 참이 될 수 있으므로, 먼저 세 testid의 존재를 앵커로 건다
-  // (getByTestId는 없으면 던진다 — TestingLibraryElementError).
-  it("[SP1] 서비스 이름·보조 문구·스크롤 상자가 서고, 스크롤 상자에 accessibility-*가 0건이다", () => {
+  it("[SP1] 로고가 한 번만 재생되도록 서고, 스크린리더에 서비스 이름으로 읽힌다", () => {
     render(<SplashScreen onTimeout={vi.fn()} />);
 
-    const serviceName = screen.getByTestId("splash-screen-service-name");
-    const tagline = screen.getByTestId("splash-screen-tagline");
-    const scroll = screen.getByTestId("splash-screen-scroll");
-    expect(serviceName).toBeInTheDocument();
-    expect(tagline).toBeInTheDocument();
-    expect(scroll).toBeInTheDocument();
-
-    const accessibilityAttrs = Array.from(scroll.attributes).filter((attr) =>
-      attr.name.startsWith("accessibility-"),
-    );
-    expect(accessibilityAttrs).toHaveLength(0);
+    const logo = screen.getByTestId("splash-screen-logo");
+    expect(logo).toHaveAttribute("loop-count", "1");
+    expect(logo).toHaveAttribute("accessibility-element", "true");
+    expect(logo).toHaveAttribute("accessibility-label", "Duru");
+    expect(logo).toHaveAttribute("accessibility-traits", "image");
   });
 
-  // SP2
-  it("[SP2] 고정 시간 전에는 onTimeout이 0회다", () => {
+  it("[SP2] 애니메이션이 끝나면 onTimeout이 정확히 1회이고, 안전 타이머가 다시 부르지 않는다", () => {
+    const onTimeout = vi.fn();
+    render(<SplashScreen onTimeout={onTimeout} />);
+
+    fireEvent(
+      screen.getByTestId("splash-screen-logo"),
+      new window.Event("bindEvent:finalloopcomplete"),
+    );
+    expect(onTimeout).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      vi.advanceTimersByTime(entrySplashDurationMs);
+    });
+    expect(onTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it("[SP3] 로고를 불러오지 못하면 기다리지 않고 onTimeout이 정확히 1회다", () => {
+    const onTimeout = vi.fn();
+    render(<SplashScreen onTimeout={onTimeout} />);
+
+    fireEvent(screen.getByTestId("splash-screen-logo"), new window.Event("bindEvent:error"));
+    expect(onTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it("[SP4] 종료 신호가 없으면 최대 체류 시간 직전까지 0회, 그 시점에 정확히 1회다", () => {
     const onTimeout = vi.fn();
     render(<SplashScreen onTimeout={onTimeout} />);
 
     act(() => {
       vi.advanceTimersByTime(entrySplashDurationMs - 1);
     });
-
     expect(onTimeout).not.toHaveBeenCalled();
-  });
-
-  // SP3
-  it("[SP3] 고정 시간이 지나면 onTimeout이 정확히 1회다", () => {
-    const onTimeout = vi.fn();
-    render(<SplashScreen onTimeout={onTimeout} />);
 
     act(() => {
-      vi.advanceTimersByTime(entrySplashDurationMs);
+      vi.advanceTimersByTime(1);
     });
-
     expect(onTimeout).toHaveBeenCalledTimes(1);
   });
 
-  // SP4
-  it("[SP4] 언마운트하면 그 뒤로 onTimeout이 불리지 않는다(타이머 정리)", () => {
+  it("[SP5] 언마운트하면 그 뒤로 onTimeout이 불리지 않는다(타이머 정리)", () => {
     const onTimeout = vi.fn();
     const { unmount } = render(<SplashScreen onTimeout={onTimeout} />);
 
@@ -79,16 +84,28 @@ describe("SplashScreen (LIB-261)", () => {
     expect(onTimeout).not.toHaveBeenCalled();
   });
 
-  // SP5 — 부재 단언(조작 단위 0건 · 서비스 이름에 header 없음)이다. 먼저 서비스 이름의
-  // 존재를 앵커로 건다.
-  it("[SP5] 화면에 조작 단위가 0건이고, 서비스 이름에 accessibility-traits='header'가 없다", () => {
+  it("[SP7] 부모가 다시 그려져 onTimeout이 새 함수로 바뀌어도 안전 타이머는 처음부터 다시 세지 않는다", () => {
+    const first = vi.fn();
+    const latest = vi.fn();
+    const { rerender } = render(<SplashScreen onTimeout={first} />);
+
+    act(() => {
+      vi.advanceTimersByTime(entrySplashDurationMs - 1000);
+    });
+    rerender(<SplashScreen onTimeout={latest} />);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(first).not.toHaveBeenCalled();
+    expect(latest).toHaveBeenCalledTimes(1);
+  });
+
+  it("[SP6] 화면에 조작 단위가 0건이고, 로고에 accessibility-traits='header'가 없다", () => {
     const { container } = render(<SplashScreen onTimeout={vi.fn()} />);
 
-    const serviceName = screen.getByTestId("splash-screen-service-name");
-    expect(serviceName).toBeInTheDocument();
-
-    expect(container.querySelectorAll('[accessibility-element="true"]')).toHaveLength(0);
+    const logo = screen.getByTestId("splash-screen-logo");
     expect(container.querySelectorAll("[bindtap]")).toHaveLength(0);
-    expect(serviceName).not.toHaveAttribute("accessibility-traits", "header");
+    expect(logo).not.toHaveAttribute("accessibility-traits", "header");
   });
 });

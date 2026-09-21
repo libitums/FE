@@ -37,6 +37,11 @@ final class ViewController: UIViewController {
       config.register(HandwritingRecognitionModule.self)
       config.register(SpeechRecognitionModule.self)
       builder.config = config
+      // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).
+      // 이미지 서비스는 generic resource fetcher가 켜져 있을 때만 `shouldRedirectUrl`을
+      // 부른다. 템플릿 fetcher는 두지 않으므로 번들 로드는 그대로 `TemplateProvider`가 맡는다.
+      builder.enableGenericResourceFetcher = .true
+      builder.mediaResourceFetcher = BundledMediaResourceFetcher()
       builder.screenSize = UIScreen.main.bounds.size
       // 시스템 글자 크기를 코어 배율로 넘긴다 (ADR-0020 D1).
       //
@@ -114,14 +119,36 @@ final class ViewController: UIViewController {
 
   /// 크기를 `viewDidLoad`가 아니라 여기서 잡는다.
   /// `viewDidLoad` 시점의 `view.frame`은 최종 크기가 아니라서 레이아웃이 어긋난다.
+  ///
+  /// **LynxView는 전체 화면이다.** 예전에는 safe area 안에만 두었는데, 그러면 상태바와
+  /// 홈 인디케이터 뒤는 호스트 배경(흰색)이 칠해져 화면이 가장자리 색을 정할 수 없었다
+  /// (브랜드색 스플래시가 위아래 흰 띠를 달고 떴다). 이제 가려지는 크기를 globalProps
+  /// `safeAreaInsets`로 넘기고, 앱 셸이 그만큼 안쪽 여백을 잡는다(mobile `lib/safe-area.ts`).
+  /// Lynx에는 `env(safe-area-inset-*)`가 없어 이 경로가 유일하다.
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
     guard let lynxView else { return }
-    let safe = view.safeAreaLayoutGuide.layoutFrame
-    guard lynxView.frame != safe else { return }
-    lynxView.frame = safe
-    lynxView.preferredLayoutWidth = safe.width
-    lynxView.preferredLayoutHeight = safe.height
+
+    let insets = view.safeAreaInsets
+    if insets != lastSafeAreaInsets {
+      lastSafeAreaInsets = insets
+      lynxView.updateGlobalProps(with: [
+        "safeAreaInsets": [
+          "top": insets.top,
+          "bottom": insets.bottom,
+          "left": insets.left,
+          "right": insets.right,
+        ],
+      ])
+    }
+
+    let bounds = view.bounds
+    guard lynxView.frame != bounds else { return }
+    lynxView.frame = bounds
+    lynxView.preferredLayoutWidth = bounds.width
+    lynxView.preferredLayoutHeight = bounds.height
     lynxView.triggerLayout()
   }
+
+  private var lastSafeAreaInsets: UIEdgeInsets?
 }

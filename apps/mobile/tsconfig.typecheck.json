@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"]
+      "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
+      "@libitums/ui-lynx/button": ["../../packages/ui-lynx/src/button/index.ts"]
     }
   }
 }

@@ -117,7 +117,7 @@ test("[IE1] 앱을 켜면 스플래시가 서고 바텀 네비게이션이 없�
   vi.useFakeTimers();
   const { container } = render(<App />);
 
-  expect(screen.getByTestId("splash-screen-service-name")).toBeInTheDocument();
+  expect(screen.getByTestId("splash-screen-logo")).toBeInTheDocument();
   expect(container.querySelector(".bottom-navigator")).toBeNull();
 });
 
@@ -288,7 +288,7 @@ test("[IE10] 토큰이 있는 상태로 켜면 스플래시 뒤 바로 여정 �
   vi.useFakeTimers();
   render(<App />);
 
-  expect(screen.getByTestId("splash-screen-service-name")).toBeInTheDocument();
+  expect(screen.getByTestId("splash-screen-logo")).toBeInTheDocument();
 
   advanceSplash();
 

@@ -1,4 +1,4 @@
-import { root } from "@lynx-js/react";
+import { GlobalPropsProvider, root } from "@lynx-js/react";
 
 // 토큰 CSS는 진입점에서 한 번만 불러온다. `:root`에 커스텀 프로퍼티가 올라가야
 // 모든 화면의 `var(--libitum-*)`가 값을 얻는다 (ADR-0014 D1).
@@ -13,15 +13,19 @@ import "@libitums/ui-lynx/text-field/styles.css";
 
 import { App } from "./App";
 
+// `GlobalPropsProvider`가 있어야 호스트가 뒤늦게 넘기는 safe area 값에 `useGlobalProps`가
+// 다시 그린다(lib/safe-area.ts).
 root.render(
-  <App
-    messengerEventSink={null}
-    visualNovelEventSink={null}
-    phoneCallEventSink={null}
-    notificationEventSink={null}
-    settingsEventSink={null}
-    entryEventSink={null}
-  />,
+  <GlobalPropsProvider>
+    <App
+      messengerEventSink={null}
+      visualNovelEventSink={null}
+      phoneCallEventSink={null}
+      notificationEventSink={null}
+      settingsEventSink={null}
+      entryEventSink={null}
+    />
+  </GlobalPropsProvider>,
 );
 
 if (import.meta.webpackHot) {
