@@ -57,8 +57,9 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 |---|---|---|
 | 저장소 목표·제외 범위 | 결정 | [0001](0001-repository-goal-and-scope.md) |
 | 앱 로스터 | 결정 | [0012](0012-native-host-app-minimal.md) — 0002 D1~D3 부분 대체 |
-| 호스트 경계·영속 저장소 | 결정 (최소 범위) + 보류 (두 번째 플랫폼) | [0012](0012-native-host-app-minimal.md) — D2의 `두 번째 네이티브 모듈` 금지는 [0017](0017-host-native-capabilities-and-audio.md)이 부분 대체 |
+| 호스트 경계·영속 저장소 | 결정 (최소 범위) + 보류 (두 번째 플랫폼) | [0012](0012-native-host-app-minimal.md) — D2의 `두 번째 네이티브 모듈` 금지는 [0017](0017-host-native-capabilities-and-audio.md)이 부분 대체, `권한 요청` 금지는 [0026](0026-permission-entry-conditions-and-denial-handling.md)이 부분 대체 |
 | **호스트 네이티브 능력 (확장 조건 · 오디오 재생)** | 결정 (입장 조건 + 모듈 경계) + 보류 (오디오 자산의 출처) | [0017](0017-host-native-capabilities-and-audio.md) |
+| **호스트 네이티브 능력 (권한 입장 조건 · 거부 처리 · 외부 이동 경계)** | 결정 (입장 조건 다섯 + 세 상태의 처방 + 나가는 이동 하나) | [0026](0026-permission-entry-conditions-and-denial-handling.md) — 0012 D2의 `권한 요청` 한 항목을 부분 대체. **열린 권한 목록은 그 D2의 권한 표**가 지고 이 표는 안 센다 |
 | workspace 구성 (패키지 매니저·workspace 선언·태스크 러너) | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 폴더 구조 | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 네이밍 | 결정 | [0003](0003-workspace-and-directory-structure.md) D6·**D7**, [0004](0004-package-boundaries-and-dependency-direction.md) |
@@ -125,6 +126,13 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 넷째 사례 기록에 있다. ⚠ **트리거 문면은 고치지 않는다** — 숫자를 다섯째로 옮기는 것은
 결정 변경이고, 이번을 「제자리 기록」으로 판정한 근거(결정 문장이 한 글자도 안 바뀐다)가
 그 자리에서 뒤집힌다. 발동했다는 사실과 재검토의 결론만 여기 남긴다.
+
+**권한은 이 표가 세지 않는다.** 호스트가 여는 **권한** 목록은
+[ADR-0026 D2](0026-permission-entry-conditions-and-denial-handling.md)의 **권한 표**에 있고,
+그 결정이 *"이 표는 여기 둔다. `docs/adr/README.md`에 복제하지 않는다"* 로 세는 자리를 하나로
+고정했다 — 세는 자리가 둘이면 한쪽만 갱신되는 순간 목록이 거짓말을 시작하기 때문이다.
+**모듈 축과 권한 축은 다르다**: 마이크는 권한 표에 행이 있고, 그 모듈이 실제로 서는 날
+위 표에도 행이 는다.
 
 ## 보류 표
 
