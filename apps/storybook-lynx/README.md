@@ -30,6 +30,8 @@ Tooltip은 `components/tooltip.md` revision
 `5c7bce3eb2c0d214de78bcec0c52d7b7395e8a19`을 기준으로 한다.
 Fog는 최신 `main`의 `components/fog.md` revision
 `456a121fdfee60dfceaba2ac8f9e989a1275c066`을 기준으로 한다.
+Avatar는 `components/avatar.md` revision
+`666d2fc6e50a8cc3aaf49aaad7148e94a4abc14e`을 기준으로 한다.
 
 ```sh
 nvm use
@@ -39,7 +41,8 @@ pnpm storybook:lynx
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
 Navigator·Step Indicator·Answer Label·Bottom Sheet·Card·Compact Numeric Input·Chat Bubble·Text
-Field·Visual Novel Dialog·Overlay·Fog·Tooltip의 실제 `.web.bundle` 열여덟 개를 만들고, Rspeedy watch와 Storybook dev
+Field·Visual Novel Dialog·Overlay·Fog·Tooltip·Avatar의 실제 `.web.bundle` 열아홉 개를 만들고,
+Rspeedy watch와 Storybook dev
 server를 함께 유지한다.
 
 Storybook의 dev/build는 `@libitums/ui-lynx`를 먼저 build하고 package의 공개 `dist` export를
@@ -62,6 +65,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Step Indicator — First, Middle, Last
 - Components/Overlay — Sheet Dismissible, Dialog Modal, Area, Area Blur, Reduced Motion
 - Components/Answer Label — Pending, Correct, Incorrect, Subtle, Large, Long Label
+- Components/Avatar — Image, Initials, CJK Initials, Placeholder, Broken Image, All Sizes, Decorative
 - Components/Card — Static, Interactive, Large With Media, Right To Left
 - Components/Compact Numeric Input — Empty, Filled, Error, Disabled
 - Components/Fog — Bottom, Top, Horizontal RTL, Hidden, Full
@@ -109,6 +113,9 @@ metadata를 JSON 값으로 전달한다. trigger와 열기·닫기 입력은 hos
 Fog Controls는 direction, size, color, visibility, layoutDirection만 직렬화한다. Fog는 Action을
 만들지 않고 pointer event를 통과시키며, ScrollView의 현재 offset을 visibility로 바꾸는 일은
 소비 host가 맡는다.
+
+Avatar Controls는 content, name, size, accessibility와 All Sizes 표시만 직렬화한다. Image는
+native `<image mode="aspectFill">`의 load/error에 따라 Initials·Placeholder와 교체된다.
 
 ## 한계
 

@@ -19,6 +19,7 @@ import * as bottomSheet from "./bottom-sheet/index";
 import * as stepIndicator from "./step-indicator/index";
 import * as overlay from "./overlay/index";
 import * as answerLabel from "./answer-label/index";
+import * as avatar from "./avatar/index";
 import * as card from "./card/index";
 import * as chatBubble from "./chat-bubble/index";
 import * as visualNovelDialog from "./visual-novel-dialog/index";
@@ -29,6 +30,7 @@ const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
 const componentArtifacts = {
   "answer-label": { implementation: "AnswerLabel.jsx", css: "answer-label.css" },
+  avatar: { implementation: "Avatar.jsx", css: "avatar.css" },
   button: { implementation: "Button.jsx", css: "button.css" },
   "back-header": { implementation: "BackHeader.jsx", css: "back-header.css" },
   "status-indicator": { implementation: "StatusIndicator.jsx", css: "status-indicator.css" },
@@ -56,6 +58,7 @@ const componentArtifacts = {
 
 const componentEntries = {
   "answer-label": "AnswerLabel",
+  avatar: "Avatar",
   button: "Button",
   "back-header": "BackHeader",
   "status-indicator": "StatusIndicator",
@@ -87,6 +90,7 @@ async function readPackageJson() {
 describe("ui-lynx package boundaries", () => {
   test("root import preserves value identity and type-compatible subpath values", () => {
     expect(root.AnswerLabel).toBe(answerLabel.AnswerLabel);
+    expect(root.Avatar).toBe(avatar.Avatar);
     expect(root.Button).toBe(button.Button);
     expect(root.BackHeader).toBe(backHeader.BackHeader);
     expect(root.StatusIndicator).toBe(statusIndicator.StatusIndicator);
@@ -120,6 +124,8 @@ describe("ui-lynx package boundaries", () => {
     expect(root.Overlay).toBe(overlay.Overlay);
     expect(root.getOverlayContract).toBe(overlay.getOverlayContract);
     expect(root.getAnswerLabelContract).toBe(answerLabel.getAnswerLabelContract);
+    expect(root.getAvatarContract).toBe(avatar.getAvatarContract);
+    expect(root.getAvatarInitials).toBe(avatar.getAvatarInitials);
     expect(root.getCardContract).toBe(card.getCardContract);
     expect(root.getChatBubbleContract).toBe(chatBubble.getChatBubbleContract);
     expect(root.getVisualNovelDialogContract).toBe(visualNovelDialog.getVisualNovelDialogContract);
@@ -159,6 +165,7 @@ describe("ui-lynx package boundaries", () => {
     expect(packageJson.exports["./answer-label/styles.css"]).toBe(
       "./dist/answer-label/answer-label.css",
     );
+    expect(packageJson.exports["./avatar/styles.css"]).toBe("./dist/avatar/avatar.css");
     expect(packageJson.exports["./card/styles.css"]).toBe("./dist/card/card.css");
     expect(packageJson.exports["./compact-numeric-input/styles.css"]).toBe(
       "./dist/compact-numeric-input/compact-numeric-input.css",
@@ -213,6 +220,13 @@ describe("ui-lynx package boundaries", () => {
       `package/dist/answer-label/${componentArtifacts["answer-label"].implementation}`,
       "package/dist/answer-label/index.d.ts",
       `package/dist/answer-label/${componentArtifacts["answer-label"].css}`,
+      "package/dist/avatar/index.js",
+      `package/dist/avatar/${componentArtifacts.avatar.implementation}`,
+      "package/dist/avatar/index.d.ts",
+      "package/dist/avatar/Avatar.d.ts",
+      "package/dist/avatar/avatar.contract.js",
+      "package/dist/avatar/avatar.contract.d.ts",
+      `package/dist/avatar/${componentArtifacts.avatar.css}`,
       "package/dist/button/index.js",
       `package/dist/button/${componentArtifacts.button.implementation}`,
       "package/dist/button/index.d.ts",

@@ -87,6 +87,16 @@ export type {
   AnswerLabelTone,
 } from "./answer-label";
 
+export { Avatar, getAvatarContract, getAvatarInitials } from "./avatar";
+export type {
+  AvatarAccessibility,
+  AvatarContent,
+  AvatarContract,
+  AvatarImageStatus,
+  AvatarProps,
+  AvatarSize,
+} from "./avatar";
+
 export { Card, getCardContract, validateCardHeader } from "./card";
 export type {
   CardAccessibilityRole,
