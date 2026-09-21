@@ -14,7 +14,10 @@ const contents = new Set<AvatarStoryContent>(["image", "initials", "placeholder"
 const sizes = new Set<AvatarSize>(["xs", "sm", "md", "lg", "xl"]);
 const accessibilities = new Set<AvatarAccessibility>(["label", "hidden"]);
 
-export function normalizeAvatarStoryArgs(args: Partial<AvatarStoryArgs>): AvatarStoryArgs {
+export function normalizeAvatarStoryArgs(input: unknown): AvatarStoryArgs {
+  const args =
+    input !== null && typeof input === "object" ? (input as Record<string, unknown>) : {};
+
   return {
     content: contents.has(args.content as AvatarStoryContent)
       ? (args.content as AvatarStoryContent)

@@ -73,6 +73,20 @@ describe("Storybook Lynx build outputs", () => {
       accessibility: "label",
       showAllSizes: false,
     });
+    expect(normalizeAvatarStoryArgs(null)).toEqual({
+      content: "initials",
+      name: "Kim Ray",
+      size: "md",
+      accessibility: "label",
+      showAllSizes: false,
+    });
+    expect(normalizeAvatarStoryArgs(undefined)).toEqual({
+      content: "initials",
+      name: "Kim Ray",
+      size: "md",
+      accessibility: "label",
+      showAllSizes: false,
+    });
   });
 
   test("visual novel dialog init data는 독립 옵션을 직렬화 가능한 계약으로 정규화한다", () => {
