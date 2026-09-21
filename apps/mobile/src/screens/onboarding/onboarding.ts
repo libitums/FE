@@ -8,25 +8,32 @@ import type { OnboardingActionLabel, OnboardingCopy, OnboardingStep } from "./on
 export const onboardingSteps: readonly OnboardingStep[] = [0, 1, 2];
 
 // 문구 표는 자리표다(계약 §0.3 D-b) — `ui` 테스트가 리터럴을 단언하지 않는다.
+// 본문의 `\n`은 읽기 좋게 의미 단위로 끊은 줄바꿈이다(2026-09-21 디자인 반영).
 // `default` 없는 switch — 스텝이 늘면 TS2366으로 선다.
 export function onboardingCopy(step: OnboardingStep): OnboardingCopy {
   switch (step) {
     case 0: {
+      // 임시 문구(2026-09-21 디자인 반영) — 확정 문구가 오면 바꾼다.
       return {
-        title: "서사로 배우는 한국어",
-        body: "이야기 속 상황을 따라가며 한국어를 익힙니다.",
+        title: "with",
+        titleEmphasis: "Story",
+        body: "Follow everyday moments in a story\nand pick up Korean along the way.",
       };
     }
     case 1: {
+      // 임시 문구(2026-09-21 디자인 반영) — 확정 문구가 오면 바꾼다.
       return {
-        title: "여정으로 이어지는 학습",
-        body: "스텝을 하나씩 지나며 이야기가 이어집니다.",
+        title: "Practice",
+        titleEmphasis: "Korean",
+        body: "Practice real conversations and\ncheck what you learned with quick quizzes.",
       };
     }
     case 2: {
+      // 임시 문구(2026-09-21 디자인 반영) — 확정 문구가 오면 바꾼다.
       return {
-        title: "듣고 고르며 확인하기",
-        body: "배운 것을 문항으로 바로 확인합니다.",
+        title: "Just",
+        titleEmphasis: "5 minutes",
+        body: "Short daily units fit into your day.\nClear one in just five minutes.",
       };
     }
   }
@@ -47,15 +54,30 @@ export function nextOnboardingStep(step: OnboardingStep): OnboardingStep | null 
   }
 }
 
+// 첫 스텝에서 `null`을 돌려준다 — 스플래시로 돌아갈 곳이 없어 뒤로가기를 두지 않는다.
+export function previousOnboardingStep(step: OnboardingStep): OnboardingStep | null {
+  switch (step) {
+    case 0: {
+      return null;
+    }
+    case 1: {
+      return 0;
+    }
+    case 2: {
+      return 1;
+    }
+  }
+}
+
 // 마지막 스텝만 갈린다(계약 §8) — 나머지는 저장소의 진행 어휘를 잇는다.
 export function onboardingActionLabel(step: OnboardingStep): OnboardingActionLabel {
   switch (step) {
     case 0:
     case 1: {
-      return "다음";
+      return "Next";
     }
     case 2: {
-      return "시작하기";
+      return "Get started";
     }
   }
 }

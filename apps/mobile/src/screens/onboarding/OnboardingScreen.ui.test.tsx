@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { onboardingActionLabel, onboardingSteps } from "./onboarding";
 import { OnboardingScreen } from "./OnboardingScreen";
@@ -16,8 +16,13 @@ import { OnboardingScreen } from "./OnboardingScreen";
 // 제목·본문(`onboardingCopy`의 결과)은 자리표다(§8) — 공백 아님·서로 다름만 본다.
 // 액션 라벨(`onboardingActionLabel`의 결과)은 임시가 아니다 — 문자열을 그대로 단언한다.
 
+// 액션은 `onboarding-screen-next` 행 안의 ui-lynx Button이다(2026-09-21 디자인 반영).
+function actionButton() {
+  return within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button");
+}
+
 function next() {
-  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
+  fireEvent.tap(actionButton(), {});
 }
 
 describe("OnboardingScreen (LIB-261)", () => {
@@ -69,23 +74,20 @@ describe("OnboardingScreen (LIB-261)", () => {
   });
 
   // OB-U4
-  it("[OB-U4] 현재 진행 점만 data-current='true'이고 스텝을 따라 옮겨 간다", () => {
+  it("[OB-U4] 페이지 표시의 현재 페이지가 스텝을 따라 옮겨 간다", () => {
     render(<OnboardingScreen onComplete={vi.fn()} />);
 
-    function currentDots(): readonly (typeof onboardingSteps)[number][] {
-      return onboardingSteps.filter(
-        (step) =>
-          screen
-            .getByTestId(`onboarding-screen-progress-dot-${step}`)
-            .getAttribute("data-current") === "true",
-      );
+    function currentPage(): string | null {
+      return within(screen.getByTestId("onboarding-screen-progress"))
+        .getByTestId("ui-lynx-page-indicator")
+        .getAttribute("data-current");
     }
 
-    expect(currentDots()).toEqual([0]);
+    expect(currentPage()).toBe("1");
     next();
-    expect(currentDots()).toEqual([1]);
+    expect(currentPage()).toBe("2");
     next();
-    expect(currentDots()).toEqual([2]);
+    expect(currentPage()).toBe("3");
   });
 
   // OB-U5
@@ -102,7 +104,7 @@ describe("OnboardingScreen (LIB-261)", () => {
   });
 
   // OB-U6
-  it("[OB-U6] 액션 라벨이 마지막에서 갈린다(다음 → 시작하기)", () => {
+  it("[OB-U6] 액션 라벨이 마지막에서 갈린다(Next → Get started)", () => {
     render(<OnboardingScreen onComplete={vi.fn()} />);
     const action = screen.getByTestId("onboarding-screen-next");
 
@@ -126,7 +128,7 @@ describe("OnboardingScreen (LIB-261)", () => {
     expect(progress).toHaveAttribute("accessibility-element", "true");
     const nameAtStep0 = progress.getAttribute("accessibility-label");
 
-    const action = screen.getByTestId("onboarding-screen-next");
+    const action = actionButton();
     expect(action).toHaveAttribute("accessibility-element", "true");
     expect(action).toHaveAttribute("accessibility-label", onboardingActionLabel(0));
     expect(action).toHaveAttribute("accessibility-traits", "button");
@@ -135,5 +137,94 @@ describe("OnboardingScreen (LIB-261)", () => {
 
     const nameAtStep1 = progress.getAttribute("accessibility-label");
     expect(nameAtStep1).not.toBe(nameAtStep0);
+  });
+
+  // OB-U8 — 2026-09-21 디자인 반영: 좌상단 뒤로가기.
+  it("[OB-U8] 첫 스텝에는 뒤로가기가 없고, 다음 스텝부터 누르면 한 칸 돌아간다", () => {
+    render(<OnboardingScreen onComplete={vi.fn()} />);
+    const root = screen.getByTestId("onboarding-screen");
+    const header = screen.getByTestId("onboarding-screen-header");
+
+    expect(within(header).queryByTestId("ui-lynx-round-button")).toBeNull();
+
+    next();
+    const back = within(header).getByTestId("ui-lynx-round-button");
+    expect(back).toHaveAttribute("accessibility-label", "이전 단계");
+
+    fireEvent.tap(back, {});
+    expect(root).toHaveAttribute("data-step", "0");
+    expect(within(header).queryByTestId("ui-lynx-round-button")).toBeNull();
+  });
+
+  // OB-U9 — 2026-09-21 디자인 반영: 둘째 스텝 듣기 카드의 글자 칠하기.
+  it("[OB-U9] 재생하면 표현이 한 글자씩 칠해지고 끝나면 멈추며, 다시 듣기는 처음부터 칠한다", () => {
+    vi.useFakeTimers();
+    try {
+      render(<OnboardingScreen onComplete={vi.fn()} />);
+      next(); // 0 → 1
+
+      const roundButton = (label: string) =>
+        screen
+          .getAllByTestId("ui-lynx-round-button")
+          .find((button) => button.getAttribute("accessibility-label") === label)!;
+      const filled = () =>
+        screen.getByTestId("onboarding-screen-quiz-text").getAttribute("data-filled");
+
+      expect(filled()).toBe("0");
+      fireEvent.tap(roundButton("재생"), {});
+      act(() => {
+        vi.advanceTimersByTime(350);
+      });
+      expect(filled()).toBe("1");
+
+      act(() => {
+        vi.advanceTimersByTime(350 * 12);
+      });
+      // "선크림 있어요?" — 띄어쓰기·물음표까지 8칸.
+      expect(filled()).toBe("8");
+      expect(roundButton("재생")).toBeDefined();
+
+      fireEvent.tap(roundButton("다시 듣기"), {});
+      expect(filled()).toBe("0");
+      act(() => {
+        vi.advanceTimersByTime(350);
+      });
+      expect(filled()).toBe("1");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // OB-U10 — 2026-09-21 디자인 반영: 셋째 스텝 학습 유닛의 Learning → Clear.
+  it("[OB-U10] 셋째 스텝의 학습 유닛이 학습 중으로 보이다가 잠시 뒤 완료로 바뀐다", () => {
+    vi.useFakeTimers();
+    try {
+      render(<OnboardingScreen onComplete={vi.fn()} />);
+      next(); // 0 → 1
+      next(); // 1 → 2
+
+      const status = () =>
+        within(screen.getByTestId("onboarding-screen-unit")).getByTestId(
+          "ui-lynx-status-indicator",
+        );
+      expect(status()).toHaveAttribute("data-status", "in-progress");
+      expect(status()).toHaveTextContent("Learning");
+
+      act(() => {
+        vi.advanceTimersByTime(1500);
+      });
+      expect(status()).toHaveAttribute("data-status", "completed");
+      expect(status()).toHaveTextContent("Clear");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // OB-U11 — 장식 그림(배경·튀어나온 인물)이 이름 없는 접근성 정지로 남지 않는다.
+  it("[OB-U11] 첫 스텝 그림 카드는 래퍼가 접근성 자손을 통째로 가린다", () => {
+    render(<OnboardingScreen onComplete={vi.fn()} />);
+    const hero = screen.getByTestId("onboarding-screen-hero");
+    expect(hero).toHaveAttribute("accessibility-elements-hidden", "true");
+    expect(hero.querySelectorAll("image").length).toBeGreaterThan(0);
   });
 });

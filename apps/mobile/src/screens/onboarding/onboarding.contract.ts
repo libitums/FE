@@ -12,8 +12,13 @@
 // (3) · §4.5)이 신설한 진행 묶음 래퍼 testid다 — OB-U7이 질의한다.
 
 export type OnboardingStep = 0 | 1 | 2;
-export type OnboardingActionLabel = "다음" | "시작하기";
-export type OnboardingCopy = { readonly title: string; readonly body: string };
+export type OnboardingActionLabel = "Next" | "Get started";
+// `titleEmphasis`가 있으면 제목 뒤에 한 칸 띄워 강조색으로 잇는다("with" + "Story").
+export type OnboardingCopy = {
+  readonly title: string;
+  readonly titleEmphasis?: string;
+  readonly body: string;
+};
 export type OnboardingScreenProps = { readonly onComplete: () => void };
 
 export type OnboardingTestId =
@@ -23,4 +28,9 @@ export type OnboardingTestId =
   | "onboarding-screen-body"
   | "onboarding-screen-next"
   | "onboarding-screen-progress"
-  | `onboarding-screen-progress-dot-${OnboardingStep}`;
+  | "onboarding-screen-cards"
+  | "onboarding-screen-header"
+  | "onboarding-screen-hero"
+  | "onboarding-screen-chat"
+  | "onboarding-screen-stack"
+  | "onboarding-screen-unit";

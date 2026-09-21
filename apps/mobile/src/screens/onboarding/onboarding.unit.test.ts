@@ -4,6 +4,7 @@ import type { OnboardingStep } from "./onboarding.contract";
 import {
   nextOnboardingStep,
   onboardingActionLabel,
+  previousOnboardingStep,
   onboardingCopy,
   onboardingSteps,
 } from "./onboarding";
@@ -57,4 +58,11 @@ test("OB5. 스텝 셋의 제목이 서로 다르다", () => {
   const titles = allOnboardingSteps.map((step) => onboardingCopy(step).title);
 
   expect(new Set(titles).size).toBe(allOnboardingSteps.length);
+});
+
+// OB5
+test("OB5. previousOnboardingStep이 0에서 null, 1·2에서 한 칸 앞이다", () => {
+  expect(previousOnboardingStep(0)).toBeNull();
+  expect(previousOnboardingStep(1)).toBe(0);
+  expect(previousOnboardingStep(2)).toBe(1);
 });

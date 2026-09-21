@@ -3,7 +3,13 @@
   "compilerOptions": {
     "paths": {
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
-      "@libitums/ui-lynx/button": ["../../packages/ui-lynx/src/button/index.ts"]
+      "@libitums/ui-lynx/button": ["../../packages/ui-lynx/src/button/index.ts"],
+      "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"],
+      "@libitums/ui-lynx/page-indicator": ["../../packages/ui-lynx/src/page-indicator/index.ts"],
+      "@libitums/ui-lynx/round-button": ["../../packages/ui-lynx/src/round-button/index.ts"],
+      "@libitums/ui-lynx/chat-bubble": ["../../packages/ui-lynx/src/chat-bubble/index.ts"],
+      "@libitums/ui-lynx/answer-label": ["../../packages/ui-lynx/src/answer-label/index.ts"],
+      "@libitums/ui-lynx/status-indicator": ["../../packages/ui-lynx/src/status-indicator/index.ts"]
     }
   }
 }
