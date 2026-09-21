@@ -14,8 +14,10 @@ import {
   learningScreenFor,
   navReducer,
   roleplayScreenFor,
+  speechProbeNav,
   tabRootActions,
   type Nav,
+  type Screen,
   type Tab,
 } from "./navigation";
 
@@ -955,29 +957,48 @@ describe("진입 흐름 (LIB-261)", () => {
 // ⭐ LIB-261이 들어온 뒤 NP2의 단언 대상이 늘었다: 앱이 실제로 부팅하는 상태는
 // `initialNav`가 아니라 `entryInitialNav`다(`App.tsx`의 `useReducer` 둘째 인자).
 // 하나만 훑으면 파수꾼이 낡아 아무것도 안 지키므로 제품 부팅 상태를 모두 훑는다.
-describe("탐침 route 도달 경로 (LIB-263)", () => {
-  // NP1
-  it("NP1. handwritingProbeNav는 여정 탭 스택에 탐침 하나만 세우고 entry가 비어 있다", () => {
-    expect(handwritingProbeNav.stacks.journey).toEqual([{ name: "handwriting-probe" }]);
-    expect(handwritingProbeNav.tab).toBe("journey");
-    // `activeStack`이 `entry`를 먼저 고르므로, 여기가 비어 있지 않으면 이 부팅
-    // 상태로도 탐침에 닿지 못한다 — 그 불변식을 이 줄이 진다.
-    expect(handwritingProbeNav.entry).toEqual([]);
-    expect(currentScreen(handwritingProbeNav)).toEqual({ name: "handwriting-probe" });
-  });
+describe("탐침 route 도달 경로 — 제품 부팅이 탐침에 닿지 않는다", () => {
+  // 개발용 탐침 부팅 상태와 그 route 이름을 **목록으로 모아 훑는다.** 탐침마다 단언을
+  // 손으로 복제하면 다음 탐침이 조용히 빠지고, 빠진 쪽은 아무도 안 본다. 여기 한 줄을
+  // 더하면 아래 단언 전부가 새 탐침을 함께 본다.
+  //
+  // 목록의 길이를 어디에서도 세지 않는다 — 세는 순간 탐침이 늘 때 이 파일이 낡는다.
+  const probeBoots: readonly { readonly route: Screen["name"]; readonly boot: Nav }[] = [
+    { route: "handwriting-probe", boot: handwritingProbeNav },
+    { route: "speech-probe", boot: speechProbeNav },
+  ];
 
-  // NP2
+  // NP1
+  for (const probe of probeBoots) {
+    it(`NP1. ${probe.route} 부팅 상태는 여정 탭 스택에 탐침 하나만 세우고 entry가 비어 있다`, () => {
+      expect(probe.boot.stacks.journey).toEqual([{ name: probe.route }]);
+      expect(probe.boot.tab).toBe("journey");
+      // `activeStack`이 `entry`를 먼저 고르므로, 여기가 비어 있지 않으면 이 부팅
+      // 상태로도 탐침에 닿지 못한다 — 그 불변식을 이 줄이 진다.
+      expect(probe.boot.entry).toEqual([]);
+      expect(currentScreen(probe.boot)).toEqual({ name: probe.route });
+    });
+  }
+
+  // NP2 — 제품 부팅 상태 **둘 다**를 탐침 **전부**에 대해 훑는다. `initialNav`만 보면
+  // App이 실제로 넘기는 부팅 상태(`entryInitialNav`)가 빠지고, 그쪽에 탐침이 섞여도
+  // 이 파수꾼이 초록으로 남는다.
   it("NP2. 제품 부팅 상태의 entry와 모든 탭 스택 어디에도 탐침 route가 없다", () => {
     const bootedScreenNames = (booted: Nav) =>
       [...booted.entry, ...Object.values(booted.stacks).flat()].map((screen) => screen.name);
 
-    expect(bootedScreenNames(initialNav)).not.toContain("handwriting-probe");
-    expect(bootedScreenNames(entryInitialNav)).not.toContain("handwriting-probe");
+    for (const booted of [initialNav, entryInitialNav]) {
+      for (const probe of probeBoots) {
+        expect(bootedScreenNames(booted)).not.toContain(probe.route);
+      }
+    }
   });
 
   // NP3
-  it("NP3. 나머지 탭 스택은 initialNav와 같다 — 부팅 상태를 여정 탭 한 자리만 바꾼다", () => {
-    expect(handwritingProbeNav.stacks.roleplay).toEqual(initialNav.stacks.roleplay);
-    expect(handwritingProbeNav.stacks.settings).toEqual(initialNav.stacks.settings);
-  });
+  for (const probe of probeBoots) {
+    it(`NP3. ${probe.route} 부팅 상태의 나머지 탭 스택은 initialNav와 같다 — 여정 탭 한 자리만 바꾼다`, () => {
+      expect(probe.boot.stacks.roleplay).toEqual(initialNav.stacks.roleplay);
+      expect(probe.boot.stacks.settings).toEqual(initialNav.stacks.settings);
+    });
+  }
 });

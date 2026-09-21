@@ -68,6 +68,10 @@ import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contra
 import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { sessionOptionChangedEvent, settingsNavOpenedEvent } from "../screens/settings/settings";
+// LIB-267: 개발용 탐침 화면. 손글씨 탐침 import와 같은 규약이다 — 이 파일이 탐침에서
+// 가져오는 것은 화면 컴포넌트 하나뿐이고 `navigation.ts`의 개발용 부팅 상태는
+// **가져오지 않는다.** 제품 부팅이 탐침을 안 쓴다는 것을 이 파일이 스스로 보인다.
+import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
 import { TermsScreen } from "../screens/terms/TermsScreen";
 import { termsSections } from "../screens/terms/terms-sections";
 import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
@@ -890,6 +894,12 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // 개발용 부팅 상태(`handwritingProbeNav`)를 손수 바꿔 끼워야 한다.
     case "handwriting-probe":
       return <HandwritingProbeScreen />;
+    // LIB-267 (개발용 탐침): 위 case와 같은 자리·같은 근거다. `never` 망라가 이 case를
+    // 강제하고, 결선은 없다 — 탐침 화면은 props도 콜백도 받지 않고 자기 상태를 스스로
+    // 든다. **아무 코드도 이 화면을 push하지 않는다**: 여기로 오는 전이가 한 자리도
+    // 없고, 닿으려면 `navigation.ts`가 둔 개발용 부팅 상태를 손수 바꿔 끼워야 한다.
+    case "speech-probe":
+      return <SpeechProbeScreen />;
     default: {
       const exhaustive: never = screen;
       return exhaustive;
