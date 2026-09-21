@@ -636,6 +636,7 @@ describe("Storybook Lynx build outputs", () => {
     "visual-novel-dialog",
     "text-field",
     "tooltip",
+    "option-selector",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -732,6 +733,13 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-tooltip--no-arrow");
     expect(index).toContain("components-tooltip--aligned-start");
     expect(index).toContain("components-tooltip--learning-language");
+    expect(index).toContain("components-option-selector--default");
+    expect(index).toContain("components-option-selector--filled");
+    expect(index).toContain("components-option-selector--multiple");
+    expect(index).toContain("components-option-selector--immediate");
+    expect(index).toContain("components-option-selector--grid");
+    expect(index).toContain("components-option-selector--disabled");
+    expect(index).toContain("components-option-selector--long-label");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -776,6 +784,7 @@ describe("Storybook Lynx build outputs", () => {
       ],
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
       "@libitums/ui-lynx/tooltip": ["../../packages/ui-lynx/src/tooltip/index.ts"],
+      "@libitums/ui-lynx/option-selector": ["../../packages/ui-lynx/src/option-selector/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -802,6 +811,7 @@ describe("Storybook Lynx build outputs", () => {
     ["visual-novel-dialog", "@libitums/ui-lynx/visual-novel-dialog"],
     ["text-field", "@libitums/ui-lynx/text-field"],
     ["tooltip", "@libitums/ui-lynx/tooltip"],
+    ["option-selector", "@libitums/ui-lynx/option-selector"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -857,6 +867,9 @@ describe("Storybook Lynx build outputs", () => {
       /["']?visual-novel-dialog["']?\s*:\s*["']\.\/src\/lynx\/visual-novel-dialog\.tsx["']/,
     );
     expect(config).toMatch(/["']?tooltip["']?\s*:\s*["']\.\/src\/lynx\/tooltip\.tsx["']/);
+    expect(config).toMatch(
+      /["']?option-selector["']?\s*:\s*["']\.\/src\/lynx\/option-selector\.tsx["']/,
+    );
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),
@@ -928,6 +941,11 @@ describe("Storybook Lynx build outputs", () => {
       import: "./dist/tooltip/index.js",
       default: "./dist/tooltip/index.js",
     });
+    expect(packageJson.exports["./option-selector"]).toEqual({
+      types: "./dist/option-selector/index.d.ts",
+      import: "./dist/option-selector/index.js",
+      default: "./dist/option-selector/index.js",
+    });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
       true,
@@ -949,6 +967,15 @@ describe("Storybook Lynx build outputs", () => {
       true,
     );
     expect(await outputExists("../../packages/ui-lynx/dist/tooltip/tooltip.css")).toBe(true);
+    expect(
+      await outputExists("../../packages/ui-lynx/dist/option-selector/OptionSelector.jsx"),
+    ).toBe(true);
+    expect(
+      await outputExists("../../packages/ui-lynx/dist/option-selector/option-selector.contract.js"),
+    ).toBe(true);
+    expect(
+      await outputExists("../../packages/ui-lynx/dist/option-selector/option-selector.css"),
+    ).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/overlay/Overlay.jsx")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/overlay/overlay.contract.js")).toBe(
       true,
@@ -1011,6 +1038,7 @@ describe("Storybook Lynx build outputs", () => {
       "text-field",
       "visual-novel-dialog",
       "tooltip",
+      "option-selector",
     ]) {
       expect(packVerifier).toContain(`modules: ["${directory}.contract"]`);
     }
@@ -1041,6 +1069,11 @@ describe("Storybook Lynx build outputs", () => {
     expect(packVerifier).toContain('component: "Card"');
     expect(packVerifier).toContain('modules: ["card.contract"]');
     expect(packVerifier).toContain('css: "card.css"');
+    expect(packVerifier).toContain('subpath: "option-selector"');
+    expect(packVerifier).toContain('directory: "option-selector"');
+    expect(packVerifier).toContain('component: "OptionSelector"');
+    expect(packVerifier).toContain('modules: ["option-selector.contract"]');
+    expect(packVerifier).toContain('css: "option-selector.css"');
     expect(packVerifier).toContain("package/dist/${directory}/index.js");
     expect(packVerifier).toContain("package/dist/${directory}/${component}.jsx");
     expect(packVerifier).toContain("package/dist/${directory}/${module}.js");

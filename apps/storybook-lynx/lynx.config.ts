@@ -27,6 +27,7 @@ export default defineConfig({
       "chat-bubble": "./src/lynx/chat-bubble.tsx",
       "visual-novel-dialog": "./src/lynx/visual-novel-dialog.tsx",
       tooltip: "./src/lynx/tooltip.tsx",
+      "option-selector": "./src/lynx/option-selector.tsx",
     },
   },
   output: {

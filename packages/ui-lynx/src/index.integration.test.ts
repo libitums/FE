@@ -26,6 +26,7 @@ import * as chatBubble from "./chat-bubble/index";
 import * as visualNovelDialog from "./visual-novel-dialog/index";
 import * as textField from "./text-field/index";
 import * as tooltip from "./tooltip/index";
+import * as optionSelector from "./option-selector/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -56,6 +57,7 @@ const componentArtifacts = {
   },
   "text-field": { implementation: "TextField.jsx", css: "text-field.css" },
   tooltip: { implementation: "Tooltip.jsx", css: "tooltip.css" },
+  "option-selector": { implementation: "OptionSelector.jsx", css: "option-selector.css" },
 } as const;
 
 const componentEntries = {
@@ -79,6 +81,7 @@ const componentEntries = {
   "visual-novel-dialog": "VisualNovelDialog",
   "text-field": "TextField",
   tooltip: "Tooltip",
+  "option-selector": "OptionSelector",
 } as const;
 
 async function readPackageJson() {
@@ -137,6 +140,10 @@ describe("ui-lynx package boundaries", () => {
     expect(root.getTextFieldContract).toBe(textField.getTextFieldContract);
     expect(root.getTooltipContract).toBe(tooltip.getTooltipContract);
     expect(root.resolveTooltipLayout).toBe(tooltip.resolveTooltipLayout);
+    expect(root.OptionSelector).toBe(optionSelector.OptionSelector);
+    expect(root.getOptionSelectorContract).toBe(optionSelector.getOptionSelectorContract);
+    expect(root.nextOptionSelection).toBe(optionSelector.nextOptionSelection);
+    expect(root.isSameOptionSelection).toBe(optionSelector.isSameOptionSelection);
   });
 
   test("root stylesheet aggregates every component without removing existing styles", async () => {
@@ -192,6 +199,9 @@ describe("ui-lynx package boundaries", () => {
     );
     expect(packageJson.exports["./text-field/styles.css"]).toBe("./dist/text-field/text-field.css");
     expect(packageJson.exports["./tooltip/styles.css"]).toBe("./dist/tooltip/tooltip.css");
+    expect(packageJson.exports["./option-selector/styles.css"]).toBe(
+      "./dist/option-selector/option-selector.css",
+    );
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
 
@@ -335,6 +345,13 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/tooltip/tooltip.contract.js",
       "package/dist/tooltip/tooltip.contract.d.ts",
       `package/dist/tooltip/${componentArtifacts.tooltip.css}`,
+      "package/dist/option-selector/index.js",
+      `package/dist/option-selector/${componentArtifacts["option-selector"].implementation}`,
+      "package/dist/option-selector/index.d.ts",
+      "package/dist/option-selector/OptionSelector.d.ts",
+      "package/dist/option-selector/option-selector.contract.js",
+      "package/dist/option-selector/option-selector.contract.d.ts",
+      `package/dist/option-selector/${componentArtifacts["option-selector"].css}`,
     ]) {
       expect(stdout).toContain(file);
     }

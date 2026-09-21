@@ -29,6 +29,7 @@
     "./dist/visual-novel-dialog/visual-novel-dialog.css",
     "./dist/text-field/text-field.css",
     "./dist/tooltip/tooltip.css",
+    "./dist/option-selector/option-selector.css",
     "./dist/status-indicator/status-indicator.css"
   ],
   "main": "./dist/index.js",
@@ -157,6 +158,12 @@
       "default": "./dist/tooltip/index.js"
     },
     "./tooltip/styles.css": "./dist/tooltip/tooltip.css",
+    "./option-selector": {
+      "types": "./dist/option-selector/index.d.ts",
+      "import": "./dist/option-selector/index.js",
+      "default": "./dist/option-selector/index.js"
+    },
+    "./option-selector/styles.css": "./dist/option-selector/option-selector.css",
     "./styles.css": "./dist/styles.css",
     "./progress-header.css": "./dist/progress-header/progress-header.css",
     "./page-indicator.css": "./dist/page-indicator/page-indicator.css",
