@@ -98,7 +98,7 @@ export type Screen =
   | { name: "splash" }
   | { name: "onboarding" }
   | { name: "login" }
-  | { name: "verification-code" }
+  | { name: "verification-code"; phoneNumber?: string }
   | { name: "language-select" }
   | { name: "journey-entry" }
   // LIB-263 계약 §5.2: 손글씨 탐침 route. 필드가 없다 — 탐침 화면은 스텝도 유닛도
@@ -226,10 +226,13 @@ export const speechProbeNav: Nav = {
 
 // `default` 없는 switch — 수단이 늘면 TS2366으로 선다(§2.7). `phone`만 코드 검증을
 // 거친다(`requiresVerificationCode`와 같은 축, `lib/entry-flow.ts` §2.1).
-export function entryScreenAfterLogin(method: EntryLoginMethod): Screen {
+// `phoneNumber`는 코드 검증 화면이 보여 줄 번호다(2026-09-21 디자인 반영). 없으면 싣지 않는다.
+export function entryScreenAfterLogin(method: EntryLoginMethod, phoneNumber?: string): Screen {
   switch (method) {
     case "phone": {
-      return { name: "verification-code" };
+      return phoneNumber
+        ? { name: "verification-code", phoneNumber }
+        : { name: "verification-code" };
     }
     case "google":
     case "apple":

@@ -17,11 +17,12 @@ export type EntryViewedScreenName = Exclude<EntryScreenName, "splash">;
 
 export type EntryLoginMethod = "phone" | "google" | "apple" | "facebook";
 
-// 계약 순서(phone → google → apple → facebook, §2.1).
+// 화면 순서가 곧 이 순서다(phone → apple → google → facebook). 2026-09-21 디자인 반영에서
+// 계약 순서(§2.1 phone → google → apple → facebook)를 피그마 순서로 바꿨다.
 export const entryLoginMethods: readonly EntryLoginMethod[] = [
   "phone",
-  "google",
   "apple",
+  "google",
   "facebook",
 ];
 

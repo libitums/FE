@@ -1,11 +1,13 @@
 import { expect, test } from "vitest";
 
 import {
+  formatVerificationCountdown,
   initialVerificationCode,
   isVerificationCodeComplete,
   isVerificationCodeRejected,
   verificationCodeFrom,
   verificationCodeLength,
+  verificationCodeValidSeconds,
 } from "./verification-code";
 
 // 계약: .agent-harness/work/lib-261/spec.md §2.5(순수 타입 계약) · §3(pureFunctions)
@@ -62,4 +64,13 @@ test("VC7. isVerificationCodeRejected가 나머지에서 거짓이다", () => {
   for (const value of notRejected) {
     expect(isVerificationCodeRejected(value)).toBe(false);
   }
+});
+
+// VC8 — 2026-09-21 디자인 반영: 5분 카운트다운 표기.
+test("VC8. 유효 시간이 5분이고 formatVerificationCountdown이 MM:SS로 적는다", () => {
+  expect(verificationCodeValidSeconds).toBe(300);
+  expect(formatVerificationCountdown(300)).toBe("05:00");
+  expect(formatVerificationCountdown(59)).toBe("00:59");
+  expect(formatVerificationCountdown(0)).toBe("00:00");
+  expect(formatVerificationCountdown(-3)).toBe("00:00");
 });

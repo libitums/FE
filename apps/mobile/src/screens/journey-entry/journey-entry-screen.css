@@ -1,82 +1,152 @@
-/* LIB-261 (ui-implementation): design.md §2.2(공통 레시피) · §8.2(값)의 값. 계약
-   §0.5 A5 · §4.2~§4.5가 고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀
-   프로퍼티로만 소비한다(ADR-0014 D1).
+/* LIB-261 (ui-implementation): design.md §2.2(공통 레시피) · §8.2(값)의 값. 토큰은 CSS
+   커스텀 프로퍼티로만 소비한다(ADR-0014 D1).
 
-   고르는 수단을 두지 않는다(design §8.2) — 단순 입장 화면이다. 목록·카드·선택
-   표식이 0건이다. */
+   2026-09-21 디자인 반영: 그림을 화면 전체(안쪽 여백 무시)에 깔고, 위 · 아래 Fog(dark)로 글자
+   자리를 어둡게 한다. 글자는 그 위에 겹친다. CSS 상속이 꺼져 있어 글자마다 색과 타이포를 적는다. */
 
 .journey-entry-screen {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
-  justify-content: flex-start;
-  gap: var(--libitum-layout-gap-block);
+  justify-content: space-between;
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
     var(--libitum-layout-screen-padding-bottom);
-  background: var(--libitum-color-background-primary);
+  background: var(--libitum-color-gray-950);
+}
+
+/* Lynx는 absolute 형제를 흐름 요소 위에 그려, 배경 · Fog를 z-index 0에, 글자 묶음을 1에 둔다. */
+.journey-entry-screen-backdrop {
+  z-index: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.journey-entry-screen-background {
+  width: 100%;
+  height: 100%;
+}
+
+/* Fog 크기는 s(40) · m(80) · full뿐이라, 칸 높이를 여기서 정하고 그 안을 full로 채운다. */
+.journey-entry-screen-fog-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
+}
+
+.journey-entry-screen-fog-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 55%;
+}
+
+.journey-entry-screen-top,
+.journey-entry-screen-bottom {
+  position: relative;
+  z-index: 1;
+}
+
+.journey-entry-screen-top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 뒤로가기 행. RoundButton xl(56)만큼 높이를 늘 잡아 둔다(다른 진입 화면과 같은 값). */
+.journey-entry-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  margin-bottom: var(--libitum-spacing-8);
 }
 
 .journey-entry-screen-title {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-s-font-family);
-  font-weight: var(--libitum-typography-heading-s-font-weight);
-  font-size: var(--libitum-typography-heading-s-font-size);
-  line-height: var(--libitum-typography-heading-s-line-height);
-  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-  flex-shrink: 0;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
 }
 
-.journey-entry-screen-scroll {
-  flex: 1;
-  justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+.journey-entry-screen-language {
+  color: var(--libitum-color-gray-500);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
 }
 
-.journey-entry-screen-content {
+.journey-entry-screen-bottom {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--libitum-layout-gap-block);
-  padding-top: var(--libitum-spacing-16);
+  gap: var(--libitum-spacing-8);
 }
 
-/* 폭·높이·줄 제한 선언 없음(design §8.2). */
-.journey-entry-screen-body {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-body-l-font-family);
-  font-weight: var(--libitum-typography-body-l-font-weight);
-  font-size: var(--libitum-typography-body-l-font-size);
-  line-height: var(--libitum-typography-body-l-line-height);
-  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+.journey-entry-screen-display {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
 }
 
-/* 고른 언어의 라벨 그대로 한 줄(§0.5 A5) — 새 문장을 짓지 않는다. */
-.journey-entry-screen-language {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-body-l-font-family);
-  font-weight: var(--libitum-typography-body-l-font-weight);
-  font-size: var(--libitum-typography-body-l-font-size);
-  line-height: var(--libitum-typography-body-l-line-height);
-  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
-}
-
-/* design §2.2 「액션 행」 — 다른 화면의 액션 행과 같은 값이다. */
-.journey-entry-screen-start {
-  background: var(--libitum-color-brand-strong);
-  min-height: var(--libitum-spacing-48);
-  border-radius: var(--libitum-radius-md);
-  width: 100%;
+/* 큰 제목과 구분선 묶음은 글자 폭만큼만 차지한다(왼쪽 정렬). */
+.journey-entry-screen-display-group {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  flex-direction: column;
+  align-self: flex-start;
 }
 
-.journey-entry-screen-start-label {
-  color: var(--libitum-color-fg-neutral-inverted);
-  font-family: var(--libitum-typography-button-xl-font-family);
-  font-weight: var(--libitum-typography-button-xl-font-weight);
-  font-size: var(--libitum-typography-button-xl-font-size);
-  line-height: var(--libitum-typography-button-xl-line-height);
-  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+/* 큰 제목 아래 brand.primary 구분선(두께 4) — 묶음 폭 = 큰 제목 글자 폭. */
+/* width: 100%는 글자 폭 묶음 안에서 0으로 풀려(Lynx) stretch로 묶음 폭을 받는다. */
+.journey-entry-screen-separator {
+  align-self: stretch;
+  height: var(--libitum-spacing-4);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.journey-entry-screen-caption {
+  color: var(--libitum-color-gray-500);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
+}
+
+/* ⚠ gray.800 글자는 어두운 Fog 위에서 대비가 낮다 — 피그마 값을 따른다. */
+.journey-entry-screen-notice {
+  margin-top: var(--libitum-spacing-16);
+  text-align: center;
+  color: var(--libitum-color-gray-800);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
+}
+
+/* 흰 Start 버튼 — FE override(2026-09-21 디자인 반영): Button에 흰 면 variant가 없어 neutral의
+   면을 흰색, 글자를 gray.900으로 바꾼다. */
+.journey-entry-screen-start {
+  width: 100%;
+}
+
+.journey-entry-screen-start .ui-lynx-button-surface {
+  background-color: var(--libitum-color-white);
+}
+
+.journey-entry-screen-start .ui-lynx-button-label {
+  color: var(--libitum-color-gray-900);
 }

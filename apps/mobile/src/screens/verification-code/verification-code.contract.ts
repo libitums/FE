@@ -6,7 +6,10 @@
 // 정의하지 않는다.
 
 export type VerificationCodeScreenProps = {
+  /** 로그인에서 입력한 번호(국가 번호 포함). 안내 문구 바로 아래 보인다. 없으면 그 줄을 그리지 않는다. */
+  readonly phoneNumber?: string;
   readonly onSubmit: () => void;
+  /** 좌상단 뒤로가기 — 로그인으로 돌아간다. */
   readonly onExit: () => void;
 };
 
@@ -15,5 +18,8 @@ export type VerificationCodeTestId =
   | "verification-code-screen-title"
   | "verification-code-screen-exit"
   | "verification-code-screen-description"
+  | "verification-code-screen-phone"
+  | "verification-code-screen-timer"
+  | "verification-code-screen-resend"
   | "verification-code-screen-input"
   | "verification-code-screen-submit";

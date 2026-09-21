@@ -427,17 +427,26 @@ function emptyStorageStub(): void {
   });
 }
 
-// `VerificationCodeScreen.ui.test.tsx`의 `dispatchTextFieldInput`·`typeCode`와 같은
-// 형태다(파일이 다르므로 다시 선언한다) — 코드 검증 상태를 한 번 지나가려면 필요하다.
+// 코드 칸 넷(CompactNumericInput)에 한 자리씩 넣는다 — `VerificationCodeScreen.ui.test.tsx`의
+// `typeCode`와 같은 형태다(파일이 다르므로 다시 선언한다).
 function typeVerificationCode(value: string): void {
-  const field = screen.getByTestId("verification-code-screen-input");
-  const input = within(field).getByTestId("ui-lynx-text-field-input");
-  const EventConstructor = input.ownerDocument.defaultView?.CustomEvent;
+  const EventConstructor = document.defaultView?.CustomEvent;
   if (!EventConstructor) throw new Error("CustomEvent is unavailable");
-  const ref = lynx.createSelectorQuery().select('[data-testid="ui-lynx-text-field-input"]');
-  fireEvent(
-    ref as unknown as Element,
-    new EventConstructor("bindEvent:input", { detail: { value } }),
+  Array.from(value).forEach((digit, index) => {
+    const ref = lynx
+      .createSelectorQuery()
+      .select(`.verification-code-screen-digit-${index} .ui-lynx-compact-numeric-input`);
+    fireEvent(
+      ref as unknown as Element,
+      new EventConstructor("bindEvent:input", { detail: { value: digit } }),
+    );
+  });
+}
+
+function tapVerificationSubmit(): void {
+  fireEvent.tap(
+    within(screen.getByTestId("verification-code-screen-submit")).getByTestId("ui-lynx-button"),
+    {},
   );
 }
 
@@ -478,20 +487,26 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계�
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
   expect(headingAxis(container)).toEqual(["login-screen-title"]);
 
-  fireEvent.tap(screen.getByTestId("login-screen-method-phone"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("login-screen-method-phone")).getByTestId("ui-lynx-button"),
+    {},
+  );
 
   // 상태 verification-code
   expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
   expect(headingAxis(container)).toEqual(["verification-code-screen-title"]);
 
   typeVerificationCode("1234");
-  fireEvent.tap(screen.getByTestId("verification-code-screen-submit"), {});
+  tapVerificationSubmit();
 
   // 상태 language-select
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
   expect(headingAxis(container)).toEqual(["language-select-screen-title"]);
 
-  fireEvent.tap(screen.getByTestId("language-select-screen-next"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("language-select-screen-next")).getByTestId("ui-lynx-button"),
+    {},
+  );
 
   // 상태 journey-entry
   expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();

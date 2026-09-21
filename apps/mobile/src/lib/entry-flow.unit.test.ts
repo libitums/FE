@@ -25,9 +25,9 @@ import {
 // test-plan의 red 기대와 대조한다).
 
 // EF1
-test("EF1. entryLoginMethods가 phone→google→apple→facebook 순서이고 중복이 없다", () => {
+test("EF1. entryLoginMethods가 phone→apple→google→facebook 순서이고 중복이 없다", () => {
   expect(entryLoginMethods.length).toBeGreaterThan(0);
-  expect(entryLoginMethods).toEqual(["phone", "google", "apple", "facebook"]);
+  expect(entryLoginMethods).toEqual(["phone", "apple", "google", "facebook"]);
   expect(new Set(entryLoginMethods).size).toBe(entryLoginMethods.length);
 });
 

@@ -4,6 +4,7 @@ import {
   entryLanguageLabel,
   entryLanguages,
   initialEntryLanguage,
+  isEntryLanguageAvailable,
   type EntryLanguage,
 } from "./entry-language";
 
@@ -24,7 +25,7 @@ test("EL2. initialEntryLanguage가 entryLanguages[0]과 같다", () => {
 });
 
 // EL3
-const allEntryLanguages: readonly EntryLanguage[] = ["ko", "en", "ja", "vi"];
+const allEntryLanguages: readonly EntryLanguage[] = ["en", "vi", "es", "ja"];
 
 test("EL3. 네 코드 각각에 대해 entryLanguageLabel이 공백 아닌 문자열이고 넷이 서로 다르다", () => {
   const labels = allEntryLanguages.map((language) => entryLanguageLabel(language));
@@ -33,4 +34,12 @@ test("EL3. 네 코드 각각에 대해 entryLanguageLabel이 공백 아닌 문�
     expect(label.trim().length).toBeGreaterThan(0);
   }
   expect(new Set(labels).size).toBe(allEntryLanguages.length);
+});
+
+// EL4 — 2026-09-21 디자인 반영: 영어만 고를 수 있고, 처음 값은 고를 수 있는 언어다.
+test("EL4. 영어만 고를 수 있고 initialEntryLanguage가 고를 수 있는 언어다", () => {
+  expect(allEntryLanguages.filter((language) => isEntryLanguageAvailable(language))).toEqual([
+    "en",
+  ]);
+  expect(isEntryLanguageAvailable(initialEntryLanguage)).toBe(true);
 });

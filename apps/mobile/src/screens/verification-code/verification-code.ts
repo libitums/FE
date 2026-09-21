@@ -37,3 +37,15 @@ export function isVerificationCodeRejected(value: string): boolean {
   const isFilled = Array.from(value).length >= verificationCodeLength;
   return isFilled && !isVerificationCodeComplete(verificationCodeFrom(value));
 }
+
+// 코드 유효 시간(초). 2026-09-21 디자인 반영: 코드 칸 아래 5분 카운트다운을 보이고,
+// Resend를 누르면 처음부터 다시 센다. 서버가 없어 만료돼도 입력을 막지 않는다.
+export const verificationCodeValidSeconds = 5 * 60;
+
+// 남은 초를 `MM:SS`로 적는다. 음수는 0으로 본다.
+export function formatVerificationCountdown(seconds: number): string {
+  const safe = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(safe / 60);
+  const rest = safe % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { entryLanguageLabel } from "../../lib/entry-language";
 import { JourneyEntryScreen } from "./JourneyEntryScreen";
@@ -11,36 +11,31 @@ import { JourneyEntryScreen } from "./JourneyEntryScreen";
 // 계획: .agent-harness/work/lib-261/test-plan.md ui §
 //       `JourneyEntryScreen.ui.test.tsx` JE-U1~JE-U4.
 //
-// ⚠ 언어 라벨 반영(JE-U2)은 초기값 픽스처(`ko`)로는 공허하다(test-plan) — 화면이 prop을
-// 무시하고 초기 언어를 그대로 보여도 우연히 참이 될 수 있다. 이 파일은 `en` 픽스처
-// 하나로 전부 돈다.
+// ⚠ 언어 라벨 반영(JE-U2)은 초기값 픽스처로는 공허하다(test-plan). 2026-09-21 디자인
+// 반영으로 고를 수 있는 언어가 초기값(`en`) 하나뿐이라 지금은 가르지 못한다.
 
 const LANGUAGE = "en";
 
+function startButton(): HTMLElement {
+  return within(screen.getByTestId("journey-entry-screen-start")).getByTestId("ui-lynx-button");
+}
+
 describe("JourneyEntryScreen (LIB-261)", () => {
-  // JE-U1 — 본문(자리표)에는 §4.5 카탈로그에 별도 testid가 없다(그 밖의 새 testid를
-  // 만들지 않는다). 제목·언어 줄·액션 셋의 존재와, 흐름 상자 전체에 그 셋을 넘는
-  // 텍스트(본문)가 있다는 것으로 본다. n-3(보정 r0.3): 스크롤 상자에 accessibility-*가
-  // 0건임을 얹는다(SP1과 같은 형태).
-  it("[JE-U1] 제목·본문·액션이 선다", () => {
+  // JE-U1 — 2026-09-21 디자인 반영: 배경 그림 · 위(제목 · 언어) · 아래(큰 제목 · 안내 · AI 고지 ·
+  // Start)가 선다. 배경 그림은 장식이라 래퍼가 접근성 트리에서 가린다.
+  it("[JE-U1] 배경 그림 · 제목 · 큰 제목 · 안내 · AI 고지 · Start가 선다", () => {
     render(<JourneyEntryScreen language={LANGUAGE} onEnter={vi.fn()} />);
 
-    const title = screen.getByTestId("journey-entry-screen-title");
-    const language = screen.getByTestId("journey-entry-screen-language");
-    const start = screen.getByTestId("journey-entry-screen-start");
-    const scroll = screen.getByTestId("journey-entry-screen-scroll");
-
-    expect(title.textContent?.trim()).not.toBe("");
-    expect(start).toBeInTheDocument();
-
-    const knownText =
-      (title.textContent ?? "") + (language.textContent ?? "") + (start.textContent ?? "");
-    expect((scroll.textContent ?? "").length).toBeGreaterThan(knownText.length);
-
-    const accessibilityAttrs = Array.from(scroll.attributes).filter((attr) =>
-      attr.name.startsWith("accessibility-"),
+    expect(screen.getByTestId("journey-entry-screen-title").textContent?.trim()).not.toBe("");
+    expect(screen.getByTestId("journey-entry-screen-display").textContent?.trim()).not.toBe("");
+    expect(screen.getByTestId("journey-entry-screen-caption").textContent?.trim()).not.toBe("");
+    expect(screen.getByTestId("journey-entry-screen-notice")).toHaveTextContent(
+      "Some images in this service are generated using AI technology",
     );
-    expect(accessibilityAttrs).toHaveLength(0);
+    expect(startButton()).toHaveTextContent("Start");
+
+    const background = screen.getByTestId("journey-entry-screen-background");
+    expect(background.closest('[accessibility-elements-hidden="true"]')).not.toBeNull();
   });
 
   // JE-U2 (en 픽스처)
@@ -57,7 +52,7 @@ describe("JourneyEntryScreen (LIB-261)", () => {
     const onEnter = vi.fn();
     render(<JourneyEntryScreen language={LANGUAGE} onEnter={onEnter} />);
 
-    fireEvent.tap(screen.getByTestId("journey-entry-screen-start"), {});
+    fireEvent.tap(startButton(), {});
 
     expect(onEnter).toHaveBeenCalledTimes(1);
   });
@@ -70,5 +65,18 @@ describe("JourneyEntryScreen (LIB-261)", () => {
       "accessibility-traits",
       "header",
     );
+  });
+
+  it("[JE-U5] onBack이 있으면 면 없는 'Back' RoundButton이 서고 누르면 onBack 1회다", () => {
+    const onBack = vi.fn();
+    render(<JourneyEntryScreen language={LANGUAGE} onEnter={vi.fn()} onBack={onBack} />);
+
+    const back = within(screen.getByTestId("journey-entry-screen-header")).getByTestId(
+      "ui-lynx-round-button",
+    );
+    expect(back).toHaveAttribute("accessibility-label", "Back");
+    expect(back).toHaveAttribute("data-variant", "overlay");
+    fireEvent.tap(back, {});
+    expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
