@@ -12,12 +12,13 @@ const uiLynxRoot = path.resolve(import.meta.dirname, "../../packages/ui-lynx");
 // 달라 깨진다 — exports 표를 그대로 읽어 subpath 이름을 지킨다.
 function uiLynxSourceAliases(): Record<string, string> {
   const manifest = JSON.parse(readFileSync(path.join(uiLynxRoot, "package.json"), "utf8")) as {
-    exports: Record<string, string | { import?: string; default?: string }>;
+    exports: Record<string, string | { import?: unknown; default?: unknown } | null>;
   };
   const aliases: Record<string, string> = {};
   for (const [subpath, target] of Object.entries(manifest.exports)) {
-    const file = typeof target === "string" ? target : (target.import ?? target.default);
-    if (!file?.startsWith("./dist/")) continue;
+    // exports는 중첩 조건 객체나 null도 허용한다 — 문자열로 풀리는 것만 다룬다.
+    const file = typeof target === "string" ? target : (target?.import ?? target?.default);
+    if (typeof file !== "string" || !file.startsWith("./dist/")) continue;
     const source = file.replace("./dist/", "./src/").replace(/\.js$/, ".ts");
     aliases[`@libitums/ui-lynx${subpath.slice(1)}$`] = path.join(uiLynxRoot, source);
   }

@@ -17,12 +17,17 @@ import "./splash-screen.css";
 // (ADR-0022 D4).
 export function SplashScreen({ onTimeout }: SplashScreenProps): ReactNode {
   const finishedRef = useRef(false);
+  // App의 결선(`wiring`)은 렌더마다 새로 지어져 `onTimeout`도 매번 새 함수다. 스플래시
+  // 도중에도 App이 다시 그려지므로(safe area globalProps 도착 등) 콜백을 의존성에 두면
+  // 안전 타이머가 그때마다 처음부터 다시 센다. 최신 콜백은 ref로만 읽는다.
+  const onTimeoutRef = useRef(onTimeout);
+  onTimeoutRef.current = onTimeout;
 
   const finish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    onTimeout();
-  }, [onTimeout]);
+    onTimeoutRef.current();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(finish, entrySplashDurationMs);

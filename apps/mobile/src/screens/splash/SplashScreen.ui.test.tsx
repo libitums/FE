@@ -84,6 +84,23 @@ describe("SplashScreen", () => {
     expect(onTimeout).not.toHaveBeenCalled();
   });
 
+  it("[SP7] 부모가 다시 그려져 onTimeout이 새 함수로 바뀌어도 안전 타이머는 처음부터 다시 세지 않는다", () => {
+    const first = vi.fn();
+    const latest = vi.fn();
+    const { rerender } = render(<SplashScreen onTimeout={first} />);
+
+    act(() => {
+      vi.advanceTimersByTime(entrySplashDurationMs - 1000);
+    });
+    rerender(<SplashScreen onTimeout={latest} />);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(first).not.toHaveBeenCalled();
+    expect(latest).toHaveBeenCalledTimes(1);
+  });
+
   it("[SP6] 화면에 조작 단위가 0건이고, 로고에 accessibility-traits='header'가 없다", () => {
     const { container } = render(<SplashScreen onTimeout={vi.fn()} />);
 
