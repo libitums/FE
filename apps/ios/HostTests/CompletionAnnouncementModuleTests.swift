@@ -104,5 +104,6 @@ final class CompletionAnnouncementModuleTests: XCTestCase {
     XCTAssertTrue(templateRender.isModuleExist("AudioPlaybackModule"))
     XCTAssertTrue(templateRender.isModuleExist("CompletionAnnouncementModule"))
     XCTAssertTrue(templateRender.isModuleExist("HandwritingRecognitionModule"))
+    XCTAssertTrue(templateRender.isModuleExist("SpeechRecognitionModule"))
   }
 }

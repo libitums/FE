@@ -104,11 +104,15 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 조건**으로 바꾸면서 비운 자리가 이 표다. 개수를 세는 대신 **목록이 보이게** 한다.
 
 **이 표는 동시에 Android 이관 목록이다.** ADR-0012 D1이 Android 호스트를 만들지 않기로
-했고, 각 행이 그때 다시 구현할 항목이다. 능력을 하나 열 때마다 그 빚이 선형으로 는다.
-**2026-09-19에 그 빚이 하나 늘었다** (LIB-263) — 아래 표의 마지막 행이다. ⚠ **이 항목은
-1:1 이관이 아니다**: Android에 `VNRecognizeTextRequest`가 없어 대응 스택을 먼저 고르는
-일이 이관 앞에 붙는다. 빚의 크기가 앞의 행들과 같지 않다는 것을 여기 적어 둔다
-([ADR-0017 D5](0017-host-native-capabilities-and-audio.md)).
+했고, 각 행이 그때 다시 구현할 항목이다. **표가 늘 때마다 그 빚이 함께 는다.**
+
+⚠ **행 수를 이관 비용으로 읽지 마라 — 행들이 같은 무게가 아니다.** 저장소·재생·발화
+행은 Android에 대응 API가 있고, **인식 계열 행은 무엇으로 인식할지를 먼저 고르는 일이
+이관 앞에 붙는다.** 음성 인식 행은 그 위에 축이 하나 더 있다 — **권한까지 연다.**
+어느 행이 어떤 성질인지는 각 행의 `상태` 칸과
+[ADR-0017 D5](0017-host-native-capabilities-and-audio.md) ·
+[ADR-0026 D2](0026-permission-entry-conditions-and-denial-handling.md)가 진다.
+**개수를 여기 박지 않는다 — 세는 것은 표다.**
 
 | 모듈 | 메서드 | 어느 화면이 요구했나 | 연 ADR | 상태 |
 |---|---|---|---|---|
@@ -116,23 +120,30 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | `AudioPlaybackModule` | `play(source, done)` · `stop()` | 듣기 (구현 순서 2번) | [0017](0017-host-native-capabilities-and-audio.md) D3 | **있음** — `apps/ios/Host/AudioPlaybackModule.swift` |
 | `CompletionAnnouncementModule` | `announce(content, callback)` | 듣기·문장 순서·단어 선택·문화 퀴즈의 완료 전이 | [0016](0016-assistive-technology-semantics.md) D11·7 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/CompletionAnnouncementModule.swift`; Android 이관 미구현 |
 | `HandwritingRecognitionModule` | `recognize(args, callback)` | **쓰기 (구현 순서 13번)** — 능력 경로 확인 **탐침**(LIB-263). ⚠ **화면이 아니다.** 쓰기 화면은 아직 서지 않았고, 이 모듈에 닿는 것은 **도달 경로 0건인 개발용 탐침 화면 하나**다 | [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/HandwritingRecognitionModule.swift`; 소비자는 그 탐침 화면 하나; Android 이관 미구현 |
+| `SpeechRecognitionModule` | `getStatus` · `requestPermissions` · `start(args, callback)` · `stop()` | **말하기 (구현 순서 13번)** — 능력 경로 확인 **탐침**(LIB-267). ⚠ **화면이 아니다.** 말하기 화면은 아직 서지 않았고, 이 모듈에 닿는 것은 **도달 경로 0건인 개발용 탐침 화면 하나**다 | [0017](0017-host-native-capabilities-and-audio.md) D1 · [0026](0026-permission-entry-conditions-and-denial-handling.md) D1 | **iOS에 있음** — `apps/ios/Host/SpeechRecognitionModule.swift`; 소비자는 그 탐침 화면 하나. ⚠ **권한을 요구하는 첫 모듈이다** — 어느 권한인지는 이 표가 아니라 ADR-0026 D2의 권한 표가 진다; Android 이관 미구현 |
 
 **재검토 트리거는 숫자다** (ADR-0017 D2): 모듈이 **넷째**로 요구되는 시점, 또는
 **한 모듈의 메서드가 다섯을 넘는 시점**.
 
-**앞 트리거가 2026-09-19에 발동했다** (LIB-263) — 표의 마지막 행이 그 넷째다. 발동한
-재검토를 실제로 돌렸고, 결론은 **ADR-0017 D1의 입장 조건을 다시 통과시키는 것**이었다.
-훑은 자리와 축별 대체 경로 판정은 [ADR-0017 D1](0017-host-native-capabilities-and-audio.md)의
-넷째 사례 기록에 있다. ⚠ **트리거 문면은 고치지 않는다** — 숫자를 다섯째로 옮기는 것은
-결정 변경이고, 이번을 「제자리 기록」으로 판정한 근거(결정 문장이 한 글자도 안 바뀐다)가
-그 자리에서 뒤집힌다. 발동했다는 사실과 재검토의 결론만 여기 남긴다.
+**앞 트리거가 2026-09-19에 발동했고**(LIB-263 — 넷째 모듈) **2026-09-21에 다시
+발동했다**(LIB-267 — 다섯째 모듈). 두 번 다 발동한 재검토를 실제로 돌렸고, 결론은 두 번
+다 **ADR-0017 D1의 입장 조건을 다시 통과시키는 것**이었다. 훑은 자리와 축별 대체 경로
+판정은 [ADR-0017 D1](0017-host-native-capabilities-and-audio.md)의 **넷째·다섯째 사례**
+기록에 있다 — 뒤엣것은 앞엣것의 답을 물려받지 않고 축을 다시 훑었다.
+
+⚠ **트리거 문면은 고치지 않는다** — 숫자를 옮기는 것은 결정 변경이고, 두 번을 「제자리
+기록」으로 판정한 근거(결정 문장이 한 글자도 안 바뀐다)가 그 자리에서 뒤집힌다.
+**첫째 트리거는 한 번 쓰고 닫히는 것이 아니다** — 모듈이 하나 더 요구될 때마다 같은
+자리에서 다시 발동한다. 발동했다는 사실과 재검토의 결론만 여기 남긴다.
 
 **권한은 이 표가 세지 않는다.** 호스트가 여는 **권한** 목록은
 [ADR-0026 D2](0026-permission-entry-conditions-and-denial-handling.md)의 **권한 표**에 있고,
 그 결정이 *"이 표는 여기 둔다. `docs/adr/README.md`에 복제하지 않는다"* 로 세는 자리를 하나로
 고정했다 — 세는 자리가 둘이면 한쪽만 갱신되는 순간 목록이 거짓말을 시작하기 때문이다.
-**모듈 축과 권한 축은 다르다**: 마이크는 권한 표에 행이 있고, 그 모듈이 실제로 서는 날
-위 표에도 행이 는다.
+**모듈 축과 권한 축은 다르다**: 마이크는 권한 표에 행이 있었고, **그 모듈이 실제로 서는
+날 위 표에도 행이 늘 것**이라고 여기 적어 뒀다. **2026-09-21에 그 날이 왔다** —
+`SpeechRecognitionModule` 행이 그것이고, 그 **한 행이 권한 표의 행 둘**(마이크 · 음성
+인식)을 진다. **행 수가 축마다 다르다는 것이 두 표를 가른 이유를 그대로 보여 준다.**
 
 ## 보류 표
 

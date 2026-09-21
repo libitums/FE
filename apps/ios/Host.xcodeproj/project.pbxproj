@@ -18,7 +18,9 @@
 		2B94A3DD2D6614980060892E /* AudioPlaybackModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D6614980060892E /* AudioPlaybackModule.swift */; };
 		2B94A3DD2D66149800608930 /* CompletionAnnouncementModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608930 /* CompletionAnnouncementModule.swift */; };
 		2B94A3DD2D66149800608941 /* HandwritingRecognitionModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */; };
+		2B94A3DD2D66149800608943 /* SpeechRecognitionModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */; };
 		2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */; };
+		2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */; };
 		2B94A3E12D6614980060892E /* FontScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3E02D6614980060892E /* FontScale.swift */; };
 		2B94A3DD2D6614980060892F /* audio in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D6614980060892F /* audio */; };
 		2B94A3DD2D66149800608938 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608939 /* Resource */; };
@@ -40,7 +42,9 @@
 		2B94A3DC2D6614980060892E /* AudioPlaybackModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlaybackModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608930 /* CompletionAnnouncementModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionAnnouncementModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandwritingRecognitionModule.swift; sourceTree = "<group>"; };
+		2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionAnnouncementModuleTests.swift; sourceTree = "<group>"; };
+		2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionModuleTests.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608932 /* HostTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HostTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B94A3E02D6614980060892E /* FontScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontScale.swift; sourceTree = "<group>"; };
 		2B94A3DC2D6614980060892F /* audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = audio; sourceTree = "<group>"; };
@@ -102,6 +106,7 @@
 				2B94A3DC2D6614980060892E /* AudioPlaybackModule.swift */,
 				2B94A3DC2D66149800608930 /* CompletionAnnouncementModule.swift */,
 				2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */,
+				2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */,
 				2B94A3E02D6614980060892E /* FontScale.swift */,
 				2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */,
 			);
@@ -110,7 +115,7 @@
 		};
 		2B94A3DC2D66149800608933 /* HostTests */ = {
 			isa = PBXGroup;
-			children = (2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */);
+			children = (2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */, 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */);
 			path = HostTests;
 			sourceTree = "<group>";
 		};
@@ -265,6 +270,7 @@
 				2B94A3DD2D6614980060892E /* AudioPlaybackModule.swift in Sources */,
 				2B94A3DD2D66149800608930 /* CompletionAnnouncementModule.swift in Sources */,
 				2B94A3DD2D66149800608941 /* HandwritingRecognitionModule.swift in Sources */,
+				2B94A3DD2D66149800608943 /* SpeechRecognitionModule.swift in Sources */,
 				2B94A3E12D6614980060892E /* FontScale.swift in Sources */,
 				2B94A3CD2D6613730060892C /* ViewController.swift in Sources */,
 				2B94A3C92D6613730060892C /* AppDelegate.swift in Sources */,
@@ -272,7 +278,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2B94A3C12D66149800608935 /* Sources */ = { isa = PBXSourcesBuildPhase; files = (2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */); };
+		2B94A3C12D66149800608935 /* Sources */ = { isa = PBXSourcesBuildPhase; files = (2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */, 2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */); };
 		2B94A3C22D66149800608936 /* Frameworks */ = { isa = PBXFrameworksBuildPhase; files = (); };
 		2B94A3C32D66149800608937 /* Resources */ = { isa = PBXResourcesBuildPhase; files = (); };
 /* End PBXSourcesBuildPhase section */
@@ -428,6 +434,8 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Host/Info.plist";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "말하기 연습에서 읽은 문장을 녹음해 어떻게 발음했는지 확인합니다. 말하기 단계에서만 녹음하고, 멈추면 바로 끝납니다.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "녹음한 말하기 연습 음성을 한국어 문장으로 바꿔 읽어야 할 문장과 맞는지 확인합니다. 이 확인 외에는 음성을 쓰지 않습니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -459,6 +467,8 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Host/Info.plist";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "말하기 연습에서 읽은 문장을 녹음해 어떻게 발음했는지 확인합니다. 말하기 단계에서만 녹음하고, 멈추면 바로 끝납니다.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "녹음한 말하기 연습 음성을 한국어 문장으로 바꿔 읽어야 할 문장과 맞는지 확인합니다. 이 확인 외에는 음성을 쓰지 않습니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
