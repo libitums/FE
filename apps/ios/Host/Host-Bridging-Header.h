@@ -5,3 +5,5 @@
 #import <Lynx/LynxTemplateProvider.h>
 #import <Lynx/LynxView.h>
 #import <Lynx/LynxViewClientV2.h>
+#import <SDWebImage/SDWebImage.h>
+#import <SDWebImageWebPCoder/SDWebImageWebPCoder.h>
