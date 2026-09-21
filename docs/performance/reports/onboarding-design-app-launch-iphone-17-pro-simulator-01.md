@@ -5,7 +5,7 @@
 - 측정 일시: 2026-09-21T07:36:39Z
 - 상태: 측정 — Release Simulator Host를 성능 캡처 모드로 새로 실행해 초기 load의
   Rendering entry와 `after-initial-load` Memory snapshot을 수집했다.
-- 기능 PR: 온보딩 디자인 반영(이 기록과 같은 PR)
+- 기능 PR: [#97 — 온보딩 세 스텝 디자인 반영 · ui-lynx 공통 컴포넌트 조정](https://github.com/libitums/FE/pull/97)
 - 대상 commit: `6365b5d9307b6d3f69b0d495d09426fcc5d5f4b8`
 - 기기: iPhone 17 Pro 시뮬레이터
 - OS: iOS 26.5
