@@ -1,5 +1,6 @@
 import { useEffect, useState } from "@lynx-js/react";
 import { playAudio, stopAudio } from "../../lib/audio";
+import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import type { PhoneCallScreenProps } from "./phone-call.contract";
 import {
   currentPhoneCallReply,
@@ -14,10 +15,13 @@ import {
 import "./phone-call-screen.css";
 
 // 전화 화면은 세션만 소유하고 완료 기록은 상위 콜백으로 넘긴다.
+// `exitLabel`은 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받는다
+// (ADR-0007 D3). 기본값은 여정 라벨이라 기존 호출은 수정 없이 성립한다(LIB-255 §2.7).
 export function PhoneCallScreen({
   unitId,
   conversation,
   completionStatus,
+  exitLabel = specialUnitExitLabel("journey"),
   onComplete,
   onExit,
 }: PhoneCallScreenProps) {
@@ -73,10 +77,10 @@ export function PhoneCallScreen({
           data-testid="phone-call-exit-button"
           accessibility-element={true}
           accessibility-traits="button"
-          accessibility-label="맵으로"
+          accessibility-label={exitLabel}
           bindtap={handleExit}
         >
-          <text>맵으로</text>
+          <text>{exitLabel}</text>
         </view>
         <text
           className="phone-call-screen-title"

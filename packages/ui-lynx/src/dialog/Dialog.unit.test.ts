@@ -17,8 +17,9 @@ describe("Dialog contract", () => {
       title: "학습을 계속할까요?",
       description: undefined,
       motion: "standard",
+      phase: "entering",
       cancelActionId: "continue",
-      className: "ui-lynx-dialog ui-lynx-dialog-motion-standard",
+      className: "ui-lynx-dialog ui-lynx-dialog-motion-standard ui-lynx-dialog-phase-entering",
       actions: [{ id: "continue", label: "계속 학습하기", variant: "brand" }],
     });
   });
@@ -37,6 +38,7 @@ describe("Dialog contract", () => {
       }),
     ).toMatchObject({
       motion: "reduced",
+      phase: "entering",
       cancelActionId: "quit",
       actions: [
         { id: "continue", variant: "brand" },
@@ -75,12 +77,28 @@ describe("Dialog contract", () => {
   test("원본 디자인의 surface, radius, spacing, elevation과 motion 토큰을 사용한다", () => {
     const styles = readFileSync(resolve(process.cwd(), "src/dialog/dialog.css"), "utf8");
     expect(styles).toContain("var(--libitum-elevation-z-dialog)");
-    expect(styles).toContain("rgba(26, 28, 32, var(--libitum-opacity-scrim, 0.45))");
+    expect(styles).toContain('@import "../overlay/overlay.css"');
     expect(styles).toContain("var(--libitum-elevation-surface-floating)");
     expect(styles).toContain("var(--libitum-elevation-shadow-s3)");
     expect(styles).toContain("var(--libitum-radius-lg)");
     expect(styles).toContain("var(--libitum-spacing-20)");
     expect(styles).toContain("var(--libitum-motion-duration-dialog)");
     expect(styles).toContain("transform: scale(0.96)");
+    expect(styles).toContain("ui-lynx-dialog-container-exit");
+    expect(styles).toContain("var(--libitum-motion-easing-exit)");
+  });
+
+  test("명시한 퇴장 phase를 class와 계약에 보존한다", () => {
+    expect(
+      getDialogContract({
+        title: "학습을 그만둘까요?",
+        actions: [{ id: "continue", label: "계속 학습하기" }],
+        phase: "exiting",
+        bindaction: () => undefined,
+      }),
+    ).toMatchObject({
+      phase: "exiting",
+      className: "ui-lynx-dialog ui-lynx-dialog-motion-standard ui-lynx-dialog-phase-exiting",
+    });
   });
 });

@@ -230,10 +230,17 @@ colocate한 `temporary` 디렉터리가 임시 생성물을 제품 코드에서 
 
 scene 전체 탭으로 진행하지 않는다. 명시적 `다음` button만 한 beat를 전진시켜 VoiceOver와
 touch가 같은 action을 갖는다. async/loading/error/disabled/selected/branch 상태는 없다.
-배경과 character image는 접근성 요소가 아니며 DOM/접근성 순서는 title → progress →
-speaker+dialogue → 현재 action → 맵으로의 논리 순서를 보장한다. `DialoguePanel`은
+배경과 character image는 접근성 요소가 아니며 DOM/접근성 순서는 나가기 → title → progress →
+speaker+dialogue → 현재 action의 논리 순서를 보장한다. `DialoguePanel`은
 `지민, {dialogue}` 한 접근성 단위다. 마지막 대사는 순회로 다시 들을 수 있고 최초 완료
 발화가 속성 채널을 대체하지 않는다.
+
+> **2026-09-15 LIB-255 머리 재배치.** 나가기(`visual-novel-exit-button`)는 메신저·전화처럼 머리
+> 행의 첫 흐름 자식이고, title과 progress는 그 옆의 제목 묶음(`visual-novel-header-text`, test-id ·
+> 접근성 속성 없음) 안에 세로로 선다. 나가기의 절대 배치와 title의 고정 여백은 없다. 여정
+> (`맵으로`)과 롤플레이(`목록으로`) 두 경로가 같은 구조이고 라벨 문자열만 다르다. 그래서 위 순서에서
+> 나가기가 맨 앞이다(이전에는 맨 뒤였다). 머리 안 정지는 나가기 · title · progress 셋 그대로이고
+> header trait는 title 하나다. 시각 값은 [디자인](../design/visual-novel.md) §4.1에 있다.
 
 ## 7. test-id 계약 (specification.testids)
 
@@ -256,12 +263,28 @@ ReactLynx 0.125.0의 native element property parser가 임의의 `data-asset-id`
 
 ## 8. 관측성 계약
 
-| event | payload | 정확한 발생 시점 | 지표 |
-|---|---|---|---|
-| `visual_novel_unit_opened` | `unitId`, `entryStatus`, `entryBeatId` | map 선택 후 push 직전, 매 진입 | entries, completed re-entry |
-| `visual_novel_unit_completed` | `unitId` | active(1)→completed(2)가 최초 성립할 때, progress write와 같은 handler에서 한 번 | completions, completion rate |
-| `visual_novel_unit_exited_incomplete` | `unitId`, `beatId` | active progress에서 `맵으로`를 눌러 backToRoot 직전 | abandonment |
-| `visual_novel_unit_replay_started` | `unitId` | completed final에서 `처음부터 보기`를 눌러 local replay를 시작할 때 | replay |
+> **2026-09-15 LIB-255 재고정.** 모든 이벤트가 진입 출처 `entrySource: "journey" | "roleplay"`를
+> 싣는다. 롤플레이 탭에서 연 연습 세션도 같은 이벤트를 내고, 열림만 출처별 변형이 둘이다.
+> 여정 쪽 발생 조건·횟수·순서는 그대로이고 속성 하나가 늘었을 뿐이다. 목록과 연습 모드,
+> 나가기 라벨 `목록으로`는 [롤플레이 목록 스펙](roleplay-list.md)에 있다.
+
+| event | 출처 | payload | 정확한 발생 시점 | 지표 |
+|---|---|---|---|---|
+| `visual_novel_unit_opened` | journey | `unitId`, `entrySource: "journey"`, `entryStatus`, `entryBeatId` | map **또는 알림**(LIB-257) 선택 후 push 직전, 매 진입 | entries, completed re-entry |
+| `visual_novel_unit_opened` | roleplay | `unitId`, `entrySource: "roleplay"` | 롤플레이 목록 항목 선택 후 push 직전, 매 진입. `entryStatus`·`entryBeatId`를 싣지 않는다 — 연습 진입은 언제나 `arrive`라 정보가 없고, 실으면 여정 상태로 오독된다 | roleplay share |
+| `visual_novel_unit_completed` | journey | `unitId`, `entrySource: "journey"` | active(1)→completed(2)가 최초 성립할 때, progress write와 같은 handler에서 한 번 | completions, completion rate |
+| `visual_novel_unit_completed` | roleplay | `unitId`, `entrySource: "roleplay"` | `find`에서 `다음`으로 `enter`에 닿는 전이마다 — 연습 진행값이 늘 처음이라 **회차마다**(replay 뒤 재완료 포함). 같은 handler에서 `이야기 완료` 능동 발화 뒤 | roleplay completions |
+| `visual_novel_unit_exited_incomplete` | journey | `unitId`, `beatId`, `entrySource: "journey"` | active progress에서 `맵으로`를 눌러 backToRoot 직전 | abandonment |
+| `visual_novel_unit_exited_incomplete` | roleplay | `unitId`, `beatId`, `entrySource: "roleplay"` | `목록으로`를 누른 장면이 `enter`가 아닐 때(`practiceVisualNovelExitOutcome(beatId)`), backToRoot 직전 | abandonment |
+| `visual_novel_unit_replay_started` | 둘 다 | `unitId`, `entrySource` | completed final에서 `처음부터 보기`를 눌러 local replay를 시작할 때 | replay |
+
+**롤플레이 출처는 판정 입력이 다르다.** 연습에는 App 진행이 없어, 화면이 넘기는 이탈
+`outcome`(연습 진행값이 늘 처음이라 늘 `incomplete`)을 버리고 나간 장면 `beatId`로 판정한다 —
+`enter`에서 나가면 완료, `arrive`·`find`면 이탈이다. 그래서 롤플레이에서 `처음부터 보기` 뒤
+`arrive`·`find`에서 나가면 이탈로 센다(여정은 replay 중 이탈을 세지 않는다). 수용 기준 5의
+*"완료 이벤트와 `이야기 완료` 능동 발화는 최초 회차의 각 1건에서 늘지 않는다"* 는 **여정 출처의
+규칙**이다 — 롤플레이 출처는 회차마다 둘 다 난다. 롤플레이 진행은 App의 visual-novel progress를
+읽지도 쓰지도 않는다.
 
 sink가 `null`이어도 progress, completion, replay, navigation 결과는 같다. 완료 뒤 또는 replay
 중 `맵으로`는 abandonment가 아니며 app background/kill, tab 전환은 이 이벤트로 세지 않는다.
@@ -285,7 +308,10 @@ payload exact-key 테스트로 대사·speaker·asset path·사용자 ID가 없�
 순서, 장식 이미지 접근성 제외, 배경/캐릭터 decode 실패의 독립 fallback을 검증한다.
 `VisualNovelScreen.ui.test.tsx`는 active0/active1/
 final/replay, 명시적 action 하나, progress text, header/button semantics, 완료 callback의 정확한
-시점을 검증한다. 계산 스타일·pixel snapshot은 디자인 검증의 책임이고 여기서 단언하지 않는다.
+시점을 검증한다. `VisualNovelScreen.header.ui.test.tsx`(LIB-255)는 머리 구조 — 나가기 → 제목
+묶음(title → progress), 화면 루트의 자식은 머리와 scene 둘 — 와 접근성 시맨틱 불변(나가기 이름·
+역할, header trait 하나, 제목 묶음에 접근성 속성 없음)을 두 진입 출처에서 검증한다. 계산
+스타일·pixel snapshot은 디자인 검증의 책임이고 여기서 단언하지 않는다.
 
 ### integration — required / applicable
 

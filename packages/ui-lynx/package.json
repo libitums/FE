@@ -16,7 +16,17 @@
     "./dist/page-indicator/page-indicator.css",
     "./dist/bottom-navigator/bottom-navigator.css",
     "./dist/step-indicator/step-indicator.css",
-    "./dist/dialog/dialog.css"
+    "./dist/dialog/dialog.css",
+    "./dist/bottom-sheet/bottom-sheet.css",
+    "./dist/overlay/overlay.css",
+    "./dist/answer-label/answer-label.css",
+    "./dist/card/card.css",
+    "./dist/compact-numeric-input/compact-numeric-input.css",
+    "./dist/fog/fog.css",
+    "./dist/chat-bubble/chat-bubble.css",
+    "./dist/visual-novel-dialog/visual-novel-dialog.css",
+    "./dist/text-field/text-field.css",
+    "./dist/tooltip/tooltip.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -64,6 +74,12 @@
       "default": "./dist/bottom-navigator/index.js"
     },
     "./bottom-navigator/styles.css": "./dist/bottom-navigator/bottom-navigator.css",
+    "./bottom-sheet": {
+      "types": "./dist/bottom-sheet/index.d.ts",
+      "import": "./dist/bottom-sheet/index.js",
+      "default": "./dist/bottom-sheet/index.js"
+    },
+    "./bottom-sheet/styles.css": "./dist/bottom-sheet/bottom-sheet.css",
     "./step-indicator": {
       "types": "./dist/step-indicator/index.d.ts",
       "import": "./dist/step-indicator/index.js",
@@ -76,6 +92,60 @@
       "default": "./dist/dialog/index.js"
     },
     "./dialog/styles.css": "./dist/dialog/dialog.css",
+    "./overlay": {
+      "types": "./dist/overlay/index.d.ts",
+      "import": "./dist/overlay/index.js",
+      "default": "./dist/overlay/index.js"
+    },
+    "./overlay/styles.css": "./dist/overlay/overlay.css",
+    "./answer-label": {
+      "types": "./dist/answer-label/index.d.ts",
+      "import": "./dist/answer-label/index.js",
+      "default": "./dist/answer-label/index.js"
+    },
+    "./answer-label/styles.css": "./dist/answer-label/answer-label.css",
+    "./card": {
+      "types": "./dist/card/index.d.ts",
+      "import": "./dist/card/index.js",
+      "default": "./dist/card/index.js"
+    },
+    "./card/styles.css": "./dist/card/card.css",
+    "./compact-numeric-input": {
+      "types": "./dist/compact-numeric-input/index.d.ts",
+      "import": "./dist/compact-numeric-input/index.js",
+      "default": "./dist/compact-numeric-input/index.js"
+    },
+    "./compact-numeric-input/styles.css": "./dist/compact-numeric-input/compact-numeric-input.css",
+    "./fog": {
+      "types": "./dist/fog/index.d.ts",
+      "import": "./dist/fog/index.js",
+      "default": "./dist/fog/index.js"
+    },
+    "./fog/styles.css": "./dist/fog/fog.css",
+    "./chat-bubble": {
+      "types": "./dist/chat-bubble/index.d.ts",
+      "import": "./dist/chat-bubble/index.js",
+      "default": "./dist/chat-bubble/index.js"
+    },
+    "./chat-bubble/styles.css": "./dist/chat-bubble/chat-bubble.css",
+    "./visual-novel-dialog": {
+      "types": "./dist/visual-novel-dialog/index.d.ts",
+      "import": "./dist/visual-novel-dialog/index.js",
+      "default": "./dist/visual-novel-dialog/index.js"
+    },
+    "./visual-novel-dialog/styles.css": "./dist/visual-novel-dialog/visual-novel-dialog.css",
+    "./text-field": {
+      "types": "./dist/text-field/index.d.ts",
+      "import": "./dist/text-field/index.js",
+      "default": "./dist/text-field/index.js"
+    },
+    "./text-field/styles.css": "./dist/text-field/text-field.css",
+    "./tooltip": {
+      "types": "./dist/tooltip/index.d.ts",
+      "import": "./dist/tooltip/index.js",
+      "default": "./dist/tooltip/index.js"
+    },
+    "./tooltip/styles.css": "./dist/tooltip/tooltip.css",
     "./styles.css": "./dist/styles.css",
     "./progress-header.css": "./dist/progress-header/progress-header.css",
     "./page-indicator.css": "./dist/page-indicator/page-indicator.css",
@@ -100,6 +170,7 @@
     "@lynx-js/testing-environment": "0.3.3",
     "@lynx-js/types": "4.1.0",
     "@testing-library/jest-dom": "7.0.1",
+    "@types/node": "22.20.0",
     "@types/react": "19.2.18",
     "typescript": "6.0.3",
     "vitest": "3.2.7"

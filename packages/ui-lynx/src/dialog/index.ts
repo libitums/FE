@@ -5,5 +5,6 @@ export type {
   DialogActionContract,
   DialogContract,
   DialogMotion,
+  DialogPhase,
   DialogProps,
 } from "./dialog.contract";

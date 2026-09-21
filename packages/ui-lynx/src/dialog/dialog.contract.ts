@@ -1,6 +1,8 @@
 import type { IconPosition } from "../button/button.contract";
+import type { OverlayPhase } from "../overlay/overlay.contract";
 
 export type DialogMotion = "standard" | "reduced";
+export type DialogPhase = OverlayPhase;
 
 export type DialogAction = {
   readonly id: string;
@@ -16,7 +18,9 @@ export type DialogProps = {
   readonly description?: string;
   readonly actions: readonly DialogAction[];
   readonly motion?: DialogMotion;
+  readonly phase?: DialogPhase;
   readonly bindaction: (id: string) => void;
+  readonly bindmotionend?: () => void;
 };
 
 export type DialogActionContract = DialogAction & {
@@ -29,6 +33,7 @@ export type DialogContract = {
   readonly className: string;
   readonly description: string | undefined;
   readonly motion: DialogMotion;
+  readonly phase: DialogPhase;
   readonly title: string;
 };
 
@@ -59,12 +64,14 @@ export function getDialogContract(props: DialogProps): DialogContract {
   }
 
   const motion = props.motion ?? "standard";
+  const phase = props.phase ?? "entering";
   return {
     actions,
     cancelActionId: actions[actions.length - 1]!.id,
-    className: `ui-lynx-dialog ui-lynx-dialog-motion-${motion}`,
+    className: `ui-lynx-dialog ui-lynx-dialog-motion-${motion} ui-lynx-dialog-phase-${phase}`,
     description: props.description,
     motion,
+    phase,
     title,
   };
 }

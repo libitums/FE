@@ -1,0 +1,79 @@
+.ui-lynx-compact-numeric-input {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: var(--libitum-spacing-0);
+  text-align: center;
+  background-color: var(--libitum-color-gray-100);
+  color: var(--libitum-color-fg-neutral);
+  border-width: var(--libitum-spacing-0);
+  border-style: solid;
+  border-color: transparent;
+}
+
+.ui-lynx-compact-numeric-input::placeholder {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.ui-lynx-compact-numeric-input-s {
+  width: var(--libitum-spacing-48);
+  height: 56px;
+  border-radius: var(--libitum-radius-md);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.ui-lynx-compact-numeric-input-m {
+  width: var(--libitum-spacing-64);
+  height: 72px;
+  border-radius: var(--libitum-radius-lg);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.ui-lynx-compact-numeric-input-l {
+  width: 72px;
+  height: 80px;
+  border-radius: var(--libitum-radius-lg);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.ui-lynx-compact-numeric-input:focus {
+  background-color: var(--libitum-color-white);
+  border-width: var(--libitum-stroke-width-thin);
+  border-color: var(--libitum-color-brand-strong);
+}
+
+.ui-lynx-compact-numeric-input-error,
+.ui-lynx-compact-numeric-input-error:focus {
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+  color: var(--libitum-color-feedback-incorrect-text);
+  border-width: var(--libitum-stroke-width-thin);
+  border-color: var(--libitum-color-feedback-incorrect);
+}
+
+.ui-lynx-compact-numeric-input-disabled {
+  background-color: var(--libitum-color-gray-50);
+  color: var(--libitum-color-fg-disabled);
+  border-width: var(--libitum-spacing-0);
+  box-shadow: none;
+}
+
+.ui-lynx-compact-numeric-input-disabled::placeholder {
+  color: var(--libitum-color-fg-disabled);
+}
+
+.ui-lynx-compact-numeric-input:not(.ui-lynx-compact-numeric-input-disabled):focus-visible {
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}

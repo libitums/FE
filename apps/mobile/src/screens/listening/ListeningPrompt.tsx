@@ -8,6 +8,10 @@ import { color } from "@libitums/design-tokens";
 import { playbackStateAfterPlay } from "./listening";
 import type { ListeningPlaybackState } from "./listening";
 import { playAudio, stopAudio } from "../../lib/audio";
+// LIB-259 계약 §2.10: 갈리는 두 자리(자동 재생 · 대본)를 여는 값. 지금은 타입만
+// 받는다 — `ui-scaffold`는 구조분해하지 않고 렌더가 불변이다(계약 §9.2). 본문이
+// 갈리는 것은 `ui-implementation`이다.
+import type { SessionOptions } from "../../lib/session-options";
 
 import "./listening-prompt.css";
 
@@ -78,9 +82,14 @@ const playbackIconColorByState: Record<ListeningPlaybackState, string> = {
 export type ListeningPromptProps = {
   text: string;
   audioSource: string;
+  sessionOptions: SessionOptions;
 };
 
-export function ListeningPrompt({ text, audioSource }: ListeningPromptProps): ReactNode {
+export function ListeningPrompt({
+  text,
+  audioSource,
+  sessionOptions,
+}: ListeningPromptProps): ReactNode {
   // **재생 상태의 주인은 이 `useState` 하나다** (계약 §9.5). `lib/audio.ts`에도 두면
   // 진실이 둘이 되고 어긋나는 순간을 판정할 수단이 없다 — ADR-0017 D3이 상태 조회
   // API를 거부한 그 근거다.
@@ -98,7 +107,15 @@ export function ListeningPrompt({ text, audioSource }: ListeningPromptProps): Re
     // 정본이 둘이 되고 `unit`이 보던 자리가 사라진다. `"unavailable"` → `"idle"`이
     // **모듈이 없을 때 「멈춤」에 영구히 갇히는 것**을 막는 유일한 자리다
     // (design §2.6의 「고장이 정상인 척한다」).
-    setPlayback(playbackStateAfterPlay(playAudio(audioSource, () => setPlayback("idle"))));
+    //
+    // LIB-259 §0.3 D-b · §2.10 — **자동 재생이 갈리는 자리는 여기뿐이다.**
+    // `sessionOptions["auto-play-audio"]`가 꺼져 있으면 마운트 시 아무것도 재생하지
+    // 않는다 — 초기값이 `"idle"`이라 컨트롤이 `듣기`로 선다. 자동 재생을 꺼도
+    // `듣기`로 들을 수 있어야 하므로(수용 기준 5) 재생 조작은 두 값 어디에서도
+    // 언제나 렌더된다(§4.7) — 이 갈래는 마운트 effect의 본문에만 있다.
+    if (sessionOptions["auto-play-audio"]) {
+      setPlayback(playbackStateAfterPlay(playAudio(audioSource, () => setPlayback("idle"))));
+    }
 
     // 계약 §9.6-2·6·7·8 — **cleanup 하나가 넷을 진다.** 문항 변경 · 완료 · 출구 둘 ·
     // 탭 전환을 각각 손으로 이으면 다섯째 경로가 생겼을 때 조용히 빠지고, 그러면
@@ -156,10 +173,17 @@ export function ListeningPrompt({ text, audioSource }: ListeningPromptProps): Re
 
       {/* 보이는 이름을 지는 요소는 가리지 않는다 — 접근성 속성을 붙이지 않는다
           (ADR-0016 D5 · 계약 §1.7). 조작 단위가 아니므로 accessibility-element도
-          붙지 않는다. **속성은 한 글자도 안 바뀌고 자리만 뒤로 갔다** (§9.5(d)). */}
-      <text className="listening-prompt-text" data-testid="listening-prompt-text">
-        {text}
-      </text>
+          붙지 않는다. **속성은 한 글자도 안 바뀌고 자리만 뒤로 갔다** (§9.5(d)).
+
+          LIB-259 §2.10 — **대본은 CSS로 숨기지 않고 렌더를 거른다.** jsdom은
+          스타일을 계산하지 않아 `display:none`은 ui 계층이 원리적으로 못 보고,
+          숨긴 `<text>`는 `enableAccessibilityByDefault`가 `YES`라 보조기술
+          정지점으로 남는다 — 「보이지 않는다」(수용 기준 6)가 거짓이 된다. */}
+      {sessionOptions["show-transcript"] ? (
+        <text className="listening-prompt-text" data-testid="listening-prompt-text">
+          {text}
+        </text>
+      ) : null}
     </view>
   );
 }

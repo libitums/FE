@@ -7,6 +7,35 @@ import type {
   RoundButtonVariant,
   ProgressHeaderMotion,
   DialogMotion,
+  DialogPhase,
+  AnswerLabelEmphasis,
+  AnswerLabelResult,
+  AnswerLabelSize,
+  CardDirection,
+  CardPadding,
+  CompactNumericInputSize,
+  BottomSheetMotion,
+  ChatBubbleContentLanguage,
+  ChatBubbleDelivery,
+  ChatBubbleDirection,
+  ChatBubbleSize,
+  TextFieldAvailability,
+  TextFieldInputPurpose,
+  VisualNovelDialogAdvance,
+  VisualNovelDialogContentLanguage,
+  VisualNovelDialogContinueIndicator,
+  VisualNovelDialogDirection,
+  VisualNovelDialogReveal,
+  VisualNovelDialogStatus,
+  VisualNovelDialogSurface,
+  VisualNovelDialogVariant,
+  TooltipAlignment,
+  TooltipArrow,
+  TooltipContentLanguage,
+  TooltipDirection,
+  TooltipPlacement,
+  TooltipTone,
+  TooltipVisibility,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -73,5 +102,100 @@ export type DialogStoryArgs = {
   actionCount: 1 | 2;
   disabledLast: boolean;
   motion: DialogMotion;
+  phase: DialogPhase;
   onAction: (id: string) => void;
+};
+export type AnswerLabelStoryArgs = {
+  result: AnswerLabelResult;
+  emphasis: AnswerLabelEmphasis;
+  size: AnswerLabelSize;
+  label: string;
+  contextLabel: string;
+};
+
+export type CardStoryArgs = {
+  padding: CardPadding;
+  interaction: "static" | "interactive";
+  direction: CardDirection;
+  title: string;
+  overline: string;
+  body: string;
+  showMedia: boolean;
+  onTap: (title: string) => void;
+};
+
+export type CompactNumericInputStoryArgs = {
+  accessibilityLabel: string;
+  defaultValue: string;
+  placeholder: string;
+  size: CompactNumericInputSize;
+  error: boolean;
+  disabled: boolean;
+  onInput: (value: string) => void;
+};
+
+export type BottomSheetStoryArgs = {
+  title: string;
+  overline: string;
+  description: string;
+  primaryActionLabel: string;
+  secondaryActionLabel: string;
+  showSecondaryAction: boolean;
+  draggable: boolean;
+  motion: BottomSheetMotion;
+  onDismiss: (reason: string) => void;
+  onAction: (id: string) => void;
+};
+
+export type ChatBubbleStoryArgs = {
+  message: string;
+  speaker: string;
+  direction: ChatBubbleDirection;
+  size: ChatBubbleSize;
+  delivery: ChatBubbleDelivery;
+  contentLanguage: ChatBubbleContentLanguage;
+  languageTag: string;
+};
+
+export type TextFieldStoryArgs = {
+  label: string;
+  qualifier: string;
+  defaultValue: string;
+  placeholder: string;
+  purpose: TextFieldInputPurpose;
+  availability: TextFieldAvailability;
+  supporting: "none" | "helper" | "error";
+  supportingMessage: string;
+  counterMaxLength: number;
+  adornment: "none" | "icons" | "prefix-suffix" | "action";
+};
+
+export type VisualNovelDialogStoryArgs = {
+  accessibilityLabel: string;
+  variant: VisualNovelDialogVariant;
+  surface: VisualNovelDialogSurface;
+  reveal: VisualNovelDialogReveal;
+  status: VisualNovelDialogStatus;
+  advance: VisualNovelDialogAdvance;
+  continueIndicator: VisualNovelDialogContinueIndicator;
+  contentLanguage: VisualNovelDialogContentLanguage;
+  direction: VisualNovelDialogDirection;
+  line: string;
+  speakerName: string;
+  languageTag: string;
+  visibleCharacterCount: number;
+  showAvatar: boolean;
+  reducedMotion: boolean;
+};
+
+export type TooltipStoryArgs = {
+  message: string;
+  placement: TooltipPlacement;
+  alignment: TooltipAlignment;
+  arrow: TooltipArrow;
+  tone: TooltipTone;
+  visibility: TooltipVisibility;
+  direction: TooltipDirection;
+  contentLanguage: TooltipContentLanguage;
+  languageTag: string;
 };

@@ -1,26 +1,65 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import { questionsForStep } from "../screens/listening/listening";
+import { authTokenStorageKey } from "../lib/auth-token";
+import { entrySplashDurationMs } from "../lib/entry-flow";
 
 // `integration` 계층: 여러 실제 모듈의 협력 (ADR-0006 D4).
-// 여기서는 App · navReducer · BottomNavigator · 화면 넷 · ErrorBoundary가 맞물린다.
+// 여기서는 App · navReducer · BottomNavigator · 화면 셋 · ErrorBoundary가 맞물린다.
 // 목킹하지 않는다 — 외부 IO가 생기면 그 경계에서만 대체한다.
 //
 // 텍스트 질의(`getByText`)는 쓰지 않는다 — 화면 제목과 탭 라벨이 같은 문자열을
 // 공유하는 조합이 있어(`홈`, `설정`) 모호하다. 전부 `data-testid`로 질의한다
 // (testids.contract.ts).
 
-test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", () => {
-  render(<App />);
+// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
+// 헬퍼(`renderApp`). 토큰이
+// 있는 상태를 스텁하고(`vi.stubGlobal("NativeModules", …)`) 가짜 타이머로
+// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다. 이 파일이 이미
+// 세운 `NativeModules` 스텁(있으면, 예: `stubHost()`의 오디오·접근성 모듈)을
+// 지우지 않고 `StorageModule`만 얹는다.
+//
+// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
+// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
+// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
+// 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+function renderApp(ui: Parameters<typeof render>[0]) {
+  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
+  const tokenStore = new Map<string, string>();
+  tokenStore.set(authTokenStorageKey, "existing-token");
+  vi.stubGlobal("NativeModules", {
+    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
+      ? previousNativeModules
+      : {}),
+    StorageModule: {
+      get: (key: string) => tokenStore.get(key) ?? null,
+      set: (key: string, value: string) => void tokenStore.set(key, value),
+      remove: (key: string) => void tokenStore.delete(key),
+    },
+  });
+  vi.useFakeTimers();
+  const result = render(ui);
+  act(() => {
+    vi.advanceTimersByTime(entrySplashDurationMs);
+  });
+  vi.useRealTimers();
+  return result;
+}
 
-  expect(screen.getByTestId("home-screen-title")).toHaveTextContent("홈");
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "true");
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", () => {
+  renderApp(<App />);
+
+  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
   expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
     "data-selected",
-    "false",
+    "true",
   );
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
     "data-selected",
@@ -30,61 +69,83 @@ test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", () => {
     "data-selected",
     "false",
   );
+  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
 });
 
-test("여정 탭으로 전환하면 여정 맵 화면이 나오고 홈 화면은 사라진다", () => {
-  render(<App />);
+test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오고 설정 화면은 사라진다", () => {
+  renderApp(<App />);
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
-  expect(screen.queryByTestId("home-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("settings-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "false");
+  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+    "data-selected",
+    "false",
+  );
 });
 
-test("롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 홈 화면은 사라진다", () => {
-  render(<App />);
+test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 여정 맵 화면은 사라진다", () => {
+  renderApp(<App />);
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
-  expect(screen.queryByTestId("home-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "false");
+  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+    "data-selected",
+    "false",
+  );
 });
 
-test("설정 탭으로 전환하면 설정 화면이 나오고 홈 화면은 사라진다", () => {
-  render(<App />);
+test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 여정 맵 화면은 사라진다", () => {
+  renderApp(<App />);
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
-  expect(screen.queryByTestId("home-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "false");
+  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+    "data-selected",
+    "false",
+  );
 });
 
-test("홈 → 여정 → 홈으로 왕복하면 홈의 루트 화면이 그대로 다시 나온다", () => {
-  render(<App />);
+test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이 그대로 다시 나온다", () => {
+  renderApp(<App />);
+
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
 
-  expect(screen.getByTestId("home-screen-title")).toHaveTextContent("홈");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toHaveAttribute("data-selected", "true");
+  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
 });
 
 // -------------------------------------------------------------------------
@@ -93,7 +154,7 @@ test("홈 → 여정 → 홈으로 왕복하면 홈의 루트 화면이 그대�
 // `StepSheet`가 실제로 맞물리는지를 본다. 목킹하지 않는다 — 외부 IO가 없다.
 
 test("여정 탭으로 전환하면 스텝 다섯이 전부 렌더된다", () => {
-  render(<App />);
+  renderApp(<App />);
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
@@ -105,10 +166,10 @@ test("여정 탭으로 전환하면 스텝 다섯이 전부 렌더된다", () =>
 });
 
 // 계약 §3.3-2 · 수용 기준 5(스택 깊이 불변)의 **대리 관찰**이다. `Nav` 스택 깊이는 밖으로
-// 노출되지 않으므로 직접 셀 수 없다 — 시트가 열려도 셸(탭 넷 · 여정 탭의 선택 상태)이
+// 노출되지 않으므로 직접 셀 수 없다 — 시트가 열려도 셸(탭 셋 · 여정 탭의 선택 상태)이
 // 그대로라는 것으로 대신 본다. 셸이 사라지거나 선택이 바뀌면 스택이 깊어졌다는 신호다.
 test("스텝을 누르면 시트가 열리고 셸이 그대로다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -118,13 +179,13 @@ test("스텝을 누르면 시트가 열리고 셸이 그대로다", () => {
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-settings")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
 });
 
 test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대로다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
@@ -133,21 +194,21 @@ test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대�
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-settings")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
 });
 
 // 시트 상태는 `Nav`가 아니라 화면 로컬 상태다(ADR-0007 D1) — 탭을 떠나면 `JourneyMapScreen`이
 // 언마운트되며 `useReducer` 상태가 버려진다. 그래서 되돌아왔을 때 시트는 닫혀 있는 것이
-// 정상이다. 기대를 뒤집지 않는다(계약 §3.3-4).
+// 정상이다. 기대를 뒤집지 않는다(계약 §3.3-4). 「다른 탭」 = 설정(LIB-257 홈 제거).
 test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 시트가 닫혀 있다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
@@ -155,7 +216,7 @@ test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 �
 });
 
 test("시트가 열린 동안에도 탭 전환이 동작한다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
@@ -217,7 +278,7 @@ function incorrectPick(answerIndex: number): number {
 
 // 계약 §3.3-1 · 수용 기준 2·3: 맵 → 시트 → `시작` → 학습 화면이 활성 스택 최상단.
 test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 덮고 최상단에 온다", () => {
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -231,7 +292,7 @@ test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 
 // 갈린다. `stepId`가 union을 타고 화면까지 도달하지 않으면 둘이 같아진다.
 // (`greeting`은 done이지만 시트가 열리고 시작된다 — lib-222 §1.5.1)
 test("서로 다른 두 스텝에서 시작하면 제목과 문항 텍스트가 갈린다", () => {
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -255,17 +316,17 @@ test("서로 다른 두 스텝에서 시작하면 제목과 문항 텍스트가 
 // 계약 §3.3-2 · 수용 기준 2 후반: 학습 화면은 셸을 가리지도 잠그지도 않는다.
 // 되돌아왔을 때 화면은 스택에 남고 **세션만** 버려진다는 것을 함께 본다 (§0.2) —
 // 그래서 먼저 문항을 하나 넘겨 버려질 로컬 상태를 만든다.
-test("학습 화면에서도 탭 넷이 그대로 조작되고, 돌아오면 화면은 남되 문항은 처음부터다", () => {
-  render(<App />);
+test("학습 화면에서도 탭 셋이 그대로 조작되고, 돌아오면 화면은 남되 문항은 처음부터다", () => {
+  renderApp(<App />);
   startStep("ordering");
 
   expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-home")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toBeInTheDocument();
   expect(screen.getByTestId("bottom-navigator-tab-settings")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
 
   fireEvent.tap(
     screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
@@ -274,9 +335,9 @@ test("학습 화면에서도 탭 넷이 그대로 조작되고, 돌아오면 화
   fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3");
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
 
-  expect(screen.getByTestId("home-screen-title")).toHaveTextContent("홈");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
@@ -292,7 +353,7 @@ test("학습 화면에서도 탭 넷이 그대로 조작되고, 돌아오면 화
 // 않는다. 평가의 `맵으로`를 눌러야 맵에 닿는다. 경로가 길어질 뿐 단언의 끝은
 // 같다(같은 계약 §7.6.2).
 test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다음이 current다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
 
   answerAllQuestions("ordering", mixedPick);
@@ -324,7 +385,7 @@ test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다
 // 응답을 하나 남긴 채 나간다 — 아무것도 안 한 채 나가면 "진행이 안 바뀐다"가
 // 이탈 때문인지 아무 일도 없었기 때문인지 갈리지 않는다.
 test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
 
   const answerIndex = questionsForStep("ordering")[0].answerIndex;
@@ -353,7 +414,7 @@ test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
 // LIB-227: 두 finish 탭 모두 평가 화면을 거친다 — 각 탭 뒤에 평가의 `맵으로`를 눌러야
 // 다음 단언(맵의 스텝 상태)에 닿는다.
 test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
@@ -383,7 +444,7 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
 // 통째로 비어도 통과한다.
 // LIB-227: 완료 경로는 평가 화면을 거친다 — 평가의 `맵으로`까지 눌러야 맵에 닿는다.
 test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
@@ -402,7 +463,7 @@ test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있�
 // 계약 §3.3-8: 잠긴 스텝에서는 시작할 수 없다 (lib-222 §1.7.2가 여전히 유효하다는
 // 회귀 단언). 잠김이라는 것을 먼저 읽어 앵커로 삼는다.
 test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   expect(screen.getByTestId("journey-step-node-directions")).toHaveAttribute(
     "data-status",
@@ -423,7 +484,7 @@ test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", (
 // (실기의 "앱 재시작 후 초기값 복귀"는 이 단언의 대체가 아니라 나머지 절반이다)
 // LIB-227: 완료를 확인하려면 평가의 맵으로까지 눌러야 맵의 스텝 상태를 읽을 수 있다.
 test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행으로 돌아온다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
@@ -431,7 +492,7 @@ test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행
   expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
 
   cleanup();
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute(
@@ -459,7 +520,7 @@ test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행
 // `mixedPick`은 가운데 문항만 오답이라 2/3 — `minCorrectCount: 2`에서 정확히
 // 통과 경로다(계약 §1.4의 경계 주석).
 test("I1: 문항 셋을 통과 경로로 마치고 결과 보기를 누르면 평가 화면이 뜨고 제목이 그 스텝의 서수다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
 
   answerAllQuestions("ordering", mixedPick);
@@ -472,7 +533,7 @@ test("I1: 문항 셋을 통과 경로로 마치고 결과 보기를 누르면 �
 // I2: 문항 행 N개의 data-result가 실제로 고른 보기의 정오와 일치한다 — 듣기의 이력이
 // 평가까지 온다. `mixedPick`은 인덱스 1만 오답이다.
 test("I2: 평가의 문항 행 data-result가 실제로 고른 보기의 정오와 일치한다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
@@ -486,7 +547,7 @@ test("I2: 평가의 문항 행 data-result가 실제로 고른 보기의 정오�
 // 스택의 루트로 곧장 가므로(ADR-0007 D6) 이 관찰은 진입이 push였든 replace였든 같다 —
 // 이 테스트는 목적지를 짓고 진입 동작을 짓지 않는다.
 test("I3: 평가의 맵으로를 누르면 backToRoot 하나로 맵에 닿는다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
@@ -501,7 +562,7 @@ test("I3: 평가의 맵으로를 누르면 backToRoot 하나로 맵에 닿는다
 
 // I4 · 수용 기준 4 앞쪽 절반: 통과가 완료를 걸었다 — u7 전에는 "듣기가 걸었다"였다.
 test("I4: 통과 뒤 맵으로 돌아오면 그 스텝이 done이고 다음이 current다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
@@ -517,7 +578,7 @@ test("I4: 통과 뒤 맵으로 돌아오면 그 스텝이 done이고 다음이 c
 // I5: 중도 이탈에는 평가가 없다 — 문항 하나만 응답하고 헤더 `맵으로`로 나가면 진행이
 // 안 바뀌고 평가 화면 자체가 뜨지 않는다.
 test("I5: 문항 하나만 응답하고 헤더 맵으로 나가면 진행이 안 바뀌고 평가가 뜨지 않는다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
 
   const answerIndex = questionsForStep("ordering")[0].answerIndex;
@@ -545,7 +606,7 @@ test("I5: 문항 하나만 응답하고 헤더 맵으로 나가면 진행이 안
 // 들어갈 수 있다(계약 §1.8.1이 코드로 확인한 경로). `incorrectPick`은 0/3이라
 // `minCorrectCount: 2`에서 확실히 미통과다.
 test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 current로 남아 다시 들어갈 수 있다", () => {
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
 
   answerAllQuestions("ordering", incorrectPick);
@@ -653,7 +714,7 @@ afterEach(() => {
 // 실어 나른다. 중간 어디서 stepId가 상수로 굳으면 여기서만 갈린다.
 test("맵 → 시트 → 시작이면 그 스텝의 첫 문항 audioSource로 play가 불린다", () => {
   const { audio: calls } = stubHost();
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -666,7 +727,7 @@ test("맵 → 시트 → 시작이면 그 스텝의 첫 문항 audioSource로 pl
 // (같으면 아래 단언이 공허해진다).
 test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 것으로 갈린다", () => {
   const { audio: calls } = stubHost();
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0)]);
@@ -687,7 +748,7 @@ test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 �
 // 지나 `question.audioSource`를 바꾸는 것까지가 관찰 대상이다.
 test("다음으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다", () => {
   const { audio: calls } = stubHost();
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
 
   fireEvent.tap(
@@ -709,7 +770,7 @@ test("다음으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다"
 // 맵이 실제로 떠 있는 것을 함께 읽어 "화면이 통째로 비었다"와 갈라 놓는다.
 test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아온다", () => {
   const { audio: calls } = stubHost();
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
@@ -735,7 +796,7 @@ test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아�
 // 확인한다 — 경로가 늘 뿐 "멎지 않은 재생이 남지 않는다"의 뜻은 그대로다.
 test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남지 않는다", () => {
   const { audio: calls } = stubHost();
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
 
   answerAllQuestions("ordering", mixedPick);
@@ -770,13 +831,13 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
 // "떠날 때 멈춘다"와 "다시는 안 튼다"가 갈리지 않는다.
 test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 문항으로 다시 튼다", () => {
   const { audio: calls } = stubHost();
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
 
-  expect(screen.getByTestId("home-screen-title")).toHaveTextContent("홈");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0), STOP]);
 
@@ -809,7 +870,7 @@ test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 �
 // (ADR-0016 D11-1 · 계약 §3.3(b)), 계약 §3.2가 값까지 고정한 문자열과도 대조한다.
 test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 그 낱말이 화면에 있는 것뿐이다", () => {
   const { announce } = stubHost();
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   startStep("ordering");
 
@@ -860,7 +921,7 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
   // 환경」을 더 이상 돌지 않게 되고, §9.3-2 가드의 회귀 단언이 조용히 공허해진다.
   expect(typeof NativeModules).toBe("undefined");
 
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -902,18 +963,15 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
 // 여기서 단언하는 것은 "스크롤 컨테이너가 testid로 존재/부재한다"까지다.
 // 실제로 스크롤되는가·고정이 지켜지는가는 실기(e2e)의 것이다(계약 §3.2 말미).
 
-// 계약 §3.3 I1 · 수용 기준 3(다섯 화면 **전부**): 탭 넷을 순회하며 각 화면에
+// 계약 §3.3 I1 · 수용 기준 3(다섯 화면 **전부**): 탭 셋을 순회하며 각 화면에
 // 스크롤 컨테이너가 하나씩 있는지 본다. 화면을 옮길 때마다 이전 화면의 스크롤
 // 컨테이너가 사라지는 것도 함께 본다 — "어딘가에 하나 있다"가 아니라 "그
-// 화면의 것이 있다"를 확인하기 위해서다.
-test("탭 넷을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 있다", () => {
-  render(<App />);
+// 화면의 것이 있다"를 확인하기 위해서다. 첫 화면이 여정 맵이라(LIB-257) 순회는
+// 여정 맵 → 롤플레이 → 설정이다.
+test("탭 셋을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 있다", () => {
+  renderApp(<App />);
 
-  expect(screen.getByTestId("home-screen-scroll")).toBeInTheDocument();
-
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
-  expect(screen.queryByTestId("home-screen-scroll")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-screen-scroll")).toBeInTheDocument();
@@ -928,7 +986,7 @@ test("탭 넷을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 
 // 있는지 본다 — 여정 맵 → 스텝 tap → 시트 `시작` → 듣기 화면. `startStep`은
 // 위쪽 LIB-223 절이 정의한 것을 그대로 재사용한다(함수 선언은 호이스팅된다).
 test("탭이 아니라 스택에 쌓인 화면(듣기)에도 스크롤 컨테이너가 있다", () => {
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -940,7 +998,7 @@ test("탭이 아니라 스택에 쌓인 화면(듣기)에도 스크롤 컨테이
 // 시트가 열려도 그대로 유지한다 — 시트는 스크롤 밖(계약 R9)이므로 시트가
 // 열려도 맵의 스크롤 컨테이너는 사라지지 않는다.
 test("시트가 열려 있어도 여정 맵의 스크롤 컨테이너는 그대로다", () => {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
 

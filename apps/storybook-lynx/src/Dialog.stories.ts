@@ -20,6 +20,7 @@ const meta = {
     actionCount: { control: "inline-radio", options: [1, 2] },
     disabledLast: { control: "boolean" },
     motion: { control: "inline-radio", options: ["standard", "reduced"] },
+    phase: { control: "inline-radio", options: ["entering", "visible", "exiting"] },
     onAction: { control: false },
   },
   args: {
@@ -28,6 +29,7 @@ const meta = {
     actionCount: 2,
     disabledLast: false,
     motion: "standard",
+    phase: "visible",
     onAction: fn(),
   },
 } satisfies Meta<DialogStoryArgs>;
@@ -40,3 +42,4 @@ export const SingleAction: Story = { args: { actionCount: 1, description: "" } }
 export const WithoutDescription: Story = { args: { description: "" } };
 export const DisabledSecondary: Story = { args: { disabledLast: true } };
 export const ReducedMotion: Story = { args: { motion: "reduced" } };
+export const Entering: Story = { args: { phase: "entering" } };

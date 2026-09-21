@@ -5,6 +5,9 @@ import stop from "@libitums/icons/lynx/stop";
 import { color } from "@libitums/design-tokens";
 
 import { ListeningPrompt } from "./ListeningPrompt";
+// LIB-259 계약 §2.10: sessionOptions가 필수 prop이 됐다. 이 파일의 fixture는
+// 언제나 초기값(둘 다 켜짐)을 준다 — 단언은 한 글자도 바꾸지 않는다(spec §9.3).
+import { initialSessionOptions } from "../../lib/session-options";
 
 // `ui` 계층: 렌더 결과와 상호작용만 본다 (ADR-0006 D4). `toHaveClass` · `toHaveStyle` ·
 // `toBeVisible`을 쓰지 않는다 (docs/conventions/code.md).
@@ -83,7 +86,11 @@ afterEach(() => {
 
 function renderPrompt(overrides: { text?: string; audioSource?: string } = {}) {
   return render(
-    <ListeningPrompt text={overrides.text ?? TEXT} audioSource={overrides.audioSource ?? SOURCE} />,
+    <ListeningPrompt
+      text={overrides.text ?? TEXT}
+      audioSource={overrides.audioSource ?? SOURCE}
+      sessionOptions={initialSessionOptions}
+    />,
   );
 }
 
@@ -141,7 +148,13 @@ test("audioSource가 바뀌면 호출 순서가 play(a) → stop → play(b)다"
   const calls = stubHost();
   const { rerender } = renderPrompt();
 
-  rerender(<ListeningPrompt text={TEXT} audioSource={OTHER_SOURCE} />);
+  rerender(
+    <ListeningPrompt
+      text={TEXT}
+      audioSource={OTHER_SOURCE}
+      sessionOptions={initialSessionOptions}
+    />,
+  );
 
   expect(sourcesOf(calls)).toEqual([SOURCE, STOP, OTHER_SOURCE]);
   // 새 문항의 재생이 시작됐으므로 컨트롤은 다시 `멈춤`이다.
@@ -154,7 +167,13 @@ test("text만 바뀌면 play도 stop도 다시 불리지 않는다", () => {
   const calls = stubHost();
   const { rerender } = renderPrompt();
 
-  rerender(<ListeningPrompt text={OTHER_TEXT} audioSource={SOURCE} />);
+  rerender(
+    <ListeningPrompt
+      text={OTHER_TEXT}
+      audioSource={SOURCE}
+      sessionOptions={initialSessionOptions}
+    />,
+  );
 
   expect(sourcesOf(calls)).toEqual([SOURCE]);
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(OTHER_TEXT);

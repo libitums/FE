@@ -1,6 +1,7 @@
 import type {} from "@lynx-js/react";
 
 import { Button } from "../button/Button";
+import { Overlay } from "../overlay/Overlay";
 import type { DialogActionContract, DialogProps } from "./dialog.contract";
 import { getDialogContract } from "./dialog.contract";
 
@@ -39,22 +40,31 @@ function DialogActionButton({ action, bindaction }: DialogActionButtonProps) {
 export function Dialog(props: DialogProps) {
   const contract = getDialogContract(props);
 
+  function handleMotionEnd() {
+    "background only";
+    props.bindmotionend?.();
+  }
+
   return (
     <view
       className={contract.className}
       data-testid="ui-lynx-dialog"
       data-motion={contract.motion}
+      data-phase={contract.phase}
       data-cancelactionid={contract.cancelActionId}
     >
-      <view
-        className="ui-lynx-dialog-scrim"
-        data-testid="ui-lynx-dialog-scrim"
-        accessibility-elements-hidden={true}
+      <Overlay
+        scope="screen"
+        surface="dialog"
+        dismiss="none"
+        motion={contract.motion}
+        phase={contract.phase}
       />
       <view
         className="ui-lynx-dialog-container"
         data-testid="ui-lynx-dialog-container"
         accessibility-role-description="dialog"
+        bindanimationend={contract.phase === "visible" ? undefined : handleMotionEnd}
       >
         <text
           className="ui-lynx-dialog-title"

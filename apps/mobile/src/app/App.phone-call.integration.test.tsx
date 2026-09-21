@@ -1,18 +1,54 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { App } from "./App";
+import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
+// LIB-261 (integration-design) §9.5: `renderApp` 헬퍼의 토큰 스텁·타이머 값.
+import { authTokenStorageKey } from "../lib/auth-token";
+import { entrySplashDurationMs } from "../lib/entry-flow";
 
 const audio = vi.hoisted(() => ({ playAudio: vi.fn(), stopAudio: vi.fn() }));
 vi.mock("../lib/audio", () => audio);
 const { playAudio, stopAudio } = audio;
 
+// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
+// 헬퍼(`renderApp`). 토큰이 있는 상태를 스텁하고 가짜 타이머로
+// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다.
+//
+// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
+// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
+// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
+// 기존 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+function renderApp(ui: Parameters<typeof render>[0]) {
+  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
+  const tokenStore = new Map<string, string>();
+  tokenStore.set(authTokenStorageKey, "existing-token");
+  vi.stubGlobal("NativeModules", {
+    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
+      ? previousNativeModules
+      : {}),
+    StorageModule: {
+      get: (key: string) => tokenStore.get(key) ?? null,
+      set: (key: string, value: string) => void tokenStore.set(key, value),
+      remove: (key: string) => void tokenStore.delete(key),
+    },
+  });
+  vi.useFakeTimers();
+  const result = render(ui);
+  act(() => {
+    vi.advanceTimersByTime(entrySplashDurationMs);
+  });
+  vi.useRealTimers();
+  return result;
+}
+
 function openJourney() {
-  render(<App />);
+  renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 }
 
 describe("App · phone-call integration", () => {
   beforeEach(() => vi.resetAllMocks());
+  afterEach(() => vi.unstubAllGlobals());
 
   it("맵에서 messenger 뒤 directions 앞에 전화 항목을 표시하고 선택한다", () => {
     openJourney();
@@ -137,5 +173,55 @@ describe("App · phone-call integration", () => {
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
     fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
     expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+  });
+
+  // LIB-255 계약 §2.8 「콜백 구현」: 여정 전화 진입(`onStartPhoneCallUnit`)에 열림
+  // 이벤트가 새로 는다 — `push` 직전에 `entrySource: "journey"` · `entryStatus`.
+  // 계획: test-plan.md integration § `App.phone-call.integration.test.tsx`(추가).
+  it("맵 항목 tap마다 push 전에 phone_call_unit_opened(journey)이 entryStatus와 함께 1건 온다", () => {
+    const phoneCallEventSink = vi.fn<NonNullable<PhoneCallEventSink>>();
+    renderApp(<App phoneCallEventSink={phoneCallEventSink} />);
+    fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+
+    fireEvent.tap(
+      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      {},
+    );
+    expect(phoneCallEventSink).toHaveBeenCalledTimes(1);
+    expect(phoneCallEventSink).toHaveBeenNthCalledWith(1, {
+      name: "phone_call_unit_opened",
+      unitId: "appointment-confirmation-phone-call",
+      entrySource: "journey",
+      entryStatus: "available",
+    });
+
+    // 완료 뒤 재진입은 entryStatus가 completed로 바뀐다.
+    let finish: (() => void) | undefined;
+    playAudio.mockImplementation((_source: string, done: () => void) => {
+      finish = done;
+      return "started";
+    });
+    for (const [, reply] of [
+      ["phone-call-confirm-01", "phone-call-reply-confirm-time-reply"],
+      ["phone-call-confirm-02", "phone-call-reply-confirm-place-reply"],
+      ["phone-call-confirm-03", "phone-call-reply-goodbye-reply"],
+    ] as const) {
+      fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
+      act(() => finish?.());
+      fireEvent.tap(screen.getByTestId(reply), {});
+    }
+    fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
+    fireEvent.tap(
+      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      {},
+    );
+
+    expect(phoneCallEventSink).toHaveBeenCalledTimes(2);
+    expect(phoneCallEventSink).toHaveBeenNthCalledWith(2, {
+      name: "phone_call_unit_opened",
+      unitId: "appointment-confirmation-phone-call",
+      entrySource: "journey",
+      entryStatus: "completed",
+    });
   });
 });

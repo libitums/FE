@@ -1,10 +1,17 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { LearningForm } from "../lib/learning-form";
 import { questionsForStep } from "../screens/listening/listening";
+// LIB-259 (integration-design) — HT1 · HT2. `termsSections()`가 절 id 목록의
+// 데이터 앵커다(리터럴을 쓰지 않는다).
+import { termsSections } from "../screens/terms/terms-sections";
+// LIB-261 (integration-design) §9.5 · HT-E1. `authTokenStorageKey`는 토큰 스텁의
+// 유일한 키다(AT3와 같은 근거). `entrySplashDurationMs`는 스플래시 전이 시각이다.
+import { authTokenStorageKey } from "../lib/auth-token";
+import { entrySplashDurationMs } from "../lib/entry-flow";
 
 // LIB-243 (integration-design) §6.3.3 — `I1` · `I2`.
 //
@@ -40,7 +47,39 @@ vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
 
 afterEach(() => {
   formStub.current = null;
+  vi.unstubAllGlobals();
 });
+
+// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
+// 헬퍼(`renderApp`). 토큰이 있는 상태를 스텁하고 가짜 타이머로
+// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다.
+//
+// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
+// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
+// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
+// 기존 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+function renderApp(ui: Parameters<typeof render>[0]) {
+  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
+  const tokenStore = new Map<string, string>();
+  tokenStore.set(authTokenStorageKey, "existing-token");
+  vi.stubGlobal("NativeModules", {
+    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
+      ? previousNativeModules
+      : {}),
+    StorageModule: {
+      get: (key: string) => tokenStore.get(key) ?? null,
+      set: (key: string, value: string) => void tokenStore.set(key, value),
+      remove: (key: string) => void tokenStore.delete(key),
+    },
+  });
+  vi.useFakeTimers();
+  const result = render(ui);
+  act(() => {
+    vi.advanceTimersByTime(entrySplashDurationMs);
+  });
+  vi.useRealTimers();
+  return result;
+}
 
 // 여정 탭 → 스텝 tap → 시트 `시작` tap. 다른 통합 파일들과 같은 형태다(파일이
 // 다르므로 다시 선언한다).
@@ -111,7 +150,7 @@ function headingAxis(container: HTMLElement): readonly (string | null)[] {
 // 빠지는 경우가 러너 출력에서 갈린다.
 test("[I1] 결선으로 연 문화 화면에서 절 제목이 accessibility-traits='header'를 진다", () => {
   formStub.current = "culture";
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -142,7 +181,7 @@ test("[I1] 결선으로 연 문화 화면에서 절 제목이 accessibility-trai
 // 함께 선 트리가 존재하지 않는다. 아래 대조가 그 트리가 실재함을 짓는다.
 test("[I2] 문화 화면이 선 합성 트리에서 제목 축에 오른 자리가 화면 제목·절 제목 둘이고 그 순서다", () => {
   formStub.current = "culture";
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   startStep("ordering");
 
@@ -175,7 +214,7 @@ test("[I2] 문화 화면이 선 합성 트리에서 제목 축에 오른 자리�
 
 test("[I3] 제목 축 닫힌 집합이 상태 listening-complete에서 계약이 고정한 목록과 정확히 같다", () => {
   // 대역 없음 — 오늘 배정표가 `ordering`에 이미 `listening`을 돌려준다(§3.2).
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
@@ -191,7 +230,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-complete에서 계약이
 // 만 확인하는 것으로는 이 자리의 존재를 아무도 안 진다 — 그래서 그 자리 자신을
 // `querySelector`로 먼저 짓는다. `data-testid`가 없어 `getByTestId`를 못 쓴다.
 test("[I3] 제목 축 닫힌 집합이 상태 assessment에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
@@ -214,7 +253,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 assessment에서 계약이 고정�
 // 찾아 던지고, 정확히 이 케이스가 빨개진다. 기대값(제목 축 목록)은 안 바뀐다.
 test("[I3] 제목 축 닫힌 집합이 상태 word-choice에서 계약이 고정한 목록과 정확히 같다", () => {
   formStub.current = "word-choice";
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   startStep("ordering");
   expect(screen.getByTestId("word-choice-screen-title")).toBeInTheDocument();
@@ -225,7 +264,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 word-choice에서 계약이 고정
 
 test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고정한 목록과 정확히 같다", () => {
   formStub.current = "sentence-order";
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   startStep("ordering");
   expect(screen.getByTestId("sentence-order-screen-title")).toBeInTheDocument();
@@ -236,7 +275,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고
 
 test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고정한 목록과 정확히 같다", () => {
   formStub.current = "culture";
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
@@ -255,17 +294,19 @@ test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고�
 // 잎 하나가 `header`를 잘못 지고 서도 오늘은 아무것도 안 빨개진다. 아래가 그 자리를
 // 첫 훑기 안으로 들인다 — 기대값은 그 앵커 목록에서 그 상태가 여는 것만 뽑는다.
 
-test("[I3] 제목 축 닫힌 집합이 상태 home에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = render(<App />);
+// (LIB-257) 「[I3] … 상태 home …」을 교체한다 — 홈이 걷혔다. 알림 버튼은 제목이
+// 아니므로(§4.2 · JN8) 여기서도 제목 축엔 알림 화면 제목만 오른다.
+test("[I3] 제목 축 닫힌 집합이 상태 notifications에서 계약이 고정한 목록과 정확히 같다", () => {
+  const { container } = renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
-  expect(screen.getByTestId("home-screen-title")).toBeInTheDocument();
+  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["home-screen-title"]);
+  expect(headingAxis(container)).toEqual(["notifications-screen-title"]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
@@ -274,7 +315,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
@@ -283,7 +324,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고�
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
@@ -296,7 +337,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한
 // 로 가려지지만 그 속성은 조작 단위 축이고, 맵 제목 자체는 그 컨테이너 밖에 있어
 // 가려지지 않는다).
 test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
@@ -310,7 +351,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 �
 // 형식이고, 그 화면이 가장 오래 머무는 상태다. `listening-choice-0`이 문항 상태의
 // 프로브다 — 종료 상태(`listening-screen-complete`)에는 없다.
 test("[I3] 제목 축 닫힌 집합이 상태 listening-question에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = render(<App />);
+  const { container } = renderApp(<App />);
 
   startStep("ordering");
   expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
@@ -320,3 +361,130 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-question에서 계약이
 
 // ErrorBoundary 오류 상태(`error-boundary-title`)는 이 회차에서 열지 않는다 — 던지는
 // 자식이 필요해 이 계층이 아니라 `ui`가 맞는 자리다(후속으로 보고한다).
+
+// -------------------------------------------------------------- HT1 · HT2 (LIB-259)
+//
+// 위 `[I3]` 「상태 settings」 케이스는 **불변** — 새 화면이 기존 상태의 제목 축을
+// 건드리지 않는다(회귀 가드, test-plan.md). 여기서는 설정 탭 아래에서 새로 여는
+// 프로필·약관 상태의 제목 축을 짓는다. 형태는 위 `[I3]` 계열과 같다
+// (`headingAxis` → `toEqual` 닫힌 집합).
+//
+// 기대 red(test-plan.md): 이 시점의 `onSelectNavTarget`이 no-op이라 이동 항목
+// tap이 프로필·약관 화면을 열지 않는다 — `getByTestId("profile-screen-title")`이
+// 요소 부재로 던진다(수집·import 오류가 아니라 단언 대상인 요소 부재다).
+
+test("[HT1] 제목 축 닫힌 집합이 상태 profile에서 계약이 고정한 목록과 정확히 같다", () => {
+  const { container } = renderApp(<App />);
+
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
+  expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
+
+  expect(headingAxis(container)).toEqual(["profile-screen-title"]);
+});
+
+// 절 제목 넷이 `header`다(ADR-0016 D12 G1) — 그래서 약관 상태의 제목 축 닫힌
+// 집합은 화면 제목 + 절 제목 넷, **다섯**이다(계약 §0.3 D-c). 절 id는
+// `termsSections()`에서 뽑는다 — 리터럴 넷을 여기 다시 쓰지 않는다(데이터 앵커).
+test("[HT2] 제목 축 닫힌 집합이 상태 terms에서 계약이 고정한 목록과 정확히 같다", () => {
+  const sections = termsSections();
+  const { container } = renderApp(<App />);
+
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("settings-nav-item-terms"), {});
+  expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
+
+  expect(headingAxis(container)).toEqual([
+    "terms-screen-title",
+    ...sections.map((section) => `terms-section-title-${section.id}`),
+  ]);
+});
+
+// -------------------------------------------------------------- HT-E1 (LIB-261)
+//
+// test-plan.md integration § `App.heading-trait.integration.test.tsx` HT-E1: 진입
+// 상태 여섯의 제목 축 닫힌 집합 — 스플래시는 `header`가 0개, 나머지 다섯은 각각
+// 1개다. 위 `[I3]`·`[HT1]`·`[HT2]`와 같은 도구(`headingAxis` → `toEqual` 닫힌
+// 집합)를 여섯 상태에 순서대로 쓴다 — 이 파일이 이미 세운 방식을 새로 발명하지
+// 않는다.
+//
+// **토큰을 스텁하지 않는다** — 위 `renderApp`(§9.5 헬퍼)은 토큰이 **있는** 상태를
+// 만들어 스플래시를 건너뛰는 용도라 이 케이스와 반대다. 여기는 스플래시 자체와
+// 그 뒤 다섯 상태를 순서대로 관찰해야 하므로 토큰 없는 상태에서 가짜 타이머만
+// 직접 전진시킨다(§9.5 2번과 같은 도구, 다른 용도).
+//
+// 여섯 상태를 **한 케이스 안에서** 순서대로 잇는다(test-plan.md 「integration red
+// 기대」— 이 파일의 기대 red는 1이다) — 상태마다 별도 `test`로 쪼개면 기대 수가
+// 달라진다.
+function emptyStorageStub(): void {
+  const store = new Map<string, string>();
+  vi.stubGlobal("NativeModules", {
+    StorageModule: {
+      get: (key: string) => store.get(key) ?? null,
+      set: (key: string, value: string) => void store.set(key, value),
+      remove: (key: string) => void store.delete(key),
+    },
+  });
+}
+
+// `VerificationCodeScreen.ui.test.tsx`의 `dispatchTextFieldInput`·`typeCode`와 같은
+// 형태다(파일이 다르므로 다시 선언한다) — 코드 검증 상태를 한 번 지나가려면 필요하다.
+function typeVerificationCode(value: string): void {
+  const field = screen.getByTestId("verification-code-screen-input");
+  const input = within(field).getByTestId("ui-lynx-text-field-input");
+  const EventConstructor = input.ownerDocument.defaultView?.CustomEvent;
+  if (!EventConstructor) throw new Error("CustomEvent is unavailable");
+  const ref = lynx.createSelectorQuery().select('[data-testid="ui-lynx-text-field-input"]');
+  fireEvent(
+    ref as unknown as Element,
+    new EventConstructor("bindEvent:input", { detail: { value } }),
+  );
+}
+
+test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계약이 고정한 목록과 정확히 같다", () => {
+  emptyStorageStub();
+  vi.useFakeTimers();
+  const { container } = render(<App />);
+
+  // 상태 splash — 화면 제목이 다섯뿐이고(§4.4) 스플래시 서비스 이름은 `header`가
+  // 아니다(A2, SP5) ⇒ 닫힌 집합이 비어 있다. 앵커로 먼저 스플래시 자신을 짓는다 —
+  // 그래야 이 빈 배열이 「스플래시 상태에서 실제로 0개」이지 「아직 아무 화면도
+  // 없어서 0개」가 아니라고 말할 수 있다.
+  expect(screen.getByTestId("splash-screen-service-name")).toBeInTheDocument();
+  expect(headingAxis(container)).toEqual([]);
+
+  act(() => {
+    vi.advanceTimersByTime(entrySplashDurationMs);
+  });
+
+  // 상태 onboarding
+  expect(screen.getByTestId("onboarding-screen")).toBeInTheDocument();
+  expect(headingAxis(container)).toEqual(["onboarding-screen-title"]);
+
+  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("onboarding-screen-next"), {});
+
+  // 상태 login
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(headingAxis(container)).toEqual(["login-screen-title"]);
+
+  fireEvent.tap(screen.getByTestId("login-screen-method-phone"), {});
+
+  // 상태 verification-code
+  expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
+  expect(headingAxis(container)).toEqual(["verification-code-screen-title"]);
+
+  typeVerificationCode("1234");
+  fireEvent.tap(screen.getByTestId("verification-code-screen-submit"), {});
+
+  // 상태 language-select
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(headingAxis(container)).toEqual(["language-select-screen-title"]);
+
+  fireEvent.tap(screen.getByTestId("language-select-screen-next"), {});
+
+  // 상태 journey-entry
+  expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
+  expect(headingAxis(container)).toEqual(["journey-entry-screen-title"]);
+});

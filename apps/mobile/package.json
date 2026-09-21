@@ -7,7 +7,7 @@
     "dev": "rspeedy dev",
     "build": "rspeedy build",
     "preview": "rspeedy preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "pnpm test:unit && pnpm test:ui && pnpm test:integration",
     "test:unit": "vitest run unit.test",
     "test:ui": "vitest run ui.test",
@@ -19,6 +19,7 @@
   "dependencies": {
     "@libitums/design-tokens": "0.2.0",
     "@libitums/icons": "0.2.0",
+    "@libitums/ui-lynx": "workspace:*",
     "@lynx-js/react": "0.125.0"
   },
   "devDependencies": {
@@ -28,6 +29,7 @@
     "@lynx-js/testing-environment": "0.3.3",
     "@lynx-js/types": "4.1.0",
     "@testing-library/jest-dom": "7.0.1",
+    "@types/node": "22.20.0",
     "@types/react": "19.2.18",
     "jsdom": "27.4.0",
     "typescript": "6.0.3",

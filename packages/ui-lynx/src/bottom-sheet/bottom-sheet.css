@@ -1,0 +1,201 @@
+@import "@libitums/design-tokens/css/variables.css";
+@import "@libitums/design-tokens/css/typography.css";
+@import "../button/button.css";
+
+.ui-lynx-bottom-sheet {
+  position: fixed;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: var(--libitum-elevation-z-sheet);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.ui-lynx-bottom-sheet-scrim {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  background-color: rgba(26, 28, 32, var(--libitum-opacity-scrim, 0.45));
+  animation: ui-lynx-bottom-sheet-scrim-enter var(--libitum-motion-duration-sheet)
+    var(--libitum-motion-easing-enter);
+}
+
+.ui-lynx-bottom-sheet-panel {
+  position: relative;
+  width: 100%;
+  max-height: 100%;
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16)
+    calc(var(--libitum-spacing-20) + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  background-color: var(--libitum-color-background-elevated);
+  border-top-left-radius: var(--libitum-radius-lg);
+  border-top-right-radius: var(--libitum-radius-lg);
+  box-shadow: 0 -10px 14px rgba(26, 28, 32, 0.2);
+  animation: ui-lynx-bottom-sheet-panel-enter var(--libitum-motion-duration-sheet)
+    var(--libitum-motion-easing-enter);
+}
+
+.ui-lynx-bottom-sheet-drag-area {
+  width: 100%;
+  height: var(--libitum-spacing-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-lynx-bottom-sheet-handle {
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-6);
+  flex-shrink: 0;
+  background-color: var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-full);
+}
+
+.ui-lynx-bottom-sheet-header {
+  margin-top: var(--libitum-spacing-20);
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  column-gap: var(--libitum-spacing-16);
+}
+
+.ui-lynx-bottom-sheet-heading {
+  min-width: var(--libitum-spacing-0);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
+}
+
+.ui-lynx-bottom-sheet-overline {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.ui-lynx-bottom-sheet-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.ui-lynx-bottom-sheet-close {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  border-radius: var(--libitum-radius-md);
+}
+
+.ui-lynx-bottom-sheet-close-surface {
+  position: relative;
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--libitum-color-gray-100);
+  border-radius: var(--libitum-radius-md);
+}
+
+.ui-lynx-bottom-sheet-close-icon {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+}
+
+.ui-lynx-bottom-sheet-close-icon-pressed {
+  opacity: 0;
+}
+
+.ui-lynx-bottom-sheet-close:active .ui-lynx-bottom-sheet-close-surface {
+  background-color: var(--libitum-color-gray-300);
+}
+
+.ui-lynx-bottom-sheet-close:active .ui-lynx-bottom-sheet-close-icon-default {
+  opacity: 0;
+}
+
+.ui-lynx-bottom-sheet-close:active .ui-lynx-bottom-sheet-close-icon-pressed {
+  opacity: 1;
+}
+
+.ui-lynx-bottom-sheet-close:focus-visible {
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+.ui-lynx-bottom-sheet-body {
+  margin-top: var(--libitum-spacing-20);
+  min-height: var(--libitum-spacing-0);
+  flex: 1;
+}
+
+.ui-lynx-bottom-sheet-description {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.ui-lynx-bottom-sheet-actions {
+  width: 100%;
+  margin-top: var(--libitum-spacing-20);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+}
+
+@keyframes ui-lynx-bottom-sheet-scrim-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ui-lynx-bottom-sheet-panel-enter {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.ui-lynx-bottom-sheet-motion-reduced .ui-lynx-bottom-sheet-scrim,
+.ui-lynx-bottom-sheet-motion-reduced .ui-lynx-bottom-sheet-panel {
+  animation-name: ui-lynx-bottom-sheet-scrim-enter;
+  animation-duration: var(--libitum-motion-duration-d2);
+  animation-timing-function: var(--libitum-motion-easing-linear);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-lynx-bottom-sheet-scrim,
+  .ui-lynx-bottom-sheet-panel {
+    animation-name: ui-lynx-bottom-sheet-scrim-enter;
+    animation-duration: var(--libitum-motion-duration-d2);
+    animation-timing-function: var(--libitum-motion-easing-linear);
+  }
+}

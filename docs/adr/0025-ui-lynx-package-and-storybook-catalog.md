@@ -178,6 +178,14 @@ bridge 상호작용을 빠르게 확인하지만 다음은 증명하지 않는�
 채택하는 릴리스에서 소비 route와 실기 검증을 필수로 승격한다. 최종 리뷰 뒤에는 Storybook dev server를 실제 실행하고
 Codex 앱의 브라우저 패널에 localhost URL을 열어야 완료로 센다.
 
+⚠ **위 *"현재 제품 앱은 아직 이 package를 소비하지 않으므로"* 는 2026-09-16부터 시점이 지났다**
+— `apps/mobile`의 진입 흐름이 `@libitums/ui-lynx/text-field` 하나를 소비한다. 그 문장은 **쓰인
+시점에 참이었으므로 사실 오류가 아니고**, 그래서 `정정 기록`이 아니라 아래
+**「2026-09-16 확장 — `apps/mobile`의 첫 소비」** 절이 덮는다(같은 날짜의 「Tooltip 공개 표면」
+절이 아니다). **D5가 스스로 예고한 *"package를 실제 제품에 채택하는 릴리스에서 소비 route와
+실기 검증을 필수로 승격한다"* 가 그 절에서 발동했다** — 승격된 실기 검증은
+`docs/e2e/entry-flow.md`가 지고 **아직 실행 0회**다.
+
 ### D6. 검증 명령은 기존 루트 게이트에 포함한다
 
 - `pnpm storybook:lynx`: Lynx Web bundle watch와 Storybook dev server
@@ -275,6 +283,135 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
   subpath만 소비한다. Controls는 JSON 직렬화 가능한 `currentStep`, `totalSteps`만 전달한다.
   runtime normalizer는 유효하지 않은 `totalSteps`를 4로, 유효하지 않은 `currentStep`을
   `Math.min(2, totalSteps)`로 대체한다.
+
+### 2026-09-15 확장 — TextField 공개 표면
+
+이 절은 같은 package/catalog 경계에 TextField 공개 컴포넌트를 추가한 delta다. 시각·상태
+정본은 `libitums/design-system/components/text-field.md` revision
+`1ba6b55103663c407f073f9ede3a2e700bf9b722`이다.
+
+- `TextField`는 native `<input>`을 사용하고 Label/Qualifier, Leading, Trailing,
+  Helper/Error, Counter를 독립 옵션으로 조합한다. Empty/Filled, Unfocused/Focused,
+  None/Error, Enabled/ReadOnly/Disabled 축에서 시각 우선순위를 한 상태로 정규화한다.
+- Input purpose는 Lynx가 지원하는 native type과 confirm type에 연결한다. native element가
+  uncontrolled initial value를 제공하므로 공개 값 계약은 `defaultValue + bindinput`이다.
+- Label 또는 별도 접근성 이름을 필수로 하고 오류 해결 문구와 counter 의미는 input 이름에
+  합친다. ReactLynx 0.125에 HTML과 동일한 required/invalid/description 관계가 없어 실제
+  VoiceOver/TalkBack과 host semantics는 제품 route 채택 시 native gate로 남긴다.
+- Leading/Trailing은 닫힌 union으로 빈 slot과 다중 adornment를 막는다. Trailing Action은 input
+  다음 별도 button node와 48px hit area를 가지며 Disabled에서는 handler를 연결하지 않는다.
+- `@libitums/ui-lynx/text-field`와 전용 styles subpath, root barrel, aggregate CSS, pack 검사를
+  함께 확장한다. Storybook은 8개 대표 story와 `text-field.web.bundle`을 제공하고 runtime은
+  public subpath만 소비한다.
+
+### 2026-09-15 확장 — ChatBubble 공개 표면
+
+이 절은 같은 package/catalog 경계에 ChatBubble 공개 컴포넌트를 추가한 delta다. 시각·상태
+정본은 `libitums/design-system/components/chat-bubble.md` revision
+`979e57fec7b38533129da65166109984d2f16686`이다.
+
+- `ChatBubble`은 Bubble 안에 Message text만 렌더한다. Speaker, Avatar, Timestamp, Delivery
+  status와 Action은 상위 Message item의 composition 책임으로 남긴다. 기존 제품 화면의
+  `MessageBubble`은 D1 원칙대로 강제 이관하지 않는다.
+- direction, S/M/L size, Outgoing delivery와 UI/learning content language를 닫힌 union으로
+  제공한다. Incoming delivery는 항상 Default이고, learning content는 비어 있지 않은
+  `languageTag`를 요구한다.
+- 최대 너비 280px, `radius.md`, 논리 방향의 0px 아래 모서리, direction surface/foreground,
+  size별 body typography와 padding은 정본 token을 그대로 쓴다. 긴 연속 문자열은 Lynx가
+  지원하는 `word-break: break-all`로 Bubble 안에 유지한다.
+- 실제 speaker와 message는 하나의 접근성 text node 이름으로 합친다. Outgoing non-default
+  delivery는 `accessibility-value`에 상태 문구로 연결한다. ReactLynx 0.125 공식 props에
+  native language 매핑이 없어 language metadata까지만 보존하며 실제 학습 언어 발음은 제품
+  route 채택 시 native gate로 남긴다.
+- `@libitums/ui-lynx/chat-bubble`과 전용 styles subpath, root barrel, aggregate CSS, pack 검사를
+  함께 확장한다. Storybook은 7개 대표 story와 `chat-bubble.web.bundle`을 제공하고 runtime은
+  public subpath만 소비한다.
+
+### 2026-09-16 확장 — VisualNovelDialog 공개 표면
+
+정본은 `libitums/design-system/components/visual-novel-dialog.md` revision
+`99d1bfbef981d3cdf225a0bad337f3aa3a7b0d55`이다.
+
+- 컴포넌트는 panel/text만 소유하고 장면, 선택지, timer와 진행 입력은 host에 남긴다.
+- Speech/Narration/Thought와 surface/reveal/advance를 닫힌 독립 축으로 제공한다. Avatar는
+  32px composition slot이다.
+- Typewriter의 시각 부분 문자열과 전체 접근성 문장을 분리한다. Auto는 pause control이
+  존재한다는 명시적 계약을 요구한다.
+- 공개 subpath, styles, root barrel, aggregate CSS와 pack 검사를 확장하고 Storybook은 9개
+  대표 story와 실제 `visual-novel-dialog.web.bundle`을 제공한다.
+
+### 2026-09-16 확장 — Tooltip 공개 표면
+
+이 절은 같은 package/catalog 경계에 Tooltip 공개 컴포넌트를 추가한 delta다. 시각·상태 정본은
+`libitums/design-system/components/tooltip.md` revision
+`5c7bce3eb2c0d214de78bcec0c52d7b7395e8a19`이다.
+
+- Tooltip은 Message와 배치 표현만 소유하며 trigger와 open/dismiss 상태는 제품 host가 소유한다.
+- Placement·Alignment·Arrow·Tone·Visibility를 독립 옵션으로 제공하고 Start/End는 RTL 논리
+  방향을 따른다. Bubble은 240px, 8×12px padding, body.m, radius.md와 floating z-index를 쓴다.
+- Brand는 제품 결정에 따라 `brand.primary`, Neutral은 `gray.950`, 전경은
+  `fg.neutral-inverted`를 사용한다. Bubble과 Arrow는 동일한 surface token을 공유한다.
+- `resolveTooltipLayout`은 측정 geometry로 Flip·Shift와 Arrow edge fallback을 순수 계산한다.
+  측정·스크롤/회전 listener와 trigger-description 접근성 결선은 host 경계로 남긴다.
+- `@libitums/ui-lynx/tooltip`과 전용 styles subpath, root barrel, aggregate CSS, pack 검사를 함께
+  확장한다. Storybook은 8개 대표 story와 `tooltip.web.bundle`을 제공한다.
+
+### 2026-09-16 확장 — `apps/mobile`의 첫 소비
+
+이 절은 같은 package/catalog 경계를 유지하면서 **제품 앱이 이 package를 처음 소비한 delta**를
+기록한다. **새 공개 컴포넌트를 더하지 않는다** — 늘어난 것은 만드는 쪽이 아니라 **쓰는 쪽**이다.
+
+**왜 새 ADR 번호가 아니고 `정정 기록`도 아닌가.** D5가
+*"package를 실제 제품에 채택하는 릴리스에서 소비 route와 실기 검증을 필수로 승격한다"* 로
+**이 시점을 자기 안에 예고**했으므로, 예고된 조건이 발동한 **적용 기록**이다. D1의
+*"기존 `apps/mobile` 화면은 이번 변경을 이유로 강제 이관하지 않는다"* 는 **지금도 참이다** —
+이관은 **0건**이고 새 화면이 소비한다. ⚠ **D5의 *"현재 제품 앱은 아직 이 package를 소비하지
+않으므로"* 는 이 절이 덮는다** — 그 문장은 **쓰인 시점에 참이었고** 2026-09-16에 시점이 지난
+것이라 사실 오류가 아니다. 그래서 `정정 기록`이 아니다.
+
+- **소비하는 공개 표면은 `@libitums/ui-lynx/text-field` 하나**이고, 함께 부르는 CSS도 전용
+  진입점 `@libitums/ui-lynx/text-field/styles.css` 하나다. **aggregate
+  `@libitums/ui-lynx/styles.css`를 부르지 않는다** — 소비하지 않는 컴포넌트의 CSS까지 제품
+  번들에 들어간다. 쓰는 자리는 진입 흐름의 입력 둘(로그인의 전화번호 칸 · 코드 검증 칸)이다.
+- **소비하지 않기로 한 것과 근거.** `CompactNumericInput`은 상자 높이가 **고정 생값**이라 최대
+  배율에서 글자 줄상자가 상자를 넘어 **숫자가 잘린다** — 고치는 것이 package 변경이라, 소비하면
+  제품 route가 그 결함을 **처음 들여오는** 자리가 된다. `PageIndicator`는 시각이 같지만 접근성
+  이름이 `Scene ${n} of ${m}`로 **영어 하드코딩**이라 한국어 화면에 영어 낭독이 들어온다.
+  `Button`은 `variant="brand"`의 대비가 미달이라(면 2.97:1 · 흰 라벨 3.02:1) 저장소의 기존 액션 행
+  레시피를 잇는다. ⇒ **소비 표면을 넓히지 않는 것이 이 절이 져야 하는 표면을 좁게 유지한다.**
+- **해석 경로 — 소비자가 두 곳에서 workspace source를 본다.** `apps/mobile/tsconfig.typecheck.json`
+  (신설)이 `@libitums/ui-lynx/text-field`를 패키지 소스로 매핑하고, `apps/mobile/vitest.config.ts`의
+  `resolve.alias`가 테스트에서 같은 일을 한다. **D3이 정한 형태 그대로다** — Rspeedy가 읽는 기본
+  `tsconfig.json`에는 매핑을 두지 않고, 패키지의 `types`가 `dist/*.d.ts`라 빌드 전에는 없기
+  때문이다. 루트 `dev`도 이제 ui-lynx를 먼저 build한다(루트 `build`는 이미 그랬다).
+  - ⚠ **형태가 `apps/storybook-lynx`와 한 줄 갈렸다 — 의도는 같고 수단이 다르다.** storybook의
+    같은 파일은 `baseUrl: "."` + `paths`인데 **mobile은 `paths`만** 두었다. 이유는 취향이 아니라
+    **TypeScript 버전**이다 — mobile은 **6.0.3**이고 그 버전에서 `baseUrl`은 제거돼 **`TS5101`
+    하드 에러**가 된다. storybook은 **5.9.3**이라 같은 줄이 아직 걸리지 않는다. `paths`는 그
+    `tsconfig.json`의 위치를 기준으로 해석되므로 `baseUrl` 없이 같은 결과가 나온다.
+    ⇒ **D3의 「`tsconfig.typecheck.json`만 workspace source를 매핑한다」는 지켜졌고 형태만
+    갈렸다.** **storybook의 파일을 이 회차가 고치지 않았다** — 그 앱의 TypeScript가 6으로 올라가는
+    날 같은 자리가 선다.
+- **D5가 비차단 후속으로 미뤄 둔 native 접근성 실기 검증이 이제 필수로 승격됐다.** 지는 자리는
+  `docs/e2e/entry-flow.md`의 **K 항목**(소프트 키보드 — 종류 · 가림 · 내리는 수단)과 **V 항목**
+  (VoiceOver — 입력 칸 위에서 들리는 것)이다. ⚠ **승격은 「돌았다」가 아니라 「이제 차단이다」**
+  이고, 이 절을 쓰는 시점에 그 항목들은 **한 번도 실행되지 않았다.**
+- ⚠ **이 소비가 제품에 처음 들여온 것 둘 — 판정이 아니라 기록이다.**
+  ① `.ui-lynx-text-field-surface`의 **150ms 색 `transition`**(`motion-duration-color`).
+  **끄는 길이 없다** — `prefers-reduced-motion`이 이 저장소 전체에 **0건**이고 Lynx 미디어 특성
+  표에도 없다. 소비하는 화면 쪽이 *"모션을 새로 더하지 않는다"* 로 정한 것은 **컴포넌트가 자기
+  CSS로 이미 가진 것에는 적용되지 않는다** — 그 구분을 여기 적어 둔다.
+  ② `:focus` **box-shadow 포커스 링.** ADR-0016 **D7**이 *"포커스 링과 탭 순서를 요구하지
+  않는다"* 고 적은 축에 **실물이 하나 생겼다** — *우리가 요구하지 않는다*와 *제품에 없다*는 다른
+  말이다. 이 스택에서 `:focus`가 실제로 서는지는 **미확인**(D0이 같은 자리를 이미 *"best-effort
+  fallback"* 으로 적었다)이고 관측 자리는 `docs/e2e/entry-flow.md` **V1의 기록 절**이다. D7 아래에도
+  같은 사실을 한 줄 이어 두었다.
+  ⇒ **둘 다 AAA 2.3.3 축이라 AA 판정을 막지 않는다.** 여기 적는 이유는 **「이 변경이 저장소에
+  무엇을 들여왔나」를 적는 자리가 이 절**이기 때문이다.
+- **축 추적표에 새 행을 더하지 않는다** — 새 축이 아니라 같은 「공유 ReactLynx 패키지와 브라우저
+  카탈로그」 축이다(ADR-0013: 새 행은 「새 축이다」라는 신호). **재검토 조건의 *"두 번째 제품 앱이
+  `@libitums/ui-lynx`를 소비할 때"* 도 발동하지 않는다** — 이번은 **첫** 제품 앱이다. 그 행은
+  그대로 열려 있다.
 
 ## 버린 대안
 

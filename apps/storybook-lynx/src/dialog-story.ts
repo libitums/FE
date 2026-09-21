@@ -1,4 +1,4 @@
-import type { DialogMotion } from "@libitums/ui-lynx/dialog";
+import type { DialogMotion, DialogPhase } from "@libitums/ui-lynx/dialog";
 
 export type DialogStoryActionData = {
   readonly id: "continue" | "quit";
@@ -11,6 +11,7 @@ export type DialogInitData = {
   readonly description: string | undefined;
   readonly actions: readonly DialogStoryActionData[];
   readonly motion: DialogMotion;
+  readonly phase: DialogPhase;
 };
 
 export type DialogStoryActionEnvelope = {
@@ -38,6 +39,7 @@ export function normalizeDialogStoryArgs(input: unknown): DialogInitData {
     description,
     actions,
     motion: args.motion === "reduced" ? "reduced" : "standard",
+    phase: args.phase === "entering" || args.phase === "exiting" ? args.phase : "visible",
   };
 }
 

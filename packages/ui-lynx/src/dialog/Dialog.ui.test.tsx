@@ -17,11 +17,12 @@ describe("Dialog", () => {
       />,
     );
 
-    expect(screen.getByTestId("ui-lynx-dialog-scrim")).toHaveAttribute(
+    expect(screen.getByTestId("ui-lynx-overlay")).toHaveAttribute(
       "accessibility-elements-hidden",
       "true",
     );
-    expect(screen.getByTestId("ui-lynx-dialog-scrim")).not.toHaveAttribute("bindtap");
+    expect(screen.getByTestId("ui-lynx-overlay")).toHaveAttribute("data-scope", "screen");
+    expect(screen.getByTestId("ui-lynx-overlay")).not.toHaveAttribute("bindtap");
     expect(screen.getByTestId("ui-lynx-dialog-container")).toHaveAttribute(
       "accessibility-role-description",
       "dialog",
@@ -86,5 +87,34 @@ describe("Dialog", () => {
     );
     expect(screen.getByTestId("ui-lynx-dialog")).toHaveClass("ui-lynx-dialog-motion-reduced");
     expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-motion", "reduced");
+  });
+
+  test("진입과 퇴장 phase에서 container motion 종료를 한 번 전달한다", () => {
+    const bindmotionend = vi.fn<() => void>();
+    const { rerender } = render(
+      <Dialog
+        title="학습을 계속할까요?"
+        actions={[{ id: "continue", label: "계속 학습하기" }]}
+        phase="entering"
+        bindaction={() => undefined}
+        bindmotionend={bindmotionend}
+      />,
+    );
+
+    expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-phase", "entering");
+    expect(screen.getByTestId("ui-lynx-overlay")).toHaveClass("ui-lynx-overlay-dialog");
+    fireEvent.animationend(screen.getByTestId("ui-lynx-dialog-container"));
+    expect(bindmotionend).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <Dialog
+        title="학습을 계속할까요?"
+        actions={[{ id: "continue", label: "계속 학습하기" }]}
+        phase="visible"
+        bindaction={() => undefined}
+        bindmotionend={bindmotionend}
+      />,
+    );
+    expect(screen.getByTestId("ui-lynx-dialog-container")).not.toHaveAttribute("bindanimationend");
   });
 });

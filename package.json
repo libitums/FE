@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter @libitums/mobile dev",
+    "dev": "pnpm --filter @libitums/ui-lynx build && pnpm --filter @libitums/mobile dev",
     "build": "pnpm --filter @libitums/ui-lynx build && pnpm --filter @libitums/mobile build && pnpm --filter @libitums/storybook-lynx build",
     "bundle:host": "pnpm build && cp apps/mobile/dist/main.lynx.bundle apps/ios/main.lynx.bundle && mkdir -p apps/ios/Resource/static && rsync -a --delete apps/mobile/dist/static/ apps/ios/Resource/static/",
     "preview": "pnpm --filter @libitums/mobile preview",

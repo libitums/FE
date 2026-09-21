@@ -26,6 +26,7 @@ function App() {
         description={data.description}
         actions={data.actions}
         motion={data.motion}
+        phase={data.phase}
         bindaction={emitAction}
       />
     </view>

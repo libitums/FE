@@ -10,16 +10,20 @@ import {
 } from "./journey-map";
 
 // 메신저 계약 props는 기존 여정 맵 UI fixture에서 공통으로 비워 둔다.
+// LIB-257 ui-scaffold: `onOpenNotifications`가 필수 prop이 됐다(계약 §2.5) — 이
+// fixture에 더하는 것으로 render 호출 전부를 한 번에 닫는다. 단언은 한 글자도
+// 바뀌지 않았다.
 const messengerFixture = {
   completedMessengerUnitIds: [] as const,
   onStartMessengerUnit: vi.fn(),
   completedPhoneCallUnitIds: [] as const,
   onStartPhoneCallUnit: vi.fn(),
+  onOpenNotifications: vi.fn(),
 };
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
-// 이 화면은 제목 텍스트 하나만 그린다 — 탭 라벨(`여정`)과 화면 제목(`여정 맵`)은
-// 다르다 (screens.contract.ts).
+// 이 화면은 머리 행에 제목 텍스트와 액션 래퍼 속 알림 버튼을, 흐름 영역에 맵 상자를
+// 그린다 — 탭 라벨(`여정`)과 화면 제목(`여정 맵`)은 다르다 (screens.contract.ts).
 test("여정 맵 화면이 제목을 렌더한다", () => {
   render(
     <JourneyMapScreen
@@ -336,7 +340,8 @@ test("completedStepCount=5로 렌더하면 다섯 전부 done이고 current인 �
 
 // ---------------------------------------------------------------- 스크롤 영역 (LIB-226 계약 §3.2 U1·U2·U3·U4)
 //
-// 여정 맵은 액션 행이 없다(계약 §1.4) — 고정은 머리(제목)뿐이고 흐름은 맵 하나다.
+// 여정 맵은 액션 행이 없다(계약 §1.4) — 고정은 제목과 액션 래퍼를 담은 머리뿐이고
+// 흐름은 맵 하나다.
 // 시트는 스크롤 밖의 겹침 레이어다(R9). 이 계층이 판정하는 것은 "구조가 계약대로
 // 짜였다"까지다 — 실제 스크롤·가림 서브트리 동작은 실기 몫이다(§3.2 말미).
 

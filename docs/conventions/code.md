@@ -16,7 +16,7 @@ apps/mobile/src/
 - 폴더는 **필요해질 때 만든다.** 지금 있는 것은 `app/` · `screens/` · `components/` ·
   `lib/` 넷이다 ([ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md)).
 - **`components/`는 뼈대 이슈에서 생겼다.** 첫 입주자는 바텀 네비게이션 셸이다 —
-  탭 넷 위에 걸려 어느 한 화면의 것이 아니다. 아래 **컴포넌트** 절의 승격 규칙
+  모든 탭 위에 걸려 어느 한 화면의 것이 아니다. 아래 **컴포넌트** 절의 승격 규칙
   ([ADR-0015 D3](../adr/0015-component-primitives-and-style-application.md))이
   **처음 발동한 사례**이고, 규칙만 있고 사례가 없던 자리를 그 판단이 채웠다
   (ADR-0015 `정정 기록` 2026-09-02).
@@ -40,14 +40,14 @@ apps/mobile/src/
 | 디렉터리 | kebab-case | `src/screens/order-detail/` |
 | React 컴포넌트 파일 | PascalCase, **export 이름과 일치** | `OrderDetailScreen.tsx` |
 | 그 외 파일 | kebab-case | `api-client.ts`, `use-navigation.ts` |
-| 화면 컴포넌트 | `~Screen` 접미사 | `HomeScreen` |
+| 화면 컴포넌트 | `~Screen` 접미사 | `SettingsScreen` |
 | 훅 | `use~` 접두사, 파일은 `use-~` | `useNavigation` / `use-navigation.ts` |
 | 테스트 파일 | `*.unit.test.ts` / `*.ui.test.tsx` / `*.integration.test.tsx` | 계층이 파일명에 드러난다 |
-| CSS 파일 | 짝이 되는 컴포넌트 파일명의 kebab-case, **같은 폴더** | `HomeScreen.tsx` → `home-screen.css` |
-| CSS 클래스 | 블록 = CSS 파일명. 하위는 `블록-요소` **한 겹만**. BEM의 `__`·`--`를 쓰지 않는다 | `.home-screen-title` |
+| CSS 파일 | 짝이 되는 컴포넌트 파일명의 kebab-case, **같은 폴더** | `SettingsScreen.tsx` → `settings-screen.css` |
+| CSS 클래스 | 블록 = CSS 파일명. 하위는 `블록-요소` **한 겹만**. BEM의 `__`·`--`를 쓰지 않는다 | `.settings-screen-title` |
 | CSS 클래스 (상태) | `블록-요소-상태`. 상태어는 **아래 예약 목록에서만**. base 클래스에 **더해** 붙인다 | `.bottom-navigator-label-selected` |
-| `data-testid` | `블록-역할`. 클래스 블록과 **같은 접두사**를 쓰고 축약하지 않는다 | `home-screen-title` |
-| 상대 import | **확장자를 붙이지 않는다** | `./HomeScreen` (`./HomeScreen.js` 아님) |
+| `data-testid` | `블록-역할`. 클래스 블록과 **같은 접두사**를 쓰고 축약하지 않는다 | `settings-screen-title` |
+| 상대 import | **확장자를 붙이지 않는다** | `./SettingsScreen` (`./SettingsScreen.js` 아님) |
 
 - **테스트 파일은 소스와 같은 폴더에 둔다.** `test/` 트리를 만들지 않는다 — 계층은
   파일명이 가른다.
@@ -119,15 +119,25 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
 
 | 채널 | 무엇을 보나 | 예 |
 |---|---|---|
-| `data-testid` | **요소를 찾는다** | `bottom-navigator-tab-home` |
+| `data-testid` | **요소를 찾는다** | `bottom-navigator-tab-journey` |
 | 상태 `data-*` | **상태** — 로직이 이 요소를 어떤 상태로 보는가 | `data-selected="true"` · `data-status="current"` |
 | `current-color` | **결선** — 그 상태에 토큰 값이 실렸는가 | `color.fg.brand` |
-| `accessibility-*` | **보조기술**이 이름·역할·상태를 받는가 | `accessibility-label="홈, 선택됨"` |
+| `accessibility-*` | **보조기술**이 이름·역할·상태를 받는가 | `accessibility-label="여정, 선택됨"` |
 
 - **상태 채널에 속성이 여럿 있어도 채널은 하나다.** boolean 하나로 끝나는 상태는
   `data-selected`(탭의 선택 여부), 값이 셋 이상인 상태는 `data-status`(스텝의
   완료·현재·잠김)다. 속성 이름이 는 것은 **같은 채널의 새 사례**이지 다섯째 채널이
   아니다 — 채널은 *"무엇을 보나"* 로 세지 *"속성이 몇 개인가"* 로 세지 않는다.
+  값이 수인 상태도 같은 채널의 사례다 — 획 수·취소 수처럼 세는 값은 문자열로 실어
+  `data-strokes`·`data-cancels`로 낸다.
+- ⚠ **`data-` 뒤의 이름은 하이픈 없는 한 낱말이어야 한다 — 이것은 취향이 아니라 플랫폼
+  제약이다.** 하이픈을 더 넣으면 `__AddDataset`이 `e.dataset[key] = value`를 그대로 해서
+  **렌더가 `SyntaxError: 'point-count' is not a valid property name`으로 터진다.**
+  `data-point-count`는 터지고 `data-path`는 된다. 터지는 자리가 그 요소 하나로 끝나지
+  않는다 — **같은 파일의 뒤 테스트까지 요소 트리가 깨져 연쇄로 실패한다.** 실측이다.
+  저장소가 이미 쓰는 `data-testid`·`data-selected`·`data-status`가 전부 이 모양이고, 새
+  이름도 그 모양으로 짓는다. **새 축이 아니라 기존 이름 규칙의 플랫폼 제약**이라 ADR도
+  축 추적표 행도 열지 않는다.
 - **넷 다 속성이라 `toHaveAttribute` 하나로 본다.** 그래서 아래 매처 절의
   "쓰지 않는다" 칸(계산된 스타일에 의존하는 `toHaveClass`·`toHaveStyle`)에
   **걸리지 않는다.** 이것이 이 저장소에서 상태를 클래스가 아니라 속성으로 내는 이유다.
@@ -139,12 +149,14 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
   [ADR-0016 D6](../adr/0016-assistive-technology-semantics.md)에 있다.
   **`ui` green을 "접근성 확인됨"으로 읽지 않는다.** 실제로 한 번 갈렸다 —
   `accessibility-value`는 `ui`에서 전부 green이었는데 iOS 실기에 도달하지 않았다.
-- **선택 상태는 이름 문자열 안에 실린다.** `accessibility-value`를 쓰지 않는다 — 이
+- **상태는 이름 문자열 안에 실린다.** `accessibility-value`를 쓰지 않는다 — 이
   스택의 iOS에서 낭독되지 않는다([ADR-0016 D3](../adr/0016-assistive-technology-semantics.md)의
   `정정 기록`). 그래서 상태를 보는 채널이 둘로 보이지만 겹치는 것이 아니다:
   상태 `data-*`는 **테스트가 보는 것**이고 `accessibility-label`의 접미사는
   **보조기술이 받는 것**이다. 여정 맵의 스텝도 같은 모양이다 —
   `data-status="current"`가 테스트의 것, `"주문하기, 현재 스텝"` 이 보조기술의 것이다.
+  **어느 값에 접미사를 붙이는지는 [ADR-0016 D13](../adr/0016-assistive-technology-semantics.md)의
+  게이트가 가른다** — 탭의 비선택처럼 안 붙이는 자리와 토글의 꺼짐처럼 붙이는 자리가 갈린다.
 
 ## 무엇을 바꾸면 어느 테스트를 쓰나
 
@@ -387,7 +399,9 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 - **`scroll-view`의 prop은 소스에서 초기값을 확인한 뒤 정한다.** `@lynx-js/types`의
   `@defaultValue`는 **리셋 값**(적었다가 지웠을 때 돌아가는 값)을 적고 있을 수 있어
   **초기값의 근거가 못 된다** — 확인은 `createView`와 ivar 초기화에서 한다. **지금 적는
-  것은 둘이고 여섯 화면 전부다**: `scroll-orientation="vertical"`(안 적으면 초기값이
+  것은 둘이고 스크롤 화면 전부다**(개수를 여기서 세지 않는다 — 목록의 정본은
+  [ADR-0022](../adr/0022-scroll-regions-and-fixed-affordances.md) **D2 표**다):
+  `scroll-orientation="vertical"`(안 적으면 초기값이
   **가로**라 세로 스크롤이 원리적으로 불가능하다) · `scroll-bar-enable={true}`(초기값이
   `NO`라 **적어야 켜진다**). `enable-scroll`은 초기값이 `YES`라 안 적고, `bounces`도
   안 적는다 — **UIKit 기본값이 `YES`이고 그것이 우리가 원하는 값임을 실기로 확인했다**
@@ -458,9 +472,14 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 - **에러 경계**: 루트에 하나뿐이다. 네트워크 실패는 여기로 올리지 않고 화면 안에서 재시도한다.
 - 모든 화면에 **화면 내 back 수단**을 둔다. 하드웨어 뒤로가기에만 의존하지 않는다.
 - **나가는 수단은 라벨이 가리키는 곳으로 간다 — 스택 깊이로 목적지를 맞추지 않는다.**
-  `맵으로`는 활성 스택의 루트로 가고(`backToRoot`), `back`(한 겹 위)으로 대신하지 않는다.
-  「한 겹 위가 마침 맵이다」는 깊이가 늘면 거짓이 된다. 진입을 `push`로 할지 `replace`로
-  할지도 **출구를 맞추려고** 고르지 않는다.
+  나가는 라벨은 둘이고 액션은 하나다. 여정 탭의 `맵으로`와 롤플레이 탭의 `목록으로`는 둘 다
+  활성 스택의 루트를 가리키므로 둘 다 `backToRoot`로 가고, `back`(한 겹 위)으로 대신하지
+  않는다. 「한 겹 위가 마침 맵이다」는 깊이가 늘면 거짓이 된다. 진입을 `push`로 할지
+  `replace`로 할지도 **출구를 맞추려고** 고르지 않는다.
+  **같은 화면이 두 탭에서 열리면 라벨을 화면이 고르지 않는다** — 진입 출처에서
+  `specialUnitExitLabel(source)`(`src/lib/special-unit-entry-source.ts`)가 정하고 App이
+  `exitLabel` prop으로 내린다. 화면은 자기가 어느 탭에서 열렸는지 모른다. `맵으로`는 여정 탭
+  스택 위에서만 쓴다.
 
 ([ADR-0007](../adr/0007-app-internals-state-routing-data-errors.md))
 
@@ -481,7 +500,7 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 - **주석이 교체 지점을 적는다 — 무엇이 임시이고, 무엇이 막고 있고, 진짜가 오는 날 무엇만
   바뀌나.**
 
-**새로 만든 규칙이 아니다. 이미 선 자리가 넷 있다.** 아래 인용은 원문 주석의 **발췌**다 —
+**새로 만든 규칙이 아니다. 이미 선 자리들이 있다.** 아래 인용은 원문 주석의 **발췌**다 —
 원문에는 계약 절 번호가 함께 달려 있고 그 번호는 이 문서에서 풀리지 않는다.
 
 - **`listening.ts`의 `ListeningQuestion.audioSource` — 한 필드가 「격리」 · 「옵셔널 금지」 ·
@@ -517,6 +536,40 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   문화 퀴즈는 스텝에 배정되지 않는다 — 들어오는 전이는 문화 학습의 액션 행 하나다"* 로
   **표를 배정으로 읽는 길을 막는다.** 표는 **export하지 않는다** — *"표를 내보내면 다음
   사람이 직접 색인해 자기 답을 짓는다."*
+- **`notification-items.ts`의 알림 목록 — 「격리」 · 「주석이 교체 지점을 적는다」를 한 모듈이
+  지고, 「옵셔널 금지」는 항목 타입이 진다** ⟨2026-09-15, LIB-257⟩. 주석이 *"**무엇이 임시인가** —
+  아래 네 항목의 `id` · `message` · `target` 전부와 개수(4)"* 로 **개수까지 임시**라고 적고,
+  *"**진짜가 오는 날 무엇만 바뀌나** — 이 함수의 본문(값과 그 출처)뿐이다. 형태 · 화면 · App 결선은
+  안 바뀐다"* 로 **교체 지점**을 적는다. 항목 타입(`NotificationItem`)은 필드 셋이 전부 필수라
+  「아직 없는 알림」이나 읽음 상태를 둘 자리가 없다. 표는 `culture-quiz.ts`처럼 **export하지 않고
+  함수 하나로만 내보낸다.** 셋째 규칙도 선다 — 알림 화면 · 항목의 `ui` 테스트가 이 모듈을
+  import하지 않고 자기 fixture를 쓴다.
+
+- **`profile-items.ts`의 프로필 항목 셋과 `terms-sections.ts`의 약관 절 넷 — 넷을 한
+  모듈씩 진다** ⟨2026-09-16, LIB-259⟩. 둘 다 표를 **export하지 않고** 조회 함수 하나
+  (`profileItems()` · `termsSections()`)만 내보내고, 값 타입의 필드가 전부 필수다.
+  **갈리는 것은 「무엇이 임시인가」의 범위다** — 프로필은 **`value` 셋만** 임시이고
+  (`id`·`label`과 항목이 셋이라는 것은 임시가 아니다), 약관은 **문구만** 임시이며
+  **분량은 임시가 아니다**: 절 4 · 문단 8 · 문단마다 문장 2 이상 · 본문 600자 이상이
+  `unit`으로 지어져 있다. 그 하한이 있는 이유는 **약관 화면의 스크롤이 실제로 걸려야
+  하기 때문**이고(ADR-0022), 그래서 이 자리는 **「값이 임시여도 값의 크기는 계약일 수
+  있다」는 첫 사례**다. ⚠ **프로필에서 더 중요한 것은 안 넣은 쪽이다** — 연속 학습일 ·
+  완료 스텝 수 · 진행률 같은 **파생값은 항목으로도 타입으로도 두지 않았다.** 그것은
+  이 절이 아니라 아래 「파생값에는 적용되지 않는다」가 가르는 자리다.
+
+- **진입 흐름의 세 자리 — 온보딩 문구 · 언어 라벨 · 임시 토큰 값** ⟨2026-09-17, LIB-261⟩.
+  셋 다 표나 값을 **export하지 않고** 조회 함수 하나만 내보내며 값 타입에 옵셔널이 없다.
+  **갈리는 것은 「무엇이 임시인가」의 크기다** — 셋이 서로 다른 크기를 보여 주는 자리라 함께
+  적는다.
+  - **온보딩 문구**는 표의 **오른쪽 여섯 문자열**(제목 셋 · 본문 셋)만 임시다. 왼쪽 키(`step`
+    셋)와 타입은 임시가 아니다 — `culture.ts`와 같은 모양이다.
+  - **언어는 라벨만 임시이고 코드는 어휘다.** `EntryLanguage` union의 네 낱말(`ko`·`en`·`ja`·`vi`)
+    위에 `data-testid`와 이벤트 값이 서 있어 **바뀌면 계약 재고정**이다. 임시인 것은 사람이 읽는
+    **라벨 문자열 넷**뿐이다. ⚠ **이 구분이 없으면 다음 사람이 「언어 목록은 임시니까」로 코드까지
+    갈아 끼우고**, 그 순간 테스트 선택자와 이벤트 값이 함께 깨진다.
+  - **임시 토큰은 함수 본문 한 줄**이다 — `createTemporaryAuthToken`이 돌려주는 고정 리터럴
+    하나가 전부이고, **키 이름 · 저장 시점 · 분기 · 타입은 임시가 아니다.** 값에 수단이나 시각을
+    실으면 진짜 토큰(서버가 주는 불투명 문자열)이 오는 날 거짓이 된다.
 
 **셋째 규칙(「화면이 내용에 의존하지 않는다」)이 선 자리는 주석이 아니라 테스트다.**
 문장 순서 · 단어 선택 · **문화 퀴즈**의 문항 `Record`는 **다섯 스텝 전부 빈 배열**인데도
@@ -532,7 +585,7 @@ fixture로도 통과한다」의 실물이다. 형태의 정본은
 **파생값에는 적용되지 않는다.** 파생값은 **임시로 채울 수 있는 종류가 아니다** — 채우면
 값이 아니라 **계산 규칙**이 굳고, 교체 지점이 한 곳으로 좁혀지지 않는다. **그런 화면은
 이음매를 만드는 것이 아니라 뒤로 미룬다.** 그 판정의 자리는
-[`docs/screens.md`](../screens.md)의 「홈은 소비자다」다.
+[`docs/screens.md`](../screens.md)의 「파생값은 임시로 채우지 않는다」다.
 
 ([ADR-0010 D6](../adr/0010-convention-docs-and-design-done-criteria.md) ·
 [ADR-0007 D2·D5](../adr/0007-app-internals-state-routing-data-errors.md) ·

@@ -180,7 +180,7 @@ describe("round-button.css", () => {
       /\.ui-lynx-round-button-disabled(?::focus-visible)?[^}]*box-shadow:\s*none/,
     );
     expect(styles).toMatch(
-      /\.ui-lynx-round-button-disabled\s+\.ui-lynx-round-button-icon\s*\{[^}]*opacity:\s*0\.35/,
+      /\.ui-lynx-round-button-disabled\s+\.ui-lynx-round-button-icon\s*\{[^}]*opacity:\s*var\(--libitum-opacity-disabled, 0\.35\)/,
     );
     expect(styles).toMatch(
       /\.ui-lynx-round-button-disabled\.ui-lynx-round-button-loading\s+\.ui-lynx-round-button-spinner\s*\{[^}]*opacity:\s*1/,

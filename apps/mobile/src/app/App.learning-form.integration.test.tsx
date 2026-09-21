@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { fireEvent, render, screen, cleanup } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, cleanup } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { journeyStepOrdinal, type JourneyStepId } from "../screens/journey-map/journey-map";
@@ -9,6 +9,9 @@ import { sentenceOrderScreenTitle } from "../screens/sentence-order/sentence-ord
 import { wordChoiceScreenTitle } from "../screens/word-choice/word-choice";
 import { cultureScreenTitle } from "../screens/culture/culture";
 import { cultureQuizScreenTitle } from "../screens/culture-quiz/culture-quiz";
+// LIB-261 (integration-design) §9.5: `renderApp` 헬퍼의 토큰 스텁·타이머 값.
+import { authTokenStorageKey } from "../lib/auth-token";
+import { entrySplashDurationMs } from "../lib/entry-flow";
 
 // LIB-239 (integration-design, u2): 결선(`App.tsx`)이 배정표(`learningFormForStep`)를
 // **실제로 경유하는지**를 짓는다. 오늘의 `onStartStep`은 리터럴
@@ -52,7 +55,39 @@ vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
 
 afterEach(() => {
   formStub.current = null;
+  vi.unstubAllGlobals();
 });
+
+// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
+// 헬퍼(`renderApp`). 토큰이 있는 상태를 스텁하고 가짜 타이머로
+// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다.
+//
+// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
+// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
+// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
+// 기존 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+function renderApp(ui: Parameters<typeof render>[0]) {
+  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
+  const tokenStore = new Map<string, string>();
+  tokenStore.set(authTokenStorageKey, "existing-token");
+  vi.stubGlobal("NativeModules", {
+    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
+      ? previousNativeModules
+      : {}),
+    StorageModule: {
+      get: (key: string) => tokenStore.get(key) ?? null,
+      set: (key: string, value: string) => void tokenStore.set(key, value),
+      remove: (key: string) => void tokenStore.delete(key),
+    },
+  });
+  vi.useFakeTimers();
+  const result = render(ui);
+  act(() => {
+    vi.advanceTimersByTime(entrySplashDurationMs);
+  });
+  vi.useRealTimers();
+  return result;
+}
 
 // 여정 탭 → 스텝 tap → 시트 `시작` tap. `App.integration.test.tsx`의 `startStep`과
 // 같은 형태다(파일이 다르므로 다시 선언한다).
@@ -94,7 +129,7 @@ const titleTextByForm: Record<LearningForm, (ordinal: number) => string> = {
 // 통과한다 — red의 근거가 아니다.
 test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화면을 연다", (form) => {
   formStub.current = form;
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -118,7 +153,7 @@ test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화
 // 순간 제목과 부재 단언이 함께 초록이 된다.
 test("learningFormForStep이 sentence-order·word-choice를 돌려줘도 던지지 않고 각 화면이 그대로 뜬다", () => {
   formStub.current = "sentence-order";
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   expect(screen.getByTestId("sentence-order-screen-title")).toHaveTextContent(
     sentenceOrderScreenTitle(journeyStepOrdinal("ordering")),
@@ -127,7 +162,7 @@ test("learningFormForStep이 sentence-order·word-choice를 돌려줘도 던지�
   cleanup();
 
   formStub.current = "word-choice";
-  render(<App />);
+  renderApp(<App />);
   startStep("ordering");
   expect(screen.getByTestId("word-choice-screen-title")).toHaveTextContent(
     wordChoiceScreenTitle(journeyStepOrdinal("ordering")),
@@ -145,7 +180,7 @@ const formByStep = (id: JourneyStepId): LearningForm =>
 
 test("배정표가 스텝마다 갈리면 ordering 스텝에서는 그 스텝에 배정된 화면(sentence-order)이 열린다", () => {
   formStub.current = formByStep;
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -156,7 +191,7 @@ test("배정표가 스텝마다 갈리면 ordering 스텝에서는 그 스텝에
 
 test("배정표가 스텝마다 갈리면 greeting 스텝에서는 그 스텝에 배정된 화면(word-choice)이 열린다", () => {
   formStub.current = formByStep;
-  render(<App />);
+  renderApp(<App />);
 
   startStep("greeting");
 
@@ -170,7 +205,7 @@ test("배정표가 스텝마다 갈리면 greeting 스텝에서는 그 스텝에
 // 듣기 화면이다. 이 케이스는 지금도 통과하고 AC 3(표 불변)이 지켜지는 한 계속
 // 통과해야 한다 — red의 근거가 아니라 "표가 바뀌지 않았다"의 회귀 대조다.
 test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배정대로 듣기 화면을 연다", () => {
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -192,7 +227,7 @@ test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배�
 // 성립한다.
 test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵으로가 맵으로 돌아온다(문화 학습이 아니다)", () => {
   formStub.current = "culture";
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
 
@@ -222,7 +257,7 @@ test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵�
 // 전제 위에서 재시작한다.
 test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시 시작하면 문화 학습이 다시 뜬다", () => {
   formStub.current = "culture";
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
@@ -243,17 +278,18 @@ test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시
 // I-D (LIB-245) — 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 돌아오면 퀴즈가
 // 그대로 있고, 그때 `맵으로`가 맵에 닿는다. 탭 전환은 활성 스택을 바꾸지 않으므로
 // 여정 스택 위의 문화 퀴즈가 그대로 남아 있어야 하고, 그 위에서의 `맵으로`도
-// 여전히 `backToRoot`로 맵에 닿아야 한다.
+// 여전히 `backToRoot`로 맵에 닿아야 한다. 「다른 탭」 = 설정(LIB-257 홈 제거 —
+// 설정 제목으로 실제로 떠난 것을 확인한다).
 test("문화 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 돌아오면 퀴즈가 그대로 있고, 그때 맵으로가 맵에 닿는다", () => {
   formStub.current = "culture";
-  render(<App />);
+  renderApp(<App />);
 
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
   expect(screen.getByTestId("culture-quiz-screen-title")).toBeInTheDocument();
 
-  // 다른 탭으로 갔다가 여정 탭으로 돌아온다.
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-home"), {});
+  // 다른 탭(설정)으로 갔다가 여정 탭으로 돌아온다.
+  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
   // 퀴즈가 그대로 있다.

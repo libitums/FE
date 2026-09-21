@@ -79,9 +79,16 @@ final class CompletionAnnouncementModuleTests: XCTestCase {
     wait(for: [callbackExpectation], timeout: 1)
   }
 
-  // 실제 호스트 설정이 Storage, Audio, Completion 세 모듈을 template render에 등록하는지 본다.
+  // 실제 호스트 설정이 네이티브 모듈을 template render에 등록하는지 본다.
+  //
+  // 이름이 `...AccessibilityModules`였을 때부터 이미 Storage가 접근성이 아니었고,
+  // 손글씨 인식이 서면서 문면이 더 어긋났다. **여기가 재는 것은 「접근성 모듈이
+  // 있는가」가 아니라 「`ViewController`가 등록한다고 적은 것이 실제로 올라갔는가」**다.
+  //
+  // 아래 단언을 세지 말고 `ViewController.viewDidLoad()`의 `config.register` 줄들과
+  // 짝이 맞는지 본다 — 한쪽에만 있는 이름이 생기면 그 자리가 틀린 것이다.
   @MainActor
-  func testHostRegistersAccessibilityModules() throws {
+  func testHostRegistersNativeModules() throws {
     let viewController = ViewController()
     viewController.loadViewIfNeeded()
     let lynxView = try XCTUnwrap(
@@ -96,5 +103,6 @@ final class CompletionAnnouncementModuleTests: XCTestCase {
     XCTAssertTrue(templateRender.isModuleExist("StorageModule"))
     XCTAssertTrue(templateRender.isModuleExist("AudioPlaybackModule"))
     XCTAssertTrue(templateRender.isModuleExist("CompletionAnnouncementModule"))
+    XCTAssertTrue(templateRender.isModuleExist("HandwritingRecognitionModule"))
   }
 }

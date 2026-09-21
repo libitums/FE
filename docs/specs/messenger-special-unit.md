@@ -203,14 +203,21 @@ export function App(
 
 ## 6. 사용자 행동 이벤트 계약
 
+> **2026-09-15 LIB-255 재고정.** 모든 이벤트가 진입 출처 `entrySource: "journey" | "roleplay"`를
+> 싣는다. 롤플레이 탭에서 연 연습 세션도 같은 이벤트를 내고, 열림만 출처별 변형이 둘이다.
+> 여정 쪽 발생 조건·횟수·순서는 그대로이고 속성 하나가 늘었을 뿐이다. 목록과 연습 모드,
+> 나가기 라벨 `목록으로`는 [롤플레이 목록 스펙](roleplay-list.md)에 있다.
+
 타입은 `MessengerEvent`다. 대화 본문·답장 문자열·사용자 식별자는 payload에 넣지 않는다.
 
-| event | payload | 발생 시점 | 지표 |
-|---|---|---|---|
-| `messenger_unit_opened` | `unitId`, `entryStatus` | 맵 항목 선택으로 화면을 push하기 직전 | 진입 수, 완료 후 재진입 수 |
-| `messenger_unit_completed` | `unitId` | available→completed가 처음 성립할 때 한 번 | 진입 대비 완료율 |
-| `messenger_unit_exited_incomplete` | `unitId` | active 상태에서 `맵으로`를 누를 때 | 중도 이탈률 |
-| `messenger_unit_replay_started` | `unitId` | completed 상태에서 `처음부터 보기`를 누를 때 | 완료 후 재진입 대비 다시 보기율 |
+| event | 출처 | payload | 발생 시점 | 지표 |
+|---|---|---|---|---|
+| `messenger_unit_opened` | journey | `unitId`, `entrySource: "journey"`, `entryStatus` | 맵 항목 **또는 알림 항목(대상 메신저 — LIB-257)** 선택으로 화면을 push하기 직전, 매 진입. 알림에서 연 것도 여정 모드라 payload가 같다 — 알림 경로는 바로 앞의 `notification_item_tapped`로 가른다([알림 스펙](notifications.md) §4) | 진입 수, 완료 후 재진입 수 |
+| `messenger_unit_opened` | roleplay | `unitId`, `entrySource: "roleplay"` | 롤플레이 목록 항목 선택으로 화면을 push하기 직전, 매 진입. `entryStatus`를 싣지 않는다 — 연습은 여정 상태를 읽지 않고, 타입이 초과 속성으로 막는다 | 롤플레이 출처 비율 |
+| `messenger_unit_completed` | journey | `unitId`, `entrySource: "journey"` | available→completed가 처음 성립할 때 한 번 | 진입 대비 완료율 |
+| `messenger_unit_completed` | roleplay | `unitId`, `entrySource: "roleplay"` | 회차가 끝에 닿을 때마다 — 처음 열었을 때든 `처음부터 보기` 뒤든. 완료 기록이 없어 거를 상태도 없다 | 롤플레이 출처 완료 수 |
+| `messenger_unit_exited_incomplete` | 둘 다 | `unitId`, `entrySource` | active 상태에서 나가기(여정 `맵으로` · 롤플레이 `목록으로`)를 누를 때 | 중도 이탈률 |
+| `messenger_unit_replay_started` | 둘 다 | `unitId`, `entrySource` | completed 상태에서 `처음부터 보기`를 누를 때 | 완료 후 재진입 대비 다시 보기율 |
 
 `App`의 경계 타입은 `MessengerEventSink`이며 값은 callback 또는 `null`이다. 주입된 callback이
 있을 때 위 발생점에서 호출하고, 제품 진입점은 현재 sink 부재를 `null`로 명시한다. no-op
@@ -218,19 +225,23 @@ export function App(
 검증한다. **이는 실제 출시 집계 전송 완료가 아니다.** 배포 전에 기존 sink를 연결하는 별도
 후속이 필요하며, 그 전에는 measurement가 실제로 집계되지 않는다.
 
-주입과 이벤트 source의 최소 결선 계약은 다음과 같다. 네 source 모두 `App`이 소유하며
-`MessengerScreen`에 sink를 직접 전달하지 않는다.
+주입과 이벤트 source의 최소 결선 계약은 다음과 같다. 모든 source를 `App`이 소유하며
+`MessengerScreen`에 sink를 직접 전달하지 않는다. 롤플레이 쪽 콜백은 private
+`RoleplayUnitWiring`에 모이고, 모듈 수준 `renderRoleplayUnitScreen`이 화면에 잇는다
+([롤플레이 목록 스펙](roleplay-list.md) §3).
 
-| event | App의 실제 source callback | sink 호출 순서·조건 |
-|---|---|---|
-| `messenger_unit_opened` | `JourneyMapScreen.onStartMessengerUnit` | 현재 완료 ID 목록에서 `entryStatus`를 계산하고, messenger 화면 `push` 직전에 호출 |
-| `messenger_unit_completed` | `MessengerScreen.onComplete` | ID가 완료 목록에 없을 때 sink 호출 후 완료 목록에 한 번 추가; replay 뒤 재완료에는 호출하지 않음 |
-| `messenger_unit_exited_incomplete` | `MessengerScreen.onExit` | 전달된 outcome이 `incomplete`일 때 `backToRoot` 직전에 호출; `completed` 이탈에는 호출하지 않음 |
-| `messenger_unit_replay_started` | `MessengerScreen.onReplay` | completed 화면의 `처음부터 보기` 탭으로 callback이 올라온 시점에 호출 |
+| event | 출처 | App의 실제 source callback | sink 호출 순서·조건 |
+|---|---|---|---|
+| `messenger_unit_opened` | journey | `JourneyMapScreen.onStartMessengerUnit` · `NotificationsScreen.onSelectItem` → `onSelectNotification` → `onStartMessengerUnit`(LIB-257) | 현재 완료 ID 목록에서 `entryStatus`를 계산하고, messenger 화면 `push` 직전에 호출 |
+| `messenger_unit_opened` | roleplay | `RoleplayListScreen.onSelectItem` → `onStartRoleplayUnit(item)` | `item.form`이 `messenger`일 때 `roleplay-messenger` 화면 `push` 직전에 호출 |
+| `messenger_unit_completed` | journey | `MessengerScreen.onComplete` | ID가 완료 목록에 없을 때 sink 호출 후 완료 목록에 한 번 추가; replay 뒤 재완료에는 호출하지 않음 |
+| `messenger_unit_completed` | roleplay | 롤플레이에서 연 `MessengerScreen.onComplete` | 매번 호출. 완료 목록을 읽지도 쓰지도 않음 |
+| `messenger_unit_exited_incomplete` | 둘 다 | `MessengerScreen.onExit` | 전달된 outcome이 `incomplete`일 때 `backToRoot` 직전에 호출; `completed` 이탈에는 호출하지 않음 |
+| `messenger_unit_replay_started` | 둘 다 | `MessengerScreen.onReplay` | completed 화면의 `처음부터 보기` 탭으로 callback이 올라온 시점에 호출 |
 
 내부 `ScreenWiring`에는 정규화된 `messengerEventSink: MessengerEventSink`를 required로 두어
 `renderScreen`까지 전달한다. 이는 private 결선이며 새 public 컴포넌트 prop가 아니다. sink가
-`null`이면 위 네 지점은 호출만 생략하고 완료 상태·세션 전이·navigation은 callback 주입
+`null`이면 위 지점들은 호출만 생략하고 완료 상태·세션 전이·navigation은 callback 주입
 경로와 동일해야 한다.
 
 ## 7. 계층별 테스트 계획
