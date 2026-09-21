@@ -173,6 +173,10 @@ describe("ui-lynx package boundaries", () => {
     );
     expect(packageJson.exports["./avatar/styles.css"]).toBe("./dist/avatar/avatar.css");
     expect(packageJson.exports["./card/styles.css"]).toBe("./dist/card/card.css");
+    expect(packageJson.exports["./button/styles.css"]).toBe("./dist/button/button.css");
+    expect(packageJson.exports["./status-indicator/styles.css"]).toBe(
+      "./dist/status-indicator/status-indicator.css",
+    );
     expect(packageJson.exports["./compact-numeric-input/styles.css"]).toBe(
       "./dist/compact-numeric-input/compact-numeric-input.css",
     );

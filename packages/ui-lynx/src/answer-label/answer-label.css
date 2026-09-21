@@ -29,8 +29,25 @@
 .ui-lynx-answer-label-text {
   min-width: var(--libitum-spacing-0);
   flex-shrink: 1;
-  color: inherit;
   white-space: normal;
+}
+
+/* 글자색을 상태마다 직접 적는다. 부모 색을 물려받는 방식은 Lynx CSS 상속(enableCSSInheritance)을
+   켠 소비자에서만 먹고, 켜지 않은 앱에서는 글자가 기본색(검정)으로 그려졌다. */
+.ui-lynx-answer-label-solid .ui-lynx-answer-label-text {
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
+.ui-lynx-answer-label-pending.ui-lynx-answer-label-subtle .ui-lynx-answer-label-text {
+  color: var(--libitum-color-fg-brand);
+}
+
+.ui-lynx-answer-label-correct.ui-lynx-answer-label-subtle .ui-lynx-answer-label-text {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.ui-lynx-answer-label-incorrect.ui-lynx-answer-label-subtle .ui-lynx-answer-label-text {
+  color: var(--libitum-color-feedback-incorrect-text);
 }
 
 .ui-lynx-answer-label-s {

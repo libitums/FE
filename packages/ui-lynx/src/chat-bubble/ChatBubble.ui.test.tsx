@@ -16,6 +16,28 @@ describe("ChatBubble UI", () => {
     expect(bubble.firstElementChild).toHaveAttribute("accessibility-element", "false");
   });
 
+  test("번역이 있으면 본문 아래에 한 줄 더 그리고, 없으면 그리지 않는다", () => {
+    const { unmount } = render(
+      <ChatBubble
+        direction="incoming"
+        message="어서 오세요"
+        speaker="직원"
+        translation="Welcome"
+      />,
+    );
+    const translation = screen.getByTestId("ui-lynx-chat-bubble-translation");
+    expect(translation).toHaveTextContent("Welcome");
+    expect(translation).toHaveAttribute("accessibility-element", "false");
+    expect(screen.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute(
+      "accessibility-label",
+      "직원: 어서 오세요, Welcome",
+    );
+    unmount();
+
+    render(<ChatBubble direction="incoming" message="어서 오세요" speaker="직원" />);
+    expect(screen.queryByTestId("ui-lynx-chat-bubble-translation")).toBeNull();
+  });
+
   test("incoming은 시작 방향과 Default delivery를 노출한다", () => {
     render(<ChatBubble direction="incoming" message="안녕하세요" speaker="지민" size="s" />);
 

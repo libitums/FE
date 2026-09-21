@@ -80,7 +80,8 @@ describe("PageIndicator UI contract", () => {
 
 describe("PageIndicator dedicated CSS contract", () => {
   test("centers one horizontal row with exact dimensions, gap, and pill mapping", () => {
-    expect(css).toMatch(/\.ui-lynx-page-indicator-track\s*\{[^}]*display:\s*linear/);
+    expect(css).toMatch(/\.ui-lynx-page-indicator-track\s*\{[^}]*display:\s*flex/);
+    expect(css).toMatch(/\.ui-lynx-page-indicator-track\s*\{[^}]*flex-direction:\s*row/);
     expect(css).toMatch(/\.ui-lynx-page-indicator-track\s*\{[^}]*justify-content:\s*center/);
     expect(css).toMatch(
       /\.ui-lynx-page-indicator-track\s*\{[^}]*gap:\s*var\(--libitum-spacing-8\)/,
@@ -98,13 +99,13 @@ describe("PageIndicator dedicated CSS contract", () => {
 
   test("uses required colors, radius, and coordinated default transition tokens", () => {
     expect(css).toMatch(
-      /\.ui-lynx-page-indicator-item\s*\{[^}]*background-color:\s*var\(--libitum-color-fg-neutral-subtle\)/,
+      /\.ui-lynx-page-indicator-item\s*\{[^}]*background-color:\s*var\(--libitum-color-gray-400\)/,
     );
     expect(css).toMatch(
       /\.ui-lynx-page-indicator-item\s*\{[^}]*border-radius:\s*var\(--libitum-radius-full\)/,
     );
     expect(css).toMatch(
-      /\.ui-lynx-page-indicator-item-current\s*\{[^}]*background-color:\s*var\(--libitum-color-brand-strong\)/,
+      /\.ui-lynx-page-indicator-item-current\s*\{[^}]*background-color:\s*var\(--libitum-color-brand-primary\)/,
     );
     expect(css).toMatch(
       /transition:\s*width\s+var\(--libitum-motion-duration-progress\)\s+var\(--libitum-motion-easing-enter\)\s*,\s*background-color\s+var\(--libitum-motion-duration-progress\)\s+var\(--libitum-motion-easing-enter\)/,

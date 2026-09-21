@@ -22,6 +22,15 @@ export function ChatBubble(props: ChatBubbleProps) {
       <text className="ui-lynx-chat-bubble-message" accessibility-element={false}>
         {props.message}
       </text>
+      {contract.translation ? (
+        <text
+          className="ui-lynx-chat-bubble-translation"
+          data-testid="ui-lynx-chat-bubble-translation"
+          accessibility-element={false}
+        >
+          {contract.translation}
+        </text>
+      ) : null}
     </view>
   );
 }

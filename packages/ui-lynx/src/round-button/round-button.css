@@ -76,7 +76,8 @@
 }
 
 .ui-lynx-round-button-brand.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
-  border-color: var(--libitum-color-fg-brand);
+  /* 아이콘과 같은 색(brand.primary)으로 맞춘다. */
+  border-color: var(--libitum-color-brand-primary);
 }
 
 .ui-lynx-round-button-disabled.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {

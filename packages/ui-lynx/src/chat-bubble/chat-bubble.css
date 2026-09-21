@@ -5,6 +5,9 @@
   border-radius: var(--libitum-radius-md);
   border-width: var(--libitum-spacing-0);
   overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-2);
 }
 
 .ui-lynx-chat-bubble-incoming {
@@ -16,7 +19,9 @@
 .ui-lynx-chat-bubble-outgoing {
   align-self: flex-end;
   border-end-end-radius: var(--libitum-spacing-0);
-  background-color: var(--libitum-color-brand-strong);
+  /* FE override(2026-09-21 디자인 반영): 정본의 brand.strong 대신 brand.primary.
+     ⚠ 흰 글자와의 대비가 약 3:1로 본문 크기 기준(4.5:1)에 못 미친다. */
+  background-color: var(--libitum-color-brand-primary);
 }
 
 .ui-lynx-chat-bubble-s {
@@ -66,4 +71,20 @@
   font-weight: var(--libitum-typography-body-l-font-weight);
   line-height: var(--libitum-typography-body-l-line-height);
   letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* FE 추가(2026-09-21 디자인 반영): 본문 아래 번역 한 줄. 크기와 무관하게 body-s · gray.700. */
+.ui-lynx-chat-bubble-translation {
+  white-space: normal;
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+/* 주황 바탕의 내 버블에서는 gray.700이 거의 보이지 않아 gray.200으로 둔다. */
+.ui-lynx-chat-bubble-outgoing .ui-lynx-chat-bubble-translation {
+  color: var(--libitum-color-gray-200);
 }
