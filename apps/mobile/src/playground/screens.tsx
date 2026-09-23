@@ -11,12 +11,12 @@ import { SplashScreen } from "../screens/splash/SplashScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
 import { ButtonCatalog } from "./ButtonCatalog";
 
-// 화면을 앱 흐름 없이 fixture props로 띄운다. 콜백은 앱 흐름과 같은 순서로 playground 안의
-// 다음 화면으로 옮겨 가기만 한다(저장·이벤트 없음) — 버튼이 눌리는지 손으로 확인하는 용도다.
-// 화면을 옮겨 올 때마다 한 줄씩 는다.
+// 화면을 앱 흐름 없이 fixture props로 띄웁니다. 콜백은 앱 흐름과 같은 순서로
+// playground 안의 다음 화면으로 옮겨 가기만 합니다(저장·이벤트 없음) — 버튼이
+// 눌리는지 손으로 확인하는 용도입니다. 화면을 옮겨 올 때마다 한 줄씩 늡니다.
 const noop = () => undefined;
 
-// 두 번째 인자는 다음 화면에 넘길 값이다(지금은 로그인 → 코드 검증의 전화번호뿐).
+// 두 번째 인자는 다음 화면에 넘길 값입니다(지금은 로그인 → 코드 검증의 전화번호뿐).
 export type PlaygroundParams = { readonly phoneNumber?: string };
 type Go = (screen: PlaygroundScreen, params?: PlaygroundParams) => void;
 

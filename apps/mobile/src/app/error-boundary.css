@@ -1,12 +1,12 @@
-/* 값은 토큰에서만 온다. 하드코딩하지 않는다.
+/* 값은 토큰에서만 옵니다. 하드코딩하지 않습니다.
    변수 이름은 `@libitums/design-tokens`가 정의한 것만 — 접두사는 예외 없이
-   `--libitum-`이다 (ADR-0014 D1·D8). */
+   `--libitum-`입니다(ADR-0014 D1·D8). */
 .error-boundary {
   display: flex;
   flex-direction: column;
   flex: 1;
   gap: var(--libitum-layout-gap-block);
-  /* 화면 여백은 축마다 값이 다르다. `padding-x`를 네 방향에 쓰면 상하가 틀린다. */
+  /* 화면 여백은 축마다 값이 다릅니다. `padding-x`를 네 방향에 쓰면 상하가 틀립니다. */
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
     var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-background-primary);
@@ -19,8 +19,8 @@
   padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
 }
 
-/* 화면 제목·본문 텍스트 역할 둘(design-lib221.md §6)을 여기서도 그대로 쓴다 —
-   빈 탭 화면과 error-boundary가 같은 질문에 같은 답을 낸다. */
+/* 화면 제목·본문 텍스트 역할 둘을 여기서도 그대로 씁니다 — 빈 탭 화면과
+   error-boundary가 같은 질문에 같은 답을 냅니다. */
 .error-boundary-title {
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-heading-s-font-family);
