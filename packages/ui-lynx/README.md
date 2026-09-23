@@ -4,7 +4,7 @@ libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
 `PageIndicator`, `BottomNavigator`, `StepIndicator`, `BottomSheet`, `CompactNumericInput`,
 `Card`, `ChatBubble`, `VisualNovelDialog`, `TextField`, `AnswerLabel`, `Overlay`, `Fog`, `Tooltip`,
-`Avatar`, `Dialog`, `OptionSelector` 스물한 가지다.
+`Avatar`, `Dialog`, `OptionSelector`, `LearningUnit` 스물두 가지다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
@@ -26,6 +26,8 @@ Avatar는 `components/avatar.md` revision
 `666d2fc6e50a8cc3aaf49aaad7148e94a4abc14e`을 기준으로 한다.
 Option Selector는 `components/option-selector.md` revision
 `456a121fdfee60dfceaba2ac8f9e989a1275c066`을 기준으로 한다.
+Learning Unit은 `components/learning-unit.md` revision
+`01d3a3c`을 기준으로 한다.
 
 ```tsx
 import { Button } from "@libitums/ui-lynx/button";
@@ -74,6 +76,23 @@ import { OptionSelector } from "@libitums/ui-lynx/option-selector";
   onChange={setSelectedIds}
   contentLanguage="learning"
   languageTag="en-US"
+/>;
+```
+
+`LearningUnit`은 학습 목록의 원형 단위 control이다. 제목·진행 문구·연결선은 상위 목록이
+조합하며, 컴포넌트는 상태별 Ring·Surface·Icon과 선택적인 Narrative 배지만 소유한다.
+ReactLynx의 focus-visible 상태는 제품 host가 `focused`로 전달한다.
+
+```tsx
+import headset from "@libitums/icons/lynx/headset";
+import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
+
+<LearningUnit
+  accessibilityLabel="1단원 쇼핑 표현 듣기"
+  icon={headset}
+  status="active"
+  narrative="narrative"
+  bindtap={startUnit}
 />;
 ```
 
@@ -341,6 +360,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/tooltip/styles.css`
 - `@libitums/ui-lynx/option-selector`
 - `@libitums/ui-lynx/option-selector/styles.css`
+- `@libitums/ui-lynx/learning-unit`
+- `@libitums/ui-lynx/learning-unit/styles.css`
 - `@libitums/ui-lynx/styles.css`
 - `@libitums/ui-lynx/progress-header.css`
 - `@libitums/ui-lynx/page-indicator.css`
@@ -360,7 +381,7 @@ label을 같은 canonical count로 clamp한다.
 
 새 컴포넌트와 기존 컴포넌트 정리는
 [`docs/component-file-conventions.md`](./docs/component-file-conventions.md)의 디렉터리·파일명
-규칙을 따른다. 공개 컴포넌트 스물한 개 모두 `<component>.contract.ts`에 공개
+규칙을 따른다. 공개 컴포넌트 스물두 개 모두 `<component>.contract.ts`에 공개
 타입과 순수 계약 로직을 함께 두고 PascalCase component test 이름을 쓴다.
 
 일반 소비자는 aggregate `@libitums/ui-lynx/styles.css`를 Lynx 진입점에서 한 번 import한다.
@@ -368,7 +389,7 @@ label을 같은 canonical count로 clamp한다.
 ReactLynx를 번들하지 않고 `>=0.123.0 <0.126.0` peer로 요구한다.
 `pnpm --filter @libitums/ui-lynx pack:check`는 실제 tarball에 컴파일된 JSX·선언·CSS,
 canonical contract, README와 docs만 들어가고 generic contract/logic 산출물이 없는지
-검증한다. package integration test도 이 부재 계약을 스물한 subpath 전체에서 확인한다.
+검증한다. package integration test도 이 부재 계약을 스물두 subpath 전체에서 확인한다.
 
 AnswerLabel은 `components/indicator/answer-label.md`의 Result·Emphasis·Size 독립 조합을
 따른다. Solid는 고대비 strong surface, Subtle은 semantic feedback surface를 사용하고 S/M/L은

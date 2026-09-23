@@ -28,6 +28,7 @@ export default defineConfig({
       "visual-novel-dialog": "./src/lynx/visual-novel-dialog.tsx",
       tooltip: "./src/lynx/tooltip.tsx",
       "option-selector": "./src/lynx/option-selector.tsx",
+      "learning-unit": "./src/lynx/learning-unit.tsx",
     },
   },
   output: {

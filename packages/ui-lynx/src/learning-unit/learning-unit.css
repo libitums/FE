@@ -1,0 +1,109 @@
+.ui-lynx-learning-unit {
+  /* design-system Learning Unit 정본(01d3a3c)의 토큰 미정 기하값입니다. */
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background: transparent;
+}
+
+.ui-lynx-learning-unit-visual,
+.ui-lynx-learning-unit-ring {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+}
+
+.ui-lynx-learning-unit-visual {
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-learning-unit-ring {
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  transition: border-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-learning-unit-surface {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  transition: background-color var(--libitum-motion-duration-color)
+    var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-learning-unit-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.ui-lynx-learning-unit-default .ui-lynx-learning-unit-surface {
+  background-color: var(--libitum-color-gray-500);
+}
+
+.ui-lynx-learning-unit-available .ui-lynx-learning-unit-surface {
+  background-color: var(--libitum-color-brand-reward-disabled-surface);
+}
+
+.ui-lynx-learning-unit-active .ui-lynx-learning-unit-surface {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-learning-unit-clear .ui-lynx-learning-unit-ring {
+  border-color: var(--libitum-color-feedback-correct);
+}
+
+.ui-lynx-learning-unit-clear .ui-lynx-learning-unit-surface {
+  background-color: var(--libitum-color-feedback-correct);
+}
+
+.ui-lynx-learning-unit:not(.ui-lynx-learning-unit-default):active .ui-lynx-learning-unit-visual {
+  transform: scale(0.95);
+}
+
+.ui-lynx-learning-unit-focused:not(.ui-lynx-learning-unit-default) {
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+.ui-lynx-learning-unit-badge {
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  right: -1.4px;
+  bottom: -1.4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--libitum-spacing-6);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.ui-lynx-learning-unit-badge-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-lynx-learning-unit:active .ui-lynx-learning-unit-visual {
+    transform: none;
+  }
+}

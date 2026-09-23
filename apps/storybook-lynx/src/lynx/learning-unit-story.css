@@ -1,0 +1,34 @@
+.learning-unit-story-card {
+  min-height: 360px;
+}
+
+.learning-unit-story-example {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.learning-unit-story-grid {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: var(--libitum-spacing-16);
+  row-gap: var(--libitum-spacing-24);
+}
+
+.learning-unit-story-item {
+  width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-8);
+}
+
+.learning-unit-story-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}

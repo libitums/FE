@@ -24,6 +24,7 @@ describe("ui-lynx styles", () => {
     expect(styles).toContain('@import "./bottom-sheet/bottom-sheet.css"');
     expect(styles).toContain('@import "./text-field/text-field.css"');
     expect(styles).toContain('@import "./option-selector/option-selector.css"');
+    expect(styles).toContain('@import "./learning-unit/learning-unit.css"');
     expect(readLegacyStyles()).toContain(".ui-lynx-button");
     expect(readLegacyStyles()).toContain(".ui-lynx-back-header");
     expect(readLegacyStyles()).toContain(".ui-lynx-status-indicator");

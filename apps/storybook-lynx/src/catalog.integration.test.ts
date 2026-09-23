@@ -26,6 +26,10 @@ import { normalizeAvatarStoryArgs } from "./avatar-story";
 import { normalizeVisualNovelDialogStoryArgs } from "./visual-novel-dialog-story";
 import { normalizeTooltipStoryArgs } from "./tooltip-story";
 import { normalizeFogStoryArgs } from "./fog-story";
+import {
+  dispatchLearningUnitStoryTap,
+  normalizeLearningUnitStoryArgs,
+} from "./learning-unit-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -47,6 +51,36 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("learning unit init data와 활성 상태 action을 안전하게 정규화한다", () => {
+    const data = normalizeLearningUnitStoryArgs({
+      accessibilityLabel: " 쇼핑 표현 듣기 ",
+      status: "active",
+      narrative: "narrative",
+      icon: "audio-waves",
+      focused: true,
+      showAllStates: false,
+      onTap: () => undefined,
+    });
+    expect(JSON.parse(JSON.stringify(data))).toEqual({
+      accessibilityLabel: "쇼핑 표현 듣기",
+      status: "active",
+      narrative: "narrative",
+      icon: "audio-waves",
+      focused: true,
+      showAllStates: false,
+    });
+    const calls: unknown[] = [];
+    expect(dispatchLearningUnitStoryTap(data, (payload) => calls.push(payload))).toBe(true);
+    expect(
+      dispatchLearningUnitStoryTap(
+        normalizeLearningUnitStoryArgs({ status: "default" }),
+        (payload) => calls.push(payload),
+      ),
+    ).toBe(false);
+    expect(calls).toEqual([
+      { channel: "STORYBOOK_ACTION", name: "onTap", args: ["쇼핑 표현 듣기"] },
+    ]);
+  });
   test("dialog init data는 직렬화 가능한 action 계약으로 정규화된다", () => {
     const data = normalizeDialogStoryArgs({
       title: "학습을 그만둘까요?",
@@ -637,6 +671,7 @@ describe("Storybook Lynx build outputs", () => {
     "text-field",
     "tooltip",
     "option-selector",
+    "learning-unit",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -740,6 +775,13 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-option-selector--grid");
     expect(index).toContain("components-option-selector--disabled");
     expect(index).toContain("components-option-selector--long-label");
+    expect(index).toContain("components-learning-unit--available");
+    expect(index).toContain("components-learning-unit--default");
+    expect(index).toContain("components-learning-unit--active");
+    expect(index).toContain("components-learning-unit--clear");
+    expect(index).toContain("components-learning-unit--narrative");
+    expect(index).toContain("components-learning-unit--focused");
+    expect(index).toContain("components-learning-unit--all-states");
   });
 
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
@@ -785,6 +827,7 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
       "@libitums/ui-lynx/tooltip": ["../../packages/ui-lynx/src/tooltip/index.ts"],
       "@libitums/ui-lynx/option-selector": ["../../packages/ui-lynx/src/option-selector/index.ts"],
+      "@libitums/ui-lynx/learning-unit": ["../../packages/ui-lynx/src/learning-unit/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -812,6 +855,7 @@ describe("Storybook Lynx build outputs", () => {
     ["text-field", "@libitums/ui-lynx/text-field"],
     ["tooltip", "@libitums/ui-lynx/tooltip"],
     ["option-selector", "@libitums/ui-lynx/option-selector"],
+    ["learning-unit", "@libitums/ui-lynx/learning-unit"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -869,6 +913,9 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(/["']?tooltip["']?\s*:\s*["']\.\/src\/lynx\/tooltip\.tsx["']/);
     expect(config).toMatch(
       /["']?option-selector["']?\s*:\s*["']\.\/src\/lynx\/option-selector\.tsx["']/,
+    );
+    expect(config).toMatch(
+      /["']?learning-unit["']?\s*:\s*["']\.\/src\/lynx\/learning-unit\.tsx["']/,
     );
 
     const packageJson = JSON.parse(
@@ -946,6 +993,11 @@ describe("Storybook Lynx build outputs", () => {
       import: "./dist/option-selector/index.js",
       default: "./dist/option-selector/index.js",
     });
+    expect(packageJson.exports["./learning-unit"]).toEqual({
+      types: "./dist/learning-unit/index.d.ts",
+      import: "./dist/learning-unit/index.js",
+      default: "./dist/learning-unit/index.js",
+    });
     expect(await outputExists("../../packages/ui-lynx/dist/styles.css")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/page-indicator/PageIndicator.jsx")).toBe(
       true,
@@ -976,6 +1028,15 @@ describe("Storybook Lynx build outputs", () => {
     expect(
       await outputExists("../../packages/ui-lynx/dist/option-selector/option-selector.css"),
     ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/learning-unit/LearningUnit.jsx")).toBe(
+      true,
+    );
+    expect(
+      await outputExists("../../packages/ui-lynx/dist/learning-unit/learning-unit.contract.js"),
+    ).toBe(true);
+    expect(await outputExists("../../packages/ui-lynx/dist/learning-unit/learning-unit.css")).toBe(
+      true,
+    );
     expect(await outputExists("../../packages/ui-lynx/dist/overlay/Overlay.jsx")).toBe(true);
     expect(await outputExists("../../packages/ui-lynx/dist/overlay/overlay.contract.js")).toBe(
       true,

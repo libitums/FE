@@ -30,7 +30,8 @@
     "./dist/text-field/text-field.css",
     "./dist/tooltip/tooltip.css",
     "./dist/option-selector/option-selector.css",
-    "./dist/status-indicator/status-indicator.css"
+    "./dist/status-indicator/status-indicator.css",
+    "./dist/learning-unit/learning-unit.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -164,6 +165,12 @@
       "default": "./dist/option-selector/index.js"
     },
     "./option-selector/styles.css": "./dist/option-selector/option-selector.css",
+    "./learning-unit": {
+      "types": "./dist/learning-unit/index.d.ts",
+      "import": "./dist/learning-unit/index.js",
+      "default": "./dist/learning-unit/index.js"
+    },
+    "./learning-unit/styles.css": "./dist/learning-unit/learning-unit.css",
     "./styles.css": "./dist/styles.css",
     "./progress-header.css": "./dist/progress-header/progress-header.css",
     "./page-indicator.css": "./dist/page-indicator/page-indicator.css",
