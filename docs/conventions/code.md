@@ -316,6 +316,8 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   이름·`.agent-harness/` 경로는 주석에 넣지 않는다.
 - 다른 파일에서 쓰는 것(export하는 함수·타입·prop)은 JSDoc(`/** */`)으로, 파일 안에서만
   의미 있는 것은 `//`로 적는다.
+- 이슈 번호·저장소 밖 경로·`계약 §…` 인용과 300줄 상한은 `oxlint` 규칙이 잡는다(지금은
+  경고이고, 정리가 끝나면 오류로 올린다).
 
 제품 `.ts`·`.tsx` 파일의 300줄 상한도 그 문서가 진다.
 
