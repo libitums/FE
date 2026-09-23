@@ -1,8 +1,8 @@
-/* 값은 토큰에서만 온다. 하드코딩하지 않는다.
+/* 값은 토큰에서만 옵니다. 하드코딩하지 않습니다.
    변수 이름은 `@libitums/design-tokens`가 정의한 것만 — 접두사는 예외 없이
-   `--libitum-`이다 (ADR-0014 D1·D8).
-   셸을 `position: fixed`/`absolute`로 띄우지 않는다 — 세로 flex로 두고
-   콘텐츠가 `flex: 1`로 남은 높이를 먹고 셸이 그 아래 형제로 붙는다 (design 문서 §3.1). */
+   `--libitum-`입니다(ADR-0014 D1·D8).
+   셸을 `position: fixed`/`absolute`로 띄우지 않습니다 — 세로 flex로 두고
+   콘텐츠가 `flex: 1`로 남은 높이를 먹고 셸이 그 아래 형제로 붙습니다. */
 .app {
   display: flex;
   flex-direction: column;
@@ -16,8 +16,8 @@
   flex: 1;
 }
 
-/* 스플래시는 가장자리(상태바 · 홈 인디케이터 뒤)까지 브랜드색이다. 셸의 safe area 여백을
-   셸 배경이 칠하므로 스플래시일 때만 배경을 바꾼다(lib/safe-area.ts). */
+/* 스플래시는 가장자리(상태바 · 홈 인디케이터 뒤)까지 브랜드색입니다. 셸의 safe area
+   여백을 셸 배경이 칠하므로 스플래시일 때만 배경을 바꿉니다(lib/safe-area.ts). */
 .app-splash {
   background: var(--libitum-color-brand-primary);
 }
