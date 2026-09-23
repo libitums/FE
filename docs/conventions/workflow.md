@@ -26,24 +26,24 @@
 
 ## 명령
 
-| 명령 | 하는 일 | 하지 않는 일 |
-|---|---|---|
-| `pnpm dev` | rspeedy dev 서버. Explorer가 붙을 URL/QR | 타입 검사·린트 |
-| `pnpm build` | UI package → mobile bundle → Storybook Lynx 정적 카탈로그 | **타입 검사** |
-| `pnpm preview` | 빌드 산출물을 Explorer로 확인 | 빌드 |
-| `pnpm typecheck` | `tsc --noEmit` | 코드 생성 |
-| `pnpm lint` | 정적 검사 + CSS 토큰 접두사 + UI package/Storybook 순환 검사 | **자동 수정** (`lint:fix`가 따로) |
-| `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 (`format:check`가 따로) |
-| `pnpm bundle:host` | `build` + 호스트로 사본 복사 | 네이티브 빌드 |
-| `pnpm test` | UI package, mobile, Storybook의 자동 테스트와 보고서 정책 | native 수동 확인 |
-| `pnpm storybook:lynx` | Lynx Web bundle watch + Storybook dev server (`localhost:6006`) | native host 검증 |
-| `pnpm storybook:lynx:build` | Lynx Web bundle + 정적 Storybook 생성 | dev server 유지 |
-| `pnpm performance:reports:gate` | **지금 이 브랜치가 CI의 보고서 정책을 통과하나.** 범위를 스스로 구한다 | 임의 범위 감사 (아래가 따로) |
-| `pnpm performance:reports:check --base <base> --head <head>` | **임의의 두 commit을 감사한다.** 소급 확인용 | 범위 자동 산출 (위가 따로) |
-| `pnpm --filter @libitums/mobile performance:capture:smoke` | iOS Host 준비부터 수집·분석·cleanup까지 native 연결 확인 | 실기 baseline·수치 threshold |
-| `pnpm size:check` | 빌드 산출물 크기를 `devtools/bundle-size/budget.json`의 예산과 대조 | 빌드 (먼저 `pnpm build`) |
-| `pnpm test:coverage` | 커버리지 측정 (숫자만 남긴다) | 게이트 — 퍼센트로 막지 않는다 |
-| `pnpm verify` | format:check → typecheck → lint → test → build → size:check → performance:reports:gate | 네이티브 빌드 |
+| 명령                                                         | 하는 일                                                                                | 하지 않는 일                      |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------- | --------------------------------- |
+| `pnpm dev`                                                   | rspeedy dev 서버. Explorer가 붙을 URL/QR                                               | 타입 검사·린트                    |
+| `pnpm build`                                                 | UI package → mobile bundle → Storybook Lynx 정적 카탈로그                              | **타입 검사**                     |
+| `pnpm preview`                                               | 빌드 산출물을 Explorer로 확인                                                          | 빌드                              |
+| `pnpm typecheck`                                             | `tsc --noEmit`                                                                         | 코드 생성                         |
+| `pnpm lint`                                                  | 정적 검사 + CSS 토큰 접두사 + UI package/Storybook 순환 검사                           | **자동 수정** (`lint:fix`가 따로) |
+| `pnpm format`                                                | 포맷 적용 (`oxfmt`)                                                                    | 검사만 (`format:check`가 따로)    |
+| `pnpm bundle:host`                                           | `build` + 호스트로 사본 복사                                                           | 네이티브 빌드                     |
+| `pnpm test`                                                  | UI package, mobile, Storybook의 자동 테스트와 보고서 정책                              | native 수동 확인                  |
+| `pnpm storybook:lynx`                                        | Lynx Web bundle watch + Storybook dev server (`localhost:6006`)                        | native host 검증                  |
+| `pnpm storybook:lynx:build`                                  | Lynx Web bundle + 정적 Storybook 생성                                                  | dev server 유지                   |
+| `pnpm performance:reports:gate`                              | **지금 이 브랜치가 CI의 보고서 정책을 통과하나.** 범위를 스스로 구한다                 | 임의 범위 감사 (아래가 따로)      |
+| `pnpm performance:reports:check --base <base> --head <head>` | **임의의 두 commit을 감사한다.** 소급 확인용                                           | 범위 자동 산출 (위가 따로)        |
+| `pnpm --filter @libitums/mobile performance:capture:smoke`   | iOS Host 준비부터 수집·분석·cleanup까지 native 연결 확인                               | 실기 baseline·수치 threshold      |
+| `pnpm size:check`                                            | 빌드 산출물 크기를 `devtools/bundle-size/budget.json`의 예산과 대조                    | 빌드 (먼저 `pnpm build`)          |
+| `pnpm test:coverage`                                         | 커버리지 측정 (숫자만 남긴다)                                                          | 게이트 — 퍼센트로 막지 않는다     |
+| `pnpm verify`                                                | format:check → typecheck → lint → test → build → size:check → performance:reports:gate | 네이티브 빌드                     |
 
 - **한 명령은 한 가지 이유로만 실패한다.** 명령이 두 가지 일을 겸하게 만들지 않는다.
   이 규칙은 **잎 명령**에 걸린다 — `verify`는 잎이 아니라 순서기라서 단계가 여럿이다.
@@ -51,6 +51,10 @@
   올리고 **왜 올렸는지 같은 PR에 적는다** — 예산이 조용히 따라 오르지 않게 하려는 것이다.
 - **커버리지는 게이트가 아니다.** 무엇을 덮을지는 계층별 테스트 계획이 정하고, 퍼센트는 CI
   작업 요약에 숫자로만 남는다.
+- **`pnpm verify`가 게이트의 단일 출처다.** CI는 그 안의 잎 명령을 **잡 여럿으로 나눠 병렬로**
+  돈다 — 하나로 이으면 첫 실패에서 멈춰 나머지를 다음 밀기까지 못 보기 때문이다. 두 쪽이
+  어긋나지 않는지는 `devtools/ci-wiring/`의 테스트가 지킨다(검사를 CI에서 빼면 그 이름을 짚어
+  실패한다).
 - **`pnpm verify`가 CI 게이트 전부다.** 로컬에서 이 한 줄이 초록이면 CI의 검사 단계도
   초록이다. **CI에만 있고 로컬에 없는 검사를 만들지 않는다** — 검사를 늘릴 때는
   workflow에 단계를 더하지 말고 `verify`에 넣는다.
@@ -149,8 +153,8 @@ Explorer는 남의 빌드라 잠글 수 없다. **하한은 3.9다** — 그 미
 
 첫 화면을 띄우기 전에 버전을 확인하고 아래에 적는다.
 
-| 확인일 | Explorer 릴리스 | 받은 자산 | 시뮬레이터 |
-|---|---|---|---|
+| 확인일     | Explorer 릴리스                | 받은 자산                       | 시뮬레이터               |
+| ---------- | ------------------------------ | ------------------------------- | ------------------------ |
 | 2026-08-25 | **4.0.1** (`lynx-family/lynx`) | `LynxExplorer-arm64.app.tar.gz` | iOS 26.5 / iPhone 17 Pro |
 
 설치는 명령으로 재현된다. **번들 로드만 수동**이다 — `lynx://` 딥링크는 앱을 열기만 하고
@@ -175,9 +179,9 @@ pnpm dev   # 나온 URL을 Explorer의 Bundle URL 칸에 붙여넣고 Go
 
 **Explorer에서 확인할 수 없는 이유가 둘로 갈린다.**
 
-| 무엇 | 왜 Explorer가 못 보나 | 그래서 |
-|---|---|---|
-| 빌드 산출물 로드 | Explorer는 dev 서버 번들을 받는다 | **Release** 호스트가 필요하다 |
+| 무엇                          | 왜 Explorer가 못 보나                                                                                                                                            | 그래서                                                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 빌드 산출물 로드              | Explorer는 dev 서버 번들을 받는다                                                                                                                                | **Release** 호스트가 필요하다                                                                     |
 | 영속 저장소 · **오디오 재생** | **Explorer에 네이티브 모듈이 없다** (ADR-0012 D3). 호스트가 등록한 모듈은 둘이다 — `StorageModule` · `AudioPlaybackModule` (`docs/adr/README.md` 호스트 모듈 표) | **호스트**가 필요하다. **Debug 호스트로도 된다** — 모듈과 오디오 자산은 두 구성에 똑같이 들어간다 |
 
 > **오디오가 Explorer에서 안 나는 것은 고장이 아니다.** 모듈이 없을 때 조용히 재생하지
@@ -261,10 +265,10 @@ xcodebuild test -workspace Host.xcworkspace -scheme Host \
 
 **번들을 어디서 읽나** — 빌드 구성이 가른다 (ADR-0012 D2).
 
-| 구성 | 읽는 곳 | 언제 |
-|---|---|---|
-| Debug | dev 서버 (`http://localhost:3000/main.lynx.bundle`) | 호스트에서 화면을 만질 때. 네이티브 재빌드 없이 앱만 재시작하면 반영된다 |
-| Release | 앱 번들 안의 `main.lynx.bundle`과 `Resource/static/` 자산 | 시연·판정. 사본을 읽으므로 **`pnpm bundle:host`를 거쳐야 한다** |
+| 구성    | 읽는 곳                                                   | 언제                                                                     |
+| ------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Debug   | dev 서버 (`http://localhost:3000/main.lynx.bundle`)       | 호스트에서 화면을 만질 때. 네이티브 재빌드 없이 앱만 재시작하면 반영된다 |
+| Release | 앱 번들 안의 `main.lynx.bundle`과 `Resource/static/` 자산 | 시연·판정. 사본을 읽으므로 **`pnpm bundle:host`를 거쳐야 한다**          |
 
 > **`cp`를 손으로 하지 않는다.** `dev`와 `build`가 **같은 `dist/main.lynx.bundle`에 쓴다.**
 > `build` 뒤에 `dev`를 한 번이라도 돌리면 그 파일이 dev 번들(10배 크기)로 덮이고,
