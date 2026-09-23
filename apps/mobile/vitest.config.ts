@@ -11,6 +11,12 @@ export default defineConfig({
       // 소스로 곧장 잇는다. 실측(logic-scaffold) — dist가 없는 상태에서 이 alias
       // 없이는 vitest가 "Failed to resolve import"로 멈춘다(§10.1의 "실측하지
       // 않았다" 표시를 이 단계가 닫는다).
+      "@libitums/ui-lynx/option-selector": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/option-selector/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/compact-numeric-input": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/compact-numeric-input/index.ts", import.meta.url),
+      ),
       "@libitums/ui-lynx/text-field": fileURLToPath(
         new URL("../../packages/ui-lynx/src/text-field/index.ts", import.meta.url),
       ),
@@ -34,6 +40,12 @@ export default defineConfig({
       ),
       "@libitums/ui-lynx/status-indicator": fileURLToPath(
         new URL("../../packages/ui-lynx/src/status-indicator/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/bottom-sheet": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/bottom-sheet/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/fog": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/fog/index.ts", import.meta.url),
       ),
     },
   },

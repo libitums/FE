@@ -125,4 +125,20 @@ describe("BottomSheet", () => {
     expect(dragArea).not.toHaveAttribute("catchtouchstart");
     expect(dragArea).not.toHaveAttribute("catchtouchend");
   });
+
+  test("children은 설명 아래 내용 자리에 그리고, 없으면 그 자리를 만들지 않는다", () => {
+    const { unmount } = render(
+      <BottomSheet title="국가 선택" closeAccessibilityLabel="닫기" ondismiss={() => undefined}>
+        <view data-testid="sheet-list" />
+      </BottomSheet>,
+    );
+    const content = screen.getByTestId("ui-lynx-bottom-sheet-content");
+    expect(content.querySelector('[data-testid="sheet-list"]')).not.toBeNull();
+    unmount();
+
+    render(
+      <BottomSheet title="국가 선택" closeAccessibilityLabel="닫기" ondismiss={() => undefined} />,
+    );
+    expect(screen.queryByTestId("ui-lynx-bottom-sheet-content")).toBeNull();
+  });
 });

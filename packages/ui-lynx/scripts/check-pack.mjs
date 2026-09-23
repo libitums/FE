@@ -151,6 +151,13 @@ const components = [
     modules: ["tooltip.contract"],
     css: "tooltip.css",
   },
+  {
+    subpath: "option-selector",
+    directory: "option-selector",
+    component: "OptionSelector",
+    modules: ["option-selector.contract"],
+    css: "option-selector.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -286,6 +293,13 @@ if (tooltipStylesExport !== "./dist/tooltip/tooltip.css") {
 }
 if (!files.includes(`package/${tooltipStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the Tooltip CSS export target");
+}
+const optionSelectorStylesExport = packedPackageJson.exports?.["./option-selector/styles.css"];
+if (optionSelectorStylesExport !== "./dist/option-selector/option-selector.css") {
+  throw new Error("packed package has an invalid ./option-selector/styles.css export");
+}
+if (!files.includes(`package/${optionSelectorStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the OptionSelector CSS export target");
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");

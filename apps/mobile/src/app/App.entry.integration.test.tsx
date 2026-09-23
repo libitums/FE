@@ -5,7 +5,7 @@ import { App } from "./App";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entryLoginMethods, entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent, EntryLoginMethod } from "../lib/entry-flow";
-import { entryLanguageLabel } from "../lib/entry-language";
+import { entryLanguageLabel, initialEntryLanguage } from "../lib/entry-language";
 
 // `integration` 계층: 진입 흐름 여섯 화면이 **한 트리에서** 실제로 이어지는지를
 // 본다(ADR-0006 D4) — `ui`가 화면을 고립 렌더해서는 볼 수 없는 것(부팅 화면 선택 ·
@@ -62,23 +62,32 @@ function advanceSplash(): void {
   });
 }
 
-// `VerificationCodeScreen.ui.test.tsx`의 `dispatchTextFieldInput`·`typeCode`와 같은
-// 형태다(파일이 다르므로 다시 선언한다).
+// 코드 칸 넷(CompactNumericInput)에 한 자리씩 넣는다 — `VerificationCodeScreen.ui.test.tsx`의
+// `typeCode`와 같은 형태다(파일이 다르므로 다시 선언한다).
 function typeVerificationCode(value: string): void {
-  const field = screen.getByTestId("verification-code-screen-input");
-  const input = within(field).getByTestId("ui-lynx-text-field-input");
-  const EventConstructor = input.ownerDocument.defaultView?.CustomEvent;
+  const EventConstructor = document.defaultView?.CustomEvent;
   if (!EventConstructor) throw new Error("CustomEvent is unavailable");
-  const ref = lynx.createSelectorQuery().select('[data-testid="ui-lynx-text-field-input"]');
-  fireEvent(
-    ref as unknown as Element,
-    new EventConstructor("bindEvent:input", { detail: { value } }),
+  Array.from(value).forEach((digit, index) => {
+    const ref = lynx
+      .createSelectorQuery()
+      .select(`.verification-code-screen-digit-${index} .ui-lynx-compact-numeric-input`);
+    fireEvent(
+      ref as unknown as Element,
+      new EventConstructor("bindEvent:input", { detail: { value: digit } }),
+    );
+  });
+}
+
+function tapVerificationSubmit(): void {
+  fireEvent.tap(
+    within(screen.getByTestId("verification-code-screen-submit")).getByTestId("ui-lynx-button"),
+    {},
   );
 }
 
 function submitVerificationCode(value: string): void {
   typeVerificationCode(value);
-  fireEvent.tap(screen.getByTestId("verification-code-screen-submit"), {});
+  tapVerificationSubmit();
 }
 
 // 온보딩 세 스텝을 끝까지 넘긴다(0→1→2→onComplete). `onboarding-screen-next`는
@@ -99,19 +108,28 @@ function completeOnboarding(): void {
 }
 
 function selectLoginMethod(method: EntryLoginMethod): void {
-  fireEvent.tap(screen.getByTestId(`login-screen-method-${method}`), {});
+  fireEvent.tap(
+    within(screen.getByTestId(`login-screen-method-${method}`)).getByTestId("ui-lynx-button"),
+    {},
+  );
 }
 
 function selectLanguage(language: string): void {
-  fireEvent.tap(screen.getByTestId(`language-select-option-${language}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-${language}`), {});
 }
 
 function continueLanguageSelect(): void {
-  fireEvent.tap(screen.getByTestId("language-select-screen-next"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("language-select-screen-next")).getByTestId("ui-lynx-button"),
+    {},
+  );
 }
 
 function startJourney(): void {
-  fireEvent.tap(screen.getByTestId("journey-entry-screen-start"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("journey-entry-screen-start")).getByTestId("ui-lynx-button"),
+    {},
+  );
 }
 
 // ---------------------------------------------------------------------- IE1
@@ -151,6 +169,67 @@ test("[IE3] 온보딩을 끝까지 넘기면 로그인이 선다", () => {
   completeOnboarding();
 
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+});
+
+// ------------------------------------------------------------------ IE3b
+// 2026-09-21 디자인 반영: 로그인의 뒤로가기는 진입 구간 스택에서 한 칸 뒤(온보딩)로 간다.
+test("[IE3b] 로그인에서 뒤로가기를 누르면 온보딩이 선다", () => {
+  emptyStorageStub();
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+
+  completeOnboarding();
+  fireEvent.tap(
+    within(screen.getByTestId("login-screen-header")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+
+  expect(screen.queryByTestId("login-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("onboarding-screen")).toBeInTheDocument();
+});
+
+// ------------------------------------------------------------------ IE6b
+// 2026-09-21 디자인 반영: 언어 선택의 뒤로가기는 진입 스택에서 한 칸 뒤로 간다 — 전화번호
+// 경로면 코드 검증이다.
+test("[IE6b] 언어 선택에서 뒤로가기를 누르면 코드 검증이 선다", () => {
+  emptyStorageStub();
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+  selectLoginMethod("phone");
+  submitVerificationCode("1234");
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(
+    within(screen.getByTestId("language-select-screen-header")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+
+  expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
+});
+
+// ------------------------------------------------------------------ IE7b
+// 2026-09-21 디자인 반영: 여정 입장의 뒤로가기는 언어 선택으로 돌아간다.
+test("[IE7b] 여정 입장에서 뒤로가기를 누르면 언어 선택이 선다", () => {
+  emptyStorageStub();
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+  selectLoginMethod("google");
+  continueLanguageSelect();
+  expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(
+    within(screen.getByTestId("journey-entry-screen-header")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+
+  expect(screen.queryByTestId("journey-entry-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
 });
 
 // ---------------------------------------------------------------------- IE4
@@ -319,7 +398,10 @@ test("[IE11] 코드 검증에서 로그인으로를 누르면 로그인이 선�
   completeOnboarding();
   selectLoginMethod("phone");
 
-  fireEvent.tap(screen.getByTestId("verification-code-screen-exit"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("verification-code-screen-exit")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
 
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("onboarding-screen")).not.toBeInTheDocument();
@@ -330,7 +412,10 @@ test("[IE11] 코드 검증에서 로그인으로를 누르면 로그인이 선�
 // ⭐ 수용 기준 5의 유일한 판정자(test-plan.md). 앞쪽 절반(세션 안 유지)은 IE7과
 // 같은 관찰이고, 뒤쪽 절반(새 App은 초기값)이 이 케이스의 몫이다 — 두 번째
 // `render`에서 언어를 고르지 않고 곧장 `다음`을 눌러, 여정 입장에 초기값
-// (`entryLanguages[0]` = `ko`)의 라벨이 보이는 것으로 「영속 0」을 짓는다.
+// (`entryLanguages[0]` = `en`)의 라벨이 보이는 것으로 「영속 0」을 짓는다.
+// ⚠ 2026-09-21 디자인 반영으로 고를 수 있는 언어가 영어(= 초기값) 하나뿐이라, 지금은
+// 「고른 값」과 「초기값」이 같아 이 케이스가 둘을 가르지 못한다. 언어가 더 열리면 초기값이
+// 아닌 언어를 고르도록 되돌린다.
 test("[IE12] 언어가 진입 흐름 동안 유지되고, 새로 렌더한 App은 초기값이다(영속 0)", () => {
   emptyStorageStub();
   vi.useFakeTimers();
@@ -364,7 +449,7 @@ test("[IE12] 언어가 진입 흐름 동안 유지되고, 새로 렌더한 App�
   continueLanguageSelect();
 
   expect(screen.getByTestId("journey-entry-screen-language")).toHaveTextContent(
-    entryLanguageLabel("ko"),
+    entryLanguageLabel(initialEntryLanguage),
   );
 });
 

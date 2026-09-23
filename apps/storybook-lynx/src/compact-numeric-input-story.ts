@@ -1,7 +1,11 @@
-import {
-  getCompactNumericInputValue,
-  type CompactNumericInputSize,
-} from "@libitums/ui-lynx/compact-numeric-input";
+import type { CompactNumericInputSize } from "@libitums/ui-lynx/compact-numeric-input";
+
+// ui-lynx `getCompactNumericInputValue`와 같은 규칙(마지막 숫자 한 자리)이다. 패키지 진입점에서
+// 값을 import하면 컴포넌트(useState)까지 실려 Node 통합 테스트가 Lynx 런타임 없이 멈춘다 —
+// 이 파일은 타입만 가져온다.
+function getCompactNumericInputValue(value: string): string {
+  return value.match(/[0-9](?!.*[0-9])/)?.[0] ?? "";
+}
 
 export type CompactNumericInputInitData = {
   readonly accessibilityLabel: string;

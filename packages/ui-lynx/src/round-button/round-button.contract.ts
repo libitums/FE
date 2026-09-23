@@ -1,6 +1,8 @@
 import { color } from "@libitums/design-tokens";
 
-export type RoundButtonVariant = "neutral" | "brand";
+// `overlay`는 FE 확장(2026-09-21 여정 입장 디자인 반영): 면 없이 흰 아이콘만 그려 어두운 그림
+// 위에 얹는다.
+export type RoundButtonVariant = "neutral" | "brand" | "overlay";
 export type RoundButtonSize = "s" | "m" | "l" | "xl";
 
 export type RoundButtonProps = {
@@ -54,6 +56,7 @@ export function getRoundButtonForegroundColor(props: RoundButtonProps): string {
   if (props.disabled) {
     return props.variant === "brand" ? color.brand["reward-disabled-surface"] : color.gray[500];
   }
+  if (props.variant === "overlay") return color.white;
   // FE override(2026-09-21 디자인 반영): brand 아이콘은 정본의 fg.brand 대신 brand.primary.
   return props.variant === "brand" ? color.brand.primary : color.fg["neutral-subtle"];
 }

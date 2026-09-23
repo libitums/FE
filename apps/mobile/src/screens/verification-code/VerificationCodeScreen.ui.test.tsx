@@ -1,46 +1,69 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { VerificationCodeScreen } from "./VerificationCodeScreen";
+import { verificationCodeValidSeconds } from "./verification-code";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 입력 정규화·완성 판정·오류 채널·나가기를 본다
+// `ui` 계층: 실제 컴포넌트를 렌더하고 코드 칸 · 완성 판정 · 카운트다운 · 뒤로가기를 본다
 // (ADR-0006 D4). 완성 판정은 `isVerificationCodeComplete`의 결과를 화면이 그리기만 한다
-// (계약 §2.5) — 이 파일은 그 로직을 다시 적지 않는다. `default-value`는 실기에서 일회성
-// 채널이라(§0.10 (6)) 이 파일은 그 속성을 더 이상 단언하지 않는다 — VC-U2 참고.
+// (계약 §2.5) — 이 파일은 그 로직을 다시 적지 않는다.
 //
-// 계약: .agent-harness/work/lib-261/spec.md §0.3 D-c(TextField 하나) · §2.5(순수 로직) ·
-//       §4.2~§4.5(구조·상태 채널·testid) · §4.3(확인의 data-complete, disabled trait을
-//       붙이지 않는다) · §0.10 (2)(C-1 — 오류 채널) · §2.6(오류 supporting) · §8(오류 문구).
-// 계획: .agent-harness/work/lib-261/test-plan.md ui § `VerificationCodeScreen.ui.test.tsx`
-//       VC-U1~VC-U8(VC-U2는 술어 교체, VC-U7·VC-U8은 보정 r0.3 신설 — m-1·C-1).
-//
-// 입력 이벤트는 CompactNumericInput.ui.test.tsx 선례와 같은 형태로 쏜다.
+// 2026-09-21 디자인 반영: 머리는 로그인과 같은 RoundButton 뒤로가기 · 제목 · 안내 · 번호,
+// 입력은 한 자리 칸 넷(CompactNumericInput), 그 아래 5분 카운트다운 · Resend · Continue다.
+// 칸마다 숫자만 받으므로(input-filter) 옛 TextField 오류 채널(VC-U2 · VC-U8)은 없어졌다.
 
-function dispatchTextFieldInput(anchor: HTMLElement, value: string) {
-  const EventConstructor = anchor.ownerDocument.defaultView?.CustomEvent;
+function typeCode(value: string) {
+  const EventConstructor = document.defaultView?.CustomEvent;
   if (!EventConstructor) throw new Error("CustomEvent is unavailable");
-  const ref = lynx.createSelectorQuery().select('[data-testid="ui-lynx-text-field-input"]');
-  fireEvent(
-    ref as unknown as Element,
-    new EventConstructor("bindEvent:input", { detail: { value } }),
+  Array.from(value).forEach((digit, index) => {
+    const ref = lynx
+      .createSelectorQuery()
+      .select(`.verification-code-screen-digit-${index} .ui-lynx-compact-numeric-input`);
+    fireEvent(
+      ref as unknown as Element,
+      new EventConstructor("bindEvent:input", { detail: { value: digit } }),
+    );
+  });
+}
+
+function submitButton(): HTMLElement {
+  return within(screen.getByTestId("verification-code-screen-submit")).getByTestId(
+    "ui-lynx-button",
   );
 }
 
-function typeCode(value: string) {
-  const field = screen.getByTestId("verification-code-screen-input");
-  const input = within(field).getByTestId("ui-lynx-text-field-input");
-  dispatchTextFieldInput(input, value);
+function actionUnitIds(container: Element): (string | null)[] {
+  return [
+    ...container.querySelectorAll('[accessibility-element="true"][accessibility-traits="button"]'),
+  ].map(
+    (el) =>
+      el.closest('[data-testid^="verification-code-screen-"]')?.getAttribute("data-testid") ?? null,
+  );
 }
 
 describe("VerificationCodeScreen (LIB-261)", () => {
-  // VC-U1 — n-3(보정 r0.3): 스크롤 상자에 accessibility-*가 0건임을 얹는다(SP1과 같은 형태).
-  it("[VC-U1] 안내문·입력 칸·확인·나가기가 선다", () => {
-    render(<VerificationCodeScreen onSubmit={vi.fn()} onExit={vi.fn()} />);
+  it("[VC-U1] 제목 · 안내 · 번호 · 칸 넷 · 카운트다운 · Resend · Continue · 뒤로가기가 선다", () => {
+    render(
+      <VerificationCodeScreen phoneNumber="+82 10 1234 5678" onSubmit={vi.fn()} onExit={vi.fn()} />,
+    );
 
-    expect(screen.getByTestId("verification-code-screen-description")).toBeInTheDocument();
-    expect(screen.getByTestId("verification-code-screen-input")).toBeInTheDocument();
-    expect(screen.getByTestId("verification-code-screen-submit")).toBeInTheDocument();
-    expect(screen.getByTestId("verification-code-screen-exit")).toBeInTheDocument();
+    expect(screen.getByTestId("verification-code-screen-title")).toHaveTextContent(
+      "Verification code OTP",
+    );
+    expect(screen.getByTestId("verification-code-screen-description")).toHaveTextContent(
+      "A verification code has been sent to",
+    );
+    expect(screen.getByTestId("verification-code-screen-phone")).toHaveTextContent(
+      "+82 10 1234 5678",
+    );
+    expect(
+      within(screen.getByTestId("verification-code-screen-input")).getAllByTestId(
+        "ui-lynx-compact-numeric-input",
+      ),
+    ).toHaveLength(4);
+    expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("05:00");
+    expect(screen.getByTestId("verification-code-screen-resend")).toHaveTextContent("Resend");
+    expect(submitButton()).toBeInTheDocument();
 
     const scroll = screen.getByTestId("verification-code-screen-scroll");
     const accessibilityAttrs = Array.from(scroll.attributes).filter((attr) =>
@@ -49,122 +72,122 @@ describe("VerificationCodeScreen (LIB-261)", () => {
     expect(accessibilityAttrs).toHaveLength(0);
   });
 
-  // VC-U2 ⚠ 술어 교체 r0.3(계약 §0.10 (2)). 옛 술어(`default-value` 속성 대조)는 실기에서
-  // 무시되는 채널이라 버렸다 — `default-value`는 네이티브에서 일회성이라(§2.6) 첫 렌더 뒤
-  // 갱신이 반영되지 않는다. 새 술어는 오류 채널(C-1 갈래 (b))을 본다: 어긋난 입력(`1*23`,
-  // 칸은 찼는데 완성이 아니다)에서 입력 칸의 accessibility-label이 "오류: "를 포함하고,
-  // `확인`이 data-complete="false"이며 눌러도 onSubmit이 0회다.
-  it("[VC-U2] 어긋난 입력(1*23)에서 오류 채널이 선다", () => {
-    const onSubmit = vi.fn();
-    render(<VerificationCodeScreen onSubmit={onSubmit} onExit={vi.fn()} />);
+  it("[VC-U2] 번호가 없으면 번호 줄을 그리지 않는다", () => {
+    render(<VerificationCodeScreen onSubmit={vi.fn()} onExit={vi.fn()} />);
 
-    typeCode("1*23");
-
-    const field = screen.getByTestId("verification-code-screen-input");
-    const input = within(field).getByTestId("ui-lynx-text-field-input");
-    expect(input.getAttribute("accessibility-label")).toContain("오류: ");
-
-    const submit = screen.getByTestId("verification-code-screen-submit");
-    expect(submit).toHaveAttribute("data-complete", "false");
-
-    fireEvent.tap(submit, {});
-    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByTestId("verification-code-screen-description")).toBeInTheDocument();
+    expect(screen.queryByTestId("verification-code-screen-phone")).not.toBeInTheDocument();
   });
 
-  // VC-U3
-  it("[VC-U3] 4자리 전에는 확인이 data-complete='false'이고 눌러도 onSubmit이 0회다", () => {
+  it("[VC-U3] 4자리 전에는 Continue가 data-complete='false'이고 눌러도 onSubmit이 0회다", () => {
     const onSubmit = vi.fn();
     render(<VerificationCodeScreen onSubmit={onSubmit} onExit={vi.fn()} />);
 
     typeCode("123");
-    const submit = screen.getByTestId("verification-code-screen-submit");
-    expect(submit).toHaveAttribute("data-complete", "false");
+    expect(screen.getByTestId("verification-code-screen-submit")).toHaveAttribute(
+      "data-complete",
+      "false",
+    );
 
-    fireEvent.tap(submit, {});
+    fireEvent.tap(submitButton(), {});
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  // VC-U4
   it("[VC-U4] 4자리를 채우면 data-complete='true'이고 누르면 onSubmit이 1회다", () => {
     const onSubmit = vi.fn();
     render(<VerificationCodeScreen onSubmit={onSubmit} onExit={vi.fn()} />);
 
     typeCode("1234");
-    const submit = screen.getByTestId("verification-code-screen-submit");
-    expect(submit).toHaveAttribute("data-complete", "true");
+    expect(screen.getByTestId("verification-code-screen-submit")).toHaveAttribute(
+      "data-complete",
+      "true",
+    );
 
-    fireEvent.tap(submit, {});
+    fireEvent.tap(submitButton(), {});
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  // VC-U5
-  it("[VC-U5] 나가기의 보이는 낱말과 accessibility-label이 둘 다 '로그인으로'이고 누르면 onExit 1회다", () => {
+  it("[VC-U5] 뒤로가기는 'Back' 이름의 RoundButton이고 누르면 onExit 1회다", () => {
     const onExit = vi.fn();
     render(<VerificationCodeScreen onSubmit={vi.fn()} onExit={onExit} />);
 
-    const exit = screen.getByTestId("verification-code-screen-exit");
-    expect(exit).toHaveTextContent("로그인으로");
-    expect(exit).toHaveAttribute("accessibility-label", "로그인으로");
+    const back = within(screen.getByTestId("verification-code-screen-exit")).getByTestId(
+      "ui-lynx-round-button",
+    );
+    expect(back).toHaveAttribute("accessibility-label", "Back");
 
-    fireEvent.tap(exit, {});
+    fireEvent.tap(back, {});
     expect(onExit).toHaveBeenCalledTimes(1);
   });
 
-  // VC-U6 — 후반부는 부재 단언(확인에 disabled가 붙지 않는다)이다. `확인`이 없으면
-  // 참이 될 수 있으므로 먼저 그 존재를 앵커로 건다(getByTestId는 없으면 던진다).
-  it("[VC-U6] 제목이 header이고, 확인에 accessibility-traits='disabled'가 붙지 않는다", () => {
+  it("[VC-U6] 제목이 header이고, Continue에 accessibility-traits='disabled'가 붙지 않는다", () => {
     render(<VerificationCodeScreen onSubmit={vi.fn()} onExit={vi.fn()} />);
 
     expect(screen.getByTestId("verification-code-screen-title")).toHaveAttribute(
       "accessibility-traits",
       "header",
     );
-
-    const submit = screen.getByTestId("verification-code-screen-submit");
+    const submit = submitButton();
     expect(submit).toBeInTheDocument();
     expect(submit).not.toHaveAttribute("accessibility-traits", "disabled");
   });
 
-  // VC-U7 — 신설 r0.3(m-1) — 녹색 가드. LG-U5 둘째 단언과 같은 형태: 조작 단위 목록을
-  // §4.4의 정의(accessibility-element="true" + traits="button")로 재 닫힌 집합으로 걸고,
-  // 코드 입력 칸은 접근성 요소이지만 traits="button"이 아니라 그 목록에서 빠짐을 둘째
-  // 단언으로 남겨 미래의 opt-out 회귀를 잡는다. 값 없는 [accessibility-element]는 쓰지
-  // 않는다(TextField 라벨 <text>가 accessibility-element={false}를 붙여 매치되는 함정).
-  it("[VC-U7] 조작 단위가 나가기·확인 둘뿐이고 코드 입력 칸은 접근성 트리에 남는다", () => {
+  it("[VC-U7] 조작 단위가 뒤로가기 · Resend · Continue 셋이고 코드 칸 넷은 접근성 트리에 남는다", () => {
     const { container } = render(<VerificationCodeScreen onSubmit={vi.fn()} onExit={vi.fn()} />);
 
-    const actionUnits = [
-      ...container.querySelectorAll(
-        '[accessibility-element="true"][accessibility-traits="button"]',
-      ),
-    ].map((el) => el.getAttribute("data-testid"));
-    expect(actionUnits).toEqual([
+    expect(actionUnitIds(container)).toEqual([
       "verification-code-screen-exit",
+      "verification-code-screen-resend",
       "verification-code-screen-submit",
     ]);
 
-    const codeInput = screen.getByTestId("ui-lynx-text-field-input");
-    expect(codeInput).toHaveAttribute("accessibility-element", "true");
-    expect(actionUnits).not.toContain("ui-lynx-text-field-input");
+    const digits = screen.getAllByTestId("ui-lynx-compact-numeric-input");
+    expect(digits.map((digit) => digit.getAttribute("accessibility-label"))).toEqual([
+      "Digit 1 of 4",
+      "Digit 2 of 4",
+      "Digit 3 of 4",
+      "Digit 4 of 4",
+    ]);
+    for (const digit of digits) {
+      expect(digit).toHaveAttribute("accessibility-element", "true");
+    }
   });
 
-  // VC-U8 — 신설 r0.3. 「어긋남이 풀리면 오류가 사라진다」는 부재 단언이다 — 존재 앵커
-  // (오류가 실제로 섰다)를 먼저 걸지 않으면 오늘도 공허하게 통과한다(오류가 애초에
-  // 없으므로). `1*23`에서 오류가 선 것을 먼저 확인한 뒤, 지워서 `1234`가 되면 오류가
-  // 사라지고 data-complete가 true로 간다.
-  it("[VC-U8] 어긋남이 풀리면 오류가 사라진다", () => {
-    render(<VerificationCodeScreen onSubmit={vi.fn()} onExit={vi.fn()} />);
+  it("[VC-U8] 카운트다운이 1초마다 줄고 Resend를 누르면 5분부터 다시 센다", () => {
+    vi.useFakeTimers();
+    try {
+      render(<VerificationCodeScreen onSubmit={vi.fn()} onExit={vi.fn()} />);
+      const timer = screen.getByTestId("verification-code-screen-timer");
 
-    const field = screen.getByTestId("verification-code-screen-input");
-    const input = within(field).getByTestId("ui-lynx-text-field-input");
-    const submit = screen.getByTestId("verification-code-screen-submit");
+      // 1초짜리 타이머를 한 회차씩 새로 걸므로(다 센 뒤 깨우지 않으려고) 1초씩 흘린다.
+      for (let tick = 0; tick < 3; tick += 1) {
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+      }
+      expect(timer).toHaveTextContent("04:57");
 
-    typeCode("1*23");
-    // 존재 앵커 — 오류가 실제로 섰음을 먼저 확인한다.
-    expect(input.getAttribute("accessibility-label")).toContain("오류: ");
+      fireEvent.tap(
+        within(screen.getByTestId("verification-code-screen-resend")).getByTestId("ui-lynx-button"),
+        {},
+      );
+      expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("05:00");
 
-    typeCode("1234");
-    expect(input.getAttribute("accessibility-label")).not.toContain("오류: ");
-    expect(submit).toHaveAttribute("data-complete", "true");
+      for (let tick = 0; tick < verificationCodeValidSeconds; tick += 1) {
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+      }
+      expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("00:00");
+
+      // 다 센 뒤에는 타이머를 걸지 않는다 — 더 흘려도 바뀌지 않고 대기 중인 타이머도 없다.
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("00:00");
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

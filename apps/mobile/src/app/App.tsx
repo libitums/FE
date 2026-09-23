@@ -249,7 +249,10 @@ type ScreenWiring = {
   // 상태를 그대로 내리고(§6), 나머지는 전이·이벤트·토큰 저장을 여는 콜백이다.
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
-  onSelectLoginMethod: (method: EntryLoginMethod) => void;
+  onSelectLoginMethod: (method: EntryLoginMethod, phoneNumber?: string) => void;
+  onLoginBack: () => void;
+  onLanguageSelectBack: () => void;
+  onJourneyEntryBack: () => void;
   onVerificationCodeSubmit: () => void;
   onVerificationCodeExit: () => void;
   entryLanguage: EntryLanguage;
@@ -635,7 +638,19 @@ export function App({
     // `requiresVerificationCode`로 다음 화면을 가르는 이유: `entryScreenAfterLogin`이
     // 돌려주는 값은 `Screen`(넓은 타입)이라 `EntryViewedScreenName`으로 다시 좁히지
     // 않는다 — 이미 있는 판별 함수를 그대로 쓴다(계약 §2.1).
-    onSelectLoginMethod: (method) => {
+    // 로그인의 뒤로가기 — 진입 구간 스택에서 한 칸 뒤(온보딩)로 간다.
+    onLoginBack: () => {
+      dispatch({ type: "back" });
+    },
+    // 언어 선택의 뒤로가기 — 진입 스택에서 한 칸 뒤(코드 검증 또는 로그인)로 간다.
+    onLanguageSelectBack: () => {
+      dispatch({ type: "back" });
+    },
+    // 여정 입장의 뒤로가기 — 언어 선택으로 돌아간다.
+    onJourneyEntryBack: () => {
+      dispatch({ type: "back" });
+    },
+    onSelectLoginMethod: (method, phoneNumber) => {
       entryEventSink?.(entryLoginMethodSelectedEvent(method));
       saveAuthToken(createTemporaryAuthToken());
       entryEventSink?.(
@@ -643,7 +658,7 @@ export function App({
           requiresVerificationCode(method) ? "verification-code" : "language-select",
         ),
       );
-      dispatch({ type: "push", screen: entryScreenAfterLogin(method) });
+      dispatch({ type: "push", screen: entryScreenAfterLogin(method, phoneNumber) });
     },
     // 코드 검증의 `확인` — 화면이 이미 완성 여부를 걸러 완성일 때만 부른다(§2.5,
     // `VerificationCodeScreen`). 여기서 다시 판정하지 않는다.
@@ -884,10 +899,13 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "onboarding":
       return <OnboardingScreen onComplete={wiring.onOnboardingComplete} />;
     case "login":
-      return <LoginScreen onSelectMethod={wiring.onSelectLoginMethod} />;
+      return (
+        <LoginScreen onSelectMethod={wiring.onSelectLoginMethod} onBack={wiring.onLoginBack} />
+      );
     case "verification-code":
       return (
         <VerificationCodeScreen
+          phoneNumber={screen.phoneNumber}
           onSubmit={wiring.onVerificationCodeSubmit}
           onExit={wiring.onVerificationCodeExit}
         />
@@ -898,10 +916,17 @@ function renderScreen(screen: Screen, wiring: ScreenWiring) {
           selected={wiring.entryLanguage}
           onSelect={wiring.onSelectEntryLanguage}
           onContinue={wiring.onContinueLanguageSelect}
+          onBack={wiring.onLanguageSelectBack}
         />
       );
     case "journey-entry":
-      return <JourneyEntryScreen language={wiring.entryLanguage} onEnter={wiring.onEnterJourney} />;
+      return (
+        <JourneyEntryScreen
+          language={wiring.entryLanguage}
+          onEnter={wiring.onEnterJourney}
+          onBack={wiring.onJourneyEntryBack}
+        />
+      );
     // LIB-263 (개발용 탐침, 계약 §5.2): `never` 망라가 이 case를 강제한다. 결선이
     // 없다 — 탐침 화면은 props도 콜백도 받지 않고 자기 상태를 스스로 든다(계약 §5.5).
     // **아무 코드도 이 화면을 push하지 않는다**(§5.1 후보 B): 위 진입 흐름 case들과

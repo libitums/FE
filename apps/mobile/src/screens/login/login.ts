@@ -11,16 +11,29 @@ import type { EntryLoginMethod } from "../../lib/entry-flow";
 export function loginMethodLabel(method: EntryLoginMethod): string {
   switch (method) {
     case "phone": {
-      return "전화번호로 계속하기";
+      return "Continue";
     }
     case "google": {
-      return "Google로 계속하기";
+      return "Connect with Google";
     }
     case "apple": {
-      return "Apple로 계속하기";
+      return "Sign in with Apple";
     }
     case "facebook": {
-      return "Facebook으로 계속하기";
+      return "Connect with Facebook";
     }
   }
 }
+
+// 전화번호 앞에 붙는 국가 코드 선택지 한 칸. 목록 전체는 `login-countries.ts`(생성 파일)에 있다.
+// 선택값은 화면 로컬이며 어디에도 저장·전송하지 않는다(§0.5 A6).
+export type LoginCountry = {
+  /** ISO 3166 두 글자 코드(소문자). */
+  readonly id: string;
+  readonly flag: string;
+  readonly name: string;
+  readonly dialCode: string;
+};
+
+// 처음 선택된 국가.
+export const defaultLoginCountryId = "kr";

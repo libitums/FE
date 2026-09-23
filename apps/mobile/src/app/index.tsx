@@ -10,11 +10,15 @@ import "@libitums/design-tokens/css/typography.css";
 // `@libitums/ui-lynx/styles.css`는 소비하지 않는 컴포넌트 열여섯의 CSS까지
 // 번들에 들인다.
 import "@libitums/ui-lynx/text-field/styles.css";
-// 온보딩이 소비하는 AnswerLabel · Button · Card · ChatBubble · PageIndicator · RoundButton · StatusIndicator의 CSS 진입점. 같은 이유로 subpath만 부른다.
+import "@libitums/ui-lynx/compact-numeric-input/styles.css";
+import "@libitums/ui-lynx/option-selector/styles.css";
+// 온보딩이 소비하는 AnswerLabel · BottomSheet · Button · Card · ChatBubble · Fog · PageIndicator · RoundButton · StatusIndicator의 CSS 진입점. 같은 이유로 subpath만 부른다.
 import "@libitums/ui-lynx/answer-label/styles.css";
+import "@libitums/ui-lynx/bottom-sheet/styles.css";
 import "@libitums/ui-lynx/button/styles.css";
 import "@libitums/ui-lynx/card/styles.css";
 import "@libitums/ui-lynx/chat-bubble/styles.css";
+import "@libitums/ui-lynx/fog/styles.css";
 import "@libitums/ui-lynx/page-indicator.css";
 import "@libitums/ui-lynx/round-button/styles.css";
 import "@libitums/ui-lynx/status-indicator/styles.css";

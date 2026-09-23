@@ -1,4 +1,4 @@
-import { root } from "@lynx-js/react";
+import { root, useState } from "@lynx-js/react";
 
 // dev 전용 진입점 (lynx.config.ts). 화면 하나를 앱과 같은 셸 안에 격리해 띄우고,
 // 피그마와 나란히 보며 디자인을 맞추는 자리다. 제품 번들에 들어가지 않는다.
@@ -9,14 +9,20 @@ import "../app/app.css";
 import "./playground.css";
 
 import { current } from "./current";
-import { playgroundScreens } from "./screens";
+import { playgroundScreens, type PlaygroundParams, type PlaygroundScreen } from "./screens";
 
 function Playground() {
-  const Screen = playgroundScreens[current];
+  // `current`에서 시작하고, 화면 콜백이 부르면 다음 화면으로 옮긴다. key로 화면 상태를 새로 연다.
+  const [{ screen, params }, setState] = useState<{
+    screen: PlaygroundScreen;
+    params: PlaygroundParams;
+  }>({ screen: current, params: {} });
+  const go = (next: PlaygroundScreen, nextParams: PlaygroundParams = {}) =>
+    setState({ screen: next, params: nextParams });
   return (
     <view className="app">
-      <view className="app-content">
-        <Screen />
+      <view className="app-content" key={screen}>
+        {playgroundScreens[screen](go, params)}
       </view>
     </view>
   );

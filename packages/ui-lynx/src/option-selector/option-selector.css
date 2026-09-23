@@ -1,0 +1,365 @@
+@import "@libitums/design-tokens/css/variables.css";
+@import "@libitums/design-tokens/css/typography.css";
+
+/* 레이아웃 — linear 레이아웃에는 gap이 없어 flex와 gap을 쓴다. */
+.ui-lynx-option-selector {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-lynx-option-selector-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-lynx-option-selector-row {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.ui-lynx-option-selector-s .ui-lynx-option-selector-list {
+  row-gap: var(--libitum-spacing-8);
+}
+
+.ui-lynx-option-selector-s .ui-lynx-option-selector-row {
+  column-gap: var(--libitum-spacing-8);
+}
+
+.ui-lynx-option-selector-m .ui-lynx-option-selector-list,
+.ui-lynx-option-selector-l .ui-lynx-option-selector-list {
+  row-gap: var(--libitum-spacing-12);
+}
+
+.ui-lynx-option-selector-m .ui-lynx-option-selector-row,
+.ui-lynx-option-selector-l .ui-lynx-option-selector-row {
+  column-gap: var(--libitum-spacing-12);
+}
+
+/* Grid는 같은 너비의 2열이다. 같은 행의 높이는 stretch로 가장 높은 항목에 맞춘다. */
+.ui-lynx-option-selector-item,
+.ui-lynx-option-selector-cell-spacer {
+  flex: 1 1 0;
+  min-width: var(--libitum-spacing-0);
+}
+
+/* 테두리 영역 2px = item 바깥 1px + surface 안쪽 1px. 1px 선 상태는 안쪽 1px을 배경색으로 칠해
+   어느 상태에서도 Option Item 크기가 변하지 않는다. */
+.ui-lynx-option-selector-item {
+  display: flex;
+  flex-direction: column;
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  box-shadow: none;
+  transition:
+    background-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing),
+    border-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-option-selector-surface {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--libitum-spacing-8);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  transition:
+    background-color var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing),
+    border-color var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-option-selector-indicator-slot,
+.ui-lynx-option-selector-indicator {
+  flex-shrink: 0;
+}
+
+/* Label은 가로·세로 중앙, 줄 수 제한 없이 단어 경계에서 줄바꿈한다. 말줄임하지 않는다. */
+.ui-lynx-option-selector-label {
+  flex: 1 1 0;
+  min-width: var(--libitum-spacing-0);
+  text-align: center;
+  white-space: normal;
+  transition: color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+}
+
+/* FE 확장(2026-09-21): Label 앞 장식 그림(예: 국기). 그림과 Label을 한 묶음으로 가운데 두고,
+   그림은 Indicator와 같은 높이 · 가로 10:7(국기 비율)로 그린다. Disabled에서는 Label처럼
+   흐리게 둔다. */
+.ui-lynx-option-selector-content {
+  flex: 1 1 0;
+  min-width: var(--libitum-spacing-0);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.ui-lynx-option-selector-content .ui-lynx-option-selector-label {
+  flex: 0 1 auto;
+}
+
+.ui-lynx-option-selector-icon {
+  flex-shrink: 0;
+}
+
+.ui-lynx-option-selector-item-disabled .ui-lynx-option-selector-icon {
+  opacity: 0.4;
+}
+
+/* Size */
+.ui-lynx-option-selector-s .ui-lynx-option-selector-item {
+  min-height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+}
+
+.ui-lynx-option-selector-s .ui-lynx-option-selector-surface {
+  padding: var(--libitum-spacing-12);
+  border-radius: calc(var(--libitum-radius-md) - var(--libitum-stroke-width-thin));
+}
+
+.ui-lynx-option-selector-s .ui-lynx-option-selector-indicator-slot,
+.ui-lynx-option-selector-s .ui-lynx-option-selector-indicator {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.ui-lynx-option-selector-s .ui-lynx-option-selector-icon {
+  width: calc(var(--libitum-icon-size-xs) * 10 / 7);
+  height: var(--libitum-icon-size-xs);
+}
+
+.ui-lynx-option-selector-s .ui-lynx-option-selector-label {
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: var(--libitum-typography-button-m-font-size);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  line-height: var(--libitum-typography-button-m-line-height);
+  letter-spacing: var(--libitum-typography-button-m-letter-spacing);
+}
+
+.ui-lynx-option-selector-m .ui-lynx-option-selector-item {
+  min-height: 60px;
+  border-radius: var(--libitum-radius-lg);
+}
+
+.ui-lynx-option-selector-m .ui-lynx-option-selector-surface {
+  padding: var(--libitum-spacing-16);
+  border-radius: calc(var(--libitum-radius-lg) - var(--libitum-stroke-width-thin));
+}
+
+.ui-lynx-option-selector-m .ui-lynx-option-selector-indicator-slot,
+.ui-lynx-option-selector-m .ui-lynx-option-selector-indicator {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.ui-lynx-option-selector-m .ui-lynx-option-selector-icon {
+  width: calc(var(--libitum-icon-size-sm) * 10 / 7);
+  height: var(--libitum-icon-size-sm);
+}
+
+.ui-lynx-option-selector-m .ui-lynx-option-selector-label {
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+.ui-lynx-option-selector-l .ui-lynx-option-selector-item {
+  min-height: 68px;
+  border-radius: var(--libitum-radius-lg);
+}
+
+.ui-lynx-option-selector-l .ui-lynx-option-selector-surface {
+  padding: var(--libitum-spacing-20);
+  border-radius: calc(var(--libitum-radius-lg) - var(--libitum-stroke-width-thin));
+}
+
+.ui-lynx-option-selector-l .ui-lynx-option-selector-indicator-slot,
+.ui-lynx-option-selector-l .ui-lynx-option-selector-indicator {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.ui-lynx-option-selector-l .ui-lynx-option-selector-icon {
+  width: calc(var(--libitum-icon-size-md) * 10 / 7);
+  height: var(--libitum-icon-size-md);
+}
+
+.ui-lynx-option-selector-l .ui-lynx-option-selector-label {
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 상태 색 — 우선순위는 Disabled → Selected → Pressed → Default다. 글자색은 Lynx CSS 상속을
+   켜지 않은 앱에서도 칠해지도록 <text>에 직접 적는다. Pressed는 pressable(Enabled·Unselected)에만 붙는다. */
+
+/* Outlined · Default */
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-item {
+  border-color: var(--libitum-color-border-strong);
+  background-color: var(--libitum-color-white);
+}
+
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-white);
+  background-color: var(--libitum-color-white);
+}
+
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-label {
+  color: var(--libitum-color-fg-neutral);
+}
+
+/* Outlined · Pressed */
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-item-pressable:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-pressable:active
+  .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-gray-100);
+  background-color: var(--libitum-color-gray-100);
+}
+
+/* Outlined · Selected */
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-item-selected {
+  border-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-selected
+  .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-selected
+  .ui-lynx-option-selector-label {
+  color: var(--libitum-color-fg-brand);
+}
+
+/* Outlined · Disabled */
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-item-disabled {
+  border-color: var(--libitum-color-border-disabled);
+  background-color: var(--libitum-color-gray-50);
+}
+
+.ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-disabled
+  .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-gray-50);
+  background-color: var(--libitum-color-gray-50);
+}
+
+.ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-disabled
+  .ui-lynx-option-selector-label {
+  color: var(--libitum-color-fg-disabled);
+}
+
+/* Outlined · Disabled + Selected — 2px 테두리 */
+.ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-disabled.ui-lynx-option-selector-item-selected
+  .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-border-disabled);
+}
+
+/* Filled · Default */
+.ui-lynx-option-selector-filled .ui-lynx-option-selector-item {
+  border-color: var(--libitum-color-gray-950);
+  background-color: var(--libitum-color-gray-950);
+}
+
+.ui-lynx-option-selector-filled .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-gray-950);
+  background-color: var(--libitum-color-gray-950);
+}
+
+.ui-lynx-option-selector-filled .ui-lynx-option-selector-label {
+  color: var(--libitum-color-gray-50);
+}
+
+/* Filled · Pressed */
+.ui-lynx-option-selector-filled .ui-lynx-option-selector-item-pressable:active {
+  border-color: var(--libitum-color-gray-900);
+  background-color: var(--libitum-color-gray-900);
+}
+
+.ui-lynx-option-selector-filled
+  .ui-lynx-option-selector-item-pressable:active
+  .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-gray-900);
+  background-color: var(--libitum-color-gray-900);
+}
+
+/* Filled · Selected — Pressed 배경을 쓰면 Label 대비가 4.412:1로 떨어져 gray.950을 유지한다. */
+.ui-lynx-option-selector-filled .ui-lynx-option-selector-item-selected {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-option-selector-filled
+  .ui-lynx-option-selector-item-selected
+  .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-option-selector-filled
+  .ui-lynx-option-selector-item-selected
+  .ui-lynx-option-selector-label {
+  color: var(--libitum-color-brand-primary);
+}
+
+/* Filled · Disabled */
+.ui-lynx-option-selector-filled .ui-lynx-option-selector-item-disabled {
+  border-color: var(--libitum-color-gray-950);
+}
+
+.ui-lynx-option-selector-filled
+  .ui-lynx-option-selector-item-disabled
+  .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-gray-950);
+}
+
+.ui-lynx-option-selector-filled
+  .ui-lynx-option-selector-item-disabled
+  .ui-lynx-option-selector-label {
+  color: var(--libitum-color-gray-800);
+}
+
+/* Filled · Disabled + Selected */
+.ui-lynx-option-selector-filled
+  .ui-lynx-option-selector-item-disabled.ui-lynx-option-selector-item-selected {
+  border-color: var(--libitum-color-gray-800);
+}
+
+.ui-lynx-option-selector-filled
+  .ui-lynx-option-selector-item-disabled.ui-lynx-option-selector-item-selected
+  .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-gray-800);
+}
+
+/* Focus ring — Enabled 항목만 focusable이다. */
+.ui-lynx-option-selector-s .ui-lynx-option-selector-item:focus,
+.ui-lynx-option-selector-m .ui-lynx-option-selector-item:focus,
+.ui-lynx-option-selector-l .ui-lynx-option-selector-item:focus {
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+.ui-lynx-option-selector-s .ui-lynx-option-selector-item-disabled:focus,
+.ui-lynx-option-selector-m .ui-lynx-option-selector-item-disabled:focus,
+.ui-lynx-option-selector-l .ui-lynx-option-selector-item-disabled:focus {
+  box-shadow: none;
+}

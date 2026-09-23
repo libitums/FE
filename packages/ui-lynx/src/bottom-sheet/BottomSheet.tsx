@@ -142,6 +142,12 @@ export function BottomSheet(props: BottomSheetProps) {
           </scroll-view>
         ) : null}
 
+        {props.children === undefined || props.children === null ? null : (
+          <view className="ui-lynx-bottom-sheet-content" data-testid="ui-lynx-bottom-sheet-content">
+            {props.children}
+          </view>
+        )}
+
         {contract.actions.length === 0 ? null : (
           <view className="ui-lynx-bottom-sheet-actions" data-testid="ui-lynx-bottom-sheet-actions">
             {contract.actions.map((action, index) => (

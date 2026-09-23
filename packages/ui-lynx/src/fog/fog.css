@@ -84,29 +84,34 @@
   width: 100%;
 }
 
+/* opaque는 토큰의 리터럴 값이다(주석의 토큰과 같아야 한다). 값이 또 var()인 커스텀 프로퍼티는
+   ReactLynx 번들에서 풀리지 않아 선언이 통째로 버려진다(design-tokens 0.2.0 CHANGELOG) — 그래서
+   Fog가 앱에서 그려지지 않았다. transparent와 같은 방식으로 리터럴을 둔다.
+   white #FFFFFF · surface-default #FFFDFC · surface-basement #FAF7F4 ·
+   surface-floating #FFF3EA · dark(gray.950) #1A1C20 */
 .ui-lynx-fog-color-white {
   --libitum-ui-lynx-fog-transparent: rgba(255, 255, 255, 0);
-  --libitum-ui-lynx-fog-opaque: var(--libitum-color-white);
+  --libitum-ui-lynx-fog-opaque: rgba(255, 255, 255, 1);
 }
 
 .ui-lynx-fog-color-surface-default {
   --libitum-ui-lynx-fog-transparent: rgba(255, 253, 252, 0);
-  --libitum-ui-lynx-fog-opaque: var(--libitum-elevation-surface-default);
+  --libitum-ui-lynx-fog-opaque: rgba(255, 253, 252, 1);
 }
 
 .ui-lynx-fog-color-surface-basement {
   --libitum-ui-lynx-fog-transparent: rgba(250, 247, 244, 0);
-  --libitum-ui-lynx-fog-opaque: var(--libitum-elevation-surface-basement);
+  --libitum-ui-lynx-fog-opaque: rgba(250, 247, 244, 1);
 }
 
 .ui-lynx-fog-color-surface-floating {
   --libitum-ui-lynx-fog-transparent: rgba(255, 243, 234, 0);
-  --libitum-ui-lynx-fog-opaque: var(--libitum-elevation-surface-floating);
+  --libitum-ui-lynx-fog-opaque: rgba(255, 243, 234, 1);
 }
 
 .ui-lynx-fog-color-dark {
   --libitum-ui-lynx-fog-transparent: rgba(26, 28, 32, 0);
-  --libitum-ui-lynx-fog-opaque: var(--libitum-color-gray-950);
+  --libitum-ui-lynx-fog-opaque: rgba(26, 28, 32, 1);
 }
 
 .ui-lynx-fog-hidden {

@@ -33,7 +33,9 @@
     calc(var(--libitum-spacing-20) + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  background-color: var(--libitum-color-background-elevated);
+  /* FE override(2026-09-21 디자인 반영): 정본의 background.elevated 대신 white.
+     BottomNavigator의 white override와 같은 결정이다. */
+  background-color: var(--libitum-color-white);
   border-top-left-radius: var(--libitum-radius-lg);
   border-top-right-radius: var(--libitum-radius-lg);
   box-shadow: 0 -10px 14px rgba(26, 28, 32, 0.2);
@@ -155,6 +157,16 @@
   font-weight: var(--libitum-typography-body-m-font-weight);
   line-height: var(--libitum-typography-body-m-line-height);
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 소비자 내용 자리. 내용 높이만큼 서고(패널 높이가 정해지지 않아 flex-basis 0이면 0으로
+   접힌다), 패널이 화면을 넘으면 줄어든다. 스스로 스크롤하지 않는다. */
+.ui-lynx-bottom-sheet-content {
+  margin-top: var(--libitum-spacing-20);
+  min-height: var(--libitum-spacing-0);
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .ui-lynx-bottom-sheet-actions {

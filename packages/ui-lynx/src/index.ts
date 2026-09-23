@@ -219,3 +219,23 @@ export type {
   TooltipTone,
   TooltipVisibility,
 } from "./tooltip";
+
+export {
+  OptionSelector,
+  getOptionSelectorContract,
+  isSameOptionSelection,
+  nextOptionSelection,
+} from "./option-selector";
+export type {
+  OptionSelectorCommit,
+  OptionSelectorContentLanguage,
+  OptionSelectorContract,
+  OptionSelectorItemContract,
+  OptionSelectorLayout,
+  OptionSelectorOption,
+  OptionSelectorProps,
+  OptionSelectorSelection,
+  OptionSelectorSelectionInput,
+  OptionSelectorSize,
+  OptionSelectorVariant,
+} from "./option-selector";

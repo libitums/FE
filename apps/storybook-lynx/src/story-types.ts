@@ -36,6 +36,12 @@ import type {
   TooltipPlacement,
   TooltipTone,
   TooltipVisibility,
+  OptionSelectorCommit,
+  OptionSelectorContentLanguage,
+  OptionSelectorLayout,
+  OptionSelectorSelection,
+  OptionSelectorSize,
+  OptionSelectorVariant,
 } from "@libitums/ui-lynx";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
@@ -111,6 +117,20 @@ export type AnswerLabelStoryArgs = {
   size: AnswerLabelSize;
   label: string;
   contextLabel: string;
+};
+
+export type OptionSelectorStoryArgs = {
+  variant: OptionSelectorVariant;
+  size: OptionSelectorSize;
+  selection: OptionSelectorSelection;
+  commit: OptionSelectorCommit;
+  layout: OptionSelectorLayout;
+  contentLanguage: OptionSelectorContentLanguage;
+  longLabels: boolean;
+  disabledLast: boolean;
+  committed: boolean;
+  onChange: (selectedIds: readonly string[]) => void;
+  onCommit: (id: string) => void;
 };
 
 export type CardStoryArgs = {

@@ -47,14 +47,16 @@
   letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
 }
 
-.ui-lynx-compact-numeric-input:focus {
+.ui-lynx-compact-numeric-input:focus,
+.ui-lynx-compact-numeric-input-focused {
   background-color: var(--libitum-color-white);
   border-width: var(--libitum-stroke-width-thin);
   border-color: var(--libitum-color-brand-strong);
 }
 
 .ui-lynx-compact-numeric-input-error,
-.ui-lynx-compact-numeric-input-error:focus {
+.ui-lynx-compact-numeric-input-error:focus,
+.ui-lynx-compact-numeric-input-error.ui-lynx-compact-numeric-input-focused {
   background-color: var(--libitum-color-feedback-incorrect-surface);
   color: var(--libitum-color-feedback-incorrect-text);
   border-width: var(--libitum-stroke-width-thin);
