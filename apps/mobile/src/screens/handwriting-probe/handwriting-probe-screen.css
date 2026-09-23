@@ -1,8 +1,8 @@
-/* LIB-263 (ui): 계약 §5.4 · §5.5. 변수 이름은 `@libitums/design-tokens`가 정의한
-   것만 쓴다(ADR-0014 D1) — 새 토큰을 만들지 않는다.
+/* 변수 이름은 `@libitums/design-tokens`가 정의한 것만 씁니다(ADR-0014 D1) —
+   새 토큰을 만들지 않습니다.
 
    ADR-0022 3분할: 머리와 액션 행은 `flex-shrink: 0`으로 고정이고, 그 사이의
-   `<scroll-view>`만 남은 높이를 먹는다. */
+   `<scroll-view>`만 남은 높이를 먹습니다. */
 .handwriting-probe-screen {
   display: flex;
   flex-direction: column;
@@ -29,8 +29,8 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* [흐름] `<scroll-view>`는 강제 linear라 flex 어휘가 안 읽힌다 — 간격과 정렬은
-   유일한 직계 자식인 `-globals`가 진다(ADR-0022 D4). */
+/* [흐름] `<scroll-view>`는 강제 linear라 flex 어휘가 안 읽힙니다 — 간격과
+   정렬은 유일한 직계 자식인 `-globals`가 집니다(ADR-0022 D4). */
 .handwriting-probe-screen-scroll {
   flex: 1;
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
@@ -43,7 +43,7 @@
   padding-top: var(--libitum-spacing-8);
 }
 
-/* 전역 이름 한 줄. 글자가 길어 줄바꿈이 잦으므로 몸글이 아니라 라벨 크기를 쓴다. */
+/* 전역 이름 한 줄. 글자가 길어 줄바꿈이 잦으므로 몸글이 아니라 라벨 크기를 씁니다. */
 .handwriting-probe-screen-global {
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-m-font-family);
@@ -53,8 +53,8 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-/* [고정] 액션 행 — 그리기 표면과 조작 수단과 관측 줄이 여기 산다. 스크롤 영역
-   **밖**이다: 표면이 스크롤 안에 있으면 둘이 같은 제스처를 다툰다. */
+/* [고정] 액션 행 — 그리기 표면과 조작 수단과 관측 줄이 여기 삽니다. 스크롤
+   영역 **밖**입니다: 표면이 스크롤 안에 있으면 둘이 같은 제스처를 다툽니다. */
 .handwriting-probe-screen-actions {
   display: flex;
   flex-direction: column;
@@ -83,7 +83,7 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-/* 관측 줄 — 사람이 실기에서 눈으로 읽는 값이라 몸글 크기를 준다. */
+/* 관측 줄 — 사람이 실기에서 눈으로 읽는 값이라 몸글 크기를 줍니다. */
 .handwriting-probe-screen-result,
 .handwriting-probe-screen-counts {
   color: var(--libitum-color-fg-neutral);

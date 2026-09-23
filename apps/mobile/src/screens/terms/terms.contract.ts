@@ -1,9 +1,6 @@
-// LIB-259 specification 계약. 구현·JSX를 두지 않는다. 변경하려면 specification
-// 재고정이 필요하다.
+// 약관 화면의 props·testid 타입을 소유합니다. 구현·JSX는 두지 않습니다.
 //
-// 계약: .agent-harness/work/lib-259/spec.md §2.9(순수 타입 계약) · §4.9(testid 카탈로그).
-//
-// 실제 법무 문구가 아니다(scope_out). 외부 링크 · 웹뷰 0건 — `<view>`·`<text>`뿐이다.
+// 실제 법무 문구가 아닙니다(범위 밖). 외부 링크 · 웹뷰 0건 — `<view>`·`<text>`뿐입니다.
 
 export type TermsSectionId = string;
 

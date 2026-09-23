@@ -1,0 +1,22 @@
+/* 변수 이름은 `@libitums/design-tokens`가 정의한 것만 씁니다(ADR-0014 D1) — 새 토큰을
+   만들지 않습니다. 선택자는 원래 `speech-probe-screen.css`의 것을 그대로 옮겼습니다 —
+   `SpeechProbeActions`가 액션 버튼 다섯을 소유합니다. */
+.speech-probe-screen-button {
+  min-height: var(--libitum-spacing-48);
+  padding: 0 var(--libitum-spacing-12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-background-secondary);
+}
+
+.speech-probe-screen-button-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
