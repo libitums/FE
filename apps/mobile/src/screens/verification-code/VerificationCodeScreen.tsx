@@ -56,13 +56,9 @@ export function VerificationCodeScreen({
   const code = verificationCodeFrom(digits.join(""));
   const complete = isVerificationCodeComplete(code);
 
-  // 남은 초입니다. Resend가 `round`를 올려 처음부터 다시 셉니다.
+  // 남은 초입니다. `round`는 재전송 회차이고, 칸을 다시 마운트하는 `key`로만 씁니다.
   const [remaining, setRemaining] = useState(verificationCodeValidSeconds);
   const [round, setRound] = useState(0);
-  useEffect(() => {
-    setRemaining(verificationCodeValidSeconds);
-    setDigits(digitIndexes.map(() => ""));
-  }, [round]);
 
   // 0에 닿으면 타이머를 걸지 않습니다 — 다 센 뒤에도 매초 깨우지 않으려고 1초짜리
   // setTimeout을 남은 초마다 새로 겁니다.
@@ -73,6 +69,14 @@ export function VerificationCodeScreen({
     }, 1000);
     return () => clearTimeout(timer);
   }, [remaining]);
+
+  // 재전송은 회차 · 남은 초 · 입력을 한자리에서 되돌립니다. `useEffect`로 `round`를 뒤따라
+  // 맞추면 렌더가 한 번 더 돌고, 어느 상태가 왜 바뀌는지도 이 함수 밖으로 흩어집니다.
+  function handleResend() {
+    setRound((value) => value + 1);
+    setRemaining(verificationCodeValidSeconds);
+    setDigits(digitIndexes.map(() => ""));
+  }
 
   function handleDigit(index: number, value: string) {
     setDigits((current) => current.map((digit, at) => (at === index ? value : digit)));
@@ -160,12 +164,7 @@ export function VerificationCodeScreen({
             <view className="verification-code-screen-resend">
               <text className="verification-code-screen-resend-hint">Didn't receive the code?</text>
               <view data-testid="verification-code-screen-resend">
-                <Button
-                  label="Resend"
-                  variant="text"
-                  size="s"
-                  bindtap={() => setRound((value) => value + 1)}
-                />
+                <Button label="Resend" variant="text" size="s" bindtap={handleResend} />
               </view>
             </view>
           </view>
