@@ -168,7 +168,7 @@ xargs -0 grep -nE '\.agent-harness|scratchpad/' < /tmp/files.z
 xargs -0 grep -nE '계약 *§|§ ?[0-9]' < /tmp/files.z
 
 # 조문 ③ — 설명체가 아닌 종결
-xargs -0 perl -Mutf8 -CSD -ne 'print "$ARGV:$.: $_" if /(?<!니)다(?=[.,)(]|\s*—|\s*$)/' < /tmp/files.z
+xargs -0 perl -Mutf8 -CSD -ne 'print "$ARGV:$.: $_" if /(?<!니)다(?=[.,)]|\s*[(—]|\s*$)/' < /tmp/files.z
 xargs -0 perl -Mutf8 -CSD -ne 'print "$ARGV:$.: $_" if /아니다/' < /tmp/files.z
 ```
 
