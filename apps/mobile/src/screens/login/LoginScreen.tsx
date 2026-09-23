@@ -181,7 +181,8 @@ export function LoginScreen({ onSelectMethod, onBack }: LoginScreenProps): React
               ))}
             </view>
 
-            {/* 약관 안내. 두 문서 이름만 진하게 강조한다(지금은 누를 수 있는 링크가 아니다). */}
+            {/* 약관 안내. 두 문서 이름만 짙은 색(gray.800)으로 구분한다 — 굵기는 같고, 지금은
+                누를 수 있는 링크가 아니다. */}
             <text className="login-screen-legal" data-testid="login-screen-legal">
               <text className="login-screen-legal-text">{"By signing up, you agree to the\n"}</text>
               <text className="login-screen-legal-emphasis">User Agreement</text>

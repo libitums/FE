@@ -159,9 +159,12 @@ describe("VerificationCodeScreen (LIB-261)", () => {
       render(<VerificationCodeScreen onSubmit={vi.fn()} onExit={vi.fn()} />);
       const timer = screen.getByTestId("verification-code-screen-timer");
 
-      act(() => {
-        vi.advanceTimersByTime(3000);
-      });
+      // 1초짜리 타이머를 한 회차씩 새로 걸므로(다 센 뒤 깨우지 않으려고) 1초씩 흘린다.
+      for (let tick = 0; tick < 3; tick += 1) {
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+      }
       expect(timer).toHaveTextContent("04:57");
 
       fireEvent.tap(
@@ -170,10 +173,19 @@ describe("VerificationCodeScreen (LIB-261)", () => {
       );
       expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("05:00");
 
+      for (let tick = 0; tick < verificationCodeValidSeconds; tick += 1) {
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+      }
+      expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("00:00");
+
+      // 다 센 뒤에는 타이머를 걸지 않는다 — 더 흘려도 바뀌지 않고 대기 중인 타이머도 없다.
       act(() => {
-        vi.advanceTimersByTime(verificationCodeValidSeconds * 1000 + 5000);
+        vi.advanceTimersByTime(5000);
       });
       expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("00:00");
+      expect(vi.getTimerCount()).toBe(0);
     } finally {
       vi.useRealTimers();
     }

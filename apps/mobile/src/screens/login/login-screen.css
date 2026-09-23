@@ -185,8 +185,8 @@
   gap: var(--libitum-spacing-12);
 }
 
-/* 약관 안내: caption · 가운데. 기본 gray.500, 문서 이름만 gray.800. CSS 상속이 꺼져 있어
-   안쪽 조각마다 타이포를 다시 적는다.
+/* 약관 안내: caption · 가운데. 기본 gray.500이고 문서 이름 두 개만 gray.800으로 **색만** 다르다
+   (굵기는 같다 — 2026-09-21 디자인 지시). CSS 상속이 꺼져 있어 안쪽 조각마다 타이포를 다시 적는다.
    ⚠ gray.500 부분은 caption 대비 기준(4.5:1)에 못 미친다(약 1.5:1) — 피그마 값을 따른다. */
 /* 줄 간격은 바깥 text의 줄 높이가 정한다(안쪽 조각의 line-height는 줄 상자를 바꾸지 않는다). */
 .login-screen-legal {
@@ -196,7 +196,8 @@
   line-height: var(--libitum-spacing-20);
 }
 
-/* 두 줄 사이를 넓히려고 줄 높이만 caption(16)보다 한 단계 크게(20) 둔다. */
+/* 두 조각의 타이포는 같다(굵기 포함) — 두 줄 사이를 넓히려고 줄 높이만 caption(16)보다 한 단계
+   크게(20) 둔다. */
 .login-screen-legal-text,
 .login-screen-legal-emphasis {
   font-family: var(--libitum-typography-caption-font-family);

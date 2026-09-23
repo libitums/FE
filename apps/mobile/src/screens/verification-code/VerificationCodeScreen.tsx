@@ -61,11 +61,17 @@ export function VerificationCodeScreen({
   const [round, setRound] = useState(0);
   useEffect(() => {
     setRemaining(verificationCodeValidSeconds);
-    const timer = setInterval(() => {
+  }, [round]);
+
+  // 0에 닿으면 타이머를 걸지 않는다 — 다 센 뒤에도 매초 깨우지 않으려고 1초짜리 setTimeout을
+  // 남은 초마다 새로 건다(PR #98 리뷰).
+  useEffect(() => {
+    if (remaining <= 0) return;
+    const timer = setTimeout(() => {
       setRemaining((seconds) => Math.max(0, seconds - 1));
     }, 1000);
-    return () => clearInterval(timer);
-  }, [round]);
+    return () => clearTimeout(timer);
+  }, [remaining]);
 
   function handleDigit(index: number, value: string) {
     setDigits((current) => current.map((digit, at) => (at === index ? value : digit)));
