@@ -1,57 +1,58 @@
-/* LIB-223 (ui): design.md §0 · §1.1 · §5.1 · §5.2 · §5.3 · §5.4의 값. 계약 §1.9가
-   고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다
-   (ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않는다.
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1) — 색·간격·타이포의
+   생값을 적지 않습니다.
 
-   **design.md §7.1의 `.listening-screen-body` ⟨제안⟩을 만들지 않았다.** 계약 §1.9의
-   클래스 목록이 그 이름을 채택하지 않았고, 목록에 없는 요소를 더하면 §1.7의 렌더
-   스케치(= 속성 계약)를 이 파일이 넓히는 것이 된다.
+   **`.listening-screen-body`(제안됐던 이름)를 만들지 않았습니다.** 클래스
+   목록이 그 이름을 채택하지 않았고, 목록에 없는 요소를 더하면 이 파일이
+   속성 계약을 넓히는 것이 됩니다.
 
-   LIB-226 (ui): `.listening-screen-scroll`이 3분할의 흐르는 영역이다
-   (.agent-harness/work/lib-226/spec.md §1.2·§1.3, design.md §1.2). design §5.3이
-   `-choices`/`-complete`에 걸었던 `flex: 1`(액션 행을 화면 아래로 미는 구조)은
-   LIB-226 계약 R8·§1.11 #2에 따라 **스크롤 컨테이너**가 진다 — 안쪽에 남기면
-   스크롤 영역이 뷰포트 높이에 갇혀 넘칠 수 없다. */
+   `.listening-screen-scroll`이 3분할의 흐르는 영역입니다. `-choices`/
+   `-complete`에 걸었던 `flex: 1`(액션 행을 화면 아래로 미는 구조)은
+   **스크롤 컨테이너**가 집니다 — 안쪽에 남기면 스크롤 영역이 뷰포트
+   높이에 갇혀 넘칠 수 없습니다. */
 
-/* 화면 상자. `journey-map-screen`과 같은 값을 쓴다 (design §0) — 옆에 놓일 화면과
-   어휘를 갈리게 하지 않는다. `position: relative`를 두지 않는다: 이 화면에 겹침
-   레이어가 없다 (design §1.1). */
+/* 화면 상자입니다. `journey-map-screen`과 같은 값을 씁니다 — 옆에 놓일
+   화면과 어휘를 갈리게 하지 않습니다. `position: relative`를 두지
+   않습니다: 이 화면에 겹침 레이어가 없습니다. */
 .listening-screen {
   display: flex;
   flex-direction: column;
   flex: 1;
-  /* Lynx의 `justify-content` 기본값은 `stretch`다 (웹은 `flex-start`). 명시하지
-     않으면 높이가 고정된 자식(헤더 48 · 액션 행 48)이 늘어난다. */
+  /* Lynx의 `justify-content` 기본값은 `stretch`입니다(웹은 `flex-start`).
+     명시하지 않으면 높이가 고정된 자식(헤더 48 · 액션 행 48)이 늘어납니다. */
   justify-content: flex-start;
   gap: var(--libitum-layout-gap-block);
-  /* 화면 여백은 축마다 값이 다르다. `padding-x`를 네 방향에 쓰면 상하가 틀린다. */
+  /* 화면 여백은 축마다 값이 다릅니다. `padding-x`를 네 방향에 쓰면 상하가
+     틀립니다. */
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
     var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-background-primary);
 }
 
-/* design §5.1 — back + 제목이 한 줄이다. 행 높이는 back 히트박스가 정한다(48).
+/* back + 제목이 한 줄입니다. 행 높이는 back 히트박스가 정합니다(48).
 
-   **`align-items: flex-start`(FE ADR-0023 규칙 3, 안 B).** `-exit`(48)와 제목(24)의
-   교차 크기가 달라 게이트 A를 실패한다(Δ 12) — `center`는 최대 배율에서 `-exit`와
-   제목의 프레임 top이 갈려 낭독 순서를 DOM 순서와 어긋나게 만든다(LIB-227 E-S3
-   실기 관측). `.listening-screen-title`의 `margin-top`이 기본 배율의 렌더를
-   오늘과 같게 되돌린다. */
+   **`align-items: flex-start`입니다**(FE ADR-0023 규칙 3, 안 B). `-exit`
+   (48)와 제목(24)의 교차 크기가 달라 게이트 A를 실패합니다(Δ 12) —
+   `center`는 최대 배율에서 `-exit`와 제목의 프레임 top이 갈려 낭독
+   순서를 DOM 순서와 어긋나게 만듭니다(실기 관측). `.listening-screen-title`
+   의 `margin-top`이 기본 배율의 렌더를 오늘과 같게 되돌립니다. */
 .listening-screen-header {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   gap: var(--libitum-layout-gap-inline);
-  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어든다. */
+  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속
+     줄어듭니다. */
   flex-shrink: 0;
 }
 
-/* design §5.1 「back 히트박스」 — 이 저장소의 첫 화면 내 back 수단이다 (ADR-0007).
-   아이콘이 아니라 텍스트다: 출구를 "아이콘이 크기를 못 받으면 아예 안 보인다"는
-   위험에 올리지 않는다 (`docs/e2e/design-token-rendering.md`). */
+/* back 히트박스입니다 — 이 저장소의 첫 화면 내 back 수단입니다(ADR-0007).
+   아이콘이 아니라 텍스트입니다: 출구를 "아이콘이 크기를 못 받으면 아예
+   안 보인다"는 위험에 올리지 않습니다. */
 .listening-screen-exit {
-  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
-     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
-     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  /* **고정 높이가 아니라 하한입니다**(ADR-0020 D5). Dynamic Type이 켜지면
+     글자만 커지고 상자는 안 커집니다 — 폭·높이·패딩은 배율을 받지
+     않습니다. 고정 높이로 두면 최대 배율에서 라벨이 상자를 넘쳐 잘리고,
+     **잘린 내용은 사라집니다**(WCAG 1.4.4). */
   min-height: var(--libitum-spacing-48);
   padding-left: var(--libitum-spacing-12);
   padding-right: var(--libitum-spacing-12);
@@ -71,22 +72,22 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-/* design §5.1 「화면 제목」 — `journey-map-screen-title` · `step-sheet-title`과 같은
-   scale이다.
+/* 화면 제목입니다 — `journey-map-screen-title` · `step-sheet-title`과 같은
+   scale입니다.
 
-   **`margin-top: var(--libitum-spacing-12)`(FE ADR-0023 규칙 3, 안 B — design.md
-   §7).** `.listening-screen-header`를 `align-items: flex-start`로 바꾼 대가를
-   여기서 갚는다. 담아야 할 사실 셋:
-   1. **12는 토큰 이름이 아니라 산술 결과다** —
+   **`margin-top: var(--libitum-spacing-12)`입니다**(FE ADR-0023 규칙 3, 안 B).
+   `.listening-screen-header`를 `align-items: flex-start`로 바꾼 대가를
+   여기서 갚습니다. 담아야 할 사실 셋:
+   1. **12는 토큰 이름이 아니라 산술 결과입니다** —
       `12 = (spacing-48 − heading-s-line-height) / 2 = (48 − 24) / 2`이고
-      `--libitum-spacing-12`와 값이 **우연히** 같다.
+      `--libitum-spacing-12`와 값이 **우연히** 같습니다.
    2. **되돌리는 조건**: `.listening-screen-exit`의 `min-height` 하한(현재
-      `spacing-48`)이나 이 제목의 typography scale(현재 `heading-s`)이 바뀌면
-      이 값이 조용히 틀린다.
-   3. **`padding`은 배율을 받지 않는다**(FE ADR-0020 D5) — 최대 배율에서도 제목
-      위 12는 그대로 남는다.
-   `<text>`에 `padding`을 준 선례가 이 저장소에 0건이다 — 실기 §5 E1-b가 판정한다.
-   E1-b가 부수면 대체안 B′(`align-self: center`)로 갈아탄다(계약 §2.1.1). */
+      `spacing-48`)이나 이 제목의 typography scale(현재 `heading-s`)이
+      바뀌면 이 값이 조용히 틀립니다.
+   3. **`padding`은 배율을 받지 않습니다**(FE ADR-0020 D5) — 최대 배율에서도
+      제목 위 12는 그대로 남습니다.
+   `<text>`에 `padding`을 준 선례가 이 저장소에 0건입니다 — 실기로
+   판정합니다. 실기가 부수면 대체안(`align-self: center`)으로 갈아탑니다. */
 .listening-screen-title {
   margin-top: var(--libitum-spacing-12);
   color: var(--libitum-color-fg-neutral);
@@ -97,28 +98,29 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* LIB-226 (ui) — design §1.2의 3분할 표. 남는 세로를 받는 것은 이 상자다(계약 R8) —
-   `flex: 1`이 그것을 진다. 배경·모서리·그림자·padding은 선언하지 않는다(표의 빈 칸이
-   전부 "없음"이다) — 칠해도 배경 대비가 1.05~1.13:1이라 안 보인다(design §1.2a).
-   위쪽 hairline만 선이다 — 잘린 내용과 헤더가 같은 배경 위 같은 계열 글자라 경계를
-   만드는 것이 선 말고 없다(design §1.2b).
-   `display: flex`·`flex-direction: column`·`gap`은 지운다 — `<scroll-view>`는
-   CSS와 무관하게 강제로 `linear`가 되고, linear 알고리즘에는 `gap`이 없어 셋 다
-   무동작이다(계약 R7.1·R8.1). 자식 간격은 `.listening-screen-content`가
-   `layout-gap-block`으로 진다 — 세로 합계는 거기서 보존된다(design §3.1 — gap 개수
-   보존). `justify-content`는 `LinearSupportFlexStyleMode()` 게이트가 이 앱에서
-   켜져 있는지 확인하지 못해 남긴다(계약 §5.1.1). */
+/* 3분할 표에서 남는 세로를 받는 것은 이 상자입니다 — `flex: 1`이 그것을
+   집니다. 배경·모서리·그림자·padding은 선언하지 않습니다(전부 "없음"
+   입니다) — 칠해도 배경 대비가 1.05~1.13:1이라 안 보입니다. 위쪽
+   hairline만 선입니다 — 잘린 내용과 헤더가 같은 배경 위 같은 계열
+   글자라 경계를 만드는 것이 선 말고 없습니다.
+   `display: flex`·`flex-direction: column`·`gap`은 지웁니다 —
+   `<scroll-view>`는 CSS와 무관하게 강제로 `linear`가 되고, linear
+   알고리즘에는 `gap`이 없어 셋 다 무동작입니다. 자식 간격은
+   `.listening-screen-content`가 `layout-gap-block`으로 집니다 — 세로
+   합계는 거기서 보존됩니다. `justify-content`는
+   `LinearSupportFlexStyleMode()` 게이트가 이 앱에서 켜져 있는지 확인하지
+   못해 남깁니다. */
 .listening-screen-scroll {
   flex: 1;
   justify-content: flex-start;
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
-/* LIB-226 (ui) — `<scroll-view>`의 직계 자식은 최대 하나다(계약 R7.1). 이 상자가
-   `.listening-screen-scroll`이 지던 흐름의 flex 어휘를 그대로 받는다 — 값은 한
-   글자도 안 바뀐다. `flex: 1`·`flex-shrink: 0`은 여기 두지 않는다: 부모
-   (`.listening-screen-scroll`)가 강제 linear라 이 상자에게 `flex-grow`·
-   `flex-shrink`가 읽히지 않는다(계약 R8.1). */
+/* `<scroll-view>`의 직계 자식은 최대 하나입니다. 이 상자가
+   `.listening-screen-scroll`이 지던 흐름의 flex 어휘를 그대로 받습니다 —
+   값은 한 글자도 안 바뀝니다. `flex: 1`·`flex-shrink: 0`은 여기 두지
+   않습니다: 부모(`.listening-screen-scroll`)가 강제 linear라 이 상자에게
+   `flex-grow`·`flex-shrink`가 읽히지 않습니다. */
 .listening-screen-content {
   display: flex;
   flex-direction: column;
@@ -126,9 +128,9 @@
   gap: var(--libitum-layout-gap-block);
 }
 
-/* design §5.2 — 막대가 아니라 텍스트다. 트랙에 쓸 색이 없고(`gray-300`이 배경 대비
-   1.13), 막대는 `accessibility-value`를 요구하는데 그것은 이 저장소에서 죽은
-   채널이다 (ADR-0016 D3). */
+/* 막대가 아니라 텍스트입니다. 트랙에 쓸 색이 없고(`gray-300`이 배경 대비
+   1.13), 막대는 `accessibility-value`를 요구하는데 그것은 이 저장소에서
+   죽은 채널입니다(ADR-0016 D3). */
 .listening-screen-progress {
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-m-font-family);
@@ -138,7 +140,6 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-/* design §1.3의 예산 표 「지시문 (body-m 1줄)」 · §6.1의 대비 행. */
 .listening-screen-instruction {
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-body-m-font-family);
@@ -148,9 +149,9 @@
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);
 }
 
-/* design §3.2 「목록 gap」 — 이 상자가 지는 값은 간격 하나다. `flex: 1`은
-   `.listening-screen-scroll`이 진다(LIB-226 계약 R8) — 안쪽에 남기면 스크롤 영역이
-   뷰포트 높이에 갇혀 넘칠 수 없다. */
+/* 목록 gap — 이 상자가 지는 값은 간격 하나입니다. `flex: 1`은
+   `.listening-screen-scroll`이 집니다 — 안쪽에 남기면 스크롤 영역이
+   뷰포트 높이에 갇혀 넘칠 수 없습니다. */
 .listening-screen-choices {
   display: flex;
   flex-direction: column;
@@ -158,15 +159,16 @@
   gap: var(--libitum-spacing-8);
 }
 
-/* design §5.3 「액션 행」 — `step-sheet.css`의 `시작` 버튼과 문자 그대로 같은 값이다.
-   시트의 `시작`을 눌러 들어온 사용자가 같은 모양의 버튼으로 나아간다.
-   `brand-primary`가 아니라 `brand-strong`이다: 흰 라벨이 `brand-primary` 위에서
-   3.02:1로 AA에 미달한다 (design §6.3). */
+/* 액션 행 — `step-sheet.css`의 `시작` 버튼과 문자 그대로 같은 값입니다.
+   시트의 `시작`을 눌러 들어온 사용자가 같은 모양의 버튼으로 나아갑니다.
+   `brand-primary`가 아니라 `brand-strong`입니다: 흰 라벨이 `brand-primary`
+   위에서 3.02:1로 AA에 미달합니다. */
 .listening-screen-next {
   background: var(--libitum-color-brand-strong);
-  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
-     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
-     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  /* **고정 높이가 아니라 하한입니다**(ADR-0020 D5). Dynamic Type이 켜지면
+     글자만 커지고 상자는 안 커집니다 — 폭·높이·패딩은 배율을 받지
+     않습니다. 고정 높이로 두면 최대 배율에서 라벨이 상자를 넘쳐 잘리고,
+     **잘린 내용은 사라집니다**(WCAG 1.4.4). */
   min-height: var(--libitum-spacing-48);
   border-radius: var(--libitum-radius-md);
   width: 100%;
@@ -185,8 +187,8 @@
   letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
 }
 
-/* design §5.4 「완료 제목」. `flex: 1`은 `.listening-screen-scroll`이 진다
-   (LIB-226 계약 R8). 점수·정답 수를 표시하지 않는다 — 게임화는 범위 밖이다. */
+/* 완료 제목입니다. `flex: 1`은 `.listening-screen-scroll`이 집니다.
+   점수·정답 수를 표시하지 않습니다 — 게임화는 범위 밖입니다. */
 .listening-screen-complete {
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-heading-s-font-family);
@@ -196,12 +198,13 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* design §5.4 「액션 행 — 라벨만 「맵으로 돌아가기」」. `-next`와 같은 값이다. */
+/* 액션 행 — 라벨만 「맵으로 돌아가기」입니다. `-next`와 같은 값입니다. */
 .listening-screen-finish {
   background: var(--libitum-color-brand-strong);
-  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
-     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
-     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  /* **고정 높이가 아니라 하한입니다**(ADR-0020 D5). Dynamic Type이 켜지면
+     글자만 커지고 상자는 안 커집니다 — 폭·높이·패딩은 배율을 받지
+     않습니다. 고정 높이로 두면 최대 배율에서 라벨이 상자를 넘쳐 잘리고,
+     **잘린 내용은 사라집니다**(WCAG 1.4.4). */
   min-height: var(--libitum-spacing-48);
   border-radius: var(--libitum-radius-md);
   width: 100%;
