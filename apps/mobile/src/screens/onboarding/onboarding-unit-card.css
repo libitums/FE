@@ -1,0 +1,43 @@
+/* `OnboardingUnitCard`의 시각 값을 소유합니다. 선택자는 컴포넌트를 쪼개기 전
+   `onboarding-screen.css`에 있던 이름 그대로입니다 — 자동 계층이 클래스 문자열의
+   시각 연결을 보지 못해, 이름을 바꾸면 빠뜨린 선택자가 에러 없이 스타일만 안 먹는
+   형태로 남습니다. */
+
+/* 셋째 스텝: 카드 하나가 400 높이 영역을 가득 채웁니다. */
+.onboarding-screen-unit-area {
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  flex-shrink: 0;
+}
+
+.onboarding-screen-unit-area .ui-lynx-card,
+.onboarding-screen-unit-area .ui-lynx-card-regions,
+.onboarding-screen-unit-area .ui-lynx-card-content {
+  flex: 1;
+}
+
+.onboarding-screen-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-8);
+}
+
+.onboarding-screen-unit-title {
+  color: var(--libitum-color-gray-950);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.onboarding-screen-unit-meta {
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
+}

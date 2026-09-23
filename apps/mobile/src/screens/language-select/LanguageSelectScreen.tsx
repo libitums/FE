@@ -17,13 +17,13 @@ import { languageFlags } from "./language-flags";
 
 import "./language-select-screen.css";
 
-// LIB-261 (ui-implementation): 계약(.agent-harness/work/lib-261/spec.md §0.3 D-b ·
-// §4.2~§4.5)과 design.md §7의 값을 채운다. 선택은 App이 소유한다(§6) — 이 화면은
-// `selected`·`onSelect`·`onContinue`만 받는다.
+// 선택은 App이 소유합니다 — 이 화면은 `selected`·`onSelect`·`onContinue`만
+// 받습니다.
 //
-// 2026-09-21 디자인 반영: 머리는 로그인과 같은 형태다(좌상단 RoundButton 뒤로가기 → 제목 · 안내). 언어 넷을 ui-lynx
-// OptionSelector(outlined · single · deferred)로 국기와 함께 늘어놓고 영어 말고는 고를 수 없게
-// 둔다(`isEntryLanguageAvailable`). 아래에 Continue →.
+// 2026-09-21 디자인 반영: 머리는 로그인과 같은 형태입니다(좌상단 RoundButton
+// 뒤로가기 → 제목 · 안내). 언어 넷을 ui-lynx OptionSelector(outlined · single ·
+// deferred)로 국기와 함께 늘어놓고 영어 말고는 고를 수 없게 둡니다
+// (`isEntryLanguageAvailable`). 아래에 Continue →.
 const languageOptions = entryLanguages.map((language) => ({
   id: language,
   label: entryLanguageLabel(language),

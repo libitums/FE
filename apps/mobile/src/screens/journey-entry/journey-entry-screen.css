@@ -1,8 +1,8 @@
-/* LIB-261 (ui-implementation): design.md §2.2(공통 레시피) · §8.2(값)의 값. 토큰은 CSS
-   커스텀 프로퍼티로만 소비한다(ADR-0014 D1).
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-   2026-09-21 디자인 반영: 그림을 화면 전체(안쪽 여백 무시)에 깔고, 위 · 아래 Fog(dark)로 글자
-   자리를 어둡게 한다. 글자는 그 위에 겹친다. CSS 상속이 꺼져 있어 글자마다 색과 타이포를 적는다. */
+   2026-09-21 디자인 반영: 그림을 화면 전체(안쪽 여백 무시)에 깔고, 위 · 아래
+   Fog(dark)로 글자 자리를 어둡게 합니다. 글자는 그 위에 겹칩니다. CSS 상속이
+   꺼져 있어 글자마다 색과 타이포를 적습니다. */
 
 .journey-entry-screen {
   position: relative;
@@ -15,7 +15,8 @@
   background: var(--libitum-color-gray-950);
 }
 
-/* Lynx는 absolute 형제를 흐름 요소 위에 그려, 배경 · Fog를 z-index 0에, 글자 묶음을 1에 둔다. */
+/* Lynx는 absolute 형제를 흐름 요소 위에 그려, 배경 · Fog를 z-index 0에, 글자
+   묶음을 1에 둡니다. */
 .journey-entry-screen-backdrop {
   z-index: 0;
   position: absolute;
@@ -30,7 +31,8 @@
   height: 100%;
 }
 
-/* Fog 크기는 s(40) · m(80) · full뿐이라, 칸 높이를 여기서 정하고 그 안을 full로 채운다. */
+/* Fog 크기는 s(40) · m(80) · full뿐이라, 칸 높이를 여기서 정하고 그 안을 full로
+   채웁니다. */
 .journey-entry-screen-fog-top {
   position: absolute;
   top: 0;
@@ -59,7 +61,8 @@
   gap: var(--libitum-spacing-8);
 }
 
-/* 뒤로가기 행. RoundButton xl(56)만큼 높이를 늘 잡아 둔다(다른 진입 화면과 같은 값). */
+/* 뒤로가기 행입니다. RoundButton xl(56)만큼 높이를 늘 잡아 둡니다(다른 진입
+   화면과 같은 값). */
 .journey-entry-screen-header {
   display: flex;
   flex-direction: row;
@@ -101,15 +104,17 @@
   letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
 }
 
-/* 큰 제목과 구분선 묶음은 글자 폭만큼만 차지한다(왼쪽 정렬). */
+/* 큰 제목과 구분선 묶음은 글자 폭만큼만 차지합니다(왼쪽 정렬). */
 .journey-entry-screen-display-group {
   display: flex;
   flex-direction: column;
   align-self: flex-start;
 }
 
-/* 큰 제목 아래 brand.primary 구분선(두께 4) — 묶음 폭 = 큰 제목 글자 폭. */
-/* width: 100%는 글자 폭 묶음 안에서 0으로 풀려(Lynx) stretch로 묶음 폭을 받는다. */
+/* 큰 제목 아래 brand.primary 구분선(두께 4)입니다 — 묶음 폭이 큰 제목 글자
+   폭입니다. */
+/* width: 100%는 글자 폭 묶음 안에서 0으로 풀려(Lynx) stretch로 묶음 폭을
+   받습니다. */
 .journey-entry-screen-separator {
   align-self: stretch;
   height: var(--libitum-spacing-4);
@@ -125,7 +130,7 @@
   letter-spacing: var(--libitum-typography-caption-letter-spacing);
 }
 
-/* ⚠ gray.800 글자는 어두운 Fog 위에서 대비가 낮다 — 피그마 값을 따른다. */
+/* ⚠ gray.800 글자는 어두운 Fog 위에서 대비가 낮습니다 — 피그마 값을 따릅니다. */
 .journey-entry-screen-notice {
   margin-top: var(--libitum-spacing-16);
   text-align: center;
@@ -137,8 +142,8 @@
   letter-spacing: var(--libitum-typography-caption-letter-spacing);
 }
 
-/* 흰 Start 버튼 — FE override(2026-09-21 디자인 반영): Button에 흰 면 variant가 없어 neutral의
-   면을 흰색, 글자를 gray.900으로 바꾼다. */
+/* 흰 Start 버튼 — FE override(2026-09-21 디자인 반영): Button에 흰 면 variant가
+   없어 neutral의 면을 흰색, 글자를 gray.900으로 바꿉니다. */
 .journey-entry-screen-start {
   width: 100%;
 }

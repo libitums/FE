@@ -1,5 +1,6 @@
-// 언어 선택 국기 SVG(2026-09-21 디자인 반영, 디자이너 제공 원본 america · vietnam · spain ·
-// japan.svg). `<svg content>`로 그린다 — 장식이라 접근성 이름에 들어가지 않는다.
+// 언어 선택 국기 SVG입니다(2026-09-21 디자인 반영, 디자이너 제공 원본 america ·
+// vietnam · spain · japan.svg). `<svg content>`로 그립니다 — 장식이라 접근성
+// 이름에 들어가지 않습니다.
 
 import type { EntryLanguage } from "../../lib/entry-language";
 

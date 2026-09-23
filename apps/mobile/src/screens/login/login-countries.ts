@@ -1,9 +1,7 @@
-// 생성 파일 — 손으로 고치지 않는다.
-//
-// 국가 코드 선택지 전체(245). 출처: `phonenumbers` 9.0.39의 SUPPORTED_REGIONS(국가 번호가 있는
-// 모든 지역)와 `pycountry` 26.2.16의 영어 이름. ISO 3166에 없는 세 지역(XK · AC · TA)은
-// 이름을 직접 적었다. 국기는 ISO 두 글자 코드의 Regional Indicator 조합이다.
-// 정렬은 영어 이름 순이다. 목록을 바꾸려면 같은 방식으로 다시 생성한다(2026-09-21).
+// 국가 번호가 있는 지역 245개입니다. 손으로 고치지 않고 같은 방식으로 다시 생성합니다 —
+// `phonenumbers` 9.0.39의 SUPPORTED_REGIONS와 `pycountry` 26.2.16의 영어 이름을 합치고,
+// ISO 3166에 없는 세 지역(XK · AC · TA)만 이름을 직접 적었습니다. 국기는 ISO 두 글자
+// 코드의 Regional Indicator 조합이고 정렬은 영어 이름 순입니다(2026-09-21 생성).
 
 import type { LoginCountry } from "./login";
 

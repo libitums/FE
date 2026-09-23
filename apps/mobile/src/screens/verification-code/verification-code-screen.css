@@ -1,10 +1,9 @@
-/* LIB-261 (ui-implementation): design.md §2.2(공통 레시피) · §6.2(값)의 값. 토큰은 CSS
-   커스텀 프로퍼티로만 소비한다(ADR-0014 D1).
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-   2026-09-21 디자인 반영: 머리는 로그인과 같은 형태(좌상단 RoundButton → 제목 · 안내)다.
-   그 아래 번호 · 한 자리 칸 넷 · 카운트다운 · Resend · Continue가 세로로 선다. 버튼과
-   칸 모양은 ui-lynx가 지고, 이 파일은 배치와 글자만 그린다. CSS 상속이 꺼져 있어 글자마다
-   색과 타이포를 다시 적는다. */
+   2026-09-21 디자인 반영: 머리는 로그인과 같은 형태(좌상단 RoundButton → 제목 ·
+   안내)입니다. 그 아래 번호 · 한 자리 칸 넷 · 카운트다운 · Resend · Continue가
+   세로로 섭니다. 버튼과 칸 모양은 ui-lynx가 지고, 이 파일은 배치와 글자만
+   그립니다. CSS 상속이 꺼져 있어 글자마다 색과 타이포를 다시 적습니다. */
 
 .verification-code-screen {
   display: flex;
@@ -16,7 +15,7 @@
   background: var(--libitum-color-background-primary);
 }
 
-/* 뒤로가기 행. RoundButton xl(56)만큼 높이를 늘 잡아 둔다(로그인과 같은 값). */
+/* 뒤로가기 행입니다. RoundButton xl(56)만큼 높이를 늘 잡아 둡니다(로그인과 같은 값). */
 .verification-code-screen-header {
   display: flex;
   flex-direction: row;
@@ -37,7 +36,7 @@
   gap: var(--libitum-spacing-16);
 }
 
-/* 제목 · 안내 묶음(로그인과 같은 값). */
+/* 제목 · 안내 묶음입니다(로그인과 같은 값). */
 .verification-code-screen-heading {
   display: flex;
   flex-direction: column;
@@ -54,15 +53,15 @@
   letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
 }
 
-/* 안내와 번호는 붙여 둔다(번호가 안내 바로 아래). */
+/* 안내와 번호는 붙여 둡니다(번호가 안내 바로 아래). */
 .verification-code-screen-sent {
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-4);
 }
 
-/* ⚠ 알려진 대비 미달: caption(11px)은 4.5:1이 필요한데 gray.600은 배경 대비 약 2.1:1이다.
-   로그인 안내와 같은 값이다(2026-09-21). */
+/* ⚠ 알려진 대비 미달: caption(11px)은 4.5:1이 필요한데 gray.600은 배경 대비 약
+   2.1:1입니다. 로그인 안내와 같은 값입니다(2026-09-21). */
 .verification-code-screen-description,
 .verification-code-screen-resend-hint {
   color: var(--libitum-color-gray-600);
@@ -82,8 +81,8 @@
   letter-spacing: var(--libitum-typography-label-l-letter-spacing);
 }
 
-/* 한 자리 칸 넷 · 카운트다운 · Resend 행은 가로 가운데로 둔다. 칸 크기는
-   CompactNumericInput L(72 × 80)이 진다. */
+/* 한 자리 칸 넷 · 카운트다운 · Resend 행은 가로 가운데로 둡니다. 칸 크기는
+   CompactNumericInput L(72 × 80)이 집니다. */
 .verification-code-screen-input {
   display: flex;
   flex-direction: row;
@@ -92,17 +91,19 @@
   flex-shrink: 0;
 }
 
-/* 활성 칸: 흰 면 + brand.primary 경계.
-   FE override(2026-09-21 디자인 반영): CompactNumericInput 정본의 포커스 경계는 brand.strong이다.
-   brand.primary는 흰 면 대비 약 3.0:1로 포커스 표시 기준(3:1)에 겨우 닿는다. */
+/* 활성 칸: 흰 면 + brand.primary 경계입니다.
+   FE override(2026-09-21 디자인 반영): CompactNumericInput 정본의 포커스 경계는
+   brand.strong입니다. brand.primary는 흰 면 대비 약 3.0:1로 포커스 표시
+   기준(3:1)에 겨우 닿습니다. */
 .verification-code-screen-input .ui-lynx-compact-numeric-input-focused {
   background-color: var(--libitum-color-white);
   border-width: var(--libitum-stroke-width-thin);
   border-color: var(--libitum-color-brand-primary);
 }
 
-/* 카운트다운과 Resend 글자 사이를 약 8로 붙인다. Resend는 누르는 자리를 48로 잡아 글자 위에
-   약 16이 비므로, 행을 8 끌어올려 보이는 간격을 8로 맞춘다(누르는 자리는 그대로다). */
+/* 카운트다운과 Resend 글자 사이를 약 8로 붙입니다. Resend는 누르는 자리를 48로
+   잡아 글자 위에 약 16이 비므로, 행을 8 끌어올려 보이는 간격을 8로 맞춥니다
+   (누르는 자리는 그대로입니다). */
 .verification-code-screen-timing {
   display: flex;
   flex-direction: column;

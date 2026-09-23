@@ -1,0 +1,144 @@
+/* `OnboardingQuizCards`의 시각 값을 소유합니다. 선택자는 컴포넌트를 쪼개기 전
+   `onboarding-screen.css`에 있던 이름 그대로입니다 — 자동 계층이 클래스 문자열의
+   시각 연결을 보지 못해, 이름을 바꾸면 빠뜨린 선택자가 에러 없이 스타일만 안 먹는
+   형태로 남습니다. */
+
+/* 둘째 스텝: 카드 셋이 겹쳐 쌓이는 400 높이 영역입니다. 카드마다 높이는
+   400 - 48이고, 뒤로 갈수록 24씩 위로 올라가 앞 카드 위로 24만 보입니다. */
+.onboarding-screen-stack {
+  position: relative;
+  height: 400px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.onboarding-screen-stack-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(100% - var(--libitum-spacing-48));
+  display: flex;
+  flex-direction: column;
+}
+
+.onboarding-screen-stack-card .ui-lynx-card {
+  flex: 1;
+}
+
+/* 쌓임 순서는 z-index가 집니다 — 맨 앞이 가장 위입니다. */
+.onboarding-screen-stack-card-back {
+  top: 0;
+  z-index: var(--libitum-elevation-z-basement);
+}
+
+.onboarding-screen-stack-card-middle {
+  top: var(--libitum-spacing-24);
+  z-index: var(--libitum-elevation-z-default);
+}
+
+.onboarding-screen-stack-card-front {
+  top: var(--libitum-spacing-48);
+  z-index: var(--libitum-elevation-z-sticky);
+}
+
+/* 맨 앞 카드 내용이 카드 높이를 채웁니다. */
+.onboarding-screen-stack-card .ui-lynx-card-regions,
+.onboarding-screen-stack-card .ui-lynx-card-content {
+  flex: 1;
+}
+
+.onboarding-screen-quiz {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* 위 행: 정답 배지는 가로 가운데, 정보 아이콘은 오른쪽 끝(절대 위치)입니다. */
+.onboarding-screen-quiz-top {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboarding-screen-quiz-info {
+  position: absolute;
+  right: 0;
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+/* 가운데: 듣기 문항 — display 크기 표현과 로마자 표기입니다. 남는 높이를
+   먹습니다. */
+.onboarding-screen-quiz-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-12);
+  flex: 1;
+}
+
+/* 재생에 맞춰 한 글자씩 gray.400 → brand.primary로 칠합니다. CSS 상속이 꺼져
+   있어 안쪽 글자마다 타이포를 다시 적습니다. */
+.onboarding-screen-quiz-syllable {
+  color: var(--libitum-color-gray-400);
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+.onboarding-screen-quiz-syllable-filled {
+  color: var(--libitum-color-brand-primary);
+}
+
+/* 로마자 표기: heading-s 타이포 · fg.neutral-muted입니다. heading-s(18px Bold)는
+   큰 텍스트 기준(18.67px Bold)에 못 미쳐 4.5:1이 필요하고, gray.600(2.1:1)·
+   gray.700(3.4:1)은 미달이라 design-system이 밝은 표면 일반 텍스트의 하한으로
+   정한 fg.neutral-muted(6.6:1)를 씁니다. */
+.onboarding-screen-quiz-romanization {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 카드 아래 끝의 재생(정지) · 다시 듣기 RoundButton 행입니다. prompt가 남는
+   높이를 먹어 이 행이 카드 바닥에 붙습니다. */
+.onboarding-screen-quiz-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-16);
+}
+
+/* 다시 듣기(RoundButton l, 터치 영역 48)와 같은 폭의 빈 자리입니다. */
+.onboarding-screen-quiz-controls-spacer {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+}
+
+/* 표현과 로마자 표기 묶음입니다. */
+.onboarding-screen-quiz-word {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.onboarding-screen-quiz-text {
+  text-align: center;
+  color: var(--libitum-color-gray-400);
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
