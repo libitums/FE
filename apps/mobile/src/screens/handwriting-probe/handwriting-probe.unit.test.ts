@@ -9,15 +9,14 @@ import {
   type StrokeRenderOptions,
 } from "./handwriting-probe";
 
-// 계약: .agent-harness/work/lib-263/spec.md §1.3~§1.7 (순수 함수 둘) · §2.7(표면 상수)
-// · §6.1 unit 표의 PD1~PD6 · SD1~SD6 · SZ1. 형태의 정본: ../../lib/answer-result.unit.test.ts
+// 형태의 정본: ../../lib/answer-result.unit.test.ts
 //
-// 획 좌표 타입은 `lib/handwriting-recognition`이 소유한다 — 접점과 화면이 함께 쓰는
-// 어휘라 화면 무관이고, `screens/` → `lib/`가 이 저장소의 의존 방향이다.
+// 획 좌표 타입은 `lib/handwriting-recognition`이 소유합니다 — 접점과 화면이 함께
+// 쓰는 어휘라 화면 무관이고, `screens/` → `lib/`가 이 저장소의 의존 방향입니다.
 //
-// 기대 문자열은 계약 §1.5의 표를 그대로 옮긴 것이다. 서식 규칙(소수점 첫째 자리 반올림,
-// 음의 0 정규화, 토큰 사이 공백 하나, 쉼표 없음)을 이 파일에서 다시 계산하지 않는다 —
-// 계약이 못박은 문자열과의 동등만 본다.
+// 기대 문자열은 계약의 표를 그대로 옮긴 것입니다. 서식 규칙(소수점 첫째 자리
+// 반올림, 음의 0 정규화, 토큰 사이 공백 하나, 쉼표 없음)을 이 파일에서 다시
+// 계산하지 않습니다 — 계약이 못박은 문자열과의 동등만 봅니다.
 
 const options: StrokeRenderOptions = {
   width: 300,
@@ -26,7 +25,7 @@ const options: StrokeRenderOptions = {
   strokeWidth: 6,
 };
 
-// 획이 하나도 없을 때의 문서. 빈 획만 있는 목록도 이것과 같아야 한다(§1.5).
+// 획이 하나도 없을 때의 문서입니다. 빈 획만 있는 목록도 이것과 같아야 합니다.
 const emptyDocument =
   '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"></svg>';
 
@@ -35,8 +34,8 @@ test("빈 획의 path 데이터는 빈 문자열이다", () => {
   expect(strokePathData([])).toBe("");
 });
 
-// PD2 — ⭐ 점이 하나뿐인 획도 눈에 보여야 한다(§1.5). 자기 자신으로 가는 `L`이
-// 길이 0인 subpath를 만들고, `stroke-linecap="round"`가 그것을 원으로 그린다.
+// PD2 — ⭐ 점이 하나뿐인 획도 눈에 보여야 합니다. 자기 자신으로 가는 `L`이 길이
+// 0인 subpath를 만들고, `stroke-linecap="round"`가 그것을 원으로 그립니다.
 test("점이 하나인 획은 자기 자신으로 가는 L을 달아 길이 0인 subpath가 된다", () => {
   expect(strokePathData([{ x: 4, y: 5 }])).toBe("M 4 5 L 4 5");
 });
@@ -90,12 +89,12 @@ test("획이 0개면 path 없는 빈 SVG 문서다", () => {
   expect(document).not.toContain("<path");
 });
 
-// SD2 — 빈 획은 `<path>`를 만들지 않으므로 획이 0개인 것과 문자열이 같다.
+// SD2 — 빈 획은 `<path>`를 만들지 않으므로 획이 0개인 것과 문자열이 같습니다.
 test("빈 획만 있는 목록은 획이 0개인 것과 같은 문서다", () => {
   expect(strokesSvgDocument([[]], options)).toBe(emptyDocument);
 });
 
-// SD3 — 속성 이름과 순서가 계약이다(§1.7).
+// SD3 — 속성 이름과 순서가 계약입니다.
 test("획 하나는 계약이 고정한 속성과 순서를 가진 path 하나가 된다", () => {
   expect(strokesSvgDocument([[{ x: 4, y: 5 }]], options)).toBe(
     '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">' +
@@ -119,8 +118,8 @@ test("획이 둘이면 path가 둘이고 d 값이 입력 순서 그대로다", (
 
   const document = strokesSvgDocument(strokes, options);
 
-  // `match`가 아니라 분할로 센다 — 0건일 때 `match`는 `null`이라 실패 메시지가
-  // 「개수가 몇이어야 하는데 몇이다」를 말하지 못한다.
+  // `match`가 아니라 분할로 셉니다 — 0건일 때 `match`는 `null`이라 실패 메시지가
+  // 「개수가 몇이어야 하는데 몇이다」를 말하지 못합니다.
   expect(document.split("<path").length - 1).toBe(2);
   expect([...document.matchAll(/ d="([^"]*)"/g)].map((match) => match[1])).toEqual([
     "M 0 0 L 1 1",
@@ -129,7 +128,7 @@ test("획이 둘이면 path가 둘이고 d 값이 입력 순서 그대로다", (
 });
 
 // SD5 — `viewBox`는 항상 `0 0 width height`이고, 크기도 좌표와 같은 서식 함수를
-// 지난다(§1.4 · §1.6).
+// 지납니다.
 test("width와 height는 좌표와 같은 서식으로 viewBox에 들어간다", () => {
   expect(
     strokesSvgDocument([], { width: 12.34, height: 45.67, color: "#1A1C20", strokeWidth: 6 }),
@@ -138,7 +137,8 @@ test("width와 height는 좌표와 같은 서식으로 viewBox에 들어간다",
   );
 });
 
-// SD6 — 색·굵기는 함수 밖에서 들어온다. 함수 안에 16진 색을 박지 않는다(ADR-0014).
+// SD6 — 색·굵기는 함수 밖에서 들어옵니다. 함수 안에 16진 색을 박지 않습니다
+// (ADR-0014).
 test("색과 굵기는 옵션에서 오고 출력의 그 자리만 바뀐다", () => {
   const document = strokesSvgDocument([[{ x: 4, y: 5 }]], {
     ...options,
@@ -154,8 +154,8 @@ test("색과 굵기는 옵션에서 오고 출력의 그 자리만 바뀐다", (
 });
 
 // ⭐ 색이 호스트가 푸는 `current-color`가 아니라 문자열 안의 SVG 속성이라는 것이
-// 계약의 결정이다(§1.6) — Q1의 「그었는데 안 보인다」가 좌표 수집 실패인지 색 해석
-// 실패인지로 갈리는 것을 막는다.
+// 계약의 결정입니다 — Q1의 「그었는데 안 보인다」가 좌표 수집 실패인지 색 해석
+// 실패인지로 갈리는 것을 막습니다.
 test("문서는 색을 current-color가 아니라 SVG stroke 속성으로 싣는다", () => {
   const document = strokesSvgDocument([[{ x: 4, y: 5 }]], options);
 

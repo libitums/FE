@@ -4,13 +4,10 @@ import { fireEvent, render, screen, within } from "@lynx-js/react/testing-librar
 import type { TermsSection } from "./terms.contract";
 import { TermsScreen } from "./TermsScreen";
 
-// `ui` 계층: 컴포넌트 렌더와 상호작용(ADR-0006 D4). fixture는 이 파일 안에서 짓는다
-// (`terms-sections.ts`를 import하지 않는다 — test-plan.md 「ui」 서문). `toHaveClass` ·
-// `toHaveStyle` · `toBeVisible`을 쓰지 않는다(`docs/conventions/code.md`). 텍스트
-// 질의(`getByText`)를 쓰지 않는다 — testid로 질의한다.
-//
-// 계약: .agent-harness/work/lib-259/spec.md §2.9 · §4.4 · §4.8 · §4.10.
-// 계획: .agent-harness/work/lib-259/test-plan.md ui § `TermsScreen.ui.test.tsx` TM1~TM7.
+// `ui` 계층: 컴포넌트 렌더와 상호작용(ADR-0006 D4). fixture는 이 파일 안에서 짓습니다
+// (`terms-sections.ts`를 import하지 않습니다). `toHaveClass`·`toHaveStyle`·
+// `toBeVisible`을 쓰지 않습니다(`docs/conventions/code.md`). 텍스트 질의(`getByText`)를
+// 쓰지 않습니다 — testid로 질의합니다.
 
 const sections: readonly TermsSection[] = [
   {
@@ -25,7 +22,6 @@ const sections: readonly TermsSection[] = [
   },
 ];
 
-// TM1: 절과 문단이 fixture 순서대로 그려지고 title·paragraph 텍스트가 fixture 값이다.
 test("[TM1] 절과 문단이 fixture 순서대로 그려지고 텍스트가 fixture 값이다", () => {
   render(<TermsScreen sections={sections} onExit={vi.fn()} />);
 
@@ -45,7 +41,6 @@ test("[TM1] 절과 문단이 fixture 순서대로 그려지고 텍스트가 fixt
   }
 });
 
-// TM2: 나가기 텍스트·이름이 "설정으로"이고 tap → onExit 정확히 1회다(D-d).
 test("[TM2] terms-screen-exit 텍스트·이름이 '설정으로'이고 tap → onExit 정확히 1회다", () => {
   const onExit = vi.fn();
   render(<TermsScreen sections={sections} onExit={onExit} />);
@@ -59,7 +54,6 @@ test("[TM2] terms-screen-exit 텍스트·이름이 '설정으로'이고 tap → 
   expect(onExit).toHaveBeenCalledTimes(1);
 });
 
-// TM3: 절 제목마다 accessibility-traits="header"다(ADR-0016 D12 G1).
 test("[TM3] 절 제목마다 accessibility-traits='header'다", () => {
   render(<TermsScreen sections={sections} onExit={vi.fn()} />);
 
@@ -71,8 +65,6 @@ test("[TM3] 절 제목마다 accessibility-traits='header'다", () => {
   }
 });
 
-// TM4: 화면 안 header 목록이 DOM 순서로 [화면 제목, 절 제목들]이다 — 더 붙지도
-// 덜 붙지도 않았다.
 test("[TM4] 화면 안 header 목록이 DOM 순서로 화면 제목 → 절 제목 순이다", () => {
   const { container } = render(<TermsScreen sections={sections} onExit={vi.fn()} />);
 
@@ -85,8 +77,6 @@ test("[TM4] 화면 안 header 목록이 DOM 순서로 화면 제목 → 절 제�
   ]);
 });
 
-// TM5: 스크롤 3분할 — 직계 요소 자식이 정확히 하나이고 terms-screen-content다.
-// 머리(제목·나가기)는 스크롤 밖이고 스크롤에 accessibility-* 0개다.
 test("[TM5] 스크롤 3분할 — 직계 자식이 terms-screen-content 하나이고 머리가 스크롤 밖이다", () => {
   render(<TermsScreen sections={sections} onExit={vi.fn()} />);
 
@@ -107,7 +97,6 @@ test("[TM5] 스크롤 3분할 — 직계 자식이 terms-screen-content 하나�
   expect(screen.getByTestId("terms-screen-exit")).toBeInTheDocument();
 });
 
-// TM6: 문단 <text>에 accessibility-*가 0개이고, 화면 안 조작 단위가 나가기 하나다.
 test("[TM6] 문단에 accessibility-*가 0개이고 화면 안 조작 단위가 나가기 하나다", () => {
   const { container } = render(<TermsScreen sections={sections} onExit={vi.fn()} />);
 
@@ -127,7 +116,6 @@ test("[TM6] 문단에 accessibility-*가 0개이고 화면 안 조작 단위가 
   ).toEqual(["terms-screen-exit"]);
 });
 
-// TM7: sections=[] → 본문 상자는 서고 절이 0개다.
 test("[TM7] sections=[] → 본문 상자가 서고 절이 0개다", () => {
   render(<TermsScreen sections={[]} onExit={vi.fn()} />);
 

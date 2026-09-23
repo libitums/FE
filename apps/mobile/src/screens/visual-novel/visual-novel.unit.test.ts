@@ -183,13 +183,11 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
   });
 });
 
-// -------------------------------- 롤플레이 연습 입력 (LIB-255 계약 §2.7 · §3)
-// 계획: .agent-harness/work/lib-255/test-plan.md unit § `visual-novel.unit.test.ts`
-// (추가). 케이스 ID는 계획의 V1~V4 그대로다. `practiceVisualNovelProgress`는
-// 여정 상태를 읽을 매개변수가 없다(계약 §6 ①) — 연습은 늘 처음부터 선다.
+// -------------------------------------------------------------- 롤플레이 연습 입력
+// `practiceVisualNovelProgress`는 여정 상태를 읽을 매개변수가 없습니다 — 연습은 늘
+// 처음부터 섭니다.
 
-describe("연습 비주얼 노벨 시작 입력 (LIB-255)", () => {
-  // V1
+describe("연습 비주얼 노벨 시작 입력", () => {
   it("V1. 연습 시작 입력이 처음 viewing 상태를 만든다 — arrive·장면 1 / 3", () => {
     const story = visualNovelStoryFor(id);
     const progress = practiceVisualNovelProgress();
@@ -200,7 +198,6 @@ describe("연습 비주얼 노벨 시작 입력 (LIB-255)", () => {
     expect(visualNovelProgressLabel(session)).toBe("장면 1 / 3");
   });
 
-  // V2
   it("V2. 연습 progress로 마지막 beat에 닿으면 completedNow가 true이고 이야기 완료를 발화한다", () => {
     const viewingLastBeat = { mode: "viewing", beatIndex: 1, replaying: false } as const;
 
@@ -210,7 +207,8 @@ describe("연습 비주얼 노벨 시작 입력 (LIB-255)", () => {
     expect(outcome.announcement).toBe("이야기 완료");
   });
 
-  // V3
+  // V3 — replaying 여부가 completedNow 판정에 끼면 안 됩니다. V2와 같은 입력에
+  // replaying만 true로 바꿔도 결과가 갈리지 않는다는 것을 봅니다.
   it("V3. 같은 호출을 replaying: true로 해도 회차마다 completedNow가 true다", () => {
     const viewingLastBeatReplay = { mode: "viewing", beatIndex: 1, replaying: true } as const;
 
@@ -220,8 +218,7 @@ describe("연습 비주얼 노벨 시작 입력 (LIB-255)", () => {
   });
 });
 
-describe("practiceVisualNovelExitOutcome (LIB-255)", () => {
-  // V4
+describe("practiceVisualNovelExitOutcome", () => {
   it("V4. arrive·find는 incomplete이고 enter는 completed다", () => {
     expect(practiceVisualNovelExitOutcome("arrive")).toBe("incomplete");
     expect(practiceVisualNovelExitOutcome("find")).toBe("incomplete");

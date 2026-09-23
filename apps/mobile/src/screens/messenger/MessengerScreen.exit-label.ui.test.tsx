@@ -5,14 +5,10 @@ import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import type { MessengerConversation } from "./messenger.contract";
 import { MessengerScreen } from "./MessengerScreen";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 나가기 라벨 상호작용을 본다 (ADR-0006 D4).
+// `ui` 계층: 실제 컴포넌트를 렌더하고 나가기 라벨 상호작용을 봅니다 (ADR-0006 D4).
 //
-// 계약: .agent-harness/work/lib-255/spec.md §2.7 「세 화면 …변경」 · §4.3 「나가기」.
-// 계획: .agent-harness/work/lib-255/test-plan.md ui § `*.exit-label.ui.test.tsx` X1~X4.
-//
-// 기존 `messenger-components.ui.test.tsx` · `messenger-accessibility.ui.test.tsx`는
-// 이 파일과 별도이고 한 글자도 고치지 않는다(수용 기준 4) — 이 파일은 `exitLabel` prop만
-// 다룬다.
+// 기존 `messenger-components.ui.test.tsx`·`messenger-accessibility.ui.test.tsx`는 이
+// 파일과 별도이고 한 글자도 고치지 않습니다 — 이 파일은 `exitLabel` prop만 다룹니다.
 
 const conversation: MessengerConversation = {
   id: "appointment-confirmation",
@@ -27,8 +23,7 @@ const conversation: MessengerConversation = {
   ],
 };
 
-describe("MessengerScreen 나가기 라벨 (LIB-255)", () => {
-  // X1
+describe("MessengerScreen 나가기 라벨", () => {
   it("[X1] exitLabel=목록으로(roleplay) → 나가기 텍스트·accessibility-label이 목록으로다", () => {
     render(
       <MessengerScreen
@@ -48,7 +43,6 @@ describe("MessengerScreen 나가기 라벨 (LIB-255)", () => {
     expect(exit).toHaveAttribute("accessibility-element", "true");
   });
 
-  // X2
   it("[X2] 목록으로 상태에서 나가기 tap → onExit가 기존과 같은 인자('incomplete')로 정확히 1회", () => {
     const onExit = vi.fn();
     render(
@@ -68,7 +62,6 @@ describe("MessengerScreen 나가기 라벨 (LIB-255)", () => {
     expect(onExit).toHaveBeenCalledWith("incomplete");
   });
 
-  // X3
   it("[X3] exitLabel=맵으로(journey) → 나가기 텍스트·accessibility-label이 맵으로다", () => {
     render(
       <MessengerScreen
@@ -86,7 +79,6 @@ describe("MessengerScreen 나가기 라벨 (LIB-255)", () => {
     expect(exit).toHaveAttribute("accessibility-label", "맵으로");
   });
 
-  // X4
   it("[X4] exitLabel 생략 → 기본값 맵으로", () => {
     render(
       <MessengerScreen

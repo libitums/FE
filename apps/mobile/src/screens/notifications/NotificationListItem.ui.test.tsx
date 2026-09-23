@@ -5,15 +5,12 @@ import { notificationDestinationLabel, notificationItemAccessibilityLabel } from
 import type { NotificationItem } from "./notifications.contract";
 import { NotificationListItem } from "./NotificationListItem";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 본다 (ADR-0006 D4). 로직을 다시
-// 짓지 않는다 — 기대값은 순수 함수(`notificationItemAccessibilityLabel` ·
+// `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다 (ADR-0006 D4). 로직을
+// 다시 짓지 않습니다 — 기대값은 순수 함수(`notificationItemAccessibilityLabel`·
 // `notificationDestinationLabel`)의 결과로 비교하고, 항목 데이터는 이 파일 안의
-// fixture로 준다(`notification-items.ts`를 import하지 않는다 — 다른 fixture로도
-// 통과해야 한다, code.md 「임시 입력값의 이음매」). `toHaveClass` · `toHaveStyle`을
-// 쓰지 않는다. 텍스트 질의(`getByText`)를 쓰지 않는다 — testid로 질의한다.
-//
-// 계약: .agent-harness/work/lib-257/spec.md §2.7 · §4.4 · §4.5.
-// 계획: .agent-harness/work/lib-257/test-plan.md ui § `NotificationListItem.ui.test.tsx` LI1~LI6.
+// fixture로 줍니다(`notification-items.ts`를 import하지 않습니다 — 다른 fixture로도
+// 통과해야 합니다, code.md 「임시 입력값의 이음매」). `toHaveClass`·`toHaveStyle`을
+// 쓰지 않습니다. 텍스트 질의(`getByText`)를 쓰지 않습니다 — testid로 질의합니다.
 
 const messengerItem: NotificationItem = {
   id: "notification-messenger",
@@ -47,7 +44,6 @@ const fixtures: readonly NotificationItem[] = [
 ];
 
 describe("NotificationListItem UI", () => {
-  // LI1
   describe("[LI1] 루트의 접근성 채널", () => {
     for (const item of fixtures) {
       it(`${item.target.kind} — accessibility-element·traits·label이 정확하다`, () => {
@@ -64,7 +60,6 @@ describe("NotificationListItem UI", () => {
     }
   });
 
-  // LI2
   describe("[LI2] 메시지·행선지 텍스트", () => {
     for (const item of fixtures) {
       it(`${item.target.kind} — 메시지는 item.message, 행선지는 notificationDestinationLabel(item.target.kind)`, () => {
@@ -80,7 +75,6 @@ describe("NotificationListItem UI", () => {
     }
   });
 
-  // LI3
   describe("[LI3] 루트 tap이 onSelect를 정확히 1회, 그 항목으로 올린다", () => {
     for (const item of fixtures) {
       it(`${item.target.kind}`, () => {
@@ -95,7 +89,7 @@ describe("NotificationListItem UI", () => {
     }
   });
 
-  // LI4 (ADR-0016 D5 — 보이는 이름을 지는 요소를 가리지 않는다)
+  // LI4 — 보이는 이름을 지는 요소를 가리지 않습니다(ADR-0016 D5).
   describe("[LI4] 가림 없음", () => {
     for (const item of fixtures) {
       it(`${item.target.kind} — 글 묶음 래퍼가 루트 안에 있고, 가림 속성이 트리 어디에도 없다`, () => {
@@ -117,8 +111,8 @@ describe("NotificationListItem UI", () => {
         expect(textWrapper).not.toHaveAttribute("accessibility-elements-hidden");
         expect(container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
 
-        // 목적지 아이콘은 testid가 없다(계약 §4.6) — 클래스 셀렉터로 찾는다. 아이콘의
-        // `content` 값(시각 값)은 단언하지 않는다.
+        // 목적지 아이콘은 testid가 없습니다 — 클래스 셀렉터로 찾습니다. 아이콘의
+        // `content` 값(시각 값)은 단언하지 않습니다.
         const icon = container.querySelector(".notification-list-item-icon");
         expect(icon).not.toBeNull();
 
@@ -132,7 +126,6 @@ describe("NotificationListItem UI", () => {
     }
   });
 
-  // LI5
   describe("[LI5] 읽음·배지 0건", () => {
     for (const item of fixtures) {
       it(`${item.target.kind} — data-status·data-read 없음, header·disabled trait 0건, 읽음 텍스트 0건`, () => {
@@ -153,7 +146,7 @@ describe("NotificationListItem UI", () => {
     }
   });
 
-  // LI6 — 이음매: 다른 fixture(긴 메시지·임의 id)에서도 LI1·LI2가 성립한다.
+  // LI6 — 이음매입니다. 다른 fixture(긴 메시지·임의 id)에서도 LI1·LI2가 성립합니다.
   describe("[LI6] 이음매 — 임의 fixture에서도 성립한다", () => {
     const longMessageItem: NotificationItem = {
       id: "notification-long-message",

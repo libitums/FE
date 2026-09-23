@@ -3,13 +3,10 @@ import { fireEvent, render, screen, within } from "@lynx-js/react/testing-librar
 
 import { JourneyMapScreen } from "./JourneyMapScreen";
 
-// `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). `toHaveClass` · `toHaveStyle`을
-// 쓰지 않는다. 텍스트 질의(`getByText`)를 쓰지 않는다 — testid로 질의한다.
+// `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). `toHaveClass`·`toHaveStyle`을
+// 쓰지 않습니다. 텍스트 질의(`getByText`)를 쓰지 않습니다 — testid로 질의합니다.
 //
-// 계약: .agent-harness/work/lib-257/spec.md §2.5 · §4.2 · §4.5 · §4.6.
-// 계획: .agent-harness/work/lib-257/test-plan.md ui § `JourneyMapScreen.notifications.ui.test.tsx` JN1~JN9.
-//
-// fixture는 기존 여정 맵 테스트의 공통 props + onOpenNotifications.
+// fixture는 기존 여정 맵 테스트의 공통 props + onOpenNotifications입니다.
 
 function fixture(overrides: { onOpenNotifications?: () => void } = {}) {
   return {
@@ -23,7 +20,6 @@ function fixture(overrides: { onOpenNotifications?: () => void } = {}) {
   };
 }
 
-// JN1
 test("[JN1] journey-map-screen-notifications의 접근성 채널이 정확하다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
@@ -33,7 +29,6 @@ test("[JN1] journey-map-screen-notifications의 접근성 채널이 정확하다
   expect(button).toHaveAttribute("accessibility-label", "알림");
 });
 
-// JN2
 test("[JN2] 버튼 tap → onOpenNotifications 정확히 1회, onStartStep·onStartMessengerUnit 0회", () => {
   const onOpenNotifications = vi.fn();
   const onStartStep = vi.fn();
@@ -57,7 +52,6 @@ test("[JN2] 버튼 tap → onOpenNotifications 정확히 1회, onStartStep·onSt
   expect(onStartMessengerUnit).not.toHaveBeenCalled();
 });
 
-// JN3
 test("[JN3] 버튼과 제목이 스크롤 밖이고, 제목의 부모가 버튼을 품는다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
@@ -72,7 +66,7 @@ test("[JN3] 버튼과 제목이 스크롤 밖이고, 제목의 부모가 버튼�
   expect(title.parentElement).toContainElement(button);
 });
 
-// JN4 (design §2.4 — 배지 0건, 보이는 낱말은 정확히 「알림」)
+// JN4 — 배지 0건, 보이는 낱말은 정확히 「알림」입니다.
 test("[JN4] 버튼 자손이 내용 줄 하나 · svg 하나 · text 하나(그 순서)뿐이고, 가림 없음", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
@@ -96,7 +90,6 @@ test("[JN4] 버튼 자손이 내용 줄 하나 · svg 하나 · text 하나(그 
   }
 });
 
-// JN5
 test("[JN5] 시트가 닫혀 있을 때 journey-map-screen-actions의 accessibility-elements-hidden이 false다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
@@ -106,7 +99,6 @@ test("[JN5] 시트가 닫혀 있을 때 journey-map-screen-actions의 accessibil
   );
 });
 
-// JN6
 test("[JN6] 스텝을 tap해 시트를 열면 journey-map-screen-actions가 true가 되고, 버튼은 여전히 문서에 있다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
@@ -119,7 +111,6 @@ test("[JN6] 스텝을 tap해 시트를 열면 journey-map-screen-actions가 true
   expect(screen.getByTestId("journey-map-screen-notifications")).toBeInTheDocument();
 });
 
-// JN7
 test("[JN7] 시트 닫기 → journey-map-screen-actions가 다시 false다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
@@ -137,7 +128,7 @@ test("[JN7] 시트 닫기 → journey-map-screen-actions가 다시 false다", ()
   );
 });
 
-// JN8 (가드 — 버튼은 제목이 아니다. 스캐폴드에서도 green이어야 한다)
+// JN8 (가드) — 버튼은 제목이 아닙니다. 스캐폴드에서도 green이어야 합니다.
 test("[JN8] header trait를 가진 요소가 journey-map-screen-title 하나다", () => {
   const { container } = render(<JourneyMapScreen {...fixture()} />);
 
@@ -146,7 +137,6 @@ test("[JN8] header trait를 가진 요소가 journey-map-screen-title 하나다"
   expect(headers[0]).toBe(screen.getByTestId("journey-map-screen-title"));
 });
 
-// JN9
 test("[JN9] DOM 순서 — 제목 → 버튼 → 스크롤", () => {
   render(<JourneyMapScreen {...fixture()} />);
 

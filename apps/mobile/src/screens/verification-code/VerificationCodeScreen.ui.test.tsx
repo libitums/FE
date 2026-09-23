@@ -4,13 +4,14 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import { VerificationCodeScreen } from "./VerificationCodeScreen";
 import { verificationCodeValidSeconds } from "./verification-code";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 코드 칸 · 완성 판정 · 카운트다운 · 뒤로가기를 본다
-// (ADR-0006 D4). 완성 판정은 `isVerificationCodeComplete`의 결과를 화면이 그리기만 한다
-// (계약 §2.5) — 이 파일은 그 로직을 다시 적지 않는다.
+// `ui` 계층: 실제 컴포넌트를 렌더하고 코드 칸·완성 판정·카운트다운·뒤로가기를 봅니다
+// (ADR-0006 D4). 완성 판정은 `isVerificationCodeComplete`의 결과를 화면이 그리기만
+// 합니다 — 이 파일은 그 로직을 다시 적지 않습니다.
 //
-// 2026-09-21 디자인 반영: 머리는 로그인과 같은 RoundButton 뒤로가기 · 제목 · 안내 · 번호,
-// 입력은 한 자리 칸 넷(CompactNumericInput), 그 아래 5분 카운트다운 · Resend · Continue다.
-// 칸마다 숫자만 받으므로(input-filter) 옛 TextField 오류 채널(VC-U2 · VC-U8)은 없어졌다.
+// 2026-09-21 디자인 반영: 머리는 로그인과 같은 RoundButton 뒤로가기·제목·안내·번호,
+// 입력은 한 자리 칸 넷(CompactNumericInput), 그 아래 5분 카운트다운·Resend·Continue입니다.
+// 칸마다 숫자만 받으므로(input-filter) 옛 TextField 오류 채널(VC-U2·VC-U8)은
+// 없어졌습니다.
 
 function typeCode(value: string) {
   const EventConstructor = document.defaultView?.CustomEvent;
@@ -41,7 +42,7 @@ function actionUnitIds(container: Element): (string | null)[] {
   );
 }
 
-describe("VerificationCodeScreen (LIB-261)", () => {
+describe("VerificationCodeScreen", () => {
   it("[VC-U1] 제목 · 안내 · 번호 · 칸 넷 · 카운트다운 · Resend · Continue · 뒤로가기가 선다", () => {
     render(
       <VerificationCodeScreen phoneNumber="+82 10 1234 5678" onSubmit={vi.fn()} onExit={vi.fn()} />,
@@ -159,7 +160,7 @@ describe("VerificationCodeScreen (LIB-261)", () => {
       render(<VerificationCodeScreen onSubmit={vi.fn()} onExit={vi.fn()} />);
       const timer = screen.getByTestId("verification-code-screen-timer");
 
-      // 1초짜리 타이머를 한 회차씩 새로 걸므로(다 센 뒤 깨우지 않으려고) 1초씩 흘린다.
+      // 1초짜리 타이머를 한 회차씩 새로 걸므로(다 센 뒤 깨우지 않으려고) 1초씩 흘립니다.
       for (let tick = 0; tick < 3; tick += 1) {
         act(() => {
           vi.advanceTimersByTime(1000);
@@ -180,7 +181,8 @@ describe("VerificationCodeScreen (LIB-261)", () => {
       }
       expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("00:00");
 
-      // 다 센 뒤에는 타이머를 걸지 않는다 — 더 흘려도 바뀌지 않고 대기 중인 타이머도 없다.
+      // 다 센 뒤에는 타이머를 걸지 않습니다 — 더 흘려도 바뀌지 않고 대기 중인 타이머도
+      // 없습니다.
       act(() => {
         vi.advanceTimersByTime(5000);
       });
@@ -206,8 +208,8 @@ describe("VerificationCodeScreen (LIB-261)", () => {
       {},
     );
 
-    // 재전송한 코드는 아직 아무것도 입력되지 않은 상태다. 이전 코드가 남아 있으면
-    // 사용자가 아무것도 치지 않고 Continue를 눌러 옛 코드를 제출하게 된다.
+    // 재전송한 코드는 아직 아무것도 입력되지 않은 상태입니다. 이전 코드가 남아 있으면
+    // 사용자가 아무것도 치지 않고 Continue를 눌러 옛 코드를 제출하게 됩니다.
     expect(screen.getByTestId("verification-code-screen-submit")).toHaveAttribute(
       "data-complete",
       "false",
@@ -215,7 +217,7 @@ describe("VerificationCodeScreen (LIB-261)", () => {
     fireEvent.tap(submitButton(), {});
     expect(onSubmit).not.toHaveBeenCalled();
 
-    // 지운 뒤에도 새 코드를 받는다.
+    // 지운 뒤에도 새 코드를 받습니다.
     typeCode("5678");
     expect(screen.getByTestId("verification-code-screen-submit")).toHaveAttribute(
       "data-complete",

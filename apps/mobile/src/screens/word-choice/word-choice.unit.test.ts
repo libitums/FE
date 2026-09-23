@@ -21,18 +21,16 @@ import {
   type WordChoiceSessionState,
 } from "./word-choice";
 
-// 계약: .agent-harness/work/lib-229/spec.md §3.1 (unit — required, 작업 단위 W3)
-// · §1.7(c) 순수 함수 열의 표 · §1.5(c) 타입.
-// 기대값의 정본은 계약이다 — 구현에서 베끼지 않는다.
+// 기대값의 정본은 계약입니다 — 구현에서 베끼지 않습니다.
 //
-// DOM·컴포넌트를 import하지 않는다 — 순수 함수 열 + 문항 데이터 자리만 본다.
-// toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없다
+// DOM·컴포넌트를 import하지 않습니다 — 순수 함수 열 + 문항 데이터 자리만 봅니다.
+// toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없습니다
 // (docs/conventions/code.md 「jest-dom 매처는 절반만 쓴다」 · ADR-0006 D4).
 //
-// 계약 §1.5(d) · §8.2 보류 1·2: wordChoiceQuestionsByStep의 값은 이 계약이 지어내지
-// 않는다 — 다섯 키 전부 빈 배열이다. 그래서 이 파일의 픽스처는 상수를 읽지 않고
-// **파일 안에서 직접 만든다**. 「데이터 불변식」(answerOrder/answerIndex 범위 · 문항이
-// 서로 다른가) 단언은 값이 없는 지금 세우지 않는다.
+// wordChoiceQuestionsByStep의 값은 이 계약이 지어내지 않습니다 — 다섯 키 전부 빈
+// 배열입니다. 그래서 이 파일의 픽스처는 상수를 읽지 않고 **파일 안에서 직접
+// 만듭니다**. 「데이터 불변식」(answerOrder/answerIndex 범위·문항이 서로 다른가)
+// 단언은 값이 없는 지금 세우지 않습니다.
 
 const stepIds: readonly JourneyStepId[] = [
   "greeting",
@@ -42,8 +40,8 @@ const stepIds: readonly JourneyStepId[] = [
   "directions",
 ];
 
-// 픽스처 — answerIndex가 0인 문항. §3.1의 "answerIndex가 0인 문항에서 0번 보기가
-// correct다" 단언을 세우는 데 쓴다(0을 거짓으로 다루는 자리를 만들지 않는다).
+// 픽스처 — answerIndex가 0인 문항입니다. "answerIndex가 0인 문항에서 0번 보기가
+// correct다" 단언을 세우는 데 씁니다(0을 거짓으로 다루는 자리를 만들지 않습니다).
 const questionAnswer0: WordChoiceQuestion = {
   prompt: "오늘 ___에 갑니다.",
   choices: ["학교", "가방", "우산", "시계"],
@@ -57,7 +55,6 @@ const questionAnswer2: WordChoiceQuestion = {
 };
 
 describe("wordChoiceScreenTitle", () => {
-  // 계약 §3.1: wordChoiceScreenTitle(3) === "3단계 · 단어 선택"
   it("서수 3은 3단계 · 단어 선택이다", () => {
     expect(wordChoiceScreenTitle(3)).toBe("3단계 · 단어 선택");
   });
@@ -72,7 +69,6 @@ describe("wordChoiceScreenTitle", () => {
 });
 
 describe("wordChoiceProgressLabel", () => {
-  // 계약 §3.1: 진행 문구 "문항 1 / 3"
   it("첫 문항(0, 3)은 문항 1 / 3이다", () => {
     expect(wordChoiceProgressLabel(0, 3)).toBe("문항 1 / 3");
   });
@@ -87,7 +83,6 @@ describe("wordChoiceProgressLabel", () => {
 });
 
 describe("judgeWordChoice", () => {
-  // 계약 §3.1: answerIndex가 0인 문항에서 0번 보기가 correct다
   it("정답 인덱스를 고르면 correct다 — answerIndex가 0인 문항도 포함한다", () => {
     expect(judgeWordChoice(questionAnswer0, 0)).toBe("correct");
     expect(judgeWordChoice(questionAnswer2, 2)).toBe("correct");
@@ -106,7 +101,7 @@ describe("judgeWordChoice", () => {
 });
 
 describe("choiceResultAt", () => {
-  // 계약 §3.1: 고르지 않은 보기는 정답이어도 null · 0번 보기를 골라도 판정이 난다
+  // 고르지 않은 보기는 정답이어도 null입니다. 0번 보기를 골라도 판정이 납니다.
   it("응답 전에는 어느 보기도 판정을 지지 않는다 — 전부 null", () => {
     const state: WordChoiceSessionState = {
       questionIndex: 0,
@@ -162,7 +157,7 @@ describe("choiceResultAt", () => {
 });
 
 describe("optionAccessibilityLabel", () => {
-  // 계약 §3.1: null → 이름만 · 판정 있으면 ", " 접미사
+  // null → 이름만입니다. 판정 있으면 ", " 접미사가 붙습니다.
   it("판정이 없으면 접미사를 붙이지 않는다 — 텍스트 그대로", () => {
     expect(optionAccessibilityLabel("학교", null)).toBe("학교");
   });
@@ -193,7 +188,7 @@ describe("optionAccessibilityLabel", () => {
 });
 
 describe("hasAnswered", () => {
-  // 계약 §1.7(c) 표: selectedChoiceIndex !== null — 응답 여부는 파생이다
+  // selectedChoiceIndex !== null — 응답 여부는 파생입니다.
   it("고른 보기가 없으면 false다", () => {
     expect(
       hasAnswered({ questionIndex: 0, selectedChoiceIndex: null, answeredChoiceIndexes: [] }),
@@ -218,7 +213,7 @@ describe("hasAnswered", () => {
 });
 
 describe("isWordChoiceSessionComplete", () => {
-  // 계약 §1.7(c) 표: questionIndex >= total — 완료는 파생이다
+  // questionIndex >= total — 완료는 파생입니다.
   it("마지막 문항에 응답만 한 상태는 아직 완료가 아니다", () => {
     expect(
       isWordChoiceSessionComplete(
@@ -252,7 +247,7 @@ describe("isWordChoiceSessionComplete", () => {
 });
 
 describe("wordChoiceSessionReducer", () => {
-  // 계약 §3.1: 전이 네 줄 + 같은 참조 둘 — 듣기의 전이표와 같다(§1.7(c) 표).
+  // 전이 네 줄 + 같은 참조 둘입니다 — 듣기의 전이표와 같습니다.
 
   it("selectChoice — 응답 전이면 고른 보기가 기록된다 — 이력은 아직 안 는다", () => {
     const next = wordChoiceSessionReducer(initialWordChoiceSessionState, {
@@ -272,7 +267,7 @@ describe("wordChoiceSessionReducer", () => {
     expect(next).toEqual({ questionIndex: 0, selectedChoiceIndex: 0, answeredChoiceIndexes: [] });
   });
 
-  // 막는 자리가 리듀서 하나다 — 컴포넌트가 아니다(§1.6(a)와 같은 규율).
+  // 막는 자리가 리듀서 하나입니다 — 컴포넌트가 아닙니다.
   it("selectChoice — 이미 응답했으면 다른 보기를 골라도 같은 참조를 돌려준다", () => {
     const state: WordChoiceSessionState = {
       questionIndex: 0,
@@ -400,8 +395,8 @@ describe("initialWordChoiceSessionState (고정 데이터)", () => {
   });
 });
 
-describe("wordChoiceSessionResults (계약 §1.7(c) 표)", () => {
-  // judgeWordChoice를 다시 쓰지 않고 부른다 — 판정의 정본이 하나임을 확인한다.
+describe("wordChoiceSessionResults", () => {
+  // judgeWordChoice를 다시 쓰지 않고 부릅니다 — 판정의 정본이 하나임을 확인합니다.
   const questions: readonly WordChoiceQuestion[] = [questionAnswer0, questionAnswer2];
 
   it("이력과 같은 길이의 결과를 낸다 — i번째는 judgeWordChoice(questions[i], a[i])와 같다", () => {
@@ -435,8 +430,8 @@ describe("wordChoiceSessionResults (계약 §1.7(c) 표)", () => {
 });
 
 describe("wordChoiceQuestionsForStep", () => {
-  // 계약 §1.7(c) 표: wordChoiceQuestionsByStep[id]의 조회. §1.5(d) · §8.2 보류 1·2에
-  // 따라 값이 아직 없다 — 지금은 다섯 스텝 전부 빈 배열을 돌려주는 것이 정상 동작이다.
+  // wordChoiceQuestionsByStep[id]의 조회입니다. 값이 아직 없습니다 — 지금은 다섯
+  // 스텝 전부 빈 배열을 돌려주는 것이 정상 동작입니다.
   it("다섯 스텝 전부 wordChoiceQuestionsByStep[id]를 그대로 낸다 — 지금은 빈 배열이다", () => {
     for (const id of stepIds) {
       expect(wordChoiceQuestionsForStep(id)).toEqual(wordChoiceQuestionsByStep[id]);
@@ -451,12 +446,13 @@ describe("wordChoiceQuestionsForStep", () => {
   });
 });
 
-describe("wordChoiceQuestionsByStep (문항 데이터 자리 — 계약 §1.5(d) · §8.2 보류 1·2)", () => {
+describe("wordChoiceQuestionsByStep (문항 데이터 자리)", () => {
   it("다섯 스텝 전부가 있다", () => {
     expect(Object.keys(wordChoiceQuestionsByStep).sort()).toEqual([...stepIds].sort());
   });
 
-  // 값을 지어내지 않았다는 것 자체가 이 단위의 계약이다 — 다섯 키 전부 빈 배열이다.
+  // 값을 지어내지 않았다는 것 자체가 이 단위의 계약입니다 — 다섯 키 전부
+  // 빈 배열입니다.
   it("값을 지어내지 않았다 — 다섯 키 전부 빈 배열이다", () => {
     for (const id of stepIds) {
       expect(wordChoiceQuestionsByStep[id]).toEqual([]);
@@ -464,14 +460,13 @@ describe("wordChoiceQuestionsByStep (문항 데이터 자리 — 계약 §1.5(d)
   });
 });
 
-// ---------------------------------------------------------------- 완료 전이 발화 (LIB-247)
-// 계약: .agent-harness/work/lib-247/spec.md §6.1 (unit — U1~U4) · §3.1(export 목록)
-// · §3.2(시그니처와 반환 문자열). 기대값의 정본은 계약이다 — word-choice.ts에서 베끼지 않는다.
+// ---------------------------------------------------------------- 완료 전이 발화
+// 기대값의 정본은 계약입니다 — word-choice.ts에서 베끼지 않습니다.
 //
-// 「정확히 한 번」은 이 계층이 지지 않는다 — 그것은 `ui`의 X-C다(계약 §6.2).
+// 「정확히 한 번」은 이 계층이 지지 않습니다 — 그것은 `ui`의 X-C입니다.
 
-describe("완료 전이 발화의 상수 둘 (계약 §3.1 표 · §3.2)", () => {
-  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나온다 (ADR-0016 D11-1).
+describe("완료 전이 발화의 상수 둘", () => {
+  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나옵니다 (ADR-0016 D11-1).
   it("완료 문구 상수가 화면에 이미 있는 `문항을 모두 마쳤어요`다", () => {
     expect(wordChoiceCompletionText).toBe("문항을 모두 마쳤어요");
   });
@@ -481,17 +476,17 @@ describe("완료 전이 발화의 상수 둘 (계약 §3.1 표 · §3.2)", () =>
   });
 });
 
-describe("wordChoiceCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
-  // U1 — 오늘 호출자가 넘기는 값(계약 §4.4 표)으로 부르면 §3.2 표의 문자열과
-  // **문자 그대로** 같다.
+describe("wordChoiceCompletionAnnouncement", () => {
+  // U1 — 오늘 호출자가 넘기는 값으로 부르면 정해진 문자열과 **문자 그대로**
+  // 같습니다.
   it("U1 — wordChoiceFinishLabel로 부르면 `문항을 모두 마쳤어요, 결과 보기`다", () => {
     expect(wordChoiceCompletionAnnouncement(wordChoiceFinishLabel)).toBe(
       "문항을 모두 마쳤어요, 결과 보기",
     );
   });
 
-  // U2 — 인자가 형식을 실제로 통과한다. 이 단언이 있어야 「인자 없는 상수 반환」의
-  // 공허함을 피한 것이 지어진다(계약 §6.1 U2 · §3.4 넷째 행).
+  // U2 — 인자가 형식을 실제로 통과합니다. 이 단언이 있어야 「인자 없는 상수 반환」의
+  // 공허함을 피한 것이 지어집니다.
   it("U2 — 다른 인자 둘의 반환이 다르고, 완료 문구 뒤가 쉼표+공백 하나와 그 인자다", () => {
     const withFinish = wordChoiceCompletionAnnouncement("결과 보기");
     const withExit = wordChoiceCompletionAnnouncement("맵으로");
@@ -501,15 +496,16 @@ describe("wordChoiceCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
     expect(withExit.slice(wordChoiceCompletionText.length)).toBe(", 맵으로");
   });
 
-  // U3 — 앞절이 그 화면의 완료 문구 상수를 지난다. 리터럴을 다시 적지 않는다 —
-  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡는다.
+  // U3 — 앞절이 그 화면의 완료 문구 상수를 지납니다. 리터럴을 다시 적지 않습니다 —
+  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡습니다.
   it("U3 — 앞절이 wordChoiceCompletionText와 같은 표를 지난다", () => {
     expect(
       wordChoiceCompletionAnnouncement(wordChoiceFinishLabel).startsWith(wordChoiceCompletionText),
     ).toBe(true);
   });
 
-  // U4 — 부수효과가 없다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도 던지지 않는다.
+  // U4 — 부수효과가 없습니다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도
+  // 던지지 않습니다.
   it("U4 — 같은 인자로 두 번 불러도 같은 값이고 던지지 않는다", () => {
     expect(() => wordChoiceCompletionAnnouncement(wordChoiceFinishLabel)).not.toThrow();
     expect(wordChoiceCompletionAnnouncement(wordChoiceFinishLabel)).toBe(

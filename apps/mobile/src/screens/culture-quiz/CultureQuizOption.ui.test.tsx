@@ -4,16 +4,13 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import type { AnswerResult } from "../../lib/answer-result";
 import { CultureQuizOption } from "./CultureQuizOption";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 본다(ADR-0006 D4). 이 컴포넌트는
-// 상태를 갖지 않는다 — props에서만 파생한다(계약 §4.2 · §4.5). `toHaveClass` ·
-// `toHaveStyle` · `toBeVisible`을 쓰지 않는다(docs/conventions/code.md 「jest-dom
+// `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다(ADR-0006 D4). 이
+// 컴포넌트는 상태를 갖지 않습니다 — props에서만 파생합니다. `toHaveClass`·
+// `toHaveStyle`·`toBeVisible`을 쓰지 않습니다(docs/conventions/code.md 「jest-dom
 // 매처는 절반만 쓴다」).
 //
-// 계약: .agent-harness/work/lib-244/spec.md §4.5(CultureQuizOption 표) · §8.2
-// (ui — required, O1~O5).
-//
-// D7 — WordChoiceOption·ListeningChoice를 import하지 않는다(값·타입 둘 다 0건).
-// 이 파일은 그 두 화면의 어떤 모듈도 참조하지 않는다.
+// WordChoiceOption·ListeningChoice를 import하지 않습니다(값·타입 둘 다 0건) — 이
+// 파일은 그 두 화면의 어떤 모듈도 참조하지 않습니다.
 
 const RESULTS: readonly (AnswerResult | null)[] = [null, "correct", "incorrect"];
 
@@ -70,7 +67,6 @@ test("[O4] 탭하면 onSelect가 자기 index로 정확히 한 번 불린다", (
   expect(onSelect).toHaveBeenCalledWith(2);
 });
 
-// 0은 falsy다 — index={0}으로도 짓는다(계약 §4.5 「truthy 분기를 만들지 않는다」).
 test("[O4] index={0}으로도 onSelect가 0으로 불린다 — 0은 falsy다", () => {
   const onSelect = vi.fn<(index: number) => void>();
   render(<CultureQuizOption index={0} text="세배" result={null} onSelect={onSelect} />);
@@ -81,7 +77,7 @@ test("[O4] index={0}으로도 onSelect가 0으로 불린다 — 0은 falsy다", 
   expect(onSelect).toHaveBeenCalledWith(0);
 });
 
-// 게이트는 리듀서 하나다(계약 §3.3 ②) — 컴포넌트가 둘째 게이트를 두지 않는다.
+// 게이트는 리듀서 하나입니다 — 컴포넌트가 둘째 게이트를 두지 않습니다.
 test("[O4] 판정이 실린 뒤에도 탭하면 onSelect가 불린다 — 게이트는 리듀서다", () => {
   const onSelect = vi.fn<(index: number) => void>();
   render(<CultureQuizOption index={1} text="세배" result="correct" onSelect={onSelect} />);

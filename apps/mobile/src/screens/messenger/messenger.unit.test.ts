@@ -115,13 +115,11 @@ describe("messenger session pure functions", () => {
   });
 });
 
-// -------------------------------- 롤플레이 연습 입력 (LIB-255 계약 §2.7 · §3)
-// 계획: .agent-harness/work/lib-255/test-plan.md unit § `messenger.unit.test.ts`
-// (추가). 케이스 ID는 계획의 M1 그대로다 — 여정 상태를 읽지 않는 시작 입력이
-// `initialMessengerSessionState`와 합성해 처음 상태를 만드는 것을 본다(계약 §6 ①).
+// -------------------------------------------------------------- 롤플레이 연습 입력
 
-describe("practiceMessengerCompletionStatus (LIB-255)", () => {
-  // M1
+describe("practiceMessengerCompletionStatus", () => {
+  // M1 — 시작 입력이 여정 상태를 읽지 않고도 initialMessengerSessionState와 합성해
+  // 처음 상태를 만듭니다. 합성이 깨지면 여기서 잡힙니다.
   it("M1. 연습 시작 입력이 처음 활성 상태를 만든다 — 공개 1개·대화 1 / 2·답장 self-accept", () => {
     const conversation = messengerConversationFor(id);
     const state = initialMessengerSessionState(practiceMessengerCompletionStatus());

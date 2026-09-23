@@ -9,20 +9,16 @@ import {
   sessionOptionStateLabel,
 } from "../../lib/session-options";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 검증한다(ADR-0006 D4).
-// 기대값은 `sessionOptionLabel` · `sessionOptionStateLabel` · `sessionOptionAccessibilityLabel`의
-// 결과로 비교한다 — 문구 리터럴을 이 파일이 다시 짓지 않는다(test-plan.md 「ui」 서문).
-// `toBeChecked` · `toBeVisible` · `toHaveStyle` · `toHaveClass`를 쓰지 않는다
+// `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 검증합니다(ADR-0006 D4).
+// 기대값은 `sessionOptionLabel`·`sessionOptionStateLabel`·`sessionOptionAccessibilityLabel`의
+// 결과로 비교합니다 — 문구 리터럴을 이 파일이 다시 짓지 않습니다.
+// `toBeChecked`·`toBeVisible`·`toHaveStyle`·`toHaveClass`를 쓰지 않습니다
 // (`docs/conventions/code.md` 「jest-dom 매처는 절반만 쓴다」). 토글 상태 판정은
-// `accessibility-label` 접미사로만 한다(ADR-0016) — `accessibility-value`를 쓰지 않는다.
-//
-// 계약: .agent-harness/work/lib-259/spec.md §2.7 · §4.3 · §4.8.
-// 계획: .agent-harness/work/lib-259/test-plan.md ui § `SettingsToggleItem.ui.test.tsx` TG1~TG8.
+// `accessibility-label` 접미사로만 합니다(ADR-0016) — `accessibility-value`를 쓰지
+// 않습니다.
 
 const KEY = sessionOptionKeys[0]!; // "auto-play-audio"
 
-// TG1: value=true — data-checked="true" · accessibility-label = "<라벨>, 켜짐" ·
-// 상태 텍스트 = "켜짐".
 test("[TG1] value=true: data-checked='true' · accessibility-label · 상태 텍스트가 켜짐이다", () => {
   render(<SettingsToggleItem optionKey={KEY} value={true} onToggle={vi.fn()} />);
 
@@ -34,7 +30,6 @@ test("[TG1] value=true: data-checked='true' · accessibility-label · 상태 텍
   );
 });
 
-// TG2: value=false — 세 채널 전부가 value=true와 갈린다(spec §4.3).
 test("[TG2] value=false: data-checked='false' · accessibility-label · 상태 텍스트가 꺼짐이고, 세 채널이 모두 value=true와 갈린다", () => {
   const { unmount } = render(
     <SettingsToggleItem optionKey={KEY} value={true} onToggle={vi.fn()} />,
@@ -61,7 +56,6 @@ test("[TG2] value=false: data-checked='false' · accessibility-label · 상태 �
   expect(stateText.textContent).not.toBe(stateTextWhenOn);
 });
 
-// TG3: 키 둘 각각 — 라벨 텍스트 = sessionOptionLabel(key).
 test.each(sessionOptionKeys)(
   "[TG3] settings-toggle-item-label-%s 텍스트가 sessionOptionLabel(key)와 같다",
   (key) => {
@@ -73,7 +67,6 @@ test.each(sessionOptionKeys)(
   },
 );
 
-// TG4: 루트 tap → onToggle 정확히 1회 · 인자가 optionKey. value가 true·false 둘 다.
 test.each([true, false])(
   "[TG4] value=%s에서 루트 tap → onToggle 1회 · 인자가 optionKey다",
   (value) => {
@@ -87,8 +80,6 @@ test.each([true, false])(
   },
 );
 
-// TG5: 조작 단위가 루트 하나다 — [accessibility-element]·[accessibility-traits="button"]
-// 목록이 각각 settings-toggle-item-<key> 하나.
 test("[TG5] 트리의 조작 단위가 루트 settings-toggle-item-<key> 하나다", () => {
   const { container } = render(
     <SettingsToggleItem optionKey={KEY} value={true} onToggle={vi.fn()} />,
@@ -106,8 +97,7 @@ test("[TG5] 트리의 조작 단위가 루트 settings-toggle-item-<key> 하나�
   ).toEqual([`settings-toggle-item-${KEY}`]);
 });
 
-// TG6 (가드): 두 값 어디에도 accessibility-value · disabled가 없고, accessibility-traits에
-// selected · adjustable이 0건이다(spec §2.7의 버린 값들).
+// TG6 (가드) — 의도적으로 쓰지 않는 값들입니다.
 test.each([true, false])(
   "[TG6] value=%s에서 accessibility-value·disabled·selected·adjustable이 0건이다",
   (value) => {
@@ -122,8 +112,8 @@ test.each([true, false])(
   },
 );
 
-// TG7 (가드): 두 값에서 트리의 class 속성 목록이 한 글자도 갈리지 않는다 —
-// 예약 상태어(ADR-0003 D7)를 늘리지 않았다는 자동 판정(ListeningPrompt.ui의 같은 형태).
+// TG7 (가드) — 예약 상태어(ADR-0003 D7)를 늘리지 않았다는 자동 판정입니다
+// (ListeningPrompt.ui의 같은 형태입니다).
 test("[TG7] 두 값에서 class 속성 목록이 한 글자도 갈리지 않는다", () => {
   const { container: onContainer } = render(
     <SettingsToggleItem optionKey={KEY} value={true} onToggle={vi.fn()} />,
@@ -142,9 +132,7 @@ test("[TG7] 두 값에서 class 속성 목록이 한 글자도 갈리지 않는�
   expect(classesWhenOff).toEqual(classesWhenOn);
 });
 
-// TG8: 표식 묶음이 가림을 진다 — 상태 낱말의 parentElement에
-// accessibility-elements-hidden="true"가 붙고, 라벨 <text>에는 붙지 않는다
-// (ADR-0016 D5). 값은 두 상태 모두 "true"다.
+// TG8 — 표식 묶음이 가림을 집니다(ADR-0016 D5). 값은 두 상태 모두 "true"입니다.
 test.each([true, false])(
   "[TG8] value=%s에서 상태 낱말의 parentElement가 accessibility-elements-hidden='true'이고 라벨에는 없다",
   (value) => {

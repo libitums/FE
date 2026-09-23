@@ -11,7 +11,7 @@ it("C1: special 항목은 appointment와 directions 사이에 삽입된다", () 
     onStartMessengerUnit: vi.fn(),
     completedPhoneCallUnitIds: [] as const,
     onStartPhoneCallUnit: vi.fn(),
-    // LIB-257 ui-scaffold: 필수 prop(계약 §2.5) — 단언은 바뀌지 않는다.
+    // onOpenNotifications도 필수 prop이라 채웁니다 — 이 테스트의 단언과는 무관합니다.
     onOpenNotifications: vi.fn(),
   };
   render(<JourneyMapScreen {...props} />);

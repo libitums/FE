@@ -23,20 +23,19 @@ import {
   type CultureQuizSessionState,
 } from "./culture-quiz";
 
-// 계약: .agent-harness/work/lib-244/spec.md §8.1 (unit — required, U1~U10)
-// · §3.3 순수 함수 여덟 · 상수 하나의 표 · §3.2 타입.
-// 기대값의 정본은 계약이다 — 구현(culture-quiz.ts)에서 베끼지 않는다.
+// 기대값의 정본은 계약입니다 — 구현(culture-quiz.ts)에서 베끼지 않습니다.
 //
-// DOM·컴포넌트를 import하지 않는다 — 순수 함수 열 + 문항 데이터 자리만 본다.
-// toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없다
+// DOM·컴포넌트를 import하지 않습니다 — 순수 함수 열 + 문항 데이터 자리만 봅니다.
+// toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없습니다
 // (docs/conventions/code.md 「jest-dom 매처는 절반만 쓴다」 · ADR-0006 D4).
 //
-// 계약 D5 · §3.4: cultureQuizQuestionsByStep의 값은 이 계약이 지어내지 않는다 —
-// 다섯 키 전부 빈 배열이다. 그래서 이 파일의 픽스처는 export되지 않는 표를 읽지 않고
-// **파일 안에서 직접 만든다**(표 자체가 export되지 않으므로 읽을 수도 없다 — §3.1).
+// 계약 D5: cultureQuizQuestionsByStep의 값은 이 계약이 지어내지 않습니다 — 다섯
+// 키 전부 빈 배열입니다. 그래서 이 파일의 픽스처는 export되지 않는 표를 읽지
+// 않고 **파일 안에서 직접 만듭니다**(표 자체가 export되지 않으므로 읽을 수도
+// 없습니다).
 //
-// U-INV(범위 불변식)는 오늘 쓰지 않는다 — 문항 표가 비어 있어 공허하게 통과한다
-// (계약 §8.1 「U-INV (오늘 쓰지 않는다)」 · D5).
+// U-INV(범위 불변식)는 오늘 쓰지 않습니다 — 문항 표가 비어 있어 공허하게
+// 통과합니다(D5).
 
 const stepIds: readonly JourneyStepId[] = [
   "greeting",
@@ -46,8 +45,9 @@ const stepIds: readonly JourneyStepId[] = [
   "directions",
 ];
 
-// 픽스처 — answerIndex가 0인 문항. U4 · U5의 "answerIndex가 0인 문항에서 0번 보기가
-// correct다" 단언을 세우는 데 쓴다(0을 거짓으로 다루는 자리를 만들지 않는다).
+// 픽스처 — answerIndex가 0인 문항입니다. U4·U5의 "answerIndex가 0인 문항에서 0번
+// 보기가 correct다" 단언을 세우는 데 씁니다(0을 거짓으로 다루는 자리를 만들지
+// 않습니다).
 const questionAnswer0: CultureQuizQuestion = {
   prompt: "설날에 어른께 드리는 인사는?",
   choices: ["세배", "성묘", "차례"],
@@ -61,7 +61,7 @@ const questionAnswer2: CultureQuizQuestion = {
 };
 
 describe("cultureQuizScreenTitle", () => {
-  // 계약 U1: 서수 셋(1·3·5)에서 `${n}단계 · 문화 퀴즈` 형식이다
+  // U1 — 서수 셋(1·3·5)에서 `${n}단계 · 문화 퀴즈` 형식입니다.
   it("서수 1은 1단계 · 문화 퀴즈다", () => {
     expect(cultureQuizScreenTitle(1)).toBe("1단계 · 문화 퀴즈");
   });
@@ -76,7 +76,8 @@ describe("cultureQuizScreenTitle", () => {
 });
 
 describe("cultureQuizProgressLabel", () => {
-  // 계약 U2: cultureQuizProgressLabel(0, 3) === "문항 1 / 3" — 0-based가 1-based 문구가 된다
+  // U2 — cultureQuizProgressLabel(0, 3) === "문항 1 / 3"입니다 — 0-based가
+  // 1-based 문구가 됩니다.
   it("첫 문항(0, 3)은 문항 1 / 3이다", () => {
     expect(cultureQuizProgressLabel(0, 3)).toBe("문항 1 / 3");
   });
@@ -91,9 +92,9 @@ describe("cultureQuizProgressLabel", () => {
 });
 
 describe("cultureQuizQuestionsForStep", () => {
-  // 계약 U3: 다섯 스텝 어느 것에도 던지지 않고 undefined가 아니다.
-  // ⚠ 어느 스텝이 몇 문항인지는 단언하지 않는다 — 값이 임시라(D5) 박으면
-  // 교체가 공짜가 아니게 된다.
+  // U3 — 다섯 스텝 어느 것에도 던지지 않고 undefined가 아닙니다.
+  // ⚠ 어느 스텝이 몇 문항인지는 단언하지 않습니다 — 값이 임시라(D5) 박으면
+  // 교체가 공짜가 아니게 됩니다.
   it("다섯 스텝 전부 던지지 않는다", () => {
     for (const id of stepIds) {
       expect(() => cultureQuizQuestionsForStep(id)).not.toThrow();
@@ -108,8 +109,8 @@ describe("cultureQuizQuestionsForStep", () => {
 });
 
 describe("judgeCultureQuiz", () => {
-  // 계약 U4: answerIndex === choiceIndex면 "correct", 아니면 "incorrect".
-  // answerIndex: 0인 fixture를 포함한다 — 0을 falsy로 다루면 여기서 잡힌다.
+  // U4 — answerIndex === choiceIndex면 "correct", 아니면 "incorrect"입니다.
+  // answerIndex: 0인 fixture를 포함합니다 — 0을 falsy로 다루면 여기서 잡힙니다.
   it("정답 인덱스를 고르면 correct다 — answerIndex가 0인 문항도 포함한다", () => {
     expect(judgeCultureQuiz(questionAnswer0, 0)).toBe("correct");
     expect(judgeCultureQuiz(questionAnswer2, 2)).toBe("correct");
@@ -126,8 +127,8 @@ describe("judgeCultureQuiz", () => {
 });
 
 describe("choiceResultAt", () => {
-  // 계약 U5: 고른 보기만 판정을 지고, 고르지 않은 정답 보기가 null이다.
-  // 미응답 상태에서 모든 보기가 null이다.
+  // U5 — 고른 보기만 판정을 지고, 고르지 않은 정답 보기가 null입니다.
+  // 미응답 상태에서 모든 보기가 null입니다.
   it("응답 전에는 어느 보기도 판정을 지지 않는다 — 전부 null", () => {
     const state: CultureQuizSessionState = { questionIndex: 0, selectedChoiceIndex: null };
 
@@ -165,8 +166,8 @@ describe("choiceResultAt", () => {
 });
 
 describe("optionAccessibilityLabel", () => {
-  // 계약 U6: null이면 접미사가 없고, 판정이 있으면 ", 정답"/", 오답"이 붙는다.
-  // 구분자는 쉼표 + 공백(ADR-0016 D3).
+  // U6 — null이면 접미사가 없고, 판정이 있으면 ", 정답"/", 오답"이 붙습니다.
+  // 구분자는 쉼표 + 공백입니다(ADR-0016 D3).
   it("판정이 없으면 접미사를 붙이지 않는다 — 텍스트 그대로", () => {
     expect(optionAccessibilityLabel("세배", null)).toBe("세배");
   });
@@ -197,7 +198,7 @@ describe("optionAccessibilityLabel", () => {
 });
 
 describe("hasAnswered", () => {
-  // 계약 U7: selectedChoiceIndex: 0에서 참이다 — 0을 falsy로 다루면 여기서 잡힌다.
+  // U7 — selectedChoiceIndex: 0에서 참입니다 — 0을 falsy로 다루면 여기서 잡힙니다.
   it("고른 보기가 없으면 false다", () => {
     expect(hasAnswered({ questionIndex: 0, selectedChoiceIndex: null })).toBe(false);
   });
@@ -216,7 +217,7 @@ describe("hasAnswered", () => {
 });
 
 describe("isCultureQuizSessionComplete", () => {
-  // 계약 U8: questionIndex === total에서 참, total - 1에서 거짓.
+  // U8 — questionIndex === total에서 참, total - 1에서 거짓입니다.
   it("questionIndex가 total과 같으면 완료다", () => {
     expect(isCultureQuizSessionComplete({ questionIndex: 3, selectedChoiceIndex: null }, 3)).toBe(
       true,
@@ -241,7 +242,7 @@ describe("isCultureQuizSessionComplete", () => {
 });
 
 describe("cultureQuizSessionReducer", () => {
-  // 계약 U9: 전이 넷(§3.3). 무변화 둘은 toBe로 같은 참조임을 짓는다.
+  // U9 — 전이 넷입니다. 무변화 둘은 toBe로 같은 참조임을 짓습니다.
 
   it("selectChoice — 미응답 상태면 고른 보기가 기록된다", () => {
     const next = cultureQuizSessionReducer(initialCultureQuizSessionState, {
@@ -261,7 +262,7 @@ describe("cultureQuizSessionReducer", () => {
     expect(next).toEqual({ questionIndex: 0, selectedChoiceIndex: 0 });
   });
 
-  // 막는 자리가 리듀서 하나다 — 컴포넌트에 둘째 게이트를 두지 않는다(§3.3).
+  // 막는 자리가 리듀서 하나입니다 — 컴포넌트에 둘째 게이트를 두지 않습니다.
   it("selectChoice — 이미 응답했으면 다른 보기를 골라도 같은 참조를 돌려준다", () => {
     const state: CultureQuizSessionState = { questionIndex: 0, selectedChoiceIndex: 2 };
 
@@ -335,22 +336,22 @@ describe("initialCultureQuizSessionState (고정 데이터)", () => {
   });
 });
 
-describe("D1 — 진행을 걸지 않는다 (U10, 계약 §2 D1 · §10-4의 기계 검사)", () => {
-  // (a) culture-quiz.ts가 내보내는 값 중 AnswerResult 배열을 돌려주는 export가 0건이다.
-  // 단어 선택의 `wordChoiceSessionResults` 같은 이력→판정 함수에 해당하는 자리를
-  // 만들지 않는다는 것을, 정본 export 목록과의 열거 대조로 짓는다 — 새 export가
-  // 몰래 늘면(예: `cultureQuizSessionResults`) 이 목록이 어긋나 잡힌다.
-  // 케이스 이름은 **닫힌 목록과 같다**만 말한다 — 타입은 런타임 열거에 애초에
-  // 안 잡힌다. 이름이 타입까지 세면 초록인 채로 이름이 거짓이 된다
-  // (계약 §8.1 U10 정정).
-  // ⚠ 이름에서 **개수를 걷었다.** 단언이 보는 것은 개수가 아니라 이름 목록이고,
-  //   목록이 자랄 때마다 이름에 박힌 수가 조용히 낡는다(LIB-247 계약 §2 · §8의
-  //   「개수를 문면에 박지 않는다」). 목록이 **닫혀 있다**는 사실은 그대로다 —
-  //   toEqual이 여분의 이름도 잡는다.
-  // ⚠ LIB-247이 이 목록을 셋 넓힌다(cultureQuizCompletionAnnouncement ·
-  //   cultureQuizCompletionText · cultureQuizExitLabel). 이 케이스가 지키는 축은
-  //   그대로다 — `cultureQuizSessionResults` 같은 이력→판정 export가 몰래 끼어드는
-  //   것(D1 「진행을 걸지 않는다」)을 여전히 잡는다.
+describe("D1 — 진행을 걸지 않는다 (U10의 기계 검사)", () => {
+  // (a) culture-quiz.ts가 내보내는 값 중 AnswerResult 배열을 돌려주는 export가
+  // 0건입니다. 단어 선택의 `wordChoiceSessionResults` 같은 이력→판정 함수에
+  // 해당하는 자리를 만들지 않는다는 것을, 정본 export 목록과의 열거 대조로
+  // 짓습니다 — 새 export가 몰래 늘면(예: `cultureQuizSessionResults`) 이 목록이
+  // 어긋나 잡힙니다. 케이스 이름은 **닫힌 목록과 같다**만 말합니다 — 타입은
+  // 런타임 열거에 애초에 안 잡힙니다. 이름이 타입까지 세면 초록인 채로 이름이
+  // 거짓이 됩니다.
+  // ⚠ 이름에서 **개수를 걷었습니다.** 단언이 보는 것은 개수가 아니라 이름
+  //   목록이고, 목록이 자랄 때마다 이름에 박힌 수가 조용히 낡습니다(「개수를
+  //   문면에 박지 않는다」). 목록이 **닫혀 있다**는 사실은 그대로입니다 —
+  //   toEqual이 여분의 이름도 잡습니다.
+  // ⚠ 이후 변경이 이 목록을 셋 넓혔습니다(cultureQuizCompletionAnnouncement·
+  //   cultureQuizCompletionText·cultureQuizExitLabel). 이 케이스가 지키는 축은
+  //   그대로입니다 — `cultureQuizSessionResults` 같은 이력→판정 export가 몰래
+  //   끼어드는 것(D1 「진행을 걸지 않는다」)을 여전히 잡습니다.
   it("값 export가 허용목록과 정확히 같다 — 타입은 런타임 열거에 안 잡힌다", () => {
     const expectedValueExports = [
       "choiceResultAt",
@@ -371,7 +372,7 @@ describe("D1 — 진행을 걸지 않는다 (U10, 계약 §2 D1 · §10-4의 기
     expect(Object.keys(cultureQuizModule).sort()).toEqual(expectedValueExports);
   });
 
-  // (b) 세션 상태에 응답 이력 필드가 없다 — 죽은 필드를 만들지 않는다(§3.2).
+  // (b) 세션 상태에 응답 이력 필드가 없습니다 — 죽은 필드를 만들지 않습니다.
   it("세션 상태의 키가 questionIndex · selectedChoiceIndex 둘뿐이다 — 이력 필드가 없다", () => {
     expect(Object.keys(initialCultureQuizSessionState).sort()).toEqual([
       "questionIndex",
@@ -380,39 +381,38 @@ describe("D1 — 진행을 걸지 않는다 (U10, 계약 §2 D1 · §10-4의 기
   });
 });
 
-// ---------------------------------------------------------------- 완료 전이 발화 (LIB-247)
-// 계약: .agent-harness/work/lib-247/spec.md §6.1 (unit — U1~U4) · §3.1(export 목록)
-// · §3.2(시그니처와 반환 문자열) · §3.3(a)(규칙은 하나이고 값이 갈린다).
-// 기대값의 정본은 계약이다 — culture-quiz.ts에서 베끼지 않는다.
+// ---------------------------------------------------------------- 완료 전이 발화
+// 규칙은 하나이고 값이 갈립니다. 기대값의 정본은 계약입니다 — culture-quiz.ts에서
+// 베끼지 않습니다.
 //
-// 「정확히 한 번」은 이 계층이 지지 않는다 — 그것은 `ui`의 X-C다(계약 §6.2).
-// 이 화면의 기존 「announce 0건」 케이스를 조이는 것도 `ui`의 일이다(§6.2(f)).
+// 「정확히 한 번」은 이 계층이 지지 않습니다 — 그것은 `ui`의 X-C입니다. 이
+// 화면의 기존 「announce 0건」 케이스를 조이는 것도 `ui`의 일입니다.
 
-describe("완료 전이 발화의 상수 둘 (계약 §3.1 표 · §3.2)", () => {
-  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나온다 (ADR-0016 D11-1).
+describe("완료 전이 발화의 상수 둘", () => {
+  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나옵니다 (ADR-0016 D11-1).
   it("완료 문구 상수가 화면에 이미 있는 `문항을 모두 마쳤어요`다", () => {
     expect(cultureQuizCompletionText).toBe("문항을 모두 마쳤어요");
   });
 
-  // ⚠ 둘째 상수의 **이름**이 넷 중 이 화면만 다르다(`…ExitLabel`). 이 화면의 그 낱말은
-  // 나아가는 수단이 아니라 **나가는 수단**이고(`culture-quiz-screen-exit`),
-  // 어느 시점에도 렌더된다(계약 §3.1 ⚠ · §0.6(b)).
+  // ⚠ 둘째 상수의 **이름**이 넷 중 이 화면만 다릅니다(`…ExitLabel`). 이 화면의
+  // 그 낱말은 나아가는 수단이 아니라 **나가는 수단**이고(`culture-quiz-screen-exit`),
+  // 어느 시점에도 렌더됩니다.
   it("완료 상태의 유일한 조작 단위 라벨이 `맵으로`다 — 나가는 수단이다", () => {
     expect(cultureQuizExitLabel).toBe("맵으로");
   });
 });
 
-describe("cultureQuizCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
-  // U1 — 오늘 호출자가 넘기는 값(계약 §4.4 표)으로 부르면 §3.2 표의 문자열과
-  // **문자 그대로** 같다. 이 화면만 뒷절이 갈린다.
+describe("cultureQuizCompletionAnnouncement", () => {
+  // U1 — 오늘 호출자가 넘기는 값으로 부르면 정해진 문자열과 **문자 그대로**
+  // 같습니다. 이 화면만 뒷절이 갈립니다.
   it("U1 — cultureQuizExitLabel로 부르면 `문항을 모두 마쳤어요, 맵으로`다", () => {
     expect(cultureQuizCompletionAnnouncement(cultureQuizExitLabel)).toBe(
       "문항을 모두 마쳤어요, 맵으로",
     );
   });
 
-  // U2 — 인자가 형식을 실제로 통과한다. 이 단언이 있어야 「인자 없는 상수 반환」의
-  // 공허함을 피한 것이 지어진다(계약 §6.1 U2 · §3.4 넷째 행).
+  // U2 — 인자가 형식을 실제로 통과합니다. 이 단언이 있어야 「인자 없는 상수 반환」의
+  // 공허함을 피한 것이 지어집니다.
   it("U2 — 다른 인자 둘의 반환이 다르고, 완료 문구 뒤가 쉼표+공백 하나와 그 인자다", () => {
     const withExit = cultureQuizCompletionAnnouncement("맵으로");
     const withFinish = cultureQuizCompletionAnnouncement("결과 보기");
@@ -422,15 +422,16 @@ describe("cultureQuizCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
     expect(withFinish.slice(cultureQuizCompletionText.length)).toBe(", 결과 보기");
   });
 
-  // U3 — 앞절이 그 화면의 완료 문구 상수를 지난다. 리터럴을 다시 적지 않는다 —
-  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡는다.
+  // U3 — 앞절이 그 화면의 완료 문구 상수를 지납니다. 리터럴을 다시 적지 않습니다 —
+  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡습니다.
   it("U3 — 앞절이 cultureQuizCompletionText와 같은 표를 지난다", () => {
     expect(
       cultureQuizCompletionAnnouncement(cultureQuizExitLabel).startsWith(cultureQuizCompletionText),
     ).toBe(true);
   });
 
-  // U4 — 부수효과가 없다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도 던지지 않는다.
+  // U4 — 부수효과가 없습니다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도
+  // 던지지 않습니다.
   it("U4 — 같은 인자로 두 번 불러도 같은 값이고 던지지 않는다", () => {
     expect(() => cultureQuizCompletionAnnouncement(cultureQuizExitLabel)).not.toThrow();
     expect(cultureQuizCompletionAnnouncement(cultureQuizExitLabel)).toBe(
@@ -439,9 +440,9 @@ describe("cultureQuizCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
   });
 });
 
-describe("문화 퀴즈의 값이 나아가는 수단을 가진 화면들과 갈린다 (계약 §3.3(a) · §9-6)", () => {
-  // 나머지 셋의 라벨을 **리터럴로 다시 적지 않고 그 모듈에서 읽는다** — 정본을 둘로
-  // 만들지 않는다. 셋 중 하나가 갈리는 날에도 이 단언이 그것을 본다.
+describe("문화 퀴즈의 값이 나아가는 수단을 가진 화면들과 갈린다", () => {
+  // 나머지 셋의 라벨을 **리터럴로 다시 적지 않고 그 모듈에서 읽습니다** — 정본을
+  // 둘로 만들지 않습니다. 셋 중 하나가 갈리는 날에도 이 단언이 그것을 봅니다.
   it("앞절은 화면마다 같고 뒷절만 갈린다 — 규칙은 하나다", () => {
     expect([listeningFinishLabel, wordChoiceFinishLabel, sentenceOrderFinishLabel]).toEqual([
       "결과 보기",
@@ -451,10 +452,10 @@ describe("문화 퀴즈의 값이 나아가는 수단을 가진 화면들과 갈
     expect(cultureQuizExitLabel).not.toBe(listeningFinishLabel);
   });
 
-  // 갈림이 예외 조항이 아니라 **그 화면이 다르기 때문**이라는 것 — 규칙
-  // 「<완료 문구>, <완료 상태에서 유일한 조작 단위의 라벨>」을 넷이 함께 지난다.
-  // ⚠ `결과 보기`는 이 화면에 **없는 낱말**이다(`onFinish`가 없다 — LIB-244 D1).
-  //    소리에만 있는 낱말을 만들지 않는 것이 이 갈림의 이유다.
+  // 갈림이 예외 조항이 아니라 **그 화면이 다르기 때문**이라는 것입니다 — 규칙
+  // 「<완료 문구>, <완료 상태에서 유일한 조작 단위의 라벨>」을 넷이 함께 지납니다.
+  // ⚠ `결과 보기`는 이 화면에 **없는 낱말**입니다(`onFinish`가 없습니다 — D1).
+  //    소리에만 있는 낱말을 만들지 않는 것이 이 갈림의 이유입니다.
   it("이 화면의 발화가 나아가는 수단을 가진 화면들의 발화와 다르다 — 소리에만 있는 낱말을 만들지 않는다", () => {
     expect(cultureQuizCompletionAnnouncement(cultureQuizExitLabel)).not.toBe(
       "문항을 모두 마쳤어요, 결과 보기",

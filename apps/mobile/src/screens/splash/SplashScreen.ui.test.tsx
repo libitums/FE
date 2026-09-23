@@ -4,15 +4,14 @@ import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { entrySplashDurationMs } from "../../lib/entry-flow";
 import { SplashScreen } from "./SplashScreen";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 전이·접근성 속성을 본다 (ADR-0006 D4).
-// 스플래시는 나가는 수단이 없다 — 유일한 전이 채널은 `onTimeout` 콜백이다(계약 §4.2).
+// `ui` 계층: 실제 컴포넌트를 렌더하고 전이·접근성 속성을 봅니다 (ADR-0006 D4).
+// 스플래시는 나가는 수단이 없습니다 — 유일한 전이 채널은 `onTimeout` 콜백입니다.
 //
-// 계약: .agent-harness/work/lib-261/spec.md §4.2~§4.5, 2026-09-21 디자인 반영으로 전이
-// 계기가 「로고 애니메이션 종료」가 되고 `entrySplashDurationMs`는 최대 체류 시간이 됐다
-// (splash.contract.ts).
+// 2026-09-21 디자인 반영으로 전이 계기가 「로고 애니메이션 종료」가 되고
+// `entrySplashDurationMs`는 최대 체류 시간이 됐습니다(splash.contract.ts).
 //
-// 테스트 환경에서는 애니메이션이 재생되지 않으므로 종료 신호는 `bindEvent:finalloopcomplete`를
-// 직접 쏴서 만든다.
+// 테스트 환경에서는 애니메이션이 재생되지 않으므로 종료 신호는
+// `bindEvent:finalloopcomplete`를 직접 쏴서 만듭니다.
 
 describe("SplashScreen", () => {
   beforeEach(() => {

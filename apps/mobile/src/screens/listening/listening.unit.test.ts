@@ -22,21 +22,18 @@ import {
   type ListeningSessionState,
 } from "./listening";
 
-// 계약: .agent-harness/work/lib-223/spec.md §3.1(a) (`unit` 테스트 계획, pureFunctions 표)
-// 기대값의 정본은 계약 §1.3~§1.5다 — 구현에서 베끼지 않는다.
+// 기대값의 정본은 계약입니다 — 구현에서 베끼지 않습니다.
 //
-// LIB-227 (.agent-harness/work/lib-227/spec.md §1.6(a)·(b) · §4.1 W2)이 이 파일의
-// 모양을 갱신한다 — `ListeningSessionState`에 `answeredChoiceIndexes` 필드가 늘고,
-// `nextQuestion` 전이 하나가 이력을 쌓으며, `sessionAnswerResults`가 새로 는다.
-// 아래 전이·초기값 단언은 **새 모양**이다 — 지금은 필드 부재와 `not implemented`로
-// 반드시 실패한다(계약 §1.6(a) 전이표 · §4.1 단언 목록).
+// 이후 변경이 이 파일의 모양을 갱신했습니다 — `ListeningSessionState`에
+// `answeredChoiceIndexes` 필드가 늘고, `nextQuestion` 전이 하나가 이력을 쌓으며,
+// `sessionAnswerResults`가 새로 늘었습니다.
 //
-// DOM·컴포넌트를 import하지 않는다 — 순수 함수 아홉 + 고정 데이터만 본다.
-// 그래서 toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없다
+// DOM·컴포넌트를 import하지 않습니다 — 순수 함수 아홉 + 고정 데이터만 봅니다.
+// 그래서 toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없습니다
 // (docs/conventions/code.md 「jest-dom 매처는 절반만 쓴다」 · ADR-0006 D4).
 
-// 계약 §1.4 표가 고정한 다섯 스텝. Record가 다섯을 전부 갖는 것은 tsc가 지고,
-// 이 배열은 테스트가 다섯을 하나도 빠뜨리지 않고 도는 축이다.
+// 계약이 고정한 다섯 스텝입니다. Record가 다섯을 전부 갖는 것은 tsc가 지고, 이
+// 배열은 테스트가 다섯을 하나도 빠뜨리지 않고 도는 축입니다.
 const stepIds: readonly JourneyStepId[] = [
   "greeting",
   "introduction",
@@ -45,8 +42,9 @@ const stepIds: readonly JourneyStepId[] = [
   "directions",
 ];
 
-// 계약 §1.4의 고정 데이터에서 그대로 온 문항 둘. questionsForStep을 거치지 않고
-// 리터럴로 세운다 — 판정 함수의 red가 데이터 조회의 red와 섞이지 않게.
+// 계약의 고정 데이터에서 그대로 온 문항 둘입니다. questionsForStep을 거치지
+// 않고 리터럴로 세웁니다 — 판정 함수의 red가 데이터 조회의 red와 섞이지 않게
+// 합니다.
 const questionAnswer0: ListeningQuestion = {
   prompt: "주문하시겠어요? 음료는 따뜻한 것과 차가운 것 중에 무엇으로 드릴까요?",
   audioSource: "ordering-2",
@@ -72,7 +70,7 @@ const questionAnswer2: ListeningQuestion = {
 };
 
 describe("questionsForStep", () => {
-  // 계약 §3.1(a): ("ordering") → 길이 3 · 첫 문항의 prompt가 계약 §1.4의 값이다
+  // ("ordering") → 길이 3·첫 문항의 prompt가 계약이 고정한 값입니다.
   it("ordering 스텝은 문항 셋을 돌려주고 첫 문항이 계약이 고정한 것이다", () => {
     const questions = questionsForStep("ordering");
 
@@ -80,14 +78,15 @@ describe("questionsForStep", () => {
     expect(questions[0]?.prompt).toBe("따뜻한 아메리카노 한 잔 주세요.");
   });
 
-  // 계약 §1.4 「스텝 커버리지 = 다섯 전부」: 하나라도 비면 그 스텝에 들어간 순간 빈 화면이다
+  // 「스텝 커버리지 = 다섯 전부」입니다: 하나라도 비면 그 스텝에 들어간 순간 빈
+  // 화면입니다.
   it("다섯 스텝 전부 문항 셋을 돌려준다 — 비는 스텝이 없다", () => {
     const lengths = stepIds.map((id) => questionsForStep(id).length);
 
     expect(lengths).toEqual([3, 3, 3, 3, 3]);
   });
 
-  it("greeting과 directions의 첫 문항이 계약 §1.4의 값이다", () => {
+  it("greeting과 directions의 첫 문항이 계약이 고정한 값이다", () => {
     expect(questionsForStep("greeting")[0]?.prompt).toBe("안녕하세요, 처음 뵙겠습니다.");
     expect(questionsForStep("directions")[0]?.prompt).toBe("혹시 지하철역이 어디예요?");
   });
@@ -99,7 +98,7 @@ describe("questionsForStep", () => {
 });
 
 describe("listeningScreenTitle", () => {
-  // 계약 §1.5(b) 표: `${ordinal}단계 · 듣기`. 구분자는 가운뎃점 양옆 공백이다.
+  // `${ordinal}단계 · 듣기`입니다. 구분자는 가운뎃점 양옆 공백입니다.
   it("서수 3은 3단계 · 듣기다", () => {
     expect(listeningScreenTitle(3)).toBe("3단계 · 듣기");
   });
@@ -114,7 +113,7 @@ describe("listeningScreenTitle", () => {
 });
 
 describe("questionProgressLabel", () => {
-  // 계약 §1.5(b) 표: `문항 ${index + 1} / ${total}` — index는 0-based다
+  // `문항 ${index + 1} / ${total}`입니다 — index는 0-based입니다.
   it("첫 문항(0, 3)은 문항 1 / 3이다", () => {
     expect(questionProgressLabel(0, 3)).toBe("문항 1 / 3");
   });
@@ -129,7 +128,7 @@ describe("questionProgressLabel", () => {
 });
 
 describe("judgeAnswer", () => {
-  // 계약 §1.5(b): choiceIndex === question.answerIndex ? "correct" : "incorrect"
+  // choiceIndex === question.answerIndex ? "correct" : "incorrect"입니다.
   it("정답 인덱스를 고르면 correct다", () => {
     expect(judgeAnswer(questionAnswer0, questionAnswer0.answerIndex)).toBe("correct");
     expect(judgeAnswer(questionAnswer2, questionAnswer2.answerIndex)).toBe("correct");
@@ -153,7 +152,7 @@ describe("judgeAnswer", () => {
 });
 
 describe("choiceResultAt", () => {
-  // 계약 §3.1(a) 표 · §1.5(b): 선택된 보기면 judgeAnswer, 아니면 null
+  // 선택된 보기면 judgeAnswer, 아니면 null입니다.
   it("응답 전에는 어느 보기도 판정을 지지 않는다 — 전부 null", () => {
     const state: ListeningSessionState = {
       questionIndex: 0,
@@ -186,7 +185,8 @@ describe("choiceResultAt", () => {
     expect(choiceResultAt(state, questionAnswer2, 1)).toBe("incorrect");
   });
 
-  // 계약 §1.1 「정답을 알려 주지 않는다」: 오답일 때 어느 것이 정답이었는지 표시하지 않는다
+  // 「정답을 알려 주지 않는다」입니다: 오답일 때 어느 것이 정답이었는지 표시하지
+  // 않습니다.
   it("고르지 않은 보기는 정답이어도 판정을 지지 않는다 — null", () => {
     const state: ListeningSessionState = {
       questionIndex: 0,
@@ -222,7 +222,7 @@ describe("choiceResultAt", () => {
 });
 
 describe("choiceAccessibilityLabel", () => {
-  // 계약 §1.5(b) 접미사 표. 구분자는 쉼표 + 공백이다 (ADR-0016 D3).
+  // 접미사 표입니다. 구분자는 쉼표 + 공백입니다 (ADR-0016 D3).
   it("판정이 없으면 접미사를 붙이지 않는다 — 텍스트 그대로", () => {
     expect(choiceAccessibilityLabel("음료 온도를 묻고 있다", null)).toBe("음료 온도를 묻고 있다");
   });
@@ -239,7 +239,7 @@ describe("choiceAccessibilityLabel", () => {
     );
   });
 
-  // 응답 전 네 보기가 전부 접미사를 달면 답을 미리 알려 주는 것이 된다 (계약 §1.5(b)).
+  // 응답 전 네 보기가 전부 접미사를 달면 답을 미리 알려 주는 것이 됩니다.
   it("판정이 없을 때 구분자(쉼표 + 공백)가 아예 생기지 않는다", () => {
     expect(choiceAccessibilityLabel("자리를 안내하고 있다", null)).not.toContain(", ");
   });
@@ -258,7 +258,7 @@ describe("choiceAccessibilityLabel", () => {
 });
 
 describe("hasAnswered", () => {
-  // 계약 §1.5(b): state.selectedChoiceIndex !== null — 응답 여부는 파생이다
+  // state.selectedChoiceIndex !== null — 응답 여부는 파생입니다.
   it("고른 보기가 없으면 false다", () => {
     expect(
       hasAnswered({ questionIndex: 0, selectedChoiceIndex: null, answeredChoiceIndexes: [] }),
@@ -283,7 +283,7 @@ describe("hasAnswered", () => {
 });
 
 describe("isSessionComplete", () => {
-  // 계약 §1.3(c)·§1.5(b): 완료는 상태에 적히지 않고 questionIndex >= total로 파생된다
+  // 완료는 상태에 적히지 않고 questionIndex >= total로 파생됩니다.
   it("마지막 문항에 응답만 한 상태는 아직 완료가 아니다", () => {
     expect(
       isSessionComplete(
@@ -317,9 +317,9 @@ describe("isSessionComplete", () => {
 });
 
 describe("listeningSessionReducer", () => {
-  // 계약(lib-227) §1.6(a) 전이표 네 줄이 이 describe의 정본이다. c는 고른 보기,
-  // a는 응답 이력이다. 바뀌는 줄은 넷째(nextQuestion — 응답했으면) 하나뿐이고,
-  // 나머지 셋은 이력이 그대로 실려 나가거나(같은 참조) 이력이 늘지 않는다.
+  // 계약의 전이표 네 줄이 이 describe의 정본입니다. c는 고른 보기, a는 응답
+  // 이력입니다. 바뀌는 줄은 넷째(nextQuestion — 응답했으면) 하나뿐이고, 나머지
+  // 셋은 이력이 그대로 실려 나가거나(같은 참조) 이력이 늘지 않습니다.
 
   it("selectChoice — 응답 전이면 고른 보기가 기록된다 — 이력은 아직 안 는다", () => {
     const next = listeningSessionReducer(initialListeningSessionState, {
@@ -355,7 +355,7 @@ describe("listeningSessionReducer", () => {
     });
   });
 
-  // 계약 §1.5(b): 응답은 문항당 한 번뿐. 막는 자리가 리듀서 하나다 — 컴포넌트가 아니다.
+  // 응답은 문항당 한 번뿐입니다. 막는 자리가 리듀서 하나입니다 — 컴포넌트가 아닙니다.
   it("selectChoice — 이미 응답했으면 다른 보기를 골라도 같은 참조를 돌려준다", () => {
     const state: ListeningSessionState = {
       questionIndex: 0,
@@ -408,8 +408,8 @@ describe("listeningSessionReducer", () => {
     });
   });
 
-  // 계약 §1.6(a): 이력이 느는 자리가 nextQuestion 하나다 — 이미 이력이 있는 상태에서도
-  // 새 응답이 **끝에 이어붙는다**(기존 이력을 덮어쓰지 않는다).
+  // 이력이 느는 자리가 nextQuestion 하나입니다 — 이미 이력이 있는 상태에서도 새
+  // 응답이 **끝에 이어붙습니다**(기존 이력을 덮어쓰지 않습니다).
   it("nextQuestion — 이미 쌓인 이력 뒤에 이번 응답이 이어붙는다", () => {
     const state: ListeningSessionState = {
       questionIndex: 1,
@@ -426,8 +426,8 @@ describe("listeningSessionReducer", () => {
     });
   });
 
-  // 계약 §3.1(a) 마지막 줄 · lib-227 §1.6(a) 불변식: 마지막 문항을 넘기면 완료 상태가
-  // 되고, 그 시점에 answeredChoiceIndexes.length === total이다.
+  // 마지막 문항을 넘기면 완료 상태가 되고, 그 시점에
+  // answeredChoiceIndexes.length === total입니다.
   it("nextQuestion — 마지막 문항에서 넘기면 완료 상태가 되고 이력 길이가 문항 수와 같다", () => {
     const state: ListeningSessionState = {
       questionIndex: 2,
@@ -493,9 +493,9 @@ describe("listeningSessionReducer", () => {
     expect(isSessionComplete(state, 3)).toBe(true);
   });
 
-  // 계약 §1.6(a) 불변식 · §4.1 「불변식: 문항 셋을 끝까지 돌면
-  // answeredChoiceIndexes.length === 3이고 순서가 응답 순서다」. 위 케이스는 매번
-  // 같은 보기(0)를 골라 순서가 드러나지 않으므로, 서로 다른 보기를 골라 순서까지 본다.
+  // 불변식: 「문항 셋을 끝까지 돌면 answeredChoiceIndexes.length === 3이고 순서가
+  // 응답 순서다」입니다. 위 케이스는 매번 같은 보기(0)를 골라 순서가 드러나지
+  // 않으므로, 서로 다른 보기를 골라 순서까지 봅니다.
   it("불변식 — 서로 다른 보기를 고르며 끝까지 돌면 이력이 응답 순서 그대로 셋 쌓인다", () => {
     let state = initialListeningSessionState;
     const picks = [1, 3, 0];
@@ -521,9 +521,10 @@ describe("initialListeningSessionState (고정 데이터)", () => {
   });
 });
 
-describe("sessionAnswerResults (계약 §1.6(b))", () => {
-  // judgeAnswer를 다시 쓰지 않고 부른다 — 리터럴로 세운 문항 둘로 판정의 정본이
-  // 하나임을 확인한다. questionAnswer0는 answerIndex 0, questionAnswer2는 answerIndex 2다.
+describe("sessionAnswerResults", () => {
+  // judgeAnswer를 다시 쓰지 않고 부릅니다 — 리터럴로 세운 문항 둘로 판정의
+  // 정본이 하나임을 확인합니다. questionAnswer0는 answerIndex 0, questionAnswer2는
+  // answerIndex 2입니다.
   const questions: readonly ListeningQuestion[] = [questionAnswer0, questionAnswer2];
 
   it("이력과 같은 길이의 결과를 낸다 — i번째는 judgeAnswer(questions[i], a[i])와 같다", () => {
@@ -556,7 +557,7 @@ describe("sessionAnswerResults (계약 §1.6(b))", () => {
   });
 });
 
-describe("listeningQuestionsByStep (고정 데이터 불변식 — 계약 §1.4)", () => {
+describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
   it("다섯 스텝이 전부 있다", () => {
     expect(Object.keys(listeningQuestionsByStep).sort()).toEqual([...stepIds].sort());
   });
@@ -603,8 +604,8 @@ describe("listeningQuestionsByStep (고정 데이터 불변식 — 계약 §1.4)
     }
   });
 
-  // 계약 §1.4 「정답 인덱스」 행: 이것이 깨지면 "첫 보기만 계속 고르면 전부 맞는" 경로가
-  // 생기고, 실기에서 오답 경로가 한 번도 안 나올 수 있다.
+  // 「정답 인덱스」 행입니다: 이것이 깨지면 "첫 보기만 계속 고르면 전부 맞는"
+  // 경로가 생기고, 실기에서 오답 경로가 한 번도 안 나올 수 있습니다.
   it("한 스텝 안에서 세 문항의 정답 인덱스가 서로 다르다", () => {
     for (const id of stepIds) {
       const answerIndexes = listeningQuestionsByStep[id].map((question) => question.answerIndex);
@@ -625,8 +626,8 @@ describe("listeningQuestionsByStep (고정 데이터 불변식 — 계약 §1.4)
     }
   });
 
-  // 계약 §1.4의 정답 인덱스 표를 그대로 옮긴다. 값의 정본은 계약이다.
-  it("정답 인덱스가 계약 §1.4 표와 일치한다", () => {
+  // 계약의 정답 인덱스 표를 그대로 옮깁니다. 값의 정본은 계약입니다.
+  it("정답 인덱스가 계약 표와 일치한다", () => {
     const table = stepIds.map((id) => ({
       id,
       answers: listeningQuestionsByStep[id].map((question) => question.answerIndex),
@@ -641,30 +642,29 @@ describe("listeningQuestionsByStep (고정 데이터 불변식 — 계약 §1.4)
     ]);
   });
 
-  // 계약 §1.4 「보기 문자열 안의 `,`」 행 · §3.1(a)의 마지막 케이스.
-  // `choiceAccessibilityLabel`이 접미사를 `", "`로 잇는다 (§1.5(b) · ADR-0016 D3).
-  // 보기 문자열 안에 쉼표가 있으면 `"네, 알겠습니다, 정답"`이 **세 마디로 갈려** 이름과
-  // 상태의 경계가 사라진다.
+  // 「보기 문자열 안의 `,`」 행입니다. `choiceAccessibilityLabel`이 접미사를
+  // `", "`로 잇습니다 (ADR-0016 D3). 보기 문자열 안에 쉼표가 있으면 `"네,
+  // 알겠습니다, 정답"`이 **세 마디로 갈려** 이름과 상태의 경계가 사라집니다.
   //
-  // **지금 60개가 이미 깨끗해서 이 케이스는 처음부터 green이다.** 생략이 아니라
-  // 회귀 방어선이다 — 강제하는 것이 없으면 문항이 늘 때 자동 계층이 전부 green인 채로
-  // 통과시킨다. `unit`이 이 불변식의 유일한 강제 지점이다 (계약 §1.4).
+  // **지금 60개가 이미 깨끗해서 이 케이스는 처음부터 green입니다.** 생략이
+  // 아니라 회귀 방어선입니다 — 강제하는 것이 없으면 문항이 늘 때 자동 계층이
+  // 전부 green인 채로 통과시킵니다. `unit`이 이 불변식의 유일한 강제 지점입니다.
   //
-  // **`prompt`는 이 케이스의 대상이 아니다** (계약 §1.4 · §3.1(a)). 접미사를 잇는 것은
-  // `choices`뿐이고, 고정 데이터의 prompt에 있는 쉼표는 **발화 문장의 것**이라 고치지
-  // 않는다. prompt까지 검사하면 멀쩡한 고정 데이터가 실패로 잡힌다.
+  // **`prompt`는 이 케이스의 대상이 아닙니다.** 접미사를 잇는 것은 `choices`뿐이고,
+  // 고정 데이터의 prompt에 있는 쉼표는 **발화 문장의 것**이라 고치지 않습니다.
+  // prompt까지 검사하면 멀쩡한 고정 데이터가 실패로 잡힙니다.
   it("모든 choices 문자열에 쉼표가 없다 — 낭독 접미사의 구분자와 충돌하지 않는다", () => {
     const choices = stepIds.flatMap((id) =>
       listeningQuestionsByStep[id].flatMap((question) => [...question.choices]),
     );
 
-    // 앵커: 5 스텝 × 3 문항 × 보기 4 = 60개를 실제로 돌았다. 목록이 비면 아래 부재
-    // 단언이 공허하게 통과한다.
+    // 앵커: 5 스텝 × 3 문항 × 보기 4 = 60개를 실제로 돌았습니다. 목록이 비면
+    // 아래 부재 단언이 공허하게 통과합니다.
     expect(choices).toHaveLength(60);
     expect(choices.filter((choice) => choice.includes(","))).toEqual([]);
 
-    // 그 불변식이 무엇을 지키는지: 접미사가 붙어도 낭독 이름이 **정확히 두 마디**로
-    // 갈린다. 위가 깨지는 순간 이 줄이 함께 빨개진다.
+    // 그 불변식이 무엇을 지키는지: 접미사가 붙어도 낭독 이름이 **정확히 두
+    // 마디**로 갈립니다. 위가 깨지는 순간 이 줄이 함께 빨개집니다.
     expect(
       choices.filter(
         (choice) => choiceAccessibilityLabel(choice, "correct").split(", ").length !== 2,
@@ -681,19 +681,19 @@ describe("listeningQuestionsByStep (고정 데이터 불변식 — 계약 §1.4)
   });
 });
 
-// ---------------------------------------------------------------- 오디오 축 (계약 §9)
+// ---------------------------------------------------------------- 오디오 축
 
-describe("playbackStateAfterPlay (계약 §9.5(c) 표)", () => {
-  // 계약 §9.3: playAudio는 재생 **요청 한 번의 결과**를 돌려준다. 이 함수가 그 결과를
-  // 화면이 보일 상태 어휘 둘로 옮긴다.
+describe("playbackStateAfterPlay", () => {
+  // playAudio는 재생 **요청 한 번의 결과**를 돌려줍니다. 이 함수가 그 결과를
+  // 화면이 보일 상태 어휘 둘로 옮깁니다.
   it("started면 재생 중이다", () => {
     expect(playbackStateAfterPlay("started")).toBe("playing");
   });
 
-  // **이 케이스가 이 축의 고장 모드를 막는 유일한 자동 방어선이다** (계약 §9.7
-  // 「모듈이 없을 때 재생 중으로 보이지 않는다」). 모듈이 없으면 재생이 시작되지
-  // 않았으므로 완료 신호도 오지 않는다 — "playing"으로 옮기면 화면이 영원히
-  // `멈춤`에 갇히고, 고장이 정상인 척한다.
+  // **이 케이스가 이 축의 고장 모드를 막는 유일한 자동 방어선입니다**
+  // (「모듈이 없을 때 재생 중으로 보이지 않는다」). 모듈이 없으면 재생이
+  // 시작되지 않았으므로 완료 신호도 오지 않습니다 — "playing"으로 옮기면
+  // 화면이 영원히 `멈춤`에 갇히고, 고장이 정상인 척합니다.
   it("unavailable이면 대기다 — 「재생 중」으로 보이지 않는다", () => {
     expect(playbackStateAfterPlay("unavailable")).toBe("idle");
   });
@@ -710,8 +710,9 @@ describe("playbackStateAfterPlay (계약 §9.5(c) 표)", () => {
   });
 });
 
-describe("audioSource (고정 데이터 불변식 — 계약 §9.4)", () => {
-  // 15개를 한 번에 도는 축. 목록이 비면 아래 부재 단언들이 공허하게 통과한다.
+describe("audioSource (고정 데이터 불변식)", () => {
+  // 15개를 한 번에 도는 축입니다. 목록이 비면 아래 부재 단언들이 공허하게
+  // 통과합니다.
   const audioSources = stepIds.flatMap((id) =>
     listeningQuestionsByStep[id].map((question) => question.audioSource),
   );
@@ -728,15 +729,15 @@ describe("audioSource (고정 데이터 불변식 — 계약 §9.4)", () => {
     expect(audioSources.filter((source) => source.length === 0)).toEqual([]);
   });
 
-  // 계약 §9.4: `greeting-1.mp3`로 적으면 **번들에 그 파일이 있는 것으로 읽힌다.** 없다.
-  // 지어낸 자산을 데이터에 적지 않는다 (ADR-0014 D4).
+  // `greeting-1.mp3`로 적으면 **번들에 그 파일이 있는 것으로 읽힙니다.** 없습니다.
+  // 지어낸 자산을 데이터에 적지 않습니다 (ADR-0014 D4).
   it("확장자(.)가 없다 — 없는 자산을 있는 것으로 읽히게 하지 않는다", () => {
     expect(audioSources.filter((source) => source.includes("."))).toEqual([]);
   });
 
-  // 계약 §9.4: 스킴(`https://…`)도 경로 구분자(`audio/greeting-1`)도 해석 방식을 미리
-  // 정하는 것이고, 그것은 보류 표 「오디오 자산의 출처·형식」이 **밖**으로 표시한 자리다.
-  // 자산이 오면 이 케이스를 **의식적으로** 연다.
+  // 스킴(`https://…`)도 경로 구분자(`audio/greeting-1`)도 해석 방식을 미리
+  // 정하는 것이고, 그것은 보류 표 「오디오 자산의 출처·형식」이 **밖**으로 표시한
+  // 자리입니다. 자산이 오면 이 케이스를 **의식적으로** 엽니다.
   it("경로 구분자(/)와 스킴(:)이 없다 — 해석 방식을 조용히 정하지 않는다", () => {
     expect(audioSources.filter((source) => source.includes("/"))).toEqual([]);
     expect(audioSources.filter((source) => source.includes(":"))).toEqual([]);
@@ -750,10 +751,11 @@ describe("audioSource (고정 데이터 불변식 — 계약 §9.4)", () => {
     expect(audioSources.filter((source) => /[./:\s]/.test(source))).toEqual([]);
   });
 
-  // 계약 §9.4: 파생하지 않고 **데이터에 적는다.** `${stepId}-${index + 1}`로 계산하면
-  // 명명 규칙이 코드에 박히고, 자산 공급자가 다른 이름을 주는 순간 규칙과 자산이 갈린다.
-  // 이 표가 그 값의 정본이고, 아래 앵커가 "파생이 아니라 데이터"를 못박는다.
-  it("15개 값이 계약 §9.4 표와 일치한다", () => {
+  // 파생하지 않고 **데이터에 적습니다.** `${stepId}-${index + 1}`로 계산하면
+  // 명명 규칙이 코드에 박히고, 자산 공급자가 다른 이름을 주는 순간 규칙과
+  // 자산이 갈립니다. 이 표가 그 값의 정본이고, 아래 앵커가 "파생이 아니라
+  // 데이터"를 못박습니다.
+  it("15개 값이 계약 표와 일치한다", () => {
     const table = stepIds.map((id) => ({
       id,
       sources: listeningQuestionsByStep[id].map((question) => question.audioSource),
@@ -768,8 +770,8 @@ describe("audioSource (고정 데이터 불변식 — 계약 §9.4)", () => {
     ]);
   });
 
-  // 계약 §9.9(b) 마지막 줄: **값이 데이터에 있고 파생이 아니라는 앵커.**
-  // 화면이 읽는 경로(questionsForStep)로 한 번 더 확인한다.
+  // **값이 데이터에 있고 파생이 아니라는 앵커입니다.** 화면이 읽는
+  // 경로(questionsForStep)로 한 번 더 확인합니다.
   it("questionsForStep이 낸 문항이 그 값을 그대로 지고 나온다", () => {
     const ordering = questionsForStep("ordering");
 
@@ -783,8 +785,8 @@ describe("audioSource (고정 데이터 불변식 — 계약 §9.4)", () => {
     expect(questionsForStep("directions")[2]?.audioSource).toBe("directions-3");
   });
 
-  // 서수는 1-based다 (계약 §9.4) — `questionProgressLabel`이 사람에게 보이는 수와
-  // 같은 축이라 문서·로그·자산 파일 이름이 어긋나지 않는다.
+  // 서수는 1-based입니다 — `questionProgressLabel`이 사람에게 보이는 수와 같은
+  // 축이라 문서·로그·자산 파일 이름이 어긋나지 않습니다.
   it("서수가 1-based다 — 사람에게 보이는 문항 번호와 같은 축이다", () => {
     for (const id of stepIds) {
       listeningQuestionsByStep[id].forEach((question, index) => {
@@ -794,16 +796,15 @@ describe("audioSource (고정 데이터 불변식 — 계약 §9.4)", () => {
   });
 });
 
-// ---------------------------------------------------------------- 완료 전이 발화 (LIB-247)
-// 계약: .agent-harness/work/lib-247/spec.md §6.1 (unit — U1~U4) · §3.1(export 목록)
-// · §3.2(시그니처와 반환 문자열). 기대값의 정본은 계약이다 — listening.ts에서 베끼지 않는다.
+// ---------------------------------------------------------------- 완료 전이 발화
+// 기대값의 정본은 계약입니다 — listening.ts에서 베끼지 않습니다.
 //
-// 「정확히 한 번」은 이 계층이 지지 않는다 — 그것은 `ui`의 X-C다(계약 §6.2).
-// 여기서 보는 것은 순수 함수의 입출력 하나뿐이다.
+// 「정확히 한 번」은 이 계층이 지지 않습니다 — 그것은 `ui`의 X-C입니다. 여기서
+// 보는 것은 순수 함수의 입출력 하나뿐입니다.
 
-describe("완료 전이 발화의 상수 둘 (계약 §3.1 표 · §3.2)", () => {
-  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나온다 (ADR-0016 D11-1).
-  // 값이 갈리면 화면과 소리가 다른 앱이 되므로 값 자체를 여기서 못박는다.
+describe("완료 전이 발화의 상수 둘", () => {
+  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나옵니다 (ADR-0016 D11-1).
+  // 값이 갈리면 화면과 소리가 다른 앱이 되므로 값 자체를 여기서 못박습니다.
   it("완료 문구 상수가 화면에 이미 있는 `문항을 모두 마쳤어요`다", () => {
     expect(listeningCompletionText).toBe("문항을 모두 마쳤어요");
   });
@@ -813,17 +814,17 @@ describe("완료 전이 발화의 상수 둘 (계약 §3.1 표 · §3.2)", () =>
   });
 });
 
-describe("listeningCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
-  // U1 — 오늘 호출자가 넘기는 값(계약 §4.4 표)으로 부르면 §3.2 표의 문자열과
-  // **문자 그대로** 같다.
+describe("listeningCompletionAnnouncement", () => {
+  // U1 — 오늘 호출자가 넘기는 값으로 부르면 정해진 문자열과 **문자 그대로**
+  // 같습니다.
   it("U1 — listeningFinishLabel로 부르면 `문항을 모두 마쳤어요, 결과 보기`다", () => {
     expect(listeningCompletionAnnouncement(listeningFinishLabel)).toBe(
       "문항을 모두 마쳤어요, 결과 보기",
     );
   });
 
-  // U2 — 인자가 형식을 실제로 통과한다. 이 단언이 있어야 「인자 없는 상수 반환」의
-  // 공허함을 피한 것이 지어진다(계약 §6.1 U2 · §3.4 넷째 행).
+  // U2 — 인자가 형식을 실제로 통과합니다. 이 단언이 있어야 「인자 없는 상수 반환」의
+  // 공허함을 피한 것이 지어집니다.
   it("U2 — 다른 인자 둘의 반환이 다르고, 완료 문구 뒤가 쉼표+공백 하나와 그 인자다", () => {
     const withFinish = listeningCompletionAnnouncement("결과 보기");
     const withExit = listeningCompletionAnnouncement("맵으로");
@@ -833,15 +834,16 @@ describe("listeningCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
     expect(withExit.slice(listeningCompletionText.length)).toBe(", 맵으로");
   });
 
-  // U3 — 앞절이 그 화면의 완료 문구 상수를 지난다. 리터럴을 다시 적지 않는다 —
-  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡는다.
+  // U3 — 앞절이 그 화면의 완료 문구 상수를 지납니다. 리터럴을 다시 적지 않습니다 —
+  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡습니다.
   it("U3 — 앞절이 listeningCompletionText와 같은 표를 지난다", () => {
     expect(
       listeningCompletionAnnouncement(listeningFinishLabel).startsWith(listeningCompletionText),
     ).toBe(true);
   });
 
-  // U4 — 부수효과가 없다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도 던지지 않는다.
+  // U4 — 부수효과가 없습니다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도
+  // 던지지 않습니다.
   it("U4 — 같은 인자로 두 번 불러도 같은 값이고 던지지 않는다", () => {
     expect(() => listeningCompletionAnnouncement(listeningFinishLabel)).not.toThrow();
     expect(listeningCompletionAnnouncement(listeningFinishLabel)).toBe(

@@ -4,13 +4,10 @@ import { fireEvent, render, screen, within } from "@lynx-js/react/testing-librar
 import type { NotificationItem } from "./notifications.contract";
 import { NotificationsScreen } from "./NotificationsScreen";
 
-// `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 로직을 다시 짓지 않는다 — 항목
-// 데이터는 이 파일 안의 fixture로 준다(`notification-items.ts`를 import하지 않는다).
-// `toHaveClass` · `toHaveStyle`을 쓰지 않는다. 텍스트 질의(`getByText`)를 쓰지 않는다 —
-// testid로 질의한다.
-//
-// 계약: .agent-harness/work/lib-257/spec.md §2.6 · §4.3 · §4.5 · §4.6 · §4.7.
-// 계획: .agent-harness/work/lib-257/test-plan.md ui § `NotificationsScreen.ui.test.tsx` NS1~NS11.
+// `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 로직을 다시 짓지 않습니다 — 항목
+// 데이터는 이 파일 안의 fixture로 줍니다(`notification-items.ts`를 import하지
+// 않습니다). `toHaveClass`·`toHaveStyle`을 쓰지 않습니다. 텍스트 질의(`getByText`)를
+// 쓰지 않습니다 — testid로 질의합니다.
 
 const messengerItem: NotificationItem = {
   id: "notification-messenger",
@@ -43,7 +40,6 @@ const items: readonly NotificationItem[] = [
   roleplayListItem,
 ];
 
-// NS1
 test("[NS1] notifications-screen-title이 알림을 렌더하고 header trait를 갖는다", () => {
   render(<NotificationsScreen items={items} onSelectItem={vi.fn()} onExit={vi.fn()} />);
 
@@ -52,7 +48,6 @@ test("[NS1] notifications-screen-title이 알림을 렌더하고 header trait를
   expect(title).toHaveAttribute("accessibility-traits", "header");
 });
 
-// NS2
 test("[NS2] notifications-screen-exit이 맵으로를 렌더하고 접근성 채널이 정확하다", () => {
   render(<NotificationsScreen items={items} onSelectItem={vi.fn()} onExit={vi.fn()} />);
 
@@ -63,7 +58,6 @@ test("[NS2] notifications-screen-exit이 맵으로를 렌더하고 접근성 채
   expect(exit).toHaveAttribute("accessibility-label", "맵으로");
 });
 
-// NS3
 test("[NS3] 나가기 tap → onExit 정확히 1회, onSelectItem 0회", () => {
   const onExit = vi.fn();
   const onSelectItem = vi.fn();
@@ -75,7 +69,6 @@ test("[NS3] 나가기 tap → onExit 정확히 1회, onSelectItem 0회", () => {
   expect(onSelectItem).not.toHaveBeenCalled();
 });
 
-// NS4
 test("[NS4] notifications-screen-scroll에 scroll-orientation·scroll-bar-enable이 붙고 accessibility-*가 0개다", () => {
   render(<NotificationsScreen items={items} onSelectItem={vi.fn()} onExit={vi.fn()} />);
 
@@ -88,7 +81,6 @@ test("[NS4] notifications-screen-scroll에 scroll-orientation·scroll-bar-enable
   expect(scroll).not.toHaveAttribute("accessibility-elements-hidden");
 });
 
-// NS5
 test("[NS5] 스크롤의 직계 요소 자식이 정확히 하나이고 notifications-screen-list다 — 목록 상자에 accessibility-* 0개", () => {
   render(<NotificationsScreen items={items} onSelectItem={vi.fn()} onExit={vi.fn()} />);
 
@@ -103,7 +95,6 @@ test("[NS5] 스크롤의 직계 요소 자식이 정확히 하나이고 notifica
   expect(list).not.toHaveAttribute("accessibility-elements-hidden");
 });
 
-// NS6
 test("[NS6] 제목·나가기가 스크롤 밖이다", () => {
   render(<NotificationsScreen items={items} onSelectItem={vi.fn()} onExit={vi.fn()} />);
 
@@ -115,7 +106,6 @@ test("[NS6] 제목·나가기가 스크롤 밖이다", () => {
   expect(screen.getByTestId("notifications-screen-exit")).toBeInTheDocument();
 });
 
-// NS7
 test("[NS7] 목록 상자 안 항목 루트 testid 순서가 items 순서와 같다 — 넷 fixture", () => {
   render(<NotificationsScreen items={items} onSelectItem={vi.fn()} onExit={vi.fn()} />);
 
@@ -133,7 +123,6 @@ test("[NS7] 목록 상자 안 항목 루트 testid 순서가 items 순서와 같
   expect(testids).toEqual(reordered.map((item) => `notification-list-item-${item.id}`));
 });
 
-// NS8
 test("[NS8] 항목 tap → onSelectItem이 정확히 1회, 인자는 그 항목", () => {
   const onSelectItem = vi.fn();
   render(<NotificationsScreen items={items} onSelectItem={onSelectItem} onExit={vi.fn()} />);
@@ -144,7 +133,6 @@ test("[NS8] 항목 tap → onSelectItem이 정확히 1회, 인자는 그 항목"
   expect(onSelectItem).toHaveBeenCalledWith(phoneCallItem);
 });
 
-// NS9
 test("[NS9] header trait를 가진 요소가 notifications-screen-title 하나다", () => {
   const { container } = render(
     <NotificationsScreen items={items} onSelectItem={vi.fn()} onExit={vi.fn()} />,
@@ -155,7 +143,6 @@ test("[NS9] header trait를 가진 요소가 notifications-screen-title 하나�
   expect(headers[0]).toBe(screen.getByTestId("notifications-screen-title"));
 });
 
-// NS10
 test("[NS10] DOM 순서 — 나가기가 제목보다 앞이다", () => {
   render(<NotificationsScreen items={items} onSelectItem={vi.fn()} onExit={vi.fn()} />);
 
@@ -165,7 +152,6 @@ test("[NS10] DOM 순서 — 나가기가 제목보다 앞이다", () => {
   expect(exit.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
 
-// NS11
 test("[NS11] items=[] → 목록 상자가 서고 항목 0개다", () => {
   render(<NotificationsScreen items={[]} onSelectItem={vi.fn()} onExit={vi.fn()} />);
 
