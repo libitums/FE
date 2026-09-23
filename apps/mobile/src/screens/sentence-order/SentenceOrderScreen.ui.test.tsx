@@ -6,36 +6,34 @@ import { SentenceOrderScreen } from "./SentenceOrderScreen";
 import type { SentenceOrderQuestion } from "./sentence-order";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 본다(ADR-0006 D4). 순수 함수
-// (sentence-order.ts)를 mock하지 않는다 — 화면이 그것을 실제로 부르는지가 이 파일이
-// 보는 것의 절반이다. `toHaveClass` · `toHaveStyle` · `toBeVisible`을 쓰지 않는다
-// (docs/conventions/code.md).
+// `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다(ADR-0006 D4). 순수
+// 함수(sentence-order.ts)를 mock하지 않습니다 — 화면이 그것을 실제로 부르는지가 이
+// 파일이 보는 것의 절반입니다. `toHaveClass`·`toHaveStyle`·`toBeVisible`을 쓰지
+// 않습니다(docs/conventions/code.md).
 //
-// 계약: .agent-harness/work/lib-229/spec.md §3.2 표 「SentenceOrderScreen」 · 스크롤
-// 규약 단언 A1~A7.
+// **문항 값을 지어내지 않는다는 것과 문항 데이터가 아예 없다는 것은 다릅니다.**
+// `sentenceOrderQuestionsByStep`은 계약에 따라 다섯 스텝 전부 빈 배열입니다 — 이
+// 컴포넌트는 `questions`를 prop으로 받지 않고 내부에서
+// `sentenceOrderQuestionsForStep(stepId)`로 그 Record를 읽으므로, 이 파일이
+// 소비할 수 있는 문항은 이 Record에 값이 있을 때뿐입니다. `sentence-order.ts`
+// 파일 자체는 고치지 않습니다(읽기 전용).
 //
-// **문항 값을 지어내지 않는다는 것과 문항 데이터가 아예 없다는 것은 다르다.**
-// `sentenceOrderQuestionsByStep`은 계약(§8.2 보류 1·2)에 따라 다섯 스텝 전부 빈
-// 배열이다 — 이 컴포넌트는 `questions`를 prop으로 받지 않고(§1.8(b)) 내부에서
-// `sentenceOrderQuestionsForStep(stepId)`로 그 Record를 읽으므로, 이 파일이 소비할
-// 수 있는 문항은 이 Record에 값이 있을 때뿐이다. `sentence-order.ts` 파일 자체는
-// 고치지 않는다(읽기 전용).
-//
-// **픽스처 주입은 `vi.mock(경로, importOriginal)`로 조회 함수 하나만 부분 대역한다**
-// (형태의 정본: `word-choice/WordChoiceScreen.ui.test.tsx`). 이전에는
-// `beforeEach`/`afterEach`로 `sentenceOrderQuestionsByStep` Record의 `ordering`
-// 슬롯을 런타임에 대입했다 — 그 방식을 걷어낸 이유 둘:
-//   1. 런타임 변형은 `readonly` 선언을 뚫는다 — 타입이 막는 것을 테스트가
-//      우회하는 것이었다.
-//   2. 모듈 전역을 변형하고 `afterEach` 정리에 의존한다 — 케이스가 실패로
-//      빠지면 원복이 스킵되어 다음 케이스로 상태가 샌다.
-// `sentenceOrderQuestionsForStep`은 Record 조회 한 줄이고 지울 가드가 없다 — 이
-// 대역이 `App.integration.test.tsx:584`의 반대 결정(`lib/audio.ts`를 `vi.mock`하지
-// 않는다)과 충돌하지 않는다. 그 결정이 막는 것은 「가드를 가진 모듈을 통째로
-// 대역해 그 가드(세대로 늦게 온 완료를 버리고 모듈 부재를 흡수하는 것)를
-// 지우는 것」이지 `vi.mock` 자체가 아니다. 나머지 export(세션 리듀서·판정·
-// 문구 합성 등)는 `importOriginal`로 그대로 통과시킨다 — `sentence-order.ts`가
-// 실제로 불리는지가 이 파일이 보는 것의 절반이라는 원칙은 바뀌지 않는다.
+// **픽스처 주입은 `vi.mock(경로, importOriginal)`로 조회 함수 하나만 부분
+// 대역합니다** (형태의 정본: `word-choice/WordChoiceScreen.ui.test.tsx`).
+// 이전에는 `beforeEach`/`afterEach`로 `sentenceOrderQuestionsByStep` Record의
+// `ordering` 슬롯을 런타임에 대입했습니다 — 그 방식을 걷어낸 이유 둘입니다:
+//   1. 런타임 변형은 `readonly` 선언을 뚫습니다 — 타입이 막는 것을 테스트가
+//      우회하는 것이었습니다.
+//   2. 모듈 전역을 변형하고 `afterEach` 정리에 의존합니다 — 케이스가 실패로
+//      빠지면 원복이 스킵되어 다음 케이스로 상태가 샙니다.
+// `sentenceOrderQuestionsForStep`은 Record 조회 한 줄이고 지울 가드가 없습니다 —
+// 이 대역이 `App.integration.test.tsx:584`의 반대 결정(`lib/audio.ts`를
+// `vi.mock`하지 않습니다)과 충돌하지 않습니다. 그 결정이 막는 것은 「가드를 가진
+// 모듈을 통째로 대역해 그 가드(세대로 늦게 온 완료를 버리고 모듈 부재를
+// 흡수하는 것)를 지우는 것」이지 `vi.mock` 자체가 아닙니다. 나머지 export(세션
+// 리듀서·판정·문구 합성 등)는 `importOriginal`로 그대로 통과시킵니다 —
+// `sentence-order.ts`가 실제로 불리는지가 이 파일이 보는 것의 절반이라는 원칙은
+// 바뀌지 않습니다.
 
 const ORDERING_QUESTIONS: readonly SentenceOrderQuestion[] = [
   {
@@ -62,8 +60,7 @@ vi.mock("./sentence-order", async (importOriginal) => {
 });
 
 afterEach(() => {
-  // announce 대역이 세운 전역을 원복한다 — 지우지 않으면 다른 파일로 샌다
-  // (계약 §3.2 「announce 대역은 테스트마다 원복한다」).
+  // announce 대역이 세운 전역을 원복합니다 — 지우지 않으면 다른 파일로 샙니다.
   vi.unstubAllGlobals();
 });
 
@@ -85,9 +82,9 @@ function renderOrdering(
 
 // ------------------------------------------------------------ announce 대역
 //
-// 형태의 정본은 `ListeningScreen.ui.test.tsx`의 `stubHost()`(오디오)다. 여기서는
-// `lib/accessibility.ts`가 만지는 접점 하나(`NativeModules.LynxAccessibilityModule`)에
-// 대역을 둔다 — `lib/accessibility.ts` 자체를 mock하지 않는다.
+// 형태의 정본은 `ListeningScreen.ui.test.tsx`의 `stubHost()`(오디오)입니다.
+// 여기서는 `lib/accessibility.ts`가 만지는 접점 하나(`NativeModules.LynxAccessibilityModule`)에
+// 대역을 둡니다 — `lib/accessibility.ts` 자체를 mock하지 않습니다.
 
 type AnnounceCall = { content: string };
 
@@ -104,7 +101,7 @@ function stubAnnounce(): AnnounceCall[] {
   return calls;
 }
 
-// 채점 builtin과 완료 custom 채널을 함께 세되 기존 대역은 변경하지 않는다.
+// 채점 builtin과 완료 custom 채널을 함께 세되 기존 대역은 변경하지 않습니다.
 function stubCompletionHost(): { builtin: AnnounceCall[]; completion: AnnounceCall[] } {
   const builtin: AnnounceCall[] = [];
   const completion: AnnounceCall[] = [];
@@ -125,14 +122,14 @@ function stubCompletionHost(): { builtin: AnnounceCall[]; completion: AnnounceCa
   return { builtin, completion };
 }
 
-// 조각을 정답 순서대로 눌러 놓는다.
+// 조각을 정답 순서대로 눌러 놓습니다.
 function placeAllCorrectly(question: SentenceOrderQuestion): void {
   for (const chipIndex of question.answerOrder) {
     fireEvent.tap(screen.getByTestId(`sentence-order-chip-${chipIndex}`), {});
   }
 }
 
-// 문항 전부를 정답으로 배치·확인하고 넘겨 완료 상태까지 몬다.
+// 문항 전부를 정답으로 배치·확인하고 넘겨 완료 상태까지 몹니다.
 function completeAllQuestions(): void {
   for (const question of ORDERING_QUESTIONS) {
     placeAllCorrectly(question);
@@ -141,10 +138,11 @@ function completeAllQuestions(): void {
   }
 }
 
-// 이 화면은 능동 채널이 둘이다 — 채점(문항 하나의 판정)과 완료(세션의 종료)다
-// (계약 §4.3). 아래 완료 전이 절이 보는 것은 둘째 채널 하나이므로, 첫째 채널이 낸
-// 발화를 걷어 내고 센다. 걷어 내는 기준을 채점 발화의 접두사 하나로 두는 것이
-// 의도다 — 완료 채널이 예상 밖의 문자열을 내면 그것도 여기 남아 잡힌다.
+// 이 화면은 능동 채널이 둘입니다 — 채점(문항 하나의 판정)과 완료(세션의
+// 종료)입니다. 아래 완료 전이 절이 보는 것은 둘째 채널 하나이므로, 첫째 채널이
+// 낸 발화를 걷어 내고 셉니다. 걷어 내는 기준을 채점 발화의 접두사 하나로 두는
+// 것이 의도입니다 — 완료 채널이 예상 밖의 문자열을 내면 그것도 여기 남아
+// 잡힙니다.
 const nonGradingCalls = (calls: readonly AnnounceCall[]): AnnounceCall[] =>
   calls.filter((call) => !call.content.startsWith("채점 결과, "));
 
@@ -252,7 +250,7 @@ test("정답 순서로 확인을 탭하면 data-result='correct'이고 다음이
 test("틀린 순서로 확인을 탭하면 data-result='incorrect'다", () => {
   renderOrdering();
 
-  // 정답 순서를 [1,0,2]로 뒤집어서 놓는다 → [0,1,2] 배치, incorrect.
+  // 정답 순서를 [1,0,2]로 뒤집어서 놓습니다 → [0,1,2] 배치, incorrect입니다.
   fireEvent.tap(screen.getByTestId("sentence-order-chip-0"), {});
   fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
   fireEvent.tap(screen.getByTestId("sentence-order-chip-2"), {});
@@ -323,7 +321,7 @@ test("결과 보기를 탭하면 onFinish가 stepId와 판정 배열로 정확�
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
   fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
   fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
-  // 두 번째 문항은 오답으로 제출한다.
+  // 두 번째 문항은 오답으로 제출합니다.
   fireEvent.tap(screen.getByTestId("sentence-order-chip-0"), {});
   fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
   fireEvent.tap(screen.getByTestId("sentence-order-chip-2"), {});
@@ -349,7 +347,7 @@ test("나가기를 탭하면 onExit이 한 번, onFinish는 불리지 않는다"
   expect(onFinish).not.toHaveBeenCalled();
 });
 
-// ---------------------------------------------------------------- 능동 낭독 (계약 §1.11)
+// ---------------------------------------------------------------- 능동 낭독
 
 test("마운트만으로는 announce가 불리지 않는다", () => {
   const calls = stubAnnounce();
@@ -400,13 +398,13 @@ test("대역이 없어도 화면이 던지지 않는다", () => {
   expect(() => renderOrdering()).not.toThrow();
 });
 
-// ------------------------------------------- 완료 전이 발화 (LIB-247 계약 §6.2 X-A~X-F)
+// ------------------------------------------- 완료 전이 발화
 //
-// 이 화면이 여는 **둘째** 능동 채널이다. 위 채점 절의 케이스들이 한 글자도 안 바뀌는
-// 것이 첫째 채널이 그대로라는 증거다 — 두 채널은 다른 정보를 다른 순간에 낸다
-// (계약 §4.3). 여기서 세는 것은 `nonGradingCalls`로 걸러 낸 완료 채널 하나다.
+// 이 화면이 여는 **둘째** 능동 채널입니다. 위 채점 절의 케이스들이 한 글자도 안
+// 바뀌는 것이 첫째 채널이 그대로라는 증거입니다 — 두 채널은 다른 정보를 다른
+// 순간에 냅니다. 여기서 세는 것은 `nonGradingCalls`로 걸러 낸 완료 채널
+// 하나입니다.
 
-// X-A. 완료 전이 뒤 완료 발화가 정확히 하나이고 그 내용이 계약 §3.2 표의 문자열이다.
 test("[X-A] 완료 전이 뒤 완료 발화가 정확히 하나이고 content가 '문항을 모두 마쳤어요, 결과 보기'다", () => {
   const calls = stubAnnounce();
   renderOrdering();
@@ -418,9 +416,9 @@ test("[X-A] 완료 전이 뒤 완료 발화가 정확히 하나이고 content가
   expect(nonGradingCalls(calls)[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
 });
 
-// X-B. 전이 **전에는** 완료 발화가 0건이다. 가드(`if (!complete) return;`)를 지우면
-// 문항 도중에 완료 발화가 나가고 이 케이스가 잡는다(계약 §6.2(h)).
-// 채점 발화는 이 축이 아니다 — 그것이 그대로 나가는 것까지 함께 적어 둔다.
+// X-B. 전이 **전에는** 완료 발화가 0건입니다. 가드(`if (!complete) return;`)를
+// 지우면 문항 도중에 완료 발화가 나가고 이 케이스가 잡습니다. 채점 발화는 이
+// 축이 아닙니다 — 그것이 그대로 나가는 것까지 함께 적어 둡니다.
 test("[X-B] 첫 렌더·확인·중간 다음까지 완료 발화가 0건이다 — 채점 발화만 나간다", () => {
   const calls = stubAnnounce();
   renderOrdering();
@@ -439,10 +437,10 @@ test("[X-B] 첫 렌더·확인·중간 다음까지 완료 발화가 0건이다 
   expect(nonGradingCalls(calls)).toHaveLength(0);
 });
 
-// X-C. **정확히 한 번**이다. 종료 상태에 닿은 뒤 같은 props로 다시 렌더해도 호출이
-// 늘지 않는다 — dep 배열을 지워 매 렌더 실행이 되면 여기서만 잡힌다(계약 §6.2(h)).
-// props를 새로 짓지 않고 **같은 참조**를 다시 넘긴다 — 값이 갈려서 늘어난 것이
-// 아니라 렌더 자체로 늘어난 것을 보려는 것이다.
+// X-C. **정확히 한 번**입니다. 종료 상태에 닿은 뒤 같은 props로 다시 렌더해도
+// 호출이 늘지 않습니다 — dep 배열을 지워 매 렌더 실행이 되면 여기서만
+// 잡힙니다. props를 새로 짓지 않고 **같은 참조**를 다시 넘깁니다 — 값이 갈려서
+// 늘어난 것이 아니라 렌더 자체로 늘어난 것을 보려는 것입니다.
 test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 완료 발화가 늘지 않는다", () => {
   const calls = stubAnnounce();
   const onExit = () => {};
@@ -466,12 +464,12 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 완료 발�
   expect(nonGradingCalls(calls)).toHaveLength(1);
 });
 
-// X-D. **소리에만 있는 낱말이 0건이다**(ADR-0016 D11-1 · 수용 기준 3). 발화 문자열을
-// 리터럴로 다시 적지 않고 **DOM에서 파생해** 짓는다 — 앞절은 종료 문구 요소의 내용,
-// 뒷절은 그 순간 화면에 실재하는 유일한 조작 단위의 `accessibility-label`이다.
-// 이것이 지는 것은 **값이 갈리지 않는다**까지다 — 양쪽을 같은 값으로 함께 인라인하면
-// 이 단언은 통과한다(계약 §6.2 X-D 불릿의 정정 · §6.2(h) 다섯째 행의 실측).
-// 「낱말이 같은 자리에서 나온다」는 계약 §2.2의 훑기가 진다.
+// X-D. **소리에만 있는 낱말이 0건입니다**(ADR-0016 D11-1·수용 기준 3). 발화
+// 문자열을 리터럴로 다시 적지 않고 **DOM에서 파생해** 짓습니다 — 앞절은 종료
+// 문구 요소의 내용, 뒷절은 그 순간 화면에 실재하는 유일한 조작 단위의
+// `accessibility-label`입니다. 이것이 지는 것은 **값이 갈리지 않는다**까지입니다
+// — 양쪽을 같은 값으로 함께 인라인하면 이 단언은 통과합니다. 「낱말이 같은
+// 자리에서 나온다」는 계약의 훑기가 집니다.
 test("[X-D] 완료 발화가 종료 문구와 그 순간 유일한 조작 단위의 라벨에서 그대로 나온다", () => {
   const calls = stubAnnounce();
   const { container } = renderOrdering();
@@ -490,8 +488,8 @@ test("[X-D] 완료 발화가 종료 문구와 그 순간 유일한 조작 단위
   expect(nonGradingCalls(calls)[0]?.content).toBe(`${completeText}, ${actionLabel}`);
 });
 
-// X-E. **마운트가 곧 완료인 갈래**(계약 §4.2). 문항 표가 빈 스텝은 첫 렌더가 이미
-// 종료 상태다 — 전이만 발화하게 만들면 그 갈래가 조용한 채로 남는다.
+// X-E. **마운트가 곧 완료인 갈래입니다.** 문항 표가 빈 스텝은 첫 렌더가 이미
+// 종료 상태입니다 — 전이만 발화하게 만들면 그 갈래가 조용한 채로 남습니다.
 test("[X-E] 문항이 0인 스텝은 마운트가 곧 완료라 그 순간 완료 발화가 하나 나간다", () => {
   const calls = stubAnnounce();
 
@@ -504,9 +502,9 @@ test("[X-E] 문항이 0인 스텝은 마운트가 곧 완료라 그 순간 완�
   expect(nonGradingCalls(calls)[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
 });
 
-// X-F. 두 채널이 **겹치지 않는다**(계약 §4.3(a)의 실행 증인). 마지막 문항의 `확인`
-// 뒤 `다음`까지 가는 경로 전체에서 발화의 **순서와 총수**를 본다 — 마지막 하나가
-// 완료 발화이고, 같은 순간에 채점 발화가 함께 나가지 않는다.
+// X-F. 두 채널이 **겹치지 않습니다**(실행 증인입니다). 마지막 문항의 `확인` 뒤
+// `다음`까지 가는 경로 전체에서 발화의 **순서와 총수**를 봅니다 — 마지막 하나가
+// 완료 발화이고, 같은 순간에 채점 발화가 함께 나가지 않습니다.
 test("[X-F] 전체 경로의 발화가 채점들 뒤에 완료 하나로 끝난다 — 한 순간에 미는 발화가 하나다", () => {
   const calls = stubAnnounce();
   renderOrdering();
@@ -517,7 +515,7 @@ test("[X-F] 전체 경로의 발화가 채점들 뒤에 완료 하나로 끝난�
   placeAllCorrectly(ORDERING_QUESTIONS[1]);
   fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
 
-  // 마지막 `다음` **직전**까지는 채점 발화뿐이다.
+  // 마지막 `다음` **직전**까지는 채점 발화뿐입니다.
   expect(calls.map((call) => call.content)).toEqual(["채점 결과, 정답", "채점 결과, 정답"]);
 
   fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
@@ -529,7 +527,7 @@ test("[X-F] 전체 경로의 발화가 채점들 뒤에 완료 하나로 끝난�
   ]);
 });
 
-// 실제 두 문항을 채점한 뒤 마지막 다음에서만 custom 완료 채널을 사용한다.
+// 실제 두 문항을 채점한 뒤 마지막 다음에서만 custom 완료 채널을 사용합니다.
 test("마지막 다음 뒤 custom 완료 발화가 한 번이고 builtin 채점 발화만 유지된다", () => {
   const { builtin, completion } = stubCompletionHost();
   const view = renderOrdering();
@@ -578,7 +576,7 @@ test("판정 표식 래퍼에 accessibility-*가 붙지 않는다", () => {
   expect(mark).not.toHaveAttribute("accessibility-elements-hidden");
 });
 
-// ---------------------------------------------------------------- 스크롤 영역 (FE ADR-0022 · 계약 §3.2 A1~A7)
+// ---------------------------------------------------------------- 스크롤 영역 (ADR-0022)
 
 test("[A1] sentence-order-screen-scroll이 존재한다", () => {
   renderOrdering();

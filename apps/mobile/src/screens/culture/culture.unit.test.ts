@@ -3,16 +3,15 @@ import { describe, expect, it } from "vitest";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import { cultureNarrativeForStep, cultureScreenTitle, type CultureNarrative } from "./culture";
 
-// 계약: LIB-238 spec §6.1 (unit — required, pureFunctions 표)
-// 기대값의 정본은 계약이다 — 구현에서 베끼지 않는다.
+// 기대값의 정본은 계약입니다 — 구현에서 베끼지 않습니다.
 //
-// DOM·컴포넌트를 import하지 않는다 — 순수 함수 둘만 본다.
-// toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없다
+// DOM·컴포넌트를 import하지 않습니다 — 순수 함수 둘만 봅니다.
+// toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없습니다
 // (docs/conventions/code.md 「jest-dom 매처는 절반만 쓴다」 · ADR-0006 D4).
 //
-// ⚠ 계약 §6.1 U3: 어느 스텝이 어떤 서사를 갖는지 문자열로 단언하지 않는다 — 값이
-// 임시라(§2.5) 박으면 교체가 공짜가 아니게 된다. `learningFormForStep`의 기존
-// unit이 쓴 규율(journey-map.unit.test.ts)과 같다.
+// ⚠ 어느 스텝이 어떤 서사를 갖는지 문자열로 단언하지 않습니다 — 값이 임시라 박으면
+// 교체가 공짜가 아니게 됩니다. `learningFormForStep`의 기존 unit이 쓴 규율
+// (journey-map.unit.test.ts)과 같습니다.
 
 const allStepIds: readonly JourneyStepId[] = [
   "greeting",
@@ -22,7 +21,7 @@ const allStepIds: readonly JourneyStepId[] = [
   "directions",
 ];
 
-describe("cultureScreenTitle (계약 §6.1 U1)", () => {
+describe("cultureScreenTitle", () => {
   it("서수 3은 3단계 · 문화다", () => {
     expect(cultureScreenTitle(3)).toBe("3단계 · 문화");
   });
@@ -36,7 +35,7 @@ describe("cultureScreenTitle (계약 §6.1 U1)", () => {
   });
 });
 
-describe("cultureNarrativeForStep — 총성 (계약 §6.1 U2)", () => {
+describe("cultureNarrativeForStep — 총성", () => {
   it("다섯 스텝 어느 것에도 던지지 않는다", () => {
     for (const id of allStepIds) {
       expect(() => cultureNarrativeForStep(id)).not.toThrow();
@@ -50,9 +49,9 @@ describe("cultureNarrativeForStep — 총성 (계약 §6.1 U2)", () => {
   });
 });
 
-describe("cultureNarrativeForStep — 내용 불변식 (계약 §6.1 U3)", () => {
-  // ⚠ 서사 문자열 자체는 단언하지 않는다 — 파일 상단 주석 참고. 여기서 보는 것은
-  // 「제목이 있는가 · 문단이 최소 하나인가 · 빈 문단이 없는가」뿐이다.
+describe("cultureNarrativeForStep — 내용 불변식", () => {
+  // ⚠ 서사 문자열 자체는 단언하지 않습니다 — 파일 상단 주석을 참고합니다. 여기서
+  // 보는 것은 「제목이 있는가·문단이 최소 하나인가·빈 문단이 없는가」뿐입니다.
 
   it("다섯 스텝 각각에서 title이 빈 문자열이 아니다", () => {
     for (const id of allStepIds) {
@@ -81,7 +80,7 @@ describe("cultureNarrativeForStep — 내용 불변식 (계약 §6.1 U3)", () =>
   });
 });
 
-describe("cultureNarrativeForStep — 부수효과 없음 (계약 §6.1 U4)", () => {
+describe("cultureNarrativeForStep — 부수효과 없음", () => {
   it("같은 스텝을 두 번 불러도 같은 값이다", () => {
     for (const id of allStepIds) {
       expect(cultureNarrativeForStep(id)).toEqual(cultureNarrativeForStep(id));

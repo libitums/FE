@@ -30,7 +30,7 @@ const active0: MessengerSessionState = { mode: "active", replyIndex: 0 };
 const active1: MessengerSessionState = { mode: "active", replyIndex: 1 };
 const completed: MessengerSessionState = { mode: "completed" };
 
-describe("messenger state pure functions (LIB-254)", () => {
+describe("messenger state pure functions", () => {
   it("available은 active 0, completed는 completed로 시작한다", () => {
     expect(initialMessengerSessionState("available")).toEqual(active0);
     expect(initialMessengerSessionState("completed")).toEqual(completed);

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { journeyMapItems, journeySteps, standardUnitSteps, type JourneyUnit } from "./journey-map";
 
-describe("journeyMapItems (LIB-254 계약)", () => {
+describe("journeyMapItems", () => {
   it("특별 항목은 유닛의 제목을 맵 데이터에 함께 전달한다", () => {
     expect(journeyMapItems.find((item) => item.kind === "special")).toEqual({
       kind: "special",

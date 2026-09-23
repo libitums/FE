@@ -7,12 +7,9 @@ import {
   notificationTappedEvent,
 } from "./notifications";
 
-// 계약: .agent-harness/work/lib-257/spec.md §2.3(순수 모듈 계약).
-// 계획: .agent-harness/work/lib-257/test-plan.md unit § `notifications.unit.test.ts`.
-//
 // 픽스처는 `NotificationItem`(type import)으로 이 파일 안에서 넷(대상 종류마다 하나)을
-// 직접 짓는다. `notification-items.ts`를 import하지 않는다 — 계산 규칙이 데이터 값에
-// 기대지 않게 한다.
+// 직접 짓습니다. `notification-items.ts`를 import하지 않습니다 — 계산 규칙이 데이터
+// 값에 기대지 않게 합니다.
 
 const messengerItem: NotificationItem = {
   id: "notification-messenger",
@@ -46,7 +43,6 @@ const allItems: readonly NotificationItem[] = [
 ];
 
 describe("notificationDestinationLabel", () => {
-  // NL1
   it("NL1. 대상 종류 넷 각각에 고정된 행선지 낱말을 돌려준다", () => {
     expect(notificationDestinationLabel("messenger")).toBe("메신저 열기");
     expect(notificationDestinationLabel("phone-call")).toBe("전화 열기");
@@ -54,7 +50,6 @@ describe("notificationDestinationLabel", () => {
     expect(notificationDestinationLabel("roleplay-list")).toBe("롤플레이 목록 보기");
   });
 
-  // NL2
   it("NL2. 넷이 서로 다르다", () => {
     const labels = allItems.map((item) => notificationDestinationLabel(item.target.kind));
 
@@ -63,7 +58,6 @@ describe("notificationDestinationLabel", () => {
 });
 
 describe("notificationItemAccessibilityLabel", () => {
-  // NL3
   it("NL3. `<메시지>, <행선지>` 형식이다 — 넷 각각", () => {
     for (const item of allItems) {
       expect(notificationItemAccessibilityLabel(item)).toBe(
@@ -72,7 +66,6 @@ describe("notificationItemAccessibilityLabel", () => {
     }
   });
 
-  // NL4 (가드)
   it("NL4. (가드) 접근성 이름에 읽음·안 읽음·새 알림이 없다", () => {
     for (const item of allItems) {
       const label = notificationItemAccessibilityLabel(item);
@@ -85,7 +78,6 @@ describe("notificationItemAccessibilityLabel", () => {
 });
 
 describe("notificationTappedEvent", () => {
-  // NE1
   it("NE1. { name, notificationId, target } 페이로드다 — 넷 각각", () => {
     for (const item of allItems) {
       expect(notificationTappedEvent(item)).toEqual({
@@ -96,7 +88,6 @@ describe("notificationTappedEvent", () => {
     }
   });
 
-  // NE2 (가드)
   it("NE2. (가드) 페이로드 키가 정확히 name·notificationId·target 셋이고 message가 없다", () => {
     for (const item of allItems) {
       const event = notificationTappedEvent(item);
@@ -107,7 +98,6 @@ describe("notificationTappedEvent", () => {
   });
 });
 
-// NE3 (가드) — 두 함수 모두 입력을 바꾸지 않고, 같은 입력에 같은 값을 돌려준다.
 describe("입력 불변 · 부수효과 없음 (가드)", () => {
   it("NE3. notificationItemAccessibilityLabel·notificationTappedEvent가 입력을 바꾸지 않고 같은 입력에 같은 값이다", () => {
     for (const item of allItems) {

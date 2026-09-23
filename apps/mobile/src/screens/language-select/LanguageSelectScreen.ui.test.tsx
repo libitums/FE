@@ -8,18 +8,18 @@ import {
 } from "../../lib/entry-language";
 import { LanguageSelectScreen } from "./LanguageSelectScreen";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 언어 넷의 순서 · 선택 · 비활성 · Continue를 본다
-// (ADR-0006 D4). 라벨 값은 `entryLanguageLabel`의 결과로 비교한다 — 로직을 다시 적지
-// 않는다(계약 §2.2).
+// `ui` 계층: 실제 컴포넌트를 렌더하고 언어 넷의 순서·선택·비활성·Continue를 봅니다
+// (ADR-0006 D4). 라벨 값은 `entryLanguageLabel`의 결과로 비교합니다 — 로직을 다시
+// 적지 않습니다.
 //
-// 2026-09-21 디자인 반영: 제목 「Select Language」 · 안내, 선택지는 ui-lynx OptionSelector
-// (single · deferred)이고 영어만 고를 수 있다. 하단 Continue →.
+// 2026-09-21 디자인 반영: 제목 「Select Language」·안내, 선택지는 ui-lynx
+// OptionSelector(single·deferred)이고 영어만 고를 수 있습니다. 하단 Continue →.
 
 function option(language: string): HTMLElement {
   return screen.getByTestId(`ui-lynx-option-selector-item-${language}`);
 }
 
-describe("LanguageSelectScreen (LIB-261)", () => {
+describe("LanguageSelectScreen", () => {
   it("[LS-U1] 제목 · 안내가 서고 언어 넷이 어휘 순서로 선다", () => {
     const { container } = render(
       <LanguageSelectScreen selected="en" onSelect={vi.fn()} onContinue={vi.fn()} />,

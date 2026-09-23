@@ -8,18 +8,18 @@ import {
   speechNormalizations,
 } from "./speech-probe";
 
-// `ui` 계층: 렌더 결과와 상호작용만 본다 (ADR-0006 D4). 계산된 스타일·레이아웃은
-// jsdom이 계산하지 않으므로 `toBeVisible`·`toHaveStyle`·`toHaveClass`를 쓰지 않는다
+// `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). 계산된 스타일·레이아웃은
+// jsdom이 계산하지 않으므로 `toBeVisible`·`toHaveStyle`·`toHaveClass`를 쓰지 않습니다
 // (vitest.setup.ts). 형태의 정본: ../handwriting-probe/HandwritingProbeScreen.ui.test.tsx
 //
-// ⚠ 이 계층에는 `NativeModules` 전역이 **아예 없다.** 그래서 여기 초록은 「모듈이 없는
-// 환경에서 화면이 던지지 않는다」까지를 보이고, 모듈이 있을 때의 값은 integration이
-// 진다 — 무대가 다르면 답도 다르다.
+// ⚠ 이 계층에는 `NativeModules` 전역이 **아예 없습니다.** 그래서 여기 초록은 「모듈이
+// 없는 환경에서 화면이 던지지 않는다」까지를 보이고, 모듈이 있을 때의 값은
+// integration이 집니다 — 무대가 다르면 답도 다릅니다.
 //
-// ⚠ **후보 목록의 개수를 이 파일이 적지 않는다.** 순수 로직이 축의 곱으로 짓는 목록이라
-// 축에 값이 늘면 개수가 바뀐다. 여기서 세면 그때 이 파일이 두 번째 정본이 된다.
+// ⚠ **후보 목록의 개수를 이 파일이 적지 않습니다.** 순수 로직이 축의 곱으로 짓는
+// 목록이라 축에 값이 늘면 개수가 바뀝니다. 여기서 세면 그때 이 파일이 두 번째
+// 정본이 됩니다.
 
-// SP1
 test("[SP1] 스크롤 영역이 정확히 하나이고 이름·속성·자식이 ADR-0022 3분할 그대로다", () => {
   const { container } = render(<SpeechProbeScreen />);
 
@@ -36,17 +36,16 @@ test("[SP1] 스크롤 영역이 정확히 하나이고 이름·속성·자식이
       .sort(),
   ).toEqual(["scroll-bar-enable", "scroll-orientation"]);
 
-  // 스크롤 컨테이너는 조작 단위가 아니라 상자다(ADR-0022 D5).
+  // 스크롤 컨테이너는 조작 단위가 아니라 상자입니다(ADR-0022 D5).
   expect(scroll).not.toHaveAttribute("accessibility-element");
   expect(scroll).not.toHaveAttribute("accessibility-label");
   expect(scroll).not.toHaveAttribute("accessibility-traits");
 
-  // 직계 자식은 관측 상자 하나뿐이다.
+  // 직계 자식은 관측 상자 하나뿐입니다.
   expect(scroll.children).toHaveLength(1);
   expect(scroll.children[0]).toHaveAttribute("data-testid", "speech-probe-screen-observations");
 });
 
-// SP2
 test("[SP2] 제목이 header이고 조작 수단마다 이름 있는 button 속성이 그 순서로 붙는다", () => {
   render(<SpeechProbeScreen />);
 
@@ -79,8 +78,8 @@ test("[SP2] 제목이 header이고 조작 수단마다 이름 있는 button 속�
   }
 });
 
-// SP3 — ⭐ 권한 둘이 **각각** 자리를 갖는다. 거부 조합 넷이 화면에서 갈리려면 값이
-// 둘이어야 하고, 한 줄로 합치면 그 갈림이 사라진다.
+// SP3 — ⭐ 권한 둘이 **각각** 자리를 갖습니다. 거부 조합 넷이 화면에서 갈리려면
+// 값이 둘이어야 하고, 한 줄로 합치면 그 갈림이 사라집니다.
 test("[SP3] 권한 상태가 마이크와 음성 인식으로 따로 서고 아직 안 읽었을 때 비어 있다", () => {
   render(<SpeechProbeScreen />);
 
@@ -92,7 +91,8 @@ test("[SP3] 권한 상태가 마이크와 음성 인식으로 따로 서고 아�
   expect(microphone).not.toBe(speech);
 });
 
-// SP4 — ADR-0026 D3의 1단계. 모듈이 없는 환경이므로 「접점 없음」이 서야 한다.
+// SP4 — ADR-0026 D3의 1단계입니다. 모듈이 없는 환경이므로 「접점 없음」이 서야
+// 합니다.
 test("[SP4] 접점 유무가 관찰값으로 서고 요청 전에는 마지막 요청이 비어 있다", () => {
   render(<SpeechProbeScreen />);
 
@@ -106,17 +106,17 @@ test("[SP5] 결과가 오기 전 인식 결과 줄은 본문이 비어 있고 �
   render(<SpeechProbeScreen />);
 
   const recognized = screen.getByTestId("speech-probe-screen-recognized");
-  // `toHaveTextContent("")`은 jest-dom이 거절한다 — 본문은 `textContent`로 직접 본다.
+  // `toHaveTextContent("")`은 jest-dom이 거절합니다 — 본문은 `textContent`로 직접
+  // 봅니다.
   expect(recognized.textContent).toBe("");
   expect(recognized).toHaveAttribute("data-received", "no");
   expect(recognized).toHaveAttribute("data-length", "");
 
-  // 상태와 온디바이스도 같은 규칙으로 비어 있다 — 빈 값이 「안 왔다」다.
+  // 상태와 온디바이스도 같은 규칙으로 비어 있습니다 — 빈 값이 「안 왔다」입니다.
   expect(screen.getByTestId("speech-probe-screen-status")).toHaveAttribute("data-status", "");
   expect(screen.getByTestId("speech-probe-screen-on-device")).toHaveAttribute("data-ondevice", "");
 });
 
-// SP6
 test("[SP6] 온디바이스 요구 토글이 값을 뒤집고 그 값을 속성으로 낸다", () => {
   render(<SpeechProbeScreen />);
 
@@ -130,7 +130,8 @@ test("[SP6] 온디바이스 요구 토글이 값을 뒤집고 그 값을 속성�
   expect(toggle).toHaveAttribute("data-require", "true");
 });
 
-// SP7 — 화면이 후보를 고르지 않는다. 순수 로직이 낸 것 **전부**가 그 순서로 선다.
+// SP7 — 화면이 후보를 고르지 않습니다. 순수 로직이 낸 것 **전부**가 그 순서로
+// 섭니다.
 test("[SP7] 대조 표가 정규화 후보 전부를 순수 로직의 순서로 내고 라벨도 그것을 쓴다", () => {
   render(<SpeechProbeScreen />);
 
@@ -145,7 +146,7 @@ test("[SP7] 대조 표가 정규화 후보 전부를 순수 로직의 순서로 
 
   for (const normalization of speechNormalizations) {
     const id = speechNormalizationId(normalization);
-    // 화면이 한국어 문구를 짓지 않는다 — 라벨의 정본은 순수 로직이다.
+    // 화면이 한국어 문구를 짓지 않습니다 — 라벨의 정본은 순수 로직입니다.
     expect(screen.getByTestId(`speech-probe-screen-comparison-${id}-label`)).toHaveTextContent(
       speechNormalizationLabel(normalization),
     );
@@ -156,7 +157,7 @@ test("[SP7] 대조 표가 정규화 후보 전부를 순수 로직의 순서로 
   }
 });
 
-// SP8 — 판정하지 않는다. `identical`은 관찰값이라 그대로 낸다.
+// SP8 — 판정하지 않습니다. `identical`은 관찰값이라 그대로 냅니다.
 test("[SP8] 결과가 오기 전에도 후보 행마다 identical 관찰값이 서고 인식 쪽이 비어 있다", () => {
   render(<SpeechProbeScreen />);
 
@@ -168,7 +169,7 @@ test("[SP8] 결과가 오기 전에도 후보 행마다 identical 관찰값이 �
     const row = screen.getByTestId(`speech-probe-screen-comparison-${id}`);
 
     // 제시문이 비어 있지 않으므로 인식 결과가 안 온 동안에는 어느 후보에서도 붙지
-    // 않는다. 「맞았다/틀렸다」를 말하는 자리가 화면에 없다는 것이 여기서 보인다.
+    // 않습니다. 「맞았다/틀렸다」를 말하는 자리가 화면에 없다는 것이 여기서 보입니다.
     expect(row).toHaveAttribute("data-identical", "false");
     expect(screen.getByTestId(`speech-probe-screen-comparison-${id}-recognized`).textContent).toBe(
       "",
@@ -176,7 +177,7 @@ test("[SP8] 결과가 오기 전에도 후보 행마다 identical 관찰값이 �
   }
 });
 
-// SP9 — 인식 결과의 모양. 안 온 동안에도 줄이 서고 세는 값이 0이다.
+// SP9 — 인식 결과의 모양입니다. 안 온 동안에도 줄이 서고 세는 값이 0입니다.
 test("[SP9] 문자열 모양 줄이 길이·공백·양끝·연속을 각각 낸다", () => {
   render(<SpeechProbeScreen />);
 
@@ -187,8 +188,8 @@ test("[SP9] 문자열 모양 줄이 길이·공백·양끝·연속을 각각 낸
   expect(shape).toHaveAttribute("data-repeats", "false");
 });
 
-// SP10 — 조작 수단은 권한 조합과 무관하게 **늘 전부 선다.** 무엇을 감출지가 곧 거부
-// 조합의 처방이고, 그것은 이 단위가 정하지 않는다.
+// SP10 — 조작 수단은 권한 조합과 무관하게 **늘 전부 섭니다.** 무엇을 감출지가 곧
+// 거부 조합의 처방이고, 그것은 이 단위가 정하지 않습니다.
 test("[SP10] 모듈이 없어도 어느 버튼을 눌러도 던지지 않는다", () => {
   expect(() => render(<SpeechProbeScreen />)).not.toThrow();
 

@@ -15,7 +15,7 @@ import {
   visiblePhoneCallEntries,
 } from "./phone-call";
 
-// 제품 정본의 세 턴을 독립 literal로 고정해 helper 자기호출 oracle을 피한다.
+// 제품 정본의 세 턴을 독립 literal로 고정해 helper 자기호출 oracle을 피합니다.
 const conversation: PhoneCallConversation = {
   unitId: "appointment-confirmation-phone-call",
   title: "약속 확인 전화",
@@ -122,12 +122,11 @@ describe("약속 확인 전화 순수 계약", () => {
   });
 });
 
-// -------------------------------- 롤플레이 연습 입력 (LIB-255 계약 §2.7 · §3)
-// 계획: .agent-harness/work/lib-255/test-plan.md unit § `phone-call.unit.test.ts`
-// (추가). 케이스 ID는 계획의 P1 그대로다.
+// -------------------------------------------------------------- 롤플레이 연습 입력
 
-describe("practicePhoneCallCompletionStatus (LIB-255)", () => {
-  // P1
+describe("practicePhoneCallCompletionStatus", () => {
+  // P1 — 연습 시작 입력이 initialPhoneCallSessionState와 합성해 처음 ready 상태를
+  // 만듭니다. 합성이 깨지면 여기서 잡힙니다.
   it("P1. 연습 시작 입력이 처음 ready 상태를 만든다 — 통화 준비·통화 시작·transcript 1개", () => {
     const state = initialPhoneCallSessionState(practicePhoneCallCompletionStatus());
 

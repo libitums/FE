@@ -19,25 +19,23 @@ import {
   type SentenceOrderSessionState,
 } from "./sentence-order";
 
-// 계약: .agent-harness/work/lib-229/spec.md §3.1 (`unit` 테스트 계획, W2의 pureFunctions
-// 표) — 단언 목록은 §3.1 「단언 목록 (지어내지 말고 이대로)」가 정본이다. 기대값을
-// 구현에서 베끼지 않는다.
+// 기대값을 구현에서 베끼지 않습니다.
 //
-// DOM·컴포넌트를 import하지 않는다 — sentence-order.ts의 순수 함수 열둘만 본다.
-// toHaveClass·toHaveStyle 같은 매처가 없다(ADR-0006 D4).
+// DOM·컴포넌트를 import하지 않습니다 — sentence-order.ts의 순수 함수 열둘만
+// 봅니다. toHaveClass·toHaveStyle 같은 매처가 없습니다(ADR-0006 D4).
 //
-// 문항 데이터는 이 계약이 값을 고정하지 않으므로(§8.2 보류 1·2) 이 파일 안에서
-// 픽스처를 직접 만든다 — sentenceOrderQuestionsByStep을 읽어 단언하지 않는다.
+// 문항 데이터는 이 계약이 값을 고정하지 않으므로 이 파일 안에서 픽스처를 직접
+// 만듭니다 — sentenceOrderQuestionsByStep을 읽어 단언하지 않습니다.
 
-// 조각 셋, 정답 순서 [0, 1, 2] — 가장 단순한 픽스처.
+// 조각 셋, 정답 순서 [0, 1, 2] — 가장 단순한 픽스처입니다.
 const simpleQuestion: SentenceOrderQuestion = {
   prompt: "낱말을 순서대로 배열해 문장을 만드세요.",
   chips: ["저는", "학생", "입니다"],
   answerOrder: [0, 1, 2],
 };
 
-// 같은 낱말이 두 번 나오는 문항 — 문자열 비교가 아니라 인덱스 비교임을 보이는
-// 픽스처(계약 §1.5의 판단 4).
+// 같은 낱말이 두 번 나오는 문항입니다 — 문자열 비교가 아니라 인덱스 비교임을 보이는
+// 픽스처입니다.
 const duplicateWordQuestion: SentenceOrderQuestion = {
   prompt: "나는 밥을 먹고 너는 빵을 먹는다.",
   chips: ["나는", "밥을", "먹고", "너는", "빵을", "먹는다"],
@@ -75,7 +73,8 @@ describe("judgeSentenceOrder", () => {
   it("같은 낱말이 두 번 나오는 문항에서도 인덱스로 갈린다", () => {
     expect(judgeSentenceOrder(duplicateWordQuestion, [0, 1, 2, 3, 4, 5])).toBe("correct");
     // 문자열로 보면 "나는"과 "너는"이 다르므로 자리를 바꿔도 표면 문장이 여전히
-    // 달라 보이지만, 인덱스 비교이므로 정답 인덱스 순서를 벗어나면 곧바로 incorrect다.
+    // 달라 보이지만, 인덱스 비교이므로 정답 인덱스 순서를 벗어나면 곧바로
+    // incorrect입니다.
     expect(judgeSentenceOrder(duplicateWordQuestion, [3, 1, 2, 0, 4, 5])).toBe("incorrect");
   });
 });
@@ -268,17 +267,16 @@ describe("isSentenceOrderSessionComplete", () => {
   });
 });
 
-// ---------------------------------------------------------------- 완료 전이 발화 (LIB-247)
-// 계약: .agent-harness/work/lib-247/spec.md §6.1 (unit — U1~U4) · §3.1(export 목록)
-// · §3.2(시그니처와 반환 문자열). 기대값의 정본은 계약이다 — sentence-order.ts에서 베끼지 않는다.
+// ---------------------------------------------------------------- 완료 전이 발화
+// 기대값의 정본은 계약입니다 — sentence-order.ts에서 베끼지 않습니다.
 //
-// ⚠ 이 화면만 능동 채널이 둘이다 — 위의 `sentenceOrderAnnouncement`(채점)와 아래
-// `sentenceOrderCompletionAnnouncement`(완료 전이)다. 이름이 두 채널을 가르고, 채점 쪽은
-// 이 이슈에서 이름도 몸통도 안 바뀐다(계약 §0.5 · §3.2). 둘이 같은 순간에 겹치지 않는다는
-// 것은 이 계층이 아니라 `ui`의 X-F가 진다(계약 §4.3(a) · §6.2).
+// ⚠ 이 화면만 능동 채널이 둘입니다 — 위의 `sentenceOrderAnnouncement`(채점)와 아래
+// `sentenceOrderCompletionAnnouncement`(완료 전이)입니다. 이름이 두 채널을 가르고,
+// 채점 쪽은 이 변경에서 이름도 몸통도 안 바뀝니다. 둘이 같은 순간에 겹치지 않는다는
+// 것은 이 계층이 아니라 `ui`의 X-F가 집니다.
 
-describe("완료 전이 발화의 상수 둘 (계약 §3.1 표 · §3.2)", () => {
-  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나온다 (ADR-0016 D11-1).
+describe("완료 전이 발화의 상수 둘", () => {
+  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나옵니다 (ADR-0016 D11-1).
   it("완료 문구 상수가 화면에 이미 있는 `문항을 모두 마쳤어요`다", () => {
     expect(sentenceOrderCompletionText).toBe("문항을 모두 마쳤어요");
   });
@@ -288,17 +286,17 @@ describe("완료 전이 발화의 상수 둘 (계약 §3.1 표 · §3.2)", () =>
   });
 });
 
-describe("sentenceOrderCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
-  // U1 — 오늘 호출자가 넘기는 값(계약 §4.4 표)으로 부르면 §3.2 표의 문자열과
-  // **문자 그대로** 같다.
+describe("sentenceOrderCompletionAnnouncement", () => {
+  // U1 — 오늘 호출자가 넘기는 값으로 부르면 정해진 문자열과 **문자 그대로**
+  // 같습니다.
   it("U1 — sentenceOrderFinishLabel로 부르면 `문항을 모두 마쳤어요, 결과 보기`다", () => {
     expect(sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel)).toBe(
       "문항을 모두 마쳤어요, 결과 보기",
     );
   });
 
-  // U2 — 인자가 형식을 실제로 통과한다. 이 단언이 있어야 「인자 없는 상수 반환」의
-  // 공허함을 피한 것이 지어진다(계약 §6.1 U2 · §3.4 넷째 행).
+  // U2 — 인자가 형식을 실제로 통과합니다. 이 단언이 있어야 「인자 없는 상수 반환」의
+  // 공허함을 피한 것이 지어집니다.
   it("U2 — 다른 인자 둘의 반환이 다르고, 완료 문구 뒤가 쉼표+공백 하나와 그 인자다", () => {
     const withFinish = sentenceOrderCompletionAnnouncement("결과 보기");
     const withExit = sentenceOrderCompletionAnnouncement("맵으로");
@@ -308,8 +306,8 @@ describe("sentenceOrderCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
     expect(withExit.slice(sentenceOrderCompletionText.length)).toBe(", 맵으로");
   });
 
-  // U3 — 앞절이 그 화면의 완료 문구 상수를 지난다. 리터럴을 다시 적지 않는다 —
-  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡는다.
+  // U3 — 앞절이 그 화면의 완료 문구 상수를 지납니다. 리터럴을 다시 적지 않습니다 —
+  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡습니다.
   it("U3 — 앞절이 sentenceOrderCompletionText와 같은 표를 지난다", () => {
     expect(
       sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel).startsWith(
@@ -318,7 +316,8 @@ describe("sentenceOrderCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
     ).toBe(true);
   });
 
-  // U4 — 부수효과가 없다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도 던지지 않는다.
+  // U4 — 부수효과가 없습니다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도
+  // 던지지 않습니다.
   it("U4 — 같은 인자로 두 번 불러도 같은 값이고 던지지 않는다", () => {
     expect(() => sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel)).not.toThrow();
     expect(sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel)).toBe(
@@ -326,8 +325,8 @@ describe("sentenceOrderCompletionAnnouncement (계약 §6.1 U1~U4)", () => {
     );
   });
 
-  // 채점 채널이 안 바뀌었다는 것을 같은 파일이 진다 — 두 채널이 이름으로 갈리고
-  // 서로의 문자열을 침범하지 않는다(계약 §0.5 표의 「안 바뀌는 것」 칸).
+  // 채점 채널이 안 바뀌었다는 것을 같은 파일이 집니다 — 두 채널이 이름으로 갈리고
+  // 서로의 문자열을 침범하지 않습니다.
   it("채점 채널과 문자열이 겹치지 않는다 — 이름이 두 채널을 가른다", () => {
     expect(sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel)).not.toBe(
       sentenceOrderAnnouncement("correct"),
