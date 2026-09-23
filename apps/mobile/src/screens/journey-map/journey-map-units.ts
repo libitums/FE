@@ -119,15 +119,27 @@ const journeyUnits: readonly JourneyUnit[] = [
   },
 ];
 
+// `default`를 두지 않습니다. 특별 유닛 화면이 늘면 그 갈래가 아무것도 돌려주지 않아 반환
+// 타입에 `undefined`가 섞이고, `flatMap`의 인자 타입과 맞지 않아 컴파일이 섭니다(2026-09-23
+// 확인). 예전에는 마지막 갈래가 조건 없는 나머지여서 새 화면이 조용히 비주얼 노벨로
+// 그려졌습니다.
 export const journeyMapItems: readonly JourneyMapItem[] = journeyUnits.flatMap<JourneyMapItem>(
-  (unit) =>
-    unit.kind === "standard"
-      ? unit.steps.map((step) => ({ kind: "standard", step }) as const)
-      : unit.screen === "messenger"
-        ? [{ kind: "special", id: unit.id, title: unit.title } as const]
-        : unit.screen === "phone-call"
-          ? [{ kind: "phone-call", id: unit.id, title: unit.title } as const]
-          : [{ kind: "visual-novel", id: unit.id, title: unit.title } as const],
+  (unit) => {
+    if (unit.kind === "standard") {
+      return unit.steps.map((step) => ({ kind: "standard", step }) as const);
+    }
+    switch (unit.screen) {
+      case "messenger": {
+        return [{ kind: "special", id: unit.id, title: unit.title } as const];
+      }
+      case "phone-call": {
+        return [{ kind: "phone-call", id: unit.id, title: unit.title } as const];
+      }
+      case "visual-novel": {
+        return [{ kind: "visual-novel", id: unit.id, title: unit.title } as const];
+      }
+    }
+  },
 );
 
 /**
