@@ -21,14 +21,11 @@ import {
   type Tab,
 } from "./navigation";
 
-// 계약: scratchpad/lib221/contracts/navigation.contract.ts
-// 계획: scratchpad/lib221/spec.md §6.2 (pureFunctions)
-//
-// 픽스처(baseStacks)는 initialNav.stacks의 모양을 빌린다(LIB-257 spec §9.1 원칙 3 —
-// `Nav["stacks"]`를 리터럴로 쓰면 키가 `Tab` 유니온에 묶여 "home" 축소 전후로 tsc가
-// 갈린다. `initialNav.stacks`에서 빌리면 `Tab`의 멤버가 몇 개든 그대로 타입이
-// 따라온다). 값 자체(각 탭의 루트 화면)는 여전히 계약이 고정한 대로다. `entry`가
-// 있는 분기와 없는 분기를 각 동작마다 짝으로 둔다.
+// 픽스처(baseStacks)는 initialNav.stacks의 모양을 빌립니다 — `Nav["stacks"]`를
+// 리터럴로 쓰면 키가 `Tab` 유니온에 묶여 탭 구성이 바뀔 때마다 tsc가 갈립니다.
+// `initialNav.stacks`에서 빌리면 `Tab`의 멤버가 몇 개든 그대로 타입이 따라옵니다.
+// 값 자체(각 탭의 루트 화면)는 여전히 계약이 고정한 대로입니다. `entry`가 있는
+// 분기와 없는 분기를 각 동작마다 짝으로 둡니다.
 
 const baseStacks: Nav["stacks"] = initialNav.stacks;
 
@@ -77,21 +74,16 @@ describe("currentScreen", () => {
   });
 });
 
-// LIB-257: 첫 화면이 여정 맵으로 바뀐다(Q1 — 홈 탭까지 없앤다). 기존 "네 탭의 스택이
-// …" 한 케이스를 셋으로 나눈다(test-plan unit § `navigation.unit.test.ts`).
-describe("initialNav (LIB-257)", () => {
-  // I1
+describe("initialNav", () => {
   it("I1. initialNav.tab이 journey다", () => {
     expect(initialNav.tab).toBe("journey");
   });
 
-  // I2
   it("I2. currentScreen(initialNav)이 여정 맵이고 activeStack(initialNav)이 여정 스택이다", () => {
     expect(currentScreen(initialNav)).toEqual({ name: "journey-map" });
     expect(activeStack(initialNav)).toEqual(initialNav.stacks.journey);
   });
 
-  // I3
   it("I3. entry가 비어 있고 세 탭 스택이 각각 자기 루트 화면 하나로 시작한다", () => {
     expect(initialNav.entry).toEqual([]);
     expect(initialNav.stacks.journey).toEqual([{ name: "journey-map" }]);
@@ -144,7 +136,6 @@ describe("navReducer", () => {
       expect(root.stacks.settings).toBe(baseStacks.settings);
     });
   });
-  // 1. push / entry 비었을 때 → 현재 탭 스택에 쌓인다. 다른 탭 스택은 그대로다
   it("1. push / entry 비었을 때 → 현재 탭 스택에 쌓이고 다른 탭 스택은 그대로다", () => {
     const n = nav({ tab: "journey", stacks: baseStacks });
 
@@ -157,7 +148,6 @@ describe("navReducer", () => {
     expect(next.stacks.settings).toEqual(baseStacks.settings);
   });
 
-  // 2. push / entry 있을 때 → entry에 쌓이고 탭 스택은 그대로다
   it("2. push / entry 있을 때 → entry에 쌓이고 탭 스택은 그대로다", () => {
     const n = nav({ entry: [{ name: "roleplay-list" }], tab: "journey", stacks: baseStacks });
 
@@ -168,7 +158,6 @@ describe("navReducer", () => {
     expect(next.stacks).toEqual(baseStacks);
   });
 
-  // 3. back / entry 비었을 때 → 현재 탭 스택에서 하나 빠진다
   it("3. back / entry 비었을 때 → 현재 탭 스택에서 하나 빠진다", () => {
     const n = nav({
       tab: "journey",
@@ -181,7 +170,6 @@ describe("navReducer", () => {
     expect(next.stacks.journey).toEqual([{ name: "journey-map" }]);
   });
 
-  // 4. back / entry 있을 때 → entry에서 하나 빠진다
   it("4. back / entry 있을 때 → entry에서 하나 빠진다", () => {
     const n = nav({
       entry: [{ name: "roleplay-list" }, { name: "settings" }],
@@ -195,14 +183,12 @@ describe("navReducer", () => {
     expect(next.stacks).toEqual(baseStacks);
   });
 
-  // 5. back / 활성 스택 길이 1 → 입력을 동일 참조로 돌려준다
   it("5. back / 활성 스택 길이 1 → 동일 참조를 돌려준다", () => {
     const n = nav({ tab: "journey", stacks: baseStacks });
 
     expect(navReducer(n, { type: "back" })).toBe(n);
   });
 
-  // 6. back / entry 길이 1 → entry를 비우지 않는다. 동일 참조
   it("6. back / entry 길이 1 → entry를 비우지 않고 동일 참조를 돌려준다", () => {
     const n = nav({ entry: [{ name: "roleplay-list" }], tab: "journey", stacks: baseStacks });
 
@@ -212,7 +198,6 @@ describe("navReducer", () => {
     expect(next.entry).toEqual([{ name: "roleplay-list" }]);
   });
 
-  // 7. replace / entry 비었을 때 → 탭 스택 최상단이 바뀌고 길이는 그대로다
   it("7. replace / entry 비었을 때 → 탭 스택 최상단이 바뀌고 길이는 그대로다", () => {
     const n = nav({
       tab: "journey",
@@ -225,7 +210,6 @@ describe("navReducer", () => {
     expect(next.stacks.journey).toHaveLength(2);
   });
 
-  // 8. replace / entry 있을 때 → entry 최상단이 바뀌고 길이는 그대로다
   it("8. replace / entry 있을 때 → entry 최상단이 바뀌고 길이는 그대로다", () => {
     const n = nav({
       entry: [{ name: "roleplay-list" }, { name: "settings" }],
@@ -240,9 +224,8 @@ describe("navReducer", () => {
     expect(next.stacks).toEqual(baseStacks);
   });
 
-  // 9. switchTab → tab이 바뀌고 세 스택이 모두 보존된다 (수용 기준 4의 근거).
-  //    integration은 스택 깊이가 1이라 이걸 관찰할 수 없으므로, 여기서 깊이 2 스택을
-  //    만들고 왕복(settings → journey → settings)까지 확인한다.
+  // integration은 스택 깊이가 1이라 이걸 관찰할 수 없으므로, 여기서 깊이 2 스택을
+  // 만들고 왕복(settings → journey → settings)까지 확인합니다.
   it("9. switchTab → tab이 바뀌고 깊이 2 이상 스택을 포함해 세 스택이 모두 보존된다 (왕복 포함)", () => {
     const deepStacks: Nav["stacks"] = {
       ...baseStacks,
@@ -265,15 +248,12 @@ describe("navReducer", () => {
     expect(back.stacks.journey).toEqual(deepStacks.journey);
   });
 
-  // 10. switchTab / 같은 탭 → 동일 참조
   it("10. switchTab / 이미 그 탭일 때 → 동일 참조를 돌려준다", () => {
     const n = nav({ tab: "settings", stacks: baseStacks });
 
     expect(navReducer(n, { type: "switchTab", tab: "settings" })).toBe(n);
   });
 
-  // 11. enterApp → entry가 비고 tab·stacks는 그대로다. 그 뒤 activeStack이 현재 탭
-  //     스택을 돌려준다 (수용 기준 3)
   it("11. enterApp → entry가 비고 tab·stacks는 그대로다. 이후 activeStack은 현재 탭 스택이다", () => {
     const n = nav({ entry: [{ name: "roleplay-list" }], tab: "journey", stacks: baseStacks });
 
@@ -285,17 +265,15 @@ describe("navReducer", () => {
     expect(activeStack(next)).toEqual(baseStacks.journey);
   });
 
-  // 12. enterApp / entry가 이미 비었을 때 → 동일 참조
   it("12. enterApp / entry가 이미 비었을 때 → 동일 참조를 돌려준다", () => {
     const n = nav({ entry: [], tab: "settings", stacks: baseStacks });
 
     expect(navReducer(n, { type: "enterApp" })).toBe(n);
   });
 
-  // switchTab은 entry 상태를 보지 않는다 — entry가 채워져 있어도 tab을 바꾼다.
-  // (switchTab은 여전히 진입 구간에서 부를 자리가 없다 — LIB-261부터 `back`은
-  // 코드 검증의 "로그인으로" 나가기가 실제로 부른다(§9.4 #3). 리듀서 자체는
-  // 어느 쪽도 막지 않는다)
+  // switchTab은 entry 상태를 보지 않습니다 — entry가 채워져 있어도 tab을 바꿉니다.
+  // switchTab은 여전히 진입 구간에서 부를 자리가 없습니다 — `back`은 코드 검증의
+  // "로그인으로" 나가기가 실제로 부릅니다. 리듀서 자체는 어느 쪽도 막지 않습니다.
   it("switchTab은 entry를 보지 않는다 — entry가 있어도 tab이 바뀐다", () => {
     const n = nav({ entry: [{ name: "roleplay-list" }], tab: "journey", stacks: baseStacks });
 
@@ -306,18 +284,15 @@ describe("navReducer", () => {
   });
 });
 
-// -------------------------------------------------------------- LIB-245 계약 §3.2
 // `backToRoot` — 활성 스택(entry가 있으면 entry, 없으면 현재 탭 스택)을 루트 하나로
-// 줄인다. 어떤 분기도 깊이를 세지 않는다 — 활성 스택 길이가 1이면 동일 참조를
-// 돌려주고, 그 밖의 길이는 전부 첫 원소 하나로 준다.
+// 줄입니다. 어떤 분기도 깊이를 세지 않습니다 — 활성 스택 길이가 1이면 동일 참조를
+// 돌려주고, 그 밖의 길이는 전부 첫 원소 하나로 줍니다.
 //
-// U1·U2는 entry가 없는 분기(전이표 1행)를, U3은 entry가 있는 분기(전이표 3행)를
-// 짓는다 — 두 분기를 짝으로 두어 어느 쪽이 활성 스택인지에 상관없이 같은 규칙이
-// 적용됨을 본다. U4·U5는 각 분기의 길이-1 동일 참조(전이표 2·4행)를, U6은
-// backToRoot가 switchTab·enterApp과 갈리는 자리(tab 유지·entry 비우지 않음)를 짓는다.
-describe("navReducer — backToRoot (LIB-245)", () => {
-  // U1. entry 비었고 활성 스택(현재 탭 스택) 길이 3 → 현재 탭 스택이 루트 하나로
-  //     준다. 다른 탭 스택·tab·entry는 그대로다 (계약 §3.2 표 1행).
+// U1·U2는 entry가 없는 분기를, U3은 entry가 있는 분기를 짓습니다 — 두 분기를 짝으로
+// 두어 어느 쪽이 활성 스택인지에 상관없이 같은 규칙이 적용됨을 봅니다. U4·U5는 각
+// 분기의 길이-1 동일 참조를, U6은 backToRoot가 switchTab·enterApp과 갈리는 자리
+// (tab 유지·entry 비우지 않음)를 짓습니다.
+describe("navReducer — backToRoot", () => {
   it("U1. entry 비었고 활성 스택 길이 3 → 현재 탭 스택이 루트 하나로 준다. 다른 탭 스택은 그대로다", () => {
     const n = nav({
       tab: "journey",
@@ -340,10 +315,9 @@ describe("navReducer — backToRoot (LIB-245)", () => {
     expect(next.stacks.settings).toEqual(baseStacks.settings);
   });
 
-  // U2. entry 비었고 활성 스택 길이 2 → 루트 하나로 준다. 길이 2에서는 `back`(하나만
-  //     pop)과 `backToRoot`(루트까지 줄이기)의 결과가 우연히 같은 자리에 온다 —
-  //     깊이를 세지 않는 backToRoot도 새 객체를 만든다는 것을 여기서 명시적으로 짓는다
-  //     (계약 §3.2 표 1행 · "어떤 분기도 깊이를 세지 않는다").
+  // 길이 2에서는 `back`(하나만 pop)과 `backToRoot`(루트까지 줄이기)의 결과가 우연히
+  // 같은 자리에 옵니다 — 깊이를 세지 않는 backToRoot도 새 객체를 만든다는 것을
+  // 여기서 명시적으로 짓습니다.
   it("U2. entry 비었고 활성 스택 길이 2 → 루트 하나로 준다 (back과 결과가 같은 자리)", () => {
     const n = nav({
       tab: "settings",
@@ -357,8 +331,6 @@ describe("navReducer — backToRoot (LIB-245)", () => {
     expect(next.entry).toEqual([]);
   });
 
-  // U3. entry 안 비었고 entry 길이 3 → entry가 첫 원소 하나로 준다. stacks·tab은
-  //     그대로다 (계약 §3.2 표 3행).
   it("U3. entry 안 비었고 entry 길이 3 → entry가 첫 원소 하나로 준다. stacks는 그대로다", () => {
     const n = nav({
       entry: [{ name: "roleplay-list" }, { name: "settings" }, { name: "journey-map" }],
@@ -373,24 +345,21 @@ describe("navReducer — backToRoot (LIB-245)", () => {
     expect(next.stacks).toEqual(baseStacks);
   });
 
-  // U4. entry 비었고 활성 스택 길이 1 → 동일 참조를 돌려준다 (계약 §3.2 표 2행).
   it("U4. entry 비었고 활성 스택 길이 1 → 동일 참조를 돌려준다", () => {
     const n = nav({ tab: "settings", stacks: baseStacks });
 
     expect(navReducer(n, { type: "backToRoot" })).toBe(n);
   });
 
-  // U5. entry 길이 1 → 동일 참조를 돌려준다 (계약 §3.2 표 4행).
   it("U5. entry 길이 1 → 동일 참조를 돌려준다", () => {
     const n = nav({ entry: [{ name: "roleplay-list" }], tab: "settings", stacks: baseStacks });
 
     expect(navReducer(n, { type: "backToRoot" })).toBe(n);
   });
 
-  // U6. backToRoot는 tab을 바꾸지 않고 entry를 비우지 않는다 — switchTab·enterApp과
-  //     갈리는 자리다. entry가 있을 때도 tab은 그대로이고, entry가 []가 되지
-  //     않는다(enterApp이라면 []가 됐을 자리). 줄어든 모양(첫 원소 하나)은 U3이 진다
-  //     — 여기서는 갈리는 자리만 본다.
+  // entry가 있을 때도 tab은 그대로이고, entry가 []가 되지 않습니다(enterApp이라면
+  // []가 됐을 자리입니다). 줄어든 모양(첫 원소 하나)은 U3이 지므로, 여기서는
+  // switchTab·enterApp과 갈리는 자리만 봅니다.
   it("U6. tab을 바꾸지 않고 entry를 비우지 않는다 — switchTab·enterApp과 갈리는 자리", () => {
     const n = nav({
       entry: [{ name: "journey-map" }, { name: "settings" }],
@@ -405,20 +374,18 @@ describe("navReducer — backToRoot (LIB-245)", () => {
   });
 });
 
-// ---------------------------------------------------------------- LIB-223 계약 §3.1(c)
-// `listening`이 `Screen` union에 든 뒤의 스택 동작. 리듀서는 화면의 내용을 모르므로
-// 여기서 보는 것은 둘이다 — **화면 파라미터(`stepId`)가 스택을 타고 그대로 나오는가**,
-// 그리고 **탭을 왕복해도 학습 화면이 여정 스택에 남는가**.
+// `listening`이 `Screen` union에 든 뒤의 스택 동작입니다. 리듀서는 화면의 내용을
+// 모르므로 여기서 보는 것은 둘입니다 — **화면 파라미터(`stepId`)가 스택을 타고
+// 그대로 나오는가**, 그리고 **탭을 왕복해도 학습 화면이 여정 스택에 남는가**.
 //
-// `Screen` union의 exhaustiveness는 `tsc`가 진다 — App.tsx의 `const exhaustive: never`
-// 한 줄이 그 게이트다. 런타임 단언으로 흉내 내지 않는다 (계약 §3.1(c)).
+// `Screen` union의 exhaustiveness는 `tsc`가 집니다 — App.tsx의 `const exhaustive:
+// never` 한 줄이 그 게이트입니다. 런타임 단언으로 흉내 내지 않습니다.
 //
-// 계약 §3.1(c)의 표는 `navReducer(initialNav, push(...))`로 적었다. 여기서는
-// `initialNav.tab`의 실제 값에 기대지 않고 항상 여정 탭으로 전환한 뒤 push한다 —
-// 표의 기대 출력 칸이 **여정 탭 스택**을 말하기 때문이고, 실제 결선(App)도 여정
-// 탭에서만 이 push를 낸다(`initialNav.tab`이 이미 journey라도 switchTab은 동일
-// 참조를 돌려줄 뿐이라 안전하다).
-describe("navReducer — listening 화면 (LIB-223)", () => {
+// 여기서는 `initialNav.tab`의 실제 값에 기대지 않고 항상 여정 탭으로 전환한 뒤
+// push합니다 — 실제 결선(App)이 여정 탭에서만 이 push를 내기 때문입니다
+// (`initialNav.tab`이 이미 journey라도 switchTab은 동일 참조를 돌려줄 뿐이라
+// 안전합니다).
+describe("navReducer — listening 화면", () => {
   const listeningScreen = { name: "listening", stepId: "ordering" } as const;
 
   function journeyNav(): Nav {
@@ -442,7 +409,7 @@ describe("navReducer — listening 화면 (LIB-223)", () => {
 
     expect(current).toBe(listeningScreen);
     expect(current.name).toBe("listening");
-    // union을 좁혀 파라미터를 읽는다. 화면 이름만 남고 stepId가 사라지면 여기서 갈린다.
+    // union을 좁혀 파라미터를 읽습니다. 화면 이름만 남고 stepId가 사라지면 여기서 갈립니다.
     expect(current.name === "listening" ? current.stepId : null).toBe("ordering");
   });
 
@@ -469,21 +436,23 @@ describe("navReducer — listening 화면 (LIB-223)", () => {
   });
 });
 
-// LIB-227 — 평가 화면. 계약(.agent-harness/work/lib-227/spec.md) §1.2·§1.8(a)가
-// `Screen` union에 `"assessment"` 멤버 하나(`stepId` · `results`)를 요구한다.
+// `Screen` union에 `"assessment"` 멤버 하나(`stepId` · `results`)가 있다는 것을
+// 보는 자리입니다.
 //
-// ⚠ **이 describe의 케이스는 red-green으로 얻은 게 아니다.** `navReducer`는 다섯
-// 액션 어디서도 `screen.name`을 읽지 않는다 — `push`·`replace`는 `action.screen`을
-// 배열에 그대로 넣을 뿐이라 `Screen`에 대해 완전히 제네릭이다. `Screen` union에
-// 멤버가 느는 것은 **순전히 타입** 층위의 사실이고 Vitest는 실행 전에 타입을 지운다.
-// 그래서 아래 케이스는 `navigation.ts`에 `"assessment"` 멤버가 아직 없어도(구현 전)
-// **첫 실행에 통과한다.**
+// ⚠ **이 describe의 케이스는 red-green으로 얻은 것이 아닙니다.** `navReducer`는
+// 다섯 액션 어디서도 `screen.name`을 읽지 않습니다 — `push`·`replace`는
+// `action.screen`을 배열에 그대로 넣을 뿐이라 `Screen`에 대해 완전히 제네릭입니다.
+// `Screen` union에 멤버가 느는 것은 **순전히 타입** 층위의 사실이고 Vitest는 실행
+// 전에 타입을 지웁니다. 그래서 아래 케이스는 `navigation.ts`에 `"assessment"`
+// 멤버가 아직 없어도(구현 전) **첫 실행에 통과합니다** — 공허하게 통과할 수 있는
+// 자리입니다.
 //
 // 그러므로 이 케이스들의 성격은 (1) `Screen`에 평가 멤버가 있다는 것의 **타입 층위
-// 주장**을 하는 **회귀 그물**이지 (2) 관찰 가능한 동작의 판정자가 아니다. **관찰
-// 가능한 동작**(평가 화면이 실제로 뜬다 · `backToRoot` 하나로 맵에 닿는다 · 미통과면
-// 진행이 갱신되지 않는다)의 판정자는 `App.integration.test.tsx`의 **I1 · I3 · I6**이다.
-describe("navReducer — assessment 화면 (LIB-227)", () => {
+// 주장**을 하는 **회귀 그물**이지 (2) 관찰 가능한 동작의 판정자가 아닙니다. **관찰
+// 가능한 동작**(평가 화면이 실제로 뜹니다 · `backToRoot` 하나로 맵에 닿습니다 ·
+// 미통과면 진행이 갱신되지 않습니다)의 판정자는 `App.integration.test.tsx`의
+// **I1 · I3 · I6**입니다.
+describe("navReducer — assessment 화면", () => {
   const listeningScreen = { name: "listening", stepId: "ordering" } as const;
   const assessmentScreen = {
     name: "assessment",
@@ -491,8 +460,8 @@ describe("navReducer — assessment 화면 (LIB-227)", () => {
     results: ["correct", "incorrect", "correct"],
   } as const;
 
-  // 실제 결선(계약 §1.8(b))이 만드는 상태를 그대로 재현한다 — 여정 탭에서 학습
-  // 화면을 push한 뒤, 평가로의 전환은 `replace`다(`push`가 아니다).
+  // 실제 결선이 만드는 상태를 그대로 재현합니다 — 여정 탭에서 학습 화면을 push한
+  // 뒤, 평가로의 전환은 `replace`입니다(`push`가 아닙니다).
   function journeyNavAtListening(): Nav {
     const journey = navReducer(initialNav, { type: "switchTab", tab: "journey" });
     return navReducer(journey, { type: "push", screen: listeningScreen });
@@ -556,15 +525,13 @@ describe("navReducer — assessment 화면 (LIB-227)", () => {
   });
 });
 
-// -------------------------------- 학습형 → 화면 (LIB-236 계약 §3.1 U2·U3)
-// 여기부터가 LIB-236이 더하는 것이다. 위의 케이스는 하나도 지우거나 뜻을 바꾸지 않는다.
-//
-// LIB-238: 계약 §6.1 U5 — 어휘 배열에 "culture"를 더한다. 아래의 기존 케이스
-// 아홉이 새 describe 없이 그대로 culture를 덮는다. `learningScreenFor`에
-// "culture" case가 없다면 런타임에 `undefined`를 돌려주므로, `.name`을 읽는 케이스와
-// `not.toBeUndefined()` 케이스가 여기서 실물로 실패했을 것이다.
+// -------------------------------------------------------------- 학습형 → 화면
+// 어휘 배열에 "culture"를 더했습니다. 아래의 기존 케이스 아홉이 새 describe 없이
+// 그대로 culture를 덮습니다. `learningScreenFor`에 "culture" case가 없다면
+// 런타임에 `undefined`를 돌려주므로, `.name`을 읽는 케이스와
+// `not.toBeUndefined()` 케이스가 여기서 실물로 실패했을 것입니다.
 
-// 계약 §1.3의 어휘 넷. 이 함수의 입력 전부다.
+// 이 함수의 입력 전부입니다.
 const allLearningForms: readonly LearningForm[] = [
   "listening",
   "sentence-order",
@@ -572,7 +539,7 @@ const allLearningForms: readonly LearningForm[] = [
   "culture",
 ];
 
-// 여정 맵의 스텝 다섯. stepId가 인자 그대로인지를 다섯 전부에서 본다.
+// 여정 맵의 스텝 다섯입니다. stepId가 인자 그대로인지를 다섯 전부에서 봅니다.
 const allStepIds: readonly JourneyStepId[] = [
   "greeting",
   "introduction",
@@ -581,7 +548,7 @@ const allStepIds: readonly JourneyStepId[] = [
   "directions",
 ];
 
-describe("learningScreenFor (계약 §3.1 U2)", () => {
+describe("learningScreenFor", () => {
   it("학습형 셋 각각에서 name이 학습형 문자열과 같다", () => {
     for (const form of allLearningForms) {
       expect(learningScreenFor(form, "ordering").name).toBe(form);
@@ -604,9 +571,9 @@ describe("learningScreenFor (계약 §3.1 U2)", () => {
     expect(new Set(names).size).toBe(allLearningForms.length);
   });
 
-  // 계약 §1.6(a): 멤버 둘의 모양은 `listening`과 문자 그대로 같다 — 필드는 `stepId`
-  // 하나이고 `stepOrdinal`도 `form`도 union에 넣지 않는다. toEqual이 그 「필드가
-  // 둘뿐」을 진다.
+  // 멤버 둘의 모양은 `listening`과 문자 그대로 같습니다 — 필드는 `stepId` 하나이고
+  // `stepOrdinal`도 `form`도 union에 넣지 않습니다. toEqual이 그 「필드가 둘뿐」을
+  // 집니다.
   it("학습형 셋 각각이 { name, stepId } 꼴이고 필드가 그 둘뿐이다", () => {
     for (const form of allLearningForms) {
       expect(learningScreenFor(form, "greeting")).toEqual({ name: form, stepId: "greeting" });
@@ -630,11 +597,10 @@ describe("learningScreenFor (계약 §3.1 U2)", () => {
   });
 });
 
-describe("learningScreenFor의 총성 (계약 §3.1 U3)", () => {
-  // ⚠ `switch`의 exhaustiveness는 tsc가 진다 (계약 §1.6(c) · §8.3.1의 TS2366 실측).
-  // **unit이 그것을 다시 단언하지 않는다** — 단언할 수 없는 것을 단언하는 척하지
-  // 않는다. 여기서 보는 것은 런타임 총성뿐이다: 셋 중 어느 값에도 undefined를 내지
-  // 않고 던지지 않는다.
+describe("learningScreenFor의 총성", () => {
+  // ⚠ `switch`의 exhaustiveness는 tsc가 집니다(TS2366 실측). **unit이 그것을 다시
+  // 단언하지 않습니다** — 단언할 수 없는 것을 단언하는 척하지 않습니다. 여기서 보는
+  // 것은 런타임 총성뿐입니다: 셋 중 어느 값에도 undefined를 내지 않고 던지지 않습니다.
 
   it("학습형 셋 중 어느 값에도 undefined를 돌려주지 않는다", () => {
     for (const form of allLearningForms) {
@@ -666,11 +632,9 @@ describe("learningScreenFor의 총성 (계약 §3.1 U3)", () => {
   });
 });
 
-// -------------------------------- 롤플레이 route 사상 (LIB-255 계약 §2.6)
-// 계획: .agent-harness/work/lib-255/test-plan.md unit § `navigation.unit.test.ts`
-// (추가 — 기존 케이스 불변). 케이스 ID는 계획의 N1~N4 그대로다.
+// ---------------------------------------------------------- 롤플레이 route 사상
 
-describe("roleplayScreenFor (LIB-255)", () => {
+describe("roleplayScreenFor", () => {
   const messengerRoleplayItem: RoleplayItem = {
     form: "messenger",
     unitId: "appointment-confirmation",
@@ -692,7 +656,6 @@ describe("roleplayScreenFor (LIB-255)", () => {
     visualNovelRoleplayItem,
   ];
 
-  // N1
   it("N1. 세 형태 각각이 대응하는 롤플레이 route + 인자의 unitId를 낸다. 필드는 둘뿐이다", () => {
     expect(roleplayScreenFor(messengerRoleplayItem)).toEqual({
       name: "roleplay-messenger",
@@ -711,7 +674,6 @@ describe("roleplayScreenFor (LIB-255)", () => {
     }
   });
 
-  // N2
   it("N2. 어느 결과도 여정 route나 탭 루트 셋이 아니다", () => {
     const forbiddenNames = [
       "messenger",
@@ -727,9 +689,9 @@ describe("roleplayScreenFor (LIB-255)", () => {
     }
   });
 
-  // N3 — 기대 화면은 roleplayScreenFor를 다시 불러 만들지 않는다(자기참조 오라클을
-  // 피한다). phone-call 항목을 골라, 스텁이 언제나 돌려주는 roleplay-messenger와
-  // 어긋나야 이 케이스가 화면 사상 자체의 정확성도 함께 걸게 한다.
+  // 기대 화면은 roleplayScreenFor를 다시 불러 만들지 않습니다 — 자기참조 오라클을
+  // 피합니다. phone-call 항목을 골라, 스텁이 언제나 돌려주는 roleplay-messenger와
+  // 어긋나야 이 케이스가 화면 사상 자체의 정확성도 함께 겁니다.
   it("N3. roleplay 탭에서 push(roleplayScreenFor(item)) → 롤플레이 스택에만 쌓이고 다른 두 스택은 동일 참조다", () => {
     const n = nav({ tab: "roleplay", stacks: baseStacks });
     const expectedScreen = {
@@ -748,7 +710,6 @@ describe("roleplayScreenFor (LIB-255)", () => {
     expect(next.stacks.settings).toBe(baseStacks.settings);
   });
 
-  // N4
   it("N4. 이어서 backToRoot → 롤플레이 스택이 루트 하나로 돌아오고 여정 스택은 여전히 동일 참조다", () => {
     const n = nav({ tab: "roleplay", stacks: baseStacks });
     const screen = roleplayScreenFor(messengerRoleplayItem);
@@ -761,12 +722,9 @@ describe("roleplayScreenFor (LIB-255)", () => {
   });
 });
 
-// -------------------------------- 알림 route (LIB-257 계약 §2.1)
-// 계획: .agent-harness/work/lib-257/test-plan.md unit § `navigation.unit.test.ts`.
-// 알림 route는 `Screen`에 필드 없는 멤버 하나로만 존재한다 — 목록은 App이 넘기고
-// 알림 화면에는 진행이 없다(계약 §2.1). 여기서 보는 것은 스택 동작뿐이다.
-describe("알림 route (LIB-257)", () => {
-  // NV1
+// 알림 route는 `Screen`에 필드 없는 멤버 하나로만 존재합니다 — 목록은 App이 넘기고
+// 알림 화면에는 진행이 없습니다. 여기서 보는 것은 스택 동작뿐입니다.
+describe("알림 route", () => {
   it("NV1. push(notifications) → 여정 스택에 알림이 쌓이고 다른 탭 스택은 동일 참조다", () => {
     const next = navReducer(initialNav, { type: "push", screen: { name: "notifications" } });
 
@@ -776,8 +734,8 @@ describe("알림 route (LIB-257)", () => {
     expect(next.stacks.settings).toBe(initialNav.stacks.settings);
   });
 
-  // NV2 — D-a·D6.1: 알림에서 연 특별 유닛에서 backToRoot하면 여정 맵으로 돌아간다.
-  // 알림으로 되돌아가지 않는다(알림은 여정 스택 중간 화면일 뿐이다).
+  // 알림에서 연 특별 유닛에서 backToRoot하면 여정 맵으로 돌아갑니다. 알림으로
+  // 되돌아가지 않습니다 — 알림은 여정 스택 중간 화면일 뿐입니다.
   it("NV2. 알림에서 연 메신저를 backToRoot하면 여정 맵으로 돌아가고 알림으로 되돌아가지 않는다", () => {
     const opened = navReducer(initialNav, { type: "push", screen: { name: "notifications" } });
     const unit = navReducer(opened, {
@@ -792,13 +750,10 @@ describe("알림 route (LIB-257)", () => {
   });
 });
 
-// -------------------------------- tabRootActions (LIB-257 계약 §0.3 D-c · §2.1)
-// 계획: .agent-harness/work/lib-257/test-plan.md unit § `navigation.unit.test.ts`.
-// `tabRootActions`는 부수효과가 없다 — 반환한 동작 목록을 App이 순서대로
-// `dispatch`한다. 여기서는 (1) 반환값의 모양과 (2) 그 값을 `navReducer`로 순서대로
-// 접었을 때의 결과를 본다.
-describe("tabRootActions (LIB-257)", () => {
-  // NV3
+// `tabRootActions`는 부수효과가 없습니다 — 반환한 동작 목록을 App이 순서대로
+// `dispatch`합니다. 여기서는 (1) 반환값의 모양과 (2) 그 값을 `navReducer`로
+// 순서대로 접었을 때의 결과를 봅니다.
+describe("tabRootActions", () => {
   it("NV3. tabRootActions(roleplay)이 switchTab·backToRoot 순서다", () => {
     expect(tabRootActions("roleplay")).toEqual([
       { type: "switchTab", tab: "roleplay" },
@@ -806,7 +761,6 @@ describe("tabRootActions (LIB-257)", () => {
     ]);
   });
 
-  // NV4
   it("NV4. 세 탭 각각에서 길이 2 — 첫째가 switchTab, 둘째가 backToRoot다", () => {
     const tabs: readonly Tab[] = ["journey", "roleplay", "settings"];
 
@@ -819,8 +773,8 @@ describe("tabRootActions (LIB-257)", () => {
     }
   });
 
-  // NV5 — 기대 화면은 리터럴로 쓴다(tabRootActions를 다시 불러 기대값을 만들지
-  // 않는다 — 자기참조 오라클을 피한다).
+  // NV5 — 기대 화면을 리터럴로 적습니다. 구현이 쓰는 `tabRootActions`를 테스트도
+  // 불러 기대값을 만들면, 그 함수가 틀렸을 때 둘이 같이 틀려 통과합니다.
   it("NV5. tabRootActions(roleplay)를 순서대로 접으면 롤플레이 스택만 루트로 줄고 여정 스택(알림 포함)은 남는다", () => {
     const stacks: Nav["stacks"] = {
       ...baseStacks,
@@ -840,7 +794,6 @@ describe("tabRootActions (LIB-257)", () => {
     expect(next.stacks.journey).toBe(n.stacks.journey);
   });
 
-  // NV6
   it("NV6. 롤플레이 스택이 이미 루트 하나일 때도 같은 접기가 동일 참조를 돌려준다", () => {
     const n = nav({ tab: "journey", stacks: baseStacks });
 
@@ -850,8 +803,6 @@ describe("tabRootActions (LIB-257)", () => {
     expect(next.stacks.roleplay).toBe(n.stacks.roleplay);
   });
 
-  // NV7 (가드) — 부수효과 없음. 같은 인자로 두 번 불러 toEqual, 접기 전후로 입력
-  // nav 객체가 바뀌지 않는다.
   it("NV7. (가드) 부수효과 없음 — 같은 인자로 두 번 불러도 같은 값이고 입력 nav가 바뀌지 않는다", () => {
     expect(tabRootActions("settings")).toEqual(tabRootActions("settings"));
 
@@ -864,16 +815,13 @@ describe("tabRootActions (LIB-257)", () => {
   });
 });
 
-// -------------------------------- 설정 탭의 새 route — profile · terms (LIB-259)
-// 계약: .agent-harness/work/lib-259/spec.md §2.2. 계획:
-// .agent-harness/work/lib-259/test-plan.md unit § `app/navigation.unit.test.ts`
-// (수정 — 기존 케이스 유지 + 추가). 케이스 id는 계획의 NV1~NV3 그대로다 — 위
-// "알림 route (LIB-257)"·"tabRootActions (LIB-257)" 구역의 NV1~NV7과 이름이
-// 겹치지만 각자 자기 describe 안에서만 유효한 지역 라벨이고 이 리듀서는 화면
-// 이름을 모르는 제네릭 함수라 별도 스텁 없이 처음부터 통과한다(기대 red 0 —
-// test-plan.md unit red 기대 표).
-describe("navReducer — 설정 탭의 새 route (LIB-259)", () => {
-  // NV1
+// -------------------------------------------------- 설정 탭의 새 route — profile · terms
+// 이 구역의 NV1~NV3은 위 "알림 route"·"tabRootActions" 구역의 NV1~NV7과 이름이
+// 겹치지만 각자 자기 describe 안에서만 유효한 지역 라벨입니다.
+// 이 리듀서는 화면 이름을 모르는 제네릭 함수라, 새 route 멤버가 아직 `Screen`
+// union에 없어도 별도 스텁 없이 처음부터 통과합니다 — 공허하게 통과할 수 있는
+// 자리입니다.
+describe("navReducer — 설정 탭의 새 route", () => {
   it("NV1. push(profile) → 설정 탭 스택에 쌓이고 다른 두 스택은 동일 참조다", () => {
     const n = nav({ tab: "settings", stacks: baseStacks });
 
@@ -884,7 +832,6 @@ describe("navReducer — 설정 탭의 새 route (LIB-259)", () => {
     expect(next.stacks.roleplay).toBe(baseStacks.roleplay);
   });
 
-  // NV2
   it("NV2. push(terms) → 설정 탭 스택에 쌓이고 다른 두 스택은 동일 참조다", () => {
     const n = nav({ tab: "settings", stacks: baseStacks });
 
@@ -895,7 +842,6 @@ describe("navReducer — 설정 탭의 새 route (LIB-259)", () => {
     expect(next.stacks.roleplay).toBe(baseStacks.roleplay);
   });
 
-  // NV3
   it("NV3. 프로필을 push한 뒤 backToRoot → 설정 탭 스택이 [{ name: settings }]다", () => {
     const n = nav({ tab: "settings", stacks: baseStacks });
     const pushed = navReducer(n, { type: "push", screen: { name: "profile" } });
@@ -906,29 +852,23 @@ describe("navReducer — 설정 탭의 새 route (LIB-259)", () => {
   });
 });
 
-// -------------------------------------------- 진입 흐름 (LIB-261 계약 §2.7)
-// 계획: .agent-harness/work/lib-261/test-plan.md unit § `app/navigation.unit.test.ts`
-// (수정 — 기존 케이스는 한 줄도 고치지 않는다). 케이스 id는 계획의 NV1~NV4
-// 그대로다 — 위 "알림 route (LIB-257)"·"tabRootActions (LIB-257)"·"설정 탭의 새
-// route (LIB-259)" 구역의 NV1~NV7과 이름이 겹치지만, 이 파일의 기존 관행처럼
-// 각자 자기 describe 안에서만 유효한 지역 라벨이다.
+// ---------------------------------------------------------------- 진입 흐름
+// 이 구역의 NV1~NV4는 위 세 구역의 NV1~NV7과 이름이 겹치지만, 이 파일의 기존
+// 관행처럼 각자 자기 describe 안에서만 유효한 지역 라벨입니다.
 //
-// ⭐ 기존 I3(`initialNav.entry`가 `[]`)은 이 구역이 건드리지 않는다 — 이 계약이
-// `initialNav`를 고치지 않기 때문이다(계약 §9.3).
-describe("진입 흐름 (LIB-261)", () => {
-  // NV1
+// ⭐ 기존 I3(`initialNav.entry`가 `[]`)은 이 구역이 건드리지 않습니다 — 진입 흐름은
+// `initialNav`를 고치지 않고 `entryInitialNav`를 별도로 둡니다.
+describe("진입 흐름", () => {
   it("NV1. entryInitialNav.entry가 길이 1이고 최상단이 splash다", () => {
     expect(entryInitialNav.entry).toHaveLength(1);
     expect(entryInitialNav.entry[0]).toEqual({ name: "splash" });
   });
 
-  // NV2
   it("NV2. entryInitialNav의 tab·stacks가 initialNav와 같다", () => {
     expect(entryInitialNav.tab).toBe(initialNav.tab);
     expect(entryInitialNav.stacks).toEqual(initialNav.stacks);
   });
 
-  // NV3
   it("NV3. entryScreenAfterLogin이 phone→verification-code, 나머지 수단→language-select다", () => {
     expect(entryScreenAfterLogin("phone")).toEqual({ name: "verification-code" });
     expect(entryScreenAfterLogin("google")).toEqual({ name: "language-select" });
@@ -936,53 +876,50 @@ describe("진입 흐름 (LIB-261)", () => {
     expect(entryScreenAfterLogin("facebook")).toEqual({ name: "language-select" });
   });
 
-  // NV4
   it("NV4. isEntrySection이 entryInitialNav에서 참, initialNav에서 거짓이다", () => {
     expect(isEntrySection(entryInitialNav)).toBe(true);
     expect(isEntrySection(initialNav)).toBe(false);
   });
 });
 
-// 계약: .agent-harness/work/lib-263/spec.md §5.3 · §6.1 unit 표의 NP2.
+// 탐침 화면은 **도달 불가**라는 것이 그 정의입니다. 소스 grep(사람이 diff를 읽을 때
+// 돌리는 것)과 짝을 이루어, 이 케이스가 그 판정의 **파수꾼**입니다 — 누가 나중에
+// 탐침을 제품 부팅에 끼워 넣으면 러너가 웁니다.
 //
-// 탐침 화면은 **도달 불가**라는 것이 그 정의다(§5.1 후보 B). 소스 grep 셋(§5.3의
-// 1~3번)은 사람이 diff를 읽을 때 돌리는 것이고, 이 케이스가 그 판정의 **파수꾼**이다 —
-// 누가 나중에 탐침을 제품 부팅에 끼워 넣으면 러너가 운다.
+// NP2는 `Screen` union에 탐침 멤버가 없을 때도 성립합니다 — 부팅 상태에 실린 화면
+// 이름을 모아 그 중에 탐침이 없다는 것만 보기 때문이고, 멤버가 생긴 뒤에도 같은
+// 글자로 남습니다. 그래서 그 케이스는 처음부터 초록이었습니다 — **구현이 없어서가
+// 아니라 부재가 곧 기대값이라서**입니다. NP1·NP3은 `handwritingProbeNav` export가
+// 선 지금 함께 올립니다.
 //
-// NP2는 `Screen` union에 탐침 멤버가 없을 때도 성립한다 — 부팅 상태에 실린 화면 이름을
-// 모아 그 중에 탐침이 없다는 것만 보기 때문이고, 멤버가 생긴 뒤에도 같은 글자로 남는다.
-// 그래서 그 케이스는 처음부터 초록이었다 — **구현이 없어서가 아니라 부재가 곧 기대값
-// 이라서**다. NP1·NP3은 `handwritingProbeNav` export가 선 지금 함께 올린다.
-//
-// ⭐ LIB-261이 들어온 뒤 NP2의 단언 대상이 늘었다: 앱이 실제로 부팅하는 상태는
-// `initialNav`가 아니라 `entryInitialNav`다(`App.tsx`의 `useReducer` 둘째 인자).
-// 하나만 훑으면 파수꾼이 낡아 아무것도 안 지키므로 제품 부팅 상태를 모두 훑는다.
+// ⭐ 앱이 실제로 부팅하는 상태는 `initialNav`가 아니라 `entryInitialNav`입니다
+// (`App.tsx`의 `useReducer` 둘째 인자). 하나만 훑으면 파수꾼이 낡아 아무것도 안
+// 지키므로 제품 부팅 상태를 모두 훑습니다.
 describe("탐침 route 도달 경로 — 제품 부팅이 탐침에 닿지 않는다", () => {
-  // 개발용 탐침 부팅 상태와 그 route 이름을 **목록으로 모아 훑는다.** 탐침마다 단언을
-  // 손으로 복제하면 다음 탐침이 조용히 빠지고, 빠진 쪽은 아무도 안 본다. 여기 한 줄을
-  // 더하면 아래 단언 전부가 새 탐침을 함께 본다.
+  // 개발용 탐침 부팅 상태와 그 route 이름을 **목록으로 모아 훑습니다.** 탐침마다
+  // 단언을 손으로 복제하면 다음 탐침이 조용히 빠지고, 빠진 쪽은 아무도 안 봅니다.
+  // 여기 한 줄을 더하면 아래 단언 전부가 새 탐침을 함께 봅니다.
   //
-  // 목록의 길이를 어디에서도 세지 않는다 — 세는 순간 탐침이 늘 때 이 파일이 낡는다.
+  // 목록의 길이를 어디에서도 세지 않습니다 — 세는 순간 탐침이 늘 때 이 파일이 낡습니다.
   const probeBoots: readonly { readonly route: Screen["name"]; readonly boot: Nav }[] = [
     { route: "handwriting-probe", boot: handwritingProbeNav },
     { route: "speech-probe", boot: speechProbeNav },
   ];
 
-  // NP1
   for (const probe of probeBoots) {
     it(`NP1. ${probe.route} 부팅 상태는 여정 탭 스택에 탐침 하나만 세우고 entry가 비어 있다`, () => {
       expect(probe.boot.stacks.journey).toEqual([{ name: probe.route }]);
       expect(probe.boot.tab).toBe("journey");
       // `activeStack`이 `entry`를 먼저 고르므로, 여기가 비어 있지 않으면 이 부팅
-      // 상태로도 탐침에 닿지 못한다 — 그 불변식을 이 줄이 진다.
+      // 상태로도 탐침에 닿지 못합니다 — 그 불변식을 이 줄이 집니다.
       expect(probe.boot.entry).toEqual([]);
       expect(currentScreen(probe.boot)).toEqual({ name: probe.route });
     });
   }
 
-  // NP2 — 제품 부팅 상태 **둘 다**를 탐침 **전부**에 대해 훑는다. `initialNav`만 보면
+  // 제품 부팅 상태 **둘 다**를 탐침 **전부**에 대해 훑습니다. `initialNav`만 보면
   // App이 실제로 넘기는 부팅 상태(`entryInitialNav`)가 빠지고, 그쪽에 탐침이 섞여도
-  // 이 파수꾼이 초록으로 남는다.
+  // 이 파수꾼이 초록으로 남습니다.
   it("NP2. 제품 부팅 상태의 entry와 모든 탭 스택 어디에도 탐침 route가 없다", () => {
     const bootedScreenNames = (booted: Nav) =>
       [...booted.entry, ...Object.values(booted.stacks).flat()].map((screen) => screen.name);
@@ -994,7 +931,6 @@ describe("탐침 route 도달 경로 — 제품 부팅이 탐침에 닿지 않�
     }
   });
 
-  // NP3
   for (const probe of probeBoots) {
     it(`NP3. ${probe.route} 부팅 상태의 나머지 탭 스택은 initialNav와 같다 — 여정 탭 한 자리만 바꾼다`, () => {
       expect(probe.boot.stacks.roleplay).toEqual(initialNav.stacks.roleplay);

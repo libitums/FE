@@ -5,32 +5,24 @@ import { App } from "./App";
 import { termsSections } from "../screens/terms/terms-sections";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { SettingsEventSink } from "../screens/settings/settings.contract";
-// LIB-261 (integration-design) §9.5: `renderApp` 헬퍼의 토큰 스텁·타이머 값.
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 
-// LIB-259 integration 계층: 설정 탭 → 프로필/약관 push와 `설정으로` 복귀 · **토글이
-// 실제로 듣기 화면에 닿는 경로**(설정 화면과 듣기 화면이 한 트리에 함께 서야
-// 한다 — `ui`가 원리적으로 못 만드는 트리) · 이벤트 넷의 발생 경계와 순서 · 설정
-// 탭 스택 보존 · 영속 없음.
-// 계획 정본: .agent-harness/work/lib-259/test-plan.md integration §
-// `App.settings.integration.test.tsx`(IT1~IT13). 목킹하지 않는다(외부 IO 없음).
-// sink는 App prop으로 직접 주입한다(계약 §7.3) — 순서를 보는 케이스는 공용 로그
-// 배열 하나에 여러 sink가 push하게 한다(`App.notifications.integration.test.tsx`
-// 선례 형태).
+// 설정 탭 → 프로필/약관 push와 `설정으로` 복귀 · **토글이 실제로 듣기 화면에 닿는
+// 경로**(설정 화면과 듣기 화면이 한 트리에 함께 서야 합니다 — `ui`가 원리적으로 못
+// 만드는 트리) · 이벤트 넷의 발생 경계와 순서 · 설정 탭 스택 보존 · 영속 없음을
+// 봅니다. 목킹하지 않습니다(외부 IO 없음). sink는 App prop으로 직접 주입합니다 —
+// 순서를 보는 케이스는 공용 로그 배열 하나에 여러 sink가 push하게 합니다
+// (`App.notifications.integration.test.tsx` 선례 형태).
 //
-// 기대 red(test-plan.md 「integration red 기대」): 이 시점의 App은 이동 항목·
-// 토글 콜백이 no-op(`() => undefined`)이고 sink가 결선되지 않았으며,
-// `ListeningScreen`에 `sessionOptions={initialSessionOptions}`가 고정값으로
-// 간다. 그래서 IT2·IT3·IT4·IT5·IT6·IT7·IT9·IT10·IT13이 빨갛다 — import·수집
-// 실패가 아니라 요소 부재/단언 실패다. IT1(설정 화면은 이미 그려졌고 App이
-// 초기값을 넘긴다) · IT8(앵커 — 오늘 동작) · IT11(토글이 no-op이라 초기값에서
-// 움직인 적이 없어 공허하게 통과 — 구현 뒤에야 비공허) · IT12(가드)는 이 시점에도
-// 그대로 녹색이다.
+// IT1(설정 화면은 이미 그려졌고 App이 초기값을 넘깁니다) · IT8(앵커 — 오늘 동작) ·
+// IT11(토글이 no-op이면 초기값에서 움직인 적이 없어 공허하게 통과합니다 — 구현
+// 뒤에야 비공허해집니다) · IT12(가드)는 결선 전에도 공허하게 통과할 수 있는
+// 자리입니다.
 
-// 여정 탭 → 스텝 tap → 시트 `시작` tap. `App.heading-trait.integration.test.tsx` ·
-// `App.integration.test.tsx`의 동명 헬퍼와 같은 형태다(파일이 다르므로 다시
-// 선언한다).
+// 여정 탭 → 스텝 tap → 시트 `시작` tap입니다. `App.heading-trait.integration.test.tsx`
+// · `App.integration.test.tsx`의 동명 헬퍼와 같은 형태입니다(파일이 다르므로 다시
+// 선언합니다).
 function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-step-node-${stepId}`), {});
@@ -42,16 +34,10 @@ function openSettingsTab(): void {
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
 }
 
-// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
-// 헬퍼(`renderApp`). 토큰이 있는 상태를 스텁하고 가짜 타이머로
-// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다. 이 파일이 이미
-// 세운 `NativeModules` 스텁(있으면, `stubHost()`의 오디오 모듈)을 지우지 않고
-// `StorageModule`만 얹는다.
-//
-// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
-// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
-// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
-// 기존 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+// 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
+// 상태를 스텁하고 가짜 타이머로 `entrySplashDurationMs`만큼 전진시켜 진입
+// 스플래시를 건너뜁니다. 이 파일이 이미 세운 `NativeModules` 스텁(있으면,
+// `stubHost()`의 오디오 모듈)을 지우지 않고 `StorageModule`만 얹습니다.
 function renderApp(ui: Parameters<typeof render>[0]) {
   const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
   const tokenStore = new Map<string, string>();
@@ -75,12 +61,11 @@ function renderApp(ui: Parameters<typeof render>[0]) {
   return result;
 }
 
-// 오디오 호스트 경계 대역 — `App.integration.test.tsx`의 `stubHost()`와 같은
-// 형태다(파일이 다르므로 다시 선언한다, 계약 §9.9(a)·(c)). `lib/audio.ts`를
-// `vi.mock`하지 않는다 — 대역을 두는 자리는 호스트 경계 하나다(test-plan.md
-// 「integration — 파일과 케이스」 도입부). `done`을 호출하지 않아 재생이 그대로
-// `"playing"`에 머문다 — IT5~IT8이 필요한 것은 재생 여부(호출 수)와 컨트롤
-// 라벨뿐이다.
+// 오디오 호스트 경계 대역입니다 — `App.integration.test.tsx`의 `stubHost()`와 같은
+// 형태입니다(파일이 다르므로 다시 선언합니다). `lib/audio.ts`를 `vi.mock`하지
+// 않습니다 — 대역을 두는 자리는 호스트 경계 하나입니다. `done`을 호출하지 않아
+// 재생이 그대로 `"playing"`에 머뭅니다 — IT5~IT8이 필요한 것은 재생 여부(호출
+// 수)와 컨트롤 라벨뿐입니다.
 type HostCall = { source: string };
 
 function stubHost(): { audio: HostCall[] } {
@@ -254,7 +239,7 @@ test("[IT9] 설정 sink는 설정 탭 tap마다 발화하고 이미 설정 탭�
     { name: "settings_opened" },
   ]);
 
-  // 이미 설정 탭인데 다시 누른다 — 네비게이션이 무동작이라 발화하지 않는다.
+  // 이미 설정 탭인데 다시 누릅니다 — 네비게이션이 무동작이라 발화하지 않습니다.
   openSettingsTab();
   expect(settingsEventSink.mock.calls.map(([event]) => event)).toEqual([
     { name: "settings_opened" },

@@ -2,23 +2,21 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { isAudioAvailable, playAudio, stopAudio } from "./audio";
 
-// 계약: .agent-harness/work/lib-223/spec.md §9.3 (JS 접점의 규칙 여섯) · §9.9(a) (케이스 표)
-// ADR: docs/adr/0017-host-native-capabilities-and-audio.md D3
 // 형태의 정본: ./storage.unit.test.ts
 //
-// DOM·컴포넌트를 import하지 않는다 — 호스트 경계를 감싼 접점 하나만 본다.
-// 그래서 toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없다
+// DOM·컴포넌트를 import하지 않습니다 — 호스트 경계를 감싼 접점 하나만 봅니다.
+// 그래서 toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없습니다
 // (docs/conventions/code.md 「jest-dom 매처는 절반만 쓴다」 · ADR-0006 D4).
 
-// ---------------------------------------------------------------- 대역 (계약 §9.9(a))
+// ---------------------------------------------------------------------- 대역
 //
-// 대역이 `done`을 **붙잡아 둔다.** 그래야 "늦게 온 콜백"을 테스트가 직접 손으로
-// 일으킬 수 있다 — 자동으로 부르는 대역을 쓰면 세대 가드가 검증되지 않는다.
+// 대역이 `done`을 **붙잡아 둡니다.** 그래야 "늦게 온 콜백"을 테스트가 직접 손으로
+// 일으킬 수 있습니다 — 자동으로 부르는 대역을 쓰면 세대 가드가 검증되지 않습니다.
 //
-// `play`와 `stop`을 **한 배열에** 적는다. 둘의 상대 순서가 계약이기 때문이다
-// (`stopAudio`가 대기 중인 `onFinished`를 무효화한다, 계약 §9.3-4).
-// `stop` 호출은 `source: "<stop>"` 로 표시한다 — 실제 `audioSource`에는 `<`·`>`가
-// 없으므로(계약 §9.4의 불변식) 이 표식이 실제 source와 겹치지 않는다.
+// `play`와 `stop`을 **한 배열에** 적습니다. 둘의 상대 순서가 계약이기 때문입니다
+// (`stopAudio`가 대기 중인 `onFinished`를 무효화합니다). `stop` 호출은
+// `source: "<stop>"`로 표시합니다 — 실제 `audioSource`에는 `<`·`>`가 없으므로
+// 이 표식이 실제 source와 겹치지 않습니다.
 
 const STOP = "<stop>";
 
@@ -40,7 +38,7 @@ const playSources = (calls: readonly HostCall[]): string[] =>
 const stopCount = (calls: readonly HostCall[]): number =>
   calls.filter((call) => call.source === STOP).length;
 
-// 붙잡아 둔 완료 콜백. `at`은 `calls` 배열에서의 자리다.
+// 붙잡아 둔 완료 콜백입니다. `at`은 `calls` 배열에서의 자리입니다.
 const doneOf = (calls: readonly HostCall[], at: number): ((result: unknown) => void) => {
   const call = calls[at];
   if (call === undefined) {
@@ -49,14 +47,14 @@ const doneOf = (calls: readonly HostCall[], at: number): ((result: unknown) => v
   return call.done;
 };
 
-// 전역 대역을 **테스트마다 원상복구한다.** 이 파일은 없던 전역(`NativeModules`)을
-// 세우므로, 지우지 않으면 다른 테스트 파일로 샌다.
+// 전역 대역을 **테스트마다 원상복구합니다.** 이 파일은 없던 전역(`NativeModules`)을
+// 세우므로, 지우지 않으면 다른 테스트 파일로 샙니다.
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
 describe("isAudioAvailable", () => {
-  // 계약 §9.3 표: 호스트에 이 모듈이 있는가. 없으면 false이고 부수효과가 없다.
+  // 호스트에 이 모듈이 있는가로 갈립니다. 없으면 false이고 부수효과가 없습니다.
   it("호스트에 모듈이 있으면 true다", () => {
     stubHost();
 
@@ -69,16 +67,16 @@ describe("isAudioAvailable", () => {
     expect(isAudioAvailable()).toBe(false);
   });
 
-  // 계약 §9.3-2: 테스트 환경에는 `NativeModules` 전역이 **아예 없다**.
-  // 맨 식별자 접근이면 여기서 ReferenceError가 난다.
+  // 테스트 환경에는 `NativeModules` 전역이 **아예 없습니다**.
+  // 맨 식별자 접근이면 여기서 ReferenceError가 납니다.
   it("전역 자체가 없어도 false이고 던지지 않는다", () => {
     expect(() => isAudioAvailable()).not.toThrow();
     expect(isAudioAvailable()).toBe(false);
   });
 
-  // registerModule이 이 프레임에서 아직 안 끝났을 때 관찰되는 값이다 — `undefined`가
-  // 아니라 `null`이다. `nativeModule()`의 반환 타입 `AudioPlaybackModule | undefined`가
-  // 이 값을 감추므로, 캐스팅만 믿으면 이 축이 조용히 새나간다.
+  // registerModule이 이 프레임에서 아직 안 끝났을 때 관찰되는 값입니다 — `undefined`가
+  // 아니라 `null`입니다. `nativeModule()`의 반환 타입 `AudioPlaybackModule | undefined`가
+  // 이 값을 감추므로, 캐스팅만 믿으면 이 축이 조용히 새나갑니다.
   it("모듈 값이 null이면 false다", () => {
     vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
 
@@ -87,8 +85,6 @@ describe("isAudioAvailable", () => {
 });
 
 describe("playAudio — 모듈이 있을 때", () => {
-  // 계약 §9.9(a) 첫 줄: 네이티브 play가 "ordering-1"으로 한 번 · 반환값 "started" ·
-  // onDone 아직 안 불림
   it("받은 source 그대로 네이티브 play를 한 번 부르고 started를 돌려준다", () => {
     const calls = stubHost();
     const onDone = vi.fn<() => void>();
@@ -100,9 +96,9 @@ describe("playAudio — 모듈이 있을 때", () => {
     expect(onDone).not.toHaveBeenCalled();
   });
 
-  // 계약 §9.3 표: playAudio의 부수효과는 네이티브 호출과 세대 갱신이다.
-  // 멈추는 것은 부른 자리의 몫이고(§9.6), playAudio가 스스로 stop을 부르지 않는다 —
-  // 부르면 §9.9(a)의 "stop이 한 번" 케이스가 둘이 된다.
+  // playAudio의 부수효과는 네이티브 호출과 세대 갱신입니다. 멈추는 것은 부른 자리의
+  // 몫이고, playAudio가 스스로 stop을 부르지 않습니다 — 부르면 "stop이 한 번"
+  // 케이스가 둘이 됩니다.
   it("네이티브 stop을 부르지 않는다", () => {
     const calls = stubHost();
 
@@ -111,7 +107,7 @@ describe("playAudio — 모듈이 있을 때", () => {
     expect(stopCount(calls)).toBe(0);
   });
 
-  // 계약 §9.3-3: play의 콜백은 언제나 넘긴다 — 네이티브 시그니처가 둘째 인자를 요구한다.
+  // play의 콜백은 언제나 넘깁니다 — 네이티브 시그니처가 둘째 인자를 요구합니다.
   it("네이티브에 완료 콜백을 함께 넘긴다", () => {
     const calls = stubHost();
 
@@ -130,8 +126,8 @@ describe("playAudio — 모듈이 있을 때", () => {
     expect(onDone).toHaveBeenCalledTimes(1);
   });
 
-  // 계약 §9.3-5: 같은 콜백이 두 번 도착해도 onFinished는 한 번만 올라간다.
-  // 네이티브가 한 번만 부른다고 정했지만(§9.2) 그것을 **믿지 않고** 한 번 더 막는다.
+  // 같은 콜백이 두 번 도착해도 onFinished는 한 번만 올라갑니다. 네이티브가 한
+  // 번만 부른다고 정했지만 그것을 **믿지 않고** 한 번 더 막습니다.
   it("같은 done이 두 번 와도 onFinished는 여전히 한 번이다", () => {
     const calls = stubHost();
     const onDone = vi.fn<() => void>();
@@ -162,9 +158,9 @@ describe("playAudio — 모듈이 있을 때", () => {
   });
 });
 
-// 계약 §9.3-4 · §9.7 「늦게 온 완료 신호가 지금 재생을 끝내지 않는다」.
-// 문항이 빠르게 넘어갈 때 이전 문항의 완료 신호가 도착해 **지금 재생 중인 것을
-// 「끝났다」로 만드는 것**이 이 가드가 막는 것이다.
+// 늦게 온 완료 신호가 지금 재생을 끝내지 않습니다. 문항이 빠르게 넘어갈 때 이전
+// 문항의 완료 신호가 도착해 **지금 재생 중인 것을 「끝났다」로 만드는 것**이 이
+// 가드가 막는 것입니다.
 describe("playAudio — 세대 가드", () => {
   it("늦게 온 이전 재생의 done은 버려진다", () => {
     const calls = stubHost();
@@ -210,7 +206,6 @@ describe("playAudio — 세대 가드", () => {
 });
 
 describe("stopAudio — 모듈이 있을 때", () => {
-  // 계약 §9.9(a): 네이티브 stop이 한 번 · doneA가 불리지 않는다
   it("네이티브 stop을 한 번 부르고, 그 뒤 늦게 온 done을 무효화한다", () => {
     const calls = stubHost();
     const doneA = vi.fn<() => void>();
@@ -223,7 +218,7 @@ describe("stopAudio — 모듈이 있을 때", () => {
     expect(doneA).not.toHaveBeenCalled();
   });
 
-  // 계약 §9.3-6 · §9.6: 멈춘 것과 끝난 것은 다르다. 멈춘 쪽은 부른 자리가 이미 안다.
+  // 멈춘 것과 끝난 것은 다릅니다. 멈춘 쪽은 부른 자리가 이미 압니다.
   it("onFinished를 부르지 않는다", () => {
     stubHost();
     const doneA = vi.fn<() => void>();
@@ -256,9 +251,9 @@ describe("stopAudio — 모듈이 있을 때", () => {
   });
 });
 
-// 계약 §9.3-1 · §9.7 「모듈이 없을 때 던지지 않고 조용하다」.
-// Explorer에 이 모듈이 없고(ADR-0012 D3) 테스트 환경에도 없다 — 없을 때 조용히
-// 재생하지 않는 것이 **정상 동작**이다 (ADR-0017 D3).
+// 모듈이 없을 때 던지지 않고 조용해야 합니다. Explorer에 이 모듈이 없고(ADR-0012
+// D3) 테스트 환경에도 없습니다 — 없을 때 조용히 재생하지 않는 것이 **정상
+// 동작**입니다(ADR-0017 D3).
 describe("모듈이 없을 때 — 전역은 있고 모듈만 없다", () => {
   it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
     vi.stubGlobal("NativeModules", {});
@@ -283,10 +278,11 @@ describe("모듈이 없을 때 — 전역은 있고 모듈만 없다", () => {
   });
 });
 
-// ADR-0016 D11 규칙 4: 모듈이 없으면 조용히 아무 일도 하지 않는다 — 던지지 않는다.
-// `null`이 그 규칙의 구멍이었다. LIB-237 전에는 `host === undefined` 가드가 `host`가
-// `null`일 때 거짓이 되어 `host.play(...)` · `host.stop()`에서 TypeError가 났다. 지금은
-// `audio.ts`의 `?? undefined` 줄이 `null`을 `undefined`로 정규화해 막는다.
+// 모듈이 없으면 조용히 아무 일도 하지 않아야 합니다 — 던지지 않습니다(ADR-0016 D11
+// 규칙 4). `null`이 그 규칙의 구멍이었습니다. 전에는 `host === undefined` 가드가
+// `host`가 `null`일 때 거짓이 되어 `host.play(...)` · `host.stop()`에서 TypeError가
+// 났습니다. 지금은 `audio.ts`의 `?? undefined` 줄이 `null`을 `undefined`로
+// 정규화해 막습니다.
 describe("모듈 값이 null일 때", () => {
   it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
     vi.stubGlobal("NativeModules", { AudioPlaybackModule: null });
@@ -311,13 +307,13 @@ describe("모듈 값이 null일 때", () => {
   });
 });
 
-// 계약 §9.3-2 · §9.9(a) 마지막 줄: `storage.unit.test.ts`·`accessibility.unit.test.ts`·
-// 이 파일 셋 모두가 각자 같은 축을 갖는다 — 전역 자체가 없을 때(`typeof` 가드)의
-// 케이스다. 셋이 같은 형태이므로(storage.ts·audio.ts·accessibility.ts가 문자 단위로
-// 같은 가드를 쓴다) 이 축도 세 파일 모두에 있다 — 이 자리 하나가 유일한 것이 아니다.
+// `storage.unit.test.ts`·`accessibility.unit.test.ts`·이 파일 셋 모두가 각자 같은
+// 축을 갖습니다 — 전역 자체가 없을 때(`typeof` 가드)의 케이스입니다. 셋이 같은
+// 형태이므로(storage.ts·audio.ts·accessibility.ts가 문자 단위로 같은 가드를 씁니다)
+// 이 축도 세 파일 모두에 있습니다 — 이 자리 하나가 유일한 것이 아닙니다.
 //
-// 전역을 세우지 않는다. `NativeModules`는 선언 자체가 없으므로 맨 식별자 접근이면
-// `ReferenceError: NativeModules is not defined`가 난다.
+// 전역을 세우지 않습니다. `NativeModules`는 선언 자체가 없으므로 맨 식별자
+// 접근이면 `ReferenceError: NativeModules is not defined`가 납니다.
 describe("전역 자체가 없을 때 — typeof 가드", () => {
   it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
     expect(() => playAudio("ordering-1", vi.fn<() => void>())).not.toThrow();
@@ -341,14 +337,15 @@ describe("전역 자체가 없을 때 — typeof 가드", () => {
   });
 });
 
-// LIB-237 PR #48 리뷰 지적: `typeof NativeModules === "undefined"` 가드는 전역이
-// **없을 때**만 막는다. `typeof null`은 `"object"`라 전역 자체가 `null`이면 이
-// 가드를 통과하고, 다음 줄 `(NativeModules as Record<string, unknown>)["…"]`의
-// 색인 접근에서 TypeError가 난다 — `storage.ts`·`accessibility.ts`와 같은 자리,
-// 같은 모양이다. 위 「전역 자체가 없을 때 — typeof 가드」와 대칭인 셋째 축이다.
+// `typeof NativeModules === "undefined"` 가드는 전역이 **없을 때**만 막습니다.
+// `typeof null`은 `"object"`라 전역 자체가 `null`이면 이 가드를 통과하고, 다음 줄
+// `(NativeModules as Record<string, unknown>)["…"]`의 색인 접근에서 TypeError가
+// 납니다 — `storage.ts`·`accessibility.ts`와 같은 자리, 같은 모양입니다. 위 「전역
+// 자체가 없을 때 — typeof 가드」와 대칭인 셋째 축입니다.
 //
 // 이 축의 가드 자체는 코드로 관측되지만, 전역이 실제로 `null`로 세팅되는 경로가
-// 관찰됐는지는 별개다 — 근거의 종류는 `audio.ts`의 `nativeModule()` 위 주석 참조.
+// 관찰됐는지는 별개입니다 — 근거의 종류는 `audio.ts`의 `nativeModule()` 위 주석을
+// 참고합니다.
 describe("전역 자체가 null일 때 — typeof 가드의 사각", () => {
   it("playAudio가 unavailable을 돌려주고 던지지 않는다", () => {
     vi.stubGlobal("NativeModules", null);

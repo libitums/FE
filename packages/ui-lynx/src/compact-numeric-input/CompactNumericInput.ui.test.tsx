@@ -49,7 +49,8 @@ describe("CompactNumericInput", () => {
     expect(onInput).toHaveBeenCalledWith("7");
   });
 
-  // Lynx가 input의 `:focus`를 칠하지 않아 포커스를 클래스로 낸다(2026-09-21).
+  // 이 케이스가 빨개지면 포커스 표시가 사라진 것입니다. Lynx가 input의 `:focus`를 칠하지
+  // 않아 클래스로 내고 있어, 클래스가 빠지면 화면에서 어느 칸이 활성인지 알 수 없습니다.
   test("포커스 동안만 focused 클래스를 붙인다", () => {
     render(<CompactNumericInput accessibilityLabel="수량" />);
     const inputRef = lynx

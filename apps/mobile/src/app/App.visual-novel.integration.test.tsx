@@ -4,7 +4,6 @@ import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { App } from "./App";
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
-// LIB-261 (integration-design) §9.5: `renderApp` 헬퍼의 토큰 스텁·타이머 값.
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 
@@ -35,16 +34,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
-// 헬퍼(`renderApp`). 토큰이 있는 상태를 스텁하고 가짜 타이머로
-// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다. 이 파일이 이미
-// 세운 `NativeModules` 스텁(있으면, `stubCompletionAnnouncementHost()`의 낭독
-// 모듈)을 지우지 않고 `StorageModule`만 얹는다.
-//
-// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
-// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
-// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
-// 기존 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+// 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
+// 상태를 스텁하고 가짜 타이머로 `entrySplashDurationMs`만큼 전진시켜 진입
+// 스플래시를 건너뜁니다. 이 파일이 이미 세운 `NativeModules` 스텁(있으면,
+// `stubCompletionAnnouncementHost()`의 낭독 모듈)을 지우지 않고 `StorageModule`만
+// 얹습니다.
 function renderApp(ui: Parameters<typeof render>[0]) {
   const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
   const tokenStore = new Map<string, string>();

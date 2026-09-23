@@ -73,7 +73,8 @@ describe("Fog UI", () => {
     expect(styles).toMatch(
       /\.ui-lynx-fog-color-surface-default\s*\{[^}]*--libitum-ui-lynx-fog-transparent:\s*rgba\(255, 253, 252, 0\)[^}]*--libitum-ui-lynx-fog-opaque:\s*rgba\(255, 253, 252, 1\)/s,
     );
-    // 값이 또 var()인 커스텀 프로퍼티는 ReactLynx 번들에서 선언째 버려진다 — Fog 색이 사라진다.
+    // 값이 또 `var()`인 커스텀 프로퍼티는 ReactLynx 번들에서 선언째 버려집니다. 이 단언이
+    // 빨개지면 Fog가 앱에서 안 보이던 그 상태로 되돌아간 것입니다.
     expect(styles).not.toMatch(/--libitum-ui-lynx-fog-[a-z-]+:\s*var\(/);
     expect(styles).toMatch(/\.ui-lynx-fog-hidden\s*\{[^}]*opacity:\s*0/s);
     expect(styles).toMatch(/\.ui-lynx-fog-visible\s*\{[^}]*opacity:\s*1/s);

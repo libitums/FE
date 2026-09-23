@@ -5,21 +5,11 @@ import { App } from "./App";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
-// LIB-261 (integration-design) §9.5: `renderApp` 헬퍼의 토큰 스텁·타이머 값.
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 
-// LIB-255 integration 계층(ADR-0006 D4): App · navReducer · BottomNavigator ·
-// RoleplayListScreen · RoleplayListItem · 세 특별 유닛 화면 · 여정 맵의 실제 결선.
-// 계획 정본: .agent-harness/work/lib-255/test-plan.md integration §
-// `App.roleplay.integration.test.tsx`(I1~I7). 케이스 ID는 spec.md §10의 수용 기준
-// 매핑과 같다.
-//
-// 기대 red(test-plan.md 「integration red 기대」): App이 아직 `roleplay-list`에
-// `items={[]}` · `onSelectItem={() => undefined}`를 넘기고, `roleplay-messenger` ·
-// `roleplay-phone-call` · `roleplay-visual-novel` case가 `null`을 반환한다
-// (ui-scaffold 상태, App.tsx의 LIB-255 주석). 그래서 이 파일의 모든 케이스가
-// `getByTestId`에서 빨갛다 — import·수집 실패가 아니라 요소 부재로 인한 단언 실패다.
+// App · navReducer · BottomNavigator · RoleplayListScreen · RoleplayListItem ·
+// 세 특별 유닛 화면 · 여정 맵의 실제 결선을 봅니다(ADR-0006 D4).
 
 const audio = vi.hoisted(() => ({
   playAudio: vi.fn<(source: string, onFinished: () => void) => unknown>(),
@@ -51,7 +41,8 @@ const messengerUnitId = "appointment-confirmation";
 const phoneCallUnitId = "appointment-confirmation-phone-call";
 const visualNovelUnitId = "cafe-arrival-visual-novel";
 
-// I5가 「여덟 항목」이라 부르는 여정 맵 데이터-status 축. 일반 스텝 다섯 + 특별 유닛 셋.
+// I5가 「여덟 항목」이라 부르는 여정 맵 데이터-status 축입니다. 일반 스텝 다섯 +
+// 특별 유닛 셋입니다.
 const journeyStateTestIds = [
   "journey-step-node-greeting",
   "journey-step-node-introduction",
@@ -75,16 +66,11 @@ type Sinks = {
   visualNovelEventSink?: VisualNovelEventSink;
 };
 
-// LIB-261 (integration-design) §9.5: 기존 `render` 직접 호출 자리를 대신하는 공용
-// 헬퍼(`renderApp`). 토큰이 있는 상태를 스텁하고 가짜 타이머로
-// `entrySplashDurationMs`만큼 전진시켜 진입 스플래시를 건너뛴다. 이 파일이 이미
-// 세운 `NativeModules` 스텁(있으면, `stubCompletionAnnouncementHost()`의 낭독
-// 모듈)을 지우지 않고 `StorageModule`만 얹는다.
-//
-// ⭐ 이 헬퍼는 **이 시점(App이 아직 initialNav를 쓴다)에는 무동작**이다 — 스플래시
-// 자체가 없어 타이머가 앞으로 밀 것이 없다. `integration-implementation`이 App을
-// `entryInitialNav`로 바꾼 뒤에야 스플래시를 실제로 건너뛴다. 이 교체로 이 파일의
-// 기존 단언은 한 줄도 바뀌지 않는다(계약 §9.5).
+// 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
+// 상태를 스텁하고 가짜 타이머로 `entrySplashDurationMs`만큼 전진시켜 진입
+// 스플래시를 건너뜁니다. 이 파일이 이미 세운 `NativeModules` 스텁(있으면,
+// `stubCompletionAnnouncementHost()`의 낭독 모듈)을 지우지 않고 `StorageModule`만
+// 얹습니다.
 function renderApp(ui: Parameters<typeof render>[0]) {
   const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
   const tokenStore = new Map<string, string>();
@@ -273,17 +259,17 @@ test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선
   renderApp(<App />);
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
 
-  // 여정에서 메신저 완료
+  // 여정에서 메신저를 완료합니다.
   fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
-  // 여정에서 전화 완료
+  // 여정에서 전화를 완료합니다.
   fireEvent.tap(screen.getByTestId(`journey-map-phone-call-${phoneCallUnitId}`), {});
   finishPhoneCall();
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
-  // 여정에서 비주얼 노벨을 find까지 진행하고 미완료로 나간다
+  // 여정에서 비주얼 노벨을 find까지 진행하고 미완료로 나갑니다.
   fireEvent.tap(screen.getByTestId(`journey-map-visual-novel-${visualNovelUnitId}`), {});
   advanceVisualNovelOnce();
   expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
@@ -386,7 +372,7 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
   expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("맵으로");
 });
 
-// -------------------------------------------------------------- I5 (AC5) — §6 ③겹의 유일한 판정자
+// -------------------------------------------------------------------------- I5 (AC5)
 
 test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 그대로다", () => {
   renderApp(<App />);
@@ -395,19 +381,19 @@ test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 �
 
   fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
 
-  // 메신저: 끝까지 → 처음부터 보기 → 다시 끝까지
+  // 메신저: 끝까지 → 처음부터 보기 → 다시 끝까지 진행합니다.
   openRoleplayItem(messengerUnitId);
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-replay"), {});
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
-  // 전화: 세 턴 끝까지
+  // 전화: 세 턴 끝까지 진행합니다.
   openRoleplayItem(phoneCallUnitId);
   finishPhoneCall();
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
-  // 비주얼 노벨: 끝까지 → 처음부터 보기 → 다시 끝까지
+  // 비주얼 노벨: 끝까지 → 처음부터 보기 → 다시 끝까지 진행합니다.
   openRoleplayItem(visualNovelUnitId);
   advanceVisualNovelOnce();
   advanceVisualNovelOnce();

@@ -4,14 +4,12 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { ErrorBoundary } from "./ErrorBoundary";
 
-// `ui` 계층: ErrorBoundary 신규 파일 (재고정 2026-09-02, 수용 기준 9).
-// 첫 고정은 "이번 이슈가 에러 경계의 동작을 바꾸지 않는다"로 두어 ui 테스트가
-// 없었다 — 요구사항 수용 기준 9가 이 요소를 직접 지목하면서 전제가 무너졌다
-// (screens.contract.ts "ErrorBoundary" 절).
+// ErrorBoundary는 한동안 동작이 바뀌지 않는다는 전제 아래 `ui` 테스트가 없었습니다 —
+// 요구사항이 이 요소를 직접 지목하면서 그 전제가 무너져 새로 생겼습니다(2026-09-02).
 //
-// 에러 상태를 렌더하려면 던지는 자식이 필요하다. 그냥 항상 던지게 두면 재시도를
-// 눌렀을 때 다시 던져서 무한 에러 루프가 되고 재시도 동작을 관찰할 수 없다 —
-// 모듈 스코프 플래그로 **첫 렌더만** 던지게 한다 (spec.md §6.3 D).
+// 에러 상태를 렌더하려면 던지는 자식이 필요합니다. 그냥 항상 던지게 두면 재시도를
+// 눌렀을 때 다시 던져서 무한 에러 루프가 되고 재시도 동작을 관찰할 수 없습니다 —
+// 모듈 스코프 플래그로 **첫 렌더만** 던지게 합니다.
 let hasThrown = false;
 
 function Boom(): ReactNode {
@@ -22,9 +20,9 @@ function Boom(): ReactNode {
   return <text data-testid="boom-recovered">복구됨</text>;
 }
 
-// `componentDidCatch`와 React가 둘 다 잡힌 에러를 찍는다. 테스트 출력이 실패처럼
-// 보이지 않게 막되, **끝나면 되돌린다** — 복원하지 않으면 이 파일 뒤로 진짜 에러
-// 로그가 조용히 사라진다.
+// `componentDidCatch`와 React가 둘 다 잡힌 에러를 찍습니다. 테스트 출력이 실패처럼
+// 보이지 않게 막되, **끝나면 되돌립니다** — 복원하지 않으면 이 파일 뒤로 진짜 에러
+// 로그가 조용히 사라집니다.
 beforeEach(() => {
   hasThrown = false;
   vi.spyOn(console, "error").mockImplementation(() => {});
