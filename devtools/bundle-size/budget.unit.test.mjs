@@ -60,7 +60,11 @@ test("BS4. 예산 파일이 잘못되면 위반이 아니라 오류다", () => {
 });
 
 // BS5 — 표가 흔들리지 않도록 자릿수를 고정합니다.
-test("BS5. 크기를 kB 한 자리로 적고 없는 값은 「없음」으로 적는다", () => {
+test("BS5. 크기를 kB 한 자리로 적고 숫자가 아닌 값은 「없음」으로 적는다", () => {
   assert.equal(formatBytes(779615), "779.6 kB");
   assert.equal(formatBytes(null), "없음");
+  // 타입 검사가 없는 파일이라 이 셋이 `NaN kB`로 새어 나가면 0에 가까운 값으로 읽힙니다.
+  assert.equal(formatBytes(undefined), "없음");
+  assert.equal(formatBytes(Number.NaN), "없음");
+  assert.equal(formatBytes("779615"), "없음");
 });

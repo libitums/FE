@@ -51,8 +51,13 @@ export function evaluateBundleBudget({ targets, sizes }) {
   return { ok: violations.length === 0, results, violations };
 }
 
-/** 사람이 읽을 크기입니다. 소수점 한 자리까지만 적어 표가 흔들리지 않게 합니다. */
+/**
+ * 사람이 읽을 크기입니다. 소수점 한 자리까지만 적어 표가 흔들리지 않게 합니다.
+ *
+ * 숫자가 아닌 값은 전부 「없음」으로 적습니다. 이 파일은 타입 검사가 없는 `.mjs`라, 크기를
+ * 못 읽은 자리가 `NaN kB`로 새어 나가면 읽는 사람이 0에 가까운 값으로 오해합니다.
+ */
 export function formatBytes(bytes) {
-  if (bytes === null) return "없음";
+  if (typeof bytes !== "number" || Number.isNaN(bytes)) return "없음";
   return `${(bytes / 1000).toFixed(1)} kB`;
 }
