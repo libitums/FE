@@ -1,13 +1,13 @@
 /**
- * 약속 확인 전화 특별 유닛의 타입 전용 계약.
+ * 약속 확인 전화 특별 유닛의 타입 전용 계약입니다.
  *
- * 이 파일은 런타임 값이나 제품 동작을 만들지 않는다. 기존 여정과 내비게이션의
- * discriminant는 구현 단계에서 함께 연결할 수 있도록 별도 통합 형태로만 기록한다.
+ * 이 파일은 런타임 값이나 제품 동작을 만들지 않습니다. 기존 여정과 내비게이션의
+ * discriminant는 연결할 수 있도록 별도 통합 형태로만 기록합니다.
  */
 
-// LIB-255 계약 §2.7: `PhoneCallScreenProps.exitLabel?`의 타입. 전화 계약에서
-// `SpecialUnitEntrySource`는 쓰지 않는다 — 아래 `PhoneCallEvent`의 두 변형이 리터럴
-// `"journey"`·`"roleplay"`라 오늘은 `SpecialUnitExitLabel`만 필요하다.
+// 전화 계약에서 `SpecialUnitEntrySource`는 쓰지 않습니다 — 아래 `PhoneCallEvent`의
+// 두 변형이 리터럴 `"journey"`·`"roleplay"`라 오늘은 `SpecialUnitExitLabel`만
+// 필요합니다.
 import type { SpecialUnitExitLabel } from "../../lib/special-unit-entry-source";
 
 export type PhoneCallUnitId = "appointment-confirmation-phone-call";
@@ -122,8 +122,7 @@ export type PhoneCallScreenProps = {
   readonly exitLabel?: SpecialUnitExitLabel;
 };
 
-// LIB-255 계약 §2.7·§7 — Q9: 전화에 열림 이벤트를 신설한다. 열림 이벤트만 있다(A5) —
-// 완료·다시보기 이벤트는 만들지 않는다.
+/** 전화에는 열림 이벤트만 있습니다 — 완료·다시보기 이벤트는 만들지 않습니다. */
 export type PhoneCallEvent =
   | {
       readonly name: "phone_call_unit_opened";
@@ -137,18 +136,21 @@ export type PhoneCallEvent =
       readonly entrySource: "roleplay";
     };
 
-// null은 출시 집계 sink가 없다는 사실을 타입으로 드러낸다(MessengerEventSink와 같은 규약).
+/** `null`은 출시 집계 sink가 없다는 사실을 타입으로 드러냅니다(`MessengerEventSink`와 같은 규약). */
 export type PhoneCallEventSink = ((event: PhoneCallEvent) => void) | null;
 
-// App의 유일한 외부 전화 계측 주입 surface다. prop 생략은 App 경계에서 null로
-// 정규화하므로 기존 <App /> 호출부를 깨지 않고, 테스트만 callback spy를 주입할 수 있다.
+/**
+ * App의 유일한 외부 전화 계측 주입 surface입니다. prop 생략은 App 경계에서
+ * `null`로 정규화하므로 기존 `<App />` 호출부를 깨지 않고, 테스트만 callback spy를
+ * 주입할 수 있습니다.
+ */
 export type PhoneCallAppProps = {
   readonly phoneCallEventSink?: PhoneCallEventSink;
 };
 
 /**
- * 구현 단계에서 기존 union에 연결할 정확한 형태다. 현재 런타임 union은 변경하지 않아
- * 기존 App의 exhaustive 분기와 일반 여정 동작을 보존한다.
+ * 기존 여정 유닛 union(`JourneyUnit`)에 그대로 연결되는 형태입니다. 현재 런타임
+ * union은 변경하지 않아 기존 App의 exhaustive 분기와 일반 여정 동작을 보존합니다.
  */
 export type PhoneCallJourneyUnitContract = {
   readonly kind: "special";

@@ -5,10 +5,11 @@ import { NotificationListItem } from "./NotificationListItem";
 
 import "./notifications-screen.css";
 
-// LIB-257 (ui-implementation): 계약(.agent-harness/work/lib-257/spec.md §2.6)의
-// 구조·testid·접근성을 채운다 + design.md §3의 값(메신저 레시피 — 나가기 첫 흐름
-// 자식 + 제목 `margin-top: spacing-12`, ADR-0023 안 B). 화면은 목록을 계산 · 정렬 ·
-// 거르지 않는다. `items`가 비어도 목록 상자는 선다(항목 0개, 계약 §2.6).
+/**
+ * 메신저 레시피를 따릅니다 — 나가기 첫 흐름 자식 + 제목 `margin-top: spacing-12`
+ * (ADR-0023 안 B). 화면은 목록을 계산 · 정렬 · 거르지 않습니다. `items`가 비어도
+ * 목록 상자는 섭니다(항목 0개).
+ */
 export function NotificationsScreen({
   items,
   onSelectItem,

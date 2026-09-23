@@ -5,8 +5,6 @@
  * belong in this file. Changes require specification re-freeze and a contract diff.
  */
 
-// LIB-255 계약 §2.7: `VisualNovelScreenProps.exitLabel?`와 `VisualNovelEvent`의 진입
-// 출처 속성 타입.
 import type {
   SpecialUnitEntrySource,
   SpecialUnitExitLabel,
@@ -164,8 +162,10 @@ export type VisualNovelEntrySnapshot = {
   readonly entryBeatId: VisualNovelBeatId;
 };
 
-// LIB-255 계약 §2.7·§7.2: 열림 이벤트는 출처별 변형이 둘이다(A4 — 롤플레이 출처는
-// `entryStatus`·`entryBeatId`를 싣지 않는다). 그 밖 세 이벤트는 두 출처 모두 같은 모양이다.
+/**
+ * 열림 이벤트는 출처별 변형이 둘입니다 — 롤플레이 출처는 `entryStatus`·
+ * `entryBeatId`를 싣지 않습니다. 그 밖 세 이벤트는 두 출처 모두 같은 모양입니다.
+ */
 export type VisualNovelEvent =
   | {
       readonly name: "visual_novel_unit_opened";

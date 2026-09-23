@@ -1,9 +1,6 @@
-// 알림 화면의 순수 로직 자리 (ADR-0006 D4 — 순수 로직은 unit 계층 대상).
-//
-// 계약: .agent-harness/work/lib-257/spec.md §2.3(순수 모듈 계약).
-//
-// LIB-257 (logic): 계약 §2.3이 고정한 동작을 채운다. DOM·컴포넌트·저장소를 만지지
-// 않는다(순수 함수뿐). 값을 import하지 않는다 — `import type`은 계약 파일에서만.
+// 알림 화면의 순수 로직 자리입니다(ADR-0006 D4 — 순수 로직은 unit 계층 대상).
+// DOM·컴포넌트·저장소를 만지지 않습니다(순수 함수뿐). 값을 import하지 않습니다 —
+// `import type`은 계약 파일에서만입니다.
 
 import type {
   NotificationItem,
@@ -12,8 +9,8 @@ import type {
   NotificationTargetKind,
 } from "./notifications.contract";
 
-// 대상 종류 → 행선지 낱말. export하지 않는다 — 표 자체가 아니라 읽는 함수가 계약이다
-// (계약 §2.3 — 종류가 늘면 이 표가 `TS2741`로 선다).
+// 대상 종류 → 행선지 낱말입니다. export하지 않습니다 — 표 자체가 아니라 읽는
+// 함수가 계약입니다(종류가 늘면 이 표가 `TS2741`로 섭니다).
 const destinationLabelByKind: Record<NotificationTargetKind, NotificationDestinationLabel> = {
   messenger: "메신저 열기",
   "phone-call": "전화 열기",

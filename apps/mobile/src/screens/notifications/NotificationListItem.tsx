@@ -10,15 +10,13 @@ import type { NotificationListItemProps, NotificationTargetKind } from "./notifi
 
 import "./notification-list-item.css";
 
-// LIB-257 (ui-implementation): 계약(.agent-harness/work/lib-257/spec.md §2.7)의
-// 구조·testid·접근성을 채운다 + design.md §4.1·§4.2의 값(목적지 아이콘 사상 포함).
-// 컴포넌트는 로직을 다시 짓지 않는다 — 두 문구는 `notifications.ts` 결과를 그대로
-// 그린다(계약 §2.7).
+// 컴포넌트는 로직을 다시 짓지 않습니다 — 두 문구는 `notifications.ts` 결과를
+// 그대로 그립니다.
 
-// export하지 않는 사상 표 — 대상 종류 → 목적지 아이콘. 특별 유닛 셋은 여정 맵 항목 ·
-// 롤플레이 항목과 같은 아이콘, 롤플레이 목록은 롤플레이 탭 아이콘과 같다
-// (design.md §1.4 — 목적지가 이미 입고 있는 아이콘을 그대로 쓴다. 새 아이콘을
-// 고르지 않는다).
+// export하지 않는 사상 표입니다 — 대상 종류 → 목적지 아이콘입니다. 특별 유닛 셋은
+// 여정 맵 항목 · 롤플레이 항목과 같은 아이콘이고, 롤플레이 목록은 롤플레이 탭
+// 아이콘과 같습니다 — 목적지가 이미 입고 있는 아이콘을 그대로 쓰고, 새 아이콘을
+// 고르지 않습니다.
 const notificationItemIconByTargetKind: Record<NotificationTargetKind, string> = {
   messenger: message02,
   "phone-call": phone,

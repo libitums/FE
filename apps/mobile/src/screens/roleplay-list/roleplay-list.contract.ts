@@ -1,16 +1,8 @@
-// LIB-255 specification 계약. 구현·JSX를 두지 않는다. 변경하려면 specification
-// 재고정이 필요하다.
-//
-// 세 화면 계약에서 가져오는 것은 `import type`이고 그 타입의 소유자가 그 화면이다
-// (docs/conventions/code.md 「import」가 허용하는 형태 그대로).
-//
-// **불리언도 상태도 없다.** 항목에 `status`·`locked`·`completed` 필드가 없으므로
-// 완료·잠김 표식을 그릴 입력이 타입에 존재하지 않는다 — 수용 기준 1의 「0건」을
-// 타입이 먼저 진다.
-//
-// **판별자는 `form`이다.** 여정의 `JourneyMapItem.kind`(`"special"`이 메신저를 뜻하는
-// 역사적 이름)를 옮겨 오지 않는다 — 목록이 보이는 것이 곧 형태라서 이름이 그 뜻을
-// 말하게 한다.
+// 롤플레이 목록 화면의 타입 전용 계약입니다 — 구현·JSX를 두지 않습니다. 세 화면
+// 계약에서 가져오는 것은 `import type`이고 그 타입의 소유자는 그 화면입니다.
+// **판별자는 `form`입니다** — 여정의 `JourneyMapItem.kind`(`"special"`이 메신저를
+// 뜻하는 역사적 이름)를 옮겨 오지 않습니다. 목록이 보이는 것이 곧 형태라서 이름이
+// 그 뜻을 말하게 합니다.
 
 import type { MessengerConversation, MessengerUnitId } from "../messenger/messenger.contract";
 import type { PhoneCallConversation, PhoneCallUnitId } from "../phone-call/phone-call.contract";
@@ -38,6 +30,11 @@ export type VisualNovelRoleplayItem = {
   readonly title: VisualNovelTitle;
 };
 
+/**
+ * 여정 항목 하나를 롤플레이 형태로 나타냅니다. **불리언도 상태도 없습니다** —
+ * 항목에 `status`·`locked`·`completed` 필드가 없으므로 완료·잠김 표식을 그릴 입력이
+ * 타입에 존재하지 않습니다.
+ */
 export type RoleplayItem = MessengerRoleplayItem | PhoneCallRoleplayItem | VisualNovelRoleplayItem;
 
 export type RoleplayListScreenProps = {

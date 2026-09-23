@@ -1,8 +1,6 @@
-// LIB-254 specification 계약. 구현·고정 데이터·JSX를 두지 않고 하류가 공유할 타입만 둔다.
-// 이 파일은 계약 고정 시점부터 변경하려면 specification 재고정이 필요하다.
+// 메신저 특별 유닛의 타입 전용 계약입니다 — 구현·고정 데이터·JSX를 두지 않고
+// 하류가 공유할 타입만 둡니다.
 
-// LIB-255 계약 §2.7: `MessengerScreenProps.exitLabel?`와 `MessengerEvent`의 진입 출처
-// 속성 타입.
 import type {
   SpecialUnitEntrySource,
   SpecialUnitExitLabel,
@@ -49,8 +47,10 @@ export type MessengerSessionAction = { readonly type: "reply" } | { readonly typ
 
 export type MessengerExitOutcome = "incomplete" | "completed";
 
-// LIB-255 계약 §2.7·§7.2: 열림 이벤트는 출처별 변형이 둘이다(A4 — 롤플레이 출처는
-// `entryStatus`를 싣지 않는다). 그 밖 세 이벤트는 두 출처 모두 같은 모양이다.
+/**
+ * 열림 이벤트는 출처별 변형이 둘입니다 — 롤플레이 출처는 `entryStatus`를 싣지
+ * 않습니다. 그 밖 세 이벤트는 두 출처 모두 같은 모양입니다.
+ */
 export type MessengerEvent =
   | {
       readonly name: "messenger_unit_opened";
@@ -79,12 +79,18 @@ export type MessengerEvent =
       readonly entrySource: SpecialUnitEntrySource;
     };
 
-// null은 현재 제품에 출시 집계 sink가 없다는 사실을 타입으로 드러낸다. no-op 함수나
-// 메모리 배열로 수집 완료를 가장하지 않는다. 대화 본문·답장 문구는 이벤트에 없다.
+/**
+ * `null`은 현재 제품에 출시 집계 sink가 없다는 사실을 타입으로 드러냅니다. no-op
+ * 함수나 메모리 배열로 수집 완료를 가장하지 않습니다. 대화 본문·답장 문구는
+ * 이벤트에 없습니다.
+ */
 export type MessengerEventSink = ((event: MessengerEvent) => void) | null;
 
-// App의 유일한 외부 메신저 계측 주입 surface다. prop 생략은 App 경계에서 null로
-// 정규화하므로 기존 <App /> 호출부를 깨지 않고, 테스트만 callback spy를 주입할 수 있다.
+/**
+ * App의 유일한 외부 메신저 계측 주입 surface입니다. prop 생략은 App 경계에서
+ * `null`로 정규화하므로 기존 `<App />` 호출부를 깨지 않고, 테스트만 callback spy를
+ * 주입할 수 있습니다.
+ */
 export type MessengerAppProps = {
   readonly messengerEventSink?: MessengerEventSink;
 };

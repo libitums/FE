@@ -1,10 +1,9 @@
-/* LIB-222 (ui): design.md §5.1 · §5.3 · §5.5의 값. 계약 §1.7이 정한 이름에 값을
-   매핑한다 — `.step-sheet` = 겹침 레이어, `.step-sheet-panel` = 판, `.step-sheet-scrim`
-   = 백드롭(design의 `.step-sheet-backdrop`). 토큰은 CSS 커스텀 프로퍼티로만
-   소비한다 (ADR-0014 D1). */
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). `.step-sheet` = 겹침
+   레이어, `.step-sheet-panel` = 판, `.step-sheet-scrim` = 백드롭으로, 정한 이름에
+   값을 매핑합니다. */
 
-/* 겹침 레이어. `.journey-map-screen`(position: relative)의 padding edge를 포함
-   블록으로 삼아 화면 전체를 덮는다 (design §5.1). */
+/* 겹침 레이어입니다. `.journey-map-screen`(position: relative)의 padding edge를
+   포함 블록으로 삼아 화면 전체를 덮습니다. */
 .step-sheet {
   position: absolute;
   top: 0;
@@ -13,8 +12,8 @@
   bottom: 0;
 }
 
-/* 딤 토큰이 패키지에 없어 `background`를 선언하지 않는다 — 없는 선언은 하드코딩이
-   아니다(design §5.2). 존재 이유는 맵으로 가는 탭을 가로채는 것 하나다. */
+/* 딤 토큰이 패키지에 없어 `background`를 선언하지 않습니다 — 없는 선언은
+   하드코딩이 아닙니다. 존재 이유는 맵으로 가는 탭을 가로채는 것 하나입니다. */
 .step-sheet-scrim {
   position: absolute;
   top: 0;
@@ -62,13 +61,14 @@
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);
 }
 
-/* design §5.5 "시작 버튼" 행의 값. `brand-primary`가 아니라 `brand-strong`이다 —
-   흰 라벨이 `brand-primary` 위에서 3.02:1로 AA에 미달한다(design §4.2·§6.3). */
+/* "시작 버튼" 행의 값입니다. `brand-primary`가 아니라 `brand-strong`입니다 —
+   흰 라벨이 `brand-primary` 위에서 3.02:1로 AA에 미달합니다. */
 .step-sheet-start {
   background: var(--libitum-color-brand-strong);
-  /* **고정 높이가 아니라 하한이다** (ADR-0020 D5). Dynamic Type이 켜지면 글자만
-     커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 높이로 두면
-     최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4). */
+  /* **고정 높이가 아니라 하한입니다**(ADR-0020 D5). Dynamic Type이 켜지면 글자만
+     커지고 상자는 안 커집니다 — 폭·높이·패딩은 배율을 받지 않습니다. 고정 높이로
+     두면 최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라집니다**(WCAG
+     1.4.4). */
   min-height: var(--libitum-spacing-48);
   border-radius: var(--libitum-radius-md);
   width: 100%;
@@ -86,19 +86,17 @@
   letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
 }
 
-/* design §5.5 "닫기 히트박스" 48×48의 값을 그대로 쓴다. 계약이 아이콘이 아니라
-   텍스트 `닫기`를 요구하므로(§1.7) 라벨 색은 design의 닫기 아이콘 색과 같은 토큰을
-   쓴다.
+/* "닫기 히트박스" 48×48의 값을 그대로 씁니다. 아이콘이 아니라 텍스트 `닫기`를
+   요구하므로 라벨 색은 닫기 아이콘 색과 같은 토큰을 씁니다.
 
-   LIB-226 (ui, W10): **고정 치수가 아니라 하한이다 — 가로도 세로도** (ADR-0020 D5,
-   가로 축은 계약 §1.8.1 C1 · design §6.3(b)가 넓혔다). Dynamic Type이 켜지면 글자만
-   커지고 상자는 안 커진다 — 폭·높이·패딩은 배율을 받지 않는다. 고정 치수로 두면
-   최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라진다**(WCAG 1.4.4).
-   `align-self: flex-start`는 그 짝이다(계약 §1.8.1 C3 · design §6.3.1) — `min-width`만
-   두면 `.step-sheet-panel`의 교차축 기본값(stretch)을 받아 판 폭짜리 알약이 된다.
-   이 선언이 하는 일은 "stretch를 안 받는 이유"를 확정 치수에서 정렬로 옮기는 것뿐이고,
-   자식 넷 중 이 상자에만 걸린다(design §6.3.1(e)) — 형제(`-title`·`-description`·
-   `-start`)는 이 선언이 닿지 않아 그대로다. */
+   **고정 치수가 아니라 하한입니다 — 가로도 세로도입니다**(ADR-0020 D5). Dynamic
+   Type이 켜지면 글자만 커지고 상자는 안 커집니다 — 폭·높이·패딩은 배율을 받지
+   않습니다. 고정 치수로 두면 최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린
+   내용은 사라집니다**(WCAG 1.4.4). `align-self: flex-start`는 그 짝입니다 —
+   `min-width`만 두면 `.step-sheet-panel`의 교차축 기본값(stretch)을 받아 판
+   폭짜리 알약이 됩니다. 이 선언이 하는 일은 "stretch를 안 받는 이유"를 확정
+   치수에서 정렬로 옮기는 것뿐이고, 자식 넷 중 이 상자에만 걸립니다 —
+   형제(`-title`·`-description`·`-start`)는 이 선언이 닿지 않아 그대로입니다. */
 .step-sheet-close {
   min-width: var(--libitum-spacing-48);
   min-height: var(--libitum-spacing-48);

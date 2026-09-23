@@ -15,12 +15,12 @@ import { artworkFor } from "./visual-novel-artwork";
 import type { VisualNovelScreenProps } from "./visual-novel.contract";
 import "./visual-novel.css";
 
-// `exitLabel`은 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받는다
-// (ADR-0007 D3). 기본값은 여정 라벨이라 기존 호출은 수정 없이 성립한다(LIB-255 §2.7).
+// `exitLabel`은 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받습니다
+// (ADR-0007 D3). 기본값은 여정 라벨이라 기존 호출은 수정 없이 성립합니다.
 //
-// LIB-255 (ui, r1 R2): 머리 재배치 — 나가기가 머리의 첫 흐름 자식이고, 제목·진행을
-// 제목 묶음 `<view className="visual-novel-header-text">`(testid·접근성 속성 없음)로
-// 감싼다. 여정·롤플레이 두 경로 공통(.agent-harness/work/lib-255/spec.md §2.9).
+// 머리 재배치입니다 — 나가기가 머리의 첫 흐름 자식이고, 제목·진행을 제목 묶음
+// `<view className="visual-novel-header-text">`(testid·접근성 속성 없음)로
+// 감쌉니다. 여정·롤플레이 두 경로 공통입니다.
 export function VisualNovelScreen({
   story,
   progress,

@@ -4,7 +4,6 @@ import tick from "@libitums/icons/lynx/tick";
 import { color } from "@libitums/design-tokens";
 import "./visual-novel-map-item.css";
 
-/** Importable UI scaffold; interaction and visual treatment are supplied by the UI layer. */
 export function VisualNovelMapItem({ id, title, status, onSelect }: VisualNovelMapItemProps) {
   const handleSelect = () => {
     "background only";

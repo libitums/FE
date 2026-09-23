@@ -1,5 +1,5 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1).
-   루트 레시피는 여정 특별 항목 루트와 토큰 단위로 같다(design.md §4.1). */
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 루트 레시피는 여정
+   특별 항목 루트와 토큰 단위로 같습니다. */
 .roleplay-list-item {
   width: 100%;
   min-height: var(--libitum-spacing-64);
@@ -20,10 +20,10 @@
   flex-shrink: 0;
 }
 
-/* 글 묶음 — 제목 / 형태 낱말을 세로로 담는 레이아웃 래퍼. 가림 없음 — 보이는 이름을
-   지는 `<text>`는 가리지 않는다(ADR-0016 D5, LIB-255 r1). 이름은 루트의
-   `accessibility-label`이 진다.
-   `spacing-4`는 같은 항목 계열의 작은 간격 선례와 같은 토큰이다(design.md §4.1). */
+/* 글 묶음 — 제목 / 형태 낱말을 세로로 담는 레이아웃 래퍼입니다. 가림 없음 —
+   보이는 이름을 지는 `<text>`는 가리지 않습니다(ADR-0016 D5). 이름은 루트의
+   `accessibility-label`이 집니다.
+   `spacing-4`는 같은 항목 계열의 작은 간격 선례와 같은 토큰입니다. */
 .roleplay-list-item-text {
   flex: 1;
   display: flex;

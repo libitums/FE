@@ -1,9 +1,8 @@
-/* LIB-222 (ui): design.md §2.1 · §3.1 · §3.2의 값. 토큰은 CSS 커스텀 프로퍼티로만
-   소비한다 (ADR-0014 D1). 계약 §1.7이 링 요소를 두지 않으므로(contract-deviation)
-   여기서는 노드(마커) 하나만 그린다 — design §2.1의 "링 외경 72px" 산술은 적용하지
-   않는다. */
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 링 요소를 두지 않으므로
+   여기서는 노드(마커) 하나만 그립니다 — "링 외경 72px" 산술은 적용하지 않습니다. */
 
-/* 탭 대상 전체. 링이 없어 터치 영역은 노드 + 라벨을 감싸는 이 상자 하나다. */
+/* 탭 대상 전체입니다. 링이 없어 터치 영역은 노드 + 라벨을 감싸는 이 상자
+   하나입니다. */
 .journey-step-node {
   display: flex;
   flex-direction: column;
@@ -11,7 +10,7 @@
   gap: var(--libitum-spacing-4);
 }
 
-/* 노드 표식. 세 상태 공통 치수만 base에 둔다 — 색은 상태 클래스가 진다 (design §2.1). */
+/* 노드 표식입니다. 세 상태 공통 치수만 base에 둡니다 — 색은 상태 클래스가 집니다. */
 .journey-step-node-marker {
   width: var(--libitum-spacing-64);
   height: var(--libitum-spacing-64);
@@ -22,9 +21,9 @@
   justify-content: center;
 }
 
-/* 상태 클래스는 base 바로 뒤, 같은 파일에 선언한다 — 특이도가 같아 순서가 결과를
-   가른다 (docs/conventions/code.md, ADR-0003 D7). 완료 · 현재는 테두리를 채움과
-   같은 토큰으로 둬 안 보이게 한다 (design §3.1). */
+/* 상태 클래스는 base 바로 뒤, 같은 파일에 선언합니다 — 특이도가 같아 순서가
+   결과를 가릅니다(`docs/conventions/code.md`, ADR-0003 D7). 완료 · 현재는 테두리를
+   채움과 같은 토큰으로 둬 안 보이게 합니다. */
 .journey-step-node-marker-done {
   background: var(--libitum-color-feedback-correct);
   border-color: var(--libitum-color-feedback-correct);
@@ -40,14 +39,14 @@
   border-color: var(--libitum-color-border-default);
 }
 
-/* 크기만 준다. 색은 `current-color` 속성으로 넘긴다 (ADR-0014 D2) — 여기 `color`를
-   적으면 `<svg>`가 읽지 않아 아무 일도 하지 않는다. */
+/* 크기만 줍니다. 색은 `current-color` 속성으로 넘깁니다(ADR-0014 D2) — 여기
+   `color`를 적으면 `<svg>`가 읽지 않아 아무 일도 하지 않습니다. */
 .journey-step-node-icon {
   width: var(--libitum-icon-size-md);
   height: var(--libitum-icon-size-md);
 }
 
-/* 라벨 색은 세 상태가 같다 (design §3.2) — 상태 클래스를 만들지 않는다. */
+/* 라벨 색은 세 상태가 같습니다 — 상태 클래스를 만들지 않습니다. */
 .journey-step-node-label {
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-m-font-family);

@@ -1,8 +1,8 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1).
-   변수 이름은 `@libitums/design-tokens/css/variables.css`가 정의한 것만 쓴다.
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 변수 이름은
+   `@libitums/design-tokens/css/variables.css`가 정의한 것만 씁니다.
    `.app`/`.app-content`가 부모 프레임을 세로 flex로 두므로 `flex: 1`로 남은
-   높이를 채워 배경이 콘텐츠 영역 전체를 덮는다 (design 문서 §6.1).
-   `position` 선언을 두지 않는다 — 이 화면에는 겹침 레이어가 없다(design.md §3.2). */
+   높이를 채워 배경이 콘텐츠 영역 전체를 덮습니다.
+   `position` 선언을 두지 않습니다 — 이 화면에는 겹침 레이어가 없습니다. */
 .notifications-screen {
   display: flex;
   flex-direction: column;
@@ -13,8 +13,8 @@
   background: var(--libitum-color-background-primary);
 }
 
-/* 메신저 · 전화 머리와 같은 레시피다(design.md §3.2) — `.messenger-screen-header`와
-   값이 같다. */
+/* 메신저 · 전화 머리와 같은 레시피입니다 — `.messenger-screen-header`와 값이
+   같습니다. */
 .notifications-screen-header {
   display: flex;
   flex-direction: row;
@@ -23,8 +23,8 @@
   flex-shrink: 0;
 }
 
-/* 나가기 — 머리 행의 첫 자식(낭독 순서 `맵으로 → 알림 → 항목들`, 계약 §2.6).
-   `.messenger-screen-exit`와 같은 상자 · 자리 · 색이다(design.md §3.2). */
+/* 나가기 — 머리 행의 첫 자식입니다(낭독 순서 `맵으로 → 알림 → 항목들`).
+   `.messenger-screen-exit`와 같은 상자 · 자리 · 색입니다. */
 .notifications-screen-exit {
   min-height: var(--libitum-spacing-48);
   padding: 0 var(--libitum-spacing-12);
@@ -44,12 +44,12 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-/* 제목 — 머리 행의 둘째 자식. `margin-top: spacing-12`는 ADR-0023 안 B다:
-   `12 = (spacing-48 − heading-s-line-height) / 2`라는 산술 결과가 `spacing-12`와
-   값이 같은 것이다(design.md §3.2). 되돌리는 조건: 나가기의 `min-height` 하한
+/* 제목 — 머리 행의 둘째 자식입니다. `margin-top: spacing-12`는 ADR-0023 안
+   B입니다: `12 = (spacing-48 − heading-s-line-height) / 2`라는 산술 결과가
+   `spacing-12`와 값이 같은 것입니다. 되돌리는 조건: 나가기의 `min-height` 하한
    (현재 `spacing-48`)이나 이 제목의 typography scale(현재 `heading-s`)이 바뀌면
-   이 값이 조용히 틀린다. 여기서는 큰 상자(나가기)가 DOM 앞이라 안 B가 순서를
-   지킨다(여정 맵 머리 §2.3과 반대 경우). */
+   이 값이 조용히 틀립니다. 여기서는 큰 상자(나가기)가 DOM 앞이라 안 B가 순서를
+   지킵니다(여정 맵 머리와 반대 경우). */
 .notifications-screen-title {
   margin-top: var(--libitum-spacing-12);
   color: var(--libitum-color-fg-neutral);
@@ -61,18 +61,18 @@
   flex: 1;
 }
 
-/* [흐름] 2분할 — 액션 행이 없다(ADR-0022 D1). `<scroll-view>`는 CSS와 무관하게
-   강제로 linear가 되어 `display`·`flex-direction`·`gap`이 안 읽힌다(계약 R8.1). */
+/* [흐름] 2분할 — 액션 행이 없습니다(ADR-0022 D1). `<scroll-view>`는 CSS와
+   무관하게 강제로 linear가 되어 `display`·`flex-direction`·`gap`이 안 읽힙니다. */
 .notifications-screen-scroll {
   flex: 1;
   justify-content: flex-start;
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
-/* 목록 상자 — 스크롤의 유일한 직계 자식. `<scroll-view>`는 강제 linear라 gap이
-   없으므로 항목 간격은 이 상자가 진다(롤플레이 목록 선례, design.md §3.2).
-   `padding-bottom`을 두지 않는다 — 마지막 항목 아래 빈 띠가 「여기가 끝」으로
-   읽혀 넘침 어포던스를 지운다(ADR-0022 D4, 롤플레이 목록과 같은 근거). */
+/* 목록 상자 — 스크롤의 유일한 직계 자식입니다. `<scroll-view>`는 강제 linear라
+   gap이 없으므로 항목 간격은 이 상자가 집니다(롤플레이 목록 선례).
+   `padding-bottom`을 두지 않습니다 — 마지막 항목 아래 빈 띠가 「여기가 끝」으로
+   읽혀 넘침 어포던스를 지웁니다(ADR-0022 D4, 롤플레이 목록과 같은 근거). */
 .notifications-screen-list {
   display: flex;
   flex-direction: column;
