@@ -1,7 +1,7 @@
 import { color } from "@libitums/design-tokens";
 
 // `overlay`는 FE 확장(2026-09-21 여정 입장 디자인 반영): 면 없이 흰 아이콘만 그려 어두운 그림
-// 위에 얹는다.
+// 위에 얹습니다.
 export type RoundButtonVariant = "neutral" | "brand" | "overlay";
 export type RoundButtonSize = "s" | "m" | "l" | "xl";
 

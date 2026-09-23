@@ -72,9 +72,9 @@ export function TextField(props: TextFieldProps) {
     setFocused(false);
   }
 
-  // Counter가 없으면 maxlength를 아예 넘기지 않는다. undefined로 넘기면 iOS native input이 포커스 뒤
-  // 다시 그릴 때 이를 0으로 받아 아무것도 입력되지 않았다(2026-09-21, 시뮬레이터 확인). 테스트 환경은
-  // undefined 속성을 지워 버려 이 차이를 재현하지 못한다.
+  // Counter가 없으면 maxlength를 아예 넘기지 않습니다. undefined로 넘기면 iOS native input이 포커스 뒤
+  // 다시 그릴 때 이를 0으로 받아 아무것도 입력되지 않았습니다(2026-09-21, 시뮬레이터 확인). 테스트
+  // 환경은 undefined 속성을 지워 버려 이 차이를 재현하지 못합니다.
   const maxLengthProps = props.counter ? { maxlength: props.counter.maxLength } : {};
 
   return (
