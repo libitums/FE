@@ -47,3 +47,17 @@ jobs:
         env:
           POLICY_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           POLICY_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      # 커버리지는 숫자만 남깁니다. 퍼센트를 게이트로 걸지 않으므로 실패해도 PR을 막지
+      # 않고, 요약만 작업 로그와 PR 요약에 싣습니다.
+      - name: Measure coverage
+        if: always()
+        continue-on-error: true
+        run: |
+          pnpm test:coverage 2>&1 | tee coverage-output.txt
+          {
+            echo "## 커버리지"
+            echo '```text'
+            grep -A6 "Coverage summary" coverage-output.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

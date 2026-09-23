@@ -41,10 +41,16 @@
 | `pnpm performance:reports:gate` | **지금 이 브랜치가 CI의 보고서 정책을 통과하나.** 범위를 스스로 구한다 | 임의 범위 감사 (아래가 따로) |
 | `pnpm performance:reports:check --base <base> --head <head>` | **임의의 두 commit을 감사한다.** 소급 확인용 | 범위 자동 산출 (위가 따로) |
 | `pnpm --filter @libitums/mobile performance:capture:smoke` | iOS Host 준비부터 수집·분석·cleanup까지 native 연결 확인 | 실기 baseline·수치 threshold |
-| `pnpm verify` | format:check → typecheck → lint → test → build → performance:reports:gate | 네이티브 빌드 |
+| `pnpm size:check` | 빌드 산출물 크기를 `devtools/bundle-size/budget.json`의 예산과 대조 | 빌드 (먼저 `pnpm build`) |
+| `pnpm test:coverage` | 커버리지 측정 (숫자만 남긴다) | 게이트 — 퍼센트로 막지 않는다 |
+| `pnpm verify` | format:check → typecheck → lint → test → build → size:check → performance:reports:gate | 네이티브 빌드 |
 
 - **한 명령은 한 가지 이유로만 실패한다.** 명령이 두 가지 일을 겸하게 만들지 않는다.
   이 규칙은 **잎 명령**에 걸린다 — `verify`는 잎이 아니라 순서기라서 단계가 여럿이다.
+- **번들이 커지면 `size:check`가 막는다.** 커진 것이 맞는 변경이면 `budget.json`의 `maxBytes`를
+  올리고 **왜 올렸는지 같은 PR에 적는다** — 예산이 조용히 따라 오르지 않게 하려는 것이다.
+- **커버리지는 게이트가 아니다.** 무엇을 덮을지는 계층별 테스트 계획이 정하고, 퍼센트는 CI
+  작업 요약에 숫자로만 남는다.
 - **`pnpm verify`가 CI 게이트 전부다.** 로컬에서 이 한 줄이 초록이면 CI의 검사 단계도
   초록이다. **CI에만 있고 로컬에 없는 검사를 만들지 않는다** — 검사를 늘릴 때는
   workflow에 단계를 더하지 말고 `verify`에 넣는다.
