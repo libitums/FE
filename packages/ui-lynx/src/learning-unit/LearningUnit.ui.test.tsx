@@ -1,4 +1,6 @@
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, test, vi } from "vitest";
 import headset from "@libitums/icons/lynx/headset";
 
@@ -55,5 +57,17 @@ describe("LearningUnit", () => {
       "accessibility-elements-hidden",
       "true",
     );
+  });
+
+  test("Narrative 아이콘은 별도 배경 면과 테두리 없이 표시한다", () => {
+    const styles = readFileSync(
+      resolve(process.cwd(), "src/learning-unit/learning-unit.css"),
+      "utf8",
+    );
+    const badgeRule = styles.match(/\.ui-lynx-learning-unit-badge\s*\{([^}]*)\}/s)?.[1];
+
+    expect(badgeRule).toBeDefined();
+    expect(badgeRule).not.toMatch(/background/);
+    expect(badgeRule).not.toMatch(/border/);
   });
 });

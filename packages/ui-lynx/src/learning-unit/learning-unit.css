@@ -88,12 +88,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--libitum-spacing-6);
-  border-width: var(--libitum-stroke-width-thin);
-  border-style: solid;
-  border-color: var(--libitum-color-gray-400);
-  border-radius: var(--libitum-radius-full);
-  background-color: var(--libitum-color-white);
 }
 
 .ui-lynx-learning-unit-badge-icon {
