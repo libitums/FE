@@ -1,9 +1,8 @@
-/* LIB-259 (ui-implementation): design.md §7.2의 값. 계약 §2.9 · §4.6이 고정한
-   이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다(ADR-0014 D1).
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-   화면 루트 · 머리 행 · 나가기 · 제목 · 스크롤은 §5.2 · §6과 같다(두 하위
-   화면의 머리가 한 레시피다). 카드(면·경계·padding)를 두지 않는다 — 이 화면이
-   그리는 것은 본문이고 블록마다 상자를 주면 읽기가 끊긴다. */
+   화면 루트 · 머리 행 · 나가기 · 제목 · 스크롤은 프로필 화면과 같습니다(두
+   하위 화면의 머리가 한 레시피입니다). 카드(면·경계·padding)를 두지 않습니다
+   — 이 화면이 그리는 것은 본문이고 블록마다 상자를 주면 읽기가 끊깁니다. */
 .terms-screen {
   display: flex;
   flex-direction: column;
@@ -52,17 +51,18 @@
   flex: 1;
 }
 
-/* [흐름] 2분할 — 액션 행이 없다(ADR-0022 D1). `<scroll-view>`는 강제 linear라
-   flex 어휘가 안 읽힌다. */
+/* [흐름] 2분할 — 액션 행이 없습니다(ADR-0022 D1). `<scroll-view>`는 강제
+   linear라 flex 어휘가 안 읽힙니다. */
 .terms-screen-scroll {
   flex: 1;
   justify-content: flex-start;
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
-/* 내용 상자 — 스크롤의 유일한 직계 자식(`.culture-screen-content`와 같다).
-   `padding-top`만 목록 선례에서 가져왔다 — hairline과 첫 줄이 붙지 않게 한다.
-   `padding-bottom` 없음 — 마지막 문단 아래 빈 띠가 넘침 어포던스를 지운다. */
+/* 내용 상자 — 스크롤의 유일한 직계 자식입니다(`.culture-screen-content`와
+   같습니다). `padding-top`만 목록 선례에서 가져왔습니다 — hairline과 첫 줄이
+   붙지 않게 합니다. `padding-bottom` 없음 — 마지막 문단 아래 빈 띠가 넘침
+   어포던스를 지웁니다. */
 .terms-screen-content {
   display: flex;
   flex-direction: column;
@@ -71,10 +71,10 @@
   padding-top: var(--libitum-spacing-16);
 }
 
-/* 절 하나(제목 + 문단들) — 계약이 요구하는 testid 구조(`terms-section-<id>`)를
-   지키는 세로 그룹이다. 내부 간격도 `-content`와 같은 값을 써서, 절 제목과
-   문단 사이·문단과 문단 사이·절과 다음 절 사이가 시각적으로 균일한 리듬을
-   만든다(design §7.1 「절 제목과 문단이 gap-block 하나로 리듬을 만든다」). */
+/* 절 하나(제목 + 문단들) — testid 구조(`terms-section-<id>`)를 지키는 세로
+   그룹입니다. 내부 간격도 `-content`와 같은 값을 써서, 절 제목과 문단 사이·
+   문단과 문단 사이·절과 다음 절 사이가 시각적으로 균일한 리듬을 만듭니다
+   (「절 제목과 문단이 gap-block 하나로 리듬을 만든다」). */
 .terms-screen-section {
   display: flex;
   flex-direction: column;
@@ -90,8 +90,9 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* 문단 — `.culture-screen-paragraph`와 같다. 폭·높이·줄 제한을 선언하지 않는다
-   — `width` · `min-width` · `max-width` · `height` · `line-clamp` 전부 0건. */
+/* 문단 — `.culture-screen-paragraph`와 같습니다. 폭·높이·줄 제한을 선언하지
+   않습니다 — `width` · `min-width` · `max-width` · `height` · `line-clamp`
+   전부 0건입니다. */
 .terms-screen-paragraph {
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-body-l-font-family);

@@ -1,21 +1,19 @@
-/* LIB-259 (ui-implementation): design.md §1.4 · §4.1 · §4.2 · §4.3의 값. 계약
-   §2.7이 고정한 이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다
-   (ADR-0014 D1).
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-   **켜짐 / 꺼짐 사이에서 이 파일의 선언은 한 글자도 갈리지 않는다** — 상태
-   클래스 0개(design §4.3). 예약 상태어(ADR-0003 D7 여섯)에 「켜짐」이 없고,
-   일곱째를 만들면 그 표의 재검토 조건이 발동한다. 상태는 TSX가 고르는
-   아이콘 `content`와 낱말 텍스트로만 갈린다.
+   **켜짐 / 꺼짐 사이에서 이 파일의 선언은 한 글자도 갈리지 않습니다** — 상태
+   클래스 0개입니다. 예약 상태어(ADR-0003 D7 여섯)에 「켜짐」이 없고, 일곱째를
+   만들면 그 표의 재검토 조건이 발동합니다. 상태는 TSX가 고르는 아이콘 `content`와
+   낱말 텍스트로만 갈립니다.
 
    루트 레시피는 `.listening-choice` · `.culture-quiz-option`과 갈리는 선언이
-   0개다(design §4.1) — 「행을 누르면 이 자리에서 값이 바뀐다」가 이미 그
-   상자의 뜻이다. **`border-width`가 두 상태에서 같다** — 굵기가 상태마다
-   다르면 행 높이가 갈리고 `box-sizing` 기본값이 이 스택에서 확인된 바 없어
-   어긋남이 조용히 쌓인다. **높이를 선언하지 않는다**(`height`도 `min-height`도)
-   — 내용이 높이를 정한다(기본 배율 58, design §4.1).
+   0개입니다 — 「행을 누르면 이 자리에서 값이 바뀐다」가 이미 그 상자의 뜻입니다.
+   **`border-width`가 두 상태에서 같습니다** — 굵기가 상태마다 다르면 행 높이가
+   갈리고 `box-sizing` 기본값이 이 스택에서 확인된 바 없어 어긋남이 조용히
+   쌓입니다. **높이를 선언하지 않습니다**(`height`도 `min-height`도) — 내용이
+   높이를 정합니다(기본 배율 58).
 
-   **`align-items: flex-start`(FE ADR-0023 규칙 3) — 게이트 A 통과(Δ 0).**
-   라벨 `body-l` 24 == 표식 묶음 max(`icon-size-md` 24, `label-m` 16) = 24. */
+   **`align-items: flex-start`(ADR-0023 규칙 3) — 게이트 A 통과(Δ 0).** 라벨
+   `body-l` 24 == 표식 묶음 max(`icon-size-md` 24, `label-m` 16) = 24입니다. */
 .settings-toggle-item {
   display: flex;
   flex-direction: row;
@@ -28,8 +26,8 @@
   flex-shrink: 0;
 }
 
-/* design §1.3 · §4.1 — 탭 대상 행의 라벨은 `body-l`이다. 가로 주축의 텍스트라
-   `flex-shrink: 0`을 주지 않는다(여러 줄 허용). */
+/* 탭 대상 행의 라벨은 `body-l`입니다. 가로 주축의 텍스트라 `flex-shrink: 0`을
+   주지 않습니다(여러 줄 허용). */
 .settings-toggle-item-label {
   flex: 1;
   color: var(--libitum-color-fg-neutral);
@@ -41,8 +39,8 @@
 }
 
 /* 표식 묶음(아이콘 + 낱말). `.listening-choice-mark` · `.assessment-item-mark`와
-   같은 값이다(design §4.1). 묶음 안은 `center`로 둔다 — 아이콘 24 vs 낱말 16으로
-   Δ 4이고 게이트 A·B 둘 다 실패라 이득 0에 보상 비용을 내지 않는다(design §4.2). */
+   같은 값입니다. 묶음 안은 `center`로 둡니다 — 아이콘 24 vs 낱말 16으로 Δ 4이고
+   게이트 A·B 둘 다 실패라 이득 0에 보상 비용을 내지 않습니다. */
 .settings-toggle-item-mark {
   display: flex;
   flex-direction: row;
@@ -51,15 +49,15 @@
   flex-shrink: 0;
 }
 
-/* 크기만 준다. 색은 `current-color` 속성으로 넘긴다(ADR-0014 D2) — 두 상태가
-   같은 상수다(design §4.3 「색은 채널이 아니다」). */
+/* 크기만 줍니다. 색은 `current-color` 속성으로 넘깁니다(ADR-0014 D2) — 두 상태가
+   같은 상수입니다(색은 채널이 아닙니다). */
 .settings-toggle-item-mark-icon {
   width: var(--libitum-icon-size-md);
   height: var(--libitum-icon-size-md);
 }
 
-/* 낱말 색은 두 상태가 같다(`fg-neutral`) — `.listening-choice-mark-label`과
-   같은 결정이다(design §4.1). */
+/* 낱말 색은 두 상태가 같습니다(`fg-neutral`) — `.listening-choice-mark-label`과
+   같은 결정입니다. */
 .settings-toggle-item-mark-label {
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-label-m-font-family);

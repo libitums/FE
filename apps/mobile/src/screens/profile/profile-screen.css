@@ -1,11 +1,10 @@
-/* LIB-259 (ui-implementation): design.md §5.2의 값. 계약 §2.8 · §4.5가 고정한
-   이름에 값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다(ADR-0014 D1).
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-   `position` 선언을 두지 않는다 — 겹침 레이어가 없다. 편집 어포던스 0을 이
-   상자 선택 자체가 진다(수용 기준 3) — `.assessment-item`의 근거와 같다:
-   "`.listening-choice`의 테두리·모서리·면을 재사용하지 않는다 — 그대로 쓰면
-   눌리지 않는 것이 눌리게 생긴다." 그래서 프로필 행에 카드·모서리·면·버튼
-   상자·꼬리 아이콘·입력 상자가 0건이다 — 구분은 `border-top` 한 줄이 진다. */
+   `position` 선언을 두지 않습니다 — 겹침 레이어가 없습니다. 편집 어포던스 0을
+   이 상자 선택 자체가 집니다 — `.assessment-item`의 근거와 같습니다:
+   "`.listening-choice`의 테두리·모서리·면을 재사용하지 않습니다 — 그대로 쓰면
+   눌리지 않는 것이 눌리게 생깁니다." 그래서 프로필 행에 카드·모서리·면·버튼
+   상자·꼬리 아이콘·입력 상자가 0건입니다 — 구분은 `border-top` 한 줄이 집니다. */
 .profile-screen {
   display: flex;
   flex-direction: column;
@@ -16,8 +15,8 @@
   background: var(--libitum-color-background-primary);
 }
 
-/* 메신저 · 알림 머리와 같은 레시피다(design.md §5.2) — `.notifications-screen-header`와
-   값이 같다. */
+/* 메신저 · 알림 머리와 같은 레시피입니다 — `.notifications-screen-header`와
+   값이 같습니다. */
 .profile-screen-header {
   display: flex;
   flex-direction: row;
@@ -26,8 +25,8 @@
   flex-shrink: 0;
 }
 
-/* 나가기 — 머리 행의 첫 자식(§6). `.notifications-screen-exit`와 같은 상자 ·
-   자리 · 색이다. */
+/* 나가기 — 머리 행의 첫 자식입니다. `.notifications-screen-exit`와 같은 상자 ·
+   자리 · 색입니다. */
 .profile-screen-exit {
   min-height: var(--libitum-spacing-48);
   padding: 0 var(--libitum-spacing-12);
@@ -47,8 +46,8 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-/* 제목 — 머리 행의 둘째 자식. `margin-top: spacing-12`는 ADR-0023 안 B다:
-   `12 = (spacing-48 − heading-s-line-height) / 2`(design.md §5.2). */
+/* 제목 — 머리 행의 둘째 자식입니다. `margin-top: spacing-12`는 ADR-0023 안 B입니다:
+   `12 = (spacing-48 − heading-s-line-height) / 2`. */
 .profile-screen-title {
   margin-top: var(--libitum-spacing-12);
   color: var(--libitum-color-fg-neutral);
@@ -60,25 +59,24 @@
   flex: 1;
 }
 
-/* [흐름] 2분할 — 액션 행이 없다(ADR-0022 D1). `<scroll-view>`는 강제 linear라
-   flex 어휘가 안 읽힌다. */
+/* [흐름] 2분할 — 액션 행이 없습니다(ADR-0022 D1). `<scroll-view>`는 강제
+   linear라 flex 어휘가 안 읽힙니다. */
 .profile-screen-scroll {
   flex: 1;
   justify-content: flex-start;
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
-/* 항목 상자 — 스크롤의 유일한 직계 자식. `gap` 없음(0) — 간격 대신 행의
-   `border-top`이 경계를 진다(`.assessment-screen-items`와 같은 결정,
-   design.md §5.2). */
+/* 항목 상자 — 스크롤의 유일한 직계 자식입니다. `gap` 없음(0) — 간격 대신 행의
+   `border-top`이 경계를 집니다(`.assessment-screen-items`와 같은 결정). */
 .profile-screen-list {
   display: flex;
   flex-direction: column;
   padding-top: var(--libitum-spacing-16);
 }
 
-/* 항목 — 세로 쌍(이름 위 · 값 아래). 가로 쌍을 쓰지 않는다 — 이름 칸에 고정
-   폭을 요구하면 텍스트를 품은 상자에 `width`를 쓰게 된다(ADR-0022 D6). */
+/* 항목 — 세로 쌍(이름 위 · 값 아래). 가로 쌍을 쓰지 않습니다 — 이름 칸에 고정
+   폭을 요구하면 텍스트를 품은 상자에 `width`를 쓰게 됩니다(ADR-0022 D6). */
 .profile-screen-item {
   display: flex;
   flex-direction: column;

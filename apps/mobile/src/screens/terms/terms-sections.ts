@@ -1,21 +1,20 @@
-// 약관 화면의 임시 입력값 자리 (「임시 입력값의 이음매」 — docs/conventions/code.md).
-//
-// 계약: .agent-harness/work/lib-259/spec.md §0.3 D-c · §2.9.
+// 약관 화면의 임시 입력값 자리입니다(「임시 입력값의 이음매」 —
+// docs/conventions/code.md).
 
 import type { TermsSection } from "./terms.contract";
 
-// **무엇이 임시인가** — 아래 넷의 `title`과 `paragraphs` 본문 문구뿐이다. `id`와
-// 절이 넷·절마다 문단 둘이라는 분량은 임시가 아니다(계약 §0.3 D-c — ADR-0022
-// 스크롤이 실제로 걸려야 한다).
+// **무엇이 임시인가** — 아래 넷의 `title`과 `paragraphs` 본문 문구뿐입니다. `id`와
+// 절이 넷·절마다 문단 둘이라는 분량은 임시가 아닙니다(ADR-0022의 스크롤이 실제로
+// 걸려야 합니다).
 //
 // **무엇이 임시가 아닌가** — `TermsSection`의 필드 셋(`id`·`title`·`paragraphs`)과
-// 분량 하한(절 4 · 문단 8 · 문단마다 문장 2 이상 · 본문 전체 600자 이상).
+// 분량 하한(절 4 · 문단 8 · 문단마다 문장 2 이상 · 본문 전체 600자 이상)입니다.
 //
-// **무엇이 막고 있나** — 실제 법무 문구가 아직 없다(scope_out). 외부 링크·웹뷰를
-// 두지 않고 여기서는 자리표(placeholder) 본문을 대신 채운다.
+// **무엇이 막고 있나** — 실제 법무 문구가 아직 없습니다(범위 밖). 외부 링크·
+// 웹뷰를 두지 않고 여기서는 자리표(placeholder) 본문을 대신 채웁니다.
 //
-// **진짜가 오는 날 무엇만 바뀌나** — 이 표의 `title`·`paragraphs` 문구뿐이다.
-// 절 수·문단 수·형태·화면·결선은 안 바뀐다.
+// **진짜가 오는 날 무엇만 바뀌나** — 이 표의 `title`·`paragraphs` 문구뿐입니다.
+// 절 수·문단 수·형태·화면·결선은 안 바뀝니다.
 const termsSectionTable: readonly TermsSection[] = [
   {
     id: "collected",

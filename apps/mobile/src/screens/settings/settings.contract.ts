@@ -1,17 +1,12 @@
-// LIB-259 specification 계약. 구현·JSX를 두지 않는다. 변경하려면 specification
-// 재고정이 필요하다.
-//
-// 계약: .agent-harness/work/lib-259/spec.md §2.3(순수 타입 계약). 이 파일은
-// `logic-scaffold`가 최종본으로 둔다 — 뒤 단계가 타입을 다시 정의하지 않는다.
-//
-// `SettingsNavTarget`이 route 이름과 같은 문자열이다(`"profile"` · `"terms"`) —
-// 우연이 아니라 계약이다. App이 `push({ name: target })`로 곧장 옮긴다(§2.11).
-//
-// 이동 항목 목록을 props로 받지 않는다 — 둘은 `SettingsNavTarget` union이 이미
-// 닫았다(`BottomNavigator`가 세 탭을 모듈 내부 상수로 둔 것과 같은 근거).
+// 설정 화면의 props·이벤트 타입을 소유합니다. 구현·JSX는 두지 않습니다.
 
 import type { SessionOptionKey, SessionOptions } from "../../lib/session-options";
 
+// `SettingsNavTarget`이 route 이름과 같은 문자열입니다(`"profile"` · `"terms"`) —
+// 우연이 아니라 계약입니다. App이 `push({ name: target })`로 곧장 옮깁니다.
+//
+// 이동 항목 목록을 props로 따로 받지 않습니다 — 둘은 이 union이 이미 닫았습니다
+// (`BottomNavigator`가 세 탭을 모듈 내부 상수로 둔 것과 같은 근거입니다).
 export type SettingsNavTarget = "profile" | "terms";
 export type SettingsNavLabel = "사용자 프로필" | "개인정보 보호 및 약관";
 

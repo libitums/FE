@@ -1,8 +1,10 @@
-/* 말하기 탐침 (LIB-267, ui). 변수 이름은 `@libitums/design-tokens`가 정의한 것만
-   쓴다(ADR-0014 D1) — 새 토큰을 만들지 않는다.
+/* 변수 이름은 `@libitums/design-tokens`가 정의한 것만 씁니다(ADR-0014 D1) — 새 토큰을
+   만들지 않습니다.
 
    ADR-0022 3분할: 머리와 액션 행은 `flex-shrink: 0`으로 고정이고, 그 사이의
-   `<scroll-view>`만 남은 높이를 먹는다. 손글씨 탐침의 CSS와 같은 뼈대다. */
+   `<scroll-view>`만 남은 높이를 먹습니다. 손글씨 탐침의 CSS와 같은 뼈대입니다. 관측 줄과
+   버튼의 시각 값은 `speech-probe-observations.css` · `speech-probe-actions.css`가
+   각각 짝 컴포넌트와 함께 소유합니다. */
 .speech-probe-screen {
   display: flex;
   flex-direction: column;
@@ -29,77 +31,14 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* [흐름] `<scroll-view>`는 강제 linear라 flex 어휘가 안 읽힌다 — 간격과 정렬은
-   유일한 직계 자식인 `-observations`가 진다(ADR-0022 D4). */
+/* [흐름] `<scroll-view>`는 강제 linear라 flex 어휘가 안 읽힙니다 — 간격과 정렬은 유일한
+   직계 자식인 `SpeechProbeObservations`의 루트가 집니다(ADR-0022 D4). */
 .speech-probe-screen-scroll {
   flex: 1;
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
-.speech-probe-screen-observations {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--libitum-spacing-8);
-  padding-top: var(--libitum-spacing-8);
-}
-
-/* 관측 줄 — 사람이 실기에서 눈으로 읽는 값이라 몸글 크기를 준다. */
-.speech-probe-screen-line {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-body-l-font-family);
-  font-weight: var(--libitum-typography-body-l-font-weight);
-  font-size: var(--libitum-typography-body-l-font-size);
-  line-height: var(--libitum-typography-body-l-line-height);
-  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
-}
-
-/* 인식 결과만 강조한다 — 이 탐침이 답하려는 물음이 이 한 줄의 내용이다. 본문이 비어
-   있는 것도 답이라 최소 높이를 줘서 줄 자리가 사라지지 않게 한다. */
-.speech-probe-screen-recognized {
-  min-height: var(--libitum-spacing-24);
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-s-font-family);
-  font-weight: var(--libitum-typography-heading-s-font-weight);
-  font-size: var(--libitum-typography-heading-s-font-size);
-  line-height: var(--libitum-typography-heading-s-line-height);
-  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-}
-
-.speech-probe-screen-comparisons {
-  display: flex;
-  flex-direction: column;
-  gap: var(--libitum-spacing-8);
-  padding-top: var(--libitum-spacing-8);
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
-}
-
-/* 후보 한 행 — 라벨 아래로 제시문과 인식 결과가 나란히 선다. 가로 표로 두지 않는 이유는
-   정규화된 문자열이 길어 폭에 눌리면 무엇이 잘렸는지가 안 보이기 때문이다. */
-.speech-probe-screen-comparison {
-  display: flex;
-  flex-direction: column;
-}
-
-.speech-probe-screen-comparison-label {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
-}
-
-.speech-probe-screen-comparison-value {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-body-m-font-family);
-  font-weight: var(--libitum-typography-body-m-font-weight);
-  font-size: var(--libitum-typography-body-m-font-size);
-  line-height: var(--libitum-typography-body-m-line-height);
-  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
-}
-
-/* [고정] 액션 행 — 조작 수단이 여기 산다. 수가 많아 줄바꿈을 허용한다. */
+/* [고정] 액션 행 — 조작 수단이 여기 삽니다. 수가 많아 줄바꿈을 허용합니다. */
 .speech-probe-screen-actions {
   display: flex;
   flex-direction: row;
@@ -107,24 +46,4 @@
   align-items: stretch;
   gap: var(--libitum-spacing-8);
   flex-shrink: 0;
-}
-
-.speech-probe-screen-button {
-  min-height: var(--libitum-spacing-48);
-  padding: 0 var(--libitum-spacing-12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
-  border-radius: var(--libitum-radius-md);
-  background: var(--libitum-color-background-secondary);
-}
-
-.speech-probe-screen-button-label {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
