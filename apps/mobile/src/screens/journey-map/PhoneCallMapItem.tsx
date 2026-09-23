@@ -4,7 +4,6 @@ import tick from "@libitums/icons/lynx/tick";
 import { color } from "@libitums/design-tokens";
 import "./phone-call-map-item.css";
 
-// 전화 맵 항목의 계약만 먼저 연결한다. 실제 마크업과 동작은 UI red 이후 구현한다.
 export function PhoneCallMapItem({ id, title, status, onSelect }: PhoneCallMapItemProps) {
   const handleSelect = () => {
     "background only";

@@ -1,13 +1,13 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비한다 (ADR-0014 D1).
-   변수 이름은 `@libitums/design-tokens/css/variables.css`가 정의한 것만 쓴다.
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 변수 이름은
+   `@libitums/design-tokens/css/variables.css`가 정의한 것만 씁니다.
    `.app`/`.app-content`가 부모 프레임을 세로 flex로 두므로 `flex: 1`로 남은
-   높이를 채워 배경이 콘텐츠 영역 전체를 덮는다 (design 문서 §6.1). */
+   높이를 채워 배경이 콘텐츠 영역 전체를 덮습니다. */
 .roleplay-list-screen {
   display: flex;
   flex-direction: column;
   flex: 1;
   gap: var(--libitum-layout-gap-block);
-  /* 화면 여백은 축마다 값이 다르다. `padding-x`를 네 방향에 쓰면 상하가 틀린다. */
+  /* 화면 여백은 축마다 값이 다릅니다. `padding-x`를 네 방향에 쓰면 상하가 틀립니다. */
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
     var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-background-primary);
@@ -20,37 +20,38 @@
   font-size: var(--libitum-typography-heading-s-font-size);
   line-height: var(--libitum-typography-heading-s-line-height);
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어든다.
+  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어듭니다.
      형제(`.roleplay-list-screen-scroll`)는 `flex: 1`이라 basis가 0이라 shrink를
-     흡수하지 않으므로, 이 상자가 유일한 축소 대상이 돼 잘릴 수 있다(FE ADR-0020 D5 ·
-     FE ADR-0023 규칙 2 · WCAG 1.4.4).
-     **이 선언은 잘림을 없애지 않는다. 잘리는 자리를 옮긴다** — 형제의 scaled shrink
-     기여가 0이라(`flex-shrink × flex-base-size`, `elastic_layout_utils.cc:108-115`)
-     줄일 수 있는 항목이 하나도 안 남고 열이 넘친다. 얻는 것은 「제목 글자가 상자 안에서
-     잘리는 것」 대신 「제목이 온전히 그려지고 화면 밖이 잘리는 것」이다 ⟨추정⟩.
-     `.assessment-screen-title`이 이미 같은 모양으로 고쳐졌다 — 규약이 있어서 함께
-     고친 첫 자리 중 하나다. */
+     흡수하지 않으므로, 이 상자가 유일한 축소 대상이 돼 잘릴 수 있습니다(FE ADR-0020
+     D5 · FE ADR-0023 규칙 2 · WCAG 1.4.4).
+     **이 선언은 잘림을 없애지 않습니다. 잘리는 자리를 옮깁니다** — 형제의 scaled
+     shrink 기여가 0이라(`flex-shrink × flex-base-size`,
+     `elastic_layout_utils.cc:108-115`) 줄일 수 있는 항목이 하나도 안 남고 열이
+     넘칩니다. 얻는 것은 「제목 글자가 상자 안에서 잘리는 것」 대신 「제목이 온전히
+     그려지고 화면 밖이 잘리는 것」입니다 ⟨추정⟩.
+     `.assessment-screen-title`이 이미 같은 모양으로 고쳐졌습니다 — 규약이 있어서
+     함께 고친 첫 자리 중 하나입니다. */
   flex-shrink: 0;
 }
 
-/* LIB-226 (ui) — design §1.2의 3분할 표 · §6.5. 자식은 목록 상자
-   (`.roleplay-list-screen-list`) 하나다 — `flex: 1`로 남는 높이를 차지하고 배경을
-   그린다. 규약이 보편이면(요구사항 결정 1) 규약의 시각 표현도 보편이어야 한다.
-   `display: flex`·`flex-direction: column`은 지운다 — `<scroll-view>`는 CSS와
-   무관하게 강제로 `linear`가 되어 이 둘이 안 읽힌다(계약 R8.1). `justify-content`는
+/* 자식은 목록 상자(`.roleplay-list-screen-list`) 하나입니다 — `flex: 1`로 남는
+   높이를 차지하고 배경을 그립니다. 규약이 보편이면 규약의 시각 표현도 보편이어야
+   합니다. `display: flex`·`flex-direction: column`은 지웁니다 — `<scroll-view>`는
+   CSS와 무관하게 강제로 `linear`가 되어 이 둘이 안 읽힙니다. `justify-content`는
    `LinearSupportFlexStyleMode()` 게이트가 이 앱에서 켜져 있는지 확인하지 못해
-   남긴다(계약 §5.1.1). */
+   남깁니다. */
 .roleplay-list-screen-scroll {
   flex: 1;
   justify-content: flex-start;
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
-/* LIB-255 (ui) — design.md §3. 스크롤의 유일한 직계 자식. `<scroll-view>`는 CSS와
-   무관하게 강제로 linear가 되어 gap이 없으므로, 항목 사이 간격은 이 상자가 진다.
-   `padding-top: spacing-16`은 hairline과 첫 항목 경계가 붙지 않게 한다 — padding-bottom은
-   두지 않는다(마지막 항목 아래 빈 띠가 「여기가 끝」으로 읽혀 넘침 어포던스를 지운다,
-   ADR-0022 D4). `flex: 1`·세로 중앙 정렬은 강제 linear 아래 죽은 선언이라 두지 않는다. */
+/* 스크롤의 유일한 직계 자식입니다. `<scroll-view>`는 CSS와 무관하게 강제로
+   linear가 되어 gap이 없으므로, 항목 사이 간격은 이 상자가 집니다.
+   `padding-top: spacing-16`은 hairline과 첫 항목 경계가 붙지 않게 합니다 —
+   padding-bottom은 두지 않습니다(마지막 항목 아래 빈 띠가 「여기가 끝」으로 읽혀
+   넘침 어포던스를 지웁니다, ADR-0022 D4). `flex: 1`·세로 중앙 정렬은 강제 linear
+   아래 죽은 선언이라 두지 않습니다. */
 .roleplay-list-screen-list {
   display: flex;
   flex-direction: column;

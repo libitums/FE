@@ -121,15 +121,16 @@ export function visualNovelEntrySnapshot(progress: VisualNovelProgress): VisualN
   };
 }
 
-// LIB-255 계약 §2.7: 롤플레이 출처의 시작 입력 — 여정 상태를 읽을 매개변수가 없다
-// (계약 §6 ①). 연습은 늘 처음부터 선다.
+/** 롤플레이 출처의 시작 입력입니다 — 여정 상태를 읽을 매개변수가 없습니다. 연습은 늘 처음부터 섭니다. */
 export const practiceVisualNovelProgress = (): VisualNovelProgress => ({
   status: "active",
   beatIndex: 0,
 });
 
-// LIB-255 계약 §2.7: 연습 비주얼 노벨의 나가기 판정. 마지막 beat(`enter`)에 닿았으면
-// `completed`, 그 밖(`arrive`·`find`)은 `incomplete`다.
+/**
+ * 연습 비주얼 노벨의 나가기 판정입니다. 마지막 beat(`enter`)에 닿았으면
+ * `completed`, 그 밖(`arrive`·`find`)은 `incomplete`입니다.
+ */
 export const practiceVisualNovelExitOutcome = (
   beatId: VisualNovelBeatId,
 ): VisualNovelExitOutcome => (beatId === "enter" ? "completed" : "incomplete");

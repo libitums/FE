@@ -14,9 +14,9 @@ import {
 } from "./phone-call";
 import "./phone-call-screen.css";
 
-// 전화 화면은 세션만 소유하고 완료 기록은 상위 콜백으로 넘긴다.
-// `exitLabel`은 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받는다
-// (ADR-0007 D3). 기본값은 여정 라벨이라 기존 호출은 수정 없이 성립한다(LIB-255 §2.7).
+// 전화 화면은 세션만 소유하고 완료 기록은 상위 콜백으로 넘깁니다.
+// `exitLabel`은 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받습니다
+// (ADR-0007 D3). 기본값은 여정 라벨이라 기존 호출은 수정 없이 성립합니다.
 export function PhoneCallScreen({
   unitId,
   conversation,
