@@ -1,20 +1,19 @@
-/* LIB-229 (ui-c): design.md §3.2 · §3.3의 값. 계약 §1.12가 고정한 이름에 값을
-   매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다(ADR-0014 D1).
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-   **판정(정답/오답)은 클래스가 되지 않는다**(계약 §1.12 · design §5.1). 이 파일의
-   상태 클래스는 `-selected` 하나이고 그 낱말은 예약 목록에 이미 있다 — ADR-0003 D7의
-   재검토 조건이 발동하지 않는다. 판정은 표식 아이콘의 모양과 `current-color` 속성,
-   그리고 낱말이 낸다.
+   **판정(정답/오답)은 클래스가 되지 않습니다.** 이 파일의 상태 클래스는
+   `-selected` 하나이고 그 낱말은 예약 목록에 이미 있습니다 — ADR-0003 D7의
+   재검토 조건이 발동하지 않습니다. 판정은 표식 아이콘의 모양과
+   `current-color` 속성, 그리고 낱말이 냅니다.
 
-   **`listening-choice.css`와 문자 그대로 같은 값이지만 선언 하나가 갈린다**
-   (design.md §3.2 「선언 하나만 갈린다」 · §2.4): `align-items`가 `center`가 아니라
-   `flex-start`다. 최대 배율에서 라벨이 여러 줄이 될 때 표식이 세로 가운데로 내려가
-   프레임 순서가 흔들리는 것을 막는다(계약 §1.10(c)-1). 기본 배율에서는 라벨
-   `line-height`(24)와 표식 아이콘(24)이 같아 결과가 `center`와 문자 그대로 같다
-   (design §2.4) — 이 값을 듣기 쪽에 소급 적용하지 않는다, 그것은 LIB-228의 일이다. */
+   **`listening-choice.css`와 문자 그대로 같은 값이지만 선언 하나가
+   갈립니다**: `align-items`가 `center`가 아니라 `flex-start`입니다. 최대
+   배율에서 라벨이 여러 줄이 될 때 표식이 세로 가운데로 내려가 프레임
+   순서가 흔들리는 것을 막습니다. 기본 배율에서는 라벨 `line-height`(24)와
+   표식 아이콘(24)이 같아 결과가 `center`와 문자 그대로 같습니다 — 이 값을
+   듣기 쪽에 소급 적용하지 않습니다, 그것은 별도 작업의 일입니다. */
 
-/* 보기 행 = 탭 대상이다. 누르는 것은 행 전체이고 표식이나 텍스트만 누르게 하지
-   않는다(design §3.2). */
+/* 보기 행 = 탭 대상입니다. 누르는 것은 행 전체이고 표식이나 텍스트만
+   누르게 하지 않습니다. */
 .word-choice-option {
   display: flex;
   flex-direction: row;
@@ -24,23 +23,24 @@
   border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
   border-radius: var(--libitum-radius-md);
   background: var(--libitum-color-background-primary);
-  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어든다. */
+  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속
+     줄어듭니다. */
   flex-shrink: 0;
 }
 
-/* 상태 클래스는 base 바로 뒤, 같은 파일에 선언한다 — 특이도가 같아 순서가 결과를
-   가르고, 뒤집히면 에러 없이 선택 표시가 안 보인다(docs/conventions/code.md,
-   ADR-0003 D7).
+/* 상태 클래스는 base 바로 뒤, 같은 파일에 선언합니다 — 특이도가 같아
+   순서가 결과를 가르고, 뒤집히면 에러 없이 선택 표시가 안 보입니다
+   (ADR-0003 D7).
 
-   면을 칠하지 않고 경계선 하나만 바꾼다 — 칠할 색이 없다(design §3.3 · §7.3).
-   판정이 이 경계선을 바꾸지 않는다 — 판정 뒤에도 행은 "내가 고른 것"이고 판정은
-   표식이 낸다(design §3.3). */
+   면을 칠하지 않고 경계선 하나만 바꿉니다 — 칠할 색이 없습니다. 판정이 이
+   경계선을 바꾸지 않습니다 — 판정 뒤에도 행은 "내가 고른 것"이고 판정은
+   표식이 냅니다. */
 .word-choice-option-selected {
   border-color: var(--libitum-color-brand-strong);
 }
 
-/* 표식이 나타나면 남는 폭이 줄어든다. 그 안에서 줄바꿈이 일어나면 그 행만 커진다 —
-   문구를 좁은 쪽 기준으로 쓰는 것이 계약의 몫이다(design.md §3.4). */
+/* 표식이 나타나면 남는 폭이 줄어듭니다. 그 안에서 줄바꿈이 일어나면 그
+   행만 커집니다 — 문구를 좁은 쪽 기준으로 쓰는 것이 계약의 몫입니다. */
 .word-choice-option-label {
   flex: 1;
   color: var(--libitum-color-fg-neutral);
@@ -51,9 +51,9 @@
   letter-spacing: var(--libitum-typography-body-l-letter-spacing);
 }
 
-/* 표식 묶음(아이콘 + 낱말). 조건부 렌더이지만 세로는 안전하다 — 텍스트
-   `line-height` 24와 아이콘 24가 같아 표식이 있든 없든 행 높이가 그대로다
-   (design §3.2). */
+/* 표식 묶음(아이콘 + 낱말)입니다. 조건부 렌더이지만 세로는 안전합니다 —
+   텍스트 `line-height` 24와 아이콘 24가 같아 표식이 있든 없든 행 높이가
+   그대로입니다. */
 .word-choice-option-mark {
   display: flex;
   flex-direction: row;
@@ -62,14 +62,15 @@
   flex-shrink: 0;
 }
 
-/* 크기만 준다. 색은 `current-color` 속성으로 넘긴다(ADR-0014 D2) — 여기 `color`를
-   적으면 `<svg>`가 읽지 않아 아무 일도 하지 않는다. */
+/* 크기만 줍니다. 색은 `current-color` 속성으로 넘깁니다(ADR-0014 D2) — 여기
+   `color`를 적으면 `<svg>`가 읽지 않아 아무 일도 하지 않습니다. */
 .word-choice-option-mark-icon {
   width: var(--libitum-icon-size-md);
   height: var(--libitum-icon-size-md);
 }
 
-/* 낱말 색은 정답·오답이 같다(`fg-neutral`) — 가른다고 얻는 것이 없다(design §3.3). */
+/* 낱말 색은 정답·오답이 같습니다(`fg-neutral`) — 가른다고 얻는 것이
+   없습니다. */
 .word-choice-option-mark-label {
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-label-m-font-family);

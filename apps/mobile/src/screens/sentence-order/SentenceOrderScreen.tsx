@@ -29,10 +29,8 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 
 import "./sentence-order-screen.css";
 
-// LIB-229 W6 (ui): 계약(.agent-harness/work/lib-229/spec.md §1.8(b)·(c))의 속성 전부를
-// 채운다. 골격·스크롤 컨테이너는 §1.9의 값이고, 낭독 순서는 §1.10, 능동 낭독은
-// §1.11이다. 세션 상태는 이 화면이 소유하고 순수 함수 `sentenceOrderSessionReducer`를
-// 소비한다(§1.5·§1.7) — 판정·완료·창고/답 줄 배치는 전부 파생이다.
+// 세션 상태는 이 화면이 소유하고 순수 함수 `sentenceOrderSessionReducer`를
+// 소비합니다 — 판정·완료·창고/답 줄 배치는 전부 파생입니다.
 
 export type SentenceOrderScreenProps = {
   stepId: JourneyStepId;
@@ -41,14 +39,15 @@ export type SentenceOrderScreenProps = {
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
 };
 
-// design.md §4.6(가) — 판정별 표식 아이콘. `ListeningChoice` · `AssessmentItem`과 같은
-// 판단이다(모양이 색과 독립인 채널, WCAG 1.4.1). 전체 index를 import하지 않는다.
+// 판정별 표식 아이콘입니다. `ListeningChoice` · `AssessmentItem`과 같은
+// 판단입니다(모양이 색과 독립인 채널, WCAG 1.4.1). 전체 index를 import하지
+// 않습니다.
 const markIconByResult: Record<AnswerResult, string> = {
   correct: tick,
   incorrect: cross,
 };
 
-// design.md §4.6 — `-text` 변형. 색은 CSS가 아니라 `current-color` 속성으로 넘긴다
+// `-text` 변형입니다. 색은 CSS가 아니라 `current-color` 속성으로 넘깁니다
 // (ADR-0014 D2).
 const markIconColorByResult: Record<AnswerResult, string> = {
   correct: color.feedback["correct-text"],
@@ -67,34 +66,36 @@ export function SentenceOrderScreen({
     initialSentenceOrderSessionState,
   );
 
-  // 완료는 파생이다(§1.7(b)의 `isSentenceOrderSessionComplete`) — 완료 시점에는
-  // `questionIndex`가 문항 수와 같아 조회할 문항이 없다. 한 번만 갈라 아래에서 다시
-  // 묻지 않는다(듣기와 같은 규율).
+  // 완료는 파생입니다(`isSentenceOrderSessionComplete`) — 완료 시점에는
+  // `questionIndex`가 문항 수와 같아 조회할 문항이 없습니다. 한 번만 갈라
+  // 아래에서 다시 묻지 않습니다(듣기와 같은 규율입니다).
   const complete = isSentenceOrderSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
 
   const result = question === null ? null : sentenceOrderResultAt(question, state);
 
-  // 채점 시점에 한 번만 낭독한다(계약 §1.11(c)). dep이 `[questionIndex, phase]`이고
-  // `phase === "checked"`일 때만 민다 — 재렌더로 두 번 밀지 않는다. cleanup이 없다,
-  // 낭독은 취소할 자원이 아니다(§1.11(c)).
+  // 채점 시점에 한 번만 낭독합니다. dep이 `[questionIndex, phase]`이고
+  // `phase === "checked"`일 때만 밉니다 — 재렌더로 두 번 밀지 않습니다.
+  // cleanup이 없습니다, 낭독은 취소할 자원이 아닙니다.
   useEffect(() => {
     if (question === null || result === null) {
       return;
     }
     announce(sentenceOrderAnnouncement(result));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- dep은 계약이 고정한 둘뿐이다
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dep은 계약이 고정한 둘뿐입니다
   }, [state.questionIndex, state.phase]);
 
-  // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번 (ADR-0016 D11-2).
-  // dep이 `complete` 하나다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이 파생값은
-  // false→true로 **한 번만** 갈린다. 그래서 재렌더로는 다시 돌지 않고, 마운트 때 이미
-  // true면 그 순간이 「처음 존재하게 되는 순간」이라 거기서 한 번 돈다.
-  // cleanup이 없다 — 낭독은 취소할 수 있는 자원이 아니다 (D11-2).
+  // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번입니다(ADR-0016 D11-2).
+  // dep이 `complete` 하나입니다 — 리듀서가 `questionIndex`를 늘리기만 하므로
+  // 이 파생값은 false→true로 **한 번만** 갈립니다. 그래서 재렌더로는 다시
+  // 돌지 않고, 마운트 때 이미 true면 그 순간이 「처음 존재하게 되는 순간」이라
+  // 거기서 한 번 돕니다. cleanup이 없습니다 — 낭독은 취소할 수 있는 자원이
+  // 아닙니다(D11-2).
   //
-  // 위 채점 effect와 **다른 dep**이다 — 두 채널이 같은 dep을 공유하면 한쪽 조건이
-  // 다른 쪽을 끌고 온다(계약 §4.3). 채점 effect의 가드(`question === null`)가 종료
-  // 상태에서 이미 원리적으로 조용하므로 한 순간에 미는 발화는 여전히 하나다.
+  // 위 채점 effect와 **다른 dep**입니다 — 두 채널이 같은 dep을 공유하면 한쪽
+  // 조건이 다른 쪽을 끌고 옵니다. 채점 effect의 가드(`question === null`)가
+  // 종료 상태에서 이미 원리적으로 조용하므로 한 순간에 미는 발화는 여전히
+  // 하나입니다.
   useEffect(() => {
     if (!complete) {
       return;
@@ -104,9 +105,9 @@ export function SentenceOrderScreen({
 
   return (
     <view className="sentence-order-screen">
-      {/* [고정] 머리 — 나가는 수단이 어느 시점에도 정확히 하나다. 완료 전에는
-          `맵으로`뿐이고, 완료 뒤에는 `결과 보기`가 유일한 출구다(듣기 헤더 형태,
-          §1.9(a)). */}
+      {/* [고정] 머리 — 나가는 수단이 어느 시점에도 정확히 하나입니다. 완료
+          전에는 `맵으로`뿐이고, 완료 뒤에는 `결과 보기`가 유일한
+          출구입니다(듣기 헤더 형태). */}
       <view className="sentence-order-screen-header">
         {question === null ? null : (
           <view
@@ -130,16 +131,16 @@ export function SentenceOrderScreen({
       </view>
 
       {/* [흐름] 내용 슬롯 — FE ADR-0022. `scroll-orientation`·`scroll-bar-enable`을
-          적는다 — 안 적으면 초기값이 각각 가로·꺼짐이라 세로 스크롤이 원리적으로
-          불가능하다(계약 §1.9(d)). accessibility-*를 붙이지 않는다 — 조작 단위가
-          아니라 상자다(계약 §1.9(g)). */}
+          적습니다 — 안 적으면 초기값이 각각 가로·꺼짐이라 세로 스크롤이
+          원리적으로 불가능합니다. accessibility-*를 붙이지 않습니다 — 조작
+          단위가 아니라 상자입니다. */}
       <scroll-view
         className="sentence-order-screen-scroll"
         data-testid="sentence-order-screen-scroll"
         scroll-orientation="vertical"
         scroll-bar-enable={true}
       >
-        {/* 직계 자식은 하나다 — flex 어휘는 이 상자가 진다(계약 §1.9(e)). */}
+        {/* 직계 자식은 하나입니다 — flex 어휘는 이 상자가 집니다. */}
         <view className="sentence-order-screen-content">
           {question === null ? null : (
             <text
@@ -160,15 +161,15 @@ export function SentenceOrderScreen({
           )}
 
           {question === null ? null : (
-            // 항상 렌더돼 실패할 수 없는 단언은 검증이 아니므로 testid를 두지 않는다.
+            // 항상 렌더돼 실패할 수 없는 단언은 검증이 아니므로 testid를 두지 않습니다.
             <text className="sentence-order-screen-instruction">
               조각을 눌러 순서대로 배치하세요.
             </text>
           )}
 
-          {/* 답 줄 — DOM 순서가 창고보다 앞이다(계약 §1.10(d) — "무엇을 만들고
-              있는가"가 "무엇으로 만드는가"보다 먼저). 놓임/안 놓임은 상태 클래스가
-              아니라 어느 목록에 있는가로 난다(계약 §1.12). */}
+          {/* 답 줄 — DOM 순서가 창고보다 앞입니다("무엇을 만들고 있는가"가
+              "무엇으로 만드는가"보다 먼저입니다). 놓임/안 놓임은 상태 클래스가
+              아니라 어느 목록에 있는가로 납니다. */}
           {question === null ? null : (
             <view
               className="sentence-order-screen-sentence"
@@ -200,10 +201,10 @@ export function SentenceOrderScreen({
             </view>
           )}
 
-          {/* 판정 표식 — design.md §4.6(가), 계약 §1.12.1이 (나) 대신 (가)를 골랐다.
-              래퍼에 accessibility-*를 붙이지 않는다 — 둘 다 버렸다(계약 §1.8(c)):
-              가림은 낱말까지 지우고, element+라벨은 조작 단위가 아닌 상자에 이름을
-              주는 것이다. 이름은 안쪽 `<text>`가 진다. */}
+          {/* 판정 표식입니다. 래퍼에 accessibility-*를 붙이지 않습니다 —
+              둘 다 버렸습니다: 가림은 낱말까지 지우고, element+라벨은 조작
+              단위가 아닌 상자에 이름을 주는 것입니다. 이름은 안쪽 `<text>`가
+              집니다. */}
           {question === null || result === null ? null : (
             <view
               className="sentence-order-screen-mark"
@@ -231,9 +232,9 @@ export function SentenceOrderScreen({
         </view>
       </scroll-view>
 
-      {/* [고정] 액션 행 — `확인` / `다음` / `결과 보기` 중 정확히 하나 또는 없음
-          (계약 §1.8(c)). `data-phase`를 두지 않는다 — 어느 버튼이 있는가로 국면이
-          이미 관찰된다. */}
+      {/* [고정] 액션 행 — `확인` / `다음` / `결과 보기` 중 정확히 하나 또는
+          없음입니다. `data-phase`를 두지 않습니다 — 어느 버튼이 있는가로
+          국면이 이미 관찰됩니다. */}
       {question !== null && canCheckArrangement(question, state) ? (
         <view
           className="sentence-order-screen-check"

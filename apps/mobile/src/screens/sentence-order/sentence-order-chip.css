@@ -1,19 +1,19 @@
-/* LIB-229 (ui): design.md §4.3 · §4.3-a의 값. 계약 §1.12 · §1.12.1이 고정한 이름에
-   값을 매핑한다. 토큰은 CSS 커스텀 프로퍼티로만 소비한다(ADR-0014 D1).
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-   조각은 놓였든 안 놓였든 같은 상자다 — 놓임/안 놓임에 상태 클래스를 두지 않는다
-   (계약 §1.12: `-placed`는 예약 목록 밖의 다섯째 상태어라 만들지 않는다). 그 정보는
-   부모(`.sentence-order-screen-sentence` / `-bank`)가 진다. 이 파일에 상태 클래스는
-   0개다. */
+   조각은 놓였든 안 놓였든 같은 상자입니다 — 놓임/안 놓임에 상태 클래스를
+   두지 않습니다(`-placed`는 예약 목록 밖의 다섯째 상태어라 만들지 않습니다).
+   그 정보는 부모(`.sentence-order-screen-sentence` / `-bank`)가 집니다. 이
+   파일에 상태 클래스는 0개입니다. */
 
-/* 조각 행 = 탭 대상이다. `.listening-choice`와 같은 padding·border·radius·background를
-   쓴다 — 다른 스크린의 항목 행과 조작 단위의 시각을 통일한다.
+/* 조각 행 = 탭 대상입니다. `.listening-choice`와 같은 padding·border·radius·
+   background를 씁니다 — 다른 스크린의 항목 행과 조작 단위의 시각을
+   통일합니다.
 
-   **`align-items`가 `flex-start`다** — `center`가 아니다. design.md §2.3·§2.4가 세운
-   판단이다: 가로 행 + 자식 높이가 배율에 따라 갈림 + 교차축 중앙 정렬이 겹치면 VoiceOver가
-   프레임 y로 순회해 낭독 순서가 뒤집힌다(LIB-228 실측). `flex-start`로 모든 자식의
-   프레임 top을 맞춰 그 조건 하나를 지운다. 이 저장소의 `align-items` 첫 `flex-start`
-   사용처다(design.md §2.4). */
+   **`align-items`가 `flex-start`입니다** — `center`가 아닙니다. 가로 행 +
+   자식 높이가 배율에 따라 갈림 + 교차축 중앙 정렬이 겹치면 VoiceOver가
+   프레임 y로 순회해 낭독 순서가 뒤집힙니다(실측 확인). `flex-start`로 모든
+   자식의 프레임 top을 맞춰 그 조건 하나를 지웁니다. 이 저장소의
+   `align-items` 첫 `flex-start` 사용처입니다. */
 .sentence-order-chip {
   display: flex;
   flex-direction: row;
@@ -23,22 +23,24 @@
   border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
   border-radius: var(--libitum-radius-md);
   background: var(--libitum-color-background-primary);
-  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어든다. */
+  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속
+     줄어듭니다. */
   flex-shrink: 0;
 }
 
-/* 자리 번호 래퍼 — 가림이 붙을 자리다(계약 §1.12.1). `flex-shrink: 0`은 이 래퍼가 진다
-   — 라벨과 나란한 가로 행에서 두 자식의 shrink가 갈려야 라벨만 줄어들고 번호는
-   잘리지 않는다(계약 §1.9(f)-1 · design.md §2.4). 폭은 선언하지 않는다 — `min-width`를
-   주면 교차축 stretch가 깨어나 부모 폭으로 늘어난다(design.md §4.3-a). */
+/* 자리 번호 래퍼 — 가림이 붙을 자리입니다. `flex-shrink: 0`은 이 래퍼가
+   집니다 — 라벨과 나란한 가로 행에서 두 자식의 shrink가 갈려야 라벨만
+   줄어들고 번호는 잘리지 않습니다. 폭은 선언하지 않습니다 — `min-width`를
+   주면 교차축 stretch가 깨어나 부모 폭으로 늘어납니다. */
 .sentence-order-chip-slot {
   flex-shrink: 0;
 }
 
-/* 자리 번호 텍스트. 아이콘이 아니라 `<text>`다 — 아이콘은 배율을 안 받고 `digit-*`가
-   9에서 끊긴다(design.md §4.3-a). `label-l`(14/700)을 골랐다 — 라벨(`body-l` 16/500)보다
-   작고 굵어 "내용이 아니라 표지"로 읽힌다. 색은 `fg-neutral-muted`(93) — 라벨의
-   `fg-neutral`(28)과 상호 대비 2.58:1로 갈린다(design.md §4.3-a). */
+/* 자리 번호 텍스트입니다. 아이콘이 아니라 `<text>`입니다 — 아이콘은 배율을
+   안 받고 `digit-*`가 9에서 끊깁니다. `label-l`(14/700)을 골랐습니다 —
+   라벨(`body-l` 16/500)보다 작고 굵어 "내용이 아니라 표지"로 읽힙니다. 색은
+   `fg-neutral-muted`(93) — 라벨의 `fg-neutral`(28)과 상호 대비 2.58:1로
+   갈립니다. */
 .sentence-order-chip-slot-label {
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-l-font-family);
@@ -48,8 +50,8 @@
   letter-spacing: var(--libitum-typography-label-l-letter-spacing);
 }
 
-/* 조각 라벨. `flex: 1` — 번호가 있을 때만 남는 폭을 다 쓴다(design.md §4.3).
-   `.listening-choice-label`과 같은 `body-l` 타이포·색이다. */
+/* 조각 라벨입니다. `flex: 1` — 번호가 있을 때만 남는 폭을 다 씁니다.
+   `.listening-choice-label`과 같은 `body-l` 타이포·색입니다. */
 .sentence-order-chip-label {
   flex: 1;
   color: var(--libitum-color-fg-neutral);
