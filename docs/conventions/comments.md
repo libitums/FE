@@ -212,5 +212,8 @@ find apps/mobile/src packages/ui-lynx/src -type f \( -name '*.ts' -o -name '*.ts
 문체는 규칙으로 막지 않습니다. 한국어 어미를 판정하려면 커스텀 규칙이 필요하고, 화면에
 나가는 문자열과 주석을 가려야 합니다.
 
-두 규칙은 지금 `warn`입니다. 기존 코드에 위반이 많이 남아 있어 `error`로 두면 CI가 바로
-막히기 때문입니다. 영역별 정리가 끝나면 `error`로 올립니다.
+두 규칙은 `error`입니다(2026-09-23 승격). 저장소 전체 정리가 끝나 위반이 0건이 됐고, 새로
+들어오는 위반은 `pnpm lint`가 막습니다.
+
+`max-lines`는 제품 코드에만 겁니다. 테스트 파일과 `devtools/`·`scripts/`·설정 파일은
+`.oxlintrc.json`의 `overrides`로 빼 두었습니다 — 300줄 상한은 화면·로직 코드의 규칙입니다.

@@ -6,7 +6,7 @@
     "import/no-cycle": "error",
     "import/no-self-import": "error",
     "max-lines": [
-      "warn",
+      "error",
       {
         "max": 300,
         "skipBlankLines": false,
@@ -14,7 +14,7 @@
       }
     ],
     "no-warning-comments": [
-      "warn",
+      "error",
       {
         "terms": ["LIB-", ".agent-harness", "scratchpad/", "계약 §"],
         "location": "anywhere"
@@ -23,7 +23,13 @@
   },
   "overrides": [
     {
-      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.test.mjs"],
+      "rules": {
+        "max-lines": "off"
+      }
+    },
+    {
+      "files": ["**/devtools/**", "**/scripts/**", "**/*.config.ts", "**/*.config.mjs"],
       "rules": {
         "max-lines": "off"
       }
