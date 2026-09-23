@@ -39,8 +39,6 @@ export type SpecialUnitWiringArgs = {
   readonly setVisualNovelProgress: Dispatch<SetStateAction<VisualNovelProgress>>;
 };
 
-// 반환 객체를 `special`로 먼저 이름 붙입니다. `onMessengerExit`이 그 이름으로 자기참조하므로,
-// 조립하는 쪽이 이 객체를 펼쳐 담아도 참조가 끊기지 않습니다.
 export function specialUnitWiring(args: SpecialUnitWiringArgs) {
   const {
     messengerEventSink,
@@ -55,7 +53,7 @@ export function specialUnitWiring(args: SpecialUnitWiringArgs) {
     setVisualNovelProgress,
   } = args;
 
-  const special = {
+  return {
     messengerEventSink,
     completedMessengerUnitIds,
     onStartMessengerUnit: (id: MessengerUnitId) => {
@@ -71,7 +69,7 @@ export function specialUnitWiring(args: SpecialUnitWiringArgs) {
     onMessengerExit: (id: MessengerUnitId, outcome: MessengerExitOutcome) => {
       // 계약상 중도 이탈만 기록합니다. 완료한 세션의 이탈은 완료 이벤트에 중복 집계하지 않습니다.
       if (outcome === "incomplete")
-        special.messengerEventSink?.({
+        messengerEventSink?.({
           name: "messenger_unit_exited_incomplete",
           unitId: id,
           entrySource: "journey",
@@ -159,6 +157,4 @@ export function specialUnitWiring(args: SpecialUnitWiringArgs) {
       });
     },
   };
-
-  return special;
 }
