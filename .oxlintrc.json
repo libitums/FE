@@ -4,6 +4,29 @@
   "ignorePatterns": ["dist/**", ".rspeedy/**", "coverage/**", "node_modules/**"],
   "rules": {
     "import/no-cycle": "error",
-    "import/no-self-import": "error"
-  }
+    "import/no-self-import": "error",
+    "max-lines": [
+      "warn",
+      {
+        "max": 300,
+        "skipBlankLines": false,
+        "skipComments": false
+      }
+    ],
+    "no-warning-comments": [
+      "warn",
+      {
+        "terms": ["LIB-", ".agent-harness", "scratchpad/", "계약 §"],
+        "location": "anywhere"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "rules": {
+        "max-lines": "off"
+      }
+    }
+  ]
 }
