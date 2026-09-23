@@ -57,6 +57,17 @@ describe("LearningUnit", () => {
       "accessibility-elements-hidden",
       "true",
     );
+    expect(screen.getByTestId("ui-lynx-learning-unit-ring").getAttribute("content")).toContain(
+      "<path",
+    );
+  });
+
+  test("일반 Learning Unit의 바깥 링은 끊김 없는 원이다", () => {
+    render(<LearningUnit accessibilityLabel="듣기" icon={headset} status="active" />);
+
+    expect(screen.getByTestId("ui-lynx-learning-unit-ring").getAttribute("content")).toContain(
+      "<circle",
+    );
   });
 
   test("Narrative 아이콘은 별도 배경 면과 테두리 없이 표시한다", () => {

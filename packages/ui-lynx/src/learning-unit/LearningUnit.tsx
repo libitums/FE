@@ -6,12 +6,22 @@ import { color } from "@libitums/design-tokens";
 
 import { getLearningUnitContract, type LearningUnitProps } from "./learning-unit.contract";
 
+const fullRing =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="47.5" fill="none" stroke="currentColor" stroke-width="5"/></svg>';
+const narrativeRing =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M70.074 93.049 A47.5 47.5 0 1 1 93.049 70.074" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>';
+
 export function LearningUnit(props: LearningUnitProps) {
   const contract = getLearningUnitContract(props);
   const icon =
     contract.iconKind === "lock" ? lock : contract.iconKind === "tick" ? tick : props.icon;
   const iconContent = icon.replace(/currentColor/g, contract.iconColor);
   const badgeContent = clapper.replace(/currentColor/g, color.fg.neutral);
+  const ringColor = contract.status === "clear" ? color.feedback.correct : color.gray[400];
+  const ringContent = (contract.narrative === "narrative" ? narrativeRing : fullRing).replace(
+    /currentColor/g,
+    ringColor,
+  );
 
   function handleTap() {
     "background only";
@@ -34,6 +44,13 @@ export function LearningUnit(props: LearningUnitProps) {
     >
       <view className="ui-lynx-learning-unit-visual">
         <view className="ui-lynx-learning-unit-ring">
+          <svg
+            className="ui-lynx-learning-unit-ring-outline"
+            data-testid="ui-lynx-learning-unit-ring"
+            content={ringContent}
+            current-color={ringColor}
+            accessibility-elements-hidden={true}
+          />
           <view className="ui-lynx-learning-unit-surface" accessibility-elements-hidden={true}>
             <svg
               className="ui-lynx-learning-unit-icon"

@@ -27,10 +27,15 @@
 }
 
 .ui-lynx-learning-unit-ring {
-  border-width: 5px;
-  border-style: solid;
-  border-color: var(--libitum-color-gray-400);
-  transition: border-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+  overflow: visible;
+}
+
+.ui-lynx-learning-unit-ring-outline {
+  width: 100px;
+  height: 100px;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .ui-lynx-learning-unit-surface {
@@ -59,10 +64,6 @@
 
 .ui-lynx-learning-unit-active .ui-lynx-learning-unit-surface {
   background-color: var(--libitum-color-brand-primary);
-}
-
-.ui-lynx-learning-unit-clear .ui-lynx-learning-unit-ring {
-  border-color: var(--libitum-color-feedback-correct);
 }
 
 .ui-lynx-learning-unit-clear .ui-lynx-learning-unit-surface {
