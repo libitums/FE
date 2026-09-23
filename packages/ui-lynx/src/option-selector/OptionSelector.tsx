@@ -35,9 +35,9 @@ function OptionSelectorItem({ contract, languageTag, onSelect }: OptionSelectorI
       accessibility-traits={contract.traits}
       bindtap={contract.interactive ? handleTap : undefined}
     >
-      {/* 바깥 1px은 item 테두리, 안쪽 1px은 surface 테두리다. 두 겹이 늘 2px을 차지해 크기가 변하지 않는다. */}
+      {/* 바깥 1px은 item 테두리, 안쪽 1px은 surface 테두리입니다. 두 겹이 늘 2px을 차지해 크기가 변하지 않습니다. */}
       <view className="ui-lynx-option-selector-surface" accessibility-elements-hidden={true}>
-        {/* Indicator 자리를 양쪽에 대칭으로 확보해 Selected가 되어도 Label이 움직이지 않는다. */}
+        {/* Indicator 자리를 양쪽에 대칭으로 확보해 Selected가 되어도 Label이 움직이지 않습니다. */}
         <view className="ui-lynx-option-selector-indicator-slot ui-lynx-option-selector-indicator-slot-leading" />
         {contract.icon === null ? (
           <text
@@ -48,7 +48,7 @@ function OptionSelectorItem({ contract, languageTag, onSelect }: OptionSelectorI
             {contract.label}
           </text>
         ) : (
-          // FE 확장: 장식 그림 + Label을 한 묶음으로 가운데 둔다.
+          // FE 확장: 장식 그림 + Label을 한 묶음으로 가운데 둡니다.
           <view className="ui-lynx-option-selector-content">
             <svg
               className="ui-lynx-option-selector-icon"
@@ -98,7 +98,7 @@ function OptionSelectorRow({
           onSelect={onSelect}
         />
       ))}
-      {/* Grid의 마지막 행이 하나뿐이어도 열 너비를 반으로 유지한다. */}
+      {/* Grid의 마지막 행이 하나뿐이어도 열 너비를 반으로 유지합니다. */}
       {selector.layout === "grid" && row.length === 1 ? (
         <view className="ui-lynx-option-selector-cell-spacer" />
       ) : null}

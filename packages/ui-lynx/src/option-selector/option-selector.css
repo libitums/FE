@@ -1,7 +1,7 @@
 @import "@libitums/design-tokens/css/variables.css";
 @import "@libitums/design-tokens/css/typography.css";
 
-/* 레이아웃 — linear 레이아웃에는 gap이 없어 flex와 gap을 쓴다. */
+/* 레이아웃 — linear 레이아웃에는 gap이 없어 flex와 gap을 씁니다. */
 .ui-lynx-option-selector {
   width: 100%;
   display: flex;
@@ -39,7 +39,7 @@
   column-gap: var(--libitum-spacing-12);
 }
 
-/* Grid는 같은 너비의 2열이다. 같은 행의 높이는 stretch로 가장 높은 항목에 맞춘다. */
+/* Grid는 같은 너비의 2열입니다. 같은 행의 높이는 stretch로 가장 높은 항목에 맞춥니다. */
 .ui-lynx-option-selector-item,
 .ui-lynx-option-selector-cell-spacer {
   flex: 1 1 0;
@@ -47,7 +47,7 @@
 }
 
 /* 테두리 영역 2px = item 바깥 1px + surface 안쪽 1px. 1px 선 상태는 안쪽 1px을 배경색으로 칠해
-   어느 상태에서도 Option Item 크기가 변하지 않는다. */
+   어느 상태에서도 Option Item 크기가 변하지 않습니다. */
 .ui-lynx-option-selector-item {
   display: flex;
   flex-direction: column;
@@ -78,7 +78,7 @@
   flex-shrink: 0;
 }
 
-/* Label은 가로·세로 중앙, 줄 수 제한 없이 단어 경계에서 줄바꿈한다. 말줄임하지 않는다. */
+/* Label은 가로·세로 중앙, 줄 수 제한 없이 단어 경계에서 줄바꿈합니다. 말줄임하지 않습니다. */
 .ui-lynx-option-selector-label {
   flex: 1 1 0;
   min-width: var(--libitum-spacing-0);
@@ -88,8 +88,8 @@
 }
 
 /* FE 확장(2026-09-21): Label 앞 장식 그림(예: 국기). 그림과 Label을 한 묶음으로 가운데 두고,
-   그림은 Indicator와 같은 높이 · 가로 10:7(국기 비율)로 그린다. Disabled에서는 Label처럼
-   흐리게 둔다. */
+   그림은 Indicator와 같은 높이 · 가로 10:7(국기 비율)로 그립니다. Disabled에서는 Label처럼
+   흐리게 둡니다. */
 .ui-lynx-option-selector-content {
   flex: 1 1 0;
   min-width: var(--libitum-spacing-0);
@@ -200,8 +200,8 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* 상태 색 — 우선순위는 Disabled → Selected → Pressed → Default다. 글자색은 Lynx CSS 상속을
-   켜지 않은 앱에서도 칠해지도록 <text>에 직접 적는다. Pressed는 pressable(Enabled·Unselected)에만 붙는다. */
+/* 상태 색 — 우선순위는 Disabled → Selected → Pressed → Default입니다. 글자색은 Lynx CSS 상속을
+   켜지 않은 앱에서도 칠해지도록 <text>에 직접 적습니다. Pressed는 pressable(Enabled·Unselected)에만 붙습니다. */
 
 /* Outlined · Default */
 .ui-lynx-option-selector-outlined .ui-lynx-option-selector-item {
@@ -303,7 +303,7 @@
   background-color: var(--libitum-color-gray-900);
 }
 
-/* Filled · Selected — Pressed 배경을 쓰면 Label 대비가 4.412:1로 떨어져 gray.950을 유지한다. */
+/* Filled · Selected — Pressed 배경을 쓰면 Label 대비가 4.412:1로 떨어져 gray.950을 유지합니다. */
 .ui-lynx-option-selector-filled .ui-lynx-option-selector-item-selected {
   border-color: var(--libitum-color-brand-primary);
 }
@@ -349,7 +349,7 @@
   border-color: var(--libitum-color-gray-800);
 }
 
-/* Focus ring — Enabled 항목만 focusable이다. */
+/* Focus ring — Enabled 항목만 focusable입니다. */
 .ui-lynx-option-selector-s .ui-lynx-option-selector-item:focus,
 .ui-lynx-option-selector-m .ui-lynx-option-selector-item:focus,
 .ui-lynx-option-selector-l .ui-lynx-option-selector-item:focus {

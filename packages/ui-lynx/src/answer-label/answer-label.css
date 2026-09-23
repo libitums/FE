@@ -32,8 +32,8 @@
   white-space: normal;
 }
 
-/* 글자색을 상태마다 직접 적는다. 부모 색을 물려받는 방식은 Lynx CSS 상속(enableCSSInheritance)을
-   켠 소비자에서만 먹고, 켜지 않은 앱에서는 글자가 기본색(검정)으로 그려졌다. */
+/* 글자색을 상태마다 직접 적습니다. 부모 색을 물려받는 방식은 Lynx CSS 상속(enableCSSInheritance)을
+   켠 소비자에서만 먹고, 켜지 않은 앱에서는 글자가 기본색(검정)으로 그려졌습니다. */
 .ui-lynx-answer-label-solid .ui-lynx-answer-label-text {
   color: var(--libitum-color-fg-neutral-inverted);
 }

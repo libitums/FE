@@ -168,9 +168,12 @@ xargs -0 grep -nE '\.agent-harness|scratchpad/' < /tmp/files.z
 xargs -0 grep -nE '계약 *§|§ ?[0-9]' < /tmp/files.z
 
 # 조문 ③ — 설명체가 아닌 종결
-xargs -0 perl -Mutf8 -CSD -ne 'print "$ARGV:$.: $_" if /(?<!니)다(\.|\s*$)/' < /tmp/files.z
+xargs -0 perl -Mutf8 -CSD -ne 'print "$ARGV:$.: $_" if /(?<!니)다(?=[.,)(]|\s*—|\s*$)/' < /tmp/files.z
 xargs -0 perl -Mutf8 -CSD -ne 'print "$ARGV:$.: $_" if /아니다/' < /tmp/files.z
 ```
+
+문장이 `다 —`나 `다(…)`로 이어지는 평서체까지 잡으려고 뒤에 오는 글자를 함께 봅니다. 공백만
+뒤따르는 경우는 넣지 않습니다 — 「상태마다 」처럼 문장 끝이 아닌 자리가 걸리기 때문입니다.
 
 전부 0줄이면 통과입니다. 남은 줄이 주석이 아니라 화면에 나가는 문구면 그대로 둡니다.
 

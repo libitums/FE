@@ -5,7 +5,7 @@
   width: 100%;
 }
 
-/* flex로 둔다 — Lynx linear 레이아웃에는 gap이 없어 점이 붙어 그려졌다(FE ADR-0022 D4). */
+/* flex로 둡니다. Lynx linear 레이아웃에는 gap이 없어 점이 서로 붙어 그려집니다(ADR-0022 D4). */
 .ui-lynx-page-indicator-track {
   display: flex;
   flex-direction: row;

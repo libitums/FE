@@ -9,7 +9,7 @@ type ChatBubbleBaseProps = {
   readonly size?: ChatBubbleSize;
   readonly contentLanguage?: ChatBubbleContentLanguage;
   readonly languageTag?: string;
-  /** 본문 아래 한 줄 더 싣는 번역. 비어 있으면 그리지 않는다. */
+  /** 본문 아래 한 줄 더 싣는 번역. 비어 있으면 그리지 않습니다. */
   readonly translation?: string;
 };
 

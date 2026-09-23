@@ -20,7 +20,7 @@
   align-self: flex-end;
   border-end-end-radius: var(--libitum-spacing-0);
   /* FE override(2026-09-21 디자인 반영): 정본의 brand.strong 대신 brand.primary.
-     ⚠ 흰 글자와의 대비가 약 3:1로 본문 크기 기준(4.5:1)에 못 미친다. */
+     ⚠ 흰 글자와의 대비가 약 3:1로 본문 크기 기준(4.5:1)에 못 미칩니다. */
   background-color: var(--libitum-color-brand-primary);
 }
 
@@ -84,7 +84,7 @@
   letter-spacing: var(--libitum-typography-body-s-letter-spacing);
 }
 
-/* 주황 바탕의 내 버블에서는 gray.700이 거의 보이지 않아 gray.200으로 둔다. */
+/* 주황 바탕의 내 버블에서는 gray.700이 거의 보이지 않아 gray.200으로 둡니다. */
 .ui-lynx-chat-bubble-outgoing .ui-lynx-chat-bubble-translation {
   color: var(--libitum-color-gray-200);
 }

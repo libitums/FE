@@ -4,8 +4,8 @@ export type StatusIndicatorProps = {
   status: StatusIndicatorStatus;
   label: string;
   contextLabel?: string;
-  /** 보조기술이 읽는 상태 이름을 바꾼다. 없으면 `statusIndicatorNames`(한국어)를 쓴다 —
-   *  화면 문구가 다른 언어일 때 상태 이름도 그 언어로 맞추려는 자리다. */
+  /** 보조기술이 읽는 상태 이름을 바꿉니다. 없으면 `statusIndicatorNames`(한국어)를 씁니다 —
+   *  화면 문구가 다른 언어일 때 상태 이름도 그 언어로 맞추려는 자리입니다. */
   statusName?: string;
 };
 

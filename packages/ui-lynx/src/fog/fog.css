@@ -84,9 +84,9 @@
   width: 100%;
 }
 
-/* opaque는 토큰의 리터럴 값이다(주석의 토큰과 같아야 한다). 값이 또 var()인 커스텀 프로퍼티는
-   ReactLynx 번들에서 풀리지 않아 선언이 통째로 버려진다(design-tokens 0.2.0 CHANGELOG) — 그래서
-   Fog가 앱에서 그려지지 않았다. transparent와 같은 방식으로 리터럴을 둔다.
+/* opaque는 토큰의 리터럴 값입니다(주석의 토큰과 같아야 합니다). 값이 또 var()인 커스텀 프로퍼티는
+   ReactLynx 번들에서 풀리지 않아 선언이 통째로 버려집니다(design-tokens 0.2.0 CHANGELOG) — 그래서
+   Fog가 앱에서 그려지지 않았습니다. transparent와 같은 방식으로 리터럴을 둡니다.
    white #FFFFFF · surface-default #FFFDFC · surface-basement #FAF7F4 ·
    surface-floating #FFF3EA · dark(gray.950) #1A1C20 */
 .ui-lynx-fog-color-white {

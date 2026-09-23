@@ -12,27 +12,27 @@ export type OptionSelectorOption = {
   readonly label: string;
   readonly disabled?: boolean;
   /**
-   * Label 앞에 붙는 장식 그림(SVG 문자열, 예: 국기). 정본 스펙 밖의 FE 확장이다(2026-09-21 언어
-   * 선택 디자인 반영). 장식이라 접근성 이름에 들어가지 않는다 — 뜻은 Label이 진다.
+   * Label 앞에 붙는 장식 그림(SVG 문자열, 예: 국기). 정본 스펙 밖의 FE 확장입니다(2026-09-21 언어
+   * 선택 디자인 반영). 장식이라 접근성 이름에 들어가지 않습니다 — 뜻은 Label이 집니다.
    */
   readonly icon?: string;
   /**
    * 보이는 Label과 다른 접근성 이름(FE 확장, 2026-09-21). Label에 국기 이모지처럼 읽히면 거슬리는
-   * 장식이 섞일 때 쓴다. 없으면 Label이 이름이다. 선택 접미사는 이 이름 뒤에 붙는다.
+   * 장식이 섞일 때 씁니다. 없으면 Label이 이름입니다. 선택 접미사는 이 이름 뒤에 붙습니다.
    */
   readonly accessibilityLabel?: string;
 };
 
 export type OptionSelectorProps = {
-  /** 무엇을 고르는지 알리는 질문·지시문. 목록의 접근성 이름이 된다. */
+  /** 무엇을 고르는지 알리는 질문·지시문. 목록의 접근성 이름이 됩니다. */
   readonly groupLabel: string;
   readonly options: readonly OptionSelectorOption[];
-  /** controlled 선택값. Single은 0~1개, Multiple은 0개 이상이다. */
+  /** controlled 선택값. Single은 0~1개, Multiple은 0개 이상입니다. */
   readonly selectedIds: readonly string[];
   readonly onChange: (selectedIds: readonly string[]) => void;
-  /** Immediate 전용. 선택한 직후 그 항목 id로 호출한다. */
+  /** Immediate 전용. 선택한 직후 그 항목 id로 호출합니다. */
   readonly onCommit?: (id: string) => void;
-  /** 제출·확정 뒤 모든 항목을 Disabled로, 고른 항목은 Disabled + Selected로 둔다. */
+  /** 제출·확정 뒤 모든 항목을 Disabled로, 고른 항목은 Disabled + Selected로 둡니다. */
   readonly committed?: boolean;
   readonly variant?: OptionSelectorVariant;
   readonly size?: OptionSelectorSize;
@@ -52,9 +52,9 @@ export type OptionSelectorItemContract = {
   readonly className: string;
   readonly accessibilityLabel: string;
   readonly traits: "button" | "disabled";
-  /** Label 앞 장식 그림. 없으면 null이다. */
+  /** Label 앞 장식 그림. 없으면 null입니다. */
   readonly icon: string | null;
-  /** Selected일 때만 Indicator를 그린다. svg current-color는 CSS 변수를 읽지 못해 TS token 값을 넘긴다. */
+  /** Selected일 때만 Indicator를 그립니다. svg current-color는 CSS 변수를 읽지 못해 TS token 값을 넘깁니다. */
   readonly indicatorColor: string | null;
 };
 
@@ -71,7 +71,7 @@ export type OptionSelectorContract = {
   readonly languageTag?: string;
   readonly committed: boolean;
   readonly items: readonly OptionSelectorItemContract[];
-  /** 행 우선 순서. Stack은 한 행에 하나, Grid는 한 행에 둘이다. */
+  /** 행 우선 순서. Stack은 한 행에 하나, Grid는 한 행에 둘입니다. */
   readonly rows: readonly (readonly OptionSelectorItemContract[])[];
 };
 
@@ -89,7 +89,7 @@ const commits = new Set<OptionSelectorCommit>(["deferred", "immediate"]);
 const layouts = new Set<OptionSelectorLayout>(["stack", "grid"]);
 const contentLanguages = new Set<OptionSelectorContentLanguage>(["ui", "learning"]);
 
-// Selected·Disabled + Selected의 Label·Indicator 색. 나머지 상태는 Indicator를 그리지 않는다.
+// Selected·Disabled + Selected의 Label·Indicator 색입니다. 나머지 상태는 Indicator를 그리지 않습니다.
 const indicatorColors = {
   filled: { selected: color.brand.primary, disabledSelected: color.gray[800] },
   outlined: { selected: color.fg.brand, disabledSelected: color.fg.disabled },
@@ -145,8 +145,8 @@ function validateSelectedIds(
 }
 
 /**
- * 탭 한 번 뒤의 선택값을 계산한다. Single은 누른 항목 하나만 남기고(다시 눌러도 유지),
- * Multiple은 누른 항목을 켜고 끈다. 결과는 항상 options 순서를 따른다.
+ * 탭 한 번 뒤의 선택값을 계산합니다. Single은 누른 항목 하나만 남기고(다시 눌러도 유지),
+ * Multiple은 누른 항목을 켜고 끕니다. 결과는 항상 options 순서를 따릅니다.
  */
 export function nextOptionSelection(input: OptionSelectorSelectionInput): readonly string[] {
   if (!input.options.some((option) => option.id === input.id)) {
@@ -179,7 +179,7 @@ export function getOptionSelectorContract(props: OptionSelectorProps): OptionSel
   if (contentLanguage === "learning" && !languageTag) {
     throw new Error("languageTag is required for learning content");
   }
-  // 조합 규칙: Multiple은 Deferred만, Immediate는 Single만 쓴다. 둘은 같은 규칙의 양면이다.
+  // 조합 규칙: Multiple은 Deferred만, Immediate는 Single만 씁니다. 둘은 같은 규칙의 양면입니다.
   if (selection === "multiple" && commit === "immediate") {
     throw new Error("OptionSelector multiple selection requires deferred commit");
   }
@@ -193,7 +193,7 @@ export function getOptionSelectorContract(props: OptionSelectorProps): OptionSel
     const disabled = committed || option.disabled === true;
     const label = option.label.trim();
     const spokenLabel = option.accessibilityLabel?.trim() || label;
-    // Selected는 Pressed 배경을 쓰지 않으므로 pressable은 Enabled·Unselected에만 붙인다.
+    // Selected는 Pressed 배경을 쓰지 않으므로 pressable은 Enabled·Unselected에만 붙입니다.
     const pressable = !disabled && !selected;
     return {
       id: option.id,
@@ -210,9 +210,9 @@ export function getOptionSelectorContract(props: OptionSelectorProps): OptionSel
       ]
         .filter((value): value is string => value !== undefined)
         .join(" "),
-      // ADR-0016 D3: 선택 여부는 이름 뒤 접미사로 낸다. 비선택은 이름만 둔다.
+      // 선택 여부는 이름 뒤 접미사로 냅니다(ADR-0016 D3). 비선택은 이름만 둡니다.
       accessibilityLabel: selected ? `${spokenLabel}, 선택됨` : spokenLabel,
-      // ADR-0016 D2·D10: traits는 한 값이다. 확정·비활성 항목은 다시 조작할 수 없으므로 disabled다.
+      // traits는 한 값입니다. 확정·비활성 항목은 다시 조작할 수 없어 disabled로 둡니다(ADR-0016 D2·D10).
       traits: disabled ? "disabled" : "button",
       indicatorColor: selected
         ? disabled
