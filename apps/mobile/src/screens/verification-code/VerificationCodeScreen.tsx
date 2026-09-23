@@ -61,6 +61,7 @@ export function VerificationCodeScreen({
   const [round, setRound] = useState(0);
   useEffect(() => {
     setRemaining(verificationCodeValidSeconds);
+    setDigits(digitIndexes.map(() => ""));
   }, [round]);
 
   // 0에 닿으면 타이머를 걸지 않습니다 — 다 센 뒤에도 매초 깨우지 않으려고 1초짜리
@@ -130,7 +131,10 @@ export function VerificationCodeScreen({
             </view>
           </view>
 
+          {/* 재전송하면 `round`가 바뀌며 칸이 새로 마운트됩니다. 칸은 값을 스스로 들고 있어
+              (비제어) 다시 마운트하지 않으면 지운 것이 화면에 남습니다. */}
           <view
+            key={round}
             className="verification-code-screen-input"
             data-testid="verification-code-screen-input"
           >
