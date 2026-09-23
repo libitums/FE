@@ -1,0 +1,80 @@
+/* `OnboardingStoryCards`의 시각 값을 소유합니다. 선택자는 컴포넌트를 쪼개기 전
+   `onboarding-screen.css`에 있던 이름 그대로입니다 — 자동 계층이 클래스 문자열의
+   시각 연결을 보지 못해, 이름을 바꾸면 빠뜨린 선택자가 에러 없이 스타일만 안 먹는
+   형태로 남습니다. */
+
+/* 2026-09-21 디자인 반영: 카드 컨테이너 둘을 위아래로 두는 400 높이 영역입니다.
+   400은 spacing 토큰(최대 96)에 없는 디자인 지정값이라 생값으로 둡니다. */
+.onboarding-screen-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  height: 400px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.onboarding-screen-card-slot {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Card는 className을 받지 않으므로 슬롯 안에서 남은 높이를 채우게 합니다. */
+.onboarding-screen-card-slot .ui-lynx-card {
+  flex: 1;
+}
+
+/* 첫 스텝 첫 카드(그림 카드)입니다. 인물이 카드 밖으로 나가므로 슬롯이 자르지
+   않습니다. */
+.onboarding-screen-hero {
+  position: relative;
+  overflow: visible;
+}
+
+/* Media를 카드 전체 높이로 늘리고 네 모서리를 카드처럼 둥글게 자릅니다
+   (Media의 기본은 윗모서리만 둥근 상단 영역입니다). */
+.onboarding-screen-hero .ui-lynx-card-regions,
+.onboarding-screen-hero .ui-lynx-card-media {
+  flex: 1;
+}
+
+.onboarding-screen-hero .ui-lynx-card-media {
+  border-radius: var(--libitum-radius-md);
+}
+
+.onboarding-screen-hero .ui-lynx-card-media-content {
+  height: 100%;
+}
+
+.onboarding-screen-hero-background {
+  width: 100%;
+  height: 100%;
+}
+
+/* 첫 스텝 둘째 카드(대화 카드)입니다. 버블 묶음이 카드 높이를 채우고 세로
+   가운데에 섭니다. */
+.onboarding-screen-chat .ui-lynx-card-regions,
+.onboarding-screen-chat .ui-lynx-card-content {
+  flex: 1;
+}
+
+.onboarding-screen-chat-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+  flex: 1;
+}
+
+/* 인물: 바닥을 카드 아래 끝에 맞추고 카드보다 48 크게 그려 위로 튀어나오게
+   합니다. 원본 540×810(2:3) 비율을 지킵니다. */
+.onboarding-screen-hero-character {
+  position: absolute;
+  right: var(--libitum-spacing-16);
+  bottom: 0;
+  height: calc(100% + var(--libitum-spacing-48));
+  aspect-ratio: 540 / 810;
+  /* Card가 elevation z-default(1)로 떠 있어 그보다 한 단계 위에 둡니다. */
+  z-index: var(--libitum-elevation-z-sticky);
+}

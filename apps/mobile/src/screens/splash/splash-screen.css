@@ -1,5 +1,5 @@
-/* 2026-09-21 디자인 반영: 브랜드 주황 바탕 가운데에 흰 로고 손글씨 애니메이션.
-   토큰은 CSS 커스텀 프로퍼티로만 소비한다(ADR-0014 D1). */
+/* 2026-09-21 디자인 반영: 브랜드 주황 바탕 가운데에 흰 로고 손글씨 애니메이션입니다.
+   토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
 
 .splash-screen {
   display: flex;
@@ -11,7 +11,7 @@
   background: var(--libitum-color-brand-primary);
 }
 
-/* 원본 캔버스 1142×523. 폭만 정하고 비율은 aspect-ratio와 aspectFit이 지킨다. */
+/* 원본 캔버스 1142×523입니다. 폭만 정하고 비율은 aspect-ratio와 aspectFit이 지킵니다. */
 .splash-screen-logo {
   width: 70%;
   aspect-ratio: 1142 / 523;

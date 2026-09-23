@@ -11,13 +11,13 @@ import type { JourneyEntryScreenProps } from "./journey-entry.contract";
 
 import "./journey-entry-screen.css";
 
-// LIB-261 (ui-implementation): 계약(.agent-harness/work/lib-261/spec.md §0.5 A5 ·
-// §4.2~§4.5)과 design.md §8의 값을 채운다. 고른 언어의 라벨을 그대로 한 줄 보인다(A5).
+// 고른 언어의 라벨을 그대로 한 줄 보입니다.
 //
-// 2026-09-21 디자인 반영: 화면 전체에 여정 그림(journey.png)을 깔고, 위 · 아래에 검은 Fog로
-// 명암을 더한다. 위에는 제목(heading-l) + 고른 언어(label, gray.500), 아래에는 큰 제목
-// (accent display) · 안내(caption, gray.500) · AI 생성 고지(gray.800) · 흰 Start 버튼.
-// 제목 · 안내 · 큰 제목 문구는 자리표다(디자인 문구 확정 전).
+// 2026-09-21 디자인 반영: 화면 전체에 여정 그림(journey.png)을 깔고, 위 · 아래에
+// 검은 Fog로 명암을 더합니다. 위에는 제목(heading-l) + 고른 언어(label,
+// gray.500), 아래에는 큰 제목(accent display) · 안내(caption, gray.500) · AI
+// 생성 고지(gray.800) · 흰 Start 버튼이 섭니다. 제목 · 안내 · 큰 제목 문구는
+// 자리표입니다(디자인 문구 확정 전).
 export function JourneyEntryScreen({
   language,
   onEnter,
@@ -25,7 +25,8 @@ export function JourneyEntryScreen({
 }: JourneyEntryScreenProps): ReactNode {
   return (
     <view className="journey-entry-screen">
-      {/* 배경 그림과 Fog는 순수 장식이다. `<image>`는 기본 접근성 정지라(ADR-0016 D5) 래퍼가 가린다. */}
+      {/* 배경 그림과 Fog는 순수 장식입니다. `<image>`는 기본 접근성 정지라서
+          (ADR-0016 D5) 래퍼가 가립니다. */}
       <view className="journey-entry-screen-backdrop" accessibility-elements-hidden={true}>
         <image
           className="journey-entry-screen-background"
@@ -42,7 +43,7 @@ export function JourneyEntryScreen({
       </view>
 
       <view className="journey-entry-screen-top">
-        {/* 그림 위라 면 없는 overlay RoundButton(흰 아이콘)을 쓴다. */}
+        {/* 그림 위라 면 없는 overlay RoundButton(흰 아이콘)을 씁니다. */}
         <view className="journey-entry-screen-header" data-testid="journey-entry-screen-header">
           {onBack ? (
             <RoundButton
@@ -67,7 +68,7 @@ export function JourneyEntryScreen({
       </view>
 
       <view className="journey-entry-screen-bottom">
-        {/* 구분선은 큰 제목 글자 폭만큼만 긋는다 — 묶음을 글자 폭으로 줄인다. */}
+        {/* 구분선은 큰 제목 글자 폭만큼만 긋습니다 — 묶음을 글자 폭으로 줄입니다. */}
         <view className="journey-entry-screen-display-group">
           <text className="journey-entry-screen-display" data-testid="journey-entry-screen-display">
             Start your story

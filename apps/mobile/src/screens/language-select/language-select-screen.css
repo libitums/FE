@@ -1,9 +1,8 @@
-/* LIB-261 (ui-implementation): design.md §2.2(공통 레시피) · §7.2(값)의 값. 토큰은 CSS
-   커스텀 프로퍼티로만 소비한다(ADR-0014 D1).
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-   2026-09-21 디자인 반영: 제목 · 안내(로그인과 같은 값) → 언어 넷(OptionSelector) → 하단
-   Continue →. 선택지 모양은 ui-lynx가 지고, 이 파일은 배치와 글자, 로그인 국가 목록과 같은
-   선택지 색 override만 둔다. */
+   2026-09-21 디자인 반영: 제목 · 안내(로그인과 같은 값) → 언어 넷(OptionSelector) →
+   하단 Continue → 순서로 섭니다. 선택지 모양은 ui-lynx가 지고, 이 파일은 배치와
+   글자, 로그인 국가 목록과 같은 선택지 색 override만 둡니다. */
 
 .language-select-screen {
   display: flex;
@@ -15,7 +14,7 @@
   background: var(--libitum-color-background-primary);
 }
 
-/* 뒤로가기 행. RoundButton xl(56)만큼 높이를 늘 잡아 둔다(로그인과 같은 값). */
+/* 뒤로가기 행입니다. RoundButton xl(56)만큼 높이를 늘 잡아 둡니다(로그인과 같은 값). */
 .language-select-screen-header {
   display: flex;
   flex-direction: row;
@@ -52,8 +51,8 @@
   letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
 }
 
-/* ⚠ 알려진 대비 미달: caption(11px)은 4.5:1이 필요한데 gray.600은 배경 대비 약 2.1:1이다.
-   로그인 안내와 같은 값이다(2026-09-21). */
+/* ⚠ 알려진 대비 미달: caption(11px)은 4.5:1이 필요한데 gray.600은 배경 대비 약
+   2.1:1입니다. 로그인 안내와 같은 값입니다(2026-09-21). */
 .language-select-screen-caption {
   color: var(--libitum-color-gray-600);
   font-family: var(--libitum-typography-caption-font-family);
@@ -68,9 +67,11 @@
   flex-shrink: 0;
 }
 
-/* 언어 선택지 — FE override(2026-09-21 디자인 반영). 로그인 국가 목록과 같은 값이다: 경계는
-   gray.400, 고른 칸은 면 없이 brand.primary 1px 경계, 글자색은 고르지 않은 칸과 같다.
-   ⚠ gray.400 경계는 흰 면 대비 약 1.4:1로 비텍스트 대비 기준(3:1)에 못 미친다 — 피그마 값을 따른다. */
+/* 언어 선택지 — FE override(2026-09-21 디자인 반영)입니다. 로그인 국가 목록과
+   같은 값입니다: 경계는 gray.400, 고른 칸은 면 없이 brand.primary 1px 경계,
+   글자색은 고르지 않은 칸과 같습니다.
+   ⚠ gray.400 경계는 흰 면 대비 약 1.4:1로 비텍스트 대비 기준(3:1)에 못
+   미칩니다 — 피그마 값을 따릅니다. */
 .language-select-screen-options
   .ui-lynx-option-selector-outlined
   .ui-lynx-option-selector-item-pressable {
@@ -99,8 +100,9 @@
   color: var(--libitum-color-fg-neutral);
 }
 
-/* 국기 + 언어 이름은 왼쪽에 붙인다(2026-09-21 디자인 반영). 정본은 Label을 가운데 두려고 왼쪽에도
-   Indicator 자리를 비워 두는데, 왼쪽 정렬에서는 그 빈 자리를 없앤다. ✓는 오른쪽 끝 그대로다. */
+/* 국기 + 언어 이름은 왼쪽에 붙입니다(2026-09-21 디자인 반영). 정본은 Label을
+   가운데 두려고 왼쪽에도 Indicator 자리를 비워 두는데, 왼쪽 정렬에서는 그 빈
+   자리를 없앱니다. ✓는 오른쪽 끝 그대로입니다. */
 .language-select-screen-options .ui-lynx-option-selector-indicator-slot-leading {
   display: none;
 }
