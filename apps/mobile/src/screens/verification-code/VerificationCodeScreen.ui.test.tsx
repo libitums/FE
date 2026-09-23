@@ -190,4 +190,38 @@ describe("VerificationCodeScreen (LIB-261)", () => {
       vi.useRealTimers();
     }
   });
+
+  it("[VC-U9] Resend를 누르면 입력한 코드가 지워지고, 그대로 Continue를 눌러도 제출되지 않는다", () => {
+    const onSubmit = vi.fn();
+    render(<VerificationCodeScreen onSubmit={onSubmit} onExit={vi.fn()} />);
+
+    typeCode("1234");
+    expect(screen.getByTestId("verification-code-screen-submit")).toHaveAttribute(
+      "data-complete",
+      "true",
+    );
+
+    fireEvent.tap(
+      within(screen.getByTestId("verification-code-screen-resend")).getByTestId("ui-lynx-button"),
+      {},
+    );
+
+    // 재전송한 코드는 아직 아무것도 입력되지 않은 상태다. 이전 코드가 남아 있으면
+    // 사용자가 아무것도 치지 않고 Continue를 눌러 옛 코드를 제출하게 된다.
+    expect(screen.getByTestId("verification-code-screen-submit")).toHaveAttribute(
+      "data-complete",
+      "false",
+    );
+    fireEvent.tap(submitButton(), {});
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    // 지운 뒤에도 새 코드를 받는다.
+    typeCode("5678");
+    expect(screen.getByTestId("verification-code-screen-submit")).toHaveAttribute(
+      "data-complete",
+      "true",
+    );
+    fireEvent.tap(submitButton(), {});
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
 });
