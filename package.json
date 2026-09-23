@@ -11,8 +11,12 @@
     "test:unit": "pnpm --filter @libitums/ui-lynx test:unit && pnpm --filter @libitums/mobile test:unit",
     "test:ui": "pnpm --filter @libitums/ui-lynx test:ui && pnpm --filter @libitums/mobile test:ui",
     "test:integration": "pnpm --filter @libitums/ui-lynx test:integration && pnpm --filter @libitums/mobile test:integration && pnpm --filter @libitums/storybook-lynx test",
-    "test": "pnpm test:unit && pnpm test:ui && pnpm test:integration && pnpm test:report-policy",
+    "test": "pnpm test:unit && pnpm test:ui && pnpm test:integration && pnpm test:report-policy && pnpm test:bundle-size && pnpm test:ci-wiring",
     "test:report-policy": "node --test devtools/performance-report-policy/*.test.mjs",
+    "test:bundle-size": "node --test devtools/bundle-size/*.test.mjs",
+    "test:ci-wiring": "node --test devtools/ci-wiring/*.test.mjs",
+    "test:coverage": "pnpm --filter @libitums/mobile test:coverage && pnpm --filter @libitums/ui-lynx test:coverage",
+    "size:check": "node devtools/bundle-size/check.mjs",
     "performance:reports:check": "node devtools/performance-report-policy/check.mjs",
     "performance:reports:gate": "node devtools/performance-report-policy/gate.mjs",
     "lint": "oxlint && pnpm lint:tokens && pnpm cycle:check",
@@ -21,9 +25,10 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt . '!**/*.md' '!apps/ios/**'",
     "format:check": "oxfmt --check . '!**/*.md' '!apps/ios/**'",
-    "verify": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm performance:reports:gate"
+    "verify": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm size:check && pnpm performance:reports:gate"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "3.2.7",
     "madge": "8.0.0",
     "oxfmt": "0.65.0",
     "oxlint": "1.80.0"

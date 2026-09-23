@@ -39,15 +39,18 @@ test("배선 3: workflow의 어떤 run: 줄도 performance:reports:check를 부�
   assert.deepEqual(offendingLines, []);
 });
 
-test("배선 4: workflow가 pnpm verify를 부르고 그 단계에 POLICY_BASE·POLICY_HEAD를 준다", () => {
+// CI가 잡 여럿으로 나뉘면서 게이트는 `pnpm verify` 안이 아니라 자기 잡에서 직접 돈다.
+// 이 테스트가 보는 것은 여전히 같다 — 게이트를 부르는 단계가 base·head를 받는가.
+test("배선 4: workflow가 게이트를 부르고 그 단계에 POLICY_BASE·POLICY_HEAD를 준다", () => {
   const workflowText = readWorkflowText();
-  const verifyStepMatch = workflowText.match(
-    /run:\s*pnpm verify\s*\n(?:[^\n]*\n)*?(?=\s*- name:|\s*$)/,
-  );
+  const index = workflowText.indexOf("run: pnpm performance:reports:gate");
 
-  assert.ok(verifyStepMatch, "pnpm verify를 실행하는 run: 줄을 찾을 수 없다");
+  assert.notEqual(index, -1, "performance:reports:gate를 실행하는 run: 줄을 찾을 수 없다");
 
-  const verifyStepBlock = verifyStepMatch[0];
-  assert.match(verifyStepBlock, /POLICY_BASE\s*:/);
-  assert.match(verifyStepBlock, /POLICY_HEAD\s*:/);
+  const rest = workflowText.slice(index);
+  const end = rest.search(/\n\s*-\s*(?:name|uses):|\n\w/);
+  const stepBlock = end === -1 ? rest : rest.slice(0, end);
+
+  assert.match(stepBlock, /POLICY_BASE\s*:/);
+  assert.match(stepBlock, /POLICY_HEAD\s*:/);
 });
