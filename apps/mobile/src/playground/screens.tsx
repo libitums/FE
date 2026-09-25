@@ -1,9 +1,11 @@
 import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import type { Tab } from "../app/nav-state";
 import { requiresVerificationCode } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
+import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
 import { LoginScreen } from "../screens/login/LoginScreen";
 import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
@@ -53,10 +55,34 @@ export const playgroundScreens = {
     />
   ),
   "language-select": (go: Go) => <LanguageSelectFixture go={go} />,
+  // 여정 맵은 진행 상태를 App에서 받습니다. 여기서는 스텝 하나를 끝낸 상태로 띄워
+  // 완료·현재·잠김 셋이 한 화면에 같이 보이게 합니다.
+  "journey-map": () => (
+    <JourneyMapScreen
+      completedStepCount={1}
+      onStartStep={noop}
+      completedMessengerUnitIds={[]}
+      onStartMessengerUnit={noop}
+      completedPhoneCallUnitIds={[]}
+      onStartPhoneCallUnit={noop}
+      onOpenNotifications={noop}
+    />
+  ),
   "journey-entry": (go: Go) => (
     <JourneyEntryScreen language="en" onEnter={noop} onBack={() => go("language-select")} />
   ),
   "catalog:button": () => <ButtonCatalog />,
+  // 바텀 네비만 봅니다. 화면 fixture를 비워 두면 바가 화면 아래 끝에 홀로 서므로,
+  // 긴 화면에 가려지지 않고 바 자체의 간격·색·선택 시각을 볼 수 있습니다.
+  "catalog:bottom-navigator": () => <view style={{ flex: "1" }} />,
 } satisfies Record<string, (go: Go, params: PlaygroundParams) => ReactNode>;
 
 export type PlaygroundScreen = keyof typeof playgroundScreens;
+
+// 바텀 네비는 App 셸이 렌더하므로 화면 fixture만으로는 안 보입니다. 여기서 화면과
+// 탭을 이어 두면 playground도 같은 자리에 바를 세워, 바 디자인을 HMR로 고칠 수
+// 있습니다. 진입 구간 화면은 여기 없습니다 — 앱에서도 바가 서지 않습니다.
+export const playgroundTabs: Partial<Record<PlaygroundScreen, Tab>> = {
+  "journey-map": "journey",
+  "catalog:bottom-navigator": "journey",
+};

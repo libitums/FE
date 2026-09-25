@@ -85,7 +85,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 // 여정 탭 → 스텝 tap → 시트 `시작` tap입니다. `App.integration.test.tsx`의
 // `startStep`과 같은 형태입니다(파일이 다르므로 다시 선언합니다).
 function startStep(stepId: JourneyStepId): void {
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-step-node-${stepId}`), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
@@ -283,8 +283,8 @@ test("문화 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 �
   expect(screen.getByTestId("culture-quiz-screen-title")).toBeInTheDocument();
 
   // 다른 탭(설정)으로 갔다가 여정 탭으로 돌아옵니다.
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   // 퀴즈가 그대로 있습니다.
   expect(screen.getByTestId("culture-quiz-screen-title")).toHaveTextContent(

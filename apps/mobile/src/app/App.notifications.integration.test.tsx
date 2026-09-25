@@ -108,11 +108,11 @@ test("[IN1] 여정 맵 알림 버튼을 tap하면 알림 화면이 서고 탭은
   openNotificationsScreen();
 
   expect(screen.getByTestId("notifications-screen-title")).toHaveTextContent("알림");
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 });
 
 test("[IN2] 알림 화면의 맵으로를 tap하면 여정 맵으로 돌아가고 알림 화면이 사라진다", () => {
@@ -149,7 +149,7 @@ test("[IN4] 메신저 대상 항목을 tap하면 메신저 화면이 열리고 �
   tapNotificationItem(messengerNotificationItem());
 
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
@@ -203,13 +203,13 @@ test("[IN8] 롤플레이 대상 항목을 tap하면 롤플레이 탭 루트로 �
   openNotificationsScreen();
   tapNotificationItem(roleplayListNotificationItem());
 
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
   );
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 });
@@ -217,11 +217,11 @@ test("[IN8] 롤플레이 대상 항목을 tap하면 롤플레이 탭 루트로 �
 test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하면 롤플레이 스택이 목록 루트로 걷힌다(D-c, 연속 dispatch 둘의 합성)", () => {
   const messengerItem = messengerNotificationItem();
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   fireEvent.tap(screen.getByTestId(`roleplay-list-item-${messengerItem.target.unitId}`), {});
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
   tapNotificationItem(roleplayListNotificationItem());
 
@@ -246,8 +246,8 @@ test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재
     { name: "notifications_opened" },
   ]);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(notificationEventSink.mock.calls.map(([event]) => event)).toEqual([
     { name: "notifications_opened" },

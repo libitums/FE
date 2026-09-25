@@ -75,7 +75,7 @@ describe("getBottomNavigatorContracts", () => {
       interactive: true,
       traits: "button",
       accessibilityLabel: "홈",
-      iconColor: color.fg["neutral-subtle"],
+      iconColor: color.gray["500"],
       pressedIconColor: color.fg["neutral-muted"],
     });
     expect(contracts[1]).toMatchObject({
@@ -119,6 +119,26 @@ describe("getBottomNavigatorContracts", () => {
       nextFocusRight: "ui-lynx-bottom-navigator-focus-2",
     });
     expect(contracts[3]).toMatchObject({ focusable: false });
+  });
+
+  // timing flag는 선택된 항목에만 실립니다. 비선택에도 붙으면 전환과 무관한 렌더까지
+  // 같은 이름으로 실려 성능 수집이 섞입니다(FE ADR-0019).
+  test("timing flag는 선택된 항목에만 실린다", () => {
+    const flagged = items.map((item) => ({ ...item, timingFlag: `libitum:navigation:${item.id}` }));
+    const contracts = getBottomNavigatorContracts({ items: flagged, selectedId: "journey" });
+
+    expect(contracts[1]).toMatchObject({ timingFlag: "libitum:navigation:journey" });
+    expect(contracts[0]).not.toHaveProperty("timingFlag");
+    expect(contracts[2]).not.toHaveProperty("timingFlag");
+    expect(contracts[3]).not.toHaveProperty("timingFlag");
+  });
+
+  // flag를 주지 않은 소비자에게 빈 속성이 새어 나가면 안 됩니다 — 속성이 아예 없어야
+  // 컴포넌트가 `__lynx_timing_flag`를 붙이지 않습니다.
+  test("timing flag를 주지 않으면 계약에 그 열쇠가 없다", () => {
+    const contracts = getBottomNavigatorContracts({ items, selectedId: "journey" });
+
+    expect(contracts[1]).not.toHaveProperty("timingFlag");
   });
 
   test("count badge는 99+로 제한하되 접근성 이름에는 실제 개수를 보존한다", () => {
@@ -233,23 +253,36 @@ describe("bottom-navigator.css", () => {
     "utf8",
   );
 
-  test("bar와 cell의 정본 token 및 48px focusable hit area를 고정한다", () => {
-    expect(styles).toMatch(/\.ui-lynx-bottom-navigator\s*\{[^}]*position:\s*fixed[^}]*bottom:\s*0/);
-    expect(styles).toMatch(/background-color:\s*var\(--libitum-color-white\)/);
+  // 바를 화면 바닥에 붙이는 일은 셸이 집니다. `position: fixed`가 되살아나면 콘텐츠가
+  // 바 뒤로 숨고 safe area 여백이 두 번 겹치므로, 없음을 답니다.
+  test("바는 스스로 자리 잡지 않고 셸의 흐름에 놓인다", () => {
+    expect(styles).not.toMatch(/\.ui-lynx-bottom-navigator\s*\{[^}]*position:\s*fixed/);
+  });
+
+  test("바의 정본 token을 고정한다", () => {
     expect(styles).toMatch(
-      /border-radius:\s*var\(--libitum-radius-md\) var\(--libitum-radius-md\) 0 0/,
+      /\.ui-lynx-bottom-navigator\s*\{[^}]*background-color:\s*var\(--libitum-color-background-primary\)/,
     );
     expect(styles).toMatch(
-      /box-shadow:\s*0 -4px 4px rgba\(26, 28, 32, var\(--libitum-opacity-8, 0\.08\)\)/,
+      /border-radius:\s*var\(--libitum-radius-xl\) var\(--libitum-radius-xl\) 0 0/,
     );
     expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator-item\s*\{[^}]*min-width:\s*var\(--libitum-spacing-48\)[^}]*height:\s*var\(--libitum-spacing-48\)/,
+      /\.ui-lynx-bottom-navigator\s*\{[^}]*padding:\s*var\(--libitum-spacing-24\)/,
+    );
+  });
+
+  // 항목 상자는 선택 여부와 무관하게 58 × 40입니다. 선택될 때만 넓어지면 이웃이 옆으로
+  // 밀리므로, 두 크기가 갈리면 여기서 빨개집니다.
+  test("항목 상자는 선택 여부와 무관하게 같은 크기다", () => {
+    expect(styles).toMatch(
+      /\.ui-lynx-bottom-navigator-item\s*\{[^}]*width:\s*58px[^}]*height:\s*40px/,
     );
     expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator-surface\s*\{[^}]*width:\s*var\(--libitum-spacing-40\)[^}]*height:\s*var\(--libitum-spacing-40\)/,
+      /\.ui-lynx-bottom-navigator-surface\s*\{[^}]*width:\s*100%[^}]*height:\s*100%/,
     );
-    expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator-item-selected \.ui-lynx-bottom-navigator-surface\s*\{[^}]*width:\s*60px/,
+    // 선택 규칙은 배경색만 바꿉니다 — 폭을 다시 건드리면 레이아웃이 흔들립니다.
+    expect(styles).not.toMatch(
+      /\.ui-lynx-bottom-navigator-item-selected[^}]*\{[^}]*(?:max-)?width:/,
     );
   });
 
@@ -271,13 +304,15 @@ describe("bottom-navigator.css", () => {
     );
   });
 
-  test("작은 viewport에서 5개 항목이 shrink되되 hit area와 아이콘 크기는 줄지 않는다", () => {
+  // 항목은 폭을 나눠 갖지 않고 고정 간격으로 가운데 모입니다. `flex: 1 1 0`가 돌아오면
+  // 항목 수에 따라 크기가 흔들리므로 없음을 함께 답니다.
+  test("항목은 고정 간격으로 가운데 모이고 크기를 나눠 갖지 않는다", () => {
     expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator-items\s*\{[^}]*width:\s*100%[^}]*justify-content:\s*space-between/,
+      /\.ui-lynx-bottom-navigator-items\s*\{[^}]*justify-content:\s*center[^}]*gap:\s*var\(--libitum-spacing-32\)/,
     );
-    expect(styles).toMatch(/\.ui-lynx-bottom-navigator-item\s*\{[^}]*flex:\s*1 1 0/);
+    expect(styles).not.toMatch(/\.ui-lynx-bottom-navigator-item\s*\{[^}]*flex:/);
     expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator-icon\s*\{[^}]*width:\s*var\(--libitum-icon-size-sm\)[^}]*height:\s*var\(--libitum-icon-size-sm\)/,
+      /\.ui-lynx-bottom-navigator-icon\s*\{[^}]*width:\s*var\(--libitum-icon-size-lg\)[^}]*height:\s*var\(--libitum-icon-size-lg\)/,
     );
   });
 });

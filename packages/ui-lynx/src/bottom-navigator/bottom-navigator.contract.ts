@@ -15,6 +15,13 @@ type BottomNavigatorItemBase = {
   readonly accessibilityLabel: string;
   readonly icon: string;
   readonly badge?: BottomNavigatorBadge;
+  /**
+   * 선택됐을 때 이 항목에 붙일 Lynx timing flag입니다. 호스트가 이 flag가 달린 update
+   * pipeline 뒤에서만 지표를 걷으므로(FE ADR-0019), 항목마다 다른 이름을 줘야 어느
+   * 전환을 잰 것인지 갈립니다. 비선택 항목에는 붙지 않습니다 — 켜진 채로 두면 전환과
+   * 무관한 렌더까지 같은 이름으로 실려 측정이 섞입니다.
+   */
+  readonly timingFlag?: string;
 };
 
 export type BottomNavigatorEnabledItem = BottomNavigatorItemBase & {
@@ -50,6 +57,7 @@ export type BottomNavigatorItemContract = {
   readonly traits: "button" | "disabled";
   readonly iconColor: string;
   readonly pressedIconColor: string;
+  readonly timingFlag?: string;
   readonly badge?: { readonly kind: "dot" } | { readonly kind: "count"; readonly text: string };
 };
 
@@ -134,11 +142,15 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
     ]
       .filter((value): value is string => value !== undefined)
       .join(" ");
+    // 비선택은 gray-500입니다. 바 배경(#FFFDFC) 대비 1.48:1이라, 뜻을 지닌 그림에
+    // WCAG 1.4.11이 요구하는 3:1에 못 미칩니다 — 디자인을 그대로 따르기로 한
+    // 결정이며(2026-09-25), 라벨이 없어 글자로 보완할 길도 없습니다. 선택은 흰
+    // 아이콘 대 주황 알약으로 3.02:1이라 이 기준을 넘깁니다.
     const iconColor = disabled
       ? color.fg.disabled
       : selected
         ? color.fg["neutral-inverted"]
-        : color.fg["neutral-subtle"];
+        : color.gray["500"];
     const pressedIconColor = disabled
       ? color.fg.disabled
       : selected
@@ -167,6 +179,7 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
       traits: disabled ? "disabled" : "button",
       iconColor,
       pressedIconColor,
+      ...(selected && item.timingFlag ? { timingFlag: item.timingFlag } : {}),
       ...(badge.render ? { badge: badge.render } : {}),
     };
   });

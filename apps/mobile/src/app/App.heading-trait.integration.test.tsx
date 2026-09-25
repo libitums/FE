@@ -77,7 +77,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 // 여정 탭 → 스텝 tap → 시트 `시작` tap입니다. 다른 통합 파일들과 같은 형태입니다
 // (파일이 다르므로 다시 선언합니다).
 function startStep(stepId: JourneyStepId): void {
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-step-node-${stepId}`), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
@@ -186,7 +186,7 @@ test("[I2] 문화 화면이 선 합성 트리에서 제목 축에 오른 자리�
   // 같은 container 안에 함께 서 있고, 조작 단위 축(`button`)에 있지 제목 축에 있지
   // 않습니다. 이것이 참이어야 위 배열이 「화면만 본 것」이 아니라 「트리 전체를 쓴
   // 것」입니다.
-  const journeyTab = screen.getByTestId("bottom-navigator-tab-journey");
+  const journeyTab = screen.getByTestId("ui-lynx-bottom-navigator-item-journey");
   expect(container.contains(journeyTab)).toBe(true);
   expect(journeyTab).toHaveAttribute("accessibility-traits", "button");
 });
@@ -298,7 +298,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 notifications에서 계약이 고�
 test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual(["journey-map-screen-title"]);
@@ -307,7 +307,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정
 test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual(["roleplay-list-screen-title"]);
@@ -316,7 +316,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고�
 test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual(["settings-screen-title"]);
@@ -329,7 +329,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한
 test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
@@ -360,7 +360,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-question에서 계약이
 test("[HT1] 제목 축 닫힌 집합이 상태 profile에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
 
@@ -374,7 +374,7 @@ test("[HT2] 제목 축 닫힌 집합이 상태 terms에서 계약이 고정한 �
   const sections = termsSections();
   const { container } = renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   fireEvent.tap(screen.getByTestId("settings-nav-item-terms"), {});
   expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
 
