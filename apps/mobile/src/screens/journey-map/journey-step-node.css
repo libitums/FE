@@ -1,49 +1,14 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 링 요소를 두지 않으므로
-   여기서는 노드(마커) 하나만 그립니다 — "링 외경 72px" 산술은 적용하지 않습니다. */
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-/* 탭 대상 전체입니다. 링이 없어 터치 영역은 노드 + 라벨을 감싸는 이 상자
-   하나입니다. */
+   표식(원 · 링 · 아이콘 · 배지)은 ui-lynx `LearningUnit`이 그립니다. 여기 남는 것은
+   표식과 제목을 세로로 묶는 상자와 제목 글자뿐입니다 — 탭 대상도 표식 쪽입니다. */
+
+/* 표식과 제목을 세로로 묶습니다. 탭은 이 상자가 아니라 안쪽 표식이 받습니다. */
 .journey-step-node {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--libitum-spacing-4);
-}
-
-/* 노드 표식입니다. 세 상태 공통 치수만 base에 둡니다 — 색은 상태 클래스가 집니다. */
-.journey-step-node-marker {
-  width: var(--libitum-spacing-64);
-  height: var(--libitum-spacing-64);
-  border-radius: var(--libitum-radius-full);
-  border: var(--libitum-stroke-width-thin) solid;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 상태 클래스는 base 바로 뒤, 같은 파일에 선언합니다 — 특이도가 같아 순서가
-   결과를 가릅니다(`docs/conventions/code.md`, ADR-0003 D7). 완료 · 현재는 테두리를
-   채움과 같은 토큰으로 둬 안 보이게 합니다. */
-.journey-step-node-marker-done {
-  background: var(--libitum-color-feedback-correct);
-  border-color: var(--libitum-color-feedback-correct);
-}
-
-.journey-step-node-marker-current {
-  background: var(--libitum-color-brand-strong);
-  border-color: var(--libitum-color-brand-strong);
-}
-
-.journey-step-node-marker-locked {
-  background: var(--libitum-color-gray-300);
-  border-color: var(--libitum-color-border-default);
-}
-
-/* 크기만 줍니다. 색은 `current-color` 속성으로 넘깁니다(ADR-0014 D2) — 여기
-   `color`를 적으면 `<svg>`가 읽지 않아 아무 일도 하지 않습니다. */
-.journey-step-node-icon {
-  width: var(--libitum-icon-size-md);
-  height: var(--libitum-icon-size-md);
 }
 
 /* 라벨 색은 세 상태가 같습니다 — 상태 클래스를 만들지 않습니다. */

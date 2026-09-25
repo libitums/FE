@@ -22,6 +22,7 @@ import "@libitums/ui-lynx/button/styles.css";
 import "@libitums/ui-lynx/card/styles.css";
 import "@libitums/ui-lynx/chat-bubble/styles.css";
 import "@libitums/ui-lynx/fog/styles.css";
+import "@libitums/ui-lynx/learning-unit/styles.css";
 import "@libitums/ui-lynx/page-indicator.css";
 import "@libitums/ui-lynx/round-button/styles.css";
 import "@libitums/ui-lynx/status-indicator/styles.css";

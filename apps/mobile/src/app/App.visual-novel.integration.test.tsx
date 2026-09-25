@@ -75,13 +75,13 @@ function advanceToFinal(): void {
 
 function journeyStateSnapshot(): readonly (string | null)[] {
   return [
-    "journey-step-node-greeting",
-    "journey-step-node-introduction",
-    "journey-step-node-ordering",
-    "journey-step-node-appointment",
+    "ui-lynx-learning-unit-greeting",
+    "ui-lynx-learning-unit-introduction",
+    "ui-lynx-learning-unit-ordering",
+    "ui-lynx-learning-unit-appointment",
     "journey-messenger-item-appointment-confirmation",
     "journey-map-phone-call-appointment-confirmation-phone-call",
-    "journey-step-node-directions",
+    "ui-lynx-learning-unit-directions",
   ].map((testId) => screen.getByTestId(testId).getAttribute("data-status"));
 }
 
@@ -90,12 +90,14 @@ test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 �
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   const items = screen
-    .getAllByTestId(/^journey-(?:map-phone-call|map-visual-novel|step-node-directions)/)
+    .getAllByTestId(
+      /^(?:journey-map-phone-call|journey-map-visual-novel|ui-lynx-learning-unit-directions$)/,
+    )
     .map((node) => node.getAttribute("data-testid"));
   expect(items).toEqual([
     "journey-map-phone-call-appointment-confirmation-phone-call",
     unitTestId,
-    "journey-step-node-directions",
+    "ui-lynx-learning-unit-directions",
   ]);
 
   fireEvent.tap(screen.getByTestId(unitTestId), {});

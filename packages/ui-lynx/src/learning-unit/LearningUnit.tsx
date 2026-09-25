@@ -30,13 +30,12 @@ export function LearningUnit(props: LearningUnitProps) {
   return (
     <view
       className={contract.className}
-      data-testid="ui-lynx-learning-unit"
+      data-testid={contract.testId}
       data-status={contract.status}
       data-narrative={contract.narrative}
       data-focused={contract.focused ? "true" : "false"}
       accessibility-element={true}
       accessibility-label={contract.accessibilityLabel}
-      accessibility-value={contract.accessibilityValue}
       accessibility-traits={contract.traits}
       focusable={contract.interactive}
       bindtap={contract.interactive ? handleTap : undefined}
@@ -45,7 +44,7 @@ export function LearningUnit(props: LearningUnitProps) {
         <view className="ui-lynx-learning-unit-ring">
           <svg
             className="ui-lynx-learning-unit-ring-outline"
-            data-testid="ui-lynx-learning-unit-ring"
+            data-testid={`${contract.testId}-ring`}
             content={ringContent}
             current-color={contract.ringColor}
             accessibility-elements-hidden={true}
@@ -53,7 +52,7 @@ export function LearningUnit(props: LearningUnitProps) {
           <view className="ui-lynx-learning-unit-surface" accessibility-elements-hidden={true}>
             <svg
               className="ui-lynx-learning-unit-icon"
-              data-testid="ui-lynx-learning-unit-icon"
+              data-testid={`${contract.testId}-icon`}
               content={iconContent}
               current-color={contract.iconColor}
             />
@@ -62,7 +61,7 @@ export function LearningUnit(props: LearningUnitProps) {
         {contract.narrative === "narrative" ? (
           <view
             className="ui-lynx-learning-unit-badge"
-            data-testid="ui-lynx-learning-unit-badge"
+            data-testid={`${contract.testId}-badge`}
             accessibility-elements-hidden={true}
           >
             <svg

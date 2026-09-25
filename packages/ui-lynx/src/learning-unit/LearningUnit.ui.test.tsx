@@ -11,7 +11,7 @@ describe("LearningUnit", () => {
     const onTap = vi.fn<() => void>();
     render(<LearningUnit accessibilityLabel="쇼핑 표현 듣기" icon={headset} bindtap={onTap} />);
     const unit = screen.getByTestId("ui-lynx-learning-unit");
-    expect(unit).toHaveAttribute("accessibility-label", "쇼핑 표현 듣기");
+    expect(unit).toHaveAttribute("accessibility-label", "쇼핑 표현 듣기, 잠김");
     expect(unit).toHaveAttribute("accessibility-traits", "disabled");
     expect(unit).toHaveAttribute("focusable", "false");
     expect(unit).not.toHaveAttribute("accessibility-value");
@@ -32,7 +32,10 @@ describe("LearningUnit", () => {
     );
     const unit = screen.getByTestId("ui-lynx-learning-unit");
     expect(unit).toHaveAttribute("accessibility-traits", "button");
-    expect(unit).toHaveAttribute("accessibility-value", "현재 항목");
+    // 상태는 이름 뒤 접미사로 실립니다 — `accessibility-value`는 iOS에서 낭독되지
+    // 않아 ADR-0016 D3이 걷은 속성입니다.
+    expect(unit).toHaveAttribute("accessibility-label", "발음 연습, 현재 항목");
+    expect(unit).not.toHaveAttribute("accessibility-value");
     expect(unit).toHaveAttribute("focusable", "true");
     expect(unit).toHaveAttribute("data-focused", "true");
     expect(unit.className).toContain("ui-lynx-learning-unit-focused");
@@ -51,7 +54,8 @@ describe("LearningUnit", () => {
     );
     expect(screen.getByTestId("ui-lynx-learning-unit")).toHaveAttribute(
       "accessibility-label",
-      "문화 이야기, 이야기 연결",
+      // `clear`라 상태 접미사가 먼저 붙고 이야기 연결이 뒤따릅니다.
+      "문화 이야기, 완료됨, 이야기 연결",
     );
     expect(screen.getByTestId("ui-lynx-learning-unit-badge")).toHaveAttribute(
       "accessibility-elements-hidden",

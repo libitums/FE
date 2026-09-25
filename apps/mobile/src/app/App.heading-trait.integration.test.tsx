@@ -78,7 +78,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 // (파일이 다르므로 다시 선언합니다).
 function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`journey-step-node-${stepId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${stepId}`), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
@@ -322,7 +322,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한
   expect(headingAxis(container)).toEqual(["settings-screen-title"]);
 });
 
-// 시트 열림 — `journey-step-node-<stepId>` tap 직후, `시작`은 아직 안 눌렀습니다.
+// 시트 열림 — `ui-lynx-learning-unit-<stepId>` tap 직후, `시작`은 아직 안 눌렀습니다.
 // 맵 제목과 시트 제목이 같은 트리에 함께 섭니다(맵 컨테이너는
 // `accessibility-elements-hidden`로 가려지지만 그 속성은 조작 단위 축이고, 맵
 // 제목 자체는 그 컨테이너 밖에 있어 가려지지 않습니다).
@@ -330,7 +330,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 �
   const { container } = renderApp(<App />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual(["journey-map-screen-title", "step-sheet-title"]);
