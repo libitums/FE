@@ -314,7 +314,7 @@ describe("bottom-navigator.css", () => {
     );
     expect(styles).not.toMatch(/\.ui-lynx-bottom-navigator-item\s*\{[^}]*flex:/);
     expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator-icon\s*\{[^}]*width:\s*var\(--libitum-icon-size-lg\)[^}]*height:\s*var\(--libitum-icon-size-lg\)/,
+      /\.ui-lynx-bottom-navigator-icon\s*\{[^}]*width:\s*var\(--libitum-icon-size-md\)[^}]*height:\s*var\(--libitum-icon-size-md\)/,
     );
   });
 });

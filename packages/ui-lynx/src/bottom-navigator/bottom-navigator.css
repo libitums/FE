@@ -59,15 +59,18 @@
   background-color: var(--libitum-color-brand-primary-pressed);
 }
 
+/* 아이콘 상자는 24pt입니다. 디자인이 그리는 글리프가 18~20pt이고 패키지 아이콘은
+   상자의 약 72%를 채우므로, 24pt가 그 크기를 냅니다. 32pt로 두면 글리프가 23pt가 되어
+   알약을 꽉 채우고, 바가 실제 높이(48pt)보다 훨씬 두껍게 보입니다. */
 .ui-lynx-bottom-navigator-icon-area {
   position: relative;
-  width: var(--libitum-icon-size-lg);
-  height: var(--libitum-icon-size-lg);
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
 }
 
 .ui-lynx-bottom-navigator-icon {
-  width: var(--libitum-icon-size-lg);
-  height: var(--libitum-icon-size-lg);
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
 }
 
 .ui-lynx-bottom-navigator-icon-pressed {
