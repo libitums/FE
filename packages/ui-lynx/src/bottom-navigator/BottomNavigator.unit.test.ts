@@ -278,7 +278,7 @@ describe("bottom-navigator.css", () => {
   // 44pt와 Material의 48dp를 함께 넘기는 값입니다 — 줄이면 둘 다 깨집니다.
   test("항목 상자는 선택 여부와 무관하게 같은 크기다", () => {
     expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator-item\s*\{[^}]*width:\s*64px[^}]*height:\s*48px/,
+      /\.ui-lynx-bottom-navigator-item\s*\{[^}]*width:\s*var\(--libitum-spacing-64\)[^}]*height:\s*var\(--libitum-spacing-48\)/,
     );
     expect(styles).toMatch(
       /\.ui-lynx-bottom-navigator-surface\s*\{[^}]*width:\s*100%[^}]*height:\s*100%/,

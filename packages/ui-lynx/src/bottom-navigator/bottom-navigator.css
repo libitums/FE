@@ -35,11 +35,10 @@
 
    터치 영역도 이 상자입니다. 디자인 실측값은 58 × 40인데 **48pt로 키웠습니다** — 40은
    Apple HIG의 최소 터치 타깃 44pt와 Material의 48dp에 모두 못 미칩니다. 탭바는 엄지로
-   자주 누르는 자리라 그 차이가 오조작으로 나타납니다. 폭도 같은 비율로 64pt입니다.
-   이 치수에 맞는 토큰이 없어 px로 적습니다. */
+   자주 누르는 자리라 그 차이가 오조작으로 나타납니다. 폭도 같은 비율로 64pt입니다. */
 .ui-lynx-bottom-navigator-item {
-  width: 64px;
-  height: 48px;
+  width: var(--libitum-spacing-64);
+  height: var(--libitum-spacing-48);
   display: flex;
   align-items: center;
   justify-content: center;
