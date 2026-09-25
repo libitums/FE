@@ -158,6 +158,13 @@ const components = [
     modules: ["option-selector.contract"],
     css: "option-selector.css",
   },
+  {
+    subpath: "learning-unit",
+    directory: "learning-unit",
+    component: "LearningUnit",
+    modules: ["learning-unit.contract"],
+    css: "learning-unit.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -300,6 +307,13 @@ if (optionSelectorStylesExport !== "./dist/option-selector/option-selector.css")
 }
 if (!files.includes(`package/${optionSelectorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the OptionSelector CSS export target");
+}
+const learningUnitStylesExport = packedPackageJson.exports?.["./learning-unit/styles.css"];
+if (learningUnitStylesExport !== "./dist/learning-unit/learning-unit.css") {
+  throw new Error("packed package has an invalid ./learning-unit/styles.css export");
+}
+if (!files.includes(`package/${learningUnitStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the LearningUnit CSS export target");
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");

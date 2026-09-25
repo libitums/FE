@@ -226,6 +226,14 @@ export {
   isSameOptionSelection,
   nextOptionSelection,
 } from "./option-selector";
+
+export { LearningUnit, getLearningUnitContract } from "./learning-unit";
+export type {
+  LearningUnitContract,
+  LearningUnitNarrative,
+  LearningUnitProps,
+  LearningUnitStatus,
+} from "./learning-unit";
 export type {
   OptionSelectorCommit,
   OptionSelectorContentLanguage,
