@@ -96,7 +96,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 
 function openRoleplayTab(sinks: Sinks = {}) {
   renderApp(<App {...sinks} />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 }
 
 function openRoleplayItem(unitId: string) {
@@ -182,12 +182,12 @@ test("[I1] 실제 데이터로 선 목록 — 항목 셋이 여정 순서로 서
 
 test("[I1b] 여정에서 메신저를 완료해도 롤플레이 목록은 새지 않는다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   const list = screen.getByTestId("roleplay-list-screen-list");
   const itemTestIds = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
@@ -206,16 +206,16 @@ test("[I2] 메신저 항목을 열면 롤플레이 스택에 push되고 여정 �
   openRoleplayTab();
   openRoleplayItem(messengerUnitId);
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
     "롤플레이, 선택됨",
   );
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 });
 
@@ -223,16 +223,16 @@ test("[I2] 전화 항목을 열면 롤플레이 스택에 push되고 여정 스�
   openRoleplayTab();
   openRoleplayItem(phoneCallUnitId);
   expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
     "롤플레이, 선택됨",
   );
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("phone-call-screen")).not.toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
 });
 
@@ -240,16 +240,16 @@ test("[I2] 비주얼 노벨 항목을 열면 롤플레이 스택에 push되고 �
   openRoleplayTab();
   openRoleplayItem(visualNovelUnitId);
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
     "롤플레이, 선택됨",
   );
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("visual-novel-screen")).not.toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
 });
 
@@ -257,7 +257,7 @@ test("[I2] 비주얼 노벨 항목을 열면 롤플레이 스택에 push되고 �
 
 test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   // 여정에서 메신저를 완료합니다.
   fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
@@ -275,7 +275,7 @@ test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선
   expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   openRoleplayItem(messengerUnitId);
   expect(screen.getByTestId("messenger-screen-progress")).toHaveTextContent("대화 1 / 2");
@@ -302,14 +302,14 @@ test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선
 
 test("[I3] 여정에서 비주얼 노벨을 완료한 뒤에도 롤플레이는 arrive에서 시작한다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-map-visual-novel-${visualNovelUnitId}`), {});
   advanceVisualNovelOnce();
   advanceVisualNovelOnce();
   expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("이야기 완료");
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   openRoleplayItem(visualNovelUnitId);
   expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
   expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 1 / 3");
@@ -328,7 +328,7 @@ test("[I4] 롤플레이에서 연 메신저의 나가기는 목록으로이고 �
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 });
 
@@ -358,7 +358,7 @@ test("[I4] 롤플레이에서 연 비주얼 노벨의 나가기는 목록으로�
 
 test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대로다(회귀)", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
   expect(screen.getByTestId("messenger-screen-exit")).toHaveTextContent("맵으로");
@@ -376,10 +376,10 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
 
 test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 그대로다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   const before = journeyStateSnapshot();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   // 메신저: 끝까지 → 처음부터 보기 → 다시 끝까지 진행합니다.
   openRoleplayItem(messengerUnitId);
@@ -402,7 +402,7 @@ test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 �
   advanceVisualNovelOnce();
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(journeyStateSnapshot()).toEqual(before);
 
   fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
@@ -462,7 +462,7 @@ test("[I6] 전화는 열림 이벤트만 있고 출처로 journey·roleplay를 �
   ]);
 
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-map-phone-call-${phoneCallUnitId}`), {});
 
   expect(phoneCallEventSink).toHaveBeenLastCalledWith({
@@ -523,7 +523,7 @@ test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지�
       <App messengerEventSink={null} phoneCallEventSink={null} visualNovelEventSink={null} />,
     ),
   ).not.toThrow();
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   expect(() => openRoleplayItem(messengerUnitId)).not.toThrow();
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
@@ -539,6 +539,6 @@ test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지�
   expect(() => openRoleplayItem(visualNovelUnitId)).not.toThrow();
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 });

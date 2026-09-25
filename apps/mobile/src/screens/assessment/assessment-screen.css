@@ -15,8 +15,15 @@
      않으면 높이가 고정된 자식(제목·액션 행)이 늘어납니다. */
   justify-content: flex-start;
   gap: var(--libitum-layout-gap-block);
+  /* 아래 여백에 바텀 네비게이션 몫을 더합니다 — 바가 콘텐츠 위에 겹치므로(app.css의
+     `.app-navigator`) 이것이 없으면 액션 행이 바에 가립니다. 더하는 값은 바 높이 68pt입니다
+     (위 여백 8 + 항목 48 + 아래 여백 12). 스크롤 안쪽이 아니라 루트에 둡니다 — 액션
+     행은 조건부라, 버튼이 없는 상태에서는 스크롤이 마지막 자식이 됩니다. */
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
-    var(--libitum-layout-screen-padding-bottom);
+    calc(
+      var(--libitum-layout-screen-padding-bottom) + var(--libitum-spacing-48) +
+        var(--libitum-spacing-12)
+    );
   background: var(--libitum-color-background-primary);
 }
 

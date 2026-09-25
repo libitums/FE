@@ -50,35 +50,35 @@ test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", () => {
   renderApp(<App />);
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "false",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "false",
   );
-  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 });
 
 test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오고 설정 화면은 사라진다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
   expect(screen.queryByTestId("settings-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "false",
   );
@@ -86,18 +86,18 @@ test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오
 
 test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 여정 맵 화면은 사라진다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
   expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "false",
   );
@@ -105,18 +105,18 @@ test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면�
 
 test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 여정 맵 화면은 사라진다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "false",
   );
@@ -125,17 +125,17 @@ test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 
 test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이 그대로 다시 나온다", () => {
   renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "true",
   );
@@ -148,7 +148,7 @@ test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이
 test("여정 탭으로 전환하면 스텝 다섯이 전부 렌더된다", () => {
   renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.getByTestId("journey-step-node-greeting")).toBeInTheDocument();
   expect(screen.getByTestId("journey-step-node-introduction")).toBeInTheDocument();
@@ -162,23 +162,23 @@ test("여정 탭으로 전환하면 스텝 다섯이 전부 렌더된다", () =>
 // 것으로 대신 봅니다. 셸이 사라지거나 선택이 바뀌면 스택이 깊어졌다는 신호입니다.
 test("스텝을 누르면 시트가 열리고 셸이 그대로다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toBeInTheDocument();
-  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 });
 
 test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대로다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
@@ -186,9 +186,9 @@ test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대�
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toBeInTheDocument();
-  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 });
 
 // 시트 상태는 `Nav`가 아니라 화면 로컬 상태입니다(ADR-0007 D1) — 탭을 떠나면
@@ -197,12 +197,12 @@ test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대�
 // 탭이 없으므로).
 test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 시트가 닫혀 있다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
@@ -210,15 +210,15 @@ test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 �
 
 test("시트가 열린 동안에도 탭 전환이 동작한다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
   expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
   );
@@ -238,7 +238,7 @@ test("시트가 열린 동안에도 탭 전환이 동작한다", () => {
 // 앵커로 잡습니다 — 뒤에 오는 부재 단언(`step-sheet-panel`이 없음을 보는 단언)이
 // 공허해지지 않도록.
 function startStep(stepId: JourneyStepId): void {
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-step-node-${stepId}`), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
@@ -313,13 +313,13 @@ test("학습 화면에서도 탭 셋이 그대로 조작되고, 돌아오면 화
   renderApp(<App />);
   startStep("ordering");
 
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toBeInTheDocument();
-  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 
   fireEvent.tap(
     screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
@@ -328,12 +328,12 @@ test("학습 화면에서도 탭 셋이 그대로 조작되고, 돌아오면 화
   fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3");
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("3단계 · 듣기");
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
@@ -456,7 +456,7 @@ test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있�
 // 앵커로 삼습니다.
 test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-step-node-directions")).toHaveAttribute(
     "data-status",
     "locked",
@@ -485,7 +485,7 @@ test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행
 
   cleanup();
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute(
     "data-status",
@@ -823,13 +823,13 @@ test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 �
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0), STOP]);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
   expect(sourcesOf(calls)).toEqual([
@@ -872,11 +872,11 @@ test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 
   const operable = [...container.querySelectorAll("[accessibility-element]")].map((el) =>
     el.getAttribute("data-testid"),
   );
-  const inShell = operable.filter((id) => id?.startsWith("bottom-navigator-tab-"));
-  const inScreen = operable.filter((id) => !id?.startsWith("bottom-navigator-tab-"));
+  const inShell = operable.filter((id) => id?.startsWith("ui-lynx-bottom-navigator-item-"));
+  const inScreen = operable.filter((id) => !id?.startsWith("ui-lynx-bottom-navigator-item-"));
 
   // 셸이 함께 서 있습니다 — `ui`가 만들 수 없는 트리라는 것의 관측 가능한 형태입니다.
-  expect(inShell).toContain("bottom-navigator-tab-journey");
+  expect(inShell).toContain("ui-lynx-bottom-navigator-item-journey");
   // 그리고 학습 화면 안의 조작 단위는 정확히 하나입니다.
   expect(inScreen).toEqual(["listening-screen-finish"]);
 
@@ -958,11 +958,11 @@ test("탭 셋을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 
 
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-screen-scroll")).toBeInTheDocument();
   expect(screen.queryByTestId("journey-map-screen-scroll")).not.toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-scroll")).toBeInTheDocument();
   expect(screen.queryByTestId("roleplay-list-screen-scroll")).not.toBeInTheDocument();
 });
@@ -984,7 +984,7 @@ test("탭이 아니라 스택에 쌓인 화면(듣기)에도 스크롤 컨테이
 // 컨테이너는 사라지지 않습니다.
 test("시트가 열려 있어도 여정 맵의 스크롤 컨테이너는 그대로다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});

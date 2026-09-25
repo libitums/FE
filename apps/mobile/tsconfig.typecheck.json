@@ -16,6 +16,9 @@
       "@libitums/ui-lynx/status-indicator": [
         "../../packages/ui-lynx/src/status-indicator/index.ts"
       ],
+      "@libitums/ui-lynx/bottom-navigator": [
+        "../../packages/ui-lynx/src/bottom-navigator/index.ts"
+      ],
       "@libitums/ui-lynx/bottom-sheet": ["../../packages/ui-lynx/src/bottom-sheet/index.ts"],
       "@libitums/ui-lynx/fog": ["../../packages/ui-lynx/src/fog/index.ts"]
     }

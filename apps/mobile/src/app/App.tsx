@@ -104,8 +104,13 @@ export function App({
   // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼
   // 안쪽 여백을 잡습니다. 여백은 셸 배경이 칠하고, 스플래시일 때만 그 배경이
   // 브랜드색입니다(lib/safe-area.ts).
+  //
+  // 아래쪽만 예외입니다 — 바텀 네비게이션이 서면 셸은 아래를 비우지 않습니다. 바가
+  // 화면 바닥까지 배경을 칠하고 홈 인디케이터를 피하는 여백을 스스로 지기 때문입니다.
+  // iOS 기본 탭바와 같은 형태입니다.
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const screenNow = currentScreen(nav);
+  const showsNavigator = !isEntrySection(nav);
 
   return (
     <ErrorBoundary>
@@ -113,26 +118,34 @@ export function App({
         className={screenNow.name === "splash" ? "app app-splash" : "app"}
         style={{
           paddingTop: `${insets.top}px`,
-          paddingBottom: `${insets.bottom}px`,
+          // 바가 설 때 아래는 비우지 않습니다 — 바가 화면 바닥까지 배경을 칠하고,
+          // 홈 인디케이터를 피하는 여백은 바 자신의 `padding-bottom`이 집니다.
+          paddingBottom: `${showsNavigator ? 0 : insets.bottom}px`,
           paddingLeft: `${insets.left}px`,
           paddingRight: `${insets.right}px`,
         }}
       >
         <view className="app-content">{renderScreen(screenNow, wiring)}</view>
         {/* 진입 구간(`entry`가 비지 않은 동안)에는 탭 전환 수단을 보이지
-            않습니다 — `enterApp`이 `entry`를 비운 뒤에야 처음 섭니다. */}
-        {isEntrySection(nav) ? null : (
-          <BottomNavigator
-            tab={nav.tab}
-            onSelectTab={(tab) => {
-              // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
-              // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
-              if (tab === "settings" && nav.tab !== "settings")
-                settingsEventSink?.({ name: "settings_opened" });
-              dispatch({ type: "switchTab", tab });
-            }}
-          />
-        )}
+            않습니다 — `enterApp`이 `entry`를 비운 뒤에야 처음 섭니다.
+
+            바는 콘텐츠 **위에 겹칩니다**(`.app-navigator`). 그래야 바 위쪽 모서리
+            밖으로 콘텐츠가 비쳐 라운드가 드러납니다. 콘텐츠가 바에 가리지 않는 일은
+            화면이 집니다 — 화면 하단 여백이 그 몫입니다. */}
+        {showsNavigator ? (
+          <view className="app-navigator">
+            <BottomNavigator
+              tab={nav.tab}
+              onSelectTab={(tab) => {
+                // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
+                // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
+                if (tab === "settings" && nav.tab !== "settings")
+                  settingsEventSink?.({ name: "settings_opened" });
+                dispatch({ type: "switchTab", tab });
+              }}
+            />
+          </view>
+        ) : null}
       </view>
     </ErrorBoundary>
   );

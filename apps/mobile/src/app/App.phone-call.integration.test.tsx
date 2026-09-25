@@ -38,7 +38,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 
 function openJourney() {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 }
 
 describe("App · phone-call integration", () => {
@@ -161,9 +161,9 @@ describe("App · phone-call integration", () => {
       screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
       {},
     );
-    fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
     expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
-    fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
     expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
     fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
@@ -175,7 +175,7 @@ describe("App · phone-call integration", () => {
   it("맵 항목 tap마다 push 전에 phone_call_unit_opened(journey)이 entryStatus와 함께 1건 온다", () => {
     const phoneCallEventSink = vi.fn<NonNullable<PhoneCallEventSink>>();
     renderApp(<App phoneCallEventSink={phoneCallEventSink} />);
-    fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
     fireEvent.tap(
       screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),

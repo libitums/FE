@@ -15,6 +15,8 @@ import "@libitums/ui-lynx/option-selector/styles.css";
 // PageIndicator · RoundButton · StatusIndicator의 CSS 진입점입니다. 같은 이유로
 // subpath만 부릅니다.
 import "@libitums/ui-lynx/answer-label/styles.css";
+// 바텀 네비게이션은 셸이 항상 세우므로 여기서 함께 부릅니다.
+import "@libitums/ui-lynx/bottom-navigator/styles.css";
 import "@libitums/ui-lynx/bottom-sheet/styles.css";
 import "@libitums/ui-lynx/button/styles.css";
 import "@libitums/ui-lynx/card/styles.css";

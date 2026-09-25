@@ -73,9 +73,17 @@
    gap이 없으므로 항목 간격은 이 상자가 집니다(롤플레이 목록 선례).
    `padding-bottom`을 두지 않습니다 — 마지막 항목 아래 빈 띠가 「여기가 끝」으로
    읽혀 넘침 어포던스를 지웁니다(ADR-0022 D4, 롤플레이 목록과 같은 근거). */
+/* 아래 여백은 바텀 네비게이션 몫입니다 — 바가 콘텐츠 위에 겹치므로(app.css의
+   `.app-navigator`) 이 여백이 없으면 마지막 항목이 바에 가립니다. 값은 바 높이 68pt입니다
+   (위 여백 8 + 항목 48 + 아래 여백 12).
+
+   ADR-0022 D4는 「마지막 항목 아래 빈 띠가 끝으로 읽혀 넘침 어포던스를 지운다」는
+   이유로 이 여백을 두지 않았습니다. 그 저울이 뒤집혔습니다 — 여백이 없으면 어포던스가
+   흐려지는 정도가 아니라 **항목이 사라집니다**. */
 .notifications-screen-list {
   display: flex;
   flex-direction: column;
   gap: var(--libitum-layout-gap-block);
   padding-top: var(--libitum-spacing-16);
+  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
 }

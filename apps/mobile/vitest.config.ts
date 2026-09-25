@@ -40,6 +40,9 @@ export default defineConfig({
       "@libitums/ui-lynx/status-indicator": fileURLToPath(
         new URL("../../packages/ui-lynx/src/status-indicator/index.ts", import.meta.url),
       ),
+      "@libitums/ui-lynx/bottom-navigator": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/bottom-navigator/index.ts", import.meta.url),
+      ),
       "@libitums/ui-lynx/bottom-sheet": fileURLToPath(
         new URL("../../packages/ui-lynx/src/bottom-sheet/index.ts", import.meta.url),
       ),

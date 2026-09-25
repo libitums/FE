@@ -40,7 +40,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 
 function openJourneyMessenger(messengerEventSink?: MessengerEventSink) {
   renderApp(<App messengerEventSink={messengerEventSink} />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
 }
 
@@ -74,7 +74,7 @@ test("두 답장을 완료하면 마지막 메시지와 맵 완료 표식이 함
 
 test("메신저 완료는 일반 completedStepCount와 directions 상태를 바꾸지 않는다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   // initialCompletedStepCount=2입니다: greeting/소개는 done, appointment/directions는 locked입니다.
   expect(screen.getByTestId("journey-step-node-greeting")).toHaveAttribute("data-status", "done");
   expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
@@ -138,9 +138,9 @@ test("중복 완료는 완료 표식을 멱등적으로 유지한다", () => {
 
 test("다른 탭은 메신저와 공존하며 기존 탭 전환 동작을 유지한다", () => {
   openJourneyMessenger();
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   // 탭별 stack은 보존되므로 여정 탭으로 돌아오면 messenger가 다시 최상단입니다.
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 });

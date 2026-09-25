@@ -64,7 +64,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 
 function openJourneyVisualNovel(visualNovelEventSink?: VisualNovelEventSink): void {
   renderApp(<App visualNovelEventSink={visualNovelEventSink} />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(unitTestId), {});
 }
 
@@ -87,7 +87,7 @@ function journeyStateSnapshot(): readonly (string | null)[] {
 
 test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 첫 장면이 push된다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   const items = screen
     .getAllByTestId(/^journey-(?:map-phone-call|map-visual-novel|step-node-directions)/)
@@ -106,7 +106,7 @@ test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 �
 
 test("미완료 이탈은 마지막 도달 장면을 보존하고 기존 여정 상태를 바꾸지 않는다", () => {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   const before = journeyStateSnapshot();
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
@@ -224,7 +224,7 @@ test("sink는 opened, incomplete exit, completion, completed re-entry, replay를
 
 test("null sink에서도 완료와 재진입 동작은 같다", () => {
   renderApp(<App visualNovelEventSink={null} />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   advanceToFinal();
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
@@ -236,7 +236,7 @@ test("null sink에서도 완료와 재진입 동작은 같다", () => {
 test("visual novel 완료는 messenger 상태·이벤트와 phone audio를 바꾸지 않는다", () => {
   const messengerEventSink = vi.fn<NonNullable<MessengerEventSink>>();
   renderApp(<App messengerEventSink={messengerEventSink} />);
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
   fireEvent.tap(screen.getByTestId("messenger-reply-self-accept"), {});

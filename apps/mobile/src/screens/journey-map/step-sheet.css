@@ -27,7 +27,11 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  /* 바텀 네비게이션 몫만큼 띄웁니다 — 바가 콘텐츠 위에 겹치므로(app.css의
+     `.app-navigator`) 0으로 두면 패널 아래쪽이 바에 가립니다. 값은 바 높이 68pt입니다
+     (위 여백 8 + 항목 48 + 아래 여백 12). 가림막(`.step-sheet-scrim`)은 화면 전체를
+     덮어야 하므로 그대로 둡니다. */
+  bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
   z-index: var(--libitum-elevation-z-sheet);
   background: var(--libitum-elevation-surface-floating);
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);

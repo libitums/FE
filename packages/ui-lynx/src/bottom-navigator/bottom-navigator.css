@@ -1,43 +1,43 @@
+/* 화면 바닥에 붙이는 일은 이 바가 하지 않습니다. `position: fixed`로 두면 셸의 세로
+   흐름에서 빠져 콘텐츠가 바 뒤로 숨고, safe area 여백도 셸과 두 번 겹칩니다 — 바를
+   어디에 세울지는 바를 담는 셸이 정합니다. */
 .ui-lynx-bottom-navigator {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--libitum-spacing-20) var(--libitum-spacing-24);
-  padding-bottom: calc(var(--libitum-spacing-20) + env(safe-area-inset-bottom));
-  border-radius: var(--libitum-radius-md) var(--libitum-radius-md) 0 0;
-  background-color: var(--libitum-color-white);
-  box-shadow: 0 -4px 4px rgba(26, 28, 32, var(--libitum-opacity-8, 0.08));
+  /* 세로 패딩은 위아래가 다릅니다. 아래 12px은 바가 화면 바닥에 닿은 채로 아이콘을
+     홈 인디케이터에서 띄우는 몫입니다 — 바를 띄워 두면 그 아래로 화면 배경이 비쳐
+     바가 뚫린 것처럼 보입니다(배경이 이미지인 화면에서 특히). iOS 기본 탭바도 배경은
+     바닥까지 차고 아이콘만 위에 둡니다.
+
+     바 높이는 8 + 48 + 12 = 68pt입니다. 터치 영역은 항목 상자가 지므로 이 여백은
+     터치 크기에 관여하지 않습니다. */
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-24) var(--libitum-spacing-12);
+  /* 위쪽 두 모서리만 둥급니다. 구분선은 두지 않습니다 — 라운드와 배경 차이가 콘텐츠와
+     바를 가릅니다. */
+  border-radius: var(--libitum-radius-xl) var(--libitum-radius-xl) 0 0;
+  background-color: var(--libitum-color-background-primary);
 }
 
+/* 항목은 폭을 나눠 갖지 않고 고정 간격으로 가운데 모입니다. 항목 수가 3~5로 바뀌어도
+   항목 크기가 따라 변하지 않아, 탭 하나를 더하거나 빼도 나머지가 제자리에 있습니다. */
 .ui-lynx-bottom-navigator-items {
-  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: var(--libitum-spacing-32);
 }
 
-.ui-lynx-bottom-navigator-items-3 {
-  max-width: 220px;
-}
+/* 항목 상자는 선택 여부와 무관하게 같은 크기입니다 — 선택될 때만 넓어지면 이웃 항목이
+   옆으로 밀립니다.
 
-.ui-lynx-bottom-navigator-items-4 {
-  max-width: 300px;
-}
-
-.ui-lynx-bottom-navigator-items-5 {
-  max-width: 380px;
-}
-
+   터치 영역도 이 상자입니다. 디자인 실측값은 58 × 40인데 **48pt로 키웠습니다** — 40은
+   Apple HIG의 최소 터치 타깃 44pt와 Material의 48dp에 모두 못 미칩니다. 탭바는 엄지로
+   자주 누르는 자리라 그 차이가 오조작으로 나타납니다. 폭도 같은 비율로 64pt입니다. */
 .ui-lynx-bottom-navigator-item {
-  flex: 1 1 0;
-  min-width: var(--libitum-spacing-48);
-  max-width: var(--libitum-spacing-48);
+  width: var(--libitum-spacing-64);
   height: var(--libitum-spacing-48);
   display: flex;
   align-items: center;
@@ -45,13 +45,10 @@
   border-radius: var(--libitum-radius-full);
 }
 
-.ui-lynx-bottom-navigator-item-selected {
-  max-width: 60px;
-}
-
+/* 알약을 칠하는 면입니다. 항목 상자와 같은 크기라, 선택 여부는 배경색만 가릅니다. */
 .ui-lynx-bottom-navigator-surface {
-  width: var(--libitum-spacing-40);
-  height: var(--libitum-spacing-40);
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -59,8 +56,9 @@
   background-color: transparent;
 }
 
+/* 선택은 색과 **알약 배경**으로 함께 전달됩니다. 색만으로 상태를 전달하지 않기 위한
+   형태 채널입니다(WCAG 1.4.1). */
 .ui-lynx-bottom-navigator-item-selected .ui-lynx-bottom-navigator-surface {
-  width: 60px;
   background-color: var(--libitum-color-brand-primary);
 }
 
@@ -68,15 +66,19 @@
   background-color: var(--libitum-color-brand-primary-pressed);
 }
 
+/* 아이콘 상자는 32pt입니다. 디자인이 그리는 글리프는 18~20pt이지만 **이 바에는 라벨이
+   없어** 아이콘 하나가 탭의 유일한 식별 단서입니다 — 라벨이 있는 바와 같은 크기를 쓰면
+   읽는 부담이 그만큼 커집니다. 알약이 64 × 48이라 32pt 상자를 넣어도 위아래 8pt가
+   남습니다. 알약이 40pt이던 때는 같은 32pt가 상자를 꽉 채워 바가 두꺼워 보였습니다. */
 .ui-lynx-bottom-navigator-icon-area {
   position: relative;
-  width: var(--libitum-icon-size-sm);
-  height: var(--libitum-icon-size-sm);
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
 }
 
 .ui-lynx-bottom-navigator-icon {
-  width: var(--libitum-icon-size-sm);
-  height: var(--libitum-icon-size-sm);
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
 }
 
 .ui-lynx-bottom-navigator-icon-pressed {

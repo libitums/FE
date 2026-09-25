@@ -37,6 +37,7 @@ function BottomNavigatorCell({ item, contract, onSelect }: BottomNavigatorCellPr
       accessibility-element={true}
       accessibility-label={contract.accessibilityLabel}
       accessibility-traits={contract.traits}
+      {...(contract.timingFlag ? { __lynx_timing_flag: contract.timingFlag } : {})}
       bindtap={contract.interactive ? handleTap : undefined}
     >
       <view className="ui-lynx-bottom-navigator-surface">

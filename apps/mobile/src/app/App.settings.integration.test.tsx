@@ -24,14 +24,14 @@ import { entrySplashDurationMs } from "../lib/entry-flow";
 // · `App.integration.test.tsx`의 동명 헬퍼와 같은 형태입니다(파일이 다르므로 다시
 // 선언합니다).
 function startStep(stepId: JourneyStepId): void {
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`journey-step-node-${stepId}`), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
 
 function openSettingsTab(): void {
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 }
 
 // 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
@@ -114,11 +114,11 @@ test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 �
   fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
 
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.queryAllByTestId(/^bottom-navigator-tab-/)).toHaveLength(3);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 });
 
 // ------------------------------------------------------------------------- IT3
@@ -245,7 +245,7 @@ test("[IT9] 설정 sink는 설정 탭 tap마다 발화하고 이미 설정 탭�
     { name: "settings_opened" },
   ]);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   openSettingsTab();
   expect(settingsEventSink.mock.calls.map(([event]) => event)).toEqual([
     { name: "settings_opened" },
@@ -350,7 +350,7 @@ test("[IT13] 설정 탭 스택 보존 — 프로필을 연 채 여정 탭을 다
   fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
 
   openSettingsTab();

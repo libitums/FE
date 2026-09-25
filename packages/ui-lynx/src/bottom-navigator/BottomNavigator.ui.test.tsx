@@ -98,7 +98,7 @@ describe("BottomNavigator", () => {
     const journeyDefault = screen.getByTestId("ui-lynx-bottom-navigator-icon-journey-default");
     expect(homeDefault).toHaveAttribute(
       "content",
-      house.replace(/currentColor/g, color.fg["neutral-subtle"]),
+      house.replace(/currentColor/g, color.gray["500"]),
     );
     expect(homePressed).toHaveAttribute(
       "content",
@@ -145,6 +145,34 @@ describe("BottomNavigator", () => {
       `${longLabel}, 선택됨`,
     );
     expect(screen.queryByText(longLabel)).not.toBeInTheDocument();
+  });
+
+  // 계약이 실은 flag가 실제로 DOM 속성까지 가는지 봅니다 — 계약만 맞고 속성이 빠지면
+  // 성능 수집이 조용히 아무것도 걷지 못합니다(FE ADR-0019).
+  test("선택된 항목에만 __lynx_timing_flag가 붙는다", () => {
+    const flagged = items
+      .slice(0, 3)
+      .map((item) => ({ ...item, timingFlag: `libitum:navigation:${item.id}` }));
+    render(<BottomNavigator items={flagged} selectedId="journey" />);
+
+    expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
+      "__lynx_timing_flag",
+      "libitum:navigation:journey",
+    );
+    expect(screen.getByTestId("ui-lynx-bottom-navigator-item-home")).not.toHaveAttribute(
+      "__lynx_timing_flag",
+    );
+    expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).not.toHaveAttribute(
+      "__lynx_timing_flag",
+    );
+  });
+
+  test("timing flag를 주지 않으면 어느 항목에도 붙지 않는다", () => {
+    render(<BottomNavigator items={items.slice(0, 3)} selectedId="journey" />);
+
+    expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).not.toHaveAttribute(
+      "__lynx_timing_flag",
+    );
   });
 
   test("disabled 이유를 같은 focus node의 접근성 이름으로 전달한다", () => {

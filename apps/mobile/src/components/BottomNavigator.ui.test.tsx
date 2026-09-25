@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
-import map from "@libitums/icons/lynx/map";
-import userGroup from "@libitums/icons/lynx/user-group";
+import flag from "@libitums/icons/lynx/flag-03";
+import friends from "@libitums/icons/lynx/friends";
 import settings from "@libitums/icons/lynx/settings";
 import { color } from "@libitums/design-tokens";
 
@@ -12,68 +12,73 @@ import type { Tab } from "../app/navigation";
 // jsdom이 계산하지 않으므로 여기서 단언하지 않습니다 — `toHaveClass`·`toHaveStyle`을
 // 쓰지 않습니다(docs/conventions/code.md).
 //
-// 선택 지시선(`.bottom-navigator-indicator`)은 testid가 없고 항상 렌더되므로
-// 존재 자체는 여기서 단언하지 않습니다 — 실패할 수 없는 단언은 검증이 아닙니다.
-// 다만 그 위에 붙는 `accessibility-elements-hidden`의 재부착 여부는 아래에서 클래스
-// 셀렉터로 찾아 봅니다.
+// 이 컴포넌트는 ui-lynx `BottomNavigator`의 어댑터입니다. 시각·접근성 속성·포커스
+// 순서는 그 패키지의 테스트가 보고, 여기서는 **결선**만 봅니다 — 어느 탭에 어느
+// 아이콘·이름·timing flag가 실리는지, 그리고 선택이 `Tab`으로 되돌아오는지.
+// 그래서 testid도 ui-lynx가 찍는 이름을 그대로 씁니다.
 //
 // 이 파일은 `"home"` 리터럴을 한 곳도 남기지 않습니다 — `Tab`에 `"home"`이 있을
 // 때도 없을 때도 tsc를 통과해야 합니다.
 
-test("탭 셋이 렌더되고 각자 라벨을 갖는다", () => {
+// ui-lynx는 아이콘 XML의 `currentColor`를 상태별 색으로 치환해 넘깁니다. 원본 문자열과
+// 그대로 견주면 언제나 어긋나므로, 같은 치환을 거친 값과 견줍니다.
+const unselected = (icon: string) => icon.replace(/currentColor/g, color.gray["500"]);
+const selected = (icon: string) => icon.replace(/currentColor/g, color.fg["neutral-inverted"]);
+
+test("탭 셋에 각자 제 아이콘이 실린다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveTextContent("여정");
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveTextContent("롤플레이");
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveTextContent("설정");
-});
-
-test("아이콘 셋이 자기 패키지 모듈 문자열을 content 속성으로 갖는다", () => {
-  render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
-
-  // 뒤바뀐 결선(예: settings 탭에 map 아이콘)을 여기서 잡습니다.
-  expect(screen.getByTestId("bottom-navigator-icon-journey")).toHaveAttribute("content", map);
-  expect(screen.getByTestId("bottom-navigator-icon-roleplay")).toHaveAttribute(
+  // 뒤바뀐 결선(예: settings 탭에 flag 아이콘)을 여기서 잡습니다.
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-journey-default")).toHaveAttribute(
     "content",
-    userGroup,
+    selected(flag),
   );
-  expect(screen.getByTestId("bottom-navigator-icon-settings")).toHaveAttribute("content", settings);
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-roleplay-default")).toHaveAttribute(
+    "content",
+    unselected(friends),
+  );
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-settings-default")).toHaveAttribute(
+    "content",
+    unselected(settings),
+  );
 });
 
 test("선택 상태가 data-selected로 노출된다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "false",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "false",
   );
 });
 
+// 성능 수집은 이 flag가 달린 update pipeline 뒤에서만 지표를 걷습니다(ADR-0019).
+// 어댑터가 flag를 넘기지 않으면 측정이 조용히 아무것도 잡지 못하므로 여기서 답니다.
 test("선택된 탭만 안정적인 성능 timing flag를 갖는다", () => {
   const { rerender } = render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "__lynx_timing_flag",
     "libitum:navigation:journey",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).not.toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).not.toHaveAttribute(
     "__lynx_timing_flag",
   );
 
   rerender(<BottomNavigator tab="settings" onSelectTab={() => {}} />);
 
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).not.toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).not.toHaveAttribute(
     "__lynx_timing_flag",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "__lynx_timing_flag",
     "libitum:navigation:settings",
   );
@@ -83,15 +88,15 @@ test("탭을 tap하면 onSelectTab이 그 탭 이름으로 정확히 한 번 불
   const onSelectTab = vi.fn<(tab: Tab) => void>();
   render(<BottomNavigator tab="journey" onSelectTab={onSelectTab} />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(onSelectTab).toHaveBeenCalledTimes(1);
   expect(onSelectTab).toHaveBeenCalledWith("journey");
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-roleplay"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(onSelectTab).toHaveBeenCalledTimes(2);
   expect(onSelectTab).toHaveBeenCalledWith("roleplay");
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(onSelectTab).toHaveBeenCalledTimes(3);
   expect(onSelectTab).toHaveBeenCalledWith("settings");
 });
@@ -100,52 +105,49 @@ test("이미 선택된 탭을 tap해도 onSelectTab이 불린다 — 셸은 걸�
   const onSelectTab = vi.fn<(tab: Tab) => void>();
   render(<BottomNavigator tab="journey" onSelectTab={onSelectTab} />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(onSelectTab).toHaveBeenCalledTimes(1);
   expect(onSelectTab).toHaveBeenCalledWith("journey");
 });
 
-test("아이콘 색이 선택 상태에 따라 갈린다", () => {
-  render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
-
-  const selectedIcon = screen.getByTestId("bottom-navigator-icon-journey");
-  expect(selectedIcon).toHaveAttribute("current-color", color.fg.brand);
-
-  const roleplay = screen.getByTestId("bottom-navigator-icon-roleplay");
-  const settingsIcon = screen.getByTestId("bottom-navigator-icon-settings");
-  expect(roleplay).toHaveAttribute("current-color", color.fg["neutral-muted"]);
-  expect(settingsIcon).toHaveAttribute("current-color", color.fg["neutral-muted"]);
-});
-
 test("셸은 상태를 갖지 않는다 — 선택 표시는 tab prop에서만 파생된다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  fireEvent.tap(screen.getByTestId("bottom-navigator-tab-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   // onSelectTab만 호출됐을 뿐, `tab` prop이 바뀌지 않았으므로 렌더 상태는 그대로입니다.
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "false",
   );
 });
 
-// ---------------------------------------------------------------------- 접근성 (2026-09-02)
-// `data-selected`·`current-color`와 같은 대우로 선택/비선택 두 상태 모두에서 봅니다.
+// ---------------------------------------------------------------------- 접근성
+// 디자인이 라벨을 걷어 아이콘만 남겼으므로, 탭을 구분하는 이름은 전부
+// `accessibility-label`에만 있습니다. 이 이름이 흐려지면 바는 스크린리더에서 구분할
+// 수 없는 그림 셋이 됩니다.
 //
 // 선택 상태는 `accessibility-value`가 아니라 `accessibility-label`의 접미사
 // (`", 선택됨"`)로 실립니다 — iOS 실기에서 `accessibility-value`가 낭독되지 않아
-// 뒤집혔습니다(ADR-0016 D3과 정정 기록). `accessibility-value`는 어느 상태에서도
-// 붙지 않으므로 부재 단언도 두지 않습니다.
+// 뒤집혔습니다(ADR-0016 D3과 정정 기록).
+
+test("탭에 보이는 글자가 없다 — 이름은 accessibility-label만 진다", () => {
+  render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
+
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveTextContent("");
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveTextContent("");
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveTextContent("");
+});
 
 test("선택된 탭의 accessibility-label은 라벨 뒤에 선택됨 접미사가 붙는다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "accessibility-label",
     "여정, 선택됨",
   );
@@ -154,101 +156,35 @@ test("선택된 탭의 accessibility-label은 라벨 뒤에 선택됨 접미사�
 test("비선택 탭들도 각자 자기 라벨을 accessibility-label로 갖는다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
     "롤플레이",
   );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "accessibility-label",
     "설정",
   );
 });
 
-test("탭 셋 모두 accessibility-traits가 button이다 — 선택 여부로 갈리지 않는다", () => {
-  render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
-
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
-    "accessibility-traits",
-    "button",
-  );
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
-    "accessibility-traits",
-    "button",
-  );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
-    "accessibility-traits",
-    "button",
-  );
-});
-
-test("탭 셋 모두 accessibility-element가 true다 — 선택 여부로 갈리지 않는다", () => {
-  render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
-
-  expect(screen.getByTestId("bottom-navigator-tab-journey")).toHaveAttribute(
-    "accessibility-element",
-    "true",
-  );
-  expect(screen.getByTestId("bottom-navigator-tab-roleplay")).toHaveAttribute(
-    "accessibility-element",
-    "true",
-  );
-  expect(screen.getByTestId("bottom-navigator-tab-settings")).toHaveAttribute(
-    "accessibility-element",
-    "true",
-  );
-});
-
-// accessibility-elements-hidden의 iOS 세터는 view.accessibilityElementsHidden이라
-// 가리는 대상이 자손입니다. 탭 아이콘 셋은 자손 없는 잎 `<svg>`이므로 이 속성을
-// 붙여도 아무것도 가리지 못합니다 — 붙이지 않는 것이 계약입니다(E-A1, E-A2).
-// 지시선 `<view>`는 이 표적 밖입니다 — 아래 별도 테스트가 봅니다.
-test("아이콘 셋에 accessibility-elements-hidden이 붙지 않는다 — 잎이다", () => {
-  render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
-
-  expect(screen.getByTestId("bottom-navigator-icon-journey")).not.toHaveAttribute(
-    "accessibility-elements-hidden",
-  );
-  expect(screen.getByTestId("bottom-navigator-icon-roleplay")).not.toHaveAttribute(
-    "accessibility-elements-hidden",
-  );
-  expect(screen.getByTestId("bottom-navigator-icon-settings")).not.toHaveAttribute(
-    "accessibility-elements-hidden",
-  );
-});
-
-// 선택 지시선 `<view>`도 자식이 0개인 잎입니다 — 자손 기준으로 가릴 것이 없습니다.
-// `enableAccessibilityByDefault`가 iOS에서 기본 NO이고 `accessibility-element`
-// prop이 없어 자기 자신 기준으로도 켜질 경로가 없습니다(LynxUIView.m:116,
-// LynxUI.m:2580~2587). 위 아이콘 잎 셋과 같은 종류의 죽은 선언이므로 여기서 붙지
-// 않는다고 단언합니다. testid가 없어 클래스 셀렉터로 찾습니다 —
-// ListeningChoice.ui.test.tsx의 `.listening-choice-mark` 선례와 같은 형태입니다.
-test("지시선에 accessibility-elements-hidden이 붙지 않는다 — 잎이다", () => {
-  render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
-
-  const tab = screen.getByTestId("bottom-navigator-tab-journey");
-  const indicator = tab.querySelector<HTMLElement>(".bottom-navigator-indicator");
-
-  expect(tab).toContainElement(indicator);
-  expect(indicator).not.toHaveAttribute("accessibility-elements-hidden");
-});
-
 test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·설정이다", () => {
   const { container } = render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  const tabs = Array.from(container.querySelectorAll('[data-testid^="bottom-navigator-tab-"]')).map(
-    (el) => el.getAttribute("data-testid"),
-  );
+  const tabs = Array.from(
+    container.querySelectorAll('[data-testid^="ui-lynx-bottom-navigator-item-"]'),
+  ).map((el) => el.getAttribute("data-testid"));
 
   expect(tabs).toEqual([
-    "bottom-navigator-tab-journey",
-    "bottom-navigator-tab-roleplay",
-    "bottom-navigator-tab-settings",
+    "ui-lynx-bottom-navigator-item-journey",
+    "ui-lynx-bottom-navigator-item-roleplay",
+    "ui-lynx-bottom-navigator-item-settings",
   ]);
 });
 
 test("[BN2] 홈 탭·아이콘이 없다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  expect(screen.queryByTestId("bottom-navigator-tab-home")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("bottom-navigator-icon-home")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("ui-lynx-bottom-navigator-item-home")).not.toBeInTheDocument();
+  expect(
+    screen.queryByTestId("ui-lynx-bottom-navigator-icon-home-default"),
+  ).not.toBeInTheDocument();
 });

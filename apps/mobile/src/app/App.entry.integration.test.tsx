@@ -122,16 +122,14 @@ function startJourney(): void {
 
 // 갈래가 반대인 대조입니다 — 스플래시 존재 앵커(부재 쪽으로 빨개짐)와 바텀
 // 네비게이션 부재(App이 조건 없이 그리면 존재 쪽으로 빨개짐)가 같은 케이스 안에서
-// 서로 다른 이유로 빨개집니다. `.bottom-navigator`는 `BottomNavigator`의 유일한
-// 루트 클래스입니다(`data-testid`가 없어 클래스로 짓습니다 — `App.heading-trait
-// .integration.test.tsx`의 `headingAxis` 클래스 대체 선례와 같은 근거).
+// 서로 다른 이유로 빨개집니다. 바 자체는 ui-lynx가 렌더하므로 그쪽 testid로 짓습니다.
 test("[IE1] 앱을 켜면 스플래시가 서고 바텀 네비게이션이 없다", () => {
   emptyStorageStub();
   vi.useFakeTimers();
-  const { container } = render(<App />);
+  render(<App />);
 
   expect(screen.getByTestId("splash-screen-logo")).toBeInTheDocument();
-  expect(container.querySelector(".bottom-navigator")).toBeNull();
+  expect(screen.queryByTestId("ui-lynx-bottom-navigator")).toBeNull();
 });
 
 // ---------------------------------------------------------------------- IE2
@@ -296,7 +294,7 @@ test("[IE7] 언어를 고르고 다음을 누르면 여정 입장에 그 언어�
 test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비게이션이 그때 처음 보인다", () => {
   emptyStorageStub();
   vi.useFakeTimers();
-  const { container } = render(<App />);
+  render(<App />);
   advanceSplash();
   completeOnboarding();
   selectLoginMethod("google");
@@ -305,12 +303,12 @@ test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비�
 
   // 진입 흐름 내내 바텀 네비게이션이 없었습니다 — 「그때 처음」의 대조입니다.
   expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
-  expect(container.querySelector(".bottom-navigator")).toBeNull();
+  expect(screen.queryByTestId("ui-lynx-bottom-navigator")).toBeNull();
 
   startJourney();
 
   expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
-  expect(container.querySelector(".bottom-navigator")).not.toBeNull();
+  expect(screen.queryByTestId("ui-lynx-bottom-navigator")).not.toBeNull();
 });
 
 // ⭐ 수단 넷 전부를 순회해 「저장된 키가 그 하나뿐」을 짓습니다
