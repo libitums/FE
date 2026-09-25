@@ -266,8 +266,10 @@ describe("bottom-navigator.css", () => {
     expect(styles).toMatch(
       /border-radius:\s*var\(--libitum-radius-xl\) var\(--libitum-radius-xl\) 0 0/,
     );
+    // 세로 4 · 가로 24입니다. 위아래에도 24를 주면 바가 88pt로 부풀어 iOS 기본
+    // 탭바(49pt)와 크게 어긋납니다.
     expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator\s*\{[^}]*padding:\s*var\(--libitum-spacing-24\)/,
+      /\.ui-lynx-bottom-navigator\s*\{[^}]*padding:\s*var\(--libitum-spacing-4\) var\(--libitum-spacing-24\)/,
     );
   });
 
