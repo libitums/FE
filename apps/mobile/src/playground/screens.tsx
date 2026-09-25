@@ -74,7 +74,11 @@ export const playgroundScreens = {
   "catalog:button": () => <ButtonCatalog />,
   // 바텀 네비만 봅니다. 화면 fixture를 비워 두면 바가 화면 아래 끝에 홀로 서므로,
   // 긴 화면에 가려지지 않고 바 자체의 간격·색·선택 시각을 볼 수 있습니다.
-  "catalog:bottom-navigator": () => <view style={{ flex: "1" }} />,
+  "catalog:bottom-navigator": () => (
+    // 배경색을 셸과 다르게 둡니다. 바 배경이 화면 배경과 같은 색이라 경계·라운드가
+    // 보이지 않아, 색을 갈라 두지 않으면 바 모양을 눈으로 확인할 수 없습니다.
+    <view style={{ flex: "1", background: "#3B6EA5" }} />
+  ),
 } satisfies Record<string, (go: Go, params: PlaygroundParams) => ReactNode>;
 
 export type PlaygroundScreen = keyof typeof playgroundScreens;
