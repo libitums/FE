@@ -44,7 +44,11 @@ function Playground() {
       <view className="app-content" key={screen}>
         {playgroundScreens[screen](go, params)}
       </view>
-      {screenTab === undefined ? null : <BottomNavigator tab={tab} onSelectTab={setTab} />}
+      {screenTab === undefined ? null : (
+        <view className="app-navigator">
+          <BottomNavigator tab={tab} onSelectTab={setTab} />
+        </view>
+      )}
     </view>
   );
 }

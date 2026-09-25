@@ -130,19 +130,25 @@ export function App({
       >
         <view className="app-content">{renderScreen(screenNow, wiring)}</view>
         {/* 진입 구간(`entry`가 비지 않은 동안)에는 탭 전환 수단을 보이지
-            않습니다 — `enterApp`이 `entry`를 비운 뒤에야 처음 섭니다. */}
-        {isEntrySection(nav) ? null : (
-          <BottomNavigator
-            tab={nav.tab}
-            onSelectTab={(tab) => {
-              // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
-              // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
-              if (tab === "settings" && nav.tab !== "settings")
-                settingsEventSink?.({ name: "settings_opened" });
-              dispatch({ type: "switchTab", tab });
-            }}
-          />
-        )}
+            않습니다 — `enterApp`이 `entry`를 비운 뒤에야 처음 섭니다.
+
+            바는 콘텐츠 **위에 겹칩니다**(`.app-navigator`). 그래야 바 위쪽 모서리
+            밖으로 콘텐츠가 비쳐 라운드가 드러납니다. 콘텐츠가 바에 가리지 않는 일은
+            화면이 집니다 — 화면 하단 여백이 그 몫입니다. */}
+        {showsNavigator ? (
+          <view className="app-navigator">
+            <BottomNavigator
+              tab={nav.tab}
+              onSelectTab={(tab) => {
+                // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
+                // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
+                if (tab === "settings" && nav.tab !== "settings")
+                  settingsEventSink?.({ name: "settings_opened" });
+                dispatch({ type: "switchTab", tab });
+              }}
+            />
+          </view>
+        ) : null}
       </view>
     </ErrorBoundary>
   );

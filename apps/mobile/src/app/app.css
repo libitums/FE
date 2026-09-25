@@ -2,18 +2,35 @@
    변수 이름은 `@libitums/design-tokens`가 정의한 것만 — 접두사는 예외 없이
    `--libitum-`입니다(ADR-0014 D1·D8).
    셸을 `position: fixed`/`absolute`로 띄우지 않습니다 — 세로 flex로 두고
-   콘텐츠가 `flex: 1`로 남은 높이를 먹고 셸이 그 아래 형제로 붙습니다. */
+   콘텐츠가 `flex: 1`로 남은 높이를 먹습니다. 바텀 네비게이션만 그 위에 겹칩니다
+   (`.app-navigator`). */
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh;
   background: var(--libitum-color-background-primary);
+  /* 바텀 네비게이션의 절대 배치 기준입니다. */
+  position: relative;
 }
 
 .app-content {
   display: flex;
   flex-direction: column;
   flex: 1;
+}
+
+/* 바텀 네비게이션을 콘텐츠 위에 겹칩니다. 흐름에 두면 바 위쪽 모서리 밖이 언제나
+   셸 배경이라 바의 라운드가 드러나지 않습니다 — 콘텐츠가 그 밑으로 지나가야 모서리가
+   보입니다. 콘텐츠가 바에 가리지 않는 일은 화면이 집니다(각 화면의 하단 여백).
+
+   `z-index`를 적습니다 — Lynx에서 절대 배치 형제는 흐름 형제 위에 그려지지만, 그
+   순서에 기대지 않고 명시합니다(ADR-0014). */
+.app-navigator {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
 }
 
 /* 스플래시는 가장자리(상태바 · 홈 인디케이터 뒤)까지 브랜드색입니다. 셸의 safe area

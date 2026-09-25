@@ -114,7 +114,13 @@
   z-index: 2;
   left: var(--libitum-layout-screen-padding-x);
   right: var(--libitum-layout-screen-padding-x);
-  bottom: var(--libitum-layout-screen-padding-bottom);
+  /* 바텀 네비게이션 몫을 더해 띄웁니다 — 바가 콘텐츠 위에 겹치므로(app.css의
+     `.app-navigator`) 이것이 없으면 대화 상자가 바에 가립니다. 더하는 값은 바
+     높이(48)와 셸이 바 아래 두는 여백(12)의 합입니다. */
+  bottom: calc(
+    var(--libitum-layout-screen-padding-bottom) + var(--libitum-spacing-48) +
+      var(--libitum-spacing-12)
+  );
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-8);

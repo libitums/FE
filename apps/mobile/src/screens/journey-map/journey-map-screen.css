@@ -110,9 +110,17 @@
    안쪽에 남으면 스크롤 영역이 뷰포트 높이에 갇히고, `center`는 스텝을 스크롤
    원점 밖으로 밀어냅니다. 가림 속성은 이 컨테이너에 그대로 남습니다 — 스크롤
    컨테이너로 올리면 가리는 범위가 넓어집니다. */
+/* 아래 여백은 바텀 네비게이션 몫입니다 — 바가 콘텐츠 위에 겹치므로(app.css의
+   `.app-navigator`) 이 여백이 없으면 마지막 항목이 바에 가립니다. 값은 바 높이(48)와
+   셸이 바 아래 두는 여백(12)의 합입니다.
+
+   ADR-0022 D4는 「마지막 항목 아래 빈 띠가 끝으로 읽혀 넘침 어포던스를 지운다」는
+   이유로 이 여백을 두지 않았습니다. 그 저울이 뒤집혔습니다 — 여백이 없으면 어포던스가
+   흐려지는 정도가 아니라 **항목이 사라집니다**. */
 .journey-map-screen-map {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--libitum-spacing-24);
+  padding-bottom: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
 }
