@@ -70,8 +70,8 @@
 /* 항목 상자 — 스크롤의 유일한 직계 자식입니다. `gap` 없음(0) — 간격 대신 행의
    `border-top`이 경계를 집니다(`.assessment-screen-items`와 같은 결정). */
 /* 아래 여백은 바텀 네비게이션 몫입니다 — 바가 콘텐츠 위에 겹치므로(app.css의
-   `.app-navigator`) 이 여백이 없으면 마지막 항목이 바에 가립니다. 값은 바 높이(48)와
-   셸이 바 아래 두는 여백(12)의 합입니다.
+   `.app-navigator`) 이 여백이 없으면 마지막 항목이 바에 가립니다. 값은 바 높이(56)와
+   셸이 바 아래 두는 여백(12)의 합 68입니다.
 
    ADR-0022 D4는 「마지막 항목 아래 빈 띠가 끝으로 읽혀 넘침 어포던스를 지운다」는
    이유로 이 여백을 두지 않았습니다. 그 저울이 뒤집혔습니다 — 여백이 없으면 어포던스가
@@ -80,7 +80,7 @@
   display: flex;
   flex-direction: column;
   padding-top: var(--libitum-spacing-16);
-  padding-bottom: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
 }
 
 /* 항목 — 세로 쌍(이름 위 · 값 아래). 가로 쌍을 쓰지 않습니다 — 이름 칸에 고정

@@ -273,11 +273,12 @@ describe("bottom-navigator.css", () => {
     );
   });
 
-  // 항목 상자는 선택 여부와 무관하게 58 × 40입니다. 선택될 때만 넓어지면 이웃이 옆으로
-  // 밀리므로, 두 크기가 갈리면 여기서 빨개집니다.
+  // 항목 상자는 선택 여부와 무관하게 64 × 48입니다. 선택될 때만 넓어지면 이웃이 옆으로
+  // 밀리므로, 두 크기가 갈리면 여기서 빨개집니다. 48pt는 Apple HIG의 최소 터치 타깃
+  // 44pt와 Material의 48dp를 함께 넘기는 값입니다 — 줄이면 둘 다 깨집니다.
   test("항목 상자는 선택 여부와 무관하게 같은 크기다", () => {
     expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator-item\s*\{[^}]*width:\s*58px[^}]*height:\s*40px/,
+      /\.ui-lynx-bottom-navigator-item\s*\{[^}]*width:\s*64px[^}]*height:\s*48px/,
     );
     expect(styles).toMatch(
       /\.ui-lynx-bottom-navigator-surface\s*\{[^}]*width:\s*100%[^}]*height:\s*100%/,
@@ -314,7 +315,7 @@ describe("bottom-navigator.css", () => {
     );
     expect(styles).not.toMatch(/\.ui-lynx-bottom-navigator-item\s*\{[^}]*flex:/);
     expect(styles).toMatch(
-      /\.ui-lynx-bottom-navigator-icon\s*\{[^}]*width:\s*var\(--libitum-icon-size-md\)[^}]*height:\s*var\(--libitum-icon-size-md\)/,
+      /\.ui-lynx-bottom-navigator-icon\s*\{[^}]*width:\s*var\(--libitum-icon-size-lg\)[^}]*height:\s*var\(--libitum-icon-size-lg\)/,
     );
   });
 });

@@ -40,12 +40,12 @@ function Playground() {
     // 화면 바닥에 붙어 실제 앱과 다르게 보입니다. 앱 셸이 바가 설 때 두는 것과 같은
     // 값을 대신 두어 두 쪽이 같은 모습이 되게 합니다 — dev 전용 셸이라 제품 번들에
     // 들어가지 않습니다.
-    <view className="app" style={{ paddingBottom: screenTab === undefined ? "34px" : "12px" }}>
+    <view className="app" style={{ paddingBottom: screenTab === undefined ? "34px" : "0px" }}>
       <view className="app-content" key={screen}>
         {playgroundScreens[screen](go, params)}
       </view>
       {screenTab === undefined ? null : (
-        <view className="app-navigator">
+        <view className="app-navigator" style={{ bottom: "12px" }}>
           <BottomNavigator tab={tab} onSelectTab={setTab} />
         </view>
       )}

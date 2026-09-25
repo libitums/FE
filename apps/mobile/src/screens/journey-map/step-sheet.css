@@ -28,10 +28,10 @@
   left: 0;
   right: 0;
   /* 바텀 네비게이션 몫만큼 띄웁니다 — 바가 콘텐츠 위에 겹치므로(app.css의
-     `.app-navigator`) 0으로 두면 패널 아래쪽이 바에 가립니다. 값은 바 높이(48)와
-     셸이 바 아래 두는 여백(12)의 합입니다. 가림막(`.step-sheet-scrim`)은 화면 전체를
+     `.app-navigator`) 0으로 두면 패널 아래쪽이 바에 가립니다. 값은 바 높이(56)와
+     셸이 바 아래 두는 여백(12)의 합 68입니다. 가림막(`.step-sheet-scrim`)은 화면 전체를
      덮어야 하므로 그대로 둡니다. */
-  bottom: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+  bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
   z-index: var(--libitum-elevation-z-sheet);
   background: var(--libitum-elevation-surface-floating);
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);

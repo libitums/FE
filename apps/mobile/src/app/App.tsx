@@ -123,7 +123,10 @@ export function App({
         className={screenNow.name === "splash" ? "app app-splash" : "app"}
         style={{
           paddingTop: `${insets.top}px`,
-          paddingBottom: `${showsNavigator ? navigatorBottomInset : insets.bottom}px`,
+          // 바가 설 때 아래 여백은 셸이 아니라 바가 집니다 — 절대 배치의 `bottom`은
+          // 셸의 padding을 지나쳐 padding box 바깥 경계를 기준으로 잡습니다. 여기에
+          // 값을 두면 콘텐츠 높이만 줄고 바는 화면 바닥에 붙습니다.
+          paddingBottom: `${showsNavigator ? 0 : insets.bottom}px`,
           paddingLeft: `${insets.left}px`,
           paddingRight: `${insets.right}px`,
         }}
@@ -136,7 +139,7 @@ export function App({
             밖으로 콘텐츠가 비쳐 라운드가 드러납니다. 콘텐츠가 바에 가리지 않는 일은
             화면이 집니다 — 화면 하단 여백이 그 몫입니다. */}
         {showsNavigator ? (
-          <view className="app-navigator">
+          <view className="app-navigator" style={{ bottom: `${navigatorBottomInset}px` }}>
             <BottomNavigator
               tab={nav.tab}
               onSelectTab={(tab) => {
