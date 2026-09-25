@@ -25,6 +25,10 @@ import { screenWiring } from "./screen-wiring";
 
 import "./app.css";
 
+// 바텀 네비게이션이 설 때 셸이 아래에 두는 여백입니다. iOS 기본 앱의 탭바가 홈
+// 인디케이터 영역에 걸쳐 앉고 남기는 값과 같습니다(파일 앱 실측 12pt).
+const navigatorBottomInset = 12;
+
 // 루트 구성입니다 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다
 // (ADR-0003 D5).
 //
@@ -104,8 +108,14 @@ export function App({
   // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼
   // 안쪽 여백을 잡습니다. 여백은 셸 배경이 칠하고, 스플래시일 때만 그 배경이
   // 브랜드색입니다(lib/safe-area.ts).
+  //
+  // 아래쪽만 예외입니다 — 바텀 네비게이션이 서면 홈 인디케이터 높이를 그대로 비우지
+  // 않고 `navigatorBottomInset`만 둡니다. 그 아래는 iOS 기본 앱(파일 · 음악)이 탭바를
+  // 겹쳐 두는 자리이고, 34px을 그대로 비우면 바가 위로 떠 알약이 치우쳐 보입니다 —
+  // 바 배경과 이 여백이 같은 색이라 둘이 한 덩어리로 읽히기 때문입니다.
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const screenNow = currentScreen(nav);
+  const showsNavigator = !isEntrySection(nav);
 
   return (
     <ErrorBoundary>
@@ -113,7 +123,7 @@ export function App({
         className={screenNow.name === "splash" ? "app app-splash" : "app"}
         style={{
           paddingTop: `${insets.top}px`,
-          paddingBottom: `${insets.bottom}px`,
+          paddingBottom: `${showsNavigator ? navigatorBottomInset : insets.bottom}px`,
           paddingLeft: `${insets.left}px`,
           paddingRight: `${insets.right}px`,
         }}
