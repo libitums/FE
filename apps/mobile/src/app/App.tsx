@@ -25,10 +25,6 @@ import { screenWiring } from "./screen-wiring";
 
 import "./app.css";
 
-// 바텀 네비게이션이 설 때 셸이 아래에 두는 여백입니다. iOS 기본 앱의 탭바가 홈
-// 인디케이터 영역에 걸쳐 앉고 남기는 값과 같습니다(파일 앱 실측 12pt).
-const navigatorBottomInset = 12;
-
 // 루트 구성입니다 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다
 // (ADR-0003 D5).
 //
@@ -109,10 +105,9 @@ export function App({
   // 안쪽 여백을 잡습니다. 여백은 셸 배경이 칠하고, 스플래시일 때만 그 배경이
   // 브랜드색입니다(lib/safe-area.ts).
   //
-  // 아래쪽만 예외입니다 — 바텀 네비게이션이 서면 홈 인디케이터 높이를 그대로 비우지
-  // 않고 `navigatorBottomInset`만 둡니다. 그 아래는 iOS 기본 앱(파일 · 음악)이 탭바를
-  // 겹쳐 두는 자리이고, 34px을 그대로 비우면 바가 위로 떠 알약이 치우쳐 보입니다 —
-  // 바 배경과 이 여백이 같은 색이라 둘이 한 덩어리로 읽히기 때문입니다.
+  // 아래쪽만 예외입니다 — 바텀 네비게이션이 서면 셸은 아래를 비우지 않습니다. 바가
+  // 화면 바닥까지 배경을 칠하고 홈 인디케이터를 피하는 여백을 스스로 지기 때문입니다.
+  // iOS 기본 탭바와 같은 형태입니다.
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const screenNow = currentScreen(nav);
   const showsNavigator = !isEntrySection(nav);
@@ -123,9 +118,8 @@ export function App({
         className={screenNow.name === "splash" ? "app app-splash" : "app"}
         style={{
           paddingTop: `${insets.top}px`,
-          // 바가 설 때 아래 여백은 셸이 아니라 바가 집니다 — 절대 배치의 `bottom`은
-          // 셸의 padding을 지나쳐 padding box 바깥 경계를 기준으로 잡습니다. 여기에
-          // 값을 두면 콘텐츠 높이만 줄고 바는 화면 바닥에 붙습니다.
+          // 바가 설 때 아래는 비우지 않습니다 — 바가 화면 바닥까지 배경을 칠하고,
+          // 홈 인디케이터를 피하는 여백은 바 자신의 `padding-bottom`이 집니다.
           paddingBottom: `${showsNavigator ? 0 : insets.bottom}px`,
           paddingLeft: `${insets.left}px`,
           paddingRight: `${insets.right}px`,
@@ -139,7 +133,7 @@ export function App({
             밖으로 콘텐츠가 비쳐 라운드가 드러납니다. 콘텐츠가 바에 가리지 않는 일은
             화면이 집니다 — 화면 하단 여백이 그 몫입니다. */}
         {showsNavigator ? (
-          <view className="app-navigator" style={{ bottom: `${navigatorBottomInset}px` }}>
+          <view className="app-navigator">
             <BottomNavigator
               tab={nav.tab}
               onSelectTab={(tab) => {

@@ -6,10 +6,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 세로 패딩은 가로와 다릅니다. 디자인의 24px을 위아래에도 주면 바가 88pt가 되어
-     iOS 기본 탭바(49pt)보다 훨씬 두꺼워집니다 — 항목이 40pt이므로 위아래 4px만 두어
-     48pt로 맞춥니다. 터치 영역은 항목 상자가 지므로 이 여백을 줄여도 줄지 않습니다. */
-  padding: var(--libitum-spacing-4) var(--libitum-spacing-24);
+  /* 세로 패딩은 위아래가 다릅니다. 아래 12px은 바가 화면 바닥에 닿은 채로 아이콘을
+     홈 인디케이터에서 띄우는 몫입니다 — 바를 띄워 두면 그 아래로 화면 배경이 비쳐
+     바가 뚫린 것처럼 보입니다(배경이 이미지인 화면에서 특히). iOS 기본 탭바도 배경은
+     바닥까지 차고 아이콘만 위에 둡니다.
+
+     바 높이는 8 + 48 + 12 = 68pt입니다. 터치 영역은 항목 상자가 지므로 이 여백은
+     터치 크기에 관여하지 않습니다. */
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-24) var(--libitum-spacing-12);
   /* 위쪽 두 모서리만 둥급니다. 구분선은 두지 않습니다 — 라운드와 배경 차이가 콘텐츠와
      바를 가릅니다. */
   border-radius: var(--libitum-radius-xl) var(--libitum-radius-xl) 0 0;

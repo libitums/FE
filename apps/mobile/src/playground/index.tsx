@@ -45,7 +45,7 @@ function Playground() {
         {playgroundScreens[screen](go, params)}
       </view>
       {screenTab === undefined ? null : (
-        <view className="app-navigator" style={{ bottom: "12px" }}>
+        <view className="app-navigator">
           <BottomNavigator tab={tab} onSelectTab={setTab} />
         </view>
       )}
