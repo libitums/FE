@@ -54,7 +54,7 @@ export function JourneyStepNode({ id, title, status, onSelect }: JourneyStepProp
           }
         }}
       />
-      <text className="ui-lynx-learning-unit-label">{title}</text>
+      <text className="journey-step-node-label">{title}</text>
     </view>
   );
 }
