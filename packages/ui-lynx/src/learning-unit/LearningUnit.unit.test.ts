@@ -17,6 +17,8 @@ describe("getLearningUnitContract", () => {
       interactive: false,
       iconKind: "lock",
       iconColor: color.gray[700],
+      ringColor: color.gray[400],
+      focused: false,
     });
   });
 
@@ -31,6 +33,8 @@ describe("getLearningUnitContract", () => {
       interactive: true,
       iconKind,
       iconColor,
+      ringColor: status === "clear" ? color.feedback.correct : color.gray[400],
+      focused: false,
       accessibilityValue,
     });
   });
@@ -48,13 +52,18 @@ describe("getLearningUnitContract", () => {
       accessibilityLabel: "1단원 쇼핑 표현 듣기, 이야기 연결",
       className:
         "ui-lynx-learning-unit ui-lynx-learning-unit-available ui-lynx-learning-unit-narrative ui-lynx-learning-unit-focused",
+      focused: true,
     });
   });
 
   test("Default에서는 전달된 focused를 무시한다", () => {
-    expect(
-      getLearningUnitContract({ accessibilityLabel: "잠긴 단위", icon, focused: true }).className,
-    ).not.toContain("focused");
+    const contract = getLearningUnitContract({
+      accessibilityLabel: "잠긴 단위",
+      icon,
+      focused: true,
+    });
+    expect(contract.focused).toBe(false);
+    expect(contract.className).not.toContain("focused");
   });
 
   test.each([

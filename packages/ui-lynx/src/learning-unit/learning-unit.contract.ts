@@ -23,6 +23,8 @@ export type LearningUnitContract = {
   readonly interactive: boolean;
   readonly iconKind: "learning" | "lock" | "tick";
   readonly iconColor: string;
+  readonly ringColor: string;
+  readonly focused: boolean;
 };
 
 const statuses = new Set<LearningUnitStatus>(["default", "available", "active", "clear"]);
@@ -70,6 +72,7 @@ export function getLearningUnitContract(props: LearningUnitProps): LearningUnitC
       : status === "available"
         ? color.brand.primary
         : color.white;
+  const ringColor = status === "clear" ? color.feedback.correct : color.gray[400];
 
   return {
     status,
@@ -85,5 +88,7 @@ export function getLearningUnitContract(props: LearningUnitProps): LearningUnitC
     interactive,
     iconKind,
     iconColor,
+    ringColor,
+    focused,
   };
 }

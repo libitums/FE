@@ -17,10 +17,9 @@ export function LearningUnit(props: LearningUnitProps) {
     contract.iconKind === "lock" ? lock : contract.iconKind === "tick" ? tick : props.icon;
   const iconContent = icon.replace(/currentColor/g, contract.iconColor);
   const badgeContent = clapper.replace(/currentColor/g, color.fg.neutral);
-  const ringColor = contract.status === "clear" ? color.feedback.correct : color.gray[400];
   const ringContent = (contract.narrative === "narrative" ? narrativeRing : fullRing).replace(
     /currentColor/g,
-    ringColor,
+    contract.ringColor,
   );
 
   function handleTap() {
@@ -34,7 +33,7 @@ export function LearningUnit(props: LearningUnitProps) {
       data-testid="ui-lynx-learning-unit"
       data-status={contract.status}
       data-narrative={contract.narrative}
-      data-focused={props.focused === true && contract.interactive ? "true" : "false"}
+      data-focused={contract.focused ? "true" : "false"}
       accessibility-element={true}
       accessibility-label={contract.accessibilityLabel}
       accessibility-value={contract.accessibilityValue}
@@ -48,7 +47,7 @@ export function LearningUnit(props: LearningUnitProps) {
             className="ui-lynx-learning-unit-ring-outline"
             data-testid="ui-lynx-learning-unit-ring"
             content={ringContent}
-            current-color={ringColor}
+            current-color={contract.ringColor}
             accessibility-elements-hidden={true}
           />
           <view className="ui-lynx-learning-unit-surface" accessibility-elements-hidden={true}>
