@@ -307,7 +307,7 @@ test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비�
 
   startJourney();
 
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("ui-lynx-bottom-navigator")).not.toBeNull();
 });
 
@@ -330,7 +330,7 @@ test("[IE9] 어느 수단으로 진행해도 토큰이 저장되고 저장된 �
     continueLanguageSelect();
     startJourney();
 
-    expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+    expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
     expect(Array.from(store.keys())).toEqual([authTokenStorageKey]);
 
     unmount();
@@ -354,7 +354,7 @@ test("[IE10] 토큰이 있는 상태로 켜면 스플래시 뒤 바로 여정 �
 
   advanceSplash();
 
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("onboarding-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("login-screen-title")).not.toBeInTheDocument();
 });
@@ -461,7 +461,7 @@ test("[IE13] entry_screen_viewed가 화면 다섯에 대해 각 전이 직전 1�
 });
 
 // ⚠ 「토큰 재실행 경로에서 0회」는 부재·무동작을 재는 칸입니다 — (b)에서 먼저
-// `journey-map-screen-title` 존재 앵커를 걸어, 0회가 「화면 전이 자체가 안
+// `journey-map-screen` 존재 앵커를 걸어, 0회가 「화면 전이 자체가 안
 // 일어나서」가 아니라 「완주가 아니라서」임을 갈라 짓습니다.
 test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_completed는 여정 입장 진행에서만 1회다(토큰 재실행 경로에서는 0회)", () => {
   // (a) 신규 진입 경로 — apple 선택 → 언어 선택 → 여정 시작입니다.
@@ -495,7 +495,7 @@ test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_c
   const reentryEvents: EntryEvent[] = [];
   render(<App entryEventSink={(event) => reentryEvents.push(event)} />);
   advanceSplash();
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   expect(reentryEvents.filter((event) => event.name === "entry_completed")).toHaveLength(0);
   expect(

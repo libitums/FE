@@ -1,6 +1,6 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). `.step-sheet` = 겹침
-   레이어, `.step-sheet-panel` = 판, `.step-sheet-scrim` = 백드롭으로, 정한 이름에
-   값을 매핑합니다. */
+   레이어, `.step-sheet-anchor` = 자리, `.step-sheet-panel` = 말풍선,
+   `.step-sheet-scrim` = 백드롭으로, 정한 이름에 값을 매핑합니다. */
 
 /* 겹침 레이어입니다. `.journey-map-screen`(position: relative)의 padding edge를
    포함 블록으로 삼아 화면 전체를 덮습니다. */
@@ -13,7 +13,8 @@
 }
 
 /* 딤 토큰이 패키지에 없어 `background`를 선언하지 않습니다 — 없는 선언은
-   하드코딩이 아닙니다. 존재 이유는 맵으로 가는 탭을 가로채는 것 하나입니다. */
+   하드코딩이 아닙니다. 하는 일은 둘입니다: 맵으로 가는 탭을 가로채고, 그 탭으로
+   말풍선을 닫습니다. */
 .step-sheet-scrim {
   position: absolute;
   top: 0;
@@ -23,32 +24,54 @@
   z-index: var(--libitum-elevation-z-floating);
 }
 
-.step-sheet-panel {
+/* 말풍선의 자리입니다. 좌우를 펴고 가운데 정렬로 말풍선을 가로 가운데에 세웁니다 —
+   유닛이 맵 가운데 줄에 서므로 꼬리도 그 줄에 섭니다.
+
+   세로는 `top`을 인라인 스타일이 집니다 — 누른 유닛마다 다른 값이라 CSS가 가질 수
+   없습니다. 여기에 `top`을 적지 않는 것은 그 때문이고, 적으면 인라인 값과 겹칩니다. */
+.step-sheet-anchor {
   position: absolute;
   left: 0;
   right: 0;
-  /* 바텀 네비게이션 몫만큼 띄웁니다 — 바가 콘텐츠 위에 겹치므로(app.css의
-     `.app-navigator`) 0으로 두면 패널 아래쪽이 바에 가립니다. 값은 바 높이 68pt입니다
-     (위 여백 8 + 항목 48 + 아래 여백 12). 가림막(`.step-sheet-scrim`)은 화면 전체를
-     덮어야 하므로 그대로 둡니다. */
-  bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
   z-index: var(--libitum-elevation-z-sheet);
-  background: var(--libitum-elevation-surface-floating);
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
-  border-top-left-radius: var(--libitum-radius-xl);
-  border-top-right-radius: var(--libitum-radius-xl);
-  box-shadow: var(--libitum-elevation-shadow-s3);
   display: flex;
   flex-direction: column;
-  gap: var(--libitum-layout-gap-block);
-  padding-top: var(--libitum-spacing-24);
-  padding-left: var(--libitum-layout-screen-padding-x);
-  padding-right: var(--libitum-layout-screen-padding-x);
-  padding-bottom: var(--libitum-spacing-32);
+  align-items: center;
 }
 
+/* 꼬리 — 45도 돌린 네모입니다. 아래 절반은 말풍선이 덮어 삼각형만 남습니다(말풍선이
+   DOM에서 뒤에 와 위에 그려집니다). 그래서 음수 여백으로 절반을 말풍선 안으로
+   밀어 넣습니다. 치수 20은 디자인 실측 삼각형(약 26×17)에 맞춘 값이고 이 치수에
+   맞는 토큰이 없어 px로 적습니다. */
+.step-sheet-caret {
+  width: 20px;
+  height: 20px;
+  margin-bottom: -10px;
+  transform: rotate(45deg);
+  border-radius: var(--libitum-radius-sm);
+  background: var(--libitum-color-white);
+}
+
+/* 말풍선입니다. 폭 250은 디자인 실측값(Figma 79-5791)이고 이 치수에 맞는 토큰이
+   없어 px로 적습니다. 가로 여백 16은 그 폭에서 내용 폭 218을 빼고 반으로 나눈
+   값입니다. */
+.step-sheet-panel {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-24);
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-xl);
+  /* 면은 `elevation-surface-floating`(#FFF3EA)이 아니라 흰색입니다 — 그 토큰은
+     주황이 섞인 떠 있는 면이고, 디자인의 말풍선은 흰 면입니다. */
+  background: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+/* 제목은 `Lesson 3: “주문하기”` 꼴입니다. 색이 `fg-neutral`이 아니라 `gray-700`인
+   것은 디자인 값입니다 — 말풍선에서 가장 큰 글자지만 가장 진하지는 않습니다. */
 .step-sheet-title {
-  color: var(--libitum-color-fg-neutral);
+  color: var(--libitum-color-gray-700);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);
   font-size: var(--libitum-typography-heading-s-font-size);
@@ -56,26 +79,79 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-.step-sheet-description {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-body-m-font-family);
-  font-weight: var(--libitum-typography-body-m-font-weight);
-  font-size: var(--libitum-typography-body-m-font-size);
-  line-height: var(--libitum-typography-body-m-line-height);
-  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+/* 진행 줄 — 낱말 행과 막대입니다. 둘 사이 간격은 디자인이 19인데 그 치수에 맞는
+   토큰이 없어 가장 가까운 `spacing-16`을 씁니다(3px 차이는 눈에 닿지 않습니다). */
+.step-sheet-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-16);
 }
 
-/* "시작 버튼" 행의 값입니다. `brand-primary`가 아니라 `brand-strong`입니다 —
-   흰 라벨이 `brand-primary` 위에서 3.02:1로 AA에 미달합니다. */
+.step-sheet-progress-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-sheet-progress-count {
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* ⚠ 알려진 대비 위반입니다. `gray-300`(#EEEFF1)은 말풍선 면(#FFFFFF) 위에서 약
+   1.2:1로, WCAG 1.4.3이 본문 글자에 요구하는 4.5:1에 크게 못 미칩니다. 디자인
+   값(Figma 79-5687)을 그대로 따르되 여기 적어 둡니다 — 같은 값을 접근성 이름
+   (`.step-sheet-progress`의 `accessibility-label`)이 함께 실어, 스크린리더는 이
+   글자의 대비와 무관하게 백분율을 읽습니다. */
+.step-sheet-progress-percent {
+  color: var(--libitum-color-gray-300);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 막대 높이 8은 `spacing-8`과 같은 값이라 토큰으로 적습니다. `overflow: hidden`이
+   채움의 둥근 끝을 막대 안에 가둡니다. */
+.step-sheet-progress-track {
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-100);
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+
+/* 채움 폭은 진행 비율이라 인라인 스타일이 집니다 — CSS가 가질 수 없는 값입니다. */
+.step-sheet-progress-fill {
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-brand-primary);
+}
+
+/* "시작 버튼" 행의 값입니다.
+
+   ⚠ 알려진 대비 위반입니다. 면은 `brand-primary`(#F46B18)이고 흰 라벨이 그 위에서
+   3.02:1로, WCAG 1.4.3이 요구하는 4.5:1(큰 글자면 3:1)에 미달합니다. 2026-09-27에
+   디자인 값을 따르기로 정했습니다 — 같은 화면의 채움 막대와 같은 주황이어야 둘이
+   한 덩어리로 읽힌다는 이유입니다. 앞서 쓰던 `brand-strong`(#B94208)이 대비를
+   지키는 값이므로, 뒤집을 때 돌아갈 자리는 그쪽입니다.
+
+   **고정 높이가 아니라 하한입니다**(ADR-0020 D5). Dynamic Type이 켜지면 글자만
+   커지고 상자는 안 커집니다 — 폭·높이·패딩은 배율을 받지 않습니다. 고정 높이로
+   두면 최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라집니다**(WCAG
+   1.4.4). 여백 16 + 라벨 줄높이 24가 디자인 높이 56을 그대로 냅니다. */
 .step-sheet-start {
-  background: var(--libitum-color-brand-strong);
-  /* **고정 높이가 아니라 하한입니다**(ADR-0020 D5). Dynamic Type이 켜지면 글자만
-     커지고 상자는 안 커집니다 — 폭·높이·패딩은 배율을 받지 않습니다. 고정 높이로
-     두면 최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린 내용은 사라집니다**(WCAG
-     1.4.4). */
+  background: var(--libitum-color-brand-primary);
   min-height: var(--libitum-spacing-48);
-  border-radius: var(--libitum-radius-md);
-  width: 100%;
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,34 +164,4 @@
   font-size: var(--libitum-typography-button-xl-font-size);
   line-height: var(--libitum-typography-button-xl-line-height);
   letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
-}
-
-/* "닫기 히트박스" 48×48의 값을 그대로 씁니다. 아이콘이 아니라 텍스트 `닫기`를
-   요구하므로 라벨 색은 닫기 아이콘 색과 같은 토큰을 씁니다.
-
-   **고정 치수가 아니라 하한입니다 — 가로도 세로도입니다**(ADR-0020 D5). Dynamic
-   Type이 켜지면 글자만 커지고 상자는 안 커집니다 — 폭·높이·패딩은 배율을 받지
-   않습니다. 고정 치수로 두면 최대 배율에서 라벨이 상자를 넘쳐 잘리고, **잘린
-   내용은 사라집니다**(WCAG 1.4.4). `align-self: flex-start`는 그 짝입니다 —
-   `min-width`만 두면 `.step-sheet-panel`의 교차축 기본값(stretch)을 받아 판
-   폭짜리 알약이 됩니다. 이 선언이 하는 일은 "stretch를 안 받는 이유"를 확정
-   치수에서 정렬로 옮기는 것뿐이고, 자식 넷 중 이 상자에만 걸립니다 —
-   형제(`-title`·`-description`·`-start`)는 이 선언이 닿지 않아 그대로입니다. */
-.step-sheet-close {
-  min-width: var(--libitum-spacing-48);
-  min-height: var(--libitum-spacing-48);
-  align-self: flex-start;
-  border-radius: var(--libitum-radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.step-sheet-close-label {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }

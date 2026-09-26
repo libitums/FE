@@ -2,7 +2,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import play from "@libitums/icons/lynx/play";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
-import type { LearningUnitStatus } from "@libitums/ui-lynx/learning-unit";
+import type { LearningUnitStatus, LearningUnitTapEvent } from "@libitums/ui-lynx/learning-unit";
 
 import { canOpenStep } from "./journey-map";
 import type { JourneyStepId, JourneyStepStatus } from "./journey-map";
@@ -31,16 +31,21 @@ export type JourneyStepProps = {
   id: JourneyStepId;
   title: string;
   status: JourneyStepStatus;
-  onSelect: (id: JourneyStepId) => void;
+  /** 탭의 세로 좌표를 함께 올립니다 — 말풍선이 이 유닛 아래에 서야 합니다. */
+  onSelect: (id: JourneyStepId, tapY: number) => void;
 };
 
 export function JourneyStepNode({ id, title, status, onSelect }: JourneyStepProps): ReactNode {
   // custom prop(`LearningUnit`의 `bindtap`)을 거쳐 `bindtap`에 닿는 핸들러라
   // `'background only'`를 둡니다 — 특별 유닛 셋과 같은 경계입니다.
-  const handleSelect = () => {
+  const handleSelect = (event: LearningUnitTapEvent) => {
     "background only";
     if (canOpenStep(status)) {
-      onSelect(id);
+      // 탭이 실어 오는 세로 좌표입니다. 타입은 `detail`을 반드시 준다고 적지만
+      // **런타임의 부재를 TS가 막아 주지 않습니다** — `DrawingSurface`가 `touches`를
+      // 다루는 자리와 같습니다. 없으면 0으로 둡니다: 말풍선이 꼭대기에 서는 것이
+      // 화면이 죽는 것보다 낫습니다.
+      onSelect(id, event.detail?.y ?? 0);
     }
   };
 

@@ -3,6 +3,11 @@ import { color } from "@libitums/design-tokens";
 export type LearningUnitStatus = "default" | "available" | "active" | "clear";
 export type LearningUnitNarrative = "none" | "narrative";
 
+/** Lynx 탭 이벤트에서 이 컴포넌트가 쓰는 부분만 적습니다(BottomSheet와 같은 갈래). */
+export type LearningUnitTapEvent = {
+  readonly detail?: { readonly y?: number };
+};
+
 export type LearningUnitProps = {
   /**
    * 이 유닛을 가려내는 이름입니다. 한 화면에 유닛이 여럿 서는 것이 이 컴포넌트의 기본
@@ -16,7 +21,11 @@ export type LearningUnitProps = {
   readonly narrative?: LearningUnitNarrative;
   /** ReactLynx 호스트가 키보드 focus-visible 상태를 전달합니다. */
   readonly focused?: boolean;
-  readonly bindtap?: () => void;
+  /**
+   * 탭 좌표를 함께 넘깁니다 — 유닛에 붙여 띄우는 말풍선이 어디에 설지 정하는 데
+   * 쓰입니다. 좌표가 필요 없는 호출자는 인자를 받지 않으면 그만입니다.
+   */
+  readonly bindtap?: (event: LearningUnitTapEvent) => void;
 };
 
 export type LearningUnitContract = {

@@ -4,7 +4,11 @@ import lock from "@libitums/icons/lynx/lock";
 import tick from "@libitums/icons/lynx/tick";
 import { color } from "@libitums/design-tokens";
 
-import { getLearningUnitContract, type LearningUnitProps } from "./learning-unit.contract";
+import {
+  getLearningUnitContract,
+  type LearningUnitProps,
+  type LearningUnitTapEvent,
+} from "./learning-unit.contract";
 
 const fullRing =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="47.5" fill="none" stroke="currentColor" stroke-width="5"/></svg>';
@@ -22,9 +26,9 @@ export function LearningUnit(props: LearningUnitProps) {
     contract.ringColor,
   );
 
-  function handleTap() {
+  function handleTap(event: LearningUnitTapEvent) {
     "background only";
-    props.bindtap?.();
+    props.bindtap?.(event);
   }
 
   return (

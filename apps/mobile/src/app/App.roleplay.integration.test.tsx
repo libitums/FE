@@ -212,7 +212,7 @@ test("[I2] 메신저 항목을 열면 롤플레이 스택에 push되고 여정 �
   );
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
@@ -229,7 +229,7 @@ test("[I2] 전화 항목을 열면 롤플레이 스택에 push되고 여정 스�
   );
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("phone-call-screen")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
@@ -246,7 +246,7 @@ test("[I2] 비주얼 노벨 항목을 열면 롤플레이 스택에 push되고 �
   );
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("visual-novel-screen")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
@@ -329,7 +329,7 @@ test("[I4] 롤플레이에서 연 메신저의 나가기는 목록으로이고 �
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
 test("[I4] 롤플레이에서 연 전화의 나가기는 목록으로이고 목록으로 돌아간다", () => {
@@ -540,5 +540,5 @@ test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지�
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });

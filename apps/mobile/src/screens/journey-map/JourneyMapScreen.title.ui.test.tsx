@@ -7,9 +7,14 @@ vi.mock("./journey-map", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./journey-map")>();
   return {
     ...actual,
-    journeyMapItems: actual.journeyMapItems.map((item) =>
-      item.kind === "special" ? { ...item, title: "검증용 메시지 제목" } : item,
-    ),
+    // 화면이 읽는 것은 구획(에피소드 + 그 항목들)입니다 — 평평한 목록이 아니라
+    // 이쪽을 바꿔야 화면에 닿습니다.
+    journeyMapSections: actual.journeyMapSections.map((section) => ({
+      ...section,
+      items: section.items.map((item) =>
+        item.kind === "special" ? { ...item, title: "검증용 메시지 제목" } : item,
+      ),
+    })),
   };
 });
 
