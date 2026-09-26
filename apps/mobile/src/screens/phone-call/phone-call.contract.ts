@@ -172,7 +172,7 @@ export type PhoneCallNavigationScreenContract = {
 };
 
 export type PhoneCallTestId =
-  | `journey-map-phone-call-${PhoneCallUnitId}`
+  | `ui-lynx-learning-unit-${PhoneCallUnitId}`
   | "phone-call-screen"
   | "phone-call-title"
   | "phone-call-contact-name"

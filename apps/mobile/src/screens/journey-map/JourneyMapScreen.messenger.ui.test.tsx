@@ -25,7 +25,7 @@ it("C1: special 항목은 appointment와 directions 사이에 삽입된다", () 
           "[data-testid=ui-lynx-learning-unit-introduction]",
           "[data-testid=ui-lynx-learning-unit-ordering]",
           "[data-testid=ui-lynx-learning-unit-appointment]",
-          "[data-testid=journey-messenger-item-appointment-confirmation]",
+          "[data-testid=ui-lynx-learning-unit-appointment-confirmation]",
           "[data-testid=ui-lynx-learning-unit-directions]",
         ].join(","),
       ),
@@ -35,7 +35,7 @@ it("C1: special 항목은 appointment와 directions 사이에 삽입된다", () 
     "ui-lynx-learning-unit-introduction",
     "ui-lynx-learning-unit-ordering",
     "ui-lynx-learning-unit-appointment",
-    "journey-messenger-item-appointment-confirmation",
+    "ui-lynx-learning-unit-appointment-confirmation",
     "ui-lynx-learning-unit-directions",
   ]);
 });
@@ -55,7 +55,7 @@ it("C2: special 뒤 directions는 자기 스텝 서수의 기존 상태와 조�
   render(<JourneyMapScreen {...fixture} />);
   const directions = screen.getByTestId("ui-lynx-learning-unit-directions");
   expect(directions).toHaveAttribute("data-status", "default");
-  const special = screen.getByTestId("journey-messenger-item-appointment-confirmation");
+  const special = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");
   expect(special).toHaveAttribute("data-status", "available");
   fireEvent.tap(special, {});
   expect(onStartMessengerUnit).toHaveBeenCalledWith("appointment-confirmation");

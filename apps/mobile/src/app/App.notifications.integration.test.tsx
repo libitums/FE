@@ -192,9 +192,14 @@ test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 �
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
-  const mapItemTestId = `journey-messenger-item-${item.target.unitId}`;
-  expect(screen.getByTestId(mapItemTestId)).toHaveAttribute("data-status", "completed");
-  expect(screen.getByTestId(mapItemTestId)).toHaveTextContent(", 완료됨");
+  const mapItemTestId = `ui-lynx-learning-unit-${item.target.unitId}`;
+  // 완료 표식은 유닛 어휘(`clear`)이고, 「완료됨」은 화면 글자가 아니라 접근성 이름에
+  // 실립니다 — `LearningUnit`이 체크 아이콘으로 그리기 때문입니다.
+  expect(screen.getByTestId(mapItemTestId)).toHaveAttribute("data-status", "clear");
+  expect(screen.getByTestId(mapItemTestId)).toHaveAttribute(
+    "accessibility-label",
+    "약속 확인 메시지, 완료됨, 이야기 연결",
+  );
 });
 
 // ------------------------------------------------------------------- IN8 · IN9

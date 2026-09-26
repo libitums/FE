@@ -13,9 +13,9 @@ describe("MessengerMapItem 접근성 회귀", () => {
         onSelect={vi.fn()}
       />,
     );
-    const item = screen.getByTestId("journey-messenger-item-appointment-confirmation");
+    const item = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");
     expect(item).toHaveAttribute("accessibility-element", "true");
-    expect(item).toHaveAttribute("accessibility-label", "약속 확인 메시지");
+    expect(item).toHaveAttribute("accessibility-label", "약속 확인 메시지, 이야기 연결");
     expect(item).toHaveAttribute("accessibility-traits", "button");
   });
 
@@ -28,9 +28,9 @@ describe("MessengerMapItem 접근성 회귀", () => {
         onSelect={vi.fn()}
       />,
     );
-    const item = screen.getByTestId("journey-messenger-item-appointment-confirmation");
+    const item = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");
     expect(item).toHaveAttribute("accessibility-element", "true");
-    expect(item).toHaveAttribute("accessibility-label", "약속 확인 메시지, 완료됨");
+    expect(item).toHaveAttribute("accessibility-label", "약속 확인 메시지, 완료됨, 이야기 연결");
     expect(item).toHaveAttribute("accessibility-traits", "button");
   });
 });

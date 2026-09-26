@@ -49,16 +49,17 @@ describe("App · phone-call integration", () => {
     openJourney();
     const items = screen
       .getAllByTestId(
-        /^(?:journey-messenger|journey-map-phone-call|ui-lynx-learning-unit-directions$)/,
+        // 유닛 하위 testid(-ring · -icon · -badge)가 아니라 유닛 자체만 셉니다.
+        /^(?:ui-lynx-learning-unit-appointment-confirmation|ui-lynx-learning-unit-appointment-confirmation-phone-call|ui-lynx-learning-unit-directions)$/,
       )
       .map((node) => node.getAttribute("data-testid"));
     expect(items).toEqual([
-      "journey-messenger-item-appointment-confirmation",
-      "journey-map-phone-call-appointment-confirmation-phone-call",
+      "ui-lynx-learning-unit-appointment-confirmation",
+      "ui-lynx-learning-unit-appointment-confirmation-phone-call",
       "ui-lynx-learning-unit-directions",
     ]);
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
     expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
@@ -73,12 +74,12 @@ describe("App · phone-call integration", () => {
     // 스텝은 `LearningUnit`이 그리므로 유닛 어휘입니다 — 특수 항목(메신저 · 전화 ·
     // 비주얼 노벨)은 자기 컴포넌트의 어휘(`available`·`completed`)를 그대로 씁니다.
     expect(before).toEqual(["clear", "clear", "active", "default", "default"]);
-    expect(screen.getByTestId("journey-messenger-item-appointment-confirmation")).toHaveAttribute(
+    expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
       "data-status",
       "available",
     );
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
     let finish: (() => void) | undefined;
@@ -103,9 +104,9 @@ describe("App · phone-call integration", () => {
     ).toHaveLength(6);
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
     expect(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
-    ).toHaveAttribute("data-status", "completed");
-    expect(screen.getByTestId("journey-messenger-item-appointment-confirmation")).toHaveAttribute(
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
+    ).toHaveAttribute("data-status", "clear");
+    expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
       "data-status",
       "available",
     );
@@ -114,7 +115,7 @@ describe("App · phone-call integration", () => {
     );
     expect(after).toEqual(before);
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
     expect(
@@ -125,10 +126,10 @@ describe("App · phone-call integration", () => {
     fireEvent.tap(screen.getByTestId("phone-call-replay-button"), {});
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
     expect(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
-    ).toHaveAttribute("data-status", "completed");
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
+    ).toHaveAttribute("data-status", "clear");
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
     expect(
@@ -141,7 +142,7 @@ describe("App · phone-call integration", () => {
   it("미완료 이탈은 stop하고 재진입을 첫 transcript로 시작한다", () => {
     openJourney();
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
     playAudio.mockReturnValue("started");
@@ -149,7 +150,7 @@ describe("App · phone-call integration", () => {
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
     expect(stopAudio).toHaveBeenCalled();
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
     expect(
@@ -162,7 +163,7 @@ describe("App · phone-call integration", () => {
   it("탭 복귀 후 전화 화면을 유지하고 exit 뒤 메신저와 공존한다", () => {
     openJourney();
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
     fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
@@ -170,7 +171,7 @@ describe("App · phone-call integration", () => {
     fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
     expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
-    fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
     expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
   });
 
@@ -182,7 +183,7 @@ describe("App · phone-call integration", () => {
     fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
     expect(phoneCallEventSink).toHaveBeenCalledTimes(1);
@@ -210,7 +211,7 @@ describe("App · phone-call integration", () => {
     }
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
 

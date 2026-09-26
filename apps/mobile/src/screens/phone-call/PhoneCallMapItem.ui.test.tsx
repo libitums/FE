@@ -14,17 +14,18 @@ describe("PhoneCallMapItem UI", () => {
           onSelect={vi.fn()}
         />,
       );
-      const item = screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call");
+      const item = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call");
       expect(item).toHaveAttribute("accessibility-element", "true");
-      expect(item).toHaveAttribute("data-status", status);
+      expect(item).toHaveAttribute("data-status", status === "completed" ? "clear" : "available");
       expect(item).toHaveAttribute("accessibility-traits", "button");
+      // 상태 접미사와 「이야기 연결」은 `LearningUnit`이 붙입니다(ADR-0016 D3).
       expect(item).toHaveAttribute(
         "accessibility-label",
-        status === "completed" ? "약속 확인 전화, 완료됨" : "약속 확인 전화",
+        status === "completed"
+          ? "약속 확인 전화, 완료됨, 이야기 연결"
+          : "약속 확인 전화, 이야기 연결",
       );
-      expect(item).toHaveTextContent(
-        status === "completed" ? "약속 확인 전화, 완료됨" : "약속 확인 전화",
-      );
+      expect(screen.getByText("약속 확인 전화")).toBeInTheDocument();
     },
   );
 
@@ -39,7 +40,7 @@ describe("PhoneCallMapItem UI", () => {
       />,
     );
     fireEvent.tap(
-      screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+      screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
     expect(onSelect).toHaveBeenCalledTimes(1);
