@@ -76,17 +76,32 @@
    에피소드인가」는 유닛을 훑는 내내 답이 필요한 물음이라, 스크롤 밖으로 흘려보내지
    않습니다.
 
-   `align-self: stretch`가 카드를 상단 바와 같은 줄 폭에 세웁니다 — 세로 열의
-   `align-items: stretch` 기본값이 안쪽 카드까지 이어져, 카드가 이 상자 폭을 꽉 씁니다.
+   `align-self: stretch`는 카드가 아니라 **이 상자**가 줄 폭을 받게 합니다. 달라붙은
+   동안 카드 옆으로도 유닛이 지나가므로, 가리는 띠는 줄 폭 전체여야 합니다. 카드
+   자신의 폭은 아래 `-card`가 집니다.
 
-   면을 칠합니다. 달라붙은 동안 이 상자 아래로 유닛이 지나가는데, 투명하면 카드
-   둘레 여백으로 그 유닛이 비칩니다. `z-index`도 같은 이유입니다. */
+   면을 칠합니다. 달라붙은 동안 이 띠 아래로 유닛이 지나가는데, 투명하면 그대로
+   비칩니다. `z-index`도 같은 이유입니다. */
 .journey-map-screen-episode-header {
   align-self: stretch;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   position: sticky;
   top: var(--libitum-spacing-0);
   z-index: var(--libitum-elevation-z-sticky);
   background: var(--libitum-color-background-primary);
+}
+
+/* 카드 폭 151은 디자인 실측값(Figma 79-5692)이고 이 치수에 맞는 토큰이 없어 px로
+   적습니다. 폭을 여기서 잡는 것은, 카드가 ui-lynx 것이라 화면이 그 클래스에 손대지
+   않기 위해서입니다 — 이 상자가 폭을 쥐고, 세로 열의 `align-items: stretch`
+   기본값이 안쪽 카드를 그 폭으로 폅니다.
+
+   왼쪽 정렬은 위 상자의 `align-items: flex-start`가 냅니다 — 카드 왼쪽 모서리가
+   상단 바의 스트릭 칩과 같은 세로선에 섭니다. */
+.journey-map-screen-episode-header-card {
+  width: 151px;
+  display: flex;
+  flex-direction: column;
 }
