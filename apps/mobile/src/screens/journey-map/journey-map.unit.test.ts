@@ -19,7 +19,8 @@ import {
   initialStepSheetState,
   journeySteps,
   journeyStepOrdinal,
-  learningFormForStep,
+  learningFormAt,
+  learningFormsForStep,
   standardUnitSteps,
   stepAccessibilityLabel,
   stepSheetReducer,
@@ -410,36 +411,64 @@ describe("learningFormForStep", () => {
   // 던지지 않습니다 — Record가 다섯 키를 전부 덮는 것을 tsc가 집니다.
   it("다섯 스텝 어느 것에도 던지지 않는다", () => {
     for (const id of allStepIds) {
-      expect(() => learningFormForStep(id)).not.toThrow();
+      expect(() => learningFormsForStep(id)).not.toThrow();
     }
   });
 
   it("다섯 스텝 어느 것에도 undefined를 돌려주지 않는다", () => {
     for (const id of allStepIds) {
-      expect(learningFormForStep(id)).not.toBeUndefined();
+      expect(learningFormsForStep(id)).not.toBeUndefined();
     }
   });
 
   it("다섯 스텝 각각에 LearningForm의 한 값을 돌려준다", () => {
     for (const id of allStepIds) {
-      expect(allLearningForms).toContain(learningFormForStep(id));
+      for (const form of learningFormsForStep(id)) {
+        expect(allLearningForms).toContain(form);
+      }
     }
   });
 
   // journeySteps에서 온 id로도 같은 것을 봅니다 — allStepIds가 그 배열과 어긋나면
   // 이 케이스가 먼저 말합니다.
   it("journeySteps의 다섯 스텝에도 그대로 성립한다", () => {
-    const forms = journeySteps.map((step) => learningFormForStep(step.id));
+    const lists = journeySteps.map((step) => learningFormsForStep(step.id));
 
-    expect(forms).toHaveLength(5);
-    for (const form of forms) {
-      expect(allLearningForms).toContain(form);
+    expect(lists).toHaveLength(5);
+    for (const forms of lists) {
+      expect(forms.length).toBeGreaterThan(0);
+      for (const form of forms) {
+        expect(allLearningForms).toContain(form);
+      }
+    }
+  });
+
+  // `learningFormAt`은 「다음 활동이 있는가」를 가리는 자리입니다. 목록 밖에서
+  // `undefined`를 돌려주는 것이 곧 「이 스텝의 활동이 끝났다」이고, 배선은 그때
+  // 평가로 갑니다 — 이 경계가 틀리면 활동 하나가 조용히 건너뛰어지거나 평가가
+  // 영영 오지 않습니다.
+  it("learningFormAt이 목록 안에서는 그 자리의 학습형을 돌려준다", () => {
+    for (const id of allStepIds) {
+      const forms = learningFormsForStep(id);
+
+      forms.forEach((form, index) => {
+        expect(learningFormAt(id, index)).toBe(form);
+      });
+    }
+  });
+
+  it("learningFormAt이 목록 밖에서는 undefined다 — 그것이 활동의 끝이다", () => {
+    for (const id of allStepIds) {
+      const forms = learningFormsForStep(id);
+
+      expect(learningFormAt(id, forms.length)).toBeUndefined();
+      expect(learningFormAt(id, forms.length + 1)).toBeUndefined();
     }
   });
 
   it("부수효과 없음 — 같은 스텝을 두 번 불러도 같은 값이다", () => {
     for (const id of allStepIds) {
-      expect(learningFormForStep(id)).toBe(learningFormForStep(id));
+      expect(learningFormsForStep(id)).toBe(learningFormsForStep(id));
     }
   });
 });
@@ -456,7 +485,7 @@ describe("교차 불변식 — 학습형과 문항 표", () => {
 
   it("듣기인 스텝에만 듣기 문항이 있다 — 양방향", () => {
     for (const id of allStepIds) {
-      expect(learningFormForStep(id) === "listening").toBe(
+      expect(learningFormsForStep(id).includes("listening")).toBe(
         listeningQuestionsForStep(id).length > 0,
       );
     }
@@ -464,7 +493,7 @@ describe("교차 불변식 — 학습형과 문항 표", () => {
 
   it("문장 순서인 스텝에만 문장 순서 문항이 있다 — 양방향", () => {
     for (const id of allStepIds) {
-      expect(learningFormForStep(id) === "sentence-order").toBe(
+      expect(learningFormsForStep(id).includes("sentence-order")).toBe(
         sentenceOrderQuestionsForStep(id).length > 0,
       );
     }
@@ -472,7 +501,7 @@ describe("교차 불변식 — 학습형과 문항 표", () => {
 
   it("단어 선택인 스텝에만 단어 선택 문항이 있다 — 양방향", () => {
     for (const id of allStepIds) {
-      expect(learningFormForStep(id) === "word-choice").toBe(
+      expect(learningFormsForStep(id).includes("word-choice")).toBe(
         wordChoiceQuestionsForStep(id).length > 0,
       );
     }
@@ -480,14 +509,14 @@ describe("교차 불변식 — 학습형과 문항 표", () => {
 
   // 위 셋을 스텝 × 학습형 격자로 한 번에 돕니다. 학습형이 넷째(culture)로 늘어
   // 이제 스무 칸입니다 — culture의 questionCountForForm이 항상 0이고
-  // learningFormForStep이 아직 culture를 돌려주는 스텝이 없으므로(보류 1b), 이
+  // 활동 목록에 아직 culture가 든 스텝이 없으므로(보류 1b), 이
   // 넷째 열은 오늘 전부 false === false로 통과합니다. **문화가 배정되는 날** 이
   // 격자가 먼저 갈라집니다 — questionCountForForm이 아니라 배정 쪽이 무너진
   // 것이라는 신호입니다.
   it("다섯 스텝 × 학습형 넷 스무 칸 전부에서 ⇔가 성립한다", () => {
     for (const id of allStepIds) {
       for (const form of allLearningForms) {
-        expect(learningFormForStep(id) === form).toBe(questionCountForForm[form](id) > 0);
+        expect(learningFormsForStep(id).includes(form)).toBe(questionCountForForm[form](id) > 0);
       }
     }
   });
@@ -503,11 +532,11 @@ describe("교차 불변식 — 학습형과 문항 표", () => {
     }
   });
 
-  it("다섯 스텝 각각에서 문항이 있는 그 하나가 그 스텝의 학습형이다", () => {
+  it("다섯 스텝 각각에서 문항이 있는 그 하나가 그 스텝의 활동 목록과 같다", () => {
     for (const id of allStepIds) {
       const nonEmpty = allLearningForms.filter((form) => questionCountForForm[form](id) > 0);
 
-      expect(nonEmpty).toEqual([learningFormForStep(id)]);
+      expect(nonEmpty).toEqual([...learningFormsForStep(id)]);
     }
   });
 
@@ -518,7 +547,18 @@ describe("교차 불변식 — 학습형과 문항 표", () => {
   // 계약이 근거 없는 예외를 코드에 남기지 않기 위해 그대로 둡니다.
   it("어느 스텝도 문항이 0개인 학습형에 배정되지 않는다", () => {
     for (const id of allStepIds) {
-      expect(questionCountForForm[learningFormForStep(id)](id)).toBeGreaterThan(0);
+      // 활동 목록의 **모든** 항목이 문항을 가져야 합니다 — 하나라도 비면 그 활동이
+      // 문항 0개짜리 화면을 엽니다.
+      for (const form of learningFormsForStep(id)) {
+        expect(questionCountForForm[form](id)).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  // 목록은 비어 있을 수 없습니다 — 타입이 막지만, 값 쪽에서도 한 번 답니다.
+  it("다섯 스텝 각각의 활동 목록이 비어 있지 않다", () => {
+    for (const id of allStepIds) {
+      expect(learningFormsForStep(id).length).toBeGreaterThan(0);
     }
   });
 });

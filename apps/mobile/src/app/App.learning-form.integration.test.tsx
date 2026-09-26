@@ -41,10 +41,22 @@ vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../screens/journey-map/journey-map")>();
   return {
     ...actual,
-    learningFormForStep: (id: JourneyStepId) => {
+    // 스텁은 학습형 하나를 줍니다 — 배정표가 목록을 돌려주므로 그 하나를 한 항목
+    // 목록으로 감쌉니다. 이 파일이 보는 것은 「배정표를 실제로 경유하는가」입니다.
+    learningFormsForStep: (id: JourneyStepId) => {
       const stub = formStub.current;
       if (stub === null) {
-        return actual.learningFormForStep(id);
+        return actual.learningFormsForStep(id);
+      }
+      return [typeof stub === "function" ? stub(id) : stub] as const;
+    },
+    learningFormAt: (id: JourneyStepId, index: number) => {
+      const stub = formStub.current;
+      if (stub === null) {
+        return actual.learningFormAt(id, index);
+      }
+      if (index !== 0) {
+        return undefined;
       }
       return typeof stub === "function" ? stub(id) : stub;
     },

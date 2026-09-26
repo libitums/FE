@@ -1,6 +1,7 @@
 import { useGlobalProps, useReducer, useState } from "@lynx-js/react";
 
 import { BottomNavigator } from "../components/BottomNavigator";
+import type { AnswerResult } from "../lib/answer-result";
 import type { EntryAppProps } from "../lib/entry-flow";
 import { initialEntryLanguage } from "../lib/entry-language";
 import type { EntryLanguage } from "../lib/entry-language";
@@ -78,6 +79,9 @@ export function App({
   // 않습니다**(ADR-0007 D1) — 앱을 다시 켜면 `initialSessionOptions`로
   // 돌아갑니다.
   const [sessionOptions, setSessionOptions] = useState<SessionOptions>(initialSessionOptions);
+  // 한 스텝의 활동들이 지나오며 쌓는 결과입니다. 유닛 하나가 활동 여럿을 잇고 평가는
+  // 마지막에 한 번만 돌므로, 그때까지의 정오를 여기 모읍니다(journey-wiring.ts).
+  const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
 
   const wiring = screenWiring({
     messengerEventSink,
@@ -97,6 +101,8 @@ export function App({
     setCompletedStepCount,
     sessionOptions,
     setSessionOptions,
+    pendingResults,
+    setPendingResults,
     entryLanguage,
     setEntryLanguage,
   });

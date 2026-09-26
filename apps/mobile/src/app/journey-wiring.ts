@@ -12,7 +12,8 @@ import {
 import type { AnswerResult } from "../lib/answer-result";
 import {
   completeStep,
-  learningFormForStep,
+  learningFormAt,
+  learningFormsForStep,
   type JourneyStepId,
 } from "../screens/journey-map/journey-map";
 import type { MessengerEventSink, MessengerUnitId } from "../screens/messenger/messenger.contract";
@@ -56,6 +57,16 @@ export type JourneyWiringArgs = {
   readonly setCompletedStepCount: Dispatch<SetStateAction<number>>;
   readonly sessionOptions: SessionOptions;
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
+  /**
+   * 한 스텝의 활동들이 지나오며 쌓은 결과입니다. 유닛 하나가 활동 여럿을 잇기 때문에
+   * 평가는 **마지막 활동이 끝난 뒤** 한 번만 돌고, 그때까지의 결과를 여기 모읍니다.
+   *
+   * 스택이 아니라 App 상태인 이유는 이 값이 화면 좌표가 아니기 때문입니다 — 어느
+   * 화면에 있든 「이 스텝에서 지금까지 맞고 틀린 것」은 하나입니다. 스택에 실으면
+   * 뒤로 가기가 결과를 되감아 평가가 달라집니다.
+   */
+  readonly pendingResults: readonly AnswerResult[];
+  readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
 };
 
 // 반환 객체를 `journey`로 먼저 이름 붙이고, `onMessengerExit`·`onSelectNotification`이
@@ -78,6 +89,8 @@ export function journeyWiring(args: JourneyWiringArgs) {
     setCompletedStepCount,
     sessionOptions,
     setSessionOptions,
+    pendingResults,
+    setPendingResults,
   } = args;
 
   const journey = {
@@ -94,25 +107,51 @@ export function journeyWiring(args: JourneyWiringArgs) {
       setVisualNovelProgress,
     }),
     completedStepCount,
-    // 시트의 `시작`이 여기로 옵니다. 목적지는 `learningFormForStep`이 정하고
+    // 시트의 `시작`이 여기로 옵니다. 목적지는 `learningFormsForStep`의 **첫 활동**이고
     // `learningScreenFor`가 화면으로 옮깁니다 — 학습형 이름을 리터럴로 쓰지 않습니다.
-    onStartStep: (id: JourneyStepId) =>
-      dispatch({ type: "push", screen: learningScreenFor(learningFormForStep(id), id) }),
+    // 목록이 비지 않는 것은 타입이 지므로 첫 항목 접근에 방어 분기가 없습니다.
+    onStartStep: (id: JourneyStepId) => {
+      setPendingResults([]);
+      dispatch({ type: "push", screen: learningScreenFor(learningFormsForStep(id)[0], id, 0) });
+    },
     // 중도 이탈입니다. **진행을 갱신하지 않습니다.** `onFinishLearning`과 합치지
-    // 않는 이유가 이 한 줄의 차이입니다.
-    onExitLearning: () => dispatch({ type: "backToRoot" }),
-    // 판정은 평가가 집니다 — `judgeAssessment` → `assessmentCompletesStep`. 셸에
-    // `verdict === "passed"` 리터럴을 쓰지 않습니다 — 진행을 쓰는 자리는 여전히
-    // 여기 하나입니다.
-    onFinishLearning: (id: JourneyStepId, results: readonly AnswerResult[]) => {
-      const verdict = judgeAssessment(results, assessmentPassCriterion);
+    // 않는 이유가 이 한 줄의 차이입니다. 쌓아 둔 결과는 버립니다 — 다음에 이 스텝을
+    // 다시 열면 첫 활동부터이므로 남겨 두면 지난 세션의 정오가 섞입니다.
+    onExitLearning: () => {
+      setPendingResults([]);
+      dispatch({ type: "backToRoot" });
+    },
+    onFinishLearning: (
+      id: JourneyStepId,
+      activityIndex: number,
+      results: readonly AnswerResult[],
+    ) => {
+      const gathered = [...pendingResults, ...results];
+      const next = learningFormAt(id, activityIndex + 1);
+      // 활동이 남았으면 평가로 가지 않습니다 — 다음 활동으로 갈아탑니다. 판정은 스텝
+      // 전체를 놓고 한 번만 내립니다.
+      if (next !== undefined) {
+        setPendingResults(gathered);
+        dispatch({
+          type: "replace",
+          screen: learningScreenFor(next, id, activityIndex + 1),
+        });
+        return;
+      }
+      setPendingResults([]);
+      // 판정은 평가가 집니다 — `judgeAssessment` → `assessmentCompletesStep`. 셸에
+      // `verdict === "passed"` 리터럴을 쓰지 않습니다.
+      const verdict = judgeAssessment(gathered, assessmentPassCriterion);
       if (assessmentCompletesStep(verdict)) {
         setCompletedStepCount((count) => completeStep(count, id));
       }
       // `replace`이지 `push`가 아닙니다 — 끝난 학습 세션은 스택에 남길 자리가
       // 아닙니다. 출구는 진입 동작이 무엇이든 활성 스택의 루트로 곧장 갑니다
       // (ADR-0007 D6).
-      dispatch({ type: "replace", screen: { name: "assessment", stepId: id, results } });
+      dispatch({
+        type: "replace",
+        screen: { name: "assessment", stepId: id, results: gathered },
+      });
     },
     // 평가의 `맵으로`입니다. 중도 이탈과 마찬가지로 진행을 갱신하지 않습니다 —
     // 판정은 이미 `onFinishLearning`에서 끝났습니다.

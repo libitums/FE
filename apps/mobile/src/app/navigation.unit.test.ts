@@ -300,8 +300,8 @@ describe("navReducer — backToRoot", () => {
         ...baseStacks,
         journey: [
           { name: "journey-map" },
-          { name: "listening", stepId: "ordering" },
-          { name: "word-choice", stepId: "ordering" },
+          { name: "listening", stepId: "ordering", activityIndex: 0 },
+          { name: "word-choice", stepId: "ordering", activityIndex: 0 },
         ],
       },
     });
@@ -386,7 +386,7 @@ describe("navReducer — backToRoot", () => {
 // (`initialNav.tab`이 이미 journey라도 switchTab은 동일 참조를 돌려줄 뿐이라
 // 안전합니다).
 describe("navReducer — listening 화면", () => {
-  const listeningScreen = { name: "listening", stepId: "ordering" } as const;
+  const listeningScreen = { name: "listening", stepId: "ordering", activityIndex: 0 } as const;
 
   function journeyNav(): Nav {
     return navReducer(initialNav, { type: "switchTab", tab: "journey" });
@@ -396,7 +396,11 @@ describe("navReducer — listening 화면", () => {
     const next = navReducer(journeyNav(), { type: "push", screen: listeningScreen });
 
     expect(next.stacks.journey).toHaveLength(2);
-    expect(next.stacks.journey[1]).toEqual({ name: "listening", stepId: "ordering" });
+    expect(next.stacks.journey[1]).toEqual({
+      name: "listening",
+      stepId: "ordering",
+      activityIndex: 0,
+    });
     expect(next.stacks.roleplay).toEqual(baseStacks.roleplay);
     expect(next.stacks.settings).toEqual(baseStacks.settings);
     expect(next.entry).toEqual([]);
@@ -432,7 +436,11 @@ describe("navReducer — listening 화면", () => {
     expect(away.stacks.journey).toHaveLength(2);
     expect(back.tab).toBe("journey");
     expect(back.stacks.journey).toHaveLength(2);
-    expect(currentScreen(back)).toEqual({ name: "listening", stepId: "ordering" });
+    expect(currentScreen(back)).toEqual({
+      name: "listening",
+      stepId: "ordering",
+      activityIndex: 0,
+    });
   });
 });
 
@@ -453,7 +461,7 @@ describe("navReducer — listening 화면", () => {
 // 미통과면 진행이 갱신되지 않습니다)의 판정자는 `App.integration.test.tsx`의
 // **I1 · I3 · I6**입니다.
 describe("navReducer — assessment 화면", () => {
-  const listeningScreen = { name: "listening", stepId: "ordering" } as const;
+  const listeningScreen = { name: "listening", stepId: "ordering", activityIndex: 0 } as const;
   const assessmentScreen = {
     name: "assessment",
     stepId: "ordering",
@@ -551,14 +559,14 @@ const allStepIds: readonly JourneyStepId[] = [
 describe("learningScreenFor", () => {
   it("학습형 셋 각각에서 name이 학습형 문자열과 같다", () => {
     for (const form of allLearningForms) {
-      expect(learningScreenFor(form, "ordering").name).toBe(form);
+      expect(learningScreenFor(form, "ordering", 0).name).toBe(form);
     }
   });
 
   it("학습형 셋 각각에서 stepId가 인자 그대로다", () => {
     for (const form of allLearningForms) {
       for (const id of allStepIds) {
-        const screen = learningScreenFor(form, id);
+        const screen = learningScreenFor(form, id, 0);
 
         expect("stepId" in screen ? screen.stepId : null).toBe(id);
       }
@@ -566,17 +574,29 @@ describe("learningScreenFor", () => {
   });
 
   it("세 결과의 name이 서로 다르다", () => {
-    const names = allLearningForms.map((form) => learningScreenFor(form, "ordering").name);
+    const names = allLearningForms.map((form) => learningScreenFor(form, "ordering", 0).name);
 
     expect(new Set(names).size).toBe(allLearningForms.length);
   });
 
-  // 멤버 둘의 모양은 `listening`과 문자 그대로 같습니다 — 필드는 `stepId` 하나이고
-  // `stepOrdinal`도 `form`도 union에 넣지 않습니다. toEqual이 그 「필드가 둘뿐」을
+  // 멤버 넷의 모양은 문자 그대로 같습니다 — 필드는 `stepId`와 `activityIndex`뿐이고
+  // `stepOrdinal`도 `form`도 union에 넣지 않습니다. toEqual이 그 「필드가 셋뿐」을
   // 집니다.
-  it("학습형 셋 각각이 { name, stepId } 꼴이고 필드가 그 둘뿐이다", () => {
+  it("학습형 넷 각각이 { name, stepId, activityIndex } 꼴이고 필드가 그 셋뿐이다", () => {
     for (const form of allLearningForms) {
-      expect(learningScreenFor(form, "greeting")).toEqual({ name: form, stepId: "greeting" });
+      expect(learningScreenFor(form, "greeting", 0)).toEqual({
+        name: form,
+        stepId: "greeting",
+        activityIndex: 0,
+      });
+    }
+  });
+
+  // 인덱스는 그대로 실립니다 — 화면이 자기 좌표를 지고, 다음 활동을 고를 때 여기서
+  // 읽습니다.
+  it("activityIndex가 인자 그대로 실린다", () => {
+    for (const form of allLearningForms) {
+      expect(learningScreenFor(form, "greeting", 2)).toMatchObject({ activityIndex: 2 });
     }
   });
 
@@ -584,14 +604,14 @@ describe("learningScreenFor", () => {
     const tabRoots = ["journey-map", "roleplay-list", "settings"];
 
     for (const form of allLearningForms) {
-      expect(tabRoots).not.toContain(learningScreenFor(form, "directions").name);
+      expect(tabRoots).not.toContain(learningScreenFor(form, "directions", 0).name);
     }
   });
 
   it("부수효과 없음 — 같은 인자를 두 번 불러도 같은 값이다", () => {
     for (const form of allLearningForms) {
-      expect(learningScreenFor(form, "appointment")).toEqual(
-        learningScreenFor(form, "appointment"),
+      expect(learningScreenFor(form, "appointment", 0)).toEqual(
+        learningScreenFor(form, "appointment", 0),
       );
     }
   });
@@ -604,27 +624,27 @@ describe("learningScreenFor의 총성", () => {
 
   it("학습형 셋 중 어느 값에도 undefined를 돌려주지 않는다", () => {
     for (const form of allLearningForms) {
-      expect(learningScreenFor(form, "directions")).not.toBeUndefined();
+      expect(learningScreenFor(form, "directions", 0)).not.toBeUndefined();
     }
   });
 
   it("학습형 셋 × 스텝 다섯 어느 칸에도 undefined를 돌려주지 않는다", () => {
     for (const form of allLearningForms) {
       for (const id of allStepIds) {
-        expect(learningScreenFor(form, id)).not.toBeUndefined();
+        expect(learningScreenFor(form, id, 0)).not.toBeUndefined();
       }
     }
   });
 
   it("학습형 셋 어느 것에도 던지지 않는다", () => {
     for (const form of allLearningForms) {
-      expect(() => learningScreenFor(form, "greeting")).not.toThrow();
+      expect(() => learningScreenFor(form, "greeting", 0)).not.toThrow();
     }
   });
 
   it("돌려준 화면은 push로 스택에 그대로 올라간다", () => {
     for (const form of allLearningForms) {
-      const screen = learningScreenFor(form, "ordering");
+      const screen = learningScreenFor(form, "ordering", 0);
       const next = navReducer(nav({ tab: "journey" }), { type: "push", screen });
 
       expect(currentScreen(next)).toEqual(screen);
