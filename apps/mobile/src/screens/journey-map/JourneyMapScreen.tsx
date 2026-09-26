@@ -116,15 +116,17 @@ export function JourneyMapScreen({
             // 감쌉니다 — 유닛 사이 간격은 맵이 주지만 에피소드 사이는 더 벌어져야 하고,
             // 그 간격을 이 상자가 집니다.
             <view className="journey-map-screen-episode" key={section.episode.id}>
-              <EpisodeHeader
-                episodeLabel={section.episode.label}
-                title={section.episode.title}
-                completedUnitCount={completedMapItemCount(section.items, progress)}
-                totalUnitCount={section.items.length}
-              />
-              {/* 헤더와 유닛을 가르는 선입니다. 순수 장식이라 접근성 트리에서 뺍니다 —
-                  경계는 헤더가 이름으로 이미 말합니다. */}
-              <view className="journey-map-screen-episode-divider" />
+              {/* 헤더를 감싸는 상자입니다. 카드가 스스로 sticky가 되지 않습니다 —
+                  ui-lynx 컴포넌트의 배치는 그것을 쓰는 화면이 정하고, 카드는 자기
+                  생김새만 압니다. 이 상자가 그 배치(줄 폭 · 달라붙기 · 덮기)를 집니다. */}
+              <view className="journey-map-screen-episode-header">
+                <EpisodeHeader
+                  episodeLabel={section.episode.label}
+                  title={section.episode.title}
+                  completedUnitCount={completedMapItemCount(section.items, progress)}
+                  totalUnitCount={section.items.length}
+                />
+              </view>
               {section.items.map((item) =>
                 item.kind === "special" ? (
                   <MessengerMapItem

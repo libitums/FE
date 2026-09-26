@@ -59,23 +59,34 @@
   padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
 }
 
-/* 에피소드 한 덩어리 — 헤더 · 구분선 · 그 에피소드의 유닛들입니다. 유닛 사이 간격은
+/* 에피소드 한 덩어리 — 헤더와 그 에피소드의 유닛들입니다. 유닛 사이 간격은
    맵(`.journey-map-screen-map`)이 주고, 이 상자는 헤더와 첫 유닛 사이만 집니다. */
 .journey-map-screen-episode {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--libitum-spacing-24);
-  /* 맵이 `align-items: center`라 자식 폭이 내용에 맞춰집니다. 그러면 안쪽 구분선의
-     `width: 100%`가 헤더 카드 폭이 되어 선이 안 보입니다 — 이 상자만 줄 폭을 받아
-     펴고, 가운데 정렬은 그 안에서 합니다. */
+  /* 맵이 `align-items: center`라 자식 폭이 내용에 맞춰집니다. 헤더는 상단 바와 같은
+     줄 폭에 서야 하므로 이 상자만 줄 폭을 받아 펴고, 유닛 가운데 정렬은 그 안에서
+     합니다. */
   align-self: stretch;
 }
 
-/* 헤더와 유닛을 가르는 선입니다. 폭을 화면 가로 여백까지 넓히지 않습니다 — 맵이 이미
-   좌우 여백을 쥐고 있고, 선이 그보다 넓으면 헤더 카드와 어긋나 보입니다. */
-.journey-map-screen-episode-divider {
-  width: 100%;
-  height: var(--libitum-stroke-width-thin);
-  background: var(--libitum-color-border-default);
+/* 에피소드 헤더 상자 — 스크롤을 올려도 꼭대기에 달라붙습니다. 「지금 어느
+   에피소드인가」는 유닛을 훑는 내내 답이 필요한 물음이라, 스크롤 밖으로 흘려보내지
+   않습니다.
+
+   `align-self: stretch`가 카드를 상단 바와 같은 줄 폭에 세웁니다 — 세로 열의
+   `align-items: stretch` 기본값이 안쪽 카드까지 이어져, 카드가 이 상자 폭을 꽉 씁니다.
+
+   면을 칠합니다. 달라붙은 동안 이 상자 아래로 유닛이 지나가는데, 투명하면 카드
+   둘레 여백으로 그 유닛이 비칩니다. `z-index`도 같은 이유입니다. */
+.journey-map-screen-episode-header {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: var(--libitum-spacing-0);
+  z-index: var(--libitum-elevation-z-sticky);
+  background: var(--libitum-color-background-primary);
 }
