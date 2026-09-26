@@ -147,7 +147,7 @@ test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화
     }
     expect(screen.queryByTestId(titleTestIdByForm[other])).not.toBeInTheDocument();
   }
-  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
 });
 
 // I-W5-4 · I-W5-1의 두 red 행(`sentence-order` · `word-choice`)과 같은 경로를 다시
@@ -251,13 +251,13 @@ test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵�
 
   // 퀴즈의 맵으로 → 맵으로 돌아옵니다(`backToRoot` 판정). 문화 학습이 아닙니다.
   fireEvent.tap(screen.getByTestId("culture-quiz-screen-exit"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("culture-quiz-screen-title")).not.toBeInTheDocument();
   expect(screen.queryByTestId("culture-screen-title")).not.toBeInTheDocument();
 });
 
 // I-B — 나간 뒤 맵이 꼭대기이고, 거기서 같은 스텝을 다시 시작하면 문화 학습이
-// 새로 열립니다. 맵이 꼭대기라는 것은 위 케이스의 journey-map-screen-title 단언이
+// 새로 열립니다. 맵이 꼭대기라는 것은 위 케이스의 journey-map-screen 단언이
 // 이미 짓습니다 — push는 위에 쌓고 currentScreen은 꼭대기만 읽으므로 잔재 유무는
 // 거기서 가려집니다. startStep 헬퍼도 ui-lynx-learning-unit-*를 요구해 같은 전제
 // 위에서 재시작합니다.
@@ -271,7 +271,7 @@ test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시
 
   // 맵으로 나갑니다.
   fireEvent.tap(screen.getByTestId("culture-quiz-screen-exit"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   // 맵에서 같은 스텝을 다시 시작합니다 — 스택에 잔재가 없습니다.
   startStep("ordering");
@@ -305,7 +305,7 @@ test("문화 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 �
 
   // 그 상태에서도 맵으로 → 맵에 닿습니다.
   fireEvent.tap(screen.getByTestId("culture-quiz-screen-exit"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("culture-quiz-screen-title")).not.toBeInTheDocument();
   expect(screen.queryByTestId("culture-screen-title")).not.toBeInTheDocument();
 });

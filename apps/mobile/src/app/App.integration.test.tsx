@@ -49,7 +49,7 @@ afterEach(() => {
 test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", () => {
   renderApp(<App />);
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
@@ -72,7 +72,7 @@ test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("settings-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
@@ -87,12 +87,12 @@ test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오
 test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 여정 맵 화면은 사라진다", () => {
   renderApp(<App />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
-  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
@@ -106,12 +106,12 @@ test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면�
 test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 여정 맵 화면은 사라진다", () => {
   renderApp(<App />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
-  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "true",
@@ -129,12 +129,12 @@ test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
-  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "true",
@@ -185,7 +185,7 @@ test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대�
   fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
@@ -205,7 +205,7 @@ test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 �
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
 test("시트가 열린 동안에도 탭 전환이 동작한다", () => {
@@ -217,7 +217,7 @@ test("시트가 열린 동안에도 탭 전환이 동작한다", () => {
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
-  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
@@ -277,7 +277,7 @@ test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 
 
   expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("3단계 · 듣기");
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
-  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
 });
 
@@ -355,7 +355,7 @@ test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
     "clear",
@@ -393,7 +393,7 @@ test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
 
   fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
     "active",
@@ -451,13 +451,13 @@ test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있�
   fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
 
   startStep("appointment");
   fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
 });
 
@@ -475,7 +475,7 @@ test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", (
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
 // "storage를 import·호출하지 않는다"는 diff·grep의 몫이지만, 그 결과로 관찰되는
@@ -556,7 +556,7 @@ test("I3: 평가의 맵으로를 누르면 backToRoot 하나로 맵에 닿는다
 
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
 });
@@ -590,7 +590,7 @@ test("I5: 문항 하나만 응답하고 헤더 맵으로 나가면 진행이 안
 
   fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
@@ -619,7 +619,7 @@ test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 cu
 
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
     "active",
@@ -779,7 +779,7 @@ test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아�
 
   fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0), STOP]);
 });
@@ -822,7 +822,7 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
 
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual(atComplete);
   expect(playSources(calls)).toHaveLength(stopCount(calls));
 });
@@ -944,7 +944,7 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
 
   expect(() => fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {})).not.toThrow();
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
     "clear",

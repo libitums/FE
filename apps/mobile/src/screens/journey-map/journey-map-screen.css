@@ -15,81 +15,12 @@
   position: relative;
 }
 
-/* 머리 행 — 제목(왼쪽) · 액션 래퍼(오른쪽)를 담는 가로 행입니다. `align-items:
-   flex-start`와 제목 여백 보상 없음은, 버튼 내용 줄을 버튼 상자 위에 붙여(아래
-   `.journey-map-screen-notifications`) 제목 · 버튼의 프레임 top이 모든 배율에서
-   같아지게 하기 위해서입니다(가로 위치와 DOM이 같은 순회 답을 냅니다).
-   `flex-shrink: 0`이 `.journey-map-screen-title`에서 여기로 옮겨 옵니다 — 오늘
-   제목은 화면 세로 열의 직접 자식이라 이 선언을 받았지만, 이제 세로 열의 자식은
-   이 머리 행입니다(FE ADR-0023 규칙 2, 사례 ⑦과 같은 갈래). */
-.journey-map-screen-header {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: var(--libitum-layout-gap-inline);
-  flex-shrink: 0;
-}
-
-.journey-map-screen-title {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-s-font-family);
-  font-weight: var(--libitum-typography-heading-s-font-weight);
-  font-size: var(--libitum-typography-heading-s-font-size);
-  line-height: var(--libitum-typography-heading-s-line-height);
-  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-  /* 머리 행의 가로 텍스트입니다(FE ADR-0023 사례 ⑧ 방향) — 남는 폭을 받아
-     줄바꿈합니다. `flex-shrink: 0`을 주지 않습니다: 주면 가로 행이 넘쳐 잘립니다. */
-  flex: 1;
-}
-
-/* 액션 래퍼 — ADR-0016 D9: 시트가 열린 동안 조작 가능한 뒤쪽 노드(알림 버튼)를
-   가립니다. 가림은 자손에 걸리므로(D5) 버튼 자신이 아니라 이 래퍼가
-   `accessibility-elements-hidden`을 집니다. 가림 전용 상자라 면 · 여백 · 경계
-   선언이 없습니다. 버튼에 준 행-자식 선언 `flex-shrink: 0`을 이 래퍼도 받습니다 —
-   머리 행의 둘째 자식이 이제 이 래퍼이고 버튼은 그 유일한 자식입니다. */
+/* 머리 — 상단 바(지표 칩 둘 · 알림 버튼)를 담는 상자입니다. ADR-0016 D9: 시트가 열린
+   동안 조작 가능한 뒤쪽 노드(알림 버튼)를 가립니다. 가림은 자손에 걸리므로(D5) 버튼
+   자신이 아니라 이 상자가 `accessibility-elements-hidden`을 집니다. 가림 전용 상자라
+   면 · 여백 · 경계 선언이 없고, 세로 열이 줄어들지 않게 `flex-shrink: 0`만 둡니다. */
 .journey-map-screen-actions {
   flex-shrink: 0;
-}
-
-/* 알림 버튼(히트 영역) — 폭 선언이 없습니다(내용 폭). 상하 padding 없이
-   `min-height`만으로 터치 영역 하한을 둡니다(ADR-0020 D5 — Dynamic Type이
-   켜지면 글자만 커지고 상자는 안 커집니다). `column` + `justify-content:
-   flex-start`가 버튼 내용 줄을 버튼 상자 위에 붙입니다 — 상자 하나에 row +
-   `flex-start`를 걸면 아이콘과 낱말의 가운데가 갈리는데, 이 갈래는 그 값 없이
-   같은 결과를 냅니다. 면을 칠하지 않습니다 — 나가기와 같은 투명 텍스트 버튼
-   어휘입니다. */
-.journey-map-screen-notifications {
-  min-height: var(--libitum-spacing-48);
-  padding: 0 var(--libitum-spacing-12);
-  border-radius: var(--libitum-radius-md);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  flex-shrink: 0;
-}
-
-/* 버튼 내용 줄 — 아이콘 · 낱말을 가로로 담아 가운데 정렬합니다. */
-.journey-map-screen-notifications-content {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--libitum-spacing-4);
-}
-
-.journey-map-screen-notifications-icon {
-  width: var(--libitum-icon-size-md);
-  height: var(--libitum-icon-size-md);
-  flex-shrink: 0;
-}
-
-/* 버튼 낱말 — `flex-shrink: 0`을 주지 않습니다(가로 텍스트, FE ADR-0023 규칙 5 (2)). */
-.journey-map-screen-notifications-label {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
 /* 남는 세로를 받는 것은 이 상자입니다 — `flex: 1`이 `.journey-map-screen-map`에서
@@ -98,11 +29,14 @@
    `display: flex`·`flex-direction: column`은 지웁니다 — `<scroll-view>`는 CSS와
    무관하게 강제로 `linear`가 되어 이 둘이 안 읽힙니다. `justify-content`는
    `LinearSupportFlexStyleMode()` 게이트가 이 앱에서 켜져 있는지 확인하지 못해
-   남깁니다. */
+   남깁니다.
+
+   위 경계선을 뗐습니다 — 그 선은 제목 줄과 스크롤 내용을 가르던 것이고, 제목이
+   없어진 지금은 에피소드 헤더 카드 바로 위에 한 겹 더 그어져 카드가 갇혀 보입니다.
+   경계는 카드 자신의 테두리와 아래 구분선이 이미 말합니다. */
 .journey-map-screen-scroll {
   flex: 1;
   justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
 /* 지그재그 오프셋은 index가 없어 성립하지 않습니다 — 직선 세로 배치로 갑니다.
@@ -123,4 +57,25 @@
   align-items: center;
   gap: var(--libitum-spacing-24);
   padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+}
+
+/* 에피소드 한 덩어리 — 헤더 · 구분선 · 그 에피소드의 유닛들입니다. 유닛 사이 간격은
+   맵(`.journey-map-screen-map`)이 주고, 이 상자는 헤더와 첫 유닛 사이만 집니다. */
+.journey-map-screen-episode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-24);
+  /* 맵이 `align-items: center`라 자식 폭이 내용에 맞춰집니다. 그러면 안쪽 구분선의
+     `width: 100%`가 헤더 카드 폭이 되어 선이 안 보입니다 — 이 상자만 줄 폭을 받아
+     펴고, 가운데 정렬은 그 안에서 합니다. */
+  align-self: stretch;
+}
+
+/* 헤더와 유닛을 가르는 선입니다. 폭을 화면 가로 여백까지 넓히지 않습니다 — 맵이 이미
+   좌우 여백을 쥐고 있고, 선이 그보다 넓으면 헤더 카드와 어긋나 보입니다. */
+.journey-map-screen-episode-divider {
+  width: 100%;
+  height: var(--libitum-stroke-width-thin);
+  background: var(--libitum-color-border-default);
 }

@@ -46,6 +46,9 @@ export default defineConfig({
       "@libitums/ui-lynx/bottom-sheet": fileURLToPath(
         new URL("../../packages/ui-lynx/src/bottom-sheet/index.ts", import.meta.url),
       ),
+      "@libitums/ui-lynx/episode-header": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/episode-header/index.ts", import.meta.url),
+      ),
       "@libitums/ui-lynx/learning-unit": fileURLToPath(
         new URL("../../packages/ui-lynx/src/learning-unit/index.ts", import.meta.url),
       ),

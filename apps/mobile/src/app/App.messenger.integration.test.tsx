@@ -53,7 +53,7 @@ test("맵의 약속 확인 메시지를 열면 실제 messenger 화면이 push�
   openJourneyMessenger();
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
   expect(screen.getByTestId("messenger-screen-title")).toHaveTextContent("약속 확인 메시지");
-  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
 });
 
 test("두 답장을 완료하면 마지막 메시지와 맵 완료 표식이 함께 나타난다", () => {
