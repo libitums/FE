@@ -11,6 +11,13 @@ import "./journey-special-unit.css";
 // 어휘로 옮기고 제목 라벨을 아래에 붙이는 일만 합니다. `narrative`는 이 유닛이 이야기에
 // 걸린 갈래라는 표시입니다 — 끊긴 링과 배지가 일반 스텝과 갈라 줍니다.
 export function MessengerMapItem({ id, title, status, onSelect }: MessengerMapItemProps) {
+  // custom prop(`LearningUnit`의 `bindtap`)을 거쳐 `bindtap`에 닿는 핸들러라
+  // `'background only'`를 둡니다(docs/specs/messenger-special-unit.md).
+  const handleSelect = () => {
+    "background only";
+    onSelect(id);
+  };
+
   return (
     // 바깥 상자는 표식과 제목을 묶는 자리일 뿐입니다 — 탭도 접근성 요소도
     // `LearningUnit`이 집니다. 그래서 `data-testid`를 두지 않습니다.
@@ -21,7 +28,7 @@ export function MessengerMapItem({ id, title, status, onSelect }: MessengerMapIt
         icon={message02}
         status={status === "completed" ? "clear" : "available"}
         narrative="narrative"
-        bindtap={() => onSelect(id)}
+        bindtap={handleSelect}
       />
       <text className="journey-special-unit-label">{title}</text>
     </view>
