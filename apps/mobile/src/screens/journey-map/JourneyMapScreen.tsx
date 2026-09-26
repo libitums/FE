@@ -163,7 +163,7 @@ export function JourneyMapScreen({
                     id={item.step.id}
                     title={item.step.title}
                     status={stepStatusAt(journeyStepOrdinal(item.step.id) - 1, completedStepCount)}
-                    onSelect={(id) => dispatch({ type: "openStep", stepId: id })}
+                    onSelect={(id, tapY) => dispatch({ type: "openStep", stepId: id, tapY })}
                   />
                 ),
               )}
@@ -175,6 +175,7 @@ export function JourneyMapScreen({
       {openStep === undefined ? null : (
         <StepSheet
           title={openStep.title}
+          anchorY={sheetState.anchorY}
           lessonOrdinal={journeyStepOrdinal(openStep.id)}
           /* 진행은 「끝낸 활동 수 / 그 스텝이 잡은 활동 수」입니다. 오늘 활동은
              스텝 단위로만 저장되므로, 끝난 스텝이면 전부이고 아니면 0입니다 —

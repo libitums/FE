@@ -5,13 +5,18 @@ import type { JourneyStepId, JourneyStepStatus } from "./journey-map-units";
 
 export type StepSheetState = {
   readonly openStepId: JourneyStepId | null;
+  /**
+   * 말풍선이 설 세로 자리입니다 — 누른 유닛의 탭 좌표를 그대로 둡니다. 닫힌 동안은
+   * 0이고, 그 값은 읽히지 않습니다(말풍선이 없습니다).
+   */
+  readonly anchorY: number;
 };
 
 export type StepSheetAction =
-  | { readonly type: "openStep"; readonly stepId: JourneyStepId }
+  | { readonly type: "openStep"; readonly stepId: JourneyStepId; readonly tapY: number }
   | { readonly type: "closeSheet" };
 
-export const initialStepSheetState: StepSheetState = { openStepId: null };
+export const initialStepSheetState: StepSheetState = { openStepId: null, anchorY: 0 };
 
 // "이 상태가 시트를 여는가"의 정본입니다 — export하지 않는 모듈 내부 상수입니다.
 // 부등호 비교가 아니라 표를 쓰는 이유는 상태가 하나 늘면 tsc가 그 상태의 답을 쓰라고
@@ -33,16 +38,18 @@ export function canOpenStep(status: JourneyStepStatus): boolean {
 export function stepSheetReducer(state: StepSheetState, action: StepSheetAction): StepSheetState {
   switch (action.type) {
     case "openStep": {
-      if (state.openStepId === action.stepId) {
+      // 같은 스텝을 다시 눌러도 자리는 갱신합니다 — 스크롤 뒤 같은 유닛을 누르면
+      // 그 유닛은 화면의 다른 높이에 있습니다.
+      if (state.openStepId === action.stepId && state.anchorY === action.tapY) {
         return state;
       }
-      return { openStepId: action.stepId };
+      return { openStepId: action.stepId, anchorY: action.tapY };
     }
     case "closeSheet": {
       if (state.openStepId === null) {
         return state;
       }
-      return { openStepId: null };
+      return { openStepId: null, anchorY: 0 };
     }
   }
 }

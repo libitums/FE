@@ -26,7 +26,9 @@
   padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
   border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-50);
   border-radius: var(--libitum-radius-sm);
-  background: var(--libitum-color-white);
+  /* 면을 칠하지 않습니다 — 화면 바탕이 그대로 비칩니다(2026-09-27 디자인 반영).
+     칩을 가르는 것은 테두리와 안의 아이콘 · 숫자이고, 흰 면은 그 일에 보태는 것이
+     없었습니다. */
 }
 
 .journey-map-top-bar-chip-icon {
@@ -64,7 +66,7 @@
   padding: var(--libitum-spacing-2);
   border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-50);
   border-radius: var(--libitum-radius-full);
-  background: var(--libitum-color-white);
+  /* 칩과 같은 이유로 면을 칠하지 않습니다 — 위 `-chip` 주석을 봅니다. */
   flex-shrink: 0;
 }
 

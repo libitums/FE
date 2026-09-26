@@ -27,15 +27,12 @@
 /* 말풍선의 자리입니다. 좌우를 펴고 가운데 정렬로 말풍선을 가로 가운데에 세웁니다 —
    유닛이 맵 가운데 줄에 서므로 꼬리도 그 줄에 섭니다.
 
-   아래 여백은 바텀 네비게이션 몫입니다 — 바가 콘텐츠 위에 겹치므로(app.css의
-   `.app-navigator`) 0으로 두면 말풍선 아래쪽이 바에 가립니다. 값은 바 높이 68pt입니다
-   (위 여백 8 + 항목 48 + 아래 여백 12). 가림막(`.step-sheet-scrim`)은 화면 전체를
-   덮어야 하므로 그대로 둡니다. */
+   세로는 `top`을 인라인 스타일이 집니다 — 누른 유닛마다 다른 값이라 CSS가 가질 수
+   없습니다. 여기에 `top`을 적지 않는 것은 그 때문이고, 적으면 인라인 값과 겹칩니다. */
 .step-sheet-anchor {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
   z-index: var(--libitum-elevation-z-sheet);
   display: flex;
   flex-direction: column;
