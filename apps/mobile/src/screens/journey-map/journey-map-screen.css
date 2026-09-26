@@ -17,10 +17,22 @@
 
 /* 머리 — 상단 바(지표 칩 둘 · 알림 버튼)를 담는 상자입니다. ADR-0016 D9: 시트가 열린
    동안 조작 가능한 뒤쪽 노드(알림 버튼)를 가립니다. 가림은 자손에 걸리므로(D5) 버튼
-   자신이 아니라 이 상자가 `accessibility-elements-hidden`을 집니다. 가림 전용 상자라
-   면 · 여백 · 경계 선언이 없고, 세로 열이 줄어들지 않게 `flex-shrink: 0`만 둡니다. */
+   자신이 아니라 이 상자가 `accessibility-elements-hidden`을 집니다.
+
+   세로 열에서 빠져 스크롤 위에 겹칩니다(2026-09-27). 열 안에 있을 때는 스크롤 영역이
+   이 상자 **아래에서** 시작해, 유닛이 헤더 뒤로 지나가는 일이 아예 없었습니다 — 칩과
+   버튼의 면을 걷어도 화면이 그대로였던 이유가 그것입니다. 이제 유닛이 그 뒤로
+   지나가고, 면 없는 칩 사이로 비칩니다.
+
+   자리를 절대값으로 적습니다. 절대 배치의 기준 상자는 `.journey-map-screen`의 padding
+   box라 `0`은 화면 여백 **바깥**을 가리킵니다 — 그래서 여백값을 그대로 적어 열 안에
+   있을 때와 같은 자리에 세웁니다. */
 .journey-map-screen-actions {
-  flex-shrink: 0;
+  position: absolute;
+  top: var(--libitum-layout-screen-padding-top);
+  left: var(--libitum-layout-screen-padding-x);
+  right: var(--libitum-layout-screen-padding-x);
+  z-index: var(--libitum-elevation-z-sticky);
 }
 
 /* 남는 세로를 받는 것은 이 상자입니다 — `flex: 1`이 `.journey-map-screen-map`에서
@@ -51,11 +63,17 @@
    ADR-0022 D4는 「마지막 항목 아래 빈 띠가 끝으로 읽혀 넘침 어포던스를 지운다」는
    이유로 이 여백을 두지 않았습니다. 그 저울이 뒤집혔습니다 — 여백이 없으면 어포던스가
    흐려지는 정도가 아니라 **항목이 사라집니다**. */
+/* 위 여백은 상단 바 몫입니다 — 바가 콘텐츠 위에 겹치므로 이 여백이 없으면 첫 항목이
+   바에 가립니다. 값은 바 높이 40pt(알림 버튼 기준: 아이콘 32 + 여백 2+2 + 테두리 2+2)에
+   열 간격을 더한 것입니다. 아래 여백과 같은 갈래입니다. */
 .journey-map-screen-map {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--libitum-spacing-24);
+  padding-top: calc(
+    var(--libitum-spacing-32) + var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
+  );
   padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
 }
 
@@ -88,7 +106,10 @@
   flex-direction: column;
   align-items: flex-start;
   position: sticky;
-  top: var(--libitum-spacing-0);
+  /* 0이 아니라 바 높이 40pt입니다 — 상단 바가 스크롤 꼭대기를 덮으므로, 0으로 두면
+     달라붙은 카드가 칩 · 버튼과 겹칩니다. 위 `.journey-map-screen-map`의 여백과 같은
+     수에서 나옵니다. */
+  top: calc(var(--libitum-spacing-32) + var(--libitum-spacing-8));
   z-index: var(--libitum-elevation-z-sticky);
 }
 
