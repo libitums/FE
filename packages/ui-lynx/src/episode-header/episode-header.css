@@ -1,0 +1,84 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
+
+/* 에피소드 한 덩어리를 감싸는 카드입니다. 세로 패딩 24 · 가로 12는 디자인 실측값이고,
+   가로가 좁은 것은 이름이 카드 폭을 꽉 쓰기 때문입니다. */
+.ui-lynx-episode-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-12);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-disabled);
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+}
+
+.ui-lynx-episode-header-label {
+  width: 100%;
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 이름은 accent/chapter입니다 — Futura가 앞에 서고 한글은 뒤따르는 Pretendard ·
+   Noto Sans KR로 떨어집니다(토큰이 폴백까지 정의합니다). 그래서 한글 이름도 안전합니다. */
+.ui-lynx-episode-header-title {
+  width: 100%;
+  color: var(--libitum-color-brand-primary);
+  text-align: center;
+  font-family: var(--libitum-typography-accent-chapter-font-family);
+  font-size: var(--libitum-typography-accent-chapter-font-size);
+  font-weight: var(--libitum-typography-accent-chapter-font-weight);
+  line-height: var(--libitum-typography-accent-chapter-line-height);
+  letter-spacing: var(--libitum-typography-accent-chapter-letter-spacing);
+}
+
+.ui-lynx-episode-header-progress {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 막대 치수 57 × 10은 디자인 실측값이고 이 치수에 맞는 토큰이 없어 px로 적습니다.
+   `flex-shrink: 0`이 없으면 이름이 길어질 때 막대가 먼저 줄어듭니다. */
+.ui-lynx-episode-header-track {
+  width: 57px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-200);
+}
+
+/* 채움 폭은 진행 비율이라 인라인 스타일이 집니다 — CSS가 가질 수 없는 값입니다.
+   `overflow: hidden`이 별을 막대 안에 가둡니다. */
+.ui-lynx-episode-header-fill {
+  height: 10px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-feedback-warning);
+}
+
+.ui-lynx-episode-header-star {
+  width: var(--libitum-spacing-12);
+  height: var(--libitum-spacing-12);
+  flex-shrink: 0;
+}
+
+.ui-lynx-episode-header-count {
+  color: var(--libitum-color-gray-500);
+  white-space: nowrap;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}

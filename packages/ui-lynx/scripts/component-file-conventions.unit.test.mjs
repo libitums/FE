@@ -105,7 +105,7 @@ describe("findComponentFileConventionViolations", () => {
     expect(findComponentFileConventionViolations([...entries].reverse())).toEqual(violations);
   });
 
-  test("the twenty-two public component directories are canonical", async () => {
+  test("the twenty-three public component directories are canonical", async () => {
     const directories = (await readdir(sourceRoot, { withFileTypes: true }))
       .filter((item) => item.isDirectory())
       .map((item) => item.name)
@@ -127,6 +127,7 @@ describe("findComponentFileConventionViolations", () => {
       "chat-bubble",
       "compact-numeric-input",
       "dialog",
+      "episode-header",
       "fog",
       "learning-unit",
       "option-selector",
