@@ -44,10 +44,14 @@ export type Screen =
   | { name: "terms" }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
-  | { name: "listening"; stepId: JourneyStepId }
-  | { name: "sentence-order"; stepId: JourneyStepId }
-  | { name: "word-choice"; stepId: JourneyStepId }
-  | { name: "culture"; stepId: JourneyStepId }
+  // 학습 화면 넷은 `activityIndex`를 함께 집니다. 유닛 하나가 활동 여럿을 잇기
+  // 때문입니다(`learningFormsByStep`) — 몇 번째 활동인지는 「지금 어느 화면인가」의
+  // 일부라 스택이 지고, 다음 활동을 고를 때 여기서 읽습니다. App 상태로 빼면 스택과
+  // 인덱스가 어긋나는 상태를 표현할 수 있게 됩니다.
+  | { name: "listening"; stepId: JourneyStepId; activityIndex: number }
+  | { name: "sentence-order"; stepId: JourneyStepId; activityIndex: number }
+  | { name: "word-choice"; stepId: JourneyStepId; activityIndex: number }
+  | { name: "culture"; stepId: JourneyStepId; activityIndex: number }
   | { name: "culture-quiz"; stepId: JourneyStepId }
   | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] }
   | { name: "messenger"; unitId: MessengerUnitId }

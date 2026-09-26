@@ -57,19 +57,23 @@ export function entryScreenAfterLogin(method: EntryLoginMethod, phoneNumber?: st
 //
 // `Record<LearningForm, …>`이 아니라 `switch`인 이유는 돌려주는 것이 스칼라가
 // 아니라 필드를 가진 객체이고 `Screen` 멤버들이 균일하지 않기 때문입니다.
-export function learningScreenFor(form: LearningForm, stepId: JourneyStepId): Screen {
+export function learningScreenFor(
+  form: LearningForm,
+  stepId: JourneyStepId,
+  activityIndex: number,
+): Screen {
   switch (form) {
     case "listening": {
-      return { name: "listening", stepId };
+      return { name: "listening", stepId, activityIndex };
     }
     case "sentence-order": {
-      return { name: "sentence-order", stepId };
+      return { name: "sentence-order", stepId, activityIndex };
     }
     case "word-choice": {
-      return { name: "word-choice", stepId };
+      return { name: "word-choice", stepId, activityIndex };
     }
     case "culture": {
-      return { name: "culture", stepId };
+      return { name: "culture", stepId, activityIndex };
     }
   }
 }

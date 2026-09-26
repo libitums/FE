@@ -94,7 +94,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           stepId={screen.stepId}
           stepOrdinal={journeyStepOrdinal(screen.stepId)}
           onExit={wiring.onExitLearning}
-          onFinish={wiring.onFinishLearning}
+          onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
           // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한
           // 소비자입니다.
           sessionOptions={wiring.sessionOptions}
@@ -141,7 +141,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           stepId={screen.stepId}
           stepOrdinal={journeyStepOrdinal(screen.stepId)}
           onExit={wiring.onExitLearning}
-          onFinish={wiring.onFinishLearning}
+          onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
         />
       );
     case "word-choice":
@@ -150,7 +150,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           stepId={screen.stepId}
           stepOrdinal={journeyStepOrdinal(screen.stepId)}
           onExit={wiring.onExitLearning}
-          onFinish={wiring.onFinishLearning}
+          onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
         />
       );
     case "messenger":

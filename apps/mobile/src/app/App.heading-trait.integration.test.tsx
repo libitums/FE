@@ -38,8 +38,17 @@ vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../screens/journey-map/journey-map")>();
   return {
     ...actual,
-    learningFormForStep: (id: JourneyStepId) =>
-      formStub.current === null ? actual.learningFormForStep(id) : formStub.current,
+    // 스텁은 학습형 하나를 줍니다 — 배정표가 목록을 돌려주므로 그 하나를 한 항목
+    // 목록으로 감쌉니다. 이 테스트가 보는 것은 「어느 화면이 서는가」이고 활동이
+    // 몇 개인지는 보지 않습니다.
+    learningFormsForStep: (id: JourneyStepId) =>
+      formStub.current === null ? actual.learningFormsForStep(id) : ([formStub.current] as const),
+    learningFormAt: (id: JourneyStepId, index: number) =>
+      formStub.current === null
+        ? actual.learningFormAt(id, index)
+        : index === 0
+          ? formStub.current
+          : undefined,
   };
 });
 

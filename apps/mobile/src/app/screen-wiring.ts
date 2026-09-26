@@ -86,7 +86,16 @@ export type ScreenWiring = {
   onExitLearning: () => void;
   // 듣기가 넘기는 것은 「끝났다」와 「무엇이 일어났는지」뿐입니다. 통과 여부는
   // 여기서 계산하지 않습니다 — 판정의 권한은 평가로 옮겨갔습니다.
-  onFinishLearning: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
+  /**
+   * 학습 활동 하나가 끝났을 때 부릅니다. `activityIndex`는 그 활동이 스텝의 몇 번째인지로,
+   * 다음 활동이 남았는지 가릴 때 씁니다 — 남았으면 다음 활동으로 갈아타고, 없으면 그때
+   * 평가가 한 번 돕니다.
+   */
+  onFinishLearning: (
+    id: JourneyStepId,
+    activityIndex: number,
+    results: readonly AnswerResult[],
+  ) => void;
   // 평가의 `맵으로`입니다. 중도 이탈(`onExitLearning`)과 같은 형태로 진행을
   // 갱신하지 않고 활성 스택의 루트로 곧장 닿습니다(ADR-0007 D6).
   onExitAssessment: () => void;
@@ -152,6 +161,8 @@ export type ScreenWiringArgs = {
   readonly setCompletedStepCount: Dispatch<SetStateAction<number>>;
   readonly sessionOptions: SessionOptions;
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
+  readonly pendingResults: readonly AnswerResult[];
+  readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
 };
