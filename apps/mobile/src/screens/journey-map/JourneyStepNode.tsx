@@ -35,6 +35,15 @@ export type JourneyStepProps = {
 };
 
 export function JourneyStepNode({ id, title, status, onSelect }: JourneyStepProps): ReactNode {
+  // custom prop(`LearningUnit`의 `bindtap`)을 거쳐 `bindtap`에 닿는 핸들러라
+  // `'background only'`를 둡니다 — 특별 유닛 셋과 같은 경계입니다.
+  const handleSelect = () => {
+    "background only";
+    if (canOpenStep(status)) {
+      onSelect(id);
+    }
+  };
+
   return (
     // 바깥 상자는 표식과 제목을 세로로 묶는 자리일 뿐입니다 — 탭도 접근성 요소도
     // `LearningUnit`이 집니다. 그래서 여기에는 `data-testid`를 두지 않습니다. 두면
@@ -48,11 +57,7 @@ export function JourneyStepNode({ id, title, status, onSelect }: JourneyStepProp
         accessibilityLabel={title}
         icon={activeIcon}
         status={unitStatusByStatus[status]}
-        bindtap={() => {
-          if (canOpenStep(status)) {
-            onSelect(id);
-          }
-        }}
+        bindtap={handleSelect}
       />
       <text className="journey-step-node-label">{title}</text>
     </view>

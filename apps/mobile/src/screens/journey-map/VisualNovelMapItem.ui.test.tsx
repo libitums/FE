@@ -14,18 +14,18 @@ describe("VisualNovelMapItem UI", () => {
           onSelect={vi.fn<(id: "cafe-arrival-visual-novel") => void>()}
         />,
       );
-      const item = screen.getByTestId("journey-map-visual-novel-cafe-arrival-visual-novel");
-      expect(item).toHaveAttribute("data-status", status);
+      const item = screen.getByTestId("ui-lynx-learning-unit-cafe-arrival-visual-novel");
+      expect(item).toHaveAttribute("data-status", status === "completed" ? "clear" : "available");
       expect(item).toHaveAttribute("accessibility-element", "true");
       expect(item).toHaveAttribute("accessibility-traits", "button");
+      // 상태 접미사와 「이야기 연결」은 `LearningUnit`이 붙입니다(ADR-0016 D3).
       expect(item).toHaveAttribute(
         "accessibility-label",
-        status === "completed" ? "카페에 도착한 지민, 완료됨" : "카페에 도착한 지민",
+        status === "completed"
+          ? "카페에 도착한 지민, 완료됨, 이야기 연결"
+          : "카페에 도착한 지민, 이야기 연결",
       );
-      expect(item).toHaveClass("visual-novel-map-item");
-      const title = item.querySelector(".visual-novel-map-item-title");
-      expect(title).toHaveClass("visual-novel-map-item-title");
-      expect(title).toHaveClass("visual-novel-map-item-action-label");
+      expect(screen.getByText("카페에 도착한 지민")).toBeInTheDocument();
     },
   );
 
@@ -39,7 +39,7 @@ describe("VisualNovelMapItem UI", () => {
         onSelect={onSelect}
       />,
     );
-    fireEvent.tap(screen.getByTestId("journey-map-visual-novel-cafe-arrival-visual-novel"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-cafe-arrival-visual-novel"), {});
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect).toHaveBeenCalledWith("cafe-arrival-visual-novel");
   });

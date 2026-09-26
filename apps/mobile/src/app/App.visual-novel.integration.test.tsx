@@ -13,7 +13,7 @@ const audio = vi.hoisted(() => ({
 }));
 vi.mock("../lib/audio", () => audio);
 
-const unitTestId = "journey-map-visual-novel-cafe-arrival-visual-novel";
+const unitTestId = "ui-lynx-learning-unit-cafe-arrival-visual-novel";
 
 type AnnouncementCall = { content: string };
 
@@ -79,8 +79,8 @@ function journeyStateSnapshot(): readonly (string | null)[] {
     "ui-lynx-learning-unit-introduction",
     "ui-lynx-learning-unit-ordering",
     "ui-lynx-learning-unit-appointment",
-    "journey-messenger-item-appointment-confirmation",
-    "journey-map-phone-call-appointment-confirmation-phone-call",
+    "ui-lynx-learning-unit-appointment-confirmation",
+    "ui-lynx-learning-unit-appointment-confirmation-phone-call",
     "ui-lynx-learning-unit-directions",
   ].map((testId) => screen.getByTestId(testId).getAttribute("data-status"));
 }
@@ -91,11 +91,12 @@ test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 �
 
   const items = screen
     .getAllByTestId(
-      /^(?:journey-map-phone-call|journey-map-visual-novel|ui-lynx-learning-unit-directions$)/,
+      // 유닛 하위 testid(-ring · -icon · -badge)가 아니라 유닛 자체만 셉니다.
+      /^(?:ui-lynx-learning-unit-appointment-confirmation-phone-call|ui-lynx-learning-unit-cafe-arrival-visual-novel|ui-lynx-learning-unit-directions)$/,
     )
     .map((node) => node.getAttribute("data-testid"));
   expect(items).toEqual([
-    "journey-map-phone-call-appointment-confirmation-phone-call",
+    "ui-lynx-learning-unit-appointment-confirmation-phone-call",
     unitTestId,
     "ui-lynx-learning-unit-directions",
   ]);
@@ -129,7 +130,7 @@ test("마지막 장면 진입에서만 완료되고 완료 재진입은 final �
   expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("이야기 완료");
 
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
-  expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "completed");
+  expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "clear");
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
   expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("이야기 완료");
@@ -142,7 +143,7 @@ test("replay는 화면만 처음으로 돌리고 이탈 후 재진입하면 완�
   expect(screen.getByTestId("visual-novel-scene-arrive")).toHaveAttribute("data-replaying", "true");
 
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
-  expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "completed");
+  expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "clear");
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
 });
@@ -156,7 +157,7 @@ test("replay에서 다시 끝까지 진행해도 완료·발화·이벤트는 �
   advanceToFinal();
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
 
-  expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "completed");
+  expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "clear");
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
   expect(announcements).toEqual([{ content: "이야기 완료" }]);
@@ -230,7 +231,7 @@ test("null sink에서도 완료와 재진입 동작은 같다", () => {
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   advanceToFinal();
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
-  expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "completed");
+  expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "clear");
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
 });
@@ -240,7 +241,7 @@ test("visual novel 완료는 messenger 상태·이벤트와 phone audio를 바�
   renderApp(<App messengerEventSink={messengerEventSink} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
-  fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
   fireEvent.tap(screen.getByTestId("messenger-reply-self-accept"), {});
   fireEvent.tap(screen.getByTestId("messenger-reply-self-thanks"), {});
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
@@ -250,18 +251,18 @@ test("visual novel 완료는 messenger 상태·이벤트와 phone audio를 바�
   advanceToFinal();
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
 
-  expect(screen.getByTestId("journey-messenger-item-appointment-confirmation")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
     "data-status",
-    "completed",
+    "clear",
   );
   expect(
-    screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
+    screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
   ).toHaveAttribute("data-status", "available");
   expect(messengerEventSink.mock.calls.map(([event]) => event)).toEqual(messengerEventsBefore);
   expect(audio.playAudio).not.toHaveBeenCalled();
   expect(audio.stopAudio).not.toHaveBeenCalled();
 
-  fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
   expect(screen.getByTestId("messenger-message-list").children).toHaveLength(5);
 });
 

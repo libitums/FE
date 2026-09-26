@@ -49,9 +49,9 @@ const journeyStateTestIds = [
   "ui-lynx-learning-unit-ordering",
   "ui-lynx-learning-unit-appointment",
   "ui-lynx-learning-unit-directions",
-  `journey-messenger-item-${messengerUnitId}`,
-  `journey-map-phone-call-${phoneCallUnitId}`,
-  `journey-map-visual-novel-${visualNovelUnitId}`,
+  `ui-lynx-learning-unit-${messengerUnitId}`,
+  `ui-lynx-learning-unit-${phoneCallUnitId}`,
+  `ui-lynx-learning-unit-${visualNovelUnitId}`,
 ] as const;
 
 function journeyStateSnapshot(): readonly (string | null)[] {
@@ -183,7 +183,7 @@ test("[I1] 실제 데이터로 선 목록 — 항목 셋이 여정 순서로 서
 test("[I1b] 여정에서 메신저를 완료해도 롤플레이 목록은 새지 않는다", () => {
   renderApp(<App />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
@@ -260,17 +260,17 @@ test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   // 여정에서 메신저를 완료합니다.
-  fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
   // 여정에서 전화를 완료합니다.
-  fireEvent.tap(screen.getByTestId(`journey-map-phone-call-${phoneCallUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
   finishPhoneCall();
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
   // 여정에서 비주얼 노벨을 find까지 진행하고 미완료로 나갑니다.
-  fireEvent.tap(screen.getByTestId(`journey-map-visual-novel-${visualNovelUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
   advanceVisualNovelOnce();
   expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
@@ -303,7 +303,7 @@ test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선
 test("[I3] 여정에서 비주얼 노벨을 완료한 뒤에도 롤플레이는 arrive에서 시작한다", () => {
   renderApp(<App />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`journey-map-visual-novel-${visualNovelUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
   advanceVisualNovelOnce();
   advanceVisualNovelOnce();
   expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("이야기 완료");
@@ -360,15 +360,15 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
   renderApp(<App />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
-  fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
   expect(screen.getByTestId("messenger-screen-exit")).toHaveTextContent("맵으로");
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
-  fireEvent.tap(screen.getByTestId(`journey-map-phone-call-${phoneCallUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
   expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("맵으로");
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
-  fireEvent.tap(screen.getByTestId(`journey-map-visual-novel-${visualNovelUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
   expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("맵으로");
 });
 
@@ -405,15 +405,15 @@ test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 �
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(journeyStateSnapshot()).toEqual(before);
 
-  fireEvent.tap(screen.getByTestId(`journey-messenger-item-${messengerUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
   expect(screen.getByTestId("messenger-screen-progress")).toHaveTextContent("대화 1 / 2");
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
-  fireEvent.tap(screen.getByTestId(`journey-map-visual-novel-${visualNovelUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
   expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
 
-  fireEvent.tap(screen.getByTestId(`journey-map-phone-call-${phoneCallUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
   expect(screen.getByTestId("phone-call-status")).toHaveTextContent("통화 준비");
 });
 
@@ -463,7 +463,7 @@ test("[I6] 전화는 열림 이벤트만 있고 출처로 journey·roleplay를 �
 
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`journey-map-phone-call-${phoneCallUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
 
   expect(phoneCallEventSink).toHaveBeenLastCalledWith({
     name: "phone_call_unit_opened",

@@ -1,0 +1,23 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+
+   표식(원 · 링 · 아이콘 · 배지)은 ui-lynx `LearningUnit`이 그립니다. 여기 남는 것은
+   표식과 제목을 세로로 묶는 상자와 제목 글자뿐입니다 — 탭 대상도 표식 쪽입니다.
+
+   특별 유닛 셋(메신저 · 전화 · 비주얼 노벨)이 같은 파일을 씁니다. 셋의 차이는 어휘와
+   아이콘뿐이고 배치는 같습니다 — `.journey-step-node`와도 값이 같지만, 스텝과 특별
+   유닛은 서로 다른 축이라 한쪽 간격을 고칠 때 다른 쪽이 딸려 가지 않게 나눠 둡니다. */
+.journey-special-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.journey-special-unit-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
