@@ -6,262 +6,145 @@ import lock from "@libitums/icons/lynx/lock";
 import { color } from "@libitums/design-tokens";
 
 import { JourneyStepNode } from "./JourneyStepNode";
-import type { JourneyStepStatus } from "./journey-map";
+import type { JourneyStepId, JourneyStepStatus } from "./journey-map";
 
-// `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). 계산된 스타일·레이아웃은
+// `ui` 계층: 렌더 결과와 상호작용만 봅니다(ADR-0006 D4). 계산된 스타일·레이아웃은
 // jsdom이 계산하지 않으므로 여기서 단언하지 않습니다 — `toHaveClass`·`toHaveStyle`을
-// 쓰지 않습니다 (docs/conventions/code.md). 상태는 순수 함수(journey-map.ts)가 이미
-// 파생해 props로 넘겨준다는 전제이므로, 여기서는 `status`를 그대로 렌더하는지만
-// 봅니다.
+// 쓰지 않습니다(docs/conventions/code.md). 상태는 순수 함수(journey-map.ts)가 이미
+// 파생해 props로 넘겨준다는 전제입니다.
+//
+// 이 컴포넌트는 ui-lynx `LearningUnit`의 어댑터입니다. 표식의 시각·접근성 속성·링·
+// 배지는 그 패키지의 테스트가 보고, 여기서는 **결선**만 봅니다 — 여정 스텝의 상태
+// 어휘가 유닛 어휘로 어떻게 옮겨 가는지, 어느 상태에 어느 아이콘이 실리는지, 그리고
+// 탭이 `onSelect`로 되돌아오는지. 그래서 testid도 `LearningUnit`이 찍는 이름을 씁니다.
 
-const STATES: readonly JourneyStepStatus[] = ["done", "current", "locked"];
+// 상태 어휘 표입니다. 두 어휘가 어긋나면 화면이 엉뚱한 표식을 그리므로 여기서 답니다.
+const UNIT_STATUS_BY_STATUS: Record<JourneyStepStatus, string> = {
+  done: "clear",
+  current: "active",
+  locked: "default",
+};
 
+// `LearningUnit`은 `clear`·`default`에서 아이콘을 스스로 정합니다 — 앱이 넘긴 아이콘이
+// 쓰이는 것은 `active`뿐입니다. 색은 유닛이 상태별로 치환해 넘깁니다.
 const ICON_BY_STATUS: Record<JourneyStepStatus, string> = {
   done: tick,
   current: play,
   locked: lock,
 };
 
-// 아이콘 색(TS 상수)입니다. done과 current는 같은 상수
-// (`color.fg["neutral-inverted"]`)를 쓴다는 것이 design이 실제로 고정한 값입니다.
-// contract-deviation: 이 사실이 계약의 "세 값이 서로 같지 않다"는 문구와
-// 어긋납니다 — 최종 보고에서 다룹니다.
 const ICON_COLOR_BY_STATUS: Record<JourneyStepStatus, string> = {
-  done: color.fg["neutral-inverted"],
-  current: color.fg["neutral-inverted"],
-  locked: color.fg["neutral-muted"],
+  done: color.white,
+  current: color.white,
+  locked: color.gray[700],
 };
 
-// 단언 1
-test("라벨이 title을 텍스트로 낸다", () => {
+const STATES: readonly JourneyStepStatus[] = ["done", "current", "locked"];
+
+test("스텝 id가 유닛 testid에 실려 스텝마다 갈린다", () => {
   render(<JourneyStepNode id="ordering" title="주문하기" status="current" onSelect={() => {}} />);
 
-  expect(screen.getByTestId("journey-step-node-ordering")).toHaveTextContent("주문하기");
+  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toBeInTheDocument();
 });
 
-// 단언 2: data-status가 status와 같습니다 — 세 상태 각각입니다.
-for (const status of STATES) {
-  test(`data-status가 상태(${status})와 같다`, () => {
-    render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
+test.each(STATES)("스텝 상태 %s가 유닛 상태 어휘로 옮겨 간다", (status) => {
+  render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
 
-    expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", status);
-  });
-}
+  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
+    "data-status",
+    UNIT_STATUS_BY_STATUS[status],
+  );
+});
 
-// 단언 3: accessibility-label이 계약 표의 합성 결과입니다 — 세 상태 각각입니다.
-test("accessibility-label이 상태별 접미사를 붙인 합성 결과다 — done", () => {
+test.each(STATES)("상태 %s에 맞는 아이콘과 색이 실린다", (status) => {
+  render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
+
+  expect(screen.getByTestId("ui-lynx-learning-unit-ordering-icon")).toHaveAttribute(
+    "content",
+    ICON_BY_STATUS[status].replace(/currentColor/g, ICON_COLOR_BY_STATUS[status]),
+  );
+});
+
+test("라벨이 title을 텍스트로 낸다", () => {
   render(<JourneyStepNode id="greeting" title="첫 인사" status="done" onSelect={() => {}} />);
 
-  expect(screen.getByTestId("journey-step-node-greeting")).toHaveAttribute(
+  expect(screen.getByText("첫 인사")).toBeInTheDocument();
+});
+
+// ---------------------------------------------------------------------- 접근성
+//
+// 상태는 이름 뒤 접미사로 실립니다(ADR-0016 D3) — `accessibility-value`는 iOS 실기에서
+// 낭독되지 않아 그 결정이 통째로 걷은 속성입니다. 접미사를 붙이는 쪽은 `LearningUnit`
+// 이므로, 앱은 제목만 넘깁니다. 두 번 붙으면 여기서 빨개집니다.
+//
+// 문구가 여정 어휘가 아니라 유닛 어휘라는 것도 함께 답니다 — 「현재 스텝」이 아니라
+// 「현재 항목」입니다.
+
+test("done의 접근성 이름은 제목 뒤에 완료됨이 붙는다", () => {
+  render(<JourneyStepNode id="greeting" title="첫 인사" status="done" onSelect={() => {}} />);
+
+  expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
     "accessibility-label",
     "첫 인사, 완료됨",
   );
 });
 
-test("accessibility-label이 상태별 접미사를 붙인 합성 결과다 — current", () => {
+test("current의 접근성 이름은 제목 뒤에 현재 항목이 붙는다", () => {
   render(<JourneyStepNode id="ordering" title="주문하기" status="current" onSelect={() => {}} />);
 
-  expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "accessibility-label",
-    "주문하기, 현재 스텝",
+    "주문하기, 현재 항목",
   );
 });
 
-test("accessibility-label이 상태별 접미사를 붙인 합성 결과다 — locked", () => {
+test("locked의 접근성 이름은 제목 뒤에 잠김이 붙는다", () => {
   render(
     <JourneyStepNode id="appointment" title="약속 잡기" status="locked" onSelect={() => {}} />,
   );
 
-  expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
     "accessibility-label",
     "약속 잡기, 잠김",
   );
 });
 
-// 단언 4 (재고정): accessibility-traits가 상태별로 갈립니다 — done·current는
-// "button" 그대로, locked는 "disabled"입니다. accessibility-element="true"는 세
-// 상태에서 여전히 갈리지 않습니다 — 트리에서 사라지지 않습니다.
-const TRAITS_BY_STATUS: Record<JourneyStepStatus, "button" | "disabled"> = {
-  done: "button",
-  current: "button",
-  locked: "disabled",
-};
+test.each([
+  ["done", "button"],
+  ["current", "button"],
+  ["locked", "disabled"],
+] as const)("accessibility-traits가 상태(%s)의 값이다", (status, traits) => {
+  render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
 
-for (const status of STATES) {
-  test(`accessibility-traits가 상태(${status})의 값이다 · accessibility-element="true"다`, () => {
-    render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
-
-    const root = screen.getByTestId("journey-step-node-ordering");
-    expect(root).toHaveAttribute("accessibility-traits", TRAITS_BY_STATUS[status]);
-    expect(root).toHaveAttribute("accessibility-element", "true");
-  });
-}
-
-// 단언 5: 아이콘 content가 상태별 패키지 모듈 문자열과 같습니다 — 뒤바뀐 결선을
-// 여기서 잡습니다.
-for (const status of STATES) {
-  test(`아이콘 content가 상태(${status})에 맞는 패키지 모듈 문자열과 같다`, () => {
-    render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
-
-    expect(screen.getByTestId("journey-step-node-icon-ordering")).toHaveAttribute(
-      "content",
-      ICON_BY_STATUS[status],
-    );
-  });
-}
-
-// 단언 6: 아이콘 current-color가 상태별 토큰 상수와 같습니다. 세 값이 서로 같지
-// 않은 것도 봅니다.
-//
-// contract-deviation: design이 실제로 고정한 세 상수는
-// done="color.fg['neutral-inverted']"(#FFFFFF)·current="color.fg['neutral-inverted']"(같은
-// #FFFFFF)·locked="color.fg['neutral-muted']"(#555D6D)입니다. done과 current가
-// 문자 그대로 같은 상수이므로, 계약의 "세 값이 서로 같지 않은 것도 함께 본다"를
-// pairwise 전부 다르다는 뜻으로 읽으면 design이 고정한 실제 값과 영구히
-// 어긋납니다(항상 실패하는 red가 아니라 절대 통과할 수 없는 assertion이
-// 됩니다). 그래서 여기서는 "세 상태가 전부 같은 값 하나로 뭉개지지 않는다"는
-// 뜻으로 읽어 locked가 done·current와 다르다는 것만 단언합니다 — 최종 보고에서
-// 이 판단을 명시합니다.
-for (const status of STATES) {
-  test(`아이콘 current-color가 상태(${status})의 토큰 상수와 같다`, () => {
-    render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
-
-    expect(screen.getByTestId("journey-step-node-icon-ordering")).toHaveAttribute(
-      "current-color",
-      ICON_COLOR_BY_STATUS[status],
-    );
-  });
-}
-
-test("아이콘 색이 세 상태로 뭉개지지 않는다 — locked는 done·current와 다르다", () => {
-  expect(ICON_COLOR_BY_STATUS.locked).not.toBe(ICON_COLOR_BY_STATUS.done);
-  expect(ICON_COLOR_BY_STATUS.locked).not.toBe(ICON_COLOR_BY_STATUS.current);
+  const unit = screen.getByTestId("ui-lynx-learning-unit-ordering");
+  expect(unit).toHaveAttribute("accessibility-traits", traits);
+  expect(unit).toHaveAttribute("accessibility-element", "true");
 });
 
-// 단언 7 (반전): 아이콘 <svg>에는 accessibility-elements-hidden이 붙지 않습니다.
-//
-// ① 아이콘이 순수 장식인 것은 여전히 참입니다. 이 반전은 "장식이 아니게 됐다"가
-//    아니라 "가림을 질 자리가 잎이 아니다"입니다.
-// ② 가릴 자리가 있다면 잎이 아니라 부모 래퍼입니다 — markerClassByStatus를 입은
-//    <view>입니다. 다만 이 트리에서는 그 래퍼도 가림을 지고 있지 않습니다: 래퍼
-//    <view> 자신은 그대로 있고 거기 붙어 있던 accessibility-elements-hidden={true}
-//    한 줄을 지웠습니다. 지워도 되는 이유는 그 래퍼의 자식이 <svg> 하나뿐이라
-//    가릴 접근성 자손이 0개였기 때문입니다(③과 같은 이유). ⇒ 지금 이 컴포넌트
-//    트리에 가림 선언은 하나도 없고, 그 부재를 개수로 못박는 것이 아래 단언
-//    7-b입니다. 이 주석과 7-b는 같은 말을 합니다.
-// ③ 잎 <svg>에 붙어 있던 선언은 동작이 0이었습니다 — LynxUISVG는 LynxUI의
-//    enableAccessibilityByDefault를 재정의하지 않아 애초에 접근성 정지 대상이
-//    아니고, 가릴 자손도 없습니다. 최적화로 지운 것이 아니라 처음부터 죽어 있던
-//    선언입니다.
-// ④ ⛔ D5가 정정되기 전에는 ADR-0016 D5가 "아이콘 <svg>에
-//    accessibility-elements-hidden={true}"를 지시하고 있었고, 이 단언은 그
-//    문면과 어긋난 채로 서 있었습니다 — 코드가 ADR을 어긴 것이 아니라 D5의
-//    예시 문면이 틀렸던 것입니다. 지금은 정정됐습니다: D5는 "잎에는 붙이지
-//    않는다. 붙여도 아무 일도 하지 않는다"이고, 어긋남은 남아 있지 않습니다.
-//    근거가 바뀌었을 뿐 방어선은 그대로입니다 — ADR을 근거로 <svg>의 가림을
-//    되살리지 마십시오.
-// ⑤ 이 두 블록(단언 7·7-b)의 주석이 한 번 낡았던 원인은 하나가 아니라
-//    둘입니다.
-//    (a) "래퍼가 가린다"·"라벨 <text>는 :77" 류 — 이전 변경 자신이 만들었고, 두
-//        줄을 지우면서 자기 주석을 안 고쳤습니다.
-//    (b) "D5는 아직 ...를 지시하고 있다" 류 — 이 변경이 만들었고, D5를 정정하는
-//        순간 그 문장이 거짓이 됐습니다.
-//    넘긴 것과 넘기지 않은 것이 한 파일에 섞여 있었다는 뜻입니다. 낡은 원인이
-//    정확히 좌표였으므로, 지워진 줄은 새 좌표로 갱신하지 않고 앵커로 바꿔
-//    적었습니다.
-//
-// 매처는 인자 하나짜리 부정형입니다. 인자 둘짜리(not.toHaveAttribute(name, "true"))는
-// 속성이 다른 값으로 붙어 있어도 통과해서 부재를 짓지 못합니다. 이 케이스가
-// 지려는 것은 부재입니다. 선례: JourneyMapScreen.ui.test.tsx의
-// [U8](journey-map-screen-scroll).
-for (const status of STATES) {
-  test(`아이콘에 accessibility-elements-hidden이 붙지 않는다 — 가림은 래퍼가 진다 — ${status}`, () => {
-    render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
+// ---------------------------------------------------------------------- 상호작용
 
-    expect(screen.getByTestId("journey-step-node-icon-ordering")).not.toHaveAttribute(
-      "accessibility-elements-hidden",
-    );
-  });
-}
+test.each(["done", "current"] as const)(
+  "열 수 있는 상태(%s)를 tap하면 onSelect가 불린다",
+  (status) => {
+    const onSelect = vi.fn<(id: JourneyStepId) => void>();
+    render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={onSelect} />);
 
-// 단언 7-b: 가림 선언이 이 컴포넌트 트리 어디에도 없습니다.
-//
-// ① 이 단언이 지는 것은 「이 컴포넌트 트리 어디에도 가림 선언이 없다」이지 특정
-//    노드의 속성 부재가 아닙니다. 그래서 가림이 잎 <svg>에서 래퍼로(또는
-//    루트로) 옮겨 붙는 것만으로는 통과하지 못합니다 — 위 단언 7은 잎 하나만
-//    보므로 그 이동을 놓칩니다.
-// ② 묶는 것은 render()가 돌려주는 container입니다. getByTestId로 잡은 루트에
-//    querySelectorAll을 걸면 루트 자신(JourneyStepNode.tsx:55)이 매치 대상에서
-//    빠지므로, 누가 루트에 가림을 붙이면 잡지 못합니다. 트리 전체를 지려면
-//    container여야 합니다. 셀렉터에 값을 쓰지 않는 이유도 같습니다 —
-//    [...="true"]로 좁히면 다른 값으로 붙은 가림을 놓쳐 부재를 지지 못합니다
-//    (단언 7의 인자 하나짜리 부정형과 같은 이유입니다).
-// ③ 래퍼(markerClassByStatus를 입은 <view>)에 붙어 있던 가림도 동작이
-//    0이었습니다 — 그 래퍼의 자식은 <svg> 하나뿐이라 가릴 접근성 자손이
-//    0개입니다. 라벨 <text>는 그 래퍼 **밖** 형제라 애초에 가려질 자리가
-//    아니었습니다. 이전 변경이 그 한 줄을 지웠고, 지워진 좌표는 새 좌표로
-//    갱신하지 않습니다 — 그 줄은 없습니다.
-// ④ 정본과의 구분: AssessmentItem.tsx:60의 래퍼는 안에 <svg>와 <text>가 함께
-//    있어 그 <text>를 실제로 가립니다. 기준은 「래퍼냐」가 아니라 「가릴
-//    접근성 자손이 있느냐」입니다 — 「래퍼면 붙인다」로 일반화하지 마십시오.
-// ⑤ ⛔ ADR-0016 D5는 정정됐습니다. 지금 D5는 "잎에는 붙이지 않는다"이고,
-//    "자손이 <svg>·<view>뿐인 래퍼에 붙이는 것은 잎에 붙이는 것과 같다"로
-//    표식 래퍼까지 같이 봅니다. 근거가 바뀌었을 뿐 방어선은 그대로입니다 —
-//    ADR을 근거로 표식 래퍼 <view>에도 아이콘 <svg>에도 가림을 되살리지
-//    마십시오.
-//
-// 선례: SentenceOrderScreen.ui.test.tsx:371·376·ListeningScreen.ui.test.tsx:490·494.
-for (const status of STATES) {
-  test(`가림 선언이 컴포넌트 트리 어디에도 없다 — ${status}`, () => {
-    const { container } = render(
-      <JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />,
-    );
-
-    expect(container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
-  });
-}
-
-// 단언 8 (재고정): tap하면 onSelect가 그 id로 정확히 한 번 불립니다 —
-// done·current만입니다. locked는 더는 이 갈래에 없습니다(아래 8-locked가 진짜
-// 게이트입니다).
-for (const status of ["done", "current"] as const) {
-  test(`tap하면 onSelect가 id로 정확히 한 번 불린다 — ${status}`, () => {
-    const onSelect = vi.fn<(id: string) => void>();
-    render(
-      <JourneyStepNode id="appointment" title="약속 잡기" status={status} onSelect={onSelect} />,
-    );
-
-    fireEvent.tap(screen.getByTestId("journey-step-node-appointment"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
 
     expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith("appointment");
-  });
-}
+    expect(onSelect).toHaveBeenCalledWith("ordering");
+  },
+);
 
-// 단언 8-locked — 계약이 고정한 막는 자리를 여기서 직접 봅니다. bindtap은 세
-// 상태에서 언제나 붙지만, 잠김일 때는 onSelect가 한 번도 불리지 않습니다. 다른
-// 부수효과가 없다는 것은 이 컴포넌트가 onSelect 외에 아무 것도 호출하지 않는
-// 순수 렌더이므로 onSelect 호출 여부 하나로 충분히 판정됩니다.
-test("tap해도 onSelect가 불리지 않는다 — locked(잠긴 스텝은 시트를 열지 않는다)", () => {
-  const onSelect = vi.fn<(id: string) => void>();
+// 잠긴 스텝은 열 수 없습니다. `LearningUnit`이 `default`에서 `bindtap`을 붙이지 않는
+// 것과 앱의 `canOpenStep` 가드가 겹쳐 막습니다 — 한쪽이 무너져도 다른 쪽이 잡습니다.
+test("잠긴 스텝을 tap해도 onSelect가 불리지 않는다", () => {
+  const onSelect = vi.fn<(id: JourneyStepId) => void>();
   render(
     <JourneyStepNode id="appointment" title="약속 잡기" status="locked" onSelect={onSelect} />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-appointment"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment"), {});
 
   expect(onSelect).not.toHaveBeenCalled();
-});
-
-// 단언 9: onSelect가 불려도 렌더 상태는 그대로입니다 — 컴포넌트가 상태를 갖지
-// 않습니다.
-test("onSelect가 불려도 렌더된 data-status는 그대로다 — 컴포넌트는 상태를 갖지 않는다", () => {
-  render(<JourneyStepNode id="ordering" title="주문하기" status="current" onSelect={() => {}} />);
-
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
-
-  expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute(
-    "data-status",
-    "current",
-  );
 });

@@ -25,7 +25,7 @@ import { entrySplashDurationMs } from "../lib/entry-flow";
 // 선언합니다).
 function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`journey-step-node-${stepId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${stepId}`), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }

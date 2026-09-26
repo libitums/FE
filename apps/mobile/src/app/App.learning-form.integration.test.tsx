@@ -86,7 +86,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 // `startStep`과 같은 형태입니다(파일이 다르므로 다시 선언합니다).
 function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`journey-step-node-${stepId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${stepId}`), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
@@ -247,7 +247,7 @@ test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵�
 // I-B — 나간 뒤 맵이 꼭대기이고, 거기서 같은 스텝을 다시 시작하면 문화 학습이
 // 새로 열립니다. 맵이 꼭대기라는 것은 위 케이스의 journey-map-screen-title 단언이
 // 이미 짓습니다 — push는 위에 쌓고 currentScreen은 꼭대기만 읽으므로 잔재 유무는
-// 거기서 가려집니다. startStep 헬퍼도 journey-step-node-*를 요구해 같은 전제
+// 거기서 가려집니다. startStep 헬퍼도 ui-lynx-learning-unit-*를 요구해 같은 전제
 // 위에서 재시작합니다.
 test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시 시작하면 문화 학습이 다시 뜬다", () => {
   formStub.current = "culture";

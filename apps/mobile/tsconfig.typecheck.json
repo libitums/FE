@@ -20,6 +20,7 @@
         "../../packages/ui-lynx/src/bottom-navigator/index.ts"
       ],
       "@libitums/ui-lynx/bottom-sheet": ["../../packages/ui-lynx/src/bottom-sheet/index.ts"],
+      "@libitums/ui-lynx/learning-unit": ["../../packages/ui-lynx/src/learning-unit/index.ts"],
       "@libitums/ui-lynx/fog": ["../../packages/ui-lynx/src/fog/index.ts"]
     }
   }

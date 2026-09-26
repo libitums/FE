@@ -21,22 +21,22 @@ it("C1: special 항목은 appointment와 directions 사이에 삽입된다", () 
     [
       ...map.querySelectorAll(
         [
-          "[data-testid=journey-step-node-greeting]",
-          "[data-testid=journey-step-node-introduction]",
-          "[data-testid=journey-step-node-ordering]",
-          "[data-testid=journey-step-node-appointment]",
+          "[data-testid=ui-lynx-learning-unit-greeting]",
+          "[data-testid=ui-lynx-learning-unit-introduction]",
+          "[data-testid=ui-lynx-learning-unit-ordering]",
+          "[data-testid=ui-lynx-learning-unit-appointment]",
           "[data-testid=journey-messenger-item-appointment-confirmation]",
-          "[data-testid=journey-step-node-directions]",
+          "[data-testid=ui-lynx-learning-unit-directions]",
         ].join(","),
       ),
     ].map((node) => node.getAttribute("data-testid")),
   ).toEqual([
-    "journey-step-node-greeting",
-    "journey-step-node-introduction",
-    "journey-step-node-ordering",
-    "journey-step-node-appointment",
+    "ui-lynx-learning-unit-greeting",
+    "ui-lynx-learning-unit-introduction",
+    "ui-lynx-learning-unit-ordering",
+    "ui-lynx-learning-unit-appointment",
     "journey-messenger-item-appointment-confirmation",
-    "journey-step-node-directions",
+    "ui-lynx-learning-unit-directions",
   ]);
 });
 
@@ -53,8 +53,8 @@ it("C2: special 뒤 directions는 자기 스텝 서수의 기존 상태와 조�
     onOpenNotifications: vi.fn(),
   };
   render(<JourneyMapScreen {...fixture} />);
-  const directions = screen.getByTestId("journey-step-node-directions");
-  expect(directions).toHaveAttribute("data-status", "locked");
+  const directions = screen.getByTestId("ui-lynx-learning-unit-directions");
+  expect(directions).toHaveAttribute("data-status", "default");
   const special = screen.getByTestId("journey-messenger-item-appointment-confirmation");
   expect(special).toHaveAttribute("data-status", "available");
   fireEvent.tap(special, {});
@@ -74,7 +74,7 @@ it("C3: directions의 실제 접근성 이름과 조작 불가 trait를 리터�
     onOpenNotifications: vi.fn(),
   };
   render(<JourneyMapScreen {...fixture} />);
-  const directions = screen.getByTestId("journey-step-node-directions");
+  const directions = screen.getByTestId("ui-lynx-learning-unit-directions");
   expect(directions).toHaveAttribute("accessibility-label", "길 묻기, 잠김");
   expect(directions).toHaveAttribute("accessibility-traits", "disabled");
 });

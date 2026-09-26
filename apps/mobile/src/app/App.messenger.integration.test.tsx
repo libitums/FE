@@ -76,27 +76,33 @@ test("메신저 완료는 일반 completedStepCount와 directions 상태를 바�
   renderApp(<App />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   // initialCompletedStepCount=2입니다: greeting/소개는 done, appointment/directions는 locked입니다.
-  expect(screen.getByTestId("journey-step-node-greeting")).toHaveAttribute("data-status", "done");
-  expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
     "data-status",
-    "locked",
+    "clear",
   );
-  expect(screen.getByTestId("journey-step-node-directions")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
     "data-status",
-    "locked",
+    "default",
+  );
+  expect(screen.getByTestId("ui-lynx-learning-unit-directions")).toHaveAttribute(
+    "data-status",
+    "default",
   );
   fireEvent.tap(screen.getByTestId("journey-messenger-item-appointment-confirmation"), {});
   finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   // 메신저 완료 전후 일반 스텝 상태는 동일한 계약 리터럴이어야 합니다.
-  expect(screen.getByTestId("journey-step-node-greeting")).toHaveAttribute("data-status", "done");
-  expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
     "data-status",
-    "locked",
+    "clear",
   );
-  expect(screen.getByTestId("journey-step-node-directions")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
     "data-status",
-    "locked",
+    "default",
+  );
+  expect(screen.getByTestId("ui-lynx-learning-unit-directions")).toHaveAttribute(
+    "data-status",
+    "default",
   );
 });
 

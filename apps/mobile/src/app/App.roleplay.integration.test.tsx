@@ -44,11 +44,11 @@ const visualNovelUnitId = "cafe-arrival-visual-novel";
 // I5가 「여덟 항목」이라 부르는 여정 맵 데이터-status 축입니다. 일반 스텝 다섯 +
 // 특별 유닛 셋입니다.
 const journeyStateTestIds = [
-  "journey-step-node-greeting",
-  "journey-step-node-introduction",
-  "journey-step-node-ordering",
-  "journey-step-node-appointment",
-  "journey-step-node-directions",
+  "ui-lynx-learning-unit-greeting",
+  "ui-lynx-learning-unit-introduction",
+  "ui-lynx-learning-unit-ordering",
+  "ui-lynx-learning-unit-appointment",
+  "ui-lynx-learning-unit-directions",
   `journey-messenger-item-${messengerUnitId}`,
   `journey-map-phone-call-${phoneCallUnitId}`,
   `journey-map-visual-novel-${visualNovelUnitId}`,

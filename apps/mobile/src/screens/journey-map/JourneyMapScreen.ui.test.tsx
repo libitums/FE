@@ -52,6 +52,11 @@ test("여정 맵 화면 제목이 accessibility-traits header를 갖는다", () 
   );
 });
 
+// 앱 상태 어휘를 `LearningUnit`의 어휘로 옮기는 표입니다(JourneyStepNode와 같은 표).
+function unitStatusOf(status: "done" | "current" | "locked"): string {
+  return status === "done" ? "clear" : status === "current" ? "active" : "default";
+}
+
 // ---------------------------------------------------------------- 단언 7~13
 // (여기부터 추가분입니다. 기존 두 테스트는 위에서 한 글자도 바뀌지 않았습니다.)
 // `toHaveClass`·`toHaveStyle`·`toBeVisible`을 쓰지 않습니다. 텍스트 질의(`getByText`)를
@@ -69,9 +74,12 @@ test("스텝 다섯이 전부 렌더되고 각자 data-status가 파생 상태�
   );
 
   journeySteps.forEach((step, index) => {
-    const expectedStatus = stepStatusAt(index, initialCompletedStepCount);
+    // 화면이 내는 것은 유닛 어휘입니다 — 앱의 `done`·`current`·`locked`를
+    // `LearningUnit`의 `clear`·`active`·`default`로 옮겨 봅니다. 두 어휘가 어긋나면
+    // 화면이 엉뚱한 표식을 그리므로, 표를 여기 못 박아 둡니다.
+    const expectedStatus = unitStatusOf(stepStatusAt(index, initialCompletedStepCount));
 
-    expect(screen.getByTestId(`journey-step-node-${step.id}`)).toHaveAttribute(
+    expect(screen.getByTestId(`ui-lynx-learning-unit-${step.id}`)).toHaveAttribute(
       "data-status",
       expectedStatus,
     );
@@ -101,7 +109,7 @@ test("스텝을 tap하면 시트가 열리고 그 스텝의 제목·설명을 �
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
@@ -120,7 +128,7 @@ test("닫기를 tap하면 시트가 사라지고 화면 제목은 그대로다",
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
@@ -139,10 +147,10 @@ test("시트가 열린 채 다른 스텝을 tap하면 시트가 그 스텝으로
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-greeting"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-greeting"), {});
 
   expect(screen.getAllByTestId("step-sheet-panel")).toHaveLength(1);
   expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("첫 인사");
@@ -162,7 +170,7 @@ test("잠긴 스텝을 tap해도 시트가 열리지 않는다", () => {
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-appointment"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment"), {});
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-map")).toHaveAttribute(
@@ -182,10 +190,10 @@ test("시트가 열린 채로 잠긴 스텝을 tap해도 시트는 그대로 열
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-appointment"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment"), {});
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
@@ -213,7 +221,7 @@ test("시작을 tap하면 onStartStep이 열린 스텝의 id로 한 번 불린�
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 
   expect(onStartStep).toHaveBeenCalledTimes(1);
@@ -272,14 +280,14 @@ test("스텝을 tap해 시트를 열면 맵의 accessibility-elements-hidden이 
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
 
   expect(screen.getByTestId("journey-map-screen-map")).toHaveAttribute(
     "accessibility-elements-hidden",
     "true",
   );
   expect(screen.getByTestId("journey-map-screen-map")).toBeInTheDocument();
-  expect(screen.getByTestId("journey-step-node-ordering")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toBeInTheDocument();
 });
 
 // 단언 16 — A안(accessibility-exclusive-focus)을 버린 이유가 "복원 실패"였고,
@@ -294,7 +302,7 @@ test("닫기를 tap하면 맵의 accessibility-elements-hidden이 다시 false�
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("journey-map-screen-map")).toHaveAttribute(
     "accessibility-elements-hidden",
     "true",
@@ -316,14 +324,17 @@ test("닫기를 tap하면 맵의 accessibility-elements-hidden이 다시 false�
 test("completedStepCount=3으로 렌더하면 ordering이 done, appointment가 current다", () => {
   render(<JourneyMapScreen {...messengerFixture} completedStepCount={3} onStartStep={() => {}} />);
 
-  expect(screen.getByTestId("journey-step-node-ordering")).toHaveAttribute("data-status", "done");
-  expect(screen.getByTestId("journey-step-node-appointment")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
-    "current",
+    "clear",
   );
-  expect(screen.getByTestId("journey-step-node-directions")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
     "data-status",
-    "locked",
+    "active",
+  );
+  expect(screen.getByTestId("ui-lynx-learning-unit-directions")).toHaveAttribute(
+    "data-status",
+    "default",
   );
 });
 
@@ -334,9 +345,9 @@ test("completedStepCount=5로 렌더하면 다섯 전부 done이고 current인 �
   render(<JourneyMapScreen {...messengerFixture} completedStepCount={5} onStartStep={() => {}} />);
 
   journeySteps.forEach((step) => {
-    expect(screen.getByTestId(`journey-step-node-${step.id}`)).toHaveAttribute(
+    expect(screen.getByTestId(`ui-lynx-learning-unit-${step.id}`)).toHaveAttribute(
       "data-status",
-      "done",
+      "clear",
     );
   });
 });
@@ -398,7 +409,7 @@ test("[U4] 시트를 열어도 step-sheet-panel은 스크롤 컨테이너 밖이
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
 
   const scroll = screen.getByTestId("journey-map-screen-scroll");
   expect(within(scroll).queryByTestId("step-sheet-panel")).not.toBeInTheDocument();

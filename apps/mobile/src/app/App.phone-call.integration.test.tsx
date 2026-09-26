@@ -48,12 +48,14 @@ describe("App · phone-call integration", () => {
   it("맵에서 messenger 뒤 directions 앞에 전화 항목을 표시하고 선택한다", () => {
     openJourney();
     const items = screen
-      .getAllByTestId(/^journey-(?:messenger|map-phone-call|step-node-directions)/)
+      .getAllByTestId(
+        /^(?:journey-messenger|journey-map-phone-call|ui-lynx-learning-unit-directions$)/,
+      )
       .map((node) => node.getAttribute("data-testid"));
     expect(items).toEqual([
       "journey-messenger-item-appointment-confirmation",
       "journey-map-phone-call-appointment-confirmation-phone-call",
-      "journey-step-node-directions",
+      "ui-lynx-learning-unit-directions",
     ]);
     fireEvent.tap(
       screen.getByTestId("journey-map-phone-call-appointment-confirmation-phone-call"),
@@ -66,9 +68,11 @@ describe("App · phone-call integration", () => {
   it("전화 3턴은 수동 재생·답장으로 완료되고 맵 완료 표식만 바꾼다", () => {
     openJourney();
     const before = ["greeting", "introduction", "ordering", "appointment", "directions"].map((id) =>
-      screen.getByTestId(`journey-step-node-${id}`).getAttribute("data-status"),
+      screen.getByTestId(`ui-lynx-learning-unit-${id}`).getAttribute("data-status"),
     );
-    expect(before).toEqual(["done", "done", "current", "locked", "locked"]);
+    // 스텝은 `LearningUnit`이 그리므로 유닛 어휘입니다 — 특수 항목(메신저 · 전화 ·
+    // 비주얼 노벨)은 자기 컴포넌트의 어휘(`available`·`completed`)를 그대로 씁니다.
+    expect(before).toEqual(["clear", "clear", "active", "default", "default"]);
     expect(screen.getByTestId("journey-messenger-item-appointment-confirmation")).toHaveAttribute(
       "data-status",
       "available",
@@ -106,7 +110,7 @@ describe("App · phone-call integration", () => {
       "available",
     );
     const after = ["greeting", "introduction", "ordering", "appointment", "directions"].map((id) =>
-      screen.getByTestId(`journey-step-node-${id}`).getAttribute("data-status"),
+      screen.getByTestId(`ui-lynx-learning-unit-${id}`).getAttribute("data-status"),
     );
     expect(after).toEqual(before);
     fireEvent.tap(

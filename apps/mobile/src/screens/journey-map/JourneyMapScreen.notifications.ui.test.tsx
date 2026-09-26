@@ -102,7 +102,7 @@ test("[JN5] 시트가 닫혀 있을 때 journey-map-screen-actions의 accessibil
 test("[JN6] 스텝을 tap해 시트를 열면 journey-map-screen-actions가 true가 되고, 버튼은 여전히 문서에 있다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
 
   expect(screen.getByTestId("journey-map-screen-actions")).toHaveAttribute(
     "accessibility-elements-hidden",
@@ -114,7 +114,7 @@ test("[JN6] 스텝을 tap해 시트를 열면 journey-map-screen-actions가 true
 test("[JN7] 시트 닫기 → journey-map-screen-actions가 다시 false다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
-  fireEvent.tap(screen.getByTestId("journey-step-node-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("journey-map-screen-actions")).toHaveAttribute(
     "accessibility-elements-hidden",
     "true",
