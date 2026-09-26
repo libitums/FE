@@ -11,6 +11,8 @@ import { LoginScreen } from "../screens/login/LoginScreen";
 import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
 import { SplashScreen } from "../screens/splash/SplashScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
+import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
+
 import { ButtonCatalog } from "./ButtonCatalog";
 
 // 화면을 앱 흐름 없이 fixture props로 띄웁니다. 콜백은 앱 흐름과 같은 순서로
@@ -74,6 +76,32 @@ export const playgroundScreens = {
   "catalog:button": () => <ButtonCatalog />,
   // 바텀 네비만 봅니다. 화면 fixture를 비워 두면 바가 화면 아래 끝에 홀로 서므로,
   // 긴 화면에 가려지지 않고 바 자체의 간격·색·선택 시각을 볼 수 있습니다.
+  // 에피소드 헤더만 봅니다. 여정 맵에 붙이기 전에 카드 · 타이포 · 진행 막대를 따로
+  // 확인하는 자리입니다 — 0%와 중간과 100%를 한 화면에 세웁니다.
+  "catalog:episode-header": () => (
+    <view
+      style={{ flex: "1", padding: "16px", display: "flex", flexDirection: "column", gap: "16px" }}
+    >
+      <EpisodeHeader
+        episodeLabel="Episode 0."
+        title="Tutorial."
+        completedUnitCount={0}
+        totalUnitCount={8}
+      />
+      <EpisodeHeader
+        episodeLabel="Episode 1."
+        title="Cosmetic."
+        completedUnitCount={7}
+        totalUnitCount={20}
+      />
+      <EpisodeHeader
+        episodeLabel="Episode 2."
+        title="한글 이름도 봅니다"
+        completedUnitCount={8}
+        totalUnitCount={8}
+      />
+    </view>
+  ),
   "catalog:bottom-navigator": () => (
     // 배경색을 셸과 다르게 둡니다. 바 배경이 화면 배경과 같은 색이라 경계·라운드가
     // 보이지 않아, 색을 갈라 두지 않으면 바 모양을 눈으로 확인할 수 없습니다.

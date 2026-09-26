@@ -31,7 +31,8 @@
     "./dist/tooltip/tooltip.css",
     "./dist/option-selector/option-selector.css",
     "./dist/status-indicator/status-indicator.css",
-    "./dist/learning-unit/learning-unit.css"
+    "./dist/learning-unit/learning-unit.css",
+    "./dist/episode-header/episode-header.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -171,6 +172,12 @@
       "default": "./dist/learning-unit/index.js"
     },
     "./learning-unit/styles.css": "./dist/learning-unit/learning-unit.css",
+    "./episode-header": {
+      "types": "./dist/episode-header/index.d.ts",
+      "import": "./dist/episode-header/index.js",
+      "default": "./dist/episode-header/index.js"
+    },
+    "./episode-header/styles.css": "./dist/episode-header/episode-header.css",
     "./styles.css": "./dist/styles.css",
     "./progress-header.css": "./dist/progress-header/progress-header.css",
     "./page-indicator.css": "./dist/page-indicator/page-indicator.css",

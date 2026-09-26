@@ -227,6 +227,9 @@ export {
   nextOptionSelection,
 } from "./option-selector";
 
+export { EpisodeHeader, getEpisodeHeaderContract } from "./episode-header";
+export type { EpisodeHeaderContract, EpisodeHeaderProps } from "./episode-header";
+
 export { LearningUnit, getLearningUnitContract } from "./learning-unit";
 export type {
   LearningUnitContract,
