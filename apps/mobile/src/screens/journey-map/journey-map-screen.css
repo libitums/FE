@@ -76,12 +76,12 @@
    에피소드인가」는 유닛을 훑는 내내 답이 필요한 물음이라, 스크롤 밖으로 흘려보내지
    않습니다.
 
-   `align-self: stretch`는 카드가 아니라 **이 상자**가 줄 폭을 받게 합니다. 달라붙은
-   동안 카드 옆으로도 유닛이 지나가므로, 가리는 띠는 줄 폭 전체여야 합니다. 카드
-   자신의 폭은 아래 `-card`가 집니다.
+   `align-self: stretch`는 카드가 아니라 **이 상자**가 줄 폭을 받게 합니다. 달라붙기는
+   줄 폭을 딛고 서야 하고, 카드 자신의 폭은 아래 `-card`가 따로 집니다.
 
-   면을 칠합니다. 달라붙은 동안 이 띠 아래로 유닛이 지나가는데, 투명하면 그대로
-   비칩니다. `z-index`도 같은 이유입니다. */
+   면을 칠하지 않습니다. 가리는 것은 카드 하나이고, 카드 옆은 그대로 비칩니다 —
+   달라붙은 헤더가 줄 전체를 덮는 띠가 아니라 떠 있는 카드로 읽힙니다(2026-09-27
+   디자인 반영). `z-index`는 그대로 둡니다: 카드가 유닛 위에 서야 합니다. */
 .journey-map-screen-episode-header {
   align-self: stretch;
   display: flex;
@@ -90,7 +90,6 @@
   position: sticky;
   top: var(--libitum-spacing-0);
   z-index: var(--libitum-elevation-z-sticky);
-  background: var(--libitum-color-background-primary);
 }
 
 /* 카드 폭 151은 디자인 실측값(Figma 79-5692)이고 이 치수에 맞는 토큰이 없어 px로

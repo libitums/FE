@@ -46,3 +46,35 @@ export function stepSheetReducer(state: StepSheetState, action: StepSheetAction)
     }
   }
 }
+
+// 말풍선의 진행 줄 값입니다. 화면이 계산식을 들고 있지 않도록 여기서 뽑습니다.
+export type StepSheetProgress = {
+  readonly countLabel: string;
+  readonly percentLabel: string;
+  readonly fillPercent: number;
+};
+
+/**
+ * 끝낸 활동 수와 전체 활동 수에서 진행 줄의 값 셋을 뽑습니다. 데이터 오류는 숨기지
+ * 않고 던집니다 — 비어 있는 배정표나 음수 완료 수는 값으로 표현할 수 있는 상태가
+ * 아닙니다.
+ *
+ * 백분율은 라벨과 막대가 **같은 수**에서 나옵니다. 디자인(Figma 79-5682)은 라벨이
+ * `0%`인데 막대가 86% 차 있어 둘이 어긋나 있는데, 그 어긋남까지 옮기지 않습니다.
+ */
+export function stepSheetProgress(completed: number, total: number): StepSheetProgress {
+  if (!Number.isInteger(total) || total <= 0) {
+    throw new Error(`전체 활동 수는 1 이상의 정수여야 합니다: ${total}`);
+  }
+  if (!Number.isInteger(completed) || completed < 0) {
+    throw new Error(`끝낸 활동 수는 0 이상의 정수여야 합니다: ${completed}`);
+  }
+  if (completed > total) {
+    throw new Error(`끝낸 활동 수가 전체보다 많습니다: ${completed} / ${total}`);
+  }
+  return {
+    countLabel: `${completed}/${total} 활동`,
+    percentLabel: `${Math.round((completed / total) * 100)}%`,
+    fillPercent: (completed / total) * 100,
+  };
+}

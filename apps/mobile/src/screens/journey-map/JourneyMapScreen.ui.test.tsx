@@ -102,7 +102,7 @@ test("처음에는 시트가 렌더되지 않는다", () => {
 });
 
 // 단언 9
-test("스텝을 tap하면 시트가 열리고 그 스텝의 제목·설명을 낸다", () => {
+test("스텝을 tap하면 말풍선이 열리고 그 스텝의 순번·제목을 낸다", () => {
   render(
     <JourneyMapScreen
       {...messengerFixture}
@@ -114,10 +114,7 @@ test("스텝을 tap하면 시트가 열리고 그 스텝의 제목·설명을 �
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
-  expect(screen.getByTestId("step-sheet-description")).toHaveTextContent(
-    "카페에서 마실 것을 주문한다",
-  );
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Lesson 3: “주문하기”");
 });
 
 // 단언 10

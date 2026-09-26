@@ -14,6 +14,7 @@ import {
   journeySteps,
   stepSheetReducer,
   stepStatusAt,
+  learningFormsForStep,
   journeyMapSections,
   completedMapItemCount,
   journeyStepOrdinal,
@@ -174,7 +175,16 @@ export function JourneyMapScreen({
       {openStep === undefined ? null : (
         <StepSheet
           title={openStep.title}
-          description={openStep.description}
+          lessonOrdinal={journeyStepOrdinal(openStep.id)}
+          /* 진행은 「끝낸 활동 수 / 그 스텝이 잡은 활동 수」입니다. 오늘 활동은
+             스텝 단위로만 저장되므로, 끝난 스텝이면 전부이고 아니면 0입니다 —
+             중간에서 그만둔 자리는 아직 어디에도 남지 않습니다. */
+          completedActivityCount={
+            stepStatusAt(journeyStepOrdinal(openStep.id) - 1, completedStepCount) === "done"
+              ? learningFormsForStep(openStep.id).length
+              : 0
+          }
+          totalActivityCount={learningFormsForStep(openStep.id).length}
           /* `시작`의 목적지는 이 화면이 정하지 않습니다 — 열린 스텝의 id를 그대로
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}
