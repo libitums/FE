@@ -11,6 +11,8 @@ import { termsSections } from "../screens/terms/terms-sections";
 // 스플래시 전이 시각입니다.
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
+// 에피소드 수의 데이터 앵커입니다 — 제목 축 기댓값을 리터럴로 적지 않기 위한 것입니다.
+import { journeyMapSections } from "../screens/journey-map/journey-map";
 
 // 이 파일이 무엇을 위해 있나: `ui`(`CultureScreen.ui.test.tsx`의 `[X9]`)는 문화
 // 화면 하나만 렌더합니다. `App`은 바텀 내비게이터를 **항상 함께** 렌더하므로, 이
@@ -304,13 +306,17 @@ test("[I3] 제목 축 닫힌 집합이 상태 notifications에서 계약이 고�
   expect(headingAxis(container)).toEqual(["notifications-screen-title"]);
 });
 
+// 2026-09-27: 맵의 화면 제목 줄이 걷혔습니다. 이 상태에서 제목 축에 오르는 것은
+// 에피소드 헤더 카드이고, 에피소드마다 하나씩입니다 — 기댓값을 리터럴로 적지 않고
+// 데이터(`journeyMapSections`)에서 뽑습니다. 에피소드가 늘면 이 테스트는 늘어난
+// 만큼을 기대하지, 빨개지지 않습니다.
 test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["journey-map-screen-title"]);
+  expect(headingAxis(container)).toEqual(journeyMapSections.map(() => "ui-lynx-episode-header"));
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고정한 목록과 정확히 같다", () => {
@@ -332,9 +338,9 @@ test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한
 });
 
 // 시트 열림 — `ui-lynx-learning-unit-<stepId>` tap 직후, `시작`은 아직 안 눌렀습니다.
-// 맵 제목과 시트 제목이 같은 트리에 함께 섭니다(맵 컨테이너는
-// `accessibility-elements-hidden`로 가려지지만 그 속성은 조작 단위 축이고, 맵
-// 제목 자체는 그 컨테이너 밖에 있어 가려지지 않습니다).
+// 에피소드 헤더와 시트 제목이 같은 트리에 함께 섭니다. 헤더는 맵 컨테이너 안이라
+// `accessibility-elements-hidden`을 함께 받지만, 그 속성은 조작 단위 축이고 제목 축은
+// 따로 삽니다 — 그래서 축에서 사라지지 않습니다.
 test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
@@ -342,7 +348,10 @@ test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 �
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["journey-map-screen-title", "step-sheet-title"]);
+  expect(headingAxis(container)).toEqual([
+    ...journeyMapSections.map(() => "ui-lynx-episode-header"),
+    "step-sheet-title",
+  ]);
 });
 
 // 듣기의 문항 상태 — `startStep`으로 세션에 들어간 직후, 아직 한 문항도 안 풀었습니다

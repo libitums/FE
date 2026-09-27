@@ -104,7 +104,7 @@ test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 �
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
   expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
-  expect(screen.queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
 });
 
 test("미완료 이탈은 마지막 도달 장면을 보존하고 기존 여정 상태를 바꾸지 않는다", () => {

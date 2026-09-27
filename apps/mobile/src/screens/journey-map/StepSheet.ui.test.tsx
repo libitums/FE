@@ -12,21 +12,21 @@ import { StepSheet } from "./StepSheet";
 // **단언 6 하나가 뒤집혔습니다** — 무동작 단언을 삭제하고 `onStart`가 불린다는
 // 단언으로 바꿨습니다. 단언 1~5는 그대로입니다.
 
-// 단언 1
-test("제목·설명이 props 문자열을 텍스트로 낸다", () => {
+// 단언 1 — 설명이 걷히고 순번이 제목 앞에 붙습니다(2026-09-27 말풍선 디자인).
+test("제목이 순번과 함께 props 문자열을 텍스트로 낸다", () => {
   render(
     <StepSheet
       title="주문하기"
-      description="카페에서 마실 것을 주문한다"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={4}
       onStart={() => {}}
       onClose={() => {}}
     />,
   );
 
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
-  expect(screen.getByTestId("step-sheet-description")).toHaveTextContent(
-    "카페에서 마실 것을 주문한다",
-  );
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Lesson 3: “주문하기”");
 });
 
 // 단언 2
@@ -34,7 +34,10 @@ test("제목이 accessibility-traits='header'를 갖는다", () => {
   render(
     <StepSheet
       title="주문하기"
-      description="카페에서 마실 것을 주문한다"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={4}
       onStart={() => {}}
       onClose={() => {}}
     />,
@@ -48,7 +51,10 @@ test("시작 버튼이 접근성 속성과 라벨 텍스트를 갖는다", () =>
   render(
     <StepSheet
       title="주문하기"
-      description="카페에서 마실 것을 주문한다"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={4}
       onStart={() => {}}
       onClose={() => {}}
     />,
@@ -61,12 +67,16 @@ test("시작 버튼이 접근성 속성과 라벨 텍스트를 갖는다", () =>
   expect(start).toHaveTextContent("시작");
 });
 
-// 단언 4
-test("닫기 버튼이 접근성 속성과 라벨 텍스트를 갖는다", () => {
+// 단언 4 — 디자인에 보이는 닫기 자리가 없어졌습니다. 이름과 역할은 가림막이 집니다:
+// 손가락은 말풍선 밖을 누르고, 스크린리더는 그 막을 `닫기` 버튼으로 읽습니다.
+test("가림막이 닫기의 접근성 속성을 갖고, 보이는 낱말은 없다", () => {
   render(
     <StepSheet
       title="주문하기"
-      description="카페에서 마실 것을 주문한다"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={4}
       onStart={() => {}}
       onClose={() => {}}
     />,
@@ -76,7 +86,7 @@ test("닫기 버튼이 접근성 속성과 라벨 텍스트를 갖는다", () =>
   expect(close).toHaveAttribute("accessibility-label", "닫기");
   expect(close).toHaveAttribute("accessibility-traits", "button");
   expect(close).toHaveAttribute("accessibility-element", "true");
-  expect(close).toHaveTextContent("닫기");
+  expect(close).toHaveTextContent("");
 });
 
 // 단언 5
@@ -85,7 +95,10 @@ test("닫기를 tap하면 onClose가 정확히 한 번 불린다", () => {
   render(
     <StepSheet
       title="주문하기"
-      description="카페에서 마실 것을 주문한다"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={4}
       onStart={() => {}}
       onClose={onClose}
     />,
@@ -109,7 +122,10 @@ test("시작을 tap하면 onStart가 정확히 한 번 불린다", () => {
   render(
     <StepSheet
       title="주문하기"
-      description="카페에서 마실 것을 주문한다"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={4}
       onStart={onStart}
       onClose={() => {}}
     />,
@@ -128,7 +144,10 @@ test("시작을 tap해도 onClose는 불리지 않는다", () => {
   render(
     <StepSheet
       title="주문하기"
-      description="카페에서 마실 것을 주문한다"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={4}
       onStart={() => {}}
       onClose={onClose}
     />,
@@ -146,7 +165,10 @@ test("닫기를 tap해도 onStart는 불리지 않는다", () => {
   render(
     <StepSheet
       title="주문하기"
-      description="카페에서 마실 것을 주문한다"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={4}
       onStart={onStart}
       onClose={() => {}}
     />,
@@ -155,4 +177,44 @@ test("닫기를 tap해도 onStart는 불리지 않는다", () => {
   fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
 
   expect(onStart).not.toHaveBeenCalled();
+});
+
+// 진행 줄 — 낱말 둘과 막대가 같은 수에서 나옵니다.
+test("진행 줄이 활동 수와 백분율을 같은 값에서 낸다", () => {
+  render(
+    <StepSheet
+      title="주문하기"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={1}
+      totalActivityCount={4}
+      onStart={() => {}}
+      onClose={() => {}}
+    />,
+  );
+
+  expect(screen.getByTestId("step-sheet-progress-count")).toHaveTextContent("1/4 활동");
+  expect(screen.getByTestId("step-sheet-progress-percent")).toHaveTextContent("25%");
+  expect(screen.getByTestId("step-sheet-progress")).toHaveAttribute(
+    "accessibility-label",
+    "1/4 활동, 25%",
+  );
+});
+
+// 0%에서는 채움을 그리지 않습니다 — 폭 0짜리 상자가 점으로 남아 「조금 했다」로
+// 읽힙니다.
+test("끝낸 활동이 없으면 채움 막대를 그리지 않는다", () => {
+  render(
+    <StepSheet
+      title="주문하기"
+      anchorY={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={4}
+      onStart={() => {}}
+      onClose={() => {}}
+    />,
+  );
+
+  expect(screen.queryByTestId("step-sheet-progress-fill")).not.toBeInTheDocument();
 });

@@ -85,7 +85,22 @@ export type JourneyMapItem =
 // `learningFormByStep`·`cultureNarrativeByStep`이 *"형태는 한 글자도 안 바뀝니다"* 라고
 // 적을 수 있었던 것은 그 표의 타입이 이미 완성돼 있었기 때문입니다. 이 목록은 특별
 // 변형이 **필드를 얻으면서** 옵니다. 그 문장을 여기 복사하지 않습니다.
-const journeyUnits: readonly JourneyUnit[] = [
+/**
+ * 유닛을 묶는 한 덩어리입니다. 맵은 에피소드마다 위에 헤더를 세우고 그 아래에 그
+ * 에피소드의 유닛을 줄로 세웁니다.
+ *
+ * `label`과 `title`이 갈려 있는 것은 디자인이 두 줄로 그리기 때문입니다 — 위가
+ * 「Episode 0.」, 아래가 이름입니다. 한 문자열로 합치면 두 줄의 타이포가 서로 달라
+ * 다시 쪼개야 합니다.
+ */
+export type JourneyEpisode = {
+  readonly id: string;
+  readonly label: string;
+  readonly title: string;
+  readonly units: readonly JourneyUnit[];
+};
+
+const tutorialUnits: readonly JourneyUnit[] = [
   {
     kind: "standard",
     steps: [
@@ -119,11 +134,26 @@ const journeyUnits: readonly JourneyUnit[] = [
   },
 ];
 
+// 에피소드 목록입니다. **맵의 세로 줄 순서가 이 목록과 그 안 유닛 순서입니다.**
+//
+// ⚠ **이음매입니다** — 오늘 에피소드가 하나뿐인 것은 전사(轉寫)입니다. 지금 있는 컨텐츠
+// (카페에서 지민을 만나는 줄기)를 튜토리얼로 두기로 한 판단이고(2026-09-26), 둘째부터는
+// 컨텐츠가 오는 대로 늡니다. 「여정이 에피소드 하나다」라고 정해진 것이 아닙니다.
+//
+// 번호가 0인 것은 이 에피소드가 본편이 아니라 사용법을 익히는 자리이기 때문입니다.
+const journeyEpisodes: readonly JourneyEpisode[] = [
+  { id: "tutorial", label: "Episode 0.", title: "Tutorial.", units: tutorialUnits },
+];
+
+// 모든 에피소드의 유닛을 목록 순서대로 이어 냅니다. 에피소드 경계를 모르는 소비자
+// (스텝 파생 · 맵 항목 파생)가 이것을 씁니다.
+const journeyUnits: readonly JourneyUnit[] = journeyEpisodes.flatMap((episode) => episode.units);
+
 // 특별 유닛 화면이 늘면 `default`의 `never` 대입이 컴파일 단계에서 섭니다(`render-screen.tsx`와
 // 같은 형태입니다). 예전에는 마지막 갈래가 조건 없는 나머지여서 새 화면이 조용히 비주얼
 // 노벨로 그려졌습니다.
-export const journeyMapItems: readonly JourneyMapItem[] = journeyUnits.flatMap<JourneyMapItem>(
-  (unit) => {
+function mapItemsOf(units: readonly JourneyUnit[]): readonly JourneyMapItem[] {
+  return units.flatMap<JourneyMapItem>((unit) => {
     if (unit.kind === "standard") {
       return unit.steps.map((step) => ({ kind: "standard", step }) as const);
     }
@@ -142,8 +172,10 @@ export const journeyMapItems: readonly JourneyMapItem[] = journeyUnits.flatMap<J
         return exhaustive;
       }
     }
-  },
-);
+  });
+}
+
+export const journeyMapItems: readonly JourneyMapItem[] = mapItemsOf(journeyUnits);
 
 /**
  * 유닛 목록에서 일반 유닛의 스텝만 목록 순서대로 이어 냅니다. 특별 유닛의 기여는
@@ -164,6 +196,20 @@ export function standardUnitSteps(units: readonly JourneyUnit[]): readonly Journ
 // 타입도 값도 순서도 파생 전과 문자 그대로 같습니다 — 오늘 특별 유닛이 0건이기
 // 때문입니다.
 export const journeySteps: readonly JourneyStep[] = standardUnitSteps(journeyUnits);
+
+/** 맵이 한 덩어리로 그리는 것입니다 — 에피소드 하나와 그 에피소드의 맵 항목들입니다. */
+export type JourneyMapSection = {
+  readonly episode: JourneyEpisode;
+  readonly items: readonly JourneyMapItem[];
+};
+
+// 맵이 그리는 구획입니다. `journeyMapItems`와 같은 변환을 에피소드 안에서 돌립니다 —
+// 두 곳이 갈리면 헤더 아래 유닛과 평평한 목록이 어긋나므로, 변환을 함수 하나로 두고
+// 양쪽이 그것을 부릅니다.
+export const journeyMapSections: readonly JourneyMapSection[] = journeyEpisodes.map((episode) => ({
+  episode,
+  items: mapItemsOf(episode.units),
+}));
 
 // 진행의 진실의 출처는 이제 App의 상태이고, 이 상수는 그 **씨앗**입니다 — 값(2)은
 // 그대로이고 이름만 역할이 좁아진 것을 반영합니다. 옛 이름(`completedStepCount`)을

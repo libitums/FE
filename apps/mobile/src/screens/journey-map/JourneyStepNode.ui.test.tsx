@@ -126,13 +126,14 @@ test.each([
 test.each(["done", "current"] as const)(
   "열 수 있는 상태(%s)를 tap하면 onSelect가 불린다",
   (status) => {
-    const onSelect = vi.fn<(id: JourneyStepId) => void>();
+    const onSelect = vi.fn<(id: JourneyStepId, tapY: number) => void>();
     render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={onSelect} />);
 
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+    // 실제 탭은 좌표를 싣습니다 — 말풍선이 설 자리가 그 값에서 나옵니다.
+    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 512 } });
 
     expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith("ordering");
+    expect(onSelect).toHaveBeenCalledWith("ordering", 512);
   },
 );
 

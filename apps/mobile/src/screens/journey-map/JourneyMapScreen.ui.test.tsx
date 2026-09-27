@@ -33,11 +33,13 @@ test("여정 맵 화면이 제목을 렌더한다", () => {
     />,
   );
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
-// 재고정 2026-09-02: 제목 다섯이 같은 방식으로 heading이 됩니다 (screens.contract.ts).
-test("여정 맵 화면 제목이 accessibility-traits header를 갖는다", () => {
+// 재고정 2026-09-27: 화면 제목 줄이 없어졌습니다(상단 바 디자인 반영). 이 화면에서
+// heading을 지는 것은 에피소드 헤더 카드입니다 — 「지금 어느 에피소드인가」가 화면의
+// 제목 자리를 대신 맡습니다.
+test("여정 맵의 heading은 에피소드 헤더 카드다", () => {
   render(
     <JourneyMapScreen
       {...messengerFixture}
@@ -46,7 +48,7 @@ test("여정 맵 화면 제목이 accessibility-traits header를 갖는다", () 
     />,
   );
 
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveAttribute(
+  expect(screen.getAllByTestId("ui-lynx-episode-header")[0]).toHaveAttribute(
     "accessibility-traits",
     "header",
   );
@@ -100,7 +102,7 @@ test("처음에는 시트가 렌더되지 않는다", () => {
 });
 
 // 단언 9
-test("스텝을 tap하면 시트가 열리고 그 스텝의 제목·설명을 낸다", () => {
+test("스텝을 tap하면 말풍선이 열리고 그 스텝의 순번·제목을 낸다", () => {
   render(
     <JourneyMapScreen
       {...messengerFixture}
@@ -112,10 +114,7 @@ test("스텝을 tap하면 시트가 열리고 그 스텝의 제목·설명을 �
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
-  expect(screen.getByTestId("step-sheet-description")).toHaveTextContent(
-    "카페에서 마실 것을 주문한다",
-  );
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Lesson 3: “주문하기”");
 });
 
 // 단언 10
@@ -134,7 +133,7 @@ test("닫기를 tap하면 시트가 사라지고 화면 제목은 그대로다",
   fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
-  expect(screen.getByTestId("journey-map-screen-title")).toHaveTextContent("여정 맵");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
 // 단언 11 — 제목이 갈립니다. 시트가 둘이 되지 않습니다.
@@ -384,7 +383,7 @@ test("[U2] journey-map-screen-map이 스크롤 컨테이너 안에 있다", () =
   expect(within(scroll).getByTestId("journey-map-screen-map")).toBeInTheDocument();
 });
 
-test("[U3] journey-map-screen-title이 스크롤 컨테이너 밖에 있다", () => {
+test("[U3] 머리(상단 바)가 스크롤 컨테이너 밖에 있다", () => {
   render(
     <JourneyMapScreen
       {...messengerFixture}
@@ -394,8 +393,8 @@ test("[U3] journey-map-screen-title이 스크롤 컨테이너 밖에 있다", ()
   );
 
   const scroll = screen.getByTestId("journey-map-screen-scroll");
-  expect(within(scroll).queryByTestId("journey-map-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(within(scroll).queryByTestId("journey-map-screen-actions")).not.toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen-actions")).toBeInTheDocument();
 });
 
 // U4: 시트는 스크롤 밖의 겹침 레이어입니다(R9) — 열려 있어도 스크롤 컨테이너

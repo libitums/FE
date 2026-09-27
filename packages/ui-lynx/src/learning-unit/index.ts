@@ -5,4 +5,5 @@ export {
   type LearningUnitNarrative,
   type LearningUnitProps,
   type LearningUnitStatus,
+  type LearningUnitTapEvent,
 } from "./learning-unit.contract";

@@ -351,7 +351,7 @@ test("[IT13] 설정 탭 스택 보존 — 프로필을 연 채 여정 탭을 다
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   openSettingsTab();
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();

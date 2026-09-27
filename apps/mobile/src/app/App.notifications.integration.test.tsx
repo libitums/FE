@@ -121,7 +121,7 @@ test("[IN2] 알림 화면의 맵으로를 tap하면 여정 맵으로 돌아가�
 
   fireEvent.tap(screen.getByTestId("notifications-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("notifications-screen-title")).not.toBeInTheDocument();
 });
 
@@ -157,7 +157,7 @@ test("[IN4] 메신저 대상 항목을 tap하면 메신저 화면이 열리고 �
 
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("notifications-screen-title")).not.toBeInTheDocument();
 });
 
@@ -170,7 +170,7 @@ test("[IN5] 전화 대상 항목을 tap하면 전화 화면이 열리고 나가�
 
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
 test("[IN6] 비주얼 노벨 대상 항목을 tap하면 비주얼 노벨 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", () => {
@@ -182,7 +182,7 @@ test("[IN6] 비주얼 노벨 대상 항목을 tap하면 비주얼 노벨 화면�
 
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
 
-  expect(screen.getByTestId("journey-map-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
 test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 완료가 맵에 기록된다(D-a)", () => {

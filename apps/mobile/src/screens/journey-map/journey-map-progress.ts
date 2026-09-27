@@ -3,7 +3,12 @@
 // 스텝 수)는 App의 상태이고, 이 파일은 그 값에서 파생만 합니다.
 
 import { journeySteps } from "./journey-map-units";
-import type { JourneyStep, JourneyStepId, JourneyStepStatus } from "./journey-map-units";
+import type {
+  JourneyMapItem,
+  JourneyStep,
+  JourneyStepId,
+  JourneyStepStatus,
+} from "./journey-map-units";
 
 // 판정 규칙입니다(그대로):
 //   index < completedCount   → "done"
@@ -53,4 +58,47 @@ export function journeyStepOrdinal(id: JourneyStepId): number {
 // 보장합니다.
 export function completeStep(completedCount: number, id: JourneyStepId): number {
   return Math.max(completedCount, journeyStepOrdinal(id));
+}
+
+/**
+ * 맵 항목 하나가 끝났는지 봅니다. 완료의 출처가 항목 종류마다 다릅니다 — 일반 스텝은
+ * 끝낸 스텝 수, 특별 유닛 셋은 각자의 완료 id 목록입니다. 그 넷을 한자리에 모아야
+ * 에피소드 진행을 셀 수 있습니다.
+ *
+ * 던지지 않는 총함수입니다 — `kind`가 닫힌 판별자라 `default`를 두지 않습니다. 넷째
+ * 종류가 늘면 `never` 대입이 컴파일 단계에서 섭니다.
+ */
+export function isMapItemComplete(item: JourneyMapItem, progress: JourneyProgress): boolean {
+  switch (item.kind) {
+    case "standard": {
+      return (
+        stepStatusAt(journeyStepOrdinal(item.step.id) - 1, progress.completedStepCount) === "done"
+      );
+    }
+    case "special": {
+      return progress.completedMessengerUnitIds.includes(item.id);
+    }
+    case "phone-call": {
+      return progress.completedPhoneCallUnitIds.includes(item.id);
+    }
+    case "visual-novel": {
+      return progress.completedVisualNovelUnitIds.includes(item.id);
+    }
+  }
+}
+
+/** 진행의 출처 넷을 한 묶음으로 받습니다 — 셀 때마다 넷을 따로 넘기면 하나를 빠뜨립니다. */
+export type JourneyProgress = {
+  readonly completedStepCount: number;
+  readonly completedMessengerUnitIds: readonly string[];
+  readonly completedPhoneCallUnitIds: readonly string[];
+  readonly completedVisualNovelUnitIds: readonly string[];
+};
+
+/** 항목들 가운데 끝난 것의 수입니다. 에피소드 헤더의 진행 막대가 이 값을 씁니다. */
+export function completedMapItemCount(
+  items: readonly JourneyMapItem[],
+  progress: JourneyProgress,
+): number {
+  return items.filter((item) => isMapItemComplete(item, progress)).length;
 }
