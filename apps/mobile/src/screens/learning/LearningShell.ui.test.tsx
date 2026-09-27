@@ -49,7 +49,7 @@ test("첫 활동에서는 채움 막대를 그리지 않는다", () => {
 test("카드로 받은 것이 카드 안에 선다", () => {
   renderShell();
 
-  const card = screen.getByTestId("learning-shell-card");
+  const card = screen.getByTestId("learning-shell-stage");
 
   expect(within(card).getByTestId("fixture-card")).toBeInTheDocument();
 });
@@ -113,7 +113,7 @@ test("DOM 순서 — 세션 헤더 → 지시문 → 카드 → 버튼", () => {
       [
         "learning-shell-session",
         "learning-shell-instruction",
-        "learning-shell-card",
+        "learning-shell-stage",
         "learning-shell-action",
       ].includes(id ?? ""),
     );
@@ -121,7 +121,7 @@ test("DOM 순서 — 세션 헤더 → 지시문 → 카드 → 버튼", () => {
   expect(order).toEqual([
     "learning-shell-session",
     "learning-shell-instruction",
-    "learning-shell-card",
+    "learning-shell-stage",
     "learning-shell-action",
   ]);
 });

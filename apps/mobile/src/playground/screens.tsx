@@ -12,6 +12,8 @@ import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
 import { SplashScreen } from "../screens/splash/SplashScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
 import { LearningShell } from "../screens/learning/LearningShell";
+import { ListeningScreen } from "../screens/listening/ListeningScreen";
+import { initialSessionOptions } from "../lib/session-options";
 import { ButtonCatalog } from "./ButtonCatalog";
 
 // 화면을 앱 흐름 없이 fixture props로 띄웁니다. 콜백은 앱 흐름과 같은 순서로
@@ -75,6 +77,18 @@ export const playgroundScreens = {
   // 학습 껍데기는 활동이 넣어 주는 것을 그립니다. 여기서는 카드 · 작업 영역에
   // 자리표시를 넣어 뼈대(상단 바 · 세션 헤더 · 지시문 · 카드 · 작업 · 버튼)만 봅니다 —
   // 활동을 옮겨 오기 전에 구조를 눈으로 확인하는 용도입니다.
+  // 듣기 활동입니다. 껍데기 안에 실제 활동이 들어간 모습을 봅니다 — 자리표시가 아니라
+  // 실물 문항이 카드 안에 섭니다.
+  listening: () => (
+    <ListeningScreen
+      stepId="ordering"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={noop}
+      onFinish={noop}
+      sessionOptions={initialSessionOptions}
+    />
+  ),
   "catalog:learning-shell": () => (
     <LearningShell
       form="listening"

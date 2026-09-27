@@ -105,7 +105,7 @@ function answerAllQuestions(
     const choiceIndex = pick(question.answerIndex, questionIndex);
 
     fireEvent.tap(screen.getByTestId(`listening-choice-${choiceIndex}`), {});
-    fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   });
 }
 
@@ -223,7 +223,10 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-complete에서 계약이
   answerAllQuestions("ordering", mixedPick);
   expect(screen.getByTestId("listening-screen-complete")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["listening-screen-title"]);
+  // 2026-09-27: 빈 집합이 답입니다. 듣기 화면의 제목 줄이 걷혔고(Figma 65-14) 껍데기는
+  // 제목 축에 아무것도 올리지 않습니다 — `Chapter n / N`은 메타 줄이지 제목이 아닙니다.
+  // 위 `toBeInTheDocument`가 앵커라, 화면이 안 떠서 비는 경우와 갈립니다.
+  expect(headingAxis(container)).toEqual([]);
 });
 
 // 닫힌 집합 대조는 배열이 **자라야** 빨개집니다 — 이 상태가 무대에 올리는 배제
@@ -237,7 +240,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 assessment에서 계약이 고정�
 
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
   expect(container.querySelector(".assessment-screen-verdict-label")).not.toBeNull();
 
@@ -369,7 +372,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-question에서 계약이
   startStep("ordering");
   expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["listening-screen-title"]);
+  expect(headingAxis(container)).toEqual([]);
 });
 
 // ErrorBoundary 오류 상태(`error-boundary-title`)는 이 회차에서 열지 않습니다 —

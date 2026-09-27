@@ -35,9 +35,13 @@ export type LearningShellProps = {
    * 활동도 있으므로 선택입니다.
    */
   workspace?: ReactNode;
-  /** 아래 버튼입니다. 라벨이 활동 · 상태마다 갈립니다(`Check` · `계속`). */
-  actionLabel: string;
-  onAction: () => void;
+  /**
+   * 아래 버튼입니다. 라벨이 활동 · 상태마다 갈립니다(`다음` · `결과 보기`). 둘 다
+   * 없으면 버튼을 그리지 않습니다 — 영구히 눌리지 않는 버튼을 두지 않기 위해서입니다
+   * (ADR-0016 D10). 「아직 할 수 없다」는 버튼이 **없는 것**으로 말합니다.
+   */
+  actionLabel?: string;
+  onAction?: () => void;
   streakDays?: number;
   trophyCount?: number;
   onOpenNotifications?: () => void;
@@ -66,7 +70,7 @@ export function LearningShell({
 
   const handleAction = () => {
     "background only";
-    onAction();
+    onAction?.();
   };
 
   return (
@@ -144,27 +148,40 @@ export function LearningShell({
 
           바깥 상자가 남는 세로를 받습니다 — 카드는 내용만큼 서고, 남는 자리를 이 상자가
           먹어 아래 버튼이 바닥에 남습니다. 카드 자신을 늘리려면 ui-lynx의 클래스에
-          손대야 하는데, 그건 이 화면의 몫이 아닙니다. */}
-      <view className="learning-shell-stage" data-testid="learning-shell-card">
+          손대야 하는데, 그건 이 화면의 몫이 아닙니다.
+
+          그 상자가 `<scroll-view>`인 것은 Dynamic Type 때문입니다 — 글자가 커지면 카드
+          내용이 남는 높이를 넘고, 넘친 내용은 **사라집니다**(WCAG 1.4.4). 내용이
+          들어가는 동안은 스크롤이 일어나지 않아 보이는 것은 달라지지 않습니다.
+          `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안 적으면 초기값이 각각
+          가로·꺼짐이라 세로 스크롤이 원리적으로 불가능합니다. */}
+      <scroll-view
+        className="learning-shell-stage"
+        data-testid="learning-shell-stage"
+        scroll-orientation="vertical"
+        scroll-bar-enable={true}
+      >
         <Card elevation="stage">
           <Card.Content>{card}</Card.Content>
         </Card>
-      </view>
+      </scroll-view>
       {workspace === undefined ? null : (
         <view className="learning-shell-workspace" data-testid="learning-shell-workspace">
           {workspace}
         </view>
       )}
-      <view
-        className="learning-shell-action"
-        data-testid="learning-shell-action"
-        accessibility-element={true}
-        accessibility-label={actionLabel}
-        accessibility-traits="button"
-        bindtap={handleAction}
-      >
-        <text className="learning-shell-action-label">{actionLabel}</text>
-      </view>
+      {actionLabel === undefined || onAction === undefined ? null : (
+        <view
+          className="learning-shell-action"
+          data-testid="learning-shell-action"
+          accessibility-element={true}
+          accessibility-label={actionLabel}
+          accessibility-traits="button"
+          bindtap={handleAction}
+        >
+          <text className="learning-shell-action-label">{actionLabel}</text>
+        </view>
+      )}
     </view>
   );
 }

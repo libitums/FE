@@ -8,6 +8,21 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 // 다 켜짐)을 줍니다 — 단언은 한 글자도 바꾸지 않습니다.
 import { initialSessionOptions } from "../../lib/session-options";
 
+// 무대(가운데 카드) 안만 세는 헬퍼입니다. 뼈대는 `LearningShell`의 것이고 그 계약은
+// 껍데기 자신의 테스트가 답니다 — 여기서 화면 전체를 세면 상단 바의 칩 · 알림 버튼과
+// 나가기 · 아래 버튼까지 들어와, 이 파일이 무엇을 고정하는지가 흐려집니다.
+function stageTappables(): readonly (string | null)[] {
+  const stage = screen.getByTestId("learning-shell-stage");
+  return [...stage.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
+    el.getAttribute("data-testid"),
+  );
+}
+
+function stageIcons(): readonly (string | null)[] {
+  const stage = screen.getByTestId("learning-shell-stage");
+  return [...stage.querySelectorAll("svg")].map((el) => el.getAttribute("data-testid"));
+}
+
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다 (ADR-0006 D4).
 // 순수 함수(listening.ts)를 mock하지 않습니다 — 화면이 그것을 실제로 부르는지가
 // 이 파일이 보는 것의 절반입니다. `toHaveClass`·`toHaveStyle`·`toBeVisible`을
@@ -49,7 +64,8 @@ function renderOrdering(
   return render(
     <ListeningScreen
       stepId="ordering"
-      stepOrdinal={3}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={overrides.onExit ?? (() => {})}
       onFinish={overrides.onFinish ?? (() => {})}
       sessionOptions={initialSessionOptions}
@@ -65,7 +81,7 @@ function answerCorrectlyAndAdvance(questionIndex: number): void {
     screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[questionIndex].answerIndex}`),
     {},
   );
-  fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 }
 
 function completeAllThree(): void {
@@ -150,13 +166,17 @@ afterEach(() => {
 
 // ---------------------------------------------------------------- 처음 렌더 (단언 1~4)
 
-// 단언 1
-test("제목이 '3단계 · 듣기'이고 accessibility-traits='header'다", () => {
+// 단언 1 — 2026-09-27: 화면 제목이 없어졌습니다(Figma 65-14). 뼈대는 `LearningShell`의
+// 것이고 이 화면이 아는 것은 카드 **안**뿐입니다. 그 경계가 성립하는지를 답니다:
+// 껍데기가 서고, 문항이 그 무대 안에 들어 있습니다.
+test("뼈대는 껍데기가 세우고 문항은 그 무대 안에 선다", () => {
   renderOrdering();
 
-  const title = screen.getByTestId("listening-screen-title");
-  expect(title).toHaveTextContent("3단계 · 듣기");
-  expect(title).toHaveAttribute("accessibility-traits", "header");
+  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
+
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(within(stage).getByTestId("listening-screen-content")).toBeInTheDocument();
+  expect(within(stage).getByTestId("listening-prompt-text")).toBeInTheDocument();
 });
 
 // 단언 2 — 1-based로 보입니다.
@@ -179,37 +199,36 @@ test("첫 문항이 제시되고 보기가 네 개 렌더된다", () => {
 });
 
 // 단언 4 — **수용 기준 3의 `ui` 쪽 판정입니다.** 어느 스텝에서 왔는지가 화면에
-// 드러납니다: 제목도 문항도 스텝마다 갈립니다. 한 스텝의 데이터가 박혀 있으면
-// 여기서 잡힙니다.
-test("다른 스텝으로 렌더하면 제목과 문항이 둘 다 갈린다", () => {
+// 드러납니다: 문항이 스텝마다 갈립니다. 한 스텝의 데이터가 박혀 있으면 여기서
+// 잡힙니다. 제목 절은 걷혔습니다 — 화면 제목이 없어졌고(Figma 65-14) 스텝을 가리는
+// 채널은 이제 문항 하나입니다.
+test("다른 스텝으로 렌더하면 문항이 갈린다", () => {
   const ordering = render(
     <ListeningScreen
       stepId="ordering"
-      stepOrdinal={3}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
     />,
   );
-  const orderingTitle = screen.getByTestId("listening-screen-title").textContent;
   const orderingPrompt = screen.getByTestId("listening-prompt-text").textContent;
   ordering.unmount();
 
   render(
     <ListeningScreen
       stepId="greeting"
-      stepOrdinal={1}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
     />,
   );
 
-  const greetingTitle = screen.getByTestId("listening-screen-title");
   const greetingPrompt = screen.getByTestId("listening-prompt-text");
-  expect(greetingTitle).toHaveTextContent("1단계 · 듣기");
   expect(greetingPrompt).toHaveTextContent("안녕하세요, 처음 뵙겠습니다.");
-  expect(greetingTitle.textContent).not.toBe(orderingTitle);
   expect(greetingPrompt.textContent).not.toBe(orderingPrompt);
 });
 
@@ -220,9 +239,9 @@ test("다른 스텝으로 렌더하면 제목과 문항이 둘 다 갈린다", (
 test("응답 전에는 나가기만 있고 다음·마치기가 없다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("listening-screen-exit")).toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-next")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-finish")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-complete")).not.toBeInTheDocument();
 });
 
@@ -301,7 +320,7 @@ test("정답 보기를 탭하면 '다음'이 나타난다", () => {
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
-  expect(screen.getByTestId("listening-screen-next")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
 });
 
 // 단언 8 — **정답을 알려 주지 않습니다.** 오답을 골라도 정답 보기는 판정을 지지
@@ -369,7 +388,8 @@ test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () 
   render(
     <ListeningScreen
       stepId="greeting"
-      stepOrdinal={1}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -379,7 +399,7 @@ test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () 
   fireEvent.tap(screen.getByTestId("listening-choice-0"), {});
 
   expect(screen.getByTestId("listening-choice-0")).toHaveAttribute("data-result", "correct");
-  expect(screen.getByTestId("listening-screen-next")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
 });
 
 // ---------------------------------------------------------------- 문항 진행 (단언 10)
@@ -389,7 +409,7 @@ test("'다음'을 탭하면 진행·문항이 갈리고 판정이 초기화되�
   renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
-  fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3");
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
@@ -398,7 +418,7 @@ test("'다음'을 탭하면 진행·문항이 갈리고 판정이 초기화되�
   for (const testid of CHOICE_TESTIDS) {
     expect(screen.getByTestId(testid)).toHaveAttribute("data-result", "none");
   }
-  expect(screen.queryByTestId("listening-screen-next")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
 });
 
 // 두 번째 문항의 정답 인덱스가 0입니다 — 문항이 넘어간 뒤에도 0번 보기가 살아
@@ -424,15 +444,17 @@ test("문항 셋을 마치면 완료 문구와 마치기가 나타난다", () =>
   completeAllThree();
 
   expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
-  expect(screen.getByTestId("listening-screen-finish")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
 });
 
-test("완료 상태에서 나가기·진행·문항·보기가 전부 사라진다", () => {
+// 나가기는 남습니다 — 껍데기의 `×`는 세션 내내 서 있고, 그 목적지(맵)는 완료
+// 버튼의 목적지(결과)와 다릅니다. 「같은 곳으로 가는 버튼 둘」이 아닙니다.
+test("완료 상태에서 진행·문항·보기가 사라지고 나가기는 남는다", () => {
   renderOrdering();
 
   completeAllThree();
 
-  expect(screen.queryByTestId("listening-screen-exit")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-progress")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-text")).not.toBeInTheDocument();
   for (const testid of CHOICE_TESTIDS) {
@@ -451,8 +473,9 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[2].answerIndex}`), {});
 
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 3 / 3");
-  expect(screen.queryByTestId("listening-screen-finish")).not.toBeInTheDocument();
-  expect(screen.getByTestId("listening-screen-exit")).toBeInTheDocument();
+  // 아래 버튼은 있지만 `다음`입니다 — 완료였다면 `결과 보기`가 섰을 자리입니다.
+  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("다음");
+  expect(screen.queryByTestId("listening-screen-complete")).not.toBeInTheDocument();
 });
 
 // 완료 전이만 custom 모듈을 사용하고 builtin announce로 중복 발화하지 않습니다.
@@ -470,7 +493,8 @@ test("완료 전이에서 custom announceCompletion이 원문으로 한 번, bui
   view.rerender(
     <ListeningScreen
       stepId="ordering"
-      stepOrdinal={3}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -487,7 +511,7 @@ test("마치기를 탭하면 onFinish가 stepId와 응답 결과 배열로 정�
   renderOrdering({ onFinish });
 
   completeAllThree();
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledWith("ordering", ["correct", "correct", "correct"]);
@@ -501,9 +525,9 @@ test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 �
 
   for (const question of ORDERING_QUESTIONS) {
     fireEvent.tap(screen.getByTestId(`listening-choice-${(question.answerIndex + 1) % 4}`), {});
-    fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   }
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledWith("ordering", ["incorrect", "incorrect", "incorrect"]);
@@ -518,7 +542,7 @@ test("응답 전 나가기를 탭하면 onExit이 한 번, onFinish는 한 번�
   const onFinish = vi.fn<(id: JourneyStepId) => void>();
   renderOrdering({ onExit, onFinish });
 
-  fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
   expect(onExit).toHaveBeenCalledTimes(1);
   expect(onFinish).not.toHaveBeenCalled();
@@ -530,7 +554,7 @@ test("문항 하나를 응답한 뒤 나가기를 탭해도 onFinish가 불리�
   renderOrdering({ onExit, onFinish });
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
-  fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
   expect(onExit).toHaveBeenCalledTimes(1);
   expect(onFinish).not.toHaveBeenCalled();
@@ -541,13 +565,24 @@ test("문항 하나를 응답한 뒤 나가기를 탭해도 onFinish가 불리�
 // 단언 14 (수용 기준 12의 "붙었는가" 절반입니다. 실제 낭독은 실기가
 // 판정합니다 — ADR-0016 D6). 두 출구의 라벨이 **다른 문자열**이라는 것도 함께
 // 봅니다 — 음성 제어에서 갈립니다.
-test("나가기에 element·label='맵으로'·traits='button'이 붙는다", () => {
-  renderOrdering();
+// 나가기의 접근성 속성은 껍데기가 자기 테스트에서 답니다(`LearningShell.ui.test.tsx`).
+// 여기서 보는 것은 **배선** 하나입니다 — 그 버튼이 이 화면의 `onExit`에 닿는가.
+test("껍데기의 나가기가 이 화면의 onExit에 닿는다", () => {
+  const onExit = vi.fn<() => void>();
+  render(
+    <ListeningScreen
+      stepId="ordering"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={onExit}
+      onFinish={() => {}}
+      sessionOptions={initialSessionOptions}
+    />,
+  );
 
-  const exit = screen.getByTestId("listening-screen-exit");
-  expect(exit).toHaveAttribute("accessibility-element", "true");
-  expect(exit).toHaveAttribute("accessibility-label", "맵으로");
-  expect(exit).toHaveAttribute("accessibility-traits", "button");
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+
+  expect(onExit).toHaveBeenCalledTimes(1);
 });
 
 test("다음에 element·label='다음'·traits='button'이 붙는다", () => {
@@ -555,7 +590,7 @@ test("다음에 element·label='다음'·traits='button'이 붙는다", () => {
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
-  const next = screen.getByTestId("listening-screen-next");
+  const next = screen.getByTestId("learning-shell-action");
   expect(next).toHaveAttribute("accessibility-element", "true");
   expect(next).toHaveAttribute("accessibility-label", "다음");
   expect(next).toHaveAttribute("accessibility-traits", "button");
@@ -571,7 +606,7 @@ test("마치기에 element·label='결과 보기'·traits='button'이 붙는다"
 
   completeAllThree();
 
-  const finish = screen.getByTestId("listening-screen-finish");
+  const finish = screen.getByTestId("learning-shell-action");
   expect(finish).toHaveAttribute("accessibility-element", "true");
   expect(finish).toHaveAttribute("accessibility-label", "결과 보기");
   expect(finish).toHaveAttribute("accessibility-traits", "button");
@@ -596,13 +631,13 @@ test("나가기·마치기 안의 라벨 텍스트가 조작 단위가 되지 �
   renderOrdering();
 
   expect(
-    screen.getByTestId("listening-screen-exit").querySelectorAll("[accessibility-element]"),
+    screen.getByTestId("learning-shell-exit").querySelectorAll("[accessibility-element]"),
   ).toHaveLength(0);
 
   completeAllThree();
 
   expect(
-    screen.getByTestId("listening-screen-finish").querySelectorAll("[accessibility-element]"),
+    screen.getByTestId("learning-shell-action").querySelectorAll("[accessibility-element]"),
   ).toHaveLength(0);
 });
 
@@ -619,15 +654,12 @@ test("나가기·마치기 안의 라벨 텍스트가 조작 단위가 되지 �
 // 수용 기준 5는 이제 「오디오 코드 0줄」이 아니라 「`<audio>`·`<video>`·`new Audio`·
 // `AudioContext`를 쓰지 않는다」로 좁아졌습니다 — 이번에 연 것은 네이티브
 // 모듈 경로 하나이고 DOM 요소도 웹 오디오도 아니다.
-test("응답 전 조작 단위가 나가기 + 재생 조작 + 보기 넷이다 — 재생 조작이 보기보다 앞이다", () => {
-  const { container } = renderOrdering();
+test("응답 전 무대의 조작 단위가 재생 조작 + 보기 넷이다 — 재생 조작이 보기보다 앞이다", () => {
+  renderOrdering();
 
-  const tappables = [...container.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
-    el.getAttribute("data-testid"),
-  );
+  const tappables = stageTappables();
 
   expect(tappables).toEqual([
-    "listening-screen-exit",
     "listening-prompt-playback",
     "listening-choice-0",
     "listening-choice-1",
@@ -636,69 +668,64 @@ test("응답 전 조작 단위가 나가기 + 재생 조작 + 보기 넷이다 �
   ]);
 });
 
-test("응답 뒤 조작 단위가 나가기 + 재생 조작 + 보기 넷 + 다음이다", () => {
-  const { container } = renderOrdering();
+// 응답해도 무대 안의 목록은 그대로입니다 — `다음`은 무대 **밖**, 껍데기의 아래
+// 버튼입니다. 그것이 생겼다는 것은 따로 답니다.
+test("응답 뒤에도 무대의 조작 단위는 그대로이고 아래 버튼이 생긴다", () => {
+  renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
-  const tappables = [...container.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
-    el.getAttribute("data-testid"),
-  );
-
-  expect(tappables).toEqual([
-    "listening-screen-exit",
+  expect(stageTappables()).toEqual([
     "listening-prompt-playback",
     "listening-choice-0",
     "listening-choice-1",
     "listening-choice-2",
     "listening-choice-3",
-    "listening-screen-next",
   ]);
+  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("다음");
 });
 
-test("완료 상태의 조작 단위가 마치기 하나뿐이다", () => {
-  const { container } = renderOrdering();
+test("완료 상태의 무대에는 조작 단위가 없고 아래 버튼이 마치기다", () => {
+  renderOrdering();
 
   completeAllThree();
 
-  const tappables = [...container.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
-    el.getAttribute("data-testid"),
-  );
-
-  expect(tappables).toEqual(["listening-screen-finish"]);
+  expect(stageTappables()).toEqual([]);
+  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("결과 보기");
 });
 
 // 아이콘 개수도 뒤집혔습니다. 응답 전에 하나 있고 그것이 **재생 아이콘**이며,
 // 응답 뒤에 생기는 둘째가 고른 보기의 표식입니다. 순서까지 셉니다 — 재생
 // 아이콘이 보기의 표식보다 앞입니다.
-test("응답 전 트리의 <svg>가 재생 아이콘 하나다", () => {
-  const { container } = renderOrdering();
+test("응답 전 무대의 <svg>가 재생 아이콘 하나다", () => {
+  renderOrdering();
 
   // 앵커: 개수 단언만 두면 화면이 반쯤 그려져도 통과합니다. 문항과 보기가
   // 실제로 그려진 트리에서 아이콘이 하나라는 것이 이 단언의 내용입니다.
   expect(screen.getByTestId("listening-prompt-text")).toBeInTheDocument();
   expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
 
-  const icons = [...container.querySelectorAll("svg")].map((el) => el.getAttribute("data-testid"));
-  expect(icons).toEqual(["listening-prompt-playback-icon"]);
+  expect(stageIcons()).toEqual(["listening-prompt-playback-icon"]);
 });
 
-test("응답 뒤 <svg>가 재생 아이콘 + 고른 보기의 표식 둘이다", () => {
-  const { container } = renderOrdering();
+test("응답 뒤 무대의 <svg>가 재생 아이콘 + 고른 보기의 표식 둘이다", () => {
+  renderOrdering();
 
   const answerIndex = ORDERING_QUESTIONS[0].answerIndex;
   fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
 
-  const icons = [...container.querySelectorAll("svg")].map((el) => el.getAttribute("data-testid"));
-  expect(icons).toEqual(["listening-prompt-playback-icon", `listening-choice-icon-${answerIndex}`]);
+  expect(stageIcons()).toEqual([
+    "listening-prompt-playback-icon",
+    `listening-choice-icon-${answerIndex}`,
+  ]);
 });
 
-test("완료 상태에도 <svg>가 하나도 없다", () => {
-  const { container } = renderOrdering();
+test("완료 상태의 무대에는 <svg>가 하나도 없다", () => {
+  renderOrdering();
 
   completeAllThree();
 
-  expect(container.querySelectorAll("svg")).toHaveLength(0);
+  expect(stageIcons()).toEqual([]);
 });
 
 // ---------------------------------------------------------------- 오디오
@@ -730,7 +757,8 @@ test("다른 스텝으로 렌더하면 play의 source가 그 스텝의 첫 문�
   render(
     <ListeningScreen
       stepId="greeting"
-      stepOrdinal={1}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -749,7 +777,7 @@ test("문항 셋을 마쳐 완료가 되면 stop이 불리고 재생 조작이 �
   completeAllThree();
 
   expect(sourcesOf(audio)).toEqual(["ordering-1", STOP, "ordering-2", STOP, "ordering-3", STOP]);
-  expect(screen.getByTestId("listening-screen-finish")).toBeInTheDocument(); // 앵커
+  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument(); // 앵커
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-playback-icon")).not.toBeInTheDocument();
 });
@@ -809,7 +837,7 @@ test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () 
 
   expect(announce).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3"); // 앵커
   expect(sourcesOf(audio)).toEqual(["ordering-1", STOP, "ordering-2"]); // 오디오는 그대로 돕니다
@@ -827,7 +855,8 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   const view = render(
     <ListeningScreen
       stepId="ordering"
-      stepOrdinal={3}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={onExit}
       onFinish={onFinish}
       sessionOptions={initialSessionOptions}
@@ -841,7 +870,8 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   view.rerender(
     <ListeningScreen
       stepId="ordering"
-      stepOrdinal={3}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={onExit}
       onFinish={onFinish}
       sessionOptions={initialSessionOptions}
@@ -850,7 +880,8 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   view.rerender(
     <ListeningScreen
       stepId="ordering"
-      stepOrdinal={3}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={onExit}
       onFinish={onFinish}
       sessionOptions={initialSessionOptions}
@@ -861,21 +892,24 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   expect(announce).toHaveLength(1);
 });
 
-// X-D. **소리에만 있는 낱말이 0건입니다**(ADR-0016 D11-1·수용 기준 3). 발화
-// 문자열을 리터럴로 다시 적지 않고 **DOM에서 파생해** 짓습니다 — 앞절은 종료
-// 문구 요소의 내용, 뒷절은 그 순간 화면에 실재하는 유일한 조작 단위의
-// `accessibility-label`입니다.
-test("[X-D] 완료 발화가 종료 문구와 그 순간 유일한 조작 단위의 라벨에서 그대로 나온다", () => {
+// X-D. **소리에만 있는 낱말이 0건입니다**(ADR-0016 D11-1·수용 기준 3). 발화 문자열을
+// 리터럴로 다시 적지 않고 **DOM에서 파생해** 짓습니다 — 앞절은 종료 문구 요소의 내용,
+// 뒷절은 그 순간 화면이 내미는 다음 걸음, 즉 아래 버튼의 `accessibility-label`입니다.
+//
+// 2026-09-27: 「유일한 조작 단위」가 아니게 됐습니다 — 껍데기가 상단 바와 나가기를
+// 함께 세웁니다. 유일성 대신 **무대에는 조작 단위가 없다**는 것으로 좁힙니다: 완료
+// 상태에서 사용자가 카드 안에서 할 일은 없고, 다음 걸음은 아래 버튼 하나입니다.
+test("[X-D] 완료 발화가 종료 문구와 아래 버튼의 라벨에서 그대로 나온다", () => {
   const { announce } = stubHost();
-  const { container } = renderOrdering();
+  renderOrdering();
 
   completeAllThree();
 
-  const elements = [...container.querySelectorAll("[accessibility-element]")];
-  expect(elements.map((el) => el.getAttribute("data-testid"))).toEqual(["listening-screen-finish"]);
+  expect(stageTappables()).toEqual([]);
 
   const completeText = screen.getByTestId("listening-screen-complete").textContent ?? "";
-  const actionLabel = elements[0]?.getAttribute("accessibility-label") ?? "";
+  const actionLabel =
+    screen.getByTestId("learning-shell-action").getAttribute("accessibility-label") ?? "";
 
   expect(announce).toHaveLength(1);
   expect(announce[0]?.content).toBe(`${completeText}, ${actionLabel}`);
@@ -900,16 +934,16 @@ test("대역 없이도 화면이 던지지 않고 재생 조작이 '듣기'로 �
 // 넘치는가·막대가 뜨는가는 이 계층이 원리적으로 못 봅니다(jsdom엔 레이아웃이
 // 없습니다).
 
-test("[U1] listening-screen-scroll이 존재한다", () => {
+test("[U1] learning-shell-stage이 존재한다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("listening-screen-scroll")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-stage")).toBeInTheDocument();
 });
 
 test("[U2] 진행·대본·보기 넷이 스크롤 컨테이너 안에 있다", () => {
   renderOrdering();
 
-  const scroll = screen.getByTestId("listening-screen-scroll");
+  const scroll = screen.getByTestId("learning-shell-stage");
   expect(within(scroll).getByTestId("listening-screen-progress")).toBeInTheDocument();
   expect(within(scroll).getByTestId("listening-prompt-text")).toBeInTheDocument();
   for (const testid of CHOICE_TESTIDS) {
@@ -917,28 +951,26 @@ test("[U2] 진행·대본·보기 넷이 스크롤 컨테이너 안에 있다", 
   }
 });
 
-test("[U3] 제목·나가기·다음이 스크롤 컨테이너 밖에 있다", () => {
+test("[U3] 나가기·아래 버튼이 무대 밖에 있다", () => {
   renderOrdering();
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
-  const scroll = screen.getByTestId("listening-screen-scroll");
-  expect(within(scroll).queryByTestId("listening-screen-title")).not.toBeInTheDocument();
-  expect(within(scroll).queryByTestId("listening-screen-exit")).not.toBeInTheDocument();
-  expect(within(scroll).queryByTestId("listening-screen-next")).not.toBeInTheDocument();
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(within(stage).queryByTestId("learning-shell-exit")).not.toBeInTheDocument();
+  expect(within(stage).queryByTestId("learning-shell-action")).not.toBeInTheDocument();
 
-  expect(screen.getByTestId("listening-screen-title")).toBeInTheDocument();
-  expect(screen.getByTestId("listening-screen-exit")).toBeInTheDocument();
-  expect(screen.getByTestId("listening-screen-next")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
 });
 
 test("[U6] 완료 상태에서 완료 문구는 스크롤 안, 마치기는 스크롤 밖이다", () => {
   renderOrdering();
   completeAllThree();
 
-  const scroll = screen.getByTestId("listening-screen-scroll");
+  const scroll = screen.getByTestId("learning-shell-stage");
   expect(within(scroll).getByTestId("listening-screen-complete")).toBeInTheDocument();
-  expect(within(scroll).queryByTestId("listening-screen-finish")).not.toBeInTheDocument();
-  expect(screen.getByTestId("listening-screen-finish")).toBeInTheDocument();
+  expect(within(scroll).queryByTestId("learning-shell-action")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
 });
 
 // ---------------------------------------------------------------- 스크롤 영역 접근성 부재
@@ -950,7 +982,7 @@ test("[U6] 완료 상태에서 완료 문구는 스크롤 안, 마치기는 스�
 test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는다", () => {
   renderOrdering();
 
-  const scroll = screen.getByTestId("listening-screen-scroll");
+  const scroll = screen.getByTestId("learning-shell-stage");
   expect(scroll).not.toHaveAttribute("accessibility-element");
   expect(scroll).not.toHaveAttribute("accessibility-label");
   expect(scroll).not.toHaveAttribute("accessibility-traits");
@@ -968,22 +1000,19 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
 // `__SetAttribute`(ElementPAPI.js:87~89)가 boolean을 `JSON.stringify`로
 // 직렬화합니다. `scroll-orientation`은 문자열이라 그대로 "vertical"로 갑니다.
 
-test("[U9] listening-screen-scroll에 scroll-orientation='vertical'이 붙는다", () => {
+test("[U9] learning-shell-stage에 scroll-orientation='vertical'이 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("listening-screen-scroll")).toHaveAttribute(
+  expect(screen.getByTestId("learning-shell-stage")).toHaveAttribute(
     "scroll-orientation",
     "vertical",
   );
 });
 
-test("[U11] listening-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
+test("[U11] learning-shell-stage에 scroll-bar-enable='true'가 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("listening-screen-scroll")).toHaveAttribute(
-    "scroll-bar-enable",
-    "true",
-  );
+  expect(screen.getByTestId("learning-shell-stage")).toHaveAttribute("scroll-bar-enable", "true");
 });
 
 // U10 — 듣기는 문항 상태와 완료 상태 둘 다 봅니다 — 문항 상태는 오늘 자식이
@@ -992,12 +1021,12 @@ test("[U11] listening-screen-scroll에 scroll-bar-enable='true'가 붙는다", (
 test("[U10] 문항 상태에서 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("listening-screen-scroll").children.length).toBeLessThanOrEqual(1);
+  expect(screen.getByTestId("learning-shell-stage").children.length).toBeLessThanOrEqual(1);
 });
 
 test("[U10] 완료 상태에서 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
   renderOrdering();
   completeAllThree();
 
-  expect(screen.getByTestId("listening-screen-scroll").children.length).toBeLessThanOrEqual(1);
+  expect(screen.getByTestId("learning-shell-stage").children.length).toBeLessThanOrEqual(1);
 });

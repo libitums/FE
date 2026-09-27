@@ -4,7 +4,6 @@ import { act, fireEvent, render, screen, cleanup } from "@lynx-js/react/testing-
 import { App } from "./App";
 import { journeyStepOrdinal, type JourneyStepId } from "../screens/journey-map/journey-map";
 import type { LearningForm } from "../lib/learning-form";
-import { listeningScreenTitle } from "../screens/listening/listening";
 import { sentenceOrderScreenTitle } from "../screens/sentence-order/sentence-order";
 import { wordChoiceScreenTitle } from "../screens/word-choice/word-choice";
 import { cultureScreenTitle } from "../screens/culture/culture";
@@ -114,14 +113,16 @@ const allForms: readonly LearningForm[] = ["listening", "sentence-order", "word-
 // 있으므로, `test.each(allForms)`가 이 두 `culture` 항목을 도는 케이스가 실제로
 // 있습니다 — `test.each`가 `allForms`를 그대로 순회하기 때문입니다.
 const titleTestIdByForm: Record<LearningForm, string> = {
-  listening: "listening-screen-title",
+  listening: "listening-screen-content",
   "sentence-order": "sentence-order-screen-title",
   "word-choice": "word-choice-screen-title",
   culture: "culture-screen-title",
 };
 
-const titleTextByForm: Record<LearningForm, (ordinal: number) => string> = {
-  listening: listeningScreenTitle,
+// 문구가 없는 화면은 `undefined`입니다 — 듣기는 화면 제목 줄이 걷혔고(Figma 65-14)
+// 정체를 가리는 것이 앵커의 **존재**뿐입니다. 나머지 셋은 아직 제목을 답니다.
+const titleTextByForm: Record<LearningForm, ((ordinal: number) => string) | undefined> = {
+  listening: undefined,
   "sentence-order": sentenceOrderScreenTitle,
   "word-choice": wordChoiceScreenTitle,
   culture: cultureScreenTitle,
@@ -138,8 +139,13 @@ test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화
 
   startStep("ordering");
 
-  const expectedTitle = titleTextByForm[form](journeyStepOrdinal("ordering"));
-  expect(screen.getByTestId(titleTestIdByForm[form])).toHaveTextContent(expectedTitle);
+  const anchor = screen.getByTestId(titleTestIdByForm[form]);
+  const expectedTitle = titleTextByForm[form]?.(journeyStepOrdinal("ordering"));
+  if (expectedTitle === undefined) {
+    expect(anchor).toBeInTheDocument();
+  } else {
+    expect(anchor).toHaveTextContent(expectedTitle);
+  }
 
   for (const other of allForms) {
     if (other === form) {
@@ -215,9 +221,7 @@ test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배�
 
   startStep("ordering");
 
-  expect(screen.getByTestId("listening-screen-title")).toHaveTextContent(
-    listeningScreenTitle(journeyStepOrdinal("ordering")),
-  );
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   expect(screen.queryByTestId("sentence-order-screen-title")).not.toBeInTheDocument();
   expect(screen.queryByTestId("word-choice-screen-title")).not.toBeInTheDocument();
 });
