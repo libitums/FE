@@ -10,13 +10,27 @@ export type StepSheetState = {
    * 0이고, 그 값은 읽히지 않습니다(말풍선이 없습니다).
    */
   readonly anchorY: number;
+  /**
+   * 탭 당시의 스크롤 자리입니다. 말풍선은 `anchorY`에 그 뒤의 스크롤 변화량을 더해
+   * 자리를 냅니다 — 유닛을 가운데로 옮기는 동안 말풍선이 그 유닛에 붙어 따라갑니다.
+   */
+  readonly anchorScrollTop: number;
 };
 
 export type StepSheetAction =
-  | { readonly type: "openStep"; readonly stepId: JourneyStepId; readonly tapY: number }
+  | {
+      readonly type: "openStep";
+      readonly stepId: JourneyStepId;
+      readonly tapY: number;
+      readonly scrollTop: number;
+    }
   | { readonly type: "closeSheet" };
 
-export const initialStepSheetState: StepSheetState = { openStepId: null, anchorY: 0 };
+export const initialStepSheetState: StepSheetState = {
+  openStepId: null,
+  anchorY: 0,
+  anchorScrollTop: 0,
+};
 
 // "이 상태가 시트를 여는가"의 정본입니다 — export하지 않는 모듈 내부 상수입니다.
 // 부등호 비교가 아니라 표를 쓰는 이유는 상태가 하나 늘면 tsc가 그 상태의 답을 쓰라고
@@ -43,13 +57,17 @@ export function stepSheetReducer(state: StepSheetState, action: StepSheetAction)
       if (state.openStepId === action.stepId && state.anchorY === action.tapY) {
         return state;
       }
-      return { openStepId: action.stepId, anchorY: action.tapY };
+      return {
+        openStepId: action.stepId,
+        anchorY: action.tapY,
+        anchorScrollTop: action.scrollTop,
+      };
     }
     case "closeSheet": {
       if (state.openStepId === null) {
         return state;
       }
-      return { openStepId: null, anchorY: 0 };
+      return { openStepId: null, anchorY: 0, anchorScrollTop: 0 };
     }
   }
 }

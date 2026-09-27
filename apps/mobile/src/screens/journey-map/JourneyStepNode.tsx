@@ -53,7 +53,10 @@ export function JourneyStepNode({ id, title, status, onSelect }: JourneyStepProp
     // 바깥 상자는 표식과 제목을 세로로 묶는 자리일 뿐입니다 — 탭도 접근성 요소도
     // `LearningUnit`이 집니다. 그래서 여기에는 `data-testid`를 두지 않습니다. 두면
     // 테스트가 실제 탭 대상이 아닌 껍데기를 누르게 됩니다.
-    <view className="journey-step-node">
+    // 클래스 둘째 조각은 선택자 손잡이입니다 — 맵이 이 스텝 하나를 집어
+    // `scrollIntoView`를 부릅니다(VerificationCodeScreen의 자릿수 선택자와 같은 갈래).
+    // 규칙이 딸려 있지 않습니다: 고르기 위한 이름입니다.
+    <view className={`journey-step-node journey-step-node-${id}`}>
       {/* 접근성 요소는 `LearningUnit`입니다 — 이름 · 상태 접미사 · traits를 그쪽이
           냅니다. 상태를 이름 뒤 접미사로 내는 규약이 같으므로(ADR-0016 D3) 제목만
           넘깁니다. 접미사까지 붙여 넘기면 두 번 붙습니다. */}
