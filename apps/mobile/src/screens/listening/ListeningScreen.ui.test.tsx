@@ -1023,19 +1023,22 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
 // `__SetAttribute`(ElementPAPI.js:87~89)가 boolean을 `JSON.stringify`로
 // 직렬화합니다. `scroll-orientation`은 문자열이라 그대로 "vertical"로 갑니다.
 
-test("[U9] learning-shell-scroll에 scroll-orientation='vertical'이 붙는다", () => {
+test("[U9] learning-shell-workspace에 scroll-orientation='vertical'이 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute(
+  expect(screen.getByTestId("learning-shell-workspace")).toHaveAttribute(
     "scroll-orientation",
     "vertical",
   );
 });
 
-test("[U11] learning-shell-scroll에 scroll-bar-enable='true'가 붙는다", () => {
+test("[U11] learning-shell-workspace에 scroll-bar-enable='true'가 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("scroll-bar-enable", "true");
+  expect(screen.getByTestId("learning-shell-workspace")).toHaveAttribute(
+    "scroll-bar-enable",
+    "true",
+  );
 });
 
 // U10 — 듣기는 문항 상태와 완료 상태 둘 다 봅니다 — 문항 상태는 오늘 자식이

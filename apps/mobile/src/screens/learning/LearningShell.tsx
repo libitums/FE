@@ -165,32 +165,35 @@ export function LearningShell({
 
           `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안 적으면 초기값이 각각
           가로·꺼짐이라 세로 스크롤이 원리적으로 불가능합니다. */}
-      <scroll-view
-        className="learning-shell-scroll"
-        data-testid="learning-shell-scroll"
-        scroll-orientation="vertical"
-        scroll-bar-enable={true}
-      >
-        <view className="learning-shell-flow">
-          <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
-            {instruction}
-          </text>
-          {/* 가운데 카드 — 학습 내용이 전개되고 판정이 뒤집히는 무대입니다. `stage`
+      <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
+        {instruction}
+      </text>
+      {/* 가운데 카드 — 학습 내용이 전개되고 판정이 뒤집히는 무대입니다. `stage`
           변형이 큰 모서리와 넓은 그림자를 집니다.
 
           넘치는 것은 위의 스크롤이 집니다 — 이 상자는 자기 높이만 압니다. */}
-          <view className="learning-shell-stage" data-testid="learning-shell-stage">
-            <Card elevation="stage">
-              <Card.Content>{card}</Card.Content>
-            </Card>
-          </view>
-          {workspace === undefined ? null : (
-            <view className="learning-shell-workspace" data-testid="learning-shell-workspace">
-              {workspace}
-            </view>
-          )}
-        </view>
-      </scroll-view>
+      <view className="learning-shell-stage" data-testid="learning-shell-stage">
+        <Card elevation="stage">
+          <Card.Content>{card}</Card.Content>
+        </Card>
+      </view>
+      {/* 작업 영역 — **스크롤이 여기 하나뿐입니다.** 머리(상단 바 · 세션 헤더) · 지시문 ·
+          무대 카드 · 아래 버튼은 자리에 고정되고, 넘치면 고를 것들만 흐릅니다. 화면
+          전체가 흐르면 문항을 다시 듣고 싶을 때 카드를 찾아 되올려야 합니다 — 무대는
+          늘 같은 자리에 있어야 합니다.
+
+          `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안 적으면 초기값이 각각
+          가로·꺼짐이라 세로 스크롤이 원리적으로 불가능합니다. */}
+      {workspace === undefined ? null : (
+        <scroll-view
+          className="learning-shell-workspace"
+          data-testid="learning-shell-workspace"
+          scroll-orientation="vertical"
+          scroll-bar-enable={true}
+        >
+          {workspace}
+        </scroll-view>
+      )}
       {actionLabel === undefined || onAction === undefined ? null : (
         <view
           className="learning-shell-action"

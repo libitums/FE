@@ -186,20 +186,23 @@ test("[I2] 문화 화면이 선 합성 트리에서 제목 축에 오른 자리�
   formStub.current = "culture";
   const { container } = renderApp(<App />);
 
+  // 대조 — 이 트리가 `ui`가 만들 수 있는 트리가 아님을 짓습니다. 맵 루트에서는 바텀
+  // 내비게이터가 같은 container 안에 서 있고, 스텝을 시작하면 **사라집니다**
+  // (ADR-0007 2026-09-27 개정: 바는 탭 루트에서만 섭니다). 화면 하나만 렌더하는
+  // `ui`는 그 둘 중 어느 쪽도 만들 수 없습니다.
+  const journeyTab = screen.getByTestId("ui-lynx-bottom-navigator-item-journey");
+  expect(container.contains(journeyTab)).toBe(true);
+  expect(journeyTab).toHaveAttribute("accessibility-traits", "button");
+
   startStep("ordering");
 
+  expect(
+    container.querySelectorAll('[data-testid^="ui-lynx-bottom-navigator-item-"]'),
+  ).toHaveLength(0);
   expect(headingAxis(container)).toEqual([
     "culture-screen-title",
     "culture-screen-narrative-title",
   ]);
-
-  // 대조 — 이 트리가 `ui`가 만들 수 있는 트리가 아님을 짓습니다. 바텀 내비게이터가
-  // 같은 container 안에 함께 서 있고, 조작 단위 축(`button`)에 있지 제목 축에 있지
-  // 않습니다. 이것이 참이어야 위 배열이 「화면만 본 것」이 아니라 「트리 전체를 쓴
-  // 것」입니다.
-  const journeyTab = screen.getByTestId("ui-lynx-bottom-navigator-item-journey");
-  expect(container.contains(journeyTab)).toBe(true);
-  expect(journeyTab).toHaveAttribute("accessibility-traits", "button");
 });
 
 // **훑기의 반대 방향입니다.** `[I2]`가 짓는 것은 「이 상태의 트리에 제목 축 자리가

@@ -309,17 +309,17 @@ test("서로 다른 두 스텝에서 시작하면 문항 텍스트가 갈린다"
 // 학습 화면은 셸을 가리지도 잠그지도 않습니다. 되돌아왔을 때 화면은 스택에 남고
 // **세션만** 버려진다는 것을 함께 봅니다 — 그래서 먼저 문항을 하나 넘겨 버려질
 // 로컬 상태를 만듭니다.
-test("학습 화면에서도 탭 셋이 그대로 조작되고, 돌아오면 화면은 남되 문항은 처음부터다", () => {
+// **뒤집힙니다**(ADR-0007 2026-09-27 개정). 예전에는 「학습 화면에서도 탭 셋이 그대로
+// 조작된다」를 봤습니다. 이제 학습은 탭 루트 위에 쌓인 자리라 **탭이 하나도 없습니다** —
+// 세션을 중간에 버리는 길을 화면 바닥에 깔아 두지 않습니다.
+//
+// 나가는 수단은 그대로 하나입니다(`×`). 그것으로 나가면 맵 루트에서 탭이 다시 서고,
+// 다시 들어가면 문항은 처음부터입니다 — 진행이 남지 않는다는 것은 그대로 봅니다.
+test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은 처음부터다", () => {
   renderApp(<App />);
   startStep("ordering");
 
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toBeInTheDocument();
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
   fireEvent.tap(
     screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
@@ -328,12 +328,17 @@ test("학습 화면에서도 탭 셋이 그대로 조작되고, 돌아오면 화
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  startStep("ordering");
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
@@ -834,19 +839,22 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
 // 고립 렌더하는 층에는 이 경로 자체가 없습니다. 돌아왔을 때 세션이 버려져 문항
 // 1부터 다시 트는 것까지 이어서 봅니다 — `stop`만 보면 "떠날 때 멈춘다"와
 // "다시는 안 튼다"가 갈리지 않습니다.
-test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 문항으로 다시 튼다", () => {
+// 학습 화면에는 탭이 없으므로(ADR-0007 2026-09-27 개정) 나가는 길은 `×` 하나입니다.
+// 보는 것은 그대로입니다 — **화면을 떠나면 소리가 멈추고, 다시 들어가면 처음부터
+// 다시 튼다.** 떠나는 수단만 갈립니다.
+test("학습 화면을 나가면 stop이 불리고, 다시 들어가면 첫 문항으로 다시 튼다", () => {
   const { audio: calls } = stubHost();
   renderApp(<App />);
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0), STOP]);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  startStep("ordering");
 
   expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
   expect(sourcesOf(calls)).toEqual([
@@ -889,10 +897,11 @@ test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 
   const operable = [...container.querySelectorAll("[accessibility-element]")].map((el) =>
     el.getAttribute("data-testid"),
   );
-  const inShell = operable.filter((id) => id?.startsWith("ui-lynx-bottom-navigator-item-"));
-
-  // 셸이 함께 서 있습니다 — `ui`가 만들 수 없는 트리라는 것의 관측 가능한 형태입니다.
-  expect(inShell).toContain("ui-lynx-bottom-navigator-item-journey");
+  // 셸이 함께 섭니다 — `ui`가 만들 수 없는 트리라는 것의 관측 가능한 형태입니다. 그
+  // 형태가 뒤집혔습니다(ADR-0007 2026-09-27 개정): 학습은 탭 루트 위에 쌓인 자리라
+  // 바가 **없습니다.** 화면 하나만 렌더하는 `ui`는 「바를 없앤 트리」도 만들 수
+  // 없습니다 — 애초에 바를 세운 적이 없기 때문입니다.
+  expect(operable.filter((id) => id?.startsWith("ui-lynx-bottom-navigator-item-"))).toEqual([]);
 
   // 2026-09-27: 「학습 화면 안의 조작 단위가 하나」가 아니게 됐습니다 — 학습 껍데기가
   // 상단 바와 나가기를 함께 세웁니다. 유일성 대신 **무대에는 조작 단위가 없다**로

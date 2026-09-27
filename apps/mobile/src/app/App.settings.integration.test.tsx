@@ -108,12 +108,20 @@ test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘이 계약 
 
 // ------------------------------------------------------------------------- IT2
 
-test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 탭은 설정 그대로다", () => {
+// 2026-09-27 개정(ADR-0007): 바텀 네비게이션은 **탭 루트에서만** 섭니다. 프로필은 설정
+// 탭 위에 쌓인 화면이라 바가 없습니다 — 「탭이 설정 그대로다」를 바로 볼 수 없게 됐고,
+// 대신 **바가 사라졌다가 나가면 설정 루트에서 다시 선다**로 같은 것을 봅니다.
+test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 바가 사라진다", () => {
   renderApp(<App />);
   openSettingsTab();
   fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
 
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+
+  expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "true",
@@ -344,18 +352,25 @@ test("[IT12] (가드) sink 없이 render(<App />) — 탭·토글·항목 tap이
 
 // ------------------------------------------------------------------------ IT13
 
-test("[IT13] 설정 탭 스택 보존 — 프로필을 연 채 여정 탭을 다녀오면 설정 탭에 프로필이 그대로 서 있다(ADR-0007 D3)", () => {
+// [IT13] **뒤집힙니다**(ADR-0007 2026-09-27 개정). 예전에는 「프로필을 연 채 여정 탭을
+// 다녀오면 프로필이 그대로 있다」를 봤습니다. 이제 쌓인 화면에서는 탭을 바꿀 수단이
+// 없으므로 그 상태를 **조작으로 만들 수 없습니다** — 리듀서의 스택 보존은 그대로 살아
+// 있지만 UI로 닿지 않습니다.
+//
+// 그 자리에 **닿을 수 없다는 것 자체**를 답니다: 쌓인 화면에는 탭이 하나도 없고, 나가야
+// 다시 섭니다. 이것이 없으면 바를 되살려도 아무것도 빨개지지 않습니다.
+test("[IT13] 쌓인 화면에서는 탭으로 나갈 수단이 없고, 나가면 탭이 다시 선다", () => {
   renderApp(<App />);
   openSettingsTab();
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
+
   fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
-  expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-
-  openSettingsTab();
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
   fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 });

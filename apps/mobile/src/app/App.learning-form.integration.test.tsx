@@ -290,24 +290,21 @@ test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시
 // 여정 스택 위의 문화 퀴즈가 그대로 남아 있어야 하고, 그 위에서의 `맵으로`도
 // 여전히 `backToRoot`로 맵에 닿아야 합니다. 「다른 탭」은 설정입니다(홈 탭이
 // 없으므로 설정 제목으로 실제로 떠난 것을 확인합니다).
-test("문화 퀴즈에 있는 채 다른 탭으로 갔다가 여정 탭으로 돌아오면 퀴즈가 그대로 있고, 그때 맵으로가 맵에 닿는다", () => {
+// **뒤집힙니다**(ADR-0007 2026-09-27 개정). 예전에는 탭을 다녀와도 퀴즈가 그대로
+// 있다는 것을 봤는데, 쌓인 화면에는 탭이 없어 그 왕복을 조작으로 만들 수 없습니다.
+// 남는 것은 **맵으로가 두 겹(문화 → 퀴즈)을 지나 맵에 닿는다**이고, 그것이 이 케이스가
+// 원래 지키려던 것입니다.
+test("문화 퀴즈에는 탭이 없고, 맵으로가 두 겹을 지나 맵에 닿는다", () => {
   formStub.current = "culture";
   renderApp(<App />);
 
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
-  expect(screen.getByTestId("culture-quiz-screen-title")).toBeInTheDocument();
-
-  // 다른 탭(설정)으로 갔다가 여정 탭으로 돌아옵니다.
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-
-  // 퀴즈가 그대로 있습니다.
   expect(screen.getByTestId("culture-quiz-screen-title")).toHaveTextContent(
     cultureQuizScreenTitle(journeyStepOrdinal("ordering")),
   );
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
-  // 그 상태에서도 맵으로 → 맵에 닿습니다.
   fireEvent.tap(screen.getByTestId("culture-quiz-screen-exit"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("culture-quiz-screen-title")).not.toBeInTheDocument();

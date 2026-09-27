@@ -28,7 +28,7 @@ import type {
   VisualNovelUnitId,
 } from "../screens/visual-novel/visual-novel.contract";
 import { ErrorBoundary } from "./ErrorBoundary";
-import { currentScreen, isEntrySection, navReducer } from "./nav-reducer";
+import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
 import { entryInitialNav } from "./nav-state";
 import { renderScreen } from "./render-screen";
@@ -181,7 +181,7 @@ export function App({
   // iOS 기본 탭바와 같은 형태입니다.
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const screenNow = currentScreen(nav);
-  const showsNavigator = !isEntrySection(nav);
+  const showsNavigator = showsTabNavigator(nav);
 
   return (
     <ErrorBoundary>

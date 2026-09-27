@@ -105,10 +105,17 @@ function finishMessengerConversation() {
 
 // -------------------------------------------------------------------- IN1 · IN2
 
-test("[IN1] 여정 맵 알림 버튼을 tap하면 알림 화면이 서고 탭은 여정 그대로다", () => {
+// 2026-09-27 개정(ADR-0007): 바텀 네비게이션은 **탭 루트에서만** 섭니다. 알림은 여정
+// 탭 위에 쌓인 화면이라 바가 없습니다 — 「탭이 여정 그대로다」는 나간 뒤에 봅니다.
+test("[IN1] 여정 맵 알림 버튼을 tap하면 알림 화면이 서고 바가 사라진다", () => {
   openNotificationsScreen();
 
   expect(screen.getByTestId("notifications-screen-title")).toHaveTextContent("알림");
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId("notifications-screen-exit"), {});
+
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
@@ -153,16 +160,17 @@ test("[IN4] 메신저 대상 항목을 tap하면 메신저 화면이 열리고 �
   tapNotificationItem(messengerNotificationItem());
 
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
   expect(screen.getByTestId("messenger-screen-exit")).toHaveTextContent("맵으로");
 
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("notifications-screen-title")).not.toBeInTheDocument();
+  // 탭은 여정 그대로입니다 — 맵 루트로 돌아왔으므로 바가 다시 섭니다.
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
 });
 
 test("[IN5] 전화 대상 항목을 tap하면 전화 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", () => {
@@ -241,6 +249,9 @@ test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하�
   fireEvent.tap(screen.getByTestId(`roleplay-list-item-${messengerItem.target.unitId}`), {});
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 
+  // 쌓인 화면에는 탭이 없습니다(ADR-0007 2026-09-27 개정) — 나가야 목록 루트에서
+  // 다시 섭니다. 롤플레이 스택은 그대로 목록 루트로 남습니다.
+  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   tapNotificationItem(roleplayListNotificationItem());
@@ -266,6 +277,9 @@ test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재
     { name: "notifications_opened" },
   ]);
 
+  // 알림은 쌓인 화면이라 탭이 없습니다 — 나간 뒤에 탭을 오갑니다. 보는 것은 그대로:
+  // **재마운트로는 sink가 늘지 않는다**입니다.
+  fireEvent.tap(screen.getByTestId("notifications-screen-exit"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
