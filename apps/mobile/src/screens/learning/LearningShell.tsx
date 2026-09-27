@@ -1,5 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { Card } from "@libitums/ui-lynx/card";
 import { TopBar } from "../../components/TopBar";
 import { learningSessionHeader } from "./learning-shell.contract";
 import type { LearningForm } from "../../lib/learning-form";
@@ -75,64 +76,79 @@ export function LearningShell({
         trophyCount={trophyCount}
         onOpenNotifications={onOpenNotifications}
       />
-      {/* 세션 헤더 카드 — 나가기 · 순번 · 진행 막대 · 학습형 이름 · 백분율입니다.
+      {/* 세션 헤더 — 나가기 · 순번 · 진행 막대 · 학습형 이름 · 백분율입니다. 면 · 모서리 ·
+          안 여백은 ui-lynx `Card`가 집니다: 회색 면에 그림자 없는 변형입니다. 이 화면이
+          카드를 손으로 그리지 않는 이유는 카드가 이미 디자인 시스템의 것이기 때문입니다.
+
           막대는 장식이 아니라 값이므로 낱말 둘을 한 접근성 요소로 묶어 읽히게 하고,
           막대 자신은 트리에서 뺍니다. */}
-      <view className="learning-shell-session" data-testid="learning-shell-session">
-        <view className="learning-shell-session-row">
-          <view
-            className="learning-shell-exit"
-            data-testid="learning-shell-exit"
-            accessibility-element={true}
-            accessibility-label="학습 나가기"
-            accessibility-traits="button"
-            bindtap={handleExit}
-          >
-            <svg
-              className="learning-shell-exit-icon"
-              content={cross}
-              current-color={color.gray[700]}
-            />
-          </view>
-          <text className="learning-shell-chapter" data-testid="learning-shell-chapter">
-            {header.chapterLabel}
-          </text>
-          {/* 나가기와 마주 보는 빈 자리입니다 — 순번이 줄 가운데 서게 합니다. 보이는
-              것이 없으므로 접근성 트리에 올리지 않습니다. */}
-          <view className="learning-shell-session-spacer" />
-        </view>
-        <view
-          className="learning-shell-progress"
-          data-testid="learning-shell-progress"
-          accessibility-element={true}
-          accessibility-label={header.accessibilityLabel}
-        >
-          <view className="learning-shell-progress-track">
-            {/* 0%에서는 그리지 않습니다 — 폭 0짜리 상자가 둥근 끝 때문에 점으로 남아
-                「조금 했다」로 읽힙니다. */}
-            {header.fillPercent === 0 ? null : (
+      <Card surface="secondary" elevation="flat">
+        <Card.Content>
+          <view className="learning-shell-session" data-testid="learning-shell-session">
+            <view className="learning-shell-session-row">
               <view
-                className="learning-shell-progress-fill"
-                data-testid="learning-shell-progress-fill"
-                style={{ width: `${String(header.fillPercent)}%` }}
-              />
-            )}
+                className="learning-shell-exit"
+                data-testid="learning-shell-exit"
+                accessibility-element={true}
+                accessibility-label="학습 나가기"
+                accessibility-traits="button"
+                bindtap={handleExit}
+              >
+                <svg
+                  className="learning-shell-exit-icon"
+                  content={cross}
+                  current-color={color.gray[700]}
+                />
+              </view>
+              <text className="learning-shell-chapter" data-testid="learning-shell-chapter">
+                {header.chapterLabel}
+              </text>
+              {/* 나가기와 마주 보는 빈 자리입니다 — 순번이 줄 가운데 서게 합니다. 보이는
+                  것이 없으므로 접근성 트리에 올리지 않습니다. */}
+              <view className="learning-shell-session-spacer" />
+            </view>
+            <view
+              className="learning-shell-progress"
+              data-testid="learning-shell-progress"
+              accessibility-element={true}
+              accessibility-label={header.accessibilityLabel}
+            >
+              <view className="learning-shell-progress-track">
+                {/* 0%에서는 그리지 않습니다 — 폭 0짜리 상자가 둥근 끝 때문에 점으로 남아
+                    「조금 했다」로 읽힙니다. */}
+                {header.fillPercent === 0 ? null : (
+                  <view
+                    className="learning-shell-progress-fill"
+                    data-testid="learning-shell-progress-fill"
+                    style={{ width: `${String(header.fillPercent)}%` }}
+                  />
+                )}
+              </view>
+              <view className="learning-shell-progress-row">
+                <text className="learning-shell-form" data-testid="learning-shell-form">
+                  {header.formLabel}
+                </text>
+                <text className="learning-shell-percent" data-testid="learning-shell-percent">
+                  {header.percentLabel}
+                </text>
+              </view>
+            </view>
           </view>
-          <view className="learning-shell-progress-row">
-            <text className="learning-shell-form" data-testid="learning-shell-form">
-              {header.formLabel}
-            </text>
-            <text className="learning-shell-percent" data-testid="learning-shell-percent">
-              {header.percentLabel}
-            </text>
-          </view>
-        </view>
-      </view>
+        </Card.Content>
+      </Card>
       <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
         {instruction}
       </text>
-      <view className="learning-shell-card" data-testid="learning-shell-card">
-        {card}
+      {/* 가운데 카드 — 학습 내용이 전개되고 판정이 뒤집히는 무대입니다. `stage` 변형이
+          큰 모서리와 넓은 그림자를 집니다.
+
+          바깥 상자가 남는 세로를 받습니다 — 카드는 내용만큼 서고, 남는 자리를 이 상자가
+          먹어 아래 버튼이 바닥에 남습니다. 카드 자신을 늘리려면 ui-lynx의 클래스에
+          손대야 하는데, 그건 이 화면의 몫이 아닙니다. */}
+      <view className="learning-shell-stage" data-testid="learning-shell-card">
+        <Card elevation="stage">
+          <Card.Content>{card}</Card.Content>
+        </Card>
       </view>
       {workspace === undefined ? null : (
         <view className="learning-shell-workspace" data-testid="learning-shell-workspace">
