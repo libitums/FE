@@ -6,7 +6,28 @@ import type { AudioPlayOutcome } from "../../lib/audio";
 // **CSS 클래스가 되지 않습니다.** ADR-0003 D7의 예약 상태어는 넷 그대로이고
 // (selected · done · current · locked) 이 낱말은 하나도 더하지 않습니다 —
 // 갈리는 것은 아이콘 모양 · current-color · 문구 셋입니다.
-export type ListeningPlaybackState = "idle" | "playing";
+export type ListeningPlaybackState = "idle" | "playing" | "paused";
+
+/**
+ * 재생/일시정지 컨트롤을 누르면 무엇이 일어나는가입니다. 세 상태가 두 동작으로
+ * 갈립니다 — 재생 중이면 멈추고, 아니면 잇거나 처음부터 틉니다.
+ *
+ * `idle`에서 `play`인 것은 「처음부터」이고, `paused`에서 `resume`인 것은 「그 자리부터」
+ * 입니다. 둘을 한 낱말로 뭉치면 다시듣기 버튼과 구별이 사라집니다.
+ */
+export type ListeningPlaybackAction = "pause" | "resume" | "play";
+
+export function playbackActionFor(state: ListeningPlaybackState): ListeningPlaybackAction {
+  // `switch`로 적습니다 — 상태가 넷이 되면 `tsc`가 이 자리를 가리킵니다.
+  switch (state) {
+    case "playing":
+      return "pause";
+    case "paused":
+      return "resume";
+    case "idle":
+      return "play";
+  }
+}
 
 // "started" → "playing" · "unavailable" → "idle".
 // **모듈이 없으면 「재생 중」으로 보이지 않는다**가 이 축에서 가장 조용히

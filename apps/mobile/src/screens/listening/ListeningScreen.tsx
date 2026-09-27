@@ -107,6 +107,7 @@ export function ListeningScreen({
           {question === null ? null : (
             <ListeningPrompt
               text={question.prompt}
+              romanization={question.romanization}
               audioSource={question.audioSource}
               sessionOptions={sessionOptions}
             />

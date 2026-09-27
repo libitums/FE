@@ -654,12 +654,13 @@ test("나가기·마치기 안의 라벨 텍스트가 조작 단위가 되지 �
 // 수용 기준 5는 이제 「오디오 코드 0줄」이 아니라 「`<audio>`·`<video>`·`new Audio`·
 // `AudioContext`를 쓰지 않는다」로 좁아졌습니다 — 이번에 연 것은 네이티브
 // 모듈 경로 하나이고 DOM 요소도 웹 오디오도 아니다.
-test("응답 전 무대의 조작 단위가 재생 조작 + 보기 넷이다 — 재생 조작이 보기보다 앞이다", () => {
+test("응답 전 무대의 조작 단위가 컨트롤 둘 + 보기 넷이다 — 컨트롤이 보기보다 앞이다", () => {
   renderOrdering();
 
   const tappables = stageTappables();
 
   expect(tappables).toEqual([
+    "listening-prompt-replay",
     "listening-prompt-playback",
     "listening-choice-0",
     "listening-choice-1",
@@ -676,6 +677,7 @@ test("응답 뒤에도 무대의 조작 단위는 그대로이고 아래 버튼�
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
   expect(stageTappables()).toEqual([
+    "listening-prompt-replay",
     "listening-prompt-playback",
     "listening-choice-0",
     "listening-choice-1",
@@ -697,7 +699,7 @@ test("완료 상태의 무대에는 조작 단위가 없고 아래 버튼이 마
 // 아이콘 개수도 뒤집혔습니다. 응답 전에 하나 있고 그것이 **재생 아이콘**이며,
 // 응답 뒤에 생기는 둘째가 고른 보기의 표식입니다. 순서까지 셉니다 — 재생
 // 아이콘이 보기의 표식보다 앞입니다.
-test("응답 전 무대의 <svg>가 재생 아이콘 하나다", () => {
+test("응답 전 무대의 <svg>가 컨트롤 아이콘 둘이다", () => {
   renderOrdering();
 
   // 앵커: 개수 단언만 두면 화면이 반쯤 그려져도 통과합니다. 문항과 보기가
@@ -705,16 +707,17 @@ test("응답 전 무대의 <svg>가 재생 아이콘 하나다", () => {
   expect(screen.getByTestId("listening-prompt-text")).toBeInTheDocument();
   expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
 
-  expect(stageIcons()).toEqual(["listening-prompt-playback-icon"]);
+  expect(stageIcons()).toEqual(["listening-prompt-replay-icon", "listening-prompt-playback-icon"]);
 });
 
-test("응답 뒤 무대의 <svg>가 재생 아이콘 + 고른 보기의 표식 둘이다", () => {
+test("응답 뒤 무대의 <svg>가 컨트롤 아이콘 둘 + 고른 보기의 표식이다", () => {
   renderOrdering();
 
   const answerIndex = ORDERING_QUESTIONS[0].answerIndex;
   fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
 
   expect(stageIcons()).toEqual([
+    "listening-prompt-replay-icon",
     "listening-prompt-playback-icon",
     `listening-choice-icon-${answerIndex}`,
   ]);
