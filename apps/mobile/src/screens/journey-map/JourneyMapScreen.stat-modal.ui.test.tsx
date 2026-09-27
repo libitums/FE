@@ -26,7 +26,7 @@ test("[JSM1] 처음에는 지표 모달이 없고, 칩 둘은 버튼으로 낭�
 
   expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
   expect(screen.queryByTestId("journey-stat-modal-trophy")).toBeNull();
-  for (const id of ["journey-map-top-bar-streak", "journey-map-top-bar-trophy"]) {
+  for (const id of ["top-bar-streak", "top-bar-trophy"]) {
     expect(screen.getByTestId(id)).toHaveAttribute("accessibility-traits", "button");
   }
 });
@@ -34,7 +34,7 @@ test("[JSM1] 처음에는 지표 모달이 없고, 칩 둘은 버튼으로 낭�
 test("[JSM2] 연속 학습 칩 tap → 연속 모달이 연속일수 · 요일 · 찬 칸 셋을 그린다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
-  fireEvent.tap(screen.getByTestId("journey-map-top-bar-streak"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-streak"), {});
 
   const modal = screen.getByTestId("journey-stat-modal-streak");
   expect(modal).toBeInTheDocument();
@@ -51,7 +51,7 @@ test("[JSM2] 연속 학습 칩 tap → 연속 모달이 연속일수 · 요일 �
 test("[JSM3] 트로피 칩 tap → 트로피 모달은 요일 줄 없이 트로피 수만큼 찬다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
-  fireEvent.tap(screen.getByTestId("journey-map-top-bar-trophy"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-trophy"), {});
 
   expect(screen.getByTestId("journey-stat-modal-trophy")).toBeInTheDocument();
   expect(screen.getByTestId("journey-stat-modal-value")).toHaveTextContent("3");
@@ -66,7 +66,7 @@ test("[JSM3] 트로피 칩 tap → 트로피 모달은 요일 줄 없이 트로�
 test("[JSM4] 모달이 떠 있는 동안 뒤쪽 머리와 맵은 낭독에서 가려진다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
-  fireEvent.tap(screen.getByTestId("journey-map-top-bar-streak"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-streak"), {});
 
   expect(screen.getByTestId("journey-map-screen-actions")).toHaveAttribute(
     "accessibility-elements-hidden",
@@ -83,7 +83,7 @@ test.each(["journey-stat-modal-back", "journey-stat-modal-continue"])(
   (containerId) => {
     const props = fixture();
     render(<JourneyMapScreen {...props} />);
-    fireEvent.tap(screen.getByTestId("journey-map-top-bar-trophy"), {});
+    fireEvent.tap(screen.getByTestId("top-bar-trophy"), {});
 
     const container = screen.getByTestId(containerId);
     const button =

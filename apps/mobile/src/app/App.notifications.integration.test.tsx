@@ -57,7 +57,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 
 function openNotificationsScreen() {
   renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 }
 
 function tapNotificationItem(item: NotificationItem) {
@@ -242,7 +242,7 @@ test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하�
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   tapNotificationItem(roleplayListNotificationItem());
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
@@ -260,7 +260,7 @@ test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하�
 test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재마운트로는 늘지 않는다(A3)", () => {
   const notificationEventSink = vi.fn<NonNullable<NotificationEventSink>>();
   renderApp(<App notificationEventSink={notificationEventSink} />);
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 
   expect(notificationEventSink.mock.calls.map(([event]) => event)).toEqual([
     { name: "notifications_opened" },
@@ -283,7 +283,7 @@ test("[IN11] 메신저 대상 tap의 공용 로그 순서는 알림 탭 이벤�
   renderApp(
     <App notificationEventSink={notificationEventSink} messengerEventSink={messengerEventSink} />,
   );
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   tapNotificationItem(item);
 
   expect(log).toEqual([
@@ -313,7 +313,7 @@ test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이고 세 특별 �
       visualNovelEventSink={visualNovelEventSink}
     />,
   );
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   tapNotificationItem(item);
 
   const tappedCalls = notificationEventSink.mock.calls
@@ -339,7 +339,7 @@ test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 �
       visualNovelEventSink={visualNovelEventSink}
     />,
   );
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   tapNotificationItem(item);
 
   expect(log).toHaveLength(3);
@@ -365,9 +365,7 @@ test("[IN14] sink 없이도 버튼·항목 tap이 던지지 않는다(가드)", 
   notificationItems().forEach((item) => {
     cleanup();
     expect(() => renderApp(<App />)).not.toThrow();
-    expect(() =>
-      fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {}),
-    ).not.toThrow();
+    expect(() => fireEvent.tap(screen.getByTestId("top-bar-notifications"), {})).not.toThrow();
 
     expect(() => {
       const node = screen.queryByTestId(`notification-list-item-${item.id}`);

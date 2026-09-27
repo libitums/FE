@@ -1,0 +1,172 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+
+   학습 화면의 고정 뼈대입니다(Figma 65-14). 활동이 바뀌어도 이 파일은 안 바뀝니다 —
+   갈리는 것은 가운데 카드 **안**이고, 그 안의 값은 활동이 가진 CSS가 씁니다. */
+.learning-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--libitum-layout-gap-block);
+  /* 화면 여백은 축마다 값이 다릅니다. `padding-x`를 네 방향에 쓰면 상하가 틀립니다. */
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+/* 세션 헤더 카드 — 나가기 · 순번 · 진행입니다. 면을 칠합니다: 화면 바탕과 갈려야
+   「지금 세션 안이다」가 한눈에 읽힙니다(여정 맵의 상단 바는 면이 없는 것과 갈리는
+   지점입니다 — 그쪽은 뒤로 유닛이 지나가야 했습니다). */
+.learning-shell-session {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-elevation-surface-floating);
+  flex-shrink: 0;
+}
+
+.learning-shell-session-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 나가기 — 히트 영역입니다. **고정 치수가 아니라 하한입니다**(ADR-0020 D5). Dynamic
+   Type이 켜지면 글자만 커지고 상자는 안 커지므로, 고정 치수로 두면 최대 배율에서
+   내용이 넘쳐 잘립니다(WCAG 1.4.4). 면을 칠하지 않습니다 — 투명 아이콘 버튼입니다. */
+.learning-shell-exit {
+  min-width: var(--libitum-spacing-48);
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+}
+
+.learning-shell-exit-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  flex-shrink: 0;
+}
+
+/* 나가기와 마주 보는 빈 자리입니다 — 같은 하한을 져야 순번이 줄 가운데 섭니다. */
+.learning-shell-session-spacer {
+  min-width: var(--libitum-spacing-48);
+  flex-shrink: 0;
+}
+
+/* 순번은 가로 텍스트입니다 — `flex-shrink: 0`을 주지 않습니다(FE ADR-0023 규칙 5 (2)).
+   `flex: 1`이 남는 폭을 받아 가운데 정렬을 성립시킵니다. */
+.learning-shell-chapter {
+  flex: 1;
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.learning-shell-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
+/* 막대 높이 8은 `spacing-8`과 같은 값이라 토큰으로 적습니다. `overflow: hidden`이
+   채움의 둥근 끝을 막대 안에 가둡니다. */
+.learning-shell-progress-track {
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-200);
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+
+/* 채움 폭은 진행 비율이라 인라인 스타일이 집니다 — CSS가 가질 수 없는 값입니다. */
+.learning-shell-progress-fill {
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-brand-primary);
+}
+
+.learning-shell-progress-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.learning-shell-form,
+.learning-shell-percent {
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}
+
+/* 지시문 — 카드 밖 회색 한 줄입니다. 가로 텍스트라 `flex-shrink: 0`을 주지 않습니다. */
+.learning-shell-instruction {
+  text-align: center;
+  color: var(--libitum-color-gray-500);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 가운데 카드 — 학습 내용이 전개되고 판정이 뒤집히는 자리입니다. 남는 세로를 받는
+   것이 이 상자입니다: 활동 내용이 길어지면 여기가 늘어나고, 아래 버튼은 바닥에
+   남습니다. 안쪽은 활동이 그립니다 — 이 규칙은 면 · 여백 · 모서리까지만 압니다. */
+.learning-shell-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+}
+
+/* 작업 영역 — 카드 밖, 활동이 채웁니다(고를 낱말 칩 등). 비어 있는 활동도 있어
+   컴포넌트가 아예 그리지 않으므로, 빈 상자가 여백만 남기는 일은 없습니다. */
+.learning-shell-workspace {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* 아래 버튼입니다.
+
+   ⚠ 알려진 대비 위반입니다. `brand-primary`(#F46B18) 위 흰 라벨이 3.02:1로 WCAG
+   1.4.3의 4.5:1에 미달합니다. 2026-09-27에 말풍선의 `시작`과 같은 이유로 디자인 값을
+   따르기로 정했습니다 — 화면 안의 주황이 한 덩어리로 읽혀야 합니다. 뒤집을 때 돌아갈
+   자리는 `brand-strong`(#B94208, 5.46:1)입니다.
+
+   **고정 높이가 아니라 하한입니다**(ADR-0020 D5). 여백 16 + 라벨 줄높이 24가 디자인
+   높이 56을 그대로 냅니다. */
+.learning-shell-action {
+  background: var(--libitum-color-brand-primary);
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.learning-shell-action-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}

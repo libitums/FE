@@ -300,7 +300,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고�
 test("[I3] 제목 축 닫힌 집합이 상태 notifications에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual(["notifications-screen-title"]);

@@ -6,7 +6,7 @@ import { MessengerMapItem } from "./MessengerMapItem";
 import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
 import { StepSheet } from "./StepSheet";
-import { JourneyMapTopBar } from "./JourneyMapTopBar";
+import { TopBar } from "../../components/TopBar";
 import { screenId, scrollId } from "./journey-map-scroll";
 import { useStepSheet } from "./useStepSheet";
 import { JourneyStatModal } from "./JourneyStatModal";
@@ -100,7 +100,7 @@ export function JourneyMapScreen({
         data-testid="journey-map-screen-actions"
         accessibility-elements-hidden={openStep !== undefined || openStat !== null}
       >
-        <JourneyMapTopBar
+        <TopBar
           streakDays={streakDays}
           trophyCount={trophyCount}
           onOpenNotifications={onOpenNotifications}
