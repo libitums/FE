@@ -276,7 +276,7 @@ test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 
   startStep("ordering");
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
 });
@@ -326,7 +326,7 @@ test("학습 화면에서도 탭 셋이 그대로 조작되고, 돌아오면 화
     {},
   );
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
@@ -336,7 +336,7 @@ test("학습 화면에서도 탭 셋이 그대로 조작되고, 돌아오면 화
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
 });
 
 // 루프 한 판이 진행을 갱신합니다.
@@ -636,7 +636,7 @@ test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 cu
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
 });
 
 // ---------------------------------------------------------------------- 오디오 축
@@ -762,7 +762,7 @@ test("다음으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다"
   );
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
   expect(sourcesOf(calls)).toEqual([
     audioSourceAt("ordering", 0),
     STOP,
@@ -848,7 +848,7 @@ test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 �
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
   expect(sourcesOf(calls)).toEqual([
     audioSourceAt("ordering", 0),
     STOP,

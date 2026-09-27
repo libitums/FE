@@ -94,6 +94,12 @@ export function ListeningScreen({
       activityIndex={activityIndex}
       totalActivityCount={totalActivityCount}
       instruction="말의 뜻으로 알맞은 것을 고르세요."
+      /* 문항 진행은 카드 **밖**, 세션 헤더의 오른쪽 자리입니다. 카드 안에 두면 한 줄과
+         그 간격만큼 카드가 높아지고, 그 높이가 화면 예산을 넘겨 스크롤을 만듭니다 —
+         디자인은 874pt 안에 다 들어가는 배치입니다. */
+      meta={
+        question === null ? undefined : questionProgressLabel(state.questionIndex, questions.length)
+      }
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -118,12 +124,6 @@ export function ListeningScreen({
       }
       card={
         <view className="listening-screen-content" data-testid="listening-screen-content">
-          {question === null ? null : (
-            <text className="listening-screen-progress" data-testid="listening-screen-progress">
-              {questionProgressLabel(state.questionIndex, questions.length)}
-            </text>
-          )}
-
           {/* 판정 배지입니다. **문항이 서 있던 그 카드 안**에서 성공 · 실패가
               뒤집힙니다 — 보기의 표식이 걷힌 뒤로 보이는 판정 채널이 이것 하나입니다. */}
           {question === null || !hasAnswered(state) ? null : (

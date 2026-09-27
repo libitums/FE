@@ -27,6 +27,13 @@ export type LearningShellProps = {
   totalActivityCount: number;
   /** 카드 위 회색 한 줄 — 「무엇을 하라」입니다. */
   instruction: string;
+  /**
+   * 세션 헤더 오른쪽의 짧은 한 줄입니다 — 디자인이 그 자리에 빈 상자를 두었고
+   * (Figma 65-42), 활동이 자기 진행(`문항 1 / 3` 같은 것)을 거기 겁니다.
+   *
+   * 없으면 그 자리는 나가기와 마주 보는 빈 자리로 남아 순번을 줄 가운데 세웁니다.
+   */
+  meta?: string;
   onExit: () => void;
   /** 가운데 카드 안입니다. 활동이 여기서 전개되고 판정도 여기서 납니다. */
   card: ReactNode;
@@ -52,6 +59,7 @@ export function LearningShell({
   activityIndex,
   totalActivityCount,
   instruction,
+  meta,
   onExit,
   card,
   workspace,
@@ -107,9 +115,16 @@ export function LearningShell({
               <text className="learning-shell-chapter" data-testid="learning-shell-chapter">
                 {header.chapterLabel}
               </text>
-              {/* 나가기와 마주 보는 빈 자리입니다 — 순번이 줄 가운데 서게 합니다. 보이는
-                  것이 없으므로 접근성 트리에 올리지 않습니다. */}
-              <view className="learning-shell-session-spacer" />
+              {/* 나가기와 마주 보는 자리입니다 — 비어 있어도 순번을 줄 가운데 세웁니다.
+                  활동이 `meta`를 주면 거기 섭니다. 비면 보이는 것이 없으므로 접근성
+                  트리에 올리지 않습니다. */}
+              <view className="learning-shell-session-spacer">
+                {meta === undefined ? null : (
+                  <text className="learning-shell-meta" data-testid="learning-shell-meta">
+                    {meta}
+                  </text>
+                )}
+              </view>
             </view>
             <view
               className="learning-shell-progress"

@@ -46,7 +46,9 @@
   border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
   border-radius: var(--libitum-radius-md);
   min-height: var(--libitum-spacing-48);
-  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  /* 세로 여백이 디자인 18이 아니라 12입니다 — 넷이 모이면 그 차이가 48pt이고, 그만큼이
+     아래 버튼을 화면 밖으로 밉니다. 높이는 하한 48이 지키므로 터치 영역은 그대로입니다. */
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-24);
   display: flex;
   flex-direction: row;
   align-items: center;

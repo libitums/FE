@@ -183,7 +183,7 @@ test("뼈대는 껍데기가 세우고 문항은 그 무대 안에 선다", () =
 test("진행 문구가 '문항 1 / 3'이다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
 });
 
 // 단언 3 (수용 기준 4)
@@ -419,7 +419,7 @@ test("'다음'을 탭하면 진행·문항이 갈리고 판정이 초기화되�
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
     ORDERING_QUESTIONS[1].prompt,
   );
@@ -463,7 +463,7 @@ test("완료 상태에서 진행·문항·보기가 사라지고 나가기는 �
   completeAllThree();
 
   expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-progress")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-text")).not.toBeInTheDocument();
   for (const testid of CHOICE_TESTIDS) {
     expect(screen.queryByTestId(testid)).not.toBeInTheDocument();
@@ -480,7 +480,7 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
   answerCorrectlyAndAdvance(1);
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[2].answerIndex}`), {});
 
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 3 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 3 / 3");
   // 아래 버튼은 있지만 `다음`입니다 — 완료였다면 `결과 보기`가 섰을 자리입니다.
   expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("다음");
   expect(screen.queryByTestId("listening-screen-complete")).not.toBeInTheDocument();
@@ -857,7 +857,7 @@ test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () 
 
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3"); // 앵커
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3"); // 앵커
   expect(sourcesOf(audio)).toEqual(["ordering-1", STOP, "ordering-2"]); // 오디오는 그대로 돕니다
   expect(announce).toHaveLength(0);
 });
@@ -958,12 +958,14 @@ test("[U1] learning-shell-stage이 존재한다", () => {
   expect(screen.getByTestId("learning-shell-stage")).toBeInTheDocument();
 });
 
-test("[U2] 진행·대본은 무대 안, 보기 넷은 무대 밖이다", () => {
+test("[U2] 대본은 무대 안, 문항 진행과 보기 넷은 무대 밖이다", () => {
   renderOrdering();
 
   const stage = screen.getByTestId("learning-shell-stage");
-  expect(within(stage).getByTestId("listening-screen-progress")).toBeInTheDocument();
   expect(within(stage).getByTestId("listening-prompt-text")).toBeInTheDocument();
+  // 문항 진행은 세션 헤더로 갔습니다 — 카드 높이를 줄여 화면 예산에 맞추기 위해서입니다.
+  expect(within(stage).queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
 
   const workspace = screen.getByTestId("learning-shell-workspace");
   for (const testid of CHOICE_TESTIDS) {

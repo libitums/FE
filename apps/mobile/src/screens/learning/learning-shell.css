@@ -7,9 +7,14 @@
   flex-direction: column;
   flex: 1;
   gap: var(--libitum-layout-gap-block);
-  /* 화면 여백은 축마다 값이 다릅니다. `padding-x`를 네 방향에 쓰면 상하가 틀립니다. */
+  /* 화면 여백은 축마다 값이 다릅니다. `padding-x`를 네 방향에 쓰면 상하가 틀립니다.
+
+     아래 여백은 화면 여백이 아니라 **바텀 네비게이션 몫**입니다 — 바가 콘텐츠 위에
+     겹치므로(app.css의 `.app-navigator`) 화면 여백만 두면 아래 버튼이 바에 가립니다.
+     기기에서 가리는 것을 봤습니다. 값은 바 높이 68pt입니다(위 여백 8 + 항목 48 +
+     아래 여백 12) — 여정 맵의 `.journey-map-screen-map`과 같은 값 · 같은 근거입니다. */
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
-    var(--libitum-layout-screen-padding-bottom);
+    calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
   background: var(--libitum-color-background-primary);
 }
 
@@ -29,12 +34,19 @@
   justify-content: space-between;
 }
 
-/* 나가기 — 히트 영역입니다. **고정 치수가 아니라 하한입니다**(ADR-0020 D5). Dynamic
-   Type이 켜지면 글자만 커지고 상자는 안 커지므로, 고정 치수로 두면 최대 배율에서
-   내용이 넘쳐 잘립니다(WCAG 1.4.4). 면을 칠하지 않습니다 — 투명 아이콘 버튼입니다. */
+/* 나가기 — 히트 영역입니다. 면을 칠하지 않습니다(투명 아이콘 버튼).
+
+   ⚠ 24pt는 WCAG 2.5.8의 하한(24×24)을 **정확히** 만족하고 Apple HIG의 44pt에는
+   미달합니다. 48로 두었다가 내렸습니다 — 이 상자가 세션 헤더 줄의 높이를 끌어
+   화면 예산을 24pt 먹었고, 그만큼이 아래 보기를 화면 밖으로 밀었습니다. 학습 화면은
+   **스크롤이 없는 것이 설계**이므로(Figma 65-14가 874pt 안에 다 들어갑니다) 그 24를
+   돌려받는 쪽을 골랐습니다. 되돌릴 자리는 이 한 줄입니다.
+
+   **고정 치수가 아니라 하한입니다**(ADR-0020 D5) — Dynamic Type에서 내용이 넘치면
+   상자가 따라 커집니다. */
 .learning-shell-exit {
-  min-width: var(--libitum-spacing-48);
-  min-height: var(--libitum-spacing-48);
+  min-width: var(--libitum-spacing-24);
+  min-height: var(--libitum-spacing-24);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -47,10 +59,26 @@
   flex-shrink: 0;
 }
 
-/* 나가기와 마주 보는 빈 자리입니다 — 같은 하한을 져야 순번이 줄 가운데 섭니다. */
+/* 나가기와 마주 보는 자리입니다 — 같은 하한을 져야 순번이 줄 가운데 섭니다. 활동이
+   준 짧은 한 줄이 여기 섭니다(`meta`). */
 .learning-shell-session-spacer {
-  min-width: var(--libitum-spacing-48);
+  min-width: var(--libitum-spacing-24);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* 활동의 진행 같은 짧은 한 줄입니다. 순번(`accent-metric`)보다 한 단 뒤에 섭니다 —
+   주인공은 가운데 순번이고 이 줄은 곁다리입니다. */
+.learning-shell-meta {
+  color: var(--libitum-color-gray-700);
+  white-space: nowrap;
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
 }
 
 /* 순번은 가로 텍스트입니다 — `flex-shrink: 0`을 주지 않습니다(FE ADR-0023 규칙 5 (2)).
