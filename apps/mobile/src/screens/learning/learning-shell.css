@@ -118,13 +118,32 @@
   letter-spacing: var(--libitum-typography-label-l-letter-spacing);
 }
 
-/* 무대를 감싸는 상자입니다. 남는 세로를 받는 것이 여기입니다 — 카드는 내용만큼 서고,
-   남는 자리를 이 상자가 먹어 아래 버튼이 바닥에 남습니다. 면 · 모서리 · 안 여백은
-   ui-lynx `Card`의 `stage` 변형이 집니다. */
-.learning-shell-stage {
+/* 흐르는 영역입니다 — 남는 세로를 받는 것이 여기입니다. 지시문 · 무대 · 작업 영역이
+   함께 스크롤되고, 남는 자리를 이 상자가 먹어 아래 버튼이 바닥에 남습니다.
+
+   `justify-content: flex-start`를 둡니다 — 넘치는 상자에서 `center`는 위쪽 내용을
+   스크롤 원점 밖으로 밀어 닿을 수 없게 만듭니다. `display: flex`·`flex-direction`을
+   적지 않습니다: `<scroll-view>`는 CSS와 무관하게 강제로 `linear`가 되어 안 읽힙니다. */
+.learning-shell-scroll {
   flex: 1;
+  justify-content: flex-start;
+}
+
+/* `<scroll-view>`의 직계 자식은 최대 하나입니다 — 간격은 이 상자가 집니다. */
+.learning-shell-flow {
   display: flex;
   flex-direction: column;
+  gap: var(--libitum-layout-gap-block);
+}
+
+/* 무대를 감싸는 상자입니다. 면 · 모서리 · 안 여백은 ui-lynx `Card`의 `stage` 변형이
+   집니다. **남는 세로를 받지 않습니다** — 받으면 카드가 자기 자리보다 커지고, 넘친
+   만큼이 아래 보기 **위로 겹쳐 나옵니다**(기기에서 봤습니다). 넘치는 것은 위의
+   스크롤이 집니다. */
+.learning-shell-stage {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
 }
 
 /* 작업 영역 — 카드 밖, 활동이 채웁니다(고를 낱말 칩 등). 비어 있는 활동도 있어

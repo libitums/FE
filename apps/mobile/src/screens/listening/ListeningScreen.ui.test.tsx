@@ -302,17 +302,23 @@ test("정답 보기를 탭하면 그 보기의 accessibility-label에 ', 정답'
 // 붙여도 아무것도 가리지 못합니다 — 붙이지 않는 것이 계약입니다 (E-A1, E-A2).
 // 가림은 `ListeningChoice.ui.test.tsx`의 래퍼(`listening-choice-mark`) 단언이
 // 집니다.
-test("정답 보기를 탭하면 그 보기에 표식 아이콘이 나타나고 accessibility-elements-hidden이 붙지 않는다 — 잎이다", () => {
+// 2026-09-27: 보기의 표식이 걷히고 **판정 배지**가 그 자리를 대신합니다. 배지는
+// 무대 카드 안에 서고, 아이콘은 잎이라 가림 속성을 지지 않습니다.
+test("정답 보기를 탭하면 무대에 정답 배지가 나타나고 보기에는 표식이 없다", () => {
   renderOrdering();
 
   const answerIndex = ORDERING_QUESTIONS[0].answerIndex;
-  expect(screen.queryByTestId(`listening-choice-icon-${answerIndex}`)).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-verdict")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
 
-  expect(screen.getByTestId(`listening-choice-icon-${answerIndex}`)).not.toHaveAttribute(
+  const verdict = screen.getByTestId("listening-verdict");
+  expect(verdict).toHaveAttribute("data-result", "correct");
+  expect(verdict).toHaveTextContent("정답");
+  expect(screen.getByTestId("listening-verdict-icon")).not.toHaveAttribute(
     "accessibility-elements-hidden",
   );
+  expect(screen.queryByTestId(`listening-choice-icon-${answerIndex}`)).not.toBeInTheDocument();
 });
 
 test("정답 보기를 탭하면 '다음'이 나타난다", () => {
@@ -356,7 +362,9 @@ test("오답을 골라도 정답 보기의 라벨에 접미사가 붙지 않는�
     .getByTestId(`listening-choice-${answerIndex}`)
     .getAttribute("accessibility-label");
   expect(answerLabel).not.toContain(", 정답");
-  expect(screen.getByTestId(`listening-choice-${wrongIndex}`)).toHaveTextContent("오답");
+  // 고른 보기에는 보이는 낱말이 없습니다 — 「오답」은 무대의 배지가 말합니다.
+  expect(screen.getByTestId(`listening-choice-${wrongIndex}`)).not.toHaveTextContent("오답");
+  expect(screen.getByTestId("listening-verdict")).toHaveTextContent("오답");
 });
 
 // 단언 9 — **게이트가 리듀서라는 것의 `ui` 쪽 관찰입니다** — 보기 컴포넌트는
@@ -654,19 +662,30 @@ test("나가기·마치기 안의 라벨 텍스트가 조작 단위가 되지 �
 // 수용 기준 5는 이제 「오디오 코드 0줄」이 아니라 「`<audio>`·`<video>`·`new Audio`·
 // `AudioContext`를 쓰지 않는다」로 좁아졌습니다 — 이번에 연 것은 네이티브
 // 모듈 경로 하나이고 DOM 요소도 웹 오디오도 아니다.
-test("응답 전 무대의 조작 단위가 컨트롤 둘 + 보기 넷이다 — 컨트롤이 보기보다 앞이다", () => {
+// 2026-09-27: 보기가 무대 **밖**으로 나갔습니다(Figma 53-14231). 무대 안에 남는
+// 조작 단위는 재생 컨트롤 둘이고, 보기 넷은 작업 영역에 섭니다.
+test("응답 전 무대의 조작 단위가 재생 컨트롤 둘뿐이다", () => {
   renderOrdering();
 
-  const tappables = stageTappables();
+  expect(stageTappables()).toEqual(["listening-prompt-replay", "listening-prompt-playback"]);
+});
 
-  expect(tappables).toEqual([
-    "listening-prompt-replay",
-    "listening-prompt-playback",
+test("보기 넷이 무대 밖 작업 영역에 선다", () => {
+  renderOrdering();
+
+  const workspace = screen.getByTestId("learning-shell-workspace");
+  const choices = [...workspace.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
+    el.getAttribute("data-testid"),
+  );
+
+  expect(choices).toEqual([
     "listening-choice-0",
     "listening-choice-1",
     "listening-choice-2",
     "listening-choice-3",
   ]);
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(within(stage).queryByTestId("listening-choice-0")).not.toBeInTheDocument();
 });
 
 // 응답해도 무대 안의 목록은 그대로입니다 — `다음`은 무대 **밖**, 껍데기의 아래
@@ -676,14 +695,7 @@ test("응답 뒤에도 무대의 조작 단위는 그대로이고 아래 버튼�
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
-  expect(stageTappables()).toEqual([
-    "listening-prompt-replay",
-    "listening-prompt-playback",
-    "listening-choice-0",
-    "listening-choice-1",
-    "listening-choice-2",
-    "listening-choice-3",
-  ]);
+  expect(stageTappables()).toEqual(["listening-prompt-replay", "listening-prompt-playback"]);
   expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("다음");
 });
 
@@ -710,17 +722,20 @@ test("응답 전 무대의 <svg>가 컨트롤 아이콘 둘이다", () => {
   expect(stageIcons()).toEqual(["listening-prompt-replay-icon", "listening-prompt-playback-icon"]);
 });
 
-test("응답 뒤 무대의 <svg>가 컨트롤 아이콘 둘 + 고른 보기의 표식이다", () => {
+// 고른 보기의 표식이 걷히고 **판정 배지**가 그 자리를 대신합니다. 배지는 무대 안,
+// 보기는 무대 밖 — 그래서 무대의 아이콘은 배지 하나가 늘어납니다.
+test("응답 뒤 무대의 <svg>가 판정 배지 + 컨트롤 아이콘 둘이다", () => {
   renderOrdering();
 
   const answerIndex = ORDERING_QUESTIONS[0].answerIndex;
   fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
 
   expect(stageIcons()).toEqual([
+    "listening-verdict-icon",
     "listening-prompt-replay-icon",
     "listening-prompt-playback-icon",
-    `listening-choice-icon-${answerIndex}`,
   ]);
+  expect(screen.getByTestId("listening-verdict")).toHaveAttribute("data-result", "correct");
 });
 
 test("완료 상태의 무대에는 <svg>가 하나도 없다", () => {
@@ -943,14 +958,17 @@ test("[U1] learning-shell-stage이 존재한다", () => {
   expect(screen.getByTestId("learning-shell-stage")).toBeInTheDocument();
 });
 
-test("[U2] 진행·대본·보기 넷이 스크롤 컨테이너 안에 있다", () => {
+test("[U2] 진행·대본은 무대 안, 보기 넷은 무대 밖이다", () => {
   renderOrdering();
 
-  const scroll = screen.getByTestId("learning-shell-stage");
-  expect(within(scroll).getByTestId("listening-screen-progress")).toBeInTheDocument();
-  expect(within(scroll).getByTestId("listening-prompt-text")).toBeInTheDocument();
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(within(stage).getByTestId("listening-screen-progress")).toBeInTheDocument();
+  expect(within(stage).getByTestId("listening-prompt-text")).toBeInTheDocument();
+
+  const workspace = screen.getByTestId("learning-shell-workspace");
   for (const testid of CHOICE_TESTIDS) {
-    expect(within(scroll).getByTestId(testid)).toBeInTheDocument();
+    expect(within(workspace).getByTestId(testid)).toBeInTheDocument();
+    expect(within(stage).queryByTestId(testid)).not.toBeInTheDocument();
   }
 });
 
@@ -1003,19 +1021,19 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
 // `__SetAttribute`(ElementPAPI.js:87~89)가 boolean을 `JSON.stringify`로
 // 직렬화합니다. `scroll-orientation`은 문자열이라 그대로 "vertical"로 갑니다.
 
-test("[U9] learning-shell-stage에 scroll-orientation='vertical'이 붙는다", () => {
+test("[U9] learning-shell-scroll에 scroll-orientation='vertical'이 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-stage")).toHaveAttribute(
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute(
     "scroll-orientation",
     "vertical",
   );
 });
 
-test("[U11] learning-shell-stage에 scroll-bar-enable='true'가 붙는다", () => {
+test("[U11] learning-shell-scroll에 scroll-bar-enable='true'가 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-stage")).toHaveAttribute("scroll-bar-enable", "true");
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("scroll-bar-enable", "true");
 });
 
 // U10 — 듣기는 문항 상태와 완료 상태 둘 다 봅니다 — 문항 상태는 오늘 자식이

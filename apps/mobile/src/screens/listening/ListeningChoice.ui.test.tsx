@@ -162,172 +162,63 @@ for (const result of RESULTS) {
   });
 }
 
-// ---------------------------------------------------------------- 채널 3: 보이는 표식
-
-// 단언 2: 판정이 없으면 표식이 통째로 없습니다 — 아이콘도 낱말도.
-test("판정이 없으면 표식 아이콘이 렌더되지 않는다", () => {
-  render(
-    <ListeningChoice index={0} text="음료 온도를 묻고 있다" result={null} onSelect={() => {}} />,
-  );
-
-  // 앵커: 보기 자체는 그려져 있고, 그 안에 표식만 없습니다.
-  expect(screen.getByTestId("listening-choice-0")).toHaveAttribute("data-result", "none");
-  expect(screen.queryByTestId("listening-choice-icon-0")).not.toBeInTheDocument();
-});
-
-test("판정이 없으면 정답·오답 낱말이 텍스트에 없다", () => {
-  render(
-    <ListeningChoice index={0} text="음료 온도를 묻고 있다" result={null} onSelect={() => {}} />,
-  );
-
-  const root = screen.getByTestId("listening-choice-0");
-  expect(root).not.toHaveTextContent("정답");
-  expect(root).not.toHaveTextContent("오답");
-});
-
-// 단언 4-c: 낱말이 보입니다. 색과 독립인 두 번째 채널입니다 (WCAG 1.4.1).
-test("정답이면 '정답' 낱말이 보기 안에 텍스트로 보인다", () => {
-  render(
-    <ListeningChoice index={1} text="음료 온도를 묻고 있다" result="correct" onSelect={() => {}} />,
-  );
-
-  expect(screen.getByTestId("listening-choice-1")).toHaveTextContent("정답");
-});
-
-// 단언 5-c.
-test("오답이면 '오답' 낱말이 보기 안에 텍스트로 보인다", () => {
-  render(
-    <ListeningChoice
-      index={2}
-      text="계산 방법을 묻고 있다"
-      result="incorrect"
-      onSelect={() => {}}
-    />,
-  );
-
-  expect(screen.getByTestId("listening-choice-2")).toHaveTextContent("오답");
-});
-
-// 단언 7-a: 아이콘 모양이 판정별 패키지 모듈 문자열과 같습니다 — 뒤바뀐 결선을
-// 여기서 잡습니다.
-for (const result of ["correct", "incorrect"] as const) {
-  test(`표식 아이콘 content가 판정(${result})의 패키지 모듈 문자열과 같다`, () => {
-    render(
-      <ListeningChoice
-        index={3}
-        text="물을 달라고 하고 있다"
-        result={result}
-        onSelect={() => {}}
-      />,
-    );
-
-    expect(screen.getByTestId("listening-choice-icon-3")).toHaveAttribute(
-      "content",
-      ICON_BY_RESULT[result],
-    );
-  });
-}
-
-// 단언 7-b: current-color가 판정별 토큰 상수와 같습니다 (「결선」 채널).
-for (const result of ["correct", "incorrect"] as const) {
-  test(`표식 아이콘 current-color가 판정(${result})의 토큰 상수와 같다`, () => {
-    render(
-      <ListeningChoice
-        index={3}
-        text="물을 달라고 하고 있다"
-        result={result}
-        onSelect={() => {}}
-      />,
-    );
-
-    expect(screen.getByTestId("listening-choice-icon-3")).toHaveAttribute(
-      "current-color",
-      ICON_COLOR_BY_RESULT[result],
-    );
-  });
-}
-
-// 단언 7-c: 두 판정이 아이콘 채널에서 실제로 갈립니다 — 모양도 색도 서로
-// 다릅니다. 하나로 뭉개지면 판정이 색 하나에만 실립니다.
-test("정답과 오답의 표식이 모양·색 둘 다에서 갈린다", () => {
-  expect(ICON_BY_RESULT.correct).not.toBe(ICON_BY_RESULT.incorrect);
-  expect(ICON_COLOR_BY_RESULT.correct).not.toBe(ICON_COLOR_BY_RESULT.incorrect);
-});
-
-// 단언 8: 표식 아이콘은 잎 `<svg>`입니다 — accessibility-elements-hidden의 iOS
-// 세터는 view.accessibilityElementsHidden이라 가리는 대상이 자손입니다. 자손
-// 없는 잎에 붙여도 아무 일도 안 하므로 이 속성을 붙이지 않는 것이 계약입니다
-// (E-A1, E-A2).
-for (const result of ["correct", "incorrect"] as const) {
-  test(`표식 아이콘에 accessibility-elements-hidden이 붙지 않는다 — ${result}`, () => {
-    render(
-      <ListeningChoice
-        index={3}
-        text="물을 달라고 하고 있다"
-        result={result}
-        onSelect={() => {}}
-      />,
-    );
-
-    expect(screen.getByTestId("listening-choice-icon-3")).not.toHaveAttribute(
-      "accessibility-elements-hidden",
-    );
-  });
-}
-
-// 단언 8-b (「표식을 가리는 자리는 **래퍼**다」): 예전에는 가림 속성이 잎
-// `<svg>`에도 붙어 있었습니다 — 지금은 `<view className="listening-choice-mark">`에만
-// 붙습니다. 이 속성의 iOS 세터는 `view.accessibilityElementsHidden`이고 **가리는
-// 대상은 자손**입니다 — 자손이 없는 `<svg>`에 붙여 봐야 아무것도 가려지지
-// 않습니다. 정작 가려야 하는 것은
-// `<text className="listening-choice-mark-label">`(`정답`/`오답`)이고,
-// `LynxUIText`는 `enableAccessibilityByDefault`가 `YES`라 **기본이 접근성
-// 요소**입니다. 가리지 않으면 조작 단위 하나가 접근성 요소 둘이 되어 ADR-0016
-// D5를 어기고 같은 낱말이 두 번 들립니다. 판정 상태는 이미 라벨 접미사가 지고
-// 있으므로(ADR-0016 D3) 이 `<text>`는 시각 채널이지 보조기술 채널이 아닙니다.
+// ---------------------------------------------------------------- 보이는 표식 없음
 //
-// **위 단언 8(`<svg>`)과 짝을 이룹니다** — 잎에는 붙지 않고 래퍼에만 붙는 것이
-// 계약입니다.
+// 2026-09-27: **보이는 표식(✓ · ✗ · 낱말)이 통째로 걷혔습니다**(Figma 53-14231).
+// 보기 넷이 응답 뒤에도 같은 모양으로 서고, 눈으로 보는 판정은 무대 카드의 배지
+// 하나가 말합니다(`ListeningVerdict`).
 //
-// test-id를 늘리지 않아 표식 래퍼에는 `data-testid`가 없습니다. 그래서 클래스
-// 셀렉터로 요소를 **찾습니다** — 찾기는 `data-testid`와 같은 탐색 축이지 상태를
-// 보는 관찰 채널이 아닙니다(code.md 「관찰 채널 넷」). 계산된 스타일에 기대는
-// `toHaveClass`와 다릅니다. 못 찾은 채로 지나가지 않도록 `toContainElement`로
-// 존재 앵커를 겁니다.
-for (const result of ["correct", "incorrect"] as const) {
-  test(`표식 래퍼가 accessibility-elements-hidden="true"다 — ${result}`, () => {
+// 이 절이 예전에 지던 것은 「모양 · 색 · 낱말 셋으로 판정을 가른다」였습니다. 그
+// 계약은 배지로 옮겨 갔고, 여기 남는 것은 **그 표식이 정말로 없다**는 것입니다 —
+// 없어진 것을 안 재면 다음 사람이 되돌려 놓아도 아무것도 빨개지지 않습니다.
+
+for (const result of RESULTS) {
+  test(`판정이 있어도 표식 아이콘이 렌더되지 않는다 — result=${String(result)}`, () => {
     render(
       <ListeningChoice
-        index={3}
-        text="물을 달라고 하고 있다"
+        index={0}
+        text="음료 온도를 묻고 있다"
         result={result}
         onSelect={() => {}}
       />,
     );
 
-    const mark = screen
-      .getByTestId("listening-choice-3")
-      .querySelector<HTMLElement>(".listening-choice-mark");
+    // 앵커: 보기 자체는 그려져 있고 판정도 들어와 있습니다.
+    expect(screen.getByTestId("listening-choice-0")).toHaveAttribute(
+      "data-result",
+      result ?? "none",
+    );
+    expect(screen.queryByTestId("listening-choice-icon-0")).not.toBeInTheDocument();
+  });
 
-    expect(mark).toContainElement(screen.getByTestId("listening-choice-icon-3"));
-    expect(mark).toHaveAttribute("accessibility-elements-hidden", "true");
+  test(`판정이 있어도 정답 · 오답 낱말이 보기 안에 없다 — result=${String(result)}`, () => {
+    const { container } = render(
+      <ListeningChoice
+        index={0}
+        text="음료 온도를 묻고 있다"
+        result={result}
+        onSelect={() => {}}
+      />,
+    );
+
+    const root = screen.getByTestId("listening-choice-0");
+    expect(root).toHaveTextContent("음료 온도를 묻고 있다"); // 앵커
+    expect(root).not.toHaveTextContent("정답");
+    expect(root).not.toHaveTextContent("오답");
+    expect(container.querySelectorAll("svg")).toHaveLength(0);
   });
 }
 
-// 왜 `<svg>` 하나로는 부족한지를 실행 가능하게 못박습니다: 래퍼에는 아이콘 말고
-// **낱말이 자손으로 더 있습니다.** 이 구조가 무너지면(낱말을 래퍼 밖으로 빼거나
-// 지우면) 래퍼를 가릴 이유도 함께 사라지므로 같은 자리에서 봅니다.
-test("표식 래퍼가 아이콘과 낱말을 자손으로 갖는다 — 가려야 할 자손이 실제로 있다", () => {
+// 판정이 화면에서 사라진 것은 **눈으로 보는 쪽**뿐입니다. 이름의 접미사는 그대로
+// 지므로 스크린리더는 여전히 어느 보기가 정답이었는지 읽습니다(ADR-0016 D3).
+test("표식이 없어도 이름의 접미사가 판정을 남긴다", () => {
   render(
-    <ListeningChoice index={3} text="물을 달라고 하고 있다" result="correct" onSelect={() => {}} />,
+    <ListeningChoice index={0} text="음료 온도를 묻고 있다" result="correct" onSelect={() => {}} />,
   );
 
-  const mark = screen
-    .getByTestId("listening-choice-3")
-    .querySelector<HTMLElement>(".listening-choice-mark");
-
-  expect(mark).toContainElement(screen.getByTestId("listening-choice-icon-3"));
-  expect(mark).toHaveTextContent("정답");
+  expect(screen.getByTestId("listening-choice-0").getAttribute("accessibility-label")).toContain(
+    "정답",
+  );
 });
 
 // 보기 하나당 정지 노드가 1개입니다 (ADR-0016 D5 — 자동 계층 쪽 절반입니다).

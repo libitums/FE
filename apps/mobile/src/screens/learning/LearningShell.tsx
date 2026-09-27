@@ -140,36 +140,42 @@ export function LearningShell({
           </view>
         </Card.Content>
       </Card>
-      <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
-        {instruction}
-      </text>
-      {/* 가운데 카드 — 학습 내용이 전개되고 판정이 뒤집히는 무대입니다. `stage` 변형이
-          큰 모서리와 넓은 그림자를 집니다.
+      {/* 흐르는 영역입니다 — 지시문 · 무대 · 작업 영역이 함께 스크롤됩니다. 고정으로
+          남는 것은 위의 상단 바 · 세션 헤더와 아래 버튼입니다(Figma 65-14의 배치).
 
-          바깥 상자가 남는 세로를 받습니다 — 카드는 내용만큼 서고, 남는 자리를 이 상자가
-          먹어 아래 버튼이 바닥에 남습니다. 카드 자신을 늘리려면 ui-lynx의 클래스에
-          손대야 하는데, 그건 이 화면의 몫이 아닙니다.
+          **스크롤이 무대 안이 아니라 여기 있는 이유**는 넘치는 것이 카드 하나가 아니기
+          때문입니다. 문장이 길어 카드가 커지면 그 아래 보기도 함께 밀리는데, 무대만
+          스크롤하면 카드는 잘리지 않고 **보기 위로 넘쳐 나옵니다** — 기기에서 그렇게
+          겹치는 것을 봤습니다.
 
-          그 상자가 `<scroll-view>`인 것은 Dynamic Type 때문입니다 — 글자가 커지면 카드
-          내용이 남는 높이를 넘고, 넘친 내용은 **사라집니다**(WCAG 1.4.4). 내용이
-          들어가는 동안은 스크롤이 일어나지 않아 보이는 것은 달라지지 않습니다.
           `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안 적으면 초기값이 각각
           가로·꺼짐이라 세로 스크롤이 원리적으로 불가능합니다. */}
       <scroll-view
-        className="learning-shell-stage"
-        data-testid="learning-shell-stage"
+        className="learning-shell-scroll"
+        data-testid="learning-shell-scroll"
         scroll-orientation="vertical"
         scroll-bar-enable={true}
       >
-        <Card elevation="stage">
-          <Card.Content>{card}</Card.Content>
-        </Card>
-      </scroll-view>
-      {workspace === undefined ? null : (
-        <view className="learning-shell-workspace" data-testid="learning-shell-workspace">
-          {workspace}
+        <view className="learning-shell-flow">
+          <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
+            {instruction}
+          </text>
+          {/* 가운데 카드 — 학습 내용이 전개되고 판정이 뒤집히는 무대입니다. `stage`
+          변형이 큰 모서리와 넓은 그림자를 집니다.
+
+          넘치는 것은 위의 스크롤이 집니다 — 이 상자는 자기 높이만 압니다. */}
+          <view className="learning-shell-stage" data-testid="learning-shell-stage">
+            <Card elevation="stage">
+              <Card.Content>{card}</Card.Content>
+            </Card>
+          </view>
+          {workspace === undefined ? null : (
+            <view className="learning-shell-workspace" data-testid="learning-shell-workspace">
+              {workspace}
+            </view>
+          )}
         </view>
-      )}
+      </scroll-view>
       {actionLabel === undefined || onAction === undefined ? null : (
         <view
           className="learning-shell-action"

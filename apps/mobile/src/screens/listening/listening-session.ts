@@ -59,6 +59,24 @@ export function hasAnswered(state: ListeningSessionState): boolean {
   return state.selectedChoiceIndex !== null;
 }
 
+/**
+ * 고른 답의 판정입니다 — 판정 배지가 이 값 하나에서 납니다.
+ *
+ * 미응답이면 던집니다. 옵셔널로 돌려주면 「아직 안 골랐다」와 「고른 답이 오답이다」를
+ * 부르는 쪽이 다시 가려야 하고, 그 갈래가 화면에 두 번째로 생깁니다 — 배지는
+ * `hasAnswered`가 참일 때만 그려지므로 그 갈래는 이미 화면에 하나 있습니다.
+ */
+export function answeredResultOf(
+  state: ListeningSessionState,
+  question: ListeningQuestion,
+): AnswerResult {
+  const selected = state.selectedChoiceIndex;
+  if (selected === null) {
+    throw new Error("아직 고르지 않은 문항의 판정을 물었습니다");
+  }
+  return judgeAnswer(question, selected);
+}
+
 // 완료도 파생입니다 — 상태에 done을 적지 않습니다.
 export function isSessionComplete(state: ListeningSessionState, total: number): boolean {
   return state.questionIndex >= total;

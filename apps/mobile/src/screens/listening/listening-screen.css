@@ -162,7 +162,8 @@
 .listening-screen-choices {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  /* 디자인 간격은 10인데 그 치수에 맞는 토큰이 없어 가장 가까운 `spacing-8`을 씁니다
+     (2px 차이는 눈에 닿지 않습니다). */
   gap: var(--libitum-spacing-8);
 }
 

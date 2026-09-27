@@ -1,39 +1,12 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import tick from "@libitums/icons/lynx/tick";
-import cross from "@libitums/icons/lynx/cross";
-import { color } from "@libitums/design-tokens";
-
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { AnswerResult } from "../../lib/answer-result";
 import { choiceAccessibilityLabel } from "./listening";
 
 import "./listening-choice.css";
 
 // 상태를 갖지 않고 props에서만 파생합니다 — 판정은 이미 계산돼 `result`로
 // 들어옵니다.
-
-// 판정별 표식 아이콘입니다. 모양이 **색과 독립인 두 번째 채널**입니다
-// (WCAG 1.4.1). 리터럴을 적지 않고 패키지 모듈을 가져옵니다. 전체 index
-// (`@libitums/icons/lynx`)를 import하지 않습니다 — 819개가 번들에
-// 들어갑니다.
-const markIconByResult: Record<AnswerResult, string> = {
-  correct: tick,
-  incorrect: cross,
-};
-
-// `-text` 변형입니다. `feedback.correct`(`#35A66F`)는 행 배경 대비 3.03:1로
-// 한 단계만 밝아져도 미달이라 표시한 경계값이고, 여정 맵에 이미 둘 서
-// 있습니다 — 세 번째를 들이지 않습니다. `-text` 변형은 6.90 / 6.76입니다.
-//
-// 색은 CSS가 아니라 `current-color` 속성으로 넘깁니다 — Lynx `<svg>`가 CSS
-// `color`를 읽지 않습니다(ADR-0014 D2). 하이픈 키라 대괄호 표기입니다.
-const markIconColorByResult: Record<AnswerResult, string> = {
-  correct: color.feedback["correct-text"],
-  incorrect: color.feedback["incorrect-text"],
-};
-
-// 세 번째 채널입니다 — 아이콘이 크기를 못 받아 안 보여도 판정이 낱말로
-// 남습니다. 낱말은 lib/answer-result.ts의 answerResultLabel이 냅니다.
 
 export type ListeningChoiceProps = {
   index: number;
@@ -50,10 +23,10 @@ export function ListeningChoice({
 }: ListeningChoiceProps): ReactNode {
   return (
     <view
-      // 상태 클래스는 base 뒤에 더해 붙입니다(짝 CSS가 base 바로 뒤에
-      // 선언합니다). 판정(정답/오답)은 클래스가 되지 않습니다 — 예약
-      // 상태어를 다섯째로 열지 않습니다(ADR-0003 D7).
-      className={"listening-choice" + (result !== null ? " listening-choice-selected" : "")}
+      // 상태 클래스가 없습니다. 판정은 예약 상태어를 다섯째로 열지 않고
+      // (ADR-0003 D7), 응답 여부로 갈리는 시각 값도 이제 없습니다 — 넷이 같은
+      // 모양으로 섭니다.
+      className="listening-choice"
       data-testid={`listening-choice-${index}`}
       // 언제나 붙고 값만 갈립니다. 조건부로 빼면 "속성을 붙이는 것을
       // 잊었다"와 "판정이 없다"가 구별되지 않습니다.
@@ -73,26 +46,14 @@ export function ListeningChoice({
     >
       {/* 보이는 이름을 지는 요소는 가리지 않습니다(ADR-0016 D5) — 접근성 속성이 없습니다. */}
       <text className="listening-choice-label">{text}</text>
-      {result === null ? null : (
-        <view
-          className="listening-choice-mark"
-          // 가림은 래퍼가 집니다 — 이 속성의 iOS 세터는
-          // `view.accessibilityElementsHidden`이라 가리는 대상이
-          // **자손**입니다. 자손 없는 `<svg>`에만 붙으면 아무것도 가려지지
-          // 않고, 정작 가려야 할 `<text>`는 `LynxUIText`의
-          // `enableAccessibilityByDefault`가 `YES`라 기본이 접근성
-          // 요소입니다(ADR-0016 D5).
-          accessibility-elements-hidden={true}
-        >
-          <svg
-            className="listening-choice-mark-icon"
-            data-testid={`listening-choice-icon-${index}`}
-            content={markIconByResult[result]}
-            current-color={markIconColorByResult[result]}
-          />
-          <text className="listening-choice-mark-label">{answerResultLabel(result)}</text>
-        </view>
-      )}
+      {/* 2026-09-27: **보이는 표식(✓ · ✗)이 걷혔습니다**(Figma 53-14231). 판정은 무대
+          카드의 배지 하나가 말하고, 보기는 넷이 같은 모양으로 섭니다.
+
+          판정이 화면에서 아예 사라진 것은 아닙니다 — `accessibility-label`의 접미사가
+          그대로 지고(ADR-0016 D3), `data-result`도 그대로입니다. 그래서 스크린리더는
+          **어느 보기가 정답이었는지**를 여전히 읽습니다. 눈으로 보는 쪽은 배지가
+          「맞았다 · 틀렸다」만 알고 어느 것을 골랐는지는 모릅니다 — 디자인이 그렇게
+          정했습니다. */}
     </view>
   );
 }

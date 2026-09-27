@@ -5,7 +5,9 @@ import { announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningChoice } from "./ListeningChoice";
+import { ListeningVerdict } from "./ListeningVerdict";
 import {
+  answeredResultOf,
   choiceResultAt,
   hasAnswered,
   initialListeningSessionState,
@@ -95,12 +97,37 @@ export function ListeningScreen({
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
+      /* 보기는 무대 카드 **밖**입니다(Figma 53-14231) — 카드는 「무엇을 들었나」를
+         말하고, 고르는 일은 그 아래 작업 영역에서 합니다. */
+      workspace={
+        question === null ? undefined : (
+          <view className="listening-screen-choices" data-testid="listening-screen-choices">
+            {question.choices.map((choiceText, choiceIndex) => (
+              <ListeningChoice
+                key={choiceIndex}
+                index={choiceIndex}
+                text={choiceText}
+                // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는
+                // null입니다.
+                result={choiceResultAt(state, question, choiceIndex)}
+                onSelect={(index) => dispatch({ type: "selectChoice", choiceIndex: index })}
+              />
+            ))}
+          </view>
+        )
+      }
       card={
         <view className="listening-screen-content" data-testid="listening-screen-content">
           {question === null ? null : (
             <text className="listening-screen-progress" data-testid="listening-screen-progress">
               {questionProgressLabel(state.questionIndex, questions.length)}
             </text>
+          )}
+
+          {/* 판정 배지입니다. **문항이 서 있던 그 카드 안**에서 성공 · 실패가
+              뒤집힙니다 — 보기의 표식이 걷힌 뒤로 보이는 판정 채널이 이것 하나입니다. */}
+          {question === null || !hasAnswered(state) ? null : (
+            <ListeningVerdict result={answeredResultOf(state, question)} />
           )}
 
           {/* 제시 채널입니다. 오디오가 생기면 **이 컴포넌트만** 통째로 갈립니다. */}
@@ -111,22 +138,6 @@ export function ListeningScreen({
               audioSource={question.audioSource}
               sessionOptions={sessionOptions}
             />
-          )}
-
-          {question === null ? null : (
-            <view className="listening-screen-choices">
-              {question.choices.map((choiceText, choiceIndex) => (
-                <ListeningChoice
-                  key={choiceIndex}
-                  index={choiceIndex}
-                  text={choiceText}
-                  // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는
-                  // null입니다.
-                  result={choiceResultAt(state, question, choiceIndex)}
-                  onSelect={(index) => dispatch({ type: "selectChoice", choiceIndex: index })}
-                />
-              ))}
-            </view>
           )}
 
           {/* 완료문입니다. 판정이 카드 안에서 뒤집힌다는 것이 이 자리에서 성립합니다 —
