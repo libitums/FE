@@ -7,6 +7,16 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 
 export type ListeningQuestion = {
   readonly prompt: string;
+  /**
+   * 제시문의 로마자 표기입니다(국어의 로마자 표기법). 제시문 아래 한 줄로 서서, 한글을
+   * 아직 못 읽는 학습자가 소리를 눈으로 짚게 합니다(Figma 53-14231).
+   *
+   * ⚠ 이 값들은 손으로 적었고 **언어 담당의 검수를 받지 않았습니다.** 자음 동화 ·
+   * 격음화가 걸리는 자리(`혹시 지하철역이` · `따뜻한` · `이 길로`)가 특히 그렇습니다.
+   * 옵셔널이 아닌 것은 같은 이유입니다 — 빠진 문항이 타입에 생기면 그 자리가 조용히
+   * 비어 버립니다.
+   */
+  readonly romanization: string;
   // 호스트가 해석하는 **불투명 문자열**입니다 — 번들 키인지 원격 URL인지는
   // 아직 정해지지 않았습니다. 데이터가 지는 것은 **안정적 식별자** 하나뿐이고,
   // 자산이 오면 `AudioPlaybackModule.resolve`에 **해석만** 붙습니다.
@@ -23,6 +33,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
   greeting: [
     {
       prompt: "안녕하세요, 처음 뵙겠습니다.",
+      romanization: "annyeonghaseyo, cheoeum boepgetseumnida",
       audioSource: "greeting-1",
       choices: [
         "처음 만난 사람에게 인사하고 있다",
@@ -34,6 +45,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
     },
     {
       prompt: "반갑습니다.",
+      romanization: "bangapseumnida",
       audioSource: "greeting-2",
       choices: [
         "미안하다고 말하고 있다",
@@ -45,6 +57,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
     },
     {
       prompt: "안녕히 계세요.",
+      romanization: "annyeonghi gyeseyo",
       audioSource: "greeting-3",
       choices: [
         "처음 만나서 인사하고 있다",
@@ -58,12 +71,14 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
   introduction: [
     {
       prompt: "이름이 어떻게 되세요?",
+      romanization: "ireumi eotteoke doeseyo?",
       audioSource: "introduction-1",
       choices: ["나이를 묻고 있다", "사는 곳을 묻고 있다", "직업을 묻고 있다", "이름을 묻고 있다"],
       answerIndex: 3,
     },
     {
       prompt: "저는 민준이라고 합니다.",
+      romanization: "jeoneun minjunirago hamnida",
       audioSource: "introduction-2",
       choices: [
         "자기 이름을 말하고 있다",
@@ -75,6 +90,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
     },
     {
       prompt: "만나서 반가워요.",
+      romanization: "mannaseo bangawoyo",
       audioSource: "introduction-3",
       choices: [
         "다시 만나자고 약속하고 있다",
@@ -88,6 +104,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
   ordering: [
     {
       prompt: "따뜻한 아메리카노 한 잔 주세요.",
+      romanization: "ttatteutan amerikano han jan juseyo",
       audioSource: "ordering-1",
       choices: [
         "차가운 커피를 두 잔 주문하고 있다",
@@ -99,6 +116,8 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
     },
     {
       prompt: "주문하시겠어요? 음료는 따뜻한 것과 차가운 것 중에 무엇으로 드릴까요?",
+      romanization:
+        "jumunhasigesseoyo? eumnyoneun ttatteutan geotgwa chagaun geot junge mueoseuro deurilkkayo?",
       audioSource: "ordering-2",
       choices: [
         "음료 온도를 묻고 있다",
@@ -110,6 +129,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
     },
     {
       prompt: "카드로 결제할게요.",
+      romanization: "kadeuro gyeoljehalgeyo",
       audioSource: "ordering-3",
       choices: [
         "현금으로 내겠다고 말하고 있다",
@@ -123,6 +143,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
   appointment: [
     {
       prompt: "내일 세 시에 만날까요?",
+      romanization: "naeil se sie mannalkkayo?",
       audioSource: "appointment-1",
       choices: [
         "만남을 취소하고 있다",
@@ -134,6 +155,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
     },
     {
       prompt: "그때는 좀 어려울 것 같아요.",
+      romanization: "geuttaeneun jom eoryeoul geot gatayo",
       audioSource: "appointment-2",
       choices: [
         "그 시간에 꼭 만나자고 말하고 있다",
@@ -145,6 +167,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
     },
     {
       prompt: "그럼 토요일 저녁은 어때요?",
+      romanization: "geureom toyoil jeonyeogeun eottaeyo?",
       audioSource: "appointment-3",
       choices: [
         "다른 시간을 다시 제안하고 있다",
@@ -158,6 +181,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
   directions: [
     {
       prompt: "혹시 지하철역이 어디예요?",
+      romanization: "hoksi jihacheollyeogi eodiyeyo?",
       audioSource: "directions-1",
       choices: [
         "지하철 요금을 묻고 있다",
@@ -169,6 +193,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
     },
     {
       prompt: "이 길로 쭉 가시면 됩니다.",
+      romanization: "i gillo jjuk gasimyeon doemnida",
       audioSource: "directions-2",
       choices: [
         "곧장 가라고 알려 주고 있다",
@@ -180,6 +205,7 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
     },
     {
       prompt: "여기서 얼마나 걸려요?",
+      romanization: "yeogiseo eolmana geollyeoyo?",
       audioSource: "directions-3",
       choices: [
         "거리의 이름을 묻고 있다",
