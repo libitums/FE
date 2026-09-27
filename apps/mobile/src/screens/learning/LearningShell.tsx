@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { Card } from "@libitums/ui-lynx/card";
+import { Fog } from "@libitums/ui-lynx/fog";
 import { TopBar } from "../../components/TopBar";
 import { learningSessionHeader } from "./learning-shell.contract";
 import type { LearningForm } from "../../lib/learning-form";
@@ -194,17 +195,34 @@ export function LearningShell({
           {workspace}
         </scroll-view>
       )}
+      {/* 아래 버튼은 **떠 있습니다** — 자기 줄을 차지하지 않고 작업 영역 위에 얹힙니다.
+          그 줄(56 + 간격)을 돌려받은 만큼 보기가 더 들어가고, 그만큼 스크롤이 덜
+          생깁니다.
+
+          버튼 뒤에 포그를 깝니다. 버튼이 가리는 자리에서 내용이 **잘려 보이면** 「여기가
+          끝」으로 읽히는데, 흐려지면 「아래에 더 있다」로 읽힙니다 — 그것이 사실입니다.
+          포그는 자식을 받지 않으므로(`children?: never`) 버튼과 형제로 두고, DOM에서
+          버튼을 뒤에 두어 버튼이 포그 위에 섭니다.
+
+          포그를 상자로 감싸는 것은 **버튼보다 위까지 번지게** 하기 위해서입니다. 포그는
+          자기 부모의 아래에 붙으므로, 감싸지 않으면 번짐이 버튼 뒤에서 끝나 보이지
+          않습니다. */}
       {actionLabel === undefined || onAction === undefined ? null : (
-        <view
-          className="learning-shell-action"
-          data-testid="learning-shell-action"
-          accessibility-element={true}
-          accessibility-label={actionLabel}
-          accessibility-traits="button"
-          bindtap={handleAction}
-        >
-          <text className="learning-shell-action-label">{actionLabel}</text>
-        </view>
+        <>
+          <view className="learning-shell-fog">
+            <Fog direction="bottom" size="full" color="surface-default" />
+          </view>
+          <view
+            className="learning-shell-action"
+            data-testid="learning-shell-action"
+            accessibility-element={true}
+            accessibility-label={actionLabel}
+            accessibility-traits="button"
+            bindtap={handleAction}
+          >
+            <text className="learning-shell-action-label">{actionLabel}</text>
+          </view>
+        </>
       )}
     </view>
   );

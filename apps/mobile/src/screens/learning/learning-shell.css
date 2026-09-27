@@ -15,6 +15,8 @@
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
     var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-background-primary);
+  /* 포그와 아래 버튼이 이 상자를 기준으로 절대 배치됩니다. 더하는 것은 이 한 줄뿐입니다. */
+  position: relative;
 }
 
 /* 세션 헤더의 안쪽 배치입니다. 면 · 모서리 · 안 여백은 ui-lynx `Card`(회색 면 · 그림자
@@ -164,6 +166,12 @@
 .learning-shell-workspace {
   flex: 1;
   justify-content: flex-start;
+  /* 아래 버튼이 떠 있으므로 마지막 항목이 그 밑으로 들어갑니다. 버튼 높이(56)와 그
+     아래 여백만큼 비워, 끝까지 내리면 마지막 보기가 버튼 밖으로 나옵니다 — 안 비우면
+     그 항목을 영영 누를 수 없습니다. */
+  padding-bottom: calc(
+    var(--libitum-spacing-48) + var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
+  );
 }
 
 /* 아래 버튼입니다.
@@ -175,7 +183,34 @@
 
    **고정 높이가 아니라 하한입니다**(ADR-0020 D5). 여백 16 + 라벨 줄높이 24가 디자인
    높이 56을 그대로 냅니다. */
+/* 포그가 설 상자입니다. 아래 버튼 높이 위로 한 뼘 더 올라가, 버튼에 닿기 전부터
+   내용이 흐려집니다 — 잘려 보이면 「여기가 끝」으로 읽히는데 흐려지면 「아래에 더
+   있다」로 읽힙니다.
+
+   높이는 버튼 아래 여백 + 버튼(56) + 번짐 한 뼘(40)입니다. 좌우는 0입니다 — 절대
+   배치의 기준 상자가 padding box라 화면 가장자리까지 닿고, 번짐이 여백에서 끊기지
+   않습니다. */
+.learning-shell-fog {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(
+    var(--libitum-layout-screen-padding-bottom) + var(--libitum-spacing-48) +
+      var(--libitum-spacing-8) + var(--libitum-spacing-40)
+  );
+  z-index: var(--libitum-elevation-z-default);
+}
+
 .learning-shell-action {
+  /* **떠 있습니다** — 세로 열에서 빠져 작업 영역 위에 얹힙니다. 절대 배치의 기준
+     상자가 `.learning-shell`의 padding box라 `0`은 화면 여백 **바깥**을 가리킵니다 —
+     그래서 여백값을 그대로 적어 열 안에 있을 때와 같은 자리에 세웁니다. */
+  position: absolute;
+  left: var(--libitum-layout-screen-padding-x);
+  right: var(--libitum-layout-screen-padding-x);
+  bottom: var(--libitum-layout-screen-padding-bottom);
+  z-index: var(--libitum-elevation-z-sticky);
   background: var(--libitum-color-brand-primary);
   min-height: var(--libitum-spacing-48);
   padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
@@ -183,7 +218,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
 .learning-shell-action-label {
