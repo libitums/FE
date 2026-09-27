@@ -21,8 +21,8 @@
   flex-direction: column;
   gap: var(--libitum-spacing-16);
   padding: var(--libitum-spacing-16);
-  border-radius: var(--libitum-radius-lg);
-  background: var(--libitum-elevation-surface-floating);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-background-secondary);
   flex-shrink: 0;
 }
 
@@ -63,17 +63,17 @@
   flex: 1;
   text-align: center;
   color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-label-l-font-family);
-  font-weight: var(--libitum-typography-label-l-font-weight);
-  font-size: var(--libitum-typography-label-l-font-size);
-  line-height: var(--libitum-typography-label-l-line-height);
-  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+  font-family: var(--libitum-typography-accent-metric-font-family);
+  font-weight: var(--libitum-typography-accent-metric-font-weight);
+  font-size: var(--libitum-typography-accent-metric-font-size);
+  line-height: var(--libitum-typography-accent-metric-line-height);
+  letter-spacing: var(--libitum-typography-accent-metric-letter-spacing);
 }
 
 .learning-shell-progress {
   display: flex;
   flex-direction: column;
-  gap: var(--libitum-spacing-4);
+  gap: var(--libitum-spacing-8);
 }
 
 /* 막대 높이 8은 `spacing-8`과 같은 값이라 토큰으로 적습니다. `overflow: hidden`이
@@ -81,7 +81,7 @@
 .learning-shell-progress-track {
   height: var(--libitum-spacing-8);
   border-radius: var(--libitum-radius-full);
-  background: var(--libitum-color-gray-200);
+  background: var(--libitum-color-gray-300);
   overflow: hidden;
   display: flex;
   flex-direction: row;
@@ -114,7 +114,7 @@
 /* 지시문 — 카드 밖 회색 한 줄입니다. 가로 텍스트라 `flex-shrink: 0`을 주지 않습니다. */
 .learning-shell-instruction {
   text-align: center;
-  color: var(--libitum-color-gray-500);
+  color: var(--libitum-color-gray-400);
   font-family: var(--libitum-typography-label-l-font-family);
   font-weight: var(--libitum-typography-label-l-font-weight);
   font-size: var(--libitum-typography-label-l-font-size);
