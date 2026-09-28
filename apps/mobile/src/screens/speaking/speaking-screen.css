@@ -1,0 +1,105 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 말하기의 카드 안 · 작업
+   영역입니다(Figma 65-282). 뼈대는 `LearningShell`이 집니다. */
+
+/* 카드 안 — 판정 자리 · 문장 · 발음 표기 · 파형이 가운데 줄로 섭니다. 높이 하한은 듣기 ·
+   문장 만들기와 같은 244입니다(문항마다 카드가 흔들리지 않게). 하한이지 고정이 아닙니다. */
+.speaking-screen-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-16);
+  min-height: 244px;
+}
+
+.speaking-screen-verdict-slot {
+  min-height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 따라 말할 문장 — `display` 글꼴(34 · ExtraBold)입니다. */
+.speaking-screen-sentence {
+  margin-top: var(--libitum-spacing-16);
+  text-align: center;
+  font-family: var(--libitum-typography-display-font-family);
+  font-size: var(--libitum-typography-display-font-size);
+  font-weight: var(--libitum-typography-display-font-weight);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+/* 낱말 조각 — Lynx에서 안쪽 `<text>`는 바깥의 글꼴 크기를 물려받지 않아(기기 확인) 같은
+   `display` 글꼴을 다시 줍니다. */
+.speaking-screen-word {
+  font-family: var(--libitum-typography-display-font-family);
+  font-size: var(--libitum-typography-display-font-size);
+  font-weight: var(--libitum-typography-display-font-weight);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+/* 판정 전에는 한 색(본문색)입니다. 판정 뒤에는 말하지 못한 낱말이 흐린 회색(gray-400)으로
+   물러나고, 맞게 말한 낱말이 주색으로 섭니다. */
+.speaking-screen-sentence-plain .speaking-screen-word {
+  color: var(--libitum-color-fg-neutral);
+}
+
+.speaking-screen-sentence-judged .speaking-screen-word {
+  color: var(--libitum-color-gray-400);
+}
+
+.speaking-screen-sentence-judged .speaking-screen-word-matched {
+  color: var(--libitum-color-brand-primary);
+}
+
+/* 발음 표기 — `heading-s` · gray-600. */
+.speaking-screen-romanization {
+  text-align: center;
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 파형 — 100 × 100은 디자인 실측값입니다. */
+.speaking-screen-waves {
+  flex-shrink: 0;
+}
+
+.speaking-screen-waves-icon {
+  width: 100px;
+  height: 100px;
+}
+
+/* 작업 영역의 안내 한 줄 — 디자인의 「Tab to continue」 자리입니다(gray-400 · label-l). */
+.speaking-screen-hint-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--libitum-spacing-48);
+}
+
+.speaking-screen-hint {
+  text-align: center;
+  color: var(--libitum-color-gray-400);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.speaking-screen-complete {
+  margin-top: var(--libitum-spacing-48);
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}

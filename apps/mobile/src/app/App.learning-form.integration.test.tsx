@@ -104,7 +104,13 @@ function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
 
-const allForms: readonly LearningForm[] = ["listening", "sentence-order", "word-choice", "culture"];
+const allForms: readonly LearningForm[] = [
+  "listening",
+  "sentence-order",
+  "word-choice",
+  "culture",
+  "speaking",
+];
 
 // 아래 두 표는 `Record<LearningForm, …>`이라 `LearningForm`에 넷째 멤버 `culture`가
 // 늘면서 tsc(TS2741)가 `culture` 키를 요구합니다 — `journey-map.unit.test.ts`의
@@ -119,6 +125,7 @@ const titleTestIdByForm: Record<LearningForm, string> = {
   "sentence-order": "sentence-order-screen-content",
   "word-choice": "word-choice-screen-content",
   culture: "culture-screen-title",
+  speaking: "speaking-screen-content",
 };
 
 // 문구가 없는 화면은 `undefined`입니다 — 학습 껍데기로 옮겨간 화면은 제목 줄이 걷혀
@@ -129,6 +136,7 @@ const titleTextByForm: Record<LearningForm, ((ordinal: number) => string) | unde
   "sentence-order": undefined,
   "word-choice": undefined,
   culture: cultureScreenTitle,
+  speaking: undefined,
 };
 
 // I-W5-1 · 학습형 셋 각각을 배정표가 돌려준다고 스텝(스텝은 항상 "ordering", 서수

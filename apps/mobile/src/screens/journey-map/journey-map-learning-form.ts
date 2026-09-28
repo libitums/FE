@@ -49,7 +49,9 @@ const learningFormsByStep: Record<JourneyStepId, readonly [LearningForm, ...Lear
   // ⟨2026-09-28⟩ 첫 인사는 듣기 뒤에 문장 만들기가 이어집니다 — 문장 만들기(Figma 65-14)에
   // 처음 닿는 자리입니다. 문항은 `sentenceOrderQuestionsByStep.greeting`의 임시 셋입니다.
   greeting: ["listening", "sentence-order"],
-  introduction: ["listening", "word-choice"],
+  // ⟨2026-09-28⟩ 이름 묻기는 듣기 → 낱말 고르기 뒤에 말하기가 이어집니다 — 말하기(Figma
+  // 65-282)에 처음 닿는 자리입니다. 문항은 `speakingQuestionsByStep.introduction`의 임시 셋입니다.
+  introduction: ["listening", "word-choice", "speaking"],
   ordering: ["listening"],
   appointment: ["listening"],
   directions: ["listening"],

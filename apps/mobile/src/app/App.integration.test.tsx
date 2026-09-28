@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { speakingQuestionsForStep } from "../screens/speaking/speaking";
 import { sentenceOrderQuestionsForStep } from "../screens/sentence-order/sentence-order";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import { questionsForStep } from "../screens/listening/listening";
@@ -301,6 +302,12 @@ function completeSentenceOrder(stepId: JourneyStepId): void {
     fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 다음
   }
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 결과 보기
+}
+
+// 학습 결과 화면이 아직 서지 않았음을 봅니다 — 서 있으면 그 나가기를 돌려줍니다.
+function lessonCompleteExitOrNull(): Element | null {
+  const exit = screen.queryByTestId("lesson-complete-screen-exit");
+  return exit === null ? null : exit;
 }
 
 function lessonCompleteExit(): Element {
@@ -1141,8 +1148,12 @@ test("둘째 활동이 그 스텝의 낱말 고르기 문항을 연다 — 순�
 });
 
 // 평가는 **활동을 다 마친 뒤** 한 번입니다. 첫 활동에서 이미 평가로 갔다면 위 테스트가
-// 잡고, 둘째 활동 뒤에 평가가 안 오면 이 테스트가 잡습니다.
-test("활동 둘을 다 마치면 그때 학습 결과 화면에 닿는다", () => {
+// 잡고, 마지막 활동 뒤에 평가가 안 오면 이 테스트가 잡습니다.
+//
+// ⟨2026-09-28⟩ 이름 묻기가 듣기 → 낱말 고르기 → **말하기** 셋을 잇습니다. 이 계층에는 음성
+// 인식 모듈이 없으므로 말하기의 문항은 `말하기` → `건너뛰기`로 넘깁니다 — 건너뛴 문항은 결과에
+// 실리지 않고, 듣기 · 낱말 고르기의 결과만으로 판정합니다.
+test("활동 셋을 다 마치면 그때 학습 결과 화면에 닿는다", () => {
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("introduction");
@@ -1151,6 +1162,14 @@ test("활동 둘을 다 마치면 그때 학습 결과 화면에 닿는다", () 
   answerAllWordChoiceQuestions("introduction", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
+  expect(screen.getByTestId("speaking-screen-content")).toBeInTheDocument();
+  expect(lessonCompleteExitOrNull()).toBeNull();
+  for (let index = 0; index < speakingQuestionsForStep("introduction").length; index += 1) {
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 말하기
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 건너뛰기
+  }
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 결과 보기
+
   expect(lessonCompleteExit()).toBeInTheDocument();
-  expect(screen.queryByTestId("word-choice-screen-content")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("speaking-screen-content")).not.toBeInTheDocument();
 });
