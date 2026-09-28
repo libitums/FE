@@ -14,6 +14,7 @@ import {
   journeyMapSections,
 } from "../screens/journey-map/journey-map";
 import { roleplaySectionsFrom } from "../screens/roleplay-list/roleplay-list";
+import { premiumRoleplayItemsFor } from "../screens/roleplay-list/roleplay-premium-items";
 import type { MessengerAppProps, MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type {
   NotificationAppProps,
@@ -136,13 +137,16 @@ export function App({
   // 롤플레이 구획입니다. **진행에서 파생합니다** — 에피소드는 여정에서 그 에피소드의
   // 항목을 전부 끝냈을 때 열리고, 그 판정의 출처는 위의 진행 넷입니다. 상태로 따로 두면
   // 진행과 어긋날 자리가 생깁니다(ADR-0007 D3).
-  const roleplaySections = roleplaySectionsFrom(journeyMapSections, (item) =>
-    isMapItemComplete(item, {
-      completedStepCount,
-      completedMessengerUnitIds,
-      completedPhoneCallUnitIds,
-      completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
-    }),
+  const roleplaySections = roleplaySectionsFrom(
+    journeyMapSections,
+    (item) =>
+      isMapItemComplete(item, {
+        completedStepCount,
+        completedMessengerUnitIds,
+        completedPhoneCallUnitIds,
+        completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
+      }),
+    premiumRoleplayItemsFor,
   );
 
   const wiring = screenWiring({

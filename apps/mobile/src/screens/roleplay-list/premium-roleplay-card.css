@@ -1,0 +1,102 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 디자인이 없는 카드라 치수는
+   기본 카드(`roleplay-card.css`, Figma 81-7985)의 것을 그대로 씁니다. */
+
+/* 면은 브랜드 주황입니다 — 기본 카드의 어두운 회색 옆에서 「이 줄은 다르다」가 먼저
+   읽히게 합니다. 그림이 오면 이 면은 그림 뒤로 가려집니다. */
+.premium-roleplay-card {
+  position: relative;
+  width: 160px;
+  height: 190px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-brand-primary);
+}
+
+/* 아래쪽 그러데이션입니다. 기본 카드와 같은 값입니다 — 그림 위에서 글자를 받칩니다. */
+.premium-roleplay-card-shade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 86px;
+  background-image: linear-gradient(to bottom, rgba(27, 27, 27, 0), #1b1b1b);
+}
+
+/* 배지 — 왼쪽 위에 떠 있는 흰 알약입니다. */
+.premium-roleplay-card-badge {
+  position: absolute;
+  top: var(--libitum-spacing-8);
+  left: var(--libitum-spacing-8);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-white);
+}
+
+.premium-roleplay-card-badge-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}
+
+.premium-roleplay-card-badge-label {
+  color: var(--libitum-color-brand-primary);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}
+
+.premium-roleplay-card-text {
+  position: absolute;
+  left: var(--libitum-spacing-8);
+  right: var(--libitum-spacing-8);
+  bottom: var(--libitum-spacing-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
+.premium-roleplay-card-title {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-accent-chapter-font-family);
+  font-weight: var(--libitum-typography-accent-chapter-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  text-overflow: ellipsis;
+}
+
+.premium-roleplay-card-situation {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+  text-overflow: ellipsis;
+}
+
+/* 에피소드 잠김 — 기본 카드와 같은 막과 자물쇠입니다. 결제 잠김에는 이 막이 없습니다:
+   여정을 끝낸 사람에게는 카드가 온전히 보여야 무엇이 기다리는지 읽힙니다. */
+.premium-roleplay-card-lock {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(42, 48, 56, 0.6);
+}
+
+.premium-roleplay-card-lock-icon {
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
+}

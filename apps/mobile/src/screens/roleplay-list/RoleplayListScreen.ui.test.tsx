@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
-import type { RoleplayItem, RoleplaySection } from "./roleplay-list.contract";
+import type { PremiumRoleplayItem, RoleplayItem, RoleplaySection } from "./roleplay-list.contract";
 import { RoleplayListScreen } from "./RoleplayListScreen";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 구획은 이 파일 안의 fixture로
@@ -26,12 +26,25 @@ const visualNovelItem: RoleplayItem = {
   title: "카페에 도착한 지민",
 };
 
+const wrongOrder: PremiumRoleplayItem = {
+  id: "premium-wrong-order",
+  title: "주문이 잘못 나왔어요",
+  situation: "카페 직원에게 정중하게 말하기",
+};
+
+const sharedTable: PremiumRoleplayItem = {
+  id: "premium-shared-table",
+  title: "합석해도 될까요?",
+  situation: "옆자리 손님과 자리 나누기",
+};
+
 const openSection: RoleplaySection = {
   episodeId: "tutorial",
   label: "Episode 0.",
   title: "Tutorial.",
   unlocked: true,
   items: [messengerItem, phoneCallItem],
+  premiumItems: [wrongOrder, sharedTable],
 };
 
 const lockedSection: RoleplaySection = {
@@ -40,6 +53,7 @@ const lockedSection: RoleplaySection = {
   title: "Cafe.",
   unlocked: false,
   items: [visualNovelItem],
+  premiumItems: [wrongOrder],
 };
 
 const sections: readonly RoleplaySection[] = [openSection, lockedSection];
@@ -82,6 +96,7 @@ test("[U3] 화면 제목이 스크롤 컨테이너 밖에 있다", () => {
 
   const scroll = screen.getByTestId("roleplay-list-screen-scroll");
   expect(within(scroll).queryByTestId("roleplay-list-screen-title")).not.toBeInTheDocument();
+  expect(within(scroll).queryByTestId("roleplay-list-screen-head")).not.toBeInTheDocument();
 });
 
 test("[U8] 스크롤 컨테이너와 목록 상자에 accessibility-*가 하나도 붙지 않는다", () => {
@@ -212,4 +227,124 @@ test("[V2] 전체 보기 tap → onViewAll이 그 에피소드 id로 1회, onSel
   expect(onViewAll).toHaveBeenCalledTimes(1);
   expect(onViewAll).toHaveBeenCalledWith("tutorial");
   expect(onSelectItem).not.toHaveBeenCalled();
+});
+
+// ------------------------------------------------------------------ 결제 롤플레이 줄
+
+const noPremiumSection: RoleplaySection = { ...openSection, premiumItems: [] };
+
+test("[P1] 결제 롤플레이 줄이 기본 줄 아래에 따로 서고 카드가 받은 순서대로 선다", () => {
+  renderScreen({ sections: [openSection] });
+
+  const section = screen.getByTestId("roleplay-list-section-tutorial");
+  const basicRow = screen.getByTestId("roleplay-list-section-row-tutorial");
+  const premium = screen.getByTestId("roleplay-list-section-premium-tutorial");
+  expect(within(section).getByTestId("roleplay-list-section-premium-tutorial")).toBe(premium);
+  expect(basicRow.compareDocumentPosition(premium) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+  const row = screen.getByTestId("roleplay-list-section-premium-row-tutorial");
+  expect(Array.from(row.children).map((el) => el.getAttribute("data-testid"))).toEqual([
+    "roleplay-premium-card-premium-wrong-order",
+    "roleplay-premium-card-premium-shared-table",
+  ]);
+  expect(row.parentElement).toHaveAttribute("scroll-orientation", "horizontal");
+});
+
+test("[P2] 결제 롤플레이가 없는 구획은 둘째 줄을 그리지 않는다", () => {
+  renderScreen({ sections: [noPremiumSection] });
+
+  expect(screen.queryByTestId("roleplay-list-section-premium-tutorial")).not.toBeInTheDocument();
+});
+
+test("[P3] 줄 머리는 한 접근성 요소로 읽히고 header trait를 갖지 않는다", () => {
+  renderScreen({ sections: [openSection] });
+
+  const header = screen.getByTestId("roleplay-list-section-premium-header-tutorial");
+  expect(header).toHaveTextContent("플러스");
+  expect(header).toHaveAttribute("accessibility-element", "true");
+  expect(header).toHaveAttribute(
+    "accessibility-label",
+    "Episode 0. 플러스 롤플레이, 이 에피소드와 닮은 상황을 더 연습해요",
+  );
+  expect(header).not.toHaveAttribute("accessibility-traits", "header");
+});
+
+test("[P4] 열린 에피소드의 결제 카드는 결제 잠김이고, 잠긴 에피소드의 것은 에피소드 잠김이다", () => {
+  renderScreen();
+
+  const openRow = screen.getByTestId("roleplay-list-section-premium-row-tutorial");
+  const lockedRow = screen.getByTestId("roleplay-list-section-premium-row-cafe");
+  expect(within(openRow).getByTestId("roleplay-premium-card-premium-wrong-order")).toHaveAttribute(
+    "data-lock",
+    "payment",
+  );
+  expect(
+    within(lockedRow).getByTestId("roleplay-premium-card-premium-wrong-order"),
+  ).toHaveAttribute("data-lock", "episode");
+});
+
+test("[P5] 결제 잠김 카드를 tap하면 그 항목의 안내가 뜨고 onSelectItem은 불리지 않는다", () => {
+  const onSelectItem = vi.fn<(item: RoleplayItem) => void>();
+  renderScreen({ sections: [openSection], onSelectItem });
+  expect(screen.queryByTestId("roleplay-list-premium-notice")).not.toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-shared-table"), {});
+
+  const notice = screen.getByTestId("roleplay-list-premium-notice");
+  expect(within(notice).getByTestId("ui-lynx-dialog-title")).toHaveTextContent("플러스 롤플레이");
+  expect(within(notice).getByTestId("ui-lynx-dialog-description")).toHaveTextContent(
+    "「합석해도 될까요?」 롤플레이는 플러스 전용이에요. 플러스는 아직 준비 중이에요.",
+  );
+  expect(onSelectItem).not.toHaveBeenCalled();
+});
+
+test("[P6] 안내의 확인을 tap하면 안내가 닫힌다", () => {
+  renderScreen({ sections: [openSection] });
+  fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-wrong-order"), {});
+
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-close")).getByTestId("ui-lynx-button"),
+    {},
+  );
+
+  expect(screen.queryByTestId("roleplay-list-premium-notice")).not.toBeInTheDocument();
+});
+
+test("[P7] 에피소드 잠김인 결제 카드는 tap해도 안내가 뜨지 않는다", () => {
+  renderScreen({ sections: [lockedSection] });
+
+  fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-wrong-order"), {});
+
+  expect(screen.queryByTestId("roleplay-list-premium-notice")).not.toBeInTheDocument();
+});
+
+test("[P8] 안내는 스크롤 밖에, 스크롤 뒤에 선다", () => {
+  renderScreen({ sections: [openSection] });
+  fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-wrong-order"), {});
+
+  const scroll = screen.getByTestId("roleplay-list-screen-scroll");
+  expect(within(scroll).queryByTestId("roleplay-list-premium-notice")).not.toBeInTheDocument();
+  expect(
+    scroll.compareDocumentPosition(screen.getByTestId("roleplay-list-premium-notice")) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+});
+
+test("[P9] 안내가 떠 있는 동안 뒤쪽(제목 · 구획)이 가려지고, 닫히면 풀린다", () => {
+  renderScreen({ sections: [openSection] });
+  const head = screen.getByTestId("roleplay-list-screen-head");
+  const section = screen.getByTestId("roleplay-list-section-tutorial");
+  expect(head).toHaveAttribute("accessibility-elements-hidden", "false");
+  expect(section).toHaveAttribute("accessibility-elements-hidden", "false");
+
+  fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-wrong-order"), {});
+  expect(head).toHaveAttribute("accessibility-elements-hidden", "true");
+  expect(section).toHaveAttribute("accessibility-elements-hidden", "true");
+
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-close")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  expect(head).toHaveAttribute("accessibility-elements-hidden", "false");
+  expect(section).toHaveAttribute("accessibility-elements-hidden", "false");
 });

@@ -3,13 +3,16 @@ import { describe, expect, it } from "vitest";
 import type { JourneyMapItem, JourneyMapSection, JourneyStep } from "../journey-map/journey-map";
 import {
   findRoleplaySection,
+  premiumRoleplayAccessibilityLabel,
+  premiumRoleplayLock,
+  premiumRoleplayNotice,
   roleplayFormLabel,
   roleplayItemAccessibilityLabel,
   roleplayItemsFrom,
   roleplaySectionAccessibilityLabel,
   roleplaySectionsFrom,
 } from "./roleplay-list";
-import type { RoleplayItem, RoleplaySection } from "./roleplay-list.contract";
+import type { PremiumRoleplayItem, RoleplayItem, RoleplaySection } from "./roleplay-list.contract";
 
 // fixture는 `JourneyMapItem`(type import)으로 이 파일 안에서 짓습니다 — 여정 폴더의
 // **값**을 가져오지 않습니다(code.md 「import」). 실제 데이터 순서는 integration I1이
@@ -194,6 +197,7 @@ describe("roleplaySectionsFrom", () => {
             title: "약속 확인 전화",
           },
         ],
+        premiumItems: [],
       },
     ]);
   });
@@ -249,6 +253,7 @@ const openSection: RoleplaySection = {
   title: "Tutorial.",
   unlocked: true,
   items: [],
+  premiumItems: [],
 };
 const lockedSection: RoleplaySection = { ...openSection, episodeId: "cafe", unlocked: false };
 
@@ -270,6 +275,77 @@ describe("roleplaySectionAccessibilityLabel", () => {
   it("A2. 잠긴 구획은 잠김과 여는 조건까지 말한다", () => {
     expect(roleplaySectionAccessibilityLabel(lockedSection)).toBe(
       "Episode 0. Tutorial., 잠김, 여정에서 이 에피소드를 끝내면 열립니다",
+    );
+  });
+});
+
+const wrongOrder: PremiumRoleplayItem = {
+  id: "premium-wrong-order",
+  title: "주문이 잘못 나왔어요",
+  situation: "카페 직원에게 정중하게 말하기",
+};
+
+describe("roleplaySectionsFrom — 결제 롤플레이", () => {
+  const premiumFor = (episodeId: string) => (episodeId === "tutorial" ? [wrongOrder] : []);
+
+  it("P1. 에피소드마다 그 에피소드의 결제 롤플레이를 싣는다", () => {
+    const sections = roleplaySectionsFrom([tutorial, cafe], () => true, premiumFor);
+
+    expect(sections.map((section) => [section.episodeId, section.premiumItems])).toEqual([
+      ["tutorial", [wrongOrder]],
+      ["cafe", []],
+    ]);
+  });
+
+  it("P2. 조회 함수를 주지 않으면 결제 롤플레이는 빈 목록이다", () => {
+    expect(roleplaySectionsFrom([tutorial], () => true)[0]?.premiumItems).toEqual([]);
+  });
+
+  it("P3. 기본 롤플레이가 없어도 결제 롤플레이가 있으면 구획이 선다", () => {
+    const sections = roleplaySectionsFrom(
+      [stepsOnly],
+      () => true,
+      () => [wrongOrder],
+    );
+
+    expect(sections.map((section) => section.episodeId)).toEqual(["steps-only"]);
+    expect(sections[0]?.items).toEqual([]);
+  });
+
+  it("P4. 결제 롤플레이는 해금 판정에 끼지 않는다 — 여정의 항목만 센다", () => {
+    expect(roleplaySectionsFrom([tutorial], () => true, premiumFor)[0]?.unlocked).toBe(true);
+    expect(roleplaySectionsFrom([tutorial], () => false, premiumFor)[0]?.unlocked).toBe(false);
+  });
+});
+
+describe("premiumRoleplayLock", () => {
+  it("L1. 에피소드를 끝내지 않았으면 에피소드 잠김이다", () => {
+    expect(premiumRoleplayLock(lockedSection)).toBe("episode");
+  });
+
+  it("L2. 에피소드를 끝냈으면 결제 잠김이다", () => {
+    expect(premiumRoleplayLock(openSection)).toBe("payment");
+  });
+});
+
+describe("premiumRoleplayAccessibilityLabel", () => {
+  it("A3. 에피소드 잠김은 잠김으로 읽는다", () => {
+    expect(premiumRoleplayAccessibilityLabel(wrongOrder, "episode")).toBe(
+      "주문이 잘못 나왔어요, 카페 직원에게 정중하게 말하기, 잠김",
+    );
+  });
+
+  it("A4. 결제 잠김은 잠김이 아니라 플러스 전용으로 읽는다 — 여는 방법이 다르다", () => {
+    expect(premiumRoleplayAccessibilityLabel(wrongOrder, "payment")).toBe(
+      "주문이 잘못 나왔어요, 카페 직원에게 정중하게 말하기, 플러스 전용",
+    );
+  });
+});
+
+describe("premiumRoleplayNotice", () => {
+  it("N1. 누른 항목의 제목을 싣고 준비 중임을 말한다", () => {
+    expect(premiumRoleplayNotice(wrongOrder)).toBe(
+      "「주문이 잘못 나왔어요」 롤플레이는 플러스 전용이에요. 플러스는 아직 준비 중이에요.",
     );
   });
 });
