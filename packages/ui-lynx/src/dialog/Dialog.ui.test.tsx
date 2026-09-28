@@ -38,7 +38,7 @@ describe("Dialog", () => {
     const buttons = screen.getAllByTestId("ui-lynx-button");
     expect(buttons[0]).toHaveAttribute("data-variant", "brand");
     expect(buttons[1]).toHaveAttribute("data-variant", "subtle");
-    expect(buttons[0]).toHaveAttribute("data-size", "m");
+    expect(buttons[0]).toHaveAttribute("data-size", "xl");
     expect(buttons[1]).toHaveAttribute("data-width", "fill");
     expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-cancelactionid", "quit");
   });

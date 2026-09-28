@@ -1,10 +1,12 @@
-import { useEffect, useRef } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { Card } from "@libitums/ui-lynx/card";
+import { Dialog } from "@libitums/ui-lynx/dialog";
 import { Fog } from "@libitums/ui-lynx/fog";
 import { TopBar } from "../../components/TopBar";
-import { learningSessionHeader, learningTimingFlag } from "./learning-shell.contract";
+import { learningTimingFlag } from "./learning-shell.contract";
+import { LearningSessionHeader } from "./LearningSessionHeader";
 import type { LearningForm } from "../../lib/learning-form";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
@@ -25,17 +27,17 @@ import "./learning-shell.css";
 export type LearningShellProps = {
   form: LearningForm;
   /** 유닛 안에서 몇 번째 활동인가입니다(0부터). */
-  activityIndex: number;
-  totalActivityCount: number;
+  /**
+   * 활동 안에서 지금 몇 번째 문항인가입니다(0부터). 세션 헤더의 `Lesson n / N`과 진행
+   * 막대가 이 값에서 납니다.
+   *
+   * ⟨2026-09-28⟩ 전에는 유닛 안의 **활동** 순번이었고 문항 순번은 오른쪽에 따로 섰는데,
+   * 한 줄에 숫자 쌍이 둘이라 어느 것이 지금 나의 위치인지가 읽히지 않았습니다.
+   */
+  questionIndex: number;
+  questionCount: number;
   /** 카드 위 회색 한 줄 — 「무엇을 하라」입니다. */
   instruction: string;
-  /**
-   * 세션 헤더 오른쪽의 짧은 한 줄입니다 — 디자인이 그 자리에 빈 상자를 두었고
-   * (Figma 65-42), 활동이 자기 진행(`문항 1 / 3` 같은 것)을 거기 겁니다.
-   *
-   * 없으면 그 자리는 나가기와 마주 보는 빈 자리로 남아 순번을 줄 가운데 세웁니다.
-   */
-  meta?: string;
   onExit: () => void;
   /** 가운데 카드 안입니다. 활동이 여기서 전개되고 판정도 여기서 납니다. */
   card: ReactNode;
@@ -67,10 +69,9 @@ export type LearningShellProps = {
 
 export function LearningShell({
   form,
-  activityIndex,
-  totalActivityCount,
+  questionIndex,
+  questionCount,
   instruction,
-  meta,
   onExit,
   card,
   workspace,
@@ -81,11 +82,25 @@ export function LearningShell({
   trophyCount = 0,
   onOpenNotifications = () => {},
 }: LearningShellProps): ReactNode {
-  const header = learningSessionHeader(form, activityIndex, totalActivityCount);
+  // 나가기는 **두 걸음**입니다 ⟨2026-09-28⟩. `×`는 묻기만 하고, 실제로 떠나는 것은
+  // 모달의 `그만두기`입니다.
+  //
+  // 한 걸음이면 손이 스친 한 번에 세션이 사라집니다 — 진행은 저장되지 않아 다음에
+  // 처음부터 다시 풀어야 하고, 되돌릴 수단이 없습니다. 되돌릴 수 없는 일 앞에서는
+  // 묻는 것이 맞습니다.
+  const [exitAsked, setExitAsked] = useState(false);
 
   const handleExit = () => {
     "background only";
-    onExit();
+    setExitAsked(true);
+  };
+
+  const handleExitAction = (id: string) => {
+    "background only";
+    setExitAsked(false);
+    if (id === "leave") {
+      onExit();
+    }
   };
 
   const handleAction = () => {
@@ -159,67 +174,12 @@ export function LearningShell({
       {/* 세션 헤더를 상자로 감쌉니다 — 스스로 넘어가는 층(`-advance`)보다 위에 서야
           `×`로 나가는 길이 막히지 않습니다. */}
       <view className="learning-shell-session-layer">
-        <Card surface="secondary" elevation="flat">
-          <Card.Content>
-            <view className="learning-shell-session" data-testid="learning-shell-session">
-              <view className="learning-shell-session-row">
-                <view
-                  className="learning-shell-exit"
-                  data-testid="learning-shell-exit"
-                  accessibility-element={true}
-                  accessibility-label="학습 나가기"
-                  accessibility-traits="button"
-                  bindtap={handleExit}
-                >
-                  <svg
-                    className="learning-shell-exit-icon"
-                    content={cross}
-                    current-color={color.gray[700]}
-                  />
-                </view>
-                <text className="learning-shell-chapter" data-testid="learning-shell-chapter">
-                  {header.chapterLabel}
-                </text>
-                {/* 나가기와 마주 보는 자리입니다 — 비어 있어도 순번을 줄 가운데 세웁니다.
-                    활동이 `meta`를 주면 거기 섭니다. 비면 보이는 것이 없으므로 접근성
-                    트리에 올리지 않습니다. */}
-                <view className="learning-shell-session-spacer">
-                  {meta === undefined ? null : (
-                    <text className="learning-shell-meta" data-testid="learning-shell-meta">
-                      {meta}
-                    </text>
-                  )}
-                </view>
-              </view>
-              <view
-                className="learning-shell-progress"
-                data-testid="learning-shell-progress"
-                accessibility-element={true}
-                accessibility-label={header.accessibilityLabel}
-              >
-                <view className="learning-shell-progress-track">
-                  {/* 0%에서는 그리지 않습니다 — 폭 0짜리 상자가 둥근 끝 때문에 점으로 남아
-                      「조금 했다」로 읽힙니다. */}
-                  {header.fillPercent === 0 ? null : (
-                    <view
-                      className="learning-shell-progress-fill"
-                      data-testid="learning-shell-progress-fill"
-                      style={{ width: `${String(header.fillPercent)}%` }}
-                    />
-                  )}
-                </view>
-                <view className="learning-shell-progress-row">
-                  <text className="learning-shell-form" data-testid="learning-shell-form">
-                    {header.formLabel}
-                  </text>
-                  <text className="learning-shell-percent" data-testid="learning-shell-percent">
-                    {header.percentLabel}
-                  </text>
-                </view>
-              </view>
-            </view>
-          </Card.Content>
-        </Card>
+        <LearningSessionHeader
+          form={form}
+          questionIndex={questionIndex}
+          questionCount={questionCount}
+          onExit={handleExit}
+        />
       </view>
       <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
         {instruction}
@@ -295,6 +255,22 @@ export function LearningShell({
           </view>
         </>
       )}
+      {/* 나가기 확인입니다. **무엇을 잃는지 본문에 적습니다** — 「그만두시겠어요?」만
+          물으면 사용자가 대가를 모른 채 고릅니다.
+
+          `그만두기`가 첫째라 강조 변형을 받습니다(`Dialog` 계약: 첫 액션이 brand).
+          묻는 말에 답하는 순서대로 읽히는 것이 낭독 순서와도 맞습니다. */}
+      {exitAsked ? (
+        <Dialog
+          title="학습을 그만둘까요?"
+          description="지금까지 푼 문항은 저장되지 않고, 다음에 처음부터 다시 풀어야 합니다."
+          actions={[
+            { id: "leave", label: "그만두기" },
+            { id: "stay", label: "계속하기" },
+          ]}
+          bindaction={handleExitAction}
+        />
+      ) : null}
     </view>
   );
 }

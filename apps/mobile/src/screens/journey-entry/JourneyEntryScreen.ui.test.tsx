@@ -11,6 +11,9 @@ import { JourneyEntryScreen } from "./JourneyEntryScreen";
 
 const LANGUAGE = "en";
 
+// 가려지는 가장자리는 호스트가 재서 넘기는 값이라 ui에서는 0입니다 — 이 계층이 보는 것은
+// 「받은 값을 자리에 쓰는가」이고, 실제 수치는 기기에서만 나옵니다.
+const NO_SAFE_AREA = { top: 0, bottom: 0 } as const;
 function startButton(): HTMLElement {
   return within(screen.getByTestId("journey-entry-screen-start")).getByTestId("ui-lynx-button");
 }
@@ -19,7 +22,7 @@ describe("JourneyEntryScreen", () => {
   // JE-U1 — 배경 그림은 장식이라 래퍼가 접근성 트리에서 가립니다. 그리기만 하고 가리지
   // 않으면 스크린리더가 배경 그림까지 읽습니다.
   it("[JE-U1] 배경 그림 · 제목 · 큰 제목 · 안내 · AI 고지 · Start가 선다", () => {
-    render(<JourneyEntryScreen language={LANGUAGE} onEnter={vi.fn()} />);
+    render(<JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onEnter={vi.fn()} />);
 
     expect(screen.getByTestId("journey-entry-screen-title").textContent?.trim()).not.toBe("");
     expect(screen.getByTestId("journey-entry-screen-display").textContent?.trim()).not.toBe("");
@@ -34,7 +37,7 @@ describe("JourneyEntryScreen", () => {
   });
 
   it("[JE-U2] 고른 언어의 라벨이 보인다", () => {
-    render(<JourneyEntryScreen language={LANGUAGE} onEnter={vi.fn()} />);
+    render(<JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onEnter={vi.fn()} />);
 
     expect(screen.getByTestId("journey-entry-screen-language")).toHaveTextContent(
       entryLanguageLabel(LANGUAGE),
@@ -43,7 +46,7 @@ describe("JourneyEntryScreen", () => {
 
   it("[JE-U3] 액션을 누르면 onEnter가 1회다", () => {
     const onEnter = vi.fn();
-    render(<JourneyEntryScreen language={LANGUAGE} onEnter={onEnter} />);
+    render(<JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onEnter={onEnter} />);
 
     fireEvent.tap(startButton(), {});
 
@@ -51,7 +54,7 @@ describe("JourneyEntryScreen", () => {
   });
 
   it("[JE-U4] 제목이 header다", () => {
-    render(<JourneyEntryScreen language={LANGUAGE} onEnter={vi.fn()} />);
+    render(<JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onEnter={vi.fn()} />);
 
     expect(screen.getByTestId("journey-entry-screen-title")).toHaveAttribute(
       "accessibility-traits",
@@ -61,7 +64,14 @@ describe("JourneyEntryScreen", () => {
 
   it("[JE-U5] onBack이 있으면 면 없는 'Back' RoundButton이 서고 누르면 onBack 1회다", () => {
     const onBack = vi.fn();
-    render(<JourneyEntryScreen language={LANGUAGE} onEnter={vi.fn()} onBack={onBack} />);
+    render(
+      <JourneyEntryScreen
+        safeArea={NO_SAFE_AREA}
+        language={LANGUAGE}
+        onEnter={vi.fn()}
+        onBack={onBack}
+      />,
+    );
 
     const back = within(screen.getByTestId("journey-entry-screen-header")).getByTestId(
       "ui-lynx-round-button",
@@ -70,5 +80,30 @@ describe("JourneyEntryScreen", () => {
     expect(back).toHaveAttribute("data-variant", "overlay");
     fireEvent.tap(back, {});
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  // ⟨2026-09-28⟩ 이 화면만 셸의 안쪽 여백을 안 받습니다 — 그림이 끝까지 깔려야 하기
+  // 때문입니다. 그래서 가려지는 가장자리를 피하는 일을 글자 묶음 둘이 직접 집니다.
+  //
+  // **그림이 아니라 글자가 피한다**는 것이 계약입니다. 그림 · Fog에 여백이 붙으면 위
+  // 아래에 닿지 않는 띠가 남고, 그것이 고치려는 바로 그 증상입니다.
+  it("[JE-U9] 가려지는 가장자리를 글자 묶음이 피하고 배경은 그대로 끝까지 간다", () => {
+    const { container } = render(
+      <JourneyEntryScreen
+        safeArea={{ top: 59, bottom: 34 }}
+        language={LANGUAGE}
+        onEnter={vi.fn()}
+      />,
+    );
+
+    const top = container.querySelector(".journey-entry-screen-top");
+    const bottom = container.querySelector(".journey-entry-screen-bottom");
+    expect(top?.getAttribute("style") ?? "").toContain("59px");
+    expect(bottom?.getAttribute("style") ?? "").toContain("34px");
+
+    // 배경 묶음에는 가장자리 몫이 붙지 않습니다.
+    const backdrop = container.querySelector(".journey-entry-screen-backdrop");
+    expect(backdrop?.getAttribute("style") ?? "").not.toContain("59px");
+    expect(backdrop?.getAttribute("style") ?? "").not.toContain("34px");
   });
 });

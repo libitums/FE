@@ -25,7 +25,10 @@ function DialogActionButton({ action, bindaction }: DialogActionButtonProps) {
       <Button
         label={action.label}
         variant={action.variant}
-        size="m"
+        // ⟨2026-09-28⟩ `m` → `xl`입니다. 확인 모달의 액션은 그 순간 화면에서 가장 중요한
+        // 조작인데 `m`은 앱의 다른 주 버튼(전부 `xl`)보다 눈에 띄게 작았고, 되돌릴 수
+        // 없는 선택을 작은 과녁으로 묻게 됩니다.
+        size="xl"
         width="fill"
         disabled={action.disabled}
         loading={action.loading}

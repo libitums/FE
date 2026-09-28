@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import diamond from "@libitums/icons/lynx/diamond";
 import fire from "@libitums/icons/lynx/fire";
+import cross from "@libitums/icons/lynx/cross";
 import tick from "@libitums/icons/lynx/tick";
 import trophy from "@libitums/icons/lynx/trophy";
 import { color } from "@libitums/design-tokens";
@@ -11,6 +12,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { StatChip, statChipDiamondColor } from "../../components/StatChip";
 import { announce } from "../../lib/accessibility";
 import type { AnswerResult } from "../../lib/answer-result";
+import type { AssessmentVerdict } from "../assessment/assessment";
 import {
   lessonCompleteAnnouncement,
   lessonCompleteSubtitle,
@@ -22,27 +24,45 @@ import {
 
 import "./lesson-complete-screen.css";
 
-// 학습 유닛을 통과하면 뜨는 화면입니다(Figma 65-466). 미통과는 이 화면이 아니라 평가
-// 화면이 받습니다 — 갈림은 `render-screen.tsx`가 집니다.
+// 학습 유닛을 마치면 뜨는 화면입니다(Figma 65-466). ⟨2026-09-28⟩ **통과와 미통과가 이
+// 화면 하나입니다** — 그전에는 통과만 여기였고 미통과는 옆의 평가 화면이라, 같은 순간의
+// 두 결과가 전혀 다른 화면으로 보였습니다.
 //
-// **DOM 순서가 곧 낭독 순서입니다** — 지표 → 판정 → 보상 → `Check`. 상태가 없습니다.
+// 갈리는 것은 셋뿐입니다: 표식(✓ · ✗) · 제목 · 보상 카드의 유무. 나머지(지표 칩 · 실수
+// 수 · 틀)는 같습니다 — **같은 일을 한 뒤의 두 결과**이기 때문입니다.
+//
+// **보상은 미통과에서 서지 않습니다.** 얻지 않은 것을 그리면 그 화면이 거짓말을 합니다.
+//
+// **DOM 순서가 곧 낭독 순서입니다** — 지표 → 판정 → 보상 → 액션. 상태가 없습니다.
 export type LessonCompleteScreenProps = {
   readonly results: readonly AnswerResult[];
+  /** 통과 여부입니다. 화면이 계산하지 않고 받습니다 — 판정의 정본은 `judgeAssessment`입니다. */
+  readonly verdict: AssessmentVerdict;
   /** 상단 지표 셋입니다. 화면이 세지 않고 받습니다. */
   readonly streakDays: number;
   readonly trophyCount: number;
   readonly diamondCount: number;
   readonly reward: LessonReward;
   readonly onExit: () => void;
+  /**
+   * 미통과에서만 씁니다 — 같은 유닛을 첫 문항부터 다시 엽니다.
+   *
+   * **나가는 수단이 아니라 나아가는 수단입니다**(ADR-0022 D1의 「나가는 수단은 어느
+   * 시점에도 정확히 하나」와 부딪히지 않습니다). 뒤로 가는 것이 아니라 새 세션을 여는
+   * 것이고, 뒤로 가는 길은 여전히 `onExit` 하나입니다.
+   */
+  readonly onRetry?: () => void;
 };
 
 export function LessonCompleteScreen({
   results,
+  verdict,
   streakDays,
   trophyCount,
   diamondCount,
   reward,
   onExit,
+  onRetry,
 }: LessonCompleteScreenProps): ReactNode {
   const mistakeCount = lessonMistakeCount(results);
 
@@ -57,8 +77,8 @@ export function LessonCompleteScreen({
   // `mistakeCount`도 갈리지 않습니다. 듣기 화면이 `[complete]`를 dep으로 두고 같은
   // 근거를 적는 것과 같은 자리입니다.
   useEffect(() => {
-    announce(lessonCompleteAnnouncement(mistakeCount));
-  }, [mistakeCount]);
+    announce(lessonCompleteAnnouncement(mistakeCount, verdict));
+  }, [mistakeCount, verdict]);
 
   return (
     <view className="lesson-complete-screen" data-testid="lesson-complete-screen">
@@ -86,11 +106,21 @@ export function LessonCompleteScreen({
 
       <view className="lesson-complete-screen-spacer-top" />
 
-      {/* 완료 표식 — 장식입니다. 판정은 아래 제목과 낭독이 말합니다. */}
-      <view className="lesson-complete-screen-badge" accessibility-elements-hidden={true}>
+      {/* 판정 표식 — 장식입니다. 판정은 아래 제목과 낭독이 말합니다. 그래도 모양을
+          가르는 것은 색만으로 갈리지 않게 하기 위해서입니다(WCAG 1.4.1): 면 색이
+          안 보이는 환경에서도 ✓ · ✗가 갈립니다. */}
+      <view
+        className={
+          verdict === "failed"
+            ? "lesson-complete-screen-badge lesson-complete-screen-badge-failed"
+            : "lesson-complete-screen-badge"
+        }
+        data-verdict={verdict}
+        accessibility-elements-hidden={true}
+      >
         <svg
           className="lesson-complete-screen-badge-icon"
-          content={tick}
+          content={verdict === "failed" ? cross : tick}
           current-color={color.white}
         />
       </view>
@@ -101,7 +131,7 @@ export function LessonCompleteScreen({
           data-testid="lesson-complete-screen-title"
           accessibility-traits="header"
         >
-          {lessonCompleteTitle(mistakeCount)}
+          {lessonCompleteTitle(mistakeCount, verdict)}
         </text>
         {/* 연속이 없으면(0일) 알약을 세우지 않습니다 — 「0 Day Streak」은 축하가 아닙니다. */}
         {streakDays > 0 ? (
@@ -129,41 +159,74 @@ export function LessonCompleteScreen({
         </text>
       </view>
 
-      {/* 보상 카드 둘 — 읽기 전용입니다. 카드마다 한 요소로 묶어 이름을 답니다. */}
-      <view className="lesson-complete-screen-rewards">
-        <view
-          className="lesson-complete-screen-reward lesson-complete-screen-reward-diamond"
-          data-testid="lesson-complete-screen-reward-diamond"
-          accessibility-element={true}
-          accessibility-label={`보상 다이아 ${reward.diamondAmount}개`}
-        >
-          <svg
-            className="lesson-complete-screen-reward-icon"
-            content={diamond}
-            current-color={statChipDiamondColor}
-          />
-          <text className="lesson-complete-screen-reward-label">{`+ ${reward.diamondAmount} REWARD`}</text>
+      {/* 보상 카드 둘 — 읽기 전용입니다. 카드마다 한 요소로 묶어 이름을 답니다.
+
+          **미통과에서는 아예 서지 않습니다** — 얻지 않은 것을 그리면 화면이 거짓말을
+          합니다. 빈 상자도 두지 않습니다: 「자리는 있는데 비었다」와 「자리가 없다」가
+          구분되지 않고, 다음 화면이 그 빈 상자를 복사합니다(ADR-0022 D1과 같은 근거). */}
+      {verdict === "failed" ? null : (
+        <view className="lesson-complete-screen-rewards">
+          <view
+            className="lesson-complete-screen-reward lesson-complete-screen-reward-diamond"
+            data-testid="lesson-complete-screen-reward-diamond"
+            accessibility-element={true}
+            accessibility-label={`보상 다이아 ${reward.diamondAmount}개`}
+          >
+            <svg
+              className="lesson-complete-screen-reward-icon"
+              content={diamond}
+              current-color={statChipDiamondColor}
+            />
+            <text className="lesson-complete-screen-reward-label">{`+ ${reward.diamondAmount} REWARD`}</text>
+          </view>
+          <view
+            className="lesson-complete-screen-reward lesson-complete-screen-reward-grade"
+            data-testid="lesson-complete-screen-reward-grade"
+            accessibility-element={true}
+            accessibility-label={`등급 ${reward.grade}`}
+          >
+            <svg
+              className="lesson-complete-screen-reward-icon"
+              content={trophy}
+              current-color={color.feedback.warning}
+            />
+            <text className="lesson-complete-screen-reward-label">{reward.grade}</text>
+          </view>
         </view>
-        <view
-          className="lesson-complete-screen-reward lesson-complete-screen-reward-grade"
-          data-testid="lesson-complete-screen-reward-grade"
-          accessibility-element={true}
-          accessibility-label={`등급 ${reward.grade}`}
-        >
-          <svg
-            className="lesson-complete-screen-reward-icon"
-            content={trophy}
-            current-color={color.feedback.warning}
-          />
-          <text className="lesson-complete-screen-reward-label">{reward.grade}</text>
-        </view>
-      </view>
+      )}
 
       <view className="lesson-complete-screen-spacer" />
 
-      {/* [고정] 액션 — 나가는 수단 하나. 목적지는 맵입니다(평가 화면의 `맵으로`와 같습니다). */}
-      <view className="lesson-complete-screen-action" data-testid="lesson-complete-screen-exit">
-        <Button label="Check →" variant="neutral" size="xl" width="fill" bindtap={onExit} />
+      {/* [고정] 액션. **나가는 수단은 어느 경우에도 하나**입니다 — 맵으로 가는 길입니다.
+
+          미통과에서만 그 위에 `Try again`이 한 줄 더 섭니다. 그것은 나가는 수단이 아니라
+          **나아가는 수단**입니다 — 뒤로 가는 것이 아니라 같은 유닛을 첫 문항부터 새로
+          엽니다. 문화 학습의 `퀴즈 풀기`와 같은 갈래입니다(ADR-0022 D2 표의 아홉째 주).
+
+          위에 두는 것은 미통과에서 사용자가 더 자주 고를 길이기 때문입니다. */}
+      {verdict === "failed" && onRetry !== undefined ? (
+        <view className="lesson-complete-screen-action" data-testid="lesson-complete-screen-retry">
+          <Button label="Try again" variant="brand" size="xl" width="fill" bindtap={onRetry} />
+        </view>
+      ) : null}
+      <view
+        className={
+          verdict === "failed"
+            ? "lesson-complete-screen-action lesson-complete-screen-action-secondary"
+            : "lesson-complete-screen-action"
+        }
+        data-testid="lesson-complete-screen-exit"
+      >
+        {/* 미통과에서는 `outline`입니다 — 그 화면의 주 동작은 위의 `Try again`이고, 둘 다
+            꽉 찬 면이면 어느 것이 주된 길인지가 색으로만 갈립니다. 통과에서는 이것이
+            유일한 버튼이라 `neutral` 그대로입니다. */}
+        <Button
+          label={verdict === "failed" ? "맵으로" : "Check →"}
+          variant={verdict === "failed" ? "outline" : "neutral"}
+          size="xl"
+          width="fill"
+          bindtap={onExit}
+        />
       </view>
     </view>
   );

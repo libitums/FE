@@ -9,6 +9,7 @@ import { lessonRewardPlaceholder } from "./lesson-complete";
 function fixture(overrides: Partial<Parameters<typeof LessonCompleteScreen>[0]> = {}) {
   return {
     results: ["correct", "correct", "correct"] as const,
+    verdict: "passed" as const,
     streakDays: 1,
     trophyCount: 0,
     diamondCount: 0,
@@ -88,4 +89,69 @@ test("[LCS6] Check tap → onExit 정확히 1회", () => {
   fireEvent.tap(button as Element, {});
 
   expect(onExit).toHaveBeenCalledTimes(1);
+});
+
+// ---------------------------------------------------------------- 미통과 (2026-09-28)
+//
+// 통과와 미통과가 **같은 화면**이 됐습니다. 그전에는 미통과가 옆의 평가 화면이라 같은
+// 순간의 두 결과가 전혀 다르게 보였습니다. 아래 셋이 그 통일의 계약입니다: 틀은 같고,
+// 표식 · 제목 · 보상만 갈립니다.
+
+test("[LCS6] 미통과는 같은 틀에 FAILED 제목이 서고 보상 카드가 아예 없다", () => {
+  render(
+    <LessonCompleteScreen
+      {...fixture({ verdict: "failed", results: ["incorrect", "incorrect", "correct"] })}
+    />,
+  );
+
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON FAILED");
+  expect(screen.getByTestId("lesson-complete-screen-subtitle")).toHaveTextContent(
+    "YOU MADE 2 MISTAKES IN THIS LESSON",
+  );
+  // 틀은 같습니다 — 지표 칩은 그대로 섭니다.
+  expect(screen.getByTestId("lesson-complete-screen-streak")).toBeInTheDocument();
+  // 얻지 않은 것을 그리지 않습니다. 빈 상자도 두지 않습니다.
+  expect(screen.queryByTestId("lesson-complete-screen-reward-diamond")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("lesson-complete-screen-reward-grade")).not.toBeInTheDocument();
+});
+
+// 색이 유일한 채널이 되지 않게 모양도 갈립니다(WCAG 1.4.1). `data-verdict`가 그 프로브입니다.
+test("[LCS7] 표식이 판정마다 갈린다", () => {
+  const { container, unmount } = render(<LessonCompleteScreen {...fixture()} />);
+  expect(container.querySelector(".lesson-complete-screen-badge")).toHaveAttribute(
+    "data-verdict",
+    "passed",
+  );
+  unmount();
+
+  const failed = render(<LessonCompleteScreen {...fixture({ verdict: "failed" })} />);
+  expect(failed.container.querySelector(".lesson-complete-screen-badge")).toHaveAttribute(
+    "data-verdict",
+    "failed",
+  );
+});
+
+// 나가는 수단은 어느 경우에도 하나입니다(ADR-0022 D1). 미통과의 `Try again`은 뒤로 가는
+// 것이 아니라 새 세션을 여는 **나아가는** 수단이라 그 규칙과 부딪히지 않습니다.
+test("[LCS8] 미통과에만 다시 풀기가 서고, 나가기는 두 경우 모두 하나다", () => {
+  const onRetry = vi.fn();
+  const onExit = vi.fn();
+
+  const passed = render(<LessonCompleteScreen {...fixture({ onRetry, onExit })} />);
+  expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-exit")).toBeInTheDocument();
+  passed.unmount();
+
+  render(<LessonCompleteScreen {...fixture({ verdict: "failed", onRetry, onExit })} />);
+  expect(screen.getByTestId("lesson-complete-screen-retry")).toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-exit")).toBeInTheDocument();
+
+  // 탭 대상은 감싼 상자가 아니라 그 안의 버튼입니다(위 [LCS5]와 같은 형태입니다).
+  const retryButton = screen
+    .getByTestId("lesson-complete-screen-retry")
+    .querySelector('[data-testid="ui-lynx-button"]');
+  fireEvent.tap(retryButton as Element, {});
+
+  expect(onRetry).toHaveBeenCalledTimes(1);
+  expect(onExit).not.toHaveBeenCalled();
 });
