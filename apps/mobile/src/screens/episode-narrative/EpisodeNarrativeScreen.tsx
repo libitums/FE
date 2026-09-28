@@ -88,14 +88,16 @@ export function EpisodeNarrativeScreen({
         <view className="episode-narrative-screen-shade" />
       </view>
 
-      {/* 넘기기 층 — 보조기술에 「다음 대사」 버튼 하나로 섭니다. 스스로 핸들러를 갖지
-          않습니다: 이 층의 탭도 루트로 올라가 넘깁니다. */}
+      {/* 넘기기 층 — 보조기술에 「다음 대사」 버튼 하나로 섭니다. 버튼 특성을 가진 요소라
+          스스로 탭을 받습니다(스크린리더의 두 번 탭이 여기로 옵니다). `catchtap`이라 루트의
+          넘기기와 겹치지 않습니다. */}
       <view
         className="episode-narrative-screen-advance"
         data-testid="episode-narrative-screen-advance"
         accessibility-element={true}
         accessibility-traits="button"
         accessibility-label={`다음 대사, ${episodeNarrativeProgressLabel(narrative, beatIndex)}`}
+        catchtap={handleAdvance}
       />
 
       <view

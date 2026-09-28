@@ -84,3 +84,13 @@ test("[ENS5] 대화 패널을 눌러도 한 장면만 넘어간다", () => {
   expect(line()).toHaveTextContent("둘째 대사");
   expect(onFinish).not.toHaveBeenCalled();
 });
+
+test("[ENS6] 넘기기 층은 스스로 탭을 받아(스크린리더 두 번 탭) 한 장면만 넘긴다", () => {
+  render(<EpisodeNarrativeScreen {...fixture()} />);
+
+  fireEvent.tap(screen.getByTestId("episode-narrative-screen-advance"), {
+    eventType: "catchEvent",
+  });
+
+  expect(line()).toHaveTextContent("둘째 대사");
+});

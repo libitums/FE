@@ -72,7 +72,9 @@ function renderEpisodeNarrativeScreen(
 ) {
   const episode = findEpisode(screen.episodeId);
   return (
+    // 에피소드가 바뀌면 새 인스턴스로 섭니다 — 장면 번호(화면 로컬)가 앞 에피소드에서 이어지지 않게 합니다.
     <EpisodeNarrativeScreen
+      key={screen.episodeId}
       insets={wiring.safeAreaInsets}
       label={episode.label}
       narrative={episodeNarrativeFor(screen.episodeId)}
