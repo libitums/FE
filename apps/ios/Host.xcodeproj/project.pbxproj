@@ -18,6 +18,7 @@
 		2B94A3DD2D6614980060892E /* AudioPlaybackModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D6614980060892E /* AudioPlaybackModule.swift */; };
 		2B94A3DD2D66149800608930 /* CompletionAnnouncementModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608930 /* CompletionAnnouncementModule.swift */; };
 		2B94A3DD2D66149800608941 /* HandwritingRecognitionModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */; };
+		2B94A3F02D6614980060894A /* HandwritingTraceModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */; };
 		2B94A3DD2D66149800608943 /* SpeechRecognitionModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */; };
 		2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */; };
 		2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */; };
@@ -43,6 +44,7 @@
 		2B94A3DC2D6614980060892E /* AudioPlaybackModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlaybackModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608930 /* CompletionAnnouncementModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionAnnouncementModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandwritingRecognitionModule.swift; sourceTree = "<group>"; };
+		2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandwritingTraceModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionAnnouncementModuleTests.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionModuleTests.swift; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 				2B94A3DC2D6614980060892E /* AudioPlaybackModule.swift */,
 				2B94A3DC2D66149800608930 /* CompletionAnnouncementModule.swift */,
 				2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */,
+				2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */,
 				2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */,
 				2B94A3E02D6614980060892E /* FontScale.swift */,
 				2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */,
@@ -272,6 +275,7 @@
 				2B94A3DD2D6614980060892E /* AudioPlaybackModule.swift in Sources */,
 				2B94A3DD2D66149800608930 /* CompletionAnnouncementModule.swift in Sources */,
 				2B94A3DD2D66149800608941 /* HandwritingRecognitionModule.swift in Sources */,
+				2B94A3F02D6614980060894A /* HandwritingTraceModule.swift in Sources */,
 				2B94A3DD2D66149800608943 /* SpeechRecognitionModule.swift in Sources */,
 				2B94A3E12D6614980060892E /* FontScale.swift in Sources */,
 				2B94A3CD2D6613730060892C /* ViewController.swift in Sources */,

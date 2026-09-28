@@ -93,3 +93,38 @@
   line-height: var(--libitum-typography-body-l-line-height);
   letter-spacing: var(--libitum-typography-body-l-letter-spacing);
 }
+
+/* 그리기 무대 — 안내 글자와 표면을 겹쳐 세웁니다 ⟨2026-09-28⟩.
+
+   면 · 테두리 · 모서리가 표면에서 여기로 옮겨 왔습니다(`drawing-surface.css`). 크기는
+   표면과 **같은 수**여야 합니다 — 무대가 더 크면 안내 글자가 표면 밖에 걸쳐 그려지고,
+   그러면 사람이 보는 안내와 호스트가 재는 안내가 갈립니다. */
+.handwriting-probe-screen-trace-stage {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  flex-shrink: 0;
+  align-self: center;
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-background-primary);
+}
+
+/* 안내 그림 — 호스트가 구운 PNG입니다. 표면 **뒤**에 섭니다(DOM에서 먼저 옵니다).
+
+   ⭐ **글자가 아니라 그림인 이유.** 화면이 `<text>`로 안내를 그리고 호스트가 같은 글자를
+   다시 그렸더니 두 렌더러가 다르게 배치했습니다 — 같은 글꼴 이름·같은 크기인데 잉크가
+   22pt 어긋나고 6% 더 컸고, 화면에 보이는 안내를 완벽하게 따라 써도 점수가 0이었습니다
+   (2026-09-28, 기기에서 잼). 그림을 받아 그대로 깔면 보는 것과 재는 것이 같은 픽셀이라
+   원리적으로 어긋날 수 없습니다.
+
+   크기는 표면과 **같은 수**여야 합니다 — 그림의 픽셀 크기가 표면 크기와 같게 구워지므로,
+   여기서 늘이거나 줄이면 그 배율만큼 채점이 어긋납니다. 색은 그림에 이미 구워져 있습니다
+   (JS가 토큰 값을 넘겨 줍니다). */
+.handwriting-probe-screen-guide {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 300px;
+}
