@@ -59,7 +59,7 @@ test("[SC2] 전역 목록의 줄 수가 스스로 적은 수와 같고 오름차
   expect(names).toEqual([...names].sort());
 });
 
-test("[SC3] 액션 행에 안내·표면·지우기·읽기·결과·견주기·견주기 결과·계수가 그 순서로 있다", () => {
+test("[SC3] 액션 행에 표면·지우기·읽기·결과·견주기·견주기 결과·계수가 그 순서로 있다", () => {
   render(<HandwritingProbeScreen />);
 
   const actions = screen.getByTestId("handwriting-probe-screen-actions");
@@ -70,9 +70,9 @@ test("[SC3] 액션 행에 안내·표면·지우기·읽기·결과·견주기·
   expect(
     [...actions.querySelectorAll("[data-testid]")].map((node) => node.getAttribute("data-testid")),
   ).toEqual([
-    // ⟨2026-09-28⟩ 안내 글자가 표면 **앞**에 옵니다 — 뒤에 깔려야 하고, 겹침의 순서를
-    // DOM 순서가 집니다. 앞에 두지 않으면 안내가 획을 덮습니다.
-    "handwriting-probe-screen-guide",
+    // ⚠ **안내가 목록에 없습니다.** 안내는 호스트가 구운 그림이고, 이 계층에는
+    // `NativeModules`가 없어 그림이 오지 않습니다. 없는 것을 그린 척하지 않는 것이
+    // 화면의 계약이라 요소 자체가 서지 않습니다 — 아래 SC3b가 그것을 따로 봅니다.
     "drawing-surface",
     "handwriting-probe-screen-clear",
     "handwriting-probe-screen-read",
@@ -85,6 +85,18 @@ test("[SC3] 액션 행에 안내·표면·지우기·읽기·결과·견주기·
   // ⭐ 그리기 표면은 스크롤 영역 **밖**의 고정 영역에 있습니다.
   const scroll = screen.getByTestId("handwriting-probe-screen-scroll");
   expect(scroll.contains(screen.getByTestId("drawing-surface"))).toBe(false);
+});
+
+// SC3b — 호스트가 없으면 안내가 **아예 서지 않습니다.**
+//
+// ⭐ 빈 그림을 그리거나 글자로 대신 그리지 않습니다. 화면이 글자를 그리면 Lynx와 UIKit이
+// 다르게 배치해 **보는 것과 채점되는 것이 갈립니다** — 2026-09-28에 22pt 어긋났고, 화면에
+// 보이는 안내를 정확히 따라 써도 점수가 0이었습니다. 없는 것을 그린 척하지 않는 것이
+// 그 갈림을 원천에서 막습니다.
+test("[SC3b] 호스트가 없으면 안내 그림이 서지 않는다", () => {
+  render(<HandwritingProbeScreen />);
+
+  expect(screen.queryByTestId("handwriting-probe-screen-guide")).not.toBeInTheDocument();
 });
 
 test("[SC4] 제목이 header이고 조작 수단마다 이름 있는 button 속성이 붙는다", () => {

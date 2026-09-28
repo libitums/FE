@@ -37,7 +37,10 @@ final class HandwritingTraceModule: NSObject, LynxModule {
   @objc static var name: String { "HandwritingTraceModule" }
 
   @objc static var methodLookup: [String: String] {
-    ["compare": NSStringFromSelector(#selector(compare(_:callback:)))]
+    [
+      "compare": NSStringFromSelector(#selector(compare(_:callback:))),
+      "guide": NSStringFromSelector(#selector(guide(_:callback:))),
+    ]
   }
 
   @objc override init() { super.init() }
@@ -60,6 +63,30 @@ final class HandwritingTraceModule: NSObject, LynxModule {
 
     Self.compareQueue.async {
       callback(Self.measure(request))
+    }
+  }
+
+  /// 안내 글자를 **그림으로** 돌려준다. 화면이 그것을 그대로 깔면 **보는 것과 재는 것이
+  /// 같은 픽셀**이 된다.
+  ///
+  /// ⭐ **이 메서드가 있는 이유가 그 한 줄이다.** 처음에는 화면이 Lynx `<text>`로 안내를
+  /// 그리고 여기서 같은 글자를 UIKit으로 다시 그렸는데, **두 렌더러가 다르게 배치했다** —
+  /// 같은 글꼴 이름·같은 크기인데 잉크가 22pt 어긋나고 6% 더 컸다(2026-09-28, 기기에서
+  /// 잼). 그래서 화면에 보이는 안내를 완벽하게 따라 써도 `덮음`·`머무름`이 0이 나왔다.
+  ///
+  /// 보정 상수로 밀어 맞추는 길은 버렸다 — 글꼴·크기·글자가 바뀔 때마다 다시 틀린다.
+  /// 그 자리에서 이미 두 번 틀렸다.
+  @objc func guide(
+    _ args: [String: Any],
+    callback: @escaping LynxCallbackBlock
+  ) {
+    guard let request = Self.parse(args) else {
+      callback(Self.guidePayload(status: "invalid-arguments"))
+      return
+    }
+
+    Self.compareQueue.async {
+      callback(Self.renderGuide(request))
     }
   }
 
@@ -89,6 +116,8 @@ final class HandwritingTraceModule: NSObject, LynxModule {
     let fontName: String
     /// 팽창 반경(표면 point). 이 값 하나가 「얼마나 빗나가도 따라 쓴 것으로 보는가」다.
     let tolerance: CGFloat
+    /// 안내 그림의 잉크 색. `guide`만 쓴다 — `compare`는 마스크만 보므로 색이 무의미하다.
+    let guideColor: UIColor
   }
 
   /// JS가 넘긴 딕셔너리를 `CompareRequest`로 바꾼다. 어느 한 자리라도 어긋나면 `nil`이다.
@@ -103,6 +132,7 @@ final class HandwritingTraceModule: NSObject, LynxModule {
       let tolerance = args["tolerance"] as? NSNumber,
       let glyph = args["glyph"] as? String,
       let fontName = args["fontName"] as? String,
+      let guideColor = args["guideColor"] as? String,
       let rawStrokes = args["strokes"] as? [[[String: Any]]]
     else {
       return nil
@@ -132,7 +162,22 @@ final class HandwritingTraceModule: NSObject, LynxModule {
       glyph: glyph,
       fontSize: CGFloat(fontSize.doubleValue),
       fontName: fontName,
-      tolerance: CGFloat(tolerance.doubleValue)
+      tolerance: CGFloat(tolerance.doubleValue),
+      guideColor: parseColor(guideColor)
+    )
+  }
+
+  /// `#RRGGBB`를 색으로 바꾼다. 모양이 어긋나면 **검정으로 간다** — 안내가 아예 안 보이는
+  /// 것보다 색만 어긋나는 편이 낫고, 색이 틀린 것은 눈에 바로 띈다.
+  private static func parseColor(_ text: String) -> UIColor {
+    var hex = text
+    if hex.hasPrefix("#") { hex.removeFirst() }
+    guard hex.count == 6, let value = UInt32(hex, radix: 16) else { return .black }
+    return UIColor(
+      red: CGFloat((value >> 16) & 0xFF) / 255,
+      green: CGFloat((value >> 8) & 0xFF) / 255,
+      blue: CGFloat(value & 0xFF) / 255,
+      alpha: 1
     )
   }
 
@@ -152,7 +197,7 @@ final class HandwritingTraceModule: NSObject, LynxModule {
 
     guard
       let drawn = renderMask(width: width, height: height, draw: { context in
-        strokeInk(request, into: context, scale: scale)
+        strokeInk(request, into: context, scale: scale, height: height)
       }),
       let guide = centeredGuideMask(request, font: font, width: width, height: height)
     else {
@@ -234,6 +279,89 @@ final class HandwritingTraceModule: NSObject, LynxModule {
     return moved
   }
 
+  /// 안내 마스크를 PNG로 구워 base64로 돌려준다. **`measure`와 같은 마스크를 쓴다** —
+  /// 여기서 한 번 더 그리면 그리는 자리가 둘이 되어 다시 갈릴 수 있다.
+  ///
+  /// 잉크 색은 **JS가 정한다.** 토큰은 CSS 커스텀 프로퍼티로만 소비하는 규약이라(ADR-0014
+  /// D1) 색의 정본이 앱 쪽에 있고, 여기서 상수를 박으면 그 정본이 둘이 된다.
+  /// `DrawingSurface`가 획 색을 prop으로 받는 것과 같은 자리다.
+  private static func renderGuide(_ request: CompareRequest) -> [String: String] {
+    let scale = compareScale
+    let width = Int((request.size.width * scale).rounded())
+    let height = Int((request.size.height * scale).rounded())
+
+    guard width > 0, height > 0 else { return guidePayload(status: "failed") }
+
+    let font = resolveFont(named: request.fontName, size: request.fontSize * scale)
+    guard let mask = centeredGuideMask(request, font: font, width: width, height: height) else {
+      return guidePayload(status: "failed")
+    }
+    guard let bounds = inkBounds(mask, width: width, height: height) else {
+      return guidePayload(status: "empty-glyph")
+    }
+    guard let png = maskPNG(mask, width: width, height: height, color: request.guideColor) else {
+      return guidePayload(status: "failed")
+    }
+
+    return guidePayload(
+      status: "rendered",
+      image: png.base64EncodedString(),
+      box: "\(bounds.0),\(bounds.1),\(bounds.2),\(bounds.3)",
+      font: font.fontName
+    )
+  }
+
+  /// 0/1 마스크를 **잉크만 불투명한** RGBA PNG로 굽는다. 바탕은 완전 투명이라 화면이
+  /// 무엇 위에 깔든 그 면이 비친다.
+  private static func maskPNG(
+    _ mask: [UInt8],
+    width: Int,
+    height: Int,
+    color: UIColor
+  ) -> Data? {
+    var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+    guard color.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return nil }
+    let r = UInt8(max(0, min(255, red * 255)))
+    let g = UInt8(max(0, min(255, green * 255)))
+    let b = UInt8(max(0, min(255, blue * 255)))
+    let a = UInt8(max(0, min(255, alpha * 255)))
+
+    var rgba = [UInt8](repeating: 0, count: width * height * 4)
+    for index in mask.indices where mask[index] == 1 {
+      let base = index * 4
+      rgba[base] = r
+      rgba[base + 1] = g
+      rgba[base + 2] = b
+      rgba[base + 3] = a
+    }
+
+    var image: CGImage?
+    rgba.withUnsafeMutableBytes { raw in
+      guard
+        let baseAddress = raw.baseAddress,
+        let context = CGContext(
+          data: baseAddress,
+          width: width,
+          height: height,
+          bitsPerComponent: 8,
+          bytesPerRow: width * 4,
+          space: CGColorSpaceDeviceRGB(),
+          bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        )
+      else {
+        return
+      }
+      image = context.makeImage()
+    }
+
+    guard let cgImage = image else { return nil }
+    return UIImage(cgImage: cgImage).pngData()
+  }
+
+  private static func CGColorSpaceDeviceRGB() -> CGColorSpace {
+    CGColorSpaceCreateDeviceRGB()
+  }
+
   /// 요청한 이름의 폰트를 찾고, 없으면 시스템 폰트로 간다. **어느 쪽이 섰는지는 답에
   /// 실어 보낸다** — 디자인이 고른 글꼴이 기기에 없으면 안내 글자의 모양이 달라지고,
   /// 그러면 같은 손글씨가 다른 수를 받는다. 그 사실이 조용히 묻히면 문턱값을 잘못 잡는다.
@@ -292,7 +420,23 @@ final class HandwritingTraceModule: NSObject, LynxModule {
   /// 그린 획을 마스크 컨텍스트에 칠한다. 좌표 규약은 형제 모듈과 같다 — 화면이 보는 것과
   /// 여기가 보는 것이 갈리면 지표가 오염된다. 점 하나짜리 획도 보이게 자기 자신으로 가는
   /// 선을 붙인다.
-  private static func strokeInk(_ request: CompareRequest, into context: CGContext, scale: CGFloat) {
+  private static func strokeInk(
+    _ request: CompareRequest,
+    into context: CGContext,
+    scale: CGFloat,
+    height: Int
+  ) {
+    // ⭐ **안내 글자와 같은 방향으로 뒤집는다.** `CGContext`의 원점은 좌하단이고 표면
+    // 좌표의 원점은 좌상단이다. 안내는 `glyphInk`가 뒤집어 그리는데 획을 그대로 그리면
+    // **둘이 상하 반전된 채로 겹친다.**
+    //
+    // 실제로 그랬다(2026-09-28). 화면에서 안내 위에 정확히 그은 획이 `덮음 0.28`을
+    // 받았고, `주`가 위아래로 얼추 대칭이라 점수가 0이 아니어서 **한동안 「솜씨가
+    // 나쁘다」로 읽혔다.** 대칭이 덜한 글자였으면 0이 나와 빨리 드러났을 것이다.
+    context.saveGState()
+    context.translateBy(x: 0, y: CGFloat(height))
+    context.scaleBy(x: 1, y: -1)
+
     context.setStrokeColor(UIColor.white.cgColor)
     context.setLineWidth(request.strokeWidth * scale)
     context.setLineCap(.round)
@@ -311,6 +455,8 @@ final class HandwritingTraceModule: NSObject, LynxModule {
       }
       context.strokePath()
     }
+
+    context.restoreGState()
   }
 
   /// 안내 글자를 마스크 컨텍스트 **가운데**에 칠한다.
@@ -463,6 +609,17 @@ final class HandwritingTraceModule: NSObject, LynxModule {
   ///
   /// `"compared"`가 아닌 답은 실어 보낼 수가 없으므로 비가 빈 문자열이다. 키를 빼지
   /// 않는 것은 받는 쪽이 모양 하나만 알면 되게 하려는 것이다.
+  /// `guide` 한 번의 답을 짓는 **유일한 자리**. `compare`와 키가 달라 페이로드를 나눈다 —
+  /// 한 모양에 둘을 욱여넣으면 받는 쪽이 어느 키가 언제 차는지를 외워야 한다.
+  private static func guidePayload(
+    status: String,
+    image: String = "",
+    box: String = "",
+    font: String = ""
+  ) -> [String: String] {
+    ["status": status, "image": image, "box": box, "font": font]
+  }
+
   private static func payload(
     status: String,
     coverage: Double? = nil,

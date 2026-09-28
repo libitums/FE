@@ -26,7 +26,42 @@ export type HandwritingTraceRequest = {
   readonly fontName: string;
   /** 팽창 반경(표면 point). 「얼마나 빗나가도 따라 쓴 것으로 보는가」입니다. */
   readonly tolerance: number;
+  /**
+   * 안내 **그림**의 잉크 색입니다(`#RRGGBB`). `guideHandwritingTrace`만 씁니다 —
+   * 견주기는 마스크만 보므로 색이 무의미합니다.
+   *
+   * 색을 JS가 넘기는 것은 토큰의 정본이 앱 쪽에 있기 때문입니다(ADR-0014 D1).
+   * `DrawingSurface`가 획 색을 prop으로 받는 것과 같은 자리입니다.
+   */
+  readonly guideColor: string;
 };
+
+/**
+ * 안내 글자를 **그림으로** 받은 결과입니다.
+ *
+ * ⭐ **이 길이 있는 이유.** 화면이 Lynx `<text>`로 안내를 그리고 호스트가 같은 글자를
+ * UIKit으로 다시 그렸더니 **두 렌더러가 다르게 배치했습니다** — 같은 글꼴 이름·같은
+ * 크기인데 잉크가 22pt 어긋나고 6% 더 컸습니다(2026-09-28, 기기에서 잼). 화면에 보이는
+ * 안내를 완벽하게 따라 써도 점수가 0이 나왔습니다.
+ *
+ * 그림을 받아 그대로 깔면 **보는 것과 재는 것이 같은 픽셀**이 되어 원리적으로 어긋날 수
+ * 없습니다. 보정 상수로 밀어 맞추는 길은 버렸습니다 — 글꼴·크기·글자가 바뀔 때마다 다시
+ * 틀리고, 그 자리에서 이미 두 번 틀렸습니다.
+ */
+export type HandwritingGuideOutcome =
+  | {
+      readonly status: "rendered";
+      /** PNG를 base64로 적은 것입니다. `data:image/png;base64,`를 앞에 붙여 씁니다. */
+      readonly image: string;
+      /** 잉크가 놓인 상자(`"x,y,w,h"`, 표면 좌표)입니다. */
+      readonly box: string;
+      /** 실제로 선 글꼴 이름입니다. */
+      readonly font: string;
+    }
+  | { readonly status: "empty-glyph" }
+  | { readonly status: "invalid-arguments" }
+  | { readonly status: "failed" }
+  | { readonly status: "malformed" };
 
 /**
  * 견주기 **한 번의 결과**입니다. 모듈 가용 여부를 답하지 않습니다 — 그것은 아래
@@ -70,6 +105,7 @@ export type HandwritingTraceRequestOutcome = "requested" | "unavailable";
 
 interface HandwritingTraceModule {
   compare(args: HandwritingTraceRequest, callback: (result: unknown) => void): void;
+  guide(args: HandwritingTraceRequest, callback: (result: unknown) => void): void;
 }
 
 // 가드의 형태와 근거는 형제 접점과 글자 그대로 같습니다 — `typeof` 가드 + `null`
@@ -111,6 +147,61 @@ export function compareHandwritingTrace(
   host.compare(request, (result) => onResult(handwritingTraceOutcome(result)));
 
   return "requested";
+}
+
+/**
+ * 안내 글자를 그림으로 요청합니다. 던지지 않습니다. 규약은 `compareHandwritingTrace`와
+ * 같습니다 — 모듈이 없으면 `onResult`도 부르지 않고 `"unavailable"`을 돌려줍니다.
+ */
+export function guideHandwritingTrace(
+  request: HandwritingTraceRequest,
+  onResult: (outcome: HandwritingGuideOutcome) => void,
+): HandwritingTraceRequestOutcome {
+  const host = nativeModule();
+  if (host === undefined) {
+    return "unavailable";
+  }
+
+  host.guide(request, (result) => onResult(handwritingGuideOutcome(result)));
+
+  return "requested";
+}
+
+/** 안내 그림 콜백의 페이로드를 결과 union으로 바꿉니다. 던지지 않습니다. */
+export function handwritingGuideOutcome(payload: unknown): HandwritingGuideOutcome {
+  if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
+    return { status: "malformed" };
+  }
+
+  const record = payload as Record<string, unknown>;
+  const status = record["status"];
+
+  if (status === "rendered") {
+    const image = record["image"];
+    const box = record["box"];
+    const font = record["font"];
+
+    // 빈 그림은 「그렸다」가 아닙니다 — 화면이 빈 문자열을 `src`에 넣으면 깨진 그림이
+    // 서고, 그것이 「안내가 없다」와 구별되지 않습니다.
+    if (typeof image !== "string" || image === "") {
+      return { status: "malformed" };
+    }
+    if (typeof box !== "string" || typeof font !== "string") {
+      return { status: "malformed" };
+    }
+    return { status: "rendered", image, box, font };
+  }
+
+  if (status === "empty-glyph") {
+    return { status: "empty-glyph" };
+  }
+  if (status === "invalid-arguments") {
+    return { status: "invalid-arguments" };
+  }
+  if (status === "failed") {
+    return { status: "failed" };
+  }
+  return { status: "malformed" };
 }
 
 /**
