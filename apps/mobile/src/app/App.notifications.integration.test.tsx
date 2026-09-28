@@ -113,7 +113,11 @@ test("[IN1] 여정 맵 알림 버튼을 tap하면 알림 화면이 서고 바가
   expect(screen.getByTestId("notifications-screen-title")).toHaveTextContent("알림");
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId("notifications-screen-exit"), {});
+  // 나가기는 라운드 버튼을 감싼 상자입니다(#123) — 탭 대상은 그 안쪽입니다.
+  fireEvent.tap(
+    within(screen.getByTestId("notifications-screen-exit")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
@@ -279,7 +283,10 @@ test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재
 
   // 알림은 쌓인 화면이라 탭이 없습니다 — 나간 뒤에 탭을 오갑니다. 보는 것은 그대로:
   // **재마운트로는 sink가 늘지 않는다**입니다.
-  fireEvent.tap(screen.getByTestId("notifications-screen-exit"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("notifications-screen-exit")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
@@ -423,7 +430,7 @@ test("[IN15] 지운 알림은 화면을 나갔다 돌아와도 돌아오지 않�
     within(screen.getByTestId("notifications-screen-exit")).getByTestId("ui-lynx-round-button"),
     {},
   );
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 
   expect(screen.queryByTestId(`notification-list-item-${item.id}`)).not.toBeInTheDocument();
 });
@@ -442,7 +449,7 @@ test("[IN16] 알림을 모두 지우면 빈 상태가 선다", () => {
 test("[IN17] 삭제는 공용 로그에 삭제 이벤트 하나를 남기고 화면을 옮기지 않는다", () => {
   const events: NotificationEvent[] = [];
   renderApp(<App notificationEventSink={(event) => events.push(event)} />);
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   const item = messengerNotificationItem();
 
   deleteNotificationItem(item);
