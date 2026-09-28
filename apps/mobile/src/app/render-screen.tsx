@@ -182,7 +182,6 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <SentenceOrderScreen
           stepId={screen.stepId}
-          stepOrdinal={journeyStepOrdinal(screen.stepId)}
           onExit={wiring.onExitLearning}
           onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
         />

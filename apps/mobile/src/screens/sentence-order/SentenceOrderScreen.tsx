@@ -1,27 +1,23 @@
 import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import tick from "@libitums/icons/lynx/tick";
-import cross from "@libitums/icons/lynx/cross";
-import { color } from "@libitums/design-tokens";
-
+import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { announce, announceCompletion } from "../../lib/accessibility";
-import { answerResultLabel } from "../../lib/answer-result";
 import type { AnswerResult } from "../../lib/answer-result";
-import { SentenceOrderChip } from "./SentenceOrderChip";
+import { LearningShell } from "../learning/LearningShell";
+import { SentenceOrderChip, SentenceOrderChipPlaceholder } from "./SentenceOrderChip";
 import {
-  bankChipIndexes,
   canCheckArrangement,
+  canPlaceChip,
+  composedSentence,
   initialSentenceOrderSessionState,
   isSentenceOrderSessionComplete,
   sentenceOrderAnnouncement,
   sentenceOrderCompletionAnnouncement,
   sentenceOrderCompletionText,
   sentenceOrderFinishLabel,
-  sentenceOrderProgressLabel,
   sentenceOrderQuestionsForStep,
   sentenceOrderResultAt,
-  sentenceOrderScreenTitle,
   sentenceOrderSessionReducer,
   sentenceOrderSessionResults,
 } from "./sentence-order";
@@ -29,34 +25,23 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 
 import "./sentence-order-screen.css";
 
-// 세션 상태는 이 화면이 소유하고 순수 함수 `sentenceOrderSessionReducer`를
-// 소비합니다 — 판정·완료·창고/답 줄 배치는 전부 파생입니다.
-
+// 문장 만들기(Figma 65-14)입니다. 상단 바 · 세션 헤더 · 지시문 · 무대 카드 · 작업 영역 ·
+// 아래 버튼은 `LearningShell`이 집니다. 이 화면이 아는 것은 카드 **안**(대화 · 답 칸 줄)과
+// 작업 영역(낱말 창고), 그리고 아래 버튼이 지금 무엇을 하는가뿐입니다.
+//
+// 대화 카드의 왼쪽 말풍선이 상대의 말(`prompt`)이고, 학습자는 그 말에 답하는 문장을 창고의
+// 조각으로 만듭니다. 창고에는 오답 낱말이 섞여 있고, 정답 길이만큼 놓으면 확인할 수 있습니다.
 export type SentenceOrderScreenProps = {
   stepId: JourneyStepId;
-  stepOrdinal: number;
   onExit: () => void;
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
 };
 
-// 판정별 표식 아이콘입니다. `ListeningChoice` · `AssessmentItem`과 같은
-// 판단입니다(모양이 색과 독립인 채널, WCAG 1.4.1). 전체 index를 import하지
-// 않습니다.
-const markIconByResult: Record<AnswerResult, string> = {
-  correct: tick,
-  incorrect: cross,
-};
-
-// `-text` 변형입니다. 색은 CSS가 아니라 `current-color` 속성으로 넘깁니다
-// (ADR-0014 D2).
-const markIconColorByResult: Record<AnswerResult, string> = {
-  correct: color.feedback["correct-text"],
-  incorrect: color.feedback["incorrect-text"],
-};
+/** 내 말풍선이 비어 있을 때의 표시입니다 — 디자인 표기 그대로입니다. */
+const emptyReplyMark = "----";
 
 export function SentenceOrderScreen({
   stepId,
-  stepOrdinal,
   onExit,
   onFinish,
 }: SentenceOrderScreenProps): ReactNode {
@@ -66,36 +51,21 @@ export function SentenceOrderScreen({
     initialSentenceOrderSessionState,
   );
 
-  // 완료는 파생입니다(`isSentenceOrderSessionComplete`) — 완료 시점에는
-  // `questionIndex`가 문항 수와 같아 조회할 문항이 없습니다. 한 번만 갈라
-  // 아래에서 다시 묻지 않습니다(듣기와 같은 규율입니다).
   const complete = isSentenceOrderSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
+  const result = question == null ? null : sentenceOrderResultAt(question, state);
 
-  const result = question === null ? null : sentenceOrderResultAt(question, state);
-
-  // 채점 시점에 한 번만 낭독합니다. dep이 `[questionIndex, phase]`이고
-  // `phase === "checked"`일 때만 밉니다 — 재렌더로 두 번 밀지 않습니다.
-  // cleanup이 없습니다, 낭독은 취소할 자원이 아닙니다.
+  // 채점 전이마다 한 번 판정을 낭독합니다.
   useEffect(() => {
-    if (question === null || result === null) {
+    if (question == null || result === null) {
       return;
     }
     announce(sentenceOrderAnnouncement(result));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- dep은 계약이 고정한 둘뿐입니다
+    // 문항 순번 · 국면이 바뀔 때만 한 번 냅니다 — `question` · `result`는 그 둘에서 파생하므로
+    // 넣지 않습니다(넣으면 같은 채점을 다시 낭독할 수 있습니다).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.questionIndex, state.phase]);
 
-  // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번입니다(ADR-0016 D11-2).
-  // dep이 `complete` 하나입니다 — 리듀서가 `questionIndex`를 늘리기만 하므로
-  // 이 파생값은 false→true로 **한 번만** 갈립니다. 그래서 재렌더로는 다시
-  // 돌지 않고, 마운트 때 이미 true면 그 순간이 「처음 존재하게 되는 순간」이라
-  // 거기서 한 번 돕니다. cleanup이 없습니다 — 낭독은 취소할 수 있는 자원이
-  // 아닙니다(D11-2).
-  //
-  // 위 채점 effect와 **다른 dep**입니다 — 두 채널이 같은 dep을 공유하면 한쪽
-  // 조건이 다른 쪽을 끌고 옵니다. 채점 effect의 가드(`question === null`)가
-  // 종료 상태에서 이미 원리적으로 조용하므로 한 순간에 미는 발화는 여전히
-  // 하나입니다.
   useEffect(() => {
     if (!complete) {
       return;
@@ -103,178 +73,116 @@ export function SentenceOrderScreen({
     announceCompletion(sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel));
   }, [complete]);
 
+  const toggle = (chipIndex: number) => dispatch({ type: "toggleChip", chipIndex });
+
+  // 아래 버튼은 정확히 하나이거나 없습니다 — `확인`(칸이 다 참) · `다음`(채점 뒤) · `결과
+  // 보기`(완료). 칸이 덜 찼으면 버튼이 없습니다(「아직 할 수 없다」를 버튼의 부재로 말합니다).
+  const action =
+    question == null
+      ? {
+          label: sentenceOrderFinishLabel,
+          run: () =>
+            onFinish(stepId, sentenceOrderSessionResults(questions, state.submittedOrders)),
+        }
+      : state.phase === "checked"
+        ? { label: "다음", run: () => dispatch({ type: "nextQuestion" }) }
+        : canCheckArrangement(question, state)
+          ? { label: "확인", run: () => dispatch({ type: "check" }) }
+          : undefined;
+
+  const bankFull = question == null ? true : !canPlaceChip(question, state);
+
   return (
-    <view className="sentence-order-screen">
-      {/* [고정] 머리 — 나가는 수단이 어느 시점에도 정확히 하나입니다. 완료
-          전에는 `맵으로`뿐이고, 완료 뒤에는 `결과 보기`가 유일한
-          출구입니다(듣기 헤더 형태). */}
-      <view className="sentence-order-screen-header">
-        {question === null ? null : (
-          <view
-            className="sentence-order-screen-exit"
-            data-testid="sentence-order-screen-exit"
-            accessibility-element={true}
-            accessibility-label="맵으로"
-            accessibility-traits="button"
-            bindtap={onExit}
-          >
-            <text className="sentence-order-screen-exit-label">맵으로</text>
-          </view>
-        )}
-        <text
-          className="sentence-order-screen-title"
-          data-testid="sentence-order-screen-title"
-          accessibility-traits="header"
-        >
-          {sentenceOrderScreenTitle(stepOrdinal)}
-        </text>
-      </view>
-
-      {/* [흐름] 내용 슬롯 — FE ADR-0022. `scroll-orientation`·`scroll-bar-enable`을
-          적습니다 — 안 적으면 초기값이 각각 가로·꺼짐이라 세로 스크롤이
-          원리적으로 불가능합니다. accessibility-*를 붙이지 않습니다 — 조작
-          단위가 아니라 상자입니다. */}
-      <scroll-view
-        className="sentence-order-screen-scroll"
-        data-testid="sentence-order-screen-scroll"
-        scroll-orientation="vertical"
-        scroll-bar-enable={true}
-      >
-        {/* 직계 자식은 하나입니다 — flex 어휘는 이 상자가 집니다. */}
-        <view className="sentence-order-screen-content">
-          {question === null ? null : (
-            <text
-              className="sentence-order-screen-progress"
-              data-testid="sentence-order-screen-progress"
-            >
-              {sentenceOrderProgressLabel(state.questionIndex, questions.length)}
-            </text>
-          )}
-
-          {question === null ? null : (
-            <text
-              className="sentence-order-screen-prompt"
-              data-testid="sentence-order-screen-prompt"
-            >
-              {question.prompt}
-            </text>
-          )}
-
-          {question === null ? null : (
-            // 항상 렌더돼 실패할 수 없는 단언은 검증이 아니므로 testid를 두지 않습니다.
-            <text className="sentence-order-screen-instruction">
-              조각을 눌러 순서대로 배치하세요.
-            </text>
-          )}
-
-          {/* 답 줄 — DOM 순서가 창고보다 앞입니다("무엇을 만들고 있는가"가
-              "무엇으로 만드는가"보다 먼저입니다). 놓임/안 놓임은 상태 클래스가
-              아니라 어느 목록에 있는가로 납니다. */}
-          {question === null ? null : (
-            <view
-              className="sentence-order-screen-sentence"
-              data-testid="sentence-order-screen-sentence"
-            >
-              {state.placedChipIndexes.map((chipIndex, position) => (
+    <LearningShell
+      form="sentence-order"
+      questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
+      questionCount={questions.length}
+      instruction="대화를 완성하세요."
+      onExit={onExit}
+      actionLabel={action?.label}
+      onAction={action?.run}
+      workspace={
+        question == null ? undefined : (
+          // 창고 — 조각이 빠져나가도 그 자리에 회색 칸이 남아 배치가 흔들리지 않습니다.
+          <view className="sentence-order-screen-bank" data-testid="sentence-order-screen-bank">
+            {question.chips.map((text, chipIndex) =>
+              state.placedChipIndexes.includes(chipIndex) ? (
+                <SentenceOrderChipPlaceholder key={chipIndex} index={chipIndex} text={text} />
+              ) : (
                 <SentenceOrderChip
                   key={chipIndex}
                   index={chipIndex}
-                  text={question.chips[chipIndex] ?? ""}
-                  placedOrdinal={position + 1}
-                  onTap={(index) => dispatch({ type: "toggleChip", chipIndex: index })}
-                />
-              ))}
-            </view>
-          )}
-
-          {question === null ? null : (
-            <view className="sentence-order-screen-bank" data-testid="sentence-order-screen-bank">
-              {bankChipIndexes(question, state).map((chipIndex) => (
-                <SentenceOrderChip
-                  key={chipIndex}
-                  index={chipIndex}
-                  text={question.chips[chipIndex] ?? ""}
+                  text={text}
                   placedOrdinal={null}
-                  onTap={(index) => dispatch({ type: "toggleChip", chipIndex: index })}
+                  disabled={bankFull}
+                  onTap={toggle}
                 />
-              ))}
-            </view>
-          )}
+              ),
+            )}
+          </view>
+        )
+      }
+      card={
+        <view className="sentence-order-screen-content" data-testid="sentence-order-screen-content">
+          {/* 판정 배지 자리 — 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다(듣기와 같음). */}
+          <view className="sentence-order-screen-verdict-slot">
+            {result === null ? null : <AnswerVerdict result={result} />}
+          </view>
 
-          {/* 판정 표식입니다. 래퍼에 accessibility-*를 붙이지 않습니다 —
-              둘 다 버렸습니다: 가림은 낱말까지 지우고, element+라벨은 조작
-              단위가 아닌 상자에 이름을 주는 것입니다. 이름은 안쪽 `<text>`가
-              집니다. */}
-          {question === null || result === null ? null : (
-            <view
-              className="sentence-order-screen-mark"
-              data-testid="sentence-order-screen-mark"
-              data-result={result}
-            >
-              <svg
-                className="sentence-order-screen-mark-icon"
-                data-testid="sentence-order-screen-mark-icon"
-                content={markIconByResult[result]}
-                current-color={markIconColorByResult[result]}
-              />
-              <text className="sentence-order-screen-mark-label">{answerResultLabel(result)}</text>
-            </view>
-          )}
-
-          {question === null ? (
+          {question == null ? (
             <text
               className="sentence-order-screen-complete"
               data-testid="sentence-order-screen-complete"
             >
               {sentenceOrderCompletionText}
             </text>
-          ) : null}
-        </view>
-      </scroll-view>
+          ) : (
+            <>
+              {/* 상대의 말 — 왼쪽 말풍선. */}
+              <view className="sentence-order-screen-partner">
+                <text
+                  className="sentence-order-screen-partner-text"
+                  data-testid="sentence-order-screen-prompt"
+                >
+                  {question.prompt}
+                </text>
+              </view>
 
-      {/* [고정] 액션 행 — `확인` / `다음` / `결과 보기` 중 정확히 하나 또는
-          없음입니다. `data-phase`를 두지 않습니다 — 어느 버튼이 있는가로
-          국면이 이미 관찰됩니다. */}
-      {question !== null && canCheckArrangement(question, state) ? (
-        <view
-          className="sentence-order-screen-check"
-          data-testid="sentence-order-screen-check"
-          accessibility-element={true}
-          accessibility-label="확인"
-          accessibility-traits="button"
-          bindtap={() => dispatch({ type: "check" })}
-        >
-          <text className="sentence-order-screen-check-label">확인</text>
-        </view>
-      ) : null}
+              {/* 내 말 — 오른쪽 말풍선. 채우는 동안은 빈 표시(`----`)이고 낭독하지 않습니다.
+                  채점하면 만든 문장이 섭니다. */}
+              <view
+                className="sentence-order-screen-reply"
+                data-testid="sentence-order-screen-reply"
+                accessibility-elements-hidden={state.phase !== "checked"}
+              >
+                <text className="sentence-order-screen-reply-text">
+                  {state.phase === "checked"
+                    ? composedSentence(question, state.placedChipIndexes)
+                    : emptyReplyMark}
+                </text>
+              </view>
 
-      {question !== null && state.phase === "checked" ? (
-        <view
-          className="sentence-order-screen-next"
-          data-testid="sentence-order-screen-next"
-          accessibility-element={true}
-          accessibility-label="다음"
-          accessibility-traits="button"
-          bindtap={() => dispatch({ type: "nextQuestion" })}
-        >
-          <text className="sentence-order-screen-next-label">다음</text>
+              {/* 답 칸 줄 — 놓인 조각이 순서대로 섭니다. 누르면 창고로 돌아갑니다. 위아래
+                  가는 선이 줄의 자리를 보입니다. */}
+              <view
+                className="sentence-order-screen-sentence"
+                data-testid="sentence-order-screen-sentence"
+              >
+                {state.placedChipIndexes.map((chipIndex, position) => (
+                  <SentenceOrderChip
+                    key={chipIndex}
+                    index={chipIndex}
+                    text={question.chips[chipIndex] ?? ""}
+                    placedOrdinal={position + 1}
+                    disabled={state.phase === "checked"}
+                    onTap={toggle}
+                  />
+                ))}
+              </view>
+            </>
+          )}
         </view>
-      ) : null}
-
-      {question === null ? (
-        <view
-          className="sentence-order-screen-finish"
-          data-testid="sentence-order-screen-finish"
-          accessibility-element={true}
-          accessibility-label={sentenceOrderFinishLabel}
-          accessibility-traits="button"
-          bindtap={() =>
-            onFinish(stepId, sentenceOrderSessionResults(questions, state.submittedOrders))
-          }
-        >
-          <text className="sentence-order-screen-finish-label">{sentenceOrderFinishLabel}</text>
-        </view>
-      ) : null}
-    </view>
+      }
+    />
   );
 }

@@ -9,11 +9,21 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 // ---------------------------------------------------------------- 도메인 타입
 
 export type SentenceOrderQuestion = {
-  /** 무엇을 만드는 문항인지 알리는 제시문입니다. 빈칸 표기 규약을 두지 않습니다. */
+  /**
+   * 상대의 말입니다 — 대화 카드의 왼쪽 말풍선에 섭니다. 학습자는 그 말에 답하는 문장을
+   * 만듭니다(Figma 65-14 「Complete the conversation」). 빈칸 표기 규약을 두지 않습니다.
+   */
   readonly prompt: string;
-  /** 화면에 제시되는 조각입니다. 이 배열의 순서가 곧 창고의 제시 순서이고 정답 순서가 아닙니다. */
+  /**
+   * 화면에 제시되는 조각입니다. 이 배열의 순서가 곧 창고의 제시 순서이고 정답 순서가
+   * 아닙니다. ⟨2026-09-28⟩ **정답에 쓰이지 않는 조각(오답 낱말)이 섞일 수 있습니다** —
+   * 정답에 없는 인덱스가 그것입니다.
+   */
   readonly chips: readonly string[];
-  /** 정답 = chips의 인덱스를 정답 순서대로 나열한 것입니다. 문자열이 아니라 인덱스입니다. */
+  /**
+   * 정답 = chips의 인덱스를 정답 순서대로 나열한 것입니다. 문자열이 아니라 인덱스입니다.
+   * chips의 부분집합이고, 이 길이가 곧 「놓을 칸 수」입니다.
+   */
   readonly answerOrder: readonly number[];
 };
 
@@ -43,13 +53,29 @@ export const initialSentenceOrderSessionState: SentenceOrderSessionState = {
   submittedOrders: [],
 };
 
-// 문항 데이터의 자리입니다. 어느 스텝이 어느 학습형인지가 저장소 데이터
-// 어디에도 없고, 문항 텍스트·조각·정답 순서의 값도 컨텐츠 공급 경로가
-// 정해지지 않았습니다. 다섯 키를 전부 두고 값은 빈 배열로 둡니다 — 지어내지
-// 않습니다.
+// 문항 데이터의 자리입니다. 문항 텍스트·조각·정답 순서의 값은 컨텐츠 공급 경로가
+// 정해지지 않았습니다. 다섯 키를 전부 두고, 문장 만들기가 배정된 스텝(첫 인사)에만
+// **임시 문항**을 둡니다 — 디자인(Figma 65-14)의 예시 대화를 따라 지은 값이고, 오답
+// 낱말이 섞여 있습니다. 컨텐츠가 오면 이 표만 갈립니다.
 export const sentenceOrderQuestionsByStep: Record<JourneyStepId, readonly SentenceOrderQuestion[]> =
   {
-    greeting: [],
+    greeting: [
+      {
+        prompt: "안녕 만나서 반가워",
+        chips: ["반가워", "안녕", "배고파", "나도", "피곤해"],
+        answerOrder: [1, 3, 0],
+      },
+      {
+        prompt: "이름이 뭐예요?",
+        chips: ["민수예요", "내일", "이름은", "제", "좋아요"],
+        answerOrder: [3, 2, 0],
+      },
+      {
+        prompt: "커피 마실래요?",
+        chips: ["좋아요", "아니요", "네", "학교"],
+        answerOrder: [2, 0],
+      },
+    ],
     introduction: [],
     ordering: [],
     appointment: [],
@@ -61,22 +87,10 @@ export const sentenceOrderQuestionsByStep: Record<JourneyStepId, readonly Senten
 // 스텝을 전부 갖는 것은 tsc가 지고, 범위 밖 입력에도 아래 식이 그대로
 // 적용됩니다.
 
-// `${ordinal}단계 · 문장 순서` 형태입니다 — 구분자는 가운뎃점 양옆 공백
-// (듣기·평가와 같습니다).
-export function sentenceOrderScreenTitle(ordinal: number): string {
-  return `${ordinal}단계 · 문장 순서`;
-}
-
 // Record가 JourneyStepId 다섯을 전부 갖는 것을 tsc가 강제하므로 조회는
 // 총함수입니다.
 export function sentenceOrderQuestionsForStep(id: JourneyStepId): readonly SentenceOrderQuestion[] {
   return sentenceOrderQuestionsByStep[id];
-}
-
-// `문항 ${index + 1} / ${total}` 형태입니다 — index는 0-based입니다(듣기와
-// 같은 문자열 형태).
-export function sentenceOrderProgressLabel(index: number, total: number): string {
-  return `문항 ${index + 1} / ${total}`;
 }
 
 // 정답 순서와 배치가 길이·각 원소 전부 같으면 correct, 아니면 incorrect
@@ -101,27 +115,38 @@ export function judgeSentenceOrder(
 // 「확인」이 뜨는가 — phase가 arranging이고 배치 수가 chips.length와 같을
 // 때만 true입니다. checked면 전부 배치돼 있어도 false입니다 — check가 배치
 // 완료를 다시 검사하지 않도록 화면이 이 식 하나만 씁니다.
+/**
+ * 채점할 수 있는가입니다. **정답 길이만큼** 놓았을 때 참입니다 — 오답 낱말이 섞이므로
+ * 창고를 다 비울 필요가 없습니다(⟨2026-09-28⟩ 전에는 조각을 전부 놓아야 했습니다).
+ */
 export function canCheckArrangement(
   question: SentenceOrderQuestion,
   state: SentenceOrderSessionState,
 ): boolean {
-  return state.phase === "arranging" && state.placedChipIndexes.length === question.chips.length;
+  return (
+    state.phase === "arranging" && state.placedChipIndexes.length === question.answerOrder.length
+  );
 }
 
-// 창고에 남은 조각입니다 — placedChipIndexes에 없는 chips 인덱스를 chips
-// 순서대로 냅니다.
-export function bankChipIndexes(
+/**
+ * 창고의 조각을 더 놓을 수 있는가입니다. 칸(정답 길이)이 다 차면 거짓입니다 — 그 뒤로는
+ * 놓인 조각을 빼야 다른 조각을 놓을 수 있습니다.
+ */
+export function canPlaceChip(
   question: SentenceOrderQuestion,
   state: SentenceOrderSessionState,
-): readonly number[] {
-  const placed = new Set(state.placedChipIndexes);
-  const result: number[] = [];
-  for (let index = 0; index < question.chips.length; index += 1) {
-    if (!placed.has(index)) {
-      result.push(index);
-    }
-  }
-  return result;
+): boolean {
+  return (
+    state.phase === "arranging" && state.placedChipIndexes.length < question.answerOrder.length
+  );
+}
+
+/** 놓인 조각을 순서대로 이은 문장입니다 — 채점 뒤 내 말풍선에 섭니다. */
+export function composedSentence(
+  question: SentenceOrderQuestion,
+  placedChipIndexes: readonly number[],
+): string {
+  return placedChipIndexes.map((index) => question.chips[index]).join(" ");
 }
 
 // 조각의 낭독 이름입니다 — placedOrdinal이 null이면 이름만, 아니면

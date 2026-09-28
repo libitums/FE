@@ -294,6 +294,10 @@ Apple의 최대 접근성 크기는 `.body` 기준 **약 3.1배**(17pt → 53pt)
 > **두 화면의 CSS가 섰다 (2026-09-05에 확인).** 네 파일이다 —
 > `sentence-order-chip.css` · `sentence-order-screen.css` · `word-choice-option.css` ·
 > `word-choice-screen.css`. **`min-height` 선언은 여섯이고 전부 9·10·13번이다**:
+> ⟨2026-09-28⟩ 문장 만들기가 `LearningShell`로 옮겨 `.sentence-order-screen-exit` · `-check` · `-next` ·
+> `-finish`는 걷혔다 — 그 자리는 껍데기의 `×`와 아래 버튼(`.learning-shell-action`)이 진다. 아래 기록은
+> 그 전 상태다.
+>
 > 9번이 둘(`.sentence-order-screen-exit` · `.word-choice-screen-exit`), 10번이 셋
 > (`.sentence-order-screen-check, -next, -finish` 묶음 하나 · `.word-choice-screen-next` ·
 > `.word-choice-screen-finish`), 13번이 하나. **11·12번에는 없다** — 두 상자 다 높이를

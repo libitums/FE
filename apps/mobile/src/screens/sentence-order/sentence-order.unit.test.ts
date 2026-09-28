@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  bankChipIndexes,
   canCheckArrangement,
+  canPlaceChip,
+  composedSentence,
   chipAccessibilityLabel,
   isSentenceOrderSessionComplete,
   judgeSentenceOrder,
@@ -10,9 +11,7 @@ import {
   sentenceOrderCompletionAnnouncement,
   sentenceOrderCompletionText,
   sentenceOrderFinishLabel,
-  sentenceOrderProgressLabel,
   sentenceOrderResultAt,
-  sentenceOrderScreenTitle,
   sentenceOrderSessionReducer,
   sentenceOrderSessionResults,
   type SentenceOrderQuestion,
@@ -167,26 +166,15 @@ describe("canCheckArrangement", () => {
     expect(canCheckArrangement(simpleQuestion, state)).toBe(true);
   });
 
+  it("오답 낱말이 섞이면 정답 길이만큼 놓았을 때 true다 — 창고를 다 비울 필요가 없다", () => {
+    const question = { prompt: "p", chips: ["a", "b", "x", "c"], answerOrder: [0, 1, 3] };
+    expect(canCheckArrangement(question, stateWith({ placedChipIndexes: [0, 1, 3] }))).toBe(true);
+    expect(canCheckArrangement(question, stateWith({ placedChipIndexes: [0, 1] }))).toBe(false);
+  });
+
   it("phase가 checked면 전부 배치돼도 false다", () => {
     const state = stateWith({ phase: "checked", placedChipIndexes: [0, 1, 2] });
     expect(canCheckArrangement(simpleQuestion, state)).toBe(false);
-  });
-});
-
-describe("bankChipIndexes", () => {
-  it("배치된 것이 빠진다", () => {
-    const state = stateWith({ placedChipIndexes: [1] });
-    expect(bankChipIndexes(simpleQuestion, state)).toEqual([0, 2]);
-  });
-
-  it("남은 순서가 chips 순서다", () => {
-    const state = stateWith({ placedChipIndexes: [2] });
-    expect(bankChipIndexes(simpleQuestion, state)).toEqual([0, 1]);
-  });
-
-  it("전부 배치되면 빈 배열이다", () => {
-    const state = stateWith({ placedChipIndexes: [0, 1, 2] });
-    expect(bankChipIndexes(simpleQuestion, state)).toEqual([]);
   });
 });
 
@@ -244,16 +232,6 @@ describe("sentenceOrderAnnouncement", () => {
 
   it("incorrect는 `채점 결과, 오답`이다", () => {
     expect(sentenceOrderAnnouncement("incorrect")).toBe("채점 결과, 오답");
-  });
-});
-
-describe("제목 · 진행 문구", () => {
-  it("sentenceOrderScreenTitle(3)은 `3단계 · 문장 순서`다", () => {
-    expect(sentenceOrderScreenTitle(3)).toBe("3단계 · 문장 순서");
-  });
-
-  it("진행 문구는 `문항 1 / 3`이다(0-based index)", () => {
-    expect(sentenceOrderProgressLabel(0, 3)).toBe("문항 1 / 3");
   });
 });
 
@@ -332,5 +310,24 @@ describe("sentenceOrderCompletionAnnouncement", () => {
       sentenceOrderAnnouncement("correct"),
     );
     expect(sentenceOrderAnnouncement("correct")).toBe("채점 결과, 정답");
+  });
+});
+
+describe("canPlaceChip · composedSentence", () => {
+  const question = { prompt: "p", chips: ["a", "b", "x"], answerOrder: [0, 1] };
+
+  it("칸이 다 차면 더 놓을 수 없다", () => {
+    expect(canPlaceChip(question, stateWith({ placedChipIndexes: [0] }))).toBe(true);
+    expect(canPlaceChip(question, stateWith({ placedChipIndexes: [0, 2] }))).toBe(false);
+  });
+
+  it("채점 뒤에는 놓을 수 없다", () => {
+    expect(canPlaceChip(question, stateWith({ phase: "checked", placedChipIndexes: [0] }))).toBe(
+      false,
+    );
+  });
+
+  it("놓인 조각을 순서대로 공백으로 잇는다", () => {
+    expect(composedSentence(question, [1, 0])).toBe("b a");
   });
 });
