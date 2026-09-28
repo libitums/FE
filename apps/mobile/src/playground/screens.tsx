@@ -68,7 +68,6 @@ export const playgroundScreens = {
       onStartMessengerUnit={noop}
       completedPhoneCallUnitIds={[]}
       onStartPhoneCallUnit={noop}
-      onOpenNotifications={noop}
     />
   ),
   "journey-entry": (go: Go) => (

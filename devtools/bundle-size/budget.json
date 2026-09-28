@@ -2,8 +2,8 @@
   "targets": [
     {
       "path": "apps/mobile/dist/main.lynx.bundle",
-      "maxBytes": 1055000,
-      "note": "모바일 Lynx 번들입니다. 2026-09-28 기준 1,004,705 bytes이고 상한은 약 5% 여유입니다. 앞선 상한(975,000)에서 에피소드 서사(비주얼 노벨) 화면이 약 42 kB를 더해 넘었습니다(서사 통화 PR 위 962,944 bytes 기준) — 대부분은 앱이 처음 쓰는 ui-lynx VisualNovelDialog · Avatar의 코드와 CSS입니다. 그림은 온보딩 그림을 재사용해 이미지는 늘지 않았습니다."
+      "maxBytes": 1108000,
+      "note": "모바일 Lynx 번들입니다. 2026-09-28 기준 1,055,145 bytes이고 상한은 약 5% 여유입니다. 앞선 상한(1,055,000)에서 전역 머리 · 젬 구매 화면이 약 32.6 kB를 더해 넘었습니다(main a2b390e 위 말하기 병합 뒤 1,022,553 bytes 기준) — 여정 맵에서 셸로 올린 머리(AppHeader) · 지표 모달, 새 젬 구매 화면의 JSX · CSS와 다색 젬 SVG(gem-icon.ts)입니다."
     },
     {
       "path": "apps/mobile/dist/static/image",

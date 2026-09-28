@@ -27,7 +27,6 @@ it("특별 항목의 표시와 접근성 이름에 맵 데이터의 제목을 �
       onStartMessengerUnit={vi.fn()}
       completedPhoneCallUnitIds={[]}
       onStartPhoneCallUnit={vi.fn()}
-      onOpenNotifications={vi.fn()}
     />,
   );
   const item = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");

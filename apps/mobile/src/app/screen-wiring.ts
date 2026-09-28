@@ -149,6 +149,13 @@ export type ScreenWiring = {
   // 호스트가 넘긴 가장자리 여백입니다. 셸이 여백을 잡지 않는 화면(서사 표지)이 자기
   // 안에서 잡을 때 씁니다 — 콜백이 아니라 값이지만 `sessionOptions`와 같이 내려갑니다.
   safeAreaInsets: SafeAreaInsets;
+  // 가진 젬 수입니다. 전역 머리가 아닌 자리(학습 화면의 상단 바 · 학습 완료의 지표 칩)도
+  // 같은 값을 그리도록 값으로 내려갑니다.
+  gemCount: number;
+  // 탭 루트 화면이 자기 안에 겹침 레이어(여정의 스텝 말풍선 · 롤플레이의 플러스 안내)를
+  // 열고 닫을 때 부릅니다. 레이어가 떠 있는 동안 전역 머리를 낭독에서 가립니다
+  // (ADR-0016 D9) — 머리는 화면 밖(셸)에 있어 화면이 스스로 가릴 수 없습니다.
+  onScreenLayerChange: (open: boolean) => void;
   // 에피소드의 서사 전개를 찾습니다 — 서사 route가 어느 형식의 화면을 그릴지 여기서 읽습니다.
   episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   // 세션 옵션의 진실의 출처와 설정 탭의 이동·토글·나가기 콜백 셋입니다. 화면은
@@ -194,6 +201,8 @@ export type ScreenWiringArgs = {
   readonly sessionOptions: SessionOptions;
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly safeAreaInsets: SafeAreaInsets;
+  readonly gemCount: number;
+  readonly setScreenLayerOpen: Dispatch<SetStateAction<boolean>>;
   readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   readonly seenEpisodeIntroIds: readonly string[];
   readonly setSeenEpisodeIntroIds: Dispatch<SetStateAction<readonly string[]>>;
@@ -222,6 +231,8 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     ...journey,
     roleplay,
     safeAreaInsets: args.safeAreaInsets,
+    gemCount: args.gemCount,
+    onScreenLayerChange: args.setScreenLayerOpen,
     episodePrologueFor: args.episodePrologueFor,
     roleplaySections: args.roleplaySections,
     onViewAllRoleplayEpisode: (episodeId: RoleplayEpisodeId) => {

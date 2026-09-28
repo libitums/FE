@@ -28,6 +28,8 @@ import type {
   VisualNovelProgress,
   VisualNovelUnitId,
 } from "../screens/visual-novel/visual-novel.contract";
+import { totalGemsOf } from "../screens/gem-purchase/gem-purchase";
+import { AppHeader } from "./AppHeader";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
@@ -40,11 +42,8 @@ import { screenWiring } from "./screen-wiring";
 
 import "./app.css";
 
-// 루트 구성입니다 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다
-// (ADR-0003 D5).
-//
-// `phoneCallEventSink`는 메신저·비주얼 노벨과 같은 방식으로 App 경계에서
-// `null`로 정규화됩니다.
+// 루트 구성입니다 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다(ADR-0003 D5).
+// `phoneCallEventSink`는 메신저·비주얼 노벨과 같은 방식으로 App 경계에서 `null`로 정규화됩니다.
 /**
  * 부팅할 때의 여정 진행입니다. 주지 않으면 제품의 씨앗(`initialCompletedStepCount` · 빈
  * 완료 목록)으로 시작합니다.
@@ -171,6 +170,14 @@ export function App({
   const [seenEpisodeIntroIds, setSeenEpisodeIntroIds] = useState<readonly string[]>(
     initialSeenEpisodeIntroIds,
   );
+  // 가진 젬 수입니다. 전역 머리의 젬 칩과 구매 화면이 함께 읽습니다. **영속하지
+  // 않고**(ADR-0007 D1) 결제 연동도 아직 없습니다 — 구매 화면의 `Pay`가 고른 팩의 젬을
+  // 세션 동안만 더합니다.
+  const [gemCount, setGemCount] = useState(0);
+  // 탭 루트 화면 안에 겹침 레이어가 떠 있는가입니다. 화면이 알려 오고(`onScreenLayerChange`)
+  // 전역 머리가 그 동안 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를
+  // 알립니다.
+  const [screenLayerOpen, setScreenLayerOpen] = useState(false);
 
   // 롤플레이 구획입니다. **진행에서 파생합니다** — 에피소드는 여정에서 그 에피소드의
   // 항목을 전부 끝냈을 때 열리고, 그 판정의 출처는 위의 진행 넷입니다. 상태로 따로 두면
@@ -190,6 +197,8 @@ export function App({
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const wiring = screenWiring({
     safeAreaInsets: insets,
+    gemCount,
+    setScreenLayerOpen,
     episodePrologueFor,
     messengerEventSink,
     phoneCallEventSink,
@@ -245,7 +254,25 @@ export function App({
           paddingRight: `${shellInsets.right}px`,
         }}
       >
-        <view className="app-content">{renderScreen(screenNow, wiring)}</view>
+        <view className="app-content">
+          {renderScreen(screenNow, wiring)}
+          {/* 전역 머리는 바텀 네비게이션과 같은 조건(탭 루트)에서만 섭니다 — 그 위에 쌓인
+              화면은 하나의 일을 끝내러 들어온 자리라 자기 머리를 스스로 집니다.
+
+              머리도 콘텐츠 **위에 겹칩니다**(`.app-header`). 스크롤되는 내용이 면 없는 칩
+              사이로 비치는 것이 디자인 의도이고, 내용이 머리에 가리지 않는 일은 화면의 위
+              여백이 집니다. 지표는 아직 규칙이 없어 0입니다. */}
+          {showsNavigator ? (
+            <AppHeader
+              streakDays={0}
+              trophyCount={0}
+              gemCount={gemCount}
+              obscured={screenLayerOpen}
+              onOpenNotifications={wiring.onOpenNotifications}
+              onPurchaseGems={(pack) => setGemCount((count) => count + totalGemsOf(pack))}
+            />
+          ) : null}
+        </view>
         {/* 진입 구간(`entry`가 비지 않은 동안)에는 탭 전환 수단을 보이지
             않습니다 — `enterApp`이 `entry`를 비운 뒤에야 처음 섭니다.
 

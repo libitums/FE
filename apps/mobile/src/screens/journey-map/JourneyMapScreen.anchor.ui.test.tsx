@@ -71,7 +71,6 @@ function renderMap(): void {
       onStartMessengerUnit={() => {}}
       completedPhoneCallUnitIds={[]}
       onStartPhoneCallUnit={() => {}}
-      onOpenNotifications={() => {}}
     />,
   );
 }

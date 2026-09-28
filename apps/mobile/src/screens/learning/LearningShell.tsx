@@ -64,6 +64,7 @@ export type LearningShellProps = {
   advance?: { readonly label: string; readonly run: () => void; readonly delayMs: number };
   streakDays?: number;
   trophyCount?: number;
+  gemCount?: number;
   onOpenNotifications?: () => void;
 };
 
@@ -80,6 +81,7 @@ export function LearningShell({
   advance,
   streakDays = 0,
   trophyCount = 0,
+  gemCount = 0,
   onOpenNotifications = () => {},
 }: LearningShellProps): ReactNode {
   // 나가기는 **두 걸음**입니다 ⟨2026-09-28⟩. `×`는 묻기만 하고, 실제로 떠나는 것은
@@ -163,6 +165,7 @@ export function LearningShell({
       <TopBar
         streakDays={streakDays}
         trophyCount={trophyCount}
+        gemCount={gemCount}
         onOpenNotifications={onOpenNotifications}
       />
       {/* 세션 헤더 — 나가기 · 순번 · 진행 막대 · 학습형 이름 · 백분율입니다. 면 · 모서리 ·

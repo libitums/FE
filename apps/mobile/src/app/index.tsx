@@ -32,6 +32,7 @@ import "@libitums/ui-lynx/learning-unit/styles.css";
 import "@libitums/ui-lynx/overlay/styles.css";
 import "@libitums/ui-lynx/page-indicator.css";
 import "@libitums/ui-lynx/round-button/styles.css";
+// 설정 화면의 항목 · 젬 구매 화면의 결제 수단 줄이 소비합니다.
 import "@libitums/ui-lynx/settings-cell/styles.css";
 import "@libitums/ui-lynx/status-indicator/styles.css";
 import "@libitums/ui-lynx/visual-novel-dialog/styles.css";

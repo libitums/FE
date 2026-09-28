@@ -1,4 +1,3 @@
-import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { JourneyStepNode } from "./JourneyStepNode";
@@ -6,11 +5,9 @@ import { MessengerMapItem } from "./MessengerMapItem";
 import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
 import { StepSheet } from "./StepSheet";
-import { TopBar } from "../../components/TopBar";
 import { screenId, scrollId } from "./journey-map-scroll";
 import { useStepSheet } from "./useStepSheet";
-import { JourneyStatModal } from "./JourneyStatModal";
-import { streakTrack, trophyTrack, type JourneyStatKind } from "./journey-stat";
+import { useScreenLayer } from "../../lib/use-screen-layer";
 import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
 import {
   findStep,
@@ -38,20 +35,8 @@ export type JourneyMapScreenProps = {
   onStartPhoneCallUnit: (id: PhoneCallUnitId) => void;
   completedVisualNovelUnitIds?: readonly VisualNovelUnitId[];
   onStartVisualNovelUnit?: (id: VisualNovelUnitId) => void;
-  onOpenNotifications: () => void;
-  /**
-   * 상단 지표 둘입니다. 화면이 스스로 세지 않고 받습니다 — 연속일수와 트로피는 여정
-   * 진행과 다른 축이고, 그 규칙은 아직 정해지지 않았습니다. 기본값 0은 「아직 규칙이
-   * 없다」를 값으로 적은 것입니다.
-   */
-  streakDays?: number;
-  trophyCount?: number;
-  /**
-   * 오늘의 요일입니다(`Date#getDay()`, 0 = 일). 연속 학습 모달의 요일 줄이 여기서
-   * 시작점을 셉니다. 넘기지 않으면 기기 시계를 읽습니다 — 테스트가 날짜에 매이지
-   * 않도록 받을 자리를 둡니다.
-   */
-  todayWeekday?: number;
+  /** 스텝 말풍선이 열리고 닫힐 때 부릅니다 — 전역 머리를 그 동안 낭독에서 가리는 데 씁니다. */
+  onLayerChange?: (open: boolean) => void;
 };
 
 // 화면 컴포넌트: 파일명 PascalCase, export 이름과 일치, `~Screen` 접미사 (ADR-0003 D6).
@@ -65,17 +50,14 @@ export function JourneyMapScreen({
   onStartPhoneCallUnit,
   completedVisualNovelUnitIds = [],
   onStartVisualNovelUnit = () => {},
-  onOpenNotifications,
-  streakDays = 0,
-  trophyCount = 0,
-  todayWeekday,
+  onLayerChange,
 }: JourneyMapScreenProps): ReactNode {
   const { sheetState, sheetTop, handleScroll, handleSelectStep, handleCloseSheet } = useStepSheet();
-  // 지표 모달 열림도 이 화면이 소유합니다 — 시트와 같은 까닭으로 `Nav`는 관여하지
-  // 않습니다. 모달은 맵 위에 겹칠 뿐 화면 전환이 아닙니다.
-  const [openStat, setOpenStat] = useState<JourneyStatKind | null>(null);
   const openStep =
     sheetState.openStepId === null ? undefined : findStep(journeySteps, sheetState.openStepId);
+  // 말풍선이 열린 동안 셸의 전역 머리(칩 · 알림 버튼)도 가려야 합니다 — 전에는 머리가 이
+  // 화면 안에 있어 아래 맵 가림과 함께 가렸습니다.
+  useScreenLayer(openStep !== undefined, onLayerChange);
 
   // 진행의 출처 넷을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
   const progress = {
@@ -87,27 +69,8 @@ export function JourneyMapScreen({
 
   return (
     <view id={screenId} className="journey-map-screen" data-testid="journey-map-screen">
-      {/* [고정] 머리 — 지표 칩 둘과 알림 버튼입니다. 화면 제목이 없습니다: 에피소드
-          헤더 카드가 「지금 어느 에피소드인가」를 이미 말하므로 제목 줄을 따로 두면 같은
-          말이 두 번 섭니다(2026-09-26 디자인 반영).
-
-          래퍼가 ADR-0016 D9의 가림을 집니다 — 시트가 열린 동안 뒤쪽 조작 노드(알림
-          버튼)를 가립니다. 가림은 자손에 걸리므로(D5) 버튼 자신이 아니라 이 래퍼에
-          붙입니다. 지표 칩은 조작 노드가 아니지만 같은 래퍼 안이라 함께 가려집니다 —
-          시트가 열린 동안 뒤쪽을 읽을 이유가 없으므로 그대로 둡니다. */}
-      <view
-        className="journey-map-screen-actions"
-        data-testid="journey-map-screen-actions"
-        accessibility-elements-hidden={openStep !== undefined || openStat !== null}
-      >
-        <TopBar
-          streakDays={streakDays}
-          trophyCount={trophyCount}
-          onOpenNotifications={onOpenNotifications}
-          onOpenStreak={() => setOpenStat("streak")}
-          onOpenTrophy={() => setOpenStat("trophy")}
-        />
-      </view>
+      {/* 머리(칩 · 알림 버튼)는 이 화면이 아니라 전역 레이아웃이 집니다(`app/AppHeader`).
+          머리는 이 화면 위에 겹치고, 그 몫의 위 여백은 맵 상자가 잡습니다. */}
       {/* [흐름] 내용 슬롯 — 스크롤 컨테이너 하나가 맵 컨테이너를 감쌉니다. 가림
           속성(`accessibility-elements-hidden`)은 맵 컨테이너에 그대로 남습니다 —
           스크롤 컨테이너로 올리면 가리는 범위가 넓어집니다. `scroll-orientation`·
@@ -124,7 +87,7 @@ export function JourneyMapScreen({
         <view
           className="journey-map-screen-map"
           data-testid="journey-map-screen-map"
-          accessibility-elements-hidden={openStep !== undefined || openStat !== null}
+          accessibility-elements-hidden={openStep !== undefined}
         >
           {journeyMapSections.map((section) => (
             // 에피소드 하나가 헤더 + 유닛 줄입니다. 조각(Fragment)이 아니라 상자로
@@ -204,19 +167,6 @@ export function JourneyMapScreen({
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}
           onClose={handleCloseSheet}
-        />
-      )}
-      {/* [겹침 레이어] 지표 모달입니다. 셸 밖에 떠 바텀 네비게이션까지 덮습니다. */}
-      {openStat === null ? null : (
-        <JourneyStatModal
-          kind={openStat}
-          value={openStat === "streak" ? streakDays : trophyCount}
-          track={
-            openStat === "streak"
-              ? streakTrack(streakDays, todayWeekday ?? new Date().getDay())
-              : trophyTrack(trophyCount)
-          }
-          onClose={() => setOpenStat(null)}
         />
       )}
     </view>

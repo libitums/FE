@@ -41,6 +41,8 @@ export type ListeningScreenProps = {
   onExit: () => void;
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
   sessionOptions: SessionOptions;
+  /** 상단 바의 젬 칩 값입니다. 전역 머리와 같은 값을 그리도록 App이 내립니다. */
+  gemCount?: number;
 };
 
 export function ListeningScreen({
@@ -48,6 +50,7 @@ export function ListeningScreen({
   onExit,
   onFinish,
   sessionOptions,
+  gemCount = 0,
 }: ListeningScreenProps): ReactNode {
   const questions = questionsForStep(stepId);
   const [state, dispatch] = useReducer(listeningSessionReducer, initialListeningSessionState);
@@ -125,6 +128,7 @@ export function ListeningScreen({
       actionLabel={action?.label}
       onAction={action?.run}
       advance={advance}
+      gemCount={gemCount}
       /* 보기는 무대 카드 **밖**입니다(Figma 53-14231) — 카드는 「무엇을 들었나」를
          말하고, 고르는 일은 그 아래 작업 영역에서 합니다. */
       workspace={
