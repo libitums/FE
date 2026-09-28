@@ -1,7 +1,8 @@
-import { useEffect, useReducer } from "@lynx-js/react";
+import { useEffect, useMemo, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
+import { LearningShell } from "../learning/LearningShell";
 import { WordChoiceOption } from "./WordChoiceOption";
 import {
   choiceResultAt,
@@ -13,7 +14,6 @@ import {
   wordChoiceFinishLabel,
   wordChoiceProgressLabel,
   wordChoiceQuestionsForStep,
-  wordChoiceScreenTitle,
   wordChoiceSessionReducer,
   wordChoiceSessionResults,
 } from "./word-choice";
@@ -29,18 +29,26 @@ import "./word-choice-screen.css";
 // 세션 상태는 이 화면이 소유하고 순수 함수 `wordChoiceSessionReducer`를
 // 소비합니다. 판정·완료·응답 여부를 상태에 적지 않습니다 — 전부 파생입니다.
 //
-// `stepOrdinal`은 App이 `journeyStepOrdinal`로 계산해 내려 주고, 이 화면은
-// 여정 맵의 값을 읽지 않습니다.
+// **뼈대는 이 화면의 것이 아닙니다** ⟨2026-09-28⟩. 상단 바·세션 헤더·지시문·무대
+// 카드·아래 버튼은 `LearningShell`이 집니다(ADR-0022 D1-2). 이 화면이 아는 것은
+// 카드 **안**에 무엇이 서는가와 작업 영역에 무엇이 서는가뿐입니다.
+//
+// ⚠ **옮긴 것이지 다시 그린 것이 아닙니다.** 보기의 판정 표식은 듣기처럼 배지로
+// 바꾸지 않고 그대로 뒀습니다 — 이 화면의 디자인이 아직 없고, 없는 디자인을 옆
+// 화면에서 베끼면 그것이 결정으로 굳습니다. 배지로 갈 자리가 생기면 그때 갑니다.
 export type WordChoiceScreenProps = {
   stepId: JourneyStepId;
-  stepOrdinal: number;
+  /** 유닛 안에서 몇 번째 활동인가입니다 — 세션 헤더의 `Chapter n / N`이 이 값에서 납니다. */
+  activityIndex: number;
+  totalActivityCount: number;
   onExit: () => void;
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
 };
 
 export function WordChoiceScreen({
   stepId,
-  stepOrdinal,
+  activityIndex,
+  totalActivityCount,
   onExit,
   onFinish,
 }: WordChoiceScreenProps): ReactNode {
@@ -66,128 +74,90 @@ export function WordChoiceScreen({
     announceCompletion(wordChoiceCompletionAnnouncement(wordChoiceFinishLabel));
   }, [complete]);
 
+  // 세션이 끝난 뒤에만 아래 버튼이 섭니다 — 문항 사이는 넘김 층이 집니다(듣기와 같은
+  // 규약입니다). 「끝났다」와 「무엇이 일어났는지」만 넘기고 통과 여부는 계산하지도,
+  // 알지도 않습니다 — 그 판정은 평가가 집니다.
+  const action =
+    question === null
+      ? {
+          label: wordChoiceFinishLabel,
+          run: () =>
+            onFinish(stepId, wordChoiceSessionResults(questions, state.answeredChoiceIndexes)),
+        }
+      : undefined;
+
+  // 고른 뒤 2.5초입니다 — 듣기와 같은 값입니다. 두 화면의 기다림이 다르면 「이 화면은
+  // 왜 더 오래 걸리지」가 조작이 아니라 화면의 성격으로 읽힙니다.
+  //
+  // **참조가 곧 걸음의 정체입니다**(껍데기가 그것으로 타이머를 갈고 겹침을 막습니다).
+  // 매 렌더 새로 만들면 관계없는 리렌더 하나가 기다림을 처음부터 되돌립니다.
+  const advance = useMemo(
+    () =>
+      question !== null && hasAnswered(state)
+        ? {
+            label: "다음으로",
+            run: () => dispatch({ type: "nextQuestion" }),
+            delayMs: 2500,
+          }
+        : undefined,
+    [question, state.selectedChoiceIndex],
+  );
+
   return (
-    <view className="word-choice-screen">
-      <view className="word-choice-screen-header">
-        {/* 나가는 수단이 어느 시점에도 정확히 하나입니다 — 완료 전에는
-            `맵으로`뿐입니다. 완료 뒤에는 `결과 보기`가 그 자리를
-            대신합니다. `onExit`은 진행을 갱신하지 않습니다. */}
-        {question === null ? null : (
-          <view
-            className="word-choice-screen-exit"
-            data-testid="word-choice-screen-exit"
-            accessibility-element={true}
-            accessibility-label="맵으로"
-            accessibility-traits="button"
-            bindtap={onExit}
-          >
-            <text className="word-choice-screen-exit-label">맵으로</text>
+    <LearningShell
+      form="word-choice"
+      activityIndex={activityIndex}
+      totalActivityCount={totalActivityCount}
+      instruction="문항에 알맞은 단어를 고르세요."
+      /* 문항 진행은 카드 밖, 세션 헤더의 오른쪽 자리입니다. */
+      meta={
+        question === null
+          ? undefined
+          : wordChoiceProgressLabel(state.questionIndex, questions.length)
+      }
+      onExit={onExit}
+      actionLabel={action?.label}
+      onAction={action?.run}
+      advance={advance}
+      /* 보기는 무대 카드 **밖**입니다 — 카드는 「무엇을 묻나」를 말하고, 고르는 일은
+         그 아래 작업 영역에서 합니다. */
+      workspace={
+        question === null ? undefined : (
+          <view className="word-choice-screen-options">
+            {question.choices.map((choiceText, choiceIndex) => (
+              <WordChoiceOption
+                key={choiceIndex}
+                index={choiceIndex}
+                text={choiceText}
+                // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는
+                // null입니다.
+                result={choiceResultAt(state, question, choiceIndex)}
+                onSelect={(index) => dispatch({ type: "selectChoice", choiceIndex: index })}
+              />
+            ))}
           </view>
-        )}
-        <text
-          className="word-choice-screen-title"
-          data-testid="word-choice-screen-title"
-          accessibility-traits="header"
-        >
-          {wordChoiceScreenTitle(stepOrdinal)}
-        </text>
-      </view>
-
-      {/* [흐름] 내용 슬롯. 스크롤 컨테이너 하나가 진행·제시·지시·보기·완료문을
-          감쌉니다. `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안
-          적으면 초기값이 각각 가로·꺼짐이라 세로 스크롤이 원리적으로
-          불가능합니다. `enable-scroll`·`bounces`는 적지 않습니다 — 초기값이
-          이미 원하는 값이거나(전자, `YES`) 실기로 확인된 값입니다(후자,
-          ADR-0022 D3 · 2026-09-04 실기로 「참. 안 적는다」로 닫혔습니다).
-          accessibility-*를 붙이지 않습니다 — 조작 단위가 아니라 상자입니다. */}
-      <scroll-view
-        className="word-choice-screen-scroll"
-        data-testid="word-choice-screen-scroll"
-        scroll-orientation="vertical"
-        scroll-bar-enable={true}
-      >
-        {/* `<scroll-view>`의 직계 자식은 최대 하나입니다 — 간격은 이 상자가
-            집니다. `data-testid`는 붙이지 않습니다: 자식 수 단언은 스크롤
-            컨테이너에서 세고, 아래 자식들은 여전히 `within(scroll)` 자손
-            질의로 닿습니다. */}
-        <view className="word-choice-screen-content">
-          {question === null ? null : (
-            <text className="word-choice-screen-progress" data-testid="word-choice-screen-progress">
-              {wordChoiceProgressLabel(state.questionIndex, questions.length)}
-            </text>
-          )}
-
+        )
+      }
+      card={
+        // 문항 상태든 완료 상태든 **언제나 서는 상자**입니다 — 이 화면의 정체를 가리는
+        // 앵커가 이것입니다(듣기의 `listening-screen-content`와 같은 자리). 제시문은
+        // 문항이 있을 때만 서므로 앵커가 될 수 없습니다: 실물 문항 표가 아직 비어 있어
+        // 마운트가 곧 완료인 갈래가 있습니다.
+        <view className="word-choice-screen-content" data-testid="word-choice-screen-content">
           {question === null ? null : (
             <text className="word-choice-screen-prompt" data-testid="word-choice-screen-prompt">
               {question.prompt}
             </text>
           )}
 
-          {question === null ? null : (
-            // 항상 렌더돼 실패할 수 없는 단언은 검증이 아니므로 testid를 두지 않습니다.
-            <text className="word-choice-screen-instruction">문항에 알맞은 단어를 고르세요.</text>
-          )}
-
-          {question === null ? null : (
-            <view className="word-choice-screen-options">
-              {question.choices.map((choiceText, choiceIndex) => (
-                <WordChoiceOption
-                  key={choiceIndex}
-                  index={choiceIndex}
-                  text={choiceText}
-                  // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은
-                  // 정답 보기는 null입니다.
-                  result={choiceResultAt(state, question, choiceIndex)}
-                  onSelect={(index) => dispatch({ type: "selectChoice", choiceIndex: index })}
-                />
-              ))}
-            </view>
-          )}
-
+          {/* 완료문입니다. 문항이 서 있던 그 카드 안에 결과가 대신 섭니다. */}
           {question === null ? (
             <text className="word-choice-screen-complete" data-testid="word-choice-screen-complete">
               {wordChoiceCompletionText}
             </text>
           ) : null}
         </view>
-      </scroll-view>
-
-      {/* [고정] 액션 행. 흐르는 영역이 아니라 화면의 직계 자식으로
-          남습니다. 응답 여부의 프로브입니다 — 존재 자체가 상태이므로
-          속성을 또 붙이지 않습니다. 판정 전에는 렌더하지 않습니다. 영구
-          `disabled` 버튼을 두지 않습니다 — 「다음」은 *아직* 불가이지
-          *영구히* 불가가 아닙니다(ADR-0016 D10). */}
-      {hasAnswered(state) ? (
-        <view
-          className="word-choice-screen-next"
-          data-testid="word-choice-screen-next"
-          accessibility-element={true}
-          accessibility-label="다음"
-          accessibility-traits="button"
-          bindtap={() => dispatch({ type: "nextQuestion" })}
-        >
-          <text className="word-choice-screen-next-label">다음</text>
-        </view>
-      ) : null}
-
-      {/* 완료의 단일 프로브입니다. 두 출구의 라벨이 다른 문자열이라 음성
-          제어에서 갈립니다. 진행을 쓰는 자리는 여전히 App이고, 완료 여부의
-          판정은 평가가 집니다. 이 화면이 넘기는 것은 「끝났다」와 「무엇이
-          일어났는지」뿐입니다 — 통과 여부를 계산하지도, 알지도 않습니다. */}
-      {question === null ? (
-        <view
-          className="word-choice-screen-finish"
-          data-testid="word-choice-screen-finish"
-          accessibility-element={true}
-          accessibility-label={wordChoiceFinishLabel}
-          accessibility-traits="button"
-          bindtap={() =>
-            onFinish(stepId, wordChoiceSessionResults(questions, state.answeredChoiceIndexes))
-          }
-        >
-          <text className="word-choice-screen-finish-label">{wordChoiceFinishLabel}</text>
-        </view>
-      ) : null}
-    </view>
+      }
+    />
   );
 }

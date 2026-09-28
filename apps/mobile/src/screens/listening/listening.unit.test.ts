@@ -12,7 +12,6 @@ import {
   listeningCompletionText,
   listeningFinishLabel,
   listeningQuestionsByStep,
-  listeningScreenTitle,
   listeningSessionReducer,
   playbackStateAfterPlay,
   questionProgressLabel,
@@ -96,21 +95,6 @@ describe("questionsForStep", () => {
   it("고정 데이터를 그대로 낸다 — 스텝마다 다른 목록이다", () => {
     expect(questionsForStep("ordering")).toEqual(listeningQuestionsByStep.ordering);
     expect(questionsForStep("greeting")).not.toEqual(listeningQuestionsByStep.ordering);
-  });
-});
-
-describe("listeningScreenTitle", () => {
-  // `${ordinal}단계 · 듣기`입니다. 구분자는 가운뎃점 양옆 공백입니다.
-  it("서수 3은 3단계 · 듣기다", () => {
-    expect(listeningScreenTitle(3)).toBe("3단계 · 듣기");
-  });
-
-  it("서수 1은 1단계 · 듣기다", () => {
-    expect(listeningScreenTitle(1)).toBe("1단계 · 듣기");
-  });
-
-  it("여정의 마지막 서수 5도 같은 형식이다", () => {
-    expect(listeningScreenTitle(5)).toBe("5단계 · 듣기");
   });
 });
 

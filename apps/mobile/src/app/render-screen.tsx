@@ -191,7 +191,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <WordChoiceScreen
           stepId={screen.stepId}
-          stepOrdinal={journeyStepOrdinal(screen.stepId)}
+          activityIndex={screen.activityIndex}
+          totalActivityCount={learningFormsForStep(screen.stepId).length}
           onExit={wiring.onExitLearning}
           onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
         />

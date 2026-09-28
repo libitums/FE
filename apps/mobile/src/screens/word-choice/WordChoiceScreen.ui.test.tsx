@@ -35,12 +35,27 @@ const ORDERING_QUESTIONS: readonly WordChoiceQuestion[] = [
   },
 ] as const;
 
+// 스텝이 갈리면 제시문도 갈린다는 것을 짓기 위한 둘째 픽스처입니다. 제목 줄이 걷히면서
+// (2026-09-28) 「어느 스텝에서 왔는가」를 드러내는 채널이 제시문 하나가 됐고, 그것을
+// 대조하려면 문항을 가진 스텝이 둘이어야 합니다.
+const GREETING_QUESTIONS: readonly WordChoiceQuestion[] = [
+  {
+    prompt: "인사 스텝의 제시문입니다.",
+    choices: ["안녕", "감사", "죄송", "부탁"],
+    answerIndex: 0,
+  },
+] as const;
+
 vi.mock("./word-choice", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./word-choice")>();
   return {
     ...actual,
-    wordChoiceQuestionsForStep: (id: JourneyStepId) =>
-      id === "ordering" ? ORDERING_QUESTIONS : [],
+    wordChoiceQuestionsForStep: (id: JourneyStepId) => {
+      if (id === "ordering") {
+        return ORDERING_QUESTIONS;
+      }
+      return id === "greeting" ? GREETING_QUESTIONS : [];
+    },
   };
 });
 
@@ -60,7 +75,8 @@ function renderOrdering(
   return render(
     <WordChoiceScreen
       stepId="ordering"
-      stepOrdinal={3}
+      activityIndex={0}
+      totalActivityCount={1}
       onExit={overrides.onExit ?? (() => {})}
       onFinish={overrides.onFinish ?? (() => {})}
     />,
@@ -75,7 +91,7 @@ function answerCorrectlyAndAdvance(questionIndex: number): void {
     throw new Error(`fixture missing at index ${questionIndex}`);
   }
   fireEvent.tap(screen.getByTestId(`word-choice-option-${question.answerIndex}`), {});
-  fireEvent.tap(screen.getByTestId("word-choice-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 }
 
 function completeAllThree(): void {
@@ -137,18 +153,13 @@ afterEach(() => {
 
 // ---------------------------------------------------------------- 처음 렌더
 
-test("제목이 '3단계 · 단어 선택'이고 accessibility-traits='header'다", () => {
-  renderOrdering();
-
-  const title = screen.getByTestId("word-choice-screen-title");
-  expect(title).toHaveTextContent("3단계 · 단어 선택");
-  expect(title).toHaveAttribute("accessibility-traits", "header");
-});
+// 2026-09-28: 화면 제목 줄이 걷혔습니다 — 껍데기의 세션 헤더가 「지금 어디인가」를
+// 말합니다(ADR-0022 D1-2). 그래서 이 화면이 내는 머리는 아래 진행 문구뿐입니다.
 
 test("진행 문구가 '문항 1 / 3'이다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("word-choice-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
 });
 
 test("첫 문항의 제시문이 렌더되고 보기가 네 개다", () => {
@@ -162,21 +173,31 @@ test("첫 문항의 제시문이 렌더되고 보기가 네 개다", () => {
   }
 });
 
-// 어느 스텝에서 왔는지가 제목에 드러납니다 — 데이터가 박혀 있으면 여기서 잡힙니다.
-test("다른 스텝으로 렌더하면 제목이 갈린다", () => {
+// 어느 스텝에서 왔는지가 제시문에 드러납니다 — 데이터가 박혀 있으면 여기서 잡힙니다.
+test("다른 스텝으로 렌더하면 제시문이 갈린다", () => {
   const ordering = render(
-    <WordChoiceScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} onFinish={() => {}} />,
+    <WordChoiceScreen
+      stepId="ordering"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={() => {}}
+      onFinish={() => {}}
+    />,
   );
-  const orderingTitle = screen.getByTestId("word-choice-screen-title").textContent;
+  const orderingPrompt = screen.getByTestId("word-choice-screen-prompt").textContent;
   ordering.unmount();
 
   render(
-    <WordChoiceScreen stepId="greeting" stepOrdinal={1} onExit={() => {}} onFinish={() => {}} />,
+    <WordChoiceScreen
+      stepId="greeting"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={() => {}}
+      onFinish={() => {}}
+    />,
   );
 
-  const greetingTitle = screen.getByTestId("word-choice-screen-title");
-  expect(greetingTitle).toHaveTextContent("1단계 · 단어 선택");
-  expect(greetingTitle.textContent).not.toBe(orderingTitle);
+  expect(screen.getByTestId("word-choice-screen-prompt").textContent).not.toBe(orderingPrompt);
 });
 
 // ---------------------------------------------------------------- 응답 전
@@ -184,9 +205,9 @@ test("다른 스텝으로 렌더하면 제목이 갈린다", () => {
 test("응답 전에는 나가기만 있고 다음·결과 보기·완료 문구가 없다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("word-choice-screen-exit")).toBeInTheDocument();
-  expect(screen.queryByTestId("word-choice-screen-next")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("word-choice-screen-finish")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-advance")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   expect(screen.queryByTestId("word-choice-screen-complete")).not.toBeInTheDocument();
 });
 
@@ -242,7 +263,7 @@ test("정답 보기를 탭하면 '다음'이 나타난다", () => {
 
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
 
-  expect(screen.getByTestId("word-choice-screen-next")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
 });
 
 // 정답을 알려 주지 않습니다 — 오답을 골라도 정답 보기는 판정을 지지 않습니다.
@@ -306,7 +327,7 @@ test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () 
   fireEvent.tap(screen.getByTestId("word-choice-option-0"), {});
 
   expect(screen.getByTestId("word-choice-option-0")).toHaveAttribute("data-result", "correct");
-  expect(screen.getByTestId("word-choice-screen-next")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
 });
 
 // ---------------------------------------------------------------- 문항 진행
@@ -315,16 +336,16 @@ test("'다음'을 탭하면 진행·문항이 갈리고 판정이 초기화되�
   renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
-  fireEvent.tap(screen.getByTestId("word-choice-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
-  expect(screen.getByTestId("word-choice-screen-progress")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
   expect(screen.getByTestId("word-choice-screen-prompt")).toHaveTextContent(
     ORDERING_QUESTIONS[1]!.prompt,
   );
   for (const testid of CHOICE_TESTIDS) {
     expect(screen.getByTestId(testid)).toHaveAttribute("data-result", "none");
   }
-  expect(screen.queryByTestId("word-choice-screen-next")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-advance")).not.toBeInTheDocument();
 });
 
 // ---------------------------------------------------------------- 완료
@@ -337,16 +358,18 @@ test("문항 셋을 마치면 완료 문구와 결과 보기가 나타난다", (
   expect(screen.getByTestId("word-choice-screen-complete")).toHaveTextContent(
     "문항을 모두 마쳤어요",
   );
-  expect(screen.getByTestId("word-choice-screen-finish")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
 });
 
-test("완료 상태에서 나가기·진행·제시문·보기가 전부 사라진다", () => {
+// 나가기는 남습니다 — 껍데기의 `×`는 세션 내내 서 있고, 그 목적지(맵)는 아래 버튼의
+// 목적지(결과)와 다릅니다. 「같은 곳으로 가는 버튼 둘」이 아닙니다.
+test("완료 상태에서 진행·제시문·보기가 사라지고 나가기는 남는다", () => {
   renderOrdering();
 
   completeAllThree();
 
-  expect(screen.queryByTestId("word-choice-screen-exit")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("word-choice-screen-progress")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
   expect(screen.queryByTestId("word-choice-screen-prompt")).not.toBeInTheDocument();
   for (const testid of CHOICE_TESTIDS) {
     expect(screen.queryByTestId(testid)).not.toBeInTheDocument();
@@ -362,9 +385,9 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
   answerCorrectlyAndAdvance(1);
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[2]!.answerIndex}`), {});
 
-  expect(screen.getByTestId("word-choice-screen-progress")).toHaveTextContent("문항 3 / 3");
-  expect(screen.queryByTestId("word-choice-screen-finish")).not.toBeInTheDocument();
-  expect(screen.getByTestId("word-choice-screen-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 3 / 3");
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
 });
 
 test("결과 보기를 탭하면 onFinish가 stepId와 결과 배열로 정확히 한 번 불린다", () => {
@@ -372,7 +395,7 @@ test("결과 보기를 탭하면 onFinish가 stepId와 결과 배열로 정확�
   renderOrdering({ onFinish });
 
   completeAllThree();
-  fireEvent.tap(screen.getByTestId("word-choice-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledWith("ordering", ["correct", "correct", "correct"]);
@@ -385,9 +408,9 @@ test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 �
 
   for (const question of ORDERING_QUESTIONS) {
     fireEvent.tap(screen.getByTestId(`word-choice-option-${(question.answerIndex + 1) % 4}`), {});
-    fireEvent.tap(screen.getByTestId("word-choice-screen-next"), {});
+    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   }
-  fireEvent.tap(screen.getByTestId("word-choice-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledWith("ordering", ["incorrect", "incorrect", "incorrect"]);
@@ -400,7 +423,7 @@ test("응답 전 나가기를 탭하면 onExit이 한 번, onFinish는 불리지
   const onFinish = vi.fn<(id: JourneyStepId) => void>();
   renderOrdering({ onExit, onFinish });
 
-  fireEvent.tap(screen.getByTestId("word-choice-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
   expect(onExit).toHaveBeenCalledTimes(1);
   expect(onFinish).not.toHaveBeenCalled();
@@ -412,7 +435,7 @@ test("문항 하나를 응답한 뒤 나가기를 탭해도 onFinish가 불리�
   renderOrdering({ onExit, onFinish });
 
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
-  fireEvent.tap(screen.getByTestId("word-choice-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
   expect(onExit).toHaveBeenCalledTimes(1);
   expect(onFinish).not.toHaveBeenCalled();
@@ -420,24 +443,29 @@ test("문항 하나를 응답한 뒤 나가기를 탭해도 onFinish가 불리�
 
 // ---------------------------------------------------------------- 접근성
 
-test("나가기에 element·label='맵으로'·traits='button'이 붙는다", () => {
+// 나가는 수단의 이름이 `맵으로`에서 `나가기`로 갈렸습니다 — 껍데기의 `×`이고, 낱말이
+// 아니라 아이콘이라 목적지를 이름에 적지 않습니다(ADR-0022 D1-2).
+test("나가기에 element·label='학습 나가기'·traits='button'이 붙는다", () => {
   renderOrdering();
 
-  const exit = screen.getByTestId("word-choice-screen-exit");
+  const exit = screen.getByTestId("learning-shell-exit");
   expect(exit).toHaveAttribute("accessibility-element", "true");
-  expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+  expect(exit).toHaveAttribute("accessibility-label", "학습 나가기");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
 });
 
-test("다음에 element·label='다음'·traits='button'이 붙는다", () => {
+// 응답 뒤에 아래 버튼이 서지 않습니다 — 판정을 보인 채 2.5초 뒤 저절로 넘어가고, 그
+// 동안 화면 전체가 넘김 층입니다. 듣기와 같은 규약입니다.
+test("넘김 층에 element·label='다음으로'·traits='button'이 붙는다", () => {
   renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
 
-  const next = screen.getByTestId("word-choice-screen-next");
-  expect(next).toHaveAttribute("accessibility-element", "true");
-  expect(next).toHaveAttribute("accessibility-label", "다음");
-  expect(next).toHaveAttribute("accessibility-traits", "button");
+  const advance = screen.getByTestId("learning-shell-advance");
+  expect(advance).toHaveAttribute("accessibility-element", "true");
+  expect(advance).toHaveAttribute("accessibility-label", "다음으로");
+  expect(advance).toHaveAttribute("accessibility-traits", "button");
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
 });
 
 test("결과 보기에 element·label='결과 보기'·traits='button'이 붙는다", () => {
@@ -445,7 +473,7 @@ test("결과 보기에 element·label='결과 보기'·traits='button'이 붙는
 
   completeAllThree();
 
-  const finish = screen.getByTestId("word-choice-screen-finish");
+  const finish = screen.getByTestId("learning-shell-action");
   expect(finish).toHaveAttribute("accessibility-element", "true");
   expect(finish).toHaveAttribute("accessibility-label", "결과 보기");
   expect(finish).toHaveAttribute("accessibility-traits", "button");
@@ -470,13 +498,13 @@ test("나가기·결과 보기 안의 라벨 텍스트가 조작 단위가 되�
   renderOrdering();
 
   expect(
-    screen.getByTestId("word-choice-screen-exit").querySelectorAll("[accessibility-element]"),
+    screen.getByTestId("learning-shell-exit").querySelectorAll("[accessibility-element]"),
   ).toHaveLength(0);
 
   completeAllThree();
 
   expect(
-    screen.getByTestId("word-choice-screen-finish").querySelectorAll("[accessibility-element]"),
+    screen.getByTestId("learning-shell-action").querySelectorAll("[accessibility-element]"),
   ).toHaveLength(0);
 });
 
@@ -488,8 +516,11 @@ test("응답 전 조작 단위가 나가기 + 보기 넷이다", () => {
     el.getAttribute("data-testid"),
   );
 
+  // 상단 바의 알림 버튼이 껍데기와 함께 딸려 옵니다 — 화면의 것이 아니지만 조작
+  // 단위의 순서는 화면 전체에서 세므로 여기 셉니다.
   expect(tappables).toEqual([
-    "word-choice-screen-exit",
+    "top-bar-notifications",
+    "learning-shell-exit",
     "word-choice-option-0",
     "word-choice-option-1",
     "word-choice-option-2",
@@ -497,7 +528,7 @@ test("응답 전 조작 단위가 나가기 + 보기 넷이다", () => {
   ]);
 });
 
-test("응답 뒤 조작 단위가 나가기 + 보기 넷 + 다음이다", () => {
+test("응답 뒤 조작 단위가 나가기 + 보기 넷 + 넘김 층이다", () => {
   const { container } = renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
@@ -507,16 +538,17 @@ test("응답 뒤 조작 단위가 나가기 + 보기 넷 + 다음이다", () => 
   );
 
   expect(tappables).toEqual([
-    "word-choice-screen-exit",
+    "top-bar-notifications",
+    "learning-shell-exit",
     "word-choice-option-0",
     "word-choice-option-1",
     "word-choice-option-2",
     "word-choice-option-3",
-    "word-choice-screen-next",
+    "learning-shell-advance",
   ]);
 });
 
-test("완료 상태의 조작 단위가 결과 보기 하나뿐이다", () => {
+test("완료 상태의 조작 단위가 나가기와 결과 보기다", () => {
   const { container } = renderOrdering();
 
   completeAllThree();
@@ -525,56 +557,64 @@ test("완료 상태의 조작 단위가 결과 보기 하나뿐이다", () => {
     el.getAttribute("data-testid"),
   );
 
-  expect(tappables).toEqual(["word-choice-screen-finish"]);
+  expect(tappables).toEqual([
+    "top-bar-notifications",
+    "learning-shell-exit",
+    "learning-shell-action",
+  ]);
 });
 
 // ---------------------------------------------------------------- 스크롤 영역
 
-test("[A1] word-choice-screen-scroll이 존재한다", () => {
+test("[A1] learning-shell-scroll이 존재한다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("word-choice-screen-scroll")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-scroll")).toBeInTheDocument();
 });
 
-test("[A2] 진행·제시문·보기 넷이 스크롤 컨테이너 안에 있다", () => {
+// 흐르는 것은 보기 넷뿐입니다 — 제시문은 무대 카드 안(고정)이고 진행은 세션
+// 헤더(고정)입니다(ADR-0022 D1-2).
+test("[A2] 보기 넷만 스크롤 컨테이너 안에 있다", () => {
   renderOrdering();
 
-  const scroll = screen.getByTestId("word-choice-screen-scroll");
-  expect(within(scroll).getByTestId("word-choice-screen-progress")).toBeInTheDocument();
-  expect(within(scroll).getByTestId("word-choice-screen-prompt")).toBeInTheDocument();
+  const scroll = screen.getByTestId("learning-shell-scroll");
   for (const testid of CHOICE_TESTIDS) {
     expect(within(scroll).getByTestId(testid)).toBeInTheDocument();
   }
+  expect(within(scroll).queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
+  expect(within(scroll).queryByTestId("word-choice-screen-prompt")).not.toBeInTheDocument();
 });
 
-test("[A3] 제목·나가기·다음이 스크롤 컨테이너 밖에 있다", () => {
+test("[A3] 나가기·넘김 층이 스크롤 컨테이너 밖에 있다", () => {
   renderOrdering();
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
 
-  const scroll = screen.getByTestId("word-choice-screen-scroll");
-  expect(within(scroll).queryByTestId("word-choice-screen-title")).not.toBeInTheDocument();
-  expect(within(scroll).queryByTestId("word-choice-screen-exit")).not.toBeInTheDocument();
-  expect(within(scroll).queryByTestId("word-choice-screen-next")).not.toBeInTheDocument();
+  const scroll = screen.getByTestId("learning-shell-scroll");
+  expect(within(scroll).queryByTestId("learning-shell-exit")).not.toBeInTheDocument();
+  expect(within(scroll).queryByTestId("learning-shell-advance")).not.toBeInTheDocument();
 
-  expect(screen.getByTestId("word-choice-screen-title")).toBeInTheDocument();
-  expect(screen.getByTestId("word-choice-screen-exit")).toBeInTheDocument();
-  expect(screen.getByTestId("word-choice-screen-next")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
 });
 
-test("완료 상태에서 완료 문구는 스크롤 안, 결과 보기는 스크롤 밖이다", () => {
+// 완료 상태에는 고를 것이 없으므로 **작업 영역 자체가 서지 않습니다**. 완료문은 문항이
+// 서 있던 그 무대 카드 안에 대신 섭니다.
+test("완료 상태에서 완료 문구는 무대 안, 스크롤은 아예 없고 결과 보기는 무대 밖이다", () => {
   renderOrdering();
   completeAllThree();
 
-  const scroll = screen.getByTestId("word-choice-screen-scroll");
-  expect(within(scroll).getByTestId("word-choice-screen-complete")).toBeInTheDocument();
-  expect(within(scroll).queryByTestId("word-choice-screen-finish")).not.toBeInTheDocument();
-  expect(screen.getByTestId("word-choice-screen-finish")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-scroll")).not.toBeInTheDocument();
+
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(within(stage).getByTestId("word-choice-screen-complete")).toBeInTheDocument();
+  expect(within(stage).queryByTestId("learning-shell-action")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
 });
 
 test("[A4] scroll-orientation='vertical'이 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("word-choice-screen-scroll")).toHaveAttribute(
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute(
     "scroll-orientation",
     "vertical",
   );
@@ -585,29 +625,28 @@ test("[A4] scroll-orientation='vertical'이 붙는다", () => {
 test("[A5] scroll-bar-enable='true'가 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("word-choice-screen-scroll")).toHaveAttribute(
-    "scroll-bar-enable",
-    "true",
-  );
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("scroll-bar-enable", "true");
 });
 
 test("[A6] 문항 상태에서 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("word-choice-screen-scroll").children.length).toBeLessThanOrEqual(1);
+  expect(screen.getByTestId("learning-shell-scroll").children.length).toBeLessThanOrEqual(1);
 });
 
-test("[A6] 완료 상태에서 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
+// 완료 상태에는 스크롤 컨테이너가 아예 없습니다 — 「직계 자식이 하나 이하」가 공허하게
+// 참인 자리라, 그 부재 자체를 답니다.
+test("[A6] 완료 상태에는 스크롤 컨테이너가 서지 않는다", () => {
   renderOrdering();
   completeAllThree();
 
-  expect(screen.getByTestId("word-choice-screen-scroll").children.length).toBeLessThanOrEqual(1);
+  expect(screen.queryByTestId("learning-shell-scroll")).not.toBeInTheDocument();
 });
 
 test("[A7] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는다", () => {
   renderOrdering();
 
-  const scroll = screen.getByTestId("word-choice-screen-scroll");
+  const scroll = screen.getByTestId("learning-shell-scroll");
   expect(scroll).not.toHaveAttribute("accessibility-element");
   expect(scroll).not.toHaveAttribute("accessibility-label");
   expect(scroll).not.toHaveAttribute("accessibility-traits");
@@ -644,7 +683,13 @@ test("마지막 다음 뒤 custom 완료 발화가 한 번이고 rerender에도 
   expect(builtin).toHaveLength(0);
 
   view.rerender(
-    <WordChoiceScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} onFinish={() => {}} />,
+    <WordChoiceScreen
+      stepId="ordering"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={() => {}}
+      onFinish={() => {}}
+    />,
   );
   expect(completion).toHaveLength(1);
   expect(builtin).toHaveLength(0);
@@ -662,9 +707,9 @@ test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () 
 
   expect(calls).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId("word-choice-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
-  expect(screen.getByTestId("word-choice-screen-progress")).toHaveTextContent("문항 2 / 3"); // 앵커
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3"); // 앵커
   expect(calls).toHaveLength(0);
 });
 
@@ -677,7 +722,13 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   const onExit = () => {};
   const onFinish = () => {};
   const view = render(
-    <WordChoiceScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+    <WordChoiceScreen
+      stepId="ordering"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={onExit}
+      onFinish={onFinish}
+    />,
   );
 
   completeAllThree();
@@ -685,10 +736,22 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   expect(calls).toHaveLength(1);
 
   view.rerender(
-    <WordChoiceScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+    <WordChoiceScreen
+      stepId="ordering"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={onExit}
+      onFinish={onFinish}
+    />,
   );
   view.rerender(
-    <WordChoiceScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+    <WordChoiceScreen
+      stepId="ordering"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={onExit}
+      onFinish={onFinish}
+    />,
   );
 
   expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument(); // 앵커
@@ -705,13 +768,14 @@ test("[X-D] 완료 발화가 종료 문구와 그 순간 유일한 조작 단위
 
   completeAllThree();
 
-  const elements = [...container.querySelectorAll("[accessibility-element]")];
-  expect(elements.map((el) => el.getAttribute("data-testid"))).toEqual([
-    "word-choice-screen-finish",
-  ]);
+  // 껍데기가 함께 세우는 것들(상단 바 · 나가기 · 진행)이 같이 잡히므로, 발화의 출처인
+  // 아래 버튼을 testid로 집습니다.
+  const elements = [...container.querySelectorAll('[accessibility-element="true"]')];
+  expect(elements.map((el) => el.getAttribute("data-testid"))).toContain("learning-shell-action");
 
   const completeText = screen.getByTestId("word-choice-screen-complete").textContent ?? "";
-  const actionLabel = elements[0]?.getAttribute("accessibility-label") ?? "";
+  const actionLabel =
+    screen.getByTestId("learning-shell-action").getAttribute("accessibility-label") ?? "";
 
   expect(calls).toHaveLength(1);
   expect(calls[0]?.content).toBe(`${completeText}, ${actionLabel}`);
@@ -723,7 +787,15 @@ test("[X-E] 문항이 0인 스텝은 마운트가 곧 완료라 그 순간 annou
   const calls = stubAnnounce();
 
   render(
-    <WordChoiceScreen stepId="greeting" stepOrdinal={1} onExit={() => {}} onFinish={() => {}} />,
+    <WordChoiceScreen
+      // 문항이 0인 스텝입니다 — `greeting`은 이 파일이 픽스처를 준 스텝이라 쓸 수
+      // 없습니다.
+      stepId="introduction"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={() => {}}
+      onFinish={() => {}}
+    />,
   );
 
   expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument(); // 앵커

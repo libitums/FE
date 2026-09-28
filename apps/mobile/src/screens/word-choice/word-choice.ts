@@ -55,12 +55,6 @@ export const wordChoiceQuestionsByStep: Record<JourneyStepId, readonly WordChoic
 // 스텝을 전부 갖는 것은 tsc가 지고, 범위 밖 입력에도 아래 식이 그대로
 // 적용됩니다.
 
-// `${ordinal}단계 · 단어 선택` 형태입니다 — 구분자는 가운뎃점 양옆
-// 공백입니다.
-export function wordChoiceScreenTitle(ordinal: number): string {
-  return `${ordinal}단계 · 단어 선택`;
-}
-
 // Record가 JourneyStepId 다섯을 전부 갖는 것을 tsc가 강제하므로 조회는
 // 총함수입니다.
 export function wordChoiceQuestionsForStep(id: JourneyStepId): readonly WordChoiceQuestion[] {

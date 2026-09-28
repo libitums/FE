@@ -14,7 +14,6 @@ import {
   wordChoiceProgressLabel,
   wordChoiceQuestionsByStep,
   wordChoiceQuestionsForStep,
-  wordChoiceScreenTitle,
   wordChoiceSessionReducer,
   wordChoiceSessionResults,
   type WordChoiceQuestion,
@@ -53,20 +52,6 @@ const questionAnswer2: WordChoiceQuestion = {
   choices: ["신발", "책상", "커피", "우산"],
   answerIndex: 2,
 };
-
-describe("wordChoiceScreenTitle", () => {
-  it("서수 3은 3단계 · 단어 선택이다", () => {
-    expect(wordChoiceScreenTitle(3)).toBe("3단계 · 단어 선택");
-  });
-
-  it("서수 1은 1단계 · 단어 선택이다", () => {
-    expect(wordChoiceScreenTitle(1)).toBe("1단계 · 단어 선택");
-  });
-
-  it("여정의 마지막 서수 5도 같은 형식이다", () => {
-    expect(wordChoiceScreenTitle(5)).toBe("5단계 · 단어 선택");
-  });
-});
 
 describe("wordChoiceProgressLabel", () => {
   it("첫 문항(0, 3)은 문항 1 / 3이다", () => {
