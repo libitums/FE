@@ -1,3 +1,4 @@
+import type { AnswerResult } from "../lib/answer-result";
 // 롤플레이 연습 콜백 여덟을 만듭니다. **여정 상태 넷과 그 setter를 받지 않는
 // 것**이 이 파일의 경계입니다 — sink 호출 · `announceCompletion` ·
 // `dispatch(push/backToRoot)` 말고 아무것도 하지 않습니다.
@@ -49,12 +50,10 @@ export function roleplayWiring({
         entrySource: "roleplay",
       });
     },
-    onMessengerReplay: (id: MessengerUnitId) =>
-      messengerEventSink?.({
-        name: "messenger_unit_replay_started",
-        unitId: id,
-        entrySource: "roleplay",
-      }),
+    // 끝난 대화의 `결과 보기`입니다. 메신저 화면을 학습 완료로 갈아 끼웁니다 — 끝난
+    // 대화는 스택에 남길 자리가 아닙니다(학습 세션 → 평가와 같은 `replace`).
+    onMessengerFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) =>
+      dispatch({ type: "replace", screen: { name: "messenger-complete", unitId: id, results } }),
     onPhoneCallComplete: () => {
       "background only";
       // 전화 완료 이벤트가 없고 기록도 없습니다 — 아무것도 하지 않습니다.

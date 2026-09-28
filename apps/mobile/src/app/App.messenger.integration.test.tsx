@@ -5,6 +5,10 @@ import { App } from "./App";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
+import {
+  answerMessengerReplies,
+  typeMessengerReply,
+} from "../screens/messenger/messenger.test-support";
 
 // 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
@@ -49,8 +53,16 @@ function openJourneyMessenger(messengerEventSink?: MessengerEventSink) {
 }
 
 function finishConversation() {
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-accept"), {});
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-thanks"), {});
+  answerMessengerReplies();
+}
+
+// 학습 완료 화면의 나가기(`맵으로` · `목록으로`)입니다. 버튼이 ui-lynx `Button`이라 안쪽을 누릅니다.
+function tapLessonCompleteExit() {
+  const button = screen
+    .getByTestId("lesson-complete-screen-exit")
+    .querySelector('[data-testid="ui-lynx-button"]');
+  if (button === null) throw new Error("lesson-complete-screen-exit 안에 버튼이 없습니다");
+  fireEvent.tap(button, {});
 }
 
 test("맵의 약속 확인 메시지를 열면 실제 messenger 화면이 push된다", () => {
@@ -115,34 +127,44 @@ test("메신저 완료는 일반 completedStepCount와 directions 상태를 바�
 
 test("미완료로 맵을 나갔다 재입장하면 첫 메시지부터 시작한다", () => {
   openJourneyMessenger();
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-accept"), {});
+  answerMessengerReplies(1);
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
   expect(screen.getByTestId("messenger-message-list").children).toHaveLength(1);
-  expect(screen.getByTestId("messenger-screen-progress")).toHaveTextContent("대화 1 / 2");
 });
 
-test("완료 재입장은 전체 대화이며 replay 후에도 완료 기록을 보존한다", () => {
+test("대화를 끝내고 결과 보기를 누르면 학습 완료(PERFECT LESSON)가 서고, 나가면 맵에 완료 표식이 있다", () => {
   openJourneyMessenger();
   finishConversation();
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
-  expect(screen.getByTestId("messenger-message-list").children).toHaveLength(5);
-  fireEvent.tap(screen.getByTestId("messenger-replay"), {});
-  finishConversation();
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+  expect(screen.queryByTestId("messenger-screen")).toBeNull();
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  tapLessonCompleteExit();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
     "data-status",
     "clear",
   );
 });
 
-test("중복 완료는 완료 표식을 멱등적으로 유지한다", () => {
+test("한 번이라도 틀린 답장이 있으면 학습 완료는 LESSON COMPLETE다", () => {
+  openJourneyMessenger();
+  typeMessengerReply("조아요");
+  fireEvent.tap(screen.getByTestId("messenger-try-again").querySelector("view")!, {});
+  finishConversation();
+  fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON COMPLETE!");
+});
+
+test("완료 재입장은 전체 대화와 결과 보기를 내고 완료 기록을 보존한다", () => {
   openJourneyMessenger();
   finishConversation();
-  fireEvent.tap(screen.getByTestId("messenger-replay"), {});
-  finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  expect(screen.getByTestId("messenger-message-list").children).toHaveLength(5);
+  fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  tapLessonCompleteExit();
   expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
     "data-status",
     "clear",
@@ -176,7 +198,7 @@ test("sink는 열린 시점에 정확한 opened payload를 한 번 받는다", (
   });
 });
 
-test("sink는 incomplete exit과 replay를 정확한 순서·payload로 받는다", () => {
+test("sink는 incomplete exit과 완료 재입장을 정확한 순서·payload로 받는다", () => {
   const sink = vi.fn();
   openJourneyMessenger(sink);
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
@@ -184,7 +206,6 @@ test("sink는 incomplete exit과 replay를 정확한 순서·payload로 받는�
   finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
-  fireEvent.tap(screen.getByTestId("messenger-replay"), {});
   expect(sink.mock.calls.map(([event]) => event)).toEqual([
     {
       name: "messenger_unit_opened",
@@ -214,22 +235,17 @@ test("sink는 incomplete exit과 replay를 정확한 순서·payload로 받는�
       entryStatus: "completed",
       entrySource: "journey",
     },
-    {
-      name: "messenger_unit_replay_started",
-      unitId: "appointment-confirmation",
-      entrySource: "journey",
-    },
   ]);
 });
 
-test("완료 후 replay를 다시 완료해도 completed 이벤트는 중복되지 않는다", () => {
+test("완료 재입장과 결과 보기는 completed 이벤트를 다시 내지 않는다", () => {
   const sink = vi.fn();
   openJourneyMessenger(sink);
   finishConversation();
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+  tapLessonCompleteExit();
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
-  fireEvent.tap(screen.getByTestId("messenger-replay"), {});
-  finishConversation();
+  fireEvent.tap(screen.getByTestId("messenger-finish"), {});
   expect(
     sink.mock.calls.filter(
       ([event]) => (event as { name: string }).name === "messenger_unit_completed",

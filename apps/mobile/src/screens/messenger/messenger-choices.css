@@ -1,0 +1,37 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 값은 디자인(Figma 80-7380)의
+   보기 버튼입니다 — 어두운 반투명 면(#1A1C20 · 0.9), 모서리 16, 흰 글자입니다. */
+.messenger-choices {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+  padding-bottom: var(--libitum-layout-screen-padding-bottom);
+}
+
+.messenger-choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--libitum-spacing-16);
+  padding-bottom: var(--libitum-spacing-16);
+  padding-left: var(--libitum-spacing-24);
+  padding-right: var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-lg);
+  /* 디자인의 면 색은 토큰이 없는 값(rgba(26,28,32,0.9))이라 그대로 적습니다. */
+  background: rgba(26, 28, 32, 0.9);
+}
+
+.messenger-choice-selected {
+  background: var(--libitum-color-brand-primary);
+}
+
+.messenger-choice-label {
+  color: var(--libitum-color-gray-50);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  line-height: var(--libitum-typography-label-xl-line-height);
+  text-align: center;
+}

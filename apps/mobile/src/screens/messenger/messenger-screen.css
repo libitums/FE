@@ -1,72 +1,192 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 값은 디자인(Figma 80-7082)을
+   따릅니다. 머리는 서사 메신저(`prologue-chat-screen.css`)와 같은 레시피입니다. */
 .messenger-screen {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: var(--libitum-layout-gap-block);
-  /* 아래 여백에 바텀 네비게이션 몫을 더합니다 — 바가 콘텐츠 위에 겹치므로(app.css의
-     `.app-navigator`) 이것이 없으면 액션 행이 바에 가립니다. 더하는 값은 바 높이 68pt입니다
-     (위 여백 8 + 항목 48 + 아래 여백 12). 스크롤 안쪽이 아니라 루트에 둡니다 — 액션
-     행은 조건부라, 버튼이 없는 상태에서는 스크롤이 마지막 자식이 됩니다. */
-  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
-    calc(
-      var(--libitum-layout-screen-padding-bottom) + var(--libitum-spacing-48) +
-        var(--libitum-spacing-12)
-    );
-  background: var(--libitum-color-background-primary);
+  gap: var(--libitum-spacing-16);
+  padding-top: var(--libitum-layout-screen-padding-top);
+  background: var(--libitum-color-white);
 }
+
 .messenger-screen-header {
+  position: relative;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: var(--libitum-layout-gap-inline);
-  flex-shrink: 0;
-}
-.messenger-screen-exit {
-  min-height: var(--libitum-spacing-48);
-  padding: 0 var(--libitum-spacing-12);
-  border-radius: var(--libitum-radius-md);
-  display: flex;
   align-items: center;
-  justify-content: center;
   flex-shrink: 0;
+  padding-left: var(--libitum-layout-screen-padding-x);
+  padding-right: var(--libitum-layout-screen-padding-x);
 }
-.messenger-screen-exit text {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
+
+.messenger-screen-exit {
+  flex-shrink: 0;
+  z-index: 1;
 }
+
 .messenger-screen-title {
-  margin-top: var(--libitum-spacing-12);
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-s-font-family);
-  font-size: var(--libitum-typography-heading-s-font-size);
-  line-height: var(--libitum-typography-heading-s-line-height);
-  flex: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
 }
+
 .messenger-screen-scroll {
   flex: 1;
   justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
-.messenger-screen-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--libitum-layout-gap-block);
-  padding-top: var(--libitum-spacing-16);
-  padding-bottom: var(--libitum-spacing-16);
-}
-.messenger-screen-progress {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-}
+
+/* 메시지 목록 — 좌우 여백 32는 디자인 실측값에 맞는 토큰입니다. */
 .messenger-message-list {
   display: flex;
   flex-direction: column;
+  gap: var(--libitum-spacing-16);
+  padding-top: var(--libitum-spacing-8);
+  padding-left: var(--libitum-spacing-32);
+  padding-right: var(--libitum-spacing-32);
+}
+
+.messenger-screen-end {
+  flex-shrink: 0;
+  height: var(--libitum-spacing-16);
+}
+
+/* 답장 구역 — 판정 배지 · 입력창 · 자판(또는 Try Again)이 세로로 섭니다(간격 12). */
+.messenger-screen-reply {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: var(--libitum-spacing-12);
 }
+
+/* 입력창 — 흰 알약에 그림자입니다. 테두리 2가 판정을 따라 색이 바뀝니다. */
+.messenger-composer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--libitum-spacing-12);
+  width: 370px;
+  padding-top: var(--libitum-spacing-4);
+  padding-bottom: var(--libitum-spacing-4);
+  padding-left: var(--libitum-spacing-24);
+  padding-right: var(--libitum-spacing-12);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-brand-primary);
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.messenger-composer-correct {
+  border-color: var(--libitum-color-feedback-correct);
+}
+
+.messenger-composer-incorrect {
+  border-color: var(--libitum-color-feedback-incorrect);
+}
+
+/* 입력창 안쪽 — 친 글자(또는 가린 정답)와 그 아래 힌트 줄입니다. */
+.messenger-composer-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
+.messenger-composer-text {
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  text-overflow: ellipsis;
+}
+
+/* 가린 정답은 학습자가 읽어야 하는 단서라 흐린 자리 표시(gray-500)보다 한 단계 진합니다. */
+.messenger-composer-placeholder {
+  color: var(--libitum-color-gray-600);
+}
+
+/* 힌트 줄 — 말풍선의 번역 줄과 같은 작은 본문(Body/small · gray-600)입니다. */
+.messenger-composer-hint {
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.messenger-composer-correct .messenger-composer-text {
+  color: var(--libitum-color-feedback-correct);
+}
+
+.messenger-composer-incorrect .messenger-composer-text {
+  color: var(--libitum-color-feedback-incorrect);
+}
+
+/* 보내기 — 지름 48의 원입니다. 보낼 말이 없거나 판정이 난 동안은 옅은 주황(디자인)입니다. */
+.messenger-composer-send {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-brand-primary);
+}
+
+.messenger-composer-send-idle {
+  background: var(--libitum-color-brand-reward-disabled-surface);
+}
+
+.messenger-composer-send-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+/* 틀린 뒤 자판 자리에 서는 Try Again — 좌우 여백 16은 디자인 실측값입니다. */
+.messenger-screen-retry {
+  align-self: stretch;
+  padding-top: var(--libitum-spacing-24);
+  padding-bottom: var(--libitum-layout-screen-padding-bottom);
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+}
+
 .messenger-screen-action {
   flex-shrink: 0;
+  padding-left: var(--libitum-layout-screen-padding-x);
+  padding-right: var(--libitum-layout-screen-padding-x);
+  padding-bottom: var(--libitum-layout-screen-padding-bottom);
+}
+
+/* 치는 동안 입력창 위에 서는 `Type!` 배지 — 판정 배지와 같은 자리 · 모양의 주색입니다. */
+.messenger-composer-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-brand-primary);
+}
+
+.messenger-composer-prompt-label {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
 }

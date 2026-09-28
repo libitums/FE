@@ -55,7 +55,7 @@ import { roleplayWiring } from "./roleplay-wiring";
 export type RoleplayUnitWiring = {
   readonly onMessengerExit: (id: MessengerUnitId, outcome: MessengerExitOutcome) => void;
   readonly onMessengerComplete: (id: MessengerUnitId) => void;
-  readonly onMessengerReplay: (id: MessengerUnitId) => void;
+  readonly onMessengerFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) => void;
   readonly onPhoneCallComplete: (id: PhoneCallUnitId) => void;
   readonly onPhoneCallExit: (outcome: PhoneCallExitOutcome) => void;
   readonly onVisualNovelAdvance: (
@@ -78,7 +78,9 @@ export type ScreenWiring = {
   onStartMessengerUnit: (id: MessengerUnitId) => void;
   onMessengerExit: (id: MessengerUnitId, outcome: MessengerExitOutcome) => void;
   onMessengerComplete: (id: MessengerUnitId) => void;
-  onMessengerReplay: (id: MessengerUnitId) => void;
+  onMessengerFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) => void;
+  // 메신저 뒤 학습 완료의 나가기입니다 — 연 스택의 루트로 갑니다.
+  onExitMessengerComplete: () => void;
   completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
   onStartPhoneCallUnit: (id: PhoneCallUnitId) => void;
   onPhoneCallComplete: (id: PhoneCallUnitId) => void;
