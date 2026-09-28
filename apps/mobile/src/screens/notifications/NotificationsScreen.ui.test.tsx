@@ -332,3 +332,42 @@ test("[NS15] 삭제 tap → onDeleteItem이 그 항목으로 1회, onSelectItem 
   expect(onDeleteItem).toHaveBeenCalledWith(messengerItem);
   expect(onSelectItem).not.toHaveBeenCalled();
 });
+
+test("[NS16] 삭제 자리가 열린 채 다른 카드를 tap하면 알림을 열지 않고 삭제 자리를 닫는다", () => {
+  const onSelectItem = vi.fn<(item: NotificationItem) => void>();
+  render(
+    <NotificationsScreen
+      items={items}
+      onSelectItem={onSelectItem}
+      onDeleteItem={vi.fn()}
+      onExit={vi.fn()}
+    />,
+  );
+
+  swipeLeft("notification-messenger");
+  fireEvent.tap(screen.getByTestId("notification-list-item-notification-phone-call"), {});
+
+  expect(onSelectItem).not.toHaveBeenCalled();
+  expect(
+    screen.queryByTestId("notification-list-item-delete-notification-messenger"),
+  ).not.toBeInTheDocument();
+
+  // 닫힌 뒤의 탭은 다시 알림을 엽니다.
+  fireEvent.tap(screen.getByTestId("notification-list-item-notification-phone-call"), {});
+  expect(onSelectItem).toHaveBeenCalledTimes(1);
+  expect(onSelectItem).toHaveBeenCalledWith(phoneCallItem);
+});
+
+test("[NS17] 지운 뒤 같은 id의 알림이 다시 와도 삭제 자리가 열린 채로 서지 않는다", () => {
+  const props = { onSelectItem: vi.fn(), onDeleteItem: vi.fn(), onExit: vi.fn() };
+  const { rerender } = render(<NotificationsScreen items={items} {...props} />);
+
+  swipeLeft("notification-messenger");
+  fireEvent.tap(screen.getByTestId("notification-list-item-delete-notification-messenger"), {});
+  rerender(<NotificationsScreen items={[phoneCallItem]} {...props} />);
+  rerender(<NotificationsScreen items={items} {...props} />);
+
+  expect(
+    screen.queryByTestId("notification-list-item-delete-notification-messenger"),
+  ).not.toBeInTheDocument();
+});

@@ -5,7 +5,11 @@ import prohibited02 from "@libitums/icons/lynx/prohibited-02";
 import { color } from "@libitums/design-tokens";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
-import type { NotificationId, NotificationsScreenProps } from "./notifications.contract";
+import type {
+  NotificationId,
+  NotificationItem,
+  NotificationsScreenProps,
+} from "./notifications.contract";
 import { NotificationListItem } from "./NotificationListItem";
 
 import "./notifications-screen.css";
@@ -23,6 +27,25 @@ export function NotificationsScreen({
 }: NotificationsScreenProps): ReactNode {
   // 삭제 자리는 한 번에 하나만 열립니다 — 다른 항목을 밀면 앞의 것이 닫힙니다.
   const [revealedId, setRevealedId] = useState<NotificationId | null>(null);
+
+  // 삭제 자리가 어디든 열려 있으면 카드 탭은 그것을 닫는 데 쓰입니다 — 열어 둔 채 다른
+  // 카드를 스친 손가락이 알림을 열어 버리지 않습니다.
+  const handleSelect = (item: NotificationItem) => {
+    "background only";
+    if (revealedId !== null) {
+      setRevealedId(null);
+      return;
+    }
+    onSelectItem(item);
+  };
+
+  // 지운 항목의 id를 들고 있지 않습니다 — 같은 id의 알림이 다시 오면 삭제 자리가 열린
+  // 채로 섭니다.
+  const handleDelete = (item: NotificationItem) => {
+    "background only";
+    setRevealedId(null);
+    onDeleteItem(item);
+  };
 
   return (
     <view className="notifications-screen">
@@ -83,10 +106,10 @@ export function NotificationsScreen({
                 key={item.id}
                 item={item}
                 deleteRevealed={revealedId === item.id}
-                onSelect={onSelectItem}
+                onSelect={handleSelect}
                 onRevealDelete={setRevealedId}
                 onHideDelete={() => setRevealedId(null)}
-                onDelete={onDeleteItem}
+                onDelete={handleDelete}
               />
             ))}
           </view>

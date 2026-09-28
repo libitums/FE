@@ -37,9 +37,11 @@ const notificationItemIconByTargetKind: Record<NotificationTargetKind, string> =
 };
 
 // 타입은 `touches`를 반드시 준다고 적지만 **런타임의 부재를 TS가 막아 주지
-// 않습니다**(`DrawingSurface`와 같은 자리). 없으면 조용히 버립니다.
+// 않습니다**(`DrawingSurface`와 같은 자리). 없으면 조용히 버립니다. 구조 분해가 아니라
+// 색인으로 읽습니다 — 구조 분해는 반복자를 요구하고, 호스트가 넘기는 목록이 그것을
+// 갖췄는지는 보장되지 않습니다.
 function swipePoint(event: TouchEvent): SwipePoint | undefined {
-  const [touch] = event.touches ?? [];
+  const touch = event.touches?.[0];
   return touch === undefined ? undefined : { x: touch.pageX, y: touch.pageY };
 }
 
