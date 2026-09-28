@@ -10,6 +10,7 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // 판정 어휘는 `lib/answer-result.ts`에서 옵니다 — 화면 폴더가 아니라 `lib/`에서
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
+import type { EpisodeIntroTarget } from "../screens/episode-intro/episode-intro.contract";
 import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type { RoleplayEpisodeId } from "../screens/roleplay-list/roleplay-list.contract";
@@ -45,6 +46,10 @@ export type Screen =
   | { name: "terms" }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
+  // 에피소드의 서사 표지입니다. 표지를 넘긴 뒤 열 유닛(`target`)을 함께 싣습니다 —
+  // 사용자가 누른 것은 유닛이고, 그 사실은 이 화면 인스턴스의 것이라 `back`과 함께
+  // 죽는 것이 맞습니다(`assessment`의 `results`와 같은 판단).
+  | { name: "episode-intro"; episodeId: string; target: EpisodeIntroTarget }
   // 학습 화면 넷은 `activityIndex`를 함께 집니다. 유닛 하나가 활동 여럿을 잇기
   // 때문입니다(`learningFormsByStep`) — 몇 번째 활동인지는 「지금 어느 화면인가」의
   // 일부라 스택이 지고, 다음 활동을 고를 때 여기서 읽습니다. App 상태로 빼면 스택과

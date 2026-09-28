@@ -4,24 +4,33 @@ import { learningSessionHeader, learningTimingFlag } from "./learning-shell.cont
 
 // `unit` 계층: 순수 함수의 입출력만 봅니다 (ADR-0006 D4).
 describe("learningSessionHeader", () => {
-  it("첫 활동은 순번 1이고 아직 0%다", () => {
+  it("첫 문항은 순번 1이고 아직 채움이 없다", () => {
     expect(learningSessionHeader("listening", 0, 4)).toEqual({
-      chapterLabel: "Chapter 1 / 4",
+      progressLabel: "Lesson 1 / 4",
       formLabel: "Listening",
-      percentLabel: "0%",
       fillPercent: 0,
-      accessibilityLabel: "Listening, 활동 4개 중 1번째",
+      accessibilityLabel: "Listening, 문항 4개 중 1번째",
     });
   });
 
-  // 지금 하는 활동은 아직 안 끝났으므로 순번이 곧 끝낸 수입니다. 마지막 활동에서도
-  // 100%가 아닙니다 — 100%는 유닛을 마쳤을 때만 나옵니다.
-  it("마지막 활동에서도 100%가 아니다", () => {
+  // 지금 푸는 문항은 아직 안 끝났으므로 순번이 곧 끝낸 수입니다. 마지막 문항에서도
+  // 100%가 아닙니다 — 100%는 활동을 마쳤을 때만 나옵니다.
+  it("마지막 문항에서도 100%가 아니다", () => {
     const header = learningSessionHeader("word-choice", 3, 4);
 
-    expect(header.chapterLabel).toBe("Chapter 4 / 4");
-    expect(header.percentLabel).toBe("75%");
+    expect(header.progressLabel).toBe("Lesson 4 / 4");
     expect(header.fillPercent).toBe(75);
+  });
+
+  // 백분율 낱말을 내지 않습니다 — 막대가 같은 것을 말하므로 숫자가 둘이면 「어느 것을
+  // 보나」가 생깁니다. 걷힌 자리를 누가 되살리면 여기서 빨개집니다.
+  it("백분율 낱말을 내지 않는다", () => {
+    expect(Object.keys(learningSessionHeader("listening", 1, 3))).toEqual([
+      "progressLabel",
+      "formLabel",
+      "fillPercent",
+      "accessibilityLabel",
+    ]);
   });
 
   it("학습형마다 이름이 갈린다", () => {
@@ -29,12 +38,23 @@ describe("learningSessionHeader", () => {
     expect(learningSessionHeader("culture", 0, 1).formLabel).toBe("Culture");
   });
 
-  it("활동 수가 0이면 던진다", () => {
-    expect(() => learningSessionHeader("listening", 0, 0)).toThrow(/1 이상의 정수/);
+  // 문항 0개는 오류가 아니라 실재하는 상태입니다 — 낱말 고르기는 오늘 다섯 스텝이 전부
+  // 빈 배열이고 그 화면은 마운트가 곧 완료입니다. 던지면 그 화면이 껍데기로 옮겨오는
+  // 순간 앱이 죽습니다.
+  it("문항이 0개면 던지지 않고 순번을 내지 않는다", () => {
+    const header = learningSessionHeader("word-choice", 0, 0);
+
+    expect(header.progressLabel).toBeUndefined();
+    expect(header.fillPercent).toBe(0);
+    expect(header.accessibilityLabel).toBe("Word choice, 문항 없음");
   });
 
-  it("순번이 활동 수를 넘으면 던진다", () => {
-    expect(() => learningSessionHeader("listening", 4, 4)).toThrow(/활동 수를 넘습니다/);
+  it("문항 수가 음수면 던진다", () => {
+    expect(() => learningSessionHeader("listening", 0, -1)).toThrow(/0 이상의 정수/);
+  });
+
+  it("순번이 문항 수를 넘으면 던진다", () => {
+    expect(() => learningSessionHeader("listening", 4, 4)).toThrow(/문항 수를 넘습니다/);
   });
 
   it("순번이 음수면 던진다", () => {

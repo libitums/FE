@@ -9,8 +9,8 @@ function renderShell(overrides: Partial<Parameters<typeof LearningShell>[0]> = {
   return render(
     <LearningShell
       form="listening"
-      activityIndex={1}
-      totalActivityCount={4}
+      questionIndex={1}
+      questionCount={4}
       instruction="대화를 완성하세요"
       onExit={() => {}}
       card={<text data-testid="fixture-card">카드 안</text>}
@@ -21,12 +21,15 @@ function renderShell(overrides: Partial<Parameters<typeof LearningShell>[0]> = {
   );
 }
 
-test("세션 헤더가 순번 · 학습형 · 백분율을 낸다", () => {
+// ⟨2026-09-28⟩ 세는 단위가 활동에서 문항으로 갈리고 백분율 낱말이 걷혔습니다 — 한 줄에
+// 숫자 쌍이 둘이면 어느 것이 지금 나의 위치인지가 읽히지 않습니다.
+test("세션 헤더가 문항 순번과 학습형만 낸다", () => {
   renderShell();
 
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Chapter 2 / 4");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 4");
   expect(screen.getByTestId("learning-shell-form")).toHaveTextContent("Listening");
-  expect(screen.getByTestId("learning-shell-percent")).toHaveTextContent("25%");
+  expect(screen.queryByTestId("learning-shell-percent")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
 });
 
 // 막대는 값이라 낱말 둘을 한 접근성 요소로 묶어 읽히게 합니다.
@@ -35,12 +38,12 @@ test("진행이 하나의 접근성 요소로 이름을 낸다", () => {
 
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
     "accessibility-label",
-    "Listening, 활동 4개 중 2번째",
+    "Listening, 문항 4개 중 2번째",
   );
 });
 
 test("첫 활동에서는 채움 막대를 그리지 않는다", () => {
-  renderShell({ activityIndex: 0 });
+  renderShell({ questionIndex: 0 });
 
   expect(screen.queryByTestId("learning-shell-progress-fill")).not.toBeInTheDocument();
 });
@@ -67,17 +70,15 @@ test("작업 영역을 받으면 그 안에 그린다", () => {
   expect(within(workspace).getByTestId("fixture-workspace")).toBeInTheDocument();
 });
 
-test("나가기가 접근성 속성을 갖고 tap하면 onExit이 한 번 불린다", () => {
+// tap의 결과는 아래 「나가기 확인」 절이 집니다 — 여기서는 속성만 봅니다.
+test("나가기가 접근성 속성을 갖는다", () => {
   const onExit = vi.fn<() => void>();
   renderShell({ onExit });
 
   const exit = screen.getByTestId("learning-shell-exit");
   expect(exit).toHaveAttribute("accessibility-label", "학습 나가기");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
-
-  fireEvent.tap(exit, {});
-
-  expect(onExit).toHaveBeenCalledTimes(1);
+  expect(onExit).not.toHaveBeenCalled();
 });
 
 test("아래 버튼이 라벨을 이름과 글자 둘 다로 내고 tap하면 onAction이 한 번 불린다", () => {
@@ -261,4 +262,75 @@ test("학습형이 갈리면 표식도 갈린다", () => {
     "__lynx_timing_flag",
     "libitum:navigation:learning-culture",
   );
+});
+
+// ---------------------------------------------------------------- 나가기 확인 (2026-09-28)
+//
+// 나가기는 두 걸음입니다. `×`는 묻기만 하고, 실제로 떠나는 것은 모달의 `그만두기`입니다.
+// 한 걸음이면 손이 스친 한 번에 세션이 사라지는데 진행은 저장되지 않아 되돌릴 수단이
+// 없습니다.
+
+test("×를 눌러도 바로 나가지 않고 확인을 묻는다", () => {
+  const onExit = vi.fn<() => void>();
+  renderShell({ onExit });
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+
+  expect(onExit).not.toHaveBeenCalled();
+  expect(screen.getByTestId("ui-lynx-dialog")).toBeInTheDocument();
+});
+
+// 무엇을 잃는지가 본문에 있어야 합니다 — 그것이 없으면 사용자가 대가를 모른 채 고릅니다.
+test("확인 모달이 잃는 것을 본문에 적는다", () => {
+  renderShell();
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+
+  const dialog = screen.getByTestId("ui-lynx-dialog");
+  expect(dialog).toHaveTextContent("학습을 그만둘까요?");
+  expect(dialog).toHaveTextContent("저장되지 않고");
+  expect(dialog).toHaveTextContent("처음부터 다시");
+});
+
+test("그만두기를 고르면 그때 onExit이 한 번 불린다", () => {
+  const onExit = vi.fn<() => void>();
+  const { container } = renderShell({ onExit });
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  const leave = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
+    (el) => el.getAttribute("accessibility-label") === "그만두기",
+  );
+  fireEvent.tap(leave as Element, {});
+
+  expect(onExit).toHaveBeenCalledTimes(1);
+});
+
+// 되돌리는 길이 있어야 「묻는다」가 참이 됩니다 — 계속하기는 아무 일도 일으키지 않고
+// 모달만 걷습니다.
+test("계속하기를 고르면 모달만 닫히고 onExit은 불리지 않는다", () => {
+  const onExit = vi.fn<() => void>();
+  const { container } = renderShell({ onExit });
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  const stay = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
+    (el) => el.getAttribute("accessibility-label") === "계속하기",
+  );
+  fireEvent.tap(stay as Element, {});
+
+  expect(onExit).not.toHaveBeenCalled();
+  expect(screen.queryByTestId("ui-lynx-dialog")).not.toBeInTheDocument();
+});
+
+// 문항이 0개인 활동에서도 껍데기가 서야 합니다 — 낱말 고르기가 오늘 그 상태이고, 그
+// 화면이 옮겨오는 순간 이 자리가 죽으면 앱이 죽습니다.
+test("문항이 0개여도 던지지 않고 순번만 서지 않는다", () => {
+  renderShell({ questionIndex: 0, questionCount: 0 });
+
+  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-chapter")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
+    "accessibility-label",
+    "Listening, 문항 없음",
+  );
+  expect(screen.queryByTestId("learning-shell-progress-fill")).not.toBeInTheDocument();
 });

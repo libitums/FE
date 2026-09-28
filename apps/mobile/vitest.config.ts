@@ -19,6 +19,9 @@ export default defineConfig({
       "@libitums/ui-lynx/text-field": fileURLToPath(
         new URL("../../packages/ui-lynx/src/text-field/index.ts", import.meta.url),
       ),
+      "@libitums/ui-lynx/dialog": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/dialog/index.ts", import.meta.url),
+      ),
       "@libitums/ui-lynx/button": fileURLToPath(
         new URL("../../packages/ui-lynx/src/button/index.ts", import.meta.url),
       ),

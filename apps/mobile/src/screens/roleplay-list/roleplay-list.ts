@@ -6,6 +6,8 @@
 
 import type { JourneyMapItem, JourneyMapSection } from "../journey-map/journey-map";
 import type {
+  PremiumRoleplayItem,
+  PremiumRoleplayLock,
   RoleplayEpisodeId,
   RoleplayFormLabel,
   RoleplayItem,
@@ -59,16 +61,18 @@ export function roleplayItemAccessibilityLabel(item: RoleplayItem, locked = fals
  * 묻는 함수로 받습니다 — 완료의 출처(스텝 수 · 특별 유닛 완료 목록)는 여정의 것이고,
  * 이 화면 폴더는 그 값을 직접 볼 수 없습니다(`code.md` 「import」).
  *
- * 롤플레이 항목이 하나도 없는 에피소드는 구획을 만들지 않습니다 — 머리만 있고 카드가
- * 없는 구획은 보여 줄 것이 없습니다.
+ * 롤플레이 항목도 결제 롤플레이도 없는 에피소드는 구획을 만들지 않습니다 — 머리만
+ * 있고 카드가 없는 구획은 보여 줄 것이 없습니다.
  */
 export function roleplaySectionsFrom(
   sections: readonly JourneyMapSection[],
   isComplete: (item: JourneyMapItem) => boolean,
+  premiumItemsFor: (episodeId: RoleplayEpisodeId) => readonly PremiumRoleplayItem[] = () => [],
 ): readonly RoleplaySection[] {
   return sections.flatMap((section): readonly RoleplaySection[] => {
     const items = roleplayItemsFrom(section.items);
-    if (items.length === 0) {
+    const premiumItems = premiumItemsFor(section.episode.id);
+    if (items.length === 0 && premiumItems.length === 0) {
       return [];
     }
     return [
@@ -78,6 +82,7 @@ export function roleplaySectionsFrom(
         title: section.episode.title,
         unlocked: section.items.every(isComplete),
         items,
+        premiumItems,
       },
     ];
   });
@@ -94,4 +99,31 @@ export function findRoleplaySection(
 export function roleplaySectionAccessibilityLabel(section: RoleplaySection): string {
   const name = `${section.label} ${section.title}`;
   return section.unlocked ? name : `${name}, 잠김, 여정에서 이 에피소드를 끝내면 열립니다`;
+}
+
+/**
+ * 결제 롤플레이가 막혀 있는 까닭입니다. 에피소드가 먼저입니다 — 에피소드를 끝내지
+ * 않았으면 결제 여부와 무관하게 에피소드 잠김입니다. 결제 롤플레이는 「그 에피소드를
+ * 끝낸 사람이 더 연습하는 자리」라, 끝내기 전에 결제를 권하지 않습니다.
+ */
+export function premiumRoleplayLock(section: RoleplaySection): PremiumRoleplayLock {
+  return section.unlocked ? "payment" : "episode";
+}
+
+// 막힌 까닭마다의 상태 낱말입니다. export하지 않습니다 — 읽는 함수가 계약입니다.
+const premiumLockSuffix: Record<PremiumRoleplayLock, string> = {
+  episode: "잠김",
+  payment: "플러스 전용",
+};
+
+export function premiumRoleplayAccessibilityLabel(
+  item: PremiumRoleplayItem,
+  lock: PremiumRoleplayLock,
+): string {
+  return `${item.title}, ${item.situation}, ${premiumLockSuffix[lock]}`;
+}
+
+/** 결제 잠김 카드를 눌렀을 때 뜨는 안내의 본문입니다. */
+export function premiumRoleplayNotice(item: PremiumRoleplayItem): string {
+  return `「${item.title}」 롤플레이는 플러스 전용이에요. 플러스는 아직 준비 중이에요.`;
 }

@@ -39,46 +39,64 @@ export function learningTimingFlag(form: LearningForm): string {
 }
 
 export type LearningSessionHeader = {
-  /** `Chapter 4 / 12` — 유닛 안에서 지금 몇 번째 활동인가입니다. */
-  readonly chapterLabel: string;
+  /**
+   * `Lesson 1 / 3` — 이 활동 안에서 지금 몇 번째 문항인가입니다.
+   *
+   * **문항이 0개면 없습니다.** 셀 것이 없는데 `Lesson 1 / 0`을 적으면 화면이 거짓말을
+   * 합니다. 그 상태는 오류가 아니라 실재합니다 — 낱말 고르기는 오늘 다섯 스텝이 전부 빈
+   * 배열이고, 그 화면은 마운트가 곧 완료입니다.
+   */
+  readonly progressLabel: string | undefined;
   readonly formLabel: string;
-  readonly percentLabel: string;
   readonly fillPercent: number;
   readonly accessibilityLabel: string;
 };
 
 /**
- * 활동 순번(0부터)과 유닛의 전체 활동 수에서 세션 헤더의 값을 뽑습니다. 데이터 오류는
- * 숨기지 않고 던집니다 — 활동이 0개인 유닛이나 범위 밖 순번은 값으로 표현할 수 있는
- * 상태가 아닙니다.
+ * 문항 순번(0부터)과 활동의 전체 문항 수에서 세션 헤더의 값을 뽑습니다.
  *
- * 백분율은 **끝낸 활동 수**를 셉니다. 지금 하는 활동은 아직 안 끝났으므로 순번이 곧
- * 끝낸 수입니다 — 첫 활동에서 0%, 마지막 활동에서 (N-1)/N입니다. 100%는 유닛을
- * 마쳤을 때만 나옵니다.
+ * ⟨2026-09-28⟩ **세는 단위가 활동에서 문항으로 갈렸습니다.** 전에는 `Chapter n / N`이
+ * 유닛 안의 활동 순번이었고 문항 순번은 오른쪽에 따로 섰는데, 한 줄에 숫자 쌍이 둘이라
+ * 어느 것이 지금 나의 위치인지가 읽히지 않았습니다.
+ *
+ * **문항 0개는 오류가 아닙니다.** 그때는 순번이 없으므로 `progressLabel`이 없고 채움도
+ * 0입니다. 나머지 데이터 오류(음수 순번 · 범위 밖 순번 · 정수가 아닌 값)는 숨기지 않고
+ * 던집니다 — 값으로 표현할 수 있는 상태가 아닙니다.
+ *
+ * 채움은 **끝낸 문항 수**를 셉니다. 지금 푸는 문항은 아직 안 끝났으므로 순번이 곧 끝낸
+ * 수입니다 — 첫 문항에서 0%, 마지막 문항에서 (N-1)/N입니다. 100%는 활동을 마쳤을 때만
+ * 나옵니다. **백분율 낱말은 내지 않습니다** — 막대가 이미 같은 것을 말하고, 숫자가 둘이면
+ * 또 「어느 것을 보나」가 생깁니다.
  */
 export function learningSessionHeader(
   form: LearningForm,
-  activityIndex: number,
-  totalActivityCount: number,
+  questionIndex: number,
+  questionCount: number,
 ): LearningSessionHeader {
-  if (!Number.isInteger(totalActivityCount) || totalActivityCount <= 0) {
-    throw new Error(`유닛의 활동 수는 1 이상의 정수여야 합니다: ${totalActivityCount}`);
+  if (!Number.isInteger(questionCount) || questionCount < 0) {
+    throw new Error(`활동의 문항 수는 0 이상의 정수여야 합니다: ${questionCount}`);
   }
-  if (!Number.isInteger(activityIndex) || activityIndex < 0) {
-    throw new Error(`활동 순번은 0 이상의 정수여야 합니다: ${activityIndex}`);
+  if (questionCount === 0) {
+    return {
+      progressLabel: undefined,
+      formLabel: formLabels[form],
+      fillPercent: 0,
+      accessibilityLabel: `${formLabels[form]}, 문항 없음`,
+    };
   }
-  if (activityIndex >= totalActivityCount) {
-    throw new Error(`활동 순번이 활동 수를 넘습니다: ${activityIndex} / ${totalActivityCount}`);
+  if (!Number.isInteger(questionIndex) || questionIndex < 0) {
+    throw new Error(`문항 순번은 0 이상의 정수여야 합니다: ${questionIndex}`);
+  }
+  if (questionIndex >= questionCount) {
+    throw new Error(`문항 순번이 문항 수를 넘습니다: ${questionIndex} / ${questionCount}`);
   }
 
-  const ordinal = activityIndex + 1;
-  const percent = (activityIndex / totalActivityCount) * 100;
+  const ordinal = questionIndex + 1;
 
   return {
-    chapterLabel: `Chapter ${String(ordinal)} / ${String(totalActivityCount)}`,
+    progressLabel: `Lesson ${String(ordinal)} / ${String(questionCount)}`,
     formLabel: formLabels[form],
-    percentLabel: `${String(Math.round(percent))}%`,
-    fillPercent: percent,
-    accessibilityLabel: `${formLabels[form]}, 활동 ${String(totalActivityCount)}개 중 ${String(ordinal)}번째`,
+    fillPercent: (questionIndex / questionCount) * 100,
+    accessibilityLabel: `${formLabels[form]}, 문항 ${String(questionCount)}개 중 ${String(ordinal)}번째`,
   };
 }

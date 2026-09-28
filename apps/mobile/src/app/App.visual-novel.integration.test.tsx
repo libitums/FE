@@ -7,6 +7,10 @@ import type { MessengerEventSink } from "../screens/messenger/messenger.contract
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 
+// 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
+// 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
+const seenIntros = ["tutorial"] as const;
+
 const audio = vi.hoisted(() => ({
   playAudio: vi.fn<(source: string, onFinished: () => void) => unknown>(),
   stopAudio: vi.fn<() => void>(),
@@ -63,7 +67,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 }
 
 function openJourneyVisualNovel(visualNovelEventSink?: VisualNovelEventSink): void {
-  renderApp(<App visualNovelEventSink={visualNovelEventSink} />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} visualNovelEventSink={visualNovelEventSink} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(unitTestId), {});
 }
@@ -86,7 +90,7 @@ function journeyStateSnapshot(): readonly (string | null)[] {
 }
 
 test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 첫 장면이 push된다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   const items = screen
@@ -108,7 +112,7 @@ test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 �
 });
 
 test("미완료 이탈은 마지막 도달 장면을 보존하고 기존 여정 상태를 바꾸지 않는다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   const before = journeyStateSnapshot();
   fireEvent.tap(screen.getByTestId(unitTestId), {});
@@ -226,7 +230,7 @@ test("sink는 opened, incomplete exit, completion, completed re-entry, replay를
 });
 
 test("null sink에서도 완료와 재진입 동작은 같다", () => {
-  renderApp(<App visualNovelEventSink={null} />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} visualNovelEventSink={null} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   advanceToFinal();
@@ -238,7 +242,7 @@ test("null sink에서도 완료와 재진입 동작은 같다", () => {
 
 test("visual novel 완료는 messenger 상태·이벤트와 phone audio를 바꾸지 않는다", () => {
   const messengerEventSink = vi.fn<NonNullable<MessengerEventSink>>();
-  renderApp(<App messengerEventSink={messengerEventSink} />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} messengerEventSink={messengerEventSink} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});

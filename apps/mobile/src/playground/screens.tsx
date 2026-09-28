@@ -72,7 +72,12 @@ export const playgroundScreens = {
     />
   ),
   "journey-entry": (go: Go) => (
-    <JourneyEntryScreen language="en" onEnter={noop} onBack={() => go("language-select")} />
+    <JourneyEntryScreen
+      safeArea={{ top: 0, bottom: 0 }}
+      language="en"
+      onEnter={noop}
+      onBack={() => go("language-select")}
+    />
   ),
   // 학습 껍데기는 활동이 넣어 주는 것을 그립니다. 여기서는 카드 · 작업 영역에
   // 자리표시를 넣어 뼈대(상단 바 · 세션 헤더 · 지시문 · 카드 · 작업 · 버튼)만 봅니다 —
@@ -82,8 +87,6 @@ export const playgroundScreens = {
   listening: () => (
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={noop}
       onFinish={noop}
       sessionOptions={initialSessionOptions}
@@ -92,8 +95,8 @@ export const playgroundScreens = {
   "catalog:learning-shell": () => (
     <LearningShell
       form="listening"
-      activityIndex={1}
-      totalActivityCount={4}
+      questionIndex={1}
+      questionCount={4}
       instruction="대화를 완성하세요"
       onExit={noop}
       card={<text className="playground-placeholder">카드 안 — 학습 내용이 여기서 전개됩니다</text>}
