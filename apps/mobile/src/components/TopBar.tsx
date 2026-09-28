@@ -71,6 +71,7 @@ export function TopBar({
           value={streakDays}
           accessibilityLabel={`연속 학습 ${streakDays}일`}
           testId="top-bar-streak"
+          surface="white"
           onTap={onOpenStreak === undefined ? undefined : handleOpenStreak}
         />
         <StatChip
@@ -78,6 +79,7 @@ export function TopBar({
           value={trophyCount}
           accessibilityLabel={`트로피 ${trophyCount}개`}
           testId="top-bar-trophy"
+          surface="white"
           onTap={onOpenTrophy === undefined ? undefined : handleOpenTrophy}
         />
         {/* 젬 칩은 트로피 옆에 섭니다(Figma 65-554). 지표가 아니라 재화라 누르면 모달이
@@ -87,6 +89,7 @@ export function TopBar({
           value={gemCount}
           accessibilityLabel={`젬 ${gemCount}개`}
           testId="top-bar-gem"
+          surface="white"
           onTap={onOpenGem === undefined ? undefined : handleOpenGem}
         />
       </view>

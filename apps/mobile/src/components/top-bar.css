@@ -29,7 +29,9 @@
   padding: var(--libitum-spacing-2);
   border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-50);
   border-radius: var(--libitum-radius-full);
-  /* 칩과 같은 이유로 면을 칠하지 않습니다 — 위 `-chip` 주석을 봅니다. */
+  /* 칩과 같은 흰 면입니다 — 스크롤되는 내용 위에 떠 있어 면이 없으면 뒤와 섞입니다
+     (2026-09-28, `stat-chip.css`의 `-surface-white`와 같은 이유). */
+  background-color: var(--libitum-color-white);
   flex-shrink: 0;
 }
 
