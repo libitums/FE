@@ -64,8 +64,6 @@ function renderOrdering(
   return render(
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={overrides.onExit ?? (() => {})}
       onFinish={overrides.onFinish ?? (() => {})}
       sessionOptions={initialSessionOptions}
@@ -182,10 +180,10 @@ test("뼈대는 껍데기가 세우고 문항은 그 무대 안에 선다", () =
 });
 
 // 단언 2 — 1-based로 보입니다.
-test("진행 문구가 '문항 1 / 3'이다", () => {
+test("진행 문구가 'Lesson 1 / 3'이다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
 });
 
 // 단언 3 (수용 기준 4)
@@ -208,8 +206,6 @@ test("다른 스텝으로 렌더하면 문항이 갈린다", () => {
   const ordering = render(
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -221,8 +217,6 @@ test("다른 스텝으로 렌더하면 문항이 갈린다", () => {
   render(
     <ListeningScreen
       stepId="greeting"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -405,8 +399,6 @@ test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () 
   render(
     <ListeningScreen
       stepId="greeting"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -428,7 +420,7 @@ test("넘김 층을 탭하면 진행·문항이 갈리고 판정이 초기화되
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
     ORDERING_QUESTIONS[1].prompt,
   );
@@ -466,13 +458,16 @@ test("문항 셋을 마치면 완료 문구와 마치기가 나타난다", () =>
 
 // 나가기는 남습니다 — 껍데기의 `×`는 세션 내내 서 있고, 그 목적지(맵)는 완료
 // 버튼의 목적지(결과)와 다릅니다. 「같은 곳으로 가는 버튼 둘」이 아닙니다.
-test("완료 상태에서 진행·문항·보기가 사라지고 나가기는 남는다", () => {
+// ⟨2026-09-28⟩ 세션 헤더는 완료 상태에도 남습니다 — 껍데기의 것이고, 나가기와 같은
+// 자리에 있습니다. 사라지는 것은 문항이 쓰던 것들(제시문 · 보기)뿐입니다. 진행 순번은
+// 마지막 문항 자리에 멈춥니다.
+test("완료 상태에서 문항·보기가 사라지고 나가기와 진행은 남는다", () => {
   renderOrdering();
 
   completeAllThree();
 
   expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
-  expect(screen.queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 3 / 3");
   expect(screen.queryByTestId("listening-prompt-text")).not.toBeInTheDocument();
   for (const testid of CHOICE_TESTIDS) {
     expect(screen.queryByTestId(testid)).not.toBeInTheDocument();
@@ -489,7 +484,7 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
   answerCorrectlyAndAdvance(1);
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[2].answerIndex}`), {});
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 3 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 3 / 3");
   // 아직 넘김 층입니다 — 완료였다면 아래 버튼(`결과 보기`)이 섰을 자리입니다.
   expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
@@ -511,8 +506,6 @@ test("완료 전이에서 custom announceCompletion이 원문으로 한 번, bui
   view.rerender(
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -592,8 +585,6 @@ test("껍데기의 나가기가 이 화면의 onExit에 닿는다", () => {
   render(
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={onExit}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -791,8 +782,6 @@ test("다른 스텝으로 렌더하면 play의 source가 그 스텝의 첫 문�
   render(
     <ListeningScreen
       stepId="greeting"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -873,7 +862,7 @@ test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () 
 
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3"); // 앵커
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3"); // 앵커
   expect(sourcesOf(audio)).toEqual(["ordering-1", STOP, "ordering-2"]); // 오디오는 그대로 돕니다
   expect(announce).toHaveLength(0);
 });
@@ -889,8 +878,6 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   const view = render(
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={onExit}
       onFinish={onFinish}
       sessionOptions={initialSessionOptions}
@@ -904,8 +891,6 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   view.rerender(
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={onExit}
       onFinish={onFinish}
       sessionOptions={initialSessionOptions}
@@ -914,8 +899,6 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   view.rerender(
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={onExit}
       onFinish={onFinish}
       sessionOptions={initialSessionOptions}
@@ -980,8 +963,8 @@ test("[U2] 대본은 무대 안, 문항 진행과 보기 넷은 무대 밖이다
   const stage = screen.getByTestId("learning-shell-stage");
   expect(within(stage).getByTestId("listening-prompt-text")).toBeInTheDocument();
   // 문항 진행은 세션 헤더로 갔습니다 — 카드 높이를 줄여 화면 예산에 맞추기 위해서입니다.
-  expect(within(stage).queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
+  expect(within(stage).queryByTestId("learning-shell-chapter")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
 
   const workspace = screen.getByTestId("learning-shell-scroll");
   for (const testid of CHOICE_TESTIDS) {
@@ -1094,20 +1077,18 @@ test("관계없는 리렌더가 끼어도 기다림이 처음으로 되돌아가
   view.rerender(
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
     />,
   );
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
 
   act(() => {
     vi.advanceTimersByTime(100);
   });
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
 
   vi.useRealTimers();
 });

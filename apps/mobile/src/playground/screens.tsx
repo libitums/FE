@@ -87,8 +87,6 @@ export const playgroundScreens = {
   listening: () => (
     <ListeningScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={noop}
       onFinish={noop}
       sessionOptions={initialSessionOptions}
@@ -97,8 +95,8 @@ export const playgroundScreens = {
   "catalog:learning-shell": () => (
     <LearningShell
       form="listening"
-      activityIndex={1}
-      totalActivityCount={4}
+      questionIndex={1}
+      questionCount={4}
       instruction="대화를 완성하세요"
       onExit={noop}
       card={<text className="playground-placeholder">카드 안 — 학습 내용이 여기서 전개됩니다</text>}

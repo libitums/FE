@@ -39,9 +39,6 @@ import "./listening-screen.css";
 // `journeyStepOrdinal`로 계산해 내려 주고, 이 화면은 여정 맵의 값을 읽지 않습니다.
 export type ListeningScreenProps = {
   stepId: JourneyStepId;
-  /** 유닛 안에서 몇 번째 활동인가입니다 — 세션 헤더의 `Chapter n / N`이 이 값에서 납니다. */
-  activityIndex: number;
-  totalActivityCount: number;
   onExit: () => void;
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
   sessionOptions: SessionOptions;
@@ -49,8 +46,6 @@ export type ListeningScreenProps = {
 
 export function ListeningScreen({
   stepId,
-  activityIndex,
-  totalActivityCount,
   onExit,
   onFinish,
   sessionOptions,
@@ -118,15 +113,11 @@ export function ListeningScreen({
   return (
     <LearningShell
       form="listening"
-      activityIndex={activityIndex}
-      totalActivityCount={totalActivityCount}
+      // 세션 헤더가 세는 것은 문항입니다 ⟨2026-09-28⟩. 완료 상태에는 지금 푸는 문항이
+      // 없으므로 마지막 문항 자리에 둡니다 — 막대가 그때 (N-1)/N에서 멈춥니다.
+      questionIndex={question === null ? questions.length - 1 : state.questionIndex}
+      questionCount={questions.length}
       instruction="말의 뜻으로 알맞은 것을 고르세요."
-      /* 문항 진행은 카드 **밖**, 세션 헤더의 오른쪽 자리입니다. 카드 안에 두면 한 줄과
-         그 간격만큼 카드가 높아지고, 그 높이가 화면 예산을 넘겨 스크롤을 만듭니다 —
-         디자인은 874pt 안에 다 들어가는 배치입니다. */
-      meta={
-        question === null ? undefined : questionProgressLabel(state.questionIndex, questions.length)
-      }
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}

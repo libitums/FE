@@ -291,7 +291,7 @@ test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 
   startStep("ordering");
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
 });
@@ -341,7 +341,7 @@ test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은
     {},
   );
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
 
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
@@ -356,7 +356,7 @@ test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은
   startStep("ordering");
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
 });
 
 // 루프 한 판이 진행을 갱신합니다.
@@ -669,7 +669,7 @@ test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 cu
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
 });
 
 // ---------------------------------------------------------------------- 오디오 축
@@ -795,7 +795,7 @@ test("넘김 층으로 문항을 넘기면 stop 뒤 새 source로 play가 불린
   );
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
   expect(sourcesOf(calls)).toEqual([
     audioSourceAt("ordering", 0),
     STOP,
@@ -884,7 +884,7 @@ test("학습 화면을 나가면 stop이 불리고, 다시 들어가면 첫 문�
 
   startStep("ordering");
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
   expect(sourcesOf(calls)).toEqual([
     audioSourceAt("ordering", 0),
     STOP,

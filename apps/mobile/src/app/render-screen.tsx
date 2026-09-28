@@ -120,8 +120,6 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <ListeningScreen
           stepId={screen.stepId}
-          activityIndex={screen.activityIndex}
-          totalActivityCount={learningFormsForStep(screen.stepId).length}
           onExit={wiring.onExitLearning}
           onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
           // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한
