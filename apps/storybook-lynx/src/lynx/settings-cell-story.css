@@ -1,0 +1,10 @@
+.settings-cell-story-card {
+  min-height: 400px;
+  row-gap: var(--libitum-spacing-16);
+}
+.settings-cell-story-feedback {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}

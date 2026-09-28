@@ -23,6 +23,7 @@ import {
 import { normalizeChatBubbleStoryArgs } from "./chat-bubble-story";
 import { normalizeTextFieldStoryArgs } from "./text-field-story";
 import { normalizeAvatarStoryArgs } from "./avatar-story";
+import { normalizeSettingsCellStoryArgs } from "./settings-cell-story";
 import { normalizeVisualNovelDialogStoryArgs } from "./visual-novel-dialog-story";
 import { normalizeTooltipStoryArgs } from "./tooltip-story";
 import { normalizeFogStoryArgs } from "./fog-story";
@@ -51,6 +52,22 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("settings cell init data는 직렬화 가능한 두 trailing 변형을 정규화한다", () => {
+    expect(
+      JSON.parse(
+        JSON.stringify(
+          normalizeSettingsCellStoryArgs({
+            variant: "toggle",
+            leading: "avatar",
+            checked: true,
+            disabled: true,
+            onChange: () => undefined,
+          }),
+        ),
+      ),
+    ).toMatchObject({ variant: "toggle", leading: "avatar", checked: true, disabled: true });
+    expect(normalizeSettingsCellStoryArgs({ variant: "unknown" }).variant).toBe("navigation");
+  });
   test("learning unit init data와 활성 상태 action을 안전하게 정규화한다", () => {
     const data = normalizeLearningUnitStoryArgs({
       accessibilityLabel: " 쇼핑 표현 듣기 ",

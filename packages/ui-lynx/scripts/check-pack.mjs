@@ -96,6 +96,13 @@ const components = [
     css: "avatar.css",
   },
   {
+    subpath: "settings-cell",
+    directory: "settings-cell",
+    component: "SettingsCell",
+    modules: ["settings-cell.contract"],
+    css: "settings-cell.css",
+  },
+  {
     subpath: "card",
     directory: "card",
     component: "Card",
@@ -333,6 +340,14 @@ if (avatarStylesExport !== "./dist/avatar/avatar.css") {
 }
 if (!files.includes(`package/${avatarStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the Avatar CSS export target");
+}
+
+const settingsCellStylesExport = packedPackageJson.exports?.["./settings-cell/styles.css"];
+if (settingsCellStylesExport !== "./dist/settings-cell/settings-cell.css") {
+  throw new Error("packed package has an invalid ./settings-cell/styles.css export");
+}
+if (!files.includes(`package/${settingsCellStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the Settings Cell CSS export target");
 }
 
 const compactNumericInputStylesExport =

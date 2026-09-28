@@ -19,6 +19,7 @@ export default defineConfig({
       overlay: "./src/lynx/overlay.tsx",
       "answer-label": "./src/lynx/answer-label.tsx",
       avatar: "./src/lynx/avatar.tsx",
+      "settings-cell": "./src/lynx/settings-cell.tsx",
       card: "./src/lynx/card.tsx",
       "compact-numeric-input": "./src/lynx/compact-numeric-input.tsx",
       fog: "./src/lynx/fog.tsx",

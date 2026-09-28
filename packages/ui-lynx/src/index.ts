@@ -107,6 +107,21 @@ export type {
   AvatarSize,
 } from "./avatar";
 
+export {
+  SettingsCell,
+  SettingsGroup,
+  getSettingsCellContract,
+  validateSettingsGroup,
+} from "./settings-cell";
+export type {
+  SettingsCellContract,
+  SettingsCellNavigationProps,
+  SettingsCellProps,
+  SettingsCellToggleProps,
+  SettingsGroupItem,
+  SettingsGroupProps,
+} from "./settings-cell";
+
 export { Card, getCardContract, validateCardHeader } from "./card";
 export type {
   CardAccessibilityRole,

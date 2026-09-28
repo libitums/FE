@@ -4,7 +4,7 @@ libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
 `PageIndicator`, `BottomNavigator`, `StepIndicator`, `BottomSheet`, `CompactNumericInput`,
 `Card`, `ChatBubble`, `VisualNovelDialog`, `TextField`, `AnswerLabel`, `Overlay`, `Fog`, `Tooltip`,
-`Avatar`, `Dialog`, `OptionSelector`, `LearningUnit` 스물두 가지다.
+`Avatar`, `Dialog`, `OptionSelector`, `LearningUnit`, `SettingsCell`·`SettingsGroup` 등이 있다.
 
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
@@ -28,6 +28,24 @@ Option Selector는 `components/option-selector.md` revision
 `456a121fdfee60dfceaba2ac8f9e989a1275c066`을 기준으로 한다.
 Learning Unit은 `components/learning-unit.md` revision
 `01d3a3c`을 기준으로 한다.
+Settings Cell은 `components/settings-cell.md` revision
+`38a3c34`을 기준으로 한다.
+
+`SettingsCell`은 Navigation 또는 Toggle 행을 한 개의 조작 대상으로 제공한다. Toggle은
+`checked`와 `onChange`를 외부에서 제어하며, 그룹 안에서는 모든 행의 Avatar 유무를 통일한다.
+현재 Lynx 접근성 trait에는 `switch`·`list`가 없어 Toggle은 button trait과 상태 낱말을
+포함한 접근성 이름으로 제공한다. Android에는 `switch` 역할 설명도 전달한다.
+
+```tsx
+import { SettingsCell, SettingsGroup } from "@libitums/ui-lynx/settings-cell";
+import "@libitums/ui-lynx/settings-cell/styles.css";
+
+<SettingsCell trailing="toggle" title="자동 재생" checked={autoplay} onChange={setAutoplay} />;
+<SettingsGroup accessibilityLabel="계정 설정" items={[
+  { id: "profile", trailing: "navigation", title: "프로필", onNavigate: openProfile },
+  { id: "language", trailing: "navigation", title: "언어", value: "한국어", onNavigate: openLanguage },
+]} />;
+```
 
 ```tsx
 import { Button } from "@libitums/ui-lynx/button";
@@ -344,6 +362,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/answer-label/styles.css`
 - `@libitums/ui-lynx/avatar`
 - `@libitums/ui-lynx/avatar/styles.css`
+- `@libitums/ui-lynx/settings-cell`
+- `@libitums/ui-lynx/settings-cell/styles.css`
 - `@libitums/ui-lynx/card`
 - `@libitums/ui-lynx/card/styles.css`
 - `@libitums/ui-lynx/compact-numeric-input`

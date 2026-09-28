@@ -22,6 +22,7 @@
     "./dist/overlay/overlay.css",
     "./dist/answer-label/answer-label.css",
     "./dist/avatar/avatar.css",
+    "./dist/settings-cell/settings-cell.css",
     "./dist/card/card.css",
     "./dist/compact-numeric-input/compact-numeric-input.css",
     "./dist/fog/fog.css",
@@ -118,6 +119,12 @@
       "default": "./dist/avatar/index.js"
     },
     "./avatar/styles.css": "./dist/avatar/avatar.css",
+    "./settings-cell": {
+      "types": "./dist/settings-cell/index.d.ts",
+      "import": "./dist/settings-cell/index.js",
+      "default": "./dist/settings-cell/index.js"
+    },
+    "./settings-cell/styles.css": "./dist/settings-cell/settings-cell.css",
     "./card": {
       "types": "./dist/card/index.d.ts",
       "import": "./dist/card/index.js",
