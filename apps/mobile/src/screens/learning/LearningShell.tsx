@@ -228,22 +228,6 @@ export function LearningShell({
       {/* 스스로 넘어가는 동안 화면 전체가 이 이름의 조작 단위입니다 — 보이는 버튼은
           없지만 기다리는 것 말고 할 수 있는 일이 있어야 합니다(WCAG 2.2.1). 세션 헤더는
           이 층보다 위에 있어 `×`로 나가는 길은 막히지 않습니다. */}
-      {/* 나가기 확인입니다. **무엇을 잃는지 본문에 적습니다** — 「그만두시겠어요?」만
-          물으면 사용자가 대가를 모른 채 고릅니다.
-
-          `그만두기`가 첫째라 강조 변형을 받습니다(`Dialog` 계약: 첫 액션이 brand).
-          묻는 말에 답하는 순서대로 읽히는 것이 낭독 순서와도 맞습니다. */}
-      {exitAsked ? (
-        <Dialog
-          title="학습을 그만둘까요?"
-          description="지금까지 푼 문항은 저장되지 않고, 다음에 처음부터 다시 풀어야 합니다."
-          actions={[
-            { id: "leave", label: "그만두기" },
-            { id: "stay", label: "계속하기" },
-          ]}
-          bindaction={handleExitAction}
-        />
-      ) : null}
       {advance === undefined ? null : (
         <view
           className="learning-shell-advance"
@@ -271,6 +255,22 @@ export function LearningShell({
           </view>
         </>
       )}
+      {/* 나가기 확인입니다. **무엇을 잃는지 본문에 적습니다** — 「그만두시겠어요?」만
+          물으면 사용자가 대가를 모른 채 고릅니다.
+
+          `그만두기`가 첫째라 강조 변형을 받습니다(`Dialog` 계약: 첫 액션이 brand).
+          묻는 말에 답하는 순서대로 읽히는 것이 낭독 순서와도 맞습니다. */}
+      {exitAsked ? (
+        <Dialog
+          title="학습을 그만둘까요?"
+          description="지금까지 푼 문항은 저장되지 않고, 다음에 처음부터 다시 풀어야 합니다."
+          actions={[
+            { id: "leave", label: "그만두기" },
+            { id: "stay", label: "계속하기" },
+          ]}
+          bindaction={handleExitAction}
+        />
+      ) : null}
     </view>
   );
 }

@@ -16,7 +16,20 @@
   justify-content: center;
 }
 
+/* ⚠ **딤은 `absolute`입니다** ⟨2026-09-28⟩. `Overlay`의 `screen` 범위는 혼자 설 때를
+   위해 `fixed`인데, 여기서는 이미 `fixed`인 `.ui-lynx-dialog` **안**에 들어갑니다.
+   Lynx에서 그 중첩(fixed 안의 fixed)이 의도대로 돌지 않아, 딤이 화면 일부만 덮고 흐름
+   요소 일부가 그 위로 올라왔습니다 — 실기에서 픽셀로 확인했습니다(무대 카드가
+   255,255,255로 남고 그 밖은 153으로 어두워졌습니다).
+
+   부모가 이미 화면 전체를 덮는 `fixed`이므로 `absolute` + inset 0이면 같은 자리를
+   가리키고, 중첩이 사라집니다. */
 .ui-lynx-dialog .ui-lynx-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 0;
 }
 
@@ -57,7 +70,10 @@
   margin-top: var(--libitum-spacing-20);
   display: flex;
   flex-direction: column;
-  row-gap: var(--libitum-spacing-8);
+  /* `row-gap`이 아니라 `gap`입니다 ⟨2026-09-28⟩ — 실기에서 액션 둘 사이가 8pt가 아니라
+     37pt로 벌어져 있었습니다(픽셀로 재서 확인). 한 덩어리로 읽혀야 할 둘이 그만큼
+     떨어지면 서로 다른 자리의 버튼처럼 보입니다. */
+  gap: var(--libitum-spacing-8);
 }
 
 .ui-lynx-dialog-action {
