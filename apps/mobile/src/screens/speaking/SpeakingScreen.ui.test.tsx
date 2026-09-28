@@ -186,7 +186,11 @@ test("[SP9] 권한 확인이 돌아오기 전에 화면을 떠나면 인식을 �
 
   tapAction("말하기");
   view.unmount();
-  pending.resolve?.({ microphone: "granted", speechRecognition: "granted", recognizerAvailable: true });
+  pending.resolve?.({
+    microphone: "granted",
+    speechRecognition: "granted",
+    recognizerAvailable: true,
+  });
 
   expect(calls.start).toBe(0);
 });
