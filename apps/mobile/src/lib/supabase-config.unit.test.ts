@@ -43,3 +43,8 @@ test("SC4. supabaseConfig()가 환경 변수를 호출마다 읽는다 — 두 �
   expect(second).toEqual({ url: "https://second.supabase.co", anonKey: "second-anon" });
   expect(second).not.toEqual(first);
 });
+
+test("SC5. https:// 뒤에 호스트가 없으면 null이다", () => {
+  expect(supabaseConfigFrom("https://", "anon")).toBeNull();
+  expect(supabaseConfigFrom("https:///", "anon")).toBeNull();
+});

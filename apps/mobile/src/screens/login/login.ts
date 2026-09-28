@@ -48,11 +48,23 @@ const e164MaxDigitLength = 15;
  * 입력에서 숫자만 남기고 맨 앞 `0` 하나를 뗍니다(국내 트렁크 접두) — 단 앞 `0`이 번호의
  * 일부인 국가 코드(`trunkZeroKeptDialCodes`)는 떼지 않습니다. 남은 숫자가 없거나
  * E.164 상한을 넘으면 `null`입니다. `display`는 입력을 다듬지 않고 그대로 붙입니다.
+ *
+ * 국가 번호까지 붙은 번호(`+82 10 …`)를 붙여 넣으면 고른 국가 번호를 한 번만 씁니다 — 다른
+ * 국가 번호로 시작하면 고른 국가와 어긋나므로 `null`입니다.
  */
 export function phoneNumberFrom(dialCode: string, input: string): PhoneNumber | null {
-  const digitsOnly = input.replace(/\D/g, "");
+  const trimmedInput = input.trim();
+  let digitsOnly = trimmedInput.replace(/\D/g, "");
   if (digitsOnly.length === 0) {
     return null;
+  }
+  const international = trimmedInput.startsWith("+");
+  if (international) {
+    const dialDigits = dialCode.replace(/\D/g, "");
+    if (!digitsOnly.startsWith(dialDigits)) {
+      return null;
+    }
+    digitsOnly = digitsOnly.slice(dialDigits.length);
   }
 
   const keepsLeadingZero = trunkZeroKeptDialCodes.includes(dialCode);
@@ -67,7 +79,7 @@ export function phoneNumberFrom(dialCode: string, input: string): PhoneNumber | 
     return null;
   }
 
-  return { e164, display: `${dialCode} ${input.trim()}` };
+  return { e164, display: international ? trimmedInput : `${dialCode} ${trimmedInput}` };
 }
 
 /** `requesting`일 때만 참입니다. */

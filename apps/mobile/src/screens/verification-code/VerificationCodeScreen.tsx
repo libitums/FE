@@ -116,7 +116,7 @@ export function VerificationCodeScreen({
   // 요청 중(`verifying` · `resending`)에는 칸 입력도 무동작입니다.
   function handleDigit(index: number, value: string) {
     if (isVerificationCodeBusy(status)) {
-      setRestoredRound((value) => value + 1);
+      setRestoredRound((prev) => prev + 1);
       return;
     }
     setDigits((current) => current.map((digit, at) => (at === index ? value : digit)));

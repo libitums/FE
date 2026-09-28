@@ -60,3 +60,15 @@ test("LP5. canRequestPhoneOtp — 번호가 있고 요청 중이 아닐 때만 �
   expect(canRequestPhoneOtp(phone, { kind: "requesting" })).toBe(false);
   expect(canRequestPhoneOtp(null, { kind: "idle" })).toBe(false);
 });
+
+test("LP6. 국가 번호까지 붙여 넣으면 국가 번호를 한 번만 쓴다", () => {
+  expect(phoneNumberFrom("+82", "+82 10 1234 5678")).toEqual({
+    e164: "+821012345678",
+    display: "+82 10 1234 5678",
+  });
+  expect(phoneNumberFrom("+82", "+82 010-1234-5678")?.e164).toBe("+821012345678");
+});
+
+test("LP7. 고른 국가와 다른 국가 번호로 시작하면 null이다", () => {
+  expect(phoneNumberFrom("+82", "+1 555 123 4567")).toBeNull();
+});

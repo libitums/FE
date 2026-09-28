@@ -16,7 +16,8 @@ export function supabaseConfigFrom(url: unknown, anonKey: unknown): SupabaseConf
   if (trimmedUrl.length === 0 || trimmedAnonKey.length === 0) {
     return null;
   }
-  if (!trimmedUrl.startsWith("https://")) {
+  // `https://` 뒤에 호스트가 있어야 합니다 — `https://`나 `https:///`만이면 요청 주소가 서지 않습니다.
+  if (!/^https:\/\/[^/\s]+/.test(trimmedUrl)) {
     return null;
   }
   if (trimmedAnonKey.startsWith("sb_secret_")) {
