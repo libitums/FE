@@ -26,7 +26,9 @@ import {
   phoneCallCompletionStatus,
 } from "../screens/phone-call/phone-call";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
+import { RoleplayEpisodeScreen } from "../screens/roleplay-list/RoleplayEpisodeScreen";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
+import { findRoleplaySection } from "../screens/roleplay-list/roleplay-list";
 import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { specialUnitExitLabel } from "../lib/special-unit-entry-source";
@@ -37,7 +39,7 @@ import { VerificationCodeScreen } from "../screens/verification-code/Verificatio
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
 import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
-import { profileList, roleplayItems, termsSectionList } from "./app-content";
+import { profileList, termsSectionList } from "./app-content";
 import type { Screen } from "./nav-state";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import type { ScreenWiring } from "./screen-wiring";
@@ -61,9 +63,30 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         />
       );
     case "roleplay-list":
-      // 모듈 상수 `roleplayItems`를 그대로 그리고, 선택은 `onStartRoleplayUnit`으로
+      // 구획은 App이 진행에서 파생해 내립니다. 선택은 `onStartRoleplayUnit`으로
       // 올립니다.
-      return <RoleplayListScreen items={roleplayItems} onSelectItem={wiring.onStartRoleplayUnit} />;
+      return (
+        <RoleplayListScreen
+          sections={wiring.roleplaySections}
+          onSelectItem={wiring.onStartRoleplayUnit}
+          onViewAll={wiring.onViewAllRoleplayEpisode}
+        />
+      );
+    case "roleplay-episode": {
+      // 없는 에피소드는 데이터 오류라 숨기지 않고 던집니다 — 이 route를 여는 자리는
+      // 구획 머리 하나뿐이고, 거기서 온 id는 구획에 반드시 있습니다.
+      const section = findRoleplaySection(wiring.roleplaySections, screen.episodeId);
+      if (section === undefined) {
+        throw new Error(`롤플레이 구획에 없는 에피소드입니다: ${screen.episodeId}`);
+      }
+      return (
+        <RoleplayEpisodeScreen
+          section={section}
+          onSelectItem={wiring.onStartRoleplayUnit}
+          onExit={wiring.onExitRoleplayEpisode}
+        />
+      );
+    }
     case "settings":
       return (
         <SettingsScreen

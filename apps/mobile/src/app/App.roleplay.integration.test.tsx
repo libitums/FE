@@ -1,7 +1,8 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import type { AppJourneySeed } from "./App";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
@@ -94,8 +95,19 @@ function renderApp(ui: Parameters<typeof render>[0]) {
   return result;
 }
 
+// 튜토리얼을 다 끝낸 진행입니다 — 롤플레이는 에피소드를 끝내야 열립니다. 이 파일이
+// 보는 것은 **열린 뒤의** 롤플레이(연습 경계 · 나가기 · 이벤트)이므로, 여덟 유닛을
+// 매번 걷는 대신 끝난 상태에서 시작합니다. 잠김은 아래 [I8]~[I10]이 제품의 씨앗으로
+// 봅니다.
+const finishedTutorial: AppJourneySeed = {
+  completedStepCount: 5,
+  completedMessengerUnitIds: [messengerUnitId],
+  completedPhoneCallUnitIds: [phoneCallUnitId],
+  visualNovelProgress: { status: "completed", beatIndex: 2 },
+};
+
 function openRoleplayTab(sinks: Sinks = {}) {
-  renderApp(<App {...sinks} />);
+  renderApp(<App journeySeed={finishedTutorial} {...sinks} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 }
 
@@ -131,11 +143,23 @@ function advanceVisualNovelOnce() {
 
 // -------------------------------------------------------------- I1 · I1b (AC1)
 
-test("[I1] 실제 데이터로 선 목록 — 항목 셋이 여정 순서로 서고 완료·잠김 표식이 없다", () => {
+test("[I1] 실제 데이터로 선 구획 — 에피소드 하나에 카드 셋이 여정 순서로 서고 완료·잠김 표식이 없다", () => {
   openRoleplayTab();
 
   const list = screen.getByTestId("roleplay-list-screen-list");
-  const itemTestIds = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
+  const sectionTestIds = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
+  expect(sectionTestIds).toEqual(["roleplay-list-section-tutorial"]);
+  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
+    "data-unlocked",
+    "true",
+  );
+  expect(screen.getByTestId("roleplay-list-section-header-tutorial")).toHaveAttribute(
+    "accessibility-label",
+    "Episode 0. Tutorial.",
+  );
+
+  const row = screen.getByTestId("roleplay-list-section-row-tutorial");
+  const itemTestIds = Array.from(row.children).map((el) => el.getAttribute("data-testid"));
   expect(itemTestIds).toEqual([
     `roleplay-list-item-${messengerUnitId}`,
     `roleplay-list-item-${phoneCallUnitId}`,
@@ -175,29 +199,11 @@ test("[I1] 실제 데이터로 선 목록 — 항목 셋이 여정 순서로 서
     "카페에 도착한 지민, 비주얼 노벨",
   );
 
-  expect(list).not.toHaveTextContent("완료됨");
-  expect(list).not.toHaveTextContent("잠김");
-  expect(list.querySelectorAll("[data-status]")).toHaveLength(0);
-});
-
-test("[I1b] 여정에서 메신저를 완료해도 롤플레이 목록은 새지 않는다", () => {
-  renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
-  finishMessengerConversation();
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-
-  const list = screen.getByTestId("roleplay-list-screen-list");
-  const itemTestIds = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
-  expect(itemTestIds).toEqual([
-    `roleplay-list-item-${messengerUnitId}`,
-    `roleplay-list-item-${phoneCallUnitId}`,
-    `roleplay-list-item-${visualNovelUnitId}`,
-  ]);
+  // 열린 에피소드에는 완료 표식도 잠김 표식도 없습니다 — 롤플레이는 몇 번을 해도
+  // 「끝낸 것」이 되지 않습니다.
   expect(list).not.toHaveTextContent("완료됨");
   expect(list.querySelectorAll("[data-status]")).toHaveLength(0);
+  expect(list.querySelectorAll('[data-locked="true"]')).toHaveLength(0);
 });
 
 // -------------------------------------------------------------- I2 (AC2)
@@ -255,27 +261,11 @@ test("[I2] 비주얼 노벨 항목을 열면 롤플레이 스택에 push되고 �
 
 // -------------------------------------------------------------- I3 (AC3)
 
-test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선다", () => {
-  renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-
-  // 여정에서 메신저를 완료합니다.
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
-  finishMessengerConversation();
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-
-  // 여정에서 전화를 완료합니다.
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
-  finishPhoneCall();
-  fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
-
-  // 여정에서 비주얼 노벨을 find까지 진행하고 미완료로 나갑니다.
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
-  advanceVisualNovelOnce();
-  expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
-  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
+// 재고정: 롤플레이가 에피소드를 끝내야 열리므로, 「여정 진행」은 이제 「여정에서 셋을
+// 모두 끝낸 상태」입니다(`finishedTutorial`). 보는 것은 그대로입니다 — 여정에서 끝까지
+// 간 유닛도 롤플레이에서는 처음부터 섭니다.
+test("[I3] 여정에서 셋을 모두 끝냈어도 롤플레이는 항상 처음부터 선다", () => {
+  openRoleplayTab();
 
   openRoleplayItem(messengerUnitId);
   expect(screen.getByTestId("messenger-screen-progress")).toHaveTextContent("대화 1 / 2");
@@ -295,21 +285,6 @@ test("[I3] 여정 진행과 무관하게 롤플레이는 항상 처음부터 선
   ).toHaveLength(1);
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
-  openRoleplayItem(visualNovelUnitId);
-  expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
-  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 1 / 3");
-});
-
-test("[I3] 여정에서 비주얼 노벨을 완료한 뒤에도 롤플레이는 arrive에서 시작한다", () => {
-  renderApp(<App />);
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
-  advanceVisualNovelOnce();
-  advanceVisualNovelOnce();
-  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("이야기 완료");
-  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   openRoleplayItem(visualNovelUnitId);
   expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
   expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 1 / 3");
@@ -374,8 +349,12 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
 
 // -------------------------------------------------------------------------- I5 (AC5)
 
+// 재고정: 롤플레이가 열려 있으려면 여정의 여덟이 이미 끝나 있어야 하므로, 「그대로」는
+// 「여덟이 끝난 채 그대로」입니다. 예전에는 롤플레이 뒤 여정 유닛을 다시 열어 처음부터
+// 서는지도 봤는데, 그 단언은 여정이 미완료일 때만 뜻이 있어 걷었습니다 — 롤플레이가
+// 여정의 완료를 걸지 않는다는 것은 결선의 단위 검사(연습 경계)가 집니다.
 test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 그대로다", () => {
-  renderApp(<App />);
+  renderApp(<App journeySeed={finishedTutorial} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   const before = journeyStateSnapshot();
 
@@ -404,17 +383,6 @@ test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 �
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(journeyStateSnapshot()).toEqual(before);
-
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
-  expect(screen.getByTestId("messenger-screen-progress")).toHaveTextContent("대화 1 / 2");
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
-  expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
-  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
-
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
-  expect(screen.getByTestId("phone-call-status")).toHaveTextContent("통화 준비");
 });
 
 // -------------------------------------------------------------- I6 (AC6)
@@ -469,7 +437,8 @@ test("[I6] 전화는 열림 이벤트만 있고 출처로 journey·roleplay를 �
     name: "phone_call_unit_opened",
     unitId: phoneCallUnitId,
     entrySource: "journey",
-    entryStatus: "available",
+    // 롤플레이가 열려 있다는 것은 여정에서 이 유닛을 이미 끝냈다는 뜻입니다.
+    entryStatus: "completed",
   });
 });
 
@@ -520,7 +489,12 @@ test("[I6] 비주얼 노벨 롤플레이 이벤트는 entrySource: roleplay를 �
 test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지지 않는다", () => {
   expect(() =>
     renderApp(
-      <App messengerEventSink={null} phoneCallEventSink={null} visualNovelEventSink={null} />,
+      <App
+        journeySeed={finishedTutorial}
+        messengerEventSink={null}
+        phoneCallEventSink={null}
+        visualNovelEventSink={null}
+      />,
     ),
   ).not.toThrow();
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
@@ -541,4 +515,127 @@ test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지�
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+});
+
+// -------------------------------------------------------------- I8~I11 (에피소드 해금)
+//
+// 여기서부터는 제품의 씨앗(스텝 둘 완료 · 특별 유닛 0건)으로 부팅합니다 — 잠김을 봅니다.
+
+function openLockedRoleplayTab() {
+  renderApp(<App />);
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
+}
+
+test("[I8] 에피소드를 끝내기 전에는 구획이 잠겨 있고 카드를 눌러도 열리지 않는다", () => {
+  openLockedRoleplayTab();
+
+  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
+    "data-unlocked",
+    "false",
+  );
+  expect(screen.getByTestId("roleplay-list-section-header-tutorial")).toHaveAttribute(
+    "accessibility-label",
+    "Episode 0. Tutorial., 잠김, 여정에서 이 에피소드를 끝내면 열립니다",
+  );
+  expect(screen.queryByTestId("roleplay-list-section-view-all-tutorial")).not.toBeInTheDocument();
+
+  for (const unitId of [messengerUnitId, phoneCallUnitId, visualNovelUnitId]) {
+    expect(screen.getByTestId(`roleplay-list-item-${unitId}`)).toHaveAttribute(
+      "data-locked",
+      "true",
+    );
+    expect(screen.getByTestId(`roleplay-list-item-lock-${unitId}`)).toBeInTheDocument();
+    openRoleplayItem(unitId);
+    expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
+  }
+  expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
+});
+
+test("[I9] 여정에서 특별 유닛 하나만 끝내서는 에피소드가 열리지 않는다", () => {
+  renderApp(<App />);
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
+  finishMessengerConversation();
+  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
+
+  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
+    "data-unlocked",
+    "false",
+  );
+  expect(screen.getByTestId(`roleplay-list-item-${messengerUnitId}`)).toHaveAttribute(
+    "data-locked",
+    "true",
+  );
+});
+
+test("[I10] 마지막 하나가 남으면 잠겨 있고, 그것을 끝내는 순간 열린다", () => {
+  // 비주얼 노벨만 남긴 진행입니다.
+  renderApp(
+    <App
+      journeySeed={{ ...finishedTutorial, visualNovelProgress: { status: "active", beatIndex: 0 } }}
+    />,
+  );
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
+  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
+    "data-unlocked",
+    "false",
+  );
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
+  advanceVisualNovelOnce();
+  advanceVisualNovelOnce();
+  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
+  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
+    "data-unlocked",
+    "true",
+  );
+  openRoleplayItem(messengerUnitId);
+  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+});
+
+test("[I11] 전체 보기는 그 에피소드의 화면을 롤플레이 스택에 쌓고, 나가기는 목록으로 돌아간다", () => {
+  openRoleplayTab();
+
+  fireEvent.tap(screen.getByTestId("roleplay-list-section-view-all-tutorial"), {});
+
+  expect(screen.getByTestId("roleplay-episode-screen-title")).toHaveTextContent(
+    "Episode 0. Tutorial.",
+  );
+  expect(screen.queryByTestId("roleplay-list-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
+  const list = screen.getByTestId("roleplay-episode-screen-list");
+  expect(Array.from(list.children).map((el) => el.getAttribute("data-testid"))).toEqual([
+    `roleplay-list-item-${messengerUnitId}`,
+    `roleplay-list-item-${phoneCallUnitId}`,
+    `roleplay-list-item-${visualNovelUnitId}`,
+  ]);
+
+  fireEvent.tap(
+    within(screen.getByTestId("roleplay-episode-screen-exit")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+  expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("roleplay-episode-screen-title")).not.toBeInTheDocument();
+});
+
+// 연습 유닛의 `목록으로`는 한 칸 뒤가 아니라 활성 스택의 루트입니다(ADR-0007 D6). 펼친
+// 화면에서 열었어도 돌아가는 곳은 롤플레이 화면입니다.
+test("[I12] 펼친 화면에서 연 유닛의 목록으로는 롤플레이 화면으로 돌아간다", () => {
+  openRoleplayTab();
+  fireEvent.tap(screen.getByTestId("roleplay-list-section-view-all-tutorial"), {});
+
+  openRoleplayItem(messengerUnitId);
+  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
+
+  expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("roleplay-episode-screen-title")).not.toBeInTheDocument();
 });

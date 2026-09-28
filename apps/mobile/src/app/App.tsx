@@ -8,7 +8,12 @@ import type { EntryLanguage } from "../lib/entry-language";
 import { safeAreaInsetsFrom } from "../lib/safe-area";
 import { initialSessionOptions } from "../lib/session-options";
 import type { SessionOptions } from "../lib/session-options";
-import { initialCompletedStepCount } from "../screens/journey-map/journey-map";
+import {
+  initialCompletedStepCount,
+  isMapItemComplete,
+  journeyMapSections,
+} from "../screens/journey-map/journey-map";
+import { roleplaySectionsFrom } from "../screens/roleplay-list/roleplay-list";
 import type { MessengerAppProps, MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type {
   NotificationAppProps,
@@ -20,6 +25,7 @@ import { initialVisualNovelProgress } from "../screens/visual-novel/visual-novel
 import type {
   VisualNovelAppProps,
   VisualNovelProgress,
+  VisualNovelUnitId,
 } from "../screens/visual-novel/visual-novel.contract";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, isEntrySection, navReducer } from "./nav-reducer";
@@ -35,7 +41,43 @@ import "./app.css";
 //
 // `phoneCallEventSink`는 메신저·비주얼 노벨과 같은 방식으로 App 경계에서
 // `null`로 정규화됩니다.
+/**
+ * 부팅할 때의 여정 진행입니다. 주지 않으면 제품의 씨앗(`initialCompletedStepCount` · 빈
+ * 완료 목록)으로 시작합니다.
+ *
+ * 있는 이유는 **진행이 열어 주는 화면**입니다. 롤플레이는 에피소드를 다 끝내야 열리는데,
+ * 그 상태에 닿으려면 유닛 여덟을 모두 지나야 합니다 — 열린 뒤의 동작을 보려는 자리
+ * (integration · 개발 중 확인)가 그 길을 매번 걷지 않게 합니다. 제품 진입점은 이 값을
+ * 주지 않습니다.
+ */
+export type AppJourneySeed = {
+  readonly completedStepCount: number;
+  readonly completedMessengerUnitIds: readonly MessengerUnitId[];
+  readonly completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
+  readonly visualNovelProgress: VisualNovelProgress;
+};
+
+export type AppSeedProps = {
+  readonly journeySeed?: AppJourneySeed;
+};
+
+const productJourneySeed: AppJourneySeed = {
+  completedStepCount: initialCompletedStepCount,
+  completedMessengerUnitIds: [],
+  completedPhoneCallUnitIds: [],
+  visualNovelProgress: initialVisualNovelProgress(),
+};
+
+// 비주얼 노벨의 진행은 완료 id 목록이 아니라 상태 하나입니다(유닛이 하나뿐입니다).
+// 여정 맵에 내릴 때(`render-screen.tsx`)와 같은 식으로 목록으로 옮깁니다.
+function completedVisualNovelUnitIdsFrom(
+  progress: VisualNovelProgress,
+): readonly VisualNovelUnitId[] {
+  return progress.status === "completed" ? ["cafe-arrival-visual-novel"] : [];
+}
+
 export function App({
+  journeySeed = productJourneySeed,
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
@@ -47,7 +89,8 @@ export function App({
   PhoneCallAppProps &
   NotificationAppProps &
   SettingsAppProps &
-  EntryAppProps = {}) {
+  EntryAppProps &
+  AppSeedProps = {}) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다
   // — 셸은 `NavAction`도 `dispatch`도 받지 않습니다(ADR-0007 D3).
   //
@@ -69,15 +112,15 @@ export function App({
   // (ADR-0007 D1: 저장소 모듈에 넣는 것은 로그인 토큰뿐입니다,
   // `lib/auth-token.ts`). 앱을 다시 켜면 진행이 `initialCompletedStepCount`로
   // 돌아가는 것이 정상이고 계약이 그것을 적습니다.
-  const [completedStepCount, setCompletedStepCount] = useState(initialCompletedStepCount);
+  const [completedStepCount, setCompletedStepCount] = useState(journeySeed.completedStepCount);
   const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
     readonly MessengerUnitId[]
-  >([]);
+  >(journeySeed.completedMessengerUnitIds);
   const [completedPhoneCallUnitIds, setCompletedPhoneCallUnitIds] = useState<
     readonly PhoneCallUnitId[]
-  >([]);
+  >(journeySeed.completedPhoneCallUnitIds);
   const [visualNovelProgress, setVisualNovelProgress] = useState<VisualNovelProgress>(
-    initialVisualNovelProgress,
+    journeySeed.visualNovelProgress,
   );
   // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
   // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.
@@ -89,6 +132,18 @@ export function App({
   // 한 스텝의 활동들이 지나오며 쌓는 결과입니다. 유닛 하나가 활동 여럿을 잇고 평가는
   // 마지막에 한 번만 돌므로, 그때까지의 정오를 여기 모읍니다(journey-wiring.ts).
   const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
+
+  // 롤플레이 구획입니다. **진행에서 파생합니다** — 에피소드는 여정에서 그 에피소드의
+  // 항목을 전부 끝냈을 때 열리고, 그 판정의 출처는 위의 진행 넷입니다. 상태로 따로 두면
+  // 진행과 어긋날 자리가 생깁니다(ADR-0007 D3).
+  const roleplaySections = roleplaySectionsFrom(journeyMapSections, (item) =>
+    isMapItemComplete(item, {
+      completedStepCount,
+      completedMessengerUnitIds,
+      completedPhoneCallUnitIds,
+      completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
+    }),
+  );
 
   const wiring = screenWiring({
     messengerEventSink,
@@ -112,6 +167,7 @@ export function App({
     setSessionOptions,
     pendingResults,
     setPendingResults,
+    roleplaySections,
     entryLanguage,
     setEntryLanguage,
   });

@@ -22,7 +22,11 @@ import type {
   PhoneCallExitOutcome,
   PhoneCallUnitId,
 } from "../screens/phone-call/phone-call.contract";
-import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
+import type {
+  RoleplayEpisodeId,
+  RoleplayItem,
+  RoleplaySection,
+} from "../screens/roleplay-list/roleplay-list.contract";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
 import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
 import type {
@@ -113,6 +117,11 @@ export type ScreenWiring = {
   // 롤플레이 목록 항목 선택입니다. 해당 sink에 열림 이벤트(출처 `roleplay`) →
   // `push(roleplayScreenFor(item))`.
   onStartRoleplayUnit: (item: RoleplayItem) => void;
+  // 롤플레이 화면의 구획입니다 — 어느 에피소드가 열렸는지까지 진행에서 파생한 값입니다.
+  // `전체 보기`는 그 에피소드의 화면을 push하고, 그 화면의 나가기는 `back`입니다.
+  roleplaySections: readonly RoleplaySection[];
+  onViewAllRoleplayEpisode: (episodeId: RoleplayEpisodeId) => void;
+  onExitRoleplayEpisode: () => void;
   // 롤플레이 route 셋의 콜백 묶음입니다. 연습 경계는 이 타입의 매개변수 모양과
   // 구현부 둘 다가 집니다.
   roleplay: RoleplayUnitWiring;
@@ -168,6 +177,7 @@ export type ScreenWiringArgs = {
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly pendingResults: readonly AnswerResult[];
   readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
+  readonly roleplaySections: readonly RoleplaySection[];
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
 };
@@ -186,5 +196,16 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     setEntryLanguage: args.setEntryLanguage,
   });
 
-  return { ...journey, roleplay, ...entry };
+  return {
+    ...journey,
+    roleplay,
+    roleplaySections: args.roleplaySections,
+    onViewAllRoleplayEpisode: (episodeId: RoleplayEpisodeId) => {
+      args.dispatch({ type: "push", screen: { name: "roleplay-episode", episodeId } });
+    },
+    onExitRoleplayEpisode: () => {
+      args.dispatch({ type: "back" });
+    },
+    ...entry,
+  };
 }

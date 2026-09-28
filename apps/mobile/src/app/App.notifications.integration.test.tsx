@@ -225,7 +225,18 @@ test("[IN8] 롤플레이 대상 항목을 tap하면 롤플레이 탭 루트로 �
 
 test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하면 롤플레이 스택이 목록 루트로 걷힌다(D-c, 연속 dispatch 둘의 합성)", () => {
   const messengerItem = messengerNotificationItem();
-  renderApp(<App />);
+  // 롤플레이는 에피소드를 끝내야 열립니다 — 연습 메신저를 열려면 끝난 진행에서
+  // 시작합니다.
+  renderApp(
+    <App
+      journeySeed={{
+        completedStepCount: 5,
+        completedMessengerUnitIds: ["appointment-confirmation"],
+        completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
+        visualNovelProgress: { status: "completed", beatIndex: 2 },
+      }}
+    />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   fireEvent.tap(screen.getByTestId(`roleplay-list-item-${messengerItem.target.unitId}`), {});
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();

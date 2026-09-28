@@ -325,7 +325,12 @@ test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고�
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["roleplay-list-screen-title"]);
+  // 화면 제목 뒤에 구획 머리가 에피소드마다 하나씩 섭니다. 롤플레이 항목이 있는
+  // 에피소드만 구획이 되고, 오늘은 튜토리얼 하나입니다.
+  expect(headingAxis(container)).toEqual([
+    "roleplay-list-screen-title",
+    "roleplay-list-section-header-tutorial",
+  ]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한 목록과 정확히 같다", () => {
