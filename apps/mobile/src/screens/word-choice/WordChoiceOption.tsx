@@ -11,7 +11,7 @@ import "./word-choice-option.css";
 
 // ⟨2026-09-28, Figma 65-327⟩ **보기에서 표식(✓ · ✗)이 걷혔습니다.** 판정은 무대 카드의
 // 배지 하나가 말하고, 보기는 고른 것만 테두리와 글자 색이 갈립니다 — 듣기가 먼저 간
-// 자리입니다.
+// 자리입니다. 그 색은 **판정을 따라** 갈립니다(정답 초록 · 오답 빨강).
 //
 // 판정이 화면에서 사라진 것은 아닙니다: `accessibility-label`의 접미사와 `data-result`가
 // 그대로라, 스크린리더는 **어느 보기가 정답이었는지**를 여전히 읽습니다.
@@ -31,11 +31,10 @@ export function WordChoiceOption({
 }: WordChoiceOptionProps): ReactNode {
   return (
     <view
-      // 상태 클래스는 base 바로 뒤, 같은 파일에 선언합니다 — 특이도가 같아
-      // 순서가 결과를 가릅니다(ADR-0003 D7). 판정(정답/오답)은 클래스가
-      // 되지 않습니다 — `selected`는 예약 목록에 이미 있는 낱말이라
-      // 다섯째가 아닙니다.
-      className={"word-choice-option" + (result !== null ? " word-choice-option-selected" : "")}
+      // 판정이 곧 상태 클래스입니다 — `-correct` · `-incorrect`. 고르기 전에는 상태가
+      // 없어 base만 섭니다. 두 낱말이 ADR-0003 D7의 예약 목록 밖인 것과 그럼에도 이
+      // 낱말을 쓰는 이유는 짝 CSS 파일 머리에 적혀 있습니다.
+      className={"word-choice-option" + (result === null ? "" : ` word-choice-option-${result}`)}
       data-testid={`word-choice-option-${index}`}
       // 언제나 붙고 값만 갈립니다. 조건부로 빼면 "속성을 잊었다"와 "판정이
       // 없다"가 구별되지 않습니다.

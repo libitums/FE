@@ -36,11 +36,18 @@
    줄바꿈을 막지 않습니다 — 34px에서 문항이 두 줄이 되는 것이 정상이고, 한 줄로
    묶으면 긴 문항이 잘립니다(WCAG 1.4.4).
 
-   `fg-neutral` on `background-primary`는 16.82:1로 카드 배경(elevated, 16.16:1)보다도
-   여유가 큽니다. */
+   ⚠ **색이 크기에 매여 있습니다** ⟨2026-09-28⟩. `brand-primary`(#F46B18)를 무대 카드의
+   흰 면(#FFFFFF) 위에 쓰면 **3.016:1**입니다. WCAG 1.4.3의 일반 텍스트 기준 4.5:1에는
+   **미달**이고, 큰 텍스트 기준 3:1은 통과합니다 — 이 글자가 34px/800이라 「큰 텍스트」
+   (18pt=24px 이상, 또는 14pt 이상 굵은 글씨)에 들기 때문입니다. **여유가 0.016뿐입니다.**
+
+   그래서 **이 색과 `display` 크기는 함께 움직입니다.** 크기를 24px 밑으로 내리면 이
+   색은 그 순간 위반이 되고, 에러도 테스트 실패도 나지 않습니다. 크기를 줄여야 할
+   일이 생기면 색을 `brand-strong`(#B94208, 5.461:1)으로 함께 돌립니다 — 그 값이면
+   크기와 무관하게 일반 텍스트 기준을 넘습니다. */
 .word-choice-screen-prompt {
   text-align: center;
-  color: var(--libitum-color-fg-neutral);
+  color: var(--libitum-color-brand-primary);
   font-family: var(--libitum-typography-display-font-family);
   font-weight: var(--libitum-typography-display-font-weight);
   font-size: var(--libitum-typography-display-font-size);
@@ -104,12 +111,17 @@
   justify-content: center;
   row-gap: var(--libitum-spacing-8);
   column-gap: var(--libitum-spacing-8);
-  /* 껍데기가 무대와 작업 영역 사이에 이미 16(`layout-gap-block`)을 둡니다. 여기서 16을
-     더해 32로 만듭니다 ⟨2026-09-28⟩ — 이 화면의 보기는 **줄을 채우는 행이 아니라 작은
+  /* 껍데기가 무대와 작업 영역 사이에 이미 16(`layout-gap-block`)을 둡니다. 여기서 32를
+     더해 48로 만듭니다 ⟨2026-09-28⟩ — 이 화면의 보기는 **줄을 채우는 행이 아니라 작은
      칩**이라, 큰 흰 카드 바로 밑에 붙으면 카드에 딸린 꼬리처럼 보였습니다. 듣기는 보기가
      카드와 같은 폭이라 그 값 그대로가 맞아, 껍데기의 gap을 건드리지 않고 이 화면만
-     띄웁니다. */
-  margin-top: var(--libitum-spacing-16);
+     띄웁니다.
+
+     **16으로는 모자랐습니다.** 카드 **안**에도 제시문 아래로 72(균형 자리 40 + gap 16 +
+     카드 여백 16)가 남아 있어서, 밖의 32가 그 흰 면에 묻혀 보였습니다 — 눈에는 「카드
+     안은 넉넉한데 칩만 붙어 있다」로 읽힙니다. 카드 안 여백과 견줄 만한 값이라야
+     떨어져 보입니다. */
+  margin-top: var(--libitum-spacing-32);
 }
 
 /* 완료 문구입니다. 문항이 서 있던 그 카드 안에 혼자 남으므로 가운데에 섭니다 —

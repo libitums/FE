@@ -21,6 +21,13 @@ import { WordChoiceOption } from "./WordChoiceOption";
 // 것). 보이는 채널은 테두리와 글자 색인데 그 둘은 계산된 스타일이라 `ui`가 원리적으로
 // 못 봅니다 — 그래서 이 파일은 클래스를 단언하지 않습니다(「toHaveClass를 쓰지 않는다」).
 // 색이 유일한 채널이 되지 않게 지키는 것은 카드의 배지입니다(WCAG 1.4.1).
+//
+// ⚠ **이 계층이 원리적으로 못 보는 것이 있습니다.** 클래스는 시각 전용이고 테스트가
+// 보는 경로가 아닙니다(`docs/conventions/code.md` 「관찰 채널 넷」) — 그래서 「상태
+// 클래스가 `data-result`를 따라가는가」는 여기서 단언되지 않습니다. 실제로 한 번
+// 갈렸습니다: 상태 클래스가 `-selected` 하나였을 때 **오답을 골라도 초록 테두리**가
+// 나왔는데, 이 파일은 그때도 전부 green이었습니다(`data-result`는 맞게 붙었으니까요).
+// 그 갈래를 가르는 것은 기기뿐입니다.
 
 const RESULTS: readonly (AnswerResult | null)[] = [null, "correct", "incorrect"];
 
