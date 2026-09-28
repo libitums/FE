@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
@@ -299,4 +300,53 @@ test("[EP4] 통화를 끝낸 뒤에는 같은 에피소드의 유닛에 표지�
   expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("prologue-call-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+});
+
+// ------------------------------------------------------------------ 서사 메신저
+//
+// 오늘 튜토리얼의 서사는 통화입니다. 메신저 형식을 앱 안에서 보려고 대본을 바꿔 끼웁니다
+// (`App`의 `episodePrologueFor`).
+
+const messengerPrologue: EpisodePrologue = {
+  kind: "messenger",
+  chat: {
+    partnerName: "유나",
+    messages: [
+      { id: "m1", sender: "other", text: "잘 도착했어?", translation: "Did you arrive?" },
+      { id: "m2", sender: "self", text: "잘 도착했어요!", translation: "I made it!" },
+    ],
+  },
+};
+
+test("[EM1] 서사가 메신저인 에피소드는 Next 뒤에 메신저가 서고, 끝까지 가면 PERFECT LESSON → 맵이다", () => {
+  vi.useFakeTimers();
+  renderApp(<App episodePrologueFor={() => messengerPrologue} />);
+  vi.useFakeTimers();
+  startOrdering();
+  tapNextOnly();
+
+  expect(screen.getByTestId("prologue-chat-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("prologue-call-screen")).not.toBeInTheDocument();
+
+  act(() => {
+    vi.advanceTimersByTime(1500);
+  });
+  fireEvent.tap(screen.getByTestId("prologue-chat-screen-send"), {});
+  vi.useRealTimers();
+  fireEvent.tap(screen.getByTestId("prologue-chat-screen-complete"), {});
+
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  tapLessonCompleteCheck();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+});
+
+test("[EM2] 서사가 없는 에피소드는 Next가 곧장 누른 유닛을 연다", () => {
+  renderApp(<App episodePrologueFor={() => undefined} />);
+  startOrdering();
+
+  tapNextOnly();
+
+  expect(screen.queryByTestId("prologue-chat-screen")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("prologue-call-screen")).not.toBeInTheDocument();
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
 });

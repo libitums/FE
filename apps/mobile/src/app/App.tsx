@@ -31,6 +31,8 @@ import type {
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
+import { episodePrologueFor as productEpisodePrologueFor } from "../screens/episode-intro/prologue";
+import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
 import { entryInitialNav } from "./nav-state";
 import type { Screen } from "./nav-state";
 import { renderScreen } from "./render-screen";
@@ -67,6 +69,12 @@ export type AppSeedProps = {
    * 제품 진입점은 이 값을 주지 않습니다.
    */
   readonly seenEpisodeIntroIds?: readonly string[];
+  /**
+   * 에피소드의 서사 전개를 찾는 함수입니다. 없으면 제품의 대본(`episodePrologueFor`)을
+   * 씁니다. 튜토리얼 하나뿐인 지금, 다른 형식(메신저)의 서사를 앱 안에서 보려는 자리가
+   * 대본을 바꿔 끼웁니다. 제품 진입점은 이 값을 주지 않습니다.
+   */
+  readonly episodePrologueFor?: (episodeId: string) => EpisodePrologue | undefined;
 };
 
 const productJourneySeed: AppJourneySeed = {
@@ -84,8 +92,8 @@ function completedVisualNovelUnitIdsFrom(
   return progress.status === "completed" ? ["cafe-arrival-visual-novel"] : [];
 }
 
-// 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지와 서사
-// 통화는 화면 전체를 한 장면으로 덮습니다(Figma 80-7869 · 80-7797).
+// 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지와 서사 전개
+// (통화 · 메신저)는 화면 전체를 한 장면으로 덮습니다(Figma 80-7869 · 80-7797 · 79-6762).
 //
 // ⟨2026-09-28⟩ **여정 입장도 같은 자리입니다.** 그 화면의 디자인 의도가 「그림을 화면
 // 전체에 깐다」인데 셸이 여백을 잡아 위 · 아래에 그림이 닿지 않는 흰 띠가 남았습니다
@@ -94,7 +102,7 @@ function completedVisualNovelUnitIdsFrom(
 function isFullBleedScreen(screen: Screen): boolean {
   return (
     screen.name === "episode-intro" ||
-    screen.name === "episode-prologue-call" ||
+    screen.name === "episode-prologue" ||
     screen.name === "journey-entry"
   );
 }
@@ -102,6 +110,7 @@ function isFullBleedScreen(screen: Screen): boolean {
 export function App({
   journeySeed = productJourneySeed,
   seenEpisodeIntroIds: initialSeenEpisodeIntroIds = [],
+  episodePrologueFor = productEpisodePrologueFor,
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
@@ -180,6 +189,7 @@ export function App({
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const wiring = screenWiring({
     safeAreaInsets: insets,
+    episodePrologueFor,
     messengerEventSink,
     phoneCallEventSink,
     visualNovelEventSink,
