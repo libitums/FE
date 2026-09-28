@@ -23,7 +23,11 @@
       "@libitums/ui-lynx/episode-header": ["../../packages/ui-lynx/src/episode-header/index.ts"],
       "@libitums/ui-lynx/learning-unit": ["../../packages/ui-lynx/src/learning-unit/index.ts"],
       "@libitums/ui-lynx/fog": ["../../packages/ui-lynx/src/fog/index.ts"],
-      "@libitums/ui-lynx/dialog": ["../../packages/ui-lynx/src/dialog/index.ts"]
+      "@libitums/ui-lynx/dialog": ["../../packages/ui-lynx/src/dialog/index.ts"],
+      "@libitums/ui-lynx/avatar": ["../../packages/ui-lynx/src/avatar/index.ts"],
+      "@libitums/ui-lynx/visual-novel-dialog": [
+        "../../packages/ui-lynx/src/visual-novel-dialog/index.ts"
+      ]
     }
   }
 }
