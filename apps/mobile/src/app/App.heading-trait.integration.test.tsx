@@ -315,10 +315,11 @@ test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고
   const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
-  expect(screen.getByTestId("sentence-order-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["sentence-order-screen-title"]);
+  // ⟨2026-09-28⟩ 빈 집합입니다 — 문장 만들기가 듣기와 같은 껍데기(`LearningShell`)로 옮겨
+  // 제목 줄이 걷혔습니다. 위 `toBeInTheDocument`가 앵커입니다.
+  expect(headingAxis(container)).toEqual([]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고정한 목록과 정확히 같다", () => {

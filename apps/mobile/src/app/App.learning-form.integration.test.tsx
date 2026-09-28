@@ -4,7 +4,6 @@ import { act, fireEvent, render, screen, cleanup } from "@lynx-js/react/testing-
 import { App } from "./App";
 import { journeyStepOrdinal, type JourneyStepId } from "../screens/journey-map/journey-map";
 import type { LearningForm } from "../lib/learning-form";
-import { sentenceOrderScreenTitle } from "../screens/sentence-order/sentence-order";
 import { cultureScreenTitle } from "../screens/culture/culture";
 import { cultureQuizScreenTitle } from "../screens/culture-quiz/culture-quiz";
 import { authTokenStorageKey } from "../lib/auth-token";
@@ -117,17 +116,17 @@ const allForms: readonly LearningForm[] = ["listening", "sentence-order", "word-
 // 있습니다 — `test.each`가 `allForms`를 그대로 순회하기 때문입니다.
 const titleTestIdByForm: Record<LearningForm, string> = {
   listening: "listening-screen-content",
-  "sentence-order": "sentence-order-screen-title",
+  "sentence-order": "sentence-order-screen-content",
   "word-choice": "word-choice-screen-content",
   culture: "culture-screen-title",
 };
 
 // 문구가 없는 화면은 `undefined`입니다 — 학습 껍데기로 옮겨간 화면은 제목 줄이 걷혀
-// (Figma 65-14) 정체를 가리는 것이 앵커의 **존재**뿐입니다. 듣기에 이어 단어 선택이
-// 그리로 갔습니다 ⟨2026-09-28⟩. 남은 둘은 아직 제목을 답니다.
+// (Figma 65-14) 정체를 가리는 것이 앵커의 **존재**뿐입니다. 듣기에 이어 낱말 고르기 ·
+// 문장 만들기가 그리로 갔습니다 ⟨2026-09-28⟩. 남은 하나(문화)는 아직 제목을 답니다.
 const titleTextByForm: Record<LearningForm, ((ordinal: number) => string) | undefined> = {
   listening: undefined,
-  "sentence-order": sentenceOrderScreenTitle,
+  "sentence-order": undefined,
   "word-choice": undefined,
   culture: cultureScreenTitle,
 };
@@ -170,9 +169,7 @@ test("learningFormForStep이 sentence-order·word-choice를 돌려줘도 던지�
   formStub.current = "sentence-order";
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
-  expect(screen.getByTestId("sentence-order-screen-title")).toHaveTextContent(
-    sentenceOrderScreenTitle(journeyStepOrdinal("ordering")),
-  );
+  expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
   expect(screen.queryByTestId("error-boundary-title")).not.toBeInTheDocument();
   cleanup();
 
@@ -198,9 +195,7 @@ test("배정표가 스텝마다 갈리면 ordering 스텝에서는 그 스텝에
 
   startStep("ordering");
 
-  expect(screen.getByTestId("sentence-order-screen-title")).toHaveTextContent(
-    sentenceOrderScreenTitle(journeyStepOrdinal("ordering")),
-  );
+  expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
 });
 
 test("배정표가 스텝마다 갈리면 greeting 스텝에서는 그 스텝에 배정된 화면(word-choice)이 열린다", () => {
@@ -223,7 +218,7 @@ test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배�
   startStep("ordering");
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.queryByTestId("sentence-order-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("sentence-order-screen-content")).not.toBeInTheDocument();
   expect(screen.queryByTestId("word-choice-screen-content")).not.toBeInTheDocument();
 });
 

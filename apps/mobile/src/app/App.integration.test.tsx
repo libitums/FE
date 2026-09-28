@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { sentenceOrderQuestionsForStep } from "../screens/sentence-order/sentence-order";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import { questionsForStep } from "../screens/listening/listening";
 import { wordChoiceQuestionsForStep } from "../screens/word-choice/word-choice";
@@ -289,6 +290,19 @@ function incorrectPick(answerIndex: number): number {
 
 // 통과 경로의 나가기입니다. 완료 화면의 `Check`는 ui-lynx `Button`이라 testid가
 // 버튼 자신이 아니라 감싸는 상자에 붙어 있습니다.
+// 문장 만들기를 실제 문항 표대로 정답 순서로 놓고 끝까지 마칩니다 — 확인 · 다음을 문항마다
+// 누르고, 끝에 결과 보기를 누릅니다(아래 버튼은 `LearningShell`의 것 하나입니다).
+function completeSentenceOrder(stepId: JourneyStepId): void {
+  for (const question of sentenceOrderQuestionsForStep(stepId)) {
+    for (const chipIndex of question.answerOrder) {
+      fireEvent.tap(screen.getByTestId(`sentence-order-chip-${chipIndex}`), {});
+    }
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 확인
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 다음
+  }
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 결과 보기
+}
+
 function lessonCompleteExit(): Element {
   const button = screen
     .getByTestId("lesson-complete-screen-exit")
@@ -460,6 +474,9 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   answerAllQuestions("greeting", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  // 첫 인사는 듣기 뒤에 문장 만들기가 이어집니다 — 그것까지 마쳐야 평가에 닿습니다.
+  expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
+  completeSentenceOrder("greeting");
   fireEvent.tap(lessonCompleteExit(), {});
 
   expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
