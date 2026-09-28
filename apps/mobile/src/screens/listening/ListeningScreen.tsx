@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "@lynx-js/react";
+import { useEffect, useMemo, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
@@ -92,14 +92,28 @@ export function ListeningScreen({
   // 고른 뒤 2.5초입니다. 배지와 고른 보기의 색을 둘 다 볼 만큼이고, 기다리는 느낌이
   // 아직 안 드는 값으로 골랐습니다. 그 전에 화면을 누르면 즉시 넘어갑니다 — 시간제한이
   // 생기는 자리라 조작을 남깁니다(WCAG 2.2.1).
-  const advance =
-    question !== null && hasAnswered(state)
-      ? {
-          label: "다음으로",
-          run: () => dispatch({ type: "nextQuestion" }),
-          delayMs: 2500,
-        }
-      : undefined;
+  //
+  // **참조가 곧 걸음의 정체입니다.** 껍데기는 이 객체가 갈릴 때 타이머를 다시 걸고,
+  // 같은 객체를 두 번 밟지 않는 것으로 자동 넘김과 손 넘김의 겹침을 막습니다. 그래서
+  // 매 렌더마다 새로 만들면 **관계없는 리렌더 하나가 기다림을 처음부터 되돌립니다** —
+  // 2.4초까지 기다린 사람이 다시 2.5초를 기다리고, 그 사이 무엇이 잘못됐는지 화면에
+  // 아무 표시도 남지 않습니다.
+  //
+  // dep 둘이 걸음의 정체 전부입니다: 어느 문항인가(`question`)와 그 문항에
+  // 응답했는가(`selectedChoiceIndex`). 응답 여부를 `hasAnswered`로 읽으면서 dep에는
+  // 그것이 보는 필드를 적습니다 — 「응답했다」의 정본은 여전히 그 함수 하나입니다.
+  // `dispatch`는 `useReducer`가 고정해 줍니다.
+  const advance = useMemo(
+    () =>
+      question !== null && hasAnswered(state)
+        ? {
+            label: "다음으로",
+            run: () => dispatch({ type: "nextQuestion" }),
+            delayMs: 2500,
+          }
+        : undefined,
+    [question, state.selectedChoiceIndex],
+  );
 
   return (
     <LearningShell

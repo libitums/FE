@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { ListeningScreen } from "./ListeningScreen";
@@ -1073,4 +1073,44 @@ test("[U10] 완료 상태에서 스크롤 컨테이너의 직계 자식이 하�
   completeAllThree();
 
   expect(screen.getByTestId("learning-shell-stage").children.length).toBeLessThanOrEqual(1);
+});
+
+// ---------------------------------------------------------------- 걸음의 정체 (2026-09-28)
+//
+// 껍데기는 **참조로** 걸음을 가릅니다 — 객체가 갈리면 타이머를 다시 걸고, 같은 객체는
+// 두 번 밟지 않습니다. 그래서 걸음을 매 렌더마다 새로 만들면 관계없는 리렌더 하나가
+// 기다림을 처음부터 되돌리는데, **화면에는 아무 표시도 남지 않습니다.** 눈으로는 「가끔
+// 늦게 넘어간다」로만 보입니다.
+//
+// 그 자리를 여기서 답니다: 2.4초를 기다린 뒤 리렌더를 한 번 끼우고, 남은 0.1초가 지나면
+// 넘어가야 합니다. 걸음이 리렌더마다 새로 만들어지면 여기서 타이머가 0으로 돌아가
+// 문항이 그대로 남습니다.
+test("관계없는 리렌더가 끼어도 기다림이 처음으로 되돌아가지 않는다", () => {
+  vi.useFakeTimers();
+  const view = renderOrdering();
+
+  fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
+
+  act(() => {
+    vi.advanceTimersByTime(2400);
+  });
+  view.rerender(
+    <ListeningScreen
+      stepId="ordering"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={() => {}}
+      onFinish={() => {}}
+      sessionOptions={initialSessionOptions}
+    />,
+  );
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
+
+  act(() => {
+    vi.advanceTimersByTime(100);
+  });
+
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
+
+  vi.useRealTimers();
 });

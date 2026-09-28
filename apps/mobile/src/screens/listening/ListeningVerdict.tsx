@@ -43,7 +43,11 @@ export function ListeningVerdict({ result }: ListeningVerdictProps): ReactNode {
       data-result={result}
       // 면 색이 판정마다 갈리는 값이라 인라인 스타일이 집니다 — 상태 클래스를 만들면
       // ADR-0003 D7의 예약 상태어가 늘어납니다.
-      style={{ background: surfaceByResult[result] }}
+      //
+      // 단축(`background`)이 아니라 홑(`backgroundColor`)입니다. 단축은 적지 않은
+      // 나머지 배경 속성까지 초기값으로 되돌리므로, 나중에 클래스가 배경에 무엇을
+      // 더하면 이 줄이 그것을 조용히 지웁니다. 여기서 정하는 것은 색 하나뿐입니다.
+      style={{ backgroundColor: surfaceByResult[result] }}
       // 하나의 접근성 요소입니다. 조작 단위가 아니므로 traits를 주지 않습니다 —
       // 누를 수 없는 것을 button으로 읽히게 하지 않습니다.
       accessibility-element={true}
