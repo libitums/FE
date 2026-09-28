@@ -17,20 +17,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* 대본과 컨트롤 사이입니다. 24에서 줄였습니다 — 가장 긴 문항에서 카드 안 내용이
-     높이 예산(300)을 넘었고, 그만큼이 아래 보기를 밀었습니다. */
-  gap: var(--libitum-spacing-16);
+  /* 대본과 컨트롤 사이입니다. 24 → 16 → 12로 두 번 줄였습니다 — 둘 다 같은 이유이고,
+     아래 보기 칸이 스크롤을 만들지 않게 카드 안 내용을 깎는 몫입니다(2026-09-28). */
+  gap: var(--libitum-spacing-12);
   /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어듭니다. */
   flex-shrink: 0;
 }
 
-/* 대본 덩어리 — 큰 글자와 로마자 줄입니다. 디자인 실측값은 12인데 8로 줄였습니다 —
+/* 대본 덩어리 — 큰 글자와 로마자 줄입니다. 디자인 실측값은 12인데 4까지 줄였습니다 —
    위 `gap`과 같은 근거(높이 예산)입니다. */
 .listening-prompt-script {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--libitum-spacing-8);
+  gap: var(--libitum-spacing-4);
 }
 
 /* 제시문의 색과 정렬입니다. **크기는 여기 없습니다** — 문장 길이에 따라 세 단계로
@@ -125,7 +125,7 @@
 
 /* 다시듣기와 마주 보는 빈 자리입니다 — 같은 폭이어야 가운데가 맞습니다. */
 .listening-prompt-controls-spacer {
-  width: 52px;
+  width: 44px;
   flex-shrink: 0;
 }
 
@@ -136,8 +136,12 @@
    자리입니다: 안에 글자가 없고 아이콘 하나뿐이라 Dynamic Type이 내용을 키우지
    않습니다. 넘칠 것이 없으므로 잘릴 것도 없습니다.
 
-   52 · 80은 디자인 실측값이고 그 치수에 맞는 토큰이 없어 px로 적습니다. 둘 다 최소
-   터치 영역 44pt를 넘습니다. */
+   ⚠ **디자인 실측값(52 · 80)에서 줄였습니다** ⟨2026-09-28⟩ — 44 · 64입니다. 카드가
+   커지면 그만큼 아래 보기 칸이 밀려 스크롤이 생기는데, 학습 화면은 스크롤이 없는 것이
+   설계라 그 몫을 여기서 깎았습니다. 되돌릴 곳은 52 · 80이고, 되돌리려면 카드의 높이
+   예산(`listening-screen.css`의 `min-height`)도 함께 올려야 합니다.
+
+   **44는 하한입니다** — Apple HIG의 최소 터치 영역이고 더 줄이면 그 선을 넘습니다. */
 .listening-prompt-replay,
 .listening-prompt-playback {
   background: var(--libitum-color-gray-100);
@@ -149,13 +153,13 @@
 }
 
 .listening-prompt-replay {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
 }
 
 .listening-prompt-playback {
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
 }
 
 /* **크기를 CSS가 줍니다.** 색은 여기가 아니라 `current-color` **속성**입니다 — Lynx
@@ -172,7 +176,7 @@
 }
 
 .listening-prompt-playback-icon {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
 }
