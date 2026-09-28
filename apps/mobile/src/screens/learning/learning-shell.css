@@ -248,14 +248,21 @@
   bottom: var(--libitum-layout-screen-padding-bottom);
   z-index: var(--libitum-elevation-z-sticky);
   /* ⚠ **알려진 대비 위반입니다.** 흰 라벨이 `brand-primary`(#F46B18) 위에서 3.02:1이고
-     WCAG 1.4.3의 4.5:1에 미달합니다. 디자인 값을 따르기로 한 자리입니다.
+     WCAG 1.4.3의 4.5:1에 미달합니다.
 
-     ⚠ **되돌릴 곳을 이미 알고 있습니다** ⟨2026-09-28에 확인⟩. 껍데기로 옮기기 전의 듣기
-     버튼(`listening-screen.css`의 `.listening-screen-next`)은 **`brand-strong`
-     (#B94208)을 썼고, 고른 근거가 정확히 이 미달이었습니다** — 흰 라벨이 그 위에서
-     5.46:1로 AA를 넘습니다. 즉 이 화면은 준수하던 값에서 미달로 **되돌아간 것**이지
-     한 번도 안 재 본 자리가 아닙니다. 그 사실이 옛 CSS와 함께 사라지지 않도록 여기
-     옮겨 적습니다. */
+     ⟨2026-09-28⟩ **아래 셋을 전부 안 뒤에 디자인 값을 따르기로 다시 정했습니다.** 놓친
+     자리가 아니라 고른 자리입니다.
+
+     1. 되돌릴 곳을 압니다 — `brand-strong`(#B94208) 위에서 흰 라벨이 **5.46:1**입니다.
+     2. 이 화면은 **준수하던 값에서 미달로 되돌아갔습니다.** 껍데기로 옮기기 전의 듣기
+        버튼(`listening-screen.css`의 `.listening-screen-next`, 2026-09-28에 걷힘)이
+        `brand-strong`을 썼고 **고른 근거가 정확히 이 미달**이었습니다.
+     3. 이 버튼은 저장소에서 **혼자 다른 주 버튼**입니다 — `.word-choice-screen-next` ·
+        `.culture-screen-quiz` · `.culture-quiz-screen-next` · `.assessment-screen-exit` ·
+        `.step-sheet-start` 다섯이 전부 `brand-strong`입니다. 학습 활동을 껍데기로
+        옮길수록 이 갈림은 넓어집니다.
+
+     되돌리려면 이 한 줄을 `brand-strong`으로 바꾸면 됩니다. */
   background: var(--libitum-color-brand-primary);
   min-height: var(--libitum-spacing-48);
   padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
