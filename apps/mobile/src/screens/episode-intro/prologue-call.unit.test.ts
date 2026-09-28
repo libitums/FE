@@ -3,30 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   initialPrologueCallVolume,
   prologueCallClock,
-  prologueCallFor,
   prologueCallProgress,
   stepPrologueCallVolume,
 } from "./prologue-call";
 
 // `unit` 계층: 순수 함수의 입출력만 봅니다 (ADR-0006 D4). 대본의 값은 임시라 단언하지
 // 않습니다 — 단언하는 것은 값이 바뀌어도 지켜져야 하는 형태입니다.
-
-describe("prologueCallFor", () => {
-  it("C1. 튜토리얼에는 대사가 있는 통화가 있다", () => {
-    const call = prologueCallFor("tutorial");
-
-    expect(call?.callerName.trim()).not.toBe("");
-    expect(call?.lines.length).toBeGreaterThan(0);
-    for (const line of call?.lines ?? []) {
-      expect(line.text.trim()).not.toBe("");
-      expect(line.translation.trim()).not.toBe("");
-    }
-  });
-
-  it("C2. 통화가 없는 에피소드는 던지지 않고 undefined다", () => {
-    expect(prologueCallFor("no-such-episode")).toBeUndefined();
-  });
-});
 
 describe("prologueCallProgress", () => {
   it("P1. 대사마다 정해진 시간씩 머문다", () => {

@@ -2,6 +2,10 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import type {
+  EpisodePrologue,
+  PrologueCall,
+} from "../screens/episode-intro/episode-intro.contract";
 import { episodeNarrativeFor } from "../screens/episode-narrative/episode-narrative";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import { authTokenStorageKey } from "../lib/auth-token";
@@ -41,14 +45,12 @@ function startOrdering(): void {
 }
 
 // `Skip`은 확인 모달을 거칩니다 — 건너뛰기로 확인까지 누르고, 누른 유닛이 열립니다.
-// `Next`는 서사(비주얼 노벨) → 서사 통화 → 학습 완료 → 맵으로 이어지므로 Check까지
-// 누릅니다. 그 끝은 맵이고 유닛은 열리지 않습니다(그 흐름 자체는 아래 [EN*] · [EP*]가 봅니다).
+// `Next`는 튜토리얼의 서사(비주얼 노벨) → 학습 완료 → 맵으로 이어지므로 Check까지
+// 누릅니다. 그 끝은 맵이고 유닛은 열리지 않습니다(그 흐름 자체는 아래 [EN*]가 봅니다).
 function tapIntro(testId: "episode-intro-screen-skip" | "episode-intro-screen-next"): void {
   fireEvent.tap(within(screen.getByTestId(testId)).getByTestId("ui-lynx-button"), {});
   if (testId === "episode-intro-screen-next") {
     readNarrative();
-    fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
-    fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
     tapLessonCompleteCheck();
   }
   if (testId === "episode-intro-screen-skip") {
@@ -66,7 +68,7 @@ function tapLessonCompleteCheck(): void {
   );
 }
 
-// `Next` 뒤의 서사(비주얼 노벨)를 끝까지 넘깁니다 — 장면 수만큼 넘기면 서사 통화로 갑니다.
+// `Next` 뒤의 서사(비주얼 노벨)를 끝까지 넘깁니다 — 장면 수만큼 넘기면 학습 완료로 갑니다.
 function readNarrative(): void {
   const beats = episodeNarrativeFor("tutorial").beats.length;
   for (let index = 0; index < beats; index += 1) {
@@ -91,7 +93,7 @@ test("[EI1] 에피소드의 유닛을 처음 시작하면 유닛 대신 그 에�
   expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
 });
 
-test("[EI2] Next로 서사 · 서사 통화 · 학습 완료를 지나면 맵으로 돌아오고, 유닛은 다시 눌러야 열린다", () => {
+test("[EI2] Next로 서사 · 학습 완료를 지나면 맵으로 돌아오고, 유닛은 다시 눌러야 열린다", () => {
   renderApp(<App />);
   startOrdering();
 
@@ -105,7 +107,7 @@ test("[EI2] Next로 서사 · 서사 통화 · 학습 완료를 지나면 맵으
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
 });
 
-test("[EN1] Next를 누르면 서사(비주얼 노벨)가 먼저 서고, 서사를 끝까지 넘기면 서사 통화가 선다", () => {
+test("[EN1] 튜토리얼은 Next를 누르면 서사(비주얼 노벨)가 서고, 끝까지 넘기면 PERFECT LESSON이다", () => {
   renderApp(<App />);
   startOrdering();
   tapNextOnly();
@@ -117,7 +119,8 @@ test("[EN1] Next를 누르면 서사(비주얼 노벨)가 먼저 서고, 서사�
   readNarrative();
 
   expect(screen.queryByTestId("episode-narrative-screen")).not.toBeInTheDocument();
-  expect(screen.getByTestId("prologue-call-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("prologue-call-screen")).not.toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
 });
 
 test("[EN2] 서사 중간에 뒤로 나가면 맵으로 가고, 본 것으로 적지 않아 다음에 표지가 다시 선다", () => {
@@ -248,7 +251,10 @@ test("[EI10] Skip 뒤 모달에서 계속 보기를 고르면 표지에 남고 �
   expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
 });
 
-// ------------------------------------------------------------------ 서사 통화
+// ------------------------------------------------------------------ 서사 통화 · 메신저
+//
+// 에피소드마다 서사 형식이 하나입니다. 튜토리얼은 비주얼 노벨이라, 통화 · 메신저 형식은
+// 대본을 바꿔 끼워 봅니다(`App`의 `episodePrologueFor`).
 
 function tapNextOnly(): void {
   fireEvent.tap(
@@ -257,33 +263,49 @@ function tapNextOnly(): void {
   );
 }
 
-// 표지 `Next` 뒤 서사를 끝까지 넘겨 서사 통화에 닿습니다.
-function tapNextToCall(): void {
-  tapNextOnly();
-  readNarrative();
+const call: PrologueCall = {
+  callerName: "지민",
+  lines: [
+    { text: "여보세요?", translation: "Hello?" },
+    { text: "이따 봐!", translation: "See you later!" },
+  ],
+};
+const callPrologue: EpisodePrologue = { kind: "call", call };
+const messengerPrologue: EpisodePrologue = {
+  kind: "messenger",
+  chat: {
+    partnerName: "유나",
+    messages: [
+      { id: "m1", sender: "other", text: "잘 도착했어?", translation: "Did you arrive?" },
+      { id: "m2", sender: "self", text: "잘 도착했어요!", translation: "I made it!" },
+    ],
+  },
+};
+
+function renderWithCall(): void {
+  renderApp(<App episodePrologueFor={() => callPrologue} />);
 }
 
-test("[EP1] Next로 서사를 지나면 서사 통화가 선다", () => {
-  renderApp(<App />);
+test("[EP1] 서사가 통화인 에피소드는 Next 뒤에 비주얼 노벨 없이 통화가 곧장 선다", () => {
+  renderWithCall();
   startOrdering();
 
-  tapNextToCall();
+  tapNextOnly();
 
-  expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("episode-narrative-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("prologue-call-screen-title")).toHaveTextContent("Episode 0.");
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
     "음성 통화, 지민",
   );
-  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
 });
 
 test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue를 기다린다", () => {
   vi.useFakeTimers();
-  renderApp(<App />);
+  renderWithCall();
   vi.useFakeTimers();
   startOrdering();
-  tapNextToCall();
+  tapNextOnly();
 
   act(() => {
     vi.advanceTimersByTime(60_000);
@@ -295,36 +317,24 @@ test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue�
   expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
 });
 
-test("[EP2b] Continue를 누르면 PERFECT LESSON 화면이 선다", () => {
-  renderApp(<App />);
+test("[EP2b] 통화의 Continue → PERFECT LESSON → Check → 맵이다", () => {
+  renderWithCall();
   startOrdering();
-  tapNextToCall();
+  tapNextOnly();
   fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
 
   fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
-
-  expect(screen.queryByTestId("prologue-call-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
-});
-
-test("[EP2c] 학습 완료의 Check를 누르면 유닛을 열지 않고 여정 맵으로 돌아온다", () => {
-  renderApp(<App />);
-  startOrdering();
-  tapNextToCall();
-  fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
-  fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
 
   tapLessonCompleteCheck();
-
-  expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
 });
 
 test("[EP3] 통화에서 뒤로 가면 표지가 아니라 맵이고, 본 것으로 적지 않는다", () => {
-  renderApp(<App />);
+  renderWithCall();
   startOrdering();
-  tapNextToCall();
+  tapNextOnly();
 
   fireEvent.tap(
     within(screen.getByTestId("prologue-call-screen-back")).getByTestId("ui-lynx-round-button"),
@@ -332,13 +342,12 @@ test("[EP3] 통화에서 뒤로 가면 표지가 아니라 맵이고, 본 것으
   );
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
   expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
 });
 
-test("[EP4] 통화를 끝낸 뒤에는 같은 에피소드의 유닛에 표지도 통화도 서지 않는다", () => {
+test("[EP4] 서사를 마친 뒤에는 같은 에피소드의 유닛에 표지도 서사도 서지 않는다", () => {
   renderApp(<App />);
   startOrdering();
   tapIntro("episode-intro-screen-next");
@@ -346,6 +355,38 @@ test("[EP4] 통화를 끝낸 뒤에는 같은 에피소드의 유닛에 표지�
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
 
   expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("prologue-call-screen")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("episode-narrative-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+});
+
+test("[EM1] 서사가 메신저인 에피소드는 Next 뒤에 메신저가 서고, 끝까지 가면 PERFECT LESSON → 맵이다", () => {
+  vi.useFakeTimers();
+  renderApp(<App episodePrologueFor={() => messengerPrologue} />);
+  vi.useFakeTimers();
+  startOrdering();
+  tapNextOnly();
+
+  expect(screen.getByTestId("prologue-chat-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("episode-narrative-screen")).not.toBeInTheDocument();
+
+  act(() => {
+    vi.advanceTimersByTime(1500);
+  });
+  fireEvent.tap(screen.getByTestId("prologue-chat-screen-send"), {});
+  vi.useRealTimers();
+  fireEvent.tap(screen.getByTestId("prologue-chat-screen-complete"), {});
+
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  tapLessonCompleteCheck();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+});
+
+test("[EM2] 서사가 없는 에피소드는 Next가 곧장 누른 유닛을 연다", () => {
+  renderApp(<App episodePrologueFor={() => undefined} />);
+  startOrdering();
+
+  tapNextOnly();
+
+  expect(screen.queryByTestId("episode-narrative-screen")).not.toBeInTheDocument();
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
 });

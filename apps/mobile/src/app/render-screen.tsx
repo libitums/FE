@@ -104,9 +104,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "terms":
       return <TermsScreen sections={termsSectionList} onExit={wiring.onExitSettingsStack} />;
     case "episode-intro":
-    case "episode-prologue-call":
+    case "episode-prologue":
     case "episode-prologue-complete":
-    case "episode-narrative":
       return renderEpisodeIntroFlow(screen, wiring);
     case "notifications":
       return (

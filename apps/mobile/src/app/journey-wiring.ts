@@ -3,6 +3,7 @@
 // 롤플레이 콜백 여덟은 `roleplay-wiring.ts`가 집니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
+import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
 
 import {
   assessmentCompletesStep,
@@ -73,6 +74,7 @@ export type JourneyWiringArgs = {
    * 화면에 있든 「이 스텝에서 지금까지 맞고 틀린 것」은 하나입니다. 스택에 실으면
    * 뒤로 가기가 결과를 되감아 평가가 달라집니다.
    */
+  readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   readonly seenEpisodeIntroIds: readonly string[];
   readonly setSeenEpisodeIntroIds: Dispatch<SetStateAction<readonly string[]>>;
   readonly pendingResults: readonly AnswerResult[];
@@ -283,6 +285,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
       setSeenEpisodeIntroIds: args.setSeenEpisodeIntroIds,
       dispatch,
       starts: unitStarts,
+      prologueFor: args.episodePrologueFor,
     }),
   };
 
