@@ -63,6 +63,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | workspace 구성 (패키지 매니저·workspace 선언·태스크 러너) | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 폴더 구조 | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 네이밍 | 결정 | [0003](0003-workspace-and-directory-structure.md) D6·**D7**, [0004](0004-package-boundaries-and-dependency-direction.md) |
+| **인증 (제공자 · 접속 값 주입 · 세션 저장과 갱신)** | 결정 (전화번호 수단만 Supabase SMS OTP + REST 직접 호출 + `.env.local` 주입 + 세션 키 하나) — 소셜 셋은 임시 토큰 그대로 | [0027](0027-phone-otp-auth-supabase.md) — [0001](0001-repository-goal-and-scope.md) D3의 「인증 인프라」 제외가 전화번호 수단 하나에서 풀렸다(적용 기록) |
 | **서비스 사용자 표시명 · 기술 식별자 호환성** | 결정 (`Duru` + 기존 기술 이름 유지) | [0025](0025-duru-service-display-name.md) |
 | package 경계와 책임 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | 의존 방향 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
@@ -76,9 +77,9 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | **시스템 글자 크기(Dynamic Type) · WCAG 1.4.4** | 결정 (코어 배율 + 실시간 갱신) + ~~보류 (배율 상한)~~ **상한 걷음 (2026-09-04)** | [0020](0020-dynamic-type-font-scale.md) — 상한을 걷은 것은 [0022](0022-scroll-regions-and-fixed-affordances.md)이 스크롤을 넣었기 때문이다 |
 | **화면의 스크롤 경계 (고정/흐름 분할)** | 결정 (3분할 + `<블록>-scroll` + **적용 대상 전부** — 목록도 개수도 [0022](0022-scroll-regions-and-fixed-affordances.md) **D2 표**가 지고 이 표는 안 센다) | [0022](0022-scroll-regions-and-fixed-affordances.md) — [0020](0020-dynamic-type-font-scale.md) D5의 하한 규약을 **가로 축으로** 넓힌 것도 여기다(D6) |
 | 린터·포매터 | 결정 (`oxlint` · `oxfmt`) | [0006](0006-command-interface-and-test-layers.md) |
-| 테스트 계층 | 결정 (3계층 + 파일 위치) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) D4·**D7** |
+| 테스트 계층 | 결정 (3계층 + 파일 위치) + 보류 (`e2e`) | [0006](0006-command-interface-and-test-layers.md) D4·**D7** — 서버 연동 케이스의 대역(`vi.stubGlobal("fetch")`, msw 없음)은 [0027](0027-phone-otp-auth-supabase.md) D5 |
 | 상태 관리 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
-| 데이터 페칭 | 결정 (클라이언트 한 파일 + **컨텐츠 도착 전의 타입 모양**) | [0007](0007-app-internals-state-routing-data-errors.md) D2·**D5** |
+| 데이터 페칭 | 결정 (클라이언트 한 파일 + **컨텐츠 도착 전의 타입 모양**) | [0007](0007-app-internals-state-routing-data-errors.md) D2·**D5** — 그 한 파일(`lib/api-client.ts`)의 첫 실물은 Supabase Auth 셋이고 호출 주체는 결선이다([0027](0027-phone-otp-auth-supabase.md) D1) |
 | 라우팅 | 결정 (전환 소유 + **나가는 수단의 목적지**) | [0007](0007-app-internals-state-routing-data-errors.md) D3·**D6** |
 | 에러 경계 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | **여정의 유닛 구조와 특별 유닛의 맵 자리** | 결정 및 사례별 실체화 (맵의 줄 = 유닛 목록 순서 + 스텝 노드와 별도 컴포넌트 + 완료 신호는 「끝까지 닿음」 + 표준 스텝 진행 세기는 유지) | [0024](0024-journey-units-and-special-unit-placement.md) — 역사적 결정 본문은 보존한다. **2026-09-09 LIB-254 기록**은 첫 메신저 특별 유닛의 목록 위치, 별도 화면·상태와 재진입 및 C1–C3을 연결했다. **2026-09-10 기록**은 전화 뒤·`directions` 앞의 비주얼 노벨 항목, 독립 3장면 화면, 마지막 장면 완료와 세션 재진입·replay, 일반 진행 및 기존 특별 유닛 상태 격리를 연결했다. 두 기록 모두 D1·D2·D6·D8의 사례이며 미래의 모든 특별 유닛 구성을 일반화하지 않는다 |
@@ -152,7 +153,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 
 | 축 | 왜 못 정하나 | 막고 있는 것 | **누가** | 푸는 시점 |
 |---|---|---|---|---|
-| `integration`의 **서버 연동 케이스** | 무엇을 목킹할지 정할 수 없다 | API 명세가 없고 백-프론트 연동이 미착수다. 계층 자체는 첫 단계에 포함된다 | **밖** | API 명세 도착 후 |
+| `integration`의 **서버 연동 케이스** ⟨**전화번호 인증에서 처음 섰다** — 2026-09-29⟩ | 무엇을 목킹할지 정할 수 없다 | API 명세가 없고 백-프론트 연동이 미착수다. 계층 자체는 첫 단계에 포함된다. ⟨2026-09-29 적용 기록⟩ **공개 명세가 있는 Supabase Auth 셋은 케이스가 섰다** — 대역은 `vi.stubGlobal("fetch")`이고 msw를 들이지 않았다([0027](0027-phone-otp-auth-supabase.md) D5). **행은 닫히지 않는다** — 진행 · 학습 데이터 같은 이 앱의 API 명세는 여전히 없다 | **밖** | API 명세 도착 후 |
 | 브랜치 보호 강제 | 정책과 CI는 있으나 GitHub 규칙으로 required check를 강제할 수 없다 | private 저장소 브랜치 보호 API가 현 플랜에서 403이다. Linux Verify는 도입됐지만 우회 가능하다 (ADR-0021 D6) | **밖** | 플랜 또는 공개 범위가 바뀌어 branch protection API를 사용할 수 있을 때 |
 | `e2e` 테스트 계층 | 도구는 있으나 환경이 없다 | `@lynx-js/kitten-lynx-test-infra`(vitest)가 Explorer(Android)를 구동한다. 개발도 시연도 iOS이므로(ADR-0012) **Android는 오직 e2e만을 위해 세우는 환경**이 됐다. **그때까지 어떤 파일도 `e2e` 명령을 선언하지 않는다** — `.agent-harness/profile.yaml`이 playwright를 부르고 있었다 (ADR-0006 D3 `정정 기록`) | **밖** (환경) | Android 에뮬레이터를 루프에 둘 수 있을 때 |
 | 토큰 이름 **전체 대조** 검사 | 대조할 목록을 저장소 안에서 볼 수 없다 | 목록의 출처가 설치된 `@libitums/design-tokens`의 `css/variables.css`다. **설치 상태에 따라 통과/실패가 갈리는 검사는 `lint`에 둘 수 없다.** 접두사 검사는 ADR-0014 D8이 먼저 닫았다 | **본인** | `pnpm install`을 전제할 수 있는 자리가 생길 때 — CI 도입(ADR-0009 D3)이 가장 이른 시점 |

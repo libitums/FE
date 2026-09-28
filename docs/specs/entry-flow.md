@@ -11,22 +11,33 @@
 - 이 문서는 공개 계약의 요약이다. 값의 정본은 코드이고, 수동 절차의 정본은
   [진입 흐름 e2e](../e2e/entry-flow.md)다.
 
+> **개정 (2026-09-29) — 전화번호 로그인이 Supabase SMS OTP로 섰다.** 결정과 근거는
+> [ADR-0027](../adr/0027-phone-otp-auth-supabase.md)이 지고, 이 문서는 진입 흐름 계약에서 바뀐
+> 자리만 고쳤다. 계약 타입이 하나 늘었다 — `apps/mobile/src/lib/auth-session.contract.ts`(세션 ·
+> 전화번호 · 실패 이유 · api-client 결과). 모듈은 `lib/api-client.ts` · `lib/auth-session.ts` ·
+> `lib/supabase-config.ts` · `lib/auth-failure.ts`가 새로 섰다. **소셜 셋의 계약은 바뀌지 않았다.**
+> 본문에 남은 LIB-261 시점의 서술 중 이 개정과 어긋나는 줄은 이 개정이 이긴다.
+
 ## 0. 고정 범위와 불변식
 
 1. 화면 **여섯**이 `entry` 스택에 담긴다. `entry`가 비면 앱 구간이고, 비지 않은 동안
    **바텀 네비게이션을 렌더하지 않는다**([ADR-0007](../adr/0007-app-internals-state-routing-data-errors.md) D3).
 2. 진입 구간은 **단방향**이다. 여섯 전부가 **나아가는 수단**을 갖고(스플래시는 고정 시간 뒤
    자동 전이), **뒤로 나가는 수단을 가진 것은 코드 검증 하나**다(§3).
-3. 저장소에 들어가는 항목은 **`libitum.auth.token` 하나**다. 고른 언어도 온보딩 진행도
-   저장하지 않는다(ADR-0007 D1).
-4. **인증이 아니다.** 서버가 없어 발급도 검증도 없고, 저장되는 값은 **고정 리터럴 하나**다.
-   로그인 수단을 고르는 것이 곧 토큰 저장이다.
-5. `@libitums/ui-lynx`의 공개 표면 중 소비하는 것은 **`TextField` 하나**다
+3. 저장소에 들어가는 항목은 **들어온 수단의 키 하나**다 — 소셜 셋은 `libitum.auth.token`,
+   전화번호는 `libitum.auth.session`(2026-09-29). 고른 언어도 온보딩 진행도 저장하지 않는다
+   (ADR-0007 D1).
+4. **전화번호만 인증이다**(2026-09-29). 번호 제출 → Supabase OTP 요청 → 6자리 검증이 성공해야
+   세션이 저장되고, **그전에는 아무것도 저장하지 않는다.** 소셜 셋은 여전히 인증이 아니다 —
+   수단을 고르는 것이 곧 **고정 리터럴 하나**의 저장이다.
+5. 진입 화면이 소비하는 `@libitums/ui-lynx` 입력은 로그인의 **`TextField`** 와 코드 검증의
+   **`CompactNumericInput`**(여섯 칸)이다
    ([ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-09-16 확장」 절).
-6. 이벤트는 셋 — 화면 열람 · 로그인 수단 선택 · 완주. 서버 · fetch가 0건이고 sink는
-   제품 진입점에서 `null`이다(§6).
+6. 이벤트는 셋 — 화면 열람 · 로그인 수단 선택 · 완주. **새 이벤트는 0건**이다. 네트워크는
+   `lib/api-client.ts` 한 곳에서만 나가고 sink는 제품 진입점에서 `null`이다(§6).
 7. 새 `NavAction`이 없다. `Tab` · `Nav` · `NavAction` · `initialNav` · 리듀서는 **한 글자도
-   바뀌지 않았고** `Screen`에 멤버 여섯이 늘었다.
+   바뀌지 않았고** `Screen`에 멤버 여섯이 늘었다. 그중 `verification-code`만 필드
+   `phoneNumber: PhoneNumber`를 갖는다(2026-09-29 — 옵셔널에서 필수로).
 
 ## 1. 컴포넌트와 데이터 흐름
 
@@ -35,8 +46,8 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 ├─ (entry가 비지 않은 동안 BottomNavigator를 렌더하지 않는다)
 ├─ SplashScreen           { onTimeout }
 ├─ OnboardingScreen       { onComplete }           ← step은 화면 로컬 상태다
-├─ LoginScreen            { onSelectMethod }
-├─ VerificationCodeScreen { onSubmit, onExit }
+├─ LoginScreen            { onSelectSocialMethod, onSubmitPhoneNumber }     ← 요청 상태는 화면 로컬
+├─ VerificationCodeScreen { phoneNumber, onVerifyCode, onResendCode, onExit } ← 〃
 ├─ LanguageSelectScreen   { selected, onSelect, onContinue }
 └─ JourneyEntryScreen     { language, onEnter }
 ```
@@ -45,7 +56,10 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
   이벤트는 전부 App이 한다(ADR-0007 D3 · [코드 규약](../conventions/code.md) 「앱 내부」).
 - 순수 로직은 `lib/` 셋과 화면 폴더 셋(온보딩 · 코드 검증 · 로그인)이 진다. 화면은 그 결과를 그린다.
 - **화면 여섯 사이의 값 import가 0건이다** — 공용 어휘는 전부 `lib/`에 있다.
-- 진입 흐름은 **데이터 fetch가 0건**이다. `lib/api-client.ts`를 만들지 않는다(ADR-0007 D2).
+- ~~진입 흐름은 **데이터 fetch가 0건**이다. `lib/api-client.ts`를 만들지 않는다(ADR-0007 D2).~~
+  ⟨2026-09-29⟩ 전화번호 경로가 `lib/api-client.ts`를 통해 Supabase Auth를 부른다. **부르는 것은
+  화면이 아니라 결선(`app/entry-wiring.ts`)이다** — 화면은 콜백의 결과(성공 · 실패 이유)만 받아
+  요청 중 · 실패를 그린다(ADR-0027 D1).
 
 ## 2. 화면 여섯
 
@@ -53,8 +67,8 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 |---|---|---|---|---|
 | 스플래시 | 없음 | 없음 | 없음 — **자동 전이** | 없음 |
 | 온보딩 | 진행 점 | `다음` / 마지막은 `시작하기` | 없음 | `step` — 화면 로컬 |
-| 로그인 | 제목 | **없음** — 수단이 넷이라 하나만 고정할 수 없다 | 없음 | **없음** — 전화번호 칸의 값을 들지 않는다 |
-| 코드 검증 | 나가기 + 제목 | `확인` | **`로그인으로`** | 원값 — 화면 로컬 |
+| 로그인 | 제목 | **없음** — 수단이 넷이라 하나만 고정할 수 없다 | 없음 | 국가 · 전화번호 입력값 · 요청 상태(`idle` · `requesting` · `failed`) — 화면 로컬 |
+| 코드 검증 | 나가기 + 제목 | `확인` | **`로그인으로`** | 여섯 칸의 원값 · 카운트다운 · 요청 상태(`idle` · `verifying` · `resending` · `failed`) — 화면 로컬 |
 | 언어 선택 | 제목 | `다음` | 없음 | 고른 언어 — **App** |
 | 여정 입장 | 제목 | `여정 시작하기` | 없음 | 없음 |
 
@@ -64,16 +78,25 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 - **온보딩은 화면 하나다.** `step`이 0→1→2로 가고 제목·본문·액션 낱말이 그 값에서 파생된다 —
   화면 셋이 아니다. `step`을 `Screen`에 넣지 않았다: **한 번 뒤로 가면 사라질 값을 라우팅 상태에
   남기지 않는다.**
-- **코드 검증은 `TextField` 하나다.** 칸 넷으로 쪼개지 않은 근거는 최대 배율의 잘림(칸 컴포넌트의
-  높이가 고정 생값이다) · 오류가 한 자리라는 것 · **접근성 정지가 하나**라는 것이다. 칸이 넷이면
-  칸 사이 자동 포커스 이동이 필요한데 **그 API가 이 스택에 없다.**
-- **완성 판정은 「입력이 끝났는가」이지 검증이 아니다.** 서버가 없어 옳고 그름을 가리지 않는다.
+- ~~**코드 검증은 `TextField` 하나다.**~~ ⟨2026-09-21 디자인 반영에서 이미 바뀌었다⟩ 코드 검증은
+  **한 자리 칸(`CompactNumericInput size="s"`) 여섯**이다(2026-09-29 — 넷에서 여섯, 칸 크기 `l` →
+  `s`로 320pt 폭 한 줄에 선다). 칸 사이 포커스 이동은 화면이 `SelectorQuery`로 네이티브 input의
+  `focus`를 부른다 — 옮기지 못해도 입력은 막히지 않는다. 칸마다 접근성 이름은 `Digit N of 6`이다.
+- **완성 판정은 「입력이 끝났는가」이지 검증이 아니다.** 옳고 그름은 **서버가 가린다**(2026-09-29) —
+  완성된 코드를 `확인`하면 Supabase가 검증하고, 틀리거나 만료되면 오류 문구가 선다. 카운트다운이
+  0이어도 입력 · 제출을 막지 않는다.
+- **요청이 떠 있는 동안 그 화면의 조작은 전부 무동작이다**(2026-09-29) — 로그인은 `Continue` · 소셜
+  셋 · 뒤로가기 · 국가 선택, 코드 검증은 `확인` · `Resend` · 나가기 · 칸 입력. 뒤로 나간 뒤 성공
+  응답이 와서 엉뚱한 스택 위에 `push`하는 경쟁을 막는다. `Continue`에 `disabled` trait을 붙이지
+  않는다 — 상태는 `data-status`로만 낸다(ADR-0016 D10).
+- **실패 문구는 `lib/auth-failure.ts`의 표 하나**가 이유 여섯(`network` · `unavailable` ·
+  `unconfigured` · `rate-limited` · `rejected` · `invalid-code`)에서 만든다. 두 화면이 같은 표를 쓴다.
 - **로그인 수단 넷에 아이콘이 0건이다** — 상표 자산이 없어 낱말만 쓴다. 상표는 원문 표기 그대로다.
-- **로그인 화면은 상태를 하나도 들지 않는다 — 의도한 형태다.** 화면이 `TextField`에 `bindinput`을
-  넘기지 않아 **전화번호 입력값이 어디에도 남지 않는다**(화면에 `useState` 0건). 서버가 없어 보낼
-  곳이 없고 저장소에 넣는 것은 토큰뿐이라([ADR-0007](../adr/0007-app-internals-state-routing-data-errors.md)
-  D1) **그 값을 받을 자리가 없다.** 받아서 버리는 핸들러를 두면 값을 쓸 준비가 된 것처럼 읽힌다.
-  ⇒ 이 칸은 **표시와 접근성 이름을 지는 칸이지 값을 읽는 칸이 아니다.**
+- ~~**로그인 화면은 상태를 하나도 들지 않는다 — 의도한 형태다.**~~ ⟨2026-09-29⟩ **이제 번호를
+  읽는다** — 보낼 곳(Supabase)이 생겼다. 입력은 `phoneNumberFrom(dialCode, input)`이 보낼 E.164와
+  보여 줄 문자열의 한 쌍(`PhoneNumber`)으로 만든다. 숫자만 남기고 맨 앞 `0` 하나(국내 트렁크 접두)를
+  떼는데, `0`이 번호의 일부인 국가 코드 넷(`+39` · `+378` · `+225` · `+242`)은 떼지 않는다. 번호는
+  **저장하지 않는다** — 코드 검증 화면의 파라미터로만 넘어간다.
 - 이 칸이 `availability="enabled"`를 넘기는 것은 **넘기지 않는 것과 완전히 같다** — `TextField`는
   안 주면 같은 값을 채우고(`availability ?? "enabled"`) 그 값을 읽는 분기는 전부 `disabled`·`read-only`만
   본다 ⇒ **동작·속성 델타가 0**이다. 코드 검증 칸은 반대로 `availability`를 넘기지 않고 `bindinput`을
@@ -100,12 +123,15 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | 사건 | 액션 | `entry` 스택 |
 |---|---|---|
 | 앱 시작 | — | `[스플래시]` |
-| 고정 시간 종료 · **토큰 없음** | `replace` | `[온보딩]` |
-| 고정 시간 종료 · **토큰 있음** | `enterApp` | `[]` → 여정 맵 |
+| 고정 시간 종료 · **토큰 · 세션 없음** | `replace` | `[온보딩]` |
+| 고정 시간 종료 · **임시 토큰만 있음** | `enterApp` | `[]` → 여정 맵 |
+| 고정 시간 종료 · **세션 있음** → 갱신 성공 | (응답까지 스플래시 유지) `enterApp` | `[]` → 여정 맵 |
+| 고정 시간 종료 · **세션 있음** → 갱신 실패 | `replace` + `push` | `[온보딩, 로그인]` — 서버가 거절했을 때만 세션을 지운다 |
 | 온보딩 완료 | `push` | `[…, 로그인]` |
-| 수단 선택(전화번호) | `push` | `[…, 코드 검증]` |
+| 전화번호 `Continue` → **OTP 요청 성공** | `push` | `[…, 코드 검증]` — 실패면 전이 없이 로그인에 오류 |
 | 수단 선택(나머지 셋) | `push` | `[…, 언어 선택]` — **코드 검증을 건너뛴다** |
-| 코드 `확인`(완성일 때만) | `push` | `[…, 언어 선택]` |
+| 코드 `확인`(완성일 때만) → **검증 성공** | `push` | `[…, 언어 선택]` — 실패면 전이 없이 코드 검증에 오류 |
+| 코드 `Resend` | — | 전이 없음. 요청이 성공해야 카운트다운 · 입력이 되돌아간다 |
 | 코드 `로그인으로` | **`back`** | 한 겹 위 = 로그인 |
 | 언어 `다음` | `push` | `[…, 여정 입장]` |
 | `여정 시작하기` | `enterApp` | `[]` → 여정 맵 |
@@ -125,25 +151,31 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 - **`backToRoot`의 `entry` 분기와 「진입 구간으로 되돌아가기」는 여전히 열려 있다** — 이 단위가
   닫지 않는다(ADR-0007 D3의 열린 질문).
 
-## 4. 토큰 — 값과 ⭐ 대가
+## 4. 토큰과 세션 — 값과 ⭐ 대가
 
-| | |
-|---|---|
-| 키 | `libitum.auth.token` — **저장소에 들어가는 유일한 키다** |
-| 값 | 고정 리터럴 하나. 시각 · 수단 · 전화번호를 **싣지 않는다** |
-| 쓰는 시점 | 로그인 수단을 고를 때 1회 |
-| 읽는 시점 | 스플래시의 고정 시간이 끝난 뒤 1회 |
-| 지우는 수단 | **없다** |
+| | 임시 토큰 (소셜 셋) | 세션 (전화번호, 2026-09-29) |
+|---|---|---|
+| 키 | `libitum.auth.token` | `libitum.auth.session` |
+| 값 | 고정 리터럴 하나. 시각 · 수단 · 전화번호를 **싣지 않는다** | `{ accessToken, refreshToken, expiresAt }` JSON. 전화번호를 **싣지 않는다** |
+| 쓰는 시점 | 소셜 수단을 고를 때 1회 | **코드 검증이 성공한 뒤** 1회 · 갱신이 성공할 때마다(refresh 토큰이 회전한다) |
+| 읽는 시점 | 스플래시의 고정 시간이 끝난 뒤 1회 | 〃 |
+| 지우는 수단 | **없다** | 갱신을 **서버가 거절**했을 때만 지운다. 그 밖에는 없다 |
+
+- 둘이 다 있으면 **세션이 이긴다.** 세션 JSON이 깨져 있으면 없는 것으로 보고 지우지 않는다.
+- 이 변경 전에 전화번호로 들어와 임시 토큰만 가진 설치는 **이주하지 않는다** — 임시 토큰 갈래로
+  계속 들어간다. 근거와 버린 대안은 [ADR-0027](../adr/0027-phone-otp-auth-supabase.md) D3 · D4.
 
 - 이 모듈이 [ADR-0012](../adr/0012-native-host-app-minimal.md) D2의 저장소 모듈을 **처음 실제로
   쓰는** 자리다. 그전까지 저장소 모듈은 부르는 코드가 0건이었다.
 - **저장 항목이 하나뿐임을 테스트가 키 집합으로 단언한다** — 호출 횟수가 아니라 집합이라 다른
-  키를 쓰는 코드가 뒤에 생겨도 잡힌다.
+  키를 쓰는 코드가 뒤에 생겨도 잡힌다. ⟨2026-09-29⟩ 그 집합이 **들어온 수단에 맞는 키 하나**가 됐고,
+  **코드 화면에 서 있는 동안(OTP 요청은 성공했다) 키가 0개**임도 단언한다.
 
 **⭐ 대가 — 진입 흐름을 다시 보려면 앱 재설치가 유일하다.**
 
 `removeAuthToken`을 만들지 않았다. **쓰는 사람이 없는 문을 열지 않는다**는 판단이고 로그아웃은
-범위 밖이다. 그 결과 **한 번 끝까지 지나가면 토큰이 남아, 그 뒤로는 앱을 재시작해도 스플래시 뒤
+범위 밖이다. ⟨2026-09-29⟩ 세션도 같다 — 지우는 것은 서버 거절 때뿐이라 이 대가는 **두 키 모두**에
+그대로 걸린다. 그 결과 **한 번 끝까지 지나가면 토큰이 남아, 그 뒤로는 앱을 재시작해도 스플래시 뒤
 바로 여정 맵**이다 — 온보딩 · 로그인 · 코드 검증 · 언어 선택을 **다시 볼 수 없다.** 다시 보려면
 **기기에서 앱을 삭제하고 다시 설치**하는 것뿐이다.
 
@@ -175,7 +207,7 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | 이름 | 속성 | 발생 시점 | 발생하지 않는 때 |
 |---|---|---|---|
 | `entry_screen_viewed` | `screen`(**스플래시를 뺀 다섯**) | 그 화면을 여는 전이의 `dispatch` 직전 1회 | **스플래시** · 코드 검증에서 `로그인으로`로 돌아갈 때 · 온보딩 `step` 전환(같은 화면이다) |
-| `entry_login_method_selected` | `method`(넷) | 수단 tap → 토큰 저장·전이 직전 1회 | 전화번호를 입력만 할 때 |
+| `entry_login_method_selected` | `method`(넷) | 소셜: 수단 tap → 토큰 저장·전이 직전 1회. **전화번호: OTP 요청이 성공한 순간 1회**(2026-09-29) | 전화번호를 입력만 할 때 · **OTP 요청이 실패할 때**(실패한 시도를 세지 않는다 — 두 번째에 성공해도 1회다) · 재전송 |
 | `entry_completed` | 없음 | **여정 입장**의 진행 tap → `enterApp` 직전 1회 | **토큰 분기로 바로 들어가는 재방문**(완주가 아니다) |
 
 - ⭐ **스플래시가 타입에서 배제돼 있다.** 이 저장소의 이벤트는 **전이를 일으키는 핸들러**가 내는데
@@ -195,12 +227,16 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 |---|---|
 | 스플래시 | `splash-screen-scroll` · `splash-screen-service-name` · `splash-screen-tagline` |
 | 온보딩 | `onboarding-screen` · `-scroll` · `-title` · `-body` · `-next` · `-progress` · `-progress-dot-<step>` |
-| 로그인 | `login-screen-scroll` · `-title` · `-phone-field` · `login-screen-method-<수단>` |
-| 코드 검증 | `verification-code-screen-scroll` · `-title` · `-exit` · `-description` · `-input` · `-submit` |
+| 로그인 | `login-screen-scroll` · `-title` · `-header` · `-country` · `-phone-field` · `-legal` · `login-screen-method-<수단>` · **`login-screen-error`**(`failed`에서만) |
+| 코드 검증 | `verification-code-screen-scroll` · `-title` · `-exit` · `-description` · `-phone` · `-timer` · `-resend` · `-input` · `-submit` · **`verification-code-screen-error`**(`failed`에서만) |
 | 언어 선택 | `language-select-screen-scroll` · `-title` · `-next` · `language-select-option[-label|-mark]-<언어>` |
 | 여정 입장 | `journey-entry-screen-scroll` · `-title` · `-language` · `-start` |
 
 - 코드·인덱스가 붙는 이름은 **어휘가 개수를 정한다**(수단 · 언어 · 스텝) — 여기서 세지 않는다.
+- ⟨2026-09-29⟩ 요청 상태는 testid가 아니라 **`data-status`** 로 낸다 — `login-screen-method-phone`
+  (`idle` · `requesting` · `failed`, 그리고 번호 완성 여부 `data-complete`)과
+  `verification-code-screen-submit`(`idle` · `verifying` · `resending` · `failed`). 정본은 두 화면의
+  `*.contract.ts`다.
 - 클래스와 `data-testid`가 같은 문자열인 것은 `-scroll` 여섯뿐이다(ADR-0022 D2).
 
 ## 8. 테스트 계층
@@ -209,14 +245,17 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 
 | 계층 | 파일 |
 |---|---|
-| unit | `lib/entry-flow` · `lib/entry-language` · `lib/auth-token` · `screens/onboarding/onboarding` · `screens/login/login` · `screens/verification-code/verification-code`의 `.unit.test.ts` · `app/navigation.unit.test.ts` |
+| unit | `lib/entry-flow` · `lib/entry-language` · `lib/auth-token` · `lib/auth-session` · `lib/api-client` · `lib/supabase-config` · `lib/auth-failure` · `screens/onboarding/onboarding` · `screens/login/login` · `screens/verification-code/verification-code`의 `.unit.test.ts` · `app/navigation.unit.test.ts` |
 | ui | 화면마다 하나 — `<화면>.ui.test.tsx` |
-| integration | `app/App.entry.integration.test.tsx`(흐름 전체 · 토큰 분기 · 바텀 네비 등장 · 이벤트) · `app/App.heading-trait.integration.test.tsx`(제목 축에 진입 상태 전부) |
-| e2e (수동) | [진입 흐름 e2e](../e2e/entry-flow.md) — T1–T9 · D1 · K1–K5 · V1–V6. **실행 0회** |
+| integration | `app/App.entry.integration.test.tsx`(흐름 전체 · 토큰 분기 · 바텀 네비 등장 · 이벤트 · **2026-09-29부터 서버 연동** — OTP 요청 · 검증 · 재전송 · 세션 갱신의 성공과 실패) · `app/App.heading-trait.integration.test.tsx`(제목 축에 진입 상태 전부) |
+| e2e (수동) | [진입 흐름 e2e](../e2e/entry-flow.md) — T1–T9 · D1 · **E1–E7** · K1–K5 · V1–V6. 실행 기록은 그 문서가 진다 |
 
 - **진입 흐름 전체는 한 트리에서만 관찰된다** — 스플래시 분기 · 전이 · 토큰 저장과 재실행 · 바텀
   네비 등장 · 언어의 세션 수명 · 이벤트 순서. 화면을 고립 렌더하는 계층이 원리적으로 만들 수 없어
   `integration`이 그 자리를 진다.
+- ⟨2026-09-29⟩ **서버는 `vi.stubGlobal("fetch")`로, 접속 값은 `vi.stubEnv`로 대역한다** — msw를 쓰지
+  않는다([ADR-0027](../adr/0027-phone-otp-auth-supabase.md) D5). 세션 없는 두 갈래가 동기로 남아 기존
+  파일들의 「임시 토큰 + 시간 경과 → 곧장 앱」 헬퍼는 그대로 돈다.
 - **기존 integration 아홉 파일의 단언은 한 줄도 바뀌지 않았다.** 첫 화면이 여정 맵에서 스플래시로
   바뀌었으므로 각 파일이 **토큰이 있는 상태를 세우고 고정 시간을 전진시키는 지역 헬퍼**를 통해
   렌더한다 — 도달 경로가 한 겹 는 것을 헬퍼가 흡수한다.
