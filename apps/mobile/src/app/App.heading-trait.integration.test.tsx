@@ -251,17 +251,18 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-complete에서 계약이
 // 것으로는 이 자리의 존재를 아무도 안 지으므로(공허하게 통과할 수 있는 자리이므로)
 // 그 자리 자신을 `querySelector`로 먼저 짓습니다. `data-testid`가 없어
 // `getByTestId`를 못 씁니다.
-test("[I3] 제목 축 닫힌 집합이 상태 assessment(미통과)에서 계약이 고정한 목록과 정확히 같다", () => {
+// ⟨2026-09-28⟩ 통과도 미통과도 학습 결과 화면 하나입니다 — 갈리는 것은 화면이 아니라
+// 그 안의 표식 · 제목 · 보상입니다. 그래서 제목 축은 두 경우가 같고, 그 제목은 결과
+// 화면의 것입니다.
+test("[I3] 제목 축 닫힌 집합이 상태 학습 결과(미통과)에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
-  // 통과하면 평가 화면이 아니라 학습 완료 화면이 뜹니다 — 평가 화면은 미통과 경로에만 섭니다.
   startStep("ordering");
   answerAllQuestions("ordering", incorrectPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
-  expect(container.querySelector(".assessment-screen-verdict-label")).not.toBeNull();
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON FAILED");
 
-  expect(headingAxis(container)).toEqual(["assessment-screen-title"]);
+  expect(headingAxis(container)).toEqual(["lesson-complete-screen-title"]);
 });
 
 // 통과 경로의 학습 완료 화면입니다. 제목 하나만 제목 축에 오릅니다 — 지표 칩 · 연속

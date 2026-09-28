@@ -2,7 +2,6 @@
 // 망라가 여기 섭니다 — 값(`initialCompletedStepCount` · `journeyStepOrdinal` ·
 // `completeStep`)은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
 
-import { AssessmentScreen } from "../screens/assessment/AssessmentScreen";
 import { assessmentPassCriterion, judgeAssessment } from "../screens/assessment/assessment";
 import { CultureScreen } from "../screens/culture/CultureScreen";
 import { cultureNarrativeForStep } from "../screens/culture/culture";
@@ -130,29 +129,30 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           sessionOptions={wiring.sessionOptions}
         />
       );
-    case "assessment":
-      // 통과하면 학습 완료 화면, 미통과면 평가 화면입니다. 판정은 셸(`onFinishLearning`)과
-      // 같은 순수 함수 · 같은 상수 · 같은 결과로 다시 내므로 둘이 갈리지 않습니다.
-      // 지표 셋은 아직 규칙이 없어 0이고(여정 맵과 같습니다), 보상은 임시값입니다.
-      if (judgeAssessment(screen.results, assessmentPassCriterion) === "passed") {
-        return (
-          <LessonCompleteScreen
-            results={screen.results}
-            streakDays={0}
-            trophyCount={0}
-            diamondCount={0}
-            reward={lessonRewardPlaceholder}
-            onExit={wiring.onExitAssessment}
-          />
-        );
-      }
+    // ⟨2026-09-28⟩ **통과도 미통과도 같은 화면입니다.** 그전에는 통과만 학습 결과
+    // 화면이고 미통과는 평가 화면이라, 같은 순간의 두 결과가 전혀 다른 화면으로
+    // 보였습니다. 갈리는 것은 화면이 아니라 그 화면 안의 셋입니다(표식 · 제목 · 보상).
+    //
+    // 판정은 셸(`onFinishLearning`)과 같은 순수 함수 · 같은 상수 · 같은 결과로 다시
+    // 내므로 둘이 갈리지 않습니다. 지표 셋은 아직 규칙이 없어 0이고(여정 맵과
+    // 같습니다), 보상은 임시값입니다.
+    case "assessment": {
+      const verdict = judgeAssessment(screen.results, assessmentPassCriterion);
       return (
-        <AssessmentScreen
-          stepOrdinal={journeyStepOrdinal(screen.stepId)}
+        <LessonCompleteScreen
           results={screen.results}
+          verdict={verdict}
+          streakDays={0}
+          trophyCount={0}
+          diamondCount={0}
+          reward={lessonRewardPlaceholder}
           onExit={wiring.onExitAssessment}
+          // 미통과에서만 씁니다 — 같은 스텝을 첫 활동부터 새로 엽니다. 맵을 거쳐
+          // 노드를 다시 누르는 것과 같은 일이고, 그 길을 한 번에 줄인 것입니다.
+          onRetry={() => wiring.onStartStep(screen.stepId)}
         />
       );
+    }
     case "culture":
       return (
         <CultureScreen

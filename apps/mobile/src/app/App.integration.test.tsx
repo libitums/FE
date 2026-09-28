@@ -648,9 +648,11 @@ test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 cu
   answerAllQuestions("ordering", incorrectPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
-  expect(screen.getByTestId("assessment-screen-verdict")).toHaveAttribute("data-verdict", "failed");
+  // ⟨2026-09-28⟩ 미통과도 학습 결과 화면입니다 — 판정은 제목과 표식이 말합니다.
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON FAILED");
+  expect(screen.getByTestId("lesson-complete-screen-retry")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+  fireEvent.tap(lessonCompleteExit(), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
