@@ -265,3 +265,90 @@ test("[IG8] 요청 중 연타는 요청을 늘리지 않고, 결과가 오면 �
   tapRead();
   expect(calls).toHaveLength(2);
 });
+
+// ------------------------------------------------------------------------- IG9
+
+// 견주기 대역입니다. 위 `stubHost`와 따로 두는 것은 **모듈이 둘**이고, 한쪽만 세운
+// 상태가 실제로 있을 수 있기 때문입니다(호스트 버전이 갈릴 때).
+function stubTraceHost(): { readonly args: unknown; readonly callback: (r: unknown) => void }[] {
+  const calls: { args: unknown; callback: (r: unknown) => void }[] = [];
+  vi.stubGlobal("NativeModules", {
+    HandwritingTraceModule: {
+      compare: (args: unknown, callback: (result: unknown) => void) => {
+        calls.push({ args, callback });
+      },
+      // 안내 그림은 이 케이스의 관심이 아니라 답하지 않습니다 — 콜백을 부르지 않으면
+      // 화면이 안내를 그리지 않고, 그것이 정상 경로입니다.
+      guide: () => {},
+    },
+  });
+  return calls;
+}
+
+const traceLine = (): HTMLElement => screen.getByTestId("handwriting-probe-screen-trace");
+
+// ⭐ **지우고 난 뒤에 옛 답이 도착하는 경로입니다.**
+//
+// 요청이 겹치는 것은 `견주기`의 진행 중 가드가 이미 막습니다. 이 케이스가 보는 것은 그것이
+// 아니라 **답이 날아오는 동안 `지우기`를 누른 경우**입니다 — 막지 않으면 사람이 빈 판을
+// 보면서 점수를 읽게 되고, 그 수가 실기 기록에 들어갑니다.
+test("[IG9] 견주기 답이 오기 전에 지우면 그 답이 줄에 서지 않는다", () => {
+  const calls = stubTraceHost();
+  render(<HandwritingProbeScreen />);
+
+  drawStroke([
+    { x: 10, y: 10 },
+    { x: 20, y: 20 },
+  ]);
+  fireEvent.tap(screen.getByTestId("handwriting-probe-screen-compare"), {});
+  expect(calls).toHaveLength(1);
+
+  // 답이 오기 전에 지웁니다. ⚠ 이 줄이 없으면 아래 단언이 **공허하게 통과합니다** —
+  // 줄이 비어 있는 것이 「버렸다」인지 「원래 비어 있다」인지 갈리지 않습니다. IG10이
+  // 그 갈림을 지킵니다: 지우지 않으면 같은 페이로드가 줄에 섭니다.
+  fireEvent.tap(screen.getByTestId("handwriting-probe-screen-clear"), {});
+
+  // 이제 옛 답이 도착합니다.
+  act(() =>
+    calls[0]!.callback({
+      status: "compared",
+      coverage: "0.8000",
+      stay: "0.9000",
+      drawnArea: "100",
+      guideArea: "200",
+      font: "AppleSDGothicNeo-Regular",
+      guideBox: "55,52,189,195",
+    }),
+  );
+
+  expect(traceLine()).toHaveAttribute("data-status", "");
+  expect(traceLine()).toHaveTextContent("");
+});
+
+// 지우는 것이 **이후 요청까지 막지는 않습니다.** 세대를 올리는 장치가 과하게 걸리면
+// 화면이 영영 답을 못 싣게 되는데, 그 갈래를 이 케이스가 지킵니다.
+test("[IG10] 지운 뒤 다시 견주면 그 답은 줄에 선다", () => {
+  const calls = stubTraceHost();
+  render(<HandwritingProbeScreen />);
+
+  drawStroke([
+    { x: 10, y: 10 },
+    { x: 20, y: 20 },
+  ]);
+  fireEvent.tap(screen.getByTestId("handwriting-probe-screen-compare"), {});
+  act(() => calls[0]!.callback({ status: "failed" }));
+  expect(traceLine()).toHaveAttribute("data-status", "failed");
+
+  fireEvent.tap(screen.getByTestId("handwriting-probe-screen-clear"), {});
+  expect(traceLine()).toHaveAttribute("data-status", "");
+
+  drawStroke([
+    { x: 30, y: 30 },
+    { x: 40, y: 40 },
+  ]);
+  fireEvent.tap(screen.getByTestId("handwriting-probe-screen-compare"), {});
+  expect(calls).toHaveLength(2);
+  act(() => calls[1]!.callback({ status: "empty-glyph" }));
+
+  expect(traceLine()).toHaveAttribute("data-status", "empty-glyph");
+});

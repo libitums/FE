@@ -1,4 +1,4 @@
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 
 import {
@@ -61,6 +61,13 @@ export function useProbeTrace(): ProbeTrace {
   const [guideImage, setGuideImage] = useState<string | null>(null);
   const [line, setLine] = useState<ProbeTraceLine | null>(null);
   const [comparing, setComparing] = useState(false);
+  // 세대 카운터입니다. **요청이 겹치는 것을 막는 장치가 아닙니다** — 그것은 아래
+  // `comparing` 가드가 이미 합니다(요청 중에는 새 요청이 안 나갑니다).
+  //
+  // 이것이 막는 것은 **지우고 난 뒤에 옛 답이 도착하는 것**입니다: 견주기를 누르고
+  // 답이 오기 전에 `지우기`를 누르면, 지워진 획에 대한 점수가 뒤늦게 줄에 섭니다.
+  // 사람은 빈 판을 보면서 0.8을 읽게 되고, 그것이 실기 기록을 오염시킵니다.
+  const generation = useRef(0);
 
   // 마운트 때 한 번 굽습니다. 글자가 상수라 다시 부를 일이 없습니다 — 글자가 바뀌는
   // 화면이 서면 그 값이 dep이 됩니다. 호스트가 없으면 `onResult`가 오지 않으므로
@@ -79,8 +86,14 @@ export function useProbeTrace(): ProbeTrace {
     setComparing(true);
     setLine(null);
 
+    const requestedAt = ++generation.current;
     const requested = compareHandwritingTrace(traceRequest(strokes), (outcome) => {
+      // 지나간 세대의 답은 버립니다. `comparing`은 그래도 풉니다 — 이 요청은 실제로
+      // 끝났고, 안 풀면 다음 견주기가 영영 막힙니다.
       setComparing(false);
+      if (requestedAt !== generation.current) {
+        return;
+      }
       setLine(outcome);
     });
 
@@ -92,5 +105,11 @@ export function useProbeTrace(): ProbeTrace {
     }
   };
 
-  return { guideImage, line, compare, reset: () => setLine(null) };
+  // 지우면 세대가 올라가 **날아오고 있던 답이 버려집니다.**
+  const reset = () => {
+    generation.current += 1;
+    setLine(null);
+  };
+
+  return { guideImage, line, compare, reset };
 }
