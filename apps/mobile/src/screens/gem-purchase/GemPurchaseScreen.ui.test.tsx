@@ -57,15 +57,18 @@ test("[GP3] 팩 tap → 고름이 옮겨 가고 요약 · 버튼이 따라 바�
   expect(payButton()).toHaveTextContent("Pay $4.99");
 });
 
-test("[GP4] 팩 카드는 버튼이고, 이름에 젬 · 가격 · 배지 · 고름이 실린다", () => {
+test("[GP4] 팩 카드는 버튼이고, 이름에 젬 · 가격 · 젬 하나 값 · 배지 · 고름이 실린다", () => {
   render(<GemPurchaseScreen {...fixture()} />);
 
   const plus = screen.getByTestId("gem-purchase-pack-plus");
   expect(plus).toHaveAttribute("accessibility-traits", "button");
-  expect(plus).toHaveAttribute("accessibility-label", "1,200 젬, + 200 bonus, $9.99, BEST VALUE");
+  expect(plus).toHaveAttribute(
+    "accessibility-label",
+    "1,200 젬, + 200 bonus, $9.99, $0.0071 per gem, BEST VALUE",
+  );
   expect(screen.getByTestId("gem-purchase-pack-max")).toHaveAttribute(
     "accessibility-label",
-    "2,800 젬, + 800 bonus, $19.99, 선택됨",
+    "2,800 젬, + 800 bonus, $19.99, $0.0056 per gem, 선택됨",
   );
 });
 

@@ -29,6 +29,9 @@ export function GemPackCard({ pack, selected, onSelect }: GemPackCardProps): Rea
     `${formatGemCount(pack.gems)} 젬`,
     packCaption(pack),
     formatPrice(pack.priceCents),
+    // 화면에 보이는 가성비(젬 하나 값)도 읽힙니다 — 팩끼리 견주는 근거라 눈으로 보는
+    // 사용자만 가져서는 안 됩니다.
+    formatPricePerGem(pack),
     pack.badge,
     selected ? "선택됨" : undefined,
   ]

@@ -19,6 +19,6 @@ test("[TB1] 칩 셋은 모두 흰 면으로 선다", () => {
   );
 
   for (const id of ["top-bar-streak", "top-bar-trophy", "top-bar-gem"]) {
-    expect(screen.getByTestId(id).getAttribute("class")).toContain("stat-chip-surface-white");
+    expect(screen.getByTestId(id).getAttribute("class")).toBe("stat-chip stat-chip-surface-white");
   }
 });
