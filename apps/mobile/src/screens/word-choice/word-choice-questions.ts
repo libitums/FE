@@ -42,8 +42,9 @@ export type WordChoiceQuestion = {
 // 돌아간다」 하나입니다.
 //
 // **보기는 낱말입니다.** 고르는 것이 문장이 아니라 낱말이라는 것이 이 학습형의
-// 정체이고, 디자인의 칩(60×60 하한, 낱말만큼 늘어남)이 그 위에 섭니다. 여기에
-// 긴 구를 넣으면 칩이 줄을 채워 듣기와 구별되지 않습니다.
+// 정체이고, 디자인의 칩(60×60 하한, 낱말만큼 늘어남)이 그 위에 섭니다. 여기에 긴 구를
+// 넣어도 줄이 바뀌지는 않지만(넷이 한 줄에 서고 폭을 나눠 갖습니다) 칩이 바닥까지
+// 줄어 낱말이 칩 안에서 접힙니다 — 그 모양은 「낱말 고르기」로 읽히지 않습니다.
 export const wordChoiceQuestionsByStep: Record<JourneyStepId, readonly WordChoiceQuestion[]> = {
   greeting: [],
   introduction: [

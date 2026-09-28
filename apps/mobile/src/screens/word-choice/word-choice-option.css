@@ -22,7 +22,16 @@
    디자인의 정사각 모양이 그대로 나옵니다.
 
    `padding`은 좌우만 줍니다. 위아래는 `min-height`와 세로 가운데 정렬이 집니다 — 둘을
-   함께 주면 최대 배율에서 높이가 두 번 늘어납니다. */
+   함께 주면 최대 배율에서 높이가 두 번 늘어납니다.
+
+   ⟨2026-09-28⟩ **줄어듭니다.** 넷이 한 줄에 서야 하므로(짝 화면 CSS의 `nowrap`), 낱말이
+   길어 자리가 모자라면 칩들이 폭을 나눠 갖습니다. **`min-width: 60px`가 그 바닥**입니다 —
+   Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어드는데, 이 값이
+   거기서 멈춰 세웁니다. 그래서 `flex-shrink: 0`을 주지 않습니다(주면 줄이 넘칩니다).
+
+   바닥까지 줄어든 칩에서는 낱말이 **접힙니다** — 칩이 그만큼 높아지고 글자는 잘리지
+   않습니다(WCAG 1.4.4). 그때 칩들의 높이가 서로 달라지는데, 줄이 가운데 정렬이라
+   나란히 섭니다. */
 .word-choice-option {
   display: flex;
   flex-direction: row;
@@ -35,8 +44,6 @@
   border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
   border-radius: var(--libitum-radius-md);
   background: var(--libitum-color-background-primary);
-  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어듭니다. */
-  flex-shrink: 0;
 }
 
 /* 고른 보기입니다. 테두리와 글자가 **판정 색**으로 갈립니다.
@@ -69,10 +76,10 @@
   color: var(--libitum-color-feedback-incorrect-text);
 }
 
-/* 낱말입니다. 줄을 바꾸지 않습니다 — 칩의 폭이 낱말을 따라 늘어나므로 접을 이유가 없고,
-   접히면 칩 높이가 그 하나만 커져 줄이 어긋납니다. */
+/* 낱말입니다. **줄바꿈을 막지 않습니다** ⟨2026-09-28⟩ — 칩이 바닥(60)까지 줄어든 뒤에도
+   낱말이 길면 잘리는 대신 접혀야 합니다(WCAG 1.4.4). 여유가 있을 때는 칩 폭이 낱말을
+   따라 늘어나므로 접힐 일이 없습니다. */
 .word-choice-option-label {
-  white-space: nowrap;
   text-align: center;
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-label-xl-font-family);
