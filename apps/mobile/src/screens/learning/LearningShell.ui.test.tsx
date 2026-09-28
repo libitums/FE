@@ -56,13 +56,13 @@ test("카드로 받은 것이 카드 안에 선다", () => {
 
 test("작업 영역은 받았을 때만 선다", () => {
   renderShell();
-  expect(screen.queryByTestId("learning-shell-workspace")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-scroll")).not.toBeInTheDocument();
 });
 
 test("작업 영역을 받으면 그 안에 그린다", () => {
   renderShell({ workspace: <text data-testid="fixture-workspace">낱말</text> });
 
-  const workspace = screen.getByTestId("learning-shell-workspace");
+  const workspace = screen.getByTestId("learning-shell-scroll");
 
   expect(within(workspace).getByTestId("fixture-workspace")).toBeInTheDocument();
 });

@@ -167,11 +167,16 @@
 
 /* 작업 영역 — 카드 밖, 활동이 채웁니다(고를 낱말 칩 등). **스크롤이 여기 하나뿐입니다**:
    남는 세로를 받고, 넘치면 여기만 흐릅니다. 무대 카드는 늘 같은 자리에 남습니다.
+   ADR-0022 D2 표의 21번이 이 상자이고, 껍데기를 딛는 화면 전부가 이 행 하나를 씁니다.
+   이름이 `-scroll`인 것도 D2의 규약입니다 — 블록은 짝 CSS 파일명(`learning-shell`)이고
+   `scroll`이 요소 자리라, 저장소의 모든 스크롤 영역이 한 번의 grep으로 찾아집니다.
+   **껍데기의 prop 이름(`workspace`)과 다른 것이 맞습니다**: prop은 부르는 쪽이 무엇을
+   넣는가를 말하고, 이 이름은 그것이 무엇인가를 말합니다.
 
    `justify-content: flex-start`를 둡니다 — 넘치는 상자에서 `center`는 위쪽 항목을
    스크롤 원점 밖으로 밀어 닿을 수 없게 만듭니다. `display: flex`·`flex-direction`을
    적지 않습니다: `<scroll-view>`는 CSS와 무관하게 강제로 `linear`가 되어 안 읽힙니다. */
-.learning-shell-workspace {
+.learning-shell-scroll {
   flex: 1;
   justify-content: flex-start;
   /* **아래를 비우지 않습니다.** 버튼 몫(72pt)을 여기 비워 두면 내용이 늘 화면보다

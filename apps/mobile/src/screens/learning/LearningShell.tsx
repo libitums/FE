@@ -216,16 +216,6 @@ export function LearningShell({
           </Card.Content>
         </Card>
       </view>
-      {/* 흐르는 영역입니다 — 지시문 · 무대 · 작업 영역이 함께 스크롤됩니다. 고정으로
-          남는 것은 위의 상단 바 · 세션 헤더와 아래 버튼입니다(Figma 65-14의 배치).
-
-          **스크롤이 무대 안이 아니라 여기 있는 이유**는 넘치는 것이 카드 하나가 아니기
-          때문입니다. 문장이 길어 카드가 커지면 그 아래 보기도 함께 밀리는데, 무대만
-          스크롤하면 카드는 잘리지 않고 **보기 위로 넘쳐 나옵니다** — 기기에서 그렇게
-          겹치는 것을 봤습니다.
-
-          `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안 적으면 초기값이 각각
-          가로·꺼짐이라 세로 스크롤이 원리적으로 불가능합니다. */}
       <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
         {instruction}
       </text>
@@ -240,15 +230,20 @@ export function LearningShell({
       </view>
       {/* 작업 영역 — **스크롤이 여기 하나뿐입니다.** 머리(상단 바 · 세션 헤더) · 지시문 ·
           무대 카드 · 아래 버튼은 자리에 고정되고, 넘치면 고를 것들만 흐릅니다. 화면
-          전체가 흐르면 문항을 다시 듣고 싶을 때 카드를 찾아 되올려야 합니다 — 무대는
-          늘 같은 자리에 있어야 합니다.
+          전체가 흐르면 문항을 다시 듣고 싶을 때 카드를 찾아 되올려야 합니다 — 무대는 늘
+          같은 자리에 있어야 합니다. 이 골격이 ADR-0022 **D1-2**이고, 이름이 prop과 다른
+          근거는 짝 CSS가 집니다.
+
+          **무대 안에 스크롤을 두지 않은 이유**는 넘치는 것이 카드 하나가 아니기
+          때문입니다. 무대만 스크롤하면 카드는 잘리지 않고 **보기 위로 넘쳐 나옵니다** —
+          기기에서 그렇게 겹치는 것을 봤습니다.
 
           `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안 적으면 초기값이 각각
           가로·꺼짐이라 세로 스크롤이 원리적으로 불가능합니다. */}
       {workspace === undefined ? null : (
         <scroll-view
-          className="learning-shell-workspace"
-          data-testid="learning-shell-workspace"
+          className="learning-shell-scroll"
+          data-testid="learning-shell-scroll"
           scroll-orientation="vertical"
           scroll-bar-enable={true}
         >

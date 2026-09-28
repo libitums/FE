@@ -689,7 +689,7 @@ test("응답 전 무대의 조작 단위가 재생 컨트롤 둘뿐이다", () =
 test("보기 넷이 무대 밖 작업 영역에 선다", () => {
   renderOrdering();
 
-  const workspace = screen.getByTestId("learning-shell-workspace");
+  const workspace = screen.getByTestId("learning-shell-scroll");
   const choices = [...workspace.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
     el.getAttribute("data-testid"),
   );
@@ -983,7 +983,7 @@ test("[U2] 대본은 무대 안, 문항 진행과 보기 넷은 무대 밖이다
   expect(within(stage).queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
   expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
 
-  const workspace = screen.getByTestId("learning-shell-workspace");
+  const workspace = screen.getByTestId("learning-shell-scroll");
   for (const testid of CHOICE_TESTIDS) {
     expect(within(workspace).getByTestId(testid)).toBeInTheDocument();
     expect(within(stage).queryByTestId(testid)).not.toBeInTheDocument();
@@ -1041,22 +1041,19 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
 // `__SetAttribute`(ElementPAPI.js:87~89)가 boolean을 `JSON.stringify`로
 // 직렬화합니다. `scroll-orientation`은 문자열이라 그대로 "vertical"로 갑니다.
 
-test("[U9] learning-shell-workspace에 scroll-orientation='vertical'이 붙는다", () => {
+test("[U9] learning-shell-scroll에 scroll-orientation='vertical'이 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-workspace")).toHaveAttribute(
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute(
     "scroll-orientation",
     "vertical",
   );
 });
 
-test("[U11] learning-shell-workspace에 scroll-bar-enable='true'가 붙는다", () => {
+test("[U11] learning-shell-scroll에 scroll-bar-enable='true'가 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-workspace")).toHaveAttribute(
-    "scroll-bar-enable",
-    "true",
-  );
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("scroll-bar-enable", "true");
 });
 
 // U10 — 듣기는 문항 상태와 완료 상태 둘 다 봅니다 — 문항 상태는 오늘 자식이
