@@ -254,7 +254,8 @@ function answerAllQuestions(
     const choiceIndex = pick(question.answerIndex, questionIndex);
 
     fireEvent.tap(screen.getByTestId(`listening-choice-${choiceIndex}`), {});
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+    // 문항 사이는 버튼이 아니라 넘김 층입니다(2026-09-28).
+    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   });
 }
 
@@ -325,7 +326,7 @@ test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은
     screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
     {},
   );
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
 
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
@@ -394,8 +395,10 @@ test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
     "data-result",
     "correct",
   );
-  // 고른 뒤 아래 버튼은 `다음`입니다 — 세션이 끝나지 않았으므로 `결과 보기`가 아닙니다.
-  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("다음");
+  // 고른 뒤에는 넘김 층입니다 — 세션이 끝나지 않았으므로 아래 버튼(`결과 보기`)이
+  // 서지 않습니다.
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-complete")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
@@ -754,9 +757,9 @@ test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 �
 });
 
 // **App을 통과한 실제 흐름에서** 문항이 넘어갑니다. `ui`는 `rerender`로 prop을
-// 갈아 끼워 이 순서를 봤습니다. 여기서는 보기 tap → `다음` tap이 세션 리듀서를
+// 갈아 끼워 이 순서를 봤습니다. 여기서는 보기 tap → 넘김 층 tap이 세션 리듀서를
 // 지나 `question.audioSource`를 바꾸는 것까지가 관찰 대상입니다.
-test("다음으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다", () => {
+test("넘김 층으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다", () => {
   const { audio: calls } = stubHost();
   renderApp(<App />);
   startStep("ordering");
@@ -765,7 +768,7 @@ test("다음으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다"
     screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
     {},
   );
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
   expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
   expect(sourcesOf(calls)).toEqual([

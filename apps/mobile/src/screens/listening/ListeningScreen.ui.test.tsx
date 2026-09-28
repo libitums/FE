@@ -81,7 +81,9 @@ function answerCorrectlyAndAdvance(questionIndex: number): void {
     screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[questionIndex].answerIndex}`),
     {},
   );
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  // 문항 사이는 버튼이 아니라 **넘김 층**입니다 — 고른 뒤 화면을 누르면 즉시
+  // 넘어가고, 안 누르면 타이머가 넘깁니다(2026-09-28).
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 }
 
 function completeAllThree(): void {
@@ -234,13 +236,13 @@ test("다른 스텝으로 렌더하면 문항이 갈린다", () => {
 
 // ---------------------------------------------------------------- 응답 전 (단언 5·6)
 
-// 단언 5 — 나가는 수단이 정확히 하나입니다 — 미완료에서는 `맵으로`뿐이고, `다음`은
-// 응답 전에 없습니다(응답 여부의 프로브)·`맵으로 돌아가기`도 없습니다.
-test("응답 전에는 나가기만 있고 다음·마치기가 없다", () => {
+// 단언 5 — 나가는 수단이 정확히 하나입니다: 미완료에서는 `×`뿐입니다. 넘김 층도
+// 아래 버튼도 응답 전에는 없습니다 — 둘 다 응답 여부의 프로브입니다.
+test("응답 전에는 나가기만 있고 넘김 층·마치기가 없다", () => {
   renderOrdering();
 
   expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
-  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-advance")).not.toBeInTheDocument();
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-complete")).not.toBeInTheDocument();
 });
@@ -321,12 +323,19 @@ test("정답 보기를 탭하면 무대에 정답 배지가 나타나고 보기�
   expect(screen.queryByTestId(`listening-choice-icon-${answerIndex}`)).not.toBeInTheDocument();
 });
 
-test("정답 보기를 탭하면 '다음'이 나타난다", () => {
+// 2026-09-28: 응답 뒤에 **아래 버튼이 서지 않습니다.** 판정을 보인 채 몇 초 뒤 저절로
+// 다음 문항으로 넘어가고, 그 동안 화면 전체가 「지금 누르면 곧바로 넘어간다」는 넘김
+// 층이 됩니다.
+//
+// 버튼의 부재와 넘김 층의 존재를 **함께** 답니다 — 하나만 보면 「버튼을 지우다 넘김을
+// 빠뜨린 것」과 구별되지 않습니다.
+test("정답 보기를 탭하면 넘김 층이 서고 아래 버튼은 서지 않는다", () => {
   renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
-  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
 });
 
 // 단언 8 — **정답을 알려 주지 않습니다.** 오답을 골라도 정답 보기는 판정을 지지
@@ -407,17 +416,17 @@ test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () 
   fireEvent.tap(screen.getByTestId("listening-choice-0"), {});
 
   expect(screen.getByTestId("listening-choice-0")).toHaveAttribute("data-result", "correct");
-  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
 });
 
 // ---------------------------------------------------------------- 문항 진행 (단언 10)
 
 // 단언 10
-test("'다음'을 탭하면 진행·문항이 갈리고 판정이 초기화되며 '다음'이 다시 사라진다", () => {
+test("넘김 층을 탭하면 진행·문항이 갈리고 판정이 초기화되며 층이 다시 사라진다", () => {
   renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
   expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
@@ -426,7 +435,7 @@ test("'다음'을 탭하면 진행·문항이 갈리고 판정이 초기화되�
   for (const testid of CHOICE_TESTIDS) {
     expect(screen.getByTestId(testid)).toHaveAttribute("data-result", "none");
   }
-  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-advance")).not.toBeInTheDocument();
 });
 
 // 두 번째 문항의 정답 인덱스가 0입니다 — 문항이 넘어간 뒤에도 0번 보기가 살아
@@ -481,8 +490,9 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[2].answerIndex}`), {});
 
   expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 3 / 3");
-  // 아래 버튼은 있지만 `다음`입니다 — 완료였다면 `결과 보기`가 섰을 자리입니다.
-  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("다음");
+  // 아직 넘김 층입니다 — 완료였다면 아래 버튼(`결과 보기`)이 섰을 자리입니다.
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-complete")).not.toBeInTheDocument();
 });
 
@@ -533,8 +543,10 @@ test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 �
 
   for (const question of ORDERING_QUESTIONS) {
     fireEvent.tap(screen.getByTestId(`listening-choice-${(question.answerIndex + 1) % 4}`), {});
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+    // 문항 사이는 넘김 층입니다(2026-09-28).
+    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   }
+  // 세션이 끝난 뒤에만 아래 버튼(`결과 보기`)이 섭니다.
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(1);
@@ -593,15 +605,19 @@ test("껍데기의 나가기가 이 화면의 onExit에 닿는다", () => {
   expect(onExit).toHaveBeenCalledTimes(1);
 });
 
-test("다음에 element·label='다음'·traits='button'이 붙는다", () => {
+// 넘김 층은 낱말이 없는 투명한 상자라 이름을 `accessibility-label` 혼자 집니다.
+// 층이 트리에 있는 동안 화면 어디를 눌러도 다음 문항으로 가므로 조작 단위로 읽혀야
+// 합니다 — 안 그러면 보조기술 사용자에게는 「기다리는 것 말고 할 수 있는 일이 없는
+// 화면」이 됩니다.
+test("넘김 층에 element·label='다음으로'·traits='button'이 붙는다", () => {
   renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
-  const next = screen.getByTestId("learning-shell-action");
-  expect(next).toHaveAttribute("accessibility-element", "true");
-  expect(next).toHaveAttribute("accessibility-label", "다음");
-  expect(next).toHaveAttribute("accessibility-traits", "button");
+  const advance = screen.getByTestId("learning-shell-advance");
+  expect(advance).toHaveAttribute("accessibility-element", "true");
+  expect(advance).toHaveAttribute("accessibility-label", "다음으로");
+  expect(advance).toHaveAttribute("accessibility-traits", "button");
 });
 
 // (u7 보정) 완료 버튼의 문구가 '맵으로 돌아가기' → '결과 보기'로 바뀝니다 —
@@ -688,15 +704,15 @@ test("보기 넷이 무대 밖 작업 영역에 선다", () => {
   expect(within(stage).queryByTestId("listening-choice-0")).not.toBeInTheDocument();
 });
 
-// 응답해도 무대 안의 목록은 그대로입니다 — `다음`은 무대 **밖**, 껍데기의 아래
-// 버튼입니다. 그것이 생겼다는 것은 따로 답니다.
-test("응답 뒤에도 무대의 조작 단위는 그대로이고 아래 버튼이 생긴다", () => {
+// 응답해도 무대 안의 목록은 그대로입니다 — 넘김은 무대 **밖**, 껍데기가 화면 위에
+// 덮는 층입니다. 그것이 생겼다는 것은 따로 답니다.
+test("응답 뒤에도 무대의 조작 단위는 그대로이고 넘김 층이 생긴다", () => {
   renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
   expect(stageTappables()).toEqual(["listening-prompt-replay", "listening-prompt-playback"]);
-  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("다음");
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
 });
 
 test("완료 상태의 무대에는 조작 단위가 없고 아래 버튼이 마치기다", () => {
@@ -855,7 +871,7 @@ test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () 
 
   expect(announce).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
   expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3"); // 앵커
   expect(sourcesOf(audio)).toEqual(["ordering-1", STOP, "ordering-2"]); // 오디오는 그대로 돕니다
@@ -974,16 +990,18 @@ test("[U2] 대본은 무대 안, 문항 진행과 보기 넷은 무대 밖이다
   }
 });
 
-test("[U3] 나가기·아래 버튼이 무대 밖에 있다", () => {
+// 아래 버튼이 무대 밖이라는 것은 완료 상태를 보는 [U6]이 집니다 — 문항 중에는 버튼
+// 자체가 없으므로 여기서는 나가기와 넘김 층만 봅니다.
+test("[U3] 나가기·넘김 층이 무대 밖에 있다", () => {
   renderOrdering();
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
   const stage = screen.getByTestId("learning-shell-stage");
   expect(within(stage).queryByTestId("learning-shell-exit")).not.toBeInTheDocument();
-  expect(within(stage).queryByTestId("learning-shell-action")).not.toBeInTheDocument();
+  expect(within(stage).queryByTestId("learning-shell-advance")).not.toBeInTheDocument();
 
   expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
 });
 
 test("[U6] 완료 상태에서 완료 문구는 스크롤 안, 마치기는 스크롤 밖이다", () => {

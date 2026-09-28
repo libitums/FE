@@ -78,15 +78,28 @@ export function ListeningScreen({
   // 아래 버튼이 지금 무엇인가입니다. 셋째 갈래는 **버튼이 없는 것**입니다 — 아직
   // 고르지 않았으면 `다음`이 할 일이 없고, 영구히 눌리지 않는 버튼을 두지 않습니다
   // (ADR-0016 D10).
+  // 아래 버튼이 서는 자리는 **세션이 끝났을 때 하나뿐**입니다. 문항 사이는 버튼 없이
+  // 스스로 넘어갑니다(아래 `advance`) — 고른 순간 판정이 이미 났고, 그 다음에 할 일은
+  // 「다음」 하나뿐이라 누르게 할 이유가 없습니다.
   const action =
     question === null
       ? {
           label: listeningFinishLabel,
           run: () => onFinish(stepId, sessionAnswerResults(questions, state.answeredChoiceIndexes)),
         }
-      : hasAnswered(state)
-        ? { label: "다음", run: () => dispatch({ type: "nextQuestion" }) }
-        : undefined;
+      : undefined;
+
+  // 고른 뒤 2.5초입니다. 배지와 고른 보기의 색을 둘 다 볼 만큼이고, 기다리는 느낌이
+  // 아직 안 드는 값으로 골랐습니다. 그 전에 화면을 누르면 즉시 넘어갑니다 — 시간제한이
+  // 생기는 자리라 조작을 남깁니다(WCAG 2.2.1).
+  const advance =
+    question !== null && hasAnswered(state)
+      ? {
+          label: "다음으로",
+          run: () => dispatch({ type: "nextQuestion" }),
+          delayMs: 2500,
+        }
+      : undefined;
 
   return (
     <LearningShell
@@ -103,6 +116,7 @@ export function ListeningScreen({
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
+      advance={advance}
       /* 보기는 무대 카드 **밖**입니다(Figma 53-14231) — 카드는 「무엇을 들었나」를
          말하고, 고르는 일은 그 아래 작업 영역에서 합니다. */
       workspace={

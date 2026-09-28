@@ -94,9 +94,13 @@ function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
 
-// 문항을 순서대로 전부 응답하고 매번 `다음`을 누릅니다. `App.integration.test.tsx`의
+// 문항을 순서대로 전부 응답하고 매번 넘김 층을 누릅니다. `App.integration.test.tsx`의
 // 동명 헬퍼와 같은 형태입니다(파일이 다르므로 다시 선언합니다) — `listening-complete`
 // 상태에 닿는 유일한 수단입니다.
+//
+// 2026-09-28: 응답 뒤에 아래 버튼이 서지 않고 넘김 층이 대신 섭니다. 층을 누르면
+// 자동 넘김을 기다리지 않고 곧바로 다음 문항으로 갑니다 — 타이머를 앞당길 수단이라
+// 이 헬퍼가 가짜 시계를 쓰지 않아도 됩니다.
 function answerAllQuestions(
   stepId: JourneyStepId,
   pick: (answerIndex: number, questionIndex: number) => number,
@@ -105,7 +109,7 @@ function answerAllQuestions(
     const choiceIndex = pick(question.answerIndex, questionIndex);
 
     fireEvent.tap(screen.getByTestId(`listening-choice-${choiceIndex}`), {});
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   });
 }
 
