@@ -15,6 +15,7 @@ import {
   learningFormAt,
   learningFormsForStep,
   type JourneyStepId,
+  journeyMapSections,
 } from "../screens/journey-map/journey-map";
 import type { MessengerEventSink, MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type {
@@ -42,6 +43,7 @@ import type {
 import { learningScreenFor, roleplayScreenFor } from "./screen-routing";
 import { specialUnitWiring } from "./special-unit-wiring";
 import { tabRootActions } from "./nav-reducer";
+import { episodeIntroWiring } from "./episode-intro-wiring";
 import type { NavAction } from "./nav-state";
 
 export type JourneyWiringArgs = {
@@ -71,6 +73,8 @@ export type JourneyWiringArgs = {
    * 화면에 있든 「이 스텝에서 지금까지 맞고 틀린 것」은 하나입니다. 스택에 실으면
    * 뒤로 가기가 결과를 되감아 평가가 달라집니다.
    */
+  readonly seenEpisodeIntroIds: readonly string[];
+  readonly setSeenEpisodeIntroIds: Dispatch<SetStateAction<readonly string[]>>;
   readonly pendingResults: readonly AnswerResult[];
   readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
 };
@@ -101,7 +105,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
     setPendingResults,
   } = args;
 
-  const journey = {
+  const unitStarts = {
     ...specialUnitWiring({
       messengerEventSink,
       phoneCallEventSink,
@@ -267,6 +271,19 @@ export function journeyWiring(args: JourneyWiringArgs) {
     // 흐름 셋(나가기)입니다 — 프로필·약관의 `설정으로` → 설정 탭 스택의
     // 루트(ADR-0007 D6).
     onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
+  };
+
+  // 유닛 시작 넷을 서사 표지로 감쌉니다. 이름이 `journey`인 것은 위의 알림 결선이 그
+  // 이름으로 시작을 부르기 때문입니다 — 알림에서 여는 유닛도 표지를 지납니다.
+  const journey = {
+    ...unitStarts,
+    ...episodeIntroWiring({
+      sections: journeyMapSections,
+      seenEpisodeIntroIds: args.seenEpisodeIntroIds,
+      setSeenEpisodeIntroIds: args.setSeenEpisodeIntroIds,
+      dispatch,
+      starts: unitStarts,
+    }),
   };
 
   return journey;

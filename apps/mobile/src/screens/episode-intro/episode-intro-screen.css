@@ -1,0 +1,128 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 값은 디자인(Figma 80-7869)을
+   따릅니다. */
+
+/* 면은 디자인의 그러데이션 끝 색(#1b1613)입니다 — 그림이 오기 전까지 그림 자리를
+   집니다. 따뜻한 검정이라 `gray-950`(차가운 검정)과 갈리고, 맞는 토큰이 없어 값으로
+   적습니다. */
+.episode-intro-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: #1b1613;
+}
+
+/* 가장자리 여백을 잡는 상자입니다. 여백 값은 인라인 스타일이 집니다. 명암 위에 서야
+   하므로 z-index 1입니다. */
+.episode-intro-screen-safe {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.episode-intro-screen-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+}
+
+/* Lynx는 absolute 형제를 흐름 요소 위에 그려, 명암을 z-index 0에, 글자와 버튼을 1에
+   둡니다(여정 입장 화면과 같은 까닭). */
+.episode-intro-screen-backdrop {
+  z-index: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* 위 · 아래 명암입니다. 높이 432 · 252는 디자인 실측값이고 맞는 토큰이 없어 px로
+   적습니다. 그림 위에서 글자와 버튼을 받치는 그늘입니다. */
+.episode-intro-screen-shade-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 432px;
+  background-image: linear-gradient(to bottom, #1b1613, rgba(27, 22, 19, 0));
+}
+
+.episode-intro-screen-shade-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 252px;
+  background-image: linear-gradient(to top, #1b1613, rgba(27, 22, 19, 0));
+}
+
+.episode-intro-screen-top {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-16);
+}
+
+.episode-intro-screen-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-4);
+}
+
+.episode-intro-screen-label {
+  color: var(--libitum-color-brand-primary);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+}
+
+.episode-intro-screen-title {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+/* 아래 버튼 줄 — `Skip`이 좁고 `Next`가 나머지를 씁니다. 폭 87은 디자인 실측값이고
+   맞는 토큰이 없어 px로 적습니다. **고정 폭이 아니라 하한입니다**(ADR-0020 D5) —
+   글자가 커지거나 낱말이 길어지면 `Skip`이 자라고 `Next`가 그만큼 줄어듭니다. */
+.episode-intro-screen-actions {
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--libitum-spacing-12);
+}
+
+.episode-intro-screen-skip {
+  min-width: 87px;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.episode-intro-screen-next {
+  flex: 1;
+  display: flex;
+}
+
+/* 건너뛰기 확인이 서는 자리입니다 — 화면 전체를 덮어 `Dialog`의 막과 상자가 그 안에
+   섭니다. */
+.episode-intro-screen-confirm {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--libitum-elevation-z-sheet);
+}

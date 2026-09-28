@@ -14,6 +14,10 @@ import { entrySplashDurationMs } from "../lib/entry-flow";
 // 에피소드 수의 데이터 앵커입니다 — 제목 축 기댓값을 리터럴로 적지 않기 위한 것입니다.
 import { journeyMapSections } from "../screens/journey-map/journey-map";
 
+// 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
+// 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
+const seenIntros = ["tutorial"] as const;
+
 // 이 파일이 무엇을 위해 있나: `ui`(`CultureScreen.ui.test.tsx`의 `[X9]`)는 문화
 // 화면 하나만 렌더합니다. `App`은 바텀 내비게이터를 **항상 함께** 렌더하므로, 이
 // 계층만이 「제목 축에 오른 자리가 이 합성 트리에 정확히 얼마나 있는가」를 물을 수
@@ -163,7 +167,7 @@ function headingAxis(container: HTMLElement): readonly (string | null)[] {
 // 경우와 둘 다 빠지는 경우가 러너 출력에서 갈립니다.
 test("[I1] 결선으로 연 문화 화면에서 절 제목이 accessibility-traits='header'를 진다", () => {
   formStub.current = "culture";
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -193,7 +197,7 @@ test("[I1] 결선으로 연 문화 화면에서 절 제목이 accessibility-trai
 // 짓습니다.
 test("[I2] 문화 화면이 선 합성 트리에서 제목 축에 오른 자리가 화면 제목·절 제목 둘이고 그 순서다", () => {
   formStub.current = "culture";
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   // 대조 — 이 트리가 `ui`가 만들 수 있는 트리가 아님을 짓습니다. 맵 루트에서는 바텀
   // 내비게이터가 같은 container 안에 서 있고, 스텝을 시작하면 **사라집니다**
@@ -229,7 +233,7 @@ test("[I2] 문화 화면이 선 합성 트리에서 제목 축에 오른 자리�
 
 test("[I3] 제목 축 닫힌 집합이 상태 listening-complete에서 계약이 고정한 목록과 정확히 같다", () => {
   // 대역 없음 — 오늘 배정표가 `ordering`에 이미 `listening`을 돌려줍니다.
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
@@ -248,7 +252,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-complete에서 계약이
 // 그 자리 자신을 `querySelector`로 먼저 짓습니다. `data-testid`가 없어
 // `getByTestId`를 못 씁니다.
 test("[I3] 제목 축 닫힌 집합이 상태 assessment(미통과)에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   // 통과하면 평가 화면이 아니라 학습 완료 화면이 뜹니다 — 평가 화면은 미통과 경로에만 섭니다.
   startStep("ordering");
@@ -263,7 +267,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 assessment(미통과)에서 계약
 // 통과 경로의 학습 완료 화면입니다. 제목 하나만 제목 축에 오릅니다 — 지표 칩 · 연속
 // 알약 · 보상 카드 · 설명은 제목이 아닙니다.
 test("[I3b] 제목 축 닫힌 집합이 학습 완료 화면에서 제목 하나뿐이다", () => {
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
@@ -285,7 +289,7 @@ test("[I3b] 제목 축 닫힌 집합이 학습 완료 화면에서 제목 하나
 // 바뀝니다.
 test("[I3] 제목 축 닫힌 집합이 상태 word-choice에서 계약이 고정한 목록과 정확히 같다", () => {
   formStub.current = "word-choice";
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
   expect(screen.getByTestId("word-choice-screen-title")).toBeInTheDocument();
@@ -296,7 +300,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 word-choice에서 계약이 고정
 
 test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고정한 목록과 정확히 같다", () => {
   formStub.current = "sentence-order";
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
   expect(screen.getByTestId("sentence-order-screen-title")).toBeInTheDocument();
@@ -307,7 +311,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고
 
 test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고정한 목록과 정확히 같다", () => {
   formStub.current = "culture";
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
@@ -327,7 +331,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고�
 // 홈 탭이 걷혔으므로 알림은 여정 탭에서 엽니다. 알림 버튼은 제목이 아니므로
 // 여기서도 제목 축엔 알림 화면 제목만 오릅니다.
 test("[I3] 제목 축 닫힌 집합이 상태 notifications에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
@@ -340,7 +344,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 notifications에서 계약이 고�
 // 데이터(`journeyMapSections`)에서 뽑습니다. 에피소드가 늘면 이 테스트는 늘어난
 // 만큼을 기대하지, 빨개지지 않습니다.
 test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -349,7 +353,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
@@ -363,7 +367,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고�
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
@@ -376,7 +380,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한
 // `accessibility-elements-hidden`을 함께 받지만, 그 속성은 조작 단위 축이고 제목 축은
 // 따로 삽니다 — 그래서 축에서 사라지지 않습니다.
 test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
@@ -393,7 +397,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 �
 // 형식이고, 그 화면이 가장 오래 머무는 상태입니다. `listening-choice-0`이 문항
 // 상태의 프로브입니다 — 종료 상태(`listening-screen-complete`)에는 없습니다.
 test("[I3] 제목 축 닫힌 집합이 상태 listening-question에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
   expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
@@ -410,7 +414,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-question에서 계약이
 // (`headingAxis` → `toEqual` 닫힌 집합).
 
 test("[HT1] 제목 축 닫힌 집합이 상태 profile에서 계약이 고정한 목록과 정확히 같다", () => {
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
@@ -424,7 +428,7 @@ test("[HT1] 제목 축 닫힌 집합이 상태 profile에서 계약이 고정한
 // 뽑습니다 — 리터럴 넷을 여기 다시 쓰지 않습니다(데이터 앵커).
 test("[HT2] 제목 축 닫힌 집합이 상태 terms에서 계약이 고정한 목록과 정확히 같다", () => {
   const sections = termsSections();
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   fireEvent.tap(screen.getByTestId("settings-nav-item-terms"), {});

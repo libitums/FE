@@ -7,6 +7,10 @@ import { questionsForStep } from "../screens/listening/listening";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 
+// 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
+// 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
+const seenIntros = ["tutorial"] as const;
+
 // `integration` 계층: 여러 실제 모듈의 협력을 봅니다(ADR-0006 D4).
 // 여기서는 App · navReducer · BottomNavigator · 화면 셋 · ErrorBoundary가 맞물립니다.
 // 목킹하지 않습니다 — 외부 IO가 생기면 그 경계에서만 대체합니다.
@@ -47,7 +51,7 @@ afterEach(() => {
 });
 
 test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
@@ -66,7 +70,7 @@ test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", () => {
 });
 
 test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오고 설정 화면은 사라진다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
@@ -85,7 +89,7 @@ test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오
 });
 
 test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 여정 맵 화면은 사라진다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
@@ -104,7 +108,7 @@ test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면�
 });
 
 test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 여정 맵 화면은 사라진다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
@@ -123,7 +127,7 @@ test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 
 });
 
 test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이 그대로 다시 나온다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
@@ -146,7 +150,7 @@ test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이
 // `StepSheet`가 실제로 맞물리는지를 봅니다. 목킹하지 않습니다 — 외부 IO가 없습니다.
 
 test("여정 탭으로 전환하면 스텝 다섯이 전부 렌더된다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
@@ -161,7 +165,7 @@ test("여정 탭으로 전환하면 스텝 다섯이 전부 렌더된다", () =>
 // 직접 셀 수 없습니다 — 시트가 열려도 셸(탭 셋 · 여정 탭의 선택 상태)이 그대로라는
 // 것으로 대신 봅니다. 셸이 사라지거나 선택이 바뀌면 스택이 깊어졌다는 신호입니다.
 test("스텝을 누르면 시트가 열리고 셸이 그대로다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
@@ -177,7 +181,7 @@ test("스텝을 누르면 시트가 열리고 셸이 그대로다", () => {
 });
 
 test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대로다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
@@ -196,7 +200,7 @@ test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대�
 // 되돌아왔을 때 시트는 닫혀 있는 것이 정상입니다. 「다른 탭」은 설정입니다(홈
 // 탭이 없으므로).
 test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 시트가 닫혀 있다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
@@ -209,7 +213,7 @@ test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 �
 });
 
 test("시트가 열린 동안에도 탭 전환이 동작한다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
@@ -282,7 +286,7 @@ function lessonCompleteExit(): Element {
 
 // 맵 → 시트 → `시작` → 학습 화면이 활성 스택 최상단에 옵니다.
 test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 덮고 최상단에 온다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -296,7 +300,7 @@ test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 
 // 갈립니다. `stepId`가 union을 타고 화면까지 도달하지 않으면 둘이 같아집니다.
 // (`greeting`은 done이지만 시트가 열리고 시작됩니다.)
 test("서로 다른 두 스텝에서 시작하면 문항 텍스트가 갈린다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -327,7 +331,7 @@ test("서로 다른 두 스텝에서 시작하면 문항 텍스트가 갈린다"
 // 나가는 수단은 그대로 하나입니다(`×`). 그것으로 나가면 맵 루트에서 탭이 다시 서고,
 // 다시 들어가면 문항은 처음부터입니다 — 진행이 남지 않는다는 것은 그대로 봅니다.
 test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은 처음부터다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
 
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
@@ -361,7 +365,7 @@ test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은
 // `결과 보기` 탭 뒤 곧장 맵이 뜨지 않습니다. 완료 화면의 `Check`를 눌러야 맵에 닿습니다. 경로가 길어질 뿐
 // 단언의 끝은 같습니다.
 test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다음이 current다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
 
   answerAllQuestions("ordering", mixedPick);
@@ -396,7 +400,7 @@ test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다
 // 안 한 채 나가면 "진행이 안 바뀐다"가 이탈 때문인지 아무 일도 없었기 때문인지
 // 갈리지 않습니다.
 test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
 
   const answerIndex = questionsForStep("ordering")[0].answerIndex;
@@ -429,7 +433,7 @@ test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
 // 화면을 거칩니다 — 각 탭 뒤에 완료 화면의 `Check`를 눌러야 다음 단언(맵의 스텝
 // 상태)에 닿습니다.
 test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
@@ -465,7 +469,7 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
 // 통과합니다(공허하게 통과할 수 있는 자리입니다). 완료 경로는 평가 화면을
 // 거칩니다 — 완료 화면의 `Check`까지 눌러야 맵에 닿습니다.
 test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
@@ -484,7 +488,7 @@ test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있�
 // 잠긴 스텝에서는 시작할 수 없습니다(회귀 단언). 잠김이라는 것을 먼저 읽어
 // 앵커로 삼습니다.
 test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("ui-lynx-learning-unit-directions")).toHaveAttribute(
     "data-status",
@@ -505,7 +509,7 @@ test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", (
 // 단언의 대체가 아니라 나머지 절반입니다). 완료를 확인하려면 완료 화면의 Check까지
 // 눌러야 맵의 스텝 상태를 읽을 수 있습니다.
 test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행으로 돌아온다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
@@ -516,7 +520,7 @@ test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행
   );
 
   cleanup();
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
@@ -542,7 +546,7 @@ test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행
 // 화면이 뜹니다. `mixedPick`은 가운데 문항만 오답이라 2/3 — `minCorrectCount: 2`에서
 // 정확히 통과 경로이고, 실수가 하나라 제목이 `PERFECT`가 아닙니다.
 test("I1: 문항 셋을 통과 경로로 마치고 결과 보기를 누르면 학습 완료 화면이 뜬다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
 
   answerAllQuestions("ordering", mixedPick);
@@ -556,7 +560,7 @@ test("I1: 문항 셋을 통과 경로로 마치고 결과 보기를 누르면 �
 // I2: 완료 화면의 실수 수가 실제로 고른 보기의 정오와 일치합니다 — 듣기의 이력이 완료
 // 화면까지 옵니다. `mixedPick`은 인덱스 1만 오답이고, 전부 정답이면 `PERFECT`입니다.
 test("I2: 완료 화면의 실수 수가 실제로 고른 보기의 정오와 일치한다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
@@ -577,7 +581,7 @@ test("I2: 완료 화면의 실수 수가 실제로 고른 보기의 정오와 �
 // 루트로 곧장 가므로(ADR-0007 D6) 이 관찰은 진입이 push였든 replace였든
 // 같습니다 — 이 테스트는 목적지를 짓고 진입 동작을 짓지 않습니다.
 test("I3: 완료 화면의 Check를 누르면 backToRoot 하나로 맵에 닿는다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
@@ -592,7 +596,7 @@ test("I3: 완료 화면의 Check를 누르면 backToRoot 하나로 맵에 닿는
 
 // I4: 통과가 완료를 겁니다 — 전에는 "듣기가 걸었다"였습니다.
 test("I4: 통과 뒤 맵으로 돌아오면 그 스텝이 done이고 다음이 current다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
@@ -611,7 +615,7 @@ test("I4: 통과 뒤 맵으로 돌아오면 그 스텝이 done이고 다음이 c
 // I5: 중도 이탈에는 평가가 없습니다 — 문항 하나만 응답하고 헤더 `맵으로`로 나가면
 // 진행이 안 바뀌고 평가 화면 자체가 뜨지 않습니다.
 test("I5: 문항 하나만 응답하고 헤더 맵으로 나가면 진행이 안 바뀌고 평가가 뜨지 않는다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
 
   const answerIndex = questionsForStep("ordering")[0].answerIndex;
@@ -638,7 +642,7 @@ test("I5: 문항 하나만 응답하고 헤더 맵으로 나가면 진행이 안
 // 노드를 다시 눌러 시트의 `시작`으로 듣기에 다시 들어갈 수 있습니다.
 // `incorrectPick`은 0/3이라 `minCorrectCount: 2`에서 확실히 미통과입니다.
 test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 current로 남아 다시 들어갈 수 있다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
 
   answerAllQuestions("ordering", incorrectPick);
@@ -746,7 +750,7 @@ afterEach(() => {
 // 나릅니다. 중간 어디서 stepId가 상수로 굳으면 여기서만 갈립니다.
 test("맵 → 시트 → 시작이면 그 스텝의 첫 문항 audioSource로 play가 불린다", () => {
   const { audio: calls } = stubHost();
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -759,7 +763,7 @@ test("맵 → 시트 → 시작이면 그 스텝의 첫 문항 audioSource로 pl
 // 앵커로 함께 읽습니다(같으면 아래 단언이 공허해집니다).
 test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 것으로 갈린다", () => {
   const { audio: calls } = stubHost();
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0)]);
@@ -780,7 +784,7 @@ test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 �
 // 지나 `question.audioSource`를 바꾸는 것까지가 관찰 대상입니다.
 test("넘김 층으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다", () => {
   const { audio: calls } = stubHost();
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
 
   fireEvent.tap(
@@ -802,7 +806,7 @@ test("넘김 층으로 문항을 넘기면 stop 뒤 새 source로 play가 불린
 // 있는 것을 함께 읽어 "화면이 통째로 비었다"와 갈라 놓습니다.
 test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아온다", () => {
   const { audio: calls } = stubHost();
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
@@ -828,7 +832,7 @@ test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아�
 // 뿐 "멎지 않은 재생이 남지 않는다"의 뜻은 그대로입니다.
 test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남지 않는다", () => {
   const { audio: calls } = stubHost();
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
 
   answerAllQuestions("ordering", mixedPick);
@@ -866,7 +870,7 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
 // 다시 튼다.** 떠나는 수단만 갈립니다.
 test("학습 화면을 나가면 stop이 불리고, 다시 들어가면 첫 문항으로 다시 튼다", () => {
   const { audio: calls } = stubHost();
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
@@ -904,7 +908,7 @@ test("학습 화면을 나가면 stop이 불리고, 다시 들어가면 첫 문�
 // 파생해 짓고(ADR-0016 D11-1), 계약이 값까지 고정한 문자열과도 대조합니다.
 test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 그 낱말이 화면에 있는 것뿐이다", () => {
   const { announce } = stubHost();
-  const { container } = renderApp(<App />);
+  const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -964,7 +968,7 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
   // 단언이 조용히 공허해집니다.
   expect(typeof NativeModules).toBe("undefined");
 
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -1012,7 +1016,7 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
 // "어딘가에 하나 있다"가 아니라 "그 화면의 것이 있다"를 확인하기 위해서입니다.
 // 첫 화면이 여정 맵이라(홈 탭 제거) 순회는 여정 맵 → 롤플레이 → 설정입니다.
 test("탭 셋을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 있다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
 
@@ -1029,7 +1033,7 @@ test("탭 셋을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 
 // 여정 맵 → 스텝 tap → 시트 `시작` → 듣기 화면. `startStep`은 위쪽 「학습 루프」
 // 절이 정의한 것을 그대로 재사용합니다(함수 선언은 호이스팅됩니다).
 test("탭이 아니라 스택에 쌓인 화면(듣기)에도 스크롤 컨테이너가 있다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -1041,7 +1045,7 @@ test("탭이 아니라 스택에 쌓인 화면(듣기)에도 스크롤 컨테이
 // 그대로 유지합니다 — 시트는 스크롤 밖이므로 시트가 열려도 맵의 스크롤
 // 컨테이너는 사라지지 않습니다.
 test("시트가 열려 있어도 여정 맵의 스크롤 컨테이너는 그대로다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
 

@@ -44,6 +44,7 @@ import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
 import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
 import { profileList, termsSectionList } from "./app-content";
 import type { Screen } from "./nav-state";
+import { renderEpisodeIntroScreen } from "./render-episode-intro";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -104,6 +105,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return <ProfileScreen items={profileList} onExit={wiring.onExitSettingsStack} />;
     case "terms":
       return <TermsScreen sections={termsSectionList} onExit={wiring.onExitSettingsStack} />;
+    case "episode-intro":
+      return renderEpisodeIntroScreen(screen, wiring);
     case "notifications":
       // 남아 있는 알림을 그대로 그리고, 선택·삭제·나가기는 결선으로 올립니다.
       return (

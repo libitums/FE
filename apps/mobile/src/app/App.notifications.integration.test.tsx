@@ -17,6 +17,10 @@ import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 
+// 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
+// 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
+const seenIntros = ["tutorial"] as const;
+
 // App · navigation · 여정 맵 머리 알림 버튼 · 알림 화면 · 알림 항목 · 대상 분기(기존
 // 여정 콜백 재사용 · tabRootActions)의 실제 결선을 봅니다. 목킹하지 않습니다(외부
 // IO 없음). sink는 App prop으로 주입합니다 — 순서를 보는 케이스는 공용 로그 배열
@@ -56,7 +60,7 @@ function renderApp(ui: Parameters<typeof render>[0]) {
 }
 
 function openNotificationsScreen() {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 }
 
@@ -241,6 +245,7 @@ test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하�
   // 시작합니다.
   renderApp(
     <App
+      seenEpisodeIntroIds={seenIntros}
       journeySeed={{
         completedStepCount: 5,
         completedMessengerUnitIds: ["appointment-confirmation"],
@@ -274,7 +279,7 @@ test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하�
 
 test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재마운트로는 늘지 않는다(A3)", () => {
   const notificationEventSink = vi.fn<NonNullable<NotificationEventSink>>();
-  renderApp(<App notificationEventSink={notificationEventSink} />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} notificationEventSink={notificationEventSink} />);
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 
   expect(notificationEventSink.mock.calls.map(([event]) => event)).toEqual([
@@ -302,7 +307,11 @@ test("[IN11] 메신저 대상 tap의 공용 로그 순서는 알림 탭 이벤�
   const item = messengerNotificationItem();
 
   renderApp(
-    <App notificationEventSink={notificationEventSink} messengerEventSink={messengerEventSink} />,
+    <App
+      seenEpisodeIntroIds={seenIntros}
+      notificationEventSink={notificationEventSink}
+      messengerEventSink={messengerEventSink}
+    />,
   );
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   tapNotificationItem(item);
@@ -328,6 +337,7 @@ test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이고 세 특별 �
 
   renderApp(
     <App
+      seenEpisodeIntroIds={seenIntros}
       notificationEventSink={notificationEventSink}
       messengerEventSink={messengerEventSink}
       phoneCallEventSink={phoneCallEventSink}
@@ -356,6 +366,7 @@ test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 �
 
   renderApp(
     <App
+      seenEpisodeIntroIds={seenIntros}
       notificationEventSink={notificationEventSink}
       visualNovelEventSink={visualNovelEventSink}
     />,
@@ -385,7 +396,7 @@ test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 �
 test("[IN14] sink 없이도 버튼·항목 tap이 던지지 않는다(가드)", () => {
   notificationItems().forEach((item) => {
     cleanup();
-    expect(() => renderApp(<App />)).not.toThrow();
+    expect(() => renderApp(<App seenEpisodeIntroIds={seenIntros} />)).not.toThrow();
     expect(() => fireEvent.tap(screen.getByTestId("top-bar-notifications"), {})).not.toThrow();
 
     expect(() => {
@@ -448,7 +459,9 @@ test("[IN16] 알림을 모두 지우면 빈 상태가 선다", () => {
 
 test("[IN17] 삭제는 공용 로그에 삭제 이벤트 하나를 남기고 화면을 옮기지 않는다", () => {
   const events: NotificationEvent[] = [];
-  renderApp(<App notificationEventSink={(event) => events.push(event)} />);
+  renderApp(
+    <App seenEpisodeIntroIds={seenIntros} notificationEventSink={(event) => events.push(event)} />,
+  );
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   const item = messengerNotificationItem();
 
