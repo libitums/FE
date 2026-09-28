@@ -11,6 +11,10 @@ import { cultureQuizScreenTitle } from "../screens/culture-quiz/culture-quiz";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 
+// 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
+// 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
+const seenIntros = ["tutorial"] as const;
+
 // 결선(`App.tsx`)이 배정표(`learningFormForStep`)를 **실제로 경유하는지**를
 // 짓습니다.
 //
@@ -135,7 +139,7 @@ const titleTextByForm: Record<LearningForm, ((ordinal: number) => string) | unde
 // 통과합니다 — red의 근거가 아닙니다.
 test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화면을 연다", (form) => {
   formStub.current = form;
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -164,7 +168,7 @@ test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화
 // 순간 제목과 부재 단언이 함께 초록이 됩니다.
 test("learningFormForStep이 sentence-order·word-choice를 돌려줘도 던지지 않고 각 화면이 그대로 뜬다", () => {
   formStub.current = "sentence-order";
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   expect(screen.getByTestId("sentence-order-screen-title")).toHaveTextContent(
     sentenceOrderScreenTitle(journeyStepOrdinal("ordering")),
@@ -173,7 +177,7 @@ test("learningFormForStep이 sentence-order·word-choice를 돌려줘도 던지�
   cleanup();
 
   formStub.current = "word-choice";
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
   expect(screen.getByTestId("word-choice-screen-title")).toHaveTextContent(
     wordChoiceScreenTitle(journeyStepOrdinal("ordering")),
@@ -191,7 +195,7 @@ const formByStep = (id: JourneyStepId): LearningForm =>
 
 test("배정표가 스텝마다 갈리면 ordering 스텝에서는 그 스텝에 배정된 화면(sentence-order)이 열린다", () => {
   formStub.current = formByStep;
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -202,7 +206,7 @@ test("배정표가 스텝마다 갈리면 ordering 스텝에서는 그 스텝에
 
 test("배정표가 스텝마다 갈리면 greeting 스텝에서는 그 스텝에 배정된 화면(word-choice)이 열린다", () => {
   formStub.current = formByStep;
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("greeting");
 
@@ -217,7 +221,7 @@ test("배정표가 스텝마다 갈리면 greeting 스텝에서는 그 스텝에
 // 않는 한 계속 통과해야 합니다 — red의 근거가 아니라 "표가 바뀌지 않았다"의
 // 회귀 대조입니다.
 test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배정대로 듣기 화면을 연다", () => {
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -237,7 +241,7 @@ test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배�
 // 성립합니다.
 test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵으로가 맵으로 돌아온다(문화 학습이 아니다)", () => {
   formStub.current = "culture";
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
 
@@ -267,7 +271,7 @@ test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵�
 // 위에서 재시작합니다.
 test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시 시작하면 문화 학습이 다시 뜬다", () => {
   formStub.current = "culture";
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
@@ -296,7 +300,7 @@ test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시
 // 원래 지키려던 것입니다.
 test("문화 퀴즈에는 탭이 없고, 맵으로가 두 겹을 지나 맵에 닿는다", () => {
   formStub.current = "culture";
-  renderApp(<App />);
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
