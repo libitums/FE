@@ -93,3 +93,43 @@
   line-height: var(--libitum-typography-body-l-line-height);
   letter-spacing: var(--libitum-typography-body-l-letter-spacing);
 }
+
+/* 그리기 무대 — 안내 글자와 표면을 겹쳐 세웁니다 ⟨2026-09-28⟩.
+
+   면 · 테두리 · 모서리가 표면에서 여기로 옮겨 왔습니다(`drawing-surface.css`). 크기는
+   표면과 **같은 수**여야 합니다 — 무대가 더 크면 안내 글자가 표면 밖에 걸쳐 그려지고,
+   그러면 사람이 보는 안내와 호스트가 재는 안내가 갈립니다. */
+.handwriting-probe-screen-trace-stage {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  flex-shrink: 0;
+  align-self: center;
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-background-primary);
+}
+
+/* 안내 글자 — 따라 쓸 흐린 글자입니다. 표면 **뒤**에 섭니다(DOM에서 먼저 옵니다).
+
+   ⚠ **이 글자가 화면에 서는 자리와 호스트가 재는 자리가 같다는 보장이 없습니다.**
+   호스트는 같은 글자를 같은 크기로 비트맵 가운데에 그리지만, 줄 높이와 베이스라인을
+   UIKit이 정하고 여기서는 Lynx가 정합니다. 둘이 몇 pt 어긋나면 **사람은 잘 따라 썼는데
+   수는 낮게** 나옵니다. 그 어긋남을 재는 것이 탐침의 일이고, 어긋나면 호스트 쪽 그리기
+   자리를 고칩니다 — 사람이 보는 것이 정본입니다. */
+.handwriting-probe-screen-guide {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 300px;
+  text-align: center;
+  color: var(--libitum-color-gray-400);
+  /* ⚠ **호스트와 같은 글꼴 이름을 적습니다.** 비워 두면 Lynx는 자기 기본 글꼴로,
+     호스트는 시스템 글꼴로 그려 **서로 다른 글자 모양**을 재게 됩니다 — 2026-09-28에
+     그 어긋남을 실제로 쟀습니다(화면의 안내보다 호스트 쪽이 12pt 아래에 섰습니다).
+     글자 모양이 갈리면 잘 따라 쓴 사람이 낮은 수를 받습니다. */
+  font-family: "Apple SD Gothic Neo";
+  font-size: 240px;
+  line-height: 300px;
+}

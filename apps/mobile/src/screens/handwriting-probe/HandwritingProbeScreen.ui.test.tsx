@@ -59,7 +59,7 @@ test("[SC2] 전역 목록의 줄 수가 스스로 적은 수와 같고 오름차
   expect(names).toEqual([...names].sort());
 });
 
-test("[SC3] 액션 행에 표면·지우기·읽기·결과 줄·계수 줄이 그 순서로 있다", () => {
+test("[SC3] 액션 행에 안내·표면·지우기·읽기·결과·견주기·견주기 결과·계수가 그 순서로 있다", () => {
   render(<HandwritingProbeScreen />);
 
   const actions = screen.getByTestId("handwriting-probe-screen-actions");
@@ -70,10 +70,15 @@ test("[SC3] 액션 행에 표면·지우기·읽기·결과 줄·계수 줄이 �
   expect(
     [...actions.querySelectorAll("[data-testid]")].map((node) => node.getAttribute("data-testid")),
   ).toEqual([
+    // ⟨2026-09-28⟩ 안내 글자가 표면 **앞**에 옵니다 — 뒤에 깔려야 하고, 겹침의 순서를
+    // DOM 순서가 집니다. 앞에 두지 않으면 안내가 획을 덮습니다.
+    "handwriting-probe-screen-guide",
     "drawing-surface",
     "handwriting-probe-screen-clear",
     "handwriting-probe-screen-read",
     "handwriting-probe-screen-result",
+    "handwriting-probe-screen-compare",
+    "handwriting-probe-screen-trace",
     "handwriting-probe-screen-counts",
   ]);
 
