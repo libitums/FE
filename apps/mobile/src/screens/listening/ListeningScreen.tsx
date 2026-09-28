@@ -115,7 +115,11 @@ export function ListeningScreen({
       form="listening"
       // 세션 헤더가 세는 것은 문항입니다 ⟨2026-09-28⟩. 완료 상태에는 지금 푸는 문항이
       // 없으므로 마지막 문항 자리에 둡니다 — 막대가 그때 (N-1)/N에서 멈춥니다.
-      questionIndex={question === null ? questions.length - 1 : state.questionIndex}
+      //
+      // 문항이 0개인 활동에서는 `Math.max`가 -1을 막습니다. 그 상태에서 계약은 순번을
+      // 아예 안 읽지만, 여기서 -1을 만들지 않는 것이 「없는 자리를 가리키지 않는다」를
+      // 이 파일에서도 참으로 만듭니다.
+      questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
       instruction="말의 뜻으로 알맞은 것을 고르세요."
       onExit={onExit}

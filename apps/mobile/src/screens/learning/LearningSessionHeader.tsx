@@ -57,9 +57,13 @@ export function LearningSessionHeader({
                 current-color={color.gray[700]}
               />
             </view>
-            <text className="learning-shell-progress-label" data-testid="learning-shell-chapter">
-              {header.progressLabel}
-            </text>
+            {/* 문항이 0개면 셀 것이 없어 순번을 세우지 않습니다 — 빈 `<text>`를 두면
+                보조기술에 빈 정지점이 남습니다. */}
+            {header.progressLabel === undefined ? null : (
+              <text className="learning-shell-progress-label" data-testid="learning-shell-chapter">
+                {header.progressLabel}
+              </text>
+            )}
             {/* 나가기와 마주 보는 빈 자리입니다 — 같은 폭이어야 순번이 줄 가운데 섭니다.
                 보이는 것이 없으므로 접근성 트리에 올리지 않습니다. */}
             <view className="learning-shell-session-spacer" />

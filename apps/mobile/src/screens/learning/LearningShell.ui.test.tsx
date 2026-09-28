@@ -320,3 +320,17 @@ test("계속하기를 고르면 모달만 닫히고 onExit은 불리지 않는�
   expect(onExit).not.toHaveBeenCalled();
   expect(screen.queryByTestId("ui-lynx-dialog")).not.toBeInTheDocument();
 });
+
+// 문항이 0개인 활동에서도 껍데기가 서야 합니다 — 낱말 고르기가 오늘 그 상태이고, 그
+// 화면이 옮겨오는 순간 이 자리가 죽으면 앱이 죽습니다.
+test("문항이 0개여도 던지지 않고 순번만 서지 않는다", () => {
+  renderShell({ questionIndex: 0, questionCount: 0 });
+
+  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-chapter")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
+    "accessibility-label",
+    "Listening, 문항 없음",
+  );
+  expect(screen.queryByTestId("learning-shell-progress-fill")).not.toBeInTheDocument();
+});

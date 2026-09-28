@@ -38,8 +38,19 @@ describe("learningSessionHeader", () => {
     expect(learningSessionHeader("culture", 0, 1).formLabel).toBe("Culture");
   });
 
-  it("문항 수가 0이면 던진다", () => {
-    expect(() => learningSessionHeader("listening", 0, 0)).toThrow(/1 이상의 정수/);
+  // 문항 0개는 오류가 아니라 실재하는 상태입니다 — 낱말 고르기는 오늘 다섯 스텝이 전부
+  // 빈 배열이고 그 화면은 마운트가 곧 완료입니다. 던지면 그 화면이 껍데기로 옮겨오는
+  // 순간 앱이 죽습니다.
+  it("문항이 0개면 던지지 않고 순번을 내지 않는다", () => {
+    const header = learningSessionHeader("word-choice", 0, 0);
+
+    expect(header.progressLabel).toBeUndefined();
+    expect(header.fillPercent).toBe(0);
+    expect(header.accessibilityLabel).toBe("Word choice, 문항 없음");
+  });
+
+  it("문항 수가 음수면 던진다", () => {
+    expect(() => learningSessionHeader("listening", 0, -1)).toThrow(/0 이상의 정수/);
   });
 
   it("순번이 문항 수를 넘으면 던진다", () => {
