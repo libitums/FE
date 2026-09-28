@@ -124,11 +124,18 @@ export function ListeningScreen({
       }
       card={
         <view className="listening-screen-content" data-testid="listening-screen-content">
-          {/* 판정 배지입니다. **문항이 서 있던 그 카드 안**에서 성공 · 실패가
-              뒤집힙니다 — 보기의 표식이 걷힌 뒤로 보이는 판정 채널이 이것 하나입니다. */}
-          {question === null || !hasAnswered(state) ? null : (
-            <ListeningVerdict result={answeredResultOf(state, question)} />
-          )}
+          {/* 판정 배지 자리입니다. **비어 있어도 자리를 지킵니다** — 배지가 뜨고 질 때
+              카드 높이가 흔들리면 그 아래 보기가 함께 밀리고, 밀린 만큼이 화면 밖으로
+              나갑니다. 디자인도 카드 위쪽을 이렇게 씁니다(Figma 53-14231: 배지가 y14,
+              제시문이 y89 — 배지가 없어도 그 자리는 비어 있습니다).
+
+              **문항이 서 있던 그 카드 안**에서 성공 · 실패가 뒤집힙니다 — 보기의 표식이
+              걷힌 뒤로 보이는 판정 채널이 이것 하나입니다. */}
+          <view className="listening-screen-verdict-slot">
+            {question === null || !hasAnswered(state) ? null : (
+              <ListeningVerdict result={answeredResultOf(state, question)} />
+            )}
+          </view>
 
           {/* 제시 채널입니다. 오디오가 생기면 **이 컴포넌트만** 통째로 갈립니다. */}
           {question === null ? null : (

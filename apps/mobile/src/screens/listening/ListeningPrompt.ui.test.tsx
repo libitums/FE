@@ -269,6 +269,7 @@ test("두 상태에서 class 속성이 한 글자도 갈리지 않는다 — 상
     "listening-prompt-replay-icon",
     "listening-prompt-playback",
     "listening-prompt-playback-icon",
+    "listening-prompt-controls-spacer",
   ]);
 
   act(() => {

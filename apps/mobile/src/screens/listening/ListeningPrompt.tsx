@@ -146,8 +146,9 @@ export function ListeningPrompt({
         </view>
       ) : null}
 
-      {/* 컨트롤 둘. 다시듣기가 왼쪽 · 작고, 재생/일시정지가 가운데 · 큽니다 — 크기가
-          둘 중 어느 것이 주된 조작인지를 말합니다(Figma 53-14231). */}
+      {/* 컨트롤 둘. 다시듣기가 왼쪽 · 작고, 재생/일시정지가 **줄 한가운데** · 큽니다 —
+          크기와 자리가 둘 중 어느 것이 주된 조작인지를 말합니다(Figma 53-14231에서
+          재생의 중심이 카드 중심과 같습니다). */}
       <view className="listening-prompt-controls">
         <view
           className="listening-prompt-replay"
@@ -185,6 +186,9 @@ export function ListeningPrompt({
             current-color={color.fg.neutral}
           />
         </view>
+        {/* 다시듣기와 마주 보는 빈 자리입니다 — 같은 폭을 져야 재생이 줄 한가운데
+            섭니다. 보이는 것이 없으므로 접근성 트리에 올리지 않습니다. */}
+        <view className="listening-prompt-controls-spacer" />
       </view>
     </view>
   );

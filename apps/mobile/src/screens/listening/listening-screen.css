@@ -197,6 +197,21 @@
 
 /* 완료 제목입니다. `flex: 1`은 `.listening-screen-scroll`이 집니다.
    점수·정답 수를 표시하지 않습니다 — 게임화는 범위 밖입니다. */
+/* 판정 배지 자리입니다. 배지가 없어도 높이를 지킵니다 — 뜨고 질 때 카드가 흔들리면
+   아래 보기가 함께 밀립니다. 높이 40은 디자인의 배지 높이입니다(Figma 79-6138).
+
+   **고정 높이가 아니라 하한입니다**(ADR-0020 D5) — Dynamic Type에서 배지 글자가
+   커지면 자리도 따라 커집니다. */
+.listening-screen-verdict-slot {
+  min-height: var(--libitum-spacing-40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 완료 문구입니다. 문항이 서 있던 그 카드 안에 혼자 남으므로 가운데에 섭니다 —
+   여백은 카드가 이미 집니다. */
 .listening-screen-complete {
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-heading-s-font-family);

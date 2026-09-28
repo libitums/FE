@@ -23,10 +23,11 @@ export function ListeningChoice({
 }: ListeningChoiceProps): ReactNode {
   return (
     <view
-      // 상태 클래스가 없습니다. 판정은 예약 상태어를 다섯째로 열지 않고
-      // (ADR-0003 D7), 응답 여부로 갈리는 시각 값도 이제 없습니다 — 넷이 같은
-      // 모양으로 섭니다.
-      className="listening-choice"
+      // 판정이 클래스로 붙습니다 — 고른 보기의 글자와 테두리가 `feedback-correct` ·
+      // `feedback-incorrect`로 갈립니다(2026-09-28). 예약 상태어(ADR-0003 D7의
+      // `selected`·`done`·`current`·`locked`)를 늘리지 않습니다: 낱말이 `correct` ·
+      // `incorrect`라 그 넷과 겹치지 않고, 값의 정본은 `AnswerResult` 타입입니다.
+      className={"listening-choice" + (result === null ? "" : ` listening-choice-${result}`)}
       data-testid={`listening-choice-${index}`}
       // 언제나 붙고 값만 갈립니다. 조건부로 빼면 "속성을 붙이는 것을
       // 잊었다"와 "판정이 없다"가 구별되지 않습니다.
