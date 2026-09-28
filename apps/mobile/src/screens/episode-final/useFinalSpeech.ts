@@ -128,11 +128,10 @@ export function useAnnounceResult(
   phase: EpisodeFinalPhase,
   result: AnswerResult | null,
 ): void {
+  // `result`는 차례 · 국면에서 파생하므로 의존성에 함께 두어도 발화가 늘지 않습니다.
   useEffect(() => {
     if (result !== null) {
       announce(`채점 결과, ${answerResultLabel(result)}`);
     }
-    // `result`는 차례 · 국면에서 파생합니다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionIndex, phase]);
+  }, [questionIndex, phase, result]);
 }
