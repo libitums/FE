@@ -1,0 +1,182 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 치수 가운데 맞는 토큰이
+   없는 것은 디자인 실측값(Figma 65-466)을 px로 적고 그 자리에 이유를 남깁니다. */
+
+/* 화면 상자 — 평가 화면과 같은 여백 어휘입니다. 아래 여백에 바텀 네비게이션 몫(68pt =
+   48 + 12 + 위 여백 8)을 더합니다 — 바가 콘텐츠 위에 겹치므로 없으면 `Check`가 가립니다. */
+.lesson-complete-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: flex-start;
+  align-items: center;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    calc(
+      var(--libitum-layout-screen-padding-bottom) + var(--libitum-spacing-48) +
+        var(--libitum-spacing-12)
+    );
+  background: var(--libitum-color-background-primary);
+}
+
+/* 칩 사이 9는 여정 맵 상단 바와 같은 실측값입니다. */
+.lesson-complete-screen-stats {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+}
+
+/* 세로 여백 둘은 남는 높이를 나눠 가집니다 — 디자인(874pt)에서 표식 위 114 · `Check` 위
+   165라 2 : 3으로 나눕니다. 고정값으로 두면 바텀 네비게이션이 서는 실제 화면에서 높이가
+   모자라 `Check`가 카드에 붙습니다. 모자라도 24는 지킵니다. */
+.lesson-complete-screen-spacer-top,
+.lesson-complete-screen-spacer {
+  min-height: var(--libitum-spacing-24);
+}
+
+.lesson-complete-screen-spacer-top {
+  flex: 2;
+}
+
+.lesson-complete-screen-spacer {
+  flex: 3;
+}
+
+/* 완료 표식 — 지름 126 · 테두리 3은 디자인 실측값입니다. */
+.lesson-complete-screen-badge {
+  width: 126px;
+  height: 126px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--libitum-color-feedback-correct-surface);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-feedback-correct);
+  flex-shrink: 0;
+}
+
+.lesson-complete-screen-badge-icon {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+}
+
+/* 판정 묶음 — 제목 · 연속 알약 · 설명. 표식 아래 54(48 + 6)입니다. */
+.lesson-complete-screen-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  margin-top: calc(var(--libitum-spacing-48) + var(--libitum-spacing-6));
+  flex-shrink: 0;
+}
+
+.lesson-complete-screen-title {
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+}
+
+/* 연속 알약 — 안쪽 여백은 디자인 그대로 왼쪽 4 · 나머지 8입니다. */
+.lesson-complete-screen-streak {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-8) var(--libitum-spacing-8)
+    var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-brand-reward-disabled-surface);
+}
+
+.lesson-complete-screen-streak-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  flex-shrink: 0;
+}
+
+.lesson-complete-screen-streak-label {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+  color: var(--libitum-color-brand-primary);
+}
+
+.lesson-complete-screen-subtitle {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+  color: var(--libitum-color-gray-700);
+  text-align: center;
+}
+
+/* 보상 카드 줄 — 판정 묶음 아래 59(48 + 12로 근사), 카드 사이 11은 디자인 실측값입니다.
+   카드 폭은 내용 폭에 남는 폭을 고루 나눠 받습니다(디자인 196 : 163). */
+.lesson-complete-screen-rewards {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  gap: 11px;
+  margin-top: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+  flex-shrink: 0;
+}
+
+/* 카드 높이 90은 디자인 실측값입니다. */
+.lesson-complete-screen-reward {
+  flex: 1 1 auto;
+  height: 90px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: 0 var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-xl);
+}
+
+/* 다이아 카드 면(#D9F6FF)과 글자(#00C3FF)는 맞는 색 토큰이 없어 디자인 값을 적습니다. */
+.lesson-complete-screen-reward-diamond {
+  background-color: #d9f6ff;
+}
+
+.lesson-complete-screen-reward-diamond .lesson-complete-screen-reward-label {
+  color: #00c3ff;
+}
+
+.lesson-complete-screen-reward-grade {
+  background-color: var(--libitum-color-feedback-warning-surface);
+}
+
+.lesson-complete-screen-reward-grade .lesson-complete-screen-reward-label {
+  color: var(--libitum-color-feedback-warning);
+}
+
+.lesson-complete-screen-reward-icon {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+}
+
+.lesson-complete-screen-reward-label {
+  /* 줄을 바꾸지 않습니다 — 「AMAZING」이 두 줄로 쪼개지면 등급이 읽히지 않습니다. */
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: var(--libitum-typography-accent-reward-font-family);
+  font-size: var(--libitum-typography-accent-reward-font-size);
+  font-weight: var(--libitum-typography-accent-reward-font-weight);
+  line-height: var(--libitum-typography-accent-reward-line-height);
+  letter-spacing: var(--libitum-typography-accent-reward-letter-spacing);
+  text-align: center;
+}
+
+.lesson-complete-screen-action {
+  align-self: stretch;
+  flex-shrink: 0;
+}

@@ -3,6 +3,7 @@
 // `completeStep`)은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
 
 import { AssessmentScreen } from "../screens/assessment/AssessmentScreen";
+import { assessmentPassCriterion, judgeAssessment } from "../screens/assessment/assessment";
 import { CultureScreen } from "../screens/culture/CultureScreen";
 import { cultureNarrativeForStep } from "../screens/culture/culture";
 import { CultureQuizScreen } from "../screens/culture-quiz/CultureQuizScreen";
@@ -10,6 +11,8 @@ import { HandwritingProbeScreen } from "../screens/handwriting-probe/Handwriting
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import { journeyStepOrdinal, learningFormsForStep } from "../screens/journey-map/journey-map";
 import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
+import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
+import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
 import { LoginScreen } from "../screens/login/LoginScreen";
@@ -125,6 +128,21 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         />
       );
     case "assessment":
+      // 통과하면 학습 완료 화면, 미통과면 평가 화면입니다. 판정은 셸(`onFinishLearning`)과
+      // 같은 순수 함수 · 같은 상수 · 같은 결과로 다시 내므로 둘이 갈리지 않습니다.
+      // 지표 셋은 아직 규칙이 없어 0이고(여정 맵과 같습니다), 보상은 임시값입니다.
+      if (judgeAssessment(screen.results, assessmentPassCriterion) === "passed") {
+        return (
+          <LessonCompleteScreen
+            results={screen.results}
+            streakDays={0}
+            trophyCount={0}
+            diamondCount={0}
+            reward={lessonRewardPlaceholder}
+            onExit={wiring.onExitAssessment}
+          />
+        );
+      }
       return (
         <AssessmentScreen
           stepOrdinal={journeyStepOrdinal(screen.stepId)}

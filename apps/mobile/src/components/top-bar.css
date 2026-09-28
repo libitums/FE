@@ -17,45 +17,7 @@
   gap: 9px;
 }
 
-/* 지표 칩 — 누르면 지표 모달을 엽니다. 높이는 디자인 실측값 그대로라 Apple HIG의
-   44pt에는 못 미칩니다(알림 버튼과 같은 사정입니다). */
-.top-bar-chip {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--libitum-spacing-2);
-  padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
-  border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-50);
-  border-radius: var(--libitum-radius-sm);
-  /* 면을 칠하지 않습니다 — 화면 바탕이 그대로 비칩니다(2026-09-27 디자인 반영).
-     칩을 가르는 것은 테두리와 안의 아이콘 · 숫자이고, 흰 면은 그 일에 보태는 것이
-     없었습니다. */
-}
-
-.top-bar-chip-icon {
-  width: var(--libitum-icon-size-md);
-  height: var(--libitum-icon-size-md);
-  flex-shrink: 0;
-}
-
-/* 숫자 색은 칩마다 갈립니다 — 아이콘과 같은 색을 써서 둘이 한 덩어리로 읽힙니다.
-   색이 유일한 구분 채널이 아닙니다: 아이콘 모양이 먼저 가릅니다(WCAG 1.4.1). */
-.top-bar-chip-streak,
-.top-bar-chip-trophy {
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-size: var(--libitum-typography-label-m-font-size);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
-}
-
-.top-bar-chip-streak {
-  color: var(--libitum-color-brand-secondary);
-}
-
-.top-bar-chip-trophy {
-  color: var(--libitum-color-feedback-warning);
-}
+/* 지표 칩 하나하나의 모양은 `components/stat-chip.css`가 집니다. */
 
 /* 알림 버튼 — 원형입니다. 아이콘 32 + 패딩 2 × 2 = 36pt라 WCAG 2.5.8(24 × 24)은
    넘지만 Apple HIG의 44pt에는 못 미칩니다. 디자인 실측값을 그대로 따른 결과입니다

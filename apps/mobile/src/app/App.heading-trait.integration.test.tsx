@@ -120,6 +120,11 @@ function mixedPick(answerIndex: number, questionIndex: number): number {
   return questionIndex === 1 ? (answerIndex + 1) % 4 : answerIndex;
 }
 
+// 전부 오답입니다 — `App.integration.test.tsx`의 동명 헬퍼와 같은 형태입니다.
+function incorrectPick(answerIndex: number): number {
+  return (answerIndex + 1) % 4;
+}
+
 // 제목 축에 오른 자리를 트리 순서대로 앵커로 냅니다. `data-testid`가 없는
 // 요소는 클래스명으로 찍습니다 — 게이트가 배제한 자리 중에는 `data-testid`가 없는
 // 것이 있고, `null`로 찍히면 러너 출력이 어느 자리인지 말하지 못합니다
@@ -242,16 +247,30 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-complete에서 계약이
 // 것으로는 이 자리의 존재를 아무도 안 지으므로(공허하게 통과할 수 있는 자리이므로)
 // 그 자리 자신을 `querySelector`로 먼저 짓습니다. `data-testid`가 없어
 // `getByTestId`를 못 씁니다.
-test("[I3] 제목 축 닫힌 집합이 상태 assessment에서 계약이 고정한 목록과 정확히 같다", () => {
+test("[I3] 제목 축 닫힌 집합이 상태 assessment(미통과)에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
+  // 통과하면 평가 화면이 아니라 학습 완료 화면이 뜹니다 — 평가 화면은 미통과 경로에만 섭니다.
   startStep("ordering");
-  answerAllQuestions("ordering", mixedPick);
+  answerAllQuestions("ordering", incorrectPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
   expect(container.querySelector(".assessment-screen-verdict-label")).not.toBeNull();
 
   expect(headingAxis(container)).toEqual(["assessment-screen-title"]);
+});
+
+// 통과 경로의 학습 완료 화면입니다. 제목 하나만 제목 축에 오릅니다 — 지표 칩 · 연속
+// 알약 · 보상 카드 · 설명은 제목이 아닙니다.
+test("[I3b] 제목 축 닫힌 집합이 학습 완료 화면에서 제목 하나뿐이다", () => {
+  const { container } = renderApp(<App />);
+
+  startStep("ordering");
+  answerAllQuestions("ordering", mixedPick);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  expect(screen.getByTestId("lesson-complete-screen-subtitle")).toBeInTheDocument();
+
+  expect(headingAxis(container)).toEqual(["lesson-complete-screen-title"]);
 });
 
 // 아래 케이스들(`word-choice`·`sentence-order`·`culture-quiz`)은 각 화면의 문항
