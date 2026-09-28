@@ -45,6 +45,9 @@ const paymentMethod = { title: "Visa •••• 4242", description: "Default p
 
 const assurances = ["Secure payment", "Instant delivery", "VAT included"] as const;
 
+// 안내의 버튼입니다. 바뀌지 않으므로 렌더마다 새로 만들지 않습니다.
+const noticeActions = [{ id: "close", label: "확인" }] as const;
+
 export function GemPurchaseScreen({ gemBalance, onClose }: GemPurchaseScreenProps): ReactNode {
   // 이 레이어는 셸 밖(`position: fixed`)이라 셸의 safe area 여백을 받지 못합니다 —
   // 지표 모달과 같이 스스로 읽습니다(lib/safe-area.ts).
@@ -228,7 +231,7 @@ export function GemPurchaseScreen({ gemBalance, onClose }: GemPurchaseScreenProp
           <Dialog
             title={gemPaymentNotice.title}
             description={gemPaymentNotice.description}
-            actions={[{ id: "close", label: "확인" }]}
+            actions={noticeActions}
             phase="visible"
             bindaction={closeNotice}
           />
