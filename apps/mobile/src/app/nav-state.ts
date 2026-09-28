@@ -50,6 +50,10 @@ export type Screen =
   // 사용자가 누른 것은 유닛이고, 그 사실은 이 화면 인스턴스의 것이라 `back`과 함께
   // 죽는 것이 맞습니다(`assessment`의 `results`와 같은 판단).
   | { name: "episode-intro"; episodeId: string; target: EpisodeIntroTarget }
+  // 표지의 `Next` 뒤에 서는 에피소드 서사(비주얼 노벨)입니다. 표지를 갈아타고
+  // (`replace`) 서므로 표지와 같은 두 필드를 이어 받습니다 — 서사가 끝나면 서사 통화로,
+  // 통화가 없는 에피소드면 `target`으로 갑니다. 장면 번호는 화면 로컬입니다.
+  | { name: "episode-narrative"; episodeId: string; target: EpisodeIntroTarget }
   // 표지의 `Next` 뒤에 이어지는 서사 통화입니다. 표지와 같은 목적지를 이어 싣습니다 —
   // 통화가 끝나면 그 유닛을 엽니다.
   | { name: "episode-prologue-call"; episodeId: string; target: EpisodeIntroTarget }

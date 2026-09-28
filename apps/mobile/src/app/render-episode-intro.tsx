@@ -1,7 +1,9 @@
-// 에피소드 서사 route 셋(표지 · 서사 통화 · 학습 완료)을 화면으로 옮깁니다. `render-screen.tsx`에서 떼어 둔 것은 그
+// 에피소드 서사 route 넷(표지 · 서사 · 서사 통화 · 학습 완료)을 화면으로 옮깁니다. `render-screen.tsx`에서 떼어 둔 것은 그
 // 파일이 커서이고, `render-roleplay-screen.tsx`와 같은 갈래입니다.
 
 import { EpisodeIntroScreen } from "../screens/episode-intro/EpisodeIntroScreen";
+import { EpisodeNarrativeScreen } from "../screens/episode-narrative/EpisodeNarrativeScreen";
+import { episodeNarrativeFor } from "../screens/episode-narrative/episode-narrative";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 import { PrologueCallScreen } from "../screens/episode-intro/PrologueCallScreen";
@@ -64,6 +66,24 @@ function renderPrologueCallScreen(
   );
 }
 
+function renderEpisodeNarrativeScreen(
+  screen: Extract<Screen, { name: "episode-narrative" }>,
+  wiring: ScreenWiring,
+) {
+  const episode = findEpisode(screen.episodeId);
+  return (
+    // 에피소드가 바뀌면 새 인스턴스로 섭니다 — 장면 번호(화면 로컬)가 앞 에피소드에서 이어지지 않게 합니다.
+    <EpisodeNarrativeScreen
+      key={screen.episodeId}
+      insets={wiring.safeAreaInsets}
+      label={episode.label}
+      narrative={episodeNarrativeFor(screen.episodeId)}
+      onFinish={() => wiring.onFinishEpisodeNarrative(screen.episodeId, screen.target)}
+      onExit={wiring.onExitEpisodeNarrative}
+    />
+  );
+}
+
 // 서사 통화를 마친 뒤의 학습 완료 화면입니다. 판정할 결과가 없어 결과는 빈 목록이고
 // 판정은 늘 통과입니다 — 그래서 늘 실수 없음(PERFECT LESSON)이고 다시 하기가 없습니다. 지표 셋과 보상은 평가를 통과했을 때와 같은
 // 값(규칙이 없어 0 · 임시값)입니다.
@@ -86,13 +106,21 @@ function renderPrologueCompleteScreen(
 
 type EpisodeIntroFlowScreen = Extract<
   Screen,
-  { name: "episode-intro" | "episode-prologue-call" | "episode-prologue-complete" }
+  {
+    name:
+      | "episode-intro"
+      | "episode-narrative"
+      | "episode-prologue-call"
+      | "episode-prologue-complete";
+  }
 >;
 
 export function renderEpisodeIntroFlow(screen: EpisodeIntroFlowScreen, wiring: ScreenWiring) {
   switch (screen.name) {
     case "episode-intro":
       return renderEpisodeIntroScreen(screen, wiring);
+    case "episode-narrative":
+      return renderEpisodeNarrativeScreen(screen, wiring);
     case "episode-prologue-call":
       return renderPrologueCallScreen(screen, wiring);
     case "episode-prologue-complete":

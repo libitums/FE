@@ -2,8 +2,8 @@
   "targets": [
     {
       "path": "apps/mobile/dist/main.lynx.bundle",
-      "maxBytes": 975000,
-      "note": "모바일 Lynx 번들입니다. 2026-09-28 기준 928,813 bytes이고 상한은 약 5% 여유입니다. 앞선 상한(925,000)에서 롤플레이 화면의 플러스 줄이 약 16 kB를 더해 넘었습니다 — 대부분은 앱이 처음 쓰는 ui-lynx Dialog · Overlay의 코드와 CSS입니다."
+      "maxBytes": 1055000,
+      "note": "모바일 Lynx 번들입니다. 2026-09-28 기준 1,004,705 bytes이고 상한은 약 5% 여유입니다. 앞선 상한(975,000)에서 에피소드 서사(비주얼 노벨) 화면이 약 42 kB를 더해 넘었습니다(서사 통화 PR 위 962,944 bytes 기준) — 대부분은 앱이 처음 쓰는 ui-lynx VisualNovelDialog · Avatar의 코드와 CSS입니다. 그림은 온보딩 그림을 재사용해 이미지는 늘지 않았습니다."
     },
     {
       "path": "apps/mobile/dist/static/image",

@@ -22,6 +22,12 @@ export default defineConfig({
       "@libitums/ui-lynx/dialog": fileURLToPath(
         new URL("../../packages/ui-lynx/src/dialog/index.ts", import.meta.url),
       ),
+      "@libitums/ui-lynx/avatar": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/avatar/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/visual-novel-dialog": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/visual-novel-dialog/index.ts", import.meta.url),
+      ),
       "@libitums/ui-lynx/button": fileURLToPath(
         new URL("../../packages/ui-lynx/src/button/index.ts", import.meta.url),
       ),

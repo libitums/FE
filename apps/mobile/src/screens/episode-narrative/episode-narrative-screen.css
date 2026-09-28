@@ -1,0 +1,98 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 치수 가운데 맞는 토큰이
+   없는 것은 디자인 실측값(Figma 79-6304)을 px로 적고 그 자리에 이유를 남깁니다. */
+
+/* 가장자리까지 까는 화면입니다 — 셸이 여백을 잡지 않습니다(`isFullBleedScreen`). 그림 ·
+   넘기기 층은 절대 배치로 화면을 덮고, 버튼 · 대화는 여백 상자 안에 섭니다. */
+.episode-narrative-screen {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* 그림이 뜨기 전 한 틀 동안 비치는 색입니다 — 표지와 같은 어두운 면입니다. */
+  background-color: #1b1613;
+}
+
+.episode-narrative-screen-scene,
+.episode-narrative-screen-advance {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.episode-narrative-screen-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* 인물 — 디자인에서 화면 폭의 91%(367 / 402), 위 100에서 대화 패널 위(651)까지 섭니다.
+   좌우 17 · 위 100 · 아래 223은 874pt 화면의 실측값입니다. */
+.episode-narrative-screen-character-slot {
+  position: absolute;
+  top: 100px;
+  right: 17px;
+  bottom: 223px;
+  left: 17px;
+  display: flex;
+}
+
+.episode-narrative-screen-character {
+  flex: 1;
+}
+
+/* 위 명암 — 흰 머리 글자가 밝은 그림 위에서도 읽히게 합니다. 높이 116과 색 #1B1613은
+   디자인 값이고(표지 명암과 같은 색), 맞는 색 토큰이 없어 적어 둡니다. */
+.episode-narrative-screen-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 116px;
+  background-image: linear-gradient(to bottom, #1b1613, rgba(27, 22, 19, 0));
+}
+
+.episode-narrative-screen-safe {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 머리 — 나가기 · 제목 · 빈 자리. 위 여백은 디자인 28에 가까운 24 + 4입니다. */
+.episode-narrative-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4)) var(--libitum-spacing-16) 0;
+  flex-shrink: 0;
+}
+
+.episode-narrative-screen-title {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+/* RoundButton xl과 같은 폭입니다. */
+.episode-narrative-screen-header-spacer {
+  width: 56px;
+  height: 56px;
+}
+
+.episode-narrative-screen-spacer {
+  flex: 1;
+}
+
+/* 대화 패널 — 좌우 14 · 아래 18은 디자인 실측값입니다. */
+.episode-narrative-screen-dialog {
+  padding: 0 14px 18px;
+  flex-shrink: 0;
+}

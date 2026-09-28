@@ -8,9 +8,19 @@ export type VisualNovelDialogStatus = "revealing" | "ready";
 export type VisualNovelDialogContinueIndicator = "on" | "off";
 export type VisualNovelDialogContentLanguage = "ui" | "learning";
 export type VisualNovelDialogDirection = "ltr" | "rtl";
+/**
+ * 계속 표시의 움직임입니다. `bounce`는 위아래로 되풀이해 움직여 「눌러서 넘기라」를 알립니다.
+ * `reducedMotion`이면 `static`입니다.
+ */
+export type VisualNovelDialogIndicatorMotion = "bounce" | "static";
 
 type VisualNovelDialogBaseProps = {
   readonly line: string;
+  /**
+   * 대사 아래 구분선 뒤에 서는 번역입니다(FE 확장, 2026-09-28 디자인 반영). 학습 대사를
+   * 모국어로 옮긴 한 줄이고, 대사가 다 드러난 뒤(`ready`)에만 섭니다.
+   */
+  readonly translation?: string;
   readonly accessibilityLabel?: string;
   readonly surface?: VisualNovelDialogSurface;
   readonly reveal?: VisualNovelDialogReveal;
@@ -21,6 +31,12 @@ type VisualNovelDialogBaseProps = {
   readonly languageTag?: string;
   readonly direction?: VisualNovelDialogDirection;
   readonly reducedMotion?: boolean;
+  /**
+   * 패널을 눌렀을 때 부릅니다(FE 확장, 2026-09-28). 없으면 패널은 `event-through`라 탭을
+   * 받지 않습니다. 있으면 패널이 탭을 직접 받고 **전파를 끊습니다** — 패널을 감싼 화면이 같은
+   * 탭으로 한 번 더 넘기지 않게 하기 위해서입니다.
+   */
+  readonly bindtap?: () => void;
 };
 
 export type VisualNovelDialogSpeechProps = VisualNovelDialogBaseProps & {
@@ -66,12 +82,15 @@ export type VisualNovelDialogContract = {
   readonly contentLanguage: VisualNovelDialogContentLanguage;
   readonly continueIndicator: VisualNovelDialogContinueIndicator;
   readonly direction: VisualNovelDialogDirection;
+  readonly indicatorMotion: VisualNovelDialogIndicatorMotion;
   readonly languageTag?: string;
   readonly line: string;
   readonly reveal: VisualNovelDialogReveal;
   readonly showContinueIndicator: boolean;
   readonly speakerName?: string;
   readonly status: VisualNovelDialogStatus;
+  readonly translation?: string;
+  readonly showTranslation: boolean;
   readonly surface: VisualNovelDialogSurface;
   readonly variant: VisualNovelDialogVariant;
   readonly visibleLine: string;
@@ -141,15 +160,22 @@ export function getVisualNovelDialogContract(
       ? getVisibleLine(line, visibleCharacterCount)
       : line;
   const avatar = variant !== "narration" && props.avatar !== undefined ? "on" : "off";
+  const translation =
+    props.translation === undefined
+      ? undefined
+      : requireVisibleText(props.translation, "translation");
   const defaultAccessibilityLabel =
     variant === "narration"
       ? line
       : variant === "thought"
         ? `${speakerName}, 속마음: ${line}`
         : `${speakerName}: ${line}`;
+  // 번역이 있으면 대사 뒤에 이어 읽습니다 — 화면에 선 두 줄을 한 요소가 함께 냅니다.
   const accessibilityLabel =
     props.accessibilityLabel === undefined
-      ? defaultAccessibilityLabel
+      ? translation
+        ? `${defaultAccessibilityLabel} ${translation}`
+        : defaultAccessibilityLabel
       : requireVisibleText(props.accessibilityLabel, "accessibilityLabel");
 
   return {
@@ -166,6 +192,7 @@ export function getVisualNovelDialogContract(
     contentLanguage,
     continueIndicator,
     direction,
+    indicatorMotion: props.reducedMotion ? "static" : "bounce",
     ...(languageTag ? { languageTag } : {}),
     line,
     reveal,
@@ -173,6 +200,8 @@ export function getVisualNovelDialogContract(
     ...(speakerName ? { speakerName } : {}),
     status,
     surface,
+    ...(translation ? { translation } : {}),
+    showTranslation: translation !== undefined && status === "ready",
     variant,
     visibleLine,
   };

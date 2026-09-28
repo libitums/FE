@@ -3,8 +3,8 @@ import type { ReactNode } from "@lynx-js/react";
 import { Card } from "@libitums/ui-lynx/card";
 import { ChatBubble } from "@libitums/ui-lynx/chat-bubble";
 
-import storyBackground from "./assets/story-background.png";
-import storyCharacter from "./assets/story-character.png";
+import storyBackground from "../../assets/story/story-background.png";
+import storyCharacter from "../../assets/story/story-character.png";
 
 import "./onboarding-story-cards.css";
 

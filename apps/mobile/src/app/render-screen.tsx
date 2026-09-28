@@ -66,8 +66,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         />
       );
     case "roleplay-list":
-      // 구획은 App이 진행에서 파생해 내립니다. 선택은 `onStartRoleplayUnit`으로
-      // 올립니다.
+      // 구획은 App이 진행에서 파생해 내리고, 선택은 `onStartRoleplayUnit`으로 올립니다.
       return (
         <RoleplayListScreen
           sections={wiring.roleplaySections}
@@ -107,6 +106,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "episode-intro":
     case "episode-prologue-call":
     case "episode-prologue-complete":
+    case "episode-narrative":
       return renderEpisodeIntroFlow(screen, wiring);
     case "notifications":
       return (
