@@ -55,6 +55,9 @@ export default defineConfig({
       "@libitums/ui-lynx/learning-unit": fileURLToPath(
         new URL("../../packages/ui-lynx/src/learning-unit/index.ts", import.meta.url),
       ),
+      "@libitums/ui-lynx/dialog": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/dialog/index.ts", import.meta.url),
+      ),
       "@libitums/ui-lynx/fog": fileURLToPath(
         new URL("../../packages/ui-lynx/src/fog/index.ts", import.meta.url),
       ),
