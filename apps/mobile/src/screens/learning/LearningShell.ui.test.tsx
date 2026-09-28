@@ -242,3 +242,23 @@ test("학습 화면에서도 알림 버튼은 조작 단위다", () => {
     "button",
   );
 });
+
+// 표식이 화면 루트에 실제로 붙는지는 ui가 봅니다 — 계약이 낱말을 맞게 만들어도 그것을
+// DOM에 안 얹으면 캡처는 여전히 비어 있고, 그 실패는 기기에서 재 보기 전까지 조용합니다.
+test("화면 루트에 학습형별 timing flag가 붙는다", () => {
+  renderShell({ form: "listening" });
+
+  expect(screen.getByTestId("learning-shell")).toHaveAttribute(
+    "__lynx_timing_flag",
+    "libitum:navigation:learning-listening",
+  );
+});
+
+test("학습형이 갈리면 표식도 갈린다", () => {
+  renderShell({ form: "culture" });
+
+  expect(screen.getByTestId("learning-shell")).toHaveAttribute(
+    "__lynx_timing_flag",
+    "libitum:navigation:learning-culture",
+  );
+});

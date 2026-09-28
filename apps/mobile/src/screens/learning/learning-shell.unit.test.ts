@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { learningSessionHeader } from "./learning-shell.contract";
+import { learningSessionHeader, learningTimingFlag } from "./learning-shell.contract";
 
 // `unit` 계층: 순수 함수의 입출력만 봅니다 (ADR-0006 D4).
 describe("learningSessionHeader", () => {
@@ -39,5 +39,24 @@ describe("learningSessionHeader", () => {
 
   it("순번이 음수면 던진다", () => {
     expect(() => learningSessionHeader("listening", -1, 4)).toThrow(/0 이상의 정수/);
+  });
+});
+
+describe("learningTimingFlag", () => {
+  // 네이티브 수집기가 **접두사로 갈라** 읽으므로 형태가 계약입니다 — 접두사가 어긋나면
+  // 시간은 재지만 메모리 스냅샷이 안 뜨고, 그 실패는 캡처를 읽기 전까지 조용합니다
+  // (ADR-0019 D3).
+  it("navigation 접두사와 학습형으로 이뤄진다", () => {
+    expect(learningTimingFlag("listening")).toBe("libitum:navigation:learning-listening");
+    expect(learningTimingFlag("culture")).toBe("libitum:navigation:learning-culture");
+  });
+
+  // 학습형마다 값이 갈려야 합니다 — Lynx가 같은 값의 첫 등장만 재므로, 겹치면 한
+  // 실행에서 학습 화면 하나만 측정되고 어느 것이었는지도 안 남습니다.
+  it("학습형 넷이 서로 다른 값을 낸다", () => {
+    const forms = ["listening", "sentence-order", "word-choice", "culture"] as const;
+    const flags = forms.map(learningTimingFlag);
+
+    expect(new Set(flags).size).toBe(forms.length);
   });
 });
