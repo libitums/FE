@@ -59,6 +59,7 @@ function renderPrologueScreen(
     case "call":
       return (
         <PrologueCallScreen
+          key={screen.episodeId}
           insets={wiring.safeAreaInsets}
           episodeLabel={episode.label}
           call={prologue.call}
@@ -70,6 +71,7 @@ function renderPrologueScreen(
     case "messenger":
       return (
         <PrologueChatScreen
+          key={screen.episodeId}
           insets={wiring.safeAreaInsets}
           episodeLabel={episode.label}
           chat={prologue.chat}

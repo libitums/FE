@@ -44,6 +44,15 @@ export function PrologueChatScreen({
     return () => clearTimeout(timer);
   }, [shownCount, next.kind]);
 
+  // 메시지가 하나 늘 때마다 대화 끝을 보입니다 — 목록이 화면을 넘으면 새 메시지가 아래에
+  // 숨습니다. 마지막 메시지가 아니라 끝의 여백을 집습니다: 끝난 대화에서는 그 여백이
+  // `Continue`와 fog의 자리라, 거기까지 내려야 마지막 메시지가 가리지 않습니다.
+  useEffect(() => {
+    if (shownCount > 0) {
+      scrollToChatEnd();
+    }
+  }, [shownCount]);
+
   const handleSend = () => {
     "background only";
     if (next.kind === "draft") {
@@ -116,6 +125,7 @@ export function PrologueChatScreen({
                 </view>
               ))}
             </view>
+            <view id={chatEndId} className="prologue-chat-screen-end" />
           </scroll-view>
 
           {next.kind === "done" ? null : (
@@ -173,4 +183,23 @@ export function PrologueChatScreen({
       ) : null}
     </view>
   );
+}
+
+// 끝의 여백입니다. `invoke`는 ID 선택자만 받습니다(클래스는 `SELECTOR_NOT_SUPPORTED`).
+const chatEndId = "prologue-chat-screen-end";
+
+function scrollToChatEnd(): void {
+  "background only";
+  try {
+    lynx
+      .createSelectorQuery()
+      .select(`#${chatEndId}`)
+      .invoke({
+        method: "scrollIntoView",
+        params: { scrollIntoViewOptions: { block: "end", behavior: "smooth" } },
+      })
+      .exec();
+  } catch {
+    // 못 내려도 대화는 이어집니다 — 손으로 내려 읽을 수 있습니다.
+  }
 }

@@ -9,6 +9,7 @@ import { PrologueChatScreen } from "./PrologueChatScreen";
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 const chat: PrologueChat = {
@@ -142,4 +143,30 @@ test("[CH7] 뒤로 tap → onBack 1회, onComplete 0회", () => {
 
   expect(props.onBack).toHaveBeenCalledTimes(1);
   expect(props.onComplete).not.toHaveBeenCalled();
+});
+
+test("[CH8] 메시지가 늘 때마다 대화 끝의 여백으로 스크롤한다 — 처음에는 하지 않는다", () => {
+  // 호스트의 질의는 jsdom에 없으므로 대역을 세워 부른 것만 적습니다.
+  const invocations: { selector: string; method: string }[] = [];
+  vi.spyOn(lynx, "createSelectorQuery").mockImplementation(
+    () =>
+      ({
+        select: (selector: string) => ({
+          invoke: (options: { method: string }) => ({
+            exec: () => invocations.push({ selector, method: options.method }),
+          }),
+        }),
+      }) as unknown as ReturnType<typeof lynx.createSelectorQuery>,
+  );
+  vi.useFakeTimers();
+  renderChat();
+  expect(invocations).toEqual([]);
+
+  wait(1500);
+  fireEvent.tap(screen.getByTestId("prologue-chat-screen-send"), {});
+
+  expect(invocations).toEqual([
+    { selector: "#prologue-chat-screen-end", method: "scrollIntoView" },
+    { selector: "#prologue-chat-screen-end", method: "scrollIntoView" },
+  ]);
 });
