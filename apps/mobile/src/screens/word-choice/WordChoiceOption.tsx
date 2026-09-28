@@ -31,9 +31,8 @@ export function WordChoiceOption({
 }: WordChoiceOptionProps): ReactNode {
   return (
     <view
-      // 판정이 곧 상태 클래스입니다 — `-correct` · `-incorrect`. 고르기 전에는 상태가
-      // 없어 base만 섭니다. 두 낱말이 ADR-0003 D7의 예약 목록 밖인 것과 그럼에도 이
-      // 낱말을 쓰는 이유는 짝 CSS 파일 머리에 적혀 있습니다.
+      // 판정이 곧 상태 클래스입니다 — `-correct` · `-incorrect`(ADR-0003 D7의 예약
+      // 상태어). 고르기 전에는 상태가 없어 base만 섭니다.
       className={"word-choice-option" + (result === null ? "" : ` word-choice-option-${result}`)}
       data-testid={`word-choice-option-${index}`}
       // 언제나 붙고 값만 갈립니다. 조건부로 빼면 "속성을 잊었다"와 "판정이
