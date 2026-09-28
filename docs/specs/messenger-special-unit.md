@@ -6,6 +6,29 @@
 - 계약 타입: `apps/mobile/src/screens/messenger/messenger.contract.ts`
 - 상태: **고정**. 구현은 이 문서와 계약 타입을 함께 따른다.
 
+> **개정 (2026-09-28) — 가상 키보드 타이핑(Figma 80-7082).** 이 유닛이 에피소드의 서사 기반
+> 최종 테스트가 되면서 답장이 **버튼 누르기에서 두벌식 가상 키보드 타이핑으로** 바뀌었다.
+> 아래 본문 중 이 개정과 어긋나는 줄은 이 개정이 이긴다.
+>
+> - 답장은 `self` 메시지의 `text`를 학습자가 자판으로 친다. 입력창에는 답장이 초성으로 가려져
+>   보이고(`maskedAnswer`: `좋아요!` → `ㅈㅇㅇ!`), 그 아래 줄에 답장의 `translation`(영문 뜻)이
+>   늘 선다. 치기 시작하면 가린 정답은 아래 줄로 옮겨 가 뜻과 함께 계속 보인다 — 뜻만으로는
+>   너무 어려워 글자 수와 첫소리를 보여 준다. 답장 문구는 칠 만한 길이로 줄였다(`좋아요!` · `고마워요!`).
+> - 채점은 한글 · 영문 · 숫자만 비교한다 — 띄어쓰기 · 문장 부호는 보지 않는다
+>   (`isTypedAnswerCorrect`).
+> - 맞으면 판정 배지(`AnswerVerdict`) · 초록 입력창이 서고 `messengerCorrectDelayMs`(1.2초)
+>   뒤 답장이 대화에 선다 — 세션 전이(`reply`)는 그때 일어난다. 틀리면 자판 자리에
+>   `Try Again`이 서고, 누르면 입력을 비우고 같은 답장을 다시 친다. 오답은 진행을 막을 뿐
+>   기록하지 않는다.
+> - 조합(`composeHangul`) · 역분해(`keystrokesFor`)는 `hangul-keyboard.ts`, 입력창 상태 전이는
+>   `messenger-composer.ts`, 자판은 `MessengerKeyboard`가 진다. `ReplyButton`과 진행 문구
+>   (`messengerProgressLabel` · `messenger-screen-progress`)는 없앴다 — 디자인에 없다.
+> - 메시지에 `translation`이 붙고 말풍선은 ui-lynx `ChatBubble`이다. 나가기는 원 버튼
+>   모양이고 이름(`맵으로`/`목록으로`)은 접근성 이름으로만 읽힌다.
+> - test-id: 자판 키 `messenger-key-<자모|shift|backspace|space|,|.|?>`, 입력창
+>   `messenger-composer`(`data-verdict`) · `messenger-composer-text`, 보내기 `messenger-send`,
+>   다시 치기 `messenger-try-again`.
+
 ## 0. 고정 범위와 불변식
 
 1. 메신저 특별 유닛 `appointment-confirmation` 하나를 맵의 「약속 잡기」와 「길 묻기」
@@ -14,8 +37,9 @@
    상태는 `available/completed`뿐이다. `JourneyStepNode`에 `isSpecial`을 추가하지 않는다.
 3. 기존 `completedStepCount`, `JourneyStepId`, `journeySteps`, 일반 스텝의 잠금·열림 계산은
    값과 의미가 모두 그대로다. 특별 유닛 완료는 별도 ID 목록으로만 기록한다.
-4. 대화는 승인된 다섯 메시지와 두 답장뿐이다. 자유 입력·선택 분기·채점은 없다.
-5. 마지막 답장을 누르면 마지막 수신 메시지가 같은 전이에서 공개되고 그때만 완료한다.
+4. 대화는 승인된 다섯 메시지와 두 답장뿐이다. 선택 분기는 없다. 답장은 가상 키보드로
+   치고 채점한다(개정 참조).
+5. 마지막 답장을 맞히면 마지막 수신 메시지가 같은 전이에서 공개되고 그때만 완료한다.
    열기만 하거나 첫 답장 뒤 나가면 완료하지 않는다.
 6. 미완료 재진입은 처음부터, 완료 재진입은 전체 기록부터다. `처음부터 보기`는 화면의
    세션만 처음으로 돌리고 완료 기록을 지우지 않는다.
@@ -31,7 +55,7 @@ App
 │  └─ MessengerMapItem × 1                (새 명시적 변형)
 └─ MessengerScreen
    ├─ MessageBubble × 현재 공개 메시지
-   └─ active: ReplyButton | completed: ReplayButton
+   └─ active: 입력창 + MessengerKeyboard(틀리면 Try Again) | completed: ReplayButton
 ```
 
 | 컴포넌트 | 경로 | 단일 책임 |
@@ -39,7 +63,7 @@ App
 | `MessengerMapItem` | `screens/journey-map/MessengerMapItem.tsx` | 특별 유닛 제목·완료 상태를 내고 선택 ID를 올린다 |
 | `MessengerScreen` | `screens/messenger/MessengerScreen.tsx` | 로컬 대화 세션을 소유하고 나가기·최초 완료·다시 보기 의도를 올린다 |
 | `MessageBubble` | `screens/messenger/MessageBubble.tsx` | `jimin/self` 판별 메시지 하나를 해당 말풍선으로 낸다 |
-| `ReplyButton` | `screens/messenger/ReplyButton.tsx` | 현재 고정 답장 하나를 한 번 전송한다 |
+| `MessengerKeyboard` | `screens/messenger/MessengerKeyboard.tsx` | 두벌식 자모 · 윗글쇠 · 지우기 · 띄어쓰기 키를 내고 누른 키를 올린다 |
 | `ReplayButton` | `screens/messenger/ReplayButton.tsx` | 완료 화면을 첫 메시지 상태로 되돌린다 |
 
 머리, 진행 문구, 메시지 목록, 액션 행은 이 화면 한 곳의 구조다. 별도 행동 계약이 없으므로
@@ -88,7 +112,6 @@ literal 기대값 fixture를 별도로 둘 수 있다.
 | `messengerSessionReducer` | state, `reply/replay` | active 0→active 1→completed; replay는 completed→active 0; 적용 불가 action은 같은 참조 |
 | `visibleMessengerMessages` | conversation, state | active 0은 앞 1개, active 1은 앞 3개, completed는 5개 |
 | `currentMessengerReply` | conversation, state | 반환형은 `SelfMessage \| null`; active 0은 `self-accept`, active 1은 `self-thanks`, completed는 `null` |
-| `messengerProgressLabel` | state | active 0=`대화 1 / 2`, active 1=`대화 2 / 2`, completed=`대화 완료` |
 | `messengerExitOutcome` | state | completed만 `completed`, 나머지는 `incomplete` |
 | `completeMessengerUnit` | 완료 ID 목록, ID | 이미 있으면 같은 참조, 없으면 한 번 추가; 제거 동작 없음 |
 | `messengerCompletionStatus` | 완료 ID 목록, ID | 포함이면 completed, 아니면 available |
@@ -193,9 +216,10 @@ export function App(
 | 표면 | test-id |
 |---|---|
 | 맵 특별 항목 | `journey-messenger-item-appointment-confirmation` |
-| 메신저 화면/나가기/제목/진행/스크롤/목록 | `messenger-screen`, `messenger-screen-exit`, `messenger-screen-title`, `messenger-screen-progress`, `messenger-screen-scroll`, `messenger-message-list` |
+| 메신저 화면/나가기/제목/스크롤/목록 | `messenger-screen`, `messenger-screen-exit`, `messenger-screen-title`, `messenger-screen-scroll`, `messenger-message-list` |
 | 메시지 | `messenger-message-<messageId>` |
-| 현재 답장 | `messenger-reply-<self-message-id>` |
+| 답장 구역 · 입력창 · 보내기 · 다시 치기 | `messenger-reply`, `messenger-composer`, `messenger-send`, `messenger-try-again` |
+| 자판 키 | `messenger-key-<자모\|shift\|backspace\|space\|,\|.\|?>` |
 | 다시 보기 | `messenger-replay` |
 
 맵 항목은 `data-status="available|completed"`, 메시지는 `data-sender="jimin|self"`를 항상

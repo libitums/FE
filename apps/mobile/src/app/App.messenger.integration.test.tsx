@@ -5,6 +5,7 @@ import { App } from "./App";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
+import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
 
 // 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
@@ -49,8 +50,7 @@ function openJourneyMessenger(messengerEventSink?: MessengerEventSink) {
 }
 
 function finishConversation() {
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-accept"), {});
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-thanks"), {});
+  answerMessengerReplies();
 }
 
 test("맵의 약속 확인 메시지를 열면 실제 messenger 화면이 push된다", () => {
@@ -115,11 +115,10 @@ test("메신저 완료는 일반 completedStepCount와 directions 상태를 바�
 
 test("미완료로 맵을 나갔다 재입장하면 첫 메시지부터 시작한다", () => {
   openJourneyMessenger();
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-accept"), {});
+  answerMessengerReplies(1);
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
   expect(screen.getByTestId("messenger-message-list").children).toHaveLength(1);
-  expect(screen.getByTestId("messenger-screen-progress")).toHaveTextContent("대화 1 / 2");
 });
 
 test("완료 재입장은 전체 대화이며 replay 후에도 완료 기록을 보존한다", () => {

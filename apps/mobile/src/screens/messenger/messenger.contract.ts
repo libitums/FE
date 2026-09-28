@@ -16,12 +16,17 @@ export type JiminMessage = {
   readonly id: "jimin-schedule" | "jimin-directions" | "jimin-goodbye";
   readonly sender: "jimin";
   readonly text: string;
+  /** 말풍선 아래 흐린 줄의 번역입니다. */
+  readonly translation: string;
 };
 
 export type SelfMessage = {
   readonly id: "self-accept" | "self-thanks";
   readonly sender: "self";
+  /** 학습자가 가상 키보드로 쳐야 하는 답장이자, 맞힌 뒤 말풍선에 서는 문장입니다. */
   readonly text: string;
+  /** 입력창의 힌트이자 말풍선 아래 번역입니다 — 학습자는 이 뜻을 한국어로 칩니다. */
+  readonly translation: string;
 };
 
 export type MessengerMessage = JiminMessage | SelfMessage;
@@ -115,9 +120,33 @@ export type MessageBubbleProps = {
   readonly message: MessengerMessage;
 };
 
-export type ReplyButtonProps = {
-  readonly reply: SelfMessage;
-  readonly onReply: () => void;
+/**
+ * 답장 입력창의 상태입니다. 입력의 진실은 누른 키의 열(`keys`)이고, 보이는 글자는
+ * `composeHangul(keys)`로 파생합니다.
+ *
+ * - `typing`: 치는 중입니다.
+ * - `correct`: 맞혔습니다. 잠시 뒤 답장이 대화에 섭니다.
+ * - `incorrect`: 틀렸습니다. `Try Again`이 입력을 비우고 `typing`으로 되돌립니다.
+ */
+export type MessengerComposerState = {
+  readonly keys: readonly string[];
+  readonly shifted: boolean;
+  readonly verdict: "typing" | "correct" | "incorrect";
+};
+
+export type MessengerComposerAction =
+  | { readonly type: "press"; readonly key: string }
+  | { readonly type: "backspace" }
+  | { readonly type: "shift" }
+  | { readonly type: "submit"; readonly answer: string }
+  | { readonly type: "retry" }
+  | { readonly type: "clear" };
+
+export type MessengerKeyboardProps = {
+  readonly shifted: boolean;
+  readonly onPress: (key: string) => void;
+  readonly onBackspace: () => void;
+  readonly onShift: () => void;
 };
 
 export type ReplayButtonProps = {

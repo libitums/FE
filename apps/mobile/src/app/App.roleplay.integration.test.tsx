@@ -8,6 +8,7 @@ import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contra
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
+import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
 
 // 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
@@ -120,8 +121,7 @@ function openRoleplayItem(unitId: string) {
 }
 
 function finishMessengerConversation() {
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-accept"), {});
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-thanks"), {});
+  answerMessengerReplies();
 }
 
 function playPhoneCallTurn(replyTestId: string) {
@@ -284,7 +284,6 @@ test("[I3] 여정에서 셋을 모두 끝냈어도 롤플레이는 항상 처음
   openRoleplayTab();
 
   openRoleplayItem(messengerUnitId);
-  expect(screen.getByTestId("messenger-screen-progress")).toHaveTextContent("대화 1 / 2");
   expect(screen.getByTestId("messenger-message-list").children).toHaveLength(1);
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
@@ -311,7 +310,10 @@ test("[I3] 여정에서 셋을 모두 끝냈어도 롤플레이는 항상 처음
 test("[I4] 롤플레이에서 연 메신저의 나가기는 목록으로이고 목록으로 돌아간 뒤 여정 탭은 맵 루트다", () => {
   openRoleplayTab();
   openRoleplayItem(messengerUnitId);
-  expect(screen.getByTestId("messenger-screen-exit")).toHaveTextContent("목록으로");
+  expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
+    "accessibility-label",
+    "목록으로",
+  );
   expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
     "accessibility-label",
     "목록으로",
@@ -352,7 +354,10 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
-  expect(screen.getByTestId("messenger-screen-exit")).toHaveTextContent("맵으로");
+  expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
+    "accessibility-label",
+    "맵으로",
+  );
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
@@ -518,7 +523,10 @@ test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지�
 
   expect(() => openRoleplayItem(messengerUnitId)).not.toThrow();
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("messenger-screen-exit")).toHaveTextContent("목록으로");
+  expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
+    "accessibility-label",
+    "목록으로",
+  );
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 

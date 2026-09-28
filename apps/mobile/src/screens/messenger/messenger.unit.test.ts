@@ -12,7 +12,6 @@ import {
   messengerCompletionStatus,
   messengerConversationFor,
   messengerExitOutcome,
-  messengerProgressLabel,
   messengerSessionReducer,
   practiceMessengerCompletionStatus,
   visibleMessengerMessages,
@@ -21,14 +20,14 @@ import {
 const id = "appointment-confirmation" as const;
 const expected = [
   ["jimin-schedule", "jimin", "토요일 오후 2시에 역 앞 카페에서 만나요."],
-  ["self-accept", "self", "네, 좋아요. 토요일에 봬요!"],
+  ["self-accept", "self", "좋아요!"],
   ["jimin-directions", "jimin", "카페는 2번 출구 오른쪽에 있어요."],
-  ["self-thanks", "self", "네, 고마워요!"],
+  ["self-thanks", "self", "고마워요!"],
   ["jimin-goodbye", "jimin", "그럼 토요일에 봬요!"],
 ] as const;
 
 describe("messengerConversationFor", () => {
-  it("승인된 5개 메시지를 고정 순서·리터럴 대사로 낸다", () => {
+  it("승인된 5개 메시지를 고정 순서·리터럴 대사로 낸다 — 답장은 자판으로 칠 만한 짧은 말이다", () => {
     const conversation = messengerConversationFor(id);
     expect(conversation.id).toBe(id);
     expect(conversation.title).toBe("약속 확인 메시지");
@@ -36,6 +35,7 @@ describe("messengerConversationFor", () => {
     expect(
       conversation.messages.map(({ id: messageId, sender, text }) => [messageId, sender, text]),
     ).toEqual(expected);
+    expect(conversation.messages.every((message) => message.translation.length > 0)).toBe(true);
   });
 });
 
@@ -78,16 +78,13 @@ describe("messenger session pure functions", () => {
     expect(visibleMessengerMessages(conversation, done)).toHaveLength(5);
   });
 
-  it("현재 답장·진행 문구·나가기 결과를 각 상태의 리터럴로 낸다", () => {
+  it("현재 답장·나가기 결과를 각 상태의 리터럴로 낸다", () => {
     const first = initialMessengerSessionState("available");
     const second = messengerSessionReducer(first, { type: "reply" });
     const done = messengerSessionReducer(second, { type: "reply" });
     expect(currentMessengerReply(conversation, first)?.id).toBe("self-accept");
     expect(currentMessengerReply(conversation, second)?.id).toBe("self-thanks");
     expect(currentMessengerReply(conversation, done)).toBeNull();
-    expect(messengerProgressLabel(first)).toBe("대화 1 / 2");
-    expect(messengerProgressLabel(second)).toBe("대화 2 / 2");
-    expect(messengerProgressLabel(done)).toBe("대화 완료");
     expect(messengerExitOutcome(first)).toBe("incomplete");
     expect(messengerExitOutcome(done)).toBe("completed");
   });
@@ -120,13 +117,12 @@ describe("messenger session pure functions", () => {
 describe("practiceMessengerCompletionStatus", () => {
   // M1 — 시작 입력이 여정 상태를 읽지 않고도 initialMessengerSessionState와 합성해
   // 처음 상태를 만듭니다. 합성이 깨지면 여기서 잡힙니다.
-  it("M1. 연습 시작 입력이 처음 활성 상태를 만든다 — 공개 1개·대화 1 / 2·답장 self-accept", () => {
+  it("M1. 연습 시작 입력이 처음 활성 상태를 만든다 — 공개 1개·답장 self-accept", () => {
     const conversation = messengerConversationFor(id);
     const state = initialMessengerSessionState(practiceMessengerCompletionStatus());
 
     expect(state).toEqual({ mode: "active", replyIndex: 0 });
     expect(visibleMessengerMessages(conversation, state)).toHaveLength(1);
-    expect(messengerProgressLabel(state)).toBe("대화 1 / 2");
     expect(currentMessengerReply(conversation, state)?.id).toBe("self-accept");
   });
 });
