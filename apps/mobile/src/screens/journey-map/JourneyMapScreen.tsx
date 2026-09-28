@@ -1,6 +1,5 @@
-import { useReducer, useRef, useState } from "@lynx-js/react";
+import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
-import type { ScrollEvent } from "@lynx-js/types";
 
 import { JourneyStepNode } from "./JourneyStepNode";
 import { MessengerMapItem } from "./MessengerMapItem";
@@ -8,24 +7,15 @@ import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
 import { StepSheet } from "./StepSheet";
 import { JourneyMapTopBar } from "./JourneyMapTopBar";
-import {
-  measureRects,
-  screenId,
-  scrollId,
-  scrollMapTo,
-  scrollStepIntoView,
-  stepNodeId,
-} from "./journey-map-scroll";
+import { screenId, scrollId } from "./journey-map-scroll";
+import { useStepSheet } from "./useStepSheet";
+import { JourneyStatModal } from "./JourneyStatModal";
+import { streakTrack, trophyTrack, type JourneyStatKind } from "./journey-stat";
 import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
 import {
   findStep,
-  initialStepSheetState,
   journeySteps,
-  stepSheetReducer,
   stepStatusAt,
-  stepSheetPlacement,
-  stepSheetTop,
-  stepUnitSize,
   learningFormsForStep,
   journeyMapSections,
   completedMapItemCount,
@@ -56,11 +46,16 @@ export type JourneyMapScreenProps = {
    */
   streakDays?: number;
   trophyCount?: number;
+  /**
+   * 오늘의 요일입니다(`Date#getDay()`, 0 = 일). 연속 학습 모달의 요일 줄이 여기서
+   * 시작점을 셉니다. 넘기지 않으면 기기 시계를 읽습니다 — 테스트가 날짜에 매이지
+   * 않도록 받을 자리를 둡니다.
+   */
+  todayWeekday?: number;
 };
 
 // 화면 컴포넌트: 파일명 PascalCase, export 이름과 일치, `~Screen` 접미사 (ADR-0003 D6).
-// 시트 열림 상태는 이 화면이 소유합니다 — `useReducer`로 순수 함수 `stepSheetReducer`를
-// 소비합니다. `Nav`는 관여하지 않습니다.
+// 시트 열림 상태는 이 화면이 소유합니다(`useStepSheet`). `Nav`는 관여하지 않습니다.
 export function JourneyMapScreen({
   completedStepCount,
   onStartStep,
@@ -73,85 +68,12 @@ export function JourneyMapScreen({
   onOpenNotifications,
   streakDays = 0,
   trophyCount = 0,
+  todayWeekday,
 }: JourneyMapScreenProps): ReactNode {
-  const [sheetState, dispatch] = useReducer(stepSheetReducer, initialStepSheetState);
-  // 스크롤 자리를 두 곳에 둡니다. ref는 탭 순간의 값을 읽기 위한 것이고(다시 그릴
-  // 이유가 없습니다), state는 말풍선이 열린 동안 그 움직임을 따라가기 위한 것입니다.
-  // 열려 있지 않으면 state를 건드리지 않습니다 — 스크롤 한 프레임마다 화면을 다시
-  // 그리는 값을 치르지 않기 위해서입니다.
-  const latestScrollTop = useRef(0);
-  const [openScrollTop, setOpenScrollTop] = useState(0);
-  // 지금 자리를 재고 있는 스텝입니다. 재는 일이 비동기라, 그 사이에 말풍선이 닫히거나
-  // 다른 스텝으로 바뀌면 늦게 온 답이 화면을 옛 유닛 쪽으로 끌고 갑니다 — 답이 왔을 때
-  // 이 값이 자기 스텝이 아니면 버립니다.
-  const measuringStepId = useRef<JourneyStepId | null>(null);
-
-  const handleScroll = (event: ScrollEvent) => {
-    "background only";
-    // oxlint-disable-next-line react/immutability
-    latestScrollTop.current = event.detail.scrollTop;
-    if (sheetState.openStepId !== null) {
-      setOpenScrollTop(event.detail.scrollTop);
-    }
-  };
-
-  const handleSelectStep = (id: JourneyStepId, tapY: number) => {
-    "background only";
-    // 먼저 탭 자리로 엽니다 — 탭이 유닛 한가운데였다고 어림한 값입니다. 재는 일은
-    // 비동기라, 기다렸다 열면 누른 뒤 말풍선이 늦게 뜹니다.
-    const tapScrollTop = latestScrollTop.current;
-    // oxlint-disable-next-line react/immutability
-    measuringStepId.current = id;
-    dispatch({
-      type: "openStep",
-      stepId: id,
-      anchorY: tapY + stepUnitSize / 2,
-      scrollTop: tapScrollTop,
-    });
-    setOpenScrollTop(tapScrollTop);
-    // 그다음 유닛을 실제로 재서 자리를 바로잡고, 유닛을 스크롤 가운데로 옮깁니다 —
-    // 탭 좌표는 손가락이 유닛의 어디를 눌렀는지에 따라 달라지므로, 그 값만으로는
-    // 말풍선이 유닛에 맞지 않습니다. 못 재도 탭을 막지 않습니다: 말풍선은 이미 떴습니다.
-    measureRects([stepNodeId(id), scrollId, screenId], (rects) => {
-      "background only";
-      if (measuringStepId.current !== id) {
-        return;
-      }
-      // oxlint-disable-next-line react/immutability
-      measuringStepId.current = null;
-      const [unit, scroll, screen] = rects ?? [];
-      if (unit === undefined || scroll === undefined || screen === undefined) {
-        scrollStepIntoView(id);
-        return;
-      }
-      const scrollTop = latestScrollTop.current;
-      const placement = stepSheetPlacement({
-        unitTop: unit.top,
-        scrollViewTop: scroll.top,
-        scrollViewHeight: scroll.height,
-        screenTop: screen.top,
-        screenHeight: screen.height,
-        scrollTop,
-      });
-      dispatch({
-        type: "anchorStep",
-        stepId: id,
-        anchorY: placement.anchorY,
-        scrollTop,
-        anchorLimit: placement.anchorLimit,
-      });
-      setOpenScrollTop(scrollTop);
-      scrollMapTo(placement.targetScrollTop);
-    });
-  };
-
-  const handleCloseSheet = () => {
-    "background only";
-    // oxlint-disable-next-line react/immutability
-    measuringStepId.current = null;
-    dispatch({ type: "closeSheet" });
-  };
-
+  const { sheetState, sheetTop, handleScroll, handleSelectStep, handleCloseSheet } = useStepSheet();
+  // 지표 모달 열림도 이 화면이 소유합니다 — 시트와 같은 까닭으로 `Nav`는 관여하지
+  // 않습니다. 모달은 맵 위에 겹칠 뿐 화면 전환이 아닙니다.
+  const [openStat, setOpenStat] = useState<JourneyStatKind | null>(null);
   const openStep =
     sheetState.openStepId === null ? undefined : findStep(journeySteps, sheetState.openStepId);
 
@@ -176,12 +98,14 @@ export function JourneyMapScreen({
       <view
         className="journey-map-screen-actions"
         data-testid="journey-map-screen-actions"
-        accessibility-elements-hidden={openStep !== undefined}
+        accessibility-elements-hidden={openStep !== undefined || openStat !== null}
       >
         <JourneyMapTopBar
           streakDays={streakDays}
           trophyCount={trophyCount}
           onOpenNotifications={onOpenNotifications}
+          onOpenStreak={() => setOpenStat("streak")}
+          onOpenTrophy={() => setOpenStat("trophy")}
         />
       </view>
       {/* [흐름] 내용 슬롯 — 스크롤 컨테이너 하나가 맵 컨테이너를 감쌉니다. 가림
@@ -200,7 +124,7 @@ export function JourneyMapScreen({
         <view
           className="journey-map-screen-map"
           data-testid="journey-map-screen-map"
-          accessibility-elements-hidden={openStep !== undefined}
+          accessibility-elements-hidden={openStep !== undefined || openStat !== null}
         >
           {journeyMapSections.map((section) => (
             // 에피소드 하나가 헤더 + 유닛 줄입니다. 조각(Fragment)이 아니라 상자로
@@ -265,7 +189,7 @@ export function JourneyMapScreen({
           title={openStep.title}
           /* 잰 자리에 그 뒤의 스크롤 변화량을 더합니다 — 유닛이 가운데로 옮겨 가는
              동안 말풍선이 그 유닛에 붙어 함께 움직입니다. */
-          top={stepSheetTop(sheetState, openScrollTop)}
+          top={sheetTop}
           lessonOrdinal={journeyStepOrdinal(openStep.id)}
           /* 진행은 「끝낸 활동 수 / 그 스텝이 잡은 활동 수」입니다. 오늘 활동은
              스텝 단위로만 저장되므로, 끝난 스텝이면 전부이고 아니면 0입니다 —
@@ -280,6 +204,19 @@ export function JourneyMapScreen({
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}
           onClose={handleCloseSheet}
+        />
+      )}
+      {/* [겹침 레이어] 지표 모달입니다. 셸 밖에 떠 바텀 네비게이션까지 덮습니다. */}
+      {openStat === null ? null : (
+        <JourneyStatModal
+          kind={openStat}
+          value={openStat === "streak" ? streakDays : trophyCount}
+          track={
+            openStat === "streak"
+              ? streakTrack(streakDays, todayWeekday ?? new Date().getDay())
+              : trophyTrack(trophyCount)
+          }
+          onClose={() => setOpenStat(null)}
         />
       )}
     </view>

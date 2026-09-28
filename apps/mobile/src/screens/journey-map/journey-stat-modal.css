@@ -1,0 +1,243 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 치수 가운데 맞는 토큰이
+   없는 것은 디자인 실측값(Figma 47-14057 · 74-419)을 px로 적고 그 자리에 이유를
+   남깁니다. */
+
+/* 겹침 레이어입니다. 셸 밖(`position: fixed`)에 띄워 바텀 네비게이션까지 덮습니다 —
+   모달이 떠 있는 동안 탭 전환은 조작 대상이 아닙니다. safe area 여백은 컴포넌트가
+   인라인으로 잡습니다.
+
+   배경은 `border-strong`(#141115)에 불투명도 0.9를 얹은 디자인 값입니다. 알파가 붙은
+   색 토큰이 패키지에 없어 rgba로 적습니다(ui-lynx overlay와 같은 처리). */
+.journey-stat-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(20, 17, 21, 0.9);
+  overflow: hidden;
+}
+
+/* 장식 층 — 레이어 전체를 덮고 내용 뒤에 섭니다. */
+.journey-stat-modal-decor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* 운석 86 × 86과 자리 셋은 디자인 실측값입니다. 화면 밖으로 조금 걸치는 것이
+   디자인 의도라 음수 좌표를 그대로 둡니다. */
+.journey-stat-modal-meteor {
+  position: absolute;
+  width: 86px;
+  height: 86px;
+}
+
+.journey-stat-modal-meteor-a {
+  left: -29px;
+  top: 238px;
+}
+
+.journey-stat-modal-meteor-b {
+  right: 21px;
+  top: 379px;
+}
+
+.journey-stat-modal-meteor-c {
+  right: 21px;
+  top: -17px;
+}
+
+/* 머리 — 나가기 원형 버튼 하나를 왼쪽에 둡니다. */
+.journey-stat-modal-header {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-spacing-24) 0;
+  flex-shrink: 0;
+}
+
+/* 머리와 큰 숫자 사이 127은 디자인 실측값입니다(96 + 32로 근사합니다). */
+.journey-stat-modal-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: calc(var(--libitum-spacing-96) + var(--libitum-spacing-32));
+  flex-shrink: 0;
+}
+
+/* 큰 숫자의 상자 — 머리 아이콘(불꽃 · 트로피)이 이 상자를 기준으로 겹칩니다. */
+.journey-stat-modal-value-box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 120px 숫자는 디자인의 한 번뿐인 크기라 타이포 토큰이 없습니다. 글꼴 · 굵기 · 자간은
+   `accent-display`를 따르고 크기와 줄 높이만 실측값으로 적습니다. */
+.journey-stat-modal-value {
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+  font-size: 120px;
+  line-height: 120px;
+  text-align: center;
+}
+
+.journey-stat-modal-title {
+  margin-top: var(--libitum-spacing-6);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+  text-align: center;
+}
+
+/* 불꽃 95 × 95 — 숫자의 오른쪽 끝을 23 넘어서고 윗변에서 69 올라간 자리입니다
+   (디자인 실측값, 「24」 기준). 오른쪽 끝에 붙이므로 숫자 폭이 바뀌어도 따라갑니다. */
+.journey-stat-modal-fire {
+  position: absolute;
+  top: -69px;
+  right: -23px;
+  width: 95px;
+  height: 95px;
+}
+
+/* 트로피 — 여백 없는 아이콘이라 상자가 정사각 58이고 그림은 가운데 47 높이만
+   차지합니다. 그림 아래 끝(상자 위에서 52.5)이 숫자 윗변에 닿게 올립니다(디자인
+   실측값). 좌우를 펴고 가운데 정렬로 숫자 가운데에 세웁니다. */
+.journey-stat-modal-trophy-anchor {
+  position: absolute;
+  top: -52.5px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.journey-stat-modal-trophy-icon {
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+}
+
+.journey-stat-modal-streak .journey-stat-modal-value {
+  color: var(--libitum-color-brand-primary);
+}
+
+.journey-stat-modal-streak .journey-stat-modal-title {
+  color: var(--libitum-color-brand-secondary);
+}
+
+.journey-stat-modal-trophy .journey-stat-modal-value,
+.journey-stat-modal-trophy .journey-stat-modal-title {
+  color: var(--libitum-color-feedback-warning);
+}
+
+/* 남는 높이를 먹어 진행 줄 · 문구 · 버튼을 아래로 밉니다. */
+.journey-stat-modal-spacer {
+  flex: 1;
+}
+
+/* 진행 줄 — 요일 줄과 칸 줄이 같은 칸 폭 32 · 간격 20을 씁니다. 칸 32는 디자인의
+   빈 원 지름이고 맞는 토큰이 없어 px로 적습니다. */
+.journey-stat-modal-track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-24);
+  flex-shrink: 0;
+}
+
+.journey-stat-modal-days,
+.journey-stat-modal-slots {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-20);
+}
+
+.journey-stat-modal-slot {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.journey-stat-modal-day {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+  color: var(--libitum-color-gray-500);
+  text-align: center;
+}
+
+/* 찬 칸을 하나로 묶는 알약입니다. 좌우로 7씩 칸 밖으로 부풀고(안쪽 여백 6 + 테두리 1)
+   그만큼 음수 여백으로 되돌려 칸 자리가 요일 아래에서 어긋나지 않게 합니다. 결과 폭은
+   3칸 기준 150으로 디자인의 151과 맞습니다. */
+.journey-stat-modal-done {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-20);
+  padding: var(--libitum-stroke-width-thin) var(--libitum-spacing-6);
+  /* 축약형 `margin: 0 -7px`은 Lynx에서 먹지 않아 두 변을 따로 적습니다. */
+  margin-left: -7px;
+  margin-right: -7px;
+  border: var(--libitum-stroke-width-thin) solid;
+  border-radius: var(--libitum-radius-lg);
+}
+
+.journey-stat-modal-streak .journey-stat-modal-done {
+  background-color: var(--libitum-color-brand-primary);
+  border-color: var(--libitum-color-brand-secondary);
+}
+
+.journey-stat-modal-trophy .journey-stat-modal-done {
+  background-color: var(--libitum-color-feedback-warning);
+  border-color: var(--libitum-color-feedback-warning);
+}
+
+.journey-stat-modal-tick {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.journey-stat-modal-empty {
+  border-radius: var(--libitum-radius-xl);
+  background-color: var(--libitum-color-gray-300);
+}
+
+/* 진행 줄과 문구 사이 75는 디자인 실측값입니다(64 + 12로 근사합니다). */
+.journey-stat-modal-message {
+  margin-top: calc(var(--libitum-spacing-64) + var(--libitum-spacing-12));
+  padding: 0 var(--libitum-spacing-24);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
+  color: var(--libitum-color-gray-500);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* 문구와 버튼 사이 35 · 버튼 아래 15는 디자인 실측값입니다(safe area 여백은 따로
+   인라인으로 잡힙니다). */
+.journey-stat-modal-footer {
+  margin-top: calc(var(--libitum-spacing-32) + var(--libitum-spacing-4));
+  margin-bottom: var(--libitum-spacing-16);
+  flex-shrink: 0;
+}
