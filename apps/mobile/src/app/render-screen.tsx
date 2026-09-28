@@ -288,9 +288,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // 부팅 상태(`handwritingProbeNav`)를 손수 바꿔 끼워야 합니다.
     case "handwriting-probe":
       return <HandwritingProbeScreen />;
-    // 위 case와 같은 자리·같은 근거입니다. `never` 망라가 이 case를 강제하고,
-    // 결선은 없습니다 — 탐침 화면은 props도 콜백도 받지 않고 자기 상태를
-    // 스스로 듭니다. **아무 코드도 이 화면을 push하지 않습니다.**
+    // 위 case와 같은 자리·같은 근거입니다 — 결선이 없고 **아무 코드도 이 화면을 push하지 않습니다.**
     case "speech-probe":
       return <SpeechProbeScreen />;
     default: {
