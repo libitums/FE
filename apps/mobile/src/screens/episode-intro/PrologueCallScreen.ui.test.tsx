@@ -49,7 +49,7 @@ test("[PC1] 머리 · 통화 상대 · 첫 대사를 그린다", () => {
   );
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
-    "음성 통화, 지민, 0:00",
+    "음성 통화, 지민",
   );
   expect(screen.getByTestId("prologue-call-screen-line-text")).toHaveTextContent("여보세요?");
   expect(screen.getByTestId("prologue-call-screen-line-translation")).toHaveTextContent("Hello?");
@@ -203,4 +203,17 @@ test("[PC9] 음소거와 소리 크기는 통화를 끝내지 않는다", () => 
   expect(props.onComplete).not.toHaveBeenCalled();
   expect(props.onBack).not.toHaveBeenCalled();
   expect(screen.queryByTestId("prologue-call-screen-complete")).not.toBeInTheDocument();
+});
+
+test("[PC11] 시계가 가도 통화 상대의 접근성 이름은 바뀌지 않는다", () => {
+  vi.useFakeTimers();
+  renderCall();
+
+  advance(2);
+
+  expect(screen.getByTestId("prologue-call-screen-clock")).toHaveTextContent("0:02");
+  expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
+    "accessibility-label",
+    "음성 통화, 지민",
+  );
 });

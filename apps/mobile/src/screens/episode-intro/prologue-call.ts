@@ -52,7 +52,9 @@ export function prologueCallProgress(
 ): PrologueCallProgress {
   const index = Math.floor(Math.max(0, elapsedSeconds) / lineSeconds);
   return {
-    lineIndex: Math.min(index, lineCount - 1),
+    // 대사가 없으면 자리를 0에 둡니다 — `lineCount - 1`이 -1이 되어 음수 자리를 내지 않게
+    // 합니다(대사 0줄은 곧장 끝난 통화입니다).
+    lineIndex: lineCount > 0 ? Math.min(index, lineCount - 1) : 0,
     ended: index >= lineCount,
   };
 }

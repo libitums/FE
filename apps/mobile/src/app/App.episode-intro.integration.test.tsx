@@ -263,7 +263,7 @@ function tapNextToCall(): void {
   readNarrative();
 }
 
-test("[EP1] Next를 누르면 표지 대신 서사 통화가 선다", () => {
+test("[EP1] Next로 서사를 지나면 서사 통화가 선다", () => {
   renderApp(<App />);
   startOrdering();
 
@@ -273,7 +273,7 @@ test("[EP1] Next를 누르면 표지 대신 서사 통화가 선다", () => {
   expect(screen.getByTestId("prologue-call-screen-title")).toHaveTextContent("Episode 0.");
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
-    "음성 통화, 지민, 0:00",
+    "음성 통화, 지민",
   );
   expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
 });

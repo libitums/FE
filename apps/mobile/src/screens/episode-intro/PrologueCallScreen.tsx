@@ -13,10 +13,12 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import type { PrologueCallScreenProps, PrologueCallVolume } from "./episode-intro.contract";
 import {
   initialPrologueCallVolume,
-  prologueCallClock,
   prologueCallProgress,
+  prologueLineSeconds,
   stepPrologueCallVolume,
 } from "./prologue-call";
+
+import { PrologueCallClock } from "./PrologueCallClock";
 
 import "./prologue-call-screen.css";
 
@@ -44,7 +46,9 @@ export function PrologueCallScreen({
   onComplete,
   onBack,
 }: PrologueCallScreenProps): ReactNode {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  // 지나간 대사 칸 수입니다. 대사가 바뀌는 `prologueLineSeconds`마다만 갑니다 — 1초
+  // 시계는 `PrologueCallClock`이 따로 셉니다.
+  const [lineTicks, setLineTicks] = useState(0);
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState<PrologueCallVolume>(initialPrologueCallVolume);
   const [volumeOpen, setVolumeOpen] = useState(false);
@@ -52,17 +56,17 @@ export function PrologueCallScreen({
   // 않습니다.
   const [hungUp, setHungUp] = useState(false);
 
-  const progress = prologueCallProgress(elapsedSeconds, call.lines.length);
+  const progress = prologueCallProgress(lineTicks * prologueLineSeconds, call.lines.length);
   const ended = hungUp || progress.ended;
   const line = call.lines[progress.lineIndex];
 
-  // 통화 시계입니다. 1초마다 한 칸 갑니다 — 대사 자리와 끝남이 모두 이 값에서 나옵니다.
-  // 끝나면 멈춥니다 — 끝난 통화의 시계는 통화 길이를 보입니다.
+  // 대사 진행입니다. 대사 한 줄이 머무는 시간마다 한 칸 갑니다 — 대사 자리와 끝남이 이
+  // 값에서 나옵니다. 끝나면 멈춥니다.
   useEffect(() => {
     if (ended) {
       return undefined;
     }
-    const timer = setInterval(() => setElapsedSeconds((seconds) => seconds + 1), 1000);
+    const timer = setInterval(() => setLineTicks((ticks) => ticks + 1), prologueLineSeconds * 1000);
     return () => clearInterval(timer);
   }, [ended]);
 
@@ -108,13 +112,14 @@ export function PrologueCallScreen({
             </text>
           </view>
 
-          {/* 통화 상대 묶음 — 낱말 셋(음성 통화 · 이름 · 시계)을 한 번에 읽습니다. 얼굴
-              그림은 장식이라 가립니다. */}
+          {/* 통화 상대 묶음 — 낱말 둘(음성 통화 · 이름)을 한 번에 읽습니다. 시계는 이름에
+              싣지 않습니다 — 매초 바뀌는 값을 이름에 두면 스크린리더가 이 자리에 머무는
+              동안 되풀이해 읽습니다. 얼굴 그림은 장식이라 가립니다. */}
           <view
             className="prologue-call-screen-caller"
             data-testid="prologue-call-screen-caller"
             accessibility-element={true}
-            accessibility-label={`음성 통화, ${call.callerName}, ${prologueCallClock(elapsedSeconds)}`}
+            accessibility-label={`음성 통화, ${call.callerName}`}
           >
             <text className="prologue-call-screen-kind">Voice Call</text>
             <view className="prologue-call-screen-portrait-frame">
@@ -125,11 +130,7 @@ export function PrologueCallScreen({
               />
             </view>
             <text className="prologue-call-screen-name">{call.callerName}</text>
-            <view className="prologue-call-screen-clock" data-testid="prologue-call-screen-clock">
-              <text className="prologue-call-screen-clock-label">
-                {prologueCallClock(elapsedSeconds)}
-              </text>
-            </view>
+            <PrologueCallClock running={!ended} />
           </view>
 
           {line === undefined ? null : (

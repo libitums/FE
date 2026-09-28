@@ -44,6 +44,10 @@ describe("prologueCallProgress", () => {
   it("P3. 음수 시간은 0으로 본다", () => {
     expect(prologueCallProgress(-5, 3, 3)).toEqual({ lineIndex: 0, ended: false });
   });
+
+  it("P4. 대사가 없으면 자리가 음수가 되지 않고 곧장 끝난다", () => {
+    expect(prologueCallProgress(0, 0, 3)).toEqual({ lineIndex: 0, ended: true });
+  });
 });
 
 describe("prologueCallClock", () => {
