@@ -21,6 +21,7 @@ import * as dialog from "./dialog/index";
 import * as overlay from "./overlay/index";
 import * as answerLabel from "./answer-label/index";
 import * as avatar from "./avatar/index";
+import * as settingsCell from "./settings-cell/index";
 import * as card from "./card/index";
 import * as chatBubble from "./chat-bubble/index";
 import * as visualNovelDialog from "./visual-novel-dialog/index";
@@ -34,6 +35,7 @@ const packageRoot = path.resolve(import.meta.dirname, "..");
 const componentArtifacts = {
   "answer-label": { implementation: "AnswerLabel.jsx", css: "answer-label.css" },
   avatar: { implementation: "Avatar.jsx", css: "avatar.css" },
+  "settings-cell": { implementation: "SettingsCell.jsx", css: "settings-cell.css" },
   button: { implementation: "Button.jsx", css: "button.css" },
   "back-header": { implementation: "BackHeader.jsx", css: "back-header.css" },
   "status-indicator": { implementation: "StatusIndicator.jsx", css: "status-indicator.css" },
@@ -65,6 +67,7 @@ const componentArtifacts = {
 const componentEntries = {
   "answer-label": "AnswerLabel",
   avatar: "Avatar",
+  "settings-cell": "SettingsCell",
   button: "Button",
   "back-header": "BackHeader",
   "status-indicator": "StatusIndicator",
@@ -100,6 +103,8 @@ describe("ui-lynx package boundaries", () => {
   test("root import preserves value identity and type-compatible subpath values", () => {
     expect(root.AnswerLabel).toBe(answerLabel.AnswerLabel);
     expect(root.Avatar).toBe(avatar.Avatar);
+    expect(root.SettingsCell).toBe(settingsCell.SettingsCell);
+    expect(root.SettingsGroup).toBe(settingsCell.SettingsGroup);
     expect(root.Button).toBe(button.Button);
     expect(root.BackHeader).toBe(backHeader.BackHeader);
     expect(root.StatusIndicator).toBe(statusIndicator.StatusIndicator);
@@ -184,6 +189,9 @@ describe("ui-lynx package boundaries", () => {
       "./dist/answer-label/answer-label.css",
     );
     expect(packageJson.exports["./avatar/styles.css"]).toBe("./dist/avatar/avatar.css");
+    expect(packageJson.exports["./settings-cell/styles.css"]).toBe(
+      "./dist/settings-cell/settings-cell.css",
+    );
     expect(packageJson.exports["./card/styles.css"]).toBe("./dist/card/card.css");
     expect(packageJson.exports["./button/styles.css"]).toBe("./dist/button/button.css");
     expect(packageJson.exports["./status-indicator/styles.css"]).toBe(
@@ -255,6 +263,12 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/avatar/avatar.contract.js",
       "package/dist/avatar/avatar.contract.d.ts",
       `package/dist/avatar/${componentArtifacts.avatar.css}`,
+      "package/dist/settings-cell/index.js",
+      "package/dist/settings-cell/SettingsCell.jsx",
+      "package/dist/settings-cell/index.d.ts",
+      "package/dist/settings-cell/settings-cell.contract.js",
+      "package/dist/settings-cell/settings-cell.contract.d.ts",
+      "package/dist/settings-cell/settings-cell.css",
       "package/dist/button/index.js",
       `package/dist/button/${componentArtifacts.button.implementation}`,
       "package/dist/button/index.d.ts",

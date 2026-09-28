@@ -13,6 +13,7 @@
 @import "./overlay/overlay.css";
 @import "./answer-label/answer-label.css";
 @import "./avatar/avatar.css";
+@import "./settings-cell/settings-cell.css";
 @import "./card/card.css";
 @import "./compact-numeric-input/compact-numeric-input.css";
 @import "./fog/fog.css";

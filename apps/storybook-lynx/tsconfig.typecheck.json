@@ -20,6 +20,7 @@
       "@libitums/ui-lynx/overlay": ["../../packages/ui-lynx/src/overlay/index.ts"],
       "@libitums/ui-lynx/answer-label": ["../../packages/ui-lynx/src/answer-label/index.ts"],
       "@libitums/ui-lynx/avatar": ["../../packages/ui-lynx/src/avatar/index.ts"],
+      "@libitums/ui-lynx/settings-cell": ["../../packages/ui-lynx/src/settings-cell/index.ts"],
       "@libitums/ui-lynx/card": ["../../packages/ui-lynx/src/card/index.ts"],
       "@libitums/ui-lynx/compact-numeric-input": [
         "../../packages/ui-lynx/src/compact-numeric-input/index.ts"
