@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 import { describe, expect, test, vi } from "vitest";
 
 import { SettingsCell, SettingsGroup } from "./SettingsCell";
@@ -107,9 +107,9 @@ describe("Settings Cell UI", () => {
     );
 
     const item = screen.getByTestId("ui-lynx-settings-group-item-profile");
-    const cell = item.querySelector('[data-testid="ui-lynx-settings-cell"]');
+    const cell = within(item).getByTestId("ui-lynx-settings-cell");
     expect(cell).toHaveAttribute("accessibility-label", "프로필");
-    tap(cell as Element);
+    tap(cell);
     expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 });
