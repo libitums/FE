@@ -11,10 +11,8 @@ import {
   wordChoiceCompletionAnnouncement,
   wordChoiceCompletionText,
   wordChoiceFinishLabel,
-  wordChoiceProgressLabel,
   wordChoiceQuestionsByStep,
   wordChoiceQuestionsForStep,
-  wordChoiceScreenTitle,
   wordChoiceSessionReducer,
   wordChoiceSessionResults,
   type WordChoiceQuestion,
@@ -53,34 +51,6 @@ const questionAnswer2: WordChoiceQuestion = {
   choices: ["신발", "책상", "커피", "우산"],
   answerIndex: 2,
 };
-
-describe("wordChoiceScreenTitle", () => {
-  it("서수 3은 3단계 · 단어 선택이다", () => {
-    expect(wordChoiceScreenTitle(3)).toBe("3단계 · 단어 선택");
-  });
-
-  it("서수 1은 1단계 · 단어 선택이다", () => {
-    expect(wordChoiceScreenTitle(1)).toBe("1단계 · 단어 선택");
-  });
-
-  it("여정의 마지막 서수 5도 같은 형식이다", () => {
-    expect(wordChoiceScreenTitle(5)).toBe("5단계 · 단어 선택");
-  });
-});
-
-describe("wordChoiceProgressLabel", () => {
-  it("첫 문항(0, 3)은 문항 1 / 3이다", () => {
-    expect(wordChoiceProgressLabel(0, 3)).toBe("문항 1 / 3");
-  });
-
-  it("마지막 문항(2, 3)은 문항 3 / 3이다", () => {
-    expect(wordChoiceProgressLabel(2, 3)).toBe("문항 3 / 3");
-  });
-
-  it("중간 문항(1, 3)은 문항 2 / 3이다", () => {
-    expect(wordChoiceProgressLabel(1, 3)).toBe("문항 2 / 3");
-  });
-});
 
 describe("judgeWordChoice", () => {
   it("정답 인덱스를 고르면 correct다 — answerIndex가 0인 문항도 포함한다", () => {
@@ -430,12 +400,9 @@ describe("wordChoiceSessionResults", () => {
 });
 
 describe("wordChoiceQuestionsForStep", () => {
-  // wordChoiceQuestionsByStep[id]의 조회입니다. 값이 아직 없습니다 — 지금은 다섯
-  // 스텝 전부 빈 배열을 돌려주는 것이 정상 동작입니다.
-  it("다섯 스텝 전부 wordChoiceQuestionsByStep[id]를 그대로 낸다 — 지금은 빈 배열이다", () => {
+  it("다섯 스텝 전부 wordChoiceQuestionsByStep[id]를 그대로 낸다", () => {
     for (const id of stepIds) {
       expect(wordChoiceQuestionsForStep(id)).toEqual(wordChoiceQuestionsByStep[id]);
-      expect(wordChoiceQuestionsForStep(id)).toEqual([]);
     }
   });
 
@@ -446,16 +413,71 @@ describe("wordChoiceQuestionsForStep", () => {
   });
 });
 
-describe("wordChoiceQuestionsByStep (문항 데이터 자리)", () => {
+// 고정 데이터의 불변식입니다 — 듣기(`listening.unit.test.ts`)가 자기 표에 거는 것과
+// 같은 줄들입니다. **값 자체는 단언하지 않습니다**: 문항 문구는 컨텐츠라 바뀔 것이고,
+// 여기서 박으면 문구를 고칠 때마다 계약이 아니라 이 테스트가 갈립니다.
+describe("wordChoiceQuestionsByStep (고정 데이터 불변식)", () => {
   it("다섯 스텝 전부가 있다", () => {
     expect(Object.keys(wordChoiceQuestionsByStep).sort()).toEqual([...stepIds].sort());
   });
 
-  // 값을 지어내지 않았다는 것 자체가 이 단위의 계약입니다 — 다섯 키 전부
-  // 빈 배열입니다.
-  it("값을 지어내지 않았다 — 다섯 키 전부 빈 배열이다", () => {
+  // ⟨2026-09-28⟩ 문항을 가진 스텝이 `introduction` 하나입니다. **어느 스텝인지를 여기서
+  // 박지 않습니다** — 그것은 배정이고, 배정과 문항의 짝은 `journey-map.unit.test.ts`의
+  // 교차 불변식이 집니다. 이 파일이 보는 것은 「비어 있지 않은 스텝은 세 문항을
+  // 갖는다」입니다.
+  it("문항이 있는 스텝은 문항이 셋이다", () => {
     for (const id of stepIds) {
-      expect(wordChoiceQuestionsByStep[id]).toEqual([]);
+      const questions = wordChoiceQuestionsByStep[id];
+      if (questions.length === 0) {
+        continue;
+      }
+
+      expect(questions).toHaveLength(3);
+    }
+  });
+
+  it("어느 스텝에도 문항이 하나도 없지는 않다 — 표 전체가 비면 화면이 못 선다", () => {
+    const total = stepIds.reduce((sum, id) => sum + wordChoiceQuestionsByStep[id].length, 0);
+
+    expect(total).toBeGreaterThan(0);
+  });
+
+  it("모든 문항의 보기가 넷이고 서로 다르다", () => {
+    for (const id of stepIds) {
+      for (const question of wordChoiceQuestionsByStep[id]) {
+        expect(question.choices).toHaveLength(4);
+        expect(new Set(question.choices).size).toBe(4);
+      }
+    }
+  });
+
+  it("모든 문항의 answerIndex가 0..3 안에 있다", () => {
+    for (const id of stepIds) {
+      for (const question of wordChoiceQuestionsByStep[id]) {
+        expect(question.answerIndex).toBeGreaterThanOrEqual(0);
+        expect(question.answerIndex).toBeLessThanOrEqual(3);
+      }
+    }
+  });
+
+  it("모든 문항의 prompt와 보기 넷이 빈 문자열이 아니다", () => {
+    for (const id of stepIds) {
+      for (const question of wordChoiceQuestionsByStep[id]) {
+        expect(question.prompt.length).toBeGreaterThan(0);
+        for (const choice of question.choices) {
+          expect(choice.length).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  // 「정답 인덱스」 행입니다: 이것이 깨지면 한 인덱스만 계속 골라 전부 맞는 경로가
+  // 생기고, 실기에서 오답 경로가 한 번도 안 나올 수 있습니다.
+  it("한 스텝 안에서 문항들의 정답 인덱스가 서로 다르다", () => {
+    for (const id of stepIds) {
+      const answerIndexes = wordChoiceQuestionsByStep[id].map((question) => question.answerIndex);
+
+      expect(new Set(answerIndexes).size).toBe(answerIndexes.length);
     }
   });
 });

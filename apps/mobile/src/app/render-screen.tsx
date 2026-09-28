@@ -8,7 +8,7 @@ import { cultureNarrativeForStep } from "../screens/culture/culture";
 import { CultureQuizScreen } from "../screens/culture-quiz/CultureQuizScreen";
 import { HandwritingProbeScreen } from "../screens/handwriting-probe/HandwritingProbeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
-import { journeyStepOrdinal, learningFormsForStep } from "../screens/journey-map/journey-map";
+import { journeyStepOrdinal } from "../screens/journey-map/journey-map";
 import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
@@ -191,7 +191,6 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <WordChoiceScreen
           stepId={screen.stepId}
-          stepOrdinal={journeyStepOrdinal(screen.stepId)}
           onExit={wiring.onExitLearning}
           onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
         />

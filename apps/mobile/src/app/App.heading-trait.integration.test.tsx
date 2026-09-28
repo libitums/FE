@@ -301,10 +301,13 @@ test("[I3] 제목 축 닫힌 집합이 상태 word-choice에서 계약이 고정
   const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
-  expect(screen.getByTestId("word-choice-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["word-choice-screen-title"]);
+  // ⟨2026-09-28⟩ 빈 집합이 답입니다 — 단어 선택도 학습 껍데기로 옮겨가며 제목 줄이
+  // 걷혔고, 껍데기는 제목 축에 아무것도 올리지 않습니다(`Chapter n / N`은 메타 줄이지
+  // 제목이 아닙니다). 듣기가 먼저 간 그 자리입니다. 위 `toBeInTheDocument`가 앵커라,
+  // 화면이 안 떠서 비는 경우와 갈립니다.
+  expect(headingAxis(container)).toEqual([]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고정한 목록과 정확히 같다", () => {

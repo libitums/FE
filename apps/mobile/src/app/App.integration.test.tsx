@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-
 import { App } from "./App";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import { questionsForStep } from "../screens/listening/listening";
+import { wordChoiceQuestionsForStep } from "../screens/word-choice/word-choice";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 
@@ -1067,4 +1068,72 @@ test("시트가 열려 있어도 여정 맵의 스크롤 컨테이너는 그대�
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
+});
+
+// ---------------------------------------------------------------- 활동 둘을 잇는 스텝
+//
+// ⟨2026-09-28⟩ **여기까지 오는 길이 처음 생겼습니다.** 유닛 하나가 활동 여럿을 잇는
+// 것은 2026-09-26에 설계로 정해졌고 `learningFormAt`·`activityIndex`가 그때 들어왔는데,
+// 배정표의 다섯 칸이 전부 활동 하나였던 탓에 **제품에서 한 번도 밟히지 않는 코드**였습니다.
+// `introduction`이 듣기 + 낱말 고르기를 잇게 되면서 그 길이 열렸고, 이 절이 그것을 봅니다.
+//
+// 아래 셋이 이 절이 지는 것입니다: 첫 활동을 마치면 **평가가 아니라 둘째 활동**이
+// 선다 · 둘째 활동이 제 문항을 연다 · 둘을 다 마쳐야 평가에 닿는다.
+
+// 낱말 고르기의 문항을 순서대로 전부 응답하고 매번 넘깁니다. 듣기의
+// `answerAllQuestions`와 같은 꼴이지만 보기의 testid가 갈립니다.
+function answerAllWordChoiceQuestions(
+  stepId: JourneyStepId,
+  pick: (answerIndex: number, questionIndex: number) => number,
+): void {
+  wordChoiceQuestionsForStep(stepId).forEach((question, questionIndex) => {
+    const choiceIndex = pick(question.answerIndex, questionIndex);
+
+    fireEvent.tap(screen.getByTestId(`word-choice-option-${choiceIndex}`), {});
+    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
+  });
+}
+
+test("활동이 둘인 스텝은 첫 활동을 마치면 평가가 아니라 둘째 활동이 선다", () => {
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
+
+  startStep("introduction");
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
+
+  answerAllQuestions("introduction", mixedPick);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+
+  expect(screen.getByTestId("word-choice-screen-content")).toBeInTheDocument();
+  expect(screen.queryByTestId("lesson-complete-screen-exit")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
+});
+
+// 둘째 활동이 **자기** 문항을 엽니다 — 결선이 stepId를 넘기지 않으면 여기서 빈
+// 화면(문항 0개)이 서고, 그것이 완료 상태와 구별되지 않습니다.
+test("둘째 활동이 그 스텝의 낱말 고르기 문항을 연다 — 순번도 처음부터다", () => {
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
+
+  startStep("introduction");
+  answerAllQuestions("introduction", mixedPick);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+
+  expect(screen.getByTestId("word-choice-screen-prompt")).toHaveTextContent(
+    wordChoiceQuestionsForStep("introduction")[0]!.prompt,
+  );
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
+});
+
+// 평가는 **활동을 다 마친 뒤** 한 번입니다. 첫 활동에서 이미 평가로 갔다면 위 테스트가
+// 잡고, 둘째 활동 뒤에 평가가 안 오면 이 테스트가 잡습니다.
+test("활동 둘을 다 마치면 그때 학습 결과 화면에 닿는다", () => {
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
+
+  startStep("introduction");
+  answerAllQuestions("introduction", mixedPick);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  answerAllWordChoiceQuestions("introduction", mixedPick);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+
+  expect(lessonCompleteExit()).toBeInTheDocument();
+  expect(screen.queryByTestId("word-choice-screen-content")).not.toBeInTheDocument();
 });
