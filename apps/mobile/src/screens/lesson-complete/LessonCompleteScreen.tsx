@@ -46,11 +46,19 @@ export function LessonCompleteScreen({
 }: LessonCompleteScreenProps): ReactNode {
   const mistakeCount = lessonMistakeCount(results);
 
-  // 마운트 때 한 번입니다 — 판정은 이 화면이 사는 동안 바뀌지 않습니다.
+  // 이 화면이 사는 동안 정확히 한 번 발화합니다(ADR-0016 D11-2).
+  //
+  // **dep이 `mistakeCount`입니다.** 빈 배열 + `eslint-disable`로 두면 「마운트 때 한 번」이
+  // 규칙이 아니라 린트를 끈 결과가 되고, 나중에 이 값이 실제로 갈리는 날 발화가 조용히
+  // 빠집니다. 값을 적어 두면 그날 `tsc`도 린트도 아닌 **화면이** 답합니다.
+  //
+  // 그래도 두 번 울리지 않습니다: `results`는 이 화면 인스턴스의 것이고 라우트에 실려
+  // 와서 `back`과 함께 죽습니다(`nav-state.ts`) — 사는 동안 갈리지 않으므로 파생값인
+  // `mistakeCount`도 갈리지 않습니다. 듣기 화면이 `[complete]`를 dep으로 두고 같은
+  // 근거를 적는 것과 같은 자리입니다.
   useEffect(() => {
     announce(lessonCompleteAnnouncement(mistakeCount));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [mistakeCount]);
 
   return (
     <view className="lesson-complete-screen" data-testid="lesson-complete-screen">
