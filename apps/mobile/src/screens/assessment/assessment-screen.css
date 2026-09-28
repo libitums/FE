@@ -101,8 +101,10 @@
   flex-direction: column;
 }
 
-/* 나가는 수단입니다. `.listening-screen-finish`와 같은 값입니다. 버튼이
-   하나뿐이라 보조 버튼 스타일을 정의하지 않습니다. */
+/* 나가는 수단입니다. `.word-choice-screen-next` · `.step-sheet-start`와 같은
+   값입니다(듣기의 같은 버튼을 가리키고 있었는데, 그 화면이 2026-09-28에 학습
+   껍데기로 옮겨가며 걷혔습니다). 버튼이 하나뿐이라 보조 버튼 스타일을 정의하지
+   않습니다. */
 .assessment-screen-exit {
   background: var(--libitum-color-brand-strong);
   /* **고정 높이가 아니라 하한입니다**(ADR-0020 D5). Dynamic Type이 켜지면

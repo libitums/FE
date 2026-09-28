@@ -247,6 +247,15 @@
   right: var(--libitum-layout-screen-padding-x);
   bottom: var(--libitum-layout-screen-padding-bottom);
   z-index: var(--libitum-elevation-z-sticky);
+  /* ⚠ **알려진 대비 위반입니다.** 흰 라벨이 `brand-primary`(#F46B18) 위에서 3.02:1이고
+     WCAG 1.4.3의 4.5:1에 미달합니다. 디자인 값을 따르기로 한 자리입니다.
+
+     ⚠ **되돌릴 곳을 이미 알고 있습니다** ⟨2026-09-28에 확인⟩. 껍데기로 옮기기 전의 듣기
+     버튼(`listening-screen.css`의 `.listening-screen-next`)은 **`brand-strong`
+     (#B94208)을 썼고, 고른 근거가 정확히 이 미달이었습니다** — 흰 라벨이 그 위에서
+     5.46:1로 AA를 넘습니다. 즉 이 화면은 준수하던 값에서 미달로 **되돌아간 것**이지
+     한 번도 안 재 본 자리가 아닙니다. 그 사실이 옛 CSS와 함께 사라지지 않도록 여기
+     옮겨 적습니다. */
   background: var(--libitum-color-brand-primary);
   min-height: var(--libitum-spacing-48);
   padding: var(--libitum-spacing-16) var(--libitum-spacing-24);

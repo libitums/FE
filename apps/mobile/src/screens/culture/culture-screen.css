@@ -36,7 +36,7 @@
   /* FE ADR-0023 규칙 3 — `-exit`(하한 48)와 제목(`heading-s`, 줄높이 24)의 교차
      크기가 달라 `center`는 최대 배율에서 두 프레임의 top을 갈라 낭독 순서를
      DOM 순서와 어긋나게 만듭니다. `flex-start` + 제목의 `margin-top` 보상으로
-     그 조건을 깹니다(`.listening-screen-header`·`.sentence-order-screen-header`와
+     그 조건을 깹니다(`.sentence-order-screen-header`와
      같은 형태). */
   align-items: flex-start;
   gap: var(--libitum-layout-gap-inline);
@@ -90,7 +90,9 @@
    전부를 `flex-start`로 닫았고, `LinearSupportFlexStyleMode()` 게이트가 이
    앱에서 켜져 있는지 확인하지 못했습니다: 소스에서 초기값을 확인하지
    못했으면 적습니다(ADR-0022 D3). 같은 이유로 같은 값을 남긴
-   `listening-screen.css`의 `.listening-screen-scroll`과 같은 형태입니다. 세로
+   `learning-shell.css`의 `.learning-shell-scroll`과 같은 형태입니다(듣기가 쓰던
+   `.listening-screen-scroll`이 2026-09-28에 그리로 옮겨갔습니다 — ADR-0022 D2 표 21번).
+   세로
    중앙 정렬은 쓰지 않습니다 — `justify-content: center`는 위쪽 문단을 스크롤
    원점 밖으로 밀어 닿을 수 없게 만듭니다. */
 .culture-screen-scroll {
@@ -136,8 +138,9 @@
 }
 
 /* [고정] 액션 행 — `.culture-quiz-screen-next` · `.word-choice-screen-next` ·
-   `.listening-screen-next` · `.step-sheet-start` · `.assessment-screen-exit`와
-   문자 그대로 같은 값입니다 — 새로 그리지 않고 다섯째로 같은 값을 씁니다.
+   `.word-choice-screen-next` · `.step-sheet-start` · `.assessment-screen-exit`와
+   문자 그대로 같은 값입니다 — 새로 그리지 않고 같은 값을 씁니다(듣기도 이 목록에
+   있었는데 2026-09-28에 학습 껍데기로 옮겨가며 걷혔습니다).
    문화 퀴즈가 서면서 나아갈 곳이 생겨 이 화면에 액션 행이
    들어왔습니다. `<scroll-view>` 밖의 화면 직계 셋째 자식입니다 — 안에 넣으면
    흐름과 함께 밀려 최대 배율에서 닿을 수 없게 됩니다. */

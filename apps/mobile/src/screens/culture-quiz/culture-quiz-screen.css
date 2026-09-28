@@ -204,9 +204,10 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* [고정] 액션 행 — `.word-choice-screen-next`·`.listening-screen-next`·
-   `.step-sheet-start`·`.assessment-screen-exit`와 문자 그대로 같은
-   값입니다. 저장소에 주 버튼 스타일이 하나뿐이고 보조 버튼 스타일은 정의된
+/* [고정] 액션 행 — `.word-choice-screen-next`·`.step-sheet-start`·
+   `.assessment-screen-exit`와 문자 그대로 같은 값입니다. (듣기의 같은 버튼도 이
+   목록에 있었는데, 그 화면이 2026-09-28에 학습 껍데기로 옮겨가며 걷혔습니다 —
+   ⚠ 껍데기의 `.learning-shell-action`은 이 값을 **안 따릅니다**.) 저장소에 주 버튼 스타일이 하나뿐이고 보조 버튼 스타일은 정의된
    적이 없습니다.
 
    `brand-primary`가 아니라 `brand-strong`입니다: 흰 라벨이 `brand-primary`
