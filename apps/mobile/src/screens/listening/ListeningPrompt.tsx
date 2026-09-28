@@ -6,7 +6,7 @@ import play from "@libitums/icons/lynx/play";
 import refresh from "@libitums/icons/lynx/refresh";
 import { color } from "@libitums/design-tokens";
 
-import { playbackActionFor, playbackStateAfterPlay } from "./listening";
+import { listeningPromptScale, playbackActionFor, playbackStateAfterPlay } from "./listening";
 import type { ListeningPlaybackAction, ListeningPlaybackState } from "./listening";
 import { pauseAudio, playAudio, resumeAudio, stopAudio } from "../../lib/audio";
 import type { SessionOptions } from "../../lib/session-options";
@@ -93,6 +93,7 @@ export function ListeningPrompt({
   }, [audioSource]);
 
   const action = playbackActionFor(playback);
+  const scale = listeningPromptScale(text);
 
   // 세 갈래가 전부입니다. 갈래를 컴포넌트 안 삼항이 아니라 `playbackActionFor`가
   // 정하므로, 상태가 늘면 `tsc`가 그 함수를 가리킵니다.
@@ -129,7 +130,10 @@ export function ListeningPrompt({
           정지점으로 남습니다 — 「보이지 않는다」가 거짓이 됩니다. 로마자 줄도 같은
           가림을 받습니다: 그것도 소리를 글자로 옮긴 것이라 대본입니다. */}
       {sessionOptions["show-transcript"] ? (
-        <view className="listening-prompt-script">
+        // 크기 단계가 문장 길이에서 나옵니다 — 긴 문장을 큰 글자로 두면 카드가 늘어나
+        // 아래 보기를 화면 밖으로 밉니다. 로마자 줄도 같은 단계를 받습니다: 둘의 크기
+        // 차이가 유지돼야 한글이 주인공이라는 것이 읽힙니다.
+        <view className={`listening-prompt-script listening-prompt-scale-${scale}`}>
           <text className="listening-prompt-text" data-testid="listening-prompt-text">
             {text}
           </text>

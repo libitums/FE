@@ -30,7 +30,12 @@
   gap: var(--libitum-spacing-12);
 }
 
-/* 제시문입니다. `display` scale(34/41, 자간 -1.4)이고 색이 `brand-primary`입니다.
+/* 제시문의 색과 정렬입니다. **크기는 여기 없습니다** — 문장 길이에 따라 세 단계로
+   갈리고, 그 단계는 아래 `-scale-*`가 집니다(`listeningPromptScale`).
+
+   크기를 단계로 끊는 이유: 긴 문장을 `display`(34)로 두면 세 줄로 접혀 카드가 120pt
+   넘게 늘어나고, 그만큼이 아래 보기를 화면 밖으로 밀어 스크롤을 만듭니다. 학습 화면은
+   스크롤이 없는 것이 설계입니다.
 
    디자인은 문장 앞부분만 주황이고 나머지가 `gray-400`입니다 — 재생 진행에 따라
    물드는 노래방식 강조인데, 그것은 **낱말별 시각 데이터**를 요구하고 그 데이터는
@@ -38,11 +43,18 @@
    「오디오 자산의 출처·형식」이 아직 열린 행입니다). 그때까지 문장 전체가 한 색입니다 —
    **절반만 주황으로 두면 그것이 「여기까지 재생됐다」는 거짓말이 됩니다.**
 
-   `dialogue-body`에서 `display`로 올라갑니다. 발화를 읽는 것이 아니라 **소리를 눈으로
-   짚는 것**이 이 줄의 일이 됐고, 그 크기는 디자인이 정합니다. */
+   발화를 읽는 것이 아니라 **소리를 눈으로 짚는 것**이 이 줄의 일입니다. */
 .listening-prompt-text {
   color: var(--libitum-color-brand-primary);
   text-align: center;
+}
+
+/* 크기 세 단계입니다. 제시문과 로마자 줄이 **함께** 내려갑니다 — 둘의 크기 차이가
+   유지돼야 한글이 주인공이고 로마자가 읽는 법이라는 것이 읽힙니다.
+
+   `l`이 디자인 값입니다(Figma 53-14231). `m` · `s`는 그보다 긴 문장을 위해 이 화면이
+   더한 단계이고, 디자인에 없는 자리입니다. */
+.listening-prompt-scale-l .listening-prompt-text {
   font-family: var(--libitum-typography-display-font-family);
   font-weight: var(--libitum-typography-display-font-weight);
   font-size: var(--libitum-typography-display-font-size);
@@ -50,8 +62,41 @@
   letter-spacing: var(--libitum-typography-display-letter-spacing);
 }
 
-/* 로마자 줄입니다. `heading-s`(18/24 Bold)에 `gray-600`으로, 제시문보다 한 단 뒤에
-   섭니다 — 주인공은 한글이고 이 줄은 그것을 읽는 법입니다. */
+.listening-prompt-scale-m .listening-prompt-text {
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.listening-prompt-scale-s .listening-prompt-text {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.listening-prompt-scale-m .listening-prompt-romanization {
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  line-height: var(--libitum-typography-label-xl-line-height);
+  letter-spacing: var(--libitum-typography-label-xl-letter-spacing);
+}
+
+.listening-prompt-scale-s .listening-prompt-romanization {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 로마자 줄의 색과 기본 크기입니다. `gray-600`으로 제시문보다 한 단 뒤에 섭니다 —
+   주인공은 한글이고 이 줄은 그것을 읽는 법입니다. 여기 적은 `heading-s`는 `l` 단계의
+   값이고, `m` · `s`는 위 규칙이 덮습니다(선택자가 더 구체적이라 순서와 무관합니다). */
 .listening-prompt-romanization {
   color: var(--libitum-color-gray-600);
   text-align: center;

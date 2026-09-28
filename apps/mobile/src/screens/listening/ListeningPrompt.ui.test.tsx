@@ -5,6 +5,8 @@ import pause from "@libitums/icons/lynx/pause";
 import { color } from "@libitums/design-tokens";
 
 import { ListeningPrompt } from "./ListeningPrompt";
+// 크기 단계는 문장 길이에서 나옵니다 — 리터럴로 적지 않고 같은 함수에서 뽑습니다.
+import { listeningPromptScale } from "./listening";
 // sessionOptions가 필수 prop이 됐습니다. 이 파일의 fixture는 언제나 초기값(둘
 // 다 켜짐)을 줍니다 — 단언은 한 글자도 바꾸지 않습니다.
 import { initialSessionOptions } from "../../lib/session-options";
@@ -259,7 +261,7 @@ test("두 상태에서 class 속성이 한 글자도 갈리지 않는다 — 상
   // 계약의 클래스 목록 그대로입니다 — 순서는 DOM 순서입니다.
   expect(classesWhilePlaying).toEqual([
     "listening-prompt",
-    "listening-prompt-script",
+    `listening-prompt-script listening-prompt-scale-${listeningPromptScale(TEXT)}`,
     "listening-prompt-text",
     "listening-prompt-romanization",
     "listening-prompt-controls",
