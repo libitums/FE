@@ -79,14 +79,19 @@ export function EpisodeFinalScreen({
     dispatch({ type });
   };
 
+  // 타이머는 늘 최신 `advance`를 부릅니다 — 판정 틈에 부모가 다시 그려져 `onFinish`가
+  // 바뀌어도 앞 렌더의 콜백을 부르지 않게 합니다.
+  const advanceRef = useRef(advance);
+  advanceRef.current = advance;
+
   // 판정 뒤 잠시 뒤에 저절로 넘어갑니다. 화면을 떠나면 타이머를 걷습니다.
   useEffect(() => {
     if (state.phase !== "judged") {
       return undefined;
     }
-    const timer = setTimeout(() => advance("next"), episodeFinalAdvanceDelayMs);
+    const timer = setTimeout(() => advanceRef.current("next"), episodeFinalAdvanceDelayMs);
     return () => clearTimeout(timer);
-    // 문항 순번 · 국면이 바뀔 때만 겁니다 — `advance`는 그 둘에서 파생한 값을 읽습니다.
+    // 문항 순번 · 국면이 바뀔 때만 겁니다 — 부르는 함수는 ref가 늘 최신으로 듭니다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.questionIndex, state.phase]);
 

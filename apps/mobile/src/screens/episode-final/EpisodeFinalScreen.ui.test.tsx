@@ -180,6 +180,27 @@ test("[EFS5] 마지막 문항의 판정 뒤 잠시 뒤에 결과를 싣고 onFin
   expect(props.onFinish).toHaveBeenCalledWith(["incorrect", "incorrect"]);
 });
 
+test("[EFS5b] 판정 틈에 onFinish가 바뀌면 넘길 때 새 콜백을 부른다", () => {
+  vi.useFakeTimers();
+  const oneQuestion: EpisodeFinalTest = { ...finalTest, questions: [finalTest.questions[0]] };
+  const base = {
+    insets: { top: 0, bottom: 0, left: 0, right: 0 },
+    episodeLabel: "Episode 0.",
+    test: oneQuestion,
+    onExit: vi.fn<() => void>(),
+  };
+  const staleFinish = vi.fn<(results: readonly AnswerResult[]) => void>();
+  const freshFinish = vi.fn<(results: readonly AnswerResult[]) => void>();
+  const view = render(<EpisodeFinalScreen {...base} onFinish={staleFinish} />);
+
+  fireEvent.tap(screen.getByTestId("episode-final-screen-option-1"), {});
+  view.rerender(<EpisodeFinalScreen {...base} onFinish={freshFinish} />);
+  wait(episodeFinalAdvanceDelayMs);
+
+  expect(staleFinish).not.toHaveBeenCalled();
+  expect(freshFinish).toHaveBeenCalledWith(["correct"]);
+});
+
 test("[EFS6] Can't speak는 판정 없이 곧장 넘어가고, 그 문항은 결과에 싣지 않는다", () => {
   const props = renderFinal();
   solveWordChoice();
