@@ -30,6 +30,8 @@ import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
 import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
 import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
+import type { EpisodeFinalTest } from "../screens/episode-final/episode-final.contract";
+import { episodeFinalTestFor as productEpisodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-progress";
 import type { AppJourneySeed } from "./journey-progress";
 import { entryInitialNav } from "./nav-state";
@@ -57,6 +59,11 @@ export type AppSeedProps = {
    * 자리가 바꿔 끼웁니다. 제품 진입점은 이 값을 주지 않습니다.
    */
   readonly episodePrologueFor?: (episodeId: string) => EpisodePrologue | undefined;
+  /**
+   * 최종 테스트를 찾는 함수입니다. 없으면 제품의 표(`episodeFinalTestFor`)를 씁니다. 제품에
+   * 없는 형식(통화)의 최종 테스트를 앱 안에서 보려는 자리가 바꿔 끼웁니다.
+   */
+  readonly episodeFinalTestFor?: (unitId: EpisodeFinalUnitId) => EpisodeFinalTest;
 };
 
 // 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지 · 그 뒤의
@@ -80,6 +87,7 @@ export function App({
   journeySeed = productJourneySeed,
   seenEpisodeIntroIds: initialSeenEpisodeIntroIds = [],
   episodePrologueFor = productEpisodePrologueFor,
+  episodeFinalTestFor = productEpisodeFinalTestFor,
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
@@ -174,6 +182,7 @@ export function App({
     gemCount,
     setScreenLayerOpen,
     episodePrologueFor,
+    episodeFinalTestFor,
     messengerEventSink,
     phoneCallEventSink,
     visualNovelEventSink,

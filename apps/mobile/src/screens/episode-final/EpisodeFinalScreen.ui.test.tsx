@@ -2,14 +2,15 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
-import type { EpisodeFinalTest } from "./episode-final.contract";
+import type { EpisodeFinalVisualNovelTest } from "./episode-final.contract";
 import { episodeFinalAdvanceDelayMs } from "./episode-final";
 import { EpisodeFinalScreen } from "./EpisodeFinalScreen";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 문항은 이 파일의 대역입니다 — 낱말
 // 고르기 하나, 말하기 하나. 판정 뒤에는 누를 것 없이 잠시 뒤 넘어가므로 가짜 시계를 씁니다.
 
-const finalTest: EpisodeFinalTest = {
+const finalTest: EpisodeFinalVisualNovelTest = {
+  format: "visual-novel",
   unitId: "tutorial-final-test",
   questions: [
     {
@@ -182,7 +183,10 @@ test("[EFS5] 마지막 문항의 판정 뒤 잠시 뒤에 결과를 싣고 onFin
 
 test("[EFS5b] 판정 틈에 onFinish가 바뀌면 넘길 때 새 콜백을 부른다", () => {
   vi.useFakeTimers();
-  const oneQuestion: EpisodeFinalTest = { ...finalTest, questions: [finalTest.questions[0]] };
+  const oneQuestion: EpisodeFinalVisualNovelTest = {
+    ...finalTest,
+    questions: [finalTest.questions[0]],
+  };
   const base = {
     insets: { top: 0, bottom: 0, left: 0, right: 0 },
     episodeLabel: "Episode 0.",

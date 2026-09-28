@@ -274,3 +274,54 @@
 .episode-final-dialog {
   padding: 0 14px 18px;
 }
+
+/* ── 통화 위의 말하기 카드(Figma 79-6043) ─────────────────── */
+
+/* 흰 카드 — 모서리 넷이 모두 둥글고 화면 여백 안에 떠 있습니다. 버튼 줄이 카드 안 아래에
+   섭니다. */
+.episode-final-speaking-call {
+  padding: 0;
+}
+
+/* 디자인의 카드(300)에 버튼 줄이 더 들어오므로 안 간격과 파형을 줄여 높이를 비슷하게
+   지킵니다 — 카드가 높아지면 뒤의 이름 · 통화 시계를 덮습니다. */
+.episode-final-speaking-call .episode-final-speaking-panel {
+  padding-bottom: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-xl);
+  background-color: var(--libitum-color-white);
+}
+
+.episode-final-speaking-call .episode-final-sentence,
+.episode-final-speaking-call .episode-final-romanization {
+  margin-top: var(--libitum-spacing-16);
+}
+
+.episode-final-speaking-call .episode-final-waves {
+  margin-top: var(--libitum-spacing-4);
+  margin-bottom: var(--libitum-spacing-12);
+}
+
+/* 파형 — 장면 패널(120 × 100)의 비율 그대로 줄입니다. */
+.episode-final-speaking-call .episode-final-waves-icon {
+  width: 77px;
+  height: 64px;
+}
+
+/* 카드 안은 장면보다 좁아 `Can't speak`가 2 : 3에서는 두 줄로 꺾입니다. 그래서 5 : 6으로
+   조금 넓힙니다 — 여전히 주 버튼보다 좁습니다. */
+.episode-final-speaking-call .episode-final-speaking-actions {
+  align-self: stretch;
+  padding: 0 var(--libitum-spacing-12);
+}
+
+.episode-final-speaking-call .episode-final-not-now {
+  flex: 5;
+}
+
+.episode-final-speaking-call .episode-final-speaking-action {
+  flex: 6;
+}
+
+.episode-final-speaking-call .episode-final-sentence-plain .episode-final-word {
+  color: var(--libitum-color-fg-neutral);
+}

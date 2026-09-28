@@ -8,6 +8,7 @@ import {
   episodeFinalPromptLine,
   episodeFinalSessionReducer,
   initialEpisodeFinalSessionState,
+  latestCallLine,
   judgeWordChoice,
 } from "./episode-final";
 import { episodeFinalTestFor } from "./episode-final-tests";
@@ -150,7 +151,11 @@ test("[EF9] 진행 라벨은 1부터 센다", () => {
 });
 
 test("[EF10] 튜토리얼 최종 테스트는 말하기와 낱말 고르기를 섞고, 정답 자리가 보기 안에 있다", () => {
-  const { questions } = episodeFinalTestFor("tutorial-final-test");
+  const test = episodeFinalTestFor("tutorial-final-test");
+  if (test.format !== "visual-novel") {
+    throw new Error("튜토리얼 최종 테스트는 비주얼 노벨 형식이어야 합니다");
+  }
+  const { questions } = test;
   const kinds = new Set(questions.map((item) => item.kind));
   expect(kinds).toEqual(new Set(["speaking", "word-choice"]));
   for (const item of questions) {
@@ -158,4 +163,16 @@ test("[EF10] 튜토리얼 최종 테스트는 말하기와 낱말 고르기를 �
       expect(item.options[item.answerIndex]).toBeDefined();
     }
   }
+});
+
+test("[EF13] 통화의 말풍선은 지금 차례까지의 마지막 상대 대사를 든다", () => {
+  const turns = [
+    { kind: "line", id: "l1", text: "여보세요?", translation: "Hello?" },
+    { kind: "speaking", id: "s1", sentence: "안녕하세요", romanization: "[an.nyeong.ha.se.yo]" },
+    { kind: "line", id: "l2", text: "잘 지냈어?", translation: "How have you been?" },
+  ] as const;
+  expect(latestCallLine(turns, 0)?.id).toBe("l1");
+  expect(latestCallLine(turns, 1)?.id).toBe("l1");
+  expect(latestCallLine(turns, 2)?.id).toBe("l2");
+  expect(latestCallLine([turns[1]], 0)).toBeUndefined();
 });

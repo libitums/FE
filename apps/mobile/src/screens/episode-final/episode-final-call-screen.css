@@ -1,0 +1,71 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 통화 최종 테스트(Figma 79-6043)
+   입니다. 면 · 머리는 서사 통화(`prologue-call-screen.css`)와 같은 값이고, 가운데(통화 상대 ·
+   말풍선)는 공용 `components/call-stage.css`가 그립니다. */
+
+/* 가장자리(상태바 · 홈 인디케이터 뒤)까지 깝니다 — 셸이 여백을 잡지 않습니다. */
+.episode-final-call-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: var(--libitum-color-background-secondary);
+}
+
+.episode-final-call-safe {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.episode-final-call-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: var(--libitum-spacing-16);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+}
+
+.episode-final-call-header {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.episode-final-call-back {
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.episode-final-call-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.episode-final-call-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-16);
+}
+
+/* 말하기 카드 — 좌우 화면 여백 안에서 홈 인디케이터 바로 위에 뜹니다(디자인에서 카드 아래가
+   화면 바닥에서 33 — 가장자리 여백과 같습니다). 그림자는 디자인 값입니다. */
+.episode-final-call-card {
+  position: absolute;
+  left: var(--libitum-layout-screen-padding-x);
+  right: var(--libitum-layout-screen-padding-x);
+  border-radius: var(--libitum-radius-xl);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+}

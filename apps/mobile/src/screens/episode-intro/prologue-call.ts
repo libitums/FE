@@ -31,11 +31,8 @@ export function prologueCallProgress(
   };
 }
 
-/** 통화 시계입니다 — `0:00`, `1:05`. */
-export function prologueCallClock(elapsedSeconds: number): string {
-  const seconds = Math.max(0, Math.floor(elapsedSeconds));
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-}
+// 통화 시계 표기는 `lib/call-clock.ts`로 올라갔습니다 — 통화 최종 테스트도 같은 시계를 씁니다.
+export { callClockLabel as prologueCallClock } from "../../lib/call-clock";
 
 export const initialPrologueCallVolume: PrologueCallVolume = 4;
 

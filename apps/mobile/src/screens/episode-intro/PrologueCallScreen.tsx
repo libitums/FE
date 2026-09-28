@@ -18,7 +18,7 @@ import {
   stepPrologueCallVolume,
 } from "./prologue-call";
 
-import { PrologueCallClock } from "./PrologueCallClock";
+import { CallCaller, CallLineBubble } from "../../components/CallCaller";
 
 import "./prologue-call-screen.css";
 
@@ -112,47 +112,19 @@ export function PrologueCallScreen({
             </text>
           </view>
 
-          {/* 통화 상대 묶음 — 낱말 둘(음성 통화 · 이름)을 한 번에 읽습니다. 시계는 이름에
-              싣지 않습니다 — 매초 바뀌는 값을 이름에 두면 스크린리더가 이 자리에 머무는
-              동안 되풀이해 읽습니다. 얼굴 그림은 장식이라 가립니다. */}
-          <view
-            className="prologue-call-screen-caller"
-            data-testid="prologue-call-screen-caller"
-            accessibility-element={true}
-            accessibility-label={`음성 통화, ${call.callerName}`}
-          >
-            <text className="prologue-call-screen-kind">Voice Call</text>
-            <view className="prologue-call-screen-portrait-frame">
-              <image
-                className="prologue-call-screen-portrait"
-                src={callerPortrait}
-                mode="aspectFill"
-              />
-            </view>
-            <text className="prologue-call-screen-name">{call.callerName}</text>
-            <PrologueCallClock running={!ended} />
-          </view>
+          <CallCaller
+            callerName={call.callerName}
+            callerPortrait={callerPortrait}
+            clockRunning={!ended}
+            testIdPrefix="prologue-call-screen"
+          />
 
           {line === undefined ? null : (
-            <view
-              className="prologue-call-screen-line"
-              data-testid="prologue-call-screen-line"
-              accessibility-element={true}
-              accessibility-label={`${line.text}, ${line.translation}`}
-            >
-              <text
-                className="prologue-call-screen-line-text"
-                data-testid="prologue-call-screen-line-text"
-              >
-                {line.text}
-              </text>
-              <text
-                className="prologue-call-screen-line-translation"
-                data-testid="prologue-call-screen-line-translation"
-              >
-                {line.translation}
-              </text>
-            </view>
+            <CallLineBubble
+              text={line.text}
+              translation={line.translation}
+              testIdPrefix="prologue-call-screen"
+            />
           )}
 
           <view className="prologue-call-screen-spacer" />

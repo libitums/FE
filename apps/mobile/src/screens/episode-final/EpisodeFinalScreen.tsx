@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from "@lynx-js/react";
+import { useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
@@ -6,25 +6,16 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
-import { announce } from "../../lib/accessibility";
-import { answerResultLabel } from "../../lib/answer-result";
-import { canListen, judgeSpeaking } from "../../lib/speaking-judge";
-import {
-  requestSpeechPermissions,
-  startSpeechRecognition,
-  stopSpeechRecognition,
-} from "../../lib/speech-recognition";
-import type { SpeechResult } from "../../lib/speech-recognition";
 import type { EpisodeFinalScreenProps } from "./episode-final.contract";
 import { episodeFinalTestIds } from "./episode-final.contract";
 import {
-  episodeFinalAdvanceDelayMs,
   episodeFinalSessionReducer,
   initialEpisodeFinalSessionState,
   judgeWordChoice,
 } from "./episode-final";
 import { FinalSpeakingPanel } from "./FinalSpeakingPanel";
 import { FinalWordChoicePanel } from "./FinalWordChoicePanel";
+import { useAdvanceAfterJudged, useAnnounceResult, useFinalSpeech } from "./useFinalSpeech";
 
 import "./episode-final-screen.css";
 
@@ -34,8 +25,8 @@ import "./episode-final-screen.css";
  * 씁니다(2026-09-28 결정 — 새 그림 없이).
  *
  * 판정 뒤에는 누를 것이 없습니다 — 판정과 정답을 잠시 보여 준 뒤 저절로 다음 문항으로
- * 갑니다(서사가 이어지듯, 2026-09-28 결정). 틀려도 정답을 보여 주고 다음으로 갑니다. 푼 것은 이 화면의 것입니다 — 뒤로 나가면
- * 버려지고, 다시 들어오면 첫 문항부터입니다.
+ * 갑니다(서사가 이어지듯, 2026-09-28 결정). 틀려도 정답을 보여 주고 다음으로
+ * 갑니다. 푼 것은 이 화면의 것입니다 — 뒤로 나가면 버려지고, 다시 들어오면 첫 문항부터입니다.
  */
 export function EpisodeFinalScreen({
   insets,
@@ -48,27 +39,11 @@ export function EpisodeFinalScreen({
   const question = test.questions[state.questionIndex] ?? test.questions[0];
   const isLast = state.questionIndex >= test.questions.length - 1;
 
-  // 화면이 떠 있는가입니다. 권한 조회 · 인식은 호스트를 거쳐 늦게 돌아오므로, 떠난 뒤에
-  // 돌아온 콜백이 인식을 새로 시작하거나 상태를 바꾸지 않게 막습니다(말하기 학습형과 같습니다).
-  const mounted = useRef(true);
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-      stopSpeechRecognition();
-    };
-  }, []);
+  const { speakingAction: speakingActionFor } = useFinalSpeech(dispatch);
 
   const judged = state.phase === "judged";
   const result = judged ? (state.results[state.results.length - 1] ?? null) : null;
-
-  useEffect(() => {
-    if (result !== null) {
-      announce(`채점 결과, ${answerResultLabel(result)}`);
-    }
-    // 문항 순번 · 국면이 바뀔 때만 한 번 냅니다 — `result`는 그 둘에서 파생합니다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.questionIndex, state.phase]);
+  useAnnounceResult(state.questionIndex, state.phase, result);
 
   // 다음 문항으로 가거나, 마지막이면 끝냅니다. 판정 뒤의 넘김과 건너뛰기가 함께 씁니다.
   const advance = (type: "next" | "skip") => {
@@ -78,70 +53,12 @@ export function EpisodeFinalScreen({
     }
     dispatch({ type });
   };
+  useAdvanceAfterJudged(state.questionIndex, state.phase, () => advance("next"));
 
-  // 타이머는 늘 최신 `advance`를 부릅니다 — 판정 틈에 부모가 다시 그려져 `onFinish`가
-  // 바뀌어도 앞 렌더의 콜백을 부르지 않게 합니다.
-  const advanceRef = useRef(advance);
-  advanceRef.current = advance;
-
-  // 판정 뒤 잠시 뒤에 저절로 넘어갑니다. 화면을 떠나면 타이머를 걷습니다.
-  useEffect(() => {
-    if (state.phase !== "judged") {
-      return undefined;
-    }
-    const timer = setTimeout(() => advanceRef.current("next"), episodeFinalAdvanceDelayMs);
-    return () => clearTimeout(timer);
-    // 문항 순번 · 국면이 바뀔 때만 겁니다 — 부르는 함수는 ref가 늘 최신으로 듭니다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.questionIndex, state.phase]);
-
-  const handleResult = (sentence: string) => (speech: SpeechResult) => {
-    if (!mounted.current) {
-      return;
-    }
-    if (speech.status !== "recognized") {
-      dispatch({ type: "unavailable" });
-      return;
-    }
-    dispatch({
-      type: "recognized",
-      text: speech.text,
-      result: judgeSpeaking(sentence, speech.text),
-    });
-  };
-
-  // 권한을 먼저 확인하고(미요청인 것만 묻습니다), 들을 수 있으면 인식을 시작합니다.
-  const startListening = (sentence: string) => {
-    dispatch({ type: "start" });
-    const requested = requestSpeechPermissions((status) => {
-      if (!mounted.current) {
-        return;
-      }
-      if (!canListen(status)) {
-        dispatch({ type: "unavailable" });
-        return;
-      }
-      if (startSpeechRecognition({}, handleResult(sentence)) === "unavailable") {
-        dispatch({ type: "unavailable" });
-      }
-    });
-    if (requested === "unavailable") {
-      dispatch({ type: "unavailable" });
-    }
-  };
-
-  // 말하기의 주 버튼입니다. 판정 뒤에는 없습니다 — 저절로 넘어갑니다. 문구는 이 화면의 다른
-  // 조작(`Say` · 서사의 `Next`)과 같이 영어입니다(2026-09-28 결정).
   const speakingAction =
-    question.kind !== "speaking"
-      ? undefined
-      : state.phase === "ready"
-        ? { label: "Speak", run: () => startListening(question.sentence) }
-        : state.phase === "listening"
-          ? { label: "Stop", run: () => stopSpeechRecognition() }
-          : state.phase === "unavailable"
-            ? { label: "Skip", run: () => advance("next") }
-            : undefined;
+    question.kind === "speaking"
+      ? speakingActionFor(state.phase, question.sentence, () => advance("next"))
+      : undefined;
 
   return (
     <view className="episode-final-screen" data-testid={episodeFinalTestIds.screen}>
