@@ -70,17 +70,15 @@ test("작업 영역을 받으면 그 안에 그린다", () => {
   expect(within(workspace).getByTestId("fixture-workspace")).toBeInTheDocument();
 });
 
-test("나가기가 접근성 속성을 갖고 tap하면 onExit이 한 번 불린다", () => {
+// tap의 결과는 아래 「나가기 확인」 절이 집니다 — 여기서는 속성만 봅니다.
+test("나가기가 접근성 속성을 갖는다", () => {
   const onExit = vi.fn<() => void>();
   renderShell({ onExit });
 
   const exit = screen.getByTestId("learning-shell-exit");
   expect(exit).toHaveAttribute("accessibility-label", "학습 나가기");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
-
-  fireEvent.tap(exit, {});
-
-  expect(onExit).toHaveBeenCalledTimes(1);
+  expect(onExit).not.toHaveBeenCalled();
 });
 
 test("아래 버튼이 라벨을 이름과 글자 둘 다로 내고 tap하면 onAction이 한 번 불린다", () => {
@@ -264,4 +262,61 @@ test("학습형이 갈리면 표식도 갈린다", () => {
     "__lynx_timing_flag",
     "libitum:navigation:learning-culture",
   );
+});
+
+// ---------------------------------------------------------------- 나가기 확인 (2026-09-28)
+//
+// 나가기는 두 걸음입니다. `×`는 묻기만 하고, 실제로 떠나는 것은 모달의 `그만두기`입니다.
+// 한 걸음이면 손이 스친 한 번에 세션이 사라지는데 진행은 저장되지 않아 되돌릴 수단이
+// 없습니다.
+
+test("×를 눌러도 바로 나가지 않고 확인을 묻는다", () => {
+  const onExit = vi.fn<() => void>();
+  renderShell({ onExit });
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+
+  expect(onExit).not.toHaveBeenCalled();
+  expect(screen.getByTestId("ui-lynx-dialog")).toBeInTheDocument();
+});
+
+// 무엇을 잃는지가 본문에 있어야 합니다 — 그것이 없으면 사용자가 대가를 모른 채 고릅니다.
+test("확인 모달이 잃는 것을 본문에 적는다", () => {
+  renderShell();
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+
+  const dialog = screen.getByTestId("ui-lynx-dialog");
+  expect(dialog).toHaveTextContent("학습을 그만둘까요?");
+  expect(dialog).toHaveTextContent("저장되지 않고");
+  expect(dialog).toHaveTextContent("처음부터 다시");
+});
+
+test("그만두기를 고르면 그때 onExit이 한 번 불린다", () => {
+  const onExit = vi.fn<() => void>();
+  const { container } = renderShell({ onExit });
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  const leave = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
+    (el) => el.getAttribute("accessibility-label") === "그만두기",
+  );
+  fireEvent.tap(leave as Element, {});
+
+  expect(onExit).toHaveBeenCalledTimes(1);
+});
+
+// 되돌리는 길이 있어야 「묻는다」가 참이 됩니다 — 계속하기는 아무 일도 일으키지 않고
+// 모달만 걷습니다.
+test("계속하기를 고르면 모달만 닫히고 onExit은 불리지 않는다", () => {
+  const onExit = vi.fn<() => void>();
+  const { container } = renderShell({ onExit });
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  const stay = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
+    (el) => el.getAttribute("accessibility-label") === "계속하기",
+  );
+  fireEvent.tap(stay as Element, {});
+
+  expect(onExit).not.toHaveBeenCalled();
+  expect(screen.queryByTestId("ui-lynx-dialog")).not.toBeInTheDocument();
 });

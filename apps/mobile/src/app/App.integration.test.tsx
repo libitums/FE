@@ -241,6 +241,18 @@ test("시트가 열린 동안에도 탭 전환이 동작한다", () => {
 // 여정 탭 → 스텝 tap → 시트 `시작` tap입니다. 시트가 실제로 떠 있는 것을 먼저
 // 앵커로 잡습니다 — 뒤에 오는 부재 단언(`step-sheet-panel`이 없음을 보는 단언)이
 // 공허해지지 않도록.
+// 학습 화면을 실제로 떠납니다 ⟨2026-09-28⟩. `×`는 묻기만 하고 실제로 떠나는 것은 모달의
+// `그만두기`입니다 — 되돌릴 수 없는 일(진행이 저장되지 않습니다) 앞이라 두 걸음입니다.
+// 그 계약은 껍데기의 ui 테스트가 지고, 여기서는 「끝까지 나간다」를 한 줄로 부릅니다.
+function exitLearning(): void {
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  const leave = [...document.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
+    (el) => el.getAttribute("accessibility-label") === "그만두기",
+  );
+  if (leave === undefined) throw new Error("나가기 확인 모달에 `그만두기`가 없습니다");
+  fireEvent.tap(leave, {});
+}
+
 function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${stepId}`), {});
@@ -309,7 +321,7 @@ test("서로 다른 두 스텝에서 시작하면 문항 텍스트가 갈린다"
     questionsForStep("ordering")[0].prompt,
   );
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitLearning();
   startStep("greeting");
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
@@ -343,7 +355,7 @@ test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitLearning();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
@@ -415,7 +427,7 @@ test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   expect(screen.queryByTestId("listening-screen-complete")).not.toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitLearning();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
@@ -479,7 +491,7 @@ test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있�
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
 
   startStep("appointment");
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitLearning();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
@@ -621,7 +633,7 @@ test("I5: 문항 하나만 응답하고 헤더 맵으로 나가면 진행이 안
   const answerIndex = questionsForStep("ordering")[0].answerIndex;
   fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitLearning();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
@@ -770,7 +782,7 @@ test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 �
   startStep("ordering");
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0)]);
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitLearning();
   startStep("greeting");
 
   expect(audioSourceAt("greeting", 0)).not.toBe(audioSourceAt("ordering", 0));
@@ -812,7 +824,7 @@ test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아�
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitLearning();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
@@ -876,7 +888,7 @@ test("학습 화면을 나가면 stop이 불리고, 다시 들어가면 첫 문�
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitLearning();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();

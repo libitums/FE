@@ -84,6 +84,17 @@ function answerCorrectlyAndAdvance(questionIndex: number): void {
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 }
 
+// 나가기는 두 걸음입니다 ⟨2026-09-28⟩ — `×`는 묻기만 하고 실제로 떠나는 것은 모달의
+// `그만두기`입니다. 그 계약은 껍데기 자신의 테스트가 지므로, 여기서는 「끝까지 나간다」를
+// 한 줄로 부릅니다.
+function exitThroughConfirm(container: Element): void {
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  const leave = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
+    (el) => el.getAttribute("accessibility-label") === "그만두기",
+  );
+  fireEvent.tap(leave as Element, {});
+}
+
 function completeAllThree(): void {
   answerCorrectlyAndAdvance(0);
   answerCorrectlyAndAdvance(1);
@@ -553,21 +564,21 @@ test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 �
 test("응답 전 나가기를 탭하면 onExit이 한 번, onFinish는 한 번도 불리지 않는다", () => {
   const onExit = vi.fn<() => void>();
   const onFinish = vi.fn<(id: JourneyStepId) => void>();
-  renderOrdering({ onExit, onFinish });
+  const { container } = renderOrdering({ onExit, onFinish });
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitThroughConfirm(container);
 
   expect(onExit).toHaveBeenCalledTimes(1);
   expect(onFinish).not.toHaveBeenCalled();
 });
 
-test("문항 하나를 응답한 뒤 나가기를 탭해도 onFinish가 불리지 않는다", () => {
+test("문항 하나를 응답한 뒤 나가도 onFinish가 불리지 않는다", () => {
   const onExit = vi.fn<() => void>();
   const onFinish = vi.fn<(id: JourneyStepId) => void>();
-  renderOrdering({ onExit, onFinish });
+  const { container } = renderOrdering({ onExit, onFinish });
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitThroughConfirm(container);
 
   expect(onExit).toHaveBeenCalledTimes(1);
   expect(onFinish).not.toHaveBeenCalled();
@@ -582,7 +593,7 @@ test("문항 하나를 응답한 뒤 나가기를 탭해도 onFinish가 불리�
 // 여기서 보는 것은 **배선** 하나입니다 — 그 버튼이 이 화면의 `onExit`에 닿는가.
 test("껍데기의 나가기가 이 화면의 onExit에 닿는다", () => {
   const onExit = vi.fn<() => void>();
-  render(
+  const { container } = render(
     <ListeningScreen
       stepId="ordering"
       onExit={onExit}
@@ -591,7 +602,7 @@ test("껍데기의 나가기가 이 화면의 onExit에 닿는다", () => {
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitThroughConfirm(container);
 
   expect(onExit).toHaveBeenCalledTimes(1);
 });
