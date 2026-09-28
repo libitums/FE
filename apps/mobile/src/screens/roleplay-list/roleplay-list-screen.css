@@ -7,13 +7,14 @@
   flex-direction: column;
   flex: 1;
   gap: var(--libitum-layout-gap-block);
-  /* 화면 여백은 축마다 값이 다릅니다. `padding-x`를 네 방향에 쓰면 상하가 틀립니다. */
-  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
-    var(--libitum-layout-screen-padding-bottom);
+  /* 좌우 여백이 없습니다 — 카드 줄이 화면 오른쪽 끝까지 흘러 「옆에 더 있다」를
+     보여 줍니다(Figma 76-692). 좌우 여백은 제목과 구획 머리와 카드 줄이 각자 집니다. */
+  padding: var(--libitum-layout-screen-padding-top) 0 var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-background-primary);
 }
 
 .roleplay-list-screen-title {
+  padding: 0 var(--libitum-layout-screen-padding-x);
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);
@@ -43,26 +44,107 @@
 .roleplay-list-screen-scroll {
   flex: 1;
   justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
 }
 
-/* 스크롤의 유일한 직계 자식입니다. `<scroll-view>`는 CSS와 무관하게 강제로
-   linear가 되어 gap이 없으므로, 항목 사이 간격은 이 상자가 집니다.
-   `padding-top: spacing-16`은 hairline과 첫 항목 경계가 붙지 않게 합니다 —
-   padding-bottom은 두지 않습니다(마지막 항목 아래 빈 띠가 「여기가 끝」으로 읽혀
-   넘침 어포던스를 지웁니다, ADR-0022 D4). `flex: 1`·세로 중앙 정렬은 강제 linear
-   아래 죽은 선언이라 두지 않습니다. */
+/* 스크롤의 유일한 직계 자식입니다. `<scroll-view>`는 CSS와 무관하게 강제로 linear가
+   되어 gap이 없으므로, 구획 사이 간격(디자인 48)은 이 상자가 집니다. */
 /* 아래 여백은 바텀 네비게이션 몫입니다 — 바가 콘텐츠 위에 겹치므로(app.css의
-   `.app-navigator`) 이 여백이 없으면 마지막 항목이 바에 가립니다. 값은 바 높이 68pt입니다
-   (위 여백 8 + 항목 48 + 아래 여백 12).
-
-   ADR-0022 D4는 「마지막 항목 아래 빈 띠가 끝으로 읽혀 넘침 어포던스를 지운다」는
-   이유로 이 여백을 두지 않았습니다. 그 저울이 뒤집혔습니다 — 여백이 없으면 어포던스가
-   흐려지는 정도가 아니라 **항목이 사라집니다**. */
+   `.app-navigator`) 이 여백이 없으면 마지막 구획이 바에 가립니다. 값은 바 높이 68pt입니다
+   (위 여백 8 + 항목 48 + 아래 여백 12). */
 .roleplay-list-screen-list {
   display: flex;
   flex-direction: column;
-  gap: var(--libitum-layout-gap-block);
-  padding-top: var(--libitum-spacing-16);
+  gap: var(--libitum-spacing-48);
+  padding-top: var(--libitum-spacing-8);
   padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+}
+
+/* 구획 — 머리 한 줄과 카드 줄입니다. 둘 사이 22는 디자인 실측값이고 가장 가까운 토큰이
+   `spacing-24`입니다. */
+.roleplay-list-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-24);
+}
+
+.roleplay-list-section-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--libitum-spacing-16);
+  padding: 0 var(--libitum-layout-screen-padding-x);
+}
+
+.roleplay-list-section-header {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-4);
+}
+
+.roleplay-list-section-label {
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* ⚠ 알려진 대비 위반입니다. `gray-600`(#B0B3BA)은 화면 면 위에서 약 2.1:1로 WCAG 1.4.3의
+   4.5:1에 못 미칩니다. 디자인 값(Figma 81-7968)을 따르되 여기 적어 둡니다 — 같은 이름을
+   구획 머리의 `accessibility-label`이 함께 싣습니다. */
+.roleplay-list-section-title {
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
+}
+
+/* `전체 보기` — 보이는 것은 작은 낱말과 화살표지만 누르는 자리는 44pt를 채웁니다(HIG).
+   디자인의 글자 높이 14를 그대로 누르는 자리로 쓰면 손가락이 닿지 않습니다. */
+.roleplay-list-section-view-all {
+  min-height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.roleplay-list-section-view-all-label {
+  color: var(--libitum-color-brand-primary);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}
+
+/* 화살표 14는 디자인 실측값이고 맞는 토큰이 없어 px로 적습니다(`icon-size-xs`는 16). */
+.roleplay-list-section-view-all-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* 카드 줄의 가로 스크롤입니다. 높이를 적습니다 — 가로 `<scroll-view>`는 높이를 내용에서
+   얻지 못하고, 안 적으면 0으로 접힙니다. 값은 카드 높이입니다. */
+.roleplay-list-section-scroll {
+  width: 100%;
+  height: 190px;
+}
+
+/* 카드 사이 12는 디자인 값입니다. 좌우 여백은 화면 여백과 같습니다 — 첫 카드가 구획
+   머리와 같은 세로선에 서고, 끝까지 넘기면 마지막 카드 오른쪽에 같은 여백이 남습니다. */
+.roleplay-list-section-row {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-12);
+  padding: 0 var(--libitum-layout-screen-padding-x);
 }

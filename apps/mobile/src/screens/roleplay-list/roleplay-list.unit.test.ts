@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import type { JourneyMapItem, JourneyStep } from "../journey-map/journey-map";
+import type { JourneyMapItem, JourneyMapSection, JourneyStep } from "../journey-map/journey-map";
 import {
+  findRoleplaySection,
   roleplayFormLabel,
   roleplayItemAccessibilityLabel,
   roleplayItemsFrom,
+  roleplaySectionAccessibilityLabel,
+  roleplaySectionsFrom,
 } from "./roleplay-list";
-import type { RoleplayItem } from "./roleplay-list.contract";
+import type { RoleplayItem, RoleplaySection } from "./roleplay-list.contract";
 
 // fixture는 `JourneyMapItem`(type import)으로 이 파일 안에서 짓습니다 — 여정 폴더의
 // **값**을 가져오지 않습니다(code.md 「import」). 실제 데이터 순서는 integration I1이
@@ -137,5 +140,136 @@ describe("roleplayItemAccessibilityLabel", () => {
     for (const item of fixtures) {
       expect(roleplayItemAccessibilityLabel(item)).toBe(roleplayItemAccessibilityLabel(item));
     }
+  });
+});
+
+describe("roleplayItemAccessibilityLabel — 잠김", () => {
+  it("R7. 잠긴 항목은 이름 뒤에 잠김이 붙는다", () => {
+    expect(
+      roleplayItemAccessibilityLabel(
+        { form: "messenger", unitId: "appointment-confirmation", title: "약속 확인 메시지" },
+        true,
+      ),
+    ).toBe("약속 확인 메시지, 메신저, 잠김");
+  });
+});
+
+// 구획 fixture입니다. 에피소드의 `units`는 이 변환이 읽지 않으므로 비워 둡니다 — 읽는
+// 것은 이름 셋과 맵 항목입니다.
+function journeySection(
+  id: string,
+  label: string,
+  title: string,
+  items: readonly JourneyMapItem[],
+): JourneyMapSection {
+  return { episode: { id, label, title, units: [] }, items };
+}
+
+const tutorial = journeySection("tutorial", "Episode 0.", "Tutorial.", [
+  standardStep("greeting"),
+  messengerItem,
+  phoneCallItem,
+]);
+const cafe = journeySection("cafe", "Episode 1.", "Cafe.", [
+  standardStep("ordering"),
+  visualNovelItem,
+]);
+const stepsOnly = journeySection("steps-only", "Episode 2.", "Steps.", [
+  standardStep("directions"),
+]);
+
+describe("roleplaySectionsFrom", () => {
+  it("S1. 에피소드마다 구획 하나를 내고 이름 셋과 롤플레이 항목을 옮긴다", () => {
+    expect(roleplaySectionsFrom([tutorial], () => true)).toEqual([
+      {
+        episodeId: "tutorial",
+        label: "Episode 0.",
+        title: "Tutorial.",
+        unlocked: true,
+        items: [
+          { form: "messenger", unitId: "appointment-confirmation", title: "약속 확인 메시지" },
+          {
+            form: "phone-call",
+            unitId: "appointment-confirmation-phone-call",
+            title: "약속 확인 전화",
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("S2. 에피소드의 항목이 전부 끝났을 때만 열린다 — 일반 스텝도 센다", () => {
+    const allButStep = (item: JourneyMapItem) => item.kind !== "standard";
+
+    expect(roleplaySectionsFrom([tutorial], allButStep)[0]?.unlocked).toBe(false);
+    expect(roleplaySectionsFrom([tutorial], () => true)[0]?.unlocked).toBe(true);
+    expect(roleplaySectionsFrom([tutorial], () => false)[0]?.unlocked).toBe(false);
+  });
+
+  it("S3. 롤플레이 항목 하나만 안 끝나도 잠긴다", () => {
+    const allButPhoneCall = (item: JourneyMapItem) => item.kind !== "phone-call";
+
+    expect(roleplaySectionsFrom([tutorial], allButPhoneCall)[0]?.unlocked).toBe(false);
+  });
+
+  it("S4. 에피소드는 서로 따로 열린다 — 앞 에피소드만 끝났으면 앞만 열린다", () => {
+    const tutorialItems = new Set(tutorial.items);
+
+    const sections = roleplaySectionsFrom([tutorial, cafe], (item) => tutorialItems.has(item));
+
+    expect(sections.map((section) => [section.episodeId, section.unlocked])).toEqual([
+      ["tutorial", true],
+      ["cafe", false],
+    ]);
+  });
+
+  it("S5. 롤플레이 항목이 없는 에피소드는 구획을 만들지 않는다", () => {
+    const sections = roleplaySectionsFrom([tutorial, stepsOnly, cafe], () => true);
+
+    expect(sections.map((section) => section.episodeId)).toEqual(["tutorial", "cafe"]);
+  });
+
+  it("S6. 입력 순서를 보존하고 입력을 변형하지 않는다", () => {
+    const input = [cafe, tutorial];
+
+    const sections = roleplaySectionsFrom(input, () => false);
+
+    expect(sections.map((section) => section.episodeId)).toEqual(["cafe", "tutorial"]);
+    expect(input).toEqual([cafe, tutorial]);
+  });
+
+  it("S7. 에피소드가 없으면 빈 배열이다", () => {
+    expect(roleplaySectionsFrom([], () => true)).toEqual([]);
+  });
+});
+
+const openSection: RoleplaySection = {
+  episodeId: "tutorial",
+  label: "Episode 0.",
+  title: "Tutorial.",
+  unlocked: true,
+  items: [],
+};
+const lockedSection: RoleplaySection = { ...openSection, episodeId: "cafe", unlocked: false };
+
+describe("findRoleplaySection", () => {
+  it("F1. 그 id의 구획을 돌려준다", () => {
+    expect(findRoleplaySection([openSection, lockedSection], "cafe")).toBe(lockedSection);
+  });
+
+  it("F2. 없는 id면 undefined다", () => {
+    expect(findRoleplaySection([openSection], "unknown")).toBeUndefined();
+  });
+});
+
+describe("roleplaySectionAccessibilityLabel", () => {
+  it("A1. 열린 구획은 두 줄을 이어 읽는다", () => {
+    expect(roleplaySectionAccessibilityLabel(openSection)).toBe("Episode 0. Tutorial.");
+  });
+
+  it("A2. 잠긴 구획은 잠김과 여는 조건까지 말한다", () => {
+    expect(roleplaySectionAccessibilityLabel(lockedSection)).toBe(
+      "Episode 0. Tutorial., 잠김, 여정에서 이 에피소드를 끝내면 열립니다",
+    );
   });
 });

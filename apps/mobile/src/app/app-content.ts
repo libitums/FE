@@ -1,25 +1,16 @@
-// 모듈 로드 때 한 번만 읽는 고정 목록 넷(`roleplayItems`·`notificationList`·
-// `profileList`·`termsSectionList`)을 소유합니다. 넷 다 로컬 상태가 없는
-// 화면(롤플레이 목록·알림·프로필·약관)에 그대로 내려갑니다.
+// 모듈 로드 때 한 번만 읽는 고정 목록 셋(`notificationList`·`profileList`·
+// `termsSectionList`)을 소유합니다. 프로필·약관은 화면에 그대로 내려가고, 알림은
+// `App` 상태의 씨앗이 됩니다(지운 알림이 세션 동안 빠집니다). 롤플레이 구획은 여기
+// 없습니다 — 진행에 따라 열리므로 상수가 아니라 `App`이 진행에서 파생합니다.
 
-import { journeyMapItems } from "../screens/journey-map/journey-map";
 import { notificationItems } from "../screens/notifications/notification-items";
 import type { NotificationItem } from "../screens/notifications/notifications.contract";
 import { profileItems } from "../screens/profile/profile-items";
-import { roleplayItemsFrom } from "../screens/roleplay-list/roleplay-list";
-import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import { termsSections } from "../screens/terms/terms-sections";
 
-// `journeyMapItems`(값)를 읽을 수 있는 자리는 여기뿐입니다 — 화면 폴더 사이 값
-// import는 금지지만(`code.md` 「import」), `roleplay-list` 폴더는 이 표를 직접
-// 볼 수 없습니다. 그래서 모듈 로드 시 한 번 변환해 모듈 상수로 둡니다.
-export const roleplayItems: readonly RoleplayItem[] = roleplayItemsFrom(journeyMapItems);
-
-// 위 `roleplayItems`와 같은 선례입니다 — 모듈 로드 때 한 번만 읽어 모듈 상수로
-// 둡니다. 알림 화면에는 로컬 상태가 없습니다.
+// 모듈 로드 때 한 번만 읽어 모듈 상수로 둡니다.
 export const notificationList: readonly NotificationItem[] = notificationItems();
 
-// `roleplayItems` · `notificationList`와 같은 선례입니다. 프로필·약관 화면에도
-// 로컬 상태가 없습니다.
+// 프로필·약관 화면에는 로컬 상태가 없습니다.
 export const profileList = profileItems();
 export const termsSectionList = termsSections();

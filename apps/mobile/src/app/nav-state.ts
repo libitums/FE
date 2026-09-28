@@ -12,6 +12,7 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { AnswerResult } from "../lib/answer-result";
 import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
+import type { RoleplayEpisodeId } from "../screens/roleplay-list/roleplay-list.contract";
 import type { VisualNovelUnitId } from "../screens/visual-novel/visual-novel.contract";
 
 // 탭 목록과 1:1입니다. 순서가 곧 바텀 네비게이션의 좌→우 순서입니다
@@ -62,6 +63,10 @@ export type Screen =
   | { name: "roleplay-messenger"; unitId: MessengerUnitId }
   | { name: "roleplay-phone-call"; unitId: PhoneCallUnitId }
   | { name: "roleplay-visual-novel"; unitId: VisualNovelUnitId }
+  // 에피소드 하나의 롤플레이를 세로로 펼친 화면입니다. 필드는 에피소드 id 하나뿐입니다
+  // — 항목과 잠김은 App이 진행에서 파생해 내립니다(넣으면 진행이 바뀌어도 스택에 옛
+  // 값이 남습니다).
+  | { name: "roleplay-episode"; episodeId: RoleplayEpisodeId }
   // 진입 흐름 화면들입니다. 전부 필드가 없습니다 — 온보딩 `step`은 화면 로컬,
   // 언어는 App 상태, 코드 값은 화면 로컬입니다.
   | { name: "splash" }
