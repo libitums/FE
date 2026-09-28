@@ -21,8 +21,9 @@ import "@libitums/ui-lynx/bottom-sheet/styles.css";
 import "@libitums/ui-lynx/button/styles.css";
 import "@libitums/ui-lynx/card/styles.css";
 import "@libitums/ui-lynx/chat-bubble/styles.css";
-// 롤플레이 화면의 플러스 안내와 서사 표지의 건너뛰기 확인이 소비하는 Dialog와, Dialog가
-// 깔고 서는 Overlay입니다.
+// 롤플레이의 플러스 안내 · 서사 표지의 건너뛰기 확인 · 학습 껍데기의 나가기 확인이
+// 소비하는 Dialog와, Dialog가 깔고 서는 Overlay입니다. Overlay가 빠지면 딤도 겹침도
+// 없이 화면 흐름에 박힙니다(기기에서 그렇게 보였습니다).
 import "@libitums/ui-lynx/dialog/styles.css";
 import "@libitums/ui-lynx/episode-header/styles.css";
 import "@libitums/ui-lynx/fog/styles.css";
