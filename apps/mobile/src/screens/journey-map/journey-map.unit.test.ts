@@ -111,33 +111,53 @@ describe("stepSheetReducer", () => {
     const next = stepSheetReducer(initialStepSheetState, {
       type: "openStep",
       stepId: "ordering",
-      tapY: 0,
+      anchorY: 0,
       scrollTop: 0,
     });
 
-    expect(next).toEqual({ openStepId: "ordering", anchorY: 0, anchorScrollTop: 0 });
+    expect(next).toEqual({
+      openStepId: "ordering",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    });
   });
 
   it("openStep — 다른 스텝이 열려 있으면 그 스텝으로 바뀐다", () => {
-    const state: StepSheetState = { openStepId: "ordering", anchorY: 0, anchorScrollTop: 0 };
+    const state: StepSheetState = {
+      openStepId: "ordering",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
 
     const next = stepSheetReducer(state, {
       type: "openStep",
       stepId: "greeting",
-      tapY: 0,
+      anchorY: 0,
       scrollTop: 0,
     });
 
-    expect(next).toEqual({ openStepId: "greeting", anchorY: 0, anchorScrollTop: 0 });
+    expect(next).toEqual({
+      openStepId: "greeting",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    });
   });
 
   it("openStep — 이미 그 스텝이 열려 있으면 같은 참조를 돌려준다", () => {
-    const state: StepSheetState = { openStepId: "ordering", anchorY: 0, anchorScrollTop: 0 };
+    const state: StepSheetState = {
+      openStepId: "ordering",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
 
     const next = stepSheetReducer(state, {
       type: "openStep",
       stepId: "ordering",
-      tapY: 0,
+      anchorY: 0,
       scrollTop: 0,
     });
 
@@ -145,11 +165,16 @@ describe("stepSheetReducer", () => {
   });
 
   it("closeSheet — 열려 있던 시트를 닫는다", () => {
-    const state: StepSheetState = { openStepId: "ordering", anchorY: 0, anchorScrollTop: 0 };
+    const state: StepSheetState = {
+      openStepId: "ordering",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
 
     const next = stepSheetReducer(state, { type: "closeSheet" });
 
-    expect(next).toEqual({ openStepId: null, anchorY: 0, anchorScrollTop: 0 });
+    expect(next).toEqual({ openStepId: null, anchorY: 0, anchorScrollTop: 0, anchorLimit: null });
   });
 
   it("closeSheet — 이미 닫혀 있으면 같은 참조를 돌려준다", () => {
@@ -159,10 +184,20 @@ describe("stepSheetReducer", () => {
   });
 
   it("부수효과 없음 — 호출 뒤 입력 state 객체가 변형되지 않는다", () => {
-    const state: StepSheetState = { openStepId: "ordering", anchorY: 0, anchorScrollTop: 0 };
-    const snapshot: StepSheetState = { openStepId: "ordering", anchorY: 0, anchorScrollTop: 0 };
+    const state: StepSheetState = {
+      openStepId: "ordering",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
+    const snapshot: StepSheetState = {
+      openStepId: "ordering",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
 
-    stepSheetReducer(state, { type: "openStep", stepId: "greeting", tapY: 0, scrollTop: 0 });
+    stepSheetReducer(state, { type: "openStep", stepId: "greeting", anchorY: 0, scrollTop: 0 });
     stepSheetReducer(state, { type: "closeSheet" });
 
     expect(state).toEqual(snapshot);
