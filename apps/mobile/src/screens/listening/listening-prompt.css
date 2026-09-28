@@ -17,17 +17,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--libitum-spacing-24);
+  /* 대본과 컨트롤 사이입니다. 24에서 줄였습니다 — 가장 긴 문항에서 카드 안 내용이
+     높이 예산(300)을 넘었고, 그만큼이 아래 보기를 밀었습니다. */
+  gap: var(--libitum-spacing-16);
   /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어듭니다. */
   flex-shrink: 0;
 }
 
-/* 대본 덩어리 — 큰 글자와 로마자 줄입니다. 둘 사이 12는 디자인 실측값입니다. */
+/* 대본 덩어리 — 큰 글자와 로마자 줄입니다. 디자인 실측값은 12인데 8로 줄였습니다 —
+   위 `gap`과 같은 근거(높이 예산)입니다. */
 .listening-prompt-script {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--libitum-spacing-12);
+  gap: var(--libitum-spacing-8);
 }
 
 /* 제시문의 색과 정렬입니다. **크기는 여기 없습니다** — 문장 길이에 따라 세 단계로
