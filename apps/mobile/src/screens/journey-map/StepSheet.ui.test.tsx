@@ -17,7 +17,7 @@ test("제목이 순번과 함께 props 문자열을 텍스트로 낸다", () => 
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
       totalActivityCount={4}
@@ -34,7 +34,7 @@ test("제목이 accessibility-traits='header'를 갖는다", () => {
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
       totalActivityCount={4}
@@ -51,7 +51,7 @@ test("시작 버튼이 접근성 속성과 라벨 텍스트를 갖는다", () =>
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
       totalActivityCount={4}
@@ -73,7 +73,7 @@ test("가림막이 닫기의 접근성 속성을 갖고, 보이는 낱말은 없
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
       totalActivityCount={4}
@@ -95,7 +95,7 @@ test("닫기를 tap하면 onClose가 정확히 한 번 불린다", () => {
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
       totalActivityCount={4}
@@ -122,7 +122,7 @@ test("시작을 tap하면 onStart가 정확히 한 번 불린다", () => {
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
       totalActivityCount={4}
@@ -144,7 +144,7 @@ test("시작을 tap해도 onClose는 불리지 않는다", () => {
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
       totalActivityCount={4}
@@ -165,7 +165,7 @@ test("닫기를 tap해도 onStart는 불리지 않는다", () => {
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
       totalActivityCount={4}
@@ -184,7 +184,7 @@ test("진행 줄이 활동 수와 백분율을 같은 값에서 낸다", () => {
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={1}
       totalActivityCount={4}
@@ -207,7 +207,7 @@ test("끝낸 활동이 없으면 채움 막대를 그리지 않는다", () => {
   render(
     <StepSheet
       title="주문하기"
-      anchorY={0}
+      top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
       totalActivityCount={4}

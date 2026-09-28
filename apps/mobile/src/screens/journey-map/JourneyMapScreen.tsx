@@ -8,6 +8,14 @@ import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
 import { StepSheet } from "./StepSheet";
 import { JourneyMapTopBar } from "./JourneyMapTopBar";
+import {
+  measureRects,
+  screenId,
+  scrollId,
+  scrollMapTo,
+  scrollStepIntoView,
+  stepNodeId,
+} from "./journey-map-scroll";
 import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
 import {
   findStep,
@@ -15,6 +23,9 @@ import {
   journeySteps,
   stepSheetReducer,
   stepStatusAt,
+  stepSheetPlacement,
+  stepSheetTop,
+  stepUnitSize,
   learningFormsForStep,
   journeyMapSections,
   completedMapItemCount,
@@ -82,24 +93,45 @@ export function JourneyMapScreen({
 
   const handleSelectStep = (id: JourneyStepId, tapY: number) => {
     "background only";
-    const scrollTop = latestScrollTop.current;
-    dispatch({ type: "openStep", stepId: id, tapY, scrollTop });
-    setOpenScrollTop(scrollTop);
-    // 누른 유닛을 스크롤 가운데로 옮깁니다 — 상단 바와 에피소드 카드가 꼭대기를
-    // 덮으므로, 거기 있던 유닛은 말풍선이 열려도 가려집니다. 실패해도 탭을 막지
-    // 않습니다: 유닛은 이미 눈에 보이는 자리에 있었습니다.
-    try {
-      lynx
-        .createSelectorQuery()
-        .select(`.journey-step-node-${id}`)
-        .invoke({
-          method: "scrollIntoView",
-          params: { scrollIntoViewOptions: { block: "center", behavior: "smooth" } },
-        })
-        .exec();
-    } catch {
-      // 자리를 못 옮겨도 말풍선은 뜹니다.
-    }
+    // 먼저 탭 자리로 엽니다 — 탭이 유닛 한가운데였다고 어림한 값입니다. 재는 일은
+    // 비동기라, 기다렸다 열면 누른 뒤 말풍선이 늦게 뜹니다.
+    const tapScrollTop = latestScrollTop.current;
+    dispatch({
+      type: "openStep",
+      stepId: id,
+      anchorY: tapY + stepUnitSize / 2,
+      scrollTop: tapScrollTop,
+    });
+    setOpenScrollTop(tapScrollTop);
+    // 그다음 유닛을 실제로 재서 자리를 바로잡고, 유닛을 스크롤 가운데로 옮깁니다 —
+    // 탭 좌표는 손가락이 유닛의 어디를 눌렀는지에 따라 달라지므로, 그 값만으로는
+    // 말풍선이 유닛에 맞지 않습니다. 못 재도 탭을 막지 않습니다: 말풍선은 이미 떴습니다.
+    measureRects([stepNodeId(id), scrollId, screenId], (rects) => {
+      "background only";
+      const [unit, scroll, screen] = rects ?? [];
+      if (unit === undefined || scroll === undefined || screen === undefined) {
+        scrollStepIntoView(id);
+        return;
+      }
+      const scrollTop = latestScrollTop.current;
+      const placement = stepSheetPlacement({
+        unitTop: unit.top,
+        scrollViewTop: scroll.top,
+        scrollViewHeight: scroll.height,
+        screenTop: screen.top,
+        screenHeight: screen.height,
+        scrollTop,
+      });
+      dispatch({
+        type: "anchorStep",
+        stepId: id,
+        anchorY: placement.anchorY,
+        scrollTop,
+        anchorLimit: placement.anchorLimit,
+      });
+      setOpenScrollTop(scrollTop);
+      scrollMapTo(placement.targetScrollTop);
+    });
   };
 
   const openStep =
@@ -114,7 +146,7 @@ export function JourneyMapScreen({
   };
 
   return (
-    <view className="journey-map-screen" data-testid="journey-map-screen">
+    <view id={screenId} className="journey-map-screen" data-testid="journey-map-screen">
       {/* [고정] 머리 — 지표 칩 둘과 알림 버튼입니다. 화면 제목이 없습니다: 에피소드
           헤더 카드가 「지금 어느 에피소드인가」를 이미 말하므로 제목 줄을 따로 두면 같은
           말이 두 번 섭니다(2026-09-26 디자인 반영).
@@ -140,6 +172,7 @@ export function JourneyMapScreen({
           `scroll-bar-enable`을 적습니다 — 안 적으면 초기값이 각각 가로·꺼짐이라
           세로 스크롤이 원리적으로 불가능합니다. accessibility-*를 붙이지 않습니다. */}
       <scroll-view
+        id={scrollId}
         className="journey-map-screen-scroll"
         data-testid="journey-map-screen-scroll"
         scroll-orientation="vertical"
@@ -212,9 +245,9 @@ export function JourneyMapScreen({
       {openStep === undefined ? null : (
         <StepSheet
           title={openStep.title}
-          /* 탭 자리에 그 뒤의 스크롤 변화량을 더합니다 — 유닛이 가운데로 옮겨 가는
+          /* 잰 자리에 그 뒤의 스크롤 변화량을 더합니다 — 유닛이 가운데로 옮겨 가는
              동안 말풍선이 그 유닛에 붙어 함께 움직입니다. */
-          anchorY={sheetState.anchorY + (sheetState.anchorScrollTop - openScrollTop)}
+          top={stepSheetTop(sheetState, openScrollTop)}
           lessonOrdinal={journeyStepOrdinal(openStep.id)}
           /* 진행은 「끝낸 활동 수 / 그 스텝이 잡은 활동 수」입니다. 오늘 활동은
              스텝 단위로만 저장되므로, 끝난 스텝이면 전부이고 아니면 0입니다 —
