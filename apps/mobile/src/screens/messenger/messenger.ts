@@ -28,7 +28,13 @@ const conversations: Record<MessengerUnitId, MessengerConversation> = {
         text: "카페는 2번 출구 오른쪽에 있어요.",
         translation: "The café is on the right of Exit 2.",
       },
-      { id: "self-thanks", sender: "self", text: "고마워요!", translation: "Thank you!" },
+      {
+        id: "self-thanks",
+        sender: "self",
+        text: "고마워요!",
+        translation: "Thank you!",
+        choices: ["미안해요!", "고마워요!", "괜찮아요?", "안녕히 가세요!"],
+      },
       {
         id: "jimin-goodbye",
         sender: "jimin",

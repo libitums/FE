@@ -172,3 +172,21 @@
   padding-right: var(--libitum-layout-screen-padding-x);
   padding-bottom: var(--libitum-layout-screen-padding-bottom);
 }
+
+/* 치는 동안 입력창 위에 서는 `Type!` 배지 — 판정 배지와 같은 자리 · 모양의 주색입니다. */
+.messenger-composer-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-brand-primary);
+}
+
+.messenger-composer-prompt-label {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}

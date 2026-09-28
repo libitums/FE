@@ -36,6 +36,11 @@ describe("messengerConversationFor", () => {
       conversation.messages.map(({ id: messageId, sender, text }) => [messageId, sender, text]),
     ).toEqual(expected);
     expect(conversation.messages.every((message) => message.translation.length > 0)).toBe(true);
+    // 둘째 답장은 객관식이고, 보기 넷 안에 정답이 들어 있습니다.
+    const thanks = conversation.messages[3];
+    expect(thanks.choices).toHaveLength(4);
+    expect(thanks.choices).toContain(thanks.text);
+    expect(conversation.messages[1].choices).toBeUndefined();
   });
 });
 

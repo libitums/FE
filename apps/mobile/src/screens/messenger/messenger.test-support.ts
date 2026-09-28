@@ -9,10 +9,15 @@ import { messengerConversationFor } from "./messenger";
 import { messengerCorrectDelayMs } from "./messenger-composer";
 
 /**
- * 문장을 자판으로 치고 보내기를 누릅니다. 자판에 없는 문장 부호(`!` 등)는 건너뜁니다 —
- * 채점이 문장 부호를 보지 않습니다.
+ * 답장을 입력하고 보내기를 누릅니다. 객관식 답장이면 그 문장의 보기를 고르고, 아니면 자판으로
+ * 칩니다 — 자판에 없는 문장 부호(`!` 등)는 건너뜁니다(채점이 문장 부호를 보지 않습니다).
  */
 export function typeMessengerReply(text: string): void {
+  if (screen.queryByTestId("messenger-choices") !== null) {
+    fireEvent.tap(screen.getByTestId(`messenger-choice-${text}`), {});
+    fireEvent.tap(screen.getByTestId("messenger-send"), {});
+    return;
+  }
   for (const key of keystrokesFor(text)) {
     const button = screen.queryByTestId(`messenger-key-${key}`);
     if (button !== null) fireEvent.tap(button, {});
@@ -20,7 +25,7 @@ export function typeMessengerReply(text: string): void {
   fireEvent.tap(screen.getByTestId("messenger-send"), {});
 }
 
-/** 맞는 답장을 치고 판정 틈을 흘려 답장이 대화에 서게 합니다. 가짜 타이머가 필요합니다. */
+/** 맞는 답장을 입력하고 판정 틈을 흘려 답장이 대화에 서게 합니다. 가짜 타이머가 필요합니다. */
 export function sendMessengerReply(text: string): void {
   typeMessengerReply(text);
   act(() => {

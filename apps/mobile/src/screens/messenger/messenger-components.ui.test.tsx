@@ -126,7 +126,9 @@ describe("messenger UI components", () => {
     expect(screen.getByTestId("messenger-message-self-accept")).toHaveTextContent("좋아요!");
     expect(screen.getByTestId("messenger-message-jimin-directions")).toBeInTheDocument();
     expect(screen.queryByTestId("answer-verdict")).toBeNull();
-    expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent("ㄱㅁㅇㅇ!");
+    // 둘째 답장은 객관식입니다 — 자판 자리에 보기가 서고, 정답을 가려 보이지 않습니다.
+    expect(screen.getByTestId("messenger-choices")).toBeInTheDocument();
+    expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent("입력해주세요.");
     expect(screen.getByTestId("messenger-composer-hint")).toHaveTextContent("Thank you!");
   });
 
@@ -157,6 +159,7 @@ describe("messenger UI components", () => {
     );
     expect(onComplete).toHaveBeenCalledWith("appointment-confirmation");
     expect(screen.queryByTestId("messenger-keyboard")).toBeNull();
+    expect(screen.queryByTestId("messenger-choices")).toBeNull();
     expect(screen.getByTestId("messenger-replay")).toBeInTheDocument();
   });
 
@@ -177,6 +180,32 @@ describe("messenger UI components", () => {
       vi.advanceTimersByTime(messengerCorrectDelayMs);
     });
     expect(onComplete).not.toHaveBeenCalled();
+  });
+
+  it("객관식 답장은 보기를 고르면 입력창에 서고, 틀린 보기는 오답 · 맞는 보기는 정답이다", () => {
+    renderActive();
+    sendMessengerReply("좋아요!");
+    const choices = screen.getByTestId("messenger-choices");
+    expect(choices.children).toHaveLength(4);
+    expect(screen.getByTestId("messenger-composer-prompt")).toHaveTextContent("Type!");
+
+    fireEvent.tap(screen.getByTestId("messenger-choice-미안해요!"), {});
+    expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent("미안해요!");
+    expect(screen.getByTestId("messenger-choice-미안해요!")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+    // 다시 고르면 바뀝니다.
+    fireEvent.tap(screen.getByTestId("messenger-choice-괜찮아요?"), {});
+    expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent("괜찮아요?");
+    fireEvent.tap(screen.getByTestId("messenger-send"), {});
+    expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "incorrect");
+    expect(screen.queryByTestId("messenger-choices")).toBeNull();
+
+    fireEvent.tap(screen.getByTestId("messenger-try-again").querySelector("view")!, {});
+    fireEvent.tap(screen.getByTestId("messenger-choice-고마워요!"), {});
+    fireEvent.tap(screen.getByTestId("messenger-send"), {});
+    expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   });
 
   it("완료 재진입은 전체 기록과 다시 보기를 제공한다", () => {

@@ -1,15 +1,13 @@
 import { useEffect, useReducer, useState } from "@lynx-js/react";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
-import arrowUp02 from "@libitums/icons/lynx/arrow-up-02";
 import refresh from "@libitums/icons/lynx/refresh";
-import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
-import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
-import { maskedAnswer } from "./hangul-keyboard";
 import { MessageBubble } from "./MessageBubble";
+import { MessengerChoices } from "./MessengerChoices";
+import { MessengerComposer } from "./MessengerComposer";
 import { MessengerKeyboard } from "./MessengerKeyboard";
 import { ReplayButton } from "./ReplayButton";
 import {
@@ -29,11 +27,11 @@ import {
 import "./messenger-screen.css";
 
 // 메신저 특별 유닛 — 에피소드의 서사 기반 최종 테스트입니다(Figma 80-7082). 지민의 메시지에
-// 학습자가 **가상 키보드(두벌식)로 답장을 쳐서** 답합니다. 입력창에 답장이 초성으로 가려져
-// 보이고(`ㅈㅇㅇ!`), 그 아래 답장의 뜻(영문)이 늘 섭니다 — 뜻만으로는 너무 어려워, 글자 수와
-// 첫소리를 보여 줍니다.
+// 학습자가 답장을 **가상 키보드(두벌식)로 쳐서** 답하거나(Figma 80-7082), 답장에 보기가
+// 있으면 **객관식 보기에서 골라** 답합니다(Figma 80-7380). 어느 쪽인지는 답장 데이터
+// (`SelfMessage.choices`)가 정합니다. 힌트는 `MessengerComposer`가 집니다.
 //
-// 맞히면 판정 배지와 초록 테두리가 서고 잠시 뒤 답장이 대화에 섭니다. 틀리면 자판 자리에
+// 맞히면 판정 배지와 초록 테두리가 서고 잠시 뒤 답장이 대화에 섭니다. 틀리면 자판 · 보기 자리에
 // `Try Again`이 서고, 누르면 입력을 비우고 같은 답장을 다시 칩니다.
 //
 // 화면 세션만 로컬로 소유하고 완료 기록은 상위 경계의 콜백으로 알립니다. `exitLabel`은
@@ -89,8 +87,6 @@ export function MessengerScreen({
     if (reply !== null) dispatchComposer({ type: "submit", answer: reply.text });
   };
 
-  const canSend = composer.verdict === "typing" && typed.trim().length > 0;
-
   return (
     <view className="messenger-screen" data-testid="messenger-screen">
       <view className="messenger-screen-header">
@@ -140,57 +136,12 @@ export function MessengerScreen({
         </view>
       ) : (
         <view className="messenger-screen-reply" data-testid="messenger-reply">
-          {composer.verdict === "typing" ? null : (
-            <AnswerVerdict result={composer.verdict === "correct" ? "correct" : "incorrect"} />
-          )}
-          <view
-            className={`messenger-composer messenger-composer-${composer.verdict}`}
-            data-testid="messenger-composer"
-            data-verdict={composer.verdict}
-          >
-            <view className="messenger-composer-body">
-              {/* 비어 있으면 가린 정답이 자리를 채우고, 치기 시작하면 친 글자가 그 자리에
-                  섭니다. 가린 정답은 아래 줄로 옮겨 가 계속 보입니다. */}
-              <text
-                className={
-                  typed.length === 0
-                    ? "messenger-composer-text messenger-composer-placeholder"
-                    : "messenger-composer-text"
-                }
-                data-testid="messenger-composer-text"
-                text-maxline="2"
-              >
-                {typed.length === 0 ? maskedAnswer(reply.text) : typed}
-              </text>
-              <text
-                className="messenger-composer-hint"
-                data-testid="messenger-composer-hint"
-                text-maxline="2"
-              >
-                {typed.length === 0
-                  ? reply.translation
-                  : `${maskedAnswer(reply.text)} · ${reply.translation}`}
-              </text>
-            </view>
-            <view
-              className={
-                canSend
-                  ? "messenger-composer-send"
-                  : "messenger-composer-send messenger-composer-send-idle"
-              }
-              data-testid="messenger-send"
-              accessibility-element={true}
-              accessibility-traits={canSend ? "button" : "disabled"}
-              accessibility-label={canSend ? `보내기, ${typed}` : "보내기"}
-              bindtap={handleSend}
-            >
-              <svg
-                className="messenger-composer-send-icon"
-                content={arrowUp02}
-                current-color={color.white}
-              />
-            </view>
-          </view>
+          <MessengerComposer
+            reply={reply}
+            typed={typed}
+            verdict={composer.verdict}
+            onSend={handleSend}
+          />
           {composer.verdict === "incorrect" ? (
             <view className="messenger-screen-retry" data-testid="messenger-try-again">
               <Button
@@ -203,12 +154,18 @@ export function MessengerScreen({
                 bindtap={() => dispatchComposer({ type: "retry" })}
               />
             </view>
-          ) : (
+          ) : reply.choices === undefined ? (
             <MessengerKeyboard
               shifted={composer.shifted}
               onPress={(key) => dispatchComposer({ type: "press", key })}
               onBackspace={() => dispatchComposer({ type: "backspace" })}
               onShift={() => dispatchComposer({ type: "shift" })}
+            />
+          ) : (
+            <MessengerChoices
+              choices={reply.choices}
+              chosen={typed}
+              onChoose={(text) => dispatchComposer({ type: "choose", text })}
             />
           )}
         </view>

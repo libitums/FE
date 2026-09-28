@@ -14,6 +14,11 @@
 >   보이고(`maskedAnswer`: `좋아요!` → `ㅈㅇㅇ!`), 그 아래 줄에 답장의 `translation`(영문 뜻)이
 >   늘 선다. 치기 시작하면 가린 정답은 아래 줄로 옮겨 가 뜻과 함께 계속 보인다 — 뜻만으로는
 >   너무 어려워 글자 수와 첫소리를 보여 준다. 답장 문구는 칠 만한 길이로 줄였다(`좋아요!` · `고마워요!`).
+> - **객관식 답장(Figma 80-7380).** 답장에 `choices`(보기 넷, 정답 포함)가 있으면 자판 자리에
+>   보기가 서고, 고른 문장이 입력창에 선다(다시 고르면 바뀐다). 보내기로 채점하는 것 · 정답 틈 ·
+>   `Try Again`은 자판과 같다. 보기가 곧 단서라 정답을 가려 보이지 않고, 입력창은
+>   `입력해주세요.`(디자인)와 뜻이다. 약속 확인 메시지는 첫 답장이 자판, 둘째 답장이 객관식이다.
+>   치는 동안 입력창 위에 `Type!` 배지가 서고, 판정이 나면 정답 · 오답 배지로 바뀐다.
 > - 채점은 한글 · 영문 · 숫자만 비교한다 — 띄어쓰기 · 문장 부호는 보지 않는다
 >   (`isTypedAnswerCorrect`).
 > - 맞으면 판정 배지(`AnswerVerdict`) · 초록 입력창이 서고 `messengerCorrectDelayMs`(1.2초)
@@ -26,8 +31,9 @@
 > - 메시지에 `translation`이 붙고 말풍선은 ui-lynx `ChatBubble`이다. 나가기는 원 버튼
 >   모양이고 이름(`맵으로`/`목록으로`)은 접근성 이름으로만 읽힌다.
 > - test-id: 자판 키 `messenger-key-<자모|shift|backspace|space|,|.|?>`, 입력창
->   `messenger-composer`(`data-verdict`) · `messenger-composer-text`, 보내기 `messenger-send`,
->   다시 치기 `messenger-try-again`.
+>   `messenger-composer`(`data-verdict`) · `messenger-composer-text` · `messenger-composer-hint` ·
+>   `messenger-composer-prompt`, 보내기 `messenger-send`, 다시 치기 `messenger-try-again`, 보기
+>   `messenger-choices` · `messenger-choice-<문장>`(`data-selected`).
 
 ## 0. 고정 범위와 불변식
 

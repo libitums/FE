@@ -27,6 +27,11 @@ export type SelfMessage = {
   readonly text: string;
   /** 입력창의 힌트이자 말풍선 아래 번역입니다 — 학습자는 이 뜻을 한국어로 칩니다. */
   readonly translation: string;
+  /**
+   * 객관식 보기입니다(Figma 80-7380). 있으면 가상 키보드 대신 이 보기에서 골라 보냅니다 —
+   * 정답(`text`)이 보기 안에 들어 있어야 합니다. 없으면 자판으로 칩니다(Figma 80-7082).
+   */
+  readonly choices?: readonly string[];
 };
 
 export type MessengerMessage = JiminMessage | SelfMessage;
@@ -136,11 +141,25 @@ export type MessengerComposerState = {
 
 export type MessengerComposerAction =
   | { readonly type: "press"; readonly key: string }
+  | { readonly type: "choose"; readonly text: string }
   | { readonly type: "backspace" }
   | { readonly type: "shift" }
   | { readonly type: "submit"; readonly answer: string }
   | { readonly type: "retry" }
   | { readonly type: "clear" };
+
+export type MessengerComposerProps = {
+  readonly reply: SelfMessage;
+  readonly typed: string;
+  readonly verdict: MessengerComposerState["verdict"];
+  readonly onSend: () => void;
+};
+
+export type MessengerChoicesProps = {
+  readonly choices: readonly string[];
+  readonly chosen: string;
+  readonly onChoose: (text: string) => void;
+};
 
 export type MessengerKeyboardProps = {
   readonly shifted: boolean;

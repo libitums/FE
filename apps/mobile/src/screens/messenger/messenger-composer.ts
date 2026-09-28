@@ -30,6 +30,9 @@ export function messengerComposerReducer(
       const key = state.shifted ? (shiftedKeys[action.key] ?? action.key) : action.key;
       return { ...state, keys: [...state.keys, key], shifted: false };
     }
+    // 객관식 보기를 고르면 그 문장이 입력창에 섭니다. 다시 고르면 바뀝니다.
+    case "choose":
+      return { ...state, keys: [...action.text], shifted: false };
     case "backspace":
       return { ...state, keys: state.keys.slice(0, -1), shifted: false };
     case "shift":

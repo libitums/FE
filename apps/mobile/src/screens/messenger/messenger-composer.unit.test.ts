@@ -57,6 +57,16 @@ describe("messengerComposerReducer", () => {
     expect(messengerComposerReducer(typing, { type: "retry" })).toBe(typing);
   });
 
+  test("choose는 고른 문장을 입력창에 세우고, 다시 고르면 바꾼다", () => {
+    const first = run([{ type: "choose", text: "미안해요!" }]);
+    expect(composedText(first)).toBe("미안해요!");
+    const second = messengerComposerReducer(first, { type: "choose", text: "고마워요!" });
+    expect(composedText(second)).toBe("고마워요!");
+    expect(messengerComposerReducer(second, { type: "submit", answer: "고마워요!" }).verdict).toBe(
+      "correct",
+    );
+  });
+
   test("clear는 어느 상태에서든 처음으로 돌린다", () => {
     const right = run([...press("ㄴㅏ"), { type: "submit", answer: "나" }]);
     expect(messengerComposerReducer(right, { type: "clear" })).toEqual(
