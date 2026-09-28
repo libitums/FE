@@ -37,7 +37,7 @@ import { VerificationCodeScreen } from "../screens/verification-code/Verificatio
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
 import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
-import { notificationList, profileList, roleplayItems, termsSectionList } from "./app-content";
+import { profileList, roleplayItems, termsSectionList } from "./app-content";
 import type { Screen } from "./nav-state";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import type { ScreenWiring } from "./screen-wiring";
@@ -79,12 +79,12 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "terms":
       return <TermsScreen sections={termsSectionList} onExit={wiring.onExitSettingsStack} />;
     case "notifications":
-      // 모듈 상수 `notificationList`를 그대로 그리고, 선택·나가기는 결선으로
-      // 올립니다.
+      // 남아 있는 알림을 그대로 그리고, 선택·삭제·나가기는 결선으로 올립니다.
       return (
         <NotificationsScreen
-          items={notificationList}
+          items={wiring.notifications}
           onSelectItem={wiring.onSelectNotification}
+          onDeleteItem={wiring.onDeleteNotification}
           onExit={wiring.onExitNotifications}
         />
       );

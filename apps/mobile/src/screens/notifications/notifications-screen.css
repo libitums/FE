@@ -1,89 +1,120 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 변수 이름은
    `@libitums/design-tokens/css/variables.css`가 정의한 것만 씁니다.
    `.app`/`.app-content`가 부모 프레임을 세로 flex로 두므로 `flex: 1`로 남은
-   높이를 채워 배경이 콘텐츠 영역 전체를 덮습니다.
-   `position` 선언을 두지 않습니다 — 이 화면에는 겹침 레이어가 없습니다. */
+   높이를 채워 배경이 콘텐츠 영역 전체를 덮습니다. 값은 디자인(Figma 64-1745 ·
+   64-1793)을 따릅니다. */
 .notifications-screen {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: var(--libitum-layout-gap-block);
+  gap: var(--libitum-spacing-24);
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
     var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-background-primary);
 }
 
-/* 메신저 · 전화 머리와 같은 레시피입니다 — `.messenger-screen-header`와 값이
-   같습니다. */
+/* 머리 — 나가기는 왼쪽에, 제목은 줄 가운데에 섭니다. 제목을 흐름에 두면 나가기 폭만큼
+   오른쪽으로 밀리므로, 줄을 기준 상자로 삼아 제목을 그 위에 겹칩니다. */
 .notifications-screen-header {
+  position: relative;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: var(--libitum-layout-gap-inline);
+  align-items: center;
   flex-shrink: 0;
 }
 
-/* 나가기 — 머리 행의 첫 자식입니다(낭독 순서 `맵으로 → 알림 → 항목들`).
-   `.messenger-screen-exit`와 같은 상자 · 자리 · 색입니다. */
+/* 나가기 — 동그란 버튼(ui-lynx `RoundButton` xl)을 담는 자리입니다. 제목보다 위에
+   섭니다: 제목 상자가 줄 전체를 덮으므로, 아래에 두면 탭이 제목에 막힙니다. */
 .notifications-screen-exit {
-  min-height: var(--libitum-spacing-48);
-  padding: 0 var(--libitum-spacing-12);
-  border-radius: var(--libitum-radius-md);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.notifications-screen-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--libitum-color-gray-800);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+/* [흐름] 2분할 — 액션 행이 없습니다(ADR-0022 D1). `<scroll-view>`는 CSS와
+   무관하게 강제로 linear가 되어 `display`·`flex-direction`·`gap`이 안 읽힙니다.
+   위 경계선이 없습니다 — 카드가 스스로 면을 가져 머리와 갈립니다. */
+.notifications-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+/* 목록 상자 — 스크롤의 유일한 직계 자식입니다. `<scroll-view>`는 강제 linear라
+   gap이 없으므로 항목 간격은 이 상자가 집니다(롤플레이 목록 선례). */
+/* 아래 여백은 바텀 네비게이션 몫입니다 — 바가 콘텐츠 위에 겹치므로(app.css의
+   `.app-navigator`) 이 여백이 없으면 마지막 항목이 바에 가립니다. 값은 바 높이 68pt입니다
+   (위 여백 8 + 항목 48 + 아래 여백 12). */
+.notifications-screen-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-layout-gap-block);
+  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+}
+
+/* 빈 상태 — 표식과 글 두 줄입니다. 위 여백 224는 디자인 실측값입니다(머리 아래 끝 85
+   → 표식 위 끝 337에서 머리와의 간격 24와 화면 위 여백을 뺀 값). 가운데 정렬로 두지
+   않습니다 — 스크롤 상자 안에서는 높이가 내용에 맞춰져 가운데가 성립하지 않습니다. */
+.notifications-screen-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-24);
+  padding-top: 224px;
+}
+
+/* 표식 — 지름 100의 동그란 면에 아이콘이 48로 섭니다(디자인의 안쪽 여백 26%). 둘 다
+   디자인 실측값이고 100에 맞는 토큰이 없어 px로 적습니다. */
+.notifications-screen-empty-mark {
+  width: 100px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-100);
 }
 
-.notifications-screen-exit-label {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+.notifications-screen-empty-icon {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
 }
 
-/* 제목 — 머리 행의 둘째 자식입니다. `margin-top: spacing-12`는 ADR-0023 안
-   B입니다: `12 = (spacing-48 − heading-s-line-height) / 2`라는 산술 결과가
-   `spacing-12`와 값이 같은 것입니다. 되돌리는 조건: 나가기의 `min-height` 하한
-   (현재 `spacing-48`)이나 이 제목의 typography scale(현재 `heading-s`)이 바뀌면
-   이 값이 조용히 틀립니다. 여기서는 큰 상자(나가기)가 DOM 앞이라 안 B가 순서를
-   지킵니다(여정 맵 머리와 반대 경우). */
-.notifications-screen-title {
-  margin-top: var(--libitum-spacing-12);
-  color: var(--libitum-color-fg-neutral);
+.notifications-screen-empty-text {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+}
+
+.notifications-screen-empty-title {
+  text-align: center;
+  color: var(--libitum-color-gray-800);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);
   font-size: var(--libitum-typography-heading-s-font-size);
   line-height: var(--libitum-typography-heading-s-line-height);
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-  flex: 1;
 }
 
-/* [흐름] 2분할 — 액션 행이 없습니다(ADR-0022 D1). `<scroll-view>`는 CSS와
-   무관하게 강제로 linear가 되어 `display`·`flex-direction`·`gap`이 안 읽힙니다. */
-.notifications-screen-scroll {
-  flex: 1;
-  justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
-}
-
-/* 목록 상자 — 스크롤의 유일한 직계 자식입니다. `<scroll-view>`는 강제 linear라
-   gap이 없으므로 항목 간격은 이 상자가 집니다(롤플레이 목록 선례).
-   `padding-bottom`을 두지 않습니다 — 마지막 항목 아래 빈 띠가 「여기가 끝」으로
-   읽혀 넘침 어포던스를 지웁니다(ADR-0022 D4, 롤플레이 목록과 같은 근거). */
-/* 아래 여백은 바텀 네비게이션 몫입니다 — 바가 콘텐츠 위에 겹치므로(app.css의
-   `.app-navigator`) 이 여백이 없으면 마지막 항목이 바에 가립니다. 값은 바 높이 68pt입니다
-   (위 여백 8 + 항목 48 + 아래 여백 12).
-
-   ADR-0022 D4는 「마지막 항목 아래 빈 띠가 끝으로 읽혀 넘침 어포던스를 지운다」는
-   이유로 이 여백을 두지 않았습니다. 그 저울이 뒤집혔습니다 — 여백이 없으면 어포던스가
-   흐려지는 정도가 아니라 **항목이 사라집니다**. */
-.notifications-screen-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--libitum-layout-gap-block);
-  padding-top: var(--libitum-spacing-16);
-  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+.notifications-screen-empty-description {
+  text-align: center;
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
 }

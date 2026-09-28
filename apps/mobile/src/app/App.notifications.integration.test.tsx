@@ -1,10 +1,11 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { notificationItems } from "../screens/notifications/notification-items";
 import { notificationDestinationLabel } from "../screens/notifications/notifications";
 import type {
+  NotificationEvent,
   NotificationEventSink,
   NotificationItem,
   NotificationTarget,
@@ -119,7 +120,10 @@ test("[IN2] 알림 화면의 맵으로를 tap하면 여정 맵으로 돌아가�
   openNotificationsScreen();
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("notifications-screen-exit"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("notifications-screen-exit")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("notifications-screen-title")).not.toBeInTheDocument();
@@ -133,7 +137,7 @@ test("[IN3] 알림 목록이 실제 데이터의 순서·수·행선지 문구�
 
   const list = screen.getByTestId("notifications-screen-list");
   const itemTestIds = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
-  expect(itemTestIds).toEqual(items.map((item) => `notification-list-item-${item.id}`));
+  expect(itemTestIds).toEqual(items.map((item) => `notification-list-item-row-${item.id}`));
 
   items.forEach((item) => {
     expect(screen.getByTestId(`notification-list-item-destination-${item.id}`)).toHaveTextContent(
@@ -359,4 +363,69 @@ test("[IN14] sink 없이도 버튼·항목 tap이 던지지 않는다(가드)", 
       if (node !== null) fireEvent.tap(node, {});
     }).not.toThrow();
   });
+});
+
+// ------------------------------------------------------------------ IN14 · IN15 · IN16
+
+function revealDelete(item: NotificationItem) {
+  const card = screen.getByTestId(`notification-list-item-${item.id}`);
+  fireEvent.touchstart(card, { touches: [{ pageX: 300, pageY: 200 }] });
+  fireEvent.touchmove(card, { touches: [{ pageX: 240, pageY: 204 }] });
+}
+
+function deleteNotificationItem(item: NotificationItem) {
+  revealDelete(item);
+  fireEvent.tap(screen.getByTestId(`notification-list-item-delete-${item.id}`), {});
+}
+
+test("[IN14] 알림을 지우면 그 항목만 사라지고 알림 화면에 남는다", () => {
+  openNotificationsScreen();
+  const item = messengerNotificationItem();
+
+  deleteNotificationItem(item);
+
+  expect(screen.queryByTestId(`notification-list-item-${item.id}`)).not.toBeInTheDocument();
+  expect(
+    screen.getByTestId(`notification-list-item-${phoneCallNotificationItem().id}`),
+  ).toBeInTheDocument();
+  expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
+});
+
+test("[IN15] 지운 알림은 화면을 나갔다 돌아와도 돌아오지 않는다", () => {
+  openNotificationsScreen();
+  const item = messengerNotificationItem();
+  deleteNotificationItem(item);
+
+  fireEvent.tap(
+    within(screen.getByTestId("notifications-screen-exit")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+
+  expect(screen.queryByTestId(`notification-list-item-${item.id}`)).not.toBeInTheDocument();
+});
+
+test("[IN16] 알림을 모두 지우면 빈 상태가 선다", () => {
+  openNotificationsScreen();
+
+  for (const item of notificationItems()) {
+    deleteNotificationItem(item);
+  }
+
+  expect(screen.getByTestId("notifications-screen-empty")).toBeInTheDocument();
+  expect(screen.queryByTestId("notifications-screen-list")).not.toBeInTheDocument();
+});
+
+test("[IN17] 삭제는 공용 로그에 삭제 이벤트 하나를 남기고 화면을 옮기지 않는다", () => {
+  const events: NotificationEvent[] = [];
+  renderApp(<App notificationEventSink={(event) => events.push(event)} />);
+  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  const item = messengerNotificationItem();
+
+  deleteNotificationItem(item);
+
+  expect(events).toEqual([
+    { name: "notifications_opened" },
+    { name: "notification_item_deleted", notificationId: item.id, target: "messenger" },
+  ]);
 });

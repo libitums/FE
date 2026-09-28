@@ -4,7 +4,10 @@ import type { NotificationItem } from "./notifications.contract";
 import {
   notificationDestinationLabel,
   notificationItemAccessibilityLabel,
+  notificationDeletedEvent,
   notificationTappedEvent,
+  swipeIntent,
+  withoutNotification,
 } from "./notifications";
 
 // 픽스처는 `NotificationItem`(type import)으로 이 파일 안에서 넷(대상 종류마다 하나)을
@@ -109,5 +112,64 @@ describe("입력 불변 · 부수효과 없음 (가드)", () => {
       expect(notificationTappedEvent(item)).toEqual(notificationTappedEvent(item));
       expect(item).toEqual(before);
     }
+  });
+});
+
+describe("notificationDeletedEvent", () => {
+  it("지운 항목의 id와 대상 종류를 싣는다", () => {
+    expect(notificationDeletedEvent(phoneCallItem)).toEqual({
+      name: "notification_item_deleted",
+      notificationId: "notification-phone-call",
+      target: "phone-call",
+    });
+  });
+});
+
+describe("withoutNotification", () => {
+  const items = [messengerItem, phoneCallItem, visualNovelItem];
+
+  it("그 id의 항목만 빼고 나머지 순서를 지킨다", () => {
+    expect(withoutNotification(items, "notification-phone-call")).toEqual([
+      messengerItem,
+      visualNovelItem,
+    ]);
+  });
+
+  it("없는 id면 같은 참조를 돌려준다", () => {
+    expect(withoutNotification(items, "notification-unknown")).toBe(items);
+  });
+
+  it("입력 배열을 변형하지 않는다", () => {
+    withoutNotification(items, "notification-messenger");
+
+    expect(items).toEqual([messengerItem, phoneCallItem, visualNovelItem]);
+  });
+
+  it("마지막 하나를 빼면 빈 목록이다", () => {
+    expect(withoutNotification([messengerItem], "notification-messenger")).toEqual([]);
+  });
+});
+
+describe("swipeIntent", () => {
+  const start = { x: 300, y: 200 };
+
+  it("왼쪽으로 충분히 밀면 연다", () => {
+    expect(swipeIntent(start, { x: 260, y: 204 })).toBe("reveal");
+  });
+
+  it("오른쪽으로 충분히 밀면 닫는다", () => {
+    expect(swipeIntent(start, { x: 340, y: 196 })).toBe("hide");
+  });
+
+  it("짧게 움직인 손가락에서는 뜻을 읽지 않는다", () => {
+    expect(swipeIntent(start, { x: 280, y: 200 })).toBeNull();
+  });
+
+  it("세로로 더 많이 움직였으면 스크롤이므로 뜻을 읽지 않는다", () => {
+    expect(swipeIntent(start, { x: 250, y: 300 })).toBeNull();
+  });
+
+  it("가로와 세로가 같으면 뜻을 읽지 않는다", () => {
+    expect(swipeIntent(start, { x: 260, y: 240 })).toBeNull();
   });
 });

@@ -21,7 +21,11 @@ import type {
   NotificationEventSink,
   NotificationItem,
 } from "../screens/notifications/notifications.contract";
-import { notificationTappedEvent } from "../screens/notifications/notifications";
+import {
+  notificationDeletedEvent,
+  notificationTappedEvent,
+  withoutNotification,
+} from "../screens/notifications/notifications";
 import type {
   PhoneCallEventSink,
   PhoneCallUnitId,
@@ -55,6 +59,8 @@ export type JourneyWiringArgs = {
   readonly setVisualNovelProgress: Dispatch<SetStateAction<VisualNovelProgress>>;
   readonly completedStepCount: number;
   readonly setCompletedStepCount: Dispatch<SetStateAction<number>>;
+  readonly notifications: readonly NotificationItem[];
+  readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   /**
@@ -87,6 +93,8 @@ export function journeyWiring(args: JourneyWiringArgs) {
     setVisualNovelProgress,
     completedStepCount,
     setCompletedStepCount,
+    notifications,
+    setNotifications,
     sessionOptions,
     setSessionOptions,
     pendingResults,
@@ -229,6 +237,13 @@ export function journeyWiring(args: JourneyWiringArgs) {
           return exhaustive;
         }
       }
+    },
+    // 알림 삭제입니다. 이벤트를 먼저 올리고 목록에서 뺍니다. 화면을 옮기지 않습니다 —
+    // 마지막 알림을 지워도 알림 화면에 남아 빈 상태를 봅니다.
+    notifications,
+    onDeleteNotification: (item: NotificationItem) => {
+      notificationEventSink?.(notificationDeletedEvent(item));
+      setNotifications((current) => withoutNotification(current, item.id));
     },
     // 알림 화면의 `맵으로`입니다. `onExitAssessment`·`onExitCulture`와 같은
     // 형태 — 활성 스택의 루트로 곧장 닿습니다(ADR-0007 D6).

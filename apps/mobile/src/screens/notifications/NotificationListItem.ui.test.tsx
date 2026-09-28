@@ -43,11 +43,19 @@ const fixtures: readonly NotificationItem[] = [
   roleplayListItem,
 ];
 
+// 삭제 자리가 닫힌 항목의 나머지 props입니다 — 이 묶음의 단언은 닫힌 상태를 봅니다.
+const closed = {
+  deleteRevealed: false,
+  onRevealDelete: () => {},
+  onHideDelete: () => {},
+  onDelete: () => {},
+};
+
 describe("NotificationListItem UI", () => {
   describe("[LI1] 루트의 접근성 채널", () => {
     for (const item of fixtures) {
       it(`${item.target.kind} — accessibility-element·traits·label이 정확하다`, () => {
-        render(<NotificationListItem item={item} onSelect={vi.fn()} />);
+        render(<NotificationListItem {...closed} item={item} onSelect={vi.fn()} />);
 
         const root = screen.getByTestId(`notification-list-item-${item.id}`);
         expect(root).toHaveAttribute("accessibility-element", "true");
@@ -63,7 +71,7 @@ describe("NotificationListItem UI", () => {
   describe("[LI2] 메시지·행선지 텍스트", () => {
     for (const item of fixtures) {
       it(`${item.target.kind} — 메시지는 item.message, 행선지는 notificationDestinationLabel(item.target.kind)`, () => {
-        render(<NotificationListItem item={item} onSelect={vi.fn()} />);
+        render(<NotificationListItem {...closed} item={item} onSelect={vi.fn()} />);
 
         expect(screen.getByTestId(`notification-list-item-message-${item.id}`)).toHaveTextContent(
           item.message,
@@ -79,7 +87,7 @@ describe("NotificationListItem UI", () => {
     for (const item of fixtures) {
       it(`${item.target.kind}`, () => {
         const onSelect = vi.fn();
-        render(<NotificationListItem item={item} onSelect={onSelect} />);
+        render(<NotificationListItem {...closed} item={item} onSelect={onSelect} />);
 
         fireEvent.tap(screen.getByTestId(`notification-list-item-${item.id}`), {});
 
@@ -93,7 +101,9 @@ describe("NotificationListItem UI", () => {
   describe("[LI4] 가림 없음", () => {
     for (const item of fixtures) {
       it(`${item.target.kind} — 글 묶음 래퍼가 루트 안에 있고, 가림 속성이 트리 어디에도 없다`, () => {
-        const { container } = render(<NotificationListItem item={item} onSelect={vi.fn()} />);
+        const { container } = render(
+          <NotificationListItem {...closed} item={item} onSelect={vi.fn()} />,
+        );
 
         const root = screen.getByTestId(`notification-list-item-${item.id}`);
         const textWrapper = screen.getByTestId(`notification-list-item-text-${item.id}`);
@@ -129,7 +139,9 @@ describe("NotificationListItem UI", () => {
   describe("[LI5] 읽음·배지 0건", () => {
     for (const item of fixtures) {
       it(`${item.target.kind} — data-status·data-read 없음, header·disabled trait 0건, 읽음 텍스트 0건`, () => {
-        const { container } = render(<NotificationListItem item={item} onSelect={vi.fn()} />);
+        const { container } = render(
+          <NotificationListItem {...closed} item={item} onSelect={vi.fn()} />,
+        );
 
         const root = screen.getByTestId(`notification-list-item-${item.id}`);
         expect(root).not.toHaveAttribute("data-status");
@@ -163,7 +175,7 @@ describe("NotificationListItem UI", () => {
 
     for (const item of [longMessageItem, arbitraryIdItem]) {
       it(`id=${item.id} — LI1·LI2가 성립한다`, () => {
-        render(<NotificationListItem item={item} onSelect={vi.fn()} />);
+        render(<NotificationListItem {...closed} item={item} onSelect={vi.fn()} />);
 
         const root = screen.getByTestId(`notification-list-item-${item.id}`);
         expect(root).toHaveAttribute("accessibility-element", "true");
@@ -181,5 +193,136 @@ describe("NotificationListItem UI", () => {
         ).toHaveTextContent(notificationDestinationLabel(item.target.kind));
       });
     }
+  });
+});
+
+describe("NotificationListItem 삭제 자리", () => {
+  it("[LD1] 닫혀 있으면 삭제 자리가 없다", () => {
+    render(<NotificationListItem {...closed} item={messengerItem} onSelect={vi.fn()} />);
+
+    expect(
+      screen.queryByTestId("notification-list-item-delete-notification-messenger"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("[LD2] 열려 있으면 삭제 자리가 버튼으로 서고 이름에 알림 문구를 싣는다", () => {
+    render(
+      <NotificationListItem
+        {...closed}
+        deleteRevealed={true}
+        item={messengerItem}
+        onSelect={vi.fn()}
+      />,
+    );
+
+    const remove = screen.getByTestId("notification-list-item-delete-notification-messenger");
+    expect(remove).toHaveTextContent("삭제");
+    expect(remove).toHaveAttribute("accessibility-element", "true");
+    expect(remove).toHaveAttribute("accessibility-traits", "button");
+    expect(remove).toHaveAttribute("accessibility-label", `${messengerItem.message}, 삭제`);
+  });
+
+  it("[LD3] 삭제 tap → onDelete가 그 항목으로 1회, onSelect 0회", () => {
+    const onDelete = vi.fn<(item: NotificationItem) => void>();
+    const onSelect = vi.fn<(item: NotificationItem) => void>();
+    render(
+      <NotificationListItem
+        {...closed}
+        deleteRevealed={true}
+        item={messengerItem}
+        onSelect={onSelect}
+        onDelete={onDelete}
+      />,
+    );
+
+    fireEvent.tap(screen.getByTestId("notification-list-item-delete-notification-messenger"), {});
+
+    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(onDelete).toHaveBeenCalledWith(messengerItem);
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("[LD4] 왼쪽으로 밀면 onRevealDelete가 그 항목 id로 불린다", () => {
+    const onRevealDelete = vi.fn<(id: string) => void>();
+    render(
+      <NotificationListItem
+        {...closed}
+        item={messengerItem}
+        onSelect={vi.fn()}
+        onRevealDelete={onRevealDelete}
+      />,
+    );
+    const card = screen.getByTestId("notification-list-item-notification-messenger");
+
+    fireEvent.touchstart(card, { touches: [{ pageX: 300, pageY: 200 }] });
+    fireEvent.touchmove(card, { touches: [{ pageX: 240, pageY: 204 }] });
+
+    expect(onRevealDelete).toHaveBeenCalledTimes(1);
+    expect(onRevealDelete).toHaveBeenCalledWith("notification-messenger");
+  });
+
+  it("[LD5] 밀고 난 손가락이 내는 tap은 알림을 열지 않는다", () => {
+    const onSelect = vi.fn<(item: NotificationItem) => void>();
+    render(<NotificationListItem {...closed} item={messengerItem} onSelect={onSelect} />);
+    const card = screen.getByTestId("notification-list-item-notification-messenger");
+
+    fireEvent.touchstart(card, { touches: [{ pageX: 300, pageY: 200 }] });
+    fireEvent.touchmove(card, { touches: [{ pageX: 240, pageY: 204 }] });
+    fireEvent.tap(card, {});
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("[LD6] 세로로 움직인 손가락은 삭제 자리를 열지 않는다", () => {
+    const onRevealDelete = vi.fn<(id: string) => void>();
+    render(
+      <NotificationListItem
+        {...closed}
+        item={messengerItem}
+        onSelect={vi.fn()}
+        onRevealDelete={onRevealDelete}
+      />,
+    );
+    const card = screen.getByTestId("notification-list-item-notification-messenger");
+
+    fireEvent.touchstart(card, { touches: [{ pageX: 300, pageY: 200 }] });
+    fireEvent.touchmove(card, { touches: [{ pageX: 260, pageY: 300 }] });
+
+    expect(onRevealDelete).not.toHaveBeenCalled();
+  });
+
+  it("[LD7] 길게 누르면 삭제 자리가 열린다 — 밀 수 없는 사용자의 길이다", () => {
+    const onRevealDelete = vi.fn<(id: string) => void>();
+    render(
+      <NotificationListItem
+        {...closed}
+        item={messengerItem}
+        onSelect={vi.fn()}
+        onRevealDelete={onRevealDelete}
+      />,
+    );
+
+    fireEvent.longpress(screen.getByTestId("notification-list-item-notification-messenger"), {});
+
+    expect(onRevealDelete).toHaveBeenCalledWith("notification-messenger");
+  });
+
+  it("[LD8] 열린 채의 카드 tap은 알림을 열지 않고 삭제 자리를 닫는다", () => {
+    const onSelect = vi.fn<(item: NotificationItem) => void>();
+    const onHideDelete = vi.fn<() => void>();
+    render(
+      <NotificationListItem
+        {...closed}
+        deleteRevealed={true}
+        item={messengerItem}
+        onSelect={onSelect}
+        onHideDelete={onHideDelete}
+      />,
+    );
+
+    fireEvent.tap(screen.getByTestId("notification-list-item-notification-messenger"), {});
+
+    expect(onHideDelete).toHaveBeenCalledTimes(1);
+    expect(onSelect).not.toHaveBeenCalled();
   });
 });
