@@ -270,6 +270,16 @@ function incorrectPick(answerIndex: number): number {
   return (answerIndex + 1) % 4;
 }
 
+// 통과 경로의 나가기입니다. 완료 화면의 `Check`는 ui-lynx `Button`이라 testid가
+// 버튼 자신이 아니라 감싸는 상자에 붙어 있습니다.
+function lessonCompleteExit(): Element {
+  const button = screen
+    .getByTestId("lesson-complete-screen-exit")
+    .querySelector('[data-testid="ui-lynx-button"]');
+  if (button === null) throw new Error("lesson-complete-screen-exit 안에 버튼이 없습니다");
+  return button;
+}
+
 // 맵 → 시트 → `시작` → 학습 화면이 활성 스택 최상단에 옵니다.
 test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 덮고 최상단에 온다", () => {
   renderApp(<App />);
@@ -347,8 +357,8 @@ test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은
 
 // 루프 한 판이 진행을 갱신합니다.
 //
-// `onFinishLearning`은 평가 화면으로 `replace`합니다 — `결과 보기` 탭 뒤 곧장
-// 맵이 뜨지 않습니다. 평가의 `맵으로`를 눌러야 맵에 닿습니다. 경로가 길어질 뿐
+// `onFinishLearning`은 `assessment` route로 `replace`하고, 통과면 학습 완료 화면이 뜹니다 —
+// `결과 보기` 탭 뒤 곧장 맵이 뜨지 않습니다. 완료 화면의 `Check`를 눌러야 맵에 닿습니다. 경로가 길어질 뿐
 // 단언의 끝은 같습니다.
 test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다음이 current다", () => {
   renderApp(<App />);
@@ -359,7 +369,7 @@ test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다
   expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
 
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+  fireEvent.tap(lessonCompleteExit(), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
@@ -416,14 +426,14 @@ test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
 
 // **결선 쪽** 관찰입니다(순수 함수 쪽은 journey-map.unit.test.ts). 진행이 3이 된
 // 뒤 서수 1인 스텝을 다시 돌아도 3에서 줄지 않습니다. 두 finish 탭 모두 평가
-// 화면을 거칩니다 — 각 탭 뒤에 평가의 `맵으로`를 눌러야 다음 단언(맵의 스텝
+// 화면을 거칩니다 — 각 탭 뒤에 완료 화면의 `Check`를 눌러야 다음 단언(맵의 스텝
 // 상태)에 닿습니다.
 test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는다", () => {
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+  fireEvent.tap(lessonCompleteExit(), {});
   expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
     "data-status",
     "active",
@@ -433,7 +443,7 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   answerAllQuestions("greeting", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+  fireEvent.tap(lessonCompleteExit(), {});
 
   expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
     "data-status",
@@ -453,13 +463,13 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
 // 언마운트되며 시트 상태가 버려지는 것의 결과입니다. 맵 제목을 함께 읽어 "맵이
 // 떠 있는데 시트만 없다"를 봅니다 — 부재만 보면 화면이 통째로 비어도
 // 통과합니다(공허하게 통과할 수 있는 자리입니다). 완료 경로는 평가 화면을
-// 거칩니다 — 평가의 `맵으로`까지 눌러야 맵에 닿습니다.
+// 거칩니다 — 완료 화면의 `Check`까지 눌러야 맵에 닿습니다.
 test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있다", () => {
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+  fireEvent.tap(lessonCompleteExit(), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
@@ -492,14 +502,14 @@ test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", (
 // 사실 — **진행이 App 인스턴스 밖으로 나가지 않는다** — 은 여기서 실행 가능합니다.
 // 진행을 3으로 만든 뒤 앱을 통째로 내리고 다시 띄웁니다. 어딘가에 영속됐다면 새
 // 인스턴스가 3을 복원해 여기서 갈립니다(실기의 "앱 재시작 후 초기값 복귀"는 이
-// 단언의 대체가 아니라 나머지 절반입니다). 완료를 확인하려면 평가의 맵으로까지
+// 단언의 대체가 아니라 나머지 절반입니다). 완료를 확인하려면 완료 화면의 Check까지
 // 눌러야 맵의 스텝 상태를 읽을 수 있습니다.
 test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행으로 돌아온다", () => {
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+  fireEvent.tap(lessonCompleteExit(), {});
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
     "clear",
@@ -528,47 +538,56 @@ test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행
 // 위에 있던 구 "전부 오답으로 마쳐도 진행은 같은 결과로 갱신된다" 케이스는
 // 이후 뒤집힌 규칙을 못박고 있어 무효가 됐고, 아래 I6이 그 자리를 대체합니다.
 
-// I1 · 마지막 문항 뒤 `결과 보기`를 누르면 평가 화면이 뜹니다. `mixedPick`은
-// 가운데 문항만 오답이라 2/3 — `minCorrectCount: 2`에서 정확히 통과 경로입니다.
-test("I1: 문항 셋을 통과 경로로 마치고 결과 보기를 누르면 평가 화면이 뜨고 제목이 그 스텝의 서수다", () => {
+// I1 · 마지막 문항 뒤 `결과 보기`를 누르면 — 통과이므로 — 평가 화면이 아니라 학습 완료
+// 화면이 뜹니다. `mixedPick`은 가운데 문항만 오답이라 2/3 — `minCorrectCount: 2`에서
+// 정확히 통과 경로이고, 실수가 하나라 제목이 `PERFECT`가 아닙니다.
+test("I1: 문항 셋을 통과 경로로 마치고 결과 보기를 누르면 학습 완료 화면이 뜬다", () => {
   renderApp(<App />);
   startStep("ordering");
 
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
-  expect(screen.getByTestId("assessment-screen-title")).toHaveTextContent("3단계 · 평가");
-  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON COMPLETE!");
+  expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
 });
 
-// I2: 문항 행 N개의 data-result가 실제로 고른 보기의 정오와 일치합니다 — 듣기의
-// 이력이 평가까지 옵니다. `mixedPick`은 인덱스 1만 오답입니다.
-test("I2: 평가의 문항 행 data-result가 실제로 고른 보기의 정오와 일치한다", () => {
+// I2: 완료 화면의 실수 수가 실제로 고른 보기의 정오와 일치합니다 — 듣기의 이력이 완료
+// 화면까지 옵니다. `mixedPick`은 인덱스 1만 오답이고, 전부 정답이면 `PERFECT`입니다.
+test("I2: 완료 화면의 실수 수가 실제로 고른 보기의 정오와 일치한다", () => {
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
-  expect(screen.getByTestId("assessment-item-0")).toHaveAttribute("data-result", "correct");
-  expect(screen.getByTestId("assessment-item-1")).toHaveAttribute("data-result", "incorrect");
-  expect(screen.getByTestId("assessment-item-2")).toHaveAttribute("data-result", "correct");
+  expect(screen.getByTestId("lesson-complete-screen-subtitle")).toHaveTextContent(
+    "YOU MADE 1 MISTAKE IN THIS LESSON",
+  );
+  fireEvent.tap(lessonCompleteExit(), {});
+
+  startStep("appointment");
+  answerAllQuestions("appointment", (answerIndex) => answerIndex);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
 });
 
-// I3: 평가의 `맵으로`가 `backToRoot` 하나로 맵에 닿습니다. 나가기가 활성 스택의
+// I3: 완료 화면의 `Check`가 `backToRoot` 하나로 맵에 닿습니다. 나가기가 활성 스택의
 // 루트로 곧장 가므로(ADR-0007 D6) 이 관찰은 진입이 push였든 replace였든
 // 같습니다 — 이 테스트는 목적지를 짓고 진입 동작을 짓지 않습니다.
-test("I3: 평가의 맵으로를 누르면 backToRoot 하나로 맵에 닿는다", () => {
+test("I3: 완료 화면의 Check를 누르면 backToRoot 하나로 맵에 닿는다", () => {
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+  fireEvent.tap(lessonCompleteExit(), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("lesson-complete-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
 });
 
 // I4: 통과가 완료를 겁니다 — 전에는 "듣기가 걸었다"였습니다.
@@ -577,7 +596,7 @@ test("I4: 통과 뒤 맵으로 돌아오면 그 스텝이 done이고 다음이 c
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+  fireEvent.tap(lessonCompleteExit(), {});
 
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
@@ -827,10 +846,10 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
 
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
-  expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-title")).toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual(atComplete);
 
-  fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
+  fireEvent.tap(lessonCompleteExit(), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual(atComplete);
@@ -961,9 +980,9 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
   expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
 
   expect(() => fireEvent.tap(screen.getByTestId("learning-shell-action"), {})).not.toThrow();
-  expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-title")).toBeInTheDocument();
 
-  expect(() => fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {})).not.toThrow();
+  expect(() => fireEvent.tap(lessonCompleteExit(), {})).not.toThrow();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(

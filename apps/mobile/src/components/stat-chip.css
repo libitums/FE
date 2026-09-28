@@ -1,0 +1,46 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
+
+/* 지표 칩 — 높이는 디자인 실측값 그대로라, 버튼으로 쓸 때 Apple HIG의 44pt에는 못
+   미칩니다(여정 맵 알림 버튼과 같은 사정입니다). */
+.stat-chip {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-2);
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
+  border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-50);
+  border-radius: var(--libitum-radius-sm);
+  /* 면을 칠하지 않습니다 — 화면 바탕이 그대로 비칩니다(2026-09-27 디자인 반영).
+     칩을 가르는 것은 테두리와 안의 아이콘 · 숫자이고, 흰 면은 그 일에 보태는 것이
+     없었습니다. */
+  flex-shrink: 0;
+}
+
+.stat-chip-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  flex-shrink: 0;
+}
+
+/* 숫자 색은 칩마다 갈립니다 — 아이콘과 같은 색을 써서 둘이 한 덩어리로 읽힙니다.
+   색이 유일한 구분 채널이 아닙니다: 아이콘 모양이 먼저 가릅니다(WCAG 1.4.1). */
+.stat-chip-value {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.stat-chip-value-streak {
+  color: var(--libitum-color-brand-secondary);
+}
+
+.stat-chip-value-trophy {
+  color: var(--libitum-color-feedback-warning);
+}
+
+/* 다이아 색은 맞는 토큰이 없어 디자인 값을 적습니다(`statChipDiamondColor`와 같은 값). */
+.stat-chip-value-diamond {
+  color: #00c3ff;
+}
