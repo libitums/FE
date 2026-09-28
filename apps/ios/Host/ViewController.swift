@@ -35,6 +35,7 @@ final class ViewController: UIViewController {
       config.register(AudioPlaybackModule.self)
       config.register(CompletionAnnouncementModule.self)
       config.register(HandwritingRecognitionModule.self)
+      config.register(HandwritingTraceModule.self)
       config.register(SpeechRecognitionModule.self)
       builder.config = config
       // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).

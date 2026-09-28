@@ -1,6 +1,7 @@
 // 메신저 특별 유닛의 타입 전용 계약입니다 — 구현·고정 데이터·JSX를 두지 않고
 // 하류가 공유할 타입만 둡니다.
 
+import type { AnswerResult } from "../../lib/answer-result";
 import type {
   SpecialUnitEntrySource,
   SpecialUnitExitLabel,
@@ -16,12 +17,22 @@ export type JiminMessage = {
   readonly id: "jimin-schedule" | "jimin-directions" | "jimin-goodbye";
   readonly sender: "jimin";
   readonly text: string;
+  /** 말풍선 아래 흐린 줄의 번역입니다. */
+  readonly translation: string;
 };
 
 export type SelfMessage = {
   readonly id: "self-accept" | "self-thanks";
   readonly sender: "self";
+  /** 학습자가 가상 키보드로 쳐야 하는 답장이자, 맞힌 뒤 말풍선에 서는 문장입니다. */
   readonly text: string;
+  /** 입력창의 힌트이자 말풍선 아래 번역입니다 — 학습자는 이 뜻을 한국어로 칩니다. */
+  readonly translation: string;
+  /**
+   * 객관식 보기입니다(Figma 80-7380). 있으면 가상 키보드 대신 이 보기에서 골라 보냅니다 —
+   * 정답(`text`)이 보기 안에 들어 있어야 합니다. 없으면 자판으로 칩니다(Figma 80-7082).
+   */
+  readonly choices?: readonly string[];
 };
 
 export type MessengerMessage = JiminMessage | SelfMessage;
@@ -43,7 +54,7 @@ export type MessengerSessionState =
   | { readonly mode: "active"; readonly replyIndex: MessengerReplyIndex }
   | { readonly mode: "completed" };
 
-export type MessengerSessionAction = { readonly type: "reply" } | { readonly type: "replay" };
+export type MessengerSessionAction = { readonly type: "reply" };
 
 export type MessengerExitOutcome = "incomplete" | "completed";
 
@@ -70,11 +81,6 @@ export type MessengerEvent =
     }
   | {
       readonly name: "messenger_unit_exited_incomplete";
-      readonly unitId: MessengerUnitId;
-      readonly entrySource: SpecialUnitEntrySource;
-    }
-  | {
-      readonly name: "messenger_unit_replay_started";
       readonly unitId: MessengerUnitId;
       readonly entrySource: SpecialUnitEntrySource;
     };
@@ -107,7 +113,11 @@ export type MessengerScreenProps = {
   readonly completionStatus: MessengerCompletionStatus;
   readonly onExit: (outcome: MessengerExitOutcome) => void;
   readonly onComplete: (id: MessengerUnitId) => void;
-  readonly onReplay: (id: MessengerUnitId) => void;
+  /**
+   * 끝난 대화의 `결과 보기`입니다 — 학습 완료 화면으로 갑니다. 결과는 답장마다 **첫 시도의
+   * 정오**입니다. 완료한 유닛에 다시 들어와 전체 기록만 본 경우는 빈 목록입니다.
+   */
+  readonly onFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) => void;
   readonly exitLabel?: SpecialUnitExitLabel;
 };
 
@@ -115,11 +125,49 @@ export type MessageBubbleProps = {
   readonly message: MessengerMessage;
 };
 
-export type ReplyButtonProps = {
-  readonly reply: SelfMessage;
-  readonly onReply: () => void;
+/**
+ * 답장 입력창의 상태입니다. 입력의 진실은 누른 키의 열(`keys`)이고, 보이는 글자는
+ * `composeHangul(keys)`로 파생합니다.
+ *
+ * - `typing`: 치는 중입니다.
+ * - `correct`: 맞혔습니다. 잠시 뒤 답장이 대화에 섭니다.
+ * - `incorrect`: 틀렸습니다. `Try Again`이 입력을 비우고 `typing`으로 되돌립니다.
+ */
+export type MessengerComposerState = {
+  readonly keys: readonly string[];
+  readonly shifted: boolean;
+  readonly verdict: "typing" | "correct" | "incorrect";
 };
 
-export type ReplayButtonProps = {
-  readonly onReplay: () => void;
+export type MessengerComposerAction =
+  | { readonly type: "press"; readonly key: string }
+  | { readonly type: "choose"; readonly text: string }
+  | { readonly type: "backspace" }
+  | { readonly type: "shift" }
+  | { readonly type: "submit"; readonly answer: string }
+  | { readonly type: "retry" }
+  | { readonly type: "clear" };
+
+export type MessengerComposerProps = {
+  readonly reply: SelfMessage;
+  readonly typed: string;
+  readonly verdict: MessengerComposerState["verdict"];
+  readonly onSend: () => void;
+};
+
+export type MessengerChoicesProps = {
+  readonly choices: readonly string[];
+  readonly chosen: string;
+  readonly onChoose: (text: string) => void;
+};
+
+export type MessengerKeyboardProps = {
+  readonly shifted: boolean;
+  readonly onPress: (key: string) => void;
+  readonly onBackspace: () => void;
+  readonly onShift: () => void;
+};
+
+export type MessengerFinishButtonProps = {
+  readonly onFinish: () => void;
 };

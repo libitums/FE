@@ -1,0 +1,83 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 값은 디자인(Figma 80-7082)의
+   자판입니다 — 흰 판에 그림자, 키는 30×40 · 모서리 8 · gray-100 면입니다. */
+.messenger-keyboard {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding-top: var(--libitum-spacing-24);
+  padding-bottom: var(--libitum-spacing-24);
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+  border-top-left-radius: var(--libitum-radius-xl);
+  border-top-right-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.messenger-keyboard-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-4);
+  width: 366px;
+}
+
+/* 셋째 · 넷째 줄은 양 끝에 붙고 가운데가 벌어집니다(디자인의 space-between). */
+.messenger-keyboard-row-spread {
+  justify-content: space-between;
+}
+
+.messenger-keyboard-cluster {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 234px;
+}
+
+.messenger-keyboard-key {
+  width: 30px;
+  height: var(--libitum-spacing-40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-sm);
+  background: var(--libitum-color-gray-100);
+}
+
+/* 켜진 윗글쇠 — 한 번 누르면 다음 키 하나에만 먹습니다. */
+.messenger-keyboard-key-on {
+  background: var(--libitum-color-gray-300);
+}
+
+.messenger-keyboard-key-wide {
+  width: 49px;
+}
+
+.messenger-keyboard-key-space {
+  width: 206px;
+}
+
+.messenger-keyboard-key-trailing {
+  width: 80px;
+}
+
+.messenger-keyboard-key-label {
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  text-align: center;
+}
+
+.messenger-keyboard-key-label-muted {
+  color: var(--libitum-color-gray-700);
+}
+
+.messenger-keyboard-key-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}

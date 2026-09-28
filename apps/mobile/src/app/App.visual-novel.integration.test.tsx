@@ -6,6 +6,7 @@ import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
+import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
 
 // 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
@@ -246,8 +247,7 @@ test("visual novel 완료는 messenger 상태·이벤트와 phone audio를 바�
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-accept"), {});
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-thanks"), {});
+  answerMessengerReplies();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   const messengerEventsBefore = messengerEventSink.mock.calls.map(([event]) => event);
 

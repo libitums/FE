@@ -7,7 +7,6 @@ import {
   initialMessengerSessionState,
   messengerCompletionStatus,
   messengerExitOutcome,
-  messengerProgressLabel,
   messengerSessionReducer,
   visibleMessengerMessages,
 } from "./messenger";
@@ -18,11 +17,11 @@ const conversation = {
   title: "약속 확인 메시지",
   participantName: "지민",
   messages: [
-    { id: "jimin-schedule", sender: "jimin", text: "첫 메시지" },
-    { id: "self-accept", sender: "self", text: "첫 답장" },
-    { id: "jimin-directions", sender: "jimin", text: "둘째 메시지" },
-    { id: "self-thanks", sender: "self", text: "둘째 답장" },
-    { id: "jimin-goodbye", sender: "jimin", text: "마지막 메시지" },
+    { id: "jimin-schedule", sender: "jimin", text: "첫 메시지", translation: "first" },
+    { id: "self-accept", sender: "self", text: "첫 답장", translation: "first reply" },
+    { id: "jimin-directions", sender: "jimin", text: "둘째 메시지", translation: "second" },
+    { id: "self-thanks", sender: "self", text: "둘째 답장", translation: "second reply" },
+    { id: "jimin-goodbye", sender: "jimin", text: "마지막 메시지", translation: "last" },
   ],
 } as MessengerConversation;
 
@@ -41,9 +40,7 @@ describe("messenger state pure functions", () => {
     expect(messengerSessionReducer(active1, { type: "reply" })).toEqual(completed);
   });
 
-  it("replay와 적용 불가 action은 계약대로 동작한다", () => {
-    expect(messengerSessionReducer(completed, { type: "replay" })).toEqual(active0);
-    expect(messengerSessionReducer(active0, { type: "replay" })).toBe(active0);
+  it("적용 불가 action은 계약대로 동작한다", () => {
     expect(messengerSessionReducer(completed, { type: "reply" })).toBe(completed);
   });
 
@@ -59,10 +56,7 @@ describe("messenger state pure functions", () => {
     expect(currentMessengerReply(conversation, completed)).toBeNull();
   });
 
-  it("진행 문구와 나가기 결과를 상태별로 낸다", () => {
-    expect(messengerProgressLabel(active0)).toBe("대화 1 / 2");
-    expect(messengerProgressLabel(active1)).toBe("대화 2 / 2");
-    expect(messengerProgressLabel(completed)).toBe("대화 완료");
+  it("나가기 결과를 상태별로 낸다", () => {
     expect(messengerExitOutcome(active0)).toBe("incomplete");
     expect(messengerExitOutcome(completed)).toBe("completed");
   });

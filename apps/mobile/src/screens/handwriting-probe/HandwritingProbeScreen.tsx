@@ -3,9 +3,16 @@ import type { ReactNode } from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 
 import { DrawingSurface } from "./DrawingSurface";
-import { probeStrokeWidth, probeSurfaceSize } from "./handwriting-probe";
+import {
+  probeStrokeWidth,
+  probeSurfaceSize,
+  probeTraceFontSize,
+  probeTraceGlyph,
+  probeTraceTolerance,
+} from "./handwriting-probe";
 import { readHandwriting } from "../../lib/handwriting-recognition";
 import type { HandwritingReadOutcome, Stroke } from "../../lib/handwriting-recognition";
+import { useProbeTrace } from "./use-probe-trace";
 
 import "./handwriting-probe-screen.css";
 
@@ -40,6 +47,9 @@ export function HandwritingProbeScreen(): ReactNode {
   const [cancels, setCancels] = useState(0);
   const [result, setResult] = useState<ProbeResultLine | null>(null);
   const [reading, setReading] = useState(false);
+  // 따라 쓰기 축은 훅이 듭니다 — 읽기(Vision)와 완전히 다른 축이고 같은 화면에 있을
+  // 뿐입니다.
+  const trace = useProbeTrace();
 
   // ⚠ 이 목록은 **이 컴포넌트가 도는 스레드의 전역**입니다 — ReactLynx에서
   // 컴포넌트 본문은 백그라운드 스레드에서 돌므로 메인 스레드(worklet)가 보는
@@ -55,6 +65,7 @@ export function HandwritingProbeScreen(): ReactNode {
     setStrokes([]);
     setCancels(0);
     setResult(null);
+    trace.reset();
   };
 
   const read = () => {
@@ -132,15 +143,36 @@ export function HandwritingProbeScreen(): ReactNode {
         className="handwriting-probe-screen-actions"
         data-testid="handwriting-probe-screen-actions"
       >
-        <DrawingSurface
-          strokes={strokes}
-          width={probeSurfaceSize.width}
-          height={probeSurfaceSize.height}
-          color={color.fg.neutral}
-          strokeWidth={probeStrokeWidth}
-          onStrokeComplete={(stroke) => setStrokes((current) => [...current, stroke])}
-          onStrokeCancel={() => setCancels((current) => current + 1)}
-        />
+        {/* 안내 글자가 표면 **뒤**에 섭니다. 겹치는 이유와 어긋남의 위험은 짝 CSS에
+            적혀 있습니다. */}
+        <view className="handwriting-probe-screen-trace-stage">
+          {/* 호스트가 구운 안내 그림입니다. **글자를 여기서 그리지 않습니다** — 그리면
+              Lynx와 UIKit이 다르게 배치해 화면과 채점이 갈립니다(2026-09-28에 22pt
+              어긋났습니다). 호스트가 없으면 안내가 없습니다: 없는 것을 그린 척하지
+              않습니다.
+
+              접근성 트리에 올리는 것은 이 상자가 표면과 정확히 같은 자리·같은 크기라,
+              실기에서 「안내가 어디 섰나」를 눈이 아니라 수로 읽는 수단이 되기
+              때문입니다. */}
+          {trace.guideImage === null ? null : (
+            <image
+              className="handwriting-probe-screen-guide"
+              data-testid="handwriting-probe-screen-guide"
+              src={`data:image/png;base64,${trace.guideImage}`}
+              accessibility-element={true}
+              accessibility-label={`안내 글자 ${probeTraceGlyph}`}
+            />
+          )}
+          <DrawingSurface
+            strokes={strokes}
+            width={probeSurfaceSize.width}
+            height={probeSurfaceSize.height}
+            color={color.fg.neutral}
+            strokeWidth={probeStrokeWidth}
+            onStrokeComplete={(stroke) => setStrokes((current) => [...current, stroke])}
+            onStrokeCancel={() => setCancels((current) => current + 1)}
+          />
+        </view>
 
         {/* 지우기는 표면의 책임이 아닙니다 — 끝난 획의 주인이 화면이라서입니다.
             실기에서 여러 번 시도하려면 앱을 다시 켜지 않고 비울 수단이 있어야
@@ -182,6 +214,33 @@ export function HandwritingProbeScreen(): ReactNode {
             `data-strokes`가 느는지가 「좌표는 왔는데 렌더가 문제」와 「바인딩이
             안 닿는다」를 가르고, `data-cancels`가 시스템이 제스처를 가져가는지를
             보입니다. */}
+        <view
+          className="handwriting-probe-screen-read"
+          data-testid="handwriting-probe-screen-compare"
+          accessibility-element={true}
+          accessibility-traits="button"
+          accessibility-label="견주기"
+          bindtap={() => trace.compare(strokes)}
+        >
+          <text className="handwriting-probe-screen-button-label">견주기</text>
+        </view>
+
+        {/* 견주기 줄 — 수를 그대로 싣습니다. **판정하지 않습니다**: 얼마가 통과인지는
+            기기에서 잡을 값이고, 여기서 문턱을 정하면 그 수가 근거 없이 계약이 됩니다.
+            폰트 이름을 함께 싣는 것은 요청한 글꼴이 기기에 없을 때 조용히 다른 모양으로
+            재게 되기 때문입니다. */}
+        <text
+          className="handwriting-probe-screen-result"
+          data-testid="handwriting-probe-screen-trace"
+          data-status={trace.line === null ? "" : trace.line.status}
+        >
+          {trace.line === null
+            ? ""
+            : trace.line.status === "compared"
+              ? `덮음 ${trace.line.coverage.toFixed(3)} · 머무름 ${trace.line.stay.toFixed(3)} · 안내 ${trace.line.guideBox}`
+              : `[${trace.line.status}]`}
+        </text>
+
         <text
           className="handwriting-probe-screen-counts"
           data-testid="handwriting-probe-screen-counts"

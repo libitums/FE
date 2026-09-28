@@ -43,6 +43,7 @@ import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
 import { profileList, termsSectionList } from "./app-content";
 import type { Screen } from "./nav-state";
 import { renderShellLearningScreen } from "./render-learning-screen";
+import { renderMessengerCompleteScreen } from "./render-messenger-complete";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
 import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
@@ -203,9 +204,11 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           exitLabel={specialUnitExitLabel("journey")}
           onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
           onComplete={wiring.onMessengerComplete}
-          onReplay={wiring.onMessengerReplay}
+          onFinish={wiring.onMessengerFinish}
         />
       );
+    case "messenger-complete":
+      return renderMessengerCompleteScreen(screen, wiring);
     case "phone-call":
       return (
         <PhoneCallScreen

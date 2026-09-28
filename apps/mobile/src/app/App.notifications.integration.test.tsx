@@ -16,6 +16,7 @@ import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contra
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
+import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
 
 // 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
@@ -103,8 +104,7 @@ function roleplayListNotificationItem() {
 }
 
 function finishMessengerConversation() {
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-accept"), {});
-  fireEvent.tap(screen.getByTestId("messenger-reply-self-thanks"), {});
+  answerMessengerReplies();
 }
 
 // -------------------------------------------------------------------- IN1 · IN2
@@ -168,7 +168,10 @@ test("[IN4] 메신저 대상 항목을 tap하면 메신저 화면이 열리고 �
   tapNotificationItem(messengerNotificationItem());
 
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("messenger-screen-exit")).toHaveTextContent("맵으로");
+  expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
+    "accessibility-label",
+    "맵으로",
+  );
 
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
