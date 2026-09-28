@@ -10,7 +10,10 @@ import { initialSessionOptions } from "../lib/session-options";
 import type { SessionOptions } from "../lib/session-options";
 import { initialCompletedStepCount } from "../screens/journey-map/journey-map";
 import type { MessengerAppProps, MessengerUnitId } from "../screens/messenger/messenger.contract";
-import type { NotificationAppProps } from "../screens/notifications/notifications.contract";
+import type {
+  NotificationAppProps,
+  NotificationItem,
+} from "../screens/notifications/notifications.contract";
 import type { PhoneCallAppProps, PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type { SettingsAppProps } from "../screens/settings/settings.contract";
 import { initialVisualNovelProgress } from "../screens/visual-novel/visual-novel";
@@ -20,6 +23,7 @@ import type {
 } from "../screens/visual-novel/visual-novel.contract";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, isEntrySection, navReducer } from "./nav-reducer";
+import { notificationList } from "./app-content";
 import { entryInitialNav } from "./nav-state";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
@@ -75,6 +79,9 @@ export function App({
   const [visualNovelProgress, setVisualNovelProgress] = useState<VisualNovelProgress>(
     initialVisualNovelProgress,
   );
+  // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
+  // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.
+  const [notifications, setNotifications] = useState<readonly NotificationItem[]>(notificationList);
   // 세션 옵션의 진실의 출처입니다. **저장소 모듈을 import하지도 부르지도
   // 않습니다**(ADR-0007 D1) — 앱을 다시 켜면 `initialSessionOptions`로
   // 돌아갑니다.
@@ -99,6 +106,8 @@ export function App({
     setVisualNovelProgress,
     completedStepCount,
     setCompletedStepCount,
+    notifications,
+    setNotifications,
     sessionOptions,
     setSessionOptions,
     pendingResults,

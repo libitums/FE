@@ -119,7 +119,10 @@ export type ScreenWiring = {
   // 여정 맵 머리 알림 버튼 · 알림 항목 선택 · 알림 화면 나가기입니다.
   // `dispatch`도 `NavAction`도 여기 들어가지 않습니다(위 원칙 그대로).
   onOpenNotifications: () => void;
+  // `notifications`는 남아 있는 알림이고, 삭제는 그 목록에서 하나를 뺍니다.
+  notifications: readonly NotificationItem[];
   onSelectNotification: (item: NotificationItem) => void;
+  onDeleteNotification: (item: NotificationItem) => void;
   onExitNotifications: () => void;
   // 세션 옵션의 진실의 출처와 설정 탭의 이동·토글·나가기 콜백 셋입니다. 화면은
   // 스택도 `dispatch`도 모릅니다(위 원칙 그대로).
@@ -159,6 +162,8 @@ export type ScreenWiringArgs = {
   readonly setVisualNovelProgress: Dispatch<SetStateAction<VisualNovelProgress>>;
   readonly completedStepCount: number;
   readonly setCompletedStepCount: Dispatch<SetStateAction<number>>;
+  readonly notifications: readonly NotificationItem[];
+  readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly pendingResults: readonly AnswerResult[];

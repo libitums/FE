@@ -52,13 +52,30 @@ export type NotificationItem = {
 export type NotificationsScreenProps = {
   readonly items: readonly NotificationItem[];
   readonly onSelectItem: (item: NotificationItem) => void;
+  readonly onDeleteItem: (item: NotificationItem) => void;
   readonly onExit: () => void;
 };
 
+/**
+ * 삭제 자리가 열렸는지는 항목이 아니라 화면이 집니다 — 한 번에 하나만 열려 있어야 하고,
+ * 그것을 아는 것은 목록 전체를 보는 쪽입니다.
+ */
 export type NotificationListItemProps = {
   readonly item: NotificationItem;
+  readonly deleteRevealed: boolean;
   readonly onSelect: (item: NotificationItem) => void;
+  readonly onRevealDelete: (id: NotificationId) => void;
+  readonly onHideDelete: () => void;
+  readonly onDelete: (item: NotificationItem) => void;
 };
+
+/** 손가락이 닿은 자리입니다. 기준은 페이지입니다 — 카드 폭이 바뀌어도 흔들리지 않습니다. */
+export type SwipePoint = {
+  readonly x: number;
+  readonly y: number;
+};
+
+export type SwipeIntent = "reveal" | "hide";
 
 export type NotificationsOpenedEvent = {
   readonly name: "notifications_opened";
@@ -70,7 +87,16 @@ export type NotificationItemTappedEvent = {
   readonly target: NotificationTargetKind;
 };
 
-export type NotificationEvent = NotificationsOpenedEvent | NotificationItemTappedEvent;
+export type NotificationItemDeletedEvent = {
+  readonly name: "notification_item_deleted";
+  readonly notificationId: NotificationId;
+  readonly target: NotificationTargetKind;
+};
+
+export type NotificationEvent =
+  | NotificationsOpenedEvent
+  | NotificationItemTappedEvent
+  | NotificationItemDeletedEvent;
 
 export type NotificationEventSink = ((event: NotificationEvent) => void) | null;
 
@@ -83,6 +109,11 @@ export type NotificationsTestId =
   | "notifications-screen-title"
   | "notifications-screen-scroll"
   | "notifications-screen-list"
+  | "notifications-screen-empty"
+  | "notifications-screen-empty-title"
+  | "notifications-screen-empty-description"
+  | `notification-list-item-row-${NotificationId}`
+  | `notification-list-item-delete-${NotificationId}`
   | `notification-list-item-${NotificationId}`
   | `notification-list-item-text-${NotificationId}`
   | `notification-list-item-message-${NotificationId}`
