@@ -212,7 +212,15 @@ final class HandwritingTraceModule: NSObject, LynxModule {
     guard drawnArea > 0 else { return payload(status: "empty-strokes") }
     guard guideArea > 0 else { return payload(status: "empty-glyph") }
 
-    let radius = Int((request.tolerance * scale).rounded())
+    // 팽창 반경을 판 크기로 **자른다.** 인자의 범위를 보는 것이 아니라 **일의 양에 천장을
+    // 두는 것**이다 — 이 둘은 다르다. 형제 모듈이 *"값의 범위는 보지 않는다"* 고 적은 것은
+    // 어긋난 값이 결과로 드러나기 때문인데, 여기서는 어긋난 값이 결과가 아니라 **시간**으로
+    // 나온다(팽창이 반경에 비례해 돈다). 답이 안 오는 것은 사유로 드러나지 않는다.
+    //
+    // 판 변보다 큰 반경은 **결과를 바꾸지 않는다** — 그쯤이면 마스크가 이미 판을 다 덮는다.
+    // 그래서 이 자름은 의미를 깎지 않으면서 일의 양만 묶는다. 임의의 상수(예: 50)로 자르면
+    // 그보다 큰 값을 **조용히 다른 뜻으로** 바꿔 버린다.
+    let radius = min(Int((request.tolerance * scale).rounded()), max(width, height))
     let drawnGrown = dilate(drawn, width: width, height: height, radius: radius)
     let guideGrown = dilate(guide, width: width, height: height, radius: radius)
 
