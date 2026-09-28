@@ -13,7 +13,6 @@ function fixture() {
     trophyCount: 3,
     gemCount: 1240,
     onOpenNotifications: vi.fn(),
-    onPurchaseGems: vi.fn(),
     todayWeekday: 1,
   };
 }
@@ -117,9 +116,8 @@ test("[AH8] 젬 칩 tap → 구매 화면이 보유 젬을 싣고 뜬다", () =>
   expect(screen.getByTestId("gem-purchase-screen-balance-value")).toHaveTextContent("1,240");
 });
 
-test("[AH9] 구매 화면의 Pay → 고른 팩을 올리고 화면이 닫힌다", () => {
-  const props = fixture();
-  render(<AppHeader {...props} />);
+test("[AH9] 구매 화면의 Pay → 결제 준비 중 안내가 뜨고 구매 화면은 그대로다", () => {
+  render(<AppHeader {...fixture()} />);
   fireEvent.tap(screen.getByTestId("top-bar-gem"), {});
 
   const pay = screen
@@ -127,14 +125,13 @@ test("[AH9] 구매 화면의 Pay → 고른 팩을 올리고 화면이 닫힌다
     .querySelector('[data-testid="ui-lynx-button"]');
   fireEvent.tap(pay as Element, {});
 
-  expect(props.onPurchaseGems).toHaveBeenCalledTimes(1);
-  expect(props.onPurchaseGems).toHaveBeenCalledWith(expect.objectContaining({ id: "max" }));
-  expect(screen.queryByTestId("gem-purchase-screen")).toBeNull();
+  expect(screen.getByTestId("gem-purchase-screen-notice")).toBeInTheDocument();
+  expect(screen.getByTestId("gem-purchase-screen")).toBeInTheDocument();
+  expect(screen.getByTestId("top-bar-gem")).toHaveTextContent("1240");
 });
 
-test("[AH10] 구매 화면의 닫기 → 아무것도 사지 않고 닫힌다", () => {
-  const props = fixture();
-  render(<AppHeader {...props} />);
+test("[AH10] 구매 화면의 닫기 → 구매 화면이 닫힌다", () => {
+  render(<AppHeader {...fixture()} />);
   fireEvent.tap(screen.getByTestId("top-bar-gem"), {});
 
   const close = screen
@@ -143,7 +140,6 @@ test("[AH10] 구매 화면의 닫기 → 아무것도 사지 않고 닫힌다", 
   fireEvent.tap(close as Element, {});
 
   expect(screen.queryByTestId("gem-purchase-screen")).toBeNull();
-  expect(props.onPurchaseGems).not.toHaveBeenCalled();
 });
 
 test("[AH11] 화면 쪽 레이어가 떠 있으면(obscured) 머리가 낭독에서 가려진다", () => {
