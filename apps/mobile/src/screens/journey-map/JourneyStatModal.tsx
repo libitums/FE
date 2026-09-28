@@ -34,7 +34,9 @@ const copy: Record<JourneyStatKind, JourneyStatCopy> = {
   },
   trophy: {
     title: "Episode Clear!",
-    message: "Amazing work! Come back tomorrow to clear chapter",
+    // Figma 원문은 "…to clear chapter"입니다. 제목(Episode Clear!)과 용어를 맞추고 관사 ·
+    // 문장 부호를 보태 고쳤습니다(PR #124 리뷰). Figma 쪽 반영이 뒤따라야 합니다.
+    message: "Amazing work! Come back tomorrow to clear the next episode!",
     heroLabel: (value) => `에피소드 클리어 ${value}개`,
   },
 };

@@ -56,6 +56,9 @@ test("[JSM3] 트로피 칩 tap → 트로피 모달은 요일 줄 없이 트로�
   expect(screen.getByTestId("journey-stat-modal-trophy")).toBeInTheDocument();
   expect(screen.getByTestId("journey-stat-modal-value")).toHaveTextContent("3");
   expect(screen.getByTestId("journey-stat-modal-title")).toHaveTextContent("Episode Clear!");
+  expect(screen.getByTestId("journey-stat-modal-message")).toHaveTextContent(
+    "Amazing work! Come back tomorrow to clear the next episode!",
+  );
   expect(screen.queryByTestId("journey-stat-modal-days")).toBeNull();
   expect(screen.getAllByTestId("journey-stat-modal-empty")).toHaveLength(4);
 });
