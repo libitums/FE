@@ -7,7 +7,7 @@
 
    내용 폭입니다 — 줄을 채우지 않습니다. 배지는 「이만큼이 결과다」를 크기로 말하지
    않습니다. */
-.listening-verdict {
+.answer-verdict {
   border-radius: var(--libitum-radius-md);
   padding: var(--libitum-spacing-8);
   display: flex;
@@ -21,7 +21,7 @@
 
 /* **크기를 CSS가 줍니다.** 색은 여기가 아니라 `current-color` 속성입니다 — Lynx
    `<svg>`가 CSS `color`를 읽지 않습니다(ADR-0014 D2). */
-.listening-verdict-icon {
+.answer-verdict-icon {
   width: var(--libitum-icon-size-sm);
   height: var(--libitum-icon-size-sm);
   flex-shrink: 0;
@@ -29,7 +29,7 @@
 
 /* 낱말입니다. `label-l`(14/20 SemiBold)에 흰 잉크 — 디자인 값입니다. 가로 텍스트라
    `flex-shrink: 0`을 주지 않습니다(FE ADR-0023 규칙 5 (2)). */
-.listening-verdict-label {
+.answer-verdict-label {
   color: var(--libitum-color-fg-neutral-inverted);
   font-family: var(--libitum-typography-label-l-font-family);
   font-weight: var(--libitum-typography-label-l-font-weight);

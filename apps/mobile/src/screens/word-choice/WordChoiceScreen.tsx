@@ -3,8 +3,10 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
+import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { WordChoiceOption } from "./WordChoiceOption";
 import {
+  answeredResultOf,
   choiceResultAt,
   hasAnswered,
   initialWordChoiceSessionState,
@@ -12,7 +14,6 @@ import {
   wordChoiceCompletionAnnouncement,
   wordChoiceCompletionText,
   wordChoiceFinishLabel,
-  wordChoiceProgressLabel,
   wordChoiceQuestionsForStep,
   wordChoiceSessionReducer,
   wordChoiceSessionResults,
@@ -33,25 +34,17 @@ import "./word-choice-screen.css";
 // 카드·아래 버튼은 `LearningShell`이 집니다(ADR-0022 D1-2). 이 화면이 아는 것은
 // 카드 **안**에 무엇이 서는가와 작업 영역에 무엇이 서는가뿐입니다.
 //
-// ⚠ **옮긴 것이지 다시 그린 것이 아닙니다.** 보기의 판정 표식은 듣기처럼 배지로
-// 바꾸지 않고 그대로 뒀습니다 — 이 화면의 디자인이 아직 없고, 없는 디자인을 옆
-// 화면에서 베끼면 그것이 결정으로 굳습니다. 배지로 갈 자리가 생기면 그때 갑니다.
+// ⟨2026-09-28, Figma 65-327⟩ **이 화면의 디자인이 왔습니다.** 옮겨만 뒀던 두 자리가
+// 그것으로 갈렸습니다: 보기의 ✓/✗ 표식이 걷히고 판정은 무대 카드의 배지가 내며,
+// 보기는 줄을 채우는 행이 아니라 낱말만 한 칩이 가로로 섭니다. 배지는 듣기와 같은
+// 조각(`components/AnswerVerdict`)입니다 — 두 화면이 같은 말을 같은 모양으로 합니다.
 export type WordChoiceScreenProps = {
   stepId: JourneyStepId;
-  /** 유닛 안에서 몇 번째 활동인가입니다 — 세션 헤더의 `Chapter n / N`이 이 값에서 납니다. */
-  activityIndex: number;
-  totalActivityCount: number;
   onExit: () => void;
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
 };
 
-export function WordChoiceScreen({
-  stepId,
-  activityIndex,
-  totalActivityCount,
-  onExit,
-  onFinish,
-}: WordChoiceScreenProps): ReactNode {
+export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
   const questions = wordChoiceQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(wordChoiceSessionReducer, initialWordChoiceSessionState);
 
@@ -106,21 +99,21 @@ export function WordChoiceScreen({
   return (
     <LearningShell
       form="word-choice"
-      activityIndex={activityIndex}
-      totalActivityCount={totalActivityCount}
+      // 세션 헤더가 세는 것은 문항입니다. 완료 상태에는 지금 푸는 문항이 없으므로
+      // 마지막 문항 자리에 둡니다 — 문항이 0개인 스텝에서는 계약이 순번을 안 읽습니다.
+      questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
+      questionCount={questions.length}
       instruction="문항에 알맞은 단어를 고르세요."
-      /* 문항 진행은 카드 밖, 세션 헤더의 오른쪽 자리입니다. */
-      meta={
-        question === null
-          ? undefined
-          : wordChoiceProgressLabel(state.questionIndex, questions.length)
-      }
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
       advance={advance}
       /* 보기는 무대 카드 **밖**입니다 — 카드는 「무엇을 묻나」를 말하고, 고르는 일은
-         그 아래 작업 영역에서 합니다. */
+         그 아래 작업 영역에서 합니다.
+
+         낱말 고르기의 보기는 듣기와 **모양이 다릅니다**(Figma 65-327). 줄을 채우는
+         행이 아니라 낱말만 한 칩이 가로로 나란히 섭니다 — 고르는 것이 문장이 아니라
+         낱말이라, 폭이 낱말의 길이를 말하는 것이 읽기에 낫습니다. */
       workspace={
         question === null ? undefined : (
           <view className="word-choice-screen-options">
@@ -144,6 +137,15 @@ export function WordChoiceScreen({
         // 문항이 있을 때만 서므로 앵커가 될 수 없습니다: 실물 문항 표가 아직 비어 있어
         // 마운트가 곧 완료인 갈래가 있습니다.
         <view className="word-choice-screen-content" data-testid="word-choice-screen-content">
+          {/* 판정 배지 자리입니다 — 비어 있어도 높이를 지킵니다. 배지가 뜨고 질 때 카드
+              높이가 흔들리면 그 아래 보기가 함께 밀립니다(듣기가 같은 자리를 같은
+              이유로 비워 둡니다). 디자인도 카드 위쪽을 이렇게 씁니다(Figma 65-327). */}
+          <view className="word-choice-screen-verdict-slot">
+            {question === null || !hasAnswered(state) ? null : (
+              <AnswerVerdict result={answeredResultOf(state, question)} />
+            )}
+          </view>
+
           {question === null ? null : (
             <text className="word-choice-screen-prompt" data-testid="word-choice-screen-prompt">
               {question.prompt}

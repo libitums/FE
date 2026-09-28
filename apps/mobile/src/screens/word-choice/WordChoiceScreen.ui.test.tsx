@@ -75,8 +75,6 @@ function renderOrdering(
   return render(
     <WordChoiceScreen
       stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={overrides.onExit ?? (() => {})}
       onFinish={overrides.onFinish ?? (() => {})}
     />,
@@ -92,6 +90,17 @@ function answerCorrectlyAndAdvance(questionIndex: number): void {
   }
   fireEvent.tap(screen.getByTestId(`word-choice-option-${question.answerIndex}`), {});
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
+}
+
+// 나가기는 두 걸음입니다 ⟨2026-09-28⟩ — `×`는 묻기만 하고 실제로 떠나는 것은 모달의
+// `그만두기`입니다. 그 계약은 껍데기 자신의 테스트가 지므로, 여기서는 「끝까지 나간다」를
+// 한 줄로 부릅니다.
+function exitThroughConfirm(container: Element): void {
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  const leave = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
+    (el) => el.getAttribute("accessibility-label") === "그만두기",
+  );
+  fireEvent.tap(leave as Element, {});
 }
 
 function completeAllThree(): void {
@@ -156,10 +165,10 @@ afterEach(() => {
 // 2026-09-28: 화면 제목 줄이 걷혔습니다 — 껍데기의 세션 헤더가 「지금 어디인가」를
 // 말합니다(ADR-0022 D1-2). 그래서 이 화면이 내는 머리는 아래 진행 문구뿐입니다.
 
-test("진행 문구가 '문항 1 / 3'이다", () => {
+test("세션 헤더의 순번이 'Lesson 1 / 3'이다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
 });
 
 test("첫 문항의 제시문이 렌더되고 보기가 네 개다", () => {
@@ -176,26 +185,12 @@ test("첫 문항의 제시문이 렌더되고 보기가 네 개다", () => {
 // 어느 스텝에서 왔는지가 제시문에 드러납니다 — 데이터가 박혀 있으면 여기서 잡힙니다.
 test("다른 스텝으로 렌더하면 제시문이 갈린다", () => {
   const ordering = render(
-    <WordChoiceScreen
-      stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
-      onExit={() => {}}
-      onFinish={() => {}}
-    />,
+    <WordChoiceScreen stepId="ordering" onExit={() => {}} onFinish={() => {}} />,
   );
   const orderingPrompt = screen.getByTestId("word-choice-screen-prompt").textContent;
   ordering.unmount();
 
-  render(
-    <WordChoiceScreen
-      stepId="greeting"
-      activityIndex={0}
-      totalActivityCount={1}
-      onExit={() => {}}
-      onFinish={() => {}}
-    />,
-  );
+  render(<WordChoiceScreen stepId="greeting" onExit={() => {}} onFinish={() => {}} />);
 
   expect(screen.getByTestId("word-choice-screen-prompt").textContent).not.toBe(orderingPrompt);
 });
@@ -338,7 +333,7 @@ test("'다음'을 탭하면 진행·문항이 갈리고 판정이 초기화되�
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
   expect(screen.getByTestId("word-choice-screen-prompt")).toHaveTextContent(
     ORDERING_QUESTIONS[1]!.prompt,
   );
@@ -363,13 +358,16 @@ test("문항 셋을 마치면 완료 문구와 결과 보기가 나타난다", (
 
 // 나가기는 남습니다 — 껍데기의 `×`는 세션 내내 서 있고, 그 목적지(맵)는 아래 버튼의
 // 목적지(결과)와 다릅니다. 「같은 곳으로 가는 버튼 둘」이 아닙니다.
-test("완료 상태에서 진행·제시문·보기가 사라지고 나가기는 남는다", () => {
+//
+// 세션 헤더도 남습니다. 완료에는 지금 푸는 문항이 없지만 순번이 사라지면 「방금 뭘
+// 마쳤나」가 화면에서 없어집니다 — 그래서 마지막 문항 자리에 섭니다.
+test("완료 상태에서 제시문·보기가 사라지고 나가기·순번은 남는다", () => {
   renderOrdering();
 
   completeAllThree();
 
   expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
-  expect(screen.queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 3 / 3");
   expect(screen.queryByTestId("word-choice-screen-prompt")).not.toBeInTheDocument();
   for (const testid of CHOICE_TESTIDS) {
     expect(screen.queryByTestId(testid)).not.toBeInTheDocument();
@@ -385,7 +383,7 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
   answerCorrectlyAndAdvance(1);
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[2]!.answerIndex}`), {});
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 3 / 3");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 3 / 3");
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
 });
@@ -418,24 +416,35 @@ test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 �
 
 // ---------------------------------------------------------------- 중도 이탈
 
-test("응답 전 나가기를 탭하면 onExit이 한 번, onFinish는 불리지 않는다", () => {
+test("응답 전 나가기를 끝까지 밟으면 onExit이 한 번, onFinish는 불리지 않는다", () => {
   const onExit = vi.fn<() => void>();
   const onFinish = vi.fn<(id: JourneyStepId) => void>();
-  renderOrdering({ onExit, onFinish });
+  const { container } = renderOrdering({ onExit, onFinish });
 
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitThroughConfirm(container);
 
   expect(onExit).toHaveBeenCalledTimes(1);
   expect(onFinish).not.toHaveBeenCalled();
 });
 
-test("문항 하나를 응답한 뒤 나가기를 탭해도 onFinish가 불리지 않는다", () => {
+// `×` 하나로는 떠나지 않습니다 — 확인이 「두 걸음」인 이유가 이것입니다. 이 단언이
+// 없으면 확인 단계를 지워도 위 테스트가 그대로 초록입니다.
+test("`×`만 눌러서는 onExit이 불리지 않는다", () => {
+  const onExit = vi.fn<() => void>();
+  renderOrdering({ onExit });
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+
+  expect(onExit).not.toHaveBeenCalled();
+});
+
+test("문항 하나를 응답한 뒤 나가도 onFinish가 불리지 않는다", () => {
   const onExit = vi.fn<() => void>();
   const onFinish = vi.fn<(id: JourneyStepId) => void>();
-  renderOrdering({ onExit, onFinish });
+  const { container } = renderOrdering({ onExit, onFinish });
 
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  exitThroughConfirm(container);
 
   expect(onExit).toHaveBeenCalledTimes(1);
   expect(onFinish).not.toHaveBeenCalled();
@@ -581,7 +590,7 @@ test("[A2] 보기 넷만 스크롤 컨테이너 안에 있다", () => {
   for (const testid of CHOICE_TESTIDS) {
     expect(within(scroll).getByTestId(testid)).toBeInTheDocument();
   }
-  expect(within(scroll).queryByTestId("learning-shell-meta")).not.toBeInTheDocument();
+  expect(within(scroll).queryByTestId("learning-shell-chapter")).not.toBeInTheDocument();
   expect(within(scroll).queryByTestId("word-choice-screen-prompt")).not.toBeInTheDocument();
 });
 
@@ -682,15 +691,7 @@ test("마지막 다음 뒤 custom 완료 발화가 한 번이고 rerender에도 
   expect(completion[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
   expect(builtin).toHaveLength(0);
 
-  view.rerender(
-    <WordChoiceScreen
-      stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
-      onExit={() => {}}
-      onFinish={() => {}}
-    />,
-  );
+  view.rerender(<WordChoiceScreen stepId="ordering" onExit={() => {}} onFinish={() => {}} />);
   expect(completion).toHaveLength(1);
   expect(builtin).toHaveLength(0);
 });
@@ -709,7 +710,7 @@ test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () 
 
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
-  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3"); // 앵커
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3"); // 앵커
   expect(calls).toHaveLength(0);
 });
 
@@ -721,38 +722,14 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
   const calls = stubAnnounce();
   const onExit = () => {};
   const onFinish = () => {};
-  const view = render(
-    <WordChoiceScreen
-      stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
-      onExit={onExit}
-      onFinish={onFinish}
-    />,
-  );
+  const view = render(<WordChoiceScreen stepId="ordering" onExit={onExit} onFinish={onFinish} />);
 
   completeAllThree();
 
   expect(calls).toHaveLength(1);
 
-  view.rerender(
-    <WordChoiceScreen
-      stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
-      onExit={onExit}
-      onFinish={onFinish}
-    />,
-  );
-  view.rerender(
-    <WordChoiceScreen
-      stepId="ordering"
-      activityIndex={0}
-      totalActivityCount={1}
-      onExit={onExit}
-      onFinish={onFinish}
-    />,
-  );
+  view.rerender(<WordChoiceScreen stepId="ordering" onExit={onExit} onFinish={onFinish} />);
+  view.rerender(<WordChoiceScreen stepId="ordering" onExit={onExit} onFinish={onFinish} />);
 
   expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument(); // 앵커
   expect(calls).toHaveLength(1);
@@ -791,8 +768,6 @@ test("[X-E] 문항이 0인 스텝은 마운트가 곧 완료라 그 순간 annou
       // 문항이 0인 스텝입니다 — `greeting`은 이 파일이 픽스처를 준 스텝이라 쓸 수
       // 없습니다.
       stepId="introduction"
-      activityIndex={0}
-      totalActivityCount={1}
       onExit={() => {}}
       onFinish={() => {}}
     />,

@@ -5,7 +5,7 @@ import { announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningChoice } from "./ListeningChoice";
-import { ListeningVerdict } from "./ListeningVerdict";
+import { AnswerVerdict } from "../../components/AnswerVerdict";
 import {
   answeredResultOf,
   choiceResultAt,
@@ -16,7 +16,6 @@ import {
   listeningCompletionText,
   listeningFinishLabel,
   listeningSessionReducer,
-  questionProgressLabel,
   questionsForStep,
   sessionAnswerResults,
 } from "./listening";
@@ -156,7 +155,7 @@ export function ListeningScreen({
               걷힌 뒤로 보이는 판정 채널이 이것 하나입니다. */}
           <view className="listening-screen-verdict-slot">
             {question === null || !hasAnswered(state) ? null : (
-              <ListeningVerdict result={answeredResultOf(state, question)} />
+              <AnswerVerdict result={answeredResultOf(state, question)} />
             )}
           </view>
 

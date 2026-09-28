@@ -6,8 +6,8 @@
    D1-2의 4분할이고, 스크롤 상자는 D2 표의 21번(`learning-shell-scroll`)입니다.
    듣기가 먼저 간 그 자리입니다.
 
-   그래서 여기 남는 것은 **껍데기가 모르는 것** 넷뿐입니다: 무대 카드 안의 배치,
-   제시문, 보기 목록의 간격, 완료 문구. 옛 골격의 클래스 열둘(`.word-choice-screen` ·
+   그래서 여기 남는 것은 **껍데기가 모르는 것**뿐입니다: 무대 카드 안의 배치, 제시문,
+   판정 배지 자리, 보기 묶음의 배치, 완료 문구. 옛 골격의 클래스 열둘(`.word-choice-screen` ·
    `-header` · `-exit` · `-exit-label` · `-title` · `-progress` · `-instruction` ·
    `-scroll` · `-next` · `-next-label` · `-finish` · `-finish-label`)은 참조가 0이 되어
    걷었습니다. */
@@ -37,14 +37,47 @@
   letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
 }
 
-/* 목록 gap — 이 상자가 지는 값은 간격 하나입니다. 남는 세로를 받는 것은 껍데기의
-   스크롤 상자(`learning-shell-scroll`)이고, 그것을 여기 남기면 무동작입니다
-   (ADR-0022 D4: linear 자식에게 `flex-grow`가 읽히지 않습니다). */
+/* 판정 배지 자리입니다 — 비어 있어도 높이를 지킵니다. 배지가 뜨고 질 때 카드 높이가
+   흔들리면 그 아래 보기가 함께 밀립니다.
+
+   **40입니다(듣기는 32).** 듣기는 카드에 높이 예산(`min-height: 244px`)이 있어 배지가
+   실제로 차지하는 36과 자리 32의 차이 4pt를 카드가 먹습니다. 이 화면에는 그 예산이
+   없어서 4pt가 그대로 밖으로 나왔고, 기기에서 배지가 뜨는 순간 제시문과 보기 넷이
+   함께 4pt 내려가는 것이 보였습니다(제시문 y348 → y352). 자리를 배지보다 크게 잡으면
+   그 밀림이 0이 되고, 40은 디자인의 배지 높이이기도 합니다(Figma 65-327).
+
+   고정이 아니라 하한입니다(ADR-0020 D5) — 최대 배율에서 배지가 더 커지면 자리도
+   따라 커집니다. 그때는 다시 밀리지만, 글자가 잘리는 것보다 낫습니다. */
+.word-choice-screen-verdict-slot {
+  min-height: var(--libitum-spacing-40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 보기 묶음입니다.
+
+   ⟨2026-09-28, Figma 65-327⟩ **세로 목록에서 가로 줄로 갈렸습니다.** 보기가 줄을 채우는
+   행이 아니라 낱말만 한 칩이라(`word-choice-option.css`), 세로로 쌓으면 왼쪽에 작은
+   상자 넷이 붙은 성긴 칸이 됩니다. 가로로 세우면 넷이 한 눈에 들어오고 비교가 눈의
+   일이 됩니다 — 고르는 일이 「읽고 고르기」가 아니라 「보고 고르기」입니다.
+
+   **`wrap`은 잘림을 막는 장치입니다.** 칩 폭이 낱말을 따라 늘어나므로 긴 낱말 넷이면
+   한 줄에 안 들어갑니다. 그때 줄을 바꾸는 것이 옳습니다 — 안 바꾸면 가로로 넘쳐
+   마지막 보기가 화면 밖에 섭니다(WCAG 1.4.4: 최대 배율에서 먼저 터집니다).
+
+   `row-gap`·`column-gap`을 따로 줍니다 — Lynx가 둘 다 읽습니다(인접 형제 선택자와
+   달리 확인된 동작입니다). 남는 세로를 받는 것은 껍데기의 스크롤 상자이므로 여기에
+   `flex-grow`를 남기지 않습니다(ADR-0022 D4). */
 .word-choice-screen-options {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--libitum-spacing-8);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  row-gap: var(--libitum-spacing-8);
+  column-gap: var(--libitum-spacing-8);
 }
 
 /* 완료 문구입니다. 문항이 서 있던 그 카드 안에 혼자 남으므로 가운데에 섭니다 —

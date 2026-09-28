@@ -14,7 +14,6 @@ import {
   listeningQuestionsByStep,
   listeningSessionReducer,
   playbackStateAfterPlay,
-  questionProgressLabel,
   questionsForStep,
   sessionAnswerResults,
   type ListeningQuestion,
@@ -95,21 +94,6 @@ describe("questionsForStep", () => {
   it("고정 데이터를 그대로 낸다 — 스텝마다 다른 목록이다", () => {
     expect(questionsForStep("ordering")).toEqual(listeningQuestionsByStep.ordering);
     expect(questionsForStep("greeting")).not.toEqual(listeningQuestionsByStep.ordering);
-  });
-});
-
-describe("questionProgressLabel", () => {
-  // `문항 ${index + 1} / ${total}`입니다 — index는 0-based입니다.
-  it("첫 문항(0, 3)은 문항 1 / 3이다", () => {
-    expect(questionProgressLabel(0, 3)).toBe("문항 1 / 3");
-  });
-
-  it("마지막 문항(2, 3)은 문항 3 / 3이다", () => {
-    expect(questionProgressLabel(2, 3)).toBe("문항 3 / 3");
-  });
-
-  it("중간 문항(1, 3)은 문항 2 / 3이다", () => {
-    expect(questionProgressLabel(1, 3)).toBe("문항 2 / 3");
   });
 });
 

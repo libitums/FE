@@ -7,16 +7,13 @@
 // 보여도 각자 자기 모듈에 구현합니다.
 
 import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
-import type { JourneyStepId } from "../journey-map/journey-map";
+import type { WordChoiceQuestion } from "./word-choice-questions";
+
+// 문항 타입과 고정 데이터는 옆 파일이 집니다. 소비자가 아는 모듈은 여전히 이것
+// 하나입니다 — 듣기가 `listening.ts`에서 같은 일을 합니다.
+export * from "./word-choice-questions";
 
 // ---------------------------------------------------------------- 도메인 타입
-
-export type WordChoiceQuestion = {
-  /** 문항 제시문입니다. 빈칸 문장이면 그 빈칸이 이 문자열 안에 있습니다 — 요소로 쪼개지 않습니다. */
-  readonly prompt: string;
-  readonly choices: readonly [string, string, string, string];
-  readonly answerIndex: 0 | 1 | 2 | 3;
-};
 
 export type WordChoiceSessionState = {
   readonly questionIndex: number;
@@ -34,37 +31,10 @@ export const initialWordChoiceSessionState: WordChoiceSessionState = {
   answeredChoiceIndexes: [],
 };
 
-// ---------------------------------------------------------------- 문항 데이터의 자리
-//
-// 값은 지어내지 않습니다. `Record<JourneyStepId, …>` 형태가 다섯 키를 전부
-// 요구하므로 다섯 키를 전부 두되 값은 빈 배열입니다.
-//
-// 어느 스텝이 어느 학습형인가를 담을 자리가 데이터에 없고, 문항 텍스트·보기·
-// 정답 인덱스의 값도 컨텐츠가 막혀 있습니다. 둘 다 이 단위 밖입니다 —
-// 지어내면 그 보류를 조용히 덮습니다.
-export const wordChoiceQuestionsByStep: Record<JourneyStepId, readonly WordChoiceQuestion[]> = {
-  greeting: [],
-  introduction: [],
-  ordering: [],
-  appointment: [],
-  directions: [],
-};
-
 // ---------------------------------------------------------------- 순수 함수
 // 전부 부수효과가 없습니다. 방어 분기를 두지 않습니다 — Record가 다섯
 // 스텝을 전부 갖는 것은 tsc가 지고, 범위 밖 입력에도 아래 식이 그대로
 // 적용됩니다.
-
-// Record가 JourneyStepId 다섯을 전부 갖는 것을 tsc가 강제하므로 조회는
-// 총함수입니다.
-export function wordChoiceQuestionsForStep(id: JourneyStepId): readonly WordChoiceQuestion[] {
-  return wordChoiceQuestionsByStep[id];
-}
-
-// `문항 ${index + 1} / ${total}` 형태입니다 — index는 0-based입니다.
-export function wordChoiceProgressLabel(index: number, total: number): string {
-  return `문항 ${index + 1} / ${total}`;
-}
 
 // 일치 비교라 answerIndex가 0인 문항에서도 0번 보기가 correct로 나옵니다 —
 // 0을 거짓으로 다루는 자리를 만들지 않습니다.
@@ -101,6 +71,25 @@ export function optionAccessibilityLabel(text: string, result: AnswerResult | nu
 }
 
 // 응답 여부는 파생입니다. null 비교라 0번 보기도 응답으로 셉니다.
+/**
+ * 고른 보기의 판정입니다 — 카드 안 배지가 쓰는 값입니다.
+ *
+ * 미응답이면 던집니다. 옵셔널로 돌려주면 「아직 안 골랐다」와 「고른 답이 오답이다」를
+ * 부르는 쪽이 다시 가려야 하고, 그 갈래가 화면에 두 번째로 생깁니다 — 배지는
+ * `hasAnswered`가 참일 때만 그려지므로 그 갈래는 이미 화면에 하나 있습니다.
+ * (듣기의 같은 이름 함수와 같은 형태입니다.)
+ */
+export function answeredResultOf(
+  state: WordChoiceSessionState,
+  question: WordChoiceQuestion,
+): AnswerResult {
+  const selected = state.selectedChoiceIndex;
+  if (selected === null) {
+    throw new Error("아직 고르지 않은 문항의 판정을 물었습니다");
+  }
+  return judgeWordChoice(question, selected);
+}
+
 export function hasAnswered(state: WordChoiceSessionState): boolean {
   return state.selectedChoiceIndex !== null;
 }

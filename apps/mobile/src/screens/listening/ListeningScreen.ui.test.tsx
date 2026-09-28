@@ -315,14 +315,14 @@ test("정답 보기를 탭하면 무대에 정답 배지가 나타나고 보기�
   renderOrdering();
 
   const answerIndex = ORDERING_QUESTIONS[0].answerIndex;
-  expect(screen.queryByTestId("listening-verdict")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("answer-verdict")).not.toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
 
-  const verdict = screen.getByTestId("listening-verdict");
+  const verdict = screen.getByTestId("answer-verdict");
   expect(verdict).toHaveAttribute("data-result", "correct");
   expect(verdict).toHaveTextContent("정답");
-  expect(screen.getByTestId("listening-verdict-icon")).not.toHaveAttribute(
+  expect(screen.getByTestId("answer-verdict-icon")).not.toHaveAttribute(
     "accessibility-elements-hidden",
   );
   expect(screen.queryByTestId(`listening-choice-icon-${answerIndex}`)).not.toBeInTheDocument();
@@ -378,7 +378,7 @@ test("오답을 골라도 정답 보기의 라벨에 접미사가 붙지 않는�
   expect(answerLabel).not.toContain(", 정답");
   // 고른 보기에는 보이는 낱말이 없습니다 — 「오답」은 무대의 배지가 말합니다.
   expect(screen.getByTestId(`listening-choice-${wrongIndex}`)).not.toHaveTextContent("오답");
-  expect(screen.getByTestId("listening-verdict")).toHaveTextContent("오답");
+  expect(screen.getByTestId("answer-verdict")).toHaveTextContent("오답");
 });
 
 // 단언 9 — **게이트가 리듀서라는 것의 `ui` 쪽 관찰입니다** — 보기 컴포넌트는
@@ -749,11 +749,11 @@ test("응답 뒤 무대의 <svg>가 판정 배지 + 컨트롤 아이콘 둘이�
   fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
 
   expect(stageIcons()).toEqual([
-    "listening-verdict-icon",
+    "answer-verdict-icon",
     "listening-prompt-replay-icon",
     "listening-prompt-playback-icon",
   ]);
-  expect(screen.getByTestId("listening-verdict")).toHaveAttribute("data-result", "correct");
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
 });
 
 test("완료 상태의 무대에는 <svg>가 하나도 없다", () => {

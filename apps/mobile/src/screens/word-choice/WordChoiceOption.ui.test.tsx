@@ -1,8 +1,5 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
-import tick from "@libitums/icons/lynx/tick";
-import cross from "@libitums/icons/lynx/cross";
-import { color } from "@libitums/design-tokens";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { WordChoiceOption } from "./WordChoiceOption";
@@ -15,27 +12,17 @@ import { WordChoiceOption } from "./WordChoiceOption";
 // 이 컴포넌트는 상태를 갖지 않습니다 — props에서만 파생합니다(판정을 prop으로
 // 내리지 않는다는 화면 쪽 규율의 짝입니다).
 //
-// 형태는 `ListeningChoice`를 잇지만 그대로 복사하지 않는 자리 둘입니다.
-//   1) 표식 `<svg>`에는 `accessibility-elements-hidden`을 붙이지 않습니다 — 자손이
-//      없는 잎에 붙이면 무동작입니다. 가림은 래퍼(`<view className="word-choice-
-//      option-mark">`)에만 붙습니다(`AssessmentItem`이 정본입니다).
-//   2) `-selected` 상태 클래스는 예약 목록에 이미 있는 낱말이라 다섯째가 아니지만,
-//      계산된 스타일이라 `ui`가 원리적으로 못 봅니다 — 이 파일이 클래스를
-//      단언하지 않습니다(「toHaveClass를 쓰지 않는다」).
+// ⟨2026-09-28, Figma 65-327⟩ **보기에서 표식(✓ · ✗)이 걷혔습니다.** 그래서 이 파일에서
+// 아이콘 모양·아이콘 색·표식 래퍼의 가림을 보던 단언 아홉이 사라졌습니다 — 그 자리는
+// 이제 무대 카드의 배지가 지고, 배지의 단언은 `AnswerVerdict.ui.test.tsx`에 있습니다.
+//
+// **판정이 관찰 불가가 된 것은 아닙니다.** 이 파일이 남기는 채널이 둘입니다:
+// `data-result`(테스트가 보는 상태)와 `accessibility-label`의 접미사(보조기술이 듣는
+// 것). 보이는 채널은 테두리와 글자 색인데 그 둘은 계산된 스타일이라 `ui`가 원리적으로
+// 못 봅니다 — 그래서 이 파일은 클래스를 단언하지 않습니다(「toHaveClass를 쓰지 않는다」).
+// 색이 유일한 채널이 되지 않게 지키는 것은 카드의 배지입니다(WCAG 1.4.1).
 
 const RESULTS: readonly (AnswerResult | null)[] = [null, "correct", "incorrect"];
-
-// 아이콘 모양의 정본은 패키지 모듈입니다 — 리터럴을 적지 않습니다.
-const ICON_BY_RESULT: Record<AnswerResult, string> = {
-  correct: tick,
-  incorrect: cross,
-};
-
-// 아이콘 색의 정본은 design이 고정한 토큰 상수입니다 — `-text` 변형입니다.
-const ICON_COLOR_BY_RESULT: Record<AnswerResult, string> = {
-  correct: color.feedback["correct-text"],
-  incorrect: color.feedback["incorrect-text"],
-};
 
 // ---------------------------------------------------------------- 채널 1: 상태 `data-*`
 
@@ -111,91 +98,43 @@ for (const result of RESULTS) {
   });
 }
 
-// ---------------------------------------------------------------- 채널 3: 보이는 표식
+// -------------------------------------------------- 채널 3: 보이는 것 — 낱말 하나뿐
 
-// 판정이 없으면 표식 묶음이 통째로 없습니다 — 판정은 조건부 렌더입니다.
-test("판정이 없으면 표식 아이콘이 렌더되지 않는다", () => {
-  render(<WordChoiceOption index={0} text="학교" result={null} onSelect={() => {}} />);
-
-  expect(screen.getByTestId("word-choice-option-0")).toHaveAttribute("data-result", "none");
-  expect(screen.queryByTestId("word-choice-option-icon-0")).not.toBeInTheDocument();
-});
-
-test("판정이 없으면 정답·오답 낱말이 텍스트에 없다", () => {
-  render(<WordChoiceOption index={0} text="학교" result={null} onSelect={() => {}} />);
-
-  const root = screen.getByTestId("word-choice-option-0");
-  expect(root).not.toHaveTextContent("정답");
-  expect(root).not.toHaveTextContent("오답");
-});
-
-// 낱말이 보입니다 — 색과 독립인 채널입니다(WCAG 1.4.1).
-test("정답이면 '정답' 낱말이 보기 안에 텍스트로 보인다", () => {
-  render(<WordChoiceOption index={1} text="학교" result="correct" onSelect={() => {}} />);
-
-  expect(screen.getByTestId("word-choice-option-1")).toHaveTextContent("정답");
-});
-
-test("오답이면 '오답' 낱말이 보기 안에 텍스트로 보인다", () => {
-  render(<WordChoiceOption index={2} text="공원" result="incorrect" onSelect={() => {}} />);
-
-  expect(screen.getByTestId("word-choice-option-2")).toHaveTextContent("오답");
-});
-
-// 아이콘 모양이 판정별 패키지 모듈 문자열과 같습니다 — 뒤바뀐 결선을 여기서
-// 잡습니다.
-for (const result of ["correct", "incorrect"] as const) {
-  test(`표식 아이콘 content가 판정(${result})의 패키지 모듈 문자열과 같다`, () => {
+// 보기가 보여 주는 것은 낱말 하나입니다. 표식도 판정 낱말도 없습니다 — 판정은 무대
+// 카드의 배지가 냅니다. **세 result 전부에서** 봅니다: 하나만 보면 「판정이 없을 때만
+// 비어 있다」와 구별되지 않습니다.
+for (const result of RESULTS) {
+  test(`보이는 것이 낱말 하나다 — 표식 아이콘이 없다 · result=${String(result)}`, () => {
     render(<WordChoiceOption index={3} text="식당" result={result} onSelect={() => {}} />);
 
-    expect(screen.getByTestId("word-choice-option-icon-3")).toHaveAttribute(
-      "content",
-      ICON_BY_RESULT[result],
-    );
+    const root = screen.getByTestId("word-choice-option-3");
+    expect(root).toHaveTextContent("식당");
+    expect(screen.queryByTestId("word-choice-option-icon-3")).not.toBeInTheDocument();
+    expect(root.querySelectorAll("svg")).toHaveLength(0);
   });
 }
 
-for (const result of ["correct", "incorrect"] as const) {
-  test(`표식 아이콘 current-color가 판정(${result})의 토큰 상수와 같다`, () => {
-    render(<WordChoiceOption index={3} text="식당" result={result} onSelect={() => {}} />);
+// 판정 낱말이 보기 안에 없습니다. 있으면 같은 말을 카드의 배지와 보기가 두 번 합니다.
+for (const result of RESULTS) {
+  test(`'정답'·'오답' 낱말이 보기 안에 없다 — result=${String(result)}`, () => {
+    render(<WordChoiceOption index={0} text="학교" result={result} onSelect={() => {}} />);
 
-    expect(screen.getByTestId("word-choice-option-icon-3")).toHaveAttribute(
-      "current-color",
-      ICON_COLOR_BY_RESULT[result],
-    );
+    const root = screen.getByTestId("word-choice-option-0");
+    expect(root).not.toHaveTextContent("정답");
+    expect(root).not.toHaveTextContent("오답");
   });
 }
 
-test("정답과 오답의 표식이 모양·색 둘 다에서 갈린다", () => {
-  expect(ICON_BY_RESULT.correct).not.toBe(ICON_BY_RESULT.incorrect);
-  expect(ICON_COLOR_BY_RESULT.correct).not.toBe(ICON_COLOR_BY_RESULT.incorrect);
-});
+// 표식 래퍼가 통째로 없습니다 — 클래스가 남아 있으면 CSS도 함께 남아 죽은 규칙이
+// 됩니다. 이 단언 하나가 「지웠다」를 지킵니다.
+for (const result of RESULTS) {
+  test(`표식 래퍼가 없다 — result=${String(result)}`, () => {
+    render(<WordChoiceOption index={0} text="학교" result={result} onSelect={() => {}} />);
 
-// 표식 래퍼가 가림을 집니다 — 잎 `<svg>`가 아니라 자손(아이콘 + 낱말)을 가진
-// 래퍼가 집니다.
-for (const result of ["correct", "incorrect"] as const) {
-  test(`표식 래퍼가 accessibility-elements-hidden="true"다 — ${result}`, () => {
-    render(<WordChoiceOption index={3} text="식당" result={result} onSelect={() => {}} />);
-
-    const mark = screen
-      .getByTestId("word-choice-option-3")
-      .querySelector<HTMLElement>(".word-choice-option-mark");
-
-    expect(mark).toContainElement(screen.getByTestId("word-choice-option-icon-3"));
-    expect(mark).toHaveAttribute("accessibility-elements-hidden", "true");
+    const root = screen.getByTestId("word-choice-option-0");
+    expect(root.querySelectorAll(".word-choice-option-mark")).toHaveLength(0);
   });
 }
-
-test("표식 래퍼가 아이콘과 낱말을 자손으로 갖는다 — 가려야 할 자손이 실제로 있다", () => {
-  render(<WordChoiceOption index={3} text="식당" result="correct" onSelect={() => {}} />);
-
-  const mark = screen
-    .getByTestId("word-choice-option-3")
-    .querySelector<HTMLElement>(".word-choice-option-mark");
-
-  expect(mark).toContainElement(screen.getByTestId("word-choice-option-icon-3"));
-  expect(mark).toHaveTextContent("정답");
-});
 
 // 보기 하나당 정지 노드가 1개입니다(ADR-0016 D5). 라벨 <text>나 표식에
 // accessibility-element·accessibility-label을 붙이면 정지 노드가 늘고 이름이 두 번

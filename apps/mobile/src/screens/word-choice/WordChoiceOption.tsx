@@ -1,10 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import tick from "@libitums/icons/lynx/tick";
-import cross from "@libitums/icons/lynx/cross";
-import { color } from "@libitums/design-tokens";
-
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { AnswerResult } from "../../lib/answer-result";
 import { optionAccessibilityLabel } from "./word-choice";
 
 import "./word-choice-option.css";
@@ -13,22 +9,12 @@ import "./word-choice-option.css";
 // 갖지 않고 props에서만 파생합니다 — 판정은 화면이 순수 함수로 이미
 // 계산해 `result`로 내립니다.
 
-// 판정별 표식 아이콘입니다. 모양이 색과 독립인 채널입니다(WCAG 1.4.1). 전체
-// index를 import하지 않습니다.
-const markIconByResult: Record<AnswerResult, string> = {
-  correct: tick,
-  incorrect: cross,
-};
-
-// `-text` 변형(6.90 / 6.76)입니다. 색은 CSS가 아니라 `current-color` 속성으로
-// 넘깁니다(ADR-0014 D2).
-const markIconColorByResult: Record<AnswerResult, string> = {
-  correct: color.feedback["correct-text"],
-  incorrect: color.feedback["incorrect-text"],
-};
-
-// 세 번째 채널입니다 — 아이콘이 크기를 못 받아 안 보여도 판정이 낱말로
-// 남습니다. 낱말은 lib/answer-result.ts의 answerResultLabel이 냅니다.
+// ⟨2026-09-28, Figma 65-327⟩ **보기에서 표식(✓ · ✗)이 걷혔습니다.** 판정은 무대 카드의
+// 배지 하나가 말하고, 보기는 고른 것만 테두리와 글자 색이 갈립니다 — 듣기가 먼저 간
+// 자리입니다.
+//
+// 판정이 화면에서 사라진 것은 아닙니다: `accessibility-label`의 접미사와 `data-result`가
+// 그대로라, 스크린리더는 **어느 보기가 정답이었는지**를 여전히 읽습니다.
 
 export type WordChoiceOptionProps = {
   index: number;
@@ -69,25 +55,6 @@ export function WordChoiceOption({
     >
       {/* 보이는 이름을 지는 요소는 가리지 않습니다(ADR-0016 D5) — 접근성 속성이 없습니다. */}
       <text className="word-choice-option-label">{text}</text>
-      {result === null ? null : (
-        <view
-          className="word-choice-option-mark"
-          // 표식 래퍼에 가림이 붙는 것이 여기서는 맞습니다 — 보기 행이
-          // 조작 단위이고 이름을 이미 라벨이 집니다. 가리는 대상은
-          // 자손입니다(view.accessibilityElementsHidden) — 그래서 잎
-          // `<svg>`가 아니라 자손을 가진 이 래퍼에 붙입니다. 자손 없는
-          // 잎에 붙이면 무동작입니다(`ListeningChoice`의 같은 자리).
-          accessibility-elements-hidden={true}
-        >
-          <svg
-            className="word-choice-option-mark-icon"
-            data-testid={`word-choice-option-icon-${index}`}
-            content={markIconByResult[result]}
-            current-color={markIconColorByResult[result]}
-          />
-          <text className="word-choice-option-mark-label">{answerResultLabel(result)}</text>
-        </view>
-      )}
     </view>
   );
 }

@@ -569,21 +569,28 @@ describe("교차 불변식 — 학습형과 문항 표", () => {
   });
 
   // ⇔ 셋에서 따라 나오는 것이지만, 깨졌을 때 무엇이 깨졌는지를 다르게 말해
-  // 줍니다 — 「한 스텝이 두 학습형의 문항을 갖는다」와 「문항이 아예 없다」를
+  // 줍니다 — 「활동 하나가 문항 없이 남았다」와 「배정 없는 표에 문항이 있다」를
   // 가릅니다.
-  it("다섯 스텝 각각에서 문항이 있는 표가 정확히 하나다", () => {
+  //
+  // ⟨2026-09-28⟩ 전에는 **「정확히 하나」**였습니다. 그 수가 1이었던 것은 스텝마다
+  // 활동이 하나뿐이어서였지 계약이어서가 아니었고, `ordering`이 듣기 + 낱말 고르기
+  // 둘을 잇게 되면서 그 전제가 사라졌습니다. 그래서 상수 1을 **활동 목록의 길이**로
+  // 바꿉니다 — 원래 말하려던 것이 그것입니다.
+  it("다섯 스텝 각각에서 문항이 있는 표의 수가 활동 목록의 길이와 같다", () => {
     for (const id of allStepIds) {
       const nonEmpty = allLearningForms.filter((form) => questionCountForForm[form](id) > 0);
 
-      expect(nonEmpty).toHaveLength(1);
+      expect(nonEmpty).toHaveLength(learningFormsForStep(id).length);
     }
   });
 
-  it("다섯 스텝 각각에서 문항이 있는 그 하나가 그 스텝의 활동 목록과 같다", () => {
+  // 순서로 견주지 않습니다 — 왼쪽은 `allLearningForms`의 순서이고 오른쪽은 **진행
+  // 순서**라, 둘이 같아야 할 이유가 없습니다. 같은 것들인가만 봅니다.
+  it("다섯 스텝 각각에서 문항이 있는 표들이 그 스텝의 활동 목록과 같은 것들이다", () => {
     for (const id of allStepIds) {
       const nonEmpty = allLearningForms.filter((form) => questionCountForForm[form](id) > 0);
 
-      expect(nonEmpty).toEqual([...learningFormsForStep(id)]);
+      expect([...nonEmpty].sort()).toEqual([...learningFormsForStep(id)].sort());
     }
   });
 

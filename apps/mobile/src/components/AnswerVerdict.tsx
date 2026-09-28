@@ -4,12 +4,19 @@ import cross from "@libitums/icons/lynx/cross";
 import tick from "@libitums/icons/lynx/tick";
 import { color } from "@libitums/design-tokens";
 
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import { answerResultLabel, type AnswerResult } from "../lib/answer-result";
 
-import "./listening-verdict.css";
+import "./answer-verdict.css";
 
-// 판정 배지입니다(Figma 53-14231의 79-6138). **무대 카드 안**에 섭니다 — 학습 내용이
-// 전개되는 그 자리에서 성공 · 실패가 뒤집힌다는 것이 이 화면 구조의 핵심입니다.
+// 판정 배지입니다(Figma 53-14231의 79-6138 · 65-327). **무대 카드 안**에 섭니다 — 학습
+// 내용이 전개되는 그 자리에서 성공 · 실패가 뒤집힌다는 것이 학습 화면 구조의 핵심입니다.
+//
+// ⟨2026-09-28⟩ 듣기의 것이었다가 `components/`로 올라왔습니다 — 낱말 고르기도 같은
+// 배지를 씁니다(ADR-0008: 화면 둘 이상이 쓰면 공용).
+//
+// **낱말은 한국어입니다.** 낱말 고르기 디자인은 `Correct!`(영문)인데 따르지 않았습니다 —
+// 같은 판정을 화면마다 다른 낱말로 배우게 되고, 학습자가 배우는 중인 언어가 한국어라
+// 판정은 모국어로 주는 것이 낫습니다.
 //
 // 보기의 표식(✓ · ✗)이 걷히면서 **보이는 판정 채널이 이것 하나가 됐습니다.** 그래서
 // 채널을 셋으로 둡니다: 아이콘 모양 · 면 색 · 낱말. 색만으로 가르지 않습니다
@@ -31,15 +38,15 @@ const surfaceByResult: Record<AnswerResult, string> = {
   incorrect: color.feedback.incorrect,
 };
 
-export type ListeningVerdictProps = {
+export type AnswerVerdictProps = {
   result: AnswerResult;
 };
 
-export function ListeningVerdict({ result }: ListeningVerdictProps): ReactNode {
+export function AnswerVerdict({ result }: AnswerVerdictProps): ReactNode {
   return (
     <view
-      className="listening-verdict"
-      data-testid="listening-verdict"
+      className="answer-verdict"
+      data-testid="answer-verdict"
       data-result={result}
       // 면 색이 판정마다 갈리는 값이라 인라인 스타일이 집니다 — 상태 클래스를 만들면
       // ADR-0003 D7의 예약 상태어가 늘어납니다.
@@ -56,12 +63,12 @@ export function ListeningVerdict({ result }: ListeningVerdictProps): ReactNode {
       {/* 아이콘은 장식이 아니라 채널이지만 이름은 감싼 상자가 집니다(ADR-0016 D5).
           자손 없는 잎이라 가림 속성을 붙이지 않습니다 — 붙여도 가릴 자손이 없습니다. */}
       <svg
-        className="listening-verdict-icon"
-        data-testid="listening-verdict-icon"
+        className="answer-verdict-icon"
+        data-testid="answer-verdict-icon"
         content={iconByResult[result]}
         current-color={color.fg["neutral-inverted"]}
       />
-      <text className="listening-verdict-label">{answerResultLabel(result)}</text>
+      <text className="answer-verdict-label">{answerResultLabel(result)}</text>
     </view>
   );
 }

@@ -1,6 +1,6 @@
 // 스텝→학습형 배정표를 소유합니다 — `learningFormsByStep`과 조회 함수
-// `learningFormsForStep`입니다. 실제 배정이 오기 전까지 다섯 키 전부가 `["listening"]`을
-// 가리키는 임시 값입니다.
+// `learningFormsForStep`입니다. 실제 배정이 오기 전까지는 문항이 있는 표를 그대로
+// 전사한 임시 값입니다.
 
 import type { LearningForm } from "../../lib/learning-form";
 import type { JourneyStepId } from "./journey-map-units";
@@ -9,12 +9,15 @@ import type { JourneyStepId } from "./journey-map-units";
 // 하나뿐입니다 — `stepStatusSuffix`·`stepOpensSheet`·`lib/answer-result.ts`와 같은
 // 형태입니다. 표를 내보내면 다음 사람이 직접 색인해 자기 답을 짓습니다.
 //
-// ⚠ **오른쪽 다섯 값은 배정이 아니라 2026-09-05 데이터의 전사(轉寫)입니다.**
-// 「이 스텝이 듣기로 정해졌다」가 아니라 「오늘 이 스텝에 있는 문항이 듣기 문항뿐이다」를
-// 적은 것입니다 — `listeningQuestionsByStep`(`listening.ts`)이 다섯 키 전부에 문항
-// 셋을 갖고, `sentenceOrderQuestionsByStep`(`sentence-order.ts`) ·
-// `wordChoiceQuestionsByStep`(`word-choice.ts`)은 다섯 키가 다 빈 배열입니다. 그래서
-// 이 값에서 동작 변화가 0입니다.
+// ⚠ **오른쪽 다섯 값은 배정이 아니라 문항 표의 전사(轉寫)입니다.** 「이 스텝이
+// 듣기로 정해졌다」가 아니라 「오늘 이 스텝에 있는 문항이 그것뿐이다」를 적은
+// 것입니다 — `listeningQuestionsByStep`이 다섯 키 전부에 문항 셋을 갖고,
+// `sentenceOrderQuestionsByStep`은 다섯 키가 다 빈 배열입니다.
+//
+// ⟨2026-09-28⟩ `introduction`에 낱말 고르기가 붙었습니다. `wordChoiceQuestionsByStep`이
+// 그 스텝에 문항 셋을 갖게 됐고, 배정과 문항은 **같은 시점에 함께** 움직여야 하므로
+// (아래 「값이 오는 날」) 이 줄이 그때 같이 갈렸습니다. 순서가 곧 진행 순서라 듣기가
+// 먼저입니다 — 말을 듣고 나서 그 안의 낱말을 고릅니다.
 //
 // **왜 빈 채로 둘 수 없나** — `LearningForm` union에 빈 값(`""`도 `null`도)이 없고
 // `Record`가 다섯 키를 전부 요구합니다. 두 문항 표가 쓴 「빈 배열 + 사유 주석」을 이
@@ -44,7 +47,7 @@ import type { JourneyStepId } from "./journey-map-units";
 // 순서가 곧 진행 순서입니다.
 const learningFormsByStep: Record<JourneyStepId, readonly [LearningForm, ...LearningForm[]]> = {
   greeting: ["listening"],
-  introduction: ["listening"],
+  introduction: ["listening", "word-choice"],
   ordering: ["listening"],
   appointment: ["listening"],
   directions: ["listening"],
