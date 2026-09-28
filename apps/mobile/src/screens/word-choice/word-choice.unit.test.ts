@@ -421,7 +421,7 @@ describe("wordChoiceQuestionsByStep (고정 데이터 불변식)", () => {
     expect(Object.keys(wordChoiceQuestionsByStep).sort()).toEqual([...stepIds].sort());
   });
 
-  // ⟨2026-09-28⟩ 문항을 가진 스텝이 `ordering` 하나입니다. **어느 스텝인지를 여기서
+  // ⟨2026-09-28⟩ 문항을 가진 스텝이 `introduction` 하나입니다. **어느 스텝인지를 여기서
   // 박지 않습니다** — 그것은 배정이고, 배정과 문항의 짝은 `journey-map.unit.test.ts`의
   // 교차 불변식이 집니다. 이 파일이 보는 것은 「비어 있지 않은 스텝은 세 문항을
   // 갖는다」입니다.
