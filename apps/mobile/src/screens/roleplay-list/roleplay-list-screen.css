@@ -9,7 +9,16 @@
   gap: var(--libitum-layout-gap-block);
   /* 좌우 여백이 없습니다 — 카드 줄이 화면 오른쪽 끝까지 흘러 「옆에 더 있다」를
      보여 줍니다(Figma 76-692). 좌우 여백은 제목과 구획 머리와 카드 줄이 각자 집니다. */
-  padding: var(--libitum-layout-screen-padding-top) 0 var(--libitum-layout-screen-padding-bottom);
+  /* 위 여백은 화면 여백에 전역 머리(`.app-header`) 몫을 더한 것입니다 — 머리가 이 화면
+     위에 겹치므로 더하지 않으면 제목이 칩 · 알림 버튼에 가립니다. 머리 높이 40pt(알림
+     버튼 기준)에 열 간격을 더합니다(여정 맵의 `.journey-map-screen-map`과 같은 수).
+     shorthand(`padding: calc(…) 0 …`)로 적으면 Lynx가 선언 전체를 버려(기기에서 확인)
+     longhand로 나눠 적습니다. */
+  padding-top: calc(
+    var(--libitum-layout-screen-padding-top) + var(--libitum-spacing-32) +
+      var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
+  );
+  padding-bottom: var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-background-primary);
   /* 안내(`.roleplay-list-premium-notice`)가 이 상자를 기준으로 절대 배치됩니다. */
   position: relative;

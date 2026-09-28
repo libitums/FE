@@ -5,6 +5,7 @@ import crown from "@libitums/icons/lynx/crown";
 import { color } from "@libitums/design-tokens";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 
+import { useScreenLayer } from "../../lib/use-screen-layer";
 import { PremiumRoleplayCard } from "./PremiumRoleplayCard";
 import { RoleplayCard } from "./RoleplayCard";
 import {
@@ -27,10 +28,14 @@ export function RoleplayListScreen({
   sections,
   onSelectItem,
   onViewAll,
+  onLayerChange,
 }: RoleplayListScreenProps): ReactNode {
   // 결제 잠김 카드를 누르면 뜨는 안내입니다. 화면이 집니다 — 결제 화면이 아직 없어 갈
   // 곳이 없고, 안내는 이 화면 위에 겹칠 뿐 화면 전환이 아닙니다.
   const [noticeItem, setNoticeItem] = useState<PremiumRoleplayItem | null>(null);
+  // 이 화면 밖의 전역 머리도 안내가 떠 있는 동안 가려야 합니다 — 아래 제목 · 목록 가림과
+  // 같은 규칙을 셸에 알립니다.
+  useScreenLayer(noticeItem !== null, onLayerChange);
 
   return (
     <view className="roleplay-list-screen">

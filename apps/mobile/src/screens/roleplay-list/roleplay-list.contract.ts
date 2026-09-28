@@ -89,6 +89,8 @@ export type RoleplayListScreenProps = {
   readonly sections: readonly RoleplaySection[];
   readonly onSelectItem: (item: RoleplayItem) => void;
   readonly onViewAll: (episodeId: RoleplayEpisodeId) => void;
+  /** 플러스 안내가 뜨고 질 때 부릅니다 — 전역 머리를 그 동안 낭독에서 가리는 데 씁니다. */
+  readonly onLayerChange?: (open: boolean) => void;
 };
 
 /** 에피소드 하나의 항목을 세로로 펼친 화면입니다 — 구획 머리의 `전체 보기`가 엽니다. */

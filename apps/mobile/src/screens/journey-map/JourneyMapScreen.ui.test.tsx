@@ -10,14 +10,11 @@ import {
 } from "./journey-map";
 
 // 메신저 계약 props는 기존 여정 맵 UI fixture에서 공통으로 비워 둡니다.
-// `onOpenNotifications`가 필수 prop이 됐습니다 — 이 fixture에 더하는 것으로
-// render 호출 전부를 한 번에 닫습니다. 단언은 한 글자도 바뀌지 않았습니다.
 const messengerFixture = {
   completedMessengerUnitIds: [] as const,
   onStartMessengerUnit: vi.fn(),
   completedPhoneCallUnitIds: [] as const,
   onStartPhoneCallUnit: vi.fn(),
-  onOpenNotifications: vi.fn(),
 };
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
@@ -383,7 +380,9 @@ test("[U2] journey-map-screen-map이 스크롤 컨테이너 안에 있다", () =
   expect(within(scroll).getByTestId("journey-map-screen-map")).toBeInTheDocument();
 });
 
-test("[U3] 머리(상단 바)가 스크롤 컨테이너 밖에 있다", () => {
+// 머리(칩 · 알림 버튼)는 전역 레이아웃(`app/AppHeader`)으로 올라갔습니다 — 이 화면은
+// 머리를 그리지 않습니다.
+test("[U3] 여정 맵은 머리를 그리지 않는다", () => {
   render(
     <JourneyMapScreen
       {...messengerFixture}
@@ -392,9 +391,8 @@ test("[U3] 머리(상단 바)가 스크롤 컨테이너 밖에 있다", () => {
     />,
   );
 
-  const scroll = screen.getByTestId("journey-map-screen-scroll");
-  expect(within(scroll).queryByTestId("journey-map-screen-actions")).not.toBeInTheDocument();
-  expect(screen.getByTestId("journey-map-screen-actions")).toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen-actions")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("top-bar-notifications")).not.toBeInTheDocument();
 });
 
 // U4: 시트는 스크롤 밖의 겹침 레이어입니다(R9) — 열려 있어도 스크롤 컨테이너
@@ -490,4 +488,25 @@ test("[U10] 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는�
   );
 
   expect(screen.getByTestId("journey-map-screen-scroll").children.length).toBeLessThanOrEqual(1);
+});
+
+// 말풍선이 열린 동안 셸의 전역 머리도 가려야 합니다 — 머리가 이 화면 밖으로 나가면서
+// 화면이 열림을 알립니다(`onLayerChange`).
+test("[U-L1] 스텝 말풍선이 열리고 닫힐 때 onLayerChange가 true → false로 불린다", () => {
+  const onLayerChange = vi.fn<(open: boolean) => void>();
+  render(
+    <JourneyMapScreen
+      {...messengerFixture}
+      completedStepCount={2}
+      onStartStep={() => {}}
+      onLayerChange={onLayerChange}
+    />,
+  );
+  expect(onLayerChange).toHaveBeenLastCalledWith(false);
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  expect(onLayerChange).toHaveBeenLastCalledWith(true);
+
+  fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
+  expect(onLayerChange).toHaveBeenLastCalledWith(false);
 });

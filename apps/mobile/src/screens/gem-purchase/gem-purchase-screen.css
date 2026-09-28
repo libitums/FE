@@ -1,0 +1,435 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 치수와 색 가운데 맞는
+   토큰이 없는 것은 디자인 실측값(Figma 597-992)을 적고 그 자리에 이유를 남깁니다.
+
+   젬 계열 색(#00C3FF · #E8FAFF · #AFEFFF · #008FBD · #4B8B9E)은 색 토큰 패키지에
+   없습니다. 칩의 젬 색(`stat-chip.css`의 `.stat-chip-value-diamond`)과 같은 사정입니다.
+   회색은 디자인 값에 가장 가까운 회색 토큰으로 옮겼습니다(#EBEBEB → gray-300 ·
+   #9A9DA4 · #777B84 → fg-neutral-subtle · #B9BAC0 → gray-600 · #C9CBD0 → gray-500 ·
+   #FAFAFA → gray-100 · #1A1A2E → fg-neutral).
+
+   디자인의 중간 굵기(650 · 750)는 700으로 적습니다 — 기기에서 Lynx가 그 값을 보통
+   굵기로 그렸습니다(2026-09-28 시뮬레이터 확인). */
+
+/* 겹침 레이어입니다. 지표 모달(`journey-stat-modal.css`)과 같은 자리 · 같은 바탕입니다 —
+   셸 밖에 띄워 바텀 네비게이션까지 덮고, 바탕은 `border-strong`(#141115)에 불투명도
+   0.9를 얹은 디자인 값입니다. */
+.gem-purchase-screen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(20, 17, 21, 0.9);
+}
+
+/* 닫기 버튼 줄 — 지표 모달의 나가기 버튼과 같은 자리입니다. */
+.gem-purchase-screen-close {
+  display: flex;
+  flex-direction: row;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-spacing-20) 0;
+  flex-shrink: 0;
+}
+
+.gem-purchase-screen-scroll {
+  flex: 1;
+}
+
+.gem-purchase-screen-body {
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-spacing-20) var(--libitum-spacing-20) var(--libitum-spacing-32);
+}
+
+/* 머리 — 제목(왼쪽)과 보유 젬 카드(오른쪽)입니다. */
+.gem-purchase-screen-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gem-purchase-screen-title {
+  padding-top: var(--libitum-spacing-4);
+  color: var(--libitum-color-gray-50);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+}
+
+.gem-purchase-screen-balance {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: var(--libitum-stroke-width-thin) solid #afefff;
+  border-radius: var(--libitum-radius-lg);
+  background-color: #e8faff;
+  flex-shrink: 0;
+}
+
+.gem-purchase-screen-balance-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.gem-purchase-screen-balance-label {
+  color: #4b8b9e;
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: 600;
+  line-height: 16.5px;
+}
+
+.gem-purchase-screen-balance-value {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  line-height: 18.4px;
+}
+
+/* 젬 그림 — 디자인 원본의 32 × 32입니다. */
+.gem-purchase-screen-gem {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+/* 젬 그림을 받치는 48 × 48 칸입니다(팩 카드 · 주문 요약). */
+.gem-purchase-screen-gem-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-md);
+  background-color: #e8faff;
+  flex-shrink: 0;
+}
+
+/* 팩 고르기 구획 */
+.gem-purchase-screen-section {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--libitum-spacing-24);
+}
+
+.gem-purchase-screen-section-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gem-purchase-screen-section-titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
+.gem-purchase-screen-section-title {
+  color: var(--libitum-color-gray-50);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  line-height: var(--libitum-typography-label-xl-line-height);
+}
+
+.gem-purchase-screen-section-caption {
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: 400;
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.gem-purchase-screen-member-bonus {
+  color: #00c3ff;
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: 700;
+  line-height: 16.5px;
+}
+
+.gem-purchase-screen-packs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding-top: var(--libitum-spacing-16);
+}
+
+/* 팩 카드 — 모서리 18은 디자인 실측값이고 맞는 반경 토큰이 없습니다. 배지가 카드 위로
+   걸치고 고름 표식이 오른쪽 아래에 붙으므로 기준 상자가 됩니다. */
+.gem-purchase-pack {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  min-height: 104px;
+  padding: var(--libitum-spacing-20);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+  border-radius: 18px;
+  background-color: var(--libitum-color-white);
+}
+
+.gem-purchase-pack-selected {
+  border-color: #00c3ff;
+  box-shadow: 0 10px 15px 0 rgba(0, 195, 255, 0.09);
+}
+
+.gem-purchase-pack-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  flex: 1;
+}
+
+.gem-purchase-pack-amount {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+}
+
+.gem-purchase-pack-gems {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
+  letter-spacing: -0.6px;
+}
+
+.gem-purchase-pack-unit {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: 700;
+  letter-spacing: 0.44px;
+}
+
+.gem-purchase-pack-caption {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: 700;
+  line-height: 16.5px;
+}
+
+.gem-purchase-pack-caption-bonus {
+  color: #008fbd;
+}
+
+/* 가격 칸 — 가격 줄의 기준선을 젬 수와 맞추려고 위에서부터 쌓습니다. 아래 여백 16은
+   고름 표식이 들어갈 자리입니다. */
+.gem-purchase-pack-price {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 3px;
+  padding-top: var(--libitum-spacing-6);
+  padding-bottom: var(--libitum-spacing-16);
+  flex-shrink: 0;
+}
+
+.gem-purchase-pack-price-value {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: 700;
+  line-height: 21px;
+}
+
+.gem-purchase-pack-per-gem {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: 400;
+  line-height: 16.5px;
+}
+
+/* 고름 표식 — 누르는 자리가 아니라 카드의 상태를 보이는 동그라미입니다. 자리(오른쪽
+   18 · 아래 14)는 디자인 실측값입니다. */
+.gem-purchase-pack-radio {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+  border: var(--libitum-stroke-width-regular) solid var(--libitum-color-gray-500);
+  border-radius: var(--libitum-radius-full);
+}
+
+/* 고른 표식은 두꺼운 테두리 안쪽에 흰 점이 남는 모양입니다(테두리 5는 디자인 값). */
+.gem-purchase-pack-radio-selected {
+  border: 5px solid #00c3ff;
+}
+
+/* 배지는 카드 윗변 가운데에 반쯤 걸칩니다(배지 높이 25의 절반). */
+.gem-purchase-pack-badge-anchor {
+  position: absolute;
+  top: -12.5px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.gem-purchase-pack-badge {
+  padding: 5px 10px;
+  border-radius: var(--libitum-radius-full);
+  background-color: #00c3ff;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: 15px;
+}
+
+/* 안심 문구 줄 */
+.gem-purchase-screen-assurances {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-20);
+  padding-top: var(--libitum-spacing-16);
+}
+
+.gem-purchase-screen-assurance {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.gem-purchase-screen-assurance-tick {
+  color: var(--libitum-color-feedback-correct);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: 800;
+  line-height: 16.5px;
+}
+
+.gem-purchase-screen-assurance-label {
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: 400;
+  line-height: 16.5px;
+}
+
+/* 주문 요약 카드 — 모서리 20과 그림자는 디자인 실측값입니다. */
+.gem-purchase-screen-summary {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--libitum-spacing-24);
+  padding: var(--libitum-spacing-20);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+  border-radius: 20px;
+  background-color: var(--libitum-color-white);
+  box-shadow: 0 16px 20px 0 rgba(26, 28, 32, 0.05);
+}
+
+.gem-purchase-screen-summary-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  line-height: var(--libitum-typography-label-xl-line-height);
+}
+
+.gem-purchase-screen-summary-total-gems {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  margin-top: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-16);
+  border-radius: 14px;
+  background-color: var(--libitum-color-gray-100);
+}
+
+.gem-purchase-screen-summary-gems-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.gem-purchase-screen-summary-gems-label {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: 400;
+  line-height: 16.5px;
+}
+
+.gem-purchase-screen-summary-gems-value {
+  padding: var(--libitum-spacing-2) 0;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  line-height: var(--libitum-typography-label-xl-line-height);
+}
+
+.gem-purchase-screen-summary-bonus {
+  color: #008fbd;
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: 600;
+  line-height: 16.5px;
+}
+
+/* `SettingsGroup`은 초점 고리 자리로 사방 4의 바깥 여백을 스스로 갖습니다. 그대로 두면
+   결제 수단 칸만 좌우로 4씩 안으로 들어가 위아래 블록과 줄이 어긋나므로, 여기서 그만큼
+   되돌립니다. 음수 `calc`는 Lynx가 버려 -4px로 적습니다. 위아래 간격(12 · 20)도 그 4를
+   빼고 적습니다. */
+.gem-purchase-screen-payment-method {
+  display: flex;
+  flex-direction: column;
+  margin: var(--libitum-spacing-8) -4px 0;
+}
+
+.gem-purchase-screen-total {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--libitum-spacing-16);
+  padding-top: var(--libitum-spacing-16);
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+}
+
+.gem-purchase-screen-total-label {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: 400;
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.gem-purchase-screen-total-value {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: 27px;
+}
+
+.gem-purchase-screen-pay {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--libitum-spacing-16);
+}
+
+.gem-purchase-screen-terms {
+  padding-top: var(--libitum-spacing-12);
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: 400;
+  line-height: 15px;
+  text-align: center;
+}

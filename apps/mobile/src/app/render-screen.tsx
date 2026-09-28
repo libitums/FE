@@ -62,7 +62,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
             wiring.visualNovelProgress.status === "completed" ? ["cafe-arrival-visual-novel"] : []
           }
           onStartVisualNovelUnit={wiring.onStartVisualNovelUnit}
-          onOpenNotifications={wiring.onOpenNotifications}
+          onLayerChange={wiring.onScreenLayerChange}
         />
       );
     case "roleplay-list":
@@ -72,6 +72,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           sections={wiring.roleplaySections}
           onSelectItem={wiring.onStartRoleplayUnit}
           onViewAll={wiring.onViewAllRoleplayEpisode}
+          onLayerChange={wiring.onScreenLayerChange}
         />
       );
     case "roleplay-episode": {
@@ -126,15 +127,14 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한
           // 소비자입니다.
           sessionOptions={wiring.sessionOptions}
+          gemCount={wiring.gemCount}
         />
       );
     // ⟨2026-09-28⟩ **통과도 미통과도 같은 화면입니다.** 그전에는 통과만 학습 결과
     // 화면이고 미통과는 평가 화면이라, 같은 순간의 두 결과가 전혀 다른 화면으로
     // 보였습니다. 갈리는 것은 화면이 아니라 그 화면 안의 셋입니다(표식 · 제목 · 보상).
-    //
-    // 판정은 셸(`onFinishLearning`)과 같은 순수 함수 · 같은 상수 · 같은 결과로 다시
-    // 내므로 둘이 갈리지 않습니다. 지표 셋은 아직 규칙이 없어 0이고(여정 맵과
-    // 같습니다), 보상은 임시값입니다.
+    // 판정은 셸(`onFinishLearning`)과 같은 순수 함수 · 같은 상수로 다시 냅니다. 지표 중
+    // 연속 · 트로피는 규칙이 없어 0이고, 젬은 전역 머리와 같은 값입니다.
     case "assessment": {
       const verdict = judgeAssessment(screen.results, assessmentPassCriterion);
       return (
@@ -143,7 +143,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           verdict={verdict}
           streakDays={0}
           trophyCount={0}
-          diamondCount={0}
+          diamondCount={wiring.gemCount}
           reward={lessonRewardPlaceholder}
           onExit={wiring.onExitAssessment}
           // 미통과에서만 씁니다 — 같은 스텝을 첫 활동부터 새로 엽니다. 맵을 거쳐

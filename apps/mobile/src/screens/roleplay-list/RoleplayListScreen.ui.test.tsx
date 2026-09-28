@@ -348,3 +348,30 @@ test("[P9] 안내가 떠 있는 동안 뒤쪽(제목 · 구획)이 가려지고,
   expect(head).toHaveAttribute("accessibility-elements-hidden", "false");
   expect(section).toHaveAttribute("accessibility-elements-hidden", "false");
 });
+
+// 안내가 떠 있는 동안 셸의 전역 머리도 가려야 합니다 — 머리는 이 화면 밖이라 화면이
+// 열림을 알립니다(`onLayerChange`).
+test("[P8] 안내가 뜨고 질 때 onLayerChange가 true → false로 불린다", () => {
+  const onLayerChange = vi.fn<(open: boolean) => void>();
+  renderScreen({ sections: [openSection], onLayerChange });
+  expect(onLayerChange).toHaveBeenLastCalledWith(false);
+
+  fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-wrong-order"), {});
+  expect(onLayerChange).toHaveBeenLastCalledWith(true);
+
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-close")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  expect(onLayerChange).toHaveBeenLastCalledWith(false);
+});
+
+test("[P9] 안내가 뜬 채 화면이 내려가면 onLayerChange(false)로 가림을 풀어 둔다", () => {
+  const onLayerChange = vi.fn<(open: boolean) => void>();
+  const { unmount } = renderScreen({ sections: [openSection], onLayerChange });
+  fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-wrong-order"), {});
+
+  unmount();
+
+  expect(onLayerChange).toHaveBeenLastCalledWith(false);
+});

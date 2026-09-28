@@ -17,6 +17,22 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  /* 전역 머리(`.app-header`)의 절대 배치 기준입니다. */
+  position: relative;
+}
+
+/* 전역 머리 — 칩 셋과 알림 버튼입니다(`AppHeader`). 바텀 네비게이션처럼 콘텐츠 위에
+   겹칩니다: 흐름에 두면 스크롤 영역이 머리 **아래에서** 시작해 내용이 그 뒤로 지나가지
+   못하고, 면 없는 칩 사이로 비치는 디자인이 성립하지 않습니다.
+
+   자리는 탭 루트 화면들의 화면 여백과 같습니다. 그 화면들은 머리 몫의 위 여백(머리
+   높이 40pt + 열 간격)을 스스로 잡습니다. */
+.app-header {
+  position: absolute;
+  top: var(--libitum-layout-screen-padding-top);
+  left: var(--libitum-layout-screen-padding-x);
+  right: var(--libitum-layout-screen-padding-x);
+  z-index: var(--libitum-elevation-z-sticky);
 }
 
 /* 바텀 네비게이션을 콘텐츠 위에 겹칩니다. 흐름에 두면 바 위쪽 모서리 밖이 언제나

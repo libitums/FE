@@ -85,8 +85,8 @@ function renderEpisodeNarrativeScreen(
 }
 
 // 서사 통화를 마친 뒤의 학습 완료 화면입니다. 판정할 결과가 없어 결과는 빈 목록이고
-// 판정은 늘 통과입니다 — 그래서 늘 실수 없음(PERFECT LESSON)이고 다시 하기가 없습니다. 지표 셋과 보상은 평가를 통과했을 때와 같은
-// 값(규칙이 없어 0 · 임시값)입니다.
+// 판정은 늘 통과입니다 — 그래서 늘 실수 없음(PERFECT LESSON)이고 다시 하기가 없습니다. 지표와 보상은 평가를 통과했을 때와 같은
+// 값(연속 · 트로피는 규칙이 없어 0, 젬은 전역 머리와 같은 값, 보상은 임시값)입니다.
 function renderPrologueCompleteScreen(
   screen: Extract<Screen, { name: "episode-prologue-complete" }>,
   wiring: ScreenWiring,
@@ -97,7 +97,7 @@ function renderPrologueCompleteScreen(
       verdict="passed"
       streakDays={0}
       trophyCount={0}
-      diamondCount={0}
+      diamondCount={wiring.gemCount}
       reward={lessonRewardPlaceholder}
       onExit={() => wiring.onExitPrologueComplete(screen.episodeId)}
     />
