@@ -1,0 +1,23 @@
+/* 끝난 대화의 하단 버튼 — 서사 메신저의 `Continue`와 같은 모양(주색 면 · 모서리 16)입니다.
+   ⚠ 알려진 대비 위반입니다. 흰 라벨이 `brand-primary` 위에서 3.02:1로 WCAG 1.4.3의 4.5:1에
+   미달합니다 — 학습 껍데기의 하단 버튼과 같은 값을 같은 까닭으로 따릅니다. */
+.messenger-finish-button {
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--libitum-color-brand-primary);
+}
+
+.messenger-finish-button-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+  text-align: center;
+}

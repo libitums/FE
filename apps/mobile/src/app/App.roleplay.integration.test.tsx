@@ -124,6 +124,15 @@ function finishMessengerConversation() {
   answerMessengerReplies();
 }
 
+// 학습 완료 화면의 나가기(`맵으로` · `목록으로`)입니다. 버튼이 ui-lynx `Button`이라 안쪽을 누릅니다.
+function tapLessonCompleteExit() {
+  const button = screen
+    .getByTestId("lesson-complete-screen-exit")
+    .querySelector('[data-testid="ui-lynx-button"]');
+  if (button === null) throw new Error("lesson-complete-screen-exit 안에 버튼이 없습니다");
+  fireEvent.tap(button, {});
+}
+
 function playPhoneCallTurn(replyTestId: string) {
   let finish: (() => void) | undefined;
   audio.playAudio.mockImplementation((_source: string, done: () => void) => {
@@ -381,12 +390,12 @@ test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 �
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
-  // 메신저: 끝까지 → 처음부터 보기 → 다시 끝까지 진행합니다.
+  // 메신저: 끝까지 → 결과 보기 → 학습 완료에서 목록으로 나갑니다.
   openRoleplayItem(messengerUnitId);
   finishMessengerConversation();
-  fireEvent.tap(screen.getByTestId("messenger-replay"), {});
-  finishMessengerConversation();
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+  tapLessonCompleteExit();
+  expect(screen.getByTestId(`roleplay-list-item-${messengerUnitId}`)).toBeInTheDocument();
 
   // 전화: 세 턴 끝까지 진행합니다.
   openRoleplayItem(phoneCallUnitId);
@@ -416,8 +425,10 @@ test("[I6] 메신저 롤플레이 이벤트는 entrySource: roleplay를 싣고 e
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {}); // active·replyIndex 0 → incomplete
   openRoleplayItem(messengerUnitId);
   finishMessengerConversation(); // 1회차 완료
-  fireEvent.tap(screen.getByTestId("messenger-replay"), {});
-  finishMessengerConversation(); // 2회차 완료(A2)
+  fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+  tapLessonCompleteExit();
+  openRoleplayItem(messengerUnitId);
+  finishMessengerConversation(); // 2회차 완료(A2) — 롤플레이는 늘 처음부터 섭니다
 
   expect(messengerEventSink.mock.calls.map(([event]) => event)).toEqual([
     { name: "messenger_unit_opened", unitId: messengerUnitId, entrySource: "roleplay" },
@@ -428,11 +439,7 @@ test("[I6] 메신저 롤플레이 이벤트는 entrySource: roleplay를 싣고 e
     },
     { name: "messenger_unit_opened", unitId: messengerUnitId, entrySource: "roleplay" },
     { name: "messenger_unit_completed", unitId: messengerUnitId, entrySource: "roleplay" },
-    {
-      name: "messenger_unit_replay_started",
-      unitId: messengerUnitId,
-      entrySource: "roleplay",
-    },
+    { name: "messenger_unit_opened", unitId: messengerUnitId, entrySource: "roleplay" },
     { name: "messenger_unit_completed", unitId: messengerUnitId, entrySource: "roleplay" },
   ]);
 });

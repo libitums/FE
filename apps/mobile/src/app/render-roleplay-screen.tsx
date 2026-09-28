@@ -34,7 +34,7 @@ export function renderRoleplayUnitScreen(screen: RoleplayUnitScreen, wiring: Rol
           exitLabel={specialUnitExitLabel("roleplay")}
           onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
           onComplete={wiring.onMessengerComplete}
-          onReplay={wiring.onMessengerReplay}
+          onFinish={wiring.onMessengerFinish}
         />
       );
     case "roleplay-phone-call":

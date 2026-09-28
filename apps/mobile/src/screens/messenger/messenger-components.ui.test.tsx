@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { MessageBubble } from "./MessageBubble";
 import { MessengerScreen } from "./MessengerScreen";
-import { ReplayButton } from "./ReplayButton";
+import { MessengerFinishButton } from "./MessengerFinishButton";
 import { messengerConversationFor } from "./messenger";
 import { messengerCorrectDelayMs } from "./messenger-composer";
 import { sendMessengerReply, typeMessengerReply } from "./messenger.test-support";
@@ -12,14 +12,14 @@ import { sendMessengerReply, typeMessengerReply } from "./messenger.test-support
 
 const conversation = messengerConversationFor("appointment-confirmation");
 
-function renderActive(onComplete = vi.fn()) {
+function renderActive(onComplete = vi.fn(), onFinish = vi.fn()) {
   render(
     <MessengerScreen
       conversation={conversation}
       completionStatus="available"
       onExit={vi.fn()}
       onComplete={onComplete}
-      onReplay={vi.fn()}
+      onFinish={onFinish}
     />,
   );
 }
@@ -41,11 +41,11 @@ describe("messenger UI components", () => {
     expect(bubble).toHaveAttribute("data-sender", "jimin");
   });
 
-  it("ReplayButton은 다시 보기 콜백을 호출한다", () => {
-    const onReplay = vi.fn();
-    render(<ReplayButton onReplay={onReplay} />);
-    fireEvent.tap(screen.getByTestId("messenger-replay"), {});
-    expect(onReplay).toHaveBeenCalledTimes(1);
+  it("MessengerFinishButton은 결과 보기 콜백을 호출한다", () => {
+    const onFinish = vi.fn();
+    render(<MessengerFinishButton onFinish={onFinish} />);
+    fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+    expect(onFinish).toHaveBeenCalledTimes(1);
   });
 
   it("MessengerScreen은 제목·나가기·스크롤 표면을 낸다", () => {
@@ -65,7 +65,7 @@ describe("messenger UI components", () => {
         completionStatus="available"
         onExit={onExit}
         onComplete={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
     fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
@@ -160,7 +160,27 @@ describe("messenger UI components", () => {
     expect(onComplete).toHaveBeenCalledWith("appointment-confirmation");
     expect(screen.queryByTestId("messenger-keyboard")).toBeNull();
     expect(screen.queryByTestId("messenger-choices")).toBeNull();
-    expect(screen.getByTestId("messenger-replay")).toBeInTheDocument();
+    expect(screen.getByTestId("messenger-finish")).toBeInTheDocument();
+  });
+
+  it("결과 보기는 답장마다 첫 시도의 정오를 싣는다 — 모두 한 번에 맞히면 전부 정답이다", () => {
+    const onFinish = vi.fn();
+    renderActive(vi.fn(), onFinish);
+    sendMessengerReply("좋아요!");
+    sendMessengerReply("고마워요!");
+    fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+    expect(onFinish).toHaveBeenCalledWith("appointment-confirmation", ["correct", "correct"]);
+  });
+
+  it("틀린 뒤 다시 맞힌 답장은 오답으로 남는다", () => {
+    const onFinish = vi.fn();
+    renderActive(vi.fn(), onFinish);
+    typeMessengerReply("조아요");
+    fireEvent.tap(screen.getByTestId("messenger-try-again").querySelector("view")!, {});
+    sendMessengerReply("좋아요!");
+    sendMessengerReply("고마워요!");
+    fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+    expect(onFinish).toHaveBeenCalledWith("appointment-confirmation", ["incorrect", "correct"]);
   });
 
   it("판정 틈에 화면을 떠나면 답장이 서지 않는다", () => {
@@ -171,7 +191,7 @@ describe("messenger UI components", () => {
         completionStatus="available"
         onExit={vi.fn()}
         onComplete={onComplete}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
     typeMessengerReply("좋아요");
@@ -208,20 +228,20 @@ describe("messenger UI components", () => {
     expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   });
 
-  it("완료 재진입은 전체 기록과 다시 보기를 제공한다", () => {
-    const onReplay = vi.fn();
+  it("완료 재진입은 전체 기록과 결과 보기를 내고, 결과는 빈 목록이다", () => {
+    const onFinish = vi.fn();
     render(
       <MessengerScreen
         conversation={conversation}
         completionStatus="completed"
         onExit={vi.fn()}
         onComplete={vi.fn()}
-        onReplay={onReplay}
+        onFinish={onFinish}
       />,
     );
     expect(screen.getByTestId("messenger-message-jimin-goodbye")).toBeInTheDocument();
-    fireEvent.tap(screen.getByTestId("messenger-replay"), {});
-    expect(onReplay).toHaveBeenCalledWith("appointment-confirmation");
-    expect(screen.getByTestId("messenger-keyboard")).toBeInTheDocument();
+    expect(screen.queryByTestId("messenger-keyboard")).toBeNull();
+    fireEvent.tap(screen.getByTestId("messenger-finish"), {});
+    expect(onFinish).toHaveBeenCalledWith("appointment-confirmation", []);
   });
 });

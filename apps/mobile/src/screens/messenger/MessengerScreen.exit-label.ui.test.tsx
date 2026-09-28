@@ -21,7 +21,7 @@ describe("MessengerScreen 나가기 라벨", () => {
         exitLabel={specialUnitExitLabel("roleplay")}
         onExit={vi.fn()}
         onComplete={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
 
@@ -40,7 +40,7 @@ describe("MessengerScreen 나가기 라벨", () => {
         exitLabel={specialUnitExitLabel("roleplay")}
         onExit={onExit}
         onComplete={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
 
@@ -58,7 +58,7 @@ describe("MessengerScreen 나가기 라벨", () => {
         exitLabel={specialUnitExitLabel("journey")}
         onExit={vi.fn()}
         onComplete={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
 
@@ -73,7 +73,7 @@ describe("MessengerScreen 나가기 라벨", () => {
         completionStatus="available"
         onExit={vi.fn()}
         onComplete={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
 

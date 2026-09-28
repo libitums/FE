@@ -1,6 +1,7 @@
 // 메신저 특별 유닛의 타입 전용 계약입니다 — 구현·고정 데이터·JSX를 두지 않고
 // 하류가 공유할 타입만 둡니다.
 
+import type { AnswerResult } from "../../lib/answer-result";
 import type {
   SpecialUnitEntrySource,
   SpecialUnitExitLabel,
@@ -53,7 +54,7 @@ export type MessengerSessionState =
   | { readonly mode: "active"; readonly replyIndex: MessengerReplyIndex }
   | { readonly mode: "completed" };
 
-export type MessengerSessionAction = { readonly type: "reply" } | { readonly type: "replay" };
+export type MessengerSessionAction = { readonly type: "reply" };
 
 export type MessengerExitOutcome = "incomplete" | "completed";
 
@@ -80,11 +81,6 @@ export type MessengerEvent =
     }
   | {
       readonly name: "messenger_unit_exited_incomplete";
-      readonly unitId: MessengerUnitId;
-      readonly entrySource: SpecialUnitEntrySource;
-    }
-  | {
-      readonly name: "messenger_unit_replay_started";
       readonly unitId: MessengerUnitId;
       readonly entrySource: SpecialUnitEntrySource;
     };
@@ -117,7 +113,11 @@ export type MessengerScreenProps = {
   readonly completionStatus: MessengerCompletionStatus;
   readonly onExit: (outcome: MessengerExitOutcome) => void;
   readonly onComplete: (id: MessengerUnitId) => void;
-  readonly onReplay: (id: MessengerUnitId) => void;
+  /**
+   * 끝난 대화의 `결과 보기`입니다 — 학습 완료 화면으로 갑니다. 결과는 답장마다 **첫 시도의
+   * 정오**입니다. 완료한 유닛에 다시 들어와 전체 기록만 본 경우는 빈 목록입니다.
+   */
+  readonly onFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) => void;
   readonly exitLabel?: SpecialUnitExitLabel;
 };
 
@@ -168,6 +168,6 @@ export type MessengerKeyboardProps = {
   readonly onShift: () => void;
 };
 
-export type ReplayButtonProps = {
-  readonly onReplay: () => void;
+export type MessengerFinishButtonProps = {
+  readonly onFinish: () => void;
 };

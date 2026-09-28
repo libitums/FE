@@ -4,12 +4,13 @@ import refresh from "@libitums/icons/lynx/refresh";
 import { Button } from "@libitums/ui-lynx/button";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import type { AnswerResult } from "../../lib/answer-result";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import { MessageBubble } from "./MessageBubble";
 import { MessengerChoices } from "./MessengerChoices";
 import { MessengerComposer } from "./MessengerComposer";
 import { MessengerKeyboard } from "./MessengerKeyboard";
-import { ReplayButton } from "./ReplayButton";
+import { MessengerFinishButton } from "./MessengerFinishButton";
 import {
   composedText,
   initialMessengerComposerState,
@@ -32,7 +33,8 @@ import "./messenger-screen.css";
 // (`SelfMessage.choices`)가 정합니다. 힌트는 `MessengerComposer`가 집니다.
 //
 // 맞히면 판정 배지와 초록 테두리가 서고 잠시 뒤 답장이 대화에 섭니다. 틀리면 자판 · 보기 자리에
-// `Try Again`이 서고, 누르면 입력을 비우고 같은 답장을 다시 칩니다.
+// `Try Again`이 서고, 누르면 입력을 비우고 같은 답장을 다시 칩니다. 대화가 끝나면 `결과 보기`가
+// 학습 완료 화면(PERFECT LESSON)으로 이어집니다.
 //
 // 화면 세션만 로컬로 소유하고 완료 기록은 상위 경계의 콜백으로 알립니다. `exitLabel`은
 // 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받습니다(ADR-0007 D3).
@@ -45,7 +47,7 @@ export function MessengerScreen({
   exitLabel = specialUnitExitLabel("journey"),
   onExit,
   onComplete,
-  onReplay,
+  onFinish,
 }: MessengerScreenProps) {
   const [session, setSession] = useState(() => initialMessengerSessionState(completionStatus));
   const [composer, dispatchComposer] = useReducer(
@@ -55,6 +57,19 @@ export function MessengerScreen({
   const messages = visibleMessengerMessages(conversation, session);
   const reply = currentMessengerReply(conversation, session);
   const typed = composedText(composer);
+  // 답장마다 첫 시도의 정오입니다 — 틀린 뒤 다시 쳐서 맞혀도 그 답장은 오답으로 남습니다.
+  // 학습 완료 화면이 이것으로 실수 수를 셉니다.
+  const [results, setResults] = useState<readonly AnswerResult[]>([]);
+
+  // 판정이 나면 그 답장의 첫 시도만 결과에 싣습니다.
+  useEffect(() => {
+    if (composer.verdict === "typing" || session.mode !== "active") {
+      return;
+    }
+    if (results.length === session.replyIndex) {
+      setResults([...results, composer.verdict === "correct" ? "correct" : "incorrect"]);
+    }
+  }, [composer.verdict]);
 
   // 맞힌 답장은 배지를 읽을 틈을 두고 대화에 섭니다. 그 사이 화면을 떠나면 타이머가
   // 걷혀 답장이 서지 않습니다.
@@ -76,12 +91,6 @@ export function MessengerScreen({
   useEffect(() => {
     scrollToMessengerEnd();
   }, [messages.length]);
-
-  const handleReplay = () => {
-    onReplay(conversation.id);
-    setSession(messengerSessionReducer(session, { type: "replay" }));
-    dispatchComposer({ type: "clear" });
-  };
 
   const handleSend = () => {
     if (reply !== null) dispatchComposer({ type: "submit", answer: reply.text });
@@ -132,7 +141,7 @@ export function MessengerScreen({
 
       {reply === null ? (
         <view className="messenger-screen-action">
-          <ReplayButton onReplay={handleReplay} />
+          <MessengerFinishButton onFinish={() => onFinish(conversation.id, results)} />
         </view>
       ) : (
         <view className="messenger-screen-reply" data-testid="messenger-reply">

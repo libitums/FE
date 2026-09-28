@@ -19,6 +19,13 @@
 >   `Try Again`은 자판과 같다. 보기가 곧 단서라 정답을 가려 보이지 않고, 입력창은
 >   `입력해주세요.`(디자인)와 뜻이다. 약속 확인 메시지는 첫 답장이 자판, 둘째 답장이 객관식이다.
 >   치는 동안 입력창 위에 `Type!` 배지가 서고, 판정이 나면 정답 · 오답 배지로 바뀐다.
+> - **끝난 대화는 학습 완료로 이어진다.** `처음부터 보기`(replay)를 없애고, 끝난 대화의 하단에
+>   `결과 보기`(`MessengerFinishButton`)를 세운다. 누르면 메신저 화면이 학습 완료
+>   (`messenger-complete` route → `LessonCompleteScreen`)로 갈아 끼워지고(`replace`), 나가면 연
+>   스택의 루트(맵 · 롤플레이 목록)로 간다. 결과는 답장마다 **첫 시도의 정오**라, 한 번도 틀리지
+>   않았으면 `PERFECT LESSON!`, 틀린 적이 있으면 `LESSON COMPLETE!`이다. 판정은 늘 통과(끝까지
+>   가야 닿는다)이고 다시 하기가 없다. 완료 재입장은 전체 기록과 `결과 보기`이고 결과는 빈
+>   목록이다. `messenger_unit_replay_started` 이벤트와 세션의 `replay` 전이도 없앴다.
 > - 채점은 한글 · 영문 · 숫자만 비교한다 — 띄어쓰기 · 문장 부호는 보지 않는다
 >   (`isTypedAnswerCorrect`).
 > - 맞으면 판정 배지(`AnswerVerdict`) · 초록 입력창이 서고 `messengerCorrectDelayMs`(1.2초)
@@ -61,7 +68,7 @@ App
 │  └─ MessengerMapItem × 1                (새 명시적 변형)
 └─ MessengerScreen
    ├─ MessageBubble × 현재 공개 메시지
-   └─ active: 입력창 + MessengerKeyboard(틀리면 Try Again) | completed: ReplayButton
+   └─ active: 입력창 + MessengerKeyboard(틀리면 Try Again) | completed: MessengerFinishButton
 ```
 
 | 컴포넌트 | 경로 | 단일 책임 |
@@ -70,7 +77,7 @@ App
 | `MessengerScreen` | `screens/messenger/MessengerScreen.tsx` | 로컬 대화 세션을 소유하고 나가기·최초 완료·다시 보기 의도를 올린다 |
 | `MessageBubble` | `screens/messenger/MessageBubble.tsx` | `jimin/self` 판별 메시지 하나를 해당 말풍선으로 낸다 |
 | `MessengerKeyboard` | `screens/messenger/MessengerKeyboard.tsx` | 두벌식 자모 · 윗글쇠 · 지우기 · 띄어쓰기 키를 내고 누른 키를 올린다 |
-| `ReplayButton` | `screens/messenger/ReplayButton.tsx` | 완료 화면을 첫 메시지 상태로 되돌린다 |
+| `MessengerFinishButton` | `screens/messenger/MessengerFinishButton.tsx` | 끝난 대화에서 학습 완료로 가는 `결과 보기`를 낸다 |
 
 머리, 진행 문구, 메시지 목록, 액션 행은 이 화면 한 곳의 구조다. 별도 행동 계약이 없으므로
 컴포넌트로 승격하지 않는다. `MessageBubble`은 `sender` 판별 union을 받고,
@@ -226,7 +233,7 @@ export function App(
 | 메시지 | `messenger-message-<messageId>` |
 | 답장 구역 · 입력창 · 보내기 · 다시 치기 | `messenger-reply`, `messenger-composer`, `messenger-send`, `messenger-try-again` |
 | 자판 키 | `messenger-key-<자모\|shift\|backspace\|space\|,\|.\|?>` |
-| 다시 보기 | `messenger-replay` |
+| 결과 보기 | `messenger-finish` |
 
 맵 항목은 `data-status="available|completed"`, 메시지는 `data-sender="jimin|self"`를 항상
 낸다. 조건부 누락으로 상태를 표현하지 않는다.
@@ -247,7 +254,6 @@ export function App(
 | `messenger_unit_completed` | journey | `unitId`, `entrySource: "journey"` | available→completed가 처음 성립할 때 한 번 | 진입 대비 완료율 |
 | `messenger_unit_completed` | roleplay | `unitId`, `entrySource: "roleplay"` | 회차가 끝에 닿을 때마다 — 처음 열었을 때든 `처음부터 보기` 뒤든. 완료 기록이 없어 거를 상태도 없다 | 롤플레이 출처 완료 수 |
 | `messenger_unit_exited_incomplete` | 둘 다 | `unitId`, `entrySource` | active 상태에서 나가기(여정 `맵으로` · 롤플레이 `목록으로`)를 누를 때 | 중도 이탈률 |
-| `messenger_unit_replay_started` | 둘 다 | `unitId`, `entrySource` | completed 상태에서 `처음부터 보기`를 누를 때 | 완료 후 재진입 대비 다시 보기율 |
 
 `App`의 경계 타입은 `MessengerEventSink`이며 값은 callback 또는 `null`이다. 주입된 callback이
 있을 때 위 발생점에서 호출하고, 제품 진입점은 현재 sink 부재를 `null`로 명시한다. no-op
@@ -267,7 +273,6 @@ export function App(
 | `messenger_unit_completed` | journey | `MessengerScreen.onComplete` | ID가 완료 목록에 없을 때 sink 호출 후 완료 목록에 한 번 추가; replay 뒤 재완료에는 호출하지 않음 |
 | `messenger_unit_completed` | roleplay | 롤플레이에서 연 `MessengerScreen.onComplete` | 매번 호출. 완료 목록을 읽지도 쓰지도 않음 |
 | `messenger_unit_exited_incomplete` | 둘 다 | `MessengerScreen.onExit` | 전달된 outcome이 `incomplete`일 때 `backToRoot` 직전에 호출; `completed` 이탈에는 호출하지 않음 |
-| `messenger_unit_replay_started` | 둘 다 | `MessengerScreen.onReplay` | completed 화면의 `처음부터 보기` 탭으로 callback이 올라온 시점에 호출 |
 
 내부 `ScreenWiring`에는 정규화된 `messengerEventSink: MessengerEventSink`를 required로 두어
 `renderScreen`까지 전달한다. 이는 private 결선이며 새 public 컴포넌트 prop가 아니다. sink가

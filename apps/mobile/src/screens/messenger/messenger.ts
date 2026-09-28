@@ -56,8 +56,6 @@ export const messengerSessionReducer = (
   state: MessengerSessionState,
   action: MessengerSessionAction,
 ): MessengerSessionState => {
-  if (action.type === "replay")
-    return state.mode === "completed" ? { mode: "active", replyIndex: 0 } : state;
   if (state.mode === "completed") return state;
   return state.replyIndex === 0 ? { mode: "active", replyIndex: 1 } : { mode: "completed" };
 };

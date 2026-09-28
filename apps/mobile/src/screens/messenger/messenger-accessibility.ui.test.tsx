@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@lynx-js/react/testing-library";
 
 import { MessengerScreen } from "./MessengerScreen";
-import { ReplayButton } from "./ReplayButton";
+import { MessengerFinishButton } from "./MessengerFinishButton";
 import { messengerConversationFor } from "./messenger";
 
 const conversation = messengerConversationFor("appointment-confirmation");
@@ -14,7 +14,7 @@ function renderActive() {
       completionStatus="available"
       onExit={vi.fn()}
       onComplete={vi.fn()}
-      onReplay={vi.fn()}
+      onFinish={vi.fn()}
     />,
   );
 }
@@ -52,11 +52,11 @@ describe("messenger accessibility static regression guard", () => {
     expect(send).toHaveAttribute("accessibility-traits", "disabled");
   });
 
-  it("처음부터 보기 버튼은 접근성 요소·정확한 이름·button trait를 갖는다", () => {
-    render(<ReplayButton onReplay={vi.fn()} />);
-    const button = screen.getByTestId("messenger-replay");
+  it("결과 보기 버튼은 접근성 요소·정확한 이름·button trait를 갖는다", () => {
+    render(<MessengerFinishButton onFinish={vi.fn()} />);
+    const button = screen.getByTestId("messenger-finish");
     expect(button).toHaveAttribute("accessibility-element", "true");
-    expect(button).toHaveAttribute("accessibility-label", "처음부터 보기");
+    expect(button).toHaveAttribute("accessibility-label", "결과 보기");
     expect(button).toHaveAttribute("accessibility-traits", "button");
   });
 
@@ -68,19 +68,19 @@ describe("messenger accessibility static regression guard", () => {
     expect(button).toHaveAttribute("accessibility-traits", "button");
   });
 
-  it("완료 재진입의 다시 보기 역시 접근성 계약을 유지한다", () => {
+  it("완료 재진입의 결과 보기 역시 접근성 계약을 유지한다", () => {
     render(
       <MessengerScreen
         conversation={conversation}
         completionStatus="completed"
         onExit={vi.fn()}
         onComplete={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
-    const button = screen.getByTestId("messenger-replay");
+    const button = screen.getByTestId("messenger-finish");
     expect(button).toHaveAttribute("accessibility-element", "true");
-    expect(button).toHaveAttribute("accessibility-label", "처음부터 보기");
+    expect(button).toHaveAttribute("accessibility-label", "결과 보기");
     expect(button).toHaveAttribute("accessibility-traits", "button");
   });
 });

@@ -70,6 +70,10 @@ export type Screen =
   | { name: "culture-quiz"; stepId: JourneyStepId }
   | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] }
   | { name: "messenger"; unitId: MessengerUnitId }
+  // 메신저 유닛(서사 기반 최종 테스트)을 마친 뒤의 학습 완료입니다. 여정 · 롤플레이 어느
+  // 쪽에서 열었든 같은 화면이고, 나가면 그 스택의 루트로 갑니다. `results`는 답장마다 첫
+  // 시도의 정오입니다(`assessment`의 `results`와 같은 판단 — 세션이 이미 낸 값을 싣습니다).
+  | { name: "messenger-complete"; unitId: MessengerUnitId; results: readonly AnswerResult[] }
   | { name: "phone-call"; unitId: PhoneCallUnitId }
   | { name: "visual-novel"; unitId: VisualNovelUnitId }
   // 롤플레이 탭에서 여는 특별 유닛 route 셋입니다. 여정 쪽 route(`messenger` ·

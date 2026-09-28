@@ -1,3 +1,4 @@
+import type { AnswerResult } from "../lib/answer-result";
 // 여정에서 여는 특별 유닛 셋(메신저 · 전화 · 비주얼 노벨)의 콜백을 만듭니다. 진행 상태와
 // 이벤트 sink를 함께 받아 「연 순간」과 「완료한 순간」을 한 자리에서 냅니다.
 
@@ -86,12 +87,11 @@ export function specialUnitWiring(args: SpecialUnitWiringArgs) {
         setCompletedMessengerUnitIds((ids) => completeMessengerUnit(ids, id));
       }
     },
-    onMessengerReplay: (id: MessengerUnitId) =>
-      messengerEventSink?.({
-        name: "messenger_unit_replay_started",
-        unitId: id,
-        entrySource: "journey",
-      }),
+    // 끝난 대화의 `결과 보기`입니다. 메신저 화면을 학습 완료로 갈아 끼웁니다 — 끝난
+    // 대화는 스택에 남길 자리가 아닙니다(학습 세션 → 평가와 같은 `replace`).
+    onMessengerFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) =>
+      dispatch({ type: "replace", screen: { name: "messenger-complete", unitId: id, results } }),
+    onExitMessengerComplete: () => dispatch({ type: "backToRoot" }),
     completedPhoneCallUnitIds,
     onStartPhoneCallUnit: (id: PhoneCallUnitId) => {
       "background only";

@@ -40,9 +40,7 @@ describe("messenger state pure functions", () => {
     expect(messengerSessionReducer(active1, { type: "reply" })).toEqual(completed);
   });
 
-  it("replay와 적용 불가 action은 계약대로 동작한다", () => {
-    expect(messengerSessionReducer(completed, { type: "replay" })).toEqual(active0);
-    expect(messengerSessionReducer(active0, { type: "replay" })).toBe(active0);
+  it("적용 불가 action은 계약대로 동작한다", () => {
     expect(messengerSessionReducer(completed, { type: "reply" })).toBe(completed);
   });
 

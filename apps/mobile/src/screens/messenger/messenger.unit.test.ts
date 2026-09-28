@@ -94,16 +94,11 @@ describe("messenger session pure functions", () => {
     expect(messengerExitOutcome(done)).toBe("completed");
   });
 
-  it("replay는 완료 세션만 0번 활성으로 되돌리고 적용 불가 action은 동일 참조다", () => {
+  it("완료 세션의 reply는 같은 참조다", () => {
     const active = initialMessengerSessionState("available");
     const done = messengerSessionReducer(messengerSessionReducer(active, { type: "reply" }), {
       type: "reply",
     });
-    expect(messengerSessionReducer(done, { type: "replay" })).toEqual({
-      mode: "active",
-      replyIndex: 0,
-    });
-    expect(messengerSessionReducer(active, { type: "replay" })).toBe(active);
     expect(messengerSessionReducer(done, { type: "reply" })).toBe(done);
   });
 
