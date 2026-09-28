@@ -4,7 +4,7 @@
 
 ## 실행 조건
 
-- 측정 일시: 2026-09-28T07:35:46Z (1회차) · 07:36:41Z (2회차) · 07:43:25Z (3회차)
+- 측정 일시: 2026-09-28T08:20:57Z (1회차) · 08:21:47Z (2회차) · 08:22:35Z (3회차)
 - 상태: 측정 — Release Simulator Host를 성능 캡처 모드로 실행해 듣기 · 낱말 고르기
   두 학습 화면의 Rendering entry와 Memory snapshot을 세 회차 수집하고 기존 분석기로
   검증했다.
@@ -14,8 +14,8 @@
 - 기기: iPhone 17 Pro 시뮬레이터
 - OS: iOS 26.5 (23F77)
 - Lynx SDK: 4.0.1 — 측정 Host의 `Podfile.lock` 고정값
-- 빌드: Release / iphonesimulator, 내장 `main.lynx.bundle`(922,207 bytes, SHA-256
-  `17d11d4f9039432e4ee6e99811d8e7cb1a4f89d549d4090a6a537e2d24ee9897`)
+- 빌드: Release / iphonesimulator, 내장 `main.lynx.bundle`(922,439 bytes, SHA-256
+  `41a2deded9bc5985ec61fe31cb6ece7fed8260e2aa40c4265225e1899025a92d`)
 - 실행 회차: 01 (Host를 껐다 켜는 것으로 회차를 가른 3회)
 
 ## 시나리오
@@ -50,52 +50,66 @@
 - 죽은 코드 둘을 걷었다(`wordChoiceProgressLabel` · `questionProgressLabel`) —
   껍데기의 세션 헤더가 순번을 지게 되면서 참조가 0이 됐던 함수들이다.
 
+**카드 안팎의 손질 셋이 뒤따랐다.** 아래 수치는 그것까지 들어간 빌드의 것이다.
+
+- **제시문이 `dialogue-body`(16/24)에서 `display`(34/41)로 올라갔다.** 카드가 지는 것이
+  문항 하나뿐인데 16px는 그 카드를 「글자 한 줄 붙은 빈 상자」로 만들었다 — 기기에서
+  카드 높이의 대부분이 빈 자리였다. 문항이 두 줄이 되면서 카드가 커졌다.
+- **배지 자리와 마주 보는 빈 자리가 생겼다.** 배지 자리가 카드 위쪽에만 있어 문항이
+  아래로 쏠려 보였다(위 40pt는 비고 아래는 붙은 모양). `justify-content: center`로는
+  안 고쳐진다 — 카드 높이가 내용에서 나오므로 가운데 정렬이 나눌 남는 높이가 없다.
+  같은 토큰을 쓰는 빈 뷰 하나로 균형을 맞췄고, **노드가 63에서 64로 하나 늘었다.**
+- **보기 묶음이 카드에서 16pt 더 떨어졌다.** 껍데기가 이미 두는 16에 더해 32다 —
+  이 화면의 보기는 줄을 채우는 행이 아니라 작은 칩이라, 큰 흰 카드 바로 밑에 붙으면
+  카드에 딸린 꼬리처럼 보였다. 듣기는 보기가 카드와 같은 폭이라 그 값 그대로가 맞아,
+  껍데기의 gap을 건드리지 않고 이 화면에만 줬다.
+
 ## 분석 결과
 
 학습 화면 둘의 update pipeline이다.
 
 | 회차  | listening | word-choice |
 | ----- | --------- | ----------- |
-| 1회차 | 17.011 ms | 9.542 ms    |
-| 2회차 | 19.431 ms | 9.532 ms    |
-| 3회차 | 19.219 ms | 11.770 ms   |
+| 1회차 | 20.774 ms | 10.037 ms   |
+| 2회차 | 19.982 ms | 8.719 ms    |
+| 3회차 | 16.578 ms | 9.796 ms    |
 
 같은 회차들의 단계별 값이다.
 
 ```text
 libitum:navigation:learning-listening
-  1회차: mtsRender 0.803 / resolve 3.028 / layout 3.735 / paintingUiOperationExecute 2.186
-  2회차: mtsRender 0.573 / resolve 2.333 / layout 3.857 / paintingUiOperationExecute 2.211
-  3회차: mtsRender 1.057 / resolve 3.070 / layout 3.157 / paintingUiOperationExecute 1.847
+  1회차: mtsRender 0.584 / resolve 2.169 / layout 5.007 / paintingUiOperationExecute 2.170
+  2회차: mtsRender 0.574 / resolve 2.370 / layout 4.057 / paintingUiOperationExecute 2.311
+  3회차: mtsRender 0.846 / resolve 3.168 / layout 2.782 / paintingUiOperationExecute 2.006
 
 libitum:navigation:learning-word-choice
-  1회차: mtsRender 0.720 / resolve 3.150 / layout 1.879 / paintingUiOperationExecute 1.607
-  2회차: mtsRender 0.698 / resolve 2.827 / layout 1.924 / paintingUiOperationExecute 1.828
-  3회차: mtsRender 0.709 / resolve 2.875 / layout 4.431 / paintingUiOperationExecute 1.735
+  1회차: mtsRender 0.707 / resolve 2.768 / layout 2.847 / paintingUiOperationExecute 1.688
+  2회차: mtsRender 0.699 / resolve 2.399 / layout 1.639 / paintingUiOperationExecute 1.972
+  3회차: mtsRender 0.505 / resolve 2.213 / layout 2.982 / paintingUiOperationExecute 2.021
 ```
 
 메모리 snapshot이다. 세 회차 모두 같은 값이었다.
 
 ```text
 after-navigation-learning-listening-01 [complete]:
-  totalBytes 1629520, elementBytes 76960, viewBytes 36608,
-  mainThreadRuntimeBytes 1515952, elementNodeCount 74 nodes
+  totalBytes 1629648, elementBytes 76960, viewBytes 36608,
+  mainThreadRuntimeBytes 1516080, elementNodeCount 74 nodes
 
 after-navigation-learning-word-choice-01 [complete]:
-  totalBytes 1620464, elementBytes 65520, viewBytes 31744,
-  mainThreadRuntimeBytes 1523200, elementNodeCount 63 nodes
+  totalBytes 1621680, elementBytes 66560, viewBytes 31744,
+  mainThreadRuntimeBytes 1523376, elementNodeCount 64 nodes
 ```
 
-**낱말 고르기가 듣기보다 가볍다** — 노드 11개(74 → 63), element 11,440 bytes,
+**낱말 고르기가 듣기보다 가볍다** — 노드 10개(74 → 64), element 10,400 bytes,
 view 4,864 bytes가 적다. 두 화면은 껍데기(상단 바 · 세션 헤더 · 지시문 · 무대 카드)를
 문자 그대로 공유하므로 이 차이는 전부 카드 안과 작업 영역에서 난다: 듣기는 제시 채널에
 재생 컨트롤 둘과 로마자 한 줄을 세우고 보기 넷이 각각 행이지만, 낱말 고르기는 제시문
 `text` 요소 하나에 보기가 낱말 `text` 하나씩인 칩이다.
 
-pipeline도 같은 방향이다(9.5~11.8 ms 대 17.0~19.4 ms). 갈리는 자리는 layout으로,
-낱말 고르기가 1.9~4.4 ms인 데 비해 듣기는 3.2~3.9 ms다 — 다만 3회차의 4.431 ms가
-듣기의 최솟값보다 크므로 이 차이를 layout 하나로 돌리지 않는다. 회차 셋의 폭이 좁지
-않아 **순위만 말하고 배수는 말하지 않는다.**
+pipeline도 같은 방향이다(8.7~10.0 ms 대 16.6~20.8 ms). 갈리는 자리는 layout으로,
+낱말 고르기가 1.6~3.0 ms인 데 비해 듣기는 2.8~5.0 ms다 — 다만 두 구간이 겹치므로
+이 차이를 layout 하나로 돌리지 않는다. 회차 셋의 폭이 좁지 않아 **순위만 말하고
+배수는 말하지 않는다.**
 
 보기를 고르는 구간(판정 배지가 뜨는 update)과 문항 사이 자동 넘김에는 timing flag가
 없어 pipeline entry가 생기지 않았다. 그 값을 추정하거나 `0`으로 쓰지 않는다.
@@ -103,8 +117,12 @@ pipeline도 같은 방향이다(9.5~11.8 ms 대 17.0~19.4 ms). 갈리는 자리�
 ## 해석
 
 **세 회차뿐이고 시뮬레이터 하나다.** 실기가 아니고 부하도 없으므로 이 수치는 예산
-판정의 근거가 아니다. 회차 폭이 낱말 고르기에서 9.5~11.8 ms로 24% 벌어지는데 표본이
+판정의 근거가 아니다. 회차 폭이 듣기에서 16.6~20.8 ms로 25% 벌어지는데 표본이
 셋이라 그 폭이 잡음인지 구간인지 말할 수 없다 — 그래서 아래에서 순위만 말한다.
+
+**앞선 측정을 버리고 다시 쟀다.** 위 세 손질이 들어오면서 노드 수와 카드 높이가
+갈렸고, 그러면 이전 회차는 지금 코드가 아닌 빌드를 설명한다. 그래서 같은 절차로 세
+회차를 새로 돌렸다.
 
 **「가볍다」가 「빨라졌다」는 아니다.** 낱말 고르기가 듣기보다 노드가 적고 pipeline이
 짧은 것은 두 화면의 비교이지 이 변경의 전후 비교가 아니다. 이 화면은 전까지 제품
@@ -117,14 +135,14 @@ pipeline도 같은 방향이다(9.5~11.8 ms 대 17.0~19.4 ms). 갈리는 자리�
 
 같은 빌드에서 접근성 트리로 기하를 재고 눈으로 확인한 것은 다음과 같다.
 
-- **칩이 디자인 치수 그대로다.** 보기 넷이 `(69,412,60×60)` `(137,…)` `(205,…)`
+- **칩이 디자인 치수 그대로다.** 보기 넷이 `(69,542,60×60)` `(137,…)` `(205,…)`
   `(273,…)`로, 60pt 정사각에 8pt 간격이고 줄이 가운데에 선다(69 + 4×60 + 3×8 = 333,
   남는 69가 양쪽으로 갈린다).
 - **배지가 떠도 아래가 밀리지 않는다.** 처음 쟀을 때 제시문이 y348 → y352, 보기가
   y404 → y408로 **4pt 내려갔다** — 배지 자리(`min-height: spacing-32`)가 배지가
   실제로 차지하는 36보다 작아서였다. 듣기는 카드의 높이 예산이 그 4pt를 먹지만 이
   화면에는 그 예산이 없어 밖으로 나왔다. 자리를 `spacing-40`(디자인의 배지 높이)으로
-  올린 뒤 다시 재니 제시문 y356 · 보기 y412로 **배지 유무와 무관하게 같았다.**
+  올린 뒤 다시 재니 **배지 유무와 무관하게 제시문 y356 · 보기 y542로 같았다.**
 - **판정이 색 하나로 말하지 않는다.** 고른 칩은 테두리가 굵어지고(2px) 글자와 테두리가
   초록이 되며, 판정 자체는 카드의 배지가 아이콘 · 면 · 낱말 셋으로 말한다.
   보조기술에는 `학생, 정답`으로 읽힌다(WCAG 1.4.1).

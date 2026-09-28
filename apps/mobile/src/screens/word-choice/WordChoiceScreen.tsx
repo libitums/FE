@@ -158,6 +158,11 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
               {wordChoiceCompletionText}
             </text>
           ) : null}
+
+          {/* 배지 자리와 마주 보는 빈 자리입니다 — 왜 필요한지는 CSS에 적혀 있습니다.
+              언제나 섭니다: 배지 자리도 언제나 서므로, 조건부로 두면 완료 상태에서만
+              다시 쏠립니다. */}
+          <view className="word-choice-screen-verdict-balance" />
         </view>
       }
     />
