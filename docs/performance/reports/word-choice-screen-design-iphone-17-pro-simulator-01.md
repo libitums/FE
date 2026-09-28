@@ -4,7 +4,7 @@
 
 ## 실행 조건
 
-- 측정 일시: 2026-09-28T08:20:57Z (1회차) · 08:21:47Z (2회차) · 08:22:35Z (3회차)
+- 측정 일시: 2026-09-28T08:46:17Z (1회차) · 08:47:02Z (2회차) · 08:47:47Z (3회차)
 - 상태: 측정 — Release Simulator Host를 성능 캡처 모드로 실행해 듣기 · 낱말 고르기
   두 학습 화면의 Rendering entry와 Memory snapshot을 세 회차 수집하고 기존 분석기로
   검증했다.
@@ -14,8 +14,8 @@
 - 기기: iPhone 17 Pro 시뮬레이터
 - OS: iOS 26.5 (23F77)
 - Lynx SDK: 4.0.1 — 측정 Host의 `Podfile.lock` 고정값
-- 빌드: Release / iphonesimulator, 내장 `main.lynx.bundle`(922,439 bytes, SHA-256
-  `41a2deded9bc5985ec61fe31cb6ece7fed8260e2aa40c4265225e1899025a92d`)
+- 빌드: Release / iphonesimulator, 내장 `main.lynx.bundle`(922,870 bytes, SHA-256
+  `7cc7470af96c94bf84cb438d1d7484e4d64c9245cd37fdeddf5dd522a0afee60`)
 - 실행 회차: 01 (Host를 껐다 켜는 것으로 회차를 가른 3회)
 
 ## 시나리오
@@ -72,34 +72,34 @@
 
 | 회차  | listening | word-choice |
 | ----- | --------- | ----------- |
-| 1회차 | 20.774 ms | 10.037 ms   |
-| 2회차 | 19.982 ms | 8.719 ms    |
-| 3회차 | 16.578 ms | 9.796 ms    |
+| 1회차 | 29.951 ms | 13.399 ms   |
+| 2회차 | 17.566 ms | 8.365 ms    |
+| 3회차 | 16.780 ms | 10.753 ms   |
 
 같은 회차들의 단계별 값이다.
 
 ```text
 libitum:navigation:learning-listening
-  1회차: mtsRender 0.584 / resolve 2.169 / layout 5.007 / paintingUiOperationExecute 2.170
-  2회차: mtsRender 0.574 / resolve 2.370 / layout 4.057 / paintingUiOperationExecute 2.311
-  3회차: mtsRender 0.846 / resolve 3.168 / layout 2.782 / paintingUiOperationExecute 2.006
+  1회차: mtsRender 1.000 / resolve 3.597 / layout 4.524 / paintingUiOperationExecute 1.980
+  2회차: mtsRender 1.017 / resolve 3.276 / layout 2.965 / paintingUiOperationExecute 1.927
+  3회차: mtsRender 0.934 / resolve 3.247 / layout 2.641 / paintingUiOperationExecute 1.949
 
 libitum:navigation:learning-word-choice
-  1회차: mtsRender 0.707 / resolve 2.768 / layout 2.847 / paintingUiOperationExecute 1.688
-  2회차: mtsRender 0.699 / resolve 2.399 / layout 1.639 / paintingUiOperationExecute 1.972
-  3회차: mtsRender 0.505 / resolve 2.213 / layout 2.982 / paintingUiOperationExecute 2.021
+  1회차: mtsRender 0.497 / resolve 2.387 / layout 6.692 / paintingUiOperationExecute 1.890
+  2회차: mtsRender 0.723 / resolve 2.380 / layout 1.551 / paintingUiOperationExecute 1.710
+  3회차: mtsRender 0.954 / resolve 3.990 / layout 2.091 / paintingUiOperationExecute 1.534
 ```
 
 메모리 snapshot이다. 세 회차 모두 같은 값이었다.
 
 ```text
 after-navigation-learning-listening-01 [complete]:
-  totalBytes 1629648, elementBytes 76960, viewBytes 36608,
-  mainThreadRuntimeBytes 1516080, elementNodeCount 74 nodes
+  totalBytes 1629696, elementBytes 76960, viewBytes 36608,
+  mainThreadRuntimeBytes 1516128, elementNodeCount 74 nodes
 
 after-navigation-learning-word-choice-01 [complete]:
-  totalBytes 1621680, elementBytes 66560, viewBytes 31744,
-  mainThreadRuntimeBytes 1523376, elementNodeCount 64 nodes
+  totalBytes 1621728, elementBytes 66560, viewBytes 31744,
+  mainThreadRuntimeBytes 1523424, elementNodeCount 64 nodes
 ```
 
 **낱말 고르기가 듣기보다 가볍다** — 노드 10개(74 → 64), element 10,400 bytes,
@@ -108,10 +108,14 @@ view 4,864 bytes가 적다. 두 화면은 껍데기(상단 바 · 세션 헤더 
 재생 컨트롤 둘과 로마자 한 줄을 세우고 보기 넷이 각각 행이지만, 낱말 고르기는 제시문
 `text` 요소 하나에 보기가 낱말 `text` 하나씩인 칩이다.
 
-pipeline도 같은 방향이다(8.7~10.0 ms 대 16.6~20.8 ms). 갈리는 자리는 layout으로,
-낱말 고르기가 1.6~3.0 ms인 데 비해 듣기는 2.8~5.0 ms다 — 다만 두 구간이 겹치므로
-이 차이를 layout 하나로 돌리지 않는다. 회차 셋의 폭이 좁지 않아 **순위만 말하고
-배수는 말하지 않는다.**
+pipeline도 같은 방향이다(8.4~13.4 ms 대 16.8~30.0 ms). 갈리는 자리는 layout으로,
+낱말 고르기가 1.6~6.7 ms인 데 비해 듣기는 2.6~4.5 ms다 — 두 구간이 겹치므로 이 차이를
+layout 하나로 돌리지 않는다.
+
+**1회차가 둘 다 유난히 크다**(29.951 · 13.399 ms). 그 회차는 앱을 새로 설치한 직후라
+캐시가 비어 있었다 — 2·3회차는 같은 설치 위에서 돌았다. 그것을 「첫 실행이라 그렇다」로
+단정하지 않고 값을 그대로 남긴다. 표본 셋으로 가를 수 있는 것이 아니다. 회차 폭이 이만큼
+벌어지므로 **순위만 말하고 배수는 말하지 않는다.**
 
 보기를 고르는 구간(판정 배지가 뜨는 update)과 문항 사이 자동 넘김에는 timing flag가
 없어 pipeline entry가 생기지 않았다. 그 값을 추정하거나 `0`으로 쓰지 않는다.
@@ -119,18 +123,12 @@ pipeline도 같은 방향이다(8.7~10.0 ms 대 16.6~20.8 ms). 갈리는 자리�
 ## 해석
 
 **세 회차뿐이고 시뮬레이터 하나다.** 실기가 아니고 부하도 없으므로 이 수치는 예산
-판정의 근거가 아니다. 회차 폭이 듣기에서 16.6~20.8 ms로 25% 벌어지는데 표본이
+판정의 근거가 아니다. 회차 폭이 듣기에서 16.8~30.0 ms로 거의 두 배 벌어지는데 표본이
 셋이라 그 폭이 잡음인지 구간인지 말할 수 없다 — 그래서 아래에서 순위만 말한다.
 
-⚠ **캡처 뒤에 CSS가 더 갈렸다.** 제시문 색이 `fg-neutral`에서 `brand-primary`로,
-보기 묶음이 고정 여백에서 `min-height: 100%` + 세로 가운데로, 고른 보기의 상태 클래스가
-`-selected` 하나에서 `-correct`/`-incorrect` 둘로 바뀌었다. 셋 다 **노드도 구조도
-그대로**다(클래스 이름과 속성 값만 갈린다). 그래서 위 `빌드`의 SHA는 **캡처한 빌드**이지
-이 PR의 마지막 커밋이 아니다. 디자인이 더 흔들리지 않게 되면 같은 절차로 다시 잰다.
-
-**앞선 측정을 버리고 다시 쟀다.** 위 세 손질이 들어오면서 노드 수와 카드 높이가
-갈렸고, 그러면 이전 회차는 지금 코드가 아닌 빌드를 설명한다. 그래서 같은 절차로 세
-회차를 새로 돌렸다.
+**앞선 측정을 두 번 버리고 다시 쟀다.** 디자인을 손볼 때마다 노드 수나 카드 높이가
+갈렸고, 그러면 이전 회차는 지금 코드가 아닌 빌드를 설명한다. 위 수치는 **PR의 마지막
+코드로 빌드한 것**에서 나왔다 — `빌드` 칸의 SHA가 그 산출물이다.
 
 **「가볍다」가 「빨라졌다」는 아니다.** 낱말 고르기가 듣기보다 노드가 적고 pipeline이
 짧은 것은 두 화면의 비교이지 이 변경의 전후 비교가 아니다. 이 화면은 전까지 제품
@@ -143,14 +141,14 @@ pipeline도 같은 방향이다(8.7~10.0 ms 대 16.6~20.8 ms). 갈리는 자리�
 
 같은 빌드에서 접근성 트리로 기하를 재고 눈으로 확인한 것은 다음과 같다.
 
-- **칩이 디자인 치수 그대로다.** 보기 넷이 `(69,542,60×60)` `(137,…)` `(205,…)`
+- **칩이 디자인 치수 그대로다.** 보기 넷이 `(69,641,60×60)` `(137,…)` `(205,…)`
   `(273,…)`로, 60pt 정사각에 8pt 간격이고 줄이 가운데에 선다(69 + 4×60 + 3×8 = 333,
   남는 69가 양쪽으로 갈린다).
 - **배지가 떠도 아래가 밀리지 않는다.** 처음 쟀을 때 제시문이 y348 → y352, 보기가
   y404 → y408로 **4pt 내려갔다** — 배지 자리(`min-height: spacing-32`)가 배지가
   실제로 차지하는 36보다 작아서였다. 듣기는 카드의 높이 예산이 그 4pt를 먹지만 이
   화면에는 그 예산이 없어 밖으로 나왔다. 자리를 `spacing-40`(디자인의 배지 높이)으로
-  올린 뒤 다시 재니 **배지 유무와 무관하게 제시문 y356 · 보기 y542로 같았다.**
+  올린 뒤 다시 재니 **배지 유무와 무관하게 제시문 y356 · 보기 y641로 같았다.**
 - **판정이 색 하나로 말하지 않는다.** 고른 칩은 테두리가 굵어지고(2px) 글자와 테두리가
   초록이 되며, 판정 자체는 카드의 배지가 아이콘 · 면 · 낱말 셋으로 말한다.
   보조기술에는 `학생, 정답`으로 읽힌다(WCAG 1.4.1).
@@ -172,7 +170,13 @@ pipeline도 같은 방향이다(8.7~10.0 ms 대 16.6~20.8 ms). 갈리는 자리�
 - 활동 둘을 잇는 스텝이 제품에서 처음 돌았다. `learningFormAt`·`activityIndex`는
   2026-09-26에 들어왔지만 배정표가 전부 활동 하나였던 탓에 밟히지 않던 코드였고, 그
   경로를 통합 테스트 셋이 함께 짚는다.
-- 후속 둘을 남긴다. (1) 칩이 낱말만큼 넓어지는 갈래가 아직 안 밟혔다 — 4자 이상
-  낱말이 오는 날 `flex-wrap`과 함께 다시 본다. (2) 판정 배지 update와 자동 넘김
-  구간에 timing flag가 없다. 둘 다 이 PR에서 하지 않는다 — 전자는 컨텐츠가, 후자는
-  잴 이유가 아직 없다.
+- **고른 보기가 판정에 따라 갈린다.** 상태 클래스가 `-selected` 하나였을 때는 오답을
+  골라도 초록이 나왔다. `-correct`/`-incorrect`로 갈랐고 기기에서 둘 다 확인했다.
+  **이 갈래는 `ui` 계층이 원리적으로 못 본다** — 클래스는 시각 전용이라 테스트가 보는
+  경로가 아니고, `data-result`는 그때도 맞게 붙어 있었다. 기기가 유일한 판정자다.
+- 후속 셋을 남긴다. (1) 칩이 낱말만큼 넓어지는 갈래가 아직 안 밟혔다 — 오늘 낱말이
+  전부 2~3자다. 4자 이상이 와서 줄이 접히는 날 `flex-wrap`과 세로 가운데 정렬을 함께
+  다시 본다. (2) 판정 배지 update와 자동 넘김 구간에 timing flag가 없다. (3) 상태어
+  `correct`·`incorrect`가 ADR-0003 D7의 예약 목록 밖이다 — 형제인 `listening-choice`가
+  이미 쓰고 있어 맞췄지만, 목록을 늘릴지 다른 기전으로 옮길지는 D7의 재검토 조건이라
+  사람이 정한다. 셋 다 이 PR에서 하지 않는다.
