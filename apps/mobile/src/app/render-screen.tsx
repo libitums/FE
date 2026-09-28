@@ -109,7 +109,6 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "episode-prologue-complete":
       return renderEpisodeIntroFlow(screen, wiring);
     case "notifications":
-      // 남아 있는 알림을 그대로 그리고, 선택·삭제·나가기는 결선으로 올립니다.
       return (
         <NotificationsScreen
           items={wiring.notifications}
