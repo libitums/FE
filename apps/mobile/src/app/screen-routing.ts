@@ -69,6 +69,9 @@ export function learningScreenFor(
     case "sentence-order": {
       return { name: "sentence-order", stepId, activityIndex };
     }
+    case "speaking": {
+      return { name: "speaking", stepId, activityIndex };
+    }
     case "word-choice": {
       return { name: "word-choice", stepId, activityIndex };
     }

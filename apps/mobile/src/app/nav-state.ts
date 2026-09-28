@@ -66,6 +66,7 @@ export type Screen =
   | { name: "sentence-order"; stepId: JourneyStepId; activityIndex: number }
   | { name: "word-choice"; stepId: JourneyStepId; activityIndex: number }
   | { name: "culture"; stepId: JourneyStepId; activityIndex: number }
+  | { name: "speaking"; stepId: JourneyStepId; activityIndex: number }
   | { name: "culture-quiz"; stepId: JourneyStepId }
   | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] }
   | { name: "messenger"; unitId: MessengerUnitId }

@@ -13,4 +13,5 @@
 // 붙지 않고, 타입이 지켜지는지는 `tsc`가 집니다.
 
 /** 기본 학습형 중 **화면을 가진 것**입니다. `docs/screens.md` 「학습의 세 유형」의 이름과 1:1입니다. */
-export type LearningForm = "listening" | "sentence-order" | "word-choice" | "culture";
+// ⟨2026-09-28⟩ 다섯째 `speaking`(말하기, Figma 65-282)이 늘었습니다.
+export type LearningForm = "listening" | "sentence-order" | "word-choice" | "culture" | "speaking";

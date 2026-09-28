@@ -13,6 +13,7 @@ const formLabels: Record<LearningForm, string> = {
   "sentence-order": "Word order",
   "word-choice": "Word choice",
   culture: "Culture",
+  speaking: "Speaking",
 };
 
 /**

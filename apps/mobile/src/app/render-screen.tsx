@@ -31,7 +31,6 @@ import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { RoleplayEpisodeScreen } from "../screens/roleplay-list/RoleplayEpisodeScreen";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { findRoleplaySection } from "../screens/roleplay-list/roleplay-list";
-import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { specialUnitExitLabel } from "../lib/special-unit-entry-source";
 import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
@@ -43,6 +42,7 @@ import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
 import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
 import { profileList, termsSectionList } from "./app-content";
 import type { Screen } from "./nav-state";
+import { renderShellLearningScreen } from "./render-learning-screen";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import type { ScreenWiring } from "./screen-wiring";
@@ -179,13 +179,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // 이 저장소가 「빠진 결선」을 컴파일 타임에 잡는 유일한 장치입니다. 분기
     // 셋의 중복은 그 장치의 가격이지 결함이 아닙니다.
     case "sentence-order":
-      return (
-        <SentenceOrderScreen
-          stepId={screen.stepId}
-          onExit={wiring.onExitLearning}
-          onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
-        />
-      );
+    case "speaking":
+      return renderShellLearningScreen(screen, wiring);
     case "word-choice":
       return (
         <WordChoiceScreen
