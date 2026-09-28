@@ -660,3 +660,50 @@ test("[I12] 펼친 화면에서 연 유닛의 목록으로는 롤플레이 화�
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("roleplay-episode-screen-title")).not.toBeInTheDocument();
 });
+
+// -------------------------------------------------------------- I13~I15 (결제 롤플레이)
+
+test("[I13] 에피소드를 끝내기 전에는 결제 롤플레이도 에피소드 잠김이고 눌러도 안내가 없다", () => {
+  openLockedRoleplayTab();
+
+  const row = screen.getByTestId("roleplay-list-section-premium-row-tutorial");
+  expect(row.children.length).toBeGreaterThan(0);
+  for (const card of Array.from(row.children)) {
+    expect(card).toHaveAttribute("data-lock", "episode");
+    fireEvent.tap(card, {});
+  }
+  expect(screen.queryByTestId("roleplay-list-premium-notice")).not.toBeInTheDocument();
+});
+
+test("[I14] 에피소드를 끝내면 기본 롤플레이는 열리고 결제 롤플레이는 결제 잠김이 된다", () => {
+  openRoleplayTab();
+
+  expect(screen.getByTestId(`roleplay-list-item-${messengerUnitId}`)).toHaveAttribute(
+    "data-locked",
+    "false",
+  );
+  const row = screen.getByTestId("roleplay-list-section-premium-row-tutorial");
+  for (const card of Array.from(row.children)) {
+    expect(card).toHaveAttribute("data-lock", "payment");
+  }
+});
+
+test("[I15] 결제 잠김 카드를 누르면 안내가 뜨고 화면은 옮겨 가지 않는다", () => {
+  openRoleplayTab();
+  const row = screen.getByTestId("roleplay-list-section-premium-row-tutorial");
+
+  fireEvent.tap(row.children[0] as Element, {});
+
+  expect(screen.getByTestId("roleplay-list-premium-notice")).toBeInTheDocument();
+  expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
+
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-close")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  expect(screen.queryByTestId("roleplay-list-premium-notice")).not.toBeInTheDocument();
+});

@@ -48,6 +48,31 @@ export type RoleplayEpisodeId = string;
  * 하나만 열린」 상태를 타입이 표현할 수 있게 됩니다. `RoleplayItem`에 상태 필드가 없다는
  * 위의 약속은 그대로입니다.
  */
+/** 결제 롤플레이를 가려내는 이름입니다. 여정의 유닛 id와 겹치지 않습니다. */
+export type PremiumRoleplayId = string;
+
+/**
+ * 결제 사용자를 위한 롤플레이 하나입니다. 그 에피소드와 닮은 상황을 더 연습하게 합니다.
+ *
+ * **열 화면을 가리키는 필드가 없습니다.** 컨텐츠도 결제도 아직 없어, 오늘 이 항목은
+ * 카드로 서기만 하는 예고입니다(`roleplay-premium-items.ts`).
+ */
+export type PremiumRoleplayItem = {
+  readonly id: PremiumRoleplayId;
+  readonly title: string;
+  /** 카드의 둘째 줄입니다 — 무엇을 연습하는지 한 줄로 말합니다. */
+  readonly situation: string;
+};
+
+/**
+ * 결제 롤플레이 카드가 막혀 있는 까닭입니다. 둘은 여는 방법이 다르므로 같은 자물쇠로
+ * 그리지 않습니다 — `episode`는 여정을 더 하면 열리고, `payment`는 결제하면 열립니다.
+ *
+ * 「열림」이 없습니다. 결제한 사용자가 없고 열 화면도 없어, 그 상태는 오늘 표현할 수
+ * 없습니다.
+ */
+export type PremiumRoleplayLock = "episode" | "payment";
+
 export type RoleplaySection = {
   readonly episodeId: RoleplayEpisodeId;
   /** 구획 머리의 첫 줄입니다 — `Episode 0.` */
@@ -56,6 +81,8 @@ export type RoleplaySection = {
   readonly title: string;
   readonly unlocked: boolean;
   readonly items: readonly RoleplayItem[];
+  /** 결제 롤플레이입니다. 없으면 빈 목록이고, 그때 구획은 둘째 줄을 그리지 않습니다. */
+  readonly premiumItems: readonly PremiumRoleplayItem[];
 };
 
 export type RoleplayListScreenProps = {
@@ -84,6 +111,12 @@ export type RoleplayCardProps = {
   readonly onSelect: (item: RoleplayItem) => void;
 };
 
+export type PremiumRoleplayCardProps = {
+  readonly item: PremiumRoleplayItem;
+  readonly lock: PremiumRoleplayLock;
+  readonly onSelect: (item: PremiumRoleplayItem) => void;
+};
+
 export type RoleplayListTestId =
   | "roleplay-list-screen-title"
   | "roleplay-list-screen-scroll"
@@ -92,6 +125,15 @@ export type RoleplayListTestId =
   | `roleplay-list-section-header-${RoleplayEpisodeId}`
   | `roleplay-list-section-view-all-${RoleplayEpisodeId}`
   | `roleplay-list-section-row-${RoleplayEpisodeId}`
+  | `roleplay-list-section-premium-${RoleplayEpisodeId}`
+  | `roleplay-list-section-premium-header-${RoleplayEpisodeId}`
+  | `roleplay-list-section-premium-row-${RoleplayEpisodeId}`
+  | `roleplay-premium-card-${PremiumRoleplayId}`
+  | `roleplay-premium-card-badge-${PremiumRoleplayId}`
+  | `roleplay-premium-card-lock-${PremiumRoleplayId}`
+  | `roleplay-premium-card-title-${PremiumRoleplayId}`
+  | `roleplay-premium-card-situation-${PremiumRoleplayId}`
+  | "roleplay-list-premium-notice"
   | "roleplay-episode-screen-exit"
   | "roleplay-episode-screen-title"
   | "roleplay-episode-screen-scroll"

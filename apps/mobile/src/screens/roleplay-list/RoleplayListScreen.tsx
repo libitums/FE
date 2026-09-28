@@ -1,10 +1,18 @@
+import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import arrowRight02 from "@libitums/icons/lynx/arrow-right-02";
+import crown from "@libitums/icons/lynx/crown";
 import { color } from "@libitums/design-tokens";
+import { Dialog } from "@libitums/ui-lynx/dialog";
 
+import { PremiumRoleplayCard } from "./PremiumRoleplayCard";
 import { RoleplayCard } from "./RoleplayCard";
-import { roleplaySectionAccessibilityLabel } from "./roleplay-list";
-import type { RoleplayListScreenProps } from "./roleplay-list.contract";
+import {
+  premiumRoleplayLock,
+  premiumRoleplayNotice,
+  roleplaySectionAccessibilityLabel,
+} from "./roleplay-list";
+import type { PremiumRoleplayItem, RoleplayListScreenProps } from "./roleplay-list.contract";
 
 import "./roleplay-list-screen.css";
 
@@ -20,15 +28,27 @@ export function RoleplayListScreen({
   onSelectItem,
   onViewAll,
 }: RoleplayListScreenProps): ReactNode {
+  // 결제 잠김 카드를 누르면 뜨는 안내입니다. 화면이 집니다 — 결제 화면이 아직 없어 갈
+  // 곳이 없고, 안내는 이 화면 위에 겹칠 뿐 화면 전환이 아닙니다.
+  const [noticeItem, setNoticeItem] = useState<PremiumRoleplayItem | null>(null);
+
   return (
     <view className="roleplay-list-screen">
-      <text
-        data-testid="roleplay-list-screen-title"
-        className="roleplay-list-screen-title"
-        accessibility-traits="header"
+      {/* 안내가 떠 있는 동안 뒤쪽을 가립니다(ADR-0016 D9). 가림은 자손에 걸리므로(D5)
+          제목 자신이 아니라 이 상자에 붙입니다. */}
+      <view
+        className="roleplay-list-screen-head"
+        data-testid="roleplay-list-screen-head"
+        accessibility-elements-hidden={noticeItem !== null}
       >
-        롤플레이
-      </text>
+        <text
+          data-testid="roleplay-list-screen-title"
+          className="roleplay-list-screen-title"
+          accessibility-traits="header"
+        >
+          롤플레이
+        </text>
+      </view>
       {/* [흐름] 내용 슬롯 — `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안
           적으면 초기값이 각각 가로·꺼짐이라 세로 스크롤이 원리적으로 불가능합니다.
           accessibility-*를 붙이지 않습니다. */}
@@ -47,6 +67,9 @@ export function RoleplayListScreen({
               className="roleplay-list-section"
               data-testid={`roleplay-list-section-${section.episodeId}`}
               data-unlocked={section.unlocked ? "true" : "false"}
+              // 안내가 떠 있는 동안 뒤쪽을 가립니다. 스크롤과 목록 상자에는 붙이지
+              // 않습니다 — 그 둘은 accessibility-*를 지지 않습니다(ADR-0022 D4·D5).
+              accessibility-elements-hidden={noticeItem !== null}
             >
               <view className="roleplay-list-section-head">
                 {/* 머리 두 줄을 한 접근성 요소로 묶습니다 — 따로 두면 `Episode 0.`와
@@ -101,10 +124,66 @@ export function RoleplayListScreen({
                   ))}
                 </view>
               </scroll-view>
+              {/* 결제 롤플레이 줄 — 기본 줄 아래에 따로 섭니다. 같은 줄에 섞으면 옆으로
+                  넘겨야 보입니다. */}
+              {section.premiumItems.length === 0 ? null : (
+                <view
+                  className="roleplay-list-section-premium"
+                  data-testid={`roleplay-list-section-premium-${section.episodeId}`}
+                >
+                  <view
+                    className="roleplay-list-section-premium-header"
+                    data-testid={`roleplay-list-section-premium-header-${section.episodeId}`}
+                    accessibility-element={true}
+                    accessibility-label={`${section.label} 플러스 롤플레이, 이 에피소드와 닮은 상황을 더 연습해요`}
+                  >
+                    <svg
+                      className="roleplay-list-section-premium-icon"
+                      content={crown}
+                      current-color={color.brand.primary}
+                    />
+                    <text className="roleplay-list-section-premium-label">플러스</text>
+                    <text className="roleplay-list-section-premium-caption">
+                      닮은 상황을 더 연습해요
+                    </text>
+                  </view>
+                  <scroll-view
+                    className="roleplay-list-section-scroll"
+                    scroll-orientation="horizontal"
+                    scroll-bar-enable={false}
+                  >
+                    <view
+                      className="roleplay-list-section-row"
+                      data-testid={`roleplay-list-section-premium-row-${section.episodeId}`}
+                    >
+                      {section.premiumItems.map((item) => (
+                        <PremiumRoleplayCard
+                          key={item.id}
+                          item={item}
+                          lock={premiumRoleplayLock(section)}
+                          onSelect={setNoticeItem}
+                        />
+                      ))}
+                    </view>
+                  </scroll-view>
+                </view>
+              )}
             </view>
           ))}
         </view>
       </scroll-view>
+      {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식입니다. */}
+      {noticeItem === null ? null : (
+        <view className="roleplay-list-premium-notice" data-testid="roleplay-list-premium-notice">
+          <Dialog
+            title="플러스 롤플레이"
+            description={premiumRoleplayNotice(noticeItem)}
+            actions={[{ id: "close", label: "확인" }]}
+            phase="visible"
+            bindaction={() => setNoticeItem(null)}
+          />
+        </view>
+      )}
     </view>
   );
 }

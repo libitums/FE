@@ -21,9 +21,12 @@ import "@libitums/ui-lynx/bottom-sheet/styles.css";
 import "@libitums/ui-lynx/button/styles.css";
 import "@libitums/ui-lynx/card/styles.css";
 import "@libitums/ui-lynx/chat-bubble/styles.css";
+// 롤플레이 화면의 플러스 안내가 소비하는 Dialog와, Dialog가 깔고 서는 Overlay입니다.
+import "@libitums/ui-lynx/dialog/styles.css";
 import "@libitums/ui-lynx/episode-header/styles.css";
 import "@libitums/ui-lynx/fog/styles.css";
 import "@libitums/ui-lynx/learning-unit/styles.css";
+import "@libitums/ui-lynx/overlay/styles.css";
 import "@libitums/ui-lynx/page-indicator.css";
 import "@libitums/ui-lynx/round-button/styles.css";
 import "@libitums/ui-lynx/status-indicator/styles.css";

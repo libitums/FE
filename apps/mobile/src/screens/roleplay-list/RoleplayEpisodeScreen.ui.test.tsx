@@ -25,6 +25,7 @@ const section: RoleplaySection = {
   title: "Tutorial.",
   unlocked: true,
   items: [messengerItem, phoneCallItem],
+  premiumItems: [],
 };
 
 function exitButton(): HTMLElement {
