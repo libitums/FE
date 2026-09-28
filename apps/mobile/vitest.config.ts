@@ -28,6 +28,9 @@ export default defineConfig({
       "@libitums/ui-lynx/visual-novel-dialog": fileURLToPath(
         new URL("../../packages/ui-lynx/src/visual-novel-dialog/index.ts", import.meta.url),
       ),
+      "@libitums/ui-lynx/settings-cell": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/settings-cell/index.ts", import.meta.url),
+      ),
       "@libitums/ui-lynx/button": fileURLToPath(
         new URL("../../packages/ui-lynx/src/button/index.ts", import.meta.url),
       ),

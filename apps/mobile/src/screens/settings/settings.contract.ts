@@ -16,17 +16,6 @@ export type SettingsScreenProps = {
   readonly onToggleSessionOption: (key: SessionOptionKey) => void;
 };
 
-export type SettingsNavItemProps = {
-  readonly target: SettingsNavTarget;
-  readonly onSelect: (target: SettingsNavTarget) => void;
-};
-
-export type SettingsToggleItemProps = {
-  readonly optionKey: SessionOptionKey;
-  readonly value: boolean;
-  readonly onToggle: (key: SessionOptionKey) => void;
-};
-
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };
 export type ProfileOpenedEvent = { readonly name: "profile_opened" };
 export type TermsOpenedEvent = { readonly name: "terms_opened" };
@@ -48,8 +37,5 @@ export type SettingsTestId =
   | "settings-screen-title"
   | "settings-screen-scroll"
   | "settings-screen-list"
-  | `settings-nav-item-${SettingsNavTarget}`
-  | `settings-nav-item-label-${SettingsNavTarget}`
-  | `settings-toggle-item-${SessionOptionKey}`
-  | `settings-toggle-item-label-${SessionOptionKey}`
-  | `settings-toggle-item-state-${SessionOptionKey}`;
+  | `ui-lynx-settings-group-item-${SettingsNavTarget}`
+  | `ui-lynx-settings-group-item-${SessionOptionKey}`;

@@ -80,6 +80,11 @@ describe("Settings Cell UI", () => {
     );
     const group = screen.getByTestId("ui-lynx-settings-group");
     expect(group).toHaveAttribute("accessibility-label", "계정 설정");
+    // 그룹은 접근성 요소가 아닙니다 — 셀이 각각 요소로 서야 스크린리더가 셀 하나하나에 닿습니다.
+    expect(group).toHaveAttribute("accessibility-element", "false");
+    for (const cell of screen.getAllByTestId("ui-lynx-settings-cell")) {
+      expect(cell).toHaveAttribute("accessibility-element", "true");
+    }
     expect(screen.getAllByTestId("ui-lynx-settings-cell")).toHaveLength(2);
     expect(group.querySelectorAll(".ui-lynx-settings-group-divider")).toHaveLength(1);
     expect(
@@ -87,5 +92,24 @@ describe("Settings Cell UI", () => {
         '[data-testid="ui-lynx-avatar"][accessibility-elements-hidden="true"]',
       ),
     ).toHaveLength(2);
+  });
+
+  test("그룹 항목 상자마다 id를 실은 testid가 있어 항목을 가려 집을 수 있다", () => {
+    const onNavigate = vi.fn<() => void>();
+    render(
+      <SettingsGroup
+        accessibilityLabel="계정"
+        items={[
+          { id: "profile", trailing: "navigation", title: "프로필", onNavigate },
+          { id: "terms", trailing: "navigation", title: "약관", onNavigate: vi.fn<() => void>() },
+        ]}
+      />,
+    );
+
+    const item = screen.getByTestId("ui-lynx-settings-group-item-profile");
+    const cell = item.querySelector('[data-testid="ui-lynx-settings-cell"]');
+    expect(cell).toHaveAttribute("accessibility-label", "프로필");
+    tap(cell as Element);
+    expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 });

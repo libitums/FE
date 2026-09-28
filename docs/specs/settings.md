@@ -35,8 +35,8 @@
 ```text
 App (app/App.tsx)                                        ← 유일한 결선 자리. sessionOptions의 주인
 ├─ SettingsScreen  { sessionOptions, onSelectNavTarget, onToggleSessionOption }
-│   ├─ SettingsNavItem × 2     { target, onSelect }      ← profile · terms
-│   └─ SettingsToggleItem × 2  { optionKey, value, onToggle }
+│   ├─ SettingsGroup "계정"    (ui-lynx) navigation 셀 × 2   ← profile · terms
+│   └─ SettingsGroup "학습"    (ui-lynx) toggle 셀 × 2       ← sessionOptionKeys
 ├─ ProfileScreen   { items, onExit }                     ← items = profileItems()
 ├─ TermsScreen     { sections, onExit }                  ← sections = termsSections()
 └─ ListeningScreen { …기존, sessionOptions }             ← 값을 읽지 않고 그대로 넘긴다
@@ -103,8 +103,11 @@ App (app/App.tsx)                                        ← 유일한 결선 �
 | 표면 | test-id |
 |---|---|
 | 제목 · 흐르는 영역 · 목록 상자 | `settings-screen-title` · `settings-screen-scroll` · `settings-screen-list` |
-| 이동 항목 루트 · 라벨 | `settings-nav-item-<target>` · `settings-nav-item-label-<target>` |
-| 토글 루트 · 라벨 · 상태 낱말 | `settings-toggle-item-<key>` · `settings-toggle-item-label-<key>` · `settings-toggle-item-state-<key>` |
+| 그룹(계정 · 학습) | `ui-lynx-settings-group` (`accessibility-label`이 그룹 이름 — 접근성 요소는 아니다) |
+| 항목 상자 · 셀 | `ui-lynx-settings-group-item-<target \| key>` 안의 `ui-lynx-settings-cell` — 토글 상태는 셀의 `data-checked` · 낭독 이름(`자동 재생, 켜짐`)이 싣는다 |
+
+⟨2026-09-28⟩ 항목 행은 앱의 `SettingsNavItem` · `SettingsToggleItem` 대신 ui-lynx `SettingsCell` · `SettingsGroup`(#132)이 그린다.
+두 앱 컴포넌트와 그 test-id(`settings-nav-item-*` · `settings-toggle-item-*`)는 걷혔다.
 
 ## 3. 사용자 프로필과 개인정보 보호 및 약관
 
@@ -239,7 +242,7 @@ App (app/App.tsx)                                        ← 유일한 결선 �
 | 계층 | 파일 |
 |---|---|
 | unit | `lib/session-options.unit.test.ts` · `screens/settings/settings.unit.test.ts` · `screens/profile/profile-items.unit.test.ts` · `screens/terms/terms-sections.unit.test.ts` · `app/navigation.unit.test.ts` |
-| ui | `screens/settings/SettingsScreen.ui.test.tsx` · `SettingsNavItem.ui.test.tsx` · `SettingsToggleItem.ui.test.tsx` · `screens/profile/ProfileScreen.ui.test.tsx` · `screens/terms/TermsScreen.ui.test.tsx` · `screens/listening/ListeningPrompt.sessionOptions.ui.test.tsx` |
+| ui | `screens/settings/SettingsScreen.ui.test.tsx` · `screens/profile/ProfileScreen.ui.test.tsx` · `screens/terms/TermsScreen.ui.test.tsx` · `screens/listening/ListeningPrompt.sessionOptions.ui.test.tsx` |
 | integration | `app/App.settings.integration.test.tsx`(설정 루트 · 스택 · 토글이 듣기에 닿는가 · 이벤트) · `app/App.heading-trait.integration.test.tsx`(프로필 · 약관 상태의 제목 축) |
 | e2e (수동) | [설정 e2e](../e2e/settings.md) — T1–T8 · D1 · V1–V4. **실행 0회.** V는 iPhone 실기 · Release · VoiceOver로 사람만 판정한다. **V4는 관찰 기록형이다**(통과/실패가 없다) |
 

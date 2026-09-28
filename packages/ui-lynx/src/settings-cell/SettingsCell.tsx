@@ -77,11 +77,20 @@ export function SettingsGroup(props: SettingsGroupProps) {
     <view
       className="ui-lynx-settings-group"
       data-testid="ui-lynx-settings-group"
-      accessibility-element={true}
+      // 그룹은 접근성 요소가 아닙니다 — 요소로 두면 iOS에서 자손 셀이 그 안에 묶여 셀 하나하나에
+      // 닿을 수 없습니다(기기 확인). 셀이 각각 이름 · 상태 · 버튼 특성을 집니다. 그룹 이름은
+      // 요소가 아닌 상자에 실어 둡니다 — 화면이 그룹을 가려 집는 손잡이입니다.
+      accessibility-element={false}
       accessibility-label={props.accessibilityLabel.trim()}
     >
       {props.items.map((item, index) => (
-        <view className="ui-lynx-settings-group-item" key={item.id}>
+        // 항목 상자에 `id`를 싣습니다 — 셀의 testid는 모두 같아, 화면이 어느 항목인지 가려
+        // 집을 손잡이가 여기뿐입니다.
+        <view
+          className="ui-lynx-settings-group-item"
+          data-testid={`ui-lynx-settings-group-item-${item.id}`}
+          key={item.id}
+        >
           <Cell
             {...item}
             position={
