@@ -1,0 +1,285 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 값은 디자인(Figma 80-7797)을
+   따릅니다. */
+
+/* 면은 `background-secondary`입니다 — 디자인이 장면 그림 위에 깐 밝은 막의 색이고,
+   그림이 오기 전까지 그 자리를 집니다. 가장자리(상태바 · 홈 인디케이터 뒤)까지 깝니다. */
+.prologue-call-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: var(--libitum-color-background-secondary);
+}
+
+.prologue-call-screen-safe {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.prologue-call-screen-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: var(--libitum-spacing-16);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+}
+
+/* 머리 — 뒤로는 왼쪽에, 제목은 줄 가운데에 섭니다(서사 표지 · 알림과 같은 레시피). */
+.prologue-call-screen-header {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.prologue-call-screen-back {
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.prologue-call-screen-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.prologue-call-screen-caller {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-16);
+}
+
+/* ⚠ 알려진 대비 위반입니다. `gray-400`(#DCDEE3)은 면 위에서 약 1.3:1입니다. 디자인
+   값을 따르되 여기 적어 둡니다 — 같은 낱말을 통화 상대 묶음의 이름이 싣습니다. */
+.prologue-call-screen-kind {
+  color: var(--libitum-color-gray-400);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 얼굴 그림 — 지름 223의 동그란 틀에 그림의 윗부분을 채웁니다. 223은 디자인 실측값이고
+   맞는 토큰이 없어 px로 적습니다. */
+.prologue-call-screen-portrait-frame {
+  width: 223px;
+  height: 223px;
+  overflow: hidden;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-100);
+}
+
+/* 그림이 세로로 길어 틀보다 크게 두고 위쪽을 맞춥니다 — 얼굴이 틀 가운데에 옵니다. */
+.prologue-call-screen-portrait {
+  width: 223px;
+  height: 297px;
+}
+
+.prologue-call-screen-name {
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.prologue-call-screen-clock {
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-xl);
+}
+
+.prologue-call-screen-clock-label {
+  color: var(--libitum-color-gray-800);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 대사 말풍선 — 흰 면에 한국어 한 줄과 번역 한 줄입니다. */
+.prologue-call-screen-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+}
+
+.prologue-call-screen-line-text {
+  text-align: center;
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.prologue-call-screen-line-translation {
+  text-align: center;
+  color: var(--libitum-color-border-default);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.prologue-call-screen-spacer {
+  flex: 1;
+}
+
+/* 소리 크기 판 — 소리 크기 버튼을 누르면 버튼 줄 위에 섭니다. */
+.prologue-call-screen-volume-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-white);
+}
+
+.prologue-call-screen-volume-step {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prologue-call-screen-volume-step-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.prologue-call-screen-volume-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.prologue-call-screen-volume-level {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-200);
+}
+
+.prologue-call-screen-volume-level-on {
+  background: var(--libitum-color-brand-primary);
+}
+
+/* 아래 버튼 줄 — 가운데 종료 버튼이 크고 위로 솟습니다. 양옆은 아래를 맞춥니다. */
+.prologue-call-screen-controls {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 var(--libitum-spacing-24);
+}
+
+/* 양옆 버튼 — 지름 80. 켜지면 면이 어두워집니다. 80은 디자인 실측값입니다. */
+.prologue-call-screen-side {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-100);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-50);
+}
+
+.prologue-call-screen-side-on {
+  border-color: var(--libitum-color-gray-900);
+  background: var(--libitum-color-gray-900);
+}
+
+.prologue-call-screen-side-icon {
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
+}
+
+/* 종료 버튼 — 지름 110의 빨간 면. 110은 디자인 실측값입니다. 아래 여백은 디자인의
+   솟음(아래 끝이 양옆보다 23 위)에 가장 가까운 토큰입니다. 테두리는 디자인이 4인데
+   토큰에서 가장 굵은 것이 `stroke-width-strong`(2)입니다. */
+.prologue-call-screen-end {
+  width: 110px;
+  height: 110px;
+  margin-bottom: var(--libitum-spacing-24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--libitum-stroke-width-strong) solid var(--libitum-color-feedback-incorrect-surface);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-feedback-incorrect);
+}
+
+.prologue-call-screen-end-icon {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+}
+
+/* 끝난 통화의 하단 fog — 학습 껍데기의 하단 버튼 자리(`.learning-shell-fog`)와 같은
+   높이 식입니다. 가장자리 여백은 fog가 덮습니다. */
+.prologue-call-screen-fog {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(
+    var(--libitum-layout-screen-padding-bottom) + var(--libitum-spacing-48) +
+      var(--libitum-spacing-8) + var(--libitum-spacing-40) + var(--libitum-spacing-32)
+  );
+  z-index: var(--libitum-elevation-z-default);
+}
+
+/* 하단 버튼 — 학습 껍데기의 하단 버튼(`.learning-shell-action`)과 같은 모양입니다.
+   `bottom`의 가장자리 여백은 인라인이 더하고, 화면 여백은 `margin-bottom`이 집니다.
+
+   ⚠ 알려진 대비 위반입니다. 흰 라벨이 `brand-primary` 위에서 3.02:1로 WCAG 1.4.3의
+   4.5:1에 미달합니다 — 학습 껍데기의 하단 버튼과 같은 값을 같은 까닭으로 따릅니다. */
+.prologue-call-screen-complete {
+  position: absolute;
+  left: var(--libitum-layout-screen-padding-x);
+  right: var(--libitum-layout-screen-padding-x);
+  margin-bottom: var(--libitum-layout-screen-padding-bottom);
+  z-index: var(--libitum-elevation-z-sticky);
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-color-brand-primary);
+}
+
+.prologue-call-screen-complete-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}

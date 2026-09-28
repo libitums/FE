@@ -140,6 +140,8 @@ export type ScreenWiring = {
   onSkipEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
   onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
   onExitEpisodeIntro: () => void;
+  onCompletePrologueCall: (episodeId: string) => void;
+  onExitPrologueComplete: (episodeId: string) => void;
   // 호스트가 넘긴 가장자리 여백입니다. 셸이 여백을 잡지 않는 화면(서사 표지)이 자기
   // 안에서 잡을 때 씁니다 — 콜백이 아니라 값이지만 `sessionOptions`와 같이 내려갑니다.
   safeAreaInsets: SafeAreaInsets;

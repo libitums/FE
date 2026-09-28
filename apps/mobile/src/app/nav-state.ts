@@ -50,6 +50,13 @@ export type Screen =
   // 사용자가 누른 것은 유닛이고, 그 사실은 이 화면 인스턴스의 것이라 `back`과 함께
   // 죽는 것이 맞습니다(`assessment`의 `results`와 같은 판단).
   | { name: "episode-intro"; episodeId: string; target: EpisodeIntroTarget }
+  // 표지의 `Next` 뒤에 이어지는 서사 통화입니다. 표지와 같은 목적지를 이어 싣습니다 —
+  // 통화가 끝나면 그 유닛을 엽니다.
+  | { name: "episode-prologue-call"; episodeId: string; target: EpisodeIntroTarget }
+  // 서사 통화를 마친 뒤의 학습 완료 화면입니다. 학습 유닛의 완료 화면을 그대로 쓰되
+  // 판정할 결과가 없어 늘 실수 없음(PERFECT)입니다. 목적지를 싣지 않습니다 — 여기서는
+  // 유닛을 열지 않고 맵으로 돌아갑니다.
+  | { name: "episode-prologue-complete"; episodeId: string }
   // 학습 화면 넷은 `activityIndex`를 함께 집니다. 유닛 하나가 활동 여럿을 잇기
   // 때문입니다(`learningFormsByStep`) — 몇 번째 활동인지는 「지금 어느 화면인가」의
   // 일부라 스택이 지고, 다음 활동을 고를 때 여기서 읽습니다. App 상태로 빼면 스택과

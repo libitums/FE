@@ -84,15 +84,19 @@ function completedVisualNovelUnitIdsFrom(
   return progress.status === "completed" ? ["cafe-arrival-visual-novel"] : [];
 }
 
-// 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지는 화면
-// 전체를 한 장면으로 덮습니다(Figma 80-7869).
+// 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지와 서사
+// 통화는 화면 전체를 한 장면으로 덮습니다(Figma 80-7869 · 80-7797).
 //
 // ⟨2026-09-28⟩ **여정 입장도 같은 자리입니다.** 그 화면의 디자인 의도가 「그림을 화면
 // 전체에 깐다」인데 셸이 여백을 잡아 위 · 아래에 그림이 닿지 않는 흰 띠가 남았습니다
 // (기기에서 확인). 스플래시는 셸 배경색을 바꿔 같은 문제를 풀지만(`app-splash`), 배경이
 // 색이 아니라 사진인 둘은 그 방법이 안 통합니다.
 function isFullBleedScreen(screen: Screen): boolean {
-  return screen.name === "episode-intro" || screen.name === "journey-entry";
+  return (
+    screen.name === "episode-intro" ||
+    screen.name === "episode-prologue-call" ||
+    screen.name === "journey-entry"
+  );
 }
 
 export function App({

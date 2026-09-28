@@ -8,6 +8,7 @@ import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../screens/visual-novel/visual-novel.contract";
 import type { EpisodeIntroTarget } from "../screens/episode-intro/episode-intro.contract";
+import { prologueCallFor } from "../screens/episode-intro/prologue-call";
 import {
   hasSeenEpisodeIntro,
   markEpisodeIntroSeen,
@@ -85,11 +86,31 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
     onStartMessengerUnit: (unitId: MessengerUnitId) => gate({ kind: "messenger", unitId }),
     onStartPhoneCallUnit: (unitId: PhoneCallUnitId) => gate({ kind: "phone-call", unitId }),
     onStartVisualNovelUnit: (unitId: VisualNovelUnitId) => gate({ kind: "visual-novel", unitId }),
-    // ⚠ 둘이 같은 일을 합니다. `Next`는 서사 전개(메신저 · 전화 · 대화로 이어지는 학습이
-    // 아닌 서사)의 시작이 될 자리인데, 그 전개의 대본이 아직 없습니다. 대본이 오는 날
-    // `Next`만 전개로 갈라지고, `Skip`은 지금처럼 유닛으로 곧장 갑니다.
+    // `Skip`은 서사를 건너뛰고 유닛으로 곧장 갑니다.
     onSkipEpisodeIntro: continueToTarget,
-    onNextEpisodeIntro: continueToTarget,
+    // `Next`는 서사 전개로 갑니다. 그 에피소드에 서사 통화가 있으면 표지를 통화로 갈아
+    // 끼우고(`replace` — 통화에서 뒤로 가면 표지가 아니라 맵입니다), 없으면 `Skip`처럼
+    // 유닛으로 곧장 갑니다.
+    onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => {
+      if (prologueCallFor(episodeId) === undefined) {
+        continueToTarget(episodeId, target);
+        return;
+      }
+      dispatch({ type: "replace", screen: { name: "episode-prologue-call", episodeId, target } });
+    },
+    // 끝난 통화의 `Continue`입니다. 통화를 학습 완료 화면으로 갈아 끼웁니다(`replace` —
+    // 완료 화면에서 돌아갈 곳은 통화가 아닙니다).
+    onCompletePrologueCall: (episodeId: string) => {
+      dispatch({ type: "replace", screen: { name: "episode-prologue-complete", episodeId } });
+    },
+    // 학습 완료 화면의 `Check`입니다. 서사를 본 것으로 적고 **여정 맵으로 돌아갑니다** —
+    // 누른 유닛을 곧장 열지 않습니다. 서사를 마친 자리는 학습의 끝과 같아서, 학습을
+    // 통과했을 때처럼 맵으로 돌아와 다음을 고르게 합니다. 유닛은 맵에서 다시 누르면
+    // 표지 없이 열립니다.
+    onExitPrologueComplete: (episodeId: string) => {
+      setSeenEpisodeIntroIds((seen) => markEpisodeIntroSeen(seen, episodeId));
+      dispatch({ type: "back" });
+    },
     // 표지를 본 것으로 적지 않습니다 — 다음에 유닛을 열면 다시 뜹니다.
     onExitEpisodeIntro: () => dispatch({ type: "back" }),
   };
