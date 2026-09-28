@@ -1,5 +1,8 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
+import { RoundButton } from "@libitums/ui-lynx/round-button";
+
 import type { ProfileScreenProps } from "./profile.contract";
 
 import "./profile-screen.css";
@@ -11,18 +14,17 @@ import "./profile-screen.css";
 export function ProfileScreen({ items, onExit }: ProfileScreenProps): ReactNode {
   return (
     <view className="profile-screen">
+      {/* 머리 — 알림 화면과 같은 모양입니다: 동그란 뒤로 버튼(첫 자식, 낭독 `설정으로`)과
+          줄 가운데의 제목. 동작은 `backToRoot`입니다(App이 결선합니다). */}
       <view className="profile-screen-header">
-        {/* 나가는 수단 — 머리 행의 첫 자식입니다. 라벨·`accessibility-label` 모두
-            `설정으로`이고 동작은 `backToRoot`입니다(App이 결선합니다). */}
-        <view
-          className="profile-screen-exit"
-          data-testid="profile-screen-exit"
-          accessibility-element={true}
-          accessibility-traits="button"
-          accessibility-label="설정으로"
-          bindtap={onExit}
-        >
-          <text className="profile-screen-exit-label">설정으로</text>
+        <view className="profile-screen-exit" data-testid="profile-screen-exit">
+          <RoundButton
+            accessibilityLabel="설정으로"
+            icon={arrowLeft03}
+            variant="neutral"
+            size="xl"
+            bindtap={onExit}
+          />
         </view>
         <text
           className="profile-screen-title"
@@ -41,28 +43,36 @@ export function ProfileScreen({ items, onExit }: ProfileScreenProps): ReactNode 
         scroll-bar-enable={true}
       >
         <view className="profile-screen-list" data-testid="profile-screen-list">
-          {items.map((item) => (
-            <view
-              className="profile-screen-item"
-              data-testid={`profile-item-${item.id}`}
-              key={item.id}
-            >
-              {/* 보이는 이름을 지므로 가리지 않습니다(ADR-0016 D5). 조작 단위가
-                  아니므로 `accessibility-element`를 붙이지 않습니다. */}
-              <text
-                className="profile-screen-item-name"
-                data-testid={`profile-item-label-${item.id}`}
-              >
-                {item.label}
-              </text>
-              <text
-                className="profile-screen-item-value"
-                data-testid={`profile-item-value-${item.id}`}
-              >
-                {item.value}
-              </text>
+          {/* 항목을 설정 화면의 설정 그룹과 같은 카드로 묶습니다 — 흰 면 · 연한 테두리 · 둥근
+              모서리 · 안쪽 구분선. 읽기 전용이라 ui-lynx 설정 셀(누르는 행)을 쓰지 않고 모양만
+              맞춥니다. 항목이 없으면 카드를 세우지 않습니다 — 빈 테두리 상자만 남습니다. */}
+          {items.length === 0 ? null : (
+            <view className="profile-screen-card" data-testid="profile-screen-card">
+              {items.map((item, index) => (
+                <view className="profile-screen-slot" key={item.id}>
+                  {index > 0 ? (
+                    <view className="profile-screen-divider" accessibility-elements-hidden={true} />
+                  ) : null}
+                  <view className="profile-screen-item" data-testid={`profile-item-${item.id}`}>
+                    {/* 보이는 이름을 지므로 가리지 않습니다(ADR-0016 D5). 조작 단위가
+                    아니므로 `accessibility-element`를 붙이지 않습니다. */}
+                    <text
+                      className="profile-screen-item-name"
+                      data-testid={`profile-item-label-${item.id}`}
+                    >
+                      {item.label}
+                    </text>
+                    <text
+                      className="profile-screen-item-value"
+                      data-testid={`profile-item-value-${item.id}`}
+                    >
+                      {item.value}
+                    </text>
+                  </view>
+                </view>
+              ))}
             </view>
-          ))}
+          )}
         </view>
       </scroll-view>
     </view>

@@ -44,6 +44,11 @@ function openSettingsTab(): void {
 // `stubHost()`의 오디오 모듈)을 지우지 않고 `StorageModule`만 얹습니다.
 // 설정 항목 셀입니다. 셀은 ui-lynx `SettingsGroup`이 그리고, 항목은 그룹이 싣는
 // `ui-lynx-settings-group-item-{id}` 상자로 가려 집습니다(`id`는 이동 대상 · 옵션 키).
+// 나가기는 동그란 뒤로 버튼(ui-lynx `RoundButton`)입니다 — testid 상자 안의 버튼을 누릅니다.
+function exitButton(testId: "profile-screen-exit" | "terms-screen-exit"): HTMLElement {
+  return within(screen.getByTestId(testId)).getByTestId("ui-lynx-round-button");
+}
+
 function settingsCell(id: string): HTMLElement {
   return within(screen.getByTestId(`ui-lynx-settings-group-item-${id}`)).getByTestId(
     "ui-lynx-settings-cell",
@@ -129,7 +134,7 @@ test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 �
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+  fireEvent.tap(exitButton("profile-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
@@ -147,7 +152,7 @@ test("[IT3] 프로필의 설정으로를 tap하면 설정 화면으로 돌아가
   fireEvent.tap(settingsCell("profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+  fireEvent.tap(exitButton("profile-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("profile-screen-title")).not.toBeInTheDocument();
@@ -165,7 +170,7 @@ test("[IT4] 개인정보 보호 및 약관 항목을 tap하면 약관 화면이 
   const content = screen.getByTestId("terms-screen-content");
   expect(content.children).toHaveLength(sections.length);
 
-  fireEvent.tap(screen.getByTestId("terms-screen-exit"), {});
+  fireEvent.tap(exitButton("terms-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("terms-screen-title")).not.toBeInTheDocument();
@@ -277,12 +282,12 @@ test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 약관 
   openSettingsTab();
   fireEvent.tap(settingsCell("profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
-  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+  fireEvent.tap(exitButton("profile-screen-exit"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(settingsCell("terms"), {});
   expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
-  fireEvent.tap(screen.getByTestId("terms-screen-exit"), {});
+  fireEvent.tap(exitButton("terms-screen-exit"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(settingsCell("auto-play-audio"), {});
@@ -327,7 +332,7 @@ test("[IT12] (가드) sink 없이 render(<App />) — 탭·토글·항목 tap이
   }).not.toThrow();
 
   expect(() => {
-    const exit = screen.queryByTestId("profile-screen-exit");
+    const exit = exitButton("profile-screen-exit");
     if (exit !== null) fireEvent.tap(exit, {});
   }).not.toThrow();
 
@@ -337,7 +342,7 @@ test("[IT12] (가드) sink 없이 render(<App />) — 탭·토글·항목 tap이
   }).not.toThrow();
 
   expect(() => {
-    const exit = screen.queryByTestId("terms-screen-exit");
+    const exit = exitButton("terms-screen-exit");
     if (exit !== null) fireEvent.tap(exit, {});
   }).not.toThrow();
 
@@ -371,7 +376,7 @@ test("[IT13] 쌓인 화면에서는 탭으로 나갈 수단이 없고, 나가면
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+  fireEvent.tap(exitButton("profile-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);

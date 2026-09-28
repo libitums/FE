@@ -1,5 +1,8 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
+import { RoundButton } from "@libitums/ui-lynx/round-button";
+
 import type { TermsScreenProps } from "./terms.contract";
 
 import "./terms-screen.css";
@@ -11,17 +14,17 @@ import "./terms-screen.css";
 export function TermsScreen({ sections, onExit }: TermsScreenProps): ReactNode {
   return (
     <view className="terms-screen">
+      {/* 머리 — 알림 화면과 같은 모양입니다: 동그란 뒤로 버튼(첫 자식, 낭독 `설정으로`)과
+          줄 가운데의 제목. 동작은 `backToRoot`입니다(App이 결선합니다). */}
       <view className="terms-screen-header">
-        {/* 나가는 수단 — 머리 행의 첫 자식입니다. */}
-        <view
-          className="terms-screen-exit"
-          data-testid="terms-screen-exit"
-          accessibility-element={true}
-          accessibility-traits="button"
-          accessibility-label="설정으로"
-          bindtap={onExit}
-        >
-          <text className="terms-screen-exit-label">설정으로</text>
+        <view className="terms-screen-exit" data-testid="terms-screen-exit">
+          <RoundButton
+            accessibilityLabel="설정으로"
+            icon={arrowLeft03}
+            variant="neutral"
+            size="xl"
+            bindtap={onExit}
+          />
         </view>
         <text
           className="terms-screen-title"
