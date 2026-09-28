@@ -8,6 +8,8 @@ import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
 import { StepSheet } from "./StepSheet";
 import { JourneyMapTopBar } from "./JourneyMapTopBar";
+import { JourneyStatModal } from "./JourneyStatModal";
+import { streakTrack, trophyTrack, type JourneyStatKind } from "./journey-stat";
 import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
 import {
   findStep,
@@ -45,6 +47,12 @@ export type JourneyMapScreenProps = {
    */
   streakDays?: number;
   trophyCount?: number;
+  /**
+   * 오늘의 요일입니다(`Date#getDay()`, 0 = 일). 연속 학습 모달의 요일 줄이 여기서
+   * 시작점을 셉니다. 넘기지 않으면 기기 시계를 읽습니다 — 테스트가 날짜에 매이지
+   * 않도록 받을 자리를 둡니다.
+   */
+  todayWeekday?: number;
 };
 
 // 화면 컴포넌트: 파일명 PascalCase, export 이름과 일치, `~Screen` 접미사 (ADR-0003 D6).
@@ -62,8 +70,12 @@ export function JourneyMapScreen({
   onOpenNotifications,
   streakDays = 0,
   trophyCount = 0,
+  todayWeekday,
 }: JourneyMapScreenProps): ReactNode {
   const [sheetState, dispatch] = useReducer(stepSheetReducer, initialStepSheetState);
+  // 지표 모달 열림도 이 화면이 소유합니다 — 시트와 같은 까닭으로 `Nav`는 관여하지
+  // 않습니다. 모달은 맵 위에 겹칠 뿐 화면 전환이 아닙니다.
+  const [openStat, setOpenStat] = useState<JourneyStatKind | null>(null);
   // 스크롤 자리를 두 곳에 둡니다. ref는 탭 순간의 값을 읽기 위한 것이고(다시 그릴
   // 이유가 없습니다), state는 말풍선이 열린 동안 그 움직임을 따라가기 위한 것입니다.
   // 열려 있지 않으면 state를 건드리지 않습니다 — 스크롤 한 프레임마다 화면을 다시
@@ -126,12 +138,14 @@ export function JourneyMapScreen({
       <view
         className="journey-map-screen-actions"
         data-testid="journey-map-screen-actions"
-        accessibility-elements-hidden={openStep !== undefined}
+        accessibility-elements-hidden={openStep !== undefined || openStat !== null}
       >
         <JourneyMapTopBar
           streakDays={streakDays}
           trophyCount={trophyCount}
           onOpenNotifications={onOpenNotifications}
+          onOpenStreak={() => setOpenStat("streak")}
+          onOpenTrophy={() => setOpenStat("trophy")}
         />
       </view>
       {/* [흐름] 내용 슬롯 — 스크롤 컨테이너 하나가 맵 컨테이너를 감쌉니다. 가림
@@ -149,7 +163,7 @@ export function JourneyMapScreen({
         <view
           className="journey-map-screen-map"
           data-testid="journey-map-screen-map"
-          accessibility-elements-hidden={openStep !== undefined}
+          accessibility-elements-hidden={openStep !== undefined || openStat !== null}
         >
           {journeyMapSections.map((section) => (
             // 에피소드 하나가 헤더 + 유닛 줄입니다. 조각(Fragment)이 아니라 상자로
@@ -229,6 +243,19 @@ export function JourneyMapScreen({
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}
           onClose={() => dispatch({ type: "closeSheet" })}
+        />
+      )}
+      {/* [겹침 레이어] 지표 모달입니다. 셸 밖에 떠 바텀 네비게이션까지 덮습니다. */}
+      {openStat === null ? null : (
+        <JourneyStatModal
+          kind={openStat}
+          value={openStat === "streak" ? streakDays : trophyCount}
+          track={
+            openStat === "streak"
+              ? streakTrack(streakDays, todayWeekday ?? new Date().getDay())
+              : trophyTrack(trophyCount)
+          }
+          onClose={() => setOpenStat(null)}
         />
       )}
     </view>

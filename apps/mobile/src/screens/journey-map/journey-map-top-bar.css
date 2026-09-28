@@ -17,7 +17,8 @@
   gap: 9px;
 }
 
-/* 지표 칩 — 읽기 전용입니다. 누를 수 없으므로 터치 영역 하한을 두지 않습니다. */
+/* 지표 칩 — 누르면 지표 모달을 엽니다. 높이는 디자인 실측값 그대로라 Apple HIG의
+   44pt에는 못 미칩니다(알림 버튼과 같은 사정입니다). */
 .journey-map-top-bar-chip {
   display: flex;
   flex-direction: row;

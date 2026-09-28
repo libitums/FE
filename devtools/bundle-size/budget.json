@@ -2,8 +2,8 @@
   "targets": [
     {
       "path": "apps/mobile/dist/main.lynx.bundle",
-      "maxBytes": 860000,
-      "note": "모바일 Lynx 번들입니다. 2026-09-28 기준 826,609 bytes이고 상한은 약 5% 여유입니다. 앞 상한(820,000)은 2026-09-23의 779,615 bytes에 맞춘 값이었고, 알림 화면 디자인 반영(빈 상태 · 삭제 자리)에서 넘었습니다."
+      "maxBytes": 880000,
+      "note": "모바일 Lynx 번들입니다. 2026-09-28 기준 836,593 bytes이고 상한은 약 5% 여유입니다. 여정 맵 지표 모달(연속 학습 · 트로피)이 약 21.5 kB를 더해 올렸습니다(main 815,059 bytes)."
     },
     {
       "path": "apps/mobile/dist/static/image",
