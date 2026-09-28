@@ -15,7 +15,7 @@ function targetsItem(
       return item.kind === "standard" && item.step.id === target.stepId;
     }
     case "messenger": {
-      return item.kind === "special" && item.id === target.unitId;
+      return item.kind === "messenger" && item.id === target.unitId;
     }
     case "phone-call": {
       return item.kind === "phone-call" && item.id === target.unitId;

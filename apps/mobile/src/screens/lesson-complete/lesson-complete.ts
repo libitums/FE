@@ -49,6 +49,19 @@ export function lessonCompleteAnnouncement(
   return mistakeCount === 0 ? `${outcome}, 실수 없음` : `${outcome}, 실수 ${mistakeCount}개`;
 }
 
+/**
+ * 흠 없이 끝냈는가입니다. **실수 0과 같은 말이 아닙니다** — 건너뛴 문항이 있으면 실수가
+ * 없어도 만점이 아닙니다(D8). 두 수가 다른 것을 세기 때문입니다: 하나는 틀린 횟수,
+ * 하나는 **재지 않은** 횟수입니다.
+ *
+ * 자리 표시자입니다. 호출되면 실패합니다 — `logic` 변형이 실동작으로 교체합니다
+ * (logic-scaffold). `lessonCompleteTitle`은 아직 이 함수를 보지 않습니다 — 그 배선도
+ * `logic` 변형의 몫입니다.
+ */
+export function isPerfectLesson(_mistakeCount: number, _skippedCount: number): boolean {
+  throw new Error("isPerfectLesson: not implemented (logic-scaffold)");
+}
+
 export type LessonReward = {
   /** 이번 학습으로 얻은 다이아 수입니다. */
   readonly diamondAmount: number;

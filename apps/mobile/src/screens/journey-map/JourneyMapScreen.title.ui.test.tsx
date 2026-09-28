@@ -12,7 +12,7 @@ vi.mock("./journey-map", async (importOriginal) => {
     journeyMapSections: actual.journeyMapSections.map((section) => ({
       ...section,
       items: section.items.map((item) =>
-        item.kind === "special" ? { ...item, title: "검증용 메시지 제목" } : item,
+        item.kind === "messenger" ? { ...item, title: "검증용 메시지 제목" } : item,
       ),
     })),
   };

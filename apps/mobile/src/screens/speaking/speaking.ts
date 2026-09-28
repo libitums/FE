@@ -57,6 +57,9 @@ export type SpeakingSessionAction =
   | { readonly type: "start" }
   | { readonly type: "recognized"; readonly text: string; readonly result: AnswerResult }
   | { readonly type: "unavailable" }
+  // 사용자가 건너뜁니다. **말하기 전(`ready`)에만** 받습니다 — 듣는 중에 받으면 인식
+  // 결과와 경합하고, 판정 뒤에 받으면 이미 실린 결과를 덮습니다.
+  | { readonly type: "skip" }
   | { readonly type: "next" };
 
 export const initialSpeakingSessionState: SpeakingSessionState = {
@@ -89,6 +92,11 @@ export function speakingSessionReducer(
       return state.phase === "ready" || state.phase === "listening"
         ? { ...state, phase: "unavailable" }
         : state;
+    }
+    case "skip": {
+      // 자리 표시자입니다. 호출되면 입력을 그대로 돌려줍니다 — D7(나)의 실동작(`results`에
+      // `"correct"`를 싣고 다음 문항으로 감)은 `logic` 변형이 채웁니다(logic-scaffold).
+      return state;
     }
     case "next": {
       if (state.phase !== "judged" && state.phase !== "unavailable") {

@@ -9,6 +9,7 @@ import { lessonRewardPlaceholder } from "./lesson-complete";
 function fixture(overrides: Partial<Parameters<typeof LessonCompleteScreen>[0]> = {}) {
   return {
     results: ["correct", "correct", "correct"] as const,
+    skippedCount: 0,
     verdict: "passed" as const,
     streakDays: 1,
     trophyCount: 0,

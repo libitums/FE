@@ -23,7 +23,7 @@ function standardStep(id: JourneyStep["id"]): JourneyMapItem {
 }
 
 const messengerItem: JourneyMapItem = {
-  kind: "special",
+  kind: "messenger",
   id: "appointment-confirmation",
   title: "약속 확인 메시지",
 };

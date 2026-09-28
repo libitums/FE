@@ -2,10 +2,36 @@
 
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
-import type { JourneyStepId } from "../journey-map/journey-map";
+import type { JourneyMapItemStatus, JourneyStepId } from "../journey-map/journey-map";
 import type { MessengerUnitId } from "../messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
+
+export type EpisodeIntroUnitId = "tutorial-intro";
+export type EpisodeIntroTitle = "에피소드 서사";
+
+/** 여정 유닛 목록에 들어가는 모양입니다(`journey-map-units.ts`). */
+export type EpisodeIntroJourneyUnitContract = {
+  readonly kind: "special";
+  readonly id: EpisodeIntroUnitId;
+  readonly title: EpisodeIntroTitle;
+  readonly screen: "episode-intro";
+};
+
+/** 맵 항목입니다. 잠김은 항목이 지지 않고 파생이 냅니다(`journey-map-progress.ts`). */
+export type EpisodeIntroJourneyMapItemContract = {
+  readonly kind: "episode-intro";
+  readonly id: EpisodeIntroUnitId;
+  readonly title: EpisodeIntroTitle;
+};
+
+export type EpisodeIntroMapItemProps = {
+  readonly id: EpisodeIntroUnitId;
+  readonly title: EpisodeIntroTitle;
+  /** 표지는 구획의 첫 항목이라 `locked`가 오지 않습니다 — 그래도 타입은 공용을 씁니다. */
+  readonly status: JourneyMapItemStatus;
+  readonly onSelect: (id: EpisodeIntroUnitId) => void;
+};
 
 /**
  * 표지를 넘긴 뒤 열 유닛입니다. 표지는 에피소드의 유닛을 **처음 여는 순간** 그 앞에

@@ -23,7 +23,7 @@ export function roleplayItemsFrom(items: readonly JourneyMapItem[]): readonly Ro
       case "standard": {
         return [];
       }
-      case "special": {
+      case "messenger": {
         return [{ form: "messenger", unitId: item.id, title: item.title }];
       }
       case "phone-call": {

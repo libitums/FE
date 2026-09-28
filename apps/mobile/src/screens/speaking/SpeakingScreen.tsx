@@ -42,7 +42,7 @@ import "./speaking-screen.css";
 export type SpeakingScreenProps = {
   stepId: JourneyStepId;
   onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
+  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
 
 export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps): ReactNode {
@@ -128,7 +128,13 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
   // 보기`. 판정 뒤에는 버튼 대신 스스로 넘어가는 걸음(`advance`)이 섭니다 — 듣기와 같습니다.
   const action =
     question == null
-      ? { label: speakingFinishLabel, run: () => onFinish(stepId, state.results) }
+      ? {
+          label: speakingFinishLabel,
+          // 건너뛴 문항 수입니다. `speakingSessionReducer`의 `skip` 갈래가 아직 자리
+          // 표시자라 오늘은 늘 0입니다 — `logic` 변형이 실제 값을 세면 이 자리도 함께
+          // 바뀝니다(logic-scaffold).
+          run: () => onFinish(stepId, state.results, 0),
+        }
       : state.phase === "ready"
         ? { label: "말하기", run: () => startListening(question.sentence) }
         : state.phase === "listening"

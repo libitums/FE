@@ -6,6 +6,7 @@ import type {
   SpecialUnitEntrySource,
   SpecialUnitExitLabel,
 } from "../../lib/special-unit-entry-source";
+import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
 export type MessengerUnitId = "appointment-confirmation";
 
@@ -104,8 +105,23 @@ export type MessengerAppProps = {
 export type MessengerMapItemProps = {
   readonly id: MessengerUnitId;
   readonly title: MessengerConversation["title"];
-  readonly status: MessengerCompletionStatus;
+  readonly status: JourneyMapItemStatus;
   readonly onSelect: (id: MessengerUnitId) => void;
+};
+
+/** 여정 유닛 목록에 들어가는 모양입니다(`journey-map-units.ts`). */
+export type MessengerJourneyUnitContract = {
+  readonly kind: "special";
+  readonly id: MessengerUnitId;
+  readonly title: "약속 확인 메시지";
+  readonly screen: "messenger";
+};
+
+/** 맵 항목입니다. */
+export type MessengerJourneyMapItemContract = {
+  readonly kind: "messenger";
+  readonly id: MessengerUnitId;
+  readonly title: MessengerConversation["title"];
 };
 
 export type MessengerScreenProps = {

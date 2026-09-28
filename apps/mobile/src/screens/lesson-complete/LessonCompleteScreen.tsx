@@ -36,6 +36,13 @@ import "./lesson-complete-screen.css";
 // **DOM 순서가 곧 낭독 순서입니다** — 지표 → 판정 → 보상 → 액션. 상태가 없습니다.
 export type LessonCompleteScreenProps = {
   readonly results: readonly AnswerResult[];
+  /**
+   * 건너뛴 말하기 문항 수입니다(D8). 통과 계산에는 이미 `results`를 통해 세어져
+   * 있고, 이 값은 **만점 판정**에만 씁니다 — 실수가 없어도 이 값이 0이 아니면
+   * 만점이 아닙니다. 아직 화면이 이 값을 보지 않습니다 — 그 배선은 `logic`
+   * 변형의 몫입니다(logic-scaffold).
+   */
+  readonly skippedCount: number;
   /** 통과 여부입니다. 화면이 계산하지 않고 받습니다 — 판정의 정본은 `judgeAssessment`입니다. */
   readonly verdict: AssessmentVerdict;
   /** 상단 지표 셋입니다. 화면이 세지 않고 받습니다. */

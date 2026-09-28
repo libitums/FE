@@ -114,7 +114,7 @@ export function JourneyMapScreen({
                 />
               </view>
               {section.items.map((item) =>
-                item.kind === "special" ? (
+                item.kind === "messenger" ? (
                   <MessengerMapItem
                     key={item.id}
                     id={item.id}

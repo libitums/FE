@@ -39,10 +39,9 @@ import { TermsScreen } from "../screens/terms/TermsScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
-import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
 import { profileList, termsSectionList } from "./app-content";
 import type { Screen } from "./nav-state";
-import { renderShellLearningScreen } from "./render-learning-screen";
+import { renderShellLearningScreen, renderWordChoiceScreen } from "./render-learning-screen";
 import { renderMessengerCompleteScreen } from "./render-messenger-complete";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
 import { renderEpisodeFinalFlow } from "./render-episode-final";
@@ -126,7 +125,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         <ListeningScreen
           stepId={screen.stepId}
           onExit={wiring.onExitLearning}
-          onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
+          onFinish={(id, results, skippedCount) =>
+            wiring.onFinishLearning(id, screen.activityIndex, results, skippedCount)
+          }
           // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한
           // 소비자입니다.
           sessionOptions={wiring.sessionOptions}
@@ -143,6 +144,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <LessonCompleteScreen
           results={screen.results}
+          skippedCount={screen.skippedCount}
           verdict={verdict}
           streakDays={0}
           trophyCount={0}
@@ -186,13 +188,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "speaking":
       return renderShellLearningScreen(screen, wiring);
     case "word-choice":
-      return (
-        <WordChoiceScreen
-          stepId={screen.stepId}
-          onExit={wiring.onExitLearning}
-          onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
-        />
-      );
+      return renderWordChoiceScreen(screen, wiring);
     case "messenger":
       return (
         <MessengerScreen

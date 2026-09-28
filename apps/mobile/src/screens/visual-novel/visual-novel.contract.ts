@@ -9,6 +9,7 @@ import type {
   SpecialUnitEntrySource,
   SpecialUnitExitLabel,
 } from "../../lib/special-unit-entry-source";
+import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
 export type VisualNovelUnitId = "cafe-arrival-visual-novel";
 export type VisualNovelTitle = "카페에 도착한 지민";
@@ -205,7 +206,7 @@ export type VisualNovelAppProps = {
 export type VisualNovelMapItemProps = {
   readonly id: VisualNovelUnitId;
   readonly title: VisualNovelTitle;
-  readonly status: VisualNovelCompletionStatus;
+  readonly status: JourneyMapItemStatus;
   readonly onSelect: (id: VisualNovelUnitId) => void;
 };
 

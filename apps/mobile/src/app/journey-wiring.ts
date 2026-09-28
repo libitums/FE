@@ -139,6 +139,12 @@ export function journeyWiring(args: JourneyWiringArgs) {
       id: JourneyStepId,
       activityIndex: number,
       results: readonly AnswerResult[],
+      // 건너뛴 말하기 문항 수입니다(D8). `results`처럼 여러 활동에 걸쳐 쌓이지
+      // 않습니다 — 건너뛰기가 있는 활동(말하기)은 오늘 스텝의 **마지막** 활동에만
+      // 배정되어 있어(`learningFormsByStep`), 마지막 활동이 낸 값이 곧 스텝 전체의
+      // 값입니다. 그 배정이 바뀌면 `pendingResults`와 같은 형태로 쌓는 자리가
+      // 필요해집니다 — `logic` 변형이 판단합니다(logic-scaffold).
+      skippedCount: number,
     ) => {
       const gathered = [...pendingResults, ...results];
       const next = learningFormAt(id, activityIndex + 1);
@@ -164,7 +170,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
       // (ADR-0007 D6).
       dispatch({
         type: "replace",
-        screen: { name: "assessment", stepId: id, results: gathered },
+        screen: { name: "assessment", stepId: id, results: gathered, skippedCount },
       });
     },
     // 평가의 `맵으로`입니다. 중도 이탈과 마찬가지로 진행을 갱신하지 않습니다 —

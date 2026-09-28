@@ -109,6 +109,7 @@ function renderPrologueCompleteScreen(
   return (
     <LessonCompleteScreen
       results={[]}
+      skippedCount={0}
       verdict="passed"
       streakDays={0}
       trophyCount={0}

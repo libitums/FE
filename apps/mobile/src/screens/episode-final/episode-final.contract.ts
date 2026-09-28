@@ -6,6 +6,7 @@
 
 import type { AnswerResult } from "../../lib/answer-result";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
 export type EpisodeFinalUnitId = "tutorial-final-test";
 export type EpisodeFinalTitle = "최종 테스트";
@@ -92,7 +93,8 @@ export type EpisodeFinalJourneyMapItemContract = {
   readonly title: EpisodeFinalTitle;
 };
 
-export type EpisodeFinalStatus = "locked" | "available" | "completed";
+/** `JourneyMapItemStatus`의 별칭입니다 — 맵 항목 상태 어휘가 하나로 합쳐졌습니다. */
+export type EpisodeFinalStatus = JourneyMapItemStatus;
 
 export type EpisodeFinalMapItemProps = {
   readonly id: EpisodeFinalUnitId;

@@ -19,7 +19,7 @@ describe("journey map visual novel contract", () => {
       "standard:introduction",
       "standard:ordering",
       "standard:appointment",
-      "special:appointment-confirmation",
+      "messenger:appointment-confirmation",
       "phone-call:appointment-confirmation-phone-call",
       "visual-novel:cafe-arrival-visual-novel",
       "standard:directions",

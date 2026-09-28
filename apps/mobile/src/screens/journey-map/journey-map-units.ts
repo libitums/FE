@@ -7,7 +7,10 @@ import type {
   EpisodeFinalJourneyMapItemContract,
   EpisodeFinalJourneyUnitContract,
 } from "../episode-final/episode-final.contract";
-import type { MessengerConversation, MessengerUnitId } from "../messenger/messenger.contract";
+import type {
+  MessengerJourneyMapItemContract,
+  MessengerJourneyUnitContract,
+} from "../messenger/messenger.contract";
 import type {
   PhoneCallJourneyUnitContract,
   PhoneCallJourneyMapItemContract,
@@ -44,12 +47,7 @@ export type JourneyStep = {
  */
 export type JourneyUnit =
   | { readonly kind: "standard"; readonly steps: readonly JourneyStep[] }
-  | {
-      readonly kind: "special";
-      readonly id: MessengerUnitId;
-      readonly title: "약속 확인 메시지";
-      readonly screen: "messenger";
-    }
+  | MessengerJourneyUnitContract
   | PhoneCallJourneyUnitContract
   | VisualNovelJourneyUnitContract
   | EpisodeFinalJourneyUnitContract;
@@ -57,14 +55,32 @@ export type JourneyUnit =
 /** 여정 맵이 그리는 항목입니다 — 표준 스텝 또는 특별 유닛 항목(메신저·전화·비주얼 노벨)입니다. */
 export type JourneyMapItem =
   | { readonly kind: "standard"; readonly step: JourneyStep }
-  | {
-      readonly kind: "special";
-      readonly id: MessengerUnitId;
-      readonly title: MessengerConversation["title"];
-    }
+  | MessengerJourneyMapItemContract
   | Omit<PhoneCallJourneyMapItemContract, "status">
   | Omit<VisualNovelJourneyMapItemContract, "status">
   | EpisodeFinalJourneyMapItemContract;
+
+/**
+ * 맵 항목 하나가 줄에서 어떤 상태로 서는가입니다. **항목이 지지 않고 파생이 냅니다** —
+ * 항목에 적으면 진행과 어긋날 자리가 생깁니다(ADR-0007 D3).
+ *
+ * 어휘를 하나로 합친 것은 `locked`가 이제 **모든 항목 종류에 올 수 있기** 때문입니다 —
+ * 전에는 잠김이 스텝 노드와 최종 테스트 둘에만 있어 종류마다 다른 타입을 썼습니다.
+ * 이 타입 자체는 `logic-scaffold`가 세우지만, 잠김을 실제로 내는 파생(`mapItemStatus`)은
+ * `logic` 변형이 채웁니다.
+ */
+export type JourneyMapItemStatus = "locked" | "available" | "completed";
+
+/**
+ * 에피소드를 가려내는 이름입니다. 오늘은 `tutorial` 하나입니다.
+ *
+ * ⚠ **이 타입은 아직 어디에도 연결되지 않습니다.** `JourneyEpisode.id`·
+ * `RoleplayEpisodeId`·`episodePrologueFor`의 매개변수를 이 타입으로 좁히면 그 값들을
+ * 임의 문자열(`"cafe"`·`"steps-only"`·`"unknown"` 등)로 쓰는 기존 테스트 픽스처가 `ui`
+ * 계층 파일(`RoleplayListScreen.ui.test.tsx` 등)까지 번져 깨진다 — `logic-scaffold`의
+ * 경계 밖이라 이번 회차는 타입 선언만 세우고 배선은 다음 판단으로 남긴다(구현 요약에 보고).
+ */
+export type JourneyEpisodeId = "tutorial";
 
 // 여정의 유닛 목록입니다. **맵의 세로 줄 순서가 이 목록의 순서입니다.**
 //
@@ -173,7 +189,7 @@ function mapItemsOf(units: readonly JourneyUnit[]): readonly JourneyMapItem[] {
     }
     switch (unit.screen) {
       case "messenger": {
-        return [{ kind: "special", id: unit.id, title: unit.title } as const];
+        return [{ kind: "messenger", id: unit.id, title: unit.title } as const];
       }
       case "phone-call": {
         return [{ kind: "phone-call", id: unit.id, title: unit.title } as const];

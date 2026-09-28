@@ -71,7 +71,15 @@ export type Screen =
   | { name: "culture"; stepId: JourneyStepId; activityIndex: number }
   | { name: "speaking"; stepId: JourneyStepId; activityIndex: number }
   | { name: "culture-quiz"; stepId: JourneyStepId }
-  | { name: "assessment"; stepId: JourneyStepId; results: readonly AnswerResult[] }
+  // `skippedCount`는 `results`와 같은 근거로 이 화면 인스턴스의 것입니다 — 건너뛴
+  // 말하기 문항 수는 판정에는 세고 만점에는 안 세는데(D8), 그 갈림을 지으려면 만점
+  // 판정이 실수 수와 별개로 이 값을 봐야 합니다.
+  | {
+      name: "assessment";
+      stepId: JourneyStepId;
+      results: readonly AnswerResult[];
+      skippedCount: number;
+    }
   | { name: "messenger"; unitId: MessengerUnitId }
   // 메신저 유닛(서사 기반 최종 테스트)을 마친 뒤의 학습 완료입니다. 여정 · 롤플레이 어느
   // 쪽에서 열었든 같은 화면이고, 나가면 그 스택의 루트로 갑니다. `results`는 답장마다 첫

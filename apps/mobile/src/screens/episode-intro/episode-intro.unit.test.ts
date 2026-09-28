@@ -12,7 +12,7 @@ function section(id: string, items: readonly JourneyMapItem[]): JourneyMapSectio
 
 const tutorial = section("tutorial", [
   { kind: "standard", step: { id: "greeting", title: "첫 인사", description: "" } },
-  { kind: "special", id: "appointment-confirmation", title: "약속 확인 메시지" },
+  { kind: "messenger", id: "appointment-confirmation", title: "약속 확인 메시지" },
 ]);
 const cafe = section("cafe", [
   { kind: "standard", step: { id: "ordering", title: "주문하기", description: "" } },

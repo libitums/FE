@@ -164,7 +164,7 @@ test("[SP8] 끝까지 가면 결과 보기가 판정된 문항의 결과만 싣�
 
   expect(screen.getByTestId("speaking-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
   tapAction("결과 보기");
-  expect(onFinish).toHaveBeenCalledWith("introduction", ["correct"]);
+  expect(onFinish).toHaveBeenCalledWith("introduction", ["correct"], 0);
 });
 
 test("[SP9] 권한 확인이 돌아오기 전에 화면을 떠나면 인식을 시작하지 않는다 — 마이크가 켜진 채 남지 않는다", () => {

@@ -1,20 +1,28 @@
-// `LearningShell` 위에 서는 학습 화면 둘(문장 만들기 · 말하기)의 route를 화면으로 옮깁니다.
-// `render-screen.tsx`에서 떼어 둔 것은 그 파일이 300줄에 닿아서이고,
+// `LearningShell` 위에 서는 학습 화면 둘(문장 만들기 · 말하기)과, `render-screen.tsx`가
+// 300줄에 닿아 함께 떼어 둔 낱말 고르기의 route를 화면으로 옮깁니다.
 // `render-episode-intro.tsx` · `render-roleplay-screen.tsx`와 같은 갈래입니다.
 
 import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
 import { SpeakingScreen } from "../screens/speaking/SpeakingScreen";
+import { WordChoiceScreen } from "../screens/word-choice/WordChoiceScreen";
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
+
+// 셋이 같은 모양으로 쓰는 헬퍼입니다 — `activityIndex`만 다르고 나머지는
+// `wiring.onFinishLearning`에 그대로 넘깁니다.
+function onFinishActivity(screen: { readonly activityIndex: number }, wiring: ScreenWiring) {
+  return (
+    id: Parameters<ScreenWiring["onFinishLearning"]>[0],
+    results: Parameters<ScreenWiring["onFinishLearning"]>[2],
+    skippedCount: Parameters<ScreenWiring["onFinishLearning"]>[3],
+  ) => wiring.onFinishLearning(id, screen.activityIndex, results, skippedCount);
+}
 
 export function renderShellLearningScreen(
   screen: Extract<Screen, { name: "sentence-order" | "speaking" }>,
   wiring: ScreenWiring,
 ) {
-  const onFinish = (
-    id: Parameters<ScreenWiring["onFinishLearning"]>[0],
-    results: Parameters<ScreenWiring["onFinishLearning"]>[2],
-  ) => wiring.onFinishLearning(id, screen.activityIndex, results);
+  const onFinish = onFinishActivity(screen, wiring);
   return screen.name === "sentence-order" ? (
     <SentenceOrderScreen
       stepId={screen.stepId}
@@ -23,5 +31,18 @@ export function renderShellLearningScreen(
     />
   ) : (
     <SpeakingScreen stepId={screen.stepId} onExit={wiring.onExitLearning} onFinish={onFinish} />
+  );
+}
+
+export function renderWordChoiceScreen(
+  screen: Extract<Screen, { name: "word-choice" }>,
+  wiring: ScreenWiring,
+) {
+  return (
+    <WordChoiceScreen
+      stepId={screen.stepId}
+      onExit={wiring.onExitLearning}
+      onFinish={onFinishActivity(screen, wiring)}
+    />
   );
 }

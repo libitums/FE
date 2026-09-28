@@ -76,7 +76,7 @@ export function isMapItemComplete(item: JourneyMapItem, progress: JourneyProgres
         stepStatusAt(journeyStepOrdinal(item.step.id) - 1, progress.completedStepCount) === "done"
       );
     }
-    case "special": {
+    case "messenger": {
       return progress.completedMessengerUnitIds.includes(item.id);
     }
     case "phone-call": {

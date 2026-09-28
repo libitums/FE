@@ -108,6 +108,7 @@ export type ScreenWiring = {
     id: JourneyStepId,
     activityIndex: number,
     results: readonly AnswerResult[],
+    skippedCount: number,
   ) => void;
   // 평가의 `맵으로`입니다. 중도 이탈(`onExitLearning`)과 같은 형태로 진행을
   // 갱신하지 않고 활성 스택의 루트로 곧장 닿습니다(ADR-0007 D6).
