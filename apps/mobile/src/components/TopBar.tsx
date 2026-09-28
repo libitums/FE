@@ -43,6 +43,16 @@ export function TopBar({
     onOpenTrophy?.();
   };
 
+  // **칩이 버튼인지는 화면마다 다릅니다.** 여정 맵은 칩을 눌러 지표 모달을 열지만,
+  // 학습 화면은 열 모달이 없어 콜백을 안 넘깁니다. 그때도 `traits="button"`을 붙이면
+  // **누르면 무언가 일어난다고 말해 놓고 아무 일도 안 하는 정지점**이 됩니다 — 보조기술
+  // 사용자는 그것이 고장인지 자기가 잘못 눌렀는지 알 수 없습니다.
+  //
+  // 이름(`accessibility-label`)은 두 경우 모두 답니다. 숫자만 낭독되면 무엇의 3인지
+  // 알 수 없는 것은 누를 수 있든 없든 같습니다.
+  const statTraits = (handler: (() => void) | undefined) =>
+    handler === undefined ? {} : ({ "accessibility-traits": "button" } as const);
+
   return (
     <view className="top-bar">
       <view className="top-bar-stats">
@@ -53,7 +63,7 @@ export function TopBar({
           data-testid="top-bar-streak"
           accessibility-element={true}
           accessibility-label={`연속 학습 ${streakDays}일`}
-          accessibility-traits="button"
+          {...statTraits(onOpenStreak)}
           bindtap={handleOpenStreak}
         >
           <svg className="top-bar-chip-icon" content={fire} current-color={color.brand.secondary} />
@@ -64,7 +74,7 @@ export function TopBar({
           data-testid="top-bar-trophy"
           accessibility-element={true}
           accessibility-label={`트로피 ${trophyCount}개`}
-          accessibility-traits="button"
+          {...statTraits(onOpenTrophy)}
           bindtap={handleOpenTrophy}
         >
           <svg

@@ -211,3 +211,34 @@ test("같은 걸음을 두 번 tap해도 run은 한 번만 불린다", () => {
 
   expect(run).toHaveBeenCalledTimes(1);
 });
+
+// ---------------------------------------------------------------- 상단 칩 (2026-09-28)
+//
+// 상단 바는 여정 맵과 함께 쓰는 컴포넌트입니다. 거기서는 칩을 눌러 지표 모달이 뜨지만
+// 학습 화면에는 열 모달이 없습니다 — 껍데기가 콜백을 안 넘깁니다.
+//
+// 그때 칩이 `button`으로 읽히면 **누르면 무언가 일어난다고 말해 놓고 아무 일도 안 하는
+// 정지점**이 됩니다. 이름은 남아야 합니다: 숫자만 낭독되면 무엇의 3인지 알 수 없는 것은
+// 누를 수 있든 없든 같습니다.
+test("학습 화면의 상단 칩은 이름을 내되 조작 단위로 읽히지 않는다", () => {
+  renderShell({ streakDays: 3, trophyCount: 7 });
+
+  const streak = screen.getByTestId("top-bar-streak");
+  expect(streak).toHaveAttribute("accessibility-label", "연속 학습 3일");
+  expect(streak).not.toHaveAttribute("accessibility-traits");
+
+  const trophy = screen.getByTestId("top-bar-trophy");
+  expect(trophy).toHaveAttribute("accessibility-label", "트로피 7개");
+  expect(trophy).not.toHaveAttribute("accessibility-traits");
+});
+
+// 알림 버튼은 껍데기가 콜백을 넘기므로 그대로 조작 단위입니다 — 위 규칙이 상단 바
+// 전체를 끄는 것이 아니라는 것을 답니다.
+test("학습 화면에서도 알림 버튼은 조작 단위다", () => {
+  renderShell();
+
+  expect(screen.getByTestId("top-bar-notifications")).toHaveAttribute(
+    "accessibility-traits",
+    "button",
+  );
+});
