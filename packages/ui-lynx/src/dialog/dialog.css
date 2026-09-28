@@ -70,10 +70,11 @@
   margin-top: var(--libitum-spacing-20);
   display: flex;
   flex-direction: column;
-  /* `row-gap`이 아니라 `gap`입니다 ⟨2026-09-28⟩ — 실기에서 액션 둘 사이가 8pt가 아니라
-     37pt로 벌어져 있었습니다(픽셀로 재서 확인). 한 덩어리로 읽혀야 할 둘이 그만큼
-     떨어지면 서로 다른 자리의 버튼처럼 보입니다. */
-  gap: var(--libitum-spacing-8);
+  /* ⟨2026-09-28에 확인⟩ `row-gap`은 Lynx에서 **정상 동작합니다** — 접근성 트리로 재니
+     위 버튼이 479에서 끝나고 아래 버튼이 487에서 시작해 정확히 8pt입니다. 한때 이 자리가
+     너무 벌어져 보였는데, 그것은 간격이 아니라 **버튼이 작아서**였습니다(당시 `m`).
+     인접 형제 선택자(`+`)와 달리 `gap` 계열은 살아 있습니다. */
+  row-gap: var(--libitum-spacing-8);
 }
 
 .ui-lynx-dialog-action {
