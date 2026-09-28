@@ -12,8 +12,8 @@
     },
     {
       "path": "packages/ui-lynx/dist",
-      "maxBytes": 455000,
-      "note": "ui-lynx 빌드 산출물 전체입니다. 2026-09-28 기준 433,480 bytes(약 423 kB)이고 상한은 약 5% 여유입니다. Card에 면 · 떠 있는 정도 변형이 더해지면서 앞선 상한(430,000)을 3.8 kB 넘었습니다 — 변형마다 포커스 링을 따로 적어야 해서 CSS가 늘었습니다."
+      "maxBytes": 481000,
+      "note": "ui-lynx 빌드 산출물 전체입니다. 2026-09-28 기준 458,011 bytes이고 상한은 약 5% 여유입니다. Settings Cell·Group의 JSX, 계약, 타입 선언과 CSS가 추가되고 최신 main의 Card·Dialog 갱신도 합쳐지면서 앞선 상한(455,000)을 넘었습니다."
     }
   ]
 }
