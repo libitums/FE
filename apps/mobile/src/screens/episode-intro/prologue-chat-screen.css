@@ -1,0 +1,170 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 값은 디자인(Figma 79-6762)을
+   따릅니다. 머리와 하단 버튼은 서사 통화(`prologue-call-screen.css`)와 같은 레시피입니다. */
+
+/* 면은 흰색입니다(디자인). 가장자리(상태바 · 홈 인디케이터 뒤)까지 깝니다. */
+.prologue-chat-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: var(--libitum-color-white);
+}
+
+.prologue-chat-screen-safe {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.prologue-chat-screen-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--libitum-spacing-16);
+  padding-top: var(--libitum-layout-screen-padding-top);
+  padding-bottom: var(--libitum-layout-screen-padding-bottom);
+}
+
+.prologue-chat-screen-header {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 var(--libitum-layout-screen-padding-x);
+}
+
+.prologue-chat-screen-back {
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.prologue-chat-screen-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.prologue-chat-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+/* 메시지 목록 — 좌우 여백 32는 디자인 실측값에 맞는 토큰입니다. 아래 여백은 끝난 대화의
+   하단 버튼 몫입니다 — 마지막 메시지가 버튼과 fog에 가리지 않습니다. */
+.prologue-chat-screen-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-32)
+    calc(var(--libitum-spacing-48) + var(--libitum-spacing-40));
+}
+
+/* 한 줄 — 상대는 왼쪽, 나는 오른쪽에 붙습니다. */
+.prologue-chat-screen-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.prologue-chat-screen-row-other {
+  justify-content: flex-start;
+}
+
+.prologue-chat-screen-row-self {
+  justify-content: flex-end;
+}
+
+/* 입력창 — 흰 알약에 그림자, 보낼 말과 보내기 버튼입니다. */
+.prologue-chat-screen-composer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--libitum-spacing-12);
+  margin: 0 var(--libitum-layout-screen-padding-x);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12) var(--libitum-spacing-4)
+    var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.prologue-chat-screen-draft {
+  flex: 1;
+  min-width: 0;
+  color: var(--libitum-color-gray-800);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  text-overflow: ellipsis;
+}
+
+/* 보내기 — 지름 48의 주황 원입니다. 보낼 말이 없는 동안은 흐립니다. */
+.prologue-chat-screen-send {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-brand-primary);
+}
+
+.prologue-chat-screen-send-idle {
+  background: var(--libitum-color-gray-500);
+}
+
+.prologue-chat-screen-send-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+/* 끝난 대화의 하단 fog와 버튼 — 서사 통화와 같은 값입니다. */
+.prologue-chat-screen-fog {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(
+    var(--libitum-layout-screen-padding-bottom) + var(--libitum-spacing-48) +
+      var(--libitum-spacing-8) + var(--libitum-spacing-40) + var(--libitum-spacing-32)
+  );
+  z-index: var(--libitum-elevation-z-default);
+}
+
+/* ⚠ 알려진 대비 위반입니다. 흰 라벨이 `brand-primary` 위에서 3.02:1로 WCAG 1.4.3의
+   4.5:1에 미달합니다 — 학습 껍데기의 하단 버튼과 같은 값을 같은 까닭으로 따릅니다. */
+.prologue-chat-screen-complete {
+  position: absolute;
+  left: var(--libitum-layout-screen-padding-x);
+  right: var(--libitum-layout-screen-padding-x);
+  margin-bottom: var(--libitum-layout-screen-padding-bottom);
+  z-index: var(--libitum-elevation-z-sticky);
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-color-brand-primary);
+}
+
+.prologue-chat-screen-complete-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}

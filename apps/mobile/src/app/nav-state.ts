@@ -50,14 +50,11 @@ export type Screen =
   // 사용자가 누른 것은 유닛이고, 그 사실은 이 화면 인스턴스의 것이라 `back`과 함께
   // 죽는 것이 맞습니다(`assessment`의 `results`와 같은 판단).
   | { name: "episode-intro"; episodeId: string; target: EpisodeIntroTarget }
-  // 표지의 `Next` 뒤에 서는 에피소드 서사(비주얼 노벨)입니다. 표지를 갈아타고
-  // (`replace`) 서므로 표지와 같은 두 필드를 이어 받습니다 — 서사가 끝나면 서사 통화로,
-  // 통화가 없는 에피소드면 `target`으로 갑니다. 장면 번호는 화면 로컬입니다.
-  | { name: "episode-narrative"; episodeId: string; target: EpisodeIntroTarget }
-  // 표지의 `Next` 뒤에 이어지는 서사 통화입니다. 표지와 같은 목적지를 이어 싣습니다 —
-  // 통화가 끝나면 그 유닛을 엽니다.
-  | { name: "episode-prologue-call"; episodeId: string; target: EpisodeIntroTarget }
-  // 서사 통화를 마친 뒤의 학습 완료 화면입니다. 학습 유닛의 완료 화면을 그대로 쓰되
+  // 표지의 `Next` 뒤에 서는 에피소드의 서사 전개입니다. 에피소드마다 형식이 하나(통화 ·
+  // 메신저 · 비주얼 노벨)이고, 어느 형식인지는 에피소드의 서사가 정합니다 — route는
+  // 모릅니다. 표지를 갈아타고(`replace`) 서므로 표지와 같은 두 필드를 이어 받습니다.
+  | { name: "episode-prologue"; episodeId: string; target: EpisodeIntroTarget }
+  // 서사 전개를 마친 뒤의 학습 완료 화면입니다. 학습 유닛의 완료 화면을 그대로 쓰되
   // 판정할 결과가 없어 늘 실수 없음(PERFECT)입니다. 목적지를 싣지 않습니다 — 여기서는
   // 유닛을 열지 않고 맵으로 돌아갑니다.
   | { name: "episode-prologue-complete"; episodeId: string }

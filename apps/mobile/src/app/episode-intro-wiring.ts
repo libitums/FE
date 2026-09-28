@@ -7,8 +7,10 @@ import type { JourneyMapSection, JourneyStepId } from "../screens/journey-map/jo
 import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../screens/visual-novel/visual-novel.contract";
-import type { EpisodeIntroTarget } from "../screens/episode-intro/episode-intro.contract";
-import { prologueCallFor } from "../screens/episode-intro/prologue-call";
+import type {
+  EpisodeIntroTarget,
+  EpisodePrologue,
+} from "../screens/episode-intro/episode-intro.contract";
 import {
   hasSeenEpisodeIntro,
   markEpisodeIntroSeen,
@@ -30,6 +32,8 @@ export type EpisodeIntroWiringArgs = {
   readonly setSeenEpisodeIntroIds: Dispatch<SetStateAction<readonly string[]>>;
   readonly dispatch: Dispatch<NavAction>;
   readonly starts: UnitStarts;
+  /** 그 에피소드의 서사 전개입니다. 없으면 표지의 `Next`가 곧장 유닛을 엽니다. */
+  readonly prologueFor: (episodeId: string) => EpisodePrologue | undefined;
 };
 
 // 목적지를 표지 없는 시작으로 옮깁니다. 돌려주는 값이 없어 빠진 갈래를 `TS2366`이
@@ -60,7 +64,8 @@ function startTarget(starts: UnitStarts, target: EpisodeIntroTarget): void {
 }
 
 export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
-  const { sections, seenEpisodeIntroIds, setSeenEpisodeIntroIds, dispatch, starts } = args;
+  const { sections, seenEpisodeIntroIds, setSeenEpisodeIntroIds, dispatch, starts, prologueFor } =
+    args;
 
   // 표지를 봤으면 곧장 열고, 아니면 표지를 쌓습니다. 표지는 유닛을 대신하지 않습니다 —
   // 목적지를 route에 실어 두고, 표지를 넘기는 순간 그 유닛을 엽니다.
@@ -88,27 +93,21 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
     onStartVisualNovelUnit: (unitId: VisualNovelUnitId) => gate({ kind: "visual-novel", unitId }),
     // `Skip`은 서사를 건너뛰고 유닛으로 곧장 갑니다.
     onSkipEpisodeIntro: continueToTarget,
-    // `Next`는 서사 전개로 갑니다 — 표지 → 서사(비주얼 노벨) → 서사 통화 → 학습 완료 → 맵.
-    // 표지를 서사로 갈아 끼웁니다(`replace` — 서사에서 뒤로 가면 표지가 아니라 맵입니다).
-    // 여기서는 본 것으로 적지 않습니다 — 서사 전개를 끝까지 마쳤을 때 적습니다. 중간에
-    // 나가면 다음에 표지부터 다시 섭니다(통화에서 나갈 때와 같은 규칙입니다).
+    // `Next`는 서사 전개로 갑니다. 에피소드마다 형식이 하나(통화 · 메신저 · 비주얼 노벨)이고
+    // 어느 형식이든 끝나면 학습 완료 → 맵입니다. 표지를 서사로 갈아 끼웁니다(`replace` —
+    // 서사에서 뒤로 가면 표지가 아니라 맵입니다). 서사가 없는 에피소드면 `Skip`처럼 유닛으로
+    // 곧장 갑니다. 여기서는 본 것으로 적지 않습니다 — 서사 전개를 끝까지 마쳤을 때 적습니다.
     onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => {
-      dispatch({ type: "replace", screen: { name: "episode-narrative", episodeId, target } });
-    },
-    // 서사의 마지막 장면 뒤입니다. 그 에피소드에 서사 통화가 있으면 서사를 통화로 갈아
-    // 끼우고, 없으면 `Skip`처럼 유닛으로 곧장 갑니다(그때 본 것으로 적습니다).
-    onFinishEpisodeNarrative: (episodeId: string, target: EpisodeIntroTarget) => {
-      if (prologueCallFor(episodeId) === undefined) {
+      if (prologueFor(episodeId) === undefined) {
         continueToTarget(episodeId, target);
         return;
       }
-      dispatch({ type: "replace", screen: { name: "episode-prologue-call", episodeId, target } });
+      dispatch({ type: "replace", screen: { name: "episode-prologue", episodeId, target } });
     },
-    // 서사 중간에 나가면 맵입니다. 유닛을 열지 않고, 본 것으로 적지 않습니다.
-    onExitEpisodeNarrative: () => dispatch({ type: "back" }),
-    // 끝난 통화의 `Continue`입니다. 통화를 학습 완료 화면으로 갈아 끼웁니다(`replace` —
-    // 완료 화면에서 돌아갈 곳은 통화가 아닙니다).
-    onCompletePrologueCall: (episodeId: string) => {
+    // 서사 전개가 끝났습니다 — 통화 · 메신저의 `Continue`, 비주얼 노벨의 마지막 장면 뒤.
+    // 서사를 학습 완료 화면으로 갈아 끼웁니다(`replace` — 완료 화면에서 돌아갈 곳은 서사가
+    // 아닙니다).
+    onCompletePrologue: (episodeId: string) => {
       dispatch({ type: "replace", screen: { name: "episode-prologue-complete", episodeId } });
     },
     // 학습 완료 화면의 `Check`입니다. 서사를 본 것으로 적고 **여정 맵으로 돌아갑니다** —
@@ -119,7 +118,8 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
       setSeenEpisodeIntroIds((seen) => markEpisodeIntroSeen(seen, episodeId));
       dispatch({ type: "back" });
     },
-    // 표지를 본 것으로 적지 않습니다 — 다음에 유닛을 열면 다시 뜹니다.
+    // 표지 · 서사에서 뒤로 나갑니다. 본 것으로 적지 않습니다 — 다음에 유닛을 열면 표지부터
+    // 다시 뜹니다.
     onExitEpisodeIntro: () => dispatch({ type: "back" }),
   };
 }

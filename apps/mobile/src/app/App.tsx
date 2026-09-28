@@ -31,6 +31,8 @@ import type {
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
+import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
+import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
 import { entryInitialNav } from "./nav-state";
 import type { Screen } from "./nav-state";
 import { renderScreen } from "./render-screen";
@@ -67,6 +69,12 @@ export type AppSeedProps = {
    * 제품 진입점은 이 값을 주지 않습니다.
    */
   readonly seenEpisodeIntroIds?: readonly string[];
+  /**
+   * 에피소드의 서사 전개를 찾는 함수입니다. 없으면 제품의 표(`episodePrologueFor`)를
+   * 씁니다. 튜토리얼 하나뿐인 지금, 다른 형식(통화 · 메신저)의 서사를 앱 안에서 보려는
+   * 자리가 바꿔 끼웁니다. 제품 진입점은 이 값을 주지 않습니다.
+   */
+  readonly episodePrologueFor?: (episodeId: string) => EpisodePrologue | undefined;
 };
 
 const productJourneySeed: AppJourneySeed = {
@@ -95,8 +103,7 @@ function completedVisualNovelUnitIdsFrom(
 function isFullBleedScreen(screen: Screen): boolean {
   return (
     screen.name === "episode-intro" ||
-    screen.name === "episode-prologue-call" ||
-    screen.name === "episode-narrative" ||
+    screen.name === "episode-prologue" ||
     screen.name === "journey-entry"
   );
 }
@@ -104,6 +111,7 @@ function isFullBleedScreen(screen: Screen): boolean {
 export function App({
   journeySeed = productJourneySeed,
   seenEpisodeIntroIds: initialSeenEpisodeIntroIds = [],
+  episodePrologueFor = productEpisodePrologueFor,
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
@@ -182,6 +190,7 @@ export function App({
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const wiring = screenWiring({
     safeAreaInsets: insets,
+    episodePrologueFor,
     messengerEventSink,
     phoneCallEventSink,
     visualNovelEventSink,

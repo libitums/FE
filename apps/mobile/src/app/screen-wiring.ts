@@ -3,7 +3,10 @@
 // 만듭니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
-import type { EpisodeIntroTarget } from "../screens/episode-intro/episode-intro.contract";
+import type {
+  EpisodeIntroTarget,
+  EpisodePrologue,
+} from "../screens/episode-intro/episode-intro.contract";
 import type { SafeAreaInsets } from "../lib/safe-area";
 
 import type { AnswerResult } from "../lib/answer-result";
@@ -141,13 +144,13 @@ export type ScreenWiring = {
   onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
   onExitEpisodeIntro: () => void;
   // 표지 `Next` 뒤 에피소드 서사의 끝 · 나가기입니다.
-  onFinishEpisodeNarrative: (episodeId: string, target: EpisodeIntroTarget) => void;
-  onExitEpisodeNarrative: () => void;
-  onCompletePrologueCall: (episodeId: string) => void;
+  onCompletePrologue: (episodeId: string) => void;
   onExitPrologueComplete: (episodeId: string) => void;
   // 호스트가 넘긴 가장자리 여백입니다. 셸이 여백을 잡지 않는 화면(서사 표지)이 자기
   // 안에서 잡을 때 씁니다 — 콜백이 아니라 값이지만 `sessionOptions`와 같이 내려갑니다.
   safeAreaInsets: SafeAreaInsets;
+  // 에피소드의 서사 전개를 찾습니다 — 서사 route가 어느 형식의 화면을 그릴지 여기서 읽습니다.
+  episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   // 세션 옵션의 진실의 출처와 설정 탭의 이동·토글·나가기 콜백 셋입니다. 화면은
   // 스택도 `dispatch`도 모릅니다(위 원칙 그대로).
   sessionOptions: SessionOptions;
@@ -191,6 +194,7 @@ export type ScreenWiringArgs = {
   readonly sessionOptions: SessionOptions;
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly safeAreaInsets: SafeAreaInsets;
+  readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   readonly seenEpisodeIntroIds: readonly string[];
   readonly setSeenEpisodeIntroIds: Dispatch<SetStateAction<readonly string[]>>;
   readonly pendingResults: readonly AnswerResult[];
@@ -218,6 +222,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     ...journey,
     roleplay,
     safeAreaInsets: args.safeAreaInsets,
+    episodePrologueFor: args.episodePrologueFor,
     roleplaySections: args.roleplaySections,
     onViewAllRoleplayEpisode: (episodeId: RoleplayEpisodeId) => {
       args.dispatch({ type: "push", screen: { name: "roleplay-episode", episodeId } });
