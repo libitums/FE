@@ -23,7 +23,6 @@ import type {
   VisualNovelProgress,
 } from "../screens/visual-novel/visual-novel.contract";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
-import { totalGemsOf } from "../screens/gem-purchase/gem-purchase";
 import { AppHeader } from "./AppHeader";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
@@ -64,6 +63,8 @@ export type AppSeedProps = {
    * 없는 형식(통화)의 최종 테스트를 앱 안에서 보려는 자리가 바꿔 끼웁니다.
    */
   readonly episodeFinalTestFor?: (unitId: EpisodeFinalUnitId) => EpisodeFinalTest;
+  /** 부팅할 때 가진 젬 수(기본 0)입니다. 결제가 없어 젬이 늘 길이 없으므로 integration만 씁니다. */
+  readonly initialGemCount?: number;
 };
 
 // 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지 · 그 뒤의
@@ -88,6 +89,7 @@ export function App({
   seenEpisodeIntroIds: initialSeenEpisodeIntroIds = [],
   episodePrologueFor = productEpisodePrologueFor,
   episodeFinalTestFor = productEpisodeFinalTestFor,
+  initialGemCount = 0,
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
@@ -151,10 +153,9 @@ export function App({
   const [seenEpisodeIntroIds, setSeenEpisodeIntroIds] = useState<readonly string[]>(
     initialSeenEpisodeIntroIds,
   );
-  // 가진 젬 수입니다. 전역 머리의 젬 칩과 구매 화면이 함께 읽습니다. **영속하지
-  // 않고**(ADR-0007 D1) 결제 연동도 아직 없습니다 — 구매 화면의 `Pay`가 고른 팩의 젬을
-  // 세션 동안만 더합니다.
-  const [gemCount, setGemCount] = useState(0);
+  // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
+  // 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
+  const [gemCount] = useState(initialGemCount);
   // 탭 루트 화면 안에 겹침 레이어가 떠 있는가입니다. 화면이 알려 오고(`onScreenLayerChange`)
   // 전역 머리가 그 동안 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를
   // 알립니다.
@@ -254,7 +255,6 @@ export function App({
               gemCount={gemCount}
               obscured={screenLayerOpen}
               onOpenNotifications={wiring.onOpenNotifications}
-              onPurchaseGems={(pack) => setGemCount((count) => count + totalGemsOf(pack))}
             />
           ) : null}
         </view>

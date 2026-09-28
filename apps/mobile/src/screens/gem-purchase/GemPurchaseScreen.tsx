@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import cross from "@libitums/icons/lynx/cross";
 import { Button } from "@libitums/ui-lynx/button";
+import { Dialog } from "@libitums/ui-lynx/dialog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { SettingsGroup } from "@libitums/ui-lynx/settings-cell";
 
@@ -12,15 +13,14 @@ import {
   findGemPack,
   formatGemCount,
   formatPrice,
-  formatPricePerGem,
   gemPacks,
+  gemPaymentNotice,
   initialGemPackId,
-  packCaption,
   totalGemsOf,
-  type GemPack,
   type GemPackId,
 } from "./gem-purchase";
 import { gemIcon } from "./gem-icon";
+import { GemPackCard } from "./GemPackCard";
 
 import "./gem-purchase-screen.css";
 
@@ -28,16 +28,15 @@ import "./gem-purchase-screen.css";
 // 겹침 레이어라 셸 밖에 떠 바텀 네비게이션까지 덮습니다 — 화면 전환(`Nav`)이 아닙니다.
 // 문구는 디자인 표기(영문) 그대로입니다.
 //
+// 결제 서비스는 아직 없습니다. `Pay`와 결제 수단 줄은 「결제 준비 중」 안내를 띄우고, 젬은
+// 늘어나지 않습니다(`gemPaymentNotice`).
+//
 // 디자인에는 닫는 수단이 없습니다. 레이어가 화면 전체를 덮으므로 나갈 길이 없으면
 // 갇히는 화면이 됩니다 — 지표 모달과 같은 자리(왼쪽 위)에 원형 닫기 버튼을 둡니다.
 
 export type GemPurchaseScreenProps = {
   /** 지금 가진 젬 수입니다. */
   readonly gemBalance: number;
-  /** `Pay`를 누르면 고른 팩을 올립니다. 결제와 적립은 부르는 쪽이 집니다. */
-  readonly onPurchase: (pack: GemPack) => void;
-  /** 결제 수단 줄을 누르면 부릅니다. */
-  readonly onChangePaymentMethod: () => void;
   readonly onClose: () => void;
 };
 
@@ -46,26 +45,30 @@ const paymentMethod = { title: "Visa •••• 4242", description: "Default p
 
 const assurances = ["Secure payment", "Instant delivery", "VAT included"] as const;
 
-export function GemPurchaseScreen({
-  gemBalance,
-  onPurchase,
-  onChangePaymentMethod,
-  onClose,
-}: GemPurchaseScreenProps): ReactNode {
+// 안내의 버튼입니다. 바뀌지 않으므로 렌더마다 새로 만들지 않습니다.
+const noticeActions = [{ id: "close", label: "확인" }] as const;
+
+export function GemPurchaseScreen({ gemBalance, onClose }: GemPurchaseScreenProps): ReactNode {
   // 이 레이어는 셸 밖(`position: fixed`)이라 셸의 safe area 여백을 받지 못합니다 —
   // 지표 모달과 같이 스스로 읽습니다(lib/safe-area.ts).
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const [selectedId, setSelectedId] = useState<GemPackId>(initialGemPackId);
   const selected = findGemPack(selectedId);
   const bonus = bonusSummary(selected);
+  // 결제 준비 중 안내입니다. 이 화면 위에 겹칠 뿐 화면 전환이 아닙니다.
+  const [noticeOpen, setNoticeOpen] = useState(false);
 
   const handleClose = () => {
     "background only";
     onClose();
   };
-  const handlePay = () => {
+  const openNotice = () => {
     "background only";
-    onPurchase(selected);
+    setNoticeOpen(true);
+  };
+  const closeNotice = () => {
+    "background only";
+    setNoticeOpen(false);
   };
 
   return (
@@ -80,13 +83,19 @@ export function GemPurchaseScreen({
         paddingRight: `${insets.right}px`,
       }}
     >
-      <view className="gem-purchase-screen-close" data-testid="gem-purchase-screen-close">
+      {/* 안내가 떠 있는 동안 뒤쪽을 낭독에서 가립니다(ADR-0016 D9). */}
+      <view
+        className="gem-purchase-screen-close"
+        data-testid="gem-purchase-screen-close"
+        accessibility-elements-hidden={noticeOpen}
+      >
         <RoundButton icon={cross} size="l" accessibilityLabel="닫기" bindtap={handleClose} />
       </view>
       <scroll-view
         className="gem-purchase-screen-scroll"
         scroll-orientation="vertical"
         scroll-bar-enable={true}
+        accessibility-elements-hidden={noticeOpen}
       >
         <view className="gem-purchase-screen-body">
           <view className="gem-purchase-screen-head">
@@ -185,7 +194,7 @@ export function GemPurchaseScreen({
                     trailing: "navigation",
                     title: paymentMethod.title,
                     description: paymentMethod.description,
-                    onNavigate: onChangePaymentMethod,
+                    onNavigate: openNotice,
                   },
                 ]}
               />
@@ -205,7 +214,7 @@ export function GemPurchaseScreen({
                 variant="neutral"
                 size="l"
                 width="fill"
-                bindtap={handlePay}
+                bindtap={openNotice}
               />
             </view>
             <text className="gem-purchase-screen-terms">
@@ -217,78 +226,17 @@ export function GemPurchaseScreen({
           <view style={{ height: `${insets.bottom}px` }} />
         </view>
       </scroll-view>
-    </view>
-  );
-}
-
-type GemPackCardProps = {
-  readonly pack: GemPack;
-  readonly selected: boolean;
-  readonly onSelect: (id: GemPackId) => void;
-};
-
-// 팩 카드 하나입니다 — 카드 전체가 한 조작 단위(고르기)이고, 오른쪽 아래 동그라미는
-// 고른 상태를 보이는 표식일 뿐 따로 누르는 자리가 아닙니다.
-function GemPackCard({ pack, selected, onSelect }: GemPackCardProps): ReactNode {
-  const handleTap = () => {
-    "background only";
-    onSelect(pack.id);
-  };
-  const spoken = [
-    `${formatGemCount(pack.gems)} 젬`,
-    packCaption(pack),
-    formatPrice(pack.priceCents),
-    pack.badge,
-    selected ? "선택됨" : undefined,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-  return (
-    <view
-      className={selected ? "gem-purchase-pack gem-purchase-pack-selected" : "gem-purchase-pack"}
-      data-testid={`gem-purchase-pack-${pack.id}`}
-      data-selected={selected ? "true" : "false"}
-      accessibility-element={true}
-      accessibility-traits="button"
-      accessibility-label={spoken}
-      bindtap={handleTap}
-    >
-      <view className="gem-purchase-screen-gem-box">
-        <svg className="gem-purchase-screen-gem" content={gemIcon} />
-      </view>
-      <view className="gem-purchase-pack-main">
-        {/* 숫자와 단위는 크기가 다른 한 줄이라 안쪽 `<text>`로 잇습니다 — 기준선이 맞습니다. */}
-        <text className="gem-purchase-pack-amount">
-          <text className="gem-purchase-pack-gems">{formatGemCount(pack.gems)}</text>
-          <text className="gem-purchase-pack-unit"> GEM</text>
-        </text>
-        <text
-          className={
-            pack.bonusGems > 0
-              ? "gem-purchase-pack-caption gem-purchase-pack-caption-bonus"
-              : "gem-purchase-pack-caption"
-          }
-        >
-          {packCaption(pack)}
-        </text>
-      </view>
-      <view className="gem-purchase-pack-price">
-        <text className="gem-purchase-pack-price-value">{formatPrice(pack.priceCents)}</text>
-        <text className="gem-purchase-pack-per-gem">{formatPricePerGem(pack)}</text>
-      </view>
-      <view
-        className={
-          selected
-            ? "gem-purchase-pack-radio gem-purchase-pack-radio-selected"
-            : "gem-purchase-pack-radio"
-        }
-      />
-      {pack.badge === undefined ? null : (
-        <view className="gem-purchase-pack-badge-anchor">
-          <text className="gem-purchase-pack-badge">{pack.badge}</text>
+      {noticeOpen ? (
+        <view data-testid="gem-purchase-screen-notice">
+          <Dialog
+            title={gemPaymentNotice.title}
+            description={gemPaymentNotice.description}
+            actions={noticeActions}
+            phase="visible"
+            bindaction={closeNotice}
+          />
         </view>
-      )}
+      ) : null}
     </view>
   );
 }
