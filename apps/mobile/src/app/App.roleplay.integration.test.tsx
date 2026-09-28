@@ -109,6 +109,7 @@ const finishedTutorial: AppJourneySeed = {
   completedMessengerUnitIds: [messengerUnitId],
   completedPhoneCallUnitIds: [phoneCallUnitId],
   visualNovelProgress: { status: "completed", beatIndex: 2 },
+  completedEpisodeFinalIds: ["tutorial-final-test"],
 };
 
 function openRoleplayTab(sinks: Sinks = {}) {

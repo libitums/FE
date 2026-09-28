@@ -1,0 +1,276 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 치수 가운데 맞는 토큰이
+   없는 것은 디자인 실측값(Figma 79-6484 말하기 · 79-6648 낱말 고르기)을 px로 적고 그
+   자리에 이유를 남깁니다. 장면 · 머리는 서사 화면(`episode-narrative-screen.css`)과 같은
+   값입니다. */
+
+/* 가장자리까지 까는 화면입니다 — 셸이 여백을 잡지 않습니다(`isFullBleedScreen`). */
+.episode-final-screen {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* 그림이 뜨기 전 한 틀 동안 비치는 색입니다 — 서사 화면과 같은 어두운 면입니다. */
+  background-color: #1b1613;
+}
+
+.episode-final-scene,
+.episode-final-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* 인물 — 서사 화면과 같은 자리입니다(좌우 17 · 위 100 · 아래 223, 874pt 화면의 실측값). */
+.episode-final-character-slot {
+  position: absolute;
+  top: 100px;
+  right: 17px;
+  bottom: 223px;
+  left: 17px;
+  display: flex;
+}
+
+.episode-final-character {
+  flex: 1;
+}
+
+/* 위 명암 — 흰 머리 글자가 밝은 그림 위에서도 읽히게 합니다(서사 화면과 같은 값). */
+.episode-final-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 116px;
+  background-image: linear-gradient(to bottom, #1b1613, rgba(27, 22, 19, 0));
+}
+
+/* 아래 여백은 잡지 않습니다 — 문항 패널이 화면 바닥까지 닿고, 홈 인디케이터 몫은 패널이
+   스스로 비웁니다. */
+.episode-final-safe {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.episode-final-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4)) var(--libitum-spacing-16) 0;
+  flex-shrink: 0;
+}
+
+.episode-final-title {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+/* RoundButton xl과 같은 폭입니다. */
+.episode-final-header-spacer {
+  width: 56px;
+  height: 56px;
+}
+
+.episode-final-spacer {
+  flex: 1;
+}
+
+/* 문항 패널의 면 — 디자인의 rgba(26, 28, 32, 0.8)입니다. 장면이 비치는 반투명 면이라 맞는
+   색 토큰이 없습니다. */
+
+/* ── 말하기 ───────────────────────────────────────────────── */
+
+/* 버튼 → 패널이 세로로 섭니다. 좌우 10은 디자인 실측값(패널 382 / 화면 402)입니다. */
+.episode-final-speaking {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+
+/* 버튼 줄 — 패널보다 조금 좁습니다(371 / 382). 판정 뒤 버튼이 걷혀도 높이(56)를 지켜
+   패널이 움직이지 않습니다. `Can't speak`가 왼쪽에 좁게(2 : 3), 주 버튼이 오른쪽에 섭니다. 주
+   버튼만 있으면 줄을 다 씁니다. */
+.episode-final-speaking-actions {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-8);
+  min-height: 56px;
+  padding: 0 var(--libitum-spacing-6);
+}
+
+.episode-final-not-now {
+  flex: 2;
+}
+
+.episode-final-speaking-action {
+  flex: 3;
+}
+
+.episode-final-speaking-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 300px;
+  padding-top: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-xl) var(--libitum-radius-xl) 0 0;
+  background-color: rgba(26, 28, 32, 0.8);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+}
+
+/* `Say` 표식과 판정 배지가 번갈아 서는 자리입니다. 높이를 지켜 문장이 흔들리지 않습니다. */
+.episode-final-speaking-badge-slot {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.episode-final-say {
+  /* 안쪽 10은 디자인 실측값입니다 — 맞는 간격 토큰이 없습니다. */
+  padding: 10px;
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.episode-final-say-label {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 문장 — `display` 글꼴입니다. 표식 아래 24(디자인 실측값)입니다. */
+.episode-final-sentence {
+  margin-top: var(--libitum-spacing-24);
+  padding: 0 var(--libitum-spacing-16);
+  text-align: center;
+  font-family: var(--libitum-typography-display-font-family);
+  font-size: var(--libitum-typography-display-font-size);
+  font-weight: var(--libitum-typography-display-font-weight);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+/* 낱말 조각 — Lynx에서 안쪽 `<text>`는 바깥의 글꼴 크기를 물려받지 않아 다시 줍니다. */
+.episode-final-word {
+  font-family: var(--libitum-typography-display-font-family);
+  font-size: var(--libitum-typography-display-font-size);
+  font-weight: var(--libitum-typography-display-font-weight);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+/* 판정 전에는 밝은 한 색, 판정 뒤에는 말하지 못한 낱말이 gray-400으로 물러나고 맞게 말한
+   낱말이 주색으로 섭니다 — 말하기 학습형과 같은 규칙입니다. */
+.episode-final-sentence-plain .episode-final-word {
+  color: var(--libitum-color-gray-50);
+}
+
+.episode-final-sentence-judged .episode-final-word {
+  color: var(--libitum-color-gray-400);
+}
+
+.episode-final-sentence-judged .episode-final-word-matched {
+  color: var(--libitum-color-brand-primary);
+}
+
+.episode-final-romanization {
+  margin-top: var(--libitum-spacing-24);
+  text-align: center;
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.episode-final-waves {
+  margin-top: var(--libitum-spacing-8);
+  margin-bottom: var(--libitum-spacing-16);
+}
+
+/* 파형 — 120 × 100은 디자인 실측값입니다. */
+.episode-final-waves-icon {
+  width: 120px;
+  height: 100px;
+}
+
+/* ── 낱말 고르기 ─────────────────────────────────────────── */
+
+.episode-final-word-choice {
+  display: flex;
+  flex-direction: column;
+  /* 보기와 패널 사이 14는 디자인 실측값입니다 — 14짜리 간격 토큰이 없습니다. */
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* 판정 배지 → 보기 셋이 가운데 줄로 섭니다. 좌우 14는 디자인 실측값입니다. */
+.episode-final-choices {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-24);
+  padding: 0 14px;
+}
+
+.episode-final-options {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+
+/* 보기 — 디자인의 rgba(26, 28, 32, 0.9) 면입니다. 판정 뒤 면 색이 바뀌어도 크기가 그대로이도록
+   테두리 3을 늘 두고 면과 같은 색으로 칠합니다. */
+.episode-final-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px var(--libitum-spacing-24);
+  border-width: 3px;
+  border-style: solid;
+  border-radius: var(--libitum-radius-lg);
+}
+
+.episode-final-option-idle {
+  border-color: rgba(26, 28, 32, 0.9);
+  background-color: rgba(26, 28, 32, 0.9);
+}
+
+.episode-final-option-correct {
+  border-color: var(--libitum-color-feedback-correct);
+  background-color: var(--libitum-color-feedback-correct);
+}
+
+.episode-final-option-incorrect {
+  border-color: var(--libitum-color-feedback-incorrect);
+  background-color: var(--libitum-color-feedback-incorrect);
+}
+
+.episode-final-option-label {
+  color: var(--libitum-color-gray-50);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+/* 대화 패널 — 서사 화면의 대화 패널과 같은 자리 값입니다(좌우 14 · 아래 18). */
+.episode-final-dialog {
+  padding: 0 14px 18px;
+}

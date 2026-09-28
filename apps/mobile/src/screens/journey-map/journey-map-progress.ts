@@ -2,6 +2,7 @@
 // `findStep`·`journeyStepOrdinal`·`completeStep`입니다. 진행의 진실의 출처(완료
 // 스텝 수)는 App의 상태이고, 이 파일은 그 값에서 파생만 합니다.
 
+import type { EpisodeFinalStatus } from "../episode-final/episode-final.contract";
 import { journeySteps } from "./journey-map-units";
 import type {
   JourneyMapItem,
@@ -84,15 +85,19 @@ export function isMapItemComplete(item: JourneyMapItem, progress: JourneyProgres
     case "visual-novel": {
       return progress.completedVisualNovelUnitIds.includes(item.id);
     }
+    case "episode-final": {
+      return progress.completedEpisodeFinalIds.includes(item.id);
+    }
   }
 }
 
-/** 진행의 출처 넷을 한 묶음으로 받습니다 — 셀 때마다 넷을 따로 넘기면 하나를 빠뜨립니다. */
+/** 진행의 출처 다섯을 한 묶음으로 받습니다 — 셀 때마다 따로 넘기면 하나를 빠뜨립니다. */
 export type JourneyProgress = {
   readonly completedStepCount: number;
   readonly completedMessengerUnitIds: readonly string[];
   readonly completedPhoneCallUnitIds: readonly string[];
   readonly completedVisualNovelUnitIds: readonly string[];
+  readonly completedEpisodeFinalIds: readonly string[];
 };
 
 /** 항목들 가운데 끝난 것의 수입니다. 에피소드 헤더의 진행 막대가 이 값을 씁니다. */
@@ -101,4 +106,23 @@ export function completedMapItemCount(
   progress: JourneyProgress,
 ): number {
   return items.filter((item) => isMapItemComplete(item, progress)).length;
+}
+
+/**
+ * 최종 테스트 항목의 상태입니다. 끝냈으면 `completed`, 같은 구획(에피소드)의 **다른 항목이
+ * 모두** 끝났으면 `available`, 아니면 `locked`입니다 — 최종 테스트는 에피소드에서 배운 것을
+ * 모아 푸는 자리라 그 앞을 다 지나야 열립니다(2026-09-28 결정).
+ *
+ * 잠김을 항목에 적지 않고 여기서 파생합니다 — 진행과 어긋날 자리가 생기지 않습니다(ADR-0007 D3).
+ */
+export function episodeFinalStatus(
+  item: Extract<JourneyMapItem, { kind: "episode-final" }>,
+  sectionItems: readonly JourneyMapItem[],
+  progress: JourneyProgress,
+): EpisodeFinalStatus {
+  if (isMapItemComplete(item, progress)) {
+    return "completed";
+  }
+  const rest = sectionItems.filter((other) => other !== item);
+  return rest.every((other) => isMapItemComplete(other, progress)) ? "available" : "locked";
 }

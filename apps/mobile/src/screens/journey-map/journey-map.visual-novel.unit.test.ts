@@ -23,6 +23,7 @@ describe("journey map visual novel contract", () => {
       "phone-call:appointment-confirmation-phone-call",
       "visual-novel:cafe-arrival-visual-novel",
       "standard:directions",
+      "episode-final:tutorial-final-test",
     ]);
   });
 

@@ -10,6 +10,7 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // 판정 어휘는 `lib/answer-result.ts`에서 옵니다 — 화면 폴더가 아니라 `lib/`에서
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
+import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroTarget } from "../screens/episode-intro/episode-intro.contract";
 import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
@@ -58,6 +59,8 @@ export type Screen =
   // 판정할 결과가 없어 늘 실수 없음(PERFECT)입니다. 목적지를 싣지 않습니다 — 여기서는
   // 유닛을 열지 않고 맵으로 돌아갑니다.
   | { name: "episode-prologue-complete"; episodeId: string }
+  | { name: "episode-final"; unitId: EpisodeFinalUnitId }
+  | { name: "episode-final-complete"; unitId: EpisodeFinalUnitId; results: readonly AnswerResult[] }
   // 학습 화면 넷은 `activityIndex`를 함께 집니다. 유닛 하나가 활동 여럿을 잇기
   // 때문입니다(`learningFormsByStep`) — 몇 번째 활동인지는 「지금 어느 화면인가」의
   // 일부라 스택이 지고, 다음 활동을 고를 때 여기서 읽습니다. App 상태로 빼면 스택과

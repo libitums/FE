@@ -12,7 +12,8 @@ import {
   startSpeechRecognition,
   stopSpeechRecognition,
 } from "../../lib/speech-recognition";
-import type { SpeechResult, SpeechStatus } from "../../lib/speech-recognition";
+import type { SpeechResult } from "../../lib/speech-recognition";
+import { canListen } from "../../lib/speaking-judge";
 import { LearningShell } from "../learning/LearningShell";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import {
@@ -43,15 +44,6 @@ export type SpeakingScreenProps = {
   onExit: () => void;
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
 };
-
-// 마이크 · 음성 인식 권한이 둘 다 있고 인식기가 서 있어야 들을 수 있습니다.
-function canListen(status: SpeechStatus): boolean {
-  return (
-    status.microphone === "granted" &&
-    status.speechRecognition === "granted" &&
-    status.recognizerAvailable
-  );
-}
 
 export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps): ReactNode {
   const questions = speakingQuestionsForStep(stepId);

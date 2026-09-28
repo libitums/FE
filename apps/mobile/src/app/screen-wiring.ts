@@ -44,6 +44,8 @@ import type {
 } from "../screens/visual-novel/visual-novel.contract";
 import type { NavAction } from "./nav-state";
 import { entryWiring } from "./entry-wiring";
+import { episodeFinalWiring } from "./episode-final-wiring";
+import type { EpisodeFinalWiring, EpisodeFinalWiringArgs } from "./episode-final-wiring";
 import { journeyWiring } from "./journey-wiring";
 import { roleplayWiring } from "./roleplay-wiring";
 
@@ -180,7 +182,8 @@ export type ScreenWiring = {
   onSelectEntryLanguage: (language: EntryLanguage) => void;
   onContinueLanguageSelect: () => void;
   onEnterJourney: () => void;
-};
+  // 에피소드 최종 테스트의 결선입니다(`episode-final-wiring.ts`).
+} & EpisodeFinalWiring;
 
 export type ScreenWiringArgs = {
   readonly messengerEventSink: MessengerEventSink;
@@ -213,7 +216,7 @@ export type ScreenWiringArgs = {
   readonly roleplaySections: readonly RoleplaySection[];
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
-};
+} & Omit<EpisodeFinalWiringArgs, "dispatch">;
 
 export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   const journey = journeyWiring(args);
@@ -244,5 +247,6 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       args.dispatch({ type: "back" });
     },
     ...entry,
+    ...episodeFinalWiring(args),
   };
 }

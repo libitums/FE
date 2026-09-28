@@ -254,6 +254,7 @@ test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하�
         completedMessengerUnitIds: ["appointment-confirmation"],
         completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
         visualNovelProgress: { status: "completed", beatIndex: 2 },
+        completedEpisodeFinalIds: ["tutorial-final-test"],
       }}
     />,
   );

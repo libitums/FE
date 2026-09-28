@@ -45,6 +45,7 @@ import type { Screen } from "./nav-state";
 import { renderShellLearningScreen } from "./render-learning-screen";
 import { renderMessengerCompleteScreen } from "./render-messenger-complete";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
+import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -63,6 +64,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
             wiring.visualNovelProgress.status === "completed" ? ["cafe-arrival-visual-novel"] : []
           }
           onStartVisualNovelUnit={wiring.onStartVisualNovelUnit}
+          completedEpisodeFinalIds={wiring.completedEpisodeFinalIds}
+          onStartEpisodeFinal={wiring.onStartEpisodeFinal}
           onLayerChange={wiring.onScreenLayerChange}
         />
       );
@@ -275,6 +278,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onBack={wiring.onJourneyEntryBack}
         />
       );
+    case "episode-final":
+    case "episode-final-complete":
+      return renderEpisodeFinalFlow(screen, wiring);
     // `never` 망라가 이 case를 강제합니다. 결선이 없습니다 — 탐침 화면은
     // props도 콜백도 받지 않고 자기 상태를 스스로 듭니다. **아무 코드도 이
     // 화면을 push하지 않습니다** — 위 진입 흐름 case들과 달리 여기로 오는
@@ -282,9 +288,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // 부팅 상태(`handwritingProbeNav`)를 손수 바꿔 끼워야 합니다.
     case "handwriting-probe":
       return <HandwritingProbeScreen />;
-    // 위 case와 같은 자리·같은 근거입니다. `never` 망라가 이 case를 강제하고,
-    // 결선은 없습니다 — 탐침 화면은 props도 콜백도 받지 않고 자기 상태를
-    // 스스로 듭니다. **아무 코드도 이 화면을 push하지 않습니다.**
+    // 위 case와 같은 자리·같은 근거입니다 — 결선이 없고 **아무 코드도 이 화면을 push하지 않습니다.**
     case "speech-probe":
       return <SpeechProbeScreen />;
     default: {
