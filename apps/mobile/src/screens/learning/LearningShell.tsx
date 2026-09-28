@@ -5,7 +5,8 @@ import { Card } from "@libitums/ui-lynx/card";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 import { Fog } from "@libitums/ui-lynx/fog";
 import { TopBar } from "../../components/TopBar";
-import { learningSessionHeader, learningTimingFlag } from "./learning-shell.contract";
+import { learningTimingFlag } from "./learning-shell.contract";
+import { LearningSessionHeader } from "./LearningSessionHeader";
 import type { LearningForm } from "../../lib/learning-form";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
@@ -81,8 +82,6 @@ export function LearningShell({
   trophyCount = 0,
   onOpenNotifications = () => {},
 }: LearningShellProps): ReactNode {
-  const header = learningSessionHeader(form, questionIndex, questionCount);
-
   // 나가기는 **두 걸음**입니다 ⟨2026-09-28⟩. `×`는 묻기만 하고, 실제로 떠나는 것은
   // 모달의 `그만두기`입니다.
   //
@@ -175,60 +174,12 @@ export function LearningShell({
       {/* 세션 헤더를 상자로 감쌉니다 — 스스로 넘어가는 층(`-advance`)보다 위에 서야
           `×`로 나가는 길이 막히지 않습니다. */}
       <view className="learning-shell-session-layer">
-        <Card surface="secondary" elevation="flat">
-          <Card.Content>
-            <view className="learning-shell-session" data-testid="learning-shell-session">
-              <view className="learning-shell-session-row">
-                <view
-                  className="learning-shell-exit"
-                  data-testid="learning-shell-exit"
-                  accessibility-element={true}
-                  accessibility-label="학습 나가기"
-                  accessibility-traits="button"
-                  bindtap={handleExit}
-                >
-                  <svg
-                    className="learning-shell-exit-icon"
-                    content={cross}
-                    current-color={color.gray[700]}
-                  />
-                </view>
-                <text
-                  className="learning-shell-progress-label"
-                  data-testid="learning-shell-chapter"
-                >
-                  {header.progressLabel}
-                </text>
-                {/* 나가기와 마주 보는 빈 자리입니다 — 같은 폭이어야 순번이 줄 가운데
-                    섭니다. 보이는 것이 없으므로 접근성 트리에 올리지 않습니다. */}
-                <view className="learning-shell-session-spacer" />
-              </view>
-              <view
-                className="learning-shell-progress"
-                data-testid="learning-shell-progress"
-                accessibility-element={true}
-                accessibility-label={header.accessibilityLabel}
-              >
-                <view className="learning-shell-progress-track">
-                  {/* 0%에서는 그리지 않습니다 — 폭 0짜리 상자가 둥근 끝 때문에 점으로 남아
-                      「조금 했다」로 읽힙니다. */}
-                  {header.fillPercent === 0 ? null : (
-                    <view
-                      className="learning-shell-progress-fill"
-                      data-testid="learning-shell-progress-fill"
-                      style={{ width: `${String(header.fillPercent)}%` }}
-                    />
-                  )}
-                </view>
-                {/* 학습형 이름만 섭니다. ⟨2026-09-28⟩ 백분율 낱말을 걷었습니다 — 막대가
-                    이미 같은 것을 말하고, 숫자가 둘이면 「어느 것을 보나」가 또 생깁니다. */}
-                <text className="learning-shell-form" data-testid="learning-shell-form">
-                  {header.formLabel}
-                </text>
-              </view>
-            </view>
-          </Card.Content>
-        </Card>
+        <LearningSessionHeader
+          form={form}
+          questionIndex={questionIndex}
+          questionCount={questionCount}
+          onExit={handleExit}
+        />
       </view>
       <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
         {instruction}
