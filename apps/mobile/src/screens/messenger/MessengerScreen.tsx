@@ -73,6 +73,10 @@ export function MessengerScreen({
 
   // 맞힌 답장은 배지를 읽을 틈을 두고 대화에 섭니다. 그 사이 화면을 떠나면 타이머가
   // 걷혀 답장이 서지 않습니다.
+  //
+  // 의존은 판정 하나뿐입니다. 판정 틈에는 자판 · 보기가 잠겨 세션을 바꿀 길이 이 타이머뿐이라,
+  // 캡처한 `session`이 낡을 수 없습니다. `onComplete`를 `setSession` 갱신 함수 안에서 부르지
+  // 않습니다 — 갱신 함수는 순수해야 하고 두 번 불릴 수 있어, 완료가 두 번 알려질 수 있습니다.
   useEffect(() => {
     if (composer.verdict !== "correct") {
       return undefined;

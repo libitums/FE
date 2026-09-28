@@ -94,6 +94,10 @@ describe("isTypedAnswerCorrect", () => {
     expect(isTypedAnswerCorrect("네 고마워요", "네, 고마워요!")).toBe(true);
   });
 
+  test("NFD(첫가끝 자모)로 적힌 정답도 완성형 입력과 같다", () => {
+    expect(isTypedAnswerCorrect("좋아요", "좋아요!".normalize("NFD"))).toBe(true);
+  });
+
   test("말이 다르면 틀린다", () => {
     expect(isTypedAnswerCorrect("조아요", "좋아요!")).toBe(false);
     expect(isTypedAnswerCorrect("좋아", "좋아요!")).toBe(false);
