@@ -4,7 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { Card } from "@libitums/ui-lynx/card";
 import { Fog } from "@libitums/ui-lynx/fog";
 import { TopBar } from "../../components/TopBar";
-import { learningSessionHeader } from "./learning-shell.contract";
+import { learningSessionHeader, learningTimingFlag } from "./learning-shell.contract";
 import type { LearningForm } from "../../lib/learning-form";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
@@ -139,7 +139,12 @@ export function LearningShell({
   }, [advance]);
 
   return (
-    <view className="learning-shell" data-testid="learning-shell">
+    <view
+      className="learning-shell"
+      data-testid="learning-shell"
+      // 이 화면이 서는 한 바퀴를 SDK가 재게 하는 표식입니다 — 값과 근거는 계약이 집니다.
+      __lynx_timing_flag={learningTimingFlag(form)}
+    >
       <TopBar
         streakDays={streakDays}
         trophyCount={trophyCount}

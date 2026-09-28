@@ -15,6 +15,29 @@ const formLabels: Record<LearningForm, string> = {
   culture: "Culture",
 };
 
+/**
+ * 학습 화면이 서는 한 바퀴를 SDK가 재게 하는 표식입니다(ADR-0019 D3).
+ *
+ * **이 값이 없으면 학습 화면은 원리적으로 못 잽니다.** Lynx는 `__lynx_timing_flag`가
+ * 붙은 요소가 그려지는 렌더만 따로 재서 이름표와 함께 내보내고, 안 붙은 렌더는 캡처에
+ * 한 줄도 남기지 않습니다 — 실제로 학습 화면을 걸어 보고 캡처를 읽었을 때 entry가 0건
+ * 이었습니다(2026-09-28).
+ *
+ * 접두사가 `libitum:navigation:`인 것은 두 가지를 함께 삽니다. 첫째로 그것이 일어난 일의
+ * 이름입니다 — 사용자가 다른 화면으로 갔습니다. 둘째로 네이티브 수집기가 **그 접두사를
+ * 보고** 메모리 스냅샷을 함께 뜹니다(`AppDelegate.swift`). 다른 이름을 지으면 시간은
+ * 재지만 메모리는 안 재집니다.
+ *
+ * 학습형마다 값을 가르는 것은 **Lynx가 같은 값의 첫 등장만 재기 때문**입니다(ADR-0019 D3).
+ * 하나로 두면 한 실행에서 학습 화면을 처음 연 한 번만 잡히고, 듣기와 낱말 고르기 중
+ * 어느 것이었는지도 남지 않습니다.
+ *
+ * **제품 비식별입니다** — 학습형 이름뿐이고 사용자 · 콘텐츠를 가리키는 것이 없습니다.
+ */
+export function learningTimingFlag(form: LearningForm): string {
+  return `libitum:navigation:learning-${form}`;
+}
+
 export type LearningSessionHeader = {
   /** `Chapter 4 / 12` — 유닛 안에서 지금 몇 번째 활동인가입니다. */
   readonly chapterLabel: string;
