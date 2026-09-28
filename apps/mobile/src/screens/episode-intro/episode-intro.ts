@@ -4,8 +4,12 @@ import type { JourneyMapSection } from "../journey-map/journey-map";
 import type { EpisodeIntroTarget } from "./episode-intro.contract";
 
 // 표지의 목적지가 맵의 어느 항목인지 봅니다. 판별은 `default` 없는 `switch`입니다 —
-// 목적지 종류가 늘면 반환 경로가 비어 `TS2366`이 섭니다.
-function targetsItem(target: EpisodeIntroTarget, item: JourneyMapSection["items"][number]) {
+// 목적지 종류가 늘면 반환 경로가 비어 `TS2366`이 섭니다 — 반환 타입을 적어야 그
+// 검사가 걸립니다.
+function targetsItem(
+  target: EpisodeIntroTarget,
+  item: JourneyMapSection["items"][number],
+): boolean {
   switch (target.kind) {
     case "step": {
       return item.kind === "standard" && item.step.id === target.stepId;

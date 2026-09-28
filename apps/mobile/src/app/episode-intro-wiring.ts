@@ -31,7 +31,8 @@ export type EpisodeIntroWiringArgs = {
   readonly starts: UnitStarts;
 };
 
-// 목적지를 표지 없는 시작으로 옮깁니다. `default` 없는 `switch`입니다.
+// 목적지를 표지 없는 시작으로 옮깁니다. 돌려주는 값이 없어 빠진 갈래를 `TS2366`이
+// 잡지 못하므로, `default`의 `never` 대입이 망라를 집니다(`render-screen.tsx`와 같은 형태).
 function startTarget(starts: UnitStarts, target: EpisodeIntroTarget): void {
   switch (target.kind) {
     case "step": {
@@ -49,6 +50,10 @@ function startTarget(starts: UnitStarts, target: EpisodeIntroTarget): void {
     case "visual-novel": {
       starts.onStartVisualNovelUnit(target.unitId);
       return;
+    }
+    default: {
+      const exhaustive: never = target;
+      return exhaustive;
     }
   }
 }
