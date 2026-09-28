@@ -273,6 +273,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "journey-entry":
       return (
         <JourneyEntryScreen
+          // 이 화면은 셸의 여백을 안 받고 스스로 가장자리를 피합니다(그림이 끝까지
+          // 깔려야 합니다 — `isFullBleedScreen`).
+          safeArea={wiring.safeAreaInsets}
           language={wiring.entryLanguage}
           onEnter={wiring.onEnterJourney}
           onBack={wiring.onJourneyEntryBack}
