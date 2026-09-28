@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import { authFailureMessage } from "../../lib/auth-failure";
 import type { PhoneOtpRequestResult } from "../../lib/auth-session.contract";
 import { entryLoginMethods } from "../../lib/entry-flow";
+import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
 import { loginMethodLabel } from "./login";
 import { loginCountries } from "./login-countries";
 import { LoginScreen } from "./LoginScreen";
@@ -13,7 +14,7 @@ import type { LoginScreenProps } from "./login.contract";
 // (ADR-0006 D4). 라벨 값은 `loginMethodLabel`의 결과로 비교합니다 — 수단 라벨은 임시가
 // 아닙니다 — 로직을 다시 적지 않습니다.
 //
-// 계약 개정(spec.md §2.2): `onSelectMethod(method, phoneNumber?)` 하나가
+// 계약 개정: `onSelectMethod(method, phoneNumber?)` 하나가
 // `onSelectSocialMethod` · `onSubmitPhoneNumber(Promise)` 둘로 갈립니다. 네트워크는
 // 부르지 않습니다 — 콜백은 `vi.fn()`이 돌려주는 Promise로 섭니다. 끝나지 않는 요청은
 // `new Promise(() => {})`, 끝나는 요청은 풀 수 있는 Promise(deferred)로 짓습니다
@@ -47,6 +48,11 @@ function methodButton(method: string): HTMLElement {
 
 function loginMethodPhone(): HTMLElement {
   return screen.getByTestId("login-screen-method-phone");
+}
+
+// 수단 요소(전화번호 · 소셜 공통)의 `data-status`입니다(넷이 같은 자리에 선다).
+function methodStatus(method: string): string | null {
+  return screen.getByTestId(`login-screen-method-${method}`).getAttribute("data-status");
 }
 
 // 조작 단위(accessibility-element="true" + traits="button")를 화면 쪽 testid로
@@ -146,10 +152,13 @@ describe("LoginScreen", () => {
     expect(rendered).toEqual(entryLoginMethods.map((method) => `login-screen-method-${method}`));
   });
 
+  // spec.md §2.3 개정 — `onSelectSocialMethod`의 반환이 `void`에서
+  // `Promise<SocialSignInOutcome>`로 바뀝니다. 반환 모양만 바뀌었고 호출 단언은
+  // 그대로입니다(test-plan §4 LG-U2 「반환 모양만」).
   it.each(socialMethods)(
-    "[LG-U2] %s를 누르면 onSelectSocialMethod가 그 수단으로 1회, onSubmitPhoneNumber는 0회다",
+    "[LG-U2] %s를 누르면 onSelectSocialMethod가 그 수단으로 1회(반환 Promise), onSubmitPhoneNumber는 0회다",
     (method) => {
-      const onSelectSocialMethod = vi.fn();
+      const onSelectSocialMethod = vi.fn((): Promise<SocialSignInOutcome> => new Promise(() => {}));
       const onSubmitPhoneNumber = vi.fn(() => Promise.resolve({ status: "sent" as const }));
       renderLogin({ onSelectSocialMethod, onSubmitPhoneNumber });
 
@@ -158,6 +167,7 @@ describe("LoginScreen", () => {
       expect(onSelectSocialMethod).toHaveBeenCalledTimes(1);
       expect(onSelectSocialMethod).toHaveBeenCalledWith(method);
       expect(onSubmitPhoneNumber).not.toHaveBeenCalled();
+      expect(onSelectSocialMethod.mock.results[0]?.value).toBeInstanceOf(Promise);
     },
   );
 
@@ -206,6 +216,49 @@ describe("LoginScreen", () => {
     });
   });
 
+  // 로그인 상태 표 — google이 요청 중일 동안 나머지 셋(apple · facebook ·
+  // phone)의 `data-status`는 `idle`입니다. LG-S2가 조작 무동작을 잰다면 이 케이스는
+  // `data-status`만 잽니다.
+  it("[LG-S1] google 요청이 안 끝난 동안 google만 requesting이고 나머지 셋은 idle이다", () => {
+    const onSelectSocialMethod = vi.fn((): Promise<SocialSignInOutcome> => new Promise(() => {}));
+    renderLogin({ onSelectSocialMethod });
+
+    fireEvent.tap(methodButton("google"), {});
+
+    expect(methodStatus("google")).toBe("requesting");
+    expect(methodStatus("apple")).toBe("idle");
+    expect(methodStatus("facebook")).toBe("idle");
+    expect(methodStatus("phone")).toBe("idle");
+  });
+
+  // 「네 수단 · 뒤로가기 · 국가 선택 무동작」을 소셜 쪽에서 잽니다 —
+  // LG-P2의 대칭(전화번호 요청 중에는 소셜이 무동작인 것)입니다.
+  it("[LG-S2] ⭐ google 요청 중에는 Continue·다른 소셜·뒤로가기·국가 선택이 모두 무동작이다", () => {
+    const onSelectSocialMethod = vi.fn((): Promise<SocialSignInOutcome> => new Promise(() => {}));
+    const onSubmitPhoneNumber = vi.fn(() => Promise.resolve({ status: "sent" as const }));
+    const onBack = vi.fn();
+    renderLogin({ onSelectSocialMethod, onSubmitPhoneNumber, onBack });
+
+    typePhoneNumber("10 1234 5678");
+    fireEvent.tap(methodButton("google"), {});
+    expect(onSelectSocialMethod).toHaveBeenCalledTimes(1);
+
+    fireEvent.tap(methodButton("phone"), {});
+    expect(onSubmitPhoneNumber).not.toHaveBeenCalled();
+
+    fireEvent.tap(methodButton("apple"), {});
+    expect(onSelectSocialMethod).toHaveBeenCalledTimes(1);
+
+    const back = within(screen.getByTestId("login-screen-header")).getByTestId(
+      "ui-lynx-round-button",
+    );
+    fireEvent.tap(back, {});
+    expect(onBack).not.toHaveBeenCalled();
+
+    fireEvent.tap(screen.getByTestId("login-screen-country"), {});
+    expect(screen.queryByTestId("login-screen-country-list")).not.toBeInTheDocument();
+  });
+
   it("[LG-P2] 요청이 안 끝난 동안 data-status가 requesting이고 Continue·소셜·뒤로가기가 무동작이다", () => {
     const onSubmitPhoneNumber = vi.fn(() => new Promise<PhoneOtpRequestResult>(() => {}));
     const onSelectSocialMethod = vi.fn();
@@ -228,6 +281,99 @@ describe("LoginScreen", () => {
     );
     fireEvent.tap(back, {});
     expect(onBack).not.toHaveBeenCalled();
+
+    // 전화번호 요청 중에도 소셜 셋은 idle 그대로입니다(한 줄 추가).
+    expect(socialMethods.map(methodStatus)).toEqual(socialMethods.map(() => "idle"));
+  });
+
+  // 취소는 idle과 구별되지 않습니다. 문구 · 발화 0.
+  it("[LG-S3] cancelled로 끝나면 넷 다 idle로 돌아가고 오류·발화가 없다", async () => {
+    const calls = stubAnnounceHost();
+    const { promise, resolve } = deferred<SocialSignInOutcome>();
+    const onSelectSocialMethod = vi.fn(() => promise);
+    renderLogin({ onSelectSocialMethod });
+
+    fireEvent.tap(methodButton("google"), {});
+    resolve({ status: "cancelled" });
+    await flushMicrotasks();
+
+    for (const method of entryLoginMethods) {
+      expect(methodStatus(method)).toBe("idle");
+    }
+    expect(screen.queryByTestId("login-screen-error")).not.toBeInTheDocument();
+    expect(calls).toHaveLength(0);
+  });
+
+  it("[LG-S4] failed/unsupported로 끝나면 그 수단만 failed이고 오류 문구가 서며 announce가 1회 불린다", async () => {
+    const calls = stubAnnounceHost();
+    const { promise, resolve } = deferred<SocialSignInOutcome>();
+    const onSelectSocialMethod = vi.fn(() => promise);
+    renderLogin({ onSelectSocialMethod });
+
+    fireEvent.tap(methodButton("google"), {});
+    resolve({ status: "failed", reason: "unsupported" });
+    await flushMicrotasks();
+
+    expect(methodStatus("google")).toBe("failed");
+    expect(methodStatus("apple")).toBe("idle");
+    expect(methodStatus("facebook")).toBe("idle");
+    expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
+      authFailureMessage("unsupported"),
+    );
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.args[0]).toEqual({ content: authFailureMessage("unsupported") });
+  });
+
+  it("[LG-S5] 실패 뒤 같은 수단을 다시 누르면 onSelectSocialMethod가 2회째 불리고 요청 중 오류 문구가 사라진다", async () => {
+    const first = deferred<SocialSignInOutcome>();
+    const onSelectSocialMethod = vi.fn(() => first.promise);
+    renderLogin({ onSelectSocialMethod });
+
+    fireEvent.tap(methodButton("google"), {});
+    first.resolve({ status: "failed", reason: "unsupported" });
+    await flushMicrotasks();
+    expect(screen.getByTestId("login-screen-error")).toBeInTheDocument();
+
+    onSelectSocialMethod.mockReturnValueOnce(new Promise<SocialSignInOutcome>(() => {}));
+    fireEvent.tap(methodButton("google"), {});
+
+    expect(onSelectSocialMethod).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId("login-screen-error")).not.toBeInTheDocument();
+  });
+
+  // `loginStatusAfterEdit`은 수단과 무관하게 `failed`를 `idle`로
+  // 되돌립니다. 소셜 실패 문구도 번호 입력으로 걷힙니다.
+  it("[LG-S6] 소셜 실패 뒤 번호를 입력하면 오류가 사라지고 그 수단이 idle로 돌아간다", async () => {
+    const { promise, resolve } = deferred<SocialSignInOutcome>();
+    const onSelectSocialMethod = vi.fn(() => promise);
+    renderLogin({ onSelectSocialMethod });
+
+    fireEvent.tap(methodButton("google"), {});
+    resolve({ status: "failed", reason: "unsupported" });
+    await flushMicrotasks();
+    expect(methodStatus("google")).toBe("failed");
+
+    typePhoneNumber("10 1234 5678");
+
+    expect(screen.queryByTestId("login-screen-error")).not.toBeInTheDocument();
+    expect(methodStatus("google")).toBe("idle");
+  });
+
+  it("[LG-S7] signed-in으로 끝나면 넷 다 idle이고 오류·발화가 없다", async () => {
+    const calls = stubAnnounceHost();
+    const { promise, resolve } = deferred<SocialSignInOutcome>();
+    const onSelectSocialMethod = vi.fn(() => promise);
+    renderLogin({ onSelectSocialMethod });
+
+    fireEvent.tap(methodButton("google"), {});
+    resolve({ status: "signed-in" });
+    await flushMicrotasks();
+
+    for (const method of entryLoginMethods) {
+      expect(methodStatus(method)).toBe("idle");
+    }
+    expect(screen.queryByTestId("login-screen-error")).not.toBeInTheDocument();
+    expect(calls).toHaveLength(0);
   });
 
   it("[LG-P3] 요청이 network로 실패하면 data-status가 failed이고 오류 문구가 서며 announce가 1회 불린다", async () => {
@@ -248,6 +394,8 @@ describe("LoginScreen", () => {
     );
     expect(calls).toHaveLength(1);
     expect(calls[0]?.args[0]).toEqual({ content: authFailureMessage("network") });
+    // 전화번호 실패 시에도 소셜 셋은 idle 그대로입니다(한 줄 추가).
+    expect(socialMethods.map(methodStatus)).toEqual(socialMethods.map(() => "idle"));
   });
 
   it("[LG-P4] 실패 뒤 번호를 고치면 오류가 사라지고 data-status가 idle로 돌아간다", async () => {

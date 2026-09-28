@@ -14,6 +14,11 @@ import {
   supabaseAuthRequest,
   verifyPhoneOtp,
 } from "./api-client";
+// 소셜 로그인(신규 · test-plan §2.4) — exchangePkceCode · supabaseAuthorizeUrl은
+// api-client.ts, pkceExchangeFailureFrom은 auth-response.ts가 소유한다(spec S6).
+import { exchangePkceCode, supabaseAuthorizeUrl } from "./api-client";
+import { pkceExchangeFailureFrom } from "./auth-response";
+import type { SupabaseAuthorizeQuery } from "./social-sign-in.contract";
 
 // §6 규약: 설정 대역을 세우는 케이스는 fetch 대역도 반드시 세운다. 부수효과
 // 함수들의 전송 함수 해석 순서가 `globalThis.fetch` 먼저이므로(spec §3) 이
@@ -38,10 +43,11 @@ afterEach(() => {
 
 // ------------------------------------------------------------------ 순수 함수
 
-test("AC1. supabaseAuthPathFor가 세 연산을 세 경로로 옮긴다", () => {
+test("AC1. supabaseAuthPathFor가 네 연산을 네 경로로 옮긴다", () => {
   expect(supabaseAuthPathFor("request-otp")).toBe("/auth/v1/otp");
   expect(supabaseAuthPathFor("verify-otp")).toBe("/auth/v1/verify");
   expect(supabaseAuthPathFor("refresh-session")).toBe("/auth/v1/token?grant_type=refresh_token");
+  expect(supabaseAuthPathFor("exchange-pkce")).toBe("/auth/v1/token?grant_type=pkce");
 });
 
 test("AC2. supabaseAuthRequest가 url·method·헤더(정확히 둘)·본문을 짓는다", () => {
@@ -271,6 +277,119 @@ test("AC15. 성공 응답 뒤 제한 시간 타이머가 남지 않는다", asyn
   );
 
   await requestPhoneOtp(samplePhone);
+
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+// ------------------------------------------------------------------ 소셜 로그인(신규)
+
+const sampleAuthorizeQuery: SupabaseAuthorizeQuery = {
+  provider: "google",
+  redirect_to: "duru://auth-callback",
+  code_challenge: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+  code_challenge_method: "s256",
+};
+
+test("AP1. supabaseAuthorizeUrl — 키 순서 고정 · 값마다 encodeURIComponent", () => {
+  expect(supabaseAuthorizeUrl(sampleConfig, sampleAuthorizeQuery)).toBe(
+    "https://test.supabase.co/auth/v1/authorize?provider=google&redirect_to=duru%3A%2F%2Fauth-callback&code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM&code_challenge_method=s256",
+  );
+
+  expect(
+    supabaseAuthorizeUrl(sampleConfig, { ...sampleAuthorizeQuery, code_challenge: "a&b=c" }),
+  ).toContain("code_challenge=a%26b%3Dc");
+});
+
+test("AP2. pkceExchangeFailureFrom — 429 · over_* → rate-limited, 5xx → unavailable, 4xx → sign-in-incomplete, 그 밖 → unavailable", () => {
+  expect(pkceExchangeFailureFrom(429, null)).toBe("rate-limited");
+  expect(pkceExchangeFailureFrom(400, "over_request_rate_limit")).toBe("rate-limited");
+  expect(pkceExchangeFailureFrom(500, null)).toBe("unavailable");
+  expect(pkceExchangeFailureFrom(400, "flow_state_not_found")).toBe("sign-in-incomplete");
+  expect(pkceExchangeFailureFrom(403, null)).toBe("sign-in-incomplete");
+  expect(pkceExchangeFailureFrom(302, null)).toBe("unavailable");
+});
+
+test("AP3. exchangePkceCode — 200 → exchanged, 200+깨진 본문 → unavailable, 헤더가 정확히 둘", async () => {
+  stubConfig();
+  const fetchMock = vi.fn(async () =>
+    jsonResponse(200, { access_token: "at", refresh_token: "rt", expires_in: 3600 }),
+  );
+  vi.stubGlobal("fetch", fetchMock);
+
+  const exchanged = await exchangePkceCode({ authCode: "abc", codeVerifier: "verifier-value" });
+
+  expect(exchanged.status).toBe("exchanged");
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const [url, init] = fetchMock.mock.calls[0] as unknown as [
+    string,
+    { headers: Record<string, string>; body: string },
+  ];
+  expect(url).toBe("https://test.supabase.co/auth/v1/token?grant_type=pkce");
+  expect(Object.keys(init.headers).sort()).toEqual(["Content-Type", "apikey"]);
+  expect(JSON.parse(init.body)).toEqual({ auth_code: "abc", code_verifier: "verifier-value" });
+
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => jsonResponse(200, { unexpected: "shape" })),
+  );
+
+  const broken = await exchangePkceCode({ authCode: "abc", codeVerifier: "verifier-value" });
+
+  expect(broken).toEqual({ status: "failed", reason: "unavailable" });
+});
+
+test("AP4. exchangePkceCode — 설정 없음 · 던짐 · 제한 시간 · 성공 뒤 타이머 0개", async () => {
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "");
+  const fetchMock = vi.fn(async () => jsonResponse(200, {}));
+  vi.stubGlobal("fetch", fetchMock);
+
+  await expect(exchangePkceCode({ authCode: "abc", codeVerifier: "v" })).resolves.toEqual({
+    status: "failed",
+    reason: "unconfigured",
+  });
+  expect(fetchMock).not.toHaveBeenCalled();
+
+  stubConfig();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => {
+      throw new Error("connection refused");
+    }),
+  );
+  await expect(exchangePkceCode({ authCode: "abc", codeVerifier: "v" })).resolves.toEqual({
+    status: "failed",
+    reason: "network",
+  });
+
+  vi.useFakeTimers();
+  stubConfig();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise(() => {})),
+  );
+
+  let settled = false;
+  const pending = exchangePkceCode({ authCode: "abc", codeVerifier: "v" }).then((result) => {
+    settled = true;
+    return result;
+  });
+
+  await vi.advanceTimersByTimeAsync(authRequestTimeoutMs - 1);
+  expect(settled).toBe(false);
+  await vi.advanceTimersByTimeAsync(1);
+  const timedOut = await pending;
+
+  expect(settled).toBe(true);
+  expect(timedOut).toEqual({ status: "failed", reason: "network" });
+
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      jsonResponse(200, { access_token: "at", refresh_token: "rt", expires_in: 3600 }),
+    ),
+  );
+  await exchangePkceCode({ authCode: "abc", codeVerifier: "v" });
 
   expect(vi.getTimerCount()).toBe(0);
 });

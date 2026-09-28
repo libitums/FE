@@ -1,8 +1,9 @@
 // 로그인 순수 로직을 소유합니다.
 
-import type { PhoneNumber } from "../../lib/auth-session.contract";
+import type { PhoneNumber, PhoneOtpRequestResult } from "../../lib/auth-session.contract";
 import type { EntryLoginMethod } from "../../lib/entry-flow";
-import type { LoginPhoneStatus } from "./login.contract";
+import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
+import type { LoginMethodStatus, LoginStatus, SocialLoginMethod } from "./login.contract";
 
 // 라벨은 임시가 아닌 최종값입니다 — `ui` 테스트도 리터럴을 단언하지 않지만 값
 // 자체는 자리표가 아닙니다. `default`를 두지 않습니다 — 수단이 늘면 TS2366으로
@@ -82,15 +83,60 @@ export function phoneNumberFrom(dialCode: string, input: string): PhoneNumber | 
   return { e164, display: international ? trimmedInput : `${dialCode} ${trimmedInput}` };
 }
 
-/** `requesting`일 때만 참입니다. */
-export function isLoginBusy(status: LoginPhoneStatus): boolean {
+/** `requesting`일 때만 참입니다 — 수단과 무관합니다. */
+export function isLoginBusy(status: LoginStatus): boolean {
   return status.kind === "requesting";
 }
 
 /** 번호가 있고 요청 중이 아닐 때만 참입니다. */
 export function canRequestPhoneOtp(
   phone: PhoneNumber | null,
-  status: LoginPhoneStatus,
+  status: LoginStatus,
 ): phone is PhoneNumber {
   return phone !== null && !isLoginBusy(status);
+}
+
+// ------------------------------------------------------------------ 소셜
+
+/** 요청 중이 아닐 때만 참입니다. */
+export function canStartSocialSignIn(status: LoginStatus): boolean {
+  return !isLoginBusy(status);
+}
+
+/** 수단 요소 하나의 `data-status`입니다. 상태가 그 수단의 것이 아니면 `idle`입니다. */
+export function loginMethodStatus(
+  status: LoginStatus,
+  method: EntryLoginMethod,
+): LoginMethodStatus {
+  if (status.kind === "idle") {
+    return "idle";
+  }
+  return status.method === method ? status.kind : "idle";
+}
+
+/** 전화번호 요청 결과 → 다음 상태입니다. */
+export function loginStatusAfterPhoneResult(result: PhoneOtpRequestResult): LoginStatus {
+  if (result.status === "sent") {
+    return { kind: "idle" };
+  }
+  return { kind: "failed", method: "phone", reason: result.reason };
+}
+
+/** 소셜 로그인 결과 → 다음 상태입니다. 취소는 `idle`과 구별되지 않습니다. */
+export function loginStatusAfterSocialOutcome(
+  method: SocialLoginMethod,
+  outcome: SocialSignInOutcome,
+): LoginStatus {
+  if (outcome.status === "failed") {
+    return { kind: "failed", method, reason: outcome.reason };
+  }
+  return { kind: "idle" };
+}
+
+/** 번호 · 국가를 고쳤을 때의 다음 상태입니다. `failed`면 수단과 무관하게 `idle`입니다. */
+export function loginStatusAfterEdit(status: LoginStatus): LoginStatus {
+  if (status.kind === "failed") {
+    return { kind: "idle" };
+  }
+  return status;
 }

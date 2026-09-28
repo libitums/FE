@@ -3,7 +3,7 @@
 
 import type { AuthFailureReason } from "./auth-session.contract";
 
-/** `default` 없는 `switch`로 여섯 이유 전부를 망라합니다. */
+/** `default` 없는 `switch`로 여덟 이유 전부를 망라합니다. */
 export function authFailureMessage(reason: AuthFailureReason): string {
   switch (reason) {
     case "network": {
@@ -13,7 +13,7 @@ export function authFailureMessage(reason: AuthFailureReason): string {
       return "Something went wrong. Please try again.";
     }
     case "unconfigured": {
-      return "Phone sign-in isn't available right now.";
+      return "Sign-in isn't available right now.";
     }
     case "rate-limited": {
       return "Too many attempts. Please wait a moment and try again.";
@@ -23,6 +23,12 @@ export function authFailureMessage(reason: AuthFailureReason): string {
     }
     case "invalid-code": {
       return "The code is incorrect or has expired.";
+    }
+    case "sign-in-incomplete": {
+      return "Sign-in didn't complete. Please try again.";
+    }
+    case "unsupported": {
+      return "This sign-in option isn't available on this device.";
     }
   }
 }

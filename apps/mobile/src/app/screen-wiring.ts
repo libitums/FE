@@ -18,6 +18,7 @@ import type {
 } from "../lib/auth-session.contract";
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
+import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type {
@@ -179,7 +180,7 @@ export type ScreenWiring = {
   // 내리고, 나머지는 전이·이벤트·토큰 저장을 여는 콜백입니다.
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
-  onSelectSocialLoginMethod: (method: SocialLoginMethod) => void;
+  onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
   onRequestPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   onVerifyPhoneOtp: (request: PhoneOtpVerifyRequest) => Promise<PhoneOtpVerifyOutcome>;
