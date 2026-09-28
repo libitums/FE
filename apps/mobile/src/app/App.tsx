@@ -28,7 +28,6 @@ import type {
   VisualNovelProgress,
   VisualNovelUnitId,
 } from "../screens/visual-novel/visual-novel.contract";
-import { totalGemsOf } from "../screens/gem-purchase/gem-purchase";
 import { AppHeader } from "./AppHeader";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
@@ -69,6 +68,12 @@ export type AppSeedProps = {
    * 제품 진입점은 이 값을 주지 않습니다.
    */
   readonly seenEpisodeIntroIds?: readonly string[];
+  /**
+   * 부팅할 때 가진 젬 수입니다. 없으면 0입니다. 결제 서비스가 아직 없어 젬이 늘어나는
+   * 길이 앱 안에 없으므로, 젬 수가 여러 자리에 같은 값으로 서는지 보려는 자리
+   * (integration · 개발 중 확인)가 씁니다. 제품 진입점은 이 값을 주지 않습니다.
+   */
+  readonly initialGemCount?: number;
 };
 
 const productJourneySeed: AppJourneySeed = {
@@ -106,6 +111,7 @@ function isFullBleedScreen(screen: Screen): boolean {
 export function App({
   journeySeed = productJourneySeed,
   seenEpisodeIntroIds: initialSeenEpisodeIntroIds = [],
+  initialGemCount = 0,
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
@@ -165,10 +171,10 @@ export function App({
   const [seenEpisodeIntroIds, setSeenEpisodeIntroIds] = useState<readonly string[]>(
     initialSeenEpisodeIntroIds,
   );
-  // 가진 젬 수입니다. 전역 머리의 젬 칩과 구매 화면이 함께 읽습니다. **영속하지
-  // 않고**(ADR-0007 D1) 결제 연동도 아직 없습니다 — 구매 화면의 `Pay`가 고른 팩의 젬을
-  // 세션 동안만 더합니다.
-  const [gemCount, setGemCount] = useState(0);
+  // 가진 젬 수입니다. 전역 머리 · 구매 화면 · 학습 화면 상단 바 · 학습 완료가 같은 값을
+  // 읽습니다. 결제 서비스가 아직 없어 바뀌는 길이 없습니다 — 구매 화면의 `Pay`는 「결제
+  // 준비 중」 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
+  const [gemCount] = useState(initialGemCount);
   // 탭 루트 화면 안에 겹침 레이어가 떠 있는가입니다. 화면이 알려 오고(`onScreenLayerChange`)
   // 전역 머리가 그 동안 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를
   // 알립니다.
@@ -263,7 +269,6 @@ export function App({
               gemCount={gemCount}
               obscured={screenLayerOpen}
               onOpenNotifications={wiring.onOpenNotifications}
-              onPurchaseGems={(pack) => setGemCount((count) => count + totalGemsOf(pack))}
             />
           ) : null}
         </view>

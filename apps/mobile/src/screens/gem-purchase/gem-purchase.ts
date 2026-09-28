@@ -52,6 +52,16 @@ export function formatPricePerGem(pack: GemPack): string {
   return `$${(pack.priceCents / 100 / totalGemsOf(pack)).toPrecision(2)} per gem`;
 }
 
+/**
+ * 결제가 아직 없다는 안내입니다. `Pay`와 결제 수단 줄이 이것을 띄웁니다 — 누르면 아무 일도
+ * 없는 버튼을 두지 않고(ADR-0016 D10), 사지도 않은 젬이 늘어나지도 않게 합니다. 문구의
+ * 결은 롤플레이의 플러스 안내(「…아직 준비 중이에요」)와 맞춥니다.
+ */
+export const gemPaymentNotice = {
+  title: "결제 준비 중",
+  description: "젬 결제 서비스는 아직 준비 중이에요. 조금만 기다려 주세요.",
+} as const;
+
 /** 팩 카드 둘째 줄입니다 — 보너스가 있으면 보너스, 없으면 팩 이름입니다. */
 export function packCaption(pack: GemPack): string {
   return pack.bonusGems > 0 ? `+ ${formatGemCount(pack.bonusGems)} bonus` : "Standard pack";

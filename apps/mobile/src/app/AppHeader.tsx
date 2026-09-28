@@ -3,7 +3,6 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
 import { GemPurchaseScreen } from "../screens/gem-purchase/GemPurchaseScreen";
-import type { GemPack } from "../screens/gem-purchase/gem-purchase";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import {
   streakTrack,
@@ -32,8 +31,6 @@ export type AppHeaderProps = {
    * 대상이 아닙니다(ADR-0016 D9).
    */
   readonly obscured?: boolean;
-  /** 젬 구매 화면의 `Pay`입니다. 적립은 젬 수를 소유한 쪽이 집니다. */
-  readonly onPurchaseGems: (pack: GemPack) => void;
   /**
    * 오늘의 요일입니다(`Date#getDay()`, 0 = 일). 연속 학습 모달의 요일 줄이 여기서
    * 시작점을 셉니다. 넘기지 않으면 기기 시계를 읽습니다.
@@ -47,7 +44,6 @@ export function AppHeader({
   gemCount,
   onOpenNotifications,
   obscured = false,
-  onPurchaseGems,
   todayWeekday,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
@@ -85,19 +81,7 @@ export function AppHeader({
           onClose={close}
         />
       ) : null}
-      {openLayer === "gem" ? (
-        <GemPurchaseScreen
-          gemBalance={gemCount}
-          onPurchase={(pack) => {
-            onPurchaseGems(pack);
-            close();
-          }}
-          // 결제 수단을 바꾸는 화면이 아직 없습니다. 줄은 디자인대로 세우되 누르면 아무
-          // 일도 일어나지 않습니다 — 그 화면이 생기면 여기서 엽니다.
-          onChangePaymentMethod={() => {}}
-          onClose={close}
-        />
-      ) : null}
+      {openLayer === "gem" ? <GemPurchaseScreen gemBalance={gemCount} onClose={close} /> : null}
     </>
   );
 }
