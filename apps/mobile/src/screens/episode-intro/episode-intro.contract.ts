@@ -42,4 +42,54 @@ export type EpisodeIntroTestId =
   | "episode-intro-screen-title"
   | "episode-intro-screen-skip"
   | "episode-intro-screen-next"
-  | "episode-intro-screen-confirm";
+  | "episode-intro-screen-confirm"
+  | "prologue-call-screen"
+  | "prologue-call-screen-back"
+  | "prologue-call-screen-title"
+  | "prologue-call-screen-caller"
+  | "prologue-call-screen-clock"
+  | "prologue-call-screen-line"
+  | "prologue-call-screen-line-text"
+  | "prologue-call-screen-line-translation"
+  | "prologue-call-screen-mute"
+  | "prologue-call-screen-volume"
+  | "prologue-call-screen-volume-panel"
+  | "prologue-call-screen-volume-down"
+  | "prologue-call-screen-volume-up"
+  | "prologue-call-screen-end"
+  | "prologue-call-screen-complete";
+
+/** 서사 통화의 대사 한 줄입니다. 위가 한국어, 아래가 번역입니다. */
+export type PrologueCallLine = {
+  readonly text: string;
+  readonly translation: string;
+};
+
+/**
+ * 표지의 `Next` 뒤에 이어지는 서사 통화입니다. **학습이 아닙니다** — 고를 답도 판정도
+ * 없고, 대사가 저절로 흐른 뒤 끝납니다.
+ */
+export type PrologueCall = {
+  readonly callerName: string;
+  /** 비어 있지 않습니다. */
+  readonly lines: readonly PrologueCallLine[];
+};
+
+/** 소리 크기 단계입니다. 0은 쓰지 않습니다 — 소리를 없애는 것은 음소거의 몫입니다. */
+export type PrologueCallVolume = 1 | 2 | 3 | 4 | 5;
+
+export type PrologueCallScreenProps = {
+  readonly insets: SafeAreaInsets;
+  /** 머리 줄입니다 — `Episode 0.` */
+  readonly episodeLabel: string;
+  readonly call: PrologueCall;
+  /** 통화 상대의 얼굴 그림입니다. */
+  readonly callerPortrait: string;
+  /**
+   * 끝난 통화의 하단 버튼을 눌렀습니다. 통화가 끝나는 것(마지막 대사가 흐름 · 종료
+   * 버튼)만으로는 불리지 않습니다 — 끝나면 하단에 버튼이 서고, 그 버튼이 다음으로 갑니다.
+   */
+  readonly onComplete: () => void;
+  /** 서사를 본 것으로 적지 않고 맵으로 돌아갑니다. */
+  readonly onBack: () => void;
+};
