@@ -91,7 +91,14 @@ test("[EI4] 표지를 넘긴 뒤에는 같은 에피소드의 유닛을 열어�
   renderApp(<App />);
   startOrdering();
   tapIntro("episode-intro-screen-skip");
+  // ⟨2026-09-28⟩ 학습 나가기는 두 걸음입니다 — `×`는 묻기만 하고 실제로 떠나는 것은
+  // 모달의 `그만두기`입니다. 진행이 저장되지 않아 되돌릴 수단이 없는 자리라 묻습니다.
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  const leave = [...document.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
+    (el) => el.getAttribute("accessibility-label") === "그만두기",
+  );
+  if (leave === undefined) throw new Error("나가기 확인 모달에 `그만두기`가 없습니다");
+  fireEvent.tap(leave, {});
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
 
