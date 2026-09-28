@@ -20,10 +20,10 @@ function fixture(overrides: { onOpenNotifications?: () => void } = {}) {
   };
 }
 
-test("[JN1] journey-map-screen-notifications의 접근성 채널이 정확하다", () => {
+test("[JN1] top-bar-notifications의 접근성 채널이 정확하다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
-  const button = screen.getByTestId("journey-map-screen-notifications");
+  const button = screen.getByTestId("top-bar-notifications");
   expect(button).toHaveAttribute("accessibility-element", "true");
   expect(button).toHaveAttribute("accessibility-traits", "button");
   expect(button).toHaveAttribute("accessibility-label", "알림");
@@ -45,7 +45,7 @@ test("[JN2] 버튼 tap → onOpenNotifications 정확히 1회, onStartStep·onSt
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 
   expect(onOpenNotifications).toHaveBeenCalledTimes(1);
   expect(onStartStep).not.toHaveBeenCalled();
@@ -57,10 +57,10 @@ test("[JN3] 버튼이 스크롤 밖 머리 상자 안에 있다", () => {
 
   const scroll = screen.getByTestId("journey-map-screen-scroll");
   const actions = screen.getByTestId("journey-map-screen-actions");
-  const button = screen.getByTestId("journey-map-screen-notifications");
+  const button = screen.getByTestId("top-bar-notifications");
 
   expect(within(scroll).queryByTestId("journey-map-screen-actions")).not.toBeInTheDocument();
-  expect(within(scroll).queryByTestId("journey-map-screen-notifications")).not.toBeInTheDocument();
+  expect(within(scroll).queryByTestId("top-bar-notifications")).not.toBeInTheDocument();
 
   // 가림(ADR-0016 D9)이 이 상자에 걸리므로 버튼이 그 자손이어야 실제로 가려집니다.
   expect(actions).toContainElement(button);
@@ -72,7 +72,7 @@ test("[JN3] 버튼이 스크롤 밖 머리 상자 안에 있다", () => {
 test("[JN4] 버튼 자손이 svg 하나뿐이고, 그 아이콘이 접근성 속성을 걸치지 않는다", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
-  const button = screen.getByTestId("journey-map-screen-notifications");
+  const button = screen.getByTestId("top-bar-notifications");
   const buttonChildren = Array.from(button.children);
   expect(buttonChildren).toHaveLength(1);
   expect(buttonChildren[0].tagName.toLowerCase()).toBe("svg");
@@ -104,7 +104,7 @@ test("[JN6] 스텝을 tap해 시트를 열면 journey-map-screen-actions가 true
     "accessibility-elements-hidden",
     "true",
   );
-  expect(screen.getByTestId("journey-map-screen-notifications")).toBeInTheDocument();
+  expect(screen.getByTestId("top-bar-notifications")).toBeInTheDocument();
 });
 
 test("[JN7] 시트 닫기 → journey-map-screen-actions가 다시 false다", () => {
@@ -136,14 +136,14 @@ test("[JN8] header trait를 가진 요소에 알림 버튼이 없다", () => {
   const headers = [...container.querySelectorAll('[accessibility-traits="header"]')];
 
   expect(headers).toContain(screen.getAllByTestId("ui-lynx-episode-header")[0]);
-  expect(headers).not.toContain(screen.getByTestId("journey-map-screen-notifications"));
+  expect(headers).not.toContain(screen.getByTestId("top-bar-notifications"));
 });
 
 test("[JN9] DOM 순서 — 머리 → 스크롤", () => {
   render(<JourneyMapScreen {...fixture()} />);
 
   const actions = screen.getByTestId("journey-map-screen-actions");
-  const button = screen.getByTestId("journey-map-screen-notifications");
+  const button = screen.getByTestId("top-bar-notifications");
   const scroll = screen.getByTestId("journey-map-screen-scroll");
 
   expect(actions).toContainElement(button);

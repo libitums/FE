@@ -8,10 +8,21 @@ import Foundation
 /// 스택 안에 대체 경로가 0개이며(`<audio>`도 `<video>`도 등록돼 있지 않고 웹 오디오도
 /// 없다), `docs/e2e/listening.md`가 눈과 귀로 판정한다.
 ///
-/// **메서드는 둘뿐이다** — `play` · `stop` (ADR-0017 D3). 여기 없는 것은 하지 않는
-/// 것이다: 일시정지 · 재개 · 시크 · 배속 · 볼륨 · 페이드 · 동시 재생 ·
-/// **재생 상태 조회** · 배경 재생 · 잠금화면 컨트롤 · **오디오 세션 카테고리 조작** ·
-/// 녹음 · 재생목록 · 프리로드 · 캐시. **넓혀야 할 것 같으면 구현하지 말고 보고한다.**
+/// **메서드는 넷이다** — `play` · `stop` · `pause` · `resume` (ADR-0017 D3, 2026-09-27
+/// 개정). 여기 없는 것은 하지 않는 것이다: 시크 · 배속 · 볼륨 · 페이드 · 동시 재생 ·
+/// **재생 상태 조회** · **재생 진행 조회** · 배경 재생 · 잠금화면 컨트롤 ·
+/// **오디오 세션 카테고리 조작** · 녹음 · 재생목록 · 프리로드 · 캐시.
+/// **넓혀야 할 것 같으면 구현하지 말고 보고한다.**
+///
+/// **일시정지가 열린 이유.** 듣기 화면의 제시 카드가 다시듣기(↻)와 재생/일시정지(⏸)
+/// 둘을 나란히 세운다(Figma 53-14231). 일시정지가 없으면 그 둘이 **같은 일**을 한다 —
+/// 모양은 갈리는데 하는 일이 같은 버튼 둘은 거짓말이다. 그래서 컨트롤이 둘이 되는
+/// 순간 이 메서드가 필요해졌고, 그 필요가 생긴 뒤에 열었다.
+///
+/// **진행 조회는 아직 안 연다.** 그것을 부를 자리가 노래방식 글자 강조 하나인데, 그
+/// 기능은 **낱말별 시각 데이터**를 요구하고 그 데이터는 실제 오디오 자산이 정해져야
+/// 만들 수 있다(`docs/adr/README.md` 보류 표의 「오디오 자산의 출처·형식」이 아직 열린
+/// 행이다). 부를 자리가 없는 API를 먼저 열면 그것이 D3이 막으려던 바로 그것이다.
 ///
 /// **다시듣기는 메서드가 아니다** — `play`를 다시 부르는 것이다. 그래서 이 파일에
 /// `replay`라는 이름이 없다.
@@ -31,6 +42,8 @@ final class AudioPlaybackModule: NSObject, LynxModule {
     [
       "play": NSStringFromSelector(#selector(play(_:done:))),
       "stop": NSStringFromSelector(#selector(stop)),
+      "pause": NSStringFromSelector(#selector(pause)),
+      "resume": NSStringFromSelector(#selector(resume)),
     ]
   }
 
@@ -147,6 +160,25 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   /// 부른 자리가 이미 안다 (ADR-0017 D3).
   @objc func stop() {
     DispatchQueue.main.async { self.teardown() }
+  }
+
+  /// 재생 중인 것을 **그 자리에서** 멈춰 둔다. 재생 중인 것이 없으면 아무 일도 하지
+  /// 않는다.
+  ///
+  /// **`teardown`을 부르지 않는다** — 이것이 `stop`과 갈리는 전부다. 플레이어도 관찰자도
+  /// 대기 중인 `done`도 그대로 남고, `resume`이 그 자리부터 잇는다. `done`을 버리지
+  /// 않는 이유는 단순하다: 일시정지는 끝이 아니고, 이어서 끝까지 가면 그때 끝난다.
+  @objc func pause() {
+    DispatchQueue.main.async { self.player?.pause() }
+  }
+
+  /// 멈춰 둔 것을 **그 자리부터** 잇는다. 멈춰 둔 것이 없으면 아무 일도 하지 않는다.
+  ///
+  /// 끝까지 간 뒤에 불리면 아무 일도 일어나지 않는다 — `AVPlayer`가 끝에서 `rate`를 0
+  /// 으로 두고, 이 메서드는 시크하지 않는다(D3의 제외 목록). 처음부터 다시 듣는 것은
+  /// `play`를 다시 부르는 것이다.
+  @objc func resume() {
+    DispatchQueue.main.async { self.player?.play() }
   }
 
   // MARK: - 해석 — **번들 리소스 조회 한 줄**

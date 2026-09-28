@@ -160,17 +160,20 @@ describe("App · phone-call integration", () => {
     ).toEqual(["phone-call-transcript-jimin-confirm-time"]);
   });
 
-  it("탭 복귀 후 전화 화면을 유지하고 exit 뒤 메신저와 공존한다", () => {
+  // **뒤집힙니다**(ADR-0007 2026-09-27 개정). 전화는 여정 탭 위에 쌓인 자리라 탭이
+  // 없습니다. 남는 것은 **exit 뒤 메신저와 공존한다**이고, 그것이 이 케이스의 내용입니다.
+  it("전화 화면에는 탭이 없고 exit 뒤 메신저와 공존한다", () => {
     openJourney();
     fireEvent.tap(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
     );
-    fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
-    expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
-    fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
     expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
+    expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
+
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
+    expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
+
     fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
     expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
   });

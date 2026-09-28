@@ -29,3 +29,11 @@
   column-gap: var(--libitum-spacing-8);
   row-gap: var(--libitum-spacing-8);
 }
+
+/* 껍데기 안에 넣는 자리표시 글자입니다 — playground 전용이라 제품 화면에 없습니다. */
+.playground-placeholder {
+  color: var(--libitum-color-gray-500);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}

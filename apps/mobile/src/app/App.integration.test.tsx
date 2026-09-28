@@ -254,7 +254,8 @@ function answerAllQuestions(
     const choiceIndex = pick(question.answerIndex, questionIndex);
 
     fireEvent.tap(screen.getByTestId(`listening-choice-${choiceIndex}`), {});
-    fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
+    // 문항 사이는 버튼이 아니라 넘김 층입니다(2026-09-28).
+    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   });
 }
 
@@ -275,8 +276,8 @@ test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 
 
   startStep("ordering");
 
-  expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("3단계 · 듣기");
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
 });
@@ -284,20 +285,20 @@ test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 
 // 결선 쪽 관찰입니다: 서로 다른 두 스텝에서 들어가면 화면에 렌더되는 값이
 // 갈립니다. `stepId`가 union을 타고 화면까지 도달하지 않으면 둘이 같아집니다.
 // (`greeting`은 done이지만 시트가 열리고 시작됩니다.)
-test("서로 다른 두 스텝에서 시작하면 제목과 문항 텍스트가 갈린다", () => {
+test("서로 다른 두 스텝에서 시작하면 문항 텍스트가 갈린다", () => {
   renderApp(<App />);
 
   startStep("ordering");
 
-  expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("3단계 · 듣기");
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
     questionsForStep("ordering")[0].prompt,
   );
 
-  fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
   startStep("greeting");
 
-  expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("1단계 · 듣기");
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
     questionsForStep("greeting")[0].prompt,
   );
@@ -309,34 +310,39 @@ test("서로 다른 두 스텝에서 시작하면 제목과 문항 텍스트가 
 // 학습 화면은 셸을 가리지도 잠그지도 않습니다. 되돌아왔을 때 화면은 스택에 남고
 // **세션만** 버려진다는 것을 함께 봅니다 — 그래서 먼저 문항을 하나 넘겨 버려질
 // 로컬 상태를 만듭니다.
-test("학습 화면에서도 탭 셋이 그대로 조작되고, 돌아오면 화면은 남되 문항은 처음부터다", () => {
+// **뒤집힙니다**(ADR-0007 2026-09-27 개정). 예전에는 「학습 화면에서도 탭 셋이 그대로
+// 조작된다」를 봤습니다. 이제 학습은 탭 루트 위에 쌓인 자리라 **탭이 하나도 없습니다** —
+// 세션을 중간에 버리는 길을 화면 바닥에 깔아 두지 않습니다.
+//
+// 나가는 수단은 그대로 하나입니다(`×`). 그것으로 나가면 맵 루트에서 탭이 다시 서고,
+// 다시 들어가면 문항은 처음부터입니다 — 진행이 남지 않는다는 것은 그대로 봅니다.
+test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은 처음부터다", () => {
   renderApp(<App />);
   startStep("ordering");
 
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toBeInTheDocument();
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
   fireEvent.tap(
     screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
     {},
   );
-  fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3");
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
-  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  startStep("ordering");
 
-  expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("3단계 · 듣기");
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
 });
 
 // 루프 한 판이 진행을 갱신합니다.
@@ -352,7 +358,7 @@ test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다
 
   expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
 
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -389,9 +395,13 @@ test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", () => {
     "data-result",
     "correct",
   );
-  expect(screen.queryByTestId("listening-screen-finish")).not.toBeInTheDocument();
+  // 고른 뒤에는 넘김 층입니다 — 세션이 끝나지 않았으므로 아래 버튼(`결과 보기`)이
+  // 서지 않습니다.
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-complete")).not.toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
@@ -412,7 +422,7 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
   expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
     "data-status",
@@ -420,9 +430,9 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
   );
 
   startStep("greeting");
-  expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("1단계 · 듣기");
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   answerAllQuestions("greeting", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
   expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
@@ -448,14 +458,14 @@ test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있�
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
 
   startStep("appointment");
-  fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
@@ -474,7 +484,7 @@ test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", (
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-directions"), {});
 
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
@@ -488,7 +498,7 @@ test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
@@ -525,10 +535,10 @@ test("I1: 문항 셋을 통과 경로로 마치고 결과 보기를 누르면 �
   startStep("ordering");
 
   answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(screen.getByTestId("assessment-screen-title")).toHaveTextContent("3단계 · 평가");
-  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
 });
 
 // I2: 문항 행 N개의 data-result가 실제로 고른 보기의 정오와 일치합니다 — 듣기의
@@ -537,7 +547,7 @@ test("I2: 평가의 문항 행 data-result가 실제로 고른 보기의 정오�
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(screen.getByTestId("assessment-item-0")).toHaveAttribute("data-result", "correct");
   expect(screen.getByTestId("assessment-item-1")).toHaveAttribute("data-result", "incorrect");
@@ -551,14 +561,14 @@ test("I3: 평가의 맵으로를 누르면 backToRoot 하나로 맵에 닿는다
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
 });
 
 // I4: 통과가 완료를 겁니다 — 전에는 "듣기가 걸었다"였습니다.
@@ -566,7 +576,7 @@ test("I4: 통과 뒤 맵으로 돌아오면 그 스텝이 done이고 다음이 c
   renderApp(<App />);
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {});
 
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
@@ -588,7 +598,7 @@ test("I5: 문항 하나만 응답하고 헤더 맵으로 나가면 진행이 안
   const answerIndex = questionsForStep("ordering")[0].answerIndex;
   fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
 
-  fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
@@ -613,7 +623,7 @@ test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 cu
   startStep("ordering");
 
   answerAllQuestions("ordering", incorrectPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(screen.getByTestId("assessment-screen-verdict")).toHaveAttribute("data-verdict", "failed");
 
@@ -633,8 +643,8 @@ test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 cu
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 
-  expect(screen.getByTestId("listening-screen-title")).toHaveTextContent("3단계 · 듣기");
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
 });
 
 // ---------------------------------------------------------------------- 오디오 축
@@ -735,7 +745,7 @@ test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 �
   startStep("ordering");
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0)]);
 
-  fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
   startStep("greeting");
 
   expect(audioSourceAt("greeting", 0)).not.toBe(audioSourceAt("ordering", 0));
@@ -747,9 +757,9 @@ test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 �
 });
 
 // **App을 통과한 실제 흐름에서** 문항이 넘어갑니다. `ui`는 `rerender`로 prop을
-// 갈아 끼워 이 순서를 봤습니다. 여기서는 보기 tap → `다음` tap이 세션 리듀서를
+// 갈아 끼워 이 순서를 봤습니다. 여기서는 보기 tap → 넘김 층 tap이 세션 리듀서를
 // 지나 `question.audioSource`를 바꾸는 것까지가 관찰 대상입니다.
-test("다음으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다", () => {
+test("넘김 층으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다", () => {
   const { audio: calls } = stubHost();
   renderApp(<App />);
   startStep("ordering");
@@ -758,9 +768,9 @@ test("다음으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다"
     screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
     {},
   );
-  fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 2 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 2 / 3");
   expect(sourcesOf(calls)).toEqual([
     audioSourceAt("ordering", 0),
     STOP,
@@ -777,7 +787,7 @@ test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아�
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
-  fireEvent.tap(screen.getByTestId("listening-screen-exit"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
@@ -815,7 +825,7 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
     STOP,
   ]);
 
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual(atComplete);
@@ -832,21 +842,24 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
 // 고립 렌더하는 층에는 이 경로 자체가 없습니다. 돌아왔을 때 세션이 버려져 문항
 // 1부터 다시 트는 것까지 이어서 봅니다 — `stop`만 보면 "떠날 때 멈춘다"와
 // "다시는 안 튼다"가 갈리지 않습니다.
-test("학습 화면에서 탭을 바꾸면 stop이 불리고, 돌아오면 첫 문항으로 다시 튼다", () => {
+// 학습 화면에는 탭이 없으므로(ADR-0007 2026-09-27 개정) 나가는 길은 `×` 하나입니다.
+// 보는 것은 그대로입니다 — **화면을 떠나면 소리가 멈추고, 다시 들어가면 처음부터
+// 다시 튼다.** 떠나는 수단만 갈립니다.
+test("학습 화면을 나가면 stop이 불리고, 다시 들어가면 첫 문항으로 다시 튼다", () => {
   const { audio: calls } = stubHost();
   renderApp(<App />);
   startStep("ordering");
   expect(stopCount(calls)).toBe(0);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0), STOP]);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  startStep("ordering");
 
-  expect(screen.getByTestId("listening-screen-progress")).toHaveTextContent("문항 1 / 3");
+  expect(screen.getByTestId("learning-shell-meta")).toHaveTextContent("문항 1 / 3");
   expect(sourcesOf(calls)).toEqual([
     audioSourceAt("ordering", 0),
     STOP,
@@ -887,16 +900,24 @@ test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 
   const operable = [...container.querySelectorAll("[accessibility-element]")].map((el) =>
     el.getAttribute("data-testid"),
   );
-  const inShell = operable.filter((id) => id?.startsWith("ui-lynx-bottom-navigator-item-"));
-  const inScreen = operable.filter((id) => !id?.startsWith("ui-lynx-bottom-navigator-item-"));
+  // 셸이 함께 섭니다 — `ui`가 만들 수 없는 트리라는 것의 관측 가능한 형태입니다. 그
+  // 형태가 뒤집혔습니다(ADR-0007 2026-09-27 개정): 학습은 탭 루트 위에 쌓인 자리라
+  // 바가 **없습니다.** 화면 하나만 렌더하는 `ui`는 「바를 없앤 트리」도 만들 수
+  // 없습니다 — 애초에 바를 세운 적이 없기 때문입니다.
+  expect(operable.filter((id) => id?.startsWith("ui-lynx-bottom-navigator-item-"))).toEqual([]);
 
-  // 셸이 함께 서 있습니다 — `ui`가 만들 수 없는 트리라는 것의 관측 가능한 형태입니다.
-  expect(inShell).toContain("ui-lynx-bottom-navigator-item-journey");
-  // 그리고 학습 화면 안의 조작 단위는 정확히 하나입니다.
-  expect(inScreen).toEqual(["listening-screen-finish"]);
+  // 2026-09-27: 「학습 화면 안의 조작 단위가 하나」가 아니게 됐습니다 — 학습 껍데기가
+  // 상단 바와 나가기를 함께 세웁니다. 유일성 대신 **무대에는 조작 단위가 없다**로
+  // 좁힙니다: 완료 상태에서 카드 안에 할 일이 없고, 다음 걸음은 아래 버튼 하나입니다.
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(
+    [...stage.querySelectorAll('[accessibility-element="true"]')].map((el) =>
+      el.getAttribute("data-testid"),
+    ),
+  ).toEqual([]);
 
   const actionLabel =
-    screen.getByTestId("listening-screen-finish").getAttribute("accessibility-label") ?? "";
+    screen.getByTestId("learning-shell-action").getAttribute("accessibility-label") ?? "";
 
   expect(announce).toHaveLength(1);
   expect(announce[0]?.content).toBe(`${complete.textContent ?? ""}, ${actionLabel}`);
@@ -939,7 +960,7 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
 
   expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
 
-  expect(() => fireEvent.tap(screen.getByTestId("listening-screen-finish"), {})).not.toThrow();
+  expect(() => fireEvent.tap(screen.getByTestId("learning-shell-action"), {})).not.toThrow();
   expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
 
   expect(() => fireEvent.tap(screen.getByTestId("assessment-screen-exit"), {})).not.toThrow();
@@ -993,7 +1014,7 @@ test("탭이 아니라 스택에 쌓인 화면(듣기)에도 스크롤 컨테이
 
   startStep("ordering");
 
-  expect(screen.getByTestId("listening-screen-scroll")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-stage")).toBeInTheDocument();
   expect(screen.queryByTestId("journey-map-screen-scroll")).not.toBeInTheDocument();
 });
 

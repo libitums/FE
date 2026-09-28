@@ -94,9 +94,13 @@ function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
 
-// 문항을 순서대로 전부 응답하고 매번 `다음`을 누릅니다. `App.integration.test.tsx`의
+// 문항을 순서대로 전부 응답하고 매번 넘김 층을 누릅니다. `App.integration.test.tsx`의
 // 동명 헬퍼와 같은 형태입니다(파일이 다르므로 다시 선언합니다) — `listening-complete`
 // 상태에 닿는 유일한 수단입니다.
+//
+// 2026-09-28: 응답 뒤에 아래 버튼이 서지 않고 넘김 층이 대신 섭니다. 층을 누르면
+// 자동 넘김을 기다리지 않고 곧바로 다음 문항으로 갑니다 — 타이머를 앞당길 수단이라
+// 이 헬퍼가 가짜 시계를 쓰지 않아도 됩니다.
 function answerAllQuestions(
   stepId: JourneyStepId,
   pick: (answerIndex: number, questionIndex: number) => number,
@@ -105,7 +109,7 @@ function answerAllQuestions(
     const choiceIndex = pick(question.answerIndex, questionIndex);
 
     fireEvent.tap(screen.getByTestId(`listening-choice-${choiceIndex}`), {});
-    fireEvent.tap(screen.getByTestId("listening-screen-next"), {});
+    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   });
 }
 
@@ -186,20 +190,23 @@ test("[I2] 문화 화면이 선 합성 트리에서 제목 축에 오른 자리�
   formStub.current = "culture";
   const { container } = renderApp(<App />);
 
+  // 대조 — 이 트리가 `ui`가 만들 수 있는 트리가 아님을 짓습니다. 맵 루트에서는 바텀
+  // 내비게이터가 같은 container 안에 서 있고, 스텝을 시작하면 **사라집니다**
+  // (ADR-0007 2026-09-27 개정: 바는 탭 루트에서만 섭니다). 화면 하나만 렌더하는
+  // `ui`는 그 둘 중 어느 쪽도 만들 수 없습니다.
+  const journeyTab = screen.getByTestId("ui-lynx-bottom-navigator-item-journey");
+  expect(container.contains(journeyTab)).toBe(true);
+  expect(journeyTab).toHaveAttribute("accessibility-traits", "button");
+
   startStep("ordering");
 
+  expect(
+    container.querySelectorAll('[data-testid^="ui-lynx-bottom-navigator-item-"]'),
+  ).toHaveLength(0);
   expect(headingAxis(container)).toEqual([
     "culture-screen-title",
     "culture-screen-narrative-title",
   ]);
-
-  // 대조 — 이 트리가 `ui`가 만들 수 있는 트리가 아님을 짓습니다. 바텀 내비게이터가
-  // 같은 container 안에 함께 서 있고, 조작 단위 축(`button`)에 있지 제목 축에 있지
-  // 않습니다. 이것이 참이어야 위 배열이 「화면만 본 것」이 아니라 「트리 전체를 쓴
-  // 것」입니다.
-  const journeyTab = screen.getByTestId("ui-lynx-bottom-navigator-item-journey");
-  expect(container.contains(journeyTab)).toBe(true);
-  expect(journeyTab).toHaveAttribute("accessibility-traits", "button");
 });
 
 // **훑기의 반대 방향입니다.** `[I2]`가 짓는 것은 「이 상태의 트리에 제목 축 자리가
@@ -223,7 +230,10 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-complete에서 계약이
   answerAllQuestions("ordering", mixedPick);
   expect(screen.getByTestId("listening-screen-complete")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["listening-screen-title"]);
+  // 2026-09-27: 빈 집합이 답입니다. 듣기 화면의 제목 줄이 걷혔고(Figma 65-14) 껍데기는
+  // 제목 축에 아무것도 올리지 않습니다 — `Chapter n / N`은 메타 줄이지 제목이 아닙니다.
+  // 위 `toBeInTheDocument`가 앵커라, 화면이 안 떠서 비는 경우와 갈립니다.
+  expect(headingAxis(container)).toEqual([]);
 });
 
 // 닫힌 집합 대조는 배열이 **자라야** 빨개집니다 — 이 상태가 무대에 올리는 배제
@@ -237,7 +247,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 assessment에서 계약이 고정�
 
   startStep("ordering");
   answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("listening-screen-finish"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   expect(screen.getByTestId("assessment-screen-title")).toBeInTheDocument();
   expect(container.querySelector(".assessment-screen-verdict-label")).not.toBeNull();
 
@@ -300,7 +310,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고�
 test("[I3] 제목 축 닫힌 집합이 상태 notifications에서 계약이 고정한 목록과 정확히 같다", () => {
   const { container } = renderApp(<App />);
 
-  fireEvent.tap(screen.getByTestId("journey-map-screen-notifications"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual(["notifications-screen-title"]);
@@ -369,7 +379,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-question에서 계약이
   startStep("ordering");
   expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["listening-screen-title"]);
+  expect(headingAxis(container)).toEqual([]);
 });
 
 // ErrorBoundary 오류 상태(`error-boundary-title`)는 이 회차에서 열지 않습니다 —

@@ -145,13 +145,19 @@ test("중복 완료는 완료 표식을 멱등적으로 유지한다", () => {
   );
 });
 
-test("다른 탭은 메신저와 공존하며 기존 탭 전환 동작을 유지한다", () => {
+// **뒤집힙니다**(ADR-0007 2026-09-27 개정). 메신저는 여정 탭 위에 쌓인 자리라 탭이
+// 없습니다 — 나가야 맵 루트에서 다시 서고, 그때 탭 전환이 그대로 동작합니다.
+test("메신저에는 탭이 없고, 나가면 탭 전환이 그대로 동작한다", () => {
   openJourneyMessenger();
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  // 탭별 stack은 보존되므로 여정 탭으로 돌아오면 messenger가 다시 최상단입니다.
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
 test("sink는 열린 시점에 정확한 opened payload를 한 번 받는다", () => {

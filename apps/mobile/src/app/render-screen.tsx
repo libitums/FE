@@ -8,7 +8,7 @@ import { cultureNarrativeForStep } from "../screens/culture/culture";
 import { CultureQuizScreen } from "../screens/culture-quiz/CultureQuizScreen";
 import { HandwritingProbeScreen } from "../screens/handwriting-probe/HandwritingProbeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
-import { journeyStepOrdinal } from "../screens/journey-map/journey-map";
+import { journeyStepOrdinal, learningFormsForStep } from "../screens/journey-map/journey-map";
 import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
@@ -115,7 +115,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <ListeningScreen
           stepId={screen.stepId}
-          stepOrdinal={journeyStepOrdinal(screen.stepId)}
+          activityIndex={screen.activityIndex}
+          totalActivityCount={learningFormsForStep(screen.stepId).length}
           onExit={wiring.onExitLearning}
           onFinish={(id, results) => wiring.onFinishLearning(id, screen.activityIndex, results)}
           // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한

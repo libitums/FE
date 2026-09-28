@@ -7,3 +7,4 @@ export * from "./listening-questions";
 export * from "./listening-session";
 export * from "./listening-copy";
 export * from "./listening-playback";
+export * from "./listening-prompt-scale";

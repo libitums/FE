@@ -85,7 +85,7 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-/* 화면 제목입니다 — `journey-map-screen-title` · `listening-screen-title`과
+/* 화면 제목입니다 — `journey-map-screen-title`과
    같은 scale입니다. `padding-top`은 `(spacing-48 − heading-s line-height) / 2 =
    (48 − 24) / 2 = 12`의 산술 결과입니다 — `spacing-12`를 "12라서" 고른 게
    아니라 값이 우연히 같습니다. `-exit`가 `min-height: spacing-48`로
@@ -150,7 +150,7 @@
   letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
 }
 
-/* 지시문 — `.listening-screen-instruction`과 같은 값(body-m +
+/* 지시문 — `.learning-shell-instruction`과 같은 값(body-m +
    fg-neutral-muted, 대비 6.53:1)입니다. */
 .word-choice-screen-instruction {
   color: var(--libitum-color-fg-neutral-muted);
@@ -182,7 +182,9 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* 액션 행 버튼 면 — `.listening-screen-next`와 문자 그대로 같은 값입니다.
+/* 액션 행 버튼 면 — `.culture-quiz-screen-next` · `.step-sheet-start` ·
+   `.assessment-screen-exit`와 문자 그대로 같은 값입니다. (듣기의 같은 버튼을
+   가리키고 있었는데, 그 화면이 2026-09-28에 학습 껍데기로 옮겨가며 걷혔습니다.)
    `brand-primary`가 아니라 `brand-strong`입니다: 흰 라벨이 `brand-primary`
    위에서 3.02:1로 AA 미달입니다. */
 .word-choice-screen-next {

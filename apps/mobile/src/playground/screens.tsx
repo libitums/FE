@@ -11,6 +11,9 @@ import { LoginScreen } from "../screens/login/LoginScreen";
 import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
 import { SplashScreen } from "../screens/splash/SplashScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
+import { LearningShell } from "../screens/learning/LearningShell";
+import { ListeningScreen } from "../screens/listening/ListeningScreen";
+import { initialSessionOptions } from "../lib/session-options";
 import { ButtonCatalog } from "./ButtonCatalog";
 
 // 화면을 앱 흐름 없이 fixture props로 띄웁니다. 콜백은 앱 흐름과 같은 순서로
@@ -70,6 +73,37 @@ export const playgroundScreens = {
   ),
   "journey-entry": (go: Go) => (
     <JourneyEntryScreen language="en" onEnter={noop} onBack={() => go("language-select")} />
+  ),
+  // 학습 껍데기는 활동이 넣어 주는 것을 그립니다. 여기서는 카드 · 작업 영역에
+  // 자리표시를 넣어 뼈대(상단 바 · 세션 헤더 · 지시문 · 카드 · 작업 · 버튼)만 봅니다 —
+  // 활동을 옮겨 오기 전에 구조를 눈으로 확인하는 용도입니다.
+  // 듣기 활동입니다. 껍데기 안에 실제 활동이 들어간 모습을 봅니다 — 자리표시가 아니라
+  // 실물 문항이 카드 안에 섭니다.
+  listening: () => (
+    <ListeningScreen
+      stepId="ordering"
+      activityIndex={0}
+      totalActivityCount={1}
+      onExit={noop}
+      onFinish={noop}
+      sessionOptions={initialSessionOptions}
+    />
+  ),
+  "catalog:learning-shell": () => (
+    <LearningShell
+      form="listening"
+      activityIndex={1}
+      totalActivityCount={4}
+      instruction="대화를 완성하세요"
+      onExit={noop}
+      card={<text className="playground-placeholder">카드 안 — 학습 내용이 여기서 전개됩니다</text>}
+      workspace={
+        <text className="playground-placeholder">작업 영역 — 고를 낱말이 여기 섭니다</text>
+      }
+      actionLabel="Check"
+      onAction={noop}
+      streakDays={3}
+    />
   ),
   "catalog:button": () => <ButtonCatalog />,
   // 바텀 네비만 봅니다. 화면 fixture를 비워 두면 바가 화면 아래 끝에 홀로 서므로,

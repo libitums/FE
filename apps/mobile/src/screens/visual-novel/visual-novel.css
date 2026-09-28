@@ -39,7 +39,8 @@
 
    **`margin-top: var(--libitum-spacing-12)`(FE ADR-0023 규칙 3, 안 B —
    `.visual-novel-header`를 `flex-start`로 바꾼 대가를 여기서 갚습니다.
-   `listening-screen.css`의 `.listening-screen-title`과 같은 형식입니다).** 담아야
+   `listening-screen.css`에 있던 `.listening-screen-title`과 같은 형식입니다 — 그 클래스는
+   2026-09-28에 걷혔고 같은 일을 지금은 `learning-shell.css`의 `-chapter`가 합니다).** 담아야
    할 사실 셋입니다:
    1. **12는 토큰 이름이 아니라 산술 결과입니다** —
       `12 = (spacing-48 − heading-s-line-height) / 2 = (48 − 24) / 2`이고

@@ -1,10 +1,12 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import play from "@libitums/icons/lynx/play";
-import stop from "@libitums/icons/lynx/stop";
+import pause from "@libitums/icons/lynx/pause";
 import { color } from "@libitums/design-tokens";
 
 import { ListeningPrompt } from "./ListeningPrompt";
+// 크기 단계는 문장 길이에서 나옵니다 — 리터럴로 적지 않고 같은 함수에서 뽑습니다.
+import { listeningPromptScale } from "./listening";
 // sessionOptions가 필수 prop이 됐습니다. 이 파일의 fixture는 언제나 초기값(둘
 // 다 켜짐)을 줍니다 — 단언은 한 글자도 바꾸지 않습니다.
 import { initialSessionOptions } from "../../lib/session-options";
@@ -16,19 +18,20 @@ import { initialSessionOptions } from "../../lib/session-options";
 // 이 컴포넌트가 소유하고 밖에서 내려오지 않습니다 — 그래서 boolean prop도 콜백
 // prop도 없습니다.
 //
-// **상태가 나가는 채널은 둘이고 둘 다 CSS가 아닙니다**:
-//   1) 아이콘 모양 — `content` 속성 (+ `current-color`는 **두 상태에서 같습니다**)
-//   2) 낱말 — `듣기`/`멈춤` (보이는 문구 = `accessibility-label`)
+// **보이는 낱말이 없어졌습니다**(2026-09-27, Figma 53-14231). 컨트롤이 동그란 아이콘
+// 버튼이라 라벨 자리가 없고, 이름은 `accessibility-label`이 혼자 집니다. 그래서 상태가
+// 나가는 채널은 **아이콘 모양 하나**이고 `current-color`는 세 상태에서 같습니다.
 // 상태 클래스는 **하나도 없습니다**. 예약 상태어는 넷 그대로입니다 (ADR-0003 D7).
 
 const TEXT = "따뜻한 아메리카노 한 잔 주세요.";
+const ROMANIZATION = "fixture romanization";
 const OTHER_TEXT = "안녕하세요, 처음 뵙겠습니다.";
 const SOURCE = "ordering-1";
 const OTHER_SOURCE = "ordering-2";
 
 // 아이콘 색의 정본은 design이 고른 토큰 상수입니다.
 // **두 상태가 같은 값**이라 색은 상태 채널이 아닙니다 (상호 대비 1.00).
-const ICON_COLOR = color.fg["neutral-inverted"];
+const ICON_COLOR = color.fg.neutral;
 
 // ------------------------------------------------------------ 대역
 //
@@ -44,6 +47,8 @@ const ICON_COLOR = color.fg["neutral-inverted"];
 // 없습니다.
 
 const STOP = "<stop>";
+const PAUSE = "<pause>";
+const RESUME = "<resume>";
 
 type HostCall = { source: string; done: (result: unknown) => void };
 
@@ -52,6 +57,8 @@ function stubHost(): HostCall[] {
   const mod = {
     play: (source: string, done: (result: unknown) => void) => void calls.push({ source, done }),
     stop: () => void calls.push({ source: STOP, done: () => {} }),
+    pause: () => void calls.push({ source: PAUSE, done: () => {} }),
+    resume: () => void calls.push({ source: RESUME, done: () => {} }),
   };
   vi.stubGlobal("NativeModules", { AudioPlaybackModule: mod });
   return calls;
@@ -60,7 +67,9 @@ function stubHost(): HostCall[] {
 const sourcesOf = (calls: readonly HostCall[]): string[] => calls.map((call) => call.source);
 
 const playSources = (calls: readonly HostCall[]): string[] =>
-  calls.filter((call) => call.source !== STOP).map((call) => call.source);
+  calls
+    .filter((call) => call.source !== STOP && call.source !== PAUSE && call.source !== RESUME)
+    .map((call) => call.source);
 
 const stopCount = (calls: readonly HostCall[]): number =>
   calls.filter((call) => call.source === STOP).length;
@@ -83,6 +92,7 @@ function renderPrompt(overrides: { text?: string; audioSource?: string } = {}) {
   return render(
     <ListeningPrompt
       text={overrides.text ?? TEXT}
+      romanization={ROMANIZATION}
       audioSource={overrides.audioSource ?? SOURCE}
       sessionOptions={initialSessionOptions}
     />,
@@ -91,6 +101,7 @@ function renderPrompt(overrides: { text?: string; audioSource?: string } = {}) {
 
 const control = () => screen.getByTestId("listening-prompt-playback");
 const icon = () => screen.getByTestId("listening-prompt-playback-icon");
+const replay = () => screen.getByTestId("listening-prompt-replay");
 
 // ---------------------------------------------------------------- 대본 (단언 1~3)
 //
@@ -146,6 +157,7 @@ test("audioSource가 바뀌면 호출 순서가 play(a) → stop → play(b)다"
   rerender(
     <ListeningPrompt
       text={TEXT}
+      romanization={ROMANIZATION}
       audioSource={OTHER_SOURCE}
       sessionOptions={initialSessionOptions}
     />,
@@ -165,6 +177,7 @@ test("text만 바뀌면 play도 stop도 다시 불리지 않는다", () => {
   rerender(
     <ListeningPrompt
       text={OTHER_TEXT}
+      romanization={ROMANIZATION}
       audioSource={SOURCE}
       sessionOptions={initialSessionOptions}
     />,
@@ -191,20 +204,19 @@ test("언마운트하면 네이티브 stop이 불린다 — 화면을 떠나면 
 
 // 단언 5 — 재생 중의 두 채널입니다. 아이콘 모양의 정본은 패키지 모듈입니다
 // (ADR-0014 D6·ListeningChoice 선례) — 리터럴을 적지 않습니다.
-test("자동 재생이 시작되면 라벨이 '멈춤'이고 아이콘 content가 stop 모듈과 같다", () => {
+test("자동 재생이 시작되면 이름이 '멈춤'이고 아이콘 content가 pause 모듈과 같다", () => {
   stubHost();
 
   renderPrompt();
 
-  expect(control()).toHaveTextContent("멈춤");
   expect(control()).toHaveAttribute("accessibility-label", "멈춤");
-  expect(icon()).toHaveAttribute("content", stop);
+  expect(icon()).toHaveAttribute("content", pause);
 });
 
 // 단언 6 — 완료 신호가 오면 대기로 되돌아옵니다.
 // **두 아이콘이 서로 다른 문자열**이라는 것을 함께 봅니다 — 같으면 위아래 두
 // 단언이 공허해집니다 (모양 채널이 실제로 갈리는지가 이 화면의 1.4.1 근거입니다).
-test("붙잡은 done을 부르면 라벨이 '듣기'로 돌아오고 아이콘 content가 play 모듈과 같다", () => {
+test("붙잡은 done을 부르면 이름이 '듣기'로 돌아오고 아이콘 content가 play 모듈과 같다", () => {
   const calls = stubHost();
   renderPrompt();
   expect(control()).toHaveAttribute("accessibility-label", "멈춤");
@@ -213,10 +225,9 @@ test("붙잡은 done을 부르면 라벨이 '듣기'로 돌아오고 아이콘 c
     doneOf(calls, 0)("done");
   });
 
-  expect(control()).toHaveTextContent("듣기");
   expect(control()).toHaveAttribute("accessibility-label", "듣기");
   expect(icon()).toHaveAttribute("content", play);
-  expect(play).not.toBe(stop);
+  expect(play).not.toBe(pause);
 });
 
 // 아이콘 색은 `current-color` **속성**으로 넘어갑니다 (Lynx `<svg>`가 CSS
@@ -250,10 +261,15 @@ test("두 상태에서 class 속성이 한 글자도 갈리지 않는다 — 상
   // 계약의 클래스 목록 그대로입니다 — 순서는 DOM 순서입니다.
   expect(classesWhilePlaying).toEqual([
     "listening-prompt",
+    `listening-prompt-script listening-prompt-scale-${listeningPromptScale(TEXT)}`,
+    "listening-prompt-text",
+    "listening-prompt-romanization",
+    "listening-prompt-controls",
+    "listening-prompt-replay",
+    "listening-prompt-replay-icon",
     "listening-prompt-playback",
     "listening-prompt-playback-icon",
-    "listening-prompt-playback-label",
-    "listening-prompt-text",
+    "listening-prompt-controls-spacer",
   ]);
 
   act(() => {
@@ -267,48 +283,94 @@ test("두 상태에서 class 속성이 한 글자도 갈리지 않는다 — 상
 
 // ---------------------------------------------------------------- 상호작용 (단언 7·8)
 
-// 단언 7 — **`stop`만 부릅니다.** 여기서 `play`를 함께 부르면 대체 규약을
-// 우회하는 셈이고 네이티브 세대 관리와 어긋납니다 (ADR-0017 D3).
-test("'멈춤' 상태에서 탭하면 네이티브 stop이 한 번이고 play는 더 불리지 않는다", () => {
+// 단언 7 — **`pause`만 부릅니다.** `stop`이 아닙니다: 멈춘 것이 아니라 멈춰 둔
+// 것이고, 대기 중인 `done`이 살아 있어야 이어 들은 재생의 끝이 올라옵니다
+// (ADR-0017 D3, 2026-09-27 개정).
+test("'멈춤' 상태에서 탭하면 네이티브 pause가 한 번이고 stop도 play도 안 불린다", () => {
   const calls = stubHost();
   renderPrompt();
 
   fireEvent.tap(control(), {});
 
   expect(playSources(calls)).toEqual([SOURCE]);
-  expect(stopCount(calls)).toBe(1);
-  expect(control()).toHaveTextContent("듣기");
-  expect(control()).toHaveAttribute("accessibility-label", "듣기");
+  expect(stopCount(calls)).toBe(0);
+  expect(sourcesOf(calls)).toEqual([SOURCE, PAUSE]);
+  expect(control()).toHaveAttribute("accessibility-label", "이어 듣기");
   expect(icon()).toHaveAttribute("content", play);
 });
 
-// 단언 8 — 다시듣기는 메서드가 아니라 **`play`를 다시 부르는 것**입니다
-// (ADR-0017 D3) — 그래서 `stop` 뒤 `play`가 아니라 `play` 하나입니다.
-test("'듣기' 상태에서 탭하면 네이티브 play가 같은 audioSource로 한 번 더 불린다", () => {
+// 멈춰 둔 것을 다시 누르면 **그 자리부터** 잇습니다 — 처음부터가 아닙니다. 그
+// 구별이 다시듣기 버튼과 이 버튼을 가르는 전부입니다.
+test("'이어 듣기' 상태에서 탭하면 네이티브 resume이 불리고 play는 안 불린다", () => {
   const calls = stubHost();
   renderPrompt();
   fireEvent.tap(control(), {});
+
+  fireEvent.tap(control(), {});
+
+  expect(sourcesOf(calls)).toEqual([SOURCE, PAUSE, RESUME]);
+  expect(playSources(calls)).toEqual([SOURCE]);
+  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(icon()).toHaveAttribute("content", pause);
+});
+
+// 다시듣기는 언제나 **처음부터**입니다 — 재생 중이든 멈춰 뒀든 `play`를 다시
+// 부릅니다(ADR-0017 D3). 그래서 `stop` 뒤 `play`가 아니라 `play` 하나입니다.
+test("다시듣기를 탭하면 같은 audioSource로 play가 한 번 더 불린다", () => {
+  const calls = stubHost();
+  renderPrompt();
+
+  fireEvent.tap(replay(), {});
+
+  expect(sourcesOf(calls)).toEqual([SOURCE, SOURCE]);
+  expect(stopCount(calls)).toBe(0);
+  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+});
+
+// 멈춰 둔 상태에서 다시듣기를 누르면 이어 듣는 것이 아니라 처음부터입니다.
+test("멈춰 둔 상태에서 다시듣기를 탭하면 resume이 아니라 play다", () => {
+  const calls = stubHost();
+  renderPrompt();
+  fireEvent.tap(control(), {});
+
+  fireEvent.tap(replay(), {});
+
+  expect(sourcesOf(calls)).toEqual([SOURCE, PAUSE, SOURCE]);
+  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+});
+
+// 단언 8 — 재생이 끝난 뒤(`idle`) 누르면 처음부터 다시 텁니다.
+test("'듣기' 상태에서 탭하면 네이티브 play가 같은 audioSource로 한 번 더 불린다", () => {
+  const calls = stubHost();
+  renderPrompt();
+  act(() => {
+    doneOf(calls, 0)("done");
+  });
   expect(control()).toHaveAttribute("accessibility-label", "듣기");
 
   fireEvent.tap(control(), {});
 
-  expect(sourcesOf(calls)).toEqual([SOURCE, STOP, SOURCE]);
+  expect(sourcesOf(calls)).toEqual([SOURCE, SOURCE]);
   expect(control()).toHaveAttribute("accessibility-label", "멈춤");
-  expect(icon()).toHaveAttribute("content", stop);
+  expect(icon()).toHaveAttribute("content", pause);
 });
 
 // ---------------------------------------------------------------- 접근성 (단언 11~13·16)
 
-// 단언 11 — 조작 단위 하나입니다. **`accessibility-label`이 보이는 문구와 같은
-// 문자열**이라 음성 제어 불일치가 생기지 않습니다.
-test("재생 조작에 element·traits='button'이 붙고 label이 보이는 문구와 같다", () => {
+// 단언 11 — 컨트롤 둘 다 조작 단위입니다. **보이는 낱말이 없으므로** 이름은
+// `accessibility-label`이 혼자 집니다 — 그래서 「보이는 문구와 같다」 단언이 걷히고,
+// 대신 **글자가 없다**를 답니다. 있으면 음성 제어에서 이름이 둘로 갈립니다.
+test("컨트롤 둘에 element·traits='button'이 붙고 보이는 글자는 없다", () => {
   stubHost();
   renderPrompt();
 
-  expect(control()).toHaveAttribute("accessibility-element", "true");
-  expect(control()).toHaveAttribute("accessibility-traits", "button");
+  for (const el of [replay(), control()]) {
+    expect(el).toHaveAttribute("accessibility-element", "true");
+    expect(el).toHaveAttribute("accessibility-traits", "button");
+    expect(el).toHaveTextContent("");
+  }
+  expect(replay()).toHaveAttribute("accessibility-label", "처음부터 듣기");
   expect(control()).toHaveAttribute("accessibility-label", "멈춤");
-  expect(control().getAttribute("accessibility-label")).toBe(control().textContent);
 });
 
 // **뒤집힌 단언 1/6** — 지금까지 `<svg>`가 0개였습니다.
@@ -316,39 +378,40 @@ test("재생 조작에 element·traits='button'이 붙고 label이 보이는 문
 // accessibility-elements-hidden의 iOS 세터는 view.accessibilityElementsHidden이라
 // 가리는 대상이 자손입니다. 아이콘은 자손 없는 잎이므로 이 속성을 붙여도
 // 아무것도 가리지 못합니다 — 붙이지 않는 것이 계약입니다 (E-A1, E-A2).
-test("재생 컨트롤이 있다 — 트리의 <svg>가 재생 아이콘 정확히 하나다", () => {
+test("트리의 <svg>가 다시듣기 · 재생 아이콘 둘이다", () => {
   stubHost();
   const { container } = renderPrompt();
 
   // 앵커: 개수 단언만 두면 컴포넌트가 반쯤 그려져도 통과합니다. 대본이 실제로
-  // 그려진 트리에서 아이콘이 하나라는 것이 이 단언의 내용입니다.
+  // 그려진 트리에서 아이콘이 둘이라는 것이 이 단언의 내용입니다.
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
 
   const icons = [...container.querySelectorAll("svg")].map((el) => el.getAttribute("data-testid"));
-  expect(icons).toEqual(["listening-prompt-playback-icon"]);
+  expect(icons).toEqual(["listening-prompt-replay-icon", "listening-prompt-playback-icon"]);
   expect(icon()).not.toHaveAttribute("accessibility-elements-hidden");
 });
 
 // **뒤집힌 단언 2/6** — 지금까지 조작 단위가 0개였습니다.
 // 뒤집힌 값은 **각각 하나**입니다. 라벨 `<text>`는 보이는 이름을 지므로 조작
 // 단위가 되면 안 됩니다 (ADR-0016 D5) — 그것도 이 개수가 함께 잡습니다.
-test("재생 컨트롤이 있다 — 트리의 조작 단위가 재생 조작 정확히 하나다", () => {
+test("트리의 조작 단위가 다시듣기 · 재생 둘이다", () => {
   stubHost();
   const { container } = renderPrompt();
 
   // 앵커 — 위와 같은 이유입니다.
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
 
+  const expected = ["listening-prompt-replay", "listening-prompt-playback"];
   expect(
     [...container.querySelectorAll("[accessibility-element]")].map((el) =>
       el.getAttribute("data-testid"),
     ),
-  ).toEqual(["listening-prompt-playback"]);
+  ).toEqual(expected);
   expect(
     [...container.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
       el.getAttribute("data-testid"),
     ),
-  ).toEqual(["listening-prompt-playback"]);
+  ).toEqual(expected);
 });
 
 // 단언 13 — ADR-0016 D3 `정정 기록`: `accessibility-value`를 쓰지 않습니다.
@@ -374,7 +437,7 @@ test("두 상태 어디에도 accessibility-value가 없고 disabled도 없다",
 // 계약입니다. 보조기술 사용자가 대본이 낭독되기 **전에** 다시 들을 수단을
 // 만납니다. 이 단언이 없으면 design이 `order`로 뒤집어도 자동 계층이 전부
 // green입니다.
-test("DOM 순서가 재생 조작 → 아이콘 → 대본이다 — 낭독 순서 계약", () => {
+test("DOM 순서가 대본 → 로마자 → 다시듣기 → 재생이다 — 낭독 순서 계약", () => {
   stubHost();
   const { container } = renderPrompt();
 
@@ -382,9 +445,12 @@ test("DOM 순서가 재생 조작 → 아이콘 → 대본이다 — 낭독 순�
     el.getAttribute("data-testid"),
   );
   expect(order).toEqual([
+    "listening-prompt-text",
+    "listening-prompt-romanization",
+    "listening-prompt-replay",
+    "listening-prompt-replay-icon",
     "listening-prompt-playback",
     "listening-prompt-playback-icon",
-    "listening-prompt-text",
   ]);
 });
 
@@ -398,7 +464,6 @@ test("DOM 순서가 재생 조작 → 아이콘 → 대본이다 — 낭독 순�
 test("대역 없이 렌더해도 던지지 않고 '듣기'에 머문다 — 모듈이 없을 때 '멈춤'에 갇히지 않는다", () => {
   expect(() => renderPrompt()).not.toThrow();
 
-  expect(control()).toHaveTextContent("듣기");
   expect(control()).toHaveAttribute("accessibility-label", "듣기");
   expect(icon()).toHaveAttribute("content", play);
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
@@ -414,19 +479,19 @@ test("대역 없이 탭해도 던지지 않고 '듣기' 그대로다", () => {
 
   expect(() => fireEvent.tap(playback, {})).not.toThrow();
 
-  expect(control()).toHaveTextContent("듣기");
   expect(control()).toHaveAttribute("accessibility-label", "듣기");
   expect(icon()).toHaveAttribute("content", play);
 });
 
 // 모듈이 없어도 조작 단위와 아이콘은 **언제나 렌더됩니다.** 숨기면 「없는
 // 환경」과 「빠뜨린 구현」이 구별되지 않습니다.
-test("대역 없이도 재생 조작과 아이콘이 렌더된다 — 숨기지 않는다", () => {
+test("대역 없이도 컨트롤 둘과 아이콘 둘이 렌더된다 — 숨기지 않는다", () => {
   const { container } = renderPrompt();
 
+  expect(replay()).toHaveAttribute("accessibility-element", "true");
   expect(control()).toHaveAttribute("accessibility-element", "true");
   expect(
     [...container.querySelectorAll("svg")].map((el) => el.getAttribute("data-testid")),
-  ).toEqual(["listening-prompt-playback-icon"]);
+  ).toEqual(["listening-prompt-replay-icon", "listening-prompt-playback-icon"]);
   expect(container.querySelectorAll("[disabled]")).toHaveLength(0);
 });

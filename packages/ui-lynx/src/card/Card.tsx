@@ -48,6 +48,8 @@ function CardRoot(props: CardProps) {
         data-interaction={contract.interaction}
         data-padding={contract.padding}
         data-direction={contract.direction}
+        data-surface={contract.surface}
+        data-elevation={contract.elevation}
         accessibility-element={contract.accessibilityElement}
         accessibility-label={contract.accessibilityLabel}
         accessibility-value={contract.accessibilityDescription}

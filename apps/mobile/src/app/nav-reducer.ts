@@ -10,6 +10,21 @@ export function isEntrySection(nav: Nav): boolean {
   return nav.entry.length > 0;
 }
 
+/**
+ * 바텀 네비게이션을 세우는가입니다. 조건이 둘이고 둘 다 「지금 어디에 있나」입니다.
+ *
+ * 1. 진입 구간이 아니다 — 스플래시 · 온보딩 · 로그인에는 탭이 없습니다.
+ * 2. **활성 스택이 루트다** — 탭 하나당 첫 화면에서만 섭니다. 그 위에 쌓인 화면
+ *    (학습 · 알림 · 약관 …)은 하나의 일을 끝내러 들어온 자리이고, 거기서 탭을 내밀면
+ *    그 일을 중간에 버리는 길을 화면 바닥에 깔아 두는 셈입니다. 나가는 수단은 그
+ *    화면이 자기 방식으로 집니다(`×` · `맵으로` · `나가기`).
+ *
+ * 부수효과가 없고 `Nav` 하나만 읽습니다 — `unit`이 보는 자리입니다.
+ */
+export function showsTabNavigator(nav: Nav): boolean {
+  return !isEntrySection(nav) && activeStack(nav).length === 1;
+}
+
 // 탭을 바꾸고 그 탭 스택을 루트로 접는 동작 목록을 돌려줍니다 — 부수효과는
 // 없습니다. App이 반환값을 **순서대로** `dispatch`합니다. 새 `NavAction`이
 // 아닙니다.

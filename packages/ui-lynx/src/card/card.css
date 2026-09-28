@@ -1,13 +1,38 @@
+/* 면과 모서리 · 그림자는 아래 변형이 정합니다 — 여기 두면 변형이 매번 덮어써야
+   하고, 덮어쓰기는 어느 값이 이기는지를 읽는 사람이 추적하게 만듭니다. */
 .ui-lynx-card {
   width: 100%;
   display: flex;
   flex-direction: column;
   overflow: visible;
   border-width: var(--libitum-spacing-0);
-  border-radius: var(--libitum-radius-md);
-  background-color: var(--libitum-color-white);
-  box-shadow: var(--libitum-elevation-shadow-s1);
   z-index: var(--libitum-elevation-z-default);
+}
+
+/* 면 — `default`는 흰 면, `secondary`는 화면 바탕보다 한 겹 눌러앉은 따뜻한 회색입니다. */
+.ui-lynx-card-surface-default {
+  background-color: var(--libitum-color-white);
+}
+
+.ui-lynx-card-surface-secondary {
+  background-color: var(--libitum-color-background-secondary);
+}
+
+/* 떠 있는 정도 — 모서리가 여기 함께 붙습니다. 무대(`stage`)만 모서리가 큰 것은
+   디자인 값이고(Figma 65-428), 큰 그림자와 큰 모서리가 한 몸으로 「앞에 선 면」을
+   만듭니다. 따로 고를 수 있게 두면 어긋난 조합이 생깁니다. */
+.ui-lynx-card-elevation-raised {
+  border-radius: var(--libitum-radius-md);
+  box-shadow: var(--libitum-elevation-shadow-s1);
+}
+
+.ui-lynx-card-elevation-flat {
+  border-radius: var(--libitum-radius-md);
+}
+
+.ui-lynx-card-elevation-stage {
+  border-radius: var(--libitum-radius-xl);
+  box-shadow: var(--libitum-elevation-shadow-s3);
 }
 
 .ui-lynx-card-regions {
@@ -27,10 +52,27 @@
   background-color: var(--libitum-color-gray-100);
 }
 
-.ui-lynx-card-interactive:focus-visible,
-.ui-lynx-card-interactive:focus {
+/* 포커스 고리입니다. 바탕 그림자를 함께 적는 것은 `box-shadow`가 통째로 덮이기
+   때문입니다 — 변형마다 그 바탕이 갈리므로 세 벌로 적습니다. */
+.ui-lynx-card-elevation-raised.ui-lynx-card-interactive:focus-visible,
+.ui-lynx-card-elevation-raised.ui-lynx-card-interactive:focus {
   box-shadow:
     var(--libitum-elevation-shadow-s1),
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+.ui-lynx-card-elevation-flat.ui-lynx-card-interactive:focus-visible,
+.ui-lynx-card-elevation-flat.ui-lynx-card-interactive:focus {
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+.ui-lynx-card-elevation-stage.ui-lynx-card-interactive:focus-visible,
+.ui-lynx-card-elevation-stage.ui-lynx-card-interactive:focus {
+  box-shadow:
+    var(--libitum-elevation-shadow-s3),
     0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
     0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
 }

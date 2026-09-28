@@ -212,51 +212,63 @@ test("[I2] 메신저 항목을 열면 롤플레이 스택에 push되고 여정 �
   openRoleplayTab();
   openRoleplayItem(messengerUnitId);
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+  // 쌓인 화면에는 탭이 없습니다(ADR-0007 2026-09-27 개정) — 나가야 목록 루트에서 다시
+  // 섭니다. 그래서 탭 확인도 나간 뒤에 합니다.
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
+  expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
     "롤플레이, 선택됨",
   );
 
+  // 여정 스택은 건드려지지 않았습니다 — 여정 탭은 여전히 맵 루트입니다.
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 });
 
 test("[I2] 전화 항목을 열면 롤플레이 스택에 push되고 여정 스택은 불변이다", () => {
   openRoleplayTab();
   openRoleplayItem(phoneCallUnitId);
   expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
+  // 쌓인 화면에는 탭이 없습니다(ADR-0007 2026-09-27 개정) — 나가야 목록 루트에서 다시
+  // 섭니다. 그래서 탭 확인도 나간 뒤에 합니다.
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
+  expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
     "롤플레이, 선택됨",
   );
 
+  // 여정 스택은 건드려지지 않았습니다 — 여정 탭은 여전히 맵 루트입니다.
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("phone-call-screen")).not.toBeInTheDocument();
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-  expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
 });
 
 test("[I2] 비주얼 노벨 항목을 열면 롤플레이 스택에 push되고 여정 스택은 불변이다", () => {
   openRoleplayTab();
   openRoleplayItem(visualNovelUnitId);
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
+  // 쌓인 화면에는 탭이 없습니다(ADR-0007 2026-09-27 개정) — 나가야 목록 루트에서 다시
+  // 섭니다. 그래서 탭 확인도 나간 뒤에 합니다.
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
+
+  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
+  expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
     "롤플레이, 선택됨",
   );
 
+  // 여정 스택은 건드려지지 않았습니다 — 여정 탭은 여전히 맵 루트입니다.
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("visual-novel-screen")).not.toBeInTheDocument();
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-  expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
 });
 
 // -------------------------------------------------------------- I3 (AC3)
@@ -512,6 +524,10 @@ test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지�
 
   expect(() => openRoleplayItem(visualNovelUnitId)).not.toThrow();
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
+  // 쌓인 화면에는 탭이 없습니다(ADR-0007 2026-09-27 개정) — 나가야 목록 루트에서
+  // 다시 서고, 그때 여정 탭으로 갈 수 있습니다.
+  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
+  expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -607,10 +623,10 @@ test("[I11] 전체 보기는 그 에피소드의 화면을 롤플레이 스택�
     "Episode 0. Tutorial.",
   );
   expect(screen.queryByTestId("roleplay-list-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
+  // ⟨2026-09-28, ADR-0007 개정⟩ 바텀 네비게이션은 **탭 루트에서만** 섭니다. 에피소드
+  // 화면은 롤플레이 탭 위에 쌓인 화면이라 바가 없습니다 — 「탭이 롤플레이 그대로다」는
+  // 아래에서 목록으로 돌아온 뒤에 봅니다.
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
   const list = screen.getByTestId("roleplay-episode-screen-list");
   expect(Array.from(list.children).map((el) => el.getAttribute("data-testid"))).toEqual([
     `roleplay-list-item-${messengerUnitId}`,
@@ -624,6 +640,11 @@ test("[I11] 전체 보기는 그 에피소드의 화면을 롤플레이 스택�
   );
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("roleplay-episode-screen-title")).not.toBeInTheDocument();
+  // 탭 루트로 돌아왔으므로 바가 다시 서고, 탭은 롤플레이 그대로입니다.
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
 });
 
 // 연습 유닛의 `목록으로`는 한 칸 뒤가 아니라 활성 스택의 루트입니다(ADR-0007 D6). 펼친

@@ -10,8 +10,9 @@
   flex-direction: column;
   flex: 1;
   /* Lynx의 `justify-content` 기본값은 `stretch`입니다. 명시하지 않으면
-     높이가 고정된 자식(헤더·액션 행)이 늘어납니다(`listening-screen.css:22-24`
-     와 같은 근거). */
+     높이가 고정된 자식(헤더·액션 행)이 늘어납니다. (듣기 화면의 같은 선언을 가리키고
+     있었는데, 그 화면이 2026-09-28에 학습 껍데기로 옮겨가며 그 줄이 사라졌습니다 —
+     지금 같은 근거로 서 있는 것은 `learning-shell.css`의 `.learning-shell`입니다.) */
   justify-content: flex-start;
   gap: var(--libitum-layout-gap-block);
   /* 아래 여백에 바텀 네비게이션 몫을 더합니다 — 바가 콘텐츠 위에 겹치므로(app.css의

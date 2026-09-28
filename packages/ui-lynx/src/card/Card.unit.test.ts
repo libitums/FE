@@ -8,15 +8,31 @@ import { getCardContract, validateCardHeader } from "./card.contract";
 const styles = readFileSync(resolve(process.cwd(), "src/card/card.css"), "utf8");
 
 describe("getCardContract", () => {
-  test("기본값은 static, M padding, LTR이다", () => {
+  test("기본값은 static, M padding, LTR, 흰 면, 떠 있는 카드다", () => {
     expect(getCardContract({ children: null })).toEqual({
       interaction: "static",
       padding: "m",
       direction: "ltr",
-      className: "ui-lynx-card ui-lynx-card-m ui-lynx-card-ltr ui-lynx-card-static",
+      surface: "default",
+      elevation: "raised",
+      className:
+        "ui-lynx-card ui-lynx-card-m ui-lynx-card-ltr ui-lynx-card-surface-default ui-lynx-card-elevation-raised ui-lynx-card-static",
       focusable: false,
       accessibilityElement: false,
     });
+  });
+
+  // 면과 떠 있는 정도는 서로 독립입니다 — 회색 면이면서 그림자가 없는 조합(학습 세션
+  // 헤더)과 흰 면이면서 무대인 조합(학습 카드)이 둘 다 성립해야 합니다.
+  test("면과 떠 있는 정도가 따로 class에 실린다", () => {
+    expect(
+      getCardContract({ children: null, surface: "secondary", elevation: "flat" }).className,
+    ).toBe(
+      "ui-lynx-card ui-lynx-card-m ui-lynx-card-ltr ui-lynx-card-surface-secondary ui-lynx-card-elevation-flat ui-lynx-card-static",
+    );
+    expect(getCardContract({ children: null, elevation: "stage" }).className).toBe(
+      "ui-lynx-card ui-lynx-card-m ui-lynx-card-ltr ui-lynx-card-surface-default ui-lynx-card-elevation-stage ui-lynx-card-static",
+    );
   });
 
   test("interactive 접근성 계약과 L padding, RTL class를 파생한다", () => {
@@ -35,7 +51,10 @@ describe("getCardContract", () => {
       interaction: "interactive",
       padding: "l",
       direction: "rtl",
-      className: "ui-lynx-card ui-lynx-card-l ui-lynx-card-rtl ui-lynx-card-interactive",
+      surface: "default",
+      elevation: "raised",
+      className:
+        "ui-lynx-card ui-lynx-card-l ui-lynx-card-rtl ui-lynx-card-surface-default ui-lynx-card-elevation-raised ui-lynx-card-interactive",
       focusable: true,
       accessibilityElement: true,
       accessibilityLabel: "오늘의 학습",
@@ -112,11 +131,26 @@ describe("validateCardHeader", () => {
 });
 
 describe("card.css", () => {
+  // 면 · 모서리 · 그림자는 뿌리 규칙이 아니라 변형이 정합니다 — 뿌리에 두면 변형이
+  // 매번 덮어써야 하고, 어느 값이 이기는지를 읽는 사람이 추적하게 됩니다.
   test("표면, radius, shadow와 padding 토큰을 사용한다", () => {
+    expect(styles).toMatch(/\.ui-lynx-card\s*\{[^}]*width:\s*100%/);
     expect(styles).toMatch(
-      /\.ui-lynx-card\s*\{[^}]*width:\s*100%[^}]*background-color:\s*var\(--libitum-color-white\)[^}]*box-shadow:\s*var\(--libitum-elevation-shadow-s1\)/,
+      /\.ui-lynx-card-surface-default\s*\{[^}]*background-color:\s*var\(--libitum-color-white\)/,
     );
-    expect(styles).toMatch(/\.ui-lynx-card\s*\{[^}]*border-radius:\s*var\(--libitum-radius-md\)/);
+    expect(styles).toMatch(
+      /\.ui-lynx-card-surface-secondary\s*\{[^}]*background-color:\s*var\(--libitum-color-background-secondary\)/,
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-card-elevation-raised\s*\{[^}]*border-radius:\s*var\(--libitum-radius-md\)[^}]*box-shadow:\s*var\(--libitum-elevation-shadow-s1\)/,
+    );
+    // `flat`은 그림자 선언이 아예 없습니다 — 없는 선언이 「띄우지 않는다」입니다.
+    expect(styles).toMatch(
+      /\.ui-lynx-card-elevation-flat\s*\{[^}]*border-radius:\s*var\(--libitum-radius-md\)[^}]*\}/,
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-card-elevation-stage\s*\{[^}]*border-radius:\s*var\(--libitum-radius-xl\)[^}]*box-shadow:\s*var\(--libitum-elevation-shadow-s3\)/,
+    );
     expect(styles).toMatch(
       /\.ui-lynx-card-m \.ui-lynx-card-content\s*\{[^}]*padding:\s*var\(--libitum-spacing-16\)/,
     );

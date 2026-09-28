@@ -1,7 +1,7 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
 
 /* 상단 줄 — 지표 칩(왼쪽)과 알림 버튼(오른쪽)을 양끝으로 밉니다. */
-.journey-map-top-bar {
+.top-bar {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -10,7 +10,7 @@
 }
 
 /* 칩 사이 9px은 디자인 실측값이고 이 치수에 맞는 토큰이 없어 px로 적습니다. */
-.journey-map-top-bar-stats {
+.top-bar-stats {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -19,7 +19,7 @@
 
 /* 지표 칩 — 누르면 지표 모달을 엽니다. 높이는 디자인 실측값 그대로라 Apple HIG의
    44pt에는 못 미칩니다(알림 버튼과 같은 사정입니다). */
-.journey-map-top-bar-chip {
+.top-bar-chip {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -32,7 +32,7 @@
      없었습니다. */
 }
 
-.journey-map-top-bar-chip-icon {
+.top-bar-chip-icon {
   width: var(--libitum-icon-size-md);
   height: var(--libitum-icon-size-md);
   flex-shrink: 0;
@@ -40,8 +40,8 @@
 
 /* 숫자 색은 칩마다 갈립니다 — 아이콘과 같은 색을 써서 둘이 한 덩어리로 읽힙니다.
    색이 유일한 구분 채널이 아닙니다: 아이콘 모양이 먼저 가릅니다(WCAG 1.4.1). */
-.journey-map-top-bar-chip-streak,
-.journey-map-top-bar-chip-trophy {
+.top-bar-chip-streak,
+.top-bar-chip-trophy {
   font-family: var(--libitum-typography-label-m-font-family);
   font-size: var(--libitum-typography-label-m-font-size);
   font-weight: var(--libitum-typography-label-m-font-weight);
@@ -49,18 +49,18 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-.journey-map-top-bar-chip-streak {
+.top-bar-chip-streak {
   color: var(--libitum-color-brand-secondary);
 }
 
-.journey-map-top-bar-chip-trophy {
+.top-bar-chip-trophy {
   color: var(--libitum-color-feedback-warning);
 }
 
 /* 알림 버튼 — 원형입니다. 아이콘 32 + 패딩 2 × 2 = 36pt라 WCAG 2.5.8(24 × 24)은
    넘지만 Apple HIG의 44pt에는 못 미칩니다. 디자인 실측값을 그대로 따른 결과입니다
    (2026-09-26). */
-.journey-map-top-bar-notifications {
+.top-bar-notifications {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,7 +71,7 @@
   flex-shrink: 0;
 }
 
-.journey-map-top-bar-notifications-icon {
+.top-bar-notifications-icon {
   width: var(--libitum-icon-size-lg);
   height: var(--libitum-icon-size-lg);
   flex-shrink: 0;

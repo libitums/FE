@@ -1,0 +1,39 @@
+/* 짝 CSS 파일입니다(ADR-0015 D2). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다
+   (ADR-0014 D1).
+
+   판정 배지입니다(Figma 79-6138). 면 색만 인라인 스타일이 집니다 — 판정마다 갈리는
+   값이라 CSS가 가질 수 없고, 상태 클래스를 만들면 예약 상태어가 늘어납니다
+   (ADR-0003 D7).
+
+   내용 폭입니다 — 줄을 채우지 않습니다. 배지는 「이만큼이 결과다」를 크기로 말하지
+   않습니다. */
+.listening-verdict {
+  border-radius: var(--libitum-radius-md);
+  padding: var(--libitum-spacing-8);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* **크기를 CSS가 줍니다.** 색은 여기가 아니라 `current-color` 속성입니다 — Lynx
+   `<svg>`가 CSS `color`를 읽지 않습니다(ADR-0014 D2). */
+.listening-verdict-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+  flex-shrink: 0;
+}
+
+/* 낱말입니다. `label-l`(14/20 SemiBold)에 흰 잉크 — 디자인 값입니다. 가로 텍스트라
+   `flex-shrink: 0`을 주지 않습니다(FE ADR-0023 규칙 5 (2)). */
+.listening-verdict-label {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
