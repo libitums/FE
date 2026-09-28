@@ -17,14 +17,20 @@
   flex: 1;
 }
 
+/* 표식 · 제목 · 메타를 카드 한가운데 세로로 모읍니다 — 여정 맵의 스텝 노드처럼 표식
+   아래에 제목이 섭니다. */
 .onboarding-screen-unit {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
   gap: var(--libitum-spacing-8);
 }
 
 .onboarding-screen-unit-title {
+  margin-top: var(--libitum-spacing-8);
+  text-align: center;
   color: var(--libitum-color-gray-950);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-weight: var(--libitum-typography-heading-s-font-weight);
