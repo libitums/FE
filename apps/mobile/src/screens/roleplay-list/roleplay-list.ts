@@ -32,6 +32,10 @@ export function roleplayItemsFrom(items: readonly JourneyMapItem[]): readonly Ro
       case "visual-novel": {
         return [{ form: "visual-novel", unitId: item.id, title: item.title }];
       }
+      // 최종 테스트는 롤플레이로 다시 여는 자리가 아닙니다 — 풀어서 에피소드를 끝내는 시험입니다.
+      case "episode-final": {
+        return [];
+      }
     }
   });
 }

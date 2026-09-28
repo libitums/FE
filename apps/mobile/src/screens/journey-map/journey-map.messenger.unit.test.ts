@@ -23,6 +23,7 @@ describe("journeyMapItems", () => {
       "appointment-confirmation-phone-call",
       "cafe-arrival-visual-novel",
       "directions",
+      "tutorial-final-test",
     ]);
   });
 

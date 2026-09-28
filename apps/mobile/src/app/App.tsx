@@ -8,11 +8,7 @@ import type { EntryLanguage } from "../lib/entry-language";
 import { safeAreaInsetsFrom, zeroSafeAreaInsets } from "../lib/safe-area";
 import { initialSessionOptions } from "../lib/session-options";
 import type { SessionOptions } from "../lib/session-options";
-import {
-  initialCompletedStepCount,
-  isMapItemComplete,
-  journeyMapSections,
-} from "../screens/journey-map/journey-map";
+import { isMapItemComplete, journeyMapSections } from "../screens/journey-map/journey-map";
 import { roleplaySectionsFrom } from "../screens/roleplay-list/roleplay-list";
 import { premiumRoleplayItemsFor } from "../screens/roleplay-list/roleplay-premium-items";
 import type { MessengerAppProps, MessengerUnitId } from "../screens/messenger/messenger.contract";
@@ -22,12 +18,11 @@ import type {
 } from "../screens/notifications/notifications.contract";
 import type { PhoneCallAppProps, PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type { SettingsAppProps } from "../screens/settings/settings.contract";
-import { initialVisualNovelProgress } from "../screens/visual-novel/visual-novel";
 import type {
   VisualNovelAppProps,
   VisualNovelProgress,
-  VisualNovelUnitId,
 } from "../screens/visual-novel/visual-novel.contract";
+import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import { totalGemsOf } from "../screens/gem-purchase/gem-purchase";
 import { AppHeader } from "./AppHeader";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -35,6 +30,8 @@ import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
 import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
 import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
+import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-progress";
+import type { AppJourneySeed } from "./journey-progress";
 import { entryInitialNav } from "./nav-state";
 import type { Screen } from "./nav-state";
 import { renderScreen } from "./render-screen";
@@ -44,21 +41,7 @@ import "./app.css";
 
 // 루트 구성입니다 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다(ADR-0003 D5).
 // `phoneCallEventSink`는 메신저·비주얼 노벨과 같은 방식으로 App 경계에서 `null`로 정규화됩니다.
-/**
- * 부팅할 때의 여정 진행입니다. 주지 않으면 제품의 씨앗(`initialCompletedStepCount` · 빈
- * 완료 목록)으로 시작합니다.
- *
- * 있는 이유는 **진행이 열어 주는 화면**입니다. 롤플레이는 에피소드를 다 끝내야 열리는데,
- * 그 상태에 닿으려면 유닛 여덟을 모두 지나야 합니다 — 열린 뒤의 동작을 보려는 자리
- * (integration · 개발 중 확인)가 그 길을 매번 걷지 않게 합니다. 제품 진입점은 이 값을
- * 주지 않습니다.
- */
-export type AppJourneySeed = {
-  readonly completedStepCount: number;
-  readonly completedMessengerUnitIds: readonly MessengerUnitId[];
-  readonly completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
-  readonly visualNovelProgress: VisualNovelProgress;
-};
+export type { AppJourneySeed } from "./journey-progress";
 
 export type AppSeedProps = {
   readonly journeySeed?: AppJourneySeed;
@@ -76,24 +59,9 @@ export type AppSeedProps = {
   readonly episodePrologueFor?: (episodeId: string) => EpisodePrologue | undefined;
 };
 
-const productJourneySeed: AppJourneySeed = {
-  completedStepCount: initialCompletedStepCount,
-  completedMessengerUnitIds: [],
-  completedPhoneCallUnitIds: [],
-  visualNovelProgress: initialVisualNovelProgress(),
-};
-
-// 비주얼 노벨의 진행은 완료 id 목록이 아니라 상태 하나입니다(유닛이 하나뿐입니다).
-// 여정 맵에 내릴 때(`render-screen.tsx`)와 같은 식으로 목록으로 옮깁니다.
-function completedVisualNovelUnitIdsFrom(
-  progress: VisualNovelProgress,
-): readonly VisualNovelUnitId[] {
-  return progress.status === "completed" ? ["cafe-arrival-visual-novel"] : [];
-}
-
 // 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지 · 그 뒤의
-// 서사(비주얼 노벨) · 서사 통화는 화면 전체를 한 장면으로 덮습니다(Figma 80-7869 · 79-6304 ·
-// 80-7797).
+// 서사(비주얼 노벨) · 서사 통화 · 최종 테스트는 화면 전체를 한 장면으로 덮습니다(Figma 80-7869 ·
+// 79-6304 · 80-7797 · 79-6484).
 //
 // ⟨2026-09-28⟩ **여정 입장도 같은 자리입니다.** 그 화면의 디자인 의도가 「그림을 화면
 // 전체에 깐다」인데 셸이 여백을 잡아 위 · 아래에 그림이 닿지 않는 흰 띠가 남았습니다
@@ -103,6 +71,7 @@ function isFullBleedScreen(screen: Screen): boolean {
   return (
     screen.name === "episode-intro" ||
     screen.name === "episode-prologue" ||
+    screen.name === "episode-final" ||
     screen.name === "journey-entry"
   );
 }
@@ -155,6 +124,10 @@ export function App({
   const [visualNovelProgress, setVisualNovelProgress] = useState<VisualNovelProgress>(
     journeySeed.visualNovelProgress,
   );
+  // 끝낸 최종 테스트입니다. 에피소드의 마지막 항목이라, 이것까지 끝나야 롤플레이가 열립니다.
+  const [completedEpisodeFinalIds, setCompletedEpisodeFinalIds] = useState<
+    readonly EpisodeFinalUnitId[]
+  >(journeySeed.completedEpisodeFinalIds);
   // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
   // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.
   const [notifications, setNotifications] = useState<readonly NotificationItem[]>(notificationList);
@@ -190,6 +163,7 @@ export function App({
         completedMessengerUnitIds,
         completedPhoneCallUnitIds,
         completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
+        completedEpisodeFinalIds,
       }),
     premiumRoleplayItemsFor,
   );
@@ -213,6 +187,8 @@ export function App({
     setCompletedPhoneCallUnitIds,
     visualNovelProgress,
     setVisualNovelProgress,
+    completedEpisodeFinalIds,
+    setCompletedEpisodeFinalIds,
     completedStepCount,
     setCompletedStepCount,
     notifications,

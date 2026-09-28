@@ -3,6 +3,10 @@
 // UI를 import하지 않습니다 — 화면 폴더 안에 있지만 화면 컴포넌트를 참조하지 않는
 // 순수 모듈입니다.
 
+import type {
+  EpisodeFinalJourneyMapItemContract,
+  EpisodeFinalJourneyUnitContract,
+} from "../episode-final/episode-final.contract";
 import type { MessengerConversation, MessengerUnitId } from "../messenger/messenger.contract";
 import type {
   PhoneCallJourneyUnitContract,
@@ -47,7 +51,8 @@ export type JourneyUnit =
       readonly screen: "messenger";
     }
   | PhoneCallJourneyUnitContract
-  | VisualNovelJourneyUnitContract;
+  | VisualNovelJourneyUnitContract
+  | EpisodeFinalJourneyUnitContract;
 
 /** 여정 맵이 그리는 항목입니다 — 표준 스텝 또는 특별 유닛 항목(메신저·전화·비주얼 노벨)입니다. */
 export type JourneyMapItem =
@@ -58,7 +63,8 @@ export type JourneyMapItem =
       readonly title: MessengerConversation["title"];
     }
   | Omit<PhoneCallJourneyMapItemContract, "status">
-  | Omit<VisualNovelJourneyMapItemContract, "status">;
+  | Omit<VisualNovelJourneyMapItemContract, "status">
+  | EpisodeFinalJourneyMapItemContract;
 
 // 여정의 유닛 목록입니다. **맵의 세로 줄 순서가 이 목록의 순서입니다.**
 //
@@ -132,6 +138,14 @@ const tutorialUnits: readonly JourneyUnit[] = [
     kind: "standard",
     steps: [{ id: "directions", title: "길 묻기", description: "약속 장소까지 가는 길을 묻는다" }],
   },
+  // 에피소드의 마지막은 최종 테스트입니다 — 서사와 에피소드에서 배운 표현을 모아 풀고
+  // 에피소드를 끝냅니다. 같은 에피소드의 다른 항목을 모두 끝내야 열립니다(`episodeFinalStatus`).
+  {
+    kind: "special",
+    id: "tutorial-final-test",
+    title: "최종 테스트",
+    screen: "episode-final",
+  },
 ];
 
 // 에피소드 목록입니다. **맵의 세로 줄 순서가 이 목록과 그 안 유닛 순서입니다.**
@@ -166,6 +180,9 @@ function mapItemsOf(units: readonly JourneyUnit[]): readonly JourneyMapItem[] {
       }
       case "visual-novel": {
         return [{ kind: "visual-novel", id: unit.id, title: unit.title } as const];
+      }
+      case "episode-final": {
+        return [{ kind: "episode-final", id: unit.id, title: unit.title } as const];
       }
       default: {
         const exhaustive: never = unit;

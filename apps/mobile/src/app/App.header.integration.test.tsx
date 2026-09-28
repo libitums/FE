@@ -78,6 +78,7 @@ const finishedTutorial: AppJourneySeed = {
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
   visualNovelProgress: { status: "completed", beatIndex: 2 },
+  completedEpisodeFinalIds: ["tutorial-final-test"],
 };
 
 function header() {

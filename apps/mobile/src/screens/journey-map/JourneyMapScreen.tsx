@@ -4,6 +4,7 @@ import { JourneyStepNode } from "./JourneyStepNode";
 import { MessengerMapItem } from "./MessengerMapItem";
 import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
+import { EpisodeFinalMapItem } from "./EpisodeFinalMapItem";
 import { StepSheet } from "./StepSheet";
 import { screenId, scrollId } from "./journey-map-scroll";
 import { useStepSheet } from "./useStepSheet";
@@ -16,12 +17,14 @@ import {
   learningFormsForStep,
   journeyMapSections,
   completedMapItemCount,
+  episodeFinalStatus,
   journeyStepOrdinal,
   type JourneyStepId,
 } from "./journey-map";
 import type { MessengerUnitId } from "../messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
+import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
 
 import "./journey-map-screen.css";
 
@@ -35,6 +38,8 @@ export type JourneyMapScreenProps = {
   onStartPhoneCallUnit: (id: PhoneCallUnitId) => void;
   completedVisualNovelUnitIds?: readonly VisualNovelUnitId[];
   onStartVisualNovelUnit?: (id: VisualNovelUnitId) => void;
+  completedEpisodeFinalIds?: readonly EpisodeFinalUnitId[];
+  onStartEpisodeFinal?: (id: EpisodeFinalUnitId) => void;
   /** 스텝 말풍선이 열리고 닫힐 때 부릅니다 — 전역 머리를 그 동안 낭독에서 가리는 데 씁니다. */
   onLayerChange?: (open: boolean) => void;
 };
@@ -50,6 +55,8 @@ export function JourneyMapScreen({
   onStartPhoneCallUnit,
   completedVisualNovelUnitIds = [],
   onStartVisualNovelUnit = () => {},
+  completedEpisodeFinalIds = [],
+  onStartEpisodeFinal = () => {},
   onLayerChange,
 }: JourneyMapScreenProps): ReactNode {
   const { sheetState, sheetTop, handleScroll, handleSelectStep, handleCloseSheet } = useStepSheet();
@@ -59,12 +66,13 @@ export function JourneyMapScreen({
   // 화면 안에 있어 아래 맵 가림과 함께 가렸습니다.
   useScreenLayer(openStep !== undefined, onLayerChange);
 
-  // 진행의 출처 넷을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
+  // 진행의 출처 다섯을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
   const progress = {
     completedStepCount,
     completedMessengerUnitIds,
     completedPhoneCallUnitIds,
     completedVisualNovelUnitIds,
+    completedEpisodeFinalIds,
   };
 
   return (
@@ -131,6 +139,14 @@ export function JourneyMapScreen({
                       completedVisualNovelUnitIds.includes(item.id) ? "completed" : "available"
                     }
                     onSelect={onStartVisualNovelUnit}
+                  />
+                ) : item.kind === "episode-final" ? (
+                  <EpisodeFinalMapItem
+                    key={item.id}
+                    id={item.id}
+                    title={item.title}
+                    status={episodeFinalStatus(item, section.items, progress)}
+                    onSelect={onStartEpisodeFinal}
                   />
                 ) : (
                   <JourneyStepNode

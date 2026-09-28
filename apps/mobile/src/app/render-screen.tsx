@@ -44,6 +44,7 @@ import { profileList, termsSectionList } from "./app-content";
 import type { Screen } from "./nav-state";
 import { renderShellLearningScreen } from "./render-learning-screen";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
+import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -62,6 +63,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
             wiring.visualNovelProgress.status === "completed" ? ["cafe-arrival-visual-novel"] : []
           }
           onStartVisualNovelUnit={wiring.onStartVisualNovelUnit}
+          completedEpisodeFinalIds={wiring.completedEpisodeFinalIds}
+          onStartEpisodeFinal={wiring.onStartEpisodeFinal}
           onLayerChange={wiring.onScreenLayerChange}
         />
       );
@@ -272,6 +275,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onBack={wiring.onJourneyEntryBack}
         />
       );
+    case "episode-final":
+    case "episode-final-complete":
+      return renderEpisodeFinalFlow(screen, wiring);
     // `never` 망라가 이 case를 강제합니다. 결선이 없습니다 — 탐침 화면은
     // props도 콜백도 받지 않고 자기 상태를 스스로 듭니다. **아무 코드도 이
     // 화면을 push하지 않습니다** — 위 진입 흐름 case들과 달리 여기로 오는
