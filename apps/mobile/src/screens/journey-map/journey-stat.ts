@@ -31,7 +31,10 @@ function wholeCount(value: number): number {
 export function streakTrack(streakDays: number, todayWeekday: number): JourneyStatTrack {
   const days = wholeCount(streakDays);
   const completedCount = days === 0 ? 0 : ((days - 1) % journeyStatSlotCount) + 1;
-  const today = ((Math.floor(todayWeekday) % 7) + 7) % 7;
+  // 유한하지 않은 요일(NaN · Infinity)은 일요일(0)로 읽습니다 — 그대로 두면 나머지 연산이
+  // NaN을 내고 요일 라벨이 비어 버립니다.
+  const weekday = Number.isFinite(todayWeekday) ? Math.floor(todayWeekday) : 0;
+  const today = ((weekday % 7) + 7) % 7;
   // 연속이 없으면 오늘부터 시작합니다 — 첫 칸이 「오늘 하면 찰 칸」입니다.
   const firstWeekday = completedCount === 0 ? today : (today - (completedCount - 1) + 7) % 7;
   const dayLabels = Array.from(

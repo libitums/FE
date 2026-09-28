@@ -28,6 +28,12 @@ test("[JS3] 연속이 없으면(0 · 음수 · NaN) 빈 줄이 오늘부터 시�
   }
 });
 
+test("[JS5] 오늘 요일이 유한하지 않으면(NaN · ±Infinity) 일요일로 읽어 라벨이 비지 않는다", () => {
+  for (const weekday of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+    expect(streakTrack(1, weekday).dayLabels).toEqual(["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]);
+  }
+});
+
 test("[JS4] 트로피 줄은 얻은 수만큼 차고 7에서 멈춘다. 요일을 갖지 않는다", () => {
   expect(trophyTrack(3)).toEqual({ completedCount: 3 });
   expect(trophyTrack(12).completedCount).toBe(journeyStatSlotCount);

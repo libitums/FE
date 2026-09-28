@@ -47,6 +47,9 @@ export type JourneyStatModalProps = {
   readonly onClose: () => void;
 };
 
+// 칸 번호 0 … 6입니다. 칸 수가 고정이라 렌더마다 만들지 않습니다.
+const slotIndexes = Array.from({ length: journeyStatSlotCount }, (_, index) => index);
+
 export function JourneyStatModal({
   kind,
   value,
@@ -57,9 +60,8 @@ export function JourneyStatModal({
   // 같은 값을 스스로 읽어 안쪽 여백으로 잡습니다(lib/safe-area.ts).
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const { title, message, heroLabel } = copy[kind];
-  const slots = Array.from({ length: journeyStatSlotCount }, (_, index) => index);
-  const done = slots.slice(0, track.completedCount);
-  const rest = slots.slice(track.completedCount);
+  const done = slotIndexes.slice(0, track.completedCount);
+  const rest = slotIndexes.slice(track.completedCount);
 
   const handleClose = () => {
     "background only";
