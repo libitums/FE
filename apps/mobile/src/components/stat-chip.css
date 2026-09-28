@@ -10,10 +10,15 @@
   padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
   border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-50);
   border-radius: var(--libitum-radius-sm);
-  /* 면을 칠하지 않습니다 — 화면 바탕이 그대로 비칩니다(2026-09-27 디자인 반영).
-     칩을 가르는 것은 테두리와 안의 아이콘 · 숫자이고, 흰 면은 그 일에 보태는 것이
-     없었습니다. */
+  /* 기본은 면을 칠하지 않습니다 — 화면 바탕이 그대로 비칩니다(학습 완료 머리). 면이
+     필요한 자리는 `surface`로 고릅니다(아래 `-surface-white`). */
   flex-shrink: 0;
+}
+
+/* 흰 면 — 상단 바의 칩입니다(Figma 65-554). 상단 바는 스크롤되는 내용 위에 겹쳐 떠
+   있어, 면이 없으면 뒤로 지나가는 유닛 · 카드와 칩이 섞여 읽힙니다(2026-09-28). */
+.stat-chip-surface-white {
+  background-color: var(--libitum-color-white);
 }
 
 .stat-chip-icon {

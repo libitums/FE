@@ -31,3 +31,25 @@ test("[SC2] onTap이 있으면 버튼이고 tap마다 한 번 부른다", () => 
   fireEvent.tap(chip, {});
   expect(onTap).toHaveBeenCalledTimes(1);
 });
+
+// 면은 자리마다 다릅니다 — 상단 바는 스크롤되는 내용 위에 떠 있어 흰 면을 칠하고, 학습
+// 완료 머리는 바탕이 그대로 비칩니다.
+test("[SC3] surface를 주지 않으면 면이 없고, white면 흰 면 클래스가 붙는다", () => {
+  render(
+    <>
+      <StatChip tone="trophy" value={1} accessibilityLabel="트로피 1개" testId="plain" />
+      <StatChip
+        tone="trophy"
+        value={1}
+        accessibilityLabel="트로피 1개"
+        testId="white"
+        surface="white"
+      />
+    </>,
+  );
+
+  expect(screen.getByTestId("plain").getAttribute("class")).toBe("stat-chip");
+  expect(screen.getByTestId("white").getAttribute("class")).toBe(
+    "stat-chip stat-chip-surface-white",
+  );
+});

@@ -15,6 +15,12 @@ import "./stat-chip.css";
 
 export type StatChipTone = "streak" | "trophy" | "diamond";
 
+/**
+ * 칩의 면입니다. `none`은 바탕이 그대로 비치고(학습 완료 머리), `white`는 흰 면을 칠합니다
+ * (상단 바 — 스크롤되는 내용 위에 떠 있어 면이 없으면 칩이 내용과 섞입니다).
+ */
+export type StatChipSurface = "none" | "white";
+
 // 다이아 색은 디자인 값(#00C3FF, Figma 65-466)이고 맞는 색 토큰이 패키지에 없어 적어 둡니다.
 export const statChipDiamondColor = "#00C3FF";
 
@@ -32,6 +38,8 @@ export type StatChipProps = {
   readonly accessibilityLabel: string;
   readonly testId: string;
   readonly onTap?: () => void;
+  /** 기본값은 `none`입니다. */
+  readonly surface?: StatChipSurface;
 };
 
 export function StatChip({
@@ -40,6 +48,7 @@ export function StatChip({
   accessibilityLabel,
   testId,
   onTap,
+  surface = "none",
 }: StatChipProps): ReactNode {
   const handleTap = () => {
     "background only";
@@ -48,7 +57,7 @@ export function StatChip({
 
   return (
     <view
-      className="stat-chip"
+      className={surface === "white" ? "stat-chip stat-chip-surface-white" : "stat-chip"}
       data-testid={testId}
       accessibility-element={true}
       accessibility-label={accessibilityLabel}
