@@ -41,12 +41,11 @@ test("[TM1] 절과 문단이 fixture 순서대로 그려지고 텍스트가 fixt
   }
 });
 
-test("[TM2] terms-screen-exit 텍스트·이름이 '설정으로'이고 tap → onExit 정확히 1회다", () => {
+test("[TM2] 나가기는 동그란 뒤로 버튼이고 이름이 '설정으로'이며 tap → onExit 정확히 1회다", () => {
   const onExit = vi.fn();
   render(<TermsScreen sections={sections} onExit={onExit} />);
 
-  const exit = screen.getByTestId("terms-screen-exit");
-  expect(exit).toHaveTextContent("설정으로");
+  const exit = within(screen.getByTestId("terms-screen-exit")).getByTestId("ui-lynx-round-button");
   expect(exit).toHaveAttribute("accessibility-label", "설정으로");
 
   fireEvent.tap(exit, {});
@@ -113,7 +112,7 @@ test("[TM6] 문단에 accessibility-*가 0개이고 화면 안 조작 단위가 
     [...container.querySelectorAll("[accessibility-element]")].map((el) =>
       el.getAttribute("data-testid"),
     ),
-  ).toEqual(["terms-screen-exit"]);
+  ).toEqual(["ui-lynx-round-button"]);
 });
 
 test("[TM7] sections=[] → 본문 상자가 서고 절이 0개다", () => {

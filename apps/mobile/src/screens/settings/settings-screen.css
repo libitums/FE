@@ -40,7 +40,8 @@
 .settings-screen-scroll {
   flex: 1;
   justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  /* 제목 밑 구분선을 두지 않습니다 — 항목이 카드(설정 그룹)로 묶여 영역을 스스로 가르고,
+     진한 선이 카드의 연한 테두리와 겹쳐 어색했습니다(2026-09-28). */
 }
 
 /* 목록 상자 — 스크롤의 유일한 직계 자식입니다(ADR-0022 D4). `<scroll-view>` 안은

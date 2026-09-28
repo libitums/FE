@@ -19,7 +19,12 @@ test("[PR1] 항목이 fixture 순서대로 그려지고 label·value 텍스트�
   render(<ProfileScreen items={items} onExit={vi.fn()} />);
 
   const list = screen.getByTestId("profile-screen-list");
-  const testids = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
+  // 항목은 카드(`profile-screen-card`) 안에 섭니다.
+  const testids = Array.from(list.querySelectorAll('[data-testid^="profile-item-"]'))
+    .map((el) => el.getAttribute("data-testid"))
+    .filter(
+      (id) => !id?.startsWith("profile-item-label-") && !id?.startsWith("profile-item-value-"),
+    );
   expect(testids).toEqual(items.map((item) => `profile-item-${item.id}`));
 
   for (const item of items) {
@@ -28,11 +33,12 @@ test("[PR1] 항목이 fixture 순서대로 그려지고 label·value 텍스트�
   }
 });
 
-test("[PR2] profile-screen-exit 텍스트·접근성이 '설정으로'다", () => {
+test("[PR2] 나가기는 동그란 뒤로 버튼이고 접근성 이름이 '설정으로'다", () => {
   render(<ProfileScreen items={items} onExit={vi.fn()} />);
 
-  const exit = screen.getByTestId("profile-screen-exit");
-  expect(exit).toHaveTextContent("설정으로");
+  const exit = within(screen.getByTestId("profile-screen-exit")).getByTestId(
+    "ui-lynx-round-button",
+  );
   expect(exit).toHaveAttribute("accessibility-element", "true");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
   expect(exit).toHaveAttribute("accessibility-label", "설정으로");
@@ -42,7 +48,10 @@ test("[PR3] 나가기 tap → onExit 정확히 1회", () => {
   const onExit = vi.fn();
   render(<ProfileScreen items={items} onExit={onExit} />);
 
-  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("profile-screen-exit")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
 
   expect(onExit).toHaveBeenCalledTimes(1);
 });
@@ -54,12 +63,12 @@ test("[PR4] 입력·편집 수단이 0건이다 — 조작 단위가 나가기 �
     [...container.querySelectorAll("[accessibility-element]")].map((el) =>
       el.getAttribute("data-testid"),
     ),
-  ).toEqual(["profile-screen-exit"]);
+  ).toEqual(["ui-lynx-round-button"]);
   expect(
     [...container.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
       el.getAttribute("data-testid"),
     ),
-  ).toEqual(["profile-screen-exit"]);
+  ).toEqual(["ui-lynx-round-button"]);
   expect(container.querySelectorAll("input")).toHaveLength(0);
   expect(container.querySelectorAll("textarea")).toHaveLength(0);
 });

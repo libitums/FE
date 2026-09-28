@@ -117,20 +117,34 @@ test("[ST1] settings-screen-list가 스크롤의 유일한 직계 요소 자식�
   expect(scroll.children[0]).toHaveAttribute("data-testid", "settings-screen-list");
 });
 
-test("[ST2] 목록 상자 안 DOM 순서가 이동 둘 → 토글 둘이다", () => {
+// 항목 셀입니다 — 그룹이 싣는 `ui-lynx-settings-group-item-{id}` 상자로 가려 집습니다.
+function settingsCell(id: string): HTMLElement {
+  return within(screen.getByTestId(`ui-lynx-settings-group-item-${id}`)).getByTestId(
+    "ui-lynx-settings-cell",
+  );
+}
+
+test("[ST2] 목록 상자 안에 그룹 둘(계정 · 학습)이 서고, 항목 순서가 이동 둘 → 토글 둘이다", () => {
   render(<SettingsScreen {...defaultSettingsScreenProps} />);
 
   const list = screen.getByTestId("settings-screen-list");
-  const testids = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
+  const groups = within(list).getAllByTestId("ui-lynx-settings-group");
+  expect(groups.map((group) => group.getAttribute("accessibility-label"))).toEqual([
+    "계정",
+    "학습",
+  ]);
+  const testids = Array.from(
+    list.querySelectorAll('[data-testid^="ui-lynx-settings-group-item-"]'),
+  ).map((el) => el.getAttribute("data-testid"));
   expect(testids).toEqual([
-    ...settingsNavTargets.map((target) => `settings-nav-item-${target}`),
-    ...sessionOptionKeys.map((key) => `settings-toggle-item-${key}`),
+    ...settingsNavTargets.map((target) => `ui-lynx-settings-group-item-${target}`),
+    ...sessionOptionKeys.map((key) => `ui-lynx-settings-group-item-${key}`),
   ]);
 });
 
 test("[ST3] 이동 항목 tap → onSelectNavTarget 1회 · 토글 tap → onToggleSessionOption 1회, 서로 침범하지 않는다", () => {
-  const onSelectNavTarget = vi.fn();
-  const onToggleSessionOption = vi.fn();
+  const onSelectNavTarget = vi.fn<(target: string) => void>();
+  const onToggleSessionOption = vi.fn<(key: string) => void>();
   render(
     <SettingsScreen
       sessionOptions={initialSessionOptions}
@@ -139,12 +153,12 @@ test("[ST3] 이동 항목 tap → onSelectNavTarget 1회 · 토글 tap → onTog
     />,
   );
 
-  fireEvent.tap(screen.getByTestId(`settings-nav-item-${settingsNavTargets[0]}`), {});
+  fireEvent.tap(settingsCell(settingsNavTargets[0]), {});
   expect(onSelectNavTarget).toHaveBeenCalledTimes(1);
   expect(onSelectNavTarget).toHaveBeenCalledWith(settingsNavTargets[0]);
   expect(onToggleSessionOption).not.toHaveBeenCalled();
 
-  fireEvent.tap(screen.getByTestId(`settings-toggle-item-${sessionOptionKeys[0]}`), {});
+  fireEvent.tap(settingsCell(sessionOptionKeys[0]), {});
   expect(onToggleSessionOption).toHaveBeenCalledTimes(1);
   expect(onToggleSessionOption).toHaveBeenCalledWith(sessionOptionKeys[0]);
   expect(onSelectNavTarget).toHaveBeenCalledTimes(1);
@@ -163,7 +177,7 @@ test("[ST4] 화면 안 header trait 요소가 settings-screen-title 하나다", 
 // ST5 — 섞인 fixture입니다. 둘 다 켜짐이 아닌 값으로 상태가 실제로 내려가는지를
 // 봅니다(⚠ 둘 다 켜짐 fixture로는 옳은 배선과 「값을 안 읽고 상수를 그린다」가
 // 구별되지 않습니다).
-test("[ST5] 섞인 fixture에서 토글 값이 실제로 내려간다", () => {
+test("[ST5] 섞인 fixture에서 토글 값이 실제로 내려가고, 낭독 이름이 켜짐/꺼짐을 싣는다", () => {
   render(
     <SettingsScreen
       sessionOptions={{ "auto-play-audio": false, "show-transcript": true }}
@@ -172,15 +186,17 @@ test("[ST5] 섞인 fixture에서 토글 값이 실제로 내려간다", () => {
     />,
   );
 
-  const autoPlay = screen.getByTestId("settings-toggle-item-auto-play-audio");
+  const autoPlay = settingsCell("auto-play-audio");
   expect(autoPlay).toHaveAttribute("data-checked", "false");
-  expect(screen.getByTestId("settings-toggle-item-state-auto-play-audio")).toHaveTextContent(
-    sessionOptionStateLabel(false),
+  expect(autoPlay).toHaveAttribute(
+    "accessibility-label",
+    `자동 재생, ${sessionOptionStateLabel(false)}`,
   );
 
-  const transcript = screen.getByTestId("settings-toggle-item-show-transcript");
+  const transcript = settingsCell("show-transcript");
   expect(transcript).toHaveAttribute("data-checked", "true");
-  expect(screen.getByTestId("settings-toggle-item-state-show-transcript")).toHaveTextContent(
-    sessionOptionStateLabel(true),
+  expect(transcript).toHaveAttribute(
+    "accessibility-label",
+    `대본 표시, ${sessionOptionStateLabel(true)}`,
   );
 });

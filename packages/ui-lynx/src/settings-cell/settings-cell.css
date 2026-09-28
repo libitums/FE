@@ -116,13 +116,15 @@
 .ui-lynx-settings-group-item {
   width: 100%;
 }
+/* 셀 모서리는 물리 속성으로 둡니다 — Lynx는 논리 속성(`border-start-start-radius` 등)을
+   적용하지 않아 흰 셀의 각진 모서리가 그룹의 둥근 테두리를 덮었습니다(기기 확인). */
 .ui-lynx-settings-cell-first {
-  border-start-start-radius: var(--libitum-radius-md);
-  border-start-end-radius: var(--libitum-radius-md);
+  border-top-left-radius: var(--libitum-radius-md);
+  border-top-right-radius: var(--libitum-radius-md);
 }
 .ui-lynx-settings-cell-last {
-  border-end-start-radius: var(--libitum-radius-md);
-  border-end-end-radius: var(--libitum-radius-md);
+  border-bottom-left-radius: var(--libitum-radius-md);
+  border-bottom-right-radius: var(--libitum-radius-md);
 }
 .ui-lynx-settings-cell-only {
   border-radius: var(--libitum-radius-md);
