@@ -140,6 +140,9 @@ export type ScreenWiring = {
   onSkipEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
   onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
   onExitEpisodeIntro: () => void;
+  // 표지 `Next` 뒤 에피소드 서사의 끝 · 나가기입니다.
+  onFinishEpisodeNarrative: (episodeId: string, target: EpisodeIntroTarget) => void;
+  onExitEpisodeNarrative: () => void;
   onCompletePrologueCall: (episodeId: string) => void;
   onExitPrologueComplete: (episodeId: string) => void;
   // 호스트가 넘긴 가장자리 여백입니다. 셸이 여백을 잡지 않는 화면(서사 표지)이 자기

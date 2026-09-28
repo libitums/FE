@@ -21,9 +21,11 @@ describe("getVisualNovelDialogContract", () => {
       contentLanguage: "ui",
       continueIndicator: "on",
       direction: "ltr",
+      indicatorMotion: "bounce",
       line: "오늘 하늘이 참 예쁘다.",
       reveal: "instant",
       showContinueIndicator: true,
+      showTranslation: false,
       speakerName: "아리아",
       status: "ready",
       surface: "opaque",
@@ -232,10 +234,32 @@ describe("visual-novel-dialog.css", () => {
     expect(styles).toContain("opacity: var(--libitum-opacity-surface, 0.9)");
   });
 
-  test("색 전환만 허용하고 위치·크기 animation을 만들지 않는다", () => {
+  // 예외 하나: 계속 표시의 bounce입니다(2026-09-28 디자인 반영). 패널 · 글자는 여전히
+  // 색만 전환하고, 움직이는 것은 계속 표시 한 자리뿐입니다.
+  test("색 전환만 허용하고, animation은 계속 표시의 bounce 하나뿐이다", () => {
     expect(styles).toContain("transition-duration: var(--libitum-motion-duration-color)");
     expect(styles).toContain("transition-timing-function: var(--libitum-motion-easing-easing)");
     expect(styles).not.toMatch(/transition-property:[^;]*(transform|width|height)/);
-    expect(styles).not.toContain("animation:");
+    expect(styles.match(/animation:/g)).toHaveLength(1);
+    expect(styles).toMatch(
+      /\.ui-lynx-visual-novel-dialog-indicator-bounce\s*\{[^}]*animation:[^}]*infinite/s,
+    );
+    expect(styles).toMatch(/@keyframes ui-lynx-visual-novel-dialog-indicator-bounce/);
   });
+});
+
+test("translation이 빈 문자열이면 던진다", () => {
+  expect(() =>
+    getVisualNovelDialogContract({ line: "안녕", speakerName: "이유나", translation: "  " }),
+  ).toThrow("VisualNovelDialog translation must not be empty");
+});
+
+test("계속 표시 모션은 기본 bounce이고, reducedMotion이면 static이다", () => {
+  expect(
+    getVisualNovelDialogContract({ line: "안녕", speakerName: "이유나" }).indicatorMotion,
+  ).toBe("bounce");
+  expect(
+    getVisualNovelDialogContract({ line: "안녕", speakerName: "이유나", reducedMotion: true })
+      .indicatorMotion,
+  ).toBe("static");
 });

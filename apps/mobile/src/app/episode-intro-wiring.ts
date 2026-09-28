@@ -88,16 +88,24 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
     onStartVisualNovelUnit: (unitId: VisualNovelUnitId) => gate({ kind: "visual-novel", unitId }),
     // `Skip`은 서사를 건너뛰고 유닛으로 곧장 갑니다.
     onSkipEpisodeIntro: continueToTarget,
-    // `Next`는 서사 전개로 갑니다. 그 에피소드에 서사 통화가 있으면 표지를 통화로 갈아
-    // 끼우고(`replace` — 통화에서 뒤로 가면 표지가 아니라 맵입니다), 없으면 `Skip`처럼
-    // 유닛으로 곧장 갑니다.
+    // `Next`는 서사 전개로 갑니다 — 표지 → 서사(비주얼 노벨) → 서사 통화 → 학습 완료 → 맵.
+    // 표지를 서사로 갈아 끼웁니다(`replace` — 서사에서 뒤로 가면 표지가 아니라 맵입니다).
+    // 여기서는 본 것으로 적지 않습니다 — 서사 전개를 끝까지 마쳤을 때 적습니다. 중간에
+    // 나가면 다음에 표지부터 다시 섭니다(통화에서 나갈 때와 같은 규칙입니다).
     onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => {
+      dispatch({ type: "replace", screen: { name: "episode-narrative", episodeId, target } });
+    },
+    // 서사의 마지막 장면 뒤입니다. 그 에피소드에 서사 통화가 있으면 서사를 통화로 갈아
+    // 끼우고, 없으면 `Skip`처럼 유닛으로 곧장 갑니다(그때 본 것으로 적습니다).
+    onFinishEpisodeNarrative: (episodeId: string, target: EpisodeIntroTarget) => {
       if (prologueCallFor(episodeId) === undefined) {
         continueToTarget(episodeId, target);
         return;
       }
       dispatch({ type: "replace", screen: { name: "episode-prologue-call", episodeId, target } });
     },
+    // 서사 중간에 나가면 맵입니다. 유닛을 열지 않고, 본 것으로 적지 않습니다.
+    onExitEpisodeNarrative: () => dispatch({ type: "back" }),
     // 끝난 통화의 `Continue`입니다. 통화를 학습 완료 화면으로 갈아 끼웁니다(`replace` —
     // 완료 화면에서 돌아갈 곳은 통화가 아닙니다).
     onCompletePrologueCall: (episodeId: string) => {

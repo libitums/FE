@@ -111,6 +111,54 @@
   height: var(--libitum-icon-size-xs);
 }
 
+/* 계속 표시 — 대사가 다 드러난 뒤(`ready`)에만 서고, 위아래로 되풀이해 움직여 「눌러서
+   넘기라」를 알립니다(FE 확장, 2026-09-28 디자인 반영). 한 번 오르내리는 데 1초이고 폭은
+   4입니다 — 되풀이 모션에 맞는 duration 토큰이 없어(가장 긴 것이 300ms) 값을 적습니다.
+   `reducedMotion`이면 `static`이라 움직이지 않습니다. */
+@keyframes ui-lynx-visual-novel-dialog-indicator-bounce {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--libitum-spacing-4));
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.ui-lynx-visual-novel-dialog-indicator-bounce {
+  animation: ui-lynx-visual-novel-dialog-indicator-bounce 1000ms var(--libitum-motion-easing-easing)
+    infinite;
+}
+
+/* 번역 — 대사 아래 구분선 뒤에 흐린 한 줄로 섭니다(FE 확장, 2026-09-28 디자인 반영). */
+.ui-lynx-visual-novel-dialog-translation-block {
+  width: 100%;
+  margin-top: var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-12);
+}
+
+/* 구분선은 gray-50을 10%로 깐 한 줄입니다 — 알파가 붙은 색 토큰이 없어 불투명도로 냅니다. */
+.ui-lynx-visual-novel-dialog-divider {
+  width: 100%;
+  height: var(--libitum-stroke-width-thin);
+  background-color: var(--libitum-color-gray-50);
+  opacity: 0.1;
+}
+
+.ui-lynx-visual-novel-dialog-translation {
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-dialogue-body-font-family);
+  font-size: var(--libitum-typography-dialogue-body-font-size);
+  font-weight: var(--libitum-typography-dialogue-body-font-weight);
+  line-height: var(--libitum-typography-dialogue-body-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
+  white-space: normal;
+}
+
 .ui-lynx-visual-novel-dialog-narration .ui-lynx-visual-novel-dialog-line {
   color: var(--libitum-color-gray-600);
 }
