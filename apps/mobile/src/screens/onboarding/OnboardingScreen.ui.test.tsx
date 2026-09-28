@@ -186,7 +186,7 @@ describe("OnboardingScreen", () => {
     }
   });
 
-  // OB-U10 — 2026-09-21 디자인 반영: 셋째 스텝 학습 유닛의 Learning → Clear입니다.
+  // OB-U10 — 셋째 스텝 카드 안은 ui-lynx `LearningUnit`입니다. active → clear로 바뀝니다.
   it("[OB-U10] 셋째 스텝의 학습 유닛이 학습 중으로 보이다가 잠시 뒤 완료로 바뀐다", () => {
     vi.useFakeTimers();
     try {
@@ -194,18 +194,16 @@ describe("OnboardingScreen", () => {
       next(); // 0 → 1
       next(); // 1 → 2
 
-      const status = () =>
+      const unit = () =>
         within(screen.getByTestId("onboarding-screen-unit")).getByTestId(
-          "ui-lynx-status-indicator",
+          "ui-lynx-learning-unit-onboarding",
         );
-      expect(status()).toHaveAttribute("data-status", "in-progress");
-      expect(status()).toHaveTextContent("Learning");
+      expect(unit()).toHaveAttribute("data-status", "active");
 
       act(() => {
         vi.advanceTimersByTime(1500);
       });
-      expect(status()).toHaveAttribute("data-status", "completed");
-      expect(status()).toHaveTextContent("Clear");
+      expect(unit()).toHaveAttribute("data-status", "clear");
     } finally {
       vi.useRealTimers();
     }
@@ -230,14 +228,21 @@ describe("OnboardingScreen", () => {
       );
       next();
       next();
-      const status = within(screen.getByTestId("onboarding-screen-unit")).getByTestId(
-        "ui-lynx-status-indicator",
+      // 표식(`LearningUnit`)은 버튼 · 한국어 접미사로 낭독되므로 가립니다.
+      expect(
+        within(screen.getByTestId("onboarding-screen-unit"))
+          .getByTestId("ui-lynx-learning-unit-onboarding")
+          .closest("[accessibility-elements-hidden]"),
+      ).not.toBeNull();
+      const content = () => screen.getByTestId("onboarding-screen-unit-content");
+      expect(content()).toHaveAttribute(
+        "accessibility-label",
+        "Shopping at a beauty store, Learning",
       );
-      expect(status).toHaveAttribute("accessibility-label", "Learning, In progress");
       act(() => {
         vi.advanceTimersByTime(1500);
       });
-      expect(status).toHaveAttribute("accessibility-label", "Clear, Completed");
+      expect(content()).toHaveAttribute("accessibility-label", "Shopping at a beauty store, Clear");
     } finally {
       vi.useRealTimers();
     }
