@@ -210,9 +210,12 @@ export function LessonCompleteScreen({
         </view>
       ) : null}
       <view className="lesson-complete-screen-action" data-testid="lesson-complete-screen-exit">
+        {/* 미통과에서는 `outline`입니다 — 그 화면의 주 동작은 위의 `Try again`이고, 둘 다
+            꽉 찬 면이면 어느 것이 주된 길인지가 색으로만 갈립니다. 통과에서는 이것이
+            유일한 버튼이라 `neutral` 그대로입니다. */}
         <Button
           label={verdict === "failed" ? "맵으로" : "Check →"}
-          variant="neutral"
+          variant={verdict === "failed" ? "outline" : "neutral"}
           size="xl"
           width="fill"
           bindtap={onExit}
