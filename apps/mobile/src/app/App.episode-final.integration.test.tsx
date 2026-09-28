@@ -5,7 +5,11 @@ import { App } from "./App";
 import type { AppJourneySeed } from "./App";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
-import { episodeFinalAdvanceDelayMs } from "../screens/episode-final/episode-final";
+import type { EpisodeFinalCallTest } from "../screens/episode-final/episode-final.contract";
+import {
+  episodeFinalAdvanceDelayMs,
+  episodeFinalLineMs,
+} from "../screens/episode-final/episode-final";
 import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { journeySteps } from "../screens/journey-map/journey-map";
 
@@ -56,7 +60,11 @@ function tapButtonIn(testId: string): void {
 // `Can't speak`를 누릅니다.
 function solveAll(): void {
   vi.useFakeTimers();
-  for (const question of episodeFinalTestFor("tutorial-final-test").questions) {
+  const test = episodeFinalTestFor("tutorial-final-test");
+  if (test.format !== "visual-novel") {
+    throw new Error("튜토리얼 최종 테스트는 비주얼 노벨 형식이어야 합니다");
+  }
+  for (const question of test.questions) {
     if (question.kind === "word-choice") {
       fireEvent.tap(screen.getByTestId(`episode-final-screen-option-${question.answerIndex}`), {});
       act(() => {
@@ -129,4 +137,41 @@ test("[EFA4] 풀던 도중 뒤로 가면 맵으로 돌아가고 완료로 적지
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(finalUnit()).toHaveAttribute("data-status", "available");
+});
+
+// 통화 서사를 가진 에피소드의 최종 테스트입니다. 제품에는 아직 없어 prop으로 끼웁니다.
+const callFinal: EpisodeFinalCallTest = {
+  format: "call",
+  unitId: "tutorial-final-test",
+  callerName: "유나",
+  turns: [
+    { kind: "line", id: "hello", text: "여보세요?", translation: "Hello?" },
+    { kind: "speaking", id: "hi", sentence: "안녕", romanization: "[an.nyeong]" },
+  ],
+};
+
+test("[EFA5] 통화 형식의 최종 테스트는 통화 화면 위에서 풀고, 학습 완료를 거쳐 맵에서 완료로 선다", () => {
+  renderApp(
+    <App
+      journeySeed={readyForFinal}
+      seenEpisodeIntroIds={["tutorial"]}
+      episodeFinalTestFor={() => callFinal}
+    />,
+  );
+
+  // 대사는 시간으로 흐릅니다 — 화면이 서기 전에 가짜 시계를 켜야 그 타이머를 돌릴 수 있습니다.
+  vi.useFakeTimers();
+  fireEvent.tap(finalUnit(), {});
+  expect(screen.getByTestId("episode-final-call-screen")).toBeInTheDocument();
+  expect(screen.getByTestId("episode-final-call-screen-line-text")).toHaveTextContent("여보세요?");
+
+  act(() => {
+    vi.advanceTimersByTime(episodeFinalLineMs);
+  });
+  tapButtonIn("episode-final-screen-not-now");
+  vi.useRealTimers();
+
+  expect(screen.getByTestId("lesson-complete-screen")).toBeInTheDocument();
+  tapButtonIn("lesson-complete-screen-exit");
+  expect(finalUnit()).toHaveAttribute("data-status", "clear");
 });

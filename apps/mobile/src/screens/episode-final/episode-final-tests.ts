@@ -12,7 +12,9 @@
 import type { EpisodeFinalTest, EpisodeFinalUnitId } from "./episode-final.contract";
 
 const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
+  // 튜토리얼의 서사가 비주얼 노벨이라 최종 테스트도 비주얼 노벨 형식입니다.
   "tutorial-final-test": {
+    format: "visual-novel",
     unitId: "tutorial-final-test",
     questions: [
       {

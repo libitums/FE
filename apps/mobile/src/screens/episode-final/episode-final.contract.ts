@@ -41,10 +41,38 @@ export type EpisodeFinalWordChoiceQuestion = {
 
 export type EpisodeFinalQuestion = EpisodeFinalSpeakingQuestion | EpisodeFinalWordChoiceQuestion;
 
-export type EpisodeFinalTest = {
-  readonly unitId: EpisodeFinalUnitId;
-  readonly questions: readonly [EpisodeFinalQuestion, ...EpisodeFinalQuestion[]];
+/** 통화 최종 테스트에서 상대가 하는 대사입니다. 잠시 머문 뒤 저절로 다음 차례로 갑니다. */
+export type EpisodeFinalCallLine = {
+  readonly kind: "line";
+  readonly id: string;
+  readonly text: string;
+  readonly translation: string;
 };
+
+/** 통화의 한 차례입니다 — 상대 대사, 또는 내가 답할 말하기 문항입니다. */
+export type EpisodeFinalCallTurn = EpisodeFinalCallLine | EpisodeFinalSpeakingQuestion;
+
+/**
+ * 최종 테스트입니다. **형식은 그 에피소드의 서사 형식을 따릅니다**(2026-09-28 결정) —
+ * 서사가 비주얼 노벨이면 장면 위에서 말하기 · 낱말 고르기를 풀고(Figma 79-6484 · 79-6648),
+ * 서사가 통화면 통화를 이어 가며 내 차례마다 말합니다(Figma 79-6043).
+ */
+export type EpisodeFinalTest =
+  | {
+      readonly format: "visual-novel";
+      readonly unitId: EpisodeFinalUnitId;
+      readonly questions: readonly [EpisodeFinalQuestion, ...EpisodeFinalQuestion[]];
+    }
+  | {
+      readonly format: "call";
+      readonly unitId: EpisodeFinalUnitId;
+      readonly callerName: string;
+      /** 비어 있지 않습니다. 말하기 차례가 적어도 하나 있어야 테스트입니다. */
+      readonly turns: readonly [EpisodeFinalCallTurn, ...EpisodeFinalCallTurn[]];
+    };
+
+export type EpisodeFinalVisualNovelTest = Extract<EpisodeFinalTest, { format: "visual-novel" }>;
+export type EpisodeFinalCallTest = Extract<EpisodeFinalTest, { format: "call" }>;
 
 /** 여정 유닛 목록에 들어가는 모양입니다(`journey-map-units.ts`). */
 export type EpisodeFinalJourneyUnitContract = {
@@ -78,7 +106,7 @@ export type EpisodeFinalScreenProps = {
   readonly insets: SafeAreaInsets;
   /** 머리 제목입니다 — `Episode 0.` */
   readonly episodeLabel: string;
-  readonly test: EpisodeFinalTest;
+  readonly test: EpisodeFinalVisualNovelTest;
   /**
    * 마지막 문항의 판정 뒤 잠시 뒤에 불립니다. 건너뛴 말하기 문항(인식 불가 · `Can't speak`)은 결과에 싣지 않습니다.
    */
@@ -87,9 +115,17 @@ export type EpisodeFinalScreenProps = {
   readonly onExit: () => void;
 };
 
+export type EpisodeFinalCallScreenProps = Omit<EpisodeFinalScreenProps, "test"> & {
+  readonly test: EpisodeFinalCallTest;
+  /** 통화 상대의 얼굴입니다. 그림은 화면 폴더끼리 주고받지 못해 결선 자리가 내립니다. */
+  readonly callerPortrait: string;
+};
+
 export const episodeFinalTestIds = {
   screen: "episode-final-screen",
   back: "episode-final-screen-back",
+  call: "episode-final-call-screen",
+  callBack: "episode-final-call-screen-back",
   title: "episode-final-screen-title",
   progress: "episode-final-screen-progress",
   speaking: "episode-final-screen-speaking",

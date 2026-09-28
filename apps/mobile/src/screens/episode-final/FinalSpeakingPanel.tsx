@@ -27,6 +27,12 @@ export type FinalSpeakingPanelProps = {
   readonly action?: { readonly label: string; readonly run: () => void };
   /** `Can't speak`(지금은 말할 수 없음)입니다. 말하기 전에만 주 버튼 왼쪽에 좁게 섭니다. */
   readonly onNotNow?: () => void;
+  /**
+   * 어디에 서는가입니다. `scene`은 서사 장면 위의 어두운 패널이고 버튼 줄이 패널 **위**에
+   * 섭니다(Figma 79-6484). `call`은 통화 화면 위의 흰 카드이고 버튼 줄이 카드 **안 아래**에
+   * 섭니다(Figma 79-6043 — 카드가 통화 버튼 자리를 덮으므로 그 자리를 씁니다).
+   */
+  readonly tone?: "scene" | "call";
 };
 
 /**
@@ -44,37 +50,40 @@ export function FinalSpeakingPanel({
   result,
   action,
   onNotNow,
+  tone = "scene",
 }: FinalSpeakingPanelProps): ReactNode {
   const words = useMemo(() => speakingWords(question.sentence), [question.sentence]);
   const judged = phase === "judged";
   const matched = judged ? matchedWordCount(question.sentence, recognized) : 0;
 
+  const actions = (
+    <view className="episode-final-speaking-actions">
+      {onNotNow === undefined ? null : (
+        <view className="episode-final-not-now" data-testid={episodeFinalTestIds.notNow}>
+          <Button label="Can't speak" variant="subtle" size="xl" width="fill" bindtap={onNotNow} />
+        </view>
+      )}
+      {action === undefined ? null : (
+        <view className="episode-final-speaking-action" data-testid={episodeFinalTestIds.action}>
+          <Button
+            label={action.label}
+            variant="brand"
+            size="xl"
+            width="fill"
+            bindtap={action.run}
+          />
+        </view>
+      )}
+    </view>
+  );
+
   return (
-    <view className="episode-final-speaking" data-testid={episodeFinalTestIds.speaking}>
-      <view className="episode-final-speaking-actions">
-        {onNotNow === undefined ? null : (
-          <view className="episode-final-not-now" data-testid={episodeFinalTestIds.notNow}>
-            <Button
-              label="Can't speak"
-              variant="subtle"
-              size="xl"
-              width="fill"
-              bindtap={onNotNow}
-            />
-          </view>
-        )}
-        {action === undefined ? null : (
-          <view className="episode-final-speaking-action" data-testid={episodeFinalTestIds.action}>
-            <Button
-              label={action.label}
-              variant="brand"
-              size="xl"
-              width="fill"
-              bindtap={action.run}
-            />
-          </view>
-        )}
-      </view>
+    <view
+      className={`episode-final-speaking episode-final-speaking-${tone}`}
+      data-testid={episodeFinalTestIds.speaking}
+      data-tone={tone}
+    >
+      {tone === "scene" ? actions : null}
       <view className="episode-final-speaking-panel">
         <view className="episode-final-speaking-badge-slot">
           {result === null ? (
@@ -121,12 +130,18 @@ export function FinalSpeakingPanel({
             className="episode-final-waves-icon"
             content={audioWaves}
             current-color={
-              phase === "listening" ? color.brand.primary : color.brand["reward-disabled-surface"]
+              phase === "listening"
+                ? color.brand.primary
+                : tone === "scene"
+                  ? color.brand["reward-disabled-surface"]
+                  : color.gray[300]
             }
           />
         </view>
-        {/* 패널은 화면 바닥까지 닿습니다 — 홈 인디케이터 몫을 패널 안에서 비웁니다. */}
-        <view style={{ height: `${insets.bottom}px` }} />
+        {tone === "call" ? actions : null}
+        {/* 장면 패널은 화면 바닥까지 닿습니다 — 홈 인디케이터 몫을 패널 안에서 비웁니다.
+            통화 카드는 화면 여백 안에 떠 있어 비울 것이 없습니다. */}
+        {tone === "scene" ? <view style={{ height: `${insets.bottom}px` }} /> : null}
       </view>
     </view>
   );

@@ -1,12 +1,15 @@
 // 에피소드 최종 테스트 route 둘(테스트 · 학습 완료)을 화면으로 옮깁니다. `render-screen.tsx`가
 // 커서 떼어 둔 것이고, `render-episode-intro.tsx`와 같은 갈래입니다.
 
+import { EpisodeFinalCallScreen } from "../screens/episode-final/EpisodeFinalCallScreen";
 import { EpisodeFinalScreen } from "../screens/episode-final/EpisodeFinalScreen";
-import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
+import type { AnswerResult } from "../lib/answer-result";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import { journeyMapSections } from "../screens/journey-map/journey-map";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
+// 통화 상대의 얼굴입니다 — 서사 통화와 같은 임시 그림입니다(`render-episode-intro.tsx`).
+import jiminPortrait from "../screens/visual-novel/assets/temporary/character-jimin-smile.png";
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -26,17 +29,27 @@ type EpisodeFinalFlowScreen = Extract<Screen, { name: "episode-final" | "episode
 
 export function renderEpisodeFinalFlow(screen: EpisodeFinalFlowScreen, wiring: ScreenWiring) {
   switch (screen.name) {
-    case "episode-final":
-      return (
-        <EpisodeFinalScreen
+    case "episode-final": {
+      // 형식은 에피소드의 서사 형식을 따릅니다 — 통화면 통화 위에서, 비주얼 노벨이면 장면 위에서.
+      const test = wiring.episodeFinalTestFor(screen.unitId);
+      const common = {
+        insets: wiring.safeAreaInsets,
+        episodeLabel: episodeLabelOf(screen.unitId),
+        onFinish: (results: readonly AnswerResult[]) =>
+          wiring.onFinishEpisodeFinal(screen.unitId, results),
+        onExit: wiring.onExitEpisodeFinal,
+      };
+      return test.format === "call" ? (
+        <EpisodeFinalCallScreen
           key={screen.unitId}
-          insets={wiring.safeAreaInsets}
-          episodeLabel={episodeLabelOf(screen.unitId)}
-          test={episodeFinalTestFor(screen.unitId)}
-          onFinish={(results) => wiring.onFinishEpisodeFinal(screen.unitId, results)}
-          onExit={wiring.onExitEpisodeFinal}
+          {...common}
+          test={test}
+          callerPortrait={jiminPortrait}
         />
+      ) : (
+        <EpisodeFinalScreen key={screen.unitId} {...common} test={test} />
       );
+    }
     // 틀린 문항이 있어도 에피소드는 끝납니다 — 판정은 늘 통과이고, 실수 수는 결과에서
     // 셉니다. 지표와 보상은 서사 뒤의 학습 완료와 같은 값입니다(`render-episode-intro.tsx`).
     case "episode-final-complete":

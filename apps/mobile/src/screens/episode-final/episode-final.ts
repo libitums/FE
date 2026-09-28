@@ -9,7 +9,11 @@
 // 갑니다(2026-09-28 결정).
 
 import type { AnswerResult } from "../../lib/answer-result";
-import type { EpisodeFinalWordChoiceQuestion } from "./episode-final.contract";
+import type {
+  EpisodeFinalCallLine,
+  EpisodeFinalCallTurn,
+  EpisodeFinalWordChoiceQuestion,
+} from "./episode-final.contract";
 
 export type EpisodeFinalPhase = "ready" | "listening" | "judged" | "unavailable";
 
@@ -102,6 +106,9 @@ export function episodeFinalSessionReducer(
   }
 }
 
+/** 통화 최종 테스트에서 상대 대사 한 줄이 머무는 시간입니다 — 서사 통화와 같은 3초입니다. */
+export const episodeFinalLineMs = 3000;
+
 /** 판정을 보여 준 뒤 다음 문항으로 넘어가기까지입니다 — 말하기 학습형의 넘김과 같은 값입니다. */
 export const episodeFinalAdvanceDelayMs = 2500;
 
@@ -161,4 +168,21 @@ export function episodeFinalPromptLabel(
 /** 몇째 문항인지입니다 — `1 / 5`. */
 export function episodeFinalProgressLabel(questionIndex: number, total: number): string {
   return `${questionIndex + 1} / ${total}`;
+}
+
+/**
+ * 지금 차례까지 가운데 **마지막 상대 대사**입니다. 내 차례에도 말풍선은 그 대사를 들고
+ * 있습니다 — 무엇에 답하는지 남아 있어야 합니다. 아직 상대 대사가 없으면 `undefined`입니다.
+ */
+export function latestCallLine(
+  turns: readonly EpisodeFinalCallTurn[],
+  turnIndex: number,
+): EpisodeFinalCallLine | undefined {
+  for (let index = Math.min(turnIndex, turns.length - 1); index >= 0; index -= 1) {
+    const turn = turns[index];
+    if (turn?.kind === "line") {
+      return turn;
+    }
+  }
+  return undefined;
 }

@@ -4,11 +4,16 @@
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
 import type { AnswerResult } from "../lib/answer-result";
-import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
+import type {
+  EpisodeFinalTest,
+  EpisodeFinalUnitId,
+} from "../screens/episode-final/episode-final.contract";
 import type { NavAction } from "./nav-state";
 
 export type EpisodeFinalWiring = {
   readonly completedEpisodeFinalIds: readonly EpisodeFinalUnitId[];
+  // 최종 테스트를 찾습니다 — route가 어느 형식의 화면을 그릴지 여기서 읽습니다.
+  readonly episodeFinalTestFor: (unitId: EpisodeFinalUnitId) => EpisodeFinalTest;
   readonly onStartEpisodeFinal: (id: EpisodeFinalUnitId) => void;
   readonly onFinishEpisodeFinal: (id: EpisodeFinalUnitId, results: readonly AnswerResult[]) => void;
   readonly onCompleteEpisodeFinal: (id: EpisodeFinalUnitId) => void;
@@ -17,6 +22,7 @@ export type EpisodeFinalWiring = {
 
 export type EpisodeFinalWiringArgs = {
   readonly dispatch: Dispatch<NavAction>;
+  readonly episodeFinalTestFor: (unitId: EpisodeFinalUnitId) => EpisodeFinalTest;
   readonly completedEpisodeFinalIds: readonly EpisodeFinalUnitId[];
   readonly setCompletedEpisodeFinalIds: Dispatch<SetStateAction<readonly EpisodeFinalUnitId[]>>;
 };
@@ -25,6 +31,7 @@ export function episodeFinalWiring(args: EpisodeFinalWiringArgs): EpisodeFinalWi
   const { dispatch, completedEpisodeFinalIds, setCompletedEpisodeFinalIds } = args;
   return {
     completedEpisodeFinalIds,
+    episodeFinalTestFor: args.episodeFinalTestFor,
     // 맵의 항목이 잠겨 있으면 여기까지 오지 않습니다 — 막는 것은 맵 항목입니다.
     onStartEpisodeFinal: (id) => {
       dispatch({ type: "push", screen: { name: "episode-final", unitId: id } });
