@@ -57,7 +57,9 @@ export function StatChip({
 
   return (
     <view
-      className={surface === "white" ? "stat-chip stat-chip-surface-white" : "stat-chip"}
+      className={["stat-chip", surface === "white" ? "stat-chip-surface-white" : undefined]
+        .filter(Boolean)
+        .join(" ")}
       data-testid={testId}
       accessibility-element={true}
       accessibility-label={accessibilityLabel}
