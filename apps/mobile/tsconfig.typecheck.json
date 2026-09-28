@@ -27,7 +27,8 @@
       "@libitums/ui-lynx/avatar": ["../../packages/ui-lynx/src/avatar/index.ts"],
       "@libitums/ui-lynx/visual-novel-dialog": [
         "../../packages/ui-lynx/src/visual-novel-dialog/index.ts"
-      ]
+      ],
+      "@libitums/ui-lynx/settings-cell": ["../../packages/ui-lynx/src/settings-cell/index.ts"]
     }
   }
 }

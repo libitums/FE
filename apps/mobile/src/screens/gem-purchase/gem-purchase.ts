@@ -18,17 +18,25 @@ export type GemPack = {
   readonly badge?: string;
 };
 
+// id마다 팩 하나입니다 — `Record`라 `GemPackId`에 id를 더하고 팩을 빠뜨리면 tsc가 잡습니다.
+const gemPacksById: Readonly<Record<GemPackId, GemPack>> = {
+  standard: { id: "standard", gems: 500, bonusGems: 0, priceCents: 499 },
+  plus: { id: "plus", gems: 1200, bonusGems: 200, priceCents: 999, badge: "BEST VALUE" },
+  max: { id: "max", gems: 2800, bonusGems: 800, priceCents: 1999 },
+};
+
+/** 화면에 늘어놓는 순서입니다. */
 export const gemPacks: readonly GemPack[] = [
-  { id: "standard", gems: 500, bonusGems: 0, priceCents: 499 },
-  { id: "plus", gems: 1200, bonusGems: 200, priceCents: 999, badge: "BEST VALUE" },
-  { id: "max", gems: 2800, bonusGems: 800, priceCents: 1999 },
+  gemPacksById.standard,
+  gemPacksById.plus,
+  gemPacksById.max,
 ];
 
 /** 화면을 열 때 골라 두는 팩입니다 — 디자인이 가장 큰 팩을 고른 상태로 그립니다. */
 export const initialGemPackId: GemPackId = "max";
 
 export function findGemPack(id: GemPackId): GemPack {
-  return gemPacks.find((pack) => pack.id === id) as GemPack;
+  return gemPacksById[id];
 }
 
 export function totalGemsOf(pack: GemPack): number {

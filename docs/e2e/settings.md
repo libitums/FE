@@ -37,8 +37,8 @@ ID를 현장에서 새로 만들지 않는다.
 - `apps/mobile/src/lib/session-options.ts`(세션 옵션 키·라벨·초기값의 정본)
 - `apps/mobile/src/screens/settings/settings.contract.ts` ·
   `apps/mobile/src/screens/settings/settings.ts`
-- `apps/mobile/src/screens/settings/SettingsScreen.tsx` ·
-  `SettingsNavItem.tsx` · `SettingsToggleItem.tsx`
+- `apps/mobile/src/screens/settings/SettingsScreen.tsx` — 항목 행은 ui-lynx
+  `SettingsCell` · `SettingsGroup`(`packages/ui-lynx/src/settings-cell/`)이 그린다
 - `apps/mobile/src/screens/profile/profile.contract.ts` ·
   `profile-items.ts`(임시 항목 셋의 정본) · `ProfileScreen.tsx`
 - `apps/mobile/src/screens/terms/terms.contract.ts` ·

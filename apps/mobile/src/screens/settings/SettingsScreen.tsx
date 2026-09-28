@@ -1,23 +1,42 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { SettingsGroup } from "@libitums/ui-lynx/settings-cell";
+import type { SettingsGroupItem } from "@libitums/ui-lynx/settings-cell";
+
 import type { SettingsScreenProps } from "./settings.contract";
-import { settingsNavTargets } from "./settings";
-import { SettingsNavItem } from "./SettingsNavItem";
-import { SettingsToggleItem } from "./SettingsToggleItem";
-import { sessionOptionKeys } from "../../lib/session-options";
+import { settingsNavLabel, settingsNavTargets } from "./settings";
+import { sessionOptionKeys, sessionOptionLabel } from "../../lib/session-options";
 
 import "./settings-screen.css";
 
 // 제목 텍스트 하나와 흐름 영역의 목록 상자를 그립니다. 흐름 영역의 유일한 직계
-// 자식은 목록 상자(`settings-screen-list`) 하나이고(ADR-0022 D4), 안에는 이동
-// 항목 둘(`settingsNavTargets` 순서) 뒤에 토글 항목 둘(`sessionOptionKeys` 순서)이
-// 옵니다. 화면은 목록을 계산·정렬·거르지 않고 토글 값도 판정하지 않습니다 — 받은
-// 것을 그대로 내립니다.
+// 자식은 목록 상자(`settings-screen-list`) 하나이고(ADR-0022 D4), 안에는 ui-lynx
+// `SettingsGroup` 둘이 섭니다 — 계정(이동 항목 둘, `settingsNavTargets` 순서)과
+// 학습(토글 항목 둘, `sessionOptionKeys` 순서). 셀의 모양 · 낭독(이름 · 켜짐/꺼짐) ·
+// 탭은 ui-lynx가 집니다. 화면은 목록을 계산·정렬·거르지 않고 토글 값도 판정하지
+// 않습니다 — 받은 것을 그대로 내립니다. 항목 `id`는 이동 대상 · 옵션 키 그대로라
+// 그룹의 항목 testid(`ui-lynx-settings-group-item-{id}`)가 그 이름을 씁니다.
 export function SettingsScreen({
   sessionOptions,
   onSelectNavTarget,
   onToggleSessionOption,
 }: SettingsScreenProps): ReactNode {
+  const accountItems: readonly SettingsGroupItem[] = settingsNavTargets.map((target) => ({
+    id: target,
+    trailing: "navigation",
+    title: settingsNavLabel(target),
+    onNavigate: () => onSelectNavTarget(target),
+  }));
+  // 셀은 바뀐 뒤 값을 넘기지만 여기서는 쓰지 않습니다 — 값의 진실은 App의 `sessionOptions`
+  // 이고, 토글은 그 값을 뒤집는 일 하나입니다(`toggleSessionOption`).
+  const learningItems: readonly SettingsGroupItem[] = sessionOptionKeys.map((key) => ({
+    id: key,
+    trailing: "toggle",
+    title: sessionOptionLabel(key),
+    checked: sessionOptions[key],
+    onChange: () => onToggleSessionOption(key),
+  }));
+
   return (
     <view className="settings-screen">
       <text
@@ -39,17 +58,8 @@ export function SettingsScreen({
         {/* `<scroll-view>`의 직계 자식은 이 상자 하나입니다(ADR-0022 D4) — 간격은
             이 상자가 집니다(`<scroll-view>` 안은 강제 linear라 `gap`이 무동작입니다). */}
         <view className="settings-screen-list" data-testid="settings-screen-list">
-          {settingsNavTargets.map((target) => (
-            <SettingsNavItem key={target} target={target} onSelect={onSelectNavTarget} />
-          ))}
-          {sessionOptionKeys.map((key) => (
-            <SettingsToggleItem
-              key={key}
-              optionKey={key}
-              value={sessionOptions[key]}
-              onToggle={onToggleSessionOption}
-            />
-          ))}
+          <SettingsGroup accessibilityLabel="계정" items={accountItems} />
+          <SettingsGroup accessibilityLabel="학습" items={learningItems} />
         </view>
       </scroll-view>
     </view>

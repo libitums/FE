@@ -3,16 +3,6 @@
 
 import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
 
-// `${ordinal}단계 · 듣기` — 구분자는 가운뎃점 양옆 공백입니다.
-export function listeningScreenTitle(ordinal: number): string {
-  return `${ordinal}단계 · 듣기`;
-}
-
-// `문항 ${index + 1} / ${total}` — index는 0-based입니다.
-export function questionProgressLabel(index: number, total: number): string {
-  return `문항 ${index + 1} / ${total}`;
-}
-
 // 접미사는 lib/answer-result.ts의 answerResultLabel이 냅니다. 구분자는
 // 쉼표 + 공백입니다(ADR-0016 D3). 판정이 **없는** 경우는 접미사를 붙이지
 // 않습니다 — 응답 전 네 보기가 전부 접미사를 달면 답을 미리 알려 주는

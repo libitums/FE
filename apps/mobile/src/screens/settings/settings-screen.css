@@ -10,12 +10,16 @@
   /* 화면 여백은 축마다 값이 다릅니다. `padding-x`를 네 방향에 쓰면 상하가 틀립니다. */
   /* 위 여백은 화면 여백에 전역 머리(`.app-header`) 몫을 더한 것입니다 — 머리가 이 화면
      위에 겹치므로 더하지 않으면 제목이 칩 · 알림 버튼에 가립니다. 머리 높이 40pt(알림
-     버튼 기준)에 열 간격을 더합니다(여정 맵의 `.journey-map-screen-map`과 같은 수). */
-  padding: calc(
-      var(--libitum-layout-screen-padding-top) + var(--libitum-spacing-32) +
-        var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
-    )
-    var(--libitum-layout-screen-padding-x) var(--libitum-layout-screen-padding-bottom);
+     버튼 기준)에 열 간격을 더합니다(여정 맵의 `.journey-map-screen-map`과 같은 수).
+     shorthand에 `calc(…)`가 섞이면 Lynx가 선언 전체를 버리므로(`.roleplay-list-screen`과
+     같은 까닭) longhand로 나눠 적습니다. */
+  padding-top: calc(
+    var(--libitum-layout-screen-padding-top) + var(--libitum-spacing-32) +
+      var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
+  );
+  padding-right: var(--libitum-layout-screen-padding-x);
+  padding-bottom: var(--libitum-layout-screen-padding-bottom);
+  padding-left: var(--libitum-layout-screen-padding-x);
   background: var(--libitum-color-background-primary);
 }
 
@@ -46,7 +50,8 @@
 .settings-screen-scroll {
   flex: 1;
   justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  /* 제목 밑 구분선을 두지 않습니다 — 항목이 카드(설정 그룹)로 묶여 영역을 스스로 가르고,
+     진한 선이 카드의 연한 테두리와 겹쳐 어색했습니다(2026-09-28). */
 }
 
 /* 목록 상자 — 스크롤의 유일한 직계 자식입니다(ADR-0022 D4). `<scroll-view>` 안은

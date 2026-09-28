@@ -13,42 +13,33 @@
   background: var(--libitum-color-background-primary);
 }
 
+/* 머리 — 알림 화면(`.notifications-screen-header`)과 같은 모양입니다. 제목은 줄 가운데에
+   섭니다(절대 배치로 줄 전체를 덮고 가운데 정렬). 나가기는 그 위에 섭니다 — 아래에 두면
+   탭이 제목 상자에 막힙니다. */
 .terms-screen-header {
+  position: relative;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: var(--libitum-layout-gap-inline);
+  align-items: center;
   flex-shrink: 0;
 }
 
 .terms-screen-exit {
-  min-height: var(--libitum-spacing-48);
-  padding: 0 var(--libitum-spacing-12);
-  border-radius: var(--libitum-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
-}
-
-.terms-screen-exit-label {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+  z-index: 1;
 }
 
 .terms-screen-title {
-  margin-top: var(--libitum-spacing-12);
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-s-font-family);
-  font-weight: var(--libitum-typography-heading-s-font-weight);
-  font-size: var(--libitum-typography-heading-s-font-size);
-  line-height: var(--libitum-typography-heading-s-line-height);
-  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-  flex: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--libitum-color-gray-800);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
 }
 
 /* [흐름] 2분할 — 액션 행이 없습니다(ADR-0022 D1). `<scroll-view>`는 강제
@@ -56,7 +47,7 @@
 .terms-screen-scroll {
   flex: 1;
   justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  /* 머리 밑 구분선을 두지 않습니다 — 설정 화면과 같습니다(2026-09-28). */
 }
 
 /* 내용 상자 — 스크롤의 유일한 직계 자식입니다(`.culture-screen-content`와

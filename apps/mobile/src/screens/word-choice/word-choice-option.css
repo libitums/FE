@@ -1,81 +1,90 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
-   **판정(정답/오답)은 클래스가 되지 않습니다.** 이 파일의 상태 클래스는
-   `-selected` 하나이고 그 낱말은 예약 목록에 이미 있습니다 — ADR-0003 D7의
-   재검토 조건이 발동하지 않습니다. 판정은 표식 아이콘의 모양과
-   `current-color` 속성, 그리고 낱말이 냅니다.
+   ⟨2026-09-28, Figma 65-327⟩ **줄을 채우는 행에서 낱말만 한 칩으로 갈렸습니다.** 고르는
+   것이 문장이 아니라 낱말이라, 폭이 낱말의 길이를 말하는 것이 읽기에 낫습니다. 듣기는
+   문장을 고르므로 행 그대로입니다 — 두 화면이 같은 껍데기를 딛되 작업 영역의 모양은
+   활동이 정합니다.
 
-   **`listening-choice.css`와 문자 그대로 같은 값이지만 선언 하나가
-   갈립니다**: `align-items`가 `center`가 아니라 `flex-start`입니다. 최대
-   배율에서 라벨이 여러 줄이 될 때 표식이 세로 가운데로 내려가 프레임
-   순서가 흔들리는 것을 막습니다. 기본 배율에서는 라벨 `line-height`(24)와
-   표식 아이콘(24)이 같아 결과가 `center`와 문자 그대로 같습니다 — 이 값을
-   듣기 쪽에 소급 적용하지 않습니다, 그것은 별도 작업의 일입니다. */
+   상태어 `correct` · `incorrect`는 ADR-0003 D7의 예약 목록에 있습니다 ⟨2026-09-28에
+   추가⟩ — 형제인 `listening-choice-correct`/`-incorrect`와 같은 낱말입니다.
 
-/* 보기 행 = 탭 대상입니다. 누르는 것은 행 전체이고 표식이나 텍스트만
-   누르게 하지 않습니다. */
+   원래 여기엔 `-selected` 하나만 있었고 「판정은 클래스가 되지 않는다」고 적혀
+   있었는데, **그 말이 틀렸습니다**: 고른 보기가 정답이든 오답이든 초록 테두리가
+   나왔습니다. 판정을 클래스로 만들지 않으면 색을 가를 방법이 없습니다 — `selected`는
+   「사용자가 고른 것」이고 판정은 「채점이 낸 결과」라 한 낱말이 둘을 겸할 수 없습니다. */
+
+/* 보기 칩 = 탭 대상입니다.
+
+   **60은 하한이지 고정이 아닙니다.** 디자인의 60×60은 `This`·`That` 같은 짧은 낱말에서
+   나온 치수인데, 이 앱의 문항은 한국어 낱말(`바나나` 같은 것)이라 그 폭에 안 들어갑니다.
+   고정하면 글자가 잘리거나 줄어들고, 그것은 최대 배율에서 더 나빠집니다(ADR-0020 D5 ·
+   WCAG 1.4.4). 그래서 **높이는 60으로 지키고 폭은 낱말만큼 늘어납니다** — 짧은 낱말에서는
+   디자인의 정사각 모양이 그대로 나옵니다.
+
+   `padding`은 좌우만 줍니다. 위아래는 `min-height`와 세로 가운데 정렬이 집니다 — 둘을
+   함께 주면 최대 배율에서 높이가 두 번 늘어납니다.
+
+   ⟨2026-09-28⟩ **줄어듭니다.** 넷이 한 줄에 서야 하므로(짝 화면 CSS의 `nowrap`), 낱말이
+   길어 자리가 모자라면 칩들이 폭을 나눠 갖습니다. **`min-width: 60px`가 그 바닥**입니다 —
+   Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어드는데, 이 값이
+   거기서 멈춰 세웁니다. 그래서 `flex-shrink: 0`을 주지 않습니다(주면 줄이 넘칩니다).
+
+   바닥까지 줄어든 칩에서는 낱말이 **접힙니다** — 칩이 그만큼 높아지고 글자는 잘리지
+   않습니다(WCAG 1.4.4). 그때 칩들의 높이가 서로 달라지는데, 줄이 가운데 정렬이라
+   나란히 섭니다. */
 .word-choice-option {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: var(--libitum-layout-gap-inline);
-  padding: var(--libitum-spacing-16);
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  min-height: 60px;
+  padding-left: var(--libitum-spacing-14);
+  padding-right: var(--libitum-spacing-14);
   border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
   border-radius: var(--libitum-radius-md);
   background: var(--libitum-color-background-primary);
-  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속
-     줄어듭니다. */
-  flex-shrink: 0;
 }
 
-/* 상태 클래스는 base 바로 뒤, 같은 파일에 선언합니다 — 특이도가 같아
-   순서가 결과를 가르고, 뒤집히면 에러 없이 선택 표시가 안 보입니다
-   (ADR-0003 D7).
+/* 고른 보기입니다. 테두리와 글자가 **판정 색**으로 갈립니다.
 
-   면을 칠하지 않고 경계선 하나만 바꿉니다 — 칠할 색이 없습니다. 판정이 이
-   경계선을 바꾸지 않습니다 — 판정 뒤에도 행은 "내가 고른 것"이고 판정은
-   표식이 냅니다. */
-.word-choice-option-selected {
-  border-color: var(--libitum-color-brand-strong);
+   **테두리와 글자가 서로 다른 변형을 씁니다** — 듣기가 같은 이유로 고른 갈래입니다.
+   테두리는 면 변형(`feedback-correct` #35A66F · `feedback-incorrect` #DF4D54)이 칩
+   배경(#FFFDFC) 위에서 3.03 · 3.89로 비텍스트 기준 3:1을 넘습니다. 글자는 같은 값이면
+   4.5:1에 미달하므로 `-text` 변형(6.90 · 6.76)을 씁니다.
+
+   **색이 유일한 채널이 아닙니다.** 테두리가 굵어지는 것(1px → 2px)이 색과 무관한 모양의
+   변화이고, 판정 자체는 카드의 배지가 아이콘 · 면 · 낱말 셋으로 말합니다(WCAG 1.4.1).
+
+   상태 클래스는 base 바로 뒤, 같은 파일에 선언합니다 — 특이도가 같아 순서가 결과를
+   가르고, 뒤집히면 에러 없이 표시가 안 보입니다(ADR-0003 D7). */
+.word-choice-option-correct {
+  border-width: var(--libitum-stroke-width-strong);
+  border-color: var(--libitum-color-feedback-correct);
 }
 
-/* 표식이 나타나면 남는 폭이 줄어듭니다. 그 안에서 줄바꿈이 일어나면 그
-   행만 커집니다 — 문구를 좁은 쪽 기준으로 쓰는 것이 계약의 몫입니다. */
+.word-choice-option-correct .word-choice-option-label {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.word-choice-option-incorrect {
+  border-width: var(--libitum-stroke-width-strong);
+  border-color: var(--libitum-color-feedback-incorrect);
+}
+
+.word-choice-option-incorrect .word-choice-option-label {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+/* 낱말입니다. **줄바꿈을 막지 않습니다** ⟨2026-09-28⟩ — 칩이 바닥(60)까지 줄어든 뒤에도
+   낱말이 길면 잘리는 대신 접혀야 합니다(WCAG 1.4.4). 여유가 있을 때는 칩 폭이 낱말을
+   따라 늘어나므로 접힐 일이 없습니다. */
 .word-choice-option-label {
-  flex: 1;
+  text-align: center;
   color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-body-l-font-family);
-  font-weight: var(--libitum-typography-body-l-font-weight);
-  font-size: var(--libitum-typography-body-l-font-size);
-  line-height: var(--libitum-typography-body-l-line-height);
-  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
-}
-
-/* 표식 묶음(아이콘 + 낱말)입니다. 조건부 렌더이지만 세로는 안전합니다 —
-   텍스트 `line-height` 24와 아이콘 24가 같아 표식이 있든 없든 행 높이가
-   그대로입니다. */
-.word-choice-option-mark {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--libitum-spacing-4);
-  flex-shrink: 0;
-}
-
-/* 크기만 줍니다. 색은 `current-color` 속성으로 넘깁니다(ADR-0014 D2) — 여기
-   `color`를 적으면 `<svg>`가 읽지 않아 아무 일도 하지 않습니다. */
-.word-choice-option-mark-icon {
-  width: var(--libitum-icon-size-md);
-  height: var(--libitum-icon-size-md);
-}
-
-/* 낱말 색은 정답·오답이 같습니다(`fg-neutral`) — 가른다고 얻는 것이
-   없습니다. */
-.word-choice-option-mark-label {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  line-height: var(--libitum-typography-label-xl-line-height);
+  letter-spacing: var(--libitum-typography-label-xl-letter-spacing);
 }

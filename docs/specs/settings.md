@@ -17,8 +17,10 @@
 1. 설정 탭 루트에 **이동 항목 둘**(사용자 프로필 · 개인정보 보호 및 약관) 다음 **세션 토글 둘**
    (`자동 재생` · `대본 표시`)이 이 순서로 선다. 액션 행이 없고, **나가는 수단도 없다** — 탭
    루트라 바텀 네비게이션이 그 자리다([ADR-0022](../adr/0022-scroll-regions-and-fixed-affordances.md) D1).
-2. 이동 항목을 누르면 그 화면이 **설정 탭 스택에** 쌓인다. 두 화면의 나가기는 보이는 텍스트와
-   `accessibility-label` 모두 **`설정으로`** 이고 동작은 `backToRoot`다.
+2. 이동 항목을 누르면 그 화면이 **설정 탭 스택에** 쌓인다. 두 화면의 나가기는 동그란 뒤로
+   버튼(ui-lynx `RoundButton`)이고 `accessibility-label`이 **`설정으로`** 이며 동작은 `backToRoot`다.
+   ⟨2026-09-28⟩ 머리는 알림 화면과 같은 모양(뒤로 버튼 + 줄 가운데 제목)이다 — 보이는 텍스트
+   `설정으로`는 걷혔다.
 3. 프로필은 **표시 전용**이다. 항목 셋을 보여 주고 **입력 · 편집 · 저장 수단이 0건**이다.
    화면 안 조작 단위는 **나가기 하나**다.
 4. 약관은 **고정 임시 본문**이다. 절 넷 · 절마다 문단 둘이고 본문이 한 화면을 넘어 스크롤된다.
@@ -35,8 +37,8 @@
 ```text
 App (app/App.tsx)                                        ← 유일한 결선 자리. sessionOptions의 주인
 ├─ SettingsScreen  { sessionOptions, onSelectNavTarget, onToggleSessionOption }
-│   ├─ SettingsNavItem × 2     { target, onSelect }      ← profile · terms
-│   └─ SettingsToggleItem × 2  { optionKey, value, onToggle }
+│   ├─ SettingsGroup "계정"    (ui-lynx) navigation 셀 × 2   ← profile · terms
+│   └─ SettingsGroup "학습"    (ui-lynx) toggle 셀 × 2       ← sessionOptionKeys
 ├─ ProfileScreen   { items, onExit }                     ← items = profileItems()
 ├─ TermsScreen     { sections, onExit }                  ← sections = termsSections()
 └─ ListeningScreen { …기존, sessionOptions }             ← 값을 읽지 않고 그대로 넘긴다
@@ -103,8 +105,11 @@ App (app/App.tsx)                                        ← 유일한 결선 �
 | 표면 | test-id |
 |---|---|
 | 제목 · 흐르는 영역 · 목록 상자 | `settings-screen-title` · `settings-screen-scroll` · `settings-screen-list` |
-| 이동 항목 루트 · 라벨 | `settings-nav-item-<target>` · `settings-nav-item-label-<target>` |
-| 토글 루트 · 라벨 · 상태 낱말 | `settings-toggle-item-<key>` · `settings-toggle-item-label-<key>` · `settings-toggle-item-state-<key>` |
+| 그룹(계정 · 학습) | `ui-lynx-settings-group` (`accessibility-label`이 그룹 이름 — 접근성 요소는 아니다) |
+| 항목 상자 · 셀 | `ui-lynx-settings-group-item-<target \| key>` 안의 `ui-lynx-settings-cell` — 토글 상태는 셀의 `data-checked` · 낭독 이름(`자동 재생, 켜짐`)이 싣는다 |
+
+⟨2026-09-28⟩ 항목 행은 앱의 `SettingsNavItem` · `SettingsToggleItem` 대신 ui-lynx `SettingsCell` · `SettingsGroup`(#132)이 그린다.
+두 앱 컴포넌트와 그 test-id(`settings-nav-item-*` · `settings-toggle-item-*`)는 걷혔다.
 
 ## 3. 사용자 프로필과 개인정보 보호 및 약관
 
@@ -121,8 +126,9 @@ App (app/App.tsx)                                        ← 유일한 결선 �
   [화면 명세](../screens.md)의 「파생값은 임시로 채우지 않는다」 — *"파생값에 가짜를 넣으면 가짜
   값 하나가 아니라 **가짜 계산 규칙**이 굳는다."* 셋은 전부 **온보딩이 받을 입력값**이다.
 - **편집 어포던스가 0건이다.** `<input>` · `bindtap` · `traits="button"`을 가진 요소가 나가기
-  하나뿐이고, 행에 카드 · 모서리 · 면 · 꼬리 아이콘도 없다 — **눌리지 않는 것이 눌리게 생기지
-  않았다.** 항목은 조작 단위가 아니므로 이름 `<text>`와 값 `<text>`가 각각 정지가 된다(가리면
+  하나뿐이다. ⟨2026-09-28⟩ 행은 설정 화면의 설정 그룹과 같은 카드(흰 면 · 연한 테두리 · 둥근
+  모서리 · 안쪽 구분선)로 묶이지만 **꼬리 표식(화살표 · 스위치)과 눌림 면이 없어** 눌리게
+  생기지 않았다. 항목은 조작 단위가 아니므로 이름 `<text>`와 값 `<text>`가 각각 정지가 된다(가리면
   값이 보조기술에서 사라진다 — ADR-0016 D5).
 - 진짜 값은 계정과 온보딩에서 온다(둘 다 범위 밖). 오는 날 바뀌는 것은 `profileItems`의 `value`
   셋뿐이다 — 형태 · 화면 · 결선은 안 바뀐다.
@@ -239,7 +245,7 @@ App (app/App.tsx)                                        ← 유일한 결선 �
 | 계층 | 파일 |
 |---|---|
 | unit | `lib/session-options.unit.test.ts` · `screens/settings/settings.unit.test.ts` · `screens/profile/profile-items.unit.test.ts` · `screens/terms/terms-sections.unit.test.ts` · `app/navigation.unit.test.ts` |
-| ui | `screens/settings/SettingsScreen.ui.test.tsx` · `SettingsNavItem.ui.test.tsx` · `SettingsToggleItem.ui.test.tsx` · `screens/profile/ProfileScreen.ui.test.tsx` · `screens/terms/TermsScreen.ui.test.tsx` · `screens/listening/ListeningPrompt.sessionOptions.ui.test.tsx` |
+| ui | `screens/settings/SettingsScreen.ui.test.tsx` · `screens/profile/ProfileScreen.ui.test.tsx` · `screens/terms/TermsScreen.ui.test.tsx` · `screens/listening/ListeningPrompt.sessionOptions.ui.test.tsx` |
 | integration | `app/App.settings.integration.test.tsx`(설정 루트 · 스택 · 토글이 듣기에 닿는가 · 이벤트) · `app/App.heading-trait.integration.test.tsx`(프로필 · 약관 상태의 제목 축) |
 | e2e (수동) | [설정 e2e](../e2e/settings.md) — T1–T8 · D1 · V1–V4. **실행 0회.** V는 iPhone 실기 · Release · VoiceOver로 사람만 판정한다. **V4는 관찰 기록형이다**(통과/실패가 없다) |
 

@@ -66,6 +66,14 @@ afterEach(() => {
 // 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
 // 상태를 스텁하고 가짜 타이머로 `entrySplashDurationMs`만큼 전진시켜 진입
 // 스플래시를 건너뜁니다.
+// 설정 항목 셀입니다. 셀은 ui-lynx `SettingsGroup`이 그리고, 항목은 그룹이 싣는
+// `ui-lynx-settings-group-item-{id}` 상자로 가려 집습니다(`id`는 이동 대상 · 옵션 키).
+function settingsCell(id: string): HTMLElement {
+  return within(screen.getByTestId(`ui-lynx-settings-group-item-${id}`)).getByTestId(
+    "ui-lynx-settings-cell",
+  );
+}
+
 function renderApp(ui: Parameters<typeof render>[0]) {
   const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
   const tokenStore = new Map<string, string>();
@@ -293,10 +301,13 @@ test("[I3] 제목 축 닫힌 집합이 상태 word-choice에서 계약이 고정
   const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
-  expect(screen.getByTestId("word-choice-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["word-choice-screen-title"]);
+  // ⟨2026-09-28⟩ 빈 집합이 답입니다 — 단어 선택도 학습 껍데기로 옮겨가며 제목 줄이
+  // 걷혔고, 껍데기는 제목 축에 아무것도 올리지 않습니다(`Chapter n / N`은 메타 줄이지
+  // 제목이 아닙니다). 듣기가 먼저 간 그 자리입니다. 위 `toBeInTheDocument`가 앵커라,
+  // 화면이 안 떠서 비는 경우와 갈립니다.
+  expect(headingAxis(container)).toEqual([]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고정한 목록과 정확히 같다", () => {
@@ -304,10 +315,11 @@ test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고
   const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   startStep("ordering");
-  expect(screen.getByTestId("sentence-order-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(["sentence-order-screen-title"]);
+  // ⟨2026-09-28⟩ 빈 집합입니다 — 문장 만들기가 듣기와 같은 껍데기(`LearningShell`)로 옮겨
+  // 제목 줄이 걷혔습니다. 위 `toBeInTheDocument`가 앵커입니다.
+  expect(headingAxis(container)).toEqual([]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고정한 목록과 정확히 같다", () => {
@@ -418,7 +430,7 @@ test("[HT1] 제목 축 닫힌 집합이 상태 profile에서 계약이 고정한
   const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
-  fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
+  fireEvent.tap(settingsCell("profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual(["profile-screen-title"]);
@@ -432,7 +444,7 @@ test("[HT2] 제목 축 닫힌 집합이 상태 terms에서 계약이 고정한 �
   const { container } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
-  fireEvent.tap(screen.getByTestId("settings-nav-item-terms"), {});
+  fireEvent.tap(settingsCell("terms"), {});
   expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual([

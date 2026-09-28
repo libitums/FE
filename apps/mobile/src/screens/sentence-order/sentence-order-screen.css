@@ -1,222 +1,106 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1) — 색·간격·타이포의
-   생값을 적지 않습니다.
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 문장 만들기의 카드 안 · 작업
+   영역입니다(Figma 65-14). 뼈대(상단 바 · 세션 헤더 · 지시문 · 무대 카드 · 아래 버튼)는
+   `LearningShell`이 집니다. */
 
-   화면 뼈대(머리·스크롤·액션 행)는 `.listening-screen*`과 같은 값입니다 —
-   같은 스텝 안에서 연속으로 도는 화면끼리 다른 값을 쓰는 것 자체가
-   신호입니다. FE ADR-0022 D1의 3분할을 잇는 일곱째 화면입니다. */
+/* 카드 안 — 판정 자리 · 상대 말풍선 · 내 말풍선 · 답 칸 줄이 위에서 아래로 섭니다.
 
-.sentence-order-screen {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  /* Lynx의 `justify-content` 기본값은 `stretch`입니다. 명시하지 않으면
-     높이가 고정된 자식(헤더·액션 행)이 늘어납니다. (듣기 화면의 같은 선언을 가리키고
-     있었는데, 그 화면이 2026-09-28에 학습 껍데기로 옮겨가며 그 줄이 사라졌습니다 —
-     지금 같은 근거로 서 있는 것은 `learning-shell.css`의 `.learning-shell`입니다.) */
-  justify-content: flex-start;
-  gap: var(--libitum-layout-gap-block);
-  /* 아래 여백에 바텀 네비게이션 몫을 더합니다 — 바가 콘텐츠 위에 겹치므로(app.css의
-     `.app-navigator`) 이것이 없으면 액션 행이 바에 가립니다. 더하는 값은 바 높이 68pt입니다
-     (위 여백 8 + 항목 48 + 아래 여백 12). 스크롤 안쪽이 아니라 루트에 둡니다 — 액션
-     행은 조건부라, 버튼이 없는 상태에서는 스크롤이 마지막 자식이 됩니다. */
-  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
-    calc(
-      var(--libitum-layout-screen-padding-bottom) + var(--libitum-spacing-48) +
-        var(--libitum-spacing-12)
-    );
-  background: var(--libitum-color-background-primary);
-}
-
-/* back 히트박스 자리 — back + 제목 한 줄입니다.
-
-   `align-items: flex-start`입니다 — `center`가 아닙니다. 순서 역전은 셋이
-   전부 성립할 때만 생깁니다(FE ADR-0023 규칙 3): 가로 행 + 자식의 교차
-   크기가 다름 + `align-items: center`. `-exit`는 `min-height: spacing-48`
-   (48)이고 제목은 `heading-s` 줄높이(24)라 Δ=24가 이미 있습니다 — `center`가
-   그 둘을 서로 다른 y에 놓고 VoiceOver는 프레임 위치로 순회하므로 순서가
-   뒤집힙니다. `flex-start`는 그 셋 중 `center`를 지워 조건을 깹니다.
-   `flex-shrink: 0`은 그대로 둡니다 — 이건 세로 축(부모가 column)의 값이고
-   이 가로 축 문제와는 무관합니다. */
-.sentence-order-screen-header {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: var(--libitum-layout-gap-inline);
-  flex-shrink: 0;
-}
-
-.sentence-order-screen-exit {
-  /* **고정 높이가 아니라 하한입니다**(ADR-0020 D5) — 배율이 커져도 상자가
-     라벨을 넘치지 않게 자랍니다. */
-  min-height: var(--libitum-spacing-48);
-  padding-left: var(--libitum-spacing-12);
-  padding-right: var(--libitum-spacing-12);
-  border-radius: var(--libitum-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* `flex-shrink: 0`을 **줍니다.** 순서 역전과는 무관합니다 — 그건 위
-     헤더의 `align-items: flex-start`가 이미 지웠습니다(FE ADR-0023 규칙 3).
-     이건 히트박스 가드입니다: 가로 행에서 이것이 없으면 `맵으로` 상자가
-     가로로 눌려 최소 터치 영역이 깨집니다(WCAG 2.5.5 / 2.5.8). `flex-shrink: 0`
-     은 잘림을 **옮기는** 것이지 없애는 것이 아닙니다 — Lynx의 shrink는
-     scaled이고 총 scaled 인자가 0이면 아무것도 안 줄고 그대로 넘칩니다
-     (`elastic_layout_utils.cc:108-115`). 그래서 형제인 제목(`-title`)은
-     반대로 기본값(`flex-shrink: 1`)을 둡니다 — 줄어들어 줄바꿈으로 흘러야
-     하는 텍스트이기 때문입니다. */
-  flex-shrink: 0;
-}
-
-.sentence-order-screen-exit-label {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
-}
-
-/* `padding-top`은 `(spacing-48 − heading-s line-height) / 2 = (48 − 24) / 2 =
-   12`의 산술 결과입니다 — `spacing-12`를 "12라서" 고른 게 아니라 값이
-   우연히 같습니다. `-exit`가 `min-height: spacing-48`로 세워지고
-   `align-items: flex-start`인 헤더에서, 이 제목(`heading-s`, 줄높이 24)의
-   위쪽을 그만큼 내려 두 자식의 시각 중심을 맞춥니다. */
-.sentence-order-screen-title {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-s-font-family);
-  font-weight: var(--libitum-typography-heading-s-font-weight);
-  font-size: var(--libitum-typography-heading-s-font-size);
-  line-height: var(--libitum-typography-heading-s-line-height);
-  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-  margin-top: var(--libitum-spacing-12);
-}
-
-/* 남는 세로를 받는 것은 스크롤 컨테이너 하나입니다(`flex: 1`).
-   `display`·`flex-direction`·`gap`을 여기 두지 않습니다 — `<scroll-view>`는
-   CSS와 무관하게 강제로 `linear`가 되고 linear 알고리즘에는 `gap`이 없어
-   무동작입니다. 위쪽 hairline만 선입니다. */
-.sentence-order-screen-scroll {
-  flex: 1;
-  justify-content: flex-start;
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
-}
-
-/* 스크롤 컨테이너의 직계 자식은 이 상자 하나입니다. flex 어휘 전부가 여기
-   삽니다. `flex: 1`·`flex-shrink`는 여기 두지 않습니다 — 부모가 강제
-   linear라 읽히지 않습니다. */
+   높이 하한은 듣기 무대와 같은 244입니다 — 문항마다 카드가 늘었다 줄었다 하면 그 아래
+   창고가 흔들립니다. 하한이지 고정이 아닙니다(ADR-0020 D5). */
 .sentence-order-screen-content {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--libitum-layout-gap-block);
+  align-items: stretch;
+  gap: var(--libitum-spacing-12);
+  min-height: 244px;
 }
 
-.sentence-order-screen-progress {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
-}
-
-.sentence-order-screen-prompt {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-body-l-font-family);
-  font-weight: var(--libitum-typography-body-l-font-weight);
-  font-size: var(--libitum-typography-body-l-font-size);
-  line-height: var(--libitum-typography-body-l-line-height);
-  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
-}
-
-.sentence-order-screen-instruction {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-body-m-font-family);
-  font-weight: var(--libitum-typography-body-m-font-weight);
-  font-size: var(--libitum-typography-body-m-font-size);
-  line-height: var(--libitum-typography-body-m-line-height);
-  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
-}
-
-/* 답 줄입니다. 놓인 조각이 순서대로 세로로 쌓입니다. `min-height`는 빈
-   상태(문항 시작 시점)에도 자리를 지키는 하한입니다 — 비면 높이 0이 되어
-   두 목록이 하나로 보입니다. `height`는 쓰지 않습니다. */
-.sentence-order-screen-sentence {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--libitum-spacing-8);
-  min-height: var(--libitum-spacing-48);
-}
-
-/* 조각 더미입니다. 위쪽 hairline이 `gap`이 아니라 이 상자의 경계를 집니다
-   — 배율에서 `gap`만으로는 두 목록의 분리감이 붕괴합니다. */
-.sentence-order-screen-bank {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--libitum-spacing-8);
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
-}
-
-/* 판정 표식은 답 줄 아래, 내용 상자의 자식으로 한 블록입니다.
-   `.listening-choice-mark`와 문자 그대로 같은 정렬 값입니다. */
-.sentence-order-screen-mark {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--libitum-spacing-4);
-}
-
-/* 아이콘은 정사각형 도형이지 텍스트 상자가 아닙니다. 고정 `width`/`height`는
-   "텍스트를 품은 상자" 제약 밖입니다(`.listening-choice-mark-icon`·
-   `.assessment-item-mark-icon`과 같은 선례입니다). */
-.sentence-order-screen-mark-icon {
-  width: var(--libitum-icon-size-md);
-  height: var(--libitum-icon-size-md);
-}
-
-.sentence-order-screen-mark-label {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
-}
-
-.sentence-order-screen-complete {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-s-font-family);
-  font-weight: var(--libitum-typography-heading-s-font-weight);
-  font-size: var(--libitum-typography-heading-s-font-size);
-  line-height: var(--libitum-typography-heading-s-line-height);
-  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
-}
-
-/* 액션 행 버튼 면·라벨 — `확인`·`다음`·`결과 보기` 셋이 같은 값입니다(서로
-   다른 요소이고 동시에 둘이 뜨지 않습니다). */
-.sentence-order-screen-check,
-.sentence-order-screen-next,
-.sentence-order-screen-finish {
-  background: var(--libitum-color-brand-strong);
-  /* **고정 높이가 아니라 하한입니다**(ADR-0020 D5). */
-  min-height: var(--libitum-spacing-48);
-  border-radius: var(--libitum-radius-md);
-  width: 100%;
+/* 판정 배지 자리 — 비어 있어도 높이를 지킵니다(듣기와 같은 값 · 같은 근거). */
+.sentence-order-screen-verdict-slot {
+  min-height: var(--libitum-spacing-32);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.sentence-order-screen-check-label,
-.sentence-order-screen-next-label,
-.sentence-order-screen-finish-label {
-  color: var(--libitum-color-fg-neutral-inverted);
-  font-family: var(--libitum-typography-button-xl-font-family);
-  font-weight: var(--libitum-typography-button-xl-font-weight);
-  font-size: var(--libitum-typography-button-xl-font-size);
-  line-height: var(--libitum-typography-button-xl-line-height);
-  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+/* 말풍선 둘 — 꼬리 쪽 한 모서리만 각집니다(상대는 왼쪽 아래, 나는 오른쪽 아래). 폭은
+   내용을 따르고 카드 폭의 80%를 넘지 않습니다. 안쪽 여백은 디자인의 말풍선 높이 71에서
+   글자 줄 20을 뺀 위아래 25 · 좌우 24에 가까운 토큰(24 · 24)입니다. */
+.sentence-order-screen-partner,
+.sentence-order-screen-reply {
+  max-width: 80%;
+  padding: var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-md);
+  flex-shrink: 0;
+}
+
+.sentence-order-screen-partner {
+  align-self: flex-start;
+  background-color: var(--libitum-color-gray-100);
+  border-bottom-left-radius: 0;
+}
+
+.sentence-order-screen-reply {
+  align-self: flex-end;
+  background-color: var(--libitum-color-brand-primary);
+  border-bottom-right-radius: 0;
+}
+
+.sentence-order-screen-partner-text,
+.sentence-order-screen-reply-text {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.sentence-order-screen-partner-text {
+  color: var(--libitum-color-gray-900);
+}
+
+.sentence-order-screen-reply-text {
+  color: var(--libitum-color-white);
+  text-align: center;
+}
+
+/* 답 칸 줄 — 놓인 조각이 가운데에서 줄바꿈하며 섭니다. 위아래 가는 선(gray-100)이 줄의
+   자리를 보입니다. 조각이 없어도 한 줄 높이(조각 46)를 지켜 선이 붙지 않습니다. */
+.sentence-order-screen-sentence {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-16);
+  margin-top: var(--libitum-spacing-12);
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-100);
+  border-bottom: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-100);
+  flex-shrink: 0;
+}
+
+/* 창고 — 가운데에서 줄바꿈하며 섭니다. 조각 사이 간격 8은 디자인(가로 7~9 · 세로 12)에
+   가까운 토큰입니다. */
+.sentence-order-screen-bank {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+  padding-top: var(--libitum-spacing-16);
+}
+
+/* 완료 문구 — 문항이 서 있던 카드 안에 혼자 남으므로 가운데에 섭니다. */
+.sentence-order-screen-complete {
+  align-self: center;
+  margin-top: var(--libitum-spacing-48);
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  text-align: center;
 }

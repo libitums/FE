@@ -2,8 +2,11 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { speakingQuestionsForStep } from "../screens/speaking/speaking";
+import { sentenceOrderQuestionsForStep } from "../screens/sentence-order/sentence-order";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import { questionsForStep } from "../screens/listening/listening";
+import { wordChoiceQuestionsForStep } from "../screens/word-choice/word-choice";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 
@@ -288,6 +291,25 @@ function incorrectPick(answerIndex: number): number {
 
 // 통과 경로의 나가기입니다. 완료 화면의 `Check`는 ui-lynx `Button`이라 testid가
 // 버튼 자신이 아니라 감싸는 상자에 붙어 있습니다.
+// 문장 만들기를 실제 문항 표대로 정답 순서로 놓고 끝까지 마칩니다 — 확인 · 다음을 문항마다
+// 누르고, 끝에 결과 보기를 누릅니다(아래 버튼은 `LearningShell`의 것 하나입니다).
+function completeSentenceOrder(stepId: JourneyStepId): void {
+  for (const question of sentenceOrderQuestionsForStep(stepId)) {
+    for (const chipIndex of question.answerOrder) {
+      fireEvent.tap(screen.getByTestId(`sentence-order-chip-${chipIndex}`), {});
+    }
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 확인
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 다음
+  }
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 결과 보기
+}
+
+// 학습 결과 화면이 아직 서지 않았음을 봅니다 — 서 있으면 그 나가기를 돌려줍니다.
+function lessonCompleteExitOrNull(): Element | null {
+  const exit = screen.queryByTestId("lesson-complete-screen-exit");
+  return exit === null ? null : exit;
+}
+
 function lessonCompleteExit(): Element {
   const button = screen
     .getByTestId("lesson-complete-screen-exit")
@@ -459,6 +481,9 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   answerAllQuestions("greeting", mixedPick);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  // 첫 인사는 듣기 뒤에 문장 만들기가 이어집니다 — 그것까지 마쳐야 평가에 닿습니다.
+  expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
+  completeSentenceOrder("greeting");
   fireEvent.tap(lessonCompleteExit(), {});
 
   expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
@@ -1067,4 +1092,84 @@ test("시트가 열려 있어도 여정 맵의 스크롤 컨테이너는 그대�
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
+});
+
+// ---------------------------------------------------------------- 활동 둘을 잇는 스텝
+//
+// ⟨2026-09-28⟩ **여기까지 오는 길이 처음 생겼습니다.** 유닛 하나가 활동 여럿을 잇는
+// 것은 2026-09-26에 설계로 정해졌고 `learningFormAt`·`activityIndex`가 그때 들어왔는데,
+// 배정표의 다섯 칸이 전부 활동 하나였던 탓에 **제품에서 한 번도 밟히지 않는 코드**였습니다.
+// `introduction`이 듣기 + 낱말 고르기를 잇게 되면서 그 길이 열렸고, 이 절이 그것을 봅니다.
+//
+// 아래 셋이 이 절이 지는 것입니다: 첫 활동을 마치면 **평가가 아니라 둘째 활동**이
+// 선다 · 둘째 활동이 제 문항을 연다 · 둘을 다 마쳐야 평가에 닿는다.
+
+// 낱말 고르기의 문항을 순서대로 전부 응답하고 매번 넘깁니다. 듣기의
+// `answerAllQuestions`와 같은 꼴이지만 보기의 testid가 갈립니다.
+function answerAllWordChoiceQuestions(
+  stepId: JourneyStepId,
+  pick: (answerIndex: number, questionIndex: number) => number,
+): void {
+  wordChoiceQuestionsForStep(stepId).forEach((question, questionIndex) => {
+    const choiceIndex = pick(question.answerIndex, questionIndex);
+
+    fireEvent.tap(screen.getByTestId(`word-choice-option-${choiceIndex}`), {});
+    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
+  });
+}
+
+test("활동이 둘인 스텝은 첫 활동을 마치면 평가가 아니라 둘째 활동이 선다", () => {
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
+
+  startStep("introduction");
+  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
+
+  answerAllQuestions("introduction", mixedPick);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+
+  expect(screen.getByTestId("word-choice-screen-content")).toBeInTheDocument();
+  expect(screen.queryByTestId("lesson-complete-screen-exit")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
+});
+
+// 둘째 활동이 **자기** 문항을 엽니다 — 결선이 stepId를 넘기지 않으면 여기서 빈
+// 화면(문항 0개)이 서고, 그것이 완료 상태와 구별되지 않습니다.
+test("둘째 활동이 그 스텝의 낱말 고르기 문항을 연다 — 순번도 처음부터다", () => {
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
+
+  startStep("introduction");
+  answerAllQuestions("introduction", mixedPick);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+
+  expect(screen.getByTestId("word-choice-screen-prompt")).toHaveTextContent(
+    wordChoiceQuestionsForStep("introduction")[0]!.prompt,
+  );
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
+});
+
+// 평가는 **활동을 다 마친 뒤** 한 번입니다. 첫 활동에서 이미 평가로 갔다면 위 테스트가
+// 잡고, 마지막 활동 뒤에 평가가 안 오면 이 테스트가 잡습니다.
+//
+// ⟨2026-09-28⟩ 이름 묻기가 듣기 → 낱말 고르기 → **말하기** 셋을 잇습니다. 이 계층에는 음성
+// 인식 모듈이 없으므로 말하기의 문항은 `말하기` → `건너뛰기`로 넘깁니다 — 건너뛴 문항은 결과에
+// 실리지 않고, 듣기 · 낱말 고르기의 결과만으로 판정합니다.
+test("활동 셋을 다 마치면 그때 학습 결과 화면에 닿는다", () => {
+  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
+
+  startStep("introduction");
+  answerAllQuestions("introduction", mixedPick);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  answerAllWordChoiceQuestions("introduction", mixedPick);
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+
+  expect(screen.getByTestId("speaking-screen-content")).toBeInTheDocument();
+  expect(lessonCompleteExitOrNull()).toBeNull();
+  for (let index = 0; index < speakingQuestionsForStep("introduction").length; index += 1) {
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 말하기
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 건너뛰기
+  }
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 결과 보기
+
+  expect(lessonCompleteExit()).toBeInTheDocument();
+  expect(screen.queryByTestId("speaking-screen-content")).not.toBeInTheDocument();
 });

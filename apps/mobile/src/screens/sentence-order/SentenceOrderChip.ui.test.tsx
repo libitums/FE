@@ -92,26 +92,39 @@ test("창고에 있으면 자리 번호가 텍스트에 없다", () => {
   expect(root).not.toHaveTextContent("2");
 });
 
-// 배치되면 자리 번호가 보이는 텍스트로도 나옵니다 — 자리 번호를 「보이는 채널」로도
-// 냅니다.
-test("배치되면 자리 번호가 보이는 텍스트로 나온다", () => {
+// ⟨2026-09-28⟩ 자리 번호를 보이는 글자로 싣지 않습니다(Figma 65-14) — 순서는 답 칸 줄
+// 안의 위치가 말하고, 낭독 이름(`, N번째`)이 소리로 싣습니다.
+test("배치돼도 자리 번호를 보이는 글자로 싣지 않는다", () => {
   render(<SentenceOrderChip index={0} text="밥을" placedOrdinal={2} onTap={() => {}} />);
 
-  expect(screen.getByTestId("sentence-order-chip-0")).toHaveTextContent("2");
+  expect(screen.getByTestId("sentence-order-chip-0").textContent).toBe("밥을");
 });
 
-// 자리 번호 래퍼는 가려집니다 — 가림은 자손을 가진 래퍼가 집니다. 자손 없는
-// `<text>`에 가림을 걸면 무동작이라 래퍼가 하나 늡니다.
-test("배치되면 자리 번호 래퍼가 accessibility-elements-hidden=true다", () => {
-  render(<SentenceOrderChip index={0} text="밥을" placedOrdinal={2} onTap={() => {}} />);
+test("창고의 조각은 bank 모양, 놓인 조각은 placed 모양이다", () => {
+  const { unmount } = render(
+    <SentenceOrderChip index={0} text="밥을" placedOrdinal={null} onTap={() => {}} />,
+  );
+  expect(screen.getByTestId("sentence-order-chip-0").getAttribute("class")).toContain(
+    "sentence-order-chip-bank",
+  );
+  unmount();
 
-  const slot = screen
-    .getByTestId("sentence-order-chip-0")
-    .querySelector<HTMLElement>(".sentence-order-chip-slot");
+  render(<SentenceOrderChip index={0} text="밥을" placedOrdinal={1} onTap={() => {}} />);
+  expect(screen.getByTestId("sentence-order-chip-0").getAttribute("class")).toContain(
+    "sentence-order-chip-placed",
+  );
+});
 
-  expect(slot).not.toBeNull();
-  expect(slot).toHaveTextContent("2");
-  expect(slot).toHaveAttribute("accessibility-elements-hidden", "true");
+test("누를 수 없는 조각은 낭독 특성이 disabled이고 tap해도 onTap을 부르지 않는다", () => {
+  const onTap = vi.fn<(index: number) => void>();
+  render(
+    <SentenceOrderChip index={0} text="밥을" placedOrdinal={null} disabled={true} onTap={onTap} />,
+  );
+
+  const root = screen.getByTestId("sentence-order-chip-0");
+  expect(root).toHaveAttribute("accessibility-traits", "disabled");
+  fireEvent.tap(root, {});
+  expect(onTap).not.toHaveBeenCalled();
 });
 
 // 이름을 지는 요소(라벨)는 가리지 않습니다 — 접근성 속성이 없습니다(ADR-0016 D5).
@@ -133,19 +146,6 @@ for (const placedOrdinal of [null, 1, 2] as const) {
 }
 
 // DOM 순서는 번호 → 이름입니다.
-test("배치되면 DOM 순서가 번호 → 이름이다", () => {
-  render(<SentenceOrderChip index={0} text="밥을" placedOrdinal={2} onTap={() => {}} />);
-
-  const root = screen.getByTestId("sentence-order-chip-0");
-  const slot = root.querySelector<HTMLElement>(".sentence-order-chip-slot");
-  const label = root.querySelector<HTMLElement>(".sentence-order-chip-label");
-
-  expect(slot).not.toBeNull();
-  expect(label).not.toBeNull();
-  // eslint-disable-next-line no-bitwise
-  expect(slot!.compareDocumentPosition(label!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-});
-
 // ------------------------------------------------------------- 상호작용
 
 // tap하면 onTap이 index로 정확히 한 번 불립니다. 배치와 해제 둘 다 같은 콜백입니다 —

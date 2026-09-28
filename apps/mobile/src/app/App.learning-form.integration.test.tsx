@@ -4,8 +4,6 @@ import { act, fireEvent, render, screen, cleanup } from "@lynx-js/react/testing-
 import { App } from "./App";
 import { journeyStepOrdinal, type JourneyStepId } from "../screens/journey-map/journey-map";
 import type { LearningForm } from "../lib/learning-form";
-import { sentenceOrderScreenTitle } from "../screens/sentence-order/sentence-order";
-import { wordChoiceScreenTitle } from "../screens/word-choice/word-choice";
 import { cultureScreenTitle } from "../screens/culture/culture";
 import { cultureQuizScreenTitle } from "../screens/culture-quiz/culture-quiz";
 import { authTokenStorageKey } from "../lib/auth-token";
@@ -106,7 +104,13 @@ function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
 
-const allForms: readonly LearningForm[] = ["listening", "sentence-order", "word-choice", "culture"];
+const allForms: readonly LearningForm[] = [
+  "listening",
+  "sentence-order",
+  "word-choice",
+  "culture",
+  "speaking",
+];
 
 // 아래 두 표는 `Record<LearningForm, …>`이라 `LearningForm`에 넷째 멤버 `culture`가
 // 늘면서 tsc(TS2741)가 `culture` 키를 요구합니다 — `journey-map.unit.test.ts`의
@@ -118,18 +122,21 @@ const allForms: readonly LearningForm[] = ["listening", "sentence-order", "word-
 // 있습니다 — `test.each`가 `allForms`를 그대로 순회하기 때문입니다.
 const titleTestIdByForm: Record<LearningForm, string> = {
   listening: "listening-screen-content",
-  "sentence-order": "sentence-order-screen-title",
-  "word-choice": "word-choice-screen-title",
+  "sentence-order": "sentence-order-screen-content",
+  "word-choice": "word-choice-screen-content",
   culture: "culture-screen-title",
+  speaking: "speaking-screen-content",
 };
 
-// 문구가 없는 화면은 `undefined`입니다 — 듣기는 화면 제목 줄이 걷혔고(Figma 65-14)
-// 정체를 가리는 것이 앵커의 **존재**뿐입니다. 나머지 셋은 아직 제목을 답니다.
+// 문구가 없는 화면은 `undefined`입니다 — 학습 껍데기로 옮겨간 화면은 제목 줄이 걷혀
+// (Figma 65-14) 정체를 가리는 것이 앵커의 **존재**뿐입니다. 듣기에 이어 낱말 고르기 ·
+// 문장 만들기가 그리로 갔습니다 ⟨2026-09-28⟩. 남은 하나(문화)는 아직 제목을 답니다.
 const titleTextByForm: Record<LearningForm, ((ordinal: number) => string) | undefined> = {
   listening: undefined,
-  "sentence-order": sentenceOrderScreenTitle,
-  "word-choice": wordChoiceScreenTitle,
+  "sentence-order": undefined,
+  "word-choice": undefined,
   culture: cultureScreenTitle,
+  speaking: undefined,
 };
 
 // I-W5-1 · 학습형 셋 각각을 배정표가 돌려준다고 스텝(스텝은 항상 "ordering", 서수
@@ -170,18 +177,15 @@ test("learningFormForStep이 sentence-order·word-choice를 돌려줘도 던지�
   formStub.current = "sentence-order";
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
-  expect(screen.getByTestId("sentence-order-screen-title")).toHaveTextContent(
-    sentenceOrderScreenTitle(journeyStepOrdinal("ordering")),
-  );
+  expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
   expect(screen.queryByTestId("error-boundary-title")).not.toBeInTheDocument();
   cleanup();
 
   formStub.current = "word-choice";
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   startStep("ordering");
-  expect(screen.getByTestId("word-choice-screen-title")).toHaveTextContent(
-    wordChoiceScreenTitle(journeyStepOrdinal("ordering")),
-  );
+  // 단어 선택도 제목 줄이 걷혔습니다 — 정체는 제시문 앵커의 존재가 집니다.
+  expect(screen.getByTestId("word-choice-screen-content")).toBeInTheDocument();
   expect(screen.queryByTestId("error-boundary-title")).not.toBeInTheDocument();
 });
 
@@ -199,9 +203,7 @@ test("배정표가 스텝마다 갈리면 ordering 스텝에서는 그 스텝에
 
   startStep("ordering");
 
-  expect(screen.getByTestId("sentence-order-screen-title")).toHaveTextContent(
-    sentenceOrderScreenTitle(journeyStepOrdinal("ordering")),
-  );
+  expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
 });
 
 test("배정표가 스텝마다 갈리면 greeting 스텝에서는 그 스텝에 배정된 화면(word-choice)이 열린다", () => {
@@ -210,9 +212,7 @@ test("배정표가 스텝마다 갈리면 greeting 스텝에서는 그 스텝에
 
   startStep("greeting");
 
-  expect(screen.getByTestId("word-choice-screen-title")).toHaveTextContent(
-    wordChoiceScreenTitle(journeyStepOrdinal("greeting")),
-  );
+  expect(screen.getByTestId("word-choice-screen-content")).toBeInTheDocument();
 });
 
 // I-W5-3 · **대조.** 스텁을 두지 않습니다 — 실물 `learningFormByStep`이 그대로
@@ -226,8 +226,8 @@ test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배�
   startStep("ordering");
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.queryByTestId("sentence-order-screen-title")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("word-choice-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("sentence-order-screen-content")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("word-choice-screen-content")).not.toBeInTheDocument();
 });
 
 // 문화 학습의 액션 행이 문화 퀴즈를 여는 전이와, 퀴즈의 `맵으로`가 맵에 닿는

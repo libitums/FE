@@ -1,48 +1,20 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 낱말 조각(Figma 65-14).
 
-   조각은 놓였든 안 놓였든 같은 상자입니다 — 놓임/안 놓임에 상태 클래스를
-   두지 않습니다(`-placed`는 예약 목록 밖의 다섯째 상태어라 만들지 않습니다).
-   그 정보는 부모(`.sentence-order-screen-sentence` / `-bank`)가 집니다. 이
-   파일에 상태 클래스는 0개입니다. */
-
-/* 조각 행 = 탭 대상입니다. `.listening-choice`와 같은 padding·border·radius·
-   background를 씁니다 — 다른 스크린의 항목 행과 조작 단위의 시각을
-   통일합니다.
-
-   **`align-items`가 `flex-start`입니다** — `center`가 아닙니다. 가로 행 +
-   자식 높이가 배율에 따라 갈림 + 교차축 중앙 정렬이 겹치면 VoiceOver가
-   프레임 y로 순회해 낭독 순서가 뒤집힙니다(실측 확인). `flex-start`로 모든
-   자식의 프레임 top을 맞춰 그 조건 하나를 지웁니다. 이 저장소의
-   `align-items` 첫 `flex-start` 사용처입니다. */
+   조각 높이 46은 디자인 실측값입니다(`label-l` 줄높이 20 + 위아래 13). 맞는 토큰이 없어
+   안쪽 여백을 12 + 1로 적습니다. */
 .sentence-order-chip {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: var(--libitum-layout-gap-inline);
-  padding: var(--libitum-spacing-16);
-  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--libitum-spacing-12) + var(--libitum-stroke-width-thin))
+    var(--libitum-spacing-16);
+  border: var(--libitum-stroke-width-thin) solid transparent;
   border-radius: var(--libitum-radius-md);
-  background: var(--libitum-color-background-primary);
-  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속
-     줄어듭니다. */
   flex-shrink: 0;
 }
 
-/* 자리 번호 래퍼 — 가림이 붙을 자리입니다. `flex-shrink: 0`은 이 래퍼가
-   집니다 — 라벨과 나란한 가로 행에서 두 자식의 shrink가 갈려야 라벨만
-   줄어들고 번호는 잘리지 않습니다. 폭은 선언하지 않습니다 — `min-width`를
-   주면 교차축 stretch가 깨어나 부모 폭으로 늘어납니다. */
-.sentence-order-chip-slot {
-  flex-shrink: 0;
-}
-
-/* 자리 번호 텍스트입니다. 아이콘이 아니라 `<text>`입니다 — 아이콘은 배율을
-   안 받고 `digit-*`가 9에서 끊깁니다. `label-l`(14/700)을 골랐습니다 —
-   라벨(`body-l` 16/500)보다 작고 굵어 "내용이 아니라 표지"로 읽힙니다. 색은
-   `fg-neutral-muted`(93) — 라벨의 `fg-neutral`(28)과 상호 대비 2.58:1로
-   갈립니다. */
-.sentence-order-chip-slot-label {
-  color: var(--libitum-color-fg-neutral-muted);
+.sentence-order-chip-label {
   font-family: var(--libitum-typography-label-l-font-family);
   font-weight: var(--libitum-typography-label-l-font-weight);
   font-size: var(--libitum-typography-label-l-font-size);
@@ -50,14 +22,37 @@
   letter-spacing: var(--libitum-typography-label-l-letter-spacing);
 }
 
-/* 조각 라벨입니다. `flex: 1` — 번호가 있을 때만 남는 폭을 다 씁니다.
-   `.listening-choice-label`과 같은 `body-l` 타이포·색입니다. */
-.sentence-order-chip-label {
-  flex: 1;
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-body-l-font-family);
-  font-weight: var(--libitum-typography-body-l-font-weight);
-  font-size: var(--libitum-typography-body-l-font-size);
-  line-height: var(--libitum-typography-body-l-line-height);
-  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+/* 창고의 조각 — 흰 면 · 연한 테두리. */
+.sentence-order-chip-bank {
+  background-color: var(--libitum-color-white);
+  border-color: var(--libitum-color-gray-300);
 }
+
+.sentence-order-chip-bank .sentence-order-chip-label {
+  color: var(--libitum-color-gray-900);
+}
+
+.sentence-order-chip-bank:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+/* 놓인 조각 — 브랜드 면 · 흰 글자. 답 칸 줄에 섭니다. */
+.sentence-order-chip-placed {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.sentence-order-chip-placed .sentence-order-chip-label {
+  color: var(--libitum-color-white);
+}
+
+/* 빠져나간 자리 — 회색 빈칸. */
+.sentence-order-chip-placeholder {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.sentence-order-chip-label-hidden {
+  opacity: 0;
+}
+
+/* 누를 수 없는 조각(칸이 다 참 · 채점 뒤)은 모양을 바꾸지 않습니다 — 디자인에 그 상태가
+   없고, 불투명도 토큰도 없습니다. 탭과 낭독 특성(`disabled`)만 갈립니다. */

@@ -6,47 +6,25 @@ import { SentenceOrderScreen } from "./SentenceOrderScreen";
 import type { SentenceOrderQuestion } from "./sentence-order";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다(ADR-0006 D4). 순수
-// 함수(sentence-order.ts)를 mock하지 않습니다 — 화면이 그것을 실제로 부르는지가 이
-// 파일이 보는 것의 절반입니다. `toHaveClass`·`toHaveStyle`·`toBeVisible`을 쓰지
-// 않습니다(docs/conventions/code.md).
+// `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 뼈대(상단 바 · 세션 헤더 · 지시문 ·
+// 무대 카드 · 아래 버튼 · 스크롤)는 `LearningShell`이 집니다 — 그 모양은
+// `LearningShell.ui.test.tsx`가 보고, 여기서는 카드 안 · 창고 · 아래 버튼이 무엇을 하는가만
+// 봅니다.
 //
-// **문항 값을 지어내지 않는다는 것과 문항 데이터가 아예 없다는 것은 다릅니다.**
-// `sentenceOrderQuestionsByStep`은 계약에 따라 다섯 스텝 전부 빈 배열입니다 — 이
-// 컴포넌트는 `questions`를 prop으로 받지 않고 내부에서
-// `sentenceOrderQuestionsForStep(stepId)`로 그 Record를 읽으므로, 이 파일이
-// 소비할 수 있는 문항은 이 Record에 값이 있을 때뿐입니다. `sentence-order.ts`
-// 파일 자체는 고치지 않습니다(읽기 전용).
-//
-// **픽스처 주입은 `vi.mock(경로, importOriginal)`로 조회 함수 하나만 부분
-// 대역합니다** (형태의 정본: `word-choice/WordChoiceScreen.ui.test.tsx`).
-// 이전에는 `beforeEach`/`afterEach`로 `sentenceOrderQuestionsByStep` Record의
-// `ordering` 슬롯을 런타임에 대입했습니다 — 그 방식을 걷어낸 이유 둘입니다:
-//   1. 런타임 변형은 `readonly` 선언을 뚫습니다 — 타입이 막는 것을 테스트가
-//      우회하는 것이었습니다.
-//   2. 모듈 전역을 변형하고 `afterEach` 정리에 의존합니다 — 케이스가 실패로
-//      빠지면 원복이 스킵되어 다음 케이스로 상태가 샙니다.
-// `sentenceOrderQuestionsForStep`은 Record 조회 한 줄이고 지울 가드가 없습니다 —
-// 이 대역이 `App.integration.test.tsx:584`의 반대 결정(`lib/audio.ts`를
-// `vi.mock`하지 않습니다)과 충돌하지 않습니다. 그 결정이 막는 것은 「가드를 가진
-// 모듈을 통째로 대역해 그 가드(세대로 늦게 온 완료를 버리고 모듈 부재를
-// 흡수하는 것)를 지우는 것」이지 `vi.mock` 자체가 아닙니다. 나머지 export(세션
-// 리듀서·판정·문구 합성 등)는 `importOriginal`로 그대로 통과시킵니다 —
-// `sentence-order.ts`가 실제로 불리는지가 이 파일이 보는 것의 절반이라는 원칙은
-// 바뀌지 않습니다.
-
+// 문항은 대역입니다 — 실물 표(`sentenceOrderQuestionsByStep`)는 임시 값이라 단언하지
+// 않습니다. 둘째 문항에 오답 낱말(`버스`)이 섞여 있습니다.
 const ORDERING_QUESTIONS: readonly SentenceOrderQuestion[] = [
   {
-    prompt: "다음 문장을 순서대로 배치하세요.",
+    prompt: "뭐 했어?",
     // chips[1]="나는" chips[0]="밥을" chips[2]="먹었다" → 정답 문장은 "나는 밥을 먹었다".
     chips: ["밥을", "나는", "먹었다"],
     answerOrder: [1, 0, 2],
   },
   {
-    prompt: "다음 문장을 순서대로 배치하세요. (2)",
-    // chips[2]="학교에" chips[0]="친구와" chips[1]="간다" → 정답 문장은 "친구와 학교에 간다".
-    chips: ["친구와", "간다", "학교에"],
-    answerOrder: [2, 0, 1],
+    prompt: "어디 가?",
+    // chips[2]="학교에" chips[0]="친구와" chips[1]="간다" · chips[3]="버스"는 오답 낱말입니다.
+    chips: ["친구와", "간다", "학교에", "버스"],
+    answerOrder: [0, 2, 1],
   },
 ] as const;
 
@@ -73,17 +51,28 @@ function renderOrdering(
   return render(
     <SentenceOrderScreen
       stepId="ordering"
-      stepOrdinal={3}
       onExit={overrides.onExit ?? (() => {})}
       onFinish={overrides.onFinish ?? (() => {})}
     />,
   );
 }
 
+// 아래 버튼은 껍데기가 그립니다. 라벨이 국면을 말합니다 — `확인` · `다음` · `결과 보기`.
+function actionLabel(): string | null {
+  return screen.queryByTestId("learning-shell-action")?.getAttribute("accessibility-label") ?? null;
+}
+
+function tapAction(label: string): void {
+  const action = screen.getByTestId("learning-shell-action");
+  expect(action).toHaveAttribute("accessibility-label", label);
+  fireEvent.tap(action, {});
+}
+
+const chip = (index: number) => screen.getByTestId(`sentence-order-chip-${index}`);
+
 // ------------------------------------------------------------ announce 대역
 //
-// 형태의 정본은 `ListeningScreen.ui.test.tsx`의 `stubHost()`(오디오)입니다.
-// 여기서는 `lib/accessibility.ts`가 만지는 접점 하나(`NativeModules.LynxAccessibilityModule`)에
+// `lib/accessibility.ts`가 만지는 접점 하나(`NativeModules.LynxAccessibilityModule`)에
 // 대역을 둡니다 — `lib/accessibility.ts` 자체를 mock하지 않습니다.
 
 type AnnounceCall = { content: string };
@@ -101,7 +90,7 @@ function stubAnnounce(): AnnounceCall[] {
   return calls;
 }
 
-// 채점 builtin과 완료 custom 채널을 함께 세되 기존 대역은 변경하지 않습니다.
+// 채점 builtin과 완료 custom 채널을 함께 셉니다.
 function stubCompletionHost(): { builtin: AnnounceCall[]; completion: AnnounceCall[] } {
   const builtin: AnnounceCall[] = [];
   const completion: AnnounceCall[] = [];
@@ -125,229 +114,207 @@ function stubCompletionHost(): { builtin: AnnounceCall[]; completion: AnnounceCa
 // 조각을 정답 순서대로 눌러 놓습니다.
 function placeAllCorrectly(question: SentenceOrderQuestion): void {
   for (const chipIndex of question.answerOrder) {
-    fireEvent.tap(screen.getByTestId(`sentence-order-chip-${chipIndex}`), {});
+    fireEvent.tap(chip(chipIndex), {});
   }
 }
 
-// 문항 전부를 정답으로 배치·확인하고 넘겨 완료 상태까지 몹니다.
+// 문항 전부를 정답으로 배치 · 확인하고 넘겨 완료 상태까지 몹니다.
 function completeAllQuestions(): void {
   for (const question of ORDERING_QUESTIONS) {
     placeAllCorrectly(question);
-    fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-    fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+    tapAction("확인");
+    tapAction("다음");
   }
 }
 
-// 이 화면은 능동 채널이 둘입니다 — 채점(문항 하나의 판정)과 완료(세션의
-// 종료)입니다. 아래 완료 전이 절이 보는 것은 둘째 채널 하나이므로, 첫째 채널이
-// 낸 발화를 걷어 내고 셉니다. 걷어 내는 기준을 채점 발화의 접두사 하나로 두는
-// 것이 의도입니다 — 완료 채널이 예상 밖의 문자열을 내면 그것도 여기 남아
-// 잡힙니다.
+// 채점 발화를 걷어 내고 완료 채널만 셉니다.
 const nonGradingCalls = (calls: readonly AnnounceCall[]): AnnounceCall[] =>
   calls.filter((call) => !call.content.startsWith("채점 결과, "));
 
-// ---------------------------------------------------------------- 처음 렌더
+// ---------------------------------------------------------------- 대화 카드
 
-test("제목이 '3단계 · 문장 순서'이고 accessibility-traits='header'다", () => {
+test("[SO1] 상대 말풍선이 제시문이고, 내 말풍선은 빈 표시(----)이며 낭독하지 않는다", () => {
   renderOrdering();
 
-  const title = screen.getByTestId("sentence-order-screen-title");
-  expect(title).toHaveTextContent("3단계 · 문장 순서");
-  expect(title).toHaveAttribute("accessibility-traits", "header");
+  expect(screen.getByTestId("sentence-order-screen-prompt")).toHaveTextContent("뭐 했어?");
+  const reply = screen.getByTestId("sentence-order-screen-reply");
+  expect(reply).toHaveTextContent("----");
+  expect(reply).toHaveAttribute("accessibility-elements-hidden", "true");
 });
 
-test("진행 문구가 '문항 1 / 2'이고 제시문이 첫 문항의 prompt다", () => {
+test("[SO2] 채점하면 내 말풍선에 놓은 순서대로 만든 문장이 서고 낭독된다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("sentence-order-screen-progress")).toHaveTextContent("문항 1 / 2");
-  expect(screen.getByTestId("sentence-order-screen-prompt")).toHaveTextContent(
-    ORDERING_QUESTIONS[0].prompt,
-  );
+  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  tapAction("확인");
+
+  const reply = screen.getByTestId("sentence-order-screen-reply");
+  expect(reply).toHaveTextContent("나는 밥을 먹었다");
+  expect(reply).toHaveAttribute("accessibility-elements-hidden", "false");
 });
 
-test("처음에는 조각 셋이 전부 창고 안에 있고 답 줄은 비어 있다", () => {
+// ---------------------------------------------------------------- 조각 이동
+
+test("[SO3] 처음에는 조각이 전부 창고에 있고 답 칸 줄은 비어 있다", () => {
   renderOrdering();
 
-  const sentence = screen.getByTestId("sentence-order-screen-sentence");
   const bank = screen.getByTestId("sentence-order-screen-bank");
-
-  expect(sentence.children.length).toBe(0);
-  for (let index = 0; index < ORDERING_QUESTIONS[0].chips.length; index += 1) {
-    expect(within(bank).getByTestId(`sentence-order-chip-${index}`)).toBeInTheDocument();
-    expect(within(sentence).queryByTestId(`sentence-order-chip-${index}`)).not.toBeInTheDocument();
+  const sentence = screen.getByTestId("sentence-order-screen-sentence");
+  for (const index of [0, 1, 2]) {
+    expect(within(bank).getByTestId(`sentence-order-chip-${index}`)).toHaveAttribute(
+      "data-placed",
+      "none",
+    );
   }
+  expect(sentence.children).toHaveLength(0);
 });
 
-test("확인 전에는 판정 표식이 없다", () => {
+test("[SO4] 조각을 누르면 답 칸 줄로 옮겨 가고, 창고의 그 자리에는 회색 빈칸이 남는다", () => {
   renderOrdering();
 
-  expect(screen.queryByTestId("sentence-order-screen-mark")).not.toBeInTheDocument();
-});
+  fireEvent.tap(chip(1), {});
 
-test("전부 배치하기 전에는 확인·다음·결과 보기가 하나도 없다", () => {
-  renderOrdering();
-
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
-
-  expect(screen.queryByTestId("sentence-order-screen-check")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("sentence-order-screen-next")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("sentence-order-screen-finish")).not.toBeInTheDocument();
-});
-
-// ---------------------------------------------------------------- 배치·해제
-
-test("조각을 탭하면 답 줄로 이동하고 data-placed가 1이 된다", () => {
-  renderOrdering();
-
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
-
-  const sentence = screen.getByTestId("sentence-order-screen-sentence");
-  const bank = screen.getByTestId("sentence-order-screen-bank");
-  const placed = within(sentence).getByTestId("sentence-order-chip-1");
-  expect(placed).toHaveAttribute("data-placed", "1");
-  expect(within(bank).queryByTestId("sentence-order-chip-1")).not.toBeInTheDocument();
-});
-
-test("놓인 조각을 다시 탭하면 창고로 돌아가고 data-placed가 'none'이 된다", () => {
-  renderOrdering();
-
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
-
-  const sentence = screen.getByTestId("sentence-order-screen-sentence");
-  const bank = screen.getByTestId("sentence-order-screen-bank");
-  const backInBank = within(bank).getByTestId("sentence-order-chip-1");
-  expect(backInBank).toHaveAttribute("data-placed", "none");
-  expect(within(sentence).queryByTestId("sentence-order-chip-1")).not.toBeInTheDocument();
-});
-
-test("전부 배치하면 확인이 나타난다", () => {
-  renderOrdering();
-
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
-
-  expect(screen.getByTestId("sentence-order-screen-check")).toBeInTheDocument();
-  expect(screen.queryByTestId("sentence-order-screen-next")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("sentence-order-screen-finish")).not.toBeInTheDocument();
-});
-
-// ---------------------------------------------------------------- 채점
-
-test("정답 순서로 확인을 탭하면 data-result='correct'이고 다음이 나타나며 확인은 사라진다", () => {
-  renderOrdering();
-
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-
-  expect(screen.getByTestId("sentence-order-screen-mark")).toHaveAttribute(
-    "data-result",
-    "correct",
-  );
-  expect(screen.getByTestId("sentence-order-screen-next")).toBeInTheDocument();
-  expect(screen.queryByTestId("sentence-order-screen-check")).not.toBeInTheDocument();
-});
-
-test("틀린 순서로 확인을 탭하면 data-result='incorrect'다", () => {
-  renderOrdering();
-
-  // 정답 순서를 [1,0,2]로 뒤집어서 놓습니다 → [0,1,2] 배치, incorrect입니다.
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-0"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-2"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-
-  expect(screen.getByTestId("sentence-order-screen-mark")).toHaveAttribute(
-    "data-result",
-    "incorrect",
-  );
-});
-
-test("채점 뒤 조각을 탭해도 배치·판정이 그대로다", () => {
-  renderOrdering();
-
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
-
-  expect(screen.getByTestId("sentence-order-screen-mark")).toHaveAttribute(
-    "data-result",
-    "correct",
-  );
   const sentence = screen.getByTestId("sentence-order-screen-sentence");
   expect(within(sentence).getByTestId("sentence-order-chip-1")).toHaveAttribute("data-placed", "1");
-});
-
-// ---------------------------------------------------------------- 문항 진행 · 완료
-
-test("'다음'을 탭하면 두 번째 문항으로 넘어가고 배치·판정이 초기화된다", () => {
-  renderOrdering();
-
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
-
-  expect(screen.getByTestId("sentence-order-screen-progress")).toHaveTextContent("문항 2 / 2");
-  expect(screen.getByTestId("sentence-order-screen-prompt")).toHaveTextContent(
-    ORDERING_QUESTIONS[1].prompt,
+  const slot = within(screen.getByTestId("sentence-order-screen-bank")).getByTestId(
+    "sentence-order-bank-slot-1",
   );
-  expect(screen.queryByTestId("sentence-order-screen-mark")).not.toBeInTheDocument();
-  expect(screen.getByTestId("sentence-order-screen-sentence").children.length).toBe(0);
-  expect(screen.queryByTestId("sentence-order-screen-next")).not.toBeInTheDocument();
+  expect(slot).toHaveAttribute("accessibility-elements-hidden", "true");
 });
 
-test("두 문항을 마치면 완료 문구와 결과 보기가 나타나고 나가기·진행이 사라진다", () => {
+test("[SO5] 놓인 조각을 다시 누르면 창고로 돌아가고 빈칸이 걷힌다", () => {
   renderOrdering();
 
+  fireEvent.tap(chip(1), {});
+  fireEvent.tap(chip(1), {});
+
+  expect(chip(1)).toHaveAttribute("data-placed", "none");
+  expect(screen.queryByTestId("sentence-order-bank-slot-1")).toBeNull();
+});
+
+test("[SO6] 놓인 조각의 낭독 이름이 자리 번호를 싣는다", () => {
+  renderOrdering();
+
+  fireEvent.tap(chip(1), {});
+  fireEvent.tap(chip(0), {});
+
+  expect(chip(1)).toHaveAttribute("accessibility-label", "나는, 1번째");
+  expect(chip(0)).toHaveAttribute("accessibility-label", "밥을, 2번째");
+});
+
+// ---------------------------------------------------------------- 오답 낱말
+
+test("[SO7] 오답 낱말이 섞이면 정답 길이만큼 놓았을 때 확인이 선다 — 창고를 다 비울 필요가 없다", () => {
+  renderOrdering();
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+  tapAction("확인");
+  tapAction("다음");
+
+  fireEvent.tap(chip(0), {});
+  fireEvent.tap(chip(2), {});
+  expect(actionLabel()).toBeNull();
+
+  fireEvent.tap(chip(1), {});
+  expect(actionLabel()).toBe("확인");
+  // 오답 낱말은 창고에 남아 있습니다.
+  expect(chip(3)).toHaveAttribute("data-placed", "none");
+});
+
+test("[SO8] 칸이 다 차면 창고의 조각은 누를 수 없다 — 놓인 조각을 빼야 다시 놓을 수 있다", () => {
+  renderOrdering();
+  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  tapAction("확인");
+  tapAction("다음");
+
   placeAllCorrectly(ORDERING_QUESTIONS[1]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+  const distractor = chip(3);
+  expect(distractor).toHaveAttribute("accessibility-traits", "disabled");
+  fireEvent.tap(distractor, {});
+  expect(distractor).toHaveAttribute("data-placed", "none");
 
-  expect(screen.getByTestId("sentence-order-screen-complete")).toHaveTextContent(
-    "문항을 모두 마쳤어요",
-  );
-  expect(screen.getByTestId("sentence-order-screen-finish")).toBeInTheDocument();
-  expect(screen.queryByTestId("sentence-order-screen-exit")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("sentence-order-screen-progress")).not.toBeInTheDocument();
+  fireEvent.tap(chip(1), {});
+  expect(chip(3)).toHaveAttribute("accessibility-traits", "button");
+  fireEvent.tap(chip(3), {});
+  expect(chip(3)).toHaveAttribute("data-placed", "3");
 });
 
-test("결과 보기를 탭하면 onFinish가 stepId와 판정 배열로 정확히 한 번 불린다", () => {
+// ---------------------------------------------------------------- 채점 · 다음 · 완료
+
+test("[SO9] 덜 놓았으면 아래 버튼이 없다", () => {
+  renderOrdering();
+
+  expect(actionLabel()).toBeNull();
+  fireEvent.tap(chip(1), {});
+  expect(actionLabel()).toBeNull();
+});
+
+test("[SO10] 정답 순서로 확인하면 판정 배지가 정답이고 버튼이 다음으로 바뀐다", () => {
+  renderOrdering();
+
+  expect(screen.queryByTestId("answer-verdict")).toBeNull();
+  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  tapAction("확인");
+
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
+  expect(actionLabel()).toBe("다음");
+});
+
+test("[SO11] 틀린 순서로 확인하면 판정 배지가 오답이다", () => {
+  renderOrdering();
+
+  fireEvent.tap(chip(0), {});
+  fireEvent.tap(chip(1), {});
+  fireEvent.tap(chip(2), {});
+  tapAction("확인");
+
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "incorrect");
+});
+
+test("[SO12] 채점 뒤에는 조각을 눌러도 배치 · 판정이 그대로다", () => {
+  renderOrdering();
+
+  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  tapAction("확인");
+  fireEvent.tap(chip(1), {});
+
+  expect(chip(1)).toHaveAttribute("data-placed", "1");
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
+});
+
+test("[SO13] 다음을 누르면 둘째 문항으로 넘어가고 배치 · 판정이 초기화된다", () => {
+  renderOrdering();
+
+  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  tapAction("확인");
+  tapAction("다음");
+
+  expect(screen.getByTestId("sentence-order-screen-prompt")).toHaveTextContent("어디 가?");
+  expect(screen.getByTestId("sentence-order-screen-sentence").children).toHaveLength(0);
+  expect(screen.queryByTestId("answer-verdict")).toBeNull();
+});
+
+test("[SO14] 문항을 다 마치면 완료 문구와 결과 보기가 서고, 결과 보기는 onFinish를 판정 배열로 한 번 부른다", () => {
   const onFinish = vi.fn<(id: JourneyStepId, results: readonly AnswerResult[]) => void>();
   renderOrdering({ onFinish });
 
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
-  // 두 번째 문항은 오답으로 제출합니다.
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-0"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-2"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+  tapAction("확인");
+  tapAction("다음");
+  fireEvent.tap(chip(1), {});
+  fireEvent.tap(chip(0), {});
+  fireEvent.tap(chip(2), {});
+  tapAction("확인");
+  tapAction("다음");
 
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-finish"), {});
-
+  expect(screen.getByTestId("sentence-order-screen-complete")).toHaveTextContent(
+    "문항을 모두 마쳤어요",
+  );
+  tapAction("결과 보기");
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledWith("ordering", ["correct", "incorrect"]);
 });
 
-// ---------------------------------------------------------------- 중도 이탈
-
-test("나가기를 탭하면 onExit이 한 번, onFinish는 불리지 않는다", () => {
-  const onExit = vi.fn<() => void>();
-  const onFinish = vi.fn<(id: JourneyStepId, results: readonly AnswerResult[]) => void>();
-  renderOrdering({ onExit, onFinish });
-
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-exit"), {});
-
-  expect(onExit).toHaveBeenCalledTimes(1);
-  expect(onFinish).not.toHaveBeenCalled();
-});
-
-// ---------------------------------------------------------------- 능동 낭독
+// ---------------------------------------------------------------- 채점 발화
 
 test("마운트만으로는 announce가 불리지 않는다", () => {
   const calls = stubAnnounce();
@@ -361,7 +328,7 @@ test("채점 시점에 announce가 한 번 불리고 content가 '채점 결과, 
   renderOrdering();
 
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+  tapAction("확인");
 
   expect(calls).toHaveLength(1);
   expect(calls[0]?.content).toBe("채점 결과, 정답");
@@ -371,39 +338,23 @@ test("오답 채점은 content가 '채점 결과, 오답'이다", () => {
   const calls = stubAnnounce();
   renderOrdering();
 
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-0"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-1"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-2"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+  fireEvent.tap(chip(0), {});
+  fireEvent.tap(chip(1), {});
+  fireEvent.tap(chip(2), {});
+  tapAction("확인");
 
   expect(calls).toHaveLength(1);
   expect(calls[0]?.content).toBe("채점 결과, 오답");
-});
-
-test("문항 둘을 각각 채점하면 announce가 문항마다 정확히 한 번씩, 합쳐 두 번 불린다", () => {
-  const calls = stubAnnounce();
-  renderOrdering();
-
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
-  placeAllCorrectly(ORDERING_QUESTIONS[1]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-
-  expect(calls).toHaveLength(2);
-  expect(calls.map((call) => call.content)).toEqual(["채점 결과, 정답", "채점 결과, 정답"]);
 });
 
 test("대역이 없어도 화면이 던지지 않는다", () => {
   expect(() => renderOrdering()).not.toThrow();
 });
 
-// ------------------------------------------- 완료 전이 발화
+// ---------------------------------------------------------------- 완료 발화
 //
-// 이 화면이 여는 **둘째** 능동 채널입니다. 위 채점 절의 케이스들이 한 글자도 안
-// 바뀌는 것이 첫째 채널이 그대로라는 증거입니다 — 두 채널은 다른 정보를 다른
-// 순간에 냅니다. 여기서 세는 것은 `nonGradingCalls`로 걸러 낸 완료 채널
-// 하나입니다.
+// 이 화면의 둘째 능동 채널입니다. 여기서 세는 것은 `nonGradingCalls`로 걸러 낸 완료
+// 채널 하나입니다.
 
 test("[X-A] 완료 전이 뒤 완료 발화가 정확히 하나이고 content가 '문항을 모두 마쳤어요, 결과 보기'다", () => {
   const calls = stubAnnounce();
@@ -416,110 +367,71 @@ test("[X-A] 완료 전이 뒤 완료 발화가 정확히 하나이고 content가
   expect(nonGradingCalls(calls)[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
 });
 
-// X-B. 전이 **전에는** 완료 발화가 0건입니다. 가드(`if (!complete) return;`)를
-// 지우면 문항 도중에 완료 발화가 나가고 이 케이스가 잡습니다. 채점 발화는 이
-// 축이 아닙니다 — 그것이 그대로 나가는 것까지 함께 적어 둡니다.
-test("[X-B] 첫 렌더·확인·중간 다음까지 완료 발화가 0건이다 — 채점 발화만 나간다", () => {
+test("[X-B] 첫 렌더 · 확인 · 중간 다음까지 완료 발화가 0건이다 — 채점 발화만 나간다", () => {
   const calls = stubAnnounce();
   renderOrdering();
 
-  expect(nonGradingCalls(calls)).toHaveLength(0);
-
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+  tapAction("확인");
+  tapAction("다음");
 
+  expect(screen.getByTestId("sentence-order-screen-prompt")).toHaveTextContent("어디 가?"); // 앵커
   expect(nonGradingCalls(calls)).toHaveLength(0);
   expect(calls.map((call) => call.content)).toEqual(["채점 결과, 정답"]);
-
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
-
-  expect(screen.getByTestId("sentence-order-screen-progress")).toHaveTextContent("문항 2 / 2"); // 앵커
-  expect(nonGradingCalls(calls)).toHaveLength(0);
 });
 
-// X-C. **정확히 한 번**입니다. 종료 상태에 닿은 뒤 같은 props로 다시 렌더해도
-// 호출이 늘지 않습니다 — dep 배열을 지워 매 렌더 실행이 되면 여기서만
-// 잡힙니다. props를 새로 짓지 않고 **같은 참조**를 다시 넘깁니다 — 값이 갈려서
-// 늘어난 것이 아니라 렌더 자체로 늘어난 것을 보려는 것입니다.
 test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 완료 발화가 늘지 않는다", () => {
   const calls = stubAnnounce();
   const onExit = () => {};
   const onFinish = () => {};
   const view = render(
-    <SentenceOrderScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
+    <SentenceOrderScreen stepId="ordering" onExit={onExit} onFinish={onFinish} />,
   );
 
   completeAllQuestions();
-
   expect(nonGradingCalls(calls)).toHaveLength(1);
 
-  view.rerender(
-    <SentenceOrderScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
-  );
-  view.rerender(
-    <SentenceOrderScreen stepId="ordering" stepOrdinal={3} onExit={onExit} onFinish={onFinish} />,
-  );
+  view.rerender(<SentenceOrderScreen stepId="ordering" onExit={onExit} onFinish={onFinish} />);
+  view.rerender(<SentenceOrderScreen stepId="ordering" onExit={onExit} onFinish={onFinish} />);
 
-  expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument(); // 앵커
   expect(nonGradingCalls(calls)).toHaveLength(1);
 });
 
-// X-D. **소리에만 있는 낱말이 0건입니다**(ADR-0016 D11-1·수용 기준 3). 발화
-// 문자열을 리터럴로 다시 적지 않고 **DOM에서 파생해** 짓습니다 — 앞절은 종료
-// 문구 요소의 내용, 뒷절은 그 순간 화면에 실재하는 유일한 조작 단위의
-// `accessibility-label`입니다. 이것이 지는 것은 **값이 갈리지 않는다**까지입니다
-// — 양쪽을 같은 값으로 함께 인라인하면 이 단언은 통과합니다. 「낱말이 같은
-// 자리에서 나온다」는 계약의 훑기가 집니다.
-test("[X-D] 완료 발화가 종료 문구와 그 순간 유일한 조작 단위의 라벨에서 그대로 나온다", () => {
+// X-D. 소리에만 있는 낱말이 0건입니다(ADR-0016 D11-1). 발화를 리터럴로 다시 적지 않고
+// DOM에서 파생해 짓습니다 — 앞절은 종료 문구, 뒷절은 그 순간의 아래 버튼 이름입니다.
+test("[X-D] 완료 발화가 종료 문구와 그 순간 아래 버튼의 이름에서 그대로 나온다", () => {
   const calls = stubAnnounce();
-  const { container } = renderOrdering();
+  renderOrdering();
 
   completeAllQuestions();
-
-  const elements = [...container.querySelectorAll("[accessibility-element]")];
-  expect(elements.map((el) => el.getAttribute("data-testid"))).toEqual([
-    "sentence-order-screen-finish",
-  ]);
 
   const completeText = screen.getByTestId("sentence-order-screen-complete").textContent ?? "";
-  const actionLabel = elements[0]?.getAttribute("accessibility-label") ?? "";
-
-  expect(nonGradingCalls(calls)).toHaveLength(1);
-  expect(nonGradingCalls(calls)[0]?.content).toBe(`${completeText}, ${actionLabel}`);
+  const label = actionLabel() ?? "";
+  expect(nonGradingCalls(calls)[0]?.content).toBe(`${completeText}, ${label}`);
 });
 
-// X-E. **마운트가 곧 완료인 갈래입니다.** 문항 표가 빈 스텝은 첫 렌더가 이미
-// 종료 상태입니다 — 전이만 발화하게 만들면 그 갈래가 조용한 채로 남습니다.
 test("[X-E] 문항이 0인 스텝은 마운트가 곧 완료라 그 순간 완료 발화가 하나 나간다", () => {
   const calls = stubAnnounce();
 
-  render(
-    <SentenceOrderScreen stepId="greeting" stepOrdinal={1} onExit={() => {}} onFinish={() => {}} />,
-  );
+  render(<SentenceOrderScreen stepId="introduction" onExit={() => {}} onFinish={() => {}} />);
 
   expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument(); // 앵커
   expect(nonGradingCalls(calls)).toHaveLength(1);
   expect(nonGradingCalls(calls)[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
 });
 
-// X-F. 두 채널이 **겹치지 않습니다**(실행 증인입니다). 마지막 문항의 `확인` 뒤
-// `다음`까지 가는 경로 전체에서 발화의 **순서와 총수**를 봅니다 — 마지막 하나가
-// 완료 발화이고, 같은 순간에 채점 발화가 함께 나가지 않습니다.
-test("[X-F] 전체 경로의 발화가 채점들 뒤에 완료 하나로 끝난다 — 한 순간에 미는 발화가 하나다", () => {
+test("[X-F] 전체 경로의 발화가 채점들 뒤에 완료 하나로 끝난다", () => {
   const calls = stubAnnounce();
   renderOrdering();
 
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+  tapAction("확인");
+  tapAction("다음");
   placeAllCorrectly(ORDERING_QUESTIONS[1]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-
-  // 마지막 `다음` **직전**까지는 채점 발화뿐입니다.
+  tapAction("확인");
   expect(calls.map((call) => call.content)).toEqual(["채점 결과, 정답", "채점 결과, 정답"]);
 
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
-
+  tapAction("다음");
   expect(calls.map((call) => call.content)).toEqual([
     "채점 결과, 정답",
     "채점 결과, 정답",
@@ -527,127 +439,42 @@ test("[X-F] 전체 경로의 발화가 채점들 뒤에 완료 하나로 끝난�
   ]);
 });
 
-// 실제 두 문항을 채점한 뒤 마지막 다음에서만 custom 완료 채널을 사용합니다.
 test("마지막 다음 뒤 custom 완료 발화가 한 번이고 builtin 채점 발화만 유지된다", () => {
   const { builtin, completion } = stubCompletionHost();
-  const view = renderOrdering();
+  renderOrdering();
 
-  expect(completion).toHaveLength(0);
-  placeAllCorrectly(ORDERING_QUESTIONS[0]!);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
-  placeAllCorrectly(ORDERING_QUESTIONS[1]!);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
+  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  tapAction("확인");
+  tapAction("다음");
+  placeAllCorrectly(ORDERING_QUESTIONS[1]);
+  tapAction("확인");
   const builtinBeforeCompletion = builtin.length;
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
+  tapAction("다음");
 
   expect(completion).toHaveLength(1);
   expect(completion[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
   expect(builtin).toHaveLength(builtinBeforeCompletion);
-
-  view.rerender(
-    <SentenceOrderScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} onFinish={() => {}} />,
-  );
-  expect(completion).toHaveLength(1);
 });
 
-// ---------------------------------------------------------------- 접근성
+// ---------------------------------------------------------------- 나가기
+
+test("나가기를 누르고 그만두기를 고르면 onExit이 한 번, onFinish는 불리지 않는다", () => {
+  const onExit = vi.fn<() => void>();
+  const onFinish = vi.fn<(id: JourneyStepId, results: readonly AnswerResult[]) => void>();
+  const { container } = renderOrdering({ onExit, onFinish });
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+  const leave = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
+    (el) => el.getAttribute("accessibility-label") === "그만두기",
+  );
+  fireEvent.tap(leave as Element, {});
+
+  expect(onExit).toHaveBeenCalledTimes(1);
+  expect(onFinish).not.toHaveBeenCalled();
+});
 
 test("accessibility-value가 화면 어디에도 없다", () => {
   const { container } = renderOrdering();
 
   expect(container.querySelectorAll("[accessibility-value]")).toHaveLength(0);
-
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-
-  expect(container.querySelectorAll("[accessibility-value]")).toHaveLength(0);
-});
-
-test("판정 표식 래퍼에 accessibility-*가 붙지 않는다", () => {
-  renderOrdering();
-
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-
-  const mark = screen.getByTestId("sentence-order-screen-mark");
-  expect(mark).not.toHaveAttribute("accessibility-element");
-  expect(mark).not.toHaveAttribute("accessibility-label");
-  expect(mark).not.toHaveAttribute("accessibility-elements-hidden");
-});
-
-// ---------------------------------------------------------------- 스크롤 영역 (ADR-0022)
-
-test("[A1] sentence-order-screen-scroll이 존재한다", () => {
-  renderOrdering();
-
-  expect(screen.getByTestId("sentence-order-screen-scroll")).toBeInTheDocument();
-});
-
-test("[A2] 진행·제시문·답 줄·창고가 스크롤 컨테이너 안에 있다", () => {
-  renderOrdering();
-
-  const scroll = screen.getByTestId("sentence-order-screen-scroll");
-  expect(within(scroll).getByTestId("sentence-order-screen-progress")).toBeInTheDocument();
-  expect(within(scroll).getByTestId("sentence-order-screen-prompt")).toBeInTheDocument();
-  expect(within(scroll).getByTestId("sentence-order-screen-sentence")).toBeInTheDocument();
-  expect(within(scroll).getByTestId("sentence-order-screen-bank")).toBeInTheDocument();
-});
-
-test("[A3] 제목·나가기·액션 행이 스크롤 컨테이너 밖에 있다", () => {
-  renderOrdering();
-
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-
-  const scroll = screen.getByTestId("sentence-order-screen-scroll");
-  expect(within(scroll).queryByTestId("sentence-order-screen-title")).not.toBeInTheDocument();
-  expect(within(scroll).queryByTestId("sentence-order-screen-exit")).not.toBeInTheDocument();
-  expect(within(scroll).queryByTestId("sentence-order-screen-next")).not.toBeInTheDocument();
-
-  expect(screen.getByTestId("sentence-order-screen-title")).toBeInTheDocument();
-  expect(screen.getByTestId("sentence-order-screen-exit")).toBeInTheDocument();
-  expect(screen.getByTestId("sentence-order-screen-next")).toBeInTheDocument();
-});
-
-test("[A4] scroll-orientation이 'vertical'로 붙는다", () => {
-  renderOrdering();
-
-  expect(screen.getByTestId("sentence-order-screen-scroll")).toHaveAttribute(
-    "scroll-orientation",
-    "vertical",
-  );
-});
-
-test("[A5] scroll-bar-enable이 문자열 'true'로 붙는다", () => {
-  renderOrdering();
-
-  expect(screen.getByTestId("sentence-order-screen-scroll")).toHaveAttribute(
-    "scroll-bar-enable",
-    "true",
-  );
-});
-
-test("[A6] 문항 진행 중과 완료 상태 둘 다 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
-  renderOrdering();
-  expect(screen.getByTestId("sentence-order-screen-scroll").children.length).toBeLessThanOrEqual(1);
-
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
-  placeAllCorrectly(ORDERING_QUESTIONS[1]);
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-check"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-screen-next"), {});
-
-  expect(screen.getByTestId("sentence-order-screen-scroll").children.length).toBeLessThanOrEqual(1);
-});
-
-test("[A7] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는다", () => {
-  renderOrdering();
-
-  const scroll = screen.getByTestId("sentence-order-screen-scroll");
-  expect(scroll).not.toHaveAttribute("accessibility-element");
-  expect(scroll).not.toHaveAttribute("accessibility-label");
-  expect(scroll).not.toHaveAttribute("accessibility-traits");
-  expect(scroll).not.toHaveAttribute("accessibility-elements-hidden");
 });

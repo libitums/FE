@@ -33,6 +33,8 @@ import { AppHeader } from "./AppHeader";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
+import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
+import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
 import { entryInitialNav } from "./nav-state";
 import type { Screen } from "./nav-state";
 import { renderScreen } from "./render-screen";
@@ -40,11 +42,8 @@ import { screenWiring } from "./screen-wiring";
 
 import "./app.css";
 
-// 루트 구성입니다 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다
-// (ADR-0003 D5).
-//
-// `phoneCallEventSink`는 메신저·비주얼 노벨과 같은 방식으로 App 경계에서
-// `null`로 정규화됩니다.
+// 루트 구성입니다 — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다(ADR-0003 D5).
+// `phoneCallEventSink`는 메신저·비주얼 노벨과 같은 방식으로 App 경계에서 `null`로 정규화됩니다.
 /**
  * 부팅할 때의 여정 진행입니다. 주지 않으면 제품의 씨앗(`initialCompletedStepCount` · 빈
  * 완료 목록)으로 시작합니다.
@@ -69,6 +68,12 @@ export type AppSeedProps = {
    * 제품 진입점은 이 값을 주지 않습니다.
    */
   readonly seenEpisodeIntroIds?: readonly string[];
+  /**
+   * 에피소드의 서사 전개를 찾는 함수입니다. 없으면 제품의 표(`episodePrologueFor`)를
+   * 씁니다. 튜토리얼 하나뿐인 지금, 다른 형식(통화 · 메신저)의 서사를 앱 안에서 보려는
+   * 자리가 바꿔 끼웁니다. 제품 진입점은 이 값을 주지 않습니다.
+   */
+  readonly episodePrologueFor?: (episodeId: string) => EpisodePrologue | undefined;
 };
 
 const productJourneySeed: AppJourneySeed = {
@@ -97,8 +102,7 @@ function completedVisualNovelUnitIdsFrom(
 function isFullBleedScreen(screen: Screen): boolean {
   return (
     screen.name === "episode-intro" ||
-    screen.name === "episode-prologue-call" ||
-    screen.name === "episode-narrative" ||
+    screen.name === "episode-prologue" ||
     screen.name === "journey-entry"
   );
 }
@@ -106,6 +110,7 @@ function isFullBleedScreen(screen: Screen): boolean {
 export function App({
   journeySeed = productJourneySeed,
   seenEpisodeIntroIds: initialSeenEpisodeIntroIds = [],
+  episodePrologueFor = productEpisodePrologueFor,
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
@@ -194,6 +199,7 @@ export function App({
     safeAreaInsets: insets,
     gemCount,
     setScreenLayerOpen,
+    episodePrologueFor,
     messengerEventSink,
     phoneCallEventSink,
     visualNovelEventSink,

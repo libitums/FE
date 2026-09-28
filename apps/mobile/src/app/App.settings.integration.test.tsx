@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { termsSections } from "../screens/terms/terms-sections";
@@ -42,6 +42,19 @@ function openSettingsTab(): void {
 // 상태를 스텁하고 가짜 타이머로 `entrySplashDurationMs`만큼 전진시켜 진입
 // 스플래시를 건너뜁니다. 이 파일이 이미 세운 `NativeModules` 스텁(있으면,
 // `stubHost()`의 오디오 모듈)을 지우지 않고 `StorageModule`만 얹습니다.
+// 설정 항목 셀입니다. 셀은 ui-lynx `SettingsGroup`이 그리고, 항목은 그룹이 싣는
+// `ui-lynx-settings-group-item-{id}` 상자로 가려 집습니다(`id`는 이동 대상 · 옵션 키).
+// 나가기는 동그란 뒤로 버튼(ui-lynx `RoundButton`)입니다 — testid 상자 안의 버튼을 누릅니다.
+function exitButton(testId: "profile-screen-exit" | "terms-screen-exit"): HTMLElement {
+  return within(screen.getByTestId(testId)).getByTestId("ui-lynx-round-button");
+}
+
+function settingsCell(id: string): HTMLElement {
+  return within(screen.getByTestId(`ui-lynx-settings-group-item-${id}`)).getByTestId(
+    "ui-lynx-settings-cell",
+  );
+}
+
 function renderApp(ui: Parameters<typeof render>[0]) {
   const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
   const tokenStore = new Map<string, string>();
@@ -94,20 +107,18 @@ test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘이 계약 
   openSettingsTab();
 
   const list = screen.getByTestId("settings-screen-list");
-  const itemTestIds = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
+  const itemTestIds = Array.from(
+    list.querySelectorAll('[data-testid^="ui-lynx-settings-group-item-"]'),
+  ).map((el) => el.getAttribute("data-testid"));
   expect(itemTestIds).toEqual([
-    "settings-nav-item-profile",
-    "settings-nav-item-terms",
-    "settings-toggle-item-auto-play-audio",
-    "settings-toggle-item-show-transcript",
+    "ui-lynx-settings-group-item-profile",
+    "ui-lynx-settings-group-item-terms",
+    "ui-lynx-settings-group-item-auto-play-audio",
+    "ui-lynx-settings-group-item-show-transcript",
   ]);
 
-  expect(screen.getByTestId("settings-toggle-item-state-auto-play-audio")).toHaveTextContent(
-    "켜짐",
-  );
-  expect(screen.getByTestId("settings-toggle-item-state-show-transcript")).toHaveTextContent(
-    "켜짐",
-  );
+  expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "true");
+  expect(settingsCell("show-transcript")).toHaveAttribute("data-checked", "true");
 });
 
 // ------------------------------------------------------------------------- IT2
@@ -118,12 +129,12 @@ test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘이 계약 
 test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 바가 사라진다", () => {
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   openSettingsTab();
-  fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
+  fireEvent.tap(settingsCell("profile"), {});
 
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+  fireEvent.tap(exitButton("profile-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
@@ -138,10 +149,10 @@ test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 �
 test("[IT3] 프로필의 설정으로를 tap하면 설정 화면으로 돌아가고 프로필 화면이 사라진다", () => {
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   openSettingsTab();
-  fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
+  fireEvent.tap(settingsCell("profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+  fireEvent.tap(exitButton("profile-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("profile-screen-title")).not.toBeInTheDocument();
@@ -153,13 +164,13 @@ test("[IT4] 개인정보 보호 및 약관 항목을 tap하면 약관 화면이 
   const sections = termsSections();
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   openSettingsTab();
-  fireEvent.tap(screen.getByTestId("settings-nav-item-terms"), {});
+  fireEvent.tap(settingsCell("terms"), {});
 
   expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
   const content = screen.getByTestId("terms-screen-content");
   expect(content.children).toHaveLength(sections.length);
 
-  fireEvent.tap(screen.getByTestId("terms-screen-exit"), {});
+  fireEvent.tap(exitButton("terms-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("terms-screen-title")).not.toBeInTheDocument();
@@ -171,10 +182,8 @@ test("[IT5] 설정에서 자동 재생을 끈 뒤 듣기 화면을 열면 재생
   const { audio } = stubHost();
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   openSettingsTab();
-  fireEvent.tap(screen.getByTestId("settings-toggle-item-auto-play-audio"), {});
-  expect(screen.getByTestId("settings-toggle-item-state-auto-play-audio")).toHaveTextContent(
-    "꺼짐",
-  );
+  fireEvent.tap(settingsCell("auto-play-audio"), {});
+  expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "false");
 
   startStep("ordering");
 
@@ -191,10 +200,8 @@ test("[IT6] 설정에서 대본 표시를 끈 뒤 듣기 화면을 열면 listen
   stubHost();
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   openSettingsTab();
-  fireEvent.tap(screen.getByTestId("settings-toggle-item-show-transcript"), {});
-  expect(screen.getByTestId("settings-toggle-item-state-show-transcript")).toHaveTextContent(
-    "꺼짐",
-  );
+  fireEvent.tap(settingsCell("show-transcript"), {});
+  expect(settingsCell("show-transcript")).toHaveAttribute("data-checked", "false");
 
   startStep("ordering");
 
@@ -207,7 +214,7 @@ test("[IT7] IT5 상태(자동 재생 끔)에서 재생 컨트롤을 tap하면 �
   const { audio } = stubHost();
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   openSettingsTab();
-  fireEvent.tap(screen.getByTestId("settings-toggle-item-auto-play-audio"), {});
+  fireEvent.tap(settingsCell("auto-play-audio"), {});
 
   startStep("ordering");
   expect(audio).toHaveLength(0);
@@ -273,18 +280,18 @@ test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 약관 
   renderApp(<App seenEpisodeIntroIds={seenIntros} settingsEventSink={settingsEventSink} />);
 
   openSettingsTab();
-  fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
+  fireEvent.tap(settingsCell("profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
-  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+  fireEvent.tap(exitButton("profile-screen-exit"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("settings-nav-item-terms"), {});
+  fireEvent.tap(settingsCell("terms"), {});
   expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
-  fireEvent.tap(screen.getByTestId("terms-screen-exit"), {});
+  fireEvent.tap(exitButton("terms-screen-exit"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("settings-toggle-item-auto-play-audio"), {});
-  fireEvent.tap(screen.getByTestId("settings-toggle-item-show-transcript"), {});
+  fireEvent.tap(settingsCell("auto-play-audio"), {});
+  fireEvent.tap(settingsCell("show-transcript"), {});
 
   expect(log).toEqual([
     { name: "settings_opened" },
@@ -300,19 +307,15 @@ test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 약관 
 test("[IT11] 앱을 다시 켠 것 — 토글 둘을 끈 뒤 unmount하고 새로 render하면 토글 둘이 다시 켜짐이다(저장하지 않는다 — 수용 기준 7)", () => {
   const { unmount } = renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   openSettingsTab();
-  fireEvent.tap(screen.getByTestId("settings-toggle-item-auto-play-audio"), {});
-  fireEvent.tap(screen.getByTestId("settings-toggle-item-show-transcript"), {});
+  fireEvent.tap(settingsCell("auto-play-audio"), {});
+  fireEvent.tap(settingsCell("show-transcript"), {});
   unmount();
 
   renderApp(<App seenEpisodeIntroIds={seenIntros} />);
   openSettingsTab();
 
-  expect(screen.getByTestId("settings-toggle-item-state-auto-play-audio")).toHaveTextContent(
-    "켜짐",
-  );
-  expect(screen.getByTestId("settings-toggle-item-state-show-transcript")).toHaveTextContent(
-    "켜짐",
-  );
+  expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "true");
+  expect(settingsCell("show-transcript")).toHaveAttribute("data-checked", "true");
 });
 
 // ------------------------------------------------------------------------ IT12
@@ -325,31 +328,31 @@ test("[IT12] (가드) sink 없이 render(<App />) — 탭·토글·항목 tap이
   }).not.toThrow();
 
   expect(() => {
-    fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
+    fireEvent.tap(settingsCell("profile"), {});
   }).not.toThrow();
 
   expect(() => {
-    const exit = screen.queryByTestId("profile-screen-exit");
+    const exit = exitButton("profile-screen-exit");
     if (exit !== null) fireEvent.tap(exit, {});
   }).not.toThrow();
 
   expect(() => {
-    const nav = screen.queryByTestId("settings-nav-item-terms");
+    const nav = settingsCell("terms");
     if (nav !== null) fireEvent.tap(nav, {});
   }).not.toThrow();
 
   expect(() => {
-    const exit = screen.queryByTestId("terms-screen-exit");
+    const exit = exitButton("terms-screen-exit");
     if (exit !== null) fireEvent.tap(exit, {});
   }).not.toThrow();
 
   expect(() => {
-    const toggle = screen.queryByTestId("settings-toggle-item-auto-play-audio");
+    const toggle = settingsCell("auto-play-audio");
     if (toggle !== null) fireEvent.tap(toggle, {});
   }).not.toThrow();
 
   expect(() => {
-    const toggle = screen.queryByTestId("settings-toggle-item-show-transcript");
+    const toggle = settingsCell("show-transcript");
     if (toggle !== null) fireEvent.tap(toggle, {});
   }).not.toThrow();
 });
@@ -368,12 +371,12 @@ test("[IT13] 쌓인 화면에서는 탭으로 나갈 수단이 없고, 나가면
   openSettingsTab();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 
-  fireEvent.tap(screen.getByTestId("settings-nav-item-profile"), {});
+  fireEvent.tap(settingsCell("profile"), {});
 
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId("profile-screen-exit"), {});
+  fireEvent.tap(exitButton("profile-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
