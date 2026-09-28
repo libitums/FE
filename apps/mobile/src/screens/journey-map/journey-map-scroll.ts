@@ -17,7 +17,8 @@ export function stepNodeId(id: JourneyStepId): string {
 export type MeasuredRect = { readonly top: number; readonly height: number };
 
 // 요소 여럿의 자리를 한 번에 잽니다. 하나라도 못 재면 `null`을 냅니다 — 반쪽짜리 값으로
-// 자리를 계산하지 않습니다.
+// 자리를 계산하지 않습니다. 잴 것이 없으면 빈 답을 바로 냅니다 — 답이 영영 안 오는
+// 일이 없습니다.
 export function measureRects(
   ids: readonly string[],
   onDone: (rects: readonly MeasuredRect[] | null) => void,
@@ -32,6 +33,10 @@ export function measureRects(
       onDone(result);
     }
   };
+  if (pending === 0) {
+    settle(rects);
+    return;
+  }
   try {
     ids.forEach((id, index) => {
       lynx

@@ -81,6 +81,10 @@ export function JourneyMapScreen({
   // 그리는 값을 치르지 않기 위해서입니다.
   const latestScrollTop = useRef(0);
   const [openScrollTop, setOpenScrollTop] = useState(0);
+  // 지금 자리를 재고 있는 스텝입니다. 재는 일이 비동기라, 그 사이에 말풍선이 닫히거나
+  // 다른 스텝으로 바뀌면 늦게 온 답이 화면을 옛 유닛 쪽으로 끌고 갑니다 — 답이 왔을 때
+  // 이 값이 자기 스텝이 아니면 버립니다.
+  const measuringStepId = useRef<JourneyStepId | null>(null);
 
   const handleScroll = (event: ScrollEvent) => {
     "background only";
@@ -96,6 +100,8 @@ export function JourneyMapScreen({
     // 먼저 탭 자리로 엽니다 — 탭이 유닛 한가운데였다고 어림한 값입니다. 재는 일은
     // 비동기라, 기다렸다 열면 누른 뒤 말풍선이 늦게 뜹니다.
     const tapScrollTop = latestScrollTop.current;
+    // oxlint-disable-next-line react/immutability
+    measuringStepId.current = id;
     dispatch({
       type: "openStep",
       stepId: id,
@@ -108,6 +114,11 @@ export function JourneyMapScreen({
     // 말풍선이 유닛에 맞지 않습니다. 못 재도 탭을 막지 않습니다: 말풍선은 이미 떴습니다.
     measureRects([stepNodeId(id), scrollId, screenId], (rects) => {
       "background only";
+      if (measuringStepId.current !== id) {
+        return;
+      }
+      // oxlint-disable-next-line react/immutability
+      measuringStepId.current = null;
       const [unit, scroll, screen] = rects ?? [];
       if (unit === undefined || scroll === undefined || screen === undefined) {
         scrollStepIntoView(id);
@@ -132,6 +143,13 @@ export function JourneyMapScreen({
       setOpenScrollTop(scrollTop);
       scrollMapTo(placement.targetScrollTop);
     });
+  };
+
+  const handleCloseSheet = () => {
+    "background only";
+    // oxlint-disable-next-line react/immutability
+    measuringStepId.current = null;
+    dispatch({ type: "closeSheet" });
   };
 
   const openStep =
@@ -261,7 +279,7 @@ export function JourneyMapScreen({
           /* `시작`의 목적지는 이 화면이 정하지 않습니다 — 열린 스텝의 id를 그대로
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}
-          onClose={() => dispatch({ type: "closeSheet" })}
+          onClose={handleCloseSheet}
         />
       )}
     </view>
