@@ -236,7 +236,7 @@ App (app/App.tsx)                                        ← 유일한 결선 �
   속성으로 막는다.
 - sink는 App의 optional prop `settingsEventSink`이고 기본값 `null`로 정규화되며, 제품 진입점은
   `null`을 명시한다. **이 변경이 병합돼도 실제 집계는 0건이다.** 그래서 이벤트는 **e2e 항목이
-  아니다** — 기기에서 관측할 수 없고 `integration`이 진다.
+  아니다** — 기기에서 관측할 수 없고 `integration`이 진다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 
 ## 7. 테스트 계층
 

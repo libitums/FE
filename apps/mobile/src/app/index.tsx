@@ -37,19 +37,25 @@ import "@libitums/ui-lynx/settings-cell/styles.css";
 import "@libitums/ui-lynx/status-indicator/styles.css";
 import "@libitums/ui-lynx/visual-novel-dialog/styles.css";
 
+import { noAnalyticsSession } from "../lib/analytics-events";
+import { productAnalyticsSession } from "../lib/posthog-client";
 import { App } from "./App";
+
+// 메인 스레드에서는 SDK 모듈이 번들에서 빠집니다(ADR-0029). 두 스레드의 첫 렌더가
+// 다른 sink를 받지만 sink는 이벤트 핸들러(background)에서만 불리므로 그려지는 것은 같습니다.
+const analytics = __BACKGROUND__ ? productAnalyticsSession() : noAnalyticsSession;
 
 // `GlobalPropsProvider`가 있어야 호스트가 뒤늦게 넘기는 safe area 값에
 // `useGlobalProps`가 다시 그립니다(lib/safe-area.ts).
 root.render(
   <GlobalPropsProvider>
     <App
-      messengerEventSink={null}
-      visualNovelEventSink={null}
-      phoneCallEventSink={null}
-      notificationEventSink={null}
-      settingsEventSink={null}
-      entryEventSink={null}
+      messengerEventSink={analytics.sinks.messengerEventSink}
+      visualNovelEventSink={analytics.sinks.visualNovelEventSink}
+      phoneCallEventSink={analytics.sinks.phoneCallEventSink}
+      notificationEventSink={analytics.sinks.notificationEventSink}
+      settingsEventSink={analytics.sinks.settingsEventSink}
+      entryEventSink={analytics.sinks.entryEventSink}
     />
   </GlobalPropsProvider>,
 );

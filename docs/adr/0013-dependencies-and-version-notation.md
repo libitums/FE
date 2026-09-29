@@ -144,6 +144,14 @@ ADR-0005 D3의 결정이고, 그건 그대로다.
 |---|---|---|
 | `@lynx-js/react` | `0.125.0` | ReactLynx 런타임. `src/`가 직접 import한다 |
 
+> **첫 설치 뒤 더해진 `dependencies`** ⟨2026-09-29, 적용 기록 — D1 · D3을 그대로 따른다⟩. 위 표는
+> 첫 설치 목록이라 그대로 두고 뒤에 늘어난 것을 여기 적는다.
+>
+> | 패키지 | 버전 | 왜 | 번들 판별(D3) |
+> |---|---|---|---|
+> | `@posthog/core` | `1.55.2` | 제품 이벤트 전송의 SDK — `PostHogCore` 하나만 쓴다([ADR-0029](0029-product-analytics-posthog.md) D1) | background 번들에 들어간다(`dist/posthog-core.mjs` 별칭, 약 70 kB) |
+> | `background-only` | `0.0.1` | 분석 어댑터의 스레드 경계 표시. 전이 의존으로만 있으면 vitest가 해석하지 못한다([ADR-0029](0029-product-analytics-posthog.md) D3 · D5) | 앱 코드(`posthog-client.ts`)가 import한다 — ReactLynx 플러그인이 스레드별 별칭을 걸어 메인 스레드 import를 빌드 오류로 막는다 |
+
 **`apps/mobile` — `devDependencies`**
 
 | 패키지 | 버전 | 왜 | 확인한 제약 |
