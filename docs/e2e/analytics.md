@@ -89,6 +89,7 @@ PostHog 웹에서 해당 프로젝트의 **Activity → Live events**를 열어 
 | 환경 | bundle SHA-256 | A1 | A2 | A3 | B1 | B2 | B3 | B4 | B5 | 확인자 · 시각 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | iOS Simulator(iPhone 17 Pro) · iOS 26.5 · **Debug 호스트(내장 번들)** — Release 아님 | 미기록 | 통과(키 없는 빌드, `ce80bc2` — 여정 맵 · 설정 탭 · 자동 재생 토글 정상, JS 오류 0) | 관찰 불가(프록시 · tcpdump 미사용 — 통과로 세지 않음) | 미실행 | 미실행(키 없음) — 대체 관찰은 아래 | 미실행(키 없음) | 미실행 | 미실행 | 미실행 | 루트 에이전트 · 2026-09-29 09:55–10:15 KST |
+| iOS Simulator(iPhone 17 Pro) · iOS 26.5 · **Debug 호스트(내장 번들) · 실제 `phc_` 키** — Release 아님 | `9c796a8d5030…`(응답 기록용 진단 줄을 더한 임시 번들 — 커밋 `3fbf26b` + 진단) | 미실행(이 회차는 키 있음) | 미실행 | 미실행 | 통과 — `settings_opened`가 `us.i.posthog.com/batch/`에 `200 {"status":"Ok"}`, `$lib = libitums-lynx`, `$process_person_profile = false` | 부분 — `session_option_changed`(`option` · `value`) · `notifications_opened` · `notification_item_tapped`(`notificationId` · `target`) 모두 200, 개인정보 속성 없음. 스페셜 유닛 열기 · 나가기는 새 설치에서 유닛이 전부 잠겨 미실행 | 통과 — 재실행 뒤 `settings_opened`의 `distinct_id`가 앞 실행과 다름 | 미실행(시뮬레이터에 비행기 모드 없음) | 관찰: 이벤트 3ms 뒤 전송 · 200, 홈으로 가기 전에 끝남 | 루트 에이전트 · 2026-09-29 10:35–10:41 KST |
 | iOS Simulator · Release | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미기록 — 실행 시 입력 |
 | iPhone 실기 · Release | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미기록 — 실행 시 입력 |
 
