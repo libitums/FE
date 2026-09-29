@@ -50,6 +50,7 @@ root.render(
       notificationEventSink={null}
       settingsEventSink={null}
       entryEventSink={null}
+      episodeIntroEventSink={null}
     />
   </GlobalPropsProvider>,
 );
