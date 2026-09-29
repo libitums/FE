@@ -1,157 +1,24 @@
-// 여정 도메인 타입과 고정 데이터를 소유합니다 — 유닛·스텝·맵 항목 타입과
-// `journeyUnits`·`journeyMapItems`·`journeySteps`·`initialCompletedStepCount`입니다.
+// 여정의 **고정 데이터와 파생**을 소유합니다 — 유닛 목록 · 에피소드 목록과
+// `journeyUnits`·`journeyMapItems`·`journeySteps`·`journeyMapSections`·
+// `initialCompletedStepCount`입니다. 타입은 `journey-map-types.ts`가 집니다.
+//
+// 배럴이 타입도 함께 내보내도록 여기서 재수출합니다 — 소비자가 타입과 값을 어느
+// 파일에서 가져올지 고르지 않아도 되게 합니다.
+//
 // UI를 import하지 않습니다 — 화면 폴더 안에 있지만 화면 컴포넌트를 참조하지 않는
 // 순수 모듈입니다.
 
 import type {
-  EpisodeFinalJourneyMapItemContract,
-  EpisodeFinalJourneyUnitContract,
-} from "../episode-final/episode-final.contract";
-import type {
-  EpisodeIntroJourneyMapItemContract,
-  EpisodeIntroJourneyUnitContract,
-} from "../episode-intro/episode-intro.contract";
-import type {
-  MessengerJourneyMapItemContract,
-  MessengerJourneyUnitContract,
-} from "../messenger/messenger.contract";
-import type {
-  PhoneCallJourneyUnitContract,
-  PhoneCallJourneyMapItemContract,
-} from "../phone-call/phone-call.contract";
-import type {
-  VisualNovelJourneyMapItemContract,
-  VisualNovelJourneyUnitContract,
-} from "../visual-novel/visual-novel.contract";
-
-export type JourneyStepId = "greeting" | "introduction" | "ordering" | "appointment" | "directions";
-
-export type JourneyStepStatus = "done" | "current" | "locked";
-
-export type JourneyStep = {
-  readonly id: JourneyStepId;
-  readonly title: string;
-  readonly description: string;
-};
-
-/**
- * 여정의 한 마디입니다. **유형이 유닛을 따라갑니다**(`docs/screens.md` 「유닛」).
- *
- * 판별 union이고 옵셔널 필드가 없습니다 — `steps?`를 두면 「스텝이 없을 수도 있는
- * 유닛」이 타입에 생기고 그 분기를 소비자 전부가 지게 됩니다(`docs/conventions/code.md`
- * 「임시 입력값의 이음매」의 「옵셔널 금지」).
- *
- * **특별 유닛은 스텝을 갖지 않습니다** — 기본 학습형은 일반 유닛에서만 돌기
- * 때문입니다. 그래서 `learningFormByStep`의 정의역이 「일반 유닛의 스텝 전부」로
- * 좁혀지고, 그 좁힘을 `Record`의 키가 집니다.
- *
- * **`special`이 오늘 아무 필드도 지지 않는 것은 판단입니다** — 그 항목이 무엇을
- * 지고 갈지는 그 유닛으로 가는 화면이 정합니다. 지금 필드를 정하면 화면 없이 그
- * 모양이 굳습니다.
- */
-export type JourneyUnit =
-  | { readonly kind: "standard"; readonly steps: readonly JourneyStep[] }
-  | EpisodeIntroJourneyUnitContract
-  | MessengerJourneyUnitContract
-  | PhoneCallJourneyUnitContract
-  | VisualNovelJourneyUnitContract
-  | EpisodeFinalJourneyUnitContract;
-
-/** 여정 맵이 그리는 항목입니다 — 표준 스텝 또는 특별 유닛 항목(표지·메신저·전화·비주얼 노벨·최종 테스트)입니다. */
-export type JourneyMapItem =
-  | { readonly kind: "standard"; readonly step: JourneyStep }
-  | EpisodeIntroJourneyMapItemContract
-  | MessengerJourneyMapItemContract
-  | Omit<PhoneCallJourneyMapItemContract, "status">
-  | Omit<VisualNovelJourneyMapItemContract, "status">
-  | EpisodeFinalJourneyMapItemContract;
-
-/**
- * 맵 항목 하나가 줄에서 어떤 상태로 서는가입니다. **항목이 지지 않고 파생이 냅니다** —
- * 항목에 적으면 진행과 어긋날 자리가 생깁니다(ADR-0007 D3).
- *
- * 어휘를 하나로 합친 것은 `locked`가 이제 **모든 항목 종류에 올 수 있기** 때문입니다 —
- * 전에는 잠김이 스텝 노드와 최종 테스트 둘에만 있어 종류마다 다른 타입을 썼습니다.
- * 잠김을 실제로 내는 파생은 `mapItemStatus`입니다(`journey-map-progress.ts`).
- */
-export type JourneyMapItemStatus = "locked" | "available" | "completed";
-
-/**
- * 에피소드를 가려내는 이름입니다. 오늘은 `tutorial` 하나입니다.
- *
- * 유닛 id가 전부 닫힌 union인데 여기만 열려 있었습니다. 닫으면 에피소드 id의 오타가
- * 컴파일에 섭니다 — `"tutoria1"`을 쓰면 `TS2322`입니다.
- *
- * **아직 없는 에피소드 이름을 미리 넣지 않습니다.** 데이터에 없는 값을 타입에 적으면
- * 그 값이 어디서 왔는지 아무도 못 답합니다.
- */
-export type JourneyEpisodeId = "tutorial";
-
-/**
- * 에피소드 **가운데**에 올 수 있는 유닛입니다. 표지도 최종 테스트도 여기 올 수
- * 없습니다 — 그 둘은 자리가 정해져 있고, 자리가 정해진 것이 가운데에 또 서면
- * 「첫/마지막」이 뜻을 잃습니다.
- */
-export type JourneyMiddleUnit = Exclude<
+  JourneyEpisode,
+  JourneyEpisodes,
+  JourneyEpisodeUnits,
+  JourneyMapItem,
+  JourneyMapSection,
+  JourneyStep,
   JourneyUnit,
-  EpisodeIntroJourneyUnitContract | EpisodeFinalJourneyUnitContract
->;
+} from "./journey-map-types";
 
-/**
- * 에피소드의 유닛 목록입니다. 첫 자리가 표지, 마지막 자리가 최종 테스트이고 **가운데는
- * 규칙이 없습니다** — 일반 학습과 서사 연계 학습을 유닛마다 자유롭게 섞습니다.
- *
- * 데이터 순서가 아니라 **타입**이 그 둘을 집니다. 순서로만 두면 최종 테스트를 가운데
- * 둬도 컴파일도 런타임도 통과합니다.
- *
- * 따라오는 것은 **최소 길이 둘**입니다(표지 + 최종). 그것이 도메인과 맞습니다 — 서사
- * 없는 에피소드도, 최종 테스트 없는 에피소드도 사용자 발화에 없습니다.
- */
-export type JourneyEpisodeUnits = readonly [
-  EpisodeIntroJourneyUnitContract,
-  ...JourneyMiddleUnit[],
-  EpisodeFinalJourneyUnitContract,
-];
-
-// 여정의 유닛 목록입니다. **맵의 세로 줄 순서가 이 목록의 순서입니다.**
-//
-// ⚠ **이음매입니다**(`docs/conventions/code.md` 「임시 입력값의 이음매」).
-//
-// **무엇이 임시인가** — 이 목록에 특별 유닛 항목이 **0건인 것**이 임시입니다. 왼쪽의
-// `kind`와 오른쪽의 타입은 임시가 아닙니다. `culture-quiz.ts`의 문항 표가 「빈 것이
-// 임시다」라고 적은 것과 같은 종류이고, `culture.ts`의 서사 표(「차 있는데도
-// 임시」)와 반대입니다.
-//
-// **왜 빈 채로 둘 수 있나** — 목록이라 원소 0을 표현할 수 있습니다. `Record<K, union>`이
-// 빈 값을 못 갖는 것과 갈리는 자리입니다.
-//
-// **이 목록이 배정 근거가 아닙니다** — 오늘 항목이 일반 유닛 하나인 것은 전사(轉寫)입니다.
-// 유닛 경계가 맵에도 문서에도 그려진 적이 없어 경계를 하나로 옮긴 것이지, 「여정이
-// 유닛 하나다」라고 정해진 것이 아닙니다.
-//
-// **무엇이 막고 있나** — 어느 유닛이 특별한지는 컨텐츠 판단이고, 특별 유닛이 열 화면은
-// 아직 정해지지 않았습니다. 갈 곳은 `docs/adr/README.md` 보류 표의 「특별 유닛의 구성과
-// 컨텐츠」 행입니다.
-//
-// **값이 오는 날 무엇이 바뀌나** — 이 목록에 항목이 늘고, 그 항목이 지는 필드와 맵의
-// 노드 컴포넌트가 함께 늘어납니다. ⚠ **여기서만 앞선 이음매들과 갈립니다** —
-// `learningFormByStep`·`cultureNarrativeByStep`이 *"형태는 한 글자도 안 바뀝니다"* 라고
-// 적을 수 있었던 것은 그 표의 타입이 이미 완성돼 있었기 때문입니다. 이 목록은 특별
-// 변형이 **필드를 얻으면서** 옵니다. 그 문장을 여기 복사하지 않습니다.
-/**
- * 유닛을 묶는 한 덩어리입니다. 맵은 에피소드마다 위에 헤더를 세우고 그 아래에 그
- * 에피소드의 유닛을 줄로 세웁니다.
- *
- * `label`과 `title`이 갈려 있는 것은 디자인이 두 줄로 그리기 때문입니다 — 위가
- * 「Episode 0.」, 아래가 이름입니다. 한 문자열로 합치면 두 줄의 타이포가 서로 달라
- * 다시 쪼개야 합니다.
- */
-export type JourneyEpisode = {
-  readonly id: JourneyEpisodeId;
-  readonly label: string;
-  readonly title: string;
-  readonly units: JourneyEpisodeUnits;
-};
+export type * from "./journey-map-types";
 
 const tutorialUnits: JourneyEpisodeUnits = [
   // 에피소드의 첫 자리는 표지입니다 — 학습의 당위성을 주는 서사가 여기서 열리고,
@@ -212,13 +79,18 @@ const tutorialUnits: JourneyEpisodeUnits = [
 // 컨텐츠가 오는 대로 늡니다. 「여정이 에피소드 하나다」라고 정해진 것이 아닙니다.
 //
 // 번호가 0인 것은 이 에피소드가 본편이 아니라 사용법을 익히는 자리이기 때문입니다.
-const journeyEpisodes: readonly JourneyEpisode[] = [
-  { id: "tutorial", label: "Episode 0.", title: "Tutorial.", units: tutorialUnits },
+const journeyEpisodes: JourneyEpisodes = [
+  { kind: "filled", id: "tutorial", label: "Episode 0.", title: "Tutorial.", units: tutorialUnits },
 ];
 
 // 모든 에피소드의 유닛을 목록 순서대로 이어 냅니다. 에피소드 경계를 모르는 소비자
 // (스텝 파생 · 맵 항목 파생)가 이것을 씁니다.
-const journeyUnits: readonly JourneyUnit[] = journeyEpisodes.flatMap((episode) => episode.units);
+// 준비 중 에피소드는 유닛이 없으므로 아무것도 보태지 않습니다 — 그래서 이 목록의 값이
+// 준비 중 에피소드가 늘어도 **문자 그대로 같습니다**(`journeySteps`·`journeyMapItems`도
+// 함께 그렇습니다).
+const journeyUnits: readonly JourneyUnit[] = journeyEpisodes.flatMap((episode) =>
+  episode.kind === "filled" ? episode.units : [],
+);
 
 // 특별 유닛 화면이 늘면 `default`의 `never` 대입이 컴파일 단계에서 섭니다(`render-screen.tsx`와
 // 같은 형태입니다). 예전에는 마지막 갈래가 조건 없는 나머지여서 새 화면이 조용히 비주얼
@@ -270,23 +142,44 @@ export function standardUnitSteps(units: readonly JourneyUnit[]): readonly Journ
 // 목록과 그 나열이 어긋날 자리가 생깁니다(`journeyStepOrdinal`이 서수를 따로 안 적는
 // 것과 같은 논리, ADR-0007 D3).
 //
-// 타입도 값도 순서도 파생 전과 문자 그대로 같습니다 — 오늘 특별 유닛이 0건이기
-// 때문입니다.
+// ⟨정정 2026-09-29⟩ 여기 *"오늘 특별 유닛이 0건이기 때문"* 이라고 적혀 있었는데
+// **거짓이 된 지 오래였습니다**(특별 유닛이 다섯입니다). 값이 파생 전과 같은 진짜 이유는
+// `standardUnitSteps`가 특별 유닛의 기여를 0으로 두기 때문이고, 그것은 개수와 무관합니다.
 export const journeySteps: readonly JourneyStep[] = standardUnitSteps(journeyUnits);
 
-/** 맵이 한 덩어리로 그리는 것입니다 — 에피소드 하나와 그 에피소드의 맵 항목들입니다. */
-export type JourneyMapSection = {
-  readonly episode: JourneyEpisode;
-  readonly items: readonly JourneyMapItem[];
-};
+/**
+ * 에피소드 목록을 맵의 구획으로 옮깁니다. **준비 중 에피소드는 구획을 만들지 않고**, 바로
+ * 앞 채워진 에피소드의 `pendingNext`에 목록 순서대로 붙습니다.
+ *
+ * 던지지 않는 총함수입니다 — 인자의 첫 자리가 `JourneyFilledEpisode`로 닫혀 있어 붙을
+ * 자리가 없는 준비 중 에피소드가 **타입에 없습니다.**
+ *
+ * **상한을 두지 않습니다** — 잇달아 오는 준비 중 전부가 한 구획에 붙습니다. 「다음 하나만」
+ * 으로 자르면 데이터에 둘을 적었을 때 하나가 조용히 사라집니다.
+ *
+ * 목록을 인자로 받는 것은 `standardUnitSteps(units)`와 같은 형태이고, 그래서 이 함수는
+ * **픽스처로 검사됩니다** — 오늘 데이터에는 「채워진 것 사이에 낀 준비 중」도 「준비 중
+ * 둘」도 없습니다.
+ */
+export function mapSectionsOf(episodes: JourneyEpisodes): readonly JourneyMapSection[] {
+  const sections: JourneyMapSection[] = [];
+  for (const episode of episodes) {
+    if (episode.kind === "filled") {
+      sections.push({ episode, items: mapItemsOf(episode.units), pendingNext: [] });
+      continue;
+    }
+    // 첫 자리가 `filled`로 닫혀 있어(`JourneyEpisodes`) 여기 닿을 때 `sections`가 비어 있을
+    // 수 없습니다 — 그래서 방어 분기가 없습니다.
+    const last = sections[sections.length - 1] as JourneyMapSection;
+    sections[sections.length - 1] = { ...last, pendingNext: [...last.pendingNext, episode] };
+  }
+  return sections;
+}
 
 // 맵이 그리는 구획입니다. `journeyMapItems`와 같은 변환을 에피소드 안에서 돌립니다 —
 // 두 곳이 갈리면 헤더 아래 유닛과 평평한 목록이 어긋나므로, 변환을 함수 하나로 두고
 // 양쪽이 그것을 부릅니다.
-export const journeyMapSections: readonly JourneyMapSection[] = journeyEpisodes.map((episode) => ({
-  episode,
-  items: mapItemsOf(episode.units),
-}));
+export const journeyMapSections: readonly JourneyMapSection[] = mapSectionsOf(journeyEpisodes);
 
 // 진행의 진실의 출처는 이제 App의 상태이고, 이 상수는 그 **씨앗**입니다 — 값(2)은
 // 그대로이고 이름만 역할이 좁아진 것을 반영합니다. 옛 이름(`completedStepCount`)을

@@ -38,6 +38,9 @@ const itemsByEpisode: Readonly<Record<RoleplayEpisodeId, readonly PremiumRolepla
       situation: "가볍게 안부 나누기",
     },
   ],
+  // 아직 유닛이 없는 에피소드입니다 — 결제 롤플레이도 없습니다. 빈 목록이 맞고,
+  // 키를 안 적으면 `Record` 전수성이 `TS2741`로 섭니다.
+  customs: [],
 };
 
 /** 없는 에피소드는 빈 목록입니다 — 결제 롤플레이가 없는 에피소드는 오류가 아닙니다. */
