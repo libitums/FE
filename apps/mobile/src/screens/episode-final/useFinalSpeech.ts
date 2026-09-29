@@ -5,8 +5,9 @@ import { useEffect, useRef } from "@lynx-js/react";
 import type { Dispatch } from "@lynx-js/react";
 
 import { announce } from "../../lib/accessibility";
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { AnswerResult } from "../../lib/answer-result";
 import { canListen, judgeSpeaking } from "../../lib/speaking-judge";
+import { useUiCopy } from "../../lib/ui-copy";
 import {
   requestSpeechPermissions,
   startSpeechRecognition,
@@ -128,10 +129,11 @@ export function useAnnounceResult(
   phase: EpisodeFinalPhase,
   result: AnswerResult | null,
 ): void {
+  const copy = useUiCopy();
   // `result`는 차례 · 국면에서 파생하므로 의존성에 함께 두어도 발화가 늘지 않습니다.
   useEffect(() => {
     if (result !== null) {
-      announce(`채점 결과, ${answerResultLabel(result)}`);
+      announce(copy.common.resultAnnouncement(result));
     }
   }, [questionIndex, phase, result]);
 }

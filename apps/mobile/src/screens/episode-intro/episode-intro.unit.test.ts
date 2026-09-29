@@ -17,14 +17,14 @@ import type { EpisodeIntroUnitId } from "./episode-intro.contract";
 const introUnit = {
   kind: "special",
   id: "tutorial-intro",
-  title: "에피소드 표지",
+  title: "Episode intro",
   screen: "episode-intro",
 } as const;
 
 const finalUnit = {
   kind: "special",
   id: "tutorial-final-test",
-  title: "최종 테스트",
+  title: "Final test",
   screen: "episode-final",
 } as const;
 
@@ -40,14 +40,14 @@ function section(title: string, items: readonly JourneyMapItem[]): JourneyMapSec
 const introItem: JourneyMapItem = {
   kind: "episode-intro",
   id: "tutorial-intro",
-  title: "에피소드 표지",
+  title: "Episode intro",
 };
 
 // 표지 항목이 **없는** 구획입니다. 첫 자리에 두어, 구획을 훑지 않고 `sections[0]`을
 // 돌려주는 구현이 통과하지 않게 합니다.
 const withoutIntro = section("표지 없는 구획", [
   { kind: "standard", step: { id: "ordering", title: "주문하기", description: "" } },
-  { kind: "messenger", id: "appointment-confirmation", title: "약속 확인 메시지" },
+  { kind: "messenger", id: "appointment-confirmation", title: "Appointment message" },
 ]);
 
 const withIntro = section("Tutorial.", [

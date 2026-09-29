@@ -3,8 +3,10 @@ import { expect, test } from "vitest";
 import {
   finishWritingQuestion,
   initialWritingScreenState,
+  writingCompletionAnnouncement,
   writingQuestionsForStep,
 } from "./writing";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 // `unit` 계층: 순수 함수의 입출력 (ADR-0006 D4).
@@ -38,4 +40,14 @@ test("[WR2] 모든 스텝의 문항은 칸마다 한 음절이고 문항 id가 �
       }
     }
   }
+});
+
+// RL11 — 완료 낭독의 앞절과 뒷절.
+test("[RL11] 완료 낭독은 `All questions done, {나아가는 라벨}`이다", () => {
+  expect(writingCompletionAnnouncement("See results", uiCopyEn)).toBe(
+    "All questions done, See results",
+  );
+  expect(writingCompletionAnnouncement("Back to map", uiCopyEn)).toBe(
+    "All questions done, Back to map",
+  );
 });

@@ -22,6 +22,7 @@ import {
   visualNovelSessionReducer,
   visualNovelStoryFor,
 } from "./visual-novel";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 const id = "cafe-arrival-visual-novel" as const;
 const active0: VisualNovelProgress = { status: "active", beatIndex: 0 };
@@ -32,7 +33,7 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
   it("정확한 3-beat 순서·내용·artwork ID를 반환한다", () => {
     const expected: VisualNovelStory = {
       unitId: id,
-      title: "카페에 도착한 지민",
+      title: "Jimin arrives at the café",
       beats: [
         {
           index: 0,
@@ -40,7 +41,7 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           backgroundId: "cafe-exterior-day",
           characterId: "jimin",
           characterPoseId: "jimin-neutral",
-          speakerName: "지민",
+          speakerName: "Jimin",
           dialogue: "여기가 우리가 만나기로 한 카페예요.",
         },
         {
@@ -49,7 +50,7 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           backgroundId: "cafe-exterior-day",
           characterId: "jimin",
           characterPoseId: "jimin-smile",
-          speakerName: "지민",
+          speakerName: "Jimin",
           dialogue: "2번 출구 오른쪽이라 금방 찾았죠?",
         },
         {
@@ -58,12 +59,31 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           backgroundId: "cafe-exterior-day",
           characterId: "jimin",
           characterPoseId: "jimin-smile",
-          speakerName: "지민",
+          speakerName: "Jimin",
           dialogue: "그럼 들어가서 같이 주문해 봐요.",
         },
       ],
     };
     expect(visualNovelStoryFor(id)).toEqual(expected);
+  });
+
+  it("CE4 제목 · 화자 이름이 영어다 — 대사는 불변", () => {
+    const story = visualNovelStoryFor(id);
+    expect(story.title).toBe("Jimin arrives at the café");
+    expect(story.beats.map((beat) => beat.speakerName)).toEqual(["Jimin", "Jimin", "Jimin"]);
+    expect(story.beats.map((beat) => beat.dialogue)).toEqual([
+      "여기가 우리가 만나기로 한 카페예요.",
+      "2번 출구 오른쪽이라 금방 찾았죠?",
+      "그럼 들어가서 같이 주문해 봐요.",
+    ]);
+  });
+
+  it("끝나는 전이만 story-complete 키를 내고 그 밖은 null이다", () => {
+    const viewingLastBeat = { mode: "viewing", beatIndex: 1, replaying: false } as const;
+    expect(advanceVisualNovel(viewingLastBeat, active1).announcement).toBe("story-complete");
+    expect(
+      advanceVisualNovel(initialVisualNovelSessionState(active0), active0).announcement,
+    ).toBeNull();
   });
 
   it("초기 progress/session과 completed 복원이 계약대로 파생된다", () => {
@@ -170,16 +190,16 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
     expect(visualNovelCompletionStatus(completed)).toBe("completed");
     expect(visualNovelExitOutcome(active1)).toBe("incomplete");
     expect(visualNovelExitOutcome(completed)).toBe("completed");
-    expect(visualNovelProgressLabel({ mode: "viewing", beatIndex: 0, replaying: false })).toBe(
-      "장면 1 / 3",
-    );
-    expect(visualNovelProgressLabel({ mode: "viewing", beatIndex: 1, replaying: true })).toBe(
-      "장면 2 / 3",
-    );
-    expect(visualNovelProgressLabel({ mode: "final", beatIndex: 2, replaying: true })).toBe(
-      "이야기 완료",
-    );
-    expect(visualNovelCompletionAnnouncement(active1, completed)).toBe("이야기 완료");
+    expect(
+      visualNovelProgressLabel({ mode: "viewing", beatIndex: 0, replaying: false }, uiCopyEn),
+    ).toBe("Scene 1 / 3");
+    expect(
+      visualNovelProgressLabel({ mode: "viewing", beatIndex: 1, replaying: true }, uiCopyEn),
+    ).toBe("Scene 2 / 3");
+    expect(
+      visualNovelProgressLabel({ mode: "final", beatIndex: 2, replaying: true }, uiCopyEn),
+    ).toBe("Story complete");
+    expect(visualNovelCompletionAnnouncement(active1, completed)).toBe("story-complete");
   });
 });
 
@@ -195,7 +215,7 @@ describe("연습 비주얼 노벨 시작 입력", () => {
 
     expect(session).toEqual({ mode: "viewing", beatIndex: 0, replaying: false });
     expect(currentVisualNovelBeat(story, session).id).toBe("arrive");
-    expect(visualNovelProgressLabel(session)).toBe("장면 1 / 3");
+    expect(visualNovelProgressLabel(session, uiCopyEn)).toBe("Scene 1 / 3");
   });
 
   it("V2. 연습 progress로 마지막 beat에 닿으면 completedNow가 true이고 이야기 완료를 발화한다", () => {
@@ -204,7 +224,7 @@ describe("연습 비주얼 노벨 시작 입력", () => {
     const outcome = advanceVisualNovel(viewingLastBeat, practiceVisualNovelProgress());
 
     expect(outcome.completedNow).toBe(true);
-    expect(outcome.announcement).toBe("이야기 완료");
+    expect(outcome.announcement).toBe("story-complete");
   });
 
   // V3 — replaying 여부가 completedNow 판정에 끼면 안 됩니다. V2와 같은 입력에

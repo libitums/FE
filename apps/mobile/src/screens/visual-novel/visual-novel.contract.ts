@@ -5,19 +5,16 @@
  * belong in this file. Changes require specification re-freeze and a contract diff.
  */
 
-import type {
-  SpecialUnitEntrySource,
-  SpecialUnitExitLabel,
-} from "../../lib/special-unit-entry-source";
+import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
 import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
 export type VisualNovelUnitId = "cafe-arrival-visual-novel";
-export type VisualNovelTitle = "카페에 도착한 지민";
+export type VisualNovelTitle = "Jimin arrives at the café";
 
 export type VisualNovelBeatIndex = 0 | 1 | 2;
 export type VisualNovelBeatId = "arrive" | "find" | "enter";
 export type VisualNovelCharacterId = "jimin";
-export type VisualNovelSpeakerName = "지민";
+export type VisualNovelSpeakerName = "Jimin";
 export type VisualNovelBackgroundId = "cafe-exterior-day";
 export type VisualNovelCharacterPoseId = "jimin-neutral" | "jimin-smile";
 
@@ -27,7 +24,7 @@ export type ArriveVisualNovelBeat = {
   readonly backgroundId: "cafe-exterior-day";
   readonly characterId: "jimin";
   readonly characterPoseId: "jimin-neutral";
-  readonly speakerName: "지민";
+  readonly speakerName: "Jimin";
   readonly dialogue: "여기가 우리가 만나기로 한 카페예요.";
 };
 
@@ -37,7 +34,7 @@ export type FindVisualNovelBeat = {
   readonly backgroundId: "cafe-exterior-day";
   readonly characterId: "jimin";
   readonly characterPoseId: "jimin-smile";
-  readonly speakerName: "지민";
+  readonly speakerName: "Jimin";
   readonly dialogue: "2번 출구 오른쪽이라 금방 찾았죠?";
 };
 
@@ -47,7 +44,7 @@ export type EnterVisualNovelBeat = {
   readonly backgroundId: "cafe-exterior-day";
   readonly characterId: "jimin";
   readonly characterPoseId: "jimin-smile";
-  readonly speakerName: "지민";
+  readonly speakerName: "Jimin";
   readonly dialogue: "그럼 들어가서 같이 주문해 봐요.";
 };
 
@@ -155,7 +152,7 @@ export type VisualNovelAdvanceOutcome = {
   readonly progress: VisualNovelProgress;
   readonly progressChanged: boolean;
   readonly completedNow: boolean;
-  readonly announcement: "이야기 완료" | null;
+  readonly announcement: "story-complete" | null;
 };
 
 export type VisualNovelEntrySnapshot = {
@@ -216,7 +213,7 @@ export type VisualNovelScreenProps = {
   readonly onAdvance: (id: VisualNovelUnitId, outcome: VisualNovelAdvanceOutcome) => void;
   readonly onExit: (outcome: VisualNovelExitOutcome, beatId: VisualNovelBeatId) => void;
   readonly onReplay: (id: VisualNovelUnitId) => void;
-  readonly exitLabel?: SpecialUnitExitLabel;
+  readonly exitTo?: SpecialUnitEntrySource;
 };
 
 export type VisualNovelSceneProps = {
@@ -227,10 +224,10 @@ export type VisualNovelSceneProps = {
 };
 
 export type DialoguePanelAction =
-  | { readonly kind: "advance"; readonly label: "다음"; readonly onSelect: () => void }
+  | { readonly kind: "advance"; readonly label: string; readonly onSelect: () => void }
   | {
       readonly kind: "replay";
-      readonly label: "처음부터 보기";
+      readonly label: string;
       readonly onSelect: () => void;
     };
 

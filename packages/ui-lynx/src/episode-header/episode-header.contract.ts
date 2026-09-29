@@ -54,6 +54,6 @@ export function getEpisodeHeaderContract(props: EpisodeHeaderProps): EpisodeHead
     fillPercent: (props.completedUnitCount / props.totalUnitCount) * 100,
     // 「7 / 20」은 눈으로 보면 막대 옆이라 뜻이 붙지만, 낭독되면 무엇의 7인지 알 수
     // 없습니다. 이름에서 단위를 밝힙니다.
-    accessibilityLabel: `${episodeLabel} ${title}, 유닛 ${props.totalUnitCount}개 중 ${props.completedUnitCount}개 완료`,
+    accessibilityLabel: `${episodeLabel} ${title}, ${props.completedUnitCount} of ${props.totalUnitCount} unit${props.totalUnitCount === 1 ? "" : "s"} completed`,
   };
 }

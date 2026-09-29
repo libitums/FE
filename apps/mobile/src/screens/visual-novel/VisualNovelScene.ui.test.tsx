@@ -9,7 +9,7 @@ const beat: VisualNovelBeat = {
   backgroundId: "cafe-exterior-day",
   characterId: "jimin",
   characterPoseId: "jimin-smile",
-  speakerName: "지민",
+  speakerName: "Jimin",
   dialogue: "2번 출구 오른쪽이라 금방 찾았죠?",
 };
 
@@ -19,7 +19,7 @@ const arriveBeat: VisualNovelBeat = {
   backgroundId: "cafe-exterior-day",
   characterId: "jimin",
   characterPoseId: "jimin-neutral",
-  speakerName: "지민",
+  speakerName: "Jimin",
   dialogue: "여기가 우리가 만나기로 한 카페예요.",
 };
 

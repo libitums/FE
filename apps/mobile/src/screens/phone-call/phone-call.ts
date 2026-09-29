@@ -1,11 +1,10 @@
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   PhoneCallCompletionStatus,
   PhoneCallConversation,
   PhoneCallExitOutcome,
-  PhoneCallPlayLabel,
   PhoneCallSessionAction,
   PhoneCallSessionState,
-  PhoneCallStatusLabel,
   PhoneCallTranscriptEntry,
   PhoneCallTurn,
   PhoneCallUnitId,
@@ -13,12 +12,12 @@ import type {
 
 const conversation: PhoneCallConversation = {
   unitId: "appointment-confirmation-phone-call",
-  title: "약속 확인 전화",
+  title: "Appointment call",
   turns: [
     {
       id: "confirm-time",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
       audioSource: "phone-call-confirm-01",
       reply: { id: "confirm-time-reply", text: "네, 토요일 오후 2시에 만나요." },
@@ -26,7 +25,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "confirm-place",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
       audioSource: "phone-call-confirm-02",
       reply: { id: "confirm-place-reply", text: "네, 2번 출구 오른쪽 카페예요." },
@@ -34,7 +33,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "goodbye",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "좋아요. 그럼 토요일에 봐요!",
       audioSource: "phone-call-confirm-03",
       reply: { id: "goodbye-reply", text: "네, 토요일에 봐요!" },
@@ -81,7 +80,12 @@ export const visiblePhoneCallEntries = (
   const entries: PhoneCallTranscriptEntry[] = [];
   for (let index = 0; index < count; index += 1) {
     const turn = value.turns[index];
-    entries.push({ speaker: "jimin", speakerName: "지민", turnId: turn.id, text: turn.transcript });
+    entries.push({
+      speaker: "jimin",
+      speakerName: "Jimin",
+      turnId: turn.id,
+      text: turn.transcript,
+    });
     if (
       state.mode === "completed" ||
       ((state.mode === "ready" || state.mode === "playing" || state.mode === "reply-ready") &&
@@ -89,7 +93,6 @@ export const visiblePhoneCallEntries = (
     ) {
       entries.push({
         speaker: "self",
-        speakerName: "나",
         replyId: turn.reply.id,
         text: turn.reply.text,
       });
@@ -109,23 +112,17 @@ export const currentPhoneCallReply = (
 ): PhoneCallTurn["reply"] | null =>
   state.mode === "reply-ready" ? value.turns[state.turnIndex].reply : null;
 
-export const phoneCallStatusLabel = (state: PhoneCallSessionState): PhoneCallStatusLabel =>
-  state.mode === "ready"
-    ? "통화 준비"
-    : state.mode === "playing"
-      ? "상대방이 말하는 중"
-      : state.mode === "reply-ready"
-        ? "답장할 차례"
-        : "통화 완료";
+export const phoneCallStatusLabel = (state: PhoneCallSessionState, copy: UiCopy): string =>
+  copy.phoneCall.status[state.mode];
 
-export const phoneCallPlayLabel = (state: PhoneCallSessionState): PhoneCallPlayLabel | null =>
+export const phoneCallPlayLabel = (state: PhoneCallSessionState, copy: UiCopy): string | null =>
   state.mode === "completed"
     ? null
     : state.mode === "ready" && state.turnIndex === 0
-      ? "통화 시작"
+      ? copy.phoneCall.play.start
       : state.mode === "ready"
-        ? "듣기"
-        : "다시 듣기";
+        ? copy.phoneCall.play.listen
+        : copy.phoneCall.play["listen-again"];
 
 export const phoneCallExitOutcome = (state: PhoneCallSessionState): PhoneCallExitOutcome =>
   state.mode === "completed" ? "completed" : "incomplete";

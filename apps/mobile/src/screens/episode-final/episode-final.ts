@@ -8,6 +8,7 @@
 // 판정 뒤에는 `Next`를 누르지 않습니다 — 서사가 저절로 이어지듯 잠시 뒤 다음 문항으로
 // 갑니다(2026-09-28 결정).
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { AnswerResult } from "../../lib/answer-result";
 import type {
   EpisodeFinalCallLine,
@@ -173,11 +174,14 @@ export function episodeFinalPromptLine(
 /** 보조기술이 읽는 문장입니다. 고르기 전에는 밑줄 셋 대신 「빈칸」이라고 읽힙니다. */
 export function episodeFinalPromptLabel(
   question: EpisodeFinalWordChoiceQuestion,
-  judged = false,
+  judged: boolean,
+  copy: UiCopy,
 ): string {
   return judged
     ? episodeFinalPromptLine(question, true)
-    : `${question.before} 빈칸 ${question.after}`.trim();
+    : [question.before.trim(), copy.common.blank, question.after.trim()]
+        .filter((part) => part !== "")
+        .join(", ");
 }
 
 /** 몇째 문항인지입니다 — `1 / 5`. */

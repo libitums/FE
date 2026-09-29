@@ -9,11 +9,8 @@ import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
 import type { SafeAreaInsets } from "../../lib/safe-area";
-import {
-  episodeNarrativeProgressLabel,
-  nextEpisodeNarrativeBeat,
-  type EpisodeNarrative,
-} from "./episode-narrative";
+import { useUiCopy } from "../../lib/ui-copy";
+import { nextEpisodeNarrativeBeat, type EpisodeNarrative } from "./episode-narrative";
 
 import "./episode-narrative-screen.css";
 
@@ -48,6 +45,7 @@ export function EpisodeNarrativeScreen({
   onFinish,
   onExit,
 }: EpisodeNarrativeScreenProps): ReactNode {
+  const copy = useUiCopy();
   const [beatIndex, setBeatIndex] = useState(0);
   const beat = narrative.beats[beatIndex] ?? narrative.beats[0];
 
@@ -96,7 +94,7 @@ export function EpisodeNarrativeScreen({
         data-testid="episode-narrative-screen-advance"
         accessibility-element={true}
         accessibility-traits="button"
-        accessibility-label={`다음 대사, ${episodeNarrativeProgressLabel(narrative, beatIndex)}`}
+        accessibility-label={copy.episodeNarrative.nextLine(beatIndex + 1, narrative.beats.length)}
         catchtap={handleAdvance}
       />
 
@@ -113,7 +111,7 @@ export function EpisodeNarrativeScreen({
           {/* 나가기의 탭은 루트까지 올라가 장면을 넘기면 안 됩니다 — 여기서 끊습니다. */}
           <view data-testid="episode-narrative-screen-back" catchtap={stopTap}>
             <RoundButton
-              accessibilityLabel="맵으로"
+              accessibilityLabel={copy.common.exitTo.journey}
               icon={arrowLeft03}
               variant="neutral"
               size="xl"

@@ -81,7 +81,7 @@ describe("getBottomNavigatorContracts", () => {
     expect(contracts[1]).toMatchObject({
       selected: true,
       interactive: true,
-      accessibilityLabel: "여정, 선택됨, 새 소식 있음",
+      accessibilityLabel: "여정, selected, 새 소식 있음",
       iconColor: color.fg["neutral-inverted"],
       pressedIconColor: color.fg["neutral-inverted"],
       className: expect.stringContaining("ui-lynx-bottom-navigator-item-selected"),
@@ -145,8 +145,19 @@ describe("getBottomNavigatorContracts", () => {
     const contracts = getBottomNavigatorContracts({ items, selectedId: "home" });
     expect(contracts[2]).toMatchObject({
       badge: { kind: "count", text: "99+" },
-      accessibilityLabel: "롤플레이, 읽지 않은 알림 120개",
+      accessibilityLabel: "롤플레이, 120 unread notifications",
     });
+  });
+
+  test.each([
+    [1, "1 unread notification"],
+    [3, "3 unread notifications"],
+  ] as const)("count %s는 영어 단복수로 낭독한다", (count, spoken) => {
+    const contracts = getBottomNavigatorContracts({
+      items: [items[0]!, items[1]!, { ...items[2]!, badge: { kind: "count", count } }],
+      selectedId: "home",
+    });
+    expect(contracts[2]).toMatchObject({ accessibilityLabel: `롤플레이, ${spoken}` });
   });
 
   test.each([3, 4, 5] as const)("%s개 navigator 계약과 item 순서를 고정한다", (count) => {

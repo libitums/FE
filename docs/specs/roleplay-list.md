@@ -13,6 +13,15 @@
 - 이 문서는 공개 계약의 요약이다. 유닛별 이벤트 표는 각 유닛 스펙에 있고 여기에 복사하지
   않는다(§5).
 
+> **개정 (2026-09-29, UI 문구표).** 결정과 근거는 [ADR-0031](../adr/0031-ui-language-catalog.md)(**제안**)이 진다. 보이는 · 읽히는 문구가 문구표
+> (`useUiCopy()` · 순수 함수의 끝 인자 `copy`)에서 나오고 영어다. 이 문서에서 바뀐 계약:
+> `RoleplayFormLabel` 타입이 지워지고 `roleplayFormLabel(form, copy)` 등 라벨 함수가 `string`을 돌려준다
+> (`roleplayItemAccessibilityLabel`의 `locked`는 필수 인자). 세 화면은 `exitLabel?` 대신 **`exitTo?:
+> SpecialUnitEntrySource`**(기본 `"journey"`)를 받고 화면이 `specialUnitExitLabel(exitTo, copy)`로 라벨을 읽는다.
+> 형태 낱말은 `Messenger` · `Phone call` · `Visual novel`, 나가기는 `Back to list` · `Back to map`, 플러스 항목의
+> 제목 · 상황은 데이터 곁 영어(`roleplay-premium-items.ts`)다. testid · 이벤트 이름 · payload는 불변이다. 본문의
+> 한국어 라벨은 당시 값이다 — 대응은 ADR-0031 부록.
+
 ## 0. 고정 범위와 불변식
 
 1. 롤플레이 탭 루트(`roleplay-list`)에 목록이 선다. 항목은 특별 유닛 **셋 전부**이고 **여정
@@ -122,9 +131,10 @@ App (app/App.tsx)                                    ← 유일한 결선 자리
 - route는 여정과 따로 셋이다 — `roleplay-messenger` · `roleplay-phone-call` ·
   `roleplay-visual-novel`(`{ name, unitId }`). 여정 route 셋과 그 소비자는 한 글자도 바뀌지
   않는다. 대가로 `Screen` 멤버와 화면 컴포넌트의 1:1이 깨졌다 — 컴포넌트 하나를 route 둘이 연다.
-- 라벨은 `specialUnitExitLabel(source)`가 진입 출처에서 고른다(`journey` → `맵으로`, `roleplay` →
-  `목록으로`). 세 화면은 `exitLabel?` prop을 받고 기본값이 `맵으로`라 기존 호출이 그대로
-  성립한다. App은 여섯 결선 모두에서 명시적으로 넘긴다.
+- 라벨은 진입 출처에서 정해진다(`journey` → `Back to map`, `roleplay` → `Back to list`). ⟨2026-09-29⟩ 세 화면은
+  `exitTo?: SpecialUnitEntrySource` prop을 받고(기본 `"journey"`) `specialUnitExitLabel(exitTo, copy)`로 문구표에서
+  라벨을 읽는다. App은 여섯 결선 모두에서 `exitTo`를 명시적으로 넘긴다. (옛 계약은 `exitLabel?` prop에
+  `맵으로` · `목록으로` 리터럴이었다.)
 - 비주얼 노벨의 나가기는 메신저 · 전화처럼 머리 행의 첫 흐름 자식이다. 2026-09-15 결정으로 이
   단위에서 옮겼다 — 이전의 절대 배치와 제목 고정 여백은 큰 글자 배율에서 `목록으로`가 제목과
   겹치게 했다. 두 경로가 같은 구조이고 라벨 문자열만 다르며, 낭독 순서는 나가기 → 제목 → 진행 →
@@ -190,6 +200,8 @@ App (app/App.tsx)                                    ← 유일한 결선 자리
   값을 계약이 고정한 것이고(근거: [화면 명세](../screens.md) 구현 순서 6의 유형 이름과 요구사항
   문면), 사용자가 이 값을 유지하기로 정했다. 전화 항목은 `약속 확인 전화, 전화`로 읽혀 낱말이
   겹친다. 값이 바뀌면 바뀌는 자리는 `roleplayFormLabel`의 표 한 곳과 `RoleplayFormLabel` 타입이다.
+  ⟨2026-09-29⟩ 이제 값은 문구표 `copy.roleplay.form`(`Messenger` · `Phone call` · `Visual novel`) 한 곳이고
+  `RoleplayFormLabel` 타입은 지워졌다. 전화 항목은 `Appointment call, Phone call`로 읽힌다.
 - **기존 테스트 수정의 해석 — 2026-09-15 수락.** 수용 기준 4의 *"기존 테스트가 수정 없이
   통과한다"* 를 나가기 라벨·여정 동작 테스트로 읽은 해석(§6)을 사용자가 수락했다.
 - **후속 후보 — 전화 완료 측정.** 전화에는 열림 이벤트만 있어 롤플레이 완료 수가 전화를 덮지

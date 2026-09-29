@@ -20,17 +20,17 @@ export type EpisodeNarrative = {
 const placeholderNarrative: EpisodeNarrative = {
   beats: [
     {
-      speakerName: "이유나",
+      speakerName: "Yuna",
       line: "어서 오세요! 찾으시는 거 있으세요?",
       translation: "Welcome! Are you looking for anything?",
     },
     {
-      speakerName: "이유나",
+      speakerName: "Yuna",
       line: "처음 오셨죠? 제가 매장을 안내해 드릴게요.",
       translation: "Is this your first visit? Let me show you around.",
     },
     {
-      speakerName: "이유나",
+      speakerName: "Yuna",
       line: "필요한 게 있으면 언제든 불러 주세요.",
       translation: "Call me anytime if you need anything.",
     },
@@ -48,9 +48,4 @@ export function nextEpisodeNarrativeBeat(
   index: number,
 ): number | null {
   return index + 1 < narrative.beats.length ? index + 1 : null;
-}
-
-/** 화면 아래쪽 진행 표시에 쓰는 낭독 문구입니다 — `1 / 3`. */
-export function episodeNarrativeProgressLabel(narrative: EpisodeNarrative, index: number): string {
-  return `${index + 1} / ${narrative.beats.length}`;
 }

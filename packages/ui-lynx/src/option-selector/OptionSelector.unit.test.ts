@@ -84,7 +84,7 @@ describe("getOptionSelectorContract", () => {
       selected: true,
       interactive: true,
       className: "ui-lynx-option-selector-item ui-lynx-option-selector-item-selected",
-      accessibilityLabel: "Tea, please, 선택됨",
+      accessibilityLabel: "Tea, please, selected",
       traits: "button",
       indicatorColor: color.fg.brand,
     });
@@ -105,7 +105,7 @@ describe("getOptionSelectorContract", () => {
     expect(outlined.items[0]).toMatchObject({
       selected: true,
       traits: "disabled",
-      accessibilityLabel: "Coffee, please, 선택됨",
+      accessibilityLabel: "Coffee, please, selected",
       indicatorColor: color.fg.disabled,
       className:
         "ui-lynx-option-selector-item ui-lynx-option-selector-item-selected ui-lynx-option-selector-item-disabled",

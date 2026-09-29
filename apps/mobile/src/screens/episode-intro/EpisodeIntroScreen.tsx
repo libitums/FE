@@ -6,6 +6,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeIntroScreenProps } from "./episode-intro.contract";
 
 import "./episode-intro-screen.css";
@@ -28,6 +29,7 @@ export function EpisodeIntroScreen({
   onSkip,
   onNext,
 }: EpisodeIntroScreenProps): ReactNode {
+  const copy = useUiCopy();
   // `Skip`은 곧장 건너뛰지 않고 한 번 묻습니다 — 건너뛴 서사는 이 세션에서 다시 서지
   // 않으므로, 손가락이 잘못 닿아 이야기를 잃지 않게 합니다.
   const [confirmingSkip, setConfirmingSkip] = useState(false);
@@ -66,7 +68,7 @@ export function EpisodeIntroScreen({
           <view className="episode-intro-screen-top">
             <view className="episode-intro-screen-back" data-testid="episode-intro-screen-back">
               <RoundButton
-                accessibilityLabel="맵으로"
+                accessibilityLabel={copy.common.exitTo.journey}
                 icon={arrowLeft03}
                 variant="neutral"
                 size="xl"
@@ -120,11 +122,11 @@ export function EpisodeIntroScreen({
       {confirmingSkip ? (
         <view className="episode-intro-screen-confirm" data-testid="episode-intro-screen-confirm">
           <Dialog
-            title="이야기를 건너뛸까요?"
-            description="건너뛰면 이 에피소드의 이야기는 다시 나오지 않아요."
+            title={copy.episodeIntro.skipDialog.title}
+            description={copy.episodeIntro.skipDialog.description}
             actions={[
-              { id: "skip", label: "건너뛰기" },
-              { id: "stay", label: "계속 보기" },
+              { id: "skip", label: copy.episodeIntro.skipDialog.skip },
+              { id: "stay", label: copy.episodeIntro.skipDialog.keepWatching },
             ]}
             phase="visible"
             bindaction={handleConfirmAction}

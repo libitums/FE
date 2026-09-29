@@ -1,8 +1,10 @@
-import { expect, test, vi } from "vitest";
+import { describe, expect, it, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { NotificationItem } from "./notifications.contract";
 import { NotificationsScreen } from "./NotificationsScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 로직을 다시 짓지 않습니다 — 항목
 // 데이터는 이 파일 안의 fixture로 줍니다(`notification-items.ts`를 import하지
@@ -11,25 +13,25 @@ import { NotificationsScreen } from "./NotificationsScreen";
 
 const messengerItem: NotificationItem = {
   id: "notification-messenger",
-  message: "지민이 약속 확인 메시지를 보냈어요",
+  message: "Jimin sent you an appointment message",
   target: { kind: "messenger", unitId: "appointment-confirmation" },
 };
 
 const phoneCallItem: NotificationItem = {
   id: "notification-phone-call",
-  message: "지민에게서 약속 확인 전화가 왔어요",
+  message: "Jimin is calling about your appointment",
   target: { kind: "phone-call", unitId: "appointment-confirmation-phone-call" },
 };
 
 const visualNovelItem: NotificationItem = {
   id: "notification-visual-novel",
-  message: "지민이 카페에 도착했어요",
+  message: "Jimin has arrived at the café",
   target: { kind: "visual-novel", unitId: "cafe-arrival-visual-novel" },
 };
 
 const roleplayListItem: NotificationItem = {
   id: "notification-roleplay-list",
-  message: "배운 대화를 롤플레이로 연습해 보세요",
+  message: "Practice what you learned in a roleplay",
   target: { kind: "roleplay-list" },
 };
 
@@ -59,7 +61,7 @@ test("[NS1] notifications-screen-title이 알림을 렌더하고 header trait를
   );
 
   const title = screen.getByTestId("notifications-screen-title");
-  expect(title).toHaveTextContent("알림");
+  expect(title).toHaveTextContent("Notifications");
   expect(title).toHaveAttribute("accessibility-traits", "header");
 });
 
@@ -76,7 +78,7 @@ test("[NS2] 나가기가 동그란 버튼으로 서고 접근성 채널이 정�
   const exit = exitButton();
   expect(exit).toHaveAttribute("accessibility-element", "true");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
-  expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+  expect(exit).toHaveAttribute("accessibility-label", "Back to map");
 });
 
 test("[NS3] 나가기 tap → onExit 정확히 1회, onSelectItem 0회", () => {
@@ -248,9 +250,11 @@ test("[NS11] items=[] → 목록 상자 대신 빈 상태가 선다", () => {
   expect(screen.queryByTestId("notifications-screen-list")).not.toBeInTheDocument();
   expect(screen.getByTestId("notifications-screen-empty")).toBeInTheDocument();
   expect(screen.getByTestId("notifications-screen-empty-title")).toHaveTextContent(
-    "아직 알림이 없어요",
+    "No notifications yet",
   );
-  expect(screen.getByTestId("notifications-screen-empty-description")).toBeInTheDocument();
+  expect(screen.getByTestId("notifications-screen-empty-description")).toHaveTextContent(
+    "We'll let you know here when there's something new.",
+  );
 });
 
 test("[NS12] 항목이 있으면 빈 상태가 없다", () => {
@@ -370,4 +374,44 @@ test("[NS17] 지운 뒤 같은 id의 알림이 다시 와도 삭제 자리가 �
   expect(
     screen.queryByTestId("notification-list-item-delete-notification-messenger"),
   ).not.toBeInTheDocument();
+});
+
+describe("[NT1-M] 알림 화면은 문구표에서 읽는다", () => {
+  it("제목 · 나가기", () => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <NotificationsScreen
+          items={items}
+          onSelectItem={vi.fn()}
+          onDeleteItem={vi.fn()}
+          onExit={vi.fn()}
+        />
+      </UiCopyContext.Provider>,
+    );
+
+    expect(screen.getByTestId("notifications-screen-title")).toHaveTextContent(
+      "⟦notifications.title⟧",
+    );
+    expect(exitButton()).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
+  });
+
+  it("빈 상태", () => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <NotificationsScreen
+          items={[]}
+          onSelectItem={vi.fn()}
+          onDeleteItem={vi.fn()}
+          onExit={vi.fn()}
+        />
+      </UiCopyContext.Provider>,
+    );
+
+    expect(screen.getByTestId("notifications-screen-empty-title")).toHaveTextContent(
+      "⟦notifications.emptyTitle⟧",
+    );
+    expect(screen.getByTestId("notifications-screen-empty-description")).toHaveTextContent(
+      "⟦notifications.emptyBody⟧",
+    );
+  });
 });

@@ -4,6 +4,7 @@
 // 집니다(`lib/writing-session.ts` · `lib/writing-judge.ts`). 여기 남는 것은 이 화면만의 것 —
 // 몇째 문항인가와 문항마다의 결과입니다.
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { AnswerResult } from "../../lib/answer-result";
 import { writingPassCriterion } from "../../lib/writing-judge";
 import type { WritingQuestion } from "../../lib/writing-session";
@@ -81,12 +82,6 @@ export function finishWritingQuestion(
   };
 }
 
-export const writingCompletionText = "문항을 모두 마쳤어요";
-export const writingFinishLabel = "결과 보기";
-
-export function writingCompletionAnnouncement(nextActionLabel: string): string {
-  return `${writingCompletionText}, ${nextActionLabel}`;
+export function writingCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
+  return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
 }
-
-/** 잴 수 없을 때 캔버스 위에 서는 안내입니다. 넘어가도 된다는 것을 함께 말합니다. */
-export const writingUnmeasurableNotice = "지금은 글씨를 잴 수 없어요. 다음으로 넘어가요.";

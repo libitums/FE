@@ -9,6 +9,7 @@ import { DrawingSurface } from "./DrawingSurface";
 import type { WritingEraseControl, WritingGuideView } from "./use-writing-practice";
 import type { AnswerResult } from "../lib/answer-result";
 import type { Stroke } from "../lib/handwriting-recognition";
+import { useUiCopy } from "../lib/ui-copy";
 import { writingCanvasGeometries, type WritingCanvasSize } from "../lib/writing-canvas";
 
 import "./writing-canvas.css";
@@ -45,6 +46,7 @@ export function WritingCanvas({
   erase,
   onStrokeComplete,
 }: WritingCanvasProps): ReactNode {
+  const copy = useUiCopy();
   const geometry = writingCanvasGeometries[size];
 
   return (
@@ -62,13 +64,13 @@ export function WritingCanvas({
           data-testid="writing-canvas-guide"
           src={`data:image/png;base64,${guide.image}`}
           accessibility-element={true}
-          accessibility-label={`안내 글자 ${glyph}`}
+          accessibility-label={copy.writing.guideGlyph(glyph)}
         />
       ) : guide.kind === "text" ? (
         <text
           className={`writing-canvas-guide-text writing-canvas-guide-text-${size}`}
           data-testid="writing-canvas-guide-text"
-          accessibility-label={`안내 글자 ${glyph}`}
+          accessibility-label={copy.writing.guideGlyph(glyph)}
         >
           {glyph}
         </text>

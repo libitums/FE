@@ -69,7 +69,7 @@ test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면�
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
-  expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
+  expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("Roleplay");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
@@ -88,7 +88,7 @@ test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Settings");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
@@ -111,7 +111,7 @@ test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Settings");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
@@ -194,7 +194,7 @@ test("시트가 열린 동안에도 탭 전환이 동작한다", async () => {
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
-  expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("롤플레이");
+  expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("Roleplay");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
@@ -216,14 +216,14 @@ test("시트가 열린 동안에도 탭 전환이 동작한다", async () => {
 // 앵커로 잡습니다 — 뒤에 오는 부재 단언(`step-sheet-panel`이 없음을 보는 단언)이
 // 공허해지지 않도록.
 // 학습 화면을 실제로 떠납니다 ⟨2026-09-28⟩. `×`는 묻기만 하고 실제로 떠나는 것은 모달의
-// `그만두기`입니다 — 되돌릴 수 없는 일(진행이 저장되지 않습니다) 앞이라 두 걸음입니다.
+// `Leave`입니다 — 되돌릴 수 없는 일(진행이 저장되지 않습니다) 앞이라 두 걸음입니다.
 // 그 계약은 껍데기의 ui 테스트가 지고, 여기서는 「끝까지 나간다」를 한 줄로 부릅니다.
 function exitLearning(): void {
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
   const leave = [...document.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
-    (el) => el.getAttribute("accessibility-label") === "그만두기",
+    (el) => el.getAttribute("accessibility-label") === "Leave",
   );
-  if (leave === undefined) throw new Error("나가기 확인 모달에 `그만두기`가 없습니다");
+  if (leave === undefined) throw new Error("나가기 확인 모달에 `Leave`가 없습니다");
   fireEvent.tap(leave, {});
 }
 
@@ -375,7 +375,7 @@ test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다
 
   answerAllQuestions("ordering", mixedPick);
 
-  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
+  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("All questions done");
 
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   fireEvent.tap(lessonCompleteExit(), {});
@@ -847,7 +847,7 @@ test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남
 
   answerAllQuestions("ordering", mixedPick);
 
-  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
+  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("All questions done");
   const atComplete = sourcesOf(calls);
   expect(atComplete).toEqual([
     audioSourceAt("ordering", 0),
@@ -928,7 +928,7 @@ test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 
 
   // 앵커 — 셸을 지나 종료 상태에 실제로 닿았습니다. 안 닿으면 아래가 전부 공허해집니다.
   const complete = screen.getByTestId("listening-screen-complete");
-  expect(complete).toHaveTextContent("문항을 모두 마쳤어요");
+  expect(complete).toHaveTextContent("All questions done");
 
   const operable = [...container.querySelectorAll("[accessibility-element]")].map((el) =>
     el.getAttribute("data-testid"),
@@ -954,7 +954,7 @@ test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 
 
   expect(announce).toHaveLength(1);
   expect(announce[0]?.content).toBe(`${complete.textContent ?? ""}, ${actionLabel}`);
-  expect(announce[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+  expect(announce[0]?.content).toBe("All questions done, See results");
 });
 
 // **회귀 단언**입니다. 위쪽 스무 케이스가 전부 대역 없이 도는 것이 이미 이
@@ -983,15 +983,15 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
   startStep("ordering");
 
   const playback = () => screen.getByTestId("listening-prompt-playback");
-  expect(playback()).toHaveAttribute("accessibility-label", "듣기");
+  expect(playback()).toHaveAttribute("accessibility-label", "Play");
 
   // 눌러도 던지지 않고 상태가 움직이지 않습니다 — 아무 일도 일어나지 않는 것이 정상입니다.
   expect(() => fireEvent.tap(playback(), {})).not.toThrow();
-  expect(playback()).toHaveAttribute("accessibility-label", "듣기");
+  expect(playback()).toHaveAttribute("accessibility-label", "Play");
 
   expect(() => answerAllQuestions("ordering", mixedPick)).not.toThrow();
 
-  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
+  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("All questions done");
 
   expect(() => fireEvent.tap(screen.getByTestId("learning-shell-action"), {})).not.toThrow();
   expect(screen.getByTestId("lesson-complete-screen-title")).toBeInTheDocument();

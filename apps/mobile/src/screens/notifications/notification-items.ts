@@ -6,7 +6,7 @@ import type { NotificationItem } from "./notifications.contract";
 // ⚠ 이음매입니다(「임시 입력값의 이음매」 — `docs/conventions/code.md`).
 //
 // **무엇이 임시인가** — 아래 네 항목의 `id` · `message` · `target` 전부와
-// 개수(4)입니다. `NotificationItem` 타입과 행선지 낱말 표(`notifications.ts`)는
+// 개수(4)입니다. `NotificationItem` 타입과 행선지 낱말(문구표 `notifications.destination`)은
 // 임시가 아닙니다.
 //
 // **무엇이 막고 있나** — 알림 내용의 실제 출처가 없습니다. 서버·API가 없고,
@@ -25,22 +25,22 @@ import type { NotificationItem } from "./notifications.contract";
 const items: readonly NotificationItem[] = [
   {
     id: "notification-messenger",
-    message: "지민이 약속 확인 메시지를 보냈어요",
+    message: "Jimin sent you an appointment message",
     target: { kind: "messenger", unitId: "appointment-confirmation" },
   },
   {
     id: "notification-phone-call",
-    message: "지민에게서 약속 확인 전화가 왔어요",
+    message: "Jimin is calling about your appointment",
     target: { kind: "phone-call", unitId: "appointment-confirmation-phone-call" },
   },
   {
     id: "notification-visual-novel",
-    message: "지민이 카페에 도착했어요",
+    message: "Jimin has arrived at the café",
     target: { kind: "visual-novel", unitId: "cafe-arrival-visual-novel" },
   },
   {
     id: "notification-roleplay-list",
-    message: "배운 대화를 롤플레이로 연습해 보세요",
+    message: "Practice what you learned in a roleplay",
     target: { kind: "roleplay-list" },
   },
 ];

@@ -19,7 +19,7 @@ describe("TextField UI", () => {
     const input = screen.getByTestId("ui-lynx-text-field-input");
     expect(input).toHaveAttribute(
       "accessibility-label",
-      "이메일 주소, 필수, 로그인할 주소를 입력해 주세요., 30자 중 5자 입력",
+      "이메일 주소, 필수, 로그인할 주소를 입력해 주세요., 5 of 30 characters",
     );
     expect(input).toHaveAttribute("maxlength", "30");
     expect(screen.getByTestId("ui-lynx-text-field-supporting-row")).toHaveTextContent(
@@ -117,7 +117,7 @@ describe("TextField UI", () => {
     expect(root).toHaveAttribute("data-state", "error");
     expect(screen.getByTestId("ui-lynx-text-field-input")).toHaveAttribute(
       "accessibility-label",
-      "이메일 주소, 오류: name@example.com 형식으로 입력해 주세요.",
+      "이메일 주소, Error: name@example.com 형식으로 입력해 주세요.",
     );
   });
 });

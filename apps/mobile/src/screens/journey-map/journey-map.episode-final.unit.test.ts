@@ -44,7 +44,7 @@ describe("최종 테스트 항목", () => {
     expect(tutorial.items.at(-1)).toEqual({
       kind: "episode-final",
       id: "tutorial-final-test",
-      title: "최종 테스트",
+      title: "Final test",
     });
   });
 

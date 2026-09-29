@@ -11,7 +11,6 @@ import {
   getPhoneCallConversation,
   practicePhoneCallCompletionStatus,
 } from "../screens/phone-call/phone-call";
-import { specialUnitExitLabel } from "../lib/special-unit-entry-source";
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import {
   practiceVisualNovelProgress,
@@ -31,7 +30,7 @@ export function renderRoleplayUnitScreen(screen: RoleplayUnitScreen, wiring: Rol
         <MessengerScreen
           conversation={messengerConversationFor(screen.unitId)}
           completionStatus={practiceMessengerCompletionStatus()}
-          exitLabel={specialUnitExitLabel("roleplay")}
+          exitTo="roleplay"
           onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
           onComplete={wiring.onMessengerComplete}
           onFinish={wiring.onMessengerFinish}
@@ -43,7 +42,7 @@ export function renderRoleplayUnitScreen(screen: RoleplayUnitScreen, wiring: Rol
           unitId={screen.unitId}
           conversation={getPhoneCallConversation()}
           completionStatus={practicePhoneCallCompletionStatus()}
-          exitLabel={specialUnitExitLabel("roleplay")}
+          exitTo="roleplay"
           onComplete={wiring.onPhoneCallComplete}
           onExit={wiring.onPhoneCallExit}
         />
@@ -57,7 +56,7 @@ export function renderRoleplayUnitScreen(screen: RoleplayUnitScreen, wiring: Rol
         <VisualNovelScreen
           story={visualNovelStoryFor(screen.unitId)}
           progress={practiceVisualNovelProgress()}
-          exitLabel={specialUnitExitLabel("roleplay")}
+          exitTo="roleplay"
           onAdvance={wiring.onVisualNovelAdvance}
           onExit={(_outcome, beatId) => wiring.onVisualNovelExit(screen.unitId, beatId)}
           onReplay={wiring.onVisualNovelReplay}

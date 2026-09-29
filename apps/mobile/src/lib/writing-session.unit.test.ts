@@ -13,6 +13,7 @@ import {
   type WritingSessionAction,
   type WritingSessionState,
 } from "./writing-session";
+import { uiCopyEn } from "./ui-copy-en";
 
 // `unit` 계층: 순수 함수의 입출력 (ADR-0006 D4). 문항은 이 파일의 대역입니다.
 
@@ -149,6 +150,6 @@ test("[WS10] 지금 음절 · 마지막 음절 여부를 순번에서 읽는다"
 test("[WS11] 빈칸은 음절 수만큼의 밑줄이고, 낭독 이름은 밑줄 대신 빈칸이다", () => {
   expect(writingBlank(question)).toBe("_ _ _");
   expect(writingBlank({ ...question, syllables: ["어", "디"] })).toBe("_ _");
-  expect(writingPromptLabel(question)).toBe("이 화장품 찾아 빈칸 .");
-  expect(writingPromptLabel({ ...question, before: "", after: "" })).toBe("빈칸");
+  expect(writingPromptLabel(question, uiCopyEn)).toBe("이 화장품 찾아, blank, .");
+  expect(writingPromptLabel({ ...question, before: "", after: "" }, uiCopyEn)).toBe("blank");
 });

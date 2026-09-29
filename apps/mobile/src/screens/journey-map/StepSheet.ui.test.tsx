@@ -2,6 +2,8 @@ import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { StepSheet } from "./StepSheet";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). `toHaveClass`·`toHaveStyle`을
 // 쓰지 않습니다 (docs/conventions/code.md).
@@ -16,7 +18,7 @@ import { StepSheet } from "./StepSheet";
 test("제목이 순번과 함께 props 문자열을 텍스트로 낸다", () => {
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
@@ -26,14 +28,14 @@ test("제목이 순번과 함께 props 문자열을 텍스트로 낸다", () => 
     />,
   );
 
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Lesson 3: “주문하기”");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Lesson 3: “Ordering”");
 });
 
 // 단언 2
 test("제목이 accessibility-traits='header'를 갖는다", () => {
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
@@ -47,10 +49,10 @@ test("제목이 accessibility-traits='header'를 갖는다", () => {
 });
 
 // 단언 3
-test("시작 버튼이 접근성 속성과 라벨 텍스트를 갖는다", () => {
+test("[JM1-E] 시작 버튼이 접근성 속성과 라벨 텍스트를 갖는다", () => {
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
@@ -61,18 +63,18 @@ test("시작 버튼이 접근성 속성과 라벨 텍스트를 갖는다", () =>
   );
 
   const start = screen.getByTestId("step-sheet-start");
-  expect(start).toHaveAttribute("accessibility-label", "시작");
+  expect(start).toHaveAttribute("accessibility-label", "Start");
   expect(start).toHaveAttribute("accessibility-traits", "button");
   expect(start).toHaveAttribute("accessibility-element", "true");
-  expect(start).toHaveTextContent("시작");
+  expect(start).toHaveTextContent("Start");
 });
 
 // 단언 4 — 디자인에 보이는 닫기 자리가 없어졌습니다. 이름과 역할은 가림막이 집니다:
-// 손가락은 말풍선 밖을 누르고, 스크린리더는 그 막을 `닫기` 버튼으로 읽습니다.
-test("가림막이 닫기의 접근성 속성을 갖고, 보이는 낱말은 없다", () => {
+// 손가락은 말풍선 밖을 누르고, 스크린리더는 그 막을 `Close` 버튼으로 읽습니다.
+test("[JM1-E] 가림막이 닫기의 접근성 속성을 갖고, 보이는 낱말은 없다", () => {
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
@@ -83,7 +85,7 @@ test("가림막이 닫기의 접근성 속성을 갖고, 보이는 낱말은 없
   );
 
   const close = screen.getByTestId("step-sheet-close");
-  expect(close).toHaveAttribute("accessibility-label", "닫기");
+  expect(close).toHaveAttribute("accessibility-label", "Close");
   expect(close).toHaveAttribute("accessibility-traits", "button");
   expect(close).toHaveAttribute("accessibility-element", "true");
   expect(close).toHaveTextContent("");
@@ -94,7 +96,7 @@ test("닫기를 tap하면 onClose가 정확히 한 번 불린다", () => {
   const onClose = vi.fn<() => void>();
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
@@ -121,7 +123,7 @@ test("시작을 tap하면 onStart가 정확히 한 번 불린다", () => {
   const onStart = vi.fn<() => void>();
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
@@ -143,7 +145,7 @@ test("시작을 tap해도 onClose는 불리지 않는다", () => {
   const onClose = vi.fn<() => void>();
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
@@ -164,7 +166,7 @@ test("닫기를 tap해도 onStart는 불리지 않는다", () => {
   const onStart = vi.fn<() => void>();
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
@@ -180,10 +182,10 @@ test("닫기를 tap해도 onStart는 불리지 않는다", () => {
 });
 
 // 진행 줄 — 낱말 둘과 막대가 같은 수에서 나옵니다.
-test("진행 줄이 활동 수와 백분율을 같은 값에서 낸다", () => {
+test("[JM1-E] 진행 줄이 활동 수와 백분율을 같은 값에서 낸다", () => {
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={1}
@@ -193,11 +195,11 @@ test("진행 줄이 활동 수와 백분율을 같은 값에서 낸다", () => {
     />,
   );
 
-  expect(screen.getByTestId("step-sheet-progress-count")).toHaveTextContent("1/4 활동");
+  expect(screen.getByTestId("step-sheet-progress-count")).toHaveTextContent("1/4 activities");
   expect(screen.getByTestId("step-sheet-progress-percent")).toHaveTextContent("25%");
   expect(screen.getByTestId("step-sheet-progress")).toHaveAttribute(
     "accessibility-label",
-    "1/4 활동, 25%",
+    "1 of 4 activities done, 25%",
   );
 });
 
@@ -206,7 +208,7 @@ test("진행 줄이 활동 수와 백분율을 같은 값에서 낸다", () => {
 test("끝낸 활동이 없으면 채움 막대를 그리지 않는다", () => {
   render(
     <StepSheet
-      title="주문하기"
+      title="Ordering"
       top={0}
       lessonOrdinal={3}
       completedActivityCount={0}
@@ -217,4 +219,52 @@ test("끝낸 활동이 없으면 채움 막대를 그리지 않는다", () => {
   );
 
   expect(screen.queryByTestId("step-sheet-progress-fill")).not.toBeInTheDocument();
+});
+
+test("[JM1-E] 활동이 하나뿐이면 activity를 단수로 말한다", () => {
+  render(
+    <StepSheet
+      title="Ordering"
+      top={0}
+      lessonOrdinal={3}
+      completedActivityCount={0}
+      totalActivityCount={1}
+      onStart={() => {}}
+      onClose={() => {}}
+    />,
+  );
+
+  expect(screen.getByTestId("step-sheet-progress-count")).toHaveTextContent("0/1 activity");
+});
+
+// JM1-M — 시트의 낱말은 모두 문구표에서 읽습니다(하드코딩 영어는 표시 표에서 남아 잡힙니다).
+test("[JM1-M] 문구표를 주입하면 시작 · 닫기 · 진행 줄이 표의 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <StepSheet
+        title="Ordering"
+        top={0}
+        lessonOrdinal={3}
+        completedActivityCount={1}
+        totalActivityCount={4}
+        onStart={() => {}}
+        onClose={() => {}}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  const start = screen.getByTestId("step-sheet-start");
+  expect(start).toHaveTextContent("⟦journeyMap.start⟧");
+  expect(start).toHaveAttribute("accessibility-label", "⟦journeyMap.start⟧");
+  expect(screen.getByTestId("step-sheet-close")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.close⟧",
+  );
+  expect(screen.getByTestId("step-sheet-progress-count")).toHaveTextContent(
+    "⟦journeyMap.activityCount⟧(1, 4)",
+  );
+  expect(screen.getByTestId("step-sheet-progress")).toHaveAttribute(
+    "accessibility-label",
+    "⟦journeyMap.activityProgressLabel⟧(1, 4), 25%",
+  );
 });

@@ -1,26 +1,25 @@
 // 듣기 학습 화면에 나가는 문자열과 발화 문구를 소유합니다. UI를 import하지
 // 않습니다.
 
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { UiCopy } from "../../lib/ui-copy.contract";
+import type { AnswerResult } from "../../lib/answer-result";
 
 // 접미사는 lib/answer-result.ts의 answerResultLabel이 냅니다. 구분자는
 // 쉼표 + 공백입니다(ADR-0016 D3). 판정이 **없는** 경우는 접미사를 붙이지
 // 않습니다 — 응답 전 네 보기가 전부 접미사를 달면 답을 미리 알려 주는
 // 것이 됩니다.
-export function choiceAccessibilityLabel(text: string, result: AnswerResult | null): string {
+export function choiceAccessibilityLabel(
+  text: string,
+  result: AnswerResult | null,
+  copy: UiCopy,
+): string {
   if (result === null) {
     return text;
   }
-  return `${text}, ${answerResultLabel(result)}`;
+  return `${text}, ${copy.common.answerResultSuffix[result]}`;
 }
 
 // ---------------------------------------------------------------- 완료 전이 발화
-
-/** 종료 상태 문구입니다. 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 납니다(ADR-0016 D11-1). */
-export const listeningCompletionText = "문항을 모두 마쳤어요";
-
-/** 완료 상태에서 화면에 남는 **유일한 조작 단위**의 라벨입니다. 이 화면에서는 `결과 보기`입니다. */
-export const listeningFinishLabel = "결과 보기";
 
 /**
  * 완료 전이의 발화 문자열입니다. 구분자는 쉼표+공백 — D3이 고른 부호를 그대로
@@ -30,9 +29,9 @@ export const listeningFinishLabel = "결과 보기";
  * *무엇이* 끝났는지(앞절)와 *이제 무엇이 남았는지*(뒷절)가 소리 안에 있어야
  * 합니다.
  *
- * 앞절은 리터럴을 다시 적지 않고 `listeningCompletionText`를 지납니다 —
+ * 앞절은 리터럴을 다시 적지 않고 문구표 `copy.common.allQuestionsDone`을 지납니다 —
  * 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 표를 지납니다.**
  */
-export function listeningCompletionAnnouncement(nextActionLabel: string): string {
-  return `${listeningCompletionText}, ${nextActionLabel}`;
+export function listeningCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
+  return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
 }

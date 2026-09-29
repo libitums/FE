@@ -6,6 +6,10 @@ libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포
 `Card`, `ChatBubble`, `VisualNovelDialog`, `TextField`, `AnswerLabel`, `Overlay`, `Fog`, `Tooltip`,
 `Avatar`, `Dialog`, `OptionSelector`, `LearningUnit`, `SettingsCell`·`SettingsGroup` 등이 있다.
 
+컴포넌트가 스스로 짓는 기본 문구(접근성 접미 `, selected` · `, loading` · 상태 이름 등)는 **영어**다. 소비 앱의
+UI 언어로 바꿔 넘기는 주입 경로는 아직 없고, 영어 밖 언어를 여는 변경이 먼저 세운다
+(FE 저장소 `docs/adr/0031-ui-language-catalog.md` D6).
+
 시각·상태 계약은 `libitums/design-system`의 대응 `components/**/*.md`가 원본이다. 현재
 구현은 revision `87c1b0d2b745429be9b586cef772deb6c8707ab6`을 기준으로 보정했다.
 Bottom Navigator는 2026-09-11의 `main` revision
@@ -66,7 +70,7 @@ import "@libitums/ui-lynx/styles.css";
 ```
 
 `AnswerLabel`은 한 문제의 답안 판정을 나타내는 비조작 표시 요소다. Pending에는 과제별
-`label`이 필요하고 Correct·Incorrect는 각각 `정답이에요`, `오답이에요`를 기본으로 쓴다.
+`label`이 필요하고 Correct·Incorrect는 각각 `Correct`, `Incorrect`를 기본으로 쓴다.
 `result`, `emphasis`, `size`는 독립적으로 조합하며 판정 tone과 icon은 component가 결정한다.
 
 ```tsx
@@ -184,7 +188,7 @@ import "@libitums/ui-lynx/bottom-navigator/styles.css";
 
 `StepIndicator`는 2–5단계의 고정된 순서형 흐름을 표시한다. `totalSteps`는 2–5 정수이고
 `currentStep`은 1–`totalSteps` 정수다. 원은 이동 control이 아니다. 전체 줄은
-`4단계 중 2단계`처럼 하나의 상태로 노출된다. root와 전용 subpath는 같은 구현과 타입을
+`Step 2 of 4`처럼 하나의 상태로 노출된다. root와 전용 subpath는 같은 구현과 타입을
 내보낸다.
 
 ```tsx
@@ -474,7 +478,7 @@ Pressed에는 icon을 표시하고, Pressed 동안 원형 surface만 95%로 줄�
 Disabled trait와 tap 차단이 우선하고 Spinner는 유지한다.
 
 RoundButton의 focusable hit area와 접근성 node는 하나다. S/M/L은 48px, XL은 56px 정사각이며
-icon과 Spinner는 장식 자손으로 숨긴다. Loading 접근성 이름에는 `, 로딩 중`이 붙는다. Lynx Web
+icon과 Spinner는 장식 자손으로 숨긴다. Loading 접근성 이름에는 `, loading`이 붙는다. Lynx Web
 Storybook은 시각·tap만 확인하므로 native focus ring과 VoiceOver/TalkBack은 제품 route 채택 때
 실기기로 검증해야 한다.
 

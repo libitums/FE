@@ -67,7 +67,7 @@ export function getSettingsCellContract(props: SettingsCellProps): SettingsCellC
   const accessibilityLabel = [
     title,
     description,
-    props.trailing === "toggle" ? (props.checked ? "켜짐" : "꺼짐") : value,
+    props.trailing === "toggle" ? (props.checked ? "on" : "off") : value,
   ]
     .filter(Boolean)
     .join(", ");

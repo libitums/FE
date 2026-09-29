@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
-import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import { messengerConversationFor } from "./messenger";
 import { MessengerScreen } from "./MessengerScreen";
 
@@ -13,12 +12,12 @@ import { MessengerScreen } from "./MessengerScreen";
 const conversation = messengerConversationFor("appointment-confirmation");
 
 describe("MessengerScreen 나가기 라벨", () => {
-  it("[X1] exitLabel=목록으로(roleplay) → 나가기 accessibility-label이 목록으로다", () => {
+  it("[X1] exitTo=roleplay → 나가기 accessibility-label이 Back to list다", () => {
     render(
       <MessengerScreen
         conversation={conversation}
         completionStatus="available"
-        exitLabel={specialUnitExitLabel("roleplay")}
+        exitTo="roleplay"
         onExit={vi.fn()}
         onComplete={vi.fn()}
         onFinish={vi.fn()}
@@ -26,18 +25,18 @@ describe("MessengerScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("messenger-screen-exit");
-    expect(exit).toHaveAttribute("accessibility-label", "목록으로");
+    expect(exit).toHaveAttribute("accessibility-label", "Back to list");
     expect(exit).toHaveAttribute("accessibility-traits", "button");
     expect(exit).toHaveAttribute("accessibility-element", "true");
   });
 
-  it("[X2] 목록으로 상태에서 나가기 tap → onExit가 기존과 같은 인자('incomplete')로 정확히 1회", () => {
+  it("[X2] roleplay 진입에서 나가기 tap → onExit가 기존과 같은 인자('incomplete')로 정확히 1회", () => {
     const onExit = vi.fn();
     render(
       <MessengerScreen
         conversation={conversation}
         completionStatus="available"
-        exitLabel={specialUnitExitLabel("roleplay")}
+        exitTo="roleplay"
         onExit={onExit}
         onComplete={vi.fn()}
         onFinish={vi.fn()}
@@ -50,12 +49,12 @@ describe("MessengerScreen 나가기 라벨", () => {
     expect(onExit).toHaveBeenCalledWith("incomplete");
   });
 
-  it("[X3] exitLabel=맵으로(journey) → 나가기 accessibility-label이 맵으로다", () => {
+  it("[X3] exitTo=journey → 나가기 accessibility-label이 Back to map이다", () => {
     render(
       <MessengerScreen
         conversation={conversation}
         completionStatus="available"
-        exitLabel={specialUnitExitLabel("journey")}
+        exitTo="journey"
         onExit={vi.fn()}
         onComplete={vi.fn()}
         onFinish={vi.fn()}
@@ -63,10 +62,10 @@ describe("MessengerScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("messenger-screen-exit");
-    expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+    expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   });
 
-  it("[X4] exitLabel 생략 → 기본값 맵으로", () => {
+  it("[X4] exitTo 생략 → 기본값 Back to map", () => {
     render(
       <MessengerScreen
         conversation={conversation}
@@ -78,6 +77,6 @@ describe("MessengerScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("messenger-screen-exit");
-    expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+    expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   });
 });

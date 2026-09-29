@@ -8,7 +8,7 @@
 // 전화 계약에서 `SpecialUnitEntrySource`는 쓰지 않습니다 — 아래 `PhoneCallEvent`의
 // 두 변형이 리터럴 `"journey"`·`"roleplay"`라 오늘은 `SpecialUnitExitLabel`만
 // 필요합니다.
-import type { SpecialUnitExitLabel } from "../../lib/special-unit-entry-source";
+import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
 import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
 export type PhoneCallUnitId = "appointment-confirmation-phone-call";
@@ -24,7 +24,7 @@ export type PhoneCallAudioSource =
 export type ConfirmTimePhoneCallTurn = {
   readonly id: "confirm-time";
   readonly speakerId: "jimin";
-  readonly speakerName: "지민";
+  readonly speakerName: "Jimin";
   readonly transcript: "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?";
   readonly audioSource: "phone-call-confirm-01";
   readonly reply: {
@@ -36,7 +36,7 @@ export type ConfirmTimePhoneCallTurn = {
 export type ConfirmPlacePhoneCallTurn = {
   readonly id: "confirm-place";
   readonly speakerId: "jimin";
-  readonly speakerName: "지민";
+  readonly speakerName: "Jimin";
   readonly transcript: "카페는 2번 출구 오른쪽에 있는 곳 맞죠?";
   readonly audioSource: "phone-call-confirm-02";
   readonly reply: {
@@ -48,7 +48,7 @@ export type ConfirmPlacePhoneCallTurn = {
 export type GoodbyePhoneCallTurn = {
   readonly id: "goodbye";
   readonly speakerId: "jimin";
-  readonly speakerName: "지민";
+  readonly speakerName: "Jimin";
   readonly transcript: "좋아요. 그럼 토요일에 봐요!";
   readonly audioSource: "phone-call-confirm-03";
   readonly reply: {
@@ -64,7 +64,7 @@ export type PhoneCallTurn =
 
 export type PhoneCallConversation = {
   readonly unitId: PhoneCallUnitId;
-  readonly title: "약속 확인 전화";
+  readonly title: "Appointment call";
   readonly turns: readonly [
     ConfirmTimePhoneCallTurn,
     ConfirmPlacePhoneCallTurn,
@@ -90,26 +90,23 @@ export type PhoneCallSessionAction =
 
 export type PhoneCallCompletionStatus = "available" | "completed";
 export type PhoneCallExitOutcome = "incomplete" | "completed";
-export type PhoneCallPlayLabel = "통화 시작" | "듣기" | "다시 듣기";
-export type PhoneCallStatusLabel = "통화 준비" | "상대방이 말하는 중" | "답장할 차례" | "통화 완료";
 
 export type PhoneCallTranscriptEntry =
   | {
       readonly speaker: "jimin";
-      readonly speakerName: "지민";
+      readonly speakerName: "Jimin";
       readonly turnId: PhoneCallTurnId;
       readonly text: PhoneCallTurn["transcript"];
     }
   | {
       readonly speaker: "self";
-      readonly speakerName: "나";
       readonly replyId: PhoneCallReplyId;
       readonly text: PhoneCallTurn["reply"]["text"];
     };
 
 export type PhoneCallMapItemProps = {
   readonly id: PhoneCallUnitId;
-  readonly title: "약속 확인 전화";
+  readonly title: "Appointment call";
   readonly status: JourneyMapItemStatus;
   readonly onSelect: (id: PhoneCallUnitId) => void;
 };
@@ -120,7 +117,7 @@ export type PhoneCallScreenProps = {
   readonly completionStatus: PhoneCallCompletionStatus;
   readonly onComplete: (id: PhoneCallUnitId) => void;
   readonly onExit: (outcome: PhoneCallExitOutcome) => void;
-  readonly exitLabel?: SpecialUnitExitLabel;
+  readonly exitTo?: SpecialUnitEntrySource;
 };
 
 /** 전화에는 열림 이벤트만 있습니다 — 완료·다시보기 이벤트는 만들지 않습니다. */
@@ -156,14 +153,14 @@ export type PhoneCallAppProps = {
 export type PhoneCallJourneyUnitContract = {
   readonly kind: "special";
   readonly id: PhoneCallUnitId;
-  readonly title: "약속 확인 전화";
+  readonly title: "Appointment call";
   readonly screen: "phone-call";
 };
 
 export type PhoneCallJourneyMapItemContract = {
   readonly kind: "phone-call";
   readonly id: PhoneCallUnitId;
-  readonly title: "약속 확인 전화";
+  readonly title: "Appointment call";
   readonly status: PhoneCallCompletionStatus;
 };
 

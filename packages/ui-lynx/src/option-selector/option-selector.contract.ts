@@ -211,7 +211,7 @@ export function getOptionSelectorContract(props: OptionSelectorProps): OptionSel
         .filter((value): value is string => value !== undefined)
         .join(" "),
       // 선택 여부는 이름 뒤 접미사로 냅니다(ADR-0016 D3). 비선택은 이름만 둡니다.
-      accessibilityLabel: selected ? `${spokenLabel}, 선택됨` : spokenLabel,
+      accessibilityLabel: selected ? `${spokenLabel}, selected` : spokenLabel,
       // traits는 한 값입니다. 확정·비활성 항목은 다시 조작할 수 없어 disabled로 둡니다(ADR-0016 D2·D10).
       traits: disabled ? "disabled" : "button",
       indicatorColor: selected

@@ -7,6 +7,7 @@ import phone from "@libitums/icons/lynx/no-padding/phone";
 import userGroup from "@libitums/icons/lynx/no-padding/user-group";
 import { color } from "@libitums/design-tokens";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import {
   notificationDestinationLabel,
   notificationItemAccessibilityLabel,
@@ -58,6 +59,7 @@ export function NotificationListItem({
   onHideDelete,
   onDelete,
 }: NotificationListItemProps): ReactNode {
+  const copy = useUiCopy();
   const swipeStart = useRef<SwipePoint | undefined>(undefined);
   // 밀기가 끝난 손가락이 떨어지며 탭까지 내는 것을 막습니다 — 삭제 자리를 열려던
   // 손가락이 알림을 열어 버립니다.
@@ -123,7 +125,7 @@ export function NotificationListItem({
         data-testid={`notification-list-item-${item.id}`}
         accessibility-element={true}
         accessibility-traits="button"
-        accessibility-label={notificationItemAccessibilityLabel(item)}
+        accessibility-label={notificationItemAccessibilityLabel(item, copy)}
         bindtap={handleTap}
         bindlongpress={handleLongPress}
         bindtouchstart={handleTouchStart}
@@ -150,7 +152,7 @@ export function NotificationListItem({
             data-testid={`notification-list-item-destination-${item.id}`}
             text-maxline="2"
           >
-            {notificationDestinationLabel(item.target.kind)}
+            {notificationDestinationLabel(item.target.kind, copy)}
           </text>
         </view>
       </view>
@@ -160,10 +162,10 @@ export function NotificationListItem({
           data-testid={`notification-list-item-delete-${item.id}`}
           accessibility-element={true}
           accessibility-traits="button"
-          accessibility-label={`${item.message}, 삭제`}
+          accessibility-label={copy.notifications.deleteLabel(item.message)}
           bindtap={() => onDelete(item)}
         >
-          <text className="notification-list-item-delete-label">삭제</text>
+          <text className="notification-list-item-delete-label">{copy.common.delete}</text>
         </view>
       ) : null}
     </view>

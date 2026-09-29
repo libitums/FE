@@ -60,26 +60,26 @@ const autoPlayOff: SessionOptions = { "auto-play-audio": false, "show-transcript
 const transcriptOff: SessionOptions = { "auto-play-audio": true, "show-transcript": false };
 const bothOff: SessionOptions = { "auto-play-audio": false, "show-transcript": false };
 
-test("[LP1] 자동 재생 꺼짐 — 마운트 시 play 0회 · 이름 '듣기' · 아이콘 play", () => {
+test("[LP1] 자동 재생 꺼짐 — 마운트 시 play 0회 · 이름 'Play' · 아이콘 play", () => {
   const calls = stubHost();
 
   renderPrompt(autoPlayOff);
 
   expect(playSources(calls)).toEqual([]);
-  expect(control()).toHaveAttribute("accessibility-label", "듣기");
-  expect(control()).toHaveAttribute("accessibility-label", "듣기");
+  expect(control()).toHaveAttribute("accessibility-label", "Play");
+  expect(control()).toHaveAttribute("accessibility-label", "Play");
   expect(icon()).toHaveAttribute("content", play);
 });
 
-test("[LP2] 자동 재생 꺼짐 + 탭 → play가 audioSource로 1회 · 이름 '멈춤'", () => {
+test("[LP2] 자동 재생 꺼짐 + 탭 → play가 audioSource로 1회 · 이름 'Pause'", () => {
   const calls = stubHost();
   renderPrompt(autoPlayOff);
 
   fireEvent.tap(control(), {});
 
   expect(playSources(calls)).toEqual([SOURCE]);
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
 });
 
 // LP3 — cleanup이 조건 없이 삽니다. 눌러서 튼 소리가 화면을 떠나도 계속 나면
@@ -124,13 +124,13 @@ test("[LP6] 둘 다 꺼짐 — play 0회이고 대본이 없다", () => {
 
 // LP7 (가드·앵커) — 「켜면 지금 동작 그대로」가 여기 섭니다. 스텁에서도 통과하므로
 // red로 세지 않습니다.
-test("[LP7] 초기값(둘 다 켜짐) — play 1회 · 이름 '멈춤' · 대본 있음", () => {
+test("[LP7] 초기값(둘 다 켜짐) — play 1회 · 이름 'Pause' · 대본 있음", () => {
   const calls = stubHost();
 
   renderPrompt(initialSessionOptions);
 
   expect(playSources(calls)).toEqual([SOURCE]);
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
 });

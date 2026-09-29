@@ -106,7 +106,7 @@ export function getAvatarContract(
       ? undefined
       : (explicitAccessibilityLabel ??
         name ??
-        (content === "placeholder" ? "프로필 사진 없음" : "프로필 사진"));
+        (content === "placeholder" ? "No profile photo" : "Profile photo"));
 
   return {
     accessibilityElement: accessibility === "label",

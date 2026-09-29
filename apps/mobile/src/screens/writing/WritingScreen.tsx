@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
@@ -15,10 +16,7 @@ import {
   finishWritingQuestion,
   initialWritingScreenState,
   writingCompletionAnnouncement,
-  writingCompletionText,
-  writingFinishLabel,
   writingQuestionsForStep,
-  writingUnmeasurableNotice,
 } from "./writing";
 
 import "./writing-screen.css";
@@ -36,6 +34,7 @@ export type WritingScreenProps = {
 };
 
 export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps): ReactNode {
+  const copy = useUiCopy();
   const questions = writingQuestionsForStep(stepId);
   const [screenState, setScreenState] = useState(initialWritingScreenState);
   const question = questions[screenState.questionIndex] ?? null;
@@ -45,7 +44,7 @@ export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps):
     if (!complete) {
       return;
     }
-    announceCompletion(writingCompletionAnnouncement(writingFinishLabel));
+    announceCompletion(writingCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
 
   return question === null ? (
@@ -53,14 +52,14 @@ export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps):
       form="writing"
       questionIndex={Math.max(0, questions.length - 1)}
       questionCount={questions.length}
-      instruction="빈칸의 글자를 따라 써 보세요."
+      instruction={copy.writing.instruction}
       onExit={onExit}
-      actionLabel={writingFinishLabel}
+      actionLabel={copy.common.seeResults}
       onAction={() => onFinish(stepId, screenState.results)}
       card={
         <view className="writing-screen-content" data-testid="writing-screen-content">
           <text className="writing-screen-complete" data-testid="writing-screen-complete">
-            {writingCompletionText}
+            {copy.common.allQuestionsDone}
           </text>
         </view>
       }
@@ -93,6 +92,7 @@ function WritingQuestionShell({
   onExit,
   onQuestionDone,
 }: WritingQuestionShellProps): ReactNode {
+  const copy = useUiCopy();
   const practice = useWritingPractice({ question, size: "workspace", onQuestionDone });
   const { state } = practice;
 
@@ -104,16 +104,16 @@ function WritingQuestionShell({
   // 하고 그 층이 그 버튼을 가립니다.
   const action =
     practice.check !== null
-      ? { label: "확인하기", run: practice.check }
+      ? { label: copy.common.check, run: practice.check }
       : practice.next !== null
-        ? { label: "다음", run: practice.next }
+        ? { label: copy.common.next, run: practice.next }
         : null;
 
   // 판정은 형제 학습형처럼 **카드의 판정 자리**에 섭니다. 캔버스 위에는 잴 수 없을 때의 안내
   // 한 줄만 섭니다 — 그 안내는 판에 대한 말이라 판 위가 맞습니다.
   const badge: WritingCanvasBadge =
     state.phase === "unmeasurable"
-      ? { kind: "notice", text: writingUnmeasurableNotice }
+      ? { kind: "notice", text: copy.writing.recognitionUnavailable }
       : { kind: "none" };
 
   return (
@@ -121,7 +121,7 @@ function WritingQuestionShell({
       form="writing"
       questionIndex={questionIndex}
       questionCount={questionCount}
-      instruction="빈칸의 글자를 따라 써 보세요."
+      instruction={copy.writing.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}

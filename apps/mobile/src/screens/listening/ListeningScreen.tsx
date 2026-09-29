@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useMemo, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
@@ -13,8 +14,6 @@ import {
   initialListeningSessionState,
   isSessionComplete,
   listeningCompletionAnnouncement,
-  listeningCompletionText,
-  listeningFinishLabel,
   listeningSessionReducer,
   questionsForStep,
   sessionAnswerResults,
@@ -52,6 +51,7 @@ export function ListeningScreen({
   sessionOptions,
   gemCount = 0,
 }: ListeningScreenProps): ReactNode {
+  const copy = useUiCopy();
   const questions = questionsForStep(stepId);
   const [state, dispatch] = useReducer(listeningSessionReducer, initialListeningSessionState);
 
@@ -69,7 +69,7 @@ export function ListeningScreen({
     if (!complete) {
       return;
     }
-    announceCompletion(listeningCompletionAnnouncement(listeningFinishLabel));
+    announceCompletion(listeningCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
 
   // 아래 버튼이 지금 무엇인가입니다. 셋째 갈래는 **버튼이 없는 것**입니다 — 아직
@@ -81,7 +81,7 @@ export function ListeningScreen({
   const action =
     question === null
       ? {
-          label: listeningFinishLabel,
+          label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
           run: () =>
             onFinish(stepId, sessionAnswerResults(questions, state.answeredChoiceIndexes), 0),
@@ -106,12 +106,12 @@ export function ListeningScreen({
     () =>
       question !== null && hasAnswered(state)
         ? {
-            label: "다음으로",
+            label: copy.common.continue,
             run: () => dispatch({ type: "nextQuestion" }),
             delayMs: 2500,
           }
         : undefined,
-    [question, state.selectedChoiceIndex],
+    [question, state.selectedChoiceIndex, copy],
   );
 
   return (
@@ -125,7 +125,7 @@ export function ListeningScreen({
       // 이 파일에서도 참으로 만듭니다.
       questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
-      instruction="말의 뜻으로 알맞은 것을 고르세요."
+      instruction={copy.listening.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -179,7 +179,7 @@ export function ListeningScreen({
               문항이 서 있던 그 상자에 결과가 대신 섭니다. */}
           {question === null ? (
             <text className="listening-screen-complete" data-testid="listening-screen-complete">
-              {listeningCompletionText}
+              {copy.common.allQuestionsDone}
             </text>
           ) : null}
         </view>

@@ -28,7 +28,6 @@ import { RoleplayEpisodeScreen } from "../screens/roleplay-list/RoleplayEpisodeS
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { findRoleplaySection } from "../screens/roleplay-list/roleplay-list";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
-import { specialUnitExitLabel } from "../lib/special-unit-entry-source";
 import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
 import { TermsScreen } from "../screens/terms/TermsScreen";
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
@@ -192,7 +191,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
             wiring.completedMessengerUnitIds,
             screen.unitId,
           )}
-          exitLabel={specialUnitExitLabel("journey")}
+          exitTo="journey"
           onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
           onComplete={wiring.onMessengerComplete}
           onFinish={wiring.onMessengerFinish}
@@ -209,7 +208,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
             wiring.completedPhoneCallUnitIds,
             screen.unitId,
           )}
-          exitLabel={specialUnitExitLabel("journey")}
+          exitTo="journey"
           onComplete={wiring.onPhoneCallComplete}
           onExit={wiring.onPhoneCallExit}
         />
@@ -219,7 +218,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         <VisualNovelScreen
           story={visualNovelStoryFor(screen.unitId)}
           progress={wiring.visualNovelProgress}
-          exitLabel={specialUnitExitLabel("journey")}
+          exitTo="journey"
           onAdvance={wiring.onVisualNovelAdvance}
           onExit={wiring.onVisualNovelExit}
           onReplay={wiring.onVisualNovelReplay}

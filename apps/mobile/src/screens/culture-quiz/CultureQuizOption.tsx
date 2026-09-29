@@ -1,10 +1,11 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
 
 import tick from "@libitums/icons/lynx/tick";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { AnswerResult } from "../../lib/answer-result";
 import { optionAccessibilityLabel } from "./culture-quiz";
 
 import "./culture-quiz-option.css";
@@ -42,6 +43,7 @@ export function CultureQuizOption({
   result,
   onSelect,
 }: CultureQuizOptionProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view
       // 상태 클래스는 base 바로 뒤에 선언합니다 — 특이도가 같아 순서가
@@ -55,7 +57,7 @@ export function CultureQuizOption({
       accessibility-element={true}
       // 상태는 라벨 접미사입니다(ADR-0016 D3). accessibility-value를 쓰지
       // 않습니다.
-      accessibility-label={optionAccessibilityLabel(text, result)}
+      accessibility-label={optionAccessibilityLabel(text, result, copy)}
       // 응답 뒤에도 그대로 "button"입니다 — ADR-0016 D10의 disabled는 영구히
       // 조작 불가한 것에만 줍니다.
       accessibility-traits="button"
@@ -79,7 +81,7 @@ export function CultureQuizOption({
             content={markIconByResult[result]}
             current-color={markIconColorByResult[result]}
           />
-          <text className="culture-quiz-option-mark-label">{answerResultLabel(result)}</text>
+          <text className="culture-quiz-option-mark-label">{copy.common.answerResult[result]}</text>
         </view>
       )}
     </view>

@@ -10,6 +10,7 @@ import { WritingPrompt } from "../../components/WritingPrompt";
 import { useWritingPractice } from "../../components/use-writing-practice";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeFinalWritingQuestion } from "./episode-final.contract";
 import { episodeFinalTestIds } from "./episode-final.contract";
 
@@ -39,6 +40,7 @@ const unmeasurableNotice = "Writing can't be checked here. Tap Next.";
  * 있어(캔버스의 `다시 쓰기`) 학습자가 언제 넘어갈지를 고릅니다. 디자인의 `Next →`가 그 자리입니다.
  */
 export function FinalWritingPanel({ insets, question, onDone }: FinalWritingPanelProps): ReactNode {
+  const copy = useUiCopy();
   const practice = useWritingPractice({ question, size: "stage", onQuestionDone: onDone });
   const { state } = practice;
 
@@ -46,9 +48,9 @@ export function FinalWritingPanel({ insets, question, onDone }: FinalWritingPane
   // 중에는 없습니다 — 누를 수 없는 버튼을 두지 않습니다(ADR-0016 D10).
   const action =
     practice.check !== null
-      ? { label: "Check", run: practice.check, icon: undefined }
+      ? { label: copy.common.check, run: practice.check, icon: undefined }
       : practice.next !== null
-        ? { label: "Next", run: practice.next, icon: arrowRight }
+        ? { label: copy.common.next, run: practice.next, icon: arrowRight }
         : null;
 
   const badge: WritingCanvasBadge =

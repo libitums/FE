@@ -501,7 +501,7 @@ describe("LoginScreen", () => {
     expect(options.length).toBe(loginCountries.length);
     const korea = screen.getByTestId("ui-lynx-option-selector-item-kr");
     expect(korea).toHaveAttribute("data-selected", "true");
-    expect(korea).toHaveAttribute("accessibility-label", "South Korea +82, 선택됨");
+    expect(korea).toHaveAttribute("accessibility-label", "South Korea +82, selected");
 
     fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-jp"), {});
 

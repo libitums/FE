@@ -11,6 +11,13 @@
 - 이 문서는 공개 계약의 요약이다. 특별 유닛의 열림 이벤트 표는 각 유닛 스펙에 있고 여기에 복사하지
   않는다(§4).
 
+> **개정 (2026-09-29, UI 문구표).** 결정과 근거는 [ADR-0031](../adr/0031-ui-language-catalog.md)(**제안**)이 진다. 제목 · 빈 상태 · 삭제 · 행선지
+> 낱말이 문구표에서 나오고 영어다(`Notifications` · `No notifications yet` · `Open messenger` · `Open call` ·
+> `Open visual novel` · `See roleplay list` · `Back to map`). `NotificationDestinationLabel` 타입이 지워지고
+> `notificationDestinationLabel(kind, copy)` · `notificationItemAccessibilityLabel(item, copy)`가 `string`을 돌려준다.
+> 알림 메시지는 항목에 딸린 **데이터 곁 영어**다(`notification-items.ts` — `Jimin sent you an appointment message`
+> 등). 이벤트 · testid 불변. 본문의 한국어 라벨은 당시 값이다 — 대응은 ADR-0031 부록.
+
 ## 0. 고정 범위와 불변식
 
 1. 탭은 **셋**(여정 · 롤플레이 · 설정)이고 앱 첫 화면은 **여정 맵**이다. `Tab` · `Screen`에 홈이 없다.

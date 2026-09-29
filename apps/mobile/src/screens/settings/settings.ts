@@ -1,10 +1,10 @@
 // 설정 화면의 순수 로직을 소유합니다. 계산·분기가 전부 순수 함수입니다 —
 // UI는 결과를 그리기만 합니다(ADR-0006 D4 — 순수 로직은 unit 계층 대상).
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   ProfileOpenedEvent,
   SessionOptionChangedEvent,
-  SettingsNavLabel,
   SettingsNavTarget,
   TermsOpenedEvent,
 } from "./settings.contract";
@@ -12,15 +12,8 @@ import type { SessionOptionKey } from "../../lib/session-options";
 
 export const settingsNavTargets: readonly SettingsNavTarget[] = ["profile", "terms"];
 
-// export하지 않습니다 — 표를 내보내면 다음 사람이 직접 색인해 자기 답을 짓습니다
-// (`session-options.ts`와 같은 근거입니다).
-const settingsNavLabels: Record<SettingsNavTarget, SettingsNavLabel> = {
-  profile: "사용자 프로필",
-  terms: "개인정보 보호 및 약관",
-};
-
-export function settingsNavLabel(target: SettingsNavTarget): SettingsNavLabel {
-  return settingsNavLabels[target];
+export function settingsNavLabel(target: SettingsNavTarget, copy: UiCopy): string {
+  return copy.settings.nav[target];
 }
 
 // `default` 없는 `switch`입니다 — target이 늘면 `TS2366`으로 섭니다.

@@ -4,7 +4,8 @@ import cross from "@libitums/icons/lynx/cross";
 import tick from "@libitums/icons/lynx/tick";
 import { color } from "@libitums/design-tokens";
 
-import { answerResultLabel, type AnswerResult } from "../lib/answer-result";
+import type { AnswerResult } from "../lib/answer-result";
+import { useUiCopy } from "../lib/ui-copy";
 
 import "./answer-verdict.css";
 
@@ -43,6 +44,7 @@ export type AnswerVerdictProps = {
 };
 
 export function AnswerVerdict({ result }: AnswerVerdictProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view
       className="answer-verdict"
@@ -58,7 +60,7 @@ export function AnswerVerdict({ result }: AnswerVerdictProps): ReactNode {
       // 하나의 접근성 요소입니다. 조작 단위가 아니므로 traits를 주지 않습니다 —
       // 누를 수 없는 것을 button으로 읽히게 하지 않습니다.
       accessibility-element={true}
-      accessibility-label={answerResultLabel(result)}
+      accessibility-label={copy.common.answerResult[result]}
     >
       {/* 아이콘은 장식이 아니라 채널이지만 이름은 감싼 상자가 집니다(ADR-0016 D5).
           자손 없는 잎이라 가림 속성을 붙이지 않습니다 — 붙여도 가릴 자손이 없습니다. */}
@@ -68,7 +70,7 @@ export function AnswerVerdict({ result }: AnswerVerdictProps): ReactNode {
         content={iconByResult[result]}
         current-color={color.fg["neutral-inverted"]}
       />
-      <text className="answer-verdict-label">{answerResultLabel(result)}</text>
+      <text className="answer-verdict-label">{copy.common.answerResult[result]}</text>
     </view>
   );
 }

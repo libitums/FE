@@ -61,8 +61,8 @@ describe("getTextFieldContract", () => {
       ),
     ).toMatchObject({
       accessibilityLabel:
-        "이메일 주소, 필수, 오류: name@example.com 형식으로 입력해 주세요., 30자 중 5자 입력",
-      counterAccessibilityLabel: "30자 중 5자 입력",
+        "이메일 주소, 필수, Error: name@example.com 형식으로 입력해 주세요., 5 of 30 characters",
+      counterAccessibilityLabel: "5 of 30 characters",
       counterLabel: "5/30",
       validation: "error",
     });

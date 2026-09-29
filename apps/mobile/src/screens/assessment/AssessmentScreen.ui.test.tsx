@@ -3,6 +3,8 @@ import { fireEvent, render, screen, within } from "@lynx-js/react/testing-librar
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { AssessmentScreen } from "./AssessmentScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다 (ADR-0006 D4). 순수 함수
 // (assessment.ts)를 mock하지 않습니다 — 화면이 그것을 실제로 부르는지가 이 파일이
@@ -75,14 +77,14 @@ test("제목이 assessmentScreenTitle(stepOrdinal)의 합성 결과이고 access
   renderScreen({ stepOrdinal: 3 });
 
   const title = screen.getByTestId("assessment-screen-title");
-  expect(title).toHaveTextContent("3단계 · 평가");
+  expect(title).toHaveTextContent("Step 3 · Assessment");
   expect(title).toHaveAttribute("accessibility-traits", "header");
 });
 
 test("다른 서수로 렌더하면 제목이 갈린다", () => {
   renderScreen({ stepOrdinal: 1 });
 
-  expect(screen.getByTestId("assessment-screen-title")).toHaveTextContent("1단계 · 평가");
+  expect(screen.getByTestId("assessment-screen-title")).toHaveTextContent("Step 1 · Assessment");
 });
 
 // ---------------------------------------------------------------- 문항 행 개수 (수용 기준 2)
@@ -119,20 +121,22 @@ test("문항 행의 data-result가 각 자리의 정오와 일치한다", () => 
 // 그대로 남깁니다 — 둘 다 지우지 않고 강화만 합니다(형태의 정본은
 // `ListeningScreen.ui.test.tsx`의 [X-D]입니다).
 
-test("[U1] 2/3 정답이면 data-verdict='passed'이고 판정 낱말이 정확히 '통과'다", () => {
+test("[U1] 2/3 정답이면 data-verdict='passed'이고 판정 낱말이 정확히 'Passed'다", () => {
   renderScreen({ results: PASSING_RESULTS });
 
   const verdict = screen.getByTestId("assessment-screen-verdict");
   expect(verdict).toHaveAttribute("data-verdict", "passed");
-  expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").toBe("통과");
+  expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").toBe("Passed");
 });
 
-test("[U2] 1/3 정답이면 data-verdict='failed'이고 판정 낱말이 정확히 '미통과'다", () => {
+test("[U2] 1/3 정답이면 data-verdict='failed'이고 판정 낱말이 정확히 'Not passed'다", () => {
   renderScreen({ results: FAILING_RESULTS });
 
   const verdict = screen.getByTestId("assessment-screen-verdict");
   expect(verdict).toHaveAttribute("data-verdict", "failed");
-  expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").toBe("미통과");
+  expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").toBe(
+    "Not passed",
+  );
 });
 
 // [U3] — 새 testid가 상자를 대체한 것이 아니라 상자 안의 잎입니다.
@@ -155,12 +159,12 @@ test("종합 판정에 accessibility-label이 없다", () => {
 
 // ---------------------------------------------------------------- 나가는 수단 (수용 기준 3)
 
-test("나가는 수단이 '맵으로' 문구·라벨·element·traits를 전부 갖는다", () => {
+test("나가는 수단이 'Back to map' 문구·라벨·element·traits를 전부 갖는다", () => {
   renderScreen();
 
   const exit = screen.getByTestId("assessment-screen-exit");
-  expect(exit).toHaveTextContent("맵으로");
-  expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+  expect(exit).toHaveTextContent("Back to map");
+  expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
   expect(exit).toHaveAttribute("accessibility-element", "true");
 });
@@ -187,12 +191,12 @@ test("맵으로를 탭하면 onExit이 정확히 한 번 불린다", () => {
   expect(onExit).toHaveBeenCalledTimes(1);
 });
 
-test("미통과 화면에서도 나가는 수단의 라벨이 여전히 '맵으로'다 — 판정에 따라 갈리지 않는다", () => {
+test("미통과 화면에서도 나가는 수단의 라벨이 여전히 'Back to map'이다 — 판정에 따라 갈리지 않는다", () => {
   renderScreen({ results: FAILING_RESULTS });
 
   expect(screen.getByTestId("assessment-screen-exit")).toHaveAttribute(
     "accessibility-label",
-    "맵으로",
+    "Back to map",
   );
 });
 
@@ -204,41 +208,41 @@ test("점수·정답 수 문자열이 화면 어디에도 없다 — 통과", ()
   const { container } = renderScreen({ results: PASSING_RESULTS });
 
   expect(container.textContent ?? "").not.toMatch(/\d+\s*\/\s*\d+/);
-  expect(container.textContent ?? "").not.toContain("점");
+  expect(container.textContent ?? "").not.toMatch(/score|point/i);
 });
 
 test("점수·정답 수 문자열이 화면 어디에도 없다 — 미통과", () => {
   const { container } = renderScreen({ results: FAILING_RESULTS });
 
   expect(container.textContent ?? "").not.toMatch(/\d+\s*\/\s*\d+/);
-  expect(container.textContent ?? "").not.toContain("점");
+  expect(container.textContent ?? "").not.toMatch(/score|point/i);
 });
 
 // ---------------------------------------------------------------- announce
 
-test("마운트 때 announce가 정확히 한 번 불리고 content가 '평가 결과, 통과'다", () => {
+test("마운트 때 announce가 정확히 한 번 불리고 content가 'Assessment result, passed'다", () => {
   const calls = stubAnnounceHost();
 
   renderScreen({ results: PASSING_RESULTS });
 
   expect(calls).toHaveLength(1);
   expect(calls[0]?.args).toHaveLength(2);
-  expect(calls[0]?.args[0]).toEqual({ content: "평가 결과, 통과" });
+  expect(calls[0]?.args[0]).toEqual({ content: "Assessment result, passed" });
 });
 
-test("마운트 때 announce가 정확히 한 번 불리고 content가 '평가 결과, 미통과'다", () => {
+test("마운트 때 announce가 정확히 한 번 불리고 content가 'Assessment result, not passed'다", () => {
   const calls = stubAnnounceHost();
 
   renderScreen({ results: FAILING_RESULTS });
 
   expect(calls).toHaveLength(1);
-  expect(calls[0]?.args[0]).toEqual({ content: "평가 결과, 미통과" });
+  expect(calls[0]?.args[0]).toEqual({ content: "Assessment result, not passed" });
 });
 
 // assessment의 종합 결과는 completion-only high 정책의 대상이 아닙니다.
 test.each([
-  ["통과", PASSING_RESULTS, "평가 결과, 통과"],
-  ["미통과", FAILING_RESULTS, "평가 결과, 미통과"],
+  ["passed", PASSING_RESULTS, "Assessment result, passed"],
+  ["not passed", FAILING_RESULTS, "Assessment result, not passed"],
 ])("%s 평가 결과는 builtin announce 1회·custom 0회다", (_label, results, content) => {
   const { builtin, completion } = stubCompletionHost();
 
@@ -342,4 +346,49 @@ test("[A7] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
   expect(scroll).not.toHaveAttribute("accessibility-label");
   expect(scroll).not.toHaveAttribute("accessibility-traits");
   expect(scroll).not.toHaveAttribute("accessibility-elements-hidden");
+});
+
+// ---------------------------------------------------------------- 문구표 (LA8)
+
+test("[LA8-M] 문구표를 주입하면 제목 · 판정 낱말 · 나가기가 표의 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <AssessmentScreen stepOrdinal={3} results={PASSING_RESULTS} onExit={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("assessment-screen-title")).toHaveTextContent(
+    "⟦common.stepTitle⟧(3, ⟦assessment.activity⟧)",
+  );
+  expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").toBe(
+    "⟦assessment.verdict.passed⟧",
+  );
+  const exit = screen.getByTestId("assessment-screen-exit");
+  expect(exit).toHaveTextContent("⟦common.exitTo.journey⟧");
+  expect(exit).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
+});
+
+test("[LA8-M] 문구표를 주입하고 미통과면 판정 낱말이 failed 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <AssessmentScreen stepOrdinal={3} results={FAILING_RESULTS} onExit={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("assessment-screen-verdict-label").textContent ?? "").toBe(
+    "⟦assessment.verdict.failed⟧",
+  );
+});
+
+test("[LA8-M] 문구표를 주입하면 낭독이 assessment.announcement 경로로 나온다", () => {
+  const calls = stubAnnounceHost();
+
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <AssessmentScreen stepOrdinal={3} results={PASSING_RESULTS} onExit={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(calls).toHaveLength(1);
+  expect(calls[0]?.args[0]).toEqual({ content: "⟦assessment.announcement⟧(passed)" });
 });

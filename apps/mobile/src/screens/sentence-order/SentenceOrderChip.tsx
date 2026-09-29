@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
 
 import { chipAccessibilityLabel } from "./sentence-order";
@@ -25,6 +26,7 @@ export function SentenceOrderChip({
   disabled = false,
   onTap,
 }: SentenceOrderChipProps): ReactNode {
+  const copy = useUiCopy();
   const handleTap = () => {
     "background only";
     onTap(index);
@@ -37,7 +39,7 @@ export function SentenceOrderChip({
       data-testid={`sentence-order-chip-${index}`}
       data-placed={placedOrdinal ?? "none"}
       accessibility-element={true}
-      accessibility-label={chipAccessibilityLabel(text, placedOrdinal)}
+      accessibility-label={chipAccessibilityLabel(text, placedOrdinal, copy)}
       accessibility-traits={disabled ? "disabled" : "button"}
       bindtap={disabled ? undefined : handleTap}
     >

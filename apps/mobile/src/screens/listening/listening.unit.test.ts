@@ -9,8 +9,6 @@ import {
   isSessionComplete,
   judgeAnswer,
   listeningCompletionAnnouncement,
-  listeningCompletionText,
-  listeningFinishLabel,
   listeningQuestionsByStep,
   listeningSessionReducer,
   playbackStateAfterPlay,
@@ -19,6 +17,7 @@ import {
   type ListeningQuestion,
   type ListeningSessionState,
 } from "./listening";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // 기대값의 정본은 계약입니다 — 구현에서 베끼지 않습니다.
 //
@@ -194,33 +193,35 @@ describe("choiceResultAt", () => {
 describe("choiceAccessibilityLabel", () => {
   // 접미사 표입니다. 구분자는 쉼표 + 공백입니다 (ADR-0016 D3).
   it("판정이 없으면 접미사를 붙이지 않는다 — 텍스트 그대로", () => {
-    expect(choiceAccessibilityLabel("음료 온도를 묻고 있다", null)).toBe("음료 온도를 묻고 있다");
+    expect(choiceAccessibilityLabel("음료 온도를 묻고 있다", null, uiCopyEn)).toBe(
+      "음료 온도를 묻고 있다",
+    );
   });
 
   it("correct는 정답 접미사를 붙인다", () => {
-    expect(choiceAccessibilityLabel("음료 온도를 묻고 있다", "correct")).toBe(
-      "음료 온도를 묻고 있다, 정답",
+    expect(choiceAccessibilityLabel("음료 온도를 묻고 있다", "correct", uiCopyEn)).toBe(
+      "음료 온도를 묻고 있다, correct",
     );
   });
 
   it("incorrect는 오답 접미사를 붙인다", () => {
-    expect(choiceAccessibilityLabel("계산 방법을 묻고 있다", "incorrect")).toBe(
-      "계산 방법을 묻고 있다, 오답",
+    expect(choiceAccessibilityLabel("계산 방법을 묻고 있다", "incorrect", uiCopyEn)).toBe(
+      "계산 방법을 묻고 있다, incorrect",
     );
   });
 
   // 응답 전 네 보기가 전부 접미사를 달면 답을 미리 알려 주는 것이 됩니다.
   it("판정이 없을 때 구분자(쉼표 + 공백)가 아예 생기지 않는다", () => {
-    expect(choiceAccessibilityLabel("자리를 안내하고 있다", null)).not.toContain(", ");
+    expect(choiceAccessibilityLabel("자리를 안내하고 있다", null, uiCopyEn)).not.toContain(", ");
   });
 
   it("세 경우가 서로 다른 문자열이다", () => {
     const text = "영업 시간을 알리고 있다";
 
     const labels = new Set([
-      choiceAccessibilityLabel(text, null),
-      choiceAccessibilityLabel(text, "correct"),
-      choiceAccessibilityLabel(text, "incorrect"),
+      choiceAccessibilityLabel(text, null, uiCopyEn),
+      choiceAccessibilityLabel(text, "correct", uiCopyEn),
+      choiceAccessibilityLabel(text, "incorrect", uiCopyEn),
     ]);
 
     expect(labels.size).toBe(3);
@@ -637,7 +638,7 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
     // 마디**로 갈립니다. 위가 깨지는 순간 이 줄이 함께 빨개집니다.
     expect(
       choices.filter(
-        (choice) => choiceAccessibilityLabel(choice, "correct").split(", ").length !== 2,
+        (choice) => choiceAccessibilityLabel(choice, "correct", uiCopyEn).split(", ").length !== 2,
       ),
     ).toEqual([]);
   });
@@ -652,6 +653,236 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
 });
 
 // ---------------------------------------------------------------- 오디오 축
+
+// CE1 — 부록 C.7. 보기 60개만 영어 뜻 풀이로 바뀌고 제시문 \u00b7 로마자 \u00b7 음원 \u00b7 정답 인덱스는 불변이다.
+// 행: [스텝, prompt, romanization, audioSource, choices, answerIndex]
+const englishChoiceTable = [
+  [
+    "greeting",
+    "안녕하세요, 처음 뵙겠습니다.",
+    "annyeonghaseyo, cheoeum boepgetseumnida",
+    "greeting-1",
+    [
+      "Greeting someone they're meeting for the first time",
+      "Saying goodbye",
+      "Saying thank you",
+      "Apologizing",
+    ],
+    0,
+  ],
+  [
+    "greeting",
+    "반갑습니다.",
+    "bangapseumnida",
+    "greeting-2",
+    [
+      "Apologizing",
+      "Saying they're glad to meet you",
+      "Saying goodbye to someone who is leaving",
+      "Asking your name",
+    ],
+    1,
+  ],
+  [
+    "greeting",
+    "안녕히 계세요.",
+    "annyeonghi gyeseyo",
+    "greeting-3",
+    [
+      "Greeting someone on first meeting",
+      "Suggesting you go together",
+      "Saying goodbye to someone who is staying",
+      "Asking you to come again",
+    ],
+    2,
+  ],
+  [
+    "introduction",
+    "이름이 어떻게 되세요?",
+    "ireumi eotteoke doeseyo?",
+    "introduction-1",
+    ["Asking your age", "Asking where you live", "Asking what you do", "Asking your name"],
+    3,
+  ],
+  [
+    "introduction",
+    "저는 민준이라고 합니다.",
+    "jeoneun minjunirago hamnida",
+    "introduction-2",
+    [
+      "Saying their own name",
+      "Calling the other person's name",
+      "Saying they forgot a name",
+      "Saying they'll change their name",
+    ],
+    0,
+  ],
+  [
+    "introduction",
+    "만나서 반가워요.",
+    "mannaseo bangawoyo",
+    "introduction-3",
+    [
+      "Promising to meet again",
+      "Saying it's nice to meet you",
+      "Apologizing",
+      "Saying they'll leave first",
+    ],
+    1,
+  ],
+  [
+    "ordering",
+    "따뜻한 아메리카노 한 잔 주세요.",
+    "ttatteutan amerikano han jan juseyo",
+    "ordering-1",
+    [
+      "Ordering two iced coffees",
+      "Canceling an order",
+      "Ordering one hot coffee",
+      "Asking for water",
+    ],
+    2,
+  ],
+  [
+    "ordering",
+    "주문하시겠어요? 음료는 따뜻한 것과 차가운 것 중에 무엇으로 드릴까요?",
+    "jumunhasigesseoyo? eumnyoneun ttatteutan geotgwa chagaun geot junge mueoseuro deurilkkayo?",
+    "ordering-2",
+    [
+      "Asking whether you want your drink hot or iced",
+      "Asking how you'll pay",
+      "Showing you to a seat",
+      "Telling you the opening hours",
+    ],
+    0,
+  ],
+  [
+    "ordering",
+    "카드로 결제할게요.",
+    "kadeuro gyeoljehalgeyo",
+    "ordering-3",
+    [
+      "Saying they'll pay in cash",
+      "Saying they'll pay later",
+      "Asking for a discount",
+      "Saying they'll pay by card",
+    ],
+    3,
+  ],
+  [
+    "appointment",
+    "내일 세 시에 만날까요?",
+    "naeil se sie mannalkkayo?",
+    "appointment-1",
+    [
+      "Canceling a meeting",
+      "Suggesting a time to meet",
+      "Asking where you are now",
+      "Telling you where to meet",
+    ],
+    1,
+  ],
+  [
+    "appointment",
+    "그때는 좀 어려울 것 같아요.",
+    "geuttaeneun jom eoryeoul geot gatayo",
+    "appointment-2",
+    [
+      "Insisting on meeting at that time",
+      "Saying they don't know the time",
+      "Saying that time is hard for them",
+      "Saying they forgot the plan",
+    ],
+    2,
+  ],
+  [
+    "appointment",
+    "그럼 토요일 저녁은 어때요?",
+    "geureom toyoil jeonyeogeun eottaeyo?",
+    "appointment-3",
+    [
+      "Suggesting a different time",
+      "Calling off the plan",
+      "Asking about the place",
+      "Saying they'll be late",
+    ],
+    0,
+  ],
+  [
+    "directions",
+    "혹시 지하철역이 어디예요?",
+    "hoksi jihacheollyeogi eodiyeyo?",
+    "directions-1",
+    [
+      "Asking the subway fare",
+      "Asking for the subway schedule",
+      "Asking where the subway station is",
+      "Suggesting you take the subway",
+    ],
+    2,
+  ],
+  [
+    "directions",
+    "이 길로 쭉 가시면 됩니다.",
+    "i gillo jjuk gasimyeon doemnida",
+    "directions-2",
+    [
+      "Telling you to go straight",
+      "Telling you to turn left",
+      "Telling you to go back",
+      "Saying they don't know the way",
+    ],
+    0,
+  ],
+  [
+    "directions",
+    "여기서 얼마나 걸려요?",
+    "yeogiseo eolmana geollyeoyo?",
+    "directions-3",
+    [
+      "Asking the name of the street",
+      "Asking how long it takes to get there",
+      "Asking the fare",
+      "Suggesting you go together",
+    ],
+    1,
+  ],
+] as const;
+
+describe("listeningQuestionsByStep — 영어 뜻 풀이 보기(CE1)", () => {
+  it("문항 15가 스텝 · 순서대로 부록 C.7과 같다 — answerIndex 15개 불변", () => {
+    const actual = stepIds.flatMap((id) =>
+      listeningQuestionsByStep[id].map((question) => [
+        id,
+        question.prompt,
+        question.romanization,
+        question.audioSource,
+        [...question.choices],
+        question.answerIndex,
+      ]),
+    );
+
+    expect(actual).toHaveLength(15);
+    expect(actual).toEqual(englishChoiceTable.map((row) => [...row]));
+  });
+
+  it("보기 60개에 한글이 없다", () => {
+    const choices = stepIds.flatMap((id) =>
+      listeningQuestionsByStep[id].flatMap((question) => [...question.choices]),
+    );
+
+    expect(choices).toHaveLength(60);
+    expect(choices.filter((choice) => /[가-힣]/.test(choice))).toEqual([]);
+  });
+
+  it("한 문항 안 보기 넷이 서로 다르다", () => {
+    for (const id of stepIds) {
+      for (const question of listeningQuestionsByStep[id]) {
+        expect(new Set(question.choices).size).toBe(4);
+      }
+    }
+  });
+});
 
 describe("playbackStateAfterPlay", () => {
   // playAudio는 재생 **요청 한 번의 결과**를 돌려줍니다. 이 함수가 그 결과를
@@ -772,52 +1003,29 @@ describe("audioSource (고정 데이터 불변식)", () => {
 // 「정확히 한 번」은 이 계층이 지지 않습니다 — 그것은 `ui`의 X-C입니다. 여기서
 // 보는 것은 순수 함수의 입출력 하나뿐입니다.
 
-describe("완료 전이 발화의 상수 둘", () => {
-  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나옵니다 (ADR-0016 D11-1).
-  // 값이 갈리면 화면과 소리가 다른 앱이 되므로 값 자체를 여기서 못박습니다.
-  it("완료 문구 상수가 화면에 이미 있는 `문항을 모두 마쳤어요`다", () => {
-    expect(listeningCompletionText).toBe("문항을 모두 마쳤어요");
-  });
-
-  it("완료 상태의 유일한 조작 단위 라벨이 `결과 보기`다", () => {
-    expect(listeningFinishLabel).toBe("결과 보기");
-  });
-});
-
 describe("listeningCompletionAnnouncement", () => {
-  // U1 — 오늘 호출자가 넘기는 값으로 부르면 정해진 문자열과 **문자 그대로**
-  // 같습니다.
-  it("U1 — listeningFinishLabel로 부르면 `문항을 모두 마쳤어요, 결과 보기`다", () => {
-    expect(listeningCompletionAnnouncement(listeningFinishLabel)).toBe(
-      "문항을 모두 마쳤어요, 결과 보기",
+  // U1 — 나아가는 라벨로 부르면 정해진 문자열과 **문자 그대로** 같습니다 (RL7).
+  it("U1 — `See results`로 부르면 `All questions done, See results`다", () => {
+    expect(listeningCompletionAnnouncement("See results", uiCopyEn)).toBe(
+      "All questions done, See results",
     );
   });
 
-  // U2 — 인자가 형식을 실제로 통과합니다. 이 단언이 있어야 「인자 없는 상수 반환」의
-  // 공허함을 피한 것이 지어집니다.
-  it("U2 — 다른 인자 둘의 반환이 다르고, 완료 문구 뒤가 쉼표+공백 하나와 그 인자다", () => {
-    const withFinish = listeningCompletionAnnouncement("결과 보기");
-    const withExit = listeningCompletionAnnouncement("맵으로");
+  // U2 — 인자가 형식을 실제로 통과합니다.
+  it("U2 — 다른 인자 둘의 반환이 다르고, 앞절 뒤가 쉼표+공백 하나와 그 인자다", () => {
+    const withFinish = listeningCompletionAnnouncement("See results", uiCopyEn);
+    const withExit = listeningCompletionAnnouncement("Back to map", uiCopyEn);
 
     expect(withFinish).not.toBe(withExit);
-    expect(withFinish.slice(listeningCompletionText.length)).toBe(", 결과 보기");
-    expect(withExit.slice(listeningCompletionText.length)).toBe(", 맵으로");
+    expect(withFinish).toBe("All questions done, See results");
+    expect(withExit).toBe("All questions done, Back to map");
   });
 
-  // U3 — 앞절이 그 화면의 완료 문구 상수를 지납니다. 리터럴을 다시 적지 않습니다 —
-  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡습니다.
-  it("U3 — 앞절이 listeningCompletionText와 같은 표를 지난다", () => {
-    expect(
-      listeningCompletionAnnouncement(listeningFinishLabel).startsWith(listeningCompletionText),
-    ).toBe(true);
-  });
-
-  // U4 — 부수효과가 없습니다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도
-  // 던지지 않습니다.
+  // U4 — 부수효과가 없습니다.
   it("U4 — 같은 인자로 두 번 불러도 같은 값이고 던지지 않는다", () => {
-    expect(() => listeningCompletionAnnouncement(listeningFinishLabel)).not.toThrow();
-    expect(listeningCompletionAnnouncement(listeningFinishLabel)).toBe(
-      listeningCompletionAnnouncement(listeningFinishLabel),
+    expect(() => listeningCompletionAnnouncement("See results", uiCopyEn)).not.toThrow();
+    expect(listeningCompletionAnnouncement("See results", uiCopyEn)).toBe(
+      listeningCompletionAnnouncement("See results", uiCopyEn),
     );
   });
 });

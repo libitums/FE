@@ -3,6 +3,8 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { AssessmentItem } from "./AssessmentItem";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태를 봅니다 (ADR-0006 D4). 계산된 스타일을
 // 볼 수 없으므로 `toHaveClass`·`toHaveStyle`을 쓰지 않습니다 (docs/conventions/code.md
@@ -13,13 +15,13 @@ import { AssessmentItem } from "./AssessmentItem";
 // 컴포넌트의 정오 표시 부분과 같은 형태이지만 조작 단위가 아닙니다.
 //
 // 기대 문자열의 정본은 계약의 접미사 표입니다 — `assessmentItemAccessibilityLabel(0,
-// "correct")` === `문항 1, 정답` · `(1, "incorrect")` === `문항 2, 오답`. 이 값은
+// "correct")` === `Question 1, correct` · `(1, "incorrect")` === `Question 2, incorrect`. 이 값은
 // assessment.unit.test.ts가 함수 자체를 이미 봅니다 — 여기서는 컴포넌트가 그 값을
 // 실제로 렌더하는지만 봅니다.
 
 const RESULTS: readonly { index: number; result: AnswerResult; label: string }[] = [
-  { index: 0, result: "correct", label: "문항 1, 정답" },
-  { index: 1, result: "incorrect", label: "문항 2, 오답" },
+  { index: 0, result: "correct", label: "Question 1, correct" },
+  { index: 1, result: "incorrect", label: "Question 2, incorrect" },
 ];
 
 // ---------------------------------------------------------------- 채널 1: 상태 `data-*`
@@ -63,16 +65,16 @@ for (const { index, result } of RESULTS) {
 // ---------------------------------------------------------------- 채널 3: 보이는 표식
 
 // assessmentItemTitle(index) 결과가 보이는 이름으로 렌더됩니다.
-test("이름 텍스트가 assessmentItemTitle(index)의 합성 결과다 — '문항 1'", () => {
+test("이름 텍스트가 assessmentItemTitle(index)의 합성 결과다 — 'Question 1'", () => {
   render(<AssessmentItem index={0} result="correct" />);
 
-  expect(screen.getByTestId("assessment-item-0")).toHaveTextContent("문항 1");
+  expect(screen.getByTestId("assessment-item-0")).toHaveTextContent("Question 1");
 });
 
-test("이름 텍스트가 assessmentItemTitle(index)의 합성 결과다 — '문항 2'", () => {
+test("이름 텍스트가 assessmentItemTitle(index)의 합성 결과다 — 'Question 2'", () => {
   render(<AssessmentItem index={1} result="incorrect" />);
 
-  expect(screen.getByTestId("assessment-item-1")).toHaveTextContent("문항 2");
+  expect(screen.getByTestId("assessment-item-1")).toHaveTextContent("Question 2");
 });
 
 // 표식 아이콘이 존재합니다 — 수용 기준 5의 첫째 채널(모양)이 붙었는지 봅니다.
@@ -85,16 +87,16 @@ for (const { index, result } of RESULTS) {
 }
 
 // 표식 낱말이 보입니다 — 색과 독립인 셋째 채널입니다 (WCAG 1.4.1).
-test("표식 낱말 '정답'이 텍스트로 보인다", () => {
+test("표식 낱말 'Correct'가 텍스트로 보인다", () => {
   render(<AssessmentItem index={0} result="correct" />);
 
-  expect(screen.getByTestId("assessment-item-0")).toHaveTextContent("정답");
+  expect(screen.getByTestId("assessment-item-0")).toHaveTextContent("Correct");
 });
 
-test("표식 낱말 '오답'이 텍스트로 보인다", () => {
+test("표식 낱말 'Incorrect'가 텍스트로 보인다", () => {
   render(<AssessmentItem index={1} result="incorrect" />);
 
-  expect(screen.getByTestId("assessment-item-1")).toHaveTextContent("오답");
+  expect(screen.getByTestId("assessment-item-1")).toHaveTextContent("Incorrect");
 });
 
 // 표식 래퍼가 accessibility-elements-hidden="true"입니다 — 가림은 자손을 가진
@@ -150,3 +152,26 @@ test("탭해도 렌더된 data-result는 그대로다 — 컴포넌트는 상태
 
   expect(screen.getByTestId("assessment-item-0")).toHaveAttribute("data-result", "correct");
 });
+
+// LA8-M — 행의 이름 · 보이는 제목 · 표식 낱말은 문구표에서 읽습니다.
+test.each([
+  [0, "correct"],
+  [1, "incorrect"],
+] as const)(
+  "[LA8-M] 문구표를 주입하면 index=%s %s 행의 글자와 이름이 표의 경로로 나온다",
+  (index, result) => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <AssessmentItem index={index} result={result} />
+      </UiCopyContext.Provider>,
+    );
+
+    const row = screen.getByTestId(`assessment-item-${index}`);
+    expect(row).toHaveTextContent(`⟦assessment.itemTitle⟧(${index + 1})`);
+    expect(row).toHaveTextContent(`⟦common.answerResult.${result}⟧`);
+    expect(row).toHaveAttribute(
+      "accessibility-label",
+      `⟦assessment.itemTitle⟧(${index + 1}), ⟦common.answerResultSuffix.${result}⟧`,
+    );
+  },
+);

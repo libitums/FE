@@ -27,10 +27,10 @@ export type ChatBubbleProps = IncomingChatBubbleProps | OutgoingChatBubbleProps;
 
 export const chatBubbleDeliveryLabels = {
   default: undefined,
-  sending: "보내는 중…",
-  sent: "보냈어요",
-  read: "읽었어요",
-  failed: "보내지 못했어요",
+  sending: "Sending…",
+  sent: "Sent",
+  read: "Read",
+  failed: "Couldn't send",
 } as const satisfies Readonly<Record<ChatBubbleDelivery, string | undefined>>;
 
 export type ChatBubbleContract = {

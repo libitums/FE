@@ -1,3 +1,5 @@
+import type { UiCopy } from "./ui-copy.contract";
+
 // 세션 옵션 어휘 자리입니다.
 //
 // 화면 폴더가 아니라 `lib/`에 두는 근거는 `code.md` 「import」의 승격 조건입니다 —
@@ -8,8 +10,6 @@
 
 export type SessionOptionKey = "auto-play-audio" | "show-transcript";
 export type SessionOptions = Readonly<Record<SessionOptionKey, boolean>>;
-export type SessionOptionLabel = "자동 재생" | "대본 표시";
-export type SessionOptionStateLabel = "켜짐" | "꺼짐";
 
 export const sessionOptionKeys: readonly SessionOptionKey[] = [
   "auto-play-audio",
@@ -24,24 +24,21 @@ export const initialSessionOptions: SessionOptions = {
   "show-transcript": true,
 };
 
-// export하지 않습니다 — 표를 내보내면 다음 사람이 직접 색인해 자기 답을 짓습니다
-// (`notifications.ts` 선례). 키가 늘면 `TS2741`로 섭니다.
-const sessionOptionLabels: Record<SessionOptionKey, SessionOptionLabel> = {
-  "auto-play-audio": "자동 재생",
-  "show-transcript": "대본 표시",
-};
-
-export function sessionOptionLabel(key: SessionOptionKey): SessionOptionLabel {
-  return sessionOptionLabels[key];
+export function sessionOptionLabel(key: SessionOptionKey, copy: UiCopy): string {
+  return copy.settings.sessionOption[key];
 }
 
-export function sessionOptionStateLabel(value: boolean): SessionOptionStateLabel {
-  return value ? "켜짐" : "꺼짐";
+export function sessionOptionStateLabel(value: boolean, copy: UiCopy): string {
+  return value ? copy.settings.optionState.on : copy.settings.optionState.off;
 }
 
 // 구분자는 쉼표 + 공백입니다(ADR-0016 D3).
-export function sessionOptionAccessibilityLabel(key: SessionOptionKey, value: boolean): string {
-  return `${sessionOptionLabel(key)}, ${sessionOptionStateLabel(value)}`;
+export function sessionOptionAccessibilityLabel(
+  key: SessionOptionKey,
+  value: boolean,
+  copy: UiCopy,
+): string {
+  return `${sessionOptionLabel(key, copy)}, ${sessionOptionStateLabel(value, copy)}`;
 }
 
 // 입력을 바꾸지 않고 새 객체를 돌려줍니다. 값이 안 바뀌는 경우가 없으므로(토글)

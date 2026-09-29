@@ -4,6 +4,9 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { premiumRoleplayAccessibilityLabel } from "./roleplay-list";
 import type { PremiumRoleplayItem } from "./roleplay-list.contract";
 import { PremiumRoleplayCard } from "./PremiumRoleplayCard";
+import { uiCopyEn } from "../../lib/ui-copy-en";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태 · 상호작용을 봅니다 (ADR-0006 D4). 항목은 이
 // 파일 안의 fixture로 줍니다(`roleplay-premium-items.ts`를 import하지 않습니다).
@@ -11,8 +14,8 @@ import { PremiumRoleplayCard } from "./PremiumRoleplayCard";
 
 const item: PremiumRoleplayItem = {
   id: "premium-wrong-order",
-  title: "주문이 잘못 나왔어요",
-  situation: "카페 직원에게 정중하게 말하기",
+  title: "My order came out wrong",
+  situation: "Talk politely to the café staff",
 };
 
 describe("PremiumRoleplayCard — 결제 잠김", () => {
@@ -24,7 +27,7 @@ describe("PremiumRoleplayCard — 결제 잠김", () => {
     expect(card).toHaveAttribute("accessibility-traits", "button");
     expect(card).toHaveAttribute(
       "accessibility-label",
-      premiumRoleplayAccessibilityLabel(item, "payment"),
+      premiumRoleplayAccessibilityLabel(item, "payment", uiCopyEn),
     );
     expect(card).toHaveAttribute("data-lock", "payment");
   });
@@ -33,11 +36,11 @@ describe("PremiumRoleplayCard — 결제 잠김", () => {
     render(<PremiumRoleplayCard item={item} lock="payment" onSelect={vi.fn()} />);
 
     expect(screen.getByTestId("roleplay-premium-card-title-premium-wrong-order")).toHaveTextContent(
-      "주문이 잘못 나왔어요",
+      "My order came out wrong",
     );
     expect(
       screen.getByTestId("roleplay-premium-card-situation-premium-wrong-order"),
-    ).toHaveTextContent("카페 직원에게 정중하게 말하기");
+    ).toHaveTextContent("Talk politely to the café staff");
   });
 
   it("[PC3] 배지가 서고 접근성 트리에서는 가려진다 — 같은 뜻을 이름이 말한다", () => {
@@ -75,7 +78,7 @@ describe("PremiumRoleplayCard — 에피소드 잠김", () => {
     expect(card).toHaveAttribute("accessibility-traits", "none");
     expect(card).toHaveAttribute(
       "accessibility-label",
-      "주문이 잘못 나왔어요, 카페 직원에게 정중하게 말하기, 잠김",
+      "My order came out wrong, Talk politely to the café staff, locked",
     );
   });
 
@@ -98,5 +101,33 @@ describe("PremiumRoleplayCard — 에피소드 잠김", () => {
     fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-wrong-order"), {});
 
     expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
+describe("[RP1-M] 결제 롤플레이 카드는 문구표에서 읽는다", () => {
+  it("결제 잠김 — 이름의 Plus only 낱말", () => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <PremiumRoleplayCard item={item} lock="payment" onSelect={vi.fn()} />
+      </UiCopyContext.Provider>,
+    );
+
+    expect(screen.getByTestId("roleplay-premium-card-premium-wrong-order")).toHaveAttribute(
+      "accessibility-label",
+      expect.stringContaining("⟦roleplay.premiumLock.payment⟧"),
+    );
+  });
+
+  it("에피소드 잠김 — 이름의 잠김 낱말", () => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <PremiumRoleplayCard item={item} lock="episode" onSelect={vi.fn()} />
+      </UiCopyContext.Provider>,
+    );
+
+    expect(screen.getByTestId("roleplay-premium-card-premium-wrong-order")).toHaveAttribute(
+      "accessibility-label",
+      expect.stringContaining("⟦roleplay.premiumLock.episode⟧"),
+    );
   });
 });

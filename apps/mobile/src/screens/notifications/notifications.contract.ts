@@ -36,12 +36,6 @@ export type NotificationTarget =
 
 export type NotificationTargetKind = NotificationTarget["kind"];
 
-export type NotificationDestinationLabel =
-  | "메신저 열기"
-  | "전화 열기"
-  | "비주얼 노벨 열기"
-  | "롤플레이 목록 보기";
-
 /** **읽음·배지 필드가 없습니다.** 필드는 셋뿐이라 읽음 표식을 그릴 입력이 타입에 존재하지 않습니다. */
 export type NotificationItem = {
   readonly id: NotificationId;

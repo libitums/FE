@@ -1,6 +1,9 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { UiCopyContext } from "../../lib/ui-copy";
+import { uiCopyEn } from "../../lib/ui-copy-en";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import type { ProfileItem } from "./profile.contract";
 import { ProfileScreen } from "./ProfileScreen";
 
@@ -10,9 +13,9 @@ import { ProfileScreen } from "./ProfileScreen";
 // 쓰지 않습니다 — testid로 질의합니다.
 
 const items: readonly ProfileItem[] = [
-  { id: "name", label: "이름", value: "두루 학습자" },
-  { id: "learning-language", label: "학습 언어", value: "한국어" },
-  { id: "learning-goal", label: "학습 목표", value: "일상 대화" },
+  { id: "name", value: "Duru Learner" },
+  { id: "learning-language", value: "Korean" },
+  { id: "learning-goal", value: "Everyday conversation" },
 ];
 
 test("[PR1] 항목이 fixture 순서대로 그려지고 label·value 텍스트가 fixture 값이다", () => {
@@ -28,12 +31,14 @@ test("[PR1] 항목이 fixture 순서대로 그려지고 label·value 텍스트�
   expect(testids).toEqual(items.map((item) => `profile-item-${item.id}`));
 
   for (const item of items) {
-    expect(screen.getByTestId(`profile-item-label-${item.id}`)).toHaveTextContent(item.label);
+    expect(screen.getByTestId(`profile-item-label-${item.id}`)).toHaveTextContent(
+      uiCopyEn.profile.itemLabel[item.id],
+    );
     expect(screen.getByTestId(`profile-item-value-${item.id}`)).toHaveTextContent(item.value);
   }
 });
 
-test("[PR2] 나가기는 동그란 뒤로 버튼이고 접근성 이름이 '설정으로'다", () => {
+test("[PR2] 나가기는 동그란 뒤로 버튼이고 접근성 이름이 'Back to settings'다", () => {
   render(<ProfileScreen items={items} onExit={vi.fn()} />);
 
   const exit = within(screen.getByTestId("profile-screen-exit")).getByTestId(
@@ -41,7 +46,7 @@ test("[PR2] 나가기는 동그란 뒤로 버튼이고 접근성 이름이 '설�
   );
   expect(exit).toHaveAttribute("accessibility-element", "true");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
-  expect(exit).toHaveAttribute("accessibility-label", "설정으로");
+  expect(exit).toHaveAttribute("accessibility-label", "Back to settings");
 });
 
 test("[PR3] 나가기 tap → onExit 정확히 1회", () => {
@@ -110,4 +115,38 @@ test("[PR7] profile-screen-title이 header이고 화면 안 header가 하나다"
   const headers = container.querySelectorAll('[accessibility-traits="header"]');
   expect(headers).toHaveLength(1);
   expect(headers[0]).toBe(title);
+});
+
+test("[AC2u-E] 제목 · 항목 이름이 영어다", () => {
+  render(<ProfileScreen items={items} onExit={vi.fn()} />);
+
+  expect(screen.getByTestId("profile-screen-title")).toHaveTextContent("User profile");
+  expect(screen.getByTestId("profile-item-label-name")).toHaveTextContent("Name");
+  expect(screen.getByTestId("profile-item-label-learning-language")).toHaveTextContent(
+    "Learning language",
+  );
+  expect(screen.getByTestId("profile-item-label-learning-goal")).toHaveTextContent("Learning goal");
+});
+
+test("[AC2u-M] 제목 · 항목 이름 · 나가기 이름이 문구표에서 온다", () => {
+  const { container } = render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <ProfileScreen items={items} onExit={vi.fn()} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("profile-screen-title")).toHaveTextContent("⟦profile.title⟧");
+  expect(screen.getByTestId("profile-item-label-name")).toHaveTextContent(
+    "⟦profile.itemLabel.name⟧",
+  );
+  expect(screen.getByTestId("profile-item-label-learning-language")).toHaveTextContent(
+    "⟦profile.itemLabel.learning-language⟧",
+  );
+  expect(screen.getByTestId("profile-item-label-learning-goal")).toHaveTextContent(
+    "⟦profile.itemLabel.learning-goal⟧",
+  );
+  expect(
+    within(screen.getByTestId("profile-screen-exit")).getByTestId("ui-lynx-round-button"),
+  ).toHaveAttribute("accessibility-label", "⟦common.backToSettings⟧");
+  expect(container.textContent).not.toMatch(/[가-힣]/);
 });

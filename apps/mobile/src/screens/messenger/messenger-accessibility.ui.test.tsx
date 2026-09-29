@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { MessengerScreen } from "./MessengerScreen";
 import { MessengerFinishButton } from "./MessengerFinishButton";
@@ -32,15 +32,15 @@ describe("messenger accessibility static regression guard", () => {
     renderActive();
     expect(screen.getByTestId("messenger-key-shift")).toHaveAttribute(
       "accessibility-label",
-      "윗글쇠",
+      "Shift",
     );
     expect(screen.getByTestId("messenger-key-backspace")).toHaveAttribute(
       "accessibility-label",
-      "지우기",
+      "Delete",
     );
     expect(screen.getByTestId("messenger-key-space")).toHaveAttribute(
       "accessibility-label",
-      "띄어쓰기",
+      "Space",
     );
   });
 
@@ -48,7 +48,7 @@ describe("messenger accessibility static regression guard", () => {
     renderActive();
     const send = screen.getByTestId("messenger-send");
     expect(send).toHaveAttribute("accessibility-element", "true");
-    expect(send).toHaveAttribute("accessibility-label", "보내기");
+    expect(send).toHaveAttribute("accessibility-label", "Send");
     expect(send).toHaveAttribute("accessibility-traits", "disabled");
   });
 
@@ -56,7 +56,7 @@ describe("messenger accessibility static regression guard", () => {
     render(<MessengerFinishButton onFinish={vi.fn()} />);
     const button = screen.getByTestId("messenger-finish");
     expect(button).toHaveAttribute("accessibility-element", "true");
-    expect(button).toHaveAttribute("accessibility-label", "결과 보기");
+    expect(button).toHaveAttribute("accessibility-label", "See results");
     expect(button).toHaveAttribute("accessibility-traits", "button");
   });
 
@@ -64,7 +64,7 @@ describe("messenger accessibility static regression guard", () => {
     renderActive();
     const button = screen.getByTestId("messenger-screen-exit");
     expect(button).toHaveAttribute("accessibility-element", "true");
-    expect(button).toHaveAttribute("accessibility-label", "맵으로");
+    expect(button).toHaveAttribute("accessibility-label", "Back to map");
     expect(button).toHaveAttribute("accessibility-traits", "button");
   });
 
@@ -80,7 +80,28 @@ describe("messenger accessibility static regression guard", () => {
     );
     const button = screen.getByTestId("messenger-finish");
     expect(button).toHaveAttribute("accessibility-element", "true");
-    expect(button).toHaveAttribute("accessibility-label", "결과 보기");
+    expect(button).toHaveAttribute("accessibility-label", "See results");
     expect(button).toHaveAttribute("accessibility-traits", "button");
+  });
+});
+
+describe("messenger accessibility — 영어 낱말 이름", () => {
+  it("[ST6-E] 문장 부호 키는 낱말 이름을 갖는다", () => {
+    renderActive();
+    expect(screen.getByTestId("messenger-key-,")).toHaveAttribute("accessibility-label", "Comma");
+    expect(screen.getByTestId("messenger-key-.")).toHaveAttribute("accessibility-label", "Period");
+    expect(screen.getByTestId("messenger-key-?")).toHaveAttribute(
+      "accessibility-label",
+      "Question mark",
+    );
+  });
+
+  it("[ST6-E] 윗글쇠를 켜면 이름이 Shift, on이다", () => {
+    renderActive();
+    fireEvent.tap(screen.getByTestId("messenger-key-shift"), {});
+    expect(screen.getByTestId("messenger-key-shift")).toHaveAttribute(
+      "accessibility-label",
+      "Shift, on",
+    );
   });
 });

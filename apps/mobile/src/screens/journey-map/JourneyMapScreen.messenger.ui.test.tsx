@@ -81,6 +81,6 @@ it("C3: directions의 실제 접근성 이름과 조작 불가 trait를 리터�
   render(<JourneyMapScreen {...fixture()} />);
 
   const directions = screen.getByTestId("ui-lynx-learning-unit-directions");
-  expect(directions).toHaveAttribute("accessibility-label", "길 묻기, 잠김");
+  expect(directions).toHaveAttribute("accessibility-label", "Asking for directions, locked");
   expect(directions).toHaveAttribute("accessibility-traits", "disabled");
 });

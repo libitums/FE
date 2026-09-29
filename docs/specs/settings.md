@@ -12,6 +12,17 @@
 - 이 문서는 공개 계약의 요약이다. 값의 정본은 코드이고, 수동 절차의 정본은
   [설정 e2e](../e2e/settings.md)다.
 
+> **개정 (2026-09-29, UI 문구표).** 결정과 근거는 [ADR-0031](../adr/0031-ui-language-catalog.md)(**제안**)이 진다. 보이는 · 읽히는 문구가 문구표에서
+> 나오고 영어다 — `Settings` · `Account` · `Learning` · `User profile` · `Privacy and terms` · `Auto-play` ·
+> `Show transcript` · `Back to settings`. 바뀐 계약: `SettingsNavLabel` 타입이 지워지고 `settingsNavLabel(target, copy)`
+> · `sessionOptionLabel(key, copy)` · `sessionOptionStateLabel(value, copy)` ·
+> `sessionOptionAccessibilityLabel(key, value, copy)`가 `string`을 돌려준다(`Auto-play, on`).
+> `ProfileItemId`는 `"name" | "learning-language" | "learning-goal"`로 좁혀지고 **`ProfileItem.label` 필드가
+> 지워졌다** — 화면이 `copy.profile.itemLabel[item.id]`를 그린다(testid 값 불변). 프로필 자리표 값은
+> `Duru learner` · `Korean` · `Daily conversation`, 약관 본문은 **영어 초안 — 법무 검토 전**(ADR-0031 확인 필요 5).
+> ⚠ 토글 셀의 켜짐/꺼짐 낭독은 ui-lynx `SettingsCell`의 기본값(`on`/`off`)이 내고 앱이 넘길 길이 없다
+> (ADR-0031 D6). 본문의 한국어 라벨은 당시 값이다 — 대응은 ADR-0031 부록.
+
 ## 0. 고정 범위와 불변식
 
 1. 설정 탭 루트에 **이동 항목 둘**(사용자 프로필 · 개인정보 보호 및 약관) 다음 **세션 토글 둘**
@@ -211,6 +222,7 @@ App (app/App.tsx)                                        ← 유일한 결선 �
   라벨이고 새 결정이 아니다** — 판정은 D6.1 유지이고 기록은 그 ADR 「정정 기록」 2026-09-16에 있다.
 - **`specialUnitExitLabel`의 표를 쓰지 않는다** — 그 표는 특별 유닛의 진입 출처 어휘이고,
   프로필 · 약관은 특별 유닛이 아니며 설정 스택에만 선다. 라벨은 두 화면의 리터럴이다.
+  ⟨2026-09-29⟩ 리터럴 대신 문구표 `copy.common.backToSettings`(`Back to settings`) 한 키를 두 화면이 읽는다.
 - 프로필과 약관은 **서로를 열지 않는다** — 설정에서만 닿아 스택 깊이가 최대 2다.
 - 새 `NavAction`이 0건이고 `entry`를 건드리지 않는다.
 

@@ -27,7 +27,7 @@ export function Button(props: ButtonProps) {
       data-disabled={props.disabled ? "true" : "false"}
       data-loading={props.loading ? "true" : "false"}
       accessibility-element={true}
-      accessibility-label={props.loading ? `${props.label}, 로딩 중` : props.label}
+      accessibility-label={props.loading ? `${props.label}, loading` : props.label}
       accessibility-traits={contract.traits}
       bindtap={interactive ? handleTap : undefined}
     >

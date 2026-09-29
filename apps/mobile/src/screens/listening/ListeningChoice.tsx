@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
 
 import type { AnswerResult } from "../../lib/answer-result";
@@ -21,6 +22,7 @@ export function ListeningChoice({
   result,
   onSelect,
 }: ListeningChoiceProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view
       // 판정이 클래스로 붙습니다 — 고른 보기의 글자와 테두리가 `feedback-correct` ·
@@ -35,7 +37,7 @@ export function ListeningChoice({
       accessibility-element={true}
       // 상태는 라벨 접미사입니다. `accessibility-value`를 쓰지 않습니다
       // (ADR-0016 D3).
-      accessibility-label={choiceAccessibilityLabel(text, result)}
+      accessibility-label={choiceAccessibilityLabel(text, result, copy)}
       // 응답 뒤에도 "button"입니다. ADR-0016 D10의 `disabled`는 **영구히**
       // 조작 불가한 것에만 주는데, 이 요소는 다음 문항이 렌더되는 순간
       // 다시 눌립니다.

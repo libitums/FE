@@ -5,6 +5,8 @@ import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import { SpeakingScreen } from "./SpeakingScreen";
 import type { SpeakingQuestion } from "./speaking";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 뼈대 모양은 `LearningShell.ui.test.tsx`가
 // 보고, 여기서는 카드 안 · 아래 버튼 · 인식 결선을 봅니다. 문항은 대역입니다.
@@ -98,7 +100,7 @@ function tapSkip(): void {
   fireEvent.tap(button as Element, {});
 }
 
-test("[SP1] 문장 · 발음 표기 · 파형을 그리고, 판정 전에는 칠한 낱말이 없고 버튼이 말하기다", () => {
+test("[SP1] 문장 · 발음 표기 · 파형을 그리고, 판정 전에는 칠한 낱말이 없고 버튼이 Speak다", () => {
   renderSpeaking();
 
   const sentence = screen.getByTestId("speaking-screen-sentence");
@@ -107,18 +109,18 @@ test("[SP1] 문장 · 발음 표기 · 파형을 그리고, 판정 전에는 칠
   expect(sentence).toHaveAttribute("data-matched", "0");
   expect(screen.getByTestId("speaking-screen-romanization")).toHaveTextContent("[i.ɡʌ.ju.se.jo]");
   expect(screen.getByTestId("speaking-screen-waves")).toHaveAttribute("data-listening", "false");
-  expect(actionLabel()).toBe("말하기");
+  expect(actionLabel()).toBe("Speak");
 });
 
-test("[SP2] 말하기 → 듣는 중이면 파형이 주색으로 서고 버튼이 그만 말하기다 · 그만 말하기는 멈춘다", () => {
+test("[SP2] 말하기 → 듣는 중이면 파형이 주색으로 서고 버튼이 Stop speaking이다 · Stop speaking은 멈춘다", () => {
   const calls = stubSpeechHost();
   renderSpeaking();
 
-  tapAction("말하기");
+  tapAction("Speak");
 
   expect(calls.start).toBe(1);
   expect(screen.getByTestId("speaking-screen-waves")).toHaveAttribute("data-listening", "true");
-  tapAction("그만 말하기");
+  tapAction("Stop speaking");
   expect(calls.stop).toBe(1);
 });
 
@@ -126,7 +128,7 @@ test("[SP3] 전부 맞게 말하면 정답이고 낱말이 모두 칠해진다 �
   stubSpeechHost({ result: { status: "recognized", text: "이거 주세요" } });
   renderSpeaking();
 
-  tapAction("말하기");
+  tapAction("Speak");
 
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   expect(screen.getByTestId("speaking-screen-sentence")).toHaveAttribute("data-matched", "2");
@@ -141,7 +143,7 @@ test("[SP4] 앞 낱말만 맞으면 그 낱말까지만 칠하고 오답이다",
   stubSpeechHost({ result: { status: "recognized", text: "이거 줘요" } });
   renderSpeaking();
 
-  tapAction("말하기");
+  tapAction("Speak");
 
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "incorrect");
   expect(screen.getByTestId("speaking-screen-sentence")).toHaveAttribute("data-matched", "1");
@@ -150,11 +152,11 @@ test("[SP4] 앞 낱말만 맞으면 그 낱말까지만 칠하고 오답이다",
 test("[SP5] 모듈이 없으면(Explorer · 테스트) 판정 없이 안내와 건너뛰기가 선다", () => {
   renderSpeaking();
 
-  tapAction("말하기");
+  tapAction("Speak");
 
   expect(screen.getByTestId("speaking-screen-unavailable")).toBeInTheDocument();
   expect(screen.queryByTestId("answer-verdict")).toBeNull();
-  tapAction("건너뛰기");
+  tapAction("Skip");
   expect(screen.getByTestId("speaking-screen-sentence")).toHaveTextContent("고마워요");
 });
 
@@ -162,19 +164,19 @@ test("[SP6] 권한이 없으면 인식을 시작하지 않고 건너뛰기가 �
   const calls = stubSpeechHost({ granted: false });
   renderSpeaking();
 
-  tapAction("말하기");
+  tapAction("Speak");
 
   expect(calls.start).toBe(0);
-  expect(actionLabel()).toBe("건너뛰기");
+  expect(actionLabel()).toBe("Skip");
 });
 
 test("[SP7] 인식이 실패하면(recognized 아님) 건너뛰기가 선다", () => {
   stubSpeechHost({ result: { status: "recognition-failed", text: "" } });
   renderSpeaking();
 
-  tapAction("말하기");
+  tapAction("Speak");
 
-  expect(actionLabel()).toBe("건너뛰기");
+  expect(actionLabel()).toBe("Skip");
 });
 
 test("[SP8] 끝까지 가면 결과 보기가 판정된 문항의 결과만 싣는다(건너뛴 문항은 싣지 않는다)", () => {
@@ -182,15 +184,15 @@ test("[SP8] 끝까지 가면 결과 보기가 판정된 문항의 결과만 싣�
   const onFinish = vi.fn<(id: JourneyStepId, results: readonly AnswerResult[]) => void>();
   renderSpeaking(onFinish);
 
-  tapAction("말하기");
+  tapAction("Speak");
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   // 둘째 문항은 모듈을 걷어 인식 불가로 건너뜁니다.
   vi.unstubAllGlobals();
-  tapAction("말하기");
-  tapAction("건너뛰기");
+  tapAction("Speak");
+  tapAction("Skip");
 
-  expect(screen.getByTestId("speaking-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
-  tapAction("결과 보기");
+  expect(screen.getByTestId("speaking-screen-complete")).toHaveTextContent("All questions done");
+  tapAction("See results");
   expect(onFinish).toHaveBeenCalledWith("introduction", ["correct"], 0);
 });
 
@@ -211,7 +213,7 @@ test("[SP9] 권한 확인이 돌아오기 전에 화면을 떠나면 인식을 �
   });
   const view = renderSpeaking();
 
-  tapAction("말하기");
+  tapAction("Speak");
   view.unmount();
   pending.resolve?.({
     microphone: "granted",
@@ -235,7 +237,7 @@ test("[SP9] 권한 확인이 돌아오기 전에 화면을 떠나면 인식을 �
 test("[UI-K1] ready에서 건너뛰기가 선다 — 주 버튼 말하기와 함께다", () => {
   renderSpeaking();
 
-  expect(actionLabel()).toBe("말하기");
+  expect(actionLabel()).toBe("Speak");
   const slot = skipSlot();
   expect(slot).toBeInTheDocument();
 
@@ -247,7 +249,7 @@ test("[UI-K1] ready에서 건너뛰기가 선다 — 주 버튼 말하기와 함
   // 시각 스펙은 `outline`입니다 — `subtle`은 학습 껍데기 배경 위에서 면 대비 1.05:1로
   // 사라집니다(design §2.5). 선례(`Can't speak`의 `subtle`)를 그대로 옮기면 안 보입니다.
   const button = (slot as Element).querySelector('[data-testid="ui-lynx-button"]');
-  expect(button).toHaveAttribute("accessibility-label", "건너뛰기");
+  expect(button).toHaveAttribute("accessibility-label", "Skip");
   expect(button).toHaveAttribute("data-variant", "outline");
 });
 
@@ -272,12 +274,12 @@ test("[UI-K2] 건너뛰면 판정 없이 다음 문항으로 간다", () => {
 test("[UI-K3] unavailable 국면의 문구와 주 버튼은 그대로다", () => {
   renderSpeaking();
 
-  tapAction("말하기");
+  tapAction("Speak");
 
   expect(screen.getByTestId("speaking-screen-unavailable")).toHaveTextContent(
-    "지금은 음성 인식을 쓸 수 없어요. 건너뛰고 다음 문장으로 가요.",
+    "Speech recognition isn't available right now. Skip to the next sentence.",
   );
-  expect(actionLabel()).toBe("건너뛰기");
+  expect(actionLabel()).toBe("Skip");
   // 같은 낱말의 버튼이 둘 서지 않습니다 — 주 버튼이 이미 그 일을 합니다(design §2.6).
   expect(skipSlot()).toBeNull();
 });
@@ -292,7 +294,7 @@ test("[UI-K4] 말하기를 누르면(listening) 건너뛰기가 사라진다", (
 
   expect(skipSlot()).toBeInTheDocument();
 
-  tapAction("말하기");
+  tapAction("Speak");
 
   expect(screen.getByTestId("speaking-screen-waves")).toHaveAttribute("data-listening", "true");
   expect(skipSlot()).toBeNull();
@@ -304,19 +306,19 @@ test("[UI-K5] 판정 뒤와 완료 국면에도 건너뛰기가 서지 않는다
 
   expect(skipSlot()).toBeInTheDocument();
 
-  tapAction("말하기");
+  tapAction("Speak");
   // 판정 뒤에는 `.learning-shell-advance`가 화면을 덮어 눌리지 않습니다 — 보이지만 안
   // 눌리는 버튼을 두지 않습니다(design §2.6).
   expect(screen.getByTestId("answer-verdict")).toBeInTheDocument();
   expect(skipSlot()).toBeNull();
 
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
-  tapAction("말하기");
+  tapAction("Speak");
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
   // 완료 — 건너뛸 문항이 없습니다.
   expect(screen.getByTestId("speaking-screen-complete")).toBeInTheDocument();
-  expect(actionLabel()).toBe("결과 보기");
+  expect(actionLabel()).toBe("See results");
   expect(skipSlot()).toBeNull();
 });
 
@@ -333,7 +335,103 @@ test("[UI-K6] 건너뛴 문항이 correct로 실리고 건너뛴 수가 함께 �
   tapSkip();
 
   expect(screen.getByTestId("speaking-screen-complete")).toBeInTheDocument();
-  tapAction("결과 보기");
+  tapAction("See results");
 
   expect(onFinish).toHaveBeenCalledWith("introduction", ["correct", "correct"], 2);
+});
+
+// ---------------------------------------------------------------- 영어 렌더 · 문구표 (LA4)
+
+test("[LA4-E] 지시문 · 듣는 중 이름 · 판정 뒤 안내가 영어다", () => {
+  stubSpeechHost({ result: { status: "recognized", text: "이거 주세요" } });
+  renderSpeaking();
+
+  expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
+    "Read the sentence out loud.",
+  );
+  expect(screen.getByTestId("speaking-screen-waves")).toHaveAttribute(
+    "accessibility-label",
+    "Listening",
+  );
+  tapAction("Speak");
+  expect(screen.getByTestId("speaking-screen-hint")).toHaveTextContent(
+    "Tap the screen to continue",
+  );
+});
+
+// 아래 마킹 행은 한 국면씩 서서 읽습니다 — 어느 낱말이 하드코딩인지 국면마다 갈립니다.
+function renderSpeakingMarked(): ReturnType<typeof render> {
+  return render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <SpeakingScreen stepId="introduction" onExit={() => {}} onFinish={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+}
+
+test("[LA4-M] 문구표를 주입하면 대기 국면의 지시문 · 말하기 · 건너뛰기 · 나가기가 표의 경로로 나온다", () => {
+  renderSpeakingMarked();
+
+  expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
+    "⟦speaking.instruction⟧",
+  );
+  expect(actionLabel()).toBe("⟦speaking.speak⟧");
+  const skipButton = screen
+    .getByTestId("speaking-screen-skip")
+    .querySelector('[data-testid="ui-lynx-button"]');
+  expect(skipButton).toHaveAttribute("accessibility-label", "⟦common.skip⟧");
+  expect(screen.getByTestId("learning-shell-exit")).toHaveAttribute(
+    "accessibility-label",
+    "⟦learningShell.exitLesson⟧",
+  );
+});
+
+test("[LA4-M] 문구표를 주입하고 말하기를 누르면 듣는 중 이름 · 그만 말하기가 표의 경로로 나온다", () => {
+  stubSpeechHost();
+  renderSpeakingMarked();
+
+  tapAction("⟦speaking.speak⟧");
+
+  expect(actionLabel()).toBe("⟦speaking.stopSpeaking⟧");
+  expect(screen.getByTestId("speaking-screen-waves")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.listening⟧",
+  );
+});
+
+test("[LA4-M] 문구표를 주입하고 판정이 나면 안내 문구 · 넘김 층이 표의 경로로 나온다", () => {
+  stubSpeechHost({ result: { status: "recognized", text: "이거 주세요" } });
+  renderSpeakingMarked();
+
+  tapAction("⟦speaking.speak⟧");
+
+  expect(screen.getByTestId("speaking-screen-hint")).toHaveTextContent("⟦speaking.tapToContinue⟧");
+  expect(screen.getByTestId("learning-shell-advance")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.continue⟧",
+  );
+});
+
+test("[LA4-M] 문구표를 주입하고 인식이 안 되면 안내 문구 · 건너뛰기가 표의 경로로 나온다", () => {
+  renderSpeakingMarked();
+
+  tapAction("⟦speaking.speak⟧");
+
+  expect(screen.getByTestId("speaking-screen-unavailable")).toHaveTextContent(
+    "⟦speaking.recognitionUnavailable⟧",
+  );
+  expect(actionLabel()).toBe("⟦common.skip⟧");
+});
+
+test("[LA4-M] 문구표를 주입하고 문항을 마치면 완료 문구 · 마치기가 표의 경로로 나온다", () => {
+  renderSpeakingMarked();
+
+  tapAction("⟦speaking.speak⟧");
+  tapAction("⟦common.skip⟧");
+  tapAction("⟦speaking.speak⟧");
+  tapAction("⟦common.skip⟧");
+
+  expect(screen.getByTestId("speaking-screen-complete")).toHaveTextContent(
+    "⟦common.allQuestionsDone⟧",
+  );
+  expect(actionLabel()).toBe("⟦common.seeResults⟧");
 });

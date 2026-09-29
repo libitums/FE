@@ -10,7 +10,7 @@ import type { WritingQuestion } from "../../lib/writing-session";
 import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
 export type EpisodeFinalUnitId = "tutorial-final-test";
-export type EpisodeFinalTitle = "최종 테스트";
+export type EpisodeFinalTitle = "Final test";
 
 /** 따라 말하는 문항입니다(Figma 79-6484). 채점은 말하기 학습형과 같은 규칙입니다. */
 export type EpisodeFinalSpeakingQuestion = {

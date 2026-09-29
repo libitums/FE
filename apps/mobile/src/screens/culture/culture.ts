@@ -3,6 +3,7 @@
 // 않는 순수 모듈입니다(listening.ts · journey-map.ts · assessment.ts와 같은
 // 형태) — UI를 import하지 않습니다.
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 // ---------------------------------------------------------------- 도메인 타입
@@ -36,38 +37,38 @@ export type CultureNarrative = {
 // word-choice)이 쓴 「빈 배열 + 사유 주석」을 이 자리는 쓸 수 없습니다.
 const cultureNarrativeByStep: Record<JourneyStepId, CultureNarrative> = {
   greeting: {
-    title: "고개를 숙이는 인사",
+    title: "Bowing when you greet",
     paragraphs: [
-      "처음 만난 사람에게는 고개를 가볍게 숙여 인사한다. 껴안거나 손을 흔드는 인사는 아주 가까운 사이에서만 쓴다.",
-      "「안녕하세요」는 아침과 낮과 밤을 가리지 않고 쓴다. 시간대마다 인사말이 갈리는 언어와 다른 자리다.",
+      "When you meet someone for the first time, greet them with a slight bow. Hugging or waving is only for very close relationships.",
+      "「안녕하세요」 works in the morning, afternoon, and evening. Unlike languages with a different greeting for each time of day, one phrase covers them all.",
     ],
   },
   introduction: {
-    title: "이름을 묻는 순서",
+    title: "The order for asking names",
     paragraphs: [
-      "이름을 묻기 전에 자기를 먼저 밝히는 것이 자연스럽다. 「저는 ○○입니다」 뒤에 상대의 이름을 묻는다.",
-      "처음 만난 사이에서는 「○○ 씨」처럼 호칭을 붙인다. 호칭을 빼면 가깝다는 뜻이 아니라 무례하다는 뜻이 된다.",
+      "It's natural to introduce yourself before asking someone's name. Say 「저는 ○○입니다」 first, then ask for theirs.",
+      "When you've just met, add a title such as 「○○ 씨」. Leaving it off doesn't sound friendly — it sounds rude.",
     ],
   },
   ordering: {
-    title: "카페에서 부르는 말",
+    title: "Getting attention at a café",
     paragraphs: [
-      "점원을 부를 때는 「저기요」라고 한다. 손가락으로 가리키거나 손뼉을 치는 것은 무례하게 보인다.",
-      "주문은 「○○ 주세요」로 끝난다. 「주세요」가 이미 정중한 말이라 더 붙이지 않아도 된다.",
+      "To call a staff member, say 「저기요」. Pointing or clapping looks rude.",
+      "An order ends with 「○○ 주세요」. 「주세요」 is already polite, so you don't need to add anything.",
     ],
   },
   appointment: {
-    title: "약속을 정하는 말",
+    title: "Making plans politely",
     paragraphs: [
-      "약속 시간은 「언제가 괜찮으세요」처럼 상대의 사정을 먼저 물어 정한다. 시간을 먼저 못박으면 재촉으로 읽힌다.",
-      "늦을 것 같으면 도착해서 사과하지 말고 미리 알린다. 늦는다는 연락 자체가 예의로 여겨진다.",
+      "Set a time by first asking what works for the other person, as in 「언제가 괜찮으세요」. Naming a time first can sound pushy.",
+      "If you're going to be late, let them know ahead of time instead of apologizing when you arrive. Letting them know is itself seen as polite.",
     ],
   },
   directions: {
-    title: "길을 묻고 답하는 법",
+    title: "Asking for and giving directions",
     paragraphs: [
-      "모르는 사람에게 길을 물을 때는 「실례합니다」로 말을 연다. 바로 질문부터 하면 무례하게 들린다.",
-      "길을 알려 줄 때는 방향보다 건물이나 가게 이름을 먼저 댄다. 「편의점에서 오른쪽」처럼 눈에 보이는 것을 기준으로 말한다.",
+      "Start with 「실례합니다」 when asking a stranger for directions. Jumping straight to the question sounds rude.",
+      "When giving directions, name a building or shop before the direction. Use landmarks you can see, as in 「편의점에서 오른쪽」.",
     ],
   },
 };
@@ -75,8 +76,8 @@ const cultureNarrativeByStep: Record<JourneyStepId, CultureNarrative> = {
 // ---------------------------------------------------------------- 순수 함수
 
 // 구분자는 가운뎃점 양옆 공백입니다 — 듣기·평가·문장 순서·단어 선택과 같습니다.
-export function cultureScreenTitle(ordinal: number): string {
-  return `${ordinal}단계 · 문화`;
+export function cultureScreenTitle(ordinal: number, copy: UiCopy): string {
+  return copy.common.stepTitle(ordinal, copy.culture.activity);
 }
 
 // 던지지 않는 총함수입니다 — `Record`가 다섯 키를 전부 덮는 것을 tsc가 지므로

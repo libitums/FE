@@ -11,6 +11,7 @@ import {
   assessmentVerdictLabel,
   judgeAssessment,
 } from "./assessment";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // 기대값의 정본은 계약입니다 — 구현에서 베끼지 않습니다.
 //
@@ -111,89 +112,100 @@ describe("assessmentCompletesStep — (u7) 완료 표", () => {
 describe("assessmentScreenTitle", () => {
   // `${ordinal}단계 · 평가` — 구분자는 가운뎃점 양옆 공백입니다.
   it("서수 3은 3단계 · 평가다", () => {
-    expect(assessmentScreenTitle(3)).toBe("3단계 · 평가");
+    expect(assessmentScreenTitle(3, uiCopyEn)).toBe("Step 3 · Assessment");
   });
 
   it("서수 1은 1단계 · 평가다", () => {
-    expect(assessmentScreenTitle(1)).toBe("1단계 · 평가");
+    expect(assessmentScreenTitle(1, uiCopyEn)).toBe("Step 1 · Assessment");
   });
 
   it("여정의 마지막 서수 5도 같은 형식이다", () => {
-    expect(assessmentScreenTitle(5)).toBe("5단계 · 평가");
+    expect(assessmentScreenTitle(5, uiCopyEn)).toBe("Step 5 · Assessment");
   });
 });
 
 describe("assessmentVerdictLabel — 판정 표", () => {
   // 낱말까지 고정합니다. "다시 도전"·"아쉬워요" 류를 쓰지 않습니다.
   it("passed는 통과다", () => {
-    expect(assessmentVerdictLabel("passed")).toBe("통과");
+    expect(assessmentVerdictLabel("passed", uiCopyEn)).toBe("Passed");
   });
 
   it("failed는 미통과다", () => {
-    expect(assessmentVerdictLabel("failed")).toBe("미통과");
+    expect(assessmentVerdictLabel("failed", uiCopyEn)).toBe("Not passed");
   });
 
   it("두 낱말이 서로 다르다", () => {
-    expect(assessmentVerdictLabel("passed")).not.toBe(assessmentVerdictLabel("failed"));
+    expect(assessmentVerdictLabel("passed", uiCopyEn)).not.toBe(
+      assessmentVerdictLabel("failed", uiCopyEn),
+    );
   });
 });
 
 describe("assessmentItemTitle", () => {
   // `문항 ${index + 1}` — index는 0-based입니다.
   it("0-based 인덱스 0은 문항 1이다", () => {
-    expect(assessmentItemTitle(0)).toBe("문항 1");
+    expect(assessmentItemTitle(0, uiCopyEn)).toBe("Question 1");
   });
 
   it("0-based 인덱스 2는 문항 3이다", () => {
-    expect(assessmentItemTitle(2)).toBe("문항 3");
+    expect(assessmentItemTitle(2, uiCopyEn)).toBe("Question 3");
   });
 });
 
 describe("assessmentItemAccessibilityLabel — 접미사 표", () => {
   // `${assessmentItemTitle(index)}, ${접미사}`. 0-based → 1-based입니다.
   it("correct는 문항 1, 정답이다", () => {
-    expect(assessmentItemAccessibilityLabel(0, "correct")).toBe("문항 1, 정답");
+    expect(assessmentItemAccessibilityLabel(0, "correct", uiCopyEn)).toBe("Question 1, correct");
   });
 
   it("incorrect는 문항 2, 오답이다", () => {
-    expect(assessmentItemAccessibilityLabel(1, "incorrect")).toBe("문항 2, 오답");
+    expect(assessmentItemAccessibilityLabel(1, "incorrect", uiCopyEn)).toBe(
+      "Question 2, incorrect",
+    );
   });
 
   // 「낱말이 듣기와 같다」 — 접미사 문구가 assessmentItemTitle 위에 그대로
   // 얹힙니다. 합성 규칙 자체를 봅니다(고정된 두 값 확인과는 다른 축입니다).
   it("어느 인덱스·판정에서도 제목 뒤에 쉼표+공백+접미사가 그대로 이어붙는다", () => {
-    expect(assessmentItemAccessibilityLabel(4, "correct")).toBe(`${assessmentItemTitle(4)}, 정답`);
-    expect(assessmentItemAccessibilityLabel(4, "incorrect")).toBe(
-      `${assessmentItemTitle(4)}, 오답`,
+    expect(assessmentItemAccessibilityLabel(4, "correct", uiCopyEn)).toBe(
+      `${assessmentItemTitle(4, uiCopyEn)}, correct`,
+    );
+    expect(assessmentItemAccessibilityLabel(4, "incorrect", uiCopyEn)).toBe(
+      `${assessmentItemTitle(4, uiCopyEn)}, incorrect`,
     );
   });
 });
 
 describe("assessmentAnnouncement — 낭독 문자열", () => {
   it("passed는 평가 결과, 통과다", () => {
-    expect(assessmentAnnouncement("passed")).toBe("평가 결과, 통과");
+    expect(assessmentAnnouncement("passed", uiCopyEn)).toBe("Assessment result, passed");
   });
 
   it("failed는 평가 결과, 미통과다", () => {
-    expect(assessmentAnnouncement("failed")).toBe("평가 결과, 미통과");
+    expect(assessmentAnnouncement("failed", uiCopyEn)).toBe("Assessment result, not passed");
   });
 
   // 「보이는 낱말과 낭독 낱말이 같다」 — assessmentVerdictLabel과
   // assessmentAnnouncement가 같은 내부 표를 지납니다. 갈리면 화면과 소리가 다른
   // 앱이 됩니다.
   it("낭독 문자열이 보이는 판정 낱말을 그대로 담는다", () => {
-    expect(assessmentAnnouncement("passed")).toContain(assessmentVerdictLabel("passed"));
-    expect(assessmentAnnouncement("failed")).toContain(assessmentVerdictLabel("failed"));
+    // 문구표 영어는 낭독에서 낱말 첫 글자가 소문자입니다(`Assessment result, passed`).
+    expect(assessmentAnnouncement("passed", uiCopyEn).toLowerCase()).toContain(
+      assessmentVerdictLabel("passed", uiCopyEn).toLowerCase(),
+    );
+    expect(assessmentAnnouncement("failed", uiCopyEn).toLowerCase()).toContain(
+      assessmentVerdictLabel("failed", uiCopyEn).toLowerCase(),
+    );
   });
 
   // 서수를 넣지 않습니다 — 단계는 화면 제목이 지는 정보입니다.
   it("서수를 담지 않는다 — 숫자가 없다", () => {
-    expect(assessmentAnnouncement("passed")).not.toMatch(/\d/);
-    expect(assessmentAnnouncement("failed")).not.toMatch(/\d/);
+    expect(assessmentAnnouncement("passed", uiCopyEn)).not.toMatch(/\d/);
+    expect(assessmentAnnouncement("failed", uiCopyEn)).not.toMatch(/\d/);
   });
 
   it("구분자가 쉼표 + 공백이다 (ADR-0016 D3)", () => {
-    expect(assessmentAnnouncement("passed")).toContain(", ");
-    expect(assessmentAnnouncement("failed")).toContain(", ");
+    expect(assessmentAnnouncement("passed", uiCopyEn)).toContain(", ");
+    expect(assessmentAnnouncement("failed", uiCopyEn)).toContain(", ");
   });
 });

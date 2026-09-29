@@ -1,7 +1,8 @@
 import { useEffect, useState } from "@lynx-js/react";
 import { playAudio, stopAudio } from "../../lib/audio";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
-import type { PhoneCallScreenProps } from "./phone-call.contract";
+import { useUiCopy } from "../../lib/ui-copy";
+import type { PhoneCallScreenProps, PhoneCallTranscriptEntry } from "./phone-call.contract";
 import {
   currentPhoneCallReply,
   currentPhoneCallTurn,
@@ -14,6 +15,10 @@ import {
 } from "./phone-call";
 import "./phone-call-screen.css";
 
+// 나(self) 항목은 이름 필드가 없습니다(계약) — 화면이 문구표의 `common.me`를 씁니다.
+const entrySpeakerName = (entry: PhoneCallTranscriptEntry, me: string): string =>
+  entry.speaker === "jimin" ? entry.speakerName : me;
+
 // 전화 화면은 세션만 소유하고 완료 기록은 상위 콜백으로 넘깁니다.
 // `exitLabel`은 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받습니다
 // (ADR-0007 D3). 기본값은 여정 라벨이라 기존 호출은 수정 없이 성립합니다.
@@ -21,16 +26,18 @@ export function PhoneCallScreen({
   unitId,
   conversation,
   completionStatus,
-  exitLabel = specialUnitExitLabel("journey"),
+  exitTo = "journey",
   onComplete,
   onExit,
 }: PhoneCallScreenProps) {
+  const copy = useUiCopy();
+  const exitLabel = specialUnitExitLabel(exitTo, copy);
   const [session, setSession] = useState(() => initialPhoneCallSessionState(completionStatus));
   const [completionLatched, setCompletionLatched] = useState(completionStatus === "completed");
   const entries = visiblePhoneCallEntries(conversation, session);
   const turn = currentPhoneCallTurn(conversation, session);
   const reply = currentPhoneCallReply(conversation, session);
-  const playLabel = phoneCallPlayLabel(session);
+  const playLabel = phoneCallPlayLabel(session, copy);
 
   useEffect(() => () => stopAudio(), []);
 
@@ -101,10 +108,10 @@ export function PhoneCallScreen({
             data-testid="phone-call-contact-name"
             accessibility-element={true}
           >
-            지민
+            {conversation.turns[0].speakerName}
           </text>
           <text className="phone-call-screen-status" data-testid="phone-call-status">
-            {phoneCallStatusLabel(session)}
+            {phoneCallStatusLabel(session, copy)}
           </text>
           <view className="phone-call-transcript-list">
             {entries.map((entry) => (
@@ -118,10 +125,10 @@ export function PhoneCallScreen({
                 }
                 accessibility-element={true}
                 accessibility-traits="text"
-                accessibility-label={`${entry.speakerName}, ${entry.text}`}
+                accessibility-label={`${entrySpeakerName(entry, copy.common.me)}, ${entry.text}`}
               >
                 <text className="phone-call-transcript-speaker" accessibility-element={false}>
-                  {entry.speakerName}
+                  {entrySpeakerName(entry, copy.common.me)}
                 </text>
                 <text className="phone-call-transcript-text" accessibility-element={false}>
                   {entry.text}
@@ -162,10 +169,10 @@ export function PhoneCallScreen({
             data-testid="phone-call-replay-button"
             accessibility-element={true}
             accessibility-traits="button"
-            accessibility-label="처음부터 보기"
+            accessibility-label={copy.common.startOver}
             bindtap={handleReplay}
           >
-            <text>처음부터 보기</text>
+            <text>{copy.common.startOver}</text>
           </view>
         ) : null}
       </view>

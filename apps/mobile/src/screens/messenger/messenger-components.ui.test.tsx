@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { MessageBubble } from "./MessageBubble";
 import { MessengerScreen } from "./MessengerScreen";
@@ -39,6 +39,10 @@ describe("messenger UI components", () => {
     expect(bubble).toHaveTextContent("토요일 오후 2시에 역 앞 카페에서 만나요.");
     expect(bubble).toHaveTextContent(conversation.messages[0].translation);
     expect(bubble).toHaveAttribute("data-sender", "jimin");
+    expect(within(bubble).getByTestId("ui-lynx-chat-bubble")).toHaveAttribute(
+      "accessibility-label",
+      expect.stringContaining("Jimin"),
+    );
   });
 
   it("MessengerFinishButton은 결과 보기 콜백을 호출한다", () => {
@@ -50,7 +54,7 @@ describe("messenger UI components", () => {
 
   it("MessengerScreen은 제목·나가기·스크롤 표면을 낸다", () => {
     renderActive();
-    expect(screen.getByTestId("messenger-screen-title")).toHaveTextContent("약속 확인 메시지");
+    expect(screen.getByTestId("messenger-screen-title")).toHaveTextContent("Appointment message");
     expect(screen.getByTestId("messenger-screen-scroll")).toHaveAttribute(
       "scroll-orientation",
       "vertical",
@@ -99,7 +103,7 @@ describe("messenger UI components", () => {
     fireEvent.tap(screen.getByTestId("messenger-key-backspace"), {});
     expect(screen.getByTestId("messenger-send")).toHaveAttribute(
       "accessibility-label",
-      "보내기, 좋ㅇ",
+      "Send, 좋ㅇ",
     );
   });
 
@@ -124,11 +128,16 @@ describe("messenger UI components", () => {
     });
 
     expect(screen.getByTestId("messenger-message-self-accept")).toHaveTextContent("좋아요!");
+    expect(
+      within(screen.getByTestId("messenger-message-self-accept")).getByTestId(
+        "ui-lynx-chat-bubble",
+      ),
+    ).toHaveAttribute("accessibility-label", expect.stringContaining("Me"));
     expect(screen.getByTestId("messenger-message-jimin-directions")).toBeInTheDocument();
     expect(screen.queryByTestId("answer-verdict")).toBeNull();
     // 둘째 답장은 객관식입니다 — 자판 자리에 보기가 서고, 정답을 가려 보이지 않습니다.
     expect(screen.getByTestId("messenger-choices")).toBeInTheDocument();
-    expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent("입력해주세요.");
+    expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent("Type your answer.");
     expect(screen.getByTestId("messenger-composer-hint")).toHaveTextContent("Thank you!");
   });
 
@@ -211,6 +220,10 @@ describe("messenger UI components", () => {
 
     fireEvent.tap(screen.getByTestId("messenger-choice-미안해요!"), {});
     expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent("미안해요!");
+    expect(screen.getByTestId("messenger-choice-미안해요!")).toHaveAttribute(
+      "accessibility-label",
+      "미안해요!, selected",
+    );
     expect(screen.getByTestId("messenger-choice-미안해요!")).toHaveAttribute(
       "data-selected",
       "true",

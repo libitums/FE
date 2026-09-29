@@ -2,6 +2,7 @@ import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { callClockLabel } from "../lib/call-clock";
+import { useUiCopy } from "../lib/ui-copy";
 
 import "./call-stage.css";
 
@@ -59,12 +60,13 @@ export function CallCaller({
   clockRunning,
   testIdPrefix,
 }: CallCallerProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view
       className="call-stage-caller"
       data-testid={`${testIdPrefix}-caller`}
       accessibility-element={true}
-      accessibility-label={`음성 통화, ${callerName}`}
+      accessibility-label={copy.phoneCall.voiceCall(callerName)}
     >
       <text className="call-stage-kind">Voice Call</text>
       <view className="call-stage-portrait-frame">

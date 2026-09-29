@@ -67,6 +67,9 @@
 }
 
 .culture-screen-title {
+  /* 영어 `Back to map`이 제목을 밀어내지 않게 남는 폭을 받고 두 줄까지 접힙니다(H1). */
+  flex: 1;
+  min-width: 0;
   /* 헤더 세로 보정의 산술입니다 — `12 = (spacing-48 − heading-s-line-height) / 2 =
      (48 − 24) / 2`입니다. `--libitum-spacing-12`와 값이 우연히 같습니다. 되돌리는
      조건: `-exit`의 하한(현재 spacing-48)이나 이 제목의 scale(현재 heading-s)이

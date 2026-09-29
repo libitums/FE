@@ -44,10 +44,6 @@ export type JourneyStep = {
  * **특별 유닛은 스텝을 갖지 않습니다** — 기본 학습형은 일반 유닛에서만 돌기
  * 때문입니다. 그래서 `learningFormByStep`의 정의역이 「일반 유닛의 스텝 전부」로
  * 좁혀지고, 그 좁힘을 `Record`의 키가 집니다.
- *
- * **`special`이 오늘 아무 필드도 지지 않는 것은 판단입니다** — 그 항목이 무엇을
- * 지고 갈지는 그 유닛으로 가는 화면이 정합니다. 지금 필드를 정하면 화면 없이 그
- * 모양이 굳습니다.
  */
 export type JourneyUnit =
   | { readonly kind: "standard"; readonly steps: readonly JourneyStep[] }
@@ -78,12 +74,6 @@ export type JourneyMapItemStatus = "locked" | "available" | "completed";
 
 /**
  * 에피소드를 가려내는 이름입니다. 오늘은 `tutorial` 하나입니다.
- *
- * 유닛 id가 전부 닫힌 union인데 여기만 열려 있었습니다. 닫으면 에피소드 id의 오타가
- * 컴파일에 섭니다 — `"tutoria1"`을 쓰면 `TS2322`입니다.
- *
- * **아직 없는 에피소드 이름을 미리 넣지 않습니다.** 데이터에 없는 값을 타입에 적으면
- * 그 값이 어디서 왔는지 아무도 못 답합니다.
  */
 export type JourneyEpisodeId = "tutorial";
 
@@ -100,9 +90,6 @@ export type JourneyMiddleUnit = Exclude<
 /**
  * 에피소드의 유닛 목록입니다. 첫 자리가 표지, 마지막 자리가 최종 테스트이고 **가운데는
  * 규칙이 없습니다** — 일반 학습과 서사 연계 학습을 유닛마다 자유롭게 섞습니다.
- *
- * 데이터 순서가 아니라 **타입**이 그 둘을 집니다. 순서로만 두면 최종 테스트를 가운데
- * 둬도 컴파일도 런타임도 통과합니다.
  *
  * 따라오는 것은 **최소 길이 둘**입니다(표지 + 최종). 그것이 도메인과 맞습니다 — 서사
  * 없는 에피소드도, 최종 테스트 없는 에피소드도 사용자 발화에 없습니다.
@@ -161,46 +148,64 @@ const tutorialUnits: JourneyEpisodeUnits = [
   {
     kind: "special",
     id: "tutorial-intro",
-    title: "에피소드 표지",
+    title: "Episode intro",
     screen: "episode-intro",
   },
   {
     kind: "standard",
     steps: [
-      { id: "greeting", title: "첫 인사", description: "카페에서 처음 인사를 나눈다" },
-      { id: "introduction", title: "이름 묻기", description: "상대의 이름을 묻고 자기를 소개한다" },
-      { id: "ordering", title: "주문하기", description: "카페에서 마실 것을 주문한다" },
-      { id: "appointment", title: "약속 잡기", description: "다음에 만날 날짜와 시간을 정한다" },
+      {
+        id: "greeting",
+        title: "First greetings",
+        description: "Greet someone for the first time at a café",
+      },
+      {
+        id: "introduction",
+        title: "Asking names",
+        description: "Ask someone's name and introduce yourself",
+      },
+      { id: "ordering", title: "Ordering", description: "Order a drink at a café" },
+      {
+        id: "appointment",
+        title: "Making plans",
+        description: "Set a date and time to meet again",
+      },
     ],
   },
   {
     kind: "special",
     id: "appointment-confirmation",
-    title: "약속 확인 메시지",
+    title: "Appointment message",
     screen: "messenger",
   },
   {
     kind: "special",
     id: "appointment-confirmation-phone-call",
-    title: "약속 확인 전화",
+    title: "Appointment call",
     screen: "phone-call",
   },
   {
     kind: "special",
     id: "cafe-arrival-visual-novel",
-    title: "카페에 도착한 지민",
+    title: "Jimin arrives at the café",
     screen: "visual-novel",
   },
   {
     kind: "standard",
-    steps: [{ id: "directions", title: "길 묻기", description: "약속 장소까지 가는 길을 묻는다" }],
+    steps: [
+      {
+        id: "directions",
+        title: "Asking for directions",
+        description: "Ask the way to the meeting place",
+      },
+    ],
   },
   // 에피소드의 마지막은 최종 테스트입니다 — 서사와 에피소드에서 배운 표현을 모아 풀고
   // 에피소드를 끝냅니다. 같은 에피소드의 다른 항목을 모두 끝내야 열립니다(`mapItemStatus`).
   {
     kind: "special",
     id: "tutorial-final-test",
-    title: "최종 테스트",
+    title: "Final test",
     screen: "episode-final",
   },
 ];
@@ -210,8 +215,6 @@ const tutorialUnits: JourneyEpisodeUnits = [
 // ⚠ **이음매입니다** — 오늘 에피소드가 하나뿐인 것은 전사(轉寫)입니다. 지금 있는 컨텐츠
 // (카페에서 지민을 만나는 줄기)를 튜토리얼로 두기로 한 판단이고(2026-09-26), 둘째부터는
 // 컨텐츠가 오는 대로 늡니다. 「여정이 에피소드 하나다」라고 정해진 것이 아닙니다.
-//
-// 번호가 0인 것은 이 에피소드가 본편이 아니라 사용법을 익히는 자리이기 때문입니다.
 const journeyEpisodes: readonly JourneyEpisode[] = [
   { id: "tutorial", label: "Episode 0.", title: "Tutorial.", units: tutorialUnits },
 ];

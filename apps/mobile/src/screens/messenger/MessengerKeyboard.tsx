@@ -3,6 +3,7 @@ import arrowUp from "@libitums/icons/lynx/arrow-up";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import { hangulKeyRows, shiftedKeys } from "./hangul-keyboard";
 import type { MessengerKeyboardProps } from "./messenger.contract";
 
@@ -19,6 +20,7 @@ export function MessengerKeyboard({
   onBackspace,
   onShift,
 }: MessengerKeyboardProps): ReactNode {
+  const copy = useUiCopy();
   const jamoKey = (key: string) => {
     const label = shifted ? (shiftedKeys[key] ?? key) : key;
     return (
@@ -51,7 +53,9 @@ export function MessengerKeyboard({
           data-shifted={shifted ? "true" : "false"}
           accessibility-element={true}
           accessibility-traits="button"
-          accessibility-label={shifted ? "윗글쇠, 켜짐" : "윗글쇠"}
+          accessibility-label={
+            shifted ? copy.messenger.keyboard.shiftOn : copy.messenger.keyboard.shift
+          }
           bindtap={onShift}
         >
           <svg
@@ -66,7 +70,7 @@ export function MessengerKeyboard({
           data-testid="messenger-key-backspace"
           accessibility-element={true}
           accessibility-traits="button"
-          accessibility-label="지우기"
+          accessibility-label={copy.messenger.keyboard.backspace}
           bindtap={onBackspace}
         >
           <svg
@@ -77,21 +81,26 @@ export function MessengerKeyboard({
         </view>
       </view>
       <view className="messenger-keyboard-row messenger-keyboard-row-spread">
-        {punctuationKey(",", "쉼표", onPress)}
-        {punctuationKey(".", "마침표", onPress)}
+        {punctuationKey(",", copy.messenger.keyboard.comma, onPress)}
+        {punctuationKey(".", copy.messenger.keyboard.period, onPress)}
         <view
           className="messenger-keyboard-key messenger-keyboard-key-space"
           data-testid="messenger-key-space"
           accessibility-element={true}
           accessibility-traits="button"
-          accessibility-label="띄어쓰기"
+          accessibility-label={copy.messenger.keyboard.space}
           bindtap={() => onPress(" ")}
         >
           <text className="messenger-keyboard-key-label messenger-keyboard-key-label-muted">
             space
           </text>
         </view>
-        {punctuationKey("?", "물음표", onPress, "messenger-keyboard-key-trailing")}
+        {punctuationKey(
+          "?",
+          copy.messenger.keyboard.questionMark,
+          onPress,
+          "messenger-keyboard-key-trailing",
+        )}
       </view>
     </view>
   );

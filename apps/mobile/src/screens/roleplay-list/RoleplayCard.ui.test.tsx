@@ -4,6 +4,9 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { roleplayFormLabel, roleplayItemAccessibilityLabel } from "./roleplay-list";
 import type { RoleplayItem } from "./roleplay-list.contract";
 import { RoleplayCard } from "./RoleplayCard";
+import { uiCopyEn } from "../../lib/ui-copy-en";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태 · 상호작용을 봅니다 (ADR-0006 D4). 기대값은
 // 순수 함수의 결과로 비교하고, 항목은 이 파일 안의 fixture로 줍니다. `toHaveClass`·
@@ -12,19 +15,19 @@ import { RoleplayCard } from "./RoleplayCard";
 const messengerItem: RoleplayItem = {
   form: "messenger",
   unitId: "appointment-confirmation",
-  title: "약속 확인 메시지",
+  title: "Appointment message",
 };
 
 const phoneCallItem: RoleplayItem = {
   form: "phone-call",
   unitId: "appointment-confirmation-phone-call",
-  title: "약속 확인 전화",
+  title: "Appointment call",
 };
 
 const visualNovelItem: RoleplayItem = {
   form: "visual-novel",
   unitId: "cafe-arrival-visual-novel",
-  title: "카페에 도착한 지민",
+  title: "Jimin arrives at the café",
 };
 
 const fixtures: readonly RoleplayItem[] = [messengerItem, phoneCallItem, visualNovelItem];
@@ -37,7 +40,10 @@ describe("RoleplayCard — 열린 카드", () => {
       const card = screen.getByTestId(`roleplay-list-item-${item.unitId}`);
       expect(card).toHaveAttribute("accessibility-element", "true");
       expect(card).toHaveAttribute("accessibility-traits", "button");
-      expect(card).toHaveAttribute("accessibility-label", roleplayItemAccessibilityLabel(item));
+      expect(card).toHaveAttribute(
+        "accessibility-label",
+        roleplayItemAccessibilityLabel(item, false, uiCopyEn),
+      );
       expect(card).toHaveAttribute("data-locked", "false");
     });
 
@@ -48,7 +54,7 @@ describe("RoleplayCard — 열린 카드", () => {
         item.title,
       );
       expect(screen.getByTestId(`roleplay-list-item-form-${item.unitId}`)).toHaveTextContent(
-        roleplayFormLabel(item.form),
+        roleplayFormLabel(item.form, uiCopyEn),
       );
     });
 
@@ -79,7 +85,7 @@ describe("RoleplayCard — 열린 카드", () => {
     render(<RoleplayCard item={messengerItem} locked={false} layout="list" onSelect={onSelect} />);
 
     const card = screen.getByTestId("roleplay-list-item-appointment-confirmation");
-    expect(card).toHaveAttribute("accessibility-label", "약속 확인 메시지, 메신저");
+    expect(card).toHaveAttribute("accessibility-label", "Appointment message, Messenger");
     fireEvent.tap(card, {});
 
     expect(onSelect).toHaveBeenCalledWith(messengerItem);
@@ -92,7 +98,7 @@ describe("RoleplayCard — 잠긴 카드", () => {
 
     const card = screen.getByTestId("roleplay-list-item-appointment-confirmation");
     expect(card).toHaveAttribute("accessibility-traits", "none");
-    expect(card).toHaveAttribute("accessibility-label", "약속 확인 메시지, 메신저, 잠김");
+    expect(card).toHaveAttribute("accessibility-label", "Appointment message, Messenger, locked");
     expect(card).toHaveAttribute("data-locked", "true");
   });
 
@@ -112,5 +118,38 @@ describe("RoleplayCard — 잠긴 카드", () => {
     fireEvent.tap(screen.getByTestId("roleplay-list-item-appointment-confirmation"), {});
 
     expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
+describe("[RP1-M] 롤플레이 카드는 문구표에서 읽는다", () => {
+  for (const item of fixtures) {
+    it(`${item.form}: 형태 낱말 · 이름`, () => {
+      render(
+        <UiCopyContext.Provider value={markedUiCopy}>
+          <RoleplayCard item={item} locked={false} layout="row" onSelect={vi.fn()} />
+        </UiCopyContext.Provider>,
+      );
+
+      expect(screen.getByTestId(`roleplay-list-item-form-${item.unitId}`)).toHaveTextContent(
+        `⟦roleplay.form.${item.form}⟧`,
+      );
+      expect(screen.getByTestId(`roleplay-list-item-${item.unitId}`)).toHaveAttribute(
+        "accessibility-label",
+        expect.stringContaining(`⟦roleplay.form.${item.form}⟧`),
+      );
+    });
+  }
+
+  it("잠긴 카드 이름의 잠김 낱말", () => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <RoleplayCard item={messengerItem} locked layout="row" onSelect={vi.fn()} />
+      </UiCopyContext.Provider>,
+    );
+
+    expect(screen.getByTestId(`roleplay-list-item-${messengerItem.unitId}`)).toHaveAttribute(
+      "accessibility-label",
+      expect.stringContaining("⟦common.locked⟧"),
+    );
   });
 });

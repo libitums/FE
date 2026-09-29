@@ -36,6 +36,7 @@ import {
   type JourneyUnit,
   type StepSheetState,
 } from "./journey-map";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // DOM·컴포넌트를 import하지 않습니다 — 순수 함수 일곱 + 고정 데이터만 봅니다.
 
@@ -69,15 +70,17 @@ describe("stepStatusAt", () => {
 describe("stepAccessibilityLabel", () => {
   // "<title>, <접미사>" 형식입니다.
   it("done 상태는 완료됨 접미사를 낸다", () => {
-    expect(stepAccessibilityLabel("첫 인사", "done")).toBe("첫 인사, 완료됨");
+    expect(stepAccessibilityLabel("First greetings", "done", uiCopyEn)).toBe(
+      "First greetings, completed",
+    );
   });
 
   it("current 상태는 현재 스텝 접미사를 낸다", () => {
-    expect(stepAccessibilityLabel("주문하기", "current")).toBe("주문하기, 현재 스텝");
+    expect(stepAccessibilityLabel("Ordering", "current", uiCopyEn)).toBe("Ordering, current step");
   });
 
   it("locked 상태는 잠김 접미사를 낸다", () => {
-    expect(stepAccessibilityLabel("약속 잡기", "locked")).toBe("약속 잡기, 잠김");
+    expect(stepAccessibilityLabel("Making plans", "locked", uiCopyEn)).toBe("Making plans, locked");
   });
 });
 
@@ -102,7 +105,7 @@ describe("findStep", () => {
   it("배열에 있는 id면 그 스텝을 돌려준다", () => {
     const found = findStep(journeySteps, "ordering");
 
-    expect(found?.title).toBe("주문하기");
+    expect(found?.title).toBe("Ordering");
   });
 
   it("배열에 없는 id면 undefined를 돌려준다", () => {
@@ -257,15 +260,15 @@ describe("낭독 이름의 데이터 앵커", () => {
   // U-N6
   it("실제 journeySteps가 초기 진행에서 내는 낭독 이름 다섯이 리터럴 표와 같다", () => {
     const labels = journeySteps.map((step, index) =>
-      stepAccessibilityLabel(step.title, stepStatusAt(index, initialCompletedStepCount)),
+      stepAccessibilityLabel(step.title, stepStatusAt(index, initialCompletedStepCount), uiCopyEn),
     );
 
     expect(labels).toEqual([
-      "첫 인사, 완료됨",
-      "이름 묻기, 완료됨",
-      "주문하기, 현재 스텝",
-      "약속 잡기, 잠김",
-      "길 묻기, 잠김",
+      "First greetings, completed",
+      "Asking names, completed",
+      "Ordering, current step",
+      "Making plans, locked",
+      "Asking for directions, locked",
     ]);
   });
 
@@ -277,12 +280,30 @@ describe("낭독 이름의 데이터 앵커", () => {
     }));
 
     expect(described).toEqual([
-      { id: "greeting", description: "카페에서 처음 인사를 나눈다" },
-      { id: "introduction", description: "상대의 이름을 묻고 자기를 소개한다" },
-      { id: "ordering", description: "카페에서 마실 것을 주문한다" },
-      { id: "appointment", description: "다음에 만날 날짜와 시간을 정한다" },
-      { id: "directions", description: "약속 장소까지 가는 길을 묻는다" },
+      { id: "greeting", description: "Greet someone for the first time at a café" },
+      { id: "introduction", description: "Ask someone's name and introduce yourself" },
+      { id: "ordering", description: "Order a drink at a café" },
+      { id: "appointment", description: "Set a date and time to meet again" },
+      { id: "directions", description: "Ask the way to the meeting place" },
     ]);
+  });
+
+  // CE3 — 스텝 제목도 리터럴로 못 박습니다(부록 C.2). id · 순서는 불변입니다.
+  it("CE3 실제 journeySteps의 id별 title이 리터럴 표와 같다", () => {
+    expect(journeySteps.map((step) => ({ id: step.id, title: step.title }))).toEqual([
+      { id: "greeting", title: "First greetings" },
+      { id: "introduction", title: "Asking names" },
+      { id: "ordering", title: "Ordering" },
+      { id: "appointment", title: "Making plans" },
+      { id: "directions", title: "Asking for directions" },
+    ]);
+  });
+
+  it("CE3 스텝 제목 · 설명에 한글이 없다", () => {
+    for (const step of journeySteps) {
+      expect(step.title).not.toMatch(/[가-힣]/);
+      expect(step.description).not.toMatch(/[가-힣]/);
+    }
   });
 });
 
@@ -595,7 +616,7 @@ const standardUnitFixture = (...steps: readonly JourneyStep[]): JourneyUnit => (
 const specialUnitFixture = (): JourneyUnit => ({
   kind: "special",
   id: "appointment-confirmation",
-  title: "약속 확인 메시지",
+  title: "Appointment message",
   screen: "messenger",
 });
 
@@ -603,7 +624,7 @@ const specialUnitFixture = (): JourneyUnit => ({
 const episodeIntroUnitFixture = (): JourneyUnit => ({
   kind: "special",
   id: "tutorial-intro",
-  title: "에피소드 표지",
+  title: "Episode intro",
   screen: "episode-intro",
 });
 
@@ -690,7 +711,7 @@ describe("표지 항목", () => {
     expect(tutorialSection.items[0]).toEqual({
       kind: "episode-intro",
       id: "tutorial-intro",
-      title: "에피소드 표지",
+      title: "Episode intro",
     });
   });
 

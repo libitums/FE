@@ -12,8 +12,8 @@ import type {
 const conversations: Record<MessengerUnitId, MessengerConversation> = {
   "appointment-confirmation": {
     id: "appointment-confirmation",
-    title: "약속 확인 메시지",
-    participantName: "지민",
+    title: "Appointment message",
+    participantName: "Jimin",
     messages: [
       {
         id: "jimin-schedule",

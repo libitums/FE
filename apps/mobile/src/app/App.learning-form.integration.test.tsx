@@ -7,6 +7,7 @@ import type { LearningForm } from "../lib/learning-form";
 import { cultureScreenTitle } from "../screens/culture/culture";
 import { cultureQuizScreenTitle } from "../screens/culture-quiz/culture-quiz";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
+import { uiCopyEn } from "../lib/ui-copy-en";
 
 // 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
@@ -106,7 +107,10 @@ const titleTestIdByForm: Record<LearningForm, string> = {
 // 문구가 없는 화면은 `undefined`입니다 — 학습 껍데기로 옮겨간 화면은 제목 줄이 걷혀
 // (Figma 65-14) 정체를 가리는 것이 앵커의 **존재**뿐입니다. 듣기에 이어 낱말 고르기 ·
 // 문장 만들기가 그리로 갔습니다 ⟨2026-09-28⟩. 남은 하나(문화)는 아직 제목을 답니다.
-const titleTextByForm: Record<LearningForm, ((ordinal: number) => string) | undefined> = {
+const titleTextByForm: Record<
+  LearningForm,
+  ((ordinal: number, copy: typeof uiCopyEn) => string) | undefined
+> = {
   listening: undefined,
   "sentence-order": undefined,
   "word-choice": undefined,
@@ -127,7 +131,7 @@ test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화
   startStep("ordering");
 
   const anchor = screen.getByTestId(titleTestIdByForm[form]);
-  const expectedTitle = titleTextByForm[form]?.(journeyStepOrdinal("ordering"));
+  const expectedTitle = titleTextByForm[form]?.(journeyStepOrdinal("ordering"), uiCopyEn);
   if (expectedTitle === undefined) {
     expect(anchor).toBeInTheDocument();
   } else {
@@ -223,13 +227,13 @@ test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵�
 
   // 문화 학습이 열렸습니다.
   expect(screen.getByTestId("culture-screen-title")).toHaveTextContent(
-    cultureScreenTitle(journeyStepOrdinal("ordering")),
+    cultureScreenTitle(journeyStepOrdinal("ordering"), uiCopyEn),
   );
 
   // 퀴즈 풀기 → 문화 퀴즈가 열립니다.
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
   expect(screen.getByTestId("culture-quiz-screen-title")).toHaveTextContent(
-    cultureQuizScreenTitle(journeyStepOrdinal("ordering")),
+    cultureQuizScreenTitle(journeyStepOrdinal("ordering"), uiCopyEn),
   );
   expect(screen.queryByTestId("culture-screen-title")).not.toBeInTheDocument();
 
@@ -260,7 +264,7 @@ test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시
   // 맵에서 같은 스텝을 다시 시작합니다 — 스택에 잔재가 없습니다.
   startStep("ordering");
   expect(screen.getByTestId("culture-screen-title")).toHaveTextContent(
-    cultureScreenTitle(journeyStepOrdinal("ordering")),
+    cultureScreenTitle(journeyStepOrdinal("ordering"), uiCopyEn),
   );
   expect(screen.queryByTestId("culture-quiz-screen-title")).not.toBeInTheDocument();
 });
@@ -281,7 +285,7 @@ test("문화 퀴즈에는 탭이 없고, 맵으로가 두 겹을 지나 맵에 �
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
   expect(screen.getByTestId("culture-quiz-screen-title")).toHaveTextContent(
-    cultureQuizScreenTitle(journeyStepOrdinal("ordering")),
+    cultureQuizScreenTitle(journeyStepOrdinal("ordering"), uiCopyEn),
   );
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 

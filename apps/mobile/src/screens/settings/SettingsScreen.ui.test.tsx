@@ -3,11 +3,9 @@ import { fireEvent, render, screen, within } from "@lynx-js/react/testing-librar
 
 import { SettingsScreen } from "./SettingsScreen";
 import { settingsNavTargets } from "./settings";
-import {
-  initialSessionOptions,
-  sessionOptionKeys,
-  sessionOptionStateLabel,
-} from "../../lib/session-options";
+import { initialSessionOptions, sessionOptionKeys } from "../../lib/session-options";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
 // 이 화면은 제목 텍스트 하나와 흐름 영역의 목록 상자를 그립니다 (screens.contract.ts).
@@ -24,7 +22,7 @@ const defaultSettingsScreenProps = {
 test("설정 화면이 제목을 렌더한다", () => {
   render(<SettingsScreen {...defaultSettingsScreenProps} />);
 
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Settings");
 });
 
 // 재고정 2026-09-02: 제목 다섯이 같은 방식으로 heading이 됩니다 (screens.contract.ts).
@@ -130,8 +128,8 @@ test("[ST2] 목록 상자 안에 그룹 둘(계정 · 학습)이 서고, 항목 
   const list = screen.getByTestId("settings-screen-list");
   const groups = within(list).getAllByTestId("ui-lynx-settings-group");
   expect(groups.map((group) => group.getAttribute("accessibility-label"))).toEqual([
-    "계정",
-    "학습",
+    "Account",
+    "Learning",
   ]);
   const testids = Array.from(
     list.querySelectorAll('[data-testid^="ui-lynx-settings-group-item-"]'),
@@ -188,15 +186,75 @@ test("[ST5] 섞인 fixture에서 토글 값이 실제로 내려가고, 낭독 �
 
   const autoPlay = settingsCell("auto-play-audio");
   expect(autoPlay).toHaveAttribute("data-checked", "false");
-  expect(autoPlay).toHaveAttribute(
-    "accessibility-label",
-    `자동 재생, ${sessionOptionStateLabel(false)}`,
-  );
+  expect(autoPlay).toHaveAttribute("accessibility-label", "Auto-play, off");
 
   const transcript = settingsCell("show-transcript");
   expect(transcript).toHaveAttribute("data-checked", "true");
-  expect(transcript).toHaveAttribute(
+  expect(transcript).toHaveAttribute("accessibility-label", "Show transcript, on");
+});
+
+// ---------------------------------------------------------------- 영어 (AC1u E)
+
+test("[AC1u-E] 이동 항목 둘이 영어 이름으로 낭독된다", () => {
+  render(<SettingsScreen {...defaultSettingsScreenProps} />);
+
+  expect(settingsCell(settingsNavTargets[0])).toHaveAttribute(
     "accessibility-label",
-    `대본 표시, ${sessionOptionStateLabel(true)}`,
+    "User profile",
   );
+  expect(settingsCell(settingsNavTargets[1])).toHaveAttribute(
+    "accessibility-label",
+    "Privacy and terms",
+  );
+});
+
+test("[AC1u-E] 토글 항목 둘이 영어 이름과 on 상태로 낭독된다", () => {
+  render(<SettingsScreen {...defaultSettingsScreenProps} />);
+
+  expect(settingsCell("auto-play-audio")).toHaveAttribute("accessibility-label", "Auto-play, on");
+  expect(settingsCell("show-transcript")).toHaveAttribute(
+    "accessibility-label",
+    "Show transcript, on",
+  );
+});
+
+// ---------------------------------------------------------------- 문구표에서 읽음 (AC1u M)
+
+test("[AC1u-M] 제목 · 묶음 이름 · 이동 · 토글 이름 · 상태가 문구표에서 온다", () => {
+  const { container } = render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <SettingsScreen
+        sessionOptions={{ "auto-play-audio": false, "show-transcript": true }}
+        onSelectNavTarget={() => undefined}
+        onToggleSessionOption={() => undefined}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("⟦settings.title⟧");
+  const groups = within(screen.getByTestId("settings-screen-list")).getAllByTestId(
+    "ui-lynx-settings-group",
+  );
+  expect(groups.map((group) => group.getAttribute("accessibility-label"))).toEqual([
+    "⟦settings.group.account⟧",
+    "⟦settings.group.learning⟧",
+  ]);
+  expect(settingsCell(settingsNavTargets[0])).toHaveAttribute(
+    "accessibility-label",
+    "⟦settings.nav.profile⟧",
+  );
+  expect(settingsCell(settingsNavTargets[1])).toHaveAttribute(
+    "accessibility-label",
+    "⟦settings.nav.terms⟧",
+  );
+  // 토글 상태 낭독(on · off)은 ui-lynx SettingsCell의 영어 기본값이다 — 앱이 넘기는 경로가 없다(spec §6 D4 개정).
+  expect(settingsCell("auto-play-audio")).toHaveAttribute(
+    "accessibility-label",
+    "⟦settings.sessionOption.auto-play-audio⟧, off",
+  );
+  expect(settingsCell("show-transcript")).toHaveAttribute(
+    "accessibility-label",
+    "⟦settings.sessionOption.show-transcript⟧, on",
+  );
+  expect(container.textContent).not.toMatch(/[가-힣]/);
 });

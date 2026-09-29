@@ -17,6 +17,7 @@ import type { BottomNavigatorItem } from "@libitums/ui-lynx/bottom-navigator";
 import type { ReactNode } from "@lynx-js/react";
 
 import type { Tab } from "../app/navigation";
+import { useUiCopy } from "../lib/ui-copy";
 
 export type BottomNavigatorProps = {
   tab: Tab;
@@ -29,31 +30,34 @@ export type BottomNavigatorProps = {
 // `id`를 `Tab` 값과 같게 두는 것이 이 어댑터의 전부입니다. 아래 `toTab`이 되돌릴 때
 // 이 전제에 기대고, timing flag 이름도 거기서 파생합니다 — 탭마다 따로 적으면 오타가
 // 조용히 성능 수집을 끊습니다(ADR-0019). flag는 `libitum:navigation:<tab>`입니다.
-const tabs: readonly {
-  readonly id: Tab;
-  readonly accessibilityLabel: string;
-  readonly icon: string;
-}[] = [
-  { id: "journey", accessibilityLabel: "여정", icon: flag },
-  { id: "roleplay", accessibilityLabel: "롤플레이", icon: friends },
-  { id: "settings", accessibilityLabel: "설정", icon: settings },
+const tabs: readonly { readonly id: Tab; readonly icon: string }[] = [
+  { id: "journey", icon: flag },
+  { id: "roleplay", icon: friends },
+  { id: "settings", icon: settings },
 ];
 
-const items: readonly (BottomNavigatorItem & { readonly id: Tab })[] = tabs.map((tab) => ({
-  ...tab,
-  timingFlag: `libitum:navigation:${tab.id}`,
-}));
+// 탭 이름은 문구표에서 옵니다 — 언어가 바뀌면 항목을 다시 짓습니다.
+function itemsFor(labels: Readonly<Record<Tab, string>>): readonly (BottomNavigatorItem & {
+  readonly id: Tab;
+})[] {
+  return tabs.map((tab) => ({
+    ...tab,
+    accessibilityLabel: labels[tab.id],
+    timingFlag: `libitum:navigation:${tab.id}`,
+  }));
+}
 
 // ui-lynx는 id를 `string`으로 돌려주므로 `Tab`으로 좁혀서 넘깁니다. 위 배열에 없는
 // id가 오면 셸이 모르는 탭이라는 뜻이라, 조용히 넘기지 않고 버립니다.
 function toTab(id: string): Tab | undefined {
-  return items.find((item) => item.id === id)?.id;
+  return tabs.find((tab) => tab.id === id)?.id;
 }
 
 export function BottomNavigator({ tab, onSelectTab }: BottomNavigatorProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <UiBottomNavigator
-      items={items}
+      items={itemsFor(copy.shell.tabs)}
       selectedId={tab}
       bindselect={(id) => {
         const next = toTab(id);

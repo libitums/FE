@@ -7,6 +7,8 @@ import { fireEvent, render, screen, within } from "@lynx-js/react/testing-librar
 import { WritingCanvas, type WritingCanvasProps } from "./WritingCanvas";
 import type { Stroke } from "../lib/handwriting-recognition";
 import { writingCanvasGeometries } from "../lib/writing-canvas";
+import { UiCopyContext } from "../lib/ui-copy";
+import { markedUiCopy } from "../lib/ui-copy.test-support";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). 캔버스는 흐름을 모르고 받은 것을
 // 그리기만 하므로, 흐름 없이 prop만으로 봅니다.
@@ -27,12 +29,12 @@ function renderCanvas(overrides: Partial<WritingCanvasProps> = {}) {
 }
 
 // WV1 — 호스트가 구운 그림은 그대로 깔리고, 표면과 같은 크기 클래스를 씁니다.
-test("[WV1] 그림 안내는 base64 그림으로 깔리고 낭독 이름이 안내 글자다", () => {
+test("[WV1][SH5-E] 그림 안내는 base64 그림으로 깔리고 낭독 이름이 Guide letter다", () => {
   renderCanvas({ guide: { kind: "image", image: "aGVsbG8=" } });
 
   const guide = screen.getByTestId("writing-canvas-guide");
   expect(guide).toHaveAttribute("src", "data:image/png;base64,aGVsbG8=");
-  expect(guide).toHaveAttribute("accessibility-label", "안내 글자 주");
+  expect(guide).toHaveAttribute("accessibility-label", "Guide letter 주");
   expect(screen.getByTestId("writing-canvas")).toHaveAttribute("data-guide", "image");
   expect(screen.queryByTestId("writing-canvas-guide-text")).not.toBeInTheDocument();
 });
@@ -127,3 +129,47 @@ test.each(["stage", "workspace"] as const)(
     );
   },
 );
+
+// SH5-M — 안내 그림의 낭독 이름은 문구표에서 읽습니다.
+test("[SH5-M] 문구표를 주입하면 안내 그림의 이름이 guideGlyph 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <WritingCanvas
+        size="stage"
+        glyph="주"
+        guide={{ kind: "image", image: "aGVsbG8=" }}
+        strokes={[]}
+        badge={{ kind: "none" }}
+        erase={null}
+        onStrokeComplete={vi.fn<(stroke: Stroke) => void>()}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("writing-canvas-guide")).toHaveAttribute(
+    "accessibility-label",
+    "⟦writing.guideGlyph⟧(주)",
+  );
+});
+
+// SH5-M — 판정 배지(AnswerVerdict)의 낱말도 문구표에서 읽습니다.
+test("[SH5-M] 문구표를 주입하면 판정 배지의 이름이 answerResult 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <WritingCanvas
+        size="stage"
+        glyph="주"
+        guide={{ kind: "hidden" }}
+        strokes={[]}
+        badge={{ kind: "verdict", result: "incorrect" }}
+        erase={null}
+        onStrokeComplete={vi.fn<(stroke: Stroke) => void>()}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.answerResult.incorrect⟧",
+  );
+});

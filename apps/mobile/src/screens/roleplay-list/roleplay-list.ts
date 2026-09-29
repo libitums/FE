@@ -4,12 +4,12 @@
 // (`docs/conventions/code.md` 「import」 — 화면 폴더 사이 값 금지). 그래서
 // `roleplayItemsFrom`은 목록을 인자로 받습니다.
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { JourneyMapItem, JourneyMapSection } from "../journey-map/journey-map";
 import type {
   PremiumRoleplayItem,
   PremiumRoleplayLock,
   RoleplayEpisodeId,
-  RoleplayFormLabel,
   RoleplayItem,
   RoleplaySection,
   RoleplayUnitForm,
@@ -45,22 +45,19 @@ export function roleplayItemsFrom(items: readonly JourneyMapItem[]): readonly Ro
   });
 }
 
-// export하지 않는 사상 표입니다.
-const roleplayFormLabelByForm: Record<RoleplayUnitForm, RoleplayFormLabel> = {
-  messenger: "메신저",
-  "phone-call": "전화",
-  "visual-novel": "비주얼 노벨",
-};
-
-export function roleplayFormLabel(form: RoleplayUnitForm): RoleplayFormLabel {
-  return roleplayFormLabelByForm[form];
+export function roleplayFormLabel(form: RoleplayUnitForm, copy: UiCopy): string {
+  return copy.roleplay.form[form];
 }
 
-// 잠긴 항목은 이름 뒤에 상태를 붙입니다 — 구분자와 낱말은 여정 스텝의 `잠김`과
-// 같습니다(ADR-0016 D3).
-export function roleplayItemAccessibilityLabel(item: RoleplayItem, locked = false): string {
-  const name = `${item.title}, ${roleplayFormLabel(item.form)}`;
-  return locked ? `${name}, 잠김` : name;
+// 잠긴 항목은 이름 뒤에 상태를 붙입니다 — 구분자와 낱말은 문구표의 `common.locked`이고
+// 여정 스텝의 잠김과 같습니다(ADR-0016 D3).
+export function roleplayItemAccessibilityLabel(
+  item: RoleplayItem,
+  locked: boolean,
+  copy: UiCopy,
+): string {
+  const name = `${item.title}, ${roleplayFormLabel(item.form, copy)}`;
+  return locked ? copy.common.locked(name) : name;
 }
 
 /**
@@ -105,9 +102,9 @@ export function findRoleplaySection(
 }
 
 /** 구획 머리의 접근성 이름입니다. 잠긴 에피소드는 여는 조건까지 말합니다. */
-export function roleplaySectionAccessibilityLabel(section: RoleplaySection): string {
+export function roleplaySectionAccessibilityLabel(section: RoleplaySection, copy: UiCopy): string {
   const name = `${section.label} ${section.title}`;
-  return section.unlocked ? name : `${name}, 잠김, 여정에서 이 에피소드를 끝내면 열립니다`;
+  return section.unlocked ? name : copy.roleplay.lockedSection(name);
 }
 
 /**
@@ -119,20 +116,15 @@ export function premiumRoleplayLock(section: RoleplaySection): PremiumRoleplayLo
   return section.unlocked ? "payment" : "episode";
 }
 
-// 막힌 까닭마다의 상태 낱말입니다. export하지 않습니다 — 읽는 함수가 계약입니다.
-const premiumLockSuffix: Record<PremiumRoleplayLock, string> = {
-  episode: "잠김",
-  payment: "플러스 전용",
-};
-
 export function premiumRoleplayAccessibilityLabel(
   item: PremiumRoleplayItem,
   lock: PremiumRoleplayLock,
+  copy: UiCopy,
 ): string {
-  return `${item.title}, ${item.situation}, ${premiumLockSuffix[lock]}`;
+  return `${item.title}, ${item.situation}, ${copy.roleplay.premiumLock[lock]}`;
 }
 
 /** 결제 잠김 카드를 눌렀을 때 뜨는 안내의 본문입니다. */
-export function premiumRoleplayNotice(item: PremiumRoleplayItem): string {
-  return `「${item.title}」 롤플레이는 플러스 전용이에요. 플러스는 아직 준비 중이에요.`;
+export function premiumRoleplayNotice(item: PremiumRoleplayItem, copy: UiCopy): string {
+  return copy.roleplay.premiumNotice(item.title);
 }

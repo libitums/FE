@@ -62,6 +62,14 @@
 >   `messenger-composer-prompt`, 보내기 `messenger-send`, 다시 치기 `messenger-try-again`, 보기
 >   `messenger-choices` · `messenger-choice-<문장>`(`data-selected`).
 
+> **개정 (2026-09-29, UI 문구표).** 결정과 근거는 [ADR-0031](../adr/0031-ui-language-catalog.md)(**제안**)이 진다. 바뀐 계약:
+> `MessengerConversation.title`은 `"Appointment message"`, 화자 `speakerName`은 `"Jimin"`(데이터 곁 영어).
+> 나가기는 `exitLabel?: SpecialUnitExitLabel` 대신 **`exitTo?: SpecialUnitEntrySource`**(기본 `"journey"`)이고
+> 화면이 `specialUnitExitLabel(exitTo, copy)`로 `Back to map` · `Back to list`를 읽는다. 입력 자리표는
+> `Type your answer.`, 자판 접근성 이름은 `Shift` · `Delete` · `Comma` · `Period` · `Space` · `Question mark`,
+> 보내기 · 결과 보기는 `Send` · `See results`. 대화 `text` · `choices`와 한글 자판 자모(학습 콘텐츠)는 한국어
+> 그대로이고 `translation`은 원래 영어다. 이 개정과 어긋나는 본문의 한국어 라벨 · 타입 리터럴은 이 개정이 이긴다.
+
 ## 0. 고정 범위와 불변식
 
 1. 메신저 특별 유닛 `appointment-confirmation` 하나를 맵의 「약속 잡기」와 「길 묻기」
@@ -165,7 +173,7 @@ type JourneyUnit =
   | {
       readonly kind: "special";
       readonly id: MessengerUnitId;
-      readonly title: "약속 확인 메시지";
+      readonly title: "Appointment message"; // 2026-09-29 전: "약속 확인 메시지"
       readonly screen: "messenger";
     };
 ```

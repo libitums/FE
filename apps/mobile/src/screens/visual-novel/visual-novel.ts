@@ -1,3 +1,4 @@
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   VisualNovelAdvanceOutcome,
   VisualNovelBeatId,
@@ -15,7 +16,7 @@ export { artworkFor } from "./visual-novel-artwork";
 
 export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory => ({
   unitId,
-  title: "카페에 도착한 지민",
+  title: "Jimin arrives at the café",
   beats: [
     {
       index: 0,
@@ -23,7 +24,7 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       backgroundId: "cafe-exterior-day",
       characterId: "jimin",
       characterPoseId: "jimin-neutral",
-      speakerName: "지민",
+      speakerName: "Jimin",
       dialogue: "여기가 우리가 만나기로 한 카페예요.",
     },
     {
@@ -32,7 +33,7 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       backgroundId: "cafe-exterior-day",
       characterId: "jimin",
       characterPoseId: "jimin-smile",
-      speakerName: "지민",
+      speakerName: "Jimin",
       dialogue: "2번 출구 오른쪽이라 금방 찾았죠?",
     },
     {
@@ -41,7 +42,7 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       backgroundId: "cafe-exterior-day",
       characterId: "jimin",
       characterPoseId: "jimin-smile",
-      speakerName: "지민",
+      speakerName: "Jimin",
       dialogue: "그럼 들어가서 같이 주문해 봐요.",
     },
   ],
@@ -90,12 +91,14 @@ export const visualNovelCompletionStatus = (
 export const visualNovelExitOutcome = (
   progress: VisualNovelProgress,
 ): "incomplete" | "completed" => (progress.status === "completed" ? "completed" : "incomplete");
-export const visualNovelProgressLabel = (session: VisualNovelSessionState): string =>
-  session.mode === "final" ? "이야기 완료" : `장면 ${session.beatIndex + 1} / 3`;
+export const visualNovelProgressLabel = (session: VisualNovelSessionState, copy: UiCopy): string =>
+  session.mode === "final"
+    ? copy.visualNovel.storyComplete
+    : copy.visualNovel.sceneProgress(session.beatIndex + 1, 3);
 export const visualNovelCompletionAnnouncement = (
   _before: VisualNovelProgress,
   _after: VisualNovelProgress,
-): "이야기 완료" => "이야기 완료";
+): "story-complete" => "story-complete";
 
 export function advanceVisualNovel(
   session: VisualNovelSessionState,

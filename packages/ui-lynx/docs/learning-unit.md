@@ -9,8 +9,9 @@
 - `focused`: ReactLynx host가 전달하는 키보드 focus-visible 상태
 - `accessibilityLabel`: 제목과 학습 유형을 포함한 단위 이름
 
-Default는 잠금 글리프를 표시하고 입력과 focus를 받지 않는다. Clear는 tick을 표시하며,
-Active와 Clear의 상태는 각각 `accessibility-value`의 `현재 항목`, `완료됨`으로 전달한다.
-Narrative 배지는 별도 control이 아니며 접근성 이름에 `이야기 연결`을 덧붙인다.
+Default는 잠금 글리프를 표시하고 입력과 focus를 받지 않는다. Clear는 tick을 표시한다.
+상태는 접근성 이름 뒤 접미사로 전달한다 — Default `locked`, Active `current`, Clear `completed`
+(Available은 접미사 없음, ADR-0016 D3 · D13). Narrative 배지는 별도 control이 아니며 접근성 이름에
+`story`를 덧붙인다. 기본 문구는 영어이고 앱이 바꿔 넘길 prop은 없다(ADR-0031 D6).
 
 제목·진행 문구·연결선과 목록 위치 정보는 상위 학습 목록이 소유한다.

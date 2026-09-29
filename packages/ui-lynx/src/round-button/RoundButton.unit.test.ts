@@ -36,7 +36,7 @@ describe("getRoundButtonContract", () => {
     expect(
       getRoundButtonContract({ accessibilityLabel: "정보", icon: "<svg />", loading: true }),
     ).toMatchObject({
-      accessibilityLabel: "정보, 로딩 중",
+      accessibilityLabel: "정보, loading",
       traits: "button",
       interactive: false,
       className: expect.stringContaining("ui-lynx-round-button-loading"),

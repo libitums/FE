@@ -6,6 +6,8 @@ import { color } from "@libitums/design-tokens";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { ListeningChoice } from "./ListeningChoice";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). 계산된 스타일을 볼 수
 // 없으므로 `toHaveClass`·`toHaveStyle`·`toBeVisible`을 쓰지 않습니다
@@ -91,19 +93,19 @@ test("판정이 없으면 accessibility-label이 text와 정확히 같다 — �
 });
 
 // 단언 4-b: 구분자는 쉼표 + 공백입니다 (ADR-0016 D3).
-test("정답이면 accessibility-label에 ', 정답' 접미사가 붙는다", () => {
+test("정답이면 accessibility-label에 ', correct' 접미사가 붙는다", () => {
   render(
     <ListeningChoice index={1} text="음료 온도를 묻고 있다" result="correct" onSelect={() => {}} />,
   );
 
   expect(screen.getByTestId("listening-choice-1")).toHaveAttribute(
     "accessibility-label",
-    "음료 온도를 묻고 있다, 정답",
+    "음료 온도를 묻고 있다, correct",
   );
 });
 
 // 단언 5-b.
-test("오답이면 accessibility-label에 ', 오답' 접미사가 붙는다", () => {
+test("오답이면 accessibility-label에 ', incorrect' 접미사가 붙는다", () => {
   render(
     <ListeningChoice
       index={2}
@@ -115,7 +117,7 @@ test("오답이면 accessibility-label에 ', 오답' 접미사가 붙는다", ()
 
   expect(screen.getByTestId("listening-choice-2")).toHaveAttribute(
     "accessibility-label",
-    "계산 방법을 묻고 있다, 오답",
+    "계산 방법을 묻고 있다, incorrect",
   );
 });
 
@@ -191,7 +193,7 @@ for (const result of RESULTS) {
     expect(screen.queryByTestId("listening-choice-icon-0")).not.toBeInTheDocument();
   });
 
-  test(`판정이 있어도 정답 · 오답 낱말이 보기 안에 없다 — result=${String(result)}`, () => {
+  test(`판정이 있어도 correct · incorrect 낱말이 보기 안에 없다 — result=${String(result)}`, () => {
     const { container } = render(
       <ListeningChoice
         index={0}
@@ -203,8 +205,8 @@ for (const result of RESULTS) {
 
     const root = screen.getByTestId("listening-choice-0");
     expect(root).toHaveTextContent("음료 온도를 묻고 있다"); // 앵커
-    expect(root).not.toHaveTextContent("정답");
-    expect(root).not.toHaveTextContent("오답");
+    expect(root).not.toHaveTextContent("correct");
+    expect(root).not.toHaveTextContent("Correct");
     expect(container.querySelectorAll("svg")).toHaveLength(0);
   });
 }
@@ -217,7 +219,7 @@ test("표식이 없어도 이름의 접미사가 판정을 남긴다", () => {
   );
 
   expect(screen.getByTestId("listening-choice-0").getAttribute("accessibility-label")).toContain(
-    "정답",
+    "correct",
   );
 });
 
@@ -314,4 +316,37 @@ test("tap해도 렌더된 data-result는 그대로다 — 컴포넌트는 상태
   fireEvent.tap(screen.getByTestId("listening-choice-0"), {});
 
   expect(screen.getByTestId("listening-choice-0")).toHaveAttribute("data-result", "none");
+});
+
+// CE1 — 보기의 이름 접미는 문구표(`common.answerResultSuffix`)에서 읽습니다. 보기 글은 데이터라
+// 표를 주입해도 그대로입니다.
+test.each(["correct", "incorrect"] as const)(
+  "[LA1-M] 문구표를 주입하면 %s 판정의 이름 접미가 answerResultSuffix 경로로 나온다",
+  (result) => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <ListeningChoice index={0} text="Asking for water" result={result} onSelect={() => {}} />
+      </UiCopyContext.Provider>,
+    );
+
+    const root = screen.getByTestId("listening-choice-0");
+    expect(root).toHaveAttribute(
+      "accessibility-label",
+      `Asking for water, ⟦common.answerResultSuffix.${result}⟧`,
+    );
+    expect(root).toHaveTextContent("Asking for water");
+  },
+);
+
+test("[LA1-M] 문구표를 주입해도 판정 전에는 이름이 보기 글 그대로다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <ListeningChoice index={0} text="Asking for water" result={null} onSelect={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("listening-choice-0")).toHaveAttribute(
+    "accessibility-label",
+    "Asking for water",
+  );
 });

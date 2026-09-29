@@ -3,6 +3,8 @@ import type { ReactNode } from "@lynx-js/react";
 import notification from "@libitums/icons/lynx/notification";
 import { color } from "@libitums/design-tokens";
 
+import { useUiCopy } from "../lib/ui-copy";
+
 import { StatChip } from "./StatChip";
 
 import "./top-bar.css";
@@ -36,6 +38,7 @@ export function TopBar({
   gemCount,
   onOpenGem,
 }: TopBarProps): ReactNode {
+  const copy = useUiCopy();
   const handleOpenNotifications = () => {
     "background only";
     onOpenNotifications();
@@ -69,7 +72,7 @@ export function TopBar({
         <StatChip
           tone="streak"
           value={streakDays}
-          accessibilityLabel={`연속 학습 ${streakDays}일`}
+          accessibilityLabel={copy.common.count.streakDays(streakDays)}
           testId="top-bar-streak"
           surface="white"
           onTap={onOpenStreak === undefined ? undefined : handleOpenStreak}
@@ -77,7 +80,7 @@ export function TopBar({
         <StatChip
           tone="trophy"
           value={trophyCount}
-          accessibilityLabel={`트로피 ${trophyCount}개`}
+          accessibilityLabel={copy.common.count.trophies(trophyCount)}
           testId="top-bar-trophy"
           surface="white"
           onTap={onOpenTrophy === undefined ? undefined : handleOpenTrophy}
@@ -87,7 +90,7 @@ export function TopBar({
         <StatChip
           tone="diamond"
           value={gemCount}
-          accessibilityLabel={`젬 ${gemCount}개`}
+          accessibilityLabel={copy.common.count.gems(gemCount)}
           testId="top-bar-gem"
           surface="white"
           onTap={onOpenGem === undefined ? undefined : handleOpenGem}
@@ -97,7 +100,7 @@ export function TopBar({
         className="top-bar-notifications"
         data-testid="top-bar-notifications"
         accessibility-element={true}
-        accessibility-label="알림"
+        accessibility-label={copy.shell.notifications}
         accessibility-traits="button"
         bindtap={handleOpenNotifications}
       >

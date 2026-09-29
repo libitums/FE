@@ -1,11 +1,10 @@
 import type { AnswerResult } from "../lib/answer-result";
 // 롤플레이 연습 콜백 여덟을 만듭니다. **여정 상태 넷과 그 setter를 받지 않는
-// 것**이 이 파일의 경계입니다 — sink 호출 · `announceCompletion` ·
+// 것**이 이 파일의 경계입니다 — sink 호출 ·
 // `dispatch(push/backToRoot)` 말고 아무것도 하지 않습니다.
 
 import type { Dispatch } from "@lynx-js/react";
 
-import { announceCompletion } from "../lib/accessibility";
 import type {
   MessengerEventSink,
   MessengerExitOutcome,
@@ -67,7 +66,6 @@ export function roleplayWiring({
       // `outcome.progress`는 버립니다 — 연습의 진행값은 늘 처음이라 뜻이
       // 없습니다.
       if (outcome.completedNow) {
-        if (outcome.announcement !== null) announceCompletion(outcome.announcement);
         visualNovelEventSink?.({
           name: "visual_novel_unit_completed",
           unitId: id,

@@ -10,6 +10,7 @@ import { listeningPromptScale, playbackActionFor, playbackStateAfterPlay } from 
 import type { ListeningPlaybackAction, ListeningPlaybackState } from "./listening";
 import { pauseAudio, playAudio, resumeAudio, stopAudio } from "../../lib/audio";
 import type { SessionOptions } from "../../lib/session-options";
+import { useUiCopy } from "../../lib/ui-copy";
 
 import "./listening-prompt.css";
 
@@ -46,12 +47,7 @@ const playbackIconByAction: Record<ListeningPlaybackAction, string> = {
 // 이름 하나뿐입니다. 그 위험을 아이콘 상자를 크게(48) 잡는 것으로 갚습니다.
 //
 // 상태가 라벨 접미사로 붙지 않습니다: 이 버튼은 상태가 갈리는 것이 아니라 **하는 일이
-// 갈립니다**(`듣기`·`이어 듣기`·`멈춤`은 서로 다른 이름입니다).
-const playbackLabelByAction: Record<ListeningPlaybackAction, string> = {
-  pause: "멈춤",
-  resume: "이어 듣기",
-  play: "듣기",
-};
+// 갈립니다**(`Play`·`Resume`·`Pause`는 서로 다른 이름입니다 — 문구표 `listening.playback`).
 
 export type ListeningPromptProps = {
   text: string;
@@ -66,6 +62,7 @@ export function ListeningPrompt({
   audioSource,
   sessionOptions,
 }: ListeningPromptProps): ReactNode {
+  const copy = useUiCopy();
   // **재생 상태의 주인은 이 `useState` 하나입니다.** `lib/audio.ts`에도 두면 진실이
   // 둘이 되고 어긋나는 순간을 판정할 수단이 없습니다 — ADR-0017 D3이 상태 조회 API를
   // 거부한 그 근거입니다.
@@ -154,7 +151,7 @@ export function ListeningPrompt({
           className="listening-prompt-replay"
           data-testid="listening-prompt-replay"
           accessibility-element={true}
-          accessibility-label="처음부터 듣기"
+          accessibility-label={copy.listening.playFromStart}
           accessibility-traits="button"
           bindtap={handleReplayTap}
         >
@@ -175,7 +172,7 @@ export function ListeningPrompt({
           // 「빠뜨린 구현」이 구별되지 않습니다. `disabled`도 두지 않습니다
           // (ADR-0016 D10): 모듈 부재는 영구 불가가 아니라 「이 환경에 아직 없음」입니다.
           accessibility-element={true}
-          accessibility-label={playbackLabelByAction[action]}
+          accessibility-label={copy.listening.playback[action]}
           accessibility-traits="button"
           bindtap={handlePlaybackTap}
         >

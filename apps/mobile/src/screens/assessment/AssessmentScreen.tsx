@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
@@ -47,6 +48,7 @@ export function AssessmentScreen({
   results,
   onExit,
 }: AssessmentScreenProps): ReactNode {
+  const copy = useUiCopy();
   // verdict를 두 곳(셸·화면)이 계산합니다 — 같은 순수 함수·같은 상수·같은
   // results라 갈릴 수 없습니다. criterion을 prop으로 받지 않고 자기 모듈 상수를
   // 직접 읽습니다.
@@ -56,7 +58,7 @@ export function AssessmentScreen({
   // 사는 동안 바뀌지 않습니다(상태가 없습니다). cleanup이 없습니다 — 낭독은
   // 취소할 수 있는 자원이 아닙니다.
   useEffect(() => {
-    announce(assessmentAnnouncement(verdict));
+    announce(assessmentAnnouncement(verdict, copy));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -69,7 +71,7 @@ export function AssessmentScreen({
         data-testid="assessment-screen-title"
         accessibility-traits="header"
       >
-        {assessmentScreenTitle(stepOrdinal)}
+        {assessmentScreenTitle(stepOrdinal, copy)}
       </text>
 
       {/* [흐름] 내용 슬롯. `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안
@@ -100,7 +102,7 @@ export function AssessmentScreen({
               className="assessment-screen-verdict-label"
               data-testid="assessment-screen-verdict-label"
             >
-              {assessmentVerdictLabel(verdict)}
+              {assessmentVerdictLabel(verdict, copy)}
             </text>
           </view>
 
@@ -118,11 +120,11 @@ export function AssessmentScreen({
         className="assessment-screen-exit"
         data-testid="assessment-screen-exit"
         accessibility-element={true}
-        accessibility-label="맵으로"
+        accessibility-label={copy.common.exitTo.journey}
         accessibility-traits="button"
         bindtap={onExit}
       >
-        <text className="assessment-screen-exit-label">맵으로</text>
+        <text className="assessment-screen-exit-label">{copy.common.exitTo.journey}</text>
       </view>
     </view>
   );

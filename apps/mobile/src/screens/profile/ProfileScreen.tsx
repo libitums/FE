@@ -3,6 +3,8 @@ import type { ReactNode } from "@lynx-js/react";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { useUiCopy } from "../../lib/ui-copy";
+
 import type { ProfileScreenProps } from "./profile.contract";
 
 import "./profile-screen.css";
@@ -12,6 +14,7 @@ import "./profile-screen.css";
 // 아닙니다 — `accessibility-element`도 `bindtap`도 없습니다. 화면 안 조작
 // 단위는 나가기 하나입니다(카드·버튼·입력 상자 0건).
 export function ProfileScreen({ items, onExit }: ProfileScreenProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view className="profile-screen">
       {/* 머리 — 알림 화면과 같은 모양입니다: 동그란 뒤로 버튼(첫 자식, 낭독 `설정으로`)과
@@ -19,7 +22,7 @@ export function ProfileScreen({ items, onExit }: ProfileScreenProps): ReactNode 
       <view className="profile-screen-header">
         <view className="profile-screen-exit" data-testid="profile-screen-exit">
           <RoundButton
-            accessibilityLabel="설정으로"
+            accessibilityLabel={copy.common.backToSettings}
             icon={arrowLeft03}
             variant="neutral"
             size="xl"
@@ -31,7 +34,7 @@ export function ProfileScreen({ items, onExit }: ProfileScreenProps): ReactNode 
           data-testid="profile-screen-title"
           accessibility-traits="header"
         >
-          사용자 프로필
+          {copy.profile.title}
         </text>
       </view>
 
@@ -60,7 +63,7 @@ export function ProfileScreen({ items, onExit }: ProfileScreenProps): ReactNode 
                       className="profile-screen-item-name"
                       data-testid={`profile-item-label-${item.id}`}
                     >
-                      {item.label}
+                      {copy.profile.itemLabel[item.id]}
                     </text>
                     <text
                       className="profile-screen-item-value"

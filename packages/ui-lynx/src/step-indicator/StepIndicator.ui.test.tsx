@@ -9,7 +9,7 @@ describe("StepIndicator UI", () => {
 
     const indicator = screen.getByTestId("ui-lynx-step-indicator");
     expect(indicator).toHaveAttribute("accessibility-element", "true");
-    expect(indicator).toHaveAttribute("accessibility-label", "4단계 중 2단계");
+    expect(indicator).toHaveAttribute("accessibility-label", "Step 2 of 4");
     expect(indicator).toHaveAttribute("data-current", "2");
     expect(indicator).toHaveAttribute("data-total", "4");
     expect(screen.getByTestId("ui-lynx-step-indicator-visual")).toHaveAttribute(

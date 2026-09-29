@@ -2,6 +2,7 @@ import type { ReactNode } from "@lynx-js/react";
 import lock from "@libitums/icons/lynx/lock";
 import { color } from "@libitums/design-tokens";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import { roleplayFormLabel, roleplayItemAccessibilityLabel } from "./roleplay-list";
 import type { RoleplayCardProps } from "./roleplay-list.contract";
 
@@ -19,6 +20,7 @@ import "./roleplay-card.css";
  * 않습니다.
  */
 export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardProps): ReactNode {
+  const copy = useUiCopy();
   const handleTap = () => {
     "background only";
     onSelect(item);
@@ -33,7 +35,7 @@ export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardPro
       // 잠긴 카드는 버튼이 아닙니다 — 눌러도 아무 일이 없는 것을 버튼이라 읽히게 두지
       // 않습니다(여정의 잠긴 스텝과 같은 판단).
       accessibility-traits={locked ? "none" : "button"}
-      accessibility-label={roleplayItemAccessibilityLabel(item, locked)}
+      accessibility-label={roleplayItemAccessibilityLabel(item, locked, copy)}
       bindtap={locked ? undefined : handleTap}
     >
       <view className="roleplay-card-shade" />
@@ -46,7 +48,7 @@ export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardPro
           {item.title}
         </text>
         <text className="roleplay-card-form" data-testid={`roleplay-list-item-form-${item.unitId}`}>
-          {roleplayFormLabel(item.form)}
+          {roleplayFormLabel(item.form, copy)}
         </text>
       </view>
       {locked ? (

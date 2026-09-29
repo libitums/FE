@@ -5,6 +5,7 @@ import crown from "@libitums/icons/lynx/crown";
 import { color } from "@libitums/design-tokens";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenLayer } from "../../lib/use-screen-layer";
 import { PremiumRoleplayCard } from "./PremiumRoleplayCard";
 import { RoleplayCard } from "./RoleplayCard";
@@ -30,6 +31,7 @@ export function RoleplayListScreen({
   onViewAll,
   onLayerChange,
 }: RoleplayListScreenProps): ReactNode {
+  const copy = useUiCopy();
   // 결제 잠김 카드를 누르면 뜨는 안내입니다. 화면이 집니다 — 결제 화면이 아직 없어 갈
   // 곳이 없고, 안내는 이 화면 위에 겹칠 뿐 화면 전환이 아닙니다.
   const [noticeItem, setNoticeItem] = useState<PremiumRoleplayItem | null>(null);
@@ -51,7 +53,7 @@ export function RoleplayListScreen({
           className="roleplay-list-screen-title"
           accessibility-traits="header"
         >
-          롤플레이
+          {copy.roleplay.title}
         </text>
       </view>
       {/* [흐름] 내용 슬롯 — `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안
@@ -84,12 +86,12 @@ export function RoleplayListScreen({
                   data-testid={`roleplay-list-section-header-${section.episodeId}`}
                   accessibility-element={true}
                   accessibility-traits="header"
-                  accessibility-label={roleplaySectionAccessibilityLabel(section)}
+                  accessibility-label={roleplaySectionAccessibilityLabel(section, copy)}
                 >
                   <text className="roleplay-list-section-label">{section.label}</text>
                   <text className="roleplay-list-section-title">{section.title}</text>
                 </view>
-                {/* 잠긴 에피소드에는 `전체 보기`가 없습니다 — 펼쳐도 열 수 있는 것이
+                {/* 잠긴 에피소드에는 `roleplay.viewAll`이 없습니다 — 펼쳐도 열 수 있는 것이
                     없습니다. */}
                 {section.unlocked ? (
                   <view
@@ -97,10 +99,12 @@ export function RoleplayListScreen({
                     data-testid={`roleplay-list-section-view-all-${section.episodeId}`}
                     accessibility-element={true}
                     accessibility-traits="button"
-                    accessibility-label={`${section.label} 전체 보기`}
+                    accessibility-label={copy.roleplay.viewAllLabel(section.label)}
                     bindtap={() => onViewAll(section.episodeId)}
                   >
-                    <text className="roleplay-list-section-view-all-label">전체 보기</text>
+                    <text className="roleplay-list-section-view-all-label">
+                      {copy.roleplay.viewAll}
+                    </text>
                     <svg
                       className="roleplay-list-section-view-all-icon"
                       content={arrowRight02}
@@ -140,16 +144,18 @@ export function RoleplayListScreen({
                     className="roleplay-list-section-premium-header"
                     data-testid={`roleplay-list-section-premium-header-${section.episodeId}`}
                     accessibility-element={true}
-                    accessibility-label={`${section.label} 플러스 롤플레이, 이 에피소드와 닮은 상황을 더 연습해요`}
+                    accessibility-label={copy.roleplay.plusSectionLabel(section.label)}
                   >
                     <svg
                       className="roleplay-list-section-premium-icon"
                       content={crown}
                       current-color={color.brand.primary}
                     />
-                    <text className="roleplay-list-section-premium-label">플러스</text>
+                    <text className="roleplay-list-section-premium-label">
+                      {copy.roleplay.plus}
+                    </text>
                     <text className="roleplay-list-section-premium-caption">
-                      닮은 상황을 더 연습해요
+                      {copy.roleplay.plusTagline}
                     </text>
                   </view>
                   <scroll-view
@@ -181,9 +187,9 @@ export function RoleplayListScreen({
       {noticeItem === null ? null : (
         <view className="roleplay-list-premium-notice" data-testid="roleplay-list-premium-notice">
           <Dialog
-            title="플러스 롤플레이"
-            description={premiumRoleplayNotice(noticeItem)}
-            actions={[{ id: "close", label: "확인" }]}
+            title={copy.roleplay.plusDialogTitle}
+            description={premiumRoleplayNotice(noticeItem, copy)}
+            actions={[{ id: "close", label: copy.common.ok }]}
             phase="visible"
             bindaction={() => setNoticeItem(null)}
           />

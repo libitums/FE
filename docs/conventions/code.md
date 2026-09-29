@@ -457,7 +457,8 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   남는다** — 두 화면이 쓴다는 것만으로 올리지 않는다.
 - **올린 모듈에 화면의 로직을 흘려 넣지 않는다.** 공용으로 가는 것은 **어휘**(타입과
   그 낱말)이고 **채점·전이는 각 화면 폴더에 남는다.** `lib/answer-result.ts`가
-  `AnswerResult`와 `answerResultLabel` 둘만 갖는 것이 그 선이다 —
+  `AnswerResult` 하나만 갖는 것이 그 선이다(그 낱말 `Correct`/`Incorrect`는 2026-09-29부터 문구표
+  `copy.common.answerResult`가 진다 — 아래 「UI 문구」) —
   `judgeAnswer`·`judgeSentenceOrder`·`judgeWordChoice`는 화면 쪽에 있다.
   그래서 파일 이름도 타입과 1:1이다(`feedback.ts`·`judgement.ts` 같은 상위 이름은
   「판정에 관한 것은 다 여기」로 읽혀 로직을 끌어온다).
@@ -468,7 +469,8 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 ## 앱 내부
 
 - **상태**: React 내장(`useState`·`useReducer`·`useContext`)만 쓴다. 서버 상태와
-  클라이언트 상태를 개념적으로 구분해서 부른다. 영속 저장소에 넣는 것은 로그인 토큰뿐이다.
+  클라이언트 상태를 개념적으로 구분해서 부른다. 영속 저장소에 넣는 것은 로그인 토큰뿐이다 — 예외는
+  ADR-0007 D1의 목록(분석 대기열 · UI 언어)뿐이다.
 - **데이터**: `src/lib/api-client.ts` 한 파일에 모은다. **서버 응답을 전역 store에
   저장하지 않는다.** Lynx의 `fetch`는 CORS·redirect·keepalive·FormData·Blob이 없다.
 - **화면 전환**: `src/app/navigation.ts`의 리듀서가 소유한다. 화면 파라미터는 union의
@@ -489,16 +491,38 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 - **에러 경계**: 루트에 하나뿐이다. 네트워크 실패는 여기로 올리지 않고 화면 안에서 재시도한다.
 - 모든 화면에 **화면 내 back 수단**을 둔다. 하드웨어 뒤로가기에만 의존하지 않는다.
 - **나가는 수단은 라벨이 가리키는 곳으로 간다 — 스택 깊이로 목적지를 맞추지 않는다.**
-  나가는 라벨은 둘이고 액션은 하나다. 여정 탭의 `맵으로`와 롤플레이 탭의 `목록으로`는 둘 다
+  나가는 라벨은 둘이고 액션은 하나다. 여정 탭의 `Back to map`과 롤플레이 탭의 `Back to list`는 둘 다
   활성 스택의 루트를 가리키므로 둘 다 `backToRoot`로 가고, `back`(한 겹 위)으로 대신하지
   않는다. 「한 겹 위가 마침 맵이다」는 깊이가 늘면 거짓이 된다. 진입을 `push`로 할지
   `replace`로 할지도 **출구를 맞추려고** 고르지 않는다.
-  **같은 화면이 두 탭에서 열리면 라벨을 화면이 고르지 않는다** — 진입 출처에서
-  `specialUnitExitLabel(source)`(`src/lib/special-unit-entry-source.ts`)가 정하고 App이
-  `exitLabel` prop으로 내린다. 화면은 자기가 어느 탭에서 열렸는지 모른다. `맵으로`는 여정 탭
-  스택 위에서만 쓴다.
+  **같은 화면이 두 탭에서 열리면 라벨을 화면이 고르지 않는다** — App이 진입 출처를 `exitTo`
+  (`SpecialUnitEntrySource`) prop으로 내리고, 화면은 `specialUnitExitLabel(exitTo, copy)`
+  (`src/lib/special-unit-entry-source.ts`)로 문구표에서 라벨을 읽는다. 화면은 자기가 어느 탭에서
+  열렸는지 모른다. `Back to map`은 여정 탭 스택 위에서만 쓴다.
 
 ([ADR-0007](../adr/0007-app-internals-state-routing-data-errors.md))
+
+## UI 문구
+
+**화면이 보여 주거나 읽어 주는 문구는 리터럴로 적지 않고 문구표에서 읽는다.** 학습 콘텐츠만 한국어다.
+
+- **컴포넌트**는 `const copy = useUiCopy()`(`src/lib/ui-copy.ts`)로 읽는다. 공용 컴포넌트도 같다.
+- **순수 함수**는 context를 읽지 않고 **끝 인자로 `copy: UiCopy`를 받아 `string`을 돌려준다.** 리듀서 ·
+  세션 전이처럼 상태를 계산하는 함수는 `copy`를 받지 않고 문구 대신 **키**를 낸다.
+- **수 · 이름 · 순번이 끼는 문구는 표의 함수**다(`copy.common.count.gems(5)`). 조각을 이어 붙이지 않는다 —
+  복수형과 어순은 언어 표가 정한다.
+- 새 문구는 `ui-copy-sections.contract.ts`의 구획 타입에 키를 더하고 `ui-copy-en-*.ts`에 영어를 채운다.
+  영어 밖 언어는 덮어쓰기라 빠진 키가 영어로 대체된다.
+- **문구표 vs 데이터 곁 영어** — 콘텐츠 항목(유닛 · 스텝 · 문항 · 알림 · 약관 절)의 **id가 늘면 같이 느는
+  텍스트**는 문구표가 아니라 그 데이터 곁의 영어 리터럴이다(이름 로마자 · 제목 · 뜻 풀이 보기 · 문화 노트 등).
+- **한글 리터럴 검사** — `pnpm lint:ui-copy`(`pnpm lint`의 잎)가 `apps/mobile/src`와 `packages/ui-lynx/src`에서
+  주석 밖 한글 리터럴을 막는다. 통과하는 것: 테스트 · 탐침 · playground · 테스트 헬퍼 · `new Error(…)` 인자 ·
+  「」 안의 한글 · 학습 콘텐츠 **선언** 허용 목록(`devtools/ui-copy-literals/policy.mjs`). 학습 콘텐츠를 새 선언에
+  두면 그 목록에 선언 이름을 더한다 — 파일째 허용하지 않는다.
+- ui 테스트는 「표에서 읽는다」를 `markedUiCopy`(`src/lib/ui-copy.test-support.ts`)를 Provider로 주입해 증명한다
+  — 검사기가 하드코딩 **영어**는 못 잡기 때문이다.
+
+([ADR-0031](../adr/0031-ui-language-catalog.md))
 
 라이브러리(zustand · TanStack Query · 라우터)를 넣는 조건은 ADR-0007에 수치로 적혀 있다.
 조건이 오면 넣고, 오기 전에 넣지 않는다.

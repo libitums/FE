@@ -1,5 +1,7 @@
 // 약관 화면의 임시 입력값 자리입니다(「임시 입력값의 이음매」 —
 // docs/conventions/code.md).
+//
+// ⚠ 영어 초안 — 법무 검토 전(2026-09-29). 화면에는 표시하지 않습니다.
 
 import type { TermsSection } from "./terms.contract";
 
@@ -18,34 +20,34 @@ import type { TermsSection } from "./terms.contract";
 const termsSectionTable: readonly TermsSection[] = [
   {
     id: "collected",
-    title: "수집하는 정보",
+    title: "Information we collect",
     paragraphs: [
-      "이 앱은 서비스 제공에 필요한 최소한의 정보만 수집한다. 온보딩 과정에서 이름과 학습 언어, 학습 목표를 입력받아 학습 계획을 구성하는 데 사용한다. 그 밖의 민감한 정보는 따로 요구하지 않는다.",
-      "학습 중 발생하는 정답과 오답, 학습 시간 같은 이용 기록도 함께 모인다. 이 기록은 다음 학습 내용을 추천하는 데 참고 자료로 쓰인다.",
+      "This app collects only the minimum information needed to provide the service. During onboarding, we ask for your name, learning language, and learning goal and use them to build your study plan. We don't ask for any other sensitive information.",
+      "We also collect usage records created while you study, such as correct and incorrect answers and study time. These records are used as reference data to recommend what to study next.",
     ],
   },
   {
     id: "usage",
-    title: "정보의 이용",
+    title: "How we use information",
     paragraphs: [
-      "수집한 정보는 학습자에게 맞는 콘텐츠를 보여 주는 데만 사용한다. 광고나 마케팅 목적으로 다른 회사에 정보를 팔거나 넘기지 않는다. 제휴사와의 정보 공유도 이용자의 별도 동의 없이는 하지 않는다.",
-      "학습 기록은 진행 상황을 계산하고 다음에 풀 문항을 고르는 데 쓰인다. 이용자가 직접 요청하지 않으면 학습 기록을 다른 목적으로 다시 쓰지 않는다.",
+      "We use the information we collect only to show you content that suits you. We don't sell or hand over information to other companies for advertising or marketing, and we don't share it with partners without your separate consent.",
+      "Your study records are used to calculate your progress and choose the questions you'll solve next. Unless you ask us to, we don't reuse your study records for any other purpose.",
     ],
   },
   {
     id: "retention",
-    title: "보관과 파기",
+    title: "Storage and deletion",
     paragraphs: [
-      "수집한 정보는 서비스를 이용하는 동안 안전하게 보관한다. 탈퇴를 요청하면 관련 법령이 정한 기간을 뺀 나머지 정보를 지운다.",
-      "보관 기간이 지난 정보는 복구할 수 없는 방식으로 파기한다. 종이 형태로 남은 자료가 있다면 분쇄하거나 소각하는 방식으로 처리한다.",
+      "We keep the information we collect safely while you use the service. If you ask to delete your account, we delete your information except what the law requires us to keep for a set period.",
+      "Information whose retention period has ended is destroyed so that it can't be recovered. Any records left on paper are shredded or incinerated.",
     ],
   },
   {
     id: "contact",
-    title: "문의",
+    title: "Contact",
     paragraphs: [
-      "개인정보 처리에 관해 궁금한 점이 있으면 고객센터로 문의할 수 있다. 문의는 앱 안의 문의하기 메뉴나 이메일로 접수한다.",
-      "접수된 문의는 담당자가 확인한 뒤 영업일 기준으로 답변을 준다. 처리 결과에 만족하지 못하면 관련 기관에 다시 문의할 수 있다.",
+      "If you have questions about how your personal information is handled, you can contact our customer center. We accept inquiries through the Contact menu in the app or by email.",
+      "A staff member reviews each inquiry and replies on business days. If you're not satisfied with the outcome, you can contact the relevant authorities.",
     ],
   },
 ];

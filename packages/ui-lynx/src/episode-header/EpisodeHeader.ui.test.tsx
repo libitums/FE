@@ -41,7 +41,7 @@ describe("EpisodeHeader", () => {
     expect(header).toHaveAttribute("accessibility-traits", "header");
     expect(header).toHaveAttribute(
       "accessibility-label",
-      "Episode 1. Cosmetic., 유닛 8개 중 3개 완료",
+      "Episode 1. Cosmetic., 3 of 8 units completed",
     );
   });
 

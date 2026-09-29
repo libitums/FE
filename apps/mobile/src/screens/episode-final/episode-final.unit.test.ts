@@ -12,6 +12,7 @@ import {
   judgeWordChoice,
 } from "./episode-final";
 import { episodeFinalTestFor } from "./episode-final-tests";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // `unit` 계층: 순수 함수의 입출력 (ADR-0006 D4).
 
@@ -165,8 +166,8 @@ describe("낱말 고르기", () => {
   });
 
   test("[EF8] 보조기술은 빈칸을 「빈칸」으로 읽고, 고른 뒤에는 완성된 문장을 읽는다", () => {
-    expect(episodeFinalPromptLabel(question)).toBe("이 화장품 찾아 빈칸 .");
-    expect(episodeFinalPromptLabel(question, true)).toBe("이 화장품 찾아주세요.");
+    expect(episodeFinalPromptLabel(question, false, uiCopyEn)).toBe("이 화장품 찾아, blank, .");
+    expect(episodeFinalPromptLabel(question, true, uiCopyEn)).toBe("이 화장품 찾아주세요.");
   });
 
   test("[EF11] 고르기 전에는 빈칸이 비어 있고, 고른 뒤에는 정답으로 채워진다", () => {
@@ -198,6 +199,27 @@ test("[EF10] 튜토리얼 최종 테스트는 말하기 · 낱말 고르기 · �
       }
     }
   }
+});
+
+test("[CE4] 최종 테스트 데이터의 화자 이름은 Yuna · Me이고 문항의 한국어는 불변이다", () => {
+  const data = episodeFinalTestFor("tutorial-final-test");
+  if (data.format !== "visual-novel") {
+    throw new Error("튜토리얼 최종 테스트는 비주얼 노벨 형식이어야 합니다");
+  }
+  const speakers = data.questions.flatMap((item) =>
+    item.kind === "word-choice" ? [[item.id, item.speakerName]] : [],
+  );
+  expect(speakers).toEqual([
+    ["welcome", "Yuna"],
+    ["find-cosmetic", "Me"],
+  ]);
+  const welcome = data.questions.find((item) => item.id === "welcome");
+  expect(welcome).toMatchObject({
+    before: "어서 ",
+    after: "!",
+    options: ["오세요", "주세요", "가세요"],
+    answerIndex: 0,
+  });
 });
 
 test("[EF13] 통화의 말풍선은 지금 차례까지의 마지막 상대 대사를 든다", () => {

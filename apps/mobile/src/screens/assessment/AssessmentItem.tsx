@@ -1,10 +1,11 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
 
 import tick from "@libitums/icons/lynx/tick";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { AnswerResult } from "../../lib/answer-result";
 import { assessmentItemAccessibilityLabel, assessmentItemTitle } from "./assessment";
 
 import "./assessment-item.css";
@@ -35,6 +36,7 @@ export type AssessmentItemProps = {
 };
 
 export function AssessmentItem({ index, result }: AssessmentItemProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view
       className="assessment-item"
@@ -44,12 +46,12 @@ export function AssessmentItem({ index, result }: AssessmentItemProps): ReactNod
       data-result={result}
       accessibility-element={true}
       // 상태는 라벨 접미사입니다. `accessibility-value`를 쓰지 않습니다(ADR-0016 D3).
-      accessibility-label={assessmentItemAccessibilityLabel(index, result)}
+      accessibility-label={assessmentItemAccessibilityLabel(index, result, copy)}
       // `accessibility-traits`를 붙이지 않습니다 — 이 행은 누를 수 없습니다.
       // `bindtap`도 없습니다.
     >
       {/* 보이는 이름을 지는 요소는 가리지 않습니다(ADR-0016 D5) — 접근성 속성이 없습니다. */}
-      <text className="assessment-item-label">{assessmentItemTitle(index)}</text>
+      <text className="assessment-item-label">{assessmentItemTitle(index, copy)}</text>
       <view
         className="assessment-item-mark"
         // 가림은 자손을 가진 래퍼가 집니다 — 자손 없는 `<svg>`에만 붙이면 아무것도
@@ -62,7 +64,7 @@ export function AssessmentItem({ index, result }: AssessmentItemProps): ReactNod
           content={markIconByResult[result]}
           current-color={markIconColorByResult[result]}
         />
-        <text className="assessment-item-mark-label">{answerResultLabel(result)}</text>
+        <text className="assessment-item-mark-label">{copy.common.answerResult[result]}</text>
       </view>
     </view>
   );

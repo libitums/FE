@@ -7,6 +7,8 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 // sessionOptions가 필수 prop이 됐습니다. 이 파일의 fixture는 언제나 초기값(둘
 // 다 켜짐)을 줍니다 — 단언은 한 글자도 바꾸지 않습니다.
 import { initialSessionOptions } from "../../lib/session-options";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // 무대(가운데 카드) 안만 세는 헬퍼입니다. 뼈대는 `LearningShell`의 것이고 그 계약은
 // 껍데기 자신의 테스트가 답니다 — 여기서 화면 전체를 세면 상단 바의 칩 · 알림 버튼과
@@ -85,13 +87,14 @@ function answerCorrectlyAndAdvance(questionIndex: number): void {
 }
 
 // 나가기는 두 걸음입니다 ⟨2026-09-28⟩ — `×`는 묻기만 하고 실제로 떠나는 것은 모달의
-// `그만두기`입니다. 그 계약은 껍데기 자신의 테스트가 지므로, 여기서는 「끝까지 나간다」를
+// `Leave`입니다. 그 계약은 껍데기 자신의 테스트가 지므로, 여기서는 「끝까지 나간다」를
 // 한 줄로 부릅니다.
 function exitThroughConfirm(container: Element): void {
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
   const leave = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
-    (el) => el.getAttribute("accessibility-label") === "그만두기",
+    (el) => el.getAttribute("accessibility-label") === "Leave",
   );
+  expect(leave).toBeDefined();
   fireEvent.tap(leave as Element, {});
 }
 
@@ -262,15 +265,15 @@ test("응답 전 네 보기가 전부 data-result='none'이다", () => {
 });
 
 // 같은 사실의 보조기술 채널입니다 — 응답 전에는 어느 보기에도 접미사가
-// 없습니다. 네 보기가 전부 ", 정답 아님" 류로 읽히면 **답을 미리 알려 주는
+// 없습니다. 네 보기가 전부 ", incorrect" 류로 읽히면 **답을 미리 알려 주는
 // 것**이 됩니다.
 test("응답 전 네 보기의 accessibility-label에 접미사가 없다 — 답을 미리 알려 주지 않는다", () => {
   renderOrdering();
 
   for (const testid of CHOICE_TESTIDS) {
     const label = screen.getByTestId(testid).getAttribute("accessibility-label");
-    expect(label).not.toContain(", 정답");
-    expect(label).not.toContain(", 오답");
+    expect(label).not.toContain(", correct");
+    expect(label).not.toContain(", incorrect");
   }
 });
 
@@ -291,7 +294,7 @@ test("정답 보기를 탭하면 그 보기만 data-result='correct'이고 나�
   });
 });
 
-test("정답 보기를 탭하면 그 보기의 accessibility-label에 ', 정답'이 붙는다", () => {
+test("정답 보기를 탭하면 그 보기의 accessibility-label에 ', correct'가 붙는다", () => {
   renderOrdering();
 
   const answered = screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`);
@@ -301,7 +304,7 @@ test("정답 보기를 탭하면 그 보기의 accessibility-label에 ', 정답'
 
   expect(
     screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`),
-  ).toHaveAttribute("accessibility-label", `${before}, 정답`);
+  ).toHaveAttribute("accessibility-label", `${before}, correct`);
 });
 
 // 재판정: accessibility-elements-hidden의 iOS 세터는 view.accessibilityElementsHidden이라
@@ -321,7 +324,7 @@ test("정답 보기를 탭하면 무대에 정답 배지가 나타나고 보기�
 
   const verdict = screen.getByTestId("answer-verdict");
   expect(verdict).toHaveAttribute("data-result", "correct");
-  expect(verdict).toHaveTextContent("정답");
+  expect(verdict).toHaveTextContent("Correct");
   expect(screen.getByTestId("answer-verdict-icon")).not.toHaveAttribute(
     "accessibility-elements-hidden",
   );
@@ -375,10 +378,10 @@ test("오답을 골라도 정답 보기의 라벨에 접미사가 붙지 않는�
   const answerLabel = screen
     .getByTestId(`listening-choice-${answerIndex}`)
     .getAttribute("accessibility-label");
-  expect(answerLabel).not.toContain(", 정답");
+  expect(answerLabel).not.toContain(", correct");
   // 고른 보기에는 보이는 낱말이 없습니다 — 「오답」은 무대의 배지가 말합니다.
-  expect(screen.getByTestId(`listening-choice-${wrongIndex}`)).not.toHaveTextContent("오답");
-  expect(screen.getByTestId("answer-verdict")).toHaveTextContent("오답");
+  expect(screen.getByTestId(`listening-choice-${wrongIndex}`)).not.toHaveTextContent("ncorrect");
+  expect(screen.getByTestId("answer-verdict")).toHaveTextContent("Incorrect");
 });
 
 // 단언 9 — **게이트가 리듀서라는 것의 `ui` 쪽 관찰입니다** — 보기 컴포넌트는
@@ -463,7 +466,7 @@ test("문항 셋을 마치면 완료 문구와 마치기가 나타난다", () =>
 
   completeAllThree();
 
-  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("문항을 모두 마쳤어요");
+  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("All questions done");
   expect(screen.getByTestId("learning-shell-action")).toBeInTheDocument();
 });
 
@@ -511,7 +514,7 @@ test("완료 전이에서 custom announceCompletion이 원문으로 한 번, bui
   completeAllThree();
 
   expect(completion).toHaveLength(1);
-  expect(completion[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+  expect(completion[0]?.content).toBe("All questions done, See results");
   expect(announce).toHaveLength(0);
 
   view.rerender(
@@ -611,14 +614,14 @@ test("껍데기의 나가기가 이 화면의 onExit에 닿는다", () => {
 // 층이 트리에 있는 동안 화면 어디를 눌러도 다음 문항으로 가므로 조작 단위로 읽혀야
 // 합니다 — 안 그러면 보조기술 사용자에게는 「기다리는 것 말고 할 수 있는 일이 없는
 // 화면」이 됩니다.
-test("넘김 층에 element·label='다음으로'·traits='button'이 붙는다", () => {
+test("넘김 층에 element·label='Continue'·traits='button'이 붙는다", () => {
   renderOrdering();
 
   fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
 
   const advance = screen.getByTestId("learning-shell-advance");
   expect(advance).toHaveAttribute("accessibility-element", "true");
-  expect(advance).toHaveAttribute("accessibility-label", "다음으로");
+  expect(advance).toHaveAttribute("accessibility-label", "Continue");
   expect(advance).toHaveAttribute("accessibility-traits", "button");
 });
 
@@ -627,16 +630,16 @@ test("넘김 층에 element·label='다음으로'·traits='button'이 붙는다"
 // accessibility-label 두 문자열만 바뀝니다. 목적지가 맵이 아니라 평가 화면으로
 // 바뀌었기 때문입니다. 통과든 미통과든 이 문구는 참입니다 — 판정에 따라 가르지
 // 않습니다.
-test("마치기에 element·label='결과 보기'·traits='button'이 붙는다", () => {
+test("마치기에 element·label='See results'·traits='button'이 붙는다", () => {
   renderOrdering();
 
   completeAllThree();
 
   const finish = screen.getByTestId("learning-shell-action");
   expect(finish).toHaveAttribute("accessibility-element", "true");
-  expect(finish).toHaveAttribute("accessibility-label", "결과 보기");
+  expect(finish).toHaveAttribute("accessibility-label", "See results");
   expect(finish).toHaveAttribute("accessibility-traits", "button");
-  expect(finish).toHaveTextContent("결과 보기");
+  expect(finish).toHaveTextContent("See results");
 });
 
 // ADR-0016 D3 `정정 기록`: 상태는 라벨 접미사이고 accessibility-value를 쓰지
@@ -723,7 +726,7 @@ test("완료 상태의 무대에는 조작 단위가 없고 아래 버튼이 마
   completeAllThree();
 
   expect(stageTappables()).toEqual([]);
-  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("결과 보기");
+  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("See results");
 });
 
 // 아이콘 개수도 뒤집혔습니다. 응답 전에 하나 있고 그것이 **재생 아이콘**이며,
@@ -847,7 +850,7 @@ test("화면을 언마운트하면 stop이 불린다 — 출구 둘과 탭 전�
 // 않아 듣기는 마운트-완료 상태에 **원리적으로 도달하지 않습니다** — 없는
 // 상태를 만들려고 이 파일에 없는 `vi.mock`을 새로 들이지 않습니다.
 
-test("[X-A] 완료 전이 뒤 announce가 정확히 하나이고 content가 '문항을 모두 마쳤어요, 결과 보기'다", () => {
+test("[X-A] 완료 전이 뒤 announce가 정확히 하나이고 content가 'All questions done, See results'다", () => {
   const { announce } = stubHost();
   renderOrdering();
 
@@ -855,7 +858,7 @@ test("[X-A] 완료 전이 뒤 announce가 정확히 하나이고 content가 '문
 
   expect(screen.getByTestId("listening-screen-complete")).toBeInTheDocument(); // 앵커
   expect(announce).toHaveLength(1);
-  expect(announce[0]?.content).toBe("문항을 모두 마쳤어요, 결과 보기");
+  expect(announce[0]?.content).toBe("All questions done, See results");
 });
 
 // X-B. 전이 **전에는** 0건입니다. 가드(`if (!complete) return;`)를 지우면 문항
@@ -943,11 +946,11 @@ test("[X-D] 완료 발화가 종료 문구와 아래 버튼의 라벨에서 그�
   expect(announce[0]?.content).toBe(`${completeText}, ${actionLabel}`);
 });
 
-test("대역 없이도 화면이 던지지 않고 재생 조작이 '듣기'로 렌더된다", () => {
+test("대역 없이도 화면이 던지지 않고 재생 조작이 'Play'로 렌더된다", () => {
   expect(() => renderOrdering()).not.toThrow();
 
   const playback = screen.getByTestId("listening-prompt-playback");
-  expect(playback).toHaveAttribute("accessibility-label", "듣기");
+  expect(playback).toHaveAttribute("accessibility-label", "Play");
   expect(playback).toHaveAttribute("accessibility-traits", "button");
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
     ORDERING_QUESTIONS[0].prompt,
@@ -1102,4 +1105,100 @@ test("관계없는 리렌더가 끼어도 기다림이 처음으로 되돌아가
   expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
 
   vi.useRealTimers();
+});
+
+// ---------------------------------------------------------------- 영어 렌더 · 문구표 (LA1)
+
+test("[LA1-E] 지시문이 영어이고 보기는 영어 뜻 풀이, 제시문은 한국어 그대로다", () => {
+  renderOrdering();
+
+  expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
+    "Choose what the sentence means.",
+  );
+  expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
+    ORDERING_QUESTIONS[0].prompt,
+  );
+  expect(screen.getByTestId("listening-choice-0")).toHaveTextContent("Ordering two iced coffees");
+  expect(screen.getByTestId("listening-choice-2")).toHaveTextContent("Ordering one hot coffee");
+});
+
+test("[LA1-E] 응답 뒤 정답 보기의 이름이 ', correct'로 끝나고 배지의 이름이 Correct다", () => {
+  renderOrdering();
+
+  fireEvent.tap(screen.getByTestId("listening-choice-2"), {});
+
+  expect(screen.getByTestId("listening-choice-2")).toHaveAttribute(
+    "accessibility-label",
+    "Ordering one hot coffee, correct",
+  );
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("accessibility-label", "Correct");
+});
+
+function renderOrderingMarked(): ReturnType<typeof render> {
+  return render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <ListeningScreen
+        stepId="ordering"
+        onExit={() => {}}
+        onFinish={() => {}}
+        sessionOptions={initialSessionOptions}
+      />
+    </UiCopyContext.Provider>,
+  );
+}
+
+test("[LA1-M] 문구표를 주입하면 지시문 · 재생 조작 · 나가기가 표의 경로로 나온다", () => {
+  renderOrderingMarked();
+
+  expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
+    "⟦listening.instruction⟧",
+  );
+  expect(screen.getByTestId("listening-prompt-replay")).toHaveAttribute(
+    "accessibility-label",
+    "⟦listening.playFromStart⟧",
+  );
+  expect(screen.getByTestId("listening-prompt-playback")).toHaveAttribute(
+    "accessibility-label",
+    "⟦listening.playback.play⟧",
+  );
+  expect(screen.getByTestId("learning-shell-exit")).toHaveAttribute(
+    "accessibility-label",
+    "⟦learningShell.exitLesson⟧",
+  );
+});
+
+test("[LA1-M] 문구표를 주입하고 응답하면 판정 배지 · 보기 접미 · 넘김 층이 표의 경로로 나온다", () => {
+  renderOrderingMarked();
+
+  fireEvent.tap(screen.getByTestId("listening-choice-2"), {});
+
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.answerResult.correct⟧",
+  );
+  expect(screen.getByTestId("listening-choice-2")).toHaveAttribute(
+    "accessibility-label",
+    "Ordering one hot coffee, ⟦common.answerResultSuffix.correct⟧",
+  );
+  expect(screen.getByTestId("learning-shell-advance")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.continue⟧",
+  );
+});
+
+test("[LA1-M] 문구표를 주입하고 문항을 마치면 완료 문구 · 마치기 · 낭독이 표의 경로로 나온다", () => {
+  const { announce, completion } = stubCompletionHost();
+  renderOrderingMarked();
+
+  completeAllThree();
+
+  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent(
+    "⟦common.allQuestionsDone⟧",
+  );
+  const finish = screen.getByTestId("learning-shell-action");
+  expect(finish).toHaveAttribute("accessibility-label", "⟦common.seeResults⟧");
+  expect(finish).toHaveTextContent("⟦common.seeResults⟧");
+  expect(completion).toHaveLength(1);
+  expect(completion[0]?.content).toBe("⟦common.allQuestionsDone⟧, ⟦common.seeResults⟧");
+  expect(announce).toHaveLength(0);
 });

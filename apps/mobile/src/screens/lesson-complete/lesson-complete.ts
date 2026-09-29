@@ -7,6 +7,7 @@
 // ⟨2026-09-28⟩ **미통과가 이 틀로 들어왔습니다.** 그전에는 통과만 이 화면이고 미통과는
 // 옆의 평가 화면이라, 같은 순간의 두 결과가 **전혀 다른 화면**으로 보였습니다.
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { AssessmentVerdict } from "../assessment/assessment";
 
@@ -46,7 +47,7 @@ export function lessonStreakLabel(streakDays: number): string {
 }
 
 /**
- * 화면이 뜰 때 한 번 낭독합니다. 영문 제목 대신 판정을 한국어로 알립니다.
+ * 화면이 뜰 때 한 번 낭독합니다. 영문 제목 대신 판정을 문구표의 UI 언어로 알립니다.
  *
  * **통과 여부를 맨 앞에 둡니다** — 실수 수보다 먼저 알아야 하는 것이 그것이고, 낭독은
  * 앞부터 들립니다.
@@ -63,10 +64,11 @@ export function lessonCompleteAnnouncement(
   mistakeCount: number,
   verdict: AssessmentVerdict,
   skippedCount: number,
+  copy: UiCopy,
 ): string {
-  const outcome = verdict === "failed" ? "학습 미통과" : "학습 완료";
-  const mistakes = mistakeCount === 0 ? "실수 없음" : `실수 ${mistakeCount}개`;
-  const skipped = skippedCount === 0 ? "" : `, 건너뛴 문항 ${skippedCount}개`;
+  const outcome = copy.lessonComplete.outcome[verdict];
+  const mistakes = copy.lessonComplete.mistakes(mistakeCount);
+  const skipped = copy.lessonComplete.skippedSuffix(skippedCount);
   return `${outcome}, ${mistakes}${skipped}`;
 }
 

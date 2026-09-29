@@ -7,6 +7,7 @@
 // 때문입니다(표지 게이트). 전에는 잠김이 스텝과 최종 테스트 둘에만 있어 종류마다 다른
 // 자리가 냈습니다.
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
 import { journeySteps } from "./journey-map-units";
 import type {
@@ -33,16 +34,15 @@ export function stepStatusAt(index: number, completedCount: number): JourneyStep
   return "locked";
 }
 
-// export하지 않는 모듈 내부 상수입니다 — 구분자는 쉼표 + 공백입니다(ADR-0016 D3이
-// 고른 것과 같은 부호).
-const stepStatusSuffix: Record<JourneyStepStatus, string> = {
-  done: "완료됨",
-  current: "현재 스텝",
-  locked: "잠김",
-};
+// 접미 낱말은 문구표(`copy.journeyMap.stepStatus`)가 냅니다 — 구분자는 쉼표 + 공백입니다
+// (ADR-0016 D3이 고른 것과 같은 부호).
 
-export function stepAccessibilityLabel(title: string, status: JourneyStepStatus): string {
-  return `${title}, ${stepStatusSuffix[status]}`;
+export function stepAccessibilityLabel(
+  title: string,
+  status: JourneyStepStatus,
+  copy: UiCopy,
+): string {
+  return `${title}, ${copy.journeyMap.stepStatus[status]}`;
 }
 
 export function findStep(

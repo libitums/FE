@@ -23,6 +23,7 @@ import type {
   RoleplayItem,
   RoleplaySection,
 } from "./roleplay-list.contract";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // fixture는 `JourneyMapItem`(type import)으로 이 파일 안에서 짓습니다 — 여정 폴더의
 // **값**을 가져오지 않습니다(code.md 「import」). 실제 데이터 순서는 integration I1이
@@ -35,25 +36,25 @@ function standardStep(id: JourneyStep["id"]): JourneyMapItem {
 const messengerItem: JourneyMapItem = {
   kind: "messenger",
   id: "appointment-confirmation",
-  title: "약속 확인 메시지",
+  title: "Appointment message",
 };
 
 const phoneCallItem: JourneyMapItem = {
   kind: "phone-call",
   id: "appointment-confirmation-phone-call",
-  title: "약속 확인 전화",
+  title: "Appointment call",
 };
 
 const visualNovelItem: JourneyMapItem = {
   kind: "visual-novel",
   id: "cafe-arrival-visual-novel",
-  title: "카페에 도착한 지민",
+  title: "Jimin arrives at the café",
 };
 
 const episodeIntroItem: JourneyMapItem = {
   kind: "episode-intro",
   id: "tutorial-intro",
-  title: "에피소드 표지",
+  title: "Episode intro",
 };
 
 describe("roleplayItemsFrom", () => {
@@ -73,17 +74,17 @@ describe("roleplayItemsFrom", () => {
     expect(result[0]).toEqual({
       form: "messenger",
       unitId: "appointment-confirmation",
-      title: "약속 확인 메시지",
+      title: "Appointment message",
     });
     expect(result[1]).toEqual({
       form: "phone-call",
       unitId: "appointment-confirmation-phone-call",
-      title: "약속 확인 전화",
+      title: "Appointment call",
     });
     expect(result[2]).toEqual({
       form: "visual-novel",
       unitId: "cafe-arrival-visual-novel",
-      title: "카페에 도착한 지민",
+      title: "Jimin arrives at the café",
     });
     // 필드가 form·unitId·title뿐입니다 — toEqual이 초과 필드를 잡습니다.
     for (const item of result) {
@@ -141,39 +142,51 @@ describe("roleplayItemsFrom", () => {
 
 describe("roleplayFormLabel", () => {
   it("R4. 세 형태 각각을 한국어 낱말로 사상한다", () => {
-    expect(roleplayFormLabel("messenger")).toBe("메신저");
-    expect(roleplayFormLabel("phone-call")).toBe("전화");
-    expect(roleplayFormLabel("visual-novel")).toBe("비주얼 노벨");
+    expect(roleplayFormLabel("messenger", uiCopyEn)).toBe("Messenger");
+    expect(roleplayFormLabel("phone-call", uiCopyEn)).toBe("Phone call");
+    expect(roleplayFormLabel("visual-novel", uiCopyEn)).toBe("Visual novel");
   });
 });
 
 describe("roleplayItemAccessibilityLabel", () => {
   const fixtures: readonly RoleplayItem[] = [
-    { form: "messenger", unitId: "appointment-confirmation", title: "약속 확인 메시지" },
+    { form: "messenger", unitId: "appointment-confirmation", title: "Appointment message" },
     {
       form: "phone-call",
       unitId: "appointment-confirmation-phone-call",
-      title: "약속 확인 전화",
+      title: "Appointment call",
     },
-    { form: "visual-novel", unitId: "cafe-arrival-visual-novel", title: "카페에 도착한 지민" },
+    {
+      form: "visual-novel",
+      unitId: "cafe-arrival-visual-novel",
+      title: "Jimin arrives at the café",
+    },
   ];
 
   it("R5. 세 fixture 항목 각각 `${title}, ${formLabel}`이고 완료됨·잠김을 포함하지 않는다", () => {
-    expect(roleplayItemAccessibilityLabel(fixtures[0])).toBe("약속 확인 메시지, 메신저");
-    expect(roleplayItemAccessibilityLabel(fixtures[1])).toBe("약속 확인 전화, 전화");
-    expect(roleplayItemAccessibilityLabel(fixtures[2])).toBe("카페에 도착한 지민, 비주얼 노벨");
+    expect(roleplayItemAccessibilityLabel(fixtures[0], false, uiCopyEn)).toBe(
+      "Appointment message, Messenger",
+    );
+    expect(roleplayItemAccessibilityLabel(fixtures[1], false, uiCopyEn)).toBe(
+      "Appointment call, Phone call",
+    );
+    expect(roleplayItemAccessibilityLabel(fixtures[2], false, uiCopyEn)).toBe(
+      "Jimin arrives at the café, Visual novel",
+    );
 
     for (const item of fixtures) {
-      const label = roleplayItemAccessibilityLabel(item);
-      expect(label).not.toContain("완료됨");
-      expect(label).not.toContain("잠김");
+      const label = roleplayItemAccessibilityLabel(item, false, uiCopyEn);
+      expect(label).not.toContain("completed");
+      expect(label).not.toContain("locked");
     }
   });
 
   // R6 — roleplayItemAccessibilityLabel 몫입니다.
   it("R6. 같은 항목을 두 번 불러도 같은 값이다", () => {
     for (const item of fixtures) {
-      expect(roleplayItemAccessibilityLabel(item)).toBe(roleplayItemAccessibilityLabel(item));
+      expect(roleplayItemAccessibilityLabel(item, false, uiCopyEn)).toBe(
+        roleplayItemAccessibilityLabel(item, false, uiCopyEn),
+      );
     }
   });
 });
@@ -182,10 +195,11 @@ describe("roleplayItemAccessibilityLabel — 잠김", () => {
   it("R7. 잠긴 항목은 이름 뒤에 잠김이 붙는다", () => {
     expect(
       roleplayItemAccessibilityLabel(
-        { form: "messenger", unitId: "appointment-confirmation", title: "약속 확인 메시지" },
+        { form: "messenger", unitId: "appointment-confirmation", title: "Appointment message" },
         true,
+        uiCopyEn,
       ),
-    ).toBe("약속 확인 메시지, 메신저, 잠김");
+    ).toBe("Appointment message, Messenger, locked");
   });
 });
 
@@ -195,14 +209,14 @@ describe("roleplayItemAccessibilityLabel — 잠김", () => {
 const introUnit = {
   kind: "special",
   id: "tutorial-intro",
-  title: "에피소드 표지",
+  title: "Episode intro",
   screen: "episode-intro",
 } as const;
 
 const finalUnit = {
   kind: "special",
   id: "tutorial-final-test",
-  title: "최종 테스트",
+  title: "Final test",
   screen: "episode-final",
 } as const;
 
@@ -250,11 +264,11 @@ describe("roleplaySectionsFrom", () => {
         title: "Tutorial.",
         unlocked: true,
         items: [
-          { form: "messenger", unitId: "appointment-confirmation", title: "약속 확인 메시지" },
+          { form: "messenger", unitId: "appointment-confirmation", title: "Appointment message" },
           {
             form: "phone-call",
             unitId: "appointment-confirmation-phone-call",
-            title: "약속 확인 전화",
+            title: "Appointment call",
           },
         ],
         premiumItems: [],
@@ -340,12 +354,12 @@ describe("findRoleplaySection", () => {
 
 describe("roleplaySectionAccessibilityLabel", () => {
   it("A1. 열린 구획은 두 줄을 이어 읽는다", () => {
-    expect(roleplaySectionAccessibilityLabel(openSection)).toBe("Episode 0. Tutorial.");
+    expect(roleplaySectionAccessibilityLabel(openSection, uiCopyEn)).toBe("Episode 0. Tutorial.");
   });
 
   it("A2. 잠긴 구획은 잠김과 여는 조건까지 말한다", () => {
-    expect(roleplaySectionAccessibilityLabel(lockedSection)).toBe(
-      "Episode 0. Tutorial., 잠김, 여정에서 이 에피소드를 끝내면 열립니다",
+    expect(roleplaySectionAccessibilityLabel(lockedSection, uiCopyEn)).toBe(
+      "Episode 0. Tutorial., locked, finish this episode in your journey to unlock it",
     );
   });
 });
@@ -401,22 +415,22 @@ describe("premiumRoleplayLock", () => {
 
 describe("premiumRoleplayAccessibilityLabel", () => {
   it("A3. 에피소드 잠김은 잠김으로 읽는다", () => {
-    expect(premiumRoleplayAccessibilityLabel(wrongOrder, "episode")).toBe(
-      "주문이 잘못 나왔어요, 카페 직원에게 정중하게 말하기, 잠김",
+    expect(premiumRoleplayAccessibilityLabel(wrongOrder, "episode", uiCopyEn)).toBe(
+      "주문이 잘못 나왔어요, 카페 직원에게 정중하게 말하기, locked",
     );
   });
 
   it("A4. 결제 잠김은 잠김이 아니라 플러스 전용으로 읽는다 — 여는 방법이 다르다", () => {
-    expect(premiumRoleplayAccessibilityLabel(wrongOrder, "payment")).toBe(
-      "주문이 잘못 나왔어요, 카페 직원에게 정중하게 말하기, 플러스 전용",
+    expect(premiumRoleplayAccessibilityLabel(wrongOrder, "payment", uiCopyEn)).toBe(
+      "주문이 잘못 나왔어요, 카페 직원에게 정중하게 말하기, Plus only",
     );
   });
 });
 
 describe("premiumRoleplayNotice", () => {
   it("N1. 누른 항목의 제목을 싣고 준비 중임을 말한다", () => {
-    expect(premiumRoleplayNotice(wrongOrder)).toBe(
-      "「주문이 잘못 나왔어요」 롤플레이는 플러스 전용이에요. 플러스는 아직 준비 중이에요.",
+    expect(premiumRoleplayNotice(wrongOrder, uiCopyEn)).toBe(
+      "“주문이 잘못 나왔어요” is a Plus roleplay. Plus isn't available yet.",
     );
   });
 });

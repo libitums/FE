@@ -2,6 +2,8 @@ import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { AppHeader } from "./AppHeader";
+import { UiCopyContext } from "../lib/ui-copy";
+import { markedUiCopy } from "../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 텍스트 질의를 쓰지 않고 testid로
 // 질의합니다. 여정 맵이 머리와 지표 모달을 소유하던 때의 JN · JSM 테스트가 머리와 함께
@@ -17,7 +19,7 @@ function fixture() {
   };
 }
 
-test("[AH1] 칩 셋은 연속 학습 → 트로피 → 젬 순서의 버튼이고, 이름에 값이 실린다", () => {
+test("[SH2-E][AH1] 칩 셋은 연속 학습 → 트로피 → 젬 순서의 버튼이고, 이름에 값이 실린다", () => {
   render(<AppHeader {...fixture()} />);
 
   const streak = screen.getByTestId("top-bar-streak");
@@ -26,18 +28,18 @@ test("[AH1] 칩 셋은 연속 학습 → 트로피 → 젬 순서의 버튼이�
   for (const chip of [streak, trophy, gem]) {
     expect(chip).toHaveAttribute("accessibility-traits", "button");
   }
-  expect(gem).toHaveAttribute("accessibility-label", "젬 1240개");
+  expect(gem).toHaveAttribute("accessibility-label", "1240 gems");
   expect(gem).toHaveTextContent("1240");
   expect(streak.compareDocumentPosition(trophy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(trophy.compareDocumentPosition(gem) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
 
-test("[AH2] 알림 버튼 tap → onOpenNotifications 정확히 1회", () => {
+test("[SH2-E][AH2] 알림 버튼 tap → onOpenNotifications 정확히 1회", () => {
   const props = fixture();
   render(<AppHeader {...props} />);
 
   const button = screen.getByTestId("top-bar-notifications");
-  expect(button).toHaveAttribute("accessibility-label", "알림");
+  expect(button).toHaveAttribute("accessibility-label", "Notifications");
   fireEvent.tap(button, {});
 
   expect(props.onOpenNotifications).toHaveBeenCalledTimes(1);
@@ -55,7 +57,7 @@ test("[AH3] 처음에는 레이어가 없고 머리는 낭독된다", () => {
   );
 });
 
-test("[AH4] 연속 학습 칩 tap → 연속 모달이 연속일수 · 요일 · 찬 칸 셋을 그린다", () => {
+test("[JM1-E][AH4] 연속 학습 칩 tap → 연속 모달이 연속일수 · 요일 · 찬 칸 셋을 그린다", () => {
   render(<AppHeader {...fixture()} />);
 
   fireEvent.tap(screen.getByTestId("top-bar-streak"), {});
@@ -65,11 +67,11 @@ test("[AH4] 연속 학습 칩 tap → 연속 모달이 연속일수 · 요일 ·
   expect(screen.getByTestId("journey-stat-modal-days")).toHaveTextContent("SaSuMoTuWeThFr");
   expect(screen.getByTestId("journey-stat-modal-track")).toHaveAttribute(
     "accessibility-label",
-    "7칸 중 3칸 완료",
+    "3 of 7 completed",
   );
 });
 
-test("[AH5] 트로피 칩 tap → 트로피 모달은 요일 줄 없이 트로피 수만큼 찬다", () => {
+test("[JM1-E][AH5] 트로피 칩 tap → 트로피 모달은 요일 줄 없이 트로피 수만큼 찬다", () => {
   render(<AppHeader {...fixture()} />);
 
   fireEvent.tap(screen.getByTestId("top-bar-trophy"), {});
@@ -146,4 +148,87 @@ test("[AH11] 화면 쪽 레이어가 떠 있으면(obscured) 머리가 낭독에
   render(<AppHeader {...fixture()} obscured />);
 
   expect(screen.getByTestId("app-header")).toHaveAttribute("accessibility-elements-hidden", "true");
+});
+
+// JM1-E — 지표 모달의 큰 숫자 낭독 이름이 영어이고 단수 · 복수를 지킨다.
+test("[JM1-E] 연속 학습 모달의 큰 숫자가 24-day streak으로, 닫기 버튼이 Back to map으로 읽힌다", () => {
+  render(<AppHeader {...fixture()} />);
+
+  fireEvent.tap(screen.getByTestId("top-bar-streak"), {});
+
+  expect(screen.getByTestId("journey-stat-modal-hero")).toHaveAttribute(
+    "accessibility-label",
+    "24-day streak",
+  );
+  expect(
+    screen
+      .getByTestId("journey-stat-modal-back")
+      .querySelector('[data-testid="ui-lynx-round-button"]'),
+  ).toHaveAttribute("accessibility-label", "Back to map");
+});
+
+test("[JM1-E] 트로피 모달의 큰 숫자가 3 episodes cleared로 읽힌다", () => {
+  render(<AppHeader {...fixture()} />);
+
+  fireEvent.tap(screen.getByTestId("top-bar-trophy"), {});
+
+  expect(screen.getByTestId("journey-stat-modal-hero")).toHaveAttribute(
+    "accessibility-label",
+    "3 episodes cleared",
+  );
+});
+
+test("[JM1-E] 트로피가 하나면 1 episode cleared로 읽힌다", () => {
+  render(<AppHeader {...fixture()} trophyCount={1} />);
+
+  fireEvent.tap(screen.getByTestId("top-bar-trophy"), {});
+
+  expect(screen.getByTestId("journey-stat-modal-hero")).toHaveAttribute(
+    "accessibility-label",
+    "1 episode cleared",
+  );
+});
+
+// JM1-M / SH2-M — 머리 칩과 지표 모달의 문구는 문구표에서 읽습니다.
+test("[JM1-M] 문구표를 주입하고 연속 학습 칩을 누르면 모달의 이름들이 표의 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <AppHeader {...fixture()} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("top-bar-gem")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.count.gems⟧(1240)",
+  );
+  fireEvent.tap(screen.getByTestId("top-bar-streak"), {});
+
+  expect(screen.getByTestId("journey-stat-modal-hero")).toHaveAttribute(
+    "accessibility-label",
+    "⟦journeyMap.statModal.streakHero⟧(24)",
+  );
+  expect(screen.getByTestId("journey-stat-modal-track")).toHaveAttribute(
+    "accessibility-label",
+    "⟦journeyMap.statModal.slotProgress⟧(3, 7)",
+  );
+  expect(
+    screen
+      .getByTestId("journey-stat-modal-back")
+      .querySelector('[data-testid="ui-lynx-round-button"]'),
+  ).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
+});
+
+test("[JM1-M] 문구표를 주입하고 트로피 칩을 누르면 큰 숫자의 이름이 episodesClearedHero 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <AppHeader {...fixture()} />
+    </UiCopyContext.Provider>,
+  );
+
+  fireEvent.tap(screen.getByTestId("top-bar-trophy"), {});
+
+  expect(screen.getByTestId("journey-stat-modal-hero")).toHaveAttribute(
+    "accessibility-label",
+    "⟦journeyMap.statModal.episodesClearedHero⟧(3)",
+  );
 });

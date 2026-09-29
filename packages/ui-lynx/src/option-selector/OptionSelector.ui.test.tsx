@@ -40,7 +40,7 @@ describe("OptionSelector UI", () => {
     expect(a).toHaveAttribute("data-selected", "false");
 
     const b = screen.getByTestId("ui-lynx-option-selector-item-b");
-    expect(b).toHaveAttribute("accessibility-label", "Tea, please, 선택됨");
+    expect(b).toHaveAttribute("accessibility-label", "Tea, please, selected");
     expect(b).toHaveAttribute("accessibility-traits", "button");
     expect(b).toHaveClass("ui-lynx-option-selector-item-selected");
 
@@ -160,7 +160,7 @@ describe("OptionSelector UI", () => {
 
     const a = screen.getByTestId("ui-lynx-option-selector-item-a");
     expect(a).toHaveAttribute("accessibility-traits", "disabled");
-    expect(a).toHaveAttribute("accessibility-label", "Coffee, please, 선택됨");
+    expect(a).toHaveAttribute("accessibility-label", "Coffee, please, selected");
     expect(screen.getByTestId("ui-lynx-option-selector-indicator-a")).toHaveAttribute(
       "current-color",
       color.fg.disabled,
@@ -237,7 +237,7 @@ describe("OptionSelector UI", () => {
     expect(screen.queryByTestId("ui-lynx-option-selector-icon-b")).toBeNull();
     expect(screen.getByTestId("ui-lynx-option-selector-item-a")).toHaveAttribute(
       "accessibility-label",
-      "English, 선택됨",
+      "English, selected",
     );
   });
 
@@ -256,7 +256,7 @@ describe("OptionSelector UI", () => {
 
     expect(screen.getByTestId("ui-lynx-option-selector-item-kr")).toHaveAttribute(
       "accessibility-label",
-      "South Korea +82, 선택됨",
+      "South Korea +82, selected",
     );
     expect(screen.getByTestId("ui-lynx-option-selector-item-jp")).toHaveAttribute(
       "accessibility-label",

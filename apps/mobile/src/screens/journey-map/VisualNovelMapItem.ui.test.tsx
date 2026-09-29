@@ -9,7 +9,7 @@ describe("VisualNovelMapItem UI", () => {
       render(
         <VisualNovelMapItem
           id="cafe-arrival-visual-novel"
-          title="카페에 도착한 지민"
+          title="Jimin arrives at the café"
           status={status}
           onSelect={vi.fn<(id: "cafe-arrival-visual-novel") => void>()}
         />,
@@ -22,10 +22,10 @@ describe("VisualNovelMapItem UI", () => {
       expect(item).toHaveAttribute(
         "accessibility-label",
         status === "completed"
-          ? "카페에 도착한 지민, 완료됨, 이야기 연결"
-          : "카페에 도착한 지민, 이야기 연결",
+          ? "Jimin arrives at the café, completed, story"
+          : "Jimin arrives at the café, story",
       );
-      expect(screen.getByText("카페에 도착한 지민")).toBeInTheDocument();
+      expect(screen.getByText("Jimin arrives at the café")).toBeInTheDocument();
     },
   );
 
@@ -34,7 +34,7 @@ describe("VisualNovelMapItem UI", () => {
     render(
       <VisualNovelMapItem
         id="cafe-arrival-visual-novel"
-        title="카페에 도착한 지민"
+        title="Jimin arrives at the café"
         status="available"
         onSelect={onSelect}
       />,

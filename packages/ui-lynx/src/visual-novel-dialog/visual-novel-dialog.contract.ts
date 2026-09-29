@@ -168,7 +168,7 @@ export function getVisualNovelDialogContract(
     variant === "narration"
       ? line
       : variant === "thought"
-        ? `${speakerName}, 속마음: ${line}`
+        ? `${speakerName}, thinking: ${line}`
         : `${speakerName}: ${line}`;
   // 번역이 있으면 대사 뒤에 이어 읽습니다 — 화면에 선 두 줄을 한 요소가 함께 냅니다.
   const accessibilityLabel =

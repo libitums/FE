@@ -128,6 +128,12 @@ apps/mobile/src/
 > 소유자(여정 맵)가 뚜렷하다.
 >
 > **D7의 예약 상태어 넷은 이 갱신으로 바뀌지 않는다.**
+>
+> ⟨2026-09-29⟩ **위 표의 `lib/answer-result.ts` 행은 이제 타입 하나다** — 낱말(`정답`/`오답`)을 내던
+> `answerResultLabel`이 지워지고 그 낱말은 문구표 `copy.common.answerResult`(`Correct`/`Incorrect`)가
+> 진다([ADR-0031](0031-ui-language-catalog.md)). 순수 모듈이고 호스트 접점이 아니라는 판정은 그대로다.
+> `lib/`의 순수 모듈 사례는 문구표(`ui-copy*.ts`)와 UI 언어(`ui-language.ts` — 저장소를 부르지만 접점은
+> 여전히 `storage.ts` 하나)로 늘었다.
 
 ### D6. 네이밍
 

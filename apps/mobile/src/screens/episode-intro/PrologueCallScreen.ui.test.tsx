@@ -3,6 +3,8 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 
 import type { PrologueCall } from "./episode-intro.contract";
 import { PrologueCallScreen } from "./PrologueCallScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 대본은 이 파일 안의 fixture로
 // 줍니다(`prologue-call.ts`의 표를 import하지 않습니다). 대사 한 줄은 3초 머뭅니다.
@@ -12,7 +14,7 @@ afterEach(() => {
 });
 
 const call: PrologueCall = {
-  callerName: "지민",
+  callerName: "Jimin",
   lines: [
     { text: "여보세요?", translation: "Hello?" },
     { text: "이따 봐!", translation: "See you later!" },
@@ -49,7 +51,7 @@ test("[PC1] 머리 · 통화 상대 · 첫 대사를 그린다", () => {
   );
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
-    "음성 통화, 지민",
+    "Voice call, Jimin",
   );
   expect(screen.getByTestId("prologue-call-screen-line-text")).toHaveTextContent("여보세요?");
   expect(screen.getByTestId("prologue-call-screen-line-translation")).toHaveTextContent("Hello?");
@@ -102,7 +104,7 @@ test("[PC4] 종료 버튼 tap → 통화가 끝나 Continue가 서고, onComplet
   const props = renderCall();
 
   const end = screen.getByTestId("prologue-call-screen-end");
-  expect(end).toHaveAttribute("accessibility-label", "통화 종료");
+  expect(end).toHaveAttribute("accessibility-label", "End call");
   fireEvent.tap(end, {});
 
   expect(screen.getByTestId("prologue-call-screen-complete")).toBeInTheDocument();
@@ -134,15 +136,15 @@ test("[PC5] 뒤로 tap → onBack 1회, onEnd 0회", () => {
 test("[PC6] 음소거는 누를 때마다 켜지고 꺼지며, 이름이 상태를 말한다", () => {
   renderCall();
   const muteButton = screen.getByTestId("prologue-call-screen-mute");
-  expect(muteButton).toHaveAttribute("accessibility-label", "음소거, 꺼짐");
+  expect(muteButton).toHaveAttribute("accessibility-label", "Mute, off");
   expect(muteButton).toHaveAttribute("data-on", "false");
 
   fireEvent.tap(muteButton, {});
-  expect(muteButton).toHaveAttribute("accessibility-label", "음소거, 켜짐");
+  expect(muteButton).toHaveAttribute("accessibility-label", "Mute, on");
   expect(muteButton).toHaveAttribute("data-on", "true");
 
   fireEvent.tap(muteButton, {});
-  expect(muteButton).toHaveAttribute("accessibility-label", "음소거, 꺼짐");
+  expect(muteButton).toHaveAttribute("accessibility-label", "Mute, off");
 });
 
 test("[PC7] 소리 크기 버튼이 판을 펼치고 접는다", () => {
@@ -153,7 +155,7 @@ test("[PC7] 소리 크기 버튼이 판을 펼치고 접는다", () => {
   expect(screen.getByTestId("prologue-call-screen-volume-panel")).toBeInTheDocument();
   expect(screen.getByTestId("prologue-call-screen-volume")).toHaveAttribute(
     "accessibility-label",
-    "소리 크기, 펼쳐짐",
+    "Volume, expanded",
   );
 
   fireEvent.tap(screen.getByTestId("prologue-call-screen-volume"), {});
@@ -173,24 +175,22 @@ test("[PC8] 판의 − · +가 크기를 한 단계씩 바꾸고 양 끝에서 �
   );
   fireEvent.tap(screen.getByTestId("prologue-call-screen-volume"), {});
   const level = () =>
-    container
-      .querySelector('[accessibility-label^="소리 크기 "]')
-      ?.getAttribute("accessibility-label");
-  expect(level()).toBe("소리 크기 4 / 5");
+    container.querySelector('[accessibility-label$=" of 5"]')?.getAttribute("accessibility-label");
+  expect(level()).toBe("Volume 4 of 5");
 
   fireEvent.tap(screen.getByTestId("prologue-call-screen-volume-up"), {});
-  expect(level()).toBe("소리 크기 5 / 5");
+  expect(level()).toBe("Volume 5 of 5");
   expect(screen.getByTestId("prologue-call-screen-volume-up")).toHaveAttribute(
     "accessibility-traits",
     "disabled",
   );
   fireEvent.tap(screen.getByTestId("prologue-call-screen-volume-up"), {});
-  expect(level()).toBe("소리 크기 5 / 5");
+  expect(level()).toBe("Volume 5 of 5");
 
   for (let index = 0; index < 5; index += 1) {
     fireEvent.tap(screen.getByTestId("prologue-call-screen-volume-down"), {});
   }
-  expect(level()).toBe("소리 크기 1 / 5");
+  expect(level()).toBe("Volume 1 of 5");
 });
 
 test("[PC9] 음소거와 소리 크기는 통화를 끝내지 않는다", () => {
@@ -214,6 +214,73 @@ test("[PC11] 시계가 가도 통화 상대의 접근성 이름은 바뀌지 않
   expect(screen.getByTestId("prologue-call-screen-clock")).toHaveTextContent("0:02");
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
-    "음성 통화, 지민",
+    "Voice call, Jimin",
+  );
+});
+
+test("[ST2-E] 소리 버튼 이름이 영어다", () => {
+  renderCall();
+
+  expect(screen.getByTestId("prologue-call-screen-volume")).toHaveAttribute(
+    "accessibility-label",
+    "Volume",
+  );
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-volume"), {});
+  expect(screen.getByTestId("prologue-call-screen-volume-down")).toHaveAttribute(
+    "accessibility-label",
+    "Volume down",
+  );
+  expect(screen.getByTestId("prologue-call-screen-volume-up")).toHaveAttribute(
+    "accessibility-label",
+    "Volume up",
+  );
+});
+
+test("[ST2-M] 문구표에서 읽는다 — 통화 상대 · 종료 · 음소거 · 소리", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <PrologueCallScreen
+        insets={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        episodeLabel="Episode 0."
+        call={call}
+        callerPortrait="portrait.png"
+        onComplete={vi.fn<() => void>()}
+        onBack={vi.fn<() => void>()}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
+    "accessibility-label",
+    "⟦phoneCall.voiceCall⟧(Jimin)",
+  );
+  expect(screen.getByTestId("prologue-call-screen-end")).toHaveAttribute(
+    "accessibility-label",
+    "⟦episodeIntro.call.endCall⟧",
+  );
+  expect(screen.getByTestId("prologue-call-screen-mute")).toHaveAttribute(
+    "accessibility-label",
+    "⟦episodeIntro.call.mute⟧(false)",
+  );
+  expect(screen.getByTestId("prologue-call-screen-volume")).toHaveAttribute(
+    "accessibility-label",
+    "⟦episodeIntro.call.volume⟧",
+  );
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-volume"), {});
+  expect(screen.getByTestId("prologue-call-screen-volume")).toHaveAttribute(
+    "accessibility-label",
+    "⟦episodeIntro.call.volumeExpanded⟧",
+  );
+  expect(screen.getByTestId("prologue-call-screen-volume-down")).toHaveAttribute(
+    "accessibility-label",
+    "⟦episodeIntro.call.volumeDown⟧",
+  );
+  expect(screen.getByTestId("prologue-call-screen-volume-up")).toHaveAttribute(
+    "accessibility-label",
+    "⟦episodeIntro.call.volumeUp⟧",
+  );
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
+  expect(screen.getByTestId("prologue-call-screen-complete")).toHaveTextContent(
+    "⟦common.continue⟧",
   );
 });
