@@ -27,15 +27,14 @@ import { AppHeader } from "./AppHeader";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
-import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
+import type {
+  EpisodeIntroUnitId,
+  EpisodePrologue,
+} from "../screens/episode-intro/episode-intro.contract";
 import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
 import type { EpisodeFinalTest } from "../screens/episode-final/episode-final.contract";
 import { episodeFinalTestFor as productEpisodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
-import {
-  completedEpisodeIntroUnitIdsFrom,
-  completedVisualNovelUnitIdsFrom,
-  productJourneySeed,
-} from "./journey-progress";
+import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-progress";
 import type { AppJourneySeed } from "./journey-progress";
 import { entryInitialNav } from "./nav-state";
 import type { Screen } from "./nav-state";
@@ -51,11 +50,11 @@ export type { AppJourneySeed } from "./journey-progress";
 export type AppSeedProps = {
   readonly journeySeed?: AppJourneySeed;
   /**
-   * 서사 표지를 이미 본 에피소드입니다. 없으면 빈 목록 — 어느 에피소드든 유닛을 처음 열
-   * 때 표지가 섭니다. 표지 뒤의 동작을 보려는 자리가 표지를 매번 넘기지 않게 합니다.
-   * 제품 진입점은 이 값을 주지 않습니다.
+   * 이미 끝낸 표지 **유닛**입니다. 없으면 빈 목록 — 그러면 그 에피소드의 나머지 유닛이
+   * 전부 잠긴 채로 섭니다(D6). 표지 뒤의 동작을 보려는 자리가 표지를 매번 지나지 않게
+   * 합니다. 제품 진입점은 이 값을 주지 않습니다.
    */
-  readonly seenEpisodeIntroIds?: readonly string[];
+  readonly completedEpisodeIntroIds?: readonly EpisodeIntroUnitId[];
   /**
    * 에피소드의 서사 전개를 찾는 함수입니다. 없으면 제품의 표(`episodePrologueFor`)를
    * 씁니다. 튜토리얼 하나뿐인 지금, 다른 형식(통화 · 메신저)의 서사를 앱 안에서 보려는
@@ -90,7 +89,7 @@ function isFullBleedScreen(screen: Screen): boolean {
 
 export function App({
   journeySeed = productJourneySeed,
-  seenEpisodeIntroIds: initialSeenEpisodeIntroIds = [],
+  completedEpisodeIntroIds: initialCompletedEpisodeIntroIds = [],
   episodePrologueFor = productEpisodePrologueFor,
   episodeFinalTestFor = productEpisodeFinalTestFor,
   initialGemCount = 0,
@@ -156,11 +155,12 @@ export function App({
   // 모양으로** 듭니다 — 건너뛰기가 있는 활동이 스텝의 어느 자리에 오든 수가 새지
   // 않게 하려면 둘이 함께 만들어지고 함께 버려져야 합니다.
   const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
-  // 서사 표지를 본 에피소드입니다. **영속하지 않습니다**(ADR-0007 D1) — 앱을 다시 켜면
-  // 표지가 다시 섭니다. 진행이 영속하지 않는 것과 같은 저울입니다.
-  const [seenEpisodeIntroIds, setSeenEpisodeIntroIds] = useState<readonly string[]>(
-    initialSeenEpisodeIntroIds,
-  );
+  // 끝낸 표지 유닛입니다. 다른 특별 유닛의 완료 목록과 같은 축입니다(ADR-0024 D6) —
+  // 「봤다」가 아니라 「끝냈다」이고, 세는 것도 에피소드가 아니라 유닛입니다.
+  // **영속하지 않습니다**(ADR-0007 D1) — 앱을 다시 켜면 표지가 다시 섭니다.
+  const [completedEpisodeIntroIds, setCompletedEpisodeIntroIds] = useState<
+    readonly EpisodeIntroUnitId[]
+  >(initialCompletedEpisodeIntroIds);
   // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
   // 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
   const [gemCount] = useState(initialGemCount);
@@ -168,8 +168,6 @@ export function App({
   // 전역 머리가 그 동안 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를
   // 알립니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
-
-  const completedEpisodeIntroIds = completedEpisodeIntroUnitIdsFrom(seenEpisodeIntroIds);
 
   // 롤플레이 구획입니다. **진행에서 파생합니다** — 에피소드는 여정에서 그 에피소드의
   // 항목을 전부 끝냈을 때 열리고, 그 판정의 출처는 위의 진행 넷입니다. 상태로 따로 두면
@@ -216,11 +214,10 @@ export function App({
     setNotifications,
     sessionOptions,
     setSessionOptions,
-    seenEpisodeIntroIds,
-    setSeenEpisodeIntroIds,
     pendingResults,
     setPendingResults,
     completedEpisodeIntroIds,
+    setCompletedEpisodeIntroIds,
     pendingSkippedCount,
     setPendingSkippedCount,
     roleplaySections,

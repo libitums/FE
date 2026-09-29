@@ -2,10 +2,7 @@
 
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
-import type { JourneyMapItemStatus, JourneyStepId } from "../journey-map/journey-map";
-import type { MessengerUnitId } from "../messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
-import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
+import type { JourneyMapItemStatus } from "../journey-map/journey-map";
 
 export type EpisodeIntroUnitId = "tutorial-intro";
 /**
@@ -42,16 +39,6 @@ export type EpisodeIntroMapItemProps = {
   readonly status: JourneyMapItemStatus;
   readonly onSelect: (id: EpisodeIntroUnitId) => void;
 };
-
-/**
- * 표지를 넘긴 뒤 열 유닛입니다. 표지는 에피소드의 유닛을 **처음 여는 순간** 그 앞에
- * 끼어듭니다 — 사용자가 누른 것은 유닛이고, 표지를 지나면 그 유닛이 열립니다.
- */
-export type EpisodeIntroTarget =
-  | { readonly kind: "step"; readonly stepId: JourneyStepId }
-  | { readonly kind: "messenger"; readonly unitId: MessengerUnitId }
-  | { readonly kind: "phone-call"; readonly unitId: PhoneCallUnitId }
-  | { readonly kind: "visual-novel"; readonly unitId: VisualNovelUnitId };
 
 export type EpisodeIntroScreenProps = {
   /**

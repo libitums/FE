@@ -11,7 +11,7 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
-import type { EpisodeIntroTarget } from "../screens/episode-intro/episode-intro.contract";
+import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
 import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type { RoleplayEpisodeId } from "../screens/roleplay-list/roleplay-list.contract";
@@ -47,18 +47,19 @@ export type Screen =
   | { name: "terms" }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
-  // 에피소드의 서사 표지입니다. 표지를 넘긴 뒤 열 유닛(`target`)을 함께 싣습니다 —
-  // 사용자가 누른 것은 유닛이고, 그 사실은 이 화면 인스턴스의 것이라 `back`과 함께
-  // 죽는 것이 맞습니다(`assessment`의 `results`와 같은 판단).
-  | { name: "episode-intro"; episodeId: string; target: EpisodeIntroTarget }
+  // 에피소드의 서사 표지입니다. 필드는 **표지 유닛 id 하나**입니다 — 표지가 스스로 맵에
+  // 서는 유닛이 되면서(ADR-0024 D2) 「넘긴 뒤 열 유닛」이라는 개념이 없어졌습니다.
+  // 에피소드는 이 id에서 파생합니다(`episodeOfIntroUnit`) — 파생 가능한 값을 따로
+  // 실으면 둘이 어긋납니다.
+  | { name: "episode-intro"; unitId: EpisodeIntroUnitId }
   // 표지의 `Next` 뒤에 서는 에피소드의 서사 전개입니다. 에피소드마다 형식이 하나(통화 ·
   // 메신저 · 비주얼 노벨)이고, 어느 형식인지는 에피소드의 서사가 정합니다 — route는
-  // 모릅니다. 표지를 갈아타고(`replace`) 서므로 표지와 같은 두 필드를 이어 받습니다.
-  | { name: "episode-prologue"; episodeId: string; target: EpisodeIntroTarget }
-  // 서사 전개를 마친 뒤의 학습 완료 화면입니다. 학습 유닛의 완료 화면을 그대로 쓰되
-  // 판정할 결과가 없어 늘 실수 없음(PERFECT)입니다. 목적지를 싣지 않습니다 — 여기서는
-  // 유닛을 열지 않고 맵으로 돌아갑니다.
-  | { name: "episode-prologue-complete"; episodeId: string }
+  // 모릅니다. 표지를 갈아타고(`replace`) 서므로 표지와 같은 필드를 이어 받습니다.
+  | { name: "episode-prologue"; unitId: EpisodeIntroUnitId }
+  // 표지를 마친 뒤의 학습 완료 화면입니다. 학습 유닛의 완료 화면을 그대로 쓰되 판정할
+  // 결과가 없어 늘 만점(PERFECT)입니다. `Skip`과 `Next`가 **둘 다** 여기로 오고,
+  // 화면은 그 둘을 구별하지 않습니다(spec §2.5).
+  | { name: "episode-prologue-complete"; unitId: EpisodeIntroUnitId }
   | { name: "episode-final"; unitId: EpisodeFinalUnitId }
   | { name: "episode-final-complete"; unitId: EpisodeFinalUnitId; results: readonly AnswerResult[] }
   // 학습 화면 넷은 `activityIndex`를 함께 집니다. 유닛 하나가 활동 여럿을 잇기

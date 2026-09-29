@@ -70,6 +70,7 @@ export type JourneyWiringArgs = {
   readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
+  readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   /**
    * 한 스텝의 활동들이 지나오며 쌓은 결과입니다. 유닛 하나가 활동 여럿을 잇기 때문에
    * 평가는 **마지막 활동이 끝난 뒤** 한 번만 돌고, 그때까지의 결과를 여기 모읍니다.
@@ -78,13 +79,11 @@ export type JourneyWiringArgs = {
    * 화면에 있든 「이 스텝에서 지금까지 맞고 틀린 것」은 하나입니다. 스택에 실으면
    * 뒤로 가기가 결과를 되감아 평가가 달라집니다.
    */
-  readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
-  readonly seenEpisodeIntroIds: readonly string[];
-  readonly setSeenEpisodeIntroIds: Dispatch<SetStateAction<readonly string[]>>;
   readonly pendingResults: readonly AnswerResult[];
   readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
   /** 끝낸 표지 유닛입니다. 맵의 표지 게이트(`mapItemStatus`)가 이 값을 봅니다. */
   readonly completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
+  readonly setCompletedEpisodeIntroIds: Dispatch<SetStateAction<readonly EpisodeIntroUnitId[]>>;
   readonly pendingSkippedCount: number;
   readonly setPendingSkippedCount: Dispatch<SetStateAction<number>>;
 };
@@ -246,16 +245,15 @@ export function journeyWiring(args: JourneyWiringArgs) {
     onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
   };
 
-  // 유닛 시작 넷을 서사 표지로 감쌉니다. 이름이 `journey`인 것은 위의 알림 결선이 그
-  // 이름으로 시작을 부르기 때문입니다 — 알림에서 여는 유닛도 표지를 지납니다.
+  // 표지 결선을 나란히 붙입니다 — **감싸지 않습니다.** 표지는 맵에 스스로 서는 유닛이라
+  // 유닛 시작 넷을 가로채지 않고(spec §2.5), 순서는 맵의 잠김 파생이 집니다. 이름이
+  // `journey`인 것은 위의 알림 결선이 그 이름으로 시작을 부르기 때문입니다.
   const journey = {
     ...unitStarts,
     ...episodeIntroWiring({
       sections: journeyMapSections,
-      seenEpisodeIntroIds: args.seenEpisodeIntroIds,
-      setSeenEpisodeIntroIds: args.setSeenEpisodeIntroIds,
+      setCompletedEpisodeIntroIds: args.setCompletedEpisodeIntroIds,
       dispatch,
-      starts: unitStarts,
       prologueFor: args.episodePrologueFor,
     }),
   };

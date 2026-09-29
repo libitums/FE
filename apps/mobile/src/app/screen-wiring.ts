@@ -4,7 +4,6 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
-  EpisodeIntroTarget,
   EpisodeIntroUnitId,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
@@ -96,9 +95,9 @@ export type ScreenWiring = {
   completedStepCount: number;
   /** 끝낸 표지 유닛입니다 — 맵의 표지 게이트가 이 값을 봅니다. */
   completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
-  // 맵의 표지 항목을 누른 것입니다. 표지가 스스로 맵에 서는 유닛이 되면서(ADR-0024 D2)
-  // 생긴 경로이고, 유닛 시작 넷(`onStartStep` 등)과 달리 게이트를 거치지 않습니다 —
-  // 표지 자신에게는 앞에 걸 것이 없습니다.
+  // 맵의 표지 항목을 누른 것입니다 — 표지로 들어가는 길은 이것 하나입니다. 유닛 시작
+  // 넷(`onStartStep` 등)을 감싸던 게이트는 없어졌습니다(spec §2.5): 순서를 지는 자리가
+  // 맵의 잠김 파생(`mapItemStatus`)으로 옮겨 갔습니다.
   onStartEpisodeIntroUnit: (id: EpisodeIntroUnitId) => void;
   onStartStep: (id: JourneyStepId) => void;
   // 학습 화면 셋이 같은 콜백을 받으므로 이름이 듣기에 묶여 있으면 거짓이
@@ -150,14 +149,16 @@ export type ScreenWiring = {
   onSelectNotification: (item: NotificationItem) => void;
   onDeleteNotification: (item: NotificationItem) => void;
   onExitNotifications: () => void;
-  // 에피소드 서사 표지의 넘기기 · 나가기입니다. 둘 다 표지 route가 실어 온 목적지를
-  // 받습니다. 여정의 유닛 시작 넷(`onStartStep` 등)은 표지를 거치는 판입니다.
-  onSkipEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
-  onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
+  // 에피소드 표지의 넘기기 · 나가기입니다. 넷 다 **표지 유닛 id 하나**를 받습니다 —
+  // 「넘긴 뒤 열 유닛」이 없어졌기 때문입니다(spec §2.5). `Skip`은 맵이 아니라 만점
+  // 결과 화면으로 갑니다(D5).
+  onSkipEpisodeIntro: (id: EpisodeIntroUnitId) => void;
+  onNextEpisodeIntro: (id: EpisodeIntroUnitId) => void;
   onExitEpisodeIntro: () => void;
-  // 표지 `Next` 뒤 에피소드 서사의 끝 · 나가기입니다.
-  onCompletePrologue: (episodeId: string) => void;
-  onExitPrologueComplete: (episodeId: string) => void;
+  // 표지 `Next` 뒤 에피소드 서사의 끝 · 결과 화면의 나가기입니다. 완료를 적는 자리는
+  // 뒤쪽 하나뿐입니다.
+  onCompletePrologue: (id: EpisodeIntroUnitId) => void;
+  onExitPrologueComplete: (id: EpisodeIntroUnitId) => void;
   // 호스트가 넘긴 가장자리 여백입니다. 셸이 여백을 잡지 않는 화면(서사 표지)이 자기
   // 안에서 잡을 때 씁니다 — 콜백이 아니라 값이지만 `sessionOptions`와 같이 내려갑니다.
   safeAreaInsets: SafeAreaInsets;
@@ -217,11 +218,10 @@ export type ScreenWiringArgs = {
   readonly gemCount: number;
   readonly setScreenLayerOpen: Dispatch<SetStateAction<boolean>>;
   readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
-  readonly seenEpisodeIntroIds: readonly string[];
-  readonly setSeenEpisodeIntroIds: Dispatch<SetStateAction<readonly string[]>>;
   readonly pendingResults: readonly AnswerResult[];
   readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
   readonly completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
+  readonly setCompletedEpisodeIntroIds: Dispatch<SetStateAction<readonly EpisodeIntroUnitId[]>>;
   readonly pendingSkippedCount: number;
   readonly setPendingSkippedCount: Dispatch<SetStateAction<number>>;
   readonly roleplaySections: readonly RoleplaySection[];
