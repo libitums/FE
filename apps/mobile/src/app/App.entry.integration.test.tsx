@@ -1776,7 +1776,6 @@ test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 �
   vi.useFakeTimers();
   render(<App />);
   advanceSplash();
-  vi.useRealTimers();
   completeOnboarding();
 
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
