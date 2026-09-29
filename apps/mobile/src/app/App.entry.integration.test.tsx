@@ -1785,3 +1785,37 @@ test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 �
     expect(screen.getByTestId(`login-screen-method-${method}`)).toBeInTheDocument();
   }
 });
+
+// ------------------------------------------------------------------------- 연결 실패 응답(#154)
+
+test("[IN1] 갱신이 status 499(연결 실패)로 돌아오면 세션 키가 남아 있다 — 오프라인이 로그아웃이 아니다", async () => {
+  const initialSession: AuthSession = {
+    accessToken: "old-access",
+    refreshToken: "old-refresh",
+    expiresAt: 1000,
+  };
+  const store = sessionPresentStorageStub(initialSession);
+  stubSupabase({ refresh: { status: 499, body: "" } });
+  vi.useFakeTimers();
+  render(<App />);
+
+  advanceSplash();
+  await advanceTimersAsync(0);
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(store.get(authSessionStorageKey)).toBe(serializeAuthSession(initialSession));
+});
+
+test("[IN2] 소셜 교환이 status 499로 돌아오면 network 문구가 서고 세션을 저장하지 않는다", async () => {
+  const { store } = stubHostWithWebAuthentication(completedWebAuthentication);
+  stubSupabase({ pkce: { status: 499, body: "" } });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("google");
+
+  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(authFailureMessage("network"));
+  expect(store.has(authSessionStorageKey)).toBe(false);
+});
