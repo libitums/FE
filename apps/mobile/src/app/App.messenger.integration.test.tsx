@@ -3,26 +3,25 @@ import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
-import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import {
   answerMessengerReplies,
   typeMessengerReply,
 } from "../screens/messenger/messenger.test-support";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
-// 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
+// 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
-const seenIntros = ["tutorial"] as const;
+const completedIntros = ["tutorial-intro"] as const;
 
 // App · navigation · 여정 맵 · 메신저 화면의 실제 결선을 봅니다.
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  vi.unstubAllEnvs();
 });
 
 async function openJourneyMessenger(messengerEventSink?: MessengerEventSink) {
   await renderSignedInApp(
-    <App seenEpisodeIntroIds={seenIntros} messengerEventSink={messengerEventSink} />,
+    <App completedEpisodeIntroIds={completedIntros} messengerEventSink={messengerEventSink} />,
   );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
@@ -68,7 +67,7 @@ test("두 답장을 완료하면 마지막 메시지와 맵 완료 표식이 함
 });
 
 test("메신저 완료는 일반 completedStepCount와 directions 상태를 바꾸지 않는다", async () => {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   // initialCompletedStepCount=2입니다: greeting/소개는 done, appointment/directions는 locked입니다.
   expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
@@ -231,7 +230,9 @@ test("완료 재입장과 결과 보기는 completed 이벤트를 다시 내지 
 
 test("명시적 null sink와 기본 null은 기능을 안전하게 유지한다", async () => {
   await expect(
-    renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} messengerEventSink={null} />),
+    renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} messengerEventSink={null} />),
   ).resolves.toBeDefined();
-  await expect(renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />)).resolves.toBeDefined();
+  await expect(
+    renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />),
+  ).resolves.toBeDefined();
 });

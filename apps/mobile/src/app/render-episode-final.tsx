@@ -56,6 +56,7 @@ export function renderEpisodeFinalFlow(screen: EpisodeFinalFlowScreen, wiring: S
       return (
         <LessonCompleteScreen
           results={screen.results}
+          skippedCount={0}
           verdict="passed"
           streakDays={0}
           trophyCount={0}

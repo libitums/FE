@@ -37,6 +37,26 @@
 >   (`messengerProgressLabel` · `messenger-screen-progress`)는 없앴다 — 디자인에 없다.
 > - 메시지에 `translation`이 붙고 말풍선은 ui-lynx `ChatBubble`이다. 나가기는 원 버튼
 >   모양이고 이름(`맵으로`/`목록으로`)은 접근성 이름으로만 읽힌다.
+
+> **개정 (2026-09-29) — 어휘 개명과 잠김.** 표지가 유닛이 되면서(ADR-0024 D10·D11) 이 유닛이
+> 딛고 선 두 가지가 바뀌었다. **아래 본문 중 이 개정과 어긋나는 줄은 이 개정이 이긴다.**
+>
+> - **맵 항목의 `kind`가 `"special"`에서 `"messenger"`로 개명됐다.** 그 이름은 **맵 항목
+>   쪽에서만 메신저 하나를 뜻하던 역사적 이름**이었고(유닛 쪽 `kind: "special"`은 특별 유닛
+>   **전부**를 뜻해 뜻과 맞으므로 그대로다), 개명으로 맵 항목의 판별자가 「`standard` +
+>   특별 유닛의 `screen` 이름들」과 1:1이 됐다. 아래 §3.1의 두 코드 블록은 그 개명 전 모양이다.
+> - **유닛·맵 항목 타입이 `messenger.contract.ts`로 옮겨 갔다.** 특별 유닛 가운데 메신저만
+>   자기 계약 파일 없이 `journey-map-units.ts`에 인라인으로 박혀 있었고, 그 비대칭이 애초에
+>   위 역사적 이름을 만들었다. **타입은 넓어지지도 좁아지지도 않았다** — 두 표현이 이미 같은
+>   리터럴이었다.
+> - **「언제든 열 수 있다」(§0-2)가 더 이상 참이 아니다.** 그 에피소드의 **표지를 끝내기
+>   전에는 잠긴다**(ADR-0024 D11). 그래서 맵 항목 props의 상태가
+>   `locked | available | completed` 공용 어휘를 쓴다. ⚠ **`MessengerCompletionStatus`
+>   자체는 그대로다** — 그 타입은 진입 이벤트 payload에도 쓰여서 `locked`를 더하면
+>   「잠긴 채로 진입했다」는 표현 불가능한 상태가 이벤트 타입에 생긴다. **완료 축과 표시
+>   축은 다른 축이다.**
+> - **유닛에 「학습 요소가 있는가」 같은 필드는 늘지 않았다.** 한때 그런 축을 두려던 초안이
+>   있었고 버렸다 — 스킵은 하나의 축이 아니라 서로 무관한 둘이다(ADR-0024 D12).
 > - test-id: 자판 키 `messenger-key-<자모|shift|backspace|space|,|.|?>`, 입력창
 >   `messenger-composer`(`data-verdict`) · `messenger-composer-text` · `messenger-composer-hint` ·
 >   `messenger-composer-prompt`, 보내기 `messenger-send`, 다시 치기 `messenger-try-again`, 보기

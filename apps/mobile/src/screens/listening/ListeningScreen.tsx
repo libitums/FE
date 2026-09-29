@@ -39,7 +39,7 @@ import "./listening-screen.css";
 export type ListeningScreenProps = {
   stepId: JourneyStepId;
   onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
+  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
   sessionOptions: SessionOptions;
   /** 상단 바의 젬 칩 값입니다. 전역 머리와 같은 값을 그리도록 App이 내립니다. */
   gemCount?: number;
@@ -82,7 +82,9 @@ export function ListeningScreen({
     question === null
       ? {
           label: listeningFinishLabel,
-          run: () => onFinish(stepId, sessionAnswerResults(questions, state.answeredChoiceIndexes)),
+          // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
+          run: () =>
+            onFinish(stepId, sessionAnswerResults(questions, state.answeredChoiceIndexes), 0),
         }
       : undefined;
 

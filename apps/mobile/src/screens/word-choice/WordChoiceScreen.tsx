@@ -41,7 +41,7 @@ import "./word-choice-screen.css";
 export type WordChoiceScreenProps = {
   stepId: JourneyStepId;
   onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
+  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
 
 export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
@@ -74,8 +74,9 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
     question === null
       ? {
           label: wordChoiceFinishLabel,
+          // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
           run: () =>
-            onFinish(stepId, wordChoiceSessionResults(questions, state.answeredChoiceIndexes)),
+            onFinish(stepId, wordChoiceSessionResults(questions, state.answeredChoiceIndexes), 0),
         }
       : undefined;
 

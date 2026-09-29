@@ -4,11 +4,13 @@
 //
 // **무엇이 임시인가** — 문항의 값 전부입니다. 컨텐츠 공급 경로가 정해지지 않았고, 튜토리얼의
 // 서사(매장에서 점원이 맞는 장면)와 스텝의 주제(인사 · 이름 묻기 · 주문하기)를 따라 지은
-// 것입니다. 3번과 5번은 디자인(Figma 79-6648 · 79-6484)의 문장입니다.
+// 것입니다. 3번 · 5번 · 6번은 디자인(Figma 79-6648 · 79-6484 · 79-6378)의 문장입니다. 6번의
+// 통과 문턱은 기본값입니다 — 글자별로 덮어쓸 근거(기기 실측)가 아직 없습니다.
 //
 // **값이 오는 날 무엇이 바뀌나** — 이 표의 값만 갈립니다. 문항의 모양(`EpisodeFinalQuestion`)은
 // 임시가 아닙니다.
 
+import { writingPassCriterion } from "../../lib/writing-judge";
 import type { EpisodeFinalTest, EpisodeFinalUnitId } from "./episode-final.contract";
 
 const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
@@ -54,6 +56,15 @@ const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
         id: "this-one-please",
         sentence: "이거 주세요",
         romanization: "[i.ɡʌ.ju.se.jo]",
+      },
+      {
+        kind: "writing",
+        id: "find-cosmetic-writing",
+        before: "이 화장품 찾아",
+        syllables: ["주", "세", "요"],
+        after: ".",
+        translation: "Please help me find this cosmetic product.",
+        passCriterion: writingPassCriterion,
       },
     ],
   },

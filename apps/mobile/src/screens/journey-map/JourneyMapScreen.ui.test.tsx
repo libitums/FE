@@ -1,6 +1,11 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
+import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
+import type { MessengerUnitId } from "../messenger/messenger.contract";
+import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
+import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import { JourneyMapScreen } from "./JourneyMapScreen";
 import {
   initialCompletedStepCount,
@@ -9,12 +14,28 @@ import {
   type JourneyStepId,
 } from "./journey-map";
 
-// 메신저 계약 props는 기존 여정 맵 UI fixture에서 공통으로 비워 둡니다.
-const messengerFixture = {
+// 특별 유닛 계약 props는 이 파일의 단언이 보는 축(스텝 노드 · 시트 · 스크롤)과
+// 무관하므로 공통으로 비워 둡니다.
+//
+// ⟨개정 2026-09-29⟩ **표지 완료만 비우지 않습니다.** 표지가 미완료면 그 구획의
+// 나머지가 통째로 잠기고(D6) 스텝 다섯이 전부 `default`가 되어, 이 파일이 보는 것
+// (서수별 상태 · 말풍선 · 겹침 · 스크롤)이 **하나도 관찰되지 않습니다**. 표지를
+// 끝낸 자리가 이 파일의 기존 단언이 말하던 그 맵입니다 — 잠김 축 자체는
+// `JourneyMapScreen.episode-intro.ui.test.tsx`의 `UI-L1`~`UI-L3`이 집니다.
+//
+// 이름이 `messengerFixture`에서 바뀐 것은 담는 것이 메신저 하나가 아니게 됐기
+// 때문입니다 — 옛 이름을 두면 표지 · 비주얼 노벨 · 최종이 메신저 것으로 읽힙니다.
+const mapFixture = {
+  completedEpisodeIntroIds: ["tutorial-intro"] as const,
+  onStartEpisodeIntroUnit: vi.fn<(id: EpisodeIntroUnitId) => void>(),
   completedMessengerUnitIds: [] as const,
-  onStartMessengerUnit: vi.fn(),
+  onStartMessengerUnit: vi.fn<(id: MessengerUnitId) => void>(),
   completedPhoneCallUnitIds: [] as const,
-  onStartPhoneCallUnit: vi.fn(),
+  onStartPhoneCallUnit: vi.fn<(id: PhoneCallUnitId) => void>(),
+  completedVisualNovelUnitIds: [] as const,
+  onStartVisualNovelUnit: vi.fn<(id: VisualNovelUnitId) => void>(),
+  completedEpisodeFinalIds: [] as const,
+  onStartEpisodeFinal: vi.fn<(id: EpisodeFinalUnitId) => void>(),
 };
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
@@ -24,7 +45,7 @@ const messengerFixture = {
 test("여정 맵 화면이 제목을 렌더한다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -39,7 +60,7 @@ test("여정 맵 화면이 제목을 렌더한다", () => {
 test("여정 맵의 heading은 에피소드 헤더 카드다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -66,7 +87,7 @@ function unitStatusOf(status: "done" | "current" | "locked"): string {
 test("스텝 다섯이 전부 렌더되고 각자 data-status가 파생 상태와 같다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -89,7 +110,7 @@ test("스텝 다섯이 전부 렌더되고 각자 data-status가 파생 상태�
 test("처음에는 시트가 렌더되지 않는다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -102,7 +123,7 @@ test("처음에는 시트가 렌더되지 않는다", () => {
 test("스텝을 tap하면 말풍선이 열리고 그 스텝의 순번·제목을 낸다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -118,7 +139,7 @@ test("스텝을 tap하면 말풍선이 열리고 그 스텝의 순번·제목을
 test("닫기를 tap하면 시트가 사라지고 화면 제목은 그대로다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -137,7 +158,7 @@ test("닫기를 tap하면 시트가 사라지고 화면 제목은 그대로다",
 test("시트가 열린 채 다른 스텝을 tap하면 시트가 그 스텝으로 바뀐다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -160,7 +181,7 @@ test("시트가 열린 채 다른 스텝을 tap하면 시트가 그 스텝으로
 test("잠긴 스텝을 tap해도 시트가 열리지 않는다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -180,7 +201,7 @@ test("잠긴 스텝을 tap해도 시트가 열리지 않는다", () => {
 test("시트가 열린 채로 잠긴 스텝을 tap해도 시트는 그대로 열려 있다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -211,7 +232,7 @@ test("시작을 tap하면 onStartStep이 열린 스텝의 id로 한 번 불린�
   const onStartStep = vi.fn<(id: JourneyStepId) => void>();
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={onStartStep}
     />,
@@ -253,7 +274,7 @@ test("시작을 tap하면 onStartStep이 열린 스텝의 id로 한 번 불린�
 test("시트가 닫혀 있을 때 맵의 accessibility-elements-hidden은 false다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -270,7 +291,7 @@ test("시트가 닫혀 있을 때 맵의 accessibility-elements-hidden은 false�
 test("스텝을 tap해 시트를 열면 맵의 accessibility-elements-hidden이 true가 되고 맵과 스텝은 여전히 문서에 있다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -292,7 +313,7 @@ test("스텝을 tap해 시트를 열면 맵의 accessibility-elements-hidden이 
 test("닫기를 tap하면 맵의 accessibility-elements-hidden이 다시 false로 돌아온다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -318,7 +339,7 @@ test("닫기를 tap하면 맵의 accessibility-elements-hidden이 다시 false�
 // 값으로 읽어, 화면이 받은 값을 실제로 소비하는지를 가릅니다. props를 무시하고
 // 상수를 읽으면 ordering이 여전히 "current"로 나와 여기서 실패합니다.
 test("completedStepCount=3으로 렌더하면 ordering이 done, appointment가 current다", () => {
-  render(<JourneyMapScreen {...messengerFixture} completedStepCount={3} onStartStep={() => {}} />);
+  render(<JourneyMapScreen {...mapFixture} completedStepCount={3} onStartStep={() => {}} />);
 
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
@@ -338,7 +359,7 @@ test("completedStepCount=3으로 렌더하면 ordering이 done, appointment가 c
 // **current인 스텝이 하나도 없는 것이 정상**입니다. 새 상태어도 새 분기도 없다는
 // 것을 화면 쪽에서 한 번 못박습니다.
 test("completedStepCount=5로 렌더하면 다섯 전부 done이고 current인 스텝이 없다", () => {
-  render(<JourneyMapScreen {...messengerFixture} completedStepCount={5} onStartStep={() => {}} />);
+  render(<JourneyMapScreen {...mapFixture} completedStepCount={5} onStartStep={() => {}} />);
 
   journeySteps.forEach((step) => {
     expect(screen.getByTestId(`ui-lynx-learning-unit-${step.id}`)).toHaveAttribute(
@@ -358,7 +379,7 @@ test("completedStepCount=5로 렌더하면 다섯 전부 done이고 current인 �
 test("[U1] journey-map-screen-scroll이 존재한다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -370,7 +391,7 @@ test("[U1] journey-map-screen-scroll이 존재한다", () => {
 test("[U2] journey-map-screen-map이 스크롤 컨테이너 안에 있다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -385,7 +406,7 @@ test("[U2] journey-map-screen-map이 스크롤 컨테이너 안에 있다", () =
 test("[U3] 여정 맵은 머리를 그리지 않는다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -400,7 +421,7 @@ test("[U3] 여정 맵은 머리를 그리지 않는다", () => {
 test("[U4] 시트를 열어도 step-sheet-panel은 스크롤 컨테이너 밖이다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -422,7 +443,7 @@ test("[U4] 시트를 열어도 step-sheet-panel은 스크롤 컨테이너 밖이
 test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -449,7 +470,7 @@ test("[U8] 스크롤 컨테이너에 accessibility-*가 하나도 붙지 않는�
 test("[U9] journey-map-screen-scroll에 scroll-orientation='vertical'이 붙는다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -464,7 +485,7 @@ test("[U9] journey-map-screen-scroll에 scroll-orientation='vertical'이 붙는�
 test("[U11] journey-map-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -476,12 +497,50 @@ test("[U11] journey-map-screen-scroll에 scroll-bar-enable='true'가 붙는다",
   );
 });
 
+// ⟨신규 2026-09-29⟩ 맵 상자의 **자식 수**를 헤더의 분모와 맞대 봅니다. 두 수가 갈리는
+// 상태가 실제로 있었습니다 — 표지 데이터가 먼저 서고 표식 컴포넌트가 아직 없던 동안
+// 헤더는 열을 세는데 줄에는 아홉만 섰습니다. 한쪽만 보면 그 어긋남이 안 잡힙니다.
+//
+// 세는 대상을 testid 목록으로 적는 것은 클래스 이름이 앵커가 되지 않게 하기
+// 위해서입니다(`journey-map-screen-episode`는 배치용 상자일 뿐입니다).
+const mapUnitTestIds = [
+  "ui-lynx-learning-unit-tutorial-intro",
+  "ui-lynx-learning-unit-greeting",
+  "ui-lynx-learning-unit-introduction",
+  "ui-lynx-learning-unit-ordering",
+  "ui-lynx-learning-unit-appointment",
+  "ui-lynx-learning-unit-appointment-confirmation",
+  "ui-lynx-learning-unit-appointment-confirmation-phone-call",
+  "ui-lynx-learning-unit-cafe-arrival-visual-novel",
+  "ui-lynx-learning-unit-directions",
+  "ui-lynx-learning-unit-tutorial-final-test",
+] as const;
+
+test("[U12] 맵 상자에 선 유닛 수가 에피소드 헤더의 분모와 같다", () => {
+  render(
+    <JourneyMapScreen
+      {...mapFixture}
+      completedStepCount={initialCompletedStepCount}
+      onStartStep={() => {}}
+    />,
+  );
+
+  const map = screen.getByTestId("journey-map-screen-map");
+  const rendered = map.querySelectorAll(
+    mapUnitTestIds.map((id) => `[data-testid=${id}]`).join(","),
+  );
+  expect(rendered).toHaveLength(mapUnitTestIds.length);
+
+  const count = screen.getAllByTestId("ui-lynx-episode-header-count")[0]?.textContent ?? "";
+  expect(count.split(" / ")[1]).toBe(String(rendered.length));
+});
+
 // U10 — 여정 맵은 오늘도 직계 자식이 하나(journey-map-screen-map)뿐이라
 // green입니다(R7.1의 「나머지 넷은 안 샌다」 표).
 test("[U10] 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
     />,
@@ -496,7 +555,7 @@ test("[U-L1] 스텝 말풍선이 열리고 닫힐 때 onLayerChange가 true → 
   const onLayerChange = vi.fn<(open: boolean) => void>();
   render(
     <JourneyMapScreen
-      {...messengerFixture}
+      {...mapFixture}
       completedStepCount={2}
       onStartStep={() => {}}
       onLayerChange={onLayerChange}

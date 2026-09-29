@@ -47,6 +47,15 @@ export type LearningShellProps = {
    */
   workspace?: ReactNode;
   /**
+   * 작업 영역이 스크롤하는가입니다. 기본은 스크롤합니다.
+   *
+   * 끄는 것은 작업 영역에 **그리기 표면**이 서는 활동(쓰기) 하나입니다. 표면의 터치와
+   * `<scroll-view>`의 팬 제스처가 다투면 무엇이 이기는지 이 스택에서 확인된 적이 없어(획을
+   * 긋는 손이 영역을 끌어 올릴 수 있습니다), 그 활동은 스크롤을 끄고 한 화면 안에 들어가는
+   * 크기로 내용을 둡니다. 스크롤 요소는 그대로 두어 골격(ADR-0022)은 같습니다.
+   */
+  workspaceScrolls?: boolean;
+  /**
    * 아래 버튼입니다. 라벨이 활동 · 상태마다 갈립니다(`다음` · `결과 보기`). 둘 다
    * 없으면 버튼을 그리지 않습니다 — 영구히 눌리지 않는 버튼을 두지 않기 위해서입니다
    * (ADR-0016 D10). 「아직 할 수 없다」는 버튼이 **없는 것**으로 말합니다.
@@ -76,6 +85,7 @@ export function LearningShell({
   onExit,
   card,
   workspace,
+  workspaceScrolls = true,
   actionLabel,
   onAction,
   advance,
@@ -214,6 +224,8 @@ export function LearningShell({
           data-testid="learning-shell-scroll"
           scroll-orientation="vertical"
           scroll-bar-enable={true}
+          // 초기값이 켜짐이라 켤 때는 적지 않고, 끌 때만 적습니다(`workspaceScrolls`의 근거).
+          enable-scroll={workspaceScrolls ? undefined : false}
         >
           {workspace}
         </scroll-view>
@@ -243,7 +255,9 @@ export function LearningShell({
       )}
       {actionLabel === undefined || onAction === undefined ? null : (
         <>
-          <view className="learning-shell-fog">
+          {/* 포그는 보이기만 합니다 — Lynx에서 절대 배치 형제는 손가락을 가로채므로, 흐려진
+              자리의 보기 · 캔버스가 눌리도록 손가락을 흘려보냅니다. */}
+          <view className="learning-shell-fog" event-through={true}>
             <Fog direction="bottom" size="full" color="surface-default" />
           </view>
           <view

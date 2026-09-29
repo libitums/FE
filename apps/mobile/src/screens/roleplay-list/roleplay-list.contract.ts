@@ -4,6 +4,7 @@
 // 뜻하는 역사적 이름)를 옮겨 오지 않습니다. 목록이 보이는 것이 곧 형태라서 이름이
 // 그 뜻을 말하게 합니다.
 
+import type { JourneyEpisodeId } from "../journey-map/journey-map-units";
 import type { MessengerConversation, MessengerUnitId } from "../messenger/messenger.contract";
 import type { PhoneCallConversation, PhoneCallUnitId } from "../phone-call/phone-call.contract";
 import type { VisualNovelTitle, VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
@@ -37,8 +38,12 @@ export type VisualNovelRoleplayItem = {
  */
 export type RoleplayItem = MessengerRoleplayItem | PhoneCallRoleplayItem | VisualNovelRoleplayItem;
 
-/** 에피소드를 가려내는 이름입니다. 여정의 `JourneyEpisode.id`와 같은 값입니다. */
-export type RoleplayEpisodeId = string;
+/**
+ * 에피소드를 가려내는 이름입니다. 여정의 `JourneyEpisode.id`와 같은 값입니다 —
+ * **주석이 말하던 것을 타입이 말하게 합니다.** 별칭이라 에피소드가 늘면 한 곳
+ * (`JourneyEpisodeId`)만 고칩니다.
+ */
+export type RoleplayEpisodeId = JourneyEpisodeId;
 
 /**
  * 롤플레이 화면의 한 구획입니다 — 에피소드 하나와 그 에피소드의 롤플레이 항목들입니다.

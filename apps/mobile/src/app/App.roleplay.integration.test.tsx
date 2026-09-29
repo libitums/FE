@@ -6,12 +6,12 @@ import type { AppJourneySeed } from "./App";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
-import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
-// 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
+// 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
-const seenIntros = ["tutorial"] as const;
+const completedIntros = ["tutorial-intro"] as const;
 
 // App · navReducer · BottomNavigator · RoleplayListScreen · RoleplayListItem ·
 // 세 특별 유닛 화면 · 여정 맵의 실제 결선을 봅니다(ADR-0006 D4).
@@ -39,7 +39,6 @@ function stubCompletionAnnouncementHost(): AnnouncementCall[] {
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  vi.unstubAllEnvs();
   vi.clearAllMocks();
 });
 
@@ -86,7 +85,7 @@ const finishedTutorial: AppJourneySeed = {
 
 async function openRoleplayTab(sinks: Sinks = {}) {
   await renderSignedInApp(
-    <App seenEpisodeIntroIds={seenIntros} journeySeed={finishedTutorial} {...sinks} />,
+    <App completedEpisodeIntroIds={completedIntros} journeySeed={finishedTutorial} {...sinks} />,
   );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 }
@@ -334,7 +333,7 @@ test("[I4] 롤플레이에서 연 비주얼 노벨의 나가기는 목록으로�
 });
 
 test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대로다(회귀)", async () => {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
@@ -359,7 +358,9 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
 // 서는지도 봤는데, 그 단언은 여정이 미완료일 때만 뜻이 있어 걷었습니다 — 롤플레이가
 // 여정의 완료를 걸지 않는다는 것은 결선의 단위 검사(연습 경계)가 집니다.
 test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 그대로다", async () => {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} journeySeed={finishedTutorial} />);
+  await renderSignedInApp(
+    <App completedEpisodeIntroIds={completedIntros} journeySeed={finishedTutorial} />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   const before = journeyStateSnapshot();
 
@@ -493,7 +494,7 @@ test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지�
   await expect(
     renderSignedInApp(
       <App
-        seenEpisodeIntroIds={seenIntros}
+        completedEpisodeIntroIds={completedIntros}
         journeySeed={finishedTutorial}
         messengerEventSink={null}
         phoneCallEventSink={null}
@@ -533,7 +534,7 @@ test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지�
 // 여기서부터는 제품의 씨앗(스텝 둘 완료 · 특별 유닛 0건)으로 부팅합니다 — 잠김을 봅니다.
 
 async function openLockedRoleplayTab() {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 }
 
@@ -563,7 +564,7 @@ test("[I8] 에피소드를 끝내기 전에는 구획이 잠겨 있고 카드를
 });
 
 test("[I9] 여정에서 특별 유닛 하나만 끝내서는 에피소드가 열리지 않는다", async () => {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
   finishMessengerConversation();
@@ -585,7 +586,7 @@ test("[I10] 마지막 하나가 남으면 잠겨 있고, 그것을 끝내는 순
   // 비주얼 노벨만 남긴 진행입니다.
   await renderSignedInApp(
     <App
-      seenEpisodeIntroIds={seenIntros}
+      completedEpisodeIntroIds={completedIntros}
       journeySeed={{ ...finishedTutorial, visualNovelProgress: { status: "active", beatIndex: 0 } }}
     />,
   );

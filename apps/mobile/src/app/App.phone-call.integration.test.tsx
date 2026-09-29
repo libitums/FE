@@ -4,25 +4,22 @@ import { App } from "./App";
 import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
-// 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
+// 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
-const seenIntros = ["tutorial"] as const;
+const completedIntros = ["tutorial-intro"] as const;
 
 const audio = vi.hoisted(() => ({ playAudio: vi.fn(), stopAudio: vi.fn() }));
 vi.mock("../lib/audio", () => audio);
 const { playAudio, stopAudio } = audio;
 
 async function openJourney() {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 }
 
 describe("App · phone-call integration", () => {
   beforeEach(() => vi.resetAllMocks());
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.unstubAllEnvs();
-  });
+  afterEach(() => vi.unstubAllGlobals());
 
   it("맵에서 messenger 뒤 directions 앞에 전화 항목을 표시하고 선택한다", async () => {
     await openJourney();
@@ -162,7 +159,7 @@ describe("App · phone-call integration", () => {
   it("맵 항목 tap마다 push 전에 phone_call_unit_opened(journey)이 entryStatus와 함께 1건 온다", async () => {
     const phoneCallEventSink = vi.fn<NonNullable<PhoneCallEventSink>>();
     await renderSignedInApp(
-      <App seenEpisodeIntroIds={seenIntros} phoneCallEventSink={phoneCallEventSink} />,
+      <App completedEpisodeIntroIds={completedIntros} phoneCallEventSink={phoneCallEventSink} />,
     );
     fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 

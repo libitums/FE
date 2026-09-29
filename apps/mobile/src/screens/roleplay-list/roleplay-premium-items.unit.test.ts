@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { RoleplayEpisodeId } from "./roleplay-list.contract";
 import { premiumRoleplayItemsFor } from "./roleplay-premium-items";
 
 // `unit` 계층: 조회 함수의 입출력만 봅니다 (ADR-0006 D4). 값(제목 · 개수)은 임시라
@@ -23,7 +24,12 @@ describe("premiumRoleplayItemsFor", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
+  // ⚠ 「없는 에피소드」는 닫힌 `RoleplayEpisodeId`(= `JourneyEpisodeId`)로 **표현할 수
+  // 없는** 입력이라 캐스트로 짓습니다. 제품 코드는 닫힌 union에서 타입 안전을 얻고
+  // (에피소드 id 오타가 `tsc`에 섭니다), 이 케이스는 **다른 것**을 봅니다 — 표에 없는
+  // 키가 와도 던지지 않고 빈 목록을 낸다는 총함수 성질입니다. 캐스트를 제품 코드에
+  // 두지 않습니다.
   it("없는 에피소드는 던지지 않고 빈 목록을 낸다", () => {
-    expect(premiumRoleplayItemsFor("no-such-episode")).toEqual([]);
+    expect(premiumRoleplayItemsFor("no-such-episode" as RoleplayEpisodeId)).toEqual([]);
   });
 });

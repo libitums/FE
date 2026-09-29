@@ -7,9 +7,9 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { SettingsEventSink } from "../screens/settings/settings.contract";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
-// 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
+// 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
-const seenIntros = ["tutorial"] as const;
+const completedIntros = ["tutorial-intro"] as const;
 
 // 설정 탭 → 프로필/약관 push와 `설정으로` 복귀 · **토글이 실제로 듣기 화면에 닿는
 // 경로**(설정 화면과 듣기 화면이 한 트리에 함께 서야 합니다 — `ui`가 원리적으로 못
@@ -74,13 +74,12 @@ function stubHost(): { audio: HostCall[] } {
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  vi.unstubAllEnvs();
 });
 
 // ------------------------------------------------------------------------- IT1
 
 test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘이 계약 순서로 서고 토글 둘 다 기본값이 켜짐이다", async () => {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
 
   const list = screen.getByTestId("settings-screen-list");
@@ -104,7 +103,7 @@ test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘이 계약 
 // 탭 위에 쌓인 화면이라 바가 없습니다 — 「탭이 설정 그대로다」를 바로 볼 수 없게 됐고,
 // 대신 **바가 사라졌다가 나가면 설정 루트에서 다시 선다**로 같은 것을 봅니다.
 test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 바가 사라진다", async () => {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
   fireEvent.tap(settingsCell("profile"), {});
 
@@ -124,7 +123,7 @@ test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 �
 // ------------------------------------------------------------------------- IT3
 
 test("[IT3] 프로필의 설정으로를 tap하면 설정 화면으로 돌아가고 프로필 화면이 사라진다", async () => {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
   fireEvent.tap(settingsCell("profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
@@ -139,7 +138,7 @@ test("[IT3] 프로필의 설정으로를 tap하면 설정 화면으로 돌아가
 
 test("[IT4] 개인정보 보호 및 약관 항목을 tap하면 약관 화면이 서고 절 수가 termsSections().length와 같으며 설정으로 돌아온다(데이터 앵커)", async () => {
   const sections = termsSections();
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
   fireEvent.tap(settingsCell("terms"), {});
 
@@ -157,7 +156,7 @@ test("[IT4] 개인정보 보호 및 약관 항목을 tap하면 약관 화면이 
 
 test("[IT5] 설정에서 자동 재생을 끈 뒤 듣기 화면을 열면 재생 컨트롤이 '듣기'다(자동 재생이 일어나지 않았다) — 이 경로는 ui가 원리적으로 못 만든다", async () => {
   const { audio } = stubHost();
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
   fireEvent.tap(settingsCell("auto-play-audio"), {});
   expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "false");
@@ -175,7 +174,7 @@ test("[IT5] 설정에서 자동 재생을 끈 뒤 듣기 화면을 열면 재생
 
 test("[IT6] 설정에서 대본 표시를 끈 뒤 듣기 화면을 열면 listening-prompt-text가 없다", async () => {
   stubHost();
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
   fireEvent.tap(settingsCell("show-transcript"), {});
   expect(settingsCell("show-transcript")).toHaveAttribute("data-checked", "false");
@@ -189,7 +188,7 @@ test("[IT6] 설정에서 대본 표시를 끈 뒤 듣기 화면을 열면 listen
 
 test("[IT7] IT5 상태(자동 재생 끔)에서 재생 컨트롤을 tap하면 라벨이 '멈춤'으로 갈린다(듣기를 눌러야 들린다 — 수용 기준 5)", async () => {
   const { audio } = stubHost();
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
   fireEvent.tap(settingsCell("auto-play-audio"), {});
 
@@ -212,7 +211,7 @@ test("[IT7] IT5 상태(자동 재생 끔)에서 재생 컨트롤을 tap하면 �
 
 test("[IT8] (앵커) 토글을 건드리지 않고 듣기 화면을 열면 오늘 동작 그대로다 — 대본이 있고 컨트롤이 '멈춤'", async () => {
   const { audio } = stubHost();
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
 
   startStep("ordering");
 
@@ -229,7 +228,7 @@ test("[IT8] (앵커) 토글을 건드리지 않고 듣기 화면을 열면 오�
 test("[IT9] 설정 sink는 설정 탭 tap마다 발화하고 이미 설정 탭인데 다시 눌러도 여전히 1건이다 — 다른 탭을 다녀오면 2건이 된다(spec §7.2)", async () => {
   const settingsEventSink = vi.fn<NonNullable<SettingsEventSink>>();
   await renderSignedInApp(
-    <App seenEpisodeIntroIds={seenIntros} settingsEventSink={settingsEventSink} />,
+    <App completedEpisodeIntroIds={completedIntros} settingsEventSink={settingsEventSink} />,
   );
 
   openSettingsTab();
@@ -257,7 +256,7 @@ test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 약관 
   const log: unknown[] = [];
   const settingsEventSink: NonNullable<SettingsEventSink> = (event) => log.push(event);
   await renderSignedInApp(
-    <App seenEpisodeIntroIds={seenIntros} settingsEventSink={settingsEventSink} />,
+    <App completedEpisodeIntroIds={completedIntros} settingsEventSink={settingsEventSink} />,
   );
 
   openSettingsTab();
@@ -286,13 +285,13 @@ test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 약관 
 // ------------------------------------------------------------------------ IT11
 
 test("[IT11] 앱을 다시 켠 것 — 토글 둘을 끈 뒤 unmount하고 새로 render하면 토글 둘이 다시 켜짐이다(저장하지 않는다 — 수용 기준 7)", async () => {
-  const { unmount } = await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  const { unmount } = await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
   fireEvent.tap(settingsCell("auto-play-audio"), {});
   fireEvent.tap(settingsCell("show-transcript"), {});
   unmount();
 
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
 
   expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "true");
@@ -302,7 +301,9 @@ test("[IT11] 앱을 다시 켠 것 — 토글 둘을 끈 뒤 unmount하고 새�
 // ------------------------------------------------------------------------ IT12
 
 test("[IT12] (가드) sink 없이 render(<App />) — 탭·토글·항목 tap이 던지지 않는다", async () => {
-  await expect(renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />)).resolves.toBeDefined();
+  await expect(
+    renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />),
+  ).resolves.toBeDefined();
 
   expect(() => {
     openSettingsTab();
@@ -348,7 +349,7 @@ test("[IT12] (가드) sink 없이 render(<App />) — 탭·토글·항목 tap이
 // 그 자리에 **닿을 수 없다는 것 자체**를 답니다: 쌓인 화면에는 탭이 하나도 없고, 나가야
 // 다시 섭니다. 이것이 없으면 바를 되살려도 아무것도 빨개지지 않습니다.
 test("[IT13] 쌓인 화면에서는 탭으로 나갈 수단이 없고, 나가면 탭이 다시 선다", async () => {
-  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 

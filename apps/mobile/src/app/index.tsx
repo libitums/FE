@@ -56,6 +56,7 @@ root.render(
       notificationEventSink={analytics.sinks.notificationEventSink}
       settingsEventSink={analytics.sinks.settingsEventSink}
       entryEventSink={analytics.sinks.entryEventSink}
+      episodeIntroEventSink={analytics.sinks.episodeIntroEventSink}
     />
   </GlobalPropsProvider>,
 );

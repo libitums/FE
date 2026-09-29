@@ -7,7 +7,14 @@ import type {
   EpisodeFinalJourneyMapItemContract,
   EpisodeFinalJourneyUnitContract,
 } from "../episode-final/episode-final.contract";
-import type { MessengerConversation, MessengerUnitId } from "../messenger/messenger.contract";
+import type {
+  EpisodeIntroJourneyMapItemContract,
+  EpisodeIntroJourneyUnitContract,
+} from "../episode-intro/episode-intro.contract";
+import type {
+  MessengerJourneyMapItemContract,
+  MessengerJourneyUnitContract,
+} from "../messenger/messenger.contract";
 import type {
   PhoneCallJourneyUnitContract,
   PhoneCallJourneyMapItemContract,
@@ -44,27 +51,67 @@ export type JourneyStep = {
  */
 export type JourneyUnit =
   | { readonly kind: "standard"; readonly steps: readonly JourneyStep[] }
-  | {
-      readonly kind: "special";
-      readonly id: MessengerUnitId;
-      readonly title: "약속 확인 메시지";
-      readonly screen: "messenger";
-    }
+  | EpisodeIntroJourneyUnitContract
+  | MessengerJourneyUnitContract
   | PhoneCallJourneyUnitContract
   | VisualNovelJourneyUnitContract
   | EpisodeFinalJourneyUnitContract;
 
-/** 여정 맵이 그리는 항목입니다 — 표준 스텝 또는 특별 유닛 항목(메신저·전화·비주얼 노벨)입니다. */
+/** 여정 맵이 그리는 항목입니다 — 표준 스텝 또는 특별 유닛 항목(표지·메신저·전화·비주얼 노벨·최종 테스트)입니다. */
 export type JourneyMapItem =
   | { readonly kind: "standard"; readonly step: JourneyStep }
-  | {
-      readonly kind: "special";
-      readonly id: MessengerUnitId;
-      readonly title: MessengerConversation["title"];
-    }
+  | EpisodeIntroJourneyMapItemContract
+  | MessengerJourneyMapItemContract
   | Omit<PhoneCallJourneyMapItemContract, "status">
   | Omit<VisualNovelJourneyMapItemContract, "status">
   | EpisodeFinalJourneyMapItemContract;
+
+/**
+ * 맵 항목 하나가 줄에서 어떤 상태로 서는가입니다. **항목이 지지 않고 파생이 냅니다** —
+ * 항목에 적으면 진행과 어긋날 자리가 생깁니다(ADR-0007 D3).
+ *
+ * 어휘를 하나로 합친 것은 `locked`가 이제 **모든 항목 종류에 올 수 있기** 때문입니다 —
+ * 전에는 잠김이 스텝 노드와 최종 테스트 둘에만 있어 종류마다 다른 타입을 썼습니다.
+ * 잠김을 실제로 내는 파생은 `mapItemStatus`입니다(`journey-map-progress.ts`).
+ */
+export type JourneyMapItemStatus = "locked" | "available" | "completed";
+
+/**
+ * 에피소드를 가려내는 이름입니다. 오늘은 `tutorial` 하나입니다.
+ *
+ * 유닛 id가 전부 닫힌 union인데 여기만 열려 있었습니다. 닫으면 에피소드 id의 오타가
+ * 컴파일에 섭니다 — `"tutoria1"`을 쓰면 `TS2322`입니다.
+ *
+ * **아직 없는 에피소드 이름을 미리 넣지 않습니다.** 데이터에 없는 값을 타입에 적으면
+ * 그 값이 어디서 왔는지 아무도 못 답합니다.
+ */
+export type JourneyEpisodeId = "tutorial";
+
+/**
+ * 에피소드 **가운데**에 올 수 있는 유닛입니다. 표지도 최종 테스트도 여기 올 수
+ * 없습니다 — 그 둘은 자리가 정해져 있고, 자리가 정해진 것이 가운데에 또 서면
+ * 「첫/마지막」이 뜻을 잃습니다.
+ */
+export type JourneyMiddleUnit = Exclude<
+  JourneyUnit,
+  EpisodeIntroJourneyUnitContract | EpisodeFinalJourneyUnitContract
+>;
+
+/**
+ * 에피소드의 유닛 목록입니다. 첫 자리가 표지, 마지막 자리가 최종 테스트이고 **가운데는
+ * 규칙이 없습니다** — 일반 학습과 서사 연계 학습을 유닛마다 자유롭게 섞습니다.
+ *
+ * 데이터 순서가 아니라 **타입**이 그 둘을 집니다. 순서로만 두면 최종 테스트를 가운데
+ * 둬도 컴파일도 런타임도 통과합니다.
+ *
+ * 따라오는 것은 **최소 길이 둘**입니다(표지 + 최종). 그것이 도메인과 맞습니다 — 서사
+ * 없는 에피소드도, 최종 테스트 없는 에피소드도 사용자 발화에 없습니다.
+ */
+export type JourneyEpisodeUnits = readonly [
+  EpisodeIntroJourneyUnitContract,
+  ...JourneyMiddleUnit[],
+  EpisodeFinalJourneyUnitContract,
+];
 
 // 여정의 유닛 목록입니다. **맵의 세로 줄 순서가 이 목록의 순서입니다.**
 //
@@ -100,13 +147,23 @@ export type JourneyMapItem =
  * 다시 쪼개야 합니다.
  */
 export type JourneyEpisode = {
-  readonly id: string;
+  readonly id: JourneyEpisodeId;
   readonly label: string;
   readonly title: string;
-  readonly units: readonly JourneyUnit[];
+  readonly units: JourneyEpisodeUnits;
 };
 
-const tutorialUnits: readonly JourneyUnit[] = [
+const tutorialUnits: JourneyEpisodeUnits = [
+  // 에피소드의 첫 자리는 표지입니다 — 학습의 당위성을 주는 서사가 여기서 열리고,
+  // 이것을 끝내야 그 에피소드의 나머지가 열립니다(`mapItemStatus`의 표지 게이트).
+  // 전에는 유닛을 처음 여는 순간 결선이 가로채 표지를 띄웠습니다. 이제 표지가 스스로
+  // 항목이라, 순서를 지는 자리가 **가로채기에서 맵의 잠김 파생으로** 옮겨 갔습니다.
+  {
+    kind: "special",
+    id: "tutorial-intro",
+    title: "에피소드 표지",
+    screen: "episode-intro",
+  },
   {
     kind: "standard",
     steps: [
@@ -139,7 +196,7 @@ const tutorialUnits: readonly JourneyUnit[] = [
     steps: [{ id: "directions", title: "길 묻기", description: "약속 장소까지 가는 길을 묻는다" }],
   },
   // 에피소드의 마지막은 최종 테스트입니다 — 서사와 에피소드에서 배운 표현을 모아 풀고
-  // 에피소드를 끝냅니다. 같은 에피소드의 다른 항목을 모두 끝내야 열립니다(`episodeFinalStatus`).
+  // 에피소드를 끝냅니다. 같은 에피소드의 다른 항목을 모두 끝내야 열립니다(`mapItemStatus`).
   {
     kind: "special",
     id: "tutorial-final-test",
@@ -172,8 +229,11 @@ function mapItemsOf(units: readonly JourneyUnit[]): readonly JourneyMapItem[] {
       return unit.steps.map((step) => ({ kind: "standard", step }) as const);
     }
     switch (unit.screen) {
+      case "episode-intro": {
+        return [{ kind: "episode-intro", id: unit.id, title: unit.title } as const];
+      }
       case "messenger": {
-        return [{ kind: "special", id: unit.id, title: unit.title } as const];
+        return [{ kind: "messenger", id: unit.id, title: unit.title } as const];
       }
       case "phone-call": {
         return [{ kind: "phone-call", id: unit.id, title: unit.title } as const];

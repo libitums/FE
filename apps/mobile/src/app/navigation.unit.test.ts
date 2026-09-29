@@ -467,6 +467,7 @@ describe("navReducer — assessment 화면", () => {
     name: "assessment",
     stepId: "ordering",
     results: ["correct", "incorrect", "correct"],
+    skippedCount: 0,
   } as const;
 
   // 실제 결선이 만드는 상태를 그대로 재현합니다 — 여정 탭에서 학습 화면을 push한
@@ -546,6 +547,8 @@ const allLearningForms: readonly LearningForm[] = [
   "sentence-order",
   "word-choice",
   "culture",
+  "speaking",
+  "writing",
 ];
 
 // 여정 맵의 스텝 다섯입니다. stepId가 인자 그대로인지를 다섯 전부에서 봅니다.

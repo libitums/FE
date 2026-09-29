@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { LearningShell } from "./LearningShell";
 
@@ -68,6 +68,17 @@ test("작업 영역을 받으면 그 안에 그린다", () => {
   const workspace = screen.getByTestId("learning-shell-scroll");
 
   expect(within(workspace).getByTestId("fixture-workspace")).toBeInTheDocument();
+});
+
+// 작업 영역의 스크롤은 기본이 켜짐이라 속성을 적지 않고(초기값이 켜짐), 끌 때만 적습니다.
+// 끄는 자리는 그리기 표면이 서는 활동입니다 — 표면과 스크롤이 제스처를 다투지 않게 합니다.
+test("작업 영역은 기본으로 스크롤하고, workspaceScrolls가 거짓이면 스크롤을 끈다", () => {
+  renderShell({ workspace: <text>낱말</text> });
+  expect(screen.getByTestId("learning-shell-scroll")).not.toHaveAttribute("enable-scroll");
+  cleanup();
+
+  renderShell({ workspace: <text>낱말</text>, workspaceScrolls: false });
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("enable-scroll", "false");
 });
 
 // tap의 결과는 아래 「나가기 확인」 절이 집니다 — 여기서는 속성만 봅니다.

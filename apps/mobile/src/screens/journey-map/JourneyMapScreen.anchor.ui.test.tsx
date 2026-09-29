@@ -64,13 +64,22 @@ function stubSelectorQuery(measurable: boolean, defer = false): Invocation[] {
 
 function renderMap(): void {
   render(
+    // ⟨개정 2026-09-29⟩ 표지 완료를 넘깁니다 — 미완료면 스텝 다섯이 통째로 잠겨(D6)
+    // 말풍선이 아예 열리지 않고, 이 파일이 보는 것(잰 자리 · 스크롤 목적지)이
+    // 관찰되지 않습니다.
     <JourneyMapScreen
       completedStepCount={initialCompletedStepCount}
       onStartStep={() => {}}
+      completedEpisodeIntroIds={["tutorial-intro"]}
+      onStartEpisodeIntroUnit={() => {}}
       completedMessengerUnitIds={[]}
       onStartMessengerUnit={() => {}}
       completedPhoneCallUnitIds={[]}
       onStartPhoneCallUnit={() => {}}
+      completedVisualNovelUnitIds={[]}
+      onStartVisualNovelUnit={() => {}}
+      completedEpisodeFinalIds={[]}
+      onStartEpisodeFinal={() => {}}
     />,
   );
 }

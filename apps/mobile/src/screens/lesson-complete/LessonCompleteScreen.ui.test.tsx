@@ -9,6 +9,7 @@ import { lessonRewardPlaceholder } from "./lesson-complete";
 function fixture(overrides: Partial<Parameters<typeof LessonCompleteScreen>[0]> = {}) {
   return {
     results: ["correct", "correct", "correct"] as const,
+    skippedCount: 0,
     verdict: "passed" as const,
     streakDays: 1,
     trophyCount: 0,
@@ -154,4 +155,54 @@ test("[LCS8] 미통과에만 다시 풀기가 서고, 나가기는 두 경우 �
 
   expect(onRetry).toHaveBeenCalledTimes(1);
   expect(onExit).not.toHaveBeenCalled();
+});
+
+// ---------------------------------------------------------------- UI-P1~P3 (D8)
+//
+// **「만점이 아니다」와 「통과가 아니다」는 다른 축입니다.** 건너뛴 문항이 있으면 실수가
+// 0이어도 만점이 아니고, 그래도 통과는 통과입니다 — 건너뛴 문항이 `correct`로 실려
+// 통과 계산(`judgeAssessment`)에는 세어지기 때문입니다(spec §2.8.2a).
+//
+// 화면에 `LESSON COMPLETE!` + `YOU MADE NO MISTAKES IN THIS LESSON` 조합이 설 수
+// 있고 그것이 참입니다 — 「틀리지는 않았지만 다 풀지도 않았다」. 부제는 **실수**를
+// 세므로 고치지 않습니다: 건너뛴 것을 실수로 세면 그 문장이 거짓말이 됩니다.
+
+test("[UI-P1] 건너뛴 문항이 있으면 실수가 없어도 만점이 아니다", () => {
+  render(
+    <LessonCompleteScreen
+      {...fixture({ results: ["correct", "correct", "correct"], skippedCount: 3 })}
+    />,
+  );
+
+  const title = screen.getByTestId("lesson-complete-screen-title");
+  expect(title).toHaveTextContent("LESSON COMPLETE!");
+  expect(title).not.toHaveTextContent("PERFECT LESSON!");
+  // 부제는 그대로입니다 — 센 것이 실수이고 실수는 정말 0입니다.
+  expect(screen.getByTestId("lesson-complete-screen-subtitle")).toHaveTextContent(
+    "YOU MADE NO MISTAKES IN THIS LESSON",
+  );
+});
+
+test("[UI-P2] 같은 화면의 표식은 통과(✓)다 — 만점이 아닌 것과 통과는 다른 축이다", () => {
+  const { container } = render(
+    <LessonCompleteScreen
+      {...fixture({ results: ["correct", "correct", "correct"], skippedCount: 3 })}
+    />,
+  );
+
+  expect(container.querySelector(".lesson-complete-screen-badge")).toHaveAttribute(
+    "data-verdict",
+    "passed",
+  );
+  // 통과했으므로 보상도 그대로 섭니다 — 얻은 것을 지우지 않습니다.
+  expect(screen.getByTestId("lesson-complete-screen-reward-diamond")).toBeInTheDocument();
+});
+
+// 표지의 스킵(가)은 **유닛**을 건너뛰고 서사에는 문항이 0개라 건너뛸 문항도 0개입니다
+// ⇒ `skippedCount = 0`이고 만점이 그대로 나옵니다. **이것이 예외가 아닌 것이 중요합니다**
+// — 「표지만 특별히 만점을 준다」는 규칙을 두지 않았는데도 답이 맞습니다(spec §2.8.2b).
+test("[UI-P3] 표지 스킵으로 온 결과 화면은 만점이다", () => {
+  render(<LessonCompleteScreen {...fixture({ results: [], skippedCount: 0 })} />);
+
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
 });

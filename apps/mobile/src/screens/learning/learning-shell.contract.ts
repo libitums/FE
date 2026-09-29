@@ -14,6 +14,7 @@ const formLabels: Record<LearningForm, string> = {
   "word-choice": "Word choice",
   culture: "Culture",
   speaking: "Speaking",
+  writing: "Writing",
 };
 
 /**

@@ -395,11 +395,11 @@ describe("createAnalyticsSession", () => {
     expect(session.identify).toBeNull();
   });
 
-  test("PC10: 여섯 sink가 함수이고 sink 호출이 요청 한 건이 된다", async () => {
+  test("PC10: 일곱 sink가 함수이고 sink 호출이 요청 한 건이 된다", async () => {
     const { calls, transport } = fakeTransport();
     const session = createAnalyticsSession(config, transport);
     const sinks = Object.values(session.sinks);
-    expect(sinks).toHaveLength(6);
+    expect(sinks).toHaveLength(7);
     for (const sink of sinks) {
       expect(sink).toBeTypeOf("function");
     }

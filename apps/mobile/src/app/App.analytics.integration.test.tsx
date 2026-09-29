@@ -22,7 +22,7 @@ import { analyticsQueueStorageKey, createAnalyticsSession } from "../lib/posthog
 // `sinks`를 App에 펼침)을 그대로 따라 합니다 — 그래서 진입점이 sink를 넘기는 결선 자체는
 // 이 파일이 잡지 못합니다(`pnpm build` · e2e A1의 몫).
 
-const seenIntros = ["tutorial"] as const;
+const completedIntros = ["tutorial-intro"] as const;
 const batchUrl = "https://us.i.posthog.com/batch/";
 
 function requireConfig(config: AnalyticsConfig | null): AnalyticsConfig {
@@ -115,7 +115,7 @@ function sessionApp(
   config: AnalyticsConfig | null = testConfig,
 ) {
   const session = createAnalyticsSession(config, transport);
-  return <App {...session.sinks} seenEpisodeIntroIds={seenIntros} />;
+  return <App {...session.sinks} completedEpisodeIntroIds={completedIntros} />;
 }
 
 // 설정 탭 → 「자동 재생」 토글입니다. 이벤트 둘이 나가야 합니다.
@@ -233,4 +233,34 @@ test("[IA6] 앱을 다시 띄우면(새 세션) distinct_id가 달라진다", as
   expect(typeof firstId).toBe("string");
   expect(typeof secondId).toBe("string");
   expect(firstId).not.toBe(secondId);
+});
+
+// ------------------------------------------------------------------------- IA-EI
+
+test("[IA-EI] 서사 표지를 열고 건너뛰면 표지 이벤트 둘이 environment와 함께 도착한다", async () => {
+  const { transport, calls } = fakeTransport();
+  const session = createAnalyticsSession(testConfig, transport);
+  await renderApp(<App {...session.sinks} />);
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-tutorial-intro"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("episode-intro-screen-skip")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-skip")).getByTestId("ui-lynx-button"),
+    {},
+  );
+
+  await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(2));
+  const events = sentEvents(calls);
+  expect(events.map((event) => event.event)).toEqual([
+    "episode_intro_viewed",
+    "episode_intro_skipped",
+  ]);
+  expect(events[0]!.properties).toMatchObject({
+    episodeId: "tutorial",
+    environment: "development",
+  });
 });

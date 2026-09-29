@@ -121,6 +121,14 @@ boolean 모드 props, compound context, ref, render prop, audio port prop, telem
 따른 동적 `status`는 App 상태를 소비하는 렌더 단계에서 합성한다. 따라서 맵 데이터에 전역
 완료 상태를 저장하거나 계약 타입에서 `status`를 삭제하지 않는다.
 
+⟨2026-09-29⟩ **그 `status`에 갈래가 하나 늘었다 — `locked`다.** 에피소드 표지를 끝내기
+전에는 그 구획의 나머지가 잠기기 때문이고(ADR-0024 D11), 그래서 맵 항목 props의 상태는
+공용 어휘 `locked | available | completed`를 쓴다. **합성을 렌더 단계가 한다는 위 규칙은 한
+글자도 안 바뀐다** — 잠김도 항목이 지지 않고 파생이 낸다. ⚠ **`PhoneCallCompletionStatus`
+자체는 안 바뀐다**: 그 타입은 진입 이벤트 payload에도 쓰여 `locked`를 더하면 「잠긴 채로
+진입했다」는 표현 불가능한 상태가 이벤트 타입에 생긴다. **완료 축과 표시 축은 다른 축이다.**
+**아래 수용 기준 1의 「언제든 열 수 있다」도 이 개정이 이긴다** — 표지를 끝낸 뒤부터다.
+
 계약 파일은 향후 연결할 `PhoneCallJourneyUnitContract`,
 `PhoneCallJourneyMapItemContract`, `PhoneCallNavigationScreenContract`를 별도
 타입으로 내보낸다. 이번 고정 단계에서는 기존 `JourneyUnit`과 `Screen` union을 확장하지

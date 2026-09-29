@@ -2,11 +2,41 @@ import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import type { TouchEvent } from "@lynx-js/types";
 
-import { strokePathData, strokesSvgDocument } from "./handwriting-probe";
-import type { DrawingSurfaceProps } from "./handwriting-probe.contract";
-import type { StrokePoint } from "../../lib/handwriting-recognition";
+import { strokePathData, strokesSvgDocument } from "../lib/stroke-svg";
+import type { Stroke, StrokePoint } from "../lib/handwriting-recognition";
 
 import "./drawing-surface.css";
+
+// 손글씨 탐침 화면의 것이었다가 여기로 올라왔습니다 — 쓰기 학습(학습형 · 최종 테스트)도 같은
+// 표면에 씁니다(ADR-0008: 화면 둘 이상이 쓰면 공용).
+//
+// ⚠ **스크롤하는 영역 안에 두지 마십시오.** 표면과 `<scroll-view>`가 같은 제스처를 다툴 때 무엇이
+// 이기는지 이 스택에서 확인된 적이 없습니다(`docs/adr/README.md` 보류 표의 「제스처」 행). 지금
+// 쓰는 세 자리 가운데 탐침의 액션 행 · 최종 테스트의 장면은 스크롤 밖이고, 학습 껍데기의 작업
+// 영역은 스크롤 요소 안이지만 스크롤을 끕니다(`LearningShell`의 `workspaceScrolls`).
+
+export type DrawingSurfaceProps = {
+  /** 이미 끝난 획들. 이 컴포넌트가 소유하지 않습니다. */
+  readonly strokes: readonly Stroke[];
+  readonly width: number;
+  readonly height: number;
+  /**
+   * 표면의 CSS 박스 크기를 지는 클래스입니다. 부르는 쪽의 짝 CSS에 두고 **`width` ·
+   * `height`와 같은 수**를 px로 적습니다.
+   *
+   * ⚠ 크기가 두 자리(이 prop의 수와 CSS)에 있는 이유는 시각 값을 CSS에 두는 규약이고(인라인
+   * `style` 금지), 둘이 갈리면 `viewBox` 좌표 변환이 항등이 아니게 되어 획이 손가락과 다른
+   * 자리에 그려집니다. 표면이 크기 하나를 박아 두면 크기가 다른 두 번째 자리가 설 수 없어
+   * 부르는 쪽이 크기를 집니다. 두 수의 일치는 부르는 쪽의 `ui` 테스트가 CSS 글자를 읽어 지킵니다.
+   */
+  readonly sizeClassName: string;
+  readonly color: string;
+  readonly strokeWidth: number;
+  /** 손가락이 떨어져 획이 하나 끝났을 때 한 번 부릅니다. 빈 획은 올리지 않습니다. */
+  readonly onStrokeComplete: (stroke: Stroke) => void;
+  /** 시스템이 제스처를 가져가 획이 버려졌을 때 한 번 부릅니다. */
+  readonly onStrokeCancel: () => void;
+};
 
 // 이 컴포넌트가 드는 상태는 **진행 중인 획 하나뿐**입니다. 끝난 획은 화면이
 // 들고 `strokes`로 내려옵니다 — `touchmove`마다 바뀌는 값을 위로 올리면 매
@@ -39,6 +69,7 @@ export function DrawingSurface({
   strokes,
   width,
   height,
+  sizeClassName,
   color,
   strokeWidth,
   onStrokeComplete,
@@ -120,7 +151,7 @@ export function DrawingSurface({
 
   return (
     <svg
-      className="drawing-surface"
+      className={`drawing-surface ${sizeClassName}`}
       data-testid="drawing-surface"
       // 노출용 `data-` 이름은 하이픈 없는 한 낱말입니다 — 하이픈을 더 넣으면
       // `dataset` 대입이 `SyntaxError`로 터져 렌더 자체가 죽습니다.

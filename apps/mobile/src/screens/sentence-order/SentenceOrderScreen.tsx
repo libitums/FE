@@ -34,7 +34,7 @@ import "./sentence-order-screen.css";
 export type SentenceOrderScreenProps = {
   stepId: JourneyStepId;
   onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
+  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
 
 /** 내 말풍선이 비어 있을 때의 표시입니다 — 디자인 표기 그대로입니다. */
@@ -81,8 +81,9 @@ export function SentenceOrderScreen({
     question == null
       ? {
           label: sentenceOrderFinishLabel,
+          // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
           run: () =>
-            onFinish(stepId, sentenceOrderSessionResults(questions, state.submittedOrders)),
+            onFinish(stepId, sentenceOrderSessionResults(questions, state.submittedOrders), 0),
         }
       : state.phase === "checked"
         ? { label: "다음", run: () => dispatch({ type: "nextQuestion" }) }

@@ -3,7 +3,6 @@ import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import type { AppJourneySeed } from "./App";
-import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import type { EpisodeFinalCallTest } from "../screens/episode-final/episode-final.contract";
 import {
   episodeFinalAdvanceDelayMs,
@@ -11,6 +10,7 @@ import {
 } from "../screens/episode-final/episode-final";
 import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { journeySteps } from "../screens/journey-map/journey-map";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // App · navReducer · 여정 맵 · 최종 테스트 · 학습 완료의 실제 결선을 봅니다(ADR-0006 D4).
 // 말하기 문항은 `Can't speak`로 지납니다 — 건너뛴 문항은 결과에 싣지 않습니다.
@@ -18,7 +18,6 @@ import { journeySteps } from "../screens/journey-map/journey-map";
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  vi.unstubAllEnvs();
 });
 
 // 최종 테스트 앞의 항목을 모두 끝낸 진행입니다.
@@ -36,8 +35,19 @@ function tapButtonIn(testId: string): void {
   fireEvent.tap(within(screen.getByTestId(testId)).getByTestId("ui-lynx-button"), {});
 }
 
+// 쓰기 문항의 음절 하나를 씁니다 — 획 하나를 긋고 `Check`, 그리고 `Next`입니다. 이 파일의
+// 대역에는 `HandwritingTraceModule`이 없어 판정을 건너뛰므로(잴 수 없음) 결과에 실리지 않습니다.
+function writeSyllable(): void {
+  const surface = screen.getByTestId("drawing-surface");
+  fireEvent.touchstart(surface, { touches: [{ x: 10, y: 10 }] });
+  fireEvent.touchmove(surface, { touches: [{ x: 20, y: 20 }] });
+  fireEvent.touchend(surface, {});
+  tapButtonIn("episode-final-screen-writing-action");
+  tapButtonIn("episode-final-screen-writing-action");
+}
+
 // 문항을 끝까지 풉니다. 낱말 고르기는 정답을 고르고 넘어갈 때까지 기다리고, 말하기는
-// `Can't speak`를 누릅니다.
+// `Can't speak`를 누르고, 쓰기는 음절마다 긋고 `Check` · `Next`를 누릅니다.
 function solveAll(): void {
   vi.useFakeTimers();
   const test = episodeFinalTestFor("tutorial-final-test");
@@ -50,6 +60,8 @@ function solveAll(): void {
       act(() => {
         vi.advanceTimersByTime(episodeFinalAdvanceDelayMs);
       });
+    } else if (question.kind === "writing") {
+      question.syllables.forEach(() => writeSyllable());
     } else {
       tapButtonIn("episode-final-screen-not-now");
     }
@@ -58,7 +70,7 @@ function solveAll(): void {
 }
 
 test("[EFA1] 제품의 씨앗에서는 최종 테스트가 잠겨 있고 눌러도 열리지 않는다", async () => {
-  await renderSignedInApp(<App seenEpisodeIntroIds={["tutorial"]} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
 
   expect(finalUnit()).toHaveAttribute("data-status", "default");
   fireEvent.tap(finalUnit(), {});
@@ -68,7 +80,9 @@ test("[EFA1] 제품의 씨앗에서는 최종 테스트가 잠겨 있고 눌러�
 });
 
 test("[EFA2] 앞 항목을 모두 끝내면 열리고, 문항을 다 풀면 학습 완료를 거쳐 맵에서 완료로 선다", async () => {
-  await renderSignedInApp(<App journeySeed={readyForFinal} seenEpisodeIntroIds={["tutorial"]} />);
+  await renderSignedInApp(
+    <App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />,
+  );
 
   fireEvent.tap(finalUnit(), {});
   expect(screen.getByTestId("episode-final-screen-title")).toHaveTextContent("Episode 0.");
@@ -85,7 +99,9 @@ test("[EFA2] 앞 항목을 모두 끝내면 열리고, 문항을 다 풀면 학�
 });
 
 test("[EFA3] 최종 테스트를 끝내야 롤플레이 에피소드가 열린다", async () => {
-  await renderSignedInApp(<App journeySeed={readyForFinal} seenEpisodeIntroIds={["tutorial"]} />);
+  await renderSignedInApp(
+    <App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />,
+  );
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
@@ -106,7 +122,9 @@ test("[EFA3] 최종 테스트를 끝내야 롤플레이 에피소드가 열린�
 });
 
 test("[EFA4] 풀던 도중 뒤로 가면 맵으로 돌아가고 완료로 적지 않는다", async () => {
-  await renderSignedInApp(<App journeySeed={readyForFinal} seenEpisodeIntroIds={["tutorial"]} />);
+  await renderSignedInApp(
+    <App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />,
+  );
 
   fireEvent.tap(finalUnit(), {});
   fireEvent.tap(screen.getByTestId("episode-final-screen-option-0"), {});
@@ -134,7 +152,7 @@ test("[EFA5] 통화 형식의 최종 테스트는 통화 화면 위에서 풀고
   await renderSignedInApp(
     <App
       journeySeed={readyForFinal}
-      seenEpisodeIntroIds={["tutorial"]}
+      completedEpisodeIntroIds={["tutorial-intro"]}
       episodeFinalTestFor={() => callFinal}
     />,
   );
