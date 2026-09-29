@@ -78,10 +78,13 @@ function renderLogin(
     onSelectSocialMethod?: LoginScreenProps["onSelectSocialMethod"];
     onSubmitPhoneNumber?: LoginScreenProps["onSubmitPhoneNumber"];
     onBack?: LoginScreenProps["onBack"];
+    phoneSignIn?: LoginScreenProps["phoneSignIn"];
   } = {},
 ) {
   return render(
     <LoginScreen
+      // 전화번호 수단의 동작을 보는 케이스가 대부분이라 기본은 `visible`입니다.
+      phoneSignIn={overrides.phoneSignIn ?? "visible"}
       onSelectSocialMethod={overrides.onSelectSocialMethod ?? vi.fn()}
       onSubmitPhoneNumber={
         overrides.onSubmitPhoneNumber ?? (() => Promise.resolve({ status: "sent" as const }))
@@ -522,5 +525,51 @@ describe("LoginScreen", () => {
     for (const id of ["kr", "us", "jp", "vn", "xk"]) {
       expect(loginCountries.some((option) => option.id === id)).toBe(true);
     }
+  });
+});
+
+// ------------------------------------------------------------ 전화번호 수단 숨김
+//
+// 전화번호 수단을 잠시 숨긴 동안의 화면입니다(`phoneSignIn="hidden"`). 소셜 셋만 섭니다.
+
+describe("전화번호 수단을 숨긴 로그인", () => {
+  it("[PH1] 번호 칸 · 국가 선택 · Continue · or 구분선이 서지 않는다", () => {
+    const { container } = renderLogin({ phoneSignIn: "hidden" });
+
+    expect(screen.queryByTestId("login-screen-phone-field")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("login-screen-country")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("login-screen-method-phone")).not.toBeInTheDocument();
+    expect(container.querySelector(".login-screen-separator")).toBeNull();
+  });
+
+  it("[PH2] 소셜 셋과 약관 안내는 그대로 선다", () => {
+    renderLogin({ phoneSignIn: "hidden" });
+
+    for (const method of ["apple", "google", "facebook"] as const) {
+      expect(screen.getByTestId(`login-screen-method-${method}`)).toBeInTheDocument();
+    }
+    expect(screen.getByTestId("login-screen-legal")).toBeInTheDocument();
+  });
+
+  it("[PH3] 제목과 안내가 전화번호를 말하지 않는다", () => {
+    const { container } = renderLogin({ phoneSignIn: "hidden" });
+
+    expect(screen.getByTestId("login-screen-title")).toHaveTextContent("Log in or Sign up");
+    expect(container.textContent).not.toContain("phone number");
+  });
+
+  it("[PH4] 숨긴 동안에도 소셜 버튼은 수단을 올리고 실패 문구를 그린다", async () => {
+    const onSelectSocialMethod = vi.fn<LoginScreenProps["onSelectSocialMethod"]>(() =>
+      Promise.resolve({ status: "failed" as const, reason: "network" as const }),
+    );
+    renderLogin({ phoneSignIn: "hidden", onSelectSocialMethod });
+
+    fireEvent.tap(
+      within(screen.getByTestId("login-screen-method-google")).getByTestId("ui-lynx-button"),
+      {},
+    );
+
+    await vi.waitFor(() => expect(screen.getByTestId("login-screen-error")).toBeInTheDocument());
+    expect(onSelectSocialMethod).toHaveBeenCalledWith("google");
   });
 });

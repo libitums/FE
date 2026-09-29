@@ -427,7 +427,7 @@ function startJourney(): void {
 test("[IE1] 앱을 켜면 스플래시가 서고 바텀 네비게이션이 없다", () => {
   emptyStorageStub();
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
 
   expect(screen.getByTestId("splash-screen-logo")).toBeInTheDocument();
   expect(screen.queryByTestId("ui-lynx-bottom-navigator")).toBeNull();
@@ -437,7 +437,7 @@ test("[IE1] 앱을 켜면 스플래시가 서고 바텀 네비게이션이 없�
 test("[IE2] 토큰 없이 고정 시간이 지나면 온보딩이 선다", () => {
   emptyStorageStub();
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
 
   advanceSplash();
 
@@ -448,7 +448,7 @@ test("[IE2] 토큰 없이 고정 시간이 지나면 온보딩이 선다", () =>
 test("[IE3] 온보딩을 끝까지 넘기면 로그인이 선다", () => {
   emptyStorageStub();
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
 
   completeOnboarding();
@@ -461,7 +461,7 @@ test("[IE3] 온보딩을 끝까지 넘기면 로그인이 선다", () => {
 test("[IE3b] 로그인에서 뒤로가기를 누르면 온보딩이 선다", () => {
   emptyStorageStub();
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
 
   completeOnboarding();
@@ -482,7 +482,7 @@ test("[IE4] 번호 입력 → Continue → OTP 요청 1회 → 코드 화면에 
   emptyStorageStub();
   const calls = stubSupabase({ otp: { status: 200, body: otpSentBody } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -509,7 +509,7 @@ test("[IA1] OTP 요청이 500이면 로그인이 그대로이고 login-screen-er
   emptyStorageStub();
   stubSupabase({ otp: { status: 500, body: "{}" } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -532,7 +532,7 @@ test("[IA2] OTP 요청 fetch가 던지면(연결 실패) 로그인이 그대로�
     vi.fn(() => Promise.reject(new Error("connection failed"))),
   );
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -548,7 +548,7 @@ test("[IA3] ⭐ 코드 화면에 서 있는 동안 저장소 키가 0개다(OTP�
   const store = emptyStorageStub();
   stubSupabase({ otp: { status: 200, body: otpSentBody } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -569,7 +569,7 @@ test("[IA4] 6자리 검증 성공 → 언어 선택. 검증 요청 본문과 저
     },
   });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
@@ -605,7 +605,7 @@ test("[IE5] 코드 6자리를 채우고 확인하면 언어 선택이 선다(5�
     verify: { status: 200, body: sessionResponseBody() },
   });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
@@ -626,7 +626,7 @@ test("[IA5] 검증이 403 otp_expired면 코드 화면이 그대로이고 저장
     verify: { status: 403, body: invalidCodeBody },
   });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
@@ -646,7 +646,7 @@ test("[IA6] 재전송하면 OTP가 두 번째로(같은 본문) 불리고 타이
   emptyStorageStub();
   const calls = stubSupabase({ otp: { status: 200, body: otpSentBody } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
@@ -682,7 +682,7 @@ test("[IA7] 세션 있는 저장소로 부팅 → 스플래시 → 갱신 성공
     },
   });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
 
   advanceSplash();
   await advanceTimersAsync(0);
@@ -714,7 +714,7 @@ test("[IA8] 갱신이 거절되면 로그인이 서고 세션 키가 지워진�
   const store = sessionPresentStorageStub(initialSession);
   stubSupabase({ refresh: { status: 400, body: refreshRejectedBody } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
 
   advanceSplash();
   await advanceTimersAsync(0);
@@ -746,7 +746,7 @@ test("[IA9] 갱신 fetch가 던지면 로그인이 서고 세션 키가 남아 �
     vi.fn(() => Promise.reject(new Error("connection failed"))),
   );
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
 
   advanceSplash();
   await advanceTimersAsync(0);
@@ -774,7 +774,7 @@ test("[IA10] 갱신 응답이 오기 전에는 스플래시가 그대로 서고,
   );
 
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
 
   advanceSplash();
   // 요청 제한 시간(10초) 안에서 스플래시 지속 시간만큼 더 흘려도 응답이 오지 않으면
@@ -801,7 +801,7 @@ test("[IA11] 설정이 없으면 Continue를 눌러도 fetch가 0회이고 uncon
   const fetchSpy = vi.fn<() => void>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -830,7 +830,7 @@ test("[IE6] 구글·애플·페이스북은 코드 검증을 건너뛰고 언어
       idToken: { status: 200, body: sessionResponseBody() },
     });
     vi.useFakeTimers();
-    const { unmount } = render(<App />);
+    const { unmount } = render(<App phoneSignIn="visible" />);
     advanceSplash();
     completeOnboarding();
 
@@ -860,7 +860,7 @@ test("[IE7] 언어를 고르고 다음을 누르면 여정 입장에 그 언어�
   const { starts } = stubHostWithWebAuthentication(completedWebAuthentication);
   const calls = stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await selectLoginMethodAsync("google");
@@ -886,7 +886,7 @@ test("[IE6b] 언어 선택에서 뒤로가기를 누르면 코드 검증이 선�
     verify: { status: 200, body: sessionResponseBody() },
   });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
@@ -908,7 +908,7 @@ test("[IE7b] 여정 입장에서 뒤로가기를 누르면 언어 선택이 선�
   const { starts } = stubHostWithWebAuthentication(completedWebAuthentication);
   const calls = stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await selectLoginMethodAsync("google");
@@ -935,7 +935,7 @@ test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비�
   const { starts } = stubHostWithWebAuthentication(completedWebAuthentication);
   const calls = stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await selectLoginMethodAsync("google");
@@ -979,7 +979,7 @@ test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorage
       });
     }
     vi.useFakeTimers();
-    const { unmount } = render(<App />);
+    const { unmount } = render(<App phoneSignIn="visible" />);
     advanceSplash();
     completeOnboarding();
     if (method === "phone") {
@@ -1017,7 +1017,7 @@ test("[IT1] ⭐ 옛 임시 토큰만 있는 저장소로 켜면 스플래시 뒤
   const fetchSpy = vi.fn<() => void>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
 
   expect(screen.getByTestId("splash-screen-logo")).toBeInTheDocument();
 
@@ -1041,7 +1041,7 @@ test("[IE11] 코드 검증에서 로그인으로를 누르면 로그인이 선�
   emptyStorageStub();
   stubSupabase({ otp: { status: 200, body: otpSentBody } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
@@ -1069,7 +1069,7 @@ test("[IE12] 언어가 진입 흐름 동안 유지되고, 새로 렌더한 App�
   const first = stubHostWithWebAuthentication(completedWebAuthentication);
   const firstCalls = stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await selectLoginMethodAsync("google");
@@ -1099,7 +1099,7 @@ test("[IE12] 언어가 진입 흐름 동안 유지되고, 새로 렌더한 App�
   stubHostWithWebAuthentication(completedWebAuthentication);
   stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await selectLoginMethodAsync("google");
@@ -1126,7 +1126,7 @@ test("[IE13] entry_screen_viewed가 화면 다섯에 대해 각 전이 직전 1�
   });
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
-  render(<App entryEventSink={(event) => events.push(event)} />);
+  render(<App phoneSignIn="visible" entryEventSink={(event) => events.push(event)} />);
   advanceSplash();
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
@@ -1162,7 +1162,7 @@ test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_c
   const calls = stubSupabase({ idToken: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
-  render(<App entryEventSink={(event) => events.push(event)} />);
+  render(<App phoneSignIn="visible" entryEventSink={(event) => events.push(event)} />);
   advanceSplash();
   completeOnboarding();
   await selectLoginMethodAsync("apple");
@@ -1198,7 +1198,7 @@ test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_c
   stubSupabase({ refresh: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
   const reentryEvents: EntryEvent[] = [];
-  render(<App entryEventSink={(event) => reentryEvents.push(event)} />);
+  render(<App phoneSignIn="visible" entryEventSink={(event) => reentryEvents.push(event)} />);
   advanceSplash();
   await advanceTimersAsync(0);
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -1222,7 +1222,7 @@ test("[IE14e] apple 취소 뒤 다시 성공하면 entry_login_method_selected�
   stubSupabase({ idToken: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
-  render(<App entryEventSink={(event) => events.push(event)} />);
+  render(<App phoneSignIn="visible" entryEventSink={(event) => events.push(event)} />);
   advanceSplash();
   completeOnboarding();
 
@@ -1247,7 +1247,7 @@ test("[IE14e] apple 취소 뒤 다시 성공하면 entry_login_method_selected�
   stubSupabase({ idToken: { status: 400, body: badJwtBody } });
   vi.useFakeTimers();
   const failureEvents: EntryEvent[] = [];
-  render(<App entryEventSink={(event) => failureEvents.push(event)} />);
+  render(<App phoneSignIn="visible" entryEventSink={(event) => failureEvents.push(event)} />);
   advanceSplash();
   completeOnboarding();
 
@@ -1267,7 +1267,7 @@ test("[IE14c] 전화번호 경로에서 OTP가 한 번 실패하고 두 번째�
   stubSupabase(routes);
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
-  render(<App entryEventSink={(event) => events.push(event)} />);
+  render(<App phoneSignIn="visible" entryEventSink={(event) => events.push(event)} />);
   advanceSplash();
   completeOnboarding();
 
@@ -1298,7 +1298,7 @@ test("[IE14d] 세션 갱신 부팅에서 entry_completed가 0회다", async () =
   stubSupabase({ refresh: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
-  render(<App entryEventSink={(event) => events.push(event)} />);
+  render(<App phoneSignIn="visible" entryEventSink={(event) => events.push(event)} />);
 
   advanceSplash();
   await advanceTimersAsync(0);
@@ -1321,7 +1321,7 @@ test("[IS1] google 탭 → start 1회(SS4의 authorize 주소) · randomBytes(32
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1347,7 +1347,7 @@ test("[IS2] ⭐ 콜백 code=abc → 교환 1회(정확한 본문) → 언어 선
     },
   });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1378,7 +1378,7 @@ test("[IS3] 취소 → 로그인 그대로 · 오류 없음 · fetch 0 · 저장
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
-  render(<App entryEventSink={(event) => events.push(event)} />);
+  render(<App phoneSignIn="visible" entryEventSink={(event) => events.push(event)} />);
   advanceSplash();
   completeOnboarding();
 
@@ -1403,7 +1403,7 @@ test("[IS4] 교환 400 flow_state_not_found → 로그인 · sign-in-incomplete 
   const { store } = stubHostWithWebAuthentication(completedWebAuthentication);
   stubSupabase({ pkce: { status: 400, body: flowStateNotFoundBody } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1428,7 +1428,7 @@ test("[IS5] 교환 fetch가 던지면(연결 실패) network 문구 · 저장 �
     vi.fn(() => Promise.reject(new Error("connection failed"))),
   );
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1449,7 +1449,7 @@ test("[IS6] ⭐ StorageModule만(웹 인증 모듈 없음) → unsupported 문�
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1471,7 +1471,7 @@ test("[IS7] 콜백 ?error=access_denied → sign-in-incomplete 문구 · fetch 0
   }));
   const calls = stubSupabase({});
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1495,7 +1495,7 @@ test("[IS8] 콜백을 보류한 채: Continue → OTP fetch 0 · apple 탭에도
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1528,7 +1528,7 @@ test("[IS9] ⭐ 소셜로 로그인한 저장소를 그대로 들고 App을 새�
     },
   });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
   await selectLoginMethodAsync("google");
@@ -1551,7 +1551,7 @@ test("[IS9] ⭐ 소셜로 로그인한 저장소를 그대로 들고 App을 새�
     },
   });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   await advanceTimersAsync(0);
 
@@ -1569,7 +1569,7 @@ test("[IS10] 설정 없음(stubEnv 없이 호스트 · fetch만) → unconfigure
   const fetchSpy = vi.fn<() => void>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1596,7 +1596,7 @@ test("[IN1] apple 탭 → Apple start 1회(인자는 해시 nonce 하나) · ran
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1618,7 +1618,7 @@ test("[IN2] ⭐ 시트 completed → id_token 교환 1회(정확한 본문) → 
     },
   });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1653,7 +1653,7 @@ test("[IN3] 시트 취소 → 로그인 그대로 · 오류 없음 · fetch 0 ·
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
-  render(<App entryEventSink={(event) => events.push(event)} />);
+  render(<App phoneSignIn="visible" entryEventSink={(event) => events.push(event)} />);
   advanceSplash();
   completeOnboarding();
 
@@ -1682,7 +1682,7 @@ test("[IN4] ⭐ Apple 모듈 없음(저장소 · 웹 인증만) → unsupported 
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1701,7 +1701,7 @@ test("[IN5] id_token 교환 400 → 로그인 · sign-in-incomplete 문구 · �
   const { store } = stubHostWithApple(completedAppleSignIn);
   stubSupabase({ idToken: { status: 400, body: badJwtBody } });
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1724,7 +1724,7 @@ test("[IN6] 호스트 failed → unsupported 문구 · fetch 0 · 저장 키 0",
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1748,7 +1748,7 @@ test("[IN7] Apple 콜백을 보류한 채: google 탭 → 웹 start 0 · Continu
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.useFakeTimers();
-  render(<App />);
+  render(<App phoneSignIn="visible" />);
   advanceSplash();
   completeOnboarding();
 
@@ -1767,4 +1767,22 @@ test("[IN7] Apple 콜백을 보류한 채: google 탭 → 웹 start 0 · Continu
     {},
   );
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+});
+
+// ------------------------------------------------------------------------- 전화번호 수단 숨김
+
+test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 수단이 없고 소셜 셋만 선다", () => {
+  emptyStorageStub();
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  vi.useRealTimers();
+  completeOnboarding();
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("login-screen-phone-field")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("login-screen-method-phone")).not.toBeInTheDocument();
+  for (const method of ["apple", "google", "facebook"] as const) {
+    expect(screen.getByTestId(`login-screen-method-${method}`)).toBeInTheDocument();
+  }
 });

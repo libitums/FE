@@ -3,7 +3,12 @@
 import type { PhoneNumber, PhoneOtpRequestResult } from "../../lib/auth-session.contract";
 import type { EntryLoginMethod } from "../../lib/entry-flow";
 import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
-import type { LoginMethodStatus, LoginStatus, SocialLoginMethod } from "./login.contract";
+import type {
+  LoginMethodStatus,
+  LoginStatus,
+  PhoneSignInVisibility,
+  SocialLoginMethod,
+} from "./login.contract";
 
 // 라벨은 임시가 아닌 최종값입니다 — `ui` 테스트도 리터럴을 단언하지 않지만 값
 // 자체는 자리표가 아닙니다. `default`를 두지 않습니다 — 수단이 늘면 TS2366으로
@@ -139,4 +144,24 @@ export function loginStatusAfterEdit(status: LoginStatus): LoginStatus {
     return { kind: "idle" };
   }
   return status;
+}
+
+/**
+ * 제품의 전화번호 수단입니다. **2026-09-29부터 잠시 숨깁니다** — SMS 공급자가 없어 실제 번호로는
+ * 코드가 오지 않고, 소셜 제공자 설정을 하는 동안 로그인 화면에 소셜 셋만 둡니다. 되살릴 때는 이
+ * 값을 `visible`로 바꿉니다. 화면 · 결선 · 테스트는 `visible`을 그대로 지킵니다.
+ */
+export const productPhoneSignIn: PhoneSignInVisibility = "hidden";
+
+/** 로그인 화면의 제목과 안내입니다. 전화번호 수단을 숨기면 전화번호를 말하지 않습니다. */
+export function loginHeading(phoneSignIn: PhoneSignInVisibility): {
+  readonly title: string;
+  readonly caption: string;
+} {
+  return phoneSignIn === "visible"
+    ? {
+        title: "Log in or Sign up with your phone number",
+        caption: "Please enter your phone number to continue",
+      }
+    : { title: "Log in or Sign up", caption: "Choose how you'd like to continue" };
 }

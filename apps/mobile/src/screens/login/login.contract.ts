@@ -29,7 +29,14 @@ export type LoginStatus =
 /** 수단 요소 하나의 `data-status` 값입니다. */
 export type LoginMethodStatus = LoginStatus["kind"];
 
+/**
+ * 전화번호 수단을 그릴지입니다. `hidden`이면 번호 칸 · 국가 선택 · `Continue` · `or` 구분선이
+ * 서지 않고 소셜 셋만 섭니다. 전화번호 로그인의 결선과 로직은 그대로 남습니다.
+ */
+export type PhoneSignInVisibility = "visible" | "hidden";
+
 export type LoginScreenProps = {
+  readonly phoneSignIn: PhoneSignInVisibility;
   /**
    * 소셜 버튼입니다. 요청 중이 아닐 때만 부릅니다. `signed-in`이면 결선이 이미 다음 화면으로
    * 옮겼습니다. `cancelled`면 조용히 `idle`, `failed`면 화면이 문구를 그립니다.

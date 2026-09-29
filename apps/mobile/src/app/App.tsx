@@ -23,6 +23,8 @@ import type {
   VisualNovelProgress,
 } from "../screens/visual-novel/visual-novel.contract";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
+import { productPhoneSignIn } from "../screens/login/login";
+import type { PhoneSignInVisibility } from "../screens/login/login.contract";
 import { AppHeader } from "./AppHeader";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
@@ -51,24 +53,21 @@ export type { AppJourneySeed } from "./journey-progress";
 export type AppSeedProps = {
   readonly journeySeed?: AppJourneySeed;
   /**
-   * 이미 끝낸 표지 **유닛**입니다. 없으면 빈 목록 — 그러면 그 에피소드의 나머지 유닛이
-   * 전부 잠긴 채로 섭니다(D6). 표지 뒤의 동작을 보려는 자리가 표지를 매번 지나지 않게
-   * 합니다. 제품 진입점은 이 값을 주지 않습니다.
+   * 이미 끝낸 표지 **유닛**입니다. 없으면 빈 목록 — 그러면 그 에피소드의 나머지 유닛이 전부
+   * 잠긴 채로 섭니다(D6). 표지 뒤의 동작을 보려는 자리가 씁니다. 제품 진입점은 주지 않습니다.
    */
   readonly completedEpisodeIntroIds?: readonly EpisodeIntroUnitId[];
   /**
-   * 에피소드의 서사 전개를 찾는 함수입니다. 없으면 제품의 표(`episodePrologueFor`)를
-   * 씁니다. 튜토리얼 하나뿐인 지금, 다른 형식(통화 · 메신저)의 서사를 앱 안에서 보려는
-   * 자리가 바꿔 끼웁니다. 제품 진입점은 이 값을 주지 않습니다.
+   * 에피소드의 서사 전개를 찾는 함수입니다. 없으면 제품의 표(`episodePrologueFor`)를 씁니다.
+   * 다른 형식(통화 · 메신저)의 서사를 보려는 자리가 바꿔 끼웁니다.
    */
   readonly episodePrologueFor?: (episodeId: string) => EpisodePrologue | undefined;
-  /**
-   * 최종 테스트를 찾는 함수입니다. 없으면 제품의 표(`episodeFinalTestFor`)를 씁니다. 제품에
-   * 없는 형식(통화)의 최종 테스트를 앱 안에서 보려는 자리가 바꿔 끼웁니다.
-   */
+  /** 최종 테스트를 찾는 함수입니다. 없으면 제품의 표(`episodeFinalTestFor`)를 씁니다. */
   readonly episodeFinalTestFor?: (unitId: EpisodeFinalUnitId) => EpisodeFinalTest;
   /** 부팅할 때 가진 젬 수(기본 0)입니다. 결제가 없어 젬이 늘 길이 없으므로 integration만 씁니다. */
   readonly initialGemCount?: number;
+  /** 로그인의 전화번호 수단입니다. 없으면 제품 값(`productPhoneSignIn` — 지금은 숨김)입니다. */
+  readonly phoneSignIn?: PhoneSignInVisibility;
 };
 
 // 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지 · 그 뒤의
@@ -94,6 +93,7 @@ export function App({
   episodePrologueFor = productEpisodePrologueFor,
   episodeFinalTestFor = productEpisodeFinalTestFor,
   initialGemCount = 0,
+  phoneSignIn = productPhoneSignIn,
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
@@ -193,6 +193,7 @@ export function App({
   const wiring = screenWiring({
     safeAreaInsets: insets,
     gemCount,
+    phoneSignIn,
     setScreenLayerOpen,
     episodePrologueFor,
     episodeFinalTestFor,

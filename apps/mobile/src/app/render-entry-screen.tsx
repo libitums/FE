@@ -43,6 +43,7 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
     case "login":
       return (
         <LoginScreen
+          phoneSignIn={wiring.phoneSignIn}
           onSelectSocialMethod={wiring.onSelectSocialLoginMethod}
           onSubmitPhoneNumber={wiring.onRequestPhoneOtp}
           onBack={wiring.onLoginBack}

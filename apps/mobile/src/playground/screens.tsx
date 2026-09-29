@@ -51,6 +51,8 @@ export const playgroundScreens = {
   onboarding: (go: Go) => <OnboardingScreen onComplete={() => go("login")} />,
   login: (go: Go) => (
     <LoginScreen
+      // 플레이그라운드는 제품이 숨긴 전화번호 수단도 그립니다 — 코드 검증 화면으로 가는 길입니다.
+      phoneSignIn="visible"
       onSelectSocialMethod={() => {
         go("language-select");
         return Promise.resolve<SocialSignInOutcome>({ status: "signed-in" });

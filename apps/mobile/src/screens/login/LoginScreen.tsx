@@ -18,6 +18,7 @@ import {
   canRequestPhoneOtp,
   defaultLoginCountryId,
   isLoginBusy,
+  loginHeading,
   loginMethodLabel,
   loginMethodStatus,
   loginStatusAfterEdit,
@@ -25,7 +26,7 @@ import {
   phoneNumberFrom,
   type LoginCountry,
 } from "./login";
-import { loginCountries } from "./login-countries";
+import { loginCountries, loginCountryOptions } from "./login-countries";
 import { LoginSocialMethods } from "./LoginSocialMethods";
 import type { LoginScreenProps, LoginStatus, SocialLoginMethod } from "./login.contract";
 
@@ -38,16 +39,11 @@ import "./login-screen.css";
 
 // 국가 목록은 ui-lynx OptionSelector(outlined · s · single · immediate)로
 // 그립니다. 고르면 곧바로 확정하고 시트를 닫습니다.
-const countryOptions = loginCountries.map((option) => ({
-  id: option.id,
-  label: `${option.flag}  ${option.name}  ${option.dialCode}`,
-  // 국기 이모지는 스크린 리더가 중복 낭독하므로 이름에서는 뺍니다.
-  accessibilityLabel: `${option.name} ${option.dialCode}`,
-}));
 
 const noop = () => undefined;
 
 export function LoginScreen({
+  phoneSignIn,
   onSelectSocialMethod,
   onSubmitPhoneNumber,
   onBack,
@@ -66,6 +62,7 @@ export function LoginScreen({
   // 로그인 요청의 화면 로컬 상태입니다.
   const [status, setStatus] = useState<LoginStatus>({ kind: "idle" });
   const busy = isLoginBusy(status);
+  const heading = loginHeading(phoneSignIn);
   const phone = phoneNumberFrom(country.dialCode, phoneNumber);
   const phoneBoxClass = phoneFocused
     ? "login-screen-phone login-screen-phone-focused"
@@ -147,75 +144,78 @@ export function LoginScreen({
                 data-testid="login-screen-title"
                 accessibility-traits="header"
               >
-                Log in or Sign up with your phone number
+                {heading.title}
               </text>
-              <text className="login-screen-caption">
-                Please enter your phone number to continue
-              </text>
+              <text className="login-screen-caption">{heading.caption}</text>
             </view>
 
-            {/* 국가 선택 | 구분선 | 번호 입력을 한 칸으로 합칩니다. */}
-            <view className={phoneBoxClass}>
-              <view
-                className="login-screen-country"
-                data-testid="login-screen-country"
-                accessibility-element={true}
-                accessibility-label={`Country code, ${country.name} ${country.dialCode}`}
-                accessibility-traits="button"
-                bindtap={guard(() => setCountrySheetOpen(true))}
-              >
-                <text className="login-screen-country-flag">{country.flag}</text>
-                <text className="login-screen-country-code">{country.dialCode}</text>
-                <svg
-                  className="login-screen-country-chevron"
-                  content={arrowDown}
-                  current-color={color.gray["600"]}
-                />
-              </view>
-              <view className="login-screen-phone-divider" />
-              <view className="login-screen-phone-field" data-testid="login-screen-phone-field">
-                <TextField
-                  accessibilityLabel="Phone number"
-                  placeholder="10 1234 5678"
-                  purpose="telephone"
-                  availability="enabled"
-                  bindfocus={() => setPhoneFocused(true)}
-                  bindblur={() => setPhoneFocused(false)}
-                  bindinput={handlePhoneInput}
-                />
-              </view>
-            </view>
+            {/* 전화번호 수단입니다. 숨기면 소셜 셋만 섭니다(`productPhoneSignIn`). */}
+            {phoneSignIn === "visible" ? (
+              <>
+                {/* 국가 선택 | 구분선 | 번호 입력을 한 칸으로 합칩니다. */}
+                <view className={phoneBoxClass}>
+                  <view
+                    className="login-screen-country"
+                    data-testid="login-screen-country"
+                    accessibility-element={true}
+                    accessibility-label={`Country code, ${country.name} ${country.dialCode}`}
+                    accessibility-traits="button"
+                    bindtap={guard(() => setCountrySheetOpen(true))}
+                  >
+                    <text className="login-screen-country-flag">{country.flag}</text>
+                    <text className="login-screen-country-code">{country.dialCode}</text>
+                    <svg
+                      className="login-screen-country-chevron"
+                      content={arrowDown}
+                      current-color={color.gray["600"]}
+                    />
+                  </view>
+                  <view className="login-screen-phone-divider" />
+                  <view className="login-screen-phone-field" data-testid="login-screen-phone-field">
+                    <TextField
+                      accessibilityLabel="Phone number"
+                      placeholder="10 1234 5678"
+                      purpose="telephone"
+                      availability="enabled"
+                      bindfocus={() => setPhoneFocused(true)}
+                      bindblur={() => setPhoneFocused(false)}
+                      bindinput={handlePhoneInput}
+                    />
+                  </view>
+                </view>
 
-            {/* 전화번호 실패 문구입니다 — 소셜 실패는 소셜 셋 아래 자리에 섭니다. */}
-            {status.kind === "failed" && status.method === "phone" ? (
-              <text className="login-screen-error" data-testid="login-screen-error">
-                {authFailureMessage(status.reason)}
-              </text>
+                {/* 전화번호 실패 문구입니다 — 소셜 실패는 소셜 셋 아래 자리에 섭니다. */}
+                {status.kind === "failed" && status.method === "phone" ? (
+                  <text className="login-screen-error" data-testid="login-screen-error">
+                    {authFailureMessage(status.reason)}
+                  </text>
+                ) : null}
+
+                <view
+                  className="login-screen-method"
+                  data-testid="login-screen-method-phone"
+                  data-complete={phone !== null ? "true" : "false"}
+                  data-status={loginMethodStatus(status, "phone")}
+                >
+                  <Button
+                    label={loginMethodLabel("phone")}
+                    variant="brand"
+                    size="xl"
+                    width="fill"
+                    icon={arrowRight}
+                    iconPosition="trailing"
+                    loading={loginMethodStatus(status, "phone") === "requesting"}
+                    bindtap={() => void handleSubmit()}
+                  />
+                </view>
+
+                <view className="login-screen-separator">
+                  <view className="login-screen-separator-line" />
+                  <text className="login-screen-separator-label">or</text>
+                  <view className="login-screen-separator-line" />
+                </view>
+              </>
             ) : null}
-
-            <view
-              className="login-screen-method"
-              data-testid="login-screen-method-phone"
-              data-complete={phone !== null ? "true" : "false"}
-              data-status={loginMethodStatus(status, "phone")}
-            >
-              <Button
-                label={loginMethodLabel("phone")}
-                variant="brand"
-                size="xl"
-                width="fill"
-                icon={arrowRight}
-                iconPosition="trailing"
-                loading={loginMethodStatus(status, "phone") === "requesting"}
-                bindtap={() => void handleSubmit()}
-              />
-            </view>
-
-            <view className="login-screen-separator">
-              <view className="login-screen-separator-line" />
-              <text className="login-screen-separator-label">or</text>
-              <view className="login-screen-separator-line" />
-            </view>
 
             <LoginSocialMethods status={status} onSelect={handleSocialSelect} />
 
@@ -262,7 +262,7 @@ export function LoginScreen({
             >
               <OptionSelector
                 groupLabel="Select country"
-                options={countryOptions}
+                options={loginCountryOptions}
                 selectedIds={[country.id]}
                 variant="outlined"
                 size="s"
