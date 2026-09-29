@@ -1,5 +1,4 @@
 import lock from "@libitums/icons/lynx/lock";
-import { Fog } from "@libitums/ui-lynx/fog";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
 import { episodeSectionId } from "./journey-map-scroll";
@@ -38,9 +37,18 @@ export function EpisodePendingSection({ episode }: EpisodePendingSectionProps) {
           읽힙니다. */}
       <view className="episode-pending-divider" />
 
-      {/* 가려지는 자리입니다. 표식 **하나**만 둡니다 — 이 구획이 말하는 것은 「무엇이 몇 개
+      {/* 가려진 표식입니다. 표식 **하나**만 둡니다 — 이 구획이 말하는 것은 「무엇이 몇 개
           있다」가 아니라 「더 있는데 아직 준비 중」 하나이고, 여럿을 세우면 개수가 뜻을
           갖는 것처럼 읽힙니다.
+
+          ⚠ **`Fog`를 쓰지 않습니다.** 안개를 이 자리에 놓아 봤지만 **아무것도 그려지지
+          않았습니다** — `dark`로 바꾸고 `z-index`를 올려도 같았습니다. 저장소에서 `Fog`가
+          동작하는 네 자리는 전부 **화면 루트**이고, 여기는 `<scroll-view>`의 **내용
+          안**입니다. ADR-0022 D4가 *"겹침 레이어는 스크롤 밖이다"* 로 적어 둔 규칙이 곧
+          Lynx의 제약이었습니다.
+
+          그래서 겹치는 대신 **표식 자체를 흐리게** 그립니다. 가리는 수단이 다를 뿐 「가려져
+          있다」는 결과는 같고, 스크롤 안에서도 확실히 섭니다.
 
           장식이라 낭독에서 걷습니다 — 위 상자가 이미 이 구획을 한 덩어리로 읽습니다. */}
       <view className="episode-pending-veil" accessibility-elements-hidden={true}>
@@ -48,14 +56,6 @@ export function EpisodePendingSection({ episode }: EpisodePendingSectionProps) {
             연해서 안개가 가릴 것이 없었습니다. `status="default"`가 자물쇠를 그리고,
             `bindtap`을 주지 않아 눌리지 않습니다. */}
         <LearningUnit accessibilityLabel={episode.title} icon={lock} status="default" />
-
-        {/* 안개가 표식 **위에 정확히 겹칩니다.** 상자를 표식 높이로 두는 것이 핵심입니다 —
-            상자가 더 크면 표식이 투명한 구간에 앉아 **안개가 없는 것처럼 보입니다**(실기에서
-            두 번 그랬습니다).
-
-            방향이 `bottom`이라 아래가 짙습니다 — 표식이 아래로 갈수록 지워져 「이어지다
-            사라진다」로 읽힙니다. 손가락과 낭독은 `Fog`가 스스로 막습니다. */}
-        <Fog direction="bottom" size="full" color="surface-default" />
       </view>
 
       <text className="episode-pending-caption" data-testid="episode-pending-caption">
