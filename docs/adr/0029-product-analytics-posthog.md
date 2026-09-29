@@ -53,7 +53,7 @@ payload는 바꾸지 않는다 — 새 이벤트도 없다.
 | `lib/posthog-client.ts` | **첫 줄 `import "background-only"`** | `PostHogCore` 하위 클래스 · 전송 해석 · 세션 생성 |
 
 타입 계약은 `lib/analytics.contract.ts`다. 이벤트 이름 · properties는 **그 파일과 화면 계약 여섯이
-정본**이고 사람이 읽는 카탈로그는 GitHub wiki 「사용자 이벤트 분석 (PostHog)」 페이지에 있다.
+정본**이고 사람이 읽는 카탈로그는 GitHub wiki 「[이벤트 사전](https://github.com/libitums/FE/wiki/Analytics-Events)」 페이지에 있다.
 화면 계약에 이벤트가 늘거나 줄면 계약 파일의 컴파일 검사가 서고, **같은 PR에서** wiki 카탈로그를 고친다.
 
 ### D2. 키가 없으면 sink는 `null`이다 — no-op이 아니다
