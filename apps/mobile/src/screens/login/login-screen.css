@@ -184,6 +184,16 @@
   left: var(--libitum-spacing-24);
 }
 
+/* Sign in with Apple은 Apple HIG의 검정 스타일을 따릅니다 — 면은 순수 검정, 로고와 문구는
+   같은 흰색입니다. `neutral`의 `gray-900` 면 · `gray-50` 문구를 이 버튼에서만 바꿉니다. */
+.login-screen-social-apple .ui-lynx-button-surface {
+  background-color: var(--libitum-color-black);
+}
+
+.login-screen-social-apple .ui-lynx-button-label {
+  color: var(--libitum-color-white);
+}
+
 /* 요청 중 스피너를 로고와 같은 자리에 고정합니다 — 로고 override가
    자리를 흐름 밖으로 빼서 라벨을 가운데 두는데, `Button`의 스피너는 흐름
    안에 남아 그대로 두면 라벨이 밀립니다. 로고와 같은 자리 · 같은 상자

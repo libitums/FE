@@ -336,6 +336,7 @@ Apple 경로(D7)에는 **콜백 URL이 없다** — 결과는 시트를 연 `sta
 | 이미 저장된 임시 토큰(D6) | 인정하지 않는다 | 사용자 결정 U3. 「로그인으로」를 **「온보딩부터」**로 읽은 것은 spec의 해석이다(아래 「남음」) |
 | 개발 · QA 우회 | 두지 않는다 — 테스트 번호 | 사용자 결정 U4 |
 | Apple 로고(심사 전 확인, 2026-09-29) | Apple Design Resources 「Sign in with Apple - Logo Only」의 글리프로 교체 — 이전 로고는 Apple 제공 원본이 아니었다. 버튼 높이 대비 글리프 43%로 Apple 「Left Aligned」 자산 비율과 같다 | 대조 결과 |
+| Apple 버튼 면(심사 전 확인, 2026-09-29) | 순수 검정 `color.black`(design-tokens 0.3.0 — design-system#72 · #73), 로고와 문구는 같은 `color.white`. 이 화면의 `.login-screen-social-apple` 한정 선택자로 `neutral`을 덮는다 | 사용자 결정 — 토큰 추가를 design-system에 요청 |
 | 스킴 이름 `duru`(D4) | 확정 | 기본값 확정 — 이견 없음 |
 | 시스템 확인 알림(D2 — `prefersEphemeralWebBrowserSession = false`) | 받아들인다 | 기본값 확정 — 이견 없음 |
 | PKCE · 같은 세션 경로(D1 · D5) · `state` 미사용(D8) | 확정 | 기본값 확정 — 이견 없음 |
@@ -347,7 +348,6 @@ Apple 경로(D7)에는 **콜백 URL이 없다** — 결과는 시트를 연 `sta
 | **Apple Developer에서 App ID `com.libitum.host`에 Sign in with Apple 켜기** | 실기 · 서명 빌드의 Apple 시트, e2e A2 · A5 · 실서버 Apple 로그인 | 사용자 |
 | **Supabase Apple 제공자 켜기와 Client IDs에 `com.libitum.host`** | Apple ID 토큰 교환 · e2e A2 | 사용자 |
 | **Google · Facebook 제공자 설정**(콘솔 값 · Supabase 제공자 · 허용 목록 `duru://auth-callback`) | 실서버 Google · Facebook 로그인 · e2e S1–S5 · S7 | 사용자 |
-| **Apple 버튼 면이 순수 검정이 아니다** — `gray-900`으로 근사. 사용자 결정(2026-09-29)으로 design-system에 `color.black` 추가를 요청했다([design-system#72](https://github.com/libitums/design-system/pull/72)). 그 release(0.3.0)를 FE가 올린 뒤 화면 CSS 한정 선택자로 적용한다 — 0.3.0에는 Accent family의 Jost 전환이 함께 들어 있어 FE 업그레이드에 폰트 제공이 따른다 | 막지 않는다(출시 · 심사 전) | 사용자 · 디자인 |
 | **스킴을 등록하지 않는 것**(D4) — 요구사항과 어긋난다 | 실기의 콜백 가로채기 확인(e2e S2) | 실기 확인 |
 | ADR-0017 D1 조건 (2)의 예외(D7) — 예외로 적을지, 조건 문면을 고칠지 | 막지 않는다. 이 ADR은 예외로 적었다 | 사용자 |
 | **D6의 해석 「로그인으로」 → 「온보딩부터」** — 임시 토큰 키를 읽지 않으면 옛 설치와 새 설치를 가를 수 없어 둘 다 온보딩부터 시작한다 | 막지 않는다 | 사용자 |

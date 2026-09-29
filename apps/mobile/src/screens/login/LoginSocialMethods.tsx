@@ -39,11 +39,11 @@ export function LoginSocialMethods({ status, onSelect }: LoginSocialMethodsProps
         return (
           <view
             key={method}
-            className="login-screen-method login-screen-social"
+            className={`login-screen-method login-screen-social login-screen-social-${method}`}
             data-testid={`login-screen-method-${method}`}
             data-status={methodStatus}
           >
-            {/* Apple만 neutral(gray.900 면), 나머지는 outline입니다. */}
+            {/* Apple만 neutral(면은 login-screen.css가 HIG 검정으로 덮습니다), 나머지는 outline입니다. */}
             <Button
               label={loginMethodLabel(method)}
               variant={method === "apple" ? "neutral" : "outline"}
