@@ -1,6 +1,11 @@
-// 스텝 진행의 파생값과 접근성 라벨을 소유합니다 — `stepStatusAt`·`stepAccessibilityLabel`·
-// `findStep`·`journeyStepOrdinal`·`completeStep`입니다. 진행의 진실의 출처(완료
-// 스텝 수)는 App의 상태이고, 이 파일은 그 값에서 파생만 합니다.
+// 여정 진행의 파생값과 접근성 라벨을 소유합니다 — 스텝 축(`stepStatusAt`·
+// `stepAccessibilityLabel`·`findStep`·`journeyStepOrdinal`·`completeStep`)과 **맵 항목
+// 축**(`JourneyProgress`·`isMapItemComplete`·`completedMapItemCount`·`mapItemStatus`)
+// 둘입니다. 진행의 진실의 출처는 App의 상태이고, 이 파일은 그 값에서 파생만 합니다.
+//
+// ⟨2026-09-29⟩ 맵 항목 축이 여기 들어온 것은 **잠김이 항목 종류 전부에 오게 됐기**
+// 때문입니다(표지 게이트). 전에는 잠김이 스텝과 최종 테스트 둘에만 있어 종류마다 다른
+// 자리가 냈습니다.
 
 import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
 import { journeySteps } from "./journey-map-units";
@@ -64,11 +69,15 @@ export function completeStep(completedCount: number, id: JourneyStepId): number 
 
 /**
  * 맵 항목 하나가 끝났는지 봅니다. 완료의 출처가 항목 종류마다 다릅니다 — 일반 스텝은
- * 끝낸 스텝 수, 특별 유닛 셋은 각자의 완료 id 목록입니다. 그 넷을 한자리에 모아야
- * 에피소드 진행을 셀 수 있습니다.
+ * 끝낸 스텝 수, 특별 유닛은 각자의 완료 id 목록입니다. 그것을 한자리에 모아야 에피소드
+ * 진행을 셀 수 있습니다.
  *
- * 던지지 않는 총함수입니다 — `kind`가 닫힌 판별자라 `default`를 두지 않습니다. 넷째
- * 종류가 늘면 `never` 대입이 컴파일 단계에서 섭니다.
+ * **출처의 수를 문면에 적지 않습니다** — 특별 유닛이 늘 때마다 이 주석이 조용히
+ * 거짓이 됩니다(실제로 그렇게 됐습니다). 세는 방법은 `JourneyProgress`의 필드
+ * 목록입니다.
+ *
+ * 던지지 않는 총함수입니다 — `kind`가 닫힌 판별자라 `default`를 두지 않습니다. 종류가
+ * 늘면 `never` 대입이 컴파일 단계에서 섭니다.
  */
 export function isMapItemComplete(item: JourneyMapItem, progress: JourneyProgress): boolean {
   switch (item.kind) {
