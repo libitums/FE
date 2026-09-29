@@ -396,7 +396,7 @@ test("결과 보기를 탭하면 onFinish가 stepId와 결과 배열로 정확�
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith("ordering", ["correct", "correct", "correct"]);
+  expect(onFinish).toHaveBeenCalledWith("ordering", ["correct", "correct", "correct"], 0);
 });
 
 // 이 슬라이스에 재시도 규칙이 없습니다 — 오답으로 전부 응답해도 완료됩니다.
@@ -411,7 +411,7 @@ test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 �
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith("ordering", ["incorrect", "incorrect", "incorrect"]);
+  expect(onFinish).toHaveBeenCalledWith("ordering", ["incorrect", "incorrect", "incorrect"], 0);
 });
 
 // ---------------------------------------------------------------- 중도 이탈

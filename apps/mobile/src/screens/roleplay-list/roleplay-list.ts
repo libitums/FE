@@ -23,7 +23,12 @@ export function roleplayItemsFrom(items: readonly JourneyMapItem[]): readonly Ro
       case "standard": {
         return [];
       }
-      case "special": {
+      // 표지도 롤플레이로 다시 여는 자리가 아닙니다 — 롤플레이는 **다시 연습하는**
+      // 자리이고, 서사를 다시 보는 것은 연습이 아닙니다. 최종 테스트와 같은 판단입니다.
+      case "episode-intro": {
+        return [];
+      }
+      case "messenger": {
         return [{ form: "messenger", unitId: item.id, title: item.title }];
       }
       case "phone-call": {

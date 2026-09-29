@@ -73,14 +73,24 @@ export const playgroundScreens = {
   "language-select": (go: Go) => <LanguageSelectFixture go={go} />,
   // 여정 맵은 진행 상태를 App에서 받습니다. 여기서는 스텝 하나를 끝낸 상태로 띄워
   // 완료·현재·잠김 셋이 한 화면에 같이 보이게 합니다.
+  //
+  // ⚠ **표지를 끝낸 상태로 띄웁니다.** 표지가 미완료면 그 구획의 나머지 아홉이 전부
+  // 잠겨(ADR-0024 D6) 완료·현재가 한 줄도 안 보입니다 — 이 놀이터가 보려던 것이
+  // 통째로 사라집니다.
   "journey-map": () => (
     <JourneyMapScreen
       completedStepCount={1}
       onStartStep={noop}
+      completedEpisodeIntroIds={["tutorial-intro"]}
+      onStartEpisodeIntroUnit={noop}
       completedMessengerUnitIds={[]}
       onStartMessengerUnit={noop}
       completedPhoneCallUnitIds={[]}
       onStartPhoneCallUnit={noop}
+      completedVisualNovelUnitIds={[]}
+      onStartVisualNovelUnit={noop}
+      completedEpisodeFinalIds={[]}
+      onStartEpisodeFinal={noop}
     />
   ),
   "journey-entry": (go: Go) => (

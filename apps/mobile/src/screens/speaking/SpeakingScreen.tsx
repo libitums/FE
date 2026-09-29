@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import audioWaves from "@libitums/icons/lynx/audio-waves";
 import { color } from "@libitums/design-tokens";
+import { Button } from "@libitums/ui-lynx/button";
 
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { announce, announceCompletion } from "../../lib/accessibility";
@@ -42,7 +43,7 @@ import "./speaking-screen.css";
 export type SpeakingScreenProps = {
   stepId: JourneyStepId;
   onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
+  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
 
 export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps): ReactNode {
@@ -128,7 +129,12 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
   // 보기`. 판정 뒤에는 버튼 대신 스스로 넘어가는 걸음(`advance`)이 섭니다 — 듣기와 같습니다.
   const action =
     question == null
-      ? { label: speakingFinishLabel, run: () => onFinish(stepId, state.results) }
+      ? {
+          label: speakingFinishLabel,
+          // 건너뛴 문항 수는 세션이 셉니다 — `results`에서 뽑을 수 없습니다(건너뛴
+          // 문항이 `"correct"`로 실려 맞힌 문항과 구별되지 않습니다).
+          run: () => onFinish(stepId, state.results, state.skippedCount),
+        }
       : state.phase === "ready"
         ? { label: "말하기", run: () => startListening(question.sentence) }
         : state.phase === "listening"
@@ -136,6 +142,13 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
           : state.phase === "unavailable"
             ? { label: "건너뛰기", run: () => dispatch({ type: "next" }) }
             : undefined;
+
+  // custom prop(`Button`의 `bindtap`)을 거쳐 `bindtap`에 닿는 핸들러라 `'background only'`를
+  // 둡니다 — 맵 항목 어댑터들과 같은 경계입니다.
+  const handleSkip = () => {
+    "background only";
+    dispatch({ type: "skip" });
+  };
 
   const advance = useMemo(
     () =>
@@ -157,17 +170,41 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
       advance={advance}
       workspace={
         question == null ? undefined : (
-          <view className="speaking-screen-hint-slot">
-            {state.phase === "judged" ? (
-              <text className="speaking-screen-hint" data-testid="speaking-screen-hint">
-                화면을 누르면 다음으로 넘어가요
-              </text>
-            ) : state.phase === "unavailable" ? (
-              <text className="speaking-screen-hint" data-testid="speaking-screen-unavailable">
-                지금은 음성 인식을 쓸 수 없어요. 건너뛰고 다음 문장으로 가요.
-              </text>
+          <>
+            {/* 건너뛰기 — **`ready`에서만** 섭니다(spec §2.8.2c). `listening`에 세우면
+                결과가 반대인 두 버튼(`그만 말하기`는 판정으로, 건너뛰기는 `correct`로)이
+                되돌릴 수 없는 채로 나란히 서고, `judged`에서는 `.learning-shell-advance`가
+                화면을 덮어 눌리지 않으며, `unavailable`에서는 같은 낱말의 주 버튼과 겹칩니다.
+                `disabled`를 쓰지 않습니다 — 「아직 할 수 없다」는 버튼이 **없는 것**으로
+                말합니다(`LearningShell`의 규약).
+
+                변형이 `outline`인 것은 선례(`Can't speak`의 `subtle`)가 **어두운 패널
+                위**라서 보이는 것이기 때문입니다. 같은 면이 학습 껍데기 배경 위에서는
+                1.05:1로 사라지고, `outline`의 경계가 3.80:1로 비텍스트 3:1을 넘는
+                팔레트 안의 유일한 선택입니다(design §2.5). */}
+            {state.phase === "ready" ? (
+              <view className="speaking-screen-skip" data-testid="speaking-screen-skip">
+                <Button
+                  label="건너뛰기"
+                  variant="outline"
+                  size="xl"
+                  width="fill"
+                  bindtap={handleSkip}
+                />
+              </view>
             ) : null}
-          </view>
+            <view className="speaking-screen-hint-slot">
+              {state.phase === "judged" ? (
+                <text className="speaking-screen-hint" data-testid="speaking-screen-hint">
+                  화면을 누르면 다음으로 넘어가요
+                </text>
+              ) : state.phase === "unavailable" ? (
+                <text className="speaking-screen-hint" data-testid="speaking-screen-unavailable">
+                  지금은 음성 인식을 쓸 수 없어요. 건너뛰고 다음 문장으로 가요.
+                </text>
+              ) : null}
+            </view>
+          </>
         )
       }
       card={

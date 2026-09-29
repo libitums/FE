@@ -91,7 +91,7 @@ const events: readonly AnalyticsEvent[] = [
   { name: "profile_opened" },
   { name: "terms_opened" },
   { name: "session_option_changed", option: "auto-play-audio", value: false },
-  { name: "episode_intro_viewed", episodeId: "tutorial", targetKind: "step" },
+  { name: "episode_intro_viewed", episodeId: "tutorial" },
   { name: "episode_intro_skipped", episodeId: "tutorial" },
   { name: "episode_intro_continued", episodeId: "tutorial", hasPrologue: true },
   { name: "episode_intro_exited", episodeId: "tutorial", stage: "prologue" },

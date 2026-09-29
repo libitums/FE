@@ -48,15 +48,25 @@ export type SpeakingSessionState = {
   readonly recognized: string;
   /**
    * 지나간 문항의 결과입니다. 인식을 쓸 수 없어 건너뛴 문항은 **싣지 않습니다** — 판정이
-   * 없는 것을 오답으로 접으면 기기 탓이 학습자 탓이 됩니다.
+   * 없는 것을 오답으로 접으면 기기 탓이 학습자 탓이 됩니다. 반대로 **사용자가** 건너뛴
+   * 문항은 `"correct"`로 싣습니다(D7 나) — 기기 탓과 사용자 사정은 다른 사건입니다.
    */
   readonly results: readonly AnswerResult[];
+  /**
+   * 사용자가 건너뛴 문항 수입니다. `results`에서 뽑을 수 없습니다 — 건너뛴 문항이
+   * `"correct"`로 실려 맞힌 문항과 구별되지 않기 때문입니다. 이 수를 따로 드는 것이
+   * 「통과에는 세고 만점에는 안 센다」(D8)를 가능하게 하는 자리입니다.
+   */
+  readonly skippedCount: number;
 };
 
 export type SpeakingSessionAction =
   | { readonly type: "start" }
   | { readonly type: "recognized"; readonly text: string; readonly result: AnswerResult }
   | { readonly type: "unavailable" }
+  // 사용자가 건너뜁니다. **말하기 전(`ready`)에만** 받습니다 — 듣는 중에 받으면 인식
+  // 결과와 경합하고, 판정 뒤에 받으면 이미 실린 결과를 덮습니다.
+  | { readonly type: "skip" }
   | { readonly type: "next" };
 
 export const initialSpeakingSessionState: SpeakingSessionState = {
@@ -64,6 +74,7 @@ export const initialSpeakingSessionState: SpeakingSessionState = {
   phase: "ready",
   recognized: "",
   results: [],
+  skippedCount: 0,
 };
 
 export function speakingSessionReducer(
@@ -90,6 +101,25 @@ export function speakingSessionReducer(
         ? { ...state, phase: "unavailable" }
         : state;
     }
+    case "skip": {
+      // ⚠ **`ready`에서만 받습니다.** 듣는 중에 받으면 인식 결과와 경합하고(멈추면
+      // 결과가 한 번 옵니다), 판정 뒤에 받으면 이미 실린 결과를 덮습니다. 인식 불가
+      // 국면도 `ready`가 아닙니다 — 거기서 받으면 기기 탓 문항이 `"correct"`로 실려
+      // 「기기 탓을 학습자 탓으로 접지 않는다」가 사라집니다.
+      if (state.phase !== "ready") {
+        return state;
+      }
+      // `next`를 따로 받지 않습니다 — 건너뛰기는 「이 문항을 끝낸다」와 「다음으로
+      // 간다」가 한 걸음입니다. 판정 화면을 거치지 않으므로 `recognized`도 빈
+      // 문자열 그대로입니다.
+      return {
+        questionIndex: state.questionIndex + 1,
+        phase: "ready",
+        recognized: "",
+        results: [...state.results, "correct"],
+        skippedCount: state.skippedCount + 1,
+      };
+    }
     case "next": {
       if (state.phase !== "judged" && state.phase !== "unavailable") {
         return state;
@@ -99,6 +129,7 @@ export function speakingSessionReducer(
         phase: "ready",
         recognized: "",
         results: state.results,
+        skippedCount: state.skippedCount,
       };
     }
   }

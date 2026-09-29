@@ -75,6 +75,16 @@
   height: 100px;
 }
 
+/* 작업 영역 맨 위의 건너뛰기 — 카드에 붙여 **「이 문항에 대한 조작」**으로 읽히게 합니다.
+   힌트가 쓰는 `spacing-48`을 주면 화면 한가운데 떠서 주 버튼과의 위계가 흐려집니다.
+   ⚠ 건너뛰기와 힌트는 한 번도 함께 서지 않으므로(건너뛰기는 `ready` 하나, 힌트는
+   `judged`·`unavailable` 둘) 두 여백이 더해지는 자리가 없습니다(design §2.5·§2.6). */
+.speaking-screen-skip {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--libitum-spacing-16);
+}
+
 /* 작업 영역의 안내 한 줄 — 디자인의 「Tab to continue」 자리입니다(gray-400 · label-l). */
 .speaking-screen-hint-slot {
   display: flex;

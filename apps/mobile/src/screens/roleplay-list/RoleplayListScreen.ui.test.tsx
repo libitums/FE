@@ -1,7 +1,12 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
-import type { PremiumRoleplayItem, RoleplayItem, RoleplaySection } from "./roleplay-list.contract";
+import type {
+  PremiumRoleplayItem,
+  RoleplayEpisodeId,
+  RoleplayItem,
+  RoleplaySection,
+} from "./roleplay-list.contract";
 import { RoleplayListScreen } from "./RoleplayListScreen";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 구획은 이 파일 안의 fixture로
@@ -47,8 +52,15 @@ const openSection: RoleplaySection = {
   premiumItems: [wrongOrder, sharedTable],
 };
 
+// ⚠ `"cafe"`의 캐스트는 의도한 것입니다. `RoleplayEpisodeId`(= `JourneyEpisodeId`)는
+// 오늘 데이터에 있는 `"tutorial"` 하나로 닫혀 있고, 제품 코드는 그 닫힘에서 타입 안전을
+// 얻습니다 — 에피소드 id의 오타가 `tsc`에 섭니다. 아래 케이스들이 보는 것은 **다른 것**
+// 입니다: 「열린 구획과 잠긴 구획이 함께 설 때 각각 어떻게 그려지는가」라, 에피소드가
+// **둘** 있어야 볼 수 있습니다. 오늘 데이터에 에피소드가 하나뿐이라 아직 없는
+// 에피소드를 픽스처가 지어냅니다. 캐스트는 이 경계에만 두고, 없는 id를 union에 미리
+// 넣지 않습니다 — 그러면 데이터에 없는 것을 타입이 있다고 말하게 됩니다.
 const lockedSection: RoleplaySection = {
-  episodeId: "cafe",
+  episodeId: "cafe" as RoleplayEpisodeId,
   label: "Episode 1.",
   title: "Cafe.",
   unlocked: false,

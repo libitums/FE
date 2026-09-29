@@ -91,7 +91,7 @@ function solveAll(): void {
 }
 
 test("[EFA1] 제품의 씨앗에서는 최종 테스트가 잠겨 있고 눌러도 열리지 않는다", () => {
-  renderApp(<App seenEpisodeIntroIds={["tutorial"]} />);
+  renderApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
 
   expect(finalUnit()).toHaveAttribute("data-status", "default");
   fireEvent.tap(finalUnit(), {});
@@ -101,7 +101,7 @@ test("[EFA1] 제품의 씨앗에서는 최종 테스트가 잠겨 있고 눌러�
 });
 
 test("[EFA2] 앞 항목을 모두 끝내면 열리고, 문항을 다 풀면 학습 완료를 거쳐 맵에서 완료로 선다", () => {
-  renderApp(<App journeySeed={readyForFinal} seenEpisodeIntroIds={["tutorial"]} />);
+  renderApp(<App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />);
 
   fireEvent.tap(finalUnit(), {});
   expect(screen.getByTestId("episode-final-screen-title")).toHaveTextContent("Episode 0.");
@@ -118,7 +118,7 @@ test("[EFA2] 앞 항목을 모두 끝내면 열리고, 문항을 다 풀면 학�
 });
 
 test("[EFA3] 최종 테스트를 끝내야 롤플레이 에피소드가 열린다", () => {
-  renderApp(<App journeySeed={readyForFinal} seenEpisodeIntroIds={["tutorial"]} />);
+  renderApp(<App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
@@ -139,7 +139,7 @@ test("[EFA3] 최종 테스트를 끝내야 롤플레이 에피소드가 열린�
 });
 
 test("[EFA4] 풀던 도중 뒤로 가면 맵으로 돌아가고 완료로 적지 않는다", () => {
-  renderApp(<App journeySeed={readyForFinal} seenEpisodeIntroIds={["tutorial"]} />);
+  renderApp(<App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />);
 
   fireEvent.tap(finalUnit(), {});
   fireEvent.tap(screen.getByTestId("episode-final-screen-option-0"), {});
@@ -167,7 +167,7 @@ test("[EFA5] 통화 형식의 최종 테스트는 통화 화면 위에서 풀고
   renderApp(
     <App
       journeySeed={readyForFinal}
-      seenEpisodeIntroIds={["tutorial"]}
+      completedEpisodeIntroIds={["tutorial-intro"]}
       episodeFinalTestFor={() => callFinal}
     />,
   );

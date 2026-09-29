@@ -4,8 +4,19 @@ import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
 import "./journey-special-unit.css";
 
-// 특별 유닛은 일반 스텝 상태와 독립적으로 언제나 선택할 수 있습니다 — 그래서
-// `LearningUnit`의 잠김 상태(`default`)를 쓰지 않습니다.
+// `LearningUnit`의 상태 어휘로 옮깁니다 — `EpisodeFinalMapItem`·`EpisodeIntroMapItem`과
+// **같은 표**입니다. 어휘가 하나 늘면 세 표가 함께 `tsc`에 섭니다.
+const unitStatusByStatus = {
+  locked: "default",
+  available: "available",
+  completed: "clear",
+} as const;
+
+// 특별 유닛은 스텝 진행과 독립적으로 열려 있습니다 — 다만 **표지 뒤에서만** 그렇습니다
+// (ADR-0024 D6). 그 구획의 표지를 끝내기 전에는 `locked`가 와서 자물쇠로 섭니다.
+// ⚠ 전에는 `status === "completed" ? "clear" : "available"` 삼항이라 **`locked`가
+// `available`로 그려졌습니다** — 타입만 공용으로 바뀌고 어댑터가 따라오지 않으면
+// 잠김이 화면에서 조용히 사라집니다.
 //
 // 표식은 ui-lynx `LearningUnit`이 그립니다. 여기서는 메신저 유닛의 어휘를 그 컴포넌트의
 // 어휘로 옮기고 제목 라벨을 아래에 붙이는 일만 합니다. `narrative`는 이 유닛이 이야기에
@@ -15,7 +26,9 @@ export function MessengerMapItem({ id, title, status, onSelect }: MessengerMapIt
   // `'background only'`를 둡니다(docs/specs/messenger-special-unit.md).
   const handleSelect = () => {
     "background only";
-    onSelect(id);
+    if (status !== "locked") {
+      onSelect(id);
+    }
   };
 
   return (
@@ -26,7 +39,7 @@ export function MessengerMapItem({ id, title, status, onSelect }: MessengerMapIt
         id={id}
         accessibilityLabel={title}
         icon={message02}
-        status={status === "completed" ? "clear" : "available"}
+        status={unitStatusByStatus[status]}
         narrative="narrative"
         bindtap={handleSelect}
       />

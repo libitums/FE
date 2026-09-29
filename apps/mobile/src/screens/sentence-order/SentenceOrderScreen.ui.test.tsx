@@ -311,7 +311,7 @@ test("[SO14] 문항을 다 마치면 완료 문구와 결과 보기가 서고, �
   );
   tapAction("결과 보기");
   expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith("ordering", ["correct", "incorrect"]);
+  expect(onFinish).toHaveBeenCalledWith("ordering", ["correct", "incorrect"], 0);
 });
 
 // ---------------------------------------------------------------- 채점 발화

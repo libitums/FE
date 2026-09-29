@@ -22,7 +22,7 @@ import { analyticsQueueStorageKey, createAnalyticsSession } from "../lib/posthog
 // `sinks`를 App에 펼침)을 그대로 따라 합니다 — 그래서 진입점이 sink를 넘기는 결선 자체는
 // 이 파일이 잡지 못합니다(`pnpm build` · e2e A1의 몫).
 
-const seenIntros = ["tutorial"] as const;
+const completedIntros = ["tutorial-intro"] as const;
 const batchUrl = "https://us.i.posthog.com/batch/";
 
 function requireConfig(config: AnalyticsConfig | null): AnalyticsConfig {
@@ -120,7 +120,7 @@ function sessionApp(
   config: AnalyticsConfig | null = testConfig,
 ) {
   const session = createAnalyticsSession(config, transport);
-  return <App {...session.sinks} seenEpisodeIntroIds={seenIntros} />;
+  return <App {...session.sinks} completedEpisodeIntroIds={completedIntros} />;
 }
 
 // 설정 탭 → 「자동 재생」 토글입니다. 이벤트 둘이 나가야 합니다.
@@ -248,8 +248,7 @@ test("[IA-EI] 서사 표지를 열고 건너뛰면 표지 이벤트 둘이 envir
   renderApp(<App {...session.sinks} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
-  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-tutorial-intro"), {});
   fireEvent.tap(
     within(screen.getByTestId("episode-intro-screen-skip")).getByTestId("ui-lynx-button"),
     {},
@@ -267,7 +266,6 @@ test("[IA-EI] 서사 표지를 열고 건너뛰면 표지 이벤트 둘이 envir
   ]);
   expect(events[0]!.properties).toMatchObject({
     episodeId: "tutorial",
-    targetKind: "step",
     environment: "development",
   });
 });

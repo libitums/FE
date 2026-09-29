@@ -2,36 +2,58 @@
 
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
-import type { JourneyStepId } from "../journey-map/journey-map";
-import type { MessengerUnitId } from "../messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
-import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
+import type { JourneyMapItemStatus } from "../journey-map/journey-map";
 
+export type EpisodeIntroUnitId = "tutorial-intro";
 /**
- * 표지를 넘긴 뒤 열 유닛입니다. 표지는 에피소드의 유닛을 **처음 여는 순간** 그 앞에
- * 끼어듭니다 — 사용자가 누른 것은 유닛이고, 표지를 지나면 그 유닛이 열립니다.
+ * 표지 유닛의 이름입니다. 리터럴인 것은 다른 특별 유닛 넷의 선례를 따른 것입니다
+ * (`EpisodeFinalTitle` · 메신저의 `"약속 확인 메시지"`) — 컨텐츠가 아니라 **그 유닛이
+ * 무엇인가를 말하는 기능 라벨**이라 값을 비워 둘 수 없습니다.
+ *
+ * 「에피소드 **서사**」가 아니라 「에피소드 **표지**」인 것은 낭독 때문입니다.
+ * `LearningUnit`이 이름을 `제목 + 상태 접미사 + "이야기 연결"`로 짓기 때문에, 「서사」면
+ * 「에피소드 서사, 현재 항목, 이야기 연결」로 *서사*와 *이야기*가 한 호흡에 두 번
+ * 들립니다. 표지는 커버이고 서사는 본문이라(`episode-prologue`) 뜻도 이쪽이 맞습니다.
  */
-export type EpisodeIntroTarget =
-  | { readonly kind: "step"; readonly stepId: JourneyStepId }
-  | { readonly kind: "messenger"; readonly unitId: MessengerUnitId }
-  | { readonly kind: "phone-call"; readonly unitId: PhoneCallUnitId }
-  | { readonly kind: "visual-novel"; readonly unitId: VisualNovelUnitId };
+export type EpisodeIntroTitle = "에피소드 표지";
+
+/** 여정 유닛 목록에 들어가는 모양입니다(`journey-map-units.ts`). */
+export type EpisodeIntroJourneyUnitContract = {
+  readonly kind: "special";
+  readonly id: EpisodeIntroUnitId;
+  readonly title: EpisodeIntroTitle;
+  readonly screen: "episode-intro";
+};
+
+/** 맵 항목입니다. 잠김은 항목이 지지 않고 파생이 냅니다(`journey-map-progress.ts`). */
+export type EpisodeIntroJourneyMapItemContract = {
+  readonly kind: "episode-intro";
+  readonly id: EpisodeIntroUnitId;
+  readonly title: EpisodeIntroTitle;
+};
+
+export type EpisodeIntroMapItemProps = {
+  readonly id: EpisodeIntroUnitId;
+  readonly title: EpisodeIntroTitle;
+  /** 표지는 구획의 첫 항목이라 `locked`가 오지 않습니다 — 그래도 타입은 공용을 씁니다. */
+  readonly status: JourneyMapItemStatus;
+  readonly onSelect: (id: EpisodeIntroUnitId) => void;
+};
 
 /**
  * 표지 · 서사의 제품 사용 이벤트입니다. 필드는 문자열 · 불리언뿐입니다.
- *   - `episode_intro_viewed` — 표지가 설 때. 표지를 본 에피소드는 표지가 서지 않아 나지 않습니다
+ *   - `episode_intro_viewed` — 맵의 표지 항목을 눌러 표지가 설 때. 끝낸 표지를 다시 열어도 납니다
  *   - `episode_intro_skipped` — 확인 모달에서 `건너뛰기`를 골랐을 때. `Skip`을 누른 것만으로는 나지 않습니다
  *   - `episode_intro_continued` — `Next`. 서사가 없는 에피소드면 곧장 유닛이 열립니다(`hasPrologue: false`)
  *   - `episode_intro_exited` — 표지(`intro`)나 서사(`prologue`)에서 뒤로 나갈 때
  *   - `episode_prologue_completed` — 서사를 끝까지 보고 하단 버튼을 눌렀을 때
  *
- * 표지를 본 에피소드는 영속하지 않아 앱을 다시 켜면 표지가 다시 섭니다 — 같은 사람이 같은
+ * 끝낸 표지는 영속하지 않아 앱을 다시 켜면 표지부터 다시 지납니다 — 같은 사람이 같은
  * 표지를 여러 번 봅니다.
  */
 export type EpisodeIntroViewedEvent = {
   readonly name: "episode_intro_viewed";
   readonly episodeId: string;
-  readonly targetKind: EpisodeIntroTarget["kind"];
 };
 export type EpisodeIntroSkippedEvent = {
   readonly name: "episode_intro_skipped";

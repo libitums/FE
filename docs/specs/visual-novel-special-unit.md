@@ -175,6 +175,12 @@ announcement 문자열, asset ID ternary를 다시 구현하지 않는다. `App.
 - map item kind는 `visual-novel`, navigation screen은
   `{name:"visual-novel", unitId:"cafe-arrival-visual-novel"}`다. 선택은 journey stack에
   push, `맵으로`는 `backToRoot`다.
+  ⟨2026-09-29⟩ **맵 항목이 서는 상태에 `locked`가 늘었다** — 에피소드 표지를 끝내기 전에는
+  그 구획의 나머지가 잠긴다(ADR-0024 D11). 맵 항목 props의 상태가 공용 어휘
+  `locked | available | completed`를 쓰고, 잠긴 동안에는 눌러도 무동작이다. ⚠ **아래 완료
+  파생은 그대로다** — `visualNovelCompletionStatus(progress)`가 여전히 완료 축의 유일한
+  정본이고, 잠김은 그 위에 **표시 축**으로 얹힌다(진행이 무엇이든 표지가 먼저다). 두 축을
+  한 타입으로 합치면 「잠긴 채로 진입했다」가 이벤트 타입에 생긴다.
 - App은 visual-novel progress와 optional `visualNovelEventSink`만 새로 소유한다. 별도
   `completedVisualNovelUnitIds`는 두 번째 완료 정본이므로 금지하고, 맵 상태는
   `visualNovelCompletionStatus(progress)` 하나에서 파생한다. 공개 props는

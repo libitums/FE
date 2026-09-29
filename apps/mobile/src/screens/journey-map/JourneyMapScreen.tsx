@@ -1,5 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { EpisodeIntroMapItem } from "./EpisodeIntroMapItem";
 import { JourneyStepNode } from "./JourneyStepNode";
 import { MessengerMapItem } from "./MessengerMapItem";
 import { PhoneCallMapItem } from "./PhoneCallMapItem";
@@ -17,14 +18,16 @@ import {
   learningFormsForStep,
   journeyMapSections,
   completedMapItemCount,
-  episodeFinalStatus,
+  mapItemStatus,
   journeyStepOrdinal,
+  type JourneyMapItem,
   type JourneyStepId,
 } from "./journey-map";
 import type { MessengerUnitId } from "../messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
+import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
 
 import "./journey-map-screen.css";
 
@@ -32,14 +35,17 @@ import "./journey-map-screen.css";
 export type JourneyMapScreenProps = {
   completedStepCount: number;
   onStartStep: (id: JourneyStepId) => void;
+  /** 끝낸 표지 유닛입니다 — 표지 게이트(`mapItemStatus`)가 이 값을 봅니다. */
+  completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
+  onStartEpisodeIntroUnit: (id: EpisodeIntroUnitId) => void;
   completedMessengerUnitIds: readonly MessengerUnitId[];
   onStartMessengerUnit: (id: MessengerUnitId) => void;
   completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
   onStartPhoneCallUnit: (id: PhoneCallUnitId) => void;
-  completedVisualNovelUnitIds?: readonly VisualNovelUnitId[];
-  onStartVisualNovelUnit?: (id: VisualNovelUnitId) => void;
-  completedEpisodeFinalIds?: readonly EpisodeFinalUnitId[];
-  onStartEpisodeFinal?: (id: EpisodeFinalUnitId) => void;
+  completedVisualNovelUnitIds: readonly VisualNovelUnitId[];
+  onStartVisualNovelUnit: (id: VisualNovelUnitId) => void;
+  completedEpisodeFinalIds: readonly EpisodeFinalUnitId[];
+  onStartEpisodeFinal: (id: EpisodeFinalUnitId) => void;
   /** 스텝 말풍선이 열리고 닫힐 때 부릅니다 — 전역 머리를 그 동안 낭독에서 가리는 데 씁니다. */
   onLayerChange?: (open: boolean) => void;
 };
@@ -49,14 +55,16 @@ export type JourneyMapScreenProps = {
 export function JourneyMapScreen({
   completedStepCount,
   onStartStep,
+  completedEpisodeIntroIds,
+  onStartEpisodeIntroUnit,
   completedMessengerUnitIds,
   onStartMessengerUnit,
   completedPhoneCallUnitIds,
   onStartPhoneCallUnit,
-  completedVisualNovelUnitIds = [],
-  onStartVisualNovelUnit = () => {},
-  completedEpisodeFinalIds = [],
-  onStartEpisodeFinal = () => {},
+  completedVisualNovelUnitIds,
+  onStartVisualNovelUnit,
+  completedEpisodeFinalIds,
+  onStartEpisodeFinal,
   onLayerChange,
 }: JourneyMapScreenProps): ReactNode {
   const { sheetState, sheetTop, handleScroll, handleSelectStep, handleCloseSheet } = useStepSheet();
@@ -66,13 +74,105 @@ export function JourneyMapScreen({
   // 화면 안에 있어 아래 맵 가림과 함께 가렸습니다.
   useScreenLayer(openStep !== undefined, onLayerChange);
 
-  // 진행의 출처 다섯을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
+  // 진행의 출처 여섯을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
   const progress = {
     completedStepCount,
+    completedEpisodeIntroIds,
     completedMessengerUnitIds,
     completedPhoneCallUnitIds,
     completedVisualNovelUnitIds,
     completedEpisodeFinalIds,
+  };
+
+  // 항목 하나를 줄에 세웁니다. **`default` 없는 `switch`입니다** — 삼항 사슬의 마지막
+  // `else`는 조건 없는 나머지라, 항목 종류가 늘면 조용히 스텝 노드로 그려지고
+  // `item.step`이 `undefined`가 됩니다. 종류가 늘면 여기서 반환 경로가 비어 컴파일이
+  // 섭니다(`mapItemsOf`·`render-screen`이 이미 쓰는 형태).
+  //
+  // 상태는 **전부 `mapItemStatus`가 냅니다**(ADR-0007 D3) — 항목이 각자 완료 목록을
+  // 다시 보면 표지 게이트가 그 자리마다 빠집니다. 스텝만 예외인데, 그것도 「쓰지
+  // 않는다」가 아니라 **잠김 축만** 이 파생에 묻고 줄에 그릴 어휘(`done`/`current`)는
+  // `stepStatusAt`이 그대로 냅니다(spec §2.9).
+  const renderMapItem = (
+    item: JourneyMapItem,
+    sectionItems: readonly JourneyMapItem[],
+  ): ReactNode => {
+    const status = mapItemStatus(item, sectionItems, progress);
+    switch (item.kind) {
+      case "episode-intro": {
+        return (
+          <EpisodeIntroMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartEpisodeIntroUnit}
+          />
+        );
+      }
+      case "messenger": {
+        return (
+          <MessengerMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartMessengerUnit}
+          />
+        );
+      }
+      case "phone-call": {
+        return (
+          <PhoneCallMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartPhoneCallUnit}
+          />
+        );
+      }
+      case "visual-novel": {
+        return (
+          <VisualNovelMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartVisualNovelUnit}
+          />
+        );
+      }
+      case "episode-final": {
+        return (
+          <EpisodeFinalMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartEpisodeFinal}
+          />
+        );
+      }
+      case "standard": {
+        return (
+          <JourneyStepNode
+            key={item.step.id}
+            id={item.step.id}
+            title={item.step.title}
+            /* 표지 미완료면 `locked`로 덮는 한 겹이 앞에 붙습니다 — 그 아래는 씨앗이
+               남긴 완료가 **지워진 것이 아니라 가려진 것**이고, 표지를 끝내면 그대로
+               드러납니다(spec §2.9). */
+            status={
+              status === "locked"
+                ? "locked"
+                : stepStatusAt(journeyStepOrdinal(item.step.id) - 1, completedStepCount)
+            }
+            onSelect={handleSelectStep}
+          />
+        );
+      }
+    }
   };
 
   return (
@@ -113,51 +213,7 @@ export function JourneyMapScreen({
                   totalUnitCount={section.items.length}
                 />
               </view>
-              {section.items.map((item) =>
-                item.kind === "special" ? (
-                  <MessengerMapItem
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    status={completedMessengerUnitIds.includes(item.id) ? "completed" : "available"}
-                    onSelect={onStartMessengerUnit}
-                  />
-                ) : item.kind === "phone-call" ? (
-                  <PhoneCallMapItem
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    status={completedPhoneCallUnitIds.includes(item.id) ? "completed" : "available"}
-                    onSelect={onStartPhoneCallUnit}
-                  />
-                ) : item.kind === "visual-novel" ? (
-                  <VisualNovelMapItem
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    status={
-                      completedVisualNovelUnitIds.includes(item.id) ? "completed" : "available"
-                    }
-                    onSelect={onStartVisualNovelUnit}
-                  />
-                ) : item.kind === "episode-final" ? (
-                  <EpisodeFinalMapItem
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    status={episodeFinalStatus(item, section.items, progress)}
-                    onSelect={onStartEpisodeFinal}
-                  />
-                ) : (
-                  <JourneyStepNode
-                    key={item.step.id}
-                    id={item.step.id}
-                    title={item.step.title}
-                    status={stepStatusAt(journeyStepOrdinal(item.step.id) - 1, completedStepCount)}
-                    onSelect={handleSelectStep}
-                  />
-                ),
-              )}
+              {section.items.map((item) => renderMapItem(item, section.items))}
             </view>
           ))}
         </view>

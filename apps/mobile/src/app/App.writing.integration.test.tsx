@@ -15,7 +15,7 @@ import { writingQuestionsForStep } from "../screens/writing/writing";
 // 판별은 학습 완료 제목으로 합니다 — 듣기를 모두 맞히면 실수는 쓰기에서만 나올 수 있어,
 // `PERFECT LESSON!`과 `LESSON COMPLETE!`가 쓰기의 결과가 실렸는지를 가릅니다.
 
-const seenIntros = ["tutorial"] as const;
+const completedIntros = ["tutorial-intro"] as const;
 const writingStep: JourneyStepId = "directions";
 
 afterEach(() => {
@@ -38,7 +38,7 @@ function renderApp(): void {
   vi.useFakeTimers();
   render(
     <App
-      seenEpisodeIntroIds={seenIntros}
+      completedEpisodeIntroIds={completedIntros}
       // 길 묻기가 지금 스텝이 되도록 앞 넷을 끝낸 진행입니다.
       journeySeed={{ ...productJourneySeed, completedStepCount: 4 }}
     />,
