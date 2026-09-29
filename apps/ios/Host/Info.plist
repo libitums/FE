@@ -11,6 +11,12 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<!-- Accent family(design-tokens 0.3.0 `font.family.accent`)의 Jost를 앱 번들에서 등록한다.
+	     design-system foundations/font-delivery.md가 고정한 google/fonts 배포물 그대로(파일명만 바꿈). -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>fonts/Jost.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

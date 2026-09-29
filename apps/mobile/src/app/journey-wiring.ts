@@ -3,7 +3,10 @@
 // 롤플레이 콜백 여덟은 `roleplay-wiring.ts`가 집니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
-import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
+import type {
+  EpisodeIntroEventSink,
+  EpisodePrologue,
+} from "../screens/episode-intro/episode-intro.contract";
 
 import {
   assessmentCompletesStep,
@@ -53,6 +56,7 @@ export type JourneyWiringArgs = {
   readonly visualNovelEventSink: VisualNovelEventSink;
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
+  readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly dispatch: Dispatch<NavAction>;
   readonly completedMessengerUnitIds: readonly MessengerUnitId[];
   readonly setCompletedMessengerUnitIds: Dispatch<SetStateAction<readonly MessengerUnitId[]>>;
@@ -286,6 +290,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
       dispatch,
       starts: unitStarts,
       prologueFor: args.episodePrologueFor,
+      episodeIntroEventSink: args.episodeIntroEventSink,
     }),
   };
 

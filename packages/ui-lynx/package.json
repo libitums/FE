@@ -202,8 +202,8 @@
     "pack:check": "pnpm pack --pack-destination .pack && node scripts/check-pack.mjs"
   },
   "dependencies": {
-    "@libitums/design-tokens": "0.2.0",
-    "@libitums/icons": "0.2.0"
+    "@libitums/design-tokens": "0.3.0",
+    "@libitums/icons": "0.3.0"
   },
   "devDependencies": {
     "@lynx-js/react": "0.125.0",

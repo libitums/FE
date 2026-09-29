@@ -196,7 +196,7 @@ boolean 모드 props, compound context, ref, render prop, audio port prop, telem
 - sink 주입은 메신저·비주얼 노벨과 같다 — `App`의 optional `phoneCallEventSink`를 기본값
   `null`로 정규화하고, 제품 진입점 `index.tsx`는 `phoneCallEventSink={null}`을 명시한다. 화면
   props에는 sink가 없다(7절의 「telemetry prop을 추가하지 않는다」는 그대로다). **운영 sink가
-  없으므로 실제 집계는 아직 0건이다.** sink가 `null`이어도 세션·오디오·완료 기록·navigation
+  없으므로 실제 집계는 아직 0건이다.** ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩ sink가 `null`이어도 세션·오디오·완료 기록·navigation
   결과는 같다.
 - 나가기 라벨: `PhoneCallScreenProps.exitLabel?`가 생겼다. 기본값은 `맵으로`이고, 롤플레이에서
   연 화면만 `목록으로`를 받는다. 동작은 둘 다 `backToRoot`다.

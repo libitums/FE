@@ -4,14 +4,23 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
+  EpisodeIntroEventSink,
+  EpisodeIntroExitStage,
   EpisodeIntroTarget,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
 import type { SafeAreaInsets } from "../lib/safe-area";
 
 import type { AnswerResult } from "../lib/answer-result";
-import type { EntryEventSink, EntryLoginMethod } from "../lib/entry-flow";
+import type {
+  PhoneNumber,
+  PhoneOtpRequestResult,
+  PhoneOtpVerifyOutcome,
+  PhoneOtpVerifyRequest,
+} from "../lib/auth-session.contract";
+import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
+import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type {
   MessengerEventSink,
@@ -146,7 +155,8 @@ export type ScreenWiring = {
   // 받습니다. 여정의 유닛 시작 넷(`onStartStep` 등)은 표지를 거치는 판입니다.
   onSkipEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
   onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
-  onExitEpisodeIntro: () => void;
+  // 나간 자리(표지 · 서사)를 함께 받습니다 — 이벤트가 어디서 나갔는지 싣습니다.
+  onExitEpisodeIntro: (episodeId: string, stage: EpisodeIntroExitStage) => void;
   // 표지 `Next` 뒤 에피소드 서사의 끝 · 나가기입니다.
   onCompletePrologue: (episodeId: string) => void;
   onExitPrologueComplete: (episodeId: string) => void;
@@ -172,11 +182,13 @@ export type ScreenWiring = {
   // 내리고, 나머지는 전이·이벤트·토큰 저장을 여는 콜백입니다.
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
-  onSelectLoginMethod: (method: EntryLoginMethod, phoneNumber?: string) => void;
+  onSelectSocialLoginMethod: (method: SocialLoginMethod) => void;
+  onRequestPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
+  onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
+  onVerifyPhoneOtp: (request: PhoneOtpVerifyRequest) => Promise<PhoneOtpVerifyOutcome>;
   onLoginBack: () => void;
   onLanguageSelectBack: () => void;
   onJourneyEntryBack: () => void;
-  onVerificationCodeSubmit: () => void;
   onVerificationCodeExit: () => void;
   entryLanguage: EntryLanguage;
   onSelectEntryLanguage: (language: EntryLanguage) => void;
@@ -192,6 +204,7 @@ export type ScreenWiringArgs = {
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
   readonly entryEventSink: EntryEventSink;
+  readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly dispatch: Dispatch<NavAction>;
   readonly completedMessengerUnitIds: readonly MessengerUnitId[];
   readonly setCompletedMessengerUnitIds: Dispatch<SetStateAction<readonly MessengerUnitId[]>>;

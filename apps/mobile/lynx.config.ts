@@ -41,7 +41,17 @@ export default defineConfig(({ command }): Config => {
     resolve: {
       // dev에서만 ui-lynx를 dist가 아니라 src로 읽어 컴포넌트 수정이 HMR로 바로 반영되게 한다.
       // build는 공개 export(dist)를 그대로 소비한다 (ADR-0025 D1).
-      alias: dev ? uiLynxSourceAliases() : {},
+      alias: {
+        ...(dev ? uiLynxSourceAliases() : {}),
+        // `@posthog/core`의 index barrel은 로그 · 메트릭 · 트레이스 · 설문 모듈까지 끌어와
+        // 번들을 약 235 kB 키운다. `PostHogCore`만 든 `dist/posthog-core.mjs`로 별칭하면
+        // 약 68 kB만 는다(ADR-0029). 패키지 exports에 이 subpath가 없어 파일 경로로 건다.
+        // 버전을 올릴 때 이 경로가 그대로인지 다시 확인한다.
+        "@posthog/core$": path.resolve(
+          import.meta.dirname,
+          "node_modules/@posthog/core/dist/posthog-core.mjs",
+        ),
+      },
     },
     plugins: [
       // dev 서버가 Explorer가 붙을 URL/QR을 낸다 (ADR-0006 D1)

@@ -2,6 +2,9 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { authFailureMessage } from "../lib/auth-failure";
+import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
+import type { AuthSession } from "../lib/auth-session.contract";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entryLoginMethods, entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent, EntryLoginMethod } from "../lib/entry-flow";
@@ -10,9 +13,11 @@ import { entryLanguageLabel, initialEntryLanguage } from "../lib/entry-language"
 // `integration` 계층: 진입 흐름 여섯 화면이 **한 트리에서** 실제로 이어지는지를
 // 봅니다(ADR-0006 D4) — `ui`가 화면을 고립 렌더해서는 볼 수 없는 것(부팅 화면 선택 ·
 // 스택 전이 · 토큰 분기 · 세션 상태의 수명 · 바텀 네비게이션의 등장 시점)이
-// 무대입니다. 목킹하지 않습니다(외부 IO 없음) — 저장소 경계만
-// `vi.stubGlobal("NativeModules", …)`로 세웁니다(`App.settings.integration.test.tsx`의
-// `stubHost()`와 같은 형태, 대역 자리는 호스트 경계 하나).
+// 무대입니다. 저장소 경계만 `vi.stubGlobal("NativeModules", …)`로 세웁니다
+// (`App.settings.integration.test.tsx`의 `stubHost()`와 같은 형태). 전화번호
+// 경로는 이제 네트워크를 실제로 타므로(spec §3 · test-plan §4) 그 경계는
+// `vi.stubGlobal("fetch", …)` + `vi.stubEnv("PUBLIC_SUPABASE_*", …)`로 섭니다
+// (test-plan §6 — msw 없음).
 
 // ------------------------------------------------------------ 저장소 스텁 헬퍼
 //
@@ -39,8 +44,17 @@ function tokenPresentStorageStub(): Map<string, string> {
   return store;
 }
 
+// IA7~IA10 — 세션이 **이미 있는** 상태를 스텁합니다(test-plan §4.1). 값은 실물
+// 직렬화(`serializeAuthSession`)를 거칩니다 — `parseAuthSession`의 왕복을 믿습니다.
+function sessionPresentStorageStub(session: AuthSession): Map<string, string> {
+  const store = emptyStorageStub();
+  store.set(authSessionStorageKey, serializeAuthSession(session));
+  return store;
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   vi.useRealTimers();
 });
 
@@ -50,7 +64,129 @@ function advanceSplash(): void {
   });
 }
 
-// 코드 칸 넷(CompactNumericInput)에 한 자리씩 넣습니다 — `VerificationCodeScreen.ui.test.tsx`의
+// 가짜 타이머 아래에서 미세 작업(네트워크 응답의 `.then` 체인)을 흘려보냅니다
+// (test-plan §4.1). 케이스 안에서 이 헬퍼 하나로 통일합니다.
+async function advanceTimersAsync(ms: number): Promise<void> {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(ms);
+  });
+}
+
+function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((res) => {
+    resolve = res;
+  });
+  return { promise, resolve };
+}
+
+// ------------------------------------------------------------ Supabase 대역
+//
+// test-plan §4.1의 `stubSupabase(routes)`입니다. `vi.stubEnv` 둘 뒤
+// `vi.stubGlobal("fetch", fn)`을 세웁니다. `fn`은 URL 경로로 응답을 고르고 호출을
+// `{ url, init }` 배열로 기록합니다. `routes`는 참조로 잡히므로, 같은 케이스
+// 안에서 재시도의 응답을 바꾸려면 반환값이 아니라 넘긴 `routes` 객체 자체의
+// 필드를 다시 쓰면 됩니다(IE14c).
+type SupabaseRouteResponse = { readonly status: number; readonly body: string };
+type SupabaseRoutes = {
+  otp?: SupabaseRouteResponse;
+  verify?: SupabaseRouteResponse;
+  refresh?: SupabaseRouteResponse;
+};
+type SupabaseCallInit = {
+  readonly method: string;
+  readonly headers: Record<string, string>;
+  readonly body: string;
+};
+type SupabaseCall = { readonly url: string; readonly init: SupabaseCallInit };
+
+function routeFor(url: string, routes: SupabaseRoutes): SupabaseRouteResponse | undefined {
+  if (url.endsWith("/auth/v1/otp")) return routes.otp;
+  if (url.endsWith("/auth/v1/verify")) return routes.verify;
+  if (url.includes("/auth/v1/token")) return routes.refresh;
+  return undefined;
+}
+
+function stubSupabase(routes: SupabaseRoutes): SupabaseCall[] {
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  const calls: SupabaseCall[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, init: SupabaseCallInit) => {
+      calls.push({ url, init });
+      const route = routeFor(url, routes);
+      if (route === undefined) {
+        throw new Error(`stubSupabase: unstubbed route for ${url}`);
+      }
+      return { status: route.status, text: async () => route.body };
+    }),
+  );
+  return calls;
+}
+
+// 응답 픽스처 — Supabase Auth 공개 문서 · evidence의 실서버 왕복(external-probe) 모양
+// 그대로입니다(test-plan §4.1). `user` · `expires_at`을 일부러 넣어 파서가 버리는지
+// 봅니다(IA4).
+const otpSentBody = "{}";
+
+function sessionResponseBody(
+  overrides: { accessToken?: string; refreshToken?: string } = {},
+): string {
+  return JSON.stringify({
+    access_token: overrides.accessToken ?? "access-token-1",
+    token_type: "bearer",
+    expires_in: 3600,
+    expires_at: 9999999999,
+    refresh_token: overrides.refreshToken ?? "refresh-token-1",
+    user: { id: "user-1" },
+  });
+}
+
+const invalidCodeBody = JSON.stringify({
+  code: 403,
+  error_code: "otp_expired",
+  msg: "Token has expired or is invalid",
+});
+
+const refreshRejectedBody = JSON.stringify({
+  code: 400,
+  error_code: "refresh_token_not_found",
+  msg: "Invalid Refresh Token: Refresh Token Not Found",
+});
+
+// ------------------------------------------------------------ 조작 헬퍼
+//
+// 전화번호 입력은 `LoginScreen.ui.test.tsx`의 `dispatchTextFieldInput`과 같은
+// 형태입니다(파일이 다르므로 다시 선언합니다, test-plan §4.1).
+function typePhoneNumber(value: string): void {
+  const field = screen.getByTestId("login-screen-phone-field");
+  const EventConstructor = field.ownerDocument.defaultView?.CustomEvent;
+  if (!EventConstructor) throw new Error("CustomEvent is unavailable");
+  const ref = lynx.createSelectorQuery().select('[data-testid="ui-lynx-text-field-input"]');
+  fireEvent(
+    ref as unknown as Element,
+    new EventConstructor("bindEvent:input", { detail: { value } }),
+  );
+}
+
+function tapPhoneContinue(): void {
+  fireEvent.tap(
+    within(screen.getByTestId("login-screen-method-phone")).getByTestId("ui-lynx-button"),
+    {},
+  );
+}
+
+// 번호를 넣고 Continue를 누른 뒤, 요청(성공·실패 어느 쪽이든)이 끝날 때까지
+// 미세 작업을 흘려보냅니다. `onSubmitPhoneNumber`가 비동기로 바뀌었으므로
+// (spec §2.2) 이 헬퍼도 비동기입니다 — 호출부는 전부 `await`합니다.
+async function submitPhoneNumber(value: string): Promise<void> {
+  typePhoneNumber(value);
+  tapPhoneContinue();
+  await advanceTimersAsync(0);
+}
+
+// 코드 칸 여섯(CompactNumericInput)에 한 자리씩 넣습니다 — `VerificationCodeScreen.ui.test.tsx`의
 // `typeCode`와 같은 형태입니다(파일이 다르므로 다시 선언합니다).
 function typeVerificationCode(value: string): void {
   const EventConstructor = document.defaultView?.CustomEvent;
@@ -73,9 +209,18 @@ function tapVerificationSubmit(): void {
   );
 }
 
-function submitVerificationCode(value: string): void {
+// `onVerifyCode`도 비동기로 바뀌었으므로(spec §2.3) 제출 뒤 미세 작업을 흘려보냅니다.
+async function submitVerificationCode(value: string): Promise<void> {
   typeVerificationCode(value);
   tapVerificationSubmit();
+  await advanceTimersAsync(0);
+}
+
+function tapResend(): void {
+  fireEvent.tap(
+    within(screen.getByTestId("verification-code-screen-resend")).getByTestId("ui-lynx-button"),
+    {},
+  );
 }
 
 // 온보딩 세 스텝을 끝까지 넘깁니다(0→1→2→onComplete). `onboarding-screen-next`는
@@ -173,83 +318,348 @@ test("[IE3b] 로그인에서 뒤로가기를 누르면 온보딩이 선다", () 
   expect(screen.getByTestId("onboarding-screen")).toBeInTheDocument();
 });
 
-// 2026-09-21 디자인 반영 — 언어 선택의 뒤로가기는 진입 스택에서 한 칸 뒤로
-// 갑니다 — 전화번호 경로면 코드 검증입니다.
-test("[IE6b] 언어 선택에서 뒤로가기를 누르면 코드 검증이 선다", () => {
-  emptyStorageStub();
-  vi.useFakeTimers();
-  render(<App />);
-  advanceSplash();
-  completeOnboarding();
-  selectLoginMethod("phone");
-  submitVerificationCode("1234");
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
-
-  fireEvent.tap(
-    within(screen.getByTestId("language-select-screen-header")).getByTestId("ui-lynx-round-button"),
-    {},
-  );
-
-  expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
-});
-
-// 2026-09-21 디자인 반영 — 여정 입장의 뒤로가기는 언어 선택으로 돌아갑니다.
-test("[IE7b] 여정 입장에서 뒤로가기를 누르면 언어 선택이 선다", () => {
-  emptyStorageStub();
-  vi.useFakeTimers();
-  render(<App />);
-  advanceSplash();
-  completeOnboarding();
-  selectLoginMethod("google");
-  continueLanguageSelect();
-  expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
-
-  fireEvent.tap(
-    within(screen.getByTestId("journey-entry-screen-header")).getByTestId("ui-lynx-round-button"),
-    {},
-  );
-
-  expect(screen.queryByTestId("journey-entry-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
-});
-
 // ---------------------------------------------------------------------- IE4
-test("[IE4] 전화번호를 고르면 코드 검증이 선다", () => {
+//
+// 개정(test-plan §4.2) — 전화번호는 이제 코드 화면으로 곧장 가지 않고, 번호를
+// 채운 뒤 Continue가 실제로 OTP 요청을 낸 **뒤에**야 옮겨 갑니다.
+test("[IE4] 번호 입력 → Continue → OTP 요청 1회 → 코드 화면에 그 번호가 보인다", async () => {
   emptyStorageStub();
+  const calls = stubSupabase({ otp: { status: 200, body: otpSentBody } });
   vi.useFakeTimers();
   render(<App />);
   advanceSplash();
   completeOnboarding();
 
-  selectLoginMethod("phone");
+  await submitPhoneNumber("10 1234 5678");
+
+  expect(calls).toHaveLength(1);
+  expect(calls[0]?.url).toBe("https://test.supabase.co/auth/v1/otp");
+  expect(calls[0]?.init.method).toBe("POST");
+  expect(calls[0]?.init.headers["apikey"]).toBe("test-anon-key");
+  expect(JSON.parse(calls[0]!.init.body)).toEqual({
+    phone: "+821012345678",
+    channel: "sms",
+    create_user: true,
+  });
 
   expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("verification-code-screen-phone")).toHaveTextContent(
+    "+82 10 1234 5678",
+  );
+});
+
+// -------------------------------------------------------------------- IA1
+test("[IA1] OTP 요청이 500이면 로그인이 그대로이고 login-screen-error가 서며 코드 화면이 없다", async () => {
+  emptyStorageStub();
+  stubSupabase({ otp: { status: 500, body: "{}" } });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await submitPhoneNumber("10 1234 5678");
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("verification-code-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
+    authFailureMessage("unavailable"),
+  );
+});
+
+// -------------------------------------------------------------------- IA2
+test("[IA2] OTP 요청 fetch가 던지면(연결 실패) 로그인이 그대로이고 network 문구가 선다", async () => {
+  emptyStorageStub();
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => Promise.reject(new Error("connection failed"))),
+  );
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await submitPhoneNumber("10 1234 5678");
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("verification-code-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(authFailureMessage("network"));
+});
+
+// -------------------------------------------------------------------- IA3
+test("[IA3] ⭐ 코드 화면에 서 있는 동안 저장소 키가 0개다(OTP는 성공했다)", async () => {
+  const store = emptyStorageStub();
+  stubSupabase({ otp: { status: 200, body: otpSentBody } });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await submitPhoneNumber("10 1234 5678");
+
+  expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
+  expect(Array.from(store.keys())).toEqual([]);
+});
+
+// -------------------------------------------------------------------- IA4
+test("[IA4] 6자리 검증 성공 → 언어 선택. 검증 요청 본문과 저장된 세션이 계약대로다", async () => {
+  const store = emptyStorageStub();
+  const calls = stubSupabase({
+    otp: { status: 200, body: otpSentBody },
+    verify: {
+      status: 200,
+      body: sessionResponseBody({ accessToken: "access-1", refreshToken: "refresh-1" }),
+    },
+  });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+  await submitPhoneNumber("10 1234 5678");
+
+  await submitVerificationCode("123456");
+
+  expect(calls).toHaveLength(2);
+  expect(calls[1]?.url).toBe("https://test.supabase.co/auth/v1/verify");
+  expect(JSON.parse(calls[1]!.init.body)).toEqual({
+    type: "sms",
+    phone: "+821012345678",
+    token: "123456",
+  });
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+
+  expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
+  const stored = JSON.parse(store.get(authSessionStorageKey)!) as Record<string, unknown>;
+  expect(Object.keys(stored).sort()).toEqual(["accessToken", "expiresAt", "refreshToken"].sort());
+  expect(stored["accessToken"]).toBe("access-1");
+  expect(stored["refreshToken"]).toBe("refresh-1");
 });
 
 // ---------------------------------------------------------------------- IE5
 //
-// ⚠ 「3자리에서는 무동작」은 부재·무동작을 재는 칸입니다 — 먼저 코드 검증 화면이
-// **그대로 남아 있다**는 존재 앵커를 걸어, 언어 선택으로 못 간 것이 「화면 자체가
-// 없어서」가 아니라 「제출이 무동작이라서」임을 갈라 짓습니다.
-test("[IE5] 코드 4자리를 채우고 확인하면 언어 선택이 선다(3자리에서는 무동작)", () => {
+// 개정(test-plan §4.2) — 코드 길이가 6자리로 바뀌었습니다. 「5자리에서는 무동작」은
+// 부재·무동작을 재는 칸입니다 — 먼저 코드 검증 화면이 **그대로 남아 있다**는
+// 존재 앵커를 걸어, 언어 선택으로 못 간 것이 「화면 자체가 없어서」가 아니라
+// 「제출이 무동작이라서」임을 갈라 짓습니다.
+test("[IE5] 코드 6자리를 채우고 확인하면 언어 선택이 선다(5자리에서는 무동작)", async () => {
   emptyStorageStub();
+  stubSupabase({
+    otp: { status: 200, body: otpSentBody },
+    verify: { status: 200, body: sessionResponseBody() },
+  });
   vi.useFakeTimers();
   render(<App />);
   advanceSplash();
   completeOnboarding();
-  selectLoginMethod("phone");
+  await submitPhoneNumber("10 1234 5678");
 
-  submitVerificationCode("123");
+  await submitVerificationCode("12345");
   expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
 
-  submitVerificationCode("1234");
+  await submitVerificationCode("123456");
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
 });
 
+// -------------------------------------------------------------------- IA5
+test("[IA5] 검증이 403 otp_expired면 코드 화면이 그대로이고 저장소가 비고 언어 선택이 없다", async () => {
+  const store = emptyStorageStub();
+  stubSupabase({
+    otp: { status: 200, body: otpSentBody },
+    verify: { status: 403, body: invalidCodeBody },
+  });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+  await submitPhoneNumber("10 1234 5678");
+
+  await submitVerificationCode("123456");
+
+  expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("verification-code-screen-error")).toHaveTextContent(
+    authFailureMessage("invalid-code"),
+  );
+  expect(Array.from(store.keys())).toEqual([]);
+});
+
+// -------------------------------------------------------------------- IA6
+test("[IA6] 재전송하면 OTP가 두 번째로(같은 본문) 불리고 타이머가 05:00으로 돌아간다", async () => {
+  emptyStorageStub();
+  const calls = stubSupabase({ otp: { status: 200, body: otpSentBody } });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+  await submitPhoneNumber("10 1234 5678");
+
+  expect(calls).toHaveLength(1);
+
+  for (let tick = 0; tick < 3; tick += 1) {
+    await advanceTimersAsync(1000);
+  }
+  expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("04:57");
+
+  tapResend();
+  await advanceTimersAsync(0);
+
+  expect(calls).toHaveLength(2);
+  expect(calls[1]?.url).toBe("https://test.supabase.co/auth/v1/otp");
+  expect(JSON.parse(calls[1]!.init.body)).toEqual(JSON.parse(calls[0]!.init.body));
+  expect(screen.getByTestId("verification-code-screen-timer")).toHaveTextContent("05:00");
+});
+
+// -------------------------------------------------------------------- IA7
+test("[IA7] 세션 있는 저장소로 부팅 → 스플래시 → 갱신 성공 → 여정 맵. 세션이 새 토큰으로 회전한다", async () => {
+  const initialSession: AuthSession = {
+    accessToken: "old-access",
+    refreshToken: "old-refresh",
+    expiresAt: 1000,
+  };
+  const store = sessionPresentStorageStub(initialSession);
+  const calls = stubSupabase({
+    refresh: {
+      status: 200,
+      body: sessionResponseBody({ accessToken: "new-access", refreshToken: "new-refresh" }),
+    },
+  });
+  vi.useFakeTimers();
+  render(<App />);
+
+  advanceSplash();
+  await advanceTimersAsync(0);
+
+  expect(calls).toHaveLength(1);
+  expect(calls[0]?.url).toBe("https://test.supabase.co/auth/v1/token?grant_type=refresh_token");
+  expect(JSON.parse(calls[0]!.init.body)).toEqual({ refresh_token: "old-refresh" });
+
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("onboarding-screen")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("login-screen-title")).not.toBeInTheDocument();
+
+  expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
+  const stored = JSON.parse(store.get(authSessionStorageKey)!) as Record<string, unknown>;
+  expect(stored["accessToken"]).toBe("new-access");
+  expect(stored["refreshToken"]).toBe("new-refresh");
+});
+
+// -------------------------------------------------------------------- IA8
+//
+// ⭐ `back` 대 `backToRoot`를 가릅니다(C11) — 진입 스택 밑에 온보딩을 깔아야 로그인의
+// 뒤로가기가 온보딩에 닿습니다.
+test("[IA8] 갱신이 거절되면 로그인이 서고 세션 키가 지워진다(로그인의 뒤로가기 → 온보딩)", async () => {
+  const initialSession: AuthSession = {
+    accessToken: "old-access",
+    refreshToken: "old-refresh",
+    expiresAt: 1000,
+  };
+  const store = sessionPresentStorageStub(initialSession);
+  stubSupabase({ refresh: { status: 400, body: refreshRejectedBody } });
+  vi.useFakeTimers();
+  render(<App />);
+
+  advanceSplash();
+  await advanceTimersAsync(0);
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("onboarding-screen")).not.toBeInTheDocument();
+  expect(Array.from(store.keys())).toEqual([]);
+
+  fireEvent.tap(
+    within(screen.getByTestId("login-screen-header")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+
+  expect(screen.getByTestId("onboarding-screen")).toBeInTheDocument();
+});
+
+// -------------------------------------------------------------------- IA9
+test("[IA9] 갱신 fetch가 던지면 로그인이 서고 세션 키가 남아 있다", async () => {
+  const initialSession: AuthSession = {
+    accessToken: "old-access",
+    refreshToken: "old-refresh",
+    expiresAt: 1000,
+  };
+  const store = sessionPresentStorageStub(initialSession);
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => Promise.reject(new Error("connection failed"))),
+  );
+  vi.useFakeTimers();
+  render(<App />);
+
+  advanceSplash();
+  await advanceTimersAsync(0);
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
+  const stored = JSON.parse(store.get(authSessionStorageKey)!) as Record<string, unknown>;
+  expect(stored["refreshToken"]).toBe("old-refresh");
+});
+
+// ------------------------------------------------------------------- IA10
+test("[IA10] 갱신 응답이 오기 전에는 스플래시가 그대로 서고, 응답을 풀면 여정 맵이 선다", async () => {
+  const initialSession: AuthSession = {
+    accessToken: "old-access",
+    refreshToken: "old-refresh",
+    expiresAt: 1000,
+  };
+  sessionPresentStorageStub(initialSession);
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  const { promise, resolve } = deferred<{ status: number; text: () => Promise<string> }>();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => promise),
+  );
+
+  vi.useFakeTimers();
+  render(<App />);
+
+  advanceSplash();
+  // 요청 제한 시간(10초) 안에서 스플래시 지속 시간만큼 더 흘려도 응답이 오지 않으면
+  // 그대로 스플래시입니다(C6 — 애니메이션 + 요청 제한 시간의 합이 최장 체류입니다).
+  await advanceTimersAsync(entrySplashDurationMs);
+
+  expect(screen.getByTestId("splash-screen-logo")).toBeInTheDocument();
+
+  resolve({
+    status: 200,
+    text: async () =>
+      sessionResponseBody({ accessToken: "new-access", refreshToken: "new-refresh" }),
+  });
+  await advanceTimersAsync(0);
+
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+});
+
+// ------------------------------------------------------------------- IA11
+test("[IA11] 설정이 없으면 Continue를 눌러도 fetch가 0회이고 unconfigured 문구가 선다", async () => {
+  emptyStorageStub();
+  // spec C2 — stubEnv 없이 fetch만 세웁니다. `supabaseConfig()`가 `null`이라
+  // api-client는 전송하지 않습니다.
+  const fetchSpy = vi.fn<() => void>();
+  vi.stubGlobal("fetch", fetchSpy);
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await submitPhoneNumber("10 1234 5678");
+
+  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
+    authFailureMessage("unconfigured"),
+  );
+});
+
 // 존재 앵커: `nonPhoneMethods`가 비어 있지 않음을 먼저 확인합니다 — 그래야 아래
-// 루프가 공허하게 통과하는 것이 아니라고 말할 수 있습니다.
+// 루프가 공허하게 통과하는 것이 아니라고 말할 수 있습니다. 소셜 셋은 네트워크를
+// 타지 않으므로 대역이 필요 없습니다 — 불변입니다.
 test("[IE6] 구글·애플·페이스북은 코드 검증을 건너뛰고 언어 선택이 선다", () => {
   const nonPhoneMethods = entryLoginMethods.filter((method) => method !== "phone");
   expect(nonPhoneMethods.length).toBeGreaterThan(0);
@@ -290,6 +700,51 @@ test("[IE7] 언어를 고르고 다음을 누르면 여정 입장에 그 언어�
   );
 });
 
+// 2026-09-21 디자인 반영 — 언어 선택의 뒤로가기는 진입 스택에서 한 칸 뒤로
+// 갑니다 — 전화번호 경로면 코드 검증입니다.
+test("[IE6b] 언어 선택에서 뒤로가기를 누르면 코드 검증이 선다", async () => {
+  emptyStorageStub();
+  stubSupabase({
+    otp: { status: 200, body: otpSentBody },
+    verify: { status: 200, body: sessionResponseBody() },
+  });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+  await submitPhoneNumber("10 1234 5678");
+  await submitVerificationCode("123456");
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(
+    within(screen.getByTestId("language-select-screen-header")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+
+  expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
+});
+
+// 2026-09-21 디자인 반영 — 여정 입장의 뒤로가기는 언어 선택으로 돌아갑니다.
+test("[IE7b] 여정 입장에서 뒤로가기를 누르면 언어 선택이 선다", () => {
+  emptyStorageStub();
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+  selectLoginMethod("google");
+  continueLanguageSelect();
+  expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(
+    within(screen.getByTestId("journey-entry-screen-header")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+
+  expect(screen.queryByTestId("journey-entry-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+});
+
 // ---------------------------------------------------------------------- IE8
 test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비게이션이 그때 처음 보인다", () => {
   emptyStorageStub();
@@ -311,31 +766,44 @@ test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비�
   expect(screen.queryByTestId("ui-lynx-bottom-navigator")).not.toBeNull();
 });
 
-// ⭐ 수단 넷 전부를 순회해 「저장된 키가 그 하나뿐」을 짓습니다
+// ⭐ 수단 넷 전부를 순회해 「저장된 키가 그 수단에 맞는 것 하나뿐」을 짓습니다
 // (`lib/auth-token.unit.test.ts` AT3와 같은 성질을 결선된 트리에서 다시 봅니다).
-test("[IE9] 어느 수단으로 진행해도 토큰이 저장되고 저장된 키가 그 하나뿐이다", () => {
+// 개정(test-plan §4.2 IE9) — 전화번호는 `authSessionStorageKey`, 소셜 셋은
+// `authTokenStorageKey`입니다(반전 — 전에는 「어느 수단이든 같은 키」였습니다).
+test("[IE9] 어느 수단으로 진행해도 저장된 키가 그 수단에 맞는 것 하나뿐이다", async () => {
   expect(entryLoginMethods.length).toBeGreaterThan(0);
 
   for (const method of entryLoginMethods) {
     const store = emptyStorageStub();
+    if (method === "phone") {
+      stubSupabase({
+        otp: { status: 200, body: otpSentBody },
+        verify: { status: 200, body: sessionResponseBody() },
+      });
+    }
     vi.useFakeTimers();
     const { unmount } = render(<App />);
     advanceSplash();
     completeOnboarding();
-    selectLoginMethod(method);
     if (method === "phone") {
-      submitVerificationCode("1234");
+      await submitPhoneNumber("10 1234 5678");
+      await submitVerificationCode("123456");
+    } else {
+      selectLoginMethod(method);
     }
     selectLanguage("en");
     continueLanguageSelect();
     startJourney();
 
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-    expect(Array.from(store.keys())).toEqual([authTokenStorageKey]);
+    expect(Array.from(store.keys())).toEqual([
+      method === "phone" ? authSessionStorageKey : authTokenStorageKey,
+    ]);
 
     unmount();
     vi.useRealTimers();
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   }
 });
 
@@ -345,8 +813,13 @@ test("[IE9] 어느 수단으로 진행해도 토큰이 저장되고 저장된 �
 // 우연히 참이 됩니다. 그래서 **먼저 스플래시가 실제로 섰다는 것**을 앵커로 걸어,
 // 「스플래시를 실제로 거친 뒤 토큰 분기로 여정 맵에 닿았다」를 「토큰과 무관하게
 // 처음부터 여정 맵이었다」와 갈라 짓습니다.
-test("[IE10] 토큰이 있는 상태로 켜면 스플래시 뒤 바로 여정 맵이고 온보딩·로그인을 거치지 않는다", () => {
+//
+// 개정(test-plan §4.2 IE10) — 임시 토큰 분기는 여전히 동기입니다(C6 · 파수꾼). fetch
+// 스파이를 더해 **네트워크를 전혀 타지 않는다**는 것을 단언합니다.
+test("[IE10] 토큰이 있는 상태로 켜면 스플래시 뒤 바로 여정 맵이고 온보딩·로그인을 거치지 않는다(fetch 0회)", () => {
   tokenPresentStorageStub();
+  const fetchSpy = vi.fn<() => void>();
+  vi.stubGlobal("fetch", fetchSpy);
   vi.useFakeTimers();
   render(<App />);
 
@@ -357,20 +830,23 @@ test("[IE10] 토큰이 있는 상태로 켜면 스플래시 뒤 바로 여정 �
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("onboarding-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("login-screen-title")).not.toBeInTheDocument();
+  expect(fetchSpy).not.toHaveBeenCalled();
 });
 
 // --------------------------------------------------------------------- IE11
 //
 // ⭐ `back` 대 `backToRoot`를 가릅니다. 진입 스택의 첫 화면은 온보딩이라
 // `backToRoot`였다면 온보딩으로 접혔을 것입니다 — 로그인(한 겹 위)에 닿는 것으로
-// 그 갈림을 짓습니다.
-test("[IE11] 코드 검증에서 로그인으로를 누르면 로그인이 선다(온보딩이 아니다)", () => {
+// 그 갈림을 짓습니다. 개정(test-plan §4.2) — 전화번호 경로를 `stubSupabase`로
+// 통과합니다.
+test("[IE11] 코드 검증에서 로그인으로를 누르면 로그인이 선다(온보딩이 아니다)", async () => {
   emptyStorageStub();
+  stubSupabase({ otp: { status: 200, body: otpSentBody } });
   vi.useFakeTimers();
   render(<App />);
   advanceSplash();
   completeOnboarding();
-  selectLoginMethod("phone");
+  await submitPhoneNumber("10 1234 5678");
 
   fireEvent.tap(
     within(screen.getByTestId("verification-code-screen-exit")).getByTestId("ui-lynx-round-button"),
@@ -432,15 +908,21 @@ test("[IE12] 언어가 진입 흐름 동안 유지되고, 새로 렌더한 App�
 // 겪는 유일한 수단입니다(온보딩 · 로그인 · 코드 검증 · 언어 선택 · 여정 입장).
 // `toEqual`이 다섯 값을 정확히 요구하므로 빈 배열이어도 참이 되는 공허함이 없습니다
 // (스플래시 부재는 이 배열 안에 "splash"가 없다는 것으로 직접 확인합니다).
-test("[IE13] entry_screen_viewed가 화면 다섯에 대해 각 전이 직전 1회씩 순서대로 나고 스플래시에는 나지 않는다", () => {
+// 개정(test-plan §4.2) — `stubSupabase`로 경로를 통과하고 코드는 6자리입니다. 열람
+// 순서 배열은 그대로입니다.
+test("[IE13] entry_screen_viewed가 화면 다섯에 대해 각 전이 직전 1회씩 순서대로 나고 스플래시에는 나지 않는다", async () => {
   emptyStorageStub();
+  stubSupabase({
+    otp: { status: 200, body: otpSentBody },
+    verify: { status: 200, body: sessionResponseBody() },
+  });
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
   render(<App entryEventSink={(event) => events.push(event)} />);
   advanceSplash();
   completeOnboarding();
-  selectLoginMethod("phone");
-  submitVerificationCode("1234");
+  await submitPhoneNumber("10 1234 5678");
+  await submitVerificationCode("123456");
   continueLanguageSelect();
 
   const viewedScreens = events
@@ -501,4 +983,52 @@ test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_c
   expect(
     reentryEvents.filter((event) => event.name === "entry_login_method_selected"),
   ).toHaveLength(0);
+});
+
+// 신규(test-plan §4.2 IE14 (c)) — C12: 실패한 시도는 세지 않습니다. 성공한 요청의
+// 순간에만 1회 납니다.
+test("[IE14c] 전화번호 경로에서 OTP가 한 번 실패하고 두 번째에 성공하면 entry_login_method_selected가 1회다", async () => {
+  emptyStorageStub();
+  const routes: SupabaseRoutes = { otp: { status: 500, body: "{}" } };
+  stubSupabase(routes);
+  vi.useFakeTimers();
+  const events: EntryEvent[] = [];
+  render(<App entryEventSink={(event) => events.push(event)} />);
+  advanceSplash();
+  completeOnboarding();
+
+  await submitPhoneNumber("10 1234 5678");
+  expect(screen.getByTestId("login-screen-error")).toBeInTheDocument();
+  expect(events.filter((event) => event.name === "entry_login_method_selected")).toHaveLength(0);
+
+  routes.otp = { status: 200, body: otpSentBody };
+  await submitPhoneNumber("10 1234 5678");
+
+  expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
+  const selected = events.filter(
+    (event): event is Extract<EntryEvent, { name: "entry_login_method_selected" }> =>
+      event.name === "entry_login_method_selected",
+  );
+  expect(selected).toEqual([{ name: "entry_login_method_selected", method: "phone" }]);
+});
+
+// 신규(test-plan §4.2 IE14 (d)) — C6: `refresh` 갈래는 완주가 아니므로 `entry_completed`를
+// 내지 않습니다.
+test("[IE14d] 세션 갱신 부팅에서 entry_completed가 0회다", async () => {
+  const initialSession: AuthSession = {
+    accessToken: "old-access",
+    refreshToken: "old-refresh",
+    expiresAt: 1000,
+  };
+  sessionPresentStorageStub(initialSession);
+  stubSupabase({ refresh: { status: 200, body: sessionResponseBody() } });
+  vi.useFakeTimers();
+  const events: EntryEvent[] = [];
+  render(<App entryEventSink={(event) => events.push(event)} />);
+
+  advanceSplash();
+  await advanceTimersAsync(0);
+
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(events.filter((event) => event.name === "entry_completed")).toHaveLength(0);
 });

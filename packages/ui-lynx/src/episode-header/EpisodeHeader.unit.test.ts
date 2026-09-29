@@ -100,7 +100,7 @@ describe("episode-header.css", () => {
     );
   });
 
-  // 이름은 accent/chapter입니다 — 이 토큰이 Futura 뒤에 한글 폴백을 달고 있어 한글
+  // 이름은 accent/chapter입니다 — 이 토큰이 Jost 뒤에 한글 폴백을 달고 있어 한글
   // 이름도 그려집니다. 다른 타이포로 바꾸면 디자인의 글자 모양이 사라집니다.
   test("이름이 accent chapter 타이포와 브랜드색을 쓴다", () => {
     expect(styles).toMatch(
