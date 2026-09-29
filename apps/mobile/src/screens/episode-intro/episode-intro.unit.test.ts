@@ -73,8 +73,15 @@ describe("episodeOfIntroUnit", () => {
   // 오므로, 어느 구획에도 없다면 **데이터 오류**이고 값으로 표현할 수 있는 상태가
   // 아닙니다. `undefined`를 돌려주면 그 판단이 소비자에게 흩어집니다.
   it("[EI-U2] 어느 구획에도 없는 표지 유닛이면 던진다", () => {
-    expect(() => episodeOfIntroUnit([], "tutorial-intro")).toThrow();
-    expect(() => episodeOfIntroUnit([withoutIntro], "tutorial-intro")).toThrow();
+    // 문면까지 겁니다 — 인자 없는 `toThrow()`는 **어떤 오류든** 통과시켜, 구현이
+    // 엉뚱한 곳에서 터져도 초록이 됩니다. 「무조건 던지는 스텁도 통과한다」는 이
+    // 케이스에서 특히 그렇습니다.
+    expect(() => episodeOfIntroUnit([], "tutorial-intro")).toThrow(
+      "어느 에피소드에도 없는 표지 유닛입니다: tutorial-intro",
+    );
+    expect(() => episodeOfIntroUnit([withoutIntro], "tutorial-intro")).toThrow(
+      "어느 에피소드에도 없는 표지 유닛입니다: tutorial-intro",
+    );
   });
 });
 

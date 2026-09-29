@@ -9,19 +9,15 @@ import { CultureQuizScreen } from "../screens/culture-quiz/CultureQuizScreen";
 import { HandwritingProbeScreen } from "../screens/handwriting-probe/HandwritingProbeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import { journeyStepOrdinal } from "../screens/journey-map/journey-map";
-import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
-import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
-import { LoginScreen } from "../screens/login/LoginScreen";
 import { MessengerScreen } from "../screens/messenger/MessengerScreen";
 import {
   messengerCompletionStatus,
   messengerConversationFor,
 } from "../screens/messenger/messenger";
 import { NotificationsScreen } from "../screens/notifications/NotificationsScreen";
-import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
 import { PhoneCallScreen } from "../screens/phone-call/PhoneCallScreen";
 import {
   getPhoneCallConversation,
@@ -34,9 +30,7 @@ import { findRoleplaySection } from "../screens/roleplay-list/roleplay-list";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { specialUnitExitLabel } from "../lib/special-unit-entry-source";
 import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
-import { SplashScreen } from "../screens/splash/SplashScreen";
 import { TermsScreen } from "../screens/terms/TermsScreen";
-import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
 import { profileList, termsSectionList } from "./app-content";
@@ -44,6 +38,7 @@ import type { Screen } from "./nav-state";
 import { renderShellLearningScreen, renderWordChoiceScreen } from "./render-learning-screen";
 import { renderMessengerCompleteScreen } from "./render-messenger-complete";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
+import { renderEntryScreen } from "./render-entry-screen";
 import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import type { ScreenWiring } from "./screen-wiring";
@@ -55,6 +50,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         <JourneyMapScreen
           completedStepCount={wiring.completedStepCount}
           onStartStep={wiring.onStartStep}
+          completedEpisodeIntroIds={wiring.completedEpisodeIntroIds}
           completedMessengerUnitIds={wiring.completedMessengerUnitIds}
           onStartMessengerUnit={wiring.onStartMessengerUnit}
           completedPhoneCallUnitIds={wiring.completedPhoneCallUnitIds}
@@ -236,44 +232,15 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "roleplay-phone-call":
     case "roleplay-visual-novel":
       return renderRoleplayUnitScreen(screen, wiring.roleplay);
-    // 진입 흐름 화면들입니다. 전이·이벤트·토큰 저장은 `wiring`의 콜백이 집니다
-    // — 화면은 결과를 그리고 조작을 올릴 뿐입니다.
+    // 진입 흐름 화면 여섯입니다 — 스플래시부터 여정 입구까지가 한 흐름이라
+    // `render-entry-screen.tsx`가 한 자리에서 집니다.
     case "splash":
-      return <SplashScreen onTimeout={wiring.onSplashTimeout} />;
     case "onboarding":
-      return <OnboardingScreen onComplete={wiring.onOnboardingComplete} />;
     case "login":
-      return (
-        <LoginScreen onSelectMethod={wiring.onSelectLoginMethod} onBack={wiring.onLoginBack} />
-      );
     case "verification-code":
-      return (
-        <VerificationCodeScreen
-          phoneNumber={screen.phoneNumber}
-          onSubmit={wiring.onVerificationCodeSubmit}
-          onExit={wiring.onVerificationCodeExit}
-        />
-      );
     case "language-select":
-      return (
-        <LanguageSelectScreen
-          selected={wiring.entryLanguage}
-          onSelect={wiring.onSelectEntryLanguage}
-          onContinue={wiring.onContinueLanguageSelect}
-          onBack={wiring.onLanguageSelectBack}
-        />
-      );
     case "journey-entry":
-      return (
-        <JourneyEntryScreen
-          // 이 화면은 셸의 여백을 안 받고 스스로 가장자리를 피합니다(그림이 끝까지
-          // 깔려야 합니다 — `isFullBleedScreen`).
-          safeArea={wiring.safeAreaInsets}
-          language={wiring.entryLanguage}
-          onEnter={wiring.onEnterJourney}
-          onBack={wiring.onJourneyEntryBack}
-        />
-      );
+      return renderEntryScreen(screen, wiring);
     case "episode-final":
     case "episode-final-complete":
       return renderEpisodeFinalFlow(screen, wiring);

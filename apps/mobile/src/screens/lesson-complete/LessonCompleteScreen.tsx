@@ -39,8 +39,8 @@ export type LessonCompleteScreenProps = {
   /**
    * 건너뛴 말하기 문항 수입니다(D8). 통과 계산에는 이미 `results`를 통해 세어져
    * 있고, 이 값은 **만점 판정**에만 씁니다 — 실수가 없어도 이 값이 0이 아니면
-   * 만점이 아닙니다. 아직 화면이 이 값을 보지 않습니다 — 그 배선은 `logic`
-   * 변형의 몫입니다(logic-scaffold).
+   * 만점이 아닙니다. 제목(`lessonCompleteTitle`)과 낭독이 이 값을 보고, 부제는
+   * 보지 않습니다 — 부제가 세는 것은 실수이고 건너뛴 것은 실수가 아닙니다.
    */
   readonly skippedCount: number;
   /** 통과 여부입니다. 화면이 계산하지 않고 받습니다 — 판정의 정본은 `judgeAssessment`입니다. */
@@ -63,6 +63,7 @@ export type LessonCompleteScreenProps = {
 
 export function LessonCompleteScreen({
   results,
+  skippedCount,
   verdict,
   streakDays,
   trophyCount,
@@ -84,8 +85,8 @@ export function LessonCompleteScreen({
   // `mistakeCount`도 갈리지 않습니다. 듣기 화면이 `[complete]`를 dep으로 두고 같은
   // 근거를 적는 것과 같은 자리입니다.
   useEffect(() => {
-    announce(lessonCompleteAnnouncement(mistakeCount, verdict));
-  }, [mistakeCount, verdict]);
+    announce(lessonCompleteAnnouncement(mistakeCount, verdict, skippedCount));
+  }, [mistakeCount, verdict, skippedCount]);
 
   return (
     <view className="lesson-complete-screen" data-testid="lesson-complete-screen">
@@ -138,7 +139,7 @@ export function LessonCompleteScreen({
           data-testid="lesson-complete-screen-title"
           accessibility-traits="header"
         >
-          {lessonCompleteTitle(mistakeCount, verdict)}
+          {lessonCompleteTitle(mistakeCount, verdict, skippedCount)}
         </text>
         {/* 연속이 없으면(0일) 알약을 세우지 않습니다 — 「0 Day Streak」은 축하가 아닙니다. */}
         {streakDays > 0 ? (

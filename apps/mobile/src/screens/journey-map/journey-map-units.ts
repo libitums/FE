@@ -8,6 +8,10 @@ import type {
   EpisodeFinalJourneyUnitContract,
 } from "../episode-final/episode-final.contract";
 import type {
+  EpisodeIntroJourneyMapItemContract,
+  EpisodeIntroJourneyUnitContract,
+} from "../episode-intro/episode-intro.contract";
+import type {
   MessengerJourneyMapItemContract,
   MessengerJourneyUnitContract,
 } from "../messenger/messenger.contract";
@@ -47,14 +51,16 @@ export type JourneyStep = {
  */
 export type JourneyUnit =
   | { readonly kind: "standard"; readonly steps: readonly JourneyStep[] }
+  | EpisodeIntroJourneyUnitContract
   | MessengerJourneyUnitContract
   | PhoneCallJourneyUnitContract
   | VisualNovelJourneyUnitContract
   | EpisodeFinalJourneyUnitContract;
 
-/** 여정 맵이 그리는 항목입니다 — 표준 스텝 또는 특별 유닛 항목(메신저·전화·비주얼 노벨)입니다. */
+/** 여정 맵이 그리는 항목입니다 — 표준 스텝 또는 특별 유닛 항목(표지·메신저·전화·비주얼 노벨·최종 테스트)입니다. */
 export type JourneyMapItem =
   | { readonly kind: "standard"; readonly step: JourneyStep }
+  | EpisodeIntroJourneyMapItemContract
   | MessengerJourneyMapItemContract
   | Omit<PhoneCallJourneyMapItemContract, "status">
   | Omit<VisualNovelJourneyMapItemContract, "status">
@@ -66,8 +72,7 @@ export type JourneyMapItem =
  *
  * 어휘를 하나로 합친 것은 `locked`가 이제 **모든 항목 종류에 올 수 있기** 때문입니다 —
  * 전에는 잠김이 스텝 노드와 최종 테스트 둘에만 있어 종류마다 다른 타입을 썼습니다.
- * 이 타입 자체는 `logic-scaffold`가 세우지만, 잠김을 실제로 내는 파생(`mapItemStatus`)은
- * `logic` 변형이 채웁니다.
+ * 잠김을 실제로 내는 파생은 `mapItemStatus`입니다(`journey-map-progress.ts`).
  */
 export type JourneyMapItemStatus = "locked" | "available" | "completed";
 
@@ -75,10 +80,14 @@ export type JourneyMapItemStatus = "locked" | "available" | "completed";
  * 에피소드를 가려내는 이름입니다. 오늘은 `tutorial` 하나입니다.
  *
  * ⚠ **이 타입은 아직 어디에도 연결되지 않습니다.** `JourneyEpisode.id`·
- * `RoleplayEpisodeId`·`episodePrologueFor`의 매개변수를 이 타입으로 좁히면 그 값들을
- * 임의 문자열(`"cafe"`·`"steps-only"`·`"unknown"` 등)로 쓰는 기존 테스트 픽스처가 `ui`
- * 계층 파일(`RoleplayListScreen.ui.test.tsx` 등)까지 번져 깨진다 — `logic-scaffold`의
- * 경계 밖이라 이번 회차는 타입 선언만 세우고 배선은 다음 판단으로 남긴다(구현 요약에 보고).
+ * `RoleplayEpisodeId`·`episodePrologueFor`의 매개변수를 이 타입으로 좁히면, 에피소드
+ * id를 임의 문자열로 쓰는 기존 픽스처가 깨집니다 — `roleplay-list.unit.test.ts`의
+ * `"cafe"`·`"steps-only"`와 `RoleplayListScreen.ui.test.tsx`의 `episodeId: "cafe"`가
+ * 그것이고, 둘 다 **테스트 파일**이라 그 자리를 함께 고치는 계층이 움직여야 합니다.
+ *
+ * 같은 이유로 `JourneyEpisodeUnits` 튜플(`[표지, ...가운데, 최종]`)도 아직 못 섭니다 —
+ * 같은 파일의 `journeySection` 헬퍼가 `units: []`로 구획을 짓습니다(실측: 좁히면
+ * `TS2322` 한 건).
  */
 export type JourneyEpisodeId = "tutorial";
 
@@ -123,6 +132,16 @@ export type JourneyEpisode = {
 };
 
 const tutorialUnits: readonly JourneyUnit[] = [
+  // 에피소드의 첫 자리는 표지입니다 — 학습의 당위성을 주는 서사가 여기서 열리고,
+  // 이것을 끝내야 그 에피소드의 나머지가 열립니다(`mapItemStatus`의 표지 게이트).
+  // 전에는 유닛을 처음 여는 순간 결선이 가로채 표지를 띄웠습니다. 이제 표지가 스스로
+  // 항목이라, 순서를 지는 자리가 **가로채기에서 맵의 잠김 파생으로** 옮겨 갔습니다.
+  {
+    kind: "special",
+    id: "tutorial-intro",
+    title: "에피소드 표지",
+    screen: "episode-intro",
+  },
   {
     kind: "standard",
     steps: [
@@ -155,7 +174,7 @@ const tutorialUnits: readonly JourneyUnit[] = [
     steps: [{ id: "directions", title: "길 묻기", description: "약속 장소까지 가는 길을 묻는다" }],
   },
   // 에피소드의 마지막은 최종 테스트입니다 — 서사와 에피소드에서 배운 표현을 모아 풀고
-  // 에피소드를 끝냅니다. 같은 에피소드의 다른 항목을 모두 끝내야 열립니다(`episodeFinalStatus`).
+  // 에피소드를 끝냅니다. 같은 에피소드의 다른 항목을 모두 끝내야 열립니다(`mapItemStatus`).
   {
     kind: "special",
     id: "tutorial-final-test",
@@ -188,6 +207,9 @@ function mapItemsOf(units: readonly JourneyUnit[]): readonly JourneyMapItem[] {
       return unit.steps.map((step) => ({ kind: "standard", step }) as const);
     }
     switch (unit.screen) {
+      case "episode-intro": {
+        return [{ kind: "episode-intro", id: unit.id, title: unit.title } as const];
+      }
       case "messenger": {
         return [{ kind: "messenger", id: unit.id, title: unit.title } as const];
       }

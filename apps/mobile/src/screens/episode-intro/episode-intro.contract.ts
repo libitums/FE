@@ -8,7 +8,17 @@ import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 
 export type EpisodeIntroUnitId = "tutorial-intro";
-export type EpisodeIntroTitle = "에피소드 서사";
+/**
+ * 표지 유닛의 이름입니다. 리터럴인 것은 다른 특별 유닛 넷의 선례를 따른 것입니다
+ * (`EpisodeFinalTitle` · 메신저의 `"약속 확인 메시지"`) — 컨텐츠가 아니라 **그 유닛이
+ * 무엇인가를 말하는 기능 라벨**이라 값을 비워 둘 수 없습니다.
+ *
+ * 「에피소드 **서사**」가 아니라 「에피소드 **표지**」인 것은 낭독 때문입니다.
+ * `LearningUnit`이 이름을 `제목 + 상태 접미사 + "이야기 연결"`로 짓기 때문에, 「서사」면
+ * 「에피소드 서사, 현재 항목, 이야기 연결」로 *서사*와 *이야기*가 한 호흡에 두 번
+ * 들립니다. 표지는 커버이고 서사는 본문이라(`episode-prologue`) 뜻도 이쪽이 맞습니다.
+ */
+export type EpisodeIntroTitle = "에피소드 표지";
 
 /** 여정 유닛 목록에 들어가는 모양입니다(`journey-map-units.ts`). */
 export type EpisodeIntroJourneyUnitContract = {

@@ -15,14 +15,24 @@ export function lessonMistakeCount(results: readonly AnswerResult[]): number {
 }
 
 /**
- * 제목은 세 갈래입니다 — 통과 · 실수 없음 / 통과 · 실수 있음 / 미통과.
+ * 제목은 세 갈래입니다 — 통과 · 만점 / 통과 · 만점 아님 / 미통과.
  *
  * 미통과가 `LESSON FAILED`인 것은 **결과를 감추지 않기 위해서**입니다. 「다시 해봐요」류로
  * 부드럽게 적으면 통과와 구별되지 않고, 이 화면이 하는 일이 정확히 그 구별입니다.
+ *
+ * **판정을 먼저 봅니다** — 실수 수로 먼저 가르면 「실수 없는 미통과」가 `PERFECT`로 뜨고,
+ * 건너뛴 수가 그 순서를 뒤집지도 않습니다.
+ *
+ * 갈림의 기준이 실수 수 하나가 아니라 `isPerfectLesson`인 것이 D8입니다 — 건너뛴 문항이
+ * 있으면 실수가 0이어도 만점이 아닙니다.
  */
-export function lessonCompleteTitle(mistakeCount: number, verdict: AssessmentVerdict): string {
+export function lessonCompleteTitle(
+  mistakeCount: number,
+  verdict: AssessmentVerdict,
+  skippedCount: number,
+): string {
   if (verdict === "failed") return "LESSON FAILED";
-  return mistakeCount === 0 ? "PERFECT LESSON!" : "LESSON COMPLETE!";
+  return isPerfectLesson(mistakeCount, skippedCount) ? "PERFECT LESSON!" : "LESSON COMPLETE!";
 }
 
 /** 실수 수를 세는 문장은 통과 · 미통과가 같습니다 — 센 것이 같기 때문입니다. */
@@ -41,12 +51,23 @@ export function lessonStreakLabel(streakDays: number): string {
  * **통과 여부를 맨 앞에 둡니다** — 실수 수보다 먼저 알아야 하는 것이 그것이고, 낭독은
  * 앞부터 들립니다.
  */
+/**
+ * ⚠ **건너뛴 수를 덧붙이는 것은 시각과 낭독이 갈리지 않게 하기 위해서입니다**(WCAG 1.3.1).
+ * 제목에 `LESSON COMPLETE!`(만점 아님)가 서는데 낭독이 *"학습 완료, 실수 없음"* 에서
+ * 멈추면, **보는 사람과 듣는 사람이 다른 정보**를 받습니다 — 듣는 쪽에만 만점처럼
+ * 들립니다.
+ *
+ * 건너뛴 것이 없으면 덧붙지 않습니다 — 없는 수를 읽어 주지 않습니다.
+ */
 export function lessonCompleteAnnouncement(
   mistakeCount: number,
   verdict: AssessmentVerdict,
+  skippedCount: number,
 ): string {
   const outcome = verdict === "failed" ? "학습 미통과" : "학습 완료";
-  return mistakeCount === 0 ? `${outcome}, 실수 없음` : `${outcome}, 실수 ${mistakeCount}개`;
+  const mistakes = mistakeCount === 0 ? "실수 없음" : `실수 ${mistakeCount}개`;
+  const skipped = skippedCount === 0 ? "" : `, 건너뛴 문항 ${skippedCount}개`;
+  return `${outcome}, ${mistakes}${skipped}`;
 }
 
 /**
@@ -54,12 +75,14 @@ export function lessonCompleteAnnouncement(
  * 없어도 만점이 아닙니다(D8). 두 수가 다른 것을 세기 때문입니다: 하나는 틀린 횟수,
  * 하나는 **재지 않은** 횟수입니다.
  *
- * 자리 표시자입니다. 호출되면 실패합니다 — `logic` 변형이 실동작으로 교체합니다
- * (logic-scaffold). `lessonCompleteTitle`은 아직 이 함수를 보지 않습니다 — 그 배선도
- * `logic` 변형의 몫입니다.
+ * ⚠ **부제(`lessonCompleteSubtitle`)는 이 함수를 보지 않습니다.** 그 문장이 세는 것은
+ * 실수이고, 건너뛴 문항이 있어도 실수는 정말 0입니다 — 건너뛴 것을 실수로 세면
+ * *"YOU MADE 3 MISTAKES"* 가 거짓말이 됩니다. 그래서 화면에 `LESSON COMPLETE!` +
+ * `YOU MADE NO MISTAKES IN THIS LESSON` 조합이 설 수 있고, 그것이 참입니다 —
+ * 「틀리지는 않았지만 다 풀지도 않았다」.
  */
-export function isPerfectLesson(_mistakeCount: number, _skippedCount: number): boolean {
-  throw new Error("isPerfectLesson: not implemented (logic-scaffold)");
+export function isPerfectLesson(mistakeCount: number, skippedCount: number): boolean {
+  return mistakeCount === 0 && skippedCount === 0;
 }
 
 export type LessonReward = {

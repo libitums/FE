@@ -3,7 +3,10 @@
 // 롤플레이 콜백 여덟은 `roleplay-wiring.ts`가 집니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
-import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
+import type {
+  EpisodeIntroUnitId,
+  EpisodePrologue,
+} from "../screens/episode-intro/episode-intro.contract";
 
 import {
   assessmentCompletesStep,
@@ -42,6 +45,7 @@ import type {
   VisualNovelProgress,
 } from "../screens/visual-novel/visual-novel.contract";
 import { learningScreenFor, roleplayScreenFor } from "./screen-routing";
+import { learningSessionWiring } from "./learning-session-wiring";
 import { specialUnitWiring } from "./special-unit-wiring";
 import { tabRootActions } from "./nav-reducer";
 import { episodeIntroWiring } from "./episode-intro-wiring";
@@ -79,6 +83,10 @@ export type JourneyWiringArgs = {
   readonly setSeenEpisodeIntroIds: Dispatch<SetStateAction<readonly string[]>>;
   readonly pendingResults: readonly AnswerResult[];
   readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
+  /** 끝낸 표지 유닛입니다. 맵의 표지 게이트(`mapItemStatus`)가 이 값을 봅니다. */
+  readonly completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
+  readonly pendingSkippedCount: number;
+  readonly setPendingSkippedCount: Dispatch<SetStateAction<number>>;
 };
 
 // 반환 객체를 `journey`로 먼저 이름 붙이고, `onMessengerExit`·`onSelectNotification`이
@@ -105,6 +113,9 @@ export function journeyWiring(args: JourneyWiringArgs) {
     setSessionOptions,
     pendingResults,
     setPendingResults,
+    completedEpisodeIntroIds,
+    pendingSkippedCount,
+    setPendingSkippedCount,
   } = args;
 
   const unitStarts = {
@@ -121,61 +132,15 @@ export function journeyWiring(args: JourneyWiringArgs) {
       setVisualNovelProgress,
     }),
     completedStepCount,
-    // 시트의 `시작`이 여기로 옵니다. 목적지는 `learningFormsForStep`의 **첫 활동**이고
-    // `learningScreenFor`가 화면으로 옮깁니다 — 학습형 이름을 리터럴로 쓰지 않습니다.
-    // 목록이 비지 않는 것은 타입이 지므로 첫 항목 접근에 방어 분기가 없습니다.
-    onStartStep: (id: JourneyStepId) => {
-      setPendingResults([]);
-      dispatch({ type: "push", screen: learningScreenFor(learningFormsForStep(id)[0], id, 0) });
-    },
-    // 중도 이탈입니다. **진행을 갱신하지 않습니다.** `onFinishLearning`과 합치지
-    // 않는 이유가 이 한 줄의 차이입니다. 쌓아 둔 결과는 버립니다 — 다음에 이 스텝을
-    // 다시 열면 첫 활동부터이므로 남겨 두면 지난 세션의 정오가 섞입니다.
-    onExitLearning: () => {
-      setPendingResults([]);
-      dispatch({ type: "backToRoot" });
-    },
-    onFinishLearning: (
-      id: JourneyStepId,
-      activityIndex: number,
-      results: readonly AnswerResult[],
-      // 건너뛴 말하기 문항 수입니다(D8). `results`처럼 여러 활동에 걸쳐 쌓이지
-      // 않습니다 — 건너뛰기가 있는 활동(말하기)은 오늘 스텝의 **마지막** 활동에만
-      // 배정되어 있어(`learningFormsByStep`), 마지막 활동이 낸 값이 곧 스텝 전체의
-      // 값입니다. 그 배정이 바뀌면 `pendingResults`와 같은 형태로 쌓는 자리가
-      // 필요해집니다 — `logic` 변형이 판단합니다(logic-scaffold).
-      skippedCount: number,
-    ) => {
-      const gathered = [...pendingResults, ...results];
-      const next = learningFormAt(id, activityIndex + 1);
-      // 활동이 남았으면 평가로 가지 않습니다 — 다음 활동으로 갈아탑니다. 판정은 스텝
-      // 전체를 놓고 한 번만 내립니다.
-      if (next !== undefined) {
-        setPendingResults(gathered);
-        dispatch({
-          type: "replace",
-          screen: learningScreenFor(next, id, activityIndex + 1),
-        });
-        return;
-      }
-      setPendingResults([]);
-      // 판정은 평가가 집니다 — `judgeAssessment` → `assessmentCompletesStep`. 셸에
-      // `verdict === "passed"` 리터럴을 쓰지 않습니다.
-      const verdict = judgeAssessment(gathered, assessmentPassCriterion);
-      if (assessmentCompletesStep(verdict)) {
-        setCompletedStepCount((count) => completeStep(count, id));
-      }
-      // `replace`이지 `push`가 아닙니다 — 끝난 학습 세션은 스택에 남길 자리가
-      // 아닙니다. 출구는 진입 동작이 무엇이든 활성 스택의 루트로 곧장 갑니다
-      // (ADR-0007 D6).
-      dispatch({
-        type: "replace",
-        screen: { name: "assessment", stepId: id, results: gathered, skippedCount },
-      });
-    },
-    // 평가의 `맵으로`입니다. 중도 이탈과 마찬가지로 진행을 갱신하지 않습니다 —
-    // 판정은 이미 `onFinishLearning`에서 끝났습니다.
-    onExitAssessment: () => dispatch({ type: "backToRoot" }),
+    completedEpisodeIntroIds,
+    ...learningSessionWiring({
+      dispatch,
+      setCompletedStepCount,
+      pendingResults,
+      setPendingResults,
+      pendingSkippedCount,
+      setPendingSkippedCount,
+    }),
     onExitCulture: () => dispatch({ type: "backToRoot" }),
     // push입니다 — replace가 아닙니다. 문화 학습이 스택에 남습니다.
     onStartCultureQuiz: (id: JourneyStepId) =>

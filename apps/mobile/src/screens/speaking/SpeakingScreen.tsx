@@ -130,10 +130,9 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     question == null
       ? {
           label: speakingFinishLabel,
-          // 건너뛴 문항 수입니다. `speakingSessionReducer`의 `skip` 갈래가 아직 자리
-          // 표시자라 오늘은 늘 0입니다 — `logic` 변형이 실제 값을 세면 이 자리도 함께
-          // 바뀝니다(logic-scaffold).
-          run: () => onFinish(stepId, state.results, 0),
+          // 건너뛴 문항 수는 세션이 셉니다 — `results`에서 뽑을 수 없습니다(건너뛴
+          // 문항이 `"correct"`로 실려 맞힌 문항과 구별되지 않습니다).
+          run: () => onFinish(stepId, state.results, state.skippedCount),
         }
       : state.phase === "ready"
         ? { label: "말하기", run: () => startListening(question.sentence) }

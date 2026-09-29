@@ -17,7 +17,7 @@ import {
   learningFormsForStep,
   journeyMapSections,
   completedMapItemCount,
-  episodeFinalStatus,
+  mapItemStatus,
   journeyStepOrdinal,
   type JourneyStepId,
 } from "./journey-map";
@@ -25,6 +25,7 @@ import type { MessengerUnitId } from "../messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
+import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
 
 import "./journey-map-screen.css";
 
@@ -32,6 +33,16 @@ import "./journey-map-screen.css";
 export type JourneyMapScreenProps = {
   completedStepCount: number;
   onStartStep: (id: JourneyStepId) => void;
+  /**
+   * 끝낸 표지 유닛입니다 — 표지 게이트(`mapItemStatus`)가 이 값을 봅니다.
+   *
+   * ⚠ **옵셔널인 것은 임시입니다.** 계약(spec §2.6)은 이 prop과 짝인
+   * `onStartEpisodeIntroUnit`을 **필수**로 세웁니다 — 안 넘기면 맵이 조용히 「완료
+   * 0건」으로 그려지는 자리라 ADR-0024 D4가 막는 바로 그 모양입니다. 필수로 바꾸면
+   * 이 화면을 렌더하는 파일 일곱이 `TS2739`로 서고, 그 자리를 고치는 것은
+   * 표지 맵 항목 컴포넌트를 세우는 `ui` 변형의 몫입니다.
+   */
+  completedEpisodeIntroIds?: readonly EpisodeIntroUnitId[];
   completedMessengerUnitIds: readonly MessengerUnitId[];
   onStartMessengerUnit: (id: MessengerUnitId) => void;
   completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
@@ -49,6 +60,7 @@ export type JourneyMapScreenProps = {
 export function JourneyMapScreen({
   completedStepCount,
   onStartStep,
+  completedEpisodeIntroIds = [],
   completedMessengerUnitIds,
   onStartMessengerUnit,
   completedPhoneCallUnitIds,
@@ -66,9 +78,10 @@ export function JourneyMapScreen({
   // 화면 안에 있어 아래 맵 가림과 함께 가렸습니다.
   useScreenLayer(openStep !== undefined, onLayerChange);
 
-  // 진행의 출처 다섯을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
+  // 진행의 출처 여섯을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
   const progress = {
     completedStepCount,
+    completedEpisodeIntroIds,
     completedMessengerUnitIds,
     completedPhoneCallUnitIds,
     completedVisualNovelUnitIds,
@@ -114,7 +127,11 @@ export function JourneyMapScreen({
                 />
               </view>
               {section.items.map((item) =>
-                item.kind === "messenger" ? (
+                // ⚠ **표지 항목은 아직 그려지지 않습니다.** 데이터와 파생(`mapItemStatus`의
+                // 표지 게이트)은 섰지만 표식 컴포넌트(`EpisodeIntroMapItem`)를 세우는 것은
+                // `ui` 변형의 몫입니다. 여기서 `null`을 내는 것은 **임시**이고, 그동안
+                // 헤더의 분모(맵 항목 수)와 줄에 실제로 서는 것의 수가 갈립니다.
+                item.kind === "episode-intro" ? null : item.kind === "messenger" ? (
                   <MessengerMapItem
                     key={item.id}
                     id={item.id}
@@ -145,7 +162,7 @@ export function JourneyMapScreen({
                     key={item.id}
                     id={item.id}
                     title={item.title}
-                    status={episodeFinalStatus(item, section.items, progress)}
+                    status={mapItemStatus(item, section.items, progress)}
                     onSelect={onStartEpisodeFinal}
                   />
                 ) : (

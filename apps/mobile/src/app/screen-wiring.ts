@@ -5,6 +5,7 @@
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
   EpisodeIntroTarget,
+  EpisodeIntroUnitId,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
 import type { SafeAreaInsets } from "../lib/safe-area";
@@ -93,6 +94,8 @@ export type ScreenWiring = {
   onVisualNovelExit: (outcome: VisualNovelExitOutcome, beatId: VisualNovelBeatId) => void;
   onVisualNovelReplay: (id: VisualNovelUnitId) => void;
   completedStepCount: number;
+  /** 끝낸 표지 유닛입니다 — 맵의 표지 게이트가 이 값을 봅니다. */
+  completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
   onStartStep: (id: JourneyStepId) => void;
   // 학습 화면 셋이 같은 콜백을 받으므로 이름이 듣기에 묶여 있으면 거짓이
   // 됩니다.
@@ -214,6 +217,9 @@ export type ScreenWiringArgs = {
   readonly setSeenEpisodeIntroIds: Dispatch<SetStateAction<readonly string[]>>;
   readonly pendingResults: readonly AnswerResult[];
   readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
+  readonly completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
+  readonly pendingSkippedCount: number;
+  readonly setPendingSkippedCount: Dispatch<SetStateAction<number>>;
   readonly roleplaySections: readonly RoleplaySection[];
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;

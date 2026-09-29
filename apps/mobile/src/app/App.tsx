@@ -31,7 +31,11 @@ import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.con
 import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
 import type { EpisodeFinalTest } from "../screens/episode-final/episode-final.contract";
 import { episodeFinalTestFor as productEpisodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
-import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-progress";
+import {
+  completedEpisodeIntroUnitIdsFrom,
+  completedVisualNovelUnitIdsFrom,
+  productJourneySeed,
+} from "./journey-progress";
 import type { AppJourneySeed } from "./journey-progress";
 import { entryInitialNav } from "./nav-state";
 import type { Screen } from "./nav-state";
@@ -148,6 +152,10 @@ export function App({
   // 한 스텝의 활동들이 지나오며 쌓는 결과입니다. 유닛 하나가 활동 여럿을 잇고 평가는
   // 마지막에 한 번만 돌므로, 그때까지의 정오를 여기 모읍니다(journey-wiring.ts).
   const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
+  // 같은 스텝에서 사용자가 건너뛴 문항 수입니다. `pendingResults`와 **같은 자리에 같은
+  // 모양으로** 듭니다 — 건너뛰기가 있는 활동이 스텝의 어느 자리에 오든 수가 새지
+  // 않게 하려면 둘이 함께 만들어지고 함께 버려져야 합니다.
+  const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
   // 서사 표지를 본 에피소드입니다. **영속하지 않습니다**(ADR-0007 D1) — 앱을 다시 켜면
   // 표지가 다시 섭니다. 진행이 영속하지 않는 것과 같은 저울입니다.
   const [seenEpisodeIntroIds, setSeenEpisodeIntroIds] = useState<readonly string[]>(
@@ -161,6 +169,8 @@ export function App({
   // 알립니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
 
+  const completedEpisodeIntroIds = completedEpisodeIntroUnitIdsFrom(seenEpisodeIntroIds);
+
   // 롤플레이 구획입니다. **진행에서 파생합니다** — 에피소드는 여정에서 그 에피소드의
   // 항목을 전부 끝냈을 때 열리고, 그 판정의 출처는 위의 진행 넷입니다. 상태로 따로 두면
   // 진행과 어긋날 자리가 생깁니다(ADR-0007 D3).
@@ -169,6 +179,7 @@ export function App({
     (item) =>
       isMapItemComplete(item, {
         completedStepCount,
+        completedEpisodeIntroIds,
         completedMessengerUnitIds,
         completedPhoneCallUnitIds,
         completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
@@ -209,6 +220,9 @@ export function App({
     setSeenEpisodeIntroIds,
     pendingResults,
     setPendingResults,
+    completedEpisodeIntroIds,
+    pendingSkippedCount,
+    setPendingSkippedCount,
     roleplaySections,
     entryLanguage,
     setEntryLanguage,
