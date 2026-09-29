@@ -45,7 +45,7 @@
   gap: var(--libitum-spacing-4);
 }
 
-/* 제목의 글꼴은 accent/chapter입니다 — Futura가 앞에 서고 한글은 뒤따르는 Pretendard로
+/* 제목의 글꼴은 accent/chapter입니다 — Jost가 앞에 서고 한글은 뒤따르는 Pretendard로
    떨어집니다(토큰이 폴백까지 정의합니다). 크기와 줄 높이는 디자인의 18을 따라
    heading-s에서 가져옵니다. */
 .roleplay-card-title {

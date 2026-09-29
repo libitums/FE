@@ -64,6 +64,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 폴더 구조 | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 네이밍 | 결정 | [0003](0003-workspace-and-directory-structure.md) D6·**D7**, [0004](0004-package-boundaries-and-dependency-direction.md) |
 | **인증 (제공자 · 접속 값 주입 · 세션 저장과 갱신)** | 결정 (전화번호 수단만 Supabase SMS OTP + REST 직접 호출 + `.env.local` 주입 + 세션 키 하나) — 소셜 셋은 임시 토큰 그대로 | [0027](0027-phone-otp-auth-supabase.md) — [0001](0001-repository-goal-and-scope.md) D3의 「인증 인프라」 제외가 전화번호 수단 하나에서 풀렸다(적용 기록) |
+| **앱 폰트 제공 (Accent의 Jost)** | 결정 (호스트 번들 + `UIAppFonts`, design-system이 고정한 배포물 그대로) — Pretendard는 보류 | [0030](0030-app-fonts-jost.md) — 0028은 열린 PR(#150)이 쓰고 있어 비워 둔다 |
 | **서비스 사용자 표시명 · 기술 식별자 호환성** | 결정 (`Duru` + 기존 기술 이름 유지) | [0025](0025-duru-service-display-name.md) |
 | package 경계와 책임 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
 | 의존 방향 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
