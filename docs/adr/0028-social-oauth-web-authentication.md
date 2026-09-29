@@ -297,7 +297,21 @@ authorize 요청에 `state`를 싣지 않는다. CSRF · 콜백 주입을 `state
 Apple 경로(D7)에는 **콜백 URL이 없다** — 결과는 시트를 연 `start` 호출의 콜백으로만 돌아온다.
 재생 방어는 `state` 대신 **nonce**가 진다(원본은 이 호출만 알고, ID 토큰에는 그 해시가 박힌다).
 
-## 제공자 · 대시보드 설정 — ⚠ 아직 하지 않았다
+## 제공자 · 대시보드 설정 — ⟨2026-09-29 마쳤다⟩
+
+⟨2026-09-29⟩ 아래 표의 설정을 마치고 실서버 로그인을 확인했다.
+
+| 제공자 | 확인 | 근거 |
+|---|---|---|
+| Google | iOS 시뮬레이터 — 인증 창 → 언어 선택 | Supabase auth 로그: `/token` `grant_type=pkce` 200 |
+| Apple | 실기(iPhone 13 mini) — 네이티브 시트 → 언어 선택 | Supabase auth 로그: `/token` `grant_type=id_token` 200. 제공자를 켜기 전에는 `provider_disabled` 400이었다 |
+| Facebook | 실기 — 사용자가 로그인됨을 확인 | Supabase auth 로그에서 완료 기록은 확인하지 못했다(`/authorize`만 봤다) |
+
+- Google의 OAuth 클라이언트는 **웹 애플리케이션 유형**이어야 한다 — iOS 유형에는 시크릿도 리디렉션 URI도 없다.
+- Meta 앱은 **일반 Facebook 로그인**이어야 한다 — 비즈니스용은 `scope` 대신 구성 ID를 요구한다. 개발 모드라 앱 역할에 든 계정만 로그인된다.
+- Apple은 Supabase의 Client IDs에 번들 ID만 넣었고 Secret Key는 비웠다 — 네이티브 경로에 Services ID · 키가 필요 없다는 것이 실기에서 확인됐다.
+- 설정 확인 알림 · Google 동의 화면에 Supabase 프로젝트 주소가 그대로 보인다 — 바꾸려면 Supabase 커스텀 도메인이 필요하다.
+
 
 코드는 섰지만 **실서버로 소셜 로그인이 돈 적이 한 번도 없다.** 필요한 것은 값이 아니라 **켜야 할
 자리**만 적는다 — 값은 저장소 어디에도 두지 않는다.
@@ -305,7 +319,7 @@ Apple 경로(D7)에는 **콜백 URL이 없다** — 결과는 시트를 연 `sta
 | 자리 | 해야 할 것 |
 |---|---|
 | Google · Facebook 개발자 콘솔 | OAuth 클라이언트 ID · 시크릿, 승인된 리다이렉트에 Supabase 콜백 주소 |
-| Apple Developer | App ID `com.libitum.host`(팀 `53DJZDK42H`)에 **Sign in with Apple 기능을 켠다**. 네이티브 경로라 웹용 Services ID · 키는 필요 없다 ⚠(Supabase 문서 근거 — 이 저장소에서 확인하지 않았다) |
+| Apple Developer | App ID `com.libitum.host`(팀 `7SJJT6G6JK`)에 **Sign in with Apple 기능을 켠다**. 네이티브 경로라 웹용 Services ID · 키는 필요 없다(2026-09-29 실기에서 확인) |
 | Supabase 대시보드 **Duru** 프로젝트 — Auth Providers | 세 제공자를 켠다. Google · Facebook에는 위 값을, **Apple의 Client IDs에는 번들 ID `com.libitum.host`** 를 넣는다 |
 | Supabase 대시보드 — 리다이렉트 허용 목록 | **`duru://auth-callback`** 을 더한다(Google · Facebook) |
 
@@ -353,7 +367,7 @@ Apple 경로(D7)에는 **콜백 URL이 없다** — 결과는 시트를 연 `sta
 | **D6의 해석 「로그인으로」 → 「온보딩부터」** — 임시 토큰 키를 읽지 않으면 옛 설치와 새 설치를 가를 수 없어 둘 다 온보딩부터 시작한다 | 막지 않는다 | 사용자 |
 | **구현 기본값** — 원본 nonce는 호스트 난수 · Apple에는 SHA-256 16진 해시 · 교환에는 원본, 새 모듈 `AppleSignInModule`, Apple이 주는 이름 · 이메일은 받지 않음, Host 권한 파일, 테스트 부팅 헬퍼 | 막지 않는다 | 사용자 |
 | **Apple 계정이 없는 기기에서 알림을 닫으면 `unsupported` 문구**(D7 「실패 문구」) — 조용히 돌아갈지, 이 안내를 둘지 | 막지 않는다 | 사용자 |
-| **서명 방식** — 지금 Host 타깃은 자동 서명(팀 `53DJZDK42H`)에 기댄다. 실기 · 서명 시뮬레이터 빌드에 그 팀의 프로비저닝이 필요하다 | 실기 e2e A1~A3 · A5 · A7 | 사용자 |
+| **서명 방식** — 지금 Host 타깃은 자동 서명(팀 `7SJJT6G6JK`)에 기댄다. ⟨2026-09-29 — 팀 ID를 실제로 서명한 팀으로 고쳤다. 앞서 적힌 `53DJZDK42H`로는 서명할 계정이 없었다. 이 팀은 개인 개발자 계정이라 초대받은 팀원의 Xcode 계정으로는 자동 서명이 되지 않고, **App Store Connect API 키**(`xcodebuild -allowProvisioningUpdates -allowProvisioningDeviceRegistration -authenticationKeyPath … -authenticationKeyID … -authenticationKeyIssuerID …`)로 서명한다. 키는 저장소에 두지 않는다⟩ 실기 · 서명 시뮬레이터 빌드에 그 팀의 프로비저닝이 필요하다 | 실기 e2e A1~A3 · A5 · A7 | 사용자 |
 
 ## 버린 대안
 
