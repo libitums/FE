@@ -1,9 +1,14 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
    2026-09-21 디자인 반영: 머리는 로그인과 같은 형태(좌상단 RoundButton → 제목 ·
-   안내)입니다. 그 아래 번호 · 한 자리 칸 넷 · 카운트다운 · Resend · Continue가
+   안내)입니다. 그 아래 번호 · 한 자리 칸 여섯 · 카운트다운 · Resend · Continue가
    세로로 섭니다. 버튼과 칸 모양은 ui-lynx가 지고, 이 파일은 배치와 글자만
-   그립니다. CSS 상속이 꺼져 있어 글자마다 색과 타이포를 다시 적습니다. */
+   그립니다. CSS 상속이 꺼져 있어 글자마다 색과 타이포를 다시 적습니다.
+
+   2026-09-29 design 반영(Supabase OTP): 코드가 6자리로 늘어 칸이
+   `CompactNumericInput size="s"`(48 × 56)로 바뀌고, 320pt 최소 지원 폭에서도
+   한 줄에 서도록 칸 폭을 유동화합니다. 실패 문구
+   `verification-code-screen-error`가 새로 생깁니다. */
 
 .verification-code-screen {
   display: flex;
@@ -81,14 +86,30 @@
   letter-spacing: var(--libitum-typography-label-l-letter-spacing);
 }
 
-/* 한 자리 칸 넷 · 카운트다운 · Resend 행은 가로 가운데로 둡니다. 칸 크기는
-   CompactNumericInput L(72 × 80)이 집니다. */
+/* 한 자리 칸 여섯 · 카운트다운 · Resend 행은 가로 가운데로 둡니다. 칸 크기는
+   CompactNumericInput s(48 × 56)가 집니다. 간격은 형제 사이의 시맨틱 간격
+   토큰입니다 — spacing-12로는 375pt 폭을 넘칩니다. */
 .verification-code-screen-input {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  gap: var(--libitum-spacing-12);
+  gap: var(--libitum-layout-gap-inline);
   flex-shrink: 0;
+}
+
+/* 칸 폭의 유동화 — 320pt 최소 지원 폭에서 여섯 칸이 한 줄에 서도록
+   칸을 감싼 래퍼를 늘어나고 줄어들게 하고, 402 · 375에서는 48을 넘지 않게
+   막습니다. 안쪽 CompactNumericInput은 `px` 고정 폭이라 화면 CSS 한정
+   선택자로 override합니다. */
+.verification-code-screen-digit {
+  flex: 1 1 0;
+  min-width: var(--libitum-spacing-0);
+  max-width: var(--libitum-spacing-48);
+}
+
+.verification-code-screen-input .ui-lynx-compact-numeric-input {
+  width: 100%;
+  flex-shrink: 1;
 }
 
 /* 활성 칸: 흰 면 + brand.primary 경계입니다.
@@ -99,6 +120,21 @@
   background-color: var(--libitum-color-white);
   border-width: var(--libitum-stroke-width-thin);
   border-color: var(--libitum-color-brand-primary);
+}
+
+/* 실패 문구 — 여섯 칸 바로 아래, 카운트다운 위입니다. 부모
+   `.verification-code-screen-content`의 gap(16)에서 8을 빼 보이는 간격을
+   8로 맞춥니다(`.verification-code-screen-resend` 선례와 같은 기법). 가운데
+   정렬은 칸 행 · 카운트다운 · Resend와 같은 축입니다. */
+.verification-code-screen-error {
+  margin-top: calc(-1 * var(--libitum-spacing-8));
+  text-align: center;
+  color: var(--libitum-color-feedback-incorrect-text);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
 }
 
 /* 카운트다운과 Resend 글자 사이를 약 8로 붙입니다. Resend는 누르는 자리를 48로

@@ -10,8 +10,15 @@ import type {
 import type { SafeAreaInsets } from "../lib/safe-area";
 
 import type { AnswerResult } from "../lib/answer-result";
-import type { EntryEventSink, EntryLoginMethod } from "../lib/entry-flow";
+import type {
+  PhoneNumber,
+  PhoneOtpRequestResult,
+  PhoneOtpVerifyOutcome,
+  PhoneOtpVerifyRequest,
+} from "../lib/auth-session.contract";
+import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
+import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type {
   MessengerEventSink,
@@ -172,11 +179,13 @@ export type ScreenWiring = {
   // 내리고, 나머지는 전이·이벤트·토큰 저장을 여는 콜백입니다.
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
-  onSelectLoginMethod: (method: EntryLoginMethod, phoneNumber?: string) => void;
+  onSelectSocialLoginMethod: (method: SocialLoginMethod) => void;
+  onRequestPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
+  onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
+  onVerifyPhoneOtp: (request: PhoneOtpVerifyRequest) => Promise<PhoneOtpVerifyOutcome>;
   onLoginBack: () => void;
   onLanguageSelectBack: () => void;
   onJourneyEntryBack: () => void;
-  onVerificationCodeSubmit: () => void;
   onVerificationCodeExit: () => void;
   entryLanguage: EntryLanguage;
   onSelectEntryLanguage: (language: EntryLanguage) => void;
