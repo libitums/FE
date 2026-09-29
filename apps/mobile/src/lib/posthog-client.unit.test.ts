@@ -12,6 +12,8 @@ import type {
 import { noAnalyticsEventSinks } from "./analytics-events";
 import {
   analyticsLibraryId,
+  analyticsQueueRetryDelaysMs,
+  analyticsQueueStorageKey,
   createAnalyticsSession,
   LynxPostHogClient,
   postHogClientOptions,
@@ -38,6 +40,44 @@ function fakeTransport(response: AnalyticsResponse = okResponse) {
     return response;
   };
   return { calls, transport };
+}
+
+// `NativeModules.StorageModule` 대역 — 키 · 값을 Map에 두고 set · remove 호출을 기록합니다.
+function fakeStorage(initial: Readonly<Record<string, string>> = {}) {
+  const values = new Map<string, string>(Object.entries(initial));
+  const sets: [string, string][] = [];
+  const removes: string[] = [];
+  const module = {
+    get: (key: string) => values.get(key) ?? null,
+    set: (key: string, value: string) => {
+      sets.push([key, value]);
+      values.set(key, value);
+    },
+    remove: (key: string) => {
+      removes.push(key);
+      values.delete(key);
+    },
+  };
+  return { module, values, sets, removes };
+}
+
+function networkDownThen(response: AnalyticsResponse = okResponse) {
+  const calls: Call[] = [];
+  let online = false;
+  const transport: AnalyticsTransport = async (url, init) => {
+    calls.push({ url, init });
+    if (!online) {
+      throw new Error("network down");
+    }
+    return response;
+  };
+  return {
+    calls,
+    transport,
+    goOnline: () => {
+      online = true;
+    },
+  };
 }
 
 type BatchEvent = {
@@ -99,6 +139,7 @@ describe("상수 · 옵션", () => {
       disableGeoip: true,
       personProfiles: "identified_only",
       defaultOptIn: true,
+      maxQueueSize: 200,
     });
   });
 });
@@ -167,13 +208,9 @@ describe("LynxPostHogClient 전송", () => {
     }
   });
 
-  test("PC6: 저장은 메모리 Map이고 StorageModule을 부르지 않는다", async () => {
-    const storage = {
-      get: vi.fn<() => void>(),
-      set: vi.fn<() => void>(),
-      remove: vi.fn<() => void>(),
-    };
-    vi.stubGlobal("NativeModules", { StorageModule: storage });
+  test("PC6: 익명 ID · 세션은 메모리에만 두고, 저장소에는 대기열 키 하나만 쓴다", async () => {
+    const storage = fakeStorage();
+    vi.stubGlobal("NativeModules", { StorageModule: storage.module });
     const { calls, transport } = fakeTransport();
     const client = makeClient(transport);
 
@@ -187,9 +224,8 @@ describe("LynxPostHogClient 전송", () => {
     await client.flush();
     await vi.waitFor(() => expect(calls.length).toBeGreaterThan(0));
 
-    expect(storage.get).not.toHaveBeenCalled();
-    expect(storage.set).not.toHaveBeenCalled();
-    expect(storage.remove).not.toHaveBeenCalled();
+    const touched = new Set([...storage.sets.map(([key]) => key), ...storage.removes]);
+    expect([...touched]).toStrictEqual([analyticsQueueStorageKey]);
   });
 
   test("PC7: 문자열이 아닌 본문은 거부된 Promise이고 동기로 던지지 않는다", async () => {
@@ -413,4 +449,127 @@ describe("productAnalyticsSession", () => {
 
 beforeEach(() => {
   vi.restoreAllMocks();
+});
+
+describe("대기열 · 재시도 · 보존", () => {
+  const sentAfter = (calls: readonly Call[], from: number) =>
+    calls.slice(from).flatMap((call) => {
+      try {
+        return bodyOf(call).batch.map((event) => event.event);
+      } catch {
+        return [];
+      }
+    });
+
+  test("PC14: 네트워크 오류면 이벤트가 대기열에 남고, 다음 이벤트 때 함께 나간다", async () => {
+    vi.useFakeTimers();
+    const net = networkDownThen();
+    const client = makeClient(net.transport);
+
+    client.capture("settings_opened", {});
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(net.calls.length).toBeGreaterThan(0);
+    const failedAttempts = net.calls.length;
+
+    net.goOnline();
+    client.capture("terms_opened", {});
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(sentAfter(net.calls, failedAttempts)).toStrictEqual(["settings_opened", "terms_opened"]);
+  });
+
+  test("PC15: 네트워크 오류 뒤 새 이벤트가 없어도 정해진 간격 뒤 스스로 다시 보낸다", async () => {
+    vi.useFakeTimers();
+    const net = networkDownThen();
+    const client = makeClient(net.transport);
+
+    client.capture("settings_opened", {});
+    // SDK 자체 재시도(첫 시도 + fetchRetryCount회)가 모두 끝난 시점부터 잰다.
+    const sdkAttempts = 1 + postHogClientOptions.fetchRetryCount;
+    for (let i = 0; i < 60 && net.calls.length < sdkAttempts; i += 1) {
+      await vi.advanceTimersByTimeAsync(500);
+    }
+    await vi.advanceTimersByTimeAsync(0);
+    const failedAttempts = net.calls.length;
+    expect(failedAttempts).toBe(sdkAttempts);
+    net.goOnline();
+
+    await vi.advanceTimersByTimeAsync(analyticsQueueRetryDelaysMs[0]! - 1_000);
+    expect(net.calls.length).toBe(failedAttempts);
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect(sentAfter(net.calls, failedAttempts)).toStrictEqual(["settings_opened"]);
+  });
+
+  test("PC16: 스스로 다시 보내기는 간격 표의 횟수만큼만 하고 멈춘다", async () => {
+    vi.useFakeTimers();
+    const net = networkDownThen();
+    const client = makeClient(net.transport);
+
+    client.capture("settings_opened", {});
+    await vi.advanceTimersByTimeAsync(10_000);
+    const afterFirst = net.calls.length;
+    const total = analyticsQueueRetryDelaysMs.reduce((sum, ms) => sum + ms, 0);
+    await vi.advanceTimersByTimeAsync(total + 60_000);
+    const afterRetries = net.calls.length;
+    expect(afterRetries).toBeGreaterThan(afterFirst);
+
+    await vi.advanceTimersByTimeAsync(3_600_000);
+    expect(net.calls.length).toBe(afterRetries);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  test("PC17: 대기열은 저장소에 적히고, 보내고 나면 지워진다", async () => {
+    vi.useFakeTimers();
+    const storage = fakeStorage();
+    vi.stubGlobal("NativeModules", { StorageModule: storage.module });
+    const net = networkDownThen();
+    const client = makeClient(net.transport);
+
+    client.capture("settings_opened", {});
+    await vi.advanceTimersByTimeAsync(10_000);
+    const saved = storage.values.get(analyticsQueueStorageKey);
+    expect(saved).toBeTypeOf("string");
+    expect(JSON.parse(saved!)).toMatchObject([{ message: { event: "settings_opened" } }]);
+
+    net.goOnline();
+    client.capture("terms_opened", {});
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(storage.values.has(analyticsQueueStorageKey)).toBe(false);
+  });
+
+  test("PC18: 저장소에 남은 대기열은 새 실행이 시작하자마자 보낸다", async () => {
+    const leftover = JSON.stringify([
+      {
+        message: {
+          type: "capture",
+          event: "settings_opened",
+          distinct_id: "previous-run",
+          properties: { $lib: "libitums-lynx" },
+          timestamp: "2026-09-29T00:00:00.000Z",
+          uuid: "01a0eacf-0000-7000-8000-000000000000",
+        },
+      },
+    ]);
+    const storage = fakeStorage({ [analyticsQueueStorageKey]: leftover });
+    vi.stubGlobal("NativeModules", { StorageModule: storage.module });
+    const { calls, transport } = fakeTransport();
+
+    makeClient(transport);
+
+    await vi.waitFor(() => expect(calls.length).toBe(1));
+    expect(batchEventsOf(calls).map((event) => [event.event, event.distinct_id])).toStrictEqual([
+      ["settings_opened", "previous-run"],
+    ]);
+    await vi.waitFor(() => expect(storage.values.has(analyticsQueueStorageKey)).toBe(false));
+  });
+
+  test("PC18: 저장된 값이 깨져 있으면 버리고 던지지 않는다", () => {
+    const storage = fakeStorage({ [analyticsQueueStorageKey]: "{not json" });
+    vi.stubGlobal("NativeModules", { StorageModule: storage.module });
+    const { transport } = fakeTransport();
+
+    expect(() => makeClient(transport)).not.toThrow();
+    expect(storage.values.has(analyticsQueueStorageKey)).toBe(false);
+  });
 });

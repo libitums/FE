@@ -11,7 +11,7 @@ import { analyticsConfigFrom } from "../lib/analytics-config";
 import { authTokenStorageKey } from "../lib/auth-token";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import { notificationItems } from "../screens/notifications/notification-items";
-import { createAnalyticsSession } from "../lib/posthog-client";
+import { analyticsQueueStorageKey, createAnalyticsSession } from "../lib/posthog-client";
 
 // 「App의 한 사용자 흐름 → sink → 매핑 → SDK 큐 → 어댑터 → transport 본문」을 한 트리에서
 // 봅니다. 대역은 경계 둘뿐입니다 — 가짜 transport(전송)와 `NativeModules.StorageModule`
@@ -205,14 +205,16 @@ test.each<Behavior>(["reject", "status-503"])(
 
 // ------------------------------------------------------------------------- IA5
 
-test("[IA5] 분석은 StorageModule에 인증 토큰 키 밖으로 아무것도 쓰지 않는다", async () => {
+test("[IA5] 분석은 익명 ID를 따로 저장하지 않는다 — 쓰는 키는 인증 토큰 · 분석 대기열뿐이다", async () => {
   const { transport, calls } = fakeTransport();
   renderApp(sessionApp(transport));
 
   tapAutoPlayToggle();
   await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(2));
 
-  expect(storageSets.filter((key) => key !== authTokenStorageKey)).toEqual([]);
+  expect(
+    storageSets.filter((key) => key !== authTokenStorageKey && key !== analyticsQueueStorageKey),
+  ).toEqual([]);
 });
 
 // ------------------------------------------------------------------------- IA6

@@ -6,6 +6,8 @@ import type { PostHogFetchOptions, PostHogFetchResponse } from "@posthog/core";
 
 import type {
   AnalyticsConfig,
+  AnalyticsQueueRetryDelaysMs,
+  AnalyticsQueueStorageKey,
   AnalyticsTransport,
   CreateAnalyticsSession,
   PostHogClientOptions,
@@ -13,6 +15,7 @@ import type {
   ResolveAnalyticsTransport,
 } from "./analytics.contract";
 import { analyticsConfig } from "./analytics-config";
+import { getItem, removeItem, setItem } from "./storage";
 import { analyticsEventSinksFrom, noAnalyticsSession } from "./analytics-events";
 
 export const postHogCoreVersion = "1.55.2" as const;
@@ -34,16 +37,73 @@ export const postHogClientOptions: PostHogClientOptions = {
   disableGeoip: true,
   personProfiles: "identified_only",
   defaultOptIn: true,
+  maxQueueSize: 200,
 };
+
+export const analyticsQueueStorageKey: AnalyticsQueueStorageKey = "analytics.queue";
+
+export const analyticsQueueRetryDelaysMs: AnalyticsQueueRetryDelaysMs = [
+  15_000, 30_000, 60_000, 120_000, 300_000,
+];
+
+// SDK가 보내지 못한 이벤트를 담는 영속 속성 이름입니다(`PostHogPersistedProperty.Queue`).
+// 값 import는 `PostHogCore` 하나뿐이라는 규칙 때문에 열거형 대신 문자열로 적습니다.
+const sdkQueueProperty = "queue";
 
 export class LynxPostHogClient extends PostHogCore {
   private readonly transport: AnalyticsTransport;
-  // 익명 ID · 세션 같은 영속 속성은 메모리에만 둡니다(실행마다 새 ID — 스토리지 참조 0).
+  // 익명 ID · 세션 같은 영속 속성은 메모리에만 둡니다(실행마다 새 ID). 저장소로 나가는 것은
+  // 보내지 못한 이벤트 대기열 하나뿐입니다(ADR-0029).
   private readonly persisted = new Map<string, unknown>();
+  private retryTimer: ReturnType<typeof setTimeout> | undefined;
+  private retryAttempt = 0;
 
   constructor(config: AnalyticsConfig, transport: AnalyticsTransport) {
     super(config.projectKey, postHogClientOptions);
     this.transport = transport;
+    this.on("error", () => this.scheduleRetry());
+    this.on("flush", () => {
+      this.retryAttempt = 0;
+    });
+    this.restoreQueue();
+  }
+
+  // 지난 실행이 남긴 대기열을 메모리로 올리고 곧바로 보냅니다. 깨진 값은 버립니다.
+  private restoreQueue(): void {
+    const saved = getItem(analyticsQueueStorageKey);
+    if (saved === null) {
+      return;
+    }
+    let queue: unknown;
+    try {
+      queue = JSON.parse(saved);
+    } catch {
+      queue = null;
+    }
+    if (!Array.isArray(queue) || queue.length === 0) {
+      removeItem(analyticsQueueStorageKey);
+      return;
+    }
+    this.persisted.set(sdkQueueProperty, queue);
+    this.flush().catch(() => undefined);
+  }
+
+  // 네트워크 오류로 대기열이 남으면 간격 표대로 스스로 다시 보냅니다. 표를 다 쓰면 멈춥니다 —
+  // 남은 대기열은 다음 이벤트나 다음 실행이 보냅니다. 그 밖 오류는 SDK가 대기열을 이미 비웠습니다.
+  private scheduleRetry(): void {
+    const queue = this.persisted.get(sdkQueueProperty);
+    if (this.retryTimer !== undefined || !Array.isArray(queue) || queue.length === 0) {
+      return;
+    }
+    const delay = analyticsQueueRetryDelaysMs[this.retryAttempt];
+    if (delay === undefined) {
+      return;
+    }
+    this.retryAttempt += 1;
+    this.retryTimer = setTimeout(() => {
+      this.retryTimer = undefined;
+      this.flush().catch(() => undefined);
+    }, delay);
   }
 
   fetch(url: string, options: PostHogFetchOptions): Promise<PostHogFetchResponse> {
@@ -84,9 +144,24 @@ export class LynxPostHogClient extends PostHogCore {
   setPersistedProperty<T>(key: string, value: T | null): void {
     if (value === null) {
       this.persisted.delete(key);
-      return;
+    } else {
+      this.persisted.set(key, value);
     }
-    this.persisted.set(key, value);
+    if (key === sdkQueueProperty) {
+      this.saveQueue(value);
+    }
+  }
+
+  private saveQueue(queue: unknown): void {
+    try {
+      if (Array.isArray(queue) && queue.length > 0) {
+        setItem(analyticsQueueStorageKey, JSON.stringify(queue));
+      } else {
+        removeItem(analyticsQueueStorageKey);
+      }
+    } catch {
+      // 저장 실패는 메모리 대기열만 남깁니다.
+    }
   }
 }
 

@@ -222,8 +222,23 @@ export type PostHogClientOptions = Required<
     | "disableGeoip"
     | "personProfiles"
     | "defaultOptIn"
+    | "maxQueueSize"
   >
 > & { readonly host: PostHogHost };
+
+// ------------------------------------------------------------------ 대기열 보존
+
+/**
+ * 보내지 못한 이벤트 대기열을 담는 저장소 키입니다(`StorageModule`이 `libitum.` 접두를 붙입니다).
+ * 저장소에 두는 분석 값은 이것 하나뿐입니다 — 익명 ID · 세션은 메모리에만 둡니다(ADR-0029).
+ */
+export type AnalyticsQueueStorageKey = "analytics.queue";
+
+/**
+ * 네트워크 오류 뒤 새 이벤트 없이 스스로 다시 보내는 간격(ms)입니다. 차례로 쓰고 다 쓰면
+ * 멈춥니다 — 남은 대기열은 다음 이벤트나 다음 실행이 보냅니다.
+ */
+export type AnalyticsQueueRetryDelaysMs = readonly number[];
 
 // ------------------------------------------------------------------ 컴파일 검사
 
