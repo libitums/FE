@@ -34,7 +34,7 @@
    **`CompactNumericInput`**(여섯 칸)이다
    ([ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-09-16 확장」 절).
 6. 이벤트는 셋 — 화면 열람 · 로그인 수단 선택 · 완주. **새 이벤트는 0건**이다. 네트워크는
-   `lib/api-client.ts` 한 곳에서만 나가고 sink는 제품 진입점에서 `null`이다(§6).
+   `lib/api-client.ts` 한 곳에서만 나가고 sink는 제품 진입점에서 `null`이다(§6). ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 7. 새 `NavAction`이 없다. `Tab` · `Nav` · `NavAction` · `initialNav` · 리듀서는 **한 글자도
    바뀌지 않았고** `Screen`에 멤버 여섯이 늘었다. 그중 `verification-code`만 필드
    `phoneNumber: PhoneNumber`를 갖는다(2026-09-29 — 옵셔널에서 필수로).
@@ -219,7 +219,7 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
   속성으로 막는다. 전화번호는 어디에도 저장·전송되지 않는다.
 - sink는 App의 optional prop이고 제품 진입점이 **`null`을 명시한다.** ⇒ **이 변경이 병합돼도 실제
   집계는 0건**이고, 그래서 이벤트는 **e2e 항목이 아니다** — 기기에서 관측할 수 없고 `integration`이
-  진다.
+  진다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 
 ## 7. `data-testid`
 

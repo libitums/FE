@@ -2,8 +2,8 @@
   "targets": [
     {
       "path": "apps/mobile/dist/main.lynx.bundle",
-      "maxBytes": 1171000,
-      "note": "모바일 Lynx 번들입니다. 2026-09-28 기준 1,115,485 bytes이고 상한은 약 5% 여유입니다. 앞선 상한(1,108,000)에서 에피소드 최종 테스트가 약 30.7 kB를 더해 넘었습니다(main 80faa11 1,084,745 bytes 기준) — 최종 테스트 화면(낱말 고르기 · 말하기 패널)과 문항 표, 맵의 최종 테스트 항목 · 잠김 파생입니다. 그 앞 main에서 손글씨 탐침(#141) · 메신저 타이핑 테스트(#142)가 상한 안에서 약 30 kB를 이미 썼습니다."
+      "maxBytes": 1259000,
+      "note": "모바일 Lynx 번들입니다. 2026-09-29 기준 1,198,319 bytes이고 상한은 약 5% 여유입니다. 앞선 상한(1,171,000)에서 PostHog 분석 전송(`@posthog/core` 1.55.2의 `PostHogCore`와 Lynx 어댑터 · 설정 · 이벤트 매핑, background 스레드 전용)이 약 69.9 kB를 더해 넘었습니다(main 8470d5c 1,128,358 bytes 기준). 패키지 index 대신 `dist/posthog-core.mjs`로 별칭해 쓰지 않는 로그 · 메트릭 · 트레이스 · 설문 모듈(약 167 kB)을 뺐습니다(`lynx.config.ts`). 별칭이 빠지면 약 1,364,000 bytes가 되어 이 상한을 넘습니다."
     },
     {
       "path": "apps/mobile/dist/static/image",

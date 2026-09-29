@@ -314,4 +314,4 @@ Host)와 다르므로 Release 회차는 여전히 필요하다. 그 밖에는 �
 따라서 이 문서의 어떤 관찰도 이벤트(`entry_screen_viewed` · `entry_login_method_selected` ·
 `entry_completed`)가 실제 운영 집계로 전송되었다는 증거로 쓰지 않는다. 이벤트의 경계와
 순서는 `integration`(`App.entry.integration.test.tsx`)이 진다. 운영 sink 연결과 서버
-집계는 별도 후속 범위다.
+집계는 별도 후속 범위다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다(키가 있는 빌드만, [ADR-0029](../adr/0029-product-analytics-posthog.md)). 이 문서의 판정은 그대로이고, 전송 관찰은 [분석 e2e](analytics.md) 한 곳에 모은다⟩
