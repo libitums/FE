@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import type {
   AnalyticsConfig,
   AnalyticsRequestInit,
   AnalyticsTransport,
 } from "../lib/analytics.contract";
 import { analyticsConfigFrom } from "../lib/analytics-config";
-import { authTokenStorageKey } from "../lib/auth-token";
-import { entrySplashDurationMs } from "../lib/entry-flow";
+import { authSessionStorageKey } from "../lib/auth-session";
 import { notificationItems } from "../screens/notifications/notification-items";
 import { analyticsQueueStorageKey, createAnalyticsSession } from "../lib/posthog-client";
 
@@ -79,29 +79,24 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
-// 토큰이 있는 상태로 스플래시를 건너뜁니다(`App.settings.integration.test.tsx`의 형태).
-// `StorageModule.set`이 불린 키를 기록합니다.
-function renderApp(ui: Parameters<typeof render>[0]) {
-  const tokenStore = new Map<string, string>();
-  tokenStore.set(authTokenStorageKey, "existing-token");
-  vi.stubGlobal("NativeModules", {
-    StorageModule: {
-      get: (key: string) => tokenStore.get(key) ?? null,
-      set: (key: string, value: string) => {
-        storageSets.push(key);
-        tokenStore.set(key, value);
-      },
-      remove: (key: string) => void tokenStore.delete(key),
-    },
-  });
-  vi.useFakeTimers();
-  const result = render(ui);
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
-  vi.useRealTimers();
+// 로그인된 설치로 부팅합니다(공용 `renderSignedInApp` — 세션 저장 + 갱신 응답 대역).
+// 부팅이 끝난 뒤 `StorageModule.set`을 감싸 불린 키를 기록합니다 — 부팅 중 세션 갱신이 쓰는
+// 키는 IA5의 관심 밖입니다.
+async function renderApp(ui: Parameters<typeof render>[0]) {
+  const result = await renderSignedInApp(ui);
+  const storage = (
+    globalThis as unknown as {
+      NativeModules: { StorageModule: { set(k: string, v: string): void } };
+    }
+  ).NativeModules.StorageModule;
+  const set = storage.set.bind(storage);
+  storage.set = (key: string, value: string) => {
+    storageSets.push(key);
+    set(key, value);
+  };
   return result;
 }
 
@@ -133,7 +128,7 @@ function tapAutoPlayToggle(): void {
 
 test("[IA1] 설정 탭 → 자동 재생 토글이 요청 본문의 이벤트 둘(settings_opened → session_option_changed)로 도착한다", async () => {
   const { transport, calls } = fakeTransport();
-  renderApp(sessionApp(transport));
+  await renderApp(sessionApp(transport));
 
   tapAutoPlayToggle();
 
@@ -151,7 +146,7 @@ test("[IA2] 알림 버튼 → 첫 알림 항목 tap이 notifications_opened → 
   const item = notificationItems()[0];
   if (item === undefined) throw new Error("no notification item");
   const { transport, calls } = fakeTransport();
-  renderApp(sessionApp(transport));
+  await renderApp(sessionApp(transport));
 
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   fireEvent.tap(screen.getByTestId(`notification-list-item-${item.id}`), {});
@@ -173,7 +168,7 @@ test("[IA2] 알림 버튼 → 첫 알림 항목 tap이 notifications_opened → 
 
 test("[IA3] 키가 없으면(config null) transport가 한 번도 불리지 않고 토글은 그대로 바뀐다", async () => {
   const { transport, calls } = fakeTransport();
-  renderApp(sessionApp(transport, null));
+  await renderApp(sessionApp(transport, null));
 
   tapAutoPlayToggle();
 
@@ -190,7 +185,7 @@ test.each<Behavior>(["reject", "status-503"])(
   async (behavior) => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     const { transport, calls } = fakeTransport(behavior);
-    renderApp(sessionApp(transport));
+    await renderApp(sessionApp(transport));
 
     vi.useFakeTimers();
     tapAutoPlayToggle();
@@ -207,15 +202,15 @@ test.each<Behavior>(["reject", "status-503"])(
 
 // ------------------------------------------------------------------------- IA5
 
-test("[IA5] 분석은 익명 ID를 따로 저장하지 않는다 — 쓰는 키는 인증 토큰 · 분석 대기열뿐이다", async () => {
+test("[IA5] 분석은 익명 ID를 따로 저장하지 않는다 — 쓰는 키는 인증 세션 · 분석 대기열뿐이다", async () => {
   const { transport, calls } = fakeTransport();
-  renderApp(sessionApp(transport));
+  await renderApp(sessionApp(transport));
 
   tapAutoPlayToggle();
   await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(2));
 
   expect(
-    storageSets.filter((key) => key !== authTokenStorageKey && key !== analyticsQueueStorageKey),
+    storageSets.filter((key) => key !== authSessionStorageKey && key !== analyticsQueueStorageKey),
   ).toEqual([]);
 });
 
@@ -223,13 +218,13 @@ test("[IA5] 분석은 익명 ID를 따로 저장하지 않는다 — 쓰는 키�
 
 test("[IA6] 앱을 다시 띄우면(새 세션) distinct_id가 달라진다", async () => {
   const first = fakeTransport();
-  const view = renderApp(sessionApp(first.transport));
+  const view = await renderApp(sessionApp(first.transport));
   openSettingsTab();
   await vi.waitFor(() => expect(sentEvents(first.calls)).toHaveLength(1));
   view.unmount();
 
   const second = fakeTransport();
-  renderApp(sessionApp(second.transport));
+  await renderApp(sessionApp(second.transport));
   openSettingsTab();
   await vi.waitFor(() => expect(sentEvents(second.calls)).toHaveLength(1));
 
