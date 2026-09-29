@@ -64,7 +64,7 @@ export class LynxPostHogClient extends PostHogCore {
   private retryAttempt = 0;
 
   constructor(config: AnalyticsConfig, transport: AnalyticsTransport) {
-    super(config.projectKey, postHogClientOptions);
+    super(config.projectKey, { ...postHogClientOptions, host: config.host });
     this.transport = transport;
     this.on("error", () => this.scheduleRetry());
     this.on("flush", () => {
@@ -186,7 +186,7 @@ export class LynxPostHogClient extends PostHogCore {
 export const resolveAnalyticsTransport: ResolveAnalyticsTransport = () => {
   const globalFetch = (globalThis as unknown as { fetch?: AnalyticsTransport }).fetch;
   if (typeof globalFetch === "function") {
-    return (url, init) => globalFetch(url, init);
+    return (url, init) => globalFetch.call(globalThis, url, init);
   }
   if (typeof lynx !== "undefined" && typeof lynx.fetch === "function") {
     const lynxFetch = lynx.fetch.bind(lynx) as unknown as AnalyticsTransport;
