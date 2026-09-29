@@ -264,3 +264,70 @@ test("[IA-EI] 서사 표지를 열고 건너뛰면 표지 이벤트 둘이 envir
     environment: "development",
   });
 });
+
+// ------------------------------------------------------------------------- IA-ID
+
+function accessTokenFor(userId: string): string {
+  const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
+  return `${encode({ alg: "HS256", typ: "JWT" })}.${encode({ sub: userId })}.signature`;
+}
+
+test("[IA-ID1] 로그인된 설치는 부팅 뒤 이벤트가 그 사용자의 distinct_id로 도착한다", async () => {
+  const { transport, calls } = fakeTransport();
+  const session = createAnalyticsSession(testConfig, transport);
+  await renderSignedInApp(
+    <App
+      {...session.sinks}
+      analyticsIdentify={session.identify}
+      completedEpisodeIntroIds={completedIntros}
+    />,
+    { refreshedAccessToken: accessTokenFor("user-1") },
+  );
+
+  openSettingsTab();
+
+  await vi.waitFor(() =>
+    expect(sentEvents(calls).map((event) => event.event)).toContain("settings_opened"),
+  );
+  const events = sentEvents(calls);
+  expect(events.map((event) => event.event)).toEqual(["$identify", "settings_opened"]);
+  expect(events.map((event) => event.distinct_id)).toEqual(["user-1", "user-1"]);
+  expect(events[1]!.properties).toMatchObject({
+    $process_person_profile: true,
+    environment: "development",
+  });
+});
+
+test("[IA-ID2] 같은 사용자는 앱을 다시 켜도 같은 distinct_id다", async () => {
+  const first = fakeTransport();
+  const firstSession = createAnalyticsSession(testConfig, first.transport);
+  const view = await renderSignedInApp(
+    <App
+      {...firstSession.sinks}
+      analyticsIdentify={firstSession.identify}
+      completedEpisodeIntroIds={completedIntros}
+    />,
+    { refreshedAccessToken: accessTokenFor("user-1") },
+  );
+  openSettingsTab();
+  await vi.waitFor(() => expect(sentEvents(first.calls).length).toBeGreaterThanOrEqual(2));
+  view.unmount();
+
+  const second = fakeTransport();
+  const secondSession = createAnalyticsSession(testConfig, second.transport);
+  await renderSignedInApp(
+    <App
+      {...secondSession.sinks}
+      analyticsIdentify={secondSession.identify}
+      completedEpisodeIntroIds={completedIntros}
+    />,
+    { refreshedAccessToken: accessTokenFor("user-1") },
+  );
+  openSettingsTab();
+  await vi.waitFor(() => expect(sentEvents(second.calls).length).toBeGreaterThanOrEqual(2));
+
+  const distinctIds = [...sentEvents(first.calls), ...sentEvents(second.calls)]
+    .filter((event) => event.event === "settings_opened")
+    .map((event) => event.distinct_id);
+  expect(distinctIds).toEqual(["user-1", "user-1"]);
+});

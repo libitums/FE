@@ -81,7 +81,7 @@ PostHog 웹에서 해당 프로젝트의 **Activity → Live events**를 열어 
 |---|---|---|
 | B1 | 앱 실행 → 진입 흐름 통과 → 설정 탭 tap | Live events에 `settings_opened` 1건. properties에 `$lib = libitums-lynx`, `$process_person_profile = false`, `environment = development` |
 | B2 | 설정 토글 · 알림 항목 tap · 스페셜 유닛 열기 · 나가기 | 각 이벤트가 이름 · properties 그대로 도착(spec §4.1 카탈로그와 대조: 예 `session_option_changed`의 `option` · `value`, `notification_item_tapped`의 `notificationId` · `target`, `messenger_unit_opened`의 `unitId` · `entrySource`). 전화번호 · 인증 토큰 · 대화 본문 · 기기 모델 · OS 버전이 properties에 **없다** |
-| B3 | 앱을 완전히 종료 후 재실행 → 설정 탭 tap | 새 `settings_opened`의 `distinct_id`가 B1과 **다르다**(실행마다 새 사용자 — 한계 §12-1) |
+| B3 | 앱을 완전히 종료 후 재실행 → 설정 탭 tap | ⟨2026-09-29 — 식별이 붙었다(ADR-0029 D8)⟩ 로그인된 설치는 새 `settings_opened`의 `distinct_id`가 B1과 **같고** 둘 다 Supabase 사용자 ID다. 재실행 직후 `$identify` 1건이 먼저 도착한다. (로그인하지 않은 실행끼리는 여전히 다르다) |
 | B4 | 비행기 모드를 켠 채 설정 탭 tap → 앱 조작 계속 → (a) 30초 안에 비행기 모드 해제 (b) 다른 회차: 켠 채 앱 종료 | 화면 동작 불변 · 오류 화면 없음. (a) 비행기 모드를 끈 뒤 15초 안팎에 **새 조작 없이** 도착한다(ADR-0029 D12 재시도). (b) 비행기 모드를 끄고 앱을 다시 켜면 **곧바로** 도착한다(저장된 대기열) |
 | B5 | 이벤트 하나 발생 직후 홈으로 보내고 5초 뒤 앱 복귀 | 도착 여부를 **기록만** 한다(background flush 없음의 실제 영향 — 판정 아님) |
 

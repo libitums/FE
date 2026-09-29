@@ -2,6 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
+import type { AnalyticsIdentify } from "../lib/analytics.contract";
 import { refreshAuthSession, requestPhoneOtp, verifyPhoneOtp } from "../lib/api-client";
 import {
   clearAuthSession,
@@ -10,6 +11,7 @@ import {
   saveAuthSession,
   sessionRefreshDisposition,
 } from "../lib/auth-session";
+import { authUserIdFrom } from "../lib/auth-user-id";
 import {
   entryCompletedEvent,
   entryLoginMethodSelectedEvent,
@@ -18,6 +20,7 @@ import {
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import type {
+  AuthSession,
   PhoneNumber,
   PhoneOtpRequestResult,
   PhoneOtpVerifyOutcome,
@@ -31,6 +34,7 @@ import { entryScreenAfterLogin } from "./screen-routing";
 
 export type EntryWiringArgs = {
   readonly entryEventSink: EntryEventSink;
+  readonly analyticsIdentify: AnalyticsIdentify | null;
   readonly dispatch: Dispatch<NavAction>;
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
@@ -38,10 +42,25 @@ export type EntryWiringArgs = {
 
 export function entryWiring({
   entryEventSink,
+  analyticsIdentify,
   dispatch,
   entryLanguage,
   setEntryLanguage,
 }: EntryWiringArgs) {
+  // 세션을 저장한 자리마다 그 사용자로 분석을 식별합니다(ADR-0029 D8). 저장한 세션에는 사용자
+  // ID가 없어 손에 든 액세스 토큰에서 읽습니다. 못 읽으면 식별하지 않고, 식별의 실패는 로그인을
+  // 막지 않습니다.
+  const storeSession = (session: AuthSession) => {
+    saveAuthSession(session);
+    const userId = authUserIdFrom(session.accessToken);
+    if (userId === null) return;
+    try {
+      analyticsIdentify?.(userId);
+    } catch {
+      // 분석은 화면을 막지 않습니다.
+    }
+  };
+
   return {
     // 스플래시 시간 종료입니다. 세션이 있으면(`refresh`) 갱신을
     // 시도하는 동안 스플래시가 그대로 섭니다. 세션이 없으면(`none`)
@@ -60,7 +79,7 @@ export function entryWiring({
           // 아니고, 실패는 온보딩을 보지 않았으므로 그 열람을 내지 않습니다).
           void refreshAuthSession(authState.refreshToken).then((result) => {
             if (result.status === "refreshed") {
-              saveAuthSession(result.session);
+              storeSession(result.session);
               dispatch({ type: "enterApp" });
               return;
             }
@@ -90,7 +109,7 @@ export function entryWiring({
     onSelectSocialLoginMethod: async (method: SocialLoginMethod): Promise<SocialSignInOutcome> => {
       const result = await signInWithSocialProvider(oauthProviderFor(method));
       if (result.status === "signed-in") {
-        saveAuthSession(result.session);
+        storeSession(result.session);
         entryEventSink?.(entryLoginMethodSelectedEvent(method));
         entryEventSink?.(entryScreenViewedEvent("language-select"));
         dispatch({ type: "push", screen: entryScreenAfterLogin({ method }) });
@@ -128,7 +147,7 @@ export function entryWiring({
     onVerifyPhoneOtp: async (request: PhoneOtpVerifyRequest): Promise<PhoneOtpVerifyOutcome> => {
       const result = await verifyPhoneOtp(request);
       if (result.status === "verified") {
-        saveAuthSession(result.session);
+        storeSession(result.session);
         entryEventSink?.(entryScreenViewedEvent("language-select"));
         dispatch({ type: "push", screen: { name: "language-select" } });
         return { status: "verified" };
