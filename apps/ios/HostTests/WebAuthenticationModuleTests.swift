@@ -87,12 +87,13 @@ final class WebAuthenticationModuleTests: XCTestCase {
     XCTAssertNotEqual(first, second)
   }
 
-  // 범위 밖(0 · 65)은 빈 문자열이다.
+  // 범위 밖(0 · 65)과 값 없음(JS `null` · `undefined`)은 빈 문자열이다.
   func testWM5RandomBytesOutOfRangeReturnsEmptyString() {
     let module = WebAuthenticationModule()
 
     XCTAssertEqual(module.randomBytes(0), "")
     XCTAssertEqual(module.randomBytes(65), "")
+    XCTAssertEqual(module.randomBytes(nil), "")
   }
 
   // MARK: - WM6 — 모듈 모양

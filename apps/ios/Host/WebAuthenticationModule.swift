@@ -76,9 +76,10 @@ final class WebAuthenticationModule: NSObject, LynxModule {
     }
   }
 
-  @objc func randomBytes(_ count: NSNumber) -> String {
-    let byteCount = count.intValue
-    guard (1...64).contains(byteCount) else { return "" }
+  /// `count`는 옵셔널이다 — JS가 `null` · `undefined`를 넘기면 브리지가 nil을 건네므로,
+  /// 강제 언래핑으로 죽지 않고 범위 밖 값과 같이 빈 문자열을 돌려준다.
+  @objc func randomBytes(_ count: NSNumber?) -> String {
+    guard let byteCount = count?.intValue, (1...64).contains(byteCount) else { return "" }
 
     var bytes = [UInt8](repeating: 0, count: byteCount)
     let status = SecRandomCopyBytes(kSecRandomDefault, byteCount, &bytes)
