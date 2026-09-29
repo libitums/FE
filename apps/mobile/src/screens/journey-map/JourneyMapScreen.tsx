@@ -1,5 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { EpisodeIntroMapItem } from "./EpisodeIntroMapItem";
 import { JourneyStepNode } from "./JourneyStepNode";
 import { MessengerMapItem } from "./MessengerMapItem";
 import { PhoneCallMapItem } from "./PhoneCallMapItem";
@@ -19,6 +20,7 @@ import {
   completedMapItemCount,
   mapItemStatus,
   journeyStepOrdinal,
+  type JourneyMapItem,
   type JourneyStepId,
 } from "./journey-map";
 import type { MessengerUnitId } from "../messenger/messenger.contract";
@@ -33,24 +35,17 @@ import "./journey-map-screen.css";
 export type JourneyMapScreenProps = {
   completedStepCount: number;
   onStartStep: (id: JourneyStepId) => void;
-  /**
-   * 끝낸 표지 유닛입니다 — 표지 게이트(`mapItemStatus`)가 이 값을 봅니다.
-   *
-   * ⚠ **옵셔널인 것은 임시입니다.** 계약(spec §2.6)은 이 prop과 짝인
-   * `onStartEpisodeIntroUnit`을 **필수**로 세웁니다 — 안 넘기면 맵이 조용히 「완료
-   * 0건」으로 그려지는 자리라 ADR-0024 D4가 막는 바로 그 모양입니다. 필수로 바꾸면
-   * 이 화면을 렌더하는 파일 일곱이 `TS2739`로 서고, 그 자리를 고치는 것은
-   * 표지 맵 항목 컴포넌트를 세우는 `ui` 변형의 몫입니다.
-   */
-  completedEpisodeIntroIds?: readonly EpisodeIntroUnitId[];
+  /** 끝낸 표지 유닛입니다 — 표지 게이트(`mapItemStatus`)가 이 값을 봅니다. */
+  completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
+  onStartEpisodeIntroUnit: (id: EpisodeIntroUnitId) => void;
   completedMessengerUnitIds: readonly MessengerUnitId[];
   onStartMessengerUnit: (id: MessengerUnitId) => void;
   completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
   onStartPhoneCallUnit: (id: PhoneCallUnitId) => void;
-  completedVisualNovelUnitIds?: readonly VisualNovelUnitId[];
-  onStartVisualNovelUnit?: (id: VisualNovelUnitId) => void;
-  completedEpisodeFinalIds?: readonly EpisodeFinalUnitId[];
-  onStartEpisodeFinal?: (id: EpisodeFinalUnitId) => void;
+  completedVisualNovelUnitIds: readonly VisualNovelUnitId[];
+  onStartVisualNovelUnit: (id: VisualNovelUnitId) => void;
+  completedEpisodeFinalIds: readonly EpisodeFinalUnitId[];
+  onStartEpisodeFinal: (id: EpisodeFinalUnitId) => void;
   /** 스텝 말풍선이 열리고 닫힐 때 부릅니다 — 전역 머리를 그 동안 낭독에서 가리는 데 씁니다. */
   onLayerChange?: (open: boolean) => void;
 };
@@ -60,15 +55,16 @@ export type JourneyMapScreenProps = {
 export function JourneyMapScreen({
   completedStepCount,
   onStartStep,
-  completedEpisodeIntroIds = [],
+  completedEpisodeIntroIds,
+  onStartEpisodeIntroUnit,
   completedMessengerUnitIds,
   onStartMessengerUnit,
   completedPhoneCallUnitIds,
   onStartPhoneCallUnit,
-  completedVisualNovelUnitIds = [],
-  onStartVisualNovelUnit = () => {},
-  completedEpisodeFinalIds = [],
-  onStartEpisodeFinal = () => {},
+  completedVisualNovelUnitIds,
+  onStartVisualNovelUnit,
+  completedEpisodeFinalIds,
+  onStartEpisodeFinal,
   onLayerChange,
 }: JourneyMapScreenProps): ReactNode {
   const { sheetState, sheetTop, handleScroll, handleSelectStep, handleCloseSheet } = useStepSheet();
@@ -86,6 +82,97 @@ export function JourneyMapScreen({
     completedPhoneCallUnitIds,
     completedVisualNovelUnitIds,
     completedEpisodeFinalIds,
+  };
+
+  // 항목 하나를 줄에 세웁니다. **`default` 없는 `switch`입니다** — 삼항 사슬의 마지막
+  // `else`는 조건 없는 나머지라, 항목 종류가 늘면 조용히 스텝 노드로 그려지고
+  // `item.step`이 `undefined`가 됩니다. 종류가 늘면 여기서 반환 경로가 비어 컴파일이
+  // 섭니다(`mapItemsOf`·`render-screen`이 이미 쓰는 형태).
+  //
+  // 상태는 **전부 `mapItemStatus`가 냅니다**(ADR-0007 D3) — 항목이 각자 완료 목록을
+  // 다시 보면 표지 게이트가 그 자리마다 빠집니다. 스텝만 예외인데, 그것도 「쓰지
+  // 않는다」가 아니라 **잠김 축만** 이 파생에 묻고 줄에 그릴 어휘(`done`/`current`)는
+  // `stepStatusAt`이 그대로 냅니다(spec §2.9).
+  const renderMapItem = (
+    item: JourneyMapItem,
+    sectionItems: readonly JourneyMapItem[],
+  ): ReactNode => {
+    const status = mapItemStatus(item, sectionItems, progress);
+    switch (item.kind) {
+      case "episode-intro": {
+        return (
+          <EpisodeIntroMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartEpisodeIntroUnit}
+          />
+        );
+      }
+      case "messenger": {
+        return (
+          <MessengerMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartMessengerUnit}
+          />
+        );
+      }
+      case "phone-call": {
+        return (
+          <PhoneCallMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartPhoneCallUnit}
+          />
+        );
+      }
+      case "visual-novel": {
+        return (
+          <VisualNovelMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartVisualNovelUnit}
+          />
+        );
+      }
+      case "episode-final": {
+        return (
+          <EpisodeFinalMapItem
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            status={status}
+            onSelect={onStartEpisodeFinal}
+          />
+        );
+      }
+      case "standard": {
+        return (
+          <JourneyStepNode
+            key={item.step.id}
+            id={item.step.id}
+            title={item.step.title}
+            /* 표지 미완료면 `locked`로 덮는 한 겹이 앞에 붙습니다 — 그 아래는 씨앗이
+               남긴 완료가 **지워진 것이 아니라 가려진 것**이고, 표지를 끝내면 그대로
+               드러납니다(spec §2.9). */
+            status={
+              status === "locked"
+                ? "locked"
+                : stepStatusAt(journeyStepOrdinal(item.step.id) - 1, completedStepCount)
+            }
+            onSelect={handleSelectStep}
+          />
+        );
+      }
+    }
   };
 
   return (
@@ -126,55 +213,7 @@ export function JourneyMapScreen({
                   totalUnitCount={section.items.length}
                 />
               </view>
-              {section.items.map((item) =>
-                // ⚠ **표지 항목은 아직 그려지지 않습니다.** 데이터와 파생(`mapItemStatus`의
-                // 표지 게이트)은 섰지만 표식 컴포넌트(`EpisodeIntroMapItem`)를 세우는 것은
-                // `ui` 변형의 몫입니다. 여기서 `null`을 내는 것은 **임시**이고, 그동안
-                // 헤더의 분모(맵 항목 수)와 줄에 실제로 서는 것의 수가 갈립니다.
-                item.kind === "episode-intro" ? null : item.kind === "messenger" ? (
-                  <MessengerMapItem
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    status={completedMessengerUnitIds.includes(item.id) ? "completed" : "available"}
-                    onSelect={onStartMessengerUnit}
-                  />
-                ) : item.kind === "phone-call" ? (
-                  <PhoneCallMapItem
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    status={completedPhoneCallUnitIds.includes(item.id) ? "completed" : "available"}
-                    onSelect={onStartPhoneCallUnit}
-                  />
-                ) : item.kind === "visual-novel" ? (
-                  <VisualNovelMapItem
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    status={
-                      completedVisualNovelUnitIds.includes(item.id) ? "completed" : "available"
-                    }
-                    onSelect={onStartVisualNovelUnit}
-                  />
-                ) : item.kind === "episode-final" ? (
-                  <EpisodeFinalMapItem
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    status={mapItemStatus(item, section.items, progress)}
-                    onSelect={onStartEpisodeFinal}
-                  />
-                ) : (
-                  <JourneyStepNode
-                    key={item.step.id}
-                    id={item.step.id}
-                    title={item.step.title}
-                    status={stepStatusAt(journeyStepOrdinal(item.step.id) - 1, completedStepCount)}
-                    onSelect={handleSelectStep}
-                  />
-                ),
-              )}
+              {section.items.map((item) => renderMapItem(item, section.items))}
             </view>
           ))}
         </view>

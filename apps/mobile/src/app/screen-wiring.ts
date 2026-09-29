@@ -96,6 +96,10 @@ export type ScreenWiring = {
   completedStepCount: number;
   /** 끝낸 표지 유닛입니다 — 맵의 표지 게이트가 이 값을 봅니다. */
   completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
+  // 맵의 표지 항목을 누른 것입니다. 표지가 스스로 맵에 서는 유닛이 되면서(ADR-0024 D2)
+  // 생긴 경로이고, 유닛 시작 넷(`onStartStep` 등)과 달리 게이트를 거치지 않습니다 —
+  // 표지 자신에게는 앞에 걸 것이 없습니다.
+  onStartEpisodeIntroUnit: (id: EpisodeIntroUnitId) => void;
   onStartStep: (id: JourneyStepId) => void;
   // 학습 화면 셋이 같은 콜백을 받으므로 이름이 듣기에 묶여 있으면 거짓이
   // 됩니다.

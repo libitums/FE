@@ -51,6 +51,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           completedStepCount={wiring.completedStepCount}
           onStartStep={wiring.onStartStep}
           completedEpisodeIntroIds={wiring.completedEpisodeIntroIds}
+          onStartEpisodeIntroUnit={wiring.onStartEpisodeIntroUnit}
           completedMessengerUnitIds={wiring.completedMessengerUnitIds}
           onStartMessengerUnit={wiring.onStartMessengerUnit}
           completedPhoneCallUnitIds={wiring.completedPhoneCallUnitIds}

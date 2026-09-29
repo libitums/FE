@@ -9,6 +9,7 @@ import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract"
 import type { VisualNovelUnitId } from "../screens/visual-novel/visual-novel.contract";
 import type {
   EpisodeIntroTarget,
+  EpisodeIntroUnitId,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
 import {
@@ -63,6 +64,61 @@ function startTarget(starts: UnitStarts, target: EpisodeIntroTarget): void {
   }
 }
 
+/**
+ * 표지 유닛이 속한 구획입니다. `episodeOfIntroUnit`은 **에피소드**만 돌려주는데
+ * 여기서는 그 구획의 항목 목록까지 봐야 해서(아래 `firstTargetOf`) 따로 찾습니다.
+ * 없으면 던집니다 — 맵의 항목을 누른 데서 온 id라 어느 구획에도 없다면 데이터 오류입니다.
+ */
+function sectionOfEpisodeIntroUnit(
+  sections: readonly JourneyMapSection[],
+  unitId: EpisodeIntroUnitId,
+): JourneyMapSection {
+  const section = sections.find((candidate) =>
+    candidate.items.some((item) => item.kind === "episode-intro" && item.id === unitId),
+  );
+  if (section === undefined) {
+    throw new Error(`어느 에피소드에도 없는 표지 유닛입니다: ${unitId}`);
+  }
+  return section;
+}
+
+/** 맵 항목을 표지의 목적지로 옮깁니다. 표지 자신과 최종 테스트는 목적지가 아닙니다. */
+function targetOfItem(item: JourneyMapSection["items"][number]): EpisodeIntroTarget | undefined {
+  switch (item.kind) {
+    case "standard": {
+      return { kind: "step", stepId: item.step.id };
+    }
+    case "messenger": {
+      return { kind: "messenger", unitId: item.id };
+    }
+    case "phone-call": {
+      return { kind: "phone-call", unitId: item.id };
+    }
+    case "visual-novel": {
+      return { kind: "visual-novel", unitId: item.id };
+    }
+    case "episode-intro":
+    case "episode-final": {
+      return undefined;
+    }
+  }
+}
+
+/**
+ * 구획의 첫 목적지 유닛입니다 — 표지를 직접 눌렀을 때 실어 둘 값입니다(위 임시 주석).
+ * 없으면 던집니다: 목적지가 될 수 있는 항목이 하나도 없는 구획은 표지만 있고 학습이
+ * 없다는 뜻이고, 값으로 표현할 수 있는 상태가 아닙니다.
+ */
+function firstTargetOf(section: JourneyMapSection): EpisodeIntroTarget {
+  for (const item of section.items) {
+    const target = targetOfItem(item);
+    if (target !== undefined) {
+      return target;
+    }
+  }
+  throw new Error(`목적지가 될 유닛이 없는 에피소드입니다: ${section.episode.id}`);
+}
+
 export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
   const { sections, seenEpisodeIntroIds, setSeenEpisodeIntroIds, dispatch, starts, prologueFor } =
     args;
@@ -87,6 +143,29 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
   };
 
   return {
+    /**
+     * 맵의 **표지 항목을 직접** 누르는 자리입니다. 표지가 스스로 유닛이 되면서
+     * (ADR-0024 D2) 생긴 경로이고, 오늘까지 표지는 다른 유닛 앞에 끼어들 때만 섰습니다.
+     * `gate`를 거치지 않습니다 — 이미 끝낸 표지를 다시 누르면 다시 보여야 하는데,
+     * `gate`는 본 표지를 건너뛰고 유닛을 엽니다.
+     *
+     * ⚠ **`target`은 임시입니다.** 표지가 유닛이 되면 route가 「넘긴 뒤 열 유닛」을
+     * 싣지 않게 되고(spec §2.5) 표지의 `Skip`은 유닛이 아니라 결과 화면으로 갑니다(D5).
+     * 그 걷어내기는 `nav-state` · `episode-intro.contract`를 함께 움직이는 일이라
+     * `integration` 변형의 몫입니다. 그때까지는 그 구획의 **첫 목적지 유닛**을 실어
+     * 오늘 흐름을 그대로 둡니다 — 값을 지어내지 않고 맵 데이터에서 파생합니다.
+     */
+    onStartEpisodeIntroUnit: (unitId: EpisodeIntroUnitId) => {
+      const section = sectionOfEpisodeIntroUnit(sections, unitId);
+      dispatch({
+        type: "push",
+        screen: {
+          name: "episode-intro",
+          episodeId: section.episode.id,
+          target: firstTargetOf(section),
+        },
+      });
+    },
     onStartStep: (stepId: JourneyStepId) => gate({ kind: "step", stepId }),
     onStartMessengerUnit: (unitId: MessengerUnitId) => gate({ kind: "messenger", unitId }),
     onStartPhoneCallUnit: (unitId: PhoneCallUnitId) => gate({ kind: "phone-call", unitId }),
