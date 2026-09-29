@@ -94,6 +94,21 @@
   border-color: var(--libitum-color-brand-primary);
 }
 
+/* 실패 문구 — 번호 칸 바로 아래, Continue 위입니다. 부모
+   `.login-screen-content`의 gap(16)에서 8을 빼 보이는 간격을 8로 맞춥니다
+   (`.verification-code-screen-resend` 선례와 같은 기법). 번호 칸이 내용 폭
+   전체라 왼쪽 정렬입니다. */
+.login-screen-error {
+  margin-top: calc(-1 * var(--libitum-spacing-8));
+  text-align: left;
+  color: var(--libitum-color-feedback-incorrect-text);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
 .login-screen-country {
   display: flex;
   flex-direction: row;

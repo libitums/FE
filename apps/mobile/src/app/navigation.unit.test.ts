@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { PhoneNumber } from "../lib/auth-session.contract";
 import type { LearningForm } from "../lib/learning-form";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
@@ -889,11 +890,19 @@ describe("진입 흐름", () => {
     expect(entryInitialNav.stacks).toEqual(initialNav.stacks);
   });
 
-  it("NV3. entryScreenAfterLogin이 phone→verification-code, 나머지 수단→language-select다", () => {
-    expect(entryScreenAfterLogin("phone")).toEqual({ name: "verification-code" });
-    expect(entryScreenAfterLogin("google")).toEqual({ name: "language-select" });
-    expect(entryScreenAfterLogin("apple")).toEqual({ name: "language-select" });
-    expect(entryScreenAfterLogin("facebook")).toEqual({ name: "language-select" });
+  // §2.4 개정 — entryScreenAfterLogin이 EntryLoginChoice 하나를 받는 판별
+  // 입력으로 바뀝니다(옵셔널 phoneNumber? 삭제). phone은 PhoneNumber를 그대로
+  // 싣고, 소셜 셋은 phoneNumber 없이 language-select입니다.
+  it('NV3. entryScreenAfterLogin({ method: "phone", phoneNumber })이 verification-code에 phoneNumber를 싣고, 나머지 수단이 language-select다', () => {
+    const phoneNumber: PhoneNumber = { e164: "+821012345678", display: "+82 10 1234 5678" };
+
+    expect(entryScreenAfterLogin({ method: "phone", phoneNumber })).toEqual({
+      name: "verification-code",
+      phoneNumber,
+    });
+    expect(entryScreenAfterLogin({ method: "google" })).toEqual({ name: "language-select" });
+    expect(entryScreenAfterLogin({ method: "apple" })).toEqual({ name: "language-select" });
+    expect(entryScreenAfterLogin({ method: "facebook" })).toEqual({ name: "language-select" });
   });
 
   it("NV4. isEntrySection이 entryInitialNav에서 참, initialNav에서 거짓이다", () => {
