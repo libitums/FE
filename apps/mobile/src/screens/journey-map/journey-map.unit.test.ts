@@ -18,14 +18,18 @@ import {
   initialCompletedStepCount,
   findStep,
   initialStepSheetState,
+  journeyMapSections,
   journeySteps,
   journeyStepOrdinal,
   learningFormAt,
   learningFormsForStep,
+  mapItemStatus,
   standardUnitSteps,
   stepAccessibilityLabel,
   stepSheetReducer,
   stepStatusAt,
+  type JourneyMapItem,
+  type JourneyProgress,
   type JourneyStep,
   type JourneyStepId,
   type JourneyUnit,
@@ -524,84 +528,28 @@ describe("learningFormForStep", () => {
 });
 
 describe("교차 불변식 — 학습형과 문항 표", () => {
-  // ⚠ **이 변경이 만든 「덮지 않는다」의 유일한 판정자입니다** (수용 기준 2).
-  // 타입은 이것을 원리적으로 못 짓습니다 — 세 문항 표가 `Record<JourneyStepId, …>`로
-  // 다섯 키를 그대로 두므로, 듣기가 아닌 스텝에 듣기 문항이 남아 있어도 tsc가
-  // 아무 말도 안 합니다.
+  // ⚠ **문면이 한 방향으로 좁아졌습니다**(D3 · 수용 기준 3).
   //
-  // **양방향(⇔)입니다.** 한쪽만 보면 「듣기가 아닌 스텝에 듣기 문항이 남아 있는
-  // 것」을 못 잡습니다. 배정이 바뀌는 날 이 단언이 먼저 빨개지고, 옮길 문항을
-  // 함께 옮기라고 말합니다.
-
-  it("듣기인 스텝에만 듣기 문항이 있다 — 양방향", () => {
-    for (const id of allStepIds) {
-      expect(learningFormsForStep(id).includes("listening")).toBe(
-        listeningQuestionsForStep(id).length > 0,
-      );
-    }
-  });
-
-  it("문장 순서인 스텝에만 문장 순서 문항이 있다 — 양방향", () => {
-    for (const id of allStepIds) {
-      expect(learningFormsForStep(id).includes("sentence-order")).toBe(
-        sentenceOrderQuestionsForStep(id).length > 0,
-      );
-    }
-  });
-
-  it("단어 선택인 스텝에만 단어 선택 문항이 있다 — 양방향", () => {
-    for (const id of allStepIds) {
-      expect(learningFormsForStep(id).includes("word-choice")).toBe(
-        wordChoiceQuestionsForStep(id).length > 0,
-      );
-    }
-  });
-
-  // 위 셋을 스텝 × 학습형 격자로 한 번에 돕니다. 학습형이 넷째(culture)로 늘어
-  // 이제 스무 칸입니다 — culture의 questionCountForForm이 항상 0이고
-  // 활동 목록에 아직 culture가 든 스텝이 없으므로(보류 1b), 이
-  // 넷째 열은 오늘 전부 false === false로 통과합니다. **문화가 배정되는 날** 이
-  // 격자가 먼저 갈라집니다 — questionCountForForm이 아니라 배정 쪽이 무너진
-  // 것이라는 신호입니다.
-  it("다섯 스텝 × 학습형 넷 스무 칸 전부에서 ⇔가 성립한다", () => {
-    for (const id of allStepIds) {
-      for (const form of allLearningForms) {
-        expect(learningFormsForStep(id).includes(form)).toBe(questionCountForForm[form](id) > 0);
-      }
-    }
-  });
-
-  // ⇔ 셋에서 따라 나오는 것이지만, 깨졌을 때 무엇이 깨졌는지를 다르게 말해
-  // 줍니다 — 「활동 하나가 문항 없이 남았다」와 「배정 없는 표에 문항이 있다」를
-  // 가릅니다.
+  // **남은 것 하나**: 활동 목록의 **모든 항목이 문항을 갖는다.** 한 항목이라도 비면
+  // 그 활동이 문항 0개짜리 화면을 엽니다.
   //
-  // ⟨2026-09-28⟩ 전에는 **「정확히 하나」**였습니다. 그 수가 1이었던 것은 스텝마다
-  // 활동이 하나뿐이어서였지 계약이어서가 아니었고, `introduction`이 듣기 + 낱말 고르기
-  // 둘을 잇게 되면서 그 전제가 사라졌습니다. 그래서 상수 1을 **활동 목록의 길이**로
-  // 바꿉니다 — 원래 말하려던 것이 그것입니다.
-  it("다섯 스텝 각각에서 문항이 있는 표의 수가 활동 목록의 길이와 같다", () => {
-    for (const id of allStepIds) {
-      const nonEmpty = allLearningForms.filter((form) => questionCountForForm[form](id) > 0);
+  // **반대 방향은 묻지 않습니다** — 어느 스텝에도 배정되지 않은 문항이 표에 남아
+  // 있어도 됩니다. 도메인이 *"일반 학습과 서사 연계 학습이 유닛마다 다르게 섞인다.
+  // **별도 규칙 없음**"* 이라고 말하기 때문입니다. 집합 동일을 요구하면 컨텐츠가
+  // 여분의 문항을 들고 있을 수 없습니다.
+  //
+  // ⚠ **무엇을 잃었는지 숨기지 않습니다.** 배정이 바뀌는 날 「옮길 문항을 함께
+  // 옮겨라」라고 먼저 말해 주던 판정자가 사라졌습니다. 남은 쪽은 「배정만 옮기고
+  // 문항을 안 옮긴 것」만 잡고, **「문항만 옮기고 배정을 안 옮긴 것」은 조용히
+  // 통과합니다.** 그것이 D3이 고른 대가입니다.
 
-      expect(nonEmpty).toHaveLength(learningFormsForStep(id).length);
-    }
-  });
-
-  // 순서로 견주지 않습니다 — 왼쪽은 `allLearningForms`의 순서이고 오른쪽은 **진행
-  // 순서**라, 둘이 같아야 할 이유가 없습니다. 같은 것들인가만 봅니다.
-  it("다섯 스텝 각각에서 문항이 있는 표들이 그 스텝의 활동 목록과 같은 것들이다", () => {
-    for (const id of allStepIds) {
-      const nonEmpty = allLearningForms.filter((form) => questionCountForForm[form](id) > 0);
-
-      expect([...nonEmpty].sort()).toEqual([...learningFormsForStep(id)].sort());
-    }
-  });
-
-  // ⚠ 계약이 미래에 거는 단언입니다. 오늘은 어느 스텝도 culture가 아니므로
-  // 다섯 칸 전부 통과합니다. **문화가 스텝에 배정되는 날** 이 단언이 먼저
-  // 빨개져 「culture는 문항 축이 아니다 — 배정하려면 questionCountForForm이
-  // 아니라 이 불변식 자체를 다시 봐야 한다」를 말해 줍니다. 그 전까지는 이
-  // 계약이 근거 없는 예외를 코드에 남기지 않기 위해 그대로 둡니다.
+  // ⚠ 새 문면의 **유일한 판정자**입니다. 타입은 이것을 원리적으로 못 짓습니다 —
+  // 문항 표들이 `Record<JourneyStepId, …>`로 다섯 키를 그대로 두므로, 배정된 학습형의
+  // 표가 비어 있어도 tsc가 아무 말도 안 합니다.
+  //
+  // culture의 트립와이어도 이 케이스가 집니다. 오늘은 어느 스텝도 culture가 아니라
+  // 다섯 칸 전부 통과하지만, **문화가 스텝에 배정되는 날** 먼저 빨개져 「culture는
+  // 문항 축이 아니다」를 말해 줍니다.
   it("어느 스텝도 문항이 0개인 학습형에 배정되지 않는다", () => {
     for (const id of allStepIds) {
       // 활동 목록의 **모든** 항목이 문항을 가져야 합니다 — 하나라도 비면 그 활동이
@@ -648,6 +596,14 @@ const specialUnitFixture = (): JourneyUnit => ({
   screen: "messenger",
 });
 
+// 표지도 특별 유닛입니다 — 다섯째 변형이고, 다른 넷과 같은 모양으로 섭니다.
+const episodeIntroUnitFixture = (): JourneyUnit => ({
+  kind: "special",
+  id: "tutorial-intro",
+  title: "에피소드 표지",
+  screen: "episode-intro",
+});
+
 describe("standardUnitSteps", () => {
   const a = fixtureStep("greeting", "A");
   const b = fixtureStep("ordering", "B");
@@ -679,6 +635,177 @@ describe("standardUnitSteps", () => {
 
   it("빈 목록은 빈 배열을 낸다 (U-N4)", () => {
     expect(standardUnitSteps([])).toEqual([]);
+  });
+
+  // ⚠ 표지를 **맨 앞**에 둡니다 — 실제 에피소드에서 그 자리이기도 하고, 앞을 건너뛰는
+  // 구현(첫 유닛만 읽는다 · slice)이 통과하지 않게 하는 자리이기도 합니다. 실제
+  // `journeyUnits`의 구성은 이 파일이 단언하지 않습니다(이음매).
+  it("[U-I3] 표지 유닛은 standardUnitSteps에 기여하지 않는다", () => {
+    const units: readonly JourneyUnit[] = [
+      episodeIntroUnitFixture(),
+      standardUnitFixture(a, b),
+      specialUnitFixture(),
+      standardUnitFixture(c),
+    ];
+
+    expect(standardUnitSteps(units)).toEqual([a, b, c]);
+  });
+
+  it("[U-I3] 표지 유닛만 있는 목록은 빈 배열을 낸다", () => {
+    expect(standardUnitSteps([episodeIntroUnitFixture()])).toEqual([]);
+  });
+});
+
+// ------------------------------------------------- 표지 항목과 잠김 파생 (D2 · D6)
+//
+// 표지가 맵의 **항목**이 되었습니다. 그전에는 유닛을 처음 열 때 결선이 가로채 표지를
+// 띄웠고, 그래서 그 에피소드의 **아무 유닛이나** 먼저 눌러도 표지가 떴습니다. 이제
+// 표지는 자기 항목이 열고, 순서를 지는 자리가 **결선의 가로채기에서 맵의 잠김
+// 파생으로** 옮겨 갔습니다 — 「눌렀더니 다른 화면이 떴다」가 「아직 열리지 않았다」로
+// 바뀝니다.
+//
+// 아래 셋은 **실제 데이터**를 봅니다 — 「데이터가 실제로 그 모양인가」가 이 계층의
+// 몫입니다. 「틀린 모양을 쓸 수 없는가」(튜플 · 닫힌 에피소드 id)는 tsc의 축이라 여기서
+// 흉내내지 않습니다.
+
+const tutorialSection = journeyMapSections[0]!;
+
+const mapItemLabel = (item: JourneyMapItem): string =>
+  item.kind === "standard" ? item.step.id : item.id;
+
+const nothingDone: JourneyProgress = {
+  completedStepCount: 0,
+  completedEpisodeIntroIds: [],
+  completedMessengerUnitIds: [],
+  completedPhoneCallUnitIds: [],
+  completedVisualNovelUnitIds: [],
+  completedEpisodeFinalIds: [],
+};
+
+describe("표지 항목", () => {
+  it("[U-I1] 튜토리얼 구획의 첫 항목이 표지다", () => {
+    expect(tutorialSection.items[0]).toEqual({
+      kind: "episode-intro",
+      id: "tutorial-intro",
+      title: "에피소드 표지",
+    });
+  });
+
+  // ⚠ 항목이 아홉에서 **열**로 늡니다. 헤더의 분모도 이 수입니다 — 막대가 재는 것은
+  // 그 아래 줄에 선 것이고, 화면에 열 줄이 서는데 아홉을 세면 대조할 수 없습니다.
+  it("[U-I2] 구획의 항목이 열이고 순서가 표지 → 스텝 넷 → 특별 셋 → 길 묻기 → 최종이다", () => {
+    expect(tutorialSection.items).toHaveLength(10);
+    expect(tutorialSection.items.map(mapItemLabel)).toEqual([
+      "tutorial-intro",
+      "greeting",
+      "introduction",
+      "ordering",
+      "appointment",
+      "appointment-confirmation",
+      "appointment-confirmation-phone-call",
+      "cafe-arrival-visual-novel",
+      "directions",
+      "tutorial-final-test",
+    ]);
+  });
+});
+
+describe("mapItemStatus — 표지 게이트", () => {
+  // ⚠ **표지가 먼저입니다.** 표지를 끝내지 않았으면 그 구획의 나머지는 진행이
+  // 무엇이든 `locked`입니다. 표지 자신은 구획의 첫 항목이라 앞에 걸 것이 없어
+  // 잠기지 않습니다.
+  it("[U-L1] 표지가 미완료면 나머지 아홉이 전부 잠기고 표지 자신은 열려 있다", () => {
+    const [intro, ...rest] = tutorialSection.items;
+
+    expect(mapItemStatus(intro!, tutorialSection.items, nothingDone)).toBe("available");
+    expect(rest).toHaveLength(9);
+    for (const item of rest) {
+      expect([mapItemLabel(item), mapItemStatus(item, tutorialSection.items, nothingDone)]).toEqual(
+        [mapItemLabel(item), "locked"],
+      );
+    }
+  });
+
+  // ⚠ **`initialCompletedStepCount`가 2인 것과 표지 미완료가 동시에 참일 수 있습니다** —
+  // 「스텝 둘을 끝냈는데 표지를 안 끝냈다」는 데이터로 표현되지만 도메인에 없는
+  // 상태입니다. 씨앗을 고쳐 관찰을 0으로 만들지 않고, **파생이 흡수합니다**: 표지
+  // 게이트를 먼저 보므로 끝낸 스텝도 잠김으로 덮입니다.
+  it("[U-L1] 표지가 미완료면 끝낸 스텝도 잠김으로 덮인다", () => {
+    const seeded: JourneyProgress = {
+      ...nothingDone,
+      completedStepCount: initialCompletedStepCount,
+    };
+
+    for (const item of tutorialSection.items.slice(1)) {
+      expect(mapItemStatus(item, tutorialSection.items, seeded)).toBe("locked");
+    }
+  });
+
+  // 표지를 끝내면 씨앗의 2가 되살아나 완료 둘 · 현재 하나가 그대로 섭니다. 특별 유닛
+  // 셋은 표지 뒤에는 언제나 열려 있고(ADR-0024 D6), 최종 테스트만 나머지가 다 끝나야
+  // 열립니다 — **오늘 규칙이 그대로 사는 것**이 이 케이스가 지는 것입니다.
+  it("[U-L2] 표지를 끝내면 잠김이 풀리고 스텝 순차 · 최종 테스트 해금 규칙이 그대로 산다", () => {
+    const introDone: JourneyProgress = {
+      ...nothingDone,
+      completedStepCount: initialCompletedStepCount,
+      completedEpisodeIntroIds: ["tutorial-intro"],
+    };
+
+    const statuses = tutorialSection.items.map(
+      (item) =>
+        [mapItemLabel(item), mapItemStatus(item, tutorialSection.items, introDone)] as const,
+    );
+
+    expect(statuses).toEqual([
+      ["tutorial-intro", "completed"],
+      ["greeting", "completed"],
+      ["introduction", "completed"],
+      ["ordering", "available"],
+      ["appointment", "locked"],
+      ["appointment-confirmation", "available"],
+      ["appointment-confirmation-phone-call", "available"],
+      ["cafe-arrival-visual-novel", "available"],
+      ["directions", "locked"],
+      ["tutorial-final-test", "locked"],
+    ]);
+  });
+
+  // ⚠ **계약과 계획이 갈린 자리입니다 — 계약을 따릅니다.** `test-plan`의 U-L3은
+  // *"끝낸 항목은 표지 미완료와 무관하게 `completed`"* 라고 적었지만, 계약(`spec` §2.7
+  // 관찰 델타 · §2.9 `mapItemStatus` 문면)은 *"표지가 끝나지 않았으면 나머지는 **진행이
+  // 무엇이든** `locked`"* 이고 부팅 직후 관찰을 **「표지만 열리고 나머지 아홉이 전부
+  // 잠김」** 으로 못박습니다. 둘이 동시에 참일 수 없어 계약 쪽을 답니다.
+  it("[U-L3] 끝낸 특별 유닛도 표지가 미완료면 잠긴다 — 표지 게이트가 완료보다 먼저다", () => {
+    const messengerDone: JourneyProgress = {
+      ...nothingDone,
+      completedMessengerUnitIds: ["appointment-confirmation"],
+    };
+    const messengerItem = tutorialSection.items.find((item) => item.kind === "messenger")!;
+
+    expect(mapItemStatus(messengerItem, tutorialSection.items, messengerDone)).toBe("locked");
+
+    // 표지를 끝내면 그 완료가 그대로 드러납니다 — 잠김이 완료를 지운 것이 아니라
+    // 가리고 있었을 뿐입니다.
+    expect(
+      mapItemStatus(messengerItem, tutorialSection.items, {
+        ...messengerDone,
+        completedEpisodeIntroIds: ["tutorial-intro"],
+      }),
+    ).toBe("completed");
+  });
+
+  // 표지 자신의 완료는 잠김 축과 무관합니다 — 앞에 걸 것이 없으므로 `locked`가 올
+  // 자리가 없고, 끝내면 `completed`, 아니면 `available` 둘뿐입니다.
+  it("[U-L3] 표지 항목은 잠기지 않는다 — 미완료면 available, 끝내면 completed다", () => {
+    const intro = tutorialSection.items[0]!;
+
+    expect(mapItemStatus(intro, tutorialSection.items, nothingDone)).toBe("available");
+    expect(
+      mapItemStatus(intro, tutorialSection.items, {
+        ...nothingDone,
+        completedEpisodeIntroIds: ["tutorial-intro"],
+      }),
+    ).toBe("completed");
   });
 });
 

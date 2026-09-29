@@ -40,6 +40,12 @@ const visualNovelItem: JourneyMapItem = {
   title: "카페에 도착한 지민",
 };
 
+const episodeIntroItem: JourneyMapItem = {
+  kind: "episode-intro",
+  id: "tutorial-intro",
+  title: "에피소드 표지",
+};
+
 describe("roleplayItemsFrom", () => {
   it("R1. standard·special·phone-call·visual-novel·standard 입력에서 셋을 뽑고 form 순서·필드가 정확하다", () => {
     const input: readonly JourneyMapItem[] = [
@@ -91,6 +97,22 @@ describe("roleplayItemsFrom", () => {
     ];
 
     expect(roleplayItemsFrom(input)).toEqual([]);
+  });
+
+  // ⚠ **red가 아닙니다 — 회귀 파수꾼입니다.** 「빈 배열이 정답인 케이스」는 구현이
+  // 없어도 초록입니다. 무엇을 지는가만 적습니다: 롤플레이는 **다시 연습하는 자리**이고,
+  // 서사를 다시 보는 것은 연습이 아닙니다. 최종 테스트와 같은 판단입니다 — 그쪽은
+  // 풀어서 에피소드를 끝내는 시험이라 다시 여는 자리가 아닙니다.
+  it("[R-I1] 표지 항목은 롤플레이 항목을 0건 낸다", () => {
+    expect(roleplayItemsFrom([episodeIntroItem])).toEqual([]);
+
+    // 사이에 껴 있어도 앞뒤가 그대로 이어집니다 — 끝에 두면 slice로도 통과합니다.
+    const input: readonly JourneyMapItem[] = [messengerItem, episodeIntroItem, visualNovelItem];
+
+    expect(roleplayItemsFrom(input).map((item) => item.form)).toEqual([
+      "messenger",
+      "visual-novel",
+    ]);
   });
 
   // R6 — roleplayItemsFrom 몫입니다. 같은 문구의 다른 R6는 roleplayItemAccessibilityLabel
