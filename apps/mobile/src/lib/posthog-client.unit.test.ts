@@ -178,6 +178,18 @@ describe("LynxPostHogClient 전송", () => {
     expect(typeof event!.distinct_id).toBe("string");
   });
 
+  test("PC3: 요청은 설정의 host로 나간다", async () => {
+    const { calls, transport } = fakeTransport();
+    const otherHost = "https://collector.test" as AnalyticsConfig["host"];
+    const client = new LynxPostHogClient({ ...config, host: otherHost }, transport);
+    clients.push(client);
+
+    client.capture("settings_opened", {});
+    await vi.waitFor(() => expect(calls).toHaveLength(1));
+
+    expect(calls[0]!.url).toBe("https://collector.test/batch/");
+  });
+
   test("PC4: 같은 클라이언트는 distinct_id가 같고 다른 인스턴스는 다르다", async () => {
     const first = fakeTransport();
     const second = fakeTransport();
@@ -414,6 +426,20 @@ describe("resolveAnalyticsTransport", () => {
     await transport!(batchUrl, init);
     expect(globalFetch).toHaveBeenCalledTimes(1);
     expect(globalFetch).toHaveBeenCalledWith(batchUrl, expect.objectContaining({ body: "{}" }));
+  });
+
+  test("PC11: 전역 fetch는 globalThis에 묶어 부른다", async () => {
+    let receiver: unknown;
+    const globalFetch = vi.fn<(this: unknown) => Promise<AnalyticsResponse>>(
+      async function (this: unknown) {
+        receiver = this;
+        return okResponse;
+      },
+    );
+    vi.stubGlobal("fetch", globalFetch);
+    const transport = resolveAnalyticsTransport();
+    await transport!(batchUrl, init);
+    expect(receiver).toBe(globalThis);
   });
 
   test("PC11: 전역 fetch가 없으면 lynx.fetch를 lynx에 묶어 부른다", async () => {

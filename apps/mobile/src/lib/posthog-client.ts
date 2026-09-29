@@ -64,7 +64,7 @@ export class LynxPostHogClient extends PostHogCore {
   private retryAttempt = 0;
 
   constructor(config: AnalyticsConfig, transport: AnalyticsTransport) {
-    super(config.projectKey, postHogClientOptions);
+    super(config.projectKey, { ...postHogClientOptions, host: config.host });
     this.transport = transport;
     // 프로젝트가 하나라 개발 · 운영을 이 속성으로 가릅니다(ADR-0029 D13). 되살린 대기열의
     // 이벤트는 만들어질 때의 값을 그대로 갖습니다.
@@ -189,7 +189,7 @@ export class LynxPostHogClient extends PostHogCore {
 export const resolveAnalyticsTransport: ResolveAnalyticsTransport = () => {
   const globalFetch = (globalThis as unknown as { fetch?: AnalyticsTransport }).fetch;
   if (typeof globalFetch === "function") {
-    return (url, init) => globalFetch(url, init);
+    return (url, init) => globalFetch.call(globalThis, url, init);
   }
   if (typeof lynx !== "undefined" && typeof lynx.fetch === "function") {
     const lynxFetch = lynx.fetch.bind(lynx) as unknown as AnalyticsTransport;

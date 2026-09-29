@@ -1,8 +1,10 @@
+import type { VerificationCodeStatus } from "./verification-code.contract";
+
 // 코드 검증 순수 로직을 소유합니다. 판정은 이 모듈이 지고, 화면은 결과를 상태에
 // 둡니다 — native `maxlength`와 키패드가 대부분을 막지만 막는 것과 판정하는 것은
 // 다릅니다.
 
-export const verificationCodeLength = 4;
+export const verificationCodeLength = 6;
 
 export const initialVerificationCode = "";
 
@@ -42,4 +44,14 @@ export function formatVerificationCountdown(seconds: number): string {
   const minutes = Math.floor(safe / 60);
   const rest = safe % 60;
   return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
+}
+
+// `verifying` · `resending`일 때 참입니다.
+export function isVerificationCodeBusy(status: VerificationCodeStatus): boolean {
+  return status.kind === "verifying" || status.kind === "resending";
+}
+
+// 완성이고 요청 중이 아닐 때만 참입니다.
+export function canSubmitVerificationCode(code: string, status: VerificationCodeStatus): boolean {
+  return isVerificationCodeComplete(code) && !isVerificationCodeBusy(status);
 }
