@@ -231,7 +231,6 @@ function journeySection(
       units: [introUnit, finalUnit],
     },
     items,
-    pendingNext: [],
   };
 }
 

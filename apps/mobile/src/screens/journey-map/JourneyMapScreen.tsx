@@ -11,6 +11,7 @@ import { screenId, scrollId } from "./journey-map-scroll";
 import { useStepSheet } from "./useStepSheet";
 import { useScreenLayer } from "../../lib/use-screen-layer";
 import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
+import { EpisodePendingSection } from "./EpisodePendingSection";
 import {
   findStep,
   journeySteps,
@@ -197,25 +198,31 @@ export function JourneyMapScreen({
           data-testid="journey-map-screen-map"
           accessibility-elements-hidden={openStep !== undefined}
         >
-          {journeyMapSections.map((section) => (
+          {journeyMapSections.map((section) =>
             // 에피소드 하나가 헤더 + 유닛 줄입니다. 조각(Fragment)이 아니라 상자로
             // 감쌉니다 — 유닛 사이 간격은 맵이 주지만 에피소드 사이는 더 벌어져야 하고,
             // 그 간격을 이 상자가 집니다.
-            <view className="journey-map-screen-episode" key={section.episode.id}>
-              {/* 헤더를 감싸는 상자입니다. 카드가 스스로 sticky가 되지 않습니다 —
-                  ui-lynx 컴포넌트의 배치는 그것을 쓰는 화면이 정하고, 카드는 자기
-                  생김새만 압니다. 이 상자가 그 배치(줄 폭 · 달라붙기 · 덮기)를 집니다. */}
-              <view className="journey-map-screen-episode-header">
-                <EpisodeHeader
-                  episodeLabel={section.episode.label}
-                  title={section.episode.title}
-                  completedUnitCount={completedMapItemCount(section.items, progress)}
-                  totalUnitCount={section.items.length}
-                />
+            // 준비 중 에피소드는 머리만 읽히고 그 아래가 가려집니다 — 줄에 세울 항목이
+            // 없으므로 구획을 통째로 다른 조각이 그립니다.
+            section.episode.kind === "pending" ? (
+              <EpisodePendingSection key={section.episode.id} episode={section.episode} />
+            ) : (
+              <view className="journey-map-screen-episode" key={section.episode.id}>
+                {/* 헤더를 감싸는 상자입니다. 카드가 스스로 sticky가 되지 않습니다 —
+                    ui-lynx 컴포넌트의 배치는 그것을 쓰는 화면이 정하고, 카드는 자기
+                    생김새만 압니다. 이 상자가 그 배치(줄 폭 · 달라붙기 · 덮기)를 집니다. */}
+                <view className="journey-map-screen-episode-header">
+                  <EpisodeHeader
+                    episodeLabel={section.episode.label}
+                    title={section.episode.title}
+                    completedUnitCount={completedMapItemCount(section.items, progress)}
+                    totalUnitCount={section.items.length}
+                  />
+                </view>
+                {section.items.map((item) => renderMapItem(item, section.items))}
               </view>
-              {section.items.map((item) => renderMapItem(item, section.items))}
-            </view>
-          ))}
+            ),
+          )}
         </view>
       </scroll-view>
       {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식입니다. */}

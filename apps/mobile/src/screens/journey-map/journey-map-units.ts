@@ -165,32 +165,19 @@ export function standardUnitSteps(units: readonly JourneyUnit[]): readonly Journ
 export const journeySteps: readonly JourneyStep[] = standardUnitSteps(journeyUnits);
 
 /**
- * 에피소드 목록을 맵의 구획으로 옮깁니다. **준비 중 에피소드는 구획을 만들지 않고**, 바로
- * 앞 채워진 에피소드의 `pendingNext`에 목록 순서대로 붙습니다.
+ * 에피소드 목록을 맵의 구획으로 옮깁니다. **에피소드 하나가 구획 하나**이고, 준비 중
+ * 에피소드도 예외가 아닙니다 — 머리가 서고 그 아래가 가려진 채 쌓입니다.
  *
- * 던지지 않는 총함수입니다 — 인자의 첫 자리가 `JourneyFilledEpisode`로 닫혀 있어 붙을
- * 자리가 없는 준비 중 에피소드가 **타입에 없습니다.**
+ * 준비 중 구획의 `items`는 **빈 목록**입니다. 가려진 자리의 표식은 화면이 그리는 장식이고
+ * 맵 항목이 아닙니다 — 데이터로 만들면 「눌리지도 세어지지도 않는 항목」이 생깁니다.
  *
- * **상한을 두지 않습니다** — 잇달아 오는 준비 중 전부가 한 구획에 붙습니다. 「다음 하나만」
- * 으로 자르면 데이터에 둘을 적었을 때 하나가 조용히 사라집니다.
- *
- * 목록을 인자로 받는 것은 `standardUnitSteps(units)`와 같은 형태이고, 그래서 이 함수는
- * **픽스처로 검사됩니다** — 오늘 데이터에는 「채워진 것 사이에 낀 준비 중」도 「준비 중
- * 둘」도 없습니다.
+ * 던지지 않는 총함수이고 순서를 그대로 보존합니다.
  */
 export function mapSectionsOf(episodes: JourneyEpisodes): readonly JourneyMapSection[] {
-  const sections: JourneyMapSection[] = [];
-  for (const episode of episodes) {
-    if (episode.kind === "filled") {
-      sections.push({ episode, items: mapItemsOf(episode.units), pendingNext: [] });
-      continue;
-    }
-    // 첫 자리가 `filled`로 닫혀 있어(`JourneyEpisodes`) 여기 닿을 때 `sections`가 비어 있을
-    // 수 없습니다 — 그래서 방어 분기가 없습니다.
-    const last = sections[sections.length - 1] as JourneyMapSection;
-    sections[sections.length - 1] = { ...last, pendingNext: [...last.pendingNext, episode] };
-  }
-  return sections;
+  return episodes.map((episode) => ({
+    episode,
+    items: episode.kind === "filled" ? mapItemsOf(episode.units) : [],
+  }));
 }
 
 // 맵이 그리는 구획입니다. `journeyMapItems`와 같은 변환을 에피소드 안에서 돌립니다 —

@@ -208,22 +208,17 @@ export type JourneyEpisode = JourneyFilledEpisode | JourneyPendingEpisode;
 export type JourneyEpisodes = readonly [JourneyFilledEpisode, ...JourneyEpisode[]];
 
 /**
- * 맵이 한 덩어리로 그리는 것입니다 — **채워진** 에피소드 하나와 그 에피소드의 맵 항목,
- * 그리고 그 뒤에 잇달아 오는 준비 중 에피소드들입니다.
+ * 맵이 한 덩어리로 그리는 것입니다 — 에피소드 하나와 그 에피소드가 줄에 세우는 항목들입니다.
  *
- * `episode`가 `JourneyFilledEpisode`로 좁혀진 것은 준비 중 에피소드가 유닛이 0개라
- * **그릴 줄이 없기** 때문입니다 — 구획을 만들면 헤더만 있고 아래가 빈 자리가 섭니다.
+ * **준비 중 에피소드도 구획을 만듭니다.** 머리(번호·이름)는 읽히고, 그 아래 유닛 자리가
+ * 안개에 가려진 채 섭니다 — 「더 있는데 아직 준비 중」을 그 모양이 말합니다. 그래서
+ * `episode`가 union인 채로 남고, 가르는 일은 화면이 `kind`로 합니다.
  *
- * `pendingNext`가 **구획에 붙는 이유**는 그것이 그릴 위치를 정하기 때문입니다 — 준비 중
- * 칸은 이 구획의 **헤더 자리**에 가로로 섭니다. 화면이 따로 계산하면 구획과 칸이 어긋날
- * 자리가 생깁니다(ADR-0007 D3).
- *
- * ⚠ **`pendingNext`에 `episode` 자신은 안 듭니다.** 들어 있으면 같은 값을 두 자리가 지고,
- * 화면이 어느 쪽으로 첫 칸을 그리는지가 판단이 됩니다. 페이저의 첫 칸이 헤더인 것은
- * **JSX 순서**가 집니다.
+ * `items`가 준비 중 구획에서는 **언제나 빈 목록**입니다. 가려진 자리에 서는 것은 **장식**
+ * 이지 맵 항목이 아닙니다 — 누를 수도 없고 진행에 세어지지도 않으므로 데이터로 만들면
+ * 「세어지지 않는 항목」이라는 표현 불가능한 상태가 생깁니다.
  */
 export type JourneyMapSection = {
-  readonly episode: JourneyFilledEpisode;
+  readonly episode: JourneyEpisode;
   readonly items: readonly JourneyMapItem[];
-  readonly pendingNext: readonly JourneyPendingEpisode[];
 };

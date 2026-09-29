@@ -40,7 +40,6 @@ function section(title: string, items: readonly JourneyMapItem[]): JourneyMapSec
       units: [introUnit, finalUnit],
     },
     items,
-    pendingNext: [],
   };
 }
 

@@ -62,16 +62,27 @@ function pending(id: string, title: string): JourneyPendingEpisode {
 }
 
 describe("실데이터의 구획", () => {
-  // R2의 유일한 판정자입니다 — 준비 중 에피소드가 구획을 만들면 여기서 수가 늡니다.
-  it("[U-S1] 준비 중 에피소드는 구획을 만들지 않는다", () => {
-    expect(journeyMapSections).toHaveLength(1);
-    expect(journeyMapSections[0]?.episode.id).toBe("tutorial");
+  // **에피소드 하나가 구획 하나**입니다 — 준비 중도 예외가 아닙니다. 머리가 읽히고 그
+  // 아래가 가려진 채 서기 때문에 그릴 자리가 있습니다.
+  it("[U-S1] 준비 중 에피소드도 자기 구획을 만든다", () => {
+    expect(journeyMapSections.map((section) => section.episode.id)).toEqual([
+      "tutorial",
+      "customs",
+    ]);
   });
 
-  it("[U-S2] 튜토리얼 구획 뒤에 준비 중 에피소드 하나가 붙는다", () => {
-    expect(journeyMapSections[0]?.pendingNext).toEqual([
-      { kind: "pending", id: "customs", label: "Episode 1.", title: "Customs." },
-    ]);
+  it("[U-S2] 준비 중 구획은 유닛이 없고 머리 두 줄만 진다", () => {
+    const pendingSection = journeyMapSections[1];
+
+    expect(pendingSection?.episode).toEqual({
+      kind: "pending",
+      id: "customs",
+      label: "Episode 1.",
+      title: "Customs.",
+    });
+    // 가려진 자리에 서는 표식은 **장식**이라 맵 항목이 아닙니다 — 데이터로 만들면
+    // 「눌리지도 세어지지도 않는 항목」이 생깁니다.
+    expect(pendingSection?.items).toEqual([]);
   });
 
   // ⚠ **red가 아닙니다 — 파수꾼입니다.** 「고치는 김에 세로 맵을 건드리지 않았는가」를
@@ -104,24 +115,25 @@ describe("실데이터의 구획", () => {
 });
 
 describe("mapSectionsOf", () => {
-  it("[U-S5] 채워진 것 사이에 낀 준비 중은 앞 구획에 붙는다", () => {
+  it("[U-S5] 채워진 것 사이에 낀 준비 중도 제자리에 구획을 만든다", () => {
     const episodes: JourneyEpisodes = [filled("a", "A."), pending("b", "B."), filled("c", "C.")];
 
     const sections = mapSectionsOf(episodes);
 
-    expect(sections.map((section) => section.episode.id)).toEqual(["a", "c"]);
-    expect(sections[0]?.pendingNext.map((episode) => episode.id)).toEqual(["b"]);
-    expect(sections[1]?.pendingNext).toEqual([]);
+    expect(sections.map((section) => section.episode.id)).toEqual(["a", "b", "c"]);
+    expect(sections[1]?.items).toEqual([]);
   });
 
   // 상한이 없다는 것을 집니다 — 「다음 하나만」으로 자르면 둘째가 조용히 사라집니다.
-  it("[U-S6] 잇달아 오는 준비 중이 전부 목록 순서대로 붙는다", () => {
+  it("[U-S6] 잇달아 오는 준비 중이 전부 목록 순서대로 선다", () => {
     const episodes: JourneyEpisodes = [filled("a", "A."), pending("b", "B."), pending("c", "C.")];
 
     const sections = mapSectionsOf(episodes);
 
-    expect(sections).toHaveLength(1);
-    expect(sections[0]?.pendingNext.map((episode) => episode.id)).toEqual(["b", "c"]);
+    expect(sections.map((section) => section.episode.id)).toEqual(["a", "b", "c"]);
+    expect(
+      sections.every((section) => section.episode.kind === "pending" || section.items.length > 0),
+    ).toBe(true);
   });
 
   it("[U-S7] 준비 중이 없어도 구조가 같다", () => {
@@ -130,20 +142,21 @@ describe("mapSectionsOf", () => {
     const sections = mapSectionsOf(episodes);
 
     expect(sections.map((section) => section.episode.id)).toEqual(["a", "b", "c"]);
-    expect(sections.every((section) => section.pendingNext.length === 0)).toBe(true);
+    expect(sections.every((section) => section.items.length > 0)).toBe(true);
   });
 });
 
 describe("준비 중 칸의 문면", () => {
-  // 짧은 상태 낱말입니다 — 젬 구매의 `결제 준비 중`과 같은 형태입니다. 문장형
-  // (`…는 아직 준비 중이에요`)은 **누른 뒤 뜨는 안내**의 문면이고, 이 칸은 눌리지 않습니다.
-  it("[U-N1] 보이는 낱말이 「준비 중」이다", () => {
-    expect(episodePendingLabel).toBe("준비 중");
+  // 에피소드 이름이 영문이라 결을 맞춥니다 — 그 옆에 한글 한 낱말이 서면 두 글자체가
+  // 한 덩어리 안에서 부딪힙니다.
+  it("[U-N1] 보이는 문구가 영문 「COMING SOON」이다", () => {
+    expect(episodePendingLabel).toBe("COMING SOON");
   });
 
-  // 형태가 `${이름}, ${상태낱말}`로 저장소 전체와 같습니다(ADR-0016 D3) — 스텝의 `, 잠김`,
-  // 롤플레이의 `, 플러스 전용`과 같은 부호·같은 자리입니다.
-  it("[U-N2] 낭독이 이름 뒤에 상태를 붙인다", () => {
+  // ⚠ **보이는 문구와 일부러 다릅니다.** 보이는 쪽은 디자인의 영문이고 듣는 쪽은 이 앱의
+  // 말입니다 — 스텝의 `, 잠김`과 같은 부호·같은 자리라, 여기만 영문이면 낭독에서 혼자
+  // 튑니다.
+  it("[U-N2] 낭독은 한국어로 이름 뒤에 상태를 붙인다", () => {
     expect(episodePendingAccessibilityLabel("Episode 1.", "Customs.")).toBe(
       "Episode 1. Customs., 준비 중",
     );
