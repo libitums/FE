@@ -42,13 +42,18 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
       return <OnboardingScreen onComplete={wiring.onOnboardingComplete} />;
     case "login":
       return (
-        <LoginScreen onSelectMethod={wiring.onSelectLoginMethod} onBack={wiring.onLoginBack} />
+        <LoginScreen
+          onSelectSocialMethod={wiring.onSelectSocialLoginMethod}
+          onSubmitPhoneNumber={wiring.onRequestPhoneOtp}
+          onBack={wiring.onLoginBack}
+        />
       );
     case "verification-code":
       return (
         <VerificationCodeScreen
           phoneNumber={screen.phoneNumber}
-          onSubmit={wiring.onVerificationCodeSubmit}
+          onVerifyCode={wiring.onVerifyPhoneOtp}
+          onResendCode={wiring.onResendPhoneOtp}
           onExit={wiring.onVerificationCodeExit}
         />
       );

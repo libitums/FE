@@ -2,7 +2,11 @@ import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import type { Tab } from "../app/nav-state";
-import { requiresVerificationCode } from "../lib/entry-flow";
+import type {
+  PhoneNumber,
+  PhoneOtpRequestResult,
+  PhoneOtpVerifyOutcome,
+} from "../lib/auth-session.contract";
 import type { EntryLanguage } from "../lib/entry-language";
 import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
@@ -22,8 +26,12 @@ import { ButtonCatalog } from "./ButtonCatalog";
 const noop = () => undefined;
 
 // 두 번째 인자는 다음 화면에 넘길 값입니다(지금은 로그인 → 코드 검증의 전화번호뿐).
-export type PlaygroundParams = { readonly phoneNumber?: string };
+export type PlaygroundParams = { readonly phoneNumber?: PhoneNumber };
 type Go = (screen: PlaygroundScreen, params?: PlaygroundParams) => void;
+
+// playground fixture 전용 자리표시 번호입니다. 코드 검증 화면은 번호가 필수라
+// 로그인을 거치지 않고 바로 열어도 값이 있어야 합니다.
+const placeholderPhoneNumber: PhoneNumber = { e164: "+821012345678", display: "+82 10 1234 5678" };
 
 function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
   const [selected, setSelected] = useState<EntryLanguage>("en");
@@ -42,18 +50,23 @@ export const playgroundScreens = {
   onboarding: (go: Go) => <OnboardingScreen onComplete={() => go("login")} />,
   login: (go: Go) => (
     <LoginScreen
-      onSelectMethod={(method, phoneNumber) =>
-        go(requiresVerificationCode(method) ? "verification-code" : "language-select", {
-          phoneNumber,
-        })
-      }
+      onSelectSocialMethod={() => go("language-select")}
+      onSubmitPhoneNumber={(phoneNumber) => {
+        // 네트워크 없이 성공을 흉내 냅니다 — 즉시 해소되는 Promise입니다.
+        go("verification-code", { phoneNumber });
+        return Promise.resolve<PhoneOtpRequestResult>({ status: "sent" });
+      }}
       onBack={() => go("onboarding")}
     />
   ),
   "verification-code": (go: Go, params: PlaygroundParams) => (
     <VerificationCodeScreen
-      phoneNumber={params.phoneNumber ?? "+82 10 1234 5678"}
-      onSubmit={() => go("language-select")}
+      phoneNumber={params.phoneNumber ?? placeholderPhoneNumber}
+      onVerifyCode={() => {
+        go("language-select");
+        return Promise.resolve<PhoneOtpVerifyOutcome>({ status: "verified" });
+      }}
+      onResendCode={() => Promise.resolve<PhoneOtpRequestResult>({ status: "sent" })}
       onExit={() => go("login")}
     />
   ),

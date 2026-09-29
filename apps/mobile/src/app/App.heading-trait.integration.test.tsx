@@ -61,6 +61,7 @@ vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
 afterEach(() => {
   formStub.current = null;
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 // 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
@@ -499,8 +500,96 @@ function tapVerificationSubmit(): void {
   );
 }
 
-test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계약이 고정한 목록과 정확히 같다", () => {
+// 전화번호 경로가 네트워크를 타므로(spec §3 · test-plan §4.1) 로그인 · 코드 화면
+// 사이를 옮기려면 대역이 필요합니다 — `App.entry.integration.test.tsx`의
+// `stubSupabase`와 같은 형태입니다(파일이 다르므로 다시 선언합니다). 이 파일이
+// 보는 것은 제목 축뿐이라 경로 하나(otp 성공 · verify 성공)만 있으면 됩니다.
+type SupabaseRouteResponse = { readonly status: number; readonly body: string };
+type SupabaseRoutes = {
+  otp?: SupabaseRouteResponse;
+  verify?: SupabaseRouteResponse;
+};
+type SupabaseCallInit = {
+  readonly method: string;
+  readonly headers: Record<string, string>;
+  readonly body: string;
+};
+
+function routeFor(url: string, routes: SupabaseRoutes): SupabaseRouteResponse | undefined {
+  if (url.endsWith("/auth/v1/otp")) return routes.otp;
+  if (url.endsWith("/auth/v1/verify")) return routes.verify;
+  return undefined;
+}
+
+function stubSupabase(routes: SupabaseRoutes): void {
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, _init: SupabaseCallInit) => {
+      const route = routeFor(url, routes);
+      if (route === undefined) {
+        throw new Error(`stubSupabase: unstubbed route for ${url}`);
+      }
+      return { status: route.status, text: async () => route.body };
+    }),
+  );
+}
+
+const otpSentBody = "{}";
+
+function sessionResponseBody(): string {
+  return JSON.stringify({
+    access_token: "access-token-1",
+    token_type: "bearer",
+    expires_in: 3600,
+    expires_at: 9999999999,
+    refresh_token: "refresh-token-1",
+    user: { id: "user-1" },
+  });
+}
+
+async function advanceTimersAsync(ms: number): Promise<void> {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(ms);
+  });
+}
+
+function typePhoneNumber(value: string): void {
+  const field = screen.getByTestId("login-screen-phone-field");
+  const EventConstructor = field.ownerDocument.defaultView?.CustomEvent;
+  if (!EventConstructor) throw new Error("CustomEvent is unavailable");
+  const ref = lynx.createSelectorQuery().select('[data-testid="ui-lynx-text-field-input"]');
+  fireEvent(
+    ref as unknown as Element,
+    new EventConstructor("bindEvent:input", { detail: { value } }),
+  );
+}
+
+async function submitPhoneNumber(value: string): Promise<void> {
+  typePhoneNumber(value);
+  fireEvent.tap(
+    within(screen.getByTestId("login-screen-method-phone")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  await advanceTimersAsync(0);
+}
+
+async function submitVerificationCode(value: string): Promise<void> {
+  typeVerificationCode(value);
+  tapVerificationSubmit();
+  await advanceTimersAsync(0);
+}
+
+// HT-E1 개정(test-plan §4.2) — 전화번호 경로가 네트워크를 타므로 번호 입력 +
+// `stubSupabase`를 거쳐야 코드 화면 · 언어 선택에 닿습니다. 제목 축 기대 목록
+// 자체는 그대로입니다(경로만 바뀝니다).
+test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계약이 고정한 목록과 정확히 같다", async () => {
   emptyStorageStub();
+  stubSupabase({
+    otp: { status: 200, body: otpSentBody },
+    verify: { status: 200, body: sessionResponseBody() },
+  });
   vi.useFakeTimers();
   const { container } = render(<App />);
 
@@ -536,17 +625,13 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계�
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
   expect(headingAxis(container)).toEqual(["login-screen-title"]);
 
-  fireEvent.tap(
-    within(screen.getByTestId("login-screen-method-phone")).getByTestId("ui-lynx-button"),
-    {},
-  );
+  await submitPhoneNumber("10 1234 5678");
 
   // 상태 verification-code
   expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
   expect(headingAxis(container)).toEqual(["verification-code-screen-title"]);
 
-  typeVerificationCode("1234");
-  tapVerificationSubmit();
+  await submitVerificationCode("123456");
 
   // 상태 language-select
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();

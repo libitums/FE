@@ -4,6 +4,7 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
+  EpisodeIntroEventSink,
   EpisodeIntroUnitId,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
@@ -57,6 +58,7 @@ export type JourneyWiringArgs = {
   readonly visualNovelEventSink: VisualNovelEventSink;
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
+  readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly dispatch: Dispatch<NavAction>;
   readonly completedMessengerUnitIds: readonly MessengerUnitId[];
   readonly setCompletedMessengerUnitIds: Dispatch<SetStateAction<readonly MessengerUnitId[]>>;
@@ -255,6 +257,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
       setCompletedEpisodeIntroIds: args.setCompletedEpisodeIntroIds,
       dispatch,
       prologueFor: args.episodePrologueFor,
+      episodeIntroEventSink: args.episodeIntroEventSink,
     }),
   };
 

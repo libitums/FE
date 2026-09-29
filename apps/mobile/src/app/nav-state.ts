@@ -10,6 +10,9 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // 판정 어휘는 `lib/answer-result.ts`에서 옵니다 — 화면 폴더가 아니라 `lib/`에서
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
+// 전화번호 로그인(Supabase OTP)의 공용 어휘입니다 — 코드 검증 화면이 보여 줄 번호를
+// 나릅니다.
+import type { PhoneNumber } from "../lib/auth-session.contract";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
 import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
@@ -71,6 +74,7 @@ export type Screen =
   | { name: "word-choice"; stepId: JourneyStepId; activityIndex: number }
   | { name: "culture"; stepId: JourneyStepId; activityIndex: number }
   | { name: "speaking"; stepId: JourneyStepId; activityIndex: number }
+  | { name: "writing"; stepId: JourneyStepId; activityIndex: number }
   | { name: "culture-quiz"; stepId: JourneyStepId }
   // `skippedCount`는 `results`와 같은 근거로 이 화면 인스턴스의 것입니다 — 건너뛴
   // 말하기 문항 수는 판정에는 세고 만점에는 안 세는데(D8), 그 갈림을 지으려면 만점
@@ -102,7 +106,7 @@ export type Screen =
   | { name: "splash" }
   | { name: "onboarding" }
   | { name: "login" }
-  | { name: "verification-code"; phoneNumber?: string }
+  | { name: "verification-code"; phoneNumber: PhoneNumber }
   | { name: "language-select" }
   | { name: "journey-entry" }
   // 손글씨 탐침 route입니다. 필드가 없습니다 — 탐침 화면은 스텝도 유닛도 받지

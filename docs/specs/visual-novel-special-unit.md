@@ -295,7 +295,7 @@ ReactLynx 0.125.0의 native element property parser가 임의의 `data-asset-id`
 sink가 `null`이어도 progress, completion, replay, navigation 결과는 같다. 완료 뒤 또는 replay
 중 `맵으로`는 abandonment가 아니며 app background/kill, tab 전환은 이 이벤트로 세지 않는다.
 payload exact-key 테스트로 대사·speaker·asset path·사용자 ID가 없음을 고정한다. 현재 제품에
-운영 sink가 없으면 계약과 테스트는 발생 경계만 증명하며 실제 출시 집계 완료를 주장하지 않는다.
+운영 sink가 없으면 계약과 테스트는 발생 경계만 증명하며 실제 출시 집계 완료를 주장하지 않는다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 
 ## 9. 계층별 테스트 계획 (specification.test-plan + applicability)
 

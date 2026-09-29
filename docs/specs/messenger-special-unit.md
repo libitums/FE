@@ -279,7 +279,7 @@ export function App(
 있을 때 위 발생점에서 호출하고, 제품 진입점은 현재 sink 부재를 `null`로 명시한다. no-op
 함수·메모리 배열·새 SDK·서버 전송을 만들지 않는다. 테스트는 callback spy로 발생 계약을
 검증한다. **이는 실제 출시 집계 전송 완료가 아니다.** 배포 전에 기존 sink를 연결하는 별도
-후속이 필요하며, 그 전에는 measurement가 실제로 집계되지 않는다.
+후속이 필요하며, 그 전에는 measurement가 실제로 집계되지 않는다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 
 주입과 이벤트 source의 최소 결선 계약은 다음과 같다. 모든 source를 `App`이 소유하며
 `MessengerScreen`에 sink를 직접 전달하지 않는다. 롤플레이 쪽 콜백은 private
@@ -453,7 +453,7 @@ producedBy: specification
 
 App의 optional sink/default `null`, 내부 required wiring, 제품 진입점의 명시적 `null`,
 네 이벤트의 순서·payload와 null 경로는 위 통합 테스트에 실체화됐다. 제품 진입점은 여전히
-운영 sink가 없으므로 출시 집계 완료를 뜻하지 않는다.
+운영 sink가 없으므로 출시 집계 완료를 뜻하지 않는다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 
 Simulator 공통 초기 load의 Rendering·Memory 수집은 아래 세 회차에 기록했다.
 

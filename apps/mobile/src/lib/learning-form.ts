@@ -14,4 +14,11 @@
 
 /** 기본 학습형 중 **화면을 가진 것**입니다. `docs/screens.md` 「학습의 세 유형」의 이름과 1:1입니다. */
 // ⟨2026-09-28⟩ 다섯째 `speaking`(말하기, Figma 65-282)이 늘었습니다.
-export type LearningForm = "listening" | "sentence-order" | "word-choice" | "culture" | "speaking";
+// ⟨2026-09-29⟩ 여섯째 `writing`(쓰기 — 빈칸의 음절을 따라 쓰기)이 늘었습니다.
+export type LearningForm =
+  | "listening"
+  | "sentence-order"
+  | "word-choice"
+  | "culture"
+  | "speaking"
+  | "writing";

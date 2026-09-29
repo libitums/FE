@@ -29,6 +29,7 @@ import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
 import type {
   EpisodeIntroUnitId,
+  EpisodeIntroAppProps,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
 import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
@@ -99,12 +100,14 @@ export function App({
   notificationEventSink = null,
   settingsEventSink = null,
   entryEventSink = null,
+  episodeIntroEventSink = null,
 }: MessengerAppProps &
   VisualNovelAppProps &
   PhoneCallAppProps &
   NotificationAppProps &
   SettingsAppProps &
   EntryAppProps &
+  EpisodeIntroAppProps &
   AppSeedProps = {}) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다
   // — 셸은 `NavAction`도 `dispatch`도 받지 않습니다(ADR-0007 D3).
@@ -199,6 +202,7 @@ export function App({
     notificationEventSink,
     settingsEventSink,
     entryEventSink,
+    episodeIntroEventSink,
     dispatch,
     completedMessengerUnitIds,
     setCompletedMessengerUnitIds,

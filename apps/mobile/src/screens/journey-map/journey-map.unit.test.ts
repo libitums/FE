@@ -12,6 +12,7 @@ import {
 import { sentenceOrderQuestionsForStep } from "../sentence-order/sentence-order";
 import { wordChoiceQuestionsForStep } from "../word-choice/word-choice";
 import { speakingQuestionsForStep } from "../speaking/speaking";
+import { writingQuestionsForStep } from "../writing/writing";
 import {
   canOpenStep,
   completeStep,
@@ -439,6 +440,7 @@ const allLearningForms: readonly LearningForm[] = [
   "word-choice",
   "culture",
   "speaking",
+  "writing",
 ];
 
 // 학습형 → 그 학습형의 문항 개수입니다. 교차 불변식을 학습형 축으로도 돌기
@@ -454,6 +456,7 @@ const questionCountForForm: Record<LearningForm, (id: JourneyStepId) => number> 
   "word-choice": (id) => wordChoiceQuestionsForStep(id).length,
   culture: () => 0,
   speaking: (id) => speakingQuestionsForStep(id).length,
+  writing: (id) => writingQuestionsForStep(id).length,
 };
 
 describe("learningFormForStep", () => {

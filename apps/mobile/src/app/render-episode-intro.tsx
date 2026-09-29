@@ -33,7 +33,7 @@ function renderEpisodeIntroScreen(
       insets={wiring.safeAreaInsets}
       label={episode.label}
       title={episode.title}
-      onBack={wiring.onExitEpisodeIntro}
+      onBack={() => wiring.onExitEpisodeIntro(screen.unitId, "intro")}
       onSkip={() => wiring.onSkipEpisodeIntro(screen.unitId)}
       onNext={() => wiring.onNextEpisodeIntro(screen.unitId)}
     />
@@ -53,6 +53,7 @@ function renderPrologueScreen(
     throw new Error(`서사가 없는 에피소드입니다: ${episode.id}`);
   }
   const onComplete = () => wiring.onCompletePrologue(screen.unitId);
+  const onExit = () => wiring.onExitEpisodeIntro(screen.unitId, "prologue");
   switch (prologue.kind) {
     case "call":
       return (
@@ -63,7 +64,7 @@ function renderPrologueScreen(
           call={prologue.call}
           callerPortrait={jiminPortrait}
           onComplete={onComplete}
-          onBack={wiring.onExitEpisodeIntro}
+          onBack={onExit}
         />
       );
     case "messenger":
@@ -74,7 +75,7 @@ function renderPrologueScreen(
           episodeLabel={episode.label}
           chat={prologue.chat}
           onComplete={onComplete}
-          onBack={wiring.onExitEpisodeIntro}
+          onBack={onExit}
         />
       );
     case "visual-novel":
@@ -87,7 +88,7 @@ function renderPrologueScreen(
           label={episode.label}
           narrative={prologue.narrative}
           onFinish={onComplete}
-          onExit={wiring.onExitEpisodeIntro}
+          onExit={onExit}
         />
       );
     default: {

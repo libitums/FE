@@ -54,7 +54,10 @@ const learningFormsByStep: Record<JourneyStepId, readonly [LearningForm, ...Lear
   introduction: ["listening", "word-choice", "speaking"],
   ordering: ["listening"],
   appointment: ["listening"],
-  directions: ["listening"],
+  // ⟨2026-09-29⟩ 길 묻기는 듣기 뒤에 쓰기가 이어집니다 — 쓰기 학습형에 처음 닿는 자리입니다.
+  // 문항은 `writingQuestionsByStep.directions`의 임시 셋입니다. 다른 스텝의 흐름을 지키는
+  // 테스트가 많아 가장 덜 밟힌 스텝을 골랐습니다 — 배정 근거가 아닙니다.
+  directions: ["listening", "writing"],
 };
 
 // 던지지 않는 총함수입니다 — `Record`가 다섯 키를 전부 덮는 것을 tsc가 지므로 방어

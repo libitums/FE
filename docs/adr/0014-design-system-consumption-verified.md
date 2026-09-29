@@ -165,6 +165,9 @@ ADR-0011의 보류 표를 닫는다. 잠정 조치가 아니라 결정이다.
 "@libitums/icons": "0.2.0"
 ```
 
+> ⟨2026-09-29 적용 기록⟩ 두 패키지를 **0.3.0**으로 올렸다. 0.3.0의 Accent family(Jost)를 앱이 제공하는 방법은 [ADR-0030](0030-app-fonts-jost.md)이다. 버전 고정 방식(정확한 버전, 캐럿 없음)은 그대로다.
+
+
 design-system의 release policy가 확정됐다. **두 패키지는 하나의 버전을 공유하고 항상 함께
 release한다.** 1.0.0 이전에는 **breaking 변경도 minor를 올린다.** caret은 `0.y.z`에서
 minor를 잠그지 않으므로 breaking 변경을 그대로 받는다.

@@ -4,6 +4,8 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import { App } from "./App";
 import type { AppJourneySeed } from "./App";
 import type {
+  EpisodeIntroEvent,
+  EpisodeIntroEventSink,
   EpisodePrologue,
   PrologueCall,
 } from "../screens/episode-intro/episode-intro.contract";
@@ -571,4 +573,145 @@ test("[EM1] 메신저 서사를 끝까지 보내면 PERFECT LESSON → Check →
   tapLessonCompleteCheck();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(introUnit()).toHaveAttribute("data-status", "clear");
+});
+
+// ------------------------------------------------------------------ 표지 · 서사 이벤트
+//
+// sink는 App prop으로 직접 주입합니다. 표지 항목을 누르는 순간부터 서사를 마칠 때까지의
+// 이벤트를 순서 그대로 봅니다.
+
+function renderWithIntroSink(
+  ui: (sink: NonNullable<EpisodeIntroEventSink>) => Parameters<typeof render>[0],
+) {
+  const events: EpisodeIntroEvent[] = [];
+  renderApp(ui((event) => events.push(event)));
+  return events;
+}
+
+test("[EV1] 표지 항목을 눌러 표지가 서면 episode_intro_viewed가 한 번 난다", () => {
+  const events = renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+
+  openIntro();
+
+  expect(events).toEqual([{ name: "episode_intro_viewed", episodeId: "tutorial" }]);
+});
+
+test("[EV2] 잠긴 유닛을 눌러서는 표지 이벤트가 나지 않는다", () => {
+  const events = renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+
+  expect(events).toEqual([]);
+});
+
+test("[EV3] Skip을 누른 것만으로는 나지 않고, 모달에서 건너뛰기를 골라야 episode_intro_skipped가 난다", () => {
+  const events = renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+  openIntro();
+
+  tapButtonIn("episode-intro-screen-skip");
+  tapButtonIn("ui-lynx-dialog-action-stay");
+  expect(events.map((event) => event.name)).toEqual(["episode_intro_viewed"]);
+
+  skipIntro();
+  expect(events.slice(1)).toEqual([{ name: "episode_intro_skipped", episodeId: "tutorial" }]);
+});
+
+test("[EV4] Next → 서사 끝 → Check는 continued · prologue_completed 순서로 난다", () => {
+  const events = renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+  openIntro();
+
+  nextIntro();
+  expect(events.slice(1)).toEqual([
+    { name: "episode_intro_continued", episodeId: "tutorial", hasPrologue: true },
+  ]);
+
+  readNarrative();
+  expect(events.slice(2)).toEqual([
+    { name: "episode_prologue_completed", episodeId: "tutorial", prologueKind: "visual-novel" },
+  ]);
+
+  tapLessonCompleteCheck();
+  expect(events).toHaveLength(3);
+});
+
+test("[EV5] 서사가 없는 에피소드의 Next는 hasPrologue가 false이고 서사 완료가 나지 않는다", () => {
+  const events = renderWithIntroSink((sink) => (
+    <App episodePrologueFor={() => undefined} episodeIntroEventSink={sink} />
+  ));
+  openIntro();
+
+  nextIntro();
+
+  expect(events.slice(1)).toEqual([
+    { name: "episode_intro_continued", episodeId: "tutorial", hasPrologue: false },
+  ]);
+});
+
+test("[EV6] 표지에서 뒤로 나가면 stage가 intro인 episode_intro_exited가 난다", () => {
+  const events = renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+  openIntro();
+
+  tapIntroBack();
+
+  expect(events.slice(1)).toEqual([
+    { name: "episode_intro_exited", episodeId: "tutorial", stage: "intro" },
+  ]);
+});
+
+test("[EV7] 서사에서 뒤로 나가면 stage가 prologue인 episode_intro_exited가 난다", () => {
+  const events = renderWithIntroSink((sink) => (
+    <App episodePrologueFor={() => callPrologue} episodeIntroEventSink={sink} />
+  ));
+  openIntro();
+  nextIntro();
+
+  fireEvent.tap(
+    within(screen.getByTestId("prologue-call-screen-back")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+
+  expect(events.slice(2)).toEqual([
+    { name: "episode_intro_exited", episodeId: "tutorial", stage: "prologue" },
+  ]);
+});
+
+test("[EV8] 서사 형식이 통화면 prologueKind가 call이다", () => {
+  const events = renderWithIntroSink((sink) => (
+    <App episodePrologueFor={() => callPrologue} episodeIntroEventSink={sink} />
+  ));
+  openIntro();
+  nextIntro();
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
+
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
+
+  expect(events.at(-1)).toEqual({
+    name: "episode_prologue_completed",
+    episodeId: "tutorial",
+    prologueKind: "call",
+  });
+});
+
+test("[EV9] 끝낸 표지를 다시 열어도 episode_intro_viewed가 난다", () => {
+  const events = renderWithIntroSink((sink) => (
+    <App completedEpisodeIntroIds={["tutorial-intro"]} episodeIntroEventSink={sink} />
+  ));
+
+  openIntro();
+
+  expect(events).toEqual([{ name: "episode_intro_viewed", episodeId: "tutorial" }]);
+});
+
+test("[EV10] (가드) sink 없이도 표지 · 서사의 어느 조작도 던지지 않는다", () => {
+  renderApp(<App />);
+
+  expect(() => {
+    openIntro();
+    tapIntroBack();
+    fireEvent.tap(introUnit(), {});
+    nextIntro();
+    readNarrative();
+    tapLessonCompleteCheck();
+  }).not.toThrow();
 });

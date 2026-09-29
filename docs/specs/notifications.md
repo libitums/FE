@@ -128,7 +128,7 @@ App (app/App.tsx)                                         ← 유일한 결선 �
 - 대상이 롤플레이 목록이면 뒤따르는 이벤트가 없다.
 - payload에 메시지 문구 · 사용자 식별자 · 시각을 싣지 않는다 — 타입이 초과 속성으로 막는다.
 - sink는 `App`의 optional prop `notificationEventSink`이고 기본값 `null`로 정규화되며, 제품 진입점은
-  `null`을 명시한다. **이 변경이 병합돼도 실제 집계는 0건이다.** 운영 sink 연결은 LIB-256이다.
+  `null`을 명시한다. **이 변경이 병합돼도 실제 집계는 0건이다.** 운영 sink 연결은 LIB-256이다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 
 특별 유닛의 열림 이벤트 표는 [메신저 스펙](messenger-special-unit.md) §6,
 [전화 스펙](phone-call-special-unit.md) §13, [비주얼 노벨 스펙](visual-novel-special-unit.md) §8에 있다.
@@ -146,7 +146,7 @@ App (app/App.tsx)                                         ← 유일한 결선 �
 
 - 홈 전용 테스트 `HomeScreen.ui.test.tsx`는 화면과 함께 지웠다. 홈을 부르던 기존 테스트는 케이스를
   지우지 않고 여정 · 설정으로 치환했다.
-- 이벤트는 e2e 항목이 아니다 — 운영 sink가 `null`이라 기기에서 관측할 수 없다.
+- 이벤트는 e2e 항목이 아니다 — 운영 sink가 `null`이라 기기에서 관측할 수 없다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 
 ## 6. 성능 기록
 
