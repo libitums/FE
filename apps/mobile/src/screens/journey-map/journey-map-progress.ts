@@ -45,6 +45,31 @@ export function stepAccessibilityLabel(title: string, status: JourneyStepStatus)
   return `${title}, ${stepStatusSuffix[status]}`;
 }
 
+/**
+ * 준비 중 칸에 보이는 낱말입니다. 에피소드 헤더의 **진행 막대가 섰던 줄**에 이것이
+ * 섭니다 — 아직 진행이 없는 에피소드라 셀 것이 없습니다.
+ *
+ * 결은 저장소의 기존 목소리와 맞춥니다 — 젬 구매의 `결제 준비 중`과 같은 **짧은 상태
+ * 낱말**이고, 문장형(`…는 아직 준비 중이에요. 조금만 기다려 주세요.`)을 여기 쓰지
+ * 않습니다: 그 문장은 **누른 뒤 뜨는 안내**의 문면이고 이 칸은 누를 수 없습니다.
+ */
+export const episodePendingLabel = "준비 중";
+
+/**
+ * 준비 중 칸의 접근성 이름입니다. 형태가 `${이름}, ${상태낱말}`로 저장소 전체와 같습니다
+ * (ADR-0016 D3) — 바로 위 `stepAccessibilityLabel`의 `, 잠김`, 롤플레이의 `, 플러스 전용`과
+ * **같은 부호·같은 자리**입니다.
+ *
+ * 이름 부분이 `${label} ${title}`인 것은 롤플레이 구획 머리와 같습니다 — 두 줄을 따로
+ * 두면 `Episode 1.`과 이름이 **두 번 멈춰** 읽힙니다.
+ *
+ * 접미사를 **붙이는 쪽**으로 정한 것은 ADR-0016 D13이 가르는 축입니다. 이 칸은 상태가 곧
+ * 존재 이유라, 붙이지 않으면 낭독에서 채워진 에피소드와 **구별되지 않습니다.**
+ */
+export function episodePendingAccessibilityLabel(label: string, title: string): string {
+  return `${label} ${title}, ${episodePendingLabel}`;
+}
+
 export function findStep(
   steps: readonly JourneyStep[],
   id: JourneyStepId,
