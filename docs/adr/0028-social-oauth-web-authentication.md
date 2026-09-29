@@ -319,7 +319,7 @@ Apple 경로(D7)에는 **콜백 URL이 없다** — 결과는 시트를 연 `sta
 | 자리 | 해야 할 것 |
 |---|---|
 | Google · Facebook 개발자 콘솔 | OAuth 클라이언트 ID · 시크릿, 승인된 리다이렉트에 Supabase 콜백 주소 |
-| Apple Developer | App ID `com.libitum.host`(팀 `7SJJT6G6JK`)에 **Sign in with Apple 기능을 켠다**. 네이티브 경로라 웹용 Services ID · 키는 필요 없다 ⚠(Supabase 문서 근거 — 이 저장소에서 확인하지 않았다) |
+| Apple Developer | App ID `com.libitum.host`(팀 `7SJJT6G6JK`)에 **Sign in with Apple 기능을 켠다**. 네이티브 경로라 웹용 Services ID · 키는 필요 없다(2026-09-29 실기에서 확인) |
 | Supabase 대시보드 **Duru** 프로젝트 — Auth Providers | 세 제공자를 켠다. Google · Facebook에는 위 값을, **Apple의 Client IDs에는 번들 ID `com.libitum.host`** 를 넣는다 |
 | Supabase 대시보드 — 리다이렉트 허용 목록 | **`duru://auth-callback`** 을 더한다(Google · Facebook) |
 
