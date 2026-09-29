@@ -90,10 +90,14 @@
   width: 151px;
   display: flex;
   flex-direction: column;
-  position: sticky;
+  position: absolute;
   /* 0이 아니라 바 높이 40pt입니다 — 상단 바가 스크롤 꼭대기를 덮으므로, 0으로 두면
      달라붙은 카드가 칩 · 버튼과 겹칩니다. 위 `.journey-map-screen-map`의 여백과 같은
      수에서 나옵니다. */
-  top: calc(var(--libitum-spacing-32) + var(--libitum-spacing-8));
+  /* 겹침 레이어로 옮기면서 자리를 화면 기준으로 다시 잡습니다 — 상단 바(칩 · 알림)
+     아래에 서야 하므로 그 높이만큼 내립니다. 스크롤 안에 있을 때는 맵 상자의 위 여백이
+     이 몫을 지고 있었습니다. */
+  top: calc(var(--libitum-spacing-80) + var(--libitum-spacing-24));
+  left: var(--libitum-layout-screen-padding-x);
   z-index: var(--libitum-elevation-z-sticky);
 }

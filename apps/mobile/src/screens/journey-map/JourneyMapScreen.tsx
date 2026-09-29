@@ -1,4 +1,5 @@
 import type { ReactNode } from "@lynx-js/react";
+import type { ScrollEvent } from "@lynx-js/types";
 
 import { EpisodeIntroMapItem } from "./EpisodeIntroMapItem";
 import { JourneyStepNode } from "./JourneyStepNode";
@@ -7,7 +8,8 @@ import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
 import { EpisodeFinalMapItem } from "./EpisodeFinalMapItem";
 import { StepSheet } from "./StepSheet";
-import { screenId, scrollId } from "./journey-map-scroll";
+import { episodeSectionId, screenId, scrollId } from "./journey-map-scroll";
+import { useCurrentEpisode } from "./useCurrentEpisode";
 import { useStepSheet } from "./useStepSheet";
 import { useScreenLayer } from "../../lib/use-screen-layer";
 import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
@@ -69,6 +71,18 @@ export function JourneyMapScreen({
   onLayerChange,
 }: JourneyMapScreenProps): ReactNode {
   const { sheetState, sheetTop, handleScroll, handleSelectStep, handleCloseSheet } = useStepSheet();
+  // 머리 카드는 구획 밖에 **하나만** 섭니다 — 무엇을 말할지는 스크롤 자리가 고릅니다
+  // (`useCurrentEpisode`의 주석에 `position: sticky`를 쓸 수 없는 이유를 적었습니다).
+  const currentEpisode = useCurrentEpisode(journeyMapSections);
+  const headerSection = journeyMapSections[currentEpisode.index] ?? journeyMapSections[0];
+
+  // 스크롤 한 번에 둘이 답합니다 — 말풍선 자리와 머리 카드 내용입니다. 인라인 화살표로
+  // 묶으면 `"background only"`가 중첩돼 바인딩이 서지 않습니다.
+  const handleMapScroll = (event: ScrollEvent) => {
+    "background only";
+    handleScroll(event);
+    currentEpisode.handleScroll(event);
+  };
   const openStep =
     sheetState.openStepId === null ? undefined : findStep(journeySteps, sheetState.openStepId);
   // 말풍선이 열린 동안 셸의 전역 머리(칩 · 알림 버튼)도 가려야 합니다 — 전에는 머리가 이
@@ -191,7 +205,7 @@ export function JourneyMapScreen({
         data-testid="journey-map-screen-scroll"
         scroll-orientation="vertical"
         scroll-bar-enable={true}
-        bindscroll={handleScroll}
+        bindscroll={handleMapScroll}
       >
         <view
           className="journey-map-screen-map"
@@ -207,24 +221,37 @@ export function JourneyMapScreen({
             section.episode.kind === "pending" ? (
               <EpisodePendingSection key={section.episode.id} episode={section.episode} />
             ) : (
-              <view className="journey-map-screen-episode" key={section.episode.id}>
-                {/* 헤더를 감싸는 상자입니다. 카드가 스스로 sticky가 되지 않습니다 —
-                    ui-lynx 컴포넌트의 배치는 그것을 쓰는 화면이 정하고, 카드는 자기
-                    생김새만 압니다. 이 상자가 그 배치(줄 폭 · 달라붙기 · 덮기)를 집니다. */}
-                <view className="journey-map-screen-episode-header">
-                  <EpisodeHeader
-                    episodeLabel={section.episode.label}
-                    title={section.episode.title}
-                    completedUnitCount={completedMapItemCount(section.items, progress)}
-                    totalUnitCount={section.items.length}
-                  />
-                </view>
+              <view
+                id={episodeSectionId(section.episode.id)}
+                className="journey-map-screen-episode"
+                key={section.episode.id}
+              >
                 {section.items.map((item) => renderMapItem(item, section.items))}
               </view>
             ),
           )}
         </view>
       </scroll-view>
+      {/* [겹침 레이어] 머리 카드입니다 — **스크롤 밖에 하나만** 섭니다. 구획마다 두고
+          `position: sticky`로 달라붙이면 Lynx에서 첫 카드가 풀리지 않아 경계를 넘어도
+          내용이 안 바뀝니다(`useCurrentEpisode`의 주석). 여기 두면 언제나 같은 자리에
+          서고, 무엇을 말할지는 스크롤 자리가 고릅니다. */}
+      <view className="journey-map-screen-episode-header">
+        {headerSection?.episode.kind === "pending" ? (
+          <view className="episode-pending-card">
+            <text className="episode-pending-card-label">{headerSection.episode.label}</text>
+            <text className="episode-pending-card-title">{headerSection.episode.title}</text>
+          </view>
+        ) : headerSection === undefined ? null : (
+          <EpisodeHeader
+            episodeLabel={headerSection.episode.label}
+            title={headerSection.episode.title}
+            completedUnitCount={completedMapItemCount(headerSection.items, progress)}
+            totalUnitCount={headerSection.items.length}
+          />
+        )}
+      </view>
+
       {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식입니다. */}
       {openStep === undefined ? null : (
         <StepSheet
