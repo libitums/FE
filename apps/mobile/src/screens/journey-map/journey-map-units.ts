@@ -79,17 +79,39 @@ export type JourneyMapItemStatus = "locked" | "available" | "completed";
 /**
  * 에피소드를 가려내는 이름입니다. 오늘은 `tutorial` 하나입니다.
  *
- * ⚠ **이 타입은 아직 어디에도 연결되지 않습니다.** `JourneyEpisode.id`·
- * `RoleplayEpisodeId`·`episodePrologueFor`의 매개변수를 이 타입으로 좁히면, 에피소드
- * id를 임의 문자열로 쓰는 기존 픽스처가 깨집니다 — `roleplay-list.unit.test.ts`의
- * `"cafe"`·`"steps-only"`와 `RoleplayListScreen.ui.test.tsx`의 `episodeId: "cafe"`가
- * 그것이고, 둘 다 **테스트 파일**이라 그 자리를 함께 고치는 계층이 움직여야 합니다.
+ * 유닛 id가 전부 닫힌 union인데 여기만 열려 있었습니다. 닫으면 에피소드 id의 오타가
+ * 컴파일에 섭니다 — `"tutoria1"`을 쓰면 `TS2322`입니다.
  *
- * 같은 이유로 `JourneyEpisodeUnits` 튜플(`[표지, ...가운데, 최종]`)도 아직 못 섭니다 —
- * 같은 파일의 `journeySection` 헬퍼가 `units: []`로 구획을 짓습니다(실측: 좁히면
- * `TS2322` 한 건).
+ * **아직 없는 에피소드 이름을 미리 넣지 않습니다.** 데이터에 없는 값을 타입에 적으면
+ * 그 값이 어디서 왔는지 아무도 못 답합니다.
  */
 export type JourneyEpisodeId = "tutorial";
+
+/**
+ * 에피소드 **가운데**에 올 수 있는 유닛입니다. 표지도 최종 테스트도 여기 올 수
+ * 없습니다 — 그 둘은 자리가 정해져 있고, 자리가 정해진 것이 가운데에 또 서면
+ * 「첫/마지막」이 뜻을 잃습니다.
+ */
+export type JourneyMiddleUnit = Exclude<
+  JourneyUnit,
+  EpisodeIntroJourneyUnitContract | EpisodeFinalJourneyUnitContract
+>;
+
+/**
+ * 에피소드의 유닛 목록입니다. 첫 자리가 표지, 마지막 자리가 최종 테스트이고 **가운데는
+ * 규칙이 없습니다** — 일반 학습과 서사 연계 학습을 유닛마다 자유롭게 섞습니다.
+ *
+ * 데이터 순서가 아니라 **타입**이 그 둘을 집니다. 순서로만 두면 최종 테스트를 가운데
+ * 둬도 컴파일도 런타임도 통과합니다.
+ *
+ * 따라오는 것은 **최소 길이 둘**입니다(표지 + 최종). 그것이 도메인과 맞습니다 — 서사
+ * 없는 에피소드도, 최종 테스트 없는 에피소드도 사용자 발화에 없습니다.
+ */
+export type JourneyEpisodeUnits = readonly [
+  EpisodeIntroJourneyUnitContract,
+  ...JourneyMiddleUnit[],
+  EpisodeFinalJourneyUnitContract,
+];
 
 // 여정의 유닛 목록입니다. **맵의 세로 줄 순서가 이 목록의 순서입니다.**
 //
@@ -125,13 +147,13 @@ export type JourneyEpisodeId = "tutorial";
  * 다시 쪼개야 합니다.
  */
 export type JourneyEpisode = {
-  readonly id: string;
+  readonly id: JourneyEpisodeId;
   readonly label: string;
   readonly title: string;
-  readonly units: readonly JourneyUnit[];
+  readonly units: JourneyEpisodeUnits;
 };
 
-const tutorialUnits: readonly JourneyUnit[] = [
+const tutorialUnits: JourneyEpisodeUnits = [
   // 에피소드의 첫 자리는 표지입니다 — 학습의 당위성을 주는 서사가 여기서 열리고,
   // 이것을 끝내야 그 에피소드의 나머지가 열립니다(`mapItemStatus`의 표지 게이트).
   // 전에는 유닛을 처음 여는 순간 결선이 가로채 표지를 띄웠습니다. 이제 표지가 스스로

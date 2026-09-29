@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import type { JourneyMapItem, JourneyMapSection, JourneyStep } from "../journey-map/journey-map";
+import type {
+  JourneyEpisodeId,
+  JourneyMapItem,
+  JourneyMapSection,
+  JourneyStep,
+} from "../journey-map/journey-map";
 import {
   findRoleplaySection,
   premiumRoleplayAccessibilityLabel,
@@ -12,7 +17,12 @@ import {
   roleplaySectionAccessibilityLabel,
   roleplaySectionsFrom,
 } from "./roleplay-list";
-import type { PremiumRoleplayItem, RoleplayItem, RoleplaySection } from "./roleplay-list.contract";
+import type {
+  PremiumRoleplayItem,
+  RoleplayEpisodeId,
+  RoleplayItem,
+  RoleplaySection,
+} from "./roleplay-list.contract";
 
 // fixture는 `JourneyMapItem`(type import)으로 이 파일 안에서 짓습니다 — 여정 폴더의
 // **값**을 가져오지 않습니다(code.md 「import」). 실제 데이터 순서는 integration I1이
@@ -179,15 +189,43 @@ describe("roleplayItemAccessibilityLabel — 잠김", () => {
   });
 });
 
-// 구획 fixture입니다. 에피소드의 `units`는 이 변환이 읽지 않으므로 비워 둡니다 — 읽는
+// 에피소드 유닛 목록의 **최소**입니다(`JourneyEpisodeUnits` = `[표지, ...가운데, 최종]`).
+// 이 변환은 `units`를 읽지 않지만 타입이 최소 둘을 요구하므로 그 둘만 채웁니다 — 읽는
 // 것은 이름 셋과 맵 항목입니다.
+const introUnit = {
+  kind: "special",
+  id: "tutorial-intro",
+  title: "에피소드 표지",
+  screen: "episode-intro",
+} as const;
+
+const finalUnit = {
+  kind: "special",
+  id: "tutorial-final-test",
+  title: "최종 테스트",
+  screen: "episode-final",
+} as const;
+
+// 구획 fixture입니다.
+//
+// ⚠ **`id`의 캐스트는 의도한 것입니다.** `JourneyEpisodeId`는 오늘 데이터에 있는
+// `"tutorial"` 하나로 닫혀 있고, 제품 코드는 그 닫힘에서 타입 안전을 얻습니다(에피소드
+// id의 오타가 `tsc`에 섭니다). 아래 케이스들이 보는 것은 **다른 것** — 「에피소드가
+// 여럿일 때 구획이 여럿 선다」는 일반성이고, 오늘 데이터에 에피소드가 하나뿐이라
+// 그것을 보려면 아직 없는 에피소드를 일부러 지어내야 합니다. 두 목적이 다르므로
+// 캐스트는 **이 픽스처 경계에만** 두고 제품 코드로 넘기지 않습니다. 없는 에피소드
+// 이름을 union에 미리 넣는 것은 더 나쁩니다 — 데이터에 없는 것을 타입이 있다고 말하게
+// 됩니다.
 function journeySection(
   id: string,
   label: string,
   title: string,
   items: readonly JourneyMapItem[],
 ): JourneyMapSection {
-  return { episode: { id, label, title, units: [] }, items };
+  return {
+    episode: { id: id as JourneyEpisodeId, label, title, units: [introUnit, finalUnit] },
+    items,
+  };
 }
 
 const tutorial = journeySection("tutorial", "Episode 0.", "Tutorial.", [
@@ -277,15 +315,26 @@ const openSection: RoleplaySection = {
   items: [],
   premiumItems: [],
 };
-const lockedSection: RoleplaySection = { ...openSection, episodeId: "cafe", unlocked: false };
+// ⚠ `"cafe"`의 캐스트는 위 `journeySection`과 같은 이유입니다 — 「구획이 여럿일 때
+// id로 고른다」를 보려면 둘째 에피소드가 있어야 하는데, 오늘 데이터에는 없습니다.
+const lockedSection: RoleplaySection = {
+  ...openSection,
+  episodeId: "cafe" as RoleplayEpisodeId,
+  unlocked: false,
+};
 
 describe("findRoleplaySection", () => {
   it("F1. 그 id의 구획을 돌려준다", () => {
-    expect(findRoleplaySection([openSection, lockedSection], "cafe")).toBe(lockedSection);
+    expect(findRoleplaySection([openSection, lockedSection], "cafe" as RoleplayEpisodeId)).toBe(
+      lockedSection,
+    );
   });
 
+  // ⚠ 「없는 id」는 닫힌 union으로 **표현할 수 없는** 입력입니다 — 그래서 캐스트로
+  // 짓습니다. 이 함수는 목록에서 찾는 총함수라 타입 밖의 값이 와도 던지지 않아야
+  // 하고, 그것을 보는 케이스가 이것입니다.
   it("F2. 없는 id면 undefined다", () => {
-    expect(findRoleplaySection([openSection], "unknown")).toBeUndefined();
+    expect(findRoleplaySection([openSection], "unknown" as RoleplayEpisodeId)).toBeUndefined();
   });
 });
 
