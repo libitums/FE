@@ -1,6 +1,13 @@
 import { expect, it, vi } from "vitest";
 import { render, screen } from "@lynx-js/react/testing-library";
+
+import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
+import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
+import type { MessengerUnitId } from "../messenger/messenger.contract";
+import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
+import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import { JourneyMapScreen } from "./JourneyMapScreen";
+import type { JourneyStepId } from "./journey-map";
 
 // 데이터 경계의 제목을 바꿔치기해, 화면이 자체 문구 대신 전달받은 값을 쓰는지 봅니다.
 vi.mock("./journey-map", async (importOriginal) => {
@@ -20,13 +27,22 @@ vi.mock("./journey-map", async (importOriginal) => {
 
 it("특별 항목의 표시와 접근성 이름에 맵 데이터의 제목을 사용한다", () => {
   render(
+    // ⟨개정 2026-09-29⟩ 표지 완료를 넘깁니다 — 미완료면 메신저 항목이 잠겨(D6) 낭독
+    // 이름에 상태 접미사 「잠김」이 끼고, 이 케이스가 보려는 **제목의 출처**가
+    // 그 접미사에 가려집니다.
     <JourneyMapScreen
       completedStepCount={2}
-      onStartStep={vi.fn()}
+      onStartStep={vi.fn<(id: JourneyStepId) => void>()}
+      completedEpisodeIntroIds={["tutorial-intro"]}
+      onStartEpisodeIntroUnit={vi.fn<(id: EpisodeIntroUnitId) => void>()}
       completedMessengerUnitIds={[]}
-      onStartMessengerUnit={vi.fn()}
+      onStartMessengerUnit={vi.fn<(id: MessengerUnitId) => void>()}
       completedPhoneCallUnitIds={[]}
-      onStartPhoneCallUnit={vi.fn()}
+      onStartPhoneCallUnit={vi.fn<(id: PhoneCallUnitId) => void>()}
+      completedVisualNovelUnitIds={[]}
+      onStartVisualNovelUnit={vi.fn<(id: VisualNovelUnitId) => void>()}
+      completedEpisodeFinalIds={[]}
+      onStartEpisodeFinal={vi.fn<(id: EpisodeFinalUnitId) => void>()}
     />,
   );
   const item = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");
