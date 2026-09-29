@@ -115,8 +115,8 @@ PUBLIC_SUPABASE_ANON_KEY=<publishable 또는 anon 키>
 ```sh
 # apps/mobile/.env.local  (git이 추적하지 않는다 — .gitignore의 .env.*)
 PUBLIC_POSTHOG_KEY=phc_<프로젝트 API 키>
-# 배포 번들을 만드는 곳에만 둔다. 개발자 기기에는 두지 않는다.
-PUBLIC_ANALYTICS_ENVIRONMENT=production
+# 배포 번들을 만드는 곳에서만 아래 줄의 주석을 푼다. 개발자 기기에서는 풀지 않는다.
+# PUBLIC_ANALYTICS_ENVIRONMENT=production
 ```
 
 - **없으면 아무것도 보내지 않는다.** 앱은 그대로 돈다 — 개발에 키는 필요 없다.
