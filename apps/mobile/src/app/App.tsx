@@ -1,6 +1,7 @@
 import { useGlobalProps, useReducer, useState } from "@lynx-js/react";
 
 import { BottomNavigator } from "../components/BottomNavigator";
+import type { AnalyticsIdentifyAppProps } from "../lib/analytics.contract";
 import type { AnswerResult } from "../lib/answer-result";
 import type { EntryAppProps } from "../lib/entry-flow";
 import { initialEntryLanguage } from "../lib/entry-language";
@@ -101,6 +102,7 @@ export function App({
   settingsEventSink = null,
   entryEventSink = null,
   episodeIntroEventSink = null,
+  analyticsIdentify = null,
 }: MessengerAppProps &
   VisualNovelAppProps &
   PhoneCallAppProps &
@@ -108,6 +110,7 @@ export function App({
   SettingsAppProps &
   EntryAppProps &
   EpisodeIntroAppProps &
+  AnalyticsIdentifyAppProps &
   AppSeedProps = {}) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다
   // — 셸은 `NavAction`도 `dispatch`도 받지 않습니다(ADR-0007 D3).
@@ -122,14 +125,10 @@ export function App({
   // `initialEntryLanguage`로 돌아갑니다(영속하지 않습니다).
   const [entryLanguage, setEntryLanguage] = useState<EntryLanguage>(initialEntryLanguage);
 
-  // **진행(완료 스텝 수)의 진실의 출처입니다.** 스텝 상태는 여기서
-  // 파생되고(`stepStatusAt`), 데이터에도 `Nav`에도 적지 않습니다 — 진행은
-  // 라우팅 상태가 아니므로 `Nav`에 필드를 더하지 않습니다(ADR-0007 D3).
-  //
-  // **영속하지 않습니다** — 저장소 모듈을 import하지도 호출하지도 않습니다
-  // (ADR-0007 D1: 저장소 모듈에 넣는 것은 로그인 토큰뿐입니다,
-  // `lib/auth-session.ts`). 앱을 다시 켜면 진행이 `initialCompletedStepCount`로
-  // 돌아가는 것이 정상이고 계약이 그것을 적습니다.
+  // **진행(완료 스텝 수)의 진실의 출처입니다.** 스텝 상태는 여기서 파생되고(`stepStatusAt`),
+  // 데이터에도 `Nav`에도 적지 않습니다 — 진행은 라우팅 상태가 아닙니다(ADR-0007 D3).
+  // **영속하지 않습니다**(ADR-0007 D1 — 저장소에 넣는 것은 로그인 세션뿐입니다). 앱을 다시
+  // 켜면 진행이 `initialCompletedStepCount`로 돌아가는 것이 정상입니다.
   const [completedStepCount, setCompletedStepCount] = useState(journeySeed.completedStepCount);
   const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
     readonly MessengerUnitId[]
@@ -204,6 +203,7 @@ export function App({
     settingsEventSink,
     entryEventSink,
     episodeIntroEventSink,
+    analyticsIdentify,
     dispatch,
     completedMessengerUnitIds,
     setCompletedMessengerUnitIds,

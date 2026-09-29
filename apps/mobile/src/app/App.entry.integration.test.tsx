@@ -1785,3 +1785,110 @@ test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 �
     expect(screen.getByTestId(`login-screen-method-${method}`)).toBeInTheDocument();
   }
 });
+
+// ------------------------------------------------------------------------- 분석 사용자 식별
+//
+// 로그인 · 세션 갱신이 성공하면 액세스 토큰의 `sub`로 분석 사용자를 식별합니다(ADR-0029 D8).
+// 토큰은 서명 없는 JWT 모양 대역입니다 — 앱은 서명을 보지 않습니다.
+
+function accessTokenFor(userId: string): string {
+  const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
+  return `${encode({ alg: "HS256", typ: "JWT" })}.${encode({ sub: userId })}.signature`;
+}
+
+test("[ID1] 소셜 로그인이 성공하면 그 사용자로 한 번 식별한다", async () => {
+  stubHostWithWebAuthentication(completedWebAuthentication);
+  stubSupabase({
+    pkce: {
+      status: 200,
+      body: sessionResponseBody({ accessToken: accessTokenFor("user-social") }),
+    },
+  });
+  const analyticsIdentify = vi.fn<(userId: string) => void>();
+  vi.useFakeTimers();
+  render(<App analyticsIdentify={analyticsIdentify} />);
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("google");
+
+  expect(analyticsIdentify.mock.calls).toEqual([["user-social"]]);
+});
+
+test("[ID2] 전화번호 코드 검증이 성공하면 그 사용자로 한 번 식별한다", async () => {
+  emptyStorageStub();
+  stubSupabase({
+    otp: { status: 200, body: otpSentBody },
+    verify: {
+      status: 200,
+      body: sessionResponseBody({ accessToken: accessTokenFor("user-phone") }),
+    },
+  });
+  const analyticsIdentify = vi.fn<(userId: string) => void>();
+  vi.useFakeTimers();
+  render(<App phoneSignIn="visible" analyticsIdentify={analyticsIdentify} />);
+  advanceSplash();
+  completeOnboarding();
+  await submitPhoneNumber("10 1234 5678");
+  expect(analyticsIdentify).not.toHaveBeenCalled();
+
+  await submitVerificationCode("123456");
+
+  expect(analyticsIdentify.mock.calls).toEqual([["user-phone"]]);
+});
+
+test("[ID3] 세션 갱신으로 부팅하면 갱신된 토큰의 사용자로 식별한다", async () => {
+  sessionPresentStorageStub({ accessToken: "old", refreshToken: "old-refresh", expiresAt: 1000 });
+  stubSupabase({
+    refresh: {
+      status: 200,
+      body: sessionResponseBody({ accessToken: accessTokenFor("user-boot") }),
+    },
+  });
+  const analyticsIdentify = vi.fn<(userId: string) => void>();
+  vi.useFakeTimers();
+  render(<App analyticsIdentify={analyticsIdentify} />);
+
+  advanceSplash();
+  await advanceTimersAsync(0);
+
+  expect(analyticsIdentify.mock.calls).toEqual([["user-boot"]]);
+});
+
+test("[ID4] 로그인이 실패하거나 토큰에서 사용자를 못 읽으면 식별하지 않는다", async () => {
+  stubHostWithWebAuthentication(completedWebAuthentication);
+  stubSupabase({
+    pkce: { status: 200, body: sessionResponseBody({ accessToken: "not-a-jwt" }) },
+  });
+  const analyticsIdentify = vi.fn<(userId: string) => void>();
+  vi.useFakeTimers();
+  render(<App analyticsIdentify={analyticsIdentify} />);
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("google");
+
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(analyticsIdentify).not.toHaveBeenCalled();
+});
+
+test("[ID5] 식별이 던져도 로그인은 언어 선택으로 넘어간다", async () => {
+  stubHostWithWebAuthentication(completedWebAuthentication);
+  stubSupabase({
+    pkce: { status: 200, body: sessionResponseBody({ accessToken: accessTokenFor("user-x") }) },
+  });
+  vi.useFakeTimers();
+  render(
+    <App
+      analyticsIdentify={() => {
+        throw new Error("identify failed");
+      }}
+    />,
+  );
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("google");
+
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+});

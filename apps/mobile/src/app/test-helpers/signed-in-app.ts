@@ -18,14 +18,17 @@ export const signedInBootSession: AuthSession = {
   expiresAt: 4_102_444_800_000,
 };
 
-// 갱신 응답 본문입니다 — `authSessionFrom`이 읽는 모양입니다.
-const refreshedSessionBody = JSON.stringify({
-  access_token: "refreshed-access-token",
-  refresh_token: "refreshed-refresh-token",
-  expires_in: 3600,
-  token_type: "bearer",
-  user: { id: "boot-user" },
-});
+// 갱신 응답 본문입니다 — `authSessionFrom`이 읽는 모양입니다. 기본 액세스 토큰은 JWT가 아니라
+// 분석 사용자 식별이 일어나지 않습니다 — 식별을 보려는 자리가 JWT 모양 토큰을 넘깁니다.
+function refreshedSessionBodyFor(accessToken: string): string {
+  return JSON.stringify({
+    access_token: accessToken,
+    refresh_token: "refreshed-refresh-token",
+    expires_in: 3600,
+    token_type: "bearer",
+    user: { id: "boot-user" },
+  });
+}
 
 /**
  * 로그인된 설치로 App을 부팅해 스플래시 · 세션 갱신을 지난 상태까지 흘립니다.
@@ -33,7 +36,11 @@ const refreshedSessionBody = JSON.stringify({
  */
 export async function renderSignedInApp(
   ui: Parameters<typeof render>[0],
+  options: { readonly refreshedAccessToken?: string } = {},
 ): Promise<ReturnType<typeof render>> {
+  const refreshedSessionBody = refreshedSessionBodyFor(
+    options.refreshedAccessToken ?? "refreshed-access-token",
+  );
   const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
   const store = new Map<string, string>();
   store.set(authSessionStorageKey, serializeAuthSession(signedInBootSession));
