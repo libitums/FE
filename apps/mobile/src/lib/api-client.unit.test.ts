@@ -502,3 +502,52 @@ test("AI3. exchangeIdToken — 설정 없음 · 던짐 · 제한 시간 · 성�
   await exchangeIdToken({ idToken: "t", nonce: "n" });
   expect(vi.getTimerCount()).toBe(0);
 });
+
+// ------------------------------------------------------------------ 연결 실패 응답(#154)
+//
+// Lynx `fetch`는 연결에 실패해도 거부하지 않고 status 499(또는 0) 응답을 돌려줍니다. 4xx로
+// 분류하면 오프라인이 「번호가 틀렸다」 · 「코드가 틀렸다」로 보이고, 세션 갱신은 세션을 지웁니다.
+
+for (const status of [0, 499]) {
+  test(`AN1. status ${String(status)} 응답은 다섯 연산 모두 network다`, async () => {
+    stubConfig();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ status, text: async () => "" })),
+    );
+
+    await expect(requestPhoneOtp(samplePhone)).resolves.toEqual({
+      status: "failed",
+      reason: "network",
+    });
+    await expect(verifyPhoneOtp({ phone: samplePhone, code: "123456" })).resolves.toEqual({
+      status: "failed",
+      reason: "network",
+    });
+    await expect(refreshAuthSession("refresh-token")).resolves.toEqual({
+      status: "failed",
+      reason: "network",
+    });
+    await expect(exchangePkceCode({ authCode: "code", codeVerifier: "verifier" })).resolves.toEqual(
+      { status: "failed", reason: "network" },
+    );
+    await expect(exchangeIdToken({ idToken: "token", nonce: "nonce" })).resolves.toEqual({
+      status: "failed",
+      reason: "network",
+    });
+  });
+}
+
+test("AN2. 진짜 4xx(400 · 403 · 498)는 여전히 연산별 실패로 분류한다", async () => {
+  stubConfig();
+  for (const status of [400, 403, 498]) {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(status, {})),
+    );
+    await expect(refreshAuthSession("refresh-token")).resolves.toEqual({
+      status: "failed",
+      reason: "rejected",
+    });
+  }
+});

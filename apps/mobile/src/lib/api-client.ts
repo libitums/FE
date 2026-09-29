@@ -203,6 +203,10 @@ async function sendAuthRequest(
   const send = (async (): Promise<AuthRequestOutcome> => {
     try {
       const response = await transport(url, init);
+      // Lynx `fetch`는 연결 실패를 거부하지 않고 이 status로 돌려줍니다(#154 · ADR-0029 D12).
+      if (response.status === 0 || response.status === 499) {
+        return { ok: false, reason: "network" };
+      }
       const bodyText = await response.text();
       return { ok: true, status: response.status, bodyText };
     } catch {
