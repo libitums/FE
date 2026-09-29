@@ -1786,33 +1786,6 @@ test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 �
   }
 });
 
-<<<<<<< HEAD
-// ------------------------------------------------------------------------- 연결 실패 응답(#154)
-
-test("[IN1] 갱신이 status 499(연결 실패)로 돌아오면 세션 키가 남아 있다 — 오프라인이 로그아웃이 아니다", async () => {
-  const initialSession: AuthSession = {
-    accessToken: "old-access",
-    refreshToken: "old-refresh",
-    expiresAt: 1000,
-  };
-  const store = sessionPresentStorageStub(initialSession);
-  stubSupabase({ refresh: { status: 499, body: "" } });
-  vi.useFakeTimers();
-  render(<App />);
-
-  advanceSplash();
-  await advanceTimersAsync(0);
-
-  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
-  expect(store.get(authSessionStorageKey)).toBe(serializeAuthSession(initialSession));
-});
-
-test("[IN2] 소셜 교환이 status 499로 돌아오면 network 문구가 서고 세션을 저장하지 않는다", async () => {
-  const { store } = stubHostWithWebAuthentication(completedWebAuthentication);
-  stubSupabase({ pkce: { status: 499, body: "" } });
-  vi.useFakeTimers();
-  render(<App />);
-=======
 // ------------------------------------------------------------------------- 분석 사용자 식별
 //
 // 로그인 · 세션 갱신이 성공하면 액세스 토큰의 `sub`로 분석 사용자를 식별합니다(ADR-0029 D8).
@@ -1834,16 +1807,11 @@ test("[ID1] 소셜 로그인이 성공하면 그 사용자로 한 번 식별한�
   const analyticsIdentify = vi.fn<(userId: string) => void>();
   vi.useFakeTimers();
   render(<App analyticsIdentify={analyticsIdentify} />);
->>>>>>> origin/main
   advanceSplash();
   completeOnboarding();
 
   await selectLoginMethodAsync("google");
 
-<<<<<<< HEAD
-  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(authFailureMessage("network"));
-  expect(store.has(authSessionStorageKey)).toBe(false);
-=======
   expect(analyticsIdentify.mock.calls).toEqual([["user-social"]]);
 });
 
@@ -1923,5 +1891,38 @@ test("[ID5] 식별이 던져도 로그인은 언어 선택으로 넘어간다", 
   await selectLoginMethodAsync("google");
 
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
->>>>>>> origin/main
+});
+
+// ------------------------------------------------------------------------- 연결 실패 응답(#154)
+
+test("[IN1] 갱신이 status 499(연결 실패)로 돌아오면 세션 키가 남아 있다 — 오프라인이 로그아웃이 아니다", async () => {
+  const initialSession: AuthSession = {
+    accessToken: "old-access",
+    refreshToken: "old-refresh",
+    expiresAt: 1000,
+  };
+  const store = sessionPresentStorageStub(initialSession);
+  stubSupabase({ refresh: { status: 499, body: "" } });
+  vi.useFakeTimers();
+  render(<App />);
+
+  advanceSplash();
+  await advanceTimersAsync(0);
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(store.get(authSessionStorageKey)).toBe(serializeAuthSession(initialSession));
+});
+
+test("[IN2] 소셜 교환이 status 499로 돌아오면 network 문구가 서고 세션을 저장하지 않는다", async () => {
+  const { store } = stubHostWithWebAuthentication(completedWebAuthentication);
+  stubSupabase({ pkce: { status: 499, body: "" } });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("google");
+
+  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(authFailureMessage("network"));
+  expect(store.has(authSessionStorageKey)).toBe(false);
 });
