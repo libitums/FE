@@ -46,6 +46,11 @@ export const analyticsQueueRetryDelaysMs: AnalyticsQueueRetryDelaysMs = [
   15_000, 30_000, 60_000, 120_000, 300_000,
 ];
 
+// Lynx `fetch`는 연결 실패를 거부하지 않고 이 status의 응답으로 돌려준다(iOS 시뮬레이터 관찰
+// 2026-09-29: 닫힌 포트 → 499). 그대로 넘기면 SDK가 HTTP 오류로 보고 이벤트를 버리므로, 거부로
+// 바꿔 네트워크 실패(대기열에 남기고 재시도)로 다룬다. PostHog 서버는 이 둘을 돌려주지 않는다.
+const lynxNetworkFailureStatuses: readonly number[] = [0, 499];
+
 // SDK가 보내지 못한 이벤트를 담는 영속 속성 이름입니다(`PostHogPersistedProperty.Queue`).
 // 값 import는 `PostHogCore` 하나뿐이라는 규칙 때문에 열거형 대신 문자열로 적습니다.
 const sdkQueueProperty = "queue";
@@ -115,11 +120,18 @@ export class LynxPostHogClient extends PostHogCore {
         method: options.method,
         headers: options.headers,
         body: options.body,
-      }).then((response) => ({
-        status: response.status,
-        text: () => response.text(),
-        json: () => response.json(),
-      }));
+      })
+        .then((response) => {
+          if (lynxNetworkFailureStatuses.includes(response.status)) {
+            throw new Error(`Lynx fetch network failure (status ${String(response.status)})`);
+          }
+          return response;
+        })
+        .then((response) => ({
+          status: response.status,
+          text: () => response.text(),
+          json: () => response.json(),
+        }));
     } catch (error) {
       return Promise.reject(error);
     }

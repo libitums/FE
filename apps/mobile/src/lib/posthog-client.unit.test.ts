@@ -572,4 +572,28 @@ describe("대기열 · 재시도 · 보존", () => {
     expect(() => makeClient(transport)).not.toThrow();
     expect(storage.values.has(analyticsQueueStorageKey)).toBe(false);
   });
+
+  // 기기 관찰(2026-09-29): Lynx `fetch`는 연결 실패를 거부하지 않고 status 499 응답으로 돌려준다.
+  test.each([499, 0])(
+    "PC19: 전송이 status %i로 끝나면 네트워크 실패로 보고 대기열에 남긴다",
+    async (status) => {
+      vi.useFakeTimers();
+      const storage = fakeStorage();
+      vi.stubGlobal("NativeModules", { StorageModule: storage.module });
+      const calls: Call[] = [];
+      const transport: AnalyticsTransport = async (url, init) => {
+        calls.push({ url, init });
+        return { ...okResponse, status };
+      };
+      const client = makeClient(transport);
+
+      client.capture("settings_opened", {});
+      await vi.advanceTimersByTimeAsync(10_000);
+
+      expect(calls).toHaveLength(1 + postHogClientOptions.fetchRetryCount);
+      const saved = storage.values.get(analyticsQueueStorageKey);
+      expect(saved).toBeTypeOf("string");
+      expect(JSON.parse(saved!)).toMatchObject([{ message: { event: "settings_opened" } }]);
+    },
+  );
 });
