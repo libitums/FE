@@ -115,12 +115,16 @@ PUBLIC_SUPABASE_ANON_KEY=<publishable 또는 anon 키>
 ```sh
 # apps/mobile/.env.local  (git이 추적하지 않는다 — .gitignore의 .env.*)
 PUBLIC_POSTHOG_KEY=phc_<프로젝트 API 키>
+# 배포 번들을 만드는 곳에서만 아래 줄의 주석을 푼다. 개발자 기기에서는 풀지 않는다.
+# PUBLIC_ANALYTICS_ENVIRONMENT=production
 ```
 
 - **없으면 아무것도 보내지 않는다.** 앱은 그대로 돈다 — 개발에 키는 필요 없다.
 - 값은 PostHog 프로젝트 설정의 **Project API Key**(`phc_…`)다. **개인 API 키(`phx_…`)는 넣지 않는다** —
   이 값은 번들에 그대로 들어가고, 앱은 `phc_`로 시작하지 않는 키를 없는 것으로 취급한다.
-- 개발 · 시뮬레이터 빌드는 운영과 **별도 프로젝트 키**를 쓴다.
+- PostHog 프로젝트는 **하나**다(무료 요금제). 개발 · 운영은 모든 이벤트에 붙는 `environment`
+  속성으로 가른다 — `PUBLIC_ANALYTICS_ENVIRONMENT`가 정확히 `production`일 때만 `production`이고
+  그 밖은 `development`다([ADR-0029](docs/adr/0029-product-analytics-posthog.md) D13).
 - 키는 빌드 시점에 들어간다. `.env.local`을 바꾸면 `pnpm dev`(호스트 앱이면 `pnpm bundle:host`)를
   다시 한다.
 

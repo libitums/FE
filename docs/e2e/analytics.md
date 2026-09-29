@@ -17,7 +17,8 @@
 
 - **키 없음(A)**: `apps/mobile/.env.local`에 `PUBLIC_POSTHOG_KEY`가 없거나 비어 있다.
 - **키 있음(B)**: 같은 파일에 `PUBLIC_POSTHOG_KEY=phc_…`(PostHog 프로젝트 설정의 Project API Key)를
-  둔다. 개발 · 시뮬레이터 빌드는 운영과 **별도 프로젝트 키**를 쓴다.
+  둔다. 프로젝트는 하나다 — 이 파일에 `PUBLIC_ANALYTICS_ENVIRONMENT`를 **두지 않아** 이벤트가
+  `environment = development`로 가게 한다(ADR-0029 D13).
 - 키는 **빌드 시점에 번들로 치환**된다. `.env.local`을 바꾼 뒤에는 반드시 `pnpm bundle:host`
   (빌드 + `apps/ios`로 번들 복사)를 다시 하고 호스트 앱을 다시 설치 · 실행한다. 앱만
   재시작해서는 이전 키가 남는다.
@@ -73,12 +74,12 @@
 
 ## B — 키가 있어야 실행 가능(실제 `phc_` 키 필요)
 
-전제: 별도 프로젝트의 실제 `phc_` 키를 `.env.local`에 넣고 `pnpm bundle:host` → 앱 재설치 · 실행.
+전제: 실제 `phc_` 키를 `.env.local`에 넣고(`PUBLIC_ANALYTICS_ENVIRONMENT`는 두지 않는다) `pnpm bundle:host` → 앱 재설치 · 실행.
 PostHog 웹에서 해당 프로젝트의 **Activity → Live events**를 열어 둔다(도착에 수 초 걸린다).
 
 | id | 단계 | 관찰(판정) |
 |---|---|---|
-| B1 | 앱 실행 → 진입 흐름 통과 → 설정 탭 tap | Live events에 `settings_opened` 1건. properties에 `$lib = libitums-lynx`, `$process_person_profile = false` |
+| B1 | 앱 실행 → 진입 흐름 통과 → 설정 탭 tap | Live events에 `settings_opened` 1건. properties에 `$lib = libitums-lynx`, `$process_person_profile = false`, `environment = development` |
 | B2 | 설정 토글 · 알림 항목 tap · 스페셜 유닛 열기 · 나가기 | 각 이벤트가 이름 · properties 그대로 도착(spec §4.1 카탈로그와 대조: 예 `session_option_changed`의 `option` · `value`, `notification_item_tapped`의 `notificationId` · `target`, `messenger_unit_opened`의 `unitId` · `entrySource`). 전화번호 · 인증 토큰 · 대화 본문 · 기기 모델 · OS 버전이 properties에 **없다** |
 | B3 | 앱을 완전히 종료 후 재실행 → 설정 탭 tap | 새 `settings_opened`의 `distinct_id`가 B1과 **다르다**(실행마다 새 사용자 — 한계 §12-1) |
 | B4 | 비행기 모드를 켠 채 설정 탭 tap → 앱 조작 계속 → (a) 30초 안에 비행기 모드 해제 (b) 다른 회차: 켠 채 앱 종료 | 화면 동작 불변 · 오류 화면 없음. (a) 비행기 모드를 끈 뒤 15초 안팎에 **새 조작 없이** 도착한다(ADR-0029 D12 재시도). (b) 비행기 모드를 끄고 앱을 다시 켜면 **곧바로** 도착한다(저장된 대기열) |

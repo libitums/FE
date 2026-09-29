@@ -66,6 +66,9 @@ export class LynxPostHogClient extends PostHogCore {
   constructor(config: AnalyticsConfig, transport: AnalyticsTransport) {
     super(config.projectKey, { ...postHogClientOptions, host: config.host });
     this.transport = transport;
+    // 프로젝트가 하나라 개발 · 운영을 이 속성으로 가릅니다(ADR-0029 D13). 되살린 대기열의
+    // 이벤트는 만들어질 때의 값을 그대로 갖습니다.
+    this.register({ environment: config.environment });
     this.on("error", () => this.scheduleRetry());
     this.on("flush", () => {
       this.retryAttempt = 0;
