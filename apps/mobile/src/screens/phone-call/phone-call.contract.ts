@@ -136,7 +136,7 @@ export type PhoneCallEvent =
       readonly entrySource: "roleplay";
     };
 
-/** `null`은 출시 집계 sink가 없다는 사실을 타입으로 드러냅니다(`MessengerEventSink`와 같은 규약). */
+/** `null`은 이 실행에서 보내지 않는다는 뜻입니다(PostHog 키가 없거나 메인 스레드). no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */
 export type PhoneCallEventSink = ((event: PhoneCallEvent) => void) | null;
 
 /**
