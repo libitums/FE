@@ -175,11 +175,10 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         />
       );
     // 결선은 `onStartStep`이 `learningFormForStep`을 거쳐 `learningScreenFor`가
-    // 돌려주는 화면을 push하므로 이 두 case가 실제로 열립니다. 세 학습
-    // 화면은 props가 문자 그대로 같지만 `Record`나 공통 렌더 헬퍼로 묶지
-    // 않습니다 — 묶으면 `switch`의 exhaustiveness가 죽고, 그 exhaustiveness가
-    // 이 저장소가 「빠진 결선」을 컴파일 타임에 잡는 유일한 장치입니다. 분기
-    // 셋의 중복은 그 장치의 가격이지 결함이 아닙니다.
+    // 돌려주는 화면을 push하므로 이 case들이 실제로 열립니다. 학습 화면은 props가 같지만
+    // `Record`나 공통 렌더 헬퍼로 묶지 않습니다 — 묶으면 `switch`의 exhaustiveness가 죽고,
+    // 그것이 이 저장소가 「빠진 결선」을 컴파일 타임에 잡는 유일한 장치입니다. 분기의
+    // 중복은 그 장치의 가격이지 결함이 아닙니다.
     case "sentence-order":
     case "speaking":
     case "writing":
