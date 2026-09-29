@@ -16,7 +16,7 @@ import {
 } from "./api-client";
 // 소셜 로그인(신규 · test-plan §2.4) — exchangePkceCode · supabaseAuthorizeUrl은
 // api-client.ts, pkceExchangeFailureFrom은 auth-response.ts가 소유한다(spec S6).
-import { exchangePkceCode, supabaseAuthorizeUrl } from "./api-client";
+import { exchangeIdToken, exchangePkceCode, supabaseAuthorizeUrl } from "./api-client";
 import { pkceExchangeFailureFrom } from "./auth-response";
 import type { SupabaseAuthorizeQuery } from "./social-sign-in.contract";
 
@@ -48,6 +48,7 @@ test("AC1. supabaseAuthPathFor가 네 연산을 네 경로로 옮긴다", () => 
   expect(supabaseAuthPathFor("verify-otp")).toBe("/auth/v1/verify");
   expect(supabaseAuthPathFor("refresh-session")).toBe("/auth/v1/token?grant_type=refresh_token");
   expect(supabaseAuthPathFor("exchange-pkce")).toBe("/auth/v1/token?grant_type=pkce");
+  expect(supabaseAuthPathFor("exchange-id-token")).toBe("/auth/v1/token?grant_type=id_token");
 });
 
 test("AC2. supabaseAuthRequest가 url·method·헤더(정확히 둘)·본문을 짓는다", () => {
@@ -391,5 +392,113 @@ test("AP4. exchangePkceCode — 설정 없음 · 던짐 · 제한 시간 · 성�
   );
   await exchangePkceCode({ authCode: "abc", codeVerifier: "v" });
 
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+// ------------------------------------------------------------------ ID 토큰 교환(test-plan §2.4 AI1~AI3)
+
+const sampleSessionBody = { access_token: "at", refresh_token: "rt", expires_in: 3600 };
+
+test("AI1. exchangeIdToken — 200 → exchanged, 200+깨진 본문 → unavailable, 요청 URL · 본문 · 헤더가 정확하다", async () => {
+  stubConfig();
+  const fetchMock = vi.fn(async () => jsonResponse(200, sampleSessionBody));
+  vi.stubGlobal("fetch", fetchMock);
+
+  const exchanged = await exchangeIdToken({ idToken: "t", nonce: "n" });
+
+  expect(exchanged).toEqual({
+    status: "exchanged",
+    session: { accessToken: "at", refreshToken: "rt", expiresAt: expect.any(Number) },
+  });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const [url, init] = fetchMock.mock.calls[0] as unknown as [
+    string,
+    { method: string; headers: Record<string, string>; body: string },
+  ];
+  expect(url).toBe("https://test.supabase.co/auth/v1/token?grant_type=id_token");
+  expect(init.method).toBe("POST");
+  expect(init.body).toBe(JSON.stringify({ provider: "apple", id_token: "t", nonce: "n" }));
+  expect(init.headers).toEqual({ apikey: "test-anon-key", "Content-Type": "application/json" });
+
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => jsonResponse(200, { unexpected: "shape" })),
+  );
+
+  await expect(exchangeIdToken({ idToken: "t", nonce: "n" })).resolves.toEqual({
+    status: "failed",
+    reason: "unavailable",
+  });
+});
+
+test("AI2. exchangeIdToken 실패 판정 — 400(error_code 무관) · 403 → sign-in-incomplete, 429 · over_* → rate-limited, 5xx → unavailable", async () => {
+  stubConfig();
+  const cases: ReadonlyArray<[number, unknown, string]> = [
+    [400, { error_code: "bad_jwt" }, "sign-in-incomplete"],
+    [400, { error_code: "anything_else" }, "sign-in-incomplete"],
+    [400, {}, "sign-in-incomplete"],
+    [403, {}, "sign-in-incomplete"],
+    [429, {}, "rate-limited"],
+    [400, { error_code: "over_request_rate_limit" }, "rate-limited"],
+    [500, {}, "unavailable"],
+  ];
+
+  for (const [status, body, reason] of cases) {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(status, body)),
+    );
+
+    await expect(exchangeIdToken({ idToken: "t", nonce: "n" })).resolves.toEqual({
+      status: "failed",
+      reason,
+    });
+  }
+});
+
+test("AI3. exchangeIdToken — 설정 없음 · 던짐 · 제한 시간 · 성공 뒤 타이머 0개, 거부하지 않는다", async () => {
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "");
+  const fetchMock = vi.fn(async () => jsonResponse(200, sampleSessionBody));
+  vi.stubGlobal("fetch", fetchMock);
+
+  await expect(exchangeIdToken({ idToken: "t", nonce: "n" })).resolves.toEqual({
+    status: "failed",
+    reason: "unconfigured",
+  });
+  expect(fetchMock).not.toHaveBeenCalled();
+
+  stubConfig();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => {
+      throw new Error("connection refused");
+    }),
+  );
+  await expect(exchangeIdToken({ idToken: "t", nonce: "n" })).resolves.toEqual({
+    status: "failed",
+    reason: "network",
+  });
+
+  vi.useFakeTimers();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise(() => {})),
+  );
+  let settled = false;
+  const pending = exchangeIdToken({ idToken: "t", nonce: "n" }).then((result) => {
+    settled = true;
+    return result;
+  });
+  await vi.advanceTimersByTimeAsync(authRequestTimeoutMs - 1);
+  expect(settled).toBe(false);
+  await vi.advanceTimersByTimeAsync(1);
+  await expect(pending).resolves.toEqual({ status: "failed", reason: "network" });
+
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => jsonResponse(200, sampleSessionBody)),
+  );
+  await exchangeIdToken({ idToken: "t", nonce: "n" });
   expect(vi.getTimerCount()).toBe(0);
 });

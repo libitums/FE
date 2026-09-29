@@ -134,13 +134,18 @@ export function base64UrlFromBytes(bytes: Uint8Array): string {
   return result;
 }
 
+/** ASCII 문자열을 바이트로 바꿉니다. 각 칸이 `charCodeAt(i)`입니다(입력은 ASCII로 한정). */
+export function asciiBytesFrom(value: string): Uint8Array {
+  const bytes = new Uint8Array(value.length);
+  for (let i = 0; i < value.length; i += 1) {
+    bytes[i] = value.charCodeAt(i);
+  }
+  return bytes;
+}
+
 /** `base64UrlFromBytes(sha256(ASCII 바이트))`. */
 export function codeChallengeFor(verifier: string): string {
-  const bytes = new Uint8Array(verifier.length);
-  for (let i = 0; i < verifier.length; i += 1) {
-    bytes[i] = verifier.charCodeAt(i);
-  }
-  return base64UrlFromBytes(sha256(bytes));
+  return base64UrlFromBytes(sha256(asciiBytesFrom(verifier)));
 }
 
 /** `verifier = base64UrlFromBytes(bytes)` · `challenge = codeChallengeFor(verifier)`. */

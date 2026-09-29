@@ -88,8 +88,8 @@ Lynx Explorer로 그 URL을 연다 — 기기는 QR 스캔, 시뮬레이터는 �
 
 ### Supabase 접속 값 — 로그인에 필요하다
 
-전화번호 로그인은 Supabase Auth(SMS OTP)를, 소셜 로그인(구글 · 애플 · 페이스북)은 Supabase
-OAuth(PKCE)를 부른다([ADR-0028](docs/adr/0028-social-oauth-web-authentication.md)). 접속 값은 **`apps/mobile/.env.local`**
+전화번호 로그인은 Supabase Auth(SMS OTP)를, 구글 · 페이스북은 Supabase OAuth(PKCE)를, 애플은
+네이티브 Sign in with Apple의 ID 토큰 교환을 부른다([ADR-0028](docs/adr/0028-social-oauth-web-authentication.md)). 접속 값은 **`apps/mobile/.env.local`**
 하나에 둔다 — 빌드가 `import.meta.env.PUBLIC_*`로 번들에 넣는다
 ([ADR-0027 D2](docs/adr/0027-phone-otp-auth-supabase.md)).
 
@@ -107,12 +107,18 @@ PUBLIC_SUPABASE_ANON_KEY=<publishable 또는 anon 키>
   *"Sign-in isn't available right now."* 를 띄운다 — **네 수단 모두**다.
 - SMS 공급자가 아직 없어 실제 번호로는 코드가 오지 않는다. **테스트 번호**와 고정 코드는
   [진입 흐름 e2e](docs/e2e/entry-flow.md) 「전제」에 있다.
-- **소셜 로그인은 접속 값만으로 서지 않는다** — 대시보드 쪽이 둘 더 필요하다. ① Auth
-  Providers에서 구글 · 애플 · 페이스북을 켜고 각 제공자 콘솔의 클라이언트 값을 넣는다
-  ② 리다이렉트 허용 목록에 **`duru://auth-callback`** 을 더한다. ⚠ **2026-09-29 현재 둘 다 되어
-  있지 않다** — 무엇이 빠지면 어떻게 보이는지는 ADR-0028 「제공자 · 대시보드 설정」에 있다.
-- 소셜 로그인은 **자체 호스트 앱에서만** 된다 — 인증 창이 호스트 모듈이라 Lynx Explorer에서는
-  *"This sign-in option isn't available on this device."* 가 선다.
+- **소셜 로그인은 접속 값만으로 서지 않는다** — 대시보드 쪽이 더 필요하다. ① Auth Providers에서
+  구글 · 애플 · 페이스북을 켠다 — 구글 · 페이스북에는 각 제공자 콘솔의 클라이언트 값을, **애플의
+  Client IDs에는 번들 ID `com.libitum.host`** 를 넣는다 ② 리다이렉트 허용 목록에
+  **`duru://auth-callback`** 을 더한다(구글 · 페이스북) ③ **Apple Developer에서 App ID
+  `com.libitum.host`에 Sign in with Apple 기능을 켠다.** ⚠ **2026-09-29 현재 셋 다 되어 있지
+  않다** — 무엇이 빠지면 어떻게 보이는지는 ADR-0028 「제공자 · 대시보드 설정」에 있다.
+- 소셜 로그인은 **자체 호스트 앱에서만** 된다 — 인증 창(구글 · 페이스북)과 애플 시트가 호스트
+  모듈이라 Lynx Explorer에서는 *"This sign-in option isn't available on this device."* 가 선다.
+  애플은 여기에 더해 **권한(엔타이틀먼트)이 서명에 들어간 빌드**여야 한다 — 기기에 Apple 계정이
+  없는 시뮬레이터에서는 시스템 알림을 닫으면 같은 문구가 선다.
+- **새 설치의 로그인은 전화번호 테스트 번호로 한다** — 개발 · QA용 우회 경로를 두지 않는다. 이
+  변경 전의 임시 토큰(`libitum.auth.token`)만 있는 설치는 온보딩부터 다시 지난다.
 
 ### PostHog 키 — 분석 전송(선택)
 

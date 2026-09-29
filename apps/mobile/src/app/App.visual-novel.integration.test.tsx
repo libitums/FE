@@ -1,11 +1,10 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
-import { authTokenStorageKey } from "../lib/auth-token";
-import { entrySplashDurationMs } from "../lib/entry-flow";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
 
 // 서사 표지를 이미 본 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
@@ -37,38 +36,13 @@ function stubCompletionAnnouncementHost(): AnnouncementCall[] {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
-// 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
-// 상태를 스텁하고 가짜 타이머로 `entrySplashDurationMs`만큼 전진시켜 진입
-// 스플래시를 건너뜁니다. 이 파일이 이미 세운 `NativeModules` 스텁(있으면,
-// `stubCompletionAnnouncementHost()`의 낭독 모듈)을 지우지 않고 `StorageModule`만
-// 얹습니다.
-function renderApp(ui: Parameters<typeof render>[0]) {
-  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
-  const tokenStore = new Map<string, string>();
-  tokenStore.set(authTokenStorageKey, "existing-token");
-  vi.stubGlobal("NativeModules", {
-    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
-      ? previousNativeModules
-      : {}),
-    StorageModule: {
-      get: (key: string) => tokenStore.get(key) ?? null,
-      set: (key: string, value: string) => void tokenStore.set(key, value),
-      remove: (key: string) => void tokenStore.delete(key),
-    },
-  });
-  vi.useFakeTimers();
-  const result = render(ui);
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
-  vi.useRealTimers();
-  return result;
-}
-
-function openJourneyVisualNovel(visualNovelEventSink?: VisualNovelEventSink): void {
-  renderApp(<App seenEpisodeIntroIds={seenIntros} visualNovelEventSink={visualNovelEventSink} />);
+async function openJourneyVisualNovel(visualNovelEventSink?: VisualNovelEventSink): Promise<void> {
+  await renderSignedInApp(
+    <App seenEpisodeIntroIds={seenIntros} visualNovelEventSink={visualNovelEventSink} />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(unitTestId), {});
 }
@@ -90,8 +64,8 @@ function journeyStateSnapshot(): readonly (string | null)[] {
   ].map((testId) => screen.getByTestId(testId).getAttribute("data-status"));
 }
 
-test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 첫 장면이 push된다", () => {
-  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
+test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 첫 장면이 push된다", async () => {
+  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   const items = screen
@@ -112,8 +86,8 @@ test("맵에서 전화 뒤이자 directions 앞의 비주얼 노벨을 열면 �
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
 });
 
-test("미완료 이탈은 마지막 도달 장면을 보존하고 기존 여정 상태를 바꾸지 않는다", () => {
-  renderApp(<App seenEpisodeIntroIds={seenIntros} />);
+test("미완료 이탈은 마지막 도달 장면을 보존하고 기존 여정 상태를 바꾸지 않는다", async () => {
+  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   const before = journeyStateSnapshot();
   fireEvent.tap(screen.getByTestId(unitTestId), {});
@@ -126,8 +100,8 @@ test("미완료 이탈은 마지막 도달 장면을 보존하고 기존 여정 
   expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
 });
 
-test("마지막 장면 진입에서만 완료되고 완료 재진입은 final 상태다", () => {
-  openJourneyVisualNovel();
+test("마지막 장면 진입에서만 완료되고 완료 재진입은 final 상태다", async () => {
+  await openJourneyVisualNovel();
   expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 1 / 3");
   fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
   expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 2 / 3");
@@ -141,8 +115,8 @@ test("마지막 장면 진입에서만 완료되고 완료 재진입은 final �
   expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("이야기 완료");
 });
 
-test("replay는 화면만 처음으로 돌리고 이탈 후 재진입하면 완료 final로 복원한다", () => {
-  openJourneyVisualNovel();
+test("replay는 화면만 처음으로 돌리고 이탈 후 재진입하면 완료 final로 복원한다", async () => {
+  await openJourneyVisualNovel();
   advanceToFinal();
   fireEvent.tap(screen.getByTestId("visual-novel-replay-button"), {});
   expect(screen.getByTestId("visual-novel-scene-arrive")).toHaveAttribute("data-replaying", "true");
@@ -153,10 +127,10 @@ test("replay는 화면만 처음으로 돌리고 이탈 후 재진입하면 완�
   expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
 });
 
-test("replay에서 다시 끝까지 진행해도 완료·발화·이벤트는 단조롭고 재진입은 final이다", () => {
+test("replay에서 다시 끝까지 진행해도 완료·발화·이벤트는 단조롭고 재진입은 final이다", async () => {
   const announcements = stubCompletionAnnouncementHost();
   const sink = vi.fn<NonNullable<VisualNovelEventSink>>();
-  openJourneyVisualNovel(sink);
+  await openJourneyVisualNovel(sink);
   advanceToFinal();
   fireEvent.tap(screen.getByTestId("visual-novel-replay-button"), {});
   advanceToFinal();
@@ -178,9 +152,9 @@ test("replay에서 다시 끝까지 진행해도 완료·발화·이벤트는 �
   ).toHaveLength(0);
 });
 
-test("sink는 opened, incomplete exit, completion, completed re-entry, replay를 정확히 기록한다", () => {
+test("sink는 opened, incomplete exit, completion, completed re-entry, replay를 정확히 기록한다", async () => {
   const sink = vi.fn<NonNullable<VisualNovelEventSink>>();
-  openJourneyVisualNovel(sink);
+  await openJourneyVisualNovel(sink);
   fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
   fireEvent.tap(screen.getByTestId(unitTestId), {});
@@ -230,8 +204,8 @@ test("sink는 opened, incomplete exit, completion, completed re-entry, replay를
   ]);
 });
 
-test("null sink에서도 완료와 재진입 동작은 같다", () => {
-  renderApp(<App seenEpisodeIntroIds={seenIntros} visualNovelEventSink={null} />);
+test("null sink에서도 완료와 재진입 동작은 같다", async () => {
+  await renderSignedInApp(<App seenEpisodeIntroIds={seenIntros} visualNovelEventSink={null} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   advanceToFinal();
@@ -241,9 +215,11 @@ test("null sink에서도 완료와 재진입 동작은 같다", () => {
   expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
 });
 
-test("visual novel 완료는 messenger 상태·이벤트와 phone audio를 바꾸지 않는다", () => {
+test("visual novel 완료는 messenger 상태·이벤트와 phone audio를 바꾸지 않는다", async () => {
   const messengerEventSink = vi.fn<NonNullable<MessengerEventSink>>();
-  renderApp(<App seenEpisodeIntroIds={seenIntros} messengerEventSink={messengerEventSink} />);
+  await renderSignedInApp(
+    <App seenEpisodeIntroIds={seenIntros} messengerEventSink={messengerEventSink} />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
@@ -270,9 +246,9 @@ test("visual novel 완료는 messenger 상태·이벤트와 phone audio를 바�
   expect(screen.getByTestId("messenger-message-list").children).toHaveLength(5);
 });
 
-test("첫 find→enter 완료만 이야기 완료를 한 번 알리고 이후 완료 여정은 재알리지 않는다", () => {
+test("첫 find→enter 완료만 이야기 완료를 한 번 알리고 이후 완료 여정은 재알리지 않는다", async () => {
   const announcements = stubCompletionAnnouncementHost();
-  openJourneyVisualNovel();
+  await openJourneyVisualNovel();
 
   fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
   expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();

@@ -738,6 +738,11 @@ LIB-257의 리뷰가 이 어긋남을 찾았다.
   `libitum.auth.token`은 아무도 새로 쓰지 않고 이 변경 전의 설치에서 읽히기만 한다. 키 집합 단언은
   이제 **어느 수단이든 세션 키 하나**다. 소셜의 교환도 `lib/api-client.ts`가 부르고 호출 주체는
   여전히 결선이다 — 위 D2 적용 기록이 그대로 걸린다.
+  ⟨2026-09-29, 같은 날 셋째⟩ **저장 키는 `libitum.auth.session` 하나뿐이다.** 사용자 결정으로 옛
+  임시 토큰을 인정하지 않게 되어 `lib/auth-token.ts`가 지워졌고, `libitum.auth.token`을 **읽거나
+  쓰는 코드가 0**이다([ADR-0028](0028-social-oauth-web-authentication.md) D6). 옛 설치의 저장소에
+  남은 값은 지우지 않는다 — 지우려면 키를 코드에 적어야 한다. Apple의 네이티브 ID 토큰 교환(D7)도
+  같은 키 · 같은 결선 경로다.
 - **D3 — `Screen`의 `verification-code` 멤버가 필드를 갖는다.** `{ name: "verification-code";
   phoneNumber: PhoneNumber }`이다(`PhoneNumber`는 보낼 E.164와 보여 줄 문자열의 한 쌍). 코드 화면이
   검증 · 재전송에 쓸 번호를 **화면 파라미터로** 받는다 — D3의 *"화면 파라미터는 union의 필드로만

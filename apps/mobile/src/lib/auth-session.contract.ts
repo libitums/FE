@@ -48,13 +48,11 @@ export type AuthSession = {
 /**
  * 스플래시가 끝날 때 저장소를 읽어 고르는 갈래입니다.
  *
- * - `refresh` — 세션이 있습니다. 갱신을 시도합니다. 임시 토큰이 함께 있어도 이쪽입니다.
- * - `temporary` — 세션이 없고 임시 토큰(소셜 셋)이 있습니다. 곧장 앱으로 들어갑니다.
- * - `none` — 둘 다 없습니다. 온보딩부터 시작합니다.
+ * - `refresh` — 세션이 있습니다. 갱신을 시도합니다.
+ * - `none` — 세션이 없습니다. 온보딩부터 시작합니다.
  */
 export type EntryAuthState =
   | { readonly kind: "refresh"; readonly refreshToken: string }
-  | { readonly kind: "temporary" }
   | { readonly kind: "none" };
 
 /**
@@ -147,7 +145,12 @@ export type RefreshAuthSession = (refreshToken: string) => Promise<SessionRefres
 // ------------------------------------------------------------------ 전송 경계
 
 /** 실패를 가를 때 어느 요청이었는지입니다 — 같은 4xx가 요청마다 다른 이유가 됩니다. */
-export type AuthOperation = "request-otp" | "verify-otp" | "refresh-session" | "exchange-pkce";
+export type AuthOperation =
+  | "request-otp"
+  | "verify-otp"
+  | "refresh-session"
+  | "exchange-pkce"
+  | "exchange-id-token";
 
 /**
  * `api-client.ts`가 쓰는 전송 함수의 모양입니다. Lynx의 `fetch`는 웹 `fetch`의 부분집합이라
@@ -169,12 +172,13 @@ export type HttpTransport = (url: string, init: HttpRequestInit) => Promise<Http
 
 // ------------------------------------------------------------------ Supabase Auth REST 스키마
 
-/** `url` 뒤에 붙는 경로입니다. 네 요청 모두 `POST`입니다. */
+/** `url` 뒤에 붙는 경로입니다. 전부 `POST`입니다. */
 export type SupabaseAuthPath =
   | "/auth/v1/otp"
   | "/auth/v1/verify"
   | "/auth/v1/token?grant_type=refresh_token"
-  | "/auth/v1/token?grant_type=pkce";
+  | "/auth/v1/token?grant_type=pkce"
+  | "/auth/v1/token?grant_type=id_token";
 
 /** `POST /auth/v1/otp` 본문입니다. 성공 응답(200)의 본문은 읽지 않습니다. */
 export type SupabaseOtpRequestBody = {

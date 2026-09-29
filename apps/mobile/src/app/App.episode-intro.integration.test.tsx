@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import type {
@@ -8,35 +8,15 @@ import type {
 } from "../screens/episode-intro/episode-intro.contract";
 import { episodeNarrativeFor } from "../screens/episode-narrative/episode-narrative";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
-import { authTokenStorageKey } from "../lib/auth-token";
-import { entrySplashDurationMs } from "../lib/entry-flow";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // App · navReducer · 여정 맵 · 에피소드 서사 표지 · 유닛 화면의 실제 결선을 봅니다
 // (ADR-0006 D4). 제품의 씨앗(표지를 본 에피소드 없음)으로 부팅합니다.
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
-
-// 다른 integration 파일들의 `renderApp`과 같은 헬퍼입니다 — 토큰이 있는 상태로 진입
-// 스플래시를 건너뜁니다.
-function renderApp(ui: Parameters<typeof render>[0]) {
-  const tokenStore = new Map<string, string>([[authTokenStorageKey, "existing-token"]]);
-  vi.stubGlobal("NativeModules", {
-    StorageModule: {
-      get: (key: string) => tokenStore.get(key) ?? null,
-      set: (key: string, value: string) => void tokenStore.set(key, value),
-      remove: (key: string) => void tokenStore.delete(key),
-    },
-  });
-  vi.useFakeTimers();
-  const result = render(ui);
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
-  vi.useRealTimers();
-  return result;
-}
 
 function startOrdering(): void {
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
@@ -83,8 +63,8 @@ function tapIntroBack(): void {
   );
 }
 
-test("[EI1] 에피소드의 유닛을 처음 시작하면 유닛 대신 그 에피소드의 표지가 선다", () => {
-  renderApp(<App />);
+test("[EI1] 에피소드의 유닛을 처음 시작하면 유닛 대신 그 에피소드의 표지가 선다", async () => {
+  await renderSignedInApp(<App />);
 
   startOrdering();
 
@@ -93,8 +73,8 @@ test("[EI1] 에피소드의 유닛을 처음 시작하면 유닛 대신 그 에�
   expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
 });
 
-test("[EI2] Next로 서사 · 학습 완료를 지나면 맵으로 돌아오고, 유닛은 다시 눌러야 열린다", () => {
-  renderApp(<App />);
+test("[EI2] Next로 서사 · 학습 완료를 지나면 맵으로 돌아오고, 유닛은 다시 눌러야 열린다", async () => {
+  await renderSignedInApp(<App />);
   startOrdering();
 
   tapIntro("episode-intro-screen-next");
@@ -107,8 +87,8 @@ test("[EI2] Next로 서사 · 학습 완료를 지나면 맵으로 돌아오고,
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
 });
 
-test("[EN1] 튜토리얼은 Next를 누르면 서사(비주얼 노벨)가 서고, 끝까지 넘기면 PERFECT LESSON이다", () => {
-  renderApp(<App />);
+test("[EN1] 튜토리얼은 Next를 누르면 서사(비주얼 노벨)가 서고, 끝까지 넘기면 PERFECT LESSON이다", async () => {
+  await renderSignedInApp(<App />);
   startOrdering();
   tapNextOnly();
 
@@ -123,8 +103,8 @@ test("[EN1] 튜토리얼은 Next를 누르면 서사(비주얼 노벨)가 서고
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
 });
 
-test("[EN2] 서사 중간에 뒤로 나가면 맵으로 가고, 본 것으로 적지 않아 다음에 표지가 다시 선다", () => {
-  renderApp(<App />);
+test("[EN2] 서사 중간에 뒤로 나가면 맵으로 가고, 본 것으로 적지 않아 다음에 표지가 다시 선다", async () => {
+  await renderSignedInApp(<App />);
   startOrdering();
   tapNextOnly();
 
@@ -141,8 +121,8 @@ test("[EN2] 서사 중간에 뒤로 나가면 맵으로 가고, 본 것으로 �
   expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
 });
 
-test("[EI3] Skip을 누르면 누른 유닛이 열린다", () => {
-  renderApp(<App />);
+test("[EI3] Skip을 누르면 누른 유닛이 열린다", async () => {
+  await renderSignedInApp(<App />);
   startOrdering();
 
   tapIntro("episode-intro-screen-skip");
@@ -151,8 +131,8 @@ test("[EI3] Skip을 누르면 누른 유닛이 열린다", () => {
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
 });
 
-test("[EI4] 표지를 넘긴 뒤에는 같은 에피소드의 유닛을 열어도 표지가 서지 않는다", () => {
-  renderApp(<App />);
+test("[EI4] 표지를 넘긴 뒤에는 같은 에피소드의 유닛을 열어도 표지가 서지 않는다", async () => {
+  await renderSignedInApp(<App />);
   startOrdering();
   tapIntro("episode-intro-screen-skip");
   // ⟨2026-09-28⟩ 학습 나가기는 두 걸음입니다 — `×`는 묻기만 하고 실제로 떠나는 것은
@@ -170,8 +150,8 @@ test("[EI4] 표지를 넘긴 뒤에는 같은 에피소드의 유닛을 열어�
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 });
 
-test("[EI5] 유닛에서 나가면 표지가 아니라 맵으로 돌아온다", () => {
-  renderApp(<App />);
+test("[EI5] 유닛에서 나가면 표지가 아니라 맵으로 돌아온다", async () => {
+  await renderSignedInApp(<App />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
   tapIntro("episode-intro-screen-skip");
@@ -183,8 +163,8 @@ test("[EI5] 유닛에서 나가면 표지가 아니라 맵으로 돌아온다", 
   expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
 });
 
-test("[EI6] 표지의 뒤로는 맵으로 돌아가고, 본 것으로 적지 않아 다음에 다시 선다", () => {
-  renderApp(<App />);
+test("[EI6] 표지의 뒤로는 맵으로 돌아가고, 본 것으로 적지 않아 다음에 다시 선다", async () => {
+  await renderSignedInApp(<App />);
   startOrdering();
 
   tapIntroBack();
@@ -196,9 +176,9 @@ test("[EI6] 표지의 뒤로는 맵으로 돌아가고, 본 것으로 적지 않
   expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
 });
 
-test("[EI7] 특별 유닛의 열림 이벤트는 표지를 넘긴 뒤에 한 번만 난다", () => {
+test("[EI7] 특별 유닛의 열림 이벤트는 표지를 넘긴 뒤에 한 번만 난다", async () => {
   const messengerEventSink = vi.fn<NonNullable<MessengerEventSink>>();
-  renderApp(<App messengerEventSink={messengerEventSink} />);
+  await renderSignedInApp(<App messengerEventSink={messengerEventSink} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
@@ -210,8 +190,8 @@ test("[EI7] 특별 유닛의 열림 이벤트는 표지를 넘긴 뒤에 한 번
   ]);
 });
 
-test("[EI8] 알림에서 여는 유닛도 표지를 지난다", () => {
-  renderApp(<App />);
+test("[EI8] 알림에서 여는 유닛도 표지를 지난다", async () => {
+  await renderSignedInApp(<App />);
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 
   fireEvent.tap(screen.getByTestId("notification-list-item-notification-messenger"), {});
@@ -221,8 +201,8 @@ test("[EI8] 알림에서 여는 유닛도 표지를 지난다", () => {
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 });
 
-test("[EI9] 표지를 본 에피소드로 부팅하면 표지 없이 유닛이 열린다", () => {
-  renderApp(<App seenEpisodeIntroIds={["tutorial"]} />);
+test("[EI9] 표지를 본 에피소드로 부팅하면 표지 없이 유닛이 열린다", async () => {
+  await renderSignedInApp(<App seenEpisodeIntroIds={["tutorial"]} />);
 
   startOrdering();
 
@@ -230,8 +210,8 @@ test("[EI9] 표지를 본 에피소드로 부팅하면 표지 없이 유닛이 �
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
 });
 
-test("[EI10] Skip 뒤 모달에서 계속 보기를 고르면 표지에 남고 본 것으로 적지 않는다", () => {
-  renderApp(<App />);
+test("[EI10] Skip 뒤 모달에서 계속 보기를 고르면 표지에 남고 본 것으로 적지 않는다", async () => {
+  await renderSignedInApp(<App />);
   startOrdering();
 
   fireEvent.tap(
@@ -282,12 +262,12 @@ const messengerPrologue: EpisodePrologue = {
   },
 };
 
-function renderWithCall(): void {
-  renderApp(<App episodePrologueFor={() => callPrologue} />);
+async function renderWithCall(): Promise<void> {
+  await renderSignedInApp(<App episodePrologueFor={() => callPrologue} />);
 }
 
-test("[EP1] 서사가 통화인 에피소드는 Next 뒤에 비주얼 노벨 없이 통화가 곧장 선다", () => {
-  renderWithCall();
+test("[EP1] 서사가 통화인 에피소드는 Next 뒤에 비주얼 노벨 없이 통화가 곧장 선다", async () => {
+  await renderWithCall();
   startOrdering();
 
   tapNextOnly();
@@ -300,9 +280,9 @@ test("[EP1] 서사가 통화인 에피소드는 Next 뒤에 비주얼 노벨 없
   );
 });
 
-test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue를 기다린다", () => {
+test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue를 기다린다", async () => {
   vi.useFakeTimers();
-  renderWithCall();
+  await renderWithCall();
   vi.useFakeTimers();
   startOrdering();
   tapNextOnly();
@@ -317,8 +297,8 @@ test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue�
   expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
 });
 
-test("[EP2b] 통화의 Continue → PERFECT LESSON → Check → 맵이다", () => {
-  renderWithCall();
+test("[EP2b] 통화의 Continue → PERFECT LESSON → Check → 맵이다", async () => {
+  await renderWithCall();
   startOrdering();
   tapNextOnly();
   fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
@@ -331,8 +311,8 @@ test("[EP2b] 통화의 Continue → PERFECT LESSON → Check → 맵이다", () 
   expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
 });
 
-test("[EP3] 통화에서 뒤로 가면 표지가 아니라 맵이고, 본 것으로 적지 않는다", () => {
-  renderWithCall();
+test("[EP3] 통화에서 뒤로 가면 표지가 아니라 맵이고, 본 것으로 적지 않는다", async () => {
+  await renderWithCall();
   startOrdering();
   tapNextOnly();
 
@@ -347,8 +327,8 @@ test("[EP3] 통화에서 뒤로 가면 표지가 아니라 맵이고, 본 것으
   expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
 });
 
-test("[EP4] 서사를 마친 뒤에는 같은 에피소드의 유닛에 표지도 서사도 서지 않는다", () => {
-  renderApp(<App />);
+test("[EP4] 서사를 마친 뒤에는 같은 에피소드의 유닛에 표지도 서사도 서지 않는다", async () => {
+  await renderSignedInApp(<App />);
   startOrdering();
   tapIntro("episode-intro-screen-next");
 
@@ -359,9 +339,9 @@ test("[EP4] 서사를 마친 뒤에는 같은 에피소드의 유닛에 표지�
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 });
 
-test("[EM1] 서사가 메신저인 에피소드는 Next 뒤에 메신저가 서고, 끝까지 가면 PERFECT LESSON → 맵이다", () => {
+test("[EM1] 서사가 메신저인 에피소드는 Next 뒤에 메신저가 서고, 끝까지 가면 PERFECT LESSON → 맵이다", async () => {
   vi.useFakeTimers();
-  renderApp(<App episodePrologueFor={() => messengerPrologue} />);
+  await renderSignedInApp(<App episodePrologueFor={() => messengerPrologue} />);
   vi.useFakeTimers();
   startOrdering();
   tapNextOnly();
@@ -381,8 +361,8 @@ test("[EM1] 서사가 메신저인 에피소드는 Next 뒤에 메신저가 서�
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
-test("[EM2] 서사가 없는 에피소드는 Next가 곧장 누른 유닛을 연다", () => {
-  renderApp(<App episodePrologueFor={() => undefined} />);
+test("[EM2] 서사가 없는 에피소드는 Next가 곧장 누른 유닛을 연다", async () => {
+  await renderSignedInApp(<App episodePrologueFor={() => undefined} />);
   startOrdering();
 
   tapNextOnly();

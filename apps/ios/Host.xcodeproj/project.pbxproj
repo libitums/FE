@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A51C0DE2E0F4B3A1C2D3E4F6 /* AppleSignInModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51C0DE2E0F4B3A1C2D3E4F5 /* AppleSignInModuleTests.swift */; };
 		2B94A3C92D6613730060892C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3C82D6613730060892C /* AppDelegate.swift */; };
 		2B94A3CB2D6613730060892C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3CA2D6613730060892C /* SceneDelegate.swift */; };
 		2B94A3CD2D6613730060892C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3CC2D6613730060892C /* ViewController.swift */; };
@@ -20,6 +21,7 @@
 		2B94A3DD2D66149800608941 /* HandwritingRecognitionModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */; };
 		2B94A3F02D6614980060894A /* HandwritingTraceModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */; };
 		2B94A3DD2D66149800608943 /* SpeechRecognitionModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */; };
+		2B94A3DD2D66149800608971 /* AppleSignInModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608970 /* AppleSignInModule.swift */; };
 		2B94A3DD2D66149800608961 /* WebAuthenticationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608960 /* WebAuthenticationModule.swift */; };
 		2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */; };
 		2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */; };
@@ -34,6 +36,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A51C0DE2E0F4B3A1C2D3E4F5 /* AppleSignInModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInModuleTests.swift; sourceTree = "<group>"; };
 		2B94A3C52D6613730060892C /* Host.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Host.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B94A3C82D6613730060892C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2B94A3CA2D6613730060892C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -49,6 +52,8 @@
 		2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandwritingRecognitionModule.swift; sourceTree = "<group>"; };
 		2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandwritingTraceModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionModule.swift; sourceTree = "<group>"; };
+		A51C0DE2E0F4B3A1C2D3E4F7 /* Host.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Host.entitlements; sourceTree = "<group>"; };
+		2B94A3DC2D66149800608970 /* AppleSignInModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608960 /* WebAuthenticationModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticationModule.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionAnnouncementModuleTests.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionModuleTests.swift; sourceTree = "<group>"; };
@@ -120,6 +125,8 @@
 				2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */,
 				2B94A3DC2D66149800608942 /* SpeechRecognitionModule.swift */,
 				2B94A3DC2D66149800608960 /* WebAuthenticationModule.swift */,
+				2B94A3DC2D66149800608970 /* AppleSignInModule.swift */,
+				A51C0DE2E0F4B3A1C2D3E4F7 /* Host.entitlements */,
 				2B94A3E02D6614980060892E /* FontScale.swift */,
 				2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */,
 			);
@@ -128,7 +135,7 @@
 		};
 		2B94A3DC2D66149800608933 /* HostTests */ = {
 			isa = PBXGroup;
-			children = (2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */, 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */, 2B94A3DC2D66149800608950 /* BundledMediaResourceFetcherTests.swift */, 2DDE2CDA1E9EDC74A4F93878 /* WebAuthenticationModuleTests.swift */);
+			children = (2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */, 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */, 2B94A3DC2D66149800608950 /* BundledMediaResourceFetcherTests.swift */, 2DDE2CDA1E9EDC74A4F93878 /* WebAuthenticationModuleTests.swift */, A51C0DE2E0F4B3A1C2D3E4F5 /* AppleSignInModuleTests.swift */);
 			path = HostTests;
 			sourceTree = "<group>";
 		};
@@ -287,6 +294,7 @@
 				2B94A3F02D6614980060894A /* HandwritingTraceModule.swift in Sources */,
 				2B94A3DD2D66149800608943 /* SpeechRecognitionModule.swift in Sources */,
 				2B94A3DD2D66149800608961 /* WebAuthenticationModule.swift in Sources */,
+				2B94A3DD2D66149800608971 /* AppleSignInModule.swift in Sources */,
 				2B94A3E12D6614980060892E /* FontScale.swift in Sources */,
 				2B94A3CD2D6613730060892C /* ViewController.swift in Sources */,
 				2B94A3C92D6613730060892C /* AppDelegate.swift in Sources */,
@@ -294,7 +302,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2B94A3C12D66149800608935 /* Sources */ = { isa = PBXSourcesBuildPhase; files = (2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */, 2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */, 2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */, 9DD97583D2CD8A7C12701B7E /* WebAuthenticationModuleTests.swift in Sources */); };
+		2B94A3C12D66149800608935 /* Sources */ = { isa = PBXSourcesBuildPhase; files = (2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */, 2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */, 2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */, 9DD97583D2CD8A7C12701B7E /* WebAuthenticationModuleTests.swift in Sources */, A51C0DE2E0F4B3A1C2D3E4F6 /* AppleSignInModuleTests.swift in Sources */); };
 		2B94A3C22D66149800608936 /* Frameworks */ = { isa = PBXFrameworksBuildPhase; files = (); };
 		2B94A3C32D66149800608937 /* Resources */ = { isa = PBXResourcesBuildPhase; files = (); };
 /* End PBXSourcesBuildPhase section */
@@ -444,6 +452,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Host/Host.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 53DJZDK42H;
@@ -477,6 +486,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Host/Host.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 53DJZDK42H;

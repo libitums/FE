@@ -10,7 +10,6 @@ import {
   saveAuthSession,
   sessionRefreshDisposition,
 } from "../lib/auth-session";
-import { hasAuthToken } from "../lib/auth-token";
 import {
   entryCompletedEvent,
   entryLoginMethodSelectedEvent,
@@ -45,17 +44,12 @@ export function entryWiring({
 }: EntryWiringArgs) {
   return {
     // 스플래시 시간 종료입니다. 세션이 있으면(`refresh`) 갱신을
-    // 시도하는 동안 스플래시가 그대로 섭니다. 세션이 없고 임시 토큰만
-    // 있으면(`temporary`, 재실행) 이벤트 없이 곧장 `enterApp` — 완주가
-    // 아닙니다. 둘 다 없으면(`none`) 「onboarding」 열람을 올리고
-    // `replace`합니다 — 스플래시는 스택에 남지 않습니다.
+    // 시도하는 동안 스플래시가 그대로 섭니다. 세션이 없으면(`none`)
+    // 「onboarding」 열람을 올리고 `replace`합니다 — 스플래시는 스택에
+    // 남지 않습니다.
     onSplashTimeout: () => {
-      const authState = entryAuthStateFrom(loadAuthSession(), hasAuthToken());
+      const authState = entryAuthStateFrom(loadAuthSession());
       switch (authState.kind) {
-        case "temporary": {
-          dispatch({ type: "enterApp" });
-          return;
-        }
         case "none": {
           entryEventSink?.(entryScreenViewedEvent("onboarding"));
           dispatch({ type: "replace", screen: { name: "onboarding" } });

@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 
 import {
+  asciiBytesFrom,
   base64UrlFromBytes,
   codeChallengeFor,
   codeVerifierByteCount,
@@ -75,4 +76,10 @@ test("PK5. codeChallengeFor가 PK4의 challenge와 같고 verifier 길이가 43�
 // ⚠ 파수꾼 — 상수는 이미 실값이라 스캐폴드에서도 초록이다.
 test("PK6. codeVerifierByteCount가 32다", () => {
   expect(codeVerifierByteCount).toBe(32);
+});
+
+test("PK7. asciiBytesFrom — 빈 문자열은 길이 0, 문자열은 ASCII 코드 그대로이며 던지지 않는다", () => {
+  expect(() => asciiBytesFrom("")).not.toThrow();
+  expect(asciiBytesFrom("").length).toBe(0);
+  expect(Array.from(asciiBytesFrom("Az-_09"))).toEqual([65, 122, 45, 95, 48, 57]);
 });

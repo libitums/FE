@@ -63,7 +63,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | workspace 구성 (패키지 매니저·workspace 선언·태스크 러너) | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 폴더 구조 | 결정 | [0003](0003-workspace-and-directory-structure.md) |
 | 네이밍 | 결정 | [0003](0003-workspace-and-directory-structure.md) D6·**D7**, [0004](0004-package-boundaries-and-dependency-direction.md) |
-| **인증 (제공자 · 접속 값 주입 · 세션 저장과 갱신)** | 결정 (전화번호 수단 Supabase SMS OTP + REST 직접 호출 + `.env.local` 주입 + 세션 키 하나) + **제안 (소셜 셋 Supabase OAuth · PKCE — 같은 세션 키 · 같은 갱신, 기본값이 사용자 확인 전)** | [0027](0027-phone-otp-auth-supabase.md) · [0028](0028-social-oauth-web-authentication.md) — 0028이 0027 D3의 「임시 토큰 키는 소셜 전용」 한 문장을 부분 대체(**아무도 새로 쓰지 않고 읽기만**). [0001](0001-repository-goal-and-scope.md) D3의 「인증 인프라」 제외가 네 수단 전부에서 풀렸다(적용 기록). ⚠ 제공자 · 대시보드 설정이 아직 없어 실서버 소셜 로그인은 한 번도 돌지 않았다 |
+| **인증 (제공자 · 접속 값 주입 · 세션 저장과 갱신)** | 결정 (전화번호 수단 Supabase SMS OTP + REST 직접 호출 + `.env.local` 주입 + 세션 키 하나) + **제안 (소셜 셋 — Google · Facebook은 Supabase OAuth · PKCE, Apple은 네이티브 ID 토큰 교환. 같은 세션 키 · 같은 갱신. 사용자 결정 넷은 났고 외부 설정 확인이 남음)** | [0027](0027-phone-otp-auth-supabase.md) · [0028](0028-social-oauth-web-authentication.md) — 0028이 0027 D3의 「임시 토큰 키는 소셜 전용」 한 문장과 D4의 스플래시 「임시 토큰만 있음」 갈래를 부분 대체(**아무도 쓰지도 읽지도 않는다** — 옛 임시 토큰 설치는 온보딩부터, 사용자 결정). [0001](0001-repository-goal-and-scope.md) D3의 「인증 인프라」 제외가 네 수단 전부에서 풀렸다(적용 기록). ⚠ 제공자 · 대시보드 설정이 아직 없어 실서버 소셜 로그인은 한 번도 돌지 않았다 |
 | **앱 폰트 제공 (Accent의 Jost)** | 결정 (호스트 번들 + `UIAppFonts`, design-system이 고정한 배포물 그대로) — Pretendard는 보류 | [0030](0030-app-fonts-jost.md) — 0028은 열린 PR(#150)이 쓰고 있어 비워 둔다 |
 | **서비스 사용자 표시명 · 기술 식별자 호환성** | 결정 (`Duru` + 기존 기술 이름 유지) | [0025](0025-duru-service-display-name.md) |
 | package 경계와 책임 | 결정 | [0004](0004-package-boundaries-and-dependency-direction.md) |
@@ -128,6 +128,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | `HandwritingTraceModule` | `compare(args, callback)` | **쓰기 (구현 순서 13번)** — 손으로 쓴 획이 **안내 글자를 얼마나 따라 그렸는가**를 두 비율(`덮음`·`머무름`)로 낸다. 형제인 `HandwritingRecognitionModule`의 Vision 경로가 `read` + **빈 문자열**을 내는 것을 보고(2026-09-28 예비 관측) **인식에 기대지 않는 판정 축**으로 연 것이다. ⚠ **화면이 아니다** — 닿는 것은 도달 경로 0건인 탐침 화면 하나이고, **문턱값은 아직 없다**(사람이 실기에서 잡는다) | [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/HandwritingTraceModule.swift`; 접점은 `apps/mobile/src/lib/handwriting-trace.ts`; Android 이관 미구현 |
 | `SpeechRecognitionModule` | `getStatus` · `requestPermissions` · `start(args, callback)` · `stop()` | **말하기 (구현 순서 13번)** — 능력 경로 확인 **탐침**(LIB-267). ⚠ **화면이 아니다.** 말하기 화면은 아직 서지 않았고, 이 모듈에 닿는 것은 **도달 경로 0건인 개발용 탐침 화면 하나**다 | [0017](0017-host-native-capabilities-and-audio.md) D1 · [0026](0026-permission-entry-conditions-and-denial-handling.md) D1 | **iOS에 있음** — `apps/ios/Host/SpeechRecognitionModule.swift`; 소비자는 그 탐침 화면 하나. ⚠ **권한을 요구하는 첫 모듈이다** — 어느 권한인지는 이 표가 아니라 ADR-0026 D2의 권한 표가 진다; Android 이관 미구현 |
 | `WebAuthenticationModule` | `start(args, callback)` · `randomBytes(count)` | **로그인 (구현 순서 12번)의 소셜 셋** — Supabase OAuth(PKCE)의 인증 창(`ASWebAuthenticationSession`)과 verifier의 난수. **제품 화면이다** — 탐침이 아니다 | [0028](0028-social-oauth-web-authentication.md) D2 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/WebAuthenticationModule.swift`; 접점은 `apps/mobile/src/lib/web-authentication.ts`. ⚠ **나가는 외부 이동을 여는 첫 모듈이다** — 경계는 [0028](0028-social-oauth-web-authentication.md) D4(URL scheme은 등록하지 않는다). 권한은 요구하지 않는다; Android 이관 미구현 |
+| `AppleSignInModule` | `start(args, callback)` | **로그인 (구현 순서 12번)의 Apple 버튼** — 네이티브 Sign in with Apple 시트(`ASAuthorizationAppleIDProvider`)에 해시된 nonce를 싣고 ID 토큰을 받는다. 난수는 `WebAuthenticationModule.randomBytes`를 쓴다. **제품 화면이다** | [0028](0028-social-oauth-web-authentication.md) D7 · [0017](0017-host-native-capabilities-and-audio.md) D1(⚠ 조건 (2) 예외 — 사용자 결정) | **iOS에 있음** — `apps/ios/Host/AppleSignInModule.swift`; 접점은 `apps/mobile/src/lib/apple-sign-in.ts`. ⚠ **엔타이틀먼트를 요구하는 첫 모듈이다** — `apps/ios/Host/Host.entitlements`(`com.apple.developer.applesignin`), App ID 기능 켜기는 사용자 몫. 권한은 요구하지 않는다; Android 이관 미구현 |
 
 **재검토 트리거는 숫자다** (ADR-0017 D2): 모듈이 **넷째**로 요구되는 시점, 또는
 **한 모듈의 메서드가 다섯을 넘는 시점**.
@@ -142,6 +143,11 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 입장 조건 셋을 다시 통과시켰고, 훑은 자리와 「찾았는데 쓰지 않은」 `webview` 태그의 사유는
 [ADR-0028 D2](0028-social-oauth-web-authentication.md)에 있다. 둘째 트리거에는 닿지 않는다 —
 메서드가 둘이다.
+**같은 날 뒤 또 발동했다**(`AppleSignInModule` — 여덟째 모듈). 입장 조건 셋 가운데 ⚠ **(2) 「대체
+경로 0개」가 성립하지 않는 채로 연 예외다** — 일곱째의 웹 OAuth로 Apple이 이미 돌았고, 근거는 사용자
+결정(Apple은 네이티브) 하나다. 조건 문면은 고치지 않았다. 판정은
+[ADR-0028 D7](0028-social-oauth-web-authentication.md) · ADR-0017 D1 여덟째 사례에 있다. 메서드는
+하나다.
 
 ⚠ **트리거 문면은 고치지 않는다** — 숫자를 옮기는 것은 결정 변경이고, 두 번을 「제자리
 기록」으로 판정한 근거(결정 문장이 한 글자도 안 바뀐다)가 그 자리에서 뒤집힌다.
@@ -164,7 +170,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 축 | 왜 못 정하나 | 막고 있는 것 | **누가** | 푸는 시점 |
 |---|---|---|---|---|
 | `integration`의 **서버 연동 케이스** ⟨**전화번호 인증에서 처음 섰다** — 2026-09-29⟩ | 무엇을 목킹할지 정할 수 없다 | API 명세가 없고 백-프론트 연동이 미착수다. 계층 자체는 첫 단계에 포함된다. ⟨2026-09-29 적용 기록⟩ **공개 명세가 있는 Supabase Auth 셋은 케이스가 섰다** — 대역은 `vi.stubGlobal("fetch")`이고 msw를 들이지 않았다([0027](0027-phone-otp-auth-supabase.md) D5). 같은 날 소셜의 PKCE 교환이 넷째로 더해졌고, 호스트 인증 창은 `NativeModules` 대역으로 선다([0028](0028-social-oauth-web-authentication.md)). **행은 닫히지 않는다** — 진행 · 학습 데이터 같은 이 앱의 API 명세는 여전히 없다 | **밖** | API 명세 도착 후 |
-| **소셜 로그인의 기본값 확인과 제공자 설정** ⟨2026-09-29⟩ | 기본값(제공자 셋 · 웹 인증 창 · 스킴 `duru` 미등록 · PKCE · 같은 세션 경로 · 옛 임시 토큰 인정 · Apple 웹 OAuth)을 사용자가 자리에 없는 동안 골랐다 | [ADR-0028](0028-social-oauth-web-authentication.md)이 **제안** 상태로 남는다. 제공자 콘솔 · Supabase 대시보드(제공자 켜기 · 리다이렉트 허용 목록)가 비어 있어 **실서버 소셜 로그인이 한 번도 돌지 않았고**, 새 설치는 어느 수단으로도 서버 없이 로그인을 지날 수 없다 — 다른 흐름의 수동 e2e 전제가 흔들린다([e2e 공통 전제](../e2e/README.md)). 목록은 ADR-0028 「사용자 확인 필요」가 진다 | **본인** | 사용자가 기본값을 확인하고 대시보드를 설정한 뒤 [진입 흐름 e2e](../e2e/entry-flow.md) S1–S5가 돌 때 |
+| **소셜 로그인의 기본값 확인과 제공자 설정** ⟨2026-09-29⟩ | 기본값을 사용자가 자리에 없는 동안 골랐다. ⟨2026-09-29 같은 날 뒤⟩ **사용자 결정으로 기본값은 전부 닫혔다** — 제공자 셋 · 스킴 `duru` · 확인 알림 · PKCE · 같은 세션 경로는 확정, Apple은 네이티브로 · 옛 임시 토큰은 인정하지 않음으로 뒤집혔다. **남은 것은 외부 설정과 디자인 확인이다** — Apple Developer App ID의 Sign in with Apple · Supabase Apple Client IDs의 `com.libitum.host` · Google/Facebook 제공자 설정 · Apple 버튼 면(순수 검정 아님) · Apple 로고 원본 대조 | [ADR-0028](0028-social-oauth-web-authentication.md)이 **제안** 상태로 남는다. 제공자 콘솔 · Apple Developer · Supabase 대시보드(제공자 켜기 · 리다이렉트 허용 목록 · Apple Client IDs)가 비어 있어 **실서버 소셜 로그인이 한 번도 돌지 않았고**, 새 설치는 어느 수단으로도 서버 없이 로그인을 지날 수 없다 — 다른 흐름의 수동 e2e 전제가 흔들린다([e2e 공통 전제](../e2e/README.md)). 목록은 ADR-0028 「사용자 확인」의 「남음」이 진다 | **본인** | 사용자가 Apple Developer · 대시보드를 설정한 뒤 [진입 흐름 e2e](../e2e/entry-flow.md) S1–S5 · A2가 돌 때 |
 | 브랜치 보호 강제 | 정책과 CI는 있으나 GitHub 규칙으로 required check를 강제할 수 없다 | private 저장소 브랜치 보호 API가 현 플랜에서 403이다. Linux Verify는 도입됐지만 우회 가능하다 (ADR-0021 D6) | **밖** | 플랜 또는 공개 범위가 바뀌어 branch protection API를 사용할 수 있을 때 |
 | `e2e` 테스트 계층 | 도구는 있으나 환경이 없다 | `@lynx-js/kitten-lynx-test-infra`(vitest)가 Explorer(Android)를 구동한다. 개발도 시연도 iOS이므로(ADR-0012) **Android는 오직 e2e만을 위해 세우는 환경**이 됐다. **그때까지 어떤 파일도 `e2e` 명령을 선언하지 않는다** — `.agent-harness/profile.yaml`이 playwright를 부르고 있었다 (ADR-0006 D3 `정정 기록`) | **밖** (환경) | Android 에뮬레이터를 루프에 둘 수 있을 때 |
 | 토큰 이름 **전체 대조** 검사 | 대조할 목록을 저장소 안에서 볼 수 없다 | 목록의 출처가 설치된 `@libitums/design-tokens`의 `css/variables.css`다. **설치 상태에 따라 통과/실패가 갈리는 검사는 `lint`에 둘 수 없다.** 접두사 검사는 ADR-0014 D8이 먼저 닫았다 | **본인** | `pnpm install`을 전제할 수 있는 자리가 생길 때 — CI 도입(ADR-0009 D3)이 가장 이른 시점 |

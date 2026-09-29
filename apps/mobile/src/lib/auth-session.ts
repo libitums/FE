@@ -1,6 +1,5 @@
 // 세션 한 항목의 직렬화 · 저장 · 스플래시 갈래 판정입니다. `lib/storage.ts`의 `getItem` ·
-// `setItem` · `removeItem`만 부릅니다 — `storage.ts`를 고치지 않습니다. `lib/auth-token.ts`
-// (소셜 셋의 임시 토큰)는 이 파일이 건드리지 않습니다.
+// `setItem` · `removeItem`만 부릅니다 — `storage.ts`를 고치지 않습니다.
 
 import type {
   AuthSession,
@@ -10,7 +9,7 @@ import type {
 } from "./auth-session.contract";
 import { getItem, removeItem, setItem } from "./storage";
 
-/** 저장소에 들어가는 유일한 키입니다. `libitum.auth.token`(소셜 셋)과는 다른 키입니다. */
+/** 저장소에 들어가는 유일한 키입니다. */
 export const authSessionStorageKey = "libitum.auth.session";
 
 /** 세 값만 담은 JSON입니다. */
@@ -55,16 +54,10 @@ export function parseAuthSession(raw: string | null): AuthSession | null {
   return { accessToken, refreshToken, expiresAt };
 }
 
-/** 계약 `EntryAuthState`의 판정입니다 — 세션 유무 × 임시 토큰 유무. */
-export function entryAuthStateFrom(
-  session: AuthSession | null,
-  hasTemporaryToken: boolean,
-): EntryAuthState {
+/** 계약 `EntryAuthState`의 판정입니다 — 세션이 있으면 `refresh`, 없으면 `none`. */
+export function entryAuthStateFrom(session: AuthSession | null): EntryAuthState {
   if (session !== null) {
     return { kind: "refresh", refreshToken: session.refreshToken };
-  }
-  if (hasTemporaryToken) {
-    return { kind: "temporary" };
   }
   return { kind: "none" };
 }
@@ -95,7 +88,7 @@ export function loadAuthSession(): AuthSession | null {
   return parseAuthSession(getItem(authSessionStorageKey));
 }
 
-/** `removeItem(authSessionStorageKey)`. `authTokenStorageKey`는 건드리지 않습니다. */
+/** `removeItem(authSessionStorageKey)`. */
 export function clearAuthSession(): void {
   removeItem(authSessionStorageKey);
 }

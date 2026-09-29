@@ -252,3 +252,195 @@ test("SS9. 교환 실패 판정 — 400 → sign-in-incomplete · 429 → rate-l
     reason: "network",
   });
 });
+
+// ------------------------------------------------------------------ Apple 네이티브 경로(test-plan §2.3 SA1~SA8 · SS10)
+
+const appleHashed = "13d31e961a1ad8ec2f16b10c4c982e0876a878ad6df144566ee1894acb70f9c3";
+const appleExchangeUrl = "https://test.supabase.co/auth/v1/token?grant_type=id_token";
+
+// 한 객체에 두 모듈을 싣는다(test-plan §7). 웹 `start`는 실패로 즉시 답해, 잘못된 경로를 타도
+// 멈추지 않고 단언 실패로 드러나게 한다.
+function stubAppleHost(overrides: {
+  appleStart?: (args: Record<string, unknown>, callback: (payload: unknown) => void) => void;
+  web?: boolean;
+  apple?: boolean;
+}): {
+  webStart: ReturnType<typeof vi.fn>;
+  randomBytes: ReturnType<typeof vi.fn>;
+  appleStart: ReturnType<typeof vi.fn>;
+} {
+  const webStart = vi.fn((_args: Record<string, unknown>, callback: (payload: unknown) => void) =>
+    callback({ status: "failed" }),
+  );
+  const randomBytes = vi.fn((_count: number) => rfcHex);
+  const appleStart = vi.fn(overrides.appleStart ?? (() => {}));
+  const modules: Record<string, unknown> = {};
+  if (overrides.web !== false) {
+    modules["WebAuthenticationModule"] = { start: webStart, randomBytes };
+  }
+  if (overrides.apple !== false) {
+    modules["AppleSignInModule"] = { start: appleStart };
+  }
+  vi.stubGlobal("NativeModules", modules);
+  return { webStart, randomBytes, appleStart };
+}
+
+test("SA1. apple — 설정 없음 → failed/unconfigured, randomBytes · Apple start · fetch 0회", async () => {
+  const { randomBytes, appleStart } = stubAppleHost({});
+  const fetchMock = vi.fn();
+  vi.stubGlobal("fetch", fetchMock);
+
+  await expect(signInWithSocialProvider("apple")).resolves.toEqual({
+    status: "failed",
+    reason: "unconfigured",
+  });
+  expect(randomBytes).not.toHaveBeenCalled();
+  expect(appleStart).not.toHaveBeenCalled();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("SA2. apple — WebAuthenticationModule 없음(Apple만) → failed/unsupported, Apple start · fetch 0회, 거부하지 않는다", async () => {
+  stubConfig();
+  const { appleStart } = stubAppleHost({ web: false });
+  const fetchMock = vi.fn();
+  vi.stubGlobal("fetch", fetchMock);
+
+  await expect(signInWithSocialProvider("apple")).resolves.toEqual({
+    status: "failed",
+    reason: "unsupported",
+  });
+  expect(appleStart).not.toHaveBeenCalled();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("SA3. apple — AppleSignInModule 없음(웹만) → failed/unsupported, fetch 0회, 거부하지 않는다", async () => {
+  stubConfig();
+  stubAppleHost({ apple: false });
+  const fetchMock = vi.fn();
+  vi.stubGlobal("fetch", fetchMock);
+
+  await expect(signInWithSocialProvider("apple")).resolves.toEqual({
+    status: "failed",
+    reason: "unsupported",
+  });
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("SA4. apple — Apple start 인자가 정확히 { nonce: 해시 }, randomBytes(32) 1회, 웹 start 0회", async () => {
+  stubConfig();
+  const { webStart, randomBytes, appleStart } = stubAppleHost({});
+  vi.stubGlobal("fetch", vi.fn());
+
+  void signInWithSocialProvider("apple").catch(() => {});
+  await Promise.resolve();
+  await Promise.resolve();
+
+  expect(appleStart).toHaveBeenCalledTimes(1);
+  const [args] = appleStart.mock.calls[0] as [Record<string, unknown>, unknown];
+  expect(args).toEqual({ nonce: appleHashed });
+  expect(Object.keys(args)).toEqual(["nonce"]);
+  expect(randomBytes).toHaveBeenCalledTimes(1);
+  expect(randomBytes).toHaveBeenCalledWith(32);
+  expect(webStart).not.toHaveBeenCalled();
+});
+
+test("SA5. apple — 호스트 cancelled → cancelled, fetch 0회", async () => {
+  stubConfig();
+  stubAppleHost({ appleStart: (_args, callback) => callback({ status: "cancelled" }) });
+  const fetchMock = vi.fn();
+  vi.stubGlobal("fetch", fetchMock);
+
+  await expect(signInWithSocialProvider("apple")).resolves.toEqual({ status: "cancelled" });
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("SA6. apple — failed · already-active · invalid-arguments · 모양 없는 페이로드 → 전부 failed/unsupported, fetch 0회", async () => {
+  stubConfig();
+  const fetchMock = vi.fn();
+  vi.stubGlobal("fetch", fetchMock);
+
+  for (const payload of [
+    { status: "failed" },
+    { status: "already-active" },
+    { status: "invalid-arguments" },
+    { status: "not-a-known-shape" },
+  ]) {
+    stubAppleHost({ appleStart: (_args, callback) => callback(payload) });
+
+    await expect(signInWithSocialProvider("apple")).resolves.toEqual({
+      status: "failed",
+      reason: "unsupported",
+    });
+  }
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("SA7. apple — completed → id_token 교환 1회(정확한 URL · 본문) → signed-in, 결과에 nonce가 없다", async () => {
+  stubConfig();
+  stubAppleHost({
+    appleStart: (_args, callback) =>
+      callback({ status: "completed", identityToken: "apple-id-token-1" }),
+  });
+  const fetchMock = vi.fn(async () =>
+    jsonResponse(200, { access_token: "at", refresh_token: "rt", expires_in: 3600 }),
+  );
+  vi.stubGlobal("fetch", fetchMock);
+
+  const result = await signInWithSocialProvider("apple");
+
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const [url, init] = fetchMock.mock.calls[0] as unknown as [
+    string,
+    { method: string; body: string },
+  ];
+  expect(url).toBe(appleExchangeUrl);
+  expect(init.method).toBe("POST");
+  expect(JSON.parse(init.body)).toEqual({
+    provider: "apple",
+    id_token: "apple-id-token-1",
+    nonce: rfcVerifier,
+  });
+  expect(result).toEqual({
+    status: "signed-in",
+    session: { accessToken: "at", refreshToken: "rt", expiresAt: expect.any(Number) },
+  });
+  expect(JSON.stringify(result)).not.toContain(rfcVerifier);
+});
+
+test("SA8. apple — 교환 400 → sign-in-incomplete · 429 → rate-limited · 500 → unavailable · 던짐 → network", async () => {
+  stubConfig();
+  const cases: ReadonlyArray<[() => Promise<unknown>, string]> = [
+    [async () => jsonResponse(400, { error_code: "bad_jwt" }), "sign-in-incomplete"],
+    [async () => jsonResponse(429, {}), "rate-limited"],
+    [async () => jsonResponse(500, {}), "unavailable"],
+    [
+      async () => {
+        throw new Error("connection refused");
+      },
+      "network",
+    ],
+  ];
+
+  for (const [respond, reason] of cases) {
+    stubAppleHost({
+      appleStart: (_args, callback) => callback({ status: "completed", identityToken: "t" }),
+    });
+    vi.stubGlobal("fetch", vi.fn(respond));
+
+    await expect(signInWithSocialProvider("apple")).resolves.toEqual({
+      status: "failed",
+      reason,
+    });
+  }
+});
+
+test("SS10. 웹 경로(google)는 AppleSignInModule.start를 부르지 않는다", async () => {
+  stubConfig();
+  const { appleStart, webStart } = stubAppleHost({});
+  vi.stubGlobal("fetch", vi.fn());
+
+  await signInWithSocialProvider("google");
+
+  expect(webStart).toHaveBeenCalledTimes(1);
+  expect(appleStart).not.toHaveBeenCalled();
+});

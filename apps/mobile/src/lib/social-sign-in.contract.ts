@@ -18,6 +18,12 @@ import type { AuthFailureReason, AuthSession } from "./auth-session.contract";
 export type SupabaseOAuthProvider = "apple" | "google" | "facebook";
 
 /**
+ * 웹 OAuth(authorize → 인증 창 → PKCE 교환)를 타는 제공자입니다. Apple은 네이티브 시트와
+ * `grant_type=id_token` 교환을 타므로 여기 없습니다(ADR-0028).
+ */
+export type WebOAuthProvider = Exclude<SupabaseOAuthProvider, "apple">;
+
+/**
  * 웹 인증 세션이 가로채는 스킴입니다. **Info.plist에 등록하지 않습니다** — 세션이 자기
  * 창 안에서 이 스킴을 가로채므로 밖에서 앱으로 들어오는 입구가 생기지 않습니다(ADR-0028).
  */
@@ -106,7 +112,7 @@ export type OAuthCallback =
  *
  * - `sign-in-incomplete` — 콜백이 `error`를 실었거나 `code`가 없거나, 교환이 4xx로 거절됐습니다.
  * - `unsupported` — 이 환경에서 이 수단을 쓸 수 없습니다(호스트 모듈 없음 · 난수 실패 · 창을
- *   띄우지 못함). 나중에 Apple을 네이티브로 바꿔도 같은 이유를 씁니다.
+ *   띄우지 못함 · Apple 시트 오류). Apple의 네이티브 시트도 같은 이유를 씁니다.
  */
 export type SocialSignInFailure =
   | Extract<AuthFailureReason, "network" | "unavailable" | "unconfigured" | "rate-limited">
@@ -128,6 +134,27 @@ export type PkceExchangeResult =
   | { readonly status: "failed"; readonly reason: PkceExchangeFailure };
 
 export type ExchangePkceCode = (request: PkceExchangeRequest) => Promise<PkceExchangeResult>;
+
+/**
+ * ID 토큰 교환(`/auth/v1/token?grant_type=id_token`)이 낼 수 있는 실패입니다. 판정 규칙이 PKCE
+ * 교환과 같습니다(429 · `over_*` → `rate-limited`, 5xx → `unavailable`, 4xx → `sign-in-incomplete`).
+ */
+export type IdTokenExchangeFailure = PkceExchangeFailure;
+
+/** Apple 네이티브 로그인이 받은 것을 Supabase 세션으로 바꾸는 입력입니다. 제공자는 늘 `apple`입니다. */
+export type IdTokenExchangeRequest = {
+  /** `AppleSignInResult`의 `identityToken`입니다. */
+  readonly idToken: string;
+  /** `AppleNoncePair.raw`입니다 — 해시가 아니라 원본입니다. */
+  readonly nonce: string;
+};
+
+/** `exchangeIdToken`의 결과입니다. 던지지 않습니다. */
+export type IdTokenExchangeResult =
+  | { readonly status: "exchanged"; readonly session: AuthSession }
+  | { readonly status: "failed"; readonly reason: IdTokenExchangeFailure };
+
+export type ExchangeIdToken = (request: IdTokenExchangeRequest) => Promise<IdTokenExchangeResult>;
 
 /** 소셜 로그인 한 번의 결과입니다. 세션을 싣습니다 — 결선이 저장하고 화면에는 내려가지 않습니다. */
 export type SocialSignInResult =
@@ -156,7 +183,7 @@ export type SignInWithSocialProvider = (
  * 키 순서는 이 타입의 순서로 고정하고, 값은 전부 `encodeURIComponent`를 거칩니다.
  */
 export type SupabaseAuthorizeQuery = {
-  readonly provider: SupabaseOAuthProvider;
+  readonly provider: WebOAuthProvider;
   readonly redirect_to: OAuthRedirectUrl;
   readonly code_challenge: string;
   readonly code_challenge_method: "s256";
@@ -166,4 +193,15 @@ export type SupabaseAuthorizeQuery = {
 export type SupabasePkceTokenRequestBody = {
   readonly auth_code: string;
   readonly code_verifier: string;
+};
+
+/**
+ * `POST /auth/v1/token?grant_type=id_token` 본문입니다. 키는 이 셋뿐입니다 — `access_token` ·
+ * `client_id` · `issuer`는 싣지 않습니다. 성공 본문은 `SupabaseSessionResponseBody`와 같습니다.
+ */
+export type SupabaseIdTokenRequestBody = {
+  readonly provider: "apple";
+  readonly id_token: string;
+  /** 원본 nonce입니다. 서버가 SHA-256 16진으로 바꿔 ID 토큰의 `nonce` 클레임과 맞춰 봅니다. */
+  readonly nonce: string;
 };

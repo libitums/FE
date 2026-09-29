@@ -3,7 +3,7 @@
 ## 판정 채널과 범위
 
 이 문서는 처음 앱을 켠 사용자가 스플래시 → 온보딩 → 로그인(전화번호 또는 소셜 —
-Apple · Google · Facebook, 시스템 인증 창) → 코드 검증(전화번호만) → 언어 선택 → 여정
+Apple은 네이티브 시트, Google · Facebook은 시스템 인증 창) → 코드 검증(전화번호만) → 언어 선택 → 여정
 입장을 지나 여정 맵에 들어가는 흐름을, 그리고 로그인 세션(소셜 · 전화번호 모두
 Supabase Auth 세션 하나 — 아래 「재설치가 유일한 재진입 수단이다」)이 있을 때·없을
 때 재실행이 어떻게 갈리는지를 iOS Release Host와 실기기에서 확인하는 수동
@@ -27,6 +27,13 @@ E1–E7」로 더하고, 기존 T4(자릿수) · T8(재실행 갈래) · T9(문�
 T8의 재실행 모양이 수단과 무관하게 하나로 합쳐진다. 셈하는 자리는
 `.agent-harness/work/supabase-social-login/test-plan.md` §6이고 이 문서가 절차
 사본이다 — S1~S8 표 항목을 여기서 더하거나 빼지 않는다.
+
+⚠ **이 문서의 보정 r0.5(Apple 네이티브 · 임시 토큰 제거)** — Apple은 웹 인증 창이 아니라
+네이티브 시스템 시트(`ASAuthorizationController`)로 들어가고, 옛 임시 토큰
+(`libitum.auth.token`)은 더는 입장 자격이 아니다. 이를 「Apple 네이티브 여정 A1–A7」과
+L1(옛 임시 토큰만 있는 설치)로 더하고, S4는 Facebook만, T9는 Apple이 시트임을 반영해
+고친다. 셈하는 자리는 `.agent-harness/work/social-login-decisions/test-plan.md` §6이고
+이 문서가 절차 사본이다 — A1~A7 · L1 표 항목을 여기서 더하거나 빼지 않는다.
 
 T1~T9·D1은 시뮬레이터에서 먼저 돌 수 있다. 그러나 그 결과만으로 `e2e-red`의 `moot`
 값을 주장하지 않는다. **K1~K5는 실기가 답한다** — 소프트 키보드는 이 저장소에서
@@ -55,9 +62,8 @@ iPhone · Release · VoiceOver로 이 흐름을 도는 것**이고, 이 문서�
 - `apps/mobile/src/lib/entry-flow.ts`(화면 여섯의 순서 · 로그인 수단 넷 · 스플래시
   고정 시간 `1200ms`의 정본)
 - `apps/mobile/src/lib/entry-language.ts`(언어 넷과 라벨의 정본)
-- `apps/mobile/src/lib/auth-token.ts`(옛 임시 토큰 키 `libitum.auth.token`의 정본 —
-  **이번 회차부터 UI 경로가 더는 쓰지 않는다**. 남아 있으면 부팅이 갱신 없이 곧장
-  여정 맵으로 가는 파수꾼 갈래로만 읽힌다)
+- ~~`apps/mobile/src/lib/auth-token.ts`~~ — **2026-09-29에 지워졌다**(ADR-0028 D6). 옛 임시 토큰
+  키 `libitum.auth.token`을 읽거나 쓰는 코드가 없다 — L1 재현법이 키 이름을 직접 적는다
 - `apps/mobile/src/lib/social-sign-in.ts` · `web-authentication.ts` · `pkce.ts`(소셜
   로그인 — 제공자 대응 · 시스템 인증 창 호출 · PKCE의 정본)
 - `apps/ios/Host/WebAuthenticationModule.swift`(시스템 인증 창을 여는 호스트 네이티브
@@ -90,9 +96,9 @@ iPhone · Release · VoiceOver로 이 흐름을 도는 것**이고, 이 문서�
 
 공통 전제([docs/e2e/README.md](README.md)) + **Release Host** + ⭐ **앱을 삭제·재설치한
 새 상태**(로그인 세션이 없어야 진입 흐름이 선다 — 소셜 · 전화번호 모두
-`libitum.auth.session` 하나에 쓴다. 옛 임시 토큰 키 `libitum.auth.token`은 이번
-회차부터 UI가 더는 쓰지 않지만 남아 있으면 부팅이 곧장 여정 맵으로 간다 — **지우는
-수단이 앱에 없다** — 아래 「재설치가 유일한 재진입 수단이다」).
+`libitum.auth.session` 하나에 쓴다. 옛 임시 토큰 키 `libitum.auth.token`은 이제
+입장 자격이 아니다 — 그것만 있는 설치는 온보딩부터 다시 시작한다(L1). 세션을 지우는
+수단은 여전히 앱에 없다 — 아래 「재설치가 유일한 재진입 수단이다」).
 
 **전화번호 인증(E1~E7)에 추가로 필요한 전제** — `apps/mobile/.env.local`에
 `PUBLIC_SUPABASE_URL` · `PUBLIC_SUPABASE_ANON_KEY`가 채워진 Release 산출물(개발
@@ -104,8 +110,20 @@ iPhone · Release · VoiceOver로 이 흐름을 도는 것**이고, 이 문서�
 evidence.yaml `user-decision`). 어느 경로(테스트 번호 · 실제 번호)로 돌았는지를 각 행의
 결과에 적는다.
 
+**Apple 네이티브(A1~A7)에 추가로 필요한 전제** — 아래를 **먼저 기록**한다(빈칸이면
+행을 돌지 않는다).
+
+- **새 모듈이 든 Host 빌드**(`AppleSignInModule` · `Host.entitlements`)인가.
+- **빌드의 서명 방식** — 자동 서명 실기 / 로컬 서명 시뮬레이터 / `CODE_SIGNING_ALLOWED=NO`
+  중 어느 것인가. **서명 없는 시뮬레이터 빌드면 A1 · A3 · A7(A3 부분)은
+  `미실행 — 서명 필요`로 적고 관찰을 지어내지 않는다**(A4가 그 빌드의 실제 모양을 본다).
+- 기기(시뮬레이터)에 **Apple ID가 로그인돼 있는가**.
+- **Apple Developer 설정**(App ID의 Sign in with Apple 기능) · **Supabase Apple 제공자와
+  Client IDs**(번들 ID 등록 — `id_token`의 `aud`)가 켜져 있는가. 아니면 A2 · A5는
+  `미실행 — Apple 설정 필요`(spec Q-1)로 둔다.
+
 **소셜 로그인(S1~S8)에 추가로 필요한 전제** — Supabase 대시보드에서 Apple ·
-Google · Facebook 제공자를 켜고 각 콘솔의 클라이언트 ID · 시크릿을 채운 상태,
+Google · Facebook 제공자를 켜고(Apple은 위 A 전제 — 웹 인증 창을 쓰지 않는다) 각 콘솔의 클라이언트 ID · 시크릿을 채운 상태,
 그리고 리다이렉트 허용 목록에 `duru://auth-callback`을 등록한 상태
 (`.agent-harness/work/supabase-social-login/spec.md` §12 Q-2). **이 문서를 세운
 시점에는 셋 다 꺼져 있고 클라이언트 ID도 없다** — 허용 목록에 없으면 GoTrue가
@@ -131,10 +149,8 @@ S2~S5 · S7 · S8(S3 부분)은 Q-2가 풀린 뒤로 미룬다 — 닫을 수 �
 
 저장소에 들어가는 항목은 **소셜 · 전화번호 모두 `libitum.auth.session` 하나**다
 (`.agent-harness/work/supabase-social-login/spec.md` — entry-wiring이 소셜 결과도
-`saveAuthSession`으로 저장한다). 옛 임시 토큰 키 `libitum.auth.token`(spec §0.3 D-d ·
-`.agent-harness/work/supabase-login/spec.md` C3)은 **이번 회차부터 UI 경로가 더는
-쓰지 않는다** — 남아 있으면(옛 설치) 부팅이 갱신 없이 곧장 여정 맵으로 가는 파수꾼
-갈래로만 읽힌다. **지우는 수단이 앱에 없다**(로그아웃은 이번 범위 밖 — spec §11.3.
+`saveAuthSession`으로 저장한다). 옛 임시 토큰 키 `libitum.auth.token`은 **더는 입장 자격이 아니다** — 그것만 남은
+옛 설치는 온보딩부터 다시 시작한다(아래 L1). 재현법은 L1 행에 있다. **세션을 지우는 수단이 앱에 없다**(로그아웃은 이번 범위 밖 — spec §11.3.
 세션은 서버가 refresh를 거절할 때만 지워지는데 그 경로는 별도 이야기다 — 이 표의
 T8·T9는 만들지 않는다). 한 번 T1~T7을 끝까지 돌아 세션이 생기면, 그 뒤로는 앱을
 재시작해도 **온보딩·로그인·코드 검증·언어 선택을 다시 볼 수 없다** — **소셜로
@@ -186,7 +202,7 @@ T8·T9는 만들지 않는다). 한 번 T1~T7을 끝까지 돌아 세션이 생�
 | T6 | 언어 선택에서 초기값이 **아닌** 항목을 누르고 `다음` | 누른 행에만 표식(`선택됨`)이 서고 다른 행의 표식이 사라진다. **여정 입장**에 **그 언어의 라벨**이 보인다 | 시뮬레이터 또는 실기 | 미실행 |
 | T7 | `여정 시작하기` | **여정 맵**이 서고 **바텀 네비게이션이 그때 처음 보인다**. 탭 셋이 동작한다 | 시뮬레이터 또는 실기 | 미실행 |
 | T8 ⚠ **보정(Supabase 소셜)** | 앱을 완전히 종료하고 다시 연다 (**R1 — 세션 있음**) | **T1~T7을 소셜로 돈 설치 · 전화번호로 돈 설치 모두 같다**: 스플래시가 **refresh 요청 왕복이 끝날 때까지 그대로 서 있다가**(온보딩·로그인이 뜨지 않은 채 스플래시가 늘어져 보이는 것 자체가 관찰이다) 여정 맵으로 넘어간다 — 소셜도 이제 **갱신 뒤** 여정 맵이다(더는 즉시 전이가 아니다) | 시뮬레이터 또는 실기 | 미실행 |
-| T9 ⚠ **보정(Supabase 소셜)** | 앱을 **삭제하고 재설치**한 뒤 열어 `Sign in with Apple` 또는 `Connect with Google`을 고른다 (**R2 — 세션 없음**) | 스플래시 뒤 **온보딩**이다. 소셜 수단을 고르면 시스템 인증 창(`ASWebAuthenticationSession`)이 앱 위에 뜨고, 로그인을 끝내면 창이 저절로 닫히며 **코드 검증을 건너뛰고** 언어 선택이 선다(소셜 경로도 전화번호와 같은 Supabase 세션 하나를 쓴다 — 창의 상세 관찰은 아래 S1~S2) | 실기(제공자 · 대시보드 설정 뒤 — spec §12 Q-2) | 미실행 |
+| T9 ⚠ **보정(Supabase 소셜)** | 앱을 **삭제하고 재설치**한 뒤 열어 `Sign in with Apple` 또는 `Connect with Google`을 고른다 (**R2 — 세션 없음**) | 스플래시 뒤 **온보딩**이다. Apple을 고르면 **시스템 Apple 로그인 시트**(아래 A1)가, Google · Facebook은 시스템 인증 창(`ASWebAuthenticationSession`)이 앱 위에 뜨고, 로그인을 끝내면 시트·창이 저절로 닫히며 **코드 검증을 건너뛰고** 언어 선택이 선다(소셜 경로도 전화번호와 같은 Supabase 세션 하나를 쓴다 — 창의 상세 관찰은 아래 S1~S2) | 실기(제공자 · 대시보드 설정 뒤 — spec §12 Q-2) | 미실행 |
 | D1 | Dynamic Type 기본 → 최대(AX5)에서 여섯 화면을 돈다 | 겹침 0 · 잘림 0. 액션 행과 나가기에 **닿을 수 있다**. 코드 검증 머리에서 나가기와 제목이 겹치지 않는다 | 시뮬레이터 또는 실기 | 미실행 |
 
 **T8은 T1~T7과 같은 설치에서 이어 돈다(재설치하지 않는다) — 세션이 있어야
@@ -230,8 +246,8 @@ T8·T9는 만들지 않는다). 한 번 T1~T7을 끝까지 돌아 세션이 생�
 「소셜 로그인(S1~S8)에 추가로 필요한 전제」다. 새로 삭제·재설치한 상태에서
 시작해 온보딩 → 로그인까지 온 상태를 이어서 쓴다(T1~T2와 같은 준비).
 
-⚠ **지금 닫을 수 있는 것은 S6과 S8의 그 부분뿐이다** — 제공자(Apple · Google ·
-Facebook)가 Supabase 프로젝트에서 모두 꺼져 있고 클라이언트 ID가 없으며,
+⚠ **지금 닫을 수 있는 것은 S6과 S8의 그 부분뿐이다** — 제공자(Google · Facebook
+웹 경로 제공자)가 Supabase 프로젝트에서 모두 꺼져 있고 클라이언트 ID가 없으며,
 리다이렉트 `duru://auth-callback`도 대시보드 허용 목록에 등록돼 있지 않다(spec
 §12 Q-2). S1은 창이 뜨는 것까지는 제공자 설정과 무관하게 확인되지만 로그인
 완료는 안 된다. S2~S5 · S7 · S8(S3 부분)은 Q-2가 풀리기 전에는 `미실행 —
@@ -242,7 +258,7 @@ Facebook)가 Supabase 프로젝트에서 모두 꺼져 있고 클라이언트 ID
 | S1 | 새로 삭제·재설치한 로그인 화면에서 `Connect with Google`(`login-screen-method-google`)을 누른다 | 시스템 인증 창(`ASWebAuthenticationSession`)이 **앱 위에** 뜨고 Google 로그인 페이지가 보인다(첫 회는 시스템 확인 알림이 먼저 뜰 수 있다). 누른 버튼이 요청 중 모양(`data-status="requesting"`)이다. 제공자가 꺼져 있어도 **창이 뜨는 것 자체는 확인된다**(창 안에 JSON 오류만 다르다) | 시뮬레이터 또는 실기 | 부분 — 2026-09-29 Debug 호스트(시뮬레이터): 시스템 확인 알림 → 계속 → 인증 창이 앱 위에 Supabase authorize 주소로 열림. 제공자가 꺼져 있어 Google 페이지 대신 `Unsupported provider: provider is not enabled`. 제공자 설정 뒤 재확인 필요 |
 | S2 | S1의 창에서 Google 로그인을 끝낸다 | 창이 **저절로 닫히고** 언어 선택 화면이 선다(Info.plist에 등록하지 않은 `duru://auth-callback` 스킴을 시스템 인증 세션이 가로챈다 · Supabase PKCE 교환이 뒤에서 성공한다) | 실기(제공자 · 대시보드 설정 뒤) | 미실행 — 제공자 미설정(ADR-0028 「막힌 것」) |
 | S3 | S1에서 창을 닫는다(취소), 또는 첫 회 시스템 확인 알림에서 취소한다 | 로그인 화면이 그대로이고 오류 문구가 없다 · 같은 버튼을 다시 누를 수 있다(`cancelled` 대응) | 실기(제공자 · 대시보드 설정 뒤) | 부분 — 같은 회차: 확인 알림의 취소 · 인증 창 X 둘 다 로그인 화면 그대로 · 오류 없음 · 로딩 걷힘 · 다시 누를 수 있음. 제공자가 꺼진 상태도 앱에는 취소로만 보인다 |
-| S4 | Apple · Facebook으로 S1~S2를 되풀이한다 | 같은 관찰(창 표시 · 저절로 닫힘 · 언어 선택) — 제공자별 설정과 Apple의 `form_post` 콜백 모양이 다르다 | 실기(제공자 · 대시보드 설정 뒤) | 미실행 — 제공자 미설정(ADR-0028 「막힌 것」) |
+| S4 | Facebook으로 S1~S2를 되풀이한다(Apple은 웹 경로가 아니다 — A1~A7) | 같은 관찰(창 표시 · 저절로 닫힘 · 언어 선택) — 제공자별 설정이 다르다 | 실기(제공자 · 대시보드 설정 뒤) | 미실행 — 제공자 미설정(ADR-0028 「막힌 것」) |
 | S5 | S2를 끝낸 뒤 앱을 완전히 종료하고 다시 연다 | 스플래시가 refresh 왕복이 끝날 때까지 서 있다가 **곧장 여정 맵**으로 넘어간다(소셜로 받은 세션도 T8과 같은 갱신을 탄다) | 실기(제공자 · 대시보드 설정 뒤) | 미실행 — 제공자 미설정(ADR-0028 「막힌 것」) |
 | S6 | **Lynx Explorer**(호스트 모듈 없음)에서 로그인의 소셜 버튼을 누른다 | 던지지 않고 `This sign-in option isn't available on this device.`(또는 `.env` 미설정이면 `Sign-in isn't available right now.`) 한 줄이 소셜 셋 아래에 뜬다 · 화면 전이 없음 · 앱이 죽지 않는다 | 시뮬레이터 또는 실기 — **제공자 설정과 무관하게 지금 돌 수 있다** | 통과 — 2026-09-29 Lynx Explorer(iPhone 시뮬레이터, dev 번들). Google → `This sign-in option isn't available on this device.` 한 줄이 소셜 셋 아래, 번호 칸 아래 오류 없음, 전이 없음 |
 | S7 | 기기를 비행기 모드로 두고 S1을 되풀이한다 | 창 안에서 페이지가 열리지 않는다 → 창을 닫으면 로그인 화면 그대로(오류 문구 없음, `cancelled` 갈래). 창이 열린 뒤 네트워크가 끊기면 교환 실패 문구(`authFailureMessage("network")`)가 뜬다 | 실기(제공자 · 대시보드 설정 뒤) | 미실행 — 제공자 미설정(ADR-0028 「막힌 것」) |
@@ -259,6 +275,41 @@ Facebook)가 Supabase 프로젝트에서 모두 꺼져 있고 클라이언트 ID
   `Host`(`CFBundleName`)로 뜬 사례가 있다. 이 표의 판정 대상이 아니고(문면
   자체가 아니라 대상 이름의 문제), 확인자는 이 값을 그대로 결과에 적되 별도로
   `실패`를 걸지 않는다 — 처방은 `apps/ios` 몫이다.
+- 한 항목이라도 어긋나면 `실패: <관찰>`로 적는다.
+
+## Apple 네이티브 여정 A1–A7 · 옛 임시 토큰 L1 — 신설
+
+`.agent-harness/work/social-login-decisions/test-plan.md` §6.2가 정본이고 이 표가 절차
+사본이다 — 항목을 여기서 더하거나 빼지 않는다. 전제는 위 「Apple 네이티브(A1~A7)에
+추가로 필요한 전제」다 — 서명 방식 · Apple ID 로그인 여부 · Apple 설정 상태를 결과와 함께
+적는다. 닫을 수 있는 행: A4 · A6 · L1 · A7(A6 부분)은 서명 · Apple 설정과 무관하다. A1 · A3 ·
+A7(A3 부분)은 서명된 빌드와 Apple ID가, A2 · A5는 Apple 설정(spec Q-1)이 필요하다. 못 닫는
+행은 `미실행 — 서명 필요` · `미실행 — Apple 설정 필요`로 두고 관찰을 지어내지 않는다.
+
+| ID | 단계 | 관찰(식별 가능한 요소) | 답하는 수단 | 결과 |
+|---|---|---|---|---|
+| A1 | 새 설치 → 로그인 → `Sign in with Apple` | **시스템 Apple 로그인 시트**가 앱 위에 뜬다 — 브라우저 창이 아니고 *"…을(를) 사용하여 로그인하려고 합니다"* 확인 알림이 **없다**. 이름 · 이메일 공유 선택지가 없다. 누른 버튼이 요청 중 모양(`data-status="requesting"`) | 서명 빌드 + Apple ID (엔타이틀먼트 · 앵커 · 해시 nonce) | 미실행 — 서명 필요(서명 없는 시뮬레이터 빌드면 이 값 그대로) |
+| A2 | A1의 시트에서 Face ID/암호로 끝낸다 | 시트가 닫히고 **언어 선택**이 선다 — GoTrue `id_token` 교환(nonce 해시 비교 · `aud`=번들 ID)이 성공한다 | 실기 또는 서명 시뮬레이터 · Apple 설정 뒤(spec Q-1) | 미실행 — Apple 설정 필요 |
+| A3 | A1에서 시트를 닫는다(취소) | 로그인 화면 그대로 · 오류 문구 없음 · 같은 버튼을 다시 누를 수 있다(`.canceled` 대응) | 서명 빌드 + Apple ID | 미실행 — 서명 필요 |
+| A4 | **서명 없는 빌드**(`CODE_SIGNING_ALLOWED=NO`) 또는 Apple ID가 없는 시뮬레이터에서 A1 | 앱이 죽지 않는다. 나타난 것을 **그대로 적는다** — 계약상 기대는 `This sign-in option isn't available on this device.`(`.unknown` → `failed`) 또는 시스템의 Apple ID 로그인 유도(닫으면 A3과 같음). 권한 없는 빌드의 실제 모양은 미리 알 수 없다 | 시뮬레이터 · 서명 없는 Host 빌드 | 통과(2026-09-29, `46c5dc8`) — 시스템 알림 「Apple 계정에 로그인 · 설정에서 Apple 계정에 로그인해야 합니다」가 떴고, 「닫기」는 취소가 아니라 오류로 와 `This sign-in option isn't available on this device.` 한 줄. 앱 멈춤 없음 |
+| A5 | A2 뒤 앱을 완전히 종료하고 다시 연다 | 스플래시가 refresh 왕복이 끝날 때까지 서 있다가 **곧장 여정 맵**(Apple로 받은 세션도 T8과 같은 갱신을 탄다) | 실기 또는 서명 시뮬레이터 · Apple 설정 뒤 | 미실행 — Apple 설정 필요 |
+| A6 | **Lynx Explorer**(호스트 모듈 없음)에서 `Sign in with Apple`을 누른다 | 던지지 않고 `This sign-in option isn't available on this device.`(`.env` 미설정이면 `Sign-in isn't available right now.`) 한 줄 · 화면 전이 없음 · 앱이 죽지 않는다 | 시뮬레이터 또는 실기 | 미실행 |
+| A7 | (VoiceOver) A3의 취소와 A6의 실패 문구를 각각 듣는다 | 취소에는 **아무것도 읽히지 않는다**. 실패 문구는 **한 번** 읽힌다. 시트가 닫힌 뒤 포커스가 **누른 버튼**에 돌아온다(웹 창과 다를 수 있다 — 다른 요소에 놓이면 들린 요소를 적는다) | 실기 · VoiceOver(A3 부분은 서명 빌드) | 미실행 — A3 부분은 서명 필요, A6 부분은 실기 · VoiceOver 필요 |
+| A7c | (VoiceOver) A4처럼 **시트 · 시스템 알림이 닫히는 순간** 실패 문구가 서는 경우를 듣는다 | 알림이 닫히며 포커스가 돌아올 때 읽히는 소리에 실패 문구가 **묻히지 않고 한 번** 읽힌다. 묻히면 들린 순서를 그대로 적는다 | 실기 · VoiceOver · Apple 계정 없는 기기(또는 A4 조건) | 미실행 — 실기 · VoiceOver 필요 |
+| L1 | 옛 임시 토큰만 있는 설치를 만든다 — 이 빌드를 **덮어 설치**(삭제하지 않음)한 시뮬레이터에서 아래 재현법으로 키를 쓴다 → 앱을 연다 | 스플래시 뒤 **온보딩**(여정 맵이 아니다) → 끝까지 넘기면 로그인 화면. 옛 자격이 조용히 통과하지 않는다(AC5) | 시뮬레이터 — 서명 · Apple 설정과 무관하다 | 통과 — 2026-09-29 시뮬레이터(아래 「실행 기록」) |
+
+**L1 재현법** — 앱을 한 번 실행해 설치가 있는 상태에서(세션 키 없음) 시뮬레이터의
+UserDefaults에 옛 키를 직접 쓴다.
+
+```sh
+xcrun simctl spawn <UDID> defaults write com.libitum.host libitum.libitum.auth.token temporary-entry-token
+```
+
+쓴 뒤 앱을 **완전히 종료했다가 다시 연다**. 옛 빌드를 만들 필요가 없다(옛 빌드가 있어도
+같은 결과여야 한다). 값이 저장소에 실제로 들어갔는지는 `defaults read com.libitum.host`로
+확인해 결과에 적는다.
+
+- A행 결과에는 **빌드 서명 방식 · Apple ID 로그인 여부 · Apple 설정 상태**를 함께 적는다.
 - 한 항목이라도 어긋나면 `실패: <관찰>`로 적는다.
 
 ## 소프트 키보드 여정 K1–K5 — 실기
@@ -373,11 +424,12 @@ B′다.
 
 ## 실행 기록
 
-| 환경 | Host SHA-256 | bundle SHA-256 | T1–T7 | T8(재설치 안 함) | T9(재설치함) | D1 | E1–E7 | S1–S8 | K1–K5 | V1–V6 | 확인자 · 확인 시각 |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| iPhone 실기 · iOS 미기록 · Release | 미기록 | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미기록 — 실행 시 입력 |
-| iOS Simulator(iPhone, 393×852pt) · iOS 26.5 · **Debug 호스트(내장 번들) + Lynx Explorer(dev 번들)** — Release 아님 | 미기록 | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | E1–E5 통과(테스트 번호), E6 · E7 미실행(사유는 각 행) | S6 통과 · S1 · S3 부분(제공자 꺼짐 — 창 열림 · 취소 복귀까지), S2 · S4 · S5 · S7 · S8 · S8b · S8c 미실행 | 미실행 | 미실행 | 루트 에이전트(자동 진행) · 2026-09-29 01:45–04:35 KST |
-| iOS Simulator · iOS 미기록 · Release | 미기록 | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행(E6 제외 — Simulator로 대체 불가) | 미실행 — 제공자 미설정(ADR-0028 「막힌 것」), S6 제외 | 미실행 — Simulator로 대체 불가 | 미실행 — Simulator로 대체 불가 | 미기록 — 실행 시 입력 |
+| 환경 | Host SHA-256 | bundle SHA-256 | T1–T7 | T8(재설치 안 함) | T9(재설치함) | D1 | E1–E7 | S1–S8 | A1–A7 | L1 | K1–K5 | V1–V6 | 확인자 · 확인 시각 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| iPhone 실기 · iOS 미기록 · Release | 미기록 | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미기록 — 실행 시 입력 |
+| iOS Simulator(iPhone, 393×852pt) · iOS 26.5 · **Debug 호스트(내장 번들) + Lynx Explorer(dev 번들)** — Release 아님 | 미기록 | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | E1–E5 통과(테스트 번호), E6 · E7 미실행(사유는 각 행) | S6 통과 · S1 · S3 부분(제공자 꺼짐 — 창 열림 · 취소 복귀까지), S2 · S4 · S5 · S7 · S8 · S8b · S8c 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 루트 에이전트(자동 진행) · 2026-09-29 01:45–04:35 KST |
+| iOS Simulator(iPhone 17 Pro) · iOS 26.5 · **Debug 호스트(내장 번들, 서명 없음 · 시뮬레이터용 권한)** — Release 아님, 커밋 `46c5dc8` | 미기록 | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행 | A1 미실행(시트 대신 A4 상황) · **A4 통과** — Apple 버튼 → 네이티브 인증 요청이 시스템까지 닿아 「Apple 계정에 로그인 · 설정에서 Apple 계정에 로그인해야 합니다」 알림(시뮬레이터에 Apple 계정 없음). 알림 「닫기」 → 취소가 아니라 `This sign-in option isn't available on this device.` 한 줄(시스템이 취소가 아닌 오류로 돌려줌 → `unsupported`), 앱 멈춤 없음. A2~A7 미실행 — Apple 계정 · Apple Developer · Supabase Client IDs 필요 | L1 통과 — 옛 임시 토큰만 넣고 실행하자 온보딩 1단계(Step 1 of 3)에서 시작 | 미실행 | 미실행 | 루트 에이전트 · 2026-09-29 KST |
+| iOS Simulator · iOS 미기록 · Release | 미기록 | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행(E6 제외 — Simulator로 대체 불가) | 미실행 — 제공자 미설정(ADR-0028 「막힌 것」), S6 제외 | 미실행 — 서명 · Apple 설정 필요, A4 · A6 제외 | 미실행 | 미실행 — Simulator로 대체 불가 | 미실행 — Simulator로 대체 불가 | 미기록 — 실행 시 입력 |
 
 2026-09-29 회차는 **Release가 아니라 Debug 호스트와 Explorer dev 번들**로 돌았다 — 전제(Release
 Host)와 다르므로 Release 회차는 여전히 필요하다. 그 밖에는 실행된 회차가 없다. 회차가 생기면 해당 환경 행의

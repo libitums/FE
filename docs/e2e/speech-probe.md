@@ -140,7 +140,8 @@ Release. 이 문서만의 전제가 더 있다.
 ⚠ **그런데 이것이 로그인 자격도 함께 지운다.** 저장소에 들어가는 항목은 로그인 자격 하나 —
 새 설치는 어느 수단이든 Supabase 세션 `libitum.auth.session`(2026-09-29,
 [ADR-0027](../adr/0027-phone-otp-auth-supabase.md) · [ADR-0028](../adr/0028-social-oauth-web-authentication.md)),
-이 변경 전에 소셜로 들어온 설치는 임시 토큰 `libitum.auth.token` — 이고
+옛 임시 토큰 `libitum.auth.token`은 같은 날 뒤 자격에서 빠졌다(ADR-0028 D6 — 그 설치는 온보딩부터
+다시 지난다) — 이고
 **그것을 지우는 수단이 앱에 없다**([README.md](README.md) 공통 전제 ·
 [진입 흐름](entry-flow.md) 「재설치가 유일한 재진입 수단이다」). 비용이 두 갈래로 갈린다 —
 **갈라서 적는다.**

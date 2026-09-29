@@ -122,7 +122,7 @@ export function App({
   //
   // **영속하지 않습니다** — 저장소 모듈을 import하지도 호출하지도 않습니다
   // (ADR-0007 D1: 저장소 모듈에 넣는 것은 로그인 토큰뿐입니다,
-  // `lib/auth-token.ts`). 앱을 다시 켜면 진행이 `initialCompletedStepCount`로
+  // `lib/auth-session.ts`). 앱을 다시 켜면 진행이 `initialCompletedStepCount`로
   // 돌아가는 것이 정상이고 계약이 그것을 적습니다.
   const [completedStepCount, setCompletedStepCount] = useState(journeySeed.completedStepCount);
   const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<

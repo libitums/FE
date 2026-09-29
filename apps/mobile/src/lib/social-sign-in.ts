@@ -2,7 +2,9 @@
 // 난수 → PKCE → authorize URL → 창 → 콜백 파싱 → 교환을 한 함수로 집니다.
 // `pair`(PKCE)는 이 함수의 지역 변수로만 삽니다 — 반환값에 싣지 않습니다.
 
-import { exchangePkceCode, supabaseAuthorizeUrl } from "./api-client";
+import { appleNonceByteCount, appleNoncePairFrom, startAppleSignIn } from "./apple-sign-in";
+import type { AppleSignInResult } from "./apple-sign-in.contract";
+import { exchangeIdToken, exchangePkceCode, supabaseAuthorizeUrl } from "./api-client";
 import type { EntryLoginMethod } from "./entry-flow";
 import { codeVerifierByteCount, pkcePairFrom } from "./pkce";
 import type {
@@ -13,6 +15,7 @@ import type {
   SocialSignInResult,
   SupabaseOAuthProvider,
   WebAuthenticationResult,
+  WebOAuthProvider,
 } from "./social-sign-in.contract";
 import { supabaseConfig } from "./supabase-config";
 import { secureRandomBytes, startWebAuthentication } from "./web-authentication";
@@ -108,9 +111,67 @@ export function oauthCallbackFrom(callbackUrl: string, redirectUrl: string): OAu
  * 한 번의 소셜 로그인 시도 전부입니다. 어떤 경우에도 거부(reject)하지 않습니다 — 실패는
  * 전부 `SocialSignInResult`의 `failed` 값으로 옵니다.
  */
-export const signInWithSocialProvider: SignInWithSocialProvider = async (
+export const signInWithSocialProvider: SignInWithSocialProvider = (
   provider: SupabaseOAuthProvider,
 ): Promise<SocialSignInResult> => {
+  switch (provider) {
+    case "apple": {
+      return signInWithApple();
+    }
+    case "google":
+    case "facebook": {
+      return signInWithWebOAuth(provider);
+    }
+  }
+};
+
+// 네이티브 Apple 시트 + id_token 교환입니다. `WebAuthenticationModule.start`를 부르지 않습니다
+// (`randomBytes`만). `nonce`는 이 함수의 지역 변수로만 삽니다 — 결과에 싣지 않습니다.
+async function signInWithApple(): Promise<SocialSignInResult> {
+  const config = supabaseConfig();
+  if (config === null) {
+    return { status: "failed", reason: "unconfigured" };
+  }
+
+  const bytes = secureRandomBytes(appleNonceByteCount);
+  if (bytes === null) {
+    return { status: "failed", reason: "unsupported" };
+  }
+
+  const nonce = appleNoncePairFrom(bytes);
+
+  const result = await new Promise<AppleSignInResult>((resolve) => {
+    const outcome = startAppleSignIn({ nonce: nonce.hashed }, resolve);
+    if (outcome === "unavailable") {
+      // 이 경로에서는 호스트 콜백이 오지 않습니다 — 시트를 못 연 것과 같은 결과로 잇습니다.
+      resolve({ status: "failed" });
+    }
+  });
+
+  switch (result.status) {
+    case "cancelled": {
+      return { status: "cancelled" };
+    }
+    case "failed":
+    case "already-active":
+    case "invalid-arguments":
+    case "malformed": {
+      return { status: "failed", reason: "unsupported" };
+    }
+    case "completed": {
+      const exchangeResult = await exchangeIdToken({
+        idToken: result.identityToken,
+        nonce: nonce.raw,
+      });
+      if (exchangeResult.status === "exchanged") {
+        return { status: "signed-in", session: exchangeResult.session };
+      }
+      return { status: "failed", reason: exchangeResult.reason };
+    }
+  }
+}
+
+async function signInWithWebOAuth(provider: WebOAuthProvider): Promise<SocialSignInResult> {
   const config = supabaseConfig();
   if (config === null) {
     return { status: "failed", reason: "unconfigured" };
@@ -165,4 +226,4 @@ export const signInWithSocialProvider: SignInWithSocialProvider = async (
       return { status: "failed", reason: exchangeResult.reason };
     }
   }
-};
+}

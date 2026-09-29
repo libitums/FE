@@ -5,7 +5,6 @@ import { App } from "./App";
 import { authFailureMessage } from "../lib/auth-failure";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import type { AuthSession } from "../lib/auth-session.contract";
-import { authTokenStorageKey } from "../lib/auth-token";
 import { entryLoginMethods, entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent, EntryLoginMethod } from "../lib/entry-flow";
 import { entryLanguageLabel, initialEntryLanguage } from "../lib/entry-language";
@@ -21,19 +20,25 @@ import { entryLanguageLabel, initialEntryLanguage } from "../lib/entry-language"
 
 // ------------------------------------------------------------ 저장소 스텁 헬퍼
 //
-// `lib/auth-token.unit.test.ts`의 `stubHost()`와 같은 형태입니다(파일이 다르므로
+// `App.settings.integration.test.tsx`의 `stubHost()`와 같은 형태입니다(파일이 다르므로
 // 다시 선언합니다) — `StorageModule`의 `get`/`set`/`remove`만 흉내 냅니다.
 //
 // `storageModuleFor`로 뽑아 둔 이유는 IS9(소셜로 로그인한 저장소를 그대로 들고 새로
 // 렌더)가 **같은 `store`를 새 `NativeModules` 객체에 다시 실어야** 해서입니다 — 이
 // 함수가 없으면 `emptyStorageStub`이 매번 새 store를 만들어 재사용할 수 없습니다.
-function storageModuleFor(store: Map<string, string>): {
+function storageModuleFor(
+  store: Map<string, string>,
+  gets?: string[],
+): {
   get: (key: string) => string | null;
   set: (key: string, value: string) => void;
   remove: (key: string) => void;
 } {
   return {
-    get: (key: string) => store.get(key) ?? null,
+    get: (key: string) => {
+      gets?.push(key);
+      return store.get(key) ?? null;
+    },
     set: (key: string, value: string) => void store.set(key, value),
     remove: (key: string) => void store.delete(key),
   };
@@ -42,15 +47,6 @@ function storageModuleFor(store: Map<string, string>): {
 function emptyStorageStub(): Map<string, string> {
   const store = new Map<string, string>();
   vi.stubGlobal("NativeModules", { StorageModule: storageModuleFor(store) });
-  return store;
-}
-
-// IE10 · IE14(재실행 경로) — 토큰이 **이미 있는** 상태를 스텁합니다. 값 자체는
-// `createTemporaryAuthToken()`의 실물과 같을 필요가 없습니다 — `hasAuthToken()`은
-// 키 존재만 봅니다.
-function tokenPresentStorageStub(): Map<string, string> {
-  const store = emptyStorageStub();
-  store.set(authTokenStorageKey, "existing-token");
   return store;
 }
 
@@ -105,6 +101,8 @@ type SupabaseRoutes = {
   // 신규(test-plan §5.1) — PKCE 교환 경로입니다. `grant_type`으로 `refresh`와
   // 가릅니다 — 둘 다 `/auth/v1/token`을 공유합니다.
   pkce?: SupabaseRouteResponse;
+  // 신규(test-plan §5.1) — Apple ID 토큰 교환 경로입니다(`grant_type=id_token`).
+  idToken?: SupabaseRouteResponse;
 };
 type SupabaseCallInit = {
   readonly method: string;
@@ -117,6 +115,7 @@ function routeFor(url: string, routes: SupabaseRoutes): SupabaseRouteResponse | 
   if (url.endsWith("/auth/v1/otp")) return routes.otp;
   if (url.endsWith("/auth/v1/verify")) return routes.verify;
   if (url.includes("grant_type=pkce")) return routes.pkce;
+  if (url.includes("grant_type=id_token")) return routes.idToken;
   if (url.includes("grant_type=refresh_token")) return routes.refresh;
   return undefined;
 }
@@ -176,6 +175,14 @@ const flowStateNotFoundBody = JSON.stringify({
   msg: "Invalid flow state, no valid flow state found",
 });
 
+// 신규(test-plan §5.1) — ID 토큰 교환 거절입니다. ⚠ `code` · `error_code` 값은 **지어낸
+// 것**입니다(spec §0 ⚠) — 계약이 값에 기대지 않으므로 단언은 문구만 봅니다.
+const badJwtBody = JSON.stringify({
+  code: 400,
+  error_code: "bad_jwt",
+  msg: "Invalid JWT",
+});
+
 // ------------------------------------------------------------ 웹 인증 대역
 //
 // test-plan §5.1의 `stubWebAuthentication(respond)`입니다. **`NativeModules`는 한
@@ -223,7 +230,72 @@ function stubHostWithWebAuthentication(respond: WebAuthenticationRespond): {
   return { store, starts, randomByteCounts };
 }
 
-// google · apple · facebook 공용 — 콜백이 `code=abc`로 즉시 끝나는 가장 흔한 성공
+// ------------------------------------------------------------ Apple 시트 대역
+//
+// test-plan §5.1 — `StorageModule` · `WebAuthenticationModule` · `AppleSignInModule`을
+// **한 객체**에 싣습니다(호스트 경계 하나 — 따로 `stubGlobal`하면 서로 지웁니다). 웹
+// 쪽 `start`도 기록해 「apple 탭이 웹 창을 열지 않는다」 · 「웹 탭이 시트를 열지
+// 않는다」를 같은 대역으로 셉니다. `randomBytes`는 웹 대역과 같은 고정 16진입니다.
+type AppleSignInStartArgs = { readonly nonce: string };
+type AppleSignInRespond = (args: AppleSignInStartArgs) => unknown | Promise<unknown>;
+
+// 위 고정 16진의 nonce 한 쌍입니다 — raw는 base64url(같은 바이트), hashed는 raw의
+// ASCII 바이트를 SHA-256한 소문자 16진입니다(spec §3.2).
+const fixedNonceRaw = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+const fixedNonceHashed = "13d31e961a1ad8ec2f16b10c4c982e0876a878ad6df144566ee1894acb70f9c3";
+
+function stubHostWithApple(
+  respondApple: AppleSignInRespond,
+  respondWeb: WebAuthenticationRespond = completedWebAuthentication,
+): {
+  readonly store: Map<string, string>;
+  readonly appleStarts: AppleSignInStartArgs[];
+  readonly webStarts: WebAuthenticationStartArgs[];
+  readonly randomByteCounts: number[];
+} {
+  const store = new Map<string, string>();
+  const appleStarts: AppleSignInStartArgs[] = [];
+  const webStarts: WebAuthenticationStartArgs[] = [];
+  const randomByteCounts: number[] = [];
+  vi.stubGlobal("NativeModules", {
+    StorageModule: storageModuleFor(store),
+    WebAuthenticationModule: {
+      start: (args: WebAuthenticationStartArgs, callback: (payload: unknown) => void) => {
+        webStarts.push(args);
+        const payload = respondWeb(args);
+        if (payload instanceof Promise) {
+          void payload.then(callback);
+        } else {
+          callback(payload);
+        }
+      },
+      randomBytes: (count: number) => {
+        randomByteCounts.push(count);
+        return fixedRandomBytesHex;
+      },
+    },
+    AppleSignInModule: {
+      start: (args: AppleSignInStartArgs, callback: (payload: unknown) => void) => {
+        appleStarts.push(args);
+        const payload = respondApple(args);
+        if (payload instanceof Promise) {
+          void payload.then(callback);
+        } else {
+          callback(payload);
+        }
+      },
+    },
+  });
+  return { store, appleStarts, webStarts, randomByteCounts };
+}
+
+const appleIdToken = "apple-id-token-1";
+
+function completedAppleSignIn(): unknown {
+  return { status: "completed", identityToken: appleIdToken };
+}
+
+// google · facebook(웹 경로) 공용 — 콜백이 `code=abc`로 즉시 끝나는 가장 흔한 성공
 // 경로입니다. IE6 · IE7 · IE7b · IE8 · IE9 · IE12 · IE14처럼 「코드 검증 없이
 // 지나간다」만 재는 케이스가 이 하나로 통일됩니다(SS8 · IS2와 같은 코드입니다).
 function completedWebAuthentication(): unknown {
@@ -743,17 +815,20 @@ test("[IA11] 설정이 없으면 Continue를 눌러도 fetch가 0회이고 uncon
 
 // 존재 앵커: `nonPhoneMethods`가 비어 있지 않음을 먼저 확인합니다 — 그래야 아래
 // 루프가 공허하게 통과하는 것이 아니라고 말할 수 있습니다. 개정(test-plan §5.2
-// IE6) — 소셜 셋이 이제 창 · 교환을 거치므로(spec §3 ⑦) 코드 검증 없이도
-// **비동기**로 언어 선택에 닿는지를 봅니다. 창 · 교환 대역은
-// `stubHostWithWebAuthentication` · `stubSupabase({ pkce })`이고, 콜백의 `code`
-// 자체가 화면에 노출되지 않으므로 검증은 여전히 「없다」입니다.
+// IE6) — 소셜 셋이 이제 창 · 시트 · 교환을 거치므로(spec §3 ⑦) 코드 검증 없이도
+// **비동기**로 언어 선택에 닿는지를 봅니다. google · facebook은 웹 창 · PKCE 교환,
+// apple은 네이티브 시트 · id_token 교환입니다(`stubHostWithApple` · `stubSupabase`).
+// 콜백의 값 자체가 화면에 노출되지 않으므로 검증은 여전히 「없다」입니다.
 test("[IE6] 구글·애플·페이스북은 코드 검증을 건너뛰고 언어 선택이 선다(비동기)", async () => {
   const nonPhoneMethods = entryLoginMethods.filter((method) => method !== "phone");
   expect(nonPhoneMethods.length).toBeGreaterThan(0);
 
   for (const method of nonPhoneMethods) {
-    const { starts } = stubHostWithWebAuthentication(completedWebAuthentication);
-    const calls = stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
+    const { appleStarts, webStarts } = stubHostWithApple(completedAppleSignIn);
+    const calls = stubSupabase({
+      pkce: { status: 200, body: sessionResponseBody() },
+      idToken: { status: 200, body: sessionResponseBody() },
+    });
     vi.useFakeTimers();
     const { unmount } = render(<App />);
     advanceSplash();
@@ -761,9 +836,11 @@ test("[IE6] 구글·애플·페이스북은 코드 검증을 건너뛰고 언어
 
     await selectLoginMethodAsync(method);
 
-    // 창 · 교환이 실제로 도는지까지 봅니다 — 안 그러면 옛 「탭 즉시 전이」
-    // 구현에서도 이 케이스가 우연히 통과합니다(공허한 초록).
-    expect(starts).toHaveLength(1);
+    // 수단의 호스트가 실제로 도는지까지 봅니다 — 안 그러면 옛 「탭 즉시 전이」
+    // 구현에서도 이 케이스가 우연히 통과합니다(공허한 초록). apple은 시트, 나머지는
+    // 웹 창이고 **다른 쪽은 0회**입니다.
+    expect(appleStarts).toHaveLength(method === "apple" ? 1 : 0);
+    expect(webStarts).toHaveLength(method === "apple" ? 0 : 1);
     expect(calls).toHaveLength(1);
     expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
     expect(screen.queryByTestId("verification-code-screen-title")).not.toBeInTheDocument();
@@ -880,10 +957,9 @@ test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비�
   expect(screen.queryByTestId("ui-lynx-bottom-navigator")).not.toBeNull();
 });
 
-// ⭐ 수단 넷 전부를 순회해 「저장된 키가 하나뿐」을 짓습니다(`lib/auth-token.unit.test.ts`
-// AT3와 같은 성질을 결선된 트리에서 다시 봅니다). 개정(test-plan §5.2 IE9) — 이제
-// **어느 수단이든 `authSessionStorageKey` 하나**입니다(반전 — 전에는 소셜 셋이
-// `authTokenStorageKey`였습니다, C3 · C9 개정).
+// ⭐ 수단 넷 전부를 순회해 「저장된 키가 하나뿐」을 짓습니다. 개정(test-plan §5.2
+// IE9) — **어느 수단이든 `authSessionStorageKey` 하나**이고, apple은 Apple 시트
+// 대역으로 돕니다.
 test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorageKey 하나다", async () => {
   expect(entryLoginMethods.length).toBeGreaterThan(0);
 
@@ -896,8 +972,11 @@ test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorage
         verify: { status: 200, body: sessionResponseBody() },
       });
     } else {
-      store = stubHostWithWebAuthentication(completedWebAuthentication).store;
-      stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
+      store = stubHostWithApple(completedAppleSignIn).store;
+      stubSupabase({
+        pkce: { status: 200, body: sessionResponseBody() },
+        idToken: { status: 200, body: sessionResponseBody() },
+      });
     }
     vi.useFakeTimers();
     const { unmount } = render(<App />);
@@ -923,17 +1002,18 @@ test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorage
   }
 });
 
-// ⚠ 존재 앵커가 먼저 필요합니다 — 앵커 없이 짜면 이 케이스가 **App이 토큰 분기를
-// 구현하기 전에도 이미 통과합니다**: 토큰을 읽지 않고 `initialNav`로 곧장 여정
-// 맵을 그리는 구현도 「온보딩·로그인 부재」·「여정 맵 존재」가 토큰 분기와 무관하게
-// 우연히 참이 됩니다. 그래서 **먼저 스플래시가 실제로 섰다는 것**을 앵커로 걸어,
-// 「스플래시를 실제로 거친 뒤 토큰 분기로 여정 맵에 닿았다」를 「토큰과 무관하게
-// 처음부터 여정 맵이었다」와 갈라 짓습니다.
+// IT1 — ⭐ AC5(test-plan §5.2, IE10을 대체·반전). 옛 임시 토큰(`libitum.auth.token`)만
+// 저장소에 남은 설치는 **이제 로그인한 것이 아닙니다**. 키는 import할 상수가 없어
+// 리터럴로 씁니다. 「읽지 않았다」는 `get` 인자 기록으로, 「지우지 않았다」는 값이
+// 그대로 남은 것으로 짓습니다(spec N11).
 //
-// 개정(test-plan §4.2 IE10) — 임시 토큰 분기는 여전히 동기입니다(C6 · 파수꾼). fetch
-// 스파이를 더해 **네트워크를 전혀 타지 않는다**는 것을 단언합니다.
-test("[IE10] 토큰이 있는 상태로 켜면 스플래시 뒤 바로 여정 맵이고 온보딩·로그인을 거치지 않는다(fetch 0회)", () => {
-  tokenPresentStorageStub();
+// ⚠ 존재 앵커: 스플래시가 실제로 선 뒤에 온보딩이 선다는 것을 함께 걸어, 「처음부터
+// 온보딩이었다」와 갈라 짓습니다.
+test("[IT1] ⭐ 옛 임시 토큰만 있는 저장소로 켜면 스플래시 뒤 온보딩이 서고(여정 맵 아님) fetch 0회 · 그 키를 읽지도 지우지도 않는다", () => {
+  const legacyKey = "libitum.auth.token";
+  const store = new Map<string, string>([[legacyKey, "existing-token"]]);
+  const gets: string[] = [];
+  vi.stubGlobal("NativeModules", { StorageModule: storageModuleFor(store, gets) });
   const fetchSpy = vi.fn<() => void>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.useFakeTimers();
@@ -943,10 +1023,12 @@ test("[IE10] 토큰이 있는 상태로 켜면 스플래시 뒤 바로 여정 �
 
   advanceSplash();
 
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("onboarding-screen")).not.toBeInTheDocument();
+  expect(screen.getByTestId("onboarding-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("login-screen-title")).not.toBeInTheDocument();
   expect(fetchSpy).not.toHaveBeenCalled();
+  expect(gets).not.toContain(legacyKey);
+  expect(store.get(legacyKey)).toBe("existing-token");
 });
 
 // --------------------------------------------------------------------- IE11
@@ -1068,16 +1150,16 @@ test("[IE13] entry_screen_viewed가 화면 다섯에 대해 각 전이 직전 1�
   expect(viewedScreens).not.toContain("splash");
 });
 
-// ⚠ 「토큰 재실행 경로에서 0회」는 부재·무동작을 재는 칸입니다 — (b)에서 먼저
+// ⚠ 「세션 재실행 경로에서 0회」는 부재·무동작을 재는 칸입니다 — (b)에서 먼저
 // `journey-map-screen` 존재 앵커를 걸어, 0회가 「화면 전이 자체가 안
 // 일어나서」가 아니라 「완주가 아니라서」임을 갈라 짓습니다.
-// 개정(test-plan §5.2 IE14 (a)) — 이벤트 시점이 교환 뒤로 옮겨 갔습니다(spec S11 ·
-// C12 넓힘) — 창 · 교환 대역을 두고 `selectLoginMethodAsync`로 흘려보냅니다. 관찰
-// (수단과 함께 1회)은 그대로입니다.
-test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_completed는 여정 입장 진행에서만 1회다(토큰 재실행 경로에서는 0회)", async () => {
+// 개정(test-plan §5.2 IE14) — (a) apple 성공을 Apple 시트 대역으로 돌립니다(이벤트
+// 시점은 교환 뒤 — spec S11 · C12). (b)는 임시 토큰이 아니라 **세션 재실행 경로**
+// (저장된 세션 + 갱신 200)입니다.
+test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_completed는 여정 입장 진행에서만 1회다(세션 재실행 경로에서는 0회)", async () => {
   // (a) 신규 진입 경로 — apple 선택 → 언어 선택 → 여정 시작입니다.
-  const { starts } = stubHostWithWebAuthentication(completedWebAuthentication);
-  const calls = stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
+  const { appleStarts } = stubHostWithApple(completedAppleSignIn);
+  const calls = stubSupabase({ idToken: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
   render(<App entryEventSink={(event) => events.push(event)} />);
@@ -1085,8 +1167,8 @@ test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_c
   completeOnboarding();
   await selectLoginMethodAsync("apple");
 
-  // 창 · 교환이 실제로 도는지까지 봅니다(공허한 초록 방지 — IE6과 같은 이유).
-  expect(starts).toHaveLength(1);
+  // 시트 · 교환이 실제로 도는지까지 봅니다(공허한 초록 방지 — IE6과 같은 이유).
+  expect(appleStarts).toHaveLength(1);
   expect(calls).toHaveLength(1);
 
   selectLanguage("en");
@@ -1106,13 +1188,19 @@ test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_c
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 
-  // (b) 토큰 재실행 경로 — 완주가 아니므로 entry_completed·entry_login_method_selected가
+  // (b) 세션 재실행 경로 — 완주가 아니므로 entry_completed·entry_login_method_selected가
   // 0회입니다.
-  tokenPresentStorageStub();
+  sessionPresentStorageStub({
+    accessToken: "old-access",
+    refreshToken: "old-refresh",
+    expiresAt: 1000,
+  });
+  stubSupabase({ refresh: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
   const reentryEvents: EntryEvent[] = [];
   render(<App entryEventSink={(event) => reentryEvents.push(event)} />);
   advanceSplash();
+  await advanceTimersAsync(0);
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   expect(reentryEvents.filter((event) => event.name === "entry_completed")).toHaveLength(0);
@@ -1127,13 +1215,11 @@ test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_c
 test("[IE14e] apple 취소 뒤 다시 성공하면 entry_login_method_selected가 1회고, 교환 실패 뒤에는 0회다", async () => {
   // (e-1) 취소 → 재시도 성공.
   let attempt = 0;
-  const { starts } = stubHostWithWebAuthentication(() => {
+  const { appleStarts } = stubHostWithApple(() => {
     attempt += 1;
-    return attempt === 1
-      ? { status: "cancelled" }
-      : { status: "completed", callbackUrl: "duru://auth-callback?code=abc" };
+    return attempt === 1 ? { status: "cancelled" } : completedAppleSignIn();
   });
-  stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
+  stubSupabase({ idToken: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
   render(<App entryEventSink={(event) => events.push(event)} />);
@@ -1146,7 +1232,7 @@ test("[IE14e] apple 취소 뒤 다시 성공하면 entry_login_method_selected�
   await selectLoginMethodAsync("apple");
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
 
-  expect(starts).toHaveLength(2);
+  expect(appleStarts).toHaveLength(2);
   expect(events.filter((event) => event.name === "entry_login_method_selected")).toEqual([
     { name: "entry_login_method_selected", method: "apple" },
   ]);
@@ -1157,8 +1243,8 @@ test("[IE14e] apple 취소 뒤 다시 성공하면 entry_login_method_selected�
   cleanup();
 
   // (e-2) 교환이 끝내 실패하면 성공한 순간이 없으므로 0회입니다.
-  stubHostWithWebAuthentication(completedWebAuthentication);
-  stubSupabase({ pkce: { status: 400, body: flowStateNotFoundBody } });
+  stubHostWithApple(completedAppleSignIn);
+  stubSupabase({ idToken: { status: 400, body: badJwtBody } });
   vi.useFakeTimers();
   const failureEvents: EntryEvent[] = [];
   render(<App entryEventSink={(event) => failureEvents.push(event)} />);
@@ -1249,9 +1335,9 @@ test("[IS1] google 탭 → start 1회(SS4의 authorize 주소) · randomBytes(32
   expect(randomByteCounts).toEqual([32]);
 });
 
-// IS2 — ⭐ 성공 경로의 저장 시점 · 저장 값입니다. `saveAuthToken`을 전혀 쓰지
-// 않는다는 것을 「저장 키가 authSessionStorageKey 하나뿐」으로 짓습니다(임시 토큰
-// 키가 나타나지 않습니다, C3 · C9 개정).
+// IS2 — ⭐ 성공 경로의 저장 시점 · 저장 값입니다. 저장 키가
+// `authSessionStorageKey` 하나뿐임을 짓습니다(임시 토큰 키가 나타나지 않습니다,
+// C3 · C9 개정).
 test("[IS2] ⭐ 콜백 code=abc → 교환 1회(정확한 본문) → 언어 선택 · 저장 키가 authSessionStorageKey 하나뿐이다", async () => {
   const { store } = stubHostWithWebAuthentication(completedWebAuthentication);
   const calls = stubSupabase({
@@ -1399,10 +1485,11 @@ test("[IS7] 콜백 ?error=access_denied → sign-in-incomplete 문구 · fetch 0
 
 // IS8 — C10 넓힘(§5.2) — 창이 열린 채(콜백 보류) 다른 조작이 전부 무동작임을
 // 짓습니다. `deferred`로 콜백을 잡아 두고, Continue · apple 탭 · 뒤로가기 순서로
-// 무동작을 확인합니다.
-test("[IS8] 콜백을 보류한 채: Continue → OTP fetch 0 · apple 탭에도 start 여전히 1회 · 뒤로가기 → 로그인 그대로", async () => {
+// 무동작을 확인합니다. 개정 — apple 탭은 **Apple 시트를 열지 않고**(0회), 웹 창은
+// 여전히 1회입니다.
+test("[IS8] 콜백을 보류한 채: Continue → OTP fetch 0 · apple 탭에도 Apple start 0회(웹 start는 여전히 1회) · 뒤로가기 → 로그인 그대로", async () => {
   const pending = deferred<unknown>();
-  const { starts } = stubHostWithWebAuthentication(() => pending.promise);
+  const { appleStarts, webStarts } = stubHostWithApple(completedAppleSignIn, () => pending.promise);
   const fetchSpy = vi.fn<() => void>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
@@ -1413,13 +1500,14 @@ test("[IS8] 콜백을 보류한 채: Continue → OTP fetch 0 · apple 탭에도
   completeOnboarding();
 
   selectLoginMethod("google");
-  expect(starts).toHaveLength(1);
+  expect(webStarts).toHaveLength(1);
 
   await submitPhoneNumber("10 1234 5678");
   expect(fetchSpy).not.toHaveBeenCalled();
 
   selectLoginMethod("apple");
-  expect(starts).toHaveLength(1);
+  expect(appleStarts).toHaveLength(0);
+  expect(webStarts).toHaveLength(1);
 
   fireEvent.tap(
     within(screen.getByTestId("login-screen-header")).getByTestId("ui-lynx-round-button"),
@@ -1492,4 +1580,191 @@ test("[IS10] 설정 없음(stubEnv 없이 호스트 · fetch만) → unconfigure
   expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
     authFailureMessage("unconfigured"),
   );
+});
+
+// ======================================================================
+// 네이티브 Apple 경로(시트 + id_token 교환) — test-plan §5.2 IN1~IN7. IS*가 웹 경로
+// 자체의 계약을 재듯, 이 아래는 **Apple 경로 자체의 계약**(시트 호출 인자 · 교환 본문
+// · 저장 · 취소 · 실패 갈래 · 상호 배제)을 잽니다.
+// ======================================================================
+
+// IN1 — 시트가 아직 안 끝난 사이(`deferred`)에 `start` 인자와 `randomBytes` 호출을
+// 검사합니다. 인자는 **`nonce` 하나**이고 값은 해시 쪽(16진 64자)입니다.
+test("[IN1] apple 탭 → Apple start 1회(인자는 해시 nonce 하나) · randomBytes(32) 1회 · 웹 start 0회", () => {
+  const pending = deferred<unknown>();
+  const { appleStarts, webStarts, randomByteCounts } = stubHostWithApple(() => pending.promise);
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  selectLoginMethod("apple");
+
+  expect(appleStarts).toEqual([{ nonce: fixedNonceHashed }]);
+  expect(randomByteCounts).toEqual([32]);
+  expect(webStarts).toHaveLength(0);
+});
+
+// IN2 — ⭐ 성공 경로의 교환 본문 · 저장 시점 · 저장 값입니다. 본문의 `nonce`는 시트에
+// 넘긴 해시가 아니라 **원본**입니다(서버가 해시를 다시 계산해 비교합니다).
+test("[IN2] ⭐ 시트 completed → id_token 교환 1회(정확한 본문) → 언어 선택 · 저장 키가 authSessionStorageKey 하나이고 값이 세 필드다", async () => {
+  const { store } = stubHostWithApple(completedAppleSignIn);
+  const calls = stubSupabase({
+    idToken: {
+      status: 200,
+      body: sessionResponseBody({ accessToken: "apple-access", refreshToken: "apple-refresh" }),
+    },
+  });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("apple");
+
+  expect(calls).toHaveLength(1);
+  expect(calls[0]?.url).toBe("https://test.supabase.co/auth/v1/token?grant_type=id_token");
+  expect(calls[0]?.init.method).toBe("POST");
+  expect(JSON.parse(calls[0]!.init.body)).toEqual({
+    provider: "apple",
+    id_token: appleIdToken,
+    nonce: fixedNonceRaw,
+  });
+
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+
+  expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
+  const stored = JSON.parse(store.get(authSessionStorageKey)!) as Record<string, unknown>;
+  expect(Object.keys(stored).sort()).toEqual(["accessToken", "expiresAt", "refreshToken"].sort());
+  expect(stored["accessToken"]).toBe("apple-access");
+  expect(stored["refreshToken"]).toBe("apple-refresh");
+});
+
+// IN3 — 취소는 `idle`과 구별되지 않습니다 — 문구 · 저장 · 이벤트가 전부 0입니다. 로그인
+// 열람(온보딩 완주) 뒤로만 이벤트를 세어 부팅 이벤트까지 0으로 요구하는 공허함을
+// 피합니다(IS3와 같은 형태).
+test("[IN3] 시트 취소 → 로그인 그대로 · 오류 없음 · fetch 0 · 저장 키 0 · entry_* 이벤트가 로그인 열람 뒤로 0개", async () => {
+  const { store } = stubHostWithApple(() => ({ status: "cancelled" }));
+  const fetchSpy = vi.fn<() => void>();
+  vi.stubGlobal("fetch", fetchSpy);
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  vi.useFakeTimers();
+  const events: EntryEvent[] = [];
+  render(<App entryEventSink={(event) => events.push(event)} />);
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("apple");
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("login-screen-error")).not.toBeInTheDocument();
+  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(Array.from(store.keys())).toEqual([]);
+
+  const loginViewedIndex = events.findIndex(
+    (event) => event.name === "entry_screen_viewed" && event.screen === "login",
+  );
+  expect(loginViewedIndex).toBeGreaterThanOrEqual(0);
+  expect(events.slice(loginViewedIndex + 1)).toEqual([]);
+});
+
+// IN4 — ⭐ AC3 — `NativeModules`에 `StorageModule` · `WebAuthenticationModule`만 있고
+// `AppleSignInModule`이 없는 환경(호스트가 옛 빌드이거나 Lynx Explorer)입니다.
+// `unsupported`로 끝나고 **던지지 않습니다**(ErrorBoundary 화면이 서지 않는다는 것을
+// 로그인 화면이 그대로 있다는 것으로 짓습니다).
+test("[IN4] ⭐ Apple 모듈 없음(저장소 · 웹 인증만) → unsupported 문구 · 던지지 않는다(로그인 화면 그대로) · fetch 0", async () => {
+  stubHostWithWebAuthentication(completedWebAuthentication);
+  const fetchSpy = vi.fn<() => void>();
+  vi.stubGlobal("fetch", fetchSpy);
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("apple");
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
+    authFailureMessage("unsupported"),
+  );
+  expect(fetchSpy).not.toHaveBeenCalled();
+});
+
+// IN5 — 교환 거절(400)입니다. 문구는 `authFailureMessage`로 비교해 리터럴에 매이지
+// 않습니다.
+test("[IN5] id_token 교환 400 → 로그인 · sign-in-incomplete 문구 · 언어 선택 없음 · 저장 키 0", async () => {
+  const { store } = stubHostWithApple(completedAppleSignIn);
+  stubSupabase({ idToken: { status: 400, body: badJwtBody } });
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("apple");
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
+    authFailureMessage("sign-in-incomplete"),
+  );
+  expect(Array.from(store.keys())).toEqual([]);
+});
+
+// IN6 — 호스트가 `failed`로 답하면(권한 없는 빌드 포함) `unsupported`이고 교환을 부르지
+// 않습니다.
+test("[IN6] 호스트 failed → unsupported 문구 · fetch 0 · 저장 키 0", async () => {
+  const { store } = stubHostWithApple(() => ({ status: "failed" }));
+  const fetchSpy = vi.fn<() => void>();
+  vi.stubGlobal("fetch", fetchSpy);
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  await selectLoginMethodAsync("apple");
+
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
+    authFailureMessage("unsupported"),
+  );
+  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(Array.from(store.keys())).toEqual([]);
+});
+
+// IN7 — C10이 Apple에도 섭니다: 시트 결과를 **보류한 채** 다른 조작이 전부 무동작입니다
+// (IS8의 거울). google 탭 → 웹 창 0회, Continue → OTP fetch 0, 뒤로가기 → 로그인 그대로.
+test("[IN7] Apple 콜백을 보류한 채: google 탭 → 웹 start 0 · Continue → OTP fetch 0 · 뒤로가기 → 로그인 그대로", async () => {
+  const pending = deferred<unknown>();
+  const { appleStarts, webStarts } = stubHostWithApple(() => pending.promise);
+  const fetchSpy = vi.fn<() => void>();
+  vi.stubGlobal("fetch", fetchSpy);
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  vi.useFakeTimers();
+  render(<App />);
+  advanceSplash();
+  completeOnboarding();
+
+  selectLoginMethod("apple");
+  expect(appleStarts).toHaveLength(1);
+
+  selectLoginMethod("google");
+  expect(webStarts).toHaveLength(0);
+  expect(appleStarts).toHaveLength(1);
+
+  await submitPhoneNumber("10 1234 5678");
+  expect(fetchSpy).not.toHaveBeenCalled();
+
+  fireEvent.tap(
+    within(screen.getByTestId("login-screen-header")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
 });
