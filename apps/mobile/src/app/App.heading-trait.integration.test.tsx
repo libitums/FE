@@ -568,7 +568,7 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계�
     verify: { status: 200, body: sessionResponseBody() },
   });
   vi.useFakeTimers();
-  const { container } = render(<App />);
+  const { container } = render(<App phoneSignIn="visible" />);
 
   // 상태 splash — 화면 제목이 다섯뿐이고 스플래시 서비스 이름은 `header`가
   // 아니므로 닫힌 집합이 비어 있습니다. 앵커로 먼저 스플래시 자신을 짓습니다 —

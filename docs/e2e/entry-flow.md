@@ -100,7 +100,9 @@ iPhone · Release · VoiceOver로 이 흐름을 도는 것**이고, 이 문서�
 입장 자격이 아니다 — 그것만 있는 설치는 온보딩부터 다시 시작한다(L1). 세션을 지우는
 수단은 여전히 앱에 없다 — 아래 「재설치가 유일한 재진입 수단이다」).
 
-**전화번호 인증(E1~E7)에 추가로 필요한 전제** — `apps/mobile/.env.local`에
+**전화번호 인증(E1~E7)에 추가로 필요한 전제** — ⟨2026-09-29⟩ 제품은 전화번호 수단을 숨긴다
+(ADR-0027 D7). E1~E7 · T4는 `screens/login/login.ts`의 `productPhoneSignIn`을 `visible`로 바꾼
+빌드에서만 돌 수 있고, 제품 빌드에서는 `미실행 — 전화번호 수단 숨김`으로 둔다. 그 빌드에서 — `apps/mobile/.env.local`에
 `PUBLIC_SUPABASE_URL` · `PUBLIC_SUPABASE_ANON_KEY`가 채워진 Release 산출물(개발
 프로젝트 — 값은 팀 내부에서 공유하고 저장소에 적지 않는다) · 그 프로젝트에 Phone Auth가 켜져
 있고 Supabase 대시보드 Auth → Phone의 **테스트 전화번호와 고정 코드**가 등록돼 있다(번호와 코드도

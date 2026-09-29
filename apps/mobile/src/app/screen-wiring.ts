@@ -21,7 +21,7 @@ import type {
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
-import type { SocialLoginMethod } from "../screens/login/login.contract";
+import type { PhoneSignInVisibility, SocialLoginMethod } from "../screens/login/login.contract";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type {
   MessengerEventSink,
@@ -176,6 +176,8 @@ export type ScreenWiring = {
   // 가진 젬 수입니다. 전역 머리가 아닌 자리(학습 화면의 상단 바 · 학습 완료의 지표 칩)도
   // 같은 값을 그리도록 값으로 내려갑니다.
   gemCount: number;
+  // 로그인에 전화번호 수단을 그릴지입니다(`productPhoneSignIn` — 지금은 숨깁니다).
+  phoneSignIn: PhoneSignInVisibility;
   // 탭 루트 화면이 자기 안에 겹침 레이어(여정의 스텝 말풍선 · 롤플레이의 플러스 안내)를
   // 열고 닫을 때 부릅니다. 레이어가 떠 있는 동안 전역 머리를 낭독에서 가립니다
   // (ADR-0016 D9) — 머리는 화면 밖(셸)에 있어 화면이 스스로 가릴 수 없습니다.
@@ -230,6 +232,7 @@ export type ScreenWiringArgs = {
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly safeAreaInsets: SafeAreaInsets;
   readonly gemCount: number;
+  readonly phoneSignIn: PhoneSignInVisibility;
   readonly setScreenLayerOpen: Dispatch<SetStateAction<boolean>>;
   readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   readonly pendingResults: readonly AnswerResult[];
@@ -262,6 +265,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     roleplay,
     safeAreaInsets: args.safeAreaInsets,
     gemCount: args.gemCount,
+    phoneSignIn: args.phoneSignIn,
     onScreenLayerChange: args.setScreenLayerOpen,
     episodePrologueFor: args.episodePrologueFor,
     roleplaySections: args.roleplaySections,
