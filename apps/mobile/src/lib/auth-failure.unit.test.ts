@@ -12,9 +12,11 @@ const allReasons: readonly AuthFailureReason[] = [
   "rate-limited",
   "rejected",
   "invalid-code",
+  "sign-in-incomplete",
+  "unsupported",
 ];
 
-test("AF1. 여섯 이유 전부가 비지 않은 문자열이고 서로 다르다", () => {
+test("AF1. 여덟 이유 전부가 비지 않은 문자열이고 서로 다르다", () => {
   const messages = allReasons.map((reason) => authFailureMessage(reason));
 
   for (const message of messages) {

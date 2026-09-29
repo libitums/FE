@@ -11,10 +11,8 @@ import {
   serializeAuthSession,
   sessionRefreshDisposition,
 } from "./auth-session";
-import { authTokenStorageKey } from "./auth-token";
 
-// `auth-token.unit.test.ts`의 `stubHost()` 형태를 그대로 씁니다 — 테스트 환경에는
-// 네이티브가 없어, 호스트가 등록하는 모듈을 대신 세웁니다.
+// 테스트 환경에는 네이티브가 없어, 호스트가 등록하는 모듈을 대신 세웁니다.
 function stubHost() {
   const store = new Map<string, string>();
   const mod = {
@@ -36,10 +34,10 @@ const sampleSession: AuthSession = {
   expiresAt: 1_700_000_000_000,
 };
 
-test("AS1. authSessionStorageKey가 libitum. 접두 · 공백 없음 · authTokenStorageKey와 다르다", () => {
+test("AS1. authSessionStorageKey가 libitum.auth.session이고 libitum. 접두 · 공백 없음", () => {
   expect(authSessionStorageKey.startsWith("libitum.")).toBe(true);
   expect(authSessionStorageKey).not.toMatch(/\s/);
-  expect(authSessionStorageKey).not.toBe(authTokenStorageKey);
+  expect(authSessionStorageKey).toBe("libitum.auth.session");
 });
 
 test("AS2. parseAuthSession(serializeAuthSession(s))가 s와 같다", () => {
@@ -59,17 +57,12 @@ test("AS3. parseAuthSession이 null인 입력 여섯", () => {
   expect(parseAuthSession("[]")).toBeNull();
 });
 
-test("AS4. entryAuthStateFrom — 세션이 있으면 토큰과 무관하게 refresh다", () => {
-  expect(entryAuthStateFrom(sampleSession, true)).toEqual({
+test("AS4. entryAuthStateFrom — 세션이 있으면 refresh, 없으면 none이다", () => {
+  expect(entryAuthStateFrom(sampleSession)).toEqual({
     kind: "refresh",
     refreshToken: sampleSession.refreshToken,
   });
-  expect(entryAuthStateFrom(sampleSession, false)).toEqual({
-    kind: "refresh",
-    refreshToken: sampleSession.refreshToken,
-  });
-  expect(entryAuthStateFrom(null, true)).toEqual({ kind: "temporary" });
-  expect(entryAuthStateFrom(null, false)).toEqual({ kind: "none" });
+  expect(entryAuthStateFrom(null)).toEqual({ kind: "none" });
 });
 
 test("AS5. sessionRefreshDisposition — rejected만 clear, 나머지는 keep", () => {
@@ -88,15 +81,14 @@ test("AS6. saveAuthSession 뒤 저장소 키가 authSessionStorageKey 하나이�
   expect(loadAuthSession()).toEqual(sampleSession);
 });
 
-test("AS7. clearAuthSession 뒤 loadAuthSession이 null이고 authTokenStorageKey는 건드리지 않는다", () => {
+test("AS7. clearAuthSession 뒤 loadAuthSession이 null이고 저장소가 비었다", () => {
   const store = stubHost();
   saveAuthSession(sampleSession);
-  store.set(authTokenStorageKey, "existing-token");
 
   clearAuthSession();
 
   expect(loadAuthSession()).toBeNull();
-  expect(store.get(authTokenStorageKey)).toBe("existing-token");
+  expect(store.size).toBe(0);
 });
 
 // stubHost()를 부르지 않아 호스트 부재를 그대로 흉내냅니다.

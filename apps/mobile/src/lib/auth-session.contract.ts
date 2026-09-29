@@ -3,9 +3,6 @@
 // 이름을 써서 `lib/`에 둡니다 — 소유 화면이 없는 어휘이기 때문입니다.
 //
 // 타입만 있습니다. 값(키 문자열 · 제한 시간 · 문구)은 구현 모듈이 가집니다.
-//
-// **소셜 셋(apple · google · facebook)은 이 어휘 밖입니다** — 지금처럼 `auth-token.ts`의 임시
-// 토큰을 씁니다. 두 저장 항목이 공존하는 규칙은 `EntryAuthState`가 집니다.
 
 // ------------------------------------------------------------------ 설정
 
@@ -51,13 +48,11 @@ export type AuthSession = {
 /**
  * 스플래시가 끝날 때 저장소를 읽어 고르는 갈래입니다.
  *
- * - `refresh` — 세션이 있습니다. 갱신을 시도합니다. 임시 토큰이 함께 있어도 이쪽입니다.
- * - `temporary` — 세션이 없고 임시 토큰(소셜 셋)이 있습니다. 곧장 앱으로 들어갑니다.
- * - `none` — 둘 다 없습니다. 온보딩부터 시작합니다.
+ * - `refresh` — 세션이 있습니다. 갱신을 시도합니다.
+ * - `none` — 세션이 없습니다. 온보딩부터 시작합니다.
  */
 export type EntryAuthState =
   | { readonly kind: "refresh"; readonly refreshToken: string }
-  | { readonly kind: "temporary" }
   | { readonly kind: "none" };
 
 /**
@@ -78,6 +73,8 @@ export type SessionRefreshDisposition = "clear" | "keep";
  * - `rejected` — 나머지 4xx입니다(OTP 요청 · 갱신).
  * - `invalid-code` — 검증의 나머지 4xx입니다. 틀린 코드와 만료된 코드를 서버가 같은 오류로
  *   돌려주므로 둘을 가르지 않습니다.
+ * - `sign-in-incomplete` — 소셜: 콜백이 오류를 싣거나 `code`가 없거나, 교환이 4xx입니다.
+ * - `unsupported` — 소셜: 이 환경에서 쓸 수 없습니다(호스트 모듈 · 난수 · 창).
  */
 export type AuthFailureReason =
   | "network"
@@ -85,16 +82,29 @@ export type AuthFailureReason =
   | "unconfigured"
   | "rate-limited"
   | "rejected"
-  | "invalid-code";
+  | "invalid-code"
+  | "sign-in-incomplete"
+  | "unsupported";
+
+// 좁힌 실패 셋은 명시 목록(`Extract`)입니다 — 새 이유가 전화번호 갈래에 섞이지 않게 합니다.
 
 /** OTP 요청(로그인 제출 · 재전송)이 낼 수 있는 실패입니다. */
-export type PhoneOtpRequestFailure = Exclude<AuthFailureReason, "invalid-code">;
+export type PhoneOtpRequestFailure = Extract<
+  AuthFailureReason,
+  "network" | "unavailable" | "unconfigured" | "rate-limited" | "rejected"
+>;
 
 /** 코드 검증이 낼 수 있는 실패입니다. */
-export type PhoneOtpVerifyFailure = Exclude<AuthFailureReason, "rejected">;
+export type PhoneOtpVerifyFailure = Extract<
+  AuthFailureReason,
+  "network" | "unavailable" | "unconfigured" | "rate-limited" | "invalid-code"
+>;
 
 /** 세션 갱신이 낼 수 있는 실패입니다. 화면에 문구로 서지 않습니다. */
-export type SessionRefreshFailure = Exclude<AuthFailureReason, "rate-limited" | "invalid-code">;
+export type SessionRefreshFailure = Extract<
+  AuthFailureReason,
+  "network" | "unavailable" | "unconfigured" | "rejected"
+>;
 
 /** 코드 검증 화면이 그리는 실패입니다 — 검증과 재전송 둘 다 이 화면에서 실패합니다. */
 export type VerificationCodeFailure = PhoneOtpRequestFailure | PhoneOtpVerifyFailure;
@@ -135,7 +145,12 @@ export type RefreshAuthSession = (refreshToken: string) => Promise<SessionRefres
 // ------------------------------------------------------------------ 전송 경계
 
 /** 실패를 가를 때 어느 요청이었는지입니다 — 같은 4xx가 요청마다 다른 이유가 됩니다. */
-export type AuthOperation = "request-otp" | "verify-otp" | "refresh-session";
+export type AuthOperation =
+  | "request-otp"
+  | "verify-otp"
+  | "refresh-session"
+  | "exchange-pkce"
+  | "exchange-id-token";
 
 /**
  * `api-client.ts`가 쓰는 전송 함수의 모양입니다. Lynx의 `fetch`는 웹 `fetch`의 부분집합이라
@@ -157,11 +172,13 @@ export type HttpTransport = (url: string, init: HttpRequestInit) => Promise<Http
 
 // ------------------------------------------------------------------ Supabase Auth REST 스키마
 
-/** `url` 뒤에 붙는 경로입니다. 세 요청 모두 `POST`입니다. */
+/** `url` 뒤에 붙는 경로입니다. 전부 `POST`입니다. */
 export type SupabaseAuthPath =
   | "/auth/v1/otp"
   | "/auth/v1/verify"
-  | "/auth/v1/token?grant_type=refresh_token";
+  | "/auth/v1/token?grant_type=refresh_token"
+  | "/auth/v1/token?grant_type=pkce"
+  | "/auth/v1/token?grant_type=id_token";
 
 /** `POST /auth/v1/otp` 본문입니다. 성공 응답(200)의 본문은 읽지 않습니다. */
 export type SupabaseOtpRequestBody = {

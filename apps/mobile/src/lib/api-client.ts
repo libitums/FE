@@ -1,6 +1,9 @@
 // Supabase Auth REST를 부르는 유일한 자리입니다(ADR-0007 D2). `supabase-js` 대신 Lynx `fetch`의
 // 부분집합에 맞춘 손 클라이언트입니다. 세 부수효과 함수는 계약상 절대 던지지 않습니다 —
 // 전송 실패 · 시간 초과 · 파싱 실패를 전부 안에서 `failed` 결과로 삼킵니다.
+//
+// 응답 파서 · 실패 판정 다섯은 `lib/auth-response.ts`로 옮겼습니다 — 여기서
+// 다시 내보내(re-export) 기존 unit import가 안 바뀝니다.
 
 import type {
   AuthOperation,
@@ -8,29 +11,60 @@ import type {
   HttpRequestInit,
   HttpTransport,
   PhoneNumber,
-  PhoneOtpRequestFailure,
   PhoneOtpRequestResult,
-  PhoneOtpVerifyFailure,
   PhoneOtpVerifyRequest,
   PhoneOtpVerifyResult,
   RefreshAuthSession,
   RequestPhoneOtp,
-  SessionRefreshFailure,
   SessionRefreshResult,
   SupabaseAuthPath,
   SupabaseConfig,
-  SupabaseErrorCode,
   SupabaseOtpRequestBody,
   SupabaseRefreshRequestBody,
   SupabaseVerifyRequestBody,
   VerifyPhoneOtp,
 } from "./auth-session.contract";
+import {
+  authSessionFrom,
+  errorCodeFrom,
+  otpRequestFailureFrom,
+  otpVerifyFailureFrom,
+  pkceExchangeFailureFrom,
+  sessionRefreshFailureFrom,
+} from "./auth-response";
+import type {
+  ExchangeIdToken,
+  ExchangePkceCode,
+  IdTokenExchangeRequest,
+  IdTokenExchangeResult,
+  PkceExchangeRequest,
+  PkceExchangeResult,
+  SupabaseAuthorizeQuery,
+  SupabaseIdTokenRequestBody,
+  SupabasePkceTokenRequestBody,
+} from "./social-sign-in.contract";
 import { supabaseConfig } from "./supabase-config";
+
+export {
+  authSessionFrom,
+  errorCodeFrom,
+  otpRequestFailureFrom,
+  otpVerifyFailureFrom,
+  sessionRefreshFailureFrom,
+} from "./auth-response";
+
+// 전송 함수가 받는 본문의 합집합입니다.
+type SupabaseAuthRequestBody =
+  | SupabaseOtpRequestBody
+  | SupabaseVerifyRequestBody
+  | SupabaseRefreshRequestBody
+  | SupabasePkceTokenRequestBody
+  | SupabaseIdTokenRequestBody;
 
 /** 응답이 이 안에 안 오면 `network`입니다. */
 export const authRequestTimeoutMs = 10000;
 
-/** `default` 없는 `switch`로 세 연산 전부를 망라합니다. */
+/** `default` 없는 `switch`로 네 연산 전부를 망라합니다. */
 export function supabaseAuthPathFor(operation: AuthOperation): SupabaseAuthPath {
   switch (operation) {
     case "request-otp": {
@@ -42,6 +76,12 @@ export function supabaseAuthPathFor(operation: AuthOperation): SupabaseAuthPath 
     case "refresh-session": {
       return "/auth/v1/token?grant_type=refresh_token";
     }
+    case "exchange-pkce": {
+      return "/auth/v1/token?grant_type=pkce";
+    }
+    case "exchange-id-token": {
+      return "/auth/v1/token?grant_type=id_token";
+    }
   }
 }
 
@@ -52,7 +92,7 @@ export function supabaseAuthPathFor(operation: AuthOperation): SupabaseAuthPath 
 export function supabaseAuthRequest(
   config: SupabaseConfig,
   operation: AuthOperation,
-  body: SupabaseOtpRequestBody | SupabaseVerifyRequestBody | SupabaseRefreshRequestBody,
+  body: SupabaseAuthRequestBody,
 ): { url: string; init: HttpRequestInit } {
   return {
     url: `${config.url}${supabaseAuthPathFor(operation)}`,
@@ -64,101 +104,57 @@ export function supabaseAuthRequest(
   };
 }
 
-/** JSON 파싱 실패 · 객체 아님 · `error_code`가 문자열 아님 → `null`. */
-export function errorCodeFrom(bodyText: string): SupabaseErrorCode {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(bodyText);
-  } catch {
-    return null;
-  }
-  if (typeof parsed !== "object" || parsed === null) {
-    return null;
-  }
-  const errorCode = (parsed as Record<string, unknown>)["error_code"];
-  return typeof errorCode === "string" ? errorCode : null;
+// ------------------------------------------------------------------ 소셜 로그인
+
+/**
+ * `GET /auth/v1/authorize`의 주소입니다. 앱이 부르지 않고 인증 창이 엽니다. 키 순서는
+ * `SupabaseAuthorizeQuery`의 순서로 고정하고, 값은 전부 `encodeURIComponent`를 거칩니다.
+ * `apikey`를 싣지 않습니다(브라우저가 여는 GET).
+ */
+export function supabaseAuthorizeUrl(
+  config: SupabaseConfig,
+  query: SupabaseAuthorizeQuery,
+): string {
+  const params = [
+    `provider=${encodeURIComponent(query.provider)}`,
+    `redirect_to=${encodeURIComponent(query.redirect_to)}`,
+    `code_challenge=${encodeURIComponent(query.code_challenge)}`,
+    `code_challenge_method=${encodeURIComponent(query.code_challenge_method)}`,
+  ].join("&");
+  return `${config.url}/auth/v1/authorize?${params}`;
 }
 
 /**
- * `access_token` · `refresh_token`이 비지 않은 문자열이고 `expires_in`이 양의 유한수일 때만
- * `AuthSession`을 돌려줍니다. `expiresAt = nowMs + expires_in × 1000`.
+ * PKCE 코드 교환입니다(`POST /auth/v1/token?grant_type=pkce`, 본문 `{ auth_code, code_verifier }`).
+ * 다른 부수효과 함수와 같은 순서(설정 → 전송 해석 →
+ * 제한 시간 경주 → 던지지 않음)를 따릅니다.
  */
-export function authSessionFrom(bodyText: string, nowMs: number): AuthSession | null {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(bodyText);
-  } catch {
-    return null;
-  }
-  if (typeof parsed !== "object" || parsed === null) {
-    return null;
-  }
-  const body = parsed as Record<string, unknown>;
-  const accessToken = body["access_token"];
-  const refreshToken = body["refresh_token"];
-  const expiresIn = body["expires_in"];
-  if (typeof accessToken !== "string" || accessToken.length === 0) {
-    return null;
-  }
-  if (typeof refreshToken !== "string" || refreshToken.length === 0) {
-    return null;
-  }
-  if (typeof expiresIn !== "number" || !Number.isFinite(expiresIn) || expiresIn <= 0) {
-    return null;
-  }
-  return { accessToken, refreshToken, expiresAt: nowMs + expiresIn * 1000 };
-}
+export const exchangePkceCode: ExchangePkceCode = async (
+  request: PkceExchangeRequest,
+): Promise<PkceExchangeResult> => {
+  const body: SupabasePkceTokenRequestBody = {
+    auth_code: request.authCode,
+    code_verifier: request.codeVerifier,
+  };
+  const outcome = await sendAuthRequest("exchange-pkce", body);
+  return sessionResult(outcome, "exchanged", pkceExchangeFailureFrom);
+};
 
-/** 429 또는 `over_` 코드 → `rate-limited` · 5xx → `unavailable` · 4xx → `rejected`. */
-export function otpRequestFailureFrom(
-  status: number,
-  errorCode: SupabaseErrorCode,
-): Extract<PhoneOtpRequestFailure, "unavailable" | "rate-limited" | "rejected"> {
-  if (status === 429 || (errorCode !== null && errorCode.startsWith("over_"))) {
-    return "rate-limited";
-  }
-  if (status >= 500) {
-    return "unavailable";
-  }
-  if (status >= 400) {
-    return "rejected";
-  }
-  return "unavailable";
-}
-
-/** `otpRequestFailureFrom`과 같고 4xx → `invalid-code`. */
-export function otpVerifyFailureFrom(
-  status: number,
-  errorCode: SupabaseErrorCode,
-): Extract<PhoneOtpVerifyFailure, "unavailable" | "rate-limited" | "invalid-code"> {
-  if (status === 429 || (errorCode !== null && errorCode.startsWith("over_"))) {
-    return "rate-limited";
-  }
-  if (status >= 500) {
-    return "unavailable";
-  }
-  if (status >= 400) {
-    return "invalid-code";
-  }
-  return "unavailable";
-}
-
-/** 5xx · 429 · `over_*` → `unavailable`(세션을 지킨다) · 4xx → `rejected`. */
-export function sessionRefreshFailureFrom(
-  status: number,
-  errorCode: SupabaseErrorCode,
-): Extract<SessionRefreshFailure, "unavailable" | "rejected"> {
-  if (status >= 500) {
-    return "unavailable";
-  }
-  if (status === 429 || (errorCode !== null && errorCode.startsWith("over_"))) {
-    return "unavailable";
-  }
-  if (status >= 400) {
-    return "rejected";
-  }
-  return "unavailable";
-}
+/**
+ * Apple ID 토큰 교환입니다(`POST /auth/v1/token?grant_type=id_token`, 본문
+ * `{ provider: "apple", id_token, nonce }`). 판정은 PKCE 교환과 같습니다.
+ */
+export const exchangeIdToken: ExchangeIdToken = async (
+  request: IdTokenExchangeRequest,
+): Promise<IdTokenExchangeResult> => {
+  const body: SupabaseIdTokenRequestBody = {
+    provider: "apple",
+    id_token: request.idToken,
+    nonce: request.nonce,
+  };
+  const outcome = await sendAuthRequest("exchange-id-token", body);
+  return sessionResult(outcome, "exchanged", pkceExchangeFailureFrom);
+};
 
 // ------------------------------------------------------------------ 전송
 
@@ -183,7 +179,7 @@ type AuthRequestOutcome =
 // 설정 확인 → 전송 함수 해석 → 전송과 제한 시간의 경주. **어떤 경우에도 던지지 않습니다.**
 async function sendAuthRequest(
   operation: AuthOperation,
-  body: SupabaseOtpRequestBody | SupabaseVerifyRequestBody | SupabaseRefreshRequestBody,
+  body: SupabaseAuthRequestBody,
 ): Promise<AuthRequestOutcome> {
   const config = supabaseConfig();
   if (config === null) {
@@ -225,6 +221,28 @@ function isSuccessStatus(status: number): boolean {
   return status >= 200 && status < 300;
 }
 
+// 세션을 내는 네 교환(검증 · 갱신 · PKCE · id_token)이 공유하는 결과 매핑입니다.
+// 2xx + 파싱 성공 → 세션, 파싱 실패 → `unavailable`, 그 밖 → 연산별 실패 판정.
+function sessionResult<Ok extends string, Reason extends string>(
+  outcome: AuthRequestOutcome,
+  okStatus: Ok,
+  failureFrom: (status: number, errorCode: string | null) => Reason,
+):
+  | { status: Ok; session: AuthSession }
+  | { status: "failed"; reason: Reason | "network" | "unconfigured" | "unavailable" } {
+  if (!outcome.ok) {
+    return { status: "failed", reason: outcome.reason };
+  }
+  if (isSuccessStatus(outcome.status)) {
+    const session = authSessionFrom(outcome.bodyText, Date.now());
+    if (session === null) {
+      return { status: "failed", reason: "unavailable" };
+    }
+    return { status: okStatus, session };
+  }
+  return { status: "failed", reason: failureFrom(outcome.status, errorCodeFrom(outcome.bodyText)) };
+}
+
 /**
  * 본문 `{ phone: e164, channel: "sms", create_user: true }`. 2xx → `sent`(본문 안 읽음).
  * 계약상 던지지 않습니다 — 실 구현은 항상 이행(resolve)된 Promise를 돌려줍니다.
@@ -259,20 +277,7 @@ export const verifyPhoneOtp: VerifyPhoneOtp = async (
     token: request.code,
   };
   const outcome = await sendAuthRequest("verify-otp", body);
-  if (!outcome.ok) {
-    return { status: "failed", reason: outcome.reason };
-  }
-  if (isSuccessStatus(outcome.status)) {
-    const session = authSessionFrom(outcome.bodyText, Date.now());
-    if (session === null) {
-      return { status: "failed", reason: "unavailable" };
-    }
-    return { status: "verified", session };
-  }
-  return {
-    status: "failed",
-    reason: otpVerifyFailureFrom(outcome.status, errorCodeFrom(outcome.bodyText)),
-  };
+  return sessionResult(outcome, "verified", otpVerifyFailureFrom);
 };
 
 /** 본문 `{ refresh_token }`. 2xx 처리는 검증과 같습니다. */
@@ -281,18 +286,5 @@ export const refreshAuthSession: RefreshAuthSession = async (
 ): Promise<SessionRefreshResult> => {
   const body: SupabaseRefreshRequestBody = { refresh_token: refreshToken };
   const outcome = await sendAuthRequest("refresh-session", body);
-  if (!outcome.ok) {
-    return { status: "failed", reason: outcome.reason };
-  }
-  if (isSuccessStatus(outcome.status)) {
-    const session = authSessionFrom(outcome.bodyText, Date.now());
-    if (session === null) {
-      return { status: "failed", reason: "unavailable" };
-    }
-    return { status: "refreshed", session };
-  }
-  return {
-    status: "failed",
-    reason: sessionRefreshFailureFrom(outcome.status, errorCodeFrom(outcome.bodyText)),
-  };
+  return sessionResult(outcome, "refreshed", sessionRefreshFailureFrom);
 };

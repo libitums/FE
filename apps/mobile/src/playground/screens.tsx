@@ -8,6 +8,7 @@ import type {
   PhoneOtpVerifyOutcome,
 } from "../lib/auth-session.contract";
 import type { EntryLanguage } from "../lib/entry-language";
+import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
@@ -50,7 +51,10 @@ export const playgroundScreens = {
   onboarding: (go: Go) => <OnboardingScreen onComplete={() => go("login")} />,
   login: (go: Go) => (
     <LoginScreen
-      onSelectSocialMethod={() => go("language-select")}
+      onSelectSocialMethod={() => {
+        go("language-select");
+        return Promise.resolve<SocialSignInOutcome>({ status: "signed-in" });
+      }}
       onSubmitPhoneNumber={(phoneNumber) => {
         // 네트워크 없이 성공을 흉내 냅니다 — 즉시 해소되는 Promise입니다.
         go("verification-code", { phoneNumber });

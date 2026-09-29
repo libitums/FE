@@ -10,7 +10,6 @@ import {
   saveAuthSession,
   sessionRefreshDisposition,
 } from "../lib/auth-session";
-import { createTemporaryAuthToken, hasAuthToken, saveAuthToken } from "../lib/auth-token";
 import {
   entryCompletedEvent,
   entryLoginMethodSelectedEvent,
@@ -24,6 +23,8 @@ import type {
   PhoneOtpVerifyOutcome,
   PhoneOtpVerifyRequest,
 } from "../lib/auth-session.contract";
+import { oauthProviderFor, signInWithSocialProvider } from "../lib/social-sign-in";
+import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { NavAction } from "./nav-state";
 import { entryScreenAfterLogin } from "./screen-routing";
@@ -43,17 +44,12 @@ export function entryWiring({
 }: EntryWiringArgs) {
   return {
     // 스플래시 시간 종료입니다. 세션이 있으면(`refresh`) 갱신을
-    // 시도하는 동안 스플래시가 그대로 섭니다. 세션이 없고 임시 토큰만
-    // 있으면(`temporary`, 재실행) 이벤트 없이 곧장 `enterApp` — 완주가
-    // 아닙니다. 둘 다 없으면(`none`) 「onboarding」 열람을 올리고
-    // `replace`합니다 — 스플래시는 스택에 남지 않습니다.
+    // 시도하는 동안 스플래시가 그대로 섭니다. 세션이 없으면(`none`)
+    // 「onboarding」 열람을 올리고 `replace`합니다 — 스플래시는 스택에
+    // 남지 않습니다.
     onSplashTimeout: () => {
-      const authState = entryAuthStateFrom(loadAuthSession(), hasAuthToken());
+      const authState = entryAuthStateFrom(loadAuthSession());
       switch (authState.kind) {
-        case "temporary": {
-          dispatch({ type: "enterApp" });
-          return;
-        }
         case "none": {
           entryEventSink?.(entryScreenViewedEvent("onboarding"));
           dispatch({ type: "replace", screen: { name: "onboarding" } });
@@ -87,13 +83,20 @@ export function entryWiring({
       entryEventSink?.(entryScreenViewedEvent("login"));
       dispatch({ type: "push", screen: { name: "login" } });
     },
-    // 소셜 셋 선택입니다 — 이벤트 → 임시 토큰 저장 → 이벤트 → push. 「검증 전에는 아무것도
-    // 저장하지 않는다」는 전화번호 갈래의 규칙이라 소셜 셋에는 적용되지 않습니다.
-    onSelectSocialLoginMethod: (method: SocialLoginMethod) => {
-      entryEventSink?.(entryLoginMethodSelectedEvent(method));
-      saveAuthToken(createTemporaryAuthToken());
-      entryEventSink?.(entryScreenViewedEvent("language-select"));
-      dispatch({ type: "push", screen: entryScreenAfterLogin({ method }) });
+    // 소셜 셋 선택입니다 — `signInWithSocialProvider`가 창 · 교환을 끝까지 진
+    // 뒤, `signed-in`일 때만 **저장 → 이벤트 → 전이** 순서로 잇습니다. 그 밖(`cancelled` · `failed`)은 결과를 그대로
+    // 돌려줄 뿐 저장 · 이벤트 · 전이가 0입니다 — 문구 · 발화는 `LoginScreen`이
+    // 집니다.
+    onSelectSocialLoginMethod: async (method: SocialLoginMethod): Promise<SocialSignInOutcome> => {
+      const result = await signInWithSocialProvider(oauthProviderFor(method));
+      if (result.status === "signed-in") {
+        saveAuthSession(result.session);
+        entryEventSink?.(entryLoginMethodSelectedEvent(method));
+        entryEventSink?.(entryScreenViewedEvent("language-select"));
+        dispatch({ type: "push", screen: entryScreenAfterLogin({ method }) });
+        return { status: "signed-in" };
+      }
+      return result;
     },
     // 전화번호 제출입니다 — `api-client.requestPhoneOtp`를 부르고,
     // 성공(`sent`)일 때만 수단 선택 · 코드 화면 열람을 올리고 그 화면으로

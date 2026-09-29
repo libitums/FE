@@ -1,13 +1,12 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { productJourneySeed } from "./journey-progress";
-import { authTokenStorageKey } from "../lib/auth-token";
-import { entrySplashDurationMs } from "../lib/entry-flow";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import { questionsForStep } from "../screens/listening/listening";
 import { writingQuestionsForStep } from "../screens/writing/writing";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // `integration` 계층: App · 배정표 · 듣기 → 쓰기 · 학습 결과의 실제 결선을 봅니다(ADR-0006 D4).
 // 쓰기가 배정된 스텝(길 묻기)을 걸어 **쓰기의 결과가 학습 결과까지 실려 가는가**를 봅니다.
@@ -22,31 +21,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// 이미 세운 `NativeModules` 대역(쓰기 호스트)을 지우지 않고 `StorageModule`만 얹습니다 —
-// `App.integration.test.tsx`의 `renderApp`과 같은 형태입니다.
-function renderApp(): void {
-  const previous = (globalThis as { NativeModules?: unknown }).NativeModules;
-  const tokenStore = new Map<string, string>([[authTokenStorageKey, "existing-token"]]);
-  vi.stubGlobal("NativeModules", {
-    ...(typeof previous === "object" && previous !== null ? previous : {}),
-    StorageModule: {
-      get: (key: string) => tokenStore.get(key) ?? null,
-      set: (key: string, value: string) => void tokenStore.set(key, value),
-      remove: (key: string) => void tokenStore.delete(key),
-    },
-  });
-  vi.useFakeTimers();
-  render(
+// 길 묻기가 지금 스텝이 되도록 앞 넷을 끝낸 진행으로 부팅합니다. `renderSignedInApp`은 이미 세운
+// `NativeModules` 대역(쓰기 호스트)을 지우지 않습니다.
+async function renderWritingApp(): Promise<void> {
+  await renderSignedInApp(
     <App
       completedEpisodeIntroIds={completedIntros}
-      // 길 묻기가 지금 스텝이 되도록 앞 넷을 끝낸 진행입니다.
       journeySeed={{ ...productJourneySeed, completedStepCount: 4 }}
     />,
   );
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
-  vi.useRealTimers();
 }
 
 // 쓰기 호스트 대역입니다. 견주기는 늘 같은 수를 돌려줍니다.
@@ -100,8 +83,8 @@ function writeAllQuestions(stepId: JourneyStepId): void {
 
 // IW1 — 쓰기가 배정된 스텝은 듣기를 마치면 평가가 아니라 쓰기가 섭니다. 배정표가 결선을 실제로
 // 거치는지의 증인입니다.
-test("[IW1] 길 묻기는 듣기를 마치면 쓰기가 서고, 첫 문항의 첫 음절부터 쓴다", () => {
-  renderApp();
+test("[IW1] 길 묻기는 듣기를 마치면 쓰기가 서고, 첫 문항의 첫 음절부터 쓴다", async () => {
+  await renderWritingApp();
   startStep(writingStep);
   answerListeningCorrectly(writingStep);
 
@@ -113,8 +96,8 @@ test("[IW1] 길 묻기는 듣기를 마치면 쓰기가 서고, 첫 문항의 �
 
 // IW2 — 호스트가 없으면 판정을 건너뛰고, 건너뛴 문항은 결과에 실리지 않습니다. 듣기를 모두
 // 맞혔으므로 실수가 0이어야 합니다 — 쓰기가 오답으로 접혔다면 `LESSON COMPLETE!`가 섭니다.
-test("[IW2] 호스트가 없으면 쓰기를 판정 없이 지나고, 학습 결과에 실수로 세지 않는다", () => {
-  renderApp();
+test("[IW2] 호스트가 없으면 쓰기를 판정 없이 지나고, 학습 결과에 실수로 세지 않는다", async () => {
+  await renderWritingApp();
   startStep(writingStep);
   answerListeningCorrectly(writingStep);
   writeAllQuestions(writingStep);
@@ -124,9 +107,9 @@ test("[IW2] 호스트가 없으면 쓰기를 판정 없이 지나고, 학습 결
 
 // IW3 — 호스트가 낮은 수를 주면 쓰기가 오답으로 실려 학습 결과의 실수가 됩니다. IW2와 짝으로
 // 「쓰기의 결과가 결과 화면까지 간다」를 짓습니다.
-test("[IW3] 호스트가 문턱 아래의 수를 주면 쓰기가 오답으로 실려 학습 결과에 실수가 선다", () => {
+test("[IW3] 호스트가 문턱 아래의 수를 주면 쓰기가 오답으로 실려 학습 결과에 실수가 선다", async () => {
   stubWritingHost("0.2", "0.3");
-  renderApp();
+  await renderWritingApp();
   startStep(writingStep);
   answerListeningCorrectly(writingStep);
 
@@ -137,9 +120,9 @@ test("[IW3] 호스트가 문턱 아래의 수를 주면 쓰기가 오답으로 �
 });
 
 // IW4 — 문턱 위의 수면 정답으로 실려 실수가 0입니다.
-test("[IW4] 호스트가 문턱 위의 수를 주면 쓰기가 정답으로 실린다", () => {
+test("[IW4] 호스트가 문턱 위의 수를 주면 쓰기가 정답으로 실린다", async () => {
   stubWritingHost("0.9", "0.9");
-  renderApp();
+  await renderWritingApp();
   startStep(writingStep);
   answerListeningCorrectly(writingStep);
   writeAllQuestions(writingStep);

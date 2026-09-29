@@ -4,7 +4,7 @@
 - 요구사항: 탭이 아직 없는 구간을 코드로 세운다 — 화면 여섯 · `entry` 스택 · 임시 토큰 ·
   `@libitums/ui-lynx` 입력 소비 · 측정 이벤트 셋. 화면 명세 쪽 변경(진입 흐름 표 · 구현 순서
   11·12번)은 [화면 명세](../screens.md)가 진다.
-- 계약 타입: `apps/mobile/src/lib/entry-flow.ts` · `lib/entry-language.ts` · `lib/auth-token.ts`,
+- 계약 타입: `apps/mobile/src/lib/entry-flow.ts` · `lib/entry-language.ts` · ~~`lib/auth-token.ts`~~(2026-09-29 삭제),
   화면 폴더의 `*.contract.ts` 여섯, 네비게이션 어휘 `apps/mobile/src/app/navigation.ts`(`Screen`).
 - 상태: **고정·구현됨.** unit · ui · integration 계층이 녹색이다. 수동 iOS 흐름은 설계됐고
   **한 번도 실행되지 않았다**(§8).
@@ -18,18 +18,36 @@
 > `lib/supabase-config.ts` · `lib/auth-failure.ts`가 새로 섰다. **소셜 셋의 계약은 바뀌지 않았다.**
 > 본문에 남은 LIB-261 시점의 서술 중 이 개정과 어긋나는 줄은 이 개정이 이긴다.
 
+> **개정 (2026-09-29, 같은 날 뒤) — 소셜 셋이 Supabase OAuth(PKCE)로 섰다.** 결정과 근거는
+> [ADR-0028](../adr/0028-social-oauth-web-authentication.md)(**제안** — 기본값이 사용자 확인 전)이
+> 진다. 계약 타입이 하나 늘었다 — `apps/mobile/src/lib/social-sign-in.contract.ts`(제공자 · 콜백 ·
+> 인증 창 결과 · 교환 · 흐름 결과). 모듈은 `lib/social-sign-in.ts` · `lib/web-authentication.ts`
+> (호스트 `WebAuthenticationModule`의 접점) · `lib/pkce.ts` · `lib/auth-response.ts`(api-client에서
+> 옮긴 순수 파서)가 새로 섰고, 로그인 화면이 소셜 버튼 묶음 `LoginSocialMethods`를 뗐다. **바로 위
+> 개정의 「소셜 셋의 계약은 바뀌지 않았다」는 이 개정이 뒤집는다.** 어긋나는 줄은 이 개정이 이긴다.
+> ⚠ 제공자 · 대시보드 설정이 아직 없어 실서버 소셜 로그인은 한 번도 돌지 않았다.
+
+> **개정 (2026-09-29, 같은 날 셋째) — 사용자 결정: Apple은 네이티브, 임시 토큰은 인정하지 않는다.**
+> 결정과 근거는 [ADR-0028](../adr/0028-social-oauth-web-authentication.md) D6 · D7이 진다. 계약 타입이
+> 하나 늘었다 — `apps/mobile/src/lib/apple-sign-in.contract.ts`(호스트 `AppleSignInModule`의 요청 ·
+> 결과 · nonce 한 쌍). 모듈은 `lib/apple-sign-in.ts`가 새로 섰고, `lib/api-client.ts`에 ID 토큰 교환
+> (`grant_type=id_token`)이 더해졌다. **`lib/auth-token.ts`는 지워졌다** — 스플래시 판정은 세션 유무
+> 하나이고, 옛 임시 토큰 설치는 온보딩부터 간다. 로그인 화면 · 결선 · 결과 union은 바뀌지 않았다.
+> 어긋나는 줄은 이 개정이 이긴다.
+
 ## 0. 고정 범위와 불변식
 
 1. 화면 **여섯**이 `entry` 스택에 담긴다. `entry`가 비면 앱 구간이고, 비지 않은 동안
    **바텀 네비게이션을 렌더하지 않는다**([ADR-0007](../adr/0007-app-internals-state-routing-data-errors.md) D3).
 2. 진입 구간은 **단방향**이다. 여섯 전부가 **나아가는 수단**을 갖고(스플래시는 고정 시간 뒤
    자동 전이), **뒤로 나가는 수단을 가진 것은 코드 검증 하나**다(§3).
-3. 저장소에 들어가는 항목은 **들어온 수단의 키 하나**다 — 소셜 셋은 `libitum.auth.token`,
-   전화번호는 `libitum.auth.session`(2026-09-29). 고른 언어도 온보딩 진행도 저장하지 않는다
-   (ADR-0007 D1).
-4. **전화번호만 인증이다**(2026-09-29). 번호 제출 → Supabase OTP 요청 → 6자리 검증이 성공해야
-   세션이 저장되고, **그전에는 아무것도 저장하지 않는다.** 소셜 셋은 여전히 인증이 아니다 —
-   수단을 고르는 것이 곧 **고정 리터럴 하나**의 저장이다.
+3. 저장소에 들어가는 항목은 **어느 수단이든 `libitum.auth.session` 하나**다(2026-09-29).
+   `libitum.auth.token`은 **아무도 쓰지도 읽지도 않는다**(같은 날 셋째 — 옛 설치에 남은 값은 지우지
+   않는다). 고른 언어도 온보딩 진행도 저장하지 않는다(ADR-0007 D1).
+4. **네 수단 전부 인증이다**(2026-09-29). 전화번호는 번호 제출 → Supabase OTP 요청 → 6자리 검증,
+   Google · Facebook은 인증 창에서 제공자 로그인 → 콜백의 `code` 교환, Apple은 네이티브 시트 →
+   ID 토큰 교환(nonce 포함)이 성공해야 세션이 저장되고, **그전에는
+   아무것도 저장하지 않는다.**
 5. 진입 화면이 소비하는 `@libitums/ui-lynx` 입력은 로그인의 **`TextField`** 와 코드 검증의
    **`CompactNumericInput`**(여섯 칸)이다
    ([ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-09-16 확장」 절).
@@ -60,6 +78,10 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
   ⟨2026-09-29⟩ 전화번호 경로가 `lib/api-client.ts`를 통해 Supabase Auth를 부른다. **부르는 것은
   화면이 아니라 결선(`app/entry-wiring.ts`)이다** — 화면은 콜백의 결과(성공 · 실패 이유)만 받아
   요청 중 · 실패를 그린다(ADR-0027 D1).
+- ⟨2026-09-29⟩ 소셜 경로는 결선이 `signInWithSocialProvider`(`lib/social-sign-in.ts`) 하나를 부르고,
+  그 함수가 호스트 인증 창 · PKCE · 교환(`lib/api-client.ts`)을 끝까지 진다. 결선은 결과가
+  `signed-in`일 때만 저장 → 이벤트 → 전이하고, 화면이 받는 결과에는 세션이 실리지 않는다
+  (ADR-0028 D1).
 
 ## 2. 화면 여섯
 
@@ -67,7 +89,7 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 |---|---|---|---|---|
 | 스플래시 | 없음 | 없음 | 없음 — **자동 전이** | 없음 |
 | 온보딩 | 진행 점 | `다음` / 마지막은 `시작하기` | 없음 | `step` — 화면 로컬 |
-| 로그인 | 제목 | **없음** — 수단이 넷이라 하나만 고정할 수 없다 | 없음 | 국가 · 전화번호 입력값 · 요청 상태(`idle` · `requesting` · `failed`) — 화면 로컬 |
+| 로그인 | 제목 | **없음** — 수단이 넷이라 하나만 고정할 수 없다 | 없음 | 국가 · 전화번호 입력값 · 요청 상태 **하나**(`idle` · `requesting` · `failed`, 뒤의 둘은 어느 수단의 것인지 싣는다) — 화면 로컬 |
 | 코드 검증 | 나가기 + 제목 | `확인` | **`로그인으로`** | 여섯 칸의 원값 · 카운트다운 · 요청 상태(`idle` · `verifying` · `resending` · `failed`) — 화면 로컬 |
 | 언어 선택 | 제목 | `다음` | 없음 | 고른 언어 — **App** |
 | 여정 입장 | 제목 | `여정 시작하기` | 없음 | 없음 |
@@ -86,11 +108,17 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
   완성된 코드를 `확인`하면 Supabase가 검증하고, 틀리거나 만료되면 오류 문구가 선다. 카운트다운이
   0이어도 입력 · 제출을 막지 않는다.
 - **요청이 떠 있는 동안 그 화면의 조작은 전부 무동작이다**(2026-09-29) — 로그인은 `Continue` · 소셜
-  셋 · 뒤로가기 · 국가 선택, 코드 검증은 `확인` · `Resend` · 나가기 · 칸 입력. 뒤로 나간 뒤 성공
+  셋 · 뒤로가기 · 국가 선택(**어느 수단의 요청이든** — 전화번호 요청 중에도 소셜 요청 중에도 네 수단
+  전부), 코드 검증은 `확인` · `Resend` · 나가기 · 칸 입력. 뒤로 나간 뒤 성공
   응답이 와서 엉뚱한 스택 위에 `push`하는 경쟁을 막는다. `Continue`에 `disabled` trait을 붙이지
   않는다 — 상태는 `data-status`로만 낸다(ADR-0016 D10).
-- **실패 문구는 `lib/auth-failure.ts`의 표 하나**가 이유 여섯(`network` · `unavailable` ·
-  `unconfigured` · `rate-limited` · `rejected` · `invalid-code`)에서 만든다. 두 화면이 같은 표를 쓴다.
+- **실패 문구는 `lib/auth-failure.ts`의 표 하나**가 이유 ~~여섯~~ **여덟**(`network` · `unavailable` ·
+  `unconfigured` · `rate-limited` · `rejected` · `invalid-code` · 소셜의 `sign-in-incomplete` ·
+  `unsupported`)에서 만든다. 두 화면이 같은 표를 쓰고, 로그인의 오류 요소는 수단과 무관하게 하나다.
+  `unconfigured` 문구는 수단 중립으로 바뀌었다(ADR-0028 D5).
+- **소셜 취소는 실패가 아니다** — 인증 창을 닫으면 `idle`로 돌아가고 문구 · 발화 · 이벤트가 0이다.
+  동의 화면에서 거절한 것은 취소가 아니라 `sign-in-incomplete`다. 번호를 고치거나 국가를 바꾸면
+  소셜 실패 문구도 사라진다.
 - **로그인 수단 넷에 아이콘이 0건이다** — 상표 자산이 없어 낱말만 쓴다. 상표는 원문 표기 그대로다.
 - ~~**로그인 화면은 상태를 하나도 들지 않는다 — 의도한 형태다.**~~ ⟨2026-09-29⟩ **이제 번호를
   읽는다** — 보낼 곳(Supabase)이 생겼다. 입력은 `phoneNumberFrom(dialCode, input)`이 보낼 E.164와
@@ -123,13 +151,12 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | 사건 | 액션 | `entry` 스택 |
 |---|---|---|
 | 앱 시작 | — | `[스플래시]` |
-| 고정 시간 종료 · **토큰 · 세션 없음** | `replace` | `[온보딩]` |
-| 고정 시간 종료 · **임시 토큰만 있음** | `enterApp` | `[]` → 여정 맵 |
-| 고정 시간 종료 · **세션 있음** → 갱신 성공 | (응답까지 스플래시 유지) `enterApp` | `[]` → 여정 맵 |
+| 고정 시간 종료 · **세션 없음**(옛 임시 토큰만 있어도 — 2026-09-29) | `replace` | `[온보딩]` |
+| 고정 시간 종료 · **세션 있음**(수단 무관) → 갱신 성공 | (응답까지 스플래시 유지) `enterApp` | `[]` → 여정 맵 |
 | 고정 시간 종료 · **세션 있음** → 갱신 실패 | `replace` + `push` | `[온보딩, 로그인]` — 서버가 거절했을 때만 세션을 지운다 |
 | 온보딩 완료 | `push` | `[…, 로그인]` |
 | 전화번호 `Continue` → **OTP 요청 성공** | `push` | `[…, 코드 검증]` — 실패면 전이 없이 로그인에 오류 |
-| 수단 선택(나머지 셋) | `push` | `[…, 언어 선택]` — **코드 검증을 건너뛴다** |
+| 소셜 셋 → **인증 창(Google · Facebook) 또는 Apple 시트 · 교환 성공** | `push` | `[…, 언어 선택]` — **코드 검증을 건너뛴다.** 취소 · 실패면 전이 없이 로그인에 남는다 |
 | 코드 `확인`(완성일 때만) → **검증 성공** | `push` | `[…, 언어 선택]` — 실패면 전이 없이 코드 검증에 오류 |
 | 코드 `Resend` | — | 전이 없음. 요청이 성공해야 카운트다운 · 입력이 되돌아간다 |
 | 코드 `로그인으로` | **`back`** | 한 겹 위 = 로그인 |
@@ -153,17 +180,26 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 
 ## 4. 토큰과 세션 — 값과 ⭐ 대가
 
-| | 임시 토큰 (소셜 셋) | 세션 (전화번호, 2026-09-29) |
+| | ~~임시 토큰~~ (2026-09-29 폐기 — 아래 ⟨같은 날 셋째⟩) | 세션 (전화번호 · 2026-09-29부터 소셜 셋도) |
 |---|---|---|
 | 키 | `libitum.auth.token` | `libitum.auth.session` |
-| 값 | 고정 리터럴 하나. 시각 · 수단 · 전화번호를 **싣지 않는다** | `{ accessToken, refreshToken, expiresAt }` JSON. 전화번호를 **싣지 않는다** |
-| 쓰는 시점 | 소셜 수단을 고를 때 1회 | **코드 검증이 성공한 뒤** 1회 · 갱신이 성공할 때마다(refresh 토큰이 회전한다) |
-| 읽는 시점 | 스플래시의 고정 시간이 끝난 뒤 1회 | 〃 |
-| 지우는 수단 | **없다** | 갱신을 **서버가 거절**했을 때만 지운다. 그 밖에는 없다 |
+| 값 | 고정 리터럴 하나. 시각 · 수단 · 전화번호를 **싣지 않는다** | `{ accessToken, refreshToken, expiresAt }` JSON. 전화번호 · 수단을 **싣지 않는다** |
+| 쓰는 시점 | ~~소셜 수단을 고를 때 1회~~ **아무도 쓰지 않는다** | **코드 검증이 성공한 뒤** · **소셜 교환(PKCE 또는 ID 토큰)이 성공한 뒤** 1회 · 갱신이 성공할 때마다(refresh 토큰이 회전한다) |
+| 읽는 시점 | ~~스플래시의 고정 시간이 끝난 뒤 1회~~ **아무도 읽지 않는다** | 스플래시의 고정 시간이 끝난 뒤 1회 |
+| 지우는 수단 | **없다** — 옛 설치에 값이 남는다 | 갱신을 **서버가 거절**했을 때만 지운다. 그 밖에는 없다 |
 
-- 둘이 다 있으면 **세션이 이긴다.** 세션 JSON이 깨져 있으면 없는 것으로 보고 지우지 않는다.
+- 세션 JSON이 깨져 있으면 없는 것으로 보고 지우지 않는다.
 - 이 변경 전에 전화번호로 들어와 임시 토큰만 가진 설치는 **이주하지 않는다** — 임시 토큰 갈래로
   계속 들어간다. 근거와 버린 대안은 [ADR-0027](../adr/0027-phone-otp-auth-supabase.md) D3 · D4.
+- ⟨2026-09-29⟩ **이 변경 전에 소셜로 들어와 임시 토큰을 가진 설치도 그대로 인정한다** — 스플래시의
+  「임시 토큰만 있음 → 곧장 앱」 갈래가 안 바뀌었다. 로그아웃이 없어 로그인으로 보내면 출구가
+  재설치뿐이 되기 때문이다. ⚠ **사용자 확인 필요**([ADR-0028](../adr/0028-social-oauth-web-authentication.md) D6).
+- ⟨2026-09-29, 같은 날 셋째 — 사용자 결정⟩ **위 두 줄은 뒤집혔다 — 옛 임시 토큰은 인정하지 않는다.**
+  스플래시가 그 키를 읽지 않으므로 옛 설치(전화번호든 소셜이든)는 세션이 없는 설치와 같이
+  **온보딩부터** 간다(ADR-0028 D6). 옛 값은 지우지 않는다 — 지우려면 키를 코드에 적어야 한다.
+- Apple의 nonce 원본도 verifier와 같이 **저장하지 않는다** — Apple 요청에는 그 해시를, 교환에는 원본을
+  싣고 한 호출의 지역 변수로만 산다.
+- 소셜의 PKCE verifier는 **저장하지 않는다** — 한 번의 시도를 지는 함수의 지역 변수로만 산다.
 
 - 이 모듈이 [ADR-0012](../adr/0012-native-host-app-minimal.md) D2의 저장소 모듈을 **처음 실제로
   쓰는** 자리다. 그전까지 저장소 모듈은 부르는 코드가 0건이었다.
@@ -207,7 +243,7 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | 이름 | 속성 | 발생 시점 | 발생하지 않는 때 |
 |---|---|---|---|
 | `entry_screen_viewed` | `screen`(**스플래시를 뺀 다섯**) | 그 화면을 여는 전이의 `dispatch` 직전 1회 | **스플래시** · 코드 검증에서 `로그인으로`로 돌아갈 때 · 온보딩 `step` 전환(같은 화면이다) |
-| `entry_login_method_selected` | `method`(넷) | 소셜: 수단 tap → 토큰 저장·전이 직전 1회. **전화번호: OTP 요청이 성공한 순간 1회**(2026-09-29) | 전화번호를 입력만 할 때 · **OTP 요청이 실패할 때**(실패한 시도를 세지 않는다 — 두 번째에 성공해도 1회다) · 재전송 |
+| `entry_login_method_selected` | `method`(넷) | ~~소셜: 수단 tap → 토큰 저장·전이 직전 1회.~~ **소셜: 교환이 성공해 세션을 저장한 뒤 · 전이 직전 1회**(2026-09-29). **전화번호: OTP 요청이 성공한 순간 1회**(2026-09-29) | 전화번호를 입력만 할 때 · **OTP 요청이 실패할 때**(실패한 시도를 세지 않는다 — 두 번째에 성공해도 1회다) · 재전송 · **소셜 버튼을 누르기만 했을 때 · 인증 창을 닫았을 때 · 소셜 실패** |
 | `entry_completed` | 없음 | **여정 입장**의 진행 tap → `enterApp` 직전 1회 | **토큰 분기로 바로 들어가는 재방문**(완주가 아니다) |
 
 - ⭐ **스플래시가 타입에서 배제돼 있다.** 이 저장소의 이벤트는 **전이를 일으키는 핸들러**가 내는데
@@ -237,6 +273,10 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
   (`idle` · `requesting` · `failed`, 그리고 번호 완성 여부 `data-complete`)과
   `verification-code-screen-submit`(`idle` · `verifying` · `resending` · `failed`). 정본은 두 화면의
   `*.contract.ts`다.
+- ⟨2026-09-29, 같은 날 뒤⟩ 소셜 요소 셋(`login-screen-method-apple` · `-google` · `-facebook`)도
+  `data-status`를 낸다 — **그 수단의 요청이면** `requesting` · `failed`, 아니면 `idle`이다(상태가
+  하나라 두 요소가 동시에 `requesting`이 되지 않는다). `login-screen-error`는 소셜 실패에도 선다.
+  **testid의 신규 · 삭제는 0건이다.**
 - 클래스와 `data-testid`가 같은 문자열인 것은 `-scroll` 여섯뿐이다(ADR-0022 D2).
 
 ## 8. 테스트 계층
@@ -245,10 +285,11 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 
 | 계층 | 파일 |
 |---|---|
-| unit | `lib/entry-flow` · `lib/entry-language` · `lib/auth-token` · `lib/auth-session` · `lib/api-client` · `lib/supabase-config` · `lib/auth-failure` · `screens/onboarding/onboarding` · `screens/login/login` · `screens/verification-code/verification-code`의 `.unit.test.ts` · `app/navigation.unit.test.ts` |
+| unit | `lib/entry-flow` · `lib/entry-language` · `lib/auth-session` · `lib/api-client` · `lib/supabase-config` · `lib/auth-failure` · `lib/pkce` · `lib/web-authentication` · `lib/apple-sign-in` · `lib/social-sign-in` · `screens/onboarding/onboarding` · `screens/login/login` · `screens/verification-code/verification-code`의 `.unit.test.ts` · `app/navigation.unit.test.ts` |
+| unit (호스트 네이티브) | `apps/ios/HostTests/WebAuthenticationModuleTests.swift` — 완료 페이로드 · 인자 판정 · 난수 모양. `apps/ios/HostTests/AppleSignInModuleTests.swift` — nonce 인자 판정 · 페이로드 조립(2026-09-29). **`pnpm verify` 밖**이고 명령은 [작업 흐름](../conventions/workflow.md) 「호스트 네이티브 테스트」 |
 | ui | 화면마다 하나 — `<화면>.ui.test.tsx` |
-| integration | `app/App.entry.integration.test.tsx`(흐름 전체 · 토큰 분기 · 바텀 네비 등장 · 이벤트 · **2026-09-29부터 서버 연동** — OTP 요청 · 검증 · 재전송 · 세션 갱신의 성공과 실패) · `app/App.heading-trait.integration.test.tsx`(제목 축에 진입 상태 전부) |
-| e2e (수동) | [진입 흐름 e2e](../e2e/entry-flow.md) — T1–T9 · D1 · **E1–E7** · K1–K5 · V1–V6. 실행 기록은 그 문서가 진다 |
+| integration | `app/App.entry.integration.test.tsx`(흐름 전체 · 토큰 분기 · 바텀 네비 등장 · 이벤트 · **2026-09-29부터 서버 연동** — OTP 요청 · 검증 · 재전송 · 세션 갱신의 성공과 실패, 그리고 **소셜의 인증 창 · 교환**과 **Apple 시트 · ID 토큰 교환**의 성공 · 취소 · 실패 · 모듈 없음) · `app/App.heading-trait.integration.test.tsx`(제목 축에 진입 상태 전부) |
+| e2e (수동) | [진입 흐름 e2e](../e2e/entry-flow.md) — T1–T9 · D1 · **E1–E7** · **S1–S8**(소셜 — 대부분 제공자 설정 전까지 막힘) · **A1–A7**(Apple 네이티브 — 서명 · Apple 설정 필요) · **L1**(옛 임시 토큰 설치) · K1–K5 · V1–V6. 실행 기록은 그 문서가 진다 |
 
 - **진입 흐름 전체는 한 트리에서만 관찰된다** — 스플래시 분기 · 전이 · 토큰 저장과 재실행 · 바텀
   네비 등장 · 언어의 세션 수명 · 이벤트 순서. 화면을 고립 렌더하는 계층이 원리적으로 만들 수 없어
@@ -256,6 +297,14 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 - ⟨2026-09-29⟩ **서버는 `vi.stubGlobal("fetch")`로, 접속 값은 `vi.stubEnv`로 대역한다** — msw를 쓰지
   않는다([ADR-0027](../adr/0027-phone-otp-auth-supabase.md) D5). 세션 없는 두 갈래가 동기로 남아 기존
   파일들의 「임시 토큰 + 시간 경과 → 곧장 앱」 헬퍼는 그대로 돈다.
+- ⟨2026-09-29, 같은 날 뒤⟩ **호스트 인증 창은 `NativeModules`의 `WebAuthenticationModule` 대역으로**
+  선다 — 저장소 대역과 같은 전역 경계다. 기존 파일들의 부팅 헬퍼가 임시 토큰을 심는 것은 그대로다 —
+  임시 토큰 갈래가 안 바뀌었기 때문이다([ADR-0028](../adr/0028-social-oauth-web-authentication.md) D6).
+- ⟨2026-09-29, 같은 날 셋째⟩ **위 두 줄의 부팅 헬퍼는 공용 `renderSignedInApp`으로 바뀌었다**
+  (`app/test-helpers/signed-in-app.ts`). 임시 토큰 갈래가 사라져, 파일 열둘이 각자 두던 동기
+  `renderApp`(임시 토큰 심기)을 지우고 **세션 저장 + 갱신 응답 대역 + 스플래시 전진 + 미세 작업
+  흘림**을 한 번에 하는 비동기 헬퍼를 부른다. **단언은 한 줄도 안 바뀌었다.** Apple 시트는
+  `NativeModules`의 `AppleSignInModule` 대역으로 선다.
 - **기존 integration 아홉 파일의 단언은 한 줄도 바뀌지 않았다.** 첫 화면이 여정 맵에서 스플래시로
   바뀌었으므로 각 파일이 **토큰이 있는 상태를 세우고 고정 시간을 전진시키는 지역 헬퍼**를 통해
   렌더한다 — 도달 경로가 한 겹 는 것을 헬퍼가 흡수한다.

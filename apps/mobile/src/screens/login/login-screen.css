@@ -2,7 +2,12 @@
 
    2026-09-21 디자인 반영: 좌상단 뒤로가기 → 제목 · 안내 → 국가 선택 + 전화번호 입력 →
    Continue → or 구분선 → 플랫폼 버튼 셋 순서로 섭니다. 버튼 모양은 ui-lynx Button이
-   지고, 이 파일은 배치와 국가 칩 · 구분선만 그립니다. */
+   지고, 이 파일은 배치와 국가 칩 · 구분선만 그립니다.
+
+   2026-09-29 소셜 로그인(Supabase OAuth) 반영: 소셜 요청 중에는 누른 버튼만
+   스피너가 돌고(로고 자리에 고정 override), 소셜 실패는 소셜 셋 바로 아래
+   `login-screen-social-error`가 전화번호 오류 줄과 같은 모양으로 섭니다
+   . */
 
 .login-screen {
   display: flex;
@@ -94,11 +99,13 @@
   border-color: var(--libitum-color-brand-primary);
 }
 
-/* 실패 문구 — 번호 칸 바로 아래, Continue 위입니다. 부모
+/* 실패 문구 — 전화번호는 번호 칸 바로 아래(Continue 위), 소셜은 소셜 셋
+   바로 아래(약관 안내 위)에 같은 모양으로 섭니다. 둘 다 부모
    `.login-screen-content`의 gap(16)에서 8을 빼 보이는 간격을 8로 맞춥니다
-   (`.verification-code-screen-resend` 선례와 같은 기법). 번호 칸이 내용 폭
-   전체라 왼쪽 정렬입니다. */
-.login-screen-error {
+   (`.verification-code-screen-resend` 선례와 같은 기법). 전화번호 오류는 번호
+   칸이 내용 폭 전체라 왼쪽 정렬, 소셜 오류는 소셜 셋과 같은 가운데 정렬입니다. */
+.login-screen-error,
+.login-screen-social-error {
   margin-top: calc(-1 * var(--libitum-spacing-8));
   text-align: left;
   color: var(--libitum-color-feedback-incorrect-text);
@@ -107,6 +114,10 @@
   font-size: var(--libitum-typography-body-s-font-size);
   line-height: var(--libitum-typography-body-s-line-height);
   letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.login-screen-social-error {
+  text-align: center;
 }
 
 .login-screen-country {
@@ -171,6 +182,27 @@
 .login-screen-social .ui-lynx-button-icon {
   position: absolute;
   left: var(--libitum-spacing-24);
+}
+
+/* Sign in with Apple은 Apple HIG의 검정 스타일을 따릅니다 — 면은 순수 검정, 로고와 문구는
+   같은 흰색입니다. `neutral`의 `gray-900` 면 · `gray-50` 문구를 이 버튼에서만 바꿉니다. */
+.login-screen-social-apple .ui-lynx-button-surface {
+  background-color: var(--libitum-color-black);
+}
+
+.login-screen-social-apple .ui-lynx-button-label {
+  color: var(--libitum-color-white);
+}
+
+/* 요청 중 스피너를 로고와 같은 자리에 고정합니다 — 로고 override가
+   자리를 흐름 밖으로 빼서 라벨을 가운데 두는데, `Button`의 스피너는 흐름
+   안에 남아 그대로 두면 라벨이 밀립니다. 로고와 같은 자리 · 같은 상자
+   크기로 둬 스피너가 로고 중심에 서게 합니다. */
+.login-screen-social .ui-lynx-button-spinner-wrap {
+  position: absolute;
+  left: var(--libitum-spacing-24);
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
 }
 
 /* 좌우 선 사이의 or입니다. */

@@ -306,6 +306,43 @@ usage description을 더하지 않았고 `AVCaptureDevice`·`PHPhotoLibrary` 계
    진다. **전부 사람이 판정한다** — 자동 계층은 원리적으로 못 본다(jsdom에 마이크가 없고
    `SFSpeechRecognizer`가 없다).
 
+**2026-09-29에 세 조건을 다시 통과한 일곱째 사례가 생겼다** — 웹 인증 창(소셜 로그인의
+Supabase OAuth)이고, iOS 호스트가 `WebAuthenticationModule`(`start` · `randomBytes`)을 등록했다
+(`apps/ios/Host/WebAuthenticationModule.swift` · 등록은 `apps/ios/Host/ViewController.swift`).
+판정의 본문은 [ADR-0028](0028-social-oauth-web-authentication.md) **D2**가 진다 — 결정이 그 ADR에
+있으므로 근거도 거기 둔다. 여기는 이 게이트가 무엇을 봤는지만 남긴다. ⚠ 여섯째 모듈
+(`HandwritingTraceModule`)의 사례 기록은 이 자리에 없다 — 번호를 모듈 순서로 센 것이다.
+
+1. **화면 목록이 요구한다** — 로그인(구현 순서 12번)의 소셜 셋. **앞의 넷째 · 다섯째와 달리 탐침이
+   아니라 제품 화면이다.**
+2. **훑은 자리** — 타입(`crypto` · `getRandomValues` · `TextEncoder` · `btoa` · `openURL` 0건) ·
+   설치된 Pod(`ASWebAuthenticationSession` · `SFSafariViewController` · `openURL` 0건) · 호스트 모듈
+   표 · JS 전역(넷째 · 다섯째 사례의 목록). ⭐ **0개가 아니다 — XElement의 `webview` 태그를
+   찾았고 쓰지 않았다.** 사유는 ADR-0028 D2다.
+3. **`docs/e2e/`에 항목으로 적을 수 있다** — [진입 흐름 e2e](../e2e/entry-flow.md)의 S1–S8.
+
+⚠ **권한은 요구하지 않는다** — ADR-0026의 조건 다섯에 들지 않는다. 대신 **나가는 외부 이동**을
+하나 더 열었고 그 경계는 ADR-0026 D4를 ADR-0028 D4가 부분 대체한 자리다. **「커스텀 UI」에 걸리지
+않는 근거** — 창은 시스템이 그리는 `ASWebAuthenticationSession`이고 호스트는 뷰를 하나도 만들지
+않는다(표시 기준 창만 넘긴다).
+
+**같은 날(2026-09-29) 뒤 여덟째 사례가 생겼다 — 이번에는 조건 하나가 성립하지 않는 채로 연 예외다.**
+네이티브 Sign in with Apple이고, iOS 호스트가 `AppleSignInModule`(`start` 하나)을 등록했다
+(`apps/ios/Host/AppleSignInModule.swift` · 등록은 `apps/ios/Host/ViewController.swift`). 판정의 본문은
+[ADR-0028](0028-social-oauth-web-authentication.md) **D7**이 진다.
+
+1. **화면 목록이 요구한다** — 일곱째와 같은 로그인 화면의 Apple 버튼.
+2. ⚠ **「대체 경로 0개」가 성립하지 않는다** — 일곱째 모듈(`WebAuthenticationModule`)의 웹 OAuth로
+   Apple이 이미 돌았다. 이 모듈을 연 근거는 **사용자 결정(2026-09-29 — Apple은 네이티브)** 하나다.
+   **조건 문면은 고치지 않는다** — 예외를 예외로 적어 두고, 같은 예외가 다시 요구되면 그때 조건
+   (2)의 문면을 다시 본다.
+3. **`docs/e2e/`에 항목으로 적을 수 있다** — [진입 흐름 e2e](../e2e/entry-flow.md)의 A1–A7.
+
+⚠ **권한은 요구하지 않는다** — 시트는 시스템이 그리고 호스트는 뷰를 만들지 않는다. 대신 호스트에
+**엔타이틀먼트 파일이 처음 생겼다**(`apps/ios/Host/Host.entitlements` — `com.apple.developer.applesignin`
+하나). 아래 「여전히 하지 않는 것」의 `코드 서명`은 **그대로 산다** — 서명 · 프로비저닝 설정을 이
+저장소가 만들지 않고, App ID에 기능을 켜는 것은 사용자 몫이다(ADR-0028 「사용자 확인」의 남음).
+
 **여전히 하지 않는 것** (ADR-0012 D2에서 그대로 이어받고 하나 더한다):
 푸시 · 딥링크 · ~~**권한 요청**~~ · 코드 서명 · 스토어 배포 · 커스텀 UI ·
 **커스텀 네이티브 엘리먼트**.
@@ -398,6 +435,15 @@ usage description을 더하지 않았고 `AVCaptureDevice`·`PHPhotoLibrary` 계
 들고 있을 수 없는 것**이다 — 버퍼가 몇 개 들어왔는지도, 방금 버퍼의 세기도, 시스템
 인터럽트로 세션이 혼자 끝났는지도 네이티브만 안다. 두 번째 진실이 아니라 **유일한
 진실**이라 조회가 열려 있다. **재생 쪽 제외는 그대로 산다.**
+
+> **2026-09-29에 같은 트리거가 다시 발동했다** — 일곱째 `WebAuthenticationModule`. 판정은 위
+> 「제자리 기록」 근거 셋을 그대로 다시 물어 같은 답을 냈고(D1 일곱째 사례), 트리거 숫자를 옮기지
+> 않았다. 메서드는 둘이라 둘째 트리거에서 멀다. 결정 문장은 [ADR-0028](0028-social-oauth-web-authentication.md)
+> 에 있다 — 이 ADR의 결정이 바뀐 것이 아니라 **다른 축(인증 · 외부 이동)이 새 번호를 연 것**이다.
+>
+> **같은 날 뒤 다시 발동했다** — 여덟째 `AppleSignInModule`. 판정은 같고(D1 여덟째 사례 — 조건 (2)는
+> 예외) 트리거 숫자를 옮기지 않았다. 메서드는 하나다 — 난수는 새 메서드 없이 일곱째의 `randomBytes`를
+> 쓴다.
 
 ### D3. 오디오 모듈의 경계 — 메서드는 **둘**
 

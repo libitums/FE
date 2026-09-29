@@ -1,7 +1,16 @@
 import { expect, test } from "vitest";
 
 import type { EntryLoginMethod } from "../../lib/entry-flow";
-import { canRequestPhoneOtp, loginMethodLabel, phoneNumberFrom } from "./login";
+import {
+  canRequestPhoneOtp,
+  canStartSocialSignIn,
+  loginMethodLabel,
+  loginMethodStatus,
+  loginStatusAfterEdit,
+  loginStatusAfterPhoneResult,
+  loginStatusAfterSocialOutcome,
+  phoneNumberFrom,
+} from "./login";
 
 // 라벨 리터럴 자체는 단언하지 않습니다(공백 아님·서로 다름만). 수단 넷은
 // `entryLoginMethods`(지금은 스텁이라 빈 배열)를 순회하지 않고 리터럴로 짓습니다 —
@@ -53,11 +62,17 @@ test("LP4. +를 뺀 숫자가 15자를 넘으면 null이다", () => {
   expect(phoneNumberFrom("+1", "123456789012345")).toBeNull();
 });
 
-test("LP5. canRequestPhoneOtp — 번호가 있고 요청 중이 아닐 때만 참", () => {
+test("LP5. canRequestPhoneOtp — 번호가 있고 어느 수단도 요청 중이 아닐 때만 참", () => {
   const phone = { e164: "+821012345678", display: "+82 10 1234 5678" };
   expect(canRequestPhoneOtp(phone, { kind: "idle" })).toBe(true);
-  expect(canRequestPhoneOtp(phone, { kind: "failed", reason: "network" })).toBe(true);
-  expect(canRequestPhoneOtp(phone, { kind: "requesting" })).toBe(false);
+  expect(canRequestPhoneOtp(phone, { kind: "failed", method: "phone", reason: "network" })).toBe(
+    true,
+  );
+  expect(
+    canRequestPhoneOtp(phone, { kind: "failed", method: "google", reason: "unsupported" }),
+  ).toBe(true);
+  expect(canRequestPhoneOtp(phone, { kind: "requesting", method: "phone" })).toBe(false);
+  expect(canRequestPhoneOtp(phone, { kind: "requesting", method: "apple" })).toBe(false);
   expect(canRequestPhoneOtp(null, { kind: "idle" })).toBe(false);
 });
 
@@ -71,4 +86,62 @@ test("LP6. 국가 번호까지 붙여 넣으면 국가 번호를 한 번만 쓴�
 
 test("LP7. 고른 국가와 다른 국가 번호로 시작하면 null이다", () => {
   expect(phoneNumberFrom("+82", "+1 555 123 4567")).toBeNull();
+});
+
+// ---------------------------------------------------------------- 요청 상태(네 수단 공유)
+
+test("LS1. canStartSocialSignIn — 어느 수단도 요청 중이 아닐 때만 참", () => {
+  expect(canStartSocialSignIn({ kind: "idle" })).toBe(true);
+  expect(canStartSocialSignIn({ kind: "failed", method: "phone", reason: "network" })).toBe(true);
+  expect(canStartSocialSignIn({ kind: "failed", method: "google", reason: "unsupported" })).toBe(
+    true,
+  );
+  expect(canStartSocialSignIn({ kind: "requesting", method: "phone" })).toBe(false);
+  expect(canStartSocialSignIn({ kind: "requesting", method: "google" })).toBe(false);
+});
+
+test("LS2. loginMethodStatus — 상태가 그 수단의 것일 때만 kind, 아니면 idle", () => {
+  const requestingGoogle = { kind: "requesting", method: "google" } as const;
+  expect(loginMethodStatus(requestingGoogle, "google")).toBe("requesting");
+  expect(loginMethodStatus(requestingGoogle, "apple")).toBe("idle");
+  expect(loginMethodStatus(requestingGoogle, "phone")).toBe("idle");
+
+  const failedPhone = { kind: "failed", method: "phone", reason: "network" } as const;
+  expect(loginMethodStatus(failedPhone, "phone")).toBe("failed");
+  expect(loginMethodStatus(failedPhone, "google")).toBe("idle");
+
+  for (const method of allLoginMethods) {
+    expect(loginMethodStatus({ kind: "idle" }, method)).toBe("idle");
+  }
+});
+
+test("LS3. loginStatusAfterSocialOutcome — 로그인 · 취소는 idle, 실패는 수단과 이유를 싣는다", () => {
+  expect(loginStatusAfterSocialOutcome("apple", { status: "signed-in" })).toEqual({ kind: "idle" });
+  expect(loginStatusAfterSocialOutcome("apple", { status: "cancelled" })).toEqual({ kind: "idle" });
+  expect(
+    loginStatusAfterSocialOutcome("apple", { status: "failed", reason: "unsupported" }),
+  ).toEqual({ kind: "failed", method: "apple", reason: "unsupported" });
+});
+
+test("LS4. loginStatusAfterPhoneResult — sent는 idle, 실패는 phone과 이유를 싣는다", () => {
+  expect(loginStatusAfterPhoneResult({ status: "sent" })).toEqual({ kind: "idle" });
+  expect(loginStatusAfterPhoneResult({ status: "failed", reason: "network" })).toEqual({
+    kind: "failed",
+    method: "phone",
+    reason: "network",
+  });
+});
+
+test("LS5. loginStatusAfterEdit — failed는 수단과 무관하게 idle, 나머지는 그대로", () => {
+  expect(
+    loginStatusAfterEdit({ kind: "failed", method: "google", reason: "sign-in-incomplete" }),
+  ).toEqual({ kind: "idle" });
+  expect(loginStatusAfterEdit({ kind: "failed", method: "phone", reason: "network" })).toEqual({
+    kind: "idle",
+  });
+  expect(loginStatusAfterEdit({ kind: "requesting", method: "phone" })).toEqual({
+    kind: "requesting",
+    method: "phone",
+  });
+  expect(loginStatusAfterEdit({ kind: "idle" })).toEqual({ kind: "idle" });
 });

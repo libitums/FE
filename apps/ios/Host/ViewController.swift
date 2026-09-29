@@ -26,17 +26,23 @@ final class ViewController: UIViewController {
       // 재검토 트리거는 숫자로 적혀 있다: **모듈이 넷째로 요구되는 시점**,
       // **한 모듈의 메서드가 다섯을 넘는 시점** (D2).
       //
-      // **앞엣것은 이미 당겨졌다.** 손글씨 인식(LIB-263 탐침)이 그 시점이었고, 입장
-      // 조건 셋을 통과해 아래에 섰다 — 손으로 쓴 글자를 읽는 능력 없이는 그 탐침이
-      // 물음 자체를 잃고, Lynx 쪽에 래스터화 수단이 0개이며(`canvas` 선언 없음),
-      // 사람이 눈으로 판정할 수 있다. 다음에 하나 더 여는 사람은 **트리거가 이미
-      // 당겨진 뒤**라는 것을 알고 연다.
+      // **앞엣것 둘은 이미 당겨졌다.** 손글씨 인식(LIB-263 탐침)이 첫 시점이었고,
+      // 입장 조건 셋을 통과해 아래에 섰다 — 손으로 쓴 글자를 읽는 능력 없이는 그
+      // 탐침이 물음 자체를 잃고, Lynx 쪽에 래스터화 수단이 0개이며(`canvas` 선언
+      // 없음), 사람이 눈으로 판정할 수 있다. 로그인 화면의 소셜 셋(웹 인증 창)이
+      // 일곱째 모듈로, Apple의 네이티브 시트(`AppleSignInModule`)가 여덟째 모듈로 다시
+      // 당겼다 — Lynx에 시스템 브라우저 세션 API가 없고(ADR-0028), `docs/e2e/`에 사람이
+      // 판정할 항목으로 적혀 있다.
+      // 다음에 하나 더 여는 사람은 **트리거가 이미 여러 번 당겨진 뒤**라는 것을 알고
+      // 연다 — 몇 번째인지는 `docs/adr/README.md`의 호스트 모듈 표가 센다.
       config.register(StorageModule.self)
       config.register(AudioPlaybackModule.self)
       config.register(CompletionAnnouncementModule.self)
       config.register(HandwritingRecognitionModule.self)
       config.register(HandwritingTraceModule.self)
       config.register(SpeechRecognitionModule.self)
+      config.register(WebAuthenticationModule.self)
+      config.register(AppleSignInModule.self)
       builder.config = config
       // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).
       // 이미지 서비스는 generic resource fetcher가 켜져 있을 때만 `shouldRedirectUrl`을
