@@ -2,12 +2,12 @@
 //
 // 결정의 근거는 ADR-0029(분석 전송 · PostHog)입니다. 이 파일은 그 계약의 타입 부분을
 // 컴파일되는 모양으로 고정합니다. 이벤트 이름과 필드는 **새로 정하지 않습니다** —
-// 각 화면 계약(`entry-flow.ts` · `*.contract.ts`)이 이미 고정한 여섯 union을 그대로
+// 각 화면 계약(`entry-flow.ts` · `*.contract.ts`)이 이미 고정한 일곱 union을 그대로
 // 모읍니다. 이 파일이 더하는 것은 「그 이벤트가 PostHog 요청의 어디로 가는가」뿐입니다.
 //
 // 모듈 셋이 이 타입을 나눠 가집니다.
 //   - `lib/analytics-config.ts`  — 순수. 키 · 환경 판정 · 호스트 상수. 어느 스레드든 안전
-//   - `lib/analytics-events.ts`  — 순수. 이벤트 → capture 매핑 · sink 여섯 만들기. 어느 스레드든 안전
+//   - `lib/analytics-events.ts`  — 순수. 이벤트 → capture 매핑 · sink 일곱 만들기. 어느 스레드든 안전
 //   - `lib/posthog-client.ts`    — `import "background-only"`. SDK · 어댑터 · 전송 해석
 //
 // SDK 타입은 **type import만** 합니다 — 값 import는 `posthog-client.ts` 한 파일뿐이라,
@@ -16,6 +16,11 @@
 import type { PostHogCore, PostHogCoreOptions } from "@posthog/core";
 
 import type { EntryAppProps, EntryEvent, EntryEventSink } from "./entry-flow";
+import type {
+  EpisodeIntroAppProps,
+  EpisodeIntroEvent,
+  EpisodeIntroEventSink,
+} from "../screens/episode-intro/episode-intro.contract";
 import type {
   MessengerAppProps,
   MessengerEvent,
@@ -47,16 +52,10 @@ import type {
 /** 수집 호스트입니다(사용자 결정 U1 — US Cloud). 환경 변수로 바꾸지 않습니다. */
 export type PostHogHost = "https://us.i.posthog.com";
 
-/**
- * 이벤트가 난 곳입니다. PostHog 프로젝트가 하나라(무료 요금제) 개발 · 운영을 이 값으로 가릅니다.
- * 모든 이벤트에 `environment` 속성으로 붙습니다(ADR-0029 D13).
- */
+/** 이벤트가 난 곳입니다. 프로젝트가 하나라 모든 이벤트에 `environment`로 붙습니다(ADR-0029 D13). */
 export type AnalyticsEnvironment = "development" | "production";
 
-/**
- * 순수 판정입니다. 값이 정확히 `"production"`일 때만 운영이고, 그 밖은 전부 `"development"`입니다 —
- * 표시를 빠뜨린 빌드가 운영 수치에 섞이지 않게 합니다.
- */
+/** 순수 판정입니다. 정확히 `"production"`일 때만 운영이고 그 밖은 전부 `"development"`입니다. */
 export type AnalyticsEnvironmentFrom = (environment: unknown) => AnalyticsEnvironment;
 
 /**
@@ -78,14 +77,15 @@ export type AnalyticsConfigFrom = (
 
 // ------------------------------------------------------------------ 이벤트 → capture
 
-/** sink 여섯이 내는 이벤트 전부입니다(이름 18개 · 모양 21개 — 열림 이벤트 셋이 출처별 두 모양). */
+/** sink 일곱이 내는 이벤트 전부입니다(이름 23개 · 모양 26개 — 열림 이벤트 셋이 출처별 두 모양). */
 export type AnalyticsEvent =
   | EntryEvent
   | MessengerEvent
   | VisualNovelEvent
   | PhoneCallEvent
   | NotificationEvent
-  | SettingsEvent;
+  | SettingsEvent
+  | EpisodeIntroEvent;
 
 /**
  * PostHog 이벤트 이름입니다. **목록을 손으로 적습니다** — 화면 계약에 이벤트가 늘거나
@@ -110,7 +110,12 @@ export type AnalyticsEventName =
   | "settings_opened"
   | "profile_opened"
   | "terms_opened"
-  | "session_option_changed";
+  | "session_option_changed"
+  | "episode_intro_viewed"
+  | "episode_intro_skipped"
+  | "episode_intro_continued"
+  | "episode_intro_exited"
+  | "episode_prologue_completed";
 
 /** 이벤트 필드 값은 문자열 · 불리언뿐입니다. 숫자 필드가 생기면 검사가 섭니다. */
 export type AnalyticsPropertyValue = string | boolean;
@@ -141,7 +146,7 @@ export type AnalyticsCaptureClient = {
 };
 
 /**
- * App이 받는 sink 여섯입니다. 키 이름이 App props 이름과 같습니다. **옵셔널이 없습니다**
+ * App이 받는 sink 일곱입니다. 키 이름이 App props 이름과 같습니다. **옵셔널이 없습니다**
  * (ADR-0007 D5) — 보내지 않을 때는 각 값이 `null`입니다. no-op 함수로 수집을 가장하지
  * 않는다는 기존 sink 규약(`MessengerEventSink` 주석)을 그대로 따릅니다.
  */
@@ -152,10 +157,11 @@ export type AnalyticsEventSinks = {
   readonly phoneCallEventSink: PhoneCallEventSink;
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
+  readonly episodeIntroEventSink: EpisodeIntroEventSink;
 };
 
 /**
- * 클라이언트가 있으면 여섯 모두 그 클라이언트로 `capture`하는 함수, 없으면 여섯 모두
+ * 클라이언트가 있으면 일곱 모두 그 클라이언트로 `capture`하는 함수, 없으면 일곱 모두
  * `null`입니다. 만든 sink는 **던지지 않습니다** — 매핑 · capture의 예외를 안에서 삼킵니다.
  */
 export type AnalyticsEventSinksFrom = (
@@ -204,7 +210,7 @@ export type ResolveAnalyticsTransport = () => AnalyticsTransport | null;
 
 /**
  * 설정과 전송이 **둘 다** 있을 때만 클라이언트를 하나 만듭니다. 하나라도 `null`이면
- * 클라이언트를 만들지 않고 sink 여섯 `null` · `identify` `null`을 돌려줍니다 — 요청 0건.
+ * 클라이언트를 만들지 않고 sink 일곱 `null` · `identify` `null`을 돌려줍니다 — 요청 0건.
  */
 export type CreateAnalyticsSession = (
   config: AnalyticsConfig | null,
@@ -265,7 +271,7 @@ type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
  * 값이 없는 검사 묶음입니다. 하나라도 거짓이 되면 `tsc`가 이 줄에서 멈춥니다.
  *   ① 화면 계약의 이벤트 이름 집합 = `AnalyticsEventName`(늘거나 줄면 섬)
  *   ② 모든 이벤트가 `name` + 스칼라 필드뿐이다(PostHog properties로 그대로 갈 수 있다)
- *   ③ sink 여섯 = App이 받는 sink props 여섯(키와 값 타입 모두, 옵셔널을 걷은 모양)
+ *   ③ sink 일곱 = App이 받는 sink props 일곱(키와 값 타입 모두, 옵셔널을 걷은 모양)
  *   ④ `PostHogCore` 인스턴스가 `AnalyticsCaptureClient` 자리에 그대로 들어간다
  */
 export type AnalyticsContractChecks = [
@@ -282,7 +288,8 @@ export type AnalyticsContractChecks = [
           VisualNovelAppProps &
           PhoneCallAppProps &
           NotificationAppProps &
-          SettingsAppProps
+          SettingsAppProps &
+          EpisodeIntroAppProps
       >
     >
   >,

@@ -17,6 +17,52 @@ export type EpisodeIntroTarget =
   | { readonly kind: "phone-call"; readonly unitId: PhoneCallUnitId }
   | { readonly kind: "visual-novel"; readonly unitId: VisualNovelUnitId };
 
+/**
+ * 표지 · 서사의 제품 사용 이벤트입니다. 필드는 문자열 · 불리언뿐입니다.
+ *   - `episode_intro_viewed` — 표지가 설 때. 표지를 본 에피소드는 표지가 서지 않아 나지 않습니다
+ *   - `episode_intro_skipped` — 확인 모달에서 `건너뛰기`를 골랐을 때. `Skip`을 누른 것만으로는 나지 않습니다
+ *   - `episode_intro_continued` — `Next`. 서사가 없는 에피소드면 곧장 유닛이 열립니다(`hasPrologue: false`)
+ *   - `episode_intro_exited` — 표지(`intro`)나 서사(`prologue`)에서 뒤로 나갈 때
+ *   - `episode_prologue_completed` — 서사를 끝까지 보고 하단 버튼을 눌렀을 때
+ *
+ * 표지를 본 에피소드는 영속하지 않아 앱을 다시 켜면 표지가 다시 섭니다 — 같은 사람이 같은
+ * 표지를 여러 번 봅니다.
+ */
+export type EpisodeIntroViewedEvent = {
+  readonly name: "episode_intro_viewed";
+  readonly episodeId: string;
+  readonly targetKind: EpisodeIntroTarget["kind"];
+};
+export type EpisodeIntroSkippedEvent = {
+  readonly name: "episode_intro_skipped";
+  readonly episodeId: string;
+};
+export type EpisodeIntroContinuedEvent = {
+  readonly name: "episode_intro_continued";
+  readonly episodeId: string;
+  readonly hasPrologue: boolean;
+};
+export type EpisodeIntroExitStage = "intro" | "prologue";
+export type EpisodeIntroExitedEvent = {
+  readonly name: "episode_intro_exited";
+  readonly episodeId: string;
+  readonly stage: EpisodeIntroExitStage;
+};
+export type EpisodePrologueCompletedEvent = {
+  readonly name: "episode_prologue_completed";
+  readonly episodeId: string;
+  readonly prologueKind: EpisodePrologue["kind"];
+};
+export type EpisodeIntroEvent =
+  | EpisodeIntroViewedEvent
+  | EpisodeIntroSkippedEvent
+  | EpisodeIntroContinuedEvent
+  | EpisodeIntroExitedEvent
+  | EpisodePrologueCompletedEvent;
+/** 보내지 않을 때는 `null`입니다 — no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */
+export type EpisodeIntroEventSink = ((event: EpisodeIntroEvent) => void) | null;
+export type EpisodeIntroAppProps = { readonly episodeIntroEventSink?: EpisodeIntroEventSink };
+
 export type EpisodeIntroScreenProps = {
   /**
    * 가장자리 여백입니다. 이 화면은 배경을 상태바 · 홈 인디케이터 뒤까지 깔고, 글자와

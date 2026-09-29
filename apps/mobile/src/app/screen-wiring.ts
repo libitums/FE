@@ -4,6 +4,8 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
+  EpisodeIntroEventSink,
+  EpisodeIntroExitStage,
   EpisodeIntroTarget,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
@@ -153,7 +155,8 @@ export type ScreenWiring = {
   // 받습니다. 여정의 유닛 시작 넷(`onStartStep` 등)은 표지를 거치는 판입니다.
   onSkipEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
   onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => void;
-  onExitEpisodeIntro: () => void;
+  // 나간 자리(표지 · 서사)를 함께 받습니다 — 이벤트가 어디서 나갔는지 싣습니다.
+  onExitEpisodeIntro: (episodeId: string, stage: EpisodeIntroExitStage) => void;
   // 표지 `Next` 뒤 에피소드 서사의 끝 · 나가기입니다.
   onCompletePrologue: (episodeId: string) => void;
   onExitPrologueComplete: (episodeId: string) => void;
@@ -201,6 +204,7 @@ export type ScreenWiringArgs = {
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
   readonly entryEventSink: EntryEventSink;
+  readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly dispatch: Dispatch<NavAction>;
   readonly completedMessengerUnitIds: readonly MessengerUnitId[];
   readonly setCompletedMessengerUnitIds: Dispatch<SetStateAction<readonly MessengerUnitId[]>>;

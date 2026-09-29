@@ -8,6 +8,8 @@ import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../screens/visual-novel/visual-novel.contract";
 import type {
+  EpisodeIntroEventSink,
+  EpisodeIntroExitStage,
   EpisodeIntroTarget,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
@@ -34,6 +36,7 @@ export type EpisodeIntroWiringArgs = {
   readonly starts: UnitStarts;
   /** 그 에피소드의 서사 전개입니다. 없으면 표지의 `Next`가 곧장 유닛을 엽니다. */
   readonly prologueFor: (episodeId: string) => EpisodePrologue | undefined;
+  readonly episodeIntroEventSink: EpisodeIntroEventSink;
 };
 
 // 목적지를 표지 없는 시작으로 옮깁니다. 돌려주는 값이 없어 빠진 갈래를 `TS2366`이
@@ -64,8 +67,15 @@ function startTarget(starts: UnitStarts, target: EpisodeIntroTarget): void {
 }
 
 export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
-  const { sections, seenEpisodeIntroIds, setSeenEpisodeIntroIds, dispatch, starts, prologueFor } =
-    args;
+  const {
+    sections,
+    seenEpisodeIntroIds,
+    setSeenEpisodeIntroIds,
+    dispatch,
+    starts,
+    prologueFor,
+    episodeIntroEventSink,
+  } = args;
 
   // 표지를 봤으면 곧장 열고, 아니면 표지를 쌓습니다. 표지는 유닛을 대신하지 않습니다 —
   // 목적지를 route에 실어 두고, 표지를 넘기는 순간 그 유닛을 엽니다.
@@ -75,6 +85,11 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
       startTarget(starts, target);
       return;
     }
+    episodeIntroEventSink?.({
+      name: "episode_intro_viewed",
+      episodeId: episode.id,
+      targetKind: target.kind,
+    });
     dispatch({ type: "push", screen: { name: "episode-intro", episodeId: episode.id, target } });
   };
 
@@ -92,13 +107,18 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
     onStartPhoneCallUnit: (unitId: PhoneCallUnitId) => gate({ kind: "phone-call", unitId }),
     onStartVisualNovelUnit: (unitId: VisualNovelUnitId) => gate({ kind: "visual-novel", unitId }),
     // `Skip`은 서사를 건너뛰고 유닛으로 곧장 갑니다.
-    onSkipEpisodeIntro: continueToTarget,
+    onSkipEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => {
+      episodeIntroEventSink?.({ name: "episode_intro_skipped", episodeId });
+      continueToTarget(episodeId, target);
+    },
     // `Next`는 서사 전개로 갑니다. 에피소드마다 형식이 하나(통화 · 메신저 · 비주얼 노벨)이고
     // 어느 형식이든 끝나면 학습 완료 → 맵입니다. 표지를 서사로 갈아 끼웁니다(`replace` —
     // 서사에서 뒤로 가면 표지가 아니라 맵입니다). 서사가 없는 에피소드면 `Skip`처럼 유닛으로
     // 곧장 갑니다. 여기서는 본 것으로 적지 않습니다 — 서사 전개를 끝까지 마쳤을 때 적습니다.
     onNextEpisodeIntro: (episodeId: string, target: EpisodeIntroTarget) => {
-      if (prologueFor(episodeId) === undefined) {
+      const hasPrologue = prologueFor(episodeId) !== undefined;
+      episodeIntroEventSink?.({ name: "episode_intro_continued", episodeId, hasPrologue });
+      if (!hasPrologue) {
         continueToTarget(episodeId, target);
         return;
       }
@@ -108,6 +128,14 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
     // 서사를 학습 완료 화면으로 갈아 끼웁니다(`replace` — 완료 화면에서 돌아갈 곳은 서사가
     // 아닙니다).
     onCompletePrologue: (episodeId: string) => {
+      const prologue = prologueFor(episodeId);
+      if (prologue !== undefined) {
+        episodeIntroEventSink?.({
+          name: "episode_prologue_completed",
+          episodeId,
+          prologueKind: prologue.kind,
+        });
+      }
       dispatch({ type: "replace", screen: { name: "episode-prologue-complete", episodeId } });
     },
     // 학습 완료 화면의 `Check`입니다. 서사를 본 것으로 적고 **여정 맵으로 돌아갑니다** —
@@ -120,6 +148,9 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
     },
     // 표지 · 서사에서 뒤로 나갑니다. 본 것으로 적지 않습니다 — 다음에 유닛을 열면 표지부터
     // 다시 뜹니다.
-    onExitEpisodeIntro: () => dispatch({ type: "back" }),
+    onExitEpisodeIntro: (episodeId: string, stage: EpisodeIntroExitStage) => {
+      episodeIntroEventSink?.({ name: "episode_intro_exited", episodeId, stage });
+      dispatch({ type: "back" });
+    },
   };
 }

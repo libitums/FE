@@ -20,9 +20,10 @@ const sinkKeys = [
   "phoneCallEventSink",
   "notificationEventSink",
   "settingsEventSink",
+  "episodeIntroEventSink",
 ] as const satisfies readonly (keyof AnalyticsEventSinks)[];
 
-// 이름 18개 · 모양 21개(열림 이벤트 셋이 출처별 두 모양).
+// 이름 23개 · 모양 26개(열림 이벤트 셋이 출처별 두 모양).
 const events: readonly AnalyticsEvent[] = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
@@ -90,6 +91,11 @@ const events: readonly AnalyticsEvent[] = [
   { name: "profile_opened" },
   { name: "terms_opened" },
   { name: "session_option_changed", option: "auto-play-audio", value: false },
+  { name: "episode_intro_viewed", episodeId: "tutorial", targetKind: "step" },
+  { name: "episode_intro_skipped", episodeId: "tutorial" },
+  { name: "episode_intro_continued", episodeId: "tutorial", hasPrologue: true },
+  { name: "episode_intro_exited", episodeId: "tutorial", stage: "prologue" },
+  { name: "episode_prologue_completed", episodeId: "tutorial", prologueKind: "call" },
 ];
 
 function withoutName(event: AnalyticsEvent): Record<string, unknown> {
@@ -98,9 +104,9 @@ function withoutName(event: AnalyticsEvent): Record<string, unknown> {
 }
 
 describe("analyticsCaptureFrom", () => {
-  test("AE1: 표가 이름 18개 · 모양 21개를 다 덮는다", () => {
-    expect(events).toHaveLength(21);
-    expect(new Set(events.map((e) => e.name)).size).toBe(18);
+  test("AE1: 표가 이름 23개 · 모양 26개를 다 덮는다", () => {
+    expect(events).toHaveLength(26);
+    expect(new Set(events.map((e) => e.name)).size).toBe(23);
   });
 
   test.each(events.map((e, i) => [`${i + 1}. ${e.name}`, e] as const))(
@@ -141,14 +147,14 @@ describe("analyticsCaptureFrom", () => {
 });
 
 describe("noAnalyticsEventSinks / noAnalyticsSession", () => {
-  test("AE3: 여섯 sink가 모두 null이다 — no-op 함수가 아니다", () => {
+  test("AE3: 일곱 sink가 모두 null이다 — no-op 함수가 아니다", () => {
     expect(Object.keys(noAnalyticsEventSinks).sort()).toStrictEqual([...sinkKeys].sort());
     for (const key of sinkKeys) {
       expect(noAnalyticsEventSinks[key]).toBeNull();
     }
   });
 
-  test("AE3: noAnalyticsSession은 sink 여섯 null + identify null이다", () => {
+  test("AE3: noAnalyticsSession은 sink 일곱 null + identify null이다", () => {
     expect(noAnalyticsSession).toStrictEqual({ sinks: noAnalyticsEventSinks, identify: null });
   });
 });
@@ -161,7 +167,7 @@ function fakeClient() {
 }
 
 describe("analyticsEventSinksFrom", () => {
-  test("AE4: null 클라이언트는 여섯 모두 null이다", () => {
+  test("AE4: null 클라이언트는 일곱 모두 null이다", () => {
     const sinks = analyticsEventSinksFrom(null);
     expect(sinks).toStrictEqual(noAnalyticsEventSinks);
     for (const key of sinkKeys) {
@@ -169,7 +175,7 @@ describe("analyticsEventSinksFrom", () => {
     }
   });
 
-  test("AE5: 여섯 sink가 이벤트 하나당 capture를 정확히 1회 부른다", () => {
+  test("AE5: 일곱 sink가 이벤트 하나당 capture를 정확히 1회 부른다", () => {
     const { client, capture, identify } = fakeClient();
     const sinks = analyticsEventSinksFrom(client);
     const bySink: readonly (readonly [unknown, AnalyticsEvent])[] = [
@@ -179,6 +185,7 @@ describe("analyticsEventSinksFrom", () => {
       [sinks.phoneCallEventSink, events[12]!],
       [sinks.notificationEventSink, events[15]!],
       [sinks.settingsEventSink, events[19]!],
+      [sinks.episodeIntroEventSink, events[21]!],
     ];
     for (const [sink, event] of bySink) {
       expect(sink).toBeTypeOf("function");

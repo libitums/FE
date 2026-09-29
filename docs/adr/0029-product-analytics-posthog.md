@@ -191,6 +191,19 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   대시보드의 인사이트는 그 필터를 켠다. 이 결정 전에 들어간 이벤트는 속성이 없어 함께 빠진다.
 - 검증: unit AC5(판정) · AC6(환경 변수) · PC20(이벤트에 붙음).
 
+### D14. 서사 표지 · 서사 이벤트 다섯이 일곱 번째 sink로 붙는다
+
+2026-09-29. 이 ADR은 「새 이벤트는 없다」로 시작했다(맥락). 표지를 건너뛰는지 볼 이벤트가 없어
+다섯을 더했다 — `episode_intro_viewed` · `episode_intro_skipped` · `episode_intro_continued` ·
+`episode_intro_exited` · `episode_prologue_completed`. 정본은
+`screens/episode-intro/episode-intro.contract.ts`의 `EpisodeIntroEvent`다.
+
+- sink는 **일곱**(`episodeIntroEventSink`), 이벤트 이름은 **23개**다. 이 문서의 「여섯」 · 「18개」는
+  그때의 수다.
+- 매핑 · 전송 · 대기열 · `environment`(D13)는 바꾸지 않았다 — 같은 sink 함수를 하나 더 내준다.
+- 표지는 앱을 켤 때마다 다시 선다(본 에피소드를 영속하지 않는다). 건너뛰기 비율은 첫 조회와
+  재조회가 섞인 값이다.
+
 ## 사용자 확인 필요
 
 ⚠ 아래는 사용자가 자리에 없는 동안 고른 기본값이다. 확인되기 전까지 이 ADR은 `제안`이다.
