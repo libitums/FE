@@ -2,7 +2,7 @@ import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 
-import { DrawingSurface } from "./DrawingSurface";
+import { DrawingSurface } from "../../components/DrawingSurface";
 import {
   probeStrokeWidth,
   probeSurfaceSize,
@@ -167,6 +167,7 @@ export function HandwritingProbeScreen(): ReactNode {
             strokes={strokes}
             width={probeSurfaceSize.width}
             height={probeSurfaceSize.height}
+            sizeClassName="handwriting-probe-screen-surface"
             color={color.fg.neutral}
             strokeWidth={probeStrokeWidth}
             onStrokeComplete={(stroke) => setStrokes((current) => [...current, stroke])}

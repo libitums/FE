@@ -1,0 +1,35 @@
+/* 짝 CSS 파일입니다(ADR-0015 D2). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+
+   빈칸 문장입니다 — `display`(34 · ExtraBold). 앞은 gray-700, 빈칸과 뒤는 주색입니다(디자인). */
+.writing-prompt {
+  text-align: center;
+  flex-shrink: 0;
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+.writing-prompt-before,
+.writing-prompt-blank {
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+.writing-prompt-before {
+  color: var(--libitum-color-gray-700);
+}
+
+.writing-prompt-blank {
+  color: var(--libitum-color-brand-primary);
+}
+
+/* 서사 장면 위의 어두운 패널에서는 빈칸 앞을 밝은 글자로 둡니다 — 최종 테스트의 말하기 문장과
+   같은 gray-50입니다. */
+.writing-prompt-scene .writing-prompt-before {
+  color: var(--libitum-color-gray-50);
+}

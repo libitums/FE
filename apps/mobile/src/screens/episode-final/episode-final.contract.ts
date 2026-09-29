@@ -6,6 +6,7 @@
 
 import type { AnswerResult } from "../../lib/answer-result";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import type { WritingQuestion } from "../../lib/writing-session";
 
 export type EpisodeFinalUnitId = "tutorial-final-test";
 export type EpisodeFinalTitle = "최종 테스트";
@@ -39,7 +40,16 @@ export type EpisodeFinalWordChoiceQuestion = {
   readonly answerIndex: 0 | 1 | 2;
 };
 
-export type EpisodeFinalQuestion = EpisodeFinalSpeakingQuestion | EpisodeFinalWordChoiceQuestion;
+/**
+ * 빈칸의 음절을 따라 쓰는 문항입니다(Figma 79-6378). 모양과 채점은 쓰기 학습형과 같은 공용
+ * 핵심(`lib/writing-session.ts`)의 것이고, 여기서는 문항 종류 낱말만 더합니다.
+ */
+export type EpisodeFinalWritingQuestion = { readonly kind: "writing" } & WritingQuestion;
+
+export type EpisodeFinalQuestion =
+  | EpisodeFinalSpeakingQuestion
+  | EpisodeFinalWordChoiceQuestion
+  | EpisodeFinalWritingQuestion;
 
 /** 통화 최종 테스트에서 상대가 하는 대사입니다. 잠시 머문 뒤 저절로 다음 차례로 갑니다. */
 export type EpisodeFinalCallLine = {
@@ -137,4 +147,6 @@ export const episodeFinalTestIds = {
   wordChoice: "episode-final-screen-word-choice",
   prompt: "episode-final-screen-prompt",
   option: (index: number) => `episode-final-screen-option-${index}`,
+  writing: "episode-final-screen-writing",
+  writingAction: "episode-final-screen-writing-action",
 } as const;
