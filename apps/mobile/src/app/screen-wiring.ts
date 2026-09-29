@@ -18,6 +18,7 @@ import type {
   PhoneOtpVerifyOutcome,
   PhoneOtpVerifyRequest,
 } from "../lib/auth-session.contract";
+import type { AnalyticsIdentify } from "../lib/analytics.contract";
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
@@ -216,6 +217,7 @@ export type ScreenWiringArgs = {
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
   readonly entryEventSink: EntryEventSink;
+  readonly analyticsIdentify: AnalyticsIdentify | null;
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly dispatch: Dispatch<NavAction>;
   readonly completedMessengerUnitIds: readonly MessengerUnitId[];
@@ -255,6 +257,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   });
   const entry = entryWiring({
     entryEventSink: args.entryEventSink,
+    analyticsIdentify: args.analyticsIdentify,
     dispatch: args.dispatch,
     entryLanguage: args.entryLanguage,
     setEntryLanguage: args.setEntryLanguage,

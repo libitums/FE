@@ -168,11 +168,13 @@ export type AnalyticsEventSinksFrom = (
   client: AnalyticsCaptureClient | null,
 ) => AnalyticsEventSinks;
 
-/**
- * 로그인 사용자 식별 자리입니다(요구사항 D2). **이번 변경에서 부르는 곳은 없습니다** —
- * Supabase 사용자 ID가 main에 없어서입니다. 던지지 않습니다.
- */
+/** 로그인 사용자 식별입니다(ADR-0029 D8). 로그인 · 세션 갱신 직후 진입 결선이 부릅니다. */
 export type AnalyticsIdentify = (userId: string) => void;
+
+/** App이 받는 식별 자리입니다. sink와 같이 보내지 않을 때는 `null`입니다. */
+export type AnalyticsIdentifyAppProps = {
+  readonly analyticsIdentify?: AnalyticsIdentify | null;
+};
 
 /** 진입점이 한 번 만들어 쥐는 묶음입니다. 클라이언트가 없으면 `identify`도 `null`입니다. */
 export type AnalyticsSession = {
