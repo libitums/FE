@@ -22,7 +22,11 @@ import {
   resolveAnalyticsTransport,
 } from "./posthog-client";
 
-const config: AnalyticsConfig = { projectKey: "phc_unit_test", host: "https://us.i.posthog.com" };
+const config: AnalyticsConfig = {
+  projectKey: "phc_unit_test",
+  host: "https://us.i.posthog.com",
+  environment: "development",
+};
 const batchUrl = "https://us.i.posthog.com/batch/";
 
 const okResponse: AnalyticsResponse = {
@@ -292,6 +296,33 @@ describe("LynxPostHogClient 전송", () => {
     expect(client.getLibraryId()).toBe("libitums-lynx");
     expect(client.getLibraryVersion()).toBe("1.55.2");
     expect(client.getCustomUserAgent()).toBeUndefined();
+  });
+});
+
+describe("환경 표시", () => {
+  test("PC20: 모든 이벤트에 설정의 environment가 붙는다", async () => {
+    const { calls, transport } = fakeTransport();
+    const client = new LynxPostHogClient({ ...config, environment: "production" }, transport);
+    clients.push(client);
+
+    client.capture("settings_opened", {});
+    client.capture("profile_opened", {});
+    await vi.waitFor(() => expect(batchEventsOf(calls)).toHaveLength(2));
+
+    expect(batchEventsOf(calls).map((event) => event.properties.environment)).toStrictEqual([
+      "production",
+      "production",
+    ]);
+  });
+
+  test("PC20: 설정이 development면 development가 붙는다", async () => {
+    const { calls, transport } = fakeTransport();
+    const client = makeClient(transport);
+
+    client.capture("settings_opened", {});
+    await vi.waitFor(() => expect(calls).toHaveLength(1));
+
+    expect(batchEventsOf(calls)[0]!.properties.environment).toBe("development");
   });
 });
 

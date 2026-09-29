@@ -48,7 +48,7 @@ payload는 바꾸지 않는다 — 새 이벤트도 없다.
 
 | 파일 | 성질 | 하는 것 |
 |---|---|---|
-| `lib/analytics-config.ts` | 순수 | `PUBLIC_POSTHOG_KEY` → 설정 또는 `null` |
+| `lib/analytics-config.ts` | 순수 | `PUBLIC_POSTHOG_KEY` → 설정 또는 `null`, `PUBLIC_ANALYTICS_ENVIRONMENT` → 환경(D13) |
 | `lib/analytics-events.ts` | 순수 · SDK import 0 | 이벤트 → `capture(name, properties)` 매핑, sink 여섯 결선 |
 | `lib/posthog-client.ts` | **첫 줄 `import "background-only"`** | `PostHogCore` 하위 클래스 · 전송 해석 · 세션 생성 |
 
@@ -128,7 +128,7 @@ feature flag(`preloadFeatureFlags: false` · `disableRemoteFeatureFlags: true` �
 `CompressionStream`이 없어 원래 꺼지지만, vitest(Node)에는 있어 테스트에서만 본문이 gzip이 되므로
 옵션으로 끈다. SDK가 붙이는 자동 속성은 `$lib` · `$lib_version` · `$session_id` ·
 `$process_person_profile` · `$is_identified` · `$geoip_disable` 여섯뿐이다 — 기기 모델 · OS 버전은
-없다.
+없다. 앱이 모든 이벤트에 더하는 속성은 `environment` 하나다(D13).
 
 ### D10. 전송 해석 — `globalThis.fetch` → 맨 식별자 `lynx.fetch` → `null`, 호출마다
 
@@ -175,6 +175,22 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 - 이 결정은 ADR-0007 D1(저장소에는 로그인 토큰만)의 **예외 하나**다. 대기열은 서버 응답도 화면
   상태도 아니고, 보내고 나면 지워져 무효화를 사람이 맡지 않는다.
 
+### D13. 개발 · 운영은 프로젝트가 아니라 `environment` 속성으로 가른다
+
+2026-09-29 사용자 결정. PostHog 무료 요금제는 **프로젝트가 하나**라 개발용 프로젝트를 따로 둘 수
+없다. 그래서 한 프로젝트에 모으고 이벤트마다 표시를 붙인다.
+
+- 빌드 환경 변수 `PUBLIC_ANALYTICS_ENVIRONMENT`가 **정확히 `production`일 때만** `production`이고,
+  없거나 다른 값이면 전부 `development`다. 표시를 빠뜨린 빌드가 운영 수치에 섞이지 않는 쪽이 기본이다.
+- 값은 클라이언트가 만들어질 때 SDK의 공통 속성으로 한 번 등록한다(`register`). 화면 계약의 이벤트
+  모양과 `capture` 매핑은 바꾸지 않는다. 되살린 대기열(D12)의 이벤트는 만들어질 때의 값을 갖는다.
+- **빌드 모드(`rspeedy dev` · `build`)로 가르지 않는다.** `pnpm bundle:host`가 운영 모드 빌드라,
+  시뮬레이터 확인용 이벤트가 `production`으로 찍힌다.
+- `production`은 **배포 번들을 만드는 곳의 `.env.local`에만** 둔다. 개발자 기기에는 두지 않는다.
+- PostHog에서는 프로젝트 설정의 내부 · 테스트 사용자 필터에 `environment = production`을 걸고,
+  대시보드의 인사이트는 그 필터를 켠다. 이 결정 전에 들어간 이벤트는 속성이 없어 함께 빠진다.
+- 검증: unit AC5(판정) · AC6(환경 변수) · PC20(이벤트에 붙음).
+
 ## 사용자 확인 필요
 
 ⚠ 아래는 사용자가 자리에 없는 동안 고른 기본값이다. 확인되기 전까지 이 ADR은 `제안`이다.
@@ -218,11 +234,17 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 8. **전송 해석은 vitest가 동작으로 지키지 못한다**(D10) — 맨 식별자를 `globalThis.lynx`로 되돌리면
    원문 검사(PC13)만 잡는다. 형태가 다른 되돌림(다른 전역 이름 등)은 기기 e2e만 잡는다.
 
+9. **배포 빌드가 `PUBLIC_ANALYTICS_ENVIRONMENT=production`을 빠뜨리면 운영 이벤트가
+   `development`로 찍힌다**(D13) — 대시보드가 비어 보이는 것으로 드러난다. 이미 들어간 이벤트의
+   값은 고칠 수 없다.
+10. **개발 이벤트도 무료 한도(월 이벤트 수)를 쓴다**(D13) — 같은 프로젝트에 쌓인다.
+
 ## 재검토 조건
 
 - **전화번호 · 소셜 로그인 PR이 머지돼 사용자 ID가 생긴 때** → D8. `identify`를 부른다. 그때
   `api-client.ts`의 `resolveTransport`와 이 파일의 전송 해석이 **두 벌**이 되므로 합칠지 함께 본다.
 - **호스트가 생명주기 전역 이벤트를 보내게 된 때** → D7. background flush를 연다.
 - **`@posthog/core` 버전을 올릴 때** → D6. 별칭 경로가 그대로인지, 번들을 다시 잰다.
+- **PostHog 프로젝트를 둘 이상 쓸 수 있게 된 때**(요금제 변경) → D13. 개발 프로젝트를 나눌지 본다.
 - **월 이벤트가 PostHog 무료 한도(프로젝트 요금제 기준)에 닿을 때** → 샘플링을 정한다.
 - **사용자 확인 필요의 여섯 항목이 답을 받은 때** → 제자리에서 고치고 `채택`으로 올린다.

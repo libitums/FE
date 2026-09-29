@@ -30,7 +30,9 @@ function requireConfig(config: AnalyticsConfig | null): AnalyticsConfig {
   return config;
 }
 
-const testConfig: AnalyticsConfig = requireConfig(analyticsConfigFrom("phc_integration_test"));
+const testConfig: AnalyticsConfig = requireConfig(
+  analyticsConfigFrom("phc_integration_test", "development"),
+);
 
 type Call = { url: string; init: AnalyticsRequestInit };
 type SentEvent = { event: string; distinct_id: string; properties: Record<string, unknown> };
