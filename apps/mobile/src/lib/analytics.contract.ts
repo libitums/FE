@@ -52,16 +52,10 @@ import type {
 /** 수집 호스트입니다(사용자 결정 U1 — US Cloud). 환경 변수로 바꾸지 않습니다. */
 export type PostHogHost = "https://us.i.posthog.com";
 
-/**
- * 이벤트가 난 곳입니다. PostHog 프로젝트가 하나라(무료 요금제) 개발 · 운영을 이 값으로 가릅니다.
- * 모든 이벤트에 `environment` 속성으로 붙습니다(ADR-0029 D13).
- */
+/** 이벤트가 난 곳입니다. 프로젝트가 하나라 모든 이벤트에 `environment`로 붙습니다(ADR-0029 D13). */
 export type AnalyticsEnvironment = "development" | "production";
 
-/**
- * 순수 판정입니다. 값이 정확히 `"production"`일 때만 운영이고, 그 밖은 전부 `"development"`입니다 —
- * 표시를 빠뜨린 빌드가 운영 수치에 섞이지 않게 합니다.
- */
+/** 순수 판정입니다. 정확히 `"production"`일 때만 운영이고 그 밖은 전부 `"development"`입니다. */
 export type AnalyticsEnvironmentFrom = (environment: unknown) => AnalyticsEnvironment;
 
 /**
