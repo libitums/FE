@@ -96,8 +96,12 @@ test("[AH-I4] 여정의 스텝 말풍선이 열린 동안 머리가 낭독에서
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 });
 
+// ⟨2026-09-29⟩ 씨앗을 형제([AH-I4]·[AH-I6]·[AH-I7])와 맞춥니다 — 표지가 맵 항목이
+// 되면서 에피소드의 완료가 **표지까지** 끝나야 참이 됩니다(D6). 표지를 안 끝낸 진행은
+// 롤플레이 에피소드를 열어 주지 않아 플러스 줄이 서지 않습니다. 이 파일이 보는 것은
+// 머리의 가림이지 표지가 아니므로, 표지는 씨앗으로 지납니다.
 test("[AH-I5] 롤플레이의 플러스 안내가 떠 있는 동안 머리가 낭독에서 가려진다", () => {
-  renderApp(<App journeySeed={finishedTutorial} />);
+  renderApp(<App journeySeed={finishedTutorial} seenEpisodeIntroIds={["tutorial"]} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   const row = screen.getByTestId("roleplay-list-section-premium-row-tutorial");
 
