@@ -28,8 +28,10 @@ export type FinalWritingPanelProps = {
 const unmeasurableNotice = "Writing can't be checked here. Tap Next.";
 
 /**
- * 쓰기 문항입니다(Figma 79-6378). 서사 장면 위에 `Write` 표식 · 빈칸 문장 · 음절 칸 · 쓰기
- * 캔버스가 서고, 아래 포그 위에 주 버튼이 섭니다. 빈칸의 음절을 하나씩 — 흐린 안내 위에 쓰고
+ * 쓰기 문항입니다(Figma 79-6378). 서사 장면 위의 어두운 반투명 패널(말하기 패널과 같은 면)에
+ * `Write` 표식 · 빈칸 문장 · 음절 칸 · 쓰기 캔버스가 서고, 아래 포그 위에 주 버튼이 섭니다.
+ * 디자인은 흰 시트를 깔지만 최종 테스트의 다른 문항처럼 장면 위 패널로 둡니다(2026-09-29 결정) —
+ * 빈칸 앞 글자는 패널 위에서 읽히도록 밝은 글자(`tone="scene"`)입니다. 빈칸의 음절을 하나씩 — 흐린 안내 위에 쓰고
  * `Check`로 견주고, 판정을 본 뒤 `Next`로 다음 음절로 갑니다. 마지막 음절의 `Next`가 문항을
  * 끝냅니다.
  *
@@ -67,7 +69,7 @@ export function FinalWritingPanel({ insets, question, onDone }: FinalWritingPane
         <view className="episode-final-say">
           <text className="episode-final-say-label">Write</text>
         </view>
-        <WritingPrompt question={question} />
+        <WritingPrompt question={question} tone="scene" />
         <SyllableSlots syllables={question.syllables} currentIndex={state.syllableIndex} />
         {practice.syllable === null ? null : (
           <WritingCanvas
@@ -85,7 +87,7 @@ export function FinalWritingPanel({ insets, question, onDone }: FinalWritingPane
           버튼이 포그 위에 섭니다. 버튼이 없어도 포그 · 여백은 남아 판이 움직이지 않습니다. */}
       <view className="episode-final-writing-footer">
         <view className="episode-final-writing-fog" event-through={true}>
-          {/* 흰 시트 위의 어두운 포그입니다(Figma 80:6794 — 어두운 포그 + 주색 `Next`). */}
+          {/* 어두운 패널 위의 어두운 포그입니다(Figma 80:6794 — 어두운 포그 + 주색 `Next`). */}
           <Fog direction="bottom" size="full" color="dark" />
         </view>
         <view className="episode-final-writing-action-slot">

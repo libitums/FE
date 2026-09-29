@@ -150,20 +150,15 @@ test("[EFW3] 호스트가 없으면 글자 안내 · 잴 수 없음으로 지나
   expect(props.onFinish).toHaveBeenCalledWith([]);
 });
 
-// EFW4 — 흰 시트는 쓰기 문항 동안만 깔립니다. 다른 문항의 장면 위 모습을 바꾸지 않습니다.
-test("[EFW4] 쓰기 문항 동안만 흰 시트가 깔리고, 다음 문항(낱말 고르기)에서는 걷힌다", () => {
+// EFW4 — 쓰기 문항도 다른 문항처럼 장면 위 패널로 섭니다(흰 시트를 깔지 않습니다). 빈칸 앞 글자가
+// 어두운 패널 위에서 읽히도록 문장이 장면용 모양으로 섭니다 — 색은 `ui`가 못 보므로 클래스
+// 문자열까지만 봅니다.
+test("[EFW4] 쓰기 문항은 장면 위 패널로 서고, 빈칸 문장은 장면용 모양이다", () => {
   renderFinal();
 
-  expect(screen.getByTestId("episode-final-screen-sheet")).toHaveAttribute(
-    "accessibility-elements-hidden",
-    "true",
-  );
-  for (let index = 0; index < 2; index += 1) {
-    draw();
-    fireEvent.tap(actionButton(), {});
-    fireEvent.tap(actionButton(), {});
-  }
-
-  expect(screen.getByTestId("episode-final-screen-word-choice")).toBeInTheDocument();
+  expect(screen.getByTestId("episode-final-screen-writing")).toBeInTheDocument();
   expect(screen.queryByTestId("episode-final-screen-sheet")).not.toBeInTheDocument();
+  expect(screen.getByTestId("writing-prompt").getAttribute("class")).toBe(
+    "writing-prompt writing-prompt-scene",
+  );
 });

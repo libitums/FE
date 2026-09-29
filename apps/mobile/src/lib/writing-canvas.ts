@@ -1,8 +1,8 @@
 // 쓰기 캔버스의 **수**(판 크기 · 안내 글자 크기 · 획 굵기 · 팽창 반경)와 견주기 요청을 짓는
 // 순수 함수를 소유합니다. UI를 import하지 않습니다.
 //
-// 캔버스는 자리마다 크기가 다릅니다 — 최종 테스트의 장면(Figma 79-6378, 370 × 450)과 학습
-// 껍데기의 무대 카드(300 × 300) 둘입니다. 크기가 바뀌면 안내 글자 · 획 굵기 · 팽창 반경이
+// 캔버스는 자리마다 크기가 다릅니다 — 최종 테스트의 장면(Figma 79-6378은 370 × 450, 여기서는 370 × 360)과 학습
+// 껍데기의 작업 영역(340 × 200) 둘입니다. 크기가 바뀌면 안내 글자 · 획 굵기 · 팽창 반경이
 // 함께 바뀌어야 지표의 뜻이 유지되므로 네 수를 한 묶음으로 둡니다.
 
 import { color } from "@libitums/design-tokens";
@@ -11,10 +11,11 @@ import type { Stroke } from "./handwriting-recognition";
 import type { HandwritingTraceRequest } from "./handwriting-trace";
 
 /**
- * 캔버스가 서는 자리입니다. `stage`는 화면 폭을 거의 다 쓰는 장면 위 캔버스, `card`는 학습
- * 껍데기의 무대 카드 안 캔버스입니다. 짝 CSS의 크기 클래스(`writing-canvas-<size>`)와 1:1입니다.
+ * 캔버스가 서는 자리입니다. `stage`는 화면 폭을 거의 다 쓰는 장면 위 캔버스, `workspace`는 학습
+ * 껍데기의 작업 영역(무대 카드 아래) 캔버스입니다. 짝 CSS의 크기 클래스(`writing-canvas-<size>`)와
+ * 1:1입니다.
  */
-export type WritingCanvasSize = "stage" | "card";
+export type WritingCanvasSize = "stage" | "workspace";
 
 export type WritingCanvasGeometry = {
   /** 표면 크기(point)입니다. 짝 CSS의 크기 클래스와 **같은 수**여야 합니다. */
@@ -29,19 +30,24 @@ export type WritingCanvasGeometry = {
 /**
  * 자리별 수입니다.
  *
- * `card`는 **손글씨 탐침과 같은 수**입니다(300 · 240 · 14 · 6) — 이 저장소에서 기기에 올려 본
- * 유일한 묶음이라(2026-09-28, `docs/e2e/handwriting-probe.md`) 크기가 맞는 자리는 그것을
- * 그대로 씁니다.
+ * ⚠ **둘 다 임시입니다 — 기기에서 잡습니다.** 안내 글자는 탐침처럼 짧은 변의 0.8이고, 획
+ * 굵기 · 팽창 반경은 탐침에서 기기로 본 묶음(글자 240 · 굵기 14 · 반경 6,
+ * `docs/e2e/handwriting-probe.md`)을 글자 크기 비로 옮긴 것이라 **잰 값이 아닙니다.**
  *
- * ⚠ `stage`는 **임시입니다 — 기기에서 잡습니다.** 판은 디자인 값(370 × 450)이고, 안내 글자는
- * 탐침처럼 짧은 변의 0.8입니다. 획 굵기 · 팽창 반경은 탐침의 값을 글자 크기 비(296 / 240)로
- * 늘린 것이라 **잰 값이 아닙니다.** 탐침에서 획 굵기는 「안내 획이 실제로 차지하는 두께」에
+ * - `stage` — 폭은 디자인 값 370이고, 높이는 디자인의 450에서 360으로 줄였습니다. 450이면 판
+ *   아래쪽이 아래 버튼 밑으로 들어가 겹쳐 보이고 그 자리의 획이 먹힙니다(높이 874 기기에서
+ *   확인). 글자 288.
+ * - `workspace` — 학습 껍데기에서 무대 카드 아래 남는 자리입니다. 폭 340은 가장 좁은 대상
+ *   기기(폭 375)에서 화면 여백(좌우 16)을 빼고도 들어가는 수이고, 높이 200은 카드 · 머리 아래에
+ *   남는 높이에서 아래 버튼 · 포그에 닿지 않게 줄인 수입니다(높이 874 기기에서 확인). 글자 160. ⚠ 가용 폭을 재어 판을 늘이는 길은 두지
+ *   않았습니다 — 판 크기가 `viewBox`와 CSS 박스에 같은 수로 서야 하는데, CSS에는 인라인 `style`을
+ *   쓰지 않으므로 런타임 수를 실을 자리가 없습니다. 탐침에서 획 굵기는 「안내 획이 실제로 차지하는 두께」에
  * 맞춘 수였고(그보다 얇으면 덮음의 상한이 1에 못 미칩니다), 글자가 커지면 그 두께도 커지므로
  * 비례로 옮겼습니다. 값이 오는 날 이 네 수만 바뀝니다.
  */
 export const writingCanvasGeometries: Record<WritingCanvasSize, WritingCanvasGeometry> = {
-  stage: { width: 370, height: 450, fontSize: 296, strokeWidth: 17, tolerance: 7 },
-  card: { width: 300, height: 300, fontSize: 240, strokeWidth: 14, tolerance: 6 },
+  stage: { width: 370, height: 360, fontSize: 288, strokeWidth: 17, tolerance: 7 },
+  workspace: { width: 340, height: 200, fontSize: 160, strokeWidth: 9, tolerance: 4 },
 };
 
 // 안내 글자를 구울 글꼴입니다. 탐침과 같은 글꼴이고, 디자인이 고른 손글씨체가 기기에 없어

@@ -148,6 +148,5 @@ export const episodeFinalTestIds = {
   prompt: "episode-final-screen-prompt",
   option: (index: number) => `episode-final-screen-option-${index}`,
   writing: "episode-final-screen-writing",
-  sheet: "episode-final-screen-sheet",
   writingAction: "episode-final-screen-writing-action",
 } as const;

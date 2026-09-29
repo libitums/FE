@@ -9,13 +9,19 @@ import "./writing-prompt.css";
 
 export type WritingPromptProps = {
   readonly question: WritingQuestion;
+  /**
+   * 어느 면 위에 서는가입니다. `plain`은 밝은 면(학습 카드), `scene`은 서사 장면 위의 어두운
+   * 패널입니다 — 빈칸 앞의 회색(gray-700)이 어두운 면 위에서 읽히지 않아, 장면 위에서는 최종
+   * 테스트의 다른 문장(말하기 문장 gray-50)과 같은 밝은 글자로 섭니다.
+   */
+  readonly tone: "plain" | "scene";
 };
 
-export function WritingPrompt({ question }: WritingPromptProps): ReactNode {
+export function WritingPrompt({ question, tone }: WritingPromptProps): ReactNode {
   const before = question.before.trimEnd();
   return (
     <text
-      className="writing-prompt"
+      className={`writing-prompt writing-prompt-${tone}`}
       data-testid="writing-prompt"
       // 밑줄을 그대로 읽으면 「밑줄 밑줄 밑줄」이 되므로 「빈칸」으로 읽힙니다.
       accessibility-label={writingPromptLabel(question)}

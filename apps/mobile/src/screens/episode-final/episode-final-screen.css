@@ -328,30 +328,18 @@
 
 /* ── 쓰기(Figma 79-6378) ─────────────────────────────────── */
 
-/* 흰 시트 — 쓰기 문항 동안 장면 전체를 덮습니다(node 79:6400: 흰 면 · 화면 전체 · 모서리 xl ·
-   그림자 0 0 20 rgba(0, 0, 0, 0.08)). 그림자 색은 말하기 패널과 같은 디자인 값이고 맞는 토큰이
-   없습니다. 흰 면 위라 머리 제목을 어두운 글자로 바꿉니다 — 뒤로 버튼은 이미 gray-100 원입니다. */
-.episode-final-sheet {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  border-radius: var(--libitum-radius-xl);
-  background-color: var(--libitum-color-white);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
-}
-
-.episode-final-safe-sheet .episode-final-title {
-  color: var(--libitum-color-gray-950);
-}
-
-/* 머리 바로 아래부터 화면 바닥까지 채웁니다. 아래 버튼 줄이 이 상자를 기준으로 떠 있습니다. */
+/* 머리 아래부터 화면 바닥까지 채우는 패널입니다. 면은 말하기 패널과 같은 어두운 반투명
+   면이고(디자인의 rgba(26, 28, 32, 0.8) — 장면이 비치는 면이라 맞는 색 토큰이 없습니다), 위
+   두 모서리만 둥급니다. 아래 버튼 줄이 이 상자를 기준으로 떠 있습니다. */
 .episode-final-writing {
   position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin-top: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-xl) var(--libitum-radius-xl) 0 0;
+  background-color: rgba(26, 28, 32, 0.8);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
 }
 
 /* `Write` 표식 → 빈칸 문장 → 음절 칸 → 캔버스가 가운데 줄로 섭니다. 좌우 16은 캔버스(370)가

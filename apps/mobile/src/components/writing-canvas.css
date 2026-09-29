@@ -20,17 +20,18 @@
 
    텍스트를 품지 않는 상자라 고정 치수입니다(ADR-0020 D5의 예외 — 배율을 안 받는 내용). */
 
-/* 장면 위 캔버스 — 디자인 값 370 × 450(화면 402에 좌우 16)입니다. */
+/* 장면 위 캔버스 — 370 × 360입니다(화면 402에 좌우 16). 디자인의 높이 450은 판
+   아래쪽이 아래 버튼 밑으로 들어가 줄였습니다 — 수의 근거는 `lib/writing-canvas.ts`에 있습니다. */
 .writing-canvas-stage {
   width: 370px;
-  height: 450px;
+  height: 360px;
 }
 
-/* 학습 껍데기의 무대 카드 안 캔버스 — 손글씨 탐침과 같은 300 × 300입니다. 카드 안 폭(402 −
-   화면 여백 32 − 카드 안 여백 48 = 322)에 들어갑니다. */
-.writing-canvas-card {
-  width: 300px;
-  height: 300px;
+/* 학습 껍데기의 작업 영역 캔버스 — 340 × 200입니다. 폭 375 기기에서도 화면 여백(좌우 16)
+   안에 들어갑니다(375 − 32 = 343). */
+.writing-canvas-workspace {
+  width: 340px;
+  height: 200px;
 }
 
 /* 호스트가 구운 안내 그림입니다. 캔버스와 같은 크기로 왼쪽 위에 겹칩니다 — 늘이거나 줄이면
@@ -60,13 +61,13 @@
 
 /* 글자 크기는 `writingCanvasGeometries`의 `fontSize`(짧은 변의 0.8)와 같은 수입니다. */
 .writing-canvas-guide-text-stage {
-  font-size: 296px;
-  line-height: 450px;
+  font-size: 288px;
+  line-height: 360px;
 }
 
-.writing-canvas-guide-text-card {
-  font-size: 240px;
-  line-height: 300px;
+.writing-canvas-guide-text-workspace {
+  font-size: 160px;
+  line-height: 200px;
 }
 
 /* 판정 배지 · 안내 한 줄 — 위쪽 가운데입니다(디자인). 표면보다 뒤에 와서 위에 섭니다. 판정 뒤에만

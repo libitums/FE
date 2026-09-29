@@ -27,3 +27,9 @@
 .writing-prompt-blank {
   color: var(--libitum-color-brand-primary);
 }
+
+/* 서사 장면 위의 어두운 패널에서는 빈칸 앞을 밝은 글자로 둡니다 — 최종 테스트의 말하기 문장과
+   같은 gray-50입니다. */
+.writing-prompt-scene .writing-prompt-before {
+  color: var(--libitum-color-gray-50);
+}

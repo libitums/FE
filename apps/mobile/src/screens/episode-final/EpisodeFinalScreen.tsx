@@ -84,19 +84,8 @@ export function EpisodeFinalScreen({
         <view className="episode-final-shade" />
       </view>
 
-      {/* 쓰기 문항이 서 있는 동안만 장면 위에 흰 시트를 깝니다(Figma 79-6378). 머리부터 아래
-          버튼까지 전부 이 위에 섭니다 — 장면이 비치면 회색 문장 앞부분이 그림 위에서 읽히지
-          않습니다. 장식이라 낭독에서 뺍니다. */}
-      {writing ? (
-        <view
-          className="episode-final-sheet"
-          data-testid={episodeFinalTestIds.sheet}
-          accessibility-elements-hidden={true}
-        />
-      ) : null}
-
       <view
-        className={writing ? "episode-final-safe episode-final-safe-sheet" : "episode-final-safe"}
+        className="episode-final-safe"
         style={{
           paddingTop: `${insets.top}px`,
           paddingLeft: `${insets.left}px`,
@@ -125,8 +114,8 @@ export function EpisodeFinalScreen({
           <view className="episode-final-header-spacer" />
         </view>
 
-        {/* 쓰기는 판이 머리 바로 아래부터 화면을 채웁니다(Figma 79-6378). 나머지 문항은 이
-            빈 상자가 패널을 화면 아래로 밉니다. */}
+        {/* 쓰기는 캔버스(450)가 커서 패널이 머리 바로 아래부터 화면을 채웁니다. 나머지 문항은
+            이 빈 상자가 패널을 화면 아래로 밉니다. */}
         {writing ? null : <view className="episode-final-spacer" />}
 
         {question.kind === "speaking" ? (

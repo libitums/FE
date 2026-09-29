@@ -103,7 +103,7 @@ test("[WSC1] 첫 음절의 흐린 안내가 깔리고, 쓰기 전에는 아래 �
   renderScreen();
 
   expect(screen.getByTestId("writing-canvas-guide")).toBeInTheDocument();
-  expect(calls.guide).toEqual([expect.objectContaining({ glyph: "가", width: 300, height: 300 })]);
+  expect(calls.guide).toEqual([expect.objectContaining({ glyph: "가", width: 340, height: 200 })]);
   expect(screen.getByTestId("syllable-slots-slot-0")).toHaveAttribute("data-status", "current");
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
 });
@@ -130,6 +130,10 @@ test("[WSC2] 쓰면 확인하기가 서고, 누르면 쓴 획으로 견주고 �
   ]);
   expect(phase()).toBe("judged");
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
+  // 판정은 형제 학습형처럼 무대 카드에 섭니다.
+  expect(screen.getByTestId("learning-shell-stage")).toContainElement(
+    screen.getByTestId("answer-verdict"),
+  );
   expect(screen.queryByTestId("writing-canvas-guide")).not.toBeInTheDocument();
   expect(action()).toHaveAttribute("accessibility-label", "다음");
 });
@@ -225,4 +229,19 @@ test("[WSC7] 문항이 없는 스텝은 곧장 완료이고 결과 보기가 빈
   expect(screen.queryByTestId("writing-canvas")).not.toBeInTheDocument();
   fireEvent.tap(action(), {});
   expect(props.onFinish).toHaveBeenCalledWith("greeting", []);
+});
+
+// WSC8 — 형제 학습형과 같은 배치입니다: 카드에 문장 · 음절 칸, 카드 아래 작업 영역에 캔버스.
+// 작업 영역은 스크롤을 끕니다 — 그리기 표면과 스크롤이 제스처를 다투지 않게 합니다.
+test("[WSC8] 문장 · 음절 칸은 무대 카드에, 캔버스는 스크롤을 끈 작업 영역에 선다", () => {
+  renderScreen();
+
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(stage).toContainElement(screen.getByTestId("writing-prompt"));
+  expect(stage).toContainElement(screen.getByTestId("syllable-slots"));
+  expect(stage).not.toContainElement(screen.getByTestId("writing-canvas"));
+
+  const scroll = screen.getByTestId("learning-shell-scroll");
+  expect(scroll).toContainElement(screen.getByTestId("writing-canvas"));
+  expect(scroll).toHaveAttribute("enable-scroll", "false");
 });

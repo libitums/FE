@@ -18,6 +18,7 @@ test("[WP1] 빈칸 문장을 밑줄로 보이고 낭독 이름은 빈칸으로 �
         translation: "Where is the station?",
         passCriterion: writingPassCriterion,
       }}
+      tone="plain"
     />,
   );
 

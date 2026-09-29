@@ -96,7 +96,7 @@ test("[WV7] 표면에서 끝난 획이 올라가고, 받은 획 수가 표면에
 // WV8 — 크기가 두 자리(TS 수 묶음 · CSS 크기 클래스)에 있습니다. 갈리면 획이 손가락과 다른 자리에
 // 그려지고, 안내 그림이 늘거나 줄어 채점과 화면이 갈립니다. 계산된 스타일이 아니라 CSS 파일의
 // 글자를 읽습니다 — 탐침의 DS13과 같은 방식입니다.
-test.each(["stage", "card"] as const)(
+test.each(["stage", "workspace"] as const)(
   "[WV8] %s의 크기 클래스가 수 묶음과 같은 수를 들고, 표면 · 그림이 그 클래스를 쓴다",
   (size) => {
     renderCanvas({ size, guide: { kind: "image", image: "aGVsbG8=" } });
