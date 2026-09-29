@@ -6,6 +6,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
+import type { AnswerResult } from "../../lib/answer-result";
 import type { EpisodeFinalScreenProps } from "./episode-final.contract";
 import { episodeFinalTestIds } from "./episode-final.contract";
 import {
@@ -15,18 +16,20 @@ import {
 } from "./episode-final";
 import { FinalSpeakingPanel } from "./FinalSpeakingPanel";
 import { FinalWordChoicePanel } from "./FinalWordChoicePanel";
+import { FinalWritingPanel } from "./FinalWritingPanel";
 import { useAdvanceAfterJudged, useAnnounceResult, useFinalSpeech } from "./useFinalSpeech";
 
 import "./episode-final-screen.css";
 
 /**
- * 에피소드 최종 테스트입니다(Figma 79-6484 · 79-6648). 서사 장면 위에서 문항을 차례로
+ * 에피소드 최종 테스트입니다(Figma 79-6484 · 79-6648 · 79-6378). 서사 장면 위에서 문항을 차례로
  * 풀고, 마지막 문항이 끝나면 에피소드를 끝냅니다. 서사 그림은 서사 화면과 같은 것을
  * 씁니다(2026-09-28 결정 — 새 그림 없이).
  *
  * 판정 뒤에는 누를 것이 없습니다 — 판정과 정답을 잠시 보여 준 뒤 저절로 다음 문항으로
  * 갑니다(서사가 이어지듯, 2026-09-28 결정). 틀려도 정답을 보여 주고 다음으로
- * 갑니다. 푼 것은 이 화면의 것입니다 — 뒤로 나가면 버려지고, 다시 들어오면 첫 문항부터입니다.
+ * 갑니다. **쓰기만 다릅니다** — 음절마다 판정 뒤 `Next`를 눌러 넘어가고(다시 쓸 수 있어서),
+ * 마지막 음절의 `Next`가 곧 다음 문항입니다. 푼 것은 이 화면의 것입니다 — 뒤로 나가면 버려지고, 다시 들어오면 첫 문항부터입니다.
  */
 export function EpisodeFinalScreen({
   insets,
@@ -38,6 +41,7 @@ export function EpisodeFinalScreen({
   const [state, dispatch] = useReducer(episodeFinalSessionReducer, initialEpisodeFinalSessionState);
   const question = test.questions[state.questionIndex] ?? test.questions[0];
   const isLast = state.questionIndex >= test.questions.length - 1;
+  const writing = question.kind === "writing";
 
   const { speakingAction: speakingActionFor } = useFinalSpeech(dispatch);
 
@@ -55,6 +59,15 @@ export function EpisodeFinalScreen({
   };
   useAdvanceAfterJudged(state.questionIndex, state.phase, () => advance("next"));
 
+  // 쓰기 문항은 판정과 넘김을 문항 안에서 이미 지나 왔습니다 — 결과를 싣고 곧장 넘어갑니다.
+  const finishWriting = (result: AnswerResult | null) => {
+    if (isLast) {
+      onFinish(result === null ? state.results : [...state.results, result]);
+      return;
+    }
+    dispatch({ type: "written", result });
+  };
+
   const speakingAction =
     question.kind === "speaking"
       ? speakingActionFor(state.phase, question.sentence, () => advance("next"))
@@ -71,8 +84,19 @@ export function EpisodeFinalScreen({
         <view className="episode-final-shade" />
       </view>
 
+      {/* 쓰기 문항이 서 있는 동안만 장면 위에 흰 시트를 깝니다(Figma 79-6378). 머리부터 아래
+          버튼까지 전부 이 위에 섭니다 — 장면이 비치면 회색 문장 앞부분이 그림 위에서 읽히지
+          않습니다. 장식이라 낭독에서 뺍니다. */}
+      {writing ? (
+        <view
+          className="episode-final-sheet"
+          data-testid={episodeFinalTestIds.sheet}
+          accessibility-elements-hidden={true}
+        />
+      ) : null}
+
       <view
-        className="episode-final-safe"
+        className={writing ? "episode-final-safe episode-final-safe-sheet" : "episode-final-safe"}
         style={{
           paddingTop: `${insets.top}px`,
           paddingLeft: `${insets.left}px`,
@@ -101,7 +125,9 @@ export function EpisodeFinalScreen({
           <view className="episode-final-header-spacer" />
         </view>
 
-        <view className="episode-final-spacer" />
+        {/* 쓰기는 판이 머리 바로 아래부터 화면을 채웁니다(Figma 79-6378). 나머지 문항은 이
+            빈 상자가 패널을 화면 아래로 밉니다. */}
+        {writing ? null : <view className="episode-final-spacer" />}
 
         {question.kind === "speaking" ? (
           <FinalSpeakingPanel
@@ -113,6 +139,13 @@ export function EpisodeFinalScreen({
             result={result}
             action={speakingAction}
             onNotNow={state.phase === "ready" ? () => advance("skip") : undefined}
+          />
+        ) : question.kind === "writing" ? (
+          <FinalWritingPanel
+            key={question.id}
+            insets={insets}
+            question={question}
+            onDone={finishWriting}
           />
         ) : question.kind === "word-choice" ? (
           <FinalWordChoicePanel

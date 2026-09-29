@@ -325,3 +325,74 @@
 .episode-final-speaking-call .episode-final-sentence-plain .episode-final-word {
   color: var(--libitum-color-fg-neutral);
 }
+
+/* ── 쓰기(Figma 79-6378) ─────────────────────────────────── */
+
+/* 흰 시트 — 쓰기 문항 동안 장면 전체를 덮습니다(node 79:6400: 흰 면 · 화면 전체 · 모서리 xl ·
+   그림자 0 0 20 rgba(0, 0, 0, 0.08)). 그림자 색은 말하기 패널과 같은 디자인 값이고 맞는 토큰이
+   없습니다. 흰 면 위라 머리 제목을 어두운 글자로 바꿉니다 — 뒤로 버튼은 이미 gray-100 원입니다. */
+.episode-final-sheet {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--libitum-radius-xl);
+  background-color: var(--libitum-color-white);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+}
+
+.episode-final-safe-sheet .episode-final-title {
+  color: var(--libitum-color-gray-950);
+}
+
+/* 머리 바로 아래부터 화면 바닥까지 채웁니다. 아래 버튼 줄이 이 상자를 기준으로 떠 있습니다. */
+.episode-final-writing {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* `Write` 표식 → 빈칸 문장 → 음절 칸 → 캔버스가 가운데 줄로 섭니다. 좌우 16은 캔버스(370)가
+   화면(402)에 서는 디자인 값이고 `spacing-16`과 같습니다. */
+.episode-final-writing-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-16) 0;
+}
+
+/* 아래 버튼 줄 — 캔버스 아래쪽 위에 떠 있습니다(디자인). 포그가 버튼 뒤로 번져 캔버스가
+   잘리지 않고 흐려집니다. */
+.episode-final-writing-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--libitum-elevation-z-sticky);
+}
+
+.episode-final-writing-fog {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(
+    var(--libitum-layout-screen-padding-bottom) + var(--libitum-spacing-48) +
+      var(--libitum-spacing-8) + var(--libitum-spacing-40)
+  );
+}
+
+/* 버튼 자리 — 버튼이 없어도(빈 판 · 재는 중) 높이(56)를 지켜 포그와 판이 움직이지 않습니다.
+   좌우는 화면 여백, 아래는 학습 껍데기의 아래 버튼과 같은 여백입니다. */
+.episode-final-writing-action-slot {
+  /* Lynx는 absolute 형제(포그, z-default)를 일반 흐름 형제 위에 칠해 탭까지 가로챕니다(기기에서
+     확인) — 버튼 자리를 위치 지정 요소로 만들어 학습 껍데기의 아래 버튼과 같은 층(z-sticky)에
+     올립니다. */
+  position: relative;
+  z-index: var(--libitum-elevation-z-sticky);
+  min-height: 56px;
+  margin: 0 var(--libitum-layout-screen-padding-x) var(--libitum-layout-screen-padding-bottom);
+}

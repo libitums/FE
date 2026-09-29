@@ -56,8 +56,19 @@ function tapButtonIn(testId: string): void {
   fireEvent.tap(within(screen.getByTestId(testId)).getByTestId("ui-lynx-button"), {});
 }
 
+// 쓰기 문항의 음절 하나를 씁니다 — 획 하나를 긋고 `Check`, 그리고 `Next`입니다. 이 파일의
+// 대역에는 `HandwritingTraceModule`이 없어 판정을 건너뛰므로(잴 수 없음) 결과에 실리지 않습니다.
+function writeSyllable(): void {
+  const surface = screen.getByTestId("drawing-surface");
+  fireEvent.touchstart(surface, { touches: [{ x: 10, y: 10 }] });
+  fireEvent.touchmove(surface, { touches: [{ x: 20, y: 20 }] });
+  fireEvent.touchend(surface, {});
+  tapButtonIn("episode-final-screen-writing-action");
+  tapButtonIn("episode-final-screen-writing-action");
+}
+
 // 문항을 끝까지 풉니다. 낱말 고르기는 정답을 고르고 넘어갈 때까지 기다리고, 말하기는
-// `Can't speak`를 누릅니다.
+// `Can't speak`를 누르고, 쓰기는 음절마다 긋고 `Check` · `Next`를 누릅니다.
 function solveAll(): void {
   vi.useFakeTimers();
   const test = episodeFinalTestFor("tutorial-final-test");
@@ -70,6 +81,8 @@ function solveAll(): void {
       act(() => {
         vi.advanceTimersByTime(episodeFinalAdvanceDelayMs);
       });
+    } else if (question.kind === "writing") {
+      question.syllables.forEach(() => writeSyllable());
     } else {
       tapButtonIn("episode-final-screen-not-now");
     }

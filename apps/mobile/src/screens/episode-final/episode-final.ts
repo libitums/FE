@@ -39,6 +39,11 @@ export type EpisodeFinalSessionAction =
   // `Can't speak`(지금은 말할 수 없음)입니다. 말하기 전(`ready`)에만 받고, 판정 없이 다음 문항으로
   // 갑니다 — 결과에 싣지 않습니다. 말할 수 없는 자리를 오답으로 접지 않습니다.
   | { readonly type: "skip" }
+  // 쓰기 문항을 다 썼습니다. 쓰기는 음절마다 판정과 `Next`를 문항 **안**에서 지나므로(공용 핵심
+  // `lib/writing-session.ts`) 이 세션에는 판정 국면 없이 결과와 넘김이 한 번에 옵니다 — 이미
+  // 누르고 넘어온 것을 다시 기다리게 하지 않습니다. `result`가 `null`이면 잰 음절이 없던
+  // 것이라 결과에 싣지 않습니다.
+  | { readonly type: "written"; readonly result: AnswerResult | null }
   | { readonly type: "next" };
 
 export const initialEpisodeFinalSessionState: EpisodeFinalSessionState = {
@@ -85,6 +90,16 @@ export function episodeFinalSessionReducer(
       return state.phase === "ready" || state.phase === "listening"
         ? { ...state, phase: "unavailable" }
         : state;
+    }
+    case "written": {
+      if (state.phase !== "ready") {
+        return state;
+      }
+      return {
+        ...initialEpisodeFinalSessionState,
+        questionIndex: state.questionIndex + 1,
+        results: action.result === null ? state.results : [...state.results, action.result],
+      };
     }
     case "skip":
     case "next": {

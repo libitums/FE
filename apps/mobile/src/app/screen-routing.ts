@@ -72,6 +72,9 @@ export function learningScreenFor(
     case "speaking": {
       return { name: "speaking", stepId, activityIndex };
     }
+    case "writing": {
+      return { name: "writing", stepId, activityIndex };
+    }
     case "word-choice": {
       return { name: "word-choice", stepId, activityIndex };
     }

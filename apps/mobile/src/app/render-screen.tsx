@@ -184,6 +184,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // 셋의 중복은 그 장치의 가격이지 결함이 아닙니다.
     case "sentence-order":
     case "speaking":
+    case "writing":
       return renderShellLearningScreen(screen, wiring);
     case "word-choice":
       return (

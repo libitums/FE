@@ -545,6 +545,8 @@ const allLearningForms: readonly LearningForm[] = [
   "sentence-order",
   "word-choice",
   "culture",
+  "speaking",
+  "writing",
 ];
 
 // 여정 맵의 스텝 다섯입니다. stepId가 인자 그대로인지를 다섯 전부에서 봅니다.
