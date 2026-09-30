@@ -57,10 +57,10 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           characterId: "jimin",
           characterPoseId: "jimin-smile",
           speakerName: "Minseo",
-          dialogue: "물 주세요",
-          context: "We practice asking for water together. Just two words.",
+          dialogue: "물 좀 주세요",
+          context: "We practice asking for water together. One small request.",
           translation: "Water, please.",
-          romanization: "mul juseyo",
+          romanization: "mul jom juseyo",
         },
         {
           index: 2,
@@ -86,7 +86,7 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
     expect(story.beats.map((beat) => beat.speakerName)).toEqual(["Minseo", "Minseo", "Minseo"]);
     expect(story.beats.map((beat) => beat.dialogue)).toEqual([
       "안녕하세요",
-      "물 주세요",
+      "물 좀 주세요",
       "내일 만나요",
     ]);
   });

@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-30",
+  "transcript_confirmation": "User confirmed the four provided source clips in this task.",
+  "split_basis": "First clip split at 1.130 seconds inside the 1.05–1.22 second quiet interval (10ms RMS below -42 dBFS).",
+  "assets": [
+    {
+      "asset": "apps/ios/Host/audio/phone-call-confirm-01.m4a",
+      "transcript": "안녕하세요",
+      "voice_label": "Mina - Clear, Calm & Warm",
+      "model_label_from_filename": "v4",
+      "source_filename": "ElevenLabs_2026-09-30T07_46_32_Mina - Clear, Calm & Warm _pvc_sp100_s83_sb86_v4.mp3",
+      "source_sha256": "6de4d521ef0278e7aa3b7365daf97bee649d779f8da1e45cbe236e1c589b913a",
+      "source_interval_seconds": {
+        "start": 0,
+        "end": 1.13
+      },
+      "encoding": "AAC/M4A, mono, 44100 Hz, requested 96000 bps",
+      "sha256": "219c30d724074d16467ce2de7620d224d11c3ebcd6d85d042f155e3d965d0862",
+      "bytes": 17334
+    },
+    {
+      "asset": "apps/ios/Host/audio/phone-call-confirm-02.m4a",
+      "transcript": "저는 민서예요.",
+      "voice_label": "Mina - Clear, Calm & Warm",
+      "model_label_from_filename": "v4",
+      "source_filename": "ElevenLabs_2026-09-30T07_46_32_Mina - Clear, Calm & Warm _pvc_sp100_s83_sb86_v4.mp3",
+      "source_sha256": "6de4d521ef0278e7aa3b7365daf97bee649d779f8da1e45cbe236e1c589b913a",
+      "source_interval_seconds": {
+        "start": 1.13,
+        "end": 2.84734693877551
+      },
+      "encoding": "AAC/M4A, mono, 44100 Hz, requested 96000 bps",
+      "sha256": "f0f3b88b96e94ee21eba53000b41f079cdd4eb24e31394d6c8f88769d0def161",
+      "bytes": 23209
+    },
+    {
+      "asset": "apps/ios/Host/audio/phone-call-confirm-03.m4a",
+      "transcript": "내일 만나요",
+      "voice_label": "Mina - Clear, Calm & Warm",
+      "model_label_from_filename": "v4",
+      "source_filename": "ElevenLabs_2026-09-30T07_48_21_Mina - Clear, Calm & Warm _pvc_sp100_s83_sb86_v4.mp3",
+      "source_sha256": "6dfe299e0a71232a7113bcc40131079f62ca7add594d5a280c3521228c28fc07",
+      "source_interval_seconds": {
+        "start": 0,
+        "end": null
+      },
+      "encoding": "AAC/M4A, mono, 44100 Hz, requested 96000 bps",
+      "sha256": "a712cd05aa59929e8c60d4acc39dd38bc42eb7bd13cb9e75477f4fdf9bfa0e9d",
+      "bytes": 19729
+    }
+  ],
+  "reserved_source_clips": [
+    {
+      "source_filename": "ElevenLabs_2026-09-30T07_47_41_Mina - Clear, Calm & Warm _pvc_sp100_s83_sb86_v4.mp3",
+      "source_sha256": "db630871a40712f27b7212d07e2e4f65d6b11c4b68bf5c0ec48f6a8a74c8942a",
+      "transcript": "물 좀 주세요.",
+      "integration": "not bundled; retained in local production output"
+    },
+    {
+      "source_filename": "ElevenLabs_2026-09-30T07_48_42_Mina - Clear, Calm & Warm _pvc_sp100_s83_sb86_v4.mp3",
+      "source_sha256": "90d2fbcad0d62860630175d04442547a412dad20d4f49d516a657531b173061b",
+      "transcript": "괜찮아요. 천천히 말해도 돼요.",
+      "integration": "not bundled; retained in local production output"
+    }
+  ]
+}

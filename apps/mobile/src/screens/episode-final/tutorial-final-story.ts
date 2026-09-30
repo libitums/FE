@@ -51,7 +51,7 @@ export const tutorialFinalStory: EpisodeFinalStory = {
         speakerName: "Me",
         variant: "narration",
         background: cafe,
-        line: "안녕하세요. 물 주세요. 내일 만나요.",
+        line: "안녕하세요. 물 좀 주세요. 내일 만나요.",
         translation: "Hello. Water, please. See you tomorrow. I can take my time.",
       },
     ],
