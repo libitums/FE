@@ -29,16 +29,16 @@
 }
 
 .narrative-background-image-imagination-departing {
-  /* 상상 진입 1.9초: 기내를 가까이 당긴 뒤 빛 안으로 물러나게 합니다. */
-  animation: narrative-imagination-depart 1900ms ease-in-out both;
+  /* 상상 진입 3초: 기내를 가까이 당긴 뒤 빛 안으로 물러나게 합니다. */
+  animation: narrative-imagination-depart 3000ms ease-in-out both;
 }
 
 .narrative-background-frame-imagination {
-  animation: narrative-imagination-reveal 1900ms ease-in-out both;
+  animation: narrative-imagination-reveal 3000ms ease-in-out both;
 }
 
 .narrative-background-image-imagination {
-  /* 1.9초에 확대가 가라앉고, 남은 4.1초는 풍경이 아주 조금 떠오릅니다. */
+  /* 3초에 확대가 가라앉고, 남은 3초는 풍경이 아주 조금 떠오릅니다. */
   animation: narrative-imagination-drift 6000ms ease-out both;
 }
 
@@ -54,24 +54,24 @@
 
 /* 자식 없는 베일의 종료만 전환 완료로 삼습니다. */
 .narrative-background-imagination-veil {
-  animation: narrative-imagination-veil 1900ms ease-in-out both;
+  animation: narrative-imagination-veil 3000ms ease-in-out both;
 }
 
 .narrative-background-reality-veil {
-  animation: narrative-reality-veil 1600ms ease-out both;
+  animation: narrative-reality-veil 2800ms ease-out both;
 }
 
 .narrative-background-image-reality-departing {
-  animation: narrative-reality-depart 1600ms ease-out both;
+  animation: narrative-reality-depart 2800ms ease-out both;
 }
 
 .narrative-background-frame-reality {
-  animation: narrative-background-reveal 1600ms ease-out both;
+  animation: narrative-background-reveal 2800ms ease-out both;
 }
 
 .narrative-background-image-reality {
   /* 기내는 확대가 천천히 가라앉은 뒤 정지합니다. */
-  animation: narrative-background-drift 1600ms ease-in reverse both;
+  animation: narrative-background-drift 2800ms ease-in reverse both;
 }
 
 @keyframes narrative-background-reveal {
@@ -126,7 +126,7 @@
   0% {
     transform: scale(1.075) translateY(0);
   }
-  32% {
+  50% {
     transform: scale(1.018) translateY(0);
   }
   100% {
