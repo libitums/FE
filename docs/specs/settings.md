@@ -23,7 +23,7 @@
 > ⚠ 토글 셀의 켜짐/꺼짐 낭독은 ui-lynx `SettingsCell`의 기본값(`on`/`off`)이 내고 앱이 넘길 길이 없다
 > (ADR-0031 D6). 본문의 한국어 라벨은 당시 값이다 — 대응은 ADR-0031 부록.
 
-> **개정 (2026-09-30, 법률 문서).** 결정과 근거는 [ADR-0032](../adr/0032-legal-documents-in-app-browser.md)가 진다.
+> **개정 (2026-09-30, 법률 문서).** 결정과 근거는 [ADR-0033](../adr/0033-legal-documents-in-app-browser.md)가 진다.
 > **약관 화면이 사라졌다** — `screens/terms/` · route `terms` · `terms_opened`가 없다. 이동 항목이 **셋**이다:
 > `User profile` · `Privacy Policy` · `Terms of Use`(`SettingsNavTarget = "profile" | LegalDocument`). 뒤의 둘은
 > 스택에 `push`하지 않고 호스트 모듈 `LegalDocumentModule`로 Notion 공개 페이지를 앱 안 브라우저 시트로 연다.

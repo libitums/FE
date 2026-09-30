@@ -6,7 +6,7 @@
 > 학습 콘텐츠(제시문 · 보기 칩 · 대사 · 받아쓰기 대상 · 문화 노트의 「」 안)는 한국어 그대로다. 날짜가 박힌 실행
 > 기록은 고치지 않는다. 영어 UI 전체를 한 번에 훑는 절차는 [UI 언어 e2e](ui-language.md)다.
 
-> ⟨2026-09-30 — 법률 문서⟩ **약관 화면이 사라졌다**([ADR-0032](../adr/0032-legal-documents-in-app-browser.md)). 설정의
+> ⟨2026-09-30 — 법률 문서⟩ **약관 화면이 사라졌다**([ADR-0033](../adr/0033-legal-documents-in-app-browser.md)). 설정의
 > 이동 항목은 **셋**(`User profile` · `Privacy Policy` · `Terms of Use`)이고, 뒤의 둘은 Notion 공개 페이지를 앱 안
 > 브라우저 시트로 연다. T1 · T3 · D1 · V1 · V3의 약관 기대값은 아래 **T3′ · V3′**가 대신한다. 이벤트는
 > `terms_opened` 대신 `legal_document_opened`다.

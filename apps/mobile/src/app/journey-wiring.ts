@@ -229,7 +229,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
     onExitNotifications: () => {
       dispatch({ type: "backToRoot" });
     },
-    // 열림 이벤트 → 프로필은 `push`, 문서 둘은 앱 위 브라우저(ADR-0032). 문서는 설정 탭
+    // 열림 이벤트 → 프로필은 `push`, 문서 둘은 앱 위 브라우저(ADR-0033). 문서는 설정 탭
     // 스택에 쌓이지 않고, 브라우저를 닫으면 설정 화면 그대로입니다.
     sessionOptions,
     onSelectNavTarget: (target: SettingsNavTarget) => {

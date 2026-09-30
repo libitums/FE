@@ -59,7 +59,7 @@ export type EntryEvent =
   | EntryScreenViewedEvent
   | EntryLoginMethodSelectedEvent
   | EntryCompletedEvent
-  // 로그인 화면의 방침 · 약관 링크입니다(ADR-0032). 설정 sink와 같은 모양입니다.
+  // 로그인 화면의 방침 · 약관 링크입니다(ADR-0033). 설정 sink와 같은 모양입니다.
   | LegalDocumentOpenedEvent;
 export type EntryEventSink = ((event: EntryEvent) => void) | null;
 export type EntryAppProps = { readonly entryEventSink?: EntryEventSink };

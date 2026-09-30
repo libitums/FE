@@ -52,7 +52,7 @@ export type LoginScreenProps = {
   readonly onBack?: () => void;
   /**
    * 안내 문구의 「Terms of Use」 · 「Privacy Policy」입니다. 문서는 앱 위 브라우저로 열리고
-   * 로그인 화면은 그대로 남습니다(ADR-0032). 요청 중에도 막지 않습니다 — 로그인 상태와 무관합니다.
+   * 로그인 화면은 그대로 남습니다(ADR-0033). 요청 중에도 막지 않습니다 — 로그인 상태와 무관합니다.
    */
   readonly onOpenLegalDocument: (document: LegalDocument) => void;
 };

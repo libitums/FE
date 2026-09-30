@@ -452,7 +452,7 @@ describe("LoginScreen", () => {
   });
 
   // LG-U5 — 전화번호 TextField의 <input>은 접근성 요소이지만 traits="button"이
-  // 아니라 이 목록에서 빠집니다. 법률 문서 링크 둘은 수단 뒤에 섭니다(ADR-0032).
+  // 아니라 이 목록에서 빠집니다. 법률 문서 링크 둘은 수단 뒤에 섭니다(ADR-0033).
   it("[LG-U5] 조작 단위 목록이 국가 칩과 수단 넷과 법률 문서 링크 둘과 정확히 같다", () => {
     const { container } = renderLogin();
 

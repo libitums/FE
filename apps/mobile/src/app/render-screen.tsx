@@ -97,7 +97,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         />
       );
     // 모듈 상수(`profileList`)를 그대로 그리고, 나가기는 설정 탭 스택의 루트로 곧장
-    // 닿습니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0032).
+    // 닿습니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0033).
     case "profile":
       return <ProfileScreen items={profileList} onExit={wiring.onExitSettingsStack} />;
     case "episode-intro":

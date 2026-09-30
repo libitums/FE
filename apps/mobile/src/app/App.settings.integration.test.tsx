@@ -136,7 +136,7 @@ test("[IT3] 프로필의 설정으로를 tap하면 설정 화면으로 돌아가
 
 // ------------------------------------------------------------------------- IT4
 
-// 방침 · 약관은 앱 위 브라우저로 엽니다(ADR-0032). 호스트 경계 대역(`LegalDocumentModule`)만
+// 방침 · 약관은 앱 위 브라우저로 엽니다(ADR-0033). 호스트 경계 대역(`LegalDocumentModule`)만
 // 세웁니다 — 이미 세운 `NativeModules`(저장소 · 오디오)를 지우지 않고 얹습니다.
 function stubLegalDocumentHost(): { opened: string[] } {
   const opened: string[] = [];

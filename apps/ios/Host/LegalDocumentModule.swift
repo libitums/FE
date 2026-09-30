@@ -2,7 +2,7 @@ import SafariServices
 import UIKit
 
 /// 개인정보처리방침 · 이용약관을 앱 위의 브라우저(`SFSafariViewController`)로 여는 호스트 네이티브
-/// 모듈이다(ADR-0032). 메서드는 `open` 하나다.
+/// 모듈이다(ADR-0033). 메서드는 `open` 하나다.
 ///
 /// **JS에게서 주소를 받지 않는다.** JS는 문서 이름(`privacy-policy` · `terms-of-use`)만 넘기고,
 /// 주소는 이 파일의 표가 든다 — 나가는 목적지가 고정 두 곳으로 닫혀 있다(ADR-0026 D4의 경계를

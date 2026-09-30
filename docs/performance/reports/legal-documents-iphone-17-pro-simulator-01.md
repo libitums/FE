@@ -6,7 +6,7 @@
   크기만 재었습니다.
 - 기능 PR: 개인정보 처리방침 · 이용약관을 호스트 모듈 `LegalDocumentModule`로 앱 안
   브라우저(`SFSafariViewController`)에 열고, 앱 안 약관 화면을 지우는 변경(이 보고서와 같은 PR,
-  ADR-0032).
+  ADR-0033).
 - 대상 commit: `feat/legal-documents`(main `7c94fe8` 위).
 - 기기: iPhone 17 Pro 시뮬레이터 — 이 회차에서는 앱을 띄우지 않았습니다.
 - OS: iOS 26.5
