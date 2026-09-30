@@ -37,10 +37,10 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       characterId: "jimin",
       characterPoseId: "jimin-smile",
       speakerName: "Minseo",
-      dialogue: "물 주세요",
-      context: "We practice asking for water together. Just two words.",
+      dialogue: "물 좀 주세요",
+      context: "We practice asking for water together. One small request.",
       translation: "Water, please.",
-      romanization: "mul juseyo",
+      romanization: "mul jom juseyo",
     },
     {
       index: 2,

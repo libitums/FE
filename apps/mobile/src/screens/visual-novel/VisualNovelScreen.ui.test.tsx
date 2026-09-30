@@ -40,7 +40,7 @@ describe("VisualNovelScreen UI", () => {
     expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Scene 2 / 3");
     expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
     expect(screen.getByTestId("visual-novel-character-jimin-smile")).toBeInTheDocument();
-    expect(screen.getByTestId("visual-novel-dialogue-find")).toHaveTextContent("물 주세요");
+    expect(screen.getByTestId("visual-novel-dialogue-find")).toHaveTextContent("물 좀 주세요");
   });
 
   it("renders completed final beat with replay and exit actions", () => {

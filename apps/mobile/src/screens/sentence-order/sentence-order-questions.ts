@@ -59,13 +59,13 @@ export const sentenceOrderQuestionsByStep: Record<JourneyStepId, readonly Senten
     ],
     ordering: [
       {
-        prompt: "물 주세요",
+        prompt: "물 좀 주세요",
         support: {
           translation: "Water, please.",
-          romanization: "mul juseyo",
-          instruction: "Tap 물 (water), then 주세요 (please).",
+          romanization: "mul jom juseyo",
+          instruction: "Tap 물 (water), then 좀 주세요 (please).",
         },
-        chips: ["주세요", "물"],
+        chips: ["좀 주세요", "물"],
         answerOrder: [1, 0],
       },
     ],

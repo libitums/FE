@@ -17,8 +17,8 @@ const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
         before: "",
         after: "",
         translation: "Hello.",
-        options: ["안녕하세요", "내일 만나요", "물 주세요"],
-        romanizations: ["annyeonghaseyo", "naeil mannayo", "mul juseyo"],
+        options: ["안녕하세요", "내일 만나요", "물 좀 주세요"],
+        romanizations: ["annyeonghaseyo", "naeil mannayo", "mul jom juseyo"],
         answerIndex: 0,
       },
       {
@@ -29,8 +29,8 @@ const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
         before: "",
         after: "",
         translation: "Water, please.",
-        options: ["내일 만나요", "물 주세요", "이름이 뭐예요?"],
-        romanizations: ["naeil mannayo", "mul juseyo", "ireumi mwoyeyo?"],
+        options: ["내일 만나요", "물 좀 주세요", "이름이 뭐예요?"],
+        romanizations: ["naeil mannayo", "mul jom juseyo", "ireumi mwoyeyo?"],
         answerIndex: 1,
       },
       {
