@@ -42,6 +42,8 @@ export type EntryWiringArgs = {
   readonly dispatch: Dispatch<NavAction>;
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
+  // 로그인 뒤 서버 진행을 불러와 합칩니다(ADR-0035). 기다리지 않습니다 — 실패해도 진입은 이어집니다.
+  readonly syncProgress: () => Promise<void>;
 };
 
 export function entryWiring({
@@ -50,12 +52,14 @@ export function entryWiring({
   dispatch,
   entryLanguage,
   setEntryLanguage,
+  syncProgress,
 }: EntryWiringArgs) {
   // 세션을 저장한 자리마다 그 사용자로 분석을 식별합니다(ADR-0029 D8). 저장한 세션에는 사용자
   // ID가 없어 손에 든 액세스 토큰에서 읽습니다. 못 읽으면 식별하지 않고, 식별의 실패는 로그인을
   // 막지 않습니다.
   const storeSession = (session: AuthSession) => {
     saveAuthSession(session);
+    void syncProgress().catch(() => undefined);
     const userId = authUserIdFrom(session.accessToken);
     if (userId === null) return;
     try {

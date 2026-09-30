@@ -95,7 +95,7 @@ export function supabaseAuthorizeUrl(
 // ------------------------------------------------------------------ 로그아웃 · 계정 삭제
 
 // 로그아웃 · 삭제 함수가 함께 쓰는 헤더 셋입니다. 키는 이것뿐입니다.
-function bearerHeaders(config: SupabaseConfig, accessToken: string): Record<string, string> {
+export function bearerHeaders(config: SupabaseConfig, accessToken: string): Record<string, string> {
   return {
     apikey: config.anonKey,
     Authorization: `Bearer ${accessToken}`,

@@ -21,6 +21,7 @@ import type {
   PhoneOtpVerifyOutcome,
   PhoneOtpVerifyRequest,
 } from "../lib/auth-session.contract";
+import type { JourneyStats, ProgressWiringArgs } from "./learning-progress";
 import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
 import type { EntryEventSink } from "../lib/entry-flow";
@@ -135,13 +136,8 @@ export type ScreenWiring = {
   // 평가의 `맵으로`입니다. 중도 이탈(`onExitLearning`)과 같은 형태로 진행을
   // 갱신하지 않고 활성 스택의 루트로 곧장 닿습니다(ADR-0007 D6).
   onExitAssessment: () => void;
-  // 문화의 `맵으로`입니다. **진행을 갱신하지 않습니다** — 근거는 「이 화면에
-  // 나아가는 수단이 없어서」가 아닙니다. 나아가는 수단은 있습니다(`퀴즈 풀기`).
-  // 근거는 **완료를 걸 판정이 이 경로에 없다**는 것입니다: 스텝 완료를 거는
-  // 권한은 평가의 판정 하나이고, 문화가 진행에 거는 방식 자체가 아직
-  // 미정입니다(`docs/screens.md` 「문화 학습과 문화 퀴즈」 미정 표). 활성
-  // 스택의 루트로 곧장 닿는 것은 `onExitLearning`·`onExitAssessment`와 같은
-  // 형태입니다(ADR-0007 D6).
+  // 문화의 `맵으로`입니다. **진행을 갱신하지 않습니다** — 완료를 걸 판정이 이 경로에 없습니다(스텝 완료는 평가의
+  // 판정 하나가 겁니다, `docs/screens.md` 「문화 학습과 문화 퀴즈」). 활성 스택의 루트로 곧장 닿습니다(ADR-0007 D6).
   onExitCulture: () => void;
   // 문화 학습의 액션 행 `퀴즈 풀기`입니다. 문화 퀴즈를 push합니다 — replace가
   // 아닙니다. 나아가는 수단은 자기 화면을 스택에서 지우지 않습니다.
@@ -215,9 +211,9 @@ export type ScreenWiring = {
   onSelectEntryLanguage: (language: EntryLanguage) => void;
   onContinueLanguageSelect: () => void;
   onEnterJourney: () => void;
-  // 에피소드 최종 테스트의 결선입니다(`episode-final-wiring.ts`).
 } & EpisodeFinalWiring &
-  AccountWiring;
+  AccountWiring &
+  JourneyStats;
 
 export type ScreenWiringArgs = {
   readonly messengerEventSink: MessengerEventSink;
@@ -256,7 +252,8 @@ export type ScreenWiringArgs = {
   readonly roleplaySections: readonly RoleplaySection[];
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
-} & Omit<EpisodeFinalWiringArgs, "dispatch">;
+} & Omit<EpisodeFinalWiringArgs, "dispatch"> &
+  ProgressWiringArgs;
 
 export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   const journey = journeyWiring(args);
@@ -271,6 +268,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     dispatch: args.dispatch,
     entryLanguage: args.entryLanguage,
     setEntryLanguage: args.setEntryLanguage,
+    syncProgress: args.syncProgress,
   });
 
   return {
@@ -278,6 +276,8 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     roleplay,
     safeAreaInsets: args.safeAreaInsets,
     gemCount: args.gemCount,
+    streakDays: args.streakDays,
+    trophyCount: args.trophyCount,
     phoneSignIn: args.phoneSignIn,
     onScreenLayerChange: args.setScreenLayerOpen,
     episodePrologueFor: args.episodePrologueFor,
