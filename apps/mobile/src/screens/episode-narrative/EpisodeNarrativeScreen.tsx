@@ -1,4 +1,4 @@
-import { useState } from "@lynx-js/react";
+import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
@@ -10,6 +10,7 @@ import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import { useUiCopy } from "../../lib/ui-copy";
+import { playAudio, stopAudio } from "../../lib/audio";
 import { nextEpisodeNarrativeBeat, type EpisodeNarrative } from "./episode-narrative";
 import { NarrativeBackground } from "./NarrativeBackground";
 
@@ -53,14 +54,30 @@ export function EpisodeNarrativeScreen({
   const previousBackground = narrative.beats[beatIndex - 1]?.background ?? storyBackground;
   const character = narrative.character === undefined ? storyCharacter : narrative.character;
 
+  const audioSource = beat.audioSource;
+
+  useEffect(() => {
+    if (audioSource === undefined) return undefined;
+    // 음원이 끝나도 독백을 읽을 시간은 사용자가 정합니다. 자동으로 넘기지 않습니다.
+    const outcome = playAudio(audioSource, () => {});
+    return outcome === "started" ? () => stopAudio() : undefined;
+  }, [audioSource, beatIndex]);
+
   const handleAdvance = () => {
     "background only";
     const next = nextEpisodeNarrativeBeat(narrative, beatIndex);
     if (next === null) {
+      if (audioSource !== undefined) stopAudio();
       onFinish();
       return;
     }
     setBeatIndex(next);
+  };
+
+  const handleExit = () => {
+    "background only";
+    if (audioSource !== undefined) stopAudio();
+    onExit();
   };
 
   return (
@@ -128,7 +145,7 @@ export function EpisodeNarrativeScreen({
               icon={arrowLeft03}
               variant="neutral"
               size="xl"
-              bindtap={onExit}
+              bindtap={handleExit}
             />
           </view>
           <text

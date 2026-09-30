@@ -11,6 +11,8 @@ export type EpisodeNarrativeBeat = {
   readonly variant?: "speech" | "narration";
   /** 장면별 배경입니다. 생략하면 기존 스토어 배경을 씁니다. */
   readonly background?: string;
+  /** 이 장면에 들어올 때 재생하고 장면을 떠날 때 멈추는 번들 음원입니다. */
+  readonly audioSource?: string;
   /** 학습 대사입니다(한국어). */
   readonly line: string;
   /** 대사의 번역입니다(영어). */

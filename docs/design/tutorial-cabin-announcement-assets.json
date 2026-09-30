@@ -1,0 +1,34 @@
+{
+  "selected_by_user": "B — cabin speaker",
+  "asset": "apps/ios/Host/audio/tutorial-cabin-announcement.m4a",
+  "asset_sha256": "9b439e1942b24a3c677bad383a1e60aeb039b58a458c513d064ecea86a85291d",
+  "asset_bytes": 58165,
+  "approved_preview_sha256": "5aaa15a3a08a1c8d0d85ea6b943345d1eba30e2342a1cabe850c1b5927a273d8",
+  "transcript": "잠시 후 인천국제공항에 도착하겠습니다.",
+  "sequence": "2.000 s chime + 0.220 s silence + 3.456 s processed announcement",
+  "voice_label_from_filename": "Hana Lee - Natural and Cheerful / v4",
+  "format": "AAC/M4A mono 44100 Hz; requested 96000 bps",
+  "source_hashes": {
+    "announcement-original.mp3": "9ac1167c62195f568e502d9567437e0e1f2dc49c04362f589ee799bb607efc6d",
+    "chime-original.mp3": "4900b8def55ed12e85a2e99e4d528856e9e23914a2fc9b2104db5371c94d6fac"
+  },
+  "processing": {
+    "file": "announcement-b-cabin-speaker.wav",
+    "duration_seconds": 3.456,
+    "peak_dbfs": -9.31,
+    "active_rms_dbfs": -23.0,
+    "clipped_samples": 0,
+    "settings": {
+      "highpass_hz": 420,
+      "lowpass_hz": 2600,
+      "presence_db": 3,
+      "compression_ratio": 2.5,
+      "echo_delays_ms": [12, 27, 46]
+    }
+  },
+  "active_rms_dbfs": {
+    "chime": -28,
+    "announcement": -23
+  },
+  "integration": "Single bundled asset; no runtime filtering, mixing, timer sequencing, or new native API."
+}

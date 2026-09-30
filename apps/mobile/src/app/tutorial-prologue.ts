@@ -115,6 +115,7 @@ export const tutorialPrologue = {
             speakerName: "Cabin crew",
             variant: "narration",
             background: descent,
+            audioSource: "tutorial-cabin-announcement",
             line: "잠시 후 인천국제공항에 도착하겠습니다.",
             translation: "We will shortly be arriving at Incheon International Airport.",
           },
