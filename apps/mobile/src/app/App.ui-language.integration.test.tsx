@@ -16,7 +16,6 @@ import { uiLanguageStorageKey } from "../lib/ui-language";
 import { journeySteps } from "../screens/journey-map/journey-map";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import { questionsForStep } from "../screens/listening/listening";
-import { termsSections } from "../screens/terms/terms-sections";
 
 // UI 언어 문구표의 App 수준 협력을 봅니다(ADR-0006 D4). 이 파일이 재는 것은 두 갈래입니다.
 //
@@ -355,18 +354,6 @@ test("[IL6] ⭐ 영어 부팅의 탭 화면과 계정 화면에는 한글이 한
   expectNoHangul(root());
   fireEvent.tap(
     within(screen.getByTestId("profile-screen-exit")).getByTestId("ui-lynx-round-button"),
-    {},
-  );
-
-  fireEvent.tap(settingsCell("terms"), {});
-  expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
-  // 약관 절이 모두 그려졌다 — 본문이 빈 채로 「한글 없음」이 참이 되는 공허함을 막는다.
-  for (const section of termsSections()) {
-    expect(screen.getByTestId(`terms-section-title-${section.id}`)).toBeInTheDocument();
-  }
-  expectNoHangul(root());
-  fireEvent.tap(
-    within(screen.getByTestId("terms-screen-exit")).getByTestId("ui-lynx-round-button"),
     {},
   );
 

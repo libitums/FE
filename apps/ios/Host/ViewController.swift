@@ -43,6 +43,10 @@ final class ViewController: UIViewController {
       config.register(SpeechRecognitionModule.self)
       config.register(WebAuthenticationModule.self)
       config.register(AppleSignInModule.self)
+      // 아홉째 — 방침 · 약관을 앱 위 브라우저로 연다(ADR-0033). 목적지는 고정 두 곳이다.
+      config.register(LegalDocumentModule.self)
+      // 열째 — 서버 푸시의 권한 · 기기 토큰 · 누른 알림(ADR-0034). 목적지는 URL이 아니라 JS가 아는 목록이다.
+      config.register(PushNotificationModule.self)
       builder.config = config
       // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).
       // 이미지 서비스는 generic resource fetcher가 켜져 있을 때만 `shouldRedirectUrl`을
@@ -65,6 +69,7 @@ final class ViewController: UIViewController {
 
     lynxView.loadTemplate(fromURL: Self.templateURL, initData: nil)
     observeContentSizeCategory()
+    observeOpenedPushNotification()
   }
 
   /// 배율 **값**을 최신으로 유지한다. **화면은 다음 실행에 바뀐다** (ADR-0020 D2).
@@ -158,4 +163,16 @@ final class ViewController: UIViewController {
   }
 
   private var lastSafeAreaInsets: UIEdgeInsets?
+
+  /// 앱이 켜진 채 알림을 누르면 JS에 알린다. JS는 이벤트를 받고 `takeOpened`로 목적지를 꺼낸다 —
+  /// 이벤트에는 목적지를 싣지 않아, 꺼내는 자리가 하나다(ADR-0034).
+  private func observeOpenedPushNotification() {
+    NotificationCenter.default.addObserver(
+      forName: PushNotificationHub.openedNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.lynxView?.sendGlobalEvent("pushNotificationOpened", withParams: [])
+    }
+  }
 }

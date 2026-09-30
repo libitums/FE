@@ -47,6 +47,7 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
           onSelectSocialMethod={wiring.onSelectSocialLoginMethod}
           onSubmitPhoneNumber={wiring.onRequestPhoneOtp}
           onBack={wiring.onLoginBack}
+          onOpenLegalDocument={wiring.onOpenLegalDocument}
         />
       );
     case "verification-code":

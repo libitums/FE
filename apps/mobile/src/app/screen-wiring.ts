@@ -2,6 +2,7 @@
 // (`journeyWiring`·`roleplayWiring`·`entryWiring`)를 합쳐 하나의 wiring을
 // 만듭니다.
 
+import type { AccountWiringArgs } from "./leave-app.contract";
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
   EpisodeIntroEventSink,
@@ -10,6 +11,8 @@ import type {
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
 import type { SafeAreaInsets } from "../lib/safe-area";
+import { accountWiring } from "./account-wiring";
+import type { AccountWiring } from "./leave-app.contract";
 
 import type { AnswerResult } from "../lib/answer-result";
 import type {
@@ -18,7 +21,8 @@ import type {
   PhoneOtpVerifyOutcome,
   PhoneOtpVerifyRequest,
 } from "../lib/auth-session.contract";
-import type { AnalyticsIdentify } from "../lib/analytics.contract";
+import type { AnalyticsUser } from "../lib/analytics-user.contract";
+import type { LegalDocument } from "../lib/legal-document.contract";
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
@@ -32,6 +36,7 @@ import type {
 import type {
   NotificationEventSink,
   NotificationItem,
+  PushNotificationTarget,
 } from "../screens/notifications/notifications.contract";
 import type {
   PhoneCallEventSink,
@@ -160,6 +165,8 @@ export type ScreenWiring = {
   onSelectNotification: (item: NotificationItem) => void;
   onDeleteNotification: (item: NotificationItem) => void;
   onExitNotifications: () => void;
+  // 누른 서버 푸시의 목적지로 갑니다(ADR-0034). 화면이 아니라 `useOpenedPush`가 부릅니다.
+  onOpenPushTarget: (target: PushNotificationTarget) => void;
   // 에피소드 표지의 넘기기 · 나가기입니다. 넷 다 **표지 유닛 id 하나**를 받습니다 —
   // 「넘긴 뒤 열 유닛」이 없어졌기 때문입니다(spec §2.5). `Skip`은 맵이 아니라 만점
   // 결과 화면으로 갑니다(D5).
@@ -200,6 +207,7 @@ export type ScreenWiring = {
   onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   onVerifyPhoneOtp: (request: PhoneOtpVerifyRequest) => Promise<PhoneOtpVerifyOutcome>;
   onLoginBack: () => void;
+  onOpenLegalDocument: (document: LegalDocument) => void;
   onLanguageSelectBack: () => void;
   onJourneyEntryBack: () => void;
   onVerificationCodeExit: () => void;
@@ -208,7 +216,8 @@ export type ScreenWiring = {
   onContinueLanguageSelect: () => void;
   onEnterJourney: () => void;
   // 에피소드 최종 테스트의 결선입니다(`episode-final-wiring.ts`).
-} & EpisodeFinalWiring;
+} & EpisodeFinalWiring &
+  AccountWiring;
 
 export type ScreenWiringArgs = {
   readonly messengerEventSink: MessengerEventSink;
@@ -217,7 +226,8 @@ export type ScreenWiringArgs = {
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
   readonly entryEventSink: EntryEventSink;
-  readonly analyticsIdentify: AnalyticsIdentify | null;
+  readonly analyticsUser: AnalyticsUser | null;
+  readonly leaveApp: AccountWiringArgs["leaveApp"];
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly dispatch: Dispatch<NavAction>;
   readonly completedMessengerUnitIds: readonly MessengerUnitId[];
@@ -257,7 +267,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   });
   const entry = entryWiring({
     entryEventSink: args.entryEventSink,
-    analyticsIdentify: args.analyticsIdentify,
+    analyticsUser: args.analyticsUser,
     dispatch: args.dispatch,
     entryLanguage: args.entryLanguage,
     setEntryLanguage: args.setEntryLanguage,
@@ -279,6 +289,11 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       args.dispatch({ type: "back" });
     },
     ...entry,
+    ...accountWiring({
+      analyticsUser: args.analyticsUser,
+      entryEventSink: args.entryEventSink,
+      leaveApp: args.leaveApp,
+    }),
     ...episodeFinalWiring(args),
   };
 }

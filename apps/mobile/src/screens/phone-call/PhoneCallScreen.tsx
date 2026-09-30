@@ -179,12 +179,16 @@ export function PhoneCallScreen({
               .join(", ")}
             bindtap={handleReply}
           >
-            <text>{reply.text}</text>
+            <text accessibility-element={false}>{reply.text}</text>
             {reply.romanization ? (
-              <text className="phone-call-reply-support">{reply.romanization}</text>
+              <text className="phone-call-reply-support" accessibility-element={false}>
+                {reply.romanization}
+              </text>
             ) : null}
             {reply.translation ? (
-              <text className="phone-call-reply-support">{reply.translation}</text>
+              <text className="phone-call-reply-support" accessibility-element={false}>
+                {reply.translation}
+              </text>
             ) : null}
           </view>
         ) : null}

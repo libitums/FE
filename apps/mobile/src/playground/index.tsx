@@ -38,7 +38,7 @@ function Playground() {
     screen === "tutorial-prologue" ||
     screen === "tutorial-specials" ||
     screen === "tutorial-final-story";
-  const isTutorialLesson = screen === "tutorial-practice";
+  const isTutorialLesson = screen.startsWith("tutorial-") && !ownsSafeArea;
 
   return (
     // 앱 셸은 호스트가 넘긴 safe area 값으로 아래 여백을 잡습니다(App.tsx). Lynx

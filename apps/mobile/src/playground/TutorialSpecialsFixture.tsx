@@ -4,6 +4,7 @@ import { messengerConversationFor } from "../screens/messenger/messenger";
 import { PhoneCallScreen } from "../screens/phone-call/PhoneCallScreen";
 import { getPhoneCallConversation } from "../screens/phone-call/phone-call";
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
+import type { VisualNovelProgress } from "../screens/visual-novel/visual-novel.contract";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
 import { EpisodeFinalJourneyScreen } from "../app/EpisodeFinalJourneyScreen";
 import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
@@ -86,6 +87,11 @@ function TutorialStoryStage({
   setStage: (stage: number) => void;
   onExit: () => void;
 }) {
+  const [vnProgress, setVnProgress] = useState<VisualNovelProgress>({
+    status: "active",
+    beatIndex: 0,
+  });
+
   if (stage === 0)
     return (
       <MessengerScreen
@@ -110,8 +116,8 @@ function TutorialStoryStage({
     return (
       <VisualNovelScreen
         story={visualNovelStoryFor("cafe-arrival-visual-novel")}
-        progress={{ status: "active", beatIndex: 0 }}
-        onAdvance={noop}
+        progress={vnProgress}
+        onAdvance={(_id, outcome) => setVnProgress(outcome.progress)}
         onReplay={noop}
         onExit={() => setStage(3)}
       />

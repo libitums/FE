@@ -59,15 +59,16 @@ test("AN4. appleSignInResultFrom — 다섯 상태는 그대로, 모르는 모�
   expect(appleSignInResultFrom({ status: "completed", identityToken: "jwt" })).toEqual({
     status: "completed",
     identityToken: "jwt",
+    authorizationCode: null,
   });
   for (const status of ["cancelled", "failed", "already-active", "invalid-arguments"]) {
     expect(appleSignInResultFrom({ status })).toEqual({ status });
   }
 
-  // 모르는 키는 버린다.
+  // 모르는 키는 버린다(authorizationCode는 아는 키다 — AS1).
   expect(
-    appleSignInResultFrom({ status: "completed", identityToken: "jwt", authorizationCode: "c" }),
-  ).toEqual({ status: "completed", identityToken: "jwt" });
+    appleSignInResultFrom({ status: "completed", identityToken: "jwt", extra: 1 }),
+  ).toStrictEqual({ status: "completed", identityToken: "jwt", authorizationCode: null });
 
   const malformedInputs: unknown[] = [
     { status: "completed" },
@@ -114,7 +115,11 @@ test("AN6. startAppleSignIn — { nonce } 정확히 한 키로 host.start 1회, 
   expect(args).toEqual({ nonce: rfcHashed });
   expect(Object.keys(args)).toEqual(["nonce"]);
   expect(onResult).toHaveBeenCalledTimes(1);
-  expect(onResult).toHaveBeenCalledWith({ status: "completed", identityToken: "jwt" });
+  expect(onResult).toHaveBeenCalledWith({
+    status: "completed",
+    identityToken: "jwt",
+    authorizationCode: null,
+  });
 });
 
 test("AN7. startAppleSignIn — host.start가 던지면 unavailable, 콜백 0회", () => {
@@ -125,4 +130,50 @@ test("AN7. startAppleSignIn — host.start가 던지면 unavailable, 콜백 0회
 
   expect(startAppleSignIn({ nonce: rfcHashed }, onResult)).toBe("unavailable");
   expect(onResult).not.toHaveBeenCalled();
+});
+
+test("AS1. appleSignInResultFrom — completed의 authorizationCode: 비지 않은 문자열만 싣고 나머지는 null(malformed 아님)", () => {
+  expect(
+    appleSignInResultFrom({
+      status: "completed",
+      identityToken: "a.b.c",
+      authorizationCode: "code",
+    }),
+  ).toStrictEqual({ status: "completed", identityToken: "a.b.c", authorizationCode: "code" });
+
+  for (const authorizationCode of [undefined, "", 42, null, {}, ["c"], true]) {
+    const payload =
+      authorizationCode === undefined
+        ? { status: "completed", identityToken: "a.b.c" }
+        : { status: "completed", identityToken: "a.b.c", authorizationCode };
+    expect(appleSignInResultFrom(payload)).toStrictEqual({
+      status: "completed",
+      identityToken: "a.b.c",
+      authorizationCode: null,
+    });
+  }
+});
+
+test("AS1. authorizationCode가 있어도 identityToken 규칙은 그대로다 — 토큰이 없으면 malformed", () => {
+  expect(appleSignInResultFrom({ status: "completed", authorizationCode: "code" })).toStrictEqual({
+    status: "malformed",
+  });
+  expect(
+    appleSignInResultFrom({ status: "completed", identityToken: "", authorizationCode: "code" }),
+  ).toStrictEqual({ status: "malformed" });
+});
+
+test("AS1. startAppleSignIn — 호스트가 준 코드가 onResult까지 그대로 닿는다", () => {
+  stubModule((_args, cb) =>
+    cb({ status: "completed", identityToken: "jwt", authorizationCode: "code-9" }),
+  );
+  const onResult = vi.fn();
+
+  startAppleSignIn({ nonce: rfcHashed }, onResult);
+
+  expect(onResult).toHaveBeenCalledWith({
+    status: "completed",
+    identityToken: "jwt",
+    authorizationCode: "code-9",
+  });
 });

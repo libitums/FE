@@ -4,6 +4,8 @@
 // 식별(ADR-0029 D8)은 로그인 · 세션 갱신 직후 손에 든 액세스 토큰의 `sub`로 합니다. **서명을
 // 검증하지 않습니다** — 이 값은 접근 판정에 쓰지 않고, 토큰은 방금 서버가 준 것입니다.
 
+import type { AuthProvidersFrom } from "./account.contract";
+
 const base64UrlAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 // base64url을 바이트마다 글자 하나인 문자열로 풉니다. Lynx background 런타임에 `atob`이 있다는
@@ -51,3 +53,45 @@ export function authUserIdFrom(accessToken: string): string | null {
   const subject = (payload as Record<string, unknown>)["sub"];
   return typeof subject === "string" && subject.length > 0 ? subject : null;
 }
+
+// JWT payload를 객체로 읽습니다. 못 읽으면 `null`. 던지지 않습니다.
+function payloadRecordFrom(accessToken: string): Record<string, unknown> | null {
+  const segments = accessToken.split(".");
+  const payloadSegment = segments[1];
+  if (segments.length !== 3 || payloadSegment === undefined) {
+    return null;
+  }
+  const payloadText = decodeBase64Url(payloadSegment);
+  if (payloadText === null) {
+    return null;
+  }
+  try {
+    const payload: unknown = JSON.parse(payloadText);
+    if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
+      return null;
+    }
+    return payload as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/** `app_metadata.providers` 다음 `app_metadata.provider`, 중복 없음. 읽을 수 없으면 `[]`. 던지지 않습니다. */
+export const authProvidersFrom: AuthProvidersFrom = (accessToken) => {
+  const payload = payloadRecordFrom(accessToken);
+  const metadata = payload === null ? null : payload["app_metadata"];
+  if (typeof metadata !== "object" || metadata === null || Array.isArray(metadata)) {
+    return [];
+  }
+  const record = metadata as Record<string, unknown>;
+  const providers = record["providers"];
+  const candidates: unknown[] = Array.isArray(providers) ? [...providers] : [];
+  candidates.push(record["provider"]);
+  const result: string[] = [];
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.length > 0 && !result.includes(candidate)) {
+      result.push(candidate);
+    }
+  }
+  return result;
+};

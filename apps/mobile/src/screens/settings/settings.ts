@@ -2,15 +2,22 @@
 // UI는 결과를 그리기만 합니다(ADR-0006 D4 — 순수 로직은 unit 계층 대상).
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
+import { legalDocumentOpenedEvent } from "../../lib/legal-document";
+import type { LegalDocumentOpenedEvent } from "../../lib/legal-document.contract";
 import type {
+  NotificationSettingsOpenedEvent,
   ProfileOpenedEvent,
   SessionOptionChangedEvent,
   SettingsNavTarget,
-  TermsOpenedEvent,
 } from "./settings.contract";
 import type { SessionOptionKey } from "../../lib/session-options";
 
-export const settingsNavTargets: readonly SettingsNavTarget[] = ["profile", "terms"];
+export const settingsNavTargets: readonly SettingsNavTarget[] = [
+  "profile",
+  "notifications",
+  "privacy-policy",
+  "terms-of-use",
+];
 
 export function settingsNavLabel(target: SettingsNavTarget, copy: UiCopy): string {
   return copy.settings.nav[target];
@@ -19,12 +26,15 @@ export function settingsNavLabel(target: SettingsNavTarget, copy: UiCopy): strin
 // `default` 없는 `switch`입니다 — target이 늘면 `TS2366`으로 섭니다.
 export function settingsNavOpenedEvent(
   target: SettingsNavTarget,
-): ProfileOpenedEvent | TermsOpenedEvent {
+): ProfileOpenedEvent | NotificationSettingsOpenedEvent | LegalDocumentOpenedEvent {
   switch (target) {
     case "profile":
       return { name: "profile_opened" };
-    case "terms":
-      return { name: "terms_opened" };
+    case "notifications":
+      return { name: "notification_settings_opened" };
+    case "privacy-policy":
+    case "terms-of-use":
+      return legalDocumentOpenedEvent(target, "settings");
   }
 }
 

@@ -1,5 +1,5 @@
 // 화면 전환 상태의 모양을 소유합니다 — `Tab`·`Screen`·`Nav`·`NavAction` 타입과
-// 초기값 둘(`initialNav`·`entryInitialNav`)입니다. 전이 로직은 `nav-reducer.ts`가
+// 초기값(`initialNav`·`entryInitialNav`·`signedOutNav`)입니다. 전이 로직은 `nav-reducer.ts`가
 // 집니다.
 
 // `app/` -> `screens/` 방향의 **type-only** import입니다. `import type`은
@@ -44,10 +44,9 @@ export type Screen =
   | { name: "journey-map" }
   | { name: "roleplay-list" }
   | { name: "settings" }
-  // 설정 탭의 화면 둘입니다. 필드가 없습니다 — 프로필·약관에 진행도 파라미터도
-  // 없고, 내용은 App이 넘깁니다.
+  // 설정 탭의 화면입니다. 필드가 없습니다 — 프로필에 진행도 파라미터가 없고, 내용은 App이
+  // 넘깁니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0033).
   | { name: "profile" }
-  | { name: "terms" }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
   // 에피소드의 서사 표지입니다. 필드는 **표지 유닛 id 하나**입니다 — 표지가 스스로 맵에
@@ -167,3 +166,10 @@ export const initialNav: Nav = {
 // `initialNav`와 같은 값이고 `entry`만 다릅니다. **App이 실제로 `useReducer`에
 // 넘기는 부팅 상태가 이것입니다** — `initialNav`가 아닙니다.
 export const entryInitialNav: Nav = { ...initialNav, entry: [{ name: "splash" }] };
+
+// 로그아웃 · 계정 삭제 뒤 새 App 세션의 첫 `Nav`입니다. 진입 구간이 `[온보딩, 로그인]`이고 탭 스택은
+// `initialNav`와 같습니다. `NavAction` · 리듀서는 바뀌지 않습니다(`app-start.ts`가 쓴다).
+export const signedOutNav: Nav = {
+  ...initialNav,
+  entry: [{ name: "onboarding" }, { name: "login" }],
+};

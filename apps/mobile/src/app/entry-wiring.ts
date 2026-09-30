@@ -2,7 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
-import type { AnalyticsIdentify } from "../lib/analytics.contract";
+import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import { refreshAuthSession, requestPhoneOtp, verifyPhoneOtp } from "../lib/api-client";
 import {
   clearAuthSession,
@@ -12,6 +12,8 @@ import {
   sessionRefreshDisposition,
 } from "../lib/auth-session";
 import { authUserIdFrom } from "../lib/auth-user-id";
+import { legalDocumentOpenedEvent, openLegalDocument } from "../lib/legal-document";
+import type { LegalDocument } from "../lib/legal-document.contract";
 import {
   entryCompletedEvent,
   entryLoginMethodSelectedEvent,
@@ -31,11 +33,12 @@ import { oauthProviderFor, signInWithSocialProvider } from "../lib/social-sign-i
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { NavAction } from "./nav-state";
+import { syncPushDevice } from "./push-wiring";
 import { entryScreenAfterLogin } from "./screen-routing";
 
 export type EntryWiringArgs = {
   readonly entryEventSink: EntryEventSink;
-  readonly analyticsIdentify: AnalyticsIdentify | null;
+  readonly analyticsUser: AnalyticsUser | null;
   readonly dispatch: Dispatch<NavAction>;
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
@@ -43,7 +46,7 @@ export type EntryWiringArgs = {
 
 export function entryWiring({
   entryEventSink,
-  analyticsIdentify,
+  analyticsUser,
   dispatch,
   entryLanguage,
   setEntryLanguage,
@@ -56,7 +59,7 @@ export function entryWiring({
     const userId = authUserIdFrom(session.accessToken);
     if (userId === null) return;
     try {
-      analyticsIdentify?.(userId);
+      analyticsUser?.identify(userId);
     } catch {
       // 분석은 화면을 막지 않습니다.
     }
@@ -82,6 +85,8 @@ export function entryWiring({
             if (result.status === "refreshed") {
               storeSession(result.session);
               dispatch({ type: "enterApp" });
+              // 이미 허용했으면 조용히 토큰을 올립니다 — 마지막 활동 시각도 이때 갱신됩니다(ADR-0034).
+              void syncPushDevice({ ask: false });
               return;
             }
             if (sessionRefreshDisposition(result.reason) === "clear") {
@@ -156,6 +161,11 @@ export function entryWiring({
       return result;
     },
     // 로그인의 뒤로가기입니다 — 진입 구간 스택에서 한 칸 뒤(온보딩)로 갑니다.
+    // 로그인 안내의 방침 · 약관입니다 — 이벤트 → 앱 위 브라우저(ADR-0033). 화면은 그대로입니다.
+    onOpenLegalDocument: (document: LegalDocument) => {
+      entryEventSink?.(legalDocumentOpenedEvent(document, "login"));
+      openLegalDocument(document);
+    },
     onLoginBack: () => {
       dispatch({ type: "back" });
     },
@@ -191,6 +201,8 @@ export function entryWiring({
     onEnterJourney: () => {
       entryEventSink?.(entryCompletedEvent());
       dispatch({ type: "enterApp" });
+      // 진입 흐름의 끝에서 알림을 묻습니다 — 다이얼로그는 맵 위에 뜨고, 답을 기다리지 않습니다(ADR-0034).
+      void syncPushDevice({ ask: true });
     },
   };
 }

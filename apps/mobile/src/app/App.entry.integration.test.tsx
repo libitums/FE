@@ -1810,7 +1810,7 @@ test("[ID1] 소셜 로그인이 성공하면 그 사용자로 한 번 식별한�
   });
   const analyticsIdentify = vi.fn<(userId: string) => void>();
   vi.useFakeTimers();
-  render(<App analyticsIdentify={analyticsIdentify} />);
+  render(<App analyticsUser={{ identify: analyticsIdentify, reset: vi.fn() }} />);
   advanceSplash();
   completeOnboarding();
 
@@ -1830,7 +1830,9 @@ test("[ID2] 전화번호 코드 검증이 성공하면 그 사용자로 한 번 
   });
   const analyticsIdentify = vi.fn<(userId: string) => void>();
   vi.useFakeTimers();
-  render(<App phoneSignIn="visible" analyticsIdentify={analyticsIdentify} />);
+  render(
+    <App phoneSignIn="visible" analyticsUser={{ identify: analyticsIdentify, reset: vi.fn() }} />,
+  );
   advanceSplash();
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
@@ -1851,7 +1853,7 @@ test("[ID3] 세션 갱신으로 부팅하면 갱신된 토큰의 사용자로 �
   });
   const analyticsIdentify = vi.fn<(userId: string) => void>();
   vi.useFakeTimers();
-  render(<App analyticsIdentify={analyticsIdentify} />);
+  render(<App analyticsUser={{ identify: analyticsIdentify, reset: vi.fn() }} />);
 
   advanceSplash();
   await advanceTimersAsync(0);
@@ -1866,7 +1868,7 @@ test("[ID4] 로그인이 실패하거나 토큰에서 사용자를 못 읽으면
   });
   const analyticsIdentify = vi.fn<(userId: string) => void>();
   vi.useFakeTimers();
-  render(<App analyticsIdentify={analyticsIdentify} />);
+  render(<App analyticsUser={{ identify: analyticsIdentify, reset: vi.fn() }} />);
   advanceSplash();
   completeOnboarding();
 
@@ -1884,8 +1886,11 @@ test("[ID5] 식별이 던져도 로그인은 언어 선택으로 넘어간다", 
   vi.useFakeTimers();
   render(
     <App
-      analyticsIdentify={() => {
-        throw new Error("identify failed");
+      analyticsUser={{
+        identify: () => {
+          throw new Error("identify failed");
+        },
+        reset: vi.fn(),
       }}
     />,
   );
@@ -1929,4 +1934,36 @@ test("[IN2] 소셜 교환이 status 499로 돌아오면 network 문구가 서고
 
   expect(screen.getByTestId("login-screen-error")).toHaveTextContent(authFailureMessage("network"));
   expect(store.has(authSessionStorageKey)).toBe(false);
+});
+
+// ------------------------------------------------------------------------- 방침 · 약관 링크
+
+test("[ILG1] 로그인 안내의 두 링크가 그 문서를 호스트로 열고 legal_document_opened(source: login)를 낸다", () => {
+  const opened: string[] = [];
+  emptyStorageStub();
+  const previous = (globalThis as { NativeModules?: Record<string, unknown> }).NativeModules ?? {};
+  vi.stubGlobal("NativeModules", {
+    ...previous,
+    LegalDocumentModule: {
+      open: (args: { document: string }, callback: (payload: unknown) => void) => {
+        opened.push(args.document);
+        callback({ status: "opened" });
+      },
+    },
+  });
+  const events: unknown[] = [];
+  vi.useFakeTimers();
+  render(<App entryEventSink={(event) => events.push(event)} />);
+  advanceSplash();
+  completeOnboarding();
+
+  fireEvent.tap(screen.getByTestId("login-screen-legal-privacy-policy"), {});
+  fireEvent.tap(screen.getByTestId("login-screen-legal-terms-of-use"), {});
+
+  expect(opened).toEqual(["privacy-policy", "terms-of-use"]);
+  expect(events.slice(-2)).toEqual([
+    { name: "legal_document_opened", document: "privacy-policy", source: "login" },
+    { name: "legal_document_opened", document: "terms-of-use", source: "login" },
+  ]);
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
 });

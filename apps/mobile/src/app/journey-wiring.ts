@@ -26,6 +26,7 @@ import type { MessengerEventSink, MessengerUnitId } from "../screens/messenger/m
 import type {
   NotificationEventSink,
   NotificationItem,
+  PushNotificationTarget,
 } from "../screens/notifications/notifications.contract";
 import {
   notificationDeletedEvent,
@@ -37,6 +38,7 @@ import type {
   PhoneCallUnitId,
 } from "../screens/phone-call/phone-call.contract";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
+import { openLegalDocument } from "../lib/legal-document";
 import { sessionOptionChangedEvent, settingsNavOpenedEvent } from "../screens/settings/settings";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
 import { toggleSessionOption } from "../lib/session-options";
@@ -49,6 +51,8 @@ import { learningScreenFor, roleplayScreenFor } from "./screen-routing";
 import { learningSessionWiring } from "./learning-session-wiring";
 import { specialUnitWiring } from "./special-unit-wiring";
 import { tabRootActions } from "./nav-reducer";
+import { pushTargetOpener } from "./push-routing";
+import { openNotificationSettings } from "./push-wiring";
 import { episodeIntroWiring } from "./episode-intro-wiring";
 import type { NavAction } from "./nav-state";
 
@@ -216,6 +220,9 @@ export function journeyWiring(args: JourneyWiringArgs) {
         }
       }
     },
+    // 누른 서버 푸시의 목적지입니다(ADR-0034) — 이동 규칙은 `push-routing.ts`입니다.
+    onOpenPushTarget: (target: PushNotificationTarget) =>
+      pushTargetOpener({ dispatch, notificationEventSink, journey })(target),
     // 알림 삭제입니다. 이벤트를 먼저 올리고 목록에서 뺍니다. 화면을 옮기지 않습니다 —
     // 마지막 알림을 지워도 알림 화면에 남아 빈 상태를 봅니다.
     notifications,
@@ -228,12 +235,20 @@ export function journeyWiring(args: JourneyWiringArgs) {
     onExitNotifications: () => {
       dispatch({ type: "backToRoot" });
     },
-    // 열림 이벤트 → `push({ name: target })`. `SettingsNavTarget`이 route
-    // 이름과 같은 문자열이라 사상 표 없이 곧장 옮깁니다.
+    // 열림 이벤트 → 프로필은 `push`, 문서 둘은 앱 위 브라우저(ADR-0033). 문서는 설정 탭
+    // 스택에 쌓이지 않고, 브라우저를 닫으면 설정 화면 그대로입니다.
     sessionOptions,
     onSelectNavTarget: (target: SettingsNavTarget) => {
       settingsEventSink?.(settingsNavOpenedEvent(target));
-      dispatch({ type: "push", screen: { name: target } });
+      if (target === "profile") {
+        dispatch({ type: "push", screen: { name: target } });
+        return;
+      }
+      if (target === "notifications") {
+        void openNotificationSettings();
+        return;
+      }
+      openLegalDocument(target);
     },
     // 흐름 하나(토글)입니다 — sink 먼저, `setSessionOptions` 나중. `value`는
     // 바뀐 뒤 값입니다.

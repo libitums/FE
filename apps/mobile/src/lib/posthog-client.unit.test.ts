@@ -395,14 +395,14 @@ describe("createAnalyticsSession", () => {
     const { calls, transport } = fakeTransport();
     const session = createAnalyticsSession(null, transport);
     expect(session.sinks).toStrictEqual(noAnalyticsEventSinks);
-    expect(session.identify).toBeNull();
+    expect(session.user).toBeNull();
     expect(calls).toHaveLength(0);
   });
 
   test("PC9: transport가 null이면 없음 세션이다", () => {
     const session = createAnalyticsSession(config, null);
     expect(session.sinks).toStrictEqual(noAnalyticsEventSinks);
-    expect(session.identify).toBeNull();
+    expect(session.user).toBeNull();
   });
 
   test("PC10: 일곱 sink가 함수이고 sink 호출이 요청 한 건이 된다", async () => {
@@ -418,8 +418,9 @@ describe("createAnalyticsSession", () => {
     await vi.waitFor(() => expect(calls).toHaveLength(1));
     expect(batchEventsOf(calls).map((e) => e.event)).toStrictEqual(["settings_opened"]);
 
-    expect(session.identify).toBeTypeOf("function");
-    expect(() => session.identify?.("user-1")).not.toThrow();
+    expect(session.user?.identify).toBeTypeOf("function");
+    expect(session.user?.reset).toBeTypeOf("function");
+    expect(() => session.user?.identify("user-1")).not.toThrow();
   });
 });
 
@@ -495,7 +496,7 @@ describe("productAnalyticsSession", () => {
     vi.stubGlobal("fetch", globalFetch);
     vi.stubEnv("PUBLIC_POSTHOG_KEY", "");
     const session = productAnalyticsSession();
-    expect(session.identify).toBeNull();
+    expect(session.user).toBeNull();
     expect(session.sinks).toStrictEqual(noAnalyticsEventSinks);
     expect(globalFetch).not.toHaveBeenCalled();
   });
@@ -539,10 +540,13 @@ describe("대기열 · 재시도 · 보존", () => {
     const failedAttempts = net.calls.length;
 
     net.goOnline();
-    client.capture("terms_opened", {});
+    client.capture("profile_opened", {});
     await vi.advanceTimersByTimeAsync(1_000);
 
-    expect(sentAfter(net.calls, failedAttempts)).toStrictEqual(["settings_opened", "terms_opened"]);
+    expect(sentAfter(net.calls, failedAttempts)).toStrictEqual([
+      "settings_opened",
+      "profile_opened",
+    ]);
   });
 
   test("PC15: 네트워크 오류 뒤 새 이벤트가 없어도 정해진 간격 뒤 스스로 다시 보낸다", async () => {
@@ -600,7 +604,7 @@ describe("대기열 · 재시도 · 보존", () => {
     expect(JSON.parse(saved!)).toMatchObject([{ message: { event: "settings_opened" } }]);
 
     net.goOnline();
-    client.capture("terms_opened", {});
+    client.capture("profile_opened", {});
     await vi.advanceTimersByTimeAsync(1_000);
     expect(storage.values.has(analyticsQueueStorageKey)).toBe(false);
   });
@@ -663,4 +667,149 @@ describe("대기열 · 재시도 · 보존", () => {
       expect(JSON.parse(saved!)).toMatchObject([{ message: { event: "settings_opened" } }]);
     },
   );
+});
+
+// ------------------------------------------------------------------ 계정 삭제 · 로그아웃 — user.identify / user.reset
+
+describe("AnalyticsSession.user — identify · reset", () => {
+  const sessionFor = (transport: AnalyticsTransport) => {
+    const session = createAnalyticsSession(config, transport);
+    if (session.user === null || session.user === undefined) {
+      throw new Error("user must exist when config and transport exist");
+    }
+    return { session, user: session.user };
+  };
+  const emit = (session: ReturnType<typeof sessionFor>["session"]) =>
+    session.sinks.settingsEventSink?.({ name: "settings_opened" });
+  const queueRemoves = (removes: readonly string[]) =>
+    removes.filter((key) => key === analyticsQueueStorageKey);
+
+  // `identify`는 SDK가 `$identify` 이벤트를 배치에 싣습니다 — AN2 · AN3은 화면 이벤트만 셉니다.
+  const capturedEventsOf = (calls: Parameters<typeof batchEventsOf>[0]) =>
+    batchEventsOf(calls).filter((event) => event.event !== "$identify");
+
+  test("AN1: 클라이언트가 없는 세션(config null · transport null)은 user가 null이다", () => {
+    expect(createAnalyticsSession(null, fakeTransport().transport).user).toBeNull();
+    expect(createAnalyticsSession(config, null).user).toBeNull();
+  });
+
+  test("AN2: identify 뒤 capture의 distinct_id가 그 사용자 ID다", async () => {
+    const { calls, transport } = fakeTransport();
+    const { session, user } = sessionFor(transport);
+
+    user.identify("u");
+    emit(session);
+    await vi.waitFor(() => expect(capturedEventsOf(calls)).toHaveLength(1));
+
+    expect(capturedEventsOf(calls)[0]!.distinct_id).toBe("u");
+  });
+
+  test("AN3: reset(identity) — 새 익명 ID로 바뀌고 environment가 그대로 실린다", async () => {
+    const { calls, transport } = fakeTransport();
+    const { session, user } = sessionFor(transport);
+
+    user.identify("u");
+    emit(session);
+    await vi.waitFor(() => expect(capturedEventsOf(calls)).toHaveLength(1));
+    user.reset("identity");
+    emit(session);
+    await vi.waitFor(() => expect(capturedEventsOf(calls)).toHaveLength(2));
+
+    const [before, after] = capturedEventsOf(calls);
+    expect(before!.distinct_id).toBe("u");
+    expect(after!.distinct_id).not.toBe("u");
+    expect(after!.distinct_id).not.toBe(before!.distinct_id);
+    expect(after!.properties.environment).toBe("development");
+  });
+
+  test("AN3: reset(identity)는 저장소 대기열을 건드리지 않고, 남은 이벤트는 다음 flush에 나간다", async () => {
+    vi.useFakeTimers();
+    const storage = fakeStorage();
+    vi.stubGlobal("NativeModules", { StorageModule: storage.module });
+    const net = networkDownThen();
+    const { session, user } = sessionFor(net.transport);
+
+    user.identify("u");
+    emit(session);
+    await vi.advanceTimersByTimeAsync(10_000);
+    const failedAttempts = net.calls.length;
+    expect(storage.values.has(analyticsQueueStorageKey)).toBe(true);
+    const removesBefore = queueRemoves(storage.removes).length;
+    const setsBefore = storage.sets.length;
+
+    user.reset("identity");
+
+    expect(queueRemoves(storage.removes)).toHaveLength(removesBefore);
+    expect(storage.sets).toHaveLength(setsBefore);
+    expect(storage.values.has(analyticsQueueStorageKey)).toBe(true);
+
+    net.goOnline();
+    emit(session);
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    const sent = capturedEventsOf(net.calls.slice(failedAttempts));
+    expect(sent).toHaveLength(2);
+    expect(sent[0]!.distinct_id).toBe("u");
+    expect(sent[1]!.distinct_id).not.toBe("u");
+    expect(sent[1]!.properties.environment).toBe("development");
+  });
+
+  test("AN4: reset(identity-and-queue) — 대기열을 저장소 · 메모리 모두 비운다", async () => {
+    vi.useFakeTimers();
+    const storage = fakeStorage();
+    vi.stubGlobal("NativeModules", { StorageModule: storage.module });
+    const net = networkDownThen();
+    const { session, user } = sessionFor(net.transport);
+
+    user.identify("u");
+    emit(session);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(storage.values.has(analyticsQueueStorageKey)).toBe(true);
+    const failedAttempts = net.calls.length;
+
+    user.reset("identity-and-queue");
+
+    expect(queueRemoves(storage.removes)).toHaveLength(1);
+    expect(storage.values.has(analyticsQueueStorageKey)).toBe(false);
+
+    // 예약된 재시도 타이머가 있었더라도 돌지 않는다 — 온라인이 돼도 옛 이벤트는 나가지 않는다.
+    net.goOnline();
+    const total = analyticsQueueRetryDelaysMs.reduce((sum, ms) => sum + ms, 0);
+    await vi.advanceTimersByTimeAsync(total + 60_000);
+    expect(net.calls).toHaveLength(failedAttempts);
+
+    // 다음 flush의 batch에는 옛 이벤트가 없고, 새 익명 ID · environment가 실린다.
+    emit(session);
+    await vi.advanceTimersByTimeAsync(1_000);
+    const sent = batchEventsOf(net.calls.slice(failedAttempts));
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.distinct_id).not.toBe("u");
+    expect(sent[0]!.properties.environment).toBe("development");
+  });
+
+  test.each(["identity", "identity-and-queue"] as const)(
+    "AN5: 클라이언트 메서드가 던져도 reset(%s)은 던지지 않는다",
+    (scope) => {
+      const { transport } = fakeTransport();
+      const { user } = sessionFor(transport);
+      const boom = () => {
+        throw new Error("sdk boom");
+      };
+      vi.spyOn(LynxPostHogClient.prototype, "reset").mockImplementation(boom);
+      vi.spyOn(LynxPostHogClient.prototype, "register").mockImplementation(boom);
+      vi.spyOn(LynxPostHogClient.prototype, "discardQueue").mockImplementation(boom);
+
+      expect(() => user.reset(scope)).not.toThrow();
+    },
+  );
+
+  test("AN5: identify도 클라이언트가 던지면 삼킨다", () => {
+    const { transport } = fakeTransport();
+    const { user } = sessionFor(transport);
+    vi.spyOn(LynxPostHogClient.prototype, "identify").mockImplementation(() => {
+      throw new Error("sdk boom");
+    });
+
+    expect(() => user.identify("u")).not.toThrow();
+  });
 });
