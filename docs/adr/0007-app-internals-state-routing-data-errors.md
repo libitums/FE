@@ -28,6 +28,8 @@ TanStack Query, react-router·TanStack Router의 통합 방법을 각각 제공�
 
 ### D1. 상태 관리 — 전역 상태 라이브러리를 도입하지 않는다
 
+> ⟨2026-09-30⟩ **학습 진행은 이제 서버에 저장된다**([ADR-0035](0035-learning-progress-and-streak-on-server.md)) — 아래의 「진행은 영속하지 않는다」는 진행에 한해 대체됐다. 세션 옵션 · 남은 알림 · 젬은 그대로다.
+
 React 내장(`useState` · `useReducer` · `useContext`)만 쓴다.
 
 **단, 서버 상태와 클라이언트 상태를 개념적으로 구분해서 부른다.** 라이브러리가 없어도

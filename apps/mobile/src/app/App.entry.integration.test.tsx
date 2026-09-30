@@ -128,6 +128,9 @@ function stubSupabase(routes: SupabaseRoutes): SupabaseCall[] {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string, init: SupabaseCallInit) => {
+      // 학습 진행 RPC(ADR-0035)는 로그인 뒤 저절로 나가는 별 축이라 기록하지 않고 빈 진행으로 답합니다 —
+      // 이 파일이 세는 것은 인증 요청입니다. 진행 불러오기는 `App.progress.integration.test.tsx`가 봅니다.
+      if (url.includes("/rest/v1/rpc/")) return { status: 200, text: async () => "null" };
       calls.push({ url, init });
       const route = routeFor(url, routes);
       if (route === undefined) {

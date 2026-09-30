@@ -141,8 +141,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           results={screen.results}
           skippedCount={screen.skippedCount}
           verdict={verdict}
-          streakDays={0}
-          trophyCount={0}
+          streakDays={wiring.streakDays}
+          trophyCount={wiring.trophyCount}
           diamondCount={wiring.gemCount}
           reward={lessonRewardPlaceholder}
           onExit={wiring.onExitAssessment}
