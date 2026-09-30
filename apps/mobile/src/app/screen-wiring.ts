@@ -82,7 +82,7 @@ export type RoleplayUnitWiring = {
     outcome: VisualNovelAdvanceOutcome,
   ) => void;
   readonly onVisualNovelExit: (id: VisualNovelUnitId, beatId: VisualNovelBeatId) => void;
-  readonly onVisualNovelReplay: (id: VisualNovelUnitId) => void;
+  readonly onVisualNovelFinish: (id: VisualNovelUnitId) => void;
 };
 
 // 화면 결선이 `renderScreen`에 넘기는 것입니다. 셸이 소유한 값 하나와 콜백
@@ -108,7 +108,7 @@ export type ScreenWiring = {
   visualNovelProgress: VisualNovelProgress;
   onVisualNovelAdvance: (id: VisualNovelUnitId, outcome: VisualNovelAdvanceOutcome) => void;
   onVisualNovelExit: (outcome: VisualNovelExitOutcome, beatId: VisualNovelBeatId) => void;
-  onVisualNovelReplay: (id: VisualNovelUnitId) => void;
+  onVisualNovelFinish: (id: VisualNovelUnitId) => void;
   completedStepCount: number;
   /** 끝낸 표지 유닛입니다 — 맵의 표지 게이트가 이 값을 봅니다. */
   completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];

@@ -34,7 +34,7 @@ function renderScreen(source: SpecialUnitEntrySource, progress: VisualNovelProgr
       exitTo={source}
       onAdvance={vi.fn<VisualNovelScreenProps["onAdvance"]>()}
       onExit={vi.fn<VisualNovelScreenProps["onExit"]>()}
-      onReplay={vi.fn<VisualNovelScreenProps["onReplay"]>()}
+      onFinish={vi.fn<VisualNovelScreenProps["onFinish"]>()}
     />,
   );
 }

@@ -10,7 +10,7 @@ import type {
   MessengerExitOutcome,
   MessengerUnitId,
 } from "../screens/messenger/messenger.contract";
-import { practiceVisualNovelExitOutcome } from "../screens/visual-novel/visual-novel";
+import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type {
   VisualNovelAdvanceOutcome,
   VisualNovelBeatId,
@@ -53,9 +53,9 @@ export function roleplayWiring({
     // 대화는 스택에 남길 자리가 아닙니다(학습 세션 → 평가와 같은 `replace`).
     onMessengerFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) =>
       dispatch({ type: "replace", screen: { name: "messenger-complete", unitId: id, results } }),
-    onPhoneCallComplete: () => {
+    onPhoneCallComplete: (id: PhoneCallUnitId) => {
       "background only";
-      // 전화 완료 이벤트가 없고 기록도 없습니다 — 아무것도 하지 않습니다.
+      dispatch({ type: "replace", screen: { name: "special-unit-complete", unitId: id } });
     },
     onPhoneCallExit: () => {
       "background only";
@@ -75,7 +75,7 @@ export function roleplayWiring({
     },
     onVisualNovelExit: (id: VisualNovelUnitId, beatId: VisualNovelBeatId) => {
       "background only";
-      if (practiceVisualNovelExitOutcome(beatId) === "incomplete") {
+      {
         visualNovelEventSink?.({
           name: "visual_novel_unit_exited_incomplete",
           unitId: id,
@@ -85,13 +85,9 @@ export function roleplayWiring({
       }
       dispatch({ type: "backToRoot" });
     },
-    onVisualNovelReplay: (id: VisualNovelUnitId) => {
+    onVisualNovelFinish: (id: VisualNovelUnitId) => {
       "background only";
-      visualNovelEventSink?.({
-        name: "visual_novel_unit_replay_started",
-        unitId: id,
-        entrySource: "roleplay",
-      });
+      dispatch({ type: "replace", screen: { name: "special-unit-complete", unitId: id } });
     },
   };
 }

@@ -29,6 +29,7 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       context: "In my imagination, tomorrow arrives. Minseo greets me at the café.",
       translation: "Hello.",
       romanization: "annyeonghaseyo",
+      reply: { dialogue: "안녕하세요!", translation: "Hello!", romanization: "annyeonghaseyo" },
     },
     {
       index: 1,
@@ -37,10 +38,15 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       characterId: "jimin",
       characterPoseId: "jimin-smile",
       speakerName: "Minseo",
-      dialogue: "물 좀 주세요",
-      context: "We practice asking for water together. One small request.",
-      translation: "Water, please.",
-      romanization: "mul jom juseyo",
+      dialogue: "뭐 마실래요?",
+      context: "Minseo asks what I would like to drink. I ask for water.",
+      translation: "What would you like to drink?",
+      romanization: "mwo masillaeyo?",
+      reply: {
+        dialogue: "물 좀 주세요.",
+        translation: "Water, please.",
+        romanization: "mul jom juseyo",
+      },
     },
     {
       index: 2,
@@ -49,11 +55,16 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       characterId: "jimin",
       characterPoseId: "jimin-smile",
       speakerName: "Minseo",
-      dialogue: "내일 만나요",
+      dialogue: "여기 물이에요.",
       context:
-        "We say goodbye. Before landing, I’ll practice directions, then listen, speak, and trace one letter.",
-      translation: "See you tomorrow.",
-      romanization: "naeil mannayo",
+        "Minseo brings me water, and I thank her. Before landing, I’ll practice directions, then listen, speak, and trace one letter.",
+      translation: "Here is your water.",
+      romanization: "yeogi murieyo",
+      reply: {
+        dialogue: "고마워요!",
+        translation: "Thank you!",
+        romanization: "gomawoyo",
+      },
     },
   ],
 });
@@ -65,7 +76,7 @@ export const initialVisualNovelSessionState = (
   progress: VisualNovelProgress,
 ): VisualNovelSessionState =>
   progress.status === "completed"
-    ? { mode: "final", beatIndex: 2, replaying: false }
+    ? { mode: "viewing", beatIndex: 0, replaying: true }
     : { mode: "viewing", beatIndex: progress.beatIndex, replaying: false };
 export const visualNovelSessionReducer = (
   state: VisualNovelSessionState,
@@ -130,7 +141,12 @@ export function advanceVisualNovel(
 export function visualNovelEntrySnapshot(progress: VisualNovelProgress): VisualNovelEntrySnapshot {
   return {
     entryStatus: visualNovelCompletionStatus(progress),
-    entryBeatId: progress.beatIndex === 0 ? "arrive" : progress.beatIndex === 1 ? "find" : "enter",
+    entryBeatId:
+      progress.status === "completed" || progress.beatIndex === 0
+        ? "arrive"
+        : progress.beatIndex === 1
+          ? "find"
+          : "enter",
   };
 }
 

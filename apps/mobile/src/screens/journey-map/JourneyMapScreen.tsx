@@ -1,3 +1,6 @@
+import { Overlay } from "@libitums/ui-lynx/overlay";
+import { useFirstUnitGuide } from "../../components/first-unit-guide";
+import "../../components/first-unit-guide.css";
 import type { ReactNode } from "@lynx-js/react";
 import type { ScrollEvent } from "@lynx-js/types";
 
@@ -70,6 +73,7 @@ export function JourneyMapScreen({
   onStartEpisodeFinal,
   onLayerChange,
 }: JourneyMapScreenProps): ReactNode {
+  const guide = useFirstUnitGuide("map");
   const { sheetState, sheetTop, handleScroll, handleSelectStep, handleCloseSheet } = useStepSheet();
   // 머리 카드는 구획 밖에 **하나만** 섭니다 — 무엇을 말할지는 스크롤 자리가 고릅니다
   // (`useCurrentEpisode`의 주석에 `position: sticky`를 쓸 수 없는 이유를 적었습니다).
@@ -87,7 +91,7 @@ export function JourneyMapScreen({
     sheetState.openStepId === null ? undefined : findStep(journeySteps, sheetState.openStepId);
   // 말풍선이 열린 동안 셸의 전역 머리(칩 · 알림 버튼)도 가려야 합니다 — 전에는 머리가 이
   // 화면 안에 있어 아래 맵 가림과 함께 가렸습니다.
-  useScreenLayer(openStep !== undefined, onLayerChange);
+  useScreenLayer(openStep !== undefined || guide.visible, onLayerChange);
 
   // 진행의 출처 여섯을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
   const progress = {
@@ -99,15 +103,7 @@ export function JourneyMapScreen({
     completedEpisodeFinalIds,
   };
 
-  // 항목 하나를 줄에 세웁니다. **`default` 없는 `switch`입니다** — 삼항 사슬의 마지막
-  // `else`는 조건 없는 나머지라, 항목 종류가 늘면 조용히 스텝 노드로 그려지고
-  // `item.step`이 `undefined`가 됩니다. 종류가 늘면 여기서 반환 경로가 비어 컴파일이
-  // 섭니다(`mapItemsOf`·`render-screen`이 이미 쓰는 형태).
-  //
-  // 상태는 **전부 `mapItemStatus`가 냅니다**(ADR-0007 D3) — 항목이 각자 완료 목록을
-  // 다시 보면 표지 게이트가 그 자리마다 빠집니다. 스텝만 예외인데, 그것도 「쓰지
-  // 않는다」가 아니라 **잠김 축만** 이 파생에 묻고 줄에 그릴 어휘(`done`/`current`)는
-  // `stepStatusAt`이 그대로 냅니다(spec §2.9).
+  // 모든 잠김은 mapItemStatus에서 파생합니다. default 없는 switch로 새 종류의 누락을 잡습니다.
   const renderMapItem = (
     item: JourneyMapItem,
     sectionItems: readonly JourneyMapItem[],
@@ -121,7 +117,11 @@ export function JourneyMapScreen({
             id={item.id}
             title={item.title}
             status={status}
-            onSelect={onStartEpisodeIntroUnit}
+            guided={guide.visible && item.id === "tutorial-intro"}
+            onSelect={(id) => {
+              guide.dismiss();
+              onStartEpisodeIntroUnit(id);
+            }}
           />
         );
       }
@@ -206,6 +206,7 @@ export function JourneyMapScreen({
         scroll-orientation="vertical"
         scroll-bar-enable={true}
         bindscroll={handleMapScroll}
+        enable-scroll={guide.visible ? false : undefined}
       >
         <view
           className="journey-map-screen-map"
@@ -226,7 +227,17 @@ export function JourneyMapScreen({
                 className="journey-map-screen-episode"
                 key={section.episode.id}
               >
-                {section.items.map((item) => renderMapItem(item, section.items))}
+                {section.items.map((item) => (
+                  <view
+                    key={item.kind === "standard" ? item.step.id : item.id}
+                    accessibility-elements-hidden={
+                      guide.visible &&
+                      !(item.kind === "episode-intro" && item.id === "tutorial-intro")
+                    }
+                  >
+                    {renderMapItem(item, section.items)}
+                  </view>
+                ))}
               </view>
             ),
           )}
@@ -236,6 +247,15 @@ export function JourneyMapScreen({
           `position: sticky`로 달라붙이면 Lynx에서 첫 카드가 풀리지 않아 경계를 넘어도
           내용이 안 바뀝니다(`useCurrentEpisode`의 주석). 여기 두면 언제나 같은 자리에
           서고, 무엇을 말할지는 스크롤 자리가 고릅니다. */}
+      {guide.visible ? (
+        <view
+          className="first-unit-map-scrim"
+          data-testid="first-unit-guide-map"
+          catchtap={guide.dismiss}
+        >
+          <Overlay scope="area" />
+        </view>
+      ) : null}
       <view className="journey-map-screen-episode-header">
         {headerSection?.episode.kind === "pending" ? (
           <view className="episode-pending-card">

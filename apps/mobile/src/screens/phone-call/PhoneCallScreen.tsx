@@ -1,4 +1,3 @@
-import { Button } from "@libitums/ui-lynx/button";
 import { CallLineBubble } from "../../components/CallCaller";
 import minseoProfile from "../../assets/characters/minseo-profile.jpg";
 import { useEffect, useState } from "@lynx-js/react";
@@ -42,7 +41,6 @@ export function PhoneCallScreen({
   const copy = useUiCopy();
   const exitLabel = specialUnitExitLabel(exitTo, copy);
   const [session, setSession] = useState(() => initialPhoneCallSessionState(completionStatus));
-  const [replayKey, setReplayKey] = useState(0);
   const [subtitleReplayKey, setSubtitleReplayKey] = useState(0);
   const [completionLatched, setCompletionLatched] = useState(completionStatus === "completed");
   const entries = visiblePhoneCallEntries(conversation, session);
@@ -90,13 +88,6 @@ export function PhoneCallScreen({
     else playSession(next);
   };
 
-  const handleReplay = () => {
-    "background only";
-    stopAudio();
-    setReplayKey((key) => key + 1);
-    setSession(phoneCallSessionReducer(session, { type: "replay" }));
-  };
-
   const handleExit = () => {
     "background only";
     stopAudio();
@@ -110,7 +101,6 @@ export function PhoneCallScreen({
       phase={incoming ? "incoming" : session.mode === "completed" ? "completed" : "active"}
       callerName={conversation.turns[0].speakerName}
       callerPortrait={minseoProfile}
-      callerKey={replayKey}
       clockRunning={!incoming && session.mode !== "completed"}
       exitLabel={exitLabel}
       onBack={handleExit}
@@ -155,20 +145,6 @@ export function PhoneCallScreen({
             onPlay={handlePlay}
             onHangUp={handleExit}
           />
-          {session.mode === "completed" ? (
-            <view
-              className="phone-call-replay-button"
-              data-testid="phone-call-replay-button"
-              accessibility-element={true}
-              accessibility-traits="button"
-              accessibility-label={copy.common.startOver}
-              bindtap={handleReplay}
-            >
-              <view accessibility-elements-hidden={true}>
-                <Button label={copy.common.startOver} variant="outline" size="xl" width="fill" />
-              </view>
-            </view>
-          ) : null}
         </>
       }
     >

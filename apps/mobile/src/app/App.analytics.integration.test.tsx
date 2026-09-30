@@ -13,6 +13,12 @@ import { authSessionStorageKey } from "../lib/auth-session";
 import { notificationItems } from "../screens/notifications/notification-items";
 import { analyticsQueueStorageKey, createAnalyticsSession } from "../lib/posthog-client";
 
+// 알림 동작 검증에만 목업을 주입합니다. 제품의 기본 알림 목록은 비어 있습니다.
+vi.mock(
+  "../screens/notifications/notification-items",
+  () => import("./test-helpers/notification-items"),
+);
+
 // 「App의 한 사용자 흐름 → sink → 매핑 → SDK 큐 → 어댑터 → transport 본문」을 한 트리에서
 // 봅니다. 대역은 경계 둘뿐입니다 — 가짜 transport(전송)와 `NativeModules.StorageModule`
 // (기록하는 저장소). SDK · 어댑터 · 매핑은 진짜입니다.

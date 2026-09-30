@@ -11,6 +11,25 @@ import type {
 } from "./ui-copy-sections.contract";
 
 export const episodeIntroEn: EpisodeIntroCopy = {
+  guide: {
+    map: "Tap to start your lesson!",
+    continue: "Tap anywhere to continue",
+    story: {
+      title: "Learn Korean through stories",
+      description:
+        "Explore stories, chats and calls in this episode. Tap the screen to read the next line.",
+    },
+    messenger: {
+      title: "Be part of the conversation",
+      description:
+        "Read the messages and their translations. When your reply appears, tap the send arrow.",
+    },
+    call: {
+      title: "Listen to a Korean call",
+      description:
+        "Answer the call to listen. Follow the translations and tap Continue when the call ends.",
+    },
+  },
   skipDialog: {
     title: "Skip the story?",
     description: "If you skip it, this episode's story won't appear again.",

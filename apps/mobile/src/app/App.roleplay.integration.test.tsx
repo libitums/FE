@@ -128,6 +128,13 @@ function finishPhoneCall() {
 
 function advanceVisualNovelOnce() {
   fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
+  fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
+}
+function finishVisualNovel() {
+  for (let i = 0; i < 5 && screen.queryByTestId("visual-novel-advance-button"); i++)
+    fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
+  fireEvent.tap(screen.getByTestId("visual-novel-finish-button"), {});
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
 }
 
 // -------------------------------------------------------------- I1 · I1b (AC1)
@@ -387,16 +394,15 @@ test("[I5] 롤플레이를 끝까지 진행해도 여정 상태 여덟 값이 �
   // 전화: 세 턴 끝까지 진행합니다.
   openRoleplayItem(phoneCallUnitId);
   finishPhoneCall();
-  fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  tapLessonCompleteExit();
 
-  // 비주얼 노벨: 끝까지 → 처음부터 보기 → 다시 끝까지 진행합니다.
-  openRoleplayItem(visualNovelUnitId);
-  advanceVisualNovelOnce();
-  advanceVisualNovelOnce();
-  fireEvent.tap(screen.getByTestId("visual-novel-replay-button"), {});
-  advanceVisualNovelOnce();
-  advanceVisualNovelOnce();
-  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
+  // 완료 화면에서 목록으로 돌아간 뒤 새 회차를 시작합니다.
+  for (let run = 0; run < 2; run++) {
+    openRoleplayItem(visualNovelUnitId);
+    finishVisualNovel();
+    tapLessonCompleteExit();
+  }
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(journeyStateSnapshot()).toEqual(before);
@@ -466,13 +472,11 @@ test("[I6] 비주얼 노벨 롤플레이 이벤트는 entrySource: roleplay를 �
   advanceVisualNovelOnce(); // → find, 미완료
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {}); // find에서 이탈 → incomplete
 
-  openRoleplayItem(visualNovelUnitId);
-  advanceVisualNovelOnce();
-  advanceVisualNovelOnce(); // → enter, 1회차 완료
-  fireEvent.tap(screen.getByTestId("visual-novel-replay-button"), {});
-  advanceVisualNovelOnce();
-  advanceVisualNovelOnce(); // → enter, 2회차 완료(A2)
-  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {}); // enter에서 이탈 → completed, 이벤트 없음
+  for (let run = 0; run < 2; run++) {
+    openRoleplayItem(visualNovelUnitId);
+    finishVisualNovel();
+    tapLessonCompleteExit();
+  }
 
   expect(visualNovelEventSink.mock.calls.map(([event]) => event)).toEqual([
     { name: "visual_novel_unit_opened", unitId: visualNovelUnitId, entrySource: "roleplay" },
@@ -484,11 +488,7 @@ test("[I6] 비주얼 노벨 롤플레이 이벤트는 entrySource: roleplay를 �
     },
     { name: "visual_novel_unit_opened", unitId: visualNovelUnitId, entrySource: "roleplay" },
     { name: "visual_novel_unit_completed", unitId: visualNovelUnitId, entrySource: "roleplay" },
-    {
-      name: "visual_novel_unit_replay_started",
-      unitId: visualNovelUnitId,
-      entrySource: "roleplay",
-    },
+    { name: "visual_novel_unit_opened", unitId: visualNovelUnitId, entrySource: "roleplay" },
     { name: "visual_novel_unit_completed", unitId: visualNovelUnitId, entrySource: "roleplay" },
   ]);
   expect(
@@ -614,9 +614,8 @@ test("[I10] 마지막 하나가 남으면 잠겨 있고, 그것을 끝내는 순
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
-  advanceVisualNovelOnce();
-  advanceVisualNovelOnce();
-  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
+  finishVisualNovel();
+  tapLessonCompleteExit();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(

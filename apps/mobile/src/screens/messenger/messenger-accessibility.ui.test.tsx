@@ -66,7 +66,7 @@ describe("messenger accessibility static regression guard", () => {
     expect(button).toHaveAttribute("accessibility-traits", "button");
   });
 
-  it("완료 재진입의 결과 보기 역시 접근성 계약을 유지한다", () => {
+  it("완료 재진입도 첫 답장의 보내기 접근성 계약을 유지한다", () => {
     render(
       <MessengerScreen
         conversation={conversation}
@@ -76,10 +76,10 @@ describe("messenger accessibility static regression guard", () => {
         onFinish={vi.fn()}
       />,
     );
-    const button = screen.getByTestId("messenger-finish");
+    const button = screen.getByTestId("messenger-send");
     expect(button).toHaveAttribute("accessibility-element", "true");
-    expect(button).toHaveAttribute("accessibility-label", "See results");
-    expect(button).toHaveAttribute("accessibility-traits", "button");
+    expect(button).toHaveAttribute("accessibility-label", "Send");
+    expect(button).toHaveAttribute("accessibility-traits", "disabled");
   });
 });
 

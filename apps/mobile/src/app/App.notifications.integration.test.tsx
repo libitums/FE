@@ -20,13 +20,19 @@ import { answerMessengerReplies } from "../screens/messenger/messenger.test-supp
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { uiCopyEn } from "../lib/ui-copy-en";
 
+// 알림 동작 검증에만 목업을 주입합니다. 제품의 기본 알림 목록은 비어 있습니다.
+vi.mock(
+  "../screens/notifications/notification-items",
+  () => import("./test-helpers/notification-items"),
+);
+
 // 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
 const completedIntros = ["tutorial-intro"] as const;
 
 // App · navigation · 여정 맵 머리 알림 버튼 · 알림 화면 · 알림 항목 · 대상 분기(기존
-// 여정 콜백 재사용 · tabRootActions)의 실제 결선을 봅니다. 목킹하지 않습니다(외부
-// IO 없음). sink는 App prop으로 주입합니다 — 순서를 보는 케이스는 공용 로그 배열
+// 여정 콜백 재사용 · tabRootActions)의 실제 결선을 봅니다. 알림 입력만 테스트 픽스처입니다.
+// sink는 App prop으로 주입합니다 — 순서를 보는 케이스는 공용 로그 배열
 // 하나에 여러 sink가 push하게 합니다.
 //
 // IN14는 가드라 요소가 없으면 그 항목을 건너뛰므로, 결선 전에도 공허하게

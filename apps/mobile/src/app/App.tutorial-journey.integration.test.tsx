@@ -18,6 +18,13 @@ const button = (id: string) =>
   fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const unit = (id: string) => `ui-lynx-learning-unit-${id}`;
 
+function dismissFirstUnitGuide(): void {
+  for (const kind of ["story", "messenger", "call"]) {
+    const guide = screen.queryByTestId(`first-unit-guide-${kind}`);
+    if (guide !== null) fireEvent.tap(guide, { eventType: "catchEvent" });
+  }
+}
+
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -43,6 +50,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   if (prologue?.kind !== "sequence") throw new Error("Expected sequence");
   vi.useFakeTimers();
   for (const segment of prologue.segments) {
+    dismissFirstUnitGuide();
     if (segment.kind === "visual-novel") {
       for (const beat of segment.narrative.beats) {
         revealNarrative();
@@ -176,8 +184,8 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
     );
     tap(`phone-call-reply-${turn.reply.id}`);
   }
-  expect(screen.getByTestId("phone-call-story-completion")).toHaveTextContent("at a café tomorrow");
-  tap("phone-call-exit-button");
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  button("lesson-complete-screen-exit");
   expect(screen.getByTestId(unit("appointment-confirmation-phone-call"))).toHaveAttribute(
     "data-status",
     "clear",
@@ -189,10 +197,11 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   expect(screen.getByTestId(unit("directions"))).toHaveAttribute("data-status", "default");
   tap(unit("cafe-arrival-visual-novel"));
   expect(screen.getByTestId("visual-novel-dialogue-arrive")).toHaveTextContent("annyeonghaseyo");
-  tap("visual-novel-advance-button");
-  tap("visual-novel-advance-button");
+  for (let i = 0; i < 5; i++) tap("visual-novel-advance-button");
   expect(screen.getByTestId("visual-novel-context")).toHaveTextContent("listen, speak, and trace");
-  tap("visual-novel-exit-button");
+  tap("visual-novel-finish-button");
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  button("lesson-complete-screen-exit");
   expect(screen.getByTestId(unit("cafe-arrival-visual-novel"))).toHaveAttribute(
     "data-status",
     "clear",

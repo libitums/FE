@@ -67,9 +67,8 @@ const conversation: PhoneCallConversation = {
 export const getPhoneCallConversation = (): PhoneCallConversation => conversation;
 
 export const initialPhoneCallSessionState = (
-  status: PhoneCallCompletionStatus,
-): PhoneCallSessionState =>
-  status === "completed" ? { mode: "completed" } : { mode: "ready", turnIndex: 0 };
+  _status: PhoneCallCompletionStatus,
+): PhoneCallSessionState => ({ mode: "ready", turnIndex: 0 });
 
 export const phoneCallSessionReducer = (
   state: PhoneCallSessionState,

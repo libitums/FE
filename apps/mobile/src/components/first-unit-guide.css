@@ -1,0 +1,118 @@
+.first-unit-guide {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.first-unit-guide .ui-lynx-overlay,
+.first-unit-map-scrim .ui-lynx-overlay {
+  background-color: rgba(26, 28, 32, 0.6);
+}
+
+/* Lynx orders positioned descendants globally; the guide must stay above its scrim. */
+.first-unit-guide-content {
+  position: relative;
+  z-index: var(--libitum-elevation-z-toast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-48);
+  width: 100%;
+  max-width: 354px;
+  padding: var(--libitum-spacing-24);
+}
+
+.first-unit-guide-title {
+  color: var(--libitum-color-white);
+  text-align: center;
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.first-unit-guide-description {
+  color: var(--libitum-color-gray-100);
+  text-align: center;
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.first-unit-guide-continue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+}
+
+.first-unit-guide-arrow {
+  width: 48px;
+  height: 48px;
+}
+
+.first-unit-guide-instruction {
+  color: var(--libitum-color-white);
+  text-align: center;
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.first-unit-map-scrim {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-sheet);
+}
+
+.journey-special-unit-guided {
+  position: relative;
+  z-index: var(--libitum-elevation-z-dialog);
+}
+
+.journey-special-unit-guided .journey-special-unit-label {
+  color: var(--libitum-color-white);
+}
+
+.first-unit-map-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 250px;
+  transform: translateX(-50%);
+  margin-top: var(--libitum-spacing-24);
+}
+
+.first-unit-map-tooltip .ui-lynx-tooltip {
+  position: relative;
+  top: 0;
+  left: 0;
+  transform: none;
+  margin-top: 0;
+  width: 100%;
+  max-width: 250px;
+}
+
+.first-unit-map-tooltip .ui-lynx-tooltip-bubble {
+  width: 100%;
+  max-width: 250px;
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-12);
+}
+
+.first-unit-map-tooltip .ui-lynx-tooltip-message {
+  text-align: center;
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}

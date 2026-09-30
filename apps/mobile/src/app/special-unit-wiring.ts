@@ -106,6 +106,7 @@ export function specialUnitWiring(args: SpecialUnitWiringArgs) {
     onPhoneCallComplete: (id: PhoneCallUnitId) => {
       "background only";
       setCompletedPhoneCallUnitIds((ids) => completePhoneCallUnit(ids, id));
+      dispatch({ type: "replace", screen: { name: "special-unit-complete", unitId: id } });
     },
     onPhoneCallExit: () => {
       "background only";
@@ -146,13 +147,9 @@ export function specialUnitWiring(args: SpecialUnitWiringArgs) {
       }
       dispatch({ type: "backToRoot" });
     },
-    onVisualNovelReplay: (id: VisualNovelUnitId) => {
+    onVisualNovelFinish: (id: VisualNovelUnitId) => {
       "background only";
-      visualNovelEventSink?.({
-        name: "visual_novel_unit_replay_started",
-        unitId: id,
-        entrySource: "journey",
-      });
+      dispatch({ type: "replace", screen: { name: "special-unit-complete", unitId: id } });
     },
   };
 }

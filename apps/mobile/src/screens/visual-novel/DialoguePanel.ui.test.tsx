@@ -43,19 +43,19 @@ describe("DialoguePanel UI", () => {
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
 
-  it("uses replay semantics for the completed beat and has no panel-wide advance target", () => {
+  it("uses finish semantics for the last response and has no panel-wide advance target", () => {
     const onSelect = vi.fn<() => void>();
     render(
       <DialoguePanel
         beatId="enter"
         speakerName="Minseo"
         dialogue="그럼 들어가서 같이 주문해 봐요."
-        action={{ kind: "replay", label: "Start over", onSelect }}
+        action={{ kind: "finish", label: "Continue", onSelect }}
       />,
     );
     expect(screen.queryByTestId("visual-novel-advance-button")).not.toBeInTheDocument();
-    const button = screen.getByTestId("visual-novel-replay-button");
-    expect(button).toHaveAttribute("accessibility-label", "Start over");
+    const button = screen.getByTestId("visual-novel-finish-button");
+    expect(button).toHaveAttribute("accessibility-label", "Continue");
     fireEvent.tap(button, {});
     expect(onSelect).toHaveBeenCalledTimes(1);
   });

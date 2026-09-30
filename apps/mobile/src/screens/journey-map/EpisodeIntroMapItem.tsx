@@ -1,3 +1,5 @@
+import { Tooltip } from "@libitums/ui-lynx/tooltip";
+import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeIntroMapItemProps } from "../episode-intro/episode-intro.contract";
 import bookmark from "@libitums/icons/lynx/bookmark";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
@@ -23,7 +25,14 @@ const unitStatusByStatus = {
 // ⟨2026-09-29⟩ 아이콘이 `bookmark`인 것은 **계약 기본값 `clapper`를 기각**했기
 // 때문입니다: `LearningUnit`이 `narrative` 유닛에 찍는 배지가 이미 `clapper`라,
 // 같은 표식 안에 같은 글리프가 둘 서게 됩니다(design.md §1).
-export function EpisodeIntroMapItem({ id, title, status, onSelect }: EpisodeIntroMapItemProps) {
+export function EpisodeIntroMapItem({
+  id,
+  title,
+  status,
+  onSelect,
+  guided = false,
+}: EpisodeIntroMapItemProps & { guided?: boolean }) {
+  const copy = useUiCopy();
   // 잠김이면 고르지 않습니다 — 특별 유닛 항목 넷과 **같은 모양**입니다.
   //
   // ⟨2026-09-30, 리뷰 반영⟩ 처음에는 이 가드를 **일부러 뺐습니다**: 표지는 구획의 첫
@@ -39,7 +48,11 @@ export function EpisodeIntroMapItem({ id, title, status, onSelect }: EpisodeIntr
   };
 
   return (
-    <view className="journey-special-unit">
+    <view
+      className={
+        guided ? "journey-special-unit journey-special-unit-guided" : "journey-special-unit"
+      }
+    >
       <LearningUnit
         id={id}
         accessibilityLabel={title}
@@ -49,6 +62,16 @@ export function EpisodeIntroMapItem({ id, title, status, onSelect }: EpisodeIntr
         bindtap={handleSelect}
       />
       <text className="journey-special-unit-label">{title}</text>
+      {guided ? (
+        <view className="first-unit-map-tooltip" bindtap={handleSelect}>
+          <Tooltip
+            message={copy.episodeIntro.guide.map}
+            tone="brand"
+            placement="bottom"
+            visibility="visible"
+          />
+        </view>
+      ) : null}
     </view>
   );
 }

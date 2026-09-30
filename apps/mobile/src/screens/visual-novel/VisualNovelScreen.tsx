@@ -1,7 +1,7 @@
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { zeroSafeAreaInsets } from "../../lib/safe-area";
-import { useReducer } from "@lynx-js/react";
+import { useReducer, useState } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
@@ -13,7 +13,6 @@ import {
   currentVisualNovelBeat,
   initialVisualNovelSessionState,
   visualNovelExitOutcome,
-  visualNovelProgressLabel,
   visualNovelSessionReducer,
 } from "./visual-novel";
 import { artworkFor } from "./visual-novel-artwork";
@@ -33,7 +32,7 @@ export function VisualNovelScreen({
   exitTo = "journey",
   onAdvance,
   onExit,
-  onReplay,
+  onFinish,
 }: VisualNovelScreenProps) {
   const copy = useUiCopy();
   const exitLabel = specialUnitExitLabel(exitTo, copy);
@@ -43,21 +42,29 @@ export function VisualNovelScreen({
     initialVisualNovelSessionState,
   );
   const beat = currentVisualNovelBeat(story, session);
+  const [showReply, setShowReply] = useState(false);
+  const line = showReply && beat.reply ? beat.reply : beat;
+  const finishing = session.mode === "final" && (showReply || !beat.reply);
 
   const handleAdvance = () => {
     "background only";
-    const outcome = advanceVisualNovel(session, progress);
-    onAdvance(story.unitId, outcome);
-    // 결과가 싣는 것은 키(`story-complete`)뿐입니다 — 낭독할 말은 화면이 받은 문구표가 정합니다.
-    if (outcome.completedNow && outcome.announcement !== null) {
-      announceCompletion(copy.visualNovel.storyComplete);
+    if (beat.reply && !showReply) {
+      setShowReply(true);
+      return;
     }
+    const outcome = advanceVisualNovel(session, progress);
+    // 마지막 장면은 내 응답까지 읽고 Continue를 눌러야 완료합니다.
+    if (session.mode === "final" || outcome.session.mode !== "final") {
+      onAdvance(story.unitId, outcome);
+      if (outcome.completedNow && outcome.announcement !== null)
+        announceCompletion(copy.visualNovel.storyComplete);
+    }
+    if (session.mode === "final") {
+      onFinish(story.unitId);
+      return;
+    }
+    setShowReply(false);
     dispatch({ type: "advance" });
-  };
-  const handleReplay = () => {
-    "background only";
-    onReplay(story.unitId);
-    dispatch({ type: "replay" });
   };
   const handleExit = () => {
     "background only";
@@ -113,7 +120,7 @@ export function VisualNovelScreen({
             {story.title}
           </text>
           <text className="visual-novel-progress" data-testid="visual-novel-progress">
-            {visualNovelProgressLabel(session, copy)}
+            {copy.visualNovel.sceneProgress(session.beatIndex + 1, story.beats.length)}
           </text>
           {beat.context ? (
             <text className="visual-novel-context" data-testid="visual-novel-context">
@@ -125,13 +132,14 @@ export function VisualNovelScreen({
       <view className="visual-novel-scene-shell">
         <DialoguePanel
           beatId={beat.id}
-          speakerName={beat.speakerName}
-          dialogue={beat.dialogue}
-          translation={beat.translation}
-          romanization={beat.romanization}
+          speakerRole={showReply ? "self" : "partner"}
+          speakerName={showReply ? copy.common.me : beat.speakerName}
+          dialogue={line.dialogue}
+          translation={line.translation}
+          romanization={line.romanization}
           action={
-            session.mode === "final"
-              ? { kind: "replay", label: copy.common.startOver, onSelect: handleReplay }
+            finishing
+              ? { kind: "finish", label: copy.common.continue, onSelect: handleAdvance }
               : { kind: "advance", label: copy.common.next, onSelect: handleAdvance }
           }
         />

@@ -7,6 +7,12 @@ export default defineConfig({
   plugins: [vitestTestingLibraryPlugin()],
   resolve: {
     alias: {
+      "@libitums/ui-lynx/overlay": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/overlay/index.ts", import.meta.url),
+      ),
+      "@libitums/ui-lynx/tooltip": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/tooltip/index.ts", import.meta.url),
+      ),
       "@libitums/ui-lynx/typewriter": fileURLToPath(
         new URL("../../packages/ui-lynx/src/typewriter/index.ts", import.meta.url),
       ),

@@ -27,7 +27,7 @@ test.each(journeySteps.filter((step) => learningFormsForStep(step.id)[0] === "se
     const questions = sentenceOrderQuestionsForStep(step.id);
     expect(questions).toHaveLength(1);
     const question = questions[0]!;
-    expect(question.chips.length).toBeLessThanOrEqual(2);
+    expect(question.chips.length).toBeLessThanOrEqual(step.id === "ordering" ? 3 : 2);
     expect(question.answerOrder).toHaveLength(question.chips.length);
     expect(question.answerOrder.map((index) => question.chips[index]).join(" ")).toBe(
       question.prompt,

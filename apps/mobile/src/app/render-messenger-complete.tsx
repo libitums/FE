@@ -3,18 +3,15 @@ import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-compl
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 
-// 메신저 유닛(서사 기반 최종 테스트)을 마친 뒤의 학습 완료 화면입니다. 대화를 끝까지 가야
-// 여기 닿으므로 판정은 늘 통과이고 다시 하기가 없습니다. 틀린 적이 없으면 PERFECT LESSON,
-// 있으면 LESSON COMPLETE입니다 — 실수 수는 답장마다 첫 시도의 정오에서 셉니다. 지표와
-// 보상은 서사 전개 뒤 학습 완료와 같은 값(연속 · 트로피 0, 젬은 전역 머리와 같은 값, 보상은
-// 임시값)입니다.
+// 중간 서사 완료 화면입니다. 메신저는 이번 답장의 정오를, 통화·비주얼 노벨은
+// 판정 문항이 없는 완료([])를 표시합니다. Check는 연 탭의 루트로 돌아갑니다.
 export function renderMessengerCompleteScreen(
-  screen: Extract<Screen, { name: "messenger-complete" }>,
+  screen: Extract<Screen, { name: "messenger-complete" | "special-unit-complete" }>,
   wiring: ScreenWiring,
 ) {
   return (
     <LessonCompleteScreen
-      results={screen.results}
+      results={screen.name === "messenger-complete" ? screen.results : []}
       skippedCount={0}
       verdict="passed"
       streakDays={wiring.streakDays}

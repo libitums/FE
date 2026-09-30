@@ -1,3 +1,5 @@
+import { FirstUnitGuide } from "../../components/FirstUnitGuide";
+import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import { useState } from "@lynx-js/react";
 import { Button } from "@libitums/ui-lynx/button";
 import type { PrologueCallScreenProps } from "./episode-intro.contract";
@@ -12,6 +14,7 @@ import "./prologue-call-screen.css";
 /** 받기 뒤 자막이 자동 진행되는 서사 통화입니다. 음원 대사는 재생 완료 후, 무음 대사는 읽기 시간 후 전환합니다. */
 export function PrologueCallScreen({
   insets,
+  guided = false,
   episodeLabel,
   call,
   callerPortrait,
@@ -20,6 +23,7 @@ export function PrologueCallScreen({
   reducedMotion = false,
 }: PrologueCallScreenProps) {
   const copy = useUiCopy();
+  const guide = useFirstUnitGuide("call", guided);
   const [accepted, setAccepted] = useState(false);
   const {
     ended,
@@ -32,7 +36,7 @@ export function PrologueCallScreen({
     replay,
     hangUp,
     stop,
-  } = usePrologueCallPlayback(call, accepted);
+  } = usePrologueCallPlayback(call, accepted && !guide.visible);
   const incoming = !accepted && !ended;
   const subtitleIntervalMs = Math.max(
     0,
@@ -50,7 +54,7 @@ export function PrologueCallScreen({
 
   const handleAccept = () => {
     "background only";
-    setAccepted(true);
+    if (!guide.visible) setAccepted(true);
   };
   const handleHangUp = () => {
     "background only";
@@ -73,7 +77,7 @@ export function PrologueCallScreen({
         phase={ended ? "completed" : incoming ? "incoming" : "active"}
         callerName={call.callerName}
         callerPortrait={callerPortrait}
-        clockRunning={accepted && !ended}
+        clockRunning={accepted && !ended && !guide.visible}
         exitLabel={copy.common.exitTo.journey}
         onBack={handleBack}
         testId="prologue-call-screen"
@@ -129,6 +133,7 @@ export function PrologueCallScreen({
           />
         ) : null}
       </CallScreen>
+      {guide.visible ? <FirstUnitGuide step="call" onDismiss={guide.dismiss} /> : null}
     </view>
   );
 }
