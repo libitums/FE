@@ -13,7 +13,7 @@ afterEach(() => {
 test.each([
   [3, "PERFECT LESSON!"],
   [2, "LESSON COMPLETE!"],
-])("미리보기에서 %i개 정답 후 엔딩 → 결과 → Check 순서를 지킨다", (correctCount, title) => {
+])("미리보기에서 %i개 정답 후 엔딩 → 결과 → Back to map 순서를 지킨다", (correctCount, title) => {
   vi.useFakeTimers();
   const onExit = vi.fn<() => void>();
   render(<TutorialSpecialsFixture initialStage={3} onExit={onExit} />);
@@ -32,7 +32,7 @@ test.each([
   readFinalStory("ending");
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent(title);
   expect(onExit).not.toHaveBeenCalled();
-  fireEvent.tap(screen.getByText("Check"), {});
+  fireEvent.tap(screen.getByText("Back to map"), {});
   expect(onExit).toHaveBeenCalledTimes(1);
 });
 
