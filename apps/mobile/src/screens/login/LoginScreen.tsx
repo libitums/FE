@@ -27,6 +27,7 @@ import {
   type LoginCountry,
 } from "./login";
 import { loginCountries, loginCountryOptions } from "./login-countries";
+import { LoginLegalNotice } from "./LoginLegalNotice";
 import { LoginSocialMethods } from "./LoginSocialMethods";
 import type { LoginScreenProps, LoginStatus, SocialLoginMethod } from "./login.contract";
 
@@ -47,6 +48,7 @@ export function LoginScreen({
   onSelectSocialMethod,
   onSubmitPhoneNumber,
   onBack,
+  onOpenLegalDocument,
 }: LoginScreenProps): ReactNode {
   const [country, setCountry] = useState<LoginCountry>(
     () =>
@@ -230,13 +232,7 @@ export function LoginScreen({
               </text>
             ) : null}
 
-            {/* 약관 안내. 두 문서 이름만 gray.800으로 구분합니다(링크 아님). */}
-            <text className="login-screen-legal" data-testid="login-screen-legal">
-              <text className="login-screen-legal-text">{"By signing up, you agree to the\n"}</text>
-              <text className="login-screen-legal-emphasis">User Agreement</text>
-              <text className="login-screen-legal-text"> & </text>
-              <text className="login-screen-legal-emphasis">Privacy Policy</text>
-            </text>
+            <LoginLegalNotice onOpenLegalDocument={onOpenLegalDocument} />
           </view>
         </scroll-view>
       </view>

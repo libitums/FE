@@ -83,6 +83,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 상태 관리 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | 데이터 페칭 | 결정 (클라이언트 한 파일 + **컨텐츠 도착 전의 타입 모양**) | [0007](0007-app-internals-state-routing-data-errors.md) D2·**D5** — 그 한 파일(`lib/api-client.ts`)의 첫 실물은 Supabase Auth 셋이고 호출 주체는 결선이다([0027](0027-phone-otp-auth-supabase.md) D1) |
 | **UI 언어 (문구표 · 영어 대체 · 저장 · 전달 · 한글 리터럴 검사)** | **제안** (`lib/` 문구표 + 영어만 채움 · 영어 밖은 영어 위 덮어쓰기 · `libitum.ui.language`를 확정 때 저장 · context 하나 · `lint:ui-copy`) — 구조 U1~U4는 사용자 결정, 루트 기본값과 ui-lynx 주입 유예가 사용자 확인 전 | [0031](0031-ui-language-catalog.md) — 저장은 [0007](0007-app-internals-state-routing-data-errors.md) D1의 예외 둘째, context는 그 D1 도입 조건의 판정. 영어 값의 정본은 `lib/ui-copy-en-*.ts` |
+| **법률 문서 (개인정보 처리방침 · 이용약관)의 출처와 여는 방식** ⟨2026-09-30⟩ | 결정 (Notion 공개 URL 둘을 호스트에 고정 · `SFSafariViewController` · 로그인 링크 둘과 설정 항목 둘) | [0033](0033-legal-documents-in-app-browser.md) — LIB-259의 약관 화면을 대체한다. 나가는 목적지는 [0026](0026-permission-entry-conditions-and-denial-handling.md) D4의 표로 읽었다 |
 | 라우팅 | 결정 (전환 소유 + **나가는 수단의 목적지**) | [0007](0007-app-internals-state-routing-data-errors.md) D3·**D6** |
 | 에러 경계 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | **제품 분석 전송 (PostHog · 스레드 경계 · 익명 식별)** | **제안** (sink 여섯을 `@posthog/core` Lynx 어댑터로 · background 전용 · 실행마다 메모리 익명 ID · `flushAt: 1`) — 기본값 여섯이 사용자 확인 전 | [0029](0029-product-analytics-posthog.md) — 전송은 [0007](0007-app-internals-state-routing-data-errors.md) D2의 「클라이언트 한 파일」 밖(나가기만 한다). 이벤트 카탈로그는 이 표가 아니라 `lib/analytics.contract.ts`와 GitHub wiki가 진다 |
@@ -131,6 +132,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | `SpeechRecognitionModule` | `getStatus` · `requestPermissions` · `start(args, callback)` · `stop()` | **말하기 (구현 순서 13번).** 처음에는 능력 경로 확인 **탐침**이었다(LIB-267 — 도달 경로 0건인 개발용 화면 하나). ⟨2026-09-28 갱신⟩ **말하기 화면이 섰고 이 모듈이 제품 경로에 들어왔다** — 여정의 학습 활동으로 열린다 | [0017](0017-host-native-capabilities-and-audio.md) D1 · [0026](0026-permission-entry-conditions-and-denial-handling.md) D1 | **iOS에 있음** — `apps/ios/Host/SpeechRecognitionModule.swift`; 소비자는 **탐침 화면 · `SpeakingScreen`(일반 말하기 학습) · `useFinalSpeech`(최종 테스트)** 다 — 세는 곳은 `apps/mobile/src/lib/speech-recognition.ts`를 쓰는 자리다. ⚠ **권한을 요구하는 첫 모듈이다** — 어느 권한인지는 이 표가 아니라 ADR-0026 D2의 권한 표가 진다; Android 이관 미구현 |
 | `WebAuthenticationModule` | `start(args, callback)` · `randomBytes(count)` | **로그인 (구현 순서 12번)의 소셜 셋** — Supabase OAuth(PKCE)의 인증 창(`ASWebAuthenticationSession`)과 verifier의 난수. **제품 화면이다** — 탐침이 아니다 | [0028](0028-social-oauth-web-authentication.md) D2 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/WebAuthenticationModule.swift`; 접점은 `apps/mobile/src/lib/web-authentication.ts`. ⚠ **나가는 외부 이동을 여는 첫 모듈이다** — 경계는 [0028](0028-social-oauth-web-authentication.md) D4(URL scheme은 등록하지 않는다). 권한은 요구하지 않는다; Android 이관 미구현 |
 | `AppleSignInModule` | `start(args, callback)` | **로그인 (구현 순서 12번)의 Apple 버튼** — 네이티브 Sign in with Apple 시트(`ASAuthorizationAppleIDProvider`)에 해시된 nonce를 싣고 ID 토큰을 받는다. 난수는 `WebAuthenticationModule.randomBytes`를 쓴다. **제품 화면이다.** ⟨2026-09-30⟩ **쓰임이 둘이다** — 설정의 **계정 삭제**가 같은 `start`로 Apple 사용자를 재인증하고, 페이로드가 `authorizationCode`를 **값이 있을 때만** 셋째 키로 싣는다(서버 함수가 Apple 토큰을 철회하는 데 쓴다, [0032](0032-account-sign-out-and-deletion.md) D4). 메서드 수 불변 | [0028](0028-social-oauth-web-authentication.md) D7 · [0017](0017-host-native-capabilities-and-audio.md) D1(⚠ 조건 (2) 예외 — 사용자 결정) | **iOS에 있음** — `apps/ios/Host/AppleSignInModule.swift`; 접점은 `apps/mobile/src/lib/apple-sign-in.ts`. ⚠ **엔타이틀먼트를 요구하는 첫 모듈이다** — `apps/ios/Host/Host.entitlements`(`com.apple.developer.applesignin`), App ID 기능 켜기는 사용자 몫. 권한은 요구하지 않는다; Android 이관 미구현 |
+| `LegalDocumentModule` | `open(args, callback)` | **로그인의 동의 문구 링크 둘 · 설정의 법률 문서 항목 둘** — 개인정보 처리방침 · 이용약관을 앱 안 브라우저(`SFSafariViewController`)로 연다. **제품 화면이다** | [0033](0033-legal-documents-in-app-browser.md) D2 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/LegalDocumentModule.swift`; 접점은 `apps/mobile/src/lib/legal-document.ts`. 목적지는 호스트 표의 `https` URL 둘뿐이고 JS는 문서 이름만 넘긴다. 권한은 요구하지 않는다; Android 이관 미구현 |
 
 **재검토 트리거는 숫자다** (ADR-0017 D2): 모듈이 **넷째**로 요구되는 시점, 또는
 **한 모듈의 메서드가 다섯을 넘는 시점**.
@@ -150,6 +152,9 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 결정(Apple은 네이티브) 하나다. 조건 문면은 고치지 않았다. 판정은
 [ADR-0028 D7](0028-social-oauth-web-authentication.md) · ADR-0017 D1 여덟째 사례에 있다. 메서드는
 하나다.
+
+**2026-09-30에 다시 발동했다**(`LegalDocumentModule` — 아홉째 모듈). 입장 조건 셋을 모두 통과한다 — 판정은
+[ADR-0033 D2](0033-legal-documents-in-app-browser.md)에 있다. 메서드는 하나다.
 
 ⚠ **트리거 문면은 고치지 않는다** — 숫자를 옮기는 것은 결정 변경이고, 두 번을 「제자리
 기록」으로 판정한 근거(결정 문장이 한 글자도 안 바뀐다)가 그 자리에서 뒤집힌다.

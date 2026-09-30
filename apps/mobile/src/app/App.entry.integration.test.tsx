@@ -1935,3 +1935,35 @@ test("[IN2] 소셜 교환이 status 499로 돌아오면 network 문구가 서고
   expect(screen.getByTestId("login-screen-error")).toHaveTextContent(authFailureMessage("network"));
   expect(store.has(authSessionStorageKey)).toBe(false);
 });
+
+// ------------------------------------------------------------------------- 방침 · 약관 링크
+
+test("[ILG1] 로그인 안내의 두 링크가 그 문서를 호스트로 열고 legal_document_opened(source: login)를 낸다", () => {
+  const opened: string[] = [];
+  emptyStorageStub();
+  const previous = (globalThis as { NativeModules?: Record<string, unknown> }).NativeModules ?? {};
+  vi.stubGlobal("NativeModules", {
+    ...previous,
+    LegalDocumentModule: {
+      open: (args: { document: string }, callback: (payload: unknown) => void) => {
+        opened.push(args.document);
+        callback({ status: "opened" });
+      },
+    },
+  });
+  const events: unknown[] = [];
+  vi.useFakeTimers();
+  render(<App entryEventSink={(event) => events.push(event)} />);
+  advanceSplash();
+  completeOnboarding();
+
+  fireEvent.tap(screen.getByTestId("login-screen-legal-privacy-policy"), {});
+  fireEvent.tap(screen.getByTestId("login-screen-legal-terms-of-use"), {});
+
+  expect(opened).toEqual(["privacy-policy", "terms-of-use"]);
+  expect(events.slice(-2)).toEqual([
+    { name: "legal_document_opened", document: "privacy-policy", source: "login" },
+    { name: "legal_document_opened", document: "terms-of-use", source: "login" },
+  ]);
+  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
+});

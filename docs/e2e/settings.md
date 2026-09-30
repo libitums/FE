@@ -13,6 +13,17 @@
 > 로그인으로 떠남)과 그 VoiceOver 확인은 [계정 삭제 e2e](account-deletion.md)가 진다. ⚠ 그 흐름을 이 문서의 설치에서
 > 돌면 세션이 지워진다 — T1~T8을 먼저 돈다.
 
+> ⟨2026-09-30 — 법률 문서⟩ **약관 화면이 사라졌다**([ADR-0033](../adr/0033-legal-documents-in-app-browser.md)). 설정의
+> 이동 항목은 **셋**(`User profile` · `Privacy Policy` · `Terms of Use`)이고, 뒤의 둘은 Notion 공개 페이지를 앱 안
+> 브라우저 시트로 연다. T1 · T3 · D1 · V1 · V3의 약관 기대값은 아래 **T3′ · V3′**가 대신한다. 이벤트는
+> `terms_opened` 대신 `legal_document_opened`다.
+
+| # | 조작 | 기대 | 환경 | 결과 |
+|---|---|---|---|---|
+| T3′ | `설정`에서 `Privacy Policy`를 누르고 닫은 뒤 `Terms of Use`를 누른다 | 각각 앱 안 브라우저 시트가 뜨고 주소가 `gregarious-pharaoh-bb6.notion.site`의 해당 문서다. `완료`로 닫으면 설정 화면 그대로다(스택이 늘지 않는다) | 시뮬레이터 또는 실기 · 네트워크 필요 | 미실행 |
+| T3″ | 로그인 화면의 `Terms of Use` · `Privacy Policy`를 누른다 | T3′와 같은 시트가 뜨고, 닫으면 로그인 화면 그대로다 | 시뮬레이터 또는 실기 | 미실행 |
+| V3′ | VoiceOver로 설정 화면을 훑는다 | `User profile, 버튼` → `Privacy Policy, 버튼` → `Terms of Use, 버튼` 순. 로그인 화면은 수단 넷 뒤에 `Terms of Use, 버튼` → `Privacy Policy, 버튼` | **실기 · 사람만** | 미실행 |
+
 ## 판정 채널과 범위
 
 이 문서는 바텀 네비게이션의 `설정` 탭에서 이동 항목 둘(`사용자 프로필` ·

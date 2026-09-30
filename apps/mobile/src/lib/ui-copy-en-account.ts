@@ -5,7 +5,6 @@ import type {
   NotificationsCopy,
   ProfileCopy,
   SettingsCopy,
-  TermsCopy,
 } from "./ui-copy-sections.contract";
 
 export const notificationsEn: NotificationsCopy = {
@@ -24,7 +23,11 @@ export const notificationsEn: NotificationsCopy = {
 export const settingsEn: SettingsCopy = {
   title: "Settings",
   group: { account: "Account", learning: "Learning", accountActions: "Account actions" },
-  nav: { profile: "User profile", terms: "Privacy and terms" },
+  nav: {
+    profile: "User profile",
+    "privacy-policy": "Privacy Policy",
+    "terms-of-use": "Terms of Use",
+  },
   sessionOption: { "auto-play-audio": "Auto-play", "show-transcript": "Show transcript" },
   optionState: { on: "on", off: "off" },
   action: { "sign-out": "Sign out", "delete-account": "Delete account" },
@@ -51,8 +54,6 @@ export const profileEn: ProfileCopy = {
     "learning-goal": "Learning goal",
   },
 };
-
-export const termsEn: TermsCopy = { title: "Privacy and terms" };
 
 export const gemPurchaseEn: GemPurchaseCopy = {
   packAmount: (count, display) => `${display} ${count === 1 ? "gem" : "gems"}`,

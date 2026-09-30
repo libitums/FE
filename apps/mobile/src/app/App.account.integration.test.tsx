@@ -560,7 +560,7 @@ test("[IA15] 계정 동작이 내는 이벤트는 기존 사전 안이고 성공
   const settingsNames = [
     "settings_opened",
     "profile_opened",
-    "terms_opened",
+    "legal_document_opened",
     "session_option_changed",
   ];
   type Scenario = { name: string; run: (h: Harness) => void; opts?: BootOptions; ok: boolean };

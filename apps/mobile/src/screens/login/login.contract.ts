@@ -7,6 +7,7 @@ import type {
   PhoneOtpRequestFailure,
   PhoneOtpRequestResult,
 } from "../../lib/auth-session.contract";
+import type { LegalDocument } from "../../lib/legal-document.contract";
 import type { SocialSignInFailure, SocialSignInOutcome } from "../../lib/social-sign-in.contract";
 
 /** 코드 검증을 거치지 않는 셋입니다. Supabase OAuth로 들어옵니다. */
@@ -49,6 +50,11 @@ export type LoginScreenProps = {
   readonly onSubmitPhoneNumber: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   /** (변경 없음) 요청 중에는 부르지 않습니다. */
   readonly onBack?: () => void;
+  /**
+   * 안내 문구의 「Terms of Use」 · 「Privacy Policy」입니다. 문서는 앱 위 브라우저로 열리고
+   * 로그인 화면은 그대로 남습니다(ADR-0033). 요청 중에도 막지 않습니다 — 로그인 상태와 무관합니다.
+   */
+  readonly onOpenLegalDocument: (document: LegalDocument) => void;
 };
 
 /** 소셜 버튼 셋입니다. 상태를 읽어 요소마다 `data-status`를 내고, 요청 중이면 탭을 무시합니다. */
@@ -64,5 +70,6 @@ export type LoginTestId =
   | "login-screen-header"
   | "login-screen-country"
   | "login-screen-legal"
+  | `login-screen-legal-${LegalDocument}`
   | "login-screen-error" // 신규
   | `login-screen-method-${EntryLoginMethod}`;

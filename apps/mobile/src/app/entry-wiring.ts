@@ -12,6 +12,8 @@ import {
   sessionRefreshDisposition,
 } from "../lib/auth-session";
 import { authUserIdFrom } from "../lib/auth-user-id";
+import { legalDocumentOpenedEvent, openLegalDocument } from "../lib/legal-document";
+import type { LegalDocument } from "../lib/legal-document.contract";
 import {
   entryCompletedEvent,
   entryLoginMethodSelectedEvent,
@@ -156,6 +158,11 @@ export function entryWiring({
       return result;
     },
     // 로그인의 뒤로가기입니다 — 진입 구간 스택에서 한 칸 뒤(온보딩)로 갑니다.
+    // 로그인 안내의 방침 · 약관입니다 — 이벤트 → 앱 위 브라우저(ADR-0033). 화면은 그대로입니다.
+    onOpenLegalDocument: (document: LegalDocument) => {
+      entryEventSink?.(legalDocumentOpenedEvent(document, "login"));
+      openLegalDocument(document);
+    },
     onLoginBack: () => {
       dispatch({ type: "back" });
     },

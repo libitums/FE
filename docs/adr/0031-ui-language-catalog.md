@@ -183,6 +183,8 @@ D1은 「zustand를 먼저 검토」다. 검토 결과 **내장 context 하나**
    있다. 그리고 한국어 원문의 **「수집한 정보는 콘텐츠를 보여 주는 데만 사용한다」 취지가 영어 초안에도 남아**
    (`We use the information we collect only to show you content that suits you.`) PostHog 분석 전송과의 충돌
    ([ADR-0029](0029-product-analytics-posthog.md) 「사용자 확인 필요」 4)이 그대로다. 문구를 고칠지는 이 ADR이 정하지 않는다.
+   ⟨2026-09-30⟩ **닫혔다** — 약관 화면과 `terms-sections.ts`가 지워지고 문서가 Notion 공개 페이지로 나갔다
+   ([ADR-0033](0033-legal-documents-in-app-browser.md)). 설정 항목 `Privacy and terms`는 `Privacy Policy` · `Terms of Use` 둘이 됐다.
 6. ⚠ **영어 문구의 언어 검수가 없다.** 전화 상태 `Speaking…`은 design의 두 후보 중 짧은 쪽을 골랐다.
 
 ## 재검토 조건

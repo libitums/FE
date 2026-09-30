@@ -10,36 +10,40 @@ import {
 import type { SettingsNavTarget } from "./settings.contract";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 
-const allNavTargets: readonly SettingsNavTarget[] = ["profile", "terms"];
+const allNavTargets: readonly SettingsNavTarget[] = ["profile", "privacy-policy", "terms-of-use"];
 const allSessionOptionKeys: readonly SessionOptionKey[] = ["auto-play-audio", "show-transcript"];
 
 describe("settingsNavTargets", () => {
-  it("SN1. 길이가 2이고 순서가 [profile, terms]다", () => {
-    expect(settingsNavTargets).toHaveLength(2);
-    expect(settingsNavTargets).toEqual(["profile", "terms"]);
+  it("SN1. 길이가 3이고 순서가 [profile, privacy-policy, terms-of-use]다", () => {
+    expect(settingsNavTargets).toHaveLength(3);
+    expect(settingsNavTargets).toEqual(["profile", "privacy-policy", "terms-of-use"]);
   });
 });
 
 describe("settingsNavLabel", () => {
-  it("SN2. profile → 사용자 프로필, terms → 개인정보 보호 및 약관. 둘이 서로 다르다", () => {
+  it("SN2. profile → User profile, privacy-policy → Privacy Policy, terms-of-use → Terms of Use. 셋이 서로 다르다", () => {
     expect(settingsNavLabel("profile", uiCopyEn)).toBe("User profile");
-    expect(settingsNavLabel("terms", uiCopyEn)).toBe("Privacy and terms");
+    expect(settingsNavLabel("privacy-policy", uiCopyEn)).toBe("Privacy Policy");
+    expect(settingsNavLabel("terms-of-use", uiCopyEn)).toBe("Terms of Use");
 
     const labels = allNavTargets.map((target) => settingsNavLabel(target, uiCopyEn));
-    expect(new Set(labels).size).toBe(2);
+    expect(new Set(labels).size).toBe(3);
   });
 });
 
 describe("settingsNavOpenedEvent", () => {
-  it("SN3. profile → { name: profile_opened }, terms → { name: terms_opened }", () => {
+  it("SN3. profile → profile_opened, 문서 둘 → legal_document_opened(document, source: settings)", () => {
     expect(settingsNavOpenedEvent("profile")).toEqual({ name: "profile_opened" });
-    expect(settingsNavOpenedEvent("terms")).toEqual({ name: "terms_opened" });
-  });
-
-  it("SN4. (가드) 두 열림 이벤트의 키가 정확히 name 하나다", () => {
-    for (const target of allNavTargets) {
-      expect(Object.keys(settingsNavOpenedEvent(target))).toEqual(["name"]);
-    }
+    expect(settingsNavOpenedEvent("privacy-policy")).toEqual({
+      name: "legal_document_opened",
+      document: "privacy-policy",
+      source: "settings",
+    });
+    expect(settingsNavOpenedEvent("terms-of-use")).toEqual({
+      name: "legal_document_opened",
+      document: "terms-of-use",
+      source: "settings",
+    });
   });
 });
 

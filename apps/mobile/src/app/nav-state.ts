@@ -44,10 +44,9 @@ export type Screen =
   | { name: "journey-map" }
   | { name: "roleplay-list" }
   | { name: "settings" }
-  // 설정 탭의 화면 둘입니다. 필드가 없습니다 — 프로필·약관에 진행도 파라미터도
-  // 없고, 내용은 App이 넘깁니다.
+  // 설정 탭의 화면입니다. 필드가 없습니다 — 프로필에 진행도 파라미터가 없고, 내용은 App이
+  // 넘깁니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0033).
   | { name: "profile" }
-  | { name: "terms" }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
   // 에피소드의 서사 표지입니다. 필드는 **표지 유닛 id 하나**입니다 — 표지가 스스로 맵에

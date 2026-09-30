@@ -27,7 +27,6 @@ import type {
   SettingsCopy,
   ShellCopy,
   SpeakingCopy,
-  TermsCopy,
   VisualNovelCopy,
   WordChoiceCopy,
   WritingCopy,
@@ -65,7 +64,6 @@ export type UiCopy = {
   readonly notifications: NotificationsCopy;
   readonly settings: SettingsCopy;
   readonly profile: ProfileCopy;
-  readonly terms: TermsCopy;
   readonly gemPurchase: GemPurchaseCopy;
 };
 

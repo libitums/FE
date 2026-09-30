@@ -210,7 +210,7 @@ test("[ST5] 섞인 fixture에서 토글 값이 실제로 내려가고, 낭독 �
 
 // ---------------------------------------------------------------- 영어 (AC1u E)
 
-test("[AC1u-E] 이동 항목 둘이 영어 이름으로 낭독된다", () => {
+test("[AC1u-E] 이동 항목 셋이 영어 이름으로 낭독된다", () => {
   render(<SettingsScreen {...defaultSettingsScreenProps} />);
 
   expect(settingsCell(settingsNavTargets[0])).toHaveAttribute(
@@ -219,7 +219,11 @@ test("[AC1u-E] 이동 항목 둘이 영어 이름으로 낭독된다", () => {
   );
   expect(settingsCell(settingsNavTargets[1])).toHaveAttribute(
     "accessibility-label",
-    "Privacy and terms",
+    "Privacy Policy",
+  );
+  expect(settingsCell(settingsNavTargets[2])).toHaveAttribute(
+    "accessibility-label",
+    "Terms of Use",
   );
 });
 
@@ -262,7 +266,11 @@ test("[AC1u-M] 제목 · 묶음 이름 · 이동 · 토글 이름 · 상태가 �
   );
   expect(settingsCell(settingsNavTargets[1])).toHaveAttribute(
     "accessibility-label",
-    "⟦settings.nav.terms⟧",
+    "⟦settings.nav.privacy-policy⟧",
+  );
+  expect(settingsCell(settingsNavTargets[2])).toHaveAttribute(
+    "accessibility-label",
+    "⟦settings.nav.terms-of-use⟧",
   );
   // 토글 상태 낭독(on · off)은 ui-lynx SettingsCell의 영어 기본값이다 — 앱이 넘기는 경로가 없다(spec §6 D4 개정).
   expect(settingsCell("auto-play-audio")).toHaveAttribute(
