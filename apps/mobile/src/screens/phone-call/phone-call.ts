@@ -14,7 +14,7 @@ const conversation: PhoneCallConversation = {
   unitId: "appointment-confirmation-phone-call",
   title: "A Call from Minseo",
   introduction: "I imagine Minseo calling before our café visit. I listen, then choose a reply.",
-  completion: "The call ends. I picture tomorrow: our café visit is about to begin.",
+  completion: "You’re meeting Minseo at a café tomorrow.",
   turns: [
     {
       id: "confirm-time",
@@ -26,9 +26,9 @@ const conversation: PhoneCallConversation = {
       audioSource: "phone-call-confirm-01",
       reply: {
         id: "confirm-time-reply",
-        text: "이름이 뭐예요?",
-        translation: "What is your name?",
-        romanization: "ireumi mwoyeyo?",
+        text: "네, 안녕하세요.",
+        translation: "Oh, hello!",
+        romanization: "ne, annyeonghaseyo",
       },
     },
     {
@@ -41,9 +41,9 @@ const conversation: PhoneCallConversation = {
       audioSource: "phone-call-confirm-02",
       reply: {
         id: "confirm-place-reply",
-        text: "안녕하세요",
-        translation: "Hello.",
-        romanization: "annyeonghaseyo",
+        text: "아, 민서 씨! 내일 카페에서 봬요.",
+        translation: "Oh, Minseo! See you at the café tomorrow.",
+        romanization: "a, minseo ssi! naeil kapeeseo bwaeyo",
       },
     },
     {
@@ -56,9 +56,9 @@ const conversation: PhoneCallConversation = {
       audioSource: "phone-call-confirm-03",
       reply: {
         id: "goodbye-reply",
-        text: "내일 만나요",
-        translation: "See you tomorrow.",
-        romanization: "naeil mannayo",
+        text: "네, 내일 만나요!",
+        translation: "Yes, see you tomorrow!",
+        romanization: "ne, naeil mannayo",
       },
     },
   ],
@@ -140,7 +140,7 @@ export const currentPhoneCallReply = (
   state.mode === "reply-ready" ? value.turns[state.turnIndex].reply : null;
 
 export const phoneCallStatusLabel = (state: PhoneCallSessionState, copy: UiCopy): string =>
-  copy.phoneCall.status[state.mode];
+  copy.phoneCall.status[state.mode === "ready" && state.turnIndex === 0 ? "incoming" : state.mode];
 
 export const phoneCallPlayLabel = (state: PhoneCallSessionState, copy: UiCopy): string | null =>
   state.mode === "completed"

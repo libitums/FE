@@ -36,6 +36,17 @@
   padding: var(--libitum-spacing-16) var(--libitum-spacing-20);
 }
 
+.ui-lynx-chat-bubble-message-slot {
+  position: relative;
+}
+
+.ui-lynx-chat-bubble-message-reveal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
 .ui-lynx-chat-bubble-message {
   white-space: normal;
   word-break: break-all;

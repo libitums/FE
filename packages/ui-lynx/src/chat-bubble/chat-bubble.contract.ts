@@ -11,6 +11,12 @@ type ChatBubbleBaseProps = {
   readonly languageTag?: string;
   /** 본문 아래 한 줄 더 싣는 번역. 비어 있으면 그리지 않습니다. */
   readonly translation?: string;
+  /** 기본값은 instant입니다. 새로 도착한 메시지에만 typewriter를 지정합니다. */
+  readonly reveal?: "instant" | "typewriter";
+  readonly intervalMs?: number;
+  readonly reducedMotion?: boolean;
+  /** 타이핑 완료 후 스크롤 등 백그라운드 작업을 수행합니다. */
+  readonly onRevealComplete?: () => void;
 };
 
 export type IncomingChatBubbleProps = ChatBubbleBaseProps & {

@@ -49,10 +49,13 @@ export function MessengerScreen({
   onExit,
   onComplete,
   onFinish,
+  reducedMotion = false,
 }: MessengerScreenProps) {
   const copy = useUiCopy();
   const exitLabel = specialUnitExitLabel(exitTo, copy);
   const [session, setSession] = useState(() => initialMessengerSessionState(completionStatus));
+  // 완료 기록으로 진입한 경우에는 과거 메시지를 다시 타이핑하지 않습니다.
+  const [animateIncoming] = useState(completionStatus !== "completed");
   const [composer, dispatchComposer] = useReducer(
     messengerComposerReducer,
     initialMessengerComposerState,
@@ -144,8 +147,13 @@ export function MessengerScreen({
           </text>
         ) : null}
         <view className="messenger-message-list" data-testid="messenger-message-list">
-          {messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
+          {messages.map((message, index) => (
+            <MessageBubble
+              key={message.id}
+              message={message}
+              animate={animateIncoming && index === messages.length - 1}
+              reducedMotion={reducedMotion}
+            />
           ))}
         </view>
         {session.mode === "completed" && conversation.completion ? (

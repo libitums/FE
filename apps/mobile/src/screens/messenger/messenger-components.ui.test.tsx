@@ -31,6 +31,44 @@ afterEach(() => {
 });
 
 describe("messenger UI components", () => {
+  it("새 상대 메시지만 타이핑하고 내 답장과 과거 메시지는 즉시 표시한다", () => {
+    renderActive();
+    const first = within(screen.getByTestId("messenger-message-jimin-schedule"));
+    expect(first.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "revealing");
+    act(() => {
+      vi.advanceTimersByTime(35);
+    });
+    expect(first.getByTestId("ui-lynx-chat-bubble-message").textContent).toBe("토");
+    sendMessengerReply("좋아요!");
+    expect(first.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "ready");
+    const mine = within(screen.getByTestId("messenger-message-self-accept"));
+    expect(mine.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "ready");
+    expect(mine.getByTestId("ui-lynx-chat-bubble-message")).toHaveTextContent("좋아요!");
+    const next = within(screen.getByTestId("messenger-message-jimin-directions"));
+    expect(next.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "revealing");
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(next.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "ready");
+    expect(next.getByTestId("ui-lynx-chat-bubble-translation")).toBeInTheDocument();
+  });
+
+  it("완료한 대화 기록은 타이핑 없이 모두 보여준다", () => {
+    render(
+      <MessengerScreen
+        conversation={conversation}
+        completionStatus="completed"
+        onExit={vi.fn()}
+        onComplete={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+    for (const bubble of screen.getAllByTestId("ui-lynx-chat-bubble")) {
+      expect(bubble).toHaveAttribute("data-status", "ready");
+    }
+    expect(screen.getAllByTestId("ui-lynx-chat-bubble-translation")).toHaveLength(5);
+  });
+
   it("MessageBubble은 지민 메시지의 문구 · 번역과 sender를 표시한다", () => {
     render(<MessageBubble message={conversation.messages[0]} />);
     const bubble = screen.getByTestId("messenger-message-jimin-schedule");
@@ -163,6 +201,9 @@ describe("messenger UI components", () => {
     renderActive(onComplete);
     sendMessengerReply("좋아요!");
     sendMessengerReply("고마워요!");
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(screen.getByTestId("messenger-message-jimin-goodbye")).toHaveTextContent(
       "그럼 토요일에 봬요!",
     );

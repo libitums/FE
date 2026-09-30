@@ -219,7 +219,9 @@ export type MessengerCopy = {
 };
 
 export type PhoneCallCopy = {
-  readonly status: Readonly<Record<"ready" | "playing" | "reply-ready" | "completed", string>>;
+  readonly status: Readonly<
+    Record<"incoming" | "ready" | "playing" | "reply-ready" | "completed", string>
+  >;
   readonly play: Readonly<Record<"start" | "listen" | "listen-again", string>>;
   readonly voiceCall: (callerName: string) => string;
 };

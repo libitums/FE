@@ -272,16 +272,16 @@ test("[I3] 여정에서 셋을 모두 끝냈어도 롤플레이는 항상 처음
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
   openRoleplayItem(phoneCallUnitId);
-  expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Ready to call");
+  expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Incoming call…");
   expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
     "accessibility-label",
-    "Start call",
+    "Accept",
   );
   expect(
     screen
       .queryAllByTestId(/^phone-call-transcript-/)
       .map((node) => node.getAttribute("data-testid")),
-  ).toHaveLength(1);
+  ).toHaveLength(0);
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
   openRoleplayItem(visualNovelUnitId);

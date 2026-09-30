@@ -39,6 +39,11 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
+    "./typewriter": {
+      "types": "./dist/typewriter/index.d.ts",
+      "import": "./dist/typewriter/index.js",
+      "default": "./dist/typewriter/index.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",

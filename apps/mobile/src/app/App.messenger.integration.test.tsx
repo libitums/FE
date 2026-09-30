@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { fireEvent, screen } from "@lynx-js/react/testing-library";
+import { act, fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import * as messengerData from "../screens/messenger/messenger";
 import { keyboardConversation } from "../screens/messenger/messenger-keyboard-fixture.test-support";
@@ -54,8 +54,14 @@ test("맵의 약속 확인 메시지를 열면 실제 messenger 화면이 push�
 
 test("두 답장을 완료하면 마지막 메시지와 맵 완료 표식이 함께 나타난다", async () => {
   await openJourneyMessenger();
+  vi.useFakeTimers();
   finishConversation();
-  expect(screen.getByTestId("messenger-message-jimin-goodbye")).toHaveTextContent("내일 만나요");
+  act(() => {
+    vi.advanceTimersByTime(1000);
+  });
+  expect(screen.getByTestId("messenger-message-jimin-goodbye")).toHaveTextContent(
+    "좋아요! 내일 봬요.",
+  );
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   // 완료 표식은 유닛 어휘(`clear`)이고, 「완료됨」은 화면 글자가 아니라 접근성
   // 이름에 실립니다 — `LearningUnit`이 체크 아이콘으로 그리기 때문입니다.

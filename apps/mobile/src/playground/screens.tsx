@@ -27,6 +27,8 @@ import { ButtonCatalog } from "./ButtonCatalog";
 import { EpisodePrologueScreen } from "../app/EpisodePrologueScreen";
 import { tutorialPrologue, tutorialPrologueLabel } from "../app/tutorial-prologue";
 import { EpisodeNarrativeScreen } from "../screens/episode-narrative/EpisodeNarrativeScreen";
+import { PrologueChatScreen } from "../screens/episode-intro/PrologueChatScreen";
+import { PrologueCallScreen } from "../screens/episode-intro/PrologueCallScreen";
 
 // 화면을 앱 흐름 없이 fixture props로 띄웁니다. 콜백은 앱 흐름과 같은 순서로
 // playground 안의 다음 화면으로 옮겨 가기만 합니다(저장·이벤트 없음) — 버튼이
@@ -57,6 +59,25 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
+  "tutorial-prologue-call": (go: Go) => (
+    <PrologueCallScreen
+      insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
+      episodeLabel={tutorialPrologueLabel}
+      call={tutorialPrologue.segments[3].call}
+      callerPortrait={tutorialPrologue.segments[3].callerPortrait}
+      onComplete={() => go("journey-map")}
+      onBack={() => go("journey-map")}
+    />
+  ),
+  "tutorial-prologue-chat": (go: Go) => (
+    <PrologueChatScreen
+      insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
+      episodeLabel={tutorialPrologueLabel}
+      chat={tutorialPrologue.segments[1].chat}
+      onComplete={() => go("journey-map")}
+      onBack={() => go("journey-map")}
+    />
+  ),
   "tutorial-announcement": (go: Go) => {
     const segment = tutorialPrologue.segments.find(
       (candidate) =>

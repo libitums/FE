@@ -1,7 +1,69 @@
-import { render, screen } from "@lynx-js/react/testing-library";
-import { describe, expect, test } from "vitest";
+import { act, render, screen } from "@lynx-js/react/testing-library";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { ChatBubble } from "./index";
+
+afterEach(() => vi.useRealTimers());
+
+test("타이핑 중에도 전체 접근성 이름을 유지하고 완료 후 번역과 완료 이벤트를 낸다", () => {
+  vi.useFakeTimers();
+  const onRevealComplete = vi.fn<() => void>();
+  const view = render(
+    <ChatBubble
+      direction="incoming"
+      speaker="Minseo"
+      message="안녕🙂"
+      translation="Hi"
+      reveal="typewriter"
+      onRevealComplete={onRevealComplete}
+    />,
+  );
+  const bubble = screen.getByTestId("ui-lynx-chat-bubble");
+  expect(bubble).toHaveAttribute("data-status", "revealing");
+  expect(screen.getByTestId("ui-lynx-chat-bubble-measure")).toHaveTextContent("안녕🙂");
+  expect(bubble).toHaveAttribute("accessibility-label", "Minseo: 안녕🙂, Hi");
+  expect(screen.getByTestId("ui-lynx-chat-bubble-translation")).toHaveStyle({
+    visibility: "hidden",
+  });
+  act(() => {
+    vi.advanceTimersByTime(35);
+  });
+  expect(screen.getByTestId("ui-lynx-chat-bubble-message").textContent).toBe("안");
+  expect(onRevealComplete).not.toHaveBeenCalled();
+  act(() => {
+    vi.advanceTimersByTime(70);
+  });
+  expect(bubble).toHaveAttribute("data-status", "ready");
+  expect(screen.getByTestId("ui-lynx-chat-bubble-translation")).toHaveTextContent("Hi");
+  expect(onRevealComplete).toHaveBeenCalledTimes(1);
+  view.rerender(
+    <ChatBubble
+      direction="incoming"
+      speaker="Minseo"
+      message="안녕🙂"
+      translation="Hi"
+      reveal="typewriter"
+      onRevealComplete={() => onRevealComplete()}
+    />,
+  );
+  expect(onRevealComplete).toHaveBeenCalledTimes(1);
+});
+
+test("모션 축소에서는 타이핑을 생략한다", () => {
+  render(
+    <ChatBubble
+      direction="incoming"
+      speaker="Minseo"
+      message="안녕"
+      translation="Hi"
+      reveal="typewriter"
+      reducedMotion
+    />,
+  );
+  expect(screen.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "ready");
+  expect(screen.getByTestId("ui-lynx-chat-bubble-message")).toHaveTextContent("안녕");
+  expect(screen.getByTestId("ui-lynx-chat-bubble-translation")).toHaveTextContent("Hi");
+});
 
 describe("ChatBubble UI", () => {
   test("Bubble에는 Message만 보이고 실제 화자 이름은 하나의 접근성 node에 합친다", () => {
@@ -13,7 +75,7 @@ describe("ChatBubble UI", () => {
     expect(bubble).toHaveAttribute("accessibility-element", "true");
     expect(bubble).toHaveAttribute("accessibility-traits", "text");
     expect(bubble).toHaveAttribute("accessibility-label", "말랑이: 오늘 하루는 어땠어?");
-    expect(bubble.firstElementChild).toHaveAttribute("accessibility-element", "false");
+    expect(bubble.firstElementChild).toHaveAttribute("accessibility-elements-hidden", "true");
   });
 
   test("번역이 있으면 본문 아래에 한 줄 더 그리고, 없으면 그리지 않는다", () => {

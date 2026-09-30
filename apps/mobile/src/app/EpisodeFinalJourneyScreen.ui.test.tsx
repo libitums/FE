@@ -4,6 +4,7 @@ import { EpisodeFinalJourneyScreen } from "./EpisodeFinalJourneyScreen";
 import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { episodeFinalAdvanceDelayMs } from "../screens/episode-final/episode-final";
 import { readFinalStory } from "./test-helpers/final-story";
+import { revealNarrative } from "./test-helpers/narrative";
 
 const review = episodeFinalTestFor("tutorial-final-test");
 if (review.format !== "visual-novel") throw new Error("Expected visual novel");
@@ -39,6 +40,7 @@ function answer(correct: number) {
 
 test("이야기 → 상황별 복습 → 통과 후 도착 이야기 → 완료 콜백 순서를 지킨다", () => {
   const { onFinish } = open();
+  revealNarrative();
   expect(screen.getByTestId("episode-narrative-screen-dialog")).toHaveTextContent(
     "The airport draws closer",
   );
@@ -46,6 +48,7 @@ test("이야기 → 상황별 복습 → 통과 후 도착 이야기 → 완료 
   readFinalStory("introduction");
   expect(screen.getByTestId("episode-final-screen-context")).toHaveTextContent("Minseo arrives");
   answer(2);
+  revealNarrative();
   expect(onFinish).not.toHaveBeenCalled();
   expect(screen.getByTestId("episode-narrative-screen-dialog")).toHaveTextContent("Minseo smiles");
   readFinalStory("ending");
@@ -59,6 +62,7 @@ test("1개 정답이면 마무리를 열지 않고 힌트 뒤 현재 시도의 �
   const { onFinish } = open();
   readFinalStory("introduction");
   answer(1);
+  revealNarrative();
   expect(onFinish).not.toHaveBeenCalled();
   expect(screen.getByTestId("episode-narrative-screen-dialog")).toHaveTextContent(
     "Let's try the three replies again",

@@ -77,17 +77,27 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
           </view>
         ) : null}
         <view className="ui-lynx-visual-novel-dialog-line-row">
-          <text
-            className="ui-lynx-visual-novel-dialog-line"
-            data-testid="ui-lynx-visual-novel-dialog-line"
-          >
-            {contract.visibleLine || "\u200B"}
-          </text>
-          {contract.showContinueIndicator ? (
+          <view className="ui-lynx-visual-novel-dialog-line-slot">
+            <text
+              className="ui-lynx-visual-novel-dialog-line"
+              style={{ visibility: "hidden" }}
+              data-testid="ui-lynx-visual-novel-dialog-measure"
+            >
+              {contract.line}
+            </text>
+            <text
+              className="ui-lynx-visual-novel-dialog-line ui-lynx-visual-novel-dialog-line-reveal"
+              data-testid="ui-lynx-visual-novel-dialog-line"
+            >
+              {contract.visibleLine || "\u200B"}
+            </text>
+          </view>
+          {contract.continueIndicator === "on" ? (
             <view
               className={`ui-lynx-visual-novel-dialog-indicator-frame ui-lynx-visual-novel-dialog-indicator-${contract.indicatorMotion}`}
               data-testid="ui-lynx-visual-novel-dialog-continue-indicator"
               data-motion={contract.indicatorMotion}
+              style={{ visibility: contract.showContinueIndicator ? "visible" : "hidden" }}
             >
               <svg
                 className="ui-lynx-visual-novel-dialog-indicator"
@@ -97,10 +107,11 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
             </view>
           ) : null}
         </view>
-        {contract.showTranslation ? (
+        {contract.translation ? (
           <view
             className="ui-lynx-visual-novel-dialog-translation-block"
             data-testid="ui-lynx-visual-novel-dialog-translation-block"
+            style={{ visibility: contract.showTranslation ? "visible" : "hidden" }}
           >
             <view className="ui-lynx-visual-novel-dialog-divider" />
             <text

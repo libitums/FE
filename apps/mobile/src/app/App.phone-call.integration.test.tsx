@@ -42,7 +42,7 @@ describe("App · phone-call integration", () => {
     expect(playAudio).toHaveBeenCalledTimes(0);
   });
 
-  it("전화 3턴은 수동 재생·답장으로 완료되고 맵 완료 표식만 바꾼다", async () => {
+  it("전화 받기 뒤 답장만으로 3턴을 완료하고 맵 완료 표식만 바꾼다", async () => {
     await openJourney();
     const before = ["greeting", "introduction", "ordering", "appointment", "directions"].map((id) =>
       screen.getByTestId(`ui-lynx-learning-unit-${id}`).getAttribute("data-status"),
@@ -63,16 +63,17 @@ describe("App · phone-call integration", () => {
       finish = done;
       return "started";
     });
+    fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
     for (const [source, reply] of [
       ["phone-call-confirm-01", "phone-call-reply-confirm-time-reply"],
       ["phone-call-confirm-02", "phone-call-reply-confirm-place-reply"],
       ["phone-call-confirm-03", "phone-call-reply-goodbye-reply"],
     ] as const) {
-      fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
       expect(playAudio).toHaveBeenLastCalledWith(source, expect.any(Function));
       act(() => finish?.());
       fireEvent.tap(screen.getByTestId(reply), {});
     }
+    expect(playAudio).toHaveBeenCalledTimes(3);
     expect(
       screen
         .queryAllByTestId(/^phone-call-transcript-/)
@@ -133,7 +134,7 @@ describe("App · phone-call integration", () => {
       screen
         .queryAllByTestId(/^phone-call-transcript-/)
         .map((node) => node.getAttribute("data-testid")),
-    ).toEqual(["phone-call-transcript-jimin-confirm-time"]);
+    ).toEqual([]);
   });
 
   // **뒤집힙니다**(ADR-0007 2026-09-27 개정). 전화는 여정 탭 위에 쌓인 자리라 탭이
@@ -181,12 +182,12 @@ describe("App · phone-call integration", () => {
       finish = done;
       return "started";
     });
+    fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
     for (const [, reply] of [
       ["phone-call-confirm-01", "phone-call-reply-confirm-time-reply"],
       ["phone-call-confirm-02", "phone-call-reply-confirm-place-reply"],
       ["phone-call-confirm-03", "phone-call-reply-goodbye-reply"],
     ] as const) {
-      fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
       act(() => finish?.());
       fireEvent.tap(screen.getByTestId(reply), {});
     }

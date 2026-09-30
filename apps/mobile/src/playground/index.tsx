@@ -37,6 +37,8 @@ function Playground() {
   const ownsSafeArea =
     screen === "tutorial-announcement" ||
     screen === "tutorial-prologue" ||
+    screen === "tutorial-prologue-chat" ||
+    screen === "tutorial-prologue-call" ||
     screen === "tutorial-specials" ||
     screen === "tutorial-cafe" ||
     screen === "tutorial-call" ||

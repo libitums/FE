@@ -52,12 +52,13 @@ export const messengerEn: MessengerCopy = {
 
 export const phoneCallEn: PhoneCallCopy = {
   status: {
+    incoming: "Incoming call…",
     ready: "Ready to call",
     playing: "Speaking…",
     "reply-ready": "Your turn to reply",
     completed: "Call ended",
   },
-  play: { start: "Start call", listen: "Listen", "listen-again": "Listen again" },
+  play: { start: "Accept", listen: "Listen", "listen-again": "Listen again" },
   voiceCall: (callerName) => `Voice call, ${callerName}`,
 };
 

@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { advanceNarrative } from "./test-helpers/narrative";
 import type { AppJourneySeed } from "./App";
 import type {
   EpisodeIntroEvent,
@@ -89,7 +90,7 @@ function readNarrative(): void {
       switch (segment.kind) {
         case "visual-novel":
           for (const _beat of segment.narrative.beats) {
-            fireEvent.tap(screen.getByTestId("episode-narrative-screen-advance"), {});
+            advanceNarrative();
           }
           break;
         case "messenger":
@@ -105,6 +106,7 @@ function readNarrative(): void {
           fireEvent.tap(screen.getByTestId("prologue-chat-screen-complete"), {});
           break;
         case "call":
+          fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
           fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
           fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
           break;
@@ -525,6 +527,7 @@ test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue�
   openIntro();
   nextIntro();
 
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
   act(() => {
     vi.advanceTimersByTime(60_000);
   });
@@ -539,6 +542,7 @@ test("[EP2b] 통화의 Continue → PERFECT LESSON → Check → 맵이고 표�
   await renderWithCall();
   openIntro();
   nextIntro();
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
   fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
 
   fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
@@ -690,6 +694,7 @@ test("[EV8] 서사 형식이 통화면 prologueKind가 call이다", async () => 
   ));
   openIntro();
   nextIntro();
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
   fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
 
   fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});

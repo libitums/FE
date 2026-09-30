@@ -21,13 +21,13 @@ const id = "appointment-confirmation" as const;
 const expected = [
   ["jimin-schedule", "jimin", "안녕하세요"],
   ["self-accept", "self", "안녕하세요"],
-  ["jimin-directions", "jimin", "내일 만나요"],
+  ["jimin-directions", "jimin", "내일 카페에서 만날까요?"],
   ["self-thanks", "self", "내일 만나요"],
-  ["jimin-goodbye", "jimin", "내일 만나요"],
+  ["jimin-goodbye", "jimin", "좋아요! 내일 봬요."],
 ] as const;
 
 describe("messengerConversationFor", () => {
-  it("다섯 메시지는 배운 표현으로 구성하며 답장은 한 개 보기로 안내한다", () => {
+  it("카페 약속을 주고받으며 답장은 배운 표현 한 개 보기로 안내한다", () => {
     const conversation = messengerConversationFor(id);
     expect(conversation.id).toBe(id);
     expect(conversation.title).toBe("A Message from Minseo");
