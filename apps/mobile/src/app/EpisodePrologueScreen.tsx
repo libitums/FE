@@ -12,6 +12,7 @@ export type EpisodePrologueScreenProps = {
   readonly insets: SafeAreaInsets;
   readonly label: string;
   readonly prologue: EpisodePrologue;
+  readonly guided?: boolean;
   readonly onComplete: () => void;
   readonly onExit: () => void;
 };
@@ -21,6 +22,7 @@ export function EpisodePrologueScreen({
   insets,
   label,
   prologue,
+  guided = false,
   onComplete,
   onExit,
 }: EpisodePrologueScreenProps): ReactNode {
@@ -46,6 +48,7 @@ export function EpisodePrologueScreen({
       return (
         <EpisodeNarrativeScreen
           key={segmentIndex}
+          guided={guided}
           insets={insets}
           label={label}
           narrative={segment.narrative}
@@ -57,6 +60,7 @@ export function EpisodePrologueScreen({
       return (
         <PrologueChatScreen
           key={segmentIndex}
+          guided={guided}
           insets={insets}
           episodeLabel={label}
           chat={segment.chat}
@@ -68,6 +72,7 @@ export function EpisodePrologueScreen({
       return (
         <PrologueCallScreen
           key={segmentIndex}
+          guided={guided}
           insets={insets}
           episodeLabel={label}
           call={segment.call}

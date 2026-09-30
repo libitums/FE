@@ -14,6 +14,12 @@ import { uiLanguageStorageKey } from "../lib/ui-language";
 import { notificationItems } from "../screens/notifications/notification-items";
 import type { SettingsEvent } from "../screens/settings/settings.contract";
 
+// 알림 동작 검증에만 목업을 주입합니다. 제품의 기본 알림 목록은 비어 있습니다.
+vi.mock(
+  "../screens/notifications/notification-items",
+  () => import("./test-helpers/notification-items"),
+);
+
 // 「설정 → 결선 → 저장소 · 분석 · 전송 · 호스트 대역 → App 세션 재시작」을 한 트리에서 봅니다.
 // 대역은 경계뿐입니다 — `StorageModule`(기록하는 저장소) · `fetch`(Supabase · 삭제 함수) ·
 // `AppleSignInModule` · `WebAuthenticationModule.randomBytes` · 분석 transport(IA5b만).

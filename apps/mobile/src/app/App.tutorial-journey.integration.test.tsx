@@ -18,6 +18,13 @@ const button = (id: string) =>
   fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const unit = (id: string) => `ui-lynx-learning-unit-${id}`;
 
+function dismissFirstUnitGuide(): void {
+  for (const kind of ["story", "messenger", "call"]) {
+    const guide = screen.queryByTestId(`first-unit-guide-${kind}`);
+    if (guide !== null) fireEvent.tap(guide, { eventType: "catchEvent" });
+  }
+}
+
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -43,6 +50,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   if (prologue?.kind !== "sequence") throw new Error("Expected sequence");
   vi.useFakeTimers();
   for (const segment of prologue.segments) {
+    dismissFirstUnitGuide();
     if (segment.kind === "visual-novel") {
       for (const beat of segment.narrative.beats) {
         revealNarrative();

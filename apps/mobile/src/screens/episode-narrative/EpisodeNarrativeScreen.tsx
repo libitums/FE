@@ -1,3 +1,5 @@
+import { FirstUnitGuide } from "../../components/FirstUnitGuide";
+import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
@@ -23,7 +25,9 @@ export type EpisodeNarrativeScreenProps = {
   /** 머리 제목입니다 — `Episode 0.` */
   readonly label: string;
   readonly narrative: EpisodeNarrative;
-  /** 마지막 장면에서 한 번 더 넘기면 불립니다. 표지를 지나 누른 유닛이 열립니다. */
+  /** 첫 유닛의 조작 안내를 표시할 수 있는 화면입니다. */
+  readonly guided?: boolean;
+  /** 마지막 장면에서 한 번 더 넘기면 불립니다. */
   readonly onFinish: () => void;
   /** 뒤로(맵으로)입니다. */
   readonly onExit: () => void;
@@ -45,6 +49,7 @@ function stopTap() {
  */
 export function EpisodeNarrativeScreen({
   insets,
+  guided = false,
   label,
   narrative,
   onFinish,
@@ -52,10 +57,12 @@ export function EpisodeNarrativeScreen({
   reducedMotion = false,
 }: EpisodeNarrativeScreenProps): ReactNode {
   const copy = useUiCopy();
+  const guide = useFirstUnitGuide("story", guided);
   const [beatIndex, setBeatIndex] = useState(0);
   const beat = narrative.beats[beatIndex] ?? narrative.beats[0];
   const typing = useTypewriter({
     text: beat.line,
+    enabled: !guide.visible,
     resetKey: beatIndex,
     reducedMotion,
     delayMs: beat.revealTiming?.delayMs,
@@ -69,14 +76,15 @@ export function EpisodeNarrativeScreen({
   const audioSource = beat.audioSource;
 
   useEffect(() => {
-    if (audioSource === undefined) return undefined;
+    if (guide.visible || audioSource === undefined) return undefined;
     // 음원이 끝나도 독백을 읽을 시간은 사용자가 정합니다. 자동으로 넘기지 않습니다.
     const outcome = playAudio(audioSource, () => {});
     return outcome === "started" ? () => stopAudio() : undefined;
-  }, [audioSource, beatIndex]);
+  }, [audioSource, beatIndex, guide.visible]);
 
   const handleAdvance = () => {
     "background only";
+    if (guide.visible) return;
     if (!typing.isComplete) {
       typing.finish();
       return;
@@ -139,6 +147,8 @@ export function EpisodeNarrativeScreen({
           넘기기와 겹치지 않습니다. */}
       <view
         className="episode-narrative-screen-advance"
+        flatten={false}
+        accessibility-elements-hidden={guide.visible}
         data-testid="episode-narrative-screen-advance"
         accessibility-element={true}
         accessibility-traits="button"
@@ -148,6 +158,8 @@ export function EpisodeNarrativeScreen({
 
       <view
         className="episode-narrative-screen-safe"
+        flatten={false}
+        accessibility-elements-hidden={guide.visible}
         style={{
           paddingTop: `${insets.top}px`,
           paddingBottom: `${insets.bottom}px`,
@@ -181,6 +193,8 @@ export function EpisodeNarrativeScreen({
 
         <view
           className="episode-narrative-screen-dialog"
+          flatten={false}
+          accessibility-elements-hidden={guide.visible}
           data-testid="episode-narrative-screen-dialog"
         >
           <VisualNovelDialog
@@ -206,6 +220,7 @@ export function EpisodeNarrativeScreen({
           />
         </view>
       </view>
+      {guide.visible ? <FirstUnitGuide step="story" onDismiss={guide.dismiss} /> : null}
     </view>
   );
 }

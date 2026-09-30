@@ -1,5 +1,6 @@
 import { useEffect, useGlobalProps, useReducer, useState } from "@lynx-js/react";
 
+import { FirstUnitGuideProvider } from "../components/first-unit-guide";
 import { BottomNavigator } from "../components/BottomNavigator";
 import type { AnalyticsUserAppProps } from "../lib/analytics.contract";
 import { announce } from "../lib/accessibility";
@@ -226,67 +227,68 @@ export function AppSession({
 
   return (
     <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
-      <ErrorBoundary>
-        <view
-          className={
-            screenNow.name === "splash" ? "app app-splash" : isPhoneCall ? "app app-call" : "app"
-          }
-          style={{
-            paddingTop: `${shellInsets.top}px`,
-            // 바가 설 때 아래는 비우지 않습니다 — 바가 화면 바닥까지 배경을 칠하고,
-            // 홈 인디케이터를 피하는 여백은 바 자신의 `padding-bottom`이 집니다.
-            paddingBottom: `${showsNavigator ? 0 : shellInsets.bottom}px`,
-            paddingLeft: `${shellInsets.left}px`,
-            paddingRight: `${shellInsets.right}px`,
-          }}
-        >
-          <view className="app-content">
-            {renderScreen(screenNow, wiring)}
-            {/* 전역 머리는 바텀 네비게이션과 같은 조건(탭 루트)에서만 섭니다 — 그 위에 쌓인
-              화면은 하나의 일을 끝내러 들어온 자리라 자기 머리를 스스로 집니다.
-
-              머리도 콘텐츠 **위에 겹칩니다**(`.app-header`). 스크롤되는 내용이 칩
-              사이로 비치는 것이 디자인 의도이고, 내용이 머리에 가리지 않는 일은 화면의 위
-              여백이 집니다. 지표는 아직 규칙이 없어 0입니다. */}
+      <FirstUnitGuideProvider
+        enabled={
+          completedStepCount === 0 &&
+          completedEpisodeIntroIds.length === 0 &&
+          completedMessengerUnitIds.length === 0 &&
+          completedPhoneCallUnitIds.length === 0 &&
+          completedEpisodeFinalIds.length === 0 &&
+          visualNovelProgress.status !== "completed"
+        }
+      >
+        <ErrorBoundary>
+          <view
+            className={
+              screenNow.name === "splash" ? "app app-splash" : isPhoneCall ? "app app-call" : "app"
+            }
+            style={{
+              paddingTop: `${shellInsets.top}px`,
+              // 바가 설 때 아래는 비우지 않습니다 — 바가 화면 바닥까지 배경을 칠하고,
+              // 홈 인디케이터를 피하는 여백은 바 자신의 `padding-bottom`이 집니다.
+              paddingBottom: `${showsNavigator ? 0 : shellInsets.bottom}px`,
+              paddingLeft: `${shellInsets.left}px`,
+              paddingRight: `${shellInsets.right}px`,
+            }}
+          >
+            <view className="app-content">
+              {renderScreen(screenNow, wiring)}
+              {/* 탭 루트에서는 전역 머리가 콘텐츠 위에 겹칩니다. */}
+              {showsNavigator ? (
+                <AppHeader
+                  streakDays={progress.streakDays}
+                  trophyCount={progress.trophyCount}
+                  celebrateStreak={progress.streakCelebration}
+                  onStreakCelebrated={progress.onStreakCelebrated}
+                  episodeSurvey={progress.episodeSurvey}
+                  {...episodeSurveyWiring({
+                    episodeIntroEventSink,
+                    onClosed: progress.onEpisodeSurveyClosed,
+                  })}
+                  gemCount={gemCount}
+                  obscured={screenLayerOpen}
+                  onOpenNotifications={wiring.onOpenNotifications}
+                />
+              ) : null}
+            </view>
+            {/* 로그인 뒤 탭 루트에만 바를 겹칩니다. 하단 여백은 각 화면이 집니다. */}
             {showsNavigator ? (
-              <AppHeader
-                streakDays={progress.streakDays}
-                trophyCount={progress.trophyCount}
-                celebrateStreak={progress.streakCelebration}
-                onStreakCelebrated={progress.onStreakCelebrated}
-                episodeSurvey={progress.episodeSurvey}
-                {...episodeSurveyWiring({
-                  episodeIntroEventSink,
-                  onClosed: progress.onEpisodeSurveyClosed,
-                })}
-                gemCount={gemCount}
-                obscured={screenLayerOpen}
-                onOpenNotifications={wiring.onOpenNotifications}
-              />
+              <view className="app-navigator" accessibility-elements-hidden={screenLayerOpen}>
+                <BottomNavigator
+                  tab={nav.tab}
+                  onSelectTab={(tab) => {
+                    // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
+                    // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
+                    if (tab === "settings" && nav.tab !== "settings")
+                      settingsEventSink?.({ name: "settings_opened" });
+                    dispatch({ type: "switchTab", tab });
+                  }}
+                />
+              </view>
             ) : null}
           </view>
-          {/* 진입 구간(`entry`가 비지 않은 동안)에는 탭 전환 수단을 보이지
-            않습니다 — `enterApp`이 `entry`를 비운 뒤에야 처음 섭니다.
-
-            바는 콘텐츠 **위에 겹칩니다**(`.app-navigator`). 그래야 바 위쪽 모서리
-            밖으로 콘텐츠가 비쳐 라운드가 드러납니다. 콘텐츠가 바에 가리지 않는 일은
-            화면이 집니다 — 화면 하단 여백이 그 몫입니다. */}
-          {showsNavigator ? (
-            <view className="app-navigator">
-              <BottomNavigator
-                tab={nav.tab}
-                onSelectTab={(tab) => {
-                  // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
-                  // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
-                  if (tab === "settings" && nav.tab !== "settings")
-                    settingsEventSink?.({ name: "settings_opened" });
-                  dispatch({ type: "switchTab", tab });
-                }}
-              />
-            </view>
-          ) : null}
-        </view>
-      </ErrorBoundary>
+        </ErrorBoundary>
+      </FirstUnitGuideProvider>
     </UiCopyContext.Provider>
   );
 }

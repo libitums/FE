@@ -55,6 +55,7 @@ function renderPrologueScreen(
       insets={wiring.safeAreaInsets}
       label={episode.id === "tutorial" ? tutorialPrologueLabel : episode.label}
       prologue={prologue}
+      guided={screen.unitId === "tutorial-intro"}
       onComplete={onComplete}
       onExit={onExit}
     />

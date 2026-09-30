@@ -16,6 +16,12 @@ import type { MessengerEventSink } from "../screens/messenger/messenger.contract
 import { journeySteps } from "../screens/journey-map/journey-map";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
+// 알림 동작 검증에만 목업을 주입합니다. 제품의 기본 알림 목록은 비어 있습니다.
+vi.mock(
+  "../screens/notifications/notification-items",
+  () => import("./test-helpers/notification-items"),
+);
+
 // App · navReducer · 여정 맵 · 에피소드 표지 유닛 · 유닛 화면의 실제 결선을 봅니다
 // (ADR-0006 D4). 제품의 씨앗(끝낸 표지 없음)으로 부팅합니다.
 //
@@ -28,6 +34,13 @@ import { renderSignedInApp } from "./test-helpers/signed-in-app";
 //
 // `Skip`도 갈렸습니다(D5) — 누른 유닛이 아니라 **`PERFECT LESSON` 결과 화면**으로
 // 갑니다. 완료를 적는 자리는 그 결과 화면의 `Check` 하나뿐입니다.
+
+function dismissFirstUnitGuide(): void {
+  for (const kind of ["story", "messenger", "call"]) {
+    const guide = screen.queryByTestId(`first-unit-guide-${kind}`);
+    if (guide !== null) fireEvent.tap(guide, { eventType: "catchEvent" });
+  }
+}
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -74,6 +87,7 @@ function skipIntro(): void {
 
 function nextIntro(): void {
   tapButtonIn("episode-intro-screen-next");
+  dismissFirstUnitGuide();
 }
 
 function tapLessonCompleteCheck(): void {
@@ -87,6 +101,7 @@ function readNarrative(): void {
   vi.useFakeTimers();
   try {
     for (const segment of prologue.segments) {
+      dismissFirstUnitGuide();
       expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
       switch (segment.kind) {
         case "visual-novel":

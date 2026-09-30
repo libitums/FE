@@ -1,3 +1,5 @@
+import { FirstUnitGuide } from "../../components/FirstUnitGuide";
+import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
@@ -24,6 +26,7 @@ import "./prologue-chat-screen.css";
  */
 export function PrologueChatScreen({
   insets,
+  guided = false,
   episodeLabel,
   chat,
   onComplete,
@@ -31,13 +34,14 @@ export function PrologueChatScreen({
   reducedMotion = false,
 }: PrologueChatScreenProps): ReactNode {
   const copy = useUiCopy();
+  const guide = useFirstUnitGuide("messenger", guided);
   const [shownCount, setShownCount] = useState(0);
   const next = prologueChatNext(chat.messages, shownCount);
   const shown = chat.messages.slice(0, shownCount);
 
   // 다음이 상대 메시지면 잠시 뒤 저절로 옵니다. 내 차례에는 기다립니다 — 보내기가 넘깁니다.
   useEffect(() => {
-    if (next.kind !== "incoming") {
+    if (guide.visible || next.kind !== "incoming") {
       return undefined;
     }
     const timer = setTimeout(
@@ -45,7 +49,7 @@ export function PrologueChatScreen({
       prologueChatIncomingDelayMs,
     );
     return () => clearTimeout(timer);
-  }, [shownCount, next.kind]);
+  }, [shownCount, next.kind, guide.visible]);
 
   // 메시지가 하나 늘 때마다 대화 끝을 보입니다 — 목록이 화면을 넘으면 새 메시지가 아래에
   // 숨습니다. 마지막 메시지가 아니라 끝의 여백을 집습니다: 끝난 대화에서는 그 여백이
@@ -58,7 +62,7 @@ export function PrologueChatScreen({
 
   const handleSend = () => {
     "background only";
-    if (next.kind === "draft") {
+    if (!guide.visible && next.kind === "draft") {
       setShownCount((count) => count + 1);
     }
   };
@@ -74,6 +78,8 @@ export function PrologueChatScreen({
     <view className="prologue-chat-screen" data-testid="prologue-chat-screen">
       <view
         className="prologue-chat-screen-safe"
+        flatten={false}
+        accessibility-elements-hidden={guide.visible}
         style={{
           paddingTop: `${insets.top}px`,
           paddingBottom: `${insets.bottom}px`,
@@ -192,6 +198,7 @@ export function PrologueChatScreen({
           </view>
         </>
       ) : null}
+      {guide.visible ? <FirstUnitGuide step="messenger" onDismiss={guide.dismiss} /> : null}
     </view>
   );
 }

@@ -1,14 +1,8 @@
 // UI 문구표의 구획 타입입니다. 타입만 둡니다 — 값(영어 표)과 조회는 `ui-copy-en*.ts` ·
 // `ui-copy.ts`가 집니다. 뿌리 타입 `UiCopy`는 `ui-copy.contract.ts`에 있습니다.
 //
-// **문구표에 드는 것** — 화면 · 공용 컴포넌트 · 그 순수 함수가 스스로 짓는 문구입니다.
-// 콘텐츠 항목 하나에 딸린 텍스트(이야기 이름 · 유닛/스텝 제목 · 뜻 풀이 · 문화 노트 · 약관 ·
-// 알림 메시지 · 플러스 항목 · 프로필 자리표 값)는 여기 없습니다 — 항목 데이터 곁의 영어
-// 리터럴입니다(메신저 `translation`과 같은 자리).
-//
-// **함수 문구** — 수 · 이름 · 순번이 끼는 문구는 인자를 받는 함수입니다. 복수형은 언어마다
-// 표가 스스로 정합니다(영어 `1 gem` / `5 gems`). 문자열을 이어 붙여 복수형을 흉내 내지
-// 않습니다. 함수는 던지지 않습니다.
+// 화면이 짓는 UI 문구만 두며, 콘텐츠 데이터는 각 콘텐츠 곁에 둡니다.
+// 수량 문구는 언어별 함수가 복수형까지 처리합니다.
 //
 // **키 union** — `lib/` 밖(화면 · 앱)이 소유한 union은 import하지 않고 같은 멤버를 여기
 // 적습니다(`lib/`는 `screens/` · `app/`을 import하지 않습니다 — ADR-0003). 소비자가
@@ -178,6 +172,13 @@ export type LessonCompleteCopy = {
 };
 
 export type EpisodeIntroCopy = {
+  readonly guide: {
+    readonly map: string;
+    readonly continue: string;
+    readonly story: { readonly title: string; readonly description: string };
+    readonly messenger: { readonly title: string; readonly description: string };
+    readonly call: { readonly title: string; readonly description: string };
+  };
   readonly skipDialog: {
     readonly title: string;
     readonly description: string;
