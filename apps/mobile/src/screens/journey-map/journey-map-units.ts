@@ -37,7 +37,8 @@ const tutorialUnits: JourneyEpisodeUnits = [
       {
         id: "greeting",
         title: "Your First Hello",
-        description: "Before landing, rehearse a hello, a warm reply, and a polite goodbye",
+        description:
+          "Learn one greeting and say hello back, with meaning and pronunciation to help",
       },
       {
         id: "introduction",

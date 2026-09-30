@@ -31,14 +31,14 @@ describe("listeningPromptScale", () => {
     expect(listeningPromptScale("")).toBe("l");
   });
 
-  // 오늘의 문항 열다섯이 전부 세 단계 안에 들어갑니다 — 넷째 단계가 필요해지면
+  // 오늘의 문항 열둘이 전부 세 단계 안에 들어갑니다 — 넷째 단계가 필요해지면
   // 여기가 아니라 `listeningPromptScale`이 답을 못 내는 것으로 드러납니다.
   it("실물 문항이 전부 세 단계 안에 든다", () => {
     const scales = Object.values(listeningQuestionsByStep)
       .flat()
       .map((question) => listeningPromptScale(question.prompt));
 
-    expect(scales).toHaveLength(15);
+    expect(scales).toHaveLength(12);
     expect(new Set(scales)).toEqual(new Set(["l", "m", "s"]));
   });
 });

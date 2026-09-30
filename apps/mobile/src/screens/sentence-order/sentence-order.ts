@@ -15,6 +15,12 @@ export type SentenceOrderQuestion = {
    * 만듭니다(Figma 65-14 「Complete the conversation」). 빈칸 표기 규약을 두지 않습니다.
    */
   readonly prompt: string;
+  /** 처음 보는 표현의 뜻·발음과 조작 안내입니다. 없는 문항은 기존 방식으로 표시합니다. */
+  readonly support?: {
+    readonly translation: string;
+    readonly romanization: string;
+    readonly instruction: string;
+  };
   /**
    * 화면에 제시되는 조각입니다. 이 배열의 순서가 곧 창고의 제시 순서이고 정답 순서가
    * 아닙니다. ⟨2026-09-28⟩ **정답에 쓰이지 않는 조각(오답 낱말)이 섞일 수 있습니다** —
@@ -54,26 +60,21 @@ export const initialSentenceOrderSessionState: SentenceOrderSessionState = {
   submittedOrders: [],
 };
 
-// 첫 인사는 기내에서 연습하는 짧은 대화입니다. 앞의 듣기에서 접한 인사·반가움·작별을
-// 한 조각 고르기 → 두 조각 조합으로 연습합니다. 이름·주문은 다음 유닛에서 다룹니다.
+// 첫 인사는 한글을 모르는 사용자도 뜻과 발음 표기를 보며 한 번 답하는 안내 활동입니다.
+// 오답·조합·작별 구분은 요구하지 않고 안녕하세요 한 표현만 사용합니다.
 // 대본은 초안이며 언어 검수 전입니다. 다른 스텝에는 문장 만들기를 배정하지 않았습니다.
 export const sentenceOrderQuestionsByStep: Record<JourneyStepId, readonly SentenceOrderQuestion[]> =
   {
     greeting: [
       {
-        prompt: "안녕하세요. 처음 뵙겠습니다.",
-        chips: ["안녕히 계세요", "안녕하세요", "감사합니다"],
-        answerOrder: [1],
-      },
-      {
-        prompt: "반갑습니다.",
-        chips: ["반갑습니다", "내일", "저도", "안녕히"],
-        answerOrder: [2, 0],
-      },
-      {
-        prompt: "안녕히 가세요.",
-        chips: ["계세요", "가세요", "안녕히", "저도"],
-        answerOrder: [2, 0],
+        prompt: "안녕하세요",
+        support: {
+          translation: "Hello",
+          romanization: "annyeonghaseyo",
+          instruction: "Tap the greeting below to say hello back.",
+        },
+        chips: ["안녕하세요"],
+        answerOrder: [0],
       },
     ],
     introduction: [],

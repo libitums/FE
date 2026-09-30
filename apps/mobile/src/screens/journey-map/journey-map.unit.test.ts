@@ -282,7 +282,8 @@ describe("낭독 이름의 데이터 앵커", () => {
     expect(described).toEqual([
       {
         id: "greeting",
-        description: "Before landing, rehearse a hello, a warm reply, and a polite goodbye",
+        description:
+          "Learn one greeting and say hello back, with meaning and pronunciation to help",
       },
       { id: "introduction", description: "Ask someone's name and introduce yourself" },
       { id: "ordering", description: "Order a drink at a café" },

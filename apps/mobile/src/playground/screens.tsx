@@ -50,14 +50,6 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
-  "tutorial-greeting-listening": (go: Go) => (
-    <ListeningScreen
-      stepId="greeting"
-      sessionOptions={initialSessionOptions}
-      onExit={() => go("journey-map")}
-      onFinish={() => go("tutorial-greeting-reply")}
-    />
-  ),
   "tutorial-greeting-reply": (go: Go) => (
     <SentenceOrderScreen
       stepId="greeting"
@@ -114,7 +106,7 @@ export const playgroundScreens = {
     <JourneyMapScreen
       completedStepCount={1}
       onStartStep={(id) => {
-        if (id === "greeting") go("tutorial-greeting-listening");
+        if (id === "greeting") go("tutorial-greeting-reply");
       }}
       completedEpisodeIntroIds={["tutorial-intro"]}
       onStartEpisodeIntroUnit={noop}

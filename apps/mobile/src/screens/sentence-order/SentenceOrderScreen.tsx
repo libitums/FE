@@ -98,7 +98,7 @@ export function SentenceOrderScreen({
       form="sentence-order"
       questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
-      instruction={copy.sentenceOrder.instruction}
+      instruction={question?.support?.instruction ?? copy.sentenceOrder.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -147,6 +147,22 @@ export function SentenceOrderScreen({
                 >
                   {question.prompt}
                 </text>
+                {question.support === undefined ? null : (
+                  <>
+                    <text
+                      className="sentence-order-screen-support"
+                      data-testid="sentence-order-screen-romanization"
+                    >
+                      {question.support.romanization}
+                    </text>
+                    <text
+                      className="sentence-order-screen-support"
+                      data-testid="sentence-order-screen-translation"
+                    >
+                      {question.support.translation}
+                    </text>
+                  </>
+                )}
               </view>
 
               {/* 내 말 — 오른쪽 말풍선. 채우는 동안은 빈 표시(`----`)이고 낭독하지 않습니다.
