@@ -217,6 +217,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "visual-novel":
       return (
         <VisualNovelScreen
+          insets={wiring.safeAreaInsets}
           story={visualNovelStoryFor(screen.unitId)}
           progress={wiring.visualNovelProgress}
           exitTo="journey"
@@ -230,7 +231,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "roleplay-messenger":
     case "roleplay-phone-call":
     case "roleplay-visual-novel":
-      return renderRoleplayUnitScreen(screen, wiring.roleplay);
+      return renderRoleplayUnitScreen(screen, wiring.roleplay, wiring.safeAreaInsets);
     // 진입 흐름 화면 여섯입니다 — 스플래시부터 여정 입구까지가 한 흐름이라
     // `render-entry-screen.tsx`가 한 자리에서 집니다.
     case "splash":

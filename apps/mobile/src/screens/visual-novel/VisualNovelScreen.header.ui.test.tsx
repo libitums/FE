@@ -83,15 +83,15 @@ describe("VisualNovelScreen 머리 구조", () => {
     }
   });
 
-  describe("[VH3] 화면 루트의 요소 자식이 정확히 둘 — 머리 → 장면 셸", () => {
+  describe("[VH3] 전체 배경 위에 머리와 대화 영역이 선다", () => {
     for (const source of sources) {
       it(`경로=${source}`, () => {
         renderScreen(source, { status: "active", beatIndex: 0 });
 
         const root = screen.getByTestId("visual-novel-screen");
-        expect(root.children).toHaveLength(2);
-        expect(root.children[0]).toHaveClass("visual-novel-header");
-        expect(root.children[1]).toHaveClass("visual-novel-scene-shell");
+        expect(root.children).toHaveLength(4);
+        expect(root.children[2]).toHaveClass("visual-novel-header");
+        expect(root.children[3]).toHaveClass("visual-novel-scene-shell");
 
         // 나가기는 더 이상 루트의 직계 자식이 아닙니다.
         const exit = screen.getByTestId("visual-novel-exit-button");
@@ -112,11 +112,8 @@ describe("VisualNovelScreen 머리 구조", () => {
         expect(exit).toHaveAttribute("accessibility-element", "true");
         expect(exit).toHaveAttribute("accessibility-traits", "button");
         expect(exit).toHaveAttribute("accessibility-label", label);
-        expect(exit).toHaveTextContent(label);
 
-        const innerText = exit.querySelector("text");
-        expect(innerText).not.toBeNull();
-        expect(innerText).toHaveAttribute("accessibility-element", "false");
+        expect(exit.querySelector('[accessibility-elements-hidden="true"]')).not.toBeNull();
 
         const headers = container.querySelectorAll('[accessibility-traits="header"]');
         expect(headers).toHaveLength(1);

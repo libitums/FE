@@ -5,6 +5,7 @@
  * belong in this file. Changes require specification re-freeze and a contract diff.
  */
 
+import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
 import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
@@ -78,18 +79,18 @@ export type VisualNovelCompletionStatus = "available" | "completed";
 export type VisualNovelExitOutcome = "incomplete" | "completed";
 
 export type VisualNovelAssetPath =
-  | "screens/visual-novel/assets/temporary/background-cafe-exterior-day.png"
-  | "screens/visual-novel/assets/temporary/character-jimin-neutral.png"
-  | "screens/visual-novel/assets/temporary/character-jimin-smile.png";
+  | "screens/visual-novel/assets/cafe/background-cafe-exterior-day.png"
+  | "screens/visual-novel/assets/cafe/character-jimin-neutral.png"
+  | "screens/visual-novel/assets/cafe/character-jimin-smile.png";
 
 export type VisualNovelBackgroundAssetContract = {
   readonly id: "cafe-exterior-day";
   readonly kind: "background";
-  readonly path: "screens/visual-novel/assets/temporary/background-cafe-exterior-day.png";
+  readonly path: "screens/visual-novel/assets/cafe/background-cafe-exterior-day.png";
   readonly format: "png";
-  readonly width: 1290;
-  readonly height: 2150;
-  readonly aspectRatio: "3:5";
+  readonly width: 941;
+  readonly height: 1672;
+  readonly aspectRatio: "941:1672";
   readonly transparency: "opaque";
 };
 
@@ -98,10 +99,10 @@ export type VisualNovelCharacterAssetContract =
       readonly id: "jimin-neutral";
       readonly kind: "character";
       readonly characterId: "jimin";
-      readonly path: "screens/visual-novel/assets/temporary/character-jimin-neutral.png";
+      readonly path: "screens/visual-novel/assets/cafe/character-jimin-neutral.png";
       readonly format: "png";
-      readonly width: 1536;
-      readonly height: 2048;
+      readonly width: 1086;
+      readonly height: 1448;
       readonly aspectRatio: "3:4";
       readonly transparency: "alpha";
     }
@@ -109,10 +110,10 @@ export type VisualNovelCharacterAssetContract =
       readonly id: "jimin-smile";
       readonly kind: "character";
       readonly characterId: "jimin";
-      readonly path: "screens/visual-novel/assets/temporary/character-jimin-smile.png";
+      readonly path: "screens/visual-novel/assets/cafe/character-jimin-smile.png";
       readonly format: "png";
-      readonly width: 1536;
-      readonly height: 2048;
+      readonly width: 1086;
+      readonly height: 1448;
       readonly aspectRatio: "3:4";
       readonly transparency: "alpha";
     };
@@ -214,6 +215,7 @@ export type VisualNovelMapItemProps = {
 };
 
 export type VisualNovelScreenProps = {
+  readonly insets?: SafeAreaInsets;
   readonly story: VisualNovelStory;
   readonly progress: VisualNovelProgress;
   readonly onAdvance: (id: VisualNovelUnitId, outcome: VisualNovelAdvanceOutcome) => void;

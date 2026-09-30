@@ -1,5 +1,7 @@
 # 카페 도착 비주얼 노벨 특별 유닛 — 토큰·시각 계약
 
+> 2026-09-30: 화면 레이어·헤더·대화 패널·버튼·안전영역 규칙은 [중간 스페셜 디자인 스펙](../specs/tutorial-special-design.md)으로 대체되었습니다. 아래는 최초 임시 구현의 기록입니다. 이미지 리소스와 이야기 상태 전이 계약은 유지합니다.
+
 - 대상: 여정 맵의 `VisualNovelMapItem`과 `VisualNovelScreen` · `VisualNovelScene` ·
   `DialoguePanel`
 - 단위: `cafe-arrival-visual-novel`, 제목 `Jimin arrives at the café`(2026-09-29 전: `카페에 도착한 지민`)

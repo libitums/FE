@@ -164,7 +164,10 @@ test("[IN5] 전화 대상 항목을 tap하면 전화 화면이 열리고 나가�
   tapNotificationItem(phoneCallNotificationItem());
 
   expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("Back to map");
+  expect(screen.getByTestId("phone-call-exit-button")).toHaveAttribute(
+    "accessibility-label",
+    "Back to map",
+  );
 
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
@@ -176,7 +179,10 @@ test("[IN6] 비주얼 노벨 대상 항목을 tap하면 비주얼 노벨 화면�
   tapNotificationItem(visualNovelNotificationItem());
 
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("Back to map");
+  expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
+    "accessibility-label",
+    "Back to map",
+  );
 
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
 

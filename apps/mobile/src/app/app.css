@@ -54,3 +54,7 @@
 .app-splash {
   background: var(--libitum-color-brand-primary);
 }
+
+.app-call {
+  background: var(--libitum-color-background-secondary);
+}

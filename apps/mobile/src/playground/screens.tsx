@@ -55,6 +55,12 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
+  "tutorial-cafe": (go: Go) => (
+    <TutorialSpecialsFixture initialStage={2} onExit={() => go("journey-map")} />
+  ),
+  "tutorial-call": (go: Go) => (
+    <TutorialSpecialsFixture initialStage={1} onExit={() => go("journey-map")} />
+  ),
   "tutorial-final-story": (go: Go) => (
     <TutorialSpecialsFixture initialStage={3} onExit={() => go("journey-map")} />
   ),
