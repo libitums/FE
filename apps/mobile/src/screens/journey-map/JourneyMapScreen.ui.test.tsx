@@ -172,7 +172,7 @@ test("시트가 열린 채 다른 스텝을 tap하면 시트가 그 스텝으로
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-greeting"), {});
 
   expect(screen.getAllByTestId("step-sheet-panel")).toHaveLength(1);
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("First greetings");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Your First Hello");
 });
 
 // 단언 12 (재고정): 부재 단언은 code.md의 표대로 queryByTestId + not.toBeInTheDocument입니다.

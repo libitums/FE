@@ -46,8 +46,8 @@ import type { JourneyStepId } from "./journey-map-units";
 // 그 상태를 값으로 표현할 수 있게 두는 대신 타입이 막습니다(`[첫 항목, ...나머지]`).
 // 순서가 곧 진행 순서입니다.
 const learningFormsByStep: Record<JourneyStepId, readonly [LearningForm, ...LearningForm[]]> = {
-  // ⟨2026-09-28⟩ 첫 인사는 듣기 뒤에 문장 만들기가 이어집니다 — 문장 만들기(Figma 65-14)에
-  // 처음 닿는 자리입니다. 문항은 `sentenceOrderQuestionsByStep.greeting`의 임시 셋입니다.
+  // 첫 인사는 듣기 셋으로 뜻을 익힌 뒤 같은 인사·반가움·작별에 답하는 문장 셋을 만듭니다.
+  // 첫 조합은 한 조각, 다음 둘은 두 조각으로 입력 방식을 익힙니다.
   greeting: ["listening", "sentence-order"],
   // ⟨2026-09-28⟩ 이름 묻기는 듣기 → 낱말 고르기 뒤에 말하기가 이어집니다 — 말하기(Figma
   // 65-282)에 처음 닿는 자리입니다. 문항은 `speakingQuestionsByStep.introduction`의 임시 셋입니다.

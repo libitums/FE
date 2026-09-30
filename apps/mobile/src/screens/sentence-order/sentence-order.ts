@@ -54,26 +54,25 @@ export const initialSentenceOrderSessionState: SentenceOrderSessionState = {
   submittedOrders: [],
 };
 
-// 문항 데이터의 자리입니다. 문항 텍스트·조각·정답 순서의 값은 컨텐츠 공급 경로가
-// 정해지지 않았습니다. 다섯 키를 전부 두고, 문장 만들기가 배정된 스텝(첫 인사)에만
-// **임시 문항**을 둡니다 — 디자인(Figma 65-14)의 예시 대화를 따라 지은 값이고, 오답
-// 낱말이 섞여 있습니다. 컨텐츠가 오면 이 표만 갈립니다.
+// 첫 인사는 기내에서 연습하는 짧은 대화입니다. 앞의 듣기에서 접한 인사·반가움·작별을
+// 한 조각 고르기 → 두 조각 조합으로 연습합니다. 이름·주문은 다음 유닛에서 다룹니다.
+// 대본은 초안이며 언어 검수 전입니다. 다른 스텝에는 문장 만들기를 배정하지 않았습니다.
 export const sentenceOrderQuestionsByStep: Record<JourneyStepId, readonly SentenceOrderQuestion[]> =
   {
     greeting: [
       {
-        prompt: "안녕 만나서 반가워",
-        chips: ["반가워", "안녕", "배고파", "나도", "피곤해"],
-        answerOrder: [1, 3, 0],
+        prompt: "안녕하세요. 처음 뵙겠습니다.",
+        chips: ["안녕히 계세요", "안녕하세요", "감사합니다"],
+        answerOrder: [1],
       },
       {
-        prompt: "이름이 뭐예요?",
-        chips: ["민수예요", "내일", "이름은", "제", "좋아요"],
-        answerOrder: [3, 2, 0],
+        prompt: "반갑습니다.",
+        chips: ["반갑습니다", "내일", "저도", "안녕히"],
+        answerOrder: [2, 0],
       },
       {
-        prompt: "커피 마실래요?",
-        chips: ["좋아요", "아니요", "네", "학교"],
+        prompt: "안녕히 가세요.",
+        chips: ["계세요", "가세요", "안녕히", "저도"],
         answerOrder: [2, 0],
       },
     ],

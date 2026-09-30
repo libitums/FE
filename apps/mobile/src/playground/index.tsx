@@ -35,6 +35,8 @@ function Playground() {
   const screenTab = playgroundTabs[screen];
   // 튜토리얼은 각 화면이 safe area를 처리하므로 셸 여백을 중복 적용하지 않습니다.
   const ownsSafeArea = screen === "tutorial-prologue";
+  const isTutorialLesson =
+    screen === "tutorial-greeting-listening" || screen === "tutorial-greeting-reply";
 
   return (
     // 앱 셸은 호스트가 넘긴 safe area 값으로 아래 여백을 잡습니다(App.tsx). Lynx
@@ -44,7 +46,10 @@ function Playground() {
     // 들어가지 않습니다.
     <view
       className="app"
-      style={{ paddingBottom: screenTab === undefined && !ownsSafeArea ? "34px" : "0px" }}
+      style={{
+        paddingTop: isTutorialLesson ? "62px" : "0px",
+        paddingBottom: screenTab === undefined && !ownsSafeArea ? "34px" : "0px",
+      }}
     >
       <view className="app-content" key={screen}>
         {playgroundScreens[screen](go, params)}
