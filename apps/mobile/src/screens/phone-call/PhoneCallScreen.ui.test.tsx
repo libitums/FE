@@ -54,6 +54,8 @@ describe("PhoneCallScreen UI", () => {
     expect(screen.getByTestId("phone-call-screen")).toBeTruthy();
     expect(screen.getByTestId("phone-call-title")).toHaveTextContent("Appointment call");
     expect(screen.getByTestId("phone-call-contact-name")).toHaveTextContent("Jimin");
+    expect(screen.getByTestId("phone-call-caller")).toHaveAttribute("class", "call-stage-caller");
+    expect(screen.getByTestId("phone-call-clock")).toHaveTextContent("0:00");
     expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Ready to call");
     expect(screen.getByTestId("phone-call-transcript-jimin-confirm-time")).toHaveTextContent(
       "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
@@ -178,6 +180,36 @@ describe("PhoneCallScreen UI", () => {
     expect(playAudio).toHaveBeenCalledTimes(3);
     expect(onComplete).toHaveBeenCalledTimes(1);
     expect(onComplete).toHaveBeenCalledWith("appointment-confirmation-phone-call");
+  });
+
+  it("통화 시계는 수동 시작·완료에 맞춰 움직이고 다시보기에서 초기화된다", () => {
+    vi.useFakeTimers();
+    try {
+      playAudio.mockReturnValue("unavailable");
+      render(<PhoneCallScreen {...props()} />);
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(screen.getByTestId("phone-call-clock")).toHaveTextContent("0:00");
+      fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(screen.getByTestId("phone-call-clock")).toHaveTextContent("0:02");
+      fireEvent.tap(screen.getByTestId("phone-call-reply-confirm-time-reply"), {});
+      fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
+      fireEvent.tap(screen.getByTestId("phone-call-reply-confirm-place-reply"), {});
+      fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
+      fireEvent.tap(screen.getByTestId("phone-call-reply-goodbye-reply"), {});
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(screen.getByTestId("phone-call-clock")).toHaveTextContent("0:02");
+      fireEvent.tap(screen.getByTestId("phone-call-replay-button"), {});
+      expect(screen.getByTestId("phone-call-clock")).toHaveTextContent("0:00");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("unavailable 재생은 즉시 현재 답장을 노출한다", () => {

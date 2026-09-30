@@ -21,7 +21,7 @@ export function TutorialSpecialsFixture({
   initialStage = 0,
 }: {
   onExit: () => void;
-  initialStage?: 0 | 3;
+  initialStage?: 0 | 1 | 2 | 3;
 }) {
   const [stage, setStage] = useState<number>(initialStage);
   const [results, setResults] = useState<readonly AnswerResult[] | null>(null);
@@ -48,9 +48,11 @@ export function TutorialSpecialsFixture({
         />
       </view>
     );
+  if (stage === 2) return <TutorialStoryStage stage={stage} setStage={setStage} onExit={onExit} />;
   if (stage < 3)
     return (
       <view
+        className={stage === 1 ? "app app-call" : "app"}
         style={{
           display: "flex",
           flexDirection: "column",
@@ -115,6 +117,7 @@ function TutorialStoryStage({
   if (stage === 2)
     return (
       <VisualNovelScreen
+        insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
         story={visualNovelStoryFor("cafe-arrival-visual-novel")}
         progress={vnProgress}
         onAdvance={(_id, outcome) => setVnProgress(outcome.progress)}

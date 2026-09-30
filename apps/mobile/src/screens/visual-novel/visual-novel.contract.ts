@@ -5,6 +5,7 @@
  * belong in this file. Changes require specification re-freeze and a contract diff.
  */
 
+import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
 import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
@@ -214,6 +215,7 @@ export type VisualNovelMapItemProps = {
 };
 
 export type VisualNovelScreenProps = {
+  readonly insets?: SafeAreaInsets;
   readonly story: VisualNovelStory;
   readonly progress: VisualNovelProgress;
   readonly onAdvance: (id: VisualNovelUnitId, outcome: VisualNovelAdvanceOutcome) => void;

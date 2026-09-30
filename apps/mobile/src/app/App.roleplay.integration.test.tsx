@@ -312,7 +312,6 @@ test("[I4] 롤플레이에서 연 메신저의 나가기는 목록으로이고 �
 test("[I4] 롤플레이에서 연 전화의 나가기는 목록으로이고 목록으로 돌아간다", async () => {
   await openRoleplayTab();
   openRoleplayItem(phoneCallUnitId);
-  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("Back to list");
   expect(screen.getByTestId("phone-call-exit-button")).toHaveAttribute(
     "accessibility-label",
     "Back to list",
@@ -324,7 +323,6 @@ test("[I4] 롤플레이에서 연 전화의 나가기는 목록으로이고 목�
 test("[I4] 롤플레이에서 연 비주얼 노벨의 나가기는 목록으로이고 목록으로 돌아간다", async () => {
   await openRoleplayTab();
   openRoleplayItem(visualNovelUnitId);
-  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("Back to list");
   expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
     "accessibility-label",
     "Back to list",
@@ -345,11 +343,17 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
-  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("Back to map");
+  expect(screen.getByTestId("phone-call-exit-button")).toHaveAttribute(
+    "accessibility-label",
+    "Back to map",
+  );
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
-  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("Back to map");
+  expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
+    "accessibility-label",
+    "Back to map",
+  );
 });
 
 // -------------------------------------------------------------------------- I5 (AC5)

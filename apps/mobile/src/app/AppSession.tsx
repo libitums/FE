@@ -66,6 +66,8 @@ function isFullBleedScreen(screen: Screen): boolean {
     screen.name === "episode-intro" ||
     screen.name === "episode-prologue" ||
     screen.name === "episode-final" ||
+    screen.name === "visual-novel" ||
+    screen.name === "roleplay-visual-novel" ||
     screen.name === "journey-entry"
   );
 }
@@ -231,7 +233,13 @@ export function AppSession({
     <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
       <ErrorBoundary>
         <view
-          className={screenNow.name === "splash" ? "app app-splash" : "app"}
+          className={
+            screenNow.name === "splash"
+              ? "app app-splash"
+              : screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call"
+                ? "app app-call"
+                : "app"
+          }
           style={{
             paddingTop: `${shellInsets.top}px`,
             // 바가 설 때 아래는 비우지 않습니다 — 바가 화면 바닥까지 배경을 칠하고,

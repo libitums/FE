@@ -1,3 +1,8 @@
+import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
+import { RoundButton } from "@libitums/ui-lynx/round-button";
+import { Button } from "@libitums/ui-lynx/button";
+import { CallCaller, CallLineBubble } from "../../components/CallCaller";
+import { artworkFor } from "../visual-novel/visual-novel-artwork";
 import { useEffect, useState } from "@lynx-js/react";
 import { playAudio, stopAudio } from "../../lib/audio";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
@@ -33,6 +38,7 @@ export function PhoneCallScreen({
   const copy = useUiCopy();
   const exitLabel = specialUnitExitLabel(exitTo, copy);
   const [session, setSession] = useState(() => initialPhoneCallSessionState(completionStatus));
+  const [replayKey, setReplayKey] = useState(0);
   const [completionLatched, setCompletionLatched] = useState(completionStatus === "completed");
   const entries = visiblePhoneCallEntries(conversation, session);
   const turn = currentPhoneCallTurn(conversation, session);
@@ -67,6 +73,7 @@ export function PhoneCallScreen({
   const handleReplay = () => {
     "background only";
     stopAudio();
+    setReplayKey((key) => key + 1);
     setSession(phoneCallSessionReducer(session, { type: "replay" }));
   };
 
@@ -87,7 +94,14 @@ export function PhoneCallScreen({
           accessibility-label={exitLabel}
           bindtap={handleExit}
         >
-          <text>{exitLabel}</text>
+          <view accessibility-elements-hidden={true}>
+            <RoundButton
+              accessibilityLabel={exitLabel}
+              icon={arrowLeft03}
+              variant="neutral"
+              size="xl"
+            />
+          </view>
         </view>
         <text
           className="phone-call-screen-title"
@@ -103,13 +117,19 @@ export function PhoneCallScreen({
         scroll-bar-enable={true}
       >
         <view className="phone-call-screen-content">
-          <text
-            className="phone-call-contact-name"
-            data-testid="phone-call-contact-name"
-            accessibility-element={true}
-          >
-            {conversation.turns[0].speakerName}
-          </text>
+          <view data-testid="phone-call-contact-name">
+            <CallCaller
+              key={replayKey}
+              callerName={conversation.turns[0].speakerName}
+              callerPortrait={artworkFor("jimin-neutral").source}
+              clockRunning={
+                session.mode === "playing" ||
+                session.mode === "reply-ready" ||
+                (session.mode === "ready" && session.turnIndex > 0)
+              }
+              testIdPrefix="phone-call"
+            />
+          </view>
           <text className="phone-call-screen-status" data-testid="phone-call-status">
             {phoneCallStatusLabel(session, copy)}
           </text>
@@ -134,22 +154,16 @@ export function PhoneCallScreen({
                   .filter(Boolean)
                   .join(", ")}
               >
-                <text className="phone-call-transcript-speaker" accessibility-element={false}>
-                  {entrySpeakerName(entry, copy.common.me)}
-                </text>
-                <text className="phone-call-transcript-text" accessibility-element={false}>
-                  {entry.text}
-                </text>
-                {entry.romanization ? (
-                  <text className="phone-call-support" accessibility-element={false}>
-                    {entry.romanization}
+                <view accessibility-elements-hidden={true}>
+                  <text className="phone-call-transcript-speaker">
+                    {entrySpeakerName(entry, copy.common.me)}
                   </text>
-                ) : null}
-                {entry.translation ? (
-                  <text className="phone-call-support" accessibility-element={false}>
-                    {entry.translation}
-                  </text>
-                ) : null}
+                  <CallLineBubble
+                    text={entry.text}
+                    translation={[entry.romanization, entry.translation].filter(Boolean).join("\n")}
+                    testIdPrefix={`phone-call-line-${entry.speaker}-${entry.speaker === "jimin" ? entry.turnId : entry.replyId}`}
+                  />
+                </view>
               </view>
             ))}
           </view>
@@ -165,7 +179,9 @@ export function PhoneCallScreen({
             accessibility-label={playLabel}
             bindtap={handlePlay}
           >
-            <text>{playLabel}</text>
+            <view accessibility-elements-hidden={true}>
+              <Button label={playLabel} variant="brand" size="xl" width="fill" />
+            </view>
           </view>
         ) : null}
         {reply ? (
@@ -201,7 +217,9 @@ export function PhoneCallScreen({
             accessibility-label={copy.common.startOver}
             bindtap={handleReplay}
           >
-            <text>{copy.common.startOver}</text>
+            <view accessibility-elements-hidden={true}>
+              <Button label={copy.common.startOver} variant="outline" size="xl" width="fill" />
+            </view>
           </view>
         ) : null}
       </view>

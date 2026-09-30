@@ -37,6 +37,8 @@ function Playground() {
   const ownsSafeArea =
     screen === "tutorial-prologue" ||
     screen === "tutorial-specials" ||
+    screen === "tutorial-cafe" ||
+    screen === "tutorial-call" ||
     screen === "tutorial-final-story";
   const isTutorialLesson = screen.startsWith("tutorial-") && !ownsSafeArea;
 
