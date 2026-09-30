@@ -22,9 +22,9 @@ export const tutorialFinalStory: EpisodeFinalStory = {
         speakerName: "Me",
         variant: "narration",
         background: cafe,
-        line: "잠깐 눈을 감으니, 상상 속 카페다. 문이 열리고 민서가 들어온다.",
+        line: "여러 방법으로 첫마디를 연습했다. 눈을 감으니 같은 카페에서 민서가 기다리고 있다.",
         translation:
-          "I close my eyes and return to the café in my imagination. The door opens. Minseo arrives.",
+          "I have practiced my first words. I close my eyes. Minseo is waiting at our imagined café.",
       },
       {
         speakerName: "Me",

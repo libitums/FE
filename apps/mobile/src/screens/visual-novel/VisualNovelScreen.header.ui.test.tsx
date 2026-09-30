@@ -58,7 +58,7 @@ describe("VisualNovelScreen 머리 구조", () => {
     }
   });
 
-  describe("[VH2] 제목 묶음의 요소 자식이 정확히 둘 — 제목 → 진행, 접근성 속성 없음", () => {
+  describe("[VH2] 제목 묶음은 제목 → 진행 → 상황 설명 순서, 접근성 속성 없음", () => {
     for (const source of sources) {
       it(`경로=${source}`, () => {
         renderScreen(source, { status: "active", beatIndex: 0 });
@@ -71,9 +71,10 @@ describe("VisualNovelScreen 머리 구조", () => {
         const bundle = title.parentElement;
 
         expect(bundle).toHaveClass("visual-novel-header-text");
-        expect(bundle?.children).toHaveLength(2);
+        expect(bundle?.children).toHaveLength(3);
         expect(bundle?.children[0]).toBe(title);
         expect(bundle?.children[1]).toBe(progress);
+        expect(bundle?.contains(screen.getByTestId("visual-novel-context"))).toBe(true);
 
         expect(bundle).not.toHaveAttribute("accessibility-element");
         expect(bundle).not.toHaveAttribute("accessibility-traits");

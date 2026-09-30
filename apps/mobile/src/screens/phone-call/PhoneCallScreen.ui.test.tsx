@@ -11,12 +11,12 @@ const { playAudio, stopAudio } = audio;
 
 const conversation: PhoneCallConversation = {
   unitId: "appointment-confirmation-phone-call",
-  title: "Appointment call",
+  title: "A Call from Minseo",
   turns: [
     {
       id: "confirm-time",
       speakerId: "jimin",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       transcript: "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
       audioSource: "phone-call-confirm-01",
       reply: { id: "confirm-time-reply", text: "네, 토요일 오후 2시에 만나요." },
@@ -24,7 +24,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "confirm-place",
       speakerId: "jimin",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       transcript: "카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
       audioSource: "phone-call-confirm-02",
       reply: { id: "confirm-place-reply", text: "네, 2번 출구 오른쪽 카페예요." },
@@ -32,7 +32,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "goodbye",
       speakerId: "jimin",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       transcript: "좋아요. 그럼 토요일에 봐요!",
       audioSource: "phone-call-confirm-03",
       reply: { id: "goodbye-reply", text: "네, 토요일에 봐요!" },
@@ -52,8 +52,8 @@ describe("PhoneCallScreen UI", () => {
   it("첫 진입은 자동 재생 없이 header·지민·준비·첫 transcript·통화 시작을 보인다", () => {
     render(<PhoneCallScreen {...props()} />);
     expect(screen.getByTestId("phone-call-screen")).toBeTruthy();
-    expect(screen.getByTestId("phone-call-title")).toHaveTextContent("Appointment call");
-    expect(screen.getByTestId("phone-call-contact-name")).toHaveTextContent("Jimin");
+    expect(screen.getByTestId("phone-call-title")).toHaveTextContent("A Call from Minseo");
+    expect(screen.getByTestId("phone-call-contact-name")).toHaveTextContent("Minseo");
     expect(screen.getByTestId("phone-call-caller")).toHaveAttribute("class", "call-stage-caller");
     expect(screen.getByTestId("phone-call-clock")).toHaveTextContent("0:00");
     expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Ready to call");
@@ -296,10 +296,10 @@ describe("PhoneCallScreen UI", () => {
     const nodes = ids.map((id) => screen.getByTestId(`phone-call-transcript-jimin-${id}`));
     expect(nodes[0].compareDocumentPosition(nodes[1])).toBe(4);
     expect(nodes[1].compareDocumentPosition(nodes[2])).toBe(4);
-    expect(nodes[0]).toHaveAttribute("accessibility-label", expect.stringContaining("Jimin"));
+    expect(nodes[0]).toHaveAttribute("accessibility-label", expect.stringContaining("Minseo"));
     expect(screen.getByTestId("phone-call-transcript-jimin-confirm-time")).toHaveAttribute(
       "accessibility-label",
-      "Jimin, 토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
+      "Minseo, 토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
     );
     expect(screen.getByTestId("phone-call-transcript-self-confirm-time-reply")).toHaveAttribute(
       "accessibility-label",
@@ -307,7 +307,7 @@ describe("PhoneCallScreen UI", () => {
     );
     expect(screen.getByTestId("phone-call-transcript-jimin-confirm-place")).toHaveAttribute(
       "accessibility-label",
-      "Jimin, 카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
+      "Minseo, 카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
     );
     expect(screen.getByTestId("phone-call-transcript-self-confirm-place-reply")).toHaveAttribute(
       "accessibility-label",
@@ -315,7 +315,7 @@ describe("PhoneCallScreen UI", () => {
     );
     expect(screen.getByTestId("phone-call-transcript-jimin-goodbye")).toHaveAttribute(
       "accessibility-label",
-      "Jimin, 좋아요. 그럼 토요일에 봐요!",
+      "Minseo, 좋아요. 그럼 토요일에 봐요!",
     );
     expect(screen.getByTestId("phone-call-transcript-self-goodbye-reply")).toHaveAttribute(
       "accessibility-label",

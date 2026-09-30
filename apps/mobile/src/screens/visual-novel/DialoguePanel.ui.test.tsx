@@ -8,7 +8,7 @@ describe("DialoguePanel UI", () => {
     render(
       <DialoguePanel
         beatId="arrive"
-        speakerName="Jimin"
+        speakerName="Minseo"
         dialogue="여기가 우리가 만나기로 한 카페예요."
         action={{ kind: "advance", label: "Next", onSelect }}
       />,
@@ -20,10 +20,10 @@ describe("DialoguePanel UI", () => {
     expect(dialog).toHaveAttribute("accessibility-element", "true");
     expect(dialog).toHaveAttribute(
       "accessibility-label",
-      "Jimin, 여기가 우리가 만나기로 한 카페예요.",
+      "Minseo, 여기가 우리가 만나기로 한 카페예요.",
     );
     expect(panel).not.toHaveAttribute("accessibility-element");
-    expect(panel).toHaveTextContent("Jimin");
+    expect(panel).toHaveTextContent("Minseo");
     expect(panel).toHaveTextContent("여기가 우리가 만나기로 한 카페예요.");
     const button = screen.getByTestId("visual-novel-advance-button");
     expect(button).toHaveAttribute("accessibility-element", "true");
@@ -48,7 +48,7 @@ describe("DialoguePanel UI", () => {
     render(
       <DialoguePanel
         beatId="enter"
-        speakerName="Jimin"
+        speakerName="Minseo"
         dialogue="그럼 들어가서 같이 주문해 봐요."
         action={{ kind: "replay", label: "Start over", onSelect }}
       />,

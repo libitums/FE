@@ -60,19 +60,19 @@ const tutorialUnits: JourneyEpisodeUnits = [
   {
     kind: "special",
     id: "appointment-confirmation",
-    title: "Appointment message",
+    title: "A Message from Minseo",
     screen: "messenger",
   },
   {
     kind: "special",
     id: "appointment-confirmation-phone-call",
-    title: "Appointment call",
+    title: "A Call from Minseo",
     screen: "phone-call",
   },
   {
     kind: "special",
     id: "cafe-arrival-visual-novel",
-    title: "Jimin arrives at the café",
+    title: "Our Imagined Café",
     screen: "visual-novel",
   },
   {
@@ -86,17 +86,17 @@ const tutorialUnits: JourneyEpisodeUnits = [
       {
         id: "tutorial-listening",
         title: "Listen to a Hello",
-        description: "Hear a familiar greeting and choose its meaning from two answers",
+        description: "Hear Minseo’s hello again before trying your own",
       },
       {
         id: "tutorial-speaking",
         title: "Say Your Hello",
-        description: "Try saying one familiar greeting with pronunciation to help",
+        description: "Answer Minseo with a hello of your own",
       },
       {
         id: "tutorial-writing",
         title: "Trace One Letter",
-        description: "Follow the pale guide to write one letter from See you tomorrow",
+        description: "Trace one letter for Minseo, then return to the café for your final practice",
       },
     ],
   },

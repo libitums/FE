@@ -7,7 +7,7 @@ import type { JourneyMapItemStatus } from "../journey-map/journey-map";
 export type EpisodeIntroUnitId = "tutorial-intro";
 /**
  * 표지 유닛의 이름입니다. 리터럴인 것은 다른 특별 유닛 넷의 선례를 따른 것입니다
- * (`EpisodeFinalTitle` · 메신저의 `"Appointment message"`) — 컨텐츠가 아니라 **그 유닛이
+ * (`EpisodeFinalTitle` · 메신저의 `"A Message from Minseo"`) — 컨텐츠가 아니라 **그 유닛이
  * 무엇인가를 말하는 기능 라벨**이라 값을 비워 둘 수 없습니다.
  *
  * 「에피소드 **서사**」가 아니라 「에피소드 **표지**」인 것은 낭독 때문입니다.

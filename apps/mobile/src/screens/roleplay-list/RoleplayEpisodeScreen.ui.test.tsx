@@ -12,13 +12,13 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 const messengerItem: RoleplayItem = {
   form: "messenger",
   unitId: "appointment-confirmation",
-  title: "Appointment message",
+  title: "A Message from Minseo",
 };
 
 const phoneCallItem: RoleplayItem = {
   form: "phone-call",
   unitId: "appointment-confirmation-phone-call",
-  title: "Appointment call",
+  title: "A Call from Minseo",
 };
 
 const section: RoleplaySection = {

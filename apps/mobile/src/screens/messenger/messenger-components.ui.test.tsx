@@ -39,7 +39,7 @@ describe("messenger UI components", () => {
     expect(bubble).toHaveAttribute("data-sender", "jimin");
     expect(within(bubble).getByTestId("ui-lynx-chat-bubble")).toHaveAttribute(
       "accessibility-label",
-      expect.stringContaining("Jimin"),
+      expect.stringContaining("Minseo"),
     );
   });
 
@@ -52,7 +52,7 @@ describe("messenger UI components", () => {
 
   it("MessengerScreen은 제목·나가기·스크롤 표면을 낸다", () => {
     renderActive();
-    expect(screen.getByTestId("messenger-screen-title")).toHaveTextContent("Appointment message");
+    expect(screen.getByTestId("messenger-screen-title")).toHaveTextContent("A Message from Minseo");
     expect(screen.getByTestId("messenger-screen-scroll")).toHaveAttribute(
       "scroll-orientation",
       "vertical",

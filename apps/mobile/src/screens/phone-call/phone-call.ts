@@ -12,12 +12,14 @@ import type {
 
 const conversation: PhoneCallConversation = {
   unitId: "appointment-confirmation-phone-call",
-  title: "Appointment call",
+  title: "A Call from Minseo",
+  introduction: "I imagine Minseo calling before our café visit. I listen, then choose a reply.",
+  completion: "The call ends. I picture tomorrow: our café visit is about to begin.",
   turns: [
     {
       id: "confirm-time",
       speakerId: "jimin",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       transcript: "안녕하세요",
       translation: "Hello.",
       romanization: "annyeonghaseyo",
@@ -32,10 +34,10 @@ const conversation: PhoneCallConversation = {
     {
       id: "confirm-place",
       speakerId: "jimin",
-      speakerName: "Jimin",
-      transcript: "저는 지민이에요.",
-      translation: "I’m Jimin.",
-      romanization: "jeoneun jiminieyo",
+      speakerName: "Minseo",
+      transcript: "저는 민서예요.",
+      translation: "I’m Minseo.",
+      romanization: "jeoneun minseoyeyo",
       audioSource: "phone-call-confirm-02",
       reply: {
         id: "confirm-place-reply",
@@ -47,7 +49,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "goodbye",
       speakerId: "jimin",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       transcript: "내일 만나요",
       translation: "See you tomorrow.",
       romanization: "naeil mannayo",
@@ -103,7 +105,7 @@ export const visiblePhoneCallEntries = (
     const turn = value.turns[index];
     entries.push({
       speaker: "jimin",
-      speakerName: "Jimin",
+      speakerName: turn.speakerName,
       turnId: turn.id,
       text: turn.transcript,
       ...(turn.translation ? { translation: turn.translation } : {}),

@@ -8,7 +8,7 @@ import { CallCaller } from "./CallCaller";
 // `ui` 계층: 통화 상대 묶음의 낭독 이름이 문구표의 것인지 봅니다(ADR-0006 D4).
 
 const props = {
-  callerName: "Jimin",
+  callerName: "Minseo",
   callerPortrait: "portrait.png",
   clockRunning: false,
   testIdPrefix: "call",
@@ -19,7 +19,7 @@ test("[SH5-E] 통화 상대 묶음의 낭독 이름이 영어 Voice call, 이름
 
   expect(screen.getByTestId("call-caller")).toHaveAttribute(
     "accessibility-label",
-    "Voice call, Jimin",
+    "Voice call, Minseo",
   );
 });
 
@@ -32,6 +32,6 @@ test("[SH5-M] 문구표를 주입하면 낭독 이름이 phoneCall.voiceCall 경
 
   expect(screen.getByTestId("call-caller")).toHaveAttribute(
     "accessibility-label",
-    "⟦phoneCall.voiceCall⟧(Jimin)",
+    "⟦phoneCall.voiceCall⟧(Minseo)",
   );
 });

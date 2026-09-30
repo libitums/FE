@@ -11,7 +11,7 @@ export type MessengerCompletionStatus = "available" | "completed";
 
 export type MessengerReplyIndex = 0 | 1;
 
-export type JiminMessage = {
+export type MinseoMessage = {
   readonly id: "jimin-schedule" | "jimin-directions" | "jimin-goodbye";
   readonly sender: "jimin";
   readonly text: string;
@@ -34,18 +34,20 @@ export type SelfMessage = {
   readonly romanization?: string;
 };
 
-export type MessengerMessage = JiminMessage | SelfMessage;
+export type MessengerMessage = MinseoMessage | SelfMessage;
 
 export type MessengerConversation = {
   readonly id: MessengerUnitId;
-  readonly title: "Appointment message";
-  readonly participantName: "Jimin";
+  readonly title: "A Message from Minseo";
+  readonly participantName: "Minseo";
+  readonly introduction?: string;
+  readonly completion?: string;
   readonly messages: readonly [
-    JiminMessage & { readonly id: "jimin-schedule" },
+    MinseoMessage & { readonly id: "jimin-schedule" },
     SelfMessage & { readonly id: "self-accept" },
-    JiminMessage & { readonly id: "jimin-directions" },
+    MinseoMessage & { readonly id: "jimin-directions" },
     SelfMessage & { readonly id: "self-thanks" },
-    JiminMessage & { readonly id: "jimin-goodbye" },
+    MinseoMessage & { readonly id: "jimin-goodbye" },
   ];
 };
 
@@ -111,7 +113,7 @@ export type MessengerMapItemProps = {
 export type MessengerJourneyUnitContract = {
   readonly kind: "special";
   readonly id: MessengerUnitId;
-  readonly title: "Appointment message";
+  readonly title: "A Message from Minseo";
   readonly screen: "messenger";
 };
 

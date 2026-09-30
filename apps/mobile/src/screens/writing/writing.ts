@@ -32,7 +32,8 @@ const writingQuestionsByStep: Record<JourneyStepId, readonly WritingQuestion[]> 
       syllables: ["나"],
       after: "요",
       translation: "See you tomorrow.",
-      instruction: "Trace the pale letter 나 (na) with your finger. You can skip for now.",
+      instruction:
+        "A little note for Minseo: 내일 만나요. Trace the pale 나 (na) with your finger, or skip for now.",
       optionalPractice: true,
       passCriterion: writingPassCriterion,
     },

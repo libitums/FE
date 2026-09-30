@@ -9,7 +9,7 @@ describe("VisualNovelMapItem UI", () => {
       render(
         <VisualNovelMapItem
           id="cafe-arrival-visual-novel"
-          title="Jimin arrives at the café"
+          title="Our Imagined Café"
           status={status}
           onSelect={vi.fn<(id: "cafe-arrival-visual-novel") => void>()}
         />,
@@ -21,11 +21,9 @@ describe("VisualNovelMapItem UI", () => {
       // 상태 접미사와 「이야기 연결」은 `LearningUnit`이 붙입니다(ADR-0016 D3).
       expect(item).toHaveAttribute(
         "accessibility-label",
-        status === "completed"
-          ? "Jimin arrives at the café, completed, story"
-          : "Jimin arrives at the café, story",
+        status === "completed" ? "Our Imagined Café, completed, story" : "Our Imagined Café, story",
       );
-      expect(screen.getByText("Jimin arrives at the café")).toBeInTheDocument();
+      expect(screen.getByText("Our Imagined Café")).toBeInTheDocument();
     },
   );
 
@@ -34,7 +32,7 @@ describe("VisualNovelMapItem UI", () => {
     render(
       <VisualNovelMapItem
         id="cafe-arrival-visual-novel"
-        title="Jimin arrives at the café"
+        title="Our Imagined Café"
         status="available"
         onSelect={onSelect}
       />,
