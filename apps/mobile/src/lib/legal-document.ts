@@ -47,7 +47,7 @@ function nativeModule(): LegalDocumentModule | undefined {
 }
 
 /**
- * 모듈이 없으면 `unavailable`(콜백 0회). 있으면 `host.open`을 부르고 `requested`. 결과 콜백은
+ * 모듈이 없거나 `open`이 함수가 아니면 `unavailable`(콜백 0회). 있으면 `host.open`을 부르고 `requested`. 결과 콜백은
  * 선택입니다 — 부르는 자리는 대개 결과를 기다리지 않습니다(띄우는 일은 호스트가 끝까지 집니다).
  */
 export function openLegalDocument(
@@ -55,7 +55,7 @@ export function openLegalDocument(
   onResult?: (result: LegalDocumentResult) => void,
 ): LegalDocumentRequestOutcome {
   const host = nativeModule();
-  if (host === undefined) {
+  if (host === undefined || typeof host.open !== "function") {
     return "unavailable";
   }
   try {

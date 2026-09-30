@@ -71,6 +71,14 @@ describe("openLegalDocument", () => {
 
     expect(() => openLegalDocument("privacy-policy")).not.toThrow();
   });
+
+  test("LG5b: 모듈은 있는데 open이 함수가 아니면 unavailable이고 콜백 0회", () => {
+    vi.stubGlobal("NativeModules", { LegalDocumentModule: { open: "missing" } });
+    const onResult = vi.fn<(result: unknown) => void>();
+
+    expect(openLegalDocument("terms-of-use", onResult)).toBe("unavailable");
+    expect(onResult).not.toHaveBeenCalled();
+  });
 });
 
 describe("legalDocumentOpenedEvent", () => {

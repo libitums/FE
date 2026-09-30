@@ -44,8 +44,13 @@ final class LegalDocumentModule: NSObject, LynxModule {
   /// 전경 창의 맨 위 화면이다 — 이미 무엇이 떠 있으면 그 위에 띄운다.
   private static func topViewController() -> UIViewController? {
     let scenes = UIApplication.shared.connectedScenes
-    let windowScene = scenes.first { $0.activationState == .foregroundActive } as? UIWindowScene
-    var top = windowScene?.windows.first { $0.isKeyWindow }?.rootViewController
+    // 전환 중이라 전경 scene이나 key window가 잠깐 없으면 첫 번째 것으로 물러선다.
+    let windowScene =
+      (scenes.first { $0.activationState == .foregroundActive } as? UIWindowScene)
+      ?? (scenes.first as? UIWindowScene)
+    var top =
+      windowScene?.windows.first { $0.isKeyWindow }?.rootViewController
+      ?? windowScene?.windows.first?.rootViewController
     while let presented = top?.presentedViewController {
       top = presented
     }
@@ -64,7 +69,7 @@ enum LegalDocumentURL {
 
   static func url(for document: Any?) -> URL? {
     guard let name = document as? String, let raw = table[name] else { return nil }
-    guard let url = URL(string: raw), url.scheme == "https" else { return nil }
+    guard let url = URL(string: raw), url.scheme?.lowercased() == "https" else { return nil }
     return url
   }
 }

@@ -252,6 +252,7 @@
 .login-screen-legal-links {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: center;
 }
 
