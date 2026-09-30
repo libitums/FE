@@ -1,5 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
+import { readFinalStory } from "./test-helpers/final-story";
 import { App } from "./App";
 import { productJourneySeed } from "./journey-progress";
 import { episodePrologueFor } from "./episode-prologues";
@@ -125,6 +126,7 @@ test("처음 여정부터 이야기·다섯 연습·스페셜·세 문항 복습
   tap(unit("tutorial-final-test"));
   const review = episodeFinalTestFor("tutorial-final-test");
   if (review.format !== "visual-novel") throw new Error("Expected visual novel");
+  readFinalStory("introduction");
   expect(review.questions).toHaveLength(3);
   for (const question of review.questions) {
     if (question.kind !== "word-choice") throw new Error("Beginner review must use choices");
@@ -136,6 +138,8 @@ test("처음 여정부터 이야기·다섯 연습·스페셜·세 문항 복습
       vi.advanceTimersByTime(episodeFinalAdvanceDelayMs);
     });
   }
+  expect(screen.queryByTestId("lesson-complete-screen-title")).toBeNull();
+  readFinalStory("ending");
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   button("lesson-complete-screen-exit");
   expect(screen.getByTestId(unit("tutorial-final-test"))).toHaveAttribute("data-status", "clear");

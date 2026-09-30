@@ -392,3 +392,15 @@
   font-size: var(--libitum-typography-label-m-font-size);
   line-height: var(--libitum-typography-label-m-line-height);
 }
+
+.episode-final-context {
+  align-self: stretch;
+  padding: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-background-elevated);
+}
+.episode-final-context-label {
+  color: var(--libitum-color-fg-neutral);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}

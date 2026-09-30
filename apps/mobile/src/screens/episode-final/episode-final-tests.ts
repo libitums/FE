@@ -1,15 +1,18 @@
 // 튜토리얼에서 배운 다섯 표현만 사용하는 3문항 복습입니다.
 // 콘텐츠 공급 경로가 정해지면 이 고정 표를 교체합니다.
+import { tutorialFinalStory } from "./tutorial-final-story";
 import type { EpisodeFinalTest, EpisodeFinalUnitId } from "./episode-final.contract";
 
 const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
   "tutorial-final-test": {
     format: "visual-novel",
     unitId: "tutorial-final-test",
+    story: tutorialFinalStory,
     questions: [
       {
         kind: "word-choice",
         id: "hello",
+        context: "Minseo arrives at the café. What will you say first?",
         speakerName: "Me",
         before: "",
         after: "",
@@ -21,6 +24,7 @@ const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
       {
         kind: "word-choice",
         id: "water",
+        context: "You sit down together. Ask for a glass of water.",
         speakerName: "Me",
         before: "",
         after: "",
@@ -32,6 +36,7 @@ const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
       {
         kind: "word-choice",
         id: "tomorrow",
+        context: "Time to leave. You will meet again tomorrow. What will you say?",
         speakerName: "Me",
         before: "",
         after: "",

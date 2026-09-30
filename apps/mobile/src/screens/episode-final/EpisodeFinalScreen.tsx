@@ -24,8 +24,8 @@ import "./episode-final-screen.css";
 
 /**
  * 에피소드 최종 테스트입니다(Figma 79-6484 · 79-6648 · 79-6378). 서사 장면 위에서 문항을 차례로
- * 풀고, 마지막 문항이 끝나면 에피소드를 끝냅니다. 서사 그림은 서사 화면과 같은 것을
- * 씁니다(2026-09-28 결정 — 새 그림 없이).
+ * 풀고, 마지막 문항이 끝나면 결과를 부모에게 넘깁니다. 이야기형 시험은 지정된 배경을
+ * 쓰며, 부모가 통과 여부와 후속 이야기를 진행합니다. 일반 시험은 기존 서사 그림을 씁니다.
  *
  * 판정 뒤에는 누를 것이 없습니다 — 판정과 정답을 잠시 보여 준 뒤 저절로 다음 문항으로
  * 갑니다(서사가 이어지듯, 2026-09-28 결정). 틀려도 정답을 보여 주고 다음으로
@@ -79,10 +79,16 @@ export function EpisodeFinalScreen({
     <view className="episode-final-screen" data-testid={episodeFinalTestIds.screen}>
       {/* 장면 그림 · 위 명암은 순수 장식입니다. 래퍼가 자손을 통째로 가립니다(ADR-0016 D5). */}
       <view className="episode-final-scene" accessibility-elements-hidden={true}>
-        <image className="episode-final-background" src={storyBackground} mode="aspectFill" />
-        <view className="episode-final-character-slot">
-          <image className="episode-final-character" src={storyCharacter} mode="aspectFit" />
-        </view>
+        <image
+          className="episode-final-background"
+          src={test.story?.background ?? storyBackground}
+          mode="aspectFill"
+        />
+        {test.story ? null : (
+          <view className="episode-final-character-slot">
+            <image className="episode-final-character" src={storyCharacter} mode="aspectFit" />
+          </view>
+        )}
         <view className="episode-final-shade" />
       </view>
 
