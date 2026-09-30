@@ -30,7 +30,12 @@ afterEach(() => {
 type HostOptions = {
   readonly granted?: boolean;
   /** 인식 결과 — `start`가 즉시 이 결과로 콜백합니다(멈춤을 기다리지 않는 대역). */
-  readonly result?: { readonly status: string; readonly text: string };
+  readonly result?: {
+    readonly status: string;
+    readonly text: string;
+    readonly errorDomain?: string;
+    readonly errorCode?: number;
+  };
 };
 
 // 호스트의 `SpeechRecognitionModule` 대역입니다. `lib/speech-recognition.ts`는 mock하지 않습니다.
@@ -453,4 +458,65 @@ test("카드의 녹음 아이콘으로도 녹음을 시작하고 멈춘다", () 
   expect(recording).toHaveAttribute("accessibility-label", "Stop speaking");
   fireEvent.tap(recording, {});
   expect(host.stop).toBe(1);
+});
+
+test("받아쓰기 비활성화 오류는 설정 안내를 보여주고 같은 문항을 재시도한다", () => {
+  const options = {
+    result: {
+      status: "recognition-failed",
+      text: "",
+      errorDomain: "kLSRErrorDomain",
+      errorCode: 201,
+    },
+  };
+  const calls = stubSpeechHost(options);
+  renderSpeaking();
+  tapAction("Speak");
+  expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
+    "Settings > General > Keyboard > Enable Dictation",
+  );
+  expect(actionLabel()).toBe("Skip");
+  const retry = within(screen.getByTestId("speaking-screen-retry")).getByTestId("ui-lynx-button");
+  expect(retry).toHaveAttribute("accessibility-label", "Try again");
+  options.result = { status: "recognized", text: "이거 주세요", errorDomain: "", errorCode: 0 };
+  fireEvent.tap(retry, {});
+  expect(calls.start).toBe(2);
+  expect(screen.getByTestId("speaking-screen-sentence")).toHaveTextContent("이거 주세요");
+  expect(screen.getByTestId("speaking-screen-sentence")).toHaveAttribute("data-matched", "2");
+  expect(screen.queryByTestId("speaking-screen-retry")).not.toBeInTheDocument();
+});
+
+test("다른 도메인의 201 오류를 받아쓰기 설정 문제로 잘못 안내하지 않는다", () => {
+  stubSpeechHost({
+    result: { status: "recognition-failed", text: "", errorDomain: "other", errorCode: 201 },
+  });
+  renderSpeaking();
+  tapAction("Speak");
+  expect(screen.getByTestId("speaking-screen-unavailable")).toHaveTextContent(
+    "Speech recognition isn't available right now.",
+  );
+  expect(screen.queryByTestId("speaking-screen-retry")).not.toBeInTheDocument();
+});
+
+test("받아쓰기 안내와 재시도 라벨도 주입한 문구표를 사용한다", () => {
+  stubSpeechHost({
+    result: {
+      status: "recognition-failed",
+      text: "",
+      errorDomain: "kLSRErrorDomain",
+      errorCode: 201,
+    },
+  });
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <SpeakingScreen stepId="introduction" onExit={() => {}} onFinish={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+  tapAction("⟦speaking.speak⟧");
+  expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
+    "⟦speaking.dictationDisabled⟧",
+  );
+  expect(
+    within(screen.getByTestId("speaking-screen-retry")).getByTestId("ui-lynx-button"),
+  ).toHaveAttribute("accessibility-label", "⟦speaking.tryAgain⟧");
 });

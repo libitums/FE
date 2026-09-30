@@ -2,7 +2,6 @@
 // `ui-copy.ts`가 집니다. 뿌리 타입 `UiCopy`는 `ui-copy.contract.ts`에 있습니다.
 //
 // 화면이 짓는 UI 문구만 두며, 콘텐츠 데이터는 각 콘텐츠 곁에 둡니다.
-// 수량 문구는 언어별 함수가 복수형까지 처리합니다.
 //
 // **키 union** — `lib/` 밖(화면 · 앱)이 소유한 union은 import하지 않고 같은 멤버를 여기
 // 적습니다(`lib/`는 `screens/` · `app/`을 import하지 않습니다 — ADR-0003). 소비자가
@@ -121,6 +120,8 @@ export type SpeakingCopy = {
   readonly instruction: string;
   readonly speak: string;
   readonly stopSpeaking: string;
+  readonly tryAgain: string;
+  readonly dictationDisabled: string;
   readonly tapToContinue: string;
   readonly recognitionUnavailable: string;
 };
@@ -131,7 +132,6 @@ export type WritingCopy = {
   readonly rewrite: string;
   readonly recognitionUnavailable: string;
   readonly guideGlyph: (glyph: string) => string;
-  /** 칸을 다 썼을 때 */
   readonly slotsAllWritten: (total: number, written: string) => string;
   /** 쓰는 중 — `written`이 빈 문자열이면 쓴 글자 부분을 읽지 않습니다. */
   readonly slotsCurrent: (
