@@ -258,6 +258,7 @@ export type DialoguePanelAction =
     };
 
 export type DialoguePanelProps = {
+  readonly speakerRole?: "partner" | "self";
   readonly beatId: VisualNovelBeatId;
   readonly speakerName: VisualNovelSpeakerName;
   readonly dialogue: VisualNovelBeat["dialogue"];

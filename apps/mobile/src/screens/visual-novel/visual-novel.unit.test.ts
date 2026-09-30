@@ -57,10 +57,10 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           characterId: "jimin",
           characterPoseId: "jimin-smile",
           speakerName: "Minseo",
-          dialogue: "물 좀 주세요",
-          context: "We practice asking for water together. One small request.",
-          translation: "Water, please.",
-          romanization: "mul jom juseyo",
+          dialogue: "뭐 마실래요?",
+          context: "Minseo asks what I would like to drink. I ask for water.",
+          translation: "What would you like to drink?",
+          romanization: "mwo masillaeyo?",
         },
         {
           index: 2,
@@ -69,11 +69,11 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           characterId: "jimin",
           characterPoseId: "jimin-smile",
           speakerName: "Minseo",
-          dialogue: "내일 만나요",
+          dialogue: "여기 물이에요.",
           context:
-            "We say goodbye. Before landing, I’ll practice directions, then listen, speak, and trace one letter.",
-          translation: "See you tomorrow.",
-          romanization: "naeil mannayo",
+            "Minseo brings me water, and I thank her. Before landing, I’ll practice directions, then listen, speak, and trace one letter.",
+          translation: "Here is your water.",
+          romanization: "yeogi murieyo",
         },
       ],
     };
@@ -81,14 +81,14 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
     expect(visualNovelStoryFor(id).beats.every((beat) => beat.reply?.dialogue)).toBe(true);
   });
 
-  it("CE4 제목 · 화자 이름이 영어다 — 대사는 불변", () => {
+  it("CE4 제목 · 화자 이름이 영어이며 상대 대사가 질문과 응답으로 이어진다", () => {
     const story = visualNovelStoryFor(id);
     expect(story.title).toBe("Our Imagined Café");
     expect(story.beats.map((beat) => beat.speakerName)).toEqual(["Minseo", "Minseo", "Minseo"]);
     expect(story.beats.map((beat) => beat.dialogue)).toEqual([
       "안녕하세요",
-      "물 좀 주세요",
-      "내일 만나요",
+      "뭐 마실래요?",
+      "여기 물이에요.",
     ]);
   });
 

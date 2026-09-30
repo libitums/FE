@@ -43,7 +43,7 @@ describe("VisualNovelScreen UI", () => {
     expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Scene 2 / 3");
     expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
     expect(screen.getByTestId("visual-novel-character-jimin-smile")).toBeInTheDocument();
-    expect(screen.getByTestId("visual-novel-dialogue-find")).toHaveTextContent("물 좀 주세요");
+    expect(screen.getByTestId("visual-novel-dialogue-find")).toHaveTextContent("뭐 마실래요?");
   });
 
   it("completed reentry starts the first scene and finishes only after the learner's final response", () => {
@@ -53,7 +53,7 @@ describe("VisualNovelScreen UI", () => {
     expect(screen.queryByText("Start over")).toBeNull();
     for (let i = 0; i < 5; i++)
       fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
-    expect(screen.getByTestId("visual-novel-dialogue-enter")).toHaveTextContent("네, 내일 만나요!");
+    expect(screen.getByTestId("visual-novel-dialogue-enter")).toHaveTextContent("고마워요!");
     expect(p.onFinish).not.toHaveBeenCalled();
     expect(screen.getByTestId("visual-novel-finish-button")).toHaveAttribute(
       "accessibility-label",

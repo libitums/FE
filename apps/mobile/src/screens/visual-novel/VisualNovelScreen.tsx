@@ -132,6 +132,7 @@ export function VisualNovelScreen({
       <view className="visual-novel-scene-shell">
         <DialoguePanel
           beatId={beat.id}
+          speakerRole={showReply ? "self" : "partner"}
           speakerName={showReply ? copy.common.me : beat.speakerName}
           dialogue={line.dialogue}
           translation={line.translation}

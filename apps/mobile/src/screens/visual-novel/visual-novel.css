@@ -78,6 +78,8 @@
 }
 .visual-novel-dialogue-scroll {
   max-height: 40vh;
+  width: calc(100% - var(--libitum-spacing-24));
+  align-self: flex-start;
 }
 .visual-novel-dialogue-action {
   width: 100%;
@@ -91,4 +93,28 @@
   font-family: var(--libitum-typography-body-s-font-family);
   font-size: var(--libitum-typography-body-s-font-size);
   line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 이름뿐 아니라 패널 위치와 명암으로 대화 상대를 구분합니다. */
+.visual-novel-dialogue-self .visual-novel-dialogue-scroll {
+  align-self: flex-end;
+}
+.visual-novel-dialogue-self .ui-lynx-visual-novel-dialog-surface {
+  background-color: var(--libitum-color-white);
+}
+.visual-novel-dialogue-self .ui-lynx-visual-novel-dialog-speaker-row {
+  flex-direction: row-reverse;
+}
+.visual-novel-dialogue-self .ui-lynx-visual-novel-dialog-speaker {
+  text-align: right;
+  color: var(--libitum-color-gray-950);
+}
+.visual-novel-dialogue-self .ui-lynx-visual-novel-dialog-line {
+  color: var(--libitum-color-gray-950);
+}
+.visual-novel-dialogue-self .ui-lynx-visual-novel-dialog-translation {
+  color: var(--libitum-color-gray-700);
+}
+.visual-novel-dialogue-self .ui-lynx-visual-novel-dialog-divider {
+  background-color: var(--libitum-color-gray-950);
 }

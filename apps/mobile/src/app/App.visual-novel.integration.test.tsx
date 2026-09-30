@@ -35,12 +35,24 @@ test("each scene includes the learner's reply before moving to the next scene", 
   for (const [scene, reply] of [
     ["arrive", "안녕하세요!"],
     ["find", "물 좀 주세요."],
-    ["enter", "네, 내일 만나요!"],
+    ["enter", "고마워요!"],
   ]) {
     expect(screen.getByTestId(`visual-novel-scene-${scene}`)).toBeInTheDocument();
     expect(screen.getByTestId("ui-lynx-visual-novel-dialog-speaker")).toHaveTextContent("Minseo");
+    expect(screen.getByTestId(`visual-novel-dialogue-${scene}`)).toHaveAttribute(
+      "data-speaker",
+      "partner",
+    );
     next();
     expect(screen.getByTestId("ui-lynx-visual-novel-dialog-speaker")).toHaveTextContent("Me");
+    expect(screen.getByTestId(`visual-novel-dialogue-${scene}`)).toHaveAttribute(
+      "data-speaker",
+      "self",
+    );
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute(
+      "data-surface",
+      "opaque",
+    );
     expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(reply);
     expect(screen.queryByTestId("lesson-complete-screen")).toBeNull();
     if (scene !== "enter") next();

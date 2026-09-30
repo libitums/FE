@@ -1,3 +1,4 @@
+import minseoProfile from "../../assets/characters/minseo-profile.jpg";
 import { Avatar } from "@libitums/ui-lynx/avatar";
 import { Button } from "@libitums/ui-lynx/button";
 import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
@@ -7,6 +8,7 @@ import "./visual-novel.css";
 // 도입·최종 이야기와 같은 디자인 컴포넌트입니다. 다음으로 대사를 읽고 마지막 Continue로 완료합니다.
 export function DialoguePanel({
   beatId,
+  speakerRole = "partner",
   speakerName,
   dialogue,
   translation,
@@ -14,7 +16,11 @@ export function DialoguePanel({
   action,
 }: DialoguePanelProps) {
   return (
-    <view className="visual-novel-dialogue" data-testid={`visual-novel-dialogue-${beatId}`}>
+    <view
+      className={`visual-novel-dialogue visual-novel-dialogue-${speakerRole}`}
+      data-speaker={speakerRole}
+      data-testid={`visual-novel-dialogue-${beatId}`}
+    >
       <scroll-view
         className="visual-novel-dialogue-scroll"
         scroll-orientation="vertical"
@@ -23,13 +29,20 @@ export function DialoguePanel({
       >
         <VisualNovelDialog
           speakerName={speakerName}
-          avatar={<Avatar name={speakerName} size="sm" accessibility="hidden" />}
+          avatar={
+            <Avatar
+              name={speakerName}
+              imageSource={speakerRole === "partner" ? minseoProfile : undefined}
+              size="sm"
+              accessibility="hidden"
+            />
+          }
           line={dialogue}
           translation={[romanization, translation].filter(Boolean).join("\n") || undefined}
           accessibilityLabel={[speakerName, dialogue, romanization, translation]
             .filter(Boolean)
             .join(", ")}
-          surface="translucent"
+          surface={speakerRole === "self" ? "opaque" : "translucent"}
           contentLanguage="learning"
           languageTag="ko"
           continueIndicator="off"

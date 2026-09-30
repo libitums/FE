@@ -42,9 +42,7 @@ test("카페의 마지막 내 대사를 읽은 뒤에만 최종 복습으로 이
   const onExit = vi.fn();
   render(<TutorialSpecialsFixture initialStage={2} onExit={onExit} />);
   for (let i = 0; i < 5; i++) fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
-  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(
-    "네, 내일 만나요!",
-  );
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent("고마워요!");
   expect(announce).not.toHaveBeenCalled();
   fireEvent.tap(screen.getByTestId("visual-novel-finish-button"), {});
   expect(announce).toHaveBeenCalledTimes(1);
