@@ -9,6 +9,6 @@
 5. 재도전에서 2개 이상 맞히면 이전 오답과 섞이지 않은 현재 시도로 엔딩이 열린다.
 6. 통과 직후에는 아직 결과 화면이나 맵 완료 표시를 만들지 않는다. 카페·기내·공항의 4개 엔딩 대사를 읽은 뒤 결과 화면이 나온다. Check 이후 완료·롤플레이 해금이 반영된다.
 7. 엔딩 중 Back to map을 누르면 완료되지 않는다. 다시 들어오면 도입 첫 장면이다. 빠르게 여러 번 눌러도 완료 콜백은 한 번이다.
-8. 개발 미리보기는 current=tutorial-final-story로 첫 도입부터 열 수 있다. 미리보기 종료는 맵으로 돌아가며 실제 완료 저장은 App 통합 테스트에서 확인한다.
+8. 개발 미리보기는 current=tutorial-final-story로 첫 도입부터 열 수 있다. 엔딩 후 실제 앱과 같은 결과 화면이 뜨며 만점은 PERFECT LESSON!, 2개 정답은 LESSON COMPLETE!로 표시된다. Check를 눌러야 맵으로 돌아가며 실제 완료 저장은 App 통합 테스트에서 확인한다.
 
 자동 검증: EpisodeFinalJourneyScreen.ui.test.tsx, episode-final-story.unit.test.ts, App.episode-final.integration.test.tsx, App.tutorial-journey.integration.test.tsx.

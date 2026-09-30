@@ -7,6 +7,9 @@ import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
 import { EpisodeFinalJourneyScreen } from "../app/EpisodeFinalJourneyScreen";
 import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
+import type { AnswerResult } from "../lib/answer-result";
+import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
+import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 
 const noop = () => undefined;
 
@@ -20,6 +23,30 @@ export function TutorialSpecialsFixture({
   initialStage?: 0 | 3;
 }) {
   const [stage, setStage] = useState<number>(initialStage);
+  const [results, setResults] = useState<readonly AnswerResult[] | null>(null);
+  if (results !== null)
+    return (
+      <view
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          paddingTop: "62px",
+          paddingBottom: "34px",
+        }}
+      >
+        <LessonCompleteScreen
+          results={results}
+          skippedCount={0}
+          verdict="passed"
+          streakDays={0}
+          trophyCount={0}
+          diamondCount={0}
+          reward={lessonRewardPlaceholder}
+          onExit={onExit}
+        />
+      </view>
+    );
   if (stage < 3)
     return (
       <view
@@ -41,7 +68,10 @@ export function TutorialSpecialsFixture({
       insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
       episodeLabel="Episode 0."
       test={review}
-      onFinish={onExit}
+      onFinish={(answers) => {
+        "background only";
+        setResults(answers);
+      }}
       onExit={onExit}
     />
   );
