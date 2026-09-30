@@ -3,3 +3,13 @@ packages:
   - "packages/*"
 engineStrict: true
 saveExact: true
+# PostgreSQL 테스트 바이너리의 배포 패키지 안 공유 라이브러리 링크를 복원합니다.
+onlyBuiltDependencies:
+  - "@embedded-postgres/darwin-arm64"
+  - "@embedded-postgres/darwin-x64"
+  - "@embedded-postgres/linux-arm"
+  - "@embedded-postgres/linux-arm64"
+  - "@embedded-postgres/linux-ia32"
+  - "@embedded-postgres/linux-ppc64"
+  - "@embedded-postgres/linux-x64"
+  - "@embedded-postgres/windows-x64"
