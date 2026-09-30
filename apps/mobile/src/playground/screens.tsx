@@ -26,6 +26,7 @@ import { TutorialSpecialsFixture } from "./TutorialSpecialsFixture";
 import { ButtonCatalog } from "./ButtonCatalog";
 import { EpisodePrologueScreen } from "../app/EpisodePrologueScreen";
 import { tutorialPrologue, tutorialPrologueLabel } from "../app/tutorial-prologue";
+import { PrologueCallScreen } from "../screens/episode-intro/PrologueCallScreen";
 import { EpisodeNarrativeScreen } from "../screens/episode-narrative/EpisodeNarrativeScreen";
 
 // 화면을 앱 흐름 없이 fixture props로 띄웁니다. 콜백은 앱 흐름과 같은 순서로
@@ -57,6 +58,16 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
+  "tutorial-prologue-call": (go: Go) => (
+    <PrologueCallScreen
+      insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
+      episodeLabel={tutorialPrologueLabel}
+      call={tutorialPrologue.segments[3].call}
+      callerPortrait={tutorialPrologue.segments[3].callerPortrait}
+      onComplete={() => go("tutorial-announcement")}
+      onBack={() => go("journey-map")}
+    />
+  ),
   "tutorial-announcement": (go: Go) => (
     <EpisodeNarrativeScreen
       insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
