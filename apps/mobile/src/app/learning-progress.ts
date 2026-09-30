@@ -111,11 +111,13 @@ export function completedActivityCount(state: JourneyProgressState): number {
   );
 }
 
-/** 트로피 = 항목을 모두 끝낸 에피소드 수입니다. 아직 유닛이 없는 에피소드는 세지 않습니다. */
-export function trophyCountFrom(
+/** 항목을 모두 끝낸 에피소드입니다. 아직 유닛이 없는 에피소드는 들지 않습니다. */
+export type CompletedEpisode = { readonly id: string; readonly title: string };
+
+export function completedEpisodesFrom(
   sections: readonly JourneyMapSection[],
   state: JourneyProgressState,
-): number {
+): readonly CompletedEpisode[] {
   const progress = {
     completedStepCount: state.completedStepCount,
     completedEpisodeIntroIds: state.completedEpisodeIntroIds,
@@ -124,10 +126,21 @@ export function trophyCountFrom(
     completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(state.visualNovelProgress),
     completedEpisodeFinalIds: state.completedEpisodeFinalIds,
   };
-  return sections.filter(
-    (section) =>
-      section.items.length > 0 && section.items.every((item) => isMapItemComplete(item, progress)),
-  ).length;
+  return sections
+    .filter(
+      (section) =>
+        section.items.length > 0 &&
+        section.items.every((item) => isMapItemComplete(item, progress)),
+    )
+    .map((section) => ({ id: section.episode.id, title: section.episode.title }));
+}
+
+/** 트로피 = 항목을 모두 끝낸 에피소드 수입니다. */
+export function trophyCountFrom(
+  sections: readonly JourneyMapSection[],
+  state: JourneyProgressState,
+): number {
+  return completedEpisodesFrom(sections, state).length;
 }
 
 /**

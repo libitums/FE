@@ -47,6 +47,8 @@ final class ViewController: UIViewController {
       config.register(LegalDocumentModule.self)
       // 열째 — 서버 푸시의 권한 · 기기 토큰 · 누른 알림(ADR-0034). 목적지는 URL이 아니라 JS가 아는 목록이다.
       config.register(PushNotificationModule.self)
+      // 열한째 — iOS 기본 평점 창 요청(ADR-0036). 언제 청할지는 JS가 정한다.
+      config.register(AppReviewModule.self)
       builder.config = config
       // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).
       // 이미지 서비스는 generic resource fetcher가 켜져 있을 때만 `shouldRedirectUrl`을

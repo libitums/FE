@@ -47,6 +47,7 @@ import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useOpenedPush } from "./use-opened-push";
 import { useJourneyProgress } from "./use-journey-progress";
+import { episodeSurveyWiring } from "./episode-survey-wiring";
 import type { AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 
@@ -258,6 +259,11 @@ export function AppSession({
                 trophyCount={progress.trophyCount}
                 celebrateStreak={progress.streakCelebration}
                 onStreakCelebrated={progress.onStreakCelebrated}
+                episodeSurvey={progress.episodeSurvey}
+                {...episodeSurveyWiring({
+                  episodeIntroEventSink,
+                  onClosed: progress.onEpisodeSurveyClosed,
+                })}
                 gemCount={gemCount}
                 obscured={screenLayerOpen}
                 onOpenNotifications={wiring.onOpenNotifications}

@@ -5,6 +5,7 @@
 // 받아쓰기 대상은 늘 한국어이고, 문구표는 그 둘레의 UI 문구만 집니다.
 
 import type { EntryLanguage } from "./entry-language";
+import type { FeedbackCopy } from "./feedback.contract";
 import type {
   AssessmentCopy,
   CommonCopy,
@@ -64,6 +65,7 @@ export type UiCopy = {
   readonly notifications: NotificationsCopy;
   readonly settings: SettingsCopy;
   readonly profile: ProfileCopy;
+  readonly feedback: FeedbackCopy;
   readonly gemPurchase: GemPurchaseCopy;
 };
 

@@ -1,6 +1,5 @@
-// `ScreenWiring`·`RoleplayUnitWiring` 타입을 선언하고, 세 부분 팩토리
-// (`journeyWiring`·`roleplayWiring`·`entryWiring`)를 합쳐 하나의 wiring을
-// 만듭니다.
+// `ScreenWiring`·`RoleplayUnitWiring` 타입을 선언하고, 부분 팩토리(`journeyWiring`·`roleplayWiring`·
+// `entryWiring` 등)를 합쳐 하나의 wiring을 만듭니다.
 
 import type { AccountWiringArgs } from "./leave-app.contract";
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
@@ -21,6 +20,7 @@ import type {
   PhoneOtpVerifyOutcome,
   PhoneOtpVerifyRequest,
 } from "../lib/auth-session.contract";
+import type { FeedbackScreenProps } from "../screens/feedback/feedback.contract";
 import type { JourneyStats, ProgressWiringArgs } from "./learning-progress";
 import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
@@ -153,8 +153,7 @@ export type ScreenWiring = {
   // 롤플레이 route 셋의 콜백 묶음입니다. 연습 경계는 이 타입의 매개변수 모양과
   // 구현부 둘 다가 집니다.
   roleplay: RoleplayUnitWiring;
-  // 여정 맵 머리 알림 버튼 · 알림 항목 선택 · 알림 화면 나가기입니다.
-  // `dispatch`도 `NavAction`도 여기 들어가지 않습니다(위 원칙 그대로).
+  // 여정 맵 머리 알림 버튼 · 알림 항목 선택 · 알림 화면 나가기입니다(`dispatch` 없음 — 위 원칙 그대로).
   onOpenNotifications: () => void;
   // `notifications`는 남아 있는 알림이고, 삭제는 그 목록에서 하나를 뺍니다.
   notifications: readonly NotificationItem[];
@@ -194,6 +193,7 @@ export type ScreenWiring = {
   onSelectNavTarget: (target: SettingsNavTarget) => void;
   onToggleSessionOption: (key: SessionOptionKey) => void;
   onExitSettingsStack: () => void;
+  onSubmitFeedback: FeedbackScreenProps["onSubmit"];
   // 진입 흐름 화면 여섯의 결선입니다. `entryLanguage`만 App 상태를 그대로
   // 내리고, 나머지는 전이·이벤트·토큰 저장을 여는 콜백입니다.
   onSplashTimeout: () => void;

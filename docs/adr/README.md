@@ -86,6 +86,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | **법률 문서 (개인정보 처리방침 · 이용약관)의 출처와 여는 방식** ⟨2026-09-30⟩ | 결정 (Notion 공개 URL 둘을 호스트에 고정 · `SFSafariViewController` · 로그인 링크 둘과 설정 항목 둘) | [0033](0033-legal-documents-in-app-browser.md) — LIB-259의 약관 화면을 대체한다. 나가는 목적지는 [0026](0026-permission-entry-conditions-and-denial-handling.md) D4의 표로 읽었다 |
 | **서버 푸시 알림 (기기 등록 · 다시 돌아오기 · 운영 공지 · 누르면 정해진 목적지)** ⟨2026-09-30⟩ | **제안** (`push_devices` + RPC 둘 · 호스트 모듈 넷 메서드 · 목적지는 닫힌 목록 여섯 · 진입 흐름 끝에서 묻기 · `send-push` + `pg_cron`) — 실제 발송은 APNs 키 전이라 미확인 | [0034](0034-server-push-notifications.md) — ADR-0001 · 0012 D2의 「푸시」를 부분 대체한다. **딥링크 금지는 산다** |
 | **학습 진행 · 연속 학습 · 트로피의 서버 저장** ⟨2026-09-30⟩ | **제안** (`learning_progress` · `learning_days` + RPC 넷 · 불러오면 합치고 못 불러왔으면 저장 안 함 · 연속 = 활동을 끝낸 날 · 트로피 = 끝낸 에피소드 수, 진행에서 파생) | [0035](0035-learning-progress-and-streak-on-server.md) — ADR-0007 D1의 「진행은 영속하지 않는다」를 부분 대체 |
+| **사용자 피드백 (설정의 보내기 · 에피소드 끝 설문 · 앱스토어 평점 요청)** ⟨2026-09-30⟩ | **제안** (`feedback` 표 + `submit_feedback` · 연속 모달 다음 설문 · 별점 4 이상이면 설치당 한 번 평점 창) — 세부는 기본값, 사용자 확인 전 | [0036](0036-user-feedback-survey-and-app-review.md) |
 | 라우팅 | 결정 (전환 소유 + **나가는 수단의 목적지**) | [0007](0007-app-internals-state-routing-data-errors.md) D3·**D6** |
 | 에러 경계 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | **제품 분석 전송 (PostHog · 스레드 경계 · 익명 식별)** | **제안** (sink 여섯을 `@posthog/core` Lynx 어댑터로 · background 전용 · 실행마다 메모리 익명 ID · `flushAt: 1`) — 기본값 여섯이 사용자 확인 전 | [0029](0029-product-analytics-posthog.md) — 전송은 [0007](0007-app-internals-state-routing-data-errors.md) D2의 「클라이언트 한 파일」 밖(나가기만 한다). 이벤트 카탈로그는 이 표가 아니라 `lib/analytics.contract.ts`와 GitHub wiki가 진다 |
@@ -136,6 +137,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | `AppleSignInModule` | `start(args, callback)` | **로그인 (구현 순서 12번)의 Apple 버튼** — 네이티브 Sign in with Apple 시트(`ASAuthorizationAppleIDProvider`)에 해시된 nonce를 싣고 ID 토큰을 받는다. 난수는 `WebAuthenticationModule.randomBytes`를 쓴다. **제품 화면이다.** ⟨2026-09-30⟩ **쓰임이 둘이다** — 설정의 **계정 삭제**가 같은 `start`로 Apple 사용자를 재인증하고, 페이로드가 `authorizationCode`를 **값이 있을 때만** 셋째 키로 싣는다(서버 함수가 Apple 토큰을 철회하는 데 쓴다, [0032](0032-account-sign-out-and-deletion.md) D4). 메서드 수 불변 | [0028](0028-social-oauth-web-authentication.md) D7 · [0017](0017-host-native-capabilities-and-audio.md) D1(⚠ 조건 (2) 예외 — 사용자 결정) | **iOS에 있음** — `apps/ios/Host/AppleSignInModule.swift`; 접점은 `apps/mobile/src/lib/apple-sign-in.ts`. ⚠ **엔타이틀먼트를 요구하는 첫 모듈이다** — `apps/ios/Host/Host.entitlements`(`com.apple.developer.applesignin`), App ID 기능 켜기는 사용자 몫. 권한은 요구하지 않는다; Android 이관 미구현 |
 | `LegalDocumentModule` | `open(args, callback)` | **로그인의 동의 문구 링크 둘 · 설정의 법률 문서 항목 둘** — 개인정보 처리방침 · 이용약관을 앱 안 브라우저(`SFSafariViewController`)로 연다. **제품 화면이다** | [0033](0033-legal-documents-in-app-browser.md) D2 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/LegalDocumentModule.swift`; 접점은 `apps/mobile/src/lib/legal-document.ts`. 목적지는 호스트 표의 `https` URL 둘뿐이고 JS는 문서 이름만 넘긴다. 권한은 요구하지 않는다; Android 이관 미구현 |
 | `PushNotificationModule` | `getStatus(callback)` · `register(callback)` · `takeOpened(callback)` · `openSettings()` | **여정 입장의 시작 · 설정의 `Notifications` · 누른 알림** — 서버 푸시의 권한 · 기기 토큰 · 누른 알림의 목적지. **제품 화면이다** | [0034](0034-server-push-notifications.md) D2 · [0017](0017-host-native-capabilities-and-audio.md) D1 · [0026](0026-permission-entry-conditions-and-denial-handling.md) D2 | **iOS에 있음** — `apps/ios/Host/PushNotificationModule.swift`(+ `AppDelegate` 토큰 콜백 · `ViewController` 전역 이벤트); 접점은 `apps/mobile/src/lib/push-notifications.ts`. ⚠ **엔타이틀먼트 `aps-environment`가 생겼다** — App ID의 Push Notifications 기능은 사용자 몫. 권한을 요구하는 둘째 모듈; Android 이관 미구현(FCM) |
+| `AppReviewModule` | `requestReview()` | **에피소드 끝 설문(별점 4 이상)** — iOS 기본 평점 창 요청. 결과 콜백 없음. **제품 화면이다** | [0036](0036-user-feedback-survey-and-app-review.md) D4 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/AppReviewModule.swift`; 접점은 `apps/mobile/src/lib/feedback-api.ts`(`requestAppReviewOnce`). 권한 없음; Android 이관 미구현(Play In-App Review) |
 
 **재검토 트리거는 숫자다** (ADR-0017 D2): 모듈이 **넷째**로 요구되는 시점, 또는
 **한 모듈의 메서드가 다섯을 넘는 시점**.
@@ -161,6 +163,9 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 
 **같은 날 또 발동했다**(`PushNotificationModule` — 열째 모듈). 입장 조건 셋을 모두 통과한다 — 판정은
 [ADR-0034 D2](0034-server-push-notifications.md)에 있다. 메서드는 넷이다(둘째 트리거에 닿지 않는다).
+
+**같은 날 또 발동했다**(`AppReviewModule` — 열한째 모듈). 입장 조건 셋을 통과한다 — 판정은
+[ADR-0036 D4](0036-user-feedback-survey-and-app-review.md)에 있다. 메서드는 하나다.
 
 ⚠ **트리거 문면은 고치지 않는다** — 숫자를 옮기는 것은 결정 변경이고, 두 번을 「제자리
 기록」으로 판정한 근거(결정 문장이 한 글자도 안 바뀐다)가 그 자리에서 뒤집힌다.
