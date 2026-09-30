@@ -22,10 +22,17 @@ export type ListeningQuestion = {
   // 자산이 오면 `AudioPlaybackModule.resolve`에 **해석만** 붙습니다.
   // 옵셔널이 아닙니다 — `audioSource?`면 "아직 없는 문항"이 타입에 생깁니다.
   readonly audioSource: string;
-  readonly choices: readonly [string, string] | readonly [string, string, string, string];
   readonly instruction?: string;
-  readonly answerIndex: 0 | 1 | 2 | 3;
-};
+} & (
+  | {
+      readonly choices: readonly [string, string];
+      readonly answerIndex: 0 | 1;
+    }
+  | {
+      readonly choices: readonly [string, string, string, string];
+      readonly answerIndex: 0 | 1 | 2 | 3;
+    }
+);
 
 // ---------------------------------------------------------------- 고정 데이터
 // 듣기가 배정된 4 스텝 × 3 문항 × 보기 4개입니다. 한 스텝 안에서 세
