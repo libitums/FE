@@ -241,10 +241,13 @@ test("[UI-K1] ready에서 건너뛰기가 선다 — 주 버튼 말하기와 함
   const slot = skipSlot();
   expect(slot).toBeInTheDocument();
 
-  // 자리는 `workspace` 슬롯입니다 — 카드 아래 · 주 버튼 위이고, DOM 순서가 곧
-  // 낭독 순서입니다(design §2.5).
-  const workspace = screen.getByTestId("learning-shell-scroll");
-  expect(within(workspace).getByTestId("speaking-screen-skip")).toBeInTheDocument();
+  // Skip은 Speak와 같은 고정 액션 행에 있어 작은 화면에서도 서로 가리지 않습니다.
+  const actions = screen.getByTestId("learning-shell-actions");
+  expect(within(actions).getByTestId("speaking-screen-skip")).toBeInTheDocument();
+  expect(within(actions).getByTestId("learning-shell-action")).toBeInTheDocument();
+  expect(
+    within(screen.getByTestId("learning-shell-scroll")).queryByTestId("speaking-screen-skip"),
+  ).toBeNull();
 
   // 시각 스펙은 `outline`입니다 — `subtle`은 학습 껍데기 배경 위에서 면 대비 1.05:1로
   // 사라집니다(design §2.5). 선례(`Can't speak`의 `subtle`)를 그대로 옮기면 안 보입니다.
@@ -351,7 +354,7 @@ test("[LA4-E] 지시문 · 듣는 중 이름 · 판정 뒤 안내가 영어다",
   );
   expect(screen.getByTestId("speaking-screen-waves")).toHaveAttribute(
     "accessibility-label",
-    "Listening",
+    "Speak",
   );
   tapAction("Speak");
   expect(screen.getByTestId("speaking-screen-hint")).toHaveTextContent(
@@ -394,7 +397,7 @@ test("[LA4-M] 문구표를 주입하고 말하기를 누르면 듣는 중 이름
   expect(actionLabel()).toBe("⟦speaking.stopSpeaking⟧");
   expect(screen.getByTestId("speaking-screen-waves")).toHaveAttribute(
     "accessibility-label",
-    "⟦common.listening⟧",
+    "⟦speaking.stopSpeaking⟧",
   );
 });
 
@@ -434,4 +437,20 @@ test("[LA4-M] 문구표를 주입하고 문항을 마치면 완료 문구 · 마
     "⟦common.allQuestionsDone⟧",
   );
   expect(actionLabel()).toBe("⟦common.seeResults⟧");
+});
+
+test("카드의 녹음 아이콘으로도 녹음을 시작하고 멈춘다", () => {
+  const host = stubSpeechHost();
+  renderSpeaking();
+  const recording = screen.getByTestId("speaking-screen-waves");
+
+  expect(recording).toHaveAttribute("accessibility-traits", "button");
+  expect(recording).toHaveAttribute("accessibility-label", "Speak");
+  fireEvent.tap(recording, {});
+
+  expect(host.start).toBe(1);
+  expect(recording).toHaveAttribute("data-listening", "true");
+  expect(recording).toHaveAttribute("accessibility-label", "Stop speaking");
+  fireEvent.tap(recording, {});
+  expect(host.stop).toBe(1);
 });

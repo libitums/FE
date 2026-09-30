@@ -167,6 +167,13 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     [question, state.phase, copy],
   );
 
+  const recordingAction =
+    state.phase === "ready" || state.phase === "listening" ? action : undefined;
+  const handleRecording = () => {
+    "background only";
+    recordingAction?.run();
+  };
+
   return (
     <LearningShell
       form="speaking"
@@ -178,31 +185,23 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
       actionLabel={action?.label}
       onAction={action?.run}
       advance={advance}
+      scrollCard={true}
+      secondaryAction={
+        question != null && state.phase === "ready" ? (
+          <view className="speaking-screen-skip" data-testid="speaking-screen-skip">
+            <Button
+              label={copy.common.skip}
+              variant="outline"
+              size="xl"
+              width="hug"
+              bindtap={handleSkip}
+            />
+          </view>
+        ) : undefined
+      }
       workspace={
         question == null ? undefined : (
           <>
-            {/* 건너뛰기 — **`ready`에서만** 섭니다(spec §2.8.2c). `listening`에 세우면
-                결과가 반대인 두 버튼(`그만 말하기`는 판정으로, 건너뛰기는 `correct`로)이
-                되돌릴 수 없는 채로 나란히 서고, `judged`에서는 `.learning-shell-advance`가
-                화면을 덮어 눌리지 않으며, `unavailable`에서는 같은 낱말의 주 버튼과 겹칩니다.
-                `disabled`를 쓰지 않습니다 — 「아직 할 수 없다」는 버튼이 **없는 것**으로
-                말합니다(`LearningShell`의 규약).
-
-                변형이 `outline`인 것은 선례(`Can't speak`의 `subtle`)가 **어두운 패널
-                위**라서 보이는 것이기 때문입니다. 같은 면이 학습 껍데기 배경 위에서는
-                1.05:1로 사라지고, `outline`의 경계가 3.80:1로 비텍스트 3:1을 넘는
-                팔레트 안의 유일한 선택입니다(design §2.5). */}
-            {state.phase === "ready" ? (
-              <view className="speaking-screen-skip" data-testid="speaking-screen-skip">
-                <Button
-                  label={copy.common.skip}
-                  variant="outline"
-                  size="xl"
-                  width="fill"
-                  bindtap={handleSkip}
-                />
-              </view>
-            ) : null}
             <view className="speaking-screen-hint-slot">
               {state.phase === "judged" ? (
                 <text className="speaking-screen-hint" data-testid="speaking-screen-hint">
@@ -268,14 +267,15 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
                 </text>
               ) : null}
 
-              {/* 파형 — 듣는 중에는 주색, 아니면 흐린 회색입니다. 듣는 중인지는 이 요소의
-                  이름이 소리로 싣습니다. */}
+              {/* 녹음 아이콘과 하단 버튼이 같은 시작·중지 동작을 제공합니다. */}
               <view
                 className="speaking-screen-waves"
                 data-testid="speaking-screen-waves"
                 data-listening={state.phase === "listening" ? "true" : "false"}
-                accessibility-element={state.phase === "listening"}
-                accessibility-label={copy.common.listening}
+                accessibility-element={recordingAction !== undefined}
+                accessibility-traits={recordingAction === undefined ? undefined : "button"}
+                accessibility-label={recordingAction?.label}
+                bindtap={recordingAction === undefined ? undefined : handleRecording}
               >
                 <svg
                   className="speaking-screen-waves-icon"

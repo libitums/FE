@@ -89,7 +89,7 @@
 .speaking-screen-skip {
   display: flex;
   justify-content: center;
-  padding-top: var(--libitum-spacing-16);
+  flex-shrink: 0;
 }
 
 /* 작업 영역의 안내 한 줄 — 디자인의 「Tab to continue」 자리입니다(gray-400 · label-l). */
