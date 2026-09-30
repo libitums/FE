@@ -125,7 +125,7 @@ test("PO3. 전환 목록에 없는 깨끗한 파일은 위반 0이다", () => {
 });
 
 // 학습 콘텐츠와 자모 표에 튜토리얼 혼합 대본 선언을 더합니다. 파일 전체를 허용하지 않습니다.
-test("PO4. 학습 콘텐츠 선언 표가 허용한 26항목과 같다", () => {
+test("PO4. 학습 콘텐츠 선언 표가 허용한 27항목과 같다", () => {
   const expected = [
     "listening-questions.ts#listeningQuestionsByStep",
     "word-choice-questions.ts#wordChoiceQuestionsByStep",
@@ -135,6 +135,7 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 26항목과 같다", () => {
     "episode-final-tests.ts#episodeFinalTests",
     "episode-narrative.ts#placeholderNarrative",
     "tutorial-prologue.ts#tutorialPrologue",
+    "tutorial-final-story.ts#tutorialFinalStory",
     "messenger.ts#conversations",
     "phone-call.ts#conversation",
     "phone-call.contract.ts#ConfirmTimePhoneCallTurn",
@@ -155,7 +156,7 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 26항목과 같다", () => {
     "hangul-keyboard.ts#hangulKeyRows",
   ];
 
-  assert.equal(expected.length, 26);
+  assert.equal(expected.length, 27);
   assert.deepEqual(
     [...uiCopyLiteralPolicy.learningContentDeclarations].sort(),
     [...expected].sort(),

@@ -34,7 +34,10 @@ function Playground() {
   const [tab, setTab] = useState<Tab>("journey");
   const screenTab = playgroundTabs[screen];
   // 튜토리얼은 각 화면이 safe area를 처리하므로 셸 여백을 중복 적용하지 않습니다.
-  const ownsSafeArea = screen === "tutorial-prologue" || screen === "tutorial-specials";
+  const ownsSafeArea =
+    screen === "tutorial-prologue" ||
+    screen === "tutorial-specials" ||
+    screen === "tutorial-final-story";
   const isTutorialLesson = screen.startsWith("tutorial-") && !ownsSafeArea;
 
   return (

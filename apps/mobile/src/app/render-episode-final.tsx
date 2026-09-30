@@ -2,7 +2,7 @@
 // 커서 떼어 둔 것이고, `render-episode-intro.tsx`와 같은 갈래입니다.
 
 import { EpisodeFinalCallScreen } from "../screens/episode-final/EpisodeFinalCallScreen";
-import { EpisodeFinalScreen } from "../screens/episode-final/EpisodeFinalScreen";
+import { EpisodeFinalJourneyScreen } from "./EpisodeFinalJourneyScreen";
 import type { AnswerResult } from "../lib/answer-result";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import { journeyMapSections } from "../screens/journey-map/journey-map";
@@ -47,10 +47,10 @@ export function renderEpisodeFinalFlow(screen: EpisodeFinalFlowScreen, wiring: S
           callerPortrait={jiminPortrait}
         />
       ) : (
-        <EpisodeFinalScreen key={screen.unitId} {...common} test={test} />
+        <EpisodeFinalJourneyScreen key={screen.unitId} {...common} test={test} />
       );
     }
-    // 틀린 문항이 있어도 에피소드는 끝납니다 — 판정은 늘 통과이고, 실수 수는 결과에서
+    // 이야기형 복습은 통과와 마무리 서사를 끝낸 뒤에만 이 route에 닿습니다. 실수 수는 결과에서
     // 셉니다. 지표와 보상은 서사 뒤의 학습 완료와 같은 값입니다(`render-episode-intro.tsx`).
     case "episode-final-complete":
       return (

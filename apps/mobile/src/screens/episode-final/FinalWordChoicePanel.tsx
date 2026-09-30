@@ -45,6 +45,16 @@ export function FinalWordChoicePanel({
   return (
     <view className="episode-final-word-choice" data-testid={episodeFinalTestIds.wordChoice}>
       <view className="episode-final-choices">
+        {question.context ? (
+          <view className="episode-final-context">
+            <text
+              className="episode-final-context-label"
+              data-testid="episode-final-screen-context"
+            >
+              {question.context}
+            </text>
+          </view>
+        ) : null}
         {result === null ? null : <AnswerVerdict result={result} />}
         <view className="episode-final-options">
           {question.options.map((option, index) => {

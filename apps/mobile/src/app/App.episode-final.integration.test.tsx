@@ -1,6 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
+import { readFinalStory } from "./test-helpers/final-story";
 import { App } from "./App";
 import type { AppJourneySeed } from "./App";
 import type { EpisodeFinalCallTest } from "../screens/episode-final/episode-final.contract";
@@ -48,7 +49,8 @@ function writeSyllable(): void {
 
 // 문항을 끝까지 풉니다. 낱말 고르기는 정답을 고르고 넘어갈 때까지 기다리고, 말하기는
 // `Can't speak`를 누르고, 쓰기는 음절마다 긋고 `Check` · `Next`를 누릅니다.
-function solveAll(): void {
+function solveAll(finishEnding = true): void {
+  readFinalStory("introduction");
   vi.useFakeTimers();
   const test = episodeFinalTestFor("tutorial-final-test");
   if (test.format !== "visual-novel") {
@@ -66,6 +68,7 @@ function solveAll(): void {
       tapButtonIn("episode-final-screen-not-now");
     }
   }
+  if (finishEnding) readFinalStory("ending");
   vi.useRealTimers();
 }
 
@@ -85,7 +88,7 @@ test("[EFA2] 앞 항목을 모두 끝내면 열리고, 문항을 다 풀면 학�
   );
 
   fireEvent.tap(finalUnit(), {});
-  expect(screen.getByTestId("episode-final-screen-title")).toHaveTextContent("Episode 0.");
+  expect(screen.getByTestId("episode-narrative-screen-title")).toHaveTextContent("Almost There");
   // 서사 화면처럼 셸이 여백을 잡지 않습니다 — 바텀 네비게이션도 서지 않습니다.
   expect(screen.queryByTestId("ui-lynx-bottom-navigator-item-journey")).toBeNull();
 
@@ -127,6 +130,7 @@ test("[EFA4] 풀던 도중 뒤로 가면 맵으로 돌아가고 완료로 적지
   );
 
   fireEvent.tap(finalUnit(), {});
+  readFinalStory("introduction");
   fireEvent.tap(screen.getByTestId("episode-final-screen-option-0"), {});
   fireEvent.tap(
     within(screen.getByTestId("episode-final-screen-back")).getByTestId("ui-lynx-round-button"),
@@ -172,4 +176,23 @@ test("[EFA5] 통화 형식의 최종 테스트는 통화 화면 위에서 풀고
   expect(screen.getByTestId("lesson-complete-screen")).toBeInTheDocument();
   tapButtonIn("lesson-complete-screen-exit");
   expect(finalUnit()).toHaveAttribute("data-status", "clear");
+});
+
+test("[EFA6] 통과해도 도착 이야기를 마치기 전에 나가면 해금하지 않는다", async () => {
+  await renderSignedInApp(
+    <App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />,
+  );
+  fireEvent.tap(finalUnit(), {});
+  solveAll(false);
+  expect(screen.queryByTestId("lesson-complete-screen")).toBeNull();
+  fireEvent.tap(
+    within(screen.getByTestId("episode-narrative-screen-back")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+  expect(finalUnit()).toHaveAttribute("data-status", "available");
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
+  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
+    "data-unlocked",
+    "false",
+  );
 });

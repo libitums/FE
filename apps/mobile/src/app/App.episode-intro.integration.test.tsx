@@ -384,7 +384,7 @@ test("[IN-I9] 표지를 끝내기 전에는 최종 테스트가 잠겨 있고, �
 
   expect(screen.getByTestId(finalUnitTestId)).toHaveAttribute("data-status", "available");
   fireEvent.tap(screen.getByTestId(finalUnitTestId), {});
-  expect(screen.getByTestId("episode-final-screen-title")).toHaveTextContent("Episode 0.");
+  expect(screen.getByTestId("episode-narrative-screen-title")).toHaveTextContent("Almost There");
 });
 
 // ------------------------------------------------------------------ 서사 통화 · 메신저

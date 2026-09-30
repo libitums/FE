@@ -4,6 +4,7 @@
 // 표현을 모아, 서사 장면 위에서 문항을 풀고 에피소드를 끝냅니다(Figma 79-6484 말하기 ·
 // 79-6648 낱말 고르기).
 
+import type { EpisodeFinalStory } from "./episode-final-story.contract";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { WritingQuestion } from "../../lib/writing-session";
@@ -40,6 +41,8 @@ export type EpisodeFinalWordChoiceQuestion = {
   /** 정답 보기의 자리(0부터)입니다. */
   readonly answerIndex: 0 | 1 | 2;
   readonly romanizations?: readonly [string, string, string];
+  /** 문항이 벌어지는 상황. 정답 선택과 구분되는 서사 안내입니다. */
+  readonly context?: string;
 };
 
 /**
@@ -74,6 +77,7 @@ export type EpisodeFinalTest =
       readonly format: "visual-novel";
       readonly unitId: EpisodeFinalUnitId;
       readonly questions: readonly [EpisodeFinalQuestion, ...EpisodeFinalQuestion[]];
+      readonly story?: EpisodeFinalStory;
     }
   | {
       readonly format: "call";
