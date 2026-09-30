@@ -1,3 +1,9 @@
+// 자동 재생 설정의 범용 듣기 경로를 명시적 배정 픽스처로 엽니다.
+vi.mock("../screens/journey-map/journey-map", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../screens/journey-map/journey-map")>()),
+  ...(await import("./test-helpers/learning-route-fixture")),
+}));
+
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen, within } from "@lynx-js/react/testing-library";
 

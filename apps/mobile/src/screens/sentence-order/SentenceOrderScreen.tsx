@@ -33,6 +33,7 @@ import "./sentence-order-screen.css";
 // 조각으로 만듭니다. 창고에는 오답 낱말이 섞여 있고, 정답 길이만큼 놓으면 확인할 수 있습니다.
 export type SentenceOrderScreenProps = {
   stepId: JourneyStepId;
+  gemCount?: number;
   onExit: () => void;
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
@@ -42,6 +43,7 @@ const emptyReplyMark = "----";
 
 export function SentenceOrderScreen({
   stepId,
+  gemCount = 0,
   onExit,
   onFinish,
 }: SentenceOrderScreenProps): ReactNode {
@@ -97,6 +99,7 @@ export function SentenceOrderScreen({
   return (
     <LearningShell
       form="sentence-order"
+      gemCount={gemCount}
       questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
       complete={complete}

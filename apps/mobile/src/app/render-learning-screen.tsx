@@ -30,6 +30,7 @@ export function renderShellLearningScreen(
       return (
         <SentenceOrderScreen
           stepId={screen.stepId}
+          gemCount={wiring.gemCount}
           onExit={wiring.onExitLearning}
           onFinish={onFinish}
         />
