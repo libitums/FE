@@ -1,4 +1,4 @@
-import { useState } from "@lynx-js/react";
+import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
@@ -36,6 +36,12 @@ export type AppHeaderProps = {
    * 시작점을 셉니다. 넘기지 않으면 기기 시계를 읽습니다.
    */
   readonly todayWeekday?: number;
+  /**
+   * 활동을 끝내 연속이 늘었는가입니다(ADR-0035). 머리가 설 때 참이면 연속 학습 모달을 **한 번** 스스로 열고
+   * `onStreakCelebrated`로 알립니다 — 결과 화면에서 맵으로 돌아온 순간 새 일수를 보여 줍니다.
+   */
+  readonly celebrateStreak?: boolean;
+  readonly onStreakCelebrated?: () => void;
 };
 
 export function AppHeader({
@@ -45,9 +51,19 @@ export function AppHeader({
   onOpenNotifications,
   obscured = false,
   todayWeekday,
+  celebrateStreak = false,
+  onStreakCelebrated,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
   const close = () => setOpenLayer(null);
+
+  // 다른 레이어가 떠 있거나 화면 쪽 레이어가 덮고 있으면 기다립니다 — 겹쳐 띄우지 않습니다.
+  useEffect(() => {
+    if (!celebrateStreak || openLayer !== null || obscured) return;
+    setOpenLayer("streak");
+    onStreakCelebrated?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [celebrateStreak, openLayer, obscured]);
 
   return (
     <>

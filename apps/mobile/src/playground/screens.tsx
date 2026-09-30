@@ -57,15 +57,27 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
-  "tutorial-announcement": (go: Go) => (
-    <EpisodeNarrativeScreen
-      insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
-      label={tutorialPrologueLabel}
-      narrative={tutorialPrologue.segments[4].narrative}
-      onFinish={() => go("journey-map")}
-      onExit={() => go("journey-map")}
-    />
-  ),
+  "tutorial-announcement": (go: Go) => {
+    const segment = tutorialPrologue.segments.find(
+      (candidate) =>
+        candidate.kind === "visual-novel" &&
+        candidate.narrative.beats.some(
+          (beat) => "audioSource" in beat && beat.audioSource === "tutorial-cabin-announcement",
+        ),
+    );
+    if (segment?.kind !== "visual-novel") {
+      throw new Error("Tutorial announcement preview requires a cabin announcement segment.");
+    }
+    return (
+      <EpisodeNarrativeScreen
+        insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
+        label={tutorialPrologueLabel}
+        narrative={segment.narrative}
+        onFinish={() => go("journey-map")}
+        onExit={() => go("journey-map")}
+      />
+    );
+  },
   "tutorial-journey": (go: Go) => <TutorialJourneyFixture onExit={() => go("journey-map")} />,
   "tutorial-cafe": (go: Go) => (
     <TutorialSpecialsFixture initialStage={2} onExit={() => go("journey-map")} />
