@@ -27,6 +27,7 @@ export type EpisodeNarrativeScreenProps = {
   readonly onFinish: () => void;
   /** 뒤로(맵으로)입니다. */
   readonly onExit: () => void;
+  /** 배경 전환·확대와 대사 타이핑·계속 표시의 모션을 줄입니다. */
   readonly reducedMotion?: boolean;
 };
 
@@ -110,8 +111,10 @@ export function EpisodeNarrativeScreen({
         <NarrativeBackground
           key={background}
           src={background}
-          previousSrc={beatIndex > 0 ? previousBackground : null}
+          previousSrc={beat.transitionFrom ?? (beatIndex > 0 ? previousBackground : null)}
           animated={beat.background !== undefined}
+          transition={beat.transition}
+          reducedMotion={reducedMotion}
         />
         {character === null ? null : (
           <view className="episode-narrative-screen-character-slot">

@@ -260,3 +260,59 @@ test("배경이 바뀌어도 기존 다이알로그로 독백을 그리고 인�
   expect(line()).toHaveTextContent("골목을 걷는다");
   expect(screen.getByTestId("narrative-background-image")).toHaveAttribute("src", "street.jpg");
 });
+
+test("실제 시작 유닛은 같은 기내 그림을 유지하고 골목으로 들어갈 때만 상상 전환한다", () => {
+  const opening = tutorialPrologue.segments[0].narrative;
+  const onFinish = vi.fn<() => void>();
+  render(
+    <EpisodeNarrativeScreen {...fixture({ narrative: opening, onFinish, reducedMotion: false })} />,
+  );
+  const cabin = screen.getByTestId("narrative-background-image");
+  fireEvent(cabin, new window.Event("bindEvent:load"));
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute(
+    "data-transition",
+    "crossfade",
+  );
+
+  // 첫 탭은 독백을 완성할 뿐 배경을 바꾸지 않습니다.
+  advance();
+  expect(line()).toHaveTextContent(opening.beats[0].line);
+  advance();
+  expect(screen.getByTestId("narrative-background-image")).toBe(cabin);
+  advance();
+  expect(line()).toHaveTextContent(opening.beats[1].line);
+  expect(screen.queryByTestId("narrative-imagination-veil")).not.toBeInTheDocument();
+
+  advance();
+  advance();
+  expect(line()).toHaveTextContent(opening.beats[2].line);
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute(
+    "data-transition",
+    "imagination",
+  );
+  fireEvent(screen.getByTestId("narrative-background-image"), new window.Event("bindEvent:load"));
+  fireEvent.animationend(screen.getByTestId("narrative-imagination-veil"), {
+    params: { animation_type: "keyframe-animation", animation_name: "narrative-imagination-veil" },
+  });
+  expect(line()).toHaveTextContent(opening.beats[2].line);
+  expect(onFinish).not.toHaveBeenCalled();
+  advance();
+  expect(onFinish).toHaveBeenCalledTimes(1);
+});
+
+test("시작 유닛의 움직임 감소 설정은 상상 배경과 대화 계속 표시까지 전달된다", () => {
+  render(
+    <EpisodeNarrativeScreen
+      {...fixture({ narrative: tutorialPrologue.segments[0].narrative, reducedMotion: true })}
+    />,
+  );
+  advance();
+  advance();
+  fireEvent(screen.getByTestId("narrative-background-image"), new window.Event("bindEvent:load"));
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute("data-transition", "none");
+  expect(screen.queryByTestId("narrative-imagination-veil")).not.toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
+    "data-motion",
+    "static",
+  );
+});

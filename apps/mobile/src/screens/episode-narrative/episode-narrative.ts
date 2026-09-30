@@ -11,6 +11,10 @@ export type EpisodeNarrativeBeat = {
   readonly variant?: "speech" | "narration";
   /** 장면별 배경입니다. 생략하면 기존 스토어 배경을 씁니다. */
   readonly background?: string;
+  /** 상상 진입 또는 기내 현실로 복귀하는 장면의 전환 연출입니다. */
+  readonly transition?: "imagination" | "reality";
+  /** 전화 등 다른 화면을 거쳐 돌아올 때 이어 보여줄 직전 상상 배경입니다. */
+  readonly transitionFrom?: string;
   /** 이 장면에 들어올 때 재생하고 장면을 떠날 때 멈추는 번들 음원입니다. */
   readonly audioSource?: string;
   /** 번들 음원의 대사 시작과 길이에 맞춘 출력 시간입니다(ms). */

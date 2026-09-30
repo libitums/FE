@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 import { EpisodeNarrativeScreen } from "./EpisodeNarrativeScreen";
 import type { EpisodeNarrative } from "./episode-narrative";
+import { tutorialPrologue } from "../../app/tutorial-prologue";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -14,7 +15,7 @@ const audible = {
 const silent = { speakerName: "Me", line: "현실로 돌아온다.", translation: "Back to reality." };
 const advance = () => fireEvent.tap(screen.getByTestId("episode-narrative-screen-advance"), {});
 
-function mount(beats: EpisodeNarrative["beats"] = [audible, silent]) {
+function mount(beats: EpisodeNarrative["beats"] = [audible, silent], reducedMotion = true) {
   const play = vi.fn((_source: string, _done: (result: unknown) => void) => {});
   const stop = vi.fn();
   vi.stubGlobal("NativeModules", { AudioPlaybackModule: { play, stop } });
@@ -22,7 +23,7 @@ function mount(beats: EpisodeNarrative["beats"] = [audible, silent]) {
     insets: { top: 0, bottom: 0, left: 0, right: 0 },
     label: "Before We Land",
     // 이 파일은 음원 생명주기를 검증합니다. 타이핑 상호작용은 별도 UI 테스트가 덮습니다.
-    reducedMotion: true,
+    reducedMotion,
     narrative: { beats },
     onFinish: vi.fn(),
     onExit: vi.fn(),
@@ -89,6 +90,44 @@ test("네이티브 음원 모듈이 없어도 대사를 읽고 완료할 수 있
   vi.stubGlobal("NativeModules", undefined);
   advance();
   expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(audible.line);
+  advance();
+  expect(view.onFinish).toHaveBeenCalledTimes(1);
+});
+
+test("기내 복귀 중 다음 독백으로 넘겨도 전환은 유지하고 안내방송만 멈춘다", () => {
+  const ending = tutorialPrologue.segments[4].narrative;
+  const view = mount(ending.beats, false);
+  const cabin = screen.getByTestId("narrative-background-image");
+  expect(view.play).toHaveBeenCalledTimes(1);
+  expect(view.play).toHaveBeenLastCalledWith("tutorial-cabin-announcement", expect.any(Function));
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute("data-transition", "reality");
+  fireEvent(cabin, new window.Event("bindEvent:load"));
+  const veil = screen.getByTestId("narrative-reality-veil");
+
+  // 안내를 완성하는 첫 탭은 음원과 장면 전환을 유지합니다.
+  advance();
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(
+    ending.beats[0].line,
+  );
+  expect(view.stop).not.toHaveBeenCalled();
+  expect(screen.getByTestId("narrative-reality-veil")).toBe(veil);
+  advance();
+  expect(view.stop).toHaveBeenCalledTimes(1);
+  expect(view.play).toHaveBeenCalledTimes(1);
+  expect(screen.getByTestId("narrative-background-image")).toBe(cabin);
+  expect(screen.getByTestId("narrative-reality-veil")).toBe(veil);
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute("data-transition", "reality");
+  expect(screen.getByTestId("narrative-background").querySelectorAll("image")).toHaveLength(2);
+  fireEvent.animationend(veil, {
+    params: { animation_type: "keyframe-animation", animation_name: "narrative-reality-veil" },
+  });
+  expect(screen.queryByTestId("narrative-reality-veil")).not.toBeInTheDocument();
+  expect(view.onFinish).not.toHaveBeenCalled();
+  advance();
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(
+    ending.beats[1].line,
+  );
+  expect(view.onFinish).not.toHaveBeenCalled();
   advance();
   expect(view.onFinish).toHaveBeenCalledTimes(1);
 });
