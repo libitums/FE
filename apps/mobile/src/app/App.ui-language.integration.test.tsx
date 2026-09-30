@@ -36,13 +36,15 @@ const formStub = vi.hoisted(() => ({ current: null as LearningForm | null }));
 // 같은 스텝에서 골라 열기 위해서입니다. 나머지 export는 그대로 통과해 맵 · 진행이 실물로 돕니다.
 vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../screens/journey-map/journey-map")>();
+  // 튜토리얼 배정과 독립적으로 범용 학습형을 여는 회귀 픽스처입니다.
+  const fixture = await import("./test-helpers/learning-route-fixture");
   return {
     ...actual,
     learningFormsForStep: (id: JourneyStepId) =>
-      formStub.current === null ? actual.learningFormsForStep(id) : ([formStub.current] as const),
+      formStub.current === null ? fixture.learningFormsForStep(id) : ([formStub.current] as const),
     learningFormAt: (id: JourneyStepId, index: number) =>
       formStub.current === null
-        ? actual.learningFormAt(id, index)
+        ? fixture.learningFormAt(id, index)
         : index === 0
           ? formStub.current
           : undefined,
@@ -422,7 +424,8 @@ const screenCases: readonly ScreenCase[] = [
     name: "문장 순서",
     open: () => openLearningForm("sentence-order"),
     screenTestId: "sentence-order-screen-content",
-    content: [/^sentence-order-/],
+    // 표현을 짚는 조작 안내도 문항의 학습 콘텐츠입니다.
+    content: [/^sentence-order-/, /^learning-shell-instruction$/],
   },
   {
     name: "말하기",

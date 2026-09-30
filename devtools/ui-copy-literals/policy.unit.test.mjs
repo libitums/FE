@@ -129,7 +129,7 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 26항목과 같다", () => {
   const expected = [
     "listening-questions.ts#listeningQuestionsByStep",
     "word-choice-questions.ts#wordChoiceQuestionsByStep",
-    "sentence-order.ts#sentenceOrderQuestionsByStep",
+    "sentence-order-questions.ts#sentenceOrderQuestionsByStep",
     "speaking.ts#speakingQuestionsByStep",
     "writing.ts#writingQuestionsByStep",
     "episode-final-tests.ts#episodeFinalTests",

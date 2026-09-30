@@ -40,6 +40,8 @@ const formStub = vi.hoisted(() => ({
 
 vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../screens/journey-map/journey-map")>();
+  // 튜토리얼 배정과 독립적으로 범용 학습형을 여는 회귀 픽스처입니다.
+  const fixture = await import("./test-helpers/learning-route-fixture");
   return {
     ...actual,
     // 스텁은 학습형 하나를 줍니다 — 배정표가 목록을 돌려주므로 그 하나를 한 항목
@@ -47,14 +49,14 @@ vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
     learningFormsForStep: (id: JourneyStepId) => {
       const stub = formStub.current;
       if (stub === null) {
-        return actual.learningFormsForStep(id);
+        return fixture.learningFormsForStep(id);
       }
       return [typeof stub === "function" ? stub(id) : stub] as const;
     },
     learningFormAt: (id: JourneyStepId, index: number) => {
       const stub = formStub.current;
       if (stub === null) {
-        return actual.learningFormAt(id, index);
+        return fixture.learningFormAt(id, index);
       }
       if (index !== 0) {
         return undefined;

@@ -1,3 +1,4 @@
+import { sentenceOrderQuestionsForStep } from "../screens/sentence-order/sentence-order";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -44,16 +45,18 @@ const formStub = vi.hoisted(() => ({
 
 vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../screens/journey-map/journey-map")>();
+  // 튜토리얼 배정과 독립적으로 범용 학습형을 여는 회귀 픽스처입니다.
+  const fixture = await import("./test-helpers/learning-route-fixture");
   return {
     ...actual,
     // 스텁은 학습형 하나를 줍니다 — 배정표가 목록을 돌려주므로 그 하나를 한 항목
     // 목록으로 감쌉니다. 이 테스트가 보는 것은 「어느 화면이 서는가」이고 활동이
     // 몇 개인지는 보지 않습니다.
     learningFormsForStep: (id: JourneyStepId) =>
-      formStub.current === null ? actual.learningFormsForStep(id) : ([formStub.current] as const),
+      formStub.current === null ? fixture.learningFormsForStep(id) : ([formStub.current] as const),
     learningFormAt: (id: JourneyStepId, index: number) =>
       formStub.current === null
-        ? actual.learningFormAt(id, index)
+        ? fixture.learningFormAt(id, index)
         : index === 0
           ? formStub.current
           : undefined,
@@ -290,6 +293,13 @@ test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고
   const { container } = await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
 
   startStep("ordering");
+  for (const question of sentenceOrderQuestionsForStep("ordering")) {
+    for (const index of question.answerOrder) {
+      fireEvent.tap(screen.getByTestId(`sentence-order-chip-${index}`), {});
+    }
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  }
   expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument();
 
   // 완료 제목은 뒤따르는 안내와 문항 수 요약의 입구입니다 (ADR-0016 D12, 2026-09-30).

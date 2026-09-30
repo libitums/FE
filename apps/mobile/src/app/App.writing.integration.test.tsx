@@ -1,3 +1,9 @@
+// 범용 학습 흐름은 명시적 다중 활동 픽스처로 검증합니다. 제품 튜토리얼은 별도 실물 테스트가 집니다.
+vi.mock("../screens/journey-map/journey-map", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../screens/journey-map/journey-map")>()),
+  ...(await import("./test-helpers/learning-route-fixture")),
+}));
+
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 

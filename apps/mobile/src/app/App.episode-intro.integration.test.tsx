@@ -216,7 +216,7 @@ test("[IN-K2] 결과 화면의 Check로 맵에 돌아오면 표지가 clear이�
   );
 
   startOrdering();
-  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
+  expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
 });
 
 // `renderPrologueCompleteScreen`이 두 경로에서 옵니다 — 끝까지 본 경우와 건너뛴
@@ -470,7 +470,7 @@ test("[IN-I12] 표지를 끝낸 것으로 부팅하면 맵의 표지가 clear로
   expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
 
   startOrdering();
-  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
+  expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
 });
 
 // 옛 [EI7]의 개정입니다 — 「표지를 넘긴 뒤에 한 번」이 아니라 「열리고 나면 **곧장**

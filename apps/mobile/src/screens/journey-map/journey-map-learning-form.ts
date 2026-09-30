@@ -5,20 +5,14 @@
 import type { LearningForm } from "../../lib/learning-form";
 import type { JourneyStepId } from "./journey-map-units";
 
-// 일반 유닛마다 활동을 실행 순서대로 배정합니다. 목록은 비어 있을 수 없고,
-// 실제 문항이 있는 학습형과 일치해야 합니다(journey-map.unit.test.ts의 교차 불변식).
-// 첫 인사는 한 표현에 답하는 안내 활동이고, 듣기와 다른 조작은 다음 유닛부터 다룹니다.
+// 튜토리얼은 표현 하나를 보고 따라 구성하는 활동 하나로 시작합니다.
+// 듣기·말하기·쓰기 등의 기존 문항은 다음 커리큘럼을 위해 유지하지만 여기서 배정하지 않습니다.
 const learningFormsByStep: Record<JourneyStepId, readonly [LearningForm, ...LearningForm[]]> = {
   greeting: ["sentence-order"],
-  // ⟨2026-09-28⟩ 이름 묻기는 듣기 → 낱말 고르기 뒤에 말하기가 이어집니다 — 말하기(Figma
-  // 65-282)에 처음 닿는 자리입니다. 문항은 `speakingQuestionsByStep.introduction`의 임시 셋입니다.
-  introduction: ["listening", "word-choice", "speaking"],
-  ordering: ["listening"],
-  appointment: ["listening"],
-  // ⟨2026-09-29⟩ 길 묻기는 듣기 뒤에 쓰기가 이어집니다 — 쓰기 학습형에 처음 닿는 자리입니다.
-  // 문항은 `writingQuestionsByStep.directions`의 임시 셋입니다. 다른 스텝의 흐름을 지키는
-  // 테스트가 많아 가장 덜 밟힌 스텝을 골랐습니다 — 배정 근거가 아닙니다.
-  directions: ["listening", "writing"],
+  introduction: ["sentence-order"],
+  ordering: ["sentence-order"],
+  appointment: ["sentence-order"],
+  directions: ["sentence-order"],
 };
 
 // 던지지 않는 총함수입니다 — `Record`가 다섯 키를 전부 덮는 것을 tsc가 지므로 방어

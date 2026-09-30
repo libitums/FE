@@ -1,6 +1,7 @@
 import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { Tab } from "../app/nav-state";
 import type {
   PhoneNumber,
@@ -30,7 +31,10 @@ import { tutorialPrologue, tutorialPrologueLabel } from "../app/tutorial-prologu
 const noop = () => undefined;
 
 // 두 번째 인자는 다음 화면에 넘길 값입니다(지금은 로그인 → 코드 검증의 전화번호뿐).
-export type PlaygroundParams = { readonly phoneNumber?: PhoneNumber };
+export type PlaygroundParams = {
+  readonly phoneNumber?: PhoneNumber;
+  readonly stepId?: JourneyStepId;
+};
 type Go = (screen: PlaygroundScreen, params?: PlaygroundParams) => void;
 
 // playground fixture 전용 자리표시 번호입니다. 코드 검증 화면은 번호가 필수라
@@ -50,9 +54,9 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
-  "tutorial-greeting-reply": (go: Go) => (
+  "tutorial-practice": (go: Go, params: PlaygroundParams) => (
     <SentenceOrderScreen
-      stepId="greeting"
+      stepId={params.stepId ?? "greeting"}
       onExit={() => go("journey-map")}
       onFinish={() => go("journey-map")}
     />
@@ -108,7 +112,7 @@ export const playgroundScreens = {
     <JourneyMapScreen
       completedStepCount={1}
       onStartStep={(id) => {
-        if (id === "greeting") go("tutorial-greeting-reply");
+        go("tutorial-practice", { stepId: id });
       }}
       completedEpisodeIntroIds={["tutorial-intro"]}
       onStartEpisodeIntroUnit={noop}

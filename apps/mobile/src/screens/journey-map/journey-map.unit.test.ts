@@ -285,10 +285,13 @@ describe("낭독 이름의 데이터 앵커", () => {
         description:
           "Learn one greeting and say hello back, with meaning and pronunciation to help",
       },
-      { id: "introduction", description: "Ask someone's name and introduce yourself" },
-      { id: "ordering", description: "Order a drink at a café" },
-      { id: "appointment", description: "Set a date and time to meet again" },
-      { id: "directions", description: "Ask the way to the meeting place" },
+      {
+        id: "introduction",
+        description: "Ask one simple question, with meaning and pronunciation to help",
+      },
+      { id: "ordering", description: "Ask for water by putting two pieces together" },
+      { id: "appointment", description: "Practice saying “See you tomorrow” with a model to help" },
+      { id: "directions", description: "Put two pieces together to ask where the station is" },
     ]);
   });
 
