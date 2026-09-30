@@ -65,11 +65,14 @@ export const feedbackEn: FeedbackCopy = {
 };
 
 export const profileEn: ProfileCopy = {
+  notProvided: "Not provided",
+  learningLanguage: "Korean",
   title: "User profile",
   itemLabel: {
     name: "Name",
     "learning-language": "Learning language",
-    "learning-goal": "Learning goal",
+    email: "Email",
+    phone: "Phone number",
   },
 };
 

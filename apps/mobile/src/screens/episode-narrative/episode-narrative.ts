@@ -17,6 +17,8 @@ export type EpisodeNarrativeBeat = {
   readonly transitionFrom?: string;
   /** 이 장면에 들어올 때 재생하고 장면을 떠날 때 멈추는 번들 음원입니다. */
   readonly audioSource?: string;
+  /** 번들 음원의 대사 시작과 길이에 맞춘 출력 시간입니다(ms). */
+  readonly revealTiming?: { readonly delayMs: number; readonly durationMs: number };
   /** 학습 대사입니다(한국어). */
   readonly line: string;
   /** 대사의 번역입니다(영어). */

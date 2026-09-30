@@ -125,6 +125,7 @@ export type MessengerJourneyMapItemContract = {
 };
 
 export type MessengerScreenProps = {
+  readonly reducedMotion?: boolean;
   readonly conversation: MessengerConversation;
   readonly completionStatus: MessengerCompletionStatus;
   readonly onExit: (outcome: MessengerExitOutcome) => void;
@@ -139,6 +140,9 @@ export type MessengerScreenProps = {
 
 export type MessageBubbleProps = {
   readonly message: MessengerMessage;
+  readonly animate?: boolean;
+  readonly reducedMotion?: boolean;
+  readonly onRevealComplete?: () => void;
 };
 
 /**

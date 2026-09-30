@@ -1,3 +1,4 @@
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { journeySteps } from "../screens/journey-map/journey-map";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
@@ -272,16 +273,16 @@ test("[I3] 여정에서 셋을 모두 끝냈어도 롤플레이는 항상 처음
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
   openRoleplayItem(phoneCallUnitId);
-  expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Ready to call");
+  expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Incoming call…");
   expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
     "accessibility-label",
-    "Start call",
+    "Accept",
   );
   expect(
     screen
       .queryAllByTestId(/^phone-call-transcript-/)
       .map((node) => node.getAttribute("data-testid")),
-  ).toHaveLength(1);
+  ).toHaveLength(0);
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
   openRoleplayItem(visualNovelUnitId);
@@ -332,7 +333,12 @@ test("[I4] 롤플레이에서 연 비주얼 노벨의 나가기는 목록으로�
 });
 
 test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대로다(회귀)", async () => {
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App
+      journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
+      completedEpisodeIntroIds={completedIntros}
+    />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
@@ -569,7 +575,12 @@ test("[I8] 에피소드를 끝내기 전에는 구획이 잠겨 있고 카드를
 });
 
 test("[I9] 여정에서 특별 유닛 하나만 끝내서는 에피소드가 열리지 않는다", async () => {
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App
+      journeySeed={journeySeedBefore("appointment-confirmation")}
+      completedEpisodeIntroIds={completedIntros}
+    />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
   finishMessengerConversation();

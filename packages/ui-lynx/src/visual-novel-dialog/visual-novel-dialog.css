@@ -79,10 +79,22 @@
   align-items: flex-end;
 }
 
+.ui-lynx-visual-novel-dialog-line-slot {
+  position: relative;
+  min-width: var(--libitum-spacing-0);
+  flex: 1;
+}
+
+.ui-lynx-visual-novel-dialog-line-reveal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
 .ui-lynx-visual-novel-dialog-line {
   min-width: var(--libitum-spacing-0);
   min-height: var(--libitum-spacing-48);
-  flex: 1;
   color: var(--libitum-color-gray-300);
   font-family: var(--libitum-typography-dialogue-body-font-family);
   font-size: var(--libitum-typography-dialogue-body-font-size);

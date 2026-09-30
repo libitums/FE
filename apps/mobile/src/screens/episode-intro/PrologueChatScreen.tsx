@@ -28,6 +28,7 @@ export function PrologueChatScreen({
   chat,
   onComplete,
   onBack,
+  reducedMotion = false,
 }: PrologueChatScreenProps): ReactNode {
   const copy = useUiCopy();
   const [shownCount, setShownCount] = useState(0);
@@ -108,7 +109,7 @@ export function PrologueChatScreen({
             scroll-bar-enable={true}
           >
             <view className="prologue-chat-screen-list" data-testid="prologue-chat-screen-list">
-              {shown.map((message) => (
+              {shown.map((message, index) => (
                 <view
                   key={message.id}
                   className={`prologue-chat-screen-row prologue-chat-screen-row-${message.sender}`}
@@ -120,6 +121,12 @@ export function PrologueChatScreen({
                     speaker={message.sender === "self" ? copy.common.me : chat.partnerName}
                     message={message.text}
                     translation={message.translation}
+                    reveal={
+                      message.sender === "other" && index === shown.length - 1
+                        ? "typewriter"
+                        : "instant"
+                    }
+                    reducedMotion={reducedMotion}
                     size="m"
                     contentLanguage="learning"
                     languageTag="ko"

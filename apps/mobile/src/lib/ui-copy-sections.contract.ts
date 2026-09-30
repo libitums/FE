@@ -219,7 +219,9 @@ export type MessengerCopy = {
 };
 
 export type PhoneCallCopy = {
-  readonly status: Readonly<Record<"ready" | "playing" | "reply-ready" | "completed", string>>;
+  readonly status: Readonly<
+    Record<"incoming" | "ready" | "playing" | "reply-ready" | "completed", string>
+  >;
   readonly play: Readonly<Record<"start" | "listen" | "listen-again", string>>;
   readonly voiceCall: (callerName: string) => string;
 };
@@ -282,8 +284,10 @@ export type SettingsCopy = {
 };
 
 export type ProfileCopy = {
+  readonly notProvided: string;
+  readonly learningLanguage: string;
   readonly title: string;
-  readonly itemLabel: Readonly<Record<"name" | "learning-language" | "learning-goal", string>>;
+  readonly itemLabel: Readonly<Record<"name" | "email" | "phone" | "learning-language", string>>;
 };
 
 export type GemPurchaseCopy = {

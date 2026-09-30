@@ -229,21 +229,21 @@ describe("journeySteps · initialCompletedStepCount (고정 데이터)", () => {
     expect(initialCompletedStepCount).toBeLessThanOrEqual(journeySteps.length);
   });
 
-  it("initialCompletedStepCount가 계약이 고정한 값(2)이다", () => {
-    expect(initialCompletedStepCount).toBe(2);
+  it("신규 사용자의 initialCompletedStepCount는 0이다", () => {
+    expect(initialCompletedStepCount).toBe(0);
   });
 
-  // 파생 상태가 done 2·current 1·locked 2가 되게 합니다.
-  it("파생 상태가 계약 표와 일치한다 — greeting·introduction done, ordering current, appointment·directions locked", () => {
+  // 신규 사용자에게 완료한 것으로 표시되는 학습이 없어야 합니다.
+  it("신규 진행에서는 첫 스텝만 current이고 나머지는 locked다", () => {
     const derived = journeySteps.map((step, index) => ({
       id: step.id,
       status: stepStatusAt(index, initialCompletedStepCount),
     }));
 
     expect(derived).toEqual([
-      { id: "greeting", status: "done" },
-      { id: "introduction", status: "done" },
-      { id: "ordering", status: "current" },
+      { id: "greeting", status: "current" },
+      { id: "introduction", status: "locked" },
+      { id: "ordering", status: "locked" },
       { id: "appointment", status: "locked" },
       { id: "directions", status: "locked" },
       { id: "tutorial-listening", status: "locked" },
@@ -267,9 +267,9 @@ describe("낭독 이름의 데이터 앵커", () => {
     );
 
     expect(labels).toEqual([
-      "Your First Hello, completed",
-      "Asking names, completed",
-      "Ordering, current step",
+      "Your First Hello, current step",
+      "Asking names, locked",
+      "Ordering, locked",
       "Making plans, locked",
       "Asking for directions, locked",
       "Listen to a Hello, locked",
@@ -787,14 +787,11 @@ describe("mapItemStatus — 표지 게이트", () => {
     }
   });
 
-  // ⚠ **`initialCompletedStepCount`가 2인 것과 표지 미완료가 동시에 참일 수 있습니다** —
-  // 「스텝 둘을 끝냈는데 표지를 안 끝냈다」는 데이터로 표현되지만 도메인에 없는
-  // 상태입니다. 씨앗을 고쳐 관찰을 0으로 만들지 않고, **파생이 흡수합니다**: 표지
-  // 게이트를 먼저 보므로 끝낸 스텝도 잠김으로 덮입니다.
+  // 과거 완료 기록은 삭제하지 않고 표지 완료 전까지만 잠금으로 가립니다.
   it("[U-L1] 표지가 미완료면 끝낸 스텝도 잠김으로 덮인다", () => {
     const seeded: JourneyProgress = {
       ...nothingDone,
-      completedStepCount: initialCompletedStepCount,
+      completedStepCount: 2,
     };
 
     for (const item of tutorialSection.items.slice(1)) {
@@ -802,10 +799,7 @@ describe("mapItemStatus — 표지 게이트", () => {
     }
   });
 
-  // 표지를 끝내면 씨앗의 2가 되살아나 완료 둘 · 현재 하나가 그대로 섭니다. 특별 유닛
-  // 셋은 표지 뒤에는 언제나 열려 있고(ADR-0024 D6), 최종 테스트만 나머지가 다 끝나야
-  // 열립니다 — **오늘 규칙이 그대로 사는 것**이 이 케이스가 지는 것입니다.
-  it("[U-L2] 표지를 끝내면 잠김이 풀리고 스텝 순차 · 최종 테스트 해금 규칙이 그대로 산다", () => {
+  it("[U-L2] 표지 완료 후 첫 학습만 열린다", () => {
     const introDone: JourneyProgress = {
       ...nothingDone,
       completedStepCount: initialCompletedStepCount,
@@ -819,13 +813,13 @@ describe("mapItemStatus — 표지 게이트", () => {
 
     expect(statuses).toEqual([
       ["tutorial-intro", "completed"],
-      ["greeting", "completed"],
-      ["introduction", "completed"],
-      ["ordering", "available"],
+      ["greeting", "available"],
+      ["introduction", "locked"],
+      ["ordering", "locked"],
       ["appointment", "locked"],
-      ["appointment-confirmation", "available"],
-      ["appointment-confirmation-phone-call", "available"],
-      ["cafe-arrival-visual-novel", "available"],
+      ["appointment-confirmation", "locked"],
+      ["appointment-confirmation-phone-call", "locked"],
+      ["cafe-arrival-visual-novel", "locked"],
       ["directions", "locked"],
       ["tutorial-listening", "locked"],
       ["tutorial-speaking", "locked"],

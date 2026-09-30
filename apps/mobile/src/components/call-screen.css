@@ -1,0 +1,243 @@
+.phone-call-screen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--libitum-spacing-16);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-secondary);
+}
+.phone-call-screen-header {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+}
+/* 정사각형 프로필을 원형 틀에 맞춥니다. */
+.phone-call-screen .call-stage-portrait {
+  height: 223px;
+}
+.phone-call-screen-exit {
+  min-height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+  z-index: 1;
+}
+.phone-call-screen-status {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+.phone-call-screen-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+.phone-call-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+}
+.phone-call-screen-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-8) 0;
+}
+.phone-call-transcript-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+.phone-call-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  width: 100%;
+}
+.phone-call-transcript-self {
+  align-self: flex-end;
+}
+.phone-call-screen-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-16);
+  flex-shrink: 0;
+}
+.phone-call-reply-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-16);
+}
+
+.phone-call-screen-status {
+  text-align: center;
+}
+.phone-call-replay-button {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: transparent;
+}
+.phone-call-reply-button {
+  background: var(--libitum-color-white);
+  border: var(--libitum-stroke-width-strong) solid var(--libitum-color-brand-primary);
+  border-radius: var(--libitum-radius-xl);
+}
+
+.phone-call-reply-button text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  line-height: var(--libitum-typography-button-xl-line-height);
+}
+.phone-call-reply-button .phone-call-reply-support {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.phone-call-transcript-speaker {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  margin-bottom: var(--libitum-spacing-4);
+}
+
+.phone-call-story-context {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  padding: var(--libitum-spacing-12) 0;
+}
+
+/* 받기 전에는 프로필과 수신 상태만 보여 줍니다. */
+.phone-call-screen-incoming .phone-call-screen-content {
+  padding-top: var(--libitum-spacing-48);
+}
+.phone-call-screen-active .call-stage-caller,
+.phone-call-screen-completed .call-stage-caller {
+  gap: var(--libitum-spacing-8);
+}
+.phone-call-screen-active .call-stage-portrait-frame,
+.phone-call-screen-active .call-stage-portrait,
+.phone-call-screen-completed .call-stage-portrait-frame,
+.phone-call-screen-completed .call-stage-portrait {
+  width: 120px;
+  height: 120px;
+}
+.phone-call-screen .call-stage-kind {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+.phone-call-screen-active .call-stage-name,
+.phone-call-screen-completed .call-stage-name {
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+.phone-call-screen .call-stage-clock {
+  padding: 0;
+  border-width: 0;
+}
+.phone-call-screen .call-stage-clock-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+.phone-call-screen .call-stage-line {
+  padding: var(--libitum-spacing-16);
+}
+.phone-call-controls {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.phone-call-control {
+  flex: 1;
+  min-width: 0;
+}
+.phone-call-control-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+.phone-call-control-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-64);
+  height: var(--libitum-spacing-64);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-100);
+}
+.phone-call-control-icon {
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-24);
+}
+.phone-call-hang-up-circle {
+  background: var(--libitum-color-feedback-incorrect);
+}
+.phone-call-hang-up-icon {
+  transform: rotate(225deg);
+}
+.phone-call-control-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+.phone-call-screen-incoming .phone-call-transcript-list {
+  display: none;
+}
+.phone-call-screen-incoming .phone-call-screen-actions {
+  align-items: center;
+  padding-bottom: var(--libitum-spacing-32);
+}
+.phone-call-answer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+}
+.phone-call-answer-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-80);
+  height: var(--libitum-spacing-80);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-feedback-correct);
+}
+.phone-call-answer-icon {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+}
+.phone-call-answer-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.phone-call-control-circle-on {
+  background: var(--libitum-color-brand-primary);
+}

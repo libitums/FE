@@ -194,7 +194,12 @@
 .messenger-story-context {
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
   font-size: var(--libitum-typography-body-s-font-size);
   line-height: var(--libitum-typography-body-s-line-height);
-  padding: var(--libitum-spacing-12) 0;
+  text-align: center;
+  margin-left: var(--libitum-spacing-32);
+  margin-right: var(--libitum-spacing-32);
+  padding-top: var(--libitum-spacing-12);
+  padding-bottom: var(--libitum-spacing-12);
 }

@@ -203,6 +203,7 @@ export type EpisodePrologue =
     };
 
 export type PrologueChatScreenProps = {
+  readonly reducedMotion?: boolean;
   readonly insets: SafeAreaInsets;
   /** 머리 줄입니다 — `Episode 0.` */
   readonly episodeLabel: string;
@@ -217,6 +218,7 @@ export type PrologueChatScreenProps = {
 export type PrologueCallVolume = 1 | 2 | 3 | 4 | 5;
 
 export type PrologueCallScreenProps = {
+  readonly reducedMotion?: boolean;
   readonly insets: SafeAreaInsets;
   /** 머리 줄입니다 — `Episode 0.` */
   readonly episodeLabel: string;

@@ -1,4 +1,6 @@
 export { Button } from "./button";
+export { useTypewriter } from "./typewriter";
+export type { TypewriterOptions, TypewriterState } from "./typewriter";
 export type {
   ButtonContract,
   ButtonProps,

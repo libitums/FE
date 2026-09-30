@@ -67,6 +67,7 @@
 
 /* 대사 말풍선 — 흰 면에 한국어 한 줄과 번역 한 줄입니다. */
 .call-stage-line {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,7 +77,24 @@
   background: var(--libitum-color-white);
 }
 
+.call-stage-line-body {
+  position: relative;
+  width: 100%;
+}
+
+.call-stage-line-measure {
+  visibility: hidden;
+}
+
+.call-stage-line-reveal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
 .call-stage-line-text {
+  width: 100%;
   text-align: center;
   color: var(--libitum-color-gray-900);
   font-family: var(--libitum-typography-heading-m-font-family);

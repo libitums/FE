@@ -105,15 +105,16 @@ describe("findComponentFileConventionViolations", () => {
     expect(findComponentFileConventionViolations([...entries].reverse())).toEqual(violations);
   });
 
-  test("the twenty-four public component directories are canonical", async () => {
+  test("public component directories are canonical alongside the typewriter hook", async () => {
     const directories = (await readdir(sourceRoot, { withFileTypes: true }))
       .filter((item) => item.isDirectory())
       .map((item) => item.name)
       .sort();
     const entries = await Promise.all(
-      directories.map(async (directory) =>
-        entry(directory, await readdir(resolve(sourceRoot, directory))),
-      ),
+      // typewriter는 UI와 CSS를 소유하지 않는 공개 훅이며 export는 index 통합 테스트가 검증한다.
+      directories
+        .filter((directory) => directory !== "typewriter")
+        .map(async (directory) => entry(directory, await readdir(resolve(sourceRoot, directory)))),
     );
 
     expect(directories).toEqual([
@@ -140,6 +141,7 @@ describe("findComponentFileConventionViolations", () => {
       "step-indicator",
       "text-field",
       "tooltip",
+      "typewriter",
       "visual-novel-dialog",
     ]);
     expect(findComponentFileConventionViolations(entries)).toEqual([]);

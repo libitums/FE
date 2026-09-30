@@ -1,3 +1,4 @@
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen } from "@lynx-js/react/testing-library";
 import { App } from "./App";
@@ -13,7 +14,12 @@ vi.mock("../lib/audio", () => audio);
 const { playAudio, stopAudio } = audio;
 
 async function openJourney() {
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App
+      journeySeed={journeySeedBefore("appointment-confirmation-phone-call")}
+      completedEpisodeIntroIds={completedIntros}
+    />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 }
 
@@ -42,17 +48,17 @@ describe("App · phone-call integration", () => {
     expect(playAudio).toHaveBeenCalledTimes(0);
   });
 
-  it("전화 3턴은 수동 재생·답장으로 완료되고 맵 완료 표식만 바꾼다", async () => {
+  it("전화 받기 뒤 답장만으로 3턴을 완료하고 맵 완료 표식만 바꾼다", async () => {
     await openJourney();
     const before = ["greeting", "introduction", "ordering", "appointment", "directions"].map((id) =>
       screen.getByTestId(`ui-lynx-learning-unit-${id}`).getAttribute("data-status"),
     );
     // 스텝은 `LearningUnit`이 그리므로 유닛 어휘입니다 — 특수 항목(메신저 · 전화 ·
     // 비주얼 노벨)은 자기 컴포넌트의 어휘(`available`·`completed`)를 그대로 씁니다.
-    expect(before).toEqual(["clear", "clear", "active", "default", "default"]);
+    expect(before).toEqual(["clear", "clear", "clear", "clear", "default"]);
     expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
       "data-status",
-      "available",
+      "clear",
     );
     fireEvent.tap(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
@@ -63,16 +69,17 @@ describe("App · phone-call integration", () => {
       finish = done;
       return "started";
     });
+    fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
     for (const [source, reply] of [
       ["phone-call-confirm-01", "phone-call-reply-confirm-time-reply"],
       ["phone-call-confirm-02", "phone-call-reply-confirm-place-reply"],
       ["phone-call-confirm-03", "phone-call-reply-goodbye-reply"],
     ] as const) {
-      fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
       expect(playAudio).toHaveBeenLastCalledWith(source, expect.any(Function));
       act(() => finish?.());
       fireEvent.tap(screen.getByTestId(reply), {});
     }
+    expect(playAudio).toHaveBeenCalledTimes(3);
     expect(
       screen
         .queryAllByTestId(/^phone-call-transcript-/)
@@ -84,7 +91,7 @@ describe("App · phone-call integration", () => {
     ).toHaveAttribute("data-status", "clear");
     expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
       "data-status",
-      "available",
+      "clear",
     );
     const after = ["greeting", "introduction", "ordering", "appointment", "directions"].map((id) =>
       screen.getByTestId(`ui-lynx-learning-unit-${id}`).getAttribute("data-status"),
@@ -133,7 +140,7 @@ describe("App · phone-call integration", () => {
       screen
         .queryAllByTestId(/^phone-call-transcript-/)
         .map((node) => node.getAttribute("data-testid")),
-    ).toEqual(["phone-call-transcript-jimin-confirm-time"]);
+    ).toEqual([]);
   });
 
   // **뒤집힙니다**(ADR-0007 2026-09-27 개정). 전화는 여정 탭 위에 쌓인 자리라 탭이
@@ -159,7 +166,11 @@ describe("App · phone-call integration", () => {
   it("맵 항목 tap마다 push 전에 phone_call_unit_opened(journey)이 entryStatus와 함께 1건 온다", async () => {
     const phoneCallEventSink = vi.fn<NonNullable<PhoneCallEventSink>>();
     await renderSignedInApp(
-      <App completedEpisodeIntroIds={completedIntros} phoneCallEventSink={phoneCallEventSink} />,
+      <App
+        journeySeed={journeySeedBefore("appointment-confirmation-phone-call")}
+        completedEpisodeIntroIds={completedIntros}
+        phoneCallEventSink={phoneCallEventSink}
+      />,
     );
     fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
@@ -181,12 +192,12 @@ describe("App · phone-call integration", () => {
       finish = done;
       return "started";
     });
+    fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
     for (const [, reply] of [
       ["phone-call-confirm-01", "phone-call-reply-confirm-time-reply"],
       ["phone-call-confirm-02", "phone-call-reply-confirm-place-reply"],
       ["phone-call-confirm-03", "phone-call-reply-goodbye-reply"],
     ] as const) {
-      fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
       act(() => finish?.());
       fireEvent.tap(screen.getByTestId(reply), {});
     }

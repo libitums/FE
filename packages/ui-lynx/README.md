@@ -6,6 +6,39 @@ libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포
 `Card`, `ChatBubble`, `VisualNovelDialog`, `TextField`, `AnswerLabel`, `Overlay`, `Fog`, `Tooltip`,
 `Avatar`, `Dialog`, `OptionSelector`, `LearningUnit`, `SettingsCell`·`SettingsGroup` 등이 있다.
 
+공통 타이핑 훅 `useTypewriter`는 `@libitums/ui-lynx/typewriter`에서 가져온다.
+`text`, `intervalMs`(기본 35ms), `resetKey`, `enabled`, `reducedMotion`을 받고
+`visibleText`, `visibleCharacterCount`, `isComplete`, `finish()`를 반환한다.
+`text`나 `resetKey`가 바뀌면 재시작하고, 완료·언마운트 시 타이머를 정리한다.
+`enabled={false}`, `reducedMotion={true}`, `intervalMs={0}`은 즉시 전체를 표시한다.
+속도나 모션 옵션을 바꿔도 재시작한다. 글자 수는 Unicode code point 단위이므로
+surrogate pair는 보존하지만 ZWJ 이모지·결합 문자는 여러 단계로 표시될 수 있다.
+
+```tsx
+import { useTypewriter } from "@libitums/ui-lynx/typewriter";
+
+function TypedLine({ text }: { text: string }) {
+  const typing = useTypewriter({ text });
+  return (
+    <text accessibility-label={text} bindtap={typing.finish}>
+      {typing.visibleText || "\u200B"}
+    </text>
+  );
+}
+```
+
+`VisualNovelDialog`에는 원문 `line`을 그대로 전달하고 `reveal="typewriter"`,
+`status={typing.isComplete ? "ready" : "revealing"}`,
+`visibleCharacterCount={typing.visibleCharacterCount}`를 연결한다. 그러면 접근성 이름은
+전체 문장을 유지하고 번역과 계속 표시는 출력 완료 후 나타난다.
+
+`ChatBubble`은 `reveal="typewriter"`를 지정하면 같은 훅으로 메시지를 출력한다.
+`intervalMs`, `reducedMotion`을 지원하고 번역은 완료 후 표시한다. 기본은 즉시 표시이며,
+새 상대 메시지에만 켜고 보낸 메시지·과거 대화는 기본값을 사용한다.
+말풍선은 전체 문장·번역 공간을 처음부터 확보하고 글자만 표시하므로 타이핑 중 크기와
+위치가 변하지 않는다. `VisualNovelDialog`도 번역과 계속 표시 공간까지 미리 확보한다.
+`onRevealComplete`는 타이핑이 완료될 때 호출된다. 콜백은 ReactLynx 백그라운드 함수로 선언한다.
+
 컴포넌트가 스스로 짓는 기본 문구(접근성 접미 `, selected` · `, loading` · 상태 이름 등)는 **영어**다. 소비 앱의
 UI 언어로 바꿔 넘기는 주입 경로는 아직 없고, 영어 밖 언어를 여는 변경이 먼저 세운다
 (FE 저장소 `docs/adr/0031-ui-language-catalog.md` D6).

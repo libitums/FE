@@ -1,6 +1,6 @@
-// 여정·학습·알림·설정 콜백을 만들고, 특별 유닛 셋의 콜백을 `special-unit-wiring.ts`에서 받아
-// 한 객체로 합칩니다. 진행 상태 넷과 세션 옵션을 여기서 읽고 갱신합니다. 연습 경계 밖의
-// 롤플레이 콜백 여덟은 `roleplay-wiring.ts`가 집니다.
+import { guardJourneyUnitStarts } from "./journey-access";
+import { completedVisualNovelUnitIdsFrom } from "./journey-progress";
+// 여정·학습·알림·설정과 특별 유닛 콜백을 합칩니다. 롤플레이는 roleplay-wiring.ts가 담당합니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
@@ -39,10 +39,9 @@ import type {
 } from "../screens/phone-call/phone-call.contract";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import { openLegalDocument } from "../lib/legal-document";
-import { sessionOptionChangedEvent, settingsNavOpenedEvent } from "../screens/settings/settings";
+import { settingsNavOpenedEvent } from "../screens/settings/settings";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
-import { toggleSessionOption } from "../lib/session-options";
-import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+import type { SessionOptions } from "../lib/session-options";
 import type {
   VisualNovelEventSink,
   VisualNovelProgress,
@@ -77,7 +76,6 @@ export type JourneyWiringArgs = {
   readonly notifications: readonly NotificationItem[];
   readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
-  readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   /**
    * 한 스텝의 활동들이 지나오며 쌓은 결과입니다. 유닛 하나가 활동 여럿을 잇기 때문에
@@ -117,7 +115,6 @@ export function journeyWiring(args: JourneyWiringArgs) {
     notifications,
     setNotifications,
     sessionOptions,
-    setSessionOptions,
     pendingResults,
     setPendingResults,
     completedEpisodeIntroIds,
@@ -252,15 +249,6 @@ export function journeyWiring(args: JourneyWiringArgs) {
       }
       openLegalDocument(target);
     },
-    // 흐름 하나(토글)입니다 — sink 먼저, `setSessionOptions` 나중. `value`는
-    // 바뀐 뒤 값입니다.
-    onToggleSessionOption: (key: SessionOptionKey) => {
-      const next = toggleSessionOption(sessionOptions, key);
-      settingsEventSink?.(sessionOptionChangedEvent(key, next[key]));
-      setSessionOptions(next);
-    },
-    // 흐름 셋(나가기)입니다 — 프로필·약관의 `설정으로` → 설정 탭 스택의
-    // 루트(ADR-0007 D6).
     onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
     // 설정 피드백 보내기입니다(ADR-0036). 성공한 것만 이벤트로 셉니다 — 글은 싣지 않습니다.
     onSubmitFeedback: async (rating: FeedbackRating, message: string): Promise<boolean> => {
@@ -276,11 +264,17 @@ export function journeyWiring(args: JourneyWiringArgs) {
     },
   };
 
-  // 표지 결선을 나란히 붙입니다 — **감싸지 않습니다.** 표지는 맵에 스스로 서는 유닛이라
-  // 유닛 시작 넷을 가로채지 않고(spec §2.5), 순서는 맵의 잠김 파생이 집니다. 이름이
-  // `journey`인 것은 위의 알림 결선이 그 이름으로 시작을 부르기 때문입니다.
+  // 알림과 푸시도 이 콜백을 사용하므로 실제 진입 직전에 맵과 같은 규칙으로 차단합니다.
   const journey = {
     ...unitStarts,
+    ...guardJourneyUnitStarts(unitStarts, {
+      completedStepCount,
+      completedEpisodeIntroIds,
+      completedMessengerUnitIds,
+      completedPhoneCallUnitIds,
+      completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
+      completedEpisodeFinalIds: [],
+    }),
     ...episodeIntroWiring({
       sections: journeyMapSections,
       setCompletedEpisodeIntroIds: args.setCompletedEpisodeIntroIds,

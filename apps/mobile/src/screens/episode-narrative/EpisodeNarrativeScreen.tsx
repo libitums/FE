@@ -5,6 +5,7 @@ import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { Avatar } from "@libitums/ui-lynx/avatar";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
+import { useTypewriter } from "@libitums/ui-lynx/typewriter";
 
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
@@ -26,7 +27,7 @@ export type EpisodeNarrativeScreenProps = {
   readonly onFinish: () => void;
   /** 뒤로(맵으로)입니다. */
   readonly onExit: () => void;
-  /** 배경 전환·확대와 계속 표시의 모션을 줄입니다. */
+  /** 배경 전환·확대와 대사 타이핑·계속 표시의 모션을 줄입니다. */
   readonly reducedMotion?: boolean;
 };
 
@@ -37,8 +38,8 @@ function stopTap() {
 
 /**
  * 에피소드 서사입니다(Figma 79-6304). 서사 표지의 `Next` 뒤에 서는 비주얼 노벨이고, 장면
- * 그림 위에 대화 패널 하나가 섭니다. 화면 어디를 눌러도 다음 장면으로 넘어가고, 마지막
- * 장면 뒤에는 누른 유닛이 열립니다.
+ * 그림 위에 대화 패널 하나가 섭니다. 출력 중 탭은 대사를 완성하고, 완료 후 탭은 다음
+ * 장면으로 넘어갑니다. 마지막 장면 뒤에는 누른 유닛이 열립니다.
  *
  * 장면 번호는 이 화면의 것입니다 — 뒤로 나가면 버려지고, 다시 들어오면 처음부터입니다.
  */
@@ -53,10 +54,18 @@ export function EpisodeNarrativeScreen({
   const copy = useUiCopy();
   const [beatIndex, setBeatIndex] = useState(0);
   const beat = narrative.beats[beatIndex] ?? narrative.beats[0];
+  const typing = useTypewriter({
+    text: beat.line,
+    resetKey: beatIndex,
+    reducedMotion,
+    delayMs: beat.revealTiming?.delayMs,
+    intervalMs: beat.revealTiming
+      ? beat.revealTiming.durationMs / Math.max(1, Array.from(beat.line).length)
+      : undefined,
+  });
   const background = beat.background ?? storyBackground;
   const previousBackground = narrative.beats[beatIndex - 1]?.background ?? storyBackground;
   const character = narrative.character === undefined ? storyCharacter : narrative.character;
-
   const audioSource = beat.audioSource;
 
   useEffect(() => {
@@ -68,6 +77,10 @@ export function EpisodeNarrativeScreen({
 
   const handleAdvance = () => {
     "background only";
+    if (!typing.isComplete) {
+      typing.finish();
+      return;
+    }
     const next = nextEpisodeNarrativeBeat(narrative, beatIndex);
     if (next === null) {
       if (audioSource !== undefined) stopAudio();
@@ -178,8 +191,11 @@ export function EpisodeNarrativeScreen({
                   speakerName: beat.speakerName,
                   avatar: <Avatar name={beat.speakerName} size="sm" accessibility="hidden" />,
                 })}
-            reducedMotion={reducedMotion}
             line={beat.line}
+            reveal="typewriter"
+            status={typing.isComplete ? "ready" : "revealing"}
+            visibleCharacterCount={typing.visibleCharacterCount}
+            reducedMotion={reducedMotion}
             translation={beat.translation}
             surface="translucent"
             contentLanguage="learning"

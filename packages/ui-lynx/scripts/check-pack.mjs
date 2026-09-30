@@ -180,6 +180,10 @@ const required = [
   "package/dist/index.js",
   "package/dist/index.d.ts",
   "package/dist/styles.css",
+  "package/dist/typewriter/index.js",
+  "package/dist/typewriter/index.d.ts",
+  "package/dist/typewriter/useTypewriter.js",
+  "package/dist/typewriter/useTypewriter.d.ts",
 ];
 
 for (const { directory, component, modules, css } of components) {

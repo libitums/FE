@@ -58,6 +58,34 @@ test("[CH1] 머리가 서고 처음에는 메시지가 없다", () => {
   expect(shownIds()).toEqual([]);
 });
 
+test("상대 말풍선은 타이핑 후 번역을 표시하고, 내 메시지는 즉시 표시한다", () => {
+  vi.useFakeTimers();
+  renderChat();
+  wait(1500);
+  const incoming = within(screen.getByTestId("prologue-chat-screen-message-m1"));
+  expect(incoming.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "revealing");
+  expect(incoming.getByTestId("ui-lynx-chat-bubble-translation")).toHaveStyle({
+    visibility: "hidden",
+  });
+  wait(35);
+  expect(incoming.getByTestId("ui-lynx-chat-bubble-message").textContent).toBe("한");
+  wait(1000);
+  expect(incoming.getByTestId("ui-lynx-chat-bubble-translation")).toHaveTextContent(
+    "Did you arrive?",
+  );
+  fireEvent.tap(screen.getByTestId("prologue-chat-screen-send"), {});
+  const outgoing = within(screen.getByTestId("prologue-chat-screen-message-m2"));
+  expect(outgoing.getByTestId("ui-lynx-chat-bubble-message")).toHaveTextContent("잘 도착했어요!");
+  expect(outgoing.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "ready");
+  wait(1500);
+  expect(incoming.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "ready");
+  expect(
+    within(screen.getByTestId("prologue-chat-screen-message-m3")).getByTestId(
+      "ui-lynx-chat-bubble",
+    ),
+  ).toHaveAttribute("data-status", "revealing");
+});
+
 test("[CH2] 상대 메시지가 저절로 오고, 내 차례에는 입력창에 보낼 말이 채워진다", () => {
   vi.useFakeTimers();
   renderChat();
@@ -171,6 +199,14 @@ test("[CH8] 메시지가 늘 때마다 대화 끝의 여백으로 스크롤한�
     { selector: "#prologue-chat-screen-end", method: "scrollIntoView" },
     { selector: "#prologue-chat-screen-end", method: "scrollIntoView" },
   ]);
+  wait(1500);
+  const beforeCompletion = invocations.length;
+  wait(1000);
+  expect(invocations).toHaveLength(beforeCompletion);
+  expect(invocations[invocations.length - 1]).toEqual({
+    selector: "#prologue-chat-screen-end",
+    method: "scrollIntoView",
+  });
 });
 
 test("[ST3-E] 화자 이름이 영어다 — 상대는 Yuna, 나는 Me", () => {

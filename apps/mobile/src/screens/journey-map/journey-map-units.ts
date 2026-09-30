@@ -223,7 +223,5 @@ export function mapSectionsOf(episodes: JourneyEpisodes): readonly JourneyMapSec
 // 양쪽이 그것을 부릅니다.
 export const journeyMapSections: readonly JourneyMapSection[] = mapSectionsOf(journeyEpisodes);
 
-// 진행의 진실의 출처는 이제 App의 상태이고, 이 상수는 그 **씨앗**입니다 — 값(2)은
-// 그대로이고 이름만 역할이 좁아진 것을 반영합니다. 옛 이름(`completedStepCount`)을
-// 남기지 않습니다: 남기면 다른 모듈이 그것을 읽고 낡은 진행을 보면서도 통과합니다.
-export const initialCompletedStepCount = 2;
+// 신규 사용자는 완료 기록 없이 시작합니다. 저장된 진행은 App에서 복원합니다.
+export const initialCompletedStepCount = 0;

@@ -104,6 +104,13 @@ test("기내 복귀 중 다음 독백으로 넘겨도 전환은 유지하고 안
   fireEvent(cabin, new window.Event("bindEvent:load"));
   const veil = screen.getByTestId("narrative-reality-veil");
 
+  // 안내를 완성하는 첫 탭은 음원과 장면 전환을 유지합니다.
+  advance();
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(
+    ending.beats[0].line,
+  );
+  expect(view.stop).not.toHaveBeenCalled();
+  expect(screen.getByTestId("narrative-reality-veil")).toBe(veil);
   advance();
   expect(view.stop).toHaveBeenCalledTimes(1);
   expect(view.play).toHaveBeenCalledTimes(1);
@@ -114,10 +121,12 @@ test("기내 복귀 중 다음 독백으로 넘겨도 전환은 유지하고 안
   fireEvent.animationend(veil, {
     params: { animation_type: "keyframe-animation", animation_name: "narrative-reality-veil" },
   });
+  expect(screen.queryByTestId("narrative-reality-veil")).not.toBeInTheDocument();
+  expect(view.onFinish).not.toHaveBeenCalled();
+  advance();
   expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(
     ending.beats[1].line,
   );
-  expect(screen.queryByTestId("narrative-reality-veil")).not.toBeInTheDocument();
   expect(view.onFinish).not.toHaveBeenCalled();
   advance();
   expect(view.onFinish).toHaveBeenCalledTimes(1);

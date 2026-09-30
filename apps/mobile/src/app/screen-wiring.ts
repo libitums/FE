@@ -1,3 +1,4 @@
+import { guardedEpisodeFinalWiring } from "./journey-access";
 // `ScreenWiring`·`RoleplayUnitWiring` 타입을 선언하고, 부분 팩토리(`journeyWiring`·`roleplayWiring`·
 // `entryWiring` 등)를 합쳐 하나의 wiring을 만듭니다.
 
@@ -50,7 +51,7 @@ import type {
   RoleplaySection,
 } from "../screens/roleplay-list/roleplay-list.contract";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
-import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+import type { SessionOptions } from "../lib/session-options";
 import type {
   VisualNovelAdvanceOutcome,
   VisualNovelBeatId,
@@ -61,7 +62,6 @@ import type {
 } from "../screens/visual-novel/visual-novel.contract";
 import type { NavAction } from "./nav-state";
 import { entryWiring } from "./entry-wiring";
-import { episodeFinalWiring } from "./episode-final-wiring";
 import type { EpisodeFinalWiring, EpisodeFinalWiringArgs } from "./episode-final-wiring";
 import { journeyWiring } from "./journey-wiring";
 import { roleplayWiring } from "./roleplay-wiring";
@@ -112,9 +112,7 @@ export type ScreenWiring = {
   completedStepCount: number;
   /** 끝낸 표지 유닛입니다 — 맵의 표지 게이트가 이 값을 봅니다. */
   completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
-  // 맵의 표지 항목을 누른 것입니다 — 표지로 들어가는 길은 이것 하나입니다. 유닛 시작
-  // 넷(`onStartStep` 등)을 감싸던 게이트는 없어졌습니다(spec §2.5): 순서를 지는 자리가
-  // 맵의 잠김 파생(`mapItemStatus`)으로 옮겨 갔습니다.
+  // 표지 항목에서 시작합니다. 일반·특별 유닛의 진입은 맵과 같은 순차 해금을 적용합니다.
   onStartEpisodeIntroUnit: (id: EpisodeIntroUnitId) => void;
   onStartStep: (id: JourneyStepId) => void;
   // 학습 화면 셋이 같은 콜백을 받으므로 이름이 듣기에 묶여 있으면 거짓이
@@ -191,7 +189,6 @@ export type ScreenWiring = {
   // 스택도 `dispatch`도 모릅니다(위 원칙 그대로).
   sessionOptions: SessionOptions;
   onSelectNavTarget: (target: SettingsNavTarget) => void;
-  onToggleSessionOption: (key: SessionOptionKey) => void;
   onExitSettingsStack: () => void;
   onSubmitFeedback: FeedbackScreenProps["onSubmit"];
   // 진입 흐름 화면 여섯의 결선입니다. `entryLanguage`만 App 상태를 그대로
@@ -237,7 +234,6 @@ export type ScreenWiringArgs = {
   readonly notifications: readonly NotificationItem[];
   readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
-  readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly safeAreaInsets: SafeAreaInsets;
   readonly gemCount: number;
   readonly phoneSignIn: PhoneSignInVisibility;
@@ -294,6 +290,6 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       entryEventSink: args.entryEventSink,
       leaveApp: args.leaveApp,
     }),
-    ...episodeFinalWiring(args),
+    ...guardedEpisodeFinalWiring(args),
   };
 }

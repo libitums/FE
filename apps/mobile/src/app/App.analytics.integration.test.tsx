@@ -118,24 +118,24 @@ function sessionApp(
   return <App {...session.sinks} completedEpisodeIntroIds={completedIntros} />;
 }
 
-// 설정 탭 → 「자동 재생」 토글입니다. 이벤트 둘이 나가야 합니다.
-function tapAutoPlayToggle(): void {
+// 설정 탭 → 프로필 열기입니다. 이벤트 둘이 나가야 합니다.
+function openProfile(): void {
   openSettingsTab();
-  fireEvent.tap(settingsCell("auto-play-audio"), {});
+  fireEvent.tap(settingsCell("profile"), {});
 }
 
 // ------------------------------------------------------------------------- IA1
 
-test("[IA1] 설정 탭 → 자동 재생 토글이 요청 본문의 이벤트 둘(settings_opened → session_option_changed)로 도착한다", async () => {
+test("[IA1] 설정 탭 → 프로필 열기이 요청 본문의 이벤트 둘(settings_opened → profile_opened)로 도착한다", async () => {
   const { transport, calls } = fakeTransport();
   await renderApp(sessionApp(transport));
 
-  tapAutoPlayToggle();
+  openProfile();
 
   await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(2));
   const events = sentEvents(calls);
-  expect(events.map((e) => e.event)).toEqual(["settings_opened", "session_option_changed"]);
-  expect(events[1]?.properties).toMatchObject({ option: "auto-play-audio", value: false });
+  expect(events.map((e) => e.event)).toEqual(["settings_opened", "profile_opened"]);
+  expect(events[1]?.properties).not.toHaveProperty("email");
   for (const call of calls) expect(call.url).toBe(batchUrl);
   expect(new Set(events.map((e) => e.distinct_id)).size).toBe(1);
 });
@@ -166,13 +166,13 @@ test("[IA2] 알림 버튼 → 첫 알림 항목 tap이 notifications_opened → 
 
 // ------------------------------------------------------------------------- IA3
 
-test("[IA3] 키가 없으면(config null) transport가 한 번도 불리지 않고 토글은 그대로 바뀐다", async () => {
+test("[IA3] 키가 없으면(config null) transport가 한 번도 불리지 않고 프로필은 정상적으로 열린다", async () => {
   const { transport, calls } = fakeTransport();
   await renderApp(sessionApp(transport, null));
 
-  tapAutoPlayToggle();
+  openProfile();
 
-  expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "false");
+  expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
   // 요청이 나간다면 비동기로 나가므로 한 번 흘려 보낸 뒤에도 0건인지 봅니다.
   await new Promise((resolve) => setTimeout(resolve, 50));
   expect(calls).toHaveLength(0);
@@ -188,12 +188,12 @@ test.each<Behavior>(["reject", "status-503"])(
     await renderApp(sessionApp(transport));
 
     vi.useFakeTimers();
-    tapAutoPlayToggle();
+    openProfile();
     await vi.runAllTimersAsync();
     vi.useRealTimers();
 
     expect(calls.length).toBeGreaterThan(0);
-    expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "false");
+    expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
     expect(screen.queryByTestId("error-boundary-title")).not.toBeInTheDocument();
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(unhandled).toEqual([]);
@@ -206,7 +206,7 @@ test("[IA5] 분석은 익명 ID를 따로 저장하지 않는다 — 쓰는 키�
   const { transport, calls } = fakeTransport();
   await renderApp(sessionApp(transport));
 
-  tapAutoPlayToggle();
+  openProfile();
   await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(2));
 
   expect(

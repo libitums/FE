@@ -1,7 +1,9 @@
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { advanceNarrative } from "./test-helpers/narrative";
 import type { AppJourneySeed } from "./App";
 import type {
   EpisodeIntroEvent,
@@ -89,7 +91,7 @@ function readNarrative(): void {
       switch (segment.kind) {
         case "visual-novel":
           for (const _beat of segment.narrative.beats) {
-            fireEvent.tap(screen.getByTestId("episode-narrative-screen-advance"), {});
+            advanceNarrative();
           }
           break;
         case "messenger":
@@ -105,6 +107,7 @@ function readNarrative(): void {
           fireEvent.tap(screen.getByTestId("prologue-chat-screen-complete"), {});
           break;
         case "call":
+          fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
           fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
           fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
           break;
@@ -210,12 +213,13 @@ test("[IN-K2] 결과 화면의 Check로 맵에 돌아오면 표지가 clear이�
   expect(introUnit()).toHaveAttribute("data-status", "clear");
   // 가려져 있던 진행(`initialCompletedStepCount` = 2)이 그대로 드러납니다 — 잠김은
   // 완료를 지우는 것이 아니라 가리는 것입니다(spec §2.9).
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
     "data-status",
     "active",
   );
 
-  startOrdering();
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-greeting"), {});
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
   expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
 });
 
@@ -334,33 +338,28 @@ test("[IN-I7] 표지를 끝낸 뒤에도 표지 항목은 잠기지 않고 다�
 // 공허한 케이스가 됩니다. 유닛에서 나가면 맵이라는 관찰 자체는
 // `App.messenger.integration.test.tsx`·`App.integration.test.tsx`가 그대로 봅니다.
 
-// ⚠ **미결입니다 — 오늘 동작을 기록만 합니다.** 알림에서 여는 특별 유닛은 맵을 거치지
-// 않아 **표지 잠김을 우회합니다**: 같은 유닛이 맵에서는 자물쇠인데 알림에서는 열립니다.
-// 옛 [EI8]은 「알림에서 여는 유닛도 표지를 지난다」였고 가로채기 층이 그것을 만들었는데,
-// 그 층이 없어지면서 반전됐습니다.
-//
-// **이것이 옳은지는 미결입니다.** 알림이 잠김을 보고 막아야 하는지, 아니면 알림은
-// 「이미 열린 것에 대한 안내」라 잠김을 볼 일이 없는지가 정해진 적이 없습니다. 판정을
-// 여기서 지어내지 않고 test-plan §7(판정이 거짓이 되는 조건)으로 올립니다. 이 케이스는
-// **동작을 바꾸라고 요구하지 않습니다** — 우회가 실제로 일어난다는 사실을 화면에 못
-// 박아, 나중에 누가 그것을 고칠 때 이 줄이 함께 움직이게 합니다.
-test("[IN-I8] 알림에서 여는 특별 유닛은 표지를 안 지나고, 맵의 잠김도 우회한다", async () => {
-  await renderSignedInApp(<App />);
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  // 맵에서는 잠겨 있습니다 — 표지를 끝내지 않았기 때문입니다.
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
-    "data-status",
-    "default",
-  );
+// 알림 진입도 맵과 같은 잠금을 적용합니다.
+test.each([false, true])(
+  "[IN-I8] 선행 학습이 미완료면 알림에서도 잠금을 우회하지 않는다 (표지 완료: %s)",
+  async (introDone) => {
+    await renderSignedInApp(<App completedEpisodeIntroIds={introDone ? ["tutorial-intro"] : []} />);
+    fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+    // 맵에서는 잠겨 있습니다 — 표지를 끝내지 않았기 때문입니다.
+    expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+      "data-status",
+      "default",
+    );
 
-  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
-  fireEvent.tap(screen.getByTestId("notification-list-item-notification-messenger"), {});
+    fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
+    fireEvent.tap(screen.getByTestId("notification-list-item-notification-messenger"), {});
 
-  // 표지가 끼어들지 않습니다(계약이 정한 것) …
-  expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
-  // … 그리고 잠김도 보지 않습니다(미결).
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-});
+    // 표지가 끼어들지 않습니다(계약이 정한 것) …
+    expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
+    // … 그리고 잠김도 보지 않습니다(미결).
+    expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
+    expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
+  },
+);
 
 // 최종 테스트가 열리는 조건이 「자기 말고 여덟 완료」에서 「아홉 완료」로 바뀝니다 —
 // 표지가 그 「다른 항목」에 낍니다(spec §2.7 델타 표). 표지만 남겨 두고 나머지를 전부
@@ -463,7 +462,12 @@ test("[IN-I11] 서사가 없는 에피소드는 Next가 Skip과 같은 결과 �
 // 됩니다. 「봤다」가 아니라 「끝냈다」이고, 축이 에피소드에서 유닛으로 옮겨 간 것을
 // 이름이 그대로 집니다. 이 케이스가 그 개명을 잡습니다.
 test("[IN-I12] 표지를 끝낸 것으로 부팅하면 맵의 표지가 clear로 서고 뒤가 열려 있다", async () => {
-  await renderSignedInApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
+  await renderSignedInApp(
+    <App
+      journeySeed={journeySeedBefore("appointment-confirmation")}
+      completedEpisodeIntroIds={["tutorial-intro"]}
+    />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(introUnit()).toHaveAttribute("data-status", "clear");
@@ -477,7 +481,12 @@ test("[IN-I12] 표지를 끝낸 것으로 부팅하면 맵의 표지가 clear로
 // 한 번」입니다. 앞에 끼는 것이 없어졌으므로 탭과 이벤트 사이에 화면이 하나도 없습니다.
 test("[IN-I13] 특별 유닛의 열림 이벤트가 곧장 한 번 난다", async () => {
   const messengerEventSink = vi.fn<NonNullable<MessengerEventSink>>();
-  await renderSignedInApp(<App messengerEventSink={messengerEventSink} />);
+  await renderSignedInApp(
+    <App
+      journeySeed={journeySeedBefore("appointment-confirmation")}
+      messengerEventSink={messengerEventSink}
+    />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   // 잠긴 동안은 눌러도 이벤트가 나지 않습니다 — 열리지 않았으니 열린 적도 없습니다.
@@ -525,6 +534,7 @@ test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue�
   openIntro();
   nextIntro();
 
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
   act(() => {
     vi.advanceTimersByTime(60_000);
   });
@@ -539,6 +549,7 @@ test("[EP2b] 통화의 Continue → PERFECT LESSON → Check → 맵이고 표�
   await renderWithCall();
   openIntro();
   nextIntro();
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
   fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
 
   fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
@@ -690,6 +701,7 @@ test("[EV8] 서사 형식이 통화면 prologueKind가 call이다", async () => 
   ));
   openIntro();
   nextIntro();
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
   fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
 
   fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});

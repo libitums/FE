@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import type { PrologueCall } from "./episode-intro.contract";
 import { PrologueCallScreen } from "./PrologueCallScreen";
 
@@ -26,6 +26,7 @@ function mount(native = true, lines?: PrologueCall["lines"]) {
   const props = {
     insets: { top: 0, bottom: 0, left: 0, right: 0 },
     episodeLabel: "Before We Land",
+    reducedMotion: true,
     callerPortrait: null,
     call: {
       callerName: "Minseo",
@@ -37,7 +38,13 @@ function mount(native = true, lines?: PrologueCall["lines"]) {
     onComplete: vi.fn(),
     onBack: vi.fn(),
   };
-  return { ...render(<PrologueCallScreen {...props} />), props, play, stop, pause, resume };
+  const view = render(<PrologueCallScreen {...props} />);
+  expect(play).not.toHaveBeenCalled();
+  advance(4000);
+  expect(play).not.toHaveBeenCalled();
+  expect(screen.queryByTestId("prologue-call-screen-complete")).toBeNull();
+  tap("accept");
+  return { ...view, props, play, stop, pause, resume };
 }
 
 test("음원 완료를 기다려 다음 대사를 재생하고 마지막 완료 뒤 직접 Continue를 누른다", () => {
@@ -92,10 +99,7 @@ test.each(["end", "back", "unmount"] as const)(
     const done = v.play.mock.calls[0]![1];
     if (action === "unmount") v.unmount();
     else if (action === "back") {
-      fireEvent.tap(
-        within(screen.getByTestId("prologue-call-screen-back")).getByTestId("ui-lynx-round-button"),
-        {},
-      );
+      tap("back");
       expect(v.props.onBack).toHaveBeenCalledTimes(1);
     } else tap("end");
     expect(v.stop).toHaveBeenCalled();
@@ -117,13 +121,11 @@ test("음원 모듈이 없는 환경은 읽기 타이머로 진행하며 일시�
   expect(screen.getByTestId("prologue-call-screen-complete")).toBeInTheDocument();
 });
 
-test("무음에서 켠 음소거·음량 강조가 음원 재생 버튼에 남지 않는다", () => {
+test("무음에서 음원으로 전환한 뒤 재생 버튼의 강조는 일시정지 상태만 반영한다", () => {
   mount(true, [
     { text: "잠깐만.", translation: "One moment." },
     { text: "여보세요?", translation: "Hello?", audioSource: "first" },
   ]);
-  tap("mute");
-  tap("volume");
   advance(3000);
   for (const id of ["playback", "replay"]) {
     const button = screen.getByTestId(`prologue-call-screen-${id}`);

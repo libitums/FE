@@ -121,6 +121,8 @@ export const tutorialPrologue = {
             transition: "reality",
             transitionFrom: cafe,
             audioSource: "tutorial-cabin-announcement",
+            // 음원 구성: 알림음 2초 + 공백 0.22초 + 안내 3.456초.
+            revealTiming: { delayMs: 2220, durationMs: 3456 },
             line: "잠시 후 인천국제공항에 도착하겠습니다.",
             translation: "We will shortly be arriving at Incheon International Airport.",
           },

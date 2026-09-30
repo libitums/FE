@@ -130,6 +130,7 @@ export type PhoneCallMapItemProps = {
 };
 
 export type PhoneCallScreenProps = {
+  readonly reducedMotion?: boolean;
   readonly unitId: PhoneCallUnitId;
   readonly conversation: PhoneCallConversation;
   readonly completionStatus: PhoneCallCompletionStatus;

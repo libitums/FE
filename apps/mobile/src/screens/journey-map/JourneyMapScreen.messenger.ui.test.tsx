@@ -18,7 +18,7 @@ import type { JourneyStepId } from "./journey-map";
 // 잠김 축 자체는 `JourneyMapScreen.episode-intro.ui.test.tsx`의 `UI-L1`·`UI-L2`가 집니다.
 function fixture() {
   return {
-    completedStepCount: 2,
+    completedStepCount: 4,
     onStartStep: vi.fn<(id: JourneyStepId) => void>(),
     completedEpisodeIntroIds: ["tutorial-intro"] as const,
     onStartEpisodeIntroUnit: vi.fn<(id: EpisodeIntroUnitId) => void>(),

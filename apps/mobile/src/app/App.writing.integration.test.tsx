@@ -8,7 +8,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { productJourneySeed } from "./journey-progress";
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import { questionsForStep } from "../screens/listening/listening";
 import { writingQuestionsForStep } from "../screens/writing/writing";
@@ -33,7 +33,7 @@ async function renderWritingApp(): Promise<void> {
   await renderSignedInApp(
     <App
       completedEpisodeIntroIds={completedIntros}
-      journeySeed={{ ...productJourneySeed, completedStepCount: 4 }}
+      journeySeed={journeySeedBefore("directions")}
     />,
   );
 }
