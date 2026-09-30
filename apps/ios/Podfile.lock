@@ -32,7 +32,7 @@ PODS:
   - LynxService/Image (4.0.1):
     - Lynx (= 4.0.1)
     - LynxServiceAPI (= 4.0.1)
-    - SDWebImage (= 5.15.5)
+    - SDWebImage (= 5.21.7)
     - SDWebImageWebPCoder (= 0.11.0)
   - LynxService/Log (4.0.1):
     - Lynx (= 4.0.1)
@@ -65,9 +65,9 @@ PODS:
     - PrimJS/quickjs
   - PrimJS/quickjs (4.0.0):
     - PrimJS/log
-  - SDWebImage (5.15.5):
-    - SDWebImage/Core (= 5.15.5)
-  - SDWebImage/Core (5.15.5)
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
   - SDWebImageWebPCoder (0.11.0):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.15)
@@ -121,12 +121,12 @@ PODS:
 
 DEPENDENCIES:
   - Lynx/Framework (= 4.0.1)
-  - LynxService/Http (= 4.0.1)
-  - LynxService/Image (= 4.0.1)
-  - LynxService/Log (= 4.0.1)
+  - LynxService/Http (from `podspecs/LynxService.podspec.json`)
+  - LynxService/Image (from `podspecs/LynxService.podspec.json`)
+  - LynxService/Log (from `podspecs/LynxService.podspec.json`)
   - PrimJS/napi (= 4.0.0)
   - PrimJS/quickjs (= 4.0.0)
-  - SDWebImage (= 5.15.5)
+  - SDWebImage (= 5.21.7)
   - SDWebImageWebPCoder (= 0.11.0)
   - XElement (= 4.0.1)
 
@@ -135,7 +135,6 @@ SPEC REPOS:
     - libwebp
     - Lynx
     - LynxBase
-    - LynxService
     - LynxServiceAPI
     - LynxTextra
     - MJRefresh
@@ -146,21 +145,25 @@ SPEC REPOS:
     - ServalSVG
     - XElement
 
+EXTERNAL SOURCES:
+  LynxService:
+    :podspec: podspecs/LynxService.podspec.json
+
 SPEC CHECKSUMS:
   libwebp: af5937a13536ef73f3784d69cc342b98961acf33
   Lynx: 1a461f83f48104309f7e2031dabf3af84b181807
   LynxBase: 5ca5092517e6460e0df6ad9b49fca76396c058d8
-  LynxService: f447c67687d3ea66eec94e10b7564996e67c06dc
+  LynxService: 081a440ee85b1b6ddf2608399c6b120b7d6dc1c9
   LynxServiceAPI: 67ae06f77e45c80f0ecaa6705d126ac3b4b8dff4
   LynxTextra: a3104e6a60e6ed844396d849fc04cfee00548ea5
   MJRefresh: ff9e531227924c84ce459338414550a05d2aea78
   PrimJS: f048efc0923e73cde312466a110516f56b70834d
-  SDWebImage: fd7e1a22f00303e058058278639bf6196ee431fe
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageWebPCoder: 295a6573c512f54ad2dd58098e64e17dcf008499
   ServalMarkdown: 4e0401818bc34bbb7659270e2df775119ccc029f
   ServalSVG: 19bf88f72dae928c28a744c9b91475a3691ded42
   XElement: f1f022652fbc5e109e7d4d66299493bfd1a74b31
 
-PODFILE CHECKSUM: 56f51fecb9681e650c92f96cdff19c2b9025a620
+PODFILE CHECKSUM: b96e028b1c65984d2f53d31dfc2e1407df101de3
 
 COCOAPODS: 1.17.0

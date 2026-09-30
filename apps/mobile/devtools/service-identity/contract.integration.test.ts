@@ -41,14 +41,17 @@ test("Debug and Release Host configurations retain the plist, bundle ID, and Hos
       new RegExp(`${id} /\\* ${name} \\*/ = \\{[\\s\\S]*?\\n\\t\\t\\};`),
     )?.[0];
     expect(configuration).toBeDefined();
-    expect(configuration).toContain('INFOPLIST_FILE = "Host/Info.plist";');
-    expect(configuration).toContain('PRODUCT_BUNDLE_IDENTIFIER = "com.libitum.host";');
+    // CocoaPods may omit optional OpenStep plist quotes when saving the project.
+    expect(configuration).toMatch(/INFOPLIST_FILE = ("Host\/Info\.plist"|Host\/Info\.plist);/);
+    expect(configuration).toMatch(
+      /PRODUCT_BUNDLE_IDENTIFIER = ("com\.libitum\.host"|com\.libitum\.host);/,
+    );
     expect(configuration).toContain('PRODUCT_NAME = "$(TARGET_NAME)";');
   }
-  expect(projectFile).toMatch(/name = "Host";\s*productName = "Host";/);
+  expect(projectFile).toMatch(/name = ("Host"|Host);\s*productName = ("Host"|Host);/);
 });
 
 test("the source-to-built metadata handoff remains an explicit manual boundary", () => {
   expect(projectFile).toContain("GENERATE_INFOPLIST_FILE = YES;");
-  expect(projectFile).toContain('INFOPLIST_FILE = "Host/Info.plist";');
+  expect(projectFile).toMatch(/INFOPLIST_FILE = ("Host\/Info\.plist"|Host\/Info\.plist);/);
 });
