@@ -58,9 +58,8 @@ export const messengerConversationFor = (id: MessengerUnitId): MessengerConversa
   conversations[id];
 
 export const initialMessengerSessionState = (
-  status: MessengerCompletionStatus,
-): MessengerSessionState =>
-  status === "completed" ? { mode: "completed" } : { mode: "active", replyIndex: 0 };
+  _status: MessengerCompletionStatus,
+): MessengerSessionState => ({ mode: "active", replyIndex: 0 });
 
 export const messengerSessionReducer = (
   state: MessengerSessionState,

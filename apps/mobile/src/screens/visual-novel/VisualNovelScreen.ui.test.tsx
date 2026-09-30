@@ -12,7 +12,7 @@ const props = (progress: VisualNovelProgress) => ({
   progress,
   onAdvance: vi.fn<VisualNovelScreenProps["onAdvance"]>(),
   onExit: vi.fn<VisualNovelScreenProps["onExit"]>(),
-  onReplay: vi.fn<VisualNovelScreenProps["onReplay"]>(),
+  onFinish: vi.fn<VisualNovelScreenProps["onFinish"]>(),
 });
 
 describe("VisualNovelScreen UI", () => {
@@ -27,6 +27,9 @@ describe("VisualNovelScreen UI", () => {
       "false",
     );
     expect(screen.getByTestId("visual-novel-dialogue-arrive")).toHaveTextContent("안녕하세요");
+    fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-speaker")).toHaveTextContent("Me");
+    expect(p.onAdvance).not.toHaveBeenCalled();
     fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
     expect(p.onAdvance).toHaveBeenCalledWith(
       "cafe-arrival-visual-novel",
@@ -43,36 +46,25 @@ describe("VisualNovelScreen UI", () => {
     expect(screen.getByTestId("visual-novel-dialogue-find")).toHaveTextContent("물 좀 주세요");
   });
 
-  it("renders completed final beat with replay and exit actions", () => {
+  it("completed reentry starts the first scene and finishes only after the learner's final response", () => {
     const p = props({ status: "completed", beatIndex: 2 });
     render(<VisualNovelScreen {...p} />);
-    expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Story complete");
-    expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
-    expect(screen.getByTestId("visual-novel-dialogue-enter")).toHaveTextContent("내일 만나요");
-    expect(screen.getByTestId("visual-novel-replay-button")).toHaveAttribute(
+    expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
+    expect(screen.queryByText("Start over")).toBeNull();
+    for (let i = 0; i < 5; i++)
+      fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
+    expect(screen.getByTestId("visual-novel-dialogue-enter")).toHaveTextContent("네, 내일 만나요!");
+    expect(p.onFinish).not.toHaveBeenCalled();
+    expect(screen.getByTestId("visual-novel-finish-button")).toHaveAttribute(
       "accessibility-label",
-      "Start over",
+      "Continue",
     );
-    expect(screen.getByTestId("visual-novel-title")).toHaveAttribute(
-      "accessibility-traits",
-      "header",
+    fireEvent.tap(screen.getByTestId("visual-novel-finish-button"), {});
+    expect(p.onFinish).toHaveBeenCalledWith("cafe-arrival-visual-novel");
+    expect(p.onAdvance).toHaveBeenLastCalledWith(
+      "cafe-arrival-visual-novel",
+      expect.objectContaining({ completedNow: false }),
     );
-    expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
-      "accessibility-traits",
-      "button",
-    );
-    expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
-      "accessibility-label",
-      "Back to map",
-    );
-    fireEvent.tap(screen.getByTestId("visual-novel-replay-button"), {});
-    expect(p.onReplay).toHaveBeenCalledWith("cafe-arrival-visual-novel");
-    expect(screen.getByTestId("visual-novel-scene-arrive")).toHaveAttribute(
-      "data-replaying",
-      "true",
-    );
-    fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
-    expect(p.onExit).toHaveBeenCalled();
   });
 
   it("keeps the logical accessibility order independent of decorative scene images", () => {
@@ -123,19 +115,20 @@ describe("[ST8-M] 비주얼 노벨 문구는 표에서 읽는다", () => {
     );
   });
 
-  it("끝 표시 · 처음부터 보기", () => {
+  it("마지막 내 대사 뒤 Continue 문구를 표에서 읽는다", () => {
     render(
       <UiCopyContext.Provider value={markedUiCopy}>
-        <VisualNovelScreen {...props({ status: "completed", beatIndex: 2 })} />
+        <VisualNovelScreen {...props({ status: "active", beatIndex: 0 })} />
       </UiCopyContext.Provider>,
     );
-
+    for (let i = 0; i < 5; i++)
+      fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
     expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent(
-      "⟦visualNovel.storyComplete⟧",
+      "⟦visualNovel.sceneProgress⟧(3, 3)",
     );
-    expect(screen.getByTestId("visual-novel-replay-button")).toHaveAttribute(
+    expect(screen.getByTestId("visual-novel-finish-button")).toHaveAttribute(
       "accessibility-label",
-      "⟦common.startOver⟧",
+      "⟦common.continue⟧",
     );
   });
 });

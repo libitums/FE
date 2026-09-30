@@ -53,7 +53,7 @@ describe("messenger UI components", () => {
     expect(next.getByTestId("ui-lynx-chat-bubble-translation")).toBeInTheDocument();
   });
 
-  it("완료한 대화 기록은 타이핑 없이 모두 보여준다", () => {
+  it("완료한 대화도 재진입하면 첫 상대 메시지를 타이핑한다", () => {
     render(
       <MessengerScreen
         conversation={conversation}
@@ -63,10 +63,9 @@ describe("messenger UI components", () => {
         onFinish={vi.fn()}
       />,
     );
-    for (const bubble of screen.getAllByTestId("ui-lynx-chat-bubble")) {
-      expect(bubble).toHaveAttribute("data-status", "ready");
-    }
-    expect(screen.getAllByTestId("ui-lynx-chat-bubble-translation")).toHaveLength(5);
+    expect(screen.getAllByTestId("ui-lynx-chat-bubble")).toHaveLength(1);
+    expect(screen.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "revealing");
+    expect(screen.queryByTestId("messenger-finish")).toBeNull();
   });
 
   it("MessageBubble은 지민 메시지의 문구 · 번역과 sender를 표시한다", () => {
@@ -284,7 +283,7 @@ describe("messenger UI components", () => {
     expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   });
 
-  it("완료 재진입은 전체 기록과 결과 보기를 내고, 결과는 빈 목록이다", () => {
+  it("완료 재진입은 새 답장의 결과를 수집한다", () => {
     const onFinish = vi.fn();
     render(
       <MessengerScreen
@@ -295,9 +294,11 @@ describe("messenger UI components", () => {
         onFinish={onFinish}
       />,
     );
-    expect(screen.getByTestId("messenger-message-jimin-goodbye")).toBeInTheDocument();
-    expect(screen.queryByTestId("messenger-keyboard")).toBeNull();
+    expect(screen.queryByTestId("messenger-message-jimin-goodbye")).toBeNull();
+    expect(screen.queryByTestId("messenger-finish")).toBeNull();
+    sendMessengerReply("좋아요!");
+    sendMessengerReply("고마워요!");
     fireEvent.tap(screen.getByTestId("messenger-finish"), {});
-    expect(onFinish).toHaveBeenCalledWith("appointment-confirmation", []);
+    expect(onFinish).toHaveBeenCalledWith("appointment-confirmation", ["correct", "correct"]);
   });
 });

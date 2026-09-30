@@ -30,9 +30,9 @@ const active1: MessengerSessionState = { mode: "active", replyIndex: 1 };
 const completed: MessengerSessionState = { mode: "completed" };
 
 describe("messenger state pure functions", () => {
-  it("available은 active 0, completed는 completed로 시작한다", () => {
+  it("완료 기록과 관계없이 첫 답장부터 시작한다", () => {
     expect(initialMessengerSessionState("available")).toEqual(active0);
-    expect(initialMessengerSessionState("completed")).toEqual(completed);
+    expect(initialMessengerSessionState("completed")).toEqual(active0);
   });
 
   it("reply는 0에서 1을 거쳐 완료로 전이한다", () => {

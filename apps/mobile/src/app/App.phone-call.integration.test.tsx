@@ -80,12 +80,9 @@ describe("App · phone-call integration", () => {
       fireEvent.tap(screen.getByTestId(reply), {});
     }
     expect(playAudio).toHaveBeenCalledTimes(3);
-    expect(
-      screen
-        .queryAllByTestId(/^phone-call-transcript-/)
-        .map((node) => node.getAttribute("data-testid")),
-    ).toHaveLength(6);
-    fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
+    expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+    expect(screen.queryByTestId("phone-call-replay-button")).toBeNull();
+    fireEvent.tap(screen.getByText("Check →"), {});
     expect(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
     ).toHaveAttribute("data-status", "clear");
@@ -105,8 +102,7 @@ describe("App · phone-call integration", () => {
       screen
         .queryAllByTestId(/^phone-call-transcript-/)
         .map((node) => node.getAttribute("data-testid")),
-    ).toHaveLength(6);
-    fireEvent.tap(screen.getByTestId("phone-call-replay-button"), {});
+    ).toHaveLength(0);
     fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
     expect(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
@@ -119,7 +115,7 @@ describe("App · phone-call integration", () => {
       screen
         .queryAllByTestId(/^phone-call-transcript-/)
         .map((node) => node.getAttribute("data-testid")),
-    ).toHaveLength(6);
+    ).toHaveLength(0);
   });
 
   it("미완료 이탈은 stop하고 재진입을 첫 transcript로 시작한다", async () => {
@@ -201,7 +197,8 @@ describe("App · phone-call integration", () => {
       act(() => finish?.());
       fireEvent.tap(screen.getByTestId(reply), {});
     }
-    fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
+    expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+    fireEvent.tap(screen.getByText("Check →"), {});
     fireEvent.tap(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},

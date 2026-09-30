@@ -67,7 +67,7 @@ describe("약속 확인 전화 순수 계약", () => {
 
   it("available/completed 초기화와 상태 label을 판정한다", () => {
     expect(initialPhoneCallSessionState("available")).toEqual(ready0);
-    expect(initialPhoneCallSessionState("completed")).toEqual({ mode: "completed" });
+    expect(initialPhoneCallSessionState("completed")).toEqual(ready0);
     expect(phoneCallStatusLabel(ready0, uiCopyEn)).toBe("Incoming call…");
     expect(phoneCallStatusLabel({ mode: "playing", turnIndex: 0 }, uiCopyEn)).toBe("Speaking…");
     expect(phoneCallStatusLabel({ mode: "reply-ready", turnIndex: 0 }, uiCopyEn)).toBe(

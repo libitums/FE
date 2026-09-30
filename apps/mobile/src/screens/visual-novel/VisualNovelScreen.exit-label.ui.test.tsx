@@ -22,7 +22,7 @@ describe("VisualNovelScreen 나가기 라벨", () => {
         exitTo="roleplay"
         onAdvance={vi.fn()}
         onExit={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
 
@@ -41,7 +41,7 @@ describe("VisualNovelScreen 나가기 라벨", () => {
         exitTo="roleplay"
         onAdvance={vi.fn()}
         onExit={onExit}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
 
@@ -59,7 +59,7 @@ describe("VisualNovelScreen 나가기 라벨", () => {
         exitTo="journey"
         onAdvance={vi.fn()}
         onExit={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
 
@@ -74,7 +74,7 @@ describe("VisualNovelScreen 나가기 라벨", () => {
         progress={progress}
         onAdvance={vi.fn()}
         onExit={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
 
@@ -92,7 +92,7 @@ describe("VisualNovelScreen 나가기 라벨", () => {
         exitTo="roleplay"
         onAdvance={vi.fn()}
         onExit={vi.fn()}
-        onReplay={vi.fn()}
+        onFinish={vi.fn()}
       />,
     );
 

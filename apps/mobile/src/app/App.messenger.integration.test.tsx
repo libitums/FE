@@ -154,12 +154,14 @@ test("자판 연습에서 틀린 답장이 있으면 학습 완료는 LESSON COM
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON COMPLETE!");
 });
 
-test("완료 재입장은 전체 대화와 결과 보기를 내고 완료 기록을 보존한다", async () => {
+test("완료 재입장은 첫 메시지부터 다시 시작하고 완료 기록을 보존한다", async () => {
   await openJourneyMessenger();
   finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
-  expect(screen.getByTestId("messenger-message-list").children).toHaveLength(5);
+  expect(screen.getByTestId("messenger-message-list").children).toHaveLength(1);
+  expect(screen.queryByTestId("messenger-finish")).toBeNull();
+  finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-finish"), {});
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   tapLessonCompleteExit();
@@ -243,6 +245,7 @@ test("완료 재입장과 결과 보기는 completed 이벤트를 다시 내지 
   fireEvent.tap(screen.getByTestId("messenger-finish"), {});
   tapLessonCompleteExit();
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-finish"), {});
   expect(
     sink.mock.calls.filter(

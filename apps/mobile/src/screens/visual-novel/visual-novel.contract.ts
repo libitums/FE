@@ -15,7 +15,7 @@ export type VisualNovelTitle = "Our Imagined Café";
 export type VisualNovelBeatIndex = 0 | 1 | 2;
 export type VisualNovelBeatId = "arrive" | "find" | "enter";
 export type VisualNovelCharacterId = "jimin";
-export type VisualNovelSpeakerName = "Minseo";
+export type VisualNovelSpeakerName = string;
 export type VisualNovelBackgroundId = "cafe-exterior-day";
 export type VisualNovelCharacterPoseId = "jimin-neutral" | "jimin-smile";
 
@@ -27,6 +27,11 @@ export type ArriveVisualNovelBeat = {
   readonly characterPoseId: "jimin-neutral";
   readonly speakerName: "Minseo";
   readonly dialogue: string;
+  readonly reply?: {
+    readonly dialogue: string;
+    readonly translation: string;
+    readonly romanization?: string;
+  };
   readonly context?: string;
   readonly translation?: string;
   readonly romanization?: string;
@@ -40,6 +45,11 @@ export type FindVisualNovelBeat = {
   readonly characterPoseId: "jimin-smile";
   readonly speakerName: "Minseo";
   readonly dialogue: string;
+  readonly reply?: {
+    readonly dialogue: string;
+    readonly translation: string;
+    readonly romanization?: string;
+  };
   readonly context?: string;
   readonly translation?: string;
   readonly romanization?: string;
@@ -53,6 +63,11 @@ export type EnterVisualNovelBeat = {
   readonly characterPoseId: "jimin-smile";
   readonly speakerName: "Minseo";
   readonly dialogue: string;
+  readonly reply?: {
+    readonly dialogue: string;
+    readonly translation: string;
+    readonly romanization?: string;
+  };
   readonly context?: string;
   readonly translation?: string;
   readonly romanization?: string;
@@ -223,7 +238,7 @@ export type VisualNovelScreenProps = {
   readonly progress: VisualNovelProgress;
   readonly onAdvance: (id: VisualNovelUnitId, outcome: VisualNovelAdvanceOutcome) => void;
   readonly onExit: (outcome: VisualNovelExitOutcome, beatId: VisualNovelBeatId) => void;
-  readonly onReplay: (id: VisualNovelUnitId) => void;
+  readonly onFinish: (id: VisualNovelUnitId) => void;
   readonly exitTo?: SpecialUnitEntrySource;
 };
 
@@ -237,7 +252,7 @@ export type VisualNovelSceneProps = {
 export type DialoguePanelAction =
   | { readonly kind: "advance"; readonly label: string; readonly onSelect: () => void }
   | {
-      readonly kind: "replay";
+      readonly kind: "finish";
       readonly label: string;
       readonly onSelect: () => void;
     };
@@ -281,4 +296,4 @@ export type VisualNovelTestId =
   | `visual-novel-character-${VisualNovelCharacterPoseId}`
   | `visual-novel-dialogue-${VisualNovelBeatId}`
   | "visual-novel-advance-button"
-  | "visual-novel-replay-button";
+  | "visual-novel-finish-button";

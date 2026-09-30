@@ -53,10 +53,7 @@ export function renderRoleplayUnitScreen(
         />
       );
     case "roleplay-visual-novel":
-      // 화면의 `onExit` 첫 인자(`outcome`)를 버립니다 — 연습의 `progress`는 늘
-      // 처음이라 `visualNovelExitOutcome(progress)`가 늘 `incomplete`라 뜻이
-      // 없습니다. 연습의 판정은 `wiring.onVisualNovelExit`을 거쳐
-      // `practiceVisualNovelExitOutcome(beatId)`가 집니다.
+      // 완료는 결과 화면으로 이동합니다. 여기서 나가기는 미완료 이탈입니다.
       return (
         <VisualNovelScreen
           insets={insets}
@@ -65,7 +62,7 @@ export function renderRoleplayUnitScreen(
           exitTo="roleplay"
           onAdvance={wiring.onVisualNovelAdvance}
           onExit={(_outcome, beatId) => wiring.onVisualNovelExit(screen.unitId, beatId)}
-          onReplay={wiring.onVisualNovelReplay}
+          onFinish={wiring.onVisualNovelFinish}
         />
       );
     default: {

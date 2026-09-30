@@ -198,6 +198,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onFinish={wiring.onMessengerFinish}
         />
       );
+    case "special-unit-complete":
     case "messenger-complete":
       return renderMessengerCompleteScreen(screen, wiring);
     case "phone-call":
@@ -223,7 +224,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           exitTo="journey"
           onAdvance={wiring.onVisualNovelAdvance}
           onExit={wiring.onVisualNovelExit}
-          onReplay={wiring.onVisualNovelReplay}
+          onFinish={wiring.onVisualNovelFinish}
         />
       );
     // 롤플레이 route 셋입니다. `renderRoleplayUnitScreen`이 연습 경계를 진

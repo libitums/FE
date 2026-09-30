@@ -110,8 +110,8 @@ function TutorialStoryStage({
         unitId="appointment-confirmation-phone-call"
         conversation={getPhoneCallConversation()}
         completionStatus="available"
-        onComplete={noop}
-        onExit={() => setStage(2)}
+        onComplete={() => setStage(2)}
+        onExit={onExit}
       />
     );
   if (stage === 2)
@@ -121,8 +121,8 @@ function TutorialStoryStage({
         story={visualNovelStoryFor("cafe-arrival-visual-novel")}
         progress={vnProgress}
         onAdvance={(_id, outcome) => setVnProgress(outcome.progress)}
-        onReplay={noop}
-        onExit={() => setStage(3)}
+        onFinish={() => setStage(3)}
+        onExit={onExit}
       />
     );
   return null;

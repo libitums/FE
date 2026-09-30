@@ -184,8 +184,8 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
     );
     tap(`phone-call-reply-${turn.reply.id}`);
   }
-  expect(screen.getByTestId("phone-call-story-completion")).toHaveTextContent("at a café tomorrow");
-  tap("phone-call-exit-button");
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  button("lesson-complete-screen-exit");
   expect(screen.getByTestId(unit("appointment-confirmation-phone-call"))).toHaveAttribute(
     "data-status",
     "clear",
@@ -197,10 +197,11 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   expect(screen.getByTestId(unit("directions"))).toHaveAttribute("data-status", "default");
   tap(unit("cafe-arrival-visual-novel"));
   expect(screen.getByTestId("visual-novel-dialogue-arrive")).toHaveTextContent("annyeonghaseyo");
-  tap("visual-novel-advance-button");
-  tap("visual-novel-advance-button");
+  for (let i = 0; i < 5; i++) tap("visual-novel-advance-button");
   expect(screen.getByTestId("visual-novel-context")).toHaveTextContent("listen, speak, and trace");
-  tap("visual-novel-exit-button");
+  tap("visual-novel-finish-button");
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  button("lesson-complete-screen-exit");
   expect(screen.getByTestId(unit("cafe-arrival-visual-novel"))).toHaveAttribute(
     "data-status",
     "clear",

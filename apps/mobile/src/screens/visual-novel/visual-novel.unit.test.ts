@@ -77,7 +77,8 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
         },
       ],
     };
-    expect(visualNovelStoryFor(id)).toEqual(expected);
+    expect(visualNovelStoryFor(id)).toMatchObject(expected);
+    expect(visualNovelStoryFor(id).beats.every((beat) => beat.reply?.dialogue)).toBe(true);
   });
 
   it("CE4 제목 · 화자 이름이 영어다 — 대사는 불변", () => {
@@ -112,9 +113,9 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
       replaying: false,
     });
     expect(initialVisualNovelSessionState(completed)).toEqual({
-      mode: "final",
-      beatIndex: 2,
-      replaying: false,
+      mode: "viewing",
+      beatIndex: 0,
+      replaying: true,
     });
   });
 
