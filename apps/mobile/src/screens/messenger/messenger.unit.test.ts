@@ -19,15 +19,15 @@ import {
 
 const id = "appointment-confirmation" as const;
 const expected = [
-  ["jimin-schedule", "jimin", "토요일 오후 2시에 역 앞 카페에서 만나요."],
-  ["self-accept", "self", "좋아요!"],
-  ["jimin-directions", "jimin", "카페는 2번 출구 오른쪽에 있어요."],
-  ["self-thanks", "self", "고마워요!"],
-  ["jimin-goodbye", "jimin", "그럼 토요일에 봬요!"],
+  ["jimin-schedule", "jimin", "안녕하세요"],
+  ["self-accept", "self", "안녕하세요"],
+  ["jimin-directions", "jimin", "내일 만나요"],
+  ["self-thanks", "self", "내일 만나요"],
+  ["jimin-goodbye", "jimin", "내일 만나요"],
 ] as const;
 
 describe("messengerConversationFor", () => {
-  it("승인된 5개 메시지를 고정 순서·리터럴 대사로 낸다 — 답장은 자판으로 칠 만한 짧은 말이다", () => {
+  it("다섯 메시지는 배운 표현으로 구성하며 답장은 한 개 보기로 안내한다", () => {
     const conversation = messengerConversationFor(id);
     expect(conversation.id).toBe(id);
     expect(conversation.title).toBe("Appointment message");
@@ -36,11 +36,13 @@ describe("messengerConversationFor", () => {
       conversation.messages.map(({ id: messageId, sender, text }) => [messageId, sender, text]),
     ).toEqual(expected);
     expect(conversation.messages.every((message) => message.translation.length > 0)).toBe(true);
-    // 둘째 답장은 객관식이고, 보기 넷 안에 정답이 들어 있습니다.
+    // 두 답장 모두 정답 하나를 고른 뒤 보냅니다.
     const thanks = conversation.messages[3];
-    expect(thanks.choices).toHaveLength(4);
+    expect(thanks.choices).toHaveLength(1);
     expect(thanks.choices).toContain(thanks.text);
-    expect(conversation.messages[1].choices).toBeUndefined();
+    expect(conversation.messages[1].choices).toEqual(["안녕하세요"]);
+    expect(conversation.messages[1].romanization).toBe("annyeonghaseyo");
+    expect(thanks.romanization).toBe("naeil mannayo");
   });
 });
 

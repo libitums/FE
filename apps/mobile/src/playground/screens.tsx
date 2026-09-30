@@ -21,6 +21,7 @@ import { LearningShell } from "../screens/learning/LearningShell";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
 import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
 import { initialSessionOptions } from "../lib/session-options";
+import { TutorialSpecialsFixture } from "./TutorialSpecialsFixture";
 import { ButtonCatalog } from "./ButtonCatalog";
 import { EpisodePrologueScreen } from "../app/EpisodePrologueScreen";
 import { tutorialPrologue, tutorialPrologueLabel } from "../app/tutorial-prologue";
@@ -54,6 +55,7 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
+  "tutorial-specials": (go: Go) => <TutorialSpecialsFixture onExit={() => go("journey-map")} />,
   "tutorial-practice": (go: Go, params: PlaygroundParams) => (
     <SentenceOrderScreen
       stepId={params.stepId ?? "greeting"}

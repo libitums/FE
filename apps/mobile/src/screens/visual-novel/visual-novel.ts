@@ -25,7 +25,9 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       characterId: "jimin",
       characterPoseId: "jimin-neutral",
       speakerName: "Jimin",
-      dialogue: "여기가 우리가 만나기로 한 카페예요.",
+      dialogue: "안녕하세요",
+      translation: "Hello.",
+      romanization: "annyeonghaseyo",
     },
     {
       index: 1,
@@ -34,7 +36,9 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       characterId: "jimin",
       characterPoseId: "jimin-smile",
       speakerName: "Jimin",
-      dialogue: "2번 출구 오른쪽이라 금방 찾았죠?",
+      dialogue: "물 주세요",
+      translation: "Water, please.",
+      romanization: "mul juseyo",
     },
     {
       index: 2,
@@ -43,7 +47,9 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       characterId: "jimin",
       characterPoseId: "jimin-smile",
       speakerName: "Jimin",
-      dialogue: "그럼 들어가서 같이 주문해 봐요.",
+      dialogue: "내일 만나요",
+      translation: "See you tomorrow.",
+      romanization: "naeil mannayo",
     },
   ],
 });

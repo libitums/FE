@@ -125,7 +125,14 @@ export function PhoneCallScreen({
                 }
                 accessibility-element={true}
                 accessibility-traits="text"
-                accessibility-label={`${entrySpeakerName(entry, copy.common.me)}, ${entry.text}`}
+                accessibility-label={[
+                  entrySpeakerName(entry, copy.common.me),
+                  entry.text,
+                  entry.romanization,
+                  entry.translation,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
               >
                 <text className="phone-call-transcript-speaker" accessibility-element={false}>
                   {entrySpeakerName(entry, copy.common.me)}
@@ -133,6 +140,16 @@ export function PhoneCallScreen({
                 <text className="phone-call-transcript-text" accessibility-element={false}>
                   {entry.text}
                 </text>
+                {entry.romanization ? (
+                  <text className="phone-call-support" accessibility-element={false}>
+                    {entry.romanization}
+                  </text>
+                ) : null}
+                {entry.translation ? (
+                  <text className="phone-call-support" accessibility-element={false}>
+                    {entry.translation}
+                  </text>
+                ) : null}
               </view>
             ))}
           </view>
@@ -157,10 +174,18 @@ export function PhoneCallScreen({
             data-testid={`phone-call-reply-${reply.id}`}
             accessibility-element={true}
             accessibility-traits="button"
-            accessibility-label={reply.text}
+            accessibility-label={[reply.text, reply.romanization, reply.translation]
+              .filter(Boolean)
+              .join(", ")}
             bindtap={handleReply}
           >
             <text>{reply.text}</text>
+            {reply.romanization ? (
+              <text className="phone-call-reply-support">{reply.romanization}</text>
+            ) : null}
+            {reply.translation ? (
+              <text className="phone-call-reply-support">{reply.translation}</text>
+            ) : null}
           </view>
         ) : null}
         {session.mode === "completed" ? (

@@ -52,7 +52,17 @@ const ready0: PhoneCallSessionState = { mode: "ready", turnIndex: 0 };
 
 describe("약속 확인 전화 순수 계약", () => {
   it("고정 3턴의 ID·대사·답장·음원 순서가 정확하다", () => {
-    expect(getPhoneCallConversation()).toEqual(conversation);
+    expect(getPhoneCallConversation().turns.map((turn) => [turn.id, turn.audioSource])).toEqual([
+      ["confirm-time", "phone-call-confirm-01"],
+      ["confirm-place", "phone-call-confirm-02"],
+      ["goodbye", "phone-call-confirm-03"],
+    ]);
+    for (const turn of getPhoneCallConversation().turns) {
+      expect(turn.translation).toBeTruthy();
+      expect(turn.romanization).toBeTruthy();
+      expect(turn.reply.translation).toBeTruthy();
+      expect(turn.reply.romanization).toBeTruthy();
+    }
   });
 
   it("available/completed 초기화와 상태 label을 판정한다", () => {
@@ -70,19 +80,19 @@ describe("약속 확인 전화 순수 계약", () => {
     expect(phoneCallPlayLabel({ mode: "completed" }, uiCopyEn)).toBeNull();
   });
 
-  it("CE4 제목 · 화자 이름이 영어다 — 대사 · 답장은 불변", () => {
+  it("CE4 제목 · 화자 이름이 영어다 — 짧은 대사에 배운 답장을 사용한다", () => {
     const live = getPhoneCallConversation();
     expect(live.title).toBe("Appointment call");
     expect(live.turns.map((turn) => turn.speakerName)).toEqual(["Jimin", "Jimin", "Jimin"]);
     expect(live.turns.map((turn) => turn.transcript)).toEqual([
-      "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
-      "카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
-      "좋아요. 그럼 토요일에 봐요!",
+      "안녕하세요",
+      "저는 지민이에요.",
+      "내일 만나요",
     ]);
     expect(live.turns.map((turn) => turn.reply.text)).toEqual([
-      "네, 토요일 오후 2시에 만나요.",
-      "네, 2번 출구 오른쪽 카페예요.",
-      "네, 토요일에 봐요!",
+      "이름이 뭐예요?",
+      "안녕하세요",
+      "내일 만나요",
     ]);
   });
 

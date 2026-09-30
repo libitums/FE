@@ -26,9 +26,7 @@ describe("VisualNovelScreen UI", () => {
       "data-replaying",
       "false",
     );
-    expect(screen.getByTestId("visual-novel-dialogue-arrive")).toHaveTextContent(
-      "여기가 우리가 만나기로 한 카페예요.",
-    );
+    expect(screen.getByTestId("visual-novel-dialogue-arrive")).toHaveTextContent("안녕하세요");
     fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
     expect(p.onAdvance).toHaveBeenCalledWith(
       "cafe-arrival-visual-novel",
@@ -42,9 +40,7 @@ describe("VisualNovelScreen UI", () => {
     expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Scene 2 / 3");
     expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
     expect(screen.getByTestId("visual-novel-character-jimin-smile")).toBeInTheDocument();
-    expect(screen.getByTestId("visual-novel-dialogue-find")).toHaveTextContent(
-      "2번 출구 오른쪽이라 금방 찾았죠?",
-    );
+    expect(screen.getByTestId("visual-novel-dialogue-find")).toHaveTextContent("물 주세요");
   });
 
   it("renders completed final beat with replay and exit actions", () => {
@@ -52,9 +48,7 @@ describe("VisualNovelScreen UI", () => {
     render(<VisualNovelScreen {...p} />);
     expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Story complete");
     expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
-    expect(screen.getByTestId("visual-novel-dialogue-enter")).toHaveTextContent(
-      "그럼 들어가서 같이 주문해 봐요.",
-    );
+    expect(screen.getByTestId("visual-novel-dialogue-enter")).toHaveTextContent("내일 만나요");
     expect(screen.getByTestId("visual-novel-replay-button")).toHaveAttribute(
       "accessibility-label",
       "Start over",

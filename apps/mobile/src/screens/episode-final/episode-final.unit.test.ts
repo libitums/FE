@@ -180,46 +180,31 @@ test("[EF9] 진행 라벨은 1부터 센다", () => {
   expect(episodeFinalProgressLabel(0, 5)).toBe("1 / 5");
 });
 
-test("[EF10] 튜토리얼 최종 테스트는 말하기 · 낱말 고르기 · 쓰기를 섞고, 정답 자리가 보기 안에 있다", () => {
-  const test = episodeFinalTestFor("tutorial-final-test");
-  if (test.format !== "visual-novel") {
-    throw new Error("튜토리얼 최종 테스트는 비주얼 노벨 형식이어야 합니다");
-  }
-  const { questions } = test;
-  const kinds = new Set(questions.map((item) => item.kind));
-  expect(kinds).toEqual(new Set(["speaking", "word-choice", "writing"]));
-  for (const item of questions) {
-    if (item.kind === "word-choice") {
-      expect(item.options[item.answerIndex]).toBeDefined();
-    }
-    // 쓰기의 칸 하나는 한 음절입니다 — 두 글자를 한 판에 두면 견주기 지표의 뜻이 흐려집니다.
-    if (item.kind === "writing") {
-      for (const syllable of item.syllables) {
-        expect([...syllable]).toHaveLength(1);
-      }
-    }
-  }
-});
-
-test("[CE4] 최종 테스트 데이터의 화자 이름은 Yuna · Me이고 문항의 한국어는 불변이다", () => {
+test("[EF10] 튜토리얼 복습은 배운 다섯 표현 안에서 고르는 세 문항이다", () => {
   const data = episodeFinalTestFor("tutorial-final-test");
-  if (data.format !== "visual-novel") {
-    throw new Error("튜토리얼 최종 테스트는 비주얼 노벨 형식이어야 합니다");
-  }
-  const speakers = data.questions.flatMap((item) =>
-    item.kind === "word-choice" ? [[item.id, item.speakerName]] : [],
-  );
-  expect(speakers).toEqual([
-    ["welcome", "Yuna"],
-    ["find-cosmetic", "Me"],
+  if (data.format !== "visual-novel") throw new Error("Expected visual novel");
+  expect(data.questions).toHaveLength(3);
+  const learned = new Set([
+    "안녕하세요",
+    "이름이 뭐예요?",
+    "물 주세요",
+    "내일 만나요",
+    "역이 어디예요?",
   ]);
-  const welcome = data.questions.find((item) => item.id === "welcome");
-  expect(welcome).toMatchObject({
-    before: "어서 ",
-    after: "!",
-    options: ["오세요", "주세요", "가세요"],
-    answerIndex: 0,
-  });
+  const seen = new Set<string>();
+  for (const question of data.questions) {
+    expect(question.kind).toBe("word-choice");
+    if (question.kind !== "word-choice") throw new Error("Expected word choice");
+    expect(question.speakerName).toBe("Me");
+    expect(question.romanizations).toHaveLength(3);
+    expect(question.translation).toBeTruthy();
+    expect(question.options[question.answerIndex]).toBeTruthy();
+    for (const option of question.options) {
+      expect(learned.has(option)).toBe(true);
+      seen.add(option);
+    }
+  }
+  expect(seen).toEqual(learned);
 });
 
 test("[EF13] 통화의 말풍선은 지금 차례까지의 마지막 상대 대사를 든다", () => {

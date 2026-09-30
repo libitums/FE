@@ -3,9 +3,7 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { MessengerScreen } from "./MessengerScreen";
 import { MessengerFinishButton } from "./MessengerFinishButton";
-import { messengerConversationFor } from "./messenger";
-
-const conversation = messengerConversationFor("appointment-confirmation");
+import { keyboardConversation as conversation } from "./messenger-keyboard-fixture.test-support";
 
 function renderActive() {
   render(

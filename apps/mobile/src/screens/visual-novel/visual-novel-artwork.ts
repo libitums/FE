@@ -3,28 +3,25 @@ import neutralSource from "./assets/temporary/character-jimin-neutral.png";
 import smileSource from "./assets/temporary/character-jimin-smile.png";
 import type { VisualNovelArtworkBundle, VisualNovelArtworkId } from "./visual-novel.contract";
 
-// Lynx iOS resolves app-bundle images only through its `Resource/` redirect path.
-// Rspeedy emits the imported files below `static/`, which bundle:host mirrors under
-// Host.app/Resource/static without changing the hashed filename.
-const hostResource = (source: string): string => `Resource/${source.replace(/^\/+/, "")}`;
-
+// Rspeedy의 URL을 그대로 사용합니다. 개발 서버 URL은 원격으로 읽고,
+// 프로덕션 /static/ 경로는 iOS Host의 BundledMediaResourceFetcher가 해석합니다.
 const artworkBundle: VisualNovelArtworkBundle = {
   "cafe-exterior-day": {
     id: "cafe-exterior-day",
     kind: "background",
-    source: hostResource(backgroundSource),
+    source: backgroundSource,
   },
   "jimin-neutral": {
     id: "jimin-neutral",
     kind: "character",
     characterId: "jimin",
-    source: hostResource(neutralSource),
+    source: neutralSource,
   },
   "jimin-smile": {
     id: "jimin-smile",
     kind: "character",
     characterId: "jimin",
-    source: hostResource(smileSource),
+    source: smileSource,
   },
 };
 

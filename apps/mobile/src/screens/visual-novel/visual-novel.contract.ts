@@ -25,7 +25,9 @@ export type ArriveVisualNovelBeat = {
   readonly characterId: "jimin";
   readonly characterPoseId: "jimin-neutral";
   readonly speakerName: "Jimin";
-  readonly dialogue: "여기가 우리가 만나기로 한 카페예요.";
+  readonly dialogue: string;
+  readonly translation?: string;
+  readonly romanization?: string;
 };
 
 export type FindVisualNovelBeat = {
@@ -35,7 +37,9 @@ export type FindVisualNovelBeat = {
   readonly characterId: "jimin";
   readonly characterPoseId: "jimin-smile";
   readonly speakerName: "Jimin";
-  readonly dialogue: "2번 출구 오른쪽이라 금방 찾았죠?";
+  readonly dialogue: string;
+  readonly translation?: string;
+  readonly romanization?: string;
 };
 
 export type EnterVisualNovelBeat = {
@@ -45,7 +49,9 @@ export type EnterVisualNovelBeat = {
   readonly characterId: "jimin";
   readonly characterPoseId: "jimin-smile";
   readonly speakerName: "Jimin";
-  readonly dialogue: "그럼 들어가서 같이 주문해 봐요.";
+  readonly dialogue: string;
+  readonly translation?: string;
+  readonly romanization?: string;
 };
 
 export type VisualNovelBeat = ArriveVisualNovelBeat | FindVisualNovelBeat | EnterVisualNovelBeat;
@@ -235,6 +241,8 @@ export type DialoguePanelProps = {
   readonly beatId: VisualNovelBeatId;
   readonly speakerName: VisualNovelSpeakerName;
   readonly dialogue: VisualNovelBeat["dialogue"];
+  readonly translation?: string;
+  readonly romanization?: string;
   readonly action: DialoguePanelAction;
 };
 

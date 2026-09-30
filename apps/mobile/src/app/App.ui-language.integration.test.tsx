@@ -517,7 +517,12 @@ const screenCases: readonly ScreenCase[] = [
       fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
     },
     screenTestId: "messenger-screen-title",
-    content: [/^messenger-message-/, /^messenger-key-/, "messenger-composer-text"],
+    content: [
+      /^messenger-message-/,
+      /^messenger-key-/,
+      /^messenger-choice-/,
+      "messenger-composer-text",
+    ],
   },
   {
     name: "전화",

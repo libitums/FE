@@ -18,25 +18,46 @@ const conversation: PhoneCallConversation = {
       id: "confirm-time",
       speakerId: "jimin",
       speakerName: "Jimin",
-      transcript: "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
+      transcript: "안녕하세요",
+      translation: "Hello.",
+      romanization: "annyeonghaseyo",
       audioSource: "phone-call-confirm-01",
-      reply: { id: "confirm-time-reply", text: "네, 토요일 오후 2시에 만나요." },
+      reply: {
+        id: "confirm-time-reply",
+        text: "이름이 뭐예요?",
+        translation: "What is your name?",
+        romanization: "ireumi mwoyeyo?",
+      },
     },
     {
       id: "confirm-place",
       speakerId: "jimin",
       speakerName: "Jimin",
-      transcript: "카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
+      transcript: "저는 지민이에요.",
+      translation: "I’m Jimin.",
+      romanization: "jeoneun jiminieyo",
       audioSource: "phone-call-confirm-02",
-      reply: { id: "confirm-place-reply", text: "네, 2번 출구 오른쪽 카페예요." },
+      reply: {
+        id: "confirm-place-reply",
+        text: "안녕하세요",
+        translation: "Hello.",
+        romanization: "annyeonghaseyo",
+      },
     },
     {
       id: "goodbye",
       speakerId: "jimin",
       speakerName: "Jimin",
-      transcript: "좋아요. 그럼 토요일에 봐요!",
+      transcript: "내일 만나요",
+      translation: "See you tomorrow.",
+      romanization: "naeil mannayo",
       audioSource: "phone-call-confirm-03",
-      reply: { id: "goodbye-reply", text: "네, 토요일에 봐요!" },
+      reply: {
+        id: "goodbye-reply",
+        text: "내일 만나요",
+        translation: "See you tomorrow.",
+        romanization: "naeil mannayo",
+      },
     },
   ],
 };
@@ -85,6 +106,8 @@ export const visiblePhoneCallEntries = (
       speakerName: "Jimin",
       turnId: turn.id,
       text: turn.transcript,
+      ...(turn.translation ? { translation: turn.translation } : {}),
+      ...(turn.romanization ? { romanization: turn.romanization } : {}),
     });
     if (
       state.mode === "completed" ||
@@ -95,6 +118,8 @@ export const visiblePhoneCallEntries = (
         speaker: "self",
         replyId: turn.reply.id,
         text: turn.reply.text,
+        ...(turn.reply.translation ? { translation: turn.reply.translation } : {}),
+        ...(turn.reply.romanization ? { romanization: turn.reply.romanization } : {}),
       });
     }
   }

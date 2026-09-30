@@ -205,6 +205,7 @@ export type EpisodeFinalCopy = {
 };
 
 export type MessengerCopy = {
+  readonly chooseReply: string;
   readonly placeholder: string;
   readonly keyboard: {
     readonly shift: string;
