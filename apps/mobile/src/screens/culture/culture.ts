@@ -36,6 +36,18 @@ export type CultureNarrative = {
 // 다섯 스텝이 전부 문화라는 뜻이 아닙니다. 문항 표 셋(listening · sentence-order ·
 // word-choice)이 쓴 「빈 배열 + 사유 주석」을 이 자리는 쓸 수 없습니다.
 const cultureNarrativeByStep: Record<JourneyStepId, CultureNarrative> = {
+  "tutorial-listening": {
+    title: "Hearing a greeting",
+    paragraphs: ["One greeting can start a conversation."],
+  },
+  "tutorial-speaking": {
+    title: "Trying a greeting",
+    paragraphs: ["Take your time when greeting someone for the first time."],
+  },
+  "tutorial-writing": {
+    title: "Writing one letter",
+    paragraphs: ["Korean letters form syllable blocks. Start with one block."],
+  },
   greeting: {
     title: "Bowing when you greet",
     paragraphs: [

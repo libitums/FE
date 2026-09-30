@@ -54,6 +54,9 @@ export type CultureQuizSessionAction =
 // 표는 export하지 않습니다 — 표를 내보내면 다음 사람이 직접 색인해 자기
 // 답을 짓습니다.
 const cultureQuizQuestionsByStep: Record<JourneyStepId, readonly CultureQuizQuestion[]> = {
+  "tutorial-listening": [],
+  "tutorial-speaking": [],
+  "tutorial-writing": [],
   greeting: [],
   introduction: [],
   ordering: [],

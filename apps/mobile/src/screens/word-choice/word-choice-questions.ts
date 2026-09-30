@@ -46,6 +46,9 @@ export type WordChoiceQuestion = {
 // 넣어도 줄이 바뀌지는 않지만(넷이 한 줄에 서고 폭을 나눠 갖습니다) 칩이 바닥까지
 // 줄어 낱말이 칩 안에서 접힙니다 — 그 모양은 「낱말 고르기」로 읽히지 않습니다.
 export const wordChoiceQuestionsByStep: Record<JourneyStepId, readonly WordChoiceQuestion[]> = {
+  "tutorial-listening": [],
+  "tutorial-speaking": [],
+  "tutorial-writing": [],
   greeting: [],
   introduction: [
     {

@@ -38,7 +38,7 @@ describe("listeningPromptScale", () => {
       .flat()
       .map((question) => listeningPromptScale(question.prompt));
 
-    expect(scales).toHaveLength(12);
+    expect(scales).toHaveLength(13);
     expect(new Set(scales)).toEqual(new Set(["l", "m", "s"]));
   });
 });

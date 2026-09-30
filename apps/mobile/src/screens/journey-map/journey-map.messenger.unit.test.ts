@@ -26,6 +26,9 @@ describe("journeyMapItems", () => {
       "appointment-confirmation-phone-call",
       "cafe-arrival-visual-novel",
       "directions",
+      "tutorial-listening",
+      "tutorial-speaking",
+      "tutorial-writing",
       "tutorial-final-test",
     ]);
   });
@@ -38,15 +41,17 @@ describe("journeyMapItems", () => {
     });
   });
 
-  // ⟨개정⟩ 맵 항목이 열로 늘어도 **스텝은 다섯 그대로**입니다 — 표지는 특별 유닛이라
-  // 스텝을 갖지 않습니다. 항목 수와 스텝 수가 갈리는 것이 이 케이스가 지는 것입니다.
-  it("항목이 열로 늘어도 journeySteps는 다섯 개와 순서를 유지한다", () => {
+  // 일반 스텝 여덟과 특별 유닛 다섯이 함께 맵을 구성합니다.
+  it("항목이 열셋으로 늘어도 journeySteps는 여덟 개와 순서를 유지한다", () => {
     expect(journeySteps.map((step) => step.id)).toEqual([
       "greeting",
       "introduction",
       "ordering",
       "appointment",
       "directions",
+      "tutorial-listening",
+      "tutorial-speaking",
+      "tutorial-writing",
     ]);
   });
 

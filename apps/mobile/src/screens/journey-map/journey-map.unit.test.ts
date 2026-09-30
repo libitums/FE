@@ -214,8 +214,8 @@ describe("stepSheetReducer", () => {
 });
 
 describe("journeySteps · initialCompletedStepCount (고정 데이터)", () => {
-  it("스텝이 다섯이다", () => {
-    expect(journeySteps).toHaveLength(5);
+  it("기존 다섯과 새 체험 셋, 스텝이 여덟이다", () => {
+    expect(journeySteps).toHaveLength(8);
   });
 
   it("id가 중복되지 않는다", () => {
@@ -246,6 +246,9 @@ describe("journeySteps · initialCompletedStepCount (고정 데이터)", () => {
       { id: "ordering", status: "current" },
       { id: "appointment", status: "locked" },
       { id: "directions", status: "locked" },
+      { id: "tutorial-listening", status: "locked" },
+      { id: "tutorial-speaking", status: "locked" },
+      { id: "tutorial-writing", status: "locked" },
     ]);
   });
 });
@@ -269,6 +272,9 @@ describe("낭독 이름의 데이터 앵커", () => {
       "Ordering, current step",
       "Making plans, locked",
       "Asking for directions, locked",
+      "Listen to a Hello, locked",
+      "Say Your Hello, locked",
+      "Trace One Letter, locked",
     ]);
   });
 
@@ -292,6 +298,18 @@ describe("낭독 이름의 데이터 앵커", () => {
       { id: "ordering", description: "Ask for water by putting two pieces together" },
       { id: "appointment", description: "Practice saying “See you tomorrow” with a model to help" },
       { id: "directions", description: "Put two pieces together to ask where the station is" },
+      {
+        id: "tutorial-listening",
+        description: "Hear a familiar greeting and choose its meaning from two answers",
+      },
+      {
+        id: "tutorial-speaking",
+        description: "Try saying one familiar greeting with pronunciation to help",
+      },
+      {
+        id: "tutorial-writing",
+        description: "Follow the pale guide to write one letter from See you tomorrow",
+      },
     ]);
   });
 
@@ -303,6 +321,9 @@ describe("낭독 이름의 데이터 앵커", () => {
       { id: "ordering", title: "Ordering" },
       { id: "appointment", title: "Making plans" },
       { id: "directions", title: "Asking for directions" },
+      { id: "tutorial-listening", title: "Listen to a Hello" },
+      { id: "tutorial-speaking", title: "Say Your Hello" },
+      { id: "tutorial-writing", title: "Trace One Letter" },
     ]);
   });
 
@@ -325,6 +346,9 @@ const allStepIds: readonly JourneyStepId[] = [
   "ordering",
   "appointment",
   "directions",
+  "tutorial-listening",
+  "tutorial-speaking",
+  "tutorial-writing",
 ];
 
 describe("journeyStepOrdinal", () => {
@@ -341,10 +365,10 @@ describe("journeyStepOrdinal", () => {
   });
 
   // 던지지 않습니다 — union이 닫혀 있고 journeySteps가 다섯을 전부 갖습니다.
-  it("다섯 스텝의 서수가 journeySteps의 자리와 1:1이다", () => {
+  it("여덟 스텝의 서수가 journeySteps의 자리와 1:1이다", () => {
     const ordinals = journeySteps.map((step) => journeyStepOrdinal(step.id));
 
-    expect(ordinals).toEqual([1, 2, 3, 4, 5]);
+    expect(ordinals).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
   });
 
   it("서수가 서로 겹치지 않는다", () => {
@@ -426,23 +450,26 @@ describe("completeStep", () => {
 });
 
 describe("여정 전부 완료 (계약의 빈칸)", () => {
-  // stepStatusAt(0..4, 5) → 전부 "done"입니다. current인 스텝이 없습니다.
-  it("진행이 5면 다섯 스텝이 전부 done이고 current가 없다", () => {
-    const statuses = journeySteps.map((_step, index) => stepStatusAt(index, 5));
+  // stepStatusAt(0..7, 8) → 전부 "done"입니다. current인 스텝이 없습니다.
+  it("진행이 8이면 여덟 스텝이 전부 done이고 current가 없다", () => {
+    const statuses = journeySteps.map((_step, index) => stepStatusAt(index, 8));
 
-    expect(statuses).toEqual(["done", "done", "done", "done", "done"]);
+    expect(statuses).toEqual(Array(8).fill("done"));
   });
 
-  it("전부 done이어도 다섯 스텝이 전부 열린다 — 다시 돌 수 있다", () => {
-    const openable = journeySteps.map((_step, index) => canOpenStep(stepStatusAt(index, 5)));
+  it("전부 done이어도 여덟 스텝이 전부 열린다 — 다시 돌 수 있다", () => {
+    const openable = journeySteps.map((_step, index) => canOpenStep(stepStatusAt(index, 8)));
 
-    expect(openable).toEqual([true, true, true, true, true]);
+    expect(openable).toEqual(Array(8).fill(true));
   });
 
   it("마지막 스텝을 끝내면 그 진행에 닿는다", () => {
-    const completed = completeStep(4, "directions");
+    const completed = completeStep(7, "tutorial-writing");
 
     expect(journeySteps.map((_step, index) => stepStatusAt(index, completed))).toEqual([
+      "done",
+      "done",
+      "done",
       "done",
       "done",
       "done",
@@ -516,10 +543,10 @@ describe("learningFormForStep", () => {
 
   // journeySteps에서 온 id로도 같은 것을 봅니다 — allStepIds가 그 배열과 어긋나면
   // 이 케이스가 먼저 말합니다.
-  it("journeySteps의 다섯 스텝에도 그대로 성립한다", () => {
+  it("journeySteps의 여덟 스텝에도 그대로 성립한다", () => {
     const lists = journeySteps.map((step) => learningFormsForStep(step.id));
 
-    expect(lists).toHaveLength(5);
+    expect(lists).toHaveLength(8);
     for (const forms of lists) {
       expect(forms.length).toBeGreaterThan(0);
       for (const form of forms) {
@@ -724,8 +751,8 @@ describe("표지 항목", () => {
 
   // ⚠ 항목이 아홉에서 **열**로 늡니다. 헤더의 분모도 이 수입니다 — 막대가 재는 것은
   // 그 아래 줄에 선 것이고, 화면에 열 줄이 서는데 아홉을 세면 대조할 수 없습니다.
-  it("[U-I2] 구획의 항목이 열이고 순서가 표지 → 스텝 넷 → 특별 셋 → 길 묻기 → 최종이다", () => {
-    expect(tutorialSection.items).toHaveLength(10);
+  it("[U-I2] 구획의 항목이 열셋이고 순서가 표지 → 스텝 넷 → 특별 셋 → 길 묻기 → 체험 셋 → 최종이다", () => {
+    expect(tutorialSection.items).toHaveLength(13);
     expect(tutorialSection.items.map(mapItemLabel)).toEqual([
       "tutorial-intro",
       "greeting",
@@ -736,6 +763,9 @@ describe("표지 항목", () => {
       "appointment-confirmation-phone-call",
       "cafe-arrival-visual-novel",
       "directions",
+      "tutorial-listening",
+      "tutorial-speaking",
+      "tutorial-writing",
       "tutorial-final-test",
     ]);
   });
@@ -745,11 +775,11 @@ describe("mapItemStatus — 표지 게이트", () => {
   // ⚠ **표지가 먼저입니다.** 표지를 끝내지 않았으면 그 구획의 나머지는 진행이
   // 무엇이든 `locked`입니다. 표지 자신은 구획의 첫 항목이라 앞에 걸 것이 없어
   // 잠기지 않습니다.
-  it("[U-L1] 표지가 미완료면 나머지 아홉이 전부 잠기고 표지 자신은 열려 있다", () => {
+  it("[U-L1] 표지가 미완료면 나머지 열둘이 전부 잠기고 표지 자신은 열려 있다", () => {
     const [intro, ...rest] = tutorialSection.items;
 
     expect(mapItemStatus(intro!, tutorialSection.items, nothingDone)).toBe("available");
-    expect(rest).toHaveLength(9);
+    expect(rest).toHaveLength(12);
     for (const item of rest) {
       expect([mapItemLabel(item), mapItemStatus(item, tutorialSection.items, nothingDone)]).toEqual(
         [mapItemLabel(item), "locked"],
@@ -797,6 +827,9 @@ describe("mapItemStatus — 표지 게이트", () => {
       ["appointment-confirmation-phone-call", "available"],
       ["cafe-arrival-visual-novel", "available"],
       ["directions", "locked"],
+      ["tutorial-listening", "locked"],
+      ["tutorial-speaking", "locked"],
+      ["tutorial-writing", "locked"],
       ["tutorial-final-test", "locked"],
     ]);
   });
@@ -804,7 +837,7 @@ describe("mapItemStatus — 표지 게이트", () => {
   // ⚠ **계약과 계획이 갈린 자리입니다 — 계약을 따릅니다.** `test-plan`의 U-L3은
   // *"끝낸 항목은 표지 미완료와 무관하게 `completed`"* 라고 적었지만, 계약(`spec` §2.7
   // 관찰 델타 · §2.9 `mapItemStatus` 문면)은 *"표지가 끝나지 않았으면 나머지는 **진행이
-  // 무엇이든** `locked`"* 이고 부팅 직후 관찰을 **「표지만 열리고 나머지 아홉이 전부
+  // 무엇이든** `locked`"* 이고 부팅 직후 관찰을 **「표지만 열리고 나머지 열둘이 전부
   // 잠김」** 으로 못박습니다. 둘이 동시에 참일 수 없어 계약 쪽을 답니다.
   it("[U-L3] 끝낸 특별 유닛도 표지가 미완료면 잠긴다 — 표지 게이트가 완료보다 먼저다", () => {
     const messengerDone: JourneyProgress = {

@@ -1,3 +1,4 @@
+import { journeySteps } from "../screens/journey-map/journey-map";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
@@ -76,7 +77,7 @@ type Sinks = {
 // 매번 걷는 대신 끝난 상태에서 시작합니다. 잠김은 아래 [I8]~[I10]이 제품의 씨앗으로
 // 봅니다.
 const finishedTutorial: AppJourneySeed = {
-  completedStepCount: 5,
+  completedStepCount: journeySteps.length,
   completedMessengerUnitIds: [messengerUnitId],
   completedPhoneCallUnitIds: [phoneCallUnitId],
   visualNovelProgress: { status: "completed", beatIndex: 2 },

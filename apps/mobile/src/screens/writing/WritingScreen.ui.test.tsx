@@ -202,7 +202,7 @@ test("[WSC5] 음절을 모두 쓰면 다음 문항으로, 끝에서 결과 보�
 
   expect(screen.getByTestId("writing-screen-complete")).toBeInTheDocument();
   fireEvent.tap(action(), {}); // See results
-  expect(props.onFinish).toHaveBeenCalledWith("directions", ["incorrect", "correct"]);
+  expect(props.onFinish).toHaveBeenCalledWith("directions", ["incorrect", "correct"], 0);
 });
 
 // WSC6 — 호스트가 없으면 안내는 글자로 대신 서고, 판정 없이 넘어가며 결과에 싣지 않습니다.
@@ -220,7 +220,7 @@ test("[WSC6] 호스트가 없으면 글자 안내가 서고, Check가 잴 수 �
   }
 
   fireEvent.tap(action(), {}); // See results
-  expect(props.onFinish).toHaveBeenCalledWith("directions", []);
+  expect(props.onFinish).toHaveBeenCalledWith("directions", [], 0);
 });
 
 // WSC7 — 문항이 없는 스텝은 마운트가 곧 완료입니다.
@@ -230,7 +230,7 @@ test("[WSC7] 문항이 없는 스텝은 곧장 완료이고 결과 보기가 빈
   expect(screen.getByTestId("writing-screen-complete")).toBeInTheDocument();
   expect(screen.queryByTestId("writing-canvas")).not.toBeInTheDocument();
   fireEvent.tap(action(), {});
-  expect(props.onFinish).toHaveBeenCalledWith("greeting", []);
+  expect(props.onFinish).toHaveBeenCalledWith("greeting", [], 0);
 });
 
 // WSC8 — 형제 학습형과 같은 배치입니다: 카드에 문장 · 음절 칸, 카드 아래 작업 영역에 캔버스.

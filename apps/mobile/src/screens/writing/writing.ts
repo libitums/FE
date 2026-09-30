@@ -23,6 +23,20 @@ import type { JourneyStepId } from "../journey-map/journey-map";
  * 문턱은 전부 기본값입니다 — 문항마다 덮어쓸 근거(글자별 실측)가 아직 없습니다.
  */
 const writingQuestionsByStep: Record<JourneyStepId, readonly WritingQuestion[]> = {
+  "tutorial-listening": [],
+  "tutorial-speaking": [],
+  "tutorial-writing": [
+    {
+      id: "tutorial-trace-na",
+      before: "내일 만",
+      syllables: ["나"],
+      after: "요",
+      translation: "See you tomorrow.",
+      instruction: "Trace the pale letter 나 (na) with your finger. You can skip for now.",
+      optionalPractice: true,
+      passCriterion: writingPassCriterion,
+    },
+  ],
   greeting: [],
   introduction: [],
   ordering: [],

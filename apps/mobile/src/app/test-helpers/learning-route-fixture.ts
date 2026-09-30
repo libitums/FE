@@ -9,6 +9,9 @@ const forms: Record<JourneyStepId, readonly [LearningForm, ...LearningForm[]]> =
   ordering: ["listening"],
   appointment: ["listening"],
   directions: ["listening", "writing"],
+  "tutorial-listening": ["listening"],
+  "tutorial-speaking": ["speaking"],
+  "tutorial-writing": ["writing"],
 };
 export const learningFormsForStep = (id: JourneyStepId) => forms[id];
 export const learningFormAt = (id: JourneyStepId, index: number) => forms[id][index];

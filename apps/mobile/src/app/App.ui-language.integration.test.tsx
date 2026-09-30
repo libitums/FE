@@ -572,7 +572,7 @@ const specialUnits = [
 ] as const;
 
 const finishedTutorial: AppJourneySeed = {
-  completedStepCount: 5,
+  completedStepCount: journeySteps.length,
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
   visualNovelProgress: { status: "completed", beatIndex: 2 },

@@ -35,6 +35,9 @@ const stepIds: readonly JourneyStepId[] = [
   "ordering",
   "appointment",
   "directions",
+  "tutorial-listening",
+  "tutorial-speaking",
+  "tutorial-writing",
 ];
 
 // 픽스처 — answerIndex가 0인 문항입니다. "answerIndex가 0인 문항에서 0번 보기가
