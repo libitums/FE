@@ -22,14 +22,6 @@
   left: 0;
 }
 
-.episode-narrative-screen-background {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
 /* 인물 — 디자인에서 화면 폭의 91%(367 / 402), 위 100에서 대화 패널 위(651)까지 섭니다.
    좌우 17 · 위 100 · 아래 223은 874pt 화면의 실측값입니다. */
 .episode-narrative-screen-character-slot {
@@ -54,6 +46,11 @@
   left: 0;
   height: 116px;
   background-image: linear-gradient(to bottom, #1b1613, rgba(27, 22, 19, 0));
+}
+
+/* 밝은 하늘 배경에서는 safe area 아래 제목까지 명암이 닿아야 합니다. */
+.episode-narrative-screen-shade-story {
+  height: calc(var(--libitum-spacing-64) * 4);
 }
 
 .episode-narrative-screen-safe {

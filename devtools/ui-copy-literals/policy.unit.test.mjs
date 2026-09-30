@@ -124,8 +124,8 @@ test("PO3. 전환 목록에 없는 깨끗한 파일은 위반 0이다", () => {
   assert.deepEqual(violationsFrom([], uiFile, withPending), []);
 });
 
-// PO4 — 데이터: spec §8 규칙 4의 열여덟 항목 + 한글 자판 자모 표 일곱(spec §8 개정, 2026-09-29).
-test("PO4. 학습 콘텐츠 선언 표가 spec §8 규칙 4의 25항목과 같다", () => {
+// 학습 콘텐츠와 자모 표에 튜토리얼 혼합 대본 선언을 더합니다. 파일 전체를 허용하지 않습니다.
+test("PO4. 학습 콘텐츠 선언 표가 허용한 26항목과 같다", () => {
   const expected = [
     "listening-questions.ts#listeningQuestionsByStep",
     "word-choice-questions.ts#wordChoiceQuestionsByStep",
@@ -134,6 +134,7 @@ test("PO4. 학습 콘텐츠 선언 표가 spec §8 규칙 4의 25항목과 같�
     "writing.ts#writingQuestionsByStep",
     "episode-final-tests.ts#episodeFinalTests",
     "episode-narrative.ts#placeholderNarrative",
+    "tutorial-prologue.ts#tutorialPrologue",
     "messenger.ts#conversations",
     "phone-call.ts#conversation",
     "phone-call.contract.ts#ConfirmTimePhoneCallTurn",
@@ -154,7 +155,7 @@ test("PO4. 학습 콘텐츠 선언 표가 spec §8 규칙 4의 25항목과 같�
     "hangul-keyboard.ts#hangulKeyRows",
   ];
 
-  assert.equal(expected.length, 25);
+  assert.equal(expected.length, 26);
   assert.deepEqual(
     [...uiCopyLiteralPolicy.learningContentDeclarations].sort(),
     [...expected].sort(),

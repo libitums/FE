@@ -22,7 +22,8 @@
   flex: 1;
   gap: var(--libitum-spacing-16);
   padding-top: var(--libitum-layout-screen-padding-top);
-  padding-bottom: var(--libitum-layout-screen-padding-bottom);
+  /* safe area는 부모가 처리합니다. 입력창에는 그 위의 작은 간격만 둡니다. */
+  padding-bottom: var(--libitum-spacing-8);
 }
 
 .prologue-chat-screen-header {

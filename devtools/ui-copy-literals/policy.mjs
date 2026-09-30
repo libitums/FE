@@ -18,6 +18,7 @@ export const uiCopyLiteralPolicy = {
     "writing.ts#writingQuestionsByStep",
     "episode-final-tests.ts#episodeFinalTests",
     "episode-narrative.ts#placeholderNarrative",
+    "tutorial-prologue.ts#tutorialPrologue",
     "messenger.ts#conversations",
     "phone-call.ts#conversation",
     "phone-call.contract.ts#ConfirmTimePhoneCallTurn",

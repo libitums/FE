@@ -173,13 +173,20 @@ export type PrologueChat = {
 };
 
 /**
- * 에피소드의 서사 전개입니다. **에피소드마다 형식을 하나 고릅니다** — 통화 · 메신저 ·
- * 비주얼 노벨. 어느 형식이든 끝나면 학습 완료(PERFECT LESSON)를 거쳐 여정 맵으로 갑니다.
+ * 서사 한 구간입니다. 통화의 인물 그림을 생략하면 기존 인물을, null이면 익명 아바타를 씁니다.
  */
-export type EpisodePrologue =
-  | { readonly kind: "call"; readonly call: PrologueCall }
+export type EpisodePrologueSegment =
+  | { readonly kind: "call"; readonly call: PrologueCall; readonly callerPortrait?: string | null }
   | { readonly kind: "messenger"; readonly chat: PrologueChat }
   | { readonly kind: "visual-novel"; readonly narrative: EpisodeNarrative };
+
+/** 구간 전부를 마친 뒤에만 학습 완료를 엽니다. 단일 형식의 기존 에피소드도 유지합니다. */
+export type EpisodePrologue =
+  | EpisodePrologueSegment
+  | {
+      readonly kind: "sequence";
+      readonly segments: readonly [EpisodePrologueSegment, ...EpisodePrologueSegment[]];
+    };
 
 export type PrologueChatScreenProps = {
   readonly insets: SafeAreaInsets;
@@ -201,7 +208,7 @@ export type PrologueCallScreenProps = {
   readonly episodeLabel: string;
   readonly call: PrologueCall;
   /** 통화 상대의 얼굴 그림입니다. */
-  readonly callerPortrait: string;
+  readonly callerPortrait: string | null;
   /**
    * 끝난 통화의 하단 버튼을 눌렀습니다. 통화가 끝나는 것(마지막 대사가 흐름 · 종료
    * 버튼)만으로는 불리지 않습니다 — 끝나면 하단에 버튼이 서고, 그 버튼이 다음으로 갑니다.

@@ -7,6 +7,10 @@
 
 export type EpisodeNarrativeBeat = {
   readonly speakerName: string;
+  /** 독백은 기존 다이알로그의 narration 변형을 쓰며 화자와 아바타를 숨깁니다. */
+  readonly variant?: "speech" | "narration";
+  /** 장면별 배경입니다. 생략하면 기존 스토어 배경을 씁니다. */
+  readonly background?: string;
   /** 학습 대사입니다(한국어). */
   readonly line: string;
   /** 대사의 번역입니다(영어). */
@@ -15,6 +19,8 @@ export type EpisodeNarrativeBeat = {
 
 export type EpisodeNarrative = {
   readonly beats: readonly [EpisodeNarrativeBeat, ...EpisodeNarrativeBeat[]];
+  /** 인물 없는 1인칭 장면은 null, 기존 대본은 생략해 기본 인물을 유지합니다. */
+  readonly character?: string | null;
 };
 
 const placeholderNarrative: EpisodeNarrative = {

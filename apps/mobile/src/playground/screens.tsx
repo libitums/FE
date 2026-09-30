@@ -20,6 +20,8 @@ import { LearningShell } from "../screens/learning/LearningShell";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
 import { initialSessionOptions } from "../lib/session-options";
 import { ButtonCatalog } from "./ButtonCatalog";
+import { EpisodePrologueScreen } from "../app/EpisodePrologueScreen";
+import { tutorialPrologue, tutorialPrologueLabel } from "../app/tutorial-prologue";
 
 // 화면을 앱 흐름 없이 fixture props로 띄웁니다. 콜백은 앱 흐름과 같은 순서로
 // playground 안의 다음 화면으로 옮겨 가기만 합니다(저장·이벤트 없음) — 버튼이
@@ -47,6 +49,15 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
+  "tutorial-prologue": (go: Go) => (
+    <EpisodePrologueScreen
+      insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
+      label={tutorialPrologueLabel}
+      prologue={tutorialPrologue}
+      onComplete={() => go("journey-map")}
+      onExit={() => go("journey-map")}
+    />
+  ),
   splash: (go: Go) => <SplashScreen onTimeout={() => go("onboarding")} />,
   onboarding: (go: Go) => <OnboardingScreen onComplete={() => go("login")} />,
   login: (go: Go) => (

@@ -8,12 +8,29 @@ import { episodePrologueFor } from "./episode-prologues";
 // 않습니다 — 단언하는 것은 형식과 모양입니다.
 
 describe("episodePrologueFor", () => {
-  it("R1. 튜토리얼의 서사는 비주얼 노벨이고 장면이 있다", () => {
+  it("R1. 튜토리얼은 비주얼 노벨 사이에 메신저와 통화를 잇는 혼합 서사다", () => {
     const prologue = episodePrologueFor("tutorial");
 
-    expect(prologue?.kind).toBe("visual-novel");
-    if (prologue?.kind === "visual-novel") {
-      expect(prologue.narrative.beats.length).toBeGreaterThan(0);
+    expect(prologue?.kind).toBe("sequence");
+    if (prologue?.kind === "sequence") {
+      expect(prologue.segments.map((segment) => segment.kind)).toEqual([
+        "visual-novel",
+        "messenger",
+        "visual-novel",
+        "call",
+        "visual-novel",
+      ]);
+      for (const segment of prologue.segments) {
+        if (segment.kind === "visual-novel") {
+          expect(segment.narrative.character).toBeNull();
+          expect(
+            segment.narrative.beats.every(
+              (beat) => beat.background && beat.variant === "narration",
+            ),
+          ).toBe(true);
+        }
+        if (segment.kind === "call") expect(segment.callerPortrait).toBeNull();
+      }
     }
   });
 

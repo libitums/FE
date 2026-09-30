@@ -1,0 +1,45 @@
+.narrative-background,
+.narrative-background-frame,
+.narrative-background-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.narrative-background {
+  overflow: hidden;
+}
+
+.narrative-background-frame-loading {
+  opacity: 0;
+}
+
+.narrative-background-frame-current {
+  /* 장면 전환은 900ms입니다. Lynx는 시간의 calc를 지원하지 않고 서사 전환 토큰은 없습니다. */
+  animation: narrative-background-reveal 900ms var(--libitum-motion-easing-easing) both;
+}
+
+.narrative-background-image-current {
+  /* 서사 확대는 6초 동안 한 번만 합니다. 해당 길이의 토큰은 없습니다. */
+  animation: narrative-background-drift 6000ms var(--libitum-motion-easing-easing) both;
+}
+
+@keyframes narrative-background-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes narrative-background-drift {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.035);
+  }
+}

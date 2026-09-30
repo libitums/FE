@@ -11,6 +11,7 @@ import storyCharacter from "../../assets/story/story-character.png";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import { useUiCopy } from "../../lib/ui-copy";
 import { nextEpisodeNarrativeBeat, type EpisodeNarrative } from "./episode-narrative";
+import { NarrativeBackground } from "./NarrativeBackground";
 
 import "./episode-narrative-screen.css";
 
@@ -48,6 +49,9 @@ export function EpisodeNarrativeScreen({
   const copy = useUiCopy();
   const [beatIndex, setBeatIndex] = useState(0);
   const beat = narrative.beats[beatIndex] ?? narrative.beats[0];
+  const background = beat.background ?? storyBackground;
+  const previousBackground = narrative.beats[beatIndex - 1]?.background ?? storyBackground;
+  const character = narrative.character === undefined ? storyCharacter : narrative.character;
 
   const handleAdvance = () => {
     "background only";
@@ -71,19 +75,28 @@ export function EpisodeNarrativeScreen({
       {/* 장면 그림 · 위 명암은 순수 장식입니다. `<image>`는 기본 접근성 정지라 래퍼가
           자손을 통째로 가립니다(ADR-0016 D5). */}
       <view className="episode-narrative-screen-scene" accessibility-elements-hidden={true}>
-        <image
-          className="episode-narrative-screen-background"
-          src={storyBackground}
-          mode="aspectFill"
+        <NarrativeBackground
+          key={background}
+          src={background}
+          previousSrc={beatIndex > 0 ? previousBackground : null}
+          animated={beat.background !== undefined}
         />
-        <view className="episode-narrative-screen-character-slot">
-          <image
-            className="episode-narrative-screen-character"
-            src={storyCharacter}
-            mode="aspectFit"
-          />
-        </view>
-        <view className="episode-narrative-screen-shade" />
+        {character === null ? null : (
+          <view className="episode-narrative-screen-character-slot">
+            <image
+              className="episode-narrative-screen-character"
+              src={character}
+              mode="aspectFit"
+            />
+          </view>
+        )}
+        <view
+          className={
+            beat.background === undefined
+              ? "episode-narrative-screen-shade"
+              : "episode-narrative-screen-shade episode-narrative-screen-shade-story"
+          }
+        />
       </view>
 
       {/* 넘기기 층 — 보조기술에 「다음 대사」 버튼 하나로 섭니다. 버튼 특성을 가진 요소라
@@ -136,8 +149,13 @@ export function EpisodeNarrativeScreen({
           data-testid="episode-narrative-screen-dialog"
         >
           <VisualNovelDialog
-            speakerName={beat.speakerName}
-            avatar={<Avatar name={beat.speakerName} size="sm" accessibility="hidden" />}
+            {...(beat.variant === "narration"
+              ? { variant: "narration" as const }
+              : {
+                  variant: beat.variant,
+                  speakerName: beat.speakerName,
+                  avatar: <Avatar name={beat.speakerName} size="sm" accessibility="hidden" />,
+                })}
             line={beat.line}
             translation={beat.translation}
             surface="translucent"
