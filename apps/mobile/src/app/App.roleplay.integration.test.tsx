@@ -101,11 +101,12 @@ function finishMessengerConversation() {
 }
 
 // 학습 완료 화면의 나가기(`맵으로` · `목록으로`)입니다. 버튼이 ui-lynx `Button`이라 안쪽을 누릅니다.
-function tapLessonCompleteExit() {
+function tapLessonCompleteExit(label = "Back to list") {
   const button = screen
     .getByTestId("lesson-complete-screen-exit")
     .querySelector('[data-testid="ui-lynx-button"]');
   if (button === null) throw new Error("lesson-complete-screen-exit 안에 버튼이 없습니다");
+  expect(button).toHaveAttribute("accessibility-label", label);
   fireEvent.tap(button, {});
 }
 
@@ -615,7 +616,7 @@ test("[I10] 마지막 하나가 남으면 잠겨 있고, 그것을 끝내는 순
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
   finishVisualNovel();
-  tapLessonCompleteExit();
+  tapLessonCompleteExit("Back to map");
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(

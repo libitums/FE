@@ -10,6 +10,7 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // 판정 어휘는 `lib/answer-result.ts`에서 옵니다 — 화면 폴더가 아니라 `lib/`에서
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
+import type { SpecialUnitEntrySource } from "../lib/special-unit-entry-source";
 // 전화번호 로그인(Supabase OTP)의 공용 어휘입니다 — 코드 검증 화면이 보여 줄 번호를
 // 나릅니다.
 import type { PhoneNumber } from "../lib/auth-session.contract";
@@ -89,8 +90,17 @@ export type Screen =
   // 메신저 유닛(서사 기반 최종 테스트)을 마친 뒤의 학습 완료입니다. 여정 · 롤플레이 어느
   // 쪽에서 열었든 같은 화면이고, 나가면 그 스택의 루트로 갑니다. `results`는 답장마다 첫
   // 시도의 정오입니다(`assessment`의 `results`와 같은 판단 — 세션이 이미 낸 값을 싣습니다).
-  | { name: "messenger-complete"; unitId: MessengerUnitId; results: readonly AnswerResult[] }
-  | { name: "special-unit-complete"; unitId: PhoneCallUnitId | VisualNovelUnitId }
+  | {
+      name: "messenger-complete";
+      unitId: MessengerUnitId;
+      results: readonly AnswerResult[];
+      exitTo?: SpecialUnitEntrySource;
+    }
+  | {
+      name: "special-unit-complete";
+      unitId: PhoneCallUnitId | VisualNovelUnitId;
+      exitTo?: SpecialUnitEntrySource;
+    }
   | { name: "phone-call"; unitId: PhoneCallUnitId }
   | { name: "visual-novel"; unitId: VisualNovelUnitId }
   // 롤플레이 탭에서 여는 특별 유닛 route 셋입니다. 여정 쪽 route(`messenger` ·

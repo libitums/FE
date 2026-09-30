@@ -13,7 +13,7 @@ const nextScene = () => {
   next();
   next();
 };
-const check = () => fireEvent.tap(screen.getByText("Check"), {});
+const check = () => fireEvent.tap(screen.getByText("Back to map"), {});
 function finish() {
   for (let i = 0; i < 5 && screen.queryByTestId("visual-novel-advance-button"); i++) next();
   tap("visual-novel-finish-button");

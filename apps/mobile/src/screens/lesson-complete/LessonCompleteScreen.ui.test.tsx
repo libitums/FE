@@ -98,7 +98,7 @@ test("[LA9-E][LCS5] 보상 카드 둘이 받은 보상을 그리고 이름을 �
   expect(grade).toHaveAttribute("accessibility-label", "Grade GREAT");
 });
 
-test("[LCS6] Check tap → onExit 정확히 1회", () => {
+test("[LCS6] Back to map tap → onExit 정확히 1회", () => {
   const onExit = vi.fn();
   render(<LessonCompleteScreen {...fixture({ onExit })} />);
 
@@ -106,7 +106,7 @@ test("[LCS6] Check tap → onExit 정확히 1회", () => {
     .getByTestId("lesson-complete-screen-exit")
     .querySelector('[data-testid="ui-lynx-button"]');
   expect(button).not.toBeNull();
-  expect(button).toHaveAttribute("accessibility-label", "Check");
+  expect(button).toHaveAttribute("accessibility-label", "Back to map");
   fireEvent.tap(button as Element, {});
 
   expect(onExit).toHaveBeenCalledTimes(1);
