@@ -10,7 +10,6 @@ import type { EntryLanguage } from "../lib/entry-language";
 import { safeAreaInsetsFrom, zeroSafeAreaInsets } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialSessionOptions } from "../lib/session-options";
-import type { SessionOptions } from "../lib/session-options";
 import { isMapItemComplete, journeyMapSections } from "../screens/journey-map/journey-map";
 import { roleplaySectionsFrom } from "../screens/roleplay-list/roleplay-list";
 import { premiumRoleplayItemsFor } from "../screens/roleplay-list/roleplay-premium-items";
@@ -130,10 +129,7 @@ export function AppSession({
   // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
   // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.
   const [notifications, setNotifications] = useState<readonly NotificationItem[]>(notificationList);
-  // 세션 옵션의 진실의 출처입니다. **저장소 모듈을 import하지도 부르지도
-  // 않습니다**(ADR-0007 D1) — 앱을 다시 켜면 `initialSessionOptions`로
-  // 돌아갑니다.
-  const [sessionOptions, setSessionOptions] = useState<SessionOptions>(initialSessionOptions);
+  const sessionOptions = initialSessionOptions;
   // 한 스텝의 활동들이 지나오며 쌓는 결과입니다. 유닛 하나가 활동 여럿을 잇고 평가는
   // 마지막에 한 번만 돌므로, 그때까지의 정오를 여기 모읍니다(journey-wiring.ts).
   const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
@@ -197,7 +193,6 @@ export function AppSession({
     notifications,
     setNotifications,
     sessionOptions,
-    setSessionOptions,
     pendingResults,
     setPendingResults,
     completedEpisodeIntroIds,

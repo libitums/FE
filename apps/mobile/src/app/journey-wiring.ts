@@ -39,10 +39,9 @@ import type {
 } from "../screens/phone-call/phone-call.contract";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import { openLegalDocument } from "../lib/legal-document";
-import { sessionOptionChangedEvent, settingsNavOpenedEvent } from "../screens/settings/settings";
+import { settingsNavOpenedEvent } from "../screens/settings/settings";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
-import { toggleSessionOption } from "../lib/session-options";
-import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+import type { SessionOptions } from "../lib/session-options";
 import type {
   VisualNovelEventSink,
   VisualNovelProgress,
@@ -77,7 +76,6 @@ export type JourneyWiringArgs = {
   readonly notifications: readonly NotificationItem[];
   readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
-  readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   /**
    * 한 스텝의 활동들이 지나오며 쌓은 결과입니다. 유닛 하나가 활동 여럿을 잇기 때문에
@@ -117,7 +115,6 @@ export function journeyWiring(args: JourneyWiringArgs) {
     notifications,
     setNotifications,
     sessionOptions,
-    setSessionOptions,
     pendingResults,
     setPendingResults,
     completedEpisodeIntroIds,
@@ -252,15 +249,6 @@ export function journeyWiring(args: JourneyWiringArgs) {
       }
       openLegalDocument(target);
     },
-    // 흐름 하나(토글)입니다 — sink 먼저, `setSessionOptions` 나중. `value`는
-    // 바뀐 뒤 값입니다.
-    onToggleSessionOption: (key: SessionOptionKey) => {
-      const next = toggleSessionOption(sessionOptions, key);
-      settingsEventSink?.(sessionOptionChangedEvent(key, next[key]));
-      setSessionOptions(next);
-    },
-    // 흐름 셋(나가기)입니다 — 프로필·약관의 `설정으로` → 설정 탭 스택의
-    // 루트(ADR-0007 D6).
     onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
     // 설정 피드백 보내기입니다(ADR-0036). 성공한 것만 이벤트로 셉니다 — 글은 싣지 않습니다.
     onSubmitFeedback: async (rating: FeedbackRating, message: string): Promise<boolean> => {

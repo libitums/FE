@@ -284,8 +284,10 @@ export type SettingsCopy = {
 };
 
 export type ProfileCopy = {
+  readonly notProvided: string;
+  readonly learningLanguage: string;
   readonly title: string;
-  readonly itemLabel: Readonly<Record<"name" | "learning-language" | "learning-goal", string>>;
+  readonly itemLabel: Readonly<Record<"name" | "email" | "phone" | "learning-language", string>>;
 };
 
 export type GemPurchaseCopy = {
