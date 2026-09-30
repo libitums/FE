@@ -11,5 +11,5 @@
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["deno-runtime.d.ts", "supabase/functions/**/*.ts"]
+  "include": ["deno-runtime.d.ts", "supabase/functions/**/*.ts", "supabase/migrations/**/*.ts"]
 }

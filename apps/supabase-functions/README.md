@@ -25,6 +25,13 @@ pnpm --filter @libitums/supabase-functions test:integration
 셋 다 루트 `pnpm typecheck` · `pnpm test`의 사슬에 들어 있다(ADR-0006 D2). Deno는 필요 없다 — 같은 코드를 Node의
 vitest · tsc가 돈다.
 
+SQL 마이그레이션 통합 테스트도 `test:integration`에 포함된다. 개발 의존성 `embedded-postgres`로 일회용 PostgreSQL 17.9를
+루프백 임의 포트에서 시작하고 종료 시 데이터 디렉터리를 지운다. 실제 DB URL이나 Supabase 시크릿을 읽지 않는다.
+기존 마이그레이션을 순서대로 실행하며, Supabase가 제공하는 `auth.users` · `auth.uid()` · 역할만 테스트용 경계로 준비한다.
+두 연결이 같은 행의 잠금을 기다리는 동시 INSERT·UPDATE, 지연 요청, 재전송, 입력 검증, 권한과 계정 격리를 확인한다.
+PostgreSQL 실행 파일의 공유 라이브러리 링크 복원을 위해 `pnpm-workspace.yaml`이 해당 패키지의 postinstall만 허용한다.
+표준 macOS·Linux 사용자 계정으로 실행한다(PostgreSQL은 root 실행을 지원하지 않는다).
+
 ## 배포 절차
 
 시크릿 값 · `.p8` 파일은 **저장소에 두지 않는다**(커밋 금지).
@@ -129,3 +136,18 @@ curl -X POST "https://<ref>.supabase.co/functions/v1/send-push" \
 ```
 
 개발 서명 빌드의 토큰은 `sandbox`, App Store · TestFlight는 `production`으로 등록되고 함수가 알맞은 APNs로 보낸다.
+
+
+## 학습 진행 저장 RPC 배포
+
+`20260930190000_merge_learning_progress.sql`은 이전 `20260930150000_learning_progress.sql` 위에 적용하는 추가 마이그레이션이다.
+기존 파일을 재실행하거나 표를 재생성하지 않는다. `save_learning_progress(jsonb)`의 인수와 반환값은 그대로여서 기존 iOS 앱도 사용할 수 있다.
+
+1. 대상 프로젝트와 미적용 마이그레이션 목록을 확인한다. `supabase db push --dry-run`으로 적용 범위를 검토한다.
+2. 검토한 마이그레이션을 서버에 적용한다. `supabase db push`를 사용하거나 해당 추가 SQL을 SQL 편집기에서 실행한다.
+3. 테스트 계정으로 완료 진행을 저장한 뒤 더 오래된 진행을 저장하고, 다시 읽었을 때 완료 기록이 유지되는지 확인한다.
+4. 앱 배포 전 서버 적용 여부를 확인한다. 앱 바이너리에 이 SQL은 포함되지 않는다.
+
+완료 목록은 합집합, 스텝 수와 활성 장면은 최댓값으로 합치고 비주얼 노벨 완료는 유지한다.
+지원하지 않는 버전이나 깨진 스냅숏은 오류를 반환하며 기존 값을 보존한다. 새로운 스냅숏 버전 배포 전에는 서버 검증·합치기부터 확장한다.
+병합 결과가 기존 16 KiB 상한을 넘으면 요청 전체가 실패한다. 진행을 감소시키는 리셋 동작은 이 RPC의 계약이 아니다.
