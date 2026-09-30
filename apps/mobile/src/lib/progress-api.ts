@@ -40,27 +40,36 @@ export function learningRpcRequest(
 }
 
 // 진행 중인 갱신입니다. 불러오기 · 저장 · 날짜 기록이 한꺼번에 갱신을 부르면 **같은 refresh 토큰으로 여러 번**
-// 요청하게 되고, Auth가 재사용으로 보아 세션을 끊을 수 있습니다 — 동시에 온 호출은 이 하나를 기다립니다.
-let pendingRefresh: Promise<string | null> | null = null;
+// 요청하게 되고, Auth가 재사용으로 보아 세션을 끊을 수 있습니다. 같은 세션만 공유하고 계정 전환 뒤 요청은 분리합니다.
+const pendingRefreshes = new Map<string, Promise<string | null>>();
 
 /** 로그인해 있으면 쓸 수 있는 액세스 토큰입니다. 만료가 가까우면 갱신해 저장합니다. 없거나 갱신이 실패하면 `null`. */
 export async function currentAccessToken(nowMs: number = Date.now()): Promise<string | null> {
-  const session = loadAuthSession();
-  if (session === null) return null;
-  if (!sessionNeedsRefresh(session, nowMs)) return session.accessToken;
-  if (pendingRefresh === null) {
-    pendingRefresh = (async () => {
-      try {
-        const refreshed = await refreshAuthSession(session.refreshToken);
-        if (refreshed.status !== "refreshed") return null;
-        saveAuthSession(refreshed.session);
-        return refreshed.session.accessToken;
-      } finally {
-        pendingRefresh = null;
-      }
-    })();
+  try {
+    const session = loadAuthSession();
+    if (session === null) return null;
+    if (!sessionNeedsRefresh(session, nowMs)) return session.accessToken;
+    const key = session.refreshToken;
+    let pending = pendingRefreshes.get(key);
+    if (pending === undefined) {
+      pending = (async () => {
+        try {
+          const refreshed = await refreshAuthSession(session.refreshToken);
+          // 응답을 기다리는 동안 로그아웃하거나 다른 세션으로 바뀌었으면 저장도 RPC도 하지 않습니다.
+          if (refreshed.status !== "refreshed" || loadAuthSession()?.refreshToken !== key)
+            return null;
+          saveAuthSession(refreshed.session);
+          return refreshed.session.accessToken;
+        } finally {
+          pendingRefreshes.delete(key);
+        }
+      })();
+      pendingRefreshes.set(key, pending);
+    }
+    return await pending;
+  } catch {
+    return null;
   }
-  return pendingRefresh;
 }
 
 /** 로그인한 사용자로 RPC 하나를 부릅니다. 2xx면 본문, 그 밖(로그인 없음 · 실패 · 연결 실패)은 `null`. */
@@ -68,10 +77,17 @@ export async function authorizedRpc(
   path: RpcPath,
   body: Record<string, unknown>,
 ): Promise<string | null> {
-  const accessToken = await currentAccessToken();
-  if (accessToken === null) return null;
-  const outcome = await send((config) => learningRpcRequest(config, accessToken, path, body), true);
-  return outcome.ok && isSuccessStatus(outcome.status) ? outcome.bodyText : null;
+  try {
+    const accessToken = await currentAccessToken();
+    if (accessToken === null || loadAuthSession()?.accessToken !== accessToken) return null;
+    const outcome = await send(
+      (config) => learningRpcRequest(config, accessToken, path, body),
+      true,
+    );
+    return outcome.ok && isSuccessStatus(outcome.status) ? outcome.bodyText : null;
+  } catch {
+    return null;
+  }
 }
 
 function jsonFrom(bodyText: string | null): unknown {

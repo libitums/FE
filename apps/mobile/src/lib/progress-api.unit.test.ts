@@ -160,3 +160,57 @@ describe("PA3 localDayFrom", () => {
     expect(localDayFrom(new Date(2026, 11, 31, 0, 0))).toBe("2026-12-31");
   });
 });
+
+describe("PA4 저장소 실패도 요청 실패로 반환", () => {
+  test("첫 세션 읽기가 실패하면 진행 API가 reject하지 않고 요청을 생략한다", async () => {
+    const { calls } = install();
+    NativeModules["StorageModule"].get = () => {
+      throw new Error("storage unavailable");
+    };
+    await expect(currentAccessToken()).resolves.toBeNull();
+    await expect(loadLearningProgress()).resolves.toEqual({ ok: false });
+    await expect(saveLearningProgress({})).resolves.toBe(false);
+    await expect(recordLearningDay("2026-09-30")).resolves.toBeNull();
+    expect(calls).toHaveLength(0);
+  });
+
+  test("RPC 직전의 계정 재확인 실패도 요청을 생략한다", async () => {
+    const { calls, store } = install();
+    let reads = 0;
+    NativeModules["StorageModule"].get = (key: string) => {
+      if (++reads === 2) throw new Error("storage unavailable");
+      return store.get(key) ?? null;
+    };
+    await expect(saveLearningProgress({})).resolves.toBe(false);
+    expect(calls).toHaveLength(0);
+  });
+
+  test("새 토큰 저장 실패를 공유한 요청이 끝난 뒤 다시 갱신할 수 있다", async () => {
+    const { calls, store } = install({
+      expiresAt: 0,
+      reply: () => ({
+        status: 200,
+        body: JSON.stringify({
+          access_token: "fresh",
+          refresh_token: "r2",
+          expires_in: 3600,
+          token_type: "bearer",
+          user: { id: "u" },
+        }),
+      }),
+    });
+    NativeModules["StorageModule"].set = () => {
+      throw new Error("storage full");
+    };
+    await expect(Promise.all([currentAccessToken(), currentAccessToken()])).resolves.toEqual([
+      null,
+      null,
+    ]);
+    expect(calls).toHaveLength(1);
+    expect(store.get(authSessionStorageKey)).toContain('"refreshToken":"refresh"');
+    NativeModules["StorageModule"].set = (key: string, value: string) => void store.set(key, value);
+    await expect(currentAccessToken()).resolves.toBe("fresh");
+    expect(calls).toHaveLength(2);
+    expect(store.get(authSessionStorageKey)).toContain('"refreshToken":"r2"');
+  });
+});
