@@ -5,6 +5,7 @@ import type { UiCopy } from "../../lib/ui-copy.contract";
 import { legalDocumentOpenedEvent } from "../../lib/legal-document";
 import type { LegalDocumentOpenedEvent } from "../../lib/legal-document.contract";
 import type {
+  NotificationSettingsOpenedEvent,
   ProfileOpenedEvent,
   SessionOptionChangedEvent,
   SettingsNavTarget,
@@ -13,6 +14,7 @@ import type { SessionOptionKey } from "../../lib/session-options";
 
 export const settingsNavTargets: readonly SettingsNavTarget[] = [
   "profile",
+  "notifications",
   "privacy-policy",
   "terms-of-use",
 ];
@@ -24,10 +26,12 @@ export function settingsNavLabel(target: SettingsNavTarget, copy: UiCopy): strin
 // `default` 없는 `switch`입니다 — target이 늘면 `TS2366`으로 섭니다.
 export function settingsNavOpenedEvent(
   target: SettingsNavTarget,
-): ProfileOpenedEvent | LegalDocumentOpenedEvent {
+): ProfileOpenedEvent | NotificationSettingsOpenedEvent | LegalDocumentOpenedEvent {
   switch (target) {
     case "profile":
       return { name: "profile_opened" };
+    case "notifications":
+      return { name: "notification_settings_opened" };
     case "privacy-policy":
     case "terms-of-use":
       return legalDocumentOpenedEvent(target, "settings");

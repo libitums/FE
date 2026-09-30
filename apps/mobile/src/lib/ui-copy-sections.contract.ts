@@ -255,7 +255,9 @@ export type NotificationsCopy = {
 export type SettingsCopy = {
   readonly title: string;
   readonly group: Readonly<Record<"account" | "learning" | "accountActions", string>>;
-  readonly nav: Readonly<Record<"profile" | "privacy-policy" | "terms-of-use", string>>;
+  readonly nav: Readonly<
+    Record<"profile" | "notifications" | "privacy-policy" | "terms-of-use", string>
+  >;
   readonly sessionOption: Readonly<Record<SessionOptionKey, string>>;
   /** 접미 낱말(소문자) — `Auto-play, on` */
   readonly optionState: Readonly<Record<"on" | "off", string>>;

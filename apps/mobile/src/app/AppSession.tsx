@@ -45,6 +45,7 @@ import type { AppJourneySeed } from "./journey-progress";
 import type { Screen } from "./nav-state";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
+import { useOpenedPush } from "./use-opened-push";
 import type { AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 
@@ -217,6 +218,9 @@ export function AppSession({
   // 아래쪽만 예외입니다 — 바텀 네비게이션이 서면 셸은 아래를 비우지 않습니다. 바가
   // 화면 바닥까지 배경을 칠하고 홈 인디케이터를 피하는 여백을 스스로 지기 때문입니다.
   // iOS 기본 탭바와 같은 형태입니다.
+  // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
+  useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
+
   const screenNow = currentScreen(nav);
   const showsNavigator = showsTabNavigator(nav);
   // 가장자리까지 그림을 까는 화면은 셸이 여백을 잡지 않습니다 — 셸 배경이 칠하는 띠가

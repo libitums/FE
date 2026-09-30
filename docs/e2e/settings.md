@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | T3′ | `설정`에서 `Privacy Policy`를 누르고 닫은 뒤 `Terms of Use`를 누른다 | 각각 앱 안 브라우저 시트가 뜨고 주소가 `gregarious-pharaoh-bb6.notion.site`의 해당 문서다. `완료`로 닫으면 설정 화면 그대로다(스택이 늘지 않는다) | 시뮬레이터 또는 실기 · 네트워크 필요 | 미실행 |
 | T3″ | 로그인 화면의 `Terms of Use` · `Privacy Policy`를 누른다 | T3′와 같은 시트가 뜨고, 닫으면 로그인 화면 그대로다 | 시뮬레이터 또는 실기 | 미실행 |
-| V3′ | VoiceOver로 설정 화면을 훑는다 | `User profile, 버튼` → `Privacy Policy, 버튼` → `Terms of Use, 버튼` 순. 로그인 화면은 수단 넷 뒤에 `Terms of Use, 버튼` → `Privacy Policy, 버튼` | **실기 · 사람만** | 미실행 |
+| V3′ | VoiceOver로 설정 화면을 훑는다 | `User profile, 버튼` → `Notifications, 버튼`(⟨2026-09-30⟩ ADR-0034) → `Privacy Policy, 버튼` → `Terms of Use, 버튼` 순. 로그인 화면은 수단 넷 뒤에 `Terms of Use, 버튼` → `Privacy Policy, 버튼` | **실기 · 사람만** | 미실행 |
 
 ## 판정 채널과 범위
 

@@ -3,6 +3,7 @@
 
 import { deleteAccount } from "../lib/account-deletion";
 import { signOutRemotely } from "../lib/api-client";
+import { forgetPushDevice } from "./push-wiring";
 import { entryScreenViewedEvent } from "../lib/entry-flow";
 import { clearAuthSession, loadAuthSession, saveAuthSession } from "../lib/auth-session";
 import type {
@@ -44,7 +45,8 @@ export function accountWiring({
     onSignOut: () => {
       const session = loadAuthSession();
       if (session !== null) {
-        // 시작만 하고 기다리지 않습니다(S7).
+        // 이 기기가 떠난 사용자의 알림을 받지 않게 먼저 토큰을 뗍니다(ADR-0034). 둘 다 기다리지 않습니다(S7).
+        forgetPushDevice(session.accessToken);
         void signOutRemotely(session.accessToken);
       }
       leave("signed-out");

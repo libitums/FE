@@ -39,9 +39,12 @@ import {
 } from "./auth-response";
 import {
   deleteAccountFunctionRequest,
+  registerPushDeviceRequest,
   supabaseAuthRequest,
   supabaseLogoutRequest,
+  unregisterPushDeviceRequest,
 } from "./auth-request";
+import type { PushDevice } from "./push-notifications.contract";
 import type {
   ExchangeIdToken,
   ExchangePkceCode,
@@ -262,3 +265,20 @@ export const requestAccountDeletion: RequestAccountDeletion = async (
   }
   return { status: "failed", reason: accountDeletionFailureFrom(outcome.status) };
 };
+
+/** 푸시 기기 등록입니다(ADR-0034). 2xx → `true`. 실패는 삼킵니다 — 알림은 로그인을 막지 않습니다. */
+export async function registerPushDevice(
+  accessToken: string,
+  device: PushDevice,
+): Promise<boolean> {
+  const outcome = await send(
+    (config) => registerPushDeviceRequest(config, accessToken, device),
+    false,
+  );
+  return outcome.ok && isSuccessStatus(outcome.status);
+}
+
+/** 푸시 기기 해제입니다. 결과를 버립니다. */
+export async function unregisterPushDevice(accessToken: string, token: string): Promise<void> {
+  await send((config) => unregisterPushDeviceRequest(config, accessToken, token), false);
+}

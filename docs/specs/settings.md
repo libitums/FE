@@ -32,6 +32,11 @@
 > 결선이 저장소의 세션 키를 지운다. §0의 7(새 `NavAction` 0)은 그대로 참이다. 결선 자리는 `App.tsx`가 아니라
 > `app/screen-wiring.ts` · `app/account-wiring.ts`이고, App 몸통은 `app/AppSession.tsx`로 옮겨졌다.
 
+> **개정 (2026-09-30, 알림).** 결정과 근거는 [ADR-0034](../adr/0034-server-push-notifications.md)가 진다. 이동 항목이 **넷**이다 —
+> `User profile` · `Notifications` · `Privacy Policy` · `Terms of Use`(`SettingsNavTarget`에 `"notifications"`). `Notifications`는
+> 알림 권한을 아직 묻지 않았으면 묻고, 물었으면 iOS 설정의 이 앱 페이지를 연다 — 스택에 쌓이지 않는다. 이벤트
+> `notification_settings_opened`가 탭마다 1회. 아래 「셋」은 당시 값이다.
+
 > **개정 (2026-09-30, 법률 문서).** 결정과 근거는 [ADR-0033](../adr/0033-legal-documents-in-app-browser.md)가 진다.
 > **약관 화면이 사라졌다** — `screens/terms/` · route `terms` · `terms_opened`가 없다. 이동 항목이 **셋**이다:
 > `User profile` · `Privacy Policy` · `Terms of Use`(`SettingsNavTarget = "profile" | LegalDocument`). 뒤의 둘은

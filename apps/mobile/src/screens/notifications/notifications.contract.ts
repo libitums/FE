@@ -87,10 +87,28 @@ export type NotificationItemDeletedEvent = {
   readonly target: NotificationTargetKind;
 };
 
+/**
+ * 서버 푸시를 눌렀을 때 앱이 갈 곳입니다(ADR-0034). 알림 목록 항목의 목적지 넷에 **여정 맵**과 **알림 목록**
+ * 둘을 더했습니다. URL이 아니라 이 이름만 받습니다 — 그래서 알림이 앱 안 임의의 자리로 들어올 수 없습니다.
+ */
+export type PushNotificationTarget =
+  | NotificationTarget
+  | { readonly kind: "journey-map" }
+  | { readonly kind: "notifications" };
+
+export type PushNotificationTargetKind = PushNotificationTarget["kind"];
+
+/** 사용자가 서버 푸시를 눌러 앱이 그 목적지로 갔습니다. 목적지를 못 읽으면 내지 않습니다. */
+export type PushNotificationOpenedEvent = {
+  readonly name: "push_notification_opened";
+  readonly target: PushNotificationTargetKind;
+};
+
 export type NotificationEvent =
   | NotificationsOpenedEvent
   | NotificationItemTappedEvent
-  | NotificationItemDeletedEvent;
+  | NotificationItemDeletedEvent
+  | PushNotificationOpenedEvent;
 
 export type NotificationEventSink = ((event: NotificationEvent) => void) | null;
 

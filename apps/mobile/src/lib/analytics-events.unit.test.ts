@@ -23,7 +23,7 @@ const sinkKeys = [
   "episodeIntroEventSink",
 ] as const satisfies readonly (keyof AnalyticsEventSinks)[];
 
-// 이름 23개 · 모양 27개(열림 이벤트 셋이 출처별 두 모양).
+// 이름 25개 · 모양 29개(열림 이벤트 셋이 출처별 두 모양).
 const events: readonly AnalyticsEvent[] = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
@@ -87,8 +87,10 @@ const events: readonly AnalyticsEvent[] = [
   { name: "notifications_opened" },
   { name: "notification_item_tapped", notificationId: "n-1", target: "messenger" },
   { name: "notification_item_deleted", notificationId: "n-2", target: "roleplay-list" },
+  { name: "push_notification_opened", target: "journey-map" },
   { name: "settings_opened" },
   { name: "profile_opened" },
+  { name: "notification_settings_opened" },
   { name: "legal_document_opened", document: "privacy-policy", source: "settings" },
   { name: "legal_document_opened", document: "terms-of-use", source: "login" },
   { name: "session_option_changed", option: "auto-play-audio", value: false },
@@ -105,9 +107,9 @@ function withoutName(event: AnalyticsEvent): Record<string, unknown> {
 }
 
 describe("analyticsCaptureFrom", () => {
-  test("AE1: 표가 이름 23개 · 모양 27개를 다 덮는다", () => {
-    expect(events).toHaveLength(27);
-    expect(new Set(events.map((e) => e.name)).size).toBe(23);
+  test("AE1: 표가 이름 25개 · 모양 29개를 다 덮는다", () => {
+    expect(events).toHaveLength(29);
+    expect(new Set(events.map((e) => e.name)).size).toBe(25);
   });
 
   test.each(events.map((e, i) => [`${i + 1}. ${e.name}`, e] as const))(
@@ -186,7 +188,7 @@ describe("analyticsEventSinksFrom", () => {
       [sinks.phoneCallEventSink, events[12]!],
       [sinks.notificationEventSink, events[15]!],
       [sinks.settingsEventSink, events[19]!],
-      [sinks.episodeIntroEventSink, events[22]!],
+      [sinks.episodeIntroEventSink, events[25]!],
     ];
     for (const [sink, event] of bySink) {
       expect(sink).toBeTypeOf("function");

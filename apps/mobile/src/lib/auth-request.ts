@@ -14,6 +14,11 @@ import type {
 } from "./auth-session.contract";
 import type { AccountDeletionRequest, DeleteAccountRequestBody } from "./account.contract";
 import type {
+  PushDevice,
+  RegisterPushDevicePath,
+  UnregisterPushDevicePath,
+} from "./push-notifications.contract";
+import type {
   SupabaseAuthorizeQuery,
   SupabaseIdTokenRequestBody,
   SupabasePkceTokenRequestBody,
@@ -129,6 +134,43 @@ export function deleteAccountFunctionRequest(
       method: "POST",
       headers: bearerHeaders(config, request.accessToken),
       body: JSON.stringify(body),
+    },
+  };
+}
+
+/**
+ * 이 기기의 푸시 토큰을 로그인한 사용자 것으로 등록합니다(ADR-0034). 본문 `{p_token, p_environment}`.
+ * 같은 요청이 사용자의 마지막 활동 시각도 갱신합니다 — 다시 돌아오기 알림이 그 값으로 대상을 고릅니다.
+ */
+export function registerPushDeviceRequest(
+  config: SupabaseConfig,
+  accessToken: string,
+  device: PushDevice,
+): { url: string; init: HttpRequestInit } {
+  const path: RegisterPushDevicePath = "/rest/v1/rpc/register_push_device";
+  return {
+    url: `${config.url}${path}`,
+    init: {
+      method: "POST",
+      headers: bearerHeaders(config, accessToken),
+      body: JSON.stringify({ p_token: device.token, p_environment: device.environment }),
+    },
+  };
+}
+
+/** 로그아웃할 때 이 기기의 토큰을 뗍니다. 본문 `{p_token}`. */
+export function unregisterPushDeviceRequest(
+  config: SupabaseConfig,
+  accessToken: string,
+  token: string,
+): { url: string; init: HttpRequestInit } {
+  const path: UnregisterPushDevicePath = "/rest/v1/rpc/unregister_push_device";
+  return {
+    url: `${config.url}${path}`,
+    init: {
+      method: "POST",
+      headers: bearerHeaders(config, accessToken),
+      body: JSON.stringify({ p_token: token }),
     },
   };
 }

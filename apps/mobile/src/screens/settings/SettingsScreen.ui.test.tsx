@@ -210,7 +210,7 @@ test("[ST5] 섞인 fixture에서 토글 값이 실제로 내려가고, 낭독 �
 
 // ---------------------------------------------------------------- 영어 (AC1u E)
 
-test("[AC1u-E] 이동 항목 셋이 영어 이름으로 낭독된다", () => {
+test("[AC1u-E] 이동 항목 넷이 영어 이름으로 낭독된다", () => {
   render(<SettingsScreen {...defaultSettingsScreenProps} />);
 
   expect(settingsCell(settingsNavTargets[0])).toHaveAttribute(
@@ -219,9 +219,13 @@ test("[AC1u-E] 이동 항목 셋이 영어 이름으로 낭독된다", () => {
   );
   expect(settingsCell(settingsNavTargets[1])).toHaveAttribute(
     "accessibility-label",
-    "Privacy Policy",
+    "Notifications",
   );
   expect(settingsCell(settingsNavTargets[2])).toHaveAttribute(
+    "accessibility-label",
+    "Privacy Policy",
+  );
+  expect(settingsCell(settingsNavTargets[3])).toHaveAttribute(
     "accessibility-label",
     "Terms of Use",
   );
@@ -266,9 +270,13 @@ test("[AC1u-M] 제목 · 묶음 이름 · 이동 · 토글 이름 · 상태가 �
   );
   expect(settingsCell(settingsNavTargets[1])).toHaveAttribute(
     "accessibility-label",
-    "⟦settings.nav.privacy-policy⟧",
+    "⟦settings.nav.notifications⟧",
   );
   expect(settingsCell(settingsNavTargets[2])).toHaveAttribute(
+    "accessibility-label",
+    "⟦settings.nav.privacy-policy⟧",
+  );
+  expect(settingsCell(settingsNavTargets[3])).toHaveAttribute(
     "accessibility-label",
     "⟦settings.nav.terms-of-use⟧",
   );

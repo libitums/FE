@@ -83,7 +83,7 @@ afterEach(() => {
 
 // ------------------------------------------------------------------------- IT1
 
-test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘·계정 동작 둘이 계약 순서로 서고 토글 둘 다 기본값이 켜짐이다", async () => {
+test("[IT1] 설정 탭을 열면 이동 항목 넷·토글 항목 둘·계정 동작 둘이 계약 순서로 서고 토글 둘 다 기본값이 켜짐이다", async () => {
   await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
 
@@ -93,6 +93,7 @@ test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘·계정 �
   ).map((el) => el.getAttribute("data-testid"));
   expect(itemTestIds).toEqual([
     "ui-lynx-settings-group-item-profile",
+    "ui-lynx-settings-group-item-notifications",
     "ui-lynx-settings-group-item-privacy-policy",
     "ui-lynx-settings-group-item-terms-of-use",
     "ui-lynx-settings-group-item-auto-play-audio",
