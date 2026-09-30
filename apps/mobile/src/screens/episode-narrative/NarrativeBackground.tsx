@@ -8,7 +8,7 @@ export type NarrativeBackgroundProps = {
   readonly src: string;
   readonly previousSrc: string | null;
   readonly animated: boolean;
-  readonly transition?: "imagination";
+  readonly transition?: "imagination" | "reality";
   readonly reducedMotion?: boolean;
 };
 
@@ -20,11 +20,17 @@ export function NarrativeBackground({
   transition,
   reducedMotion = false,
 }: NarrativeBackgroundProps): ReactNode {
+  // 같은 그림의 다음 독백은 새 전환이 아닙니다. 출발 그림과 연출을 함께 고정합니다.
+  const [{ transition: entryTransition, previousSrc: entryPreviousSrc }] = useState({
+    transition,
+    previousSrc,
+  });
   const [loaded, setLoaded] = useState(false);
   const [settled, setSettled] = useState(false);
   const motionEnabled = animated && !reducedMotion;
-  const imagination = motionEnabled && transition === "imagination";
-  const showPrevious = motionEnabled && !settled && previousSrc !== null && previousSrc !== src;
+  const profile = motionEnabled ? entryTransition : undefined;
+  const showPrevious =
+    motionEnabled && !settled && entryPreviousSrc !== null && entryPreviousSrc !== src;
   const handleLoad = () => {
     "background only";
     setLoaded(true);
@@ -32,9 +38,7 @@ export function NarrativeBackground({
   const handleSettled = (event: AnimationEvent) => {
     "background only";
     // 배경 이미지의 6초 이동 등 다른 애니메이션의 종료는 전환 완료가 아닙니다.
-    const completionName = imagination
-      ? "narrative-imagination-veil"
-      : "narrative-background-reveal";
+    const completionName = profile ? `narrative-${profile}-veil` : "narrative-background-reveal";
     if (loaded && event.params?.animation_name === completionName) setSettled(true);
   };
 
@@ -42,17 +46,17 @@ export function NarrativeBackground({
     <view
       className="narrative-background"
       data-testid="narrative-background"
-      data-transition={imagination ? "imagination" : motionEnabled ? "crossfade" : "none"}
+      data-transition={motionEnabled ? (profile ?? "crossfade") : "none"}
       accessibility-elements-hidden={true}
     >
       {showPrevious ? (
         <image
           className={
-            imagination && loaded
-              ? "narrative-background-image narrative-background-image-departing"
+            profile && loaded
+              ? `narrative-background-image narrative-background-image-${profile}-departing`
               : "narrative-background-image"
           }
-          src={previousSrc}
+          src={entryPreviousSrc}
           mode="aspectFill"
         />
       ) : null}
@@ -60,20 +64,16 @@ export function NarrativeBackground({
         className={
           motionEnabled
             ? loaded
-              ? imagination
-                ? "narrative-background-frame narrative-background-frame-imagination"
-                : "narrative-background-frame narrative-background-frame-current"
+              ? `narrative-background-frame narrative-background-frame-${profile ?? "current"}`
               : "narrative-background-frame narrative-background-frame-loading"
             : "narrative-background-frame"
         }
-        bindanimationend={imagination ? undefined : handleSettled}
+        bindanimationend={profile ? undefined : handleSettled}
       >
         <image
           className={
             motionEnabled && loaded
-              ? imagination
-                ? "narrative-background-image narrative-background-image-imagination"
-                : "narrative-background-image narrative-background-image-current"
+              ? `narrative-background-image narrative-background-image-${profile ?? "current"}`
               : "narrative-background-image"
           }
           data-testid="narrative-background-image"
@@ -83,10 +83,10 @@ export function NarrativeBackground({
           bindload={handleLoad}
         />
       </view>
-      {imagination && loaded && !settled ? (
+      {profile && loaded && !settled ? (
         <view
-          className="narrative-background-imagination-veil"
-          data-testid="narrative-imagination-veil"
+          className={`narrative-background-${profile}-veil`}
+          data-testid={`narrative-${profile}-veil`}
           bindanimationend={handleSettled}
         />
       ) : null}

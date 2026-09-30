@@ -48,13 +48,12 @@ test("상상 전환은 그림이 로드된 뒤에만 기내 퇴장, 거리 등�
     "imagination",
   );
   expect(imageSources(container)).toEqual(["airplane.jpg", "street.jpg"]);
-  expect(container.querySelector(".narrative-background-image-departing")).toBeNull();
+  expect(container.querySelector(".narrative-background-image-imagination-departing")).toBeNull();
   expect(screen.queryByTestId("narrative-imagination-veil")).not.toBeInTheDocument();
   loadImage();
-  expect(container.querySelector(".narrative-background-image-departing")).toHaveAttribute(
-    "src",
-    "airplane.jpg",
-  );
+  expect(
+    container.querySelector(".narrative-background-image-imagination-departing"),
+  ).toHaveAttribute("src", "airplane.jpg");
   expect(screen.getByTestId("narrative-background-image")).toHaveClass(
     "narrative-background-image-imagination",
   );
@@ -79,7 +78,7 @@ test("상상 전환은 다른 층의 종료와 다른 애니메이션 이름을 
   endAnimation(image, "narrative-imagination-drift");
   endAnimation(image.parentElement!, "narrative-imagination-reveal");
   endAnimation(
-    container.querySelector(".narrative-background-image-departing")!,
+    container.querySelector(".narrative-background-image-imagination-departing")!,
     "narrative-imagination-depart",
   );
   endAnimation(veil, "narrative-background-reveal");
@@ -159,4 +158,96 @@ test("진행 중 장면의 key가 교체되면 새 이미지의 로드를 기다
   unmount();
   expect(container.querySelectorAll("image")).toHaveLength(0);
   expect(screen.queryByTestId("narrative-background")).not.toBeInTheDocument();
+});
+
+test("현실 복귀는 기내 그림을 읽은 뒤 시작하고 현실 베일의 종료 때만 카페를 정리한다", () => {
+  const { container } = render(
+    <NarrativeBackground
+      src="airplane.jpg"
+      previousSrc="cafe.jpg"
+      animated={true}
+      transition="reality"
+    />,
+  );
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute("data-transition", "reality");
+  expect(imageSources(container)).toEqual(["cafe.jpg", "airplane.jpg"]);
+  expect(screen.getByTestId("narrative-background-image").parentElement).toHaveClass(
+    "narrative-background-frame-loading",
+  );
+  expect(screen.queryByTestId("narrative-reality-veil")).not.toBeInTheDocument();
+  loadImage();
+  const veil = screen.getByTestId("narrative-reality-veil");
+  const image = screen.getByTestId("narrative-background-image");
+  expect(image).toHaveClass("narrative-background-image-reality");
+  expect(image.parentElement).toHaveClass("narrative-background-frame-reality");
+  expect(container.querySelector(".narrative-background-image-reality-departing")).toHaveAttribute(
+    "src",
+    "cafe.jpg",
+  );
+  endAnimation(image.parentElement!, "narrative-background-reveal");
+  endAnimation(veil, "narrative-imagination-veil");
+  expect(imageSources(container)).toEqual(["cafe.jpg", "airplane.jpg"]);
+  endAnimation(veil, "narrative-reality-veil");
+  expect(imageSources(container)).toEqual(["airplane.jpg"]);
+  expect(screen.queryByTestId("narrative-reality-veil")).not.toBeInTheDocument();
+});
+
+test.each(["imagination", "reality"] as const)(
+  "%s: 같은 배경의 다음 독백은 진행 중 출발 그림과 전환을 유지하고 완료 후 다시 시작하지 않는다",
+  (transition) => {
+    const { container, rerender } = render(
+      <NarrativeBackground
+        key="destination.jpg"
+        src="destination.jpg"
+        previousSrc="source.jpg"
+        animated={true}
+        transition={transition}
+      />,
+    );
+    loadImage();
+    const image = screen.getByTestId("narrative-background-image");
+    const veil = screen.getByTestId(`narrative-${transition}-veil`);
+    const nextBeat = (
+      <NarrativeBackground
+        key="destination.jpg"
+        src="destination.jpg"
+        previousSrc="destination.jpg"
+        animated={true}
+      />
+    );
+    rerender(nextBeat);
+    expect(screen.getByTestId("narrative-background-image")).toBe(image);
+    expect(screen.getByTestId(`narrative-${transition}-veil`)).toBe(veil);
+    expect(imageSources(container)).toEqual(["source.jpg", "destination.jpg"]);
+    expect(screen.getByTestId("narrative-background")).toHaveAttribute(
+      "data-transition",
+      transition,
+    );
+    endAnimation(veil, `narrative-${transition}-veil`);
+    rerender(nextBeat);
+    loadImage();
+    expect(imageSources(container)).toEqual(["destination.jpg"]);
+    expect(screen.queryByTestId(`narrative-${transition}-veil`)).not.toBeInTheDocument();
+    expect(image.parentElement).toHaveClass(`narrative-background-frame-${transition}`);
+  },
+);
+
+test("현실 복귀 중 움직임 감소를 켜면 기내 정지 화면만 남긴다", () => {
+  const props = {
+    src: "airplane.jpg",
+    previousSrc: "cafe.jpg",
+    animated: true,
+    transition: "reality" as const,
+  };
+  const { container, rerender } = render(<NarrativeBackground {...props} />);
+  loadImage();
+  expect(screen.getByTestId("narrative-reality-veil")).toBeInTheDocument();
+  rerender(<NarrativeBackground {...props} reducedMotion={true} />);
+  expect(imageSources(container)).toEqual(["airplane.jpg"]);
+  expect(screen.queryByTestId("narrative-reality-veil")).not.toBeInTheDocument();
+  expect(screen.getByTestId("narrative-background-image")).toHaveAttribute("data-motion", "static");
+  expect(screen.getByTestId("narrative-background-image").parentElement).toHaveAttribute(
+    "class",
+    "narrative-background-frame",
+  );
 });

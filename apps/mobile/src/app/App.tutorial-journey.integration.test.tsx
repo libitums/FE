@@ -53,6 +53,32 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
           expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(
             "잠시 후 인천국제공항에 도착하겠습니다.",
           );
+          expect(screen.getByTestId("narrative-background")).toHaveAttribute(
+            "data-transition",
+            "reality",
+          );
+          expect(screen.getByTestId("narrative-background").querySelectorAll("image")).toHaveLength(
+            2,
+          );
+          expect(screen.getByTestId("narrative-background").querySelector("image")).toHaveAttribute(
+            "src",
+            beat.transitionFrom,
+          );
+          const cabin = screen.getByTestId("narrative-background-image");
+          expect(cabin).toHaveAttribute("src", beat.background);
+          fireEvent(cabin, new window.Event("bindEvent:load"));
+          fireEvent.animationend(screen.getByTestId("narrative-reality-veil"), {
+            params: {
+              animation_type: "keyframe-animation",
+              animation_name: "narrative-reality-veil",
+            },
+          });
+          expect(screen.getByTestId("narrative-background").querySelectorAll("image")).toHaveLength(
+            1,
+          );
+          expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(
+            beat.line,
+          );
         }
         tap("episode-narrative-screen-advance");
       }

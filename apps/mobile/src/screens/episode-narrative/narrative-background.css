@@ -1,7 +1,8 @@
 .narrative-background,
 .narrative-background-frame,
 .narrative-background-image,
-.narrative-background-imagination-veil {
+.narrative-background-imagination-veil,
+.narrative-background-reality-veil {
   position: absolute;
   top: 0;
   right: 0;
@@ -27,7 +28,7 @@
   animation: narrative-background-drift 6000ms var(--libitum-motion-easing-easing) both;
 }
 
-.narrative-background-image-departing {
+.narrative-background-image-imagination-departing {
   /* 상상 진입 1.9초: 기내를 가까이 당긴 뒤 빛 안으로 물러나게 합니다. */
   animation: narrative-imagination-depart 1900ms ease-in-out both;
 }
@@ -41,15 +42,36 @@
   animation: narrative-imagination-drift 6000ms ease-out both;
 }
 
-.narrative-background-imagination-veil {
+.narrative-background-imagination-veil,
+.narrative-background-reality-veil {
   background-image: linear-gradient(
     150deg,
     var(--libitum-elevation-surface-floating),
     var(--libitum-elevation-surface-default),
     var(--libitum-elevation-surface-floating)
   );
-  /* 별도 자식 없는 완료 층입니다. 모든 장면 전환은 이 빛이 사라진 뒤에 정리합니다. */
+}
+
+/* 자식 없는 베일의 종료만 전환 완료로 삼습니다. */
+.narrative-background-imagination-veil {
   animation: narrative-imagination-veil 1900ms ease-in-out both;
+}
+
+.narrative-background-reality-veil {
+  animation: narrative-reality-veil 1600ms ease-out both;
+}
+
+.narrative-background-image-reality-departing {
+  animation: narrative-reality-depart 1600ms ease-out both;
+}
+
+.narrative-background-frame-reality {
+  animation: narrative-background-reveal 1600ms ease-out both;
+}
+
+.narrative-background-image-reality {
+  /* 기내는 확대가 천천히 가라앉은 뒤 정지합니다. */
+  animation: narrative-background-drift 1600ms ease-in reverse both;
 }
 
 @keyframes narrative-background-reveal {
@@ -136,5 +158,27 @@
   100% {
     opacity: 0;
     transform: scale(1.2);
+  }
+}
+
+@keyframes narrative-reality-depart {
+  from {
+    opacity: 1;
+    transform: scale(1.035);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes narrative-reality-veil {
+  from {
+    opacity: 0.42;
+    transform: scale(1.12);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1);
   }
 }
