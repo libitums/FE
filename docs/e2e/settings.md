@@ -6,6 +6,13 @@
 > 학습 콘텐츠(제시문 · 보기 칩 · 대사 · 받아쓰기 대상 · 문화 노트의 「」 안)는 한국어 그대로다. 날짜가 박힌 실행
 > 기록은 고치지 않는다. 영어 UI 전체를 한 번에 훑는 절차는 [UI 언어 e2e](ui-language.md)다.
 
+> ⟨2026-09-30 — 계정 묶음⟩ **설정 목록 끝에 셋째 묶음 `Account actions`(`Sign out` · `Delete account`)가
+> 섰다**([ADR-0032](../adr/0032-account-sign-out-and-deletion.md) · [설정 스펙](../specs/settings.md) §9). T1의 기대값
+> 「이동 항목 둘 → 토글 둘」은 **그 뒤에 행 둘이 더 있는 것**으로 읽는다(`ui-lynx-settings-group-item-sign-out` ·
+> `-delete-account`). 이 표는 계약 사본이라 행을 더하지 않는다 — 두 행을 누르는 흐름(확인 대화상자 · 로딩 · 실패 문구 ·
+> 로그인으로 떠남)과 그 VoiceOver 확인은 [계정 삭제 e2e](account-deletion.md)가 진다. ⚠ 그 흐름을 이 문서의 설치에서
+> 돌면 세션이 지워진다 — T1~T8을 먼저 돈다.
+
 ## 판정 채널과 범위
 
 이 문서는 바텀 네비게이션의 `설정` 탭에서 이동 항목 둘(`사용자 프로필` ·

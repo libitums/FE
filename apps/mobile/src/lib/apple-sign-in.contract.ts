@@ -42,14 +42,20 @@ export type AppleSignInRequest = {
  * Apple 로그인 시트 한 번의 결과입니다. `WebAuthenticationResult`와 같은 낱말을 씁니다.
  * `malformed`만 JS에서 생깁니다 — 페이로드가 아는 모양이 아닐 때입니다.
  *
- * - `completed` — Apple이 자격을 내줬습니다. `identityToken`은 ID 토큰(JWT) 문자열입니다.
+ * - `completed` — Apple이 자격을 내줬습니다. `identityToken`은 ID 토큰(JWT) 문자열이고,
+ *   `authorizationCode`는 계정 삭제의 재인증이 쓰는 일회용 코드입니다 — 코드가 없거나 문자열이
+ *   아니거나 비면 `null`이며 `malformed`가 아닙니다. 로그인 경로는 이 값을 읽지 않습니다.
  * - `cancelled` — 사용자가 시트를 닫았습니다(`ASAuthorizationError.canceled`).
  * - `failed` — 그 밖의 오류, 또는 자격에 ID 토큰이 없습니다(권한 없는 빌드 포함).
  * - `already-active` — 이미 열린 시트가 있습니다.
  * - `invalid-arguments` — `nonce`가 모양이 아닙니다.
  */
 export type AppleSignInResult =
-  | { readonly status: "completed"; readonly identityToken: string }
+  | {
+      readonly status: "completed";
+      readonly identityToken: string;
+      readonly authorizationCode: string | null;
+    }
   | { readonly status: "cancelled" }
   | { readonly status: "failed" }
   | { readonly status: "already-active" }

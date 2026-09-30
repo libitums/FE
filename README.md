@@ -11,6 +11,7 @@
 | [`apps/mobile`](apps/mobile) | 사용자 대면 화면 전부. Lynx 번들을 만든다 | ReactLynx · rspeedy · pnpm |
 | [`apps/ios`](apps/ios) | 그 번들을 로드해 실행하는 네이티브 호스트 | Swift · Xcode · CocoaPods |
 | [`apps/storybook-lynx`](apps/storybook-lynx) | 실제 Lynx Web bundle을 `<lynx-view>`로 보여주는 컴포넌트 카탈로그 | Storybook · Rspeedy |
+| [`apps/supabase-functions`](apps/supabase-functions) | 서버 함수(Supabase Edge Function). 지금은 계정 삭제 `delete-account` 하나 — 배포 · 시크릿은 [그 README](apps/supabase-functions/README.md) | TypeScript · Deno · Supabase CLI |
 
 공개 재사용 컴포넌트는 [`packages/ui-lynx`](packages/ui-lynx)에 있다. 현재 Button, Back Header,
 Status Indicator, Progress Header를 명시적 package export로 제공한다.
@@ -119,6 +120,10 @@ PUBLIC_SUPABASE_ANON_KEY=<publishable 또는 anon 키>
   없는 시뮬레이터에서는 시스템 알림을 닫으면 같은 문구가 선다.
 - **새 설치의 로그인은 전화번호 테스트 번호로 한다** — 개발 · QA용 우회 경로를 두지 않는다. 이
   변경 전의 임시 토큰(`libitum.auth.token`)만 있는 설치는 온보딩부터 다시 지난다.
+- **설정의 `Sign out`은 접속 값만으로 되지만 `Delete account`는 서버 함수가 배포돼 있어야 한다** — 함수가
+  없으면 삭제가 *"Couldn't delete your account. Please try again."* 으로 끝나고 계정은 그대로다. 함수 배포와
+  Apple 키(.p8) 시크릿 등록은 [`apps/supabase-functions/README.md`](apps/supabase-functions/README.md)에 있다
+  ([ADR-0032](docs/adr/0032-account-sign-out-and-deletion.md)).
 
 ### PostHog 키 — 분석 전송(선택)
 

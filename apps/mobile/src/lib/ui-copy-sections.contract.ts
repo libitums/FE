@@ -252,11 +252,28 @@ export type NotificationsCopy = {
 
 export type SettingsCopy = {
   readonly title: string;
-  readonly group: Readonly<Record<"account" | "learning", string>>;
+  readonly group: Readonly<Record<"account" | "learning" | "accountActions", string>>;
   readonly nav: Readonly<Record<"profile" | "terms", string>>;
   readonly sessionOption: Readonly<Record<SessionOptionKey, string>>;
   /** 접미 낱말(소문자) — `Auto-play, on` */
   readonly optionState: Readonly<Record<"on" | "off", string>>;
+  /** 「Account actions」 묶음의 행 제목 — 키는 `AccountAction` */
+  readonly action: Readonly<Record<"sign-out" | "delete-account", string>>;
+  readonly signOutDialog: {
+    readonly title: string;
+    readonly confirm: string;
+    readonly cancel: string;
+  };
+  readonly deleteDialog: {
+    readonly title: string;
+    readonly description: string;
+    readonly confirm: string;
+    readonly cancel: string;
+  };
+  /** 삭제 실패 문구 — `network`만 따로, 나머지 넷은 `other` */
+  readonly deleteFailure: Readonly<Record<"network" | "other", string>>;
+  /** 떠난 뒤 새 세션이 한 번 낭독하는 결과 — 키는 `AccountExit` */
+  readonly exitAnnouncement: Readonly<Record<"signed-out" | "deleted", string>>;
 };
 
 export type ProfileCopy = {

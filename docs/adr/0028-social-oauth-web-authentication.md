@@ -269,7 +269,11 @@ PKCE verifier와 Apple nonce(D7). Apple 모듈에 난수 메서드를 새로 두
   | `start(args, callback)` | `{ nonce }`(해시) → 콜백 **정확히 한 번** | `nonce`가 `^[0-9a-f]{64}$`가 아니면 `invalid-arguments`. 이미 시트가 떠 있으면 `already-active`. 아니면 `ASAuthorizationAppleIDProvider` 요청(`requestedScopes = []`)을 열고 끝나면 `completed`(+ `identityToken`) · `cancelled`(`.canceled`만) · `failed`(그 밖 오류 · 토큰 없음) |
 
   페이로드 키는 `status`와 `identityToken` 둘뿐이다. **이름 · 이메일을 요청하지 않는다**(범위 밖 —
-  프로필 화면이 쓰지 않는다). JS 접점은 `lib/apple-sign-in.ts`(ADR-0017 D3 「모듈마다 파일 하나」).
+  프로필 화면이 쓰지 않는다). ⟨2026-09-30⟩ **키가 셋일 수 있다** — 시트가 비지 않은 UTF-8
+  `authorizationCode`를 주면 그 값을 셋째 키로 싣는다. 계정 삭제의 Apple 재인증이 같은 `start`로 받아 서버 함수가
+  Apple 토큰을 철회하는 데 쓰고, **로그인 경로는 읽지 않는다**(Supabase 교환 본문 불변). JS `completed`는
+  `authorizationCode: string | null`이고 없으면 `null`이지 `malformed`가 아니다 — 옛 호스트 빌드와 섞여도 로그인이
+  깨지지 않는다. 메서드 · 인자 · 스코프는 그대로다([ADR-0032](0032-account-sign-out-and-deletion.md) D4). JS 접점은 `lib/apple-sign-in.ts`(ADR-0017 D3 「모듈마다 파일 하나」).
   검증은 순수 부분(인자 판정 · 페이로드 조립)이 `HostTests`의 `AppleSignInModuleTests`, 시트는 수동
   e2e **A1~A7**이다.
 - **엔타이틀먼트.** `apps/ios/Host/Host.entitlements`(`com.apple.developer.applesignin` = `Default`
@@ -405,6 +409,7 @@ Apple 경로(D7)에는 **콜백 URL이 없다** — 결과는 시트를 연 `sta
 - **임시 토큰으로 들어온 옛 설치는 온보딩부터 다시 지난다**(D6) — 옛 키의 값은 저장소에 남는다.
 - **콜백 모양이 공개 문서 근거다**(D1의 ⚠) — 실서버로 돌기 전까지 파서는 가정 위에 서 있다.
 - 로그아웃은 여전히 없다 — 세션을 지우는 것은 갱신을 서버가 거절했을 때뿐이다(ADR-0027 D4).
+  ⟨2026-09-30⟩ **해소됐다** — 로그아웃 · 계정 삭제가 섰다([ADR-0032](0032-account-sign-out-and-deletion.md)).
 
 ## 재검토 조건
 
@@ -418,6 +423,8 @@ Apple 경로(D7)에는 **콜백 URL이 없다** — 결과는 시트를 연 `sta
   — D6을 개정했다. 옛 설치는 로그인만이 아니라 온보딩부터 간다(키를 읽지 않기 때문)
 - **로그아웃이 화면 목록에 들어오는 시점** → ADR-0027 D3. 세션 키를 지우는 자리가 된다(임시 토큰
   키는 이미 아무도 읽지 않는다)
+  ⭐ **2026-09-30에 발동했다** — 로그아웃 · 계정 삭제가 세션 키를 지운다. Apple 사용자의 삭제는 이 ADR의
+  `AppleSignInModule`을 한 번 더 부른다(위 D7의 ⟨2026-09-30⟩). 결정은 [ADR-0032](0032-account-sign-out-and-deletion.md)
 - **실기에서 Apple 시트가 서명 빌드로도 열리지 않거나, Supabase가 네이티브 Client ID 외에 Services
   ID를 요구하는 것이 확인되는 시점** → D7 · 「제공자 · 대시보드 설정」
 - **Deployment Target을 17.4 아래로 내리는 시점** → D2. `.customScheme` 대신 옛 이니셜라이저와
