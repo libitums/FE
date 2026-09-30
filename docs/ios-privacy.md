@@ -40,17 +40,29 @@ SDK 선언도 앱의 `CA92.1` 항목으로 대신할 수 없습니다.
 Apple이 지정한 iOS 앱의 파일 위치는
 [manifest 추가 안내](https://developer.apple.com/documentation/bundleresources/adding-a-privacy-manifest-to-your-app-or-third-party-sdk)에 따릅니다.
 
-## 남은 배포 차단 항목 — SDK manifest
+## SDWebImage SDK manifest
 
-2026-09-30의 `Podfile.lock`·설치된 Pods·서명 없는 Release Archive를 확인한 결과:
+SDWebImage는 [Apple의 manifest 필수 SDK 목록](https://developer.apple.com/support/third-party-SDK-requirements/)에 포함됩니다.
+기존 5.15.5에는 manifest가 없어서 공식 선언을 제공하는 **5.21.7**로 고정합니다.
+[SDK 원본 manifest](https://github.com/SDWebImage/SDWebImage/blob/5.21.7/WebImage/PrivacyInfo.xcprivacy)는
+`FileTimestamp / C617.1`을 선언하며, CocoaPods가 이를
+`Host.app/SDWebImage.bundle/PrivacyInfo.xcprivacy`로 복사합니다. 앱의 manifest에 SDK
+선언을 대신 적거나 SDK의 선언 내용을 수정하지 않습니다.
 
-- `SDWebImage 5.15.5`에는 `PrivacyInfo.xcprivacy`가 없습니다.
-- `LynxService/Image 4.0.1`이 `SDWebImage = 5.15.5`를 요구하므로 앱 Podfile에서
-  SDWebImage 버전만 올리면 의존성이 충돌합니다.
-- SDWebImage는 [Apple의 manifest 필수 SDK 목록](https://developer.apple.com/support/third-party-SDK-requirements/)에 포함됩니다.
-- `MJRefresh 3.7.9`의 자체 manifest는 Archive의 `MJRefresh.Privacy.bundle`에 포함됩니다.
-- 같은 Archive에 SDWebImage용 manifest는 포함되지 않았습니다.
+LynxService/Image 4.0.1은 SDWebImage 5.15.5를 정확 버전으로 요구합니다. 그래서 공식
+LynxService podspec의 Image 의존성 한 필드만 조정한 로컬 명세를 사용합니다.
+**Lynx 런타임·서비스 소스·WebP coder 버전은 유지합니다.** 원본 출처·라이선스·변경 범위와
+제거 조건은 [podspecs 안내](../apps/ios/podspecs/README.md)에 기록합니다.
 
-**이번 Host 선언 추가만으로 SDK 요구사항은 해결되지 않습니다.** 다음 작업에서
-Lynx 이미지 서비스의 버전 제약과 SDK 제공 manifest를 함께 해결하고 이미지 로딩·캐시
-동작을 검증해야 합니다. SDK 업그레이드나 포장 방식 변경은 별도 PR로 처리합니다.
+업데이트 후 다음을 확인합니다.
+
+- `pod install --deployment --no-repo-update`가 lock 변경 없이 완료되는지 확인합니다.
+- HostTests에서 등록된 Lynx 이미지 서비스로 번들 PNG·JPEG·애니메이션 WebP를 읽고,
+  WebP 프레임 진행·일시 정지·재개 및 원본·메모리 제거 후 디스크 캐시 재로딩을 확인합니다.
+- 서명 없는 Release Archive에서 앱 자체 manifest와 `SDWebImage.bundle`,
+  `MJRefresh.Privacy.bundle`의 SDK manifest가 모두 포함되는지 확인합니다.
+- SDK manifest를 plist로 읽어 설치된 SDK 원본의 값 전체와 비교합니다.
+
+검증 기록은 [SDK manifest 보고서](performance/reports/ios-sdk-privacy-manifest-archive-01.md)를
+참조합니다. 최종 서명 Archive의 Privacy Report·App Store Connect 검증과 앱 전체의
+데이터 수집 공개 항목 감사는 별도로 수행해야 합니다.
