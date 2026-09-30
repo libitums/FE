@@ -12,7 +12,7 @@ export function EpisodeFinalJourneyScreen(props: EpisodeFinalScreenProps) {
   const { test, insets, onExit, onFinish } = props;
   const story = test.story;
   const [stage, setStage] = useState<Stage>("introduction");
-  const [results, setResults] = useState<readonly AnswerResult[]>([]);
+  const resultsRef = useRef<readonly AnswerResult[]>([]);
   const completed = useRef(false);
   const transition = useRef<Stage | null>(null);
 
@@ -22,7 +22,7 @@ export function EpisodeFinalJourneyScreen(props: EpisodeFinalScreenProps) {
     "background only";
     if (transition.current === "test") return;
     transition.current = "test";
-    setResults(answers);
+    resultsRef.current = answers;
     setStage(passesEpisodeFinalStory(test, answers) ? "ending" : "retry");
   };
   const finishNarrative = () => {
@@ -31,7 +31,7 @@ export function EpisodeFinalJourneyScreen(props: EpisodeFinalScreenProps) {
     transition.current = stage;
     if (stage === "ending") {
       completed.current = true;
-      onFinish(results);
+      onFinish(resultsRef.current);
     } else {
       setStage("test");
     }
