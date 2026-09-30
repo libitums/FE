@@ -53,6 +53,8 @@ export function createJourneyProgressSync(
       apply(merged);
       needsLoad = false;
       if (observedJson === jsonFrom(server)) {
+        // 조회만으로 동기화가 끝나면 복구입니다. 저장이 남았으면 성공할 때까지 backoff를 유지합니다.
+        retryAttempt = 0;
         pending = null;
         clearPendingProgress(userId);
       } else {

@@ -313,3 +313,46 @@ test("망 연결 거부·타임아웃에서도 미전송 기록을 유지하고 
   response.resolve({ status: 503, body: "" });
   await flush();
 });
+
+test("초기 조회 실패에서 복구되면 다음 저장 실패는 첫 재시도 간격부터 시작한다", async () => {
+  load = async () => ({ status: 503, body: "" });
+  await boot();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(21_000);
+  });
+  expect(loads).toBe(4);
+  load = async () => ({ status: 200, body: "null" });
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(30_000);
+  });
+  expect(loads).toBe(5);
+  save = async () => ({ status: 503, body: "" });
+  await complete(1);
+  expect(saves).toHaveLength(1);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(999);
+  });
+  expect(saves).toHaveLength(1);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1);
+  });
+  expect(saves).toHaveLength(2);
+});
+
+test("재조회가 성공해도 저장이 계속 실패하면 재시도 간격을 늘린다", async () => {
+  await boot();
+  save = async () => ({ status: 503, body: "" });
+  await complete(1);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1_000);
+  });
+  expect(saves).toHaveLength(2);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(4_999);
+  });
+  expect(saves).toHaveLength(2);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1);
+  });
+  expect(saves).toHaveLength(3);
+});
