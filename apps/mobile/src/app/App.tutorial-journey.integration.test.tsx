@@ -66,7 +66,12 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
       }
       tap("prologue-chat-screen-complete");
     } else {
-      tap("prologue-call-screen-end");
+      for (const line of segment.call.lines) {
+        expect(play).toHaveBeenLastCalledWith(line.audioSource, expect.any(Function));
+        expect(screen.getByTestId("prologue-call-screen-line-text")).toHaveTextContent(line.text);
+        act(() => finishAudio?.());
+      }
+      expect(screen.getByTestId("prologue-call-screen-complete")).toBeInTheDocument();
       tap("prologue-call-screen-complete");
     }
   }
