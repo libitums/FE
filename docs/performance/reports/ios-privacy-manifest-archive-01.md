@@ -34,3 +34,8 @@ Host의 Copy Bundle Resources에 추가한 PrivacyInfo.xcprivacy가 Release Arch
 앱 자체의 required-reason API 선언 누락을 수정합니다. 별도로 확인된 SDWebImage 5.15.5의
 SDK manifest 누락과 LynxService/Image의 버전 제약은 다음 작업에서 해결해야 합니다.
 선언 근거·Archive 검사 절차·남은 배포 조건은 `docs/ios-privacy.md`에 기록했습니다.
+
+## main 통합 재검증
+- 검증 일시: 2026-10-01, Asia/Seoul. 선행 PR #187–#192의 리뷰 수정을 포함해 전체 `pnpm verify`와 `pnpm bundle:host`가 통과했습니다.
+- 현재 모바일 번들은 1,402,356 bytes로 1,403,000 bytes 상한 이내입니다. 앱 manifest와 Xcode 리소스 등록은 최초 Archive 검증 이후 변경하지 않았습니다.
+- 서명한 최종 Archive·App Store Connect·수집 공개 감사와 성능 수치는 미측정이며 기존 해석의 한계를 유지합니다.
