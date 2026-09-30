@@ -595,3 +595,12 @@ ADR-0007과 같은 모양의 실수다 — 웹 생태계의 기본값을 근거 
 위 2026-08-25 항목이 `format:check`를 넣으며 같은 표를 제자리에서 고쳤다.
 새 번호를 피하는 둘째 이유 — D1 하나 때문에 이 문서의 멀쩡한 D들이 `대체됨`으로
 밀리고, 축 추적표의 「명령 인터페이스」 축이 두 번호로 갈린다.
+
+**2026-09-30 — 루트 사슬 셋에 서버 함수 앱이 들었다** ⟨적용 기록, 새 결정 아님⟩
+([ADR-0032](0032-account-sign-out-and-deletion.md) D1). `apps/supabase-functions`의 `typecheck` · `test:unit` ·
+`test:integration`이 루트 `typecheck` · `test:unit` · `test:integration`에 **명시 `--filter` 하나씩**으로 붙었다(D2 —
+`-r`로 범위가 조용히 넓어지지 않는다). `test:ui` · `build` · `size:check`에는 들지 않는다 — ui 계층이 없고 Lynx
+산출물이 없다. `lint` · `format:check`는 저장소 전체 도구라 손대지 않고 새 앱을 덮는다. **CI 워크플로 diff는 0이다** —
+`verify`의 잎 명령 이름이 같고 `devtools/ci-wiring`이 양쪽 일치를 그대로 지킨다(D3). 서버 연동 케이스의 대역은 msw가 아니다 —
+앱 쪽은 `vi.stubGlobal("fetch")`, 함수 쪽은 핸들러에 주입하는 바깥 호출 함수(`outbound`)를 가짜로 바꾼다(D4 셋째 행과 같은 판정). D1의 *"앱이 하나이므로"* 는
+이미 참이 아니지만 명령 표의 행은 바뀌지 않는다 — 제자리 문구는 고치지 않는다.

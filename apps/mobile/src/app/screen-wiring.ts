@@ -2,6 +2,7 @@
 // (`journeyWiring`·`roleplayWiring`·`entryWiring`)를 합쳐 하나의 wiring을
 // 만듭니다.
 
+import type { AccountWiringArgs } from "./leave-app.contract";
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
   EpisodeIntroEventSink,
@@ -10,6 +11,8 @@ import type {
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
 import type { SafeAreaInsets } from "../lib/safe-area";
+import { accountWiring } from "./account-wiring";
+import type { AccountWiring } from "./leave-app.contract";
 
 import type { AnswerResult } from "../lib/answer-result";
 import type {
@@ -18,7 +21,7 @@ import type {
   PhoneOtpVerifyOutcome,
   PhoneOtpVerifyRequest,
 } from "../lib/auth-session.contract";
-import type { AnalyticsIdentify } from "../lib/analytics.contract";
+import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
@@ -210,7 +213,8 @@ export type ScreenWiring = {
   onContinueLanguageSelect: () => void;
   onEnterJourney: () => void;
   // 에피소드 최종 테스트의 결선입니다(`episode-final-wiring.ts`).
-} & EpisodeFinalWiring;
+} & EpisodeFinalWiring &
+  AccountWiring;
 
 export type ScreenWiringArgs = {
   readonly messengerEventSink: MessengerEventSink;
@@ -219,7 +223,8 @@ export type ScreenWiringArgs = {
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
   readonly entryEventSink: EntryEventSink;
-  readonly analyticsIdentify: AnalyticsIdentify | null;
+  readonly analyticsUser: AnalyticsUser | null;
+  readonly leaveApp: AccountWiringArgs["leaveApp"];
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly dispatch: Dispatch<NavAction>;
   readonly completedMessengerUnitIds: readonly MessengerUnitId[];
@@ -259,7 +264,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   });
   const entry = entryWiring({
     entryEventSink: args.entryEventSink,
-    analyticsIdentify: args.analyticsIdentify,
+    analyticsUser: args.analyticsUser,
     dispatch: args.dispatch,
     entryLanguage: args.entryLanguage,
     setEntryLanguage: args.setEntryLanguage,
@@ -281,6 +286,11 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       args.dispatch({ type: "back" });
     },
     ...entry,
+    ...accountWiring({
+      analyticsUser: args.analyticsUser,
+      entryEventSink: args.entryEventSink,
+      leaveApp: args.leaveApp,
+    }),
     ...episodeFinalWiring(args),
   };
 }

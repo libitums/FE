@@ -155,8 +155,8 @@ describe("noAnalyticsEventSinks / noAnalyticsSession", () => {
     }
   });
 
-  test("AE3: noAnalyticsSession은 sink 일곱 null + identify null이다", () => {
-    expect(noAnalyticsSession).toStrictEqual({ sinks: noAnalyticsEventSinks, identify: null });
+  test("AE3: noAnalyticsSession은 sink 일곱 null + user null이다(identify 자리 없음)", () => {
+    expect(noAnalyticsSession).toStrictEqual({ sinks: noAnalyticsEventSinks, user: null });
   });
 });
 

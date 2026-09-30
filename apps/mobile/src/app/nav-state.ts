@@ -1,5 +1,5 @@
 // 화면 전환 상태의 모양을 소유합니다 — `Tab`·`Screen`·`Nav`·`NavAction` 타입과
-// 초기값 둘(`initialNav`·`entryInitialNav`)입니다. 전이 로직은 `nav-reducer.ts`가
+// 초기값(`initialNav`·`entryInitialNav`·`signedOutNav`)입니다. 전이 로직은 `nav-reducer.ts`가
 // 집니다.
 
 // `app/` -> `screens/` 방향의 **type-only** import입니다. `import type`은
@@ -166,3 +166,10 @@ export const initialNav: Nav = {
 // `initialNav`와 같은 값이고 `entry`만 다릅니다. **App이 실제로 `useReducer`에
 // 넘기는 부팅 상태가 이것입니다** — `initialNav`가 아닙니다.
 export const entryInitialNav: Nav = { ...initialNav, entry: [{ name: "splash" }] };
+
+// 로그아웃 · 계정 삭제 뒤 새 App 세션의 첫 `Nav`입니다. 진입 구간이 `[온보딩, 로그인]`이고 탭 스택은
+// `initialNav`와 같습니다. `NavAction` · 리듀서는 바뀌지 않습니다(`app-start.ts`가 쓴다).
+export const signedOutNav: Nav = {
+  ...initialNav,
+  entry: [{ name: "onboarding" }, { name: "login" }],
+};

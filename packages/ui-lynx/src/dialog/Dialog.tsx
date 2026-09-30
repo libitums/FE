@@ -54,7 +54,7 @@ export function Dialog(props: DialogProps) {
       data-testid="ui-lynx-dialog"
       data-motion={contract.motion}
       data-phase={contract.phase}
-      data-cancelactionid={contract.cancelActionId}
+      data-cancelactionid={contract.cancelActionId ?? undefined}
     >
       <Overlay
         scope="screen"

@@ -23,6 +23,15 @@
 > ⚠ 토글 셀의 켜짐/꺼짐 낭독은 ui-lynx `SettingsCell`의 기본값(`on`/`off`)이 내고 앱이 넘길 길이 없다
 > (ADR-0031 D6). 본문의 한국어 라벨은 당시 값이다 — 대응은 ADR-0031 부록.
 
+> **개정 (2026-09-30) — 계정 묶음(로그아웃 · 계정 삭제).** 결정과 근거는
+> [ADR-0032](../adr/0032-account-sign-out-and-deletion.md)(**제안**)가 지고, 화면 계약은 아래 **§9**다. 목록 끝에
+> 셋째 묶음 `Account actions`가 서고 `SettingsScreenProps`에 **필수 prop 셋**(`onSignOut` · `onDeleteAccount` ·
+> `onLayerChange`)이 더해졌다. 계약 타입이 하나 늘었다 — `screens/settings/account-actions.contract.ts`.
+> **§0의 1(「액션 행이 없다」)은 그대로다** — 새 묶음도 navigation 셀이고 액션 행이 아니다. **§0의 6(「서버 · fetch ·
+> 영속 저장이 0건」)과 §1의 다이어그램은 이 개정이 이긴다** — 설정이 로그아웃 · 삭제 요청을 결선으로 내보내고
+> 결선이 저장소의 세션 키를 지운다. §0의 7(새 `NavAction` 0)은 그대로 참이다. 결선 자리는 `App.tsx`가 아니라
+> `app/screen-wiring.ts` · `app/account-wiring.ts`이고, App 몸통은 `app/AppSession.tsx`로 옮겨졌다.
+
 > **개정 (2026-09-30, 법률 문서).** 결정과 근거는 [ADR-0033](../adr/0033-legal-documents-in-app-browser.md)가 진다.
 > **약관 화면이 사라졌다** — `screens/terms/` · route `terms` · `terms_opened`가 없다. 이동 항목이 **셋**이다:
 > `User profile` · `Privacy Policy` · `Terms of Use`(`SettingsNavTarget = "profile" | LegalDocument`). 뒤의 둘은
@@ -280,6 +289,77 @@ App (app/App.tsx)                                        ← 유일한 결선 �
 [ADR-0021](../adr/0021-performance-report-ci-automation.md)이 요구하는 기록은
 [`settings-iphone-17-pro-simulator-01`](../performance/reports/settings-iphone-17-pro-simulator-01.md)이다.
 관찰 구간과 한계는 그 보고서에 있다.
+
+## 9. 계정 묶음 — 로그아웃 · 계정 삭제 (2026-09-30)
+
+타입의 정본은 `screens/settings/account-actions.contract.ts`(어휘 · props · 상태 · 전이표 · testid)이고 영어 값의
+정본은 `lib/ui-copy-en-account.ts`의 `settingsEn`이다. 여기는 요약이다.
+
+**배치.** 목록 끝(`Learning` 다음)에 `SettingsGroup` 하나 — 보이는 제목 없이 이름 `Account actions`(테스트 손잡이 — VoiceOver는 읽지 않는다), 항목은
+navigation 셀 둘(`Sign out` · `Delete account`, 덜 파괴적인 것이 먼저). 실패 문구 `<text>`는 그 묶음 바로 아래, 대화상자는
+**화면 루트의 마지막 자식**이다(스크롤 안이 아니다). 대화상자가 떠 있는 동안 제목과 스크롤에
+`accessibility-elements-hidden`, 전역 머리는 `onLayerChange(true)`로 가린다([ADR-0016](../adr/0016-assistive-technology-semantics.md) D9).
+
+**props — 셋 다 필수.**
+
+| prop | 언제 |
+|---|---|
+| `onSignOut: () => void` | 로그아웃 대화상자의 확인에서 정확히 한 번. 결선이 곧장 화면을 내린다 |
+| `onDeleteAccount: () => Promise<AccountDeletionResult>` | 삭제 대화상자의 확인에서 정확히 한 번. 거부하지 않는다(`deleted` · `cancelled` · `failed(reason)`) |
+| `onLayerChange: (open: boolean) => void` | 대화상자가 열리고 닫힐 때 |
+
+**상태 기계 — 화면 로컬, 한 번에 대화상자 하나.**
+
+| 상태 | 보이는 것 | 누르면 |
+|---|---|---|
+| `idle(null)` | 묶음 셋 | 행 → 해당 대화상자 |
+| `idle(reason)` | 묶음 셋 + 실패 문구 — 들어서는 순간 `announce` 1회 | 행을 누르면 문구가 지워지고 대화상자가 선다. 설정을 떠나면 사라진다 |
+| `confirming-sign-out` | `Sign out?` · [`Sign out`, `Stay signed in`] | 확인 → `onSignOut()` · `idle(null)` / 취소 → `idle(null)` |
+| `confirming-delete` | `Delete your account?` + 설명 · [`Delete account`, `Keep account`] | 확인 → `deleting` + `onDeleteAccount()` / 취소 → `idle(null)` |
+| `deleting` | 같은 대화상자 — 확인 **로딩**(`Delete account, loading`) · 취소 **비활성** · 뒤로가기 · ESC 경로 없음 | 전부 무시(같은 상태 객체) |
+| ↳ 결과 `deleted` | 변화 없음 — 결선이 App 세션을 재시작해 화면이 내려간다 | |
+| ↳ 결과 `cancelled`(Apple 시트 닫음) | `confirming-delete`로 돌아간다. 문구 · 낭독 0 | |
+| ↳ 결과 `failed(reason)` | 대화상자가 닫히고 `idle(reason)` | |
+
+- 대화상자 액션 순서는 늘 **확인 → 취소**다. ui-lynx `Dialog`가 마지막 액션을 취소 경로로 내놓으므로 취소가
+  마지막이어야 호스트가 뒤로가기를 연결할 때 삭제를 실행하지 않는다(지금 iOS 호스트는 연결하지 않아 취소 버튼뿐이다).
+  확인은 기존 brand, **파괴 전용 색 없음**.
+- 실패 낭독은 대화상자가 닫힌 화면이 반영된 뒤(effect) 1회. 떠난 뒤 새 세션은 `exitAnnouncement`(`You're signed out.` ·
+  `Your account was deleted.`)를 1회 낭독한다(`AppStart.exit`).
+- 로딩 + 취소 비활성 조합은 ui-lynx `Dialog`의 완화된 규칙(「누를 수 있거나 로딩 중인 액션 ≥ 1」, 로딩 중이면
+  `cancelActionId = null`)이 받는다 — `packages/ui-lynx/README.md` Dialog 절.
+- 로그아웃에는 진행 · 실패 상태가 없다 — 결선이 요청을 기다리지 않는다(ADR-0032 D5).
+- **알려진 한계** — 대화상자 Scrim이 화면 영역만 덮어 바텀 네비게이션은 눌린다. 삭제 중 탭을 바꾸면 실패 문구는
+  보이지 않지만 `deleted` 뒤처리는 그대로 선다.
+
+**문구**(`copy.settings`).
+
+| 키 | 영어 |
+|---|---|
+| `group.accountActions` | `Account actions`(테스트 손잡이 — 낭독 안 됨) |
+| `exitAnnouncement` | `You're signed out.` · `Your account was deleted.`(새 세션이 1회 낭독) |
+| `action.sign-out` · `action.delete-account` | `Sign out` · `Delete account` |
+| `signOutDialog` | `Sign out?` · `Sign out` · `Stay signed in` |
+| `deleteDialog` | `Delete your account?` · `Your account and learning progress will be permanently deleted. This can't be undone.` · `Delete account` · `Keep account` |
+| `deleteFailure.network` | `Couldn't delete your account. Check your connection and try again.` |
+| `deleteFailure.other` | `Couldn't delete your account. Please try again.`(`unavailable` · `unconfigured` · `session-expired` · `apple-unconfirmed`) |
+
+**testid.** 화면이 붙이는 것은 셋 — `settings-screen-account-error` · `settings-screen-sign-out-dialog` ·
+`settings-screen-delete-dialog`(대화상자 래퍼). 행은 `SettingsGroup`이 `ui-lynx-settings-group-item-{sign-out | delete-account}`를,
+액션은 `Dialog`가 `ui-lynx-dialog-action-{sign-out | stay | delete | keep}`를 붙인다. 로딩은 `ui-lynx-button`의
+`data-loading`, 비활성은 `data-disabled`, 취소 경로는 `ui-lynx-dialog`의 `data-cancelactionid`(로딩 동안 없음)로 본다.
+
+**이벤트.** 새 이벤트 0 · 새 속성 0. 떠날 때 결선이 기존 `entry_screen_viewed { screen: "login" }`를 분석 reset **뒤**에
+한 번 낸다([진입 흐름 스펙](entry-flow.md) 개정 2026-09-30).
+
+**테스트 계층**(경로는 `apps/mobile/src/` 기준).
+
+| 계층 | 파일 |
+|---|---|
+| unit | `screens/settings/account-actions.unit.test.ts` · `lib/account-deletion.unit.test.ts` · `lib/api-client.account.unit.test.ts` · `lib/auth-request.unit.test.ts` · `app/account-wiring.unit.test.ts` · `app/app-start.unit.test.ts` |
+| ui | `screens/settings/SettingsScreen.ui.test.tsx` |
+| integration | `app/App.account.integration.test.tsx`(설정 → 결선 → 저장소 · 분석 · 전송 · 호스트 대역 → App 세션 재시작) |
+| e2e (수동) | [계정 삭제 e2e](../e2e/account-deletion.md) |
 
 ## 비고
 

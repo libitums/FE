@@ -2,7 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
-import type { AnalyticsIdentify } from "../lib/analytics.contract";
+import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import { refreshAuthSession, requestPhoneOtp, verifyPhoneOtp } from "../lib/api-client";
 import {
   clearAuthSession,
@@ -37,7 +37,7 @@ import { entryScreenAfterLogin } from "./screen-routing";
 
 export type EntryWiringArgs = {
   readonly entryEventSink: EntryEventSink;
-  readonly analyticsIdentify: AnalyticsIdentify | null;
+  readonly analyticsUser: AnalyticsUser | null;
   readonly dispatch: Dispatch<NavAction>;
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
@@ -45,7 +45,7 @@ export type EntryWiringArgs = {
 
 export function entryWiring({
   entryEventSink,
-  analyticsIdentify,
+  analyticsUser,
   dispatch,
   entryLanguage,
   setEntryLanguage,
@@ -58,7 +58,7 @@ export function entryWiring({
     const userId = authUserIdFrom(session.accessToken);
     if (userId === null) return;
     try {
-      analyticsIdentify?.(userId);
+      analyticsUser?.identify(userId);
     } catch {
       // 분석은 화면을 막지 않습니다.
     }

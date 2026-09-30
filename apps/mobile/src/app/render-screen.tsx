@@ -94,6 +94,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           sessionOptions={wiring.sessionOptions}
           onSelectNavTarget={wiring.onSelectNavTarget}
           onToggleSessionOption={wiring.onToggleSessionOption}
+          onSignOut={wiring.onSignOut}
+          onDeleteAccount={wiring.onDeleteAccount}
+          onLayerChange={wiring.onScreenLayerChange}
         />
       );
     // 모듈 상수(`profileList`)를 그대로 그리고, 나가기는 설정 탭 스택의 루트로 곧장

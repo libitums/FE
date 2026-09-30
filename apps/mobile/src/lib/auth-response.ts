@@ -4,6 +4,10 @@
 // 그대로 다시 내보내(re-export) 기존 unit import가 안 바뀝니다.
 
 import type {
+  AccountDeletionFailureFrom,
+  AccountDeletionFailureFromRefresh,
+} from "./account.contract";
+import type {
   AuthSession,
   PhoneOtpRequestFailure,
   PhoneOtpVerifyFailure,
@@ -127,3 +131,32 @@ export function pkceExchangeFailureFrom(
   }
   return "unavailable";
 }
+
+/** 401 → `session-expired` · 403 → `apple-unconfirmed` · 그 밖 → `unavailable`. */
+export const accountDeletionFailureFrom: AccountDeletionFailureFrom = (status) => {
+  if (status === 401) {
+    return "session-expired";
+  }
+  if (status === 403) {
+    return "apple-unconfirmed";
+  }
+  return "unavailable";
+};
+
+/** `rejected` → `session-expired` · 나머지는 같은 낱말. */
+export const accountDeletionFailureFromRefresh: AccountDeletionFailureFromRefresh = (reason) => {
+  switch (reason) {
+    case "rejected": {
+      return "session-expired";
+    }
+    case "network": {
+      return "network";
+    }
+    case "unavailable": {
+      return "unavailable";
+    }
+    case "unconfigured": {
+      return "unconfigured";
+    }
+  }
+};
