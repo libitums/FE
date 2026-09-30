@@ -45,3 +45,9 @@ SDWebImage가 제공하는 공식 선언을 사용하며, 새 SDK에 맞춰 앱�
 않습니다. 최종 서명 Archive의 Privacy Report와 App Store Connect 검증 및 App Privacy
 공개 항목 감사가 남아 있습니다. 공식 LynxService 명세가 manifest 제공 버전을 허용하면
 로컬 podspec을 제거하고 이미지·캐시 회귀와 Archive 검사를 다시 실행합니다.
+
+## main 통합 재검증
+- 검증 일시: 2026-10-01, Asia/Seoul. 선행 PR #187–#193의 리뷰 수정을 포함해 전체 `pnpm verify`와 iPhone 17 Pro / iOS Simulator 26.5의 HostTests 54건이 통과했습니다.
+- `pod install --deployment --no-repo-update` 후 Podfile.lock과 Xcode 프로젝트의 SHA-256이 그대로 유지되었습니다. 현재 production 번들과 Host에 복사된 번들도 바이트 단위로 일치합니다.
+- 현재 모바일 번들은 1,402,356 bytes로 1,403,000 bytes 상한 이내입니다. SDK 선언과 이미지 서비스 변경은 최초 Archive 검증 이후 바꾸지 않았습니다.
+- 최종 서명 Archive·App Store Connect·수집 공개 감사와 성능 수치는 미측정이며 기존 해석의 한계를 유지합니다.
