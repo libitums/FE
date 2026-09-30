@@ -44,9 +44,9 @@ import Speech
 /// ADR-0017 D3이 막은 「오디오 세션 카테고리 조작」은 **재생 모듈**의 제외 항목이고,
 /// 그 근거는 *"시스템 정책을 건드리는 순간 권한·백그라운드 모드에 닿는다"* 였다.
 /// 권한 쪽은 ADR-0026이 조건으로 열었고, **백그라운드 모드는 여기서도 열지 않는다** —
-/// `UIBackgroundModes`를 넣지 않고 세션을 세션 밖까지 살려 두지 않는다. 세션이 끝나면
-/// `setActive(false, options: .notifyOthersOnDeactivation)`로 되돌려 재생 모듈과 다른 앱의
-/// 소리가 원래대로 돌아오게 한다.
+/// `UIBackgroundModes`를 넣지 않는다. 마이크 캡처가 끝나면 세션을 비활성화하고
+/// 녹음 전에 쓰던 카테고리·모드·옵션을 복원한다. 인식기의 마지막 결과를 기다리는 동안에도
+/// 재생 모듈은 원래의 무음 스위치 정책으로 소리를 낼 수 있다.
 ///
 /// **온디바이스 여부를 감추지 않는다.** 아래 「온디바이스」 절을 본다.
 @objc(SpeechRecognitionModule)
@@ -177,6 +177,7 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
 
   private final class Session {
     let engine = AVAudioEngine()
+    let audioSession = RecordingAudioSession()
     let request = SFSpeechAudioBufferRecognitionRequest()
     let meter = LevelMeter()
     let startedAt = Date()
@@ -192,6 +193,7 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
     var error: NSError?
     /// 탭을 걷고 `endAudio()`까지 마쳤는가. `stop()`이 두 번 불려도 한 번만 걷는다.
     var stopping = false
+    var tapInstalled = false
 
     init(requestedOnDevice: Bool, supportsOnDevice: Bool, callback: @escaping LynxCallbackBlock) {
       self.requestedOnDevice = requestedOnDevice
@@ -334,7 +336,7 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
     session = current
 
     do {
-      try activateRecordingSession()
+      try current.audioSession.activate()
       try startEngine(current)
     } catch let error as NSError {
       // 엔진이 시작에서 죽었어도 탭은 이미 걸려 있을 수 있다. 탭을 걷는 절차는
@@ -368,33 +370,6 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
     }
   }
 
-  /// 녹음에 필요한 **최소한**의 오디오 세션 설정.
-  ///
-  /// - `.record` — 기본 `.soloAmbient`는 입력을 허용하지 않아 탭에 한 프레임도 오지
-  ///   않는다. 재생까지 겸하는 `.playAndRecord`를 쓰지 않는 이유는 이 모듈이 소리를
-  ///   내지 않기 때문이다 — 안 쓰는 능력을 여는 것이 「이왕 만든 김에」의 모양이다.
-  /// - `.measurement` — 시스템이 얹는 신호 처리(자동 이득·이퀄라이제이션)를 끈다.
-  ///   레벨 값이 우리가 받은 소리를 그대로 비추게 하려는 것이고, 그것이 「소리가
-  ///   들어오는가」를 판정하는 이 탐침의 물음과 곧장 닿는다.
-  /// - 옵션 없음 — `.duckOthers` 같은 것을 붙이면 다른 앱 소리의 정책까지 정하게 된다.
-  ///
-  /// **백그라운드는 열지 않는다** (ADR-0017 D3 · ADR-0026). `UIBackgroundModes`가 없고,
-  /// 세션은 `deactivateRecordingSession()`이 끝나는 즉시 되돌린다.
-  private static func activateRecordingSession() throws {
-    let audioSession = AVAudioSession.sharedInstance()
-    try audioSession.setCategory(.record, mode: .measurement, options: [])
-    try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-  }
-
-  /// 세션을 원래대로 돌린다. **실패해도 던지지 않는다** — 되돌리기에 실패한 것이
-  /// 인식 결과를 못 올릴 이유가 되지 않는다.
-  ///
-  /// `.notifyOthersOnDeactivation`은 우리가 비켰다는 것을 다른 앱과 `AudioPlaybackModule`에
-  /// 알린다. 이것이 없으면 녹음 뒤 듣기 화면의 소리가 작아진 채로 남는다.
-  private static func deactivateRecordingSession() {
-    try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-  }
-
   /// 입력 노드에 탭을 걸고 엔진을 돌린다.
   ///
   /// 포맷을 우리가 만들지 않고 **입력 노드가 주는 것을 그대로** 쓴다. 기기마다 샘플
@@ -419,6 +394,7 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
       }
     }
 
+    current.tapInstalled = true
     current.engine.prepare()
     try current.engine.start()
   }
@@ -470,7 +446,6 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
   /// 엔진·탭·오디오 세션을 걷는다. 여러 번 불려도 안전하다.
   private static func teardown(_ current: Session) {
     stopCapture(current)
-    deactivateRecordingSession()
   }
 
   /// 엔진을 멈추고 탭을 걷고 인식기에 「더 없다」를 알린다. **걷는 절차는 여기 한 벌뿐이다** —
@@ -479,8 +454,13 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
     guard !current.stopping else { return }
     current.stopping = true
     current.engine.stop()
-    current.engine.inputNode.removeTap(onBus: 0)
+    if current.tapInstalled {
+      current.engine.inputNode.removeTap(onBus: 0)
+      current.tapInstalled = false
+    }
     current.request.endAudio()
+    // stop 직후 복원한다. 최종 인식 결과/3초 타임아웃까지 .record를 남기지 않는다.
+    current.audioSession.restore()
   }
 
   /// 콜백을 **정확히 한 번** 올린다. 올리는 자리가 여기 하나뿐이고, 올린 즉시 콜백을
