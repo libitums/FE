@@ -69,15 +69,27 @@ final class RecordingAudioSessionTests: XCTestCase {
 
   func testLateRepeatedCleanupDoesNotDeactivateNewPlayback() throws {
     let session = FakeAudioSession()
-    let recording = RecordingAudioSession(session: session)
-    try recording.activate()
-    recording.restore()
+    var recording: RecordingAudioSession? = RecordingAudioSession(session: session)
+    try recording?.activate()
+    recording?.restore()
     try session.setCategory(.playback, mode: .spokenAudio, options: [.mixWithOthers])
     try session.setActive(true, options: [])
-    recording.restore()
+    recording?.restore()
+    recording = nil
     XCTAssertEqual(session.category, .playback)
     XCTAssertEqual(session.mode, .spokenAudio)
     XCTAssertEqual(session.activations, [true, false, true])
+  }
+
+  func testReleasingActiveRecordingRestoresPreviousConfiguration() throws {
+    let session = FakeAudioSession()
+    var recording: RecordingAudioSession? = RecordingAudioSession(session: session)
+    try recording?.activate()
+    XCTAssertEqual(session.category, .record)
+    recording = nil
+    XCTAssertEqual(session.category, .soloAmbient)
+    XCTAssertEqual(session.mode, .default)
+    XCTAssertEqual(session.activations, [true, false])
   }
 
   func testRepeatedActivationPreservesOriginalConfiguration() throws {

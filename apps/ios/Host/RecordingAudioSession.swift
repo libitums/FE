@@ -10,6 +10,10 @@ final class RecordingAudioSession {
     self.session = session
   }
 
+  deinit {
+    restore()
+  }
+
   func activate() throws {
     guard previous == nil else { return }
     previous = Configuration(

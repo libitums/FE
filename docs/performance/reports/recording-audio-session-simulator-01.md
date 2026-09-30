@@ -19,8 +19,9 @@
   `.record`, 모드가 `.measurement`로 남는 것을 시뮬레이터에서 재현했습니다.
 - 녹음 종료·인식 오류·엔진 시작 실패는 입력을 멈춘 뒤 같은 설정 복원 경로를 지납니다.
   활성화 실패는 즉시 복원합니다. 마지막 인식 결과와 타임아웃은 재생 중인 세션을 다시 끄지 않습니다.
+- 명시적 정리를 놓쳐 객체가 해제되는 경우에도 복원하며, 이미 복원한 객체의 해제는 다음 재생을 끄지 않습니다.
 - 활성화에는 빈 옵션을 사용하고 `.notifyOthersOnDeactivation`은 비활성화할 때만 사용합니다.
-- 새 네이티브 회귀 테스트 9건, HostTests 전체 49건 통과. 실제 AVAudioSession에서
+- 새 네이티브 회귀 테스트 10건, HostTests 전체 50건 통과. 실제 AVAudioSession에서
   `.soloAmbient`/`.default`/빈 옵션 복원을 확인하고 `AudioPlaybackModule`의 `greeting-1`
   재생이 `AVPlayerItem.didPlayToEndTimeNotification`과 단일 완료 콜백까지 도달했습니다.
 - 전체 `pnpm verify`와 `pnpm bundle:host` 통과. 모바일 번들은 1,383,096 bytes로
