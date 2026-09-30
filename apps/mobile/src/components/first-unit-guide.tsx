@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "@lynx-js/react";
+import { createContext, useContext, useMemo, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 export type FirstUnitGuideStep = "map" | "story" | "messenger" | "call";
@@ -18,18 +18,18 @@ export function FirstUnitGuideProvider({
   children: ReactNode;
 }) {
   const [dismissed, setDismissed] = useState<readonly FirstUnitGuideStep[]>([]);
-  return (
-    <FirstUnitGuideContext.Provider
-      value={{
-        enabled,
-        dismissed,
-        dismiss: (step) =>
-          setDismissed((steps) => (steps.includes(step) ? steps : [...steps, step])),
-      }}
-    >
-      {children}
-    </FirstUnitGuideContext.Provider>
+  const value = useMemo(
+    () => ({
+      enabled,
+      dismissed,
+      dismiss: (step: FirstUnitGuideStep) => {
+        "background only";
+        setDismissed((steps) => (steps.includes(step) ? steps : [...steps, step]));
+      },
+    }),
+    [enabled, dismissed],
   );
+  return <FirstUnitGuideContext.Provider value={value}>{children}</FirstUnitGuideContext.Provider>;
 }
 
 export function useFirstUnitGuide(step: FirstUnitGuideStep, eligible = true) {

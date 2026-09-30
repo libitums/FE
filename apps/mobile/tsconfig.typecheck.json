@@ -2,6 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "paths": {
+      "@libitums/ui-lynx/overlay": ["../../packages/ui-lynx/src/overlay/index.ts"],
+      "@libitums/ui-lynx/tooltip": ["../../packages/ui-lynx/src/tooltip/index.ts"],
       "@libitums/ui-lynx/typewriter": ["../../packages/ui-lynx/src/typewriter/index.ts"],
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
       "@libitums/ui-lynx/option-selector": ["../../packages/ui-lynx/src/option-selector/index.ts"],
