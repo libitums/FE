@@ -17,6 +17,8 @@ create index push_devices_user_id_idx on public.push_devices (user_id);
 create index push_devices_last_active_at_idx on public.push_devices (last_active_at);
 
 alter table public.push_devices enable row level security;
+-- 앱 역할의 기본 표 권한도 걷는다 — RLS가 막지 않는 TRUNCATE까지. RPC와 service role만 닿는다.
+revoke all on table public.push_devices from anon, authenticated;
 
 -- 로그인한 사용자가 이 기기의 토큰을 자기 것으로 등록한다. 같은 토큰이 다른 사용자에게 묶여 있으면
 -- (한 기기에서 계정을 바꿨으면) 새 사용자로 옮긴다 — 알림은 지금 로그인한 사람에게만 간다.
