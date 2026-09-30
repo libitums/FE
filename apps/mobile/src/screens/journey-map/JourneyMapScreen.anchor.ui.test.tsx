@@ -191,7 +191,7 @@ test("재는 사이에 다른 스텝을 누르면 옛 스텝의 답은 버리고
       params: { offset: 0, smooth: true },
     },
   ]);
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("First greetings");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Your First Hello");
   // 첫 인사의 아래 모서리 300 + 간격 8입니다.
   expect(sheetTop()).toContain("308px");
 });

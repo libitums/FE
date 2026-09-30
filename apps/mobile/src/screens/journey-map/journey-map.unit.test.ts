@@ -264,7 +264,7 @@ describe("낭독 이름의 데이터 앵커", () => {
     );
 
     expect(labels).toEqual([
-      "First greetings, completed",
+      "Your First Hello, completed",
       "Asking names, completed",
       "Ordering, current step",
       "Making plans, locked",
@@ -280,7 +280,11 @@ describe("낭독 이름의 데이터 앵커", () => {
     }));
 
     expect(described).toEqual([
-      { id: "greeting", description: "Greet someone for the first time at a café" },
+      {
+        id: "greeting",
+        description:
+          "Learn one greeting and say hello back, with meaning and pronunciation to help",
+      },
       { id: "introduction", description: "Ask someone's name and introduce yourself" },
       { id: "ordering", description: "Order a drink at a café" },
       { id: "appointment", description: "Set a date and time to meet again" },
@@ -291,7 +295,7 @@ describe("낭독 이름의 데이터 앵커", () => {
   // CE3 — 스텝 제목도 리터럴로 못 박습니다(부록 C.2). id · 순서는 불변입니다.
   it("CE3 실제 journeySteps의 id별 title이 리터럴 표와 같다", () => {
     expect(journeySteps.map((step) => ({ id: step.id, title: step.title }))).toEqual([
-      { id: "greeting", title: "First greetings" },
+      { id: "greeting", title: "Your First Hello" },
       { id: "introduction", title: "Asking names" },
       { id: "ordering", title: "Ordering" },
       { id: "appointment", title: "Making plans" },

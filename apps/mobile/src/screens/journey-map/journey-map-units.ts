@@ -36,8 +36,9 @@ const tutorialUnits: JourneyEpisodeUnits = [
     steps: [
       {
         id: "greeting",
-        title: "First greetings",
-        description: "Greet someone for the first time at a café",
+        title: "Your First Hello",
+        description:
+          "Learn one greeting and say hello back, with meaning and pronunciation to help",
       },
       {
         id: "introduction",

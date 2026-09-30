@@ -22,12 +22,10 @@ import "./learning-shell.css";
  * 위에서 아래로 상단 바 · 세션 헤더 · 지시문 · 가운데 카드 · 작업 영역 · 아래 버튼이고,
  * 낭독 순서가 곧 DOM 순서입니다.
  *
- * 껍데기는 판정을 모릅니다. 카드 안에 무엇이 서는지도 모릅니다 — 활동이 `card`로
- * 넣어 주는 것을 그릴 뿐입니다. 그래서 활동이 하나 늘어도 이 파일은 안 바뀝니다.
+ * 껍데기는 정답 판정 없이 활동의 카드와 완료 여부를 받아 그립니다.
  */
 export type LearningShellProps = {
   form: LearningForm;
-  /** 유닛 안에서 몇 번째 활동인가입니다(0부터). */
   /**
    * 활동 안에서 지금 몇 번째 문항인가입니다(0부터). 세션 헤더의 `Lesson n / N`과 진행
    * 막대가 이 값에서 납니다.
@@ -37,6 +35,8 @@ export type LearningShellProps = {
    */
   questionIndex: number;
   questionCount: number;
+  /** 완료 화면은 문항이 아니며 문제 지시문을 표시하지 않습니다. */
+  complete?: boolean;
   /** 카드 위 회색 한 줄 — 「무엇을 하라」입니다. */
   instruction: string;
   onExit: () => void;
@@ -82,6 +82,7 @@ export function LearningShell({
   form,
   questionIndex,
   questionCount,
+  complete = false,
   instruction,
   onExit,
   card,
@@ -196,9 +197,11 @@ export function LearningShell({
           onExit={handleExit}
         />
       </view>
-      <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
-        {instruction}
-      </text>
+      {complete ? null : (
+        <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
+          {instruction}
+        </text>
+      )}
       {/* 가운데 카드 — 학습 내용이 전개되고 판정이 뒤집히는 무대입니다. `stage`
           변형이 큰 모서리와 넓은 그림자를 집니다.
 

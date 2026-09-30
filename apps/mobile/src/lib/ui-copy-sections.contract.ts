@@ -97,6 +97,8 @@ export type JourneyMapCopy = {
 /** 학습 껍데기(머리 · 나가기 대화상자)입니다. 형식 라벨은 기존 영어(`formLabels`)를 받습니다. */
 export type LearningShellCopy = {
   readonly exitLesson: string;
+  readonly completionDescription: string;
+  readonly completedQuestions: (count: number) => string;
   readonly leaveDialog: {
     readonly title: string;
     readonly description: string;

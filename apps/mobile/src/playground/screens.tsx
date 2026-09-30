@@ -18,6 +18,7 @@ import { SplashScreen } from "../screens/splash/SplashScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
 import { LearningShell } from "../screens/learning/LearningShell";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
+import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
 import { initialSessionOptions } from "../lib/session-options";
 import { ButtonCatalog } from "./ButtonCatalog";
 import { EpisodePrologueScreen } from "../app/EpisodePrologueScreen";
@@ -49,6 +50,13 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
+  "tutorial-greeting-reply": (go: Go) => (
+    <SentenceOrderScreen
+      stepId="greeting"
+      onExit={() => go("journey-map")}
+      onFinish={() => go("journey-map")}
+    />
+  ),
   "tutorial-prologue": (go: Go) => (
     <EpisodePrologueScreen
       insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
@@ -96,10 +104,12 @@ export const playgroundScreens = {
   // ⚠ **표지를 끝낸 상태로 띄웁니다.** 표지가 미완료면 그 구획의 나머지 아홉이 전부
   // 잠겨(ADR-0024 D6) 완료·현재가 한 줄도 안 보입니다 — 이 놀이터가 보려던 것이
   // 통째로 사라집니다.
-  "journey-map": () => (
+  "journey-map": (go: Go) => (
     <JourneyMapScreen
       completedStepCount={1}
-      onStartStep={noop}
+      onStartStep={(id) => {
+        if (id === "greeting") go("tutorial-greeting-reply");
+      }}
       completedEpisodeIntroIds={["tutorial-intro"]}
       onStartEpisodeIntroUnit={noop}
       completedMessengerUnitIds={[]}

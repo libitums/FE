@@ -6,6 +6,7 @@ import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import type { AnswerResult } from "../../lib/answer-result";
 import { LearningShell } from "../learning/LearningShell";
+import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { SentenceOrderChip, SentenceOrderChipPlaceholder } from "./SentenceOrderChip";
 import {
   canCheckArrangement,
@@ -98,7 +99,8 @@ export function SentenceOrderScreen({
       form="sentence-order"
       questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
-      instruction={copy.sentenceOrder.instruction}
+      complete={complete}
+      instruction={question?.support?.instruction ?? copy.sentenceOrder.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -131,12 +133,10 @@ export function SentenceOrderScreen({
           </view>
 
           {question == null ? (
-            <text
-              className="sentence-order-screen-complete"
-              data-testid="sentence-order-screen-complete"
-            >
-              {copy.common.allQuestionsDone}
-            </text>
+            <LearningActivityComplete
+              questionCount={questions.length}
+              testId="sentence-order-screen-complete"
+            />
           ) : (
             <>
               {/* 상대의 말 — 왼쪽 말풍선. */}
@@ -147,6 +147,22 @@ export function SentenceOrderScreen({
                 >
                   {question.prompt}
                 </text>
+                {question.support === undefined ? null : (
+                  <>
+                    <text
+                      className="sentence-order-screen-support"
+                      data-testid="sentence-order-screen-romanization"
+                    >
+                      {question.support.romanization}
+                    </text>
+                    <text
+                      className="sentence-order-screen-support"
+                      data-testid="sentence-order-screen-translation"
+                    >
+                      {question.support.translation}
+                    </text>
+                  </>
+                )}
               </view>
 
               {/* 내 말 — 오른쪽 말풍선. 채우는 동안은 빈 표시(`----`)이고 낭독하지 않습니다.

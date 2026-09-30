@@ -5,22 +5,36 @@ import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // `unit` 계층: 순수 함수의 입출력만 봅니다 (ADR-0006 D4).
 describe("learningSessionHeader", () => {
-  it("첫 문항은 순번 1이고 아직 채움이 없다", () => {
+  it("첫 문항의 순번과 막대는 모두 1/4이다", () => {
     expect(learningSessionHeader("listening", 0, 4, uiCopyEn)).toEqual({
       progressLabel: "Lesson 1 / 4",
       formLabel: "Listening",
-      fillPercent: 0,
+      fillPercent: 25,
       accessibilityLabel: "Listening, question 1 of 4",
     });
   });
 
-  // 지금 푸는 문항은 아직 안 끝났으므로 순번이 곧 끝낸 수입니다. 마지막 문항에서도
-  // 100%가 아닙니다 — 100%는 활동을 마쳤을 때만 나옵니다.
-  it("마지막 문항에서도 100%가 아니다", () => {
+  // 완료 화면은 문항이 아니므로 마지막 문항에서 이미 100%여야 합니다.
+  it("마지막 문항은 완료 화면으로 넘어가기 전에 100%다", () => {
     const header = learningSessionHeader("word-choice", 3, 4, uiCopyEn);
 
     expect(header.progressLabel).toBe("Lesson 4 / 4");
-    expect(header.fillPercent).toBe(75);
+    expect(header.fillPercent).toBe(100);
+  });
+
+  it("한 문항짜리 활동은 추가 end 단계 없이 1/1이다", () => {
+    const header = learningSessionHeader("sentence-order", 0, 1, uiCopyEn);
+    expect(header.progressLabel).toBe("Lesson 1 / 1");
+    expect(header.fillPercent).toBe(100);
+  });
+
+  it("세 문항의 진행은 실제 문항 수만 분모로 쓴다", () => {
+    const percentages = [0, 1, 2].map(
+      (index) => learningSessionHeader("listening", index, 3, uiCopyEn).fillPercent,
+    );
+    expect(percentages[0]).toBeCloseTo(100 / 3);
+    expect(percentages[1]).toBeCloseTo(200 / 3);
+    expect(percentages[2]).toBe(100);
   });
 
   // 백분율 낱말을 내지 않습니다 — 막대가 같은 것을 말하므로 숫자가 둘이면 「어느 것을
