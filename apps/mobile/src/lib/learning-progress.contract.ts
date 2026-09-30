@@ -22,3 +22,5 @@ export type LoadLearningProgressPath = "/rest/v1/rpc/load_learning_progress";
 export type SaveLearningProgressPath = "/rest/v1/rpc/save_learning_progress";
 export type RecordLearningDayPath = "/rest/v1/rpc/record_learning_day";
 export type LearningStreakPath = "/rest/v1/rpc/learning_streak";
+
+export type RecordLearningDaysPath = "/rest/v1/rpc/record_learning_days";

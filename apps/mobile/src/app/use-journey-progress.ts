@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
-import { fetchLearningStreak, localDayFrom, recordLearningDay } from "../lib/progress-api";
+import { localDayFrom } from "../lib/progress-api";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
 import { journeyMapSections } from "../screens/journey-map/journey-map-units";
@@ -17,6 +17,7 @@ import {
   trophyCountFrom,
 } from "./learning-progress";
 import type { CompletedEpisode, JourneyProgressState } from "./learning-progress";
+import { createLearningDaySync } from "./learning-day-sync";
 import { createJourneyProgressSync } from "./journey-progress-sync";
 import { progressUserId } from "./pending-learning-progress";
 
@@ -64,8 +65,16 @@ export function useJourneyProgress(
   latest.current = state;
   const initial = useRef(state);
   const sync = useRef<ReturnType<typeof createJourneyProgressSync> | null>(null);
+  const days = useRef<ReturnType<typeof createLearningDaySync> | null>(null);
   const renderedSync = sync.current;
-  useEffect(() => () => sync.current?.dispose(), []);
+  const renderedDays = days.current;
+  useEffect(
+    () => () => {
+      sync.current?.dispose();
+      days.current?.dispose();
+    },
+    [],
+  );
   const activityCount = useRef(completedActivityCount(state));
   const completedEpisodeIds = useRef(
     completedEpisodesFrom(journeyMapSections, state).map((e) => e.id),
@@ -91,6 +100,7 @@ export function useJourneyProgress(
     if (sync.current?.userId !== userId) {
       if (sync.current !== null) {
         sync.current.dispose();
+        days.current?.dispose();
         apply(initial.current);
         setStreakDays(0);
         setStreakCelebration(false);
@@ -98,12 +108,12 @@ export function useJourneyProgress(
         setRecordingDay(false);
       }
       sync.current = createJourneyProgressSync(userId, () => latest.current, apply);
+      days.current = createLearningDaySync(userId, (streak, celebrate) => {
+        if (celebrate && streak > streakRef.current) setStreakCelebration(true);
+        setStreakDays(streak);
+      });
     }
-    const current = sync.current;
-    await current.flush();
-    if (!current.isCurrent()) return;
-    const streak = await fetchLearningStreak(localDayFrom(new Date()));
-    if (current.isCurrent() && streak !== null) setStreakDays(streak);
+    await Promise.all([sync.current.flush(), days.current?.flush()]);
   };
 
   useEffect(() => {
@@ -122,12 +132,7 @@ export function useJourneyProgress(
     }
     if (grew) {
       setRecordingDay(true);
-      void recordLearningDay(localDayFrom(new Date()))
-        .then((streak) => {
-          if (streak === null || (renderedSync !== null && !renderedSync.isCurrent())) return;
-          if (streak > streakRef.current) setStreakCelebration(true);
-          setStreakDays(streak);
-        })
+      void (renderedDays?.record(localDayFrom(new Date())) ?? Promise.resolve())
         .catch(() => undefined)
         .finally(() => {
           if (renderedSync === null || renderedSync.isCurrent()) setRecordingDay(false);
