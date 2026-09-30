@@ -64,6 +64,8 @@ export const journeyMapEn: JourneyMapCopy = {
 
 export const learningShellEn: LearningShellCopy = {
   exitLesson: "Leave lesson",
+  completionDescription: "Take a breath. You're ready for the next step.",
+  completedQuestions: (count) => `${count} of ${n(count, "question", "questions")} completed`,
   leaveDialog: {
     title: "Leave this lesson?",
     description: "Your answers so far won't be saved, and you'll start over next time.",

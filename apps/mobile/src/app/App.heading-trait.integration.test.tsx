@@ -229,10 +229,8 @@ test("[I3] 제목 축 닫힌 집합이 상태 listening-complete에서 계약이
   answerAllQuestions("ordering", mixedPick);
   expect(screen.getByTestId("listening-screen-complete")).toBeInTheDocument();
 
-  // 2026-09-27: 빈 집합이 답입니다. 듣기 화면의 제목 줄이 걷혔고(Figma 65-14) 껍데기는
-  // 제목 축에 아무것도 올리지 않습니다 — `Chapter n / N`은 메타 줄이지 제목이 아닙니다.
-  // 위 `toBeInTheDocument`가 앵커라, 화면이 안 떠서 비는 경우와 갈립니다.
-  expect(headingAxis(container)).toEqual([]);
+  // 완료 제목은 뒤따르는 안내와 문항 수 요약의 입구입니다 (ADR-0016 D12, 2026-09-30).
+  expect(headingAxis(container)).toEqual(["listening-screen-complete"]);
 });
 
 // 닫힌 집합 대조는 배열이 **자라야** 빨개집니다 — 이 상태가 무대에 올리는 배제
@@ -285,11 +283,8 @@ test("[I3] 제목 축 닫힌 집합이 상태 word-choice에서 계약이 고정
   startStep("ordering");
   expect(screen.getByTestId("word-choice-screen-complete")).toBeInTheDocument();
 
-  // ⟨2026-09-28⟩ 빈 집합이 답입니다 — 단어 선택도 학습 껍데기로 옮겨가며 제목 줄이
-  // 걷혔고, 껍데기는 제목 축에 아무것도 올리지 않습니다(`Chapter n / N`은 메타 줄이지
-  // 제목이 아닙니다). 듣기가 먼저 간 그 자리입니다. 위 `toBeInTheDocument`가 앵커라,
-  // 화면이 안 떠서 비는 경우와 갈립니다.
-  expect(headingAxis(container)).toEqual([]);
+  // 완료 제목은 뒤따르는 안내와 문항 수 요약의 입구입니다 (ADR-0016 D12, 2026-09-30).
+  expect(headingAxis(container)).toEqual(["word-choice-screen-complete"]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고정한 목록과 정확히 같다", async () => {
@@ -299,9 +294,8 @@ test("[I3] 제목 축 닫힌 집합이 상태 sentence-order에서 계약이 고
   startStep("ordering");
   expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument();
 
-  // ⟨2026-09-28⟩ 빈 집합입니다 — 문장 만들기가 듣기와 같은 껍데기(`LearningShell`)로 옮겨
-  // 제목 줄이 걷혔습니다. 위 `toBeInTheDocument`가 앵커입니다.
-  expect(headingAxis(container)).toEqual([]);
+  // 완료 제목은 뒤따르는 안내와 문항 수 요약의 입구입니다 (ADR-0016 D12, 2026-09-30).
+  expect(headingAxis(container)).toEqual(["sentence-order-screen-complete"]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 culture-quiz에서 계약이 고정한 목록과 정확히 같다", async () => {

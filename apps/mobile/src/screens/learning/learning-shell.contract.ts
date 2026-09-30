@@ -66,10 +66,8 @@ export type LearningSessionHeader = {
  * 0입니다. 나머지 데이터 오류(음수 순번 · 범위 밖 순번 · 정수가 아닌 값)는 숨기지 않고
  * 던집니다 — 값으로 표현할 수 있는 상태가 아닙니다.
  *
- * 채움은 **끝낸 문항 수**를 셉니다. 지금 푸는 문항은 아직 안 끝났으므로 순번이 곧 끝낸
- * 수입니다 — 첫 문항에서 0%, 마지막 문항에서 (N-1)/N입니다. 100%는 활동을 마쳤을 때만
- * 나옵니다. **백분율 낱말은 내지 않습니다** — 막대가 이미 같은 것을 말하고, 숫자가 둘이면
- * 또 「어느 것을 보나」가 생깁니다.
+ * 채움은 현재 문항의 순번 / 실제 문항 수입니다. 완료 화면은 문항이 아니므로
+ * 분모에 포함하지 않습니다. 첫 문항은 1/N, 마지막 문항은 N/N으로 이미 100%입니다.
  */
 export function learningSessionHeader(
   form: LearningForm,
@@ -100,7 +98,7 @@ export function learningSessionHeader(
   return {
     progressLabel: `Lesson ${String(ordinal)} / ${String(questionCount)}`,
     formLabel: formLabels[form],
-    fillPercent: (questionIndex / questionCount) * 100,
+    fillPercent: (ordinal / questionCount) * 100,
     accessibilityLabel: copy.learningShell.headerQuestionOf(
       formLabels[form],
       ordinal,

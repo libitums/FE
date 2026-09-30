@@ -6,6 +6,7 @@ import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import type { AnswerResult } from "../../lib/answer-result";
 import { LearningShell } from "../learning/LearningShell";
+import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { SentenceOrderChip, SentenceOrderChipPlaceholder } from "./SentenceOrderChip";
 import {
   canCheckArrangement,
@@ -98,6 +99,7 @@ export function SentenceOrderScreen({
       form="sentence-order"
       questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
+      complete={complete}
       instruction={question?.support?.instruction ?? copy.sentenceOrder.instruction}
       onExit={onExit}
       actionLabel={action?.label}
@@ -131,12 +133,10 @@ export function SentenceOrderScreen({
           </view>
 
           {question == null ? (
-            <text
-              className="sentence-order-screen-complete"
-              data-testid="sentence-order-screen-complete"
-            >
-              {copy.common.allQuestionsDone}
-            </text>
+            <LearningActivityComplete
+              questionCount={questions.length}
+              testId="sentence-order-screen-complete"
+            />
           ) : (
             <>
               {/* 상대의 말 — 왼쪽 말풍선. */}

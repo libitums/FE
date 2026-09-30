@@ -11,6 +11,7 @@ import { announceCompletion } from "../../lib/accessibility";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { WritingQuestion } from "../../lib/writing-session";
 import { LearningShell } from "../learning/LearningShell";
+import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import {
   finishWritingQuestion,
@@ -52,15 +53,17 @@ export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps):
       form="writing"
       questionIndex={Math.max(0, questions.length - 1)}
       questionCount={questions.length}
+      complete={complete}
       instruction={copy.writing.instruction}
       onExit={onExit}
       actionLabel={copy.common.seeResults}
       onAction={() => onFinish(stepId, screenState.results)}
       card={
         <view className="writing-screen-content" data-testid="writing-screen-content">
-          <text className="writing-screen-complete" data-testid="writing-screen-complete">
-            {copy.common.allQuestionsDone}
-          </text>
+          <LearningActivityComplete
+            questionCount={questions.length}
+            testId="writing-screen-complete"
+          />
         </view>
       }
     />
