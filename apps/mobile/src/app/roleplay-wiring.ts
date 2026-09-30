@@ -52,10 +52,16 @@ export function roleplayWiring({
     // 끝난 대화의 `결과 보기`입니다. 메신저 화면을 학습 완료로 갈아 끼웁니다 — 끝난
     // 대화는 스택에 남길 자리가 아닙니다(학습 세션 → 평가와 같은 `replace`).
     onMessengerFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) =>
-      dispatch({ type: "replace", screen: { name: "messenger-complete", unitId: id, results } }),
+      dispatch({
+        type: "replace",
+        screen: { name: "messenger-complete", unitId: id, results, exitTo: "roleplay" },
+      }),
     onPhoneCallComplete: (id: PhoneCallUnitId) => {
       "background only";
-      dispatch({ type: "replace", screen: { name: "special-unit-complete", unitId: id } });
+      dispatch({
+        type: "replace",
+        screen: { name: "special-unit-complete", unitId: id, exitTo: "roleplay" },
+      });
     },
     onPhoneCallExit: () => {
       "background only";
@@ -87,7 +93,10 @@ export function roleplayWiring({
     },
     onVisualNovelFinish: (id: VisualNovelUnitId) => {
       "background only";
-      dispatch({ type: "replace", screen: { name: "special-unit-complete", unitId: id } });
+      dispatch({
+        type: "replace",
+        screen: { name: "special-unit-complete", unitId: id, exitTo: "roleplay" },
+      });
     },
   };
 }

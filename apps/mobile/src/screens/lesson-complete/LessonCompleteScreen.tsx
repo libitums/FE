@@ -13,6 +13,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { StatChip, statChipDiamondColor } from "../../components/StatChip";
 import { announce } from "../../lib/accessibility";
 import type { AnswerResult } from "../../lib/answer-result";
+import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
 import type { AssessmentVerdict } from "../assessment/assessment";
 import {
   lessonCompleteAnnouncement,
@@ -51,6 +52,7 @@ export type LessonCompleteScreenProps = {
   readonly trophyCount: number;
   readonly diamondCount: number;
   readonly reward: LessonReward;
+  readonly exitTo?: SpecialUnitEntrySource;
   readonly onExit: () => void;
   /**
    * 미통과에서만 씁니다 — 같은 유닛을 첫 문항부터 다시 엽니다.
@@ -70,6 +72,7 @@ export function LessonCompleteScreen({
   trophyCount,
   diamondCount,
   reward,
+  exitTo = "journey",
   onExit,
   onRetry,
 }: LessonCompleteScreenProps): ReactNode {
@@ -231,7 +234,7 @@ export function LessonCompleteScreen({
             꽉 찬 면이면 어느 것이 주된 길인지가 색으로만 갈립니다. 통과에서는 이것이
             유일한 버튼이라 `neutral` 그대로입니다. */}
         <Button
-          label={copy.common.exitTo.journey}
+          label={copy.common.exitTo[exitTo]}
           variant={verdict === "failed" ? "outline" : "neutral"}
           size="xl"
           width="fill"
