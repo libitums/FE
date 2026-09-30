@@ -102,11 +102,11 @@ export function getLearningUnitContract(props: LearningUnitProps): LearningUnitC
   // 상태라, 목록을 훑을 때마다 항목 수만큼 더 읽히는 값을 치를 이유가 없습니다.
   const statusSuffix =
     status === "default"
-      ? "잠김"
+      ? "locked"
       : status === "active"
-        ? "현재 항목"
+        ? "current"
         : status === "clear"
-          ? "완료됨"
+          ? "completed"
           : undefined;
 
   return {
@@ -117,7 +117,7 @@ export function getLearningUnitContract(props: LearningUnitProps): LearningUnitC
     accessibilityLabel: [
       props.accessibilityLabel.trim(),
       statusSuffix,
-      narrative === "narrative" ? "이야기 연결" : undefined,
+      narrative === "narrative" ? "story" : undefined,
     ]
       .filter((value): value is string => value !== undefined)
       .join(", "),

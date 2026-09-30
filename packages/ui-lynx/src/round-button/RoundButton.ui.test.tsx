@@ -39,7 +39,7 @@ describe("RoundButton", () => {
     render(<RoundButton accessibilityLabel="정보" icon={info02} loading={true} />);
 
     const button = screen.getByTestId("ui-lynx-round-button");
-    expect(button).toHaveAttribute("accessibility-label", "정보, 로딩 중");
+    expect(button).toHaveAttribute("accessibility-label", "정보, loading");
     expect(button).toHaveAttribute("data-loading", "true");
     expect(button).toHaveClass("ui-lynx-round-button-loading");
     expect(screen.queryByTestId("ui-lynx-round-button-icon")).not.toBeInTheDocument();
@@ -93,7 +93,7 @@ describe("RoundButton", () => {
 
     const button = screen.getByTestId("ui-lynx-round-button");
     expect(button).toHaveAttribute("accessibility-traits", "disabled");
-    expect(button).toHaveAttribute("accessibility-label", "업로드, 로딩 중");
+    expect(button).toHaveAttribute("accessibility-label", "업로드, loading");
     expect(button).toHaveAttribute("data-disabled", "true");
     expect(button).toHaveAttribute("data-loading", "true");
     expect(button).toHaveClass(

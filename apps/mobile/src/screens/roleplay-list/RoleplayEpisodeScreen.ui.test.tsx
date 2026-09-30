@@ -3,6 +3,8 @@ import { fireEvent, render, screen, within } from "@lynx-js/react/testing-librar
 
 import type { RoleplayItem, RoleplaySection } from "./roleplay-list.contract";
 import { RoleplayEpisodeScreen } from "./RoleplayEpisodeScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 구획은 이 파일 안의 fixture로
 // 줍니다. `toHaveClass`·`toHaveStyle`을 쓰지 않습니다.
@@ -10,13 +12,13 @@ import { RoleplayEpisodeScreen } from "./RoleplayEpisodeScreen";
 const messengerItem: RoleplayItem = {
   form: "messenger",
   unitId: "appointment-confirmation",
-  title: "약속 확인 메시지",
+  title: "Appointment message",
 };
 
 const phoneCallItem: RoleplayItem = {
   form: "phone-call",
   unitId: "appointment-confirmation-phone-call",
-  title: "약속 확인 전화",
+  title: "Appointment call",
 };
 
 const section: RoleplaySection = {
@@ -42,12 +44,12 @@ test("[E1] 제목이 에피소드의 두 줄을 이어 그리고 header trait를
   expect(title).toHaveAttribute("accessibility-traits", "header");
 });
 
-test("[E2] 나가기가 동그란 버튼으로 서고 이름이 목록으로다", () => {
+test("[E2] 나가기가 동그란 버튼으로 서고 이름이 Back to list다", () => {
   render(<RoleplayEpisodeScreen section={section} onSelectItem={vi.fn()} onExit={vi.fn()} />);
 
   const exit = exitButton();
   expect(exit).toHaveAttribute("accessibility-traits", "button");
-  expect(exit).toHaveAttribute("accessibility-label", "목록으로");
+  expect(exit).toHaveAttribute("accessibility-label", "Back to list");
 });
 
 test("[E3] 나가기 tap → onExit 정확히 1회, onSelectItem 0회", () => {
@@ -112,4 +114,14 @@ test("[E7] 잠긴 구획이 오면 카드가 잠겨 서고 눌러도 열리지 �
   fireEvent.tap(card, {});
 
   expect(onSelectItem).not.toHaveBeenCalled();
+});
+
+test("[RP1-M] 문구표에서 읽는다 — 나가기 이름", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <RoleplayEpisodeScreen section={section} onSelectItem={vi.fn()} onExit={vi.fn()} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(exitButton()).toHaveAttribute("accessibility-label", "⟦common.exitTo.roleplay⟧");
 });

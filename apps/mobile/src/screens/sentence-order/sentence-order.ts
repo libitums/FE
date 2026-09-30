@@ -3,7 +3,8 @@
 // 화면 컴포넌트를 참조하지 않는 순수 모듈입니다(listening.ts · assessment.ts와
 // 같은 판단입니다).
 
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { UiCopy } from "../../lib/ui-copy.contract";
+import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 // ---------------------------------------------------------------- 도메인 타입
@@ -149,13 +150,17 @@ export function composedSentence(
   return placedChipIndexes.map((index) => question.chips[index]).join(" ");
 }
 
-// 조각의 낭독 이름입니다 — placedOrdinal이 null이면 이름만, 아니면
-// `${text}, ${n}번째`입니다.
-export function chipAccessibilityLabel(text: string, placedOrdinal: number | null): string {
+// 조각의 낭독 이름입니다 — placedOrdinal이 null이면 이름만, 아니면 문구표의
+// `sentenceOrder.placedChip`입니다.
+export function chipAccessibilityLabel(
+  text: string,
+  placedOrdinal: number | null,
+  copy: UiCopy,
+): string {
   if (placedOrdinal === null) {
     return text;
   }
-  return `${text}, ${placedOrdinal}번째`;
+  return copy.sentenceOrder.placedChip(text, placedOrdinal);
 }
 
 // 지금 보여 줄 판정입니다 — checked일 때만 judgeSentenceOrder를 부르고, 그
@@ -261,22 +266,13 @@ export function sentenceOrderSessionResults(
   return results;
 }
 
-// 능동 낭독 문자열입니다 — answerResultLabel을 다시 감싸지 않고 그 낱말을
-// 그대로 씁니다.
-export function sentenceOrderAnnouncement(result: AnswerResult): string {
-  return `채점 결과, ${answerResultLabel(result)}`;
+// 능동 낭독 문자열입니다 — 문구표의 `common.resultAnnouncement`를 그대로 씁니다.
+export function sentenceOrderAnnouncement(result: AnswerResult, copy: UiCopy): string {
+  return copy.common.resultAnnouncement(result);
 }
 
 // ---------------------------------------------------------------- 완료 전이 발화
-//
-// 위의 `sentenceOrderAnnouncement`(채점)는 **이름도 몸통도 안 바뀝니다** —
-// 아래 새 이름이 두 채널을 이름으로 가릅니다.
-
-/** 종료 상태 문구입니다. 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 납니다(ADR-0016 D11-1). */
-export const sentenceOrderCompletionText = "문항을 모두 마쳤어요";
-
-/** 완료 상태에서 화면에 남는 **유일한 조작 단위**의 라벨입니다. 이 화면에서는 `결과 보기`입니다. */
-export const sentenceOrderFinishLabel = "결과 보기";
+// 위의 `sentenceOrderAnnouncement`(채점)와 아래 완료 발화가 두 채널을 이름으로 가릅니다.
 
 /**
  * 완료 전이의 발화 문자열입니다. 구분자는 쉼표+공백 — D3이 고른 부호를 그대로
@@ -286,9 +282,9 @@ export const sentenceOrderFinishLabel = "결과 보기";
  * *무엇이* 끝났는지(앞절)와 *이제 무엇이 남았는지*(뒷절)가 소리 안에 있어야
  * 합니다.
  *
- * 앞절은 리터럴을 다시 적지 않고 `sentenceOrderCompletionText`를 지납니다 —
+ * 앞절은 리터럴을 다시 적지 않고 문구표 `copy.common.allQuestionsDone`을 지납니다 —
  * 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 표를 지납니다.**
  */
-export function sentenceOrderCompletionAnnouncement(nextActionLabel: string): string {
-  return `${sentenceOrderCompletionText}, ${nextActionLabel}`;
+export function sentenceOrderCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
+  return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
 }

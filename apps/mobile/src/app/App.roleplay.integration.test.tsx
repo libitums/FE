@@ -154,41 +154,41 @@ test("[I1] 실제 데이터로 선 구획 — 에피소드 하나에 카드 셋�
   ]);
 
   expect(screen.getByTestId(`roleplay-list-item-title-${messengerUnitId}`)).toHaveTextContent(
-    "약속 확인 메시지",
+    "Appointment message",
   );
   expect(screen.getByTestId(`roleplay-list-item-form-${messengerUnitId}`)).toHaveTextContent(
-    "메신저",
+    "Messenger",
   );
   expect(screen.getByTestId(`roleplay-list-item-${messengerUnitId}`)).toHaveAttribute(
     "accessibility-label",
-    "약속 확인 메시지, 메신저",
+    "Appointment message, Messenger",
   );
 
   expect(screen.getByTestId(`roleplay-list-item-title-${phoneCallUnitId}`)).toHaveTextContent(
-    "약속 확인 전화",
+    "Appointment call",
   );
   expect(screen.getByTestId(`roleplay-list-item-form-${phoneCallUnitId}`)).toHaveTextContent(
-    "전화",
+    "Phone call",
   );
   expect(screen.getByTestId(`roleplay-list-item-${phoneCallUnitId}`)).toHaveAttribute(
     "accessibility-label",
-    "약속 확인 전화, 전화",
+    "Appointment call, Phone call",
   );
 
   expect(screen.getByTestId(`roleplay-list-item-title-${visualNovelUnitId}`)).toHaveTextContent(
-    "카페에 도착한 지민",
+    "Jimin arrives at the café",
   );
   expect(screen.getByTestId(`roleplay-list-item-form-${visualNovelUnitId}`)).toHaveTextContent(
-    "비주얼 노벨",
+    "Visual novel",
   );
   expect(screen.getByTestId(`roleplay-list-item-${visualNovelUnitId}`)).toHaveAttribute(
     "accessibility-label",
-    "카페에 도착한 지민, 비주얼 노벨",
+    "Jimin arrives at the café, Visual novel",
   );
 
   // 열린 에피소드에는 완료 표식도 잠김 표식도 없습니다 — 롤플레이는 몇 번을 해도
   // 「끝낸 것」이 되지 않습니다.
-  expect(list).not.toHaveTextContent("완료됨");
+  expect(list).not.toHaveTextContent("completed");
   expect(list.querySelectorAll("[data-status]")).toHaveLength(0);
   expect(list.querySelectorAll('[data-locked="true"]')).toHaveLength(0);
 });
@@ -207,7 +207,7 @@ test("[I2] 메신저 항목을 열면 롤플레이 스택에 push되고 여정 �
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
-    "롤플레이, 선택됨",
+    "Roleplay, selected",
   );
 
   // 여정 스택은 건드려지지 않았습니다 — 여정 탭은 여전히 맵 루트입니다.
@@ -228,7 +228,7 @@ test("[I2] 전화 항목을 열면 롤플레이 스택에 push되고 여정 스�
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
-    "롤플레이, 선택됨",
+    "Roleplay, selected",
   );
 
   // 여정 스택은 건드려지지 않았습니다 — 여정 탭은 여전히 맵 루트입니다.
@@ -249,7 +249,7 @@ test("[I2] 비주얼 노벨 항목을 열면 롤플레이 스택에 push되고 �
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
-    "롤플레이, 선택됨",
+    "Roleplay, selected",
   );
 
   // 여정 스택은 건드려지지 않았습니다 — 여정 탭은 여전히 맵 루트입니다.
@@ -271,10 +271,10 @@ test("[I3] 여정에서 셋을 모두 끝냈어도 롤플레이는 항상 처음
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
   openRoleplayItem(phoneCallUnitId);
-  expect(screen.getByTestId("phone-call-status")).toHaveTextContent("통화 준비");
+  expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Ready to call");
   expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
     "accessibility-label",
-    "통화 시작",
+    "Start call",
   );
   expect(
     screen
@@ -285,7 +285,7 @@ test("[I3] 여정에서 셋을 모두 끝냈어도 롤플레이는 항상 처음
 
   openRoleplayItem(visualNovelUnitId);
   expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
-  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 1 / 3");
+  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Scene 1 / 3");
 });
 
 // -------------------------------------------------------------- I4 (AC4)
@@ -295,11 +295,11 @@ test("[I4] 롤플레이에서 연 메신저의 나가기는 목록으로이고 �
   openRoleplayItem(messengerUnitId);
   expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
     "accessibility-label",
-    "목록으로",
+    "Back to list",
   );
   expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
     "accessibility-label",
-    "목록으로",
+    "Back to list",
   );
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
@@ -311,10 +311,10 @@ test("[I4] 롤플레이에서 연 메신저의 나가기는 목록으로이고 �
 test("[I4] 롤플레이에서 연 전화의 나가기는 목록으로이고 목록으로 돌아간다", async () => {
   await openRoleplayTab();
   openRoleplayItem(phoneCallUnitId);
-  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("목록으로");
+  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("Back to list");
   expect(screen.getByTestId("phone-call-exit-button")).toHaveAttribute(
     "accessibility-label",
-    "목록으로",
+    "Back to list",
   );
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
@@ -323,10 +323,10 @@ test("[I4] 롤플레이에서 연 전화의 나가기는 목록으로이고 목�
 test("[I4] 롤플레이에서 연 비주얼 노벨의 나가기는 목록으로이고 목록으로 돌아간다", async () => {
   await openRoleplayTab();
   openRoleplayItem(visualNovelUnitId);
-  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("목록으로");
+  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("Back to list");
   expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
     "accessibility-label",
-    "목록으로",
+    "Back to list",
   );
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
@@ -339,16 +339,16 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
   expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
     "accessibility-label",
-    "맵으로",
+    "Back to map",
   );
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
-  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("맵으로");
+  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("Back to map");
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
-  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("맵으로");
+  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("Back to map");
 });
 
 // -------------------------------------------------------------------------- I5 (AC5)
@@ -485,7 +485,7 @@ test("[I6] 비주얼 노벨 롤플레이 이벤트는 entrySource: roleplay를 �
       ([event]) => event.name === "visual_novel_unit_exited_incomplete",
     ),
   ).toHaveLength(1);
-  expect(announcements).toEqual([{ content: "이야기 완료" }, { content: "이야기 완료" }]);
+  expect(announcements).toEqual([{ content: "Story complete" }, { content: "Story complete" }]);
 });
 
 // -------------------------------------------------------------- I7 (AC6 부수 — null sink)
@@ -508,7 +508,7 @@ test("[I7] null sink에서도 I2·I4의 내비게이션 결과가 같고 던지�
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
   expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
     "accessibility-label",
-    "목록으로",
+    "Back to list",
   );
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
@@ -547,7 +547,7 @@ test("[I8] 에피소드를 끝내기 전에는 구획이 잠겨 있고 카드를
   );
   expect(screen.getByTestId("roleplay-list-section-header-tutorial")).toHaveAttribute(
     "accessibility-label",
-    "Episode 0. Tutorial., 잠김, 여정에서 이 에피소드를 끝내면 열립니다",
+    "Episode 0. Tutorial., locked, finish this episode in your journey to unlock it",
   );
   expect(screen.queryByTestId("roleplay-list-section-view-all-tutorial")).not.toBeInTheDocument();
 

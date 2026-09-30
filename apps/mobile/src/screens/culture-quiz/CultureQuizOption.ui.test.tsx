@@ -3,6 +3,8 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { CultureQuizOption } from "./CultureQuizOption";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다(ADR-0006 D4). 이
 // 컴포넌트는 상태를 갖지 않습니다 — props에서만 파생합니다. `toHaveClass`·
@@ -26,19 +28,19 @@ test("[O1] result=null이면 라벨이 text 그대로이고 접미사가 없다 
 
 // ---------------------------------------------------------------- O2: 정답 접미사
 
-test("[O2] result='correct'이면 라벨이 ', 정답'으로 끝나고 data-result='correct'다", () => {
+test("[O2] result='correct'이면 라벨이 ', correct'로 끝나고 data-result='correct'다", () => {
   render(<CultureQuizOption index={1} text="세배" result="correct" onSelect={() => {}} />);
 
   const root = screen.getByTestId("culture-quiz-option-1");
-  expect(root.getAttribute("accessibility-label")).toMatch(/, 정답$/);
+  expect(root.getAttribute("accessibility-label")).toMatch(/, correct$/);
   expect(root).toHaveAttribute("data-result", "correct");
 });
 
-test("result='incorrect'이면 라벨이 ', 오답'으로 끝나고 data-result='incorrect'다", () => {
+test("result='incorrect'이면 라벨이 ', incorrect'로 끝나고 data-result='incorrect'다", () => {
   render(<CultureQuizOption index={2} text="성묘" result="incorrect" onSelect={() => {}} />);
 
   const root = screen.getByTestId("culture-quiz-option-2");
-  expect(root.getAttribute("accessibility-label")).toMatch(/, 오답$/);
+  expect(root.getAttribute("accessibility-label")).toMatch(/, incorrect$/);
   expect(root).toHaveAttribute("data-result", "incorrect");
 });
 
@@ -109,3 +111,32 @@ test("[O5] result=null이면 표식 래퍼 자체가 없다", () => {
   expect(screen.getByTestId("culture-quiz-option-0")).toHaveAttribute("data-result", "none");
   expect(screen.queryByTestId("culture-quiz-option-icon-0")).not.toBeInTheDocument();
 });
+
+// LA7-E — 판정이 있으면 보기 안에 영어 표시(Correct · Incorrect)가 선다.
+test.each([
+  ["correct", "Correct"],
+  ["incorrect", "Incorrect"],
+] as const)("[LA7-E] result=%s이면 보기 안에 표시 %s가 선다", (result, word) => {
+  render(<CultureQuizOption index={0} text="세배" result={result} onSelect={() => {}} />);
+
+  expect(screen.getByTestId("culture-quiz-option-0")).toHaveTextContent(word);
+});
+
+// LA7-M — 이름 접미와 보이는 표시는 문구표에서 읽습니다.
+test.each(["correct", "incorrect"] as const)(
+  "[LA7-M] 문구표를 주입하면 %s의 이름 접미와 표시가 표의 경로로 나온다",
+  (result) => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <CultureQuizOption index={0} text="세배" result={result} onSelect={() => {}} />
+      </UiCopyContext.Provider>,
+    );
+
+    const root = screen.getByTestId("culture-quiz-option-0");
+    expect(root).toHaveAttribute(
+      "accessibility-label",
+      `세배, ⟦common.answerResultSuffix.${result}⟧`,
+    );
+    expect(root).toHaveTextContent(`⟦common.answerResult.${result}⟧`);
+  },
+);

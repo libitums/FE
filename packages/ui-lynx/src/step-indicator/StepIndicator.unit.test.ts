@@ -10,7 +10,7 @@ describe("getStepIndicatorContract", () => {
     const contract = getStepIndicatorContract({ currentStep: 2, totalSteps: 4 });
 
     expect(contract).toEqual({
-      accessibilityLabel: "4단계 중 2단계",
+      accessibilityLabel: "Step 2 of 4",
       steps: [
         { number: 1, status: "completed" },
         { number: 2, status: "current" },
@@ -22,8 +22,8 @@ describe("getStepIndicatorContract", () => {
   });
 
   test.each([
-    { currentStep: 1, totalSteps: 2, accessibilityLabel: "2단계 중 1단계" },
-    { currentStep: 5, totalSteps: 5, accessibilityLabel: "5단계 중 5단계" },
+    { currentStep: 1, totalSteps: 2, accessibilityLabel: "Step 1 of 2" },
+    { currentStep: 5, totalSteps: 5, accessibilityLabel: "Step 5 of 5" },
   ])("2–5단계 경계값을 허용한다: %j", ({ accessibilityLabel, ...props }) => {
     const contract = getStepIndicatorContract(props);
 

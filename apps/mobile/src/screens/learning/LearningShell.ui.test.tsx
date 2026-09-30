@@ -2,6 +2,8 @@ import { expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { LearningShell } from "./LearningShell";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). `toHaveClass`·`toHaveStyle`을
 // 쓰지 않습니다 (docs/conventions/code.md).
@@ -33,12 +35,12 @@ test("세션 헤더가 문항 순번과 학습형만 낸다", () => {
 });
 
 // 막대는 값이라 낱말 둘을 한 접근성 요소로 묶어 읽히게 합니다.
-test("진행이 하나의 접근성 요소로 이름을 낸다", () => {
+test("[LS1-E] 진행이 하나의 접근성 요소로 이름을 낸다", () => {
   renderShell();
 
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
     "accessibility-label",
-    "Listening, 문항 4개 중 2번째",
+    "Listening, question 2 of 4",
   );
 });
 
@@ -82,12 +84,12 @@ test("작업 영역은 기본으로 스크롤하고, workspaceScrolls가 거짓�
 });
 
 // tap의 결과는 아래 「나가기 확인」 절이 집니다 — 여기서는 속성만 봅니다.
-test("나가기가 접근성 속성을 갖는다", () => {
+test("[LS1-E] 나가기가 접근성 속성을 갖는다", () => {
   const onExit = vi.fn<() => void>();
   renderShell({ onExit });
 
   const exit = screen.getByTestId("learning-shell-exit");
-  expect(exit).toHaveAttribute("accessibility-label", "학습 나가기");
+  expect(exit).toHaveAttribute("accessibility-label", "Leave lesson");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
   expect(onExit).not.toHaveBeenCalled();
 });
@@ -232,15 +234,15 @@ test("같은 걸음을 두 번 tap해도 run은 한 번만 불린다", () => {
 // 그때 칩이 `button`으로 읽히면 **누르면 무언가 일어난다고 말해 놓고 아무 일도 안 하는
 // 정지점**이 됩니다. 이름은 남아야 합니다: 숫자만 낭독되면 무엇의 3인지 알 수 없는 것은
 // 누를 수 있든 없든 같습니다.
-test("학습 화면의 상단 칩은 이름을 내되 조작 단위로 읽히지 않는다", () => {
+test("[SH2-E] 학습 화면의 상단 칩은 이름을 내되 조작 단위로 읽히지 않는다", () => {
   renderShell({ streakDays: 3, trophyCount: 7 });
 
   const streak = screen.getByTestId("top-bar-streak");
-  expect(streak).toHaveAttribute("accessibility-label", "연속 학습 3일");
+  expect(streak).toHaveAttribute("accessibility-label", "3-day streak");
   expect(streak).not.toHaveAttribute("accessibility-traits");
 
   const trophy = screen.getByTestId("top-bar-trophy");
-  expect(trophy).toHaveAttribute("accessibility-label", "트로피 7개");
+  expect(trophy).toHaveAttribute("accessibility-label", "7 trophies");
   expect(trophy).not.toHaveAttribute("accessibility-traits");
 });
 
@@ -277,7 +279,7 @@ test("학습형이 갈리면 표식도 갈린다", () => {
 
 // ---------------------------------------------------------------- 나가기 확인 (2026-09-28)
 //
-// 나가기는 두 걸음입니다. `×`는 묻기만 하고, 실제로 떠나는 것은 모달의 `그만두기`입니다.
+// 나가기는 두 걸음입니다. `×`는 묻기만 하고, 실제로 떠나는 것은 모달의 `Leave`입니다.
 // 한 걸음이면 손이 스친 한 번에 세션이 사라지는데 진행은 저장되지 않아 되돌릴 수단이
 // 없습니다.
 
@@ -292,25 +294,26 @@ test("×를 눌러도 바로 나가지 않고 확인을 묻는다", () => {
 });
 
 // 무엇을 잃는지가 본문에 있어야 합니다 — 그것이 없으면 사용자가 대가를 모른 채 고릅니다.
-test("확인 모달이 잃는 것을 본문에 적는다", () => {
+test("[LS1-E] 확인 모달이 잃는 것을 본문에 적는다", () => {
   renderShell();
 
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
 
   const dialog = screen.getByTestId("ui-lynx-dialog");
-  expect(dialog).toHaveTextContent("학습을 그만둘까요?");
-  expect(dialog).toHaveTextContent("저장되지 않고");
-  expect(dialog).toHaveTextContent("처음부터 다시");
+  expect(dialog).toHaveTextContent("Leave this lesson?");
+  expect(dialog).toHaveTextContent("won't be saved");
+  expect(dialog).toHaveTextContent("start over next time");
 });
 
-test("그만두기를 고르면 그때 onExit이 한 번 불린다", () => {
+test("[LS1-E] Leave를 고르면 그때 onExit이 한 번 불린다", () => {
   const onExit = vi.fn<() => void>();
   const { container } = renderShell({ onExit });
 
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
   const leave = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
-    (el) => el.getAttribute("accessibility-label") === "그만두기",
+    (el) => el.getAttribute("accessibility-label") === "Leave",
   );
+  expect(leave).toBeDefined();
   fireEvent.tap(leave as Element, {});
 
   expect(onExit).toHaveBeenCalledTimes(1);
@@ -318,14 +321,15 @@ test("그만두기를 고르면 그때 onExit이 한 번 불린다", () => {
 
 // 되돌리는 길이 있어야 「묻는다」가 참이 됩니다 — 계속하기는 아무 일도 일으키지 않고
 // 모달만 걷습니다.
-test("계속하기를 고르면 모달만 닫히고 onExit은 불리지 않는다", () => {
+test("[LS1-E] Keep going을 고르면 모달만 닫히고 onExit은 불리지 않는다", () => {
   const onExit = vi.fn<() => void>();
   const { container } = renderShell({ onExit });
 
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
   const stay = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
-    (el) => el.getAttribute("accessibility-label") === "계속하기",
+    (el) => el.getAttribute("accessibility-label") === "Keep going",
   );
+  expect(stay).toBeDefined();
   fireEvent.tap(stay as Element, {});
 
   expect(onExit).not.toHaveBeenCalled();
@@ -334,14 +338,96 @@ test("계속하기를 고르면 모달만 닫히고 onExit은 불리지 않는�
 
 // 문항이 0개인 활동에서도 껍데기가 서야 합니다 — 낱말 고르기가 오늘 그 상태이고, 그
 // 화면이 옮겨오는 순간 이 자리가 죽으면 앱이 죽습니다.
-test("문항이 0개여도 던지지 않고 순번만 서지 않는다", () => {
+test("[LS1-E] 문항이 0개여도 던지지 않고 순번만 서지 않는다", () => {
   renderShell({ questionIndex: 0, questionCount: 0 });
 
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
   expect(screen.queryByTestId("learning-shell-chapter")).not.toBeInTheDocument();
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
     "accessibility-label",
-    "Listening, 문항 없음",
+    "Listening, no questions",
   );
   expect(screen.queryByTestId("learning-shell-progress-fill")).not.toBeInTheDocument();
+});
+
+// LS1-M — 학습 셸의 낱말은 모두 문구표에서 읽습니다(하드코딩 영어는 표시 표에서 남아 잡힙니다).
+function renderMarkedShell() {
+  return render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <LearningShell
+        form="listening"
+        questionIndex={1}
+        questionCount={4}
+        instruction="대화를 완성하세요"
+        onExit={() => {}}
+        card={<text data-testid="fixture-card">카드 안</text>}
+        actionLabel="Check"
+        onAction={() => {}}
+        streakDays={3}
+        trophyCount={7}
+      />
+    </UiCopyContext.Provider>,
+  );
+}
+
+test("[LS1-M] 문구표를 주입하면 나가기 · 진행 이름 · 상단 칩이 표의 경로로 나온다", () => {
+  renderMarkedShell();
+
+  expect(screen.getByTestId("learning-shell-exit")).toHaveAttribute(
+    "accessibility-label",
+    "⟦learningShell.exitLesson⟧",
+  );
+  expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
+    "accessibility-label",
+    "⟦learningShell.headerQuestionOf⟧(Listening, 2, 4)",
+  );
+  expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.count.streakDays⟧(3)",
+  );
+  expect(screen.getByTestId("top-bar-trophy")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.count.trophies⟧(7)",
+  );
+  expect(screen.getByTestId("top-bar-notifications")).toHaveAttribute(
+    "accessibility-label",
+    "⟦shell.notifications⟧",
+  );
+});
+
+test("[LS1-M] 문구표를 주입하고 나가기를 누르면 대화상자의 제목 · 설명 · 두 버튼이 표의 경로로 나온다", () => {
+  const { container } = renderMarkedShell();
+
+  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
+
+  const dialog = screen.getByTestId("ui-lynx-dialog");
+  expect(dialog).toHaveTextContent("⟦learningShell.leaveDialog.title⟧");
+  expect(dialog).toHaveTextContent("⟦learningShell.leaveDialog.description⟧");
+  const labels = [...container.querySelectorAll('[data-testid="ui-lynx-button"]')].map((el) =>
+    el.getAttribute("accessibility-label"),
+  );
+  expect(labels).toContain("⟦learningShell.leaveDialog.leave⟧");
+  expect(labels).toContain("⟦learningShell.leaveDialog.stay⟧");
+});
+
+test("[LS1-M] 문구표를 주입하면 문항이 없는 진행 이름이 headerNoQuestions 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <LearningShell
+        form="listening"
+        questionIndex={0}
+        questionCount={0}
+        instruction="대화를 완성하세요"
+        onExit={() => {}}
+        card={<text>카드 안</text>}
+        actionLabel="Check"
+        onAction={() => {}}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
+    "accessibility-label",
+    "⟦learningShell.headerNoQuestions⟧(Listening)",
+  );
 });

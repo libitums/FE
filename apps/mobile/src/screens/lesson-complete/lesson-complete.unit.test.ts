@@ -9,6 +9,7 @@ import {
   lessonMistakeCount,
   lessonStreakLabel,
 } from "./lesson-complete";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // `unit` 계층: 순수 함수의 입출력 (ADR-0006 D4).
 
@@ -35,14 +36,24 @@ test("[LC3] 설명은 실수 수에 따라 단수 · 복수가 갈린다", () =>
 
 test("[LC4] 연속 라벨과 낭독 문구", () => {
   expect(lessonStreakLabel(1)).toBe("1 Day Streak");
-  expect(lessonCompleteAnnouncement(0, "passed", 0)).toBe("학습 완료, 실수 없음");
-  expect(lessonCompleteAnnouncement(2, "passed", 0)).toBe("학습 완료, 실수 2개");
+  expect(lessonCompleteAnnouncement(0, "passed", 0, uiCopyEn)).toBe("Lesson complete, no mistakes");
+  expect(lessonCompleteAnnouncement(2, "passed", 0, uiCopyEn)).toBe("Lesson complete, 2 mistakes");
 });
 
 // 낭독은 앞부터 들립니다 — 통과 여부가 실수 수보다 먼저 나와야 합니다.
+test("[LC5b] 건너뛴 문항이 붙는 순서와 단수 — RL15", () => {
+  expect(lessonCompleteAnnouncement(2, "failed", 1, uiCopyEn)).toBe(
+    "Lesson not passed, 2 mistakes, 1 skipped question",
+  );
+});
+
 test("[LC5] 미통과 낭독은 「학습 미통과」로 시작한다", () => {
-  expect(lessonCompleteAnnouncement(2, "failed", 0)).toBe("학습 미통과, 실수 2개");
-  expect(lessonCompleteAnnouncement(2, "failed", 0).startsWith("학습 미통과")).toBe(true);
+  expect(lessonCompleteAnnouncement(2, "failed", 0, uiCopyEn)).toBe(
+    "Lesson not passed, 2 mistakes",
+  );
+  expect(lessonCompleteAnnouncement(2, "failed", 0, uiCopyEn).startsWith("Lesson not passed")).toBe(
+    true,
+  );
 });
 
 // ------------------------------------------------- 만점과 건너뛴 문항 (D8 · C13)
@@ -80,21 +91,21 @@ test("[U-P2] 건너뛴 문항이 있으면 제목은 LESSON COMPLETE!이고 부�
 });
 
 // ⚠ **시각과 낭독이 같은 것을 말해야 합니다**(WCAG 1.3.1). 제목에 `LESSON COMPLETE!`
-// (만점 아님)가 서는데 낭독이 *"학습 완료, 실수 없음"* 에서 멈추면, 보는 사람과 듣는
+// (만점 아님)가 서는데 낭독이 *"Lesson complete, no mistakes"* 에서 멈추면, 보는 사람과 듣는
 // 사람이 **다른 정보**를 받습니다.
 //
 // ⚠ 정확한 문면은 계약이 예시로만 적었습니다(*"학습 완료, 실수 없음, 건너뛴 문항 3개"*).
 // 그래서 낱말을 통째로 박지 않고 **무엇이 실려야 하는가**만 답니다 — 앞부분은 그대로이고,
 // 건너뛴 수가 뒤에 붙습니다.
 test("[U-P3] 낭독에 건너뛴 문항 수가 실린다 — 시각과 낭독이 같은 것을 말한다", () => {
-  const announcement = lessonCompleteAnnouncement(0, "passed", 3);
+  const announcement = lessonCompleteAnnouncement(0, "passed", 3, uiCopyEn);
 
-  expect(announcement.startsWith("학습 완료, 실수 없음")).toBe(true);
-  expect(announcement).not.toBe("학습 완료, 실수 없음");
-  expect(announcement).toContain("3");
+  expect(announcement.startsWith("Lesson complete, no mistakes")).toBe(true);
+  expect(announcement).not.toBe("Lesson complete, no mistakes");
+  expect(announcement).toBe("Lesson complete, no mistakes, 3 skipped questions");
 
   // 건너뛴 것이 없으면 덧붙지 않습니다 — 없는 수를 읽어 주지 않습니다.
-  expect(lessonCompleteAnnouncement(0, "passed", 0)).toBe("학습 완료, 실수 없음");
+  expect(lessonCompleteAnnouncement(0, "passed", 0, uiCopyEn)).toBe("Lesson complete, no mistakes");
 });
 
 // 두 수가 **다른 것**을 셉니다: 하나는 틀린 횟수, 하나는 재지 않은 횟수입니다. 건너뛴

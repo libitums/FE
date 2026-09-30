@@ -13,6 +13,8 @@ import {
   stepStatusAt,
   type JourneyStepId,
 } from "./journey-map";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // 특별 유닛 계약 props는 이 파일의 단언이 보는 축(스텝 노드 · 시트 · 스크롤)과
 // 무관하므로 공통으로 비워 둡니다.
@@ -132,7 +134,7 @@ test("스텝을 tap하면 말풍선이 열리고 그 스텝의 순번·제목을
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Lesson 3: “주문하기”");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Lesson 3: “Ordering”");
 });
 
 // 단언 10
@@ -165,12 +167,12 @@ test("시트가 열린 채 다른 스텝을 tap하면 시트가 그 스텝으로
   );
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Ordering");
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-greeting"), {});
 
   expect(screen.getAllByTestId("step-sheet-panel")).toHaveLength(1);
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("첫 인사");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("First greetings");
 });
 
 // 단언 12 (재고정): 부재 단언은 code.md의 표대로 queryByTestId + not.toBeInTheDocument입니다.
@@ -208,12 +210,12 @@ test("시트가 열린 채로 잠긴 스텝을 tap해도 시트는 그대로 열
   );
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Ordering");
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment"), {});
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Ordering");
 });
 
 // 단언 13 (**뒤집힘**): `시작`은 더 이상 무동작이 아닙니다.
@@ -245,7 +247,7 @@ test("시작을 tap하면 onStartStep이 열린 스텝의 id로 한 번 불린�
   expect(onStartStep).toHaveBeenCalledWith("ordering");
   // 시트를 닫는 주체는 이 화면이 아닙니다 — 화면 전환이 언마운트로 버립니다.
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("주문하기");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Ordering");
 });
 
 // ---------------------------------------------------------------- 단언 14~16 (보정)
@@ -568,4 +570,28 @@ test("[U-L1] 스텝 말풍선이 열리고 닫힐 때 onLayerChange가 true → 
 
   fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
   expect(onLayerChange).toHaveBeenLastCalledWith(false);
+});
+
+// JM1-M — 화면이 여는 시트의 낱말은 문구표에서 읽습니다(하드코딩 영어는 표시 표에서 남아 잡힙니다).
+test("[JM1-M] 문구표를 주입하고 스텝을 열면 시트의 시작 · 닫기 · 진행 줄이 표의 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <JourneyMapScreen
+        {...mapFixture}
+        completedStepCount={initialCompletedStepCount}
+        onStartStep={() => {}}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+
+  expect(screen.getByTestId("step-sheet-start")).toHaveTextContent("⟦journeyMap.start⟧");
+  expect(screen.getByTestId("step-sheet-close")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.close⟧",
+  );
+  expect(screen.getByTestId("step-sheet-progress-count")).toHaveTextContent(
+    "⟦journeyMap.activityCount⟧(",
+  );
 });

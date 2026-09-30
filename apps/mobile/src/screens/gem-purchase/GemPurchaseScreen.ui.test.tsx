@@ -2,7 +2,9 @@ import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { GemPurchaseScreen } from "./GemPurchaseScreen";
-import { gemPaymentNotice } from "./gem-purchase";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { uiCopyEn } from "../../lib/ui-copy-en";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). testid로 질의합니다.
 
@@ -25,7 +27,7 @@ test("[GP1] 보유 젬을 쉼표로 끊어 보이고, 카드 하나로 낭독한
   expect(screen.getByTestId("gem-purchase-screen-balance-value")).toHaveTextContent("1,240");
   expect(screen.getByTestId("gem-purchase-screen-balance")).toHaveAttribute(
     "accessibility-label",
-    "보유 젬 1,240개",
+    "You have 1,240 gems",
   );
 });
 
@@ -64,11 +66,11 @@ test("[GP4] 팩 카드는 버튼이고, 이름에 젬 · 가격 · 젬 하나 �
   expect(plus).toHaveAttribute("accessibility-traits", "button");
   expect(plus).toHaveAttribute(
     "accessibility-label",
-    "1,200 젬, + 200 bonus, $9.99, $0.0071 per gem, BEST VALUE",
+    "1,200 gems, + 200 bonus, $9.99, $0.0071 per gem, BEST VALUE",
   );
   expect(screen.getByTestId("gem-purchase-pack-max")).toHaveAttribute(
     "accessibility-label",
-    "2,800 젬, + 800 bonus, $19.99, $0.0056 per gem, 선택됨",
+    "2,800 gems, + 800 bonus, $19.99, $0.0056 per gem, selected",
   );
 });
 
@@ -81,10 +83,10 @@ test("[GP5] Pay → 결제 준비 중 안내가 뜨고, 뒤쪽은 낭독에서 �
 
   const notice = screen.getByTestId("gem-purchase-screen-notice");
   expect(within(notice).getByTestId("ui-lynx-dialog-title")).toHaveTextContent(
-    gemPaymentNotice.title,
+    uiCopyEn.gemPurchase.notice.title,
   );
   expect(within(notice).getByTestId("ui-lynx-dialog-description")).toHaveTextContent(
-    "젬 결제 서비스는 아직 준비 중이에요. 조금만 기다려 주세요.",
+    "Gem payments aren't available yet. Please check back soon.",
   );
   expect(screen.getByTestId("gem-purchase-screen-close")).toHaveAttribute(
     "accessibility-elements-hidden",
@@ -125,8 +127,62 @@ test("[GP6] 닫기 → onClose 1회", () => {
   const close = screen
     .getByTestId("gem-purchase-screen-close")
     .querySelector('[data-testid="ui-lynx-round-button"]') as Element;
-  expect(close).toHaveAttribute("accessibility-label", "닫기");
+  expect(close).toHaveAttribute("accessibility-label", "Close");
   fireEvent.tap(close, {});
 
   expect(props.onClose).toHaveBeenCalledTimes(1);
+});
+
+test("[AC4u-E] 결제 수단 묶음 이름 · 안내 제목 · 확인 버튼이 영어다", () => {
+  render(<GemPurchaseScreen {...fixture()} />);
+
+  expect(screen.getByTestId("ui-lynx-settings-group")).toHaveAttribute(
+    "accessibility-label",
+    "Payment method",
+  );
+  fireEvent.tap(payButton(), {});
+  const notice = screen.getByTestId("gem-purchase-screen-notice");
+  expect(within(notice).getByTestId("ui-lynx-dialog-title")).toHaveTextContent(
+    "Payment coming soon",
+  );
+  expect(within(notice).getByTestId("ui-lynx-dialog-action-close")).toHaveTextContent("OK");
+});
+
+test("[AC4u-M] 닫기 · 잔액 · 팩 이름 · 결제 수단 이름이 문구표에서 온다", () => {
+  const { container } = render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <GemPurchaseScreen {...fixture()} />
+    </UiCopyContext.Provider>,
+  );
+
+  const close = screen
+    .getByTestId("gem-purchase-screen-close")
+    .querySelector('[data-testid="ui-lynx-round-button"]') as Element;
+  expect(close).toHaveAttribute("accessibility-label", "⟦common.close⟧");
+  expect(
+    screen.getByTestId("gem-purchase-screen-balance").getAttribute("accessibility-label"),
+  ).toContain("⟦gemPurchase.balance⟧");
+  const plusLabel = screen
+    .getByTestId("gem-purchase-pack-plus")
+    .getAttribute("accessibility-label");
+  expect(plusLabel).toContain("⟦gemPurchase.packAmount⟧");
+  const maxLabel = screen.getByTestId("gem-purchase-pack-max").getAttribute("accessibility-label");
+  expect(maxLabel).toContain("⟦common.selected⟧");
+  expect(screen.getByTestId("ui-lynx-settings-group")).toHaveAttribute(
+    "accessibility-label",
+    "⟦gemPurchase.paymentMethod⟧",
+  );
+
+  fireEvent.tap(payButton(), {});
+  const notice = screen.getByTestId("gem-purchase-screen-notice");
+  expect(within(notice).getByTestId("ui-lynx-dialog-title")).toHaveTextContent(
+    "⟦gemPurchase.notice.title⟧",
+  );
+  expect(within(notice).getByTestId("ui-lynx-dialog-description")).toHaveTextContent(
+    "⟦gemPurchase.notice.description⟧",
+  );
+  expect(within(notice).getByTestId("ui-lynx-dialog-action-close")).toHaveTextContent(
+    "⟦common.ok⟧",
+  );
+  expect(container.textContent).not.toMatch(/[가-힣]/);
 });

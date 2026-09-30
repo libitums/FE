@@ -8,6 +8,8 @@ import type {
   RoleplaySection,
 } from "./roleplay-list.contract";
 import { RoleplayListScreen } from "./RoleplayListScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 구획은 이 파일 안의 fixture로
 // 줍니다 — 어느 에피소드가 열렸는지는 화면이 정하지 않고 받습니다. `toHaveClass`·
@@ -16,31 +18,31 @@ import { RoleplayListScreen } from "./RoleplayListScreen";
 const messengerItem: RoleplayItem = {
   form: "messenger",
   unitId: "appointment-confirmation",
-  title: "약속 확인 메시지",
+  title: "Appointment message",
 };
 
 const phoneCallItem: RoleplayItem = {
   form: "phone-call",
   unitId: "appointment-confirmation-phone-call",
-  title: "약속 확인 전화",
+  title: "Appointment call",
 };
 
 const visualNovelItem: RoleplayItem = {
   form: "visual-novel",
   unitId: "cafe-arrival-visual-novel",
-  title: "카페에 도착한 지민",
+  title: "Jimin arrives at the café",
 };
 
 const wrongOrder: PremiumRoleplayItem = {
   id: "premium-wrong-order",
-  title: "주문이 잘못 나왔어요",
-  situation: "카페 직원에게 정중하게 말하기",
+  title: "My order came out wrong",
+  situation: "Talk politely to the café staff",
 };
 
 const sharedTable: PremiumRoleplayItem = {
   id: "premium-shared-table",
-  title: "합석해도 될까요?",
-  situation: "옆자리 손님과 자리 나누기",
+  title: "Can I share this table?",
+  situation: "Share a table with another customer",
 };
 
 const openSection: RoleplaySection = {
@@ -91,7 +93,7 @@ test("롤플레이 화면이 제목을 렌더하고 header trait를 갖는다", 
   renderScreen();
 
   const title = screen.getByTestId("roleplay-list-screen-title");
-  expect(title).toHaveTextContent("롤플레이");
+  expect(title).toHaveTextContent("Roleplay");
   expect(title).toHaveAttribute("accessibility-traits", "header");
 });
 
@@ -199,7 +201,7 @@ test("[L1] 잠긴 구획은 잠김을 싣고, 머리 이름이 여는 조건을 
   );
   expect(screen.getByTestId("roleplay-list-section-header-cafe")).toHaveAttribute(
     "accessibility-label",
-    "Episode 1. Cafe., 잠김, 여정에서 이 에피소드를 끝내면 열립니다",
+    "Episode 1. Cafe., locked, finish this episode in your journey to unlock it",
   );
 });
 
@@ -223,10 +225,10 @@ test("[V1] 전체 보기가 버튼으로 서고 이름에 에피소드를 싣는
   renderScreen();
 
   const viewAll = screen.getByTestId("roleplay-list-section-view-all-tutorial");
-  expect(viewAll).toHaveTextContent("전체 보기");
+  expect(viewAll).toHaveTextContent("View all");
   expect(viewAll).toHaveAttribute("accessibility-element", "true");
   expect(viewAll).toHaveAttribute("accessibility-traits", "button");
-  expect(viewAll).toHaveAttribute("accessibility-label", "Episode 0. 전체 보기");
+  expect(viewAll).toHaveAttribute("accessibility-label", "View all, Episode 0.");
 });
 
 test("[V2] 전체 보기 tap → onViewAll이 그 에피소드 id로 1회, onSelectItem 0회", () => {
@@ -272,11 +274,11 @@ test("[P3] 줄 머리는 한 접근성 요소로 읽히고 header trait를 갖�
   renderScreen({ sections: [openSection] });
 
   const header = screen.getByTestId("roleplay-list-section-premium-header-tutorial");
-  expect(header).toHaveTextContent("플러스");
+  expect(header).toHaveTextContent("Plus");
   expect(header).toHaveAttribute("accessibility-element", "true");
   expect(header).toHaveAttribute(
     "accessibility-label",
-    "Episode 0. 플러스 롤플레이, 이 에피소드와 닮은 상황을 더 연습해요",
+    "Episode 0. Plus roleplay, practice situations similar to this episode",
   );
   expect(header).not.toHaveAttribute("accessibility-traits", "header");
 });
@@ -303,9 +305,9 @@ test("[P5] 결제 잠김 카드를 tap하면 그 항목의 안내가 뜨고 onSe
   fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-shared-table"), {});
 
   const notice = screen.getByTestId("roleplay-list-premium-notice");
-  expect(within(notice).getByTestId("ui-lynx-dialog-title")).toHaveTextContent("플러스 롤플레이");
+  expect(within(notice).getByTestId("ui-lynx-dialog-title")).toHaveTextContent("Plus roleplay");
   expect(within(notice).getByTestId("ui-lynx-dialog-description")).toHaveTextContent(
-    "「합석해도 될까요?」 롤플레이는 플러스 전용이에요. 플러스는 아직 준비 중이에요.",
+    "“Can I share this table?” is a Plus roleplay. Plus isn't available yet.",
   );
   expect(onSelectItem).not.toHaveBeenCalled();
 });
@@ -386,4 +388,64 @@ test("[P9] 안내가 뜬 채 화면이 내려가면 onLayerChange(false)로 가�
   unmount();
 
   expect(onLayerChange).toHaveBeenLastCalledWith(false);
+});
+
+test("[RP1-E] 플러스 줄 머리에 태그라인이 영어로 서고, 안내의 동작 이름이 OK다", () => {
+  renderScreen({ sections: [openSection] });
+
+  expect(screen.getByTestId("roleplay-list-section-premium-header-tutorial")).toHaveTextContent(
+    "Practice similar situations",
+  );
+  fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-wrong-order"), {});
+  expect(
+    within(screen.getByTestId("ui-lynx-dialog-action-close")).getByTestId("ui-lynx-button"),
+  ).toHaveAttribute("accessibility-label", "OK");
+});
+
+function renderMarkedScreen(sectionList: readonly RoleplaySection[] = sections) {
+  return render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <RoleplayListScreen sections={sectionList} onSelectItem={vi.fn()} onViewAll={vi.fn()} />
+    </UiCopyContext.Provider>,
+  );
+}
+
+test("[RP1-M] 문구표에서 읽는다 — 제목 · 전체 보기 · 잠긴 구획", () => {
+  renderMarkedScreen();
+
+  expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("⟦roleplay.title⟧");
+  const viewAll = screen.getByTestId("roleplay-list-section-view-all-tutorial");
+  expect(viewAll).toHaveTextContent("⟦roleplay.viewAll⟧");
+  expect(viewAll).toHaveAttribute(
+    "accessibility-label",
+    expect.stringContaining("⟦roleplay.viewAllLabel⟧"),
+  );
+  expect(screen.getByTestId("roleplay-list-section-header-cafe")).toHaveAttribute(
+    "accessibility-label",
+    expect.stringContaining("⟦roleplay.lockedSection⟧"),
+  );
+});
+
+test("[RP1-M] 문구표에서 읽는다 — 플러스 줄 머리 · 안내 대화상자", () => {
+  renderMarkedScreen([openSection]);
+
+  const header = screen.getByTestId("roleplay-list-section-premium-header-tutorial");
+  expect(header).toHaveTextContent("⟦roleplay.plus⟧");
+  expect(header).toHaveTextContent("⟦roleplay.plusTagline⟧");
+  expect(header).toHaveAttribute(
+    "accessibility-label",
+    expect.stringContaining("⟦roleplay.plusSectionLabel⟧"),
+  );
+
+  fireEvent.tap(screen.getByTestId("roleplay-premium-card-premium-wrong-order"), {});
+  const notice = screen.getByTestId("roleplay-list-premium-notice");
+  expect(within(notice).getByTestId("ui-lynx-dialog-title")).toHaveTextContent(
+    "⟦roleplay.plusDialogTitle⟧",
+  );
+  expect(within(notice).getByTestId("ui-lynx-dialog-description")).toHaveTextContent(
+    "⟦roleplay.premiumNotice⟧",
+  );
+  expect(
+    within(screen.getByTestId("ui-lynx-dialog-action-close")).getByTestId("ui-lynx-button"),
+  ).toHaveAttribute("accessibility-label", "⟦common.ok⟧");
 });

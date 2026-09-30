@@ -10,6 +10,8 @@ import { listeningPromptScale } from "./listening";
 // sessionOptions가 필수 prop이 됐습니다. 이 파일의 fixture는 언제나 초기값(둘
 // 다 켜짐)을 줍니다 — 단언은 한 글자도 바꾸지 않습니다.
 import { initialSessionOptions } from "../../lib/session-options";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). `toHaveClass`·`toHaveStyle`·
 // `toBeVisible`을 쓰지 않습니다 (docs/conventions/code.md).
@@ -165,7 +167,7 @@ test("audioSource가 바뀌면 호출 순서가 play(a) → stop → play(b)다"
 
   expect(sourcesOf(calls)).toEqual([SOURCE, STOP, OTHER_SOURCE]);
   // 새 문항의 재생이 시작됐으므로 컨트롤은 다시 `멈춤`입니다.
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
 });
 
 // text만 바뀌면 재생을 다시 걸지 않습니다 — dep이 `audioSource` 하나라는 것입니다.
@@ -204,28 +206,28 @@ test("언마운트하면 네이티브 stop이 불린다 — 화면을 떠나면 
 
 // 단언 5 — 재생 중의 두 채널입니다. 아이콘 모양의 정본은 패키지 모듈입니다
 // (ADR-0014 D6·ListeningChoice 선례) — 리터럴을 적지 않습니다.
-test("자동 재생이 시작되면 이름이 '멈춤'이고 아이콘 content가 pause 모듈과 같다", () => {
+test("자동 재생이 시작되면 이름이 'Pause'이고 아이콘 content가 pause 모듈과 같다", () => {
   stubHost();
 
   renderPrompt();
 
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
   expect(icon()).toHaveAttribute("content", pause);
 });
 
 // 단언 6 — 완료 신호가 오면 대기로 되돌아옵니다.
 // **두 아이콘이 서로 다른 문자열**이라는 것을 함께 봅니다 — 같으면 위아래 두
 // 단언이 공허해집니다 (모양 채널이 실제로 갈리는지가 이 화면의 1.4.1 근거입니다).
-test("붙잡은 done을 부르면 이름이 '듣기'로 돌아오고 아이콘 content가 play 모듈과 같다", () => {
+test("붙잡은 done을 부르면 이름이 'Play'로 돌아오고 아이콘 content가 play 모듈과 같다", () => {
   const calls = stubHost();
   renderPrompt();
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
 
   act(() => {
     doneOf(calls, 0)("done");
   });
 
-  expect(control()).toHaveAttribute("accessibility-label", "듣기");
+  expect(control()).toHaveAttribute("accessibility-label", "Play");
   expect(icon()).toHaveAttribute("content", play);
   expect(play).not.toBe(pause);
 });
@@ -286,7 +288,7 @@ test("두 상태에서 class 속성이 한 글자도 갈리지 않는다 — 상
 // 단언 7 — **`pause`만 부릅니다.** `stop`이 아닙니다: 멈춘 것이 아니라 멈춰 둔
 // 것이고, 대기 중인 `done`이 살아 있어야 이어 들은 재생의 끝이 올라옵니다
 // (ADR-0017 D3, 2026-09-27 개정).
-test("'멈춤' 상태에서 탭하면 네이티브 pause가 한 번이고 stop도 play도 안 불린다", () => {
+test("'Pause' 상태에서 탭하면 네이티브 pause가 한 번이고 stop도 play도 안 불린다", () => {
   const calls = stubHost();
   renderPrompt();
 
@@ -295,13 +297,13 @@ test("'멈춤' 상태에서 탭하면 네이티브 pause가 한 번이고 stop�
   expect(playSources(calls)).toEqual([SOURCE]);
   expect(stopCount(calls)).toBe(0);
   expect(sourcesOf(calls)).toEqual([SOURCE, PAUSE]);
-  expect(control()).toHaveAttribute("accessibility-label", "이어 듣기");
+  expect(control()).toHaveAttribute("accessibility-label", "Resume");
   expect(icon()).toHaveAttribute("content", play);
 });
 
 // 멈춰 둔 것을 다시 누르면 **그 자리부터** 잇습니다 — 처음부터가 아닙니다. 그
 // 구별이 다시듣기 버튼과 이 버튼을 가르는 전부입니다.
-test("'이어 듣기' 상태에서 탭하면 네이티브 resume이 불리고 play는 안 불린다", () => {
+test("'Resume' 상태에서 탭하면 네이티브 resume이 불리고 play는 안 불린다", () => {
   const calls = stubHost();
   renderPrompt();
   fireEvent.tap(control(), {});
@@ -310,7 +312,7 @@ test("'이어 듣기' 상태에서 탭하면 네이티브 resume이 불리고 pl
 
   expect(sourcesOf(calls)).toEqual([SOURCE, PAUSE, RESUME]);
   expect(playSources(calls)).toEqual([SOURCE]);
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
   expect(icon()).toHaveAttribute("content", pause);
 });
 
@@ -324,7 +326,7 @@ test("다시듣기를 탭하면 같은 audioSource로 play가 한 번 더 불린
 
   expect(sourcesOf(calls)).toEqual([SOURCE, SOURCE]);
   expect(stopCount(calls)).toBe(0);
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
 });
 
 // 멈춰 둔 상태에서 다시듣기를 누르면 이어 듣는 것이 아니라 처음부터입니다.
@@ -336,22 +338,22 @@ test("멈춰 둔 상태에서 다시듣기를 탭하면 resume이 아니라 play
   fireEvent.tap(replay(), {});
 
   expect(sourcesOf(calls)).toEqual([SOURCE, PAUSE, SOURCE]);
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
 });
 
 // 단언 8 — 재생이 끝난 뒤(`idle`) 누르면 처음부터 다시 텁니다.
-test("'듣기' 상태에서 탭하면 네이티브 play가 같은 audioSource로 한 번 더 불린다", () => {
+test("'Play' 상태에서 탭하면 네이티브 play가 같은 audioSource로 한 번 더 불린다", () => {
   const calls = stubHost();
   renderPrompt();
   act(() => {
     doneOf(calls, 0)("done");
   });
-  expect(control()).toHaveAttribute("accessibility-label", "듣기");
+  expect(control()).toHaveAttribute("accessibility-label", "Play");
 
   fireEvent.tap(control(), {});
 
   expect(sourcesOf(calls)).toEqual([SOURCE, SOURCE]);
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
   expect(icon()).toHaveAttribute("content", pause);
 });
 
@@ -369,8 +371,8 @@ test("컨트롤 둘에 element·traits='button'이 붙고 보이는 글자는 �
     expect(el).toHaveAttribute("accessibility-traits", "button");
     expect(el).toHaveTextContent("");
   }
-  expect(replay()).toHaveAttribute("accessibility-label", "처음부터 듣기");
-  expect(control()).toHaveAttribute("accessibility-label", "멈춤");
+  expect(replay()).toHaveAttribute("accessibility-label", "Play from the start");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
 });
 
 // **뒤집힌 단언 1/6** — 지금까지 `<svg>`가 0개였습니다.
@@ -461,17 +463,17 @@ test("DOM 순서가 대본 → 로마자 → 다시듣기 → 재생이다 — �
 // 사용자가 보는 것은 *"대기 그대로"*가 아니라 *"영원히 재생 중"*이고, 그것은
 // 「정상과 고장이 같아 보인다」보다 나쁩니다 — **고장이 정상인 척합니다.**
 // `playbackStateAfterPlay("unavailable") === "idle"`이 그것을 막는 자리입니다.
-test("대역 없이 렌더해도 던지지 않고 '듣기'에 머문다 — 모듈이 없을 때 '멈춤'에 갇히지 않는다", () => {
+test("대역 없이 렌더해도 던지지 않고 'Play'에 머문다 — 모듈이 없을 때 'Pause'에 갇히지 않는다", () => {
   expect(() => renderPrompt()).not.toThrow();
 
-  expect(control()).toHaveAttribute("accessibility-label", "듣기");
+  expect(control()).toHaveAttribute("accessibility-label", "Play");
   expect(icon()).toHaveAttribute("content", play);
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
 });
 
 // 단언 15 — 누르면 아무 일도 일어나지 않습니다. **그것이 정상 동작입니다**
 // (ADR-0017 D3). 던지지도 않고 「멈춤」으로 넘어가지도 않습니다.
-test("대역 없이 탭해도 던지지 않고 '듣기' 그대로다", () => {
+test("대역 없이 탭해도 던지지 않고 'Play' 그대로다", () => {
   renderPrompt();
   // 탭 대상을 먼저 잡습니다 — 화살표 안에서 잡으면 "요소가 없다"가 "탭이
   // 던졌다"로 읽혀 실패 사유가 흐려집니다.
@@ -479,7 +481,7 @@ test("대역 없이 탭해도 던지지 않고 '듣기' 그대로다", () => {
 
   expect(() => fireEvent.tap(playback, {})).not.toThrow();
 
-  expect(control()).toHaveAttribute("accessibility-label", "듣기");
+  expect(control()).toHaveAttribute("accessibility-label", "Play");
   expect(icon()).toHaveAttribute("content", play);
 });
 
@@ -494,4 +496,39 @@ test("대역 없이도 컨트롤 둘과 아이콘 둘이 렌더된다 — 숨기
     [...container.querySelectorAll("svg")].map((el) => el.getAttribute("data-testid")),
   ).toEqual(["listening-prompt-replay-icon", "listening-prompt-playback-icon"]);
   expect(container.querySelectorAll("[disabled]")).toHaveLength(0);
+});
+
+// LA1-M — 재생 조작의 이름은 문구표에서 읽습니다(하드코딩 영어는 표시 표에서 남아 잡힙니다).
+test("[LA1-M] 문구표를 주입하면 다시듣기 · 재생 조작의 이름이 표의 경로로 나온다 — 대기 상태", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <ListeningPrompt
+        text={TEXT}
+        romanization={ROMANIZATION}
+        audioSource={SOURCE}
+        sessionOptions={initialSessionOptions}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(replay()).toHaveAttribute("accessibility-label", "⟦listening.playFromStart⟧");
+  expect(control()).toHaveAttribute("accessibility-label", "⟦listening.playback.play⟧");
+});
+
+test("[LA1-M] 문구표를 주입하면 재생 중 이름이 pause 경로로, 멈춘 뒤 이름이 resume 경로로 나온다", () => {
+  stubHost();
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <ListeningPrompt
+        text={TEXT}
+        romanization={ROMANIZATION}
+        audioSource={SOURCE}
+        sessionOptions={initialSessionOptions}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(control()).toHaveAttribute("accessibility-label", "⟦listening.playback.pause⟧");
+  fireEvent.tap(control(), {});
+  expect(control()).toHaveAttribute("accessibility-label", "⟦listening.playback.resume⟧");
 });

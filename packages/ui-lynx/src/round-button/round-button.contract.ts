@@ -47,7 +47,7 @@ export function getRoundButtonContract(props: RoundButtonProps): RoundButtonCont
     size,
     className,
     traits: disabled ? "disabled" : "button",
-    accessibilityLabel: loading ? `${props.accessibilityLabel}, 로딩 중` : props.accessibilityLabel,
+    accessibilityLabel: loading ? `${props.accessibilityLabel}, loading` : props.accessibilityLabel,
     interactive: !disabled && !loading,
   };
 }

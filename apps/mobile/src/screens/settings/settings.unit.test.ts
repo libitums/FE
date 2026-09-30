@@ -8,6 +8,7 @@ import {
   settingsNavTargets,
 } from "./settings";
 import type { SettingsNavTarget } from "./settings.contract";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 const allNavTargets: readonly SettingsNavTarget[] = ["profile", "terms"];
 const allSessionOptionKeys: readonly SessionOptionKey[] = ["auto-play-audio", "show-transcript"];
@@ -21,10 +22,10 @@ describe("settingsNavTargets", () => {
 
 describe("settingsNavLabel", () => {
   it("SN2. profile → 사용자 프로필, terms → 개인정보 보호 및 약관. 둘이 서로 다르다", () => {
-    expect(settingsNavLabel("profile")).toBe("사용자 프로필");
-    expect(settingsNavLabel("terms")).toBe("개인정보 보호 및 약관");
+    expect(settingsNavLabel("profile", uiCopyEn)).toBe("User profile");
+    expect(settingsNavLabel("terms", uiCopyEn)).toBe("Privacy and terms");
 
-    const labels = allNavTargets.map((target) => settingsNavLabel(target));
+    const labels = allNavTargets.map((target) => settingsNavLabel(target, uiCopyEn));
     expect(new Set(labels).size).toBe(2);
   });
 });
@@ -75,7 +76,7 @@ describe("입력 불변 · 부수효과 없음 (가드)", () => {
     expect(settingsNavTargets).toEqual(settingsNavTargets);
 
     for (const target of allNavTargets) {
-      expect(settingsNavLabel(target)).toBe(settingsNavLabel(target));
+      expect(settingsNavLabel(target, uiCopyEn)).toBe(settingsNavLabel(target, uiCopyEn));
       expect(settingsNavOpenedEvent(target)).toEqual(settingsNavOpenedEvent(target));
     }
 

@@ -30,6 +30,18 @@ describe("journey map visual novel contract", () => {
     ]);
   });
 
+  it("CE3 특별 항목 제목이 영어다(부록 C.1)", () => {
+    expect(
+      journeyMapItems.flatMap((item) => (item.kind === "standard" ? [] : [[item.id, item.title]])),
+    ).toEqual([
+      ["tutorial-intro", "Episode intro"],
+      ["appointment-confirmation", "Appointment message"],
+      ["appointment-confirmation-phone-call", "Appointment call"],
+      ["cafe-arrival-visual-novel", "Jimin arrives at the café"],
+      ["tutorial-final-test", "Final test"],
+    ]);
+  });
+
   it("기존 five standard steps와 ordinal 및 초기 상태는 변하지 않는다", () => {
     expect(journeySteps.map(({ id }) => id)).toEqual([
       "greeting",

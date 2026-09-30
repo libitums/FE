@@ -23,8 +23,8 @@ describe("AnswerLabel contract", () => {
   });
 
   test.each([
-    ["correct", "정답이에요", "tick", "positive"],
-    ["incorrect", "오답이에요", "cross", "negative"],
+    ["correct", "Correct", "tick", "positive"],
+    ["incorrect", "Incorrect", "cross", "negative"],
   ] as const)("%s는 기본 문구, 고정 icon과 tone을 사용한다", (result, label, icon, tone) => {
     expect(getAnswerLabelContract({ result })).toMatchObject({ result, label, icon, tone });
   });
@@ -54,8 +54,8 @@ describe("AnswerLabel contract", () => {
   });
 
   test.each([
-    ["correct", "정답이에요"],
-    ["incorrect", "오답이에요"],
+    ["correct", "Correct"],
+    ["incorrect", "Incorrect"],
   ] as const)("%s의 빈 사용자 문구는 기본 문구를 사용한다", (result, label) => {
     expect(getAnswerLabelContract({ result, label: "   " })).toMatchObject({ label });
   });

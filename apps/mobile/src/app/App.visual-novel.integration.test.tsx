@@ -101,17 +101,17 @@ test("미완료 이탈은 마지막 도달 장면을 보존하고 기존 여정 
 
 test("마지막 장면 진입에서만 완료되고 완료 재진입은 final 상태다", async () => {
   await openJourneyVisualNovel();
-  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 1 / 3");
+  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Scene 1 / 3");
   fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
-  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 2 / 3");
+  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Scene 2 / 3");
   fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
-  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("이야기 완료");
+  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Story complete");
 
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
   expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "clear");
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
-  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("이야기 완료");
+  expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Story complete");
 });
 
 test("replay는 화면만 처음으로 돌리고 이탈 후 재진입하면 완료 final로 복원한다", async () => {
@@ -138,7 +138,7 @@ test("replay에서 다시 끝까지 진행해도 완료·발화·이벤트는 �
   expect(screen.getByTestId(unitTestId)).toHaveAttribute("data-status", "clear");
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
-  expect(announcements).toEqual([{ content: "이야기 완료" }]);
+  expect(announcements).toEqual([{ content: "Story complete" }]);
   expect(
     sink.mock.calls.filter(
       ([event]) => (event as { name: string }).name === "visual_novel_unit_completed",
@@ -255,7 +255,7 @@ test("첫 find→enter 완료만 이야기 완료를 한 번 알리고 이후 �
   expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("visual-novel-advance-button"), {});
 
-  expect(announcements).toEqual([{ content: "이야기 완료" }]);
+  expect(announcements).toEqual([{ content: "Story complete" }]);
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
@@ -266,5 +266,5 @@ test("첫 find→enter 완료만 이야기 완료를 한 번 알리고 이후 �
   fireEvent.tap(screen.getByTestId(unitTestId), {});
   fireEvent.tap(screen.getByTestId("visual-novel-replay-button"), {});
 
-  expect(announcements).toEqual([{ content: "이야기 완료" }]);
+  expect(announcements).toEqual([{ content: "Story complete" }]);
 });

@@ -8,6 +8,7 @@ import { TopBar } from "../../components/TopBar";
 import { learningTimingFlag } from "./learning-shell.contract";
 import { LearningSessionHeader } from "./LearningSessionHeader";
 import type { LearningForm } from "../../lib/learning-form";
+import { useUiCopy } from "../../lib/ui-copy";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
@@ -94,6 +95,7 @@ export function LearningShell({
   gemCount = 0,
   onOpenNotifications = () => {},
 }: LearningShellProps): ReactNode {
+  const copy = useUiCopy();
   // 나가기는 **두 걸음**입니다 ⟨2026-09-28⟩. `×`는 묻기만 하고, 실제로 떠나는 것은
   // 모달의 `그만두기`입니다.
   //
@@ -275,15 +277,15 @@ export function LearningShell({
       {/* 나가기 확인입니다. **무엇을 잃는지 본문에 적습니다** — 「그만두시겠어요?」만
           물으면 사용자가 대가를 모른 채 고릅니다.
 
-          `그만두기`가 첫째라 강조 변형을 받습니다(`Dialog` 계약: 첫 액션이 brand).
+          `Leave`(그만두기)가 첫째라 강조 변형을 받습니다(`Dialog` 계약: 첫 액션이 brand).
           묻는 말에 답하는 순서대로 읽히는 것이 낭독 순서와도 맞습니다. */}
       {exitAsked ? (
         <Dialog
-          title="학습을 그만둘까요?"
-          description="지금까지 푼 문항은 저장되지 않고, 다음에 처음부터 다시 풀어야 합니다."
+          title={copy.learningShell.leaveDialog.title}
+          description={copy.learningShell.leaveDialog.description}
           actions={[
-            { id: "leave", label: "그만두기" },
-            { id: "stay", label: "계속하기" },
+            { id: "leave", label: copy.learningShell.leaveDialog.leave },
+            { id: "stay", label: copy.learningShell.leaveDialog.stay },
           ]}
           bindaction={handleExitAction}
         />

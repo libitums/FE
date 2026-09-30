@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
@@ -6,8 +7,6 @@ import { CultureQuizOption } from "./CultureQuizOption";
 import {
   choiceResultAt,
   cultureQuizCompletionAnnouncement,
-  cultureQuizCompletionText,
-  cultureQuizExitLabel,
   cultureQuizProgressLabel,
   cultureQuizQuestionsForStep,
   cultureQuizScreenTitle,
@@ -35,6 +34,7 @@ export function CultureQuizScreen({
   stepOrdinal,
   onExit,
 }: CultureQuizScreenProps): ReactNode {
+  const copy = useUiCopy();
   const questions = cultureQuizQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(cultureQuizSessionReducer, initialCultureQuizSessionState);
 
@@ -58,7 +58,7 @@ export function CultureQuizScreen({
     if (!complete) {
       return;
     }
-    announceCompletion(cultureQuizCompletionAnnouncement(cultureQuizExitLabel));
+    announceCompletion(cultureQuizCompletionAnnouncement(copy.common.exitTo.journey, copy));
   }, [complete]);
 
   return (
@@ -71,18 +71,18 @@ export function CultureQuizScreen({
           className="culture-quiz-screen-exit"
           data-testid="culture-quiz-screen-exit"
           accessibility-element={true}
-          accessibility-label={cultureQuizExitLabel}
+          accessibility-label={copy.common.exitTo.journey}
           accessibility-traits="button"
           bindtap={onExit}
         >
-          <text className="culture-quiz-screen-exit-label">{cultureQuizExitLabel}</text>
+          <text className="culture-quiz-screen-exit-label">{copy.common.exitTo.journey}</text>
         </view>
         <text
           className="culture-quiz-screen-title"
           data-testid="culture-quiz-screen-title"
           accessibility-traits="header"
         >
-          {cultureQuizScreenTitle(stepOrdinal)}
+          {cultureQuizScreenTitle(stepOrdinal, copy)}
         </text>
       </view>
 
@@ -104,7 +104,7 @@ export function CultureQuizScreen({
               className="culture-quiz-screen-progress"
               data-testid="culture-quiz-screen-progress"
             >
-              {cultureQuizProgressLabel(state.questionIndex, questions.length)}
+              {cultureQuizProgressLabel(state.questionIndex, questions.length, copy)}
             </text>
           )}
 
@@ -116,7 +116,7 @@ export function CultureQuizScreen({
 
           {question === null ? null : (
             // 항상 렌더돼 실패할 수 없는 단언은 검증이 아니므로 testid를 두지 않습니다.
-            <text className="culture-quiz-screen-instruction">문항에 알맞은 답을 고르세요.</text>
+            <text className="culture-quiz-screen-instruction">{copy.cultureQuiz.instruction}</text>
           )}
 
           {question === null ? null : (
@@ -140,7 +140,7 @@ export function CultureQuizScreen({
               className="culture-quiz-screen-complete"
               data-testid="culture-quiz-screen-complete"
             >
-              {cultureQuizCompletionText}
+              {copy.common.allQuestionsDone}
             </text>
           ) : null}
         </view>
@@ -154,11 +154,11 @@ export function CultureQuizScreen({
           className="culture-quiz-screen-next"
           data-testid="culture-quiz-screen-next"
           accessibility-element={true}
-          accessibility-label="다음"
+          accessibility-label={copy.common.next}
           accessibility-traits="button"
           bindtap={() => dispatch({ type: "nextQuestion" })}
         >
-          <text className="culture-quiz-screen-next-label">다음</text>
+          <text className="culture-quiz-screen-next-label">{copy.common.next}</text>
         </view>
       ) : null}
     </view>

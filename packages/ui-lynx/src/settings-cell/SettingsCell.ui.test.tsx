@@ -14,7 +14,7 @@ describe("Settings Cell UI", () => {
       <SettingsCell trailing="toggle" title="자동 재생" checked={false} onChange={onChange} />,
     );
     const row = screen.getByTestId("ui-lynx-settings-cell");
-    expect(row).toHaveAttribute("accessibility-label", "자동 재생, 꺼짐");
+    expect(row).toHaveAttribute("accessibility-label", "자동 재생, off");
     expect(row).toHaveAttribute("accessibility-traits", "button");
     expect(row).toHaveAttribute("accessibility-role-description", "switch");
     expect(row).toHaveAttribute("data-checked", "false");

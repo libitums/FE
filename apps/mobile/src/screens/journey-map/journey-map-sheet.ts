@@ -1,6 +1,7 @@
 // 스텝 시트의 열림 상태 전이를 소유합니다 — `StepSheetState`·`StepSheetAction`·
 // `initialStepSheetState`·`canOpenStep`·`stepSheetReducer`입니다.
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { JourneyStepId, JourneyStepStatus } from "./journey-map-units";
 
 export type StepSheetState = {
@@ -115,7 +116,11 @@ export type StepSheetProgress = {
  * 백분율은 라벨과 막대가 **같은 수**에서 나옵니다. 디자인(Figma 79-5682)은 라벨이
  * `0%`인데 막대가 86% 차 있어 둘이 어긋나 있는데, 그 어긋남까지 옮기지 않습니다.
  */
-export function stepSheetProgress(completed: number, total: number): StepSheetProgress {
+export function stepSheetProgress(
+  completed: number,
+  total: number,
+  copy: UiCopy,
+): StepSheetProgress {
   if (!Number.isInteger(total) || total <= 0) {
     throw new Error(`전체 활동 수는 1 이상의 정수여야 합니다: ${total}`);
   }
@@ -126,7 +131,7 @@ export function stepSheetProgress(completed: number, total: number): StepSheetPr
     throw new Error(`끝낸 활동 수가 전체보다 많습니다: ${completed} / ${total}`);
   }
   return {
-    countLabel: `${completed}/${total} 활동`,
+    countLabel: copy.journeyMap.activityCount(completed, total),
     percentLabel: `${Math.round((completed / total) * 100)}%`,
     fillPercent: (completed / total) * 100,
   };

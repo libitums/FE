@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   episodePendingAccessibilityLabel,
-  episodePendingLabel,
   journeyMapItems,
   journeyMapSections,
   journeySteps,
   mapSectionsOf,
 } from "./journey-map";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 import type {
   JourneyEpisodeId,
   JourneyEpisodes,
@@ -27,14 +27,14 @@ import type {
 const introUnit = {
   kind: "special",
   id: "tutorial-intro",
-  title: "에피소드 표지",
+  title: "Episode intro",
   screen: "episode-intro",
 } as const;
 
 const finalUnit = {
   kind: "special",
   id: "tutorial-final-test",
-  title: "최종 테스트",
+  title: "Final test",
   screen: "episode-final",
 } as const;
 
@@ -149,16 +149,15 @@ describe("mapSectionsOf", () => {
 describe("준비 중 칸의 문면", () => {
   // 에피소드 이름이 영문이라 결을 맞춥니다 — 그 옆에 한글 한 낱말이 서면 두 글자체가
   // 한 덩어리 안에서 부딪힙니다.
-  it("[U-N1] 보이는 문구가 영문 「COMING SOON」이다", () => {
-    expect(episodePendingLabel).toBe("COMING SOON");
+  it("[U-N1] 보이는 문구를 문구표가 낸다", () => {
+    expect(uiCopyEn.journeyMap.episodePendingLabel).toBe("COMING SOON");
   });
 
-  // ⚠ **보이는 문구와 일부러 다릅니다.** 보이는 쪽은 디자인의 영문이고 듣는 쪽은 이 앱의
-  // 말입니다 — 스텝의 `, 잠김`과 같은 부호·같은 자리라, 여기만 영문이면 낭독에서 혼자
-  // 튑니다.
-  it("[U-N2] 낭독은 한국어로 이름 뒤에 상태를 붙인다", () => {
-    expect(episodePendingAccessibilityLabel("Episode 1.", "Customs.")).toBe(
-      "Episode 1. Customs., 준비 중",
+  // 형태가 `${이름}, ${상태낱말}`로 저장소 전체와 같습니다 — 스텝의 `, locked`와 같은
+  // 부호·같은 자리입니다. 낱말은 **문구표**가 냅니다(이 앱에 한국어 UI 언어가 없습니다).
+  it("[U-N2] 낭독이 이름 뒤에 상태를 붙인다", () => {
+    expect(episodePendingAccessibilityLabel("Episode 1.", "Customs.", uiCopyEn)).toBe(
+      "Episode 1. Customs., coming soon",
     );
   });
 });

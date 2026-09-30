@@ -6,6 +6,7 @@ import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source
 import { visualNovelStoryFor } from "./visual-novel";
 import type { VisualNovelProgress, VisualNovelScreenProps } from "./visual-novel.contract";
 import { VisualNovelScreen } from "./VisualNovelScreen";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 머리 구조·접근성 시맨틱을 봅니다 (ADR-0006 D4).
 // 나가기가 머리의 첫 흐름 자식이고, 제목·진행이 제목 묶음(`.visual-novel-header-text`,
@@ -30,7 +31,7 @@ function renderScreen(source: SpecialUnitEntrySource, progress: VisualNovelProgr
     <VisualNovelScreen
       story={story}
       progress={progress}
-      exitLabel={specialUnitExitLabel(source)}
+      exitTo={source}
       onAdvance={vi.fn<VisualNovelScreenProps["onAdvance"]>()}
       onExit={vi.fn<VisualNovelScreenProps["onExit"]>()}
       onReplay={vi.fn<VisualNovelScreenProps["onReplay"]>()}
@@ -106,7 +107,7 @@ describe("VisualNovelScreen 머리 구조", () => {
       it(`경로=${source}`, () => {
         const { container } = renderScreen(source, { status: "active", beatIndex: 0 });
 
-        const label = specialUnitExitLabel(source);
+        const label = specialUnitExitLabel(source, uiCopyEn);
         const exit = screen.getByTestId("visual-novel-exit-button");
         expect(exit).toHaveAttribute("accessibility-element", "true");
         expect(exit).toHaveAttribute("accessibility-traits", "button");

@@ -1,7 +1,8 @@
 // 평가 화면의 순수 로직과 통과 기준 상수를 소유합니다(ADR-0006 D4 — 순수 로직은
 // unit 계층 대상입니다). UI를 import하지 않습니다.
 
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { UiCopy } from "../../lib/ui-copy.contract";
+import type { AnswerResult } from "../../lib/answer-result";
 
 // ---------------------------------------------------------------- 도메인 타입
 
@@ -29,38 +30,36 @@ export function judgeAssessment(
   return correctCount >= criterion.minCorrectCount ? "passed" : "failed";
 }
 
-// `${ordinal}단계 · 평가` 형태입니다 — 구분자는 가운뎃점 양옆 공백입니다.
-export function assessmentScreenTitle(ordinal: number): string {
-  return `${ordinal}단계 · 평가`;
+// `Step ${ordinal} · Assessment` 형태입니다 — 구분자는 가운뎃점 양옆 공백입니다.
+export function assessmentScreenTitle(ordinal: number, copy: UiCopy): string {
+  return copy.common.stepTitle(ordinal, copy.assessment.activity);
 }
 
-// 판정 표입니다. export하지 않는 모듈 내부 표입니다 — journey-map.ts의
-// stepStatusSuffix와 같은 형태입니다. "다시 도전"·"아쉬워요" 류를 두지 않습니다.
-const verdictLabel: Record<AssessmentVerdict, string> = {
-  passed: "통과",
-  failed: "미통과",
-};
-
-export function assessmentVerdictLabel(verdict: AssessmentVerdict): string {
-  return verdictLabel[verdict];
+// 판정 낱말은 문구표(`copy.assessment.verdict`)가 냅니다.
+// "다시 도전"·"아쉬워요" 류를 두지 않습니다.
+export function assessmentVerdictLabel(verdict: AssessmentVerdict, copy: UiCopy): string {
+  return copy.assessment.verdict[verdict];
 }
 
-// `문항 ${index + 1}` 형태입니다 — index는 0-based입니다.
-export function assessmentItemTitle(index: number): string {
-  return `문항 ${index + 1}`;
+// `Question ${index + 1}` 형태입니다 — index는 0-based입니다.
+export function assessmentItemTitle(index: number, copy: UiCopy): string {
+  return copy.assessment.itemTitle(index + 1);
 }
 
-// 접미사는 lib/answer-result.ts의 answerResultLabel이 냅니다 — listening.ts의
+// 접미사는 문구표 `copy.common.answerResultSuffix`가 냅니다 — listening.ts의
 // choiceAccessibilityLabel · ListeningChoice.tsx와 같은 정본을 씁니다.
-export function assessmentItemAccessibilityLabel(index: number, result: AnswerResult): string {
-  return `${assessmentItemTitle(index)}, ${answerResultLabel(result)}`;
+export function assessmentItemAccessibilityLabel(
+  index: number,
+  result: AnswerResult,
+  copy: UiCopy,
+): string {
+  return `${assessmentItemTitle(index, copy)}, ${copy.common.answerResultSuffix[result]}`;
 }
 
-// 낭독 문자열입니다. 보이는 판정 낱말을 그대로 담습니다 — 화면과 소리가 다른
-// 앱이 되지 않도록 같은 verdictLabel 표를 지납니다. 구분자는 쉼표 + 공백입니다
-// (ADR-0016 D3).
-export function assessmentAnnouncement(verdict: AssessmentVerdict): string {
-  return `평가 결과, ${assessmentVerdictLabel(verdict)}`;
+// 낭독 문자열입니다. 문구표의 `assessment.announcement`가 판정 낱말까지 냅니다.
+// 구분자는 쉼표 + 공백입니다(ADR-0016 D3).
+export function assessmentAnnouncement(verdict: AssessmentVerdict, copy: UiCopy): string {
+  return copy.assessment.announcement(verdict);
 }
 
 // 완료 표입니다. `if`도 부등호도 아니라 Record입니다 — 판정이 하나 늘면 tsc가 그

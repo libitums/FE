@@ -142,12 +142,12 @@ export function getTextFieldContract(
   const count = Array.from(state.value).length;
   const counterLabel = props.counter ? `${count}/${props.counter.maxLength}` : undefined;
   const counterAccessibilityLabel = props.counter
-    ? `${props.counter.maxLength}자 중 ${count}자 입력`
+    ? `${count} of ${props.counter.maxLength} characters`
     : undefined;
   const describedBy = [
     props.qualifier,
     props.supporting?.kind === "error"
-      ? `오류: ${props.supporting.message}`
+      ? `Error: ${props.supporting.message}`
       : props.supporting?.message,
     counterAccessibilityLabel,
   ].filter((value): value is string => Boolean(value));

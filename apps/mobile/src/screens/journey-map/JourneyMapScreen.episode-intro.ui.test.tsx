@@ -86,7 +86,7 @@ test("[UI-I1] 맵에 표지 항목이 선다", () => {
   renderMap();
 
   expect(screen.getByTestId(introTestId)).toBeInTheDocument();
-  expect(screen.getByText("에피소드 표지")).toBeInTheDocument();
+  expect(screen.getByText("Episode intro")).toBeInTheDocument();
 });
 
 // 표지가 **맨 앞**에 서면 「줄의 자리 ≠ 스텝의 서수」가 모든 스텝에서 어긋납니다 —
@@ -138,14 +138,14 @@ test("[UI-I6] 표지의 낭독 이름이 상태에 따라 갈린다", () => {
   const { unmount } = renderMap();
   expect(screen.getByTestId(introTestId)).toHaveAttribute(
     "accessibility-label",
-    "에피소드 표지, 이야기 연결",
+    "Episode intro, story",
   );
   unmount();
 
   renderMap({ completedEpisodeIntroIds: introDone });
   expect(screen.getByTestId(introTestId)).toHaveAttribute(
     "accessibility-label",
-    "에피소드 표지, 완료됨, 이야기 연결",
+    "Episode intro, completed, story",
   );
 });
 

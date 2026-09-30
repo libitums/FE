@@ -17,7 +17,7 @@ describe("Settings Cell contract", () => {
       checked: true,
       onChange: vi.fn<(checked: boolean) => void>(),
     });
-    expect(contract.accessibilityLabel).toBe("자동 재생, 다음 학습, 켜짐");
+    expect(contract.accessibilityLabel).toBe("자동 재생, 다음 학습, on");
     expect(contract.className).toContain("ui-lynx-settings-cell-type-toggle");
   });
 

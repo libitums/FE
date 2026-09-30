@@ -5,6 +5,8 @@ import type { AnswerResult } from "../../lib/answer-result";
 import type { EpisodeFinalCallTest } from "./episode-final.contract";
 import { episodeFinalAdvanceDelayMs, episodeFinalLineMs } from "./episode-final";
 import { EpisodeFinalCallScreen } from "./EpisodeFinalCallScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 통화는 이 파일의 대역입니다 — 상대 대사
 // 하나, 내 차례 하나, 상대 대사 하나, 내 차례 하나. 시간으로 흐르므로 가짜 시계를 씁니다.
@@ -12,7 +14,7 @@ import { EpisodeFinalCallScreen } from "./EpisodeFinalCallScreen";
 const callTest: EpisodeFinalCallTest = {
   format: "call",
   unitId: "tutorial-final-test",
-  callerName: "유나",
+  callerName: "Yuna",
   turns: [
     { kind: "line", id: "hello", text: "여보세요?", translation: "Hello?" },
     { kind: "speaking", id: "hi", sentence: "안녕", romanization: "[an.nyeong]" },
@@ -74,7 +76,7 @@ test("[EFC1] 통화 상대 · 시계 · 첫 상대 대사가 서고, 상대 대�
 
   expect(screen.getByTestId("episode-final-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
-    "음성 통화, 유나",
+    "Voice call, Yuna",
   );
   expect(screen.getByTestId("episode-final-call-screen-clock")).toHaveTextContent("0:00");
   expect(lineText()).toHaveTextContent("여보세요?");
@@ -158,4 +160,40 @@ test("[EFC6] 판정 틈에 onFinish가 바뀌면 끝낼 때 새 콜백을 부른
 
   expect(staleFinish).not.toHaveBeenCalled();
   expect(freshFinish).toHaveBeenCalledWith(["correct"]);
+});
+
+test("[ST5-E] 뒤로 이름이 영어다", () => {
+  renderCall();
+
+  expect(
+    within(screen.getByTestId("episode-final-call-screen-back")).getByTestId(
+      "ui-lynx-round-button",
+    ),
+  ).toHaveAttribute("accessibility-label", "Back to map");
+});
+
+test("[ST5-M] 문구표에서 읽는다 — 통화 상대 · 뒤로", () => {
+  vi.useFakeTimers();
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <EpisodeFinalCallScreen
+        insets={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        episodeLabel="Episode 1."
+        test={callTest}
+        callerPortrait="portrait.png"
+        onFinish={vi.fn<(results: readonly AnswerResult[]) => void>()}
+        onExit={vi.fn<() => void>()}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("episode-final-call-screen-caller")).toHaveAttribute(
+    "accessibility-label",
+    "⟦phoneCall.voiceCall⟧(Yuna)",
+  );
+  expect(
+    within(screen.getByTestId("episode-final-call-screen-back")).getByTestId(
+      "ui-lynx-round-button",
+    ),
+  ).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
 });

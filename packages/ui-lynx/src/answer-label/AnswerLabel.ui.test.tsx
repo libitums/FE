@@ -22,8 +22,8 @@ describe("AnswerLabel UI", () => {
   });
 
   test.each([
-    ["correct", "정답이에요", tick],
-    ["incorrect", "오답이에요", cross],
+    ["correct", "Correct", tick],
+    ["incorrect", "Incorrect", cross],
   ] as const)("%s는 판정 icon과 기본 Label을 같은 전경색으로 표시한다", (result, label, icon) => {
     render(<AnswerLabel result={result} />);
 
@@ -47,6 +47,6 @@ describe("AnswerLabel UI", () => {
     expect(root).toHaveClass("ui-lynx-answer-label-correct");
     expect(root).toHaveClass("ui-lynx-answer-label-subtle");
     expect(root).toHaveClass("ui-lynx-answer-label-l");
-    expect(root).toHaveAttribute("accessibility-label", "3번 문제, 정답이에요");
+    expect(root).toHaveAttribute("accessibility-label", "3번 문제, Correct");
   });
 });

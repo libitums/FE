@@ -19,6 +19,7 @@ import {
 } from "./prologue-call";
 
 import { CallCaller, CallLineBubble } from "../../components/CallCaller";
+import { useUiCopy } from "../../lib/ui-copy";
 
 import "./prologue-call-screen.css";
 
@@ -46,6 +47,7 @@ export function PrologueCallScreen({
   onComplete,
   onBack,
 }: PrologueCallScreenProps): ReactNode {
+  const copy = useUiCopy();
   // 지나간 대사 칸 수입니다. 대사가 바뀌는 `prologueLineSeconds`마다만 갑니다 — 1초
   // 시계는 `PrologueCallClock`이 따로 셉니다.
   const [lineTicks, setLineTicks] = useState(0);
@@ -96,7 +98,7 @@ export function PrologueCallScreen({
           <view className="prologue-call-screen-header">
             <view className="prologue-call-screen-back" data-testid="prologue-call-screen-back">
               <RoundButton
-                accessibilityLabel="맵으로"
+                accessibilityLabel={copy.common.exitTo.journey}
                 icon={arrowLeft03}
                 variant="neutral"
                 size="xl"
@@ -139,7 +141,7 @@ export function PrologueCallScreen({
                 data-testid="prologue-call-screen-volume-down"
                 accessibility-element={true}
                 accessibility-traits={volume === 1 ? "disabled" : "button"}
-                accessibility-label="소리 줄이기"
+                accessibility-label={copy.episodeIntro.call.volumeDown}
                 bindtap={() => setVolume((current) => stepPrologueCallVolume(current, "down"))}
               >
                 <svg
@@ -152,7 +154,10 @@ export function PrologueCallScreen({
               <view
                 className="prologue-call-screen-volume-bar"
                 accessibility-element={true}
-                accessibility-label={`소리 크기 ${String(volume)} / 5`}
+                accessibility-label={copy.episodeIntro.call.volumeLevel(
+                  volume,
+                  volumeLevels.length,
+                )}
               >
                 {volumeLevels.map((level) => (
                   <view
@@ -170,7 +175,7 @@ export function PrologueCallScreen({
                 data-testid="prologue-call-screen-volume-up"
                 accessibility-element={true}
                 accessibility-traits={volume === 5 ? "disabled" : "button"}
-                accessibility-label="소리 키우기"
+                accessibility-label={copy.episodeIntro.call.volumeUp}
                 bindtap={() => setVolume((current) => stepPrologueCallVolume(current, "up"))}
               >
                 <svg
@@ -194,7 +199,7 @@ export function PrologueCallScreen({
                 data-on={muted ? "true" : "false"}
                 accessibility-element={true}
                 accessibility-traits="button"
-                accessibility-label={muted ? "음소거, 켜짐" : "음소거, 꺼짐"}
+                accessibility-label={copy.episodeIntro.call.mute(muted)}
                 bindtap={() => setMuted((current) => !current)}
               >
                 <svg
@@ -208,7 +213,7 @@ export function PrologueCallScreen({
                 data-testid="prologue-call-screen-end"
                 accessibility-element={true}
                 accessibility-traits="button"
-                accessibility-label="통화 종료"
+                accessibility-label={copy.episodeIntro.call.endCall}
                 bindtap={handleHangUp}
               >
                 <svg
@@ -227,7 +232,9 @@ export function PrologueCallScreen({
                 data-on={volumeOpen ? "true" : "false"}
                 accessibility-element={true}
                 accessibility-traits="button"
-                accessibility-label={volumeOpen ? "소리 크기, 펼쳐짐" : "소리 크기"}
+                accessibility-label={
+                  volumeOpen ? copy.episodeIntro.call.volumeExpanded : copy.episodeIntro.call.volume
+                }
                 bindtap={() => setVolumeOpen((current) => !current)}
               >
                 <svg
@@ -253,10 +260,10 @@ export function PrologueCallScreen({
             style={{ bottom: `${insets.bottom}px` }}
             accessibility-element={true}
             accessibility-traits="button"
-            accessibility-label="Continue"
+            accessibility-label={copy.common.continue}
             bindtap={handleComplete}
           >
-            <text className="prologue-call-screen-complete-label">Continue</text>
+            <text className="prologue-call-screen-complete-label">{copy.common.continue}</text>
           </view>
         </>
       ) : null}

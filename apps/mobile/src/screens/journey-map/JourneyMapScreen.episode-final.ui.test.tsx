@@ -46,7 +46,7 @@ test("[EMS1] 다른 항목이 남아 있으면 자물쇠로 서고, 눌러도 �
 
   const unit = screen.getByTestId(finalTestId);
   expect(unit).toHaveAttribute("data-status", "default");
-  expect(screen.getByText("최종 테스트")).toBeInTheDocument();
+  expect(screen.getByText("Final test")).toBeInTheDocument();
   fireEvent.tap(unit, {});
 
   expect(onStart).not.toHaveBeenCalled();

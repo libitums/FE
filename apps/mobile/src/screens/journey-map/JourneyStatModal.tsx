@@ -11,6 +11,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
+import { useUiCopy } from "../../lib/ui-copy";
 import { journeyStatSlotCount, type JourneyStatKind, type JourneyStatTrack } from "./journey-stat";
 
 import "./journey-stat-modal.css";
@@ -22,22 +23,18 @@ import "./journey-stat-modal.css";
 type JourneyStatCopy = {
   readonly title: string;
   readonly message: string;
-  /** 스크린리더가 큰 숫자와 제목을 한 문장으로 읽게 하는 이름입니다. */
-  readonly heroLabel: (value: number) => string;
 };
 
-const copy: Record<JourneyStatKind, JourneyStatCopy> = {
+const kindCopy: Record<JourneyStatKind, JourneyStatCopy> = {
   streak: {
     title: "day streak",
     message: "Amazing work! Come back tomorrow to keep your streak alive!",
-    heroLabel: (value) => `연속 학습 ${value}일`,
   },
   trophy: {
     title: "Episode Clear!",
     // Figma 원문은 "…to clear chapter"입니다. 제목(Episode Clear!)과 용어를 맞추고 관사 ·
     // 문장 부호를 보태 고쳤습니다(PR #124 리뷰). Figma 쪽 반영이 뒤따라야 합니다.
     message: "Amazing work! Come back tomorrow to clear the next episode!",
-    heroLabel: (value) => `에피소드 클리어 ${value}개`,
   },
 };
 
@@ -61,7 +58,13 @@ export function JourneyStatModal({
   // 이 레이어는 셸 밖(`position: fixed`)이라 셸의 safe area 여백을 받지 못합니다 —
   // 같은 값을 스스로 읽어 안쪽 여백으로 잡습니다(lib/safe-area.ts).
   const insets = safeAreaInsetsFrom(useGlobalProps());
-  const { title, message, heroLabel } = copy[kind];
+  const copy = useUiCopy();
+  const { title, message } = kindCopy[kind];
+  // 스크린리더가 큰 숫자와 제목을 한 문장으로 읽게 하는 이름입니다.
+  const heroLabel =
+    kind === "streak"
+      ? copy.journeyMap.statModal.streakHero(value)
+      : copy.journeyMap.statModal.episodesClearedHero(value);
   const done = slotIndexes.slice(0, track.completedCount);
   const rest = slotIndexes.slice(track.completedCount);
 
@@ -102,7 +105,7 @@ export function JourneyStatModal({
           <RoundButton
             icon={arrowLeft}
             size="xl"
-            accessibilityLabel="맵으로"
+            accessibilityLabel={copy.common.exitTo.journey}
             bindtap={handleClose}
           />
         </view>
@@ -113,7 +116,7 @@ export function JourneyStatModal({
         data-testid="journey-stat-modal-hero"
         accessibility-element={true}
         accessibility-traits="header"
-        accessibility-label={heroLabel(value)}
+        accessibility-label={heroLabel}
       >
         <view className="journey-stat-modal-value-box">
           <text className="journey-stat-modal-value" data-testid="journey-stat-modal-value">
@@ -151,7 +154,10 @@ export function JourneyStatModal({
         className="journey-stat-modal-track"
         data-testid="journey-stat-modal-track"
         accessibility-element={true}
-        accessibility-label={`${journeyStatSlotCount}칸 중 ${track.completedCount}칸 완료`}
+        accessibility-label={copy.journeyMap.statModal.slotProgress(
+          track.completedCount,
+          journeyStatSlotCount,
+        )}
       >
         {track.dayLabels ? (
           <view className="journey-stat-modal-days" data-testid="journey-stat-modal-days">

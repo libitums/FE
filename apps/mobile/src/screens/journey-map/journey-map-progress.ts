@@ -7,6 +7,7 @@
 // 때문입니다(표지 게이트). 전에는 잠김이 스텝과 최종 테스트 둘에만 있어 종류마다 다른
 // 자리가 냈습니다.
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
 import { journeySteps } from "./journey-map-units";
 import type {
@@ -33,47 +34,36 @@ export function stepStatusAt(index: number, completedCount: number): JourneyStep
   return "locked";
 }
 
-// export하지 않는 모듈 내부 상수입니다 — 구분자는 쉼표 + 공백입니다(ADR-0016 D3이
-// 고른 것과 같은 부호).
-const stepStatusSuffix: Record<JourneyStepStatus, string> = {
-  done: "완료됨",
-  current: "현재 스텝",
-  locked: "잠김",
-};
+// 접미 낱말은 문구표(`copy.journeyMap.stepStatus`)가 냅니다 — 구분자는 쉼표 + 공백입니다
+// (ADR-0016 D3이 고른 것과 같은 부호).
 
-export function stepAccessibilityLabel(title: string, status: JourneyStepStatus): string {
-  return `${title}, ${stepStatusSuffix[status]}`;
+export function stepAccessibilityLabel(
+  title: string,
+  status: JourneyStepStatus,
+  copy: UiCopy,
+): string {
+  return `${title}, ${copy.journeyMap.stepStatus[status]}`;
 }
 
 /**
- * 준비 중 구획의 가려진 자리에 **보이는** 문구입니다.
- *
- * 영문인 것은 에피소드 이름이 영문이기 때문입니다(`Tutorial.` · `Customs.`) — 그 옆에
- * 한글 한 낱말이 서면 두 글자체가 한 덩어리 안에서 부딪힙니다. 결과 화면의
- * `PERFECT LESSON!`과 같은 대문자 한 줄입니다.
- */
-export const episodePendingLabel = "COMING SOON";
-
-/**
- * 준비 중 구획의 **낭독**에 붙는 상태 낱말입니다. **보이는 문구와 일부러 다릅니다** —
- * 보이는 쪽은 디자인의 영문이고, 듣는 쪽은 이 앱의 말입니다. 스텝의 `, 잠김`,
- * 롤플레이의 `, 플러스 전용`과 같은 부호·같은 자리라, 여기만 영문이면 낭독에서 혼자
- * 튑니다.
- */
-const episodePendingSpokenSuffix = "준비 중";
-
-/**
  * 준비 중 구획의 접근성 이름입니다. 형태가 `${이름}, ${상태낱말}`로 저장소 전체와 같습니다
- * (ADR-0016 D3).
+ * (ADR-0016 D3) — 바로 위 `stepAccessibilityLabel`의 `, locked`와 **같은 부호·같은 자리**
+ * 입니다.
  *
  * 이름 부분이 `${label} ${title}`인 것은 롤플레이 구획 머리와 같습니다 — 두 줄을 따로
  * 두면 `Episode 1.`과 이름이 **두 번 멈춰** 읽힙니다.
  *
- * 접미사를 **붙이는 쪽**으로 정한 것은 이 구획의 상태가 곧 존재 이유이기 때문입니다 —
- * 붙이지 않으면 낭독에서 채워진 에피소드와 **구별되지 않습니다.**
+ * ⚠ **낱말을 여기서 짓지 않고 문구표에서 받습니다.** 처음에는 보이는 문구를 영문으로,
+ * 낭독을 한국어로 갈랐는데 **이 앱에 한국어 UI 언어가 없습니다** — 영어가 기준이고 다른
+ * 언어가 그것을 덮습니다(`ui-copy.ts`). 낭독만 한국어로 두면 영어 부팅에서 한글이 혼자
+ * 남습니다.
  */
-export function episodePendingAccessibilityLabel(label: string, title: string): string {
-  return `${label} ${title}, ${episodePendingSpokenSuffix}`;
+export function episodePendingAccessibilityLabel(
+  label: string,
+  title: string,
+  copy: UiCopy,
+): string {
+  return copy.journeyMap.episodePending(label, title);
 }
 
 export function findStep(

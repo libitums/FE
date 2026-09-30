@@ -2,6 +2,14 @@
 
 상태: 요구사항 승인 및 계약 고정 완료, 제품 구현 전
 
+> **개정 (2026-09-29, UI 문구표).** 결정과 근거는 [ADR-0031](../adr/0031-ui-language-catalog.md)(**제안**)이 진다. 바뀐 계약:
+> `PhoneCallStatusLabel` · `PhoneCallPlayLabel` 타입이 지워지고 `phoneCallStatusLabel(state, copy)` →
+> `string` · `phoneCallPlayLabel(state, copy)` → `string | null`이다(`Ready to call` · `Speaking…` ·
+> `Your turn to reply` · `Call ended` / `Start call` · `Listen` · `Listen again`). 대본의 지민 갈래
+> `speakerName`은 `"Jimin"`, **self 갈래는 `speakerName` 필드가 없다**(화면이 `copy.common.me` = `Me`를 그린다).
+> 제목은 `Appointment call`. 나가기는 `exitLabel?` 대신 `exitTo?: SpecialUnitEntrySource`. 대사 · 답장 문장(학습
+> 콘텐츠)은 한국어 그대로다. 본문의 한국어 라벨은 당시 값이다 — 대응은 ADR-0031 부록.
+
 ## 1. 목적
 
 사용자가 지민의 약속 확인 음성을 직접 재생해 듣고 정해진 답장으로 3턴 대화를
@@ -207,7 +215,8 @@ boolean 모드 props, compound context, ref, render prop, audio port prop, telem
   없으므로 실제 집계는 아직 0건이다.** ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩ sink가 `null`이어도 세션·오디오·완료 기록·navigation
   결과는 같다.
 - 나가기 라벨: `PhoneCallScreenProps.exitLabel?`가 생겼다. 기본값은 `맵으로`이고, 롤플레이에서
-  연 화면만 `목록으로`를 받는다. 동작은 둘 다 `backToRoot`다.
+  연 화면만 `목록으로`를 받는다. 동작은 둘 다 `backToRoot`다. ⟨2026-09-29⟩ prop은
+  `exitTo?: SpecialUnitEntrySource`(기본 `"journey"`)로 바뀌었고 라벨은 `Back to map` · `Back to list`다.
 - 연습 모드: 롤플레이에서 연 화면은 `practicePhoneCallCompletionStatus()`(= `available`)로
   `ready(0)`에서 시작하고, 끝까지 가도 `completedPhoneCallUnitIds`를 바꾸지 않는다.
 - 검증: `App.phone-call.integration.test.tsx`(여정 열림), `App.roleplay.integration.test.tsx`

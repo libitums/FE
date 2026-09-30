@@ -2,6 +2,7 @@ import type { ReactNode } from "@lynx-js/react";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import { RoleplayCard } from "./RoleplayCard";
 import type { RoleplayEpisodeScreenProps } from "./roleplay-list.contract";
 
@@ -17,13 +18,14 @@ export function RoleplayEpisodeScreen({
   onSelectItem,
   onExit,
 }: RoleplayEpisodeScreenProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view className="roleplay-episode-screen">
-      {/* 머리 — 나가기가 첫 자식입니다(낭독 순서 `목록으로 → 에피소드 → 항목들`). */}
+      {/* 머리 — 나가기가 첫 자식입니다(낭독 순서 `나가기 → 에피소드 → 항목들`). */}
       <view className="roleplay-episode-screen-header">
         <view className="roleplay-episode-screen-exit" data-testid="roleplay-episode-screen-exit">
           <RoundButton
-            accessibilityLabel="목록으로"
+            accessibilityLabel={copy.common.exitTo.roleplay}
             icon={arrowLeft03}
             variant="neutral"
             size="xl"

@@ -8,13 +8,13 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { SettingsGroup } from "@libitums/ui-lynx/settings-cell";
 
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
+import { useUiCopy } from "../../lib/ui-copy";
 import {
   bonusSummary,
   findGemPack,
   formatGemCount,
   formatPrice,
   gemPacks,
-  gemPaymentNotice,
   initialGemPackId,
   totalGemsOf,
   type GemPackId,
@@ -29,7 +29,7 @@ import "./gem-purchase-screen.css";
 // 문구는 디자인 표기(영문) 그대로입니다.
 //
 // 결제 서비스는 아직 없습니다. `Pay`와 결제 수단 줄은 「결제 준비 중」 안내를 띄우고, 젬은
-// 늘어나지 않습니다(`gemPaymentNotice`).
+// 늘어나지 않습니다(문구표 `gemPurchase.notice`).
 //
 // 디자인에는 닫는 수단이 없습니다. 레이어가 화면 전체를 덮으므로 나갈 길이 없으면
 // 갇히는 화면이 됩니다 — 지표 모달과 같은 자리(왼쪽 위)에 원형 닫기 버튼을 둡니다.
@@ -45,10 +45,9 @@ const paymentMethod = { title: "Visa •••• 4242", description: "Default p
 
 const assurances = ["Secure payment", "Instant delivery", "VAT included"] as const;
 
-// 안내의 버튼입니다. 바뀌지 않으므로 렌더마다 새로 만들지 않습니다.
-const noticeActions = [{ id: "close", label: "확인" }] as const;
-
 export function GemPurchaseScreen({ gemBalance, onClose }: GemPurchaseScreenProps): ReactNode {
+  const copy = useUiCopy();
+  const noticeActions = [{ id: "close", label: copy.common.ok }] as const;
   // 이 레이어는 셸 밖(`position: fixed`)이라 셸의 safe area 여백을 받지 못합니다 —
   // 지표 모달과 같이 스스로 읽습니다(lib/safe-area.ts).
   const insets = safeAreaInsetsFrom(useGlobalProps());
@@ -89,7 +88,12 @@ export function GemPurchaseScreen({ gemBalance, onClose }: GemPurchaseScreenProp
         data-testid="gem-purchase-screen-close"
         accessibility-elements-hidden={noticeOpen}
       >
-        <RoundButton icon={cross} size="l" accessibilityLabel="닫기" bindtap={handleClose} />
+        <RoundButton
+          icon={cross}
+          size="l"
+          accessibilityLabel={copy.common.close}
+          bindtap={handleClose}
+        />
       </view>
       <scroll-view
         className="gem-purchase-screen-scroll"
@@ -110,7 +114,7 @@ export function GemPurchaseScreen({ gemBalance, onClose }: GemPurchaseScreenProp
               className="gem-purchase-screen-balance"
               data-testid="gem-purchase-screen-balance"
               accessibility-element={true}
-              accessibility-label={`보유 젬 ${formatGemCount(gemBalance)}개`}
+              accessibility-label={copy.gemPurchase.balance(gemBalance, formatGemCount(gemBalance))}
             >
               <svg className="gem-purchase-screen-gem" content={gemIcon} />
               <view className="gem-purchase-screen-balance-text">
@@ -187,7 +191,7 @@ export function GemPurchaseScreen({ gemBalance, onClose }: GemPurchaseScreenProp
             </view>
             <view className="gem-purchase-screen-payment-method">
               <SettingsGroup
-                accessibilityLabel="결제 수단"
+                accessibilityLabel={copy.gemPurchase.paymentMethod}
                 items={[
                   {
                     id: "payment-method",
@@ -229,8 +233,8 @@ export function GemPurchaseScreen({ gemBalance, onClose }: GemPurchaseScreenProp
       {noticeOpen ? (
         <view data-testid="gem-purchase-screen-notice">
           <Dialog
-            title={gemPaymentNotice.title}
-            description={gemPaymentNotice.description}
+            title={copy.gemPurchase.notice.title}
+            description={copy.gemPurchase.notice.description}
             actions={noticeActions}
             phase="visible"
             bindaction={closeNotice}

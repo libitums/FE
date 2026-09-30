@@ -4,9 +4,10 @@ import { BottomNavigator } from "../components/BottomNavigator";
 import type { AnalyticsIdentifyAppProps } from "../lib/analytics.contract";
 import type { AnswerResult } from "../lib/answer-result";
 import type { EntryAppProps } from "../lib/entry-flow";
-import { initialEntryLanguage } from "../lib/entry-language";
+import { loadUiLanguage } from "../lib/ui-language";
 import type { EntryLanguage } from "../lib/entry-language";
 import { safeAreaInsetsFrom, zeroSafeAreaInsets } from "../lib/safe-area";
+import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialSessionOptions } from "../lib/session-options";
 import type { SessionOptions } from "../lib/session-options";
 import { isMapItemComplete, journeyMapSections } from "../screens/journey-map/journey-map";
@@ -114,16 +115,13 @@ export function App({
   AppSeedProps = {}) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다
   // — 셸은 `NavAction`도 `dispatch`도 받지 않습니다(ADR-0007 D3).
-  //
   // 초기값이 `entryInitialNav`입니다 — 부팅이 진입 스택 `[{ name: "splash" }]`로
   // 시작합니다. `initialNav` 자신은 안 바뀝니다 — 그래서 이 한 줄이 부팅 화면을
   // 바꾸는 유일한 자리입니다.
   const [nav, dispatch] = useReducer(navReducer, entryInitialNav);
 
-  // 고른 언어의 세션 상태입니다 — App `useState`가 소유합니다(화면 둘·깊이
-  // 1단계로 전역 상태 도입 조건 미달). 화면을 새로 렌더하면
-  // `initialEntryLanguage`로 돌아갑니다(영속하지 않습니다).
-  const [entryLanguage, setEntryLanguage] = useState<EntryLanguage>(initialEntryLanguage);
+  // 고른 언어(= UI 언어)입니다. 첫 렌더에 저장값을 읽고, Provider가 이 언어의 문구표를 내립니다.
+  const [entryLanguage, setEntryLanguage] = useState<EntryLanguage>(loadUiLanguage);
 
   // **진행(완료 스텝 수)의 진실의 출처입니다.** 스텝 상태는 여기서 파생되고(`stepStatusAt`),
   // 데이터에도 `Nav`에도 적지 않습니다 — 진행은 라우팅 상태가 아닙니다(ADR-0007 D3).
@@ -244,57 +242,59 @@ export function App({
   const shellInsets = isFullBleedScreen(screenNow) ? zeroSafeAreaInsets : insets;
 
   return (
-    <ErrorBoundary>
-      <view
-        className={screenNow.name === "splash" ? "app app-splash" : "app"}
-        style={{
-          paddingTop: `${shellInsets.top}px`,
-          // 바가 설 때 아래는 비우지 않습니다 — 바가 화면 바닥까지 배경을 칠하고,
-          // 홈 인디케이터를 피하는 여백은 바 자신의 `padding-bottom`이 집니다.
-          paddingBottom: `${showsNavigator ? 0 : shellInsets.bottom}px`,
-          paddingLeft: `${shellInsets.left}px`,
-          paddingRight: `${shellInsets.right}px`,
-        }}
-      >
-        <view className="app-content">
-          {renderScreen(screenNow, wiring)}
-          {/* 전역 머리는 바텀 네비게이션과 같은 조건(탭 루트)에서만 섭니다 — 그 위에 쌓인
+    <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
+      <ErrorBoundary>
+        <view
+          className={screenNow.name === "splash" ? "app app-splash" : "app"}
+          style={{
+            paddingTop: `${shellInsets.top}px`,
+            // 바가 설 때 아래는 비우지 않습니다 — 바가 화면 바닥까지 배경을 칠하고,
+            // 홈 인디케이터를 피하는 여백은 바 자신의 `padding-bottom`이 집니다.
+            paddingBottom: `${showsNavigator ? 0 : shellInsets.bottom}px`,
+            paddingLeft: `${shellInsets.left}px`,
+            paddingRight: `${shellInsets.right}px`,
+          }}
+        >
+          <view className="app-content">
+            {renderScreen(screenNow, wiring)}
+            {/* 전역 머리는 바텀 네비게이션과 같은 조건(탭 루트)에서만 섭니다 — 그 위에 쌓인
               화면은 하나의 일을 끝내러 들어온 자리라 자기 머리를 스스로 집니다.
 
               머리도 콘텐츠 **위에 겹칩니다**(`.app-header`). 스크롤되는 내용이 칩
               사이로 비치는 것이 디자인 의도이고, 내용이 머리에 가리지 않는 일은 화면의 위
               여백이 집니다. 지표는 아직 규칙이 없어 0입니다. */}
-          {showsNavigator ? (
-            <AppHeader
-              streakDays={0}
-              trophyCount={0}
-              gemCount={gemCount}
-              obscured={screenLayerOpen}
-              onOpenNotifications={wiring.onOpenNotifications}
-            />
-          ) : null}
-        </view>
-        {/* 진입 구간(`entry`가 비지 않은 동안)에는 탭 전환 수단을 보이지
+            {showsNavigator ? (
+              <AppHeader
+                streakDays={0}
+                trophyCount={0}
+                gemCount={gemCount}
+                obscured={screenLayerOpen}
+                onOpenNotifications={wiring.onOpenNotifications}
+              />
+            ) : null}
+          </view>
+          {/* 진입 구간(`entry`가 비지 않은 동안)에는 탭 전환 수단을 보이지
             않습니다 — `enterApp`이 `entry`를 비운 뒤에야 처음 섭니다.
 
             바는 콘텐츠 **위에 겹칩니다**(`.app-navigator`). 그래야 바 위쪽 모서리
             밖으로 콘텐츠가 비쳐 라운드가 드러납니다. 콘텐츠가 바에 가리지 않는 일은
             화면이 집니다 — 화면 하단 여백이 그 몫입니다. */}
-        {showsNavigator ? (
-          <view className="app-navigator">
-            <BottomNavigator
-              tab={nav.tab}
-              onSelectTab={(tab) => {
-                // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
-                // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
-                if (tab === "settings" && nav.tab !== "settings")
-                  settingsEventSink?.({ name: "settings_opened" });
-                dispatch({ type: "switchTab", tab });
-              }}
-            />
-          </view>
-        ) : null}
-      </view>
-    </ErrorBoundary>
+          {showsNavigator ? (
+            <view className="app-navigator">
+              <BottomNavigator
+                tab={nav.tab}
+                onSelectTab={(tab) => {
+                  // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
+                  // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
+                  if (tab === "settings" && nav.tab !== "settings")
+                    settingsEventSink?.({ name: "settings_opened" });
+                  dispatch({ type: "switchTab", tab });
+                }}
+              />
+            </view>
+          ) : null}
+        </view>
+      </ErrorBoundary>
+    </UiCopyContext.Provider>
   );
 }

@@ -1,3 +1,4 @@
+import { useUiCopy } from "../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
 
 import { writingBlank, writingPromptLabel, type WritingQuestion } from "../lib/writing-session";
@@ -18,13 +19,14 @@ export type WritingPromptProps = {
 };
 
 export function WritingPrompt({ question, tone }: WritingPromptProps): ReactNode {
+  const copy = useUiCopy();
   const before = question.before.trimEnd();
   return (
     <text
       className={`writing-prompt writing-prompt-${tone}`}
       data-testid="writing-prompt"
       // 밑줄을 그대로 읽으면 「밑줄 밑줄 밑줄」이 되므로 「빈칸」으로 읽힙니다.
-      accessibility-label={writingPromptLabel(question)}
+      accessibility-label={writingPromptLabel(question, copy)}
     >
       {/* Lynx에서 안쪽 `<text>`는 바깥 글꼴을 물려받지 않아(기기 확인) 조각마다 글꼴을 줍니다. */}
       {before === "" ? null : <text className="writing-prompt-before">{`${before} `}</text>}

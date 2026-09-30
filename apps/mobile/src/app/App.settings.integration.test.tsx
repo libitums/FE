@@ -166,7 +166,7 @@ test("[IT5] 설정에서 자동 재생을 끈 뒤 듣기 화면을 열면 재생
   expect(audio).toHaveLength(0);
   expect(screen.getByTestId("listening-prompt-playback")).toHaveAttribute(
     "accessibility-label",
-    "듣기",
+    "Play",
   );
 });
 
@@ -196,14 +196,14 @@ test("[IT7] IT5 상태(자동 재생 끔)에서 재생 컨트롤을 tap하면 �
   expect(audio).toHaveLength(0);
   expect(screen.getByTestId("listening-prompt-playback")).toHaveAttribute(
     "accessibility-label",
-    "듣기",
+    "Play",
   );
 
   fireEvent.tap(screen.getByTestId("listening-prompt-playback"), {});
 
   expect(screen.getByTestId("listening-prompt-playback")).toHaveAttribute(
     "accessibility-label",
-    "멈춤",
+    "Pause",
   );
 });
 
@@ -218,7 +218,7 @@ test("[IT8] (앵커) 토글을 건드리지 않고 듣기 화면을 열면 오�
   expect(audio).toHaveLength(1);
   expect(screen.getByTestId("listening-prompt-playback")).toHaveAttribute(
     "accessibility-label",
-    "멈춤",
+    "Pause",
   );
   expect(screen.getByTestId("listening-prompt-text")).toBeInTheDocument();
 });

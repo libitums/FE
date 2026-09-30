@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
 
 import { cultureScreenTitle } from "./culture";
@@ -28,6 +29,7 @@ export function CultureScreen({
   onExit,
   onStartQuiz,
 }: CultureScreenProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view className="culture-screen">
       {/* [고정] 머리 — 나가는 수단 `맵으로` 하나 + 제목. */}
@@ -36,18 +38,18 @@ export function CultureScreen({
           className="culture-screen-exit"
           data-testid="culture-screen-exit"
           accessibility-element={true}
-          accessibility-label="맵으로"
+          accessibility-label={copy.common.exitTo.journey}
           accessibility-traits="button"
           bindtap={onExit}
         >
-          <text className="culture-screen-exit-label">맵으로</text>
+          <text className="culture-screen-exit-label">{copy.common.exitTo.journey}</text>
         </view>
         <text
           className="culture-screen-title"
           data-testid="culture-screen-title"
           accessibility-traits="header"
         >
-          {cultureScreenTitle(stepOrdinal)}
+          {cultureScreenTitle(stepOrdinal, copy)}
         </text>
       </view>
 
@@ -91,11 +93,11 @@ export function CultureScreen({
         className="culture-screen-quiz"
         data-testid="culture-screen-quiz"
         accessibility-element={true}
-        accessibility-label="퀴즈 풀기"
+        accessibility-label={copy.culture.takeQuiz}
         accessibility-traits="button"
         bindtap={onStartQuiz}
       >
-        <text className="culture-screen-quiz-label">퀴즈 풀기</text>
+        <text className="culture-screen-quiz-label">{copy.culture.takeQuiz}</text>
       </view>
     </view>
   );

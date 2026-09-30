@@ -6,6 +6,8 @@ import { writingPassCriterion } from "../../lib/writing-judge";
 import type { WritingQuestion } from "../../lib/writing-session";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import { WritingScreen } from "./WritingScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 실제 화면을 렌더하고 상태 · 상호작용을 봅니다(ADR-0006 D4). 공용 핵심(리듀서 ·
 // 판정 · 캔버스)은 대역하지 않습니다 — 화면이 그것을 실제로 부르는지가 이 파일이 보는 것의
@@ -109,12 +111,12 @@ test("[WSC1] 첫 음절의 흐린 안내가 깔리고, 쓰기 전에는 아래 �
 });
 
 // WSC2 — 견주기는 안내와 같은 요청 모양에 쓴 획을 싣습니다.
-test("[WSC2] 쓰면 확인하기가 서고, 누르면 쓴 획으로 견주고 판정 배지가 선다 — 안내는 걷힌다", () => {
+test("[WSC2] 쓰면 Check가 서고, 누르면 쓴 획으로 견주고 판정 배지가 선다 — 안내는 걷힌다", () => {
   const calls = stubHost([["0.9", "0.9"]]);
   renderScreen();
   draw();
 
-  expect(action()).toHaveAttribute("accessibility-label", "확인하기");
+  expect(action()).toHaveAttribute("accessibility-label", "Check");
   fireEvent.tap(action(), {});
 
   expect(calls.compare).toEqual([
@@ -135,10 +137,10 @@ test("[WSC2] 쓰면 확인하기가 서고, 누르면 쓴 획으로 견주고 �
     screen.getByTestId("answer-verdict"),
   );
   expect(screen.queryByTestId("writing-canvas-guide")).not.toBeInTheDocument();
-  expect(action()).toHaveAttribute("accessibility-label", "다음");
+  expect(action()).toHaveAttribute("accessibility-label", "Next");
 });
 
-// WSC3 — 틀리면 캔버스의 `다시 쓰기`로 같은 음절을 빈 판에서 다시 씁니다.
+// WSC3 — 틀리면 캔버스의 `Write again`으로 같은 음절을 빈 판에서 다시 씁니다.
 test("[WSC3] 틀리면 다시 쓰기가 서고, 누르면 같은 음절의 빈 판으로 돌아가 안내가 다시 선다", () => {
   stubHost([["0.1", "0.1"]]);
   renderScreen();
@@ -149,7 +151,7 @@ test("[WSC3] 틀리면 다시 쓰기가 서고, 누르면 같은 음절의 빈 �
   const retry = within(screen.getByTestId("writing-canvas-erase")).getByTestId(
     "ui-lynx-round-button",
   );
-  expect(retry).toHaveAttribute("accessibility-label", "다시 쓰기");
+  expect(retry).toHaveAttribute("accessibility-label", "Write again");
   fireEvent.tap(retry, {});
 
   expect(phase()).toBe("writing");
@@ -158,8 +160,8 @@ test("[WSC3] 틀리면 다시 쓰기가 서고, 누르면 같은 음절의 빈 �
   expect(screen.getByTestId("syllable-slots-slot-0")).toHaveAttribute("data-status", "current");
 });
 
-// WSC4 — 쓰는 중에는 캔버스의 `지우기`가 판을 비웁니다.
-test("[WSC4] 쓰는 중에 지우기를 누르면 판이 비고 확인하기가 걷힌다", () => {
+// WSC4 — 쓰는 중에는 캔버스의 `Erase`가 판을 비웁니다.
+test("[WSC4] 쓰는 중에 지우기를 누르면 판이 비고 Check가 걷힌다", () => {
   stubHost([]);
   renderScreen();
   draw();
@@ -183,8 +185,8 @@ test("[WSC5] 음절을 모두 쓰면 다음 문항으로, 끝에서 결과 보�
   const props = renderScreen();
 
   draw();
-  fireEvent.tap(action(), {}); // 확인하기 — 가: 정답
-  fireEvent.tap(action(), {}); // 다음
+  fireEvent.tap(action(), {}); // Check — 가: 정답
+  fireEvent.tap(action(), {}); // Next
   expect(screen.getByTestId("syllable-slots-slot-0")).toHaveAttribute("data-status", "done");
   expect(screen.getByTestId("syllable-slots-slot-1")).toHaveAttribute("data-status", "current");
 
@@ -199,12 +201,12 @@ test("[WSC5] 음절을 모두 쓰면 다음 문항으로, 끝에서 결과 보�
   fireEvent.tap(action(), {}); // 다음 — 둘째 문항 끝
 
   expect(screen.getByTestId("writing-screen-complete")).toBeInTheDocument();
-  fireEvent.tap(action(), {}); // 결과 보기
+  fireEvent.tap(action(), {}); // See results
   expect(props.onFinish).toHaveBeenCalledWith("directions", ["incorrect", "correct"]);
 });
 
 // WSC6 — 호스트가 없으면 안내는 글자로 대신 서고, 판정 없이 넘어가며 결과에 싣지 않습니다.
-test("[WSC6] 호스트가 없으면 글자 안내가 서고, 확인하기가 잴 수 없음으로 가 결과 없이 넘어간다", () => {
+test("[WSC6] 호스트가 없으면 글자 안내가 서고, Check가 잴 수 없음으로 가 결과 없이 넘어간다", () => {
   const props = renderScreen();
 
   expect(screen.getByTestId("writing-canvas-guide-text").textContent).toBe("가");
@@ -217,7 +219,7 @@ test("[WSC6] 호스트가 없으면 글자 안내가 서고, 확인하기가 잴
     fireEvent.tap(action(), {});
   }
 
-  fireEvent.tap(action(), {}); // 결과 보기
+  fireEvent.tap(action(), {}); // See results
   expect(props.onFinish).toHaveBeenCalledWith("directions", []);
 });
 
@@ -244,4 +246,113 @@ test("[WSC8] 문장 · 음절 칸은 무대 카드에, 캔버스는 스크롤을
   const scroll = screen.getByTestId("learning-shell-scroll");
   expect(scroll).toContainElement(screen.getByTestId("writing-canvas"));
   expect(scroll).toHaveAttribute("enable-scroll", "false");
+});
+
+// ---------------------------------------------------------------- 영어 렌더 · 문구표 (LA5)
+
+test("[LA5-E] 지시문 · 안내 글자 이름이 영어다", () => {
+  stubHost([]);
+  renderScreen();
+
+  expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
+    "Trace the letters in the blank.",
+  );
+  expect(screen.getByTestId("writing-canvas-guide")).toHaveAttribute(
+    "accessibility-label",
+    "Guide letter 가",
+  );
+});
+
+test("[LA5-E] 쓰는 중 지우기 버튼의 이름이 Erase다", () => {
+  stubHost([]);
+  renderScreen();
+  draw();
+
+  expect(
+    within(screen.getByTestId("writing-canvas-erase")).getByTestId("ui-lynx-round-button"),
+  ).toHaveAttribute("accessibility-label", "Erase");
+});
+
+test("[LA5-E] 잴 수 없을 때 안내가 영어다", () => {
+  renderScreen();
+  draw();
+  fireEvent.tap(action(), {});
+
+  expect(screen.getByTestId("writing-canvas-notice")).toHaveTextContent(
+    "Handwriting can't be checked right now. Moving on.",
+  );
+});
+
+function renderScreenMarked(stepId: JourneyStepId = "directions") {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <WritingScreen stepId={stepId} onExit={() => {}} onFinish={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+}
+
+test("[LA5-M] 문구표를 주입하면 지시문 · 안내 글자 · 나가기가 표의 경로로 나온다", () => {
+  stubHost([]);
+  renderScreenMarked();
+
+  expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
+    "⟦writing.instruction⟧",
+  );
+  expect(screen.getByTestId("writing-canvas-guide")).toHaveAttribute(
+    "accessibility-label",
+    "⟦writing.guideGlyph⟧(가)",
+  );
+  expect(screen.getByTestId("learning-shell-exit")).toHaveAttribute(
+    "accessibility-label",
+    "⟦learningShell.exitLesson⟧",
+  );
+});
+
+test("[LA5-M] 문구표를 주입하고 쓰면 지우기 · 확인 · 판정 · 다음이 표의 경로로 나온다", () => {
+  stubHost([["0.9", "0.9"]]);
+  renderScreenMarked();
+  draw();
+
+  expect(
+    within(screen.getByTestId("writing-canvas-erase")).getByTestId("ui-lynx-round-button"),
+  ).toHaveAttribute("accessibility-label", "⟦writing.erase⟧");
+  expect(action()).toHaveAttribute("accessibility-label", "⟦common.check⟧");
+
+  fireEvent.tap(action(), {});
+
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.answerResult.correct⟧",
+  );
+  expect(action()).toHaveAttribute("accessibility-label", "⟦common.next⟧");
+});
+
+test("[LA5-M] 문구표를 주입하고 틀리면 다시 쓰기의 이름이 rewrite 경로로 나온다", () => {
+  stubHost([["0.1", "0.1"]]);
+  renderScreenMarked();
+  draw();
+  fireEvent.tap(action(), {});
+
+  expect(
+    within(screen.getByTestId("writing-canvas-erase")).getByTestId("ui-lynx-round-button"),
+  ).toHaveAttribute("accessibility-label", "⟦writing.rewrite⟧");
+});
+
+test("[LA5-M] 문구표를 주입하고 잴 수 없으면 안내가 recognitionUnavailable 경로로 나온다", () => {
+  renderScreenMarked();
+  draw();
+  fireEvent.tap(action(), {});
+
+  expect(screen.getByTestId("writing-canvas-notice")).toHaveTextContent(
+    "⟦writing.recognitionUnavailable⟧",
+  );
+});
+
+test("[LA5-M] 문구표를 주입하고 문항이 없는 스텝이면 완료 문구 · 마치기가 표의 경로로 나온다", () => {
+  renderScreenMarked("greeting");
+
+  expect(screen.getByTestId("writing-screen-complete")).toHaveTextContent(
+    "⟦common.allQuestionsDone⟧",
+  );
+  expect(action()).toHaveAttribute("accessibility-label", "⟦common.seeResults⟧");
 });

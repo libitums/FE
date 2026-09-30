@@ -4,7 +4,6 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 const audio = vi.hoisted(() => ({ playAudio: vi.fn(), stopAudio: vi.fn() }));
 vi.mock("../../lib/audio", () => audio);
 
-import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import type { PhoneCallConversation } from "./phone-call.contract";
 import { PhoneCallScreen } from "./PhoneCallScreen";
 
@@ -16,12 +15,12 @@ import { PhoneCallScreen } from "./PhoneCallScreen";
 
 const conversation: PhoneCallConversation = {
   unitId: "appointment-confirmation-phone-call",
-  title: "약속 확인 전화",
+  title: "Appointment call",
   turns: [
     {
       id: "confirm-time",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
       audioSource: "phone-call-confirm-01",
       reply: { id: "confirm-time-reply", text: "네, 토요일 오후 2시에 만나요." },
@@ -29,7 +28,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "confirm-place",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
       audioSource: "phone-call-confirm-02",
       reply: { id: "confirm-place-reply", text: "네, 2번 출구 오른쪽 카페예요." },
@@ -37,7 +36,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "goodbye",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "좋아요. 그럼 토요일에 봐요!",
       audioSource: "phone-call-confirm-03",
       reply: { id: "goodbye-reply", text: "네, 토요일에 봐요!" },
@@ -48,33 +47,33 @@ const conversation: PhoneCallConversation = {
 describe("PhoneCallScreen 나가기 라벨", () => {
   beforeEach(() => vi.resetAllMocks());
 
-  it("[X1] exitLabel=목록으로(roleplay) → 나가기 텍스트·accessibility-label이 목록으로다", () => {
+  it("[X1] exitTo=roleplay → 나가기 텍스트·accessibility-label이 Back to list다", () => {
     render(
       <PhoneCallScreen
         unitId={conversation.unitId}
         conversation={conversation}
         completionStatus="available"
-        exitLabel={specialUnitExitLabel("roleplay")}
+        exitTo="roleplay"
         onComplete={vi.fn()}
         onExit={vi.fn()}
       />,
     );
 
     const exit = screen.getByTestId("phone-call-exit-button");
-    expect(exit).toHaveTextContent("목록으로");
-    expect(exit).toHaveAttribute("accessibility-label", "목록으로");
+    expect(exit).toHaveTextContent("Back to list");
+    expect(exit).toHaveAttribute("accessibility-label", "Back to list");
     expect(exit).toHaveAttribute("accessibility-traits", "button");
     expect(exit).toHaveAttribute("accessibility-element", "true");
   });
 
-  it("[X2] 목록으로 상태에서 나가기 tap → onExit가 기존과 같은 인자('incomplete')로 정확히 1회", () => {
+  it("[X2] roleplay 진입에서 나가기 tap → onExit가 기존과 같은 인자('incomplete')로 정확히 1회", () => {
     const onExit = vi.fn();
     render(
       <PhoneCallScreen
         unitId={conversation.unitId}
         conversation={conversation}
         completionStatus="available"
-        exitLabel={specialUnitExitLabel("roleplay")}
+        exitTo="roleplay"
         onComplete={vi.fn()}
         onExit={onExit}
       />,
@@ -86,24 +85,24 @@ describe("PhoneCallScreen 나가기 라벨", () => {
     expect(onExit).toHaveBeenCalledWith("incomplete");
   });
 
-  it("[X3] exitLabel=맵으로(journey) → 나가기 텍스트·accessibility-label이 맵으로다", () => {
+  it("[X3] exitTo=journey → 나가기 텍스트·accessibility-label이 Back to map이다", () => {
     render(
       <PhoneCallScreen
         unitId={conversation.unitId}
         conversation={conversation}
         completionStatus="available"
-        exitLabel={specialUnitExitLabel("journey")}
+        exitTo="journey"
         onComplete={vi.fn()}
         onExit={vi.fn()}
       />,
     );
 
     const exit = screen.getByTestId("phone-call-exit-button");
-    expect(exit).toHaveTextContent("맵으로");
-    expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+    expect(exit).toHaveTextContent("Back to map");
+    expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   });
 
-  it("[X4] exitLabel 생략 → 기본값 맵으로", () => {
+  it("[X4] exitTo 생략 → 기본값 Back to map", () => {
     render(
       <PhoneCallScreen
         unitId={conversation.unitId}
@@ -115,7 +114,7 @@ describe("PhoneCallScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("phone-call-exit-button");
-    expect(exit).toHaveTextContent("맵으로");
-    expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+    expect(exit).toHaveTextContent("Back to map");
+    expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   });
 });

@@ -3,6 +3,8 @@ import type { ReactNode } from "@lynx-js/react";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { useUiCopy } from "../../lib/ui-copy";
+
 import type { TermsScreenProps } from "./terms.contract";
 
 import "./terms-screen.css";
@@ -12,6 +14,7 @@ import "./terms-screen.css";
 // `header`입니다(ADR-0016 D12 G1). 문단은 접근성 속성 0개 — 화면 안 조작
 // 단위는 나가기 하나입니다. 외부 링크 · 웹뷰 0건입니다.
 export function TermsScreen({ sections, onExit }: TermsScreenProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view className="terms-screen">
       {/* 머리 — 알림 화면과 같은 모양입니다: 동그란 뒤로 버튼(첫 자식, 낭독 `설정으로`)과
@@ -19,7 +22,7 @@ export function TermsScreen({ sections, onExit }: TermsScreenProps): ReactNode {
       <view className="terms-screen-header">
         <view className="terms-screen-exit" data-testid="terms-screen-exit">
           <RoundButton
-            accessibilityLabel="설정으로"
+            accessibilityLabel={copy.common.backToSettings}
             icon={arrowLeft03}
             variant="neutral"
             size="xl"
@@ -31,7 +34,7 @@ export function TermsScreen({ sections, onExit }: TermsScreenProps): ReactNode {
           data-testid="terms-screen-title"
           accessibility-traits="header"
         >
-          개인정보 보호 및 약관
+          {copy.terms.title}
         </text>
       </view>
 

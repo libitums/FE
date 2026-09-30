@@ -2,7 +2,10 @@
 
 - 대상: 여정 맵의 `VisualNovelMapItem`과 `VisualNovelScreen` · `VisualNovelScene` ·
   `DialoguePanel`
-- 단위: `cafe-arrival-visual-novel`, 제목 `카페에 도착한 지민`
+- 단위: `cafe-arrival-visual-novel`, 제목 `Jimin arrives at the café`(2026-09-29 전: `카페에 도착한 지민`)
+- ⟨2026-09-29⟩ UI 문구 · 제목 · 화자 이름이 영어로 바뀌었다([ADR-0031](../adr/0031-ui-language-catalog.md)) —
+  아래의 한국어 라벨(`다음` · `처음부터 보기` · `장면 1 / 3` · `이야기 완료` · `맵으로` · `지민`)은 당시 값이고
+  대응은 ADR-0031 부록에 있다. 시각 값 · 토큰 · 레이어는 바뀌지 않았다. 대사는 학습 콘텐츠라 한국어 그대로다.
 - 기준 흐름: `arrive` → `find` → `enter`의 고정 3장면. 분기·호감도·선택지·채점·애니메이션·
   오디오는 없다. `enter` 장면에 닿는 전이가 완료를 건다.
 - 디자인 단일 출처: harness `profiles/frontend/knowledge/DESIGN.md`,

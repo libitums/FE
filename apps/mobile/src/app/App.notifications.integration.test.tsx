@@ -16,6 +16,7 @@ import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contra
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
 import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
+import { uiCopyEn } from "../lib/ui-copy-en";
 
 // 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
@@ -87,7 +88,7 @@ function finishMessengerConversation() {
 test("[IN1] 여정 맵 알림 버튼을 tap하면 알림 화면이 서고 바가 사라진다", async () => {
   await openNotificationsScreen();
 
-  expect(screen.getByTestId("notifications-screen-title")).toHaveTextContent("알림");
+  expect(screen.getByTestId("notifications-screen-title")).toHaveTextContent("Notifications");
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 
   // 나가기는 라운드 버튼을 감싼 상자입니다(#123) — 탭 대상은 그 안쪽입니다.
@@ -129,7 +130,7 @@ test("[IN3] 알림 목록이 실제 데이터의 순서·수·행선지 문구�
 
   items.forEach((item) => {
     expect(screen.getByTestId(`notification-list-item-destination-${item.id}`)).toHaveTextContent(
-      notificationDestinationLabel(item.target.kind),
+      notificationDestinationLabel(item.target.kind, uiCopyEn),
     );
   });
 });
@@ -143,7 +144,7 @@ test("[IN4] 메신저 대상 항목을 tap하면 메신저 화면이 열리고 �
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
   expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
     "accessibility-label",
-    "맵으로",
+    "Back to map",
   );
 
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
@@ -162,7 +163,7 @@ test("[IN5] 전화 대상 항목을 tap하면 전화 화면이 열리고 나가�
   tapNotificationItem(phoneCallNotificationItem());
 
   expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("맵으로");
+  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("Back to map");
 
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
@@ -174,7 +175,7 @@ test("[IN6] 비주얼 노벨 대상 항목을 tap하면 비주얼 노벨 화면�
   tapNotificationItem(visualNovelNotificationItem());
 
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("맵으로");
+  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("Back to map");
 
   fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
 
@@ -194,7 +195,7 @@ test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 �
   expect(screen.getByTestId(mapItemTestId)).toHaveAttribute("data-status", "clear");
   expect(screen.getByTestId(mapItemTestId)).toHaveAttribute(
     "accessibility-label",
-    "약속 확인 메시지, 완료됨, 이야기 연결",
+    "Appointment message, completed, story",
   );
 });
 

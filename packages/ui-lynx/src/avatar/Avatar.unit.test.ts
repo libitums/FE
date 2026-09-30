@@ -26,7 +26,7 @@ describe("Avatar contract", () => {
   test("이름과 이미지가 없으면 Placeholder를 쓰고 md를 기본 Size로 쓴다", () => {
     expect(getAvatarContract({})).toMatchObject({
       accessibilityElement: true,
-      accessibilityLabel: "프로필 사진 없음",
+      accessibilityLabel: "No profile photo",
       content: "placeholder",
       size: "md",
     });

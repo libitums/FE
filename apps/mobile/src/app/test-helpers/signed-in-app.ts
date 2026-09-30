@@ -11,6 +11,13 @@ import type { AuthSession } from "../../lib/auth-session.contract";
 import { authSessionStorageKey, serializeAuthSession } from "../../lib/auth-session";
 import { entrySplashDurationMs } from "../../lib/entry-flow";
 
+/** `StorageModule` 대역의 모양입니다. */
+export type StorageModuleDouble = {
+  readonly get: (key: string) => string | null;
+  readonly set: (key: string, value: string) => void;
+  readonly remove: (key: string) => void;
+};
+
 /** 부팅에 심는 세션입니다. 값은 픽스처이고 서버 자격이 아닙니다. */
 export const signedInBootSession: AuthSession = {
   accessToken: "boot-access-token",
@@ -36,7 +43,14 @@ function refreshedSessionBodyFor(accessToken: string): string {
  */
 export async function renderSignedInApp(
   ui: Parameters<typeof render>[0],
-  options: { readonly refreshedAccessToken?: string } = {},
+  options: {
+    readonly refreshedAccessToken?: string;
+    /**
+     * 저장소 대역을 직접 넘길 때 씁니다(예: 호출을 기록하는 대역, 이미 값이 든 저장소). 넘기면 이 헬퍼는
+     * 세션을 심지 않습니다 — 부를 쪽이 `authSessionStorageKey`를 넣어 둡니다.
+     */
+    readonly storageModule?: StorageModuleDouble;
+  } = {},
 ): Promise<ReturnType<typeof render>> {
   const refreshedSessionBody = refreshedSessionBodyFor(
     options.refreshedAccessToken ?? "refreshed-access-token",
@@ -48,7 +62,7 @@ export async function renderSignedInApp(
     ...(typeof previousNativeModules === "object" && previousNativeModules !== null
       ? previousNativeModules
       : {}),
-    StorageModule: {
+    StorageModule: options.storageModule ?? {
       get: (key: string) => store.get(key) ?? null,
       set: (key: string, value: string) => void store.set(key, value),
       remove: (key: string) => void store.delete(key),

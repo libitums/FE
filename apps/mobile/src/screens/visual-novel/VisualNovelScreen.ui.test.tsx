@@ -3,6 +3,8 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { VisualNovelScreen } from "./VisualNovelScreen";
 import { visualNovelStoryFor } from "./visual-novel";
 import type { VisualNovelProgress, VisualNovelScreenProps } from "./visual-novel.contract";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 const story = visualNovelStoryFor("cafe-arrival-visual-novel");
 const props = (progress: VisualNovelProgress) => ({
@@ -17,8 +19,8 @@ describe("VisualNovelScreen UI", () => {
   it("renders title, progress, first scene/dialogue, and advances one beat per explicit button", () => {
     const p = props({ status: "active", beatIndex: 0 });
     render(<VisualNovelScreen {...p} />);
-    expect(screen.getByTestId("visual-novel-title")).toHaveTextContent("카페에 도착한 지민");
-    expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 1 / 3");
+    expect(screen.getByTestId("visual-novel-title")).toHaveTextContent("Jimin arrives at the café");
+    expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Scene 1 / 3");
     expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
     expect(screen.getByTestId("visual-novel-scene-arrive")).toHaveAttribute(
       "data-replaying",
@@ -37,7 +39,7 @@ describe("VisualNovelScreen UI", () => {
 
   it("selects the exact second beat from active progress", () => {
     render(<VisualNovelScreen {...props({ status: "active", beatIndex: 1 })} />);
-    expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("장면 2 / 3");
+    expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Scene 2 / 3");
     expect(screen.getByTestId("visual-novel-scene-find")).toBeInTheDocument();
     expect(screen.getByTestId("visual-novel-character-jimin-smile")).toBeInTheDocument();
     expect(screen.getByTestId("visual-novel-dialogue-find")).toHaveTextContent(
@@ -48,14 +50,14 @@ describe("VisualNovelScreen UI", () => {
   it("renders completed final beat with replay and exit actions", () => {
     const p = props({ status: "completed", beatIndex: 2 });
     render(<VisualNovelScreen {...p} />);
-    expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("이야기 완료");
+    expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Story complete");
     expect(screen.getByTestId("visual-novel-scene-enter")).toBeInTheDocument();
     expect(screen.getByTestId("visual-novel-dialogue-enter")).toHaveTextContent(
       "그럼 들어가서 같이 주문해 봐요.",
     );
     expect(screen.getByTestId("visual-novel-replay-button")).toHaveAttribute(
       "accessibility-label",
-      "처음부터 보기",
+      "Start over",
     );
     expect(screen.getByTestId("visual-novel-title")).toHaveAttribute(
       "accessibility-traits",
@@ -67,7 +69,7 @@ describe("VisualNovelScreen UI", () => {
     );
     expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
       "accessibility-label",
-      "맵으로",
+      "Back to map",
     );
     fireEvent.tap(screen.getByTestId("visual-novel-replay-button"), {});
     expect(p.onReplay).toHaveBeenCalledWith("cafe-arrival-visual-novel");
@@ -103,5 +105,46 @@ describe("VisualNovelScreen UI", () => {
         order[i - 1].compareDocumentPosition(order[i]) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
     }
+  });
+});
+
+describe("[ST8-M] 비주얼 노벨 문구는 표에서 읽는다", () => {
+  it("진행 · 다음 · 나가기", () => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <VisualNovelScreen {...props({ status: "active", beatIndex: 0 })} />
+      </UiCopyContext.Provider>,
+    );
+
+    expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent(
+      "⟦visualNovel.sceneProgress⟧(1, 3)",
+    );
+    expect(screen.getByTestId("visual-novel-advance-button")).toHaveAttribute(
+      "accessibility-label",
+      "⟦common.next⟧",
+    );
+    expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
+      "accessibility-label",
+      "⟦common.exitTo.journey⟧",
+    );
+    expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent(
+      "⟦common.exitTo.journey⟧",
+    );
+  });
+
+  it("끝 표시 · 처음부터 보기", () => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <VisualNovelScreen {...props({ status: "completed", beatIndex: 2 })} />
+      </UiCopyContext.Provider>,
+    );
+
+    expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent(
+      "⟦visualNovel.storyComplete⟧",
+    );
+    expect(screen.getByTestId("visual-novel-replay-button")).toHaveAttribute(
+      "accessibility-label",
+      "⟦common.startOver⟧",
+    );
   });
 });

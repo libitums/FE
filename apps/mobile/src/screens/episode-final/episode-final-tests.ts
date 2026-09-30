@@ -22,7 +22,7 @@ const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
       {
         kind: "word-choice",
         id: "welcome",
-        speakerName: "이유나",
+        speakerName: "Yuna",
         before: "어서 ",
         after: "!",
         translation: "Welcome!",
@@ -38,7 +38,7 @@ const episodeFinalTests: Record<EpisodeFinalUnitId, EpisodeFinalTest> = {
       {
         kind: "word-choice",
         id: "find-cosmetic",
-        speakerName: "나",
+        speakerName: "Me",
         before: "이 화장품 찾아",
         after: ".",
         translation: "Please help me find this cosmetic product.",

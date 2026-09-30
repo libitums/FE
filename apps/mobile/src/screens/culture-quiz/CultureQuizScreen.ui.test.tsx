@@ -4,6 +4,8 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import type { CultureQuizQuestion } from "./culture-quiz";
 import { CultureQuizScreen } from "./CultureQuizScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다(ADR-0006 D4). 순수
 // 함수(culture-quiz.ts의 세션 리듀서·판정·문구)는 mock하지 않습니다 — 화면이
@@ -108,22 +110,22 @@ function optionTestIds(question: CultureQuizQuestion): readonly string[] {
 
 // ---------------------------------------------------------------- X1: 제목
 
-test("[X1] 제목이 '3단계 · 문화 퀴즈'이고 accessibility-traits='header'다", () => {
+test("[X1] 제목이 'Step 3 · Culture quiz'이고 accessibility-traits='header'다", () => {
   renderOrdering();
 
   const title = screen.getByTestId("culture-quiz-screen-title");
-  expect(title).toHaveTextContent("3단계 · 문화 퀴즈");
+  expect(title).toHaveTextContent("Step 3 · Culture quiz");
   expect(title).toHaveAttribute("accessibility-traits", "header");
 });
 
 // ---------------------------------------------------------------- X2: 나가기
 
-test("[X2] -exit가 라벨 '맵으로'·traits='button'이고 탭하면 onExit이 정확히 한 번 불린다", () => {
+test("[X2] -exit가 라벨 'Back to map'·traits='button'이고 탭하면 onExit이 정확히 한 번 불린다", () => {
   const onExit = vi.fn<() => void>();
   renderOrdering({ onExit });
 
   const exit = screen.getByTestId("culture-quiz-screen-exit");
-  expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+  expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
 
   fireEvent.tap(exit, {});
@@ -133,10 +135,10 @@ test("[X2] -exit가 라벨 '맵으로'·traits='button'이고 탭하면 onExit�
 
 // ---------------------------------------------------------------- X3: 진행 문구
 
-test("[X3] 진행 문구가 fixture의 문항 수를 반영한다 — '문항 1 / 2'", () => {
+test("[X3] 진행 문구가 fixture의 문항 수를 반영한다 — 'Question 1 / 2'", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("culture-quiz-screen-progress")).toHaveTextContent("문항 1 / 2");
+  expect(screen.getByTestId("culture-quiz-screen-progress")).toHaveTextContent("Question 1 / 2");
 });
 
 // ---------------------------------------------------------------- X4: 제시문
@@ -208,7 +210,7 @@ test("[X7] 응답 뒤 고른 보기에만 판정 접미사가 붙고 나머지�
     (_choice, index) =>
       screen.getByTestId(`culture-quiz-option-${index}`).getAttribute("accessibility-label") ?? "",
   );
-  const suffixed = labels.map((label) => /, (정답|오답)$/.test(label));
+  const suffixed = labels.map((label) => /, (correct|incorrect)$/.test(label));
 
   expect(suffixed).toEqual(question.choices.map((_choice, index) => index === chosenIndex));
 });
@@ -221,7 +223,7 @@ test("[X8] -next를 탭하면 진행 문구가 다음 문항으로 넘어가고 
   fireEvent.tap(screen.getByTestId("culture-quiz-option-0"), {});
   fireEvent.tap(screen.getByTestId("culture-quiz-screen-next"), {});
 
-  expect(screen.getByTestId("culture-quiz-screen-progress")).toHaveTextContent("문항 2 / 2");
+  expect(screen.getByTestId("culture-quiz-screen-progress")).toHaveTextContent("Question 2 / 2");
   expect(screen.getByTestId("culture-quiz-screen-prompt")).toHaveTextContent(
     ORDERING_QUESTIONS[1]!.prompt,
   );
@@ -241,7 +243,7 @@ test("[X9] 마지막 문항의 -next 뒤 -complete가 뜨고 -exit가 여전히 
   fireEvent.tap(screen.getByTestId("culture-quiz-screen-next"), {});
 
   expect(screen.getByTestId("culture-quiz-screen-complete")).toHaveTextContent(
-    "문항을 모두 마쳤어요",
+    "All questions done",
   );
   expect(screen.getByTestId("culture-quiz-screen-exit")).toBeInTheDocument();
   expect(screen.queryByTestId("culture-quiz-screen-next")).not.toBeInTheDocument();
@@ -327,7 +329,7 @@ test("전체 흐름(응답 → 다음 → 완료)에서 예외 없이 렌더되�
   }).not.toThrow();
 
   expect(calls).toHaveLength(1);
-  expect(calls[0]?.content).toBe("문항을 모두 마쳤어요, 맵으로");
+  expect(calls[0]?.content).toBe("All questions done, Back to map");
 });
 
 // 실제 마지막 다음 전이만 custom 완료 발화를 사용하고 builtin 중복은 만들지
@@ -340,7 +342,7 @@ test("마지막 다음 뒤 custom 문화 완료 발화가 한 번이고 rerender
   completeAllQuestions();
 
   expect(completion).toHaveLength(1);
-  expect(completion[0]?.content).toBe("문항을 모두 마쳤어요, 맵으로");
+  expect(completion[0]?.content).toBe("All questions done, Back to map");
   expect(builtin).toHaveLength(0);
 
   view.rerender(<CultureQuizScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} />);
@@ -371,7 +373,7 @@ test("[X-A] 완료 전이 뒤 announce가 정확히 하나이고 content가 '문
 
   expect(screen.getByTestId("culture-quiz-screen-complete")).toBeInTheDocument(); // 앵커
   expect(calls).toHaveLength(1);
-  expect(calls[0]?.content).toBe("문항을 모두 마쳤어요, 맵으로");
+  expect(calls[0]?.content).toBe("All questions done, Back to map");
 });
 
 // X-B. 전이 **전에는** 0건입니다. 가드(`if (!complete) return;`)를 지우면 문항
@@ -389,7 +391,7 @@ test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () 
 
   fireEvent.tap(screen.getByTestId("culture-quiz-screen-next"), {});
 
-  expect(screen.getByTestId("culture-quiz-screen-progress")).toHaveTextContent("문항 2 / 2"); // 앵커
+  expect(screen.getByTestId("culture-quiz-screen-progress")).toHaveTextContent("Question 2 / 2"); // 앵커
   expect(calls).toHaveLength(0);
 });
 
@@ -447,5 +449,83 @@ test("[X-E] 문항이 0인 스텝은 마운트가 곧 완료라 그 순간 annou
 
   expect(screen.getByTestId("culture-quiz-screen-complete")).toBeInTheDocument(); // 앵커
   expect(calls).toHaveLength(1);
-  expect(calls[0]?.content).toBe("문항을 모두 마쳤어요, 맵으로");
+  expect(calls[0]?.content).toBe("All questions done, Back to map");
+});
+
+// ---------------------------------------------------------------- 영어 렌더 · 문구표 (LA7)
+
+test("[LA7-E] 지시문 · 다음 버튼이 영어다", () => {
+  renderOrdering();
+
+  expect(screen.getByText("Choose the right answer.")).toBeInTheDocument();
+  fireEvent.tap(screen.getByTestId("culture-quiz-option-0"), {});
+  const next = screen.getByTestId("culture-quiz-screen-next");
+  expect(next).toHaveAttribute("accessibility-label", "Next");
+  expect(next).toHaveTextContent("Next");
+});
+
+test("[LA7-E] 응답 뒤 고른 보기의 이름이 ', correct'로 끝나고 표시 Correct가 선다", () => {
+  renderOrdering();
+
+  fireEvent.tap(screen.getByTestId("culture-quiz-option-0"), {});
+
+  const option = screen.getByTestId("culture-quiz-option-0");
+  expect(option).toHaveAttribute("accessibility-label", "세배, correct");
+  expect(option).toHaveTextContent("Correct");
+});
+
+function renderOrderingMarked(): ReturnType<typeof render> {
+  return render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <CultureQuizScreen stepId="ordering" stepOrdinal={3} onExit={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+}
+
+test("[LA7-M] 문구표를 주입하면 제목 · 나가기 · 지시문 · 진행이 표의 경로로 나온다", () => {
+  renderOrderingMarked();
+
+  expect(screen.getByTestId("culture-quiz-screen-title")).toHaveTextContent(
+    "⟦common.stepTitle⟧(3, ⟦cultureQuiz.activity⟧)",
+  );
+  expect(screen.getByTestId("culture-quiz-screen-exit")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.exitTo.journey⟧",
+  );
+  expect(screen.getByText("⟦cultureQuiz.instruction⟧")).toBeInTheDocument();
+  expect(screen.getByTestId("culture-quiz-screen-progress")).toHaveTextContent(
+    "⟦cultureQuiz.progress⟧(1, 2)",
+  );
+});
+
+test("[LA7-M] 문구표를 주입하고 응답하면 보기 이름 · 표시 · 다음 버튼이 표의 경로로 나온다", () => {
+  renderOrderingMarked();
+
+  fireEvent.tap(screen.getByTestId("culture-quiz-option-0"), {});
+
+  const option = screen.getByTestId("culture-quiz-option-0");
+  expect(option).toHaveAttribute(
+    "accessibility-label",
+    "세배, ⟦common.answerResultSuffix.correct⟧",
+  );
+  expect(option).toHaveTextContent("⟦common.answerResult.correct⟧");
+  const next = screen.getByTestId("culture-quiz-screen-next");
+  expect(next).toHaveAttribute("accessibility-label", "⟦common.next⟧");
+  expect(next).toHaveTextContent("⟦common.next⟧");
+});
+
+test("[LA7-M] 문구표를 주입하고 문항을 마치면 완료 문구 · 낭독이 표의 경로로 나온다", () => {
+  const { completion } = stubCompletionHost();
+  renderOrderingMarked();
+
+  fireEvent.tap(screen.getByTestId("culture-quiz-option-0"), {});
+  fireEvent.tap(screen.getByTestId("culture-quiz-screen-next"), {});
+  fireEvent.tap(screen.getByTestId("culture-quiz-option-0"), {});
+  fireEvent.tap(screen.getByTestId("culture-quiz-screen-next"), {});
+
+  expect(screen.getByTestId("culture-quiz-screen-complete")).toHaveTextContent(
+    "⟦common.allQuestionsDone⟧",
+  );
+  expect(completion).toHaveLength(1);
+  expect(completion[0]?.content).toBe("⟦common.allQuestionsDone⟧, ⟦common.exitTo.journey⟧");
 });

@@ -4,7 +4,8 @@
 // 인식을 쓸 수 없음(`unavailable`). 인식 결과는 말하기를 멈출 때 **한 번** 옵니다
 // (`lib/speech-recognition.ts`) — 그래서 낱말을 칠하는 것도 그 한 번의 결과로 합니다.
 
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { UiCopy } from "../../lib/ui-copy.contract";
+import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 export type SpeakingQuestion = {
@@ -140,13 +141,10 @@ export function isSpeakingSessionComplete(state: SpeakingSessionState, total: nu
 }
 
 /** 채점 발화입니다 — 문장 만들기 · 듣기와 같은 형태입니다. */
-export function speakingAnnouncement(result: AnswerResult): string {
-  return `채점 결과, ${answerResultLabel(result)}`;
+export function speakingAnnouncement(result: AnswerResult, copy: UiCopy): string {
+  return copy.common.resultAnnouncement(result);
 }
 
-export const speakingCompletionText = "문항을 모두 마쳤어요";
-export const speakingFinishLabel = "결과 보기";
-
-export function speakingCompletionAnnouncement(nextActionLabel: string): string {
-  return `${speakingCompletionText}, ${nextActionLabel}`;
+export function speakingCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
+  return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
 }

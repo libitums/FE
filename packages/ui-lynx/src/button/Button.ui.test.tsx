@@ -40,7 +40,7 @@ describe("Button UI", () => {
 
     const button = screen.getByTestId("ui-lynx-button");
     expect(button).toHaveAttribute("data-loading", "true");
-    expect(button).toHaveAttribute("accessibility-label", "저장, 로딩 중");
+    expect(button).toHaveAttribute("accessibility-label", "저장, loading");
     expect(screen.getByTestId("ui-lynx-button-label")).toHaveTextContent("저장");
     expect(screen.getByTestId("ui-lynx-button-spinner")).toBeInTheDocument();
   });

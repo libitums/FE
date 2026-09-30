@@ -7,6 +7,8 @@ import { color } from "@libitums/design-tokens";
 
 import { JourneyStepNode } from "./JourneyStepNode";
 import type { JourneyStepId, JourneyStepStatus } from "./journey-map";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다(ADR-0006 D4). 계산된 스타일·레이아웃은
 // jsdom이 계산하지 않으므로 여기서 단언하지 않습니다 — `toHaveClass`·`toHaveStyle`을
@@ -42,13 +44,13 @@ const ICON_COLOR_BY_STATUS: Record<JourneyStepStatus, string> = {
 const STATES: readonly JourneyStepStatus[] = ["done", "current", "locked"];
 
 test("스텝 id가 유닛 testid에 실려 스텝마다 갈린다", () => {
-  render(<JourneyStepNode id="ordering" title="주문하기" status="current" onSelect={() => {}} />);
+  render(<JourneyStepNode id="ordering" title="Ordering" status="current" onSelect={() => {}} />);
 
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toBeInTheDocument();
 });
 
 test.each(STATES)("스텝 상태 %s가 유닛 상태 어휘로 옮겨 간다", (status) => {
-  render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
+  render(<JourneyStepNode id="ordering" title="Ordering" status={status} onSelect={() => {}} />);
 
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
@@ -57,7 +59,7 @@ test.each(STATES)("스텝 상태 %s가 유닛 상태 어휘로 옮겨 간다", (
 });
 
 test.each(STATES)("상태 %s에 맞는 아이콘과 색이 실린다", (status) => {
-  render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
+  render(<JourneyStepNode id="ordering" title="Ordering" status={status} onSelect={() => {}} />);
 
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering-icon")).toHaveAttribute(
     "content",
@@ -66,9 +68,11 @@ test.each(STATES)("상태 %s에 맞는 아이콘과 색이 실린다", (status) 
 });
 
 test("라벨이 title을 텍스트로 낸다", () => {
-  render(<JourneyStepNode id="greeting" title="첫 인사" status="done" onSelect={() => {}} />);
+  render(
+    <JourneyStepNode id="greeting" title="First greetings" status="done" onSelect={() => {}} />,
+  );
 
-  expect(screen.getByText("첫 인사")).toBeInTheDocument();
+  expect(screen.getByText("First greetings")).toBeInTheDocument();
 });
 
 // ---------------------------------------------------------------------- 접근성
@@ -77,35 +81,37 @@ test("라벨이 title을 텍스트로 낸다", () => {
 // 낭독되지 않아 그 결정이 통째로 걷은 속성입니다. 접미사를 붙이는 쪽은 `LearningUnit`
 // 이므로, 앱은 제목만 넘깁니다. 두 번 붙으면 여기서 빨개집니다.
 //
-// 문구가 여정 어휘가 아니라 유닛 어휘라는 것도 함께 답니다 — 「현재 스텝」이 아니라
-// 「현재 항목」입니다.
+// 문구가 패키지의 영어 접미(`completed` · `current` · `locked`)라는 것도 함께 답니다 — 여정 표의
+// `stepStatus`를 앱이 다시 덧붙이면(`current step, current`) 여기서 빨개집니다.
 
-test("done의 접근성 이름은 제목 뒤에 완료됨이 붙는다", () => {
-  render(<JourneyStepNode id="greeting" title="첫 인사" status="done" onSelect={() => {}} />);
+test("[JM1-E] done의 접근성 이름은 제목 뒤에 유닛 접미 completed가 붙는다", () => {
+  render(
+    <JourneyStepNode id="greeting" title="First greetings" status="done" onSelect={() => {}} />,
+  );
 
   expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
     "accessibility-label",
-    "첫 인사, 완료됨",
+    "First greetings, completed",
   );
 });
 
-test("current의 접근성 이름은 제목 뒤에 현재 항목이 붙는다", () => {
-  render(<JourneyStepNode id="ordering" title="주문하기" status="current" onSelect={() => {}} />);
+test("[JM1-E] current의 접근성 이름은 제목 뒤에 유닛 접미 current가 붙는다", () => {
+  render(<JourneyStepNode id="ordering" title="Ordering" status="current" onSelect={() => {}} />);
 
   expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "accessibility-label",
-    "주문하기, 현재 항목",
+    "Ordering, current",
   );
 });
 
-test("locked의 접근성 이름은 제목 뒤에 잠김이 붙는다", () => {
+test("[JM1-E] locked의 접근성 이름은 제목 뒤에 유닛 접미 locked가 붙는다", () => {
   render(
-    <JourneyStepNode id="appointment" title="약속 잡기" status="locked" onSelect={() => {}} />,
+    <JourneyStepNode id="appointment" title="Making plans" status="locked" onSelect={() => {}} />,
   );
 
   expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
     "accessibility-label",
-    "약속 잡기, 잠김",
+    "Making plans, locked",
   );
 });
 
@@ -114,7 +120,7 @@ test.each([
   ["current", "button"],
   ["locked", "disabled"],
 ] as const)("accessibility-traits가 상태(%s)의 값이다", (status, traits) => {
-  render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={() => {}} />);
+  render(<JourneyStepNode id="ordering" title="Ordering" status={status} onSelect={() => {}} />);
 
   const unit = screen.getByTestId("ui-lynx-learning-unit-ordering");
   expect(unit).toHaveAttribute("accessibility-traits", traits);
@@ -127,7 +133,7 @@ test.each(["done", "current"] as const)(
   "열 수 있는 상태(%s)를 tap하면 onSelect가 불린다",
   (status) => {
     const onSelect = vi.fn<(id: JourneyStepId, tapY: number) => void>();
-    render(<JourneyStepNode id="ordering" title="주문하기" status={status} onSelect={onSelect} />);
+    render(<JourneyStepNode id="ordering" title="Ordering" status={status} onSelect={onSelect} />);
 
     // 실제 탭은 좌표를 싣습니다 — 말풍선이 설 자리가 그 값에서 나옵니다.
     fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 512 } });
@@ -142,10 +148,30 @@ test.each(["done", "current"] as const)(
 test("잠긴 스텝을 tap해도 onSelect가 불리지 않는다", () => {
   const onSelect = vi.fn<(id: JourneyStepId) => void>();
   render(
-    <JourneyStepNode id="appointment" title="약속 잡기" status="locked" onSelect={onSelect} />,
+    <JourneyStepNode id="appointment" title="Making plans" status="locked" onSelect={onSelect} />,
   );
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment"), {});
 
   expect(onSelect).not.toHaveBeenCalled();
 });
+
+// JM1-M — 접근성 이름은 제목(데이터)에 패키지 접미 하나만 붙습니다. 문구표를 주입해도 앱이
+// 표의 `stepStatus`를 덧붙이지 않고, 제목 자리에 표의 경로가 새지도 않습니다.
+const suffixByStatus = { done: "completed", current: "current", locked: "locked" } as const;
+
+test.each(["done", "current", "locked"] as const)(
+  "[JM1-M] 문구표를 주입해도 %s의 접근성 이름은 제목 + 패키지 접미 하나다",
+  (status) => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <JourneyStepNode id="ordering" title="Ordering" status={status} onSelect={() => {}} />
+      </UiCopyContext.Provider>,
+    );
+
+    expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
+      "accessibility-label",
+      `Ordering, ${suffixByStatus[status]}`,
+    );
+  },
+);

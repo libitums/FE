@@ -1,5 +1,7 @@
 import { Component, Fragment, type ReactNode } from "@lynx-js/react";
 
+import { useUiCopy } from "../lib/ui-copy";
+
 import "./error-boundary.css";
 
 // 에러 경계는 루트에 하나만 둡니다(ADR-0007 D4).
@@ -8,6 +10,33 @@ import "./error-boundary.css";
 
 type Props = { children: ReactNode };
 type State = { error: Error | null; generation: number };
+
+// 클래스는 context를 hook으로 못 읽으므로 에러 화면만 함수 컴포넌트로 뺍니다.
+function ErrorFallback({ message, onRetry }: { message: string; onRetry: () => void }): ReactNode {
+  const copy = useUiCopy();
+  return (
+    <view className="error-boundary">
+      <text
+        className="error-boundary-title"
+        data-testid="error-boundary-title"
+        accessibility-traits="header"
+      >
+        {copy.shell.errorBoundary.title}
+      </text>
+      <text className="error-boundary-message">{message}</text>
+      <view
+        className="error-boundary-retry"
+        data-testid="error-boundary-retry"
+        accessibility-element={true}
+        accessibility-label={copy.shell.errorBoundary.retry}
+        accessibility-traits="button"
+        bindtap={onRetry}
+      >
+        <text className="error-boundary-retry-label">{copy.shell.errorBoundary.retry}</text>
+      </view>
+    </view>
+  );
+}
 
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { error: null, generation: 0 };
@@ -28,28 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.error) {
-      return (
-        <view className="error-boundary">
-          <text
-            className="error-boundary-title"
-            data-testid="error-boundary-title"
-            accessibility-traits="header"
-          >
-            문제가 생겼어요
-          </text>
-          <text className="error-boundary-message">{this.state.error.message}</text>
-          <view
-            className="error-boundary-retry"
-            data-testid="error-boundary-retry"
-            accessibility-element={true}
-            accessibility-label="다시 시도"
-            accessibility-traits="button"
-            bindtap={this.retry}
-          >
-            <text className="error-boundary-retry-label">다시 시도</text>
-          </view>
-        </view>
-      );
+      return <ErrorFallback message={this.state.error.message} onRetry={this.retry} />;
     }
 
     return <Fragment key={this.state.generation}>{this.props.children}</Fragment>;

@@ -7,6 +7,7 @@ import { ChatBubble } from "@libitums/ui-lynx/chat-bubble";
 import { Fog } from "@libitums/ui-lynx/fog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import type { PrologueChatScreenProps } from "./episode-intro.contract";
 import { prologueChatIncomingDelayMs, prologueChatNext } from "./prologue-chat";
 
@@ -28,6 +29,7 @@ export function PrologueChatScreen({
   onComplete,
   onBack,
 }: PrologueChatScreenProps): ReactNode {
+  const copy = useUiCopy();
   const [shownCount, setShownCount] = useState(0);
   const next = prologueChatNext(chat.messages, shownCount);
   const shown = chat.messages.slice(0, shownCount);
@@ -84,7 +86,7 @@ export function PrologueChatScreen({
           <view className="prologue-chat-screen-header">
             <view className="prologue-chat-screen-back" data-testid="prologue-chat-screen-back">
               <RoundButton
-                accessibilityLabel="맵으로"
+                accessibilityLabel={copy.common.exitTo.journey}
                 icon={arrowLeft03}
                 variant="neutral"
                 size="xl"
@@ -115,7 +117,7 @@ export function PrologueChatScreen({
                 >
                   <ChatBubble
                     direction={message.sender === "self" ? "outgoing" : "incoming"}
-                    speaker={message.sender === "self" ? "나" : chat.partnerName}
+                    speaker={message.sender === "self" ? copy.common.me : chat.partnerName}
                     message={message.text}
                     translation={message.translation}
                     size="m"
@@ -149,7 +151,9 @@ export function PrologueChatScreen({
                 data-testid="prologue-chat-screen-send"
                 accessibility-element={true}
                 accessibility-traits={draft === undefined ? "disabled" : "button"}
-                accessibility-label={draft === undefined ? "보내기" : `보내기, ${draft.text}`}
+                accessibility-label={
+                  draft === undefined ? copy.common.send : copy.common.sendWithText(draft.text)
+                }
                 bindtap={handleSend}
               >
                 <svg
@@ -174,10 +178,10 @@ export function PrologueChatScreen({
             style={{ bottom: `${insets.bottom}px` }}
             accessibility-element={true}
             accessibility-traits="button"
-            accessibility-label="Continue"
+            accessibility-label={copy.common.continue}
             bindtap={handleComplete}
           >
-            <text className="prologue-chat-screen-complete-label">Continue</text>
+            <text className="prologue-chat-screen-complete-label">{copy.common.continue}</text>
           </view>
         </>
       ) : null}

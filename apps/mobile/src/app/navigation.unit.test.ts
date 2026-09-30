@@ -662,17 +662,17 @@ describe("roleplayScreenFor", () => {
   const messengerRoleplayItem: RoleplayItem = {
     form: "messenger",
     unitId: "appointment-confirmation",
-    title: "약속 확인 메시지",
+    title: "Appointment message",
   };
   const phoneCallRoleplayItem: RoleplayItem = {
     form: "phone-call",
     unitId: "appointment-confirmation-phone-call",
-    title: "약속 확인 전화",
+    title: "Appointment call",
   };
   const visualNovelRoleplayItem: RoleplayItem = {
     form: "visual-novel",
     unitId: "cafe-arrival-visual-novel",
-    title: "카페에 도착한 지민",
+    title: "Jimin arrives at the café",
   };
   const allRoleplayItems: readonly RoleplayItem[] = [
     messengerRoleplayItem,

@@ -20,7 +20,7 @@ describe("BackHeader UI", () => {
     );
 
     const back = screen.getByTestId("ui-lynx-back-header-back");
-    expect(back).toHaveAttribute("accessibility-label", "뒤로, Episode 04");
+    expect(back).toHaveAttribute("accessibility-label", "Back, Episode 04");
     expect(back).toHaveAttribute("accessibility-traits", "button");
     const title = screen.getByTestId("ui-lynx-back-header-title");
     expect(title).toHaveTextContent("Episode 04");

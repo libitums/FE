@@ -6,6 +6,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
+import { useUiCopy } from "../../lib/ui-copy";
 import { MessageBubble } from "./MessageBubble";
 import { MessengerChoices } from "./MessengerChoices";
 import { MessengerComposer } from "./MessengerComposer";
@@ -33,7 +34,7 @@ import "./messenger-screen.css";
 // (`SelfMessage.choices`)가 정합니다. 힌트는 `MessengerComposer`가 집니다.
 //
 // 맞히면 판정 배지와 초록 테두리가 서고 잠시 뒤 답장이 대화에 섭니다. 틀리면 자판 · 보기 자리에
-// `Try Again`이 서고, 누르면 입력을 비우고 같은 답장을 다시 칩니다. 대화가 끝나면 `결과 보기`가
+// `Try Again`이 서고, 누르면 입력을 비우고 같은 답장을 다시 칩니다. 대화가 끝나면 `See results`가
 // 학습 완료 화면(PERFECT LESSON)으로 이어집니다.
 //
 // 화면 세션만 로컬로 소유하고 완료 기록은 상위 경계의 콜백으로 알립니다. `exitLabel`은
@@ -44,11 +45,13 @@ import "./messenger-screen.css";
 export function MessengerScreen({
   conversation,
   completionStatus,
-  exitLabel = specialUnitExitLabel("journey"),
+  exitTo = "journey",
   onExit,
   onComplete,
   onFinish,
 }: MessengerScreenProps) {
+  const copy = useUiCopy();
+  const exitLabel = specialUnitExitLabel(exitTo, copy);
   const [session, setSession] = useState(() => initialMessengerSessionState(completionStatus));
   const [composer, dispatchComposer] = useReducer(
     messengerComposerReducer,

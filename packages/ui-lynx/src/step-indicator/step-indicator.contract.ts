@@ -41,7 +41,7 @@ export function getStepIndicatorContract(props: StepIndicatorProps): StepIndicat
   });
 
   return {
-    accessibilityLabel: `${props.totalSteps}단계 중 ${props.currentStep}단계`,
+    accessibilityLabel: `Step ${props.currentStep} of ${props.totalSteps}`,
     steps,
   };
 }

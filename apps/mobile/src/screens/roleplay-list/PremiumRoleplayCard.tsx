@@ -3,6 +3,7 @@ import crown from "@libitums/icons/lynx/crown";
 import lock from "@libitums/icons/lynx/lock";
 import { color } from "@libitums/design-tokens";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import { premiumRoleplayAccessibilityLabel } from "./roleplay-list";
 import type { PremiumRoleplayCardProps } from "./roleplay-list.contract";
 
@@ -21,6 +22,7 @@ export function PremiumRoleplayCard({
   lock: lockKind,
   onSelect,
 }: PremiumRoleplayCardProps): ReactNode {
+  const copy = useUiCopy();
   const episodeLocked = lockKind === "episode";
 
   const handleTap = () => {
@@ -35,7 +37,7 @@ export function PremiumRoleplayCard({
       data-lock={lockKind}
       accessibility-element={true}
       accessibility-traits={episodeLocked ? "none" : "button"}
-      accessibility-label={premiumRoleplayAccessibilityLabel(item, lockKind)}
+      accessibility-label={premiumRoleplayAccessibilityLabel(item, lockKind, copy)}
       bindtap={episodeLocked ? undefined : handleTap}
     >
       <view className="premium-roleplay-card-shade" />

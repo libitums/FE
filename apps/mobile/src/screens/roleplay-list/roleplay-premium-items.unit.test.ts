@@ -18,6 +18,32 @@ describe("premiumRoleplayItemsFor", () => {
     }
   });
 
+  it("CE5. 제목 · 상황이 부록 C.3의 영어다 — id 불변", () => {
+    expect(
+      premiumRoleplayItemsFor("tutorial").map(({ id, title, situation }) => ({
+        id,
+        title,
+        situation,
+      })),
+    ).toEqual([
+      {
+        id: "premium-wrong-order",
+        title: "My order came out wrong",
+        situation: "Talk politely to the café staff",
+      },
+      {
+        id: "premium-shared-table",
+        title: "Can I share this table?",
+        situation: "Share a table with another customer",
+      },
+      {
+        id: "premium-regular-chat",
+        title: "The owner of my regular café",
+        situation: "Make some small talk",
+      },
+    ]);
+  });
+
   it("id가 서로 겹치지 않는다", () => {
     const ids = premiumRoleplayItemsFor("tutorial").map((item) => item.id);
 

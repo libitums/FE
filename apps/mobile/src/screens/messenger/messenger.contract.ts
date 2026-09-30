@@ -2,10 +2,7 @@
 // 하류가 공유할 타입만 둡니다.
 
 import type { AnswerResult } from "../../lib/answer-result";
-import type {
-  SpecialUnitEntrySource,
-  SpecialUnitExitLabel,
-} from "../../lib/special-unit-entry-source";
+import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
 import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
 export type MessengerUnitId = "appointment-confirmation";
@@ -40,8 +37,8 @@ export type MessengerMessage = JiminMessage | SelfMessage;
 
 export type MessengerConversation = {
   readonly id: MessengerUnitId;
-  readonly title: "약속 확인 메시지";
-  readonly participantName: "지민";
+  readonly title: "Appointment message";
+  readonly participantName: "Jimin";
   readonly messages: readonly [
     JiminMessage & { readonly id: "jimin-schedule" },
     SelfMessage & { readonly id: "self-accept" },
@@ -113,7 +110,7 @@ export type MessengerMapItemProps = {
 export type MessengerJourneyUnitContract = {
   readonly kind: "special";
   readonly id: MessengerUnitId;
-  readonly title: "약속 확인 메시지";
+  readonly title: "Appointment message";
   readonly screen: "messenger";
 };
 
@@ -134,7 +131,7 @@ export type MessengerScreenProps = {
    * 정오**입니다. 완료한 유닛에 다시 들어와 전체 기록만 본 경우는 빈 목록입니다.
    */
   readonly onFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) => void;
-  readonly exitLabel?: SpecialUnitExitLabel;
+  readonly exitTo?: SpecialUnitEntrySource;
 };
 
 export type MessageBubbleProps = {

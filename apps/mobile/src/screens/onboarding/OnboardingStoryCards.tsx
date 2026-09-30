@@ -9,6 +9,13 @@ import storyCharacter from "../../assets/story/story-character.png";
 import "./onboarding-story-cards.css";
 
 /** 온보딩 첫 스텝의 카드 둘(배경 그림 카드, 대화 카드)을 그립니다. 상태를 갖지 않습니다. */
+// 카드 속 대화의 한국어 대사입니다 — 학습 콘텐츠라 UI 언어를 따르지 않습니다(한글 리터럴 검사의 허용 선언).
+const onboardingStoryMessages = {
+  welcome: "어서 오세요! 찾으시는 거 있으세요?",
+  sunscreen: "선크림 있어요?",
+  thisWay: "네, 이쪽으로 오세요.",
+} as const;
+
 export function OnboardingStoryCards(): ReactNode {
   return (
     <view className="onboarding-screen-cards" data-testid="onboarding-screen-cards">
@@ -44,7 +51,7 @@ export function OnboardingStoryCards(): ReactNode {
               <ChatBubble
                 direction="incoming"
                 speaker="Staff"
-                message="어서 오세요! 찾으시는 거 있으세요?"
+                message={onboardingStoryMessages.welcome}
                 translation="Welcome! Are you looking for anything?"
                 size="s"
                 contentLanguage="learning"
@@ -53,7 +60,7 @@ export function OnboardingStoryCards(): ReactNode {
               <ChatBubble
                 direction="outgoing"
                 speaker="Me"
-                message="선크림 있어요?"
+                message={onboardingStoryMessages.sunscreen}
                 translation="Do you have sunscreen?"
                 size="s"
                 contentLanguage="learning"
@@ -62,7 +69,7 @@ export function OnboardingStoryCards(): ReactNode {
               <ChatBubble
                 direction="incoming"
                 speaker="Staff"
-                message="네, 이쪽으로 오세요."
+                message={onboardingStoryMessages.thisWay}
                 translation="Yes, come this way."
                 size="s"
                 contentLanguage="learning"

@@ -14,7 +14,7 @@ describe("getLearningUnitContract", () => {
       status: "default",
       narrative: "none",
       className: "ui-lynx-learning-unit ui-lynx-learning-unit-default",
-      accessibilityLabel: "쇼핑 표현 듣기, 잠김",
+      accessibilityLabel: "쇼핑 표현 듣기, locked",
       traits: "disabled",
       interactive: false,
       iconKind: "lock",
@@ -29,8 +29,8 @@ describe("getLearningUnitContract", () => {
   // `available`에만 접미사가 없습니다 — 열려 있고 아직 손대지 않은 평범한 상태입니다.
   test.each([
     ["available", "learning", color.brand.primary, "듣기"],
-    ["active", "learning", color.white, "듣기, 현재 항목"],
-    ["clear", "tick", color.white, "듣기, 완료됨"],
+    ["active", "learning", color.white, "듣기, current"],
+    ["clear", "tick", color.white, "듣기, completed"],
   ] as const)("%s 상태 계약을 만든다", (status, iconKind, iconColor, accessibilityLabel) => {
     expect(getLearningUnitContract({ accessibilityLabel: "듣기", icon, status })).toMatchObject({
       status,
@@ -53,7 +53,7 @@ describe("getLearningUnitContract", () => {
         status: "clear",
         narrative: "narrative",
       }),
-    ).toMatchObject({ accessibilityLabel: "문화 이야기, 완료됨, 이야기 연결" });
+    ).toMatchObject({ accessibilityLabel: "문화 이야기, completed, story" });
   });
 
   test("Narrative는 상태와 독립적이며 접근성 이름에 이야기 연결을 덧붙인다", () => {
@@ -66,7 +66,7 @@ describe("getLearningUnitContract", () => {
         focused: true,
       }),
     ).toMatchObject({
-      accessibilityLabel: "1단원 쇼핑 표현 듣기, 이야기 연결",
+      accessibilityLabel: "1단원 쇼핑 표현 듣기, story",
       className:
         "ui-lynx-learning-unit ui-lynx-learning-unit-available ui-lynx-learning-unit-narrative ui-lynx-learning-unit-focused",
       focused: true,

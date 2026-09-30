@@ -3,6 +3,15 @@
 상태: **계약 고정**  
 타입 정본: `apps/mobile/src/screens/visual-novel/visual-novel.contract.ts`
 
+> **개정 (2026-09-29, UI 문구표).** 결정과 근거는 [ADR-0031](../adr/0031-ui-language-catalog.md)(**제안**)이 진다. 바뀐 계약:
+> `VisualNovelTitle`은 `"Jimin arrives at the café"`, `VisualNovelSpeakerName`은 `"Jimin"`(데이터 곁 영어).
+> `VisualNovelAdvanceOutcome.announcement`는 문구가 아니라 **키** `"story-complete" | null`이고 화면 · 결선이
+> `copy.visualNovel.storyComplete`(`Story complete`)를 낭독한다. `DialoguePanelAction.label`은 `string`
+> (화면이 `copy.common.next` · `copy.common.startOver` = `Next` · `Start over`로 채운다).
+> `visualNovelProgressLabel(session, copy)`는 `Scene 1 / 3` … 또는 `Story complete`. 나가기는 `exitLabel?` 대신
+> `exitTo?: SpecialUnitEntrySource`. 대사(학습 콘텐츠)는 한국어 그대로다. 본문의 한국어 라벨(`장면 1 / 3` ·
+> `이야기 완료` · `다음` · `처음부터 보기` · `맵으로`)은 당시 값이다 — 대응은 ADR-0031 부록.
+
 ## 목적 (goal)
 
 사용자가 여정 맵에서 짧은 비주얼 노벨을 열어 배경·캐릭터·대사를 정해진 순서로 감상하고,

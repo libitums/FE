@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useMemo, useReducer, useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
@@ -24,8 +25,6 @@ import {
   matchedWordCount,
   speakingAnnouncement,
   speakingCompletionAnnouncement,
-  speakingCompletionText,
-  speakingFinishLabel,
   speakingQuestionsForStep,
   speakingSessionReducer,
   speakingWords,
@@ -47,6 +46,7 @@ export type SpeakingScreenProps = {
 };
 
 export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps): ReactNode {
+  const copy = useUiCopy();
   const questions = speakingQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(speakingSessionReducer, initialSpeakingSessionState);
 
@@ -78,7 +78,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     if (result === null) {
       return;
     }
-    announce(speakingAnnouncement(result));
+    announce(speakingAnnouncement(result, copy));
     // 문항 순번 · 국면이 바뀔 때만 한 번 냅니다 — `result`는 그 둘에서 파생합니다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.questionIndex, state.phase]);
@@ -87,7 +87,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     if (!complete) {
       return;
     }
-    announceCompletion(speakingCompletionAnnouncement(speakingFinishLabel));
+    announceCompletion(speakingCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
 
   const handleResult = (sentence: string) => (result: SpeechResult) => {
@@ -130,17 +130,17 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
   const action =
     question == null
       ? {
-          label: speakingFinishLabel,
+          label: copy.common.seeResults,
           // 건너뛴 문항 수는 세션이 셉니다 — `results`에서 뽑을 수 없습니다(건너뛴
           // 문항이 `"correct"`로 실려 맞힌 문항과 구별되지 않습니다).
           run: () => onFinish(stepId, state.results, state.skippedCount),
         }
       : state.phase === "ready"
-        ? { label: "말하기", run: () => startListening(question.sentence) }
+        ? { label: copy.speaking.speak, run: () => startListening(question.sentence) }
         : state.phase === "listening"
-          ? { label: "그만 말하기", run: () => stopSpeechRecognition() }
+          ? { label: copy.speaking.stopSpeaking, run: () => stopSpeechRecognition() }
           : state.phase === "unavailable"
-            ? { label: "건너뛰기", run: () => dispatch({ type: "next" }) }
+            ? { label: copy.common.skip, run: () => dispatch({ type: "next" }) }
             : undefined;
 
   // custom prop(`Button`의 `bindtap`)을 거쳐 `bindtap`에 닿는 핸들러라 `'background only'`를
@@ -153,9 +153,9 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
   const advance = useMemo(
     () =>
       question != null && state.phase === "judged"
-        ? { label: "다음으로", run: () => dispatch({ type: "next" }), delayMs: 2500 }
+        ? { label: copy.common.continue, run: () => dispatch({ type: "next" }), delayMs: 2500 }
         : undefined,
-    [question, state.phase],
+    [question, state.phase, copy],
   );
 
   return (
@@ -163,7 +163,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
       form="speaking"
       questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
-      instruction="문장을 소리 내어 읽어 보세요."
+      instruction={copy.speaking.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -185,7 +185,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
             {state.phase === "ready" ? (
               <view className="speaking-screen-skip" data-testid="speaking-screen-skip">
                 <Button
-                  label="건너뛰기"
+                  label={copy.common.skip}
                   variant="outline"
                   size="xl"
                   width="fill"
@@ -196,11 +196,11 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
             <view className="speaking-screen-hint-slot">
               {state.phase === "judged" ? (
                 <text className="speaking-screen-hint" data-testid="speaking-screen-hint">
-                  화면을 누르면 다음으로 넘어가요
+                  {copy.speaking.tapToContinue}
                 </text>
               ) : state.phase === "unavailable" ? (
                 <text className="speaking-screen-hint" data-testid="speaking-screen-unavailable">
-                  지금은 음성 인식을 쓸 수 없어요. 건너뛰고 다음 문장으로 가요.
+                  {copy.speaking.recognitionUnavailable}
                 </text>
               ) : null}
             </view>
@@ -216,7 +216,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
 
           {question == null ? (
             <text className="speaking-screen-complete" data-testid="speaking-screen-complete">
-              {speakingCompletionText}
+              {copy.common.allQuestionsDone}
             </text>
           ) : (
             <>
@@ -256,7 +256,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
                 data-testid="speaking-screen-waves"
                 data-listening={state.phase === "listening" ? "true" : "false"}
                 accessibility-element={state.phase === "listening"}
-                accessibility-label="듣는 중"
+                accessibility-label={copy.common.listening}
               >
                 <svg
                   className="speaking-screen-waves-icon"

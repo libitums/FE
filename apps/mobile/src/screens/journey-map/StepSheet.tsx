@@ -1,5 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import { stepSheetProgress } from "./journey-map-sheet";
 
 import "./step-sheet.css";
@@ -34,7 +35,8 @@ export function StepSheet({
   onStart,
   onClose,
 }: StepSheetProps): ReactNode {
-  const progress = stepSheetProgress(completedActivityCount, totalActivityCount);
+  const copy = useUiCopy();
+  const progress = stepSheetProgress(completedActivityCount, totalActivityCount, copy);
 
   return (
     <view className="step-sheet">
@@ -52,7 +54,7 @@ export function StepSheet({
         className="step-sheet-scrim"
         data-testid="step-sheet-close"
         accessibility-element={true}
-        accessibility-label="닫기"
+        accessibility-label={copy.common.close}
         accessibility-traits="button"
         bindtap={onClose}
       />
@@ -78,7 +80,7 @@ export function StepSheet({
             className="step-sheet-progress"
             data-testid="step-sheet-progress"
             accessibility-element={true}
-            accessibility-label={`${progress.countLabel}, ${progress.percentLabel}`}
+            accessibility-label={`${copy.journeyMap.activityProgressLabel(completedActivityCount, totalActivityCount)}, ${progress.percentLabel}`}
           >
             <view className="step-sheet-progress-row">
               <text className="step-sheet-progress-count" data-testid="step-sheet-progress-count">
@@ -107,11 +109,11 @@ export function StepSheet({
             className="step-sheet-start"
             data-testid="step-sheet-start"
             accessibility-element={true}
-            accessibility-label="시작"
+            accessibility-label={copy.journeyMap.start}
             accessibility-traits="button"
             bindtap={onStart}
           >
-            <text className="step-sheet-start-label">시작</text>
+            <text className="step-sheet-start-label">{copy.journeyMap.start}</text>
           </view>
         </view>
       </view>

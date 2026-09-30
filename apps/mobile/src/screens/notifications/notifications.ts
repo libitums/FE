@@ -2,6 +2,7 @@
 // DOM·컴포넌트·저장소를 만지지 않습니다(순수 함수뿐). 값을 import하지 않습니다 —
 // `import type`은 계약 파일에서만입니다.
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   NotificationId,
   NotificationItem,
@@ -9,27 +10,17 @@ import type {
   NotificationItemTappedEvent,
   SwipeIntent,
   SwipePoint,
-  NotificationDestinationLabel,
   NotificationTargetKind,
 } from "./notifications.contract";
 
-// 대상 종류 → 행선지 낱말입니다. export하지 않습니다 — 표 자체가 아니라 읽는
-// 함수가 계약입니다(종류가 늘면 이 표가 `TS2741`로 섭니다).
-const destinationLabelByKind: Record<NotificationTargetKind, NotificationDestinationLabel> = {
-  messenger: "메신저 열기",
-  "phone-call": "전화 열기",
-  "visual-novel": "비주얼 노벨 열기",
-  "roleplay-list": "롤플레이 목록 보기",
-};
-
-export function notificationDestinationLabel(
-  kind: NotificationTargetKind,
-): NotificationDestinationLabel {
-  return destinationLabelByKind[kind];
+// 대상 종류 → 행선지 낱말입니다. 표는 문구표(`copy.notifications.destination`)에 있고
+// 읽는 함수가 계약입니다(종류가 늘면 문구표 타입이 `TS2741`로 섭니다).
+export function notificationDestinationLabel(kind: NotificationTargetKind, copy: UiCopy): string {
+  return copy.notifications.destination[kind];
 }
 
-export function notificationItemAccessibilityLabel(item: NotificationItem): string {
-  return `${item.message}, ${notificationDestinationLabel(item.target.kind)}`;
+export function notificationItemAccessibilityLabel(item: NotificationItem, copy: UiCopy): string {
+  return `${item.message}, ${notificationDestinationLabel(item.target.kind, copy)}`;
 }
 
 export function notificationTappedEvent(item: NotificationItem): NotificationItemTappedEvent {

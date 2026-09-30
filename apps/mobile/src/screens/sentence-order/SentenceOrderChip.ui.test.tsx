@@ -2,6 +2,8 @@ import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { SentenceOrderChip } from "./SentenceOrderChip";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). 계산된 스타일을 볼 수
 // 없으므로 `toHaveClass`·`toHaveStyle`·`toBeVisible`을 쓰지 않습니다. 상태는 전부
@@ -51,7 +53,7 @@ test("배치되면 accessibility-label에 ', N번째' 접미사가 붙는다", (
 
   expect(screen.getByTestId("sentence-order-chip-0")).toHaveAttribute(
     "accessibility-label",
-    "밥을, 2번째",
+    "밥을, position 2",
   );
 });
 
@@ -191,4 +193,31 @@ test("tap해도 렌더된 data-placed는 그대로다 — 컴포넌트는 상태
   fireEvent.tap(screen.getByTestId("sentence-order-chip-0"), {});
 
   expect(screen.getByTestId("sentence-order-chip-0")).toHaveAttribute("data-placed", "none");
+});
+
+// LA3-M — 놓인 조각의 이름은 문구표(`sentenceOrder.placedChip`)에서 읽습니다. 안 놓인 조각은 글 그대로입니다.
+test("[LA3-M] 문구표를 주입하면 놓인 조각의 이름이 placedChip 경로(인자 포함)로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <SentenceOrderChip index={0} text="밥을" placedOrdinal={2} onTap={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("sentence-order-chip-0")).toHaveAttribute(
+    "accessibility-label",
+    "⟦sentenceOrder.placedChip⟧(밥을, 2)",
+  );
+});
+
+test("[LA3-M] 문구표를 주입해도 안 놓인 조각의 이름은 글 그대로다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <SentenceOrderChip index={0} text="밥을" placedOrdinal={null} onTap={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("sentence-order-chip-0")).toHaveAttribute(
+    "accessibility-label",
+    "밥을",
+  );
 });

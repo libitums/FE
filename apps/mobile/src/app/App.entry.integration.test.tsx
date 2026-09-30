@@ -8,6 +8,7 @@ import type { AuthSession } from "../lib/auth-session.contract";
 import { entryLoginMethods, entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent, EntryLoginMethod } from "../lib/entry-flow";
 import { entryLanguageLabel, initialEntryLanguage } from "../lib/entry-language";
+import { uiLanguageStorageKey } from "../lib/ui-language";
 
 // `integration` 계층: 진입 흐름 여섯 화면이 **한 트리에서** 실제로 이어지는지를
 // 봅니다(ADR-0006 D4) — `ui`가 화면을 고립 렌더해서는 볼 수 없는 것(부팅 화면 선택 ·
@@ -960,7 +961,8 @@ test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비�
 // ⭐ 수단 넷 전부를 순회해 「저장된 키가 하나뿐」을 짓습니다. 개정(test-plan §5.2
 // IE9) — **어느 수단이든 `authSessionStorageKey` 하나**이고, apple은 Apple 시트
 // 대역으로 돕니다.
-test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorageKey 하나다", async () => {
+// 언어를 **고른 뒤**라 키가 하나 더 늘어납니다 — ADR-0007 D1의 둘째 예외(`libitum.ui.language`).
+test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorageKey와 UI 언어 키 둘뿐이다", async () => {
   expect(entryLoginMethods.length).toBeGreaterThan(0);
 
   for (const method of entryLoginMethods) {
@@ -993,7 +995,9 @@ test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorage
     startJourney();
 
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-    expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
+    expect(Array.from(store.keys()).sort()).toEqual(
+      [authSessionStorageKey, uiLanguageStorageKey].sort(),
+    );
 
     unmount();
     vi.useRealTimers();
@@ -1057,7 +1061,7 @@ test("[IE11] 코드 검증에서 로그인으로를 누르면 로그인이 선�
 
 // 앞쪽 절반(세션 안 유지)은 IE7과 같은 관찰이고, 뒤쪽 절반(새 App은 초기값)이 이
 // 케이스의 몫입니다 — 두 번째 `render`에서 언어를 고르지 않고 곧장 `다음`을 눌러,
-// 여정 입장에 초기값(`entryLanguages[0]` = `en`)의 라벨이 보이는 것으로 「영속 0」을
+// 여정 입장에 초기값(`entryLanguages[0]` = `en`)의 라벨이 보이는 것으로 「빈 저장소는 초기값」을
 // 짓습니다.
 // ⚠ 2026-09-21 디자인 반영으로 고를 수 있는 언어가 영어(= 초기값) 하나뿐이라,
 // 지금은 「고른 값」과 「초기값」이 같아 이 케이스가 둘을 가르지 못합니다(공허하게
@@ -1065,7 +1069,7 @@ test("[IE11] 코드 검증에서 로그인으로를 누르면 로그인이 선�
 // 되돌립니다.
 // 개정(test-plan §5.2 IE12) — `selectLoginMethod` 뒤 비동기 헬퍼로 바뀝니다(두
 // 렌더 모두 창 · 교환 대역이 필요합니다). 관찰은 그대로입니다.
-test("[IE12] 언어가 진입 흐름 동안 유지되고, 새로 렌더한 App은 초기값이다(영속 0)", async () => {
+test("[IE12] 언어가 진입 흐름 동안 유지되고, 빈 저장소로 새로 렌더한 App은 초기값이다", async () => {
   const first = stubHostWithWebAuthentication(completedWebAuthentication);
   const firstCalls = stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();

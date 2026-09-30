@@ -1,8 +1,28 @@
-import { expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { LessonCompleteScreen } from "./LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "./lesson-complete";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+// 낭독 대역 — 이 화면은 builtin announce 하나로 낭독합니다.
+function stubAnnounce(): string[] {
+  const contents: string[] = [];
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
+        contents.push(args.content);
+        callback("announced");
+      },
+    },
+  });
+  return contents;
+}
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). testid로 질의합니다.
 
@@ -41,13 +61,13 @@ test("[LCS2] 실수가 있으면 같은 틀에 제목 · 설명만 바뀐다", (
   expect(screen.getByTestId("lesson-complete-screen-reward-diamond")).toBeInTheDocument();
 });
 
-test("[LCS3] 지표 칩 셋은 읽기 전용이고 이름을 단다", () => {
+test("[LA9-E][LCS3] 지표 칩 셋은 읽기 전용이고 이름을 단다", () => {
   render(<LessonCompleteScreen {...fixture({ streakDays: 3, trophyCount: 2, diamondCount: 5 })} />);
 
   const expected = [
-    ["lesson-complete-screen-streak", "연속 학습 3일"],
-    ["lesson-complete-screen-trophy", "트로피 2개"],
-    ["lesson-complete-screen-diamond", "다이아 5개"],
+    ["lesson-complete-screen-streak", "3-day streak"],
+    ["lesson-complete-screen-trophy", "2 trophies"],
+    ["lesson-complete-screen-diamond", "5 diamonds"],
   ] as const;
   for (const [id, label] of expected) {
     const chip = screen.getByTestId(id);
@@ -67,15 +87,15 @@ test("[LCS4] 연속 알약은 연속이 있을 때만 선다", () => {
   expect(screen.queryByTestId("lesson-complete-screen-streak-pill")).toBeNull();
 });
 
-test("[LCS5] 보상 카드 둘이 받은 보상을 그리고 이름을 단다", () => {
+test("[LA9-E][LCS5] 보상 카드 둘이 받은 보상을 그리고 이름을 단다", () => {
   render(<LessonCompleteScreen {...fixture({ reward: { diamondAmount: 7, grade: "GREAT" } })} />);
 
   const diamond = screen.getByTestId("lesson-complete-screen-reward-diamond");
   expect(diamond).toHaveTextContent("+ 7 REWARD");
-  expect(diamond).toHaveAttribute("accessibility-label", "보상 다이아 7개");
+  expect(diamond).toHaveAttribute("accessibility-label", "Reward, 7 diamonds");
   const grade = screen.getByTestId("lesson-complete-screen-reward-grade");
   expect(grade).toHaveTextContent("GREAT");
-  expect(grade).toHaveAttribute("accessibility-label", "등급 GREAT");
+  expect(grade).toHaveAttribute("accessibility-label", "Grade GREAT");
 });
 
 test("[LCS6] Check tap → onExit 정확히 1회", () => {
@@ -205,4 +225,150 @@ test("[UI-P3] 표지 스킵으로 온 결과 화면은 만점이다", () => {
   render(<LessonCompleteScreen {...fixture({ results: [], skippedCount: 0 })} />);
 
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+});
+
+// ---------------------------------------------------------------- 영어 렌더 · 문구표 (LA9)
+
+test("[LA9-E] 다이아 1개 · 트로피 1개는 단수로 말한다", () => {
+  render(<LessonCompleteScreen {...fixture({ trophyCount: 1, diamondCount: 1 })} />);
+
+  expect(screen.getByTestId("lesson-complete-screen-trophy")).toHaveAttribute(
+    "accessibility-label",
+    "1 trophy",
+  );
+  expect(screen.getByTestId("lesson-complete-screen-diamond")).toHaveAttribute(
+    "accessibility-label",
+    "1 diamond",
+  );
+});
+
+test("[LA9-E] 연속 알약의 이름이 영어 3-day streak이고 알약의 보이는 영어 문구는 그대로다", () => {
+  render(<LessonCompleteScreen {...fixture({ streakDays: 3 })} />);
+
+  expect(screen.getByTestId("lesson-complete-screen-streak-pill")).toHaveAttribute(
+    "accessibility-label",
+    "3-day streak",
+  );
+  expect(screen.getByTestId("lesson-complete-screen-streak-pill")).toHaveTextContent(
+    "3 Day Streak",
+  );
+});
+
+test("[LA9-E] 미통과의 나가기 버튼 이름이 Back to map이다", () => {
+  render(<LessonCompleteScreen {...fixture({ verdict: "failed", onRetry: vi.fn() })} />);
+
+  const button = screen
+    .getByTestId("lesson-complete-screen-exit")
+    .querySelector('[data-testid="ui-lynx-button"]');
+  expect(button).toHaveAttribute("accessibility-label", "Back to map");
+});
+
+test("[LA9-E] 낭독이 통과 · 실수 수 · 건너뛴 수를 영어로 말한다", () => {
+  const contents = stubAnnounce();
+
+  render(
+    <LessonCompleteScreen
+      {...fixture({ results: ["incorrect", "incorrect", "correct"], skippedCount: 1 })}
+    />,
+  );
+
+  expect(contents).toEqual(["Lesson complete, 2 mistakes, 1 skipped question"]);
+});
+
+test("[LA9-E] 실수도 건너뜀도 없으면 낭독이 no mistakes로 끝난다", () => {
+  const contents = stubAnnounce();
+
+  render(<LessonCompleteScreen {...fixture()} />);
+
+  expect(contents).toEqual(["Lesson complete, no mistakes"]);
+});
+
+test("[LA9-E] 미통과의 낭독이 Lesson not passed로 시작한다", () => {
+  const contents = stubAnnounce();
+
+  render(
+    <LessonCompleteScreen
+      {...fixture({ verdict: "failed", results: ["incorrect", "incorrect", "correct"] })}
+    />,
+  );
+
+  expect(contents).toEqual(["Lesson not passed, 2 mistakes"]);
+});
+
+test("[LA9-M] 문구표를 주입하면 지표 칩 · 보상 카드의 이름이 표의 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <LessonCompleteScreen
+        {...fixture({
+          streakDays: 3,
+          trophyCount: 2,
+          diamondCount: 5,
+          reward: { diamondAmount: 7, grade: "GREAT" },
+        })}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("lesson-complete-screen-streak")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.count.streakDays⟧(3)",
+  );
+  expect(screen.getByTestId("lesson-complete-screen-trophy")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.count.trophies⟧(2)",
+  );
+  expect(screen.getByTestId("lesson-complete-screen-diamond")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.count.diamonds⟧(5)",
+  );
+  expect(screen.getByTestId("lesson-complete-screen-reward-diamond")).toHaveAttribute(
+    "accessibility-label",
+    "⟦lessonComplete.rewardDiamonds⟧(7)",
+  );
+  expect(screen.getByTestId("lesson-complete-screen-reward-grade")).toHaveAttribute(
+    "accessibility-label",
+    "⟦lessonComplete.grade⟧(GREAT)",
+  );
+});
+
+test("[LA9-M] 문구표를 주입하고 연속이 있으면 연속 알약의 이름이 streakDays 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <LessonCompleteScreen {...fixture({ streakDays: 3 })} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("lesson-complete-screen-streak-pill")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.count.streakDays⟧(3)",
+  );
+});
+
+test("[LA9-M] 문구표를 주입하면 낭독이 outcome · mistakes · skippedSuffix 경로로 나온다", () => {
+  const contents = stubAnnounce();
+
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <LessonCompleteScreen
+        {...fixture({ results: ["incorrect", "incorrect", "correct"], skippedCount: 1 })}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(contents).toEqual([
+    "⟦lessonComplete.outcome.passed⟧, ⟦lessonComplete.mistakes⟧(2)⟦lessonComplete.skippedSuffix⟧(1)",
+  ]);
+});
+
+test("[LA9-M] 문구표를 주입하고 미통과면 나가기 버튼의 이름이 exitTo.journey 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <LessonCompleteScreen {...fixture({ verdict: "failed", onRetry: vi.fn() })} />
+    </UiCopyContext.Provider>,
+  );
+
+  const button = screen
+    .getByTestId("lesson-complete-screen-exit")
+    .querySelector('[data-testid="ui-lynx-button"]');
+  expect(button).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
 });

@@ -9,8 +9,6 @@ import {
   judgeWordChoice,
   optionAccessibilityLabel,
   wordChoiceCompletionAnnouncement,
-  wordChoiceCompletionText,
-  wordChoiceFinishLabel,
   wordChoiceQuestionsByStep,
   wordChoiceQuestionsForStep,
   wordChoiceSessionReducer,
@@ -18,6 +16,7 @@ import {
   type WordChoiceQuestion,
   type WordChoiceSessionState,
 } from "./word-choice";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // 기대값의 정본은 계약입니다 — 구현에서 베끼지 않습니다.
 //
@@ -129,28 +128,28 @@ describe("choiceResultAt", () => {
 describe("optionAccessibilityLabel", () => {
   // null → 이름만입니다. 판정 있으면 ", " 접미사가 붙습니다.
   it("판정이 없으면 접미사를 붙이지 않는다 — 텍스트 그대로", () => {
-    expect(optionAccessibilityLabel("학교", null)).toBe("학교");
+    expect(optionAccessibilityLabel("학교", null, uiCopyEn)).toBe("학교");
   });
 
   it("correct는 정답 접미사를 붙인다", () => {
-    expect(optionAccessibilityLabel("학교", "correct")).toBe("학교, 정답");
+    expect(optionAccessibilityLabel("학교", "correct", uiCopyEn)).toBe("학교, correct");
   });
 
   it("incorrect는 오답 접미사를 붙인다", () => {
-    expect(optionAccessibilityLabel("가방", "incorrect")).toBe("가방, 오답");
+    expect(optionAccessibilityLabel("가방", "incorrect", uiCopyEn)).toBe("가방, incorrect");
   });
 
   it("판정이 없을 때 구분자(쉼표 + 공백)가 아예 생기지 않는다", () => {
-    expect(optionAccessibilityLabel("우산", null)).not.toContain(", ");
+    expect(optionAccessibilityLabel("우산", null, uiCopyEn)).not.toContain(", ");
   });
 
   it("세 경우가 서로 다른 문자열이다", () => {
     const text = "시계";
 
     const labels = new Set([
-      optionAccessibilityLabel(text, null),
-      optionAccessibilityLabel(text, "correct"),
-      optionAccessibilityLabel(text, "incorrect"),
+      optionAccessibilityLabel(text, null, uiCopyEn),
+      optionAccessibilityLabel(text, "correct", uiCopyEn),
+      optionAccessibilityLabel(text, "incorrect", uiCopyEn),
     ]);
 
     expect(labels.size).toBe(3);
@@ -487,51 +486,29 @@ describe("wordChoiceQuestionsByStep (고정 데이터 불변식)", () => {
 //
 // 「정확히 한 번」은 이 계층이 지지 않습니다 — 그것은 `ui`의 X-C입니다.
 
-describe("완료 전이 발화의 상수 둘", () => {
-  // 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 나옵니다 (ADR-0016 D11-1).
-  it("완료 문구 상수가 화면에 이미 있는 `문항을 모두 마쳤어요`다", () => {
-    expect(wordChoiceCompletionText).toBe("문항을 모두 마쳤어요");
-  });
-
-  it("완료 상태의 유일한 조작 단위 라벨이 `결과 보기`다", () => {
-    expect(wordChoiceFinishLabel).toBe("결과 보기");
-  });
-});
-
 describe("wordChoiceCompletionAnnouncement", () => {
-  // U1 — 오늘 호출자가 넘기는 값으로 부르면 정해진 문자열과 **문자 그대로**
-  // 같습니다.
-  it("U1 — wordChoiceFinishLabel로 부르면 `문항을 모두 마쳤어요, 결과 보기`다", () => {
-    expect(wordChoiceCompletionAnnouncement(wordChoiceFinishLabel)).toBe(
-      "문항을 모두 마쳤어요, 결과 보기",
+  // U1 — 나아가는 라벨로 부르면 정해진 문자열과 **문자 그대로** 같습니다 (RL7).
+  it("U1 — `See results`로 부르면 `All questions done, See results`다", () => {
+    expect(wordChoiceCompletionAnnouncement("See results", uiCopyEn)).toBe(
+      "All questions done, See results",
     );
   });
 
-  // U2 — 인자가 형식을 실제로 통과합니다. 이 단언이 있어야 「인자 없는 상수 반환」의
-  // 공허함을 피한 것이 지어집니다.
-  it("U2 — 다른 인자 둘의 반환이 다르고, 완료 문구 뒤가 쉼표+공백 하나와 그 인자다", () => {
-    const withFinish = wordChoiceCompletionAnnouncement("결과 보기");
-    const withExit = wordChoiceCompletionAnnouncement("맵으로");
+  // U2 — 인자가 형식을 실제로 통과합니다.
+  it("U2 — 다른 인자 둘의 반환이 다르고, 앞절 뒤가 쉼표+공백 하나와 그 인자다", () => {
+    const withFinish = wordChoiceCompletionAnnouncement("See results", uiCopyEn);
+    const withExit = wordChoiceCompletionAnnouncement("Back to map", uiCopyEn);
 
     expect(withFinish).not.toBe(withExit);
-    expect(withFinish.slice(wordChoiceCompletionText.length)).toBe(", 결과 보기");
-    expect(withExit.slice(wordChoiceCompletionText.length)).toBe(", 맵으로");
+    expect(withFinish).toBe("All questions done, See results");
+    expect(withExit).toBe("All questions done, Back to map");
   });
 
-  // U3 — 앞절이 그 화면의 완료 문구 상수를 지납니다. 리터럴을 다시 적지 않습니다 —
-  // 적으면 정본이 둘이 되고, 상수를 인라인 리터럴로 흩어도 이 단언이 안 잡습니다.
-  it("U3 — 앞절이 wordChoiceCompletionText와 같은 표를 지난다", () => {
-    expect(
-      wordChoiceCompletionAnnouncement(wordChoiceFinishLabel).startsWith(wordChoiceCompletionText),
-    ).toBe(true);
-  });
-
-  // U4 — 부수효과가 없습니다. `announce`를 부르지 않는 순수 함수라 호스트가 없어도
-  // 던지지 않습니다.
+  // U4 — 부수효과가 없습니다.
   it("U4 — 같은 인자로 두 번 불러도 같은 값이고 던지지 않는다", () => {
-    expect(() => wordChoiceCompletionAnnouncement(wordChoiceFinishLabel)).not.toThrow();
-    expect(wordChoiceCompletionAnnouncement(wordChoiceFinishLabel)).toBe(
-      wordChoiceCompletionAnnouncement(wordChoiceFinishLabel),
+    expect(() => wordChoiceCompletionAnnouncement("See results", uiCopyEn)).not.toThrow();
+    expect(wordChoiceCompletionAnnouncement("See results", uiCopyEn)).toBe(
+      wordChoiceCompletionAnnouncement("See results", uiCopyEn),
     );
   });
 });

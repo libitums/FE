@@ -6,10 +6,11 @@
 // 달라(학습 껍데기의 한국어 버튼 · 최종 테스트의 영어 버튼) 여기서 정하지 않습니다 — 화면은
 // `check` · `next`가 있는지로 버튼을 세우고 라벨은 스스로 붙입니다.
 
+import { useUiCopy } from "../lib/ui-copy";
 import { useEffect, useReducer, useRef, useState } from "@lynx-js/react";
 
 import { announce } from "../lib/accessibility";
-import { answerResultLabel, type AnswerResult } from "../lib/answer-result";
+import type { AnswerResult } from "../lib/answer-result";
 import type { Stroke } from "../lib/handwriting-recognition";
 import { compareHandwritingTrace, guideHandwritingTrace } from "../lib/handwriting-trace";
 import { writingCanvasGeometries, writingTraceRequest } from "../lib/writing-canvas";
@@ -73,6 +74,7 @@ export function useWritingPractice({
   size,
   onQuestionDone,
 }: WritingPracticeOptions): WritingPractice {
+  const copy = useUiCopy();
   const [state, dispatch] = useReducer(writingSessionReducer, initialWritingSessionState);
   const [guideEntry, setGuideEntry] = useState<GuideEntry | null>(null);
   const geometry = writingCanvasGeometries[size];
@@ -127,7 +129,7 @@ export function useWritingPractice({
   // 판정이 서면 채점 결과를 한 번 읽습니다 — 말하기 · 최종 테스트와 같은 문구입니다.
   useEffect(() => {
     if (state.phase === "judged" && state.verdict !== null) {
-      announce(`채점 결과, ${answerResultLabel(state.verdict)}`);
+      announce(copy.common.resultAnnouncement(state.verdict));
     }
   }, [state.syllableIndex, state.phase, state.verdict]);
 
@@ -175,9 +177,9 @@ export function useWritingPractice({
 
   const erase: WritingEraseControl | null =
     state.phase === "writing" && state.strokes.length > 0
-      ? { label: "지우기", run: () => dispatch({ type: "clear" }) }
+      ? { label: copy.writing.erase, run: () => dispatch({ type: "clear" }) }
       : state.phase === "judged" && state.verdict === "incorrect"
-        ? { label: "다시 쓰기", run: () => dispatch({ type: "retry" }) }
+        ? { label: copy.writing.rewrite, run: () => dispatch({ type: "retry" }) }
         : null;
 
   return {

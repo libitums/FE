@@ -1,5 +1,8 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import type { UiCopy } from "../lib/ui-copy.contract";
+import { useUiCopy } from "../lib/ui-copy";
+
 import "./syllable-slots.css";
 
 // 음절 칸 줄입니다(Figma 79-6378의 빈칸 아래 칸 셋). 빈칸을 채우는 음절이 한 칸씩 서고, 이미
@@ -25,24 +28,24 @@ export function syllableSlotStatus(index: number, currentIndex: number): Syllabl
 // 낭독 이름입니다. 칸 하나씩 읽게 하면 세 번 멈추면서 같은 말을 되풀이하므로, 줄 하나를 한
 // 요소로 묶어 「몇 칸 중 몇째를 쓰는 중이고 무엇을 썼나」를 한 번에 읽힙니다. 아직 안 쓴 칸의
 // 글자는 읽지 않습니다 — 화면에도 보이지 않는 것입니다.
-function slotsLabel(syllables: readonly string[], currentIndex: number): string {
+function slotsLabel(syllables: readonly string[], currentIndex: number, copy: UiCopy): string {
   const written = syllables.slice(0, currentIndex).join("");
   const total = syllables.length;
   if (currentIndex >= total) {
-    return `쓸 글자 ${total}칸, 모두 씀, ${written}`;
+    return copy.writing.slotsAllWritten(total, written);
   }
   const current = syllables[currentIndex] ?? "";
-  const done = written === "" ? "" : `, 쓴 글자 ${written}`;
-  return `쓸 글자 ${total}칸 중 ${currentIndex + 1}번째, ${current}${done}`;
+  return copy.writing.slotsCurrent(total, currentIndex + 1, current, written);
 }
 
 export function SyllableSlots({ syllables, currentIndex }: SyllableSlotsProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view
       className="syllable-slots"
       data-testid="syllable-slots"
       accessibility-element={true}
-      accessibility-label={slotsLabel(syllables, currentIndex)}
+      accessibility-label={slotsLabel(syllables, currentIndex, copy)}
     >
       {syllables.map((syllable, index) => {
         const status = syllableSlotStatus(index, currentIndex);

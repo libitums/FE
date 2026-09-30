@@ -1,6 +1,8 @@
 import { useReducer } from "@lynx-js/react";
 
+import { announceCompletion } from "../../lib/accessibility";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
+import { useUiCopy } from "../../lib/ui-copy";
 import { DialoguePanel } from "./DialoguePanel";
 import { VisualNovelScene } from "./VisualNovelScene";
 import {
@@ -24,11 +26,13 @@ import "./visual-novel.css";
 export function VisualNovelScreen({
   story,
   progress,
-  exitLabel = specialUnitExitLabel("journey"),
+  exitTo = "journey",
   onAdvance,
   onExit,
   onReplay,
 }: VisualNovelScreenProps) {
+  const copy = useUiCopy();
+  const exitLabel = specialUnitExitLabel(exitTo, copy);
   const [session, dispatch] = useReducer(
     visualNovelSessionReducer,
     progress,
@@ -38,7 +42,12 @@ export function VisualNovelScreen({
 
   const handleAdvance = () => {
     "background only";
-    onAdvance(story.unitId, advanceVisualNovel(session, progress));
+    const outcome = advanceVisualNovel(session, progress);
+    onAdvance(story.unitId, outcome);
+    // 결과가 싣는 것은 키(`story-complete`)뿐입니다 — 낭독할 말은 화면이 받은 문구표가 정합니다.
+    if (outcome.completedNow && outcome.announcement !== null) {
+      announceCompletion(copy.visualNovel.storyComplete);
+    }
     dispatch({ type: "advance" });
   };
   const handleReplay = () => {
@@ -76,7 +85,7 @@ export function VisualNovelScreen({
             {story.title}
           </text>
           <text className="visual-novel-progress" data-testid="visual-novel-progress">
-            {visualNovelProgressLabel(session)}
+            {visualNovelProgressLabel(session, copy)}
           </text>
         </view>
       </view>
@@ -93,8 +102,8 @@ export function VisualNovelScreen({
           dialogue={beat.dialogue}
           action={
             session.mode === "final"
-              ? { kind: "replay", label: "처음부터 보기", onSelect: handleReplay }
-              : { kind: "advance", label: "다음", onSelect: handleAdvance }
+              ? { kind: "replay", label: copy.common.startOver, onSelect: handleReplay }
+              : { kind: "advance", label: copy.common.next, onSelect: handleAdvance }
           }
         />
       </view>

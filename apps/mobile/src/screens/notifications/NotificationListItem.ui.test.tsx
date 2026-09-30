@@ -4,6 +4,9 @@ import { fireEvent, render, screen, within } from "@lynx-js/react/testing-librar
 import { notificationDestinationLabel, notificationItemAccessibilityLabel } from "./notifications";
 import type { NotificationItem } from "./notifications.contract";
 import { NotificationListItem } from "./NotificationListItem";
+import { uiCopyEn } from "../../lib/ui-copy-en";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다 (ADR-0006 D4). 로직을
 // 다시 짓지 않습니다 — 기대값은 순수 함수(`notificationItemAccessibilityLabel`·
@@ -14,25 +17,25 @@ import { NotificationListItem } from "./NotificationListItem";
 
 const messengerItem: NotificationItem = {
   id: "notification-messenger",
-  message: "지민이 약속 확인 메시지를 보냈어요",
+  message: "Jimin sent you an appointment message",
   target: { kind: "messenger", unitId: "appointment-confirmation" },
 };
 
 const phoneCallItem: NotificationItem = {
   id: "notification-phone-call",
-  message: "지민에게서 약속 확인 전화가 왔어요",
+  message: "Jimin is calling about your appointment",
   target: { kind: "phone-call", unitId: "appointment-confirmation-phone-call" },
 };
 
 const visualNovelItem: NotificationItem = {
   id: "notification-visual-novel",
-  message: "지민이 카페에 도착했어요",
+  message: "Jimin has arrived at the café",
   target: { kind: "visual-novel", unitId: "cafe-arrival-visual-novel" },
 };
 
 const roleplayListItem: NotificationItem = {
   id: "notification-roleplay-list",
-  message: "배운 대화를 롤플레이로 연습해 보세요",
+  message: "Practice what you learned in a roleplay",
   target: { kind: "roleplay-list" },
 };
 
@@ -62,7 +65,7 @@ describe("NotificationListItem UI", () => {
         expect(root).toHaveAttribute("accessibility-traits", "button");
         expect(root).toHaveAttribute(
           "accessibility-label",
-          notificationItemAccessibilityLabel(item),
+          notificationItemAccessibilityLabel(item, uiCopyEn),
         );
       });
     }
@@ -78,7 +81,7 @@ describe("NotificationListItem UI", () => {
         );
         expect(
           screen.getByTestId(`notification-list-item-destination-${item.id}`),
-        ).toHaveTextContent(notificationDestinationLabel(item.target.kind));
+        ).toHaveTextContent(notificationDestinationLabel(item.target.kind, uiCopyEn));
       });
     }
   });
@@ -153,7 +156,7 @@ describe("NotificationListItem UI", () => {
           expect(el.getAttribute("accessibility-traits")).not.toBe("disabled");
         }
 
-        expect(container).not.toHaveTextContent("읽음");
+        expect(container).not.toHaveTextContent("Read");
       });
     }
   });
@@ -182,7 +185,7 @@ describe("NotificationListItem UI", () => {
         expect(root).toHaveAttribute("accessibility-traits", "button");
         expect(root).toHaveAttribute(
           "accessibility-label",
-          notificationItemAccessibilityLabel(item),
+          notificationItemAccessibilityLabel(item, uiCopyEn),
         );
 
         expect(screen.getByTestId(`notification-list-item-message-${item.id}`)).toHaveTextContent(
@@ -190,7 +193,7 @@ describe("NotificationListItem UI", () => {
         );
         expect(
           screen.getByTestId(`notification-list-item-destination-${item.id}`),
-        ).toHaveTextContent(notificationDestinationLabel(item.target.kind));
+        ).toHaveTextContent(notificationDestinationLabel(item.target.kind, uiCopyEn));
       });
     }
   });
@@ -216,10 +219,10 @@ describe("NotificationListItem 삭제 자리", () => {
     );
 
     const remove = screen.getByTestId("notification-list-item-delete-notification-messenger");
-    expect(remove).toHaveTextContent("삭제");
+    expect(remove).toHaveTextContent("Delete");
     expect(remove).toHaveAttribute("accessibility-element", "true");
     expect(remove).toHaveAttribute("accessibility-traits", "button");
-    expect(remove).toHaveAttribute("accessibility-label", `${messengerItem.message}, 삭제`);
+    expect(remove).toHaveAttribute("accessibility-label", `${messengerItem.message}, delete`);
   });
 
   it("[LD3] 삭제 tap → onDelete가 그 항목으로 1회, onSelect 0회", () => {
@@ -324,5 +327,43 @@ describe("NotificationListItem 삭제 자리", () => {
 
     expect(onHideDelete).toHaveBeenCalledTimes(1);
     expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
+describe("[NT1-M] 알림 항목은 문구표에서 읽는다", () => {
+  it("행선지 낱말", () => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <NotificationListItem {...closed} item={roleplayListItem} onSelect={vi.fn()} />
+      </UiCopyContext.Provider>,
+    );
+
+    expect(
+      screen.getByTestId(`notification-list-item-destination-${roleplayListItem.id}`),
+    ).toHaveTextContent("⟦notifications.destination.roleplay-list⟧");
+    expect(screen.getByTestId(`notification-list-item-${roleplayListItem.id}`)).toHaveAttribute(
+      "accessibility-label",
+      expect.stringContaining("⟦notifications.destination.roleplay-list⟧"),
+    );
+  });
+
+  it("삭제 자리 — 보이는 낱말 · 이름", () => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <NotificationListItem
+          {...closed}
+          deleteRevealed={true}
+          item={messengerItem}
+          onSelect={vi.fn()}
+        />
+      </UiCopyContext.Provider>,
+    );
+
+    const remove = screen.getByTestId("notification-list-item-delete-notification-messenger");
+    expect(remove).toHaveTextContent("⟦common.delete⟧");
+    expect(remove).toHaveAttribute(
+      "accessibility-label",
+      expect.stringContaining("⟦notifications.deleteLabel⟧"),
+    );
   });
 });

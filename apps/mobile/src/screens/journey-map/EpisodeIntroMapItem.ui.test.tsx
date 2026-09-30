@@ -28,7 +28,7 @@ describe("EpisodeIntroMapItem UI", () => {
       render(
         <EpisodeIntroMapItem
           id="tutorial-intro"
-          title="에피소드 표지"
+          title="Episode intro"
           status={status}
           onSelect={vi.fn<(id: "tutorial-intro") => void>()}
         />,
@@ -47,11 +47,9 @@ describe("EpisodeIntroMapItem UI", () => {
       // 두 번 들립니다.
       expect(item).toHaveAttribute(
         "accessibility-label",
-        status === "completed"
-          ? "에피소드 표지, 완료됨, 이야기 연결"
-          : "에피소드 표지, 이야기 연결",
+        status === "completed" ? "Episode intro, completed, story" : "Episode intro, story",
       );
-      expect(screen.getByText("에피소드 표지")).toBeInTheDocument();
+      expect(screen.getByText("Episode intro")).toBeInTheDocument();
     },
   );
 
@@ -64,7 +62,7 @@ describe("EpisodeIntroMapItem UI", () => {
     render(
       <EpisodeIntroMapItem
         id="tutorial-intro"
-        title="에피소드 표지"
+        title="Episode intro"
         status="available"
         onSelect={vi.fn<(id: "tutorial-intro") => void>()}
       />,
@@ -86,7 +84,7 @@ describe("EpisodeIntroMapItem UI", () => {
     render(
       <EpisodeIntroMapItem
         id="tutorial-intro"
-        title="에피소드 표지"
+        title="Episode intro"
         status="available"
         onSelect={onSelect}
       />,
@@ -106,7 +104,7 @@ describe("EpisodeIntroMapItem UI", () => {
     render(
       <EpisodeIntroMapItem
         id="tutorial-intro"
-        title="에피소드 표지"
+        title="Episode intro"
         status="locked"
         onSelect={onSelect}
       />,

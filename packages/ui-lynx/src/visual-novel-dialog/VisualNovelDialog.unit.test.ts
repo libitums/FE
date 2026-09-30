@@ -56,7 +56,7 @@ describe("getVisualNovelDialogContract", () => {
         line: "이번에는 꼭 말해야 해.",
         speakerName: "아리아",
       }).accessibilityLabel,
-    ).toBe("아리아, 속마음: 이번에는 꼭 말해야 해.");
+    ).toBe("아리아, thinking: 이번에는 꼭 말해야 해.");
   });
 
   test("호스트가 번역한 접근성 이름을 기본 포맷보다 우선한다", () => {

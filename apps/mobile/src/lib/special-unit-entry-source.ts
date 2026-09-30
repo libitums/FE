@@ -1,3 +1,5 @@
+import type { UiCopy } from "./ui-copy.contract";
+
 // 특별 유닛 진입 출처 어휘의 정본입니다.
 //
 // `lib/`인 근거는 이 어휘를 세 화면 계약(이벤트 union)과 세 화면 컴포넌트(기본
@@ -9,13 +11,6 @@
 
 export type SpecialUnitEntrySource = "journey" | "roleplay";
 
-export type SpecialUnitExitLabel = "맵으로" | "목록으로";
-
-const specialUnitExitLabelBySource: Record<SpecialUnitEntrySource, SpecialUnitExitLabel> = {
-  journey: "맵으로",
-  roleplay: "목록으로",
-};
-
-export function specialUnitExitLabel(source: SpecialUnitEntrySource): SpecialUnitExitLabel {
-  return specialUnitExitLabelBySource[source];
+export function specialUnitExitLabel(source: SpecialUnitEntrySource, copy: UiCopy): string {
+  return copy.common.exitTo[source];
 }

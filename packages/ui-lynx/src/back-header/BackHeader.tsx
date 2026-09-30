@@ -20,7 +20,7 @@ export function BackHeader(props: BackHeaderProps) {
           className="ui-lynx-back-header-back-icon-area"
           data-testid="ui-lynx-back-header-back"
           accessibility-element={true}
-          accessibility-label={`뒤로, ${props.title}`}
+          accessibility-label={`Back, ${props.title}`}
           accessibility-traits="button"
           catchtap={handleBack}
         >
@@ -59,7 +59,7 @@ export function BackHeader(props: BackHeaderProps) {
           className="ui-lynx-back-header-info"
           data-testid="ui-lynx-back-header-info"
           accessibility-element={true}
-          accessibility-label="화면 정보"
+          accessibility-label="Screen info"
           accessibility-traits="button"
           bindtap={handleInfo}
         >

@@ -3,6 +3,8 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { WordChoiceOption } from "./WordChoiceOption";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). 계산된 스타일을 볼 수
 // 없으므로 `toHaveClass`·`toHaveStyle`·`toBeVisible`을 쓰지 않습니다
@@ -70,7 +72,7 @@ test("정답이면 accessibility-label에 ', 정답' 접미사가 붙는다", ()
 
   expect(screen.getByTestId("word-choice-option-1")).toHaveAttribute(
     "accessibility-label",
-    "학교, 정답",
+    "학교, correct",
   );
 });
 
@@ -79,7 +81,7 @@ test("오답이면 accessibility-label에 ', 오답' 접미사가 붙는다", ()
 
   expect(screen.getByTestId("word-choice-option-2")).toHaveAttribute(
     "accessibility-label",
-    "공원, 오답",
+    "공원, incorrect",
   );
 });
 
@@ -127,8 +129,8 @@ for (const result of RESULTS) {
     render(<WordChoiceOption index={0} text="학교" result={result} onSelect={() => {}} />);
 
     const root = screen.getByTestId("word-choice-option-0");
-    expect(root).not.toHaveTextContent("정답");
-    expect(root).not.toHaveTextContent("오답");
+    expect(root).not.toHaveTextContent("correct");
+    expect(root).not.toHaveTextContent("Correct");
   });
 }
 
@@ -202,3 +204,22 @@ test("tap해도 렌더된 data-result는 그대로다 — 컴포넌트는 상태
 
   expect(screen.getByTestId("word-choice-option-0")).toHaveAttribute("data-result", "none");
 });
+
+// LA2-M — 보기의 이름 접미는 문구표(`common.answerResultSuffix`)에서 읽습니다. 낱말은 학습 콘텐츠라 그대로입니다.
+test.each(["correct", "incorrect"] as const)(
+  "[LA2-M] 문구표를 주입하면 %s 판정의 이름 접미가 answerResultSuffix 경로로 나온다",
+  (result) => {
+    render(
+      <UiCopyContext.Provider value={markedUiCopy}>
+        <WordChoiceOption index={0} text="학교" result={result} onSelect={() => {}} />
+      </UiCopyContext.Provider>,
+    );
+
+    const root = screen.getByTestId("word-choice-option-0");
+    expect(root).toHaveAttribute(
+      "accessibility-label",
+      `학교, ⟦common.answerResultSuffix.${result}⟧`,
+    );
+    expect(root).toHaveTextContent("학교");
+  },
+);

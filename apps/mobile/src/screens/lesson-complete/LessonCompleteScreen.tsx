@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
@@ -72,6 +73,7 @@ export function LessonCompleteScreen({
   onExit,
   onRetry,
 }: LessonCompleteScreenProps): ReactNode {
+  const copy = useUiCopy();
   const mistakeCount = lessonMistakeCount(results);
 
   // 이 화면이 사는 동안 정확히 한 번 발화합니다(ADR-0016 D11-2).
@@ -85,7 +87,7 @@ export function LessonCompleteScreen({
   // `mistakeCount`도 갈리지 않습니다. 듣기 화면이 `[complete]`를 dep으로 두고 같은
   // 근거를 적는 것과 같은 자리입니다.
   useEffect(() => {
-    announce(lessonCompleteAnnouncement(mistakeCount, verdict, skippedCount));
+    announce(lessonCompleteAnnouncement(mistakeCount, verdict, skippedCount, copy));
   }, [mistakeCount, verdict, skippedCount]);
 
   return (
@@ -95,19 +97,19 @@ export function LessonCompleteScreen({
         <StatChip
           tone="streak"
           value={streakDays}
-          accessibilityLabel={`연속 학습 ${streakDays}일`}
+          accessibilityLabel={copy.common.count.streakDays(streakDays)}
           testId="lesson-complete-screen-streak"
         />
         <StatChip
           tone="trophy"
           value={trophyCount}
-          accessibilityLabel={`트로피 ${trophyCount}개`}
+          accessibilityLabel={copy.common.count.trophies(trophyCount)}
           testId="lesson-complete-screen-trophy"
         />
         <StatChip
           tone="diamond"
           value={diamondCount}
-          accessibilityLabel={`다이아 ${diamondCount}개`}
+          accessibilityLabel={copy.common.count.diamonds(diamondCount)}
           testId="lesson-complete-screen-diamond"
         />
       </view>
@@ -147,7 +149,7 @@ export function LessonCompleteScreen({
             className="lesson-complete-screen-streak"
             data-testid="lesson-complete-screen-streak-pill"
             accessibility-element={true}
-            accessibility-label={`연속 학습 ${streakDays}일`}
+            accessibility-label={copy.common.count.streakDays(streakDays)}
           >
             <svg
               className="lesson-complete-screen-streak-icon"
@@ -178,7 +180,7 @@ export function LessonCompleteScreen({
             className="lesson-complete-screen-reward lesson-complete-screen-reward-diamond"
             data-testid="lesson-complete-screen-reward-diamond"
             accessibility-element={true}
-            accessibility-label={`보상 다이아 ${reward.diamondAmount}개`}
+            accessibility-label={copy.lessonComplete.rewardDiamonds(reward.diamondAmount)}
           >
             <svg
               className="lesson-complete-screen-reward-icon"
@@ -191,7 +193,7 @@ export function LessonCompleteScreen({
             className="lesson-complete-screen-reward lesson-complete-screen-reward-grade"
             data-testid="lesson-complete-screen-reward-grade"
             accessibility-element={true}
-            accessibility-label={`등급 ${reward.grade}`}
+            accessibility-label={copy.lessonComplete.grade(reward.grade)}
           >
             <svg
               className="lesson-complete-screen-reward-icon"
@@ -229,7 +231,7 @@ export function LessonCompleteScreen({
             꽉 찬 면이면 어느 것이 주된 길인지가 색으로만 갈립니다. 통과에서는 이것이
             유일한 버튼이라 `neutral` 그대로입니다. */}
         <Button
-          label={verdict === "failed" ? "맵으로" : "Check →"}
+          label={verdict === "failed" ? copy.common.exitTo.journey : "Check →"}
           variant={verdict === "failed" ? "outline" : "neutral"}
           size="xl"
           width="fill"

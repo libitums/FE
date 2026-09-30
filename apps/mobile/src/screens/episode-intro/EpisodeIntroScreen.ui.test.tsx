@@ -2,6 +2,8 @@ import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { EpisodeIntroScreen } from "./EpisodeIntroScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). `toHaveClass`·`toHaveStyle`을 쓰지
 // 않습니다. 텍스트 질의(`getByText`)를 쓰지 않습니다 — testid로 질의합니다.
@@ -50,7 +52,7 @@ test("[I3] 뒤로 버튼이 맵으로라는 이름을 싣고, tap → onBack 1�
   const props = renderIntro();
 
   const back = buttonIn("episode-intro-screen-back", "ui-lynx-round-button");
-  expect(back).toHaveAttribute("accessibility-label", "맵으로");
+  expect(back).toHaveAttribute("accessibility-label", "Back to map");
   fireEvent.tap(back, {});
 
   expect(props.onBack).toHaveBeenCalledTimes(1);
@@ -69,9 +71,7 @@ test("[I4] Skip tap은 곧장 건너뛰지 않고 확인 모달을 띄운다", (
   fireEvent.tap(buttonIn("episode-intro-screen-skip", "ui-lynx-button"), {});
 
   const confirm = screen.getByTestId("episode-intro-screen-confirm");
-  expect(within(confirm).getByTestId("ui-lynx-dialog-title")).toHaveTextContent(
-    "이야기를 건너뛸까요?",
-  );
+  expect(within(confirm).getByTestId("ui-lynx-dialog-title")).toHaveTextContent("Skip the story?");
   expect(props.onSkip).not.toHaveBeenCalled();
   expect(props.onNext).not.toHaveBeenCalled();
 });
@@ -142,4 +142,49 @@ test("[I7] 가장자리 여백을 여백 상자가 인라인으로 잡는다", (
   const style = screen.getByTestId("episode-intro-screen-safe").getAttribute("style") ?? "";
   expect(style).toContain("62px");
   expect(style).toContain("34px");
+});
+
+test("[ST1-E] 확인 대화상자의 설명 · 동작이 영어다", () => {
+  renderIntro();
+  fireEvent.tap(buttonIn("episode-intro-screen-skip", "ui-lynx-button"), {});
+
+  const confirm = screen.getByTestId("episode-intro-screen-confirm");
+  expect(within(confirm).getByTestId("ui-lynx-dialog-title")).toHaveTextContent("Skip the story?");
+  expect(confirm).toHaveTextContent("If you skip it, this episode's story won't appear again.");
+  expect(dialogAction("skip")).toHaveAttribute("accessibility-label", "Skip");
+  expect(dialogAction("stay")).toHaveAttribute("accessibility-label", "Keep watching");
+});
+
+test("[ST1-M] 문구표에서 읽는다 — 뒤로 이름 · 대화상자 문구", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <EpisodeIntroScreen
+        insets={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        label="Episode 0."
+        title="Tutorial."
+        onBack={vi.fn<() => void>()}
+        onSkip={vi.fn<() => void>()}
+        onNext={vi.fn<() => void>()}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(buttonIn("episode-intro-screen-back", "ui-lynx-round-button")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.exitTo.journey⟧",
+  );
+  fireEvent.tap(buttonIn("episode-intro-screen-skip", "ui-lynx-button"), {});
+  const confirm = screen.getByTestId("episode-intro-screen-confirm");
+  expect(within(confirm).getByTestId("ui-lynx-dialog-title")).toHaveTextContent(
+    "⟦episodeIntro.skipDialog.title⟧",
+  );
+  expect(confirm).toHaveTextContent("⟦episodeIntro.skipDialog.description⟧");
+  expect(dialogAction("skip")).toHaveAttribute(
+    "accessibility-label",
+    "⟦episodeIntro.skipDialog.skip⟧",
+  );
+  expect(dialogAction("stay")).toHaveAttribute(
+    "accessibility-label",
+    "⟦episodeIntro.skipDialog.keepWatching⟧",
+  );
 });

@@ -4,7 +4,6 @@ import type { AnswerResult } from "../lib/answer-result";
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
-import { announceCompletion } from "../lib/accessibility";
 import type {
   MessengerEventSink,
   MessengerExitOutcome,
@@ -128,7 +127,6 @@ export function specialUnitWiring(args: SpecialUnitWiringArgs) {
       "background only";
       if (outcome.progressChanged) setVisualNovelProgress(outcome.progress);
       if (outcome.completedNow) {
-        if (outcome.announcement !== null) announceCompletion(outcome.announcement);
         visualNovelEventSink?.({
           name: "visual_novel_unit_completed",
           unitId: id,

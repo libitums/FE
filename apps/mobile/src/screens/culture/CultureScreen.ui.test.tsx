@@ -3,6 +3,8 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { CultureNarrative } from "./culture";
 import { CultureScreen } from "./CultureScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다 (ADR-0006 D4). `vi.mock`을
 // 쓰지 않습니다 — narrative는 fixture를 prop으로 그대로 넘깁니다. `./culture`로부터는
@@ -59,22 +61,22 @@ function renderScreen(
 
 // ---------------------------------------------------------------- X1: 제목
 
-test("[X1] 제목이 3단계 · 문화이고 accessibility-traits='header'다", () => {
+test("[LA6-E][X1] 제목이 Step 3 · Culture이고 accessibility-traits='header'다", () => {
   renderScreen({ stepOrdinal: 3 });
 
   const title = screen.getByTestId("culture-screen-title");
-  expect(title).toHaveTextContent("3단계 · 문화");
+  expect(title).toHaveTextContent("Step 3 · Culture");
   expect(title).toHaveAttribute("accessibility-traits", "header");
 });
 
 // ---------------------------------------------------------------- X2: 나가는 수단
 
-test("[X2] 나가는 수단이 accessibility-element·label·traits를 전부 갖는다", () => {
+test("[LA6-E][X2] 나가는 수단이 accessibility-element·label·traits를 전부 갖는다", () => {
   renderScreen();
 
   const exit = screen.getByTestId("culture-screen-exit");
   expect(exit).toHaveAttribute("accessibility-element", "true");
-  expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+  expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
 });
 
@@ -160,17 +162,17 @@ test("[X8] 화면 전체에 accessibility-elements-hidden이 0건이다", () => 
 //
 // "이 화면에는 나아가는 수단이 없다"로 액션 행을 안 만든 예전 근거가 문화 퀴즈가
 // 서면서 소멸했습니다(D3) — 뒤집힌 판정을 여기 짓습니다. `culture-screen-quiz`는
-// 조건 없이 렌더되고(D3.1), `맵으로`는 액션 행이 생겨도 걷히지 않습니다(둘이 동시에
+// 조건 없이 렌더되고(D3.1), `Back to map`은 액션 행이 생겨도 걷히지 않습니다(둘이 동시에
 // 섭니다 — 이 화면이 스택에서 안 사라지므로 「나가는 수단은 하나」 규칙과 안
 // 어긋납니다).
 
-test("[C1] culture-screen-quiz가 조건 없이 있고 라벨 '퀴즈 풀기'·traits='button'이며 탭하면 onStartQuiz가 정확히 한 번 불린다", () => {
+test("[LA6-E][C1] culture-screen-quiz가 조건 없이 있고 라벨 'Take the quiz'·traits='button'이며 탭하면 onStartQuiz가 정확히 한 번 불린다", () => {
   const onStartQuiz = vi.fn<() => void>();
   renderScreen({ onStartQuiz });
 
   const quiz = screen.getByTestId("culture-screen-quiz");
   expect(quiz).toHaveAttribute("accessibility-element", "true");
-  expect(quiz).toHaveAttribute("accessibility-label", "퀴즈 풀기");
+  expect(quiz).toHaveAttribute("accessibility-label", "Take the quiz");
   expect(quiz).toHaveAttribute("accessibility-traits", "button");
 
   fireEvent.tap(quiz, {});
@@ -186,11 +188,11 @@ test("[C1] 문단이 하나뿐인 fixture에서도 culture-screen-quiz가 있다
   expect(screen.getByTestId("culture-screen-quiz")).toBeInTheDocument();
 });
 
-test("[C2] 액션 행이 생겨도 '맵으로'가 여전히 있다 — 나가는 수단이 걷히지 않는다", () => {
+test("[C2] 액션 행이 생겨도 'Back to map'이 여전히 있다 — 나가는 수단이 걷히지 않는다", () => {
   renderScreen();
 
   const exit = screen.getByTestId("culture-screen-exit");
-  expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+  expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
   expect(screen.getByTestId("culture-screen-quiz")).toBeInTheDocument();
 });
@@ -244,4 +246,46 @@ test("[X9] culture-screen-narrative-title이 accessibility-traits='header'를 �
 
   expect(narrativeTitle).toBeInTheDocument();
   expect(narrativeTitle).not.toHaveAttribute("accessibility-element");
+});
+
+// ---------------------------------------------------------------- 문구표 (LA6)
+
+test("[LA6-E] 단계 번호가 바뀌면 제목의 순번이 따라간다", () => {
+  renderScreen({ stepOrdinal: 1 });
+
+  expect(screen.getByTestId("culture-screen-title")).toHaveTextContent("Step 1 · Culture");
+});
+
+test("[LA6-E] 퀴즈 버튼의 보이는 글자가 Take the quiz다", () => {
+  renderScreen();
+
+  expect(screen.getByTestId("culture-screen-quiz")).toHaveTextContent("Take the quiz");
+});
+
+// LA6-M — 노트 본문은 데이터(fixture)라 그대로, 나머지 낱말은 문구표에서 읽습니다.
+test("[LA6-M] 문구표를 주입하면 제목 · 나가기 · 퀴즈 버튼이 표의 경로로 나오고 노트는 그대로다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <CultureScreen
+        stepOrdinal={3}
+        narrative={FIXTURE_NARRATIVE}
+        onExit={() => {}}
+        onStartQuiz={() => {}}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("culture-screen-title")).toHaveTextContent(
+    "⟦common.stepTitle⟧(3, ⟦culture.activity⟧)",
+  );
+  expect(screen.getByTestId("culture-screen-exit")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.exitTo.journey⟧",
+  );
+  const quiz = screen.getByTestId("culture-screen-quiz");
+  expect(quiz).toHaveAttribute("accessibility-label", "⟦culture.takeQuiz⟧");
+  expect(quiz).toHaveTextContent("⟦culture.takeQuiz⟧");
+  expect(screen.getByTestId("culture-screen-narrative-title")).toHaveTextContent(
+    FIXTURE_NARRATIVE.title,
+  );
 });

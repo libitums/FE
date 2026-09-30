@@ -8,9 +8,9 @@ describe("DialoguePanel UI", () => {
     render(
       <DialoguePanel
         beatId="arrive"
-        speakerName="지민"
+        speakerName="Jimin"
         dialogue="여기가 우리가 만나기로 한 카페예요."
-        action={{ kind: "advance", label: "다음", onSelect }}
+        action={{ kind: "advance", label: "Next", onSelect }}
       />,
     );
     const panel = screen.getByTestId("visual-novel-dialogue-arrive");
@@ -18,20 +18,20 @@ describe("DialoguePanel UI", () => {
     expect(content).toHaveAttribute("accessibility-element", "true");
     expect(content).toHaveAttribute(
       "accessibility-label",
-      "지민, 여기가 우리가 만나기로 한 카페예요.",
+      "Jimin, 여기가 우리가 만나기로 한 카페예요.",
     );
-    expect(screen.getByText("지민")).toHaveAttribute("accessibility-element", "false");
+    expect(screen.getByText("Jimin")).toHaveAttribute("accessibility-element", "false");
     expect(screen.getByText("여기가 우리가 만나기로 한 카페예요.")).toHaveAttribute(
       "accessibility-element",
       "false",
     );
     expect(panel).not.toHaveAttribute("accessibility-element");
-    expect(panel).toHaveTextContent("지민");
+    expect(panel).toHaveTextContent("Jimin");
     expect(panel).toHaveTextContent("여기가 우리가 만나기로 한 카페예요.");
     const button = screen.getByTestId("visual-novel-advance-button");
     expect(button).toHaveAttribute("accessibility-element", "true");
     expect(button).toHaveAttribute("accessibility-traits", "button");
-    expect(button).toHaveAttribute("accessibility-label", "다음");
+    expect(button).toHaveAttribute("accessibility-label", "Next");
     expect(panel).toHaveClass("visual-novel-dialogue");
     expect(content.tagName.toLowerCase()).toBe("scroll-view");
     expect(content).toHaveClass("visual-novel-dialogue-scroll");
@@ -48,14 +48,14 @@ describe("DialoguePanel UI", () => {
     render(
       <DialoguePanel
         beatId="enter"
-        speakerName="지민"
+        speakerName="Jimin"
         dialogue="그럼 들어가서 같이 주문해 봐요."
-        action={{ kind: "replay", label: "처음부터 보기", onSelect }}
+        action={{ kind: "replay", label: "Start over", onSelect }}
       />,
     );
     expect(screen.queryByTestId("visual-novel-advance-button")).not.toBeInTheDocument();
     const button = screen.getByTestId("visual-novel-replay-button");
-    expect(button).toHaveAttribute("accessibility-label", "처음부터 보기");
+    expect(button).toHaveAttribute("accessibility-label", "Start over");
     fireEvent.tap(button, {});
     expect(onSelect).toHaveBeenCalledTimes(1);
   });

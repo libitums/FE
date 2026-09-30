@@ -165,6 +165,15 @@ Major 5건 · Minor 3건을 냈다. 원인은 계약 위반이 아니라 **요�
 사용자는 네 탭 중 어디에 있는지 알 수단이 없다(WCAG 2.1 A **4.1.2 Name, Role, Value**).
 **이름의 단일 출처를 지키는 것보다 상태가 전달되는 것이 앞선다.**
 
+⟨2026-09-29 — 적용 기록, 새 결정 아님⟩ **접미 낱말이 UI 언어를 따른다.** 이 D와 D13의 예시(`, 선택됨` ·
+`잠김` · `완료됨` · `켜짐`/`꺼짐`)는 당시의 한국어 값이다. 이제 낱말은 앱의 문구표(`copy.common.selected` ·
+`copy.common.locked` · `copy.journeyMap.stepStatus` · `copy.settings.optionState`)와 ui-lynx의 영어 기본값
+(`, selected` · `, loading` · `locked` · `completed` · `on`/`off`)이 진다([ADR-0031](0031-ui-language-catalog.md)).
+**형태는 그대로다** — 이름 뒤에 쉼표 + 공백, 비선택은 이름만, 어느 값에 붙이는가는 D13. 접미는 **소문자**
+(`Journey, selected`)로 이름과 한 마디로 읽히게 한다. 합성은 여전히 한 방향 파생이다 — 문구표에도 합성
+결과를 적지 않고 함수(`selected(label)`)로 둔다. 옛 기록 · 예시의 한국어는 고치지 않는다(대응은 ADR-0031 부록).
+⚠ 영어로 **들리는지**는 아직 실기 VoiceOver로 확인하지 않았다(`docs/e2e/ui-language.md` E5).
+
 ### D4. **제목을 지는 자리**는 `accessibility-traits="header"`다. `accessibility-heading`을 쓰지 않는다
 
 **어느 자리가 「제목을 지는 자리」인가는 D12가 판별한다.** D4는 *그 자리에 무엇을
@@ -831,6 +840,11 @@ git grep -lE 'accessibility-label=\{[a-zA-Z]+(Finish|Exit)Label\}' -- 'apps/mobi
 ```
 
 **`A ＼ B`·`A ＼ C`·`A ＼ D`가 전부 비어 있어야 한다. 어느 쪽에도 개수를 적지 않는다.**
+
+> ⟨2026-09-29 — 앵커 갱신, 판정 기준은 그대로⟩ C · D의 앵커가 가리키던 상수(`listeningCompletionText` 등
+> `*CompletionText` · `*FinishLabel` · `cultureQuizExitLabel`)가 문구표로 옮겨져 지워졌다([ADR-0031](0031-ui-language-catalog.md)).
+> 같은 것을 읽는 앵커는 **C: `'\{copy\.common\.allQuestionsDone\}'`** · **D: `'accessibility-label=\{copy\.'`**
+> 이다(경로 인자는 위와 같다). C는 옛 앵커와 같은 파일 여섯을 잡는다. 위 블록은 당시 형태로 남긴다.
 
 - **B의 앵커에 여는 괄호가 붙어 있는 것이 핵심이다.** 그것이 「부르는가」와 「이름이 파일에
   있는가」를 가른다 — 이 저장소의 import는 여러 줄로 갈리므로 괄호가 없으면 **호출이

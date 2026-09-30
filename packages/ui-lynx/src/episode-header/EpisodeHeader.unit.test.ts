@@ -44,9 +44,15 @@ describe("getEpisodeHeaderContract", () => {
 
   // 「7 / 20」은 눈으로 보면 막대 옆이라 뜻이 붙지만, 낭독되면 무엇의 7인지 알 수
   // 없습니다. 이름이 단위를 밝히는지 답니다.
+  test("단위가 하나면 단수로 낭독한다", () => {
+    expect(
+      getEpisodeHeaderContract({ ...base, totalUnitCount: 1, completedUnitCount: 1 }),
+    ).toMatchObject({ accessibilityLabel: "Episode 0. Tutorial., 1 of 1 unit completed" });
+  });
+
   test("접근성 이름이 번호 · 이름과 함께 단위를 밝힌다", () => {
     expect(getEpisodeHeaderContract({ ...base, completedUnitCount: 7 })).toMatchObject({
-      accessibilityLabel: "Episode 0. Tutorial., 유닛 20개 중 7개 완료",
+      accessibilityLabel: "Episode 0. Tutorial., 7 of 20 units completed",
     });
   });
 

@@ -61,3 +61,5 @@ Android 실행 환경이 없고, 개발도 시연도 iOS이기 때문이다. 대
 않았으며, 자동 unit/UI/integration 결과를 수동 iOS 결과로 대신하지 않는다.
 
 분석 이벤트(PostHog) 전송의 수동 흐름은 [분석 이벤트 전송 e2e](analytics.md)에 있다. 2026-09-29 Debug 호스트 회차에서 A1만 통과했고 Release 회차는 아직 없다(A는 키 없이, B는 실제 `phc_` 키가 있어야 실행 가능).
+
+UI 언어 문구표(영어 UI 둘러보기 · VoiceOver 낭독 · 레이아웃 · 재실행 유지)의 수동 흐름은 [UI 언어 e2e](ui-language.md)에 있다. 아직 실행된 회차가 없다.

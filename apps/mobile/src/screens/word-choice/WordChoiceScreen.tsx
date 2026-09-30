@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useMemo, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
@@ -12,8 +13,6 @@ import {
   initialWordChoiceSessionState,
   isWordChoiceSessionComplete,
   wordChoiceCompletionAnnouncement,
-  wordChoiceCompletionText,
-  wordChoiceFinishLabel,
   wordChoiceQuestionsForStep,
   wordChoiceSessionReducer,
   wordChoiceSessionResults,
@@ -45,6 +44,7 @@ export type WordChoiceScreenProps = {
 };
 
 export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
+  const copy = useUiCopy();
   const questions = wordChoiceQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(wordChoiceSessionReducer, initialWordChoiceSessionState);
 
@@ -64,7 +64,7 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
     if (!complete) {
       return;
     }
-    announceCompletion(wordChoiceCompletionAnnouncement(wordChoiceFinishLabel));
+    announceCompletion(wordChoiceCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
 
   // 세션이 끝난 뒤에만 아래 버튼이 섭니다 — 문항 사이는 넘김 층이 집니다(듣기와 같은
@@ -73,7 +73,7 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
   const action =
     question === null
       ? {
-          label: wordChoiceFinishLabel,
+          label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
           run: () =>
             onFinish(stepId, wordChoiceSessionResults(questions, state.answeredChoiceIndexes), 0),
@@ -89,12 +89,12 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
     () =>
       question !== null && hasAnswered(state)
         ? {
-            label: "다음으로",
+            label: copy.common.continue,
             run: () => dispatch({ type: "nextQuestion" }),
             delayMs: 2500,
           }
         : undefined,
-    [question, state.selectedChoiceIndex],
+    [question, state.selectedChoiceIndex, copy],
   );
 
   return (
@@ -104,7 +104,7 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
       // 마지막 문항 자리에 둡니다 — 문항이 0개인 스텝에서는 계약이 순번을 안 읽습니다.
       questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
-      instruction="문항에 알맞은 단어를 고르세요."
+      instruction={copy.wordChoice.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -156,7 +156,7 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
           {/* 완료문입니다. 문항이 서 있던 그 카드 안에 결과가 대신 섭니다. */}
           {question === null ? (
             <text className="word-choice-screen-complete" data-testid="word-choice-screen-complete">
-              {wordChoiceCompletionText}
+              {copy.common.allQuestionsDone}
             </text>
           ) : null}
 

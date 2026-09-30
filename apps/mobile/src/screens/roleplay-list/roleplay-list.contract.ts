@@ -11,8 +11,6 @@ import type { VisualNovelTitle, VisualNovelUnitId } from "../visual-novel/visual
 
 export type RoleplayUnitForm = "messenger" | "phone-call" | "visual-novel";
 
-export type RoleplayFormLabel = "메신저" | "전화" | "비주얼 노벨";
-
 export type MessengerRoleplayItem = {
   readonly form: "messenger";
   readonly unitId: MessengerUnitId;

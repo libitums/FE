@@ -9,6 +9,7 @@ import {
   toggleSessionOption,
   type SessionOptionKey,
 } from "./session-options";
+import { uiCopyEn } from "./ui-copy-en";
 
 // 스텁 버전은 다음을 돌려줍니다: sessionOptionKeys = [] · initialSessionOptions = 두 키
 // 모두 false(일부러 계약과 반대) · sessionOptionLabel = 언제나 "자동 재생" ·
@@ -40,12 +41,12 @@ describe("sessionOptionKeys", () => {
 
 describe("sessionOptionLabel", () => {
   it("SO4. auto-play-audio → 자동 재생, show-transcript → 대본 표시", () => {
-    expect(sessionOptionLabel("auto-play-audio")).toBe("자동 재생");
-    expect(sessionOptionLabel("show-transcript")).toBe("대본 표시");
+    expect(sessionOptionLabel("auto-play-audio", uiCopyEn)).toBe("Auto-play");
+    expect(sessionOptionLabel("show-transcript", uiCopyEn)).toBe("Show transcript");
   });
 
   it("SO5. 라벨 둘이 서로 다르다 — 같으면 SO4가 반쯤 공허해진다", () => {
-    const labels = allKeys.map((key) => sessionOptionLabel(key));
+    const labels = allKeys.map((key) => sessionOptionLabel(key, uiCopyEn));
 
     expect(new Set(labels).size).toBe(2);
   });
@@ -53,8 +54,8 @@ describe("sessionOptionLabel", () => {
 
 describe("sessionOptionStateLabel", () => {
   it("SO6. true → 켜짐, false → 꺼짐", () => {
-    expect(sessionOptionStateLabel(true)).toBe("켜짐");
-    expect(sessionOptionStateLabel(false)).toBe("꺼짐");
+    expect(sessionOptionStateLabel(true, uiCopyEn)).toBe("on");
+    expect(sessionOptionStateLabel(false, uiCopyEn)).toBe("off");
   });
 });
 
@@ -62,11 +63,15 @@ describe("sessionOptionAccessibilityLabel", () => {
   it("SO7. 네 조합 = `${sessionOptionLabel(key)}, ${sessionOptionStateLabel(value)}`", () => {
     for (const key of allKeys) {
       for (const value of [true, false]) {
-        expect(sessionOptionAccessibilityLabel(key, value)).toBe(
-          `${sessionOptionLabel(key)}, ${sessionOptionStateLabel(value)}`,
+        expect(sessionOptionAccessibilityLabel(key, value, uiCopyEn)).toBe(
+          `${sessionOptionLabel(key, uiCopyEn)}, ${sessionOptionStateLabel(value, uiCopyEn)}`,
         );
       }
     }
+
+    expect(sessionOptionAccessibilityLabel("show-transcript", false, uiCopyEn)).toBe(
+      "Show transcript, off",
+    );
   });
 });
 

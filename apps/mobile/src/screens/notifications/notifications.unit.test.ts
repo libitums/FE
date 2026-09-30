@@ -9,6 +9,7 @@ import {
   swipeIntent,
   withoutNotification,
 } from "./notifications";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // 픽스처는 `NotificationItem`(type import)으로 이 파일 안에서 넷(대상 종류마다 하나)을
 // 직접 짓습니다. `notification-items.ts`를 import하지 않습니다 — 계산 규칙이 데이터
@@ -47,14 +48,14 @@ const allItems: readonly NotificationItem[] = [
 
 describe("notificationDestinationLabel", () => {
   it("NL1. 대상 종류 넷 각각에 고정된 행선지 낱말을 돌려준다", () => {
-    expect(notificationDestinationLabel("messenger")).toBe("메신저 열기");
-    expect(notificationDestinationLabel("phone-call")).toBe("전화 열기");
-    expect(notificationDestinationLabel("visual-novel")).toBe("비주얼 노벨 열기");
-    expect(notificationDestinationLabel("roleplay-list")).toBe("롤플레이 목록 보기");
+    expect(notificationDestinationLabel("messenger", uiCopyEn)).toBe("Open messenger");
+    expect(notificationDestinationLabel("phone-call", uiCopyEn)).toBe("Open call");
+    expect(notificationDestinationLabel("visual-novel", uiCopyEn)).toBe("Open visual novel");
+    expect(notificationDestinationLabel("roleplay-list", uiCopyEn)).toBe("See roleplay list");
   });
 
   it("NL2. 넷이 서로 다르다", () => {
-    const labels = allItems.map((item) => notificationDestinationLabel(item.target.kind));
+    const labels = allItems.map((item) => notificationDestinationLabel(item.target.kind, uiCopyEn));
 
     expect(new Set(labels).size).toBe(4);
   });
@@ -63,19 +64,30 @@ describe("notificationDestinationLabel", () => {
 describe("notificationItemAccessibilityLabel", () => {
   it("NL3. `<메시지>, <행선지>` 형식이다 — 넷 각각", () => {
     for (const item of allItems) {
-      expect(notificationItemAccessibilityLabel(item)).toBe(
-        `${item.message}, ${notificationDestinationLabel(item.target.kind)}`,
+      expect(notificationItemAccessibilityLabel(item, uiCopyEn)).toBe(
+        `${item.message}, ${notificationDestinationLabel(item.target.kind, uiCopyEn)}`,
       );
     }
   });
 
+  it("NL3b. (RL20) 영어 메시지 항목의 이름이 `Jimin sent you an appointment message, Open messenger`다", () => {
+    const item: NotificationItem = {
+      ...messengerItem,
+      message: "Jimin sent you an appointment message",
+    };
+
+    expect(notificationItemAccessibilityLabel(item, uiCopyEn)).toBe(
+      "Jimin sent you an appointment message, Open messenger",
+    );
+  });
+
   it("NL4. (가드) 접근성 이름에 읽음·안 읽음·새 알림이 없다", () => {
     for (const item of allItems) {
-      const label = notificationItemAccessibilityLabel(item);
+      const label = notificationItemAccessibilityLabel(item, uiCopyEn);
 
-      expect(label).not.toContain("읽음");
-      expect(label).not.toContain("안 읽음");
-      expect(label).not.toContain("새 알림");
+      expect(label.toLowerCase()).not.toContain("read");
+      expect(label.toLowerCase()).not.toContain("unread");
+      expect(label.toLowerCase()).not.toContain("new notification");
     }
   });
 });
@@ -106,8 +118,8 @@ describe("입력 불변 · 부수효과 없음 (가드)", () => {
     for (const item of allItems) {
       const before = JSON.parse(JSON.stringify(item)) as NotificationItem;
 
-      expect(notificationItemAccessibilityLabel(item)).toEqual(
-        notificationItemAccessibilityLabel(item),
+      expect(notificationItemAccessibilityLabel(item, uiCopyEn)).toEqual(
+        notificationItemAccessibilityLabel(item, uiCopyEn),
       );
       expect(notificationTappedEvent(item)).toEqual(notificationTappedEvent(item));
       expect(item).toEqual(before);

@@ -4,6 +4,7 @@
 // 씁니다 — 화면 폴더끼리는 값을 주고받지 않으므로 여기 둡니다. 흐름에 붙는 호스트 결선은
 // `components/use-writing-practice.ts`가, 판정 규칙은 `writing-judge.ts`가 집니다.
 
+import type { UiCopy } from "./ui-copy.contract";
 import type { AnswerResult } from "./answer-result";
 import type { Stroke } from "./handwriting-recognition";
 import type { WritingJudgement, WritingPassCriterion } from "./writing-judge";
@@ -158,8 +159,8 @@ export function writingBlank(question: WritingQuestion): string {
 }
 
 /** 보조기술이 읽는 문장입니다. 밑줄 대신 「빈칸」이라고 읽힙니다. */
-export function writingPromptLabel(question: WritingQuestion): string {
-  return [question.before.trim(), "빈칸", question.after.trim()]
+export function writingPromptLabel(question: WritingQuestion, copy: UiCopy): string {
+  return [question.before.trim(), copy.common.blank, question.after.trim()]
     .filter((part) => part !== "")
-    .join(" ");
+    .join(", ");
 }

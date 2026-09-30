@@ -9,6 +9,7 @@ import { AnswerVerdict } from "../../components/AnswerVerdict";
 import type { AnswerResult } from "../../lib/answer-result";
 import { matchedWordCount, speakingWords } from "../../lib/speaking-judge";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeFinalSpeakingQuestion } from "./episode-final.contract";
 import { episodeFinalTestIds } from "./episode-final.contract";
 import type { EpisodeFinalPhase } from "./episode-final";
@@ -52,6 +53,7 @@ export function FinalSpeakingPanel({
   onNotNow,
   tone = "scene",
 }: FinalSpeakingPanelProps): ReactNode {
+  const copy = useUiCopy();
   const words = useMemo(() => speakingWords(question.sentence), [question.sentence]);
   const judged = phase === "judged";
   const matched = judged ? matchedWordCount(question.sentence, recognized) : 0;
@@ -124,7 +126,7 @@ export function FinalSpeakingPanel({
           data-testid={episodeFinalTestIds.waves}
           data-listening={phase === "listening" ? "true" : "false"}
           accessibility-element={phase === "listening"}
-          accessibility-label="듣는 중"
+          accessibility-label={copy.common.listening}
         >
           <svg
             className="episode-final-waves-icon"

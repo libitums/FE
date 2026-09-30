@@ -31,8 +31,8 @@ export type AnswerLabelContract = {
 };
 
 const resultDefaults = {
-  correct: { icon: "tick", label: "정답이에요", tone: "positive" },
-  incorrect: { icon: "cross", label: "오답이에요", tone: "negative" },
+  correct: { icon: "tick", label: "Correct", tone: "positive" },
+  incorrect: { icon: "cross", label: "Incorrect", tone: "negative" },
   pending: { icon: null, label: null, tone: "brand" },
 } as const;
 

@@ -28,46 +28,64 @@ const tutorialUnits: JourneyEpisodeUnits = [
   {
     kind: "special",
     id: "tutorial-intro",
-    title: "에피소드 표지",
+    title: "Episode intro",
     screen: "episode-intro",
   },
   {
     kind: "standard",
     steps: [
-      { id: "greeting", title: "첫 인사", description: "카페에서 처음 인사를 나눈다" },
-      { id: "introduction", title: "이름 묻기", description: "상대의 이름을 묻고 자기를 소개한다" },
-      { id: "ordering", title: "주문하기", description: "카페에서 마실 것을 주문한다" },
-      { id: "appointment", title: "약속 잡기", description: "다음에 만날 날짜와 시간을 정한다" },
+      {
+        id: "greeting",
+        title: "First greetings",
+        description: "Greet someone for the first time at a café",
+      },
+      {
+        id: "introduction",
+        title: "Asking names",
+        description: "Ask someone's name and introduce yourself",
+      },
+      { id: "ordering", title: "Ordering", description: "Order a drink at a café" },
+      {
+        id: "appointment",
+        title: "Making plans",
+        description: "Set a date and time to meet again",
+      },
     ],
   },
   {
     kind: "special",
     id: "appointment-confirmation",
-    title: "약속 확인 메시지",
+    title: "Appointment message",
     screen: "messenger",
   },
   {
     kind: "special",
     id: "appointment-confirmation-phone-call",
-    title: "약속 확인 전화",
+    title: "Appointment call",
     screen: "phone-call",
   },
   {
     kind: "special",
     id: "cafe-arrival-visual-novel",
-    title: "카페에 도착한 지민",
+    title: "Jimin arrives at the café",
     screen: "visual-novel",
   },
   {
     kind: "standard",
-    steps: [{ id: "directions", title: "길 묻기", description: "약속 장소까지 가는 길을 묻는다" }],
+    steps: [
+      {
+        id: "directions",
+        title: "Asking for directions",
+        description: "Ask the way to the meeting place",
+      },
+    ],
   },
   // 에피소드의 마지막은 최종 테스트입니다 — 서사와 에피소드에서 배운 표현을 모아 풀고
   // 에피소드를 끝냅니다. 같은 에피소드의 다른 항목을 모두 끝내야 열립니다(`mapItemStatus`).
   {
     kind: "special",
     id: "tutorial-final-test",
-    title: "최종 테스트",
+    title: "Final test",
     screen: "episode-final",
   },
 ];

@@ -6,13 +6,13 @@ import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeFinalWordChoiceQuestion } from "./episode-final.contract";
 import { episodeFinalTestIds } from "./episode-final.contract";
 import {
   episodeFinalOptionState,
   episodeFinalPromptLabel,
   episodeFinalPromptLine,
-  type EpisodeFinalOptionState,
 } from "./episode-final";
 
 export type FinalWordChoicePanelProps = {
@@ -21,13 +21,6 @@ export type FinalWordChoicePanelProps = {
   readonly chosenIndex: number | null;
   readonly result: AnswerResult | null;
   readonly onChoose: (optionIndex: number) => void;
-};
-
-// 보기 모양마다 붙는 낭독 접미사입니다. 색만으로 가르지 않습니다(WCAG 1.4.1).
-const optionSuffix: Record<EpisodeFinalOptionState, string> = {
-  idle: "",
-  correct: ", 정답",
-  incorrect: ", 고른 답, 오답",
 };
 
 /**
@@ -46,6 +39,7 @@ export function FinalWordChoicePanel({
   result,
   onChoose,
 }: FinalWordChoicePanelProps): ReactNode {
+  const copy = useUiCopy();
   const judged = chosenIndex !== null;
 
   return (
@@ -63,7 +57,7 @@ export function FinalWordChoicePanel({
                 data-state={state}
                 accessibility-element={true}
                 accessibility-traits={judged ? "text" : "button"}
-                accessibility-label={`${option}${optionSuffix[state]}`}
+                accessibility-label={`${option}${copy.episodeFinal.optionSuffix[state]}`}
                 bindtap={() => onChoose(index)}
               >
                 <text className="episode-final-option-label">{option}</text>
@@ -78,7 +72,7 @@ export function FinalWordChoicePanel({
           avatar={<Avatar name={question.speakerName} size="sm" accessibility="hidden" />}
           line={episodeFinalPromptLine(question, judged)}
           translation={question.translation}
-          accessibilityLabel={`${question.speakerName}: ${episodeFinalPromptLabel(question, judged)} ${question.translation}`}
+          accessibilityLabel={`${question.speakerName}: ${episodeFinalPromptLabel(question, judged, copy)}, ${question.translation}`}
           surface="translucent"
           continueIndicator="off"
           contentLanguage="learning"

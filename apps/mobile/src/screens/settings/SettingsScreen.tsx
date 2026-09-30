@@ -6,6 +6,7 @@ import type { SettingsGroupItem } from "@libitums/ui-lynx/settings-cell";
 import type { SettingsScreenProps } from "./settings.contract";
 import { settingsNavLabel, settingsNavTargets } from "./settings";
 import { sessionOptionKeys, sessionOptionLabel } from "../../lib/session-options";
+import { useUiCopy } from "../../lib/ui-copy";
 
 import "./settings-screen.css";
 
@@ -21,10 +22,11 @@ export function SettingsScreen({
   onSelectNavTarget,
   onToggleSessionOption,
 }: SettingsScreenProps): ReactNode {
+  const copy = useUiCopy();
   const accountItems: readonly SettingsGroupItem[] = settingsNavTargets.map((target) => ({
     id: target,
     trailing: "navigation",
-    title: settingsNavLabel(target),
+    title: settingsNavLabel(target, copy),
     onNavigate: () => onSelectNavTarget(target),
   }));
   // 셀은 바뀐 뒤 값을 넘기지만 여기서는 쓰지 않습니다 — 값의 진실은 App의 `sessionOptions`
@@ -32,7 +34,7 @@ export function SettingsScreen({
   const learningItems: readonly SettingsGroupItem[] = sessionOptionKeys.map((key) => ({
     id: key,
     trailing: "toggle",
-    title: sessionOptionLabel(key),
+    title: sessionOptionLabel(key, copy),
     checked: sessionOptions[key],
     onChange: () => onToggleSessionOption(key),
   }));
@@ -44,7 +46,7 @@ export function SettingsScreen({
         className="settings-screen-title"
         accessibility-traits="header"
       >
-        설정
+        {copy.settings.title}
       </text>
       {/* [흐름] 내용 슬롯 — `scroll-orientation`·`scroll-bar-enable`을 적습니다.
           안 적으면 초기값이 각각 가로·꺼짐이라 세로 스크롤이 원리적으로 불가능합니다.
@@ -58,8 +60,8 @@ export function SettingsScreen({
         {/* `<scroll-view>`의 직계 자식은 이 상자 하나입니다(ADR-0022 D4) — 간격은
             이 상자가 집니다(`<scroll-view>` 안은 강제 linear라 `gap`이 무동작입니다). */}
         <view className="settings-screen-list" data-testid="settings-screen-list">
-          <SettingsGroup accessibilityLabel="계정" items={accountItems} />
-          <SettingsGroup accessibilityLabel="학습" items={learningItems} />
+          <SettingsGroup accessibilityLabel={copy.settings.group.account} items={accountItems} />
+          <SettingsGroup accessibilityLabel={copy.settings.group.learning} items={learningItems} />
         </view>
       </scroll-view>
     </view>

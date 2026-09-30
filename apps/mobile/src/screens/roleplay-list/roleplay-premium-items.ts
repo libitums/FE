@@ -24,18 +24,18 @@ const itemsByEpisode: Readonly<Record<RoleplayEpisodeId, readonly PremiumRolepla
   tutorial: [
     {
       id: "premium-wrong-order",
-      title: "주문이 잘못 나왔어요",
-      situation: "카페 직원에게 정중하게 말하기",
+      title: "My order came out wrong",
+      situation: "Talk politely to the café staff",
     },
     {
       id: "premium-shared-table",
-      title: "합석해도 될까요?",
-      situation: "옆자리 손님과 자리 나누기",
+      title: "Can I share this table?",
+      situation: "Share a table with another customer",
     },
     {
       id: "premium-regular-chat",
-      title: "단골 카페 사장님",
-      situation: "가볍게 안부 나누기",
+      title: "The owner of my regular café",
+      situation: "Make some small talk",
     },
   ],
   // 아직 유닛이 없는 에피소드입니다 — 결제 롤플레이도 없습니다. 빈 목록이 맞고,

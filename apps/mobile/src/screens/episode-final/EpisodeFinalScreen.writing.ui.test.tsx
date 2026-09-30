@@ -6,6 +6,8 @@ import { writingPassCriterion } from "../../lib/writing-judge";
 import type { EpisodeFinalVisualNovelTest } from "./episode-final.contract";
 import { episodeFinalAdvanceDelayMs } from "./episode-final";
 import { EpisodeFinalScreen } from "./EpisodeFinalScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 최종 테스트의 쓰기 문항(Figma 79-6378)을 봅니다(ADR-0006 D4). 문항은 이 파일의
 // 대역입니다 — 쓰기 하나 뒤에 낱말 고르기 하나를 둬, 쓰기를 마치면 **다음 문항으로 곧장**
@@ -28,7 +30,7 @@ const finalTest: EpisodeFinalVisualNovelTest = {
     {
       kind: "word-choice",
       id: "choose",
-      speakerName: "나",
+      speakerName: "Me",
       before: "어서 ",
       after: "!",
       translation: "Welcome!",
@@ -161,4 +163,25 @@ test("[EFW4] 쓰기 문항은 장면 위 패널로 서고, 빈칸 문장은 장�
   expect(screen.getByTestId("writing-prompt").getAttribute("class")).toBe(
     "writing-prompt writing-prompt-scene",
   );
+});
+
+test("[ST5-M] 문구표에서 읽는다 — 확인 · 다음 버튼 이름", () => {
+  stubHost("0.9", "0.9");
+  vi.useFakeTimers();
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <EpisodeFinalScreen
+        insets={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        episodeLabel="Episode 0."
+        test={finalTest}
+        onFinish={vi.fn<(results: readonly AnswerResult[]) => void>()}
+        onExit={vi.fn<() => void>()}
+      />
+    </UiCopyContext.Provider>,
+  );
+
+  draw();
+  expect(actionButton()).toHaveAttribute("accessibility-label", "⟦common.check⟧");
+  fireEvent.tap(actionButton(), {});
+  expect(actionButton()).toHaveAttribute("accessibility-label", "⟦common.next⟧");
 });

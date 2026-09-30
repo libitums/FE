@@ -10,10 +10,10 @@ export type StatusIndicatorProps = {
 };
 
 export const statusIndicatorNames: Record<StatusIndicatorStatus, string> = {
-  completed: "완료",
-  "in-progress": "진행 중",
-  "needs-retry": "다시 시도",
-  locked: "잠김",
+  completed: "Completed",
+  "in-progress": "In progress",
+  "needs-retry": "Try again",
+  locked: "Locked",
 };
 export function getStatusIndicatorLabel(props: StatusIndicatorProps): string {
   const statusName = props.statusName?.trim() || statusIndicatorNames[props.status];

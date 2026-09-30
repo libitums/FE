@@ -43,7 +43,7 @@ function tapLessonCompleteExit() {
 test("맵의 약속 확인 메시지를 열면 실제 messenger 화면이 push된다", async () => {
   await openJourneyMessenger();
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("messenger-screen-title")).toHaveTextContent("약속 확인 메시지");
+  expect(screen.getByTestId("messenger-screen-title")).toHaveTextContent("Appointment message");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
 });
 
@@ -62,7 +62,7 @@ test("두 답장을 완료하면 마지막 메시지와 맵 완료 표식이 함
   );
   expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
     "accessibility-label",
-    "약속 확인 메시지, 완료됨, 이야기 연결",
+    "Appointment message, completed, story",
   );
 });
 
@@ -156,7 +156,7 @@ test("메신저에는 탭이 없고, 나가면 탭 전환이 그대로 동작한
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("설정");
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Settings");
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });

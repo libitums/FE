@@ -86,7 +86,7 @@ function getBadgeContract(badge: BottomNavigatorBadge | undefined): {
       throw new Error("BottomNavigator count badge must be a positive integer");
     }
     return {
-      accessibilityText: `읽지 않은 알림 ${badge.count}개`,
+      accessibilityText: `${badge.count} unread notification${badge.count === 1 ? "" : "s"}`,
       render: { kind: "count", text: badge.count > 99 ? "99+" : String(badge.count) },
     };
   }
@@ -129,7 +129,7 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
     const badge = getBadgeContract(item.badge);
     const accessibilityLabel = [
       item.accessibilityLabel.trim(),
-      selected ? "선택됨" : undefined,
+      selected ? "selected" : undefined,
       disabled ? item.disabledReason.trim() : undefined,
       badge.accessibilityText,
     ]

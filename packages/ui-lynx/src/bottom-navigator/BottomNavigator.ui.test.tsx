@@ -56,7 +56,7 @@ describe("BottomNavigator", () => {
     );
     expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
       "accessibility-label",
-      "여정, 선택됨, 새 소식 있음",
+      "여정, selected, 새 소식 있음",
     );
     expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
       "accessibility-traits",
@@ -142,7 +142,7 @@ describe("BottomNavigator", () => {
 
     expect(screen.getByTestId("ui-lynx-bottom-navigator-item-home")).toHaveAttribute(
       "accessibility-label",
-      `${longLabel}, 선택됨`,
+      `${longLabel}, selected`,
     );
     expect(screen.queryByText(longLabel)).not.toBeInTheDocument();
   });

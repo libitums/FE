@@ -6,6 +6,7 @@ import { color } from "@libitums/design-tokens";
 
 import { learningSessionHeader } from "./learning-shell.contract";
 import type { LearningForm } from "../../lib/learning-form";
+import { useUiCopy } from "../../lib/ui-copy";
 
 // 학습 껍데기의 세션 헤더입니다 — 나가기 · 문항 순번 · 진행 막대 · 학습형 이름.
 //
@@ -31,7 +32,8 @@ export function LearningSessionHeader({
   questionCount,
   onExit,
 }: LearningSessionHeaderProps): ReactNode {
-  const header = learningSessionHeader(form, questionIndex, questionCount);
+  const copy = useUiCopy();
+  const header = learningSessionHeader(form, questionIndex, questionCount, copy);
 
   const handleExit = () => {
     "background only";
@@ -47,7 +49,7 @@ export function LearningSessionHeader({
               className="learning-shell-exit"
               data-testid="learning-shell-exit"
               accessibility-element={true}
-              accessibility-label="학습 나가기"
+              accessibility-label={copy.learningShell.exitLesson}
               accessibility-traits="button"
               bindtap={handleExit}
             >

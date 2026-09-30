@@ -7,6 +7,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
 import type { AnswerResult } from "../../lib/answer-result";
+import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeFinalScreenProps } from "./episode-final.contract";
 import { episodeFinalTestIds } from "./episode-final.contract";
 import {
@@ -38,6 +39,7 @@ export function EpisodeFinalScreen({
   onFinish,
   onExit,
 }: EpisodeFinalScreenProps): ReactNode {
+  const copy = useUiCopy();
   const [state, dispatch] = useReducer(episodeFinalSessionReducer, initialEpisodeFinalSessionState);
   const question = test.questions[state.questionIndex] ?? test.questions[0];
   const isLast = state.questionIndex >= test.questions.length - 1;
@@ -95,7 +97,7 @@ export function EpisodeFinalScreen({
         <view className="episode-final-header">
           <view data-testid={episodeFinalTestIds.back}>
             <RoundButton
-              accessibilityLabel="맵으로"
+              accessibilityLabel={copy.common.exitTo.journey}
               icon={arrowLeft03}
               variant="neutral"
               size="xl"

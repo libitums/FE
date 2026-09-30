@@ -2,7 +2,8 @@ import lock from "@libitums/icons/lynx/lock";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
 import { episodeSectionId } from "./journey-map-scroll";
-import { episodePendingAccessibilityLabel, episodePendingLabel } from "./journey-map";
+import { episodePendingAccessibilityLabel } from "./journey-map";
+import { useUiCopy } from "../../lib/ui-copy";
 import type { JourneyPendingEpisode } from "./journey-map";
 
 import "./episode-pending.css";
@@ -19,6 +20,8 @@ export type EpisodePendingSectionProps = {
 // 고릅니다 — 가로 선을 넘으면 따라다니던 카드가 이 에피소드를 말합니다
 // (`useCurrentEpisode`). 흐름 안에 카드를 또 두면 같은 것이 두 번 보입니다.
 export function EpisodePendingSection({ episode }: EpisodePendingSectionProps) {
+  const copy = useUiCopy();
+
   return (
     // 구획 전체가 접근성 요소 하나입니다 — 번호 · 이름 · 상태가 따로 읽히면 「준비 중」이
     // 무엇의 준비 중인지 잃습니다. 안쪽 표식은 장식이라 낭독에 이름이 없습니다.
@@ -30,7 +33,7 @@ export function EpisodePendingSection({ episode }: EpisodePendingSectionProps) {
       className="journey-map-screen-episode"
       data-testid={`episode-pending-${episode.id}`}
       accessibility-element={true}
-      accessibility-label={episodePendingAccessibilityLabel(episode.label, episode.title)}
+      accessibility-label={episodePendingAccessibilityLabel(episode.label, episode.title, copy)}
     >
       {/* 에피소드 사이를 가르는 연한 가로 선입니다. 면을 칠하지 않고 선 하나만 둡니다 —
           「여기서 다른 에피소드가 시작한다」만 말하면 되고, 띠를 깔면 그 자체가 내용처럼
@@ -59,7 +62,7 @@ export function EpisodePendingSection({ episode }: EpisodePendingSectionProps) {
       </view>
 
       <text className="episode-pending-caption" data-testid="episode-pending-caption">
-        {episodePendingLabel}
+        {copy.journeyMap.episodePendingLabel}
       </text>
     </view>
   );

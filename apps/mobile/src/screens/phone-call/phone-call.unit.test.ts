@@ -14,16 +14,17 @@ import {
   practicePhoneCallCompletionStatus,
   visiblePhoneCallEntries,
 } from "./phone-call";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // 제품 정본의 세 턴을 독립 literal로 고정해 helper 자기호출 oracle을 피합니다.
 const conversation: PhoneCallConversation = {
   unitId: "appointment-confirmation-phone-call",
-  title: "약속 확인 전화",
+  title: "Appointment call",
   turns: [
     {
       id: "confirm-time",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
       audioSource: "phone-call-confirm-01",
       reply: { id: "confirm-time-reply", text: "네, 토요일 오후 2시에 만나요." },
@@ -31,7 +32,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "confirm-place",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
       audioSource: "phone-call-confirm-02",
       reply: { id: "confirm-place-reply", text: "네, 2번 출구 오른쪽 카페예요." },
@@ -39,7 +40,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "goodbye",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "좋아요. 그럼 토요일에 봐요!",
       audioSource: "phone-call-confirm-03",
       reply: { id: "goodbye-reply", text: "네, 토요일에 봐요!" },
@@ -57,14 +58,48 @@ describe("약속 확인 전화 순수 계약", () => {
   it("available/completed 초기화와 상태 label을 판정한다", () => {
     expect(initialPhoneCallSessionState("available")).toEqual(ready0);
     expect(initialPhoneCallSessionState("completed")).toEqual({ mode: "completed" });
-    expect(phoneCallStatusLabel(ready0)).toBe("통화 준비");
-    expect(phoneCallStatusLabel({ mode: "playing", turnIndex: 0 })).toBe("상대방이 말하는 중");
-    expect(phoneCallStatusLabel({ mode: "reply-ready", turnIndex: 0 })).toBe("답장할 차례");
-    expect(phoneCallStatusLabel({ mode: "completed" })).toBe("통화 완료");
-    expect(phoneCallPlayLabel(ready0)).toBe("통화 시작");
-    expect(phoneCallPlayLabel({ mode: "ready", turnIndex: 1 })).toBe("듣기");
-    expect(phoneCallPlayLabel({ mode: "playing", turnIndex: 0 })).toBe("다시 듣기");
-    expect(phoneCallPlayLabel({ mode: "completed" })).toBeNull();
+    expect(phoneCallStatusLabel(ready0, uiCopyEn)).toBe("Ready to call");
+    expect(phoneCallStatusLabel({ mode: "playing", turnIndex: 0 }, uiCopyEn)).toBe("Speaking…");
+    expect(phoneCallStatusLabel({ mode: "reply-ready", turnIndex: 0 }, uiCopyEn)).toBe(
+      "Your turn to reply",
+    );
+    expect(phoneCallStatusLabel({ mode: "completed" }, uiCopyEn)).toBe("Call ended");
+    expect(phoneCallPlayLabel(ready0, uiCopyEn)).toBe("Start call");
+    expect(phoneCallPlayLabel({ mode: "ready", turnIndex: 1 }, uiCopyEn)).toBe("Listen");
+    expect(phoneCallPlayLabel({ mode: "playing", turnIndex: 0 }, uiCopyEn)).toBe("Listen again");
+    expect(phoneCallPlayLabel({ mode: "completed" }, uiCopyEn)).toBeNull();
+  });
+
+  it("CE4 제목 · 화자 이름이 영어다 — 대사 · 답장은 불변", () => {
+    const live = getPhoneCallConversation();
+    expect(live.title).toBe("Appointment call");
+    expect(live.turns.map((turn) => turn.speakerName)).toEqual(["Jimin", "Jimin", "Jimin"]);
+    expect(live.turns.map((turn) => turn.transcript)).toEqual([
+      "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
+      "카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
+      "좋아요. 그럼 토요일에 봐요!",
+    ]);
+    expect(live.turns.map((turn) => turn.reply.text)).toEqual([
+      "네, 토요일 오후 2시에 만나요.",
+      "네, 2번 출구 오른쪽 카페예요.",
+      "네, 토요일에 봐요!",
+    ]);
+  });
+
+  it("RL17 보이는 항목: jimin 갈래는 Jimin, self 갈래는 speakerName 키가 없다", () => {
+    const entries = visiblePhoneCallEntries(getPhoneCallConversation(), {
+      mode: "ready",
+      turnIndex: 1,
+    });
+    expect(entries).toHaveLength(3);
+    for (const entry of entries) {
+      if (entry.speaker === "jimin") {
+        expect(entry.speakerName).toBe("Jimin");
+      } else {
+        expect(entry).not.toHaveProperty("speakerName");
+      }
+    }
+    expect(entries.map((entry) => entry.speaker)).toEqual(["jimin", "self", "jimin"]);
   });
 
   it("정확한 3턴 전이와 잘못된 연속 action의 참조 불변성을 보장한다", () => {
@@ -131,8 +166,8 @@ describe("practicePhoneCallCompletionStatus", () => {
     const state = initialPhoneCallSessionState(practicePhoneCallCompletionStatus());
 
     expect(state).toEqual({ mode: "ready", turnIndex: 0 });
-    expect(phoneCallStatusLabel(state)).toBe("통화 준비");
-    expect(phoneCallPlayLabel(state)).toBe("통화 시작");
+    expect(phoneCallStatusLabel(state, uiCopyEn)).toBe("Ready to call");
+    expect(phoneCallPlayLabel(state, uiCopyEn)).toBe("Start call");
     expect(visiblePhoneCallEntries(conversation, state)).toHaveLength(1);
   });
 });

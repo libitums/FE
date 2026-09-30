@@ -1,3 +1,4 @@
+import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
@@ -14,8 +15,6 @@ import {
   isSentenceOrderSessionComplete,
   sentenceOrderAnnouncement,
   sentenceOrderCompletionAnnouncement,
-  sentenceOrderCompletionText,
-  sentenceOrderFinishLabel,
   sentenceOrderQuestionsForStep,
   sentenceOrderResultAt,
   sentenceOrderSessionReducer,
@@ -45,6 +44,7 @@ export function SentenceOrderScreen({
   onExit,
   onFinish,
 }: SentenceOrderScreenProps): ReactNode {
+  const copy = useUiCopy();
   const questions = sentenceOrderQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(
     sentenceOrderSessionReducer,
@@ -60,7 +60,7 @@ export function SentenceOrderScreen({
     if (question == null || result === null) {
       return;
     }
-    announce(sentenceOrderAnnouncement(result));
+    announce(sentenceOrderAnnouncement(result, copy));
     // 문항 순번 · 국면이 바뀔 때만 한 번 냅니다 — `question` · `result`는 그 둘에서 파생하므로
     // 넣지 않습니다(넣으면 같은 채점을 다시 낭독할 수 있습니다).
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,7 +70,7 @@ export function SentenceOrderScreen({
     if (!complete) {
       return;
     }
-    announceCompletion(sentenceOrderCompletionAnnouncement(sentenceOrderFinishLabel));
+    announceCompletion(sentenceOrderCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
 
   const toggle = (chipIndex: number) => dispatch({ type: "toggleChip", chipIndex });
@@ -80,15 +80,15 @@ export function SentenceOrderScreen({
   const action =
     question == null
       ? {
-          label: sentenceOrderFinishLabel,
+          label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
           run: () =>
             onFinish(stepId, sentenceOrderSessionResults(questions, state.submittedOrders), 0),
         }
       : state.phase === "checked"
-        ? { label: "다음", run: () => dispatch({ type: "nextQuestion" }) }
+        ? { label: copy.common.next, run: () => dispatch({ type: "nextQuestion" }) }
         : canCheckArrangement(question, state)
-          ? { label: "확인", run: () => dispatch({ type: "check" }) }
+          ? { label: copy.common.check, run: () => dispatch({ type: "check" }) }
           : undefined;
 
   const bankFull = question == null ? true : !canPlaceChip(question, state);
@@ -98,7 +98,7 @@ export function SentenceOrderScreen({
       form="sentence-order"
       questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
-      instruction="대화를 완성하세요."
+      instruction={copy.sentenceOrder.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -135,7 +135,7 @@ export function SentenceOrderScreen({
               className="sentence-order-screen-complete"
               data-testid="sentence-order-screen-complete"
             >
-              {sentenceOrderCompletionText}
+              {copy.common.allQuestionsDone}
             </text>
           ) : (
             <>

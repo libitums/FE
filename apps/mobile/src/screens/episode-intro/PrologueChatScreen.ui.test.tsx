@@ -3,6 +3,8 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 
 import type { PrologueChat } from "./episode-intro.contract";
 import { PrologueChatScreen } from "./PrologueChatScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 대본은 이 파일 안의 fixture로
 // 줍니다. 상대 메시지는 1.5초 뒤 옵니다.
@@ -13,7 +15,7 @@ afterEach(() => {
 });
 
 const chat: PrologueChat = {
-  partnerName: "유나",
+  partnerName: "Yuna",
   messages: [
     { id: "m1", sender: "other", text: "한국에는 잘 도착했어?", translation: "Did you arrive?" },
     { id: "m2", sender: "self", text: "잘 도착했어요!", translation: "I made it safely!" },
@@ -70,7 +72,7 @@ test("[CH2] 상대 메시지가 저절로 오고, 내 차례에는 입력창에 
   expect(screen.getByTestId("prologue-chat-screen-draft")).toHaveTextContent("잘 도착했어요!");
   const send = screen.getByTestId("prologue-chat-screen-send");
   expect(send).toHaveAttribute("accessibility-traits", "button");
-  expect(send).toHaveAttribute("accessibility-label", "보내기, 잘 도착했어요!");
+  expect(send).toHaveAttribute("accessibility-label", "Send, 잘 도착했어요!");
 });
 
 test("[CH3] 내 차례에는 기다린다 — 보내기 전에는 다음 메시지가 오지 않는다", () => {
@@ -169,4 +171,50 @@ test("[CH8] 메시지가 늘 때마다 대화 끝의 여백으로 스크롤한�
     { selector: "#prologue-chat-screen-end", method: "scrollIntoView" },
     { selector: "#prologue-chat-screen-end", method: "scrollIntoView" },
   ]);
+});
+
+test("[ST3-E] 화자 이름이 영어다 — 상대는 Yuna, 나는 Me", () => {
+  vi.useFakeTimers();
+  renderChat();
+  wait(1500);
+  fireEvent.tap(screen.getByTestId("prologue-chat-screen-send"), {});
+
+  const other = within(screen.getByTestId("prologue-chat-screen-message-m1")).getByTestId(
+    "ui-lynx-chat-bubble",
+  );
+  const mine = within(screen.getByTestId("prologue-chat-screen-message-m2")).getByTestId(
+    "ui-lynx-chat-bubble",
+  );
+  expect(other).toHaveAttribute("accessibility-label", expect.stringContaining("Yuna"));
+  expect(mine).toHaveAttribute("accessibility-label", expect.stringContaining("Me"));
+});
+
+test("[ST3-M] 문구표에서 읽는다 — 보내기 이름 · 내 화자 · 뒤로", () => {
+  vi.useFakeTimers();
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <PrologueChatScreen
+        insets={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        episodeLabel="Episode 1."
+        chat={chat}
+        onComplete={vi.fn<() => void>()}
+        onBack={vi.fn<() => void>()}
+      />
+    </UiCopyContext.Provider>,
+  );
+  wait(1500);
+
+  expect(screen.getByTestId("prologue-chat-screen-send")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.sendWithText⟧(잘 도착했어요!)",
+  );
+  fireEvent.tap(screen.getByTestId("prologue-chat-screen-send"), {});
+  expect(
+    within(screen.getByTestId("prologue-chat-screen-message-m2")).getByTestId(
+      "ui-lynx-chat-bubble",
+    ),
+  ).toHaveAttribute("accessibility-label", expect.stringContaining("⟦common.me⟧"));
+  expect(
+    within(screen.getByTestId("prologue-chat-screen-back")).getByTestId("ui-lynx-round-button"),
+  ).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
 });

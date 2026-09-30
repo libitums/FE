@@ -62,8 +62,8 @@ describe("ChatBubble UI", () => {
     const bubble = screen.getByTestId("ui-lynx-chat-bubble");
     expect(bubble).toHaveAttribute("data-direction", "outgoing");
     expect(bubble).toHaveAttribute("data-delivery", "failed");
-    expect(bubble).toHaveAttribute("accessibility-value", "보내지 못했어요");
-    expect(bubble).not.toHaveTextContent("보내지 못했어요");
+    expect(bubble).toHaveAttribute("accessibility-value", "Couldn't send");
+    expect(bubble).not.toHaveTextContent("Couldn't send");
   });
 
   test("학습 콘텐츠 언어 종류와 tag를 소비자 결선용 metadata로 보존한다", () => {

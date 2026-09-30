@@ -1,6 +1,7 @@
 // 학습 껍데기의 세션 헤더가 내는 값들을 뽑습니다. 화면이 계산식을 들고 있지 않도록
 // 여기 모읍니다 — 같은 수에서 낱말 셋(순번 · 백분율 · 접근성 이름)과 막대가 나옵니다.
 
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { LearningForm } from "../../lib/learning-form";
 
 /**
@@ -74,6 +75,7 @@ export function learningSessionHeader(
   form: LearningForm,
   questionIndex: number,
   questionCount: number,
+  copy: UiCopy,
 ): LearningSessionHeader {
   if (!Number.isInteger(questionCount) || questionCount < 0) {
     throw new Error(`활동의 문항 수는 0 이상의 정수여야 합니다: ${questionCount}`);
@@ -83,7 +85,7 @@ export function learningSessionHeader(
       progressLabel: undefined,
       formLabel: formLabels[form],
       fillPercent: 0,
-      accessibilityLabel: `${formLabels[form]}, 문항 없음`,
+      accessibilityLabel: copy.learningShell.headerNoQuestions(formLabels[form]),
     };
   }
   if (!Number.isInteger(questionIndex) || questionIndex < 0) {
@@ -99,6 +101,10 @@ export function learningSessionHeader(
     progressLabel: `Lesson ${String(ordinal)} / ${String(questionCount)}`,
     formLabel: formLabels[form],
     fillPercent: (questionIndex / questionCount) * 100,
-    accessibilityLabel: `${formLabels[form]}, 문항 ${String(questionCount)}개 중 ${String(ordinal)}번째`,
+    accessibilityLabel: copy.learningShell.headerQuestionOf(
+      formLabels[form],
+      ordinal,
+      questionCount,
+    ),
   };
 }

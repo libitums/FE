@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import type { PhoneCallConversation } from "./phone-call.contract";
 import { PhoneCallScreen } from "./PhoneCallScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 const audio = vi.hoisted(() => ({ playAudio: vi.fn(), stopAudio: vi.fn() }));
 vi.mock("../../lib/audio", () => audio);
@@ -9,12 +11,12 @@ const { playAudio, stopAudio } = audio;
 
 const conversation: PhoneCallConversation = {
   unitId: "appointment-confirmation-phone-call",
-  title: "약속 확인 전화",
+  title: "Appointment call",
   turns: [
     {
       id: "confirm-time",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
       audioSource: "phone-call-confirm-01",
       reply: { id: "confirm-time-reply", text: "네, 토요일 오후 2시에 만나요." },
@@ -22,7 +24,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "confirm-place",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
       audioSource: "phone-call-confirm-02",
       reply: { id: "confirm-place-reply", text: "네, 2번 출구 오른쪽 카페예요." },
@@ -30,7 +32,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "goodbye",
       speakerId: "jimin",
-      speakerName: "지민",
+      speakerName: "Jimin",
       transcript: "좋아요. 그럼 토요일에 봐요!",
       audioSource: "phone-call-confirm-03",
       reply: { id: "goodbye-reply", text: "네, 토요일에 봐요!" },
@@ -50,13 +52,13 @@ describe("PhoneCallScreen UI", () => {
   it("첫 진입은 자동 재생 없이 header·지민·준비·첫 transcript·통화 시작을 보인다", () => {
     render(<PhoneCallScreen {...props()} />);
     expect(screen.getByTestId("phone-call-screen")).toBeTruthy();
-    expect(screen.getByTestId("phone-call-title")).toHaveTextContent("약속 확인 전화");
-    expect(screen.getByTestId("phone-call-contact-name")).toHaveTextContent("지민");
-    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("통화 준비");
+    expect(screen.getByTestId("phone-call-title")).toHaveTextContent("Appointment call");
+    expect(screen.getByTestId("phone-call-contact-name")).toHaveTextContent("Jimin");
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Ready to call");
     expect(screen.getByTestId("phone-call-transcript-jimin-confirm-time")).toHaveTextContent(
       "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
     );
-    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent("통화 시작");
+    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent("Start call");
     expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
       "accessibility-element",
       "true",
@@ -67,7 +69,7 @@ describe("PhoneCallScreen UI", () => {
     );
     expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
       "accessibility-label",
-      "통화 시작",
+      "Start call",
     );
     expect(screen.queryByTestId("phone-call-reply-confirm-time-reply")).toBeNull();
   });
@@ -116,25 +118,25 @@ describe("PhoneCallScreen UI", () => {
     expect(playAudio).toHaveBeenCalledTimes(0);
     fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
     expect(playAudio).toHaveBeenCalledWith("phone-call-confirm-01", expect.any(Function));
-    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("상대방이 말하는 중");
-    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent("다시 듣기");
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Speaking…");
+    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent("Listen again");
     expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
       "accessibility-label",
-      "다시 듣기",
+      "Listen again",
     );
     expect(screen.queryByTestId("phone-call-reply-confirm-time-reply")).toBeNull();
     act(() => finish?.());
-    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("답장할 차례");
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Your turn to reply");
     expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
       "accessibility-label",
-      "다시 듣기",
+      "Listen again",
     );
     fireEvent.tap(screen.getByTestId("phone-call-reply-confirm-time-reply"), {});
-    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("통화 준비");
-    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent("듣기");
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Ready to call");
+    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent("Listen");
     expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
       "accessibility-label",
-      "듣기",
+      "Listen",
     );
     expect(transcriptIds()).toEqual([
       "phone-call-transcript-jimin-confirm-time",
@@ -146,11 +148,11 @@ describe("PhoneCallScreen UI", () => {
     expect(playAudio).toHaveBeenLastCalledWith("phone-call-confirm-02", expect.any(Function));
     act(() => finish?.());
     fireEvent.tap(screen.getByTestId("phone-call-reply-confirm-place-reply"), {});
-    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("통화 준비");
-    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent("듣기");
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Ready to call");
+    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent("Listen");
     expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
       "accessibility-label",
-      "듣기",
+      "Listen",
     );
     expect(transcriptIds()).toEqual([
       "phone-call-transcript-jimin-confirm-time",
@@ -164,7 +166,7 @@ describe("PhoneCallScreen UI", () => {
     expect(playAudio).toHaveBeenLastCalledWith("phone-call-confirm-03", expect.any(Function));
     act(() => finish?.());
     fireEvent.tap(screen.getByTestId("phone-call-reply-goodbye-reply"), {});
-    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("통화 완료");
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("Call ended");
     expect(transcriptIds()).toEqual([
       "phone-call-transcript-jimin-confirm-time",
       "phone-call-transcript-self-confirm-time-reply",
@@ -226,7 +228,7 @@ describe("PhoneCallScreen UI", () => {
     const replay = screen.getByTestId("phone-call-replay-button");
     expect(replay).toHaveAttribute("accessibility-element", "true");
     expect(replay).toHaveAttribute("accessibility-traits", "button");
-    expect(replay).toHaveAttribute("accessibility-label", "처음부터 보기");
+    expect(replay).toHaveAttribute("accessibility-label", "Start over");
     fireEvent.tap(replay, {});
     expect(
       screen
@@ -250,7 +252,7 @@ describe("PhoneCallScreen UI", () => {
     const exit = screen.getByTestId("phone-call-exit-button");
     expect(exit).toHaveAttribute("accessibility-element", "true");
     expect(exit).toHaveAttribute("accessibility-traits", "button");
-    expect(exit).toHaveAttribute("accessibility-label", "맵으로");
+    expect(exit).toHaveAttribute("accessibility-label", "Back to map");
     fireEvent.tap(exit, {});
     expect(onExit).toHaveBeenCalledTimes(1);
     expect(onExit).toHaveBeenCalledWith("incomplete");
@@ -262,30 +264,99 @@ describe("PhoneCallScreen UI", () => {
     const nodes = ids.map((id) => screen.getByTestId(`phone-call-transcript-jimin-${id}`));
     expect(nodes[0].compareDocumentPosition(nodes[1])).toBe(4);
     expect(nodes[1].compareDocumentPosition(nodes[2])).toBe(4);
-    expect(nodes[0]).toHaveAttribute("accessibility-label", expect.stringContaining("지민"));
+    expect(nodes[0]).toHaveAttribute("accessibility-label", expect.stringContaining("Jimin"));
     expect(screen.getByTestId("phone-call-transcript-jimin-confirm-time")).toHaveAttribute(
       "accessibility-label",
-      "지민, 토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
+      "Jimin, 토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
     );
     expect(screen.getByTestId("phone-call-transcript-self-confirm-time-reply")).toHaveAttribute(
       "accessibility-label",
-      "나, 네, 토요일 오후 2시에 만나요.",
+      "Me, 네, 토요일 오후 2시에 만나요.",
     );
     expect(screen.getByTestId("phone-call-transcript-jimin-confirm-place")).toHaveAttribute(
       "accessibility-label",
-      "지민, 카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
+      "Jimin, 카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
     );
     expect(screen.getByTestId("phone-call-transcript-self-confirm-place-reply")).toHaveAttribute(
       "accessibility-label",
-      "나, 네, 2번 출구 오른쪽 카페예요.",
+      "Me, 네, 2번 출구 오른쪽 카페예요.",
     );
     expect(screen.getByTestId("phone-call-transcript-jimin-goodbye")).toHaveAttribute(
       "accessibility-label",
-      "지민, 좋아요. 그럼 토요일에 봐요!",
+      "Jimin, 좋아요. 그럼 토요일에 봐요!",
     );
     expect(screen.getByTestId("phone-call-transcript-self-goodbye-reply")).toHaveAttribute(
       "accessibility-label",
-      "나, 네, 토요일에 봐요!",
+      "Me, 네, 토요일에 봐요!",
+    );
+  });
+});
+
+function renderMarkedCall(completionStatus: "available" | "completed" = "available") {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <PhoneCallScreen {...props(completionStatus)} />
+    </UiCopyContext.Provider>,
+  );
+}
+
+describe("[ST7-M] 전화 문구는 표에서 읽는다", () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it("상태 · 재생 · 나가기", () => {
+    renderMarkedCall();
+
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("⟦phoneCall.status.ready⟧");
+    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent(
+      "⟦phoneCall.play.start⟧",
+    );
+    expect(screen.getByTestId("phone-call-audio-button")).toHaveAttribute(
+      "accessibility-label",
+      "⟦phoneCall.play.start⟧",
+    );
+    expect(screen.getByTestId("phone-call-exit-button")).toHaveAttribute(
+      "accessibility-label",
+      "⟦common.exitTo.journey⟧",
+    );
+  });
+
+  it("재생 중 · 답장 차례 · 다시 듣기 · 다음 턴의 듣기", () => {
+    let finish: (() => void) | undefined;
+    playAudio.mockImplementation((_source: string, done: () => void) => {
+      finish = done;
+      return "started";
+    });
+    renderMarkedCall();
+
+    fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent("⟦phoneCall.status.playing⟧");
+    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent(
+      "⟦phoneCall.play.listen-again⟧",
+    );
+    act(() => finish?.());
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent(
+      "⟦phoneCall.status.reply-ready⟧",
+    );
+    fireEvent.tap(screen.getByTestId("phone-call-reply-confirm-time-reply"), {});
+    expect(screen.getByTestId("phone-call-audio-button")).toHaveTextContent(
+      "⟦phoneCall.play.listen⟧",
+    );
+  });
+
+  it("완료 상태 — 끝 표시 · 처음부터 · 내 화자", () => {
+    renderMarkedCall("completed");
+
+    expect(screen.getByTestId("phone-call-status")).toHaveTextContent(
+      "⟦phoneCall.status.completed⟧",
+    );
+    expect(screen.getByTestId("phone-call-replay-button")).toHaveAttribute(
+      "accessibility-label",
+      "⟦common.startOver⟧",
+    );
+    expect(screen.getByTestId("phone-call-replay-button")).toHaveTextContent("⟦common.startOver⟧");
+    expect(screen.getByTestId("phone-call-transcript-self-confirm-time-reply")).toHaveAttribute(
+      "accessibility-label",
+      expect.stringContaining("⟦common.me⟧"),
     );
   });
 });

@@ -5,6 +5,8 @@ import type { AnswerResult } from "../../lib/answer-result";
 import type { EpisodeFinalVisualNovelTest } from "./episode-final.contract";
 import { episodeFinalAdvanceDelayMs } from "./episode-final";
 import { EpisodeFinalScreen } from "./EpisodeFinalScreen";
+import { UiCopyContext } from "../../lib/ui-copy";
+import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 문항은 이 파일의 대역입니다 — 낱말
 // 고르기 하나, 말하기 하나. 판정 뒤에는 누를 것 없이 잠시 뒤 넘어가므로 가짜 시계를 씁니다.
@@ -16,7 +18,7 @@ const finalTest: EpisodeFinalVisualNovelTest = {
     {
       kind: "word-choice",
       id: "find",
-      speakerName: "나",
+      speakerName: "Me",
       before: "이 화장품 찾아",
       after: ".",
       translation: "Please help me find this cosmetic product.",
@@ -101,14 +103,14 @@ test("[EFS1] 머리와 첫 문항이 서고, 문장은 서사의 대화 패널�
 
   expect(screen.getByTestId("episode-final-screen-title")).toHaveTextContent("Episode 0.");
   const prompt = screen.getByTestId("episode-final-screen-prompt");
-  expect(within(prompt).getByTestId("ui-lynx-visual-novel-dialog-speaker")).toHaveTextContent("나");
+  expect(within(prompt).getByTestId("ui-lynx-visual-novel-dialog-speaker")).toHaveTextContent("Me");
   expect(dialogLine()).toHaveTextContent("이 화장품 찾아_ _ _.");
   expect(within(prompt).getByTestId("ui-lynx-visual-novel-dialog-translation")).toHaveTextContent(
     "Please help me find this cosmetic product.",
   );
   expect(within(prompt).getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute(
     "accessibility-label",
-    "나: 이 화장품 찾아 빈칸 . Please help me find this cosmetic product.",
+    "Me: 이 화장품 찾아, blank, ., Please help me find this cosmetic product.",
   );
   expect(optionStates()).toEqual(["idle", "idle", "idle"]);
   expect(screen.queryByTestId("answer-verdict")).toBeNull();
@@ -137,7 +139,7 @@ test("[EFS3] 틀리게 고르면 고른 보기가 incorrect, 정답 보기가 co
   expect(optionStates()).toEqual(["idle", "correct", "incorrect"]);
   expect(screen.getByTestId("episode-final-screen-option-2")).toHaveAttribute(
     "accessibility-label",
-    "있어요, 고른 답, 오답",
+    "있어요, your answer, incorrect",
   );
   expect(dialogLine()).toHaveTextContent("이 화장품 찾아주세요.");
 
@@ -238,4 +240,81 @@ test("[EFS8] 뒤로 tap → onExit 1회, onFinish 0회", () => {
 
   expect(props.onExit).toHaveBeenCalledTimes(1);
   expect(props.onFinish).not.toHaveBeenCalled();
+});
+
+test("[ST5-E] 정답 보기 이름에 correct 접미가 붙고, 뒤로 이름이 영어다", () => {
+  renderFinal();
+
+  fireEvent.tap(screen.getByTestId("episode-final-screen-option-1"), {});
+
+  expect(screen.getByTestId("episode-final-screen-option-1")).toHaveAttribute(
+    "accessibility-label",
+    "주세요, correct",
+  );
+  expect(
+    within(screen.getByTestId("episode-final-screen-back")).getByTestId("ui-lynx-round-button"),
+  ).toHaveAttribute("accessibility-label", "Back to map");
+});
+
+test("[ST5-E] 듣는 중 파형의 이름이 Listening이다", () => {
+  stubSpeechHost();
+  renderFinal();
+  solveWordChoice();
+
+  tapButton("episode-final-screen-action");
+
+  expect(screen.getByTestId("episode-final-screen-waves")).toHaveAttribute(
+    "accessibility-label",
+    "Listening",
+  );
+});
+
+function renderFinalMarked() {
+  vi.useFakeTimers();
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <EpisodeFinalScreen
+        insets={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        episodeLabel="Episode 0."
+        test={finalTest}
+        onFinish={vi.fn<(results: readonly AnswerResult[]) => void>()}
+        onExit={vi.fn<() => void>()}
+      />
+    </UiCopyContext.Provider>,
+  );
+}
+
+test("[ST5-M] 문구표에서 읽는다 — 빈칸 낭독 · 보기 접미 · 뒤로", () => {
+  renderFinalMarked();
+
+  expect(
+    within(screen.getByTestId("episode-final-screen-back")).getByTestId("ui-lynx-round-button"),
+  ).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
+  expect(
+    within(screen.getByTestId("episode-final-screen-prompt")).getByTestId(
+      "ui-lynx-visual-novel-dialog",
+    ),
+  ).toHaveAttribute("accessibility-label", expect.stringContaining("⟦common.blank⟧"));
+  fireEvent.tap(screen.getByTestId("episode-final-screen-option-2"), {});
+  expect(screen.getByTestId("episode-final-screen-option-2")).toHaveAttribute(
+    "accessibility-label",
+    expect.stringContaining("⟦episodeFinal.optionSuffix.incorrect⟧"),
+  );
+  expect(screen.getByTestId("episode-final-screen-option-1")).toHaveAttribute(
+    "accessibility-label",
+    expect.stringContaining("⟦episodeFinal.optionSuffix.correct⟧"),
+  );
+});
+
+test("[ST5-M] 문구표에서 읽는다 — 듣는 중 파형", () => {
+  stubSpeechHost();
+  renderFinalMarked();
+  solveWordChoice();
+
+  tapButton("episode-final-screen-action");
+
+  expect(screen.getByTestId("episode-final-screen-waves")).toHaveAttribute(
+    "accessibility-label",
+    "⟦common.listening⟧",
+  );
 });

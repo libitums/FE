@@ -2,6 +2,8 @@ import type { ReactNode } from "@lynx-js/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
+import { UiCopyContext } from "../lib/ui-copy";
+import { markedUiCopy } from "../lib/ui-copy.test-support";
 import { ErrorBoundary } from "./ErrorBoundary";
 
 // ErrorBoundary는 한동안 동작이 바뀌지 않는다는 전제 아래 `ui` 테스트가 없었습니다 —
@@ -15,7 +17,7 @@ let hasThrown = false;
 function Boom(): ReactNode {
   if (!hasThrown) {
     hasThrown = true;
-    throw new Error("테스트용 실패");
+    throw new Error("test failure");
   }
   return <text data-testid="boom-recovered">복구됨</text>;
 }
@@ -32,7 +34,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-test("에러 화면 제목이 문구와 header trait을 갖는다", () => {
+test("[SH3-E] 에러 화면 제목이 문구와 header trait을 갖는다", () => {
   render(
     <ErrorBoundary>
       <Boom />
@@ -40,7 +42,7 @@ test("에러 화면 제목이 문구와 header trait을 갖는다", () => {
   );
 
   const title = screen.getByTestId("error-boundary-title");
-  expect(title).toHaveTextContent("문제가 생겼어요");
+  expect(title).toHaveTextContent("Something went wrong");
   expect(title).toHaveAttribute("accessibility-traits", "header");
 });
 
@@ -57,7 +59,7 @@ test("재시도 요소가 accessibility-traits button을 갖는다", () => {
   );
 });
 
-test("재시도 요소가 accessibility-label 다시 시도를 갖는다", () => {
+test("[SH3-E] 재시도 요소가 accessibility-label Try again과 보이는 글자 Try again을 갖는다", () => {
   render(
     <ErrorBoundary>
       <Boom />
@@ -66,8 +68,9 @@ test("재시도 요소가 accessibility-label 다시 시도를 갖는다", () =>
 
   expect(screen.getByTestId("error-boundary-retry")).toHaveAttribute(
     "accessibility-label",
-    "다시 시도",
+    "Try again",
   );
+  expect(screen.getByTestId("error-boundary-retry")).toHaveTextContent("Try again");
 });
 
 test("재시도 요소가 accessibility-element true를 갖는다", () => {
@@ -96,4 +99,22 @@ test("재시도를 tap하면 실패 화면이 사라지고 자식이 다시 렌�
 
   expect(screen.queryByTestId("error-boundary-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("boom-recovered")).toBeInTheDocument();
+});
+
+// SH3-M — 폴백의 문구는 문구표에서 읽습니다(하드코딩 영어는 표시 표에서 그대로 남아 잡힙니다).
+test("[SH3-M] 문구표를 주입하면 제목 · 재시도의 글자와 이름이 표의 경로로 나온다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <ErrorBoundary>
+        <Boom />
+      </ErrorBoundary>
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("error-boundary-title")).toHaveTextContent(
+    "⟦shell.errorBoundary.title⟧",
+  );
+  const retry = screen.getByTestId("error-boundary-retry");
+  expect(retry).toHaveTextContent("⟦shell.errorBoundary.retry⟧");
+  expect(retry).toHaveAttribute("accessibility-label", "⟦shell.errorBoundary.retry⟧");
 });

@@ -7,7 +7,8 @@
 // (word-choice.ts)에도 있습니다. 거기서 import하지 않고 각자 자기 모듈에
 // 구현합니다 — 이름이 다른 모듈과 겹치는 것은 의도입니다.
 
-import { answerResultLabel, type AnswerResult } from "../../lib/answer-result";
+import type { UiCopy } from "../../lib/ui-copy.contract";
+import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 // ---------------------------------------------------------------- 도메인 타입
@@ -68,10 +69,10 @@ export const initialCultureQuizSessionState: CultureQuizSessionState = {
   selectedChoiceIndex: null,
 };
 
-// `${ordinal}단계 · 문화 퀴즈` 형태입니다 — 구분자는 가운뎃점 양옆 공백(화면
+// `Step ${ordinal} · Culture quiz` 형태입니다 — 구분자는 가운뎃점 양옆 공백(화면
 // 다섯과 같습니다).
-export function cultureQuizScreenTitle(ordinal: number): string {
-  return `${ordinal}단계 · 문화 퀴즈`;
+export function cultureQuizScreenTitle(ordinal: number, copy: UiCopy): string {
+  return copy.common.stepTitle(ordinal, copy.cultureQuiz.activity);
 }
 
 // Record가 JourneyStepId 다섯을 전부 갖는 것을 tsc가 강제하므로 조회는
@@ -82,10 +83,10 @@ export function cultureQuizQuestionsForStep(id: JourneyStepId): readonly Culture
   return cultureQuizQuestionsByStep[id];
 }
 
-// `문항 ${index + 1} / ${total}` 형태입니다 — index는 0-based가 1-based 문구가
+// `Question ${index + 1} / ${total}` 형태입니다 — index는 0-based가 1-based 문구가
 // 됩니다.
-export function cultureQuizProgressLabel(index: number, total: number): string {
-  return `문항 ${index + 1} / ${total}`;
+export function cultureQuizProgressLabel(index: number, total: number, copy: UiCopy): string {
+  return copy.cultureQuiz.progress(index + 1, total);
 }
 
 // answerIndex === choiceIndex 비교입니다. answerIndex가 0인 문항에서도 0번
@@ -113,11 +114,15 @@ export function choiceResultAt(
 // 접미사는 lib/answer-result.ts의 answerResultLabel이 냅니다 — 새 판정 낱말을
 // 이 모듈에 짓지 않습니다. 구분자는 쉼표 + 공백입니다(ADR-0016 D3). 판정이
 // 없으면 접미사를 붙이지 않습니다.
-export function optionAccessibilityLabel(text: string, result: AnswerResult | null): string {
+export function optionAccessibilityLabel(
+  text: string,
+  result: AnswerResult | null,
+  copy: UiCopy,
+): string {
   if (result === null) {
     return text;
   }
-  return `${text}, ${answerResultLabel(result)}`;
+  return `${text}, ${copy.common.answerResultSuffix[result]}`;
 }
 
 // 응답 여부는 파생입니다. null 비교라 0번 보기를 골라도 응답으로 셉니다.
@@ -165,15 +170,8 @@ export function cultureQuizSessionReducer(
 
 // ---------------------------------------------------------------- 완료 전이 발화
 //
-// 둘째 상수의 이름이 넷 중 이 화면만 다른 것이 의도입니다 — 이 화면의 그
-// 낱말은 **나가는 수단**(`culture-quiz-screen-exit`)이고 나머지 셋은
-// **나아가는 수단**입니다. 시그니처는 넷이 같습니다.
-
-/** 종료 상태 문구입니다. 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 자리**에서 납니다(ADR-0016 D11-1). */
-export const cultureQuizCompletionText = "문항을 모두 마쳤어요";
-
-/** 완료 상태에서 화면에 남는 **유일한 조작 단위**의 라벨입니다. 이 화면에서는 `맵으로`입니다. */
-export const cultureQuizExitLabel = "맵으로";
+// 이 화면의 완료 뒷절은 **나가는 수단**(`culture-quiz-screen-exit`, `copy.common.exitTo.journey`)이고
+// 나머지 셋은 **나아가는 수단**입니다. 시그니처는 넷이 같습니다.
 
 /**
  * 완료 전이의 발화 문자열입니다. 구분자는 쉼표+공백 — D3이 고른 부호를 그대로
@@ -183,9 +181,9 @@ export const cultureQuizExitLabel = "맵으로";
  * *무엇이* 끝났는지(앞절)와 *이제 무엇이 남았는지*(뒷절)가 소리 안에 있어야
  * 합니다.
  *
- * 앞절은 리터럴을 다시 적지 않고 `cultureQuizCompletionText`를 지납니다 —
+ * 앞절은 리터럴을 다시 적지 않고 문구표 `copy.common.allQuestionsDone`을 지납니다 —
  * 화면이 렌더하는 낱말과 발화가 담는 낱말이 **같은 표를 지납니다.**
  */
-export function cultureQuizCompletionAnnouncement(nextActionLabel: string): string {
-  return `${cultureQuizCompletionText}, ${nextActionLabel}`;
+export function cultureQuizCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
+  return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
 }

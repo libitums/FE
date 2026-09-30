@@ -5,6 +5,8 @@ import friends from "@libitums/icons/lynx/friends";
 import settings from "@libitums/icons/lynx/settings";
 import { color } from "@libitums/design-tokens";
 
+import { UiCopyContext } from "../lib/ui-copy";
+import { markedUiCopy } from "../lib/ui-copy.test-support";
 import { BottomNavigator } from "./BottomNavigator";
 import type { Tab } from "../app/navigation";
 
@@ -133,7 +135,7 @@ test("셸은 상태를 갖지 않는다 — 선택 표시는 tab prop에서만 �
 // 수 없는 그림 셋이 됩니다.
 //
 // 선택 상태는 `accessibility-value`가 아니라 `accessibility-label`의 접미사
-// (`", 선택됨"`)로 실립니다 — iOS 실기에서 `accessibility-value`가 낭독되지 않아
+// (`", selected"`)로 실립니다 — iOS 실기에서 `accessibility-value`가 낭독되지 않아
 // 뒤집혔습니다(ADR-0016 D3과 정정 기록).
 
 test("탭에 보이는 글자가 없다 — 이름은 accessibility-label만 진다", () => {
@@ -144,25 +146,25 @@ test("탭에 보이는 글자가 없다 — 이름은 accessibility-label만 진
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveTextContent("");
 });
 
-test("선택된 탭의 accessibility-label은 라벨 뒤에 선택됨 접미사가 붙는다", () => {
+test("[SH1-E] 선택된 탭의 accessibility-label은 라벨 뒤에 selected 접미사가 붙는다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "accessibility-label",
-    "여정, 선택됨",
+    "Journey, selected",
   );
 });
 
-test("비선택 탭들도 각자 자기 라벨을 accessibility-label로 갖는다", () => {
+test("[SH1-E] 비선택 탭들도 각자 자기 라벨을 accessibility-label로 갖는다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "accessibility-label",
-    "롤플레이",
+    "Roleplay",
   );
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "accessibility-label",
-    "설정",
+    "Settings",
   );
 });
 
@@ -187,4 +189,38 @@ test("[BN2] 홈 탭·아이콘이 없다", () => {
   expect(
     screen.queryByTestId("ui-lynx-bottom-navigator-icon-home-default"),
   ).not.toBeInTheDocument();
+});
+
+test("[SH1-E] 선택 탭이 바뀌면 접미사가 그 탭으로 옮겨 간다", () => {
+  render(<BottomNavigator tab="settings" onSelectTab={() => {}} />);
+
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+    "accessibility-label",
+    "Settings, selected",
+  );
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
+    "accessibility-label",
+    "Journey",
+  );
+});
+
+test("[SH1-M] 문구표를 주입하면 탭 이름이 표의 경로로 나오고 선택 탭만 접미사가 붙는다", () => {
+  render(
+    <UiCopyContext.Provider value={markedUiCopy}>
+      <BottomNavigator tab="journey" onSelectTab={() => {}} />
+    </UiCopyContext.Provider>,
+  );
+
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
+    "accessibility-label",
+    "⟦shell.tabs.journey⟧, selected",
+  );
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
+    "accessibility-label",
+    "⟦shell.tabs.roleplay⟧",
+  );
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+    "accessibility-label",
+    "⟦shell.tabs.settings⟧",
+  );
 });

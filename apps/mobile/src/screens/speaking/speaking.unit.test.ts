@@ -7,10 +7,12 @@ import {
   judgeSpeaking,
   matchedWordCount,
   speakingAnnouncement,
+  speakingCompletionAnnouncement,
   speakingQuestionsForStep,
   speakingSessionReducer,
   speakingWords,
 } from "./speaking";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // `unit` 계층: 순수 함수의 입출력 (ADR-0006 D4).
 
@@ -83,8 +85,8 @@ describe("speakingSessionReducer", () => {
   });
 
   it("채점 발화는 다른 학습형과 같은 형태다", () => {
-    expect(speakingAnnouncement("correct")).toBe("채점 결과, 정답");
-    expect(speakingAnnouncement("incorrect")).toBe("채점 결과, 오답");
+    expect(speakingAnnouncement("correct", uiCopyEn)).toBe("Result, correct");
+    expect(speakingAnnouncement("incorrect", uiCopyEn)).toBe("Result, incorrect");
   });
 });
 
@@ -171,5 +173,16 @@ describe("speakingSessionReducer — 건너뛰기", () => {
     expect(state.results).toEqual(["correct", "correct", "correct"]);
     expect(state.skippedCount).toBe(3);
     expect(judgeAssessment(state.results, assessmentPassCriterion)).toBe("passed");
+  });
+});
+
+describe("speakingCompletionAnnouncement", () => {
+  it("[RL10] 앞절 `All questions done` 뒤에 쉼표+공백과 나아가는 라벨이 붙는다", () => {
+    expect(speakingCompletionAnnouncement("See results", uiCopyEn)).toBe(
+      "All questions done, See results",
+    );
+    expect(speakingCompletionAnnouncement("Back to map", uiCopyEn)).toBe(
+      "All questions done, Back to map",
+    );
   });
 });

@@ -8,7 +8,6 @@ import type { SessionOptionKey, SessionOptions } from "../../lib/session-options
 // 이동 항목 목록을 props로 따로 받지 않습니다 — 둘은 이 union이 이미 닫았습니다
 // (`BottomNavigator`가 세 탭을 모듈 내부 상수로 둔 것과 같은 근거입니다).
 export type SettingsNavTarget = "profile" | "terms";
-export type SettingsNavLabel = "사용자 프로필" | "개인정보 보호 및 약관";
 
 export type SettingsScreenProps = {
   readonly sessionOptions: SessionOptions;
