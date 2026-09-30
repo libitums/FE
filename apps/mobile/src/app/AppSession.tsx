@@ -224,6 +224,7 @@ export function AppSession({
   useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
 
   const screenNow = currentScreen(nav);
+  const isPhoneCall = screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call";
   const showsNavigator = showsTabNavigator(nav);
   // 가장자리까지 그림을 까는 화면은 셸이 여백을 잡지 않습니다 — 셸 배경이 칠하는 띠가
   // 그림을 끊습니다. 여백은 화면이 자기 안에서 잡습니다(`wiring.safeAreaInsets`).
@@ -234,11 +235,7 @@ export function AppSession({
       <ErrorBoundary>
         <view
           className={
-            screenNow.name === "splash"
-              ? "app app-splash"
-              : screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call"
-                ? "app app-call"
-                : "app"
+            screenNow.name === "splash" ? "app app-splash" : isPhoneCall ? "app app-call" : "app"
           }
           style={{
             paddingTop: `${shellInsets.top}px`,

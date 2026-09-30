@@ -22,7 +22,7 @@ import "./phone-call-screen.css";
 
 // 나(self) 항목은 이름 필드가 없습니다(계약) — 화면이 문구표의 `common.me`를 씁니다.
 const entrySpeakerName = (entry: PhoneCallTranscriptEntry, me: string): string =>
-  entry.speaker === "jimin" ? entry.speakerName : me;
+  entry.speaker === "self" ? me : entry.speakerName;
 
 // 전화 화면은 세션만 소유하고 완료 기록은 상위 콜백으로 넘깁니다.
 // `exitLabel`은 어느 탭에서 열렸는지를 화면이 알아서가 아니라 데이터로 받습니다
@@ -121,7 +121,7 @@ export function PhoneCallScreen({
             <CallCaller
               key={replayKey}
               callerName={conversation.turns[0].speakerName}
-              callerPortrait={artworkFor("jimin-neutral").source}
+              callerPortrait={artworkFor(`${conversation.turns[0].speakerId}-neutral`).source}
               clockRunning={
                 session.mode === "playing" ||
                 session.mode === "reply-ready" ||
@@ -136,12 +136,12 @@ export function PhoneCallScreen({
           <view className="phone-call-transcript-list">
             {entries.map((entry) => (
               <view
-                key={entry.speaker === "jimin" ? entry.turnId : entry.replyId}
+                key={entry.speaker === "self" ? entry.replyId : entry.turnId}
                 className={`phone-call-transcript phone-call-transcript-${entry.speaker}`}
                 data-testid={
-                  entry.speaker === "jimin"
-                    ? `phone-call-transcript-jimin-${entry.turnId}`
-                    : `phone-call-transcript-self-${entry.replyId}`
+                  entry.speaker === "self"
+                    ? `phone-call-transcript-self-${entry.replyId}`
+                    : `phone-call-transcript-${entry.speaker}-${entry.turnId}`
                 }
                 accessibility-element={true}
                 accessibility-traits="text"
@@ -161,7 +161,7 @@ export function PhoneCallScreen({
                   <CallLineBubble
                     text={entry.text}
                     translation={[entry.romanization, entry.translation].filter(Boolean).join("\n")}
-                    testIdPrefix={`phone-call-line-${entry.speaker}-${entry.speaker === "jimin" ? entry.turnId : entry.replyId}`}
+                    testIdPrefix={`phone-call-line-${entry.speaker}-${entry.speaker === "self" ? entry.replyId : entry.turnId}`}
                   />
                 </view>
               </view>
