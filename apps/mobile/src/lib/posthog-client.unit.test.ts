@@ -140,7 +140,7 @@ describe("상수 · 옵션", () => {
       sendFeatureFlagEvent: false,
       disableSurveys: true,
       disableCompression: true,
-      disableGeoip: true,
+      disableGeoip: false,
       personProfiles: "identified_only",
       defaultOptIn: true,
       maxQueueSize: 200,
@@ -172,10 +172,20 @@ describe("LynxPostHogClient 전송", () => {
       note: "kept",
       $lib: "libitums-lynx",
       $lib_version: "1.55.2",
-      $geoip_disable: true,
+
       $process_person_profile: false,
     });
     expect(typeof event!.distinct_id).toBe("string");
+  });
+
+  test("PC3: 나라 조회를 끄는 표시($geoip_disable)를 보내지 않는다 — 서버의 GeoIP 변환이 나라를 붙인다", async () => {
+    const { calls, transport } = fakeTransport();
+    const client = makeClient(transport);
+
+    client.capture("settings_opened", {});
+    await vi.waitFor(() => expect(calls).toHaveLength(1));
+
+    expect(batchEventsOf(calls)[0]!.properties).not.toHaveProperty("$geoip_disable");
   });
 
   test("PC3: 요청은 설정의 host로 나간다", async () => {

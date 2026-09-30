@@ -142,6 +142,7 @@ feature flag(`preloadFeatureFlags: false` · `disableRemoteFeatureFlags: true` �
 옵션으로 끈다. SDK가 붙이는 자동 속성은 `$lib` · `$lib_version` · `$session_id` ·
 `$process_person_profile` · `$is_identified` · `$geoip_disable` 여섯뿐이다 — 기기 모델 · OS 버전은
 없다. 앱이 모든 이벤트에 더하는 속성은 `environment` 하나다(D13).
+⟨2026-09-30 — **GeoIP는 켰다**(D15). `disableGeoip: false`이고 `$geoip_disable`는 더는 붙지 않는다⟩
 
 ### D10. 전송 해석 — `globalThis.fetch` → 맨 식별자 `lynx.fetch` → `null`, 호출마다
 
@@ -220,6 +221,24 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   `episode_intro_viewed`의 `targetKind`를 뺐다. 운영 이벤트가 들어오기 전이라 지난 데이터와
   어긋나는 것은 없다. 끝낸 표지를 맵에서 다시 열어도 `episode_intro_viewed`가 난다⟩
 
+### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
+
+2026-09-30 사용자 결정. 접속하는 나라를 보고, 나중에 서버 리전을 고를 근거로 삼는다.
+
+- 앱은 `disableGeoip: false`다 — 이벤트에 `$geoip_disable`를 붙이지 않는다. 앱이 보내는 속성은
+  그대로이고, 위치는 **PostHog 서버의 GeoIP 변환**이 요청 IP로 붙인다.
+- **남기는 것**: 나라 · 대륙 · 1단계 행정구역(주 · 지방) · 시간대(`$geoip_country_*` ·
+  `$geoip_continent_*` · `$geoip_subdivision_1_*` · `$geoip_time_zone`). 리전은 대륙 · 권역 단위라
+  나라로 충분하고, 한 나라에 리전이 여럿인 곳(미국 동 · 서부)은 주로 가른다.
+- **남기지 않는 것**: 도시 · 우편번호 · 위도 · 경도 · 정확도 반경 · 2단계 행정구역. 프로젝트의 GeoIP
+  변환 코드를 고쳐 이 값을 쓰지 않게 했다(PostHog Data pipelines → Transformations → GeoIP,
+  2026-09-30 v2). 기본 템플릿을 다시 적용하면 되살아나므로 템플릿으로 되돌리지 않는다.
+- **IP는 저장하지 않는다** — 프로젝트 설정 Discard client IP data(`anonymize_ips: true`). GeoIP
+  변환은 IP를 버리기 전에 돈다.
+- 리전 판단은 위치보다 **실제 응답 시간**이 정확하다. 필요해지면 로그인 요청의 소요 시간을
+  이벤트로 남긴다.
+- 개인정보처리방침 · App Store 개인정보 라벨(Coarse Location · Analytics)에 적는다.
+
 ## 사용자 확인 필요
 
 ⚠ 아래는 사용자가 자리에 없는 동안 고른 기본값이다. 확인되기 전까지 이 ADR은 `제안`이다.
@@ -227,7 +246,7 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 1. ⚠ **`flushAt: 1` · background flush 없음**(D7) — 요구사항의 기본값(SDK 배치 + background flush)을
    바꿨다.
 2. ⚠ **번들 상한 1,171,000 → 1,259,000**(D6).
-3. ⚠ **GeoIP를 끈 채 시작**(D9) — 나라별 분석을 원하면 `disableGeoip` 한 값만 바꾼다.
+3. ~~⚠ **GeoIP를 끈 채 시작**(D9)~~ 2026-09-30 켰다 — 나라 · 주 · 시간대만 남기고 IP는 저장하지 않는다(D15).
 4. ⚠ **약관 문구와 충돌할 수 있다.** 「개인정보 보호 및 약관」 화면(`screens/terms/terms-sections.ts`)이
    *"수집한 정보는 학습자에게 맞는 콘텐츠를 보여 주는 데만 사용한다"* 고 적는다. 제품 사용 이벤트를
    외부 분석 서비스(PostHog)로 보내는 것이 이 문장과 맞는지 확인하지 않았다. 문구를 고칠지는 이
@@ -258,7 +277,7 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
    전송이 끝난 뒤 지우므로 대개 다음 실행이 다시 보낸다 — 이때 PostHog에 두 번 들어갈 수 있다).
 3. **오프라인 재시도는 다섯 번(합 약 8분)으로 끝난다**(D12) — 그 뒤는 다음 이벤트나 다음 실행을
    기다린다. 대기열이 200건을 넘으면 가장 오래된 것부터 버린다.
-4. **GeoIP 없음 · 기기 · OS 속성 없음** — 플랫폼 비교를 못 한다.
+4. **기기 · OS 속성 없음** — 플랫폼 비교를 못 한다. ⟨2026-09-30 — 위치는 나라 · 주 단위로 있다(D15). 도시 단위는 없다⟩
 5. **옵트아웃 수단 없음** — 설정에 수집 끄기가 없다. 필요해지면 `optOut()` 자리를 새 결정으로 연다.
 6. **화면 조회 · 앱 시작 이벤트 없음** — 퍼널의 분모가 진입 이벤트 · 유닛 열림에 한정된다.
 7. **전송 실패는 `console.error` 한 줄로만 남는다** — 화면에 드러나지 않는다(의도).
