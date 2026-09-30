@@ -1,0 +1,54 @@
+.learning-activity-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-8) var(--libitum-spacing-32);
+}
+
+.learning-activity-complete-emblem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-80);
+  height: var(--libitum-spacing-80);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-background-elevated);
+}
+
+.learning-activity-complete-icon {
+  width: var(--libitum-icon-size-xl);
+  height: var(--libitum-icon-size-xl);
+}
+
+.learning-activity-complete-title {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.learning-activity-complete-description {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.learning-activity-complete-summary {
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-background-secondary);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+}
+
+.learning-activity-complete-summary-text {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  text-align: center;
+}

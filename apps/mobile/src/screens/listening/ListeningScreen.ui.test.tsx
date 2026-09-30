@@ -761,12 +761,12 @@ test("응답 뒤 무대의 <svg>가 판정 배지 + 컨트롤 아이콘 둘이�
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
 });
 
-test("완료 상태의 무대에는 <svg>가 하나도 없다", () => {
+test("완료 상태에는 재생 아이콘 없이 장식용 완료 아이콘만 있다", () => {
   renderOrdering();
 
   completeAllThree();
 
-  expect(stageIcons()).toEqual([]);
+  expect(stageIcons()).toEqual(["learning-activity-complete-icon"]);
 });
 
 // ---------------------------------------------------------------- 오디오

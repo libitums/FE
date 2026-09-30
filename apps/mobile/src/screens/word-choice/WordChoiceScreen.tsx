@@ -4,6 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
+import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { WordChoiceOption } from "./WordChoiceOption";
 import {
@@ -104,6 +105,7 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
       // 마지막 문항 자리에 둡니다 — 문항이 0개인 스텝에서는 계약이 순번을 안 읽습니다.
       questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
+      complete={complete}
       instruction={copy.wordChoice.instruction}
       onExit={onExit}
       actionLabel={action?.label}
@@ -155,9 +157,10 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
 
           {/* 완료문입니다. 문항이 서 있던 그 카드 안에 결과가 대신 섭니다. */}
           {question === null ? (
-            <text className="word-choice-screen-complete" data-testid="word-choice-screen-complete">
-              {copy.common.allQuestionsDone}
-            </text>
+            <LearningActivityComplete
+              questionCount={questions.length}
+              testId="word-choice-screen-complete"
+            />
           ) : null}
 
           {/* 배지 자리와 마주 보는 빈 자리입니다 — 왜 필요한지는 CSS에 적혀 있습니다.

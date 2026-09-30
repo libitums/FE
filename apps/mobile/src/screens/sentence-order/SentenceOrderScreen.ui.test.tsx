@@ -302,6 +302,7 @@ test("[SO14] 문항을 다 마치면 완료 문구와 결과 보기가 서고, �
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
   tapAction("Check");
   tapAction("Next");
+  expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute("data-progress", "100");
   fireEvent.tap(chip(1), {});
   fireEvent.tap(chip(0), {});
   fireEvent.tap(chip(2), {});
@@ -311,6 +312,11 @@ test("[SO14] 문항을 다 마치면 완료 문구와 결과 보기가 서고, �
   expect(screen.getByTestId("sentence-order-screen-complete")).toHaveTextContent(
     "All questions done",
   );
+  expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute("data-progress", "100");
+  expect(screen.getByTestId("learning-activity-complete")).toHaveTextContent(
+    "2 of 2 questions completed",
+  );
+  expect(screen.queryByTestId("learning-shell-instruction")).not.toBeInTheDocument();
   tapAction("See results");
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledWith("ordering", ["correct", "incorrect"], 0);

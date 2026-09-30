@@ -4,6 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
+import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningChoice } from "./ListeningChoice";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
@@ -117,14 +118,10 @@ export function ListeningScreen({
   return (
     <LearningShell
       form="listening"
-      // 세션 헤더가 세는 것은 문항입니다 ⟨2026-09-28⟩. 완료 상태에는 지금 푸는 문항이
-      // 없으므로 마지막 문항 자리에 둡니다 — 막대가 그때 (N-1)/N에서 멈춥니다.
-      //
-      // 문항이 0개인 활동에서는 `Math.max`가 -1을 막습니다. 그 상태에서 계약은 순번을
-      // 아예 안 읽지만, 여기서 -1을 만들지 않는 것이 「없는 자리를 가리키지 않는다」를
-      // 이 파일에서도 참으로 만듭니다.
+      // 완료 화면은 마지막 문항의 N/N을 유지하며 별도 문항으로 세지 않습니다.
       questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
+      complete={complete}
       instruction={copy.listening.instruction}
       onExit={onExit}
       actionLabel={action?.label}
@@ -178,9 +175,10 @@ export function ListeningScreen({
           {/* 완료문입니다. 판정이 카드 안에서 뒤집힌다는 것이 이 자리에서 성립합니다 —
               문항이 서 있던 그 상자에 결과가 대신 섭니다. */}
           {question === null ? (
-            <text className="listening-screen-complete" data-testid="listening-screen-complete">
-              {copy.common.allQuestionsDone}
-            </text>
+            <LearningActivityComplete
+              questionCount={questions.length}
+              testId="listening-screen-complete"
+            />
           ) : null}
         </view>
       }
