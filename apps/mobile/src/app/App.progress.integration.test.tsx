@@ -119,6 +119,8 @@ test("[IPG1] 부팅 뒤 서버 진행을 불러와 맵에 그리고, 연속 칩�
     "5-day streak",
   );
   expect(rpcs.map((rpc) => rpc.name)).toEqual(["load_learning_progress", "learning_streak"]);
+  // 부팅으로 받은 일수는 축하하지 않습니다 — 모달이 저절로 뜨지 않습니다.
+  expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
   expect(rpcs[1]!.body).toEqual({ p_today: localDayFrom(new Date()) });
 });
 
@@ -142,6 +144,22 @@ test("[IPG2] 활동을 끝내면 오늘을 적고 진행을 저장하며, 연속
     "accessibility-label",
     "1-day streak",
   );
+  // 연속이 늘어 맵으로 돌아오면 연속 학습 모달이 한 번 뜹니다.
+  expect(screen.getByTestId("journey-stat-modal-streak")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-stat-modal-value")).toHaveTextContent("1");
+});
+
+test("[IPG4] 이미 오늘 한 날(일수가 그대로)이면 모달이 뜨지 않는다", async () => {
+  await boot({ load: { status: 200, body: "null" }, streak: 3, recorded: 3 });
+
+  finishIntro();
+  await flush();
+
+  expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(
+    "accessibility-label",
+    "3-day streak",
+  );
+  expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
 });
 
 test("[IPG3] 불러오기가 실패했으면 저장하지 않고 다시 불러온다 — 서버 진행을 덮어쓰지 않는다", async () => {

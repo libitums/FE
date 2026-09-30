@@ -55,6 +55,11 @@ export function useJourneyProgress(
     readonly EpisodeIntroUnitId[]
   >(initialCompletedEpisodeIntroIds);
   const [streakDays, setStreakDays] = useState(0);
+  // 연속이 **활동으로** 늘었는가입니다 — 머리가 다음에 설 때 연속 학습 모달을 한 번 띄웁니다. 부팅의 불러오기로 받은
+  // 값은 축하하지 않습니다.
+  const [streakCelebration, setStreakCelebration] = useState(false);
+  const streakRef = useRef(0);
+  streakRef.current = streakDays;
 
   const state: JourneyProgressState = {
     completedStepCount,
@@ -104,7 +109,9 @@ export function useJourneyProgress(
     if (grew) {
       void recordLearningDay(localDayFrom(new Date()))
         .then((streak) => {
-          if (streak !== null) setStreakDays(streak);
+          if (streak === null) return;
+          if (streak > streakRef.current) setStreakCelebration(true);
+          setStreakDays(streak);
         })
         .catch(() => undefined);
     }
@@ -137,6 +144,8 @@ export function useJourneyProgress(
     setCompletedEpisodeFinalIds,
     setCompletedEpisodeIntroIds,
     streakDays,
+    streakCelebration,
+    onStreakCelebrated: () => setStreakCelebration(false),
     trophyCount: trophyCountFrom(journeyMapSections, state),
     syncFromServer,
   };

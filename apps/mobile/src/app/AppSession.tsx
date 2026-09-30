@@ -256,6 +256,8 @@ export function AppSession({
               <AppHeader
                 streakDays={progress.streakDays}
                 trophyCount={progress.trophyCount}
+                celebrateStreak={progress.streakCelebration}
+                onStreakCelebrated={progress.onStreakCelebrated}
                 gemCount={gemCount}
                 obscured={screenLayerOpen}
                 onOpenNotifications={wiring.onOpenNotifications}
