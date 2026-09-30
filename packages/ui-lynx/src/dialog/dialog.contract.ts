@@ -29,7 +29,8 @@ export type DialogActionContract = DialogAction & {
 
 export type DialogContract = {
   readonly actions: readonly DialogActionContract[];
-  readonly cancelActionId: string;
+  /** 뒤로가기 · ESC가 연결할 아래쪽 액션 id입니다. 로딩 중인 액션이 있으면 `null`(취소 경로 없음). */
+  readonly cancelActionId: string | null;
   readonly className: string;
   readonly description: string | undefined;
   readonly motion: DialogMotion;
@@ -59,16 +60,17 @@ export function getDialogContract(props: DialogProps): DialogContract {
     return { ...action, id, label, variant: index === 0 ? "brand" : "subtle" };
   });
 
-  if (!actions.some((action) => !action.disabled && !action.loading)) {
-    throw new Error("Dialog requires at least one interactive action");
+  if (!actions.some((action) => action.loading === true || action.disabled !== true)) {
+    throw new Error("Dialog requires at least one interactive or loading action");
   }
+  const busy = actions.some((action) => action.loading === true);
 
   const motion = props.motion ?? "standard";
   const phase = props.phase ?? "entering";
   const description = props.description?.trim() ? props.description : undefined;
   return {
     actions,
-    cancelActionId: actions[actions.length - 1]!.id,
+    cancelActionId: busy ? null : actions[actions.length - 1]!.id,
     className: `ui-lynx-dialog ui-lynx-dialog-motion-${motion} ui-lynx-dialog-phase-${phase}`,
     description,
     motion,

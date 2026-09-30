@@ -202,7 +202,9 @@ import "@libitums/ui-lynx/styles.css";
 탭으로 닫히지 않으며 공용 `Overlay`의 Screen · Dialog · Dismiss None 조합을 사용한다. 두
 action은 제품 결정에 따라 위에서부터 Brand, Subtle 순서다. `phase`는 진입·표시·퇴장 전환을
 명시하고 `data-cancelactionid`는
-뒤로가기·ESC를 연결할 때 실행할 아래쪽 action id를 노출한다. 배경 접근성 숨김과 닫힌 뒤
+뒤로가기·ESC를 연결할 때 실행할 아래쪽 action id를 노출한다. action 중 하나라도
+`loading`이면 취소 경로가 없어 속성이 없다(뒤로가기·ESC 무시). 모든 action이 `disabled`이고
+`loading`도 아니면 계약 오류이며, 하나가 `loading`이면 나머지가 `disabled`여도 유효하다. 배경 접근성 숨김과 닫힌 뒤
 focus 복원은 Dialog를 여는 소비 화면이 소유한다.
 
 ```tsx

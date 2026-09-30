@@ -167,6 +167,16 @@ export class LynxPostHogClient extends PostHogCore {
     }
   }
 
+  /** 재시도 타이머를 풀고 메모리 · 저장소 대기열을 비웁니다. */
+  discardQueue(): void {
+    if (this.retryTimer !== undefined) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = undefined;
+    }
+    this.retryAttempt = 0;
+    this.setPersistedProperty(sdkQueueProperty, null);
+  }
+
   private saveQueue(queue: unknown): void {
     try {
       if (Array.isArray(queue) && queue.length > 0) {
@@ -205,12 +215,27 @@ export const createAnalyticsSession: CreateAnalyticsSession = (config, transport
   const client = new LynxPostHogClient(config, transport);
   return {
     sinks: analyticsEventSinksFrom(client),
-    identify: (userId) => {
-      try {
-        client.identify(userId);
-      } catch {
-        // 식별 실패는 화면에 드러내지 않습니다.
-      }
+    user: {
+      identify: (userId) => {
+        try {
+          client.identify(userId);
+        } catch {
+          // 식별 실패는 화면에 드러내지 않습니다.
+        }
+      },
+      reset: (scope) => {
+        try {
+          // 대기열을 먼저 버려 reset 중 flush가 옛 대기열을 보내는 창을 없앱니다.
+          if (scope === "identity-and-queue") {
+            client.discardQueue();
+          }
+          client.reset();
+          // reset이 등록 속성을 지우므로 D13 속성을 다시 겁니다.
+          client.register({ environment: config.environment });
+        } catch {
+          // 되돌리기 실패는 화면에 드러내지 않습니다.
+        }
+      },
     },
   };
 };

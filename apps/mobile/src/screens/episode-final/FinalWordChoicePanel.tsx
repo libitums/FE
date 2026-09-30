@@ -60,9 +60,11 @@ export function FinalWordChoicePanel({
                 accessibility-label={`${option}${question.romanizations ? `, ${question.romanizations[index]}` : ""}${copy.episodeFinal.optionSuffix[state]}`}
                 bindtap={() => onChoose(index)}
               >
-                <text className="episode-final-option-label">{option}</text>
+                <text className="episode-final-option-label" accessibility-element={false}>
+                  {option}
+                </text>
                 {question.romanizations ? (
-                  <text className="episode-final-option-romanization">
+                  <text className="episode-final-option-romanization" accessibility-element={false}>
                     {question.romanizations[index]}
                   </text>
                 ) : null}

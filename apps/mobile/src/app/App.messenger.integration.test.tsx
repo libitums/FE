@@ -19,6 +19,7 @@ const completedIntros = ["tutorial-intro"] as const;
 // App · navigation · 여정 맵 · 메신저 화면의 실제 결선을 봅니다.
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });

@@ -188,6 +188,7 @@ D4가 금지한 `padding-bottom`(빈 띠로 끝을 표시)의 **반대 방향 �
 > 뺀 나머지 행이다.
 >
 > **열두째(사용자 프로필)와 열셋째(개인정보 보호 및 약관)도 같은 자리다 (LIB-259).**
+> ⟨2026-09-30⟩ 열셋째는 지워졌다 — 문서가 앱 안 브라우저 시트로 나갔다([ADR-0033](0033-legal-documents-in-app-browser.md)).
 > 화면 파일이 함께 섰고(`screens/profile/ProfileScreen.tsx` · `profile-screen.css` ·
 > `screens/terms/TermsScreen.tsx` · `terms-screen.css`) 상자의 형태가 7~11번과 글자 그대로
 > 같다 — `scroll-orientation="vertical"` · `scroll-bar-enable={true}` 둘만 적었고
