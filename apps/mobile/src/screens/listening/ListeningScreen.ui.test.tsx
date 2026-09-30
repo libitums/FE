@@ -230,16 +230,16 @@ test("다른 스텝으로 렌더하면 문항이 갈린다", () => {
 
   render(
     <ListeningScreen
-      stepId="greeting"
+      stepId="introduction"
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
     />,
   );
 
-  const greetingPrompt = screen.getByTestId("listening-prompt-text");
-  expect(greetingPrompt).toHaveTextContent("안녕하세요, 처음 뵙겠습니다.");
-  expect(greetingPrompt.textContent).not.toBe(orderingPrompt);
+  const introductionPrompt = screen.getByTestId("listening-prompt-text");
+  expect(introductionPrompt).toHaveTextContent("이름이 어떻게 되세요?");
+  expect(introductionPrompt.textContent).not.toBe(orderingPrompt);
 });
 
 // ---------------------------------------------------------------- 응답 전 (단언 5·6)
@@ -406,19 +406,21 @@ test("응답 뒤 다른 보기를 탭해도 첫 응답이 그대로다", () => {
   );
 });
 
-// **0은 falsy입니다.** `greeting`의 첫 문항은 정답 인덱스가 0이라, 0번 보기를
+// **0은 falsy입니다.** `introduction`의 둘째 문항은 정답 인덱스가 0이라, 0번 보기를
 // 고른 것이 응답으로 기록되지 않으면 여기서만 잡힙니다 — 판정도 안 나오고
 // `다음`도 안 뜹니다.
 test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () => {
   render(
     <ListeningScreen
-      stepId="greeting"
+      stepId="introduction"
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
     />,
   );
 
+  fireEvent.tap(screen.getByTestId("listening-choice-3"), {});
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   fireEvent.tap(screen.getByTestId("listening-choice-0"), {});
 
   expect(screen.getByTestId("listening-choice-0")).toHaveAttribute("data-result", "correct");
@@ -759,12 +761,12 @@ test("응답 뒤 무대의 <svg>가 판정 배지 + 컨트롤 아이콘 둘이�
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
 });
 
-test("완료 상태의 무대에는 <svg>가 하나도 없다", () => {
+test("완료 상태에는 재생 아이콘 없이 장식용 완료 아이콘만 있다", () => {
   renderOrdering();
 
   completeAllThree();
 
-  expect(stageIcons()).toEqual([]);
+  expect(stageIcons()).toEqual(["learning-activity-complete-icon"]);
 });
 
 // ---------------------------------------------------------------- 오디오
@@ -795,14 +797,14 @@ test("다른 스텝으로 렌더하면 play의 source가 그 스텝의 첫 문�
 
   render(
     <ListeningScreen
-      stepId="greeting"
+      stepId="introduction"
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
     />,
   );
 
-  expect(sourcesOf(audio)).toEqual(["greeting-1"]);
+  expect(sourcesOf(audio)).toEqual(["introduction-1"]);
 });
 
 // 추가 2 — 문항을 다 마치면 `ListeningPrompt`가 언마운트되고 cleanup이 `stop`을

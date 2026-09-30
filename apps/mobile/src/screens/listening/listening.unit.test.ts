@@ -77,16 +77,12 @@ describe("questionsForStep", () => {
     expect(questions[0]?.prompt).toBe("따뜻한 아메리카노 한 잔 주세요.");
   });
 
-  // 「스텝 커버리지 = 다섯 전부」입니다: 하나라도 비면 그 스텝에 들어간 순간 빈
-  // 화면입니다.
-  it("다섯 스텝 전부 문항 셋을 돌려준다 — 비는 스텝이 없다", () => {
-    const lengths = stepIds.map((id) => questionsForStep(id).length);
-
-    expect(lengths).toEqual([3, 3, 3, 3, 3]);
+  it("첫 인사는 듣기 없이 시작하고 나머지 네 스텝은 세 문항이다", () => {
+    expect(stepIds.map((id) => questionsForStep(id).length)).toEqual([0, 3, 3, 3, 3]);
   });
 
-  it("greeting과 directions의 첫 문항이 계약이 고정한 값이다", () => {
-    expect(questionsForStep("greeting")[0]?.prompt).toBe("안녕하세요, 처음 뵙겠습니다.");
+  it("introduction과 directions의 첫 문항이 계약이 고정한 값이다", () => {
+    expect(questionsForStep("introduction")[0]?.prompt).toBe("이름이 어떻게 되세요?");
     expect(questionsForStep("directions")[0]?.prompt).toBe("혹시 지하철역이 어디예요?");
   });
 
@@ -533,10 +529,10 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
     expect(Object.keys(listeningQuestionsByStep).sort()).toEqual([...stepIds].sort());
   });
 
-  it("스텝마다 문항이 셋이다", () => {
+  it("듣기를 배정한 스텝에만 문항이 셋이다", () => {
     const lengths = stepIds.map((id) => listeningQuestionsByStep[id].length);
 
-    expect(lengths).toEqual([3, 3, 3, 3, 3]);
+    expect(lengths).toEqual([0, 3, 3, 3, 3]);
   });
 
   it("모든 문항의 보기가 넷이다", () => {
@@ -588,6 +584,7 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
   it("어느 스텝에서도 한 인덱스만 계속 골라 셋을 다 맞힐 수 없다", () => {
     for (const id of stepIds) {
       const questions = listeningQuestionsByStep[id];
+      if (questions.length === 0) continue;
 
       for (const fixedChoice of [0, 1, 2, 3]) {
         const allCorrect = questions.every((question) => question.answerIndex === fixedChoice);
@@ -605,7 +602,7 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
     }));
 
     expect(table).toEqual([
-      { id: "greeting", answers: [0, 1, 2] },
+      { id: "greeting", answers: [] },
       { id: "introduction", answers: [3, 0, 1] },
       { id: "ordering", answers: [2, 0, 3] },
       { id: "appointment", answers: [1, 2, 0] },
@@ -617,7 +614,7 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
   // `", "`로 잇습니다 (ADR-0016 D3). 보기 문자열 안에 쉼표가 있으면 `"네,
   // 알겠습니다, 정답"`이 **세 마디로 갈려** 이름과 상태의 경계가 사라집니다.
   //
-  // **지금 60개가 이미 깨끗해서 이 케이스는 처음부터 green입니다.** 생략이
+  // **지금 48개가 이미 깨끗해서 이 케이스는 처음부터 green입니다.** 생략이
   // 아니라 회귀 방어선입니다 — 강제하는 것이 없으면 문항이 늘 때 자동 계층이
   // 전부 green인 채로 통과시킵니다. `unit`이 이 불변식의 유일한 강제 지점입니다.
   //
@@ -629,9 +626,9 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
       listeningQuestionsByStep[id].flatMap((question) => [...question.choices]),
     );
 
-    // 앵커: 5 스텝 × 3 문항 × 보기 4 = 60개를 실제로 돌았습니다. 목록이 비면
+    // 앵커: 4 스텝 × 3 문항 × 보기 4 = 48개를 실제로 돌았습니다. 목록이 비면
     // 아래 부재 단언이 공허하게 통과합니다.
-    expect(choices).toHaveLength(60);
+    expect(choices).toHaveLength(48);
     expect(choices.filter((choice) => choice.includes(","))).toEqual([]);
 
     // 그 불변식이 무엇을 지키는지: 접미사가 붙어도 낭독 이름이 **정확히 두
@@ -654,48 +651,9 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
 
 // ---------------------------------------------------------------- 오디오 축
 
-// CE1 — 부록 C.7. 보기 60개만 영어 뜻 풀이로 바뀌고 제시문 \u00b7 로마자 \u00b7 음원 \u00b7 정답 인덱스는 불변이다.
+// CE1 — 부록 C.7. 보기 48개만 영어 뜻 풀이로 바뀌고 제시문 \u00b7 로마자 \u00b7 음원 \u00b7 정답 인덱스는 불변이다.
 // 행: [스텝, prompt, romanization, audioSource, choices, answerIndex]
 const englishChoiceTable = [
-  [
-    "greeting",
-    "안녕하세요, 처음 뵙겠습니다.",
-    "annyeonghaseyo, cheoeum boepgetseumnida",
-    "greeting-1",
-    [
-      "Greeting someone they're meeting for the first time",
-      "Saying goodbye",
-      "Saying thank you",
-      "Apologizing",
-    ],
-    0,
-  ],
-  [
-    "greeting",
-    "반갑습니다.",
-    "bangapseumnida",
-    "greeting-2",
-    [
-      "Apologizing",
-      "Saying they're glad to meet you",
-      "Saying goodbye to someone who is leaving",
-      "Asking your name",
-    ],
-    1,
-  ],
-  [
-    "greeting",
-    "안녕히 계세요.",
-    "annyeonghi gyeseyo",
-    "greeting-3",
-    [
-      "Greeting someone on first meeting",
-      "Suggesting you go together",
-      "Saying goodbye to someone who is staying",
-      "Asking you to come again",
-    ],
-    2,
-  ],
   [
     "introduction",
     "이름이 어떻게 되세요?",
@@ -850,7 +808,7 @@ const englishChoiceTable = [
 ] as const;
 
 describe("listeningQuestionsByStep — 영어 뜻 풀이 보기(CE1)", () => {
-  it("문항 15가 스텝 · 순서대로 부록 C.7과 같다 — answerIndex 15개 불변", () => {
+  it("문항 12가 스텝 · 순서대로 부록 C.7과 같다 — answerIndex 12개 불변", () => {
     const actual = stepIds.flatMap((id) =>
       listeningQuestionsByStep[id].map((question) => [
         id,
@@ -862,16 +820,16 @@ describe("listeningQuestionsByStep — 영어 뜻 풀이 보기(CE1)", () => {
       ]),
     );
 
-    expect(actual).toHaveLength(15);
+    expect(actual).toHaveLength(12);
     expect(actual).toEqual(englishChoiceTable.map((row) => [...row]));
   });
 
-  it("보기 60개에 한글이 없다", () => {
+  it("보기 48개에 한글이 없다", () => {
     const choices = stepIds.flatMap((id) =>
       listeningQuestionsByStep[id].flatMap((question) => [...question.choices]),
     );
 
-    expect(choices).toHaveLength(60);
+    expect(choices).toHaveLength(48);
     expect(choices.filter((choice) => /[가-힣]/.test(choice))).toEqual([]);
   });
 
@@ -912,18 +870,18 @@ describe("playbackStateAfterPlay", () => {
 });
 
 describe("audioSource (고정 데이터 불변식)", () => {
-  // 15개를 한 번에 도는 축입니다. 목록이 비면 아래 부재 단언들이 공허하게
+  // 12개를 한 번에 도는 축입니다. 목록이 비면 아래 부재 단언들이 공허하게
   // 통과합니다.
   const audioSources = stepIds.flatMap((id) =>
     listeningQuestionsByStep[id].map((question) => question.audioSource),
   );
 
-  it("5 스텝 × 3 문항 = 15개를 실제로 돈다", () => {
-    expect(audioSources).toHaveLength(15);
+  it("4 스텝 × 3 문항 = 12개를 실제로 돈다", () => {
+    expect(audioSources).toHaveLength(12);
   });
 
-  it("15개가 서로 다르다 — 문항마다 안정적 식별자 하나다", () => {
-    expect(new Set(audioSources).size).toBe(15);
+  it("12개가 서로 다르다 — 문항마다 안정적 식별자 하나다", () => {
+    expect(new Set(audioSources).size).toBe(12);
   });
 
   it("빈 문자열이 없다 — 필드가 옵셔널이 아니므로 빈 값이 그 자리를 대신할 수 있다", () => {
@@ -956,14 +914,14 @@ describe("audioSource (고정 데이터 불변식)", () => {
   // 명명 규칙이 코드에 박히고, 자산 공급자가 다른 이름을 주는 순간 규칙과
   // 자산이 갈립니다. 이 표가 그 값의 정본이고, 아래 앵커가 "파생이 아니라
   // 데이터"를 못박습니다.
-  it("15개 값이 계약 표와 일치한다", () => {
+  it("12개 값이 계약 표와 일치한다", () => {
     const table = stepIds.map((id) => ({
       id,
       sources: listeningQuestionsByStep[id].map((question) => question.audioSource),
     }));
 
     expect(table).toEqual([
-      { id: "greeting", sources: ["greeting-1", "greeting-2", "greeting-3"] },
+      { id: "greeting", sources: [] },
       { id: "introduction", sources: ["introduction-1", "introduction-2", "introduction-3"] },
       { id: "ordering", sources: ["ordering-1", "ordering-2", "ordering-3"] },
       { id: "appointment", sources: ["appointment-1", "appointment-2", "appointment-3"] },
@@ -982,7 +940,7 @@ describe("audioSource (고정 데이터 불변식)", () => {
   });
 
   it("다른 스텝의 첫 문항도 그 스텝의 첫 source를 진다", () => {
-    expect(questionsForStep("greeting")[0]?.audioSource).toBe("greeting-1");
+    expect(questionsForStep("introduction")[0]?.audioSource).toBe("introduction-1");
     expect(questionsForStep("directions")[2]?.audioSource).toBe("directions-3");
   });
 

@@ -55,6 +55,14 @@
   letter-spacing: var(--libitum-typography-label-l-letter-spacing);
 }
 
+.sentence-order-screen-support {
+  margin-top: var(--libitum-spacing-8);
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
 .sentence-order-screen-partner-text {
   color: var(--libitum-color-gray-900);
 }

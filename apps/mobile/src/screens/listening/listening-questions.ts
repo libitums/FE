@@ -27,47 +27,11 @@ export type ListeningQuestion = {
 };
 
 // ---------------------------------------------------------------- 고정 데이터
-// 값까지 고정돼 있습니다 — 5 스텝 × 3 문항 × 보기 4개. 한 스텝 안에서 세
+// 듣기가 배정된 4 스텝 × 3 문항 × 보기 4개입니다. 한 스텝 안에서 세
 // 문항의 정답 인덱스가 서로 다릅니다. 하류가 지어내지 않습니다.
 export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQuestion[]> = {
-  greeting: [
-    {
-      prompt: "안녕하세요, 처음 뵙겠습니다.",
-      romanization: "annyeonghaseyo, cheoeum boepgetseumnida",
-      audioSource: "greeting-1",
-      choices: [
-        "Greeting someone they're meeting for the first time",
-        "Saying goodbye",
-        "Saying thank you",
-        "Apologizing",
-      ],
-      answerIndex: 0,
-    },
-    {
-      prompt: "반갑습니다.",
-      romanization: "bangapseumnida",
-      audioSource: "greeting-2",
-      choices: [
-        "Apologizing",
-        "Saying they're glad to meet you",
-        "Saying goodbye to someone who is leaving",
-        "Asking your name",
-      ],
-      answerIndex: 1,
-    },
-    {
-      prompt: "안녕히 계세요.",
-      romanization: "annyeonghi gyeseyo",
-      audioSource: "greeting-3",
-      choices: [
-        "Greeting someone on first meeting",
-        "Suggesting you go together",
-        "Saying goodbye to someone who is staying",
-        "Asking you to come again",
-      ],
-      answerIndex: 2,
-    },
-  ],
+  // 첫 인사는 뜻과 발음을 보며 답하는 안내 활동만 합니다. 듣기는 다음 유닛부터 시작합니다.
+  greeting: [],
   introduction: [
     {
       prompt: "이름이 어떻게 되세요?",

@@ -1,3 +1,9 @@
+// 범용 학습 흐름은 명시적 다중 활동 픽스처로 검증합니다. 제품 튜토리얼은 별도 실물 테스트가 집니다.
+vi.mock("../screens/journey-map/journey-map", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../screens/journey-map/journey-map")>()),
+  ...(await import("./test-helpers/learning-route-fixture")),
+}));
+
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
@@ -315,11 +321,11 @@ test("서로 다른 두 스텝에서 시작하면 문항 텍스트가 갈린다"
   );
 
   exitLearning();
-  startStep("greeting");
+  startStep("introduction");
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
-    questionsForStep("greeting")[0].prompt,
+    questionsForStep("introduction")[0].prompt,
   );
   expect(screen.getByTestId("listening-prompt-text")).not.toHaveTextContent(
     questionsForStep("ordering")[0].prompt,
@@ -449,10 +455,14 @@ test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는�
   );
 
   startStep("greeting");
-  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  answerAllQuestions("greeting", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  // 첫 인사는 듣기 뒤에 문장 만들기가 이어집니다 — 그것까지 마쳐야 평가에 닿습니다.
+  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
+  expect(screen.getByTestId("sentence-order-screen-translation")).toHaveTextContent("Hello");
+  expect(screen.getByTestId("sentence-order-screen-romanization")).toHaveTextContent(
+    "annyeonghaseyo",
+  );
+  // 첫 인사는 오답 조각 없이 인사 한 번으로 마칩니다.
+  expect(screen.getByTestId("sentence-order-chip-0")).toHaveTextContent("안녕하세요");
+  expect(screen.queryByTestId("sentence-order-chip-1")).not.toBeInTheDocument();
   expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
   completeSentenceOrder("greeting");
   fireEvent.tap(lessonCompleteExit(), {});
@@ -779,13 +789,13 @@ test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 �
   expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0)]);
 
   exitLearning();
-  startStep("greeting");
+  startStep("introduction");
 
-  expect(audioSourceAt("greeting", 0)).not.toBe(audioSourceAt("ordering", 0));
+  expect(audioSourceAt("introduction", 0)).not.toBe(audioSourceAt("ordering", 0));
   expect(sourcesOf(calls)).toEqual([
     audioSourceAt("ordering", 0),
     STOP,
-    audioSourceAt("greeting", 0),
+    audioSourceAt("introduction", 0),
   ]);
 });
 

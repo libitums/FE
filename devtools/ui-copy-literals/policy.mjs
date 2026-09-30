@@ -13,7 +13,7 @@ export const uiCopyLiteralPolicy = {
   learningContentDeclarations: [
     "listening-questions.ts#listeningQuestionsByStep",
     "word-choice-questions.ts#wordChoiceQuestionsByStep",
-    "sentence-order.ts#sentenceOrderQuestionsByStep",
+    "sentence-order-questions.ts#sentenceOrderQuestionsByStep",
     "speaking.ts#speakingQuestionsByStep",
     "writing.ts#writingQuestionsByStep",
     "episode-final-tests.ts#episodeFinalTests",

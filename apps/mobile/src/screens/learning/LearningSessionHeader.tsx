@@ -73,6 +73,7 @@ export function LearningSessionHeader({
           <view
             className="learning-shell-progress"
             data-testid="learning-shell-progress"
+            data-progress={String(header.fillPercent)}
             accessibility-element={true}
             accessibility-label={header.accessibilityLabel}
           >

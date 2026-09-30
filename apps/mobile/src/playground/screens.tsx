@@ -1,6 +1,7 @@
 import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { Tab } from "../app/nav-state";
 import type {
   PhoneNumber,
@@ -18,6 +19,7 @@ import { SplashScreen } from "../screens/splash/SplashScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
 import { LearningShell } from "../screens/learning/LearningShell";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
+import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
 import { initialSessionOptions } from "../lib/session-options";
 import { ButtonCatalog } from "./ButtonCatalog";
 import { EpisodePrologueScreen } from "../app/EpisodePrologueScreen";
@@ -29,7 +31,10 @@ import { tutorialPrologue, tutorialPrologueLabel } from "../app/tutorial-prologu
 const noop = () => undefined;
 
 // 두 번째 인자는 다음 화면에 넘길 값입니다(지금은 로그인 → 코드 검증의 전화번호뿐).
-export type PlaygroundParams = { readonly phoneNumber?: PhoneNumber };
+export type PlaygroundParams = {
+  readonly phoneNumber?: PhoneNumber;
+  readonly stepId?: JourneyStepId;
+};
 type Go = (screen: PlaygroundScreen, params?: PlaygroundParams) => void;
 
 // playground fixture 전용 자리표시 번호입니다. 코드 검증 화면은 번호가 필수라
@@ -49,6 +54,13 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
+  "tutorial-practice": (go: Go, params: PlaygroundParams) => (
+    <SentenceOrderScreen
+      stepId={params.stepId ?? "greeting"}
+      onExit={() => go("journey-map")}
+      onFinish={() => go("journey-map")}
+    />
+  ),
   "tutorial-prologue": (go: Go) => (
     <EpisodePrologueScreen
       insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
@@ -96,10 +108,12 @@ export const playgroundScreens = {
   // ⚠ **표지를 끝낸 상태로 띄웁니다.** 표지가 미완료면 그 구획의 나머지 아홉이 전부
   // 잠겨(ADR-0024 D6) 완료·현재가 한 줄도 안 보입니다 — 이 놀이터가 보려던 것이
   // 통째로 사라집니다.
-  "journey-map": () => (
+  "journey-map": (go: Go) => (
     <JourneyMapScreen
       completedStepCount={1}
-      onStartStep={noop}
+      onStartStep={(id) => {
+        go("tutorial-practice", { stepId: id });
+      }}
       completedEpisodeIntroIds={["tutorial-intro"]}
       onStartEpisodeIntroUnit={noop}
       completedMessengerUnitIds={[]}

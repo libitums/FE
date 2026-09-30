@@ -17,6 +17,7 @@ import {
 import type { SpeechResult } from "../../lib/speech-recognition";
 import { canListen } from "../../lib/speaking-judge";
 import { LearningShell } from "../learning/LearningShell";
+import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import {
   initialSpeakingSessionState,
@@ -163,6 +164,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
       form="speaking"
       questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
+      complete={complete}
       instruction={copy.speaking.instruction}
       onExit={onExit}
       actionLabel={action?.label}
@@ -215,9 +217,10 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
           </view>
 
           {question == null ? (
-            <text className="speaking-screen-complete" data-testid="speaking-screen-complete">
-              {copy.common.allQuestionsDone}
-            </text>
+            <LearningActivityComplete
+              questionCount={questions.length}
+              testId="speaking-screen-complete"
+            />
           ) : (
             <>
               {/* 따라 말할 문장 — 판정 뒤에는 앞에서부터 맞게 말한 낱말이 주황으로, 나머지가

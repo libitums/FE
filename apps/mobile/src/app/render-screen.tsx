@@ -1,8 +1,9 @@
+import { learningPassCriterionForStep } from "./learning-assessment";
 // `Screen` 유니온을 화면 컴포넌트로 옮기는 `switch` 하나를 소유합니다. `never`
 // 망라가 여기 섭니다 — 값(`initialCompletedStepCount` · `journeyStepOrdinal` ·
 // `completeStep`)은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
 
-import { assessmentPassCriterion, judgeAssessment } from "../screens/assessment/assessment";
+import { judgeAssessment } from "../screens/assessment/assessment";
 import { CultureScreen } from "../screens/culture/CultureScreen";
 import { cultureNarrativeForStep } from "../screens/culture/culture";
 import { CultureQuizScreen } from "../screens/culture-quiz/CultureQuizScreen";
@@ -134,7 +135,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // 그 화면 안의 셋입니다(표식 · 제목 · 보상). 판정은 셸(`onFinishLearning`)과
     // 같은 순수 함수 · 같은 상수로 다시 냅니다. 연속 · 트로피는 규칙이 없어 0입니다.
     case "assessment": {
-      const verdict = judgeAssessment(screen.results, assessmentPassCriterion);
+      const verdict = judgeAssessment(screen.results, learningPassCriterionForStep(screen.stepId));
       return (
         <LessonCompleteScreen
           results={screen.results}

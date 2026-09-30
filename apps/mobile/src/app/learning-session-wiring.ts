@@ -1,3 +1,4 @@
+import { learningPassCriterionForStep } from "./learning-assessment";
 // 한 스텝의 학습 세션 콜백 넷을 만듭니다 — 시작 · 중도 이탈 · 활동 끝 · 평가 나가기.
 // `special-unit-wiring.ts`와 같은 갈래이고, 그쪽이 특별 유닛의 「연 순간 · 끝낸 순간」을
 // 지듯 이쪽은 **활동 여럿을 잇는 한 세션**을 집니다.
@@ -8,11 +9,7 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
-import {
-  assessmentCompletesStep,
-  assessmentPassCriterion,
-  judgeAssessment,
-} from "../screens/assessment/assessment";
+import { assessmentCompletesStep, judgeAssessment } from "../screens/assessment/assessment";
 import type { AnswerResult } from "../lib/answer-result";
 import {
   completeStep,
@@ -88,7 +85,7 @@ export function learningSessionWiring(args: LearningSessionWiringArgs) {
       clearSession();
       // 판정은 평가가 집니다 — `judgeAssessment` → `assessmentCompletesStep`. 셸에
       // `verdict === "passed"` 리터럴을 쓰지 않습니다.
-      const verdict = judgeAssessment(gathered, assessmentPassCriterion);
+      const verdict = judgeAssessment(gathered, learningPassCriterionForStep(id));
       if (assessmentCompletesStep(verdict)) {
         setCompletedStepCount((count) => completeStep(count, id));
       }

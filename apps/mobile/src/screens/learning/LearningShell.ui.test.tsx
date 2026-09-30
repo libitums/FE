@@ -44,10 +44,11 @@ test("[LS1-E] 진행이 하나의 접근성 요소로 이름을 낸다", () => {
   );
 });
 
-test("첫 활동에서는 채움 막대를 그리지 않는다", () => {
+test("첫 문항의 막대가 순번과 같은 진행률을 표시한다", () => {
   renderShell({ questionIndex: 0 });
 
-  expect(screen.queryByTestId("learning-shell-progress-fill")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-progress-fill")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute("data-progress", "25");
 });
 
 // 껍데기는 카드 안에 무엇이 서는지 모릅니다 — 받은 것을 그 자리에 그릴 뿐입니다.
@@ -430,4 +431,11 @@ test("[LS1-M] 문구표를 주입하면 문항이 없는 진행 이름이 header
     "accessibility-label",
     "⟦learningShell.headerNoQuestions⟧(Listening)",
   );
+});
+
+test("완료 화면은 추가 문항 없이 100%를 유지하고 지시문을 숨긴다", () => {
+  renderShell({ complete: true, questionIndex: 2, questionCount: 3 });
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 3 / 3");
+  expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute("data-progress", "100");
+  expect(screen.queryByTestId("learning-shell-instruction")).not.toBeInTheDocument();
 });

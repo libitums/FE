@@ -36,19 +36,24 @@ const tutorialUnits: JourneyEpisodeUnits = [
     steps: [
       {
         id: "greeting",
-        title: "First greetings",
-        description: "Greet someone for the first time at a café",
+        title: "Your First Hello",
+        description:
+          "Learn one greeting and say hello back, with meaning and pronunciation to help",
       },
       {
         id: "introduction",
         title: "Asking names",
-        description: "Ask someone's name and introduce yourself",
+        description: "Ask one simple question, with meaning and pronunciation to help",
       },
-      { id: "ordering", title: "Ordering", description: "Order a drink at a café" },
+      {
+        id: "ordering",
+        title: "Ordering",
+        description: "Ask for water by putting two pieces together",
+      },
       {
         id: "appointment",
         title: "Making plans",
-        description: "Set a date and time to meet again",
+        description: "Practice saying “See you tomorrow” with a model to help",
       },
     ],
   },
@@ -76,7 +81,7 @@ const tutorialUnits: JourneyEpisodeUnits = [
       {
         id: "directions",
         title: "Asking for directions",
-        description: "Ask the way to the meeting place",
+        description: "Put two pieces together to ask where the station is",
       },
     ],
   },

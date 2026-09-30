@@ -147,7 +147,7 @@
 /* 지시문 — 카드 밖 회색 한 줄입니다. 가로 텍스트라 `flex-shrink: 0`을 주지 않습니다. */
 .learning-shell-instruction {
   text-align: center;
-  color: var(--libitum-color-gray-400);
+  color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-l-font-family);
   font-weight: var(--libitum-typography-label-l-font-weight);
   font-size: var(--libitum-typography-label-l-font-size);
