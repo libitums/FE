@@ -17,8 +17,8 @@ export function renderMessengerCompleteScreen(
       results={screen.results}
       skippedCount={0}
       verdict="passed"
-      streakDays={0}
-      trophyCount={0}
+      streakDays={wiring.streakDays}
+      trophyCount={wiring.trophyCount}
       diamondCount={wiring.gemCount}
       reward={lessonRewardPlaceholder}
       onExit={wiring.onExitMessengerComplete}

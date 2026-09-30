@@ -16,6 +16,10 @@
   gap: var(--libitum-layout-gap-inline);
   flex-shrink: 0;
 }
+/* 정사각형 프로필을 원형 틀에 맞춥니다. */
+.phone-call-screen .call-stage-portrait {
+  height: 223px;
+}
 .phone-call-screen-exit {
   min-height: var(--libitum-spacing-48);
   flex-shrink: 0;

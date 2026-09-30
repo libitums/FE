@@ -55,7 +55,10 @@ import type {
   SupabaseIdTokenRequestBody,
   SupabasePkceTokenRequestBody,
 } from "./social-sign-in.contract";
-import { supabaseConfig } from "./supabase-config";
+import { isSuccessStatus, send } from "./supabase-transport";
+import type { AuthRequestOutcome } from "./supabase-transport";
+
+export { authRequestTimeoutMs } from "./supabase-transport";
 
 export {
   authSessionFrom,
@@ -65,9 +68,6 @@ export {
   sessionRefreshFailureFrom,
 } from "./auth-response";
 export { supabaseAuthPathFor, supabaseAuthRequest, supabaseAuthorizeUrl } from "./auth-request";
-
-/** 응답이 이 안에 안 오면 `network`입니다. */
-export const authRequestTimeoutMs = 10000;
 
 /**
  * PKCE 코드 교환입니다(`POST /auth/v1/token?grant_type=pkce`, 본문 `{ auth_code, code_verifier }`).
@@ -103,76 +103,6 @@ export const exchangeIdToken: ExchangeIdToken = async (
   );
   return sessionResult(outcome, "exchanged", pkceExchangeFailureFrom);
 };
-
-// ------------------------------------------------------------------ 전송
-
-// `globalThis.fetch` → `lynx.fetch` → 없음. 캐스팅은 `tsconfig`의 `lib`이 `ES2022`뿐이라
-// DOM의 `fetch` · `RequestInit` 선언이 없어서입니다(`storage.ts`의 `NativeModules`와 같은 근거).
-function resolveTransport(): HttpTransport | undefined {
-  const globalFetch = (globalThis as unknown as Record<string, unknown>)["fetch"];
-  if (typeof globalFetch === "function") {
-    return globalFetch as unknown as HttpTransport;
-  }
-  if (typeof lynx !== "undefined" && typeof lynx.fetch === "function") {
-    // 넘기는 값은 계약의 `HttpRequestInit`(문자열 헤더 · 본문)뿐이라 함수째 캐스팅합니다.
-    return lynx.fetch.bind(lynx) as unknown as HttpTransport;
-  }
-  return undefined;
-}
-
-type AuthRequestOutcome =
-  | { readonly ok: true; readonly status: number; readonly bodyText: string }
-  | { readonly ok: false; readonly reason: "network" | "unconfigured" };
-
-// 설정 확인 → 전송 함수 해석 → 전송과 제한 시간의 경주. **어떤 경우에도 던지지 않습니다.**
-async function send(
-  build: (config: SupabaseConfig) => { url: string; init: HttpRequestInit },
-  readBody: boolean,
-): Promise<AuthRequestOutcome> {
-  const config = supabaseConfig();
-  if (config === null) {
-    return { ok: false, reason: "unconfigured" };
-  }
-
-  const transport = resolveTransport();
-  if (transport === undefined) {
-    return { ok: false, reason: "network" };
-  }
-
-  const { url, init } = build(config);
-
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<AuthRequestOutcome>((resolve) => {
-    timeoutId = setTimeout(() => {
-      resolve({ ok: false, reason: "network" });
-    }, authRequestTimeoutMs);
-  });
-
-  const send = (async (): Promise<AuthRequestOutcome> => {
-    try {
-      const response = await transport(url, init);
-      // Lynx `fetch`는 연결 실패를 거부하지 않고 이 status로 돌려줍니다(#154 · ADR-0029 D12).
-      if (response.status === 0 || response.status === 499) {
-        return { ok: false, reason: "network" };
-      }
-      // 로그아웃 · 삭제는 상태 코드만 가르므로 본문을 읽지 않습니다.
-      const bodyText = readBody ? await response.text() : "";
-      return { ok: true, status: response.status, bodyText };
-    } catch {
-      return { ok: false, reason: "network" };
-    }
-  })();
-
-  const outcome = await Promise.race([send, timeout]);
-  if (timeoutId !== undefined) {
-    clearTimeout(timeoutId);
-  }
-  return outcome;
-}
-
-function isSuccessStatus(status: number): boolean {
-  return status >= 200 && status < 300;
-}
 
 // 세션을 내는 네 교환(검증 · 갱신 · PKCE · id_token)이 공유하는 결과 매핑입니다.
 // 2xx + 파싱 성공 → 세션, 파싱 실패 → `unavailable`, 그 밖 → 연산별 실패 판정.

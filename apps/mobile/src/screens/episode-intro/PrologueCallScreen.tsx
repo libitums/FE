@@ -53,6 +53,8 @@ export function PrologueCallScreen({
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState<PrologueCallVolume>(initialPrologueCallVolume);
   const [volumeOpen, setVolumeOpen] = useState(false);
+  const playbackOn = audioSource === undefined ? muted : paused;
+  const volumeOn = audioSource === undefined && volumeOpen;
   const handleBack = () => {
     "background only";
     stop();
@@ -178,7 +180,7 @@ export function PrologueCallScreen({
             <view className="prologue-call-screen-controls">
               <view
                 className={
-                  muted
+                  playbackOn
                     ? "prologue-call-screen-side prologue-call-screen-side-on"
                     : "prologue-call-screen-side"
                 }
@@ -187,7 +189,7 @@ export function PrologueCallScreen({
                     ? "prologue-call-screen-mute"
                     : "prologue-call-screen-playback"
                 }
-                data-on={muted ? "true" : "false"}
+                data-on={playbackOn ? "true" : "false"}
                 accessibility-element={true}
                 accessibility-traits="button"
                 accessibility-label={
@@ -202,7 +204,7 @@ export function PrologueCallScreen({
                 <svg
                   className="prologue-call-screen-side-icon"
                   content={audioSource === undefined ? mute : paused ? play : pause}
-                  current-color={muted ? color.white : color.gray[800]}
+                  current-color={playbackOn ? color.white : color.gray[800]}
                 />
               </view>
               <view
@@ -221,7 +223,7 @@ export function PrologueCallScreen({
               </view>
               <view
                 className={
-                  volumeOpen
+                  volumeOn
                     ? "prologue-call-screen-side prologue-call-screen-side-on"
                     : "prologue-call-screen-side"
                 }
@@ -230,7 +232,7 @@ export function PrologueCallScreen({
                     ? "prologue-call-screen-volume"
                     : "prologue-call-screen-replay"
                 }
-                data-on={volumeOpen ? "true" : "false"}
+                data-on={volumeOn ? "true" : "false"}
                 accessibility-element={true}
                 accessibility-traits="button"
                 accessibility-label={
@@ -247,7 +249,7 @@ export function PrologueCallScreen({
                 <svg
                   className="prologue-call-screen-side-icon"
                   content={audioSource === undefined ? slider : refresh}
-                  current-color={volumeOpen ? color.white : color.gray[800]}
+                  current-color={volumeOn ? color.white : color.gray[800]}
                 />
               </view>
             </view>

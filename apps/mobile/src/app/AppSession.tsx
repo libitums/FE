@@ -46,6 +46,7 @@ import type { Screen } from "./nav-state";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useOpenedPush } from "./use-opened-push";
+import { useJourneyProgress } from "./use-journey-progress";
 import type { AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 
@@ -107,24 +108,24 @@ export function AppSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // **진행(완료 스텝 수)의 진실의 출처입니다.** 스텝 상태는 여기서 파생되고(`stepStatusAt`),
-  // 데이터에도 `Nav`에도 적지 않습니다 — 진행은 라우팅 상태가 아닙니다(ADR-0007 D3).
-  // **영속하지 않습니다**(ADR-0007 D1 — 저장소에 넣는 것은 로그인 세션뿐입니다). 앱을 다시
-  // 켜면 진행이 `initialCompletedStepCount`로 돌아가는 것이 정상입니다.
-  const [completedStepCount, setCompletedStepCount] = useState(journeySeed.completedStepCount);
-  const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
-    readonly MessengerUnitId[]
-  >(journeySeed.completedMessengerUnitIds);
-  const [completedPhoneCallUnitIds, setCompletedPhoneCallUnitIds] = useState<
-    readonly PhoneCallUnitId[]
-  >(journeySeed.completedPhoneCallUnitIds);
-  const [visualNovelProgress, setVisualNovelProgress] = useState<VisualNovelProgress>(
-    journeySeed.visualNovelProgress,
-  );
-  // 끝낸 최종 테스트입니다. 에피소드의 마지막 항목이라, 이것까지 끝나야 롤플레이가 열립니다.
-  const [completedEpisodeFinalIds, setCompletedEpisodeFinalIds] = useState<
-    readonly EpisodeFinalUnitId[]
-  >(journeySeed.completedEpisodeFinalIds);
+  // **진행의 진실의 출처입니다**(스텝 · 특별 유닛 · 표지 · 최종 테스트). 스텝 상태는 여기서 파생되고(`stepStatusAt`),
+  // `Nav`에 적지 않습니다(ADR-0007 D3). ⟨2026-09-30⟩ **서버에 저장합니다**(ADR-0035) — 로그인 뒤 불러와 합치고
+  // 바뀔 때마다 저장합니다. 연속 학습 · 트로피도 이 훅이 냅니다.
+  const progress = useJourneyProgress(journeySeed, initialCompletedEpisodeIntroIds);
+  const {
+    completedStepCount,
+    setCompletedStepCount,
+    completedMessengerUnitIds,
+    setCompletedMessengerUnitIds,
+    completedPhoneCallUnitIds,
+    setCompletedPhoneCallUnitIds,
+    visualNovelProgress,
+    setVisualNovelProgress,
+    completedEpisodeFinalIds,
+    setCompletedEpisodeFinalIds,
+    completedEpisodeIntroIds,
+    setCompletedEpisodeIntroIds,
+  } = progress;
   // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
   // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.
   const [notifications, setNotifications] = useState<readonly NotificationItem[]>(notificationList);
@@ -139,12 +140,6 @@ export function AppSession({
   // 모양으로** 듭니다 — 건너뛰기가 있는 활동이 스텝의 어느 자리에 오든 수가 새지
   // 않게 하려면 둘이 함께 만들어지고 함께 버려져야 합니다.
   const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
-  // 끝낸 표지 유닛입니다. 다른 특별 유닛의 완료 목록과 같은 축입니다(ADR-0024 D6) —
-  // 「봤다」가 아니라 「끝냈다」이고, 세는 것도 에피소드가 아니라 유닛입니다.
-  // **영속하지 않습니다**(ADR-0007 D1) — 앱을 다시 켜면 표지가 다시 섭니다.
-  const [completedEpisodeIntroIds, setCompletedEpisodeIntroIds] = useState<
-    readonly EpisodeIntroUnitId[]
-  >(initialCompletedEpisodeIntroIds);
   // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
   // 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
   const [gemCount] = useState(initialGemCount);
@@ -211,6 +206,9 @@ export function AppSession({
     roleplaySections,
     entryLanguage,
     setEntryLanguage,
+    streakDays: progress.streakDays,
+    trophyCount: progress.trophyCount,
+    syncProgress: progress.syncFromServer,
   });
 
   // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼
@@ -256,8 +254,10 @@ export function AppSession({
               여백이 집니다. 지표는 아직 규칙이 없어 0입니다. */}
             {showsNavigator ? (
               <AppHeader
-                streakDays={0}
-                trophyCount={0}
+                streakDays={progress.streakDays}
+                trophyCount={progress.trophyCount}
+                celebrateStreak={progress.streakCelebration}
+                onStreakCelebrated={progress.onStreakCelebrated}
                 gemCount={gemCount}
                 obscured={screenLayerOpen}
                 onOpenNotifications={wiring.onOpenNotifications}

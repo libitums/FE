@@ -2,7 +2,7 @@ import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { Button } from "@libitums/ui-lynx/button";
 import { CallCaller, CallLineBubble } from "../../components/CallCaller";
-import { artworkFor } from "../visual-novel/visual-novel-artwork";
+import minseoProfile from "../../assets/characters/minseo-profile.jpg";
 import { useEffect, useState } from "@lynx-js/react";
 import { playAudio, stopAudio } from "../../lib/audio";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
@@ -126,7 +126,7 @@ export function PhoneCallScreen({
             <CallCaller
               key={replayKey}
               callerName={conversation.turns[0].speakerName}
-              callerPortrait={artworkFor(`${conversation.turns[0].speakerId}-neutral`).source}
+              callerPortrait={minseoProfile}
               clockRunning={
                 session.mode === "playing" ||
                 session.mode === "reply-ready" ||
@@ -172,14 +172,14 @@ export function PhoneCallScreen({
               </view>
             ))}
           </view>
+          {session.mode === "completed" && conversation.completion ? (
+            <text className="phone-call-story-context" data-testid="phone-call-story-completion">
+              {conversation.completion}
+            </text>
+          ) : null}
         </view>
       </scroll-view>
       <view className="phone-call-screen-actions">
-        {session.mode === "completed" && conversation.completion ? (
-          <text className="phone-call-story-context" data-testid="phone-call-story-completion">
-            {conversation.completion}
-          </text>
-        ) : null}
         {playLabel ? (
           <view
             className="phone-call-audio-button"
