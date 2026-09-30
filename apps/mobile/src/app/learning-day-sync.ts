@@ -53,9 +53,9 @@ export function createLearningDaySync(
       .finally(() => {
         running = null;
         if (!isCurrent()) return;
-        if (succeeded && pending.length === 0) {
+        if (succeeded) {
           retryAttempt = 0;
-          return;
+          if (pending.length === 0) return;
         }
         retryTimer = setTimeout(
           () => {

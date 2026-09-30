@@ -4,6 +4,7 @@ import { saveAuthSession, clearAuthSession } from "../lib/auth-session";
 import { localDayFrom } from "../lib/progress-api";
 import { useJourneyProgress } from "./use-journey-progress";
 import { productJourneySeed } from "./journey-progress";
+import { createLearningDaySync } from "./learning-day-sync";
 
 const store = new Map<string, string>();
 const key = (user: string) => `libitum.learning-days.pending.${user}`;
@@ -191,4 +192,24 @@ test("손상된 항목과 중복은 제외하고 유효한 날짜만 복구한�
   await boot();
   expect(requests[0].p_days).toEqual(["2026-09-20"]);
   expect(store.has(key("a"))).toBe(false);
+});
+
+test("연결 복구 직후 새 날짜가 생기면 이전 실패 대기 시간을 이어받지 않는다", async () => {
+  const days = createLearningDaySync("a", () => {
+    vi.setSystemTime(new Date(2026, 8, 26, 12));
+    response = async () => ({ status: 503, body: "" });
+    void days.record("2026-09-26");
+  });
+  try {
+    await days.record("2026-09-25");
+    await vi.advanceTimersByTimeAsync(1_000);
+    response = async () => ({ status: 200, body: "1" });
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(requests).toHaveLength(3);
+    expect(JSON.parse(store.get(key("a"))!)).toEqual(["2026-09-26"]);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(requests).toHaveLength(4);
+  } finally {
+    days.dispose();
+  }
 });
