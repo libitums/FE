@@ -16,6 +16,10 @@ import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
+// 제목을 내는 것은 **채워진** 구획뿐입니다 — 준비 중 구획은 아래가 가려져 읽을 내용이
+// 없어 축에 오르지 않습니다.
+const filledSections = journeyMapSections.filter((section) => section.episode.kind === "filled");
+
 const completedIntros = ["tutorial-intro"] as const;
 
 // 이 파일이 무엇을 위해 있나: `ui`(`CultureScreen.ui.test.tsx`의 `[X9]`)는 문화
@@ -331,16 +335,21 @@ test("[I3] 제목 축 닫힌 집합이 상태 notifications에서 계약이 고�
 });
 
 // 2026-09-27: 맵의 화면 제목 줄이 걷혔습니다. 이 상태에서 제목 축에 오르는 것은
-// 에피소드 헤더 카드이고, 에피소드마다 하나씩입니다 — 기댓값을 리터럴로 적지 않고
-// 데이터(`journeyMapSections`)에서 뽑습니다. 에피소드가 늘면 이 테스트는 늘어난
+// 에피소드 헤더 카드이고, **채워진** 에피소드마다 하나씩입니다 — 기댓값을 리터럴로 적지
+// 않고 데이터(`journeyMapSections`)에서 뽑습니다. 에피소드가 늘면 이 테스트는 늘어난
 // 만큼을 기대하지, 빨개지지 않습니다.
+//
+// ⟨2026-09-29⟩ **준비 중 에피소드는 제목을 내지 않습니다.** 그 구획은 아래가 가려져
+// **읽을 내용이 없고**, 구획 전체가 낭독 요소 하나(`Episode 1. Customs., 준비 중`)입니다.
+// 제목은 뒤따르는 내용이 있을 때 제목이라(ADR-0016 D4), 여기에 제목을 주면 아무 데도
+// 데려가지 못하는 머리말이 축에 섭니다.
 test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정한 목록과 정확히 같다", async () => {
   const { container } = await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(journeyMapSections.map(() => "ui-lynx-episode-header"));
+  expect(headingAxis(container)).toEqual(filledSections.map(() => "ui-lynx-episode-header"));
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고정한 목록과 정확히 같다", async () => {
@@ -378,7 +387,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 �
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual([
-    ...journeyMapSections.map(() => "ui-lynx-episode-header"),
+    ...filledSections.map(() => "ui-lynx-episode-header"),
     "step-sheet-title",
   ]);
 });
