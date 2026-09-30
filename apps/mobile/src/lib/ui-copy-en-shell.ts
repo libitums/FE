@@ -53,6 +53,8 @@ export const journeyMapEn: JourneyMapCopy = {
     `${completed}/${total} ${total === 1 ? "activity" : "activities"}`,
   activityProgressLabel: (completed, total) =>
     `${completed} of ${n(total, "activity", "activities")} done`,
+  episodePendingLabel: "COMING SOON",
+  episodePending: (label, title) => `${label} ${title}, coming soon`,
   statModal: {
     streakHero: (days) => `${days}-day streak`,
     episodesClearedHero: (count) => `${n(count, "episode", "episodes")} cleared`,

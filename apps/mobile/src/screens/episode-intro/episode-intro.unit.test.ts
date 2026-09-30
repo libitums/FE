@@ -32,7 +32,13 @@ const finalUnit = {
 // 타입이 요구하는 최소 튜플만 채우고, 갈림은 `items`로만 줍니다.
 function section(title: string, items: readonly JourneyMapItem[]): JourneyMapSection {
   return {
-    episode: { id: "tutorial", label: "Episode 0.", title, units: [introUnit, finalUnit] },
+    episode: {
+      kind: "filled",
+      id: "tutorial",
+      label: "Episode 0.",
+      title,
+      units: [introUnit, finalUnit],
+    },
     items,
   };
 }

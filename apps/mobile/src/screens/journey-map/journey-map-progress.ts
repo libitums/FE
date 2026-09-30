@@ -45,6 +45,27 @@ export function stepAccessibilityLabel(
   return `${title}, ${copy.journeyMap.stepStatus[status]}`;
 }
 
+/**
+ * 준비 중 구획의 접근성 이름입니다. 형태가 `${이름}, ${상태낱말}`로 저장소 전체와 같습니다
+ * (ADR-0016 D3) — 바로 위 `stepAccessibilityLabel`의 `, locked`와 **같은 부호·같은 자리**
+ * 입니다.
+ *
+ * 이름 부분이 `${label} ${title}`인 것은 롤플레이 구획 머리와 같습니다 — 두 줄을 따로
+ * 두면 `Episode 1.`과 이름이 **두 번 멈춰** 읽힙니다.
+ *
+ * ⚠ **낱말을 여기서 짓지 않고 문구표에서 받습니다.** 처음에는 보이는 문구를 영문으로,
+ * 낭독을 한국어로 갈랐는데 **이 앱에 한국어 UI 언어가 없습니다** — 영어가 기준이고 다른
+ * 언어가 그것을 덮습니다(`ui-copy.ts`). 낭독만 한국어로 두면 영어 부팅에서 한글이 혼자
+ * 남습니다.
+ */
+export function episodePendingAccessibilityLabel(
+  label: string,
+  title: string,
+  copy: UiCopy,
+): string {
+  return copy.journeyMap.episodePending(label, title);
+}
+
 export function findStep(
   steps: readonly JourneyStep[],
   id: JourneyStepId,

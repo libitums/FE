@@ -1,0 +1,92 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
+
+/* 에피소드 사이를 가르는 연한 가로 선입니다. 면을 칠하지 않고 선 하나만 둡니다 —
+   「여기서 다른 에피소드가 시작한다」만 말하면 되고, 띠를 깔면 그 자체가 내용처럼
+   읽힙니다.
+
+   높이가 아니라 `border-top`인 것은 1px보다 얇은 선을 기기 배율대로 그리기 위해서입니다. */
+.episode-pending-divider {
+  align-self: stretch;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-disabled);
+  /* 위아래로 크게 벌립니다. 선이 **에피소드가 갈리는 자리**를 말하므로, 앞 에피소드의
+     마지막 유닛과 다음 머리 카드 어느 쪽에도 붙으면 안 됩니다 — 붙으면 그 유닛의
+     밑줄처럼 읽힙니다. */
+  margin: var(--libitum-spacing-64) 0 var(--libitum-spacing-48);
+}
+
+/* 머리 카드입니다. 표면을 **에피소드 헤더와 같은 토큰**으로 맞춥니다 — 위아래로 나란히
+   서는 두 카드의 면이 다르면 형제로 안 읽힙니다.
+
+   `ui-lynx`의 `EpisodeHeader`를 쓰지 않는 이유는 그 계약이 `totalUnitCount`에 0을
+   거부하기 때문입니다(`must be a positive integer`). 진행이 없는 에피소드는 그 컴포넌트가
+   지는 모양이 아니고, 그 하나 때문에 디자인 시스템을 고치지 않습니다. */
+.episode-pending-card {
+  display: flex;
+  width: 151px;
+  align-self: flex-start;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-12);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-disabled);
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+}
+
+.episode-pending-card-label {
+  width: 100%;
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 이름은 헤더와 같은 accent/chapter이되 색이 `brand-primary`가 아니라 `fg-neutral`입니다 —
+   아직 갈 수 없는 자리라 브랜드 색으로 부르면 「눌러 보라」로 읽힙니다. 채도가 아니라
+   **역할**이 다른 것을 색이 말합니다. */
+.episode-pending-card-title {
+  width: 100%;
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+  font-family: var(--libitum-typography-accent-chapter-font-family);
+  font-size: var(--libitum-typography-accent-chapter-font-size);
+  font-weight: var(--libitum-typography-accent-chapter-font-weight);
+  line-height: var(--libitum-typography-accent-chapter-line-height);
+  letter-spacing: var(--libitum-typography-accent-chapter-letter-spacing);
+}
+
+/* 가려진 표식이 서는 자리입니다. **흐리게** 그려 「있긴 한데 아직 아니다」를 말합니다 —
+   `Fog`를 겹치는 대신 이 방법을 쓰는 이유는 컴포넌트 주석에 적었습니다(스크롤 내용 안에서는
+   겹침 레이어가 안 그려집니다).
+
+   0.28은 자물쇠의 윤곽이 **겨우 읽히는** 값입니다 — 더 낮추면 자리만 남고 「유닛이 올
+   곳」이라는 것이 안 읽히고, 더 높이면 잠긴 유닛과 구별되지 않아 「눌러 봐도 되나」가
+   됩니다. */
+.episode-pending-veil {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0.28;
+  /* 아래를 크게 비웁니다. **자리를 차지하는 것 자체가 뜻입니다** — 「에피소드 하나가
+     통째로 올 자리」라고 말하고, 동시에 **머리 카드가 교체될 만큼 스크롤 여유**를
+     만듭니다. */
+  margin-bottom: var(--libitum-spacing-80);
+}
+
+/* 문구입니다. 가려진 표식 **아래**에 섭니다 — 안개가 짙어지는 쪽 끝이라 「여기서 끊기고
+   그다음은 아직」으로 읽힙니다. 겹쳐 얹지 않는 이유는 표식을 가리면 「더 있다」는 신호
+   자체가 약해지기 때문입니다. */
+.episode-pending-caption {
+  /* 문구 아래로도 한 화면 가까이 비웁니다 — 위 `margin-bottom`과 같은 이유입니다. */
+  margin-bottom: 320px;
+  color: var(--libitum-color-fg-neutral-subtle);
+  text-align: center;
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}

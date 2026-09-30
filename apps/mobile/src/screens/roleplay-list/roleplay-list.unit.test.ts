@@ -237,7 +237,13 @@ function journeySection(
   items: readonly JourneyMapItem[],
 ): JourneyMapSection {
   return {
-    episode: { id: id as JourneyEpisodeId, label, title, units: [introUnit, finalUnit] },
+    episode: {
+      kind: "filled",
+      id: id as JourneyEpisodeId,
+      label,
+      title,
+      units: [introUnit, finalUnit],
+    },
     items,
   };
 }

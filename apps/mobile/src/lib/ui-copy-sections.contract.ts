@@ -83,6 +83,10 @@ export type JourneyMapCopy = {
   readonly activityCount: (completed: number, total: number) => string;
   /** 진행의 접근성 이름 — `n of N`(보이는 `n/N`은 분수로 읽힌다). */
   readonly activityProgressLabel: (completed: number, total: number) => string;
+  /** 아직 유닛이 없는 에피소드 구획에 **보이는** 문구입니다. */
+  readonly episodePendingLabel: string;
+  /** 같은 구획의 접근성 이름입니다 — `${이름}, ${상태낱말}`로 스텝·롤플레이와 같은 자리입니다. */
+  readonly episodePending: (label: string, title: string) => string;
   readonly statModal: {
     readonly streakHero: (days: number) => string;
     readonly episodesClearedHero: (count: number) => string;
