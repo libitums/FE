@@ -41,6 +41,7 @@
 		2B94A3DD2D66149800608938 /* Resource in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608939 /* Resource */; };
 		2BE49E032D7720F0000D068C /* main.lynx.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 2BE49E022D7720F0000D068C /* main.lynx.bundle */; };
 		63972E0D34F86B0706325BCE /* libPods-Host.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B67B2104D0445A811952B8 /* libPods-Host.a */; };
+		A030C0DE0000000000000012 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A030C0DE0000000000000011 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -85,6 +86,7 @@
 		61CE2062BA0F77A3DF32F268 /* Pods-Host.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Host.release.xcconfig"; path = "Target Support Files/Pods-Host/Pods-Host.release.xcconfig"; sourceTree = "<group>"; };
 		72043EE1F9E3529358168057 /* Pods-Host.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Host.debug.xcconfig"; path = "Target Support Files/Pods-Host/Pods-Host.debug.xcconfig"; sourceTree = "<group>"; };
 		C4B67B2104D0445A811952B8 /* libPods-Host.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Host.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A030C0DE0000000000000011 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +135,7 @@
 				2B94A3DC2D66149800608980 /* fonts */,
 				2B94A3D32D6613740060892C /* LaunchScreen.storyboard */,
 				2B94A3D62D6613740060892C /* Info.plist */,
+				A030C0DE0000000000000011 /* PrivacyInfo.xcprivacy */,
 				2B94A3DC2D6614980060892C /* TemplateProvider.swift */,
 				2B94A3DC2D6614980060892D /* StorageModule.swift */,
 				2B94A3DC2D6614980060892E /* AudioPlaybackModule.swift */,
@@ -250,6 +253,7 @@
 				2B94A3DD2D66149800608938 /* Resource in Resources */,
 				2B94A3DD2D6614980060892F /* audio in Resources */,
 				2B94A3DD2D66149800608981 /* fonts in Resources */,
+				A030C0DE0000000000000012 /* PrivacyInfo.xcprivacy in Resources */,
 				2B94A3D22D6613740060892C /* Assets.xcassets in Resources */,
 				2B94A3D52D6613740060892C /* Base in Resources */,
 				2B94A3D02D6613730060892C /* Base in Resources */,
