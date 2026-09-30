@@ -86,6 +86,8 @@ export const playgroundScreens = {
         return Promise.resolve<PhoneOtpRequestResult>({ status: "sent" });
       }}
       onBack={() => go("onboarding")}
+      // 플레이그라운드에는 호스트가 없어 문서를 열지 않습니다.
+      onOpenLegalDocument={() => undefined}
     />
   ),
   "verification-code": (go: Go, params: PlaygroundParams) => (

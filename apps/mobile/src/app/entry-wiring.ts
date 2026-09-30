@@ -2,7 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
-import type { AnalyticsIdentify } from "../lib/analytics.contract";
+import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import { refreshAuthSession, requestPhoneOtp, verifyPhoneOtp } from "../lib/api-client";
 import {
   clearAuthSession,
@@ -12,6 +12,8 @@ import {
   sessionRefreshDisposition,
 } from "../lib/auth-session";
 import { authUserIdFrom } from "../lib/auth-user-id";
+import { legalDocumentOpenedEvent, openLegalDocument } from "../lib/legal-document";
+import type { LegalDocument } from "../lib/legal-document.contract";
 import {
   entryCompletedEvent,
   entryLoginMethodSelectedEvent,
@@ -35,7 +37,7 @@ import { entryScreenAfterLogin } from "./screen-routing";
 
 export type EntryWiringArgs = {
   readonly entryEventSink: EntryEventSink;
-  readonly analyticsIdentify: AnalyticsIdentify | null;
+  readonly analyticsUser: AnalyticsUser | null;
   readonly dispatch: Dispatch<NavAction>;
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
@@ -43,7 +45,7 @@ export type EntryWiringArgs = {
 
 export function entryWiring({
   entryEventSink,
-  analyticsIdentify,
+  analyticsUser,
   dispatch,
   entryLanguage,
   setEntryLanguage,
@@ -56,7 +58,7 @@ export function entryWiring({
     const userId = authUserIdFrom(session.accessToken);
     if (userId === null) return;
     try {
-      analyticsIdentify?.(userId);
+      analyticsUser?.identify(userId);
     } catch {
       // 분석은 화면을 막지 않습니다.
     }
@@ -156,6 +158,11 @@ export function entryWiring({
       return result;
     },
     // 로그인의 뒤로가기입니다 — 진입 구간 스택에서 한 칸 뒤(온보딩)로 갑니다.
+    // 로그인 안내의 방침 · 약관입니다 — 이벤트 → 앱 위 브라우저(ADR-0033). 화면은 그대로입니다.
+    onOpenLegalDocument: (document: LegalDocument) => {
+      entryEventSink?.(legalDocumentOpenedEvent(document, "login"));
+      openLegalDocument(document);
+    },
     onLoginBack: () => {
       dispatch({ type: "back" });
     },

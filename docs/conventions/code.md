@@ -32,6 +32,18 @@ apps/mobile/src/
 - 문서는 `docs/` 아래, 산출물은 그것을 만든 앱 안(`apps/mobile/dist/`)
   ([ADR-0003 D4](../adr/0003-workspace-and-directory-structure.md)).
 - 스크립트 디렉터리를 만들지 않는다. `package.json`의 `scripts`로 충분하다.
+- **서버 함수 앱은 `apps/supabase-functions`다** — Supabase Edge Function이고 Lynx와 무관하다
+  ([ADR-0032 D1](../adr/0032-account-sign-out-and-deletion.md)). 함수 하나가 폴더 하나다.
+
+  ```text
+  apps/supabase-functions/supabase/functions/
+    <함수 이름>/index.ts   Deno 진입. 환경을 읽어 핸들러에 넘기는 것이 전부다
+    _shared/              런타임 중립 TypeScript — 로직 · 계약 · 테스트는 전부 여기
+  ```
+
+  `_shared/`는 `fetch` · `Request` · `Response` · WebCrypto 같은 웹 표준만 쓰고 Node 전역(`Buffer` ·
+  `process`)을 쓰지 않는다 — `tsconfig`의 `types: []`가 막는다. `Deno`는 `index.ts`에서만 부른다.
+  앱(`apps/mobile`)과 코드를 나누지 않는다 — 같은 모양이 필요하면 양쪽 계약 파일에 따로 적는다.
 
 ## 네이밍
 
@@ -49,6 +61,9 @@ apps/mobile/src/
 | `data-testid`       | `블록-역할`. 클래스 블록과 **같은 접두사**를 쓰고 축약하지 않는다                  | `settings-screen-title`                         |
 | 상대 import         | **확장자를 붙이지 않는다**                                                         | `./SettingsScreen` (`./SettingsScreen.js` 아님) |
 
+- **상대 import 확장자의 예외 하나 — Deno.** `apps/supabase-functions/supabase/functions/**`는 **`.ts`를
+  붙인다**(`./base64.ts`). Deno가 확장자 없는 경로를 풀지 않기 때문이고, tsc는
+  `allowImportingTsExtensions`로 받는다. 그 밖은 표대로 붙이지 않는다.
 - **테스트 파일은 소스와 같은 폴더에 둔다.** `test/` 트리를 만들지 않는다 — 계층은
   파일명이 가른다.
 - `data-testid`는 **테스트가 실제로 질의하는 요소에만** 붙인다.
@@ -488,6 +503,11 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   **규칙은 한 글자도 안 바뀐다** — 어느 화면을 여는지는 여전히 데이터가 정하고 셸에 사슬이
   없다. 배정이 무엇을 기다리는지는 `docs/adr/README.md` 보류 표의
   「스텝별 학습형 배정」 행.
+- **앱 구간을 떠나는 것(로그아웃 · 계정 삭제)은 App 세션 재시작이다 — `NavAction`이 아니다.** 바깥
+  `App`(`src/app/App.tsx`)은 `AppStart`(key · 첫 `Nav`) 하나만 쥐고, 결선이 `onLeaveApp`을 부르면 key가 올라
+  몸통 `AppSession`이 처음 값으로 다시 선다. App 상태를 하나씩 되돌리는 코드를 쓰지 않는다 — 새 `useState`가
+  생겨도 빠뜨릴 자리가 없게 하려는 것이다. 새 App 상태는 `AppSession`에 둔다
+  ([ADR-0032 D6](../adr/0032-account-sign-out-and-deletion.md) · ADR-0007 D3).
 - **에러 경계**: 루트에 하나뿐이다. 네트워크 실패는 여기로 올리지 않고 화면 안에서 재시도한다.
 - 모든 화면에 **화면 내 back 수단**을 둔다. 하드웨어 뒤로가기에만 의존하지 않는다.
 - **나가는 수단은 라벨이 가리키는 곳으로 간다 — 스택 깊이로 목적지를 맞추지 않는다.**
@@ -596,7 +616,8 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   import하지 않고 자기 fixture를 쓴다.
 
 - **`profile-items.ts`의 프로필 항목 셋과 `terms-sections.ts`의 약관 절 넷 — 넷을 한
-  모듈씩 진다** ⟨2026-09-16, LIB-259⟩. 둘 다 표를 **export하지 않고** 조회 함수 하나
+  모듈씩 진다** ⟨2026-09-16, LIB-259⟩. ⟨2026-09-30⟩ `terms-sections.ts`는 지워졌다
+  ([ADR-0033](../adr/0033-legal-documents-in-app-browser.md)) — 약관 쪽 서술은 당시 기록이다. 둘 다 표를 **export하지 않고** 조회 함수 하나
   (`profileItems()` · `termsSections()`)만 내보내고, 값 타입의 필드가 전부 필수다.
   **갈리는 것은 「무엇이 임시인가」의 범위다** — 프로필은 **`value` 셋만** 임시이고
   (`id`·`label`과 항목이 셋이라는 것은 임시가 아니다), 약관은 **문구만** 임시이며

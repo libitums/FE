@@ -57,7 +57,7 @@ root.render(
       settingsEventSink={analytics.sinks.settingsEventSink}
       entryEventSink={analytics.sinks.entryEventSink}
       episodeIntroEventSink={analytics.sinks.episodeIntroEventSink}
-      analyticsIdentify={analytics.identify}
+      analyticsUser={analytics.user}
     />
   </GlobalPropsProvider>,
 );

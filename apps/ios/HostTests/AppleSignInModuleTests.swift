@@ -14,42 +14,80 @@ final class AppleSignInModuleTests: XCTestCase {
 
   // completed면 identityToken이 UTF-8 문자열 그대로 서고, 키가 정확히 둘이어야 한다.
   func testAH1PayloadCompletedCarriesIdentityTokenAndExactlyTwoKeys() {
-    let payload = AppleSignInPayload.make(identityToken: Data("eyJ.a.b".utf8), error: nil)
+    let payload = AppleSignInPayload.make(
+      identityToken: Data("eyJ.a.b".utf8), authorizationCode: nil, error: nil)
 
     XCTAssertEqual(payload["status"] as? String, "completed")
     XCTAssertEqual(payload["identityToken"] as? String, "eyJ.a.b")
     XCTAssertEqual(Set(payload.keys), ["status", "identityToken"])
   }
 
+  // AH1b — 토큰과 코드가 함께 오면 authorizationCode가 UTF-8 문자열로 실리고 키가 정확히 셋이다.
+  func testAH1bPayloadWithCodeCarriesAuthorizationCodeAndExactlyThreeKeys() {
+    let payload = AppleSignInPayload.make(
+      identityToken: Data("eyJ.a.b".utf8), authorizationCode: Data("c1".utf8), error: nil)
+
+    XCTAssertEqual(payload["status"] as? String, "completed")
+    XCTAssertEqual(payload["identityToken"] as? String, "eyJ.a.b")
+    XCTAssertEqual(payload["authorizationCode"] as? String, "c1")
+    XCTAssertEqual(Set(payload.keys), ["status", "identityToken", "authorizationCode"])
+  }
+
+  // AH1c — 빈 코드 · UTF-8이 아닌 코드는 키를 싣지 않고, 코드가 있어도 토큰 없음 · 오류 판정은 불변이다.
+  func testAH1cPayloadIgnoresUnusableCodeAndKeepsErrorPrecedence() {
+    for code in [Data(), Data([0xff, 0xfe])] {
+      let payload = AppleSignInPayload.make(
+        identityToken: Data("eyJ.a.b".utf8), authorizationCode: code, error: nil)
+      XCTAssertEqual(payload["status"] as? String, "completed")
+      XCTAssertNil(payload["authorizationCode"])
+      XCTAssertEqual(Set(payload.keys), ["status", "identityToken"])
+    }
+
+    let noToken = AppleSignInPayload.make(
+      identityToken: nil, authorizationCode: Data("c1".utf8), error: nil)
+    XCTAssertEqual(noToken["status"] as? String, "failed")
+
+    let canceled = AppleSignInPayload.make(
+      identityToken: nil, authorizationCode: Data("c1".utf8),
+      error: ASAuthorizationError(.canceled))
+    XCTAssertEqual(canceled["status"] as? String, "cancelled")
+
+    let failed = AppleSignInPayload.make(
+      identityToken: Data("eyJ.a.b".utf8), authorizationCode: Data("c1".utf8),
+      error: NSError(domain: "test.host", code: 1))
+    XCTAssertEqual(failed["status"] as? String, "failed")
+    XCTAssertNil(failed["authorizationCode"])
+  }
+
   // 토큰 없음 · 빈 Data · UTF-8이 아닌 바이트는 failed다.
   func testAH2PayloadWithoutUsableTokenIsFailed() {
     XCTAssertEqual(
-      AppleSignInPayload.make(identityToken: nil, error: nil)["status"] as? String, "failed")
+      AppleSignInPayload.make(identityToken: nil, authorizationCode: nil, error: nil)["status"] as? String, "failed")
     XCTAssertEqual(
-      AppleSignInPayload.make(identityToken: Data(), error: nil)["status"] as? String, "failed")
+      AppleSignInPayload.make(identityToken: Data(), authorizationCode: nil, error: nil)["status"] as? String, "failed")
     XCTAssertEqual(
-      AppleSignInPayload.make(identityToken: Data([0xff, 0xfe]), error: nil)["status"] as? String,
+      AppleSignInPayload.make(identityToken: Data([0xff, 0xfe]), authorizationCode: nil, error: nil)["status"] as? String,
       "failed")
   }
 
   // canceled만 cancelled, 나머지 코드 · 임의 NSError는 failed, 토큰과 오류가 둘 다 있으면 오류가 앞선다.
   func testAH3PayloadMapsCanceledAndOtherErrors() {
     let canceled = AppleSignInPayload.make(
-      identityToken: nil, error: ASAuthorizationError(.canceled))
+      identityToken: nil, authorizationCode: nil, error: ASAuthorizationError(.canceled))
     XCTAssertEqual(canceled["status"] as? String, "cancelled")
 
     let others: [ASAuthorizationError.Code] = [.failed, .unknown, .invalidResponse, .notHandled]
     for code in others {
-      let payload = AppleSignInPayload.make(identityToken: nil, error: ASAuthorizationError(code))
+      let payload = AppleSignInPayload.make(identityToken: nil, authorizationCode: nil, error: ASAuthorizationError(code))
       XCTAssertEqual(payload["status"] as? String, "failed", "\(code) — failed가 아니다")
     }
 
     let arbitrary = AppleSignInPayload.make(
-      identityToken: nil, error: NSError(domain: "test.host", code: 1))
+      identityToken: nil, authorizationCode: nil, error: NSError(domain: "test.host", code: 1))
     XCTAssertEqual(arbitrary["status"] as? String, "failed")
 
     let both = AppleSignInPayload.make(
-      identityToken: Data("eyJ.a.b".utf8), error: ASAuthorizationError(.canceled))
+      identityToken: Data("eyJ.a.b".utf8), authorizationCode: nil, error: ASAuthorizationError(.canceled))
     XCTAssertEqual(both["status"] as? String, "cancelled")
   }
 

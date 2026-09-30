@@ -85,6 +85,50 @@ describe("Dialog contract", () => {
     );
   });
 
+  test("UDL1 로딩 액션과 비활성 액션 조합은 던지지 않고 취소 경로가 없다", () => {
+    const contract = getDialogContract({
+      title: "계정을 삭제할까요?",
+      actions: [
+        { id: "a", label: "삭제", loading: true },
+        { id: "b", label: "취소", disabled: true },
+      ],
+      bindaction: () => undefined,
+    });
+    expect(contract.cancelActionId).toBeNull();
+  });
+
+  test("UDL2 누를 수도 로딩 중도 아닌 액션뿐이면 새 메시지로 던진다", () => {
+    expect(() =>
+      getDialogContract({
+        title: "제목",
+        actions: [
+          { id: "a", label: "A", disabled: true },
+          { id: "b", label: "B", disabled: true },
+        ],
+        bindaction: () => undefined,
+      }),
+    ).toThrow("Dialog requires at least one interactive or loading action");
+  });
+
+  test("UDL3 로딩 없는 한 · 두 액션은 마지막 id가 취소 경로이고 변형이 그대로다", () => {
+    const one = getDialogContract({
+      title: "제목",
+      actions: [{ id: "a", label: "A" }],
+      bindaction: () => undefined,
+    });
+    expect(one.cancelActionId).toBe("a");
+    const two = getDialogContract({
+      title: "제목",
+      actions: [
+        { id: "a", label: "A" },
+        { id: "b", label: "B" },
+      ],
+      bindaction: () => undefined,
+    });
+    expect(two.cancelActionId).toBe("b");
+    expect(two.actions.map((action) => action.variant)).toEqual(["brand", "subtle"]);
+  });
+
   test("제품 결정의 white surface와 원본 radius, spacing, elevation, motion 토큰을 사용한다", () => {
     const styles = readFileSync(resolve(process.cwd(), "src/dialog/dialog.css"), "utf8");
     expect(styles).toContain("var(--libitum-elevation-z-dialog)");

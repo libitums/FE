@@ -1,0 +1,5 @@
+# Supabase CLI가 요구하는 로컬 식별자다(원격 프로젝트 ref가 아니다 — ref는 `supabase link`가 정한다).
+project_id = "duru"
+
+[functions.delete-account]
+verify_jwt = false

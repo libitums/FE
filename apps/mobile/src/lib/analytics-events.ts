@@ -24,7 +24,7 @@ export const noAnalyticsEventSinks: AnalyticsEventSinks = {
 
 export const noAnalyticsSession: AnalyticsSession = {
   sinks: noAnalyticsEventSinks,
-  identify: null,
+  user: null,
 };
 
 export const analyticsEventSinksFrom: AnalyticsEventSinksFrom = (client) => {
