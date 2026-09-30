@@ -47,3 +47,7 @@ iPhone 17 Pro / iOS 26.5 개발 playground에서 7번과 완료 후 맵 복귀�
 2026-10-01 iPhone 13 mini / iOS 26.6.2 확인: 사용자 확인으로 Skip 겹침이 해소됐다. 마이크·음성 인식 권한과 한국어 인식기 가용 상태는 정상이었지만, 시작 186ms 뒤 입력 버퍼 0개로 `kLSRErrorDomain/201`이 반환됐다. [Apple 문서](https://developer.apple.com/documentation/speech/sfspeechrecognitiontask/error)는 이 값을 Siri 또는 받아쓰기 비활성화로 정의한다. 사용자가 받아쓰기 활성화 후 실제 인식 결과가 나오는 것을 확인했다. 이 확인은 수정 전의 오류 안내를 사용하는 진단 Host에서 이뤄졌으며, 새 안내·같은 문항 재시도는 자동 UI 테스트로 따로 검증한다.
 
 같은 날 최종 수정본(진단 로그 제거, production Lynx 번들을 포함한 Debug Host)을 iPhone에 다시 설치한 뒤, 사용자가 녹음 직후 음원 재생 및 홈 화면 왕복 후 재생·녹음 모두 정상이라고 확인했다.
+
+## 레슨 성공 보상 표시
+
+레슨 통과·만점 화면의 젬 보상은 `+ 0 REWARD`, 맵으로 돌아가는 버튼은 화살표 없는 `Check`다. 일반 레슨·서사·메신저·에피소드 최종 복습이 공유하는 기본 보상은 0이며 실제 잔액을 증가시키지 않는다. 미통과의 Try again·나가기 동작은 그대로 확인한다.

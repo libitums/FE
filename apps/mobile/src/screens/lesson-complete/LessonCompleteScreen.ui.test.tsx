@@ -106,7 +106,7 @@ test("[LCS6] Check tap → onExit 정확히 1회", () => {
     .getByTestId("lesson-complete-screen-exit")
     .querySelector('[data-testid="ui-lynx-button"]');
   expect(button).not.toBeNull();
-  expect(button).toHaveAttribute("accessibility-label", "Check →");
+  expect(button).toHaveAttribute("accessibility-label", "Check");
   fireEvent.tap(button as Element, {});
 
   expect(onExit).toHaveBeenCalledTimes(1);
