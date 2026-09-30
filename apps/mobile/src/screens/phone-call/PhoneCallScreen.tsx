@@ -117,6 +117,11 @@ export function PhoneCallScreen({
         scroll-bar-enable={true}
       >
         <view className="phone-call-screen-content">
+          {conversation.introduction ? (
+            <text className="phone-call-story-context" data-testid="phone-call-story-introduction">
+              {conversation.introduction}
+            </text>
+          ) : null}
           <view data-testid="phone-call-contact-name">
             <CallCaller
               key={replayKey}
@@ -170,6 +175,11 @@ export function PhoneCallScreen({
         </view>
       </scroll-view>
       <view className="phone-call-screen-actions">
+        {session.mode === "completed" && conversation.completion ? (
+          <text className="phone-call-story-context" data-testid="phone-call-story-completion">
+            {conversation.completion}
+          </text>
+        ) : null}
         {playLabel ? (
           <view
             className="phone-call-audio-button"

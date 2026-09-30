@@ -36,19 +36,19 @@ function standardStep(id: JourneyStep["id"]): JourneyMapItem {
 const messengerItem: JourneyMapItem = {
   kind: "messenger",
   id: "appointment-confirmation",
-  title: "Appointment message",
+  title: "A Message from Minseo",
 };
 
 const phoneCallItem: JourneyMapItem = {
   kind: "phone-call",
   id: "appointment-confirmation-phone-call",
-  title: "Appointment call",
+  title: "A Call from Minseo",
 };
 
 const visualNovelItem: JourneyMapItem = {
   kind: "visual-novel",
   id: "cafe-arrival-visual-novel",
-  title: "Jimin arrives at the café",
+  title: "Our Imagined Café",
 };
 
 const episodeIntroItem: JourneyMapItem = {
@@ -74,17 +74,17 @@ describe("roleplayItemsFrom", () => {
     expect(result[0]).toEqual({
       form: "messenger",
       unitId: "appointment-confirmation",
-      title: "Appointment message",
+      title: "A Message from Minseo",
     });
     expect(result[1]).toEqual({
       form: "phone-call",
       unitId: "appointment-confirmation-phone-call",
-      title: "Appointment call",
+      title: "A Call from Minseo",
     });
     expect(result[2]).toEqual({
       form: "visual-novel",
       unitId: "cafe-arrival-visual-novel",
-      title: "Jimin arrives at the café",
+      title: "Our Imagined Café",
     });
     // 필드가 form·unitId·title뿐입니다 — toEqual이 초과 필드를 잡습니다.
     for (const item of result) {
@@ -150,28 +150,28 @@ describe("roleplayFormLabel", () => {
 
 describe("roleplayItemAccessibilityLabel", () => {
   const fixtures: readonly RoleplayItem[] = [
-    { form: "messenger", unitId: "appointment-confirmation", title: "Appointment message" },
+    { form: "messenger", unitId: "appointment-confirmation", title: "A Message from Minseo" },
     {
       form: "phone-call",
       unitId: "appointment-confirmation-phone-call",
-      title: "Appointment call",
+      title: "A Call from Minseo",
     },
     {
       form: "visual-novel",
       unitId: "cafe-arrival-visual-novel",
-      title: "Jimin arrives at the café",
+      title: "Our Imagined Café",
     },
   ];
 
   it("R5. 세 fixture 항목 각각 `${title}, ${formLabel}`이고 완료됨·잠김을 포함하지 않는다", () => {
     expect(roleplayItemAccessibilityLabel(fixtures[0], false, uiCopyEn)).toBe(
-      "Appointment message, Messenger",
+      "A Message from Minseo, Messenger",
     );
     expect(roleplayItemAccessibilityLabel(fixtures[1], false, uiCopyEn)).toBe(
-      "Appointment call, Phone call",
+      "A Call from Minseo, Phone call",
     );
     expect(roleplayItemAccessibilityLabel(fixtures[2], false, uiCopyEn)).toBe(
-      "Jimin arrives at the café, Visual novel",
+      "Our Imagined Café, Visual novel",
     );
 
     for (const item of fixtures) {
@@ -195,11 +195,11 @@ describe("roleplayItemAccessibilityLabel — 잠김", () => {
   it("R7. 잠긴 항목은 이름 뒤에 잠김이 붙는다", () => {
     expect(
       roleplayItemAccessibilityLabel(
-        { form: "messenger", unitId: "appointment-confirmation", title: "Appointment message" },
+        { form: "messenger", unitId: "appointment-confirmation", title: "A Message from Minseo" },
         true,
         uiCopyEn,
       ),
-    ).toBe("Appointment message, Messenger, locked");
+    ).toBe("A Message from Minseo, Messenger, locked");
   });
 });
 
@@ -270,11 +270,11 @@ describe("roleplaySectionsFrom", () => {
         title: "Tutorial.",
         unlocked: true,
         items: [
-          { form: "messenger", unitId: "appointment-confirmation", title: "Appointment message" },
+          { form: "messenger", unitId: "appointment-confirmation", title: "A Message from Minseo" },
           {
             form: "phone-call",
             unitId: "appointment-confirmation-phone-call",
-            title: "Appointment call",
+            title: "A Call from Minseo",
           },
         ],
         premiumItems: [],

@@ -85,3 +85,10 @@
 .visual-novel-large-text-reflow {
   flex-shrink: 0;
 }
+
+.visual-novel-context {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}

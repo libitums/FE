@@ -30,8 +30,8 @@ describe("messengerConversationFor", () => {
   it("다섯 메시지는 배운 표현으로 구성하며 답장은 한 개 보기로 안내한다", () => {
     const conversation = messengerConversationFor(id);
     expect(conversation.id).toBe(id);
-    expect(conversation.title).toBe("Appointment message");
-    expect(conversation.participantName).toBe("Jimin");
+    expect(conversation.title).toBe("A Message from Minseo");
+    expect(conversation.participantName).toBe("Minseo");
     expect(
       conversation.messages.map(({ id: messageId, sender, text }) => [messageId, sender, text]),
     ).toEqual(expected);
@@ -65,8 +65,8 @@ describe("messenger session pure functions", () => {
 
   const conversation = {
     id,
-    title: "Appointment message",
-    participantName: "Jimin",
+    title: "A Message from Minseo",
+    participantName: "Minseo",
     messages: expected.map(([messageId, sender, text]) => ({
       id: messageId,
       sender,

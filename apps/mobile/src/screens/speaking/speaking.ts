@@ -31,7 +31,7 @@ export const speakingQuestionsByStep: Record<JourneyStepId, readonly SpeakingQue
       romanization: "annyeonghaseyo",
       support: {
         translation: "Hello.",
-        instruction: "Try saying hello. Read the pronunciation below, or skip for now.",
+        instruction: "Now it’s my turn to greet Minseo. Try saying hello, or skip for now.",
       },
       optionalPractice: true,
     },

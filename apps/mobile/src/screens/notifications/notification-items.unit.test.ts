@@ -78,9 +78,9 @@ describe("notificationItems", () => {
 
   it("CE5. 메시지 넷이 부록 C.4의 영어다 — id · 순서 불변", () => {
     expect(notificationItems().map(({ id, message }) => ({ id, message }))).toEqual([
-      { id: "notification-messenger", message: "Jimin sent you an appointment message" },
-      { id: "notification-phone-call", message: "Jimin is calling about your appointment" },
-      { id: "notification-visual-novel", message: "Jimin has arrived at the café" },
+      { id: "notification-messenger", message: "Minseo sent you an appointment message" },
+      { id: "notification-phone-call", message: "Minseo is calling about your appointment" },
+      { id: "notification-visual-novel", message: "Minseo has arrived at the café" },
       { id: "notification-roleplay-list", message: "Practice what you learned in a roleplay" },
     ]);
   });

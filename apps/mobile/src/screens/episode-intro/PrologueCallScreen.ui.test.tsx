@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 const call: PrologueCall = {
-  callerName: "Jimin",
+  callerName: "Minseo",
   lines: [
     { text: "여보세요?", translation: "Hello?" },
     { text: "이따 봐!", translation: "See you later!" },
@@ -51,7 +51,7 @@ test("[PC1] 머리 · 통화 상대 · 첫 대사를 그린다", () => {
   );
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
-    "Voice call, Jimin",
+    "Voice call, Minseo",
   );
   expect(screen.getByTestId("prologue-call-screen-line-text")).toHaveTextContent("여보세요?");
   expect(screen.getByTestId("prologue-call-screen-line-translation")).toHaveTextContent("Hello?");
@@ -214,7 +214,7 @@ test("[PC11] 시계가 가도 통화 상대의 접근성 이름은 바뀌지 않
   expect(screen.getByTestId("prologue-call-screen-clock")).toHaveTextContent("0:02");
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
-    "Voice call, Jimin",
+    "Voice call, Minseo",
   );
 });
 
@@ -252,7 +252,7 @@ test("[ST2-M] 문구표에서 읽는다 — 통화 상대 · 종료 · 음소거
 
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
-    "⟦phoneCall.voiceCall⟧(Jimin)",
+    "⟦phoneCall.voiceCall⟧(Minseo)",
   );
   expect(screen.getByTestId("prologue-call-screen-end")).toHaveAttribute(
     "accessibility-label",

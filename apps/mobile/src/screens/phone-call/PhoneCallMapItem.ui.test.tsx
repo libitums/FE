@@ -9,7 +9,7 @@ describe("PhoneCallMapItem UI", () => {
       render(
         <PhoneCallMapItem
           id="appointment-confirmation-phone-call"
-          title="Appointment call"
+          title="A Call from Minseo"
           status={status}
           onSelect={vi.fn()}
         />,
@@ -21,9 +21,11 @@ describe("PhoneCallMapItem UI", () => {
       // 상태 접미사와 「이야기 연결」은 `LearningUnit`이 붙입니다(ADR-0016 D3).
       expect(item).toHaveAttribute(
         "accessibility-label",
-        status === "completed" ? "Appointment call, completed, story" : "Appointment call, story",
+        status === "completed"
+          ? "A Call from Minseo, completed, story"
+          : "A Call from Minseo, story",
       );
-      expect(screen.getByText("Appointment call")).toBeInTheDocument();
+      expect(screen.getByText("A Call from Minseo")).toBeInTheDocument();
     },
   );
 
@@ -32,7 +34,7 @@ describe("PhoneCallMapItem UI", () => {
     render(
       <PhoneCallMapItem
         id="appointment-confirmation-phone-call"
-        title="Appointment call"
+        title="A Call from Minseo"
         status="available"
         onSelect={onSelect}
       />,

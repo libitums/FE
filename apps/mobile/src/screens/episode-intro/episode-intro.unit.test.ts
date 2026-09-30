@@ -53,7 +53,7 @@ const introItem: JourneyMapItem = {
 // 돌려주는 구현이 통과하지 않게 합니다.
 const withoutIntro = section("표지 없는 구획", [
   { kind: "standard", step: { id: "ordering", title: "주문하기", description: "" } },
-  { kind: "messenger", id: "appointment-confirmation", title: "Appointment message" },
+  { kind: "messenger", id: "appointment-confirmation", title: "A Message from Minseo" },
 ]);
 
 const withIntro = section("Tutorial.", [

@@ -155,36 +155,36 @@ test("[I1] 실제 데이터로 선 구획 — 에피소드 하나에 카드 셋�
   ]);
 
   expect(screen.getByTestId(`roleplay-list-item-title-${messengerUnitId}`)).toHaveTextContent(
-    "Appointment message",
+    "A Message from Minseo",
   );
   expect(screen.getByTestId(`roleplay-list-item-form-${messengerUnitId}`)).toHaveTextContent(
     "Messenger",
   );
   expect(screen.getByTestId(`roleplay-list-item-${messengerUnitId}`)).toHaveAttribute(
     "accessibility-label",
-    "Appointment message, Messenger",
+    "A Message from Minseo, Messenger",
   );
 
   expect(screen.getByTestId(`roleplay-list-item-title-${phoneCallUnitId}`)).toHaveTextContent(
-    "Appointment call",
+    "A Call from Minseo",
   );
   expect(screen.getByTestId(`roleplay-list-item-form-${phoneCallUnitId}`)).toHaveTextContent(
     "Phone call",
   );
   expect(screen.getByTestId(`roleplay-list-item-${phoneCallUnitId}`)).toHaveAttribute(
     "accessibility-label",
-    "Appointment call, Phone call",
+    "A Call from Minseo, Phone call",
   );
 
   expect(screen.getByTestId(`roleplay-list-item-title-${visualNovelUnitId}`)).toHaveTextContent(
-    "Jimin arrives at the café",
+    "Our Imagined Café",
   );
   expect(screen.getByTestId(`roleplay-list-item-form-${visualNovelUnitId}`)).toHaveTextContent(
     "Visual novel",
   );
   expect(screen.getByTestId(`roleplay-list-item-${visualNovelUnitId}`)).toHaveAttribute(
     "accessibility-label",
-    "Jimin arrives at the café, Visual novel",
+    "Our Imagined Café, Visual novel",
   );
 
   // 열린 에피소드에는 완료 표식도 잠김 표식도 없습니다 — 롤플레이는 몇 번을 해도

@@ -24,7 +24,7 @@ export type PhoneCallAudioSource =
 export type ConfirmTimePhoneCallTurn = {
   readonly id: "confirm-time";
   readonly speakerId: "jimin";
-  readonly speakerName: "Jimin";
+  readonly speakerName: "Minseo";
   readonly transcript: string;
   readonly translation?: string;
   readonly romanization?: string;
@@ -40,7 +40,7 @@ export type ConfirmTimePhoneCallTurn = {
 export type ConfirmPlacePhoneCallTurn = {
   readonly id: "confirm-place";
   readonly speakerId: "jimin";
-  readonly speakerName: "Jimin";
+  readonly speakerName: "Minseo";
   readonly transcript: string;
   readonly translation?: string;
   readonly romanization?: string;
@@ -56,7 +56,7 @@ export type ConfirmPlacePhoneCallTurn = {
 export type GoodbyePhoneCallTurn = {
   readonly id: "goodbye";
   readonly speakerId: "jimin";
-  readonly speakerName: "Jimin";
+  readonly speakerName: "Minseo";
   readonly transcript: string;
   readonly translation?: string;
   readonly romanization?: string;
@@ -75,8 +75,10 @@ export type PhoneCallTurn =
   | GoodbyePhoneCallTurn;
 
 export type PhoneCallConversation = {
+  readonly introduction?: string;
+  readonly completion?: string;
   readonly unitId: PhoneCallUnitId;
-  readonly title: "Appointment call";
+  readonly title: "A Call from Minseo";
   readonly turns: readonly [
     ConfirmTimePhoneCallTurn,
     ConfirmPlacePhoneCallTurn,
@@ -106,7 +108,7 @@ export type PhoneCallExitOutcome = "incomplete" | "completed";
 export type PhoneCallTranscriptEntry =
   | {
       readonly speaker: "jimin";
-      readonly speakerName: "Jimin";
+      readonly speakerName: "Minseo";
       readonly turnId: PhoneCallTurnId;
       readonly text: PhoneCallTurn["transcript"];
       readonly translation?: string;
@@ -122,7 +124,7 @@ export type PhoneCallTranscriptEntry =
 
 export type PhoneCallMapItemProps = {
   readonly id: PhoneCallUnitId;
-  readonly title: "Appointment call";
+  readonly title: "A Call from Minseo";
   readonly status: JourneyMapItemStatus;
   readonly onSelect: (id: PhoneCallUnitId) => void;
 };
@@ -169,14 +171,14 @@ export type PhoneCallAppProps = {
 export type PhoneCallJourneyUnitContract = {
   readonly kind: "special";
   readonly id: PhoneCallUnitId;
-  readonly title: "Appointment call";
+  readonly title: "A Call from Minseo";
   readonly screen: "phone-call";
 };
 
 export type PhoneCallJourneyMapItemContract = {
   readonly kind: "phone-call";
   readonly id: PhoneCallUnitId;
-  readonly title: "Appointment call";
+  readonly title: "A Call from Minseo";
   readonly status: PhoneCallCompletionStatus;
 };
 

@@ -393,7 +393,7 @@ test("[IN-I9] 표지를 끝내기 전에는 최종 테스트가 잠겨 있고, �
 // 대본을 바꿔 끼워 봅니다(`App`의 `episodePrologueFor`).
 
 const call: PrologueCall = {
-  callerName: "Jimin",
+  callerName: "Minseo",
   lines: [
     { text: "여보세요?", translation: "Hello?" },
     { text: "이따 봐!", translation: "See you later!" },
@@ -427,7 +427,7 @@ test("[IN-I10] 서사가 통화·메신저인 에피소드도 진입점이 표�
   expect(screen.getByTestId("prologue-call-screen-title")).toHaveTextContent("Before We Land");
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
-    "Voice call, Jimin",
+    "Voice call, Minseo",
   );
   first.unmount();
 

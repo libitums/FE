@@ -17,19 +17,19 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 const messengerItem: NotificationItem = {
   id: "notification-messenger",
-  message: "Jimin sent you an appointment message",
+  message: "Minseo sent you an appointment message",
   target: { kind: "messenger", unitId: "appointment-confirmation" },
 };
 
 const phoneCallItem: NotificationItem = {
   id: "notification-phone-call",
-  message: "Jimin is calling about your appointment",
+  message: "Minseo is calling about your appointment",
   target: { kind: "phone-call", unitId: "appointment-confirmation-phone-call" },
 };
 
 const visualNovelItem: NotificationItem = {
   id: "notification-visual-novel",
-  message: "Jimin has arrived at the café",
+  message: "Minseo has arrived at the café",
   target: { kind: "visual-novel", unitId: "cafe-arrival-visual-novel" },
 };
 

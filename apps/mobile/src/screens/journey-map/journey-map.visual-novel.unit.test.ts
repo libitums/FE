@@ -38,9 +38,9 @@ describe("journey map visual novel contract", () => {
       journeyMapItems.flatMap((item) => (item.kind === "standard" ? [] : [[item.id, item.title]])),
     ).toEqual([
       ["tutorial-intro", "Episode intro"],
-      ["appointment-confirmation", "Appointment message"],
-      ["appointment-confirmation-phone-call", "Appointment call"],
-      ["cafe-arrival-visual-novel", "Jimin arrives at the café"],
+      ["appointment-confirmation", "A Message from Minseo"],
+      ["appointment-confirmation-phone-call", "A Call from Minseo"],
+      ["cafe-arrival-visual-novel", "Our Imagined Café"],
       ["tutorial-final-test", "Final test"],
     ]);
   });

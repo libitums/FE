@@ -14,8 +14,8 @@ import {
 const id = "appointment-confirmation" as const;
 const conversation = {
   id,
-  title: "Appointment message",
-  participantName: "Jimin",
+  title: "A Message from Minseo",
+  participantName: "Minseo",
   messages: [
     { id: "jimin-schedule", sender: "jimin", text: "첫 메시지", translation: "first" },
     { id: "self-accept", sender: "self", text: "첫 답장", translation: "first reply" },

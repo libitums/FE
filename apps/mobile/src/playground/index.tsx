@@ -42,6 +42,8 @@ function Playground() {
     screen === "tutorial-final-story";
   const isTutorialLesson = screen.startsWith("tutorial-") && !ownsSafeArea;
 
+  if (screen === "tutorial-journey") return playgroundScreens[screen](go);
+
   return (
     // 앱 셸은 호스트가 넘긴 safe area 값으로 아래 여백을 잡습니다(App.tsx). Lynx
     // Explorer는 그 값을 넘기지 않아(lib/safe-area.ts) 여기서는 0이 되고, 그러면 바가
