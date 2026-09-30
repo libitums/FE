@@ -1,3 +1,5 @@
+import { guardJourneyUnitStarts } from "./journey-access";
+import { completedVisualNovelUnitIdsFrom } from "./journey-progress";
 // 여정·학습·알림·설정 콜백을 만들고, 특별 유닛 셋의 콜백을 `special-unit-wiring.ts`에서 받아
 // 한 객체로 합칩니다. 진행 상태 넷과 세션 옵션을 여기서 읽고 갱신합니다. 연습 경계 밖의
 // 롤플레이 콜백 여덟은 `roleplay-wiring.ts`가 집니다.
@@ -262,11 +264,17 @@ export function journeyWiring(args: JourneyWiringArgs) {
     onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
   };
 
-  // 표지 결선을 나란히 붙입니다 — **감싸지 않습니다.** 표지는 맵에 스스로 서는 유닛이라
-  // 유닛 시작 넷을 가로채지 않고(spec §2.5), 순서는 맵의 잠김 파생이 집니다. 이름이
-  // `journey`인 것은 위의 알림 결선이 그 이름으로 시작을 부르기 때문입니다.
+  // 알림과 푸시도 이 콜백을 사용하므로 실제 진입 직전에 맵과 같은 규칙으로 차단합니다.
   const journey = {
     ...unitStarts,
+    ...guardJourneyUnitStarts(unitStarts, {
+      completedStepCount,
+      completedEpisodeIntroIds,
+      completedMessengerUnitIds,
+      completedPhoneCallUnitIds,
+      completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
+      completedEpisodeFinalIds: [],
+    }),
     ...episodeIntroWiring({
       sections: journeyMapSections,
       setCompletedEpisodeIntroIds: args.setCompletedEpisodeIntroIds,

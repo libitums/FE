@@ -1,3 +1,4 @@
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen, cleanup } from "@lynx-js/react/testing-library";
 
@@ -128,7 +129,9 @@ const titleTextByForm: Record<
 // 통과합니다 — red의 근거가 아닙니다.
 test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화면을 연다", async (form) => {
   formStub.current = form;
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
 
   startStep("ordering");
 
@@ -157,14 +160,18 @@ test.each(allForms)("learningFormForStep이 %s를 돌려주면 시작이 그 화
 // 순간 제목과 부재 단언이 함께 초록이 됩니다.
 test("learningFormForStep이 sentence-order·word-choice를 돌려줘도 던지지 않고 각 화면이 그대로 뜬다", async () => {
   formStub.current = "sentence-order";
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
   startStep("ordering");
   expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
   expect(screen.queryByTestId("error-boundary-title")).not.toBeInTheDocument();
   cleanup();
 
   formStub.current = "word-choice";
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
   startStep("ordering");
   // 단어 선택도 제목 줄이 걷혔습니다 — 정체는 제시문 앵커의 존재가 집니다.
   expect(screen.getByTestId("word-choice-screen-content")).toBeInTheDocument();
@@ -181,7 +188,9 @@ const formByStep = (id: JourneyStepId): LearningForm =>
 
 test("배정표가 스텝마다 갈리면 ordering 스텝에서는 그 스텝에 배정된 화면(sentence-order)이 열린다", async () => {
   formStub.current = formByStep;
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
 
   startStep("ordering");
 
@@ -190,7 +199,9 @@ test("배정표가 스텝마다 갈리면 ordering 스텝에서는 그 스텝에
 
 test("배정표가 스텝마다 갈리면 greeting 스텝에서는 그 스텝에 배정된 화면(word-choice)이 열린다", async () => {
   formStub.current = formByStep;
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
 
   startStep("greeting");
 
@@ -203,7 +214,9 @@ test("배정표가 스텝마다 갈리면 greeting 스텝에서는 그 스텝에
 // 않는 한 계속 통과해야 합니다 — red의 근거가 아니라 "표가 바뀌지 않았다"의
 // 회귀 대조입니다.
 test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배정대로 듣기 화면을 연다", async () => {
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
 
   startStep("ordering");
 
@@ -223,7 +236,9 @@ test("배정표에 스텁이 없으면 ordering 스텝은 오늘의 실물 배�
 // 성립합니다.
 test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵으로가 맵으로 돌아온다(문화 학습이 아니다)", async () => {
   formStub.current = "culture";
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
 
   startStep("ordering");
 
@@ -253,7 +268,9 @@ test("문화 학습의 퀴즈 풀기가 문화 퀴즈를 열고, 퀴즈의 맵�
 // 위에서 재시작합니다.
 test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시 시작하면 문화 학습이 다시 뜬다", async () => {
   formStub.current = "culture";
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
 
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
@@ -282,7 +299,9 @@ test("문화 퀴즈에서 맵으로 나간 뒤 맵에서 같은 스텝을 다시
 // 원래 지키려던 것입니다.
 test("문화 퀴즈에는 탭이 없고, 맵으로가 두 겹을 지나 맵에 닿는다", async () => {
   formStub.current = "culture";
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
 
   startStep("ordering");
   fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});

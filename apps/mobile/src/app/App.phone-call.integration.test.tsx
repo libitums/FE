@@ -1,3 +1,4 @@
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen } from "@lynx-js/react/testing-library";
 import { App } from "./App";
@@ -13,7 +14,12 @@ vi.mock("../lib/audio", () => audio);
 const { playAudio, stopAudio } = audio;
 
 async function openJourney() {
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App
+      journeySeed={journeySeedBefore("appointment-confirmation-phone-call")}
+      completedEpisodeIntroIds={completedIntros}
+    />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 }
 
@@ -49,10 +55,10 @@ describe("App · phone-call integration", () => {
     );
     // 스텝은 `LearningUnit`이 그리므로 유닛 어휘입니다 — 특수 항목(메신저 · 전화 ·
     // 비주얼 노벨)은 자기 컴포넌트의 어휘(`available`·`completed`)를 그대로 씁니다.
-    expect(before).toEqual(["clear", "clear", "active", "default", "default"]);
+    expect(before).toEqual(["clear", "clear", "clear", "clear", "default"]);
     expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
       "data-status",
-      "available",
+      "clear",
     );
     fireEvent.tap(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
@@ -85,7 +91,7 @@ describe("App · phone-call integration", () => {
     ).toHaveAttribute("data-status", "clear");
     expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
       "data-status",
-      "available",
+      "clear",
     );
     const after = ["greeting", "introduction", "ordering", "appointment", "directions"].map((id) =>
       screen.getByTestId(`ui-lynx-learning-unit-${id}`).getAttribute("data-status"),
@@ -160,7 +166,11 @@ describe("App · phone-call integration", () => {
   it("맵 항목 tap마다 push 전에 phone_call_unit_opened(journey)이 entryStatus와 함께 1건 온다", async () => {
     const phoneCallEventSink = vi.fn<NonNullable<PhoneCallEventSink>>();
     await renderSignedInApp(
-      <App completedEpisodeIntroIds={completedIntros} phoneCallEventSink={phoneCallEventSink} />,
+      <App
+        journeySeed={journeySeedBefore("appointment-confirmation-phone-call")}
+        completedEpisodeIntroIds={completedIntros}
+        phoneCallEventSink={phoneCallEventSink}
+      />,
     );
     fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 

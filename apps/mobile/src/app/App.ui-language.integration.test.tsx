@@ -1,3 +1,4 @@
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -173,7 +174,13 @@ async function walkEntryFlow(
   stubFreshInstallHost(storage);
   vi.useFakeTimers();
   const events: EntryEvent[] = [];
-  render(<App phoneSignIn="visible" entryEventSink={(event) => events.push(event)} />);
+  render(
+    <App
+      journeySeed={journeySeedBefore("ordering")}
+      phoneSignIn="visible"
+      entryEventSink={(event) => events.push(event)}
+    />,
+  );
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
   });
@@ -211,9 +218,12 @@ function expectEnglishJourneyTabs(): void {
 test("[IL1] ⭐ 저장된 언어가 vi인 재방문자는 부팅 중에 그 키를 읽고, 여정 맵에 영어 탭으로 선다", async () => {
   const storage = sessionStorageWith({ [uiLanguageStorageKey]: "vi" });
 
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />, {
-    storageModule: storage.module,
-  });
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+    {
+      storageModule: storage.module,
+    },
+  );
 
   // 부팅이 언어 키를 실제로 읽었다 — 읽지 않았다면 아래 영어는 「기본값이 영어라서」 우연히 참이다.
   expect(languageKeyCalls(storage).gets).toBeGreaterThanOrEqual(1);
@@ -226,9 +236,15 @@ describe.each([["ko"], [""]])("[IL2] 저장된 언어가 이상한 값(%j)", (st
   test("부팅이 성공하고 영어이며, 그 키를 지우거나 덮지 않는다", async () => {
     const storage = sessionStorageWith({ [uiLanguageStorageKey]: stored });
 
-    await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />, {
-      storageModule: storage.module,
-    });
+    await renderSignedInApp(
+      <App
+        journeySeed={journeySeedBefore("ordering")}
+        completedEpisodeIntroIds={completedIntros}
+      />,
+      {
+        storageModule: storage.module,
+      },
+    );
 
     expect(languageKeyCalls(storage).gets).toBeGreaterThanOrEqual(1);
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -272,9 +288,12 @@ test("[IL4] ⭐ 고른 언어는 App을 내렸다 다시 그려도 부팅에서 
   const getsBeforeReboot = storage.gets.length;
 
   // 재실행 — 진입 흐름 없이 세션 갱신으로 여정 맵에 선다.
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />, {
-    storageModule: storage.module,
-  });
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+    {
+      storageModule: storage.module,
+    },
+  );
 
   const bootReads = storage.gets
     .slice(getsBeforeReboot)
@@ -310,7 +329,9 @@ function expectNoHangul(container: Element): void {
 }
 
 test("[IL6] ⭐ 영어 부팅의 탭 화면과 계정 화면에는 한글이 한 글자도 없다", async () => {
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
   const body = screen.getByTestId("journey-map-screen").ownerDocument.body;
   const root = (): Element => body;
 
@@ -384,6 +405,7 @@ function startStep(stepId: JourneyStepId): void {
 async function bootJourney(seed?: AppJourneySeed, introDone = true): Promise<void> {
   await renderSignedInApp(
     <App
+      journeySeed={journeySeedBefore("ordering")}
       {...(introDone ? { completedEpisodeIntroIds: completedIntros } : {})}
       {...(seed === undefined ? {} : { journeySeed: seed })}
     />,
@@ -501,7 +523,7 @@ const screenCases: readonly ScreenCase[] = [
   {
     name: "메신저",
     open: async () => {
-      await bootJourney();
+      await bootJourney(journeySeedBefore("appointment-confirmation"));
       fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
     },
     screenTestId: "messenger-screen-title",
@@ -515,7 +537,7 @@ const screenCases: readonly ScreenCase[] = [
   {
     name: "전화",
     open: async () => {
-      await bootJourney();
+      await bootJourney(journeySeedBefore("appointment-confirmation-phone-call"));
       fireEvent.tap(
         screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
         {},
@@ -527,7 +549,7 @@ const screenCases: readonly ScreenCase[] = [
   {
     name: "비주얼 노벨",
     open: async () => {
-      await bootJourney();
+      await bootJourney(journeySeedBefore("cafe-arrival-visual-novel"));
       fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-cafe-arrival-visual-novel"), {});
     },
     screenTestId: "visual-novel-screen",
@@ -581,7 +603,7 @@ const finishedTutorial: AppJourneySeed = {
 
 describe.each(specialUnits)("[IL8] $name의 나가기", ({ unitId, exitTestId }) => {
   test("여정에서 연 화면은 Back to map이고 누르면 여정 맵으로 돌아간다", async () => {
-    await bootJourney();
+    await bootJourney(journeySeedBefore(unitId));
     fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${unitId}`), {});
 
     expect(screen.getByTestId(exitTestId)).toHaveAttribute("accessibility-label", "Back to map");

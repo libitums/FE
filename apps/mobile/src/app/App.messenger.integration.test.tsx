@@ -1,3 +1,4 @@
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, screen } from "@lynx-js/react/testing-library";
 
@@ -26,7 +27,11 @@ afterEach(() => {
 
 async function openJourneyMessenger(messengerEventSink?: MessengerEventSink) {
   await renderSignedInApp(
-    <App completedEpisodeIntroIds={completedIntros} messengerEventSink={messengerEventSink} />,
+    <App
+      journeySeed={journeySeedBefore("appointment-confirmation")}
+      completedEpisodeIntroIds={completedIntros}
+      messengerEventSink={messengerEventSink}
+    />,
   );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
@@ -76,7 +81,12 @@ test("두 답장을 완료하면 마지막 메시지와 맵 완료 표식이 함
 });
 
 test("메신저 완료는 일반 completedStepCount와 directions 상태를 바꾸지 않는다", async () => {
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(
+    <App
+      journeySeed={journeySeedBefore("appointment-confirmation")}
+      completedEpisodeIntroIds={completedIntros}
+    />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   // initialCompletedStepCount=2입니다: greeting/소개는 done, appointment/directions는 locked입니다.
   expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
@@ -85,7 +95,7 @@ test("메신저 완료는 일반 completedStepCount와 directions 상태를 바�
   );
   expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
     "data-status",
-    "default",
+    "clear",
   );
   expect(screen.getByTestId("ui-lynx-learning-unit-directions")).toHaveAttribute(
     "data-status",
@@ -101,7 +111,7 @@ test("메신저 완료는 일반 completedStepCount와 directions 상태를 바�
   );
   expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
     "data-status",
-    "default",
+    "clear",
   );
   expect(screen.getByTestId("ui-lynx-learning-unit-directions")).toHaveAttribute(
     "data-status",
@@ -243,9 +253,20 @@ test("완료 재입장과 결과 보기는 completed 이벤트를 다시 내지 
 
 test("명시적 null sink와 기본 null은 기능을 안전하게 유지한다", async () => {
   await expect(
-    renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} messengerEventSink={null} />),
+    renderSignedInApp(
+      <App
+        journeySeed={journeySeedBefore("appointment-confirmation")}
+        completedEpisodeIntroIds={completedIntros}
+        messengerEventSink={null}
+      />,
+    ),
   ).resolves.toBeDefined();
   await expect(
-    renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />),
+    renderSignedInApp(
+      <App
+        journeySeed={journeySeedBefore("appointment-confirmation")}
+        completedEpisodeIntroIds={completedIntros}
+      />,
+    ),
   ).resolves.toBeDefined();
 });

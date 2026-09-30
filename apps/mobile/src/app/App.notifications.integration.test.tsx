@@ -1,3 +1,4 @@
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { journeySteps } from "../screens/journey-map/journey-map";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
@@ -35,8 +36,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function openNotificationsScreen() {
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+async function openNotificationsScreen(unitId = "cafe-arrival-visual-novel") {
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore(unitId)} completedEpisodeIntroIds={completedIntros} />,
+  );
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 }
 
@@ -191,7 +194,7 @@ test("[IN6] 비주얼 노벨 대상 항목을 tap하면 비주얼 노벨 화면�
 
 test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 완료가 맵에 기록된다(D-a)", async () => {
   const item = messengerNotificationItem();
-  await openNotificationsScreen();
+  await openNotificationsScreen("appointment-confirmation");
   tapNotificationItem(item);
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
@@ -266,6 +269,7 @@ test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재
   const notificationEventSink = vi.fn<NonNullable<NotificationEventSink>>();
   await renderSignedInApp(
     <App
+      journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={notificationEventSink}
     />,
@@ -298,6 +302,7 @@ test("[IN11] 메신저 대상 tap의 공용 로그 순서는 알림 탭 이벤�
 
   await renderSignedInApp(
     <App
+      journeySeed={journeySeedBefore("appointment-confirmation")}
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={notificationEventSink}
       messengerEventSink={messengerEventSink}
@@ -327,6 +332,7 @@ test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이고 세 특별 �
 
   await renderSignedInApp(
     <App
+      journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={notificationEventSink}
       messengerEventSink={messengerEventSink}
@@ -356,6 +362,7 @@ test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 �
 
   await renderSignedInApp(
     <App
+      journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={notificationEventSink}
       visualNovelEventSink={visualNovelEventSink}
@@ -387,7 +394,12 @@ test("[IN14] sink 없이도 버튼·항목 tap이 던지지 않는다(가드)", 
   for (const item of notificationItems()) {
     cleanup();
     await expect(
-      renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />),
+      renderSignedInApp(
+        <App
+          journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
+          completedEpisodeIntroIds={completedIntros}
+        />,
+      ),
     ).resolves.toBeDefined();
     expect(() => fireEvent.tap(screen.getByTestId("top-bar-notifications"), {})).not.toThrow();
 
@@ -453,6 +465,7 @@ test("[IN17] 삭제는 공용 로그에 삭제 이벤트 하나를 남기고 화
   const events: NotificationEvent[] = [];
   await renderSignedInApp(
     <App
+      journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={(event) => events.push(event)}
     />,

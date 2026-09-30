@@ -3,7 +3,6 @@ import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 import { readFinalStory } from "./test-helpers/final-story";
 import { advanceNarrative, revealNarrative } from "./test-helpers/narrative";
 import { App } from "./App";
-import { productJourneySeed } from "./journey-progress";
 import { episodePrologueFor } from "./episode-prologues";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { journeySteps } from "../screens/journey-map/journey-map";
@@ -36,7 +35,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
     AudioPlaybackModule: { play, stop: vi.fn() },
     SpeechRecognitionModule: { start: recognize, stop: vi.fn() },
   });
-  await renderSignedInApp(<App journeySeed={{ ...productJourneySeed, completedStepCount: 0 }} />);
+  await renderSignedInApp(<App />);
   expect(screen.getByTestId(unit("greeting"))).toHaveAttribute("data-status", "default");
   tap(unit("tutorial-intro"));
   button("episode-intro-screen-next");
@@ -90,6 +89,15 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
     expect(screen.getByTestId(unit(id))).toHaveAttribute("data-status", "clear");
   }
   for (const step of journeySteps.slice(0, 4)) completeStep(step.id);
+  expect(screen.getByTestId(unit("appointment-confirmation"))).toHaveAttribute(
+    "data-status",
+    "available",
+  );
+  expect(screen.getByTestId(unit("appointment-confirmation-phone-call"))).toHaveAttribute(
+    "data-status",
+    "default",
+  );
+  expect(screen.getByTestId(unit("directions"))).toHaveAttribute("data-status", "default");
   tap(unit("appointment-confirmation"));
   expect(screen.getByTestId("messenger-screen-title")).toHaveTextContent("Minseo");
   expect(screen.getByTestId("messenger-story-introduction")).toHaveTextContent(
@@ -111,6 +119,14 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
     "clear",
   );
 
+  expect(screen.getByTestId(unit("appointment-confirmation-phone-call"))).toHaveAttribute(
+    "data-status",
+    "available",
+  );
+  expect(screen.getByTestId(unit("cafe-arrival-visual-novel"))).toHaveAttribute(
+    "data-status",
+    "default",
+  );
   tap(unit("appointment-confirmation-phone-call"));
   expect(screen.getByTestId("phone-call-contact-name")).toHaveTextContent("Minseo");
   expect(screen.queryByTestId("phone-call-story-introduction")).toBeNull();
@@ -132,6 +148,11 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
     "data-status",
     "clear",
   );
+  expect(screen.getByTestId(unit("cafe-arrival-visual-novel"))).toHaveAttribute(
+    "data-status",
+    "available",
+  );
+  expect(screen.getByTestId(unit("directions"))).toHaveAttribute("data-status", "default");
   tap(unit("cafe-arrival-visual-novel"));
   expect(screen.getByTestId("visual-novel-dialogue-arrive")).toHaveTextContent("annyeonghaseyo");
   tap("visual-novel-advance-button");
