@@ -112,7 +112,12 @@ export async function loadLearningProgress(): Promise<
   { readonly ok: true; readonly raw: unknown } | { readonly ok: false }
 > {
   const bodyText = await authorizedRpc("/rest/v1/rpc/load_learning_progress", {});
-  return bodyText === null ? { ok: false } : { ok: true, raw: jsonFrom(bodyText) };
+  if (bodyText === null) return { ok: false };
+  try {
+    return { ok: true, raw: JSON.parse(bodyText) as unknown };
+  } catch {
+    return { ok: false };
+  }
 }
 
 export async function saveLearningProgress(snapshot: object): Promise<boolean> {
