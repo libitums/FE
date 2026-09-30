@@ -87,7 +87,7 @@ describe("실데이터의 구획", () => {
 
   // ⚠ **red가 아닙니다 — 파수꾼입니다.** 「고치는 김에 세로 맵을 건드리지 않았는가」를
   // 집니다. 준비 중 에피소드는 맵 항목을 0건 내므로 이 목록이 문자 그대로 같아야 합니다.
-  it("[U-S3] 튜토리얼 구획의 항목이 열이고 순서가 그대로다", () => {
+  it("[U-S3] 튜토리얼 구획의 항목이 열셋이고 순서가 그대로다", () => {
     expect(
       journeyMapSections[0]?.items.map((item) =>
         item.kind === "standard" ? `standard:${item.step.id}` : `${item.kind}:${item.id}`,
@@ -102,6 +102,9 @@ describe("실데이터의 구획", () => {
       "phone-call:appointment-confirmation-phone-call",
       "visual-novel:cafe-arrival-visual-novel",
       "standard:directions",
+      "standard:tutorial-listening",
+      "standard:tutorial-speaking",
+      "standard:tutorial-writing",
       "episode-final:tutorial-final-test",
     ]);
   });
@@ -109,8 +112,8 @@ describe("실데이터의 구획", () => {
   // ⚠ 파수꾼입니다. 공허하지 않은 이유: `episode.units`를 판별 없이 펴는 구현은
   // `TS2339`로 **먼저** 서고, 준비 중에서 `[]` 대신 던지는 구현이면 여기서 터집니다.
   it("[U-S4] 준비 중은 평평한 목록에도 0을 기여한다", () => {
-    expect(journeySteps).toHaveLength(5);
-    expect(journeyMapItems).toHaveLength(10);
+    expect(journeySteps).toHaveLength(8);
+    expect(journeyMapItems).toHaveLength(13);
   });
 });
 

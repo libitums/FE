@@ -26,6 +26,9 @@ describe("journey map visual novel contract", () => {
       "phone-call:appointment-confirmation-phone-call",
       "visual-novel:cafe-arrival-visual-novel",
       "standard:directions",
+      "standard:tutorial-listening",
+      "standard:tutorial-speaking",
+      "standard:tutorial-writing",
       "episode-final:tutorial-final-test",
     ]);
   });
@@ -49,12 +52,18 @@ describe("journey map visual novel contract", () => {
       "ordering",
       "appointment",
       "directions",
+      "tutorial-listening",
+      "tutorial-speaking",
+      "tutorial-writing",
     ]);
-    expect(journeySteps.map(({ id }) => journeyStepOrdinal(id))).toEqual([1, 2, 3, 4, 5]);
+    expect(journeySteps.map(({ id }) => journeyStepOrdinal(id))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(journeySteps.map((_, index) => stepStatusAt(index, initialCompletedStepCount))).toEqual([
       "done",
       "done",
       "current",
+      "locked",
+      "locked",
+      "locked",
       "locked",
       "locked",
     ]);

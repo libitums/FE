@@ -27,7 +27,15 @@ import type {
   VisualNovelJourneyUnitContract,
 } from "../visual-novel/visual-novel.contract";
 
-export type JourneyStepId = "greeting" | "introduction" | "ordering" | "appointment" | "directions";
+export type JourneyStepId =
+  | "greeting"
+  | "introduction"
+  | "ordering"
+  | "appointment"
+  | "directions"
+  | "tutorial-listening"
+  | "tutorial-speaking"
+  | "tutorial-writing";
 
 export type JourneyStepStatus = "done" | "current" | "locked";
 

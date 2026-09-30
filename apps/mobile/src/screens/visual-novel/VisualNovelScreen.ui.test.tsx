@@ -84,8 +84,8 @@ describe("VisualNovelScreen UI", () => {
     );
     const scene = screen.getByTestId("visual-novel-scene-arrive");
     const dialogue = screen.getByTestId("visual-novel-dialogue-arrive");
-    expect(scene.parentElement).toHaveClass("visual-novel-scene-shell");
-    expect(dialogue.parentElement).toBe(scene.parentElement);
+    expect(root.contains(scene)).toBe(true);
+    expect(dialogue.parentElement).toHaveClass("visual-novel-scene-shell");
     const order = [
       screen.getByTestId("visual-novel-exit-button"),
       screen.getByTestId("visual-novel-title"),
@@ -119,9 +119,6 @@ describe("[ST8-M] 비주얼 노벨 문구는 표에서 읽는다", () => {
     );
     expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
       "accessibility-label",
-      "⟦common.exitTo.journey⟧",
-    );
-    expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent(
       "⟦common.exitTo.journey⟧",
     );
   });

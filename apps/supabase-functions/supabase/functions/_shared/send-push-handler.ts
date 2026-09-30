@@ -14,6 +14,7 @@ import {
   serviceKeyCheckRequest,
   userDevicesRequest,
 } from "./push-devices.ts";
+import { isJwtShaped } from "./service-key.ts";
 import { reengagementMessageFor, sendPushBodyFrom } from "./send-push-body.ts";
 import type {
   ApnsResult,
@@ -56,6 +57,9 @@ async function isServiceCaller(
   presentedKey: string,
 ): Promise<boolean> {
   if (sameSecret(presentedKey, env.supabaseServiceRoleKey)) return true;
+  // 형식 검사는 불필요한 조회만 줄입니다. 권한은 아래 Auth 응답으로 확인합니다.
+  const secretShaped = presentedKey.startsWith("sb_secret_") && presentedKey.length > 10;
+  if (!isJwtShaped(presentedKey) && !secretShaped) return false;
   const response = await send(deps, serviceKeyCheckRequest(env, presentedKey));
   return response !== null && response.status === 200;
 }

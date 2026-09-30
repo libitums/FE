@@ -30,6 +30,9 @@ export type SentenceOrderQuestion = {
 // 튜토리얼은 한 유닛에 한 표현이며, 뒤로 갈수록 조합 순서의 직접 안내를 줄입니다.
 export const sentenceOrderQuestionsByStep: Record<JourneyStepId, readonly SentenceOrderQuestion[]> =
   {
+    "tutorial-listening": [],
+    "tutorial-speaking": [],
+    "tutorial-writing": [],
     greeting: [
       {
         prompt: "안녕하세요",

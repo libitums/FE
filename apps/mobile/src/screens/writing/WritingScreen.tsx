@@ -1,6 +1,7 @@
 import { useUiCopy } from "../../lib/ui-copy";
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
+import { Button } from "@libitums/ui-lynx/button";
 
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { SyllableSlots } from "../../components/SyllableSlots";
@@ -31,13 +32,14 @@ import "./writing-screen.css";
 export type WritingScreenProps = {
   stepId: JourneyStepId;
   onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
+  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
 
 export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps): ReactNode {
   const copy = useUiCopy();
   const questions = writingQuestionsForStep(stepId);
   const [screenState, setScreenState] = useState(initialWritingScreenState);
+  const [skippedCount, setSkippedCount] = useState(0);
   const question = questions[screenState.questionIndex] ?? null;
   const complete = question === null;
 
@@ -48,35 +50,46 @@ export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps):
     announceCompletion(writingCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
 
-  return question === null ? (
-    <LearningShell
-      form="writing"
-      questionIndex={Math.max(0, questions.length - 1)}
-      questionCount={questions.length}
-      complete={complete}
-      instruction={copy.writing.instruction}
-      onExit={onExit}
-      actionLabel={copy.common.seeResults}
-      onAction={() => onFinish(stepId, screenState.results)}
-      card={
-        <view className="writing-screen-content" data-testid="writing-screen-content">
-          <LearningActivityComplete
-            questionCount={questions.length}
-            testId="writing-screen-complete"
-          />
-        </view>
-      }
-    />
-  ) : (
-    <WritingQuestionShell
-      // 문항이 바뀌면 음절 흐름을 처음부터 새로 씁니다 — 훅의 상태가 문항 하나의 것입니다.
-      key={question.id}
-      question={question}
-      questionIndex={screenState.questionIndex}
-      questionCount={questions.length}
-      onExit={onExit}
-      onQuestionDone={(result) => setScreenState((state) => finishWritingQuestion(state, result))}
-    />
+  return (
+    <view className="writing-screen">
+      {question === null ? (
+        <LearningShell
+          form="writing"
+          questionIndex={Math.max(0, questions.length - 1)}
+          questionCount={questions.length}
+          complete={complete}
+          instruction={copy.writing.instruction}
+          onExit={onExit}
+          actionLabel={copy.common.seeResults}
+          onAction={() => onFinish(stepId, screenState.results, skippedCount)}
+          card={
+            <view className="writing-screen-content" data-testid="writing-screen-content">
+              <LearningActivityComplete
+                questionCount={questions.length}
+                testId="writing-screen-complete"
+              />
+            </view>
+          }
+        />
+      ) : (
+        <WritingQuestionShell
+          // 문항이 바뀌면 음절 흐름을 처음부터 새로 씁니다 — 훅의 상태가 문항 하나의 것입니다.
+          key={question.id}
+          question={question}
+          questionIndex={screenState.questionIndex}
+          questionCount={questions.length}
+          onExit={onExit}
+          onQuestionDone={(result) =>
+            setScreenState((state) => finishWritingQuestion(state, result))
+          }
+          onQuestionSkipped={() => {
+            "background only";
+            setSkippedCount((count) => count + 1);
+            setScreenState((state) => finishWritingQuestion(state, "correct"));
+          }}
+        />
+      )}
+    </view>
   );
 }
 
@@ -86,6 +99,7 @@ type WritingQuestionShellProps = {
   readonly questionCount: number;
   readonly onExit: () => void;
   readonly onQuestionDone: (result: AnswerResult | null) => void;
+  readonly onQuestionSkipped: () => void;
 };
 
 function WritingQuestionShell({
@@ -94,10 +108,18 @@ function WritingQuestionShell({
   questionCount,
   onExit,
   onQuestionDone,
+  onQuestionSkipped,
 }: WritingQuestionShellProps): ReactNode {
   const copy = useUiCopy();
   const practice = useWritingPractice({ question, size: "workspace", onQuestionDone });
   const { state } = practice;
+  const skipped = useRef(false);
+  const skip = () => {
+    "background only";
+    if (skipped.current || (state.phase !== "writing" && state.phase !== "unmeasurable")) return;
+    skipped.current = true;
+    onQuestionSkipped();
+  };
 
   // 아래 버튼 — 쓰는 중에 획이 있으면 `확인하기`, 판정 · 잴 수 없음 뒤면 `다음`입니다. 빈 판과
   // 재는 중에는 버튼이 없습니다 — 누를 수 없는 버튼을 두지 않습니다(ADR-0016 D10).
@@ -106,11 +128,13 @@ function WritingQuestionShell({
   // 화면 전체를 덮어 누르면 넘어가는데, 쓰기는 틀린 뒤 캔버스의 `다시 쓰기`를 누를 수 있어야
   // 하고 그 층이 그 버튼을 가립니다.
   const action =
-    practice.check !== null
-      ? { label: copy.common.check, run: practice.check }
-      : practice.next !== null
-        ? { label: copy.common.next, run: practice.next }
-        : null;
+    question.optionalPractice && state.phase === "unmeasurable"
+      ? { label: copy.common.skip, run: skip }
+      : practice.check !== null
+        ? { label: copy.common.check, run: practice.check }
+        : practice.next !== null
+          ? { label: copy.common.next, run: practice.next }
+          : null;
 
   // 판정은 형제 학습형처럼 **카드의 판정 자리**에 섭니다. 캔버스 위에는 잴 수 없을 때의 안내
   // 한 줄만 섭니다 — 그 안내는 판에 대한 말이라 판 위가 맞습니다.
@@ -124,7 +148,7 @@ function WritingQuestionShell({
       form="writing"
       questionIndex={questionIndex}
       questionCount={questionCount}
-      instruction={copy.writing.instruction}
+      instruction={question.instruction ?? copy.writing.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -146,7 +170,9 @@ function WritingQuestionShell({
           <text className="writing-screen-translation" data-testid="writing-screen-translation">
             {question.translation}
           </text>
-          <SyllableSlots syllables={question.syllables} currentIndex={state.syllableIndex} />
+          {question.optionalPractice ? null : (
+            <SyllableSlots syllables={question.syllables} currentIndex={state.syllableIndex} />
+          )}
         </view>
       }
       workspace={
@@ -162,6 +188,17 @@ function WritingQuestionShell({
               onStrokeComplete={practice.addStroke}
             />
           )}
+          {question.optionalPractice && state.phase === "writing" ? (
+            <view className="writing-screen-skip" data-testid="writing-screen-skip">
+              <Button
+                label={copy.common.skip}
+                variant="outline"
+                size="xl"
+                width="fill"
+                bindtap={skip}
+              />
+            </view>
+          ) : null}
         </view>
       }
     />

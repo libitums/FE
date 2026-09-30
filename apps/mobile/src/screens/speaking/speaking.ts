@@ -13,6 +13,9 @@ export type SpeakingQuestion = {
   readonly sentence: string;
   /** 발음 표기입니다 — 대괄호까지 값에 담습니다(`[i.ɡʌ.ju.se.jo]`). */
   readonly romanization: string;
+  readonly support?: { readonly translation: string; readonly instruction: string };
+  /** 첫 체험은 인식 불가 상태에서도 명시적인 Skip을 허용합니다. */
+  readonly optionalPractice?: boolean;
 };
 
 /**
@@ -21,6 +24,19 @@ export type SpeakingQuestion = {
  * 이 표만 갈립니다.
  */
 export const speakingQuestionsByStep: Record<JourneyStepId, readonly SpeakingQuestion[]> = {
+  "tutorial-listening": [],
+  "tutorial-speaking": [
+    {
+      sentence: "안녕하세요",
+      romanization: "annyeonghaseyo",
+      support: {
+        translation: "Hello.",
+        instruction: "Try saying hello. Read the pronunciation below, or skip for now.",
+      },
+      optionalPractice: true,
+    },
+  ],
+  "tutorial-writing": [],
   greeting: [],
   introduction: [
     { sentence: "제 이름은 민수예요", romanization: "[je.i.reu.meun.min.su.ye.yo]" },
@@ -65,9 +81,9 @@ export type SpeakingSessionAction =
   | { readonly type: "start" }
   | { readonly type: "recognized"; readonly text: string; readonly result: AnswerResult }
   | { readonly type: "unavailable" }
-  // 사용자가 건너뜁니다. **말하기 전(`ready`)에만** 받습니다 — 듣는 중에 받으면 인식
-  // 결과와 경합하고, 판정 뒤에 받으면 이미 실린 결과를 덮습니다.
-  | { readonly type: "skip" }
+  // 사용자가 건너뜁니다. ready 또는 선택적 체험의 unavailable에서 받습니다.
+  // 듣는 중·판정 뒤에는 결과와 경합하지 않도록 무시합니다.
+  | { readonly type: "skip"; readonly allowUnavailable?: boolean }
   | { readonly type: "next" };
 
 export const initialSpeakingSessionState: SpeakingSessionState = {
@@ -103,11 +119,8 @@ export function speakingSessionReducer(
         : state;
     }
     case "skip": {
-      // ⚠ **`ready`에서만 받습니다.** 듣는 중에 받으면 인식 결과와 경합하고(멈추면
-      // 결과가 한 번 옵니다), 판정 뒤에 받으면 이미 실린 결과를 덮습니다. 인식 불가
-      // 국면도 `ready`가 아닙니다 — 거기서 받으면 기기 탓 문항이 `"correct"`로 실려
-      // 「기기 탓을 학습자 탓으로 접지 않는다」가 사라집니다.
-      if (state.phase !== "ready") {
+      // 인식 불가 건너뛰기는 선택적 체험만 명시적으로 허용합니다.
+      if (state.phase !== "ready" && !(state.phase === "unavailable" && action.allowUnavailable)) {
         return state;
       }
       // `next`를 따로 받지 않습니다 — 건너뛰기는 「이 문항을 끝낸다」와 「다음으로

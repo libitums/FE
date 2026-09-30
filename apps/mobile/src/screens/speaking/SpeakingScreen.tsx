@@ -141,7 +141,15 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
         : state.phase === "listening"
           ? { label: copy.speaking.stopSpeaking, run: () => stopSpeechRecognition() }
           : state.phase === "unavailable"
-            ? { label: copy.common.skip, run: () => dispatch({ type: "next" }) }
+            ? {
+                label: copy.common.skip,
+                run: () =>
+                  dispatch(
+                    question.optionalPractice
+                      ? { type: "skip", allowUnavailable: true }
+                      : { type: "next" },
+                  ),
+              }
             : undefined;
 
   // custom prop(`Button`의 `bindtap`)을 거쳐 `bindtap`에 닿는 핸들러라 `'background only'`를
@@ -165,7 +173,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
       questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
       complete={complete}
-      instruction={copy.speaking.instruction}
+      instruction={question?.support?.instruction ?? copy.speaking.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -251,6 +259,14 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
               >
                 {question.romanization}
               </text>
+              {question.support ? (
+                <text
+                  className="speaking-screen-translation"
+                  data-testid="speaking-screen-translation"
+                >
+                  {question.support.translation}
+                </text>
+              ) : null}
 
               {/* 파형 — 듣는 중에는 주색, 아니면 흐린 회색입니다. 듣는 중인지는 이 요소의
                   이름이 소리로 싣습니다. */}

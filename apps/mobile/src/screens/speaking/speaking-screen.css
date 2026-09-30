@@ -11,6 +11,13 @@
   min-height: 244px;
 }
 
+.speaking-screen-translation {
+  color: var(--libitum-color-fg-neutral);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  text-align: center;
+}
+
 .speaking-screen-verdict-slot {
   min-height: var(--libitum-spacing-32);
   display: flex;

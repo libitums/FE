@@ -66,6 +66,8 @@ function isFullBleedScreen(screen: Screen): boolean {
     screen.name === "episode-intro" ||
     screen.name === "episode-prologue" ||
     screen.name === "episode-final" ||
+    screen.name === "visual-novel" ||
+    screen.name === "roleplay-visual-novel" ||
     screen.name === "journey-entry"
   );
 }
@@ -222,6 +224,7 @@ export function AppSession({
   useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
 
   const screenNow = currentScreen(nav);
+  const isPhoneCall = screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call";
   const showsNavigator = showsTabNavigator(nav);
   // 가장자리까지 그림을 까는 화면은 셸이 여백을 잡지 않습니다 — 셸 배경이 칠하는 띠가
   // 그림을 끊습니다. 여백은 화면이 자기 안에서 잡습니다(`wiring.safeAreaInsets`).
@@ -231,7 +234,9 @@ export function AppSession({
     <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
       <ErrorBoundary>
         <view
-          className={screenNow.name === "splash" ? "app app-splash" : "app"}
+          className={
+            screenNow.name === "splash" ? "app app-splash" : isPhoneCall ? "app app-call" : "app"
+          }
           style={{
             paddingTop: `${shellInsets.top}px`,
             // 바가 설 때 아래는 비우지 않습니다 — 바가 화면 바닥까지 배경을 칠하고,

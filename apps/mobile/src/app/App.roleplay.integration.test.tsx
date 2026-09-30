@@ -1,3 +1,4 @@
+import { journeySteps } from "../screens/journey-map/journey-map";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
@@ -76,7 +77,7 @@ type Sinks = {
 // 매번 걷는 대신 끝난 상태에서 시작합니다. 잠김은 아래 [I8]~[I10]이 제품의 씨앗으로
 // 봅니다.
 const finishedTutorial: AppJourneySeed = {
-  completedStepCount: 5,
+  completedStepCount: journeySteps.length,
   completedMessengerUnitIds: [messengerUnitId],
   completedPhoneCallUnitIds: [phoneCallUnitId],
   visualNovelProgress: { status: "completed", beatIndex: 2 },
@@ -311,7 +312,6 @@ test("[I4] 롤플레이에서 연 메신저의 나가기는 목록으로이고 �
 test("[I4] 롤플레이에서 연 전화의 나가기는 목록으로이고 목록으로 돌아간다", async () => {
   await openRoleplayTab();
   openRoleplayItem(phoneCallUnitId);
-  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("Back to list");
   expect(screen.getByTestId("phone-call-exit-button")).toHaveAttribute(
     "accessibility-label",
     "Back to list",
@@ -323,7 +323,6 @@ test("[I4] 롤플레이에서 연 전화의 나가기는 목록으로이고 목�
 test("[I4] 롤플레이에서 연 비주얼 노벨의 나가기는 목록으로이고 목록으로 돌아간다", async () => {
   await openRoleplayTab();
   openRoleplayItem(visualNovelUnitId);
-  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("Back to list");
   expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
     "accessibility-label",
     "Back to list",
@@ -344,11 +343,17 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
-  expect(screen.getByTestId("phone-call-exit-button")).toHaveTextContent("Back to map");
+  expect(screen.getByTestId("phone-call-exit-button")).toHaveAttribute(
+    "accessibility-label",
+    "Back to map",
+  );
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
-  expect(screen.getByTestId("visual-novel-exit-button")).toHaveTextContent("Back to map");
+  expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
+    "accessibility-label",
+    "Back to map",
+  );
 });
 
 // -------------------------------------------------------------------------- I5 (AC5)

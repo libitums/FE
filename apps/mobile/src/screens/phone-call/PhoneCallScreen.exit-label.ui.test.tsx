@@ -60,7 +60,6 @@ describe("PhoneCallScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("phone-call-exit-button");
-    expect(exit).toHaveTextContent("Back to list");
     expect(exit).toHaveAttribute("accessibility-label", "Back to list");
     expect(exit).toHaveAttribute("accessibility-traits", "button");
     expect(exit).toHaveAttribute("accessibility-element", "true");
@@ -98,7 +97,6 @@ describe("PhoneCallScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("phone-call-exit-button");
-    expect(exit).toHaveTextContent("Back to map");
     expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   });
 
@@ -114,7 +112,6 @@ describe("PhoneCallScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("phone-call-exit-button");
-    expect(exit).toHaveTextContent("Back to map");
     expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   });
 });

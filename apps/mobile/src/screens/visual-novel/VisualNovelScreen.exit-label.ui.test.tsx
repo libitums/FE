@@ -27,7 +27,6 @@ describe("VisualNovelScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("visual-novel-exit-button");
-    expect(exit).toHaveTextContent("Back to list");
     expect(exit).toHaveAttribute("accessibility-label", "Back to list");
     expect(exit).toHaveAttribute("accessibility-traits", "button");
     expect(exit).toHaveAttribute("accessibility-element", "true");
@@ -65,7 +64,6 @@ describe("VisualNovelScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("visual-novel-exit-button");
-    expect(exit).toHaveTextContent("Back to map");
     expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   });
 
@@ -81,13 +79,12 @@ describe("VisualNovelScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("visual-novel-exit-button");
-    expect(exit).toHaveTextContent("Back to map");
     expect(exit).toHaveAttribute("accessibility-label", "Back to map");
   });
 
   // 비주얼 노벨만: 나가기 안쪽 <text>의 accessibility-element="false"가 X1에서도
   // 유지됩니다.
-  it("[X1 부속] roleplay 진입에서도 나가기 안쪽 텍스트가 accessibility-element='false'를 유지한다", () => {
+  it("[X1 부속] roleplay 진입에서도 나가기 아이콘은 중복 낭독하지 않는다", () => {
     render(
       <VisualNovelScreen
         story={story}
@@ -100,9 +97,7 @@ describe("VisualNovelScreen 나가기 라벨", () => {
     );
 
     const exit = screen.getByTestId("visual-novel-exit-button");
-    const innerText = exit.querySelector("text");
-    expect(innerText).not.toBeNull();
-    expect(innerText).toHaveAttribute("accessibility-element", "false");
-    expect(innerText).toHaveTextContent("Back to list");
+    expect(exit.querySelector('[accessibility-elements-hidden="true"]')).not.toBeNull();
+    expect(exit.querySelector('[data-testid="ui-lynx-round-button"]')).not.toBeNull();
   });
 });

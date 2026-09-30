@@ -19,7 +19,7 @@ import { SplashScreen } from "../screens/splash/SplashScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
 import { LearningShell } from "../screens/learning/LearningShell";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
-import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
+import { TutorialPracticeFixture, TutorialPracticeModesFixture } from "./TutorialPracticeFixture";
 import { initialSessionOptions } from "../lib/session-options";
 import { TutorialSpecialsFixture } from "./TutorialSpecialsFixture";
 import { ButtonCatalog } from "./ButtonCatalog";
@@ -55,12 +55,23 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
+  "tutorial-cafe": (go: Go) => (
+    <TutorialSpecialsFixture initialStage={2} onExit={() => go("journey-map")} />
+  ),
+  "tutorial-call": (go: Go) => (
+    <TutorialSpecialsFixture initialStage={1} onExit={() => go("journey-map")} />
+  ),
+  "tutorial-final-story": (go: Go) => (
+    <TutorialSpecialsFixture initialStage={3} onExit={() => go("journey-map")} />
+  ),
   "tutorial-specials": (go: Go) => <TutorialSpecialsFixture onExit={() => go("journey-map")} />,
+  "tutorial-practice-modes": (go: Go) => (
+    <TutorialPracticeModesFixture onFinal={() => go("tutorial-final-story")} />
+  ),
   "tutorial-practice": (go: Go, params: PlaygroundParams) => (
-    <SentenceOrderScreen
+    <TutorialPracticeFixture
       stepId={params.stepId ?? "greeting"}
       onExit={() => go("journey-map")}
-      onFinish={() => go("journey-map")}
     />
   ),
   "tutorial-prologue": (go: Go) => (

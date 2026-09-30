@@ -15,15 +15,12 @@ describe("DialoguePanel UI", () => {
     );
     const panel = screen.getByTestId("visual-novel-dialogue-arrive");
     const content = screen.getByTestId("visual-novel-dialogue-content-arrive");
-    expect(content).toHaveAttribute("accessibility-element", "true");
-    expect(content).toHaveAttribute(
+    const dialog = screen.getByTestId("ui-lynx-visual-novel-dialog");
+    expect(dialog).toHaveAttribute("data-surface", "translucent");
+    expect(dialog).toHaveAttribute("accessibility-element", "true");
+    expect(dialog).toHaveAttribute(
       "accessibility-label",
       "Jimin, 여기가 우리가 만나기로 한 카페예요.",
-    );
-    expect(screen.getByText("Jimin")).toHaveAttribute("accessibility-element", "false");
-    expect(screen.getByText("여기가 우리가 만나기로 한 카페예요.")).toHaveAttribute(
-      "accessibility-element",
-      "false",
     );
     expect(panel).not.toHaveAttribute("accessibility-element");
     expect(panel).toHaveTextContent("Jimin");
@@ -38,7 +35,10 @@ describe("DialoguePanel UI", () => {
     expect(content).toHaveAttribute("scroll-orientation", "vertical");
     expect(button.parentElement).toBe(panel);
     expect(button).toHaveClass("visual-novel-dialogue-action");
-    expect(button.querySelector("text")).toHaveClass("visual-novel-dialogue-action-label");
+    expect(button.querySelector('[data-testid="ui-lynx-button"]')).toHaveAttribute(
+      "data-variant",
+      "brand",
+    );
     fireEvent.tap(button, {});
     expect(onSelect).toHaveBeenCalledTimes(1);
   });

@@ -90,7 +90,7 @@ describe("cultureNarrativeForStep — 부수효과 없음", () => {
 });
 
 // CE2 — 부록 C.5의 영어 노트입니다. 「」 안의 한국어만 남고 나머지는 영어입니다.
-const cultureEnglish: Record<JourneyStepId, CultureNarrative> = {
+const cultureEnglish: Partial<Record<JourneyStepId, CultureNarrative>> = {
   greeting: {
     title: "Bowing when you greet",
     paragraphs: [

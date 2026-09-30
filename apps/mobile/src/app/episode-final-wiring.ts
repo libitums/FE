@@ -43,8 +43,8 @@ export function episodeFinalWiring(args: EpisodeFinalWiringArgs): EpisodeFinalWi
         screen: { name: "episode-final-complete", unitId: id, results },
       });
     },
-    // 끝낸 것으로 적는 자리는 여기 하나입니다 — 문항을 다 풀고 결과를 본 뒤입니다. 틀린
-    // 문항이 있어도 에피소드는 끝납니다(정답을 보여 주고 넘어가는 결정, 2026-09-28).
+    // 끝낸 것으로 적는 자리는 여기 하나입니다. 이야기형은 통과 후 마무리 서사까지 읽고
+    // 결과를 확인해야 닿습니다. 재도전·서사 중 이탈은 여기까지 오지 않습니다.
     onCompleteEpisodeFinal: (id) => {
       setCompletedEpisodeFinalIds((ids) => (ids.includes(id) ? ids : [...ids, id]));
       dispatch({ type: "back" });

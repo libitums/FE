@@ -1,3 +1,4 @@
+import { journeySteps } from "../screens/journey-map/journey-map";
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
@@ -49,7 +50,7 @@ test("[AH-I3] 젬 구매 화면의 Pay는 준비 중 안내만 띄우고 젬은 
 
 // 튜토리얼을 다 끝낸 진행입니다 — 롤플레이의 플러스 안내는 에피소드가 열려야 뜹니다.
 const finishedTutorial: AppJourneySeed = {
-  completedStepCount: 5,
+  completedStepCount: journeySteps.length,
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
   visualNovelProgress: { status: "completed", beatIndex: 2 },

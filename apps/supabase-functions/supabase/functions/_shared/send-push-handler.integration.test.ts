@@ -81,6 +81,8 @@ describe("send-push handler", () => {
     );
     expect((await h.post(announcement, null)).status).toBe(401);
     expect((await h.post(announcement, "Bearer anon-key")).status).toBe(401);
+    expect(h.calls).toHaveLength(0);
+    expect((await h.post(announcement, "Bearer eyJh.eyJi.sig")).status).toBe(401);
     // 글자가 다른 키는 Auth에 한 번 묻고, 거절되면 그 뒤로 아무것도 부르지 않는다.
     expect(h.calls.map((call) => call.url)).toEqual([
       "https://p.supabase.co/auth/v1/admin/users?page=1&per_page=1",
@@ -249,5 +251,42 @@ describe("send-push handler", () => {
     const same = harness(() => ({ status: 200, body: "[]" }));
     expect((await same.post(announcement)).status).toBe(200);
     expect(same.calls.some((call) => call.url.includes("/auth/v1/admin/users"))).toBe(false);
+  });
+  test.each(["random-key", "sb_publishable_abc", "sb_secret_", "eyJh..sig"])(
+    "SH12 잘못된 키 형식 %s는 Auth · 기기 조회 · 발송 없이 거절한다",
+    async (key) => {
+      const h = harness(() => ({ status: 200, body: "[]" }));
+      expect((await h.post(announcement, `Bearer ${key}`)).status).toBe(401);
+      expect(h.calls).toHaveLength(0);
+    },
+  );
+
+  test("SH13 런타임과 다른 새 비밀 키는 Auth 확인 후에만 허용하고 apikey로만 보낸다", async () => {
+    const key = "sb_secret_other-server-key";
+    const h = harness(() => ({ status: 200, body: "[]" }));
+    expect((await h.post(announcement, `Bearer ${key}`)).status).toBe(200);
+    expect(h.calls).toHaveLength(2);
+    expect(h.calls[0]!.url).toContain("/auth/v1/admin/users");
+    expect(h.calls[0]!.headers).toEqual({ apikey: key });
+    expect(h.calls[1]!.url).toContain("/rest/v1/push_devices");
+  });
+
+  test.each([401, 403, 429, 500])(
+    "SH14 키 형식이 맞아도 Auth 응답 %i이면 기기 조회 · 발송 없이 거절한다",
+    async (status) => {
+      const h = harness(() => ({ status }));
+      expect((await h.post(announcement, "Bearer sb_secret_unverified")).status).toBe(401);
+      expect(h.calls).toHaveLength(1);
+      expect(h.calls[0]!.url).toContain("/auth/v1/admin/users");
+    },
+  );
+
+  test("SH15 Auth 연결 실패도 인증 실패로 처리하고 발송하지 않는다", async () => {
+    const h = harness(() => {
+      throw new Error("network unavailable");
+    });
+    expect((await h.post(announcement, "Bearer eyJh.eyJi.sig")).status).toBe(401);
+    expect(h.calls).toHaveLength(1);
+    expect(h.calls[0]!.url).toContain("/auth/v1/admin/users");
   });
 });

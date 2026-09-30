@@ -6,16 +6,19 @@ import type { LearningForm } from "../../lib/learning-form";
 import type { JourneyStepId } from "./journey-map-units";
 
 // 튜토리얼은 표현 하나를 보고 따라 구성하는 활동 하나로 시작합니다.
-// 듣기·말하기·쓰기 등의 기존 문항은 다음 커리큘럼을 위해 유지하지만 여기서 배정하지 않습니다.
+// 후반의 세 유닛에서 듣기·말하기·쓰기를 한 문항씩 따로 경험합니다.
 const learningFormsByStep: Record<JourneyStepId, readonly [LearningForm, ...LearningForm[]]> = {
   greeting: ["sentence-order"],
   introduction: ["sentence-order"],
   ordering: ["sentence-order"],
   appointment: ["sentence-order"],
   directions: ["sentence-order"],
+  "tutorial-listening": ["listening"],
+  "tutorial-speaking": ["speaking"],
+  "tutorial-writing": ["writing"],
 };
 
-// 던지지 않는 총함수입니다 — `Record`가 다섯 키를 전부 덮는 것을 tsc가 지므로 방어
+// 던지지 않는 총함수입니다 — `Record`가 모든 키를 전부 덮는 것을 tsc가 지므로 방어
 // 분기도 `undefined` 반환도 없습니다. `sentenceOrderQuestionsForStep`이 쓴 것과 같은
 // 문장입니다. 새 스텝이 늘면 위 `Record`가 `TS2741`로 섭니다.
 export function learningFormsForStep(

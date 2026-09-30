@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { readFinalStory } from "./test-helpers/final-story";
 import { App } from "./App";
 import type { AppJourneySeed } from "./App";
 import { hangulIn, hangulOutside } from "./test-helpers/hangul";
@@ -537,6 +538,7 @@ const screenCases: readonly ScreenCase[] = [
     open: async () => {
       await bootJourney(readyForFinal);
       fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-tutorial-final-test"), {});
+      readFinalStory("introduction");
     },
     screenTestId: "episode-final-screen-title",
     content: [/^episode-final-screen-(line|option|prompt|question)/],
@@ -570,7 +572,7 @@ const specialUnits = [
 ] as const;
 
 const finishedTutorial: AppJourneySeed = {
-  completedStepCount: 5,
+  completedStepCount: journeySteps.length,
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
   visualNovelProgress: { status: "completed", beatIndex: 2 },

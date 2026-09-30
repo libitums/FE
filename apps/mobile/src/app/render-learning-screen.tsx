@@ -41,12 +41,7 @@ export function renderShellLearningScreen(
       );
     case "writing":
       return (
-        <WritingScreen
-          stepId={screen.stepId}
-          onExit={wiring.onExitLearning}
-          // 쓰기에는 건너뛰기가 없습니다 — 잴 수 없던 음절은 결과에 싣지 않을 뿐입니다.
-          onFinish={(id, results) => onFinish(id, results, 0)}
-        />
+        <WritingScreen stepId={screen.stepId} onExit={wiring.onExitLearning} onFinish={onFinish} />
       );
   }
 }

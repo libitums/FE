@@ -1,6 +1,7 @@
 // 롤플레이 route 셋을 화면 컴포넌트로 옮깁니다. 자기 `never` 망라를 따로
 // 가집니다.
 
+import { zeroSafeAreaInsets } from "../lib/safe-area";
 import { MessengerScreen } from "../screens/messenger/MessengerScreen";
 import {
   messengerConversationFor,
@@ -23,7 +24,11 @@ import type { RoleplayUnitWiring } from "./screen-wiring";
 // App 상태를 캡처할 수 있어 연습 경계(매개변수 타입에 여정 상태 필드가
 // 없다는 것)가 사라집니다. 자기 `switch`에 `never` 망라를 갖고
 // `renderScreen`의 망라도 그대로 섭니다 — 둘 다 섭니다.
-export function renderRoleplayUnitScreen(screen: RoleplayUnitScreen, wiring: RoleplayUnitWiring) {
+export function renderRoleplayUnitScreen(
+  screen: RoleplayUnitScreen,
+  wiring: RoleplayUnitWiring,
+  insets = zeroSafeAreaInsets,
+) {
   switch (screen.name) {
     case "roleplay-messenger":
       return (
@@ -54,6 +59,7 @@ export function renderRoleplayUnitScreen(screen: RoleplayUnitScreen, wiring: Rol
       // `practiceVisualNovelExitOutcome(beatId)`가 집니다.
       return (
         <VisualNovelScreen
+          insets={insets}
           story={visualNovelStoryFor(screen.unitId)}
           progress={practiceVisualNovelProgress()}
           exitTo="roleplay"

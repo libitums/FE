@@ -1,3 +1,6 @@
+import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
+import { RoundButton } from "@libitums/ui-lynx/round-button";
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { useReducer } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
@@ -24,6 +27,7 @@ import "./visual-novel.css";
 // `<view className="visual-novel-header-text">`(testid·접근성 속성 없음)로
 // 감쌉니다. 여정·롤플레이 두 경로 공통입니다.
 export function VisualNovelScreen({
+  insets = zeroSafeAreaInsets,
   story,
   progress,
   exitTo = "journey",
@@ -64,7 +68,24 @@ export function VisualNovelScreen({
     <view
       className="visual-novel-screen visual-novel-large-text-reflow"
       data-testid="visual-novel-screen"
+      style={{
+        paddingTop: `${insets.top}px`,
+        paddingBottom: `${insets.bottom}px`,
+        paddingLeft: `${insets.left}px`,
+        paddingRight: `${insets.right}px`,
+      }}
     >
+      <VisualNovelScene
+        beat={beat}
+        backgroundArtwork={artworkFor(beat.backgroundId)}
+        characterArtwork={artworkFor(beat.characterPoseId)}
+        replaying={session.replaying}
+      />
+      <view
+        className="visual-novel-shade"
+        event-through={true}
+        accessibility-elements-hidden={true}
+      />
       <view className="visual-novel-header visual-novel-large-text-reflow">
         <view
           className="visual-novel-exit"
@@ -74,7 +95,14 @@ export function VisualNovelScreen({
           accessibility-label={exitLabel}
           bindtap={handleExit}
         >
-          <text accessibility-element={false}>{exitLabel}</text>
+          <view accessibility-elements-hidden={true}>
+            <RoundButton
+              accessibilityLabel={exitLabel}
+              icon={arrowLeft03}
+              variant="neutral"
+              size="xl"
+            />
+          </view>
         </view>
         <view className="visual-novel-header-text">
           <text
@@ -90,12 +118,6 @@ export function VisualNovelScreen({
         </view>
       </view>
       <view className="visual-novel-scene-shell">
-        <VisualNovelScene
-          beat={beat}
-          backgroundArtwork={artworkFor(beat.backgroundId)}
-          characterArtwork={artworkFor(beat.characterPoseId)}
-          replaying={session.replaying}
-        />
         <DialoguePanel
           beatId={beat.id}
           speakerName={beat.speakerName}
