@@ -122,7 +122,7 @@ export function ListeningScreen({
       questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
       complete={complete}
-      instruction={copy.listening.instruction}
+      instruction={question?.instruction ?? copy.listening.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}

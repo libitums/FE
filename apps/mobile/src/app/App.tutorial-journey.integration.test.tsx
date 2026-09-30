@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 // 학습 데이터·배정·진행·채점은 실제 코드. 외부 인증과 네이티브 재생 완료만 대역합니다.
-test("처음 여정부터 이야기·다섯 연습·스페셜·세 문항 복습을 거쳐 롤플레이를 연다", async () => {
+test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습을 거쳐 롤플레이를 연다", async () => {
   let finishAudio: (() => void) | undefined;
   const play = vi.fn((_source: string, done: () => void) => {
     finishAudio = done;
@@ -34,7 +34,6 @@ test("처음 여정부터 이야기·다섯 연습·스페셜·세 문항 복습
   vi.stubGlobal("NativeModules", {
     AudioPlaybackModule: { play, stop: vi.fn() },
     SpeechRecognitionModule: { start: recognize, stop: vi.fn() },
-    HandwritingTraceModule: { evaluate: recognize },
   });
   await renderSignedInApp(<App journeySeed={{ ...productJourneySeed, completedStepCount: 0 }} />);
   expect(screen.getByTestId(unit("greeting"))).toHaveAttribute("data-status", "default");
@@ -119,6 +118,29 @@ test("처음 여정부터 이야기·다섯 연습·스페셜·세 문항 복습
     "clear",
   );
   completeStep("directions");
+  expect(screen.getByTestId(unit("tutorial-final-test"))).toHaveAttribute("data-status", "default");
+  tap(unit("tutorial-listening"));
+  tap("step-sheet-start");
+  tap("listening-choice-0");
+  tap("learning-shell-advance");
+  tap("learning-shell-action");
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  button("lesson-complete-screen-exit");
+  for (const [id, skip] of [
+    ["tutorial-speaking", "speaking-screen-skip"],
+    ["tutorial-writing", "writing-screen-skip"],
+  ]) {
+    tap(unit(id!));
+    tap("step-sheet-start");
+    button(skip!);
+    tap("learning-shell-action");
+    expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent(
+      "LESSON COMPLETE!",
+    );
+    button("lesson-complete-screen-exit");
+    expect(screen.getByTestId(unit(id!))).toHaveAttribute("data-status", "clear");
+  }
+
   expect(screen.getByTestId(unit("tutorial-final-test"))).toHaveAttribute(
     "data-status",
     "available",

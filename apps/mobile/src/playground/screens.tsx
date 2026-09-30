@@ -19,7 +19,7 @@ import { SplashScreen } from "../screens/splash/SplashScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
 import { LearningShell } from "../screens/learning/LearningShell";
 import { ListeningScreen } from "../screens/listening/ListeningScreen";
-import { SentenceOrderScreen } from "../screens/sentence-order/SentenceOrderScreen";
+import { TutorialPracticeFixture, TutorialPracticeModesFixture } from "./TutorialPracticeFixture";
 import { initialSessionOptions } from "../lib/session-options";
 import { TutorialSpecialsFixture } from "./TutorialSpecialsFixture";
 import { ButtonCatalog } from "./ButtonCatalog";
@@ -59,11 +59,13 @@ export const playgroundScreens = {
     <TutorialSpecialsFixture initialStage={3} onExit={() => go("journey-map")} />
   ),
   "tutorial-specials": (go: Go) => <TutorialSpecialsFixture onExit={() => go("journey-map")} />,
+  "tutorial-practice-modes": (go: Go) => (
+    <TutorialPracticeModesFixture onFinal={() => go("tutorial-final-story")} />
+  ),
   "tutorial-practice": (go: Go, params: PlaygroundParams) => (
-    <SentenceOrderScreen
+    <TutorialPracticeFixture
       stepId={params.stepId ?? "greeting"}
       onExit={() => go("journey-map")}
-      onFinish={() => go("journey-map")}
     />
   ),
   "tutorial-prologue": (go: Go) => (

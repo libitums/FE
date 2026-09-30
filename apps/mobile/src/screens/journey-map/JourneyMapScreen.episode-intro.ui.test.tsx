@@ -151,14 +151,14 @@ test("[UI-I6] 표지의 낭독 이름이 상태에 따라 갈린다", () => {
 
 // 헤더 막대가 재는 것은 **그 아래 줄에 선 것**의 진행입니다 — 화면에 열 줄이 서는데
 // 아홉을 세면 사용자가 대조할 수 없습니다(spec §2.7). 분자도 같은 단위입니다.
-test("[UI-I7] 에피소드 헤더의 분모가 10이고 분자가 끝낸 맵 항목 수다", () => {
+test("[UI-I7] 에피소드 헤더의 분모가 13이고 분자가 끝낸 맵 항목 수다", () => {
   const { unmount } = renderMap();
-  expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("2 / 10");
+  expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("2 / 13");
   unmount();
 
   // 표지를 끝내면 분자가 하나 늡니다 — 표지가 진행의 여섯째 출처입니다.
   renderMap({ completedEpisodeIntroIds: introDone });
-  expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("3 / 10");
+  expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("3 / 13");
 });
 
 // 「줄 중간에 낀 항목 뒤」를 **줄 머리에 낀** 경우로 한 번 더 봅니다. `directions`는
@@ -172,6 +172,9 @@ test("[UI-I8] 표지 뒤의 스텝 다섯이 여전히 자기 서수의 상태�
     ordering: "clear",
     appointment: "clear",
     directions: "active",
+    "tutorial-listening": "default",
+    "tutorial-speaking": "default",
+    "tutorial-writing": "default",
   };
   journeySteps.forEach((step) => {
     expect(screen.getByTestId(`ui-lynx-learning-unit-${step.id}`)).toHaveAttribute(

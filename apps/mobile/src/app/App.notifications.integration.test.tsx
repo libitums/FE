@@ -1,3 +1,4 @@
+import { journeySteps } from "../screens/journey-map/journey-map";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
@@ -224,7 +225,7 @@ test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하�
     <App
       completedEpisodeIntroIds={completedIntros}
       journeySeed={{
-        completedStepCount: 5,
+        completedStepCount: journeySteps.length,
         completedMessengerUnitIds: ["appointment-confirmation"],
         completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
         visualNovelProgress: { status: "completed", beatIndex: 2 },

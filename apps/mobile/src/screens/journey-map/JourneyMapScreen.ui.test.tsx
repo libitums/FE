@@ -357,11 +357,17 @@ test("completedStepCount=3으로 렌더하면 ordering이 done, appointment가 c
   );
 });
 
-// 엣지 (「여정이 전부 완료된다」): completedStepCount=5면 다섯 전부 done이고
+// 엣지 (「여정이 전부 완료된다」): completedStepCount=8이면 여덟 전부 done이고
 // **current인 스텝이 하나도 없는 것이 정상**입니다. 새 상태어도 새 분기도 없다는
 // 것을 화면 쪽에서 한 번 못박습니다.
-test("completedStepCount=5로 렌더하면 다섯 전부 done이고 current인 스텝이 없다", () => {
-  render(<JourneyMapScreen {...mapFixture} completedStepCount={5} onStartStep={() => {}} />);
+test("completedStepCount=8로 렌더하면 여덟 전부 done이고 current인 스텝이 없다", () => {
+  render(
+    <JourneyMapScreen
+      {...mapFixture}
+      completedStepCount={journeySteps.length}
+      onStartStep={() => {}}
+    />,
+  );
 
   journeySteps.forEach((step) => {
     expect(screen.getByTestId(`ui-lynx-learning-unit-${step.id}`)).toHaveAttribute(
@@ -515,6 +521,9 @@ const mapUnitTestIds = [
   "ui-lynx-learning-unit-appointment-confirmation-phone-call",
   "ui-lynx-learning-unit-cafe-arrival-visual-novel",
   "ui-lynx-learning-unit-directions",
+  "ui-lynx-learning-unit-tutorial-listening",
+  "ui-lynx-learning-unit-tutorial-speaking",
+  "ui-lynx-learning-unit-tutorial-writing",
   "ui-lynx-learning-unit-tutorial-final-test",
 ] as const;
 

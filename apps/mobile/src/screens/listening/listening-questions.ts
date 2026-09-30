@@ -22,15 +22,35 @@ export type ListeningQuestion = {
   // 자산이 오면 `AudioPlaybackModule.resolve`에 **해석만** 붙습니다.
   // 옵셔널이 아닙니다 — `audioSource?`면 "아직 없는 문항"이 타입에 생깁니다.
   readonly audioSource: string;
-  readonly choices: readonly [string, string, string, string];
-  readonly answerIndex: 0 | 1 | 2 | 3;
-};
+  readonly instruction?: string;
+} & (
+  | {
+      readonly choices: readonly [string, string];
+      readonly answerIndex: 0 | 1;
+    }
+  | {
+      readonly choices: readonly [string, string, string, string];
+      readonly answerIndex: 0 | 1 | 2 | 3;
+    }
+);
 
 // ---------------------------------------------------------------- 고정 데이터
 // 듣기가 배정된 4 스텝 × 3 문항 × 보기 4개입니다. 한 스텝 안에서 세
 // 문항의 정답 인덱스가 서로 다릅니다. 하류가 지어내지 않습니다.
 export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQuestion[]> = {
   // 첫 인사는 뜻과 발음을 보며 답하는 안내 활동만 합니다. 듣기는 다음 유닛부터 시작합니다.
+  "tutorial-listening": [
+    {
+      prompt: "안녕하세요",
+      romanization: "annyeonghaseyo",
+      audioSource: "phone-call-confirm-01",
+      choices: ["Hello", "Thank you"],
+      answerIndex: 0,
+      instruction: "Listen to the greeting, then tap its meaning. You can listen again.",
+    },
+  ],
+  "tutorial-speaking": [],
+  "tutorial-writing": [],
   greeting: [],
   introduction: [
     {

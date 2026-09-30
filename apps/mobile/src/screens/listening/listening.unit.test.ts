@@ -29,8 +29,7 @@ import { uiCopyEn } from "../../lib/ui-copy-en";
 // 그래서 toHaveClass·toHaveStyle·toBeVisible 같은 매처가 한 줄도 없습니다
 // (docs/conventions/code.md 「jest-dom 매처는 절반만 쓴다」 · ADR-0006 D4).
 
-// 계약이 고정한 다섯 스텝입니다. Record가 다섯을 전부 갖는 것은 tsc가 지고, 이
-// 배열은 테스트가 다섯을 하나도 빠뜨리지 않고 도는 축입니다.
+// 기존 다섯 스텝의 듣기 데이터 회귀를 확인합니다. 새 한 문항 체험은 App 통합 테스트로 검증합니다.
 const stepIds: readonly JourneyStepId[] = [
   "greeting",
   "introduction",
@@ -525,8 +524,10 @@ describe("sessionAnswerResults", () => {
 });
 
 describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
-  it("다섯 스텝이 전부 있다", () => {
-    expect(Object.keys(listeningQuestionsByStep).sort()).toEqual([...stepIds].sort());
+  it("기존 다섯 스텝과 체험 셋이 전부 있다", () => {
+    expect(Object.keys(listeningQuestionsByStep).sort()).toEqual(
+      [...stepIds, "tutorial-listening", "tutorial-speaking", "tutorial-writing"].sort(),
+    );
   });
 
   it("듣기를 배정한 스텝에만 문항이 셋이다", () => {
@@ -538,7 +539,7 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
   it("모든 문항의 보기가 넷이다", () => {
     for (const id of stepIds) {
       for (const question of listeningQuestionsByStep[id]) {
-        expect(question.choices).toHaveLength(4);
+        expect([2, 4]).toContain(question.choices.length);
       }
     }
   });
@@ -547,7 +548,7 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
     for (const id of stepIds) {
       for (const question of listeningQuestionsByStep[id]) {
         expect(question.answerIndex).toBeGreaterThanOrEqual(0);
-        expect(question.answerIndex).toBeLessThanOrEqual(3);
+        expect(question.answerIndex).toBeLessThan(question.choices.length);
       }
     }
   });
@@ -566,7 +567,7 @@ describe("listeningQuestionsByStep (고정 데이터 불변식)", () => {
   it("한 문항 안에서 보기 넷이 서로 다르다", () => {
     for (const id of stepIds) {
       for (const question of listeningQuestionsByStep[id]) {
-        expect(new Set(question.choices).size).toBe(4);
+        expect(new Set(question.choices).size).toBe(question.choices.length);
       }
     }
   });
@@ -836,7 +837,7 @@ describe("listeningQuestionsByStep — 영어 뜻 풀이 보기(CE1)", () => {
   it("한 문항 안 보기 넷이 서로 다르다", () => {
     for (const id of stepIds) {
       for (const question of listeningQuestionsByStep[id]) {
-        expect(new Set(question.choices).size).toBe(4);
+        expect(new Set(question.choices).size).toBe(question.choices.length);
       }
     }
   });

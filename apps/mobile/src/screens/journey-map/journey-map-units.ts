@@ -83,6 +83,21 @@ const tutorialUnits: JourneyEpisodeUnits = [
         title: "Asking for directions",
         description: "Put two pieces together to ask where the station is",
       },
+      {
+        id: "tutorial-listening",
+        title: "Listen to a Hello",
+        description: "Hear a familiar greeting and choose its meaning from two answers",
+      },
+      {
+        id: "tutorial-speaking",
+        title: "Say Your Hello",
+        description: "Try saying one familiar greeting with pronunciation to help",
+      },
+      {
+        id: "tutorial-writing",
+        title: "Trace One Letter",
+        description: "Follow the pale guide to write one letter from See you tomorrow",
+      },
     ],
   },
   // 에피소드의 마지막은 최종 테스트입니다 — 서사와 에피소드에서 배운 표현을 모아 풀고

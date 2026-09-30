@@ -1,3 +1,10 @@
+.writing-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+}
+
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 쓰기의 카드 안 · 작업 영역입니다.
    뼈대는 `LearningShell`이, 빈칸 문장 · 음절 칸 · 캔버스의 모양은 각 공용 컴포넌트의 짝 CSS가
    집니다 — 여기는 그것들을 쌓는 일과 번역 한 줄뿐입니다. */
@@ -39,6 +46,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.writing-screen-skip {
+  align-self: stretch;
+  margin-top: var(--libitum-spacing-12);
 }
 
 /* 문항을 모두 마쳤을 때의 한 줄입니다 — 말하기와 같은 모양입니다. */

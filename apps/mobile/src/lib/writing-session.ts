@@ -33,6 +33,9 @@ export type WritingQuestion = {
    * `writingPassCriterion`을 그대로 적습니다.
    */
   readonly passCriterion: WritingPassCriterion;
+  readonly instruction?: string;
+  /** 조작 체험 문항에서는 명시적 건너뛰기를 제공합니다. */
+  readonly optionalPractice?: boolean;
 };
 
 /**
