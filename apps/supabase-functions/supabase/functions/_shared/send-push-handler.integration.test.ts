@@ -4,7 +4,7 @@ import { signEs256 } from "./apple-client-secret.ts";
 import { bytesFromBase64Url } from "./base64.ts";
 import type { OutboundRequest, OutboundResponse } from "./delete-account.contract.ts";
 import type { SendPushEnv, SendPushLogEntry } from "./send-push.contract.ts";
-import { createSendPushHandler } from "./send-push-handler.ts";
+import { createSendPushHandler, tokensPerRemoval, userIdsPerLookup } from "./send-push-handler.ts";
 
 // 핸들러 + 실제 WebCrypto 서명 + 가짜 바깥 호출(PostgREST · APNs)을 잇습니다(SH1~SH8).
 
@@ -176,5 +176,52 @@ describe("send-push handler", () => {
       },
     ]);
     expect(JSON.stringify(h.logs)).not.toContain(tokens[0]);
+  });
+
+  test("SH9 사용자 목록은 100개씩 나눠 조회하고, 무효 토큰은 50개씩 나눠 지운다", async () => {
+    expect(userIdsPerLookup).toBe(100);
+    expect(tokensPerRemoval).toBe(50);
+    const userIds = Array.from(
+      { length: 150 },
+      (_, i) => `00000000-0000-4000-8000-${String(i).padStart(12, "0")}`,
+    );
+    const many = Array.from({ length: 60 }, (_, i) => i.toString(16).padStart(64, "0"));
+    const h = harness((request) => {
+      if (request.method === "DELETE") return { status: 204 };
+      if (request.url.includes("/rest/v1/")) {
+        const first = request.url.includes(userIds[0]!);
+        const rows = (first ? many.slice(0, 30) : many.slice(30)).map((token) => ({
+          token,
+          environment: "production",
+        }));
+        return { status: 200, body: JSON.stringify(rows) };
+      }
+      return { status: 410 };
+    });
+    const response = await h.post({ ...announcement, audience: { userIds } });
+    await expect(response.json()).resolves.toEqual({
+      devices: 60,
+      sent: 0,
+      failed: 60,
+      removed: 60,
+    });
+    const lookups = h.calls.filter((call) => call.method === "GET");
+    expect(lookups).toHaveLength(2);
+    expect(h.calls.filter((call) => call.method === "DELETE")).toHaveLength(2);
+  });
+
+  test("SH10 나눈 조회 중 하나라도 실패하면 아무에게도 보내지 않는다", async () => {
+    const userIds = Array.from(
+      { length: 101 },
+      (_, i) => `00000000-0000-4000-8000-${String(i).padStart(12, "0")}`,
+    );
+    const h = harness((request) =>
+      request.url.includes(userIds[100]!)
+        ? { status: 500 }
+        : { status: 200, body: JSON.stringify([{ token: tokens[0], environment: "sandbox" }]) },
+    );
+    const response = await h.post({ ...announcement, audience: { userIds } });
+    expect(response.status).toBe(502);
+    expect(h.calls.filter((call) => call.url.includes("/3/device/"))).toHaveLength(0);
   });
 });

@@ -1,6 +1,6 @@
 -- 다시 돌아오기 알림 예약입니다(ADR-0034). **마이그레이션이 아닙니다** — `send-push`를 배포하고 Vault에
 -- service role 키를 넣은 뒤 SQL 편집기에서 한 번 실행합니다(README 「send-push」). 다시 실행하면 같은 이름의
--- 예약을 덮어씁니다.
+-- 예약을 덮어씁니다. 실행 전에 아래 `<project-ref>`를 프로젝트 ref로 바꿉니다.
 --
 -- 매일 10:00 UTC(한국 19:00)에 두 번 부릅니다 — 정확히 3일 · 7일 전 하루 동안 마지막으로 앱을 연 사용자.
 -- 사전 준비:
@@ -13,7 +13,7 @@ select cron.schedule(
   '0 10 * * *',
   $$
   select net.http_post(
-    url := 'https://wgwnitgyotyvixozwrzu.supabase.co/functions/v1/send-push',
+    url := 'https://<project-ref>.supabase.co/functions/v1/send-push',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || (

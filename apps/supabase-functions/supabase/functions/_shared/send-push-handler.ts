@@ -45,11 +45,40 @@ function sameSecret(a: string, b: string): boolean {
   return difference === 0;
 }
 
-function devicesRequestFor(env: SendPushEnv, body: SendPushRequestBody): OutboundRequest {
-  if (body.kind === "reengagement") return reengagementDevicesRequest(env, body.days);
-  return body.audience === "all"
-    ? allDevicesRequest(env)
-    : userDevicesRequest(env, body.audience.userIds);
+/** 쿼리 문자열에 싣는 ID · 토큰 수의 상한입니다 — URL 길이 제한(414)을 넘지 않게 나눕니다. */
+export const userIdsPerLookup = 100;
+export const tokensPerRemoval = 50;
+
+function chunks<T>(items: readonly T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let start = 0; start < items.length; start += size) {
+    result.push(items.slice(start, start + size));
+  }
+  return result;
+}
+
+function devicesRequestsFor(env: SendPushEnv, body: SendPushRequestBody): OutboundRequest[] {
+  if (body.kind === "reengagement") return [reengagementDevicesRequest(env, body.days)];
+  if (body.audience === "all") return [allDevicesRequest(env)];
+  return chunks(body.audience.userIds, userIdsPerLookup).map((ids) => userDevicesRequest(env, ids));
+}
+
+/** 조회가 하나라도 실패하면 `null` — 일부 대상에게만 보내지 않습니다. */
+async function lookupDevices(
+  deps: SendPushDeps,
+  requests: readonly OutboundRequest[],
+): Promise<PushDevice[] | null> {
+  const pages = await Promise.all(
+    requests.map(async (request) => {
+      const response = await send(deps, request);
+      if (response === null || response.status < 200 || response.status >= 300) return null;
+      return pushDevicesFrom(await response.text().catch(() => ""));
+    }),
+  );
+  if (pages.some((page) => page === null)) return null;
+  const byToken = new Map<string, PushDevice>();
+  for (const page of pages) for (const device of page ?? []) byToken.set(device.token, device);
+  return [...byToken.values()];
 }
 
 function messageFor(body: SendPushRequestBody): PushMessage {
@@ -84,11 +113,7 @@ async function decide(
   env: SendPushEnv,
   body: SendPushRequestBody,
 ): Promise<SendPushOutcome> {
-  const lookup = await send(deps, devicesRequestFor(env, body));
-  if (lookup === null || lookup.status < 200 || lookup.status >= 300) {
-    return { status: 502, error: "devices_unavailable" };
-  }
-  const devices = pushDevicesFrom(await lookup.text().catch(() => ""));
+  const devices = await lookupDevices(deps, devicesRequestsFor(env, body));
   if (devices === null) return { status: 502, error: "devices_unavailable" };
   if (devices.length === 0) {
     return { status: 200, summary: { devices: 0, sent: 0, failed: 0, removed: 0 } };
@@ -100,15 +125,15 @@ async function decide(
   const results = await deliver(deps, env, authToken, devices, apnsPayload(messageFor(body)));
   const invalid = devices.filter((_, index) => results[index] === "invalid-token");
   let removed = 0;
-  if (invalid.length > 0) {
+  for (const batch of chunks(invalid, tokensPerRemoval)) {
     const removal = await send(
       deps,
       removeDevicesRequest(
         env,
-        invalid.map((device) => device.token),
+        batch.map((device) => device.token),
       ),
     );
-    if (removal !== null && removal.status >= 200 && removal.status < 300) removed = invalid.length;
+    if (removal !== null && removal.status >= 200 && removal.status < 300) removed += batch.length;
   }
   return {
     status: 200,
