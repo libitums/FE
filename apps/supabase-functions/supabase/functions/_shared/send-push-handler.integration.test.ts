@@ -71,15 +71,20 @@ const devicesBody = JSON.stringify([
 const announcement = { kind: "announcement", audience: "all", title: "New", body: "Episode 2" };
 
 describe("send-push handler", () => {
-  test("SH1 POST가 아니면 405, 환경이 없으면 500, 키가 틀리면 401 — 바깥 호출 0", async () => {
-    const h = harness(() => ({ status: 200, body: "[]" }));
+  test("SH1 POST가 아니면 405, 환경이 없으면 500, 키가 틀리면 401 — 기기 조회 · 발송 0", async () => {
+    const h = harness((request) =>
+      request.url.includes("/auth/v1/admin/users") ? { status: 401 } : { status: 200, body: "[]" },
+    );
     expect((await h.handler(new Request("https://x/send-push"))).status).toBe(405);
     expect((await harness(() => ({ status: 200 }), { env: null }).post(announcement)).status).toBe(
       500,
     );
     expect((await h.post(announcement, null)).status).toBe(401);
     expect((await h.post(announcement, "Bearer anon-key")).status).toBe(401);
-    expect(h.calls).toHaveLength(0);
+    // 글자가 다른 키는 Auth에 한 번 묻고, 거절되면 그 뒤로 아무것도 부르지 않는다.
+    expect(h.calls.map((call) => call.url)).toEqual([
+      "https://p.supabase.co/auth/v1/admin/users?page=1&per_page=1",
+    ]);
   });
 
   test("SH2 본문이 틀리면 400", async () => {
@@ -223,5 +228,26 @@ describe("send-push handler", () => {
     const response = await h.post({ ...announcement, audience: { userIds } });
     expect(response.status).toBe(502);
     expect(h.calls.filter((call) => call.url.includes("/3/device/"))).toHaveLength(0);
+  });
+
+  test("SH11 런타임과 형식이 다른 서버 키도 Auth가 200이면 통과한다 — 같은 글자면 묻지 않는다", async () => {
+    const legacyKey = "eyJh.eyJzZXJ2aWNlIjp0cnVlfQ.sig";
+    const h = harness((request) => {
+      if (request.url.includes("/auth/v1/admin/users")) {
+        return request.headers["apikey"] === legacyKey
+          ? { status: 200, body: "{}" }
+          : { status: 401 };
+      }
+      return { status: 200, body: "[]" };
+    });
+    expect((await h.post(announcement, `Bearer ${legacyKey}`)).status).toBe(200);
+    expect(h.calls[0]!.headers).toEqual({
+      apikey: legacyKey,
+      Authorization: `Bearer ${legacyKey}`,
+    });
+
+    const same = harness(() => ({ status: 200, body: "[]" }));
+    expect((await same.post(announcement)).status).toBe(200);
+    expect(same.calls.some((call) => call.url.includes("/auth/v1/admin/users"))).toBe(false);
   });
 });

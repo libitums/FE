@@ -5,6 +5,7 @@ import {
   pushDevicesFrom,
   reengagementDevicesRequest,
   removeDevicesRequest,
+  serviceKeyCheckRequest,
   userDevicesRequest,
 } from "./push-devices.ts";
 import type { SendPushEnv } from "./send-push.contract.ts";
@@ -20,7 +21,13 @@ describe("PD1 요청", () => {
   test("service role로 PostgREST를 부른다", () => {
     const all = allDevicesRequest(env);
     expect(all.url).toBe("https://p.supabase.co/rest/v1/push_devices?select=token,environment");
-    expect(all.headers).toMatchObject({ apikey: "service", Authorization: "Bearer service" });
+    expect(all.headers).toEqual({ apikey: "service", "Content-Type": "application/json" });
+    const check = serviceKeyCheckRequest(env, "eyJh.eyJi.sig");
+    expect(check.url).toBe("https://p.supabase.co/auth/v1/admin/users?page=1&per_page=1");
+    expect(check.headers).toEqual({
+      apikey: "eyJh.eyJi.sig",
+      Authorization: "Bearer eyJh.eyJi.sig",
+    });
     expect(userDevicesRequest(env, ["u1", "u2"]).url).toContain("user_id=in.(u1,u2)");
     const reengagement = reengagementDevicesRequest(env, 7);
     expect(reengagement.url).toBe("https://p.supabase.co/rest/v1/rpc/reengagement_devices");
