@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import { describe, expect, test } from "vitest";
 
 import * as root from "./index";
+import * as typewriter from "./typewriter/index";
 import * as button from "./button/index";
 import * as backHeader from "./back-header/index";
 import * as statusIndicator from "./status-indicator/index";
@@ -101,6 +102,7 @@ async function readPackageJson() {
 
 describe("ui-lynx package boundaries", () => {
   test("root import preserves value identity and type-compatible subpath values", () => {
+    expect(root.useTypewriter).toBe(typewriter.useTypewriter);
     expect(root.AnswerLabel).toBe(answerLabel.AnswerLabel);
     expect(root.Avatar).toBe(avatar.Avatar);
     expect(root.SettingsCell).toBe(settingsCell.SettingsCell);
@@ -167,6 +169,11 @@ describe("ui-lynx package boundaries", () => {
 
   test("each public subpath resolves to an independent source entry", async () => {
     const packageJson = await readPackageJson();
+    expect(packageJson.exports["./typewriter"]).toEqual({
+      types: "./dist/typewriter/index.d.ts",
+      import: "./dist/typewriter/index.js",
+      default: "./dist/typewriter/index.js",
+    });
     for (const [subpath, entry] of Object.entries(
       Object.fromEntries(Object.keys(componentEntries).map((entry) => [`./${entry}`, entry])),
     )) {

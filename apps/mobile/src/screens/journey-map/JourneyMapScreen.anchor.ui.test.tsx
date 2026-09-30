@@ -1,8 +1,9 @@
+// 말풍선 배치 검증은 두 학습을 완료한 상태에서 진행한다.
+const initialCompletedStepCount = 2;
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { JourneyMapScreen } from "./JourneyMapScreen";
-import { initialCompletedStepCount } from "./journey-map";
 
 // `ui` 계층: 말풍선이 탭 좌표가 아니라 **잰 유닛 자리**에 서는지, 그리고 스크롤이 계산한
 // 목적지로 가는지를 봅니다. 호스트의 질의는 jsdom에 없으므로 여기서 대역을 세웁니다 —

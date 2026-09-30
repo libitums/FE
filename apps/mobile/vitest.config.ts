@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [vitestTestingLibraryPlugin()],
   resolve: {
     alias: {
+      "@libitums/ui-lynx/typewriter": fileURLToPath(
+        new URL("../../packages/ui-lynx/src/typewriter/index.ts", import.meta.url),
+      ),
       // 테스트가 빌드 산출물(`dist`)에 의존하지 않도록 워크스페이스 소스로 곧장 잇습니다.
       // 이 alias가 없으면 `dist`가 없는 상태에서 vitest가 "Failed to resolve import"로
       // 멈춥니다.

@@ -1,3 +1,4 @@
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
@@ -96,6 +97,7 @@ test("[IP2] 알림을 눌러 켜진 앱은 여정에 들어선 뒤 그 유닛을
   const events: NotificationEvent[] = [];
   await renderSignedInApp(
     <App
+      journeySeed={journeySeedBefore("appointment-confirmation")}
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={(event) => events.push(event)}
     />,
@@ -177,4 +179,16 @@ test("[IP6] 설정에서 허용해 등록한 기기는 로그아웃 때 해제�
 
   const unregister = calls.find((call) => call.url.endsWith("/rpc/unregister_push_device"));
   expect(unregister?.body).toBe(JSON.stringify({ p_token: token }));
+});
+
+test("선행 학습을 완료하지 않으면 푸시로 켜져도 잠긴 메신저 대신 맵에 남는다", async () => {
+  stubPushHost({ opened: { kind: "messenger", unitId: "appointment-confirmation" } });
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await flush();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+    "data-status",
+    "default",
+  );
 });

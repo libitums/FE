@@ -153,12 +153,12 @@ test("[UI-I6] 표지의 낭독 이름이 상태에 따라 갈린다", () => {
 // 아홉을 세면 사용자가 대조할 수 없습니다(spec §2.7). 분자도 같은 단위입니다.
 test("[UI-I7] 에피소드 헤더의 분모가 13이고 분자가 끝낸 맵 항목 수다", () => {
   const { unmount } = renderMap();
-  expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("2 / 13");
+  expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("0 / 13");
   unmount();
 
   // 표지를 끝내면 분자가 하나 늡니다 — 표지가 진행의 여섯째 출처입니다.
   renderMap({ completedEpisodeIntroIds: introDone });
-  expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("3 / 13");
+  expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("1 / 13");
 });
 
 // 「줄 중간에 낀 항목 뒤」를 **줄 머리에 낀** 경우로 한 번 더 봅니다. `directions`는
@@ -171,7 +171,7 @@ test("[UI-I8] 표지 뒤의 스텝 다섯이 여전히 자기 서수의 상태�
     introduction: "clear",
     ordering: "clear",
     appointment: "clear",
-    directions: "active",
+    directions: "default",
     "tutorial-listening": "default",
     "tutorial-speaking": "default",
     "tutorial-writing": "default",
@@ -237,34 +237,22 @@ test("[UI-L2] 표지 미완료면 스텝 다섯도 잠기고 시트가 열리지
 
 // 잠김이 완료를 **지우는** 것이 아니라 **가리는** 것입니다 — 표지를 끝내면 가려져
 // 있던 `initialCompletedStepCount`가 그대로 드러납니다.
-test("[UI-L3] 표지를 끝내면 완료 둘 · 현재 하나가 되살아나고 시트가 다시 열린다", () => {
+test("[UI-L3] 표지를 끝내면 첫 학습만 열리고 뒤 유닛은 잠긴다", () => {
   renderMap({ completedEpisodeIntroIds: introDone });
-
   expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
-    "data-status",
-    "clear",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-introduction")).toHaveAttribute(
-    "data-status",
-    "clear",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
     "data-status",
     "active",
   );
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-learning-unit-introduction")).toHaveAttribute(
     "data-status",
     "default",
   );
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-greeting"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 });
 
-// 엣지 — 표지를 끝내면 특별 유닛 셋은 **언제나 열림**으로 돌아갑니다(ADR-0024 D6).
-// 순차는 표지 → 가운데 → 최종의 세 구간에만 서고, 가운데 셋은 서로 순서가 걸리지
-// 않습니다(넓은 읽기를 버린 자리, spec §2.9).
-test("[엣지] 표지를 끝내면 가운데 특별 유닛 셋이 서로 순서 없이 열린다", () => {
+// 특별 유닛도 선행 학습 완료 전에는 잠깁니다.
+test("[엣지] 표지만 완료하면 가운데 특별 유닛 셋은 잠겨 있다", () => {
   const handlers = renderMap({ completedEpisodeIntroIds: introDone });
 
   const middle = [
@@ -275,12 +263,12 @@ test("[엣지] 표지를 끝내면 가운데 특별 유닛 셋이 서로 순서 
   middle.forEach((id) => {
     expect(screen.getByTestId(`ui-lynx-learning-unit-${id}`)).toHaveAttribute(
       "data-status",
-      "available",
+      "default",
     );
   });
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-cafe-arrival-visual-novel"), {});
-  expect(handlers.onStartVisualNovelUnit).toHaveBeenCalledWith("cafe-arrival-visual-novel");
+  expect(handlers.onStartVisualNovelUnit).not.toHaveBeenCalled();
   // 최종 테스트는 여전히 잠깁니다 — 같은 구획의 다른 항목이 모두 끝나야 열립니다.
   expect(screen.getByTestId(finalTestId)).toHaveAttribute("data-status", "default");
 });

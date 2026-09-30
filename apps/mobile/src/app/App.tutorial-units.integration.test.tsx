@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 import { App } from "./App";
-import { productJourneySeed } from "./journey-progress";
+import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { journeySteps, learningFormsForStep } from "../screens/journey-map/journey-map";
 import { sentenceOrderQuestionsForStep } from "../screens/sentence-order/sentence-order";
@@ -13,13 +13,13 @@ afterEach(() => {
 
 // 배정·문항·채점·진행을 대역하지 않습니다. 각 유닛이 잠금 해제된 바로 그 상태에서 시작합니다.
 test.each(journeySteps.filter((step) => learningFormsForStep(step.id)[0] === "sentence-order"))(
-  "$id: 안내 한 문항으로 완료하고 다음 일반 유닛을 연다",
+  "$id: 안내 한 문항으로 완료하고 맵 순서의 다음 유닛을 연다",
   async (step) => {
     const ordinal = journeySteps.findIndex(({ id }) => id === step.id);
     await renderSignedInApp(
       <App
         completedEpisodeIntroIds={["tutorial-intro"]}
-        journeySeed={{ ...productJourneySeed, completedStepCount: ordinal }}
+        journeySeed={{ ...journeySeedBefore(step.id), completedStepCount: ordinal }}
         initialGemCount={1240}
       />,
     );
@@ -69,11 +69,17 @@ test.each(journeySteps.filter((step) => learningFormsForStep(step.id)[0] === "se
       "data-status",
       "clear",
     );
+    if (step.id === "appointment") {
+      expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+        "data-status",
+        "available",
+      );
+    }
     const next = journeySteps[ordinal + 1];
     if (next !== undefined) {
       expect(screen.getByTestId(`ui-lynx-learning-unit-${next.id}`)).toHaveAttribute(
         "data-status",
-        "active",
+        step.id === "appointment" ? "default" : "active",
       );
     }
   },

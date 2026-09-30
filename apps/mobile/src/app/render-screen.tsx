@@ -24,8 +24,8 @@ import {
   getPhoneCallConversation,
   phoneCallCompletionStatus,
 } from "../screens/phone-call/phone-call";
+import { AccountProfileScreen } from "../screens/profile/AccountProfileScreen";
 import { FeedbackScreen } from "../screens/feedback/FeedbackScreen";
-import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { RoleplayEpisodeScreen } from "../screens/roleplay-list/RoleplayEpisodeScreen";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { findRoleplaySection } from "../screens/roleplay-list/roleplay-list";
@@ -33,7 +33,6 @@ import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
-import { profileList } from "./app-content";
 import type { Screen } from "./nav-state";
 import { renderShellLearningScreen, renderWordChoiceScreen } from "./render-learning-screen";
 import { renderMessengerCompleteScreen } from "./render-messenger-complete";
@@ -93,18 +92,14 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "settings":
       return (
         <SettingsScreen
-          sessionOptions={wiring.sessionOptions}
           onSelectNavTarget={wiring.onSelectNavTarget}
-          onToggleSessionOption={wiring.onToggleSessionOption}
           onSignOut={wiring.onSignOut}
           onDeleteAccount={wiring.onDeleteAccount}
           onLayerChange={wiring.onScreenLayerChange}
         />
       );
-    // 모듈 상수(`profileList`)를 그대로 그리고, 나가기는 설정 탭 스택의 루트로 곧장
-    // 닿습니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0033).
     case "profile":
-      return <ProfileScreen items={profileList} onExit={wiring.onExitSettingsStack} />;
+      return <AccountProfileScreen onExit={wiring.onExitSettingsStack} />;
     case "feedback":
       return (
         <FeedbackScreen onSubmit={wiring.onSubmitFeedback} onExit={wiring.onExitSettingsStack} />

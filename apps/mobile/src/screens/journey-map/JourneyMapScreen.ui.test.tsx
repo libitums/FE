@@ -1,3 +1,5 @@
+// 말풍선 배치 검증은 두 학습을 완료한 상태에서 진행한다.
+const initialCompletedStepCount = 2;
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -7,12 +9,7 @@ import type { MessengerUnitId } from "../messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import { JourneyMapScreen } from "./JourneyMapScreen";
-import {
-  initialCompletedStepCount,
-  journeySteps,
-  stepStatusAt,
-  type JourneyStepId,
-} from "./journey-map";
+import { journeySteps, stepStatusAt, type JourneyStepId } from "./journey-map";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 

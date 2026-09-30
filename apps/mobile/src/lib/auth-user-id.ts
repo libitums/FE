@@ -9,8 +9,7 @@ import type { AuthProvidersFrom } from "./account.contract";
 const base64UrlAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 // base64url을 바이트마다 글자 하나인 문자열로 풉니다. Lynx background 런타임에 `atob`이 있다는
-// 보장이 없어 직접 풉니다. 아스키 밖 바이트는 글자가 깨지지만 JSON의 구조 문자는 아스키라
-// 파싱에는 영향이 없고, 읽는 값(`sub`)은 아스키입니다.
+// 보장이 없어 직접 풉니다. UTF-8을 복원해 한글 이름도 보존합니다.
 function decodeBase64Url(value: string): string | null {
   let bits = 0;
   let bitCount = 0;
@@ -27,7 +26,15 @@ function decodeBase64Url(value: string): string | null {
       decoded += String.fromCharCode((bits >> bitCount) & 0xff);
     }
   }
-  return decoded;
+  try {
+    return decodeURIComponent(
+      Array.from(decoded, (char) => `%${char.charCodeAt(0).toString(16).padStart(2, "0")}`).join(
+        "",
+      ),
+    );
+  } catch {
+    return null;
+  }
 }
 
 /** JWT가 아니거나 · payload를 못 읽거나 · `sub`가 비지 않은 문자열이 아니면 `null`. 던지지 않습니다. */
@@ -55,7 +62,7 @@ export function authUserIdFrom(accessToken: string): string | null {
 }
 
 // JWT payload를 객체로 읽습니다. 못 읽으면 `null`. 던지지 않습니다.
-function payloadRecordFrom(accessToken: string): Record<string, unknown> | null {
+export function payloadRecordFrom(accessToken: string): Record<string, unknown> | null {
   const segments = accessToken.split(".");
   const payloadSegment = segments[1];
   if (segments.length !== 3 || payloadSegment === undefined) {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import { Avatar } from "@libitums/ui-lynx/avatar";
+import { useTypewriter } from "@libitums/ui-lynx/typewriter";
 
 import { callClockLabel } from "../lib/call-clock";
 import { useUiCopy } from "../lib/ui-copy";
@@ -48,6 +49,7 @@ export type CallCallerProps = {
   readonly callerName: string;
   readonly callerPortrait: string | null;
   readonly clockRunning: boolean;
+  readonly showClock?: boolean;
   readonly testIdPrefix: string;
 };
 
@@ -59,6 +61,7 @@ export function CallCaller({
   callerName,
   callerPortrait,
   clockRunning,
+  showClock = true,
   testIdPrefix,
 }: CallCallerProps): ReactNode {
   const copy = useUiCopy();
@@ -85,7 +88,7 @@ export function CallCaller({
         )}
       </view>
       <text className="call-stage-name">{callerName}</text>
-      <CallClock running={clockRunning} testId={`${testIdPrefix}-clock`} />
+      {showClock ? <CallClock running={clockRunning} testId={`${testIdPrefix}-clock`} /> : null}
     </view>
   );
 }
@@ -94,6 +97,10 @@ export type CallLineBubbleProps = {
   readonly text: string;
   readonly translation: string;
   readonly testIdPrefix: string;
+  readonly reveal?: "instant" | "typewriter";
+  readonly intervalMs?: number;
+  readonly resetKey?: string | number;
+  readonly reducedMotion?: boolean;
 };
 
 /** 상대 대사 말풍선입니다 — 흰 면에 한국어 한 줄과 번역 한 줄입니다. */
@@ -101,20 +108,46 @@ export function CallLineBubble({
   text,
   translation,
   testIdPrefix,
+  reveal = "instant",
+  intervalMs,
+  resetKey,
+  reducedMotion,
 }: CallLineBubbleProps): ReactNode {
+  const typing = useTypewriter({
+    text,
+    enabled: reveal === "typewriter",
+    intervalMs,
+    resetKey,
+    reducedMotion,
+  });
   return (
     <view
       className="call-stage-line"
       data-testid={`${testIdPrefix}-line`}
+      data-status={typing.isComplete ? "ready" : "revealing"}
       accessibility-element={true}
       accessibility-label={`${text}, ${translation}`}
     >
-      <text className="call-stage-line-text" data-testid={`${testIdPrefix}-line-text`}>
-        {text}
-      </text>
+      <view className="call-stage-line-body" accessibility-elements-hidden={true}>
+        {/* 전체 자막의 줄바꿈과 높이를 먼저 확보해 타이핑 중 말풍선이 움직이지 않습니다. */}
+        <text
+          className="call-stage-line-text call-stage-line-measure"
+          data-testid={`${testIdPrefix}-line-measure`}
+        >
+          {text}
+        </text>
+        <text
+          className="call-stage-line-text call-stage-line-reveal"
+          data-testid={`${testIdPrefix}-line-text`}
+        >
+          {typing.visibleText || "\u200B"}
+        </text>
+      </view>
       <text
         className="call-stage-line-translation"
         data-testid={`${testIdPrefix}-line-translation`}
+        accessibility-element={false}
+        style={{ visibility: typing.isComplete ? "visible" : "hidden" }}
       >
         {translation}
       </text>

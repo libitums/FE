@@ -31,7 +31,7 @@ it("특별 항목의 표시와 접근성 이름에 맵 데이터의 제목을 �
     // 이름에 상태 접미사 「잠김」이 끼고, 이 케이스가 보려는 **제목의 출처**가
     // 그 접미사에 가려집니다.
     <JourneyMapScreen
-      completedStepCount={2}
+      completedStepCount={4}
       onStartStep={vi.fn<(id: JourneyStepId) => void>()}
       completedEpisodeIntroIds={["tutorial-intro"]}
       onStartEpisodeIntroUnit={vi.fn<(id: EpisodeIntroUnitId) => void>()}

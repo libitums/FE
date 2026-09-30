@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { EpisodePrologueScreen } from "./EpisodePrologueScreen";
+import { advanceNarrative, revealNarrative } from "./test-helpers/narrative";
 import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.contract";
 
 afterEach(() => vi.useRealTimers());
@@ -72,7 +73,7 @@ function mount() {
   return { ...view, onComplete, onExit };
 }
 
-const advance = () => fireEvent.tap(screen.getByTestId("episode-narrative-screen-advance"), {});
+const advance = advanceNarrative;
 
 test("메신저와 전화 완료는 다음 구간으로 이어지고 마지막 독백에서만 한 번 완료된다", () => {
   vi.useFakeTimers();
@@ -86,12 +87,14 @@ test("메신저와 전화 완료는 다음 구간으로 이어지고 마지막 �
   expect(onComplete).not.toHaveBeenCalled();
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveTextContent("Imagined friend");
   expect(screen.getByTestId("prologue-call-screen-caller").querySelector("image")).toBeNull();
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
 
   act(() => {
     vi.advanceTimersByTime(3000);
   });
   expect(onComplete).not.toHaveBeenCalled();
   fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
+  revealNarrative();
   expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent("현실로");
   advance();
   expect(onComplete).not.toHaveBeenCalled();

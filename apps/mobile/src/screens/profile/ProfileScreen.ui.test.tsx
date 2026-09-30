@@ -15,7 +15,7 @@ import { ProfileScreen } from "./ProfileScreen";
 const items: readonly ProfileItem[] = [
   { id: "name", value: "Duru Learner" },
   { id: "learning-language", value: "Korean" },
-  { id: "learning-goal", value: "Everyday conversation" },
+  { id: "email", value: "learner@example.test" },
 ];
 
 test("[PR1] 항목이 fixture 순서대로 그려지고 label·value 텍스트가 fixture 값이다", () => {
@@ -125,7 +125,7 @@ test("[AC2u-E] 제목 · 항목 이름이 영어다", () => {
   expect(screen.getByTestId("profile-item-label-learning-language")).toHaveTextContent(
     "Learning language",
   );
-  expect(screen.getByTestId("profile-item-label-learning-goal")).toHaveTextContent("Learning goal");
+  expect(screen.getByTestId("profile-item-label-email")).toHaveTextContent("Email");
 });
 
 test("[AC2u-M] 제목 · 항목 이름 · 나가기 이름이 문구표에서 온다", () => {
@@ -142,8 +142,8 @@ test("[AC2u-M] 제목 · 항목 이름 · 나가기 이름이 문구표에서 �
   expect(screen.getByTestId("profile-item-label-learning-language")).toHaveTextContent(
     "⟦profile.itemLabel.learning-language⟧",
   );
-  expect(screen.getByTestId("profile-item-label-learning-goal")).toHaveTextContent(
-    "⟦profile.itemLabel.learning-goal⟧",
+  expect(screen.getByTestId("profile-item-label-email")).toHaveTextContent(
+    "⟦profile.itemLabel.email⟧",
   );
   expect(
     within(screen.getByTestId("profile-screen-exit")).getByTestId("ui-lynx-round-button"),

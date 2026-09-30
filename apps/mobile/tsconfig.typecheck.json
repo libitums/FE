@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "paths": {
+      "@libitums/ui-lynx/typewriter": ["../../packages/ui-lynx/src/typewriter/index.ts"],
       "@libitums/ui-lynx/text-field": ["../../packages/ui-lynx/src/text-field/index.ts"],
       "@libitums/ui-lynx/option-selector": ["../../packages/ui-lynx/src/option-selector/index.ts"],
       "@libitums/ui-lynx/compact-numeric-input": [

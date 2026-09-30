@@ -58,9 +58,9 @@ describe("journey map visual novel contract", () => {
     ]);
     expect(journeySteps.map(({ id }) => journeyStepOrdinal(id))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(journeySteps.map((_, index) => stepStatusAt(index, initialCompletedStepCount))).toEqual([
-      "done",
-      "done",
       "current",
+      "locked",
+      "locked",
       "locked",
       "locked",
       "locked",

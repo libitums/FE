@@ -68,19 +68,19 @@ describe("약속 확인 전화 순수 계약", () => {
   it("available/completed 초기화와 상태 label을 판정한다", () => {
     expect(initialPhoneCallSessionState("available")).toEqual(ready0);
     expect(initialPhoneCallSessionState("completed")).toEqual({ mode: "completed" });
-    expect(phoneCallStatusLabel(ready0, uiCopyEn)).toBe("Ready to call");
+    expect(phoneCallStatusLabel(ready0, uiCopyEn)).toBe("Incoming call…");
     expect(phoneCallStatusLabel({ mode: "playing", turnIndex: 0 }, uiCopyEn)).toBe("Speaking…");
     expect(phoneCallStatusLabel({ mode: "reply-ready", turnIndex: 0 }, uiCopyEn)).toBe(
       "Your turn to reply",
     );
     expect(phoneCallStatusLabel({ mode: "completed" }, uiCopyEn)).toBe("Call ended");
-    expect(phoneCallPlayLabel(ready0, uiCopyEn)).toBe("Start call");
+    expect(phoneCallPlayLabel(ready0, uiCopyEn)).toBe("Accept");
     expect(phoneCallPlayLabel({ mode: "ready", turnIndex: 1 }, uiCopyEn)).toBe("Listen");
     expect(phoneCallPlayLabel({ mode: "playing", turnIndex: 0 }, uiCopyEn)).toBe("Listen again");
     expect(phoneCallPlayLabel({ mode: "completed" }, uiCopyEn)).toBeNull();
   });
 
-  it("CE4 제목 · 화자 이름이 영어다 — 짧은 대사에 배운 답장을 사용한다", () => {
+  it("CE4 민서의 전화 인사에 답하고 메신저에서 정한 카페 약속으로 이어진다", () => {
     const live = getPhoneCallConversation();
     expect(live.title).toBe("A Call from Minseo");
     expect(live.turns.map((turn) => turn.speakerName)).toEqual(["Minseo", "Minseo", "Minseo"]);
@@ -90,9 +90,9 @@ describe("약속 확인 전화 순수 계약", () => {
       "내일 만나요",
     ]);
     expect(live.turns.map((turn) => turn.reply.text)).toEqual([
-      "이름이 뭐예요?",
-      "안녕하세요",
-      "내일 만나요",
+      "네, 안녕하세요.",
+      "아, 민서 씨! 내일 카페에서 봬요.",
+      "네, 내일 만나요!",
     ]);
   });
 
@@ -176,8 +176,8 @@ describe("practicePhoneCallCompletionStatus", () => {
     const state = initialPhoneCallSessionState(practicePhoneCallCompletionStatus());
 
     expect(state).toEqual({ mode: "ready", turnIndex: 0 });
-    expect(phoneCallStatusLabel(state, uiCopyEn)).toBe("Ready to call");
-    expect(phoneCallPlayLabel(state, uiCopyEn)).toBe("Start call");
+    expect(phoneCallStatusLabel(state, uiCopyEn)).toBe("Incoming call…");
+    expect(phoneCallPlayLabel(state, uiCopyEn)).toBe("Accept");
     expect(visiblePhoneCallEntries(conversation, state)).toHaveLength(1);
   });
 });

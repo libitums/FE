@@ -66,9 +66,10 @@ describe("VisualNovelDialog UI", () => {
     expect(dialog).toHaveAttribute("data-status", "revealing");
     expect(dialog).toHaveAttribute("accessibility-label", "Mina: A🙂BC");
     expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent("A🙂");
-    expect(
-      screen.queryByTestId("ui-lynx-visual-novel-dialog-continue-indicator"),
-    ).not.toBeInTheDocument();
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-measure")).toHaveTextContent("A🙂BC");
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveStyle({
+      visibility: "hidden",
+    });
   });
 
   test("Ready에서만 장식 Continue indicator를 렌더한다", () => {
@@ -119,9 +120,9 @@ describe("VisualNovelDialog UI", () => {
         visibleCharacterCount={2}
       />,
     );
-    expect(
-      screen.queryByTestId("ui-lynx-visual-novel-dialog-continue-indicator"),
-    ).not.toBeInTheDocument();
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveStyle({
+      visibility: "hidden",
+    });
   });
 
   test("Thought·Translucent·RTL·학습 언어 metadata를 노출한다", () => {
@@ -177,9 +178,9 @@ describe("VisualNovelDialog UI", () => {
       />,
     );
 
-    expect(
-      screen.queryByTestId("ui-lynx-visual-novel-dialog-translation-block"),
-    ).not.toBeInTheDocument();
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-translation-block")).toHaveStyle({
+      visibility: "hidden",
+    });
   });
 
   test("번역이 없으면 번역 자리를 그리지 않는다", () => {

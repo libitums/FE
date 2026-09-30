@@ -14,9 +14,8 @@ const conversations: Record<MessengerUnitId, MessengerConversation> = {
     id: "appointment-confirmation",
     title: "A Message from Minseo",
     participantName: "Minseo",
-    introduction:
-      "Still in my airplane seat, I imagine a message from Minseo. I try the words I just learned.",
-    completion: "We have a plan for tomorrow. In my imagination, Minseo calls next.",
+    introduction: "Imagine a chat with Minseo.",
+    completion: "You’re meeting at a café tomorrow.",
     messages: [
       {
         id: "jimin-schedule",
@@ -35,8 +34,8 @@ const conversations: Record<MessengerUnitId, MessengerConversation> = {
       {
         id: "jimin-directions",
         sender: "jimin",
-        text: "내일 만나요",
-        translation: "See you tomorrow.",
+        text: "내일 카페에서 만날까요?",
+        translation: "Shall we meet at a café tomorrow?",
       },
       {
         id: "self-thanks",
@@ -49,8 +48,8 @@ const conversations: Record<MessengerUnitId, MessengerConversation> = {
       {
         id: "jimin-goodbye",
         sender: "jimin",
-        text: "내일 만나요",
-        translation: "See you tomorrow!",
+        text: "좋아요! 내일 봬요.",
+        translation: "Sounds good! See you tomorrow.",
       },
     ],
   },
