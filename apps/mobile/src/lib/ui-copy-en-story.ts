@@ -37,6 +37,7 @@ export const episodeFinalEn: EpisodeFinalCopy = {
 };
 
 export const messengerEn: MessengerCopy = {
+  chooseReply: "Choose a reply, then send.",
   placeholder: "Type your answer.",
   keyboard: {
     shift: "Shift",

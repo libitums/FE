@@ -154,3 +154,7 @@ URL을 내도록 고친 뒤, Release `Host.app` 안 세 PNG의 해시 일치를 
 `changed-files: docs/e2e/visual-novel.md`
 
 `applicability: automated e2e not applicable (no runner/command); Simulator Release packaging and F1–F6 passed; physical-device VoiceOver excluded from requested scope`
+
+## 2026-09-30 이미지 URL 처리 정정
+
+현재 Host는 `/static/` 경로를 `Resource/static/`으로 변환하는 BundledMediaResourceFetcher를 사용합니다. artwork resolver는 번들러의 URL을 그대로 전달합니다. 이전 `Resource/` 접두사 추가는 개발 서버의 HTTP URL을 깨뜨려 배경·인물을 비우므로 제거했습니다. iPhone 17 Pro 개발 playground에서 두 이미지와 표정 전환을 재확인했습니다.

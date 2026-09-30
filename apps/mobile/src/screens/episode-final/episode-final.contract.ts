@@ -39,6 +39,7 @@ export type EpisodeFinalWordChoiceQuestion = {
   readonly options: readonly [string, string, string];
   /** 정답 보기의 자리(0부터)입니다. */
   readonly answerIndex: 0 | 1 | 2;
+  readonly romanizations?: readonly [string, string, string];
 };
 
 /**

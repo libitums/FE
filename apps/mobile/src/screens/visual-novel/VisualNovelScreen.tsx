@@ -100,6 +100,8 @@ export function VisualNovelScreen({
           beatId={beat.id}
           speakerName={beat.speakerName}
           dialogue={beat.dialogue}
+          translation={beat.translation}
+          romanization={beat.romanization}
           action={
             session.mode === "final"
               ? { kind: "replay", label: copy.common.startOver, onSelect: handleReplay }

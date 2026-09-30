@@ -58,5 +58,17 @@
   {
     "id": "directions-3",
     "text": "여기서 얼마나 걸려요?"
+  },
+  {
+    "id": "phone-call-confirm-01",
+    "text": "안녕하세요"
+  },
+  {
+    "id": "phone-call-confirm-02",
+    "text": "저는 지민이에요."
+  },
+  {
+    "id": "phone-call-confirm-03",
+    "text": "내일 만나요"
   }
 ]

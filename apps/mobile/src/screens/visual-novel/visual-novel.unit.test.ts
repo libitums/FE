@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import backgroundSource from "./assets/temporary/background-cafe-exterior-day.png";
+import neutralSource from "./assets/temporary/character-jimin-neutral.png";
+import smileSource from "./assets/temporary/character-jimin-smile.png";
 
 import type {
   VisualNovelProgress,
@@ -42,7 +45,9 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           characterId: "jimin",
           characterPoseId: "jimin-neutral",
           speakerName: "Jimin",
-          dialogue: "여기가 우리가 만나기로 한 카페예요.",
+          dialogue: "안녕하세요",
+          translation: "Hello.",
+          romanization: "annyeonghaseyo",
         },
         {
           index: 1,
@@ -51,7 +56,9 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           characterId: "jimin",
           characterPoseId: "jimin-smile",
           speakerName: "Jimin",
-          dialogue: "2번 출구 오른쪽이라 금방 찾았죠?",
+          dialogue: "물 주세요",
+          translation: "Water, please.",
+          romanization: "mul juseyo",
         },
         {
           index: 2,
@@ -60,7 +67,9 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           characterId: "jimin",
           characterPoseId: "jimin-smile",
           speakerName: "Jimin",
-          dialogue: "그럼 들어가서 같이 주문해 봐요.",
+          dialogue: "내일 만나요",
+          translation: "See you tomorrow.",
+          romanization: "naeil mannayo",
         },
       ],
     };
@@ -72,9 +81,9 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
     expect(story.title).toBe("Jimin arrives at the café");
     expect(story.beats.map((beat) => beat.speakerName)).toEqual(["Jimin", "Jimin", "Jimin"]);
     expect(story.beats.map((beat) => beat.dialogue)).toEqual([
-      "여기가 우리가 만나기로 한 카페예요.",
-      "2번 출구 오른쪽이라 금방 찾았죠?",
-      "그럼 들어가서 같이 주문해 봐요.",
+      "안녕하세요",
+      "물 주세요",
+      "내일 만나요",
     ]);
   });
 
@@ -146,23 +155,23 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
     });
   });
 
-  it("artworkFor는 닫힌 세 ID를 exact local source로 resolve한다", () => {
+  it("artworkFor는 닫힌 세 ID를 번들러가 제공한 URL 그대로로 resolve한다", () => {
     expect(artworkFor("cafe-exterior-day")).toMatchObject({
       id: "cafe-exterior-day",
       kind: "background",
-      source: expect.stringMatching(/^Resource\//),
+      source: backgroundSource,
     });
     expect(artworkFor("jimin-neutral")).toMatchObject({
       id: "jimin-neutral",
       kind: "character",
       characterId: "jimin",
-      source: expect.stringMatching(/^Resource\//),
+      source: neutralSource,
     });
     expect(artworkFor("jimin-smile")).toMatchObject({
       id: "jimin-smile",
       kind: "character",
       characterId: "jimin",
-      source: expect.stringMatching(/^Resource\//),
+      source: smileSource,
     });
   });
 

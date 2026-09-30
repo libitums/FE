@@ -25,11 +25,15 @@ export type ConfirmTimePhoneCallTurn = {
   readonly id: "confirm-time";
   readonly speakerId: "jimin";
   readonly speakerName: "Jimin";
-  readonly transcript: "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?";
+  readonly transcript: string;
+  readonly translation?: string;
+  readonly romanization?: string;
   readonly audioSource: "phone-call-confirm-01";
   readonly reply: {
     readonly id: "confirm-time-reply";
-    readonly text: "네, 토요일 오후 2시에 만나요.";
+    readonly text: string;
+    readonly translation?: string;
+    readonly romanization?: string;
   };
 };
 
@@ -37,11 +41,15 @@ export type ConfirmPlacePhoneCallTurn = {
   readonly id: "confirm-place";
   readonly speakerId: "jimin";
   readonly speakerName: "Jimin";
-  readonly transcript: "카페는 2번 출구 오른쪽에 있는 곳 맞죠?";
+  readonly transcript: string;
+  readonly translation?: string;
+  readonly romanization?: string;
   readonly audioSource: "phone-call-confirm-02";
   readonly reply: {
     readonly id: "confirm-place-reply";
-    readonly text: "네, 2번 출구 오른쪽 카페예요.";
+    readonly text: string;
+    readonly translation?: string;
+    readonly romanization?: string;
   };
 };
 
@@ -49,11 +57,15 @@ export type GoodbyePhoneCallTurn = {
   readonly id: "goodbye";
   readonly speakerId: "jimin";
   readonly speakerName: "Jimin";
-  readonly transcript: "좋아요. 그럼 토요일에 봐요!";
+  readonly transcript: string;
+  readonly translation?: string;
+  readonly romanization?: string;
   readonly audioSource: "phone-call-confirm-03";
   readonly reply: {
     readonly id: "goodbye-reply";
-    readonly text: "네, 토요일에 봐요!";
+    readonly text: string;
+    readonly translation?: string;
+    readonly romanization?: string;
   };
 };
 
@@ -97,11 +109,15 @@ export type PhoneCallTranscriptEntry =
       readonly speakerName: "Jimin";
       readonly turnId: PhoneCallTurnId;
       readonly text: PhoneCallTurn["transcript"];
+      readonly translation?: string;
+      readonly romanization?: string;
     }
   | {
       readonly speaker: "self";
       readonly replyId: PhoneCallReplyId;
       readonly text: PhoneCallTurn["reply"]["text"];
+      readonly translation?: string;
+      readonly romanization?: string;
     };
 
 export type PhoneCallMapItemProps = {

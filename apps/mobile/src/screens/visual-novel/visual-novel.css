@@ -165,3 +165,9 @@
 .visual-novel-large-text-reflow {
   flex-shrink: 0;
 }
+
+.visual-novel-dialogue-support {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}

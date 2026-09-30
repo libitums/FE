@@ -120,7 +120,7 @@
 
 /* 힌트 줄 — 말풍선의 번역 줄과 같은 작은 본문(Body/small · gray-600)입니다. */
 .messenger-composer-hint {
-  color: var(--libitum-color-gray-600);
+  color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-body-s-font-family);
   font-weight: var(--libitum-typography-body-s-font-weight);
   font-size: var(--libitum-typography-body-s-font-size);

@@ -4,13 +4,11 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import { MessageBubble } from "./MessageBubble";
 import { MessengerScreen } from "./MessengerScreen";
 import { MessengerFinishButton } from "./MessengerFinishButton";
-import { messengerConversationFor } from "./messenger";
+import { keyboardConversation as conversation } from "./messenger-keyboard-fixture.test-support";
 import { messengerCorrectDelayMs } from "./messenger-composer";
 import { sendMessengerReply, typeMessengerReply } from "./messenger.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 자판 · 판정 · 대화 전개를 봅니다(ADR-0006 D4).
-
-const conversation = messengerConversationFor("appointment-confirmation");
 
 function renderActive(onComplete = vi.fn(), onFinish = vi.fn()) {
   render(
@@ -137,7 +135,9 @@ describe("messenger UI components", () => {
     expect(screen.queryByTestId("answer-verdict")).toBeNull();
     // 둘째 답장은 객관식입니다 — 자판 자리에 보기가 서고, 정답을 가려 보이지 않습니다.
     expect(screen.getByTestId("messenger-choices")).toBeInTheDocument();
-    expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent("Type your answer.");
+    expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent(
+      "Choose a reply, then send.",
+    );
     expect(screen.getByTestId("messenger-composer-hint")).toHaveTextContent("Thank you!");
   });
 
@@ -216,7 +216,9 @@ describe("messenger UI components", () => {
     sendMessengerReply("좋아요!");
     const choices = screen.getByTestId("messenger-choices");
     expect(choices.children).toHaveLength(4);
-    expect(screen.getByTestId("messenger-composer-prompt")).toHaveTextContent("Type!");
+    expect(screen.getByTestId("messenger-composer-prompt")).toHaveTextContent(
+      "Choose a reply, then send.",
+    );
 
     fireEvent.tap(screen.getByTestId("messenger-choice-미안해요!"), {});
     expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent("미안해요!");

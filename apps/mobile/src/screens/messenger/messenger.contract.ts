@@ -31,6 +31,7 @@ export type SelfMessage = {
    * 정답(`text`)이 보기 안에 들어 있어야 합니다. 없으면 자판으로 칩니다(Figma 80-7082).
    */
   readonly choices?: readonly string[];
+  readonly romanization?: string;
 };
 
 export type MessengerMessage = JiminMessage | SelfMessage;

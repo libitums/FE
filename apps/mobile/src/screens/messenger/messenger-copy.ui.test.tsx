@@ -5,14 +5,12 @@ import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import { MessengerFinishButton } from "./MessengerFinishButton";
 import { MessengerScreen } from "./MessengerScreen";
-import { messengerConversationFor } from "./messenger";
+import { keyboardConversation as conversation } from "./messenger-keyboard-fixture.test-support";
 import { messengerCorrectDelayMs } from "./messenger-composer";
 import { sendMessengerReply } from "./messenger.test-support";
 
 // `ui` 계층 — 메신저가 문구를 표에서 읽는지 봅니다(ST6-M). `markedUiCopy`를 넣으면 화면이 쓰는
 // 키가 `⟦경로⟧`로 나옵니다 — 하드코딩된 영어가 있으면 그 자리에 영어가 남아 잡힙니다.
-
-const conversation = messengerConversationFor("appointment-confirmation");
 
 function renderMarked(exitTo: "journey" | "roleplay" = "journey") {
   render(
@@ -85,7 +83,7 @@ describe("[ST6-M] 메신저 문구는 표에서 읽는다", () => {
     sendMessengerReply("좋아요!");
 
     expect(screen.getByTestId("messenger-composer-text")).toHaveTextContent(
-      "⟦messenger.placeholder⟧",
+      "⟦messenger.chooseReply⟧",
     );
     fireEvent.tap(screen.getByTestId("messenger-choice-미안해요!"), {});
     expect(screen.getByTestId("messenger-choice-미안해요!")).toHaveAttribute(

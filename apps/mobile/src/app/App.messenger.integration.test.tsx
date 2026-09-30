@@ -1,11 +1,14 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
+import * as messengerData from "../screens/messenger/messenger";
+import { keyboardConversation } from "../screens/messenger/messenger-keyboard-fixture.test-support";
 import { App } from "./App";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import {
   answerMessengerReplies,
   typeMessengerReply,
+  sendMessengerReply,
 } from "../screens/messenger/messenger.test-support";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
@@ -16,7 +19,9 @@ const completedIntros = ["tutorial-intro"] as const;
 // App · navigation · 여정 맵 · 메신저 화면의 실제 결선을 봅니다.
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 async function openJourneyMessenger(messengerEventSink?: MessengerEventSink) {
@@ -50,9 +55,7 @@ test("맵의 약속 확인 메시지를 열면 실제 messenger 화면이 push�
 test("두 답장을 완료하면 마지막 메시지와 맵 완료 표식이 함께 나타난다", async () => {
   await openJourneyMessenger();
   finishConversation();
-  expect(screen.getByTestId("messenger-message-jimin-goodbye")).toHaveTextContent(
-    "그럼 토요일에 봬요!",
-  );
+  expect(screen.getByTestId("messenger-message-jimin-goodbye")).toHaveTextContent("내일 만나요");
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   // 완료 표식은 유닛 어휘(`clear`)이고, 「완료됨」은 화면 글자가 아니라 접근성
   // 이름에 실립니다 — `LearningUnit`이 체크 아이콘으로 그리기 때문입니다.
@@ -122,11 +125,15 @@ test("대화를 끝내고 결과 보기를 누르면 학습 완료(PERFECT LESSO
   );
 });
 
-test("한 번이라도 틀린 답장이 있으면 학습 완료는 LESSON COMPLETE다", async () => {
+test("자판 연습에서 틀린 답장이 있으면 학습 완료는 LESSON COMPLETE다", async () => {
+  vi.spyOn(messengerData, "messengerConversationFor").mockReturnValue(keyboardConversation);
   await openJourneyMessenger();
+  vi.useFakeTimers();
   typeMessengerReply("조아요");
   fireEvent.tap(screen.getByTestId("messenger-try-again").querySelector("view")!, {});
-  finishConversation();
+  sendMessengerReply("좋아요!");
+  sendMessengerReply("고마워요!");
+  vi.useRealTimers();
   fireEvent.tap(screen.getByTestId("messenger-finish"), {});
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON COMPLETE!");
 });
