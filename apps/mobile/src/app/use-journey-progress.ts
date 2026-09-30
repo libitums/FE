@@ -1,23 +1,8 @@
-// 여정 진행의 상태와 서버 저장(ADR-0035)입니다. `AppSession`에서 옮겨 왔습니다 — 진행 여섯 상태 · 연속 학습 · 트로피가
-// 한 자리에 있습니다.
-//
-// - **불러오기** — 로그인(부팅의 세션 갱신 · 새 로그인) 뒤 `syncFromServer`가 서버 진행을 받아 지금 진행과
-//   **합칩니다**(완료 목록은 합집합, 스텝 수는 큰 쪽). 한쪽이 앞서도 잃지 않습니다.
-// - **저장하기** — 진행이 바뀔 때마다 스냅숏을 저장합니다. 불러오기가 한 번도 성공하지 않았으면 저장하지 않고
-//   먼저 다시 불러옵니다 — 실패를 빈 진행으로 읽어 서버를 덮어쓰지 않습니다.
-// - **연속 학습** — 끝낸 활동 수가 늘면 오늘(기기 날짜)을 학습한 날로 적고 새 연속 일수를 받습니다.
-//
-// **모두 기다리지 않고 실패를 삼킵니다** — 진행 저장은 학습을 막지 않습니다.
+// 여정 진행과 연속 학습 상태입니다. 미전송 기록·계정별 복구·재시도는 journey-progress-sync가 담당합니다.
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
-import {
-  fetchLearningStreak,
-  loadLearningProgress,
-  localDayFrom,
-  recordLearningDay,
-  saveLearningProgress,
-} from "../lib/progress-api";
+import { fetchLearningStreak, localDayFrom, recordLearningDay } from "../lib/progress-api";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
 import { journeyMapSections } from "../screens/journey-map/journey-map-units";
@@ -29,12 +14,11 @@ import { loadEpisodeSurveyDone } from "../lib/feedback-api";
 import {
   completedActivityCount,
   completedEpisodesFrom,
-  journeyProgressFrom,
-  learningProgressSnapshotFrom,
-  mergeJourneyProgress,
   trophyCountFrom,
 } from "./learning-progress";
 import type { CompletedEpisode, JourneyProgressState } from "./learning-progress";
+import { createJourneyProgressSync } from "./journey-progress-sync";
+import { progressUserId } from "./pending-learning-progress";
 
 export function useJourneyProgress(
   journeySeed: AppJourneySeed,
@@ -78,14 +62,17 @@ export function useJourneyProgress(
   };
   const latest = useRef(state);
   latest.current = state;
-  // 서버와 같다고 아는 마지막 스냅숏(JSON)입니다. `null`이면 아직 한 번도 불러오지 못했습니다.
-  const syncedJson = useRef<string | null>(null);
+  const initial = useRef(state);
+  const sync = useRef<ReturnType<typeof createJourneyProgressSync> | null>(null);
+  const renderedSync = sync.current;
+  useEffect(() => () => sync.current?.dispose(), []);
   const activityCount = useRef(completedActivityCount(state));
   const completedEpisodeIds = useRef(
     completedEpisodesFrom(journeyMapSections, state).map((e) => e.id),
   );
 
   const apply = (next: JourneyProgressState): void => {
+    latest.current = next;
     activityCount.current = completedActivityCount(next);
     completedEpisodeIds.current = completedEpisodesFrom(journeyMapSections, next).map((e) => e.id);
     setCompletedStepCount(next.completedStepCount);
@@ -96,24 +83,32 @@ export function useJourneyProgress(
     setCompletedEpisodeIntroIds(next.completedEpisodeIntroIds);
   };
 
-  /** 서버 진행을 받아 지금 진행과 합치고, 연속 일수를 받습니다. 로그인 뒤에 부릅니다. */
+  /** 로그인 뒤 호출합니다. 로컬 미전송 진행을 즉시 복구한 다음 서버와 합칩니다. */
   const syncFromServer = async (): Promise<void> => {
-    try {
-      const loaded = await loadLearningProgress();
-      if (loaded.ok) {
-        const server = journeyProgressFrom(loaded.raw);
-        syncedJson.current =
-          server === null ? "" : JSON.stringify(learningProgressSnapshotFrom(server));
-        if (server !== null) apply(mergeJourneyProgress(latest.current, server));
+    "background only";
+    const userId = progressUserId();
+    if (userId === null) return;
+    if (sync.current?.userId !== userId) {
+      if (sync.current !== null) {
+        sync.current.dispose();
+        apply(initial.current);
+        setStreakDays(0);
+        setStreakCelebration(false);
+        setEpisodeSurvey(null);
+        setRecordingDay(false);
       }
-      const streak = await fetchLearningStreak(localDayFrom(new Date()));
-      if (streak !== null) setStreakDays(streak);
-    } catch {
-      // 진행 저장은 학습을 막지 않습니다.
+      sync.current = createJourneyProgressSync(userId, () => latest.current, apply);
     }
+    const current = sync.current;
+    await current.flush();
+    if (!current.isCurrent()) return;
+    const streak = await fetchLearningStreak(localDayFrom(new Date()));
+    if (current.isCurrent() && streak !== null) setStreakDays(streak);
   };
 
   useEffect(() => {
+    // 계정 전환 이전 렌더에서 예약한 effect는 새 계정에 반영하지 않습니다.
+    if (sync.current !== renderedSync) return;
     const count = completedActivityCount(state);
     const grew = count > activityCount.current;
     activityCount.current = count;
@@ -129,23 +124,17 @@ export function useJourneyProgress(
       setRecordingDay(true);
       void recordLearningDay(localDayFrom(new Date()))
         .then((streak) => {
-          if (streak === null) return;
+          if (streak === null || (renderedSync !== null && !renderedSync.isCurrent())) return;
           if (streak > streakRef.current) setStreakCelebration(true);
           setStreakDays(streak);
         })
         .catch(() => undefined)
-        .finally(() => setRecordingDay(false));
+        .finally(() => {
+          if (renderedSync === null || renderedSync.isCurrent()) setRecordingDay(false);
+        });
     }
 
-    if (syncedJson.current === null) {
-      // 한 번도 불러오지 못했습니다 — 저장 대신 다시 불러와 합칩니다(합친 결과가 다르면 다음 차례에 저장됩니다).
-      if (grew) void syncFromServer();
-      return;
-    }
-    const json = JSON.stringify(learningProgressSnapshotFrom(state));
-    if (json === syncedJson.current) return;
-    syncedJson.current = json;
-    void saveLearningProgress(learningProgressSnapshotFrom(state)).catch(() => undefined);
+    renderedSync?.capture(state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     completedStepCount,

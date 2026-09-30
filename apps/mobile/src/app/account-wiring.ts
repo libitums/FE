@@ -1,6 +1,8 @@
 // 로그아웃 · 계정 삭제의 결선입니다 — 설정 화면의 콜백 둘을 만들고 뒤처리(세션 삭제 → 분석 되돌리기 →
 // `entry_screen_viewed(login)` → App 세션 재시작)를 잇습니다. 어휘는 `leave-app.contract.ts`입니다.
 
+import { authUserIdFrom } from "../lib/auth-user-id";
+import { clearPendingProgress } from "./pending-learning-progress";
 import { deleteAccount } from "../lib/account-deletion";
 import { signOutRemotely } from "../lib/api-client";
 import { forgetPushDevice } from "./push-wiring";
@@ -58,6 +60,8 @@ export function accountWiring({
       }
       const result = await deleteAccount(session, saveAuthSession);
       if (result.status === "deleted") {
+        const userId = authUserIdFrom(session.accessToken);
+        if (userId !== null) clearPendingProgress(userId);
         leave("deleted");
       }
       return result;

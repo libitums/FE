@@ -254,7 +254,12 @@ function expectSignedOutEnd(h: Harness, scope: "identity" | "identity-and-queue"
   expect(h.reset).toHaveBeenCalledWith(scope);
   expect(h.events).toEqual([{ name: "entry_screen_viewed", screen: "login" }]);
   expect(h.order.filter((entry) => !entry.startsWith("fetch:") && entry !== "apple:start")).toEqual(
-    [`remove:${sessionKey}`, `reset:${scope}`, "event:login"],
+    [
+      ...(scope === "identity-and-queue" ? ["remove:libitum.progress.pending.user-1"] : []),
+      `remove:${sessionKey}`,
+      `reset:${scope}`,
+      "event:login",
+    ],
   );
 }
 
@@ -654,3 +659,25 @@ test.each([
   expect(announced.filter((content) => content === expected)).toHaveLength(1);
   expect(sessionStored(h)).toBe(false);
 });
+
+test.each(["sign-out", "delete-failed", "deleted"] as const)(
+  "미전송 진행은 계정 삭제 성공 때만 지운다: %s",
+  async (exit) => {
+    const h = await bootApp();
+    const ownKey = "libitum.progress.pending.user-1";
+    const otherKey = "libitum.progress.pending.user-2";
+    h.store.set(ownKey, "own pending");
+    h.store.set(otherKey, "other pending");
+    if (exit === "sign-out") {
+      signOut();
+      await onLogin();
+    } else {
+      if (exit === "delete-failed") h.net.fn = { status: 500 };
+      startDelete();
+      if (exit === "deleted") await onLogin();
+      else await expectFailure(h, failureText.other);
+    }
+    expect(h.store.has(ownKey)).toBe(exit !== "deleted");
+    expect(h.store.get(otherKey)).toBe("other pending");
+  },
+);

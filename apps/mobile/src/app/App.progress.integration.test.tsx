@@ -18,7 +18,7 @@ type Replies = {
 };
 
 const refreshedBody = JSON.stringify({
-  access_token: "refreshed-access",
+  access_token: `e30.${btoa(JSON.stringify({ sub: "u" })).replace(/=+$/, "")}.sig`,
   refresh_token: "refreshed-refresh",
   expires_in: 3600,
   token_type: "bearer",
