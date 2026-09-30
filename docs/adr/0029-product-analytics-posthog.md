@@ -130,6 +130,14 @@ const analytics = __BACKGROUND__ ? productAnalyticsSession() : noAnalyticsSessio
     않아 그 사이에 나가는 이벤트는 없다.
   - 식별이 던져도 로그인은 막히지 않는다(D11).
   - 로그아웃이 아직 없어 `reset`을 부르는 자리가 없다. 로그아웃이 생기면 거기서 익명으로 되돌린다.
+    ⟨2026-09-30 — **이제 부른다**⟩ 로그아웃 · 계정 삭제의 뒤처리(`app/account-wiring.ts`)가 세션을 지운 직후
+    `reset`을 부른다([ADR-0032](0032-account-sign-out-and-deletion.md) D7). 범위는 둘 — 로그아웃 `identity`,
+    삭제 `identity-and-queue`(아래 D12의 대기열까지 버린다). 순서는 대기열 버리기 → `reset()` →
+    `register({ environment })` 다시 걸기다 — `@posthog/core@1.55.2`의 `reset`이 등록 속성을 지워 D13의
+    `environment`가 빠지기 때문이다. 그 뒤 이벤트는 새 익명 ID이고 식별 전까지 person을 만들지 않는다.
+    이를 위해 **진입점의 세션 모양이 `{ sinks, identify }`에서 `{ sinks, user }`로 바뀌었다** — `user`는
+    `identify`와 `reset`을 함께 지고(`lib/analytics-user.contract.ts`), 클라이언트가 없으면 `null`이다. App prop도
+    `analyticsIdentify`에서 `analyticsUser`로 같은 자리에서 바뀌었다. reset이 던져도 뒤처리는 계속된다(D11).
   - 검증: unit `auth-user-id`(UI1–UI3) · integration `App.entry` ID1–ID5 · `App.analytics`
     IA-ID1–IA-ID2.
 
@@ -188,6 +196,10 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   뒤 멈춤 · 타이머 0) · PC17(저장 · 보낸 뒤 지움) · PC18(다음 실행이 곧바로 보냄 · 깨진 값) · PC19(499 · 0).
 - 이 결정은 ADR-0007 D1(저장소에는 로그인 토큰만)의 **예외 하나**다. 대기열은 서버 응답도 화면
   상태도 아니고, 보내고 나면 지워져 무효화를 사람이 맡지 않는다.
+- ⟨2026-09-30⟩ **보내지 않고 버리는 때가 하나 생겼다 — 계정 삭제.** 떠난 사용자의 ID가 실린 대기열이
+  다음 실행에 나가지 않게 `LynxPostHogClient.discardQueue()`가 재시도 타이머를 멈추고 메모리 대기열과
+  `analytics.queue` 키를 지운다. 로그아웃은 버리지 않는다 — 이미 쌓인 이벤트는 그 사용자가 실제로 낸 것이다.
+  키를 만지는 자리는 여전히 이 모듈 하나다(D3 — 결선이 키를 직접 지우지 않는다). [ADR-0032](0032-account-sign-out-and-deletion.md) D7.
 
 ### D13. 개발 · 운영은 프로젝트가 아니라 `environment` 속성으로 가른다
 

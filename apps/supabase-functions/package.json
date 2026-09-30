@@ -1,0 +1,19 @@
+{
+  "name": "@libitums/supabase-functions",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run unit.test",
+    "test:integration": "vitest run integration.test"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.0",
+    "typescript": "6.0.3",
+    "vitest": "3.2.7"
+  },
+  "engines": {
+    "node": ">=22.12 <23"
+  }
+}

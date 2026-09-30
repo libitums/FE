@@ -1,5 +1,6 @@
 // 설정 화면의 props·이벤트 타입을 소유합니다. 구현·JSX는 두지 않습니다.
 
+import type { AccountActionsProps, AccountActionsTestId } from "./account-actions.contract";
 import type { SessionOptionKey, SessionOptions } from "../../lib/session-options";
 
 // `SettingsNavTarget`이 route 이름과 같은 문자열입니다(`"profile"` · `"terms"`) —
@@ -13,7 +14,7 @@ export type SettingsScreenProps = {
   readonly sessionOptions: SessionOptions;
   readonly onSelectNavTarget: (target: SettingsNavTarget) => void;
   readonly onToggleSessionOption: (key: SessionOptionKey) => void;
-};
+} & AccountActionsProps;
 
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };
 export type ProfileOpenedEvent = { readonly name: "profile_opened" };
@@ -37,4 +38,5 @@ export type SettingsTestId =
   | "settings-screen-scroll"
   | "settings-screen-list"
   | `ui-lynx-settings-group-item-${SettingsNavTarget}`
-  | `ui-lynx-settings-group-item-${SessionOptionKey}`;
+  | `ui-lynx-settings-group-item-${SessionOptionKey}`
+  | AccountActionsTestId;

@@ -1810,7 +1810,7 @@ test("[ID1] 소셜 로그인이 성공하면 그 사용자로 한 번 식별한�
   });
   const analyticsIdentify = vi.fn<(userId: string) => void>();
   vi.useFakeTimers();
-  render(<App analyticsIdentify={analyticsIdentify} />);
+  render(<App analyticsUser={{ identify: analyticsIdentify, reset: vi.fn() }} />);
   advanceSplash();
   completeOnboarding();
 
@@ -1830,7 +1830,9 @@ test("[ID2] 전화번호 코드 검증이 성공하면 그 사용자로 한 번 
   });
   const analyticsIdentify = vi.fn<(userId: string) => void>();
   vi.useFakeTimers();
-  render(<App phoneSignIn="visible" analyticsIdentify={analyticsIdentify} />);
+  render(
+    <App phoneSignIn="visible" analyticsUser={{ identify: analyticsIdentify, reset: vi.fn() }} />,
+  );
   advanceSplash();
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
@@ -1851,7 +1853,7 @@ test("[ID3] 세션 갱신으로 부팅하면 갱신된 토큰의 사용자로 �
   });
   const analyticsIdentify = vi.fn<(userId: string) => void>();
   vi.useFakeTimers();
-  render(<App analyticsIdentify={analyticsIdentify} />);
+  render(<App analyticsUser={{ identify: analyticsIdentify, reset: vi.fn() }} />);
 
   advanceSplash();
   await advanceTimersAsync(0);
@@ -1866,7 +1868,7 @@ test("[ID4] 로그인이 실패하거나 토큰에서 사용자를 못 읽으면
   });
   const analyticsIdentify = vi.fn<(userId: string) => void>();
   vi.useFakeTimers();
-  render(<App analyticsIdentify={analyticsIdentify} />);
+  render(<App analyticsUser={{ identify: analyticsIdentify, reset: vi.fn() }} />);
   advanceSplash();
   completeOnboarding();
 
@@ -1884,8 +1886,11 @@ test("[ID5] 식별이 던져도 로그인은 언어 선택으로 넘어간다", 
   vi.useFakeTimers();
   render(
     <App
-      analyticsIdentify={() => {
-        throw new Error("identify failed");
+      analyticsUser={{
+        identify: () => {
+          throw new Error("identify failed");
+        },
+        reset: vi.fn(),
       }}
     />,
   );

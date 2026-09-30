@@ -70,15 +70,19 @@ extension AppleSignInModule: ASAuthorizationControllerDelegate {
     controller: ASAuthorizationController,
     didCompleteWithAuthorization authorization: ASAuthorization
   ) {
-    let token = (authorization.credential as? ASAuthorizationAppleIDCredential)?.identityToken
-    finish(with: AppleSignInPayload.make(identityToken: token, error: nil))
+    let credential = authorization.credential as? ASAuthorizationAppleIDCredential
+    finish(
+      with: AppleSignInPayload.make(
+        identityToken: credential?.identityToken,
+        authorizationCode: credential?.authorizationCode,
+        error: nil))
   }
 
   func authorizationController(
     controller: ASAuthorizationController,
     didCompleteWithError error: Error
   ) {
-    finish(with: AppleSignInPayload.make(identityToken: nil, error: error))
+    finish(with: AppleSignInPayload.make(identityToken: nil, authorizationCode: nil, error: error))
   }
 }
 
@@ -101,9 +105,10 @@ enum AppleSignInArguments {
   }
 }
 
-/// 콜백 페이로드 조립이다 — 순수, `HostTests`가 잰다. 키는 `status`와 `identityToken` 둘뿐이다.
+/// 콜백 페이로드 조립이다 — 순수, `HostTests`가 잰다. 키는 `status` · `identityToken`, 코드가 비지 않은
+/// UTF-8이면 `authorizationCode`까지 셋이다. 코드는 계정 삭제 재인증(서버 철회)이 쓴다.
 enum AppleSignInPayload {
-  static func make(identityToken: Data?, error: Error?) -> [String: Any] {
+  static func make(identityToken: Data?, authorizationCode: Data?, error: Error?) -> [String: Any] {
     if let error = error {
       if let authError = error as? ASAuthorizationError, authError.code == .canceled {
         return ["status": "cancelled"]
@@ -115,7 +120,14 @@ enum AppleSignInPayload {
       let token = String(data: data, encoding: .utf8),
       !token.isEmpty
     {
-      return ["status": "completed", "identityToken": token]
+      var payload: [String: Any] = ["status": "completed", "identityToken": token]
+      if let codeData = authorizationCode,
+        let code = String(data: codeData, encoding: .utf8),
+        !code.isEmpty
+      {
+        payload["authorizationCode"] = code
+      }
+      return payload
     }
 
     return ["status": "failed"]

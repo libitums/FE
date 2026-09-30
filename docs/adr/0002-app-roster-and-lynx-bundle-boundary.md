@@ -114,6 +114,13 @@ Lynx는 웹이 아니다. 여기서 가장 중요한 사실 하나:
 
 ## 정정 기록
 
+**2026-09-30 — 서버 함수 앱이 로스터에 들었다. 제품 화면 앱은 여전히 하나다.** 계정 삭제의 Apple 토큰 철회가
+서버 코드를 요구해 `apps/supabase-functions`(`@libitums/supabase-functions`)가 생겼다
+([ADR-0032](0032-account-sign-out-and-deletion.md) D1). 이 앱은 **Lynx 번들과 무관한 Supabase Edge Function**이고
+서비스 화면을 소유하지 않는다 — 그래서 D3의 번들 생성 · 로드 경계에도, 제품 앱 로스터의 개수에도 들지 않는다.
+**D4의 타깃 이름 규칙은 그대로 따랐다** — 이름은 서비스명이 아니라 배포 타깃(Supabase Functions)이다.
+`apps/`에 둔 근거는 ADR-0004 D1(import되지 않는 잎)이다. 결정 문장은 한 글자도 바뀌지 않는다.
+
 **2026-09-10 — 검증 앱을 제품 앱 로스터와 구분했다.** `apps/storybook-lynx`가 생겼지만
 서비스 화면이나 배포 경계를 소유하는 제품 앱은 아니다. Storybook manager 안에서 실제
 Lynx Web bundle을 실행하는 개발·검증 앱이며, 그 책임과 경계는 ADR-0025가 맡는다. 따라서
