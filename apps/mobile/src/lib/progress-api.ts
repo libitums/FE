@@ -11,6 +11,7 @@ import type {
   LoadLearningProgressPath,
   LocalDay,
   RecordLearningDayPath,
+  RecordLearningDaysPath,
   SaveLearningProgressPath,
 } from "./learning-progress.contract";
 import type { SubmitFeedbackPath } from "./feedback.contract";
@@ -20,6 +21,7 @@ type RpcPath =
   | LoadLearningProgressPath
   | SaveLearningProgressPath
   | RecordLearningDayPath
+  | RecordLearningDaysPath
   | LearningStreakPath
   | SubmitFeedbackPath;
 
@@ -129,6 +131,16 @@ export async function saveLearningProgress(snapshot: object): Promise<boolean> {
 /** 오늘을 학습한 날로 적고 새 연속 일수를 받습니다. */
 export async function recordLearningDay(day: LocalDay): Promise<number | null> {
   return countFrom(await authorizedRpc("/rest/v1/rpc/record_learning_day", { p_day: day }));
+}
+
+/** 원래 학습 날짜들을 멱등 저장하고 현재 기기 날짜 기준의 연속 일수를 받습니다. */
+export async function recordLearningDays(
+  days: readonly LocalDay[],
+  today: LocalDay,
+): Promise<number | null> {
+  return countFrom(
+    await authorizedRpc("/rest/v1/rpc/record_learning_days", { p_days: days, p_today: today }),
+  );
 }
 
 export async function fetchLearningStreak(today: LocalDay): Promise<number | null> {

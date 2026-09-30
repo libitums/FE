@@ -14,8 +14,9 @@ import type { SettingsEvent } from "../screens/settings/settings.contract";
 
 type Rpc = { readonly name: string; readonly body: Record<string, unknown> };
 
+const accessToken = `e30.${btoa(JSON.stringify({ sub: "u" })).replace(/=+$/, "")}.sig`;
 const refreshedBody = JSON.stringify({
-  access_token: "refreshed-access",
+  access_token: accessToken,
   refresh_token: "refreshed-refresh",
   expires_in: 3600,
   token_type: "bearer",
@@ -26,7 +27,7 @@ async function boot(ui: Parameters<typeof render>[0]) {
   const store = new Map<string, string>();
   store.set(
     authSessionStorageKey,
-    serializeAuthSession({ accessToken: "a", refreshToken: "r", expiresAt: 4_102_444_800_000 }),
+    serializeAuthSession({ accessToken, refreshToken: "r", expiresAt: 4_102_444_800_000 }),
   );
   const requestReview = vi.fn<() => void>();
   vi.stubGlobal("NativeModules", {
@@ -46,7 +47,7 @@ async function boot(ui: Parameters<typeof render>[0]) {
     }
     const name = url.split("/rest/v1/rpc/")[1] ?? url;
     rpcs.push({ name, body: JSON.parse(init.body) as Record<string, unknown> });
-    const body = name === "record_learning_day" ? "1" : name === "learning_streak" ? "0" : "null";
+    const body = name === "record_learning_days" ? "1" : name === "learning_streak" ? "0" : "null";
     return Promise.resolve({ status: 200, text: async () => body });
   });
 

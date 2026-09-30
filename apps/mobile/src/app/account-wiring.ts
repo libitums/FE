@@ -2,6 +2,7 @@
 // `entry_screen_viewed(login)` → App 세션 재시작)를 잇습니다. 어휘는 `leave-app.contract.ts`입니다.
 
 import { authUserIdFrom } from "../lib/auth-user-id";
+import { clearPendingLearningDays } from "./pending-learning-days";
 import { clearPendingProgress } from "./pending-learning-progress";
 import { deleteAccount } from "../lib/account-deletion";
 import { signOutRemotely } from "../lib/api-client";
@@ -61,7 +62,10 @@ export function accountWiring({
       const result = await deleteAccount(session, saveAuthSession);
       if (result.status === "deleted") {
         const userId = authUserIdFrom(session.accessToken);
-        if (userId !== null) clearPendingProgress(userId);
+        if (userId !== null) {
+          clearPendingProgress(userId);
+          clearPendingLearningDays(userId);
+        }
         leave("deleted");
       }
       return result;

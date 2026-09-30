@@ -7,7 +7,8 @@
 //
 // 로그인 토큰을 저장합니다(ADR-0007 D1). 화면 상태·서버 응답 캐시는 두지 않습니다.
 // 예외는 미전송 분석 이벤트(`analytics.queue`, ADR-0029 D12)와 사용자별 미전송 학습 진행
-// (`libitum.progress.pending.<userId>`, ADR-0035 D3)입니다. 서버 확인 뒤 지웁니다.
+// (`libitum.progress.pending.<userId>`, ADR-0035 D3)과 학습 날짜
+// (`libitum.learning-days.pending.<userId>`, ADR-0035 D6)입니다. 서버 확인 뒤 지웁니다.
 
 /** 호스트가 `StorageModule`이라는 이름으로 등록합니다. */
 interface StorageModule {

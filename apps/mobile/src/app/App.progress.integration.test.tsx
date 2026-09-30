@@ -52,7 +52,7 @@ async function boot(replies: Replies): Promise<Rpc[]> {
         ? replies.load
         : name === "learning_streak"
           ? { status: 200, body: String(replies.streak) }
-          : name === "record_learning_day"
+          : name === "record_learning_days"
             ? { status: 200, body: String(replies.recorded) }
             : { status: 204, body: "" };
     return Promise.resolve({ status: reply.status, text: async () => reply.body });
@@ -134,8 +134,11 @@ test("[IPG2] 활동을 끝내면 오늘을 적고 진행을 저장하며, 연속
   finishIntro();
   await flush();
 
-  const record = rpcs.find((rpc) => rpc.name === "record_learning_day");
-  expect(record?.body).toEqual({ p_day: localDayFrom(new Date()) });
+  const record = rpcs.find((rpc) => rpc.name === "record_learning_days");
+  expect(record?.body).toEqual({
+    p_days: [localDayFrom(new Date())],
+    p_today: localDayFrom(new Date()),
+  });
   const save = rpcs.find((rpc) => rpc.name === "save_learning_progress");
   expect((save?.body["p_progress"] as Record<string, unknown>)["completedEpisodeIntroIds"]).toEqual(
     ["tutorial-intro"],
@@ -170,5 +173,5 @@ test("[IPG3] 불러오기가 실패했으면 저장하지 않고 다시 불러�
 
   expect(rpcs.some((rpc) => rpc.name === "save_learning_progress")).toBe(false);
   expect(rpcs.filter((rpc) => rpc.name === "load_learning_progress")).toHaveLength(2);
-  expect(rpcs.some((rpc) => rpc.name === "record_learning_day")).toBe(true);
+  expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(true);
 });

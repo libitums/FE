@@ -72,7 +72,7 @@ export async function startTestDatabase() {
       create role authenticated;
       create role service_role;
       create schema auth;
-      create table auth.users (id uuid primary key);
+      create table auth.users (id uuid primary key, created_at timestamptz not null default now());
       create function auth.uid() returns uuid language sql stable as $$
         select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
       $$;
