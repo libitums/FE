@@ -68,17 +68,18 @@ begin
     ) as unique_ids;
     merged := jsonb_set(merged, array[field], ids);
   end loop;
+  -- v1의 추가 메타데이터는 보존하고 진행을 나타내는 두 필드만 단조 증가시킨다.
+  merged := jsonb_set(merged, '{visualNovel}', (p_saved->'visualNovel') || (p_incoming->'visualNovel'));
   if p_saved#>>'{visualNovel,status}' = 'completed'
     or p_incoming#>>'{visualNovel,status}' = 'completed' then
-    merged := jsonb_set(merged, '{visualNovel}', '{"status":"completed","beatIndex":2}'::jsonb);
+    merged := jsonb_set(merged, '{visualNovel,status}', '"completed"'::jsonb);
+    merged := jsonb_set(merged, '{visualNovel,beatIndex}', '2'::jsonb);
   else
-    merged := jsonb_set(merged, '{visualNovel}', jsonb_build_object(
-      'status', 'active',
-      'beatIndex', greatest(
-        (p_saved#>>'{visualNovel,beatIndex}')::integer,
-        (p_incoming#>>'{visualNovel,beatIndex}')::integer
-      )
-    ));
+    merged := jsonb_set(merged, '{visualNovel,status}', '"active"'::jsonb);
+    merged := jsonb_set(merged, '{visualNovel,beatIndex}', to_jsonb(greatest(
+      (p_saved#>>'{visualNovel,beatIndex}')::integer,
+      (p_incoming#>>'{visualNovel,beatIndex}')::integer
+    )));
   end if;
   return merged;
 end;

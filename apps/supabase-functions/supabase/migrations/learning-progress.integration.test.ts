@@ -210,3 +210,24 @@ test("SQL NULL과 지나치게 큰 입력은 기존 진행을 보존한다", asy
   ).rejects.toMatchObject({ code: "22023" });
   expect(await load(writerA)).toEqual(first);
 });
+
+test.each(["active", "completed"])(
+  "비주얼 노벨 %s 병합은 양쪽의 추가 메타데이터를 유지한다",
+  async (status) => {
+    await save(writerA, { ...first, visualNovel: { ...first.visualNovel, savedMetadata: "a" } });
+    await save(writerB, {
+      ...empty,
+      visualNovel: { status, beatIndex: status === "completed" ? 2 : 0, incomingMetadata: "b" },
+    });
+    await save(writerB, empty);
+    expect(await load(writerA)).toEqual({
+      ...first,
+      visualNovel: {
+        status,
+        beatIndex: status === "completed" ? 2 : 1,
+        savedMetadata: "a",
+        incomingMetadata: "b",
+      },
+    });
+  },
+);
