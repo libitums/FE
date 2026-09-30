@@ -35,6 +35,7 @@ export const tutorialPrologue = {
             speakerName: "Me",
             variant: "narration",
             background: street,
+            transition: "imagination",
             line: "이런 골목을 걷다가, 아직 만나지 않은 친구에게 연락이 온다면…",
             translation:
               "Perhaps, walking down a street like this, a friend I haven't met yet might message me…",

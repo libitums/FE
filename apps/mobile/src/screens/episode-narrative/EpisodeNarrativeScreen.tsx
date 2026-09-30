@@ -26,6 +26,8 @@ export type EpisodeNarrativeScreenProps = {
   readonly onFinish: () => void;
   /** 뒤로(맵으로)입니다. */
   readonly onExit: () => void;
+  /** 배경 전환·확대와 계속 표시의 모션을 줄입니다. */
+  readonly reducedMotion?: boolean;
 };
 
 // 탭 전파만 끊습니다. `catchtap`은 핸들러가 있어야 붙습니다.
@@ -46,6 +48,7 @@ export function EpisodeNarrativeScreen({
   narrative,
   onFinish,
   onExit,
+  reducedMotion = false,
 }: EpisodeNarrativeScreenProps): ReactNode {
   const copy = useUiCopy();
   const [beatIndex, setBeatIndex] = useState(0);
@@ -97,6 +100,8 @@ export function EpisodeNarrativeScreen({
           src={background}
           previousSrc={beatIndex > 0 ? previousBackground : null}
           animated={beat.background !== undefined}
+          transition={beat.transition}
+          reducedMotion={reducedMotion}
         />
         {character === null ? null : (
           <view className="episode-narrative-screen-character-slot">
@@ -173,6 +178,7 @@ export function EpisodeNarrativeScreen({
                   speakerName: beat.speakerName,
                   avatar: <Avatar name={beat.speakerName} size="sm" accessibility="hidden" />,
                 })}
+            reducedMotion={reducedMotion}
             line={beat.line}
             translation={beat.translation}
             surface="translucent"

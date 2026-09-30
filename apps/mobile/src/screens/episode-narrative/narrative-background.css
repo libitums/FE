@@ -1,6 +1,7 @@
 .narrative-background,
 .narrative-background-frame,
-.narrative-background-image {
+.narrative-background-image,
+.narrative-background-imagination-veil {
   position: absolute;
   top: 0;
   right: 0;
@@ -26,6 +27,31 @@
   animation: narrative-background-drift 6000ms var(--libitum-motion-easing-easing) both;
 }
 
+.narrative-background-image-departing {
+  /* 상상 진입 1.9초: 기내를 가까이 당긴 뒤 빛 안으로 물러나게 합니다. */
+  animation: narrative-imagination-depart 1900ms ease-in-out both;
+}
+
+.narrative-background-frame-imagination {
+  animation: narrative-imagination-reveal 1900ms ease-in-out both;
+}
+
+.narrative-background-image-imagination {
+  /* 1.9초에 확대가 가라앉고, 남은 4.1초는 풍경이 아주 조금 떠오릅니다. */
+  animation: narrative-imagination-drift 6000ms ease-out both;
+}
+
+.narrative-background-imagination-veil {
+  background-image: linear-gradient(
+    150deg,
+    var(--libitum-elevation-surface-floating),
+    var(--libitum-elevation-surface-default),
+    var(--libitum-elevation-surface-floating)
+  );
+  /* 별도 자식 없는 완료 층입니다. 모든 장면 전환은 이 빛이 사라진 뒤에 정리합니다. */
+  animation: narrative-imagination-veil 1900ms ease-in-out both;
+}
+
 @keyframes narrative-background-reveal {
   from {
     opacity: 0;
@@ -41,5 +67,74 @@
   }
   to {
     transform: scale(1.035);
+  }
+}
+
+@keyframes narrative-imagination-depart {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 0.85;
+    transform: scale(1.055);
+  }
+  75%,
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes narrative-imagination-reveal {
+  0%,
+  22% {
+    opacity: 0;
+  }
+  55% {
+    opacity: 0.55;
+  }
+  88%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes narrative-imagination-drift {
+  0% {
+    transform: scale(1.075) translateY(0);
+  }
+  32% {
+    transform: scale(1.018) translateY(0);
+  }
+  100% {
+    transform: scale(1.035) translateY(-0.4%);
+  }
+}
+
+@keyframes narrative-imagination-veil {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  22% {
+    opacity: 0.3;
+    transform: scale(1.04);
+  }
+  44% {
+    opacity: 0.94;
+    transform: scale(1.1);
+  }
+  60% {
+    opacity: 0.72;
+    transform: scale(1.14);
+  }
+  85% {
+    opacity: 0.16;
+    transform: scale(1.18);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
   }
 }

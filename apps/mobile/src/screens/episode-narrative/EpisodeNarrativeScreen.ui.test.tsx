@@ -5,6 +5,7 @@ import { EpisodeNarrativeScreen } from "./EpisodeNarrativeScreen";
 import type { EpisodeNarrative } from "./episode-narrative";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
+import { tutorialPrologue } from "../../app/tutorial-prologue";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). testid로 질의합니다.
 
@@ -164,4 +165,53 @@ test("배경이 바뀌어도 기존 다이알로그로 독백을 그리고 인�
   fireEvent.tap(screen.getByTestId("ui-lynx-visual-novel-dialog"), { eventType: "catchEvent" });
   expect(line()).toHaveTextContent("골목을 걷는다");
   expect(screen.getByTestId("narrative-background-image")).toHaveAttribute("src", "street.jpg");
+});
+
+test("실제 시작 유닛은 같은 기내 그림을 유지하고 골목으로 들어갈 때만 상상 전환한다", () => {
+  const opening = tutorialPrologue.segments[0].narrative;
+  const onFinish = vi.fn<() => void>();
+  render(<EpisodeNarrativeScreen {...fixture({ narrative: opening, onFinish })} />);
+  const cabin = screen.getByTestId("narrative-background-image");
+  fireEvent(cabin, new window.Event("bindEvent:load"));
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute(
+    "data-transition",
+    "crossfade",
+  );
+
+  advance();
+  expect(screen.getByTestId("narrative-background-image")).toBe(cabin);
+  expect(line()).toHaveTextContent(opening.beats[1].line);
+  expect(screen.queryByTestId("narrative-imagination-veil")).not.toBeInTheDocument();
+
+  advance();
+  expect(line()).toHaveTextContent(opening.beats[2].line);
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute(
+    "data-transition",
+    "imagination",
+  );
+  fireEvent(screen.getByTestId("narrative-background-image"), new window.Event("bindEvent:load"));
+  fireEvent.animationend(screen.getByTestId("narrative-imagination-veil"), {
+    params: { animation_type: "keyframe-animation", animation_name: "narrative-imagination-veil" },
+  });
+  expect(line()).toHaveTextContent(opening.beats[2].line);
+  expect(onFinish).not.toHaveBeenCalled();
+  advance();
+  expect(onFinish).toHaveBeenCalledTimes(1);
+});
+
+test("시작 유닛의 움직임 감소 설정은 상상 배경과 대화 계속 표시까지 전달된다", () => {
+  render(
+    <EpisodeNarrativeScreen
+      {...fixture({ narrative: tutorialPrologue.segments[0].narrative, reducedMotion: true })}
+    />,
+  );
+  advance();
+  advance();
+  fireEvent(screen.getByTestId("narrative-background-image"), new window.Event("bindEvent:load"));
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute("data-transition", "none");
+  expect(screen.queryByTestId("narrative-imagination-veil")).not.toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
+    "data-motion",
+    "static",
+  );
 });

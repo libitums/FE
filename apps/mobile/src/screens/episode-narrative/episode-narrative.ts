@@ -11,6 +11,8 @@ export type EpisodeNarrativeBeat = {
   readonly variant?: "speech" | "narration";
   /** 장면별 배경입니다. 생략하면 기존 스토어 배경을 씁니다. */
   readonly background?: string;
+  /** 기내에서 상상 속으로 들어가는 장면의 전환 연출입니다. */
+  readonly transition?: "imagination";
   /** 이 장면에 들어올 때 재생하고 장면을 떠날 때 멈추는 번들 음원입니다. */
   readonly audioSource?: string;
   /** 학습 대사입니다(한국어). */
