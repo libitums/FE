@@ -172,14 +172,14 @@ export function PhoneCallScreen({
               </view>
             ))}
           </view>
+          {session.mode === "completed" && conversation.completion ? (
+            <text className="phone-call-story-context" data-testid="phone-call-story-completion">
+              {conversation.completion}
+            </text>
+          ) : null}
         </view>
       </scroll-view>
       <view className="phone-call-screen-actions">
-        {session.mode === "completed" && conversation.completion ? (
-          <text className="phone-call-story-context" data-testid="phone-call-story-completion">
-            {conversation.completion}
-          </text>
-        ) : null}
         {playLabel ? (
           <view
             className="phone-call-audio-button"

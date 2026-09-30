@@ -11,8 +11,10 @@ import {
   pushDevicesFrom,
   reengagementDevicesRequest,
   removeDevicesRequest,
+  serviceKeyCheckRequest,
   userDevicesRequest,
 } from "./push-devices.ts";
+import { isJwtShaped } from "./service-key.ts";
 import { reengagementMessageFor, sendPushBodyFrom } from "./send-push-body.ts";
 import type {
   ApnsResult,
@@ -43,6 +45,23 @@ function sameSecret(a: string, b: string): boolean {
   let difference = 0;
   for (let i = 0; i < a.length; i += 1) difference |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return difference === 0;
+}
+
+/**
+ * 호출자가 서버 키를 냈는가. 런타임의 키와 글자가 같으면 곧바로 통과, 아니면 Auth에 물어 200이면 통과입니다
+ * (예약 작업이 Vault의 레거시 키를, 런타임이 새 비밀 키를 들고 있을 수 있습니다).
+ */
+async function isServiceCaller(
+  deps: SendPushDeps,
+  env: SendPushEnv,
+  presentedKey: string,
+): Promise<boolean> {
+  if (sameSecret(presentedKey, env.supabaseServiceRoleKey)) return true;
+  // 형식 검사는 불필요한 조회만 줄입니다. 권한은 아래 Auth 응답으로 확인합니다.
+  const secretShaped = presentedKey.startsWith("sb_secret_") && presentedKey.length > 10;
+  if (!isJwtShaped(presentedKey) && !secretShaped) return false;
+  const response = await send(deps, serviceKeyCheckRequest(env, presentedKey));
+  return response !== null && response.status === 200;
 }
 
 /** 쿼리 문자열에 싣는 ID · 토큰 수의 상한입니다 — URL 길이 제한(414)을 넘지 않게 나눕니다. */
@@ -163,7 +182,7 @@ export const createSendPushHandler: CreateSendPushHandler = (deps) => {
       else if (env === null) outcome = { status: 500, error: "server_misconfigured" };
       else {
         const token = bearerTokenFrom(request.headers.get("Authorization"));
-        if (token === null || !sameSecret(token, env.supabaseServiceRoleKey)) {
+        if (token === null || !(await isServiceCaller(deps, env, token))) {
           outcome = { status: 401, error: "unauthorized" };
         } else {
           const body = sendPushBodyFrom(await request.text().catch(() => ""));
