@@ -151,6 +151,8 @@ export type EpisodeIntroTestId =
 
 /** 서사 통화의 대사 한 줄입니다. 위가 한국어, 아래가 번역입니다. */
 export type PrologueCallLine = {
+  /** 음원이 있으면 재생 완료 후 다음 대사로 넘어갑니다. */
+  readonly audioSource?: string;
   readonly text: string;
   readonly translation: string;
 };

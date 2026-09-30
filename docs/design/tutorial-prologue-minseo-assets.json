@@ -1,0 +1,25 @@
+{
+  "voice": "Mina - Clear, Calm & Warm / v4",
+  "mapping_basis": "Download order; pending user confirmation, not independently transcribed or listened to.",
+  "encoding": "AAC mono 44100 Hz, requested 96000 bps; no cuts or effects",
+  "assets": [
+    {
+      "asset": "apps/ios/Host/audio/tutorial-minseo-call-01.m4a",
+      "source_filename": "ElevenLabs_2026-09-30T08_10_26_Mina - Clear, Calm & Warm _pvc_sp100_s83_sb86_v4.mp3",
+      "source_sha256": "20a93453c26a661e997e1a29c7931d21938dc38e7bb010dcda4d189fe5b1ad05",
+      "asset_sha256": "c688a256ea714ffdbcd5df0531fb6369aecac0b2f6f1beb19c505c3d41614cbd",
+      "asset_bytes": 33646,
+      "duration_seconds": 2.507755,
+      "expected_transcript": "여보세요? 창가에 있다고 했지?"
+    },
+    {
+      "asset": "apps/ios/Host/audio/tutorial-minseo-call-02.m4a",
+      "source_filename": "ElevenLabs_2026-09-30T08_11_06_Mina - Clear, Calm & Warm _pvc_sp100_s83_sb86_v4.mp3",
+      "source_sha256": "574686412e1e73a685aec7b0ecd21371b3b8ebdb7a36e549b172400df7bdd577",
+      "asset_sha256": "1f3c64e9f77b92e2bbc15a923fa58d9667ab1a4e60b314fef08afe8095431bff",
+      "asset_bytes": 35894,
+      "duration_seconds": 2.690612,
+      "expected_transcript": "나 거의 다 왔어. 조금만 기다려!"
+    }
+  ]
+}

@@ -25,9 +25,15 @@ export function FeedbackScreen({ onSubmit, onExit }: FeedbackScreenProps): React
   const [status, setStatus] = useState<FeedbackStatus>("editing");
 
   const handleSend = async (): Promise<void> => {
+    "background only";
     if (rating === null || status === "sending") return;
     setStatus("sending");
-    const ok = await onSubmit(rating, message);
+    let ok = false;
+    try {
+      ok = await onSubmit(rating, message);
+    } catch {
+      // 예외도 전송 실패로 처리해 입력을 유지하고 다시 보낼 수 있게 합니다.
+    }
     setStatus(ok ? "sent" : "failed");
     announce(ok ? copy.feedback.sent : copy.feedback.failed);
   };

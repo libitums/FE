@@ -1,8 +1,11 @@
-import { useEffect, useState } from "@lynx-js/react";
+import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import minus from "@libitums/icons/lynx/minus";
 import mute from "@libitums/icons/lynx/mute";
+import pause from "@libitums/icons/lynx/pause";
+import play from "@libitums/icons/lynx/play";
+import refresh from "@libitums/icons/lynx/refresh";
 import phone from "@libitums/icons/lynx/phone";
 import plus from "@libitums/icons/lynx/plus";
 import slider from "@libitums/icons/lynx/slider";
@@ -11,15 +14,12 @@ import { Fog } from "@libitums/ui-lynx/fog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import type { PrologueCallScreenProps, PrologueCallVolume } from "./episode-intro.contract";
-import {
-  initialPrologueCallVolume,
-  prologueCallProgress,
-  prologueLineSeconds,
-  stepPrologueCallVolume,
-} from "./prologue-call";
+import { initialPrologueCallVolume, stepPrologueCallVolume } from "./prologue-call";
 
 import { CallCaller, CallLineBubble } from "../../components/CallCaller";
 import { useUiCopy } from "../../lib/ui-copy";
+
+import { usePrologueCallPlayback } from "./usePrologueCallPlayback";
 
 import "./prologue-call-screen.css";
 
@@ -33,8 +33,8 @@ const volumeLevels: readonly PrologueCallVolume[] = [1, 2, 3, 4, 5];
  * `Continue`가 섭니다. 다음 화면으로 가는 것은 그 버튼뿐입니다 — 저절로 넘어가지
  * 않습니다.
  *
- * ⚠ 통화 음성이 아직 없습니다. 음소거와 소리 크기는 상태로만 있고, 음성이 오는 날 그
- * 재생에 걸립니다. 대사는 음성 대신 `prologueLineSeconds`마다 넘어갑니다.
+ * 음원이 있는 대사는 재생 완료로 이어지고, 없는 대사는 기존 읽기 시간으로 이어집니다.
+ * 음원 대사의 양옆 버튼은 일시정지·재개와 다시 듣기입니다.
  *
  * 디자인의 배경 그림과 오른쪽 위 설정 버튼은 그리지 않습니다 — 그림이 없고, 설정이 갈
  * 곳이 정해지지 않았습니다.
@@ -48,33 +48,22 @@ export function PrologueCallScreen({
   onBack,
 }: PrologueCallScreenProps): ReactNode {
   const copy = useUiCopy();
-  // 지나간 대사 칸 수입니다. 대사가 바뀌는 `prologueLineSeconds`마다만 갑니다 — 1초
-  // 시계는 `PrologueCallClock`이 따로 셉니다.
-  const [lineTicks, setLineTicks] = useState(0);
+  const { ended, line, paused, audioSource, togglePlayback, replay, hangUp, stop } =
+    usePrologueCallPlayback(call);
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState<PrologueCallVolume>(initialPrologueCallVolume);
   const [volumeOpen, setVolumeOpen] = useState(false);
-  // 종료 버튼으로 끊었는지입니다. 대사가 다 흘러 끝난 것은 시간에서 나오므로 따로 두지
-  // 않습니다.
-  const [hungUp, setHungUp] = useState(false);
-
-  const progress = prologueCallProgress(lineTicks * prologueLineSeconds, call.lines.length);
-  const ended = hungUp || progress.ended;
-  const line = call.lines[progress.lineIndex];
-
-  // 대사 진행입니다. 대사 한 줄이 머무는 시간마다 한 칸 갑니다 — 대사 자리와 끝남이 이
-  // 값에서 나옵니다. 끝나면 멈춥니다.
-  useEffect(() => {
-    if (ended) {
-      return undefined;
-    }
-    const timer = setInterval(() => setLineTicks((ticks) => ticks + 1), prologueLineSeconds * 1000);
-    return () => clearInterval(timer);
-  }, [ended]);
+  const playbackOn = audioSource === undefined ? muted : paused;
+  const volumeOn = audioSource === undefined && volumeOpen;
+  const handleBack = () => {
+    "background only";
+    stop();
+    onBack();
+  };
 
   const handleHangUp = () => {
     "background only";
-    setHungUp(true);
+    hangUp();
     setVolumeOpen(false);
   };
 
@@ -102,7 +91,7 @@ export function PrologueCallScreen({
                 icon={arrowLeft03}
                 variant="neutral"
                 size="xl"
-                bindtap={onBack}
+                bindtap={handleBack}
               />
             </view>
             <text
@@ -131,7 +120,7 @@ export function PrologueCallScreen({
 
           <view className="prologue-call-screen-spacer" />
 
-          {!ended && volumeOpen ? (
+          {!ended && audioSource === undefined && volumeOpen ? (
             <view
               className="prologue-call-screen-volume-panel"
               data-testid="prologue-call-screen-volume-panel"
@@ -191,21 +180,31 @@ export function PrologueCallScreen({
             <view className="prologue-call-screen-controls">
               <view
                 className={
-                  muted
+                  playbackOn
                     ? "prologue-call-screen-side prologue-call-screen-side-on"
                     : "prologue-call-screen-side"
                 }
-                data-testid="prologue-call-screen-mute"
-                data-on={muted ? "true" : "false"}
+                data-testid={
+                  audioSource === undefined
+                    ? "prologue-call-screen-mute"
+                    : "prologue-call-screen-playback"
+                }
+                data-on={playbackOn ? "true" : "false"}
                 accessibility-element={true}
                 accessibility-traits="button"
-                accessibility-label={copy.episodeIntro.call.mute(muted)}
-                bindtap={() => setMuted((current) => !current)}
+                accessibility-label={
+                  audioSource === undefined
+                    ? copy.episodeIntro.call.mute(muted)
+                    : copy.listening.playback[paused ? "resume" : "pause"]
+                }
+                bindtap={
+                  audioSource === undefined ? () => setMuted((current) => !current) : togglePlayback
+                }
               >
                 <svg
                   className="prologue-call-screen-side-icon"
-                  content={mute}
-                  current-color={muted ? color.white : color.gray[800]}
+                  content={audioSource === undefined ? mute : paused ? play : pause}
+                  current-color={playbackOn ? color.white : color.gray[800]}
                 />
               </view>
               <view
@@ -224,23 +223,33 @@ export function PrologueCallScreen({
               </view>
               <view
                 className={
-                  volumeOpen
+                  volumeOn
                     ? "prologue-call-screen-side prologue-call-screen-side-on"
                     : "prologue-call-screen-side"
                 }
-                data-testid="prologue-call-screen-volume"
-                data-on={volumeOpen ? "true" : "false"}
+                data-testid={
+                  audioSource === undefined
+                    ? "prologue-call-screen-volume"
+                    : "prologue-call-screen-replay"
+                }
+                data-on={volumeOn ? "true" : "false"}
                 accessibility-element={true}
                 accessibility-traits="button"
                 accessibility-label={
-                  volumeOpen ? copy.episodeIntro.call.volumeExpanded : copy.episodeIntro.call.volume
+                  audioSource === undefined
+                    ? volumeOpen
+                      ? copy.episodeIntro.call.volumeExpanded
+                      : copy.episodeIntro.call.volume
+                    : copy.phoneCall.play["listen-again"]
                 }
-                bindtap={() => setVolumeOpen((current) => !current)}
+                bindtap={
+                  audioSource === undefined ? () => setVolumeOpen((current) => !current) : replay
+                }
               >
                 <svg
                   className="prologue-call-screen-side-icon"
-                  content={slider}
-                  current-color={volumeOpen ? color.white : color.gray[800]}
+                  content={audioSource === undefined ? slider : refresh}
+                  current-color={volumeOn ? color.white : color.gray[800]}
                 />
               </view>
             </view>
