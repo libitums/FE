@@ -33,6 +33,7 @@ import { oauthProviderFor, signInWithSocialProvider } from "../lib/social-sign-i
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { NavAction } from "./nav-state";
+import { syncPushDevice } from "./push-wiring";
 import { entryScreenAfterLogin } from "./screen-routing";
 
 export type EntryWiringArgs = {
@@ -84,6 +85,8 @@ export function entryWiring({
             if (result.status === "refreshed") {
               storeSession(result.session);
               dispatch({ type: "enterApp" });
+              // 이미 허용했으면 조용히 토큰을 올립니다 — 마지막 활동 시각도 이때 갱신됩니다(ADR-0034).
+              void syncPushDevice({ ask: false });
               return;
             }
             if (sessionRefreshDisposition(result.reason) === "clear") {
@@ -198,6 +201,8 @@ export function entryWiring({
     onEnterJourney: () => {
       entryEventSink?.(entryCompletedEvent());
       dispatch({ type: "enterApp" });
+      // 진입 흐름의 끝에서 알림을 묻습니다 — 다이얼로그는 맵 위에 뜨고, 답을 기다리지 않습니다(ADR-0034).
+      void syncPushDevice({ ask: true });
     },
   };
 }

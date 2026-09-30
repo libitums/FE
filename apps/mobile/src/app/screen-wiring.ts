@@ -36,6 +36,7 @@ import type {
 import type {
   NotificationEventSink,
   NotificationItem,
+  PushNotificationTarget,
 } from "../screens/notifications/notifications.contract";
 import type {
   PhoneCallEventSink,
@@ -164,6 +165,8 @@ export type ScreenWiring = {
   onSelectNotification: (item: NotificationItem) => void;
   onDeleteNotification: (item: NotificationItem) => void;
   onExitNotifications: () => void;
+  // 누른 서버 푸시의 목적지로 갑니다(ADR-0034). 화면이 아니라 `useOpenedPush`가 부릅니다.
+  onOpenPushTarget: (target: PushNotificationTarget) => void;
   // 에피소드 표지의 넘기기 · 나가기입니다. 넷 다 **표지 유닛 id 하나**를 받습니다 —
   // 「넘긴 뒤 열 유닛」이 없어졌기 때문입니다(spec §2.5). `Skip`은 맵이 아니라 만점
   // 결과 화면으로 갑니다(D5).

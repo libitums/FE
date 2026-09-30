@@ -25,6 +25,7 @@ export const settingsEn: SettingsCopy = {
   group: { account: "Account", learning: "Learning", accountActions: "Account actions" },
   nav: {
     profile: "User profile",
+    notifications: "Notifications",
     "privacy-policy": "Privacy Policy",
     "terms-of-use": "Terms of Use",
   },

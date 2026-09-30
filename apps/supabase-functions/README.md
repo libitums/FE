@@ -1,6 +1,7 @@
 # @libitums/supabase-functions
 
-Supabase Edge Function 앱이다. 지금은 `delete-account` 하나 — 로그인한 사용자가 자기 계정을 지운다
+Supabase Edge Function 앱이다. 함수는 둘 — `delete-account`와 `send-push`(서버 푸시, 아래 「send-push」 ·
+[ADR-0034](../../docs/adr/0034-server-push-notifications.md)). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
 (Apple 사용자는 Apple 토큰 철회까지). 결정과 HTTP 계약(판정 순서 · 상태 코드)은
 [ADR-0032](../../docs/adr/0032-account-sign-out-and-deletion.md) D1~D3, 타입은
 `supabase/functions/_shared/delete-account.contract.ts`가 정본이다.
@@ -87,3 +88,37 @@ supabase functions deploy delete-account --no-verify-jwt
 성공은 204. 오류는 `{"error": "<code>"}`이고 CORS 헤더는 없다(호출자는 앱의 네이티브 fetch뿐).
 바깥 호출마다 제한 시간 10초, 재시도 없음. 로그는 요청당 한 줄(`event` · `status` · `error`)이고
 토큰 · 코드 · 사용자 ID · 이메일은 싣지 않는다.
+
+## send-push (서버 푸시 — ADR-0034)
+
+`POST` · `Authorization: Bearer <service role 키>`. 본문은 둘이다.
+
+```jsonc
+{ "kind": "reengagement", "days": 3 }                        // 3 또는 7 — 문구는 함수가 든다
+{ "kind": "announcement", "audience": "all",                 // 또는 { "userIds": ["<uuid>", …] } (1~1000)
+  "title": "Episode 2 is here", "body": "…",                  // 제목 ≤ 100자 · 본문 ≤ 500자
+  "target": { "kind": "journey-map" } }                        // 생략하면 여정 맵
+```
+
+목적지(`target.kind`)는 `journey-map` · `notifications` · `roleplay-list` · `messenger` · `phone-call` · `visual-novel`
+(뒤의 셋은 `unitId`가 필요하다). 성공은 200 `{devices, sent, failed, removed}` — 무효 토큰은 표에서 지운다.
+
+### 배포 순서
+
+1. **Apple** — Identifiers에서 `com.libitum.host`의 **Push Notifications**를 켠다. Keys에서 **Apple Push Notifications
+   service (APNs)**를 체크한 키를 만들고 `.p8`을 받는다(Sign in with Apple 키에 체크를 더한 새 키 하나로 합쳐도 된다).
+2. **마이그레이션** — `supabase/migrations/20260930120000_push_devices.sql`을 적용한다(`supabase db push` 또는 SQL 편집기).
+3. **시크릿** — `APNS_KEY_ID` · `APNS_PRIVATE_KEY`(.p8 내용). `APPLE_TEAM_ID` · `APPLE_CLIENT_ID`(= 토픽 `com.libitum.host`)는
+   삭제 함수와 같은 값을 쓴다. 하나라도 비면 모든 요청이 500 `server_misconfigured`다.
+4. **배포** — `supabase functions deploy send-push`(`config.toml`에 `verify_jwt = false`).
+5. **예약** — `pg_cron` · `pg_net`을 켜고 Vault에 service role 키를 넣은 뒤 `supabase/cron/reengagement.sql`을 한 번 실행한다.
+
+### 운영 공지 보내기
+
+```sh
+curl -X POST "https://<ref>.supabase.co/functions/v1/send-push" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/json" \
+  -d '{"kind":"announcement","audience":"all","title":"Episode 2 is here","body":"Jimin has a new story for you.","target":{"kind":"journey-map"}}'
+```
+
+개발 서명 빌드의 토큰은 `sandbox`, App Store · TestFlight는 `production`으로 등록되고 함수가 알맞은 APNs로 보낸다.

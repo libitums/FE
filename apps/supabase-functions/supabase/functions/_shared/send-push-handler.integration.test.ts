@@ -1,0 +1,180 @@
+import { beforeAll, describe, expect, test } from "vitest";
+
+import { signEs256 } from "./apple-client-secret.ts";
+import { bytesFromBase64Url } from "./base64.ts";
+import type { OutboundRequest, OutboundResponse } from "./delete-account.contract.ts";
+import type { SendPushEnv, SendPushLogEntry } from "./send-push.contract.ts";
+import { createSendPushHandler } from "./send-push-handler.ts";
+
+// 핸들러 + 실제 WebCrypto 서명 + 가짜 바깥 호출(PostgREST · APNs)을 잇습니다(SH1~SH8).
+
+const serviceKey = "service-role-key";
+const tokens = ["a", "b", "c"].map((c) => c.repeat(64));
+let privateKeyPem: string;
+let publicKey: CryptoKey;
+
+beforeAll(async () => {
+  const pair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, [
+    "sign",
+    "verify",
+  ]);
+  publicKey = pair.publicKey;
+  const der = new Uint8Array(await crypto.subtle.exportKey("pkcs8", pair.privateKey));
+  let binary = "";
+  for (const byte of der) binary += String.fromCharCode(byte);
+  const lines = btoa(binary).match(/.{1,64}/g) ?? [];
+  privateKeyPem = ["-----BEGIN PRIVATE KEY-----", ...lines, "-----END PRIVATE KEY-----"].join("\n");
+});
+
+const env = (): SendPushEnv => ({
+  supabaseUrl: "https://p.supabase.co",
+  supabaseServiceRoleKey: serviceKey,
+  apns: { teamId: "TEAM", keyId: "KEY", topic: "com.libitum.host", privateKeyPem },
+});
+
+type Reply = { status: number; body?: string };
+
+function harness(
+  routes: (request: OutboundRequest) => Reply,
+  overrides: { env?: SendPushEnv | null } = {},
+) {
+  const calls: OutboundRequest[] = [];
+  const logs: SendPushLogEntry[] = [];
+  const handler = createSendPushHandler({
+    env: overrides.env === undefined ? env() : overrides.env,
+    outbound: async (request): Promise<OutboundResponse> => {
+      calls.push(request);
+      const reply = routes(request);
+      return { status: reply.status, text: async () => reply.body ?? "" };
+    },
+    nowMs: () => 1_700_000_000_000,
+    signEs256,
+    log: (entry) => logs.push(entry),
+  });
+  const post = (body: unknown, auth: string | null = `Bearer ${serviceKey}`) =>
+    handler(
+      new Request("https://p.supabase.co/functions/v1/send-push", {
+        method: "POST",
+        headers: auth === null ? {} : { Authorization: auth },
+        body: typeof body === "string" ? body : JSON.stringify(body),
+      }),
+    );
+  return { calls, logs, post, handler };
+}
+
+const devicesBody = JSON.stringify([
+  { token: tokens[0], environment: "sandbox" },
+  { token: tokens[1], environment: "production" },
+  { token: tokens[2], environment: "production" },
+]);
+
+const announcement = { kind: "announcement", audience: "all", title: "New", body: "Episode 2" };
+
+describe("send-push handler", () => {
+  test("SH1 POST가 아니면 405, 환경이 없으면 500, 키가 틀리면 401 — 바깥 호출 0", async () => {
+    const h = harness(() => ({ status: 200, body: "[]" }));
+    expect((await h.handler(new Request("https://x/send-push"))).status).toBe(405);
+    expect((await harness(() => ({ status: 200 }), { env: null }).post(announcement)).status).toBe(
+      500,
+    );
+    expect((await h.post(announcement, null)).status).toBe(401);
+    expect((await h.post(announcement, "Bearer anon-key")).status).toBe(401);
+    expect(h.calls).toHaveLength(0);
+  });
+
+  test("SH2 본문이 틀리면 400", async () => {
+    const h = harness(() => ({ status: 200, body: "[]" }));
+    expect((await h.post({ kind: "announcement", audience: "all" })).status).toBe(400);
+    expect(h.calls).toHaveLength(0);
+  });
+
+  test("SH3 기기 조회가 실패하면 502", async () => {
+    const h = harness(() => ({ status: 500 }));
+    const response = await h.post(announcement);
+    expect(response.status).toBe(502);
+    await expect(response.json()).resolves.toEqual({ error: "devices_unavailable" });
+  });
+
+  test("SH4 기기가 없으면 APNs를 부르지 않고 0을 센다", async () => {
+    const h = harness(() => ({ status: 200, body: "[]" }));
+    const response = await h.post(announcement);
+    await expect(response.json()).resolves.toEqual({ devices: 0, sent: 0, failed: 0, removed: 0 });
+    expect(h.calls).toHaveLength(1);
+  });
+
+  test("SH5 공지 — 환경별 호스트로 보내고, 서명된 JWT와 목적지 기본값(여정 맵)을 싣는다", async () => {
+    const h = harness((request) =>
+      request.url.includes("/rest/v1/") ? { status: 200, body: devicesBody } : { status: 200 },
+    );
+    const response = await h.post(announcement);
+    await expect(response.json()).resolves.toEqual({ devices: 3, sent: 3, failed: 0, removed: 0 });
+
+    const pushes = h.calls.filter((call) => call.url.includes("/3/device/"));
+    expect(pushes.map((call) => new URL(call.url).host)).toEqual([
+      "api.sandbox.push.apple.com",
+      "api.push.apple.com",
+      "api.push.apple.com",
+    ]);
+    const payload = JSON.parse(pushes[0]!.body!) as Record<string, unknown>;
+    expect(payload["target"]).toEqual({ kind: "journey-map" });
+
+    const jwt = pushes[0]!.headers["authorization"]!.replace("bearer ", "");
+    const [header, claims, signature] = jwt.split(".");
+    const verified = await crypto.subtle.verify(
+      { name: "ECDSA", hash: "SHA-256" },
+      publicKey,
+      bytesFromBase64Url(signature!) as Uint8Array<ArrayBuffer>,
+      new TextEncoder().encode(`${header}.${claims}`),
+    );
+    expect(verified).toBe(true);
+    expect(JSON.parse(new TextDecoder().decode(bytesFromBase64Url(claims!)!))).toEqual({
+      iss: "TEAM",
+      iat: 1_700_000_000,
+    });
+  });
+
+  test("SH6 무효 토큰은 한 번의 DELETE로 지우고 실패로 센다", async () => {
+    const h = harness((request) => {
+      if (request.method === "DELETE") return { status: 204 };
+      if (request.url.includes("/rest/v1/")) return { status: 200, body: devicesBody };
+      if (request.url.endsWith(tokens[0]!))
+        return { status: 410, body: '{"reason":"Unregistered"}' };
+      if (request.url.endsWith(tokens[1]!)) return { status: 500 };
+      return { status: 200 };
+    });
+    const response = await h.post(announcement);
+    await expect(response.json()).resolves.toEqual({ devices: 3, sent: 1, failed: 2, removed: 1 });
+    const deletes = h.calls.filter((call) => call.method === "DELETE");
+    expect(deletes).toHaveLength(1);
+    expect(deletes[0]!.url).toContain(`token=in.(${tokens[0]})`);
+  });
+
+  test("SH7 다시 돌아오기는 RPC로 대상을 고르고 함수의 문구를 싣는다", async () => {
+    const h = harness((request) =>
+      request.url.includes("/rest/v1/")
+        ? { status: 200, body: JSON.stringify([{ token: tokens[0], environment: "sandbox" }]) }
+        : { status: 200 },
+    );
+    await h.post({ kind: "reengagement", days: 3 });
+    expect(h.calls[0]!.url).toBe("https://p.supabase.co/rest/v1/rpc/reengagement_devices");
+    expect(h.calls[0]!.body).toBe('{"p_days":3}');
+    const payload = JSON.parse(h.calls[1]!.body!) as { aps: { alert: { title: string } } };
+    expect(payload.aps.alert.title).toBe("Your Korean journey is waiting");
+  });
+
+  test("SH8 로그는 요청당 한 줄이고 토큰을 싣지 않는다", async () => {
+    const h = harness((request) =>
+      request.url.includes("/rest/v1/") ? { status: 200, body: devicesBody } : { status: 200 },
+    );
+    await h.post(announcement);
+    expect(h.logs).toEqual([
+      {
+        event: "send-push",
+        status: 200,
+        kind: "announcement",
+        summary: { devices: 3, sent: 3, failed: 0, removed: 0 },
+      },
+    ]);
+    expect(JSON.stringify(h.logs)).not.toContain(tokens[0]);
+  });
+});

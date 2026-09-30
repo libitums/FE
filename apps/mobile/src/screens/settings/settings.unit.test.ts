@@ -14,9 +14,14 @@ const allNavTargets: readonly SettingsNavTarget[] = ["profile", "privacy-policy"
 const allSessionOptionKeys: readonly SessionOptionKey[] = ["auto-play-audio", "show-transcript"];
 
 describe("settingsNavTargets", () => {
-  it("SN1. 길이가 3이고 순서가 [profile, privacy-policy, terms-of-use]다", () => {
-    expect(settingsNavTargets).toHaveLength(3);
-    expect(settingsNavTargets).toEqual(["profile", "privacy-policy", "terms-of-use"]);
+  it("SN1. 길이가 4이고 순서가 [profile, notifications, privacy-policy, terms-of-use]다", () => {
+    expect(settingsNavTargets).toHaveLength(4);
+    expect(settingsNavTargets).toEqual([
+      "profile",
+      "notifications",
+      "privacy-policy",
+      "terms-of-use",
+    ]);
   });
 });
 
