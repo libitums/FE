@@ -300,15 +300,15 @@ describe("낭독 이름의 데이터 앵커", () => {
       { id: "directions", description: "Put two pieces together to ask where the station is" },
       {
         id: "tutorial-listening",
-        description: "Hear a familiar greeting and choose its meaning from two answers",
+        description: "Hear Minseo’s hello again before trying your own",
       },
       {
         id: "tutorial-speaking",
-        description: "Try saying one familiar greeting with pronunciation to help",
+        description: "Answer Minseo with a hello of your own",
       },
       {
         id: "tutorial-writing",
-        description: "Follow the pale guide to write one letter from See you tomorrow",
+        description: "Trace one letter for Minseo, then return to the café for your final practice",
       },
     ]);
   });
@@ -650,7 +650,7 @@ const standardUnitFixture = (...steps: readonly JourneyStep[]): JourneyUnit => (
 const specialUnitFixture = (): JourneyUnit => ({
   kind: "special",
   id: "appointment-confirmation",
-  title: "Appointment message",
+  title: "A Message from Minseo",
   screen: "messenger",
 });
 

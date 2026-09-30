@@ -19,12 +19,12 @@ import { uiCopyEn } from "../../lib/ui-copy-en";
 // 제품 정본의 세 턴을 독립 literal로 고정해 helper 자기호출 oracle을 피합니다.
 const conversation: PhoneCallConversation = {
   unitId: "appointment-confirmation-phone-call",
-  title: "Appointment call",
+  title: "A Call from Minseo",
   turns: [
     {
       id: "confirm-time",
       speakerId: "jimin",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       transcript: "토요일 오후 2시에 역 앞 카페에서 만나는 거 맞죠?",
       audioSource: "phone-call-confirm-01",
       reply: { id: "confirm-time-reply", text: "네, 토요일 오후 2시에 만나요." },
@@ -32,7 +32,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "confirm-place",
       speakerId: "jimin",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       transcript: "카페는 2번 출구 오른쪽에 있는 곳 맞죠?",
       audioSource: "phone-call-confirm-02",
       reply: { id: "confirm-place-reply", text: "네, 2번 출구 오른쪽 카페예요." },
@@ -40,7 +40,7 @@ const conversation: PhoneCallConversation = {
     {
       id: "goodbye",
       speakerId: "jimin",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       transcript: "좋아요. 그럼 토요일에 봐요!",
       audioSource: "phone-call-confirm-03",
       reply: { id: "goodbye-reply", text: "네, 토요일에 봐요!" },
@@ -82,11 +82,11 @@ describe("약속 확인 전화 순수 계약", () => {
 
   it("CE4 제목 · 화자 이름이 영어다 — 짧은 대사에 배운 답장을 사용한다", () => {
     const live = getPhoneCallConversation();
-    expect(live.title).toBe("Appointment call");
-    expect(live.turns.map((turn) => turn.speakerName)).toEqual(["Jimin", "Jimin", "Jimin"]);
+    expect(live.title).toBe("A Call from Minseo");
+    expect(live.turns.map((turn) => turn.speakerName)).toEqual(["Minseo", "Minseo", "Minseo"]);
     expect(live.turns.map((turn) => turn.transcript)).toEqual([
       "안녕하세요",
-      "저는 지민이에요.",
+      "저는 민서예요.",
       "내일 만나요",
     ]);
     expect(live.turns.map((turn) => turn.reply.text)).toEqual([
@@ -96,7 +96,7 @@ describe("약속 확인 전화 순수 계약", () => {
     ]);
   });
 
-  it("RL17 보이는 항목: jimin 갈래는 Jimin, self 갈래는 speakerName 키가 없다", () => {
+  it("RL17 보이는 항목: jimin 갈래는 Minseo, self 갈래는 speakerName 키가 없다", () => {
     const entries = visiblePhoneCallEntries(getPhoneCallConversation(), {
       mode: "ready",
       turnIndex: 1,
@@ -104,7 +104,7 @@ describe("약속 확인 전화 순수 계약", () => {
     expect(entries).toHaveLength(3);
     for (const entry of entries) {
       if (entry.speaker === "jimin") {
-        expect(entry.speakerName).toBe("Jimin");
+        expect(entry.speakerName).toBe("Minseo");
       } else {
         expect(entry).not.toHaveProperty("speakerName");
       }

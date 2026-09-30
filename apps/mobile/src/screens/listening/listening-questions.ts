@@ -46,7 +46,8 @@ export const listeningQuestionsByStep: Record<JourneyStepId, readonly ListeningQ
       audioSource: "phone-call-confirm-01",
       choices: ["Hello", "Thank you"],
       answerIndex: 0,
-      instruction: "Listen to the greeting, then tap its meaning. You can listen again.",
+      instruction:
+        "Minseo’s hello comes back to me. Listen, then tap its meaning. You can listen again.",
     },
   ],
   "tutorial-speaking": [],

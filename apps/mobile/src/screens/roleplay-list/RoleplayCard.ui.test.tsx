@@ -15,19 +15,19 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 const messengerItem: RoleplayItem = {
   form: "messenger",
   unitId: "appointment-confirmation",
-  title: "Appointment message",
+  title: "A Message from Minseo",
 };
 
 const phoneCallItem: RoleplayItem = {
   form: "phone-call",
   unitId: "appointment-confirmation-phone-call",
-  title: "Appointment call",
+  title: "A Call from Minseo",
 };
 
 const visualNovelItem: RoleplayItem = {
   form: "visual-novel",
   unitId: "cafe-arrival-visual-novel",
-  title: "Jimin arrives at the café",
+  title: "Our Imagined Café",
 };
 
 const fixtures: readonly RoleplayItem[] = [messengerItem, phoneCallItem, visualNovelItem];
@@ -85,7 +85,7 @@ describe("RoleplayCard — 열린 카드", () => {
     render(<RoleplayCard item={messengerItem} locked={false} layout="list" onSelect={onSelect} />);
 
     const card = screen.getByTestId("roleplay-list-item-appointment-confirmation");
-    expect(card).toHaveAttribute("accessibility-label", "Appointment message, Messenger");
+    expect(card).toHaveAttribute("accessibility-label", "A Message from Minseo, Messenger");
     fireEvent.tap(card, {});
 
     expect(onSelect).toHaveBeenCalledWith(messengerItem);
@@ -98,7 +98,7 @@ describe("RoleplayCard — 잠긴 카드", () => {
 
     const card = screen.getByTestId("roleplay-list-item-appointment-confirmation");
     expect(card).toHaveAttribute("accessibility-traits", "none");
-    expect(card).toHaveAttribute("accessibility-label", "Appointment message, Messenger, locked");
+    expect(card).toHaveAttribute("accessibility-label", "A Message from Minseo, Messenger, locked");
     expect(card).toHaveAttribute("data-locked", "true");
   });
 

@@ -202,7 +202,7 @@ test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 �
   expect(screen.getByTestId(mapItemTestId)).toHaveAttribute("data-status", "clear");
   expect(screen.getByTestId(mapItemTestId)).toHaveAttribute(
     "accessibility-label",
-    "Appointment message, completed, story",
+    "A Message from Minseo, completed, story",
   );
 });
 

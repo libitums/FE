@@ -77,12 +77,15 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   }
   for (const step of journeySteps.slice(0, 4)) completeStep(step.id);
   tap(unit("appointment-confirmation"));
+  expect(screen.getByTestId("messenger-screen-title")).toHaveTextContent("Minseo");
+  expect(screen.getByTestId("messenger-story-introduction")).toHaveTextContent("airplane seat");
   for (const message of messengerConversationFor("appointment-confirmation").messages) {
     if (message.sender !== "self") continue;
     expect(screen.queryByTestId("messenger-keyboard")).not.toBeInTheDocument();
     expect(screen.getByTestId("messenger-composer-hint")).toHaveTextContent(message.romanization!);
     sendMessengerReply(message.text);
   }
+  expect(screen.getByTestId("messenger-story-completion")).toHaveTextContent("Minseo calls next");
   tap("messenger-finish");
   button("lesson-complete-screen-exit");
   expect(screen.getByTestId(unit("appointment-confirmation"))).toHaveAttribute(
@@ -91,6 +94,8 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   );
 
   tap(unit("appointment-confirmation-phone-call"));
+  expect(screen.getByTestId("phone-call-contact-name")).toHaveTextContent("Minseo");
+  expect(screen.getByTestId("phone-call-story-introduction")).toHaveTextContent("imagine");
   for (const turn of getPhoneCallConversation().turns) {
     expect(screen.getByTestId(`phone-call-transcript-jimin-${turn.id}`)).toHaveTextContent(
       turn.translation!,
@@ -103,6 +108,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
     );
     tap(`phone-call-reply-${turn.reply.id}`);
   }
+  expect(screen.getByTestId("phone-call-story-completion")).toHaveTextContent("café visit");
   tap("phone-call-exit-button");
   expect(screen.getByTestId(unit("appointment-confirmation-phone-call"))).toHaveAttribute(
     "data-status",
@@ -112,6 +118,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   expect(screen.getByTestId("visual-novel-dialogue-arrive")).toHaveTextContent("annyeonghaseyo");
   tap("visual-novel-advance-button");
   tap("visual-novel-advance-button");
+  expect(screen.getByTestId("visual-novel-context")).toHaveTextContent("listen, speak, and trace");
   tap("visual-novel-exit-button");
   expect(screen.getByTestId(unit("cafe-arrival-visual-novel"))).toHaveAttribute(
     "data-status",

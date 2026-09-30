@@ -115,6 +115,11 @@ export function VisualNovelScreen({
           <text className="visual-novel-progress" data-testid="visual-novel-progress">
             {visualNovelProgressLabel(session, copy)}
           </text>
+          {beat.context ? (
+            <text className="visual-novel-context" data-testid="visual-novel-context">
+              {beat.context}
+            </text>
+          ) : null}
         </view>
       </view>
       <view className="visual-novel-scene-shell">

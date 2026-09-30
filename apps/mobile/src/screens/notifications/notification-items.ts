@@ -25,17 +25,17 @@ import type { NotificationItem } from "./notifications.contract";
 const items: readonly NotificationItem[] = [
   {
     id: "notification-messenger",
-    message: "Jimin sent you an appointment message",
+    message: "Minseo sent you an appointment message",
     target: { kind: "messenger", unitId: "appointment-confirmation" },
   },
   {
     id: "notification-phone-call",
-    message: "Jimin is calling about your appointment",
+    message: "Minseo is calling about your appointment",
     target: { kind: "phone-call", unitId: "appointment-confirmation-phone-call" },
   },
   {
     id: "notification-visual-novel",
-    message: "Jimin has arrived at the café",
+    message: "Minseo has arrived at the café",
     target: { kind: "visual-novel", unitId: "cafe-arrival-visual-novel" },
   },
   {

@@ -10,7 +10,7 @@ describe("MessengerMapItem UI", () => {
       render(
         <MessengerMapItem
           id="appointment-confirmation"
-          title="Appointment message"
+          title="A Message from Minseo"
           status={status}
           onSelect={vi.fn()}
         />,
@@ -25,10 +25,10 @@ describe("MessengerMapItem UI", () => {
       expect(item).toHaveAttribute(
         "accessibility-label",
         status === "completed"
-          ? "Appointment message, completed, story"
-          : "Appointment message, story",
+          ? "A Message from Minseo, completed, story"
+          : "A Message from Minseo, story",
       );
-      expect(screen.getByText("Appointment message")).toBeInTheDocument();
+      expect(screen.getByText("A Message from Minseo")).toBeInTheDocument();
     },
   );
 
@@ -37,7 +37,7 @@ describe("MessengerMapItem UI", () => {
     render(
       <MessengerMapItem
         id="appointment-confirmation"
-        title="Appointment message"
+        title="A Message from Minseo"
         status="available"
         onSelect={onSelect}
       />,

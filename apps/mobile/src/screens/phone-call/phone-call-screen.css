@@ -108,3 +108,11 @@
   line-height: var(--libitum-typography-label-m-line-height);
   margin-bottom: var(--libitum-spacing-4);
 }
+
+.phone-call-story-context {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  padding: var(--libitum-spacing-12) 0;
+}

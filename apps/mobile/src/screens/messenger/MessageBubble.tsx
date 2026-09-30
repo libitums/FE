@@ -18,7 +18,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     >
       <ChatBubble
         direction={isSelf ? "outgoing" : "incoming"}
-        speaker={isSelf ? copy.common.me : "Jimin"}
+        speaker={isSelf ? copy.common.me : "Minseo"}
         message={message.text}
         translation={message.translation}
         size="m"

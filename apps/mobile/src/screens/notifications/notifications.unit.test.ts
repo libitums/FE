@@ -70,14 +70,14 @@ describe("notificationItemAccessibilityLabel", () => {
     }
   });
 
-  it("NL3b. (RL20) 영어 메시지 항목의 이름이 `Jimin sent you an appointment message, Open messenger`다", () => {
+  it("NL3b. (RL20) 영어 메시지 항목의 이름이 `Minseo sent you an appointment message, Open messenger`다", () => {
     const item: NotificationItem = {
       ...messengerItem,
-      message: "Jimin sent you an appointment message",
+      message: "Minseo sent you an appointment message",
     };
 
     expect(notificationItemAccessibilityLabel(item, uiCopyEn)).toBe(
-      "Jimin sent you an appointment message, Open messenger",
+      "Minseo sent you an appointment message, Open messenger",
     );
   });
 

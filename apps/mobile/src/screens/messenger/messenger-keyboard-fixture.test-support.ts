@@ -3,8 +3,8 @@ import type { MessengerConversation, MessengerUnitId } from "./messenger.contrac
 const conversations: Record<MessengerUnitId, MessengerConversation> = {
   "appointment-confirmation": {
     id: "appointment-confirmation",
-    title: "Appointment message",
-    participantName: "Jimin",
+    title: "A Message from Minseo",
+    participantName: "Minseo",
     messages: [
       {
         id: "jimin-schedule",

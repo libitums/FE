@@ -16,7 +16,7 @@ export { artworkFor } from "./visual-novel-artwork";
 
 export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory => ({
   unitId,
-  title: "Jimin arrives at the café",
+  title: "Our Imagined Café",
   beats: [
     {
       index: 0,
@@ -24,8 +24,9 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       backgroundId: "cafe-exterior-day",
       characterId: "jimin",
       characterPoseId: "jimin-neutral",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       dialogue: "안녕하세요",
+      context: "In my imagination, tomorrow arrives. Minseo greets me at the café.",
       translation: "Hello.",
       romanization: "annyeonghaseyo",
     },
@@ -35,8 +36,9 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       backgroundId: "cafe-exterior-day",
       characterId: "jimin",
       characterPoseId: "jimin-smile",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       dialogue: "물 주세요",
+      context: "We practice asking for water together. Just two words.",
       translation: "Water, please.",
       romanization: "mul juseyo",
     },
@@ -46,8 +48,10 @@ export const visualNovelStoryFor = (unitId: VisualNovelUnitId): VisualNovelStory
       backgroundId: "cafe-exterior-day",
       characterId: "jimin",
       characterPoseId: "jimin-smile",
-      speakerName: "Jimin",
+      speakerName: "Minseo",
       dialogue: "내일 만나요",
+      context:
+        "We say goodbye. Before landing, I’ll practice directions, then listen, speak, and trace one letter.",
       translation: "See you tomorrow.",
       romanization: "naeil mannayo",
     },

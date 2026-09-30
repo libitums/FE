@@ -19,7 +19,7 @@ describe("VisualNovelScreen UI", () => {
   it("renders title, progress, first scene/dialogue, and advances one beat per explicit button", () => {
     const p = props({ status: "active", beatIndex: 0 });
     render(<VisualNovelScreen {...p} />);
-    expect(screen.getByTestId("visual-novel-title")).toHaveTextContent("Jimin arrives at the café");
+    expect(screen.getByTestId("visual-novel-title")).toHaveTextContent("Our Imagined Café");
     expect(screen.getByTestId("visual-novel-progress")).toHaveTextContent("Scene 1 / 3");
     expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
     expect(screen.getByTestId("visual-novel-scene-arrive")).toHaveAttribute(

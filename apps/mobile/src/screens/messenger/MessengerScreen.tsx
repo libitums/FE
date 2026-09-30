@@ -138,11 +138,21 @@ export function MessengerScreen({
         scroll-orientation="vertical"
         scroll-bar-enable={true}
       >
+        {conversation.introduction ? (
+          <text className="messenger-story-context" data-testid="messenger-story-introduction">
+            {conversation.introduction}
+          </text>
+        ) : null}
         <view className="messenger-message-list" data-testid="messenger-message-list">
           {messages.map((message) => (
             <MessageBubble key={message.id} message={message} />
           ))}
         </view>
+        {session.mode === "completed" && conversation.completion ? (
+          <text className="messenger-story-context" data-testid="messenger-story-completion">
+            {conversation.completion}
+          </text>
+        ) : null}
         <view id={messengerEndId} className="messenger-screen-end" />
       </scroll-view>
 

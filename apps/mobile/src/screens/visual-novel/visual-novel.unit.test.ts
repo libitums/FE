@@ -36,7 +36,7 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
   it("정확한 3-beat 순서·내용·artwork ID를 반환한다", () => {
     const expected: VisualNovelStory = {
       unitId: id,
-      title: "Jimin arrives at the café",
+      title: "Our Imagined Café",
       beats: [
         {
           index: 0,
@@ -44,8 +44,9 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           backgroundId: "cafe-exterior-day",
           characterId: "jimin",
           characterPoseId: "jimin-neutral",
-          speakerName: "Jimin",
+          speakerName: "Minseo",
           dialogue: "안녕하세요",
+          context: "In my imagination, tomorrow arrives. Minseo greets me at the café.",
           translation: "Hello.",
           romanization: "annyeonghaseyo",
         },
@@ -55,8 +56,9 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           backgroundId: "cafe-exterior-day",
           characterId: "jimin",
           characterPoseId: "jimin-smile",
-          speakerName: "Jimin",
+          speakerName: "Minseo",
           dialogue: "물 주세요",
+          context: "We practice asking for water together. Just two words.",
           translation: "Water, please.",
           romanization: "mul juseyo",
         },
@@ -66,8 +68,10 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
           backgroundId: "cafe-exterior-day",
           characterId: "jimin",
           characterPoseId: "jimin-smile",
-          speakerName: "Jimin",
+          speakerName: "Minseo",
           dialogue: "내일 만나요",
+          context:
+            "We say goodbye. Before landing, I’ll practice directions, then listen, speak, and trace one letter.",
           translation: "See you tomorrow.",
           romanization: "naeil mannayo",
         },
@@ -78,8 +82,8 @@ describe("카페 도착 비주얼 노벨 순수 계약", () => {
 
   it("CE4 제목 · 화자 이름이 영어다 — 대사는 불변", () => {
     const story = visualNovelStoryFor(id);
-    expect(story.title).toBe("Jimin arrives at the café");
-    expect(story.beats.map((beat) => beat.speakerName)).toEqual(["Jimin", "Jimin", "Jimin"]);
+    expect(story.title).toBe("Our Imagined Café");
+    expect(story.beats.map((beat) => beat.speakerName)).toEqual(["Minseo", "Minseo", "Minseo"]);
     expect(story.beats.map((beat) => beat.dialogue)).toEqual([
       "안녕하세요",
       "물 주세요",

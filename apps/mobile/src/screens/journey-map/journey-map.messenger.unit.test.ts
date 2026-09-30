@@ -7,7 +7,7 @@ describe("journeyMapItems", () => {
     expect(journeyMapItems.find((item) => item.kind === "messenger")).toEqual({
       kind: "messenger",
       id: "appointment-confirmation",
-      title: "Appointment message",
+      title: "A Message from Minseo",
     });
   });
 
@@ -37,7 +37,7 @@ describe("journeyMapItems", () => {
     expect(journeyMapItems).toContainEqual({
       kind: "phone-call",
       id: "appointment-confirmation-phone-call",
-      title: "Appointment call",
+      title: "A Call from Minseo",
     });
   });
 
@@ -64,7 +64,7 @@ describe("journeyMapItems", () => {
       {
         kind: "special",
         id: "appointment-confirmation",
-        title: "Appointment message",
+        title: "A Message from Minseo",
         screen: "messenger",
       },
       { kind: "standard", steps: standardSteps.slice(4) },

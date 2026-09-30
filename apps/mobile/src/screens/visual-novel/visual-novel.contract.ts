@@ -10,12 +10,12 @@ import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source
 import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
 
 export type VisualNovelUnitId = "cafe-arrival-visual-novel";
-export type VisualNovelTitle = "Jimin arrives at the café";
+export type VisualNovelTitle = "Our Imagined Café";
 
 export type VisualNovelBeatIndex = 0 | 1 | 2;
 export type VisualNovelBeatId = "arrive" | "find" | "enter";
 export type VisualNovelCharacterId = "jimin";
-export type VisualNovelSpeakerName = "Jimin";
+export type VisualNovelSpeakerName = "Minseo";
 export type VisualNovelBackgroundId = "cafe-exterior-day";
 export type VisualNovelCharacterPoseId = "jimin-neutral" | "jimin-smile";
 
@@ -25,8 +25,9 @@ export type ArriveVisualNovelBeat = {
   readonly backgroundId: "cafe-exterior-day";
   readonly characterId: "jimin";
   readonly characterPoseId: "jimin-neutral";
-  readonly speakerName: "Jimin";
+  readonly speakerName: "Minseo";
   readonly dialogue: string;
+  readonly context?: string;
   readonly translation?: string;
   readonly romanization?: string;
 };
@@ -37,8 +38,9 @@ export type FindVisualNovelBeat = {
   readonly backgroundId: "cafe-exterior-day";
   readonly characterId: "jimin";
   readonly characterPoseId: "jimin-smile";
-  readonly speakerName: "Jimin";
+  readonly speakerName: "Minseo";
   readonly dialogue: string;
+  readonly context?: string;
   readonly translation?: string;
   readonly romanization?: string;
 };
@@ -49,8 +51,9 @@ export type EnterVisualNovelBeat = {
   readonly backgroundId: "cafe-exterior-day";
   readonly characterId: "jimin";
   readonly characterPoseId: "jimin-smile";
-  readonly speakerName: "Jimin";
+  readonly speakerName: "Minseo";
   readonly dialogue: string;
+  readonly context?: string;
   readonly translation?: string;
   readonly romanization?: string;
 };
