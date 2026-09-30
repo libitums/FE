@@ -26,6 +26,7 @@ import { TutorialSpecialsFixture } from "./TutorialSpecialsFixture";
 import { ButtonCatalog } from "./ButtonCatalog";
 import { EpisodePrologueScreen } from "../app/EpisodePrologueScreen";
 import { tutorialPrologue, tutorialPrologueLabel } from "../app/tutorial-prologue";
+import { EpisodeNarrativeScreen } from "../screens/episode-narrative/EpisodeNarrativeScreen";
 
 // 화면을 앱 흐름 없이 fixture props로 띄웁니다. 콜백은 앱 흐름과 같은 순서로
 // playground 안의 다음 화면으로 옮겨 가기만 합니다(저장·이벤트 없음) — 버튼이
@@ -56,6 +57,27 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
+  "tutorial-announcement": (go: Go) => {
+    const segment = tutorialPrologue.segments.find(
+      (candidate) =>
+        candidate.kind === "visual-novel" &&
+        candidate.narrative.beats.some(
+          (beat) => "audioSource" in beat && beat.audioSource === "tutorial-cabin-announcement",
+        ),
+    );
+    if (segment?.kind !== "visual-novel") {
+      throw new Error("Tutorial announcement preview requires a cabin announcement segment.");
+    }
+    return (
+      <EpisodeNarrativeScreen
+        insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
+        label={tutorialPrologueLabel}
+        narrative={segment.narrative}
+        onFinish={() => go("journey-map")}
+        onExit={() => go("journey-map")}
+      />
+    );
+  },
   "tutorial-journey": (go: Go) => <TutorialJourneyFixture onExit={() => go("journey-map")} />,
   "tutorial-cafe": (go: Go) => (
     <TutorialSpecialsFixture initialStage={2} onExit={() => go("journey-map")} />

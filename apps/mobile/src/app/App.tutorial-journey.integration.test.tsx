@@ -44,7 +44,18 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   vi.useFakeTimers();
   for (const segment of prologue.segments) {
     if (segment.kind === "visual-novel") {
-      for (const _beat of segment.narrative.beats) tap("episode-narrative-screen-advance");
+      for (const beat of segment.narrative.beats) {
+        if (beat.speakerName === "Cabin crew") {
+          expect(play).toHaveBeenLastCalledWith(
+            "tutorial-cabin-announcement",
+            expect.any(Function),
+          );
+          expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(
+            "잠시 후 인천국제공항에 도착하겠습니다.",
+          );
+        }
+        tap("episode-narrative-screen-advance");
+      }
     } else if (segment.kind === "messenger") {
       for (const message of segment.chat.messages) {
         if (message.sender === "other")
