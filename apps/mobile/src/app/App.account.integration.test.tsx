@@ -292,7 +292,7 @@ test.each<[string, Reply]>([
   expectSignedOutEnd(h, "identity");
 });
 
-test("[IA4] 로그아웃 → 다시 로그인하면 알림 · 세션 옵션이 처음 값이고 새 사용자로 식별한다", async () => {
+test("[IA4] 로그아웃 → 다시 로그인하면 알림이 처음 값이고 새 사용자로 식별한다", async () => {
   const h = await bootApp();
   const item = notificationItems()[0];
   if (item === undefined) throw new Error("no notification item");
@@ -308,8 +308,6 @@ test("[IA4] 로그아웃 → 다시 로그인하면 알림 · 세션 옵션이 �
     {},
   );
   openSettings();
-  fireEvent.tap(cell("auto-play-audio"), {});
-  expect(cell("auto-play-audio")).toHaveAttribute("data-checked", "false");
 
   fireEvent.tap(cell("sign-out"), {});
   fireEvent.tap(dialogAction("sign-out"), {});
@@ -339,7 +337,9 @@ test("[IA4] 로그아웃 → 다시 로그인하면 알림 · 세션 옵션이 �
     {},
   );
   openSettings();
-  expect(cell("auto-play-audio")).toHaveAttribute("data-checked", "true");
+  expect(
+    screen.queryByTestId("ui-lynx-settings-group-item-auto-play-audio"),
+  ).not.toBeInTheDocument();
 });
 
 // ---------------------------------------------------------------- 삭제

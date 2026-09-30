@@ -1,7 +1,7 @@
 // 설정 화면의 props·이벤트 타입을 소유합니다. 구현·JSX는 두지 않습니다.
 
 import type { AccountActionsProps, AccountActionsTestId } from "./account-actions.contract";
-import type { SessionOptionKey, SessionOptions } from "../../lib/session-options";
+import type { SessionOptionKey } from "../../lib/session-options";
 import type { LegalDocument, LegalDocumentOpenedEvent } from "../../lib/legal-document.contract";
 
 // 이동 항목 넷입니다. `profile`은 route 이름과 같은 문자열이라 App이 `push`로 옮기고, 문서
@@ -14,9 +14,7 @@ import type { LegalDocument, LegalDocumentOpenedEvent } from "../../lib/legal-do
 export type SettingsNavTarget = "profile" | "notifications" | LegalDocument;
 
 export type SettingsScreenProps = {
-  readonly sessionOptions: SessionOptions;
   readonly onSelectNavTarget: (target: SettingsNavTarget) => void;
-  readonly onToggleSessionOption: (key: SessionOptionKey) => void;
 } & AccountActionsProps;
 
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };
@@ -42,5 +40,4 @@ export type SettingsTestId =
   | "settings-screen-scroll"
   | "settings-screen-list"
   | `ui-lynx-settings-group-item-${SettingsNavTarget}`
-  | `ui-lynx-settings-group-item-${SessionOptionKey}`
   | AccountActionsTestId;

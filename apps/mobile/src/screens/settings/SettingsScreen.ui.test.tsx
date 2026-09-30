@@ -3,7 +3,6 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 
 import { SettingsScreen } from "./SettingsScreen";
 import { settingsNavTargets } from "./settings";
-import { initialSessionOptions, sessionOptionKeys } from "../../lib/session-options";
 import type { AccountDeletionResult } from "../../lib/account.contract";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
@@ -19,9 +18,7 @@ const accountNoopProps = {
   onLayerChange: () => undefined,
 };
 const defaultSettingsScreenProps = {
-  sessionOptions: initialSessionOptions,
   onSelectNavTarget: () => undefined,
-  onToggleSessionOption: () => undefined,
   ...accountNoopProps,
 };
 
@@ -132,14 +129,13 @@ function settingsCell(id: string): HTMLElement {
   );
 }
 
-test("[ST2] 목록 상자 안에 그룹 셋(계정 · 학습 · 계정 동작)이 서고, 항목 순서가 이동 둘 → 토글 둘 → 로그아웃 → 삭제다", () => {
+test("[ST2] 목록 상자 안에 계정과 계정 동작 그룹만 표시한다", () => {
   render(<SettingsScreen {...defaultSettingsScreenProps} />);
 
   const list = screen.getByTestId("settings-screen-list");
   const groups = within(list).getAllByTestId("ui-lynx-settings-group");
   expect(groups.map((group) => group.getAttribute("accessibility-label"))).toEqual([
     "Account",
-    "Learning",
     "Account actions",
   ]);
   const testids = Array.from(
@@ -147,33 +143,9 @@ test("[ST2] 목록 상자 안에 그룹 셋(계정 · 학습 · 계정 동작)�
   ).map((el) => el.getAttribute("data-testid"));
   expect(testids).toEqual([
     ...settingsNavTargets.map((target) => `ui-lynx-settings-group-item-${target}`),
-    ...sessionOptionKeys.map((key) => `ui-lynx-settings-group-item-${key}`),
     "ui-lynx-settings-group-item-sign-out",
     "ui-lynx-settings-group-item-delete-account",
   ]);
-});
-
-test("[ST3] 이동 항목 tap → onSelectNavTarget 1회 · 토글 tap → onToggleSessionOption 1회, 서로 침범하지 않는다", () => {
-  const onSelectNavTarget = vi.fn<(target: string) => void>();
-  const onToggleSessionOption = vi.fn<(key: string) => void>();
-  render(
-    <SettingsScreen
-      sessionOptions={initialSessionOptions}
-      onSelectNavTarget={onSelectNavTarget}
-      onToggleSessionOption={onToggleSessionOption}
-      {...accountNoopProps}
-    />,
-  );
-
-  fireEvent.tap(settingsCell(settingsNavTargets[0]), {});
-  expect(onSelectNavTarget).toHaveBeenCalledTimes(1);
-  expect(onSelectNavTarget).toHaveBeenCalledWith(settingsNavTargets[0]);
-  expect(onToggleSessionOption).not.toHaveBeenCalled();
-
-  fireEvent.tap(settingsCell(sessionOptionKeys[0]), {});
-  expect(onToggleSessionOption).toHaveBeenCalledTimes(1);
-  expect(onToggleSessionOption).toHaveBeenCalledWith(sessionOptionKeys[0]);
-  expect(onSelectNavTarget).toHaveBeenCalledTimes(1);
 });
 
 // ST4 (가드) — 이동·토글 항목은 제목이 아닙니다. 목록 상자가 서기 전에도 제목
@@ -189,24 +161,6 @@ test("[ST4] 화면 안 header trait 요소가 settings-screen-title 하나다", 
 // ST5 — 섞인 fixture입니다. 둘 다 켜짐이 아닌 값으로 상태가 실제로 내려가는지를
 // 봅니다(⚠ 둘 다 켜짐 fixture로는 옳은 배선과 「값을 안 읽고 상수를 그린다」가
 // 구별되지 않습니다).
-test("[ST5] 섞인 fixture에서 토글 값이 실제로 내려가고, 낭독 이름이 켜짐/꺼짐을 싣는다", () => {
-  render(
-    <SettingsScreen
-      sessionOptions={{ "auto-play-audio": false, "show-transcript": true }}
-      onSelectNavTarget={() => undefined}
-      onToggleSessionOption={() => undefined}
-      {...accountNoopProps}
-    />,
-  );
-
-  const autoPlay = settingsCell("auto-play-audio");
-  expect(autoPlay).toHaveAttribute("data-checked", "false");
-  expect(autoPlay).toHaveAttribute("accessibility-label", "Auto-play, off");
-
-  const transcript = settingsCell("show-transcript");
-  expect(transcript).toHaveAttribute("data-checked", "true");
-  expect(transcript).toHaveAttribute("accessibility-label", "Show transcript, on");
-});
 
 // ---------------------------------------------------------------- 영어 (AC1u E)
 
@@ -231,27 +185,12 @@ test("[AC1u-E] 이동 항목 넷이 영어 이름으로 낭독된다", () => {
   );
 });
 
-test("[AC1u-E] 토글 항목 둘이 영어 이름과 on 상태로 낭독된다", () => {
-  render(<SettingsScreen {...defaultSettingsScreenProps} />);
-
-  expect(settingsCell("auto-play-audio")).toHaveAttribute("accessibility-label", "Auto-play, on");
-  expect(settingsCell("show-transcript")).toHaveAttribute(
-    "accessibility-label",
-    "Show transcript, on",
-  );
-});
-
 // ---------------------------------------------------------------- 문구표에서 읽음 (AC1u M)
 
-test("[AC1u-M] 제목 · 묶음 이름 · 이동 · 토글 이름 · 상태가 문구표에서 온다", () => {
+test("[AC1u-M] 제목 · 묶음 이름 · 이동 이름이 문구표에서 온다", () => {
   const { container } = render(
     <UiCopyContext.Provider value={markedUiCopy}>
-      <SettingsScreen
-        sessionOptions={{ "auto-play-audio": false, "show-transcript": true }}
-        onSelectNavTarget={() => undefined}
-        onToggleSessionOption={() => undefined}
-        {...accountNoopProps}
-      />
+      <SettingsScreen onSelectNavTarget={() => undefined} {...accountNoopProps} />
     </UiCopyContext.Provider>,
   );
 
@@ -261,7 +200,6 @@ test("[AC1u-M] 제목 · 묶음 이름 · 이동 · 토글 이름 · 상태가 �
   );
   expect(groups.map((group) => group.getAttribute("accessibility-label"))).toEqual([
     "⟦settings.group.account⟧",
-    "⟦settings.group.learning⟧",
     "⟦settings.group.accountActions⟧",
   ]);
   expect(settingsCell(settingsNavTargets[0])).toHaveAttribute(
@@ -279,15 +217,6 @@ test("[AC1u-M] 제목 · 묶음 이름 · 이동 · 토글 이름 · 상태가 �
   expect(settingsCell(settingsNavTargets[3])).toHaveAttribute(
     "accessibility-label",
     "⟦settings.nav.terms-of-use⟧",
-  );
-  // 토글 상태 낭독(on · off)은 ui-lynx SettingsCell의 영어 기본값이다 — 앱이 넘기는 경로가 없다(spec §6 D4 개정).
-  expect(settingsCell("auto-play-audio")).toHaveAttribute(
-    "accessibility-label",
-    "⟦settings.sessionOption.auto-play-audio⟧, off",
-  );
-  expect(settingsCell("show-transcript")).toHaveAttribute(
-    "accessibility-label",
-    "⟦settings.sessionOption.show-transcript⟧, on",
   );
   expect(container.textContent).not.toMatch(/[가-힣]/);
 });
@@ -344,9 +273,7 @@ function renderAccount(options: { marked?: boolean } = {}) {
   const onLayerChange = vi.fn<(open: boolean) => void>();
   const screenElement = (
     <SettingsScreen
-      sessionOptions={initialSessionOptions}
       onSelectNavTarget={() => undefined}
-      onToggleSessionOption={() => undefined}
       onSignOut={onSignOut}
       onDeleteAccount={onDeleteAccount}
       onLayerChange={onLayerChange}
@@ -391,30 +318,28 @@ async function settleWith(gate: Deferred, result: AccountDeletionResult) {
   await flush();
 }
 
-test("[SU1-E] 세 번째 묶음이 Account actions이고 sign-out → delete-account 순서로 서며, 대화상자와 실패 문구는 없다", () => {
+test("[SU1-E] 두 번째 묶음이 Account actions이고 sign-out → delete-account 순서로 서며, 대화상자와 실패 문구는 없다", () => {
   renderAccount();
 
   const groups = within(screen.getByTestId("settings-screen-list")).getAllByTestId(
     "ui-lynx-settings-group",
   );
-  expect(groups).toHaveLength(3);
-  expect(groups[2]).toHaveAttribute("accessibility-label", "Account actions");
+  expect(groups).toHaveLength(2);
+  expect(groups[1]).toHaveAttribute("accessibility-label", "Account actions");
   const items = Array.from(
-    groups[2]!.querySelectorAll('[data-testid^="ui-lynx-settings-group-item-"]'),
+    groups[1]!.querySelectorAll('[data-testid^="ui-lynx-settings-group-item-"]'),
   ).map((el) => el.getAttribute("data-testid"));
   expect(items).toEqual([
     "ui-lynx-settings-group-item-sign-out",
     "ui-lynx-settings-group-item-delete-account",
   ]);
-  expect(within(groups[2]!).getByText("Sign out")).toBeInTheDocument();
-  expect(within(groups[2]!).getByText("Delete account")).toBeInTheDocument();
+  expect(within(groups[1]!).getByText("Sign out")).toBeInTheDocument();
+  expect(within(groups[1]!).getByText("Delete account")).toBeInTheDocument();
   expect(screen.queryByTestId("settings-screen-account-error")).not.toBeInTheDocument();
   expect(screen.queryByTestId("settings-screen-sign-out-dialog")).not.toBeInTheDocument();
   expect(screen.queryByTestId("settings-screen-delete-dialog")).not.toBeInTheDocument();
   expect(screen.queryByTestId("ui-lynx-dialog")).not.toBeInTheDocument();
-  // 기존 두 묶음 불변
   expect(groups[0]).toHaveAttribute("accessibility-label", "Account");
-  expect(groups[1]).toHaveAttribute("accessibility-label", "Learning");
 });
 
 test("[SU1-M] 묶음 이름과 두 행 제목이 문구표에서 온다", () => {
@@ -423,7 +348,7 @@ test("[SU1-M] 묶음 이름과 두 행 제목이 문구표에서 온다", () => 
   const groups = within(screen.getByTestId("settings-screen-list")).getAllByTestId(
     "ui-lynx-settings-group",
   );
-  expect(groups[2]).toHaveAttribute("accessibility-label", "⟦settings.group.accountActions⟧");
+  expect(groups[1]).toHaveAttribute("accessibility-label", "⟦settings.group.accountActions⟧");
   expect(screen.getByText("⟦settings.action.sign-out⟧")).toBeInTheDocument();
   expect(screen.getByText("⟦settings.action.delete-account⟧")).toBeInTheDocument();
 });
@@ -678,4 +603,17 @@ test("[SU15] 대화상자가 열린 채 언마운트되면 onLayerChange(false)�
   unmount();
 
   expect(onLayerChange).toHaveBeenLastCalledWith(false);
+});
+
+test("학습 토글을 표시하지 않고 프로필로 이동한다", () => {
+  const onSelectNavTarget = vi.fn();
+  render(<SettingsScreen {...defaultSettingsScreenProps} onSelectNavTarget={onSelectNavTarget} />);
+  expect(
+    screen.queryByTestId("ui-lynx-settings-group-item-auto-play-audio"),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByTestId("ui-lynx-settings-group-item-show-transcript"),
+  ).not.toBeInTheDocument();
+  fireEvent.tap(settingsCell("profile"), {});
+  expect(onSelectNavTarget).toHaveBeenCalledWith("profile");
 });

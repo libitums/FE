@@ -17,21 +17,7 @@ import { renderSignedInApp } from "./test-helpers/signed-in-app";
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
 const completedIntros = ["tutorial-intro"] as const;
 
-// 설정 탭 → 프로필/약관 push와 `설정으로` 복귀 · **토글이 실제로 듣기 화면에 닿는
-// 경로**(설정 화면과 듣기 화면이 한 트리에 함께 서야 합니다 — `ui`가 원리적으로 못
-// 만드는 트리) · 이벤트 넷의 발생 경계와 순서 · 설정 탭 스택 보존 · 영속 없음을
-// 봅니다. 목킹하지 않습니다(외부 IO 없음). sink는 App prop으로 직접 주입합니다 —
-// 순서를 보는 케이스는 공용 로그 배열 하나에 여러 sink가 push하게 합니다
-// (`App.notifications.integration.test.tsx` 선례 형태).
-//
-// IT1(설정 화면은 이미 그려졌고 App이 초기값을 넘깁니다) · IT8(앵커 — 오늘 동작) ·
-// IT11(토글이 no-op이면 초기값에서 움직인 적이 없어 공허하게 통과합니다 — 구현
-// 뒤에야 비공허해집니다) · IT12(가드)는 결선 전에도 공허하게 통과할 수 있는
-// 자리입니다.
-
-// 여정 탭 → 스텝 tap → 시트 `시작` tap입니다. `App.heading-trait.integration.test.tsx`
-// · `App.integration.test.tsx`의 동명 헬퍼와 같은 형태입니다(파일이 다르므로 다시
-// 선언합니다).
+// 설정에서 프로필·문서로 이동하고 기본 듣기 동작을 유지하는지 검증합니다.
 function startStep(stepId: JourneyStepId): void {
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${stepId}`), {});
@@ -84,7 +70,7 @@ afterEach(() => {
 
 // ------------------------------------------------------------------------- IT1
 
-test("[IT1] 설정 탭을 열면 이동 항목 넷·토글 항목 둘·계정 동작 둘이 계약 순서로 서고 토글 둘 다 기본값이 켜짐이다", async () => {
+test("[IT1] 설정 탭을 열면 계정 항목 넷과 계정 동작 둘만 표시된다", async () => {
   await renderSignedInApp(
     <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
   );
@@ -99,14 +85,9 @@ test("[IT1] 설정 탭을 열면 이동 항목 넷·토글 항목 둘·계정 �
     "ui-lynx-settings-group-item-notifications",
     "ui-lynx-settings-group-item-privacy-policy",
     "ui-lynx-settings-group-item-terms-of-use",
-    "ui-lynx-settings-group-item-auto-play-audio",
-    "ui-lynx-settings-group-item-show-transcript",
     "ui-lynx-settings-group-item-sign-out",
     "ui-lynx-settings-group-item-delete-account",
   ]);
-
-  expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "true");
-  expect(settingsCell("show-transcript")).toHaveAttribute("data-checked", "true");
 });
 
 // ------------------------------------------------------------------------- IT2
@@ -183,67 +164,6 @@ test("[IT4] 개인정보처리방침 · 이용약관 항목을 tap하면 그 문
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 });
 
-// ------------------------------------------------------------------------- IT5
-
-test("[IT5] 설정에서 자동 재생을 끈 뒤 듣기 화면을 열면 재생 컨트롤이 '듣기'다(자동 재생이 일어나지 않았다) — 이 경로는 ui가 원리적으로 못 만든다", async () => {
-  const { audio } = stubHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  openSettingsTab();
-  fireEvent.tap(settingsCell("auto-play-audio"), {});
-  expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "false");
-
-  startStep("ordering");
-
-  expect(audio).toHaveLength(0);
-  expect(screen.getByTestId("listening-prompt-playback")).toHaveAttribute(
-    "accessibility-label",
-    "Play",
-  );
-});
-
-// ------------------------------------------------------------------------- IT6
-
-test("[IT6] 설정에서 대본 표시를 끈 뒤 듣기 화면을 열면 listening-prompt-text가 없다", async () => {
-  stubHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  openSettingsTab();
-  fireEvent.tap(settingsCell("show-transcript"), {});
-  expect(settingsCell("show-transcript")).toHaveAttribute("data-checked", "false");
-
-  startStep("ordering");
-
-  expect(screen.queryByTestId("listening-prompt-text")).not.toBeInTheDocument();
-});
-
-// ------------------------------------------------------------------------- IT7
-
-test("[IT7] IT5 상태(자동 재생 끔)에서 재생 컨트롤을 tap하면 라벨이 '멈춤'으로 갈린다(듣기를 눌러야 들린다 — 수용 기준 5)", async () => {
-  const { audio } = stubHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  openSettingsTab();
-  fireEvent.tap(settingsCell("auto-play-audio"), {});
-
-  startStep("ordering");
-  expect(audio).toHaveLength(0);
-  expect(screen.getByTestId("listening-prompt-playback")).toHaveAttribute(
-    "accessibility-label",
-    "Play",
-  );
-
-  fireEvent.tap(screen.getByTestId("listening-prompt-playback"), {});
-
-  expect(screen.getByTestId("listening-prompt-playback")).toHaveAttribute(
-    "accessibility-label",
-    "Pause",
-  );
-});
-
 // ------------------------------------------------------------------------- IT8
 
 test("[IT8] (앵커) 토글을 건드리지 않고 듣기 화면을 열면 오늘 동작 그대로다 — 대본이 있고 컨트롤이 '멈춤'", async () => {
@@ -295,7 +215,7 @@ test("[IT9] 설정 sink는 설정 탭 tap마다 발화하고 이미 설정 탭�
 
 // ------------------------------------------------------------------------ IT10
 
-test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 이용약관 → 자동 재생 토글 → 대본 토글의 순서가 정확히 계약대로다('설정으로' 복귀는 settings_opened를 내지 않는다)", async () => {
+test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 이용약관의 순서가 정확히 계약대로다('설정으로' 복귀는 settings_opened를 내지 않는다)", async () => {
   const log: unknown[] = [];
   const settingsEventSink: NonNullable<SettingsEventSink> = (event) => log.push(event);
   await renderSignedInApp(
@@ -316,41 +236,16 @@ test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 이용�
   fireEvent.tap(settingsCell("terms-of-use"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(settingsCell("auto-play-audio"), {});
-  fireEvent.tap(settingsCell("show-transcript"), {});
-
   expect(log).toEqual([
     { name: "settings_opened" },
     { name: "profile_opened" },
     { name: "legal_document_opened", document: "terms-of-use", source: "settings" },
-    { name: "session_option_changed", option: "auto-play-audio", value: false },
-    { name: "session_option_changed", option: "show-transcript", value: false },
   ]);
-});
-
-// ------------------------------------------------------------------------ IT11
-
-test("[IT11] 앱을 다시 켠 것 — 토글 둘을 끈 뒤 unmount하고 새로 render하면 토글 둘이 다시 켜짐이다(저장하지 않는다 — 수용 기준 7)", async () => {
-  const { unmount } = await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  openSettingsTab();
-  fireEvent.tap(settingsCell("auto-play-audio"), {});
-  fireEvent.tap(settingsCell("show-transcript"), {});
-  unmount();
-
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  openSettingsTab();
-
-  expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "true");
-  expect(settingsCell("show-transcript")).toHaveAttribute("data-checked", "true");
 });
 
 // ------------------------------------------------------------------------ IT12
 
-test("[IT12] (가드) sink 없이 render(App) — 탭·토글·항목 tap이 던지지 않는다", async () => {
+test("[IT12] (가드) sink 없이 render(App) — 탭·항목 tap이 던지지 않는다", async () => {
   await expect(
     renderSignedInApp(
       <App
@@ -376,16 +271,6 @@ test("[IT12] (가드) sink 없이 render(App) — 탭·토글·항목 tap이 던
   expect(() => {
     fireEvent.tap(settingsCell("privacy-policy"), {});
     fireEvent.tap(settingsCell("terms-of-use"), {});
-  }).not.toThrow();
-
-  expect(() => {
-    const toggle = settingsCell("auto-play-audio");
-    if (toggle !== null) fireEvent.tap(toggle, {});
-  }).not.toThrow();
-
-  expect(() => {
-    const toggle = settingsCell("show-transcript");
-    if (toggle !== null) fireEvent.tap(toggle, {});
   }).not.toThrow();
 });
 
@@ -414,4 +299,34 @@ test("[IT13] 쌓인 화면에서는 탭으로 나갈 수단이 없고, 나가면
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
+});
+
+test("프로필은 갱신된 로그인 계정의 한글 이름·이메일·전화번호를 표시한다", async () => {
+  const payload = {
+    sub: "profile-fixture",
+    email: "learner@example.test",
+    phone: "+821012345678",
+    user_metadata: { full_name: "김하늘" },
+  };
+  const token = `header.${Buffer.from(JSON.stringify(payload)).toString("base64url")}.signature`;
+  const events: unknown[] = [];
+  await renderSignedInApp(<App settingsEventSink={(event) => events.push(event)} />, {
+    refreshedAccessToken: token,
+  });
+  openSettingsTab();
+  fireEvent.tap(settingsCell("profile"), {});
+  expect(screen.getByTestId("profile-item-value-name")).toHaveTextContent("김하늘");
+  expect(screen.getByTestId("profile-item-value-email")).toHaveTextContent("learner@example.test");
+  expect(screen.getByTestId("profile-item-value-phone")).toHaveTextContent("+821012345678");
+  expect(JSON.stringify(events)).not.toContain("learner@example.test");
+  expect(screen.queryByTestId("profile-item-learning-goal")).not.toBeInTheDocument();
+});
+
+test("계정이 제공하지 않은 정보는 예시 개인정보로 채우지 않는다", async () => {
+  await renderSignedInApp(<App />);
+  openSettingsTab();
+  fireEvent.tap(settingsCell("profile"), {});
+  for (const id of ["name", "email", "phone"]) {
+    expect(screen.getByTestId(`profile-item-value-${id}`)).toHaveTextContent("Not provided");
+  }
 });

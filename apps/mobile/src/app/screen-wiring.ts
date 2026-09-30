@@ -51,7 +51,7 @@ import type {
   RoleplaySection,
 } from "../screens/roleplay-list/roleplay-list.contract";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
-import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+import type { SessionOptions } from "../lib/session-options";
 import type {
   VisualNovelAdvanceOutcome,
   VisualNovelBeatId,
@@ -190,7 +190,6 @@ export type ScreenWiring = {
   // 스택도 `dispatch`도 모릅니다(위 원칙 그대로).
   sessionOptions: SessionOptions;
   onSelectNavTarget: (target: SettingsNavTarget) => void;
-  onToggleSessionOption: (key: SessionOptionKey) => void;
   onExitSettingsStack: () => void;
   // 진입 흐름 화면 여섯의 결선입니다. `entryLanguage`만 App 상태를 그대로
   // 내리고, 나머지는 전이·이벤트·토큰 저장을 여는 콜백입니다.
@@ -235,7 +234,6 @@ export type ScreenWiringArgs = {
   readonly notifications: readonly NotificationItem[];
   readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
-  readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly safeAreaInsets: SafeAreaInsets;
   readonly gemCount: number;
   readonly phoneSignIn: PhoneSignInVisibility;
