@@ -124,6 +124,36 @@ describe("PA2 currentAccessToken", () => {
   });
 });
 
+describe("PA2b 동시 갱신", () => {
+  test("동시에 온 호출은 갱신을 한 번만 보내고 같은 새 토큰을 쓴다", async () => {
+    const { calls } = install({
+      expiresAt: 0,
+      reply: (url) =>
+        url.includes("grant_type=refresh_token")
+          ? {
+              status: 200,
+              body: JSON.stringify({
+                access_token: "fresh",
+                refresh_token: "r2",
+                expires_in: 3600,
+                token_type: "bearer",
+                user: { id: "u" },
+              }),
+            }
+          : { status: 200, body: "1" },
+    });
+    await Promise.all([
+      loadLearningProgress(),
+      recordLearningDay("2026-09-30"),
+      fetchLearningStreak("2026-09-30"),
+    ]);
+    expect(calls.filter((call) => call.url.includes("grant_type=refresh_token"))).toHaveLength(1);
+    const rpcs = calls.filter((call) => call.url.includes("/rest/v1/rpc/"));
+    expect(rpcs).toHaveLength(3);
+    expect(new Set(rpcs.map((call) => call.auth))).toEqual(new Set(["Bearer fresh"]));
+  });
+});
+
 describe("PA3 localDayFrom", () => {
   test("기기 시간대의 날짜를 YYYY-MM-DD로 낸다", () => {
     expect(localDayFrom(new Date(2026, 0, 5, 23, 59))).toBe("2026-01-05");

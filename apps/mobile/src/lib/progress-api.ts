@@ -37,15 +37,28 @@ export function learningRpcRequest(
   };
 }
 
+// 진행 중인 갱신입니다. 불러오기 · 저장 · 날짜 기록이 한꺼번에 갱신을 부르면 **같은 refresh 토큰으로 여러 번**
+// 요청하게 되고, Auth가 재사용으로 보아 세션을 끊을 수 있습니다 — 동시에 온 호출은 이 하나를 기다립니다.
+let pendingRefresh: Promise<string | null> | null = null;
+
 /** 로그인해 있으면 쓸 수 있는 액세스 토큰입니다. 만료가 가까우면 갱신해 저장합니다. 없거나 갱신이 실패하면 `null`. */
 export async function currentAccessToken(nowMs: number = Date.now()): Promise<string | null> {
   const session = loadAuthSession();
   if (session === null) return null;
   if (!sessionNeedsRefresh(session, nowMs)) return session.accessToken;
-  const refreshed = await refreshAuthSession(session.refreshToken);
-  if (refreshed.status !== "refreshed") return null;
-  saveAuthSession(refreshed.session);
-  return refreshed.session.accessToken;
+  if (pendingRefresh === null) {
+    pendingRefresh = (async () => {
+      try {
+        const refreshed = await refreshAuthSession(session.refreshToken);
+        if (refreshed.status !== "refreshed") return null;
+        saveAuthSession(refreshed.session);
+        return refreshed.session.accessToken;
+      } finally {
+        pendingRefresh = null;
+      }
+    })();
+  }
+  return pendingRefresh;
 }
 
 async function rpc(path: RpcPath, body: Record<string, unknown>): Promise<string | null> {
