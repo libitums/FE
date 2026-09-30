@@ -100,7 +100,9 @@ export function speakingSessionReducer(
 ): SpeakingSessionState {
   switch (action.type) {
     case "start": {
-      return state.phase === "ready" ? { ...state, phase: "listening" } : state;
+      return state.phase === "ready" || state.phase === "unavailable"
+        ? { ...state, phase: "listening" }
+        : state;
     }
     case "recognized": {
       if (state.phase !== "listening") {

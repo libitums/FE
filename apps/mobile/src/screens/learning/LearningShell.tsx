@@ -3,7 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { Card } from "@libitums/ui-lynx/card";
 import { Dialog } from "@libitums/ui-lynx/dialog";
-import { Fog } from "@libitums/ui-lynx/fog";
+import { LearningShellActions } from "./LearningShellActions";
 import { TopBar } from "../../components/TopBar";
 import { learningTimingFlag } from "./learning-shell.contract";
 import { LearningSessionHeader } from "./LearningSessionHeader";
@@ -56,6 +56,10 @@ export type LearningShellProps = {
    * 크기로 내용을 둡니다. 스크롤 요소는 그대로 두어 골격(ADR-0022)은 같습니다.
    */
   workspaceScrolls?: boolean;
+  /** 말하기처럼 카드가 길어지는 화면은 카드와 안내를 함께 스크롤합니다. */
+  scrollCard?: boolean;
+  /** 주 버튼과 같은 행에 서는 보조 조작입니다. */
+  secondaryAction?: ReactNode;
   /**
    * 아래 버튼입니다. 라벨이 활동 · 상태마다 갈립니다(`다음` · `결과 보기`). 둘 다
    * 없으면 버튼을 그리지 않습니다 — 영구히 눌리지 않는 버튼을 두지 않기 위해서입니다
@@ -88,6 +92,8 @@ export function LearningShell({
   card,
   workspace,
   workspaceScrolls = true,
+  scrollCard = false,
+  secondaryAction,
   actionLabel,
   onAction,
   advance,
@@ -168,6 +174,14 @@ export function LearningShell({
     };
   }, [advance]);
 
+  const stage = (
+    <view className="learning-shell-stage" data-testid="learning-shell-stage">
+      <Card elevation="stage">
+        <Card.Content>{card}</Card.Content>
+      </Card>
+    </view>
+  );
+
   return (
     <view
       className="learning-shell"
@@ -202,49 +216,33 @@ export function LearningShell({
           {instruction}
         </text>
       )}
-      {/* 가운데 카드 — 학습 내용이 전개되고 판정이 뒤집히는 무대입니다. `stage`
-          변형이 큰 모서리와 넓은 그림자를 집니다.
-
-          넘치는 것은 위의 스크롤이 집니다 — 이 상자는 자기 높이만 압니다. */}
-      <view className="learning-shell-stage" data-testid="learning-shell-stage">
-        <Card elevation="stage">
-          <Card.Content>{card}</Card.Content>
-        </Card>
-      </view>
-      {/* 작업 영역 — **스크롤이 여기 하나뿐입니다.** 머리(상단 바 · 세션 헤더) · 지시문 ·
-          무대 카드 · 아래 버튼은 자리에 고정되고, 넘치면 고를 것들만 흐릅니다. 화면
-          전체가 흐르면 문항을 다시 듣고 싶을 때 카드를 찾아 되올려야 합니다 — 무대는 늘
-          같은 자리에 있어야 합니다. 이 골격이 ADR-0022 **D1-2**이고, 이름이 prop과 다른
-          근거는 짝 CSS가 집니다.
-
-          **무대 안에 스크롤을 두지 않은 이유**는 넘치는 것이 카드 하나가 아니기
-          때문입니다. 무대만 스크롤하면 카드는 잘리지 않고 **보기 위로 넘쳐 나옵니다** —
-          기기에서 그렇게 겹치는 것을 봤습니다.
-
-          `scroll-orientation`·`scroll-bar-enable`을 적습니다 — 안 적으면 초기값이 각각
-          가로·꺼짐이라 세로 스크롤이 원리적으로 불가능합니다. */}
-      {workspace === undefined ? null : (
+      {/* 카드 스크롤 모드는 버튼 행의 실제 높이를 먼저 확보합니다. */}
+      {scrollCard ? (
         <scroll-view
-          className="learning-shell-scroll"
+          className="learning-shell-scroll learning-shell-card-scroll"
           data-testid="learning-shell-scroll"
           scroll-orientation="vertical"
           scroll-bar-enable={true}
-          // 초기값이 켜짐이라 켤 때는 적지 않고, 끌 때만 적습니다(`workspaceScrolls`의 근거).
-          enable-scroll={workspaceScrolls ? undefined : false}
         >
+          {stage}
           {workspace}
         </scroll-view>
+      ) : (
+        <>
+          {stage}
+          {workspace === undefined ? null : (
+            <scroll-view
+              className="learning-shell-scroll"
+              data-testid="learning-shell-scroll"
+              scroll-orientation="vertical"
+              scroll-bar-enable={true}
+              enable-scroll={workspaceScrolls ? undefined : false}
+            >
+              {workspace}
+            </scroll-view>
+          )}
+        </>
       )}
-      {/* 아래 버튼은 **떠 있습니다** — 자기 줄을 차지하지 않고 작업 영역 위에 얹힙니다.
-          그 줄(56 + 간격)을 돌려받은 만큼 보기가 더 들어가 스크롤이 덜 생깁니다.
-
-          버튼 뒤에 포그를 깝니다. 버튼이 가리는 자리에서 내용이 **잘려 보이면** 「여기가
-          끝」으로 읽히는데, 흐려지면 「아래에 더 있다」로 읽힙니다 — 그것이 사실입니다.
-          포그는 자식을 받지 않으므로(`children?: never`) 버튼과 형제로 두고, DOM에서
-          버튼을 뒤에 두어 버튼이 포그 위에 섭니다.
-
-          포그를 상자로 감싸는 것은 **버튼보다 위까지 번지게** 하기 위해서입니다 — 포그는
-          자기 부모의 아래에 붙으므로 감싸지 않으면 번짐이 버튼 뒤에서 끝나 안 보입니다. */}
       {/* 스스로 넘어가는 동안 화면 전체가 이 이름의 조작 단위입니다 — 보이는 버튼은
           없지만 기다리는 것 말고 할 수 있는 일이 있어야 합니다(WCAG 2.2.1). 세션 헤더는
           이 층보다 위에 있어 `×`로 나가는 길은 막히지 않습니다. */}
@@ -259,23 +257,12 @@ export function LearningShell({
         />
       )}
       {actionLabel === undefined || onAction === undefined ? null : (
-        <>
-          {/* 포그는 보이기만 합니다 — Lynx에서 절대 배치 형제는 손가락을 가로채므로, 흐려진
-              자리의 보기 · 캔버스가 눌리도록 손가락을 흘려보냅니다. */}
-          <view className="learning-shell-fog" event-through={true}>
-            <Fog direction="bottom" size="full" color="surface-default" />
-          </view>
-          <view
-            className="learning-shell-action"
-            data-testid="learning-shell-action"
-            accessibility-element={true}
-            accessibility-label={actionLabel}
-            accessibility-traits="button"
-            bindtap={handleAction}
-          >
-            <text className="learning-shell-action-label">{actionLabel}</text>
-          </view>
-        </>
+        <LearningShellActions
+          label={actionLabel}
+          onAction={handleAction}
+          secondaryAction={secondaryAction}
+          inFlow={scrollCard}
+        />
       )}
       {/* 나가기 확인입니다. **무엇을 잃는지 본문에 적습니다** — 「그만두시겠어요?」만
           물으면 사용자가 대가를 모른 채 고릅니다.

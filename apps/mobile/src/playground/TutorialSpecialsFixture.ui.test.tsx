@@ -32,7 +32,7 @@ test.each([
   readFinalStory("ending");
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent(title);
   expect(onExit).not.toHaveBeenCalled();
-  fireEvent.tap(screen.getByText("Check →"), {});
+  fireEvent.tap(screen.getByText("Check"), {});
   expect(onExit).toHaveBeenCalledTimes(1);
 });
 

@@ -955,7 +955,7 @@ producedBy: 이 회차의 승인권자
 - (3) 표지 항목을 누른다 → ✅ 표지 화면이 선다(`Episode 0.` / `Tutorial.` + `Skip` · `Next`)
 - (4) `Skip` → 확인 모달(「이야기를 건너뛸까요?」 / 「건너뛰면 이 에피소드의 이야기는 다시
   나오지 않아요.」) → `건너뛰기` → ✅ **`PERFECT LESSON!` 결과 화면**이 선다. 맵이 아니다(D5).
-  「YOU MADE NO MISTAKES IN THIS LESSON」 · `+ 12 REWARD` · `AMAZING`이 함께 선다
+  「YOU MADE NO MISTAKES IN THIS LESSON」 · `+ 0 REWARD` · `AMAZING`이 함께 선다
 - (5) `Check` → ✅ 맵으로 돌아오고 **표지가 체크**로 바뀐다. **나머지 아홉의 자물쇠가
   풀리고** 스텝 둘이 완료 · 「주문하기」가 현재(재생)로 선다. 헤더가 `3 / 10`이 된다
 - (6) 「주문하기」를 누른다 → ✅ 시트가 뜬다(`Lesson 3: "주문하기"` / `0/1 활동` / `시작`).

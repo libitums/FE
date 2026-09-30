@@ -30,6 +30,9 @@ export const speakingEn: SpeakingCopy = {
   instruction: "Read the sentence out loud.",
   speak: "Speak",
   stopSpeaking: "Stop speaking",
+  tryAgain: "Try again",
+  dictationDisabled:
+    "Siri or Dictation is off. Turn on Settings > General > Keyboard > Enable Dictation, then try again.",
   tapToContinue: "Tap the screen to continue",
   recognitionUnavailable:
     "Speech recognition isn't available right now. Skip to the next sentence.",

@@ -95,7 +95,7 @@ export type LessonReward = {
 };
 
 /**
- * 보상의 임시값입니다. 다이아 · 등급의 계산 규칙이 아직 없어 디자인 예시 값을 그대로
- * 둡니다. 규칙이 정해지면 이 상수 대신 계산 결과를 넘깁니다.
+ * 레슨 완료 보상입니다. 출시 시 젬을 지급하지 않으므로 0으로 표시합니다.
+ * 등급은 임시값이며, 보상 규칙이 생기면 이 상수 대신 계산 결과를 넘깁니다.
  */
-export const lessonRewardPlaceholder: LessonReward = { diamondAmount: 12, grade: "AMAZING" };
+export const lessonRewardPlaceholder: LessonReward = { diamondAmount: 0, grade: "AMAZING" };

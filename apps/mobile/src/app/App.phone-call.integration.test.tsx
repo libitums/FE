@@ -82,7 +82,7 @@ describe("App · phone-call integration", () => {
     expect(playAudio).toHaveBeenCalledTimes(3);
     expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
     expect(screen.queryByTestId("phone-call-replay-button")).toBeNull();
-    fireEvent.tap(screen.getByText("Check →"), {});
+    fireEvent.tap(screen.getByText("Check"), {});
     expect(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
     ).toHaveAttribute("data-status", "clear");
@@ -198,7 +198,7 @@ describe("App · phone-call integration", () => {
       fireEvent.tap(screen.getByTestId(reply), {});
     }
     expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
-    fireEvent.tap(screen.getByText("Check →"), {});
+    fireEvent.tap(screen.getByText("Check"), {});
     fireEvent.tap(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},

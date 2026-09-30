@@ -1,5 +1,5 @@
 import { useUiCopy } from "../../lib/ui-copy";
-import { useEffect, useMemo, useReducer, useRef } from "@lynx-js/react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import audioWaves from "@libitums/icons/lynx/audio-waves";
@@ -33,13 +33,7 @@ import {
 
 import "./speaking-screen.css";
 
-// 말하기(Figma 65-282)입니다. 뼈대는 `LearningShell`이 집니다 — 이 화면이 아는 것은 카드
-// 안(판정 배지 · 따라 말할 문장 · 발음 표기 · 파형)과 아래 버튼이 지금 무엇을 하는가입니다.
-//
-// 인식은 호스트의 `SpeechRecognitionModule`이 합니다. 결과는 말하기를 멈출 때 한 번
-// 오고, 그 결과로 앞에서부터 맞은 낱말을 칠하고 판정합니다. 모듈이 없거나(Explorer ·
-// 테스트) 권한이 없으면 판정하지 않고 건너뛸 수 있게 합니다 — 기기 탓을 오답으로 접지
-// 않습니다.
+// 말하기 화면은 문항·판정·녹음 조작을 소유하고 배치는 LearningShell에 맡깁니다.
 export type SpeakingScreenProps = {
   stepId: JourneyStepId;
   onExit: () => void;
@@ -50,6 +44,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
   const copy = useUiCopy();
   const questions = speakingQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(speakingSessionReducer, initialSpeakingSessionState);
+  const [dictationDisabled, setDictationDisabled] = useState(false);
 
   // 화면이 떠 있는가입니다. 권한 조회 · 인식은 호스트를 거쳐 늦게 돌아오므로, 떠난 뒤에
   // 돌아온 콜백이 인식을 새로 시작하거나(마이크가 켜진 채 남습니다) 상태를 바꾸지 않게 막습니다.
@@ -96,6 +91,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
       return;
     }
     if (result.status !== "recognized") {
+      setDictationDisabled(result.errorDomain === "kLSRErrorDomain" && result.errorCode === 201);
       dispatch({ type: "unavailable" });
       return;
     }
@@ -108,6 +104,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
 
   // 권한을 먼저 확인하고(미요청인 것만 묻습니다), 들을 수 있으면 인식을 시작합니다.
   const startListening = (sentence: string) => {
+    setDictationDisabled(false);
     dispatch({ type: "start" });
     const requested = requestSpeechPermissions((status) => {
       if (!mounted.current) {
@@ -126,8 +123,6 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     }
   };
 
-  // 아래 버튼 — 준비 `말하기` · 듣는 중 `그만 말하기` · 인식 불가 `건너뛰기` · 완료 `결과
-  // 보기`. 판정 뒤에는 버튼 대신 스스로 넘어가는 걸음(`advance`)이 섭니다 — 듣기와 같습니다.
   const action =
     question == null
       ? {
@@ -159,6 +154,12 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     dispatch({ type: "skip" });
   };
 
+  const retryAvailable = state.phase === "unavailable" && dictationDisabled;
+  const handleRetry = () => {
+    "background only";
+    if (question != null && retryAvailable) startListening(question.sentence);
+  };
+
   const advance = useMemo(
     () =>
       question != null && state.phase === "judged"
@@ -167,48 +168,54 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     [question, state.phase, copy],
   );
 
+  const recordingAction =
+    state.phase === "ready" || state.phase === "listening" ? action : undefined;
+  const handleRecording = () => {
+    "background only";
+    recordingAction?.run();
+  };
+
   return (
     <LearningShell
       form="speaking"
       questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
       complete={complete}
-      instruction={question?.support?.instruction ?? copy.speaking.instruction}
+      instruction={
+        retryAvailable
+          ? copy.speaking.dictationDisabled
+          : (question?.support?.instruction ?? copy.speaking.instruction)
+      }
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
       advance={advance}
+      scrollCard={true}
+      secondaryAction={
+        question != null && (state.phase === "ready" || retryAvailable) ? (
+          <view
+            className="speaking-screen-skip"
+            data-testid={retryAvailable ? "speaking-screen-retry" : "speaking-screen-skip"}
+          >
+            <Button
+              label={retryAvailable ? copy.speaking.tryAgain : copy.common.skip}
+              variant="outline"
+              size="xl"
+              width="hug"
+              bindtap={retryAvailable ? handleRetry : handleSkip}
+            />
+          </view>
+        ) : undefined
+      }
       workspace={
         question == null ? undefined : (
           <>
-            {/* 건너뛰기 — **`ready`에서만** 섭니다(spec §2.8.2c). `listening`에 세우면
-                결과가 반대인 두 버튼(`그만 말하기`는 판정으로, 건너뛰기는 `correct`로)이
-                되돌릴 수 없는 채로 나란히 서고, `judged`에서는 `.learning-shell-advance`가
-                화면을 덮어 눌리지 않으며, `unavailable`에서는 같은 낱말의 주 버튼과 겹칩니다.
-                `disabled`를 쓰지 않습니다 — 「아직 할 수 없다」는 버튼이 **없는 것**으로
-                말합니다(`LearningShell`의 규약).
-
-                변형이 `outline`인 것은 선례(`Can't speak`의 `subtle`)가 **어두운 패널
-                위**라서 보이는 것이기 때문입니다. 같은 면이 학습 껍데기 배경 위에서는
-                1.05:1로 사라지고, `outline`의 경계가 3.80:1로 비텍스트 3:1을 넘는
-                팔레트 안의 유일한 선택입니다(design §2.5). */}
-            {state.phase === "ready" ? (
-              <view className="speaking-screen-skip" data-testid="speaking-screen-skip">
-                <Button
-                  label={copy.common.skip}
-                  variant="outline"
-                  size="xl"
-                  width="fill"
-                  bindtap={handleSkip}
-                />
-              </view>
-            ) : null}
             <view className="speaking-screen-hint-slot">
               {state.phase === "judged" ? (
                 <text className="speaking-screen-hint" data-testid="speaking-screen-hint">
                   {copy.speaking.tapToContinue}
                 </text>
-              ) : state.phase === "unavailable" ? (
+              ) : state.phase === "unavailable" && !dictationDisabled ? (
                 <text className="speaking-screen-hint" data-testid="speaking-screen-unavailable">
                   {copy.speaking.recognitionUnavailable}
                 </text>
@@ -231,9 +238,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
             />
           ) : (
             <>
-              {/* 따라 말할 문장 — 판정 뒤에는 앞에서부터 맞게 말한 낱말이 주황으로, 나머지가
-                  흐린 회색으로 갈립니다. 판정 전에는 한 색입니다. 낭독 이름은 문장 그대로입니다
-                  — 색은 보이는 채널이고, 판정은 배지와 채점 발화가 소리로 싣습니다. */}
+              {/* 판정 뒤에는 연속으로 맞힌 낱말을 칠합니다. */}
               <text
                 className={`speaking-screen-sentence speaking-screen-sentence-${judged ? "judged" : "plain"}`}
                 data-testid="speaking-screen-sentence"
@@ -268,14 +273,15 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
                 </text>
               ) : null}
 
-              {/* 파형 — 듣는 중에는 주색, 아니면 흐린 회색입니다. 듣는 중인지는 이 요소의
-                  이름이 소리로 싣습니다. */}
+              {/* 녹음 아이콘과 하단 버튼이 같은 시작·중지 동작을 제공합니다. */}
               <view
                 className="speaking-screen-waves"
                 data-testid="speaking-screen-waves"
                 data-listening={state.phase === "listening" ? "true" : "false"}
-                accessibility-element={state.phase === "listening"}
-                accessibility-label={copy.common.listening}
+                accessibility-element={recordingAction !== undefined}
+                accessibility-traits={recordingAction === undefined ? undefined : "button"}
+                accessibility-label={recordingAction?.label}
+                bindtap={recordingAction === undefined ? undefined : handleRecording}
               >
                 <svg
                   className="speaking-screen-waves-icon"

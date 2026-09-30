@@ -231,7 +231,7 @@ export function LessonCompleteScreen({
             꽉 찬 면이면 어느 것이 주된 길인지가 색으로만 갈립니다. 통과에서는 이것이
             유일한 버튼이라 `neutral` 그대로입니다. */}
         <Button
-          label={verdict === "failed" ? copy.common.exitTo.journey : "Check →"}
+          label={verdict === "failed" ? copy.common.exitTo.journey : "Check"}
           variant={verdict === "failed" ? "outline" : "neutral"}
           size="xl"
           width="fill"
