@@ -1,5 +1,6 @@
 import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
+import { Avatar } from "@libitums/ui-lynx/avatar";
 
 import { callClockLabel } from "../lib/call-clock";
 import { useUiCopy } from "../lib/ui-copy";
@@ -45,7 +46,7 @@ function CallClock({
 
 export type CallCallerProps = {
   readonly callerName: string;
-  readonly callerPortrait: string;
+  readonly callerPortrait: string | null;
   readonly clockRunning: boolean;
   readonly testIdPrefix: string;
 };
@@ -69,8 +70,19 @@ export function CallCaller({
       accessibility-label={copy.phoneCall.voiceCall(callerName)}
     >
       <text className="call-stage-kind">Voice Call</text>
-      <view className="call-stage-portrait-frame">
-        <image className="call-stage-portrait" src={callerPortrait} mode="aspectFill" />
+      <view
+        className={
+          callerPortrait === null
+            ? "call-stage-portrait-frame call-stage-portrait-frame-anonymous"
+            : "call-stage-portrait-frame"
+        }
+        accessibility-elements-hidden={true}
+      >
+        {callerPortrait === null ? (
+          <Avatar size="xl" accessibility="hidden" />
+        ) : (
+          <image className="call-stage-portrait" src={callerPortrait} mode="aspectFill" />
+        )}
       </view>
       <text className="call-stage-name">{callerName}</text>
       <CallClock running={clockRunning} testId={`${testIdPrefix}-clock`} />

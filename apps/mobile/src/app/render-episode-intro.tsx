@@ -2,16 +2,11 @@
 // 파일이 커서이고, `render-roleplay-screen.tsx`와 같은 갈래입니다.
 
 import { EpisodeIntroScreen } from "../screens/episode-intro/EpisodeIntroScreen";
-import { EpisodeNarrativeScreen } from "../screens/episode-narrative/EpisodeNarrativeScreen";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
-import { PrologueCallScreen } from "../screens/episode-intro/PrologueCallScreen";
-import { PrologueChatScreen } from "../screens/episode-intro/PrologueChatScreen";
+import { EpisodePrologueScreen } from "./EpisodePrologueScreen";
+import { tutorialPrologueLabel } from "./tutorial-prologue";
 import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
-// 튜토리얼 통화 상대(지민)의 얼굴입니다. 비주얼 노벨의 임시 그림을 그대로 씁니다 — 같은
-// 인물이고, 같은 파일이라 번들에 두 번 실리지 않습니다. 화면 폴더끼리는 값을 주고받을 수
-// 없어(`code.md` 「import」) 이 결선 자리가 가져와 내립니다.
-import jiminPortrait from "../screens/visual-novel/assets/temporary/character-jimin-smile.png";
 import { episodeOfIntroUnit } from "../screens/episode-intro/episode-intro";
 import { journeyMapSections } from "../screens/journey-map/journey-map";
 import type { Screen } from "./nav-state";
@@ -54,48 +49,16 @@ function renderPrologueScreen(
   }
   const onComplete = () => wiring.onCompletePrologue(screen.unitId);
   const onExit = () => wiring.onExitEpisodeIntro(screen.unitId, "prologue");
-  switch (prologue.kind) {
-    case "call":
-      return (
-        <PrologueCallScreen
-          key={screen.unitId}
-          insets={wiring.safeAreaInsets}
-          episodeLabel={episode.label}
-          call={prologue.call}
-          callerPortrait={jiminPortrait}
-          onComplete={onComplete}
-          onBack={onExit}
-        />
-      );
-    case "messenger":
-      return (
-        <PrologueChatScreen
-          key={screen.unitId}
-          insets={wiring.safeAreaInsets}
-          episodeLabel={episode.label}
-          chat={prologue.chat}
-          onComplete={onComplete}
-          onBack={onExit}
-        />
-      );
-    case "visual-novel":
-      return (
-        // 표지 유닛이 바뀌면 새 인스턴스로 섭니다 — 장면 번호(화면 로컬)가 앞 에피소드에서
-        // 이어지지 않게 합니다.
-        <EpisodeNarrativeScreen
-          key={screen.unitId}
-          insets={wiring.safeAreaInsets}
-          label={episode.label}
-          narrative={prologue.narrative}
-          onFinish={onComplete}
-          onExit={onExit}
-        />
-      );
-    default: {
-      const exhaustive: never = prologue;
-      return exhaustive;
-    }
-  }
+  return (
+    <EpisodePrologueScreen
+      key={screen.unitId}
+      insets={wiring.safeAreaInsets}
+      label={episode.id === "tutorial" ? tutorialPrologueLabel : episode.label}
+      prologue={prologue}
+      onComplete={onComplete}
+      onExit={onExit}
+    />
+  );
 }
 
 // 표지를 마친 뒤의 학습 완료 화면입니다. **`Skip`과 `Next` 두 경로에서 옵니다**(D5) —

@@ -55,8 +55,8 @@ export function episodeIntroWiring(args: EpisodeIntroWiringArgs) {
       episodeIntroEventSink?.({ name: "episode_intro_skipped", episodeId: episodeIdOf(unitId) });
       toPrologueComplete(unitId);
     },
-    // `Next`는 서사 전개로 갑니다. 에피소드마다 형식이 하나(통화 · 메신저 · 비주얼 노벨)
-    // 이고, 어느 형식이든 끝나면 결과 화면입니다. 표지를 서사로 갈아 끼웁니다(`replace` —
+    // `Next`는 서사 전개로 갑니다. 단일 형식 또는 혼합 구간을 전부 마치면 결과 화면입니다.
+    // 표지를 서사로 갈아 끼웁니다(`replace` —
     // 서사에서 뒤로 가면 표지가 아니라 맵입니다). 서사가 없는 에피소드면 `Skip`과 **같은
     // 곳**으로 갑니다 — 그래야 완료를 적는 자리가 하나로 남습니다.
     onNextEpisodeIntro: (unitId: EpisodeIntroUnitId) => {

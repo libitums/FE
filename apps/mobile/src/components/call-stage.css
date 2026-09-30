@@ -29,6 +29,12 @@
   background: var(--libitum-color-gray-100);
 }
 
+.call-stage-portrait-frame-anonymous {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* 그림이 세로로 길어 틀보다 크게 두고 위쪽을 맞춥니다 — 얼굴이 틀 가운데에 옵니다. */
 .call-stage-portrait {
   width: 223px;

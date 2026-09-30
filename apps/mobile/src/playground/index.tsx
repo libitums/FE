@@ -33,6 +33,8 @@ function Playground() {
   // 이라, 여기서 옮기면 빈 화면이 뜹니다. 선택 상태만 바꿔 바의 선택 시각을 봅니다.
   const [tab, setTab] = useState<Tab>("journey");
   const screenTab = playgroundTabs[screen];
+  // 튜토리얼은 각 화면이 safe area를 처리하므로 셸 여백을 중복 적용하지 않습니다.
+  const ownsSafeArea = screen === "tutorial-prologue";
 
   return (
     // 앱 셸은 호스트가 넘긴 safe area 값으로 아래 여백을 잡습니다(App.tsx). Lynx
@@ -40,7 +42,10 @@ function Playground() {
     // 화면 바닥에 붙어 실제 앱과 다르게 보입니다. 앱 셸이 바가 설 때 두는 것과 같은
     // 값을 대신 두어 두 쪽이 같은 모습이 되게 합니다 — dev 전용 셸이라 제품 번들에
     // 들어가지 않습니다.
-    <view className="app" style={{ paddingBottom: screenTab === undefined ? "34px" : "0px" }}>
+    <view
+      className="app"
+      style={{ paddingBottom: screenTab === undefined && !ownsSafeArea ? "34px" : "0px" }}
+    >
       <view className="app-content" key={screen}>
         {playgroundScreens[screen](go, params)}
       </view>

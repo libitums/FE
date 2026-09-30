@@ -9,7 +9,7 @@ import type {
   EpisodePrologue,
   PrologueCall,
 } from "../screens/episode-intro/episode-intro.contract";
-import { episodeNarrativeFor } from "../screens/episode-narrative/episode-narrative";
+import { episodePrologueFor } from "./episode-prologues";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import { journeySteps } from "../screens/journey-map/journey-map";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
@@ -78,11 +78,40 @@ function tapLessonCompleteCheck(): void {
   tapButtonIn("lesson-complete-screen-exit");
 }
 
-// `Next` 뒤의 서사(비주얼 노벨)를 끝까지 넘깁니다 — 장면 수만큼 넘기면 학습 완료로 갑니다.
+// 제품 대본의 각 구간을 실제 화면 조작으로 마칩니다. 구간 사이에는 결과 화면이 없습니다.
 function readNarrative(): void {
-  const beats = episodeNarrativeFor("tutorial").beats.length;
-  for (let index = 0; index < beats; index += 1) {
-    fireEvent.tap(screen.getByTestId("episode-narrative-screen-advance"), {});
+  const prologue = episodePrologueFor("tutorial");
+  if (prologue?.kind !== "sequence") throw new Error("Expected tutorial sequence");
+  vi.useFakeTimers();
+  try {
+    for (const segment of prologue.segments) {
+      expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
+      switch (segment.kind) {
+        case "visual-novel":
+          for (const _beat of segment.narrative.beats) {
+            fireEvent.tap(screen.getByTestId("episode-narrative-screen-advance"), {});
+          }
+          break;
+        case "messenger":
+          for (const message of segment.chat.messages) {
+            if (message.sender === "other") {
+              act(() => {
+                vi.advanceTimersByTime(1500);
+              });
+            } else {
+              fireEvent.tap(screen.getByTestId("prologue-chat-screen-send"), {});
+            }
+          }
+          fireEvent.tap(screen.getByTestId("prologue-chat-screen-complete"), {});
+          break;
+        case "call":
+          fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
+          fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
+          break;
+      }
+    }
+  } finally {
+    vi.useRealTimers();
   }
 }
 
@@ -231,7 +260,7 @@ test("[IN-I4] Next → 서사 → 결과 화면 → Check면 맵이고 표지가
 
   nextIntro();
   expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
-  expect(screen.getByTestId("episode-narrative-screen-title")).toHaveTextContent("Episode 0.");
+  expect(screen.getByTestId("episode-narrative-screen-title")).toHaveTextContent("Before We Land");
   expect(screen.queryByTestId("prologue-call-screen")).not.toBeInTheDocument();
 
   readNarrative();
@@ -395,7 +424,7 @@ test("[IN-I10] 서사가 통화·메신저인 에피소드도 진입점이 표�
 
   nextIntro();
   expect(screen.queryByTestId("episode-narrative-screen")).not.toBeInTheDocument();
-  expect(screen.getByTestId("prologue-call-screen-title")).toHaveTextContent("Episode 0.");
+  expect(screen.getByTestId("prologue-call-screen-title")).toHaveTextContent("Before We Land");
   expect(screen.getByTestId("prologue-call-screen-caller")).toHaveAttribute(
     "accessibility-label",
     "Voice call, Jimin",
@@ -607,7 +636,7 @@ test("[EV4] Next → 서사 끝 → Check는 continued · prologue_completed 순
 
   readNarrative();
   expect(events.slice(2)).toEqual([
-    { name: "episode_prologue_completed", episodeId: "tutorial", prologueKind: "visual-novel" },
+    { name: "episode_prologue_completed", episodeId: "tutorial", prologueKind: "sequence" },
   ]);
 
   tapLessonCompleteCheck();

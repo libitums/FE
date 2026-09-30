@@ -120,3 +120,48 @@ test("[ST4-M] 문구표에서 읽는다 — 넘기기 이름 · 뒤로", () => {
     within(screen.getByTestId("episode-narrative-screen-back")).getByTestId("ui-lynx-round-button"),
   ).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
 });
+
+test("배경이 바뀌어도 기존 다이알로그로 독백을 그리고 인물과 화자를 숨긴다", () => {
+  render(
+    <EpisodeNarrativeScreen
+      {...fixture({
+        narrative: {
+          character: null,
+          beats: [
+            {
+              speakerName: "Me",
+              variant: "narration",
+              background: "airplane.jpg",
+              line: "상상해 본다",
+              translation: "I imagine",
+            },
+            {
+              speakerName: "Me",
+              variant: "narration",
+              background: "street.jpg",
+              line: "골목을 걷는다",
+              translation: "I walk down a street",
+            },
+          ],
+        },
+      })}
+    />,
+  );
+
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute(
+    "data-variant",
+    "narration",
+  );
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute(
+    "data-surface",
+    "translucent",
+  );
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute("data-avatar", "off");
+  expect(screen.queryByTestId("ui-lynx-visual-novel-dialog-speaker")).not.toBeInTheDocument();
+  expect(screen.getByTestId("narrative-background-image")).toHaveAttribute("src", "airplane.jpg");
+  expect(screen.getByTestId("episode-narrative-screen").querySelectorAll("image")).toHaveLength(1);
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-visual-novel-dialog"), { eventType: "catchEvent" });
+  expect(line()).toHaveTextContent("골목을 걷는다");
+  expect(screen.getByTestId("narrative-background-image")).toHaveAttribute("src", "street.jpg");
+});
