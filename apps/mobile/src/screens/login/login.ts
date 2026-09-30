@@ -1,6 +1,14 @@
 // 로그인 순수 로직을 소유합니다.
 
+import type { PhoneNumber, PhoneOtpRequestResult } from "../../lib/auth-session.contract";
 import type { EntryLoginMethod } from "../../lib/entry-flow";
+import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
+import type {
+  LoginMethodStatus,
+  LoginStatus,
+  PhoneSignInVisibility,
+  SocialLoginMethod,
+} from "./login.contract";
 
 // 라벨은 임시가 아닌 최종값입니다 — `ui` 테스트도 리터럴을 단언하지 않지만 값
 // 자체는 자리표가 아닙니다. `default`를 두지 않습니다 — 수단이 늘면 TS2366으로
@@ -23,8 +31,8 @@ export function loginMethodLabel(method: EntryLoginMethod): string {
 }
 
 // 전화번호 앞에 붙는 국가 코드 선택지 한 칸입니다. 목록 전체는
-// `login-countries.ts`(생성 파일)에 있습니다. 선택값은 화면 로컬이며 어디에도
-// 저장·전송하지 않습니다.
+// `login-countries.ts`(생성 파일)에 있습니다. 선택값은 화면 로컬이며 저장하지
+// 않습니다 — 번호와 합쳐 인증 코드 요청에만 쓰입니다.
 export type LoginCountry = {
   /** ISO 3166 두 글자 코드(소문자)입니다. */
   readonly id: string;
@@ -35,3 +43,125 @@ export type LoginCountry = {
 
 // 처음 선택된 국가입니다.
 export const defaultLoginCountryId = "kr";
+
+/** 앞 `0`이 트렁크 접두가 아니라 번호의 일부인 국가 코드입니다. */
+export const trunkZeroKeptDialCodes: readonly string[] = ["+39", "+378", "+225", "+242"];
+
+/** `+`를 뺀 E.164 숫자의 상한입니다(ITU-T E.164). */
+const e164MaxDigitLength = 15;
+
+/**
+ * 입력에서 숫자만 남기고 맨 앞 `0` 하나를 뗍니다(국내 트렁크 접두) — 단 앞 `0`이 번호의
+ * 일부인 국가 코드(`trunkZeroKeptDialCodes`)는 떼지 않습니다. 남은 숫자가 없거나
+ * E.164 상한을 넘으면 `null`입니다. `display`는 입력을 다듬지 않고 그대로 붙입니다.
+ *
+ * 국가 번호까지 붙은 번호(`+82 10 …`)를 붙여 넣으면 고른 국가 번호를 한 번만 씁니다 — 다른
+ * 국가 번호로 시작하면 고른 국가와 어긋나므로 `null`입니다.
+ */
+export function phoneNumberFrom(dialCode: string, input: string): PhoneNumber | null {
+  const trimmedInput = input.trim();
+  let digitsOnly = trimmedInput.replace(/\D/g, "");
+  if (digitsOnly.length === 0) {
+    return null;
+  }
+  const international = trimmedInput.startsWith("+");
+  if (international) {
+    const dialDigits = dialCode.replace(/\D/g, "");
+    if (!digitsOnly.startsWith(dialDigits)) {
+      return null;
+    }
+    digitsOnly = digitsOnly.slice(dialDigits.length);
+  }
+
+  const keepsLeadingZero = trunkZeroKeptDialCodes.includes(dialCode);
+  const nationalNumber =
+    !keepsLeadingZero && digitsOnly.startsWith("0") ? digitsOnly.slice(1) : digitsOnly;
+  if (nationalNumber.length === 0) {
+    return null;
+  }
+
+  const e164 = `${dialCode}${nationalNumber}`;
+  if (e164.replace(/\+/g, "").length > e164MaxDigitLength) {
+    return null;
+  }
+
+  return { e164, display: international ? trimmedInput : `${dialCode} ${trimmedInput}` };
+}
+
+/** `requesting`일 때만 참입니다 — 수단과 무관합니다. */
+export function isLoginBusy(status: LoginStatus): boolean {
+  return status.kind === "requesting";
+}
+
+/** 번호가 있고 요청 중이 아닐 때만 참입니다. */
+export function canRequestPhoneOtp(
+  phone: PhoneNumber | null,
+  status: LoginStatus,
+): phone is PhoneNumber {
+  return phone !== null && !isLoginBusy(status);
+}
+
+// ------------------------------------------------------------------ 소셜
+
+/** 요청 중이 아닐 때만 참입니다. */
+export function canStartSocialSignIn(status: LoginStatus): boolean {
+  return !isLoginBusy(status);
+}
+
+/** 수단 요소 하나의 `data-status`입니다. 상태가 그 수단의 것이 아니면 `idle`입니다. */
+export function loginMethodStatus(
+  status: LoginStatus,
+  method: EntryLoginMethod,
+): LoginMethodStatus {
+  if (status.kind === "idle") {
+    return "idle";
+  }
+  return status.method === method ? status.kind : "idle";
+}
+
+/** 전화번호 요청 결과 → 다음 상태입니다. */
+export function loginStatusAfterPhoneResult(result: PhoneOtpRequestResult): LoginStatus {
+  if (result.status === "sent") {
+    return { kind: "idle" };
+  }
+  return { kind: "failed", method: "phone", reason: result.reason };
+}
+
+/** 소셜 로그인 결과 → 다음 상태입니다. 취소는 `idle`과 구별되지 않습니다. */
+export function loginStatusAfterSocialOutcome(
+  method: SocialLoginMethod,
+  outcome: SocialSignInOutcome,
+): LoginStatus {
+  if (outcome.status === "failed") {
+    return { kind: "failed", method, reason: outcome.reason };
+  }
+  return { kind: "idle" };
+}
+
+/** 번호 · 국가를 고쳤을 때의 다음 상태입니다. `failed`면 수단과 무관하게 `idle`입니다. */
+export function loginStatusAfterEdit(status: LoginStatus): LoginStatus {
+  if (status.kind === "failed") {
+    return { kind: "idle" };
+  }
+  return status;
+}
+
+/**
+ * 제품의 전화번호 수단입니다. **2026-09-29부터 잠시 숨깁니다** — SMS 공급자가 없어 실제 번호로는
+ * 코드가 오지 않고, 소셜 제공자 설정을 하는 동안 로그인 화면에 소셜 셋만 둡니다. 되살릴 때는 이
+ * 값을 `visible`로 바꿉니다. 화면 · 결선 · 테스트는 `visible`을 그대로 지킵니다.
+ */
+export const productPhoneSignIn: PhoneSignInVisibility = "hidden";
+
+/** 로그인 화면의 제목과 안내입니다. 전화번호 수단을 숨기면 전화번호를 말하지 않습니다. */
+export function loginHeading(phoneSignIn: PhoneSignInVisibility): {
+  readonly title: string;
+  readonly caption: string;
+} {
+  return phoneSignIn === "visible"
+    ? {
+        title: "Log in or Sign up with your phone number",
+        caption: "Please enter your phone number to continue",
+      }
+    : { title: "Log in or Sign up", caption: "Choose how you'd like to continue" };
+}

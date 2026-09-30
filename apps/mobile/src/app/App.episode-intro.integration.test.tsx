@@ -4,14 +4,15 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import { App } from "./App";
 import type { AppJourneySeed } from "./App";
 import type {
+  EpisodeIntroEvent,
+  EpisodeIntroEventSink,
   EpisodePrologue,
   PrologueCall,
 } from "../screens/episode-intro/episode-intro.contract";
 import { episodeNarrativeFor } from "../screens/episode-narrative/episode-narrative";
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import { journeySteps } from "../screens/journey-map/journey-map";
-import { authTokenStorageKey } from "../lib/auth-token";
-import { entrySplashDurationMs } from "../lib/entry-flow";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // App · navReducer · 여정 맵 · 에피소드 표지 유닛 · 유닛 화면의 실제 결선을 봅니다
 // (ADR-0006 D4). 제품의 씨앗(끝낸 표지 없음)으로 부팅합니다.
@@ -29,26 +30,6 @@ import { entrySplashDurationMs } from "../lib/entry-flow";
 afterEach(() => {
   vi.unstubAllGlobals();
 });
-
-// 다른 integration 파일들의 `renderApp`과 같은 헬퍼입니다 — 토큰이 있는 상태로 진입
-// 스플래시를 건너뜁니다.
-function renderApp(ui: Parameters<typeof render>[0]) {
-  const tokenStore = new Map<string, string>([[authTokenStorageKey, "existing-token"]]);
-  vi.stubGlobal("NativeModules", {
-    StorageModule: {
-      get: (key: string) => tokenStore.get(key) ?? null,
-      set: (key: string, value: string) => void tokenStore.set(key, value),
-      remove: (key: string) => void tokenStore.delete(key),
-    },
-  });
-  vi.useFakeTimers();
-  const result = render(ui);
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
-  vi.useRealTimers();
-  return result;
-}
 
 const introUnitTestId = "ui-lynx-learning-unit-tutorial-intro";
 const finalUnitTestId = "ui-lynx-learning-unit-tutorial-final-test";
@@ -125,8 +106,8 @@ function startOrdering(): void {
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 }
 
-test("[IN-I1] 맵의 표지 항목을 누르면 그 에피소드의 표지 화면이 선다", () => {
-  renderApp(<App />);
+test("[IN-I1] 맵의 표지 항목을 누르면 그 에피소드의 표지 화면이 선다", async () => {
+  await renderSignedInApp(<App />);
 
   openIntro();
 
@@ -140,8 +121,8 @@ test("[IN-I1] 맵의 표지 항목을 누르면 그 에피소드의 표지 화�
 // [EI1]의 **반전**입니다. 전에는 「유닛을 누르면 표지가 뜬다」였고, 이제는 「유닛이
 // 아예 눌리지 않는다」입니다(AC1 후반 + D6). 사용자가 보는 것이 「눌렀더니 다른 화면이
 // 떴다」에서 「아직 열리지 않았다」로 바뀐 자리이고, spec §2.7 델타 표의 그 줄입니다.
-test("[IN-I2] 표지 전에는 스텝도 특별 유닛 셋도 눌리지 않고 표지도 뜨지 않는다", () => {
-  renderApp(<App />);
+test("[IN-I2] 표지 전에는 스텝도 특별 유닛 셋도 눌리지 않고 표지도 뜨지 않는다", async () => {
+  await renderSignedInApp(<App />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   gatedUnits.forEach(({ testId, screenTestId }) => {
@@ -162,8 +143,8 @@ test("[IN-I2] 표지 전에는 스텝도 특별 유닛 셋도 눌리지 않고 �
 // 옛 [EI3]은 「`Skip`을 누르면 누른 유닛이 열린다」였습니다. D5가 그것을 바꿉니다 —
 // 건너뛴 서사도 **결과 화면**을 지납니다. 채점할 것이 없어 만점인 것이지 「건너뛰면
 // 만점」이 규칙인 것이 아닙니다(spec §2.8).
-test("[IN-I3] Skip → 확인 모달 → 건너뛰기면 맵이 아니라 결과 화면이 선다", () => {
-  renderApp(<App />);
+test("[IN-I3] Skip → 확인 모달 → 건너뛰기면 맵이 아니라 결과 화면이 선다", async () => {
+  await renderSignedInApp(<App />);
   openIntro();
 
   skipIntro();
@@ -175,8 +156,8 @@ test("[IN-I3] Skip → 확인 모달 → 건너뛰기면 맵이 아니라 결과
   expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
 });
 
-test("[IN-K1] 건너뛰고 온 결과 화면의 제목이 PERFECT LESSON!이다", () => {
-  renderApp(<App />);
+test("[IN-K1] 건너뛰고 온 결과 화면의 제목이 PERFECT LESSON!이다", async () => {
+  await renderSignedInApp(<App />);
   openIntro();
 
   skipIntro();
@@ -189,8 +170,8 @@ test("[IN-K1] 건너뛰고 온 결과 화면의 제목이 PERFECT LESSON!이다"
 
 // **완료를 적는 자리가 여기 하나입니다**(spec §2.5) — 전에는 `Skip`과 `Check` 둘이
 // 각자 적었습니다. 결과 화면에 닿는 것이 곧 완료이고, 그 완료가 곧 잠김 해제입니다.
-test("[IN-K2] 결과 화면의 Check로 맵에 돌아오면 표지가 clear이고 잠김이 풀린다", () => {
-  renderApp(<App />);
+test("[IN-K2] 결과 화면의 Check로 맵에 돌아오면 표지가 clear이고 잠김이 풀린다", async () => {
+  await renderSignedInApp(<App />);
   openIntro();
   skipIntro();
 
@@ -213,7 +194,7 @@ test("[IN-K2] 결과 화면의 Check로 맵에 돌아오면 표지가 clear이�
 // 경우입니다. **화면은 그 둘을 구별하지 않습니다**(spec §2.5). 구별하려면 route에 필드가
 // 하나 늘어야 하고 그것을 읽을 곳이 오늘 0건입니다. 건너뛴 것과 본 것이 같은 결과를
 // 내는 것이 D5가 고른 바로 그 동작입니다.
-test("[IN-K3] Skip으로 온 결과 화면과 Next로 온 결과 화면이 구별되지 않는다", () => {
+test("[IN-K3] Skip으로 온 결과 화면과 Next로 온 결과 화면이 구별되지 않는다", async () => {
   function completeScreenShape() {
     const pick = (testId: string) => screen.getByTestId(testId).textContent ?? "";
     return {
@@ -225,13 +206,13 @@ test("[IN-K3] Skip으로 온 결과 화면과 Next로 온 결과 화면이 구�
     };
   }
 
-  const skipped = renderApp(<App />);
+  const skipped = await renderSignedInApp(<App />);
   openIntro();
   skipIntro();
   const skippedShape = completeScreenShape();
   skipped.unmount();
 
-  renderApp(<App />);
+  await renderSignedInApp(<App />);
   openIntro();
   nextIntro();
   readNarrative();
@@ -244,8 +225,8 @@ test("[IN-K3] Skip으로 온 결과 화면과 Next로 온 결과 화면이 구�
 // 옛 [EI2]·[EN1]의 개정입니다 — 끝이 「맵 + 유닛은 다시 눌러야 열린다」에서 「맵 +
 // 표지가 clear」로 바뀝니다. 서사 자체의 모양(비주얼 노벨이 서고 통화가 아니다)도
 // 여기서 함께 봅니다.
-test("[IN-I4] Next → 서사 → 결과 화면 → Check면 맵이고 표지가 clear다", () => {
-  renderApp(<App />);
+test("[IN-I4] Next → 서사 → 결과 화면 → Check면 맵이고 표지가 clear다", async () => {
+  await renderSignedInApp(<App />);
   openIntro();
 
   nextIntro();
@@ -264,8 +245,8 @@ test("[IN-I4] Next → 서사 → 결과 화면 → Check면 맵이고 표지가
 
 // 옛 [EI6]의 개정입니다 — 「다음에 유닛을 열면 표지가 다시 선다」가 「표지가 여전히
 // 미완료라 뒤가 잠긴 채다」로 바뀝니다. 뒤로는 결과 화면에 닿지 않으므로 완료가 아닙니다.
-test("[IN-I5] 표지의 뒤로는 맵으로 가고 완료로 적지 않아 잠김도 그대로다", () => {
-  renderApp(<App />);
+test("[IN-I5] 표지의 뒤로는 맵으로 가고 완료로 적지 않아 잠김도 그대로다", async () => {
+  await renderSignedInApp(<App />);
   openIntro();
 
   tapIntroBack();
@@ -283,8 +264,8 @@ test("[IN-I5] 표지의 뒤로는 맵으로 가고 완료로 적지 않아 잠�
 
 // 옛 [EN2]의 개정입니다. 이유가 더 좁아졌습니다 — 완료를 적는 자리가 결과 화면의
 // `Check` 하나뿐이라, **결과 화면에 닿은 적이 없으면** 어디서 나가든 완료가 아닙니다.
-test("[IN-I6] 서사 중간에 뒤로 나가면 결과 화면에 닿은 적이 없어 완료로 적지 않는다", () => {
-  renderApp(<App />);
+test("[IN-I6] 서사 중간에 뒤로 나가면 결과 화면에 닿은 적이 없어 완료로 적지 않는다", async () => {
+  await renderSignedInApp(<App />);
   openIntro();
   nextIntro();
 
@@ -302,8 +283,8 @@ test("[IN-I6] 서사 중간에 뒤로 나가면 결과 화면에 닿은 적이 �
 // 옛 [EI4]의 대체입니다 — 「표지를 넘긴 뒤에는 표지가 서지 않는다」가 아니라 「표지
 // **항목**이 완료 표식으로 서고, 그래도 다시 열린다」입니다. 표지는 유닛이라 끝낸
 // 뒤에도 다시 볼 수 있습니다(스텝을 다시 푸는 것과 같은 자리).
-test("[IN-I7] 표지를 끝낸 뒤에도 표지 항목은 잠기지 않고 다시 눌러도 열린다", () => {
-  renderApp(<App />);
+test("[IN-I7] 표지를 끝낸 뒤에도 표지 항목은 잠기지 않고 다시 눌러도 열린다", async () => {
+  await renderSignedInApp(<App />);
   finishIntroBySkip();
 
   expect(introUnit()).toHaveAttribute("data-status", "clear");
@@ -334,8 +315,8 @@ test("[IN-I7] 표지를 끝낸 뒤에도 표지 항목은 잠기지 않고 다�
 // 여기서 지어내지 않고 test-plan §7(판정이 거짓이 되는 조건)으로 올립니다. 이 케이스는
 // **동작을 바꾸라고 요구하지 않습니다** — 우회가 실제로 일어난다는 사실을 화면에 못
 // 박아, 나중에 누가 그것을 고칠 때 이 줄이 함께 움직이게 합니다.
-test("[IN-I8] 알림에서 여는 특별 유닛은 표지를 안 지나고, 맵의 잠김도 우회한다", () => {
-  renderApp(<App />);
+test("[IN-I8] 알림에서 여는 특별 유닛은 표지를 안 지나고, 맵의 잠김도 우회한다", async () => {
+  await renderSignedInApp(<App />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   // 맵에서는 잠겨 있습니다 — 표지를 끝내지 않았기 때문입니다.
   expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
@@ -355,7 +336,7 @@ test("[IN-I8] 알림에서 여는 특별 유닛은 표지를 안 지나고, 맵�
 // 최종 테스트가 열리는 조건이 「자기 말고 여덟 완료」에서 「아홉 완료」로 바뀝니다 —
 // 표지가 그 「다른 항목」에 낍니다(spec §2.7 델타 표). 표지만 남겨 두고 나머지를 전부
 // 끝낸 씨앗이라, 최종의 잠김이 **표지 하나에** 걸린 것이 드러납니다.
-test("[IN-I9] 표지를 끝내기 전에는 최종 테스트가 잠겨 있고, 표지를 끝내면 열린다", () => {
+test("[IN-I9] 표지를 끝내기 전에는 최종 테스트가 잠겨 있고, 표지를 끝내면 열린다", async () => {
   const introLeft: AppJourneySeed = {
     completedStepCount: journeySteps.length,
     completedMessengerUnitIds: ["appointment-confirmation"],
@@ -363,7 +344,7 @@ test("[IN-I9] 표지를 끝내기 전에는 최종 테스트가 잠겨 있고, �
     visualNovelProgress: { status: "completed", beatIndex: 2 },
     completedEpisodeFinalIds: [],
   };
-  renderApp(<App journeySeed={introLeft} />);
+  await renderSignedInApp(<App journeySeed={introLeft} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(screen.getByTestId(finalUnitTestId)).toHaveAttribute("data-status", "default");
@@ -401,14 +382,14 @@ const messengerPrologue: EpisodePrologue = {
   },
 };
 
-function renderWithCall() {
-  return renderApp(<App episodePrologueFor={() => callPrologue} />);
+async function renderWithCall() {
+  return await renderSignedInApp(<App episodePrologueFor={() => callPrologue} />);
 }
 
 // 옛 [EP1]·[EM1]의 **진입 경로 개정**입니다 — 서사 형식이 무엇이든 들어가는 문은 맵의
 // 표지 항목 하나입니다. 형식별 화면이 서는 것은 그 뒤의 일입니다.
-test("[IN-I10] 서사가 통화·메신저인 에피소드도 진입점이 표지 항목이다", () => {
-  const first = renderWithCall();
+test("[IN-I10] 서사가 통화·메신저인 에피소드도 진입점이 표지 항목이다", async () => {
+  const first = await renderWithCall();
   openIntro();
   expect(screen.getByTestId("episode-intro-screen-title")).toHaveTextContent("Tutorial.");
 
@@ -421,7 +402,7 @@ test("[IN-I10] 서사가 통화·메신저인 에피소드도 진입점이 표�
   );
   first.unmount();
 
-  renderApp(<App episodePrologueFor={() => messengerPrologue} />);
+  await renderSignedInApp(<App episodePrologueFor={() => messengerPrologue} />);
   openIntro();
   expect(screen.getByTestId("episode-intro-screen-title")).toHaveTextContent("Tutorial.");
 
@@ -433,8 +414,8 @@ test("[IN-I10] 서사가 통화·메신저인 에피소드도 진입점이 표�
 // 옛 [EM2]의 **반전**입니다 — 「서사가 없으면 `Next`가 곧장 누른 유닛을 연다」였는데,
 // 열 유닛이라는 개념이 없어졌습니다. 서사가 없어도 결과 화면을 지납니다: `Skip`과 같은
 // 곳이고, 그래야 완료를 적는 자리가 하나로 남습니다(spec §2.5).
-test("[IN-I11] 서사가 없는 에피소드는 Next가 Skip과 같은 결과 화면으로 간다", () => {
-  renderApp(<App episodePrologueFor={() => undefined} />);
+test("[IN-I11] 서사가 없는 에피소드는 Next가 Skip과 같은 결과 화면으로 간다", async () => {
+  await renderSignedInApp(<App episodePrologueFor={() => undefined} />);
   openIntro();
 
   nextIntro();
@@ -452,8 +433,8 @@ test("[IN-I11] 서사가 없는 에피소드는 Next가 Skip과 같은 결과 �
 // `seenEpisodeIntroIds`(에피소드 id)가 `completedEpisodeIntroIds`(표지 **유닛** id)가
 // 됩니다. 「봤다」가 아니라 「끝냈다」이고, 축이 에피소드에서 유닛으로 옮겨 간 것을
 // 이름이 그대로 집니다. 이 케이스가 그 개명을 잡습니다.
-test("[IN-I12] 표지를 끝낸 것으로 부팅하면 맵의 표지가 clear로 서고 뒤가 열려 있다", () => {
-  renderApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
+test("[IN-I12] 표지를 끝낸 것으로 부팅하면 맵의 표지가 clear로 서고 뒤가 열려 있다", async () => {
+  await renderSignedInApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   expect(introUnit()).toHaveAttribute("data-status", "clear");
@@ -465,9 +446,9 @@ test("[IN-I12] 표지를 끝낸 것으로 부팅하면 맵의 표지가 clear로
 
 // 옛 [EI7]의 개정입니다 — 「표지를 넘긴 뒤에 한 번」이 아니라 「열리고 나면 **곧장**
 // 한 번」입니다. 앞에 끼는 것이 없어졌으므로 탭과 이벤트 사이에 화면이 하나도 없습니다.
-test("[IN-I13] 특별 유닛의 열림 이벤트가 곧장 한 번 난다", () => {
+test("[IN-I13] 특별 유닛의 열림 이벤트가 곧장 한 번 난다", async () => {
   const messengerEventSink = vi.fn<NonNullable<MessengerEventSink>>();
-  renderApp(<App messengerEventSink={messengerEventSink} />);
+  await renderSignedInApp(<App messengerEventSink={messengerEventSink} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   // 잠긴 동안은 눌러도 이벤트가 나지 않습니다 — 열리지 않았으니 열린 적도 없습니다.
@@ -494,8 +475,8 @@ test("[IN-I13] 특별 유닛의 열림 이벤트가 곧장 한 번 난다", () =
 // 끝낸 뒤 특별 유닛이 곧장 열리는 것은 [IN-I13]이, 스텝이 열리는 것은 [IN-K2]가
 // 봅니다.
 
-test("[EI10] Skip 뒤 모달에서 계속 보기를 고르면 표지에 남고 완료로 적지 않는다", () => {
-  renderApp(<App />);
+test("[EI10] Skip 뒤 모달에서 계속 보기를 고르면 표지에 남고 완료로 적지 않는다", async () => {
+  await renderSignedInApp(<App />);
   openIntro();
 
   tapButtonIn("episode-intro-screen-skip");
@@ -508,9 +489,9 @@ test("[EI10] Skip 뒤 모달에서 계속 보기를 고르면 표지에 남고 �
   expect(introUnit()).toHaveAttribute("data-status", "available");
 });
 
-test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue를 기다린다", () => {
+test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue를 기다린다", async () => {
   vi.useFakeTimers();
-  renderWithCall();
+  await renderWithCall();
   vi.useFakeTimers();
   openIntro();
   nextIntro();
@@ -525,8 +506,8 @@ test("[EP2] 대사가 흐른 뒤 통화가 끝나면 화면에 남아 Continue�
   expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
 });
 
-test("[EP2b] 통화의 Continue → PERFECT LESSON → Check → 맵이고 표지가 clear다", () => {
-  renderWithCall();
+test("[EP2b] 통화의 Continue → PERFECT LESSON → Check → 맵이고 표지가 clear다", async () => {
+  await renderWithCall();
   openIntro();
   nextIntro();
   fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
@@ -539,8 +520,8 @@ test("[EP2b] 통화의 Continue → PERFECT LESSON → Check → 맵이고 표�
   expect(introUnit()).toHaveAttribute("data-status", "clear");
 });
 
-test("[EP3] 통화에서 뒤로 가면 맵이고 완료로 적지 않는다", () => {
-  renderWithCall();
+test("[EP3] 통화에서 뒤로 가면 맵이고 완료로 적지 않는다", async () => {
+  await renderWithCall();
   openIntro();
   nextIntro();
 
@@ -553,9 +534,9 @@ test("[EP3] 통화에서 뒤로 가면 맵이고 완료로 적지 않는다", ()
   expect(introUnit()).toHaveAttribute("data-status", "available");
 });
 
-test("[EM1] 메신저 서사를 끝까지 보내면 PERFECT LESSON → Check → 맵이다", () => {
+test("[EM1] 메신저 서사를 끝까지 보내면 PERFECT LESSON → Check → 맵이다", async () => {
   vi.useFakeTimers();
-  renderApp(<App episodePrologueFor={() => messengerPrologue} />);
+  await renderSignedInApp(<App episodePrologueFor={() => messengerPrologue} />);
   vi.useFakeTimers();
   openIntro();
   nextIntro();
@@ -571,4 +552,145 @@ test("[EM1] 메신저 서사를 끝까지 보내면 PERFECT LESSON → Check →
   tapLessonCompleteCheck();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(introUnit()).toHaveAttribute("data-status", "clear");
+});
+
+// ------------------------------------------------------------------ 표지 · 서사 이벤트
+//
+// sink는 App prop으로 직접 주입합니다. 표지 항목을 누르는 순간부터 서사를 마칠 때까지의
+// 이벤트를 순서 그대로 봅니다.
+
+async function renderWithIntroSink(
+  ui: (sink: NonNullable<EpisodeIntroEventSink>) => Parameters<typeof render>[0],
+) {
+  const events: EpisodeIntroEvent[] = [];
+  await renderSignedInApp(ui((event) => events.push(event)));
+  return events;
+}
+
+test("[EV1] 표지 항목을 눌러 표지가 서면 episode_intro_viewed가 한 번 난다", async () => {
+  const events = await renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+
+  openIntro();
+
+  expect(events).toEqual([{ name: "episode_intro_viewed", episodeId: "tutorial" }]);
+});
+
+test("[EV2] 잠긴 유닛을 눌러서는 표지 이벤트가 나지 않는다", async () => {
+  const events = await renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+
+  expect(events).toEqual([]);
+});
+
+test("[EV3] Skip을 누른 것만으로는 나지 않고, 모달에서 건너뛰기를 골라야 episode_intro_skipped가 난다", async () => {
+  const events = await renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+  openIntro();
+
+  tapButtonIn("episode-intro-screen-skip");
+  tapButtonIn("ui-lynx-dialog-action-stay");
+  expect(events.map((event) => event.name)).toEqual(["episode_intro_viewed"]);
+
+  skipIntro();
+  expect(events.slice(1)).toEqual([{ name: "episode_intro_skipped", episodeId: "tutorial" }]);
+});
+
+test("[EV4] Next → 서사 끝 → Check는 continued · prologue_completed 순서로 난다", async () => {
+  const events = await renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+  openIntro();
+
+  nextIntro();
+  expect(events.slice(1)).toEqual([
+    { name: "episode_intro_continued", episodeId: "tutorial", hasPrologue: true },
+  ]);
+
+  readNarrative();
+  expect(events.slice(2)).toEqual([
+    { name: "episode_prologue_completed", episodeId: "tutorial", prologueKind: "visual-novel" },
+  ]);
+
+  tapLessonCompleteCheck();
+  expect(events).toHaveLength(3);
+});
+
+test("[EV5] 서사가 없는 에피소드의 Next는 hasPrologue가 false이고 서사 완료가 나지 않는다", async () => {
+  const events = await renderWithIntroSink((sink) => (
+    <App episodePrologueFor={() => undefined} episodeIntroEventSink={sink} />
+  ));
+  openIntro();
+
+  nextIntro();
+
+  expect(events.slice(1)).toEqual([
+    { name: "episode_intro_continued", episodeId: "tutorial", hasPrologue: false },
+  ]);
+});
+
+test("[EV6] 표지에서 뒤로 나가면 stage가 intro인 episode_intro_exited가 난다", async () => {
+  const events = await renderWithIntroSink((sink) => <App episodeIntroEventSink={sink} />);
+  openIntro();
+
+  tapIntroBack();
+
+  expect(events.slice(1)).toEqual([
+    { name: "episode_intro_exited", episodeId: "tutorial", stage: "intro" },
+  ]);
+});
+
+test("[EV7] 서사에서 뒤로 나가면 stage가 prologue인 episode_intro_exited가 난다", async () => {
+  const events = await renderWithIntroSink((sink) => (
+    <App episodePrologueFor={() => callPrologue} episodeIntroEventSink={sink} />
+  ));
+  openIntro();
+  nextIntro();
+
+  fireEvent.tap(
+    within(screen.getByTestId("prologue-call-screen-back")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+
+  expect(events.slice(2)).toEqual([
+    { name: "episode_intro_exited", episodeId: "tutorial", stage: "prologue" },
+  ]);
+});
+
+test("[EV8] 서사 형식이 통화면 prologueKind가 call이다", async () => {
+  const events = await renderWithIntroSink((sink) => (
+    <App episodePrologueFor={() => callPrologue} episodeIntroEventSink={sink} />
+  ));
+  openIntro();
+  nextIntro();
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-end"), {});
+
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-complete"), {});
+
+  expect(events.at(-1)).toEqual({
+    name: "episode_prologue_completed",
+    episodeId: "tutorial",
+    prologueKind: "call",
+  });
+});
+
+test("[EV9] 끝낸 표지를 다시 열어도 episode_intro_viewed가 난다", async () => {
+  const events = await renderWithIntroSink((sink) => (
+    <App completedEpisodeIntroIds={["tutorial-intro"]} episodeIntroEventSink={sink} />
+  ));
+
+  openIntro();
+
+  expect(events).toEqual([{ name: "episode_intro_viewed", episodeId: "tutorial" }]);
+});
+
+test("[EV10] (가드) sink 없이도 표지 · 서사의 어느 조작도 던지지 않는다", async () => {
+  await renderSignedInApp(<App />);
+
+  expect(() => {
+    openIntro();
+    tapIntroBack();
+    fireEvent.tap(introUnit(), {});
+    nextIntro();
+    readNarrative();
+    tapLessonCompleteCheck();
+  }).not.toThrow();
 });

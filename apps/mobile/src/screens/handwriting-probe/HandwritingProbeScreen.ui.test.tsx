@@ -1,7 +1,11 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { expect, test } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { HandwritingProbeScreen } from "./HandwritingProbeScreen";
+import { probeSurfaceSize } from "./handwriting-probe";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). 계산된 스타일·레이아웃은
 // jsdom이 계산하지 않으므로 `toBeVisible`·`toHaveStyle`·`toHaveClass`를 쓰지
@@ -13,7 +17,7 @@ import { HandwritingProbeScreen } from "./HandwritingProbeScreen";
 // 줄을 그렸는가」가 같고 정렬돼 있다는 것입니다. 실제 이름 확인은 `docs/e2e/`의
 // 수동 항목이 집니다.
 //
-// ⚠ 터치 페이로드의 한계는 `DrawingSurface.ui.test.tsx` 머리와 같습니다 — 환경이
+// ⚠ 터치 페이로드의 한계는 `components/DrawingSurface.ui.test.tsx` 머리와 같습니다 — 환경이
 // 필드 이름을 검증하지 않으므로 이 파일의 초록이 실기의 필드 이름을 보증하지
 // 않습니다.
 
@@ -188,4 +192,33 @@ test("[SC8] 표면에 accessibility-*가 하나도 없다", () => {
   expect(surface).not.toHaveAttribute("accessibility-label");
   expect(surface).not.toHaveAttribute("accessibility-traits");
   expect(surface).not.toHaveAttribute("accessibility-elements-hidden");
+});
+
+// 크기가 두 자리에 있습니다 — `probeSurfaceSize`(TS)와 표면에 붙는 크기 클래스의 CSS
+// 박스입니다. 저장소 규약이 시각 값을 CSS에 두라 하므로(인라인 `style` 금지) 한 자리로 합칠
+// 수 없고, 대신 **둘이 같은 수를 든다는 사실을 기계가 지킵니다.**
+//
+// 왜 이것을 거는가: `viewBox`가 `0 0 probeSurfaceSize`인데 CSS 박스가 다른 수면 좌표 변환이
+// 항등이 아니게 되어 획이 손가락과 다른 자리에 그려집니다. 그 증상은
+// `docs/e2e/handwriting-probe.md`의 **E2(Q1-b 「위치가 맞는가」)** 가 묻는 것과 똑같이 보여서,
+// 플랫폼 문제가 아닌 이유로 그 항목이 「어긋난다」로 답하게 됩니다.
+//
+// 표면이 크기를 박던 때는 `DrawingSurface.ui.test.tsx`에 있었습니다 — 표면이 공용이 되며
+// 크기를 부르는 쪽이 지게 되어 여기로 옮겼습니다. 계산된 스타일이 아니라 **CSS 파일의
+// 글자**를 읽습니다.
+test("[DS13] 표면의 크기 클래스가 probeSurfaceSize와 같은 수를 든다 — 좌표 변환이 항등이어야 한다", () => {
+  render(<HandwritingProbeScreen />);
+  expect(screen.getByTestId("drawing-surface").getAttribute("class")).toBe(
+    "drawing-surface handwriting-probe-screen-surface",
+  );
+
+  const styles = readFileSync(resolve(import.meta.dirname, "handwriting-probe-screen.css"), "utf8");
+
+  expect(styles).toMatch(
+    new RegExp(
+      `\\.handwriting-probe-screen-surface\\s*\\{[^}]*width:\\s*${probeSurfaceSize.width}px[^}]*` +
+        `height:\\s*${probeSurfaceSize.height}px`,
+      "s",
+    ),
+  );
 });

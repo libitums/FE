@@ -1,9 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, fireEvent, screen } from "@lynx-js/react/testing-library";
 import { App } from "./App";
 import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
-import { authTokenStorageKey } from "../lib/auth-token";
-import { entrySplashDurationMs } from "../lib/entry-flow";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
@@ -13,35 +12,8 @@ const audio = vi.hoisted(() => ({ playAudio: vi.fn(), stopAudio: vi.fn() }));
 vi.mock("../lib/audio", () => audio);
 const { playAudio, stopAudio } = audio;
 
-// 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
-// 상태를 스텁하고 가짜 타이머로 `entrySplashDurationMs`만큼 전진시켜 진입
-// 스플래시를 건너뜁니다. 이 파일의 단언은 App이 스플래시를 실제로 건너뛰든 아니든
-// 한 줄도 바뀌지 않습니다.
-function renderApp(ui: Parameters<typeof render>[0]) {
-  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
-  const tokenStore = new Map<string, string>();
-  tokenStore.set(authTokenStorageKey, "existing-token");
-  vi.stubGlobal("NativeModules", {
-    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
-      ? previousNativeModules
-      : {}),
-    StorageModule: {
-      get: (key: string) => tokenStore.get(key) ?? null,
-      set: (key: string, value: string) => void tokenStore.set(key, value),
-      remove: (key: string) => void tokenStore.delete(key),
-    },
-  });
-  vi.useFakeTimers();
-  const result = render(ui);
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
-  vi.useRealTimers();
-  return result;
-}
-
-function openJourney() {
-  renderApp(<App completedEpisodeIntroIds={completedIntros} />);
+async function openJourney() {
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 }
 
@@ -49,8 +21,8 @@ describe("App · phone-call integration", () => {
   beforeEach(() => vi.resetAllMocks());
   afterEach(() => vi.unstubAllGlobals());
 
-  it("맵에서 messenger 뒤 directions 앞에 전화 항목을 표시하고 선택한다", () => {
-    openJourney();
+  it("맵에서 messenger 뒤 directions 앞에 전화 항목을 표시하고 선택한다", async () => {
+    await openJourney();
     const items = screen
       .getAllByTestId(
         // 유닛 하위 testid(-ring · -icon · -badge)가 아니라 유닛 자체만 셉니다.
@@ -70,8 +42,8 @@ describe("App · phone-call integration", () => {
     expect(playAudio).toHaveBeenCalledTimes(0);
   });
 
-  it("전화 3턴은 수동 재생·답장으로 완료되고 맵 완료 표식만 바꾼다", () => {
-    openJourney();
+  it("전화 3턴은 수동 재생·답장으로 완료되고 맵 완료 표식만 바꾼다", async () => {
+    await openJourney();
     const before = ["greeting", "introduction", "ordering", "appointment", "directions"].map((id) =>
       screen.getByTestId(`ui-lynx-learning-unit-${id}`).getAttribute("data-status"),
     );
@@ -143,8 +115,8 @@ describe("App · phone-call integration", () => {
     ).toHaveLength(6);
   });
 
-  it("미완료 이탈은 stop하고 재진입을 첫 transcript로 시작한다", () => {
-    openJourney();
+  it("미완료 이탈은 stop하고 재진입을 첫 transcript로 시작한다", async () => {
+    await openJourney();
     fireEvent.tap(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
@@ -166,8 +138,8 @@ describe("App · phone-call integration", () => {
 
   // **뒤집힙니다**(ADR-0007 2026-09-27 개정). 전화는 여정 탭 위에 쌓인 자리라 탭이
   // 없습니다. 남는 것은 **exit 뒤 메신저와 공존한다**이고, 그것이 이 케이스의 내용입니다.
-  it("전화 화면에는 탭이 없고 exit 뒤 메신저와 공존한다", () => {
-    openJourney();
+  it("전화 화면에는 탭이 없고 exit 뒤 메신저와 공존한다", async () => {
+    await openJourney();
     fireEvent.tap(
       screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
       {},
@@ -184,9 +156,9 @@ describe("App · phone-call integration", () => {
 
   // 여정 전화 진입(`onStartPhoneCallUnit`)에 열림 이벤트가 새로 늡니다 — `push`
   // 직전에 `entrySource: "journey"` · `entryStatus`가 함께 실립니다.
-  it("맵 항목 tap마다 push 전에 phone_call_unit_opened(journey)이 entryStatus와 함께 1건 온다", () => {
+  it("맵 항목 tap마다 push 전에 phone_call_unit_opened(journey)이 entryStatus와 함께 1건 온다", async () => {
     const phoneCallEventSink = vi.fn<NonNullable<PhoneCallEventSink>>();
-    renderApp(
+    await renderSignedInApp(
       <App completedEpisodeIntroIds={completedIntros} phoneCallEventSink={phoneCallEventSink} />,
     );
     fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});

@@ -252,3 +252,11 @@ export const loginCountries: readonly LoginCountry[] = [
   { id: "zw", flag: "🇿🇼", name: "Zimbabwe", dialCode: "+263" },
   { id: "ax", flag: "🇦🇽", name: "Åland Islands", dialCode: "+358" },
 ];
+
+// 국가 목록을 ui-lynx OptionSelector의 항목으로 옮깁니다. 국기 이모지는 스크린 리더가 중복
+// 낭독하므로 이름(`accessibilityLabel`)에서는 뺍니다.
+export const loginCountryOptions = loginCountries.map((option) => ({
+  id: option.id,
+  label: `${option.flag}  ${option.name}  ${option.dialCode}`,
+  accessibilityLabel: `${option.name} ${option.dialCode}`,
+}));

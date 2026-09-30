@@ -152,7 +152,7 @@ App (app/App.tsx)                                    ← 유일한 결선 자리
   `unitId`로 복원된다.
 - 세 sink 모두 `App`의 optional prop이고 기본값 `null`로 정규화되며, 제품 진입점은 `null`을
   명시한다. **이 변경이 병합돼도 실제 집계는 0건이다.** 계약과 테스트는 발생 경계만 증명한다.
-  운영 sink 연결은 별도 후속이다.
+  운영 sink 연결은 별도 후속이다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 
 유닛별 이벤트 표(이름 · payload · 발생 시점)는 [메신저 스펙](messenger-special-unit.md) §6,
 [전화 스펙](phone-call-special-unit.md) §13, [비주얼 노벨 스펙](visual-novel-special-unit.md) §8에
@@ -176,7 +176,7 @@ App (app/App.tsx)                                    ← 유일한 결선 자리
 - 기존 ui 테스트는 한 곳을 고쳤다 — `VisualNovelScreen.ui.test.tsx` 낭독 순서 케이스의 기대 순서를
   나가기 → 제목 → 진행 → 대사 → 현재 동작으로 바꿨다. 비주얼 노벨 머리 재배치(§4)가 DOM 순서를
   바꿨기 때문이다. 같은 케이스의 다른 단언과 나머지 케이스는 그대로다.
-- 이벤트는 e2e 항목이 아니다 — 운영 sink가 `null`이라 기기에서 관측할 수 없다.
+- 이벤트는 e2e 항목이 아니다 — 운영 sink가 `null`이라 기기에서 관측할 수 없다. ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 
 ## 7. 성능 기록
 

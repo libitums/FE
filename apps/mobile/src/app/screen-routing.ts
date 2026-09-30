@@ -7,7 +7,8 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // **값**을 가져오게 되어 `app/ -> screens/` type-only 규약이 깨집니다. 값은
 // App이 읽어 내립니다.
 import type { LearningForm } from "../lib/learning-form";
-import type { EntryLoginMethod } from "../lib/entry-flow";
+import type { PhoneNumber } from "../lib/auth-session.contract";
+import type { SocialLoginMethod } from "../screens/login/login.contract";
 // 롤플레이 route 셋의 `roleplayScreenFor`가 받는 판별 입력입니다. `roleplay-list`
 // 폴더는 `screens/` 사이 값 import 금지에 걸리지 않습니다 — 이 import는 `import type`입니다.
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
@@ -31,13 +32,19 @@ export function roleplayScreenFor(item: RoleplayItem): RoleplayUnitScreen {
 
 // `default` 없는 switch입니다. 수단이 늘면 TS2366으로 섭니다. `phone`만 코드
 // 검증을 거칩니다(`requiresVerificationCode`와 같은 축). `phoneNumber`는 코드
-// 검증 화면이 보여 줄 번호입니다(2026-09-21 디자인 반영). 없으면 싣지 않습니다.
-export function entryScreenAfterLogin(method: EntryLoginMethod, phoneNumber?: string): Screen {
-  switch (method) {
+// 검증 화면이 보여 줄 번호입니다(2026-09-21 디자인 반영).
+// 로그인 뒤 다음 화면을 가르는 판별 입력입니다. 전화번호는 검증할 번호를 싣습니다.
+export type EntryLoginChoice =
+  | { readonly method: "phone"; readonly phoneNumber: PhoneNumber }
+  | { readonly method: SocialLoginMethod };
+
+// 옵셔널 `phoneNumber?: string` 인자가 사라지고 `EntryLoginChoice` 하나를
+// 받는 판별 입력으로 바뀝니다. `phone`은 `PhoneNumber`를 그대로 싣고, 소셜 셋은
+// `phoneNumber` 없이 `language-select`로 갑니다.
+export function entryScreenAfterLogin(choice: EntryLoginChoice): Screen {
+  switch (choice.method) {
     case "phone": {
-      return phoneNumber
-        ? { name: "verification-code", phoneNumber }
-        : { name: "verification-code" };
+      return { name: "verification-code", phoneNumber: choice.phoneNumber };
     }
     case "google":
     case "apple":
@@ -71,6 +78,9 @@ export function learningScreenFor(
     }
     case "speaking": {
       return { name: "speaking", stepId, activityIndex };
+    }
+    case "writing": {
+      return { name: "writing", stepId, activityIndex };
     }
     case "word-choice": {
       return { name: "word-choice", stepId, activityIndex };

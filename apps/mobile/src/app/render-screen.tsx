@@ -131,11 +131,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           gemCount={wiring.gemCount}
         />
       );
-    // ⟨2026-09-28⟩ **통과도 미통과도 같은 화면입니다.** 그전에는 통과만 학습 결과
-    // 화면이고 미통과는 평가 화면이라, 같은 순간의 두 결과가 전혀 다른 화면으로
-    // 보였습니다. 갈리는 것은 화면이 아니라 그 화면 안의 셋입니다(표식 · 제목 · 보상).
-    // 판정은 셸(`onFinishLearning`)과 같은 순수 함수 · 같은 상수로 다시 냅니다. 지표 중
-    // 연속 · 트로피는 규칙이 없어 0이고, 젬은 전역 머리와 같은 값입니다.
+    // ⟨2026-09-28⟩ **통과도 미통과도 같은 화면입니다.** 갈리는 것은 화면이 아니라
+    // 그 화면 안의 셋입니다(표식 · 제목 · 보상). 판정은 셸(`onFinishLearning`)과
+    // 같은 순수 함수 · 같은 상수로 다시 냅니다. 연속 · 트로피는 규칙이 없어 0입니다.
     case "assessment": {
       const verdict = judgeAssessment(screen.results, assessmentPassCriterion);
       return (
@@ -176,13 +174,13 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         />
       );
     // 결선은 `onStartStep`이 `learningFormForStep`을 거쳐 `learningScreenFor`가
-    // 돌려주는 화면을 push하므로 이 두 case가 실제로 열립니다. 세 학습
-    // 화면은 props가 문자 그대로 같지만 `Record`나 공통 렌더 헬퍼로 묶지
-    // 않습니다 — 묶으면 `switch`의 exhaustiveness가 죽고, 그 exhaustiveness가
-    // 이 저장소가 「빠진 결선」을 컴파일 타임에 잡는 유일한 장치입니다. 분기
-    // 셋의 중복은 그 장치의 가격이지 결함이 아닙니다.
+    // 돌려주는 화면을 push하므로 이 case들이 실제로 열립니다. 학습 화면은 props가 같지만
+    // `Record`나 공통 렌더 헬퍼로 묶지 않습니다 — 묶으면 `switch`의 exhaustiveness가 죽고,
+    // 그것이 이 저장소가 「빠진 결선」을 컴파일 타임에 잡는 유일한 장치입니다. 분기의
+    // 중복은 그 장치의 가격이지 결함이 아닙니다.
     case "sentence-order":
     case "speaking":
+    case "writing":
       return renderShellLearningScreen(screen, wiring);
     case "word-choice":
       return renderWordChoiceScreen(screen, wiring);
@@ -245,11 +243,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "episode-final":
     case "episode-final-complete":
       return renderEpisodeFinalFlow(screen, wiring);
-    // `never` 망라가 이 case를 강제합니다. 결선이 없습니다 — 탐침 화면은
-    // props도 콜백도 받지 않고 자기 상태를 스스로 듭니다. **아무 코드도 이
-    // 화면을 push하지 않습니다** — 위 진입 흐름 case들과 달리 여기로 오는
-    // 전이가 한 자리도 없습니다. 여기 닿으려면 `navigation.ts`가 둔 개발용
-    // 부팅 상태(`handwritingProbeNav`)를 손수 바꿔 끼워야 합니다.
+    // `never` 망라가 이 case를 강제합니다. 결선이 없습니다 — 탐침 화면은 props도
+    // 콜백도 받지 않습니다. **아무 코드도 이 화면을 push하지 않습니다** — 닿으려면
+    // `navigation.ts`가 둔 개발용 부팅 상태(`handwritingProbeNav`)를 바꿔 끼웁니다.
     case "handwriting-probe":
       return <HandwritingProbeScreen />;
     // 위 case와 같은 자리·같은 근거입니다 — 결선이 없고 **아무 코드도 이 화면을 push하지 않습니다.**

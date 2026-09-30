@@ -1,12 +1,8 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { DrawingSurface } from "./DrawingSurface";
-import { probeSurfaceSize } from "./handwriting-probe";
-import type { Stroke } from "../../lib/handwriting-recognition";
+import type { Stroke } from "../lib/handwriting-recognition";
 
 // 케이스 번호 DS1 뒤는 계약에서 오지 않고 **판정이 낸 사각을 닫으려고 덧붙인
 // 것**입니다 — 각 케이스가 자기 자리에서 무엇을 막는지 스스로 적습니다.
@@ -42,6 +38,7 @@ function renderSurface(overrides: {
       strokes={overrides.strokes ?? []}
       width={300}
       height={300}
+      sizeClassName="fixture-surface"
       color="#1A1C20"
       strokeWidth={6}
       onStrokeComplete={overrides.onStrokeComplete ?? (() => {})}
@@ -191,6 +188,7 @@ test("[DS11] strokes를 빈 배열로 다시 렌더하면 content가 빈 문서�
       strokes={[]}
       width={300}
       height={300}
+      sizeClassName="fixture-surface"
       color="#1A1C20"
       strokeWidth={6}
       onStrokeComplete={() => {}}
@@ -224,27 +222,14 @@ test("[DS12] 진행 중인 획 위에 새 touchstart가 오면 진행분이 취�
   expect(surface).toHaveAttribute("data-path", "M 7 7 L 7 7");
 });
 
-// 크기가 두 자리에 있습니다 — `probeSurfaceSize`(TS)와 `.drawing-surface`의 CSS
-// 박스입니다. 저장소 규약이 시각 값을 CSS에 두라 하므로(인라인 `style` 금지) 한
-// 자리로 합칠 수 없고, 대신 **둘이 같은 수를 든다는 사실을 기계가 지킵니다.**
-//
-// 왜 이것을 거는가: `viewBox`가 `0 0 probeSurfaceSize`인데 CSS 박스가 다른 수면
-// 좌표 변환이 항등이 아니게 되어 획이 손가락과 다른 자리에 그려집니다. 그 증상은
-// `docs/e2e/handwriting-probe.md`의 **E2(Q1-b 「위치가 맞는가」)** 가 묻는 것과
-// 똑같이 보여서, 플랫폼 문제가 아닌 이유로 그 항목이 「어긋난다」로 답하게
-// 됩니다. 실기의 답이 오염되는 것을 막으려면 여기서 막는 편이 쌉니다.
-//
-// 계산된 스타일을 보지 않습니다 — jsdom은 Lynx 스타일을 계산하지 않습니다. 읽는
-// 것은 **CSS 파일의 글자**이고, 같은 방식의 선례가 `@libitums/ui-lynx`에 여럿
-// 있습니다.
-test("[DS13] CSS 박스가 probeSurfaceSize와 같은 수를 든다 — 좌표 변환이 항등이어야 한다", () => {
-  const styles = readFileSync(resolve(import.meta.dirname, "drawing-surface.css"), "utf8");
+// DS13(CSS 박스와 `viewBox`의 수가 같은가)은 크기를 지는 쪽으로 옮겼습니다 — 표면이 크기를
+// 박지 않고 부르는 쪽이 `sizeClassName`으로 줍니다. 탐침은 `HandwritingProbeScreen.ui.test.tsx`,
+// 쓰기 캔버스는 `WritingCanvas.ui.test.tsx`가 봅니다.
 
-  expect(styles).toMatch(
-    new RegExp(
-      `\\.drawing-surface\\s*\\{[^}]*width:\\s*${probeSurfaceSize.width}px[^}]*` +
-        `height:\\s*${probeSurfaceSize.height}px`,
-      "s",
-    ),
+test("[DS14] 부르는 쪽이 준 크기 클래스가 표면의 base 클래스에 더해 붙는다", () => {
+  renderSurface({});
+
+  expect(screen.getByTestId("drawing-surface").getAttribute("class")).toBe(
+    "drawing-surface fixture-surface",
   );
 });

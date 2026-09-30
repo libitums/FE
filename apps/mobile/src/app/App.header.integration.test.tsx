@@ -1,10 +1,9 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import type { AppJourneySeed } from "./App";
-import { authTokenStorageKey } from "../lib/auth-token";
-import { entrySplashDurationMs } from "../lib/entry-flow";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // App · 전역 머리(`AppHeader`) · 바텀 네비게이션 · 젬 구매 화면의 실제 결선을 봅니다.
 // 목킹하지 않습니다(외부 IO 없음).
@@ -13,32 +12,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// 토큰이 있는 상태를 스텁하고 진입 스플래시를 건너뜁니다 — 다른 App integration 파일과
-// 같은 헬퍼입니다.
-function renderApp(ui: Parameters<typeof render>[0]) {
-  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
-  const tokenStore = new Map<string, string>([[authTokenStorageKey, "existing-token"]]);
-  vi.stubGlobal("NativeModules", {
-    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
-      ? previousNativeModules
-      : {}),
-    StorageModule: {
-      get: (key: string) => tokenStore.get(key) ?? null,
-      set: (key: string, value: string) => void tokenStore.set(key, value),
-      remove: (key: string) => void tokenStore.delete(key),
-    },
-  });
-  vi.useFakeTimers();
-  const result = render(ui);
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
-  vi.useRealTimers();
-  return result;
-}
-
-test("[AH-I1] 탭 루트 셋 모두에 머리와 바텀 네비게이션이 함께 선다", () => {
-  renderApp(<App />);
+test("[AH-I1] 탭 루트 셋 모두에 머리와 바텀 네비게이션이 함께 선다", async () => {
+  await renderSignedInApp(<App />);
 
   for (const tab of ["journey", "roleplay", "settings"] as const) {
     fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
@@ -48,16 +23,16 @@ test("[AH-I1] 탭 루트 셋 모두에 머리와 바텀 네비게이션이 함�
   }
 });
 
-test("[AH-I2] 탭 루트 위에 화면이 쌓이면 머리가 내려간다", () => {
-  renderApp(<App />);
+test("[AH-I2] 탭 루트 위에 화면이 쌓이면 머리가 내려간다", async () => {
+  await renderSignedInApp(<App />);
 
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 
   expect(screen.queryByTestId("app-header")).toBeNull();
 });
 
-test("[AH-I3] 젬 구매 화면의 Pay는 준비 중 안내만 띄우고 젬은 늘지 않는다", () => {
-  renderApp(<App />);
+test("[AH-I3] 젬 구매 화면의 Pay는 준비 중 안내만 띄우고 젬은 늘지 않는다", async () => {
+  await renderSignedInApp(<App />);
   expect(screen.getByTestId("top-bar-gem")).toHaveTextContent("0");
 
   fireEvent.tap(screen.getByTestId("top-bar-gem"), {});
@@ -85,8 +60,8 @@ function header() {
   return screen.getByTestId("app-header");
 }
 
-test("[AH-I4] 여정의 스텝 말풍선이 열린 동안 머리가 낭독에서 가려지고, 닫으면 풀린다", () => {
-  renderApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
+test("[AH-I4] 여정의 스텝 말풍선이 열린 동안 머리가 낭독에서 가려지고, 닫으면 풀린다", async () => {
+  await renderSignedInApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
@@ -100,8 +75,10 @@ test("[AH-I4] 여정의 스텝 말풍선이 열린 동안 머리가 낭독에서
 // 되면서 에피소드의 완료가 **표지까지** 끝나야 참이 됩니다(D6). 표지를 안 끝낸 진행은
 // 롤플레이 에피소드를 열어 주지 않아 플러스 줄이 서지 않습니다. 이 파일이 보는 것은
 // 머리의 가림이지 표지가 아니므로, 표지는 씨앗으로 지납니다.
-test("[AH-I5] 롤플레이의 플러스 안내가 떠 있는 동안 머리가 낭독에서 가려진다", () => {
-  renderApp(<App journeySeed={finishedTutorial} completedEpisodeIntroIds={["tutorial-intro"]} />);
+test("[AH-I5] 롤플레이의 플러스 안내가 떠 있는 동안 머리가 낭독에서 가려진다", async () => {
+  await renderSignedInApp(
+    <App journeySeed={finishedTutorial} completedEpisodeIntroIds={["tutorial-intro"]} />,
+  );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   const row = screen.getByTestId("roleplay-list-section-premium-row-tutorial");
 
@@ -117,8 +94,8 @@ test("[AH-I5] 롤플레이의 플러스 안내가 떠 있는 동안 머리가 �
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 });
 
-test("[AH-I6] 말풍선이 열린 채 탭을 옮겨도 머리의 가림이 남지 않는다", () => {
-  renderApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
+test("[AH-I6] 말풍선이 열린 채 탭을 옮겨도 머리의 가림이 남지 않는다", async () => {
+  await renderSignedInApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
@@ -126,8 +103,10 @@ test("[AH-I6] 말풍선이 열린 채 탭을 옮겨도 머리의 가림이 남�
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 });
 
-test("[AH-I7] 젬 수는 학습 화면의 상단 바에도 같은 값으로 선다", () => {
-  renderApp(<App completedEpisodeIntroIds={["tutorial-intro"]} initialGemCount={1240} />);
+test("[AH-I7] 젬 수는 학습 화면의 상단 바에도 같은 값으로 선다", async () => {
+  await renderSignedInApp(
+    <App completedEpisodeIntroIds={["tutorial-intro"]} initialGemCount={1240} />,
+  );
   expect(screen.getByTestId("top-bar-gem")).toHaveTextContent("1240");
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});

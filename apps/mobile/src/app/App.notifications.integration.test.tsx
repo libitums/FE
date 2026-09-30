@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { notificationItems } from "../screens/notifications/notification-items";
@@ -14,9 +14,8 @@ import type {
 import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
-import { authTokenStorageKey } from "../lib/auth-token";
-import { entrySplashDurationMs } from "../lib/entry-flow";
 import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
+import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
 // 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
@@ -34,34 +33,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
-// 상태를 스텁하고 가짜 타이머로 `entrySplashDurationMs`만큼 전진시켜 진입
-// 스플래시를 건너뜁니다.
-function renderApp(ui: Parameters<typeof render>[0]) {
-  const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
-  const tokenStore = new Map<string, string>();
-  tokenStore.set(authTokenStorageKey, "existing-token");
-  vi.stubGlobal("NativeModules", {
-    ...(typeof previousNativeModules === "object" && previousNativeModules !== null
-      ? previousNativeModules
-      : {}),
-    StorageModule: {
-      get: (key: string) => tokenStore.get(key) ?? null,
-      set: (key: string, value: string) => void tokenStore.set(key, value),
-      remove: (key: string) => void tokenStore.delete(key),
-    },
-  });
-  vi.useFakeTimers();
-  const result = render(ui);
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
-  vi.useRealTimers();
-  return result;
-}
-
-function openNotificationsScreen() {
-  renderApp(<App completedEpisodeIntroIds={completedIntros} />);
+async function openNotificationsScreen() {
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 }
 
@@ -111,8 +84,8 @@ function finishMessengerConversation() {
 
 // 2026-09-27 개정(ADR-0007): 바텀 네비게이션은 **탭 루트에서만** 섭니다. 알림은 여정
 // 탭 위에 쌓인 화면이라 바가 없습니다 — 「탭이 여정 그대로다」는 나간 뒤에 봅니다.
-test("[IN1] 여정 맵 알림 버튼을 tap하면 알림 화면이 서고 바가 사라진다", () => {
-  openNotificationsScreen();
+test("[IN1] 여정 맵 알림 버튼을 tap하면 알림 화면이 서고 바가 사라진다", async () => {
+  await openNotificationsScreen();
 
   expect(screen.getByTestId("notifications-screen-title")).toHaveTextContent("알림");
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
@@ -131,8 +104,8 @@ test("[IN1] 여정 맵 알림 버튼을 tap하면 알림 화면이 서고 바가
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
 });
 
-test("[IN2] 알림 화면의 맵으로를 tap하면 여정 맵으로 돌아가고 알림 화면이 사라진다", () => {
-  openNotificationsScreen();
+test("[IN2] 알림 화면의 맵으로를 tap하면 여정 맵으로 돌아가고 알림 화면이 사라진다", async () => {
+  await openNotificationsScreen();
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(
@@ -146,9 +119,9 @@ test("[IN2] 알림 화면의 맵으로를 tap하면 여정 맵으로 돌아가�
 
 // -------------------------------------------------------------------------- IN3
 
-test("[IN3] 알림 목록이 실제 데이터의 순서·수·행선지 문구로 선다(데이터 앵커 — 리터럴 4를 쓰지 않는다)", () => {
+test("[IN3] 알림 목록이 실제 데이터의 순서·수·행선지 문구로 선다(데이터 앵커 — 리터럴 4를 쓰지 않는다)", async () => {
   const items = notificationItems();
-  openNotificationsScreen();
+  await openNotificationsScreen();
 
   const list = screen.getByTestId("notifications-screen-list");
   const itemTestIds = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
@@ -163,8 +136,8 @@ test("[IN3] 알림 목록이 실제 데이터의 순서·수·행선지 문구�
 
 // ------------------------------------------------------------------- IN4~IN7
 
-test("[IN4] 메신저 대상 항목을 tap하면 메신저 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", () => {
-  openNotificationsScreen();
+test("[IN4] 메신저 대상 항목을 tap하면 메신저 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", async () => {
+  await openNotificationsScreen();
   tapNotificationItem(messengerNotificationItem());
 
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
@@ -184,8 +157,8 @@ test("[IN4] 메신저 대상 항목을 tap하면 메신저 화면이 열리고 �
   );
 });
 
-test("[IN5] 전화 대상 항목을 tap하면 전화 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", () => {
-  openNotificationsScreen();
+test("[IN5] 전화 대상 항목을 tap하면 전화 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", async () => {
+  await openNotificationsScreen();
   tapNotificationItem(phoneCallNotificationItem());
 
   expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
@@ -196,8 +169,8 @@ test("[IN5] 전화 대상 항목을 tap하면 전화 화면이 열리고 나가�
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
-test("[IN6] 비주얼 노벨 대상 항목을 tap하면 비주얼 노벨 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", () => {
-  openNotificationsScreen();
+test("[IN6] 비주얼 노벨 대상 항목을 tap하면 비주얼 노벨 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", async () => {
+  await openNotificationsScreen();
   tapNotificationItem(visualNovelNotificationItem());
 
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
@@ -208,9 +181,9 @@ test("[IN6] 비주얼 노벨 대상 항목을 tap하면 비주얼 노벨 화면�
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
-test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 완료가 맵에 기록된다(D-a)", () => {
+test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 완료가 맵에 기록된다(D-a)", async () => {
   const item = messengerNotificationItem();
-  openNotificationsScreen();
+  await openNotificationsScreen();
   tapNotificationItem(item);
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
@@ -227,8 +200,8 @@ test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 �
 
 // ------------------------------------------------------------------- IN8 · IN9
 
-test("[IN8] 롤플레이 대상 항목을 tap하면 롤플레이 탭 루트로 가고, 여정 탭으로 돌아오면 알림 화면이 남아 있다(D-c)", () => {
-  openNotificationsScreen();
+test("[IN8] 롤플레이 대상 항목을 tap하면 롤플레이 탭 루트로 가고, 여정 탭으로 돌아오면 알림 화면이 남아 있다(D-c)", async () => {
+  await openNotificationsScreen();
   tapNotificationItem(roleplayListNotificationItem());
 
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
@@ -242,11 +215,11 @@ test("[IN8] 롤플레이 대상 항목을 tap하면 롤플레이 탭 루트로 �
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 });
 
-test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하면 롤플레이 스택이 목록 루트로 걷힌다(D-c, 연속 dispatch 둘의 합성)", () => {
+test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하면 롤플레이 스택이 목록 루트로 걷힌다(D-c, 연속 dispatch 둘의 합성)", async () => {
   const messengerItem = messengerNotificationItem();
   // 롤플레이는 에피소드를 끝내야 열립니다 — 연습 메신저를 열려면 끝난 진행에서
   // 시작합니다.
-  renderApp(
+  await renderSignedInApp(
     <App
       completedEpisodeIntroIds={completedIntros}
       journeySeed={{
@@ -281,9 +254,9 @@ test("[IN9] 연습 메신저를 연 채 알림의 롤플레이 대상을 tap하�
 // 않습니다. 그래서 아래 네 케이스는 tsc가 그 자리에서 정확히 실패해야 정직합니다
 // (`as any`·`@ts-expect-error`로 가리지 않습니다).
 
-test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재마운트로는 늘지 않는다(A3)", () => {
+test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재마운트로는 늘지 않는다(A3)", async () => {
   const notificationEventSink = vi.fn<NonNullable<NotificationEventSink>>();
-  renderApp(
+  await renderSignedInApp(
     <App
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={notificationEventSink}
@@ -309,13 +282,13 @@ test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재
   ]);
 });
 
-test("[IN11] 메신저 대상 tap의 공용 로그 순서는 알림 탭 이벤트 → 메신저 열림 이벤트다(D-b)", () => {
+test("[IN11] 메신저 대상 tap의 공용 로그 순서는 알림 탭 이벤트 → 메신저 열림 이벤트다(D-b)", async () => {
   const log: unknown[] = [];
   const notificationEventSink: NonNullable<NotificationEventSink> = (event) => log.push(event);
   const messengerEventSink: NonNullable<MessengerEventSink> = (event) => log.push(event);
   const item = messengerNotificationItem();
 
-  renderApp(
+  await renderSignedInApp(
     <App
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={notificationEventSink}
@@ -337,14 +310,14 @@ test("[IN11] 메신저 대상 tap의 공용 로그 순서는 알림 탭 이벤�
   ]);
 });
 
-test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이고 세 특별 유닛 sink는 안 불린다", () => {
+test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이고 세 특별 유닛 sink는 안 불린다", async () => {
   const notificationEventSink = vi.fn<NonNullable<NotificationEventSink>>();
   const messengerEventSink = vi.fn<NonNullable<MessengerEventSink>>();
   const phoneCallEventSink = vi.fn<NonNullable<PhoneCallEventSink>>();
   const visualNovelEventSink = vi.fn<NonNullable<VisualNovelEventSink>>();
   const item = roleplayListNotificationItem();
 
-  renderApp(
+  await renderSignedInApp(
     <App
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={notificationEventSink}
@@ -367,13 +340,13 @@ test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이고 세 특별 �
   expect(visualNovelEventSink).not.toHaveBeenCalled();
 });
 
-test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 이벤트 → 비주얼 노벨 열림(여정 변형)이다(D-b)", () => {
+test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 이벤트 → 비주얼 노벨 열림(여정 변형)이다(D-b)", async () => {
   const log: unknown[] = [];
   const notificationEventSink: NonNullable<NotificationEventSink> = (event) => log.push(event);
   const visualNovelEventSink: NonNullable<VisualNovelEventSink> = (event) => log.push(event);
   const item = visualNovelNotificationItem();
 
-  renderApp(
+  await renderSignedInApp(
     <App
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={notificationEventSink}
@@ -402,17 +375,19 @@ test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 �
 
 // ------------------------------------------------------------------------ IN14
 
-test("[IN14] sink 없이도 버튼·항목 tap이 던지지 않는다(가드)", () => {
-  notificationItems().forEach((item) => {
+test("[IN14] sink 없이도 버튼·항목 tap이 던지지 않는다(가드)", async () => {
+  for (const item of notificationItems()) {
     cleanup();
-    expect(() => renderApp(<App completedEpisodeIntroIds={completedIntros} />)).not.toThrow();
+    await expect(
+      renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />),
+    ).resolves.toBeDefined();
     expect(() => fireEvent.tap(screen.getByTestId("top-bar-notifications"), {})).not.toThrow();
 
     expect(() => {
       const node = screen.queryByTestId(`notification-list-item-${item.id}`);
       if (node !== null) fireEvent.tap(node, {});
     }).not.toThrow();
-  });
+  }
 });
 
 // ------------------------------------------------------------------ IN14 · IN15 · IN16
@@ -428,8 +403,8 @@ function deleteNotificationItem(item: NotificationItem) {
   fireEvent.tap(screen.getByTestId(`notification-list-item-delete-${item.id}`), {});
 }
 
-test("[IN14] 알림을 지우면 그 항목만 사라지고 알림 화면에 남는다", () => {
-  openNotificationsScreen();
+test("[IN14] 알림을 지우면 그 항목만 사라지고 알림 화면에 남는다", async () => {
+  await openNotificationsScreen();
   const item = messengerNotificationItem();
 
   deleteNotificationItem(item);
@@ -441,8 +416,8 @@ test("[IN14] 알림을 지우면 그 항목만 사라지고 알림 화면에 남
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 });
 
-test("[IN15] 지운 알림은 화면을 나갔다 돌아와도 돌아오지 않는다", () => {
-  openNotificationsScreen();
+test("[IN15] 지운 알림은 화면을 나갔다 돌아와도 돌아오지 않는다", async () => {
+  await openNotificationsScreen();
   const item = messengerNotificationItem();
   deleteNotificationItem(item);
 
@@ -455,8 +430,8 @@ test("[IN15] 지운 알림은 화면을 나갔다 돌아와도 돌아오지 않�
   expect(screen.queryByTestId(`notification-list-item-${item.id}`)).not.toBeInTheDocument();
 });
 
-test("[IN16] 알림을 모두 지우면 빈 상태가 선다", () => {
-  openNotificationsScreen();
+test("[IN16] 알림을 모두 지우면 빈 상태가 선다", async () => {
+  await openNotificationsScreen();
 
   for (const item of notificationItems()) {
     deleteNotificationItem(item);
@@ -466,9 +441,9 @@ test("[IN16] 알림을 모두 지우면 빈 상태가 선다", () => {
   expect(screen.queryByTestId("notifications-screen-list")).not.toBeInTheDocument();
 });
 
-test("[IN17] 삭제는 공용 로그에 삭제 이벤트 하나를 남기고 화면을 옮기지 않는다", () => {
+test("[IN17] 삭제는 공용 로그에 삭제 이벤트 하나를 남기고 화면을 옮기지 않는다", async () => {
   const events: NotificationEvent[] = [];
-  renderApp(
+  await renderSignedInApp(
     <App
       completedEpisodeIntroIds={completedIntros}
       notificationEventSink={(event) => events.push(event)}

@@ -1,6 +1,7 @@
 import { useGlobalProps, useReducer, useState } from "@lynx-js/react";
 
 import { BottomNavigator } from "../components/BottomNavigator";
+import type { AnalyticsIdentifyAppProps } from "../lib/analytics.contract";
 import type { AnswerResult } from "../lib/answer-result";
 import type { EntryAppProps } from "../lib/entry-flow";
 import { initialEntryLanguage } from "../lib/entry-language";
@@ -23,12 +24,15 @@ import type {
   VisualNovelProgress,
 } from "../screens/visual-novel/visual-novel.contract";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
+import { productPhoneSignIn } from "../screens/login/login";
+import type { PhoneSignInVisibility } from "../screens/login/login.contract";
 import { AppHeader } from "./AppHeader";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { notificationList } from "./app-content";
 import type {
   EpisodeIntroUnitId,
+  EpisodeIntroAppProps,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
 import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
@@ -50,24 +54,21 @@ export type { AppJourneySeed } from "./journey-progress";
 export type AppSeedProps = {
   readonly journeySeed?: AppJourneySeed;
   /**
-   * 이미 끝낸 표지 **유닛**입니다. 없으면 빈 목록 — 그러면 그 에피소드의 나머지 유닛이
-   * 전부 잠긴 채로 섭니다(D6). 표지 뒤의 동작을 보려는 자리가 표지를 매번 지나지 않게
-   * 합니다. 제품 진입점은 이 값을 주지 않습니다.
+   * 이미 끝낸 표지 **유닛**입니다. 없으면 빈 목록 — 그러면 그 에피소드의 나머지 유닛이 전부
+   * 잠긴 채로 섭니다(D6). 표지 뒤의 동작을 보려는 자리가 씁니다. 제품 진입점은 주지 않습니다.
    */
   readonly completedEpisodeIntroIds?: readonly EpisodeIntroUnitId[];
   /**
-   * 에피소드의 서사 전개를 찾는 함수입니다. 없으면 제품의 표(`episodePrologueFor`)를
-   * 씁니다. 튜토리얼 하나뿐인 지금, 다른 형식(통화 · 메신저)의 서사를 앱 안에서 보려는
-   * 자리가 바꿔 끼웁니다. 제품 진입점은 이 값을 주지 않습니다.
+   * 에피소드의 서사 전개를 찾는 함수입니다. 없으면 제품의 표(`episodePrologueFor`)를 씁니다.
+   * 다른 형식(통화 · 메신저)의 서사를 보려는 자리가 바꿔 끼웁니다.
    */
   readonly episodePrologueFor?: (episodeId: string) => EpisodePrologue | undefined;
-  /**
-   * 최종 테스트를 찾는 함수입니다. 없으면 제품의 표(`episodeFinalTestFor`)를 씁니다. 제품에
-   * 없는 형식(통화)의 최종 테스트를 앱 안에서 보려는 자리가 바꿔 끼웁니다.
-   */
+  /** 최종 테스트를 찾는 함수입니다. 없으면 제품의 표(`episodeFinalTestFor`)를 씁니다. */
   readonly episodeFinalTestFor?: (unitId: EpisodeFinalUnitId) => EpisodeFinalTest;
   /** 부팅할 때 가진 젬 수(기본 0)입니다. 결제가 없어 젬이 늘 길이 없으므로 integration만 씁니다. */
   readonly initialGemCount?: number;
+  /** 로그인의 전화번호 수단입니다. 없으면 제품 값(`productPhoneSignIn` — 지금은 숨김)입니다. */
+  readonly phoneSignIn?: PhoneSignInVisibility;
 };
 
 // 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지 · 그 뒤의
@@ -93,18 +94,23 @@ export function App({
   episodePrologueFor = productEpisodePrologueFor,
   episodeFinalTestFor = productEpisodeFinalTestFor,
   initialGemCount = 0,
+  phoneSignIn = productPhoneSignIn,
   messengerEventSink = null,
   visualNovelEventSink = null,
   phoneCallEventSink = null,
   notificationEventSink = null,
   settingsEventSink = null,
   entryEventSink = null,
+  episodeIntroEventSink = null,
+  analyticsIdentify = null,
 }: MessengerAppProps &
   VisualNovelAppProps &
   PhoneCallAppProps &
   NotificationAppProps &
   SettingsAppProps &
   EntryAppProps &
+  EpisodeIntroAppProps &
+  AnalyticsIdentifyAppProps &
   AppSeedProps = {}) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다
   // — 셸은 `NavAction`도 `dispatch`도 받지 않습니다(ADR-0007 D3).
@@ -119,14 +125,10 @@ export function App({
   // `initialEntryLanguage`로 돌아갑니다(영속하지 않습니다).
   const [entryLanguage, setEntryLanguage] = useState<EntryLanguage>(initialEntryLanguage);
 
-  // **진행(완료 스텝 수)의 진실의 출처입니다.** 스텝 상태는 여기서
-  // 파생되고(`stepStatusAt`), 데이터에도 `Nav`에도 적지 않습니다 — 진행은
-  // 라우팅 상태가 아니므로 `Nav`에 필드를 더하지 않습니다(ADR-0007 D3).
-  //
-  // **영속하지 않습니다** — 저장소 모듈을 import하지도 호출하지도 않습니다
-  // (ADR-0007 D1: 저장소 모듈에 넣는 것은 로그인 토큰뿐입니다,
-  // `lib/auth-token.ts`). 앱을 다시 켜면 진행이 `initialCompletedStepCount`로
-  // 돌아가는 것이 정상이고 계약이 그것을 적습니다.
+  // **진행(완료 스텝 수)의 진실의 출처입니다.** 스텝 상태는 여기서 파생되고(`stepStatusAt`),
+  // 데이터에도 `Nav`에도 적지 않습니다 — 진행은 라우팅 상태가 아닙니다(ADR-0007 D3).
+  // **영속하지 않습니다**(ADR-0007 D1 — 저장소에 넣는 것은 로그인 세션뿐입니다). 앱을 다시
+  // 켜면 진행이 `initialCompletedStepCount`로 돌아가는 것이 정상입니다.
   const [completedStepCount, setCompletedStepCount] = useState(journeySeed.completedStepCount);
   const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
     readonly MessengerUnitId[]
@@ -190,6 +192,7 @@ export function App({
   const wiring = screenWiring({
     safeAreaInsets: insets,
     gemCount,
+    phoneSignIn,
     setScreenLayerOpen,
     episodePrologueFor,
     episodeFinalTestFor,
@@ -199,6 +202,8 @@ export function App({
     notificationEventSink,
     settingsEventSink,
     entryEventSink,
+    episodeIntroEventSink,
+    analyticsIdentify,
     dispatch,
     completedMessengerUnitIds,
     setCompletedMessengerUnitIds,

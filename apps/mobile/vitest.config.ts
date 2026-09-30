@@ -76,7 +76,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text-summary", "json-summary"],
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test.{ts,tsx}", "src/**/*.d.ts"],
+      exclude: ["src/**/*.test.{ts,tsx}", "src/**/*.d.ts", "src/**/test-helpers/**"],
     },
     // jest-dom 매처 등록. 어느 매처를 쓰고 쓰지 않는지는 setup 파일 주석에 있다.
     setupFiles: ["./vitest.setup.ts"],

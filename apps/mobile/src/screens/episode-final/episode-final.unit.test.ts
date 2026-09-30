@@ -111,6 +111,35 @@ test("[EF12] 말하기 전에만 건너뛸 수 있고, 건너뛰면 결과 없�
   expect(episodeFinalSessionReducer(listening, { type: "skip" })).toBe(listening);
 });
 
+// EF14 — 쓰기는 판정과 `Next`를 문항 안에서 지나 오므로 이 세션에는 결과와 넘김이 한 번에
+// 옵니다. 잰 음절이 없던 문항(`null`)을 오답으로 접으면 기기 탓이 학습자 탓이 됩니다.
+test("[EF14] 쓰기를 끝내면 결과를 싣고 곧장 다음 문항으로 간다. 결과가 없으면 싣지 않는다", () => {
+  const written = episodeFinalSessionReducer(initialEpisodeFinalSessionState, {
+    type: "written",
+    result: "incorrect",
+  });
+  expect(written).toEqual({
+    ...initialEpisodeFinalSessionState,
+    questionIndex: 1,
+    results: ["incorrect"],
+  });
+
+  const skipped = episodeFinalSessionReducer(written, { type: "written", result: null });
+  expect(skipped).toEqual({
+    ...initialEpisodeFinalSessionState,
+    questionIndex: 2,
+    results: ["incorrect"],
+  });
+
+  // 다른 문항의 판정 중에 늦게 온 완료는 무시합니다.
+  const judged = episodeFinalSessionReducer(initialEpisodeFinalSessionState, {
+    type: "choose",
+    optionIndex: 0,
+    result: "correct",
+  });
+  expect(episodeFinalSessionReducer(judged, { type: "written", result: "correct" })).toBe(judged);
+});
+
 describe("낱말 고르기", () => {
   test("[EF6] 정답 자리를 고르면 정답이다", () => {
     expect(judgeWordChoice(question, 1)).toBe("correct");
@@ -150,17 +179,23 @@ test("[EF9] 진행 라벨은 1부터 센다", () => {
   expect(episodeFinalProgressLabel(0, 5)).toBe("1 / 5");
 });
 
-test("[EF10] 튜토리얼 최종 테스트는 말하기와 낱말 고르기를 섞고, 정답 자리가 보기 안에 있다", () => {
+test("[EF10] 튜토리얼 최종 테스트는 말하기 · 낱말 고르기 · 쓰기를 섞고, 정답 자리가 보기 안에 있다", () => {
   const test = episodeFinalTestFor("tutorial-final-test");
   if (test.format !== "visual-novel") {
     throw new Error("튜토리얼 최종 테스트는 비주얼 노벨 형식이어야 합니다");
   }
   const { questions } = test;
   const kinds = new Set(questions.map((item) => item.kind));
-  expect(kinds).toEqual(new Set(["speaking", "word-choice"]));
+  expect(kinds).toEqual(new Set(["speaking", "word-choice", "writing"]));
   for (const item of questions) {
     if (item.kind === "word-choice") {
       expect(item.options[item.answerIndex]).toBeDefined();
+    }
+    // 쓰기의 칸 하나는 한 음절입니다 — 두 글자를 한 판에 두면 견주기 지표의 뜻이 흐려집니다.
+    if (item.kind === "writing") {
+      for (const syllable of item.syllables) {
+        expect([...syllable]).toHaveLength(1);
+      }
     }
   }
 });

@@ -4,14 +4,25 @@
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
+  EpisodeIntroEventSink,
+  EpisodeIntroExitStage,
   EpisodeIntroUnitId,
   EpisodePrologue,
 } from "../screens/episode-intro/episode-intro.contract";
 import type { SafeAreaInsets } from "../lib/safe-area";
 
 import type { AnswerResult } from "../lib/answer-result";
-import type { EntryEventSink, EntryLoginMethod } from "../lib/entry-flow";
+import type {
+  PhoneNumber,
+  PhoneOtpRequestResult,
+  PhoneOtpVerifyOutcome,
+  PhoneOtpVerifyRequest,
+} from "../lib/auth-session.contract";
+import type { AnalyticsIdentify } from "../lib/analytics.contract";
+import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
+import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
+import type { PhoneSignInVisibility, SocialLoginMethod } from "../screens/login/login.contract";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type {
   MessengerEventSink,
@@ -154,7 +165,8 @@ export type ScreenWiring = {
   // 결과 화면으로 갑니다(D5).
   onSkipEpisodeIntro: (id: EpisodeIntroUnitId) => void;
   onNextEpisodeIntro: (id: EpisodeIntroUnitId) => void;
-  onExitEpisodeIntro: () => void;
+  // 나간 자리(표지 · 서사)를 함께 받습니다 — 이벤트가 어디서 나갔는지 싣습니다.
+  onExitEpisodeIntro: (id: EpisodeIntroUnitId, stage: EpisodeIntroExitStage) => void;
   // 표지 `Next` 뒤 에피소드 서사의 끝 · 결과 화면의 나가기입니다. 완료를 적는 자리는
   // 뒤쪽 하나뿐입니다.
   onCompletePrologue: (id: EpisodeIntroUnitId) => void;
@@ -165,6 +177,8 @@ export type ScreenWiring = {
   // 가진 젬 수입니다. 전역 머리가 아닌 자리(학습 화면의 상단 바 · 학습 완료의 지표 칩)도
   // 같은 값을 그리도록 값으로 내려갑니다.
   gemCount: number;
+  // 로그인에 전화번호 수단을 그릴지입니다(`productPhoneSignIn` — 지금은 숨깁니다).
+  phoneSignIn: PhoneSignInVisibility;
   // 탭 루트 화면이 자기 안에 겹침 레이어(여정의 스텝 말풍선 · 롤플레이의 플러스 안내)를
   // 열고 닫을 때 부릅니다. 레이어가 떠 있는 동안 전역 머리를 낭독에서 가립니다
   // (ADR-0016 D9) — 머리는 화면 밖(셸)에 있어 화면이 스스로 가릴 수 없습니다.
@@ -181,11 +195,13 @@ export type ScreenWiring = {
   // 내리고, 나머지는 전이·이벤트·토큰 저장을 여는 콜백입니다.
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
-  onSelectLoginMethod: (method: EntryLoginMethod, phoneNumber?: string) => void;
+  onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
+  onRequestPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
+  onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
+  onVerifyPhoneOtp: (request: PhoneOtpVerifyRequest) => Promise<PhoneOtpVerifyOutcome>;
   onLoginBack: () => void;
   onLanguageSelectBack: () => void;
   onJourneyEntryBack: () => void;
-  onVerificationCodeSubmit: () => void;
   onVerificationCodeExit: () => void;
   entryLanguage: EntryLanguage;
   onSelectEntryLanguage: (language: EntryLanguage) => void;
@@ -201,6 +217,8 @@ export type ScreenWiringArgs = {
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
   readonly entryEventSink: EntryEventSink;
+  readonly analyticsIdentify: AnalyticsIdentify | null;
+  readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly dispatch: Dispatch<NavAction>;
   readonly completedMessengerUnitIds: readonly MessengerUnitId[];
   readonly setCompletedMessengerUnitIds: Dispatch<SetStateAction<readonly MessengerUnitId[]>>;
@@ -216,6 +234,7 @@ export type ScreenWiringArgs = {
   readonly setSessionOptions: Dispatch<SetStateAction<SessionOptions>>;
   readonly safeAreaInsets: SafeAreaInsets;
   readonly gemCount: number;
+  readonly phoneSignIn: PhoneSignInVisibility;
   readonly setScreenLayerOpen: Dispatch<SetStateAction<boolean>>;
   readonly episodePrologueFor: (episodeId: string) => EpisodePrologue | undefined;
   readonly pendingResults: readonly AnswerResult[];
@@ -238,6 +257,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   });
   const entry = entryWiring({
     entryEventSink: args.entryEventSink,
+    analyticsIdentify: args.analyticsIdentify,
     dispatch: args.dispatch,
     entryLanguage: args.entryLanguage,
     setEntryLanguage: args.setEntryLanguage,
@@ -248,6 +268,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     roleplay,
     safeAreaInsets: args.safeAreaInsets,
     gemCount: args.gemCount,
+    phoneSignIn: args.phoneSignIn,
     onScreenLayerChange: args.setScreenLayerOpen,
     episodePrologueFor: args.episodePrologueFor,
     roleplaySections: args.roleplaySections,
