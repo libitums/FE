@@ -22,6 +22,7 @@ export const tutorialFinalStory: EpisodeFinalStory = {
         speakerName: "Me",
         variant: "narration",
         background: cafe,
+        transition: "imagination",
         line: "여러 방법으로 첫마디를 연습했다. 눈을 감으니 같은 카페에서 민서가 기다리고 있다.",
         translation:
           "I have practiced my first words. I close my eyes. Minseo is waiting at our imagined café.",
@@ -71,6 +72,7 @@ export const tutorialFinalStory: EpisodeFinalStory = {
         speakerName: "Me",
         variant: "narration",
         background: flight,
+        transition: "reality",
         line: "눈을 뜬다. 곧 비행기가 착륙한다. 이제 상상에서 현실로.",
         translation:
           "I open my eyes. Moments later, the plane lands. My imagined journey is becoming real.",
