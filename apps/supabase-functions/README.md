@@ -64,6 +64,11 @@ supabase secrets set \
 바꿔야 한다(후속 작업). `SUPABASE_` 접두 이름은 시크릿으로 직접 넣을 수 없으니 이름을 덮어쓰는 우회는 없다.
 배포 뒤 `delete-account`가 500 `server_misconfigured`나 401 `invalid_session`을 내면 이 항목부터 확인한다.
 
+⟨2026-09-30 확인⟩ **런타임의 `SUPABASE_SERVICE_ROLE_KEY`는 대시보드의 레거시 `service_role` JWT와 글자가 다르다**(Vault에
+넣은 레거시 키를 `send-push`가 같은 글자로 비교해 401을 냈다). 그래서 서버 키는 형식을 가려 싣는다(`_shared/service-key.ts`) —
+JWT면 `apikey` + `Authorization`, 아니면(`sb_secret_…`) `apikey`만. `send-push`는 호출자의 키가 런타임과 글자가 달라도 Auth
+관리자 API가 200을 주면 서버 키로 인정한다.
+
 ### 3. 배포
 
 `config.toml`에 `verify_jwt = false`가 있으므로 그대로 배포한다. 함수가 스스로 Bearer 토큰을 검증한다
@@ -112,6 +117,8 @@ supabase functions deploy delete-account --no-verify-jwt
    삭제 함수와 같은 값을 쓴다. 하나라도 비면 모든 요청이 500 `server_misconfigured`다.
 4. **배포** — `supabase functions deploy send-push`(`config.toml`에 `verify_jwt = false`).
 5. **예약** — `pg_cron` · `pg_net`을 켜고 Vault에 service role 키를 넣은 뒤 `supabase/cron/reengagement.sql`을 한 번 실행한다.
+   Vault 이름은 `send_push_service_role_key`, 값은 대시보드 → Settings → API Keys → Legacy의 `service_role`(`eyJ…`).
+   ⟨2026-09-30⟩ 운영 프로젝트에 적용했다 — 예약 `send-push-reengagement`(매일 10:00 UTC), 빈 본문 400 · `days: 3` 200으로 확인.
 
 ### 운영 공지 보내기
 

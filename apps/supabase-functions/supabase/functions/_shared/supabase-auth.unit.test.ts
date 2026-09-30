@@ -85,12 +85,22 @@ describe("FA3 authUserSummaryFrom", () => {
 });
 
 describe("FA4 adminDeleteUserRequest", () => {
-  test("service role로 사용자 ID를 인코딩한 DELETE다", () => {
+  test("service role로 사용자 ID를 인코딩한 DELETE다 — 비밀 키(JWT 아님)는 apikey에만 싣는다", () => {
     expect(adminDeleteUserRequest(env, "u/1")).toEqual({
       url: "https://x.supabase.co/auth/v1/admin/users/u%2F1",
       method: "DELETE",
-      headers: { apikey: "service", Authorization: "Bearer service" },
+      headers: { apikey: "service" },
       body: null,
     });
+  });
+
+  test("레거시 JWT 키는 Authorization에도 싣는다", () => {
+    const jwtKey = "eyJh.eyJi.sig";
+    expect(adminDeleteUserRequest({ ...env, supabaseServiceRoleKey: jwtKey }, "u").headers).toEqual(
+      {
+        apikey: jwtKey,
+        Authorization: `Bearer ${jwtKey}`,
+      },
+    );
   });
 });

@@ -4,6 +4,7 @@ import type {
   AuthUserSummaryFrom,
   BearerTokenFrom,
 } from "./delete-account.contract.ts";
+import { serviceKeyHeaders } from "./service-key.ts";
 
 export const bearerTokenFrom: BearerTokenFrom = (authorization) => {
   if (authorization === null) return null;
@@ -52,9 +53,6 @@ export const authUserSummaryFrom: AuthUserSummaryFrom = (bodyText) => {
 export const adminDeleteUserRequest: AdminDeleteUserRequest = (env, userId) => ({
   url: `${env.supabaseUrl}/auth/v1/admin/users/${encodeURIComponent(userId)}`,
   method: "DELETE",
-  headers: {
-    apikey: env.supabaseServiceRoleKey,
-    Authorization: `Bearer ${env.supabaseServiceRoleKey}`,
-  },
+  headers: serviceKeyHeaders(env.supabaseServiceRoleKey),
   body: null,
 });
