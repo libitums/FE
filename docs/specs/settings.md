@@ -23,6 +23,13 @@
 > ⚠ 토글 셀의 켜짐/꺼짐 낭독은 ui-lynx `SettingsCell`의 기본값(`on`/`off`)이 내고 앱이 넘길 길이 없다
 > (ADR-0031 D6). 본문의 한국어 라벨은 당시 값이다 — 대응은 ADR-0031 부록.
 
+> **개정 (2026-09-30, 법률 문서).** 결정과 근거는 [ADR-0032](../adr/0032-legal-documents-in-app-browser.md)가 진다.
+> **약관 화면이 사라졌다** — `screens/terms/` · route `terms` · `terms_opened`가 없다. 이동 항목이 **셋**이다:
+> `User profile` · `Privacy Policy` · `Terms of Use`(`SettingsNavTarget = "profile" | LegalDocument`). 뒤의 둘은
+> 스택에 `push`하지 않고 호스트 모듈 `LegalDocumentModule`로 Notion 공개 페이지를 앱 안 브라우저 시트로 연다.
+> 이벤트는 `legal_document_opened { document, source: "settings" }`가 `terms_opened`의 자리에 선다. 아래 본문의
+> 약관 절(§3의 약관 · §2 route `terms` · 이벤트 표의 `terms_opened` · 제목 축 HT2)은 **당시 값**이다.
+
 ## 0. 고정 범위와 불변식
 
 1. 설정 탭 루트에 **이동 항목 둘**(사용자 프로필 · 개인정보 보호 및 약관) 다음 **세션 토글 둘**
@@ -256,9 +263,9 @@ App (app/App.tsx)                                        ← 유일한 결선 �
 
 | 계층 | 파일 |
 |---|---|
-| unit | `lib/session-options.unit.test.ts` · `screens/settings/settings.unit.test.ts` · `screens/profile/profile-items.unit.test.ts` · `screens/terms/terms-sections.unit.test.ts` · `app/navigation.unit.test.ts` |
-| ui | `screens/settings/SettingsScreen.ui.test.tsx` · `screens/profile/ProfileScreen.ui.test.tsx` · `screens/terms/TermsScreen.ui.test.tsx` · `screens/listening/ListeningPrompt.sessionOptions.ui.test.tsx` |
-| integration | `app/App.settings.integration.test.tsx`(설정 루트 · 스택 · 토글이 듣기에 닿는가 · 이벤트) · `app/App.heading-trait.integration.test.tsx`(프로필 · 약관 상태의 제목 축) |
+| unit | `lib/session-options.unit.test.ts` · `screens/settings/settings.unit.test.ts` · `screens/profile/profile-items.unit.test.ts` · `lib/legal-document.unit.test.ts` · `app/navigation.unit.test.ts` |
+| ui | `screens/settings/SettingsScreen.ui.test.tsx` · `screens/profile/ProfileScreen.ui.test.tsx` · `screens/listening/ListeningPrompt.sessionOptions.ui.test.tsx` |
+| integration | `app/App.settings.integration.test.tsx`(설정 루트 · 스택 · 토글이 듣기에 닿는가 · 이벤트) · `app/App.heading-trait.integration.test.tsx`(프로필 상태의 제목 축) |
 | e2e (수동) | [설정 e2e](../e2e/settings.md) — T1–T8 · D1 · V1–V4. **실행 0회.** V는 iPhone 실기 · Release · VoiceOver로 사람만 판정한다. **V4는 관찰 기록형이다**(통과/실패가 없다) |
 
 - **기존 듣기 테스트의 단언은 한 줄도 바뀌지 않았다.** 고친 것은 fixture에 `sessionOptions`를

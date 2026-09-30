@@ -37,6 +37,7 @@ import type {
   PhoneCallUnitId,
 } from "../screens/phone-call/phone-call.contract";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
+import { openLegalDocument } from "../lib/legal-document";
 import { sessionOptionChangedEvent, settingsNavOpenedEvent } from "../screens/settings/settings";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
 import { toggleSessionOption } from "../lib/session-options";
@@ -228,12 +229,16 @@ export function journeyWiring(args: JourneyWiringArgs) {
     onExitNotifications: () => {
       dispatch({ type: "backToRoot" });
     },
-    // 열림 이벤트 → `push({ name: target })`. `SettingsNavTarget`이 route
-    // 이름과 같은 문자열이라 사상 표 없이 곧장 옮깁니다.
+    // 열림 이벤트 → 프로필은 `push`, 문서 둘은 앱 위 브라우저(ADR-0032). 문서는 설정 탭
+    // 스택에 쌓이지 않고, 브라우저를 닫으면 설정 화면 그대로입니다.
     sessionOptions,
     onSelectNavTarget: (target: SettingsNavTarget) => {
       settingsEventSink?.(settingsNavOpenedEvent(target));
-      dispatch({ type: "push", screen: { name: target } });
+      if (target === "profile") {
+        dispatch({ type: "push", screen: { name: target } });
+        return;
+      }
+      openLegalDocument(target);
     },
     // 흐름 하나(토글)입니다 — sink 먼저, `setSessionOptions` 나중. `value`는
     // 바뀐 뒤 값입니다.

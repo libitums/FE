@@ -79,6 +79,7 @@ function renderLogin(
     onSubmitPhoneNumber?: LoginScreenProps["onSubmitPhoneNumber"];
     onBack?: LoginScreenProps["onBack"];
     phoneSignIn?: LoginScreenProps["phoneSignIn"];
+    onOpenLegalDocument?: LoginScreenProps["onOpenLegalDocument"];
   } = {},
 ) {
   return render(
@@ -90,6 +91,7 @@ function renderLogin(
         overrides.onSubmitPhoneNumber ?? (() => Promise.resolve({ status: "sent" as const }))
       }
       onBack={overrides.onBack}
+      onOpenLegalDocument={overrides.onOpenLegalDocument ?? vi.fn()}
     />,
   );
 }
@@ -450,13 +452,15 @@ describe("LoginScreen", () => {
   });
 
   // LG-U5 — 전화번호 TextField의 <input>은 접근성 요소이지만 traits="button"이
-  // 아니라 이 목록에서 빠집니다.
-  it("[LG-U5] 조작 단위 목록이 국가 칩과 수단 넷과 정확히 같다", () => {
+  // 아니라 이 목록에서 빠집니다. 법률 문서 링크 둘은 수단 뒤에 섭니다(ADR-0032).
+  it("[LG-U5] 조작 단위 목록이 국가 칩과 수단 넷과 법률 문서 링크 둘과 정확히 같다", () => {
     const { container } = renderLogin();
 
     expect(actionUnitIds(container)).toEqual([
       "login-screen-country",
       ...entryLoginMethods.map((method) => `login-screen-method-${method}`),
+      "login-screen-legal-terms-of-use",
+      "login-screen-legal-privacy-policy",
     ]);
 
     const phoneInput = screen.getByTestId("ui-lynx-text-field-input");
@@ -571,5 +575,30 @@ describe("전화번호 수단을 숨긴 로그인", () => {
 
     await vi.waitFor(() => expect(screen.getByTestId("login-screen-error")).toBeInTheDocument());
     expect(onSelectSocialMethod).toHaveBeenCalledWith("google");
+  });
+});
+
+// ------------------------------------------------------------ 방침 · 약관 링크
+
+describe("로그인 안내의 방침 · 약관 링크", () => {
+  it("[LL1] 이용약관 · 개인정보처리방침을 누르면 그 문서를 올린다", () => {
+    const onOpenLegalDocument = vi.fn<LoginScreenProps["onOpenLegalDocument"]>();
+    renderLogin({ onOpenLegalDocument });
+
+    fireEvent.tap(screen.getByTestId("login-screen-legal-terms-of-use"), {});
+    fireEvent.tap(screen.getByTestId("login-screen-legal-privacy-policy"), {});
+
+    expect(onOpenLegalDocument.mock.calls).toEqual([["terms-of-use"], ["privacy-policy"]]);
+  });
+
+  it("[LL2] 두 링크는 버튼으로 읽히고 이름이 문서 이름이다", () => {
+    renderLogin();
+
+    const terms = screen.getByTestId("login-screen-legal-terms-of-use");
+    const privacy = screen.getByTestId("login-screen-legal-privacy-policy");
+    expect(terms).toHaveAttribute("accessibility-traits", "button");
+    expect(terms).toHaveAttribute("accessibility-label", "Terms of Use");
+    expect(privacy).toHaveAttribute("accessibility-traits", "button");
+    expect(privacy).toHaveAttribute("accessibility-label", "Privacy Policy");
   });
 });

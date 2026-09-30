@@ -539,10 +539,13 @@ describe("대기열 · 재시도 · 보존", () => {
     const failedAttempts = net.calls.length;
 
     net.goOnline();
-    client.capture("terms_opened", {});
+    client.capture("profile_opened", {});
     await vi.advanceTimersByTimeAsync(1_000);
 
-    expect(sentAfter(net.calls, failedAttempts)).toStrictEqual(["settings_opened", "terms_opened"]);
+    expect(sentAfter(net.calls, failedAttempts)).toStrictEqual([
+      "settings_opened",
+      "profile_opened",
+    ]);
   });
 
   test("PC15: 네트워크 오류 뒤 새 이벤트가 없어도 정해진 간격 뒤 스스로 다시 보낸다", async () => {
@@ -600,7 +603,7 @@ describe("대기열 · 재시도 · 보존", () => {
     expect(JSON.parse(saved!)).toMatchObject([{ message: { event: "settings_opened" } }]);
 
     net.goOnline();
-    client.capture("terms_opened", {});
+    client.capture("profile_opened", {});
     await vi.advanceTimersByTimeAsync(1_000);
     expect(storage.values.has(analyticsQueueStorageKey)).toBe(false);
   });

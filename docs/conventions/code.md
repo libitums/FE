@@ -596,7 +596,8 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   import하지 않고 자기 fixture를 쓴다.
 
 - **`profile-items.ts`의 프로필 항목 셋과 `terms-sections.ts`의 약관 절 넷 — 넷을 한
-  모듈씩 진다** ⟨2026-09-16, LIB-259⟩. 둘 다 표를 **export하지 않고** 조회 함수 하나
+  모듈씩 진다** ⟨2026-09-16, LIB-259⟩. ⟨2026-09-30⟩ `terms-sections.ts`는 지워졌다
+  ([ADR-0032](../adr/0032-legal-documents-in-app-browser.md)) — 약관 쪽 서술은 당시 기록이다. 둘 다 표를 **export하지 않고** 조회 함수 하나
   (`profileItems()` · `termsSections()`)만 내보내고, 값 타입의 필드가 전부 필수다.
   **갈리는 것은 「무엇이 임시인가」의 범위다** — 프로필은 **`value` 셋만** 임시이고
   (`id`·`label`과 항목이 셋이라는 것은 임시가 아니다), 약관은 **문구만** 임시이며

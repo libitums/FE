@@ -244,10 +244,15 @@
 /* 줄 간격은 바깥 text의 줄 높이가 정합니다(안쪽 조각의 line-height는 줄 상자를
    바꾸지 않습니다). */
 .login-screen-legal {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-top: var(--libitum-spacing-8);
-  font-size: var(--libitum-typography-caption-font-size);
-  line-height: var(--libitum-spacing-20);
+}
+.login-screen-legal-links {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
 /* 두 조각의 타이포는 같습니다(굵기 포함) — 두 줄 사이를 넓히려고 줄 높이만

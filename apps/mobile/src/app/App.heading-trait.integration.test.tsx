@@ -5,8 +5,6 @@ import { App } from "./App";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { LearningForm } from "../lib/learning-form";
 import { questionsForStep } from "../screens/listening/listening";
-// `termsSections()`가 절 id 목록의 데이터 앵커입니다(리터럴을 쓰지 않습니다).
-import { termsSections } from "../screens/terms/terms-sections";
 // `authTokenStorageKey`는 토큰 스텁의 유일한 키입니다. `entrySplashDurationMs`는
 // 스플래시 전이 시각입니다.
 import { entrySplashDurationMs } from "../lib/entry-flow";
@@ -423,25 +421,8 @@ test("[HT1] 제목 축 닫힌 집합이 상태 profile에서 계약이 고정한
   expect(headingAxis(container)).toEqual(["profile-screen-title"]);
 });
 
-// 절 제목 넷이 `header`입니다(ADR-0016 D12 G1) — 그래서 약관 상태의 제목 축 닫힌
-// 집합은 화면 제목 + 절 제목 넷, **다섯**입니다. 절 id는 `termsSections()`에서
-// 뽑습니다 — 리터럴 넷을 여기 다시 쓰지 않습니다(데이터 앵커).
-test("[HT2] 제목 축 닫힌 집합이 상태 terms에서 계약이 고정한 목록과 정확히 같다", async () => {
-  const sections = termsSections();
-  const { container } = await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
-  fireEvent.tap(settingsCell("terms"), {});
-  expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
-
-  expect(headingAxis(container)).toEqual([
-    "terms-screen-title",
-    ...sections.map((section) => `terms-section-title-${section.id}`),
-  ]);
-});
-
 // HT-E1: 진입 상태 여섯의 제목 축 닫힌 집합입니다 — 스플래시는 `header`가 0개,
-// 나머지 다섯은 각각 1개입니다. 위 `[I3]`·`[HT1]`·`[HT2]`와 같은 도구
+// 나머지 다섯은 각각 1개입니다. 위 `[I3]`·`[HT1]`과 같은 도구
 // (`headingAxis` → `toEqual` 닫힌 집합)를 여섯 상태에 순서대로 씁니다 — 이 파일이
 // 이미 세운 방식을 새로 발명하지 않습니다.
 //

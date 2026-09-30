@@ -43,6 +43,8 @@ final class ViewController: UIViewController {
       config.register(SpeechRecognitionModule.self)
       config.register(WebAuthenticationModule.self)
       config.register(AppleSignInModule.self)
+      // 아홉째 — 방침 · 약관을 앱 위 브라우저로 연다(ADR-0032). 목적지는 고정 두 곳이다.
+      config.register(LegalDocumentModule.self)
       builder.config = config
       // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).
       // 이미지 서비스는 generic resource fetcher가 켜져 있을 때만 `shouldRedirectUrl`을

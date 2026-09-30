@@ -19,6 +19,7 @@ import type {
   PhoneOtpVerifyRequest,
 } from "../lib/auth-session.contract";
 import type { AnalyticsIdentify } from "../lib/analytics.contract";
+import type { LegalDocument } from "../lib/legal-document.contract";
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
@@ -200,6 +201,7 @@ export type ScreenWiring = {
   onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   onVerifyPhoneOtp: (request: PhoneOtpVerifyRequest) => Promise<PhoneOtpVerifyOutcome>;
   onLoginBack: () => void;
+  onOpenLegalDocument: (document: LegalDocument) => void;
   onLanguageSelectBack: () => void;
   onJourneyEntryBack: () => void;
   onVerificationCodeExit: () => void;
