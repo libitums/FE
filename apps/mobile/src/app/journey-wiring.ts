@@ -51,6 +51,8 @@ import { learningScreenFor, roleplayScreenFor } from "./screen-routing";
 import { learningSessionWiring } from "./learning-session-wiring";
 import { specialUnitWiring } from "./special-unit-wiring";
 import { tabRootActions } from "./nav-reducer";
+import { submitFeedback } from "../lib/feedback-api";
+import type { FeedbackRating } from "../lib/feedback.contract";
 import { pushTargetOpener } from "./push-routing";
 import { openNotificationSettings } from "./push-wiring";
 import { episodeIntroWiring } from "./episode-intro-wiring";
@@ -240,7 +242,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
     sessionOptions,
     onSelectNavTarget: (target: SettingsNavTarget) => {
       settingsEventSink?.(settingsNavOpenedEvent(target));
-      if (target === "profile") {
+      if (target === "profile" || target === "feedback") {
         dispatch({ type: "push", screen: { name: target } });
         return;
       }
@@ -260,6 +262,18 @@ export function journeyWiring(args: JourneyWiringArgs) {
     // 흐름 셋(나가기)입니다 — 프로필·약관의 `설정으로` → 설정 탭 스택의
     // 루트(ADR-0007 D6).
     onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
+    // 설정 피드백 보내기입니다(ADR-0036). 성공한 것만 이벤트로 셉니다 — 글은 싣지 않습니다.
+    onSubmitFeedback: async (rating: FeedbackRating, message: string): Promise<boolean> => {
+      const ok = await submitFeedback({ kind: "general", rating, message, context: {} });
+      if (ok) {
+        settingsEventSink?.({
+          name: "feedback_submitted",
+          rating: String(rating),
+          hasMessage: message.trim() !== "",
+        });
+      }
+      return ok;
+    },
   };
 
   // 표지 결선을 나란히 붙입니다 — **감싸지 않습니다.** 표지는 맵에 스스로 서는 유닛이라

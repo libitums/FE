@@ -76,7 +76,7 @@ export type AnalyticsConfigFrom = (
 
 // ------------------------------------------------------------------ 이벤트 → capture
 
-/** sink 일곱이 내는 이벤트 전부입니다(이름 25개 · 모양 29개 — 열림 이벤트 셋이 출처별 두 모양). */
+/** sink 일곱이 내는 이벤트 전부입니다(이름 29개 · 모양 33개 — 열림 이벤트 셋이 출처별 두 모양). */
 export type AnalyticsEvent =
   | EntryEvent
   | MessengerEvent
@@ -110,13 +110,17 @@ export type AnalyticsEventName =
   | "settings_opened"
   | "profile_opened"
   | "notification_settings_opened"
+  | "feedback_opened"
+  | "feedback_submitted"
   | "legal_document_opened"
   | "session_option_changed"
   | "episode_intro_viewed"
   | "episode_intro_skipped"
   | "episode_intro_continued"
   | "episode_intro_exited"
-  | "episode_prologue_completed";
+  | "episode_prologue_completed"
+  | "episode_survey_answered"
+  | "episode_survey_skipped";
 
 /** 이벤트 필드 값은 문자열 · 불리언뿐입니다. 숫자 필드가 생기면 검사가 섭니다. */
 export type AnalyticsPropertyValue = string | boolean;

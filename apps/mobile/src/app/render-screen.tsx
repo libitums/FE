@@ -24,6 +24,7 @@ import {
   getPhoneCallConversation,
   phoneCallCompletionStatus,
 } from "../screens/phone-call/phone-call";
+import { FeedbackScreen } from "../screens/feedback/FeedbackScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { RoleplayEpisodeScreen } from "../screens/roleplay-list/RoleplayEpisodeScreen";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
@@ -104,6 +105,10 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // 닿습니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0033).
     case "profile":
       return <ProfileScreen items={profileList} onExit={wiring.onExitSettingsStack} />;
+    case "feedback":
+      return (
+        <FeedbackScreen onSubmit={wiring.onSubmitFeedback} onExit={wiring.onExitSettingsStack} />
+      );
     case "episode-intro":
     case "episode-prologue":
     case "episode-prologue-complete":

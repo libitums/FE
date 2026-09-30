@@ -232,3 +232,57 @@ test("[JM1-M] 문구표를 주입하고 트로피 칩을 누르면 큰 숫자의
     "⟦journeyMap.statModal.episodesClearedHero⟧(3)",
   );
 });
+
+// ---------------------------------------------------------------- 에피소드 끝 설문 (ADR-0036)
+
+const survey = { id: "tutorial", title: "Tutorial" };
+
+function tapInside(testId: string): void {
+  const container = screen.getByTestId(testId);
+  const button =
+    container.querySelector('[data-testid="ui-lynx-round-button"]') ??
+    container.querySelector('[data-testid="ui-lynx-button"]');
+  fireEvent.tap(button!, {});
+}
+
+test("[AH-S1] 설문이 있으면 설문 시트가 뜨고, 보기를 누르면 그 별점으로 답한다", () => {
+  const onAnswer = vi.fn();
+  const { rerender } = render(
+    <AppHeader {...fixture()} episodeSurvey={survey} onAnswerEpisodeSurvey={onAnswer} />,
+  );
+
+  expect(screen.getByTestId("episode-survey-options")).toBeInTheDocument();
+  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-4"), {});
+
+  expect(onAnswer).toHaveBeenCalledWith("tutorial", 4);
+  // 부모가 설문을 비우면(`onEpisodeSurveyClosed`) 다시 뜨지 않습니다.
+  rerender(<AppHeader {...fixture()} episodeSurvey={null} onAnswerEpisodeSurvey={onAnswer} />);
+  expect(screen.queryByTestId("episode-survey-options")).toBeNull();
+});
+
+test("[AH-S2] Not now는 건너뛰기다", () => {
+  const onSkip = vi.fn();
+  const { rerender } = render(
+    <AppHeader {...fixture()} episodeSurvey={survey} onSkipEpisodeSurvey={onSkip} />,
+  );
+
+  tapInside("ui-lynx-bottom-sheet-action-skip");
+
+  expect(onSkip).toHaveBeenCalledWith("tutorial");
+  rerender(<AppHeader {...fixture()} episodeSurvey={null} onSkipEpisodeSurvey={onSkip} />);
+  expect(screen.queryByTestId("episode-survey-options")).toBeNull();
+});
+
+test("[AH-S3] 연속 축하가 먼저다 — 연속 모달을 닫은 뒤에 설문이 뜬다", () => {
+  const { rerender } = render(
+    <AppHeader {...fixture()} celebrateStreak={true} episodeSurvey={survey} />,
+  );
+  expect(screen.getByTestId("journey-stat-modal-streak")).toBeInTheDocument();
+  expect(screen.queryByTestId("episode-survey-options")).toBeNull();
+
+  // 축하를 알린 뒤 부모가 플래그를 내립니다.
+  rerender(<AppHeader {...fixture()} celebrateStreak={false} episodeSurvey={survey} />);
+  tapInside("journey-stat-modal-back");
+
+  expect(screen.getByTestId("episode-survey-options")).toBeInTheDocument();
+});
