@@ -266,7 +266,7 @@ test("[AH-S2] Not now는 건너뛰기다", () => {
     <AppHeader {...fixture()} episodeSurvey={survey} onSkipEpisodeSurvey={onSkip} />,
   );
 
-  tapInside("ui-lynx-bottom-sheet-action-skip");
+  tapInside("episode-survey-skip");
 
   expect(onSkip).toHaveBeenCalledWith("tutorial");
   rerender(<AppHeader {...fixture()} episodeSurvey={null} onSkipEpisodeSurvey={onSkip} />);

@@ -1,11 +1,14 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
+import { Button } from "@libitums/ui-lynx/button";
 import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 
 import { feedbackRatings } from "../../lib/feedback-api";
 import type { FeedbackRating } from "../../lib/feedback.contract";
 import { useUiCopy } from "../../lib/ui-copy";
+
+import "./episode-survey-sheet.css";
 
 export type EpisodeSurveySheetProps = {
   readonly episodeTitle: string;
@@ -27,7 +30,6 @@ export function EpisodeSurveySheet({
       title={copy.feedback.survey.title}
       description={copy.feedback.survey.description(episodeTitle)}
       closeAccessibilityLabel={copy.feedback.survey.skip}
-      actions={[{ id: "skip", label: copy.feedback.survey.skip, bindtap: onSkip }]}
       ondismiss={onSkip}
     >
       <view data-testid="episode-survey-options">
@@ -47,6 +49,16 @@ export function EpisodeSurveySheet({
             const rating = feedbackRatings.find((value) => String(value) === id);
             if (rating !== undefined) onAnswer(rating);
           }}
+        />
+      </view>
+      {/* 시트의 기본 액션 버튼(m)은 보기 목록 아래에서 너무 작아, 다른 화면의 주 버튼과 같은 xl로 둡니다. */}
+      <view className="episode-survey-skip" data-testid="episode-survey-skip">
+        <Button
+          label={copy.feedback.survey.skip}
+          variant="subtle"
+          size="xl"
+          width="fill"
+          bindtap={onSkip}
         />
       </view>
     </BottomSheet>
