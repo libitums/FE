@@ -1,5 +1,6 @@
 // 영어 문구표 구획 — 계정 · 기타(notifications ~ gemPurchase).
 
+import type { FeedbackCopy } from "./feedback.contract";
 import type {
   GemPurchaseCopy,
   NotificationsCopy,
@@ -26,6 +27,7 @@ export const settingsEn: SettingsCopy = {
   nav: {
     profile: "User profile",
     notifications: "Notifications",
+    feedback: "Send feedback",
     "privacy-policy": "Privacy Policy",
     "terms-of-use": "Terms of Use",
   },
@@ -45,6 +47,21 @@ export const settingsEn: SettingsCopy = {
     other: "Couldn't delete your account. Please try again.",
   },
   exitAnnouncement: { "signed-out": "You're signed out.", deleted: "Your account was deleted." },
+};
+
+export const feedbackEn: FeedbackCopy = {
+  title: "Send feedback",
+  ratingQuestion: "How is Duru so far?",
+  ratingOption: { 1: "Not good", 2: "Could be better", 3: "Okay", 4: "Good", 5: "Love it" },
+  messageLabel: "Anything else you'd like to tell us? (optional)",
+  send: "Send",
+  sent: "Thanks! We got your feedback.",
+  failed: "Couldn't send your feedback. Please try again.",
+  survey: {
+    title: "How was this episode?",
+    description: (episodeTitle) => `You finished ${episodeTitle}. Tell us what you thought.`,
+    skip: "Not now",
+  },
 };
 
 export const profileEn: ProfileCopy = {

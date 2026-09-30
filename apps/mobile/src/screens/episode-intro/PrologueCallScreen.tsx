@@ -1,14 +1,15 @@
-import { useEffect, useState } from "@lynx-js/react";
+import { useState } from "@lynx-js/react";
 import { Button } from "@libitums/ui-lynx/button";
 import type { PrologueCallScreenProps } from "./episode-intro.contract";
-import { prologueCallProgress, prologueLineSeconds } from "./prologue-call";
+import { prologueLineSeconds } from "./prologue-call";
 import { CallLineBubble } from "../../components/CallCaller";
 import { CallControls } from "../../components/CallControls";
 import { CallScreen } from "../../components/CallScreen";
 import { useUiCopy } from "../../lib/ui-copy";
+import { usePrologueCallPlayback } from "./usePrologueCallPlayback";
 import "./prologue-call-screen.css";
 
-/** 받기 뒤 자막이 자동 진행되는 서사 통화입니다. 음성은 아직 제공되지 않습니다. */
+/** 받기 뒤 자막이 자동 진행되는 서사 통화입니다. 음원 대사는 재생 완료 후, 무음 대사는 읽기 시간 후 전환합니다. */
 export function PrologueCallScreen({
   insets,
   episodeLabel,
@@ -20,22 +21,32 @@ export function PrologueCallScreen({
 }: PrologueCallScreenProps) {
   const copy = useUiCopy();
   const [accepted, setAccepted] = useState(false);
-  const [lineTicks, setLineTicks] = useState(0);
-  const [hungUp, setHungUp] = useState(false);
-  const progress = prologueCallProgress(lineTicks * prologueLineSeconds, call.lines.length);
-  const ended = hungUp || progress.ended;
+  const {
+    ended,
+    line,
+    lineIndex,
+    replayKey,
+    paused,
+    audioSource,
+    togglePlayback,
+    replay,
+    hangUp,
+    stop,
+  } = usePrologueCallPlayback(call, accepted);
   const incoming = !accepted && !ended;
-  const line = call.lines[progress.lineIndex];
-  const subtitleIntervalMs = Math.min(
-    35,
-    (prologueLineSeconds * 1000 - 1000) / Math.max(1, Array.from(line?.text ?? "").length),
+  const subtitleIntervalMs = Math.max(
+    0,
+    Math.min(
+      35,
+      (prologueLineSeconds * 1000 - 1000) / Math.max(1, Array.from(line?.text ?? "").length),
+    ),
   );
 
-  useEffect(() => {
-    if (!accepted || ended) return undefined;
-    const timer = setInterval(() => setLineTicks((ticks) => ticks + 1), prologueLineSeconds * 1000);
-    return () => clearInterval(timer);
-  }, [accepted, ended]);
+  const handleBack = () => {
+    "background only";
+    stop();
+    onBack();
+  };
 
   const handleAccept = () => {
     "background only";
@@ -43,7 +54,7 @@ export function PrologueCallScreen({
   };
   const handleHangUp = () => {
     "background only";
-    setHungUp(true);
+    hangUp();
   };
 
   return (
@@ -64,7 +75,7 @@ export function PrologueCallScreen({
         callerPortrait={callerPortrait}
         clockRunning={accepted && !ended}
         exitLabel={copy.common.exitTo.journey}
-        onBack={onBack}
+        onBack={handleBack}
         testId="prologue-call-screen"
         testIdPrefix="prologue-call-screen"
         backTestId="prologue-call-screen-back"
@@ -73,10 +84,21 @@ export function PrologueCallScreen({
             <CallControls
               incoming={incoming}
               ended={ended}
-              playLabel={incoming ? copy.phoneCall.play.start : null}
-              playTestId="prologue-call-screen-accept"
+              playLabel={
+                incoming
+                  ? copy.phoneCall.play.start
+                  : audioSource
+                    ? copy.phoneCall.play["listen-again"]
+                    : null
+              }
+              playTestId={incoming ? "prologue-call-screen-accept" : "prologue-call-screen-replay"}
               hangUpTestId="prologue-call-screen-end"
-              onPlay={handleAccept}
+              onPlay={incoming ? handleAccept : replay}
+              playback={
+                audioSource
+                  ? { paused, onToggle: togglePlayback, testId: "prologue-call-screen-playback" }
+                  : undefined
+              }
               onHangUp={handleHangUp}
             />
             {ended ? (
@@ -102,7 +124,7 @@ export function PrologueCallScreen({
             testIdPrefix="prologue-call-screen"
             reveal={ended ? "instant" : "typewriter"}
             intervalMs={subtitleIntervalMs}
-            resetKey={progress.lineIndex}
+            resetKey={`${lineIndex}:${replayKey}`}
             reducedMotion={reducedMotion}
           />
         ) : null}

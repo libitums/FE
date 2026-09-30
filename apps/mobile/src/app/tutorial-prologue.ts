@@ -97,10 +97,12 @@ export const tutorialPrologue = {
         lines: [
           {
             text: "여보세요? 창가에 있다고 했지?",
+            audioSource: "tutorial-minseo-call-01",
             translation: "Hello? You said you were by the window, right?",
           },
           {
             text: "나 거의 다 왔어. 조금만 기다려!",
+            audioSource: "tutorial-minseo-call-02",
             translation: "I'm almost there. See you in a moment!",
           },
         ],

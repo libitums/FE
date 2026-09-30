@@ -2,6 +2,8 @@ import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
+import type { FeedbackRating } from "../lib/feedback.contract";
+import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { GemPurchaseScreen } from "../screens/gem-purchase/GemPurchaseScreen";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import {
@@ -18,7 +20,7 @@ import {
 // `Nav`가 관여하지 않습니다(ADR-0007 D3). 전에는 여정 맵이 지표 모달을 소유했는데,
 // 머리가 셸로 올라오면서 모달도 함께 올라왔습니다.
 
-type AppHeaderLayer = JourneyStatKind | "gem";
+type AppHeaderLayer = JourneyStatKind | "gem" | "survey";
 
 export type AppHeaderProps = {
   readonly streakDays: number;
@@ -42,6 +44,13 @@ export type AppHeaderProps = {
    */
   readonly celebrateStreak?: boolean;
   readonly onStreakCelebrated?: () => void;
+  /**
+   * 활동으로 끝낸 에피소드의 설문입니다(ADR-0036). 연속 모달이 먼저이고, 레이어가 모두 닫히면 뜹니다. 답하거나
+   * 건너뛰면 `onEpisodeSurveyClosed`가 불립니다.
+   */
+  readonly episodeSurvey?: { readonly id: string; readonly title: string } | null;
+  readonly onAnswerEpisodeSurvey?: (episodeId: string, rating: FeedbackRating) => void;
+  readonly onSkipEpisodeSurvey?: (episodeId: string) => void;
 };
 
 export function AppHeader({
@@ -53,6 +62,9 @@ export function AppHeader({
   todayWeekday,
   celebrateStreak = false,
   onStreakCelebrated,
+  episodeSurvey = null,
+  onAnswerEpisodeSurvey,
+  onSkipEpisodeSurvey,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
   const close = () => setOpenLayer(null);
@@ -64,6 +76,11 @@ export function AppHeader({
     onStreakCelebrated?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [celebrateStreak, openLayer, obscured]);
+
+  useEffect(() => {
+    if (episodeSurvey === null || celebrateStreak || openLayer !== null || obscured) return;
+    setOpenLayer("survey");
+  }, [episodeSurvey, celebrateStreak, openLayer, obscured]);
 
   return (
     <>
@@ -98,6 +115,19 @@ export function AppHeader({
         />
       ) : null}
       {openLayer === "gem" ? <GemPurchaseScreen gemBalance={gemCount} onClose={close} /> : null}
+      {openLayer === "survey" && episodeSurvey !== null ? (
+        <EpisodeSurveySheet
+          episodeTitle={episodeSurvey.title}
+          onAnswer={(rating) => {
+            close();
+            onAnswerEpisodeSurvey?.(episodeSurvey.id, rating);
+          }}
+          onSkip={() => {
+            close();
+            onSkipEpisodeSurvey?.(episodeSurvey.id);
+          }}
+        />
+      ) : null}
     </>
   );
 }

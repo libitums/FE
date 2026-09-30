@@ -30,8 +30,13 @@ export function useTypewriter({
   reducedMotion = false,
   resetKey,
 }: TypewriterOptions): TypewriterState {
-  const interval = Number.isFinite(intervalMs) && intervalMs >= 0 ? intervalMs : 35;
-  const delay = Number.isFinite(delayMs) && delayMs >= 0 ? delayMs : 0;
+  const interval =
+    Number.isFinite(intervalMs) && intervalMs >= 0
+      ? intervalMs === 0
+        ? 0
+        : Math.max(1, Math.floor(intervalMs))
+      : 35;
+  const delay = Number.isFinite(delayMs) && delayMs >= 0 ? Math.round(delayMs) : 0;
   const instant = !enabled || reducedMotion || interval === 0;
   const characters = useMemo(() => Array.from(text), [text]);
   const session = useMemo(

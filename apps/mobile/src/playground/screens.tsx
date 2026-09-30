@@ -59,16 +59,22 @@ function LanguageSelectFixture({ go }: { go: Go }): ReactNode {
 }
 
 export const playgroundScreens = {
-  "tutorial-prologue-call": (go: Go) => (
-    <PrologueCallScreen
-      insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
-      episodeLabel={tutorialPrologueLabel}
-      call={tutorialPrologue.segments[3].call}
-      callerPortrait={tutorialPrologue.segments[3].callerPortrait}
-      onComplete={() => go("journey-map")}
-      onBack={() => go("journey-map")}
-    />
-  ),
+  "tutorial-prologue-call": (go: Go) => {
+    const segment = tutorialPrologue.segments.find((candidate) => candidate.kind === "call");
+    if (segment?.kind !== "call") {
+      throw new Error("Tutorial call preview requires a call segment.");
+    }
+    return (
+      <PrologueCallScreen
+        insets={{ top: 62, bottom: 34, left: 0, right: 0 }}
+        episodeLabel={tutorialPrologueLabel}
+        call={segment.call}
+        callerPortrait={segment.callerPortrait}
+        onComplete={() => go("tutorial-announcement")}
+        onBack={() => go("journey-map")}
+      />
+    );
+  },
   "tutorial-prologue-chat": (go: Go) => (
     <PrologueChatScreen
       insets={{ top: 62, bottom: 34, left: 0, right: 0 }}

@@ -75,12 +75,24 @@ export type EpisodePrologueCompletedEvent = {
   readonly episodeId: string;
   readonly prologueKind: EpisodePrologue["kind"];
 };
+/** 에피소드 끝 설문의 답입니다(ADR-0036). `rating`은 `"1"` … `"5"`. */
+export type EpisodeSurveyAnsweredEvent = {
+  readonly name: "episode_survey_answered";
+  readonly episodeId: string;
+  readonly rating: string;
+};
+export type EpisodeSurveySkippedEvent = {
+  readonly name: "episode_survey_skipped";
+  readonly episodeId: string;
+};
 export type EpisodeIntroEvent =
   | EpisodeIntroViewedEvent
   | EpisodeIntroSkippedEvent
   | EpisodeIntroContinuedEvent
   | EpisodeIntroExitedEvent
-  | EpisodePrologueCompletedEvent;
+  | EpisodePrologueCompletedEvent
+  | EpisodeSurveyAnsweredEvent
+  | EpisodeSurveySkippedEvent;
 /** 보내지 않을 때는 `null`입니다 — no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */
 export type EpisodeIntroEventSink = ((event: EpisodeIntroEvent) => void) | null;
 export type EpisodeIntroAppProps = { readonly episodeIntroEventSink?: EpisodeIntroEventSink };
@@ -139,6 +151,8 @@ export type EpisodeIntroTestId =
 
 /** 서사 통화의 대사 한 줄입니다. 위가 한국어, 아래가 번역입니다. */
 export type PrologueCallLine = {
+  /** 음원이 있으면 재생 완료 후 다음 대사로 넘어갑니다. */
+  readonly audioSource?: string;
   readonly text: string;
   readonly translation: string;
 };

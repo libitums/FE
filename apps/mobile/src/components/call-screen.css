@@ -237,3 +237,7 @@
   font-size: var(--libitum-typography-label-l-font-size);
   line-height: var(--libitum-typography-label-l-line-height);
 }
+
+.phone-call-control-circle-on {
+  background: var(--libitum-color-brand-primary);
+}

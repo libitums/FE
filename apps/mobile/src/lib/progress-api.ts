@@ -13,13 +13,15 @@ import type {
   RecordLearningDayPath,
   SaveLearningProgressPath,
 } from "./learning-progress.contract";
+import type { SubmitFeedbackPath } from "./feedback.contract";
 import { isSuccessStatus, send } from "./supabase-transport";
 
 type RpcPath =
   | LoadLearningProgressPath
   | SaveLearningProgressPath
   | RecordLearningDayPath
-  | LearningStreakPath;
+  | LearningStreakPath
+  | SubmitFeedbackPath;
 
 export function learningRpcRequest(
   config: SupabaseConfig,
@@ -61,7 +63,11 @@ export async function currentAccessToken(nowMs: number = Date.now()): Promise<st
   return pendingRefresh;
 }
 
-async function rpc(path: RpcPath, body: Record<string, unknown>): Promise<string | null> {
+/** 로그인한 사용자로 RPC 하나를 부릅니다. 2xx면 본문, 그 밖(로그인 없음 · 실패 · 연결 실패)은 `null`. */
+export async function authorizedRpc(
+  path: RpcPath,
+  body: Record<string, unknown>,
+): Promise<string | null> {
   const accessToken = await currentAccessToken();
   if (accessToken === null) return null;
   const outcome = await send((config) => learningRpcRequest(config, accessToken, path, body), true);
@@ -89,21 +95,23 @@ function countFrom(bodyText: string | null): number | null {
 export async function loadLearningProgress(): Promise<
   { readonly ok: true; readonly raw: unknown } | { readonly ok: false }
 > {
-  const bodyText = await rpc("/rest/v1/rpc/load_learning_progress", {});
+  const bodyText = await authorizedRpc("/rest/v1/rpc/load_learning_progress", {});
   return bodyText === null ? { ok: false } : { ok: true, raw: jsonFrom(bodyText) };
 }
 
 export async function saveLearningProgress(snapshot: object): Promise<boolean> {
-  return (await rpc("/rest/v1/rpc/save_learning_progress", { p_progress: snapshot })) !== null;
+  return (
+    (await authorizedRpc("/rest/v1/rpc/save_learning_progress", { p_progress: snapshot })) !== null
+  );
 }
 
 /** 오늘을 학습한 날로 적고 새 연속 일수를 받습니다. */
 export async function recordLearningDay(day: LocalDay): Promise<number | null> {
-  return countFrom(await rpc("/rest/v1/rpc/record_learning_day", { p_day: day }));
+  return countFrom(await authorizedRpc("/rest/v1/rpc/record_learning_day", { p_day: day }));
 }
 
 export async function fetchLearningStreak(today: LocalDay): Promise<number | null> {
-  return countFrom(await rpc("/rest/v1/rpc/learning_streak", { p_today: today }));
+  return countFrom(await authorizedRpc("/rest/v1/rpc/learning_streak", { p_today: today }));
 }
 
 /** 기기 시간대의 날짜입니다. */

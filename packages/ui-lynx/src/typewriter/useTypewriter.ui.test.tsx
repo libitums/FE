@@ -118,3 +118,17 @@ test.each([NaN, Infinity, -1])("잘못된 간격 %s는 기본 속도로 복구�
   tick(35);
   expect(output().textContent).toBe("A");
 });
+
+test("소수 간격은 길어지지 않게 내림하고 양수 간격이 즉시 표시로 바뀌지 않는다", () => {
+  const view = render(<Sample text="AB" intervalMs={10.6} delayMs={2.6} />);
+  tick(12);
+  expect(output().textContent).toBe("");
+  tick(1);
+  expect(output().textContent).toBe("A");
+  view.rerender(<Sample text="CD" intervalMs={0.2} />);
+  expect(output().textContent).toBe("");
+  tick(1);
+  expect(output().textContent).toBe("C");
+  tick(1);
+  expect(output().textContent).toBe("CD");
+});

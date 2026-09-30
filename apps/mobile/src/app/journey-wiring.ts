@@ -1,8 +1,6 @@
 import { guardJourneyUnitStarts } from "./journey-access";
 import { completedVisualNovelUnitIdsFrom } from "./journey-progress";
-// 여정·학습·알림·설정 콜백을 만들고, 특별 유닛 셋의 콜백을 `special-unit-wiring.ts`에서 받아
-// 한 객체로 합칩니다. 진행 상태 넷과 세션 옵션을 여기서 읽고 갱신합니다. 연습 경계 밖의
-// 롤플레이 콜백 여덟은 `roleplay-wiring.ts`가 집니다.
+// 여정·학습·알림·설정과 특별 유닛 콜백을 합칩니다. 롤플레이는 roleplay-wiring.ts가 담당합니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type {
@@ -53,6 +51,8 @@ import { learningScreenFor, roleplayScreenFor } from "./screen-routing";
 import { learningSessionWiring } from "./learning-session-wiring";
 import { specialUnitWiring } from "./special-unit-wiring";
 import { tabRootActions } from "./nav-reducer";
+import { submitFeedback } from "../lib/feedback-api";
+import type { FeedbackRating } from "../lib/feedback.contract";
 import { pushTargetOpener } from "./push-routing";
 import { openNotificationSettings } from "./push-wiring";
 import { episodeIntroWiring } from "./episode-intro-wiring";
@@ -242,7 +242,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
     sessionOptions,
     onSelectNavTarget: (target: SettingsNavTarget) => {
       settingsEventSink?.(settingsNavOpenedEvent(target));
-      if (target === "profile") {
+      if (target === "profile" || target === "feedback") {
         dispatch({ type: "push", screen: { name: target } });
         return;
       }
@@ -262,6 +262,18 @@ export function journeyWiring(args: JourneyWiringArgs) {
     // 흐름 셋(나가기)입니다 — 프로필·약관의 `설정으로` → 설정 탭 스택의
     // 루트(ADR-0007 D6).
     onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
+    // 설정 피드백 보내기입니다(ADR-0036). 성공한 것만 이벤트로 셉니다 — 글은 싣지 않습니다.
+    onSubmitFeedback: async (rating: FeedbackRating, message: string): Promise<boolean> => {
+      const ok = await submitFeedback({ kind: "general", rating, message, context: {} });
+      if (ok) {
+        settingsEventSink?.({
+          name: "feedback_submitted",
+          rating: String(rating),
+          hasMessage: message.trim() !== "",
+        });
+      }
+      return ok;
+    },
   };
 
   // 알림과 푸시도 이 콜백을 사용하므로 실제 진입 직전에 맵과 같은 규칙으로 차단합니다.

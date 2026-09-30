@@ -25,8 +25,10 @@
 		2B94A3DD2D66149800608961 /* WebAuthenticationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608960 /* WebAuthenticationModule.swift */; };
 		4C1D0C5E0A1F2B3C4D6E0000 /* LegalDocumentModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4D5E0000 /* LegalDocumentModule.swift */; };
 		4C1D0C5E0A1F2B3C4DAE0000 /* PushNotificationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4D9E0000 /* PushNotificationModule.swift */; };
+		4C1D0C5E0A1F2B3C4DEE0000 /* AppReviewModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4DDE0000 /* AppReviewModule.swift */; };
 		4C1D0C5E0A1F2B3C4D8E0000 /* LegalDocumentModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */; };
 		4C1D0C5E0A1F2B3C4DCE0000 /* PushNotificationModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */; };
+		4C1D0C5E0A1F2B3C4E0E0000 /* AppReviewModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4DFE0000 /* AppReviewModuleTests.swift */; };
 		2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */; };
 		2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */; };
 		2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608950 /* BundledMediaResourceFetcherTests.swift */; };
@@ -61,8 +63,10 @@
 		2B94A3DC2D66149800608960 /* WebAuthenticationModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticationModule.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4D5E0000 /* LegalDocumentModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalDocumentModule.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4D9E0000 /* PushNotificationModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationModule.swift; sourceTree = "<group>"; };
+		4C1D0C5E0A1F2B3C4DDE0000 /* AppReviewModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReviewModule.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalDocumentModuleTests.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationModuleTests.swift; sourceTree = "<group>"; };
+		4C1D0C5E0A1F2B3C4DFE0000 /* AppReviewModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReviewModuleTests.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionAnnouncementModuleTests.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionModuleTests.swift; sourceTree = "<group>"; };
 		2B94A3DC2D66149800608950 /* BundledMediaResourceFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledMediaResourceFetcherTests.swift; sourceTree = "<group>"; };
@@ -135,6 +139,7 @@
 				2B94A3DC2D66149800608960 /* WebAuthenticationModule.swift */,
 				4C1D0C5E0A1F2B3C4D5E0000 /* LegalDocumentModule.swift */,
 				4C1D0C5E0A1F2B3C4D9E0000 /* PushNotificationModule.swift */,
+				4C1D0C5E0A1F2B3C4DDE0000 /* AppReviewModule.swift */,
 				2B94A3DC2D66149800608970 /* AppleSignInModule.swift */,
 				A51C0DE2E0F4B3A1C2D3E4F7 /* Host.entitlements */,
 				2B94A3E02D6614980060892E /* FontScale.swift */,
@@ -145,7 +150,7 @@
 		};
 		2B94A3DC2D66149800608933 /* HostTests */ = {
 			isa = PBXGroup;
-			children = (2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */, 4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */, 4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */, 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */, 2B94A3DC2D66149800608950 /* BundledMediaResourceFetcherTests.swift */, 2DDE2CDA1E9EDC74A4F93878 /* WebAuthenticationModuleTests.swift */, A51C0DE2E0F4B3A1C2D3E4F5 /* AppleSignInModuleTests.swift */);
+			children = (2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */, 4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */, 4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */, 4C1D0C5E0A1F2B3C4DFE0000 /* AppReviewModuleTests.swift */, 2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */, 2B94A3DC2D66149800608950 /* BundledMediaResourceFetcherTests.swift */, 2DDE2CDA1E9EDC74A4F93878 /* WebAuthenticationModuleTests.swift */, A51C0DE2E0F4B3A1C2D3E4F5 /* AppleSignInModuleTests.swift */);
 			path = HostTests;
 			sourceTree = "<group>";
 		};
@@ -306,6 +311,7 @@
 				2B94A3DD2D66149800608961 /* WebAuthenticationModule.swift in Sources */,
 				4C1D0C5E0A1F2B3C4D6E0000 /* LegalDocumentModule.swift in Sources */,
 				4C1D0C5E0A1F2B3C4DAE0000 /* PushNotificationModule.swift in Sources */,
+				4C1D0C5E0A1F2B3C4DEE0000 /* AppReviewModule.swift in Sources */,
 				2B94A3DD2D66149800608971 /* AppleSignInModule.swift in Sources */,
 				2B94A3E12D6614980060892E /* FontScale.swift in Sources */,
 				2B94A3CD2D6613730060892C /* ViewController.swift in Sources */,
@@ -314,7 +320,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2B94A3C12D66149800608935 /* Sources */ = { isa = PBXSourcesBuildPhase; files = (4C1D0C5E0A1F2B3C4D8E0000 /* LegalDocumentModuleTests.swift in Sources */, 4C1D0C5E0A1F2B3C4DCE0000 /* PushNotificationModuleTests.swift in Sources */, 2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */, 2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */, 2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */, 9DD97583D2CD8A7C12701B7E /* WebAuthenticationModuleTests.swift in Sources */, A51C0DE2E0F4B3A1C2D3E4F6 /* AppleSignInModuleTests.swift in Sources */); };
+		2B94A3C12D66149800608935 /* Sources */ = { isa = PBXSourcesBuildPhase; files = (4C1D0C5E0A1F2B3C4D8E0000 /* LegalDocumentModuleTests.swift in Sources */, 4C1D0C5E0A1F2B3C4DCE0000 /* PushNotificationModuleTests.swift in Sources */, 4C1D0C5E0A1F2B3C4E0E0000 /* AppReviewModuleTests.swift in Sources */, 2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */, 2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */, 2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */, 9DD97583D2CD8A7C12701B7E /* WebAuthenticationModuleTests.swift in Sources */, A51C0DE2E0F4B3A1C2D3E4F6 /* AppleSignInModuleTests.swift in Sources */); };
 		2B94A3C22D66149800608936 /* Frameworks */ = { isa = PBXFrameworksBuildPhase; files = (); };
 		2B94A3C32D66149800608937 /* Resources */ = { isa = PBXResourcesBuildPhase; files = (); };
 /* End PBXSourcesBuildPhase section */

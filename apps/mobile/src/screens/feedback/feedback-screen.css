@@ -1,0 +1,77 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 머리는 프로필 화면(`.profile-screen-header`)과 같은 값입니다. */
+.feedback-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+.feedback-screen-header {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.feedback-screen-exit {
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.feedback-screen-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--libitum-color-gray-800);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.feedback-screen-scroll {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+/* 아래 여백은 바텀 네비게이션 몫입니다(프로필 화면과 같은 값). */
+.feedback-screen-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-16);
+  padding-top: var(--libitum-spacing-16);
+  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+}
+
+.feedback-screen-question {
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.feedback-screen-sent,
+.feedback-screen-failed {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.feedback-screen-sent {
+  color: var(--libitum-color-gray-800);
+  text-align: center;
+}
+
+.feedback-screen-failed {
+  color: var(--libitum-color-feedback-incorrect-text);
+}

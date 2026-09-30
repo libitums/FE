@@ -25,14 +25,16 @@ import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type { VisualNovelProgress } from "../screens/visual-novel/visual-novel.contract";
 import type { AppJourneySeed } from "./journey-progress";
+import { loadEpisodeSurveyDone } from "../lib/feedback-api";
 import {
   completedActivityCount,
+  completedEpisodesFrom,
   journeyProgressFrom,
   learningProgressSnapshotFrom,
   mergeJourneyProgress,
   trophyCountFrom,
 } from "./learning-progress";
-import type { JourneyProgressState } from "./learning-progress";
+import type { CompletedEpisode, JourneyProgressState } from "./learning-progress";
 
 export function useJourneyProgress(
   journeySeed: AppJourneySeed,
@@ -60,6 +62,11 @@ export function useJourneyProgress(
   const [streakCelebration, setStreakCelebration] = useState(false);
   const streakRef = useRef(0);
   streakRef.current = streakDays;
+  // 활동으로 끝낸 에피소드의 설문입니다(ADR-0036). 머리가 연속 모달 다음에 띄웁니다. 에피소드마다 한 번만 묻습니다.
+  const [episodeSurvey, setEpisodeSurvey] = useState<CompletedEpisode | null>(null);
+  // 오늘을 기록하는 중인가입니다. 그동안 설문을 내놓지 않습니다 — 연속이 늘었는지 알기 전에 설문이 먼저 뜨지 않게
+  // (연속 모달이 먼저입니다).
+  const [recordingDay, setRecordingDay] = useState(false);
 
   const state: JourneyProgressState = {
     completedStepCount,
@@ -74,9 +81,13 @@ export function useJourneyProgress(
   // 서버와 같다고 아는 마지막 스냅숏(JSON)입니다. `null`이면 아직 한 번도 불러오지 못했습니다.
   const syncedJson = useRef<string | null>(null);
   const activityCount = useRef(completedActivityCount(state));
+  const completedEpisodeIds = useRef(
+    completedEpisodesFrom(journeyMapSections, state).map((e) => e.id),
+  );
 
   const apply = (next: JourneyProgressState): void => {
     activityCount.current = completedActivityCount(next);
+    completedEpisodeIds.current = completedEpisodesFrom(journeyMapSections, next).map((e) => e.id);
     setCompletedStepCount(next.completedStepCount);
     setCompletedMessengerUnitIds(next.completedMessengerUnitIds);
     setCompletedPhoneCallUnitIds(next.completedPhoneCallUnitIds);
@@ -106,14 +117,24 @@ export function useJourneyProgress(
     const count = completedActivityCount(state);
     const grew = count > activityCount.current;
     activityCount.current = count;
+    const episodes = completedEpisodesFrom(journeyMapSections, state);
+    const newlyCompleted = episodes.filter((e) => !completedEpisodeIds.current.includes(e.id));
+    completedEpisodeIds.current = episodes.map((e) => e.id);
     if (grew) {
+      const done = loadEpisodeSurveyDone();
+      const next = newlyCompleted.find((e) => !done.includes(e.id));
+      if (next !== undefined) setEpisodeSurvey(next);
+    }
+    if (grew) {
+      setRecordingDay(true);
       void recordLearningDay(localDayFrom(new Date()))
         .then((streak) => {
           if (streak === null) return;
           if (streak > streakRef.current) setStreakCelebration(true);
           setStreakDays(streak);
         })
-        .catch(() => undefined);
+        .catch(() => undefined)
+        .finally(() => setRecordingDay(false));
     }
 
     if (syncedJson.current === null) {
@@ -146,6 +167,8 @@ export function useJourneyProgress(
     streakDays,
     streakCelebration,
     onStreakCelebrated: () => setStreakCelebration(false),
+    episodeSurvey: recordingDay ? null : episodeSurvey,
+    onEpisodeSurveyClosed: () => setEpisodeSurvey(null),
     trophyCount: trophyCountFrom(journeyMapSections, state),
     syncFromServer,
   };
