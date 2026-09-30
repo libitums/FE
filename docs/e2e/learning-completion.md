@@ -45,3 +45,5 @@ iPhone 17 Pro / iOS 26.5 개발 playground에서 7번과 완료 후 맵 복귀�
 7. iPhone의 받아쓰기를 끈 상태에서 말하기를 시도한다. `kLSRErrorDomain/201`을 받으면 Siri·받아쓰기 설정 안내와 Try again, Skip이 함께 보여야 한다. 설정 → 일반 → 키보드 → 받아쓰기 활성화를 켜고 돌아와 Try again을 누르면 같은 문항을 다시 인식한다. 실패·재시도 자체가 채점이나 건너뛴 횟수를 추가하면 안 된다.
 
 2026-10-01 iPhone 13 mini / iOS 26.6.2 확인: 사용자 확인으로 Skip 겹침이 해소됐다. 마이크·음성 인식 권한과 한국어 인식기 가용 상태는 정상이었지만, 시작 186ms 뒤 입력 버퍼 0개로 `kLSRErrorDomain/201`이 반환됐다. [Apple 문서](https://developer.apple.com/documentation/speech/sfspeechrecognitiontask/error)는 이 값을 Siri 또는 받아쓰기 비활성화로 정의한다. 사용자가 받아쓰기 활성화 후 실제 인식 결과가 나오는 것을 확인했다. 이 확인은 수정 전의 오류 안내를 사용하는 진단 Host에서 이뤄졌으며, 새 안내·같은 문항 재시도는 자동 UI 테스트로 따로 검증한다.
+
+같은 날 최종 수정본(진단 로그 제거, production Lynx 번들을 포함한 Debug Host)을 iPhone에 다시 설치한 뒤, 사용자가 녹음 직후 음원 재생 및 홈 화면 왕복 후 재생·녹음 모두 정상이라고 확인했다.
