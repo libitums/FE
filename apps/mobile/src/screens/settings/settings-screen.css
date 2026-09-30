@@ -72,3 +72,19 @@
   padding-top: var(--libitum-spacing-16);
   padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
 }
+
+/* 삭제 실패 문구 — 목록 상자의 마지막 자식입니다. 목록 gap을 빼고 그룹과의 보이는 간격을
+   `spacing-8`로 맞춥니다. shorthand에 `calc(…)`가 섞이면 Lynx가 선언을 버리므로 longhand로
+   적습니다(로그인 `.login-screen-error`와 같은 타이포 · 색). */
+.settings-screen-account-error {
+  color: var(--libitum-color-feedback-incorrect-text);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+  text-align: left;
+  margin-top: calc(-1 * var(--libitum-layout-gap-block) + var(--libitum-spacing-8));
+  padding-left: calc(var(--libitum-spacing-4) + var(--libitum-spacing-20));
+  padding-right: calc(var(--libitum-spacing-4) + var(--libitum-spacing-20));
+}

@@ -6,7 +6,12 @@
 // 다시 내보내(re-export) 기존 unit import가 안 바뀝니다.
 
 import type {
-  AuthOperation,
+  AccountDeletionRequest,
+  AccountDeletionRequestResult,
+  RequestAccountDeletion,
+  SignOutRemotely,
+} from "./account.contract";
+import type {
   AuthSession,
   HttpRequestInit,
   HttpTransport,
@@ -17,7 +22,6 @@ import type {
   RefreshAuthSession,
   RequestPhoneOtp,
   SessionRefreshResult,
-  SupabaseAuthPath,
   SupabaseConfig,
   SupabaseOtpRequestBody,
   SupabaseRefreshRequestBody,
@@ -25,6 +29,7 @@ import type {
   VerifyPhoneOtp,
 } from "./auth-session.contract";
 import {
+  accountDeletionFailureFrom,
   authSessionFrom,
   errorCodeFrom,
   otpRequestFailureFrom,
@@ -32,6 +37,11 @@ import {
   pkceExchangeFailureFrom,
   sessionRefreshFailureFrom,
 } from "./auth-response";
+import {
+  deleteAccountFunctionRequest,
+  supabaseAuthRequest,
+  supabaseLogoutRequest,
+} from "./auth-request";
 import type {
   ExchangeIdToken,
   ExchangePkceCode,
@@ -39,7 +49,6 @@ import type {
   IdTokenExchangeResult,
   PkceExchangeRequest,
   PkceExchangeResult,
-  SupabaseAuthorizeQuery,
   SupabaseIdTokenRequestBody,
   SupabasePkceTokenRequestBody,
 } from "./social-sign-in.contract";
@@ -52,77 +61,10 @@ export {
   otpVerifyFailureFrom,
   sessionRefreshFailureFrom,
 } from "./auth-response";
-
-// 전송 함수가 받는 본문의 합집합입니다.
-type SupabaseAuthRequestBody =
-  | SupabaseOtpRequestBody
-  | SupabaseVerifyRequestBody
-  | SupabaseRefreshRequestBody
-  | SupabasePkceTokenRequestBody
-  | SupabaseIdTokenRequestBody;
+export { supabaseAuthPathFor, supabaseAuthRequest, supabaseAuthorizeUrl } from "./auth-request";
 
 /** 응답이 이 안에 안 오면 `network`입니다. */
 export const authRequestTimeoutMs = 10000;
-
-/** `default` 없는 `switch`로 네 연산 전부를 망라합니다. */
-export function supabaseAuthPathFor(operation: AuthOperation): SupabaseAuthPath {
-  switch (operation) {
-    case "request-otp": {
-      return "/auth/v1/otp";
-    }
-    case "verify-otp": {
-      return "/auth/v1/verify";
-    }
-    case "refresh-session": {
-      return "/auth/v1/token?grant_type=refresh_token";
-    }
-    case "exchange-pkce": {
-      return "/auth/v1/token?grant_type=pkce";
-    }
-    case "exchange-id-token": {
-      return "/auth/v1/token?grant_type=id_token";
-    }
-  }
-}
-
-/**
- * `url = config.url + path`, `init`은 `POST` · `apikey` · `Content-Type` 헤더 ·
- * JSON 본문입니다. `Authorization` 헤더를 싣지 않습니다.
- */
-export function supabaseAuthRequest(
-  config: SupabaseConfig,
-  operation: AuthOperation,
-  body: SupabaseAuthRequestBody,
-): { url: string; init: HttpRequestInit } {
-  return {
-    url: `${config.url}${supabaseAuthPathFor(operation)}`,
-    init: {
-      method: "POST",
-      headers: { apikey: config.anonKey, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    },
-  };
-}
-
-// ------------------------------------------------------------------ 소셜 로그인
-
-/**
- * `GET /auth/v1/authorize`의 주소입니다. 앱이 부르지 않고 인증 창이 엽니다. 키 순서는
- * `SupabaseAuthorizeQuery`의 순서로 고정하고, 값은 전부 `encodeURIComponent`를 거칩니다.
- * `apikey`를 싣지 않습니다(브라우저가 여는 GET).
- */
-export function supabaseAuthorizeUrl(
-  config: SupabaseConfig,
-  query: SupabaseAuthorizeQuery,
-): string {
-  const params = [
-    `provider=${encodeURIComponent(query.provider)}`,
-    `redirect_to=${encodeURIComponent(query.redirect_to)}`,
-    `code_challenge=${encodeURIComponent(query.code_challenge)}`,
-    `code_challenge_method=${encodeURIComponent(query.code_challenge_method)}`,
-  ].join("&");
-  return `${config.url}/auth/v1/authorize?${params}`;
-}
 
 /**
  * PKCE 코드 교환입니다(`POST /auth/v1/token?grant_type=pkce`, 본문 `{ auth_code, code_verifier }`).
@@ -136,7 +78,7 @@ export const exchangePkceCode: ExchangePkceCode = async (
     auth_code: request.authCode,
     code_verifier: request.codeVerifier,
   };
-  const outcome = await sendAuthRequest("exchange-pkce", body);
+  const outcome = await send((config) => supabaseAuthRequest(config, "exchange-pkce", body), true);
   return sessionResult(outcome, "exchanged", pkceExchangeFailureFrom);
 };
 
@@ -152,7 +94,10 @@ export const exchangeIdToken: ExchangeIdToken = async (
     id_token: request.idToken,
     nonce: request.nonce,
   };
-  const outcome = await sendAuthRequest("exchange-id-token", body);
+  const outcome = await send(
+    (config) => supabaseAuthRequest(config, "exchange-id-token", body),
+    true,
+  );
   return sessionResult(outcome, "exchanged", pkceExchangeFailureFrom);
 };
 
@@ -177,9 +122,9 @@ type AuthRequestOutcome =
   | { readonly ok: false; readonly reason: "network" | "unconfigured" };
 
 // 설정 확인 → 전송 함수 해석 → 전송과 제한 시간의 경주. **어떤 경우에도 던지지 않습니다.**
-async function sendAuthRequest(
-  operation: AuthOperation,
-  body: SupabaseAuthRequestBody,
+async function send(
+  build: (config: SupabaseConfig) => { url: string; init: HttpRequestInit },
+  readBody: boolean,
 ): Promise<AuthRequestOutcome> {
   const config = supabaseConfig();
   if (config === null) {
@@ -191,7 +136,7 @@ async function sendAuthRequest(
     return { ok: false, reason: "network" };
   }
 
-  const { url, init } = supabaseAuthRequest(config, operation, body);
+  const { url, init } = build(config);
 
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<AuthRequestOutcome>((resolve) => {
@@ -207,7 +152,8 @@ async function sendAuthRequest(
       if (response.status === 0 || response.status === 499) {
         return { ok: false, reason: "network" };
       }
-      const bodyText = await response.text();
+      // 로그아웃 · 삭제는 상태 코드만 가르므로 본문을 읽지 않습니다.
+      const bodyText = readBody ? await response.text() : "";
       return { ok: true, status: response.status, bodyText };
     } catch {
       return { ok: false, reason: "network" };
@@ -255,7 +201,7 @@ export const requestPhoneOtp: RequestPhoneOtp = async (
   phone: PhoneNumber,
 ): Promise<PhoneOtpRequestResult> => {
   const body: SupabaseOtpRequestBody = { phone: phone.e164, channel: "sms", create_user: true };
-  const outcome = await sendAuthRequest("request-otp", body);
+  const outcome = await send((config) => supabaseAuthRequest(config, "request-otp", body), true);
   if (!outcome.ok) {
     return { status: "failed", reason: outcome.reason };
   }
@@ -280,7 +226,7 @@ export const verifyPhoneOtp: VerifyPhoneOtp = async (
     phone: request.phone.e164,
     token: request.code,
   };
-  const outcome = await sendAuthRequest("verify-otp", body);
+  const outcome = await send((config) => supabaseAuthRequest(config, "verify-otp", body), true);
   return sessionResult(outcome, "verified", otpVerifyFailureFrom);
 };
 
@@ -289,6 +235,30 @@ export const refreshAuthSession: RefreshAuthSession = async (
   refreshToken: string,
 ): Promise<SessionRefreshResult> => {
   const body: SupabaseRefreshRequestBody = { refresh_token: refreshToken };
-  const outcome = await sendAuthRequest("refresh-session", body);
+  const outcome = await send(
+    (config) => supabaseAuthRequest(config, "refresh-session", body),
+    true,
+  );
   return sessionResult(outcome, "refreshed", sessionRefreshFailureFrom);
+};
+
+/**
+ * 로그아웃 요청을 시작만 하고 결과를 버립니다. 설정이 없으면 요청하지 않습니다. 거부하지 않습니다.
+ */
+export const signOutRemotely: SignOutRemotely = async (accessToken) => {
+  await send((config) => supabaseLogoutRequest(config, accessToken), false);
+};
+
+/** 삭제 함수를 부릅니다. 2xx → `deleted`. 거부하지 않습니다. */
+export const requestAccountDeletion: RequestAccountDeletion = async (
+  request: AccountDeletionRequest,
+): Promise<AccountDeletionRequestResult> => {
+  const outcome = await send((config) => deleteAccountFunctionRequest(config, request), false);
+  if (!outcome.ok) {
+    return { status: "failed", reason: outcome.reason };
+  }
+  if (isSuccessStatus(outcome.status)) {
+    return { status: "deleted" };
+  }
+  return { status: "failed", reason: accountDeletionFailureFrom(outcome.status) };
 };

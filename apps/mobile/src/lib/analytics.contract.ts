@@ -1,9 +1,7 @@
-// 제품 사용 이벤트를 PostHog로 보내는 계약입니다. 타입만 둡니다 — 구현 · 값은 없습니다.
-//
-// 결정의 근거는 ADR-0029(분석 전송 · PostHog)입니다. 이 파일은 그 계약의 타입 부분을
-// 컴파일되는 모양으로 고정합니다. 이벤트 이름과 필드는 **새로 정하지 않습니다** —
-// 각 화면 계약(`entry-flow.ts` · `*.contract.ts`)이 이미 고정한 일곱 union을 그대로
-// 모읍니다. 이 파일이 더하는 것은 「그 이벤트가 PostHog 요청의 어디로 가는가」뿐입니다.
+// 제품 사용 이벤트를 PostHog로 보내는 계약입니다(ADR-0029). 타입만 둡니다 — 구현 · 값은 없습니다.
+// 이벤트 이름과 필드는 **새로 정하지 않습니다** — 각 화면 계약(`entry-flow.ts` · `*.contract.ts`)이
+// 이미 고정한 일곱 union을 그대로 모읍니다. 이 파일이 더하는 것은 「그 이벤트가 PostHog 요청의
+// 어디로 가는가」뿐입니다.
 //
 // 모듈 셋이 이 타입을 나눠 가집니다.
 //   - `lib/analytics-config.ts`  — 순수. 키 · 환경 판정 · 호스트 상수. 어느 스레드든 안전
@@ -15,6 +13,7 @@
 
 import type { PostHogCore, PostHogCoreOptions } from "@posthog/core";
 
+import type { AnalyticsUser } from "./analytics-user.contract";
 import type { EntryAppProps, EntryEvent, EntryEventSink } from "./entry-flow";
 import type {
   EpisodeIntroAppProps,
@@ -77,7 +76,7 @@ export type AnalyticsConfigFrom = (
 
 // ------------------------------------------------------------------ 이벤트 → capture
 
-/** sink 일곱이 내는 이벤트 전부입니다(이름 23개 · 모양 26개 — 열림 이벤트 셋이 출처별 두 모양). */
+/** sink 일곱이 내는 이벤트 전부입니다(이름 23개 · 모양 27개 — 열림 이벤트 셋이 출처별 두 모양). */
 export type AnalyticsEvent =
   | EntryEvent
   | MessengerEvent
@@ -109,7 +108,7 @@ export type AnalyticsEventName =
   | "notification_item_deleted"
   | "settings_opened"
   | "profile_opened"
-  | "terms_opened"
+  | "legal_document_opened"
   | "session_option_changed"
   | "episode_intro_viewed"
   | "episode_intro_skipped"
@@ -168,18 +167,16 @@ export type AnalyticsEventSinksFrom = (
   client: AnalyticsCaptureClient | null,
 ) => AnalyticsEventSinks;
 
-/** 로그인 사용자 식별입니다(ADR-0029 D8). 로그인 · 세션 갱신 직후 진입 결선이 부릅니다. */
+/** 로그인 사용자 식별입니다(ADR-0029 D8). `AnalyticsUser.identify`와 같은 모양입니다. */
 export type AnalyticsIdentify = (userId: string) => void;
 
-/** App이 받는 식별 자리입니다. sink와 같이 보내지 않을 때는 `null`입니다. */
-export type AnalyticsIdentifyAppProps = {
-  readonly analyticsIdentify?: AnalyticsIdentify | null;
-};
+/** App이 받는 사용자 자리(`identify` + `reset`)입니다. 없으면 `null`. */
+export type AnalyticsUserAppProps = { readonly analyticsUser?: AnalyticsUser | null };
 
-/** 진입점이 한 번 만들어 쥐는 묶음입니다. 클라이언트가 없으면 `identify`도 `null`입니다. */
+/** 진입점이 만드는 묶음입니다. 클라이언트가 없으면 `user`도 `null`. */
 export type AnalyticsSession = {
   readonly sinks: AnalyticsEventSinks;
-  readonly identify: AnalyticsIdentify | null;
+  readonly user: AnalyticsUser | null;
 };
 
 // ------------------------------------------------------------------ 전송(어댑터 ↔ Lynx fetch)
@@ -258,10 +255,7 @@ export type PostHogClientOptions = Required<
  */
 export type AnalyticsQueueStorageKey = "analytics.queue";
 
-/**
- * 네트워크 오류 뒤 새 이벤트 없이 스스로 다시 보내는 간격(ms)입니다. 차례로 쓰고 다 쓰면
- * 멈춥니다 — 남은 대기열은 다음 이벤트나 다음 실행이 보냅니다.
- */
+/** 네트워크 오류 뒤 스스로 다시 보내는 간격(ms)입니다. 다 쓰면 멈추고, 남은 대기열은 다음 이벤트나 실행이 보냅니다. */
 export type AnalyticsQueueRetryDelaysMs = readonly number[];
 
 // ------------------------------------------------------------------ 컴파일 검사

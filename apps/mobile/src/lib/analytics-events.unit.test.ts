@@ -23,7 +23,7 @@ const sinkKeys = [
   "episodeIntroEventSink",
 ] as const satisfies readonly (keyof AnalyticsEventSinks)[];
 
-// 이름 23개 · 모양 26개(열림 이벤트 셋이 출처별 두 모양).
+// 이름 23개 · 모양 27개(열림 이벤트 셋이 출처별 두 모양).
 const events: readonly AnalyticsEvent[] = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
@@ -89,7 +89,8 @@ const events: readonly AnalyticsEvent[] = [
   { name: "notification_item_deleted", notificationId: "n-2", target: "roleplay-list" },
   { name: "settings_opened" },
   { name: "profile_opened" },
-  { name: "terms_opened" },
+  { name: "legal_document_opened", document: "privacy-policy", source: "settings" },
+  { name: "legal_document_opened", document: "terms-of-use", source: "login" },
   { name: "session_option_changed", option: "auto-play-audio", value: false },
   { name: "episode_intro_viewed", episodeId: "tutorial" },
   { name: "episode_intro_skipped", episodeId: "tutorial" },
@@ -104,8 +105,8 @@ function withoutName(event: AnalyticsEvent): Record<string, unknown> {
 }
 
 describe("analyticsCaptureFrom", () => {
-  test("AE1: 표가 이름 23개 · 모양 26개를 다 덮는다", () => {
-    expect(events).toHaveLength(26);
+  test("AE1: 표가 이름 23개 · 모양 27개를 다 덮는다", () => {
+    expect(events).toHaveLength(27);
     expect(new Set(events.map((e) => e.name)).size).toBe(23);
   });
 
@@ -154,8 +155,8 @@ describe("noAnalyticsEventSinks / noAnalyticsSession", () => {
     }
   });
 
-  test("AE3: noAnalyticsSession은 sink 일곱 null + identify null이다", () => {
-    expect(noAnalyticsSession).toStrictEqual({ sinks: noAnalyticsEventSinks, identify: null });
+  test("AE3: noAnalyticsSession은 sink 일곱 null + user null이다(identify 자리 없음)", () => {
+    expect(noAnalyticsSession).toStrictEqual({ sinks: noAnalyticsEventSinks, user: null });
   });
 });
 
@@ -185,7 +186,7 @@ describe("analyticsEventSinksFrom", () => {
       [sinks.phoneCallEventSink, events[12]!],
       [sinks.notificationEventSink, events[15]!],
       [sinks.settingsEventSink, events[19]!],
-      [sinks.episodeIntroEventSink, events[21]!],
+      [sinks.episodeIntroEventSink, events[22]!],
     ];
     for (const [sink, event] of bySink) {
       expect(sink).toBeTypeOf("function");

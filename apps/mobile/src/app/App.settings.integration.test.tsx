@@ -2,7 +2,6 @@ import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { termsSections } from "../screens/terms/terms-sections";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { SettingsEventSink } from "../screens/settings/settings.contract";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
@@ -44,7 +43,7 @@ function openSettingsTab(): void {
 // 설정 항목 셀입니다. 셀은 ui-lynx `SettingsGroup`이 그리고, 항목은 그룹이 싣는
 // `ui-lynx-settings-group-item-{id}` 상자로 가려 집습니다(`id`는 이동 대상 · 옵션 키).
 // 나가기는 동그란 뒤로 버튼(ui-lynx `RoundButton`)입니다 — testid 상자 안의 버튼을 누릅니다.
-function exitButton(testId: "profile-screen-exit" | "terms-screen-exit"): HTMLElement {
+function exitButton(testId: "profile-screen-exit"): HTMLElement {
   return within(screen.getByTestId(testId)).getByTestId("ui-lynx-round-button");
 }
 
@@ -78,7 +77,7 @@ afterEach(() => {
 
 // ------------------------------------------------------------------------- IT1
 
-test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘이 계약 순서로 서고 토글 둘 다 기본값이 켜짐이다", async () => {
+test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘·계정 동작 둘이 계약 순서로 서고 토글 둘 다 기본값이 켜짐이다", async () => {
   await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
   openSettingsTab();
 
@@ -88,9 +87,12 @@ test("[IT1] 설정 탭을 열면 이동 항목 둘·토글 항목 둘이 계약 
   ).map((el) => el.getAttribute("data-testid"));
   expect(itemTestIds).toEqual([
     "ui-lynx-settings-group-item-profile",
-    "ui-lynx-settings-group-item-terms",
+    "ui-lynx-settings-group-item-privacy-policy",
+    "ui-lynx-settings-group-item-terms-of-use",
     "ui-lynx-settings-group-item-auto-play-audio",
     "ui-lynx-settings-group-item-show-transcript",
+    "ui-lynx-settings-group-item-sign-out",
+    "ui-lynx-settings-group-item-delete-account",
   ]);
 
   expect(settingsCell("auto-play-audio")).toHaveAttribute("data-checked", "true");
@@ -136,20 +138,33 @@ test("[IT3] 프로필의 설정으로를 tap하면 설정 화면으로 돌아가
 
 // ------------------------------------------------------------------------- IT4
 
-test("[IT4] 개인정보 보호 및 약관 항목을 tap하면 약관 화면이 서고 절 수가 termsSections().length와 같으며 설정으로 돌아온다(데이터 앵커)", async () => {
-  const sections = termsSections();
+// 방침 · 약관은 앱 위 브라우저로 엽니다(ADR-0033). 호스트 경계 대역(`LegalDocumentModule`)만
+// 세웁니다 — 이미 세운 `NativeModules`(저장소 · 오디오)를 지우지 않고 얹습니다.
+function stubLegalDocumentHost(): { opened: string[] } {
+  const opened: string[] = [];
+  const previous = (globalThis as { NativeModules?: Record<string, unknown> }).NativeModules ?? {};
+  vi.stubGlobal("NativeModules", {
+    ...previous,
+    LegalDocumentModule: {
+      open: (args: { document: string }, callback: (payload: unknown) => void) => {
+        opened.push(args.document);
+        callback({ status: "opened" });
+      },
+    },
+  });
+  return { opened };
+}
+
+test("[IT4] 개인정보처리방침 · 이용약관 항목을 tap하면 그 문서를 호스트로 열고 설정 화면에 남는다", async () => {
   await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  const { opened } = stubLegalDocumentHost();
   openSettingsTab();
-  fireEvent.tap(settingsCell("terms"), {});
 
-  expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
-  const content = screen.getByTestId("terms-screen-content");
-  expect(content.children).toHaveLength(sections.length);
+  fireEvent.tap(settingsCell("privacy-policy"), {});
+  fireEvent.tap(settingsCell("terms-of-use"), {});
 
-  fireEvent.tap(exitButton("terms-screen-exit"), {});
-
+  expect(opened).toEqual(["privacy-policy", "terms-of-use"]);
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
-  expect(screen.queryByTestId("terms-screen-title")).not.toBeInTheDocument();
 });
 
 // ------------------------------------------------------------------------- IT5
@@ -252,7 +267,7 @@ test("[IT9] 설정 sink는 설정 탭 tap마다 발화하고 이미 설정 탭�
 
 // ------------------------------------------------------------------------ IT10
 
-test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 약관 → 설정으로 → 자동 재생 토글 → 대본 토글의 순서가 정확히 계약대로다('설정으로' 복귀는 settings_opened를 내지 않는다)", async () => {
+test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 이용약관 → 자동 재생 토글 → 대본 토글의 순서가 정확히 계약대로다('설정으로' 복귀는 settings_opened를 내지 않는다)", async () => {
   const log: unknown[] = [];
   const settingsEventSink: NonNullable<SettingsEventSink> = (event) => log.push(event);
   await renderSignedInApp(
@@ -265,9 +280,8 @@ test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 약관 
   fireEvent.tap(exitButton("profile-screen-exit"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
-  fireEvent.tap(settingsCell("terms"), {});
-  expect(screen.getByTestId("terms-screen-title")).toBeInTheDocument();
-  fireEvent.tap(exitButton("terms-screen-exit"), {});
+  stubLegalDocumentHost();
+  fireEvent.tap(settingsCell("terms-of-use"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(settingsCell("auto-play-audio"), {});
@@ -276,7 +290,7 @@ test("[IT10] 공용 로그 — 설정 → 프로필 → 설정으로 → 약관 
   expect(log).toEqual([
     { name: "settings_opened" },
     { name: "profile_opened" },
-    { name: "terms_opened" },
+    { name: "legal_document_opened", document: "terms-of-use", source: "settings" },
     { name: "session_option_changed", option: "auto-play-audio", value: false },
     { name: "session_option_changed", option: "show-transcript", value: false },
   ]);
@@ -319,13 +333,8 @@ test("[IT12] (가드) sink 없이 render(<App />) — 탭·토글·항목 tap이
   }).not.toThrow();
 
   expect(() => {
-    const nav = settingsCell("terms");
-    if (nav !== null) fireEvent.tap(nav, {});
-  }).not.toThrow();
-
-  expect(() => {
-    const exit = exitButton("terms-screen-exit");
-    if (exit !== null) fireEvent.tap(exit, {});
+    fireEvent.tap(settingsCell("privacy-policy"), {});
+    fireEvent.tap(settingsCell("terms-of-use"), {});
   }).not.toThrow();
 
   expect(() => {

@@ -129,4 +129,47 @@ describe("Dialog", () => {
     );
     expect(screen.getByTestId("ui-lynx-dialog-container")).not.toHaveAttribute("bindanimationend");
   });
+
+  // UDU1 — 로딩 · 비활성 액션(계정 삭제 대화상자의 대기 중 모양).
+  test("[UDU1] 로딩 액션은 스피너를 그리고 취소 경로를 없애며, 로딩 · 비활성 액션 탭은 bindaction을 부르지 않는다", () => {
+    const bindaction = vi.fn<(id: string) => void>();
+    expect(() =>
+      render(
+        <Dialog
+          title="삭제할까요?"
+          actions={[
+            { id: "a", label: "A", loading: true },
+            { id: "b", label: "B", disabled: true },
+          ]}
+          bindaction={bindaction}
+        />,
+      ),
+    ).not.toThrow();
+
+    const buttons = screen.getAllByTestId("ui-lynx-button");
+    expect(buttons[0]).toHaveAttribute("data-loading", "true");
+    expect(screen.getByTestId("ui-lynx-button-spinner")).toBeInTheDocument();
+    // 값이 undefined인 속성을 testing-environment가 "null" 문자열로 직렬화한다 — 실제 Lynx에서는 속성 없음.
+    expect(screen.getByTestId("ui-lynx-dialog").getAttribute("data-cancelactionid") ?? "null").toBe(
+      "null",
+    );
+    fireEvent.tap(buttons[0]!, {});
+    fireEvent.tap(buttons[1]!, {});
+    expect(bindaction).not.toHaveBeenCalled();
+  });
+
+  // UDU2 — 파수꾼: 로딩 없는 두 액션은 마지막 id가 취소 경로.
+  test("[UDU2] 로딩 없는 두 액션이면 data-cancelactionid가 마지막 id다", () => {
+    render(
+      <Dialog
+        title="삭제할까요?"
+        actions={[
+          { id: "a", label: "A" },
+          { id: "b", label: "B" },
+        ]}
+        bindaction={() => undefined}
+      />,
+    );
+    expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-cancelactionid", "b");
+  });
 });

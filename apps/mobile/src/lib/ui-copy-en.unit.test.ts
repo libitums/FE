@@ -81,9 +81,8 @@ test("UE3. 표 전체(문자열 잎 + 함수 잎)에 한글이 없다", () => {
 });
 
 test("UE4. 탭 머리 제목이 17자 이하다", () => {
-  const limit = "Privacy and terms".length;
-  expect(limit).toBe(17);
-  for (const title of [c.profile.title, c.terms.title, c.notifications.title, c.settings.title]) {
+  const limit = 17;
+  for (const title of [c.profile.title, c.notifications.title, c.settings.title]) {
     expect(title.length).toBeLessThanOrEqual(limit);
   }
 });
@@ -91,7 +90,8 @@ test("UE4. 탭 머리 제목이 17자 이하다", () => {
 test("UE5. 부록 B 대표 문구와 문자열이 같다", () => {
   expect(c.common.exitTo.journey).toBe("Back to map");
   expect(c.learningShell.leaveDialog.title).toBe("Leave this lesson?");
-  expect(c.settings.nav.terms).toBe("Privacy and terms");
+  expect(c.settings.nav["privacy-policy"]).toBe("Privacy Policy");
+  expect(c.settings.nav["terms-of-use"]).toBe("Terms of Use");
   expect(c.phoneCall.status.playing).toBe("Speaking…");
   expect(c.roleplay.premiumNotice("T")).toBe("“T” is a Plus roleplay. Plus isn't available yet.");
 });

@@ -5,7 +5,6 @@ import type {
   NotificationsCopy,
   ProfileCopy,
   SettingsCopy,
-  TermsCopy,
 } from "./ui-copy-sections.contract";
 
 export const notificationsEn: NotificationsCopy = {
@@ -23,10 +22,28 @@ export const notificationsEn: NotificationsCopy = {
 
 export const settingsEn: SettingsCopy = {
   title: "Settings",
-  group: { account: "Account", learning: "Learning" },
-  nav: { profile: "User profile", terms: "Privacy and terms" },
+  group: { account: "Account", learning: "Learning", accountActions: "Account actions" },
+  nav: {
+    profile: "User profile",
+    "privacy-policy": "Privacy Policy",
+    "terms-of-use": "Terms of Use",
+  },
   sessionOption: { "auto-play-audio": "Auto-play", "show-transcript": "Show transcript" },
   optionState: { on: "on", off: "off" },
+  action: { "sign-out": "Sign out", "delete-account": "Delete account" },
+  signOutDialog: { title: "Sign out?", confirm: "Sign out", cancel: "Stay signed in" },
+  deleteDialog: {
+    title: "Delete your account?",
+    description:
+      "Your account and learning progress will be permanently deleted. This can't be undone.",
+    confirm: "Delete account",
+    cancel: "Keep account",
+  },
+  deleteFailure: {
+    network: "Couldn't delete your account. Check your connection and try again.",
+    other: "Couldn't delete your account. Please try again.",
+  },
+  exitAnnouncement: { "signed-out": "You're signed out.", deleted: "Your account was deleted." },
 };
 
 export const profileEn: ProfileCopy = {
@@ -37,8 +54,6 @@ export const profileEn: ProfileCopy = {
     "learning-goal": "Learning goal",
   },
 };
-
-export const termsEn: TermsCopy = { title: "Privacy and terms" };
 
 export const gemPurchaseEn: GemPurchaseCopy = {
   packAmount: (count, display) => `${display} ${count === 1 ? "gem" : "gems"}`,

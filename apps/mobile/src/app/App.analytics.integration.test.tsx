@@ -278,7 +278,7 @@ test("[IA-ID1] 로그인된 설치는 부팅 뒤 이벤트가 그 사용자의 d
   await renderSignedInApp(
     <App
       {...session.sinks}
-      analyticsIdentify={session.identify}
+      analyticsUser={session.user}
       completedEpisodeIntroIds={completedIntros}
     />,
     { refreshedAccessToken: accessTokenFor("user-1") },
@@ -304,7 +304,7 @@ test("[IA-ID2] 같은 사용자는 앱을 다시 켜도 같은 distinct_id다", 
   const view = await renderSignedInApp(
     <App
       {...firstSession.sinks}
-      analyticsIdentify={firstSession.identify}
+      analyticsUser={firstSession.user}
       completedEpisodeIntroIds={completedIntros}
     />,
     { refreshedAccessToken: accessTokenFor("user-1") },
@@ -318,7 +318,7 @@ test("[IA-ID2] 같은 사용자는 앱을 다시 켜도 같은 distinct_id다", 
   await renderSignedInApp(
     <App
       {...secondSession.sinks}
-      analyticsIdentify={secondSession.identify}
+      analyticsUser={secondSession.user}
       completedEpisodeIntroIds={completedIntros}
     />,
     { refreshedAccessToken: accessTokenFor("user-1") },
