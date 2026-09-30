@@ -6,7 +6,7 @@ import type { EpisodePrologue } from "../screens/episode-intro/episode-intro.con
 import { PrologueCallScreen } from "../screens/episode-intro/PrologueCallScreen";
 import { PrologueChatScreen } from "../screens/episode-intro/PrologueChatScreen";
 import { EpisodeNarrativeScreen } from "../screens/episode-narrative/EpisodeNarrativeScreen";
-import jiminPortrait from "../screens/visual-novel/assets/temporary/character-jimin-smile.png";
+import jiminPortrait from "../screens/visual-novel/assets/cafe/character-jimin-smile.png";
 
 export type EpisodePrologueScreenProps = {
   readonly insets: SafeAreaInsets;

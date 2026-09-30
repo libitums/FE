@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import backgroundSource from "./assets/temporary/background-cafe-exterior-day.png";
-import neutralSource from "./assets/temporary/character-jimin-neutral.png";
-import smileSource from "./assets/temporary/character-jimin-smile.png";
+import backgroundSource from "./assets/cafe/background-cafe-exterior-day.png";
+import neutralSource from "./assets/cafe/character-jimin-neutral.png";
+import smileSource from "./assets/cafe/character-jimin-smile.png";
 
 import type {
   VisualNovelProgress,

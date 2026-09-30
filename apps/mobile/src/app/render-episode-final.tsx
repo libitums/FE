@@ -9,7 +9,7 @@ import { journeyMapSections } from "../screens/journey-map/journey-map";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 // 통화 상대의 얼굴입니다 — 서사 통화와 같은 임시 그림입니다(`render-episode-intro.tsx`).
-import jiminPortrait from "../screens/visual-novel/assets/temporary/character-jimin-smile.png";
+import jiminPortrait from "../screens/visual-novel/assets/cafe/character-jimin-smile.png";
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 

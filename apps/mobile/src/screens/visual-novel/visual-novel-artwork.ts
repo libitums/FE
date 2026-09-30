@@ -1,6 +1,6 @@
-import backgroundSource from "./assets/temporary/background-cafe-exterior-day.png";
-import neutralSource from "./assets/temporary/character-jimin-neutral.png";
-import smileSource from "./assets/temporary/character-jimin-smile.png";
+import backgroundSource from "./assets/cafe/background-cafe-exterior-day.png";
+import neutralSource from "./assets/cafe/character-jimin-neutral.png";
+import smileSource from "./assets/cafe/character-jimin-smile.png";
 import type { VisualNovelArtworkBundle, VisualNovelArtworkId } from "./visual-novel.contract";
 
 // Rspeedy의 URL을 그대로 사용합니다. 개발 서버 URL은 원격으로 읽고,
