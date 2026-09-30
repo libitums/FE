@@ -34,7 +34,7 @@ export const postHogClientOptions: PostHogClientOptions = {
   sendFeatureFlagEvent: false,
   disableSurveys: true,
   disableCompression: true,
-  disableGeoip: true,
+  disableGeoip: false,
   personProfiles: "identified_only",
   defaultOptIn: true,
   maxQueueSize: 200,
