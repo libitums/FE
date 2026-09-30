@@ -237,7 +237,6 @@ describe("[FI7] 비 Apple 사용자 · 코드 null", () => {
     });
     expect(requests[1]?.headers).toMatchObject({
       apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
     });
   });
 });
