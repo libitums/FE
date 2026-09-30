@@ -45,27 +45,31 @@ const pendingRefreshes = new Map<string, Promise<string | null>>();
 
 /** 로그인해 있으면 쓸 수 있는 액세스 토큰입니다. 만료가 가까우면 갱신해 저장합니다. 없거나 갱신이 실패하면 `null`. */
 export async function currentAccessToken(nowMs: number = Date.now()): Promise<string | null> {
-  const session = loadAuthSession();
-  if (session === null) return null;
-  if (!sessionNeedsRefresh(session, nowMs)) return session.accessToken;
-  const key = session.refreshToken;
-  let pending = pendingRefreshes.get(key);
-  if (pending === undefined) {
-    pending = (async () => {
-      try {
-        const refreshed = await refreshAuthSession(session.refreshToken);
-        // 응답을 기다리는 동안 로그아웃하거나 다른 세션으로 바뀌었으면 저장도 RPC도 하지 않습니다.
-        if (refreshed.status !== "refreshed" || loadAuthSession()?.refreshToken !== key)
-          return null;
-        saveAuthSession(refreshed.session);
-        return refreshed.session.accessToken;
-      } finally {
-        pendingRefreshes.delete(key);
-      }
-    })();
-    pendingRefreshes.set(key, pending);
+  try {
+    const session = loadAuthSession();
+    if (session === null) return null;
+    if (!sessionNeedsRefresh(session, nowMs)) return session.accessToken;
+    const key = session.refreshToken;
+    let pending = pendingRefreshes.get(key);
+    if (pending === undefined) {
+      pending = (async () => {
+        try {
+          const refreshed = await refreshAuthSession(session.refreshToken);
+          // 응답을 기다리는 동안 로그아웃하거나 다른 세션으로 바뀌었으면 저장도 RPC도 하지 않습니다.
+          if (refreshed.status !== "refreshed" || loadAuthSession()?.refreshToken !== key)
+            return null;
+          saveAuthSession(refreshed.session);
+          return refreshed.session.accessToken;
+        } finally {
+          pendingRefreshes.delete(key);
+        }
+      })();
+      pendingRefreshes.set(key, pending);
+    }
+    return await pending;
+  } catch {
+    return null;
   }
-  return pending;
 }
 
 /** 로그인한 사용자로 RPC 하나를 부릅니다. 2xx면 본문, 그 밖(로그인 없음 · 실패 · 연결 실패)은 `null`. */
@@ -73,10 +77,17 @@ export async function authorizedRpc(
   path: RpcPath,
   body: Record<string, unknown>,
 ): Promise<string | null> {
-  const accessToken = await currentAccessToken();
-  if (accessToken === null || loadAuthSession()?.accessToken !== accessToken) return null;
-  const outcome = await send((config) => learningRpcRequest(config, accessToken, path, body), true);
-  return outcome.ok && isSuccessStatus(outcome.status) ? outcome.bodyText : null;
+  try {
+    const accessToken = await currentAccessToken();
+    if (accessToken === null || loadAuthSession()?.accessToken !== accessToken) return null;
+    const outcome = await send(
+      (config) => learningRpcRequest(config, accessToken, path, body),
+      true,
+    );
+    return outcome.ok && isSuccessStatus(outcome.status) ? outcome.bodyText : null;
+  } catch {
+    return null;
+  }
 }
 
 function jsonFrom(bodyText: string | null): unknown {
