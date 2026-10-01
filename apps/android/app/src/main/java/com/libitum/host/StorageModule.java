@@ -18,10 +18,10 @@ public final class StorageModule extends LynxModule {
   }
 
   @LynxMethod public void set(String key, String value) {
-    preferences.edit().putString("libitum." + key, value).commit();
+    preferences.edit().putString("libitum." + key, value).apply();
   }
 
   @LynxMethod public void remove(String key) {
-    preferences.edit().remove("libitum." + key).commit();
+    preferences.edit().remove("libitum." + key).apply();
   }
 }

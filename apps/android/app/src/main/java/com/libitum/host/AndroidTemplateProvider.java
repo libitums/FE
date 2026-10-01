@@ -42,7 +42,7 @@ final class AndroidTemplateProvider extends AbsTemplateProvider {
         } else {
           callback.onFailed("Unsupported bundle URL: " + uri);
         }
-      } catch (IOException error) {
+      } catch (Exception error) {
         callback.onFailed(error.toString());
       }
     }, "lynx-template-loader").start();
