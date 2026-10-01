@@ -56,6 +56,32 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 `WebAuthenticationModuleTest`는 난수와 잘못된 요청의 반환을 확인한다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
+## Maestro E2E
+
+Maestro CLI와 전용 Android API 35 에뮬레이터를 준비한다. 흐름은 **세로 390×844,
+160 dpi, 글자 배율 1.0** 기준이다. 에뮬레이터 크기를 확인하고 필요하면
+`adb shell wm size 390x844`로 맞춘다. 앱 상태를 지우므로 로그인된 기기에는 실행하지
+않는다.
+
+```sh
+# 저장소 루트: 실제 제공자 설정 대신 모의 URL을 번들에 포함한다.
+PUBLIC_SUPABASE_URL=https://example.invalid \
+  PUBLIC_SUPABASE_ANON_KEY=local-bridge-test pnpm bundle:android
+cd apps/android
+./gradlew assembleBundled
+adb -s <전용 에뮬레이터 ID> install -r app/build/outputs/apk/bundled/app-bundled.apk
+cd ../..
+E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android
+```
+
+`test:e2e:android:host`는 온보딩과 로그인 화면을, `test:e2e:android:social`은
+Apple·Google·Facebook의 인증 URL·PKCE·모의 딥링크 복귀를 각각 확인한다.
+실제 제공자 계정으로 로그인하거나 세션을 갱신하지는 않는다. 결과와 남은 항목은
+[호스트 흐름](../../docs/e2e/android-host.md)과
+[소셜 로그인 흐름](../../docs/e2e/android-social-login.md)에 적는다.
+모의 설정의 APK를 검증한 뒤 배포용 번들이 필요하면 실제 설정으로
+`pnpm bundle:android`와 Gradle 빌드를 다시 실행한다.
+
 ## 소셜 로그인 설정
 
 초기 심사 버전의 로그인 화면에는 Apple·Google·Facebook 버튼만 있다. 세 버튼 모두

@@ -7,6 +7,8 @@
   **명령 인터페이스**(`test:e2e` 한 줄)
 - 부분 대체: ADR-0006 D4의 *"`e2e` 제외"* 와 *"뷰 기반 도구는 쓰지 않는다"*, D3의 *"`test.e2e` 키를 두지 않는다"*,
   D6의 *"파일 하나 → `<flow>.e2e.test.ts`"*. ADR-0006의 나머지(계층 셋 · `verify` 구성 · D6의 수동 흐름 목록)는 그대로다.
+- Android 확장: [ADR-0040](0040-android-e2e-maestro.md)이 별도 APK·흐름·명령을 정한다.
+  이 문서의 `test:e2e`는 iOS `entry-flow.yaml`만 실행한다.
 
 ## 맥락
 
