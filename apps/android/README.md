@@ -113,6 +113,9 @@ Custom Tab으로 열고 뒤로가기로 앱에 복귀하는지 확인한다.
 `E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:signed-in`으로 검사한다.
 모의 세션과 계측 APK를 사용하는 이 흐름의 범위는
 [설정 화면 검증](../../docs/e2e/android-signed-in-settings.md)에 적었다.
+Google Play 이미지의 TalkBack 검증은 별도 명령
+`E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:talkback`을 사용한다.
+현재 관찰된 실패와 재현 절차는 [TalkBack 검증](../../docs/e2e/android-talkback.md)에 있다.
 실제 제공자 계정으로 로그인하거나 세션을 갱신하지는 않는다. 결과와 남은 항목은
 [호스트 흐름](../../docs/e2e/android-host.md)과
 [소셜 로그인 흐름](../../docs/e2e/android-social-login.md)에 적는다.

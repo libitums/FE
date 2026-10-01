@@ -226,6 +226,10 @@ describe("OnboardingScreen", () => {
         "accessibility-label",
         "Step 1 of 3",
       );
+      expect(screen.getByTestId("ui-lynx-page-indicator")).toHaveAttribute(
+        "accessibility-element",
+        "false",
+      );
       next();
       next();
       // 표식(`LearningUnit`)은 버튼 · 한국어 접미사로 낭독되므로 가립니다.

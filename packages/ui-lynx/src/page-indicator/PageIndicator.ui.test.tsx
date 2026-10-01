@@ -52,6 +52,13 @@ describe("PageIndicator UI contract", () => {
     }
   });
 
+  test("can leave the spoken progress to an enclosing screen label", () => {
+    render(<PageIndicator currentPage={1} pageCount={3} decorative />);
+    const root = screen.getByTestId("ui-lynx-page-indicator");
+    expect(root).toHaveAttribute("accessibility-element", "false");
+    expect(root).not.toHaveAttribute("accessibility-label");
+  });
+
   test("keeps state attributes and spoken state synchronized on rerender", () => {
     const view = render(<PageIndicator currentPage={1} pageCount={4} />);
     view.rerender(<PageIndicator currentPage={3} pageCount={4} />);

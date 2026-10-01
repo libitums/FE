@@ -95,7 +95,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
               accessibility-element={true}
               accessibility-label={`Step ${step + 1} of ${onboardingSteps.length}`}
             >
-              <PageIndicator pageCount={onboardingSteps.length} currentPage={step + 1} />
+              <PageIndicator pageCount={onboardingSteps.length} currentPage={step + 1} decorative />
             </view>
 
             {/* 제목과 본문은 서로 붙어 읽히도록 따로 묶습니다(간격 4). */}
