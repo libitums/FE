@@ -60,10 +60,13 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 
 Maestro CLI와 전용 Android API 35 에뮬레이터를 준비한다. 흐름은 **세로 390×844,
 160 dpi, 글자 배율 1.0** 기준이다. 에뮬레이터 크기를 확인하고 필요하면
-`adb shell wm size 390x844`로 맞춘다. 앱 상태를 지우므로 로그인된 기기에는 실행하지
-않는다.
+아래처럼 맞춘다. 앱 상태를 지우므로 로그인된 기기에는 실행하지 않는다.
 
 ```sh
+adb -s <전용 에뮬레이터 ID> shell wm size 390x844
+adb -s <전용 에뮬레이터 ID> shell wm density 160
+adb -s <전용 에뮬레이터 ID> shell settings put system font_scale 1.0
+
 # 저장소 루트: 실제 제공자 설정 대신 모의 URL을 번들에 포함한다.
 PUBLIC_SUPABASE_URL=https://example.invalid \
   PUBLIC_SUPABASE_ANON_KEY=local-bridge-test pnpm bundle:android
