@@ -18,8 +18,18 @@ adb -s "$E2E_UDID" shell settings put secure enabled_accessibility_services \
   com.google.android.marvin.talkback/.TalkBackService
 adb -s "$E2E_UDID" shell settings put secure accessibility_enabled 1
 
-if ! adb -s "$E2E_UDID" shell dumpsys accessibility | grep -q 'Bound services:{Service\[label=TalkBack'; then
-  echo "TalkBack did not bind on $E2E_UDID" >&2
+attempt=0
+until adb -s "$E2E_UDID" shell dumpsys accessibility | grep -q 'Bound services:{Service\[label=TalkBack'; do
+  attempt=$((attempt + 1))
+  if [ "$attempt" -ge 10 ]; then
+    echo "TalkBack did not bind on $E2E_UDID" >&2
+    exit 1
+  fi
+  sleep 1
+done
+
+if [ "$(adb -s "$E2E_UDID" shell settings get secure touch_exploration_enabled | tr -d '\r')" != "1" ]; then
+  echo "TalkBack touch exploration is not enabled on $E2E_UDID" >&2
   exit 1
 fi
 
