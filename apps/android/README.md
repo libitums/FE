@@ -120,6 +120,9 @@ Google Play 이미지의 TalkBack 검증은 별도 명령
 실제 제공자 계정으로 로그인하거나 세션을 갱신하지는 않는다. 결과와 남은 항목은
 [호스트 흐름](../../docs/e2e/android-host.md)과
 [소셜 로그인 흐름](../../docs/e2e/android-social-login.md)에 적는다.
+실제 Supabase 설정과 Chrome이 있는 전용 Google Play 에뮬레이터에서는
+`E2E_UDID=<ID> pnpm test:e2e:android:social:live`로 계정 입력 전 제공자 페이지까지
+사전 검증한다. 현재 Apple은 서버의 OAuth secret 누락 오류로 실패한다.
 모의 설정의 APK를 검증한 뒤 배포용 번들이 필요하면 실제 설정으로
 `pnpm bundle:android`와 Gradle 빌드를 다시 실행한다.
 

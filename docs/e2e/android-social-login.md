@@ -53,3 +53,27 @@ Maestro의 모의 로그인 URL은 세션을 만들지 않으므로 계정 삭�
 
 실제 Apple 인증·철회·관리자 삭제는 아직 실행하지 않았다. 모의 unit/integration 테스트는
 원래 Supabase 사용자와 Apple subject 대조, 토큰 누락·오류·취소에서의 삭제 중단을 확인한다.
+
+## 실제 제공자 페이지 사전 검증
+
+Google Play API 35 에뮬레이터에는 Chrome이 있다. 실제 설정을 담은 무시된
+`apps/mobile/.env.local`을 준비하고 다음을 실행한다. 검사기는 URL·anon key 값을
+출력하지 않고 서버의 세 제공자 활성 플래그와 빌드된 번들에 실제 URL이 포함됐는지만
+확인한다. Maestro는 390×844·160 dpi에서 각 버튼을 눌러 제공자 로그인 도메인이
+열리는지 검사한다. 계정 입력은 하지 않는다.
+
+```sh
+E2E_UDID=<Google Play 에뮬레이터 ID> pnpm test:e2e:android:social:live
+```
+
+2026-10-02 실행 결과: 공개 설정에서는 Apple·Google·Facebook이 모두 활성으로
+보였다. Google은 `accounts.google.com`, Facebook은 `m.facebook.com` 로그인 화면에
+도달했다. Apple은 제공자 화면에 도달하지 못했고 Supabase가
+`validation_failed` / `Unsupported provider: missing OAuth secret`을 반환했다.
+따라서 Apple Services ID의 웹 OAuth secret 설정을 고친 뒤 같은 사전 검증을
+다시 통과시켜야 한다. 활성 플래그만으로 실제 인증 가능성을 판정하면 안 된다.
+
+테스트 계정이 아직 없어 세 제공자의 실제 코드 교환·앱 복귀·세션 저장·재시작·
+서버 갱신 성공은 미검증이다. 계정 준비 후 각 제공자에서 로그인 → 여정 화면 →
+앱 강제 종료·재실행 → 여정 화면과 갱신 상태를 확인한다. 거부된 갱신의 세션 삭제
+경로는 `apps/android/test-session-resume.sh`의 모의 서버 계측 4건이 통과했다.

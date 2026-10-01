@@ -22,6 +22,7 @@
     "test:e2e:android:host": "maestro ${E2E_UDID:+--udid \"$E2E_UDID\"} test e2e/android-host.yaml",
     "test:e2e:android:social": "sh devtools/android-maestro/run-social.sh",
     "test:e2e:android:legal": "sh devtools/android-maestro/run-legal-documents.sh",
+    "test:e2e:android:social:live": "sh devtools/android-maestro/run-live-provider-preflight.sh",
     "test:e2e:android:small": "sh devtools/android-maestro/run-small-screen.sh",
     "test:e2e:android:signed-in": "sh devtools/android-maestro/run-signed-in-settings.sh",
     "test:e2e:android:talkback": "sh devtools/android-maestro/run-talkback.sh",
