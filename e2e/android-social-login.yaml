@@ -1,0 +1,32 @@
+# A5 — Apple·Google·Facebook OAuth 창과 앱 복귀. 모의 Supabase URL로 빌드한 APK에서 실행한다.
+appId: com.libitum.host
+env:
+  PROVIDER: ${PROVIDER || "apple"}
+  BUTTON_POINT: ${BUTTON_POINT || "50%,27%"}
+---
+- setOrientation: PORTRAIT
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Welcome! Are you looking for anything?"
+    timeout: 20000
+- tapOn:
+    point: "50%,88%"
+- tapOn:
+    point: "50%,88%"
+- tapOn:
+    point: "50%,88%"
+- assertScreenshot:
+    path: screenshots/android-login-390x844.png
+    thresholdPercentage: 95
+- tapOn:
+    point: ${BUTTON_POINT}
+- extendedWaitUntil:
+    visible: ".*provider=${PROVIDER}.*code_challenge=.*"
+    timeout: 15000
+- assertVisible: ".*redirect_to=duru%3A%2F%2Fauth-callback.*"
+- openLink: "duru://auth-callback?code=fake"
+- assertNotVisible: "Webpage not available"
+- assertScreenshot:
+    path: screenshots/android-social-error-390x844.png
+    thresholdPercentage: 99.5

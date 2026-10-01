@@ -1,0 +1,20 @@
+# A2 — Android bundled APK가 개발 서버 없이 온보딩과 로그인 화면을 렌더한다.
+appId: com.libitum.host
+---
+- setOrientation: PORTRAIT
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Welcome! Are you looking for anything?"
+    timeout: 20000
+- assertNotVisible: "Settings"
+- tapOn:
+    point: "50%,88%"
+- assertNotVisible: "Welcome! Are you looking for anything?"
+- tapOn:
+    point: "50%,88%"
+- tapOn:
+    point: "50%,88%"
+- assertScreenshot:
+    path: screenshots/android-login-390x844.png
+    thresholdPercentage: 95
