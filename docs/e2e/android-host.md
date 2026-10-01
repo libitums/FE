@@ -12,7 +12,7 @@ Android SDK 35, JDK 17, Android 에뮬레이터와 `apps/android` Gradle 프로�
 |---|---|---|
 | A1 | Debug APK를 열기 | Duru 첫 화면이 뜨고 미리보기 서버의 번들·이미지를 로드 |
 | A2 | `pnpm bundle:android` 뒤 로컬 설치용 `bundled` APK 열기 | 네트워크 개발 서버 없이 첫 화면과 로컬 이미지가 뜸 |
-| A3 | 전화번호 로그인으로 세션 저장 후 앱 완전 종료·재실행 | `StorageModule`에서 세션을 읽어 로그인 유지. 전화번호 수단을 켠 시험 빌드와 SMS 공급자·인증 서버가 필요 |
+| A3 | 소셜 로그인으로 세션 저장 후 앱 완전 종료·재실행 | `StorageModule`에서 세션을 읽고 서버 갱신 뒤 로그인 유지 |
 | A4 | 기기 시스템 글자 크기 변경 후 앱 재실행 | 글자 배율이 반영되고 핵심 조작이 가려지지 않음 |
 
 ## 2026-10-01 실행 결과
@@ -24,7 +24,7 @@ Debug 실행 인자에 `http://10.0.2.2:3001/main.lynx.bundle`를 지정했다.
 |---|---|---|
 | A1 | 통과 | [Debug 화면](evidence/android-debug-preview.png): 첫 화면·이미지 표시. Lynx 로그에서 `StorageModule.get` 호출 확인 |
 | A2 | 통과 | [번들 포함 화면](evidence/android-bundled.png): 개발 서버 없이 첫 화면·로컬 이미지 표시. APK 안의 `assets/main.lynx.bundle`, `assets/static/` 확인 |
-| A3 | 저장소 경계 통과, 로그인 흐름 미실행 | 별도 계측 프로세스에서 테스트용 세션을 저장하고 앱 프로세스를 종료한 뒤 새 프로세스에서 같은 값을 읽었다. 삭제 후 재시작해도 값이 없었다. 제품의 `productPhoneSignIn`이 `hidden`이고 SMS 공급자가 없어 실제 전화번호 로그인과 토큰 갱신은 미검증 |
+| A3 | 저장소 경계 통과, 로그인 흐름 미실행 | 별도 계측 프로세스에서 테스트용 세션을 저장하고 앱 프로세스를 종료한 뒤 새 프로세스에서 같은 값을 읽었다. 삭제 후 재시작해도 값이 없었다. 초기 심사 버전은 소셜 로그인만 사용하지만 Android 호스트에 `WebAuthenticationModule`·`AppleSignInModule`이 없어 실제 로그인과 토큰 갱신은 미검증 |
 | A4 | 온보딩·로그인 화면 통과 | [첫 화면 130%](evidence/android-font-130.png), [로그인 100%](evidence/android-login-font-100.png), [로그인 130%](evidence/android-login-font-130.png): 320×640에서 온보딩 3단계를 지나 로그인에 도달했다. 130%에서 Facebook 문구와 로고가 겹치는 문제를 수정해 버튼 3개·약관 링크가 모두 보임. 로그인 뒤 화면은 미검증 |
 
 `pnpm dev`의 HMR 번들은 이 최소 호스트에 WebSocket 지원이 없어 빈 화면을 보였다.
@@ -44,9 +44,8 @@ Debug 앱과 계측 APK를 설치하고 세 테스트를 각각 다른 계측 �
 
 모바일 JS의 기존 IA7·IA8·IA9 통합 테스트도 통과했다. 이 테스트들은 저장된 세션의
 재실행 후 토큰 갱신 성공, 갱신 거절 시 삭제, 네트워크 오류 시 보존을 각각 확인한다.
-현재 제품 빌드는 `productPhoneSignIn = "hidden"`이다. 실제 전화번호 로그인과 인증 서버를
-결합한 기기 검증은 SMS 공급자·테스트 계정·서버 설정과 전화번호 수단을 켠 시험 빌드가
-준비되면 위 A3 절차로 수행한다.
+초기 심사 버전은 소셜 로그인만 사용하며 `productPhoneSignIn = "hidden"`이다. 실제 A3
+기기 검증에는 Android 소셜 인증 모듈과 제공자·서버 설정 및 테스트 계정이 필요하다.
 
 ### A4 글자 크기 재현
 
