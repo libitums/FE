@@ -1,13 +1,24 @@
 package com.libitum.host;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import androidx.browser.customtabs.CustomTabsIntent;
 import com.lynx.tasm.LynxBooleanOption;
 import com.lynx.tasm.LynxView;
 import com.lynx.tasm.LynxViewBuilder;
+import com.lynx.react.bridge.Callback;
 import com.lynx.xelement.XElementBehaviors;
 
 public final class MainActivity extends Activity {
+  private final Handler mainHandler = new Handler(Looper.getMainLooper());
+  private Callback authCallback;
+  private String authScheme;
+  private boolean leftForAuthentication;
+
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     boolean bundled = !BuildConfig.DEBUG;
@@ -20,8 +31,63 @@ public final class MainActivity extends Activity {
     builder.setFontScale(getResources().getConfiguration().fontScale);
     builder.addBehaviors(new XElementBehaviors().create());
     builder.registerModule("StorageModule", StorageModule.class);
+    builder.registerModule("WebAuthenticationModule", WebAuthenticationModule.class, this);
     LynxView lynxView = builder.build(this);
     setContentView(lynxView);
     lynxView.renderTemplateUrl(templateUrl, "");
+  }
+
+  void startWebAuthentication(String url, String scheme, Callback callback) {
+    if (authCallback != null) {
+      callback.invoke(WebAuthenticationModule.payload("already-active", null));
+      return;
+    }
+    authCallback = callback;
+    authScheme = scheme;
+    leftForAuthentication = false;
+    try {
+      new CustomTabsIntent.Builder().build().launchUrl(this, Uri.parse(url));
+    } catch (RuntimeException error) {
+      finishWebAuthentication("failed", null);
+    }
+  }
+
+  @Override protected void onPause() {
+    if (authCallback != null) leftForAuthentication = true;
+    super.onPause();
+  }
+
+  @Override protected void onResume() {
+    super.onResume();
+    if (leftForAuthentication && authCallback != null) {
+      // A browser close resumes us without a redirect. Allow an incoming redirect intent first.
+      Callback pending = authCallback;
+      mainHandler.postDelayed(() -> {
+        if (authCallback == pending) finishWebAuthentication("cancelled", null);
+      }, 500);
+    }
+  }
+
+  @Override protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    setIntent(intent);
+    String callbackUrl = intent.getDataString();
+    if (authCallback != null && WebAuthContract.expectedRedirect(callbackUrl, authScheme)) {
+      finishWebAuthentication("completed", callbackUrl);
+    }
+  }
+
+  private void finishWebAuthentication(String status, String callbackUrl) {
+    Callback callback = authCallback;
+    if (callback == null) return;
+    authCallback = null;
+    authScheme = null;
+    leftForAuthentication = false;
+    callback.invoke(WebAuthenticationModule.payload(status, callbackUrl));
+  }
+
+  @Override protected void onDestroy() {
+    finishWebAuthentication("failed", null);
+    super.onDestroy();
   }
 }

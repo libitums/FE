@@ -78,6 +78,11 @@ function appleSignInModule(): AppleSignInModule | undefined {
   return module as AppleSignInModule;
 }
 
+/** 네이티브 Apple 시트를 제공하는 호스트인지 확인합니다. */
+export function isAppleSignInAvailable(): boolean {
+  return appleSignInModule() !== undefined;
+}
+
 /**
  * 시트를 엽니다. 모듈이 없으면 `unavailable`이고 콜백은 0회입니다. 있으면 호스트에 키 하나(`nonce`)만
  * 넘기고 `requested`입니다. 결과는 콜백으로 정확히 한 번 옵니다.

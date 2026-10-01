@@ -18,14 +18,14 @@ import type { AuthFailureReason, AuthSession } from "./auth-session.contract";
 export type SupabaseOAuthProvider = "apple" | "google" | "facebook";
 
 /**
- * 웹 OAuth(authorize → 인증 창 → PKCE 교환)를 타는 제공자입니다. Apple은 네이티브 시트와
- * `grant_type=id_token` 교환을 타므로 여기 없습니다(ADR-0028).
+ * 웹 OAuth(authorize → 인증 창 → PKCE 교환)를 타는 제공자입니다. Apple은 네이티브 시트가
+ * 없는 Android 호스트에서 이 경로를 탑니다.
  */
-export type WebOAuthProvider = Exclude<SupabaseOAuthProvider, "apple">;
+export type WebOAuthProvider = SupabaseOAuthProvider;
 
 /**
- * 웹 인증 세션이 가로채는 스킴입니다. **Info.plist에 등록하지 않습니다** — 세션이 자기
- * 창 안에서 이 스킴을 가로채므로 밖에서 앱으로 들어오는 입구가 생기지 않습니다(ADR-0028).
+ * iOS 웹 인증 세션은 이 스킴을 창 안에서 가로채므로 Info.plist에 등록하지 않습니다.
+ * Android는 브라우저 리다이렉트를 받기 위해 manifest에 등록합니다(ADR-0038).
  */
 export type OAuthCallbackScheme = "duru";
 
@@ -49,7 +49,7 @@ export type PkcePair = {
 
 /**
  * 호스트가 `WebAuthenticationModule`이라는 이름으로 등록합니다(iOS
- * `ASWebAuthenticationSession`). 메서드는 둘입니다.
+ * `ASWebAuthenticationSession`, Android Custom Tab). 메서드는 둘입니다.
  *
  * - `start` — 인증 창을 열고, 창이 닫힐 때 **정확히 한 번** 콜백합니다.
  * - `randomBytes` — 암호학적 난수 `count`바이트를 소문자 16진 문자열로 **동기** 반환합니다.

@@ -20,3 +20,12 @@
 
 Debug는 `pnpm preview`로 빌드된 번들을 제공한다. `pnpm dev` HMR 번들은
 WebSocket 지원이 없어 현재 호스트에서 빈 화면이므로 수용 경로에 넣지 않았다.
+
+## 후속 A5 — 소셜 인증 경계
+
+초기 심사 버전의 소셜 로그인만을 대상으로 Android `WebAuthenticationModule`과
+Apple 웹 OAuth 분기를 추가했다([ADR-0038](../adr/0038-android-social-oauth.md)).
+순수 Java URL·콜백 검사, API 35 계측 3건, 모바일 통합 테스트와 `pnpm verify`가
+통과했다. 임시 테스트 URL로 Apple 버튼의 브라우저 시작, 모의 딥링크 복귀,
+브라우저 뒤로 취소를 관찰했다. 임시 설정은 번들과 APK에서 제거했다.
+실제 제공자 로그인·A3 세션 갱신과 Android Apple 계정 삭제는 아직 수용 판정을 내리지 않았다.
