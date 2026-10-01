@@ -81,7 +81,8 @@ E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android
 Apple·Google·Facebook의 인증 URL·PKCE·모의 딥링크 복귀를 각각 확인한다.
 `test:e2e:android:small`은 320×640에서 글자 배율 1.0·1.3을 각각 적용해
 온보딩 세 단계의 고정 버튼과 소셜 로그인 화면을 비교한다. 실행 뒤 390×844·1.0으로
-돌린다. `test:e2e:android`는 이 세 명령을 순서대로 실행한다.
+돌린다. 세 흐름은 버튼의 접근성 이름으로 선택한다. `test:e2e:android`는 이 세 명령을
+순서대로 실행한다.
 실제 제공자 계정으로 로그인하거나 세션을 갱신하지는 않는다. 결과와 남은 항목은
 [호스트 흐름](../../docs/e2e/android-host.md)과
 [소셜 로그인 흐름](../../docs/e2e/android-social-login.md)에 적는다.

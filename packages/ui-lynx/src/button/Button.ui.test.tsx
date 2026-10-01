@@ -14,6 +14,7 @@ describe("Button UI", () => {
     expect(button).toHaveAttribute("accessibility-element", "true");
     expect(button).toHaveAttribute("accessibility-label", "계속");
     expect(button).toHaveAttribute("accessibility-traits", "button");
+    expect(button).toHaveAttribute("flatten", "false");
   });
 
   test("tap을 소비자 callback으로 전달한다", () => {

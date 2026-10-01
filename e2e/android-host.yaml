@@ -8,13 +8,13 @@ appId: com.libitum.host
     visible: "Welcome! Are you looking for anything?"
     timeout: 20000
 - assertNotVisible: "Settings"
-- tapOn:
-    point: "50%,88%"
+- tapOn: "Next"
 - assertNotVisible: "Welcome! Are you looking for anything?"
-- tapOn:
-    point: "50%,88%"
-- tapOn:
-    point: "50%,88%"
+- tapOn: "Next"
+- tapOn: "Get started"
+- assertVisible: "Sign in with Apple"
+- assertVisible: "Connect with Google"
+- assertVisible: "Connect with Facebook"
 - assertScreenshot:
     path: screenshots/android-login-390x844.png
     thresholdPercentage: 95

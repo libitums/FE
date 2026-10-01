@@ -12,15 +12,15 @@ env:
 - assertScreenshot:
     path: screenshots/android-small-onboarding-${SCALE}.png
     thresholdPercentage: 95
-- tapOn:
-    point: "50%,84%"
+- tapOn: "Next"
 - assertScreenshot:
     path: screenshots/android-small-onboarding-step2-${SCALE}.png
     thresholdPercentage: 95
-- tapOn:
-    point: "50%,84%"
-- tapOn:
-    point: "50%,84%"
+- tapOn: "Next"
+- tapOn: "Get started"
+- assertVisible: "Sign in with Apple"
+- assertVisible: "Connect with Google"
+- assertVisible: "Connect with Facebook"
 - assertScreenshot:
     path: screenshots/android-small-login-${SCALE}.png
     thresholdPercentage: 95

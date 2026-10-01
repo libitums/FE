@@ -29,7 +29,7 @@ Debug 실행 인자에 `http://10.0.2.2:3001/main.lynx.bundle`를 지정했다.
 | A3 | 저장소 경계 통과, 실제 로그인·갱신 미검증 | 별도 계측 프로세스에서 테스트용 세션을 저장하고 앱 프로세스를 종료한 뒤 새 프로세스에서 같은 값을 읽었다. 삭제 후 재시작해도 값이 없었다. 제공자 계정으로 로그인한 뒤 재시작·갱신하는 경로는 미실행 |
 | A4 | 온보딩·로그인 화면 통과 | [첫 화면 130%](evidence/android-font-130.png), [로그인 100%](evidence/android-login-font-100.png), [로그인 130%](evidence/android-login-font-130.png): 320×640에서 온보딩 3단계를 지나 로그인에 도달했다. 130%에서 Facebook 문구와 로고가 겹치는 문제를 수정해 버튼 3개·약관 링크가 모두 보임. 로그인 뒤 화면은 미검증 |
 | A5 | 브리지·모의 왕복 통과, 실제 제공자 로그인 미검증 | 순수 Java URL·콜백 검사와 API 35 계측 3건이 통과했다. 임시 `https://example.invalid` 설정의 번들에서 Apple 버튼을 누르면 `provider=apple`·PKCE challenge를 실은 브라우저가 열렸다. 모의 `duru://auth-callback?code=fake` 복귀 후 교환의 네트워크 오류 문구가 나타났고, 브라우저 뒤로 가기는 오류 없이 로그인 화면으로 돌아왔다. 실제 제공자 코드 교환은 남았다 |
-| A6 | 작은 화면 조작·문구 대비 개선, 접근성 이름 미해결 | 320×640·160 dpi에서 온보딩 카드가 `Next` 위에 그려지는 현상을 재현해 고정 버튼을 전면에 배치했다. 100%·130%에서 세 단계와 로그인 화면에 도달했다. 온보딩 안내·로그인 안내·약관 일반 문구를 `fg-neutral-muted`로 바꿔 배경 대비 약 6.53:1로 높였다. Android UI 트리에서는 `Back`만 이름이 있고 `Next`와 소셜 버튼 이름이 빠져 있다 |
+| A6 | 작은 화면·문구 대비·버튼 이름 통과, TalkBack 미검증 | 320×640·160 dpi에서 온보딩 카드가 `Next` 위에 그려지는 현상을 재현해 고정 버튼을 전면에 배치했다. 100%·130%에서 세 단계와 로그인 화면에 도달했다. 온보딩 안내·로그인 안내·약관 일반 문구를 `fg-neutral-muted`로 바꿔 배경 대비 약 6.53:1로 높였다. 공통 `Button`의 평탄화를 꺼서 Android UI 트리에 `Next`·Apple·Google·Facebook 이름이 표시됐다 |
 
 ### A2 Maestro 실행
 
@@ -37,9 +37,10 @@ Debug 실행 인자에 `http://10.0.2.2:3001/main.lynx.bundle`를 지정했다.
 Maestro 2.11.0에서
 `E2E_UDID=<ID> pnpm test:e2e:android:host`가 통과했다. 흐름은 첫 화면의 대화 문구를
 확인하고 온보딩 세 단계를 누른 뒤 로그인 화면 기준 이미지와 비교한다. 개발 서버를
-켜지 않고 `bundled` APK를 설치해 실행했다. Android 접근성 트리에는 첫 화면의
-대화 문구만 잡히고 `Next`와 소셜 버튼 이름이 빠져 있어, 390×844 기준 화면 좌표와
-기준 이미지를 사용한다. 화면 크기·글자 배율을 바꾸면 이 흐름도 다시 맞춰야 한다.
+켜지 않고 `bundled` APK를 설치해 실행했다. 처음에는 Android 접근성 트리에 첫
+화면의 대화 문구만 잡히고 `Next`와 소셜 버튼 이름이 빠져 있어 화면 좌표로 눌렀다.
+공통 `Button`에 `flatten={false}`를 적용한 뒤에는 이 이름들이 트리에 나타나고
+Maestro가 이름으로 누른다. 화면 크기·글자 배율이 바뀌면 기준 이미지를 다시 확인한다.
 
 `pnpm dev`의 HMR 번들은 이 최소 호스트에 WebSocket 지원이 없어 빈 화면을 보였다.
 Debug 검증과 사용 절차에는 `pnpm preview`를 사용한다.
@@ -48,15 +49,15 @@ Debug 검증과 사용 절차에는 `pnpm preview`를 사용한다.
 
 `E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:small`은 320×640·160 dpi에서
 글자 배율 1.0과 1.3을 각각 설정한다. 첫째·둘째 온보딩의 고정 `Next`가 카드 위에
-보이는 기준 이미지와 탭, 마지막 단계 뒤 소셜 로그인 화면을 확인한다. 종료할 때
+보이는 기준 이미지와 이름 선택자 탭, 마지막 단계 뒤 소셜 로그인 화면을 확인한다. 종료할 때
 390×844·1.0으로 복원한다. 화면 기준 이미지는 `e2e/screenshots/android-small-*.png`다.
 
-Android `uiautomator dump`에서 로그인 `Back`은 `content-desc="Back"`으로 보이지만
-`Next`와 Apple·Google·Facebook 버튼의 이름은 보이지 않았다. Button 표면에
-접근성 속성을 중복해 주거나 Lynx의 기본 접근성 요소 설정을 켜도 달라지지 않아
-그 실험은 되돌렸다. 따라서 Maestro는 좌표·이미지로 시각과 탭을 확인하며,
-TalkBack 순차 탐색 및 버튼 이름은 아직 통과로 판정하지 않는다. 전용 에뮬레이터에
-TalkBack이 설치돼 있지 않아 실제 낭독 검증도 남아 있다.
+기존 Android `uiautomator dump`에서는 로그인 `Back`만 `content-desc`가 있었고
+`Next`와 Apple·Google·Facebook 버튼 이름이 빠져 있었다. Button 표면에 접근성
+속성을 중복하거나 Lynx의 기본 접근성 요소 설정을 켜도 달라지지 않았다. 공통
+`Button` 루트에 `flatten={false}`를 적용하자 `Next`와 세 소셜 버튼의 `content-desc`가
+나타났다. 390×844·320×640에서 Maestro 이름 선택으로 온보딩과 로그인 진입이 통과했다.
+전용 에뮬레이터에는 TalkBack이 없어 실제 낭독과 순차 탐색 검증은 남아 있다.
 
 ### A3 저장소 경계 재현
 
