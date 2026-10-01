@@ -184,6 +184,14 @@
   left: var(--libitum-spacing-24);
 }
 
+/* 글자 크기를 키웠을 때 긴 Facebook 문구가 왼쪽 로고와 겹치지 않도록
+   로고 자리만큼 양쪽에 같은 여백을 두고 가운데에서 줄바꿈합니다. */
+.login-screen-social .ui-lynx-button-label {
+  margin-left: var(--libitum-spacing-24);
+  margin-right: var(--libitum-spacing-24);
+  text-align: center;
+}
+
 /* Sign in with Apple은 Apple HIG의 검정 스타일을 따릅니다 — 면은 순수 검정, 로고와 문구는
    같은 흰색입니다. `neutral`의 `gray-900` 면 · `gray-50` 문구를 이 버튼에서만 바꿉니다. */
 .login-screen-social-apple .ui-lynx-button-surface {
