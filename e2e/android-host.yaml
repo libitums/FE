@@ -12,9 +12,14 @@ appId: com.libitum.host
 - assertNotVisible: "Welcome! Are you looking for anything?"
 - tapOn: "Next"
 - tapOn: "Get started"
+- assertVisible: "Log in or Sign up"
+- assertVisible: "Choose how you'd like to continue"
 - assertVisible: "Sign in with Apple"
 - assertVisible: "Connect with Google"
 - assertVisible: "Connect with Facebook"
+- assertVisible: "By signing up, you agree to the"
+- assertVisible: "Terms of Use"
+- assertVisible: "Privacy Policy"
 - assertScreenshot:
     path: screenshots/android-login-390x844.png
     thresholdPercentage: 95

@@ -10,25 +10,33 @@ export function LoginLegalNotice({
 }: Pick<LoginScreenProps, "onOpenLegalDocument">): ReactNode {
   return (
     <view className="login-screen-legal" data-testid="login-screen-legal">
-      <text className="login-screen-legal-text">By signing up, you agree to the</text>
+      <text className="login-screen-legal-text" flatten={false} accessibility-element={true}>
+        By signing up, you agree to the
+      </text>
       <view className="login-screen-legal-links">
         <text
           className="login-screen-legal-emphasis"
           data-testid="login-screen-legal-terms-of-use"
+          flatten={false}
           accessibility-element={true}
           accessibility-label="Terms of Use"
           accessibility-traits="button"
+          accessibility-enable-tap={true}
           bindtap={() => onOpenLegalDocument("terms-of-use")}
         >
           Terms of Use
         </text>
-        <text className="login-screen-legal-text"> & </text>
+        <text className="login-screen-legal-text" flatten={false} accessibility-element={true}>
+          &
+        </text>
         <text
           className="login-screen-legal-emphasis"
           data-testid="login-screen-legal-privacy-policy"
+          flatten={false}
           accessibility-element={true}
           accessibility-label="Privacy Policy"
           accessibility-traits="button"
+          accessibility-enable-tap={true}
           bindtap={() => onOpenLegalDocument("privacy-policy")}
         >
           Privacy Policy

@@ -91,6 +91,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
             <view
               className="onboarding-screen-progress"
               data-testid="onboarding-screen-progress"
+              flatten={false}
               accessibility-element={true}
               accessibility-label={`Step ${step + 1} of ${onboardingSteps.length}`}
             >
@@ -103,6 +104,8 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
               <text
                 className="onboarding-screen-title"
                 data-testid="onboarding-screen-title"
+                flatten={false}
+                accessibility-element={true}
                 accessibility-traits="header"
               >
                 {copy.title}
@@ -110,7 +113,12 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
                   <text className="onboarding-screen-title-emphasis">{` ${copy.titleEmphasis}`}</text>
                 ) : null}
               </text>
-              <text className="onboarding-screen-body" data-testid="onboarding-screen-body">
+              <text
+                className="onboarding-screen-body"
+                data-testid="onboarding-screen-body"
+                flatten={false}
+                accessibility-element={true}
+              >
                 {copy.body}
               </text>
             </view>

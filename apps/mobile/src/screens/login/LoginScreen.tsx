@@ -144,11 +144,15 @@ export function LoginScreen({
               <text
                 className="login-screen-title"
                 data-testid="login-screen-title"
+                flatten={false}
+                accessibility-element={true}
                 accessibility-traits="header"
               >
                 {heading.title}
               </text>
-              <text className="login-screen-caption">{heading.caption}</text>
+              <text className="login-screen-caption" flatten={false} accessibility-element={true}>
+                {heading.caption}
+              </text>
             </view>
 
             {/* 전화번호 수단입니다. 숨기면 소셜 셋만 섭니다(`productPhoneSignIn`). */}
@@ -188,7 +192,12 @@ export function LoginScreen({
 
                 {/* 전화번호 실패 문구입니다 — 소셜 실패는 소셜 셋 아래 자리에 섭니다. */}
                 {status.kind === "failed" && status.method === "phone" ? (
-                  <text className="login-screen-error" data-testid="login-screen-error">
+                  <text
+                    className="login-screen-error"
+                    data-testid="login-screen-error"
+                    flatten={false}
+                    accessibility-element={true}
+                  >
                     {authFailureMessage(status.reason)}
                   </text>
                 ) : null}
@@ -227,6 +236,8 @@ export function LoginScreen({
               <text
                 className="login-screen-error login-screen-social-error"
                 data-testid="login-screen-error"
+                flatten={false}
+                accessibility-element={true}
               >
                 {authFailureMessage(status.reason)}
               </text>

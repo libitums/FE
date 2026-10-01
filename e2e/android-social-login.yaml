@@ -23,8 +23,9 @@ env:
 - assertVisible: ".*redirect_to=duru%3A%2F%2Fauth-callback.*"
 - openLink: "duru://auth-callback?code=fake"
 - assertNotVisible: "Webpage not available"
-- waitForAnimationToEnd:
-    timeout: 20000
+- extendedWaitUntil:
+    visible: "Couldn't connect. Check your connection and try again."
+    timeout: 30000
 - assertScreenshot:
     path: screenshots/android-social-error-390x844.png
     thresholdPercentage: 99.5

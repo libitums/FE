@@ -29,7 +29,7 @@ Debug 실행 인자에 `http://10.0.2.2:3001/main.lynx.bundle`를 지정했다.
 | A3 | 모의 인증 응답으로 재시작·갱신 통과, 실제 제공자 미검증 | 저장소 경계 테스트에 더해 실제 Lynx 화면에서 서로 다른 앱 프로세스의 두 차례 갱신·토큰 교체·여정 화면, 400 거부 시 세션 삭제·로그인 화면을 확인했다. 제공자 계정으로 로그인한 뒤 실제 서버에서 갱신하는 경로는 미실행 |
 | A4 | 온보딩·로그인 화면 통과 | [첫 화면 130%](evidence/android-font-130.png), [로그인 100%](evidence/android-login-font-100.png), [로그인 130%](evidence/android-login-font-130.png): 320×640에서 온보딩 3단계를 지나 로그인에 도달했다. 130%에서 Facebook 문구와 로고가 겹치는 문제를 수정해 버튼 3개·약관 링크가 모두 보임. 로그인 뒤 화면은 미검증 |
 | A5 | 브리지·모의 왕복 통과, 실제 제공자 로그인 미검증 | 순수 Java URL·콜백 검사와 API 35 계측 3건이 통과했다. 임시 `https://example.invalid` 설정의 번들에서 Apple 버튼을 누르면 `provider=apple`·PKCE challenge를 실은 브라우저가 열렸다. 모의 `duru://auth-callback?code=fake` 복귀 후 교환의 네트워크 오류 문구가 나타났고, 브라우저 뒤로 가기는 오류 없이 로그인 화면으로 돌아왔다. 실제 제공자 코드 교환은 남았다 |
-| A6 | 작은 화면·문구 대비·접근성 클릭 통과, TalkBack 미검증 | 320×640·160 dpi에서 온보딩 카드가 `Next` 위에 그려지는 현상을 재현해 고정 버튼을 전면에 배치했다. 100%·130%에서 세 단계와 로그인 화면에 도달했다. 온보딩 안내·로그인 안내·약관 일반 문구를 `fg-neutral-muted`로 바꿔 배경 대비 약 6.53:1로 높였다. 공통 버튼의 Android 접근성 이름과 `ACTION_CLICK`을 계측했다 |
+| A6 | 작은 화면·문구 대비·접근성 노드와 클릭 통과, TalkBack 미검증 | 320×640·160 dpi에서 온보딩 카드가 `Next` 위에 그려지는 현상을 재현해 고정 버튼을 전면에 배치했다. 100%·130%에서 세 단계와 로그인 화면에 도달했다. 온보딩 안내·로그인 안내·약관 일반 문구를 `fg-neutral-muted`로 바꿔 배경 대비 약 6.53:1로 높였다. 온보딩·로그인 텍스트와 링크의 Android 접근성 노드 및 버튼·링크의 `ACTION_CLICK`을 계측했다 |
 
 ### A2 Maestro 실행
 
@@ -68,8 +68,25 @@ Android View 기반 접근성 경로에서 Lynx의 `accessibility-enable-tap` �
 설정하고, 최소 호스트의 `AccessibilityTapBridge`가 해당 View에 클릭 동작을 연결한다.
 계측 테스트는 `Next`→`Back`→`Next`→`Next`→`Get started`를 접근성 클릭만으로
 실행한 뒤 Apple·Google·Facebook 버튼의 `isClickable`과 `ACTION_CLICK`을 확인한다.
+온보딩 진행 상태·제목·본문과 로그인 제목·설명·약관 문구·인증 실패 문구는 Lynx의
+텍스트 평탄화를 해제해 Android 접근성 노드로 노출한다. 약관 링크 두 개는
+`ACTION_CLICK`도 노출한다. 독립된 약관 텍스트 노드 사이의 시각적 간격은 CSS로 유지한다.
+계측 테스트는 로그인 노드의 읽기 순서가 뒤로 가기→제목→설명→소셜 버튼 3개→약관
+문구→이용약관→구분자→개인정보처리방침인지 확인한다. Android 접근성 노드의 순서만
+검사했으며 TalkBack의 실제 음성 낭독·스와이프 초점 이동을 뜻하지 않는다.
 2026-10-01 API 35 계측 1건과 Maestro 호스트 1건·소셜 3건·작은 화면 2건이 통과했다.
+소셜 Maestro는 모의 콜백 후 인증 실패 문구가 접근성 노드에 나타날 때까지 기다린 뒤
+오류 화면 이미지를 비교한다.
 모의 인증 설정을 제거하고 재빌드한 APK에서도 호스트 Maestro가 다시 통과했다.
+
+현재 전용 AOSP 에뮬레이터에는 TalkBack과 Google Play가 없다. 실제 TalkBack
+검증에는 Google Play 시스템 이미지 또는 Android Accessibility Suite가 설치된 기기가
+필요하다. Google Play 이미지를 설치하려는 SDK Manager가
+`android-sdk-arm-dbt-license` 동의를 요구해 설치를 보류했다. 테스트 가능 환경이
+준비되면 온보딩 각 단계와 로그인 화면에서 좌우 스와이프로 위 순서의 음성 낭독을 듣고,
+두 약관 링크를 두 번 탭해 각각의 문서로 이동하는지 확인한다. 현재 Lynx의
+`accessibility-traits="header"`는 테스트 환경의 Android `isHeading()`에 반영되지
+않았다. 제목 단위 탐색은 실제 TalkBack 환경에서 별도로 확인해야 한다.
 
 Debug 앱을 로컬 미리보기 번들로 실행할 때 다음처럼 재현한다.
 

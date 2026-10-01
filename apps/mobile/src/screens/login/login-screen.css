@@ -259,6 +259,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
+  gap: var(--libitum-spacing-4);
 }
 
 /* 두 조각의 타이포는 같습니다(굵기 포함) — 두 줄 사이를 넓히려고 줄 높이만
