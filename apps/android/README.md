@@ -14,6 +14,24 @@ iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-ho
 `apps/android`를 Android Studio에서 열거나 이 디렉터리에서 `./gradlew`를 실행한다.
 프로젝트는 pnpm workspace 멤버가 아니다.
 
+## 개발 서버와 HMR
+
+저장소 루트에서 `pnpm dev`를 실행하고 Android 에뮬레이터에 Debug APK를 설치한다.
+기본 번들 URL은 `http://10.0.2.2:3000/main.lynx.bundle`이다. 개발 서버가 다른
+포트를 선택하면 출력된 포트를 실행 인자로 지정한다. 실기기에서는 서버가 표시한 LAN
+주소를 사용한다.
+
+```sh
+cd apps/android
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -n com.libitum.host/.MainActivity \
+  --es bundle-url http://10.0.2.2:3001/main.lynx.bundle
+```
+
+Debug 호스트는 Rspeedy의 WebSocket 연결과 변경분 파일을 읽는다. `apps/mobile/src`를
+수정하면 앱을 다시 실행하지 않고 화면에 반영된다. 로컬 HTTP는 Debug에만 허용한다.
+
 ## HTTP 미리보기로 실행
 
 저장소 루트에서 `pnpm bundle:android`로 번들을 만든 뒤 `pnpm preview`를 실행한다.
@@ -26,9 +44,8 @@ adb shell am start -n com.libitum.host/.MainActivity \
   --es bundle-url http://10.0.2.2:3001/main.lynx.bundle
 ```
 
-Debug에만 로컬 HTTP를 허용한다. 실제 포트는 `pnpm preview` 출력에서 확인한다.
-`pnpm dev`의 HMR 번들은 WebSocket 호스트 지원이 필요한데 이 최소 호스트에는 없으므로
-현재는 미리보기 서버를 사용한다. 화면 수정 후에는 번들을 다시 빌드하고 앱을 재실행한다.
+실제 포트는 `pnpm preview` 출력에서 확인한다. 화면 수정 후에는 번들을 다시 빌드하고
+앱을 재실행한다. 반복 개발에는 위의 `pnpm dev`를 사용한다.
 
 ## APK 자산으로 실행
 
