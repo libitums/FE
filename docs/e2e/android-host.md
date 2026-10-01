@@ -16,6 +16,7 @@ Android SDK 35, JDK 17, Android 에뮬레이터와 `apps/android` Gradle 프로�
 | A4 | 기기 시스템 글자 크기 변경 후 앱 재실행 | 글자 배율이 반영되고 핵심 조작이 가려지지 않음 |
 | A5 | 소셜 버튼에서 인증 창을 열고 `duru://auth-callback`으로 복귀 | Android 브리지의 `completed` 콜백 뒤 PKCE 교환을 수행. [Maestro 절차](android-social-login.md) 참조 |
 | A6 | 작은 화면에서 버튼 가림·진입 문구 대비·접근성 클릭 확인 | 고정 버튼과 소셜 수단을 조작할 수 있고, 안내 문구를 읽을 수 있음. Android 접근성 트리의 버튼 이름과 `ACTION_CLICK`을 확인 |
+| A7 | 로그인 화면의 이용약관·개인정보처리방침 링크 열기 | 각 링크가 호스트에 고정된 HTTPS 문서를 Custom Tab으로 열고 뒤로가기로 로그인 화면에 복귀 |
 
 ## 2026-10-01 실행 결과
 
@@ -30,6 +31,17 @@ Debug 실행 인자에 `http://10.0.2.2:3001/main.lynx.bundle`를 지정했다.
 | A4 | 온보딩·로그인 화면 통과 | [첫 화면 130%](evidence/android-font-130.png), [로그인 100%](evidence/android-login-font-100.png), [로그인 130%](evidence/android-login-font-130.png): 320×640에서 온보딩 3단계를 지나 로그인에 도달했다. 130%에서 Facebook 문구와 로고가 겹치는 문제를 수정해 버튼 3개·약관 링크가 모두 보임. 로그인 뒤 화면은 미검증 |
 | A5 | 브리지·모의 왕복 통과, 실제 제공자 로그인 미검증 | 순수 Java URL·콜백 검사와 API 35 계측 3건이 통과했다. 임시 `https://example.invalid` 설정의 번들에서 Apple 버튼을 누르면 `provider=apple`·PKCE challenge를 실은 브라우저가 열렸다. 모의 `duru://auth-callback?code=fake` 복귀 후 교환의 네트워크 오류 문구가 나타났고, 브라우저 뒤로 가기는 오류 없이 로그인 화면으로 돌아왔다. 실제 제공자 코드 교환은 남았다 |
 | A6 | 작은 화면·문구 대비·접근성 노드와 클릭 통과, TalkBack 미검증 | 320×640·160 dpi에서 온보딩 카드가 `Next` 위에 그려지는 현상을 재현해 고정 버튼을 전면에 배치했다. 100%·130%에서 세 단계와 로그인 화면에 도달했다. 온보딩 안내·로그인 안내·약관 일반 문구를 `fg-neutral-muted`로 바꿔 배경 대비 약 6.53:1로 높였다. 온보딩·로그인 텍스트와 링크의 Android 접근성 노드 및 버튼·링크의 `ACTION_CLICK`을 계측했다 |
+
+### 2026-10-02 법률 문서 링크 검증
+
+API 35 에뮬레이터에서 `LegalDocumentModuleTest` 2건이 통과했다. 문서 이름 둘이 iOS
+호스트와 동일한 HTTPS 주소로만 연결되고, 임의 URL·잘못된 타입은
+`invalid-arguments`를 반환했다. bundled APK의
+`E2E_UDID=<ID> pnpm test:e2e:android:legal`에서 약관·개인정보처리방침 링크가 각각
+고정 Notion 주소의 Custom Tab을 열고 뒤로가기로 로그인 화면에 복귀했다. 설정 화면에서
+같은 모듈을 호출하는 경로는 실제 로그인 계정 없이 별도 E2E를 실행하지 않았다.
+모의 인증 설정의 bundled APK에서 집계 명령 `pnpm test:e2e:android`도 통과했다
+(호스트 1·소셜 3·법률 문서 2·작은 화면 2회차).
 
 ### A2 Maestro 실행
 

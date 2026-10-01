@@ -1,0 +1,22 @@
+# 로그인 화면의 두 법률 문서 링크가 고정된 Custom Tab 목적지를 연다.
+appId: com.libitum.host
+env:
+  DOCUMENT_LABEL: ${DOCUMENT_LABEL || "Terms of Use"}
+  DOCUMENT_PATH: ${DOCUMENT_PATH || "DURU-Term-of-Use-3eb0c2540c0180ef9072f0b447b3b468"}
+---
+- setOrientation: PORTRAIT
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Welcome! Are you looking for anything?"
+    timeout: 20000
+- tapOn: "Next"
+- tapOn: "Next"
+- tapOn: "Get started"
+- assertVisible: "Log in or Sign up"
+- tapOn: ${DOCUMENT_LABEL}
+- extendedWaitUntil:
+    visible: ".*gregarious-pharaoh-bb6.notion.site/${DOCUMENT_PATH}.*"
+    timeout: 15000
+- pressKey: back
+- assertVisible: "Log in or Sign up"
