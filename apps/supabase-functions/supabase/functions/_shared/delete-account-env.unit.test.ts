@@ -10,6 +10,7 @@ const full: Record<DeleteAccountEnvName, string> = {
   APPLE_TEAM_ID: "TEAM",
   APPLE_KEY_ID: "K",
   APPLE_CLIENT_ID: "com.libitum.host",
+  APPLE_WEB_CLIENT_ID: "com.libitum.web",
   APPLE_PRIVATE_KEY: "PEM",
 };
 
@@ -27,7 +28,13 @@ describe("FE1 deleteAccountEnvFrom", () => {
       supabaseUrl: "https://x.supabase.co",
       supabaseAnonKey: "anon",
       supabaseServiceRoleKey: "service",
-      apple: { teamId: "TEAM", keyId: "K", clientId: "com.libitum.host", privateKeyPem: "PEM" },
+      apple: {
+        teamId: "TEAM",
+        keyId: "K",
+        clientId: "com.libitum.host",
+        webClientId: "com.libitum.web",
+        privateKeyPem: "PEM",
+      },
     });
   });
 

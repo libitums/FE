@@ -2,6 +2,7 @@ import { bytesFromBase64Url } from "./base64.ts";
 import type {
   AppleRevokeEndpoint,
   AppleRevokeRequest,
+  AppleRefreshValidationRequest,
   AppleTokenEndpoint,
   AppleTokenExchangeFrom,
   AppleTokenRequest,
@@ -28,6 +29,22 @@ export const appleTokenRequest: AppleTokenRequest = (config, clientSecret, autho
     ["client_secret", clientSecret],
     ["code", authorizationCode],
     ["grant_type", "authorization_code"],
+  ]),
+});
+
+export const appleRefreshValidationRequest: AppleRefreshValidationRequest = (
+  config,
+  clientSecret,
+  refreshToken,
+) => ({
+  url: appleTokenEndpoint,
+  method: "POST",
+  headers: formHeaders,
+  body: formBody([
+    ["client_id", config.clientId],
+    ["client_secret", clientSecret],
+    ["refresh_token", refreshToken],
+    ["grant_type", "refresh_token"],
   ]),
 });
 
@@ -63,6 +80,12 @@ export function jwtSubjectFrom(jwt: string): string | null {
   const payload = parseObject(new TextDecoder().decode(bytes));
   const sub = payload?.["sub"];
   return typeof sub === "string" && sub !== "" ? sub : null;
+}
+
+/** Apple의 refresh grant 응답은 새 refresh_token 없이 id_token만 돌려줍니다. */
+export function appleRefreshSubjectFrom(bodyText: string): string | null {
+  const idToken = parseObject(bodyText)?.["id_token"];
+  return typeof idToken === "string" ? jwtSubjectFrom(idToken) : null;
 }
 
 export const appleTokenExchangeFrom: AppleTokenExchangeFrom = (bodyText) => {

@@ -40,10 +40,13 @@ type Reply = { status: number } | Error;
 // 갱신 · 삭제 함수 호출을 URL로 가르는 fetch 대역입니다. 호출 순서를 `events`에 남깁니다.
 function setup(options: {
   refresh?: Reply | { status: 200; body: unknown };
+  pkce?: Reply | { status: 200; body: unknown };
   del?: Reply;
   randomBytes?: () => unknown;
   start?: (cb: (payload: unknown) => void) => void;
+  webStart?: (cb: (payload: unknown) => void) => void;
   host?: boolean;
+  appleHost?: boolean;
 }) {
   const events: string[] = [];
   const deleteCalls: { url: string; init: { headers: Record<string, string>; body: string } }[] =
@@ -65,6 +68,10 @@ function setup(options: {
       refreshCalls.push(init);
       return reply(options.refresh);
     }
+    if (url.includes("/auth/v1/token?grant_type=pkce")) {
+      events.push("pkce");
+      return reply(options.pkce);
+    }
     if (url.endsWith("/functions/v1/delete-account")) {
       events.push("delete");
       deleteCalls.push({ url, init });
@@ -78,16 +85,20 @@ function setup(options: {
     events.push("sheet");
     (options.start ?? (() => undefined))(cb);
   });
+  const webStart = vi.fn((_args: Record<string, unknown>, cb: (payload: unknown) => void) => {
+    events.push("web");
+    (options.webStart ?? (() => undefined))(cb);
+  });
   const randomBytes = vi.fn(options.randomBytes ?? (() => hex64));
   const storage = { get: vi.fn(() => null), set: vi.fn(), remove: vi.fn() };
   if (options.host !== false) {
     vi.stubGlobal("NativeModules", {
-      WebAuthenticationModule: { randomBytes },
-      AppleSignInModule: { start },
+      WebAuthenticationModule: { randomBytes, start: webStart },
+      ...(options.appleHost === false ? {} : { AppleSignInModule: { start } }),
       StorageModule: storage,
     });
   }
-  return { events, deleteCalls, refreshCalls, fetchMock, start, randomBytes, storage };
+  return { events, deleteCalls, refreshCalls, fetchMock, start, webStart, randomBytes, storage };
 }
 
 beforeEach(() => {
@@ -275,6 +286,78 @@ describe("deleteAccount", () => {
 
     expect(result).toStrictEqual({ status: "failed", reason: "apple-unconfirmed" });
     expect(events).not.toContain("delete");
+  });
+
+  test("AD4-W: Android Apple 웹 재인증은 원래 세션을 유지하고 제공자 토큰만 삭제 요청에 싣는다", async () => {
+    const { events, deleteCalls, fetchMock, webStart, start } = setup({
+      appleHost: false,
+      webStart: (cb) =>
+        cb({ status: "completed", callbackUrl: "duru://auth-callback?code=pkce-code" }),
+      pkce: {
+        status: 200,
+        body: {
+          access_token: appleToken,
+          refresh_token: "new-supabase-refresh",
+          expires_in: 3600,
+          provider_refresh_token: "apple-web-refresh",
+        },
+      },
+    });
+    const persist = vi.fn();
+    await expect(deleteAccount(sessionWith(appleToken), persist)).resolves.toStrictEqual({
+      status: "deleted",
+    });
+    expect(events).toStrictEqual(["web", "pkce", "delete"]);
+    expect(webStart).toHaveBeenCalledTimes(1);
+    const [webRequest] = webStart.mock.calls[0]!;
+    const authorizeUrl = new URL(webRequest["url"] as string);
+    expect(authorizeUrl.pathname).toBe("/auth/v1/authorize");
+    expect(authorizeUrl.searchParams.get("provider")).toBe("apple");
+    expect(authorizeUrl.searchParams.get("redirect_to")).toBe("duru://auth-callback");
+    expect(authorizeUrl.searchParams.get("code_challenge_method")).toBe("s256");
+    expect(authorizeUrl.searchParams.get("code_challenge")).toBeTruthy();
+    const pkceCall = fetchMock.mock.calls.find(([url]) =>
+      url.includes("/auth/v1/token?grant_type=pkce"),
+    );
+    expect(pkceCall).toBeDefined();
+    expect(JSON.parse((pkceCall?.[1] as unknown as { body: string }).body).auth_code).toBe(
+      "pkce-code",
+    );
+    expect(start).not.toHaveBeenCalled();
+    expect(persist).not.toHaveBeenCalled();
+    expect(deleteCalls[0]!.init.headers["Authorization"]).toBe(`Bearer ${appleToken}`);
+    expect(JSON.parse(deleteCalls[0]!.init.body)).toStrictEqual({
+      apple_authorization_code: null,
+      apple_provider_refresh_token: "apple-web-refresh",
+    });
+  });
+
+  test("AD4-W: 다른 Supabase 사용자·제공자 토큰 없음·취소는 삭제하지 않는다", async () => {
+    for (const body of [
+      {
+        access_token: tokenWith({ sub: "other" }),
+        refresh_token: "r",
+        expires_in: 3600,
+        provider_refresh_token: "p",
+      },
+      { access_token: appleToken, refresh_token: "r", expires_in: 3600 },
+    ] as const) {
+      const { events } = setup({
+        appleHost: false,
+        webStart: (cb) => cb({ status: "completed", callbackUrl: "duru://auth-callback?code=c" }),
+        pkce: { status: 200, body },
+      });
+      await expect(deleteAccount(sessionWith(appleToken), vi.fn())).resolves.toStrictEqual({
+        status: "failed",
+        reason: "apple-unconfirmed",
+      });
+      expect(events).toStrictEqual(["web", "pkce"]);
+    }
+    const { events } = setup({ appleHost: false, webStart: (cb) => cb({ status: "cancelled" }) });
+    await expect(deleteAccount(sessionWith(appleToken), vi.fn())).resolves.toStrictEqual({
+      status: "cancelled",
+    });
+    expect(events).toStrictEqual(["web"]);
   });
 
   test("AD5: 만료 30초 전 — 갱신이 먼저, persist 1회(새 세션), 삭제 Bearer는 새 액세스 토큰", async () => {

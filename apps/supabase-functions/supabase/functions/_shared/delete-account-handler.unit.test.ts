@@ -8,6 +8,10 @@ describe("FH1 deleteAccountBodyFrom", () => {
     ['{"apple_authorization_code":null}', { apple_authorization_code: null }],
     ['{"apple_authorization_code":"c"}', { apple_authorization_code: "c" }],
     ['{"apple_authorization_code":"c","extra":1}', { apple_authorization_code: "c" }],
+    [
+      '{"apple_authorization_code":null,"apple_provider_refresh_token":"r"}',
+      { apple_authorization_code: null, apple_provider_refresh_token: "r" },
+    ],
   ])("%s → 본문", (text, expected) => {
     expect(deleteAccountBodyFrom(text)).toEqual(expected);
   });
@@ -16,6 +20,8 @@ describe("FH1 deleteAccountBodyFrom", () => {
     "{}",
     '{"apple_authorization_code":""}',
     '{"apple_authorization_code":1}',
+    '{"apple_authorization_code":null,"apple_provider_refresh_token":""}',
+    '{"apple_authorization_code":"c","apple_provider_refresh_token":"r"}',
     "[]",
     '[{"apple_authorization_code":"c"}]',
     "not json",

@@ -130,5 +130,8 @@ Apple Services ID와 웹용 secret을 준비하고, Supabase Apple provider Clie
 Services ID를 맨 앞에 둔다. iOS 네이티브 App ID는 뒤에 둘 수 있다.
 `PUBLIC_SUPABASE_URL`과 `PUBLIC_SUPABASE_ANON_KEY`를 번들 빌드 전에 주입한다.
 설정과 계정이 없는 빌드에서는 실제 로그인·재시작 A3를 통과로 판정하지 않는다.
-Apple 계정 삭제의 재인증은 아직 iOS `AppleSignInModule`에 묶여 있어 Android에서는
-완료할 수 없다.
+Apple 계정 삭제는 Android에서 웹 OAuth를 다시 열고 Supabase PKCE 교환 응답의
+`provider_refresh_token`을 삭제 함수에 일회성으로 보낸다. 함수의
+`APPLE_WEB_CLIENT_ID`가 Supabase Apple provider의 첫 번째 Services ID와 같아야 한다.
+제공자 토큰이 없거나 재인증한 Supabase 사용자 ID가 다르면 삭제를 중단한다.
+실제 Apple 왕복은 제공자 설정과 테스트 계정이 준비될 때까지 미검증이다.

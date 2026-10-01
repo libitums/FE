@@ -127,6 +127,9 @@ export function deleteAccountFunctionRequest(
 ): { url: string; init: HttpRequestInit } {
   const body: DeleteAccountRequestBody = {
     apple_authorization_code: request.appleAuthorizationCode,
+    ...(request.appleProviderRefreshToken === undefined
+      ? {}
+      : { apple_provider_refresh_token: request.appleProviderRefreshToken }),
   };
   return {
     url: `${config.url}/functions/v1/delete-account`,

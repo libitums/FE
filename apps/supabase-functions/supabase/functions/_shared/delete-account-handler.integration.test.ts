@@ -44,7 +44,13 @@ function makeEnv(apple: boolean = true): DeleteAccountEnv {
     supabaseAnonKey: anonKey,
     supabaseServiceRoleKey: serviceKey,
     apple: apple
-      ? { teamId: "TEAM", keyId: "KEY", clientId: "com.libitum.host", privateKeyPem }
+      ? {
+          teamId: "TEAM",
+          keyId: "KEY",
+          clientId: "com.libitum.host",
+          webClientId: "com.libitum.web",
+          privateKeyPem,
+        }
       : null,
   };
 }
@@ -321,6 +327,80 @@ describe("[FI10] Apple 사용자의 전체 왕복", () => {
       new TextEncoder().encode(`${header}.${claims}`),
     );
     expect(verified).toBe(true);
+  });
+});
+
+describe("[FI10-W] Android Apple 웹 재인증", () => {
+  const webBody = (refreshToken = appleRefreshToken) =>
+    JSON.stringify({ apple_authorization_code: null, apple_provider_refresh_token: refreshToken });
+
+  test("Apple refresh grant의 subject를 대조한 뒤 같은 토큰을 Services ID로 철회한다", async () => {
+    const { handler, requests } = setup(
+      okRoutes({
+        user: { status: 200, body: appleUserBody },
+        exchange: {
+          status: 200,
+          body: JSON.stringify({ id_token: unsignedJwt({ sub: appleSubject }) }),
+        },
+      }),
+    );
+    expect((await handler(post(webBody()))).status).toBe(204);
+    expect(urlsOf(requests)).toEqual([
+      "GET https://project.supabase.co/auth/v1/user",
+      "POST https://appleid.apple.com/auth/token",
+      "POST https://appleid.apple.com/auth/revoke",
+      `DELETE https://project.supabase.co/auth/v1/admin/users/${userId}`,
+    ]);
+    const validation = new URLSearchParams(requests[1]?.body ?? "");
+    expect(validation.get("client_id")).toBe("com.libitum.web");
+    expect(validation.get("grant_type")).toBe("refresh_token");
+    expect(validation.get("refresh_token")).toBe(appleRefreshToken);
+    const revoke = new URLSearchParams(requests[2]?.body ?? "");
+    expect(revoke.get("client_id")).toBe("com.libitum.web");
+    expect(revoke.get("token")).toBe(appleRefreshToken);
+    const secret = validation.get("client_secret") ?? "";
+    const claims = JSON.parse(
+      new TextDecoder().decode(bytesFromBase64Url(secret.split(".")[1] ?? "") ?? new Uint8Array()),
+    );
+    expect(claims.sub).toBe("com.libitum.web");
+  });
+
+  test("다른 Apple 계정이면 철회와 삭제를 하지 않는다", async () => {
+    const { handler, requests } = setup(
+      okRoutes({
+        user: { status: 200, body: appleUserBody },
+        exchange: {
+          status: 200,
+          body: JSON.stringify({ id_token: unsignedJwt({ sub: "other" }) }),
+        },
+      }),
+    );
+    await expectError(await handler(post(webBody())), 403, "apple_account_mismatch");
+    expect(appleCalls(requests)).toHaveLength(1);
+    expect(deletions(requests)).toEqual([]);
+  });
+
+  test("검증 응답에 id_token이 없으면 철회와 삭제를 하지 않는다", async () => {
+    const { handler, requests } = setup(
+      okRoutes({
+        user: { status: 200, body: appleUserBody },
+        exchange: { status: 200, body: "{}" },
+      }),
+    );
+    await expectError(await handler(post(webBody())), 502, "apple_exchange_failed");
+    expect(appleCalls(requests)).toHaveLength(1);
+    expect(deletions(requests)).toEqual([]);
+  });
+
+  test("Services ID 설정이 없으면 Apple을 부르지 않는다", async () => {
+    const env = makeEnv();
+    const { handler, requests } = setup(okRoutes({ user: { status: 200, body: appleUserBody } }), {
+      ...env,
+      apple: { ...env.apple!, webClientId: undefined },
+    });
+    await expectError(await handler(post(webBody())), 500, "server_misconfigured");
+    expect(appleCalls(requests)).toEqual([]);
+    expect(deletions(requests)).toEqual([]);
   });
 });
 
