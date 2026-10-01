@@ -49,4 +49,7 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 
 `PATH`에 JDK 17의 `javac`/`java`가 있을 때 `sh apps/android/test-host-paths.sh`를
 저장소 루트에서 실행한다. 번들 복사는 `pnpm test:android-bundle`로 검증한다.
+에뮬레이터를 실행한 상태에서 `apps/android/test-storage-restart.sh`를 실행하면
+테스트용 세션의 저장·앱 프로세스 종료 후 복원·삭제 후 재시작을 확인한다. 실제
+전화번호 로그인과 서버의 토큰 갱신은 이 테스트에 포함되지 않는다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.

@@ -12,6 +12,7 @@ android {
     targetSdk 34
     versionCode 1
     versionName '0.1.0'
+    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
   }
 
   buildTypes {
@@ -58,6 +59,9 @@ dependencies {
   implementation "org.lynxsdk.lynx:xelement-overlay:${lynxVersion}"
   implementation "org.lynxsdk.lynx:xelement-svg:${lynxVersion}"
   implementation 'org.lynxsdk.lynx:servalsvg:0.0.1-alpha.3'
+
+  androidTestImplementation 'androidx.test:runner:1.7.0'
+  androidTestImplementation 'androidx.test.ext:junit:1.3.0'
 }
 
 tasks.register('verifyBundledAssets') {

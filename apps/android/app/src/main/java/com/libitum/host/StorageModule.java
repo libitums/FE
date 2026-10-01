@@ -6,6 +6,7 @@ import com.lynx.jsbridge.LynxMethod;
 import com.lynx.jsbridge.LynxModule;
 
 public final class StorageModule extends LynxModule {
+  private static final String AUTH_SESSION_KEY = "libitum.auth.session";
   private final SharedPreferences preferences;
 
   public StorageModule(Context context) {
@@ -18,10 +19,21 @@ public final class StorageModule extends LynxModule {
   }
 
   @LynxMethod public void set(String key, String value) {
-    preferences.edit().putString("libitum." + key, value).apply();
+    SharedPreferences.Editor editor = preferences.edit().putString("libitum." + key, value);
+    if (AUTH_SESSION_KEY.equals(key)) {
+      // Keep login state durable even if the app process stops immediately afterward.
+      editor.commit();
+    } else {
+      editor.apply();
+    }
   }
 
   @LynxMethod public void remove(String key) {
-    preferences.edit().remove("libitum." + key).apply();
+    SharedPreferences.Editor editor = preferences.edit().remove("libitum." + key);
+    if (AUTH_SESSION_KEY.equals(key)) {
+      editor.commit();
+    } else {
+      editor.apply();
+    }
   }
 }
