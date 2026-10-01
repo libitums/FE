@@ -60,6 +60,12 @@ public final class ButtonAccessibilityTest {
     }
   }
 
+  private static void assertHeading(UiAutomation automation, String label) {
+    AccessibilityNodeInfo node = await(automation, label);
+    assertNotNull(label + " heading accessibility node missing", node);
+    assertTrue(label + " is not exposed as an Android heading", node.isHeading());
+  }
+
   private static void activate(UiAutomation automation, String label) {
     AccessibilityNodeInfo node = awaitAction(automation, label);
     assertNotNull(label + " accessibility node missing", node);
@@ -115,19 +121,24 @@ public final class ButtonAccessibilityTest {
     LynxView lynxView = (LynxView) ((android.view.ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
     assertNotNull("Next accessibility node missing", await(automation, "Next"));
     assertNotNull("progress accessibility node missing", await(automation, "Step 1 of 3"));
-    assertNotNull("onboarding title accessibility node missing",
+    assertNotNull("onboarding dialogue accessibility node missing",
         await(automation, "Welcome! Are you looking for anything?"));
+    assertHeading(automation, "with Story");
     LynxBaseUI nextUI = findLynxUI(lynxView.getLynxUIRoot(), "Next");
     assertNotNull("Next Lynx UI missing", nextUI);
     assertTrue("Next Lynx UI has no accessibility tap", nextUI.getAccessibilityEnableTap());
     assertTrue("Next Lynx UI has no bound tap: " + nextUI.getEvents(), nextUI.getEvents() != null && nextUI.getEvents().containsKey("tap"));
     activate(automation, "Next");
     assertNotNull("Next ACTION_CLICK did not advance onboarding", await(automation, "Back"));
+    assertHeading(automation, "Practice Korean");
     activate(automation, "Back");
     awaitMissing(automation, "Back");
+    assertHeading(automation, "with Story");
     activate(automation, "Next");
     activate(automation, "Next");
+    assertHeading(automation, "Just 5 minutes");
     activate(automation, "Get started");
+    assertHeading(automation, "Log in or Sign up");
     for (String label : new String[] {"Sign in with Apple", "Connect with Google", "Connect with Facebook"}) {
       AccessibilityNodeInfo button = awaitAction(automation, label);
       assertNotNull(label + " accessibility node missing", button);

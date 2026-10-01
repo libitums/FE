@@ -146,6 +146,7 @@ export function LoginScreen({
                 data-testid="login-screen-title"
                 flatten={false}
                 accessibility-element={true}
+                accessibility-heading={true}
                 accessibility-traits="header"
               >
                 {heading.title}

@@ -84,9 +84,13 @@ Android View 기반 접근성 경로에서 Lynx의 `accessibility-enable-tap` �
 필요하다. Google Play 이미지를 설치하려는 SDK Manager가
 `android-sdk-arm-dbt-license` 동의를 요구해 설치를 보류했다. 테스트 가능 환경이
 준비되면 온보딩 각 단계와 로그인 화면에서 좌우 스와이프로 위 순서의 음성 낭독을 듣고,
-두 약관 링크를 두 번 탭해 각각의 문서로 이동하는지 확인한다. 현재 Lynx의
-`accessibility-traits="header"`는 테스트 환경의 Android `isHeading()`에 반영되지
-않았다. 제목 단위 탐색은 실제 TalkBack 환경에서 별도로 확인해야 한다.
+두 약관 링크를 두 번 탭해 각각의 문서로 이동하는지 확인한다. Lynx의
+`accessibility-traits="header"`만으로는 Android `isHeading()`이 켜지지 않아
+온보딩·로그인 제목에 `accessibility-heading={true}`를 명시했다. API 35 계측에서
+온보딩 세 제목과 로그인 제목의 `isHeading()`이 모두 참이었다. 실제 TalkBack의
+제목 단위 탐색은 서비스가 설치된 환경에서 별도로 확인해야 한다. 이 변경 후
+Maestro 호스트 1건·모의 소셜 로그인 3건·작은 화면 2건이 통과했고, 모의 설정을 제거한
+최종 APK에서도 호스트·작은 화면 흐름이 통과했다.
 
 Debug 앱을 로컬 미리보기 번들로 실행할 때 다음처럼 재현한다.
 

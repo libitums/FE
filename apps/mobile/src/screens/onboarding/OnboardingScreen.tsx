@@ -106,6 +106,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
                 data-testid="onboarding-screen-title"
                 flatten={false}
                 accessibility-element={true}
+                accessibility-heading={true}
                 accessibility-traits="header"
               >
                 {copy.title}
