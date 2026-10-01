@@ -7,7 +7,7 @@
 - 날짜: 2026-09-29 (같은 날 사용자 결정으로 D6 · D7 개정)
 - 다루는 축: 인증 (소셜 제공자 · OAuth 흐름 · Apple ID 토큰 교환) · 호스트 네이티브 능력 (웹 인증 창 ·
   Apple 인증 시트)
-- Android 적용: [ADR-0038](0038-android-social-oauth.md)이 Apple 웹 OAuth 경로와
+- Android 적용: [ADR-0039](0039-android-social-oauth.md)이 Apple 웹 OAuth 경로와
   `duru://auth-callback` 딥링크 등록을 부분 대체한다. 아래의 Apple 네이티브 시트·스킴 미등록
   결정은 iOS 호스트에 적용한다.
 - 부분 대체:

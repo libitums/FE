@@ -1,13 +1,14 @@
 # 수동으로 통과시킬 흐름
 
-`e2e` 테스트는 자동화하지 않는다. 도구는 있으나(`@lynx-js/kitten-lynx-test-infra`)
-Android 실행 환경이 없고, 개발도 시연도 iOS이기 때문이다. 대신 **무엇을 통과시켜야
-하는지는 여기에 고정해 둔다** ([ADR-0006 D4·D6](../adr/0006-command-interface-and-test-layers.md)).
+**무엇을 통과시켜야 하는지를 여기에 고정해 둔다** ([ADR-0006 D6](../adr/0006-command-interface-and-test-layers.md)).
+대부분은 사람이 돈다. ⟨2026-10-01⟩ **접근성 트리로 판정되는 기능 관찰 일부는 Maestro 흐름으로 옮긴다**
+([ADR-0037](../adr/0037-ios-e2e-maestro.md)) — 아래 「자동화」. VoiceOver 발화 · Dynamic Type · 소프트 키보드 · 시스템
+시트 · 실기 관찰은 자동화하지 않고 이 문서들이 계속 진다.
 
 ## 형식
 
 **파일 하나 = 흐름 하나 = 나중의 테스트 파일 하나.**
-`docs/e2e/login.md` → `login.e2e.test.ts`. 파일명이 이 대응을 강제한다.
+`docs/e2e/login.md` → ~~`login.e2e.test.ts`~~ `e2e/login.yaml`(ADR-0037 D3). 파일명이 이 대응을 강제한다.
 
 ```text
 # <흐름 이름>              → 나중에 describe / test 이름
@@ -18,7 +19,8 @@ Android 실행 환경이 없고, 개발도 시연도 iOS이기 때문이다. 대
 
 **"관찰"은 인상이 아니라 식별 가능한 요소로 쓴다.** 자동화 도구가 CSS 셀렉터로 요소를
 찾으므로("자연스럽게 보인다"가 아니라 "`#submit`이 사라지고 `#result`에 총액이 뜬다").
-이렇게 쓰면 나중에 이관이 기계적이다.
+이렇게 쓰면 나중에 이관이 기계적이다. ⟨2026-10-01⟩ Maestro의 선택자는 CSS 셀렉터가 아니라 **보이는 문구 · 접근성
+이름**이다(ADR-0037 D6) — 옮길 행의 관찰에는 testid와 함께 그 이름이 적혀 있어야 한다.
 
 ## 공통 전제
 
@@ -42,6 +44,31 @@ Android 실행 환경이 없고, 개발도 시연도 iOS이기 때문이다. 대
     않아 온보딩부터 다시 시작한다(ADR-0028 D6 · [진입 흐름](entry-flow.md) L1).
   - **자격을 지우는 수단이 앱에 없다** — 이 상태를 벗어나 진입 흐름을 다시 보려면 앱을
     삭제·재설치해야 한다([진입 흐름](entry-flow.md) 「재설치가 유일한 재진입 수단이다」).
+
+## 자동화
+
+흐름 파일은 `e2e/<flow>.yaml`이고 이 디렉터리의 `<flow>.md`와 이름이 같다. 어느 행을 옮겼는지는 흐름 파일의
+주석(`# T1 — …`)이 적는다. **흐름 파일이 없는 문서, 흐름 파일이 옮기지 않은 행은 전부 수동이다.**
+
+준비물은 Xcode · Java(확인한 것은 OpenJDK 21) · Maestro CLI(확인한 것은 2.11.0)다. 저장소 의존이 아니라 각자 설치한다.
+
+```sh
+pnpm bundle:host
+cd apps/ios && pod install
+git checkout Host.xcodeproj/project.pbxproj   # pod install이 고친 것을 되돌린다
+xcodebuild -workspace Host.xcworkspace -scheme Host -configuration Release \
+  -sdk iphonesimulator -destination "generic/platform=iOS Simulator" \
+  -derivedDataPath <빌드 폴더> build
+xcrun simctl install <UDID> <빌드 폴더>/Build/Products/Release-iphonesimulator/Host.app
+cd ../..
+E2E_UDID=<UDID> pnpm test:e2e
+```
+
+- **Release로 빌드한다.** Debug는 `localhost:3000`의 dev 서버를 읽어 다른 작업 트리의 코드가 뜰 수 있다(ADR-0037 D2).
+- **전용 시뮬레이터를 쓴다.** 흐름이 `clearState`로 앱 데이터를 지운다 — 로그인해 둔 시뮬레이터에 돌리면 세션이 사라진다.
+- `pnpm verify`와 CI는 이 명령을 부르지 않는다. 초록이어도 e2e는 돌지 않은 것이다(ADR-0037 D4).
+- 자동 회차도 수동 회차와 같이 **커밋 · 기기 · 빌드 종류**를 흐름 문서의 실행 기록에 적는다. 통과한 흐름이 수동 전용
+  행(실기 · VoiceOver)을 대신하지 않는다.
 
 ## 목록은 두지 않는다
 

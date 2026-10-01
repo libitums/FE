@@ -24,7 +24,7 @@ WebSocket 지원이 없어 현재 호스트에서 빈 화면이므로 수용 경
 ## 후속 A5 — 소셜 인증 경계
 
 초기 심사 버전의 소셜 로그인만을 대상으로 Android `WebAuthenticationModule`과
-Apple 웹 OAuth 분기를 추가했다([ADR-0038](../adr/0038-android-social-oauth.md)).
+Apple 웹 OAuth 분기를 추가했다([ADR-0039](../adr/0039-android-social-oauth.md)).
 순수 Java URL·콜백 검사, API 35 계측 3건, 모바일 통합 테스트와 `pnpm verify`가
 통과했다. 임시 테스트 URL로 Apple 버튼의 브라우저 시작, 모의 딥링크 복귀,
 브라우저 뒤로 취소를 관찰했다. 임시 설정은 번들과 APK에서 제거했다.

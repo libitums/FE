@@ -25,7 +25,7 @@ import type {
 import { supabaseConfig } from "./supabase-config";
 import { secureRandomBytes, startWebAuthentication } from "./web-authentication";
 
-/** iOS 세션이 가로채고 Android manifest가 딥링크로 받는 스킴입니다(ADR-0038). */
+/** iOS 세션이 가로채고 Android manifest가 딥링크로 받는 스킴입니다(ADR-0039). */
 export const oauthCallbackScheme: OAuthCallbackScheme = "duru";
 
 /** `redirect_to`에 싣는 값입니다. Supabase 대시보드의 리다이렉트 허용 목록과 같아야 합니다. */

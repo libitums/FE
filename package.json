@@ -18,6 +18,7 @@
     "test:ui-copy-literals": "node --test devtools/ui-copy-literals/*.test.mjs",
     "test:ci-wiring": "node --test devtools/ci-wiring/*.test.mjs",
     "test:android-bundle": "node --test devtools/android-bundle/*.test.mjs",
+    "test:e2e": "maestro ${E2E_UDID:+--udid \"$E2E_UDID\"} test e2e",
     "test:coverage": "pnpm --filter @libitums/mobile test:coverage && pnpm --filter @libitums/ui-lynx test:coverage",
     "size:check": "node devtools/bundle-size/check.mjs",
     "performance:reports:check": "node devtools/performance-report-policy/check.mjs",

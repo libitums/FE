@@ -1,0 +1,24 @@
+# 진입 흐름 — docs/e2e/entry-flow.md의 T1 · T2를 옮긴 것이다 (ADR-0037 D3).
+# 로그인부터는 자동화하지 않는다 — 시스템 시트와 테스트 계정이 필요하다 (ADR-0037 D5).
+appId: com.libitum.host
+---
+- launchApp:
+    clearState: true
+
+# T1 — 스플래시 뒤 온보딩이 선다. 바텀 네비게이션이 없다.
+- extendedWaitUntil:
+    visible: "Next"
+    timeout: 15000
+- assertNotVisible: "Settings"
+
+# T2 — 액션을 세 번 누른다. 마지막 액션의 낱말이 갈린다.
+- tapOn: "Next"
+- assertVisible: "Next"
+- tapOn: "Next"
+- assertVisible: "Get started"
+- assertNotVisible: "Next"
+- tapOn: "Get started"
+
+# 끝나면 로그인이다.
+- assertVisible: "Sign in with Apple"
+- assertVisible: "Connect with Google"

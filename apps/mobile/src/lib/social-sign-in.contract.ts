@@ -25,7 +25,7 @@ export type WebOAuthProvider = SupabaseOAuthProvider;
 
 /**
  * iOS 웹 인증 세션은 이 스킴을 창 안에서 가로채므로 Info.plist에 등록하지 않습니다.
- * Android는 브라우저 리다이렉트를 받기 위해 manifest에 등록합니다(ADR-0038).
+ * Android는 브라우저 리다이렉트를 받기 위해 manifest에 등록합니다(ADR-0039).
  */
 export type OAuthCallbackScheme = "duru";
 

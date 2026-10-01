@@ -2,7 +2,7 @@
 
 `apps/mobile`의 Lynx 번들을 Android `LynxView` 하나에서 실행한다. 지금은 이미지·HTTP
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`을 제공한다. 네이티브 기능 전체의
-iOS 동등성은 아직 없다([ADR-0037](../../docs/adr/0037-android-minimal-host.md)).
+iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
 
 ## 준비
 
