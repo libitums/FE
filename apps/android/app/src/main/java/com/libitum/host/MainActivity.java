@@ -10,6 +10,7 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import com.lynx.tasm.LynxBooleanOption;
 import com.lynx.tasm.LynxView;
 import com.lynx.tasm.LynxViewBuilder;
+import com.lynx.tasm.LynxViewClient;
 import com.lynx.react.bridge.Callback;
 import com.lynx.xelement.XElementBehaviors;
 
@@ -33,6 +34,15 @@ public final class MainActivity extends Activity {
     builder.registerModule("StorageModule", StorageModule.class);
     builder.registerModule("WebAuthenticationModule", WebAuthenticationModule.class, this);
     LynxView lynxView = builder.build(this);
+    lynxView.addLynxViewClient(new LynxViewClient() {
+      @Override public void onFirstScreen() {
+        mainHandler.post(() -> AccessibilityTapBridge.sync(lynxView));
+      }
+
+      @Override public void onPageUpdate() {
+        mainHandler.post(() -> AccessibilityTapBridge.sync(lynxView));
+      }
+    });
     setContentView(lynxView);
     lynxView.renderTemplateUrl(templateUrl, "");
   }

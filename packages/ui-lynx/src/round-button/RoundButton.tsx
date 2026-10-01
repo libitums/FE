@@ -27,6 +27,7 @@ export function RoundButton(props: RoundButtonProps) {
       accessibility-element={true}
       accessibility-label={contract.accessibilityLabel}
       accessibility-traits={contract.traits}
+      accessibility-enable-tap={contract.interactive}
       bindtap={contract.interactive ? handleTap : undefined}
     >
       <view className="ui-lynx-round-button-surface" data-testid="ui-lynx-round-button-surface">

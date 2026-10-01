@@ -15,7 +15,7 @@ Android SDK 35, JDK 17, Android 에뮬레이터와 `apps/android` Gradle 프로�
 | A3 | 소셜 로그인으로 세션 저장 후 앱 완전 종료·재실행 | `StorageModule`에서 세션을 읽고 서버 갱신 뒤 로그인 유지 |
 | A4 | 기기 시스템 글자 크기 변경 후 앱 재실행 | 글자 배율이 반영되고 핵심 조작이 가려지지 않음 |
 | A5 | 소셜 버튼에서 인증 창을 열고 `duru://auth-callback`으로 복귀 | Android 브리지의 `completed` 콜백 뒤 PKCE 교환을 수행. [Maestro 절차](android-social-login.md) 참조 |
-| A6 | 작은 화면에서 버튼 가림·진입 문구 대비·접근성 이름 확인 | 고정 버튼과 소셜 수단을 조작할 수 있고, 안내 문구를 읽을 수 있음. Android 접근성 트리의 버튼 이름은 별도 확인 |
+| A6 | 작은 화면에서 버튼 가림·진입 문구 대비·접근성 클릭 확인 | 고정 버튼과 소셜 수단을 조작할 수 있고, 안내 문구를 읽을 수 있음. Android 접근성 트리의 버튼 이름과 `ACTION_CLICK`을 확인 |
 
 ## 2026-10-01 실행 결과
 
@@ -29,7 +29,7 @@ Debug 실행 인자에 `http://10.0.2.2:3001/main.lynx.bundle`를 지정했다.
 | A3 | 저장소 경계 통과, 실제 로그인·갱신 미검증 | 별도 계측 프로세스에서 테스트용 세션을 저장하고 앱 프로세스를 종료한 뒤 새 프로세스에서 같은 값을 읽었다. 삭제 후 재시작해도 값이 없었다. 제공자 계정으로 로그인한 뒤 재시작·갱신하는 경로는 미실행 |
 | A4 | 온보딩·로그인 화면 통과 | [첫 화면 130%](evidence/android-font-130.png), [로그인 100%](evidence/android-login-font-100.png), [로그인 130%](evidence/android-login-font-130.png): 320×640에서 온보딩 3단계를 지나 로그인에 도달했다. 130%에서 Facebook 문구와 로고가 겹치는 문제를 수정해 버튼 3개·약관 링크가 모두 보임. 로그인 뒤 화면은 미검증 |
 | A5 | 브리지·모의 왕복 통과, 실제 제공자 로그인 미검증 | 순수 Java URL·콜백 검사와 API 35 계측 3건이 통과했다. 임시 `https://example.invalid` 설정의 번들에서 Apple 버튼을 누르면 `provider=apple`·PKCE challenge를 실은 브라우저가 열렸다. 모의 `duru://auth-callback?code=fake` 복귀 후 교환의 네트워크 오류 문구가 나타났고, 브라우저 뒤로 가기는 오류 없이 로그인 화면으로 돌아왔다. 실제 제공자 코드 교환은 남았다 |
-| A6 | 작은 화면·문구 대비·버튼 이름 통과, TalkBack 미검증 | 320×640·160 dpi에서 온보딩 카드가 `Next` 위에 그려지는 현상을 재현해 고정 버튼을 전면에 배치했다. 100%·130%에서 세 단계와 로그인 화면에 도달했다. 온보딩 안내·로그인 안내·약관 일반 문구를 `fg-neutral-muted`로 바꿔 배경 대비 약 6.53:1로 높였다. 공통 `Button`의 평탄화를 꺼서 Android UI 트리에 `Next`·Apple·Google·Facebook 이름이 표시됐다 |
+| A6 | 작은 화면·문구 대비·접근성 클릭 통과, TalkBack 미검증 | 320×640·160 dpi에서 온보딩 카드가 `Next` 위에 그려지는 현상을 재현해 고정 버튼을 전면에 배치했다. 100%·130%에서 세 단계와 로그인 화면에 도달했다. 온보딩 안내·로그인 안내·약관 일반 문구를 `fg-neutral-muted`로 바꿔 배경 대비 약 6.53:1로 높였다. 공통 버튼의 Android 접근성 이름과 `ACTION_CLICK`을 계측했다 |
 
 ### A2 Maestro 실행
 
@@ -58,6 +58,33 @@ Debug 검증과 사용 절차에는 `pnpm preview`를 사용한다.
 `Button` 루트에 `flatten={false}`를 적용하자 `Next`와 세 소셜 버튼의 `content-desc`가
 나타났다. 390×844·320×640에서 Maestro 이름 선택으로 온보딩과 로그인 진입이 통과했다.
 전용 에뮬레이터에는 TalkBack이 없어 실제 낭독과 순차 탐색 검증은 남아 있다.
+
+### A6 접근성 클릭 재현
+
+API 35 에뮬레이터에서 `UiAutomation`으로 `ACTION_CLICK`을 실행했다. 처음에는 버튼 이름만
+보이고 `isClickable=false`였으며 `ACTION_CLICK`도 없었다. ReactLynx가 사용하는
+Android View 기반 접근성 경로에서 Lynx의 `accessibility-enable-tap` 속성이 자동으로
+클릭 동작으로 연결되지 않았다. 공통 `Button`·`RoundButton`은 활성 상태에만 이 속성을
+설정하고, 최소 호스트의 `AccessibilityTapBridge`가 해당 View에 클릭 동작을 연결한다.
+계측 테스트는 `Next`→`Back`→`Next`→`Next`→`Get started`를 접근성 클릭만으로
+실행한 뒤 Apple·Google·Facebook 버튼의 `isClickable`과 `ACTION_CLICK`을 확인한다.
+2026-10-01 API 35 계측 1건과 Maestro 호스트 1건·소셜 3건·작은 화면 2건이 통과했다.
+모의 인증 설정을 제거하고 재빌드한 APK에서도 호스트 Maestro가 다시 통과했다.
+
+Debug 앱을 로컬 미리보기 번들로 실행할 때 다음처럼 재현한다.
+
+```sh
+pnpm bundle:android
+pnpm preview
+cd apps/android
+./gradlew assembleDebug assembleDebugAndroidTest
+adb -s <전용 에뮬레이터 ID> install -r app/build/outputs/apk/debug/app-debug.apk
+adb -s <전용 에뮬레이터 ID> install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -s <전용 에뮬레이터 ID> shell am instrument -w \
+  -e class com.libitum.host.ButtonAccessibilityTest \
+  -e bundleUrl http://10.0.2.2:<preview 포트>/main.lynx.bundle \
+  com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner
+```
 
 ### A3 저장소 경계 재현
 

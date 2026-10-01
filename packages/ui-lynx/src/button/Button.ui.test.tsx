@@ -14,6 +14,7 @@ describe("Button UI", () => {
     expect(button).toHaveAttribute("accessibility-element", "true");
     expect(button).toHaveAttribute("accessibility-label", "계속");
     expect(button).toHaveAttribute("accessibility-traits", "button");
+    expect(button).toHaveAttribute("accessibility-enable-tap", "true");
     expect(button).toHaveAttribute("flatten", "false");
   });
 
@@ -34,6 +35,7 @@ describe("Button UI", () => {
     expect(onTap).not.toHaveBeenCalled();
     expect(button).toHaveAttribute("data-disabled", "true");
     expect(button).toHaveAttribute("accessibility-traits", "disabled");
+    expect(button).toHaveAttribute("accessibility-enable-tap", "false");
   });
 
   test("loading은 라벨을 유지하고 상태 이름과 spinner를 제공한다", () => {

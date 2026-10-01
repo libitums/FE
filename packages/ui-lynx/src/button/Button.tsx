@@ -31,6 +31,7 @@ export function Button(props: ButtonProps) {
       accessibility-element={true}
       accessibility-label={props.loading ? `${props.label}, loading` : props.label}
       accessibility-traits={contract.traits}
+      accessibility-enable-tap={interactive}
       bindtap={interactive ? handleTap : undefined}
     >
       <view className="ui-lynx-button-surface">
