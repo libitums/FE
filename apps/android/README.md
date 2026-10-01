@@ -52,6 +52,11 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 에뮬레이터를 실행한 상태에서 `apps/android/test-storage-restart.sh`를 실행하면
 테스트용 세션의 저장·앱 프로세스 종료 후 복원·삭제 후 재시작을 확인한다. 실제
 소셜 로그인과 서버의 토큰 갱신은 이 테스트에 포함되지 않는다.
+전용 에뮬레이터에서 `E2E_UDID=<ID> sh apps/android/test-session-resume.sh`를
+실행하면 모의 HTTPS 인증 응답으로 실제 Lynx 화면의 세션 갱신을 확인한다. 스크립트는
+앱 데이터를 지우고 테스트용 설정으로 번들을 다시 빌드한 뒤, 서로 다른 앱 프로세스에서
+세션 저장 → 갱신·여정 화면 → 재시작 후 재갱신·여정 화면 → 거부 시 세션 삭제·로그인
+화면을 검증한다. 완료 후 일반 번들이 필요하면 `pnpm bundle:android`를 다시 실행한다.
 `sh apps/android/test-web-auth-contract.sh`는 인증 URL·콜백 검증을, Android 계측
 `WebAuthenticationModuleTest`는 난수와 잘못된 요청의 반환을 확인한다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
