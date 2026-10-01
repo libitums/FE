@@ -35,6 +35,8 @@
 | `pnpm lint`                                                  | 정적 검사 + CSS 토큰 접두사 + UI package/Storybook 순환 검사                           | **자동 수정** (`lint:fix`가 따로) |
 | `pnpm format`                                                | 포맷 적용 (`oxfmt`)                                                                    | 검사만 (`format:check`가 따로)    |
 | `pnpm bundle:host`                                           | `build` + 호스트로 사본 복사                                                           | 네이티브 빌드                     |
+| `pnpm bundle:android`                                        | UI package·mobile 빌드 + Android 자산 복사                                             | 네이티브 빌드                     |
+| `pnpm test:android-bundle`                                   | Android 자산 복사 통합 테스트                                                          | Android SDK 빌드                  |
 | `pnpm test`                                                  | UI package, mobile, Storybook의 자동 테스트와 보고서 정책                              | native 수동 확인                  |
 | `pnpm storybook:lynx`                                        | Lynx Web bundle watch + Storybook dev server (`localhost:6006`)                        | native host 검증                  |
 | `pnpm storybook:lynx:build`                                  | Lynx Web bundle + 정적 Storybook 생성                                                  | dev server 유지                   |
@@ -267,6 +269,11 @@ xcodebuild test -workspace Host.xcworkspace -scheme Host \
 ```sh
 xcrun simctl launch booted com.libitum.host --bundle-url=http://localhost:3001/main.lynx.bundle
 ```
+
+Android 최소 호스트는 [`apps/android/README.md`](../../apps/android/README.md)의 Gradle 절차로
+빌드한다. Debug는 `pnpm bundle:android` 뒤 `pnpm preview`가 제공하는 번들을 읽으며
+에뮬레이터 기본 URL은 `http://10.0.2.2:3000/main.lynx.bundle`이다. Release는 복사된
+APK 자산을 읽는다.
 
 **영속성 확인** — 저장 → 완전 종료 → 재실행 → 읽기.
 

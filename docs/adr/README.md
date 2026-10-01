@@ -56,8 +56,8 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 축 | 처리 | ADR |
 |---|---|---|
 | 저장소 목표·제외 범위 | 결정 | [0001](0001-repository-goal-and-scope.md) |
-| 앱 로스터 | 결정 | [0012](0012-native-host-app-minimal.md) — 0002 D1~D3 부분 대체 |
-| 호스트 경계·영속 저장소 | 결정 (최소 범위) + 보류 (두 번째 플랫폼) | [0012](0012-native-host-app-minimal.md) — D2의 `두 번째 네이티브 모듈` 금지는 [0017](0017-host-native-capabilities-and-audio.md)이 부분 대체, `권한 요청` 금지는 [0026](0026-permission-entry-conditions-and-denial-handling.md)이 부분 대체 |
+| 앱 로스터 | 결정 | [0012](0012-native-host-app-minimal.md) — 0002 D1~D3 부분 대체; [0037](0037-android-minimal-host.md)가 Android 제외를 부분 대체 |
+| 호스트 경계·영속 저장소 | 결정 (iOS 전체 호스트 · Android 최소 호스트) | [0012](0012-native-host-app-minimal.md), [0037](0037-android-minimal-host.md) — D2의 `두 번째 네이티브 모듈` 금지는 [0017](0017-host-native-capabilities-and-audio.md)이 부분 대체, `권한 요청` 금지는 [0026](0026-permission-entry-conditions-and-denial-handling.md)이 부분 대체 |
 | **호스트 네이티브 능력 (확장 조건 · 오디오 재생)** | 결정 (입장 조건 + 모듈 경계) + 보류 (오디오 자산의 출처) | [0017](0017-host-native-capabilities-and-audio.md) |
 | **호스트 네이티브 능력 (권한 입장 조건 · 거부 처리 · 외부 이동 경계)** | 결정 (입장 조건 다섯 + 세 상태의 처방 + 나가는 이동 하나) + **제안 (나가는 목적지 둘째 — 웹 인증 창)** | [0026](0026-permission-entry-conditions-and-denial-handling.md) — 0012 D2의 `권한 요청` 한 항목을 부분 대체. **열린 권한 목록은 그 D2의 권한 표**가 지고 이 표는 안 센다. D4의 「설정 페이지 하나」는 [0028](0028-social-oauth-web-authentication.md) D4가 부분 대체 — 인증 창 하나가 더 나가고, **들어오는 쪽(URL scheme 등록)은 그대로 막혀 있다** |
 | workspace 구성 (패키지 매니저·workspace 선언·태스크 러너) | 결정 | [0003](0003-workspace-and-directory-structure.md) |
@@ -114,8 +114,8 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 (`두 번째 네이티브 모듈 금지`)으로 호스트가 자랄 압력을 막았는데, 그 상한을 **입장
 조건**으로 바꾸면서 비운 자리가 이 표다. 개수를 세는 대신 **목록이 보이게** 한다.
 
-**이 표는 동시에 Android 이관 목록이다.** ADR-0012 D1이 Android 호스트를 만들지 않기로
-했고, 각 행이 그때 다시 구현할 항목이다. **표가 늘 때마다 그 빚이 함께 는다.**
+**이 표는 동시에 Android 이관 목록이다.** [ADR-0037](0037-android-minimal-host.md)이 최소 호스트를
+열었고, 각 행의 Android 상태가 남은 구현을 표시한다.
 
 ⚠ **행 수를 이관 비용으로 읽지 마라 — 행들이 같은 무게가 아니다.** 저장소·재생·발화
 행은 Android에 대응 API가 있고, **인식 계열 행은 무엇으로 인식할지를 먼저 고르는 일이
@@ -127,7 +127,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 
 | 모듈 | 메서드 | 어느 화면이 요구했나 | 연 ADR | 상태 |
 |---|---|---|---|---|
-| `StorageModule` | `get` · `set` · `remove` | 로그인 (세션 유지) | [0012](0012-native-host-app-minimal.md) D2 | **있음** — `apps/ios/Host/StorageModule.swift` |
+| `StorageModule` | `get` · `set` · `remove` | 로그인 (세션 유지) | [0012](0012-native-host-app-minimal.md) D2, [0037](0037-android-minimal-host.md) | **iOS·Android에 있음** — `apps/ios/Host/StorageModule.swift`, `apps/android/app/src/main/java/com/libitum/host/StorageModule.java` |
 | `AudioPlaybackModule` | `play(source, done)` · `stop()` | 듣기 (구현 순서 2번) | [0017](0017-host-native-capabilities-and-audio.md) D3 | **있음** — `apps/ios/Host/AudioPlaybackModule.swift` |
 | `CompletionAnnouncementModule` | `announce(content, callback)` | 듣기·문장 순서·단어 선택·문화 퀴즈의 완료 전이 | [0016](0016-assistive-technology-semantics.md) D11·7 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/CompletionAnnouncementModule.swift`; Android 이관 미구현 |
 | `HandwritingRecognitionModule` | `recognize(args, callback)` | **쓰기 (구현 순서 13번)** — 능력 경로 확인 **탐침**(LIB-263). ⚠ **화면이 아니다.** 쓰기 화면은 아직 서지 않았고, 이 모듈에 닿는 것은 **도달 경로 0건인 개발용 탐침 화면 하나**다 | [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS에 있음** — `apps/ios/Host/HandwritingRecognitionModule.swift`; 소비자는 그 탐침 화면 하나; Android 이관 미구현 |

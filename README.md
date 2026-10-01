@@ -10,6 +10,7 @@
 |---|---|---|
 | [`apps/mobile`](apps/mobile) | 사용자 대면 화면 전부. Lynx 번들을 만든다 | ReactLynx · rspeedy · pnpm |
 | [`apps/ios`](apps/ios) | 그 번들을 로드해 실행하는 네이티브 호스트 | Swift · Xcode · CocoaPods |
+| [`apps/android`](apps/android) | 같은 번들을 로드하는 Android 최소 호스트 | Java · Gradle · Lynx SDK 4.0.1 |
 | [`apps/storybook-lynx`](apps/storybook-lynx) | 실제 Lynx Web bundle을 `<lynx-view>`로 보여주는 컴포넌트 카탈로그 | Storybook · Rspeedy |
 | [`apps/supabase-functions`](apps/supabase-functions) | 서버 함수(Supabase Edge Function). 지금은 계정 삭제 `delete-account` 하나 — 배포 · 시크릿은 [그 README](apps/supabase-functions/README.md) | TypeScript · Deno · Supabase CLI |
 
@@ -17,8 +18,12 @@
 Status Indicator, Progress Header를 명시적 package export로 제공한다.
 
 **번들을 만드는 쪽과 로드하는 쪽이 다르다** (ADR-0002 D3). 화면을 고치면 `apps/mobile`을
-빌드해 `apps/ios`로 옮겨야 실기기에 반영된다 — `pnpm bundle:host`가 Lynx 번들과
-번들이 참조하는 `Resource/static/` 자산을 함께 복사해 그 둘을 잇는다.
+빌드해 호스트로 옮겨야 실기기에 반영된다. iOS는 `pnpm bundle:host`, Android는
+`pnpm bundle:android`가 Lynx 번들과 정적 자산을 함께 복사한다.
+
+Android 호스트는 첫 단계로 번들 로드, 이미지·HTTP 서비스, 입력·SVG·오버레이 요소,
+영속 저장소만 제공한다. 나머지 iOS 네이티브 모듈은 아직 Android에 없다.
+빌드와 실행은 [`apps/android/README.md`](apps/android/README.md)에 있다.
 
 앱 이름은 서비스명이 아니라 **타깃**으로 짓는다 (ADR-0002 D4). 앱이 늘 때 무슨 축으로
 나뉘는지가 이름에서 읽혀야 하기 때문이다. 웹 앱과 관리자 앱은 요구사항에 없어서 첫
