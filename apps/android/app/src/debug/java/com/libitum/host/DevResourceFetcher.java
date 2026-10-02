@@ -19,7 +19,7 @@ final class DevResourceFetcher extends LynxGenericResourceFetcher {
   @Override public void fetchResource(
       LynxResourceRequest request, LynxResourceCallback<byte[]> callback) {
     String url = request.getUrl();
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    if (url == null || (!url.startsWith("http://") && !url.startsWith("https://"))) {
       callback.onResponse(LynxResourceResponse.onFailed(
           new IOException("Unsupported development resource URL: " + url)));
       return;

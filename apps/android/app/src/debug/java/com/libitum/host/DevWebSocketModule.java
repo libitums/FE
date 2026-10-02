@@ -10,6 +10,7 @@ import com.lynx.react.bridge.JavaOnlyMap;
 import com.lynx.react.bridge.ReadableArray;
 import com.lynx.react.bridge.ReadableMap;
 import com.lynx.tasm.behavior.LynxContext;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
@@ -32,6 +33,7 @@ public final class DevWebSocketModule extends LynxModule {
   }
 
   @LynxMethod public void connect(String url, ReadableArray protocols, ReadableMap options, int id) {
+    if (destroyed) return;
     try {
       Request.Builder request = new Request.Builder().url(url);
       if (protocols != null && protocols.size() > 0) {
@@ -44,8 +46,10 @@ public final class DevWebSocketModule extends LynxModule {
       }
       if (options != null && options.hasKey("headers") && !options.isNull("headers")) {
         ReadableMap headers = options.getMap("headers");
-        for (String name : headers.toHashMap().keySet()) {
-          request.header(name, headers.getString(name));
+        for (Map.Entry<String, Object> header : headers.toHashMap().entrySet()) {
+          if (header.getValue() != null) {
+            request.header(header.getKey(), String.valueOf(header.getValue()));
+          }
         }
       }
       WebSocket socket = client.newWebSocket(request.build(), new WebSocketListener() {
