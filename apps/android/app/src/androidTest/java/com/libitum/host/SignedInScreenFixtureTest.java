@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.SystemClock;
 import com.lynx.jsbridge.network.HttpRequest;
 import com.lynx.jsbridge.network.HttpResponse;
@@ -22,6 +23,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 import org.junit.Test;
 
 /** Keeps a signed-in Debug activity alive while Maestro checks the settings screen. */
@@ -56,10 +58,20 @@ public final class SignedInScreenFixtureTest {
   private static boolean hasTestId(LynxBaseUI node, String testId) {
     if (node == null) return false;
     if (testId.equals(node.getTestID()) || testId.equals(node.getIdSelector())) return true;
-    for (LynxBaseUI child : node.getChildren()) {
-      if (hasTestId(child, testId)) return true;
+    List<LynxBaseUI> children = node.getChildren();
+    if (children != null) {
+      for (LynxBaseUI child : children) {
+        if (hasTestId(child, testId)) return true;
+      }
     }
     return false;
+  }
+
+  private static boolean hasTestIdOnMainThread(
+      Instrumentation instrumentation, LynxView view, String testId) {
+    boolean[] found = new boolean[1];
+    instrumentation.runOnMainSync(() -> found[0] = hasTestId(view.getLynxUIRoot(), testId));
+    return found[0];
   }
 
   @Test public void keepSignedInScreenForMaestro() throws InterruptedException {
@@ -77,23 +89,33 @@ public final class SignedInScreenFixtureTest {
         if (STOP_ACTION.equals(intent.getAction())) stop.countDown();
       }
     };
-    context.registerReceiver(receiver, new IntentFilter(STOP_ACTION), Context.RECEIVER_EXPORTED);
+    if (Build.VERSION.SDK_INT >= 33) {
+      context.registerReceiver(receiver, new IntentFilter(STOP_ACTION), Context.RECEIVER_EXPORTED);
+    } else {
+      context.registerReceiver(receiver, new IntentFilter(STOP_ACTION));
+    }
     MainActivity activity = null;
     try {
       Intent launch = new Intent(Intent.ACTION_MAIN);
       launch.setClass(context, MainActivity.class);
       launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
       launch.putExtra("bundle-url", bundleUrl);
-      activity = (MainActivity) instrumentation.startActivitySync(launch);
-      LynxView view = (LynxView) ((android.view.ViewGroup) activity.findViewById(android.R.id.content))
-          .getChildAt(0);
+      MainActivity launchedActivity = (MainActivity) instrumentation.startActivitySync(launch);
+      activity = launchedActivity;
+      android.view.View[] firstChild = new android.view.View[1];
+      instrumentation.runOnMainSync(() -> {
+        android.view.ViewGroup content = launchedActivity.findViewById(android.R.id.content);
+        if (content != null) firstChild[0] = content.getChildAt(0);
+      });
+      assertTrue("Activity content is missing a LynxView", firstChild[0] instanceof LynxView);
+      LynxView view = (LynxView) firstChild[0];
       long deadline = SystemClock.uptimeMillis() + 20000;
-      while (!hasTestId(view.getLynxUIRoot(), "journey-map-screen")
+      while (!hasTestIdOnMainThread(instrumentation, view, "journey-map-screen")
           && SystemClock.uptimeMillis() < deadline) {
         SystemClock.sleep(200);
       }
       assertTrue("signed-in journey screen did not render",
-          hasTestId(view.getLynxUIRoot(), "journey-map-screen"));
+          hasTestIdOnMainThread(instrumentation, view, "journey-map-screen"));
       assertTrue("Maestro did not send the fixture stop broadcast", stop.await(180, TimeUnit.SECONDS));
     } finally {
       context.unregisterReceiver(receiver);

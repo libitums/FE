@@ -8,6 +8,7 @@ env:
 - extendedWaitUntil:
     visible: "Journey, selected"
     timeout: 30000
+# The first-use scrim has no accessibility node. This fixed-size flow taps its empty area.
 - tapOn:
     point: "10%,45%"
 - waitForAnimationToEnd
