@@ -133,9 +133,12 @@ export function fcmRequest(
     body: JSON.stringify({
       message: {
         token,
-        notification: { title: message.title, body: message.body },
-        data: { target: JSON.stringify(message.target) },
-        android: { notification: { channel_id: "duru-updates" } },
+        data: {
+          title: message.title,
+          body: message.body,
+          target: JSON.stringify(message.target),
+        },
+        android: { priority: "HIGH" },
       },
     }),
   };

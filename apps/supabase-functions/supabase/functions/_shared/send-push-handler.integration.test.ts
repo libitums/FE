@@ -122,7 +122,13 @@ describe("send-push handler", () => {
     ).toHaveLength(1);
     const fcm = h.calls.find((call) => call.url.includes("fcm.googleapis.com/v1/projects/"))!;
     expect(fcm.headers.Authorization).toBe("Bearer access");
-    expect(JSON.parse(fcm.body!).message.token).toBe("bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1");
+    expect(JSON.parse(fcm.body!)).toEqual({
+      message: {
+        token: "bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1",
+        data: { title: "New", body: "Episode 2", target: '{"kind":"journey-map"}' },
+        android: { priority: "HIGH" },
+      },
+    });
   });
 
   test("SH17 FCM 시크릿이 없어도 APNs 발송을 계속하고 FCM만 실패로 센다", async () => {

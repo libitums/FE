@@ -118,9 +118,12 @@ describe("FCM HTTP v1", () => {
     expect(JSON.parse(request!.body!)).toEqual({
       message: {
         token: rawToken,
-        notification: { title: "New", body: "Episode 2" },
-        data: { target: '{"kind":"messenger","unitId":"u1"}' },
-        android: { notification: { channel_id: "duru-updates" } },
+        data: {
+          title: "New",
+          body: "Episode 2",
+          target: '{"kind":"messenger","unitId":"u1"}',
+        },
+        android: { priority: "HIGH" },
       },
     });
     expect(fcmResultFrom(200, "{}")).toBe("sent");
