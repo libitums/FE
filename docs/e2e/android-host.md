@@ -54,8 +54,18 @@ Maestro 2.11.0에서
 공통 `Button`에 `flatten={false}`를 적용한 뒤에는 이 이름들이 트리에 나타나고
 Maestro가 이름으로 누른다. 화면 크기·글자 배율이 바뀌면 기준 이미지를 다시 확인한다.
 
-`pnpm dev`의 HMR 번들은 이 최소 호스트에 WebSocket 지원이 없어 빈 화면을 보였다.
-Debug 검증과 사용 절차에는 `pnpm preview`를 사용한다.
+### 2026-10-02 Debug 개발 서버와 HMR
+
+Debug APK에 `LynxWebSocketModule`과 외부 변경분 파일 fetcher를 등록했다. API 35
+에뮬레이터에서 `pnpm dev`가 출력한 `3001` 포트의 번들을
+`--es bundle-url http://10.0.2.2:3001/main.lynx.bundle`로 열어 첫 온보딩 화면을
+확인했다. WebSocket은 `/rsbuild-hmr`에 연결됐고, 화면 소스의 문구를 임시로 바꾼 뒤
+앱을 재실행하지 않고 변경 문구가 나타났다. 원래 문구로 되돌렸을 때도 즉시 반영됐으며
+Android 로그에 `Updated modules`와 `App is up to date`가 기록됐다. 임시 소스 변경은
+작업 트리에 남기지 않았다. 서버가 선택한 포트를 실행 인자에 반영해야 한다.
+Debug·bundled·release 변형을 빌드했고, 개발 브리지 클래스가 bundled/release APK에
+포함되지 않은 것도 확인했다. bundled APK에서 Maestro 호스트 1건·작은 화면 2건,
+모의 인증 번들에서 소셜 로그인 3건이 통과했다.
 
 ### A6 작은 화면·접근성 재현
 

@@ -34,6 +34,7 @@ public final class MainActivity extends Activity {
     builder.registerModule("StorageModule", StorageModule.class);
     builder.registerModule("WebAuthenticationModule", WebAuthenticationModule.class, this);
     builder.registerModule("LegalDocumentModule", LegalDocumentModule.class, this);
+    DebugSupport.configure(builder);
     LynxView lynxView = builder.build(this);
     lynxView.addLynxViewClient(new LynxViewClient() {
       @Override public void onFirstScreen() {
