@@ -41,8 +41,9 @@ final class HandwritingTraceMath {
     if (radius <= 0) return mask;
     int r = Math.min(radius, Math.max(width, height));
     byte[] horizontal = new byte[mask.length];
+    int[] prefix = new int[Math.max(width, height) + 1];
     for (int y = 0; y < height; y++) {
-      int[] prefix = new int[width + 1];
+      prefix[0] = 0;
       for (int x = 0; x < width; x++) {
         prefix[x + 1] = prefix[x] + mask[y * width + x];
       }
@@ -53,7 +54,7 @@ final class HandwritingTraceMath {
     }
     byte[] result = new byte[mask.length];
     for (int x = 0; x < width; x++) {
-      int[] prefix = new int[height + 1];
+      prefix[0] = 0;
       for (int y = 0; y < height; y++) {
         prefix[y + 1] = prefix[y] + horizontal[y * width + x];
       }

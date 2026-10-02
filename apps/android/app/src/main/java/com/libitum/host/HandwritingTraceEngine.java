@@ -29,21 +29,23 @@ final class HandwritingTraceEngine {
     int[] box = HandwritingTraceMath.bounds(mask, request.width(), request.height());
     if (box == null) return status("empty-glyph");
     Bitmap bitmap = Bitmap.createBitmap(request.width(), request.height(), Bitmap.Config.ARGB_8888);
-    int[] pixels = new int[mask.length];
-    int color = guideColor(request.guideColor());
-    for (int i = 0; i < mask.length; i++) {
-      if (mask[i] != 0) pixels[i] = color;
+    try {
+      int[] pixels = new int[mask.length];
+      int color = guideColor(request.guideColor());
+      for (int i = 0; i < mask.length; i++) {
+        if (mask[i] != 0) pixels[i] = color;
+      }
+      bitmap.setPixels(pixels, 0, request.width(), 0, 0, request.width(), request.height());
+      ByteArrayOutputStream output = new ByteArrayOutputStream();
+      if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) return status("failed");
+      JavaOnlyMap result = status("rendered");
+      result.putString("image", Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP));
+      result.putString("box", boxString(box));
+      result.putString("font", FONT_FAMILY);
+      return result;
+    } finally {
+      bitmap.recycle();
     }
-    bitmap.setPixels(pixels, 0, request.width(), 0, 0, request.width(), request.height());
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    boolean encoded = bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
-    bitmap.recycle();
-    if (!encoded) return status("failed");
-    JavaOnlyMap result = status("rendered");
-    result.putString("image", Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP));
-    result.putString("box", boxString(box));
-    result.putString("font", FONT_FAMILY);
-    return result;
   }
 
   static JavaOnlyMap compare(Request request) {
@@ -77,45 +79,50 @@ final class HandwritingTraceEngine {
 
   private static byte[] glyphMask(Request request) {
     Bitmap bitmap = Bitmap.createBitmap(request.width(), request.height(), Bitmap.Config.ARGB_8888);
-    Canvas canvas = new Canvas(bitmap);
-    canvas.drawColor(Color.BLACK);
-    Paint paint = whitePaint();
-    paint.setTypeface(FONT);
-    paint.setTextSize(request.fontSize());
-    float x = (request.width() - paint.measureText(request.glyph())) / 2;
-    float y = (request.height() - paint.ascent() - paint.descent()) / 2;
-    canvas.drawText(request.glyph(), x, y, paint);
-    byte[] raw = binaryMask(bitmap);
-    bitmap.recycle();
-    return HandwritingTraceMath.center(raw, request.width(), request.height());
+    try {
+      Canvas canvas = new Canvas(bitmap);
+      canvas.drawColor(Color.BLACK);
+      Paint paint = whitePaint();
+      paint.setTypeface(FONT);
+      paint.setTextSize(request.fontSize());
+      float x = (request.width() - paint.measureText(request.glyph())) / 2;
+      float y = (request.height() - paint.ascent() - paint.descent()) / 2;
+      canvas.drawText(request.glyph(), x, y, paint);
+      return HandwritingTraceMath.center(binaryMask(bitmap), request.width(), request.height());
+    } finally {
+      bitmap.recycle();
+    }
   }
 
   private static byte[] strokeMask(Request request) {
     Bitmap bitmap = Bitmap.createBitmap(request.width(), request.height(), Bitmap.Config.ARGB_8888);
-    Canvas canvas = new Canvas(bitmap);
-    canvas.drawColor(Color.BLACK);
-    Paint paint = whitePaint();
-    paint.setStyle(Paint.Style.STROKE);
-    paint.setStrokeWidth(request.strokeWidth());
-    paint.setStrokeCap(Paint.Cap.ROUND);
-    paint.setStrokeJoin(Paint.Join.ROUND);
-    for (List<Point> stroke : request.strokes()) {
-      if (stroke.isEmpty()) continue;
-      if (stroke.size() == 1) {
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(stroke.get(0).x(), stroke.get(0).y(),
-            request.strokeWidth() / 2, paint);
-        paint.setStyle(Paint.Style.STROKE);
-        continue;
-      }
+    try {
+      Canvas canvas = new Canvas(bitmap);
+      canvas.drawColor(Color.BLACK);
+      Paint paint = whitePaint();
+      paint.setStyle(Paint.Style.STROKE);
+      paint.setStrokeWidth(request.strokeWidth());
+      paint.setStrokeCap(Paint.Cap.ROUND);
+      paint.setStrokeJoin(Paint.Join.ROUND);
       Path path = new Path();
-      path.moveTo(stroke.get(0).x(), stroke.get(0).y());
-      for (int i = 1; i < stroke.size(); i++) path.lineTo(stroke.get(i).x(), stroke.get(i).y());
-      canvas.drawPath(path, paint);
+      for (List<Point> stroke : request.strokes()) {
+        if (stroke.isEmpty()) continue;
+        if (stroke.size() == 1) {
+          paint.setStyle(Paint.Style.FILL);
+          canvas.drawCircle(stroke.get(0).x(), stroke.get(0).y(),
+              request.strokeWidth() / 2, paint);
+          paint.setStyle(Paint.Style.STROKE);
+          continue;
+        }
+        path.reset();
+        path.moveTo(stroke.get(0).x(), stroke.get(0).y());
+        for (int i = 1; i < stroke.size(); i++) path.lineTo(stroke.get(i).x(), stroke.get(i).y());
+        canvas.drawPath(path, paint);
+      }
+      return binaryMask(bitmap);
+    } finally {
+      bitmap.recycle();
     }
-    byte[] mask = binaryMask(bitmap);
-    bitmap.recycle();
-    return mask;
   }
 
   private static Paint whitePaint() {
