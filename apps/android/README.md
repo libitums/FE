@@ -3,7 +3,7 @@
 `apps/mobile`의 Lynx 번들을 Android `LynxView` 하나에서 실행한다. 지금은 이미지·HTTP
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
 `LegalDocumentModule`·`AudioPlaybackModule`·`CompletionAnnouncementModule`·
-`SpeechRecognitionModule`·`HandwritingTraceModule`을 제공한다. 네이티브 기능 전체의
+`SpeechRecognitionModule`·`HandwritingTraceModule`·`AppReviewModule`을 제공한다. 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
 
 ## 준비
@@ -92,6 +92,9 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 `HandwritingTraceMathTest`와 `HandwritingTraceModuleTest`는 안내 그림의 마스크 정렬,
 팽창 판정, PNG와 채점 영역의 일치를 확인한다. 쓰기 화면의 터치·판정 Maestro 절차는
 [Android 손글씨 검증](../../docs/e2e/android-handwriting-trace.md)에 있다.
+`ReviewRequestGateTest`와 `AppReviewModuleTest`는 Play 리뷰 요청의 중복 방지,
+`FakeReviewManager`를 통한 요청·실행 및 실패 후 재시도를 확인한다. 설문에서 호스트까지의
+Maestro 절차는 [Android 평점 요청 검증](../../docs/e2e/android-app-review.md)에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
@@ -125,6 +128,8 @@ Custom Tab으로 열고 뒤로가기로 앱에 복귀하는지 확인한다.
 화면을 열어 마이크 권한 요청과 인식 서비스가 없는 AOSP의 건너뛰기 안내를 확인한다.
 `E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:handwriting`은 모의 진행으로
 쓰기 화면을 열어 안내 PNG, 터치 획, 네이티브 판정과 결과 화면을 확인한다.
+`E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:review`는 모의 완료 상태에서
+에피소드 설문 5점을 골라 `AppReviewModule.requestReview` 호출 1회를 확인한다.
 `test:e2e:android:small`은 320×640에서 글자 배율 1.0·1.3을 각각 적용해
 온보딩 세 단계의 고정 버튼과 소셜 로그인 화면을 비교한다. 실행 뒤 390×844·1.0으로
 돌린다. 네 흐름은 버튼의 접근성 이름으로 선택한다. `test:e2e:android`는 이 네 명령을

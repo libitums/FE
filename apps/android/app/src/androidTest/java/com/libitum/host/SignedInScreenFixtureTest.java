@@ -47,6 +47,12 @@ public final class SignedInScreenFixtureTest {
       + "\"completedEpisodeFinalIds\":[]}";
   private static final String WRITING_PROGRESS = SPEECH_PROGRESS.replace(
       "\"completedStepCount\":6", "\"completedStepCount\":7");
+  private static final String REVIEW_PROGRESS = "{\"version\":1,\"completedStepCount\":1000,"
+      + "\"completedEpisodeIntroIds\":[],"
+      + "\"completedMessengerUnitIds\":[\"appointment-confirmation\"],"
+      + "\"completedPhoneCallUnitIds\":[\"appointment-confirmation-phone-call\"],"
+      + "\"visualNovel\":{\"status\":\"completed\",\"beatIndex\":2},"
+      + "\"completedEpisodeFinalIds\":[\"tutorial-final-test\"]}";
 
   private static final class AuthService implements ILynxHttpService {
     private final String accessToken;
@@ -110,13 +116,16 @@ public final class SignedInScreenFixtureTest {
         InstrumentationRegistry.getArguments().getString("speechProgress"));
     boolean writingProgress = "true".equals(
         InstrumentationRegistry.getArguments().getString("writingProgress"));
-    String accessToken = audioProgress || speechProgress || writingProgress
+    boolean reviewProgress = "true".equals(
+        InstrumentationRegistry.getArguments().getString("reviewProgress"));
+    String accessToken = audioProgress || speechProgress || writingProgress || reviewProgress
         ? "fixture." + Base64.getUrlEncoder().withoutPadding().encodeToString(
             "{\"sub\":\"audio-fixture\"}".getBytes(StandardCharsets.UTF_8)) + ".signature"
         : "fixture-access";
-    if (audioProgress || speechProgress || writingProgress) {
+    if (audioProgress || speechProgress || writingProgress || reviewProgress) {
       new StorageModule(context).set("libitum.progress.pending.audio-fixture",
-          writingProgress ? WRITING_PROGRESS : speechProgress ? SPEECH_PROGRESS : AUDIO_PROGRESS);
+          reviewProgress ? REVIEW_PROGRESS : writingProgress ? WRITING_PROGRESS
+              : speechProgress ? SPEECH_PROGRESS : AUDIO_PROGRESS);
     }
     LynxServiceCenter.inst().registerService(ILynxHttpService.class, new AuthService(accessToken));
 

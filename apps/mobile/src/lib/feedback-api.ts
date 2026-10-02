@@ -56,12 +56,10 @@ function appReviewModule(): AppReviewModule | undefined {
   return module ?? undefined;
 }
 
-/**
- * 설치당 한 번 iOS 기본 평점 창을 요청합니다. 실제로 뜰지는 iOS가 정합니다(1년에 3번 상한 · 개발 빌드는 늘 뜸).
- * 요청했으면 `true`.
- */
+/** 설치당 한 번 호스트의 평점 창을 요청합니다. 표시 여부는 각 스토어가 결정합니다. */
 export function requestAppReviewOnce(): boolean {
-  if (getItem(appReviewRequestedStorageKey) !== null) return false;
+  // Android Lynx의 String 반환은 없는 SharedPreferences 값도 ""로 건넬 수 있습니다.
+  if (getItem(appReviewRequestedStorageKey) === "1") return false;
   const host = appReviewModule();
   if (host === undefined || typeof host.requestReview !== "function") return false;
   try {

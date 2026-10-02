@@ -1,0 +1,25 @@
+# A completed tutorial episode asks the Android host for a Play review once.
+appId: com.libitum.host
+---
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Journey, selected"
+    timeout: 30000
+- tapOn:
+    point: "10%,45%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "50%,17%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "15%,88%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "50%,50%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "50%,81%"
+- waitForAnimationToEnd
+- tapOn: "5 · Love it"
+- waitForAnimationToEnd
+- assertVisible: "Journey, selected"

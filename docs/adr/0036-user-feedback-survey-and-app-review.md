@@ -43,6 +43,11 @@
   `SKStoreReviewController`. 결과를 알려 주는 API가 없어 콜백이 없다.
 - **에피소드 설문 별점 4 이상 뒤, 설치당 한 번**(`libitum.app-review.requested`). 실제로 뜰지는 iOS가 정한다(1년 3번,
   개발 서명은 늘 뜸, TestFlight는 안 뜸).
+- Android 호스트는 같은 `requestReview()` 계약을 Play In-App Review 2.0.2의
+  `requestReviewFlow()` → `launchReviewFlow()`로 수행한다. 활성 Activity가 없으면 요청하지 않고,
+  요청 진행 중 중복 호출은 합친다. Play의 완료는 대화 상자 표시나 평점 제출을 뜻하지 않는다.
+  앱의 한 번 요청 기록은 iOS와 공유하는 JS 키의 값 `"1"`로 판단한다. Android Lynx의 빈
+  `String` 반환을 미기록으로 처리해야 한다.
 - **ADR-0017 D1 입장 조건 셋**: (1) 사용자 요구 — 스토어 평점은 앱 밖에서 줄 수 없다, (2) Lynx에 StoreKit 대체 0개,
   (3) e2e에 사람이 판정할 항목이 있다(개발 빌드에서 창이 뜨는가).
 
