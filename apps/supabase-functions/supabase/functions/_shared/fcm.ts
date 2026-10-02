@@ -134,8 +134,8 @@ export function fcmRequest(
       message: {
         token,
         data: {
-          title: message.title,
-          body: message.body,
+          title: String(message.title ?? ""),
+          body: String(message.body ?? ""),
           target: JSON.stringify(message.target),
         },
         android: { priority: "HIGH" },
