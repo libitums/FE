@@ -23,4 +23,12 @@ public final class HandwritingTraceMathTest {
     assertEquals(1, HandwritingTraceMath.intersection(one, one));
     assertEquals(0, HandwritingTraceMath.intersection(one, new byte[25]));
   }
+
+  @Test public void rectangularDilationDoesNotLeakInkBetweenRows() {
+    byte[] corner = new byte[18];
+    corner[0] = 1;
+    byte[] grown = HandwritingTraceMath.dilate(corner, 6, 3, 1);
+    assertEquals(4, HandwritingTraceMath.area(grown));
+    assertArrayEquals(new int[] {0, 0, 2, 2}, HandwritingTraceMath.bounds(grown, 6, 3));
+  }
 }

@@ -38,7 +38,7 @@ E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:handwriting
 
 ## 결과와 남은 확인
 
-- 2026-10-02, Android 15 API 35 AOSP ARM 에뮬레이터: 순수 Java 단위 2건,
+- 2026-10-02, Android 15 API 35 AOSP ARM 에뮬레이터: 순수 Java 단위 3건,
   계측 3건, Maestro 1건 통과.
 - 안내 `나` PNG가 작업 영역 가운데에 보였고, 표면을 그은 뒤 `Check`가 나타나
   판정 화면으로 바뀌었다. 모듈 등록을 뺀 비교 실행에서는 네이티브 호출 검사가 실패했다.
