@@ -83,6 +83,14 @@ describe("PA1 요청", () => {
     await expect(recordLearningDay("2026-09-30")).resolves.toBeNull();
   });
 
+  test("읽을 수 없는 JSON 응답은 재시도 가능한 요청 실패와 구분한다", async () => {
+    install({ reply: () => ({ status: 200, body: "{bad-json" }) });
+    await expect(loadLearningProgress()).resolves.toEqual({
+      ok: false,
+      invalidResponse: true,
+    });
+  });
+
   test("연속 일수는 0 이상 정수만 받는다", async () => {
     install({ reply: () => ({ status: 200, body: '"3"' }) });
     await expect(fetchLearningStreak("2026-09-30")).resolves.toBeNull();

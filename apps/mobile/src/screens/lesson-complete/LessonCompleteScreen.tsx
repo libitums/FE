@@ -50,7 +50,6 @@ export type LessonCompleteScreenProps = {
   /** 진행 지표입니다. 상단에는 연속 학습과 트로피만 표시합니다. */
   readonly streakDays: number;
   readonly trophyCount: number;
-  readonly diamondCount: number;
   readonly reward: LessonReward;
   readonly exitTo?: SpecialUnitEntrySource;
   readonly onExit: () => void;

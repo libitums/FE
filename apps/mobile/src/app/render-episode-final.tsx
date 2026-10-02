@@ -60,7 +60,6 @@ export function renderEpisodeFinalFlow(screen: EpisodeFinalFlowScreen, wiring: S
           verdict="passed"
           streakDays={wiring.streakDays}
           trophyCount={wiring.trophyCount}
-          diamondCount={wiring.gemCount}
           reward={lessonRewardPlaceholder}
           onExit={() => wiring.onCompleteEpisodeFinal(screen.unitId)}
         />

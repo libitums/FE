@@ -33,7 +33,6 @@ function fixture(overrides: Partial<Parameters<typeof LessonCompleteScreen>[0]> 
     verdict: "passed" as const,
     streakDays: 1,
     trophyCount: 0,
-    diamondCount: 0,
     reward: lessonRewardPlaceholder,
     onExit: vi.fn(),
     ...overrides,
@@ -62,7 +61,7 @@ test("[LCS2] 실수가 있으면 같은 틀에 제목 · 설명만 바뀐다", (
 });
 
 test("[LA9-E][LCS3] 지표 칩 둘은 읽기 전용이고 젬 칩은 숨긴다", () => {
-  render(<LessonCompleteScreen {...fixture({ streakDays: 3, trophyCount: 2, diamondCount: 5 })} />);
+  render(<LessonCompleteScreen {...fixture({ streakDays: 3, trophyCount: 2 })} />);
 
   expect(screen.queryByTestId("lesson-complete-screen-diamond")).not.toBeInTheDocument();
   const expected = [
@@ -230,7 +229,7 @@ test("[UI-P3] 표지 스킵으로 온 결과 화면은 만점이다", () => {
 // ---------------------------------------------------------------- 영어 렌더 · 문구표 (LA9)
 
 test("[LA9-E] 트로피 1개는 단수로 말한다", () => {
-  render(<LessonCompleteScreen {...fixture({ trophyCount: 1, diamondCount: 1 })} />);
+  render(<LessonCompleteScreen {...fixture({ trophyCount: 1 })} />);
 
   expect(screen.getByTestId("lesson-complete-screen-trophy")).toHaveAttribute(
     "accessibility-label",
@@ -298,7 +297,6 @@ test("[LA9-M] 문구표를 주입하면 지표 칩 · 보상 카드의 이름이
         {...fixture({
           streakDays: 3,
           trophyCount: 2,
-          diamondCount: 5,
           reward: { diamondAmount: 7, grade: "GREAT" },
         })}
       />

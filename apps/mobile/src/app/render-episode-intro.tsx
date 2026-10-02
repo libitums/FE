@@ -79,7 +79,6 @@ function renderPrologueCompleteScreen(
       verdict="passed"
       streakDays={wiring.streakDays}
       trophyCount={wiring.trophyCount}
-      diamondCount={wiring.gemCount}
       reward={lessonRewardPlaceholder}
       onExit={() => wiring.onExitPrologueComplete(screen.unitId)}
     />

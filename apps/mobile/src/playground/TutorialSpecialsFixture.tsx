@@ -42,7 +42,6 @@ export function TutorialSpecialsFixture({
           verdict="passed"
           streakDays={0}
           trophyCount={0}
-          diamondCount={0}
           reward={lessonRewardPlaceholder}
           onExit={onExit}
         />

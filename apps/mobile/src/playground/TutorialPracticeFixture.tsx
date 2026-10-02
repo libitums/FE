@@ -77,7 +77,6 @@ export function TutorialPracticeFixture({
         verdict={judgeAssessment(result.answers, learningPassCriterionForStep(stepId))}
         streakDays={0}
         trophyCount={0}
-        diamondCount={0}
         reward={lessonRewardPlaceholder}
         onExit={onExit}
         onRetry={() => setResult(null)}
