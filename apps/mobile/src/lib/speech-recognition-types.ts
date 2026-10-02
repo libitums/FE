@@ -44,7 +44,7 @@ export type SpeechStatus = {
   readonly locale: string;
   readonly listening: boolean;
   readonly bufferCount: number;
-  /** 가장 최근 버퍼의 RMS입니다. `0...1`이고 **배율이 곱해지지 않은 날값**입니다. */
+  /** `0...1` 입력 레벨입니다. iOS는 PCM RMS 원값, Android는 인식 서비스의 dB 알림을 변환한 근사치입니다. */
   readonly level: number;
   readonly peakLevel: number;
 };

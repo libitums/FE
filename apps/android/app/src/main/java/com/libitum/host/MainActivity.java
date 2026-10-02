@@ -20,6 +20,7 @@ public final class MainActivity extends Activity {
   private String authScheme;
   private boolean leftForAuthentication;
   private AudioPlaybackController audioPlayback;
+  private SpeechRecognitionController speechRecognition;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -39,6 +40,9 @@ public final class MainActivity extends Activity {
         getWindow().getDecorView());
     audioPlayback = new AudioPlaybackController(this);
     builder.registerModule("AudioPlaybackModule", AudioPlaybackModule.class, audioPlayback);
+    speechRecognition = new SpeechRecognitionController(this);
+    builder.registerModule("SpeechRecognitionModule", SpeechRecognitionModule.class,
+        speechRecognition);
     DebugSupport.configure(builder);
     LynxView lynxView = builder.build(this);
     lynxView.addLynxViewClient(new LynxViewClient() {
@@ -106,7 +110,14 @@ public final class MainActivity extends Activity {
   @Override protected void onDestroy() {
     finishWebAuthentication("failed", null);
     if (audioPlayback != null) audioPlayback.stop();
+    if (speechRecognition != null) speechRecognition.destroy();
     super.onDestroy();
+  }
+
+  @Override public void onRequestPermissionsResult(
+      int requestCode, String[] permissions, int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    if (speechRecognition != null) speechRecognition.onRequestPermissionsResult(requestCode);
   }
 
   @Override protected void onStart() {
@@ -116,6 +127,7 @@ public final class MainActivity extends Activity {
 
   @Override protected void onStop() {
     if (audioPlayback != null) audioPlayback.interrupt();
+    if (speechRecognition != null) speechRecognition.interrupt();
     super.onStop();
   }
 }
