@@ -47,6 +47,7 @@ export type BottomNavigatorItemContract = {
   readonly selected: boolean;
   readonly disabled: boolean;
   readonly interactive: boolean;
+  readonly accessibilityTapEnabled: boolean;
   readonly focusable: boolean;
   readonly focusId?: string;
   readonly focusIndex?: string;
@@ -165,6 +166,7 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
       selected,
       disabled,
       interactive: !disabled,
+      accessibilityTapEnabled: !disabled,
       focusable: !disabled,
       ...(!disabled
         ? {

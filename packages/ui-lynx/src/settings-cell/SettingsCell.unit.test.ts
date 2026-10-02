@@ -18,6 +18,7 @@ describe("Settings Cell contract", () => {
       onChange: vi.fn<(checked: boolean) => void>(),
     });
     expect(contract.accessibilityLabel).toBe("자동 재생, 다음 학습, on");
+    expect(contract).toHaveProperty("accessibilityTapEnabled", true);
     expect(contract.className).toContain("ui-lynx-settings-cell-type-toggle");
   });
 
@@ -31,6 +32,7 @@ describe("Settings Cell contract", () => {
     });
     expect(contract.accessibilityLabel).toBe("언어, 한국어");
     expect(contract.value).toBe("한국어");
+    expect(contract).toHaveProperty("accessibilityTapEnabled", true);
     expect(contract).not.toHaveProperty("description");
   });
 
@@ -51,6 +53,16 @@ describe("Settings Cell contract", () => {
         onNavigate: vi.fn<() => void>(),
       }),
     ).toThrow(/title/);
+  });
+
+  test("disabled 행은 Android 접근성 클릭을 노출하지 않는다", () => {
+    const contract = getSettingsCellContract({
+      trailing: "navigation",
+      title: "로그아웃",
+      disabled: true,
+      onNavigate: vi.fn<() => void>(),
+    });
+    expect(contract).toHaveProperty("accessibilityTapEnabled", false);
   });
 
   test("group은 비어 있거나 아바타 사용이 섞이면 거부한다", () => {

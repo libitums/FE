@@ -40,6 +40,15 @@ test("설정 화면 제목이 accessibility-traits header를 갖는다", () => {
     "accessibility-traits",
     "header",
   );
+  expect(screen.getByTestId("settings-screen-title")).toHaveAttribute("flatten", "false");
+  expect(screen.getByTestId("settings-screen-title")).toHaveAttribute(
+    "accessibility-element",
+    "true",
+  );
+  expect(screen.getByTestId("settings-screen-title")).toHaveAttribute(
+    "accessibility-heading",
+    "true",
+  );
 });
 
 // ---------------------------------------------------------------- 스크롤 영역

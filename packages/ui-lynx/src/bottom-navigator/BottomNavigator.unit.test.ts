@@ -73,6 +73,7 @@ describe("getBottomNavigatorContracts", () => {
       selected: false,
       disabled: false,
       interactive: true,
+      accessibilityTapEnabled: true,
       traits: "button",
       accessibilityLabel: "홈",
       iconColor: color.gray["500"],
@@ -89,6 +90,7 @@ describe("getBottomNavigatorContracts", () => {
     expect(contracts[3]).toMatchObject({
       disabled: true,
       interactive: false,
+      accessibilityTapEnabled: false,
       traits: "disabled",
       accessibilityLabel: "설정, 로그인 후 사용 가능",
       iconColor: color.fg.disabled,

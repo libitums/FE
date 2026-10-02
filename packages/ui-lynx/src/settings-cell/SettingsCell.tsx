@@ -31,8 +31,10 @@ function Cell(
       data-checked={props.trailing === "toggle" ? String(props.checked) : undefined}
       data-disabled={String(contract.disabled)}
       accessibility-element={true}
+      flatten={false}
       accessibility-label={contract.accessibilityLabel}
       accessibility-traits={contract.disabled ? "disabled" : "button"}
+      accessibility-enable-tap={contract.accessibilityTapEnabled ? true : undefined}
       accessibility-role-description={props.trailing === "toggle" ? "switch" : undefined}
       focusable={!contract.disabled}
       bindtap={contract.disabled ? undefined : handleTap}
