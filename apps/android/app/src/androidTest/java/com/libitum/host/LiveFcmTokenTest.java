@@ -43,10 +43,11 @@ public final class LiveFcmTokenTest {
     try {
       CountDownLatch done = new CountDownLatch(1);
       AtomicReference<JavaOnlyMap> response = new AtomicReference<>();
-      new PushNotificationModule(activity, activity.pushNotifications).register(values -> {
-        response.set((JavaOnlyMap) values[0]);
-        done.countDown();
-      });
+      instrumentation.runOnMainSync(() ->
+          new PushNotificationModule(activity, activity.pushNotifications).register(values -> {
+            response.set((JavaOnlyMap) values[0]);
+            done.countDown();
+          }));
       assertTrue("FCM registration callback timed out", done.await(20, TimeUnit.SECONDS));
       JavaOnlyMap registration = response.get();
       assertNotNull(registration);
