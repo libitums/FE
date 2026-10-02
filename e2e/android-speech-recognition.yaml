@@ -1,0 +1,29 @@
+# Android speech permission and unavailable-service path on the dedicated AOSP emulator.
+appId: com.libitum.host
+---
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Journey, selected"
+    timeout: 30000
+- swipe:
+    start: "50%,80%"
+    end: "50%,22%"
+    duration: 600
+- swipe:
+    start: "50%,80%"
+    end: "50%,22%"
+    duration: 600
+- tapOn:
+    point: "50%,42%"
+- tapOn:
+    point: "50%,76%"
+- tapOn:
+    point: "60%,88%"
+- extendedWaitUntil:
+    visible: "Allow Duru to record audio?"
+    timeout: 10000
+- tapOn: "WHILE USING THE APP"
+- waitForAnimationToEnd
+- assertScreenshot:
+    path: screenshots/android-speech-unavailable-390x844.png
+    thresholdPercentage: 95

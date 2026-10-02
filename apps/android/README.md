@@ -2,7 +2,8 @@
 
 `apps/mobile`의 Lynx 번들을 Android `LynxView` 하나에서 실행한다. 지금은 이미지·HTTP
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
-`LegalDocumentModule`·`AudioPlaybackModule`·`CompletionAnnouncementModule`을 제공한다. 네이티브 기능 전체의
+`LegalDocumentModule`·`AudioPlaybackModule`·`CompletionAnnouncementModule`·
+`SpeechRecognitionModule`을 제공한다. 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
 
 ## 준비
@@ -84,6 +85,10 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 `CompletionAnnouncementModuleTest`는 완료 안내의 원문·콜백·실제 Android 접근성
 공지 이벤트를 확인한다. 듣기 완료까지의 Maestro 절차는
 [`docs/e2e/android-completion-announcement.md`](../../docs/e2e/android-completion-announcement.md)에 있다.
+`SpeechRecognitionSessionTest`는 결과 한 번 반환과 입력 레벨 경계를,
+`SpeechRecognitionModuleTest`는 권한·잘못된 인자·서비스 부재 페이로드를 확인한다.
+말하기 화면의 마이크 권한 Maestro 절차는
+[Android 음성 인식 검증](../../docs/e2e/android-speech-recognition.md)에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
@@ -113,6 +118,8 @@ Apple·Google·Facebook의 인증 URL·PKCE·모의 딥링크 복귀를 각각 �
 Custom Tab으로 열고 뒤로가기로 앱에 복귀하는지 확인한다.
 `E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:audio`는 모의 진행으로 듣기
 화면을 열어 자동 재생·다시듣기·이탈 시 중단을 확인한다.
+`E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:speech`는 모의 진행으로 말하기
+화면을 열어 마이크 권한 요청과 인식 서비스가 없는 AOSP의 건너뛰기 안내를 확인한다.
 `test:e2e:android:small`은 320×640에서 글자 배율 1.0·1.3을 각각 적용해
 온보딩 세 단계의 고정 버튼과 소셜 로그인 화면을 비교한다. 실행 뒤 390×844·1.0으로
 돌린다. 네 흐름은 버튼의 접근성 이름으로 선택한다. `test:e2e:android`는 이 네 명령을
