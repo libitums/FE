@@ -3,7 +3,7 @@ import { base64UrlFromBytes, utf8Bytes } from "./base64.ts";
 import type { OutboundRequest, SignEs256 } from "./delete-account.contract.ts";
 import type {
   ApnsResultFrom,
-  PushEnvironment,
+  ApnsEnvironment,
   PushMessage,
   SendPushEnv,
 } from "./send-push.contract.ts";
@@ -11,7 +11,7 @@ import type {
 // APNs HTTP/2 API입니다(토큰 기반 인증). 인증 JWT는 요청마다가 아니라 **발송 한 번**에 하나 만듭니다 —
 // Apple은 20분 안의 재사용을 권하고, 한 번의 발송은 그보다 짧습니다.
 
-export const apnsHosts: Readonly<Record<PushEnvironment, string>> = {
+export const apnsHosts: Readonly<Record<ApnsEnvironment, string>> = {
   sandbox: "https://api.sandbox.push.apple.com",
   production: "https://api.push.apple.com",
 };
@@ -49,7 +49,7 @@ export function apnsPayload(message: PushMessage): string {
 export function apnsRequest(
   apns: SendPushEnv["apns"],
   authToken: string,
-  device: { readonly token: string; readonly environment: PushEnvironment },
+  device: { readonly token: string; readonly environment: ApnsEnvironment },
   payload: string,
 ): OutboundRequest {
   return {

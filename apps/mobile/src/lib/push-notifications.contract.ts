@@ -4,8 +4,8 @@
 /** 알림 권한 상태입니다. `unavailable`은 호스트 모듈이 없는 환경(테스트 · 웹 미리보기)입니다. */
 export type PushPermission = "not-determined" | "denied" | "authorized" | "provisional";
 
-/** 기기 토큰이 가야 하는 APNs입니다. 서명(개발 · 배포)이 가르고 호스트가 답합니다. */
-export type PushEnvironment = "sandbox" | "production";
+/** APNs 서명 환경 또는 Android FCM 전송입니다. 호스트가 답합니다. */
+export type PushEnvironment = "sandbox" | "production" | "fcm";
 
 export type PushDevice = { readonly token: string; readonly environment: PushEnvironment };
 
@@ -15,7 +15,7 @@ export type PushRegistration = {
   readonly device: PushDevice | null;
 };
 
-/** 호스트 모듈 `PushNotificationModule`입니다(Swift `PushNotificationModule.swift`). */
+/** 호스트 모듈 `PushNotificationModule`입니다(iOS · Android). */
 export interface PushNotificationModule {
   getStatus(callback: (payload: unknown) => void): void;
   register(callback: (payload: unknown) => void): void;

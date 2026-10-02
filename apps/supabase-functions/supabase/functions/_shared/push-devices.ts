@@ -6,9 +6,10 @@ import type {
   ReengagementDays,
   SendPushEnv,
 } from "./send-push.contract.ts";
+import { fcmRawTokenFrom } from "./fcm.ts";
 
 // `push_devices` 표를 service role로 읽고 지웁니다(PostgREST). 표는 RLS가 켜져 있고 정책이 없어 이 키로만
-// 닿습니다(마이그레이션 `20260930120000_push_devices.sql`).
+// 닿습니다(마이그레이션 `20260930120000_push_devices.sql` + `20261002120000_push_devices_fcm.sql`).
 
 const headers = (env: SendPushEnv): Record<string, string> => ({
   ...serviceKeyHeaders(env.supabaseServiceRoleKey),
@@ -68,7 +69,7 @@ export function removeDevicesRequest(env: SendPushEnv, tokens: readonly string[]
   };
 }
 
-const tokenPattern = /^[0-9a-f]{64,200}$/;
+const apnsTokenPattern = /^[0-9a-f]{64,200}$/;
 
 export const pushDevicesFrom: PushDevicesFrom = (bodyText) => {
   let parsed: unknown;
@@ -82,8 +83,14 @@ export const pushDevicesFrom: PushDevicesFrom = (bodyText) => {
   for (const row of parsed) {
     if (typeof row !== "object" || row === null) continue;
     const { token, environment } = row as Record<string, unknown>;
-    if (typeof token !== "string" || !tokenPattern.test(token)) continue;
-    if (environment !== "sandbox" && environment !== "production") continue;
+    if (typeof token !== "string") continue;
+    if (environment === "fcm") {
+      if (fcmRawTokenFrom(token) === null) continue;
+    } else if (
+      (environment !== "sandbox" && environment !== "production") ||
+      !apnsTokenPattern.test(token)
+    )
+      continue;
     devices.push({ token, environment });
   }
   return devices;

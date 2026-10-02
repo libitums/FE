@@ -4,6 +4,8 @@
 권한 · 토큰 응답의 해석, 목적지 검증, 등록 · 해제 요청, 누른 알림의 화면 전환이고(`App.push.integration.test.tsx` IP1~IP6),
 **시스템 다이얼로그 · 실제 토큰 · APNs 배달 · 알림 누름은 사람이 판정한다.** 자동 E2E: not applicable.
 
+Android FCM 전송 계약은 [ADR-0041](../adr/0041-android-push-transport.md)에서 정한다. 현재 이 문서의 A·B 절차는 iOS용이다. Android 호스트 변경에서 Maestro 권한·알림 누름 흐름을 추가한다. 실제 FCM 발송은 Firebase 프로젝트·테스트 기기가 준비된 뒤 확인한다.
+
 ## 전제
 
 - **A(발송 없이)** — 시뮬레이터 또는 실기. 서버 표(마이그레이션)가 적용돼 있다.

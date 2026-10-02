@@ -7,6 +7,13 @@ import {
 } from "./apns.ts";
 import type { OutboundRequest, OutboundResponse } from "./delete-account.contract.ts";
 import {
+  fcmAccessTokenFrom,
+  fcmAssertion,
+  fcmOauthRequest,
+  fcmRequest,
+  fcmResultFrom,
+} from "./fcm.ts";
+import {
   allDevicesRequest,
   pushDevicesFrom,
   reengagementDevicesRequest,
@@ -67,6 +74,8 @@ async function isServiceCaller(
 /** 쿼리 문자열에 싣는 ID · 토큰 수의 상한입니다 — URL 길이 제한(414)을 넘지 않게 나눕니다. */
 export const userIdsPerLookup = 100;
 export const tokensPerRemoval = 50;
+const fcmTokensPerRemoval = 10;
+const fcmRemovalUrlLimit = 3400;
 
 function chunks<T>(items: readonly T[], size: number): T[][] {
   const result: T[][] = [];
@@ -74,6 +83,28 @@ function chunks<T>(items: readonly T[], size: number): T[][] {
     result.push(items.slice(start, start + size));
   }
   return result;
+}
+
+function fcmRemovalBatches(env: SendPushEnv, devices: readonly PushDevice[]): PushDevice[][] {
+  const batches: PushDevice[][] = [];
+  const baseLength = `${env.supabaseUrl}/rest/v1/push_devices?token=in.()`.length;
+  let batch: PushDevice[] = [];
+  let tokenLength = 0;
+  for (const device of devices) {
+    const nextLength = tokenLength + device.token.length + (batch.length === 0 ? 0 : 1);
+    if (
+      batch.length > 0 &&
+      (batch.length >= fcmTokensPerRemoval || baseLength + nextLength > fcmRemovalUrlLimit)
+    ) {
+      batches.push(batch);
+      batch = [];
+      tokenLength = 0;
+    }
+    tokenLength += device.token.length + (batch.length === 0 ? 0 : 1);
+    batch.push(device);
+  }
+  if (batch.length > 0) batches.push(batch);
+  return batches;
 }
 
 function devicesRequestsFor(env: SendPushEnv, body: SendPushRequestBody): OutboundRequest[] {
@@ -108,16 +139,28 @@ function messageFor(body: SendPushRequestBody): PushMessage {
 async function deliver(
   deps: SendPushDeps,
   env: SendPushEnv,
-  authToken: string,
+  apnsToken: string | null,
+  fcmToken: string | null,
   devices: readonly PushDevice[],
-  payload: string,
+  message: PushMessage,
 ): Promise<ApnsResult[]> {
   const results: ApnsResult[] = [];
+  const apnsBody = apnsPayload(message);
   for (let start = 0; start < devices.length; start += apnsConcurrency) {
     const batch = devices.slice(start, start + apnsConcurrency);
     const settled = await Promise.all(
       batch.map(async (device) => {
-        const response = await send(deps, apnsRequest(env.apns, authToken, device, payload));
+        if (device.environment === "fcm") {
+          if (env.fcm == null || fcmToken === null) return "failed" as const;
+          const request = fcmRequest(env.fcm, fcmToken, device.token, message);
+          if (request === null) return "failed" as const;
+          const response = await send(deps, request);
+          return response === null
+            ? ("failed" as const)
+            : fcmResultFrom(response.status, await response.text().catch(() => ""));
+        }
+        if (apnsToken === null) return "failed" as const;
+        const response = await send(deps, apnsRequest(env.apns, apnsToken, device, apnsBody));
         if (response === null) return "failed" as const;
         return apnsResultFrom(response.status, await response.text().catch(() => ""));
       }),
@@ -138,13 +181,35 @@ async function decide(
     return { status: 200, summary: { devices: 0, sent: 0, failed: 0, removed: 0 } };
   }
 
-  const authToken = await apnsAuthToken(env.apns, deps.nowMs(), deps.signEs256);
-  if (authToken === null) return { status: 500, error: "server_misconfigured" };
+  const hasApns = devices.some((device) => device.environment !== "fcm");
+  const hasFcm = devices.some((device) => device.environment === "fcm");
+  const apnsToken = hasApns ? await apnsAuthToken(env.apns, deps.nowMs(), deps.signEs256) : null;
+  if (hasApns && apnsToken === null) return { status: 500, error: "server_misconfigured" };
+  let fcmToken: string | null = null;
+  if (hasFcm && env.fcm != null) {
+    const assertion = await fcmAssertion(env.fcm, deps.nowMs());
+    if (assertion !== null) {
+      const response = await send(deps, fcmOauthRequest(assertion));
+      if (response !== null) {
+        fcmToken = fcmAccessTokenFrom(response.status, await response.text().catch(() => ""));
+      }
+    }
+  }
 
-  const results = await deliver(deps, env, authToken, devices, apnsPayload(messageFor(body)));
+  const results = await deliver(deps, env, apnsToken, fcmToken, devices, messageFor(body));
   const invalid = devices.filter((_, index) => results[index] === "invalid-token");
   let removed = 0;
-  for (const batch of chunks(invalid, tokensPerRemoval)) {
+  const removalBatches = [
+    ...chunks(
+      invalid.filter((device) => device.environment !== "fcm"),
+      tokensPerRemoval,
+    ),
+    ...fcmRemovalBatches(
+      env,
+      invalid.filter((device) => device.environment === "fcm"),
+    ),
+  ];
+  for (const batch of removalBatches) {
     const removal = await send(
       deps,
       removeDevicesRequest(

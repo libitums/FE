@@ -9,6 +9,7 @@ import {
   userDevicesRequest,
 } from "./push-devices.ts";
 import type { SendPushEnv } from "./send-push.contract.ts";
+import { fcmStoredTokenFrom } from "./fcm.ts";
 
 const env: SendPushEnv = {
   supabaseUrl: "https://p.supabase.co",
@@ -59,5 +60,18 @@ describe("PD2 pushDevicesFrom", () => {
   test("배열이 아니면 null", () => {
     expect(pushDevicesFrom("{}")).toBeNull();
     expect(pushDevicesFrom("nope")).toBeNull();
+  });
+
+  test("FCM 저장 토큰은 환경과 함께 검증한다", () => {
+    const fcm = fcmStoredTokenFrom("bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1")!;
+    expect(
+      pushDevicesFrom(
+        JSON.stringify([
+          { token: fcm, environment: "fcm" },
+          { token: fcm, environment: "production" },
+          { token, environment: "fcm" },
+        ]),
+      ),
+    ).toEqual([{ token: fcm, environment: "fcm" }]);
   });
 });
