@@ -45,6 +45,8 @@ public final class SignedInScreenFixtureTest {
       + "\"completedVisualNovelUnitIds\":[\"cafe-arrival-visual-novel\"],"
       + "\"visualNovel\":{\"status\":\"completed\",\"beatIndex\":2},"
       + "\"completedEpisodeFinalIds\":[]}";
+  private static final String WRITING_PROGRESS = SPEECH_PROGRESS.replace(
+      "\"completedStepCount\":6", "\"completedStepCount\":7");
 
   private static final class AuthService implements ILynxHttpService {
     private final String accessToken;
@@ -106,13 +108,15 @@ public final class SignedInScreenFixtureTest {
         InstrumentationRegistry.getArguments().getString("audioProgress"));
     boolean speechProgress = "true".equals(
         InstrumentationRegistry.getArguments().getString("speechProgress"));
-    String accessToken = audioProgress || speechProgress
+    boolean writingProgress = "true".equals(
+        InstrumentationRegistry.getArguments().getString("writingProgress"));
+    String accessToken = audioProgress || speechProgress || writingProgress
         ? "fixture." + Base64.getUrlEncoder().withoutPadding().encodeToString(
             "{\"sub\":\"audio-fixture\"}".getBytes(StandardCharsets.UTF_8)) + ".signature"
         : "fixture-access";
-    if (audioProgress || speechProgress) {
+    if (audioProgress || speechProgress || writingProgress) {
       new StorageModule(context).set("libitum.progress.pending.audio-fixture",
-          speechProgress ? SPEECH_PROGRESS : AUDIO_PROGRESS);
+          writingProgress ? WRITING_PROGRESS : speechProgress ? SPEECH_PROGRESS : AUDIO_PROGRESS);
     }
     LynxServiceCenter.inst().registerService(ILynxHttpService.class, new AuthService(accessToken));
 
