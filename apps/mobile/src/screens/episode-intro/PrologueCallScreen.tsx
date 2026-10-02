@@ -1,6 +1,6 @@
 import { FirstUnitGuide } from "../../components/FirstUnitGuide";
 import { useFirstUnitGuide } from "../../components/first-unit-guide";
-import { useState } from "@lynx-js/react";
+import { useEffect, useState } from "@lynx-js/react";
 import { Button } from "@libitums/ui-lynx/button";
 import type { PrologueCallScreenProps } from "./episode-intro.contract";
 import { prologueLineSeconds } from "./prologue-call";
@@ -8,6 +8,7 @@ import { CallLineBubble } from "../../components/CallCaller";
 import { CallControls } from "../../components/CallControls";
 import { CallScreen } from "../../components/CallScreen";
 import { useUiCopy } from "../../lib/ui-copy";
+import { playSound, stopRing } from "../../lib/sound-effects";
 import { usePrologueCallPlayback } from "./usePrologueCallPlayback";
 import "./prologue-call-screen.css";
 
@@ -38,6 +39,11 @@ export function PrologueCallScreen({
     stop,
   } = usePrologueCallPlayback(call, accepted && !guide.visible);
   const incoming = !accepted && !ended;
+  useEffect(() => {
+    if (!incoming || guide.visible) return undefined;
+    playSound("ring_bell");
+    return () => stopRing();
+  }, [incoming, guide.visible]);
   const subtitleIntervalMs = Math.max(
     0,
     Math.min(
@@ -48,16 +54,22 @@ export function PrologueCallScreen({
 
   const handleBack = () => {
     "background only";
+    stopRing();
     stop();
     onBack();
   };
 
   const handleAccept = () => {
     "background only";
-    if (!guide.visible) setAccepted(true);
+    if (!guide.visible) {
+      stopRing();
+      playSound("accept_call");
+      setAccepted(true);
+    }
   };
   const handleHangUp = () => {
     "background only";
+    stopRing();
     hangUp();
   };
 

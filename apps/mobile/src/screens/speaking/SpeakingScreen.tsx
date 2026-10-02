@@ -16,6 +16,7 @@ import {
 } from "../../lib/speech-recognition";
 import type { SpeechResult } from "../../lib/speech-recognition";
 import { canListen } from "../../lib/speaking-judge";
+import { playSound } from "../../lib/sound-effects";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import type { JourneyStepId } from "../journey-map/journey-map";
@@ -69,7 +70,6 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
       stopSpeechRecognition();
     };
   }, []);
-
   useEffect(() => {
     if (result === null) {
       return;
@@ -78,14 +78,12 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     // 문항 순번 · 국면이 바뀔 때만 한 번 냅니다 — `result`는 그 둘에서 파생합니다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.questionIndex, state.phase]);
-
   useEffect(() => {
     if (!complete) {
       return;
     }
     announceCompletion(speakingCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
-
   const handleResult = (sentence: string) => (result: SpeechResult) => {
     if (!mounted.current) {
       return;
@@ -101,7 +99,6 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
       result: judgeSpeaking(sentence, result.text),
     });
   };
-
   // 권한을 먼저 확인하고(미요청인 것만 묻습니다), 들을 수 있으면 인식을 시작합니다.
   const startListening = (sentence: string) => {
     setDictationDisabled(false);
@@ -151,15 +148,17 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
   // 둡니다 — 맵 항목 어댑터들과 같은 경계입니다.
   const handleSkip = () => {
     "background only";
+    playSound("button");
     dispatch({ type: "skip" });
   };
-
   const retryAvailable = state.phase === "unavailable" && dictationDisabled;
   const handleRetry = () => {
     "background only";
-    if (question != null && retryAvailable) startListening(question.sentence);
+    if (question != null && retryAvailable) {
+      playSound("button");
+      startListening(question.sentence);
+    }
   };
-
   const advance = useMemo(
     () =>
       question != null && state.phase === "judged"
@@ -172,6 +171,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     state.phase === "ready" || state.phase === "listening" ? action : undefined;
   const handleRecording = () => {
     "background only";
+    if (recordingAction !== undefined) playSound("button");
     recordingAction?.run();
   };
 

@@ -43,6 +43,9 @@
 		A030C0DE0000000000000004 /* RecordingAudioSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A030C0DE0000000000000003 /* RecordingAudioSessionTests.swift */; };
 		A030C0DE0000000000000012 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A030C0DE0000000000000011 /* PrivacyInfo.xcprivacy */; };
 		A51C0DE2E0F4B3A1C2D3E4F6 /* AppleSignInModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51C0DE2E0F4B3A1C2D3E4F5 /* AppleSignInModuleTests.swift */; };
+		D0A500000000000000000001 /* SoundEffectsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A500000000000000000004 /* SoundEffectsModule.swift */; };
+		D0A500000000000000000002 /* sfx in Resources */ = {isa = PBXBuildFile; fileRef = D0A500000000000000000005 /* sfx */; };
+		D0A500000000000000000003 /* SoundEffectsModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A500000000000000000006 /* SoundEffectsModuleTests.swift */; };
 		CF6E66CAE06A00C80CD48C53 /* ImageServiceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0870E09825A129BCC80CB945 /* ImageServiceTests.m */; };
 /* End PBXBuildFile section */
 
@@ -101,6 +104,9 @@
 		A030C0DE0000000000000011 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A51C0DE2E0F4B3A1C2D3E4F5 /* AppleSignInModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInModuleTests.swift; sourceTree = "<group>"; };
 		A51C0DE2E0F4B3A1C2D3E4F7 /* Host.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Host.entitlements; sourceTree = "<group>"; };
+		D0A500000000000000000004 /* SoundEffectsModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffectsModule.swift; sourceTree = "<group>"; };
+		D0A500000000000000000005 /* sfx */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sfx; sourceTree = "<group>"; };
+		D0A500000000000000000006 /* SoundEffectsModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffectsModuleTests.swift; sourceTree = "<group>"; };
 		C4B67B2104D0445A811952B8 /* libPods-Host.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Host.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F97220D3A6966BCDDA0405F8 /* Pods-HostTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HostTests.release.xcconfig"; path = "Target Support Files/Pods-HostTests/Pods-HostTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -156,6 +162,7 @@
 				2B94A3CE2D6613730060892C /* Main.storyboard */,
 				2B94A3D12D6613740060892C /* Assets.xcassets */,
 				2B94A3DC2D6614980060892F /* audio */,
+				D0A500000000000000000005 /* sfx */,
 				2B94A3DC2D66149800608980 /* fonts */,
 				2B94A3D32D6613740060892C /* LaunchScreen.storyboard */,
 				2B94A3D62D6613740060892C /* Info.plist */,
@@ -163,6 +170,7 @@
 				2B94A3DC2D6614980060892C /* TemplateProvider.swift */,
 				2B94A3DC2D6614980060892D /* StorageModule.swift */,
 				2B94A3DC2D6614980060892E /* AudioPlaybackModule.swift */,
+				D0A500000000000000000004 /* SoundEffectsModule.swift */,
 				2B94A3DC2D66149800608930 /* CompletionAnnouncementModule.swift */,
 				2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */,
 				2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */,
@@ -184,6 +192,7 @@
 			isa = PBXGroup;
 			children = (
 				2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */,
+				D0A500000000000000000006 /* SoundEffectsModuleTests.swift */,
 				4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */,
 				4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */,
 				4C1D0C5E0A1F2B3C4DFE0000 /* AppReviewModuleTests.swift */,
@@ -300,6 +309,7 @@
 				2BE49E032D7720F0000D068C /* main.lynx.bundle in Resources */,
 				2B94A3DD2D66149800608938 /* Resource in Resources */,
 				2B94A3DD2D6614980060892F /* audio in Resources */,
+				D0A500000000000000000002 /* sfx in Resources */,
 				2B94A3DD2D66149800608981 /* fonts in Resources */,
 				A030C0DE0000000000000012 /* PrivacyInfo.xcprivacy in Resources */,
 				2B94A3D22D6613740060892C /* Assets.xcassets in Resources */,
@@ -393,6 +403,7 @@
 				2B94A3DD2D6614980060892C /* TemplateProvider.swift in Sources */,
 				2B94A3DD2D6614980060892D /* StorageModule.swift in Sources */,
 				2B94A3DD2D6614980060892E /* AudioPlaybackModule.swift in Sources */,
+				D0A500000000000000000001 /* SoundEffectsModule.swift in Sources */,
 				2B94A3DD2D66149800608930 /* CompletionAnnouncementModule.swift in Sources */,
 				2B94A3DD2D66149800608941 /* HandwritingRecognitionModule.swift in Sources */,
 				2B94A3F02D6614980060894A /* HandwritingTraceModule.swift in Sources */,
@@ -418,6 +429,7 @@
 				4C1D0C5E0A1F2B3C4DCE0000 /* PushNotificationModuleTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4E0E0000 /* AppReviewModuleTests.swift in Sources */,
 				2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */,
+				D0A500000000000000000003 /* SoundEffectsModuleTests.swift in Sources */,
 				2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */,
 				A030C0DE0000000000000004 /* RecordingAudioSessionTests.swift in Sources */,
 				2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */,

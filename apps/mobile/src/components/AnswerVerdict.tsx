@@ -1,3 +1,4 @@
+import { useEffect } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import cross from "@libitums/icons/lynx/cross";
@@ -5,6 +6,7 @@ import tick from "@libitums/icons/lynx/tick";
 import { color } from "@libitums/design-tokens";
 
 import type { AnswerResult } from "../lib/answer-result";
+import { playSound } from "../lib/sound-effects";
 import { useUiCopy } from "../lib/ui-copy";
 
 import "./answer-verdict.css";
@@ -45,6 +47,9 @@ export type AnswerVerdictProps = {
 
 export function AnswerVerdict({ result }: AnswerVerdictProps): ReactNode {
   const copy = useUiCopy();
+  useEffect(() => {
+    playSound(result === "correct" ? "correct_answer" : "wrong_answer");
+  }, [result]);
   return (
     <view
       className="answer-verdict"

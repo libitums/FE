@@ -107,6 +107,7 @@ export function SentenceOrderScreen({
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
+      actionSound={action?.label === copy.common.check ? "none" : "button"}
       workspace={
         question == null ? undefined : (
           // 창고 — 조각이 빠져나가도 그 자리에 회색 칸이 남아 배치가 흔들리지 않습니다.

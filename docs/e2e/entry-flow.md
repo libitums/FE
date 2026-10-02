@@ -462,9 +462,45 @@ B′다.
 | iOS Simulator · iOS 미기록 · Release | 미기록 | 미기록 | 미실행 | 미실행 | 미실행 | 미실행 | 미실행(E6 제외 — Simulator로 대체 불가) | 미실행 — 제공자 미설정(ADR-0028 「막힌 것」), S6 제외 | 미실행 — 서명 · Apple 설정 필요, A4 · A6 제외 | 미실행 | 미실행 — Simulator로 대체 불가 | 미실행 — Simulator로 대체 불가 | 미기록 — 실행 시 입력 |
 
 2026-09-29 회차는 **Release가 아니라 Debug 호스트와 Explorer dev 번들**로 돌았다 — 전제(Release
-Host)와 다르므로 Release 회차는 여전히 필요하다. 그 밖에는 실행된 회차가 없다. 회차가 생기면 해당 환경 행의
+Host)와 다르므로 전체 Release 회차는 여전히 필요하다. 회차가 생기면 해당 환경 행의
 `미실행` · `미기록`을 그 회차의 값으로 바꾸거나 행을 추가하고, 「실행 전 증거 고정」
 표를 그 회차의 값으로 채운다.
+
+### 2026-10-02 Release Maestro 부분 회차
+
+- 소스: `06e1475d` + 이 작업 트리의 미커밋 iOS 효과음 변경.
+- 기기: `Duru E2E` 시뮬레이터, iOS 26.5, Release arm64. Maestro `launchApp.clearState`로 시작.
+- Host 실행 파일 SHA-256: `0b3d6c18e31f9d47c090df26fcf4d0e74d4bfbbfd15f5d4d5189aa49019c8264`.
+- `main.lynx.bundle` SHA-256: `57921fa944328494ab1ccb57413a28c27a87e1c4fdbc5b1cfc5f04568d0cd5f5`.
+- `e2e/entry-flow.yaml` 통과: T1·T2의 온보딩 `Next` → `Next` → `Get started`와 로그인 화면의 Apple·Google 버튼을 확인했다. T3~T7, T8~T9와 실기·보조기술 항목은 실행하지 않았다. 제공자 계정이 필요한 로그인 이후 흐름을 통과했다는 뜻이 아니다.
+- 확인자: 루트 에이전트, 2026-10-02 16:14 KST. 앱을 같은 시뮬레이터에 다시 띄워 로그인 화면을 확인했다.
+- 이 첫 산출물은 작업 트리에 `.env.local`이 없어 공개 Supabase 설정이 번들에 들어가지 않았다. 로그인 동작의 판정 근거로 쓰지 않는다.
+
+### 2026-10-02 로그인 설정 포함 재실행
+
+- 소스: `06e1475d` + 같은 작업 트리의 미커밋 iOS 효과음 변경. `apps/mobile/.env.local`에는 원래 체크아웃의 공개 Supabase URL·키 두 값만 넣었다. 값은 기록하지 않는다.
+- 기기: 별도 `Duru Sound E2E` 시뮬레이터, iOS 26.5, Release arm64. 새 기기에서 Maestro `launchApp.clearState`로 시작했다.
+- Host 실행 파일 SHA-256: `f777d91f93405661c87abdd68be3fb2f600157302122dd74ecc2957a86e1a982`.
+- `main.lynx.bundle` SHA-256: `afcc0fe5c0fd9b859cecf2fa1cbcfce70d0861ec3bf3afb4b87563fd2f176d41`(1,412,309 bytes). 빌드·설치 번들이 같고, 공개 Supabase URL·키 포함을 값 노출 없이 검증했다.
+- `e2e/entry-flow.yaml` 통과: T1·T2의 온보딩과 로그인 화면 확인. 별도로 사용 중이던 `Duru E2E` 기기에서는 Google 인증이 2단계 인증 화면까지 열렸고, 사용자 인증 완료 뒤 여정 화면으로 복귀한 것을 관찰했다. 인증 코드 입력은 자동 회차에서 수행하지 않았다.
+- 확인자: 루트 에이전트, 2026-10-02 16:24 KST. T3~T9와 실기·보조기술 항목은 미실행이다.
+
+### 2026-10-02 퍼펙트·학습 버튼음 후속 회차
+
+- 소스: `06e1475d` + 같은 작업 트리의 미커밋 iOS 효과음 변경. 퍼펙트는 `pass_lesson`으로 통일하고 일반 학습 버튼에 공통 클릭음을 연결했다.
+- 기기: 별도 `Duru Sound E2E` 시뮬레이터, iOS 26.5, Release arm64. Maestro `launchApp.clearState`로 시작했다.
+- Host 실행 파일 SHA-256: `88e941cb565817dce933e819d20cb27685a8a2ebb5bf27a3b05e8cb53d009ff6`.
+- `main.lynx.bundle` SHA-256: `0a5b31dfa482c9096974fc87f0cfea6cceb52238c62279a991426064f01c3229`(1,412,776 bytes). `.app/sfx/`에는 MP3 8개만 있다.
+- `e2e/entry-flow.yaml` 통과: T1·T2의 온보딩과 로그인 화면 확인. 네이티브 XCTest 2개도 자산 조회·디코딩·재생 시작을 통과했다. Maestro는 학습 효과음을 청음하거나 로그인 뒤 학습 흐름을 자동화하지 않는다.
+- 별도로 로그인된 `Duru E2E`에 데이터 초기화 없이 최종 Release 앱을 설치·실행했고 여정 화면 복귀를 확인했다. 확인자: 루트 에이전트, 2026-10-02 KST.
+
+### 2026-10-02 PR 리베이스 재검증
+
+- 소스: 최신 `main`(`c49a8209`) + `codex/ios-sound-effects` 브랜치. 로그인용 공개 설정은 무시 파일에 유지했고 값은 기록하지 않는다.
+- 기기: 별도 `Duru Sound E2E` 시뮬레이터, iOS 26.5, Release arm64. Maestro `launchApp.clearState`로 시작했다.
+- Host 실행 파일 SHA-256: `88e941cb565817dce933e819d20cb27685a8a2ebb5bf27a3b05e8cb53d009ff6`.
+- `main.lynx.bundle` SHA-256: `b7c7e1b17ac79ac1057c88144453570e7ccccb734379dd9ebfdecc316bcfb6b6`(1,380,375 bytes). `.app/sfx/`에는 MP3 8개만 있다.
+- `e2e/entry-flow.yaml` 통과: T1·T2의 온보딩과 로그인 화면 확인. 네이티브 XCTest 2개도 통과했다. 로그인 뒤 학습 흐름과 효과음의 실제 청음은 이 Maestro 회차의 판정 범위 밖이다.
 
 ## 이벤트 운영 범위
 

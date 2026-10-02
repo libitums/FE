@@ -17,6 +17,7 @@ import type { BottomNavigatorItem } from "@libitums/ui-lynx/bottom-navigator";
 import type { ReactNode } from "@lynx-js/react";
 
 import type { Tab } from "../app/navigation";
+import { playSound } from "../lib/sound-effects";
 import { useUiCopy } from "../lib/ui-copy";
 
 export type BottomNavigatorProps = {
@@ -61,7 +62,10 @@ export function BottomNavigator({ tab, onSelectTab }: BottomNavigatorProps): Rea
       selectedId={tab}
       bindselect={(id) => {
         const next = toTab(id);
-        if (next !== undefined) onSelectTab(next);
+        if (next !== undefined) {
+          playSound("button");
+          onSelectTab(next);
+        }
       }}
     />
   );

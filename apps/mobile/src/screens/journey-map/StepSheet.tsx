@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { playSound } from "../../lib/sound-effects";
 import { stepSheetProgress } from "./journey-map-sheet";
 
 import "./step-sheet.css";
@@ -37,6 +38,11 @@ export function StepSheet({
 }: StepSheetProps): ReactNode {
   const copy = useUiCopy();
   const progress = stepSheetProgress(completedActivityCount, totalActivityCount, copy);
+
+  const handleStart = (): void => {
+    playSound("button");
+    onStart();
+  };
 
   return (
     <view className="step-sheet">
@@ -111,7 +117,7 @@ export function StepSheet({
             accessibility-element={true}
             accessibility-label={copy.journeyMap.start}
             accessibility-traits="button"
-            bindtap={onStart}
+            bindtap={handleStart}
           >
             <text className="step-sheet-start-label">{copy.journeyMap.start}</text>
           </view>

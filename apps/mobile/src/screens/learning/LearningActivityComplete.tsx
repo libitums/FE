@@ -1,8 +1,10 @@
+import { useEffect } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import tick from "@libitums/icons/lynx/tick";
 import { color } from "@libitums/design-tokens";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { playSound } from "../../lib/sound-effects";
 
 import "./learning-activity-complete.css";
 
@@ -15,6 +17,9 @@ export function LearningActivityComplete({
   readonly testId: string;
 }): ReactNode {
   const copy = useUiCopy();
+  useEffect(() => {
+    playSound("lesson_complete");
+  }, []);
   return (
     <view className="learning-activity-complete" data-testid="learning-activity-complete">
       <view className="learning-activity-complete-emblem" accessibility-elements-hidden={true}>

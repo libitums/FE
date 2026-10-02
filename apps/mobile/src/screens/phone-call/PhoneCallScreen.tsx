@@ -2,6 +2,7 @@ import { CallLineBubble } from "../../components/CallCaller";
 import minseoProfile from "../../assets/characters/minseo-profile.jpg";
 import { useEffect, useState } from "@lynx-js/react";
 import { playAudio, stopAudio } from "../../lib/audio";
+import { playSound, stopRing } from "../../lib/sound-effects";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import { useUiCopy } from "../../lib/ui-copy";
 import type {
@@ -48,6 +49,11 @@ export function PhoneCallScreen({
   const reply = currentPhoneCallReply(conversation, session);
   const playLabel = phoneCallPlayLabel(session, copy);
   const incoming = session.mode === "ready" && session.turnIndex === 0;
+  useEffect(() => {
+    if (!incoming) return undefined;
+    playSound("ring_bell");
+    return () => stopRing();
+  }, [incoming]);
   const displayedEntries = incoming
     ? []
     : session.mode === "completed"
@@ -73,6 +79,10 @@ export function PhoneCallScreen({
 
   const handlePlay = () => {
     "background only";
+    if (incoming) {
+      stopRing();
+      playSound("accept_call");
+    }
     playSession(session);
   };
 
@@ -90,6 +100,7 @@ export function PhoneCallScreen({
 
   const handleExit = () => {
     "background only";
+    stopRing();
     stopAudio();
     onExit(completionLatched ? "completed" : phoneCallExitOutcome(session));
   };

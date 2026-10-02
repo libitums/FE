@@ -12,6 +12,7 @@ import { Button } from "@libitums/ui-lynx/button";
 
 import { StatChip, statChipDiamondColor } from "../../components/StatChip";
 import { announce } from "../../lib/accessibility";
+import { playSound } from "../../lib/sound-effects";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
 import type { AssessmentVerdict } from "../assessment/assessment";
@@ -76,6 +77,10 @@ export function LessonCompleteScreen({
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
   const mistakeCount = lessonMistakeCount(results);
+
+  useEffect(() => {
+    playSound(verdict === "failed" ? "failed_lesson" : "pass_lesson");
+  }, [verdict]);
 
   // 이 화면이 사는 동안 정확히 한 번 발화합니다(ADR-0016 D11-2).
   //
