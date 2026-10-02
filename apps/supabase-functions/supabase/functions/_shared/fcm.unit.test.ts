@@ -118,10 +118,30 @@ describe("FCM HTTP v1", () => {
     expect(JSON.parse(request!.body!)).toEqual({
       message: {
         token: rawToken,
-        notification: { title: "New", body: "Episode 2" },
-        data: { target: '{"kind":"messenger","unitId":"u1"}' },
-        android: { notification: { channel_id: "duru-updates" } },
+        data: {
+          title: "New",
+          body: "Episode 2",
+          target: '{"kind":"messenger","unitId":"u1"}',
+        },
+        android: { priority: "HIGH" },
       },
+    });
+    const malformed = fcmRequest(
+      {
+        projectId: "duru-prod",
+        clientEmail: "push@duru.iam.gserviceaccount.com",
+        privateKeyPem: "pem",
+      },
+      "access",
+      stored,
+      { title: null, body: undefined, target: { kind: "journey-map" } } as unknown as Parameters<
+        typeof fcmRequest
+      >[3],
+    );
+    expect(JSON.parse(malformed!.body!).message.data).toEqual({
+      title: "",
+      body: "",
+      target: '{"kind":"journey-map"}',
     });
     expect(fcmResultFrom(200, "{}")).toBe("sent");
     expect(fcmResultFrom(404, '{"error":{"details":[{"errorCode":"UNREGISTERED"}]}}')).toBe(
