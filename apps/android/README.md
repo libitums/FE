@@ -2,7 +2,7 @@
 
 `apps/mobile`의 Lynx 번들을 Android `LynxView` 하나에서 실행한다. 지금은 이미지·HTTP
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
-`LegalDocumentModule`을 제공한다. 네이티브 기능 전체의
+`LegalDocumentModule`·`AudioPlaybackModule`을 제공한다. 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
 
 ## 준비
@@ -78,6 +78,9 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 `sh apps/android/test-web-auth-contract.sh`는 인증 URL·콜백 검증을, Android 계측
 `WebAuthenticationModuleTest`는 난수와 잘못된 요청의 반환을 확인한다.
 `LegalDocumentModuleTest`는 법률 문서 이름을 두 고정 HTTPS 주소로만 연결하는지 확인한다.
+`AudioPlaybackModuleTest`는 공통 `.m4a` 자산 21개, 실제 재생 완료, 대체, 일시정지·재개,
+중단·백그라운드 전환·오디오 포커스 손실과 복귀를 확인한다. 자산은 Gradle이 `apps/ios/Host/audio`에서
+빌드 산출물로 동기화하며 APK에 압축 없이 넣는다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
@@ -105,6 +108,8 @@ E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android
 Apple·Google·Facebook의 인증 URL·PKCE·모의 딥링크 복귀를 각각 확인한다.
 `test:e2e:android:legal`은 로그인 화면의 두 법률 문서 링크가 정해진 주소를
 Custom Tab으로 열고 뒤로가기로 앱에 복귀하는지 확인한다.
+`E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:audio`는 모의 진행으로 듣기
+화면을 열어 자동 재생·다시듣기·이탈 시 중단을 확인한다.
 `test:e2e:android:small`은 320×640에서 글자 배율 1.0·1.3을 각각 적용해
 온보딩 세 단계의 고정 버튼과 소셜 로그인 화면을 비교한다. 실행 뒤 390×844·1.0으로
 돌린다. 네 흐름은 버튼의 접근성 이름으로 선택한다. `test:e2e:android`는 이 네 명령을

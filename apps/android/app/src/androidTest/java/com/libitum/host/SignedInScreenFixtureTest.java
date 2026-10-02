@@ -21,6 +21,7 @@ import com.lynx.tasm.service.LynxHttpRequestCallback;
 import com.lynx.tasm.service.LynxServiceCenter;
 import androidx.test.platform.app.InstrumentationRegistry;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
@@ -31,8 +32,20 @@ public final class SignedInScreenFixtureTest {
   private static final String STOP_ACTION = "com.libitum.host.test.STOP_SIGNED_IN_FIXTURE";
   private static final String REFRESH_URL =
       "https://example.invalid/auth/v1/token?grant_type=refresh_token";
+  private static final String AUDIO_PROGRESS = "{\"version\":1,\"completedStepCount\":5,"
+      + "\"completedEpisodeIntroIds\":[\"tutorial-intro\"],"
+      + "\"completedMessengerUnitIds\":[\"appointment-confirmation\"],"
+      + "\"completedPhoneCallUnitIds\":[\"appointment-confirmation-phone-call\"],"
+      + "\"visualNovel\":{\"status\":\"completed\",\"beatIndex\":2},"
+      + "\"completedEpisodeFinalIds\":[]}";
 
   private static final class AuthService implements ILynxHttpService {
+    private final String accessToken;
+
+    AuthService(String accessToken) {
+      this.accessToken = accessToken;
+    }
+
     @Override public void request(HttpRequest request, LynxHttpRequestCallback callback) {
       HttpResponse response = new HttpResponse();
       response.setUrl(request.getUrl());
@@ -43,7 +56,8 @@ public final class SignedInScreenFixtureTest {
       response.setStatusCode(refresh ? 200 : 404);
       response.setStatusText(refresh ? "OK" : "Not Found");
       String body = refresh
-          ? "{\"access_token\":\"fixture-access\",\"refresh_token\":\"fixture-refresh\",\"expires_in\":3600}"
+          ? "{\"access_token\":\"" + accessToken
+              + "\",\"refresh_token\":\"fixture-refresh\",\"expires_in\":3600}"
           : "{}";
       response.setHttpBody(body.getBytes(StandardCharsets.UTF_8));
       callback.invoke(response);
@@ -81,7 +95,16 @@ public final class SignedInScreenFixtureTest {
     assertNotNull("bundleUrl instrumentation argument missing", bundleUrl);
     new StorageModule(context).set("libitum.auth.session",
         "{\"accessToken\":\"fixture-access\",\"refreshToken\":\"fixture-seed\",\"expiresAt\":1}");
-    LynxServiceCenter.inst().registerService(ILynxHttpService.class, new AuthService());
+    boolean audioProgress = "true".equals(
+        InstrumentationRegistry.getArguments().getString("audioProgress"));
+    String accessToken = audioProgress
+        ? "fixture." + Base64.getUrlEncoder().withoutPadding().encodeToString(
+            "{\"sub\":\"audio-fixture\"}".getBytes(StandardCharsets.UTF_8)) + ".signature"
+        : "fixture-access";
+    if (audioProgress) {
+      new StorageModule(context).set("libitum.progress.pending.audio-fixture", AUDIO_PROGRESS);
+    }
+    LynxServiceCenter.inst().registerService(ILynxHttpService.class, new AuthService(accessToken));
 
     CountDownLatch stop = new CountDownLatch(1);
     BroadcastReceiver receiver = new BroadcastReceiver() {

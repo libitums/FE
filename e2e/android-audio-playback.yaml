@@ -1,0 +1,36 @@
+# Android native audio through the signed-in Lynx listening screen.
+appId: com.libitum.host
+---
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Journey, selected"
+    timeout: 30000
+- tapOn:
+    point: "10%,45%"
+- swipe:
+    start: "50%,70%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,70%"
+    end: "50%,25%"
+    duration: 700
+- tapOn:
+    point: "50%,65%"
+- tapOn:
+    point: "50%,79%"
+- waitForAnimationToEnd
+- assertScreenshot:
+    path: screenshots/android-audio-listening-390x844.png
+    thresholdPercentage: 95
+- tapOn:
+    point: "33%,56%"
+- tapOn:
+    point: "33%,56%"
+- tapOn:
+    point: "11%,14%"
+- tapOn:
+    point: "50%,50%"
+- extendedWaitUntil:
+    visible: "Journey, selected"
+    timeout: 10000
