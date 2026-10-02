@@ -99,7 +99,6 @@ export function LearningShell({
   advance,
   streakDays = 0,
   trophyCount = 0,
-  gemCount = 0,
   onOpenNotifications = () => {},
 }: LearningShellProps): ReactNode {
   const copy = useUiCopy();
@@ -192,7 +191,6 @@ export function LearningShell({
       <TopBar
         streakDays={streakDays}
         trophyCount={trophyCount}
-        gemCount={gemCount}
         onOpenNotifications={onOpenNotifications}
       />
       {/* 세션 헤더 — 나가기 · 순번 · 진행 막대 · 학습형 이름 · 백분율입니다. 면 · 모서리 ·

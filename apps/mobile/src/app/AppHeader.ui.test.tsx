@@ -13,25 +13,21 @@ function fixture() {
   return {
     streakDays: 24,
     trophyCount: 3,
-    gemCount: 1240,
     onOpenNotifications: vi.fn(),
     todayWeekday: 1,
   };
 }
 
-test("[SH2-E][AH1] 칩 셋은 연속 학습 → 트로피 → 젬 순서의 버튼이고, 이름에 값이 실린다", () => {
+test("[SH2-E][AH1] 연속 학습 → 트로피 순서로 표시하고 젬 구매 진입점은 숨긴다", () => {
   render(<AppHeader {...fixture()} />);
 
   const streak = screen.getByTestId("top-bar-streak");
   const trophy = screen.getByTestId("top-bar-trophy");
-  const gem = screen.getByTestId("top-bar-gem");
-  for (const chip of [streak, trophy, gem]) {
+  expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
+  for (const chip of [streak, trophy]) {
     expect(chip).toHaveAttribute("accessibility-traits", "button");
   }
-  expect(gem).toHaveAttribute("accessibility-label", "1240 gems");
-  expect(gem).toHaveTextContent("1240");
   expect(streak.compareDocumentPosition(trophy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  expect(trophy.compareDocumentPosition(gem) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
 
 test("[SH2-E][AH2] 알림 버튼 tap → onOpenNotifications 정확히 1회", () => {
@@ -85,7 +81,7 @@ test("[JM1-E][AH5] 트로피 칩 tap → 트로피 모달은 요일 줄 없이 �
 test("[AH6] 레이어가 떠 있는 동안 머리는 낭독에서 가려진다", () => {
   render(<AppHeader {...fixture()} />);
 
-  fireEvent.tap(screen.getByTestId("top-bar-gem"), {});
+  fireEvent.tap(screen.getByTestId("top-bar-trophy"), {});
 
   expect(screen.getByTestId("app-header")).toHaveAttribute("accessibility-elements-hidden", "true");
 });
@@ -108,41 +104,6 @@ test.each(["journey-stat-modal-back", "journey-stat-modal-continue"])(
     expect(props.onOpenNotifications).not.toHaveBeenCalled();
   },
 );
-
-test("[AH8] 젬 칩 tap → 구매 화면이 보유 젬을 싣고 뜬다", () => {
-  render(<AppHeader {...fixture()} />);
-
-  fireEvent.tap(screen.getByTestId("top-bar-gem"), {});
-
-  expect(screen.getByTestId("gem-purchase-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("gem-purchase-screen-balance-value")).toHaveTextContent("1,240");
-});
-
-test("[AH9] 구매 화면의 Pay → 결제 준비 중 안내가 뜨고 구매 화면은 그대로다", () => {
-  render(<AppHeader {...fixture()} />);
-  fireEvent.tap(screen.getByTestId("top-bar-gem"), {});
-
-  const pay = screen
-    .getByTestId("gem-purchase-screen-pay")
-    .querySelector('[data-testid="ui-lynx-button"]');
-  fireEvent.tap(pay as Element, {});
-
-  expect(screen.getByTestId("gem-purchase-screen-notice")).toBeInTheDocument();
-  expect(screen.getByTestId("gem-purchase-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("top-bar-gem")).toHaveTextContent("1240");
-});
-
-test("[AH10] 구매 화면의 닫기 → 구매 화면이 닫힌다", () => {
-  render(<AppHeader {...fixture()} />);
-  fireEvent.tap(screen.getByTestId("top-bar-gem"), {});
-
-  const close = screen
-    .getByTestId("gem-purchase-screen-close")
-    .querySelector('[data-testid="ui-lynx-round-button"]');
-  fireEvent.tap(close as Element, {});
-
-  expect(screen.queryByTestId("gem-purchase-screen")).toBeNull();
-});
 
 test("[AH11] 화면 쪽 레이어가 떠 있으면(obscured) 머리가 낭독에서 가려진다", () => {
   render(<AppHeader {...fixture()} obscured />);
@@ -197,10 +158,6 @@ test("[JM1-M] 문구표를 주입하고 연속 학습 칩을 누르면 모달의
     </UiCopyContext.Provider>,
   );
 
-  expect(screen.getByTestId("top-bar-gem")).toHaveAttribute(
-    "accessibility-label",
-    "⟦common.count.gems⟧(1240)",
-  );
   fireEvent.tap(screen.getByTestId("top-bar-streak"), {});
 
   expect(screen.getByTestId("journey-stat-modal-hero")).toHaveAttribute(

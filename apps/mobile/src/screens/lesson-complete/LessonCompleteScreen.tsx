@@ -47,7 +47,7 @@ export type LessonCompleteScreenProps = {
   readonly skippedCount: number;
   /** 통과 여부입니다. 화면이 계산하지 않고 받습니다 — 판정의 정본은 `judgeAssessment`입니다. */
   readonly verdict: AssessmentVerdict;
-  /** 상단 지표 셋입니다. 화면이 세지 않고 받습니다. */
+  /** 진행 지표입니다. 상단에는 연속 학습과 트로피만 표시합니다. */
   readonly streakDays: number;
   readonly trophyCount: number;
   readonly diamondCount: number;
@@ -70,7 +70,6 @@ export function LessonCompleteScreen({
   verdict,
   streakDays,
   trophyCount,
-  diamondCount,
   reward,
   exitTo = "journey",
   onExit,
@@ -95,7 +94,7 @@ export function LessonCompleteScreen({
 
   return (
     <view className="lesson-complete-screen" data-testid="lesson-complete-screen">
-      {/* [고정] 머리 — 지표 칩 셋. 읽기 전용입니다. */}
+      {/* [고정] 머리 — 연속 학습 · 트로피. 읽기 전용입니다. */}
       <view className="lesson-complete-screen-stats">
         <StatChip
           tone="streak"
@@ -108,12 +107,6 @@ export function LessonCompleteScreen({
           value={trophyCount}
           accessibilityLabel={copy.common.count.trophies(trophyCount)}
           testId="lesson-complete-screen-trophy"
-        />
-        <StatChip
-          tone="diamond"
-          value={diamondCount}
-          accessibilityLabel={copy.common.count.diamonds(diamondCount)}
-          testId="lesson-complete-screen-diamond"
         />
       </view>
 

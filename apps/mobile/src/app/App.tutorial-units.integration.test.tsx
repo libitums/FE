@@ -35,7 +35,7 @@ test.each(journeySteps.filter((step) => learningFormsForStep(step.id)[0] === "se
 
     fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${step.id}`), {});
     fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
-    expect(screen.getByTestId("top-bar-gem")).toHaveTextContent("1240");
+    expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
     expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 1");
     expect(screen.getByTestId("sentence-order-screen-prompt")).toHaveTextContent(question.prompt);
     expect(screen.getByTestId("sentence-order-screen-translation")).toHaveTextContent(

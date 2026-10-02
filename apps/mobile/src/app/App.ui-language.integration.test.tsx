@@ -377,12 +377,6 @@ test("[IL6] ⭐ 영어 부팅의 탭 화면과 계정 화면에는 한글이 한
     within(screen.getByTestId("profile-screen-exit")).getByTestId("ui-lynx-round-button"),
     {},
   );
-
-  // 젬 구매
-  openTab("journey");
-  fireEvent.tap(screen.getByTestId("top-bar-gem"), {});
-  expect(screen.getByTestId("gem-purchase-screen")).toBeInTheDocument();
-  expectNoHangul(root());
 });
 
 // ------------------------------------------------------------ IL7 · 학습 · 이야기 화면

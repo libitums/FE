@@ -13,7 +13,6 @@ import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialSessionOptions } from "../lib/session-options";
 import { isMapItemComplete, journeyMapSections } from "../screens/journey-map/journey-map";
 import { roleplaySectionsFrom } from "../screens/roleplay-list/roleplay-list";
-import { premiumRoleplayItemsFor } from "../screens/roleplay-list/roleplay-premium-items";
 import type { MessengerAppProps, MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type {
   NotificationAppProps,
@@ -148,19 +147,16 @@ export function AppSession({
 
   // 롤플레이 구획입니다. **진행에서 파생합니다** — 에피소드는 여정에서 그 에피소드의
   // 항목을 전부 끝냈을 때 열리고, 그 판정의 출처는 위의 진행 넷입니다. 상태로 따로 두면
-  // 진행과 어긋날 자리가 생깁니다(ADR-0007 D3).
-  const roleplaySections = roleplaySectionsFrom(
-    journeyMapSections,
-    (item) =>
-      isMapItemComplete(item, {
-        completedStepCount,
-        completedEpisodeIntroIds,
-        completedMessengerUnitIds,
-        completedPhoneCallUnitIds,
-        completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
-        completedEpisodeFinalIds,
-      }),
-    premiumRoleplayItemsFor,
+  // 진행과 어긋날 자리가 생깁니다(ADR-0007 D3). 결제 전에는 Plus 예고 항목을 싣지 않습니다.
+  const roleplaySections = roleplaySectionsFrom(journeyMapSections, (item) =>
+    isMapItemComplete(item, {
+      completedStepCount,
+      completedEpisodeIntroIds,
+      completedMessengerUnitIds,
+      completedPhoneCallUnitIds,
+      completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
+      completedEpisodeFinalIds,
+    }),
   );
 
   const insets = safeAreaInsetsFrom(useGlobalProps());
@@ -229,12 +225,14 @@ export function AppSession({
     <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
       <FirstUnitGuideProvider
         enabled={
+          progress.hasLoadedProgress &&
           completedStepCount === 0 &&
           completedEpisodeIntroIds.length === 0 &&
           completedMessengerUnitIds.length === 0 &&
           completedPhoneCallUnitIds.length === 0 &&
           completedEpisodeFinalIds.length === 0 &&
-          visualNovelProgress.status !== "completed"
+          visualNovelProgress.status === "active" &&
+          visualNovelProgress.beatIndex === 0
         }
       >
         <ErrorBoundary>
@@ -265,7 +263,6 @@ export function AppSession({
                     episodeIntroEventSink,
                     onClosed: progress.onEpisodeSurveyClosed,
                   })}
-                  gemCount={gemCount}
                   obscured={screenLayerOpen}
                   onOpenNotifications={wiring.onOpenNotifications}
                 />

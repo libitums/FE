@@ -9,6 +9,10 @@ import { zeroSafeAreaInsets } from "../lib/safe-area";
 import { revealNarrative } from "./test-helpers/narrative";
 
 const tap = (id: string) => fireEvent.tap(screen.getByTestId(id), {});
+const newLearner = {
+  refreshedAccessToken: `e30.${btoa(JSON.stringify({ sub: "new-learner" }))}.sig`,
+  loadProgress: async () => ({ status: 200, body: "null" }),
+};
 const dismiss = (kind: string) =>
   fireEvent.tap(screen.getByTestId(`first-unit-guide-${kind}`), { eventType: "catchEvent" });
 const next = () =>
@@ -24,7 +28,10 @@ afterEach(() => {
 });
 
 test("first unit selection and story guides dismiss without skipping a line and stay dismissed on reentry", async () => {
-  await renderSignedInApp(<App journeySeed={{ ...productJourneySeed, completedStepCount: 0 }} />);
+  await renderSignedInApp(
+    <App journeySeed={{ ...productJourneySeed, completedStepCount: 0 }} />,
+    newLearner,
+  );
   expect(screen.getByTestId("first-unit-guide-map")).toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-scroll")).toHaveAttribute("enable-scroll", "false");
   tap("ui-lynx-learning-unit-tutorial-intro");
@@ -46,12 +53,12 @@ test("first unit selection and story guides dismiss without skipping a line and 
 });
 
 test("a new learner sees the first-unit guide", async () => {
-  await renderSignedInApp(<App />);
+  await renderSignedInApp(<App />, newLearner);
   expect(screen.getByTestId("first-unit-guide-map")).toBeInTheDocument();
 });
 
 test("a completed first unit never shows guides when replayed", async () => {
-  await renderSignedInApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
+  await renderSignedInApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />, newLearner);
   expect(screen.queryByTestId("first-unit-guide-map")).not.toBeInTheDocument();
   tap("ui-lynx-learning-unit-tutorial-intro");
   next();

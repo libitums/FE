@@ -45,6 +45,9 @@ export async function renderSignedInApp(
   ui: Parameters<typeof render>[0],
   options: {
     readonly refreshedAccessToken?: string;
+    /** 진행 조회를 검증하는 테스트만 응답을 제공합니다. 기본 헬퍼는 기존처럼 갱신만 허용합니다. */
+    readonly loadProgress?: () => Promise<{ status: number; body: string }>;
+    readonly keepFakeTimers?: boolean;
     /**
      * 저장소 대역을 직접 넘길 때 씁니다(예: 호출을 기록하는 대역, 이미 값이 든 저장소). 넘기면 이 헬퍼는
      * 세션을 심지 않습니다 — 부를 쪽이 `authSessionStorageKey`를 넣어 둡니다.
@@ -75,6 +78,12 @@ export async function renderSignedInApp(
     if (typeof url === "string" && url.includes("grant_type=refresh_token")) {
       return Promise.resolve({ status: 200, text: async () => refreshedSessionBody });
     }
+    if (url.endsWith("/load_learning_progress") && options.loadProgress !== undefined) {
+      return options.loadProgress().then((reply) => ({
+        status: reply.status,
+        text: async () => reply.body,
+      }));
+    }
     return Promise.reject(new Error(`renderSignedInApp: 예상 밖 요청 ${String(url)}`));
   });
 
@@ -86,7 +95,7 @@ export async function renderSignedInApp(
   await act(async () => {
     await vi.advanceTimersByTimeAsync(0);
   });
-  vi.useRealTimers();
+  if (!options.keepFakeTimers) vi.useRealTimers();
 
   if (screen.queryByTestId("splash-screen-logo") !== null) {
     throw new Error("renderSignedInApp: 스플래시를 지나지 못했습니다");

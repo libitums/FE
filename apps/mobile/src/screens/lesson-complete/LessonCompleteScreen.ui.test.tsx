@@ -61,13 +61,13 @@ test("[LCS2] 실수가 있으면 같은 틀에 제목 · 설명만 바뀐다", (
   expect(screen.getByTestId("lesson-complete-screen-reward-diamond")).toBeInTheDocument();
 });
 
-test("[LA9-E][LCS3] 지표 칩 셋은 읽기 전용이고 이름을 단다", () => {
+test("[LA9-E][LCS3] 지표 칩 둘은 읽기 전용이고 젬 칩은 숨긴다", () => {
   render(<LessonCompleteScreen {...fixture({ streakDays: 3, trophyCount: 2, diamondCount: 5 })} />);
 
+  expect(screen.queryByTestId("lesson-complete-screen-diamond")).not.toBeInTheDocument();
   const expected = [
     ["lesson-complete-screen-streak", "3-day streak"],
     ["lesson-complete-screen-trophy", "2 trophies"],
-    ["lesson-complete-screen-diamond", "5 diamonds"],
   ] as const;
   for (const [id, label] of expected) {
     const chip = screen.getByTestId(id);
@@ -229,16 +229,12 @@ test("[UI-P3] 표지 스킵으로 온 결과 화면은 만점이다", () => {
 
 // ---------------------------------------------------------------- 영어 렌더 · 문구표 (LA9)
 
-test("[LA9-E] 다이아 1개 · 트로피 1개는 단수로 말한다", () => {
+test("[LA9-E] 트로피 1개는 단수로 말한다", () => {
   render(<LessonCompleteScreen {...fixture({ trophyCount: 1, diamondCount: 1 })} />);
 
   expect(screen.getByTestId("lesson-complete-screen-trophy")).toHaveAttribute(
     "accessibility-label",
     "1 trophy",
-  );
-  expect(screen.getByTestId("lesson-complete-screen-diamond")).toHaveAttribute(
-    "accessibility-label",
-    "1 diamond",
   );
 });
 
@@ -316,10 +312,6 @@ test("[LA9-M] 문구표를 주입하면 지표 칩 · 보상 카드의 이름이
   expect(screen.getByTestId("lesson-complete-screen-trophy")).toHaveAttribute(
     "accessibility-label",
     "⟦common.count.trophies⟧(2)",
-  );
-  expect(screen.getByTestId("lesson-complete-screen-diamond")).toHaveAttribute(
-    "accessibility-label",
-    "⟦common.count.diamonds⟧(5)",
   );
   expect(screen.getByTestId("lesson-complete-screen-reward-diamond")).toHaveAttribute(
     "accessibility-label",

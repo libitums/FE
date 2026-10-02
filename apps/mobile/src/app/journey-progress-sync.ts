@@ -23,6 +23,7 @@ export function createJourneyProgressSync(
   userId: string,
   readLatest: () => JourneyProgressState,
   apply: (next: JourneyProgressState) => void,
+  onLoaded: () => void,
 ) {
   "background only";
   let disposed = false;
@@ -52,6 +53,7 @@ export function createJourneyProgressSync(
       observedJson = jsonFrom(merged);
       apply(merged);
       needsLoad = false;
+      onLoaded();
       if (observedJson === jsonFrom(server)) {
         // 조회만으로 동기화가 끝나면 복구입니다. 저장이 남았으면 성공할 때까지 backoff를 유지합니다.
         retryAttempt = 0;
