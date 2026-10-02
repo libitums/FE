@@ -9,6 +9,7 @@ import { learningTimingFlag } from "./learning-shell.contract";
 import { LearningSessionHeader } from "./LearningSessionHeader";
 import type { LearningForm } from "../../lib/learning-form";
 import { useUiCopy } from "../../lib/ui-copy";
+import { playSound } from "../../lib/sound-effects";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
@@ -67,6 +68,8 @@ export type LearningShellProps = {
    */
   actionLabel?: string;
   onAction?: () => void;
+  /** 바로 판정음이 나는 확인 동작은 클릭음을 생략한다. */
+  actionSound?: "button" | "none";
   /**
    * 스스로 넘어가는 걸음입니다. 주면 `delayMs` 뒤에 `run`을 부르고, 그 전에 화면을
    * 누르면 즉시 부릅니다.
@@ -96,6 +99,7 @@ export function LearningShell({
   secondaryAction,
   actionLabel,
   onAction,
+  actionSound = "button",
   advance,
   streakDays = 0,
   trophyCount = 0,
@@ -112,11 +116,13 @@ export function LearningShell({
 
   const handleExit = () => {
     "background only";
+    playSound("button");
     setExitAsked(true);
   };
 
   const handleExitAction = (id: string) => {
     "background only";
+    playSound("button");
     setExitAsked(false);
     if (id === "leave") {
       onExit();
@@ -125,6 +131,7 @@ export function LearningShell({
 
   const handleAction = () => {
     "background only";
+    if (actionSound === "button") playSound("button");
     onAction?.();
   };
 

@@ -11,6 +11,7 @@ import type { ListeningPlaybackAction, ListeningPlaybackState } from "./listenin
 import { pauseAudio, playAudio, resumeAudio, stopAudio } from "../../lib/audio";
 import type { SessionOptions } from "../../lib/session-options";
 import { useUiCopy } from "../../lib/ui-copy";
+import { playSound } from "../../lib/sound-effects";
 
 import "./listening-prompt.css";
 
@@ -95,6 +96,8 @@ export function ListeningPrompt({
   // 세 갈래가 전부입니다. 갈래를 컴포넌트 안 삼항이 아니라 `playbackActionFor`가
   // 정하므로, 상태가 늘면 `tsc`가 그 함수를 가리킵니다.
   const handlePlaybackTap = (): void => {
+    "background only";
+    playSound("button");
     switch (action) {
       case "pause":
         pauseAudio();
@@ -112,6 +115,8 @@ export function ListeningPrompt({
   // **다시듣기는 언제나 「처음부터」입니다.** 메서드가 아니라 `play`를 다시 부르는
   // 것이고(ADR-0017 D3), 그래서 재생 중이든 멈춰 뒀든 같은 일을 합니다.
   const handleReplayTap = (): void => {
+    "background only";
+    playSound("button");
     setPlayback(playbackStateAfterPlay(playAudio(audioSource, () => setPlayback("idle"))));
   };
 

@@ -1,4 +1,5 @@
 import { useUiCopy } from "../../lib/ui-copy";
+import { playSound } from "../../lib/sound-effects";
 import type { ReactNode } from "@lynx-js/react";
 
 import { cultureScreenTitle } from "./culture";
@@ -30,6 +31,10 @@ export function CultureScreen({
   onStartQuiz,
 }: CultureScreenProps): ReactNode {
   const copy = useUiCopy();
+  const handleStartQuiz = (): void => {
+    playSound("button");
+    onStartQuiz();
+  };
   return (
     <view className="culture-screen">
       {/* [고정] 머리 — 나가는 수단 `맵으로` 하나 + 제목. */}
@@ -95,7 +100,7 @@ export function CultureScreen({
         accessibility-element={true}
         accessibility-label={copy.culture.takeQuiz}
         accessibility-traits="button"
-        bindtap={onStartQuiz}
+        bindtap={handleStartQuiz}
       >
         <text className="culture-screen-quiz-label">{copy.culture.takeQuiz}</text>
       </view>

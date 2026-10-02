@@ -9,6 +9,7 @@ import { WritingCanvas, type WritingCanvasBadge } from "../../components/Writing
 import { WritingPrompt } from "../../components/WritingPrompt";
 import { useWritingPractice } from "../../components/use-writing-practice";
 import { announceCompletion } from "../../lib/accessibility";
+import { playSound } from "../../lib/sound-effects";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { WritingQuestion } from "../../lib/writing-session";
 import { LearningShell } from "../learning/LearningShell";
@@ -120,6 +121,12 @@ function WritingQuestionShell({
     skipped.current = true;
     onQuestionSkipped();
   };
+  const skipFromButton = () => {
+    "background only";
+    if (skipped.current) return;
+    playSound("button");
+    skip();
+  };
 
   // 아래 버튼 — 쓰는 중에 획이 있으면 `확인하기`, 판정 · 잴 수 없음 뒤면 `다음`입니다. 빈 판과
   // 재는 중에는 버튼이 없습니다 — 누를 수 없는 버튼을 두지 않습니다(ADR-0016 D10).
@@ -127,11 +134,11 @@ function WritingQuestionShell({
   // 판정 뒤 넘김은 문장 만들기처럼 **버튼**입니다. 듣기 · 말하기의 스스로 넘어가는 층(`advance`)은
   // 화면 전체를 덮어 누르면 넘어가는데, 쓰기는 틀린 뒤 캔버스의 `다시 쓰기`를 누를 수 있어야
   // 하고 그 층이 그 버튼을 가립니다.
-  const action =
+  const action: { label: string; run: () => void; sound?: "none" } | null =
     question.optionalPractice && state.phase === "unmeasurable"
       ? { label: copy.common.skip, run: skip }
       : practice.check !== null
-        ? { label: copy.common.check, run: practice.check }
+        ? { label: copy.common.check, run: practice.check, sound: "none" }
         : practice.next !== null
           ? { label: copy.common.next, run: practice.next }
           : null;
@@ -152,6 +159,7 @@ function WritingQuestionShell({
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
+      actionSound={action?.sound ?? "button"}
       // 그리기 표면이 서는 작업 영역이라 스크롤을 끕니다(`workspaceScrolls`의 근거).
       workspaceScrolls={false}
       card={
@@ -195,7 +203,7 @@ function WritingQuestionShell({
                 variant="outline"
                 size="xl"
                 width="fill"
-                bindtap={skip}
+                bindtap={skipFromButton}
               />
             </view>
           ) : null}

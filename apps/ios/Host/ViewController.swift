@@ -37,6 +37,7 @@ final class ViewController: UIViewController {
       // 연다 — 몇 번째인지는 `docs/adr/README.md`의 호스트 모듈 표가 센다.
       config.register(StorageModule.self)
       config.register(AudioPlaybackModule.self)
+      config.register(SoundEffectsModule.self)
       config.register(CompletionAnnouncementModule.self)
       config.register(HandwritingRecognitionModule.self)
       config.register(HandwritingTraceModule.self)

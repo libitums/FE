@@ -6,6 +6,7 @@ import arrowRight from "@libitums/icons/lynx/arrow-right";
 import { Button } from "@libitums/ui-lynx/button";
 import { PageIndicator } from "@libitums/ui-lynx/page-indicator";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
+import { playSound } from "../../lib/sound-effects";
 
 import {
   nextOnboardingStep,
@@ -34,10 +35,14 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
   const previous = previousOnboardingStep(step);
 
   function handleBack() {
-    if (previous !== null) setStep(previous);
+    if (previous !== null) {
+      playSound("button");
+      setStep(previous);
+    }
   }
 
   function handleNext() {
+    playSound("button");
     const next = nextOnboardingStep(step);
     if (next === null) {
       onComplete();

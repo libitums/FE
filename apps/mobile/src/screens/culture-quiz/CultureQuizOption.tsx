@@ -1,4 +1,5 @@
 import { useUiCopy } from "../../lib/ui-copy";
+import { useEffect } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import tick from "@libitums/icons/lynx/tick";
@@ -6,6 +7,7 @@ import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
 import type { AnswerResult } from "../../lib/answer-result";
+import { playSound } from "../../lib/sound-effects";
 import { optionAccessibilityLabel } from "./culture-quiz";
 
 import "./culture-quiz-option.css";
@@ -44,6 +46,9 @@ export function CultureQuizOption({
   onSelect,
 }: CultureQuizOptionProps): ReactNode {
   const copy = useUiCopy();
+  useEffect(() => {
+    if (result !== null) playSound(result === "correct" ? "correct_answer" : "wrong_answer");
+  }, [result]);
   return (
     <view
       // 상태 클래스는 base 바로 뒤에 선언합니다 — 특이도가 같아 순서가

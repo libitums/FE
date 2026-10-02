@@ -2,6 +2,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
 
 import { chipAccessibilityLabel } from "./sentence-order";
+import { playSound } from "../../lib/sound-effects";
 
 import "./sentence-order-chip.css";
 
@@ -29,6 +30,7 @@ export function SentenceOrderChip({
   const copy = useUiCopy();
   const handleTap = () => {
     "background only";
+    playSound("button");
     onTap(index);
   };
   const variant = placedOrdinal === null ? "bank" : "placed";
