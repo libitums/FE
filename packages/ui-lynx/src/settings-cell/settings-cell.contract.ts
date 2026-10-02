@@ -35,6 +35,7 @@ export type SettingsCellContract = {
   readonly accessibilityLabel: string;
   readonly className: string;
   readonly disabled: boolean;
+  readonly accessibilityTapEnabled: boolean;
   readonly description?: string;
   readonly value?: string;
 };
@@ -82,6 +83,7 @@ export function getSettingsCellContract(props: SettingsCellProps): SettingsCellC
       .filter(Boolean)
       .join(" "),
     disabled,
+    accessibilityTapEnabled: !disabled,
     ...(description ? { description } : {}),
     ...(value ? { value } : {}),
   };

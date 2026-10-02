@@ -17,6 +17,8 @@ describe("Settings Cell UI", () => {
     expect(row).toHaveAttribute("accessibility-label", "자동 재생, off");
     expect(row).toHaveAttribute("accessibility-traits", "button");
     expect(row).toHaveAttribute("accessibility-role-description", "switch");
+    expect(row).toHaveAttribute("flatten", "false");
+    expect(row).toHaveAttribute("accessibility-enable-tap", "true");
     expect(row).toHaveAttribute("data-checked", "false");
     expect(row.querySelectorAll("[bindtap]")).toHaveLength(0);
     tap(row);
@@ -49,6 +51,7 @@ describe("Settings Cell UI", () => {
     );
     const row = screen.getByTestId("ui-lynx-settings-cell");
     expect(row).toHaveAttribute("accessibility-traits", "disabled");
+    expect(row).not.toHaveAttribute("accessibility-enable-tap");
     expect(row).toHaveAttribute("focusable", "false");
     expect(row).not.toHaveAttribute("bindtap");
     tap(row);

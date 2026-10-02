@@ -47,7 +47,10 @@ export function SettingsScreen({
       <text
         data-testid="settings-screen-title"
         className="settings-screen-title"
+        flatten={false}
+        accessibility-element={true}
         accessibility-traits="header"
+        accessibility-heading={true}
         accessibility-elements-hidden={layerOpen ? true : undefined}
       >
         {copy.settings.title}

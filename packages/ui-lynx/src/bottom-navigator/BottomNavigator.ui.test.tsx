@@ -70,6 +70,17 @@ describe("BottomNavigator", () => {
       "accessibility-label",
       "설정, 로그인 후 사용 가능",
     );
+    expect(screen.getByTestId("ui-lynx-bottom-navigator-item-home")).toHaveAttribute(
+      "flatten",
+      "false",
+    );
+    expect(screen.getByTestId("ui-lynx-bottom-navigator-item-home")).toHaveAttribute(
+      "accessibility-enable-tap",
+      "true",
+    );
+    expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).not.toHaveAttribute(
+      "accessibility-enable-tap",
+    );
   });
 
   test("enabled 항목은 disabled를 건너뛴 선형 D-pad 순서와 양끝 경계를 노출한다", () => {

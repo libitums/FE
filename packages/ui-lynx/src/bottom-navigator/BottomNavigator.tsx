@@ -35,8 +35,10 @@ function BottomNavigatorCell({ item, contract, onSelect }: BottomNavigatorCellPr
       next-focus-left={contract.nextFocusLeft}
       next-focus-right={contract.nextFocusRight}
       accessibility-element={true}
+      flatten={false}
       accessibility-label={contract.accessibilityLabel}
       accessibility-traits={contract.traits}
+      accessibility-enable-tap={contract.accessibilityTapEnabled ? true : undefined}
       {...(contract.timingFlag ? { __lynx_timing_flag: contract.timingFlag } : {})}
       bindtap={contract.interactive ? handleTap : undefined}
     >

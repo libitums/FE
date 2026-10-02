@@ -1,0 +1,34 @@
+# A4·A7 — 계측 픽스처가 띄운 로그인 이후 화면을 320×640에서 검사한다.
+appId: com.libitum.host
+env:
+  SCALE: ${SCALE || "100"}
+  DOCUMENT_LABEL: ${DOCUMENT_LABEL || "Terms of Use"}
+---
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Journey, selected"
+    timeout: 30000
+# The first-use scrim has no accessibility node. This fixed-size flow taps its empty area.
+- tapOn:
+    point: "10%,45%"
+- waitForAnimationToEnd
+- tapOn: "Settings"
+- assertVisible: "Settings"
+- assertVisible: "User profile"
+- assertVisible: "Notifications"
+- assertVisible: "Send feedback"
+- assertVisible: "Privacy Policy"
+- assertVisible: "Terms of Use"
+- takeScreenshot: signed-in-settings-${SCALE}
+- assertScreenshot:
+    path: screenshots/android-signed-in-settings-${SCALE}.png
+    thresholdPercentage: 95
+- scrollUntilVisible:
+    element: ${DOCUMENT_LABEL}
+    direction: DOWN
+- tapOn: ${DOCUMENT_LABEL}
+- extendedWaitUntil:
+    visible: ".*gregarious-pharaoh-bb6.notion.site.*"
+    timeout: 15000
+- pressKey: back
+- assertVisible: "Settings"
