@@ -1,5 +1,6 @@
 package com.libitum.host;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import androidx.browser.customtabs.CustomTabsIntent;
@@ -11,11 +12,11 @@ import com.lynx.react.bridge.ReadableMap;
 
 /** Opens only the two legal documents fixed in the Android host. */
 public final class LegalDocumentModule extends LynxModule {
-  private final MainActivity activity;
+  private final Activity activity;
 
   public LegalDocumentModule(Context context, Object param) {
     super(context, param);
-    activity = param instanceof MainActivity ? (MainActivity) param : null;
+    activity = param instanceof Activity ? (Activity) param : null;
   }
 
   @LynxMethod public void open(ReadableMap args, Callback callback) {
