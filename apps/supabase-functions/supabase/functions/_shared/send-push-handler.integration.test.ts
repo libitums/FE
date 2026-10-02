@@ -179,6 +179,37 @@ describe("send-push handler", () => {
     expect(removal.url).not.toContain(second);
   });
 
+  test("SH19 많은 무효 FCM 토큰은 URL 길이를 지키며 묶어 지운다", async () => {
+    const many = Array.from({ length: 11 }, (_, index) =>
+      fcmStoredTokenFrom(`fcm-token-${index}-${"x".repeat(60)}`),
+    );
+    const h = harness(
+      (request) => {
+        if (request.method === "DELETE") return { status: 204 };
+        if (request.url.includes("/rest/v1/push_devices")) {
+          return {
+            status: 200,
+            body: JSON.stringify(many.map((token) => ({ token, environment: "fcm" }))),
+          };
+        }
+        if (request.url.includes("oauth2.googleapis.com")) {
+          return { status: 200, body: '{"access_token":"access","token_type":"Bearer"}' };
+        }
+        return { status: 404, body: '{"error":{"details":[{"errorCode":"UNREGISTERED"}]}}' };
+      },
+      { env: fcmEnv() },
+    );
+    await expect((await h.post(announcement)).json()).resolves.toEqual({
+      devices: 11,
+      sent: 0,
+      failed: 11,
+      removed: 11,
+    });
+    const deletions = h.calls.filter((call) => call.method === "DELETE");
+    expect(deletions).toHaveLength(2);
+    expect(deletions.every((call) => call.url.length < 3500)).toBe(true);
+  });
+
   test("SH1 POST가 아니면 405, 환경이 없으면 500, 키가 틀리면 401 — 기기 조회 · 발송 0", async () => {
     const h = harness((request) =>
       request.url.includes("/auth/v1/admin/users") ? { status: 401 } : { status: 200, body: "[]" },

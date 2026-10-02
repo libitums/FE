@@ -74,6 +74,8 @@ async function isServiceCaller(
 /** 쿼리 문자열에 싣는 ID · 토큰 수의 상한입니다 — URL 길이 제한(414)을 넘지 않게 나눕니다. */
 export const userIdsPerLookup = 100;
 export const tokensPerRemoval = 50;
+const fcmTokensPerRemoval = 10;
+const fcmRemovalUrlLimit = 3400;
 
 function chunks<T>(items: readonly T[], size: number): T[][] {
   const result: T[][] = [];
@@ -81,6 +83,28 @@ function chunks<T>(items: readonly T[], size: number): T[][] {
     result.push(items.slice(start, start + size));
   }
   return result;
+}
+
+function fcmRemovalBatches(env: SendPushEnv, devices: readonly PushDevice[]): PushDevice[][] {
+  const batches: PushDevice[][] = [];
+  const baseLength = `${env.supabaseUrl}/rest/v1/push_devices?token=in.()`.length;
+  let batch: PushDevice[] = [];
+  let tokenLength = 0;
+  for (const device of devices) {
+    const nextLength = tokenLength + device.token.length + (batch.length === 0 ? 0 : 1);
+    if (
+      batch.length > 0 &&
+      (batch.length >= fcmTokensPerRemoval || baseLength + nextLength > fcmRemovalUrlLimit)
+    ) {
+      batches.push(batch);
+      batch = [];
+      tokenLength = 0;
+    }
+    tokenLength += device.token.length + (batch.length === 0 ? 0 : 1);
+    batch.push(device);
+  }
+  if (batch.length > 0) batches.push(batch);
+  return batches;
 }
 
 function devicesRequestsFor(env: SendPushEnv, body: SendPushRequestBody): OutboundRequest[] {
@@ -180,7 +204,10 @@ async function decide(
       invalid.filter((device) => device.environment !== "fcm"),
       tokensPerRemoval,
     ),
-    ...invalid.filter((device) => device.environment === "fcm").map((device) => [device]),
+    ...fcmRemovalBatches(
+      env,
+      invalid.filter((device) => device.environment === "fcm"),
+    ),
   ];
   for (const batch of removalBatches) {
     const removal = await send(
