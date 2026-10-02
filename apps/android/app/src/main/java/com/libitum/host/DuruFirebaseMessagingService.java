@@ -22,8 +22,9 @@ public final class DuruFirebaseMessagingService extends FirebaseMessagingService
     NotificationManager notifications = context.getSystemService(NotificationManager.class);
     if (notifications == null) return;
     NotificationChannel channel = new NotificationChannel(
-        CHANNEL_ID, "Duru updates", NotificationManager.IMPORTANCE_DEFAULT);
-    channel.setDescription("Learning updates and announcements");
+        CHANNEL_ID, context.getString(R.string.notification_channel_name),
+        NotificationManager.IMPORTANCE_DEFAULT);
+    channel.setDescription(context.getString(R.string.notification_channel_description));
     notifications.createNotificationChannel(channel);
   }
 

@@ -96,10 +96,10 @@ final class PushNotificationController {
   }
 
   void destroy() {
-    main.post(() -> {
-      destroyed = true;
-      complete(null);
-    });
+    // Activity.onDestroy runs on the main thread. Cancel the token timeout and queued work.
+    destroyed = true;
+    main.removeCallbacksAndMessages(null);
+    complete(null);
   }
 
   private String permission() {

@@ -10,13 +10,13 @@ final class PushOpenedStore {
   static void store(Context context, String targetJson) {
     if (PushNotificationController.targetFromJson(targetJson) == null) return;
     context.getSharedPreferences(NAME, Context.MODE_PRIVATE).edit()
-        .putString(TARGET, targetJson).commit();
+        .putString(TARGET, targetJson).apply();
   }
 
   static String take(Context context) {
     String target = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
         .getString(TARGET, null);
-    context.getSharedPreferences(NAME, Context.MODE_PRIVATE).edit().remove(TARGET).commit();
+    context.getSharedPreferences(NAME, Context.MODE_PRIVATE).edit().remove(TARGET).apply();
     return target;
   }
 }
