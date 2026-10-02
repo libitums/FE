@@ -1,7 +1,8 @@
 # Duru Android 최소 호스트
 
 `apps/mobile`의 Lynx 번들을 Android `LynxView` 하나에서 실행한다. 지금은 이미지·HTTP
-서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`을 제공한다. 네이티브 기능 전체의
+서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
+`LegalDocumentModule`을 제공한다. 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
 
 ## 준비
@@ -59,6 +60,7 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 화면을 검증한다. 완료 후 일반 번들이 필요하면 `pnpm bundle:android`를 다시 실행한다.
 `sh apps/android/test-web-auth-contract.sh`는 인증 URL·콜백 검증을, Android 계측
 `WebAuthenticationModuleTest`는 난수와 잘못된 요청의 반환을 확인한다.
+`LegalDocumentModuleTest`는 법률 문서 이름을 두 고정 HTTPS 주소로만 연결하는지 확인한다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
@@ -84,9 +86,11 @@ E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android
 
 `test:e2e:android:host`는 온보딩과 로그인 화면을, `test:e2e:android:social`은
 Apple·Google·Facebook의 인증 URL·PKCE·모의 딥링크 복귀를 각각 확인한다.
+`test:e2e:android:legal`은 로그인 화면의 두 법률 문서 링크가 정해진 주소를
+Custom Tab으로 열고 뒤로가기로 앱에 복귀하는지 확인한다.
 `test:e2e:android:small`은 320×640에서 글자 배율 1.0·1.3을 각각 적용해
 온보딩 세 단계의 고정 버튼과 소셜 로그인 화면을 비교한다. 실행 뒤 390×844·1.0으로
-돌린다. 세 흐름은 버튼의 접근성 이름으로 선택한다. `test:e2e:android`는 이 세 명령을
+돌린다. 네 흐름은 버튼의 접근성 이름으로 선택한다. `test:e2e:android`는 이 네 명령을
 순서대로 실행한다.
 실제 제공자 계정으로 로그인하거나 세션을 갱신하지는 않는다. 결과와 남은 항목은
 [호스트 흐름](../../docs/e2e/android-host.md)과
