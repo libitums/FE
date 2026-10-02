@@ -21,8 +21,9 @@ Status Indicator, Progress Header를 명시적 package export로 제공한다.
 빌드해 호스트로 옮겨야 실기기에 반영된다. iOS는 `pnpm bundle:host`, Android는
 `pnpm bundle:android`가 Lynx 번들과 정적 자산을 함께 복사한다.
 
-Android 호스트는 첫 단계로 번들 로드, 이미지·HTTP 서비스, 입력·SVG·오버레이 요소,
-영속 저장소만 제공한다. 나머지 iOS 네이티브 모듈은 아직 Android에 없다.
+Android 호스트는 번들 로드, 이미지·HTTP 서비스, 입력·SVG·오버레이 요소,
+영속 저장소, 소셜 웹 인증, 법률 문서, 오디오 재생, 완료 접근성 공지를 제공한다.
+나머지 iOS 네이티브 모듈은 아직 Android에 없다.
 빌드와 실행은 [`apps/android/README.md`](apps/android/README.md)에 있다.
 
 앱 이름은 서비스명이 아니라 **타깃**으로 짓는다 (ADR-0002 D4). 앱이 늘 때 무슨 축으로

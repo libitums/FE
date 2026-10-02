@@ -35,6 +35,8 @@ public final class MainActivity extends Activity {
     builder.registerModule("StorageModule", StorageModule.class);
     builder.registerModule("WebAuthenticationModule", WebAuthenticationModule.class, this);
     builder.registerModule("LegalDocumentModule", LegalDocumentModule.class, this);
+    builder.registerModule("CompletionAnnouncementModule", CompletionAnnouncementModule.class,
+        getWindow().getDecorView());
     audioPlayback = new AudioPlaybackController(this);
     builder.registerModule("AudioPlaybackModule", AudioPlaybackModule.class, audioPlayback);
     DebugSupport.configure(builder);

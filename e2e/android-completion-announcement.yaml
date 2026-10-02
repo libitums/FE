@@ -1,0 +1,34 @@
+# A signed-in listening completion reaches the Android announcement module.
+appId: com.libitum.host
+---
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Journey, selected"
+    timeout: 30000
+- tapOn:
+    point: "10%,45%"
+- swipe:
+    start: "50%,70%"
+    end: "50%,25%"
+    duration: 700
+- swipe:
+    start: "50%,70%"
+    end: "50%,25%"
+    duration: 700
+- tapOn:
+    point: "50%,65%"
+- tapOn:
+    point: "50%,79%"
+- waitForAnimationToEnd
+- assertScreenshot:
+    path: screenshots/android-audio-listening-390x844.png
+    thresholdPercentage: 95
+# The AOSP Lynx tree omits listening choices and the completion button. The
+# second tap lands on empty card space after the 2.5 s answer transition.
+- tapOn:
+    point: "50%,67%"
+    repeat: 2
+    delay: 3500
+- assertScreenshot:
+    path: screenshots/android-completion-390x844.png
+    thresholdPercentage: 95

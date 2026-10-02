@@ -2,7 +2,7 @@
 
 `apps/mobile`의 Lynx 번들을 Android `LynxView` 하나에서 실행한다. 지금은 이미지·HTTP
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
-`LegalDocumentModule`·`AudioPlaybackModule`을 제공한다. 네이티브 기능 전체의
+`LegalDocumentModule`·`AudioPlaybackModule`·`CompletionAnnouncementModule`을 제공한다. 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
 
 ## 준비
@@ -81,6 +81,9 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 `AudioPlaybackModuleTest`는 공통 `.m4a` 자산 21개, 실제 재생 완료, 대체, 일시정지·재개,
 중단·백그라운드 전환·오디오 포커스 손실과 복귀를 확인한다. 자산은 Gradle이 `apps/ios/Host/audio`에서
 빌드 산출물로 동기화하며 APK에 압축 없이 넣는다.
+`CompletionAnnouncementModuleTest`는 완료 안내의 원문·콜백·실제 Android 접근성
+공지 이벤트를 확인한다. 듣기 완료까지의 Maestro 절차는
+[`docs/e2e/android-completion-announcement.md`](../../docs/e2e/android-completion-announcement.md)에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
