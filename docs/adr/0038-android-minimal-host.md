@@ -20,8 +20,8 @@ XElement, `StorageModule`만 연결한다. 호스트 자체 화면은 만들지 
 
 ## 대가
 
-Android 앱이 생겨도 제품 전체의 플랫폼 동등성은 아직 없다. 오디오·음성·소셜 인증·푸시 등은
-`docs/adr/README.md`의 호스트 모듈 표에 남은 이관 항목이다. HMR 번들은 WebSocket 지원이
+Android 앱을 처음 만들 때 제품 전체의 플랫폼 동등성은 없었다. 오디오·음성·소셜 인증·푸시 등은
+`docs/adr/README.md`의 호스트 모듈 표에 이관 항목으로 기록했다. HMR 번들은 WebSocket 지원이
 필요해 현재 Debug 경로에서 사용하지 않는다. 에뮬레이터 판정은
 `docs/e2e/android-host.md`에 기록한다.
 
