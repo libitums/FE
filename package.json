@@ -26,6 +26,7 @@
     "test:e2e:android:small": "sh devtools/android-maestro/run-small-screen.sh",
     "test:e2e:android:signed-in": "sh devtools/android-maestro/run-signed-in-settings.sh",
     "test:e2e:android:audio": "sh devtools/android-maestro/run-audio-playback.sh",
+    "test:e2e:android:completion": "sh devtools/android-maestro/run-completion-announcement.sh",
     "test:e2e:android:talkback": "sh devtools/android-maestro/run-talkback.sh",
     "test:e2e:android": "pnpm test:e2e:android:host && pnpm test:e2e:android:social && pnpm test:e2e:android:legal && pnpm test:e2e:android:small",
     "test:coverage": "pnpm --filter @libitums/mobile test:coverage && pnpm --filter @libitums/ui-lynx test:coverage",
