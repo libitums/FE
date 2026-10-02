@@ -12,6 +12,7 @@ import com.lynx.tasm.LynxView;
 import com.lynx.tasm.LynxViewBuilder;
 import com.lynx.tasm.LynxViewClient;
 import com.lynx.react.bridge.Callback;
+import com.lynx.react.bridge.JavaOnlyArray;
 import com.lynx.xelement.XElementBehaviors;
 
 public final class MainActivity extends Activity {
@@ -21,6 +22,8 @@ public final class MainActivity extends Activity {
   private boolean leftForAuthentication;
   private AudioPlaybackController audioPlayback;
   private SpeechRecognitionController speechRecognition;
+  PushNotificationController pushNotifications;
+  private LynxView lynxView;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -45,8 +48,10 @@ public final class MainActivity extends Activity {
         speechRecognition);
     builder.registerModule("HandwritingTraceModule", HandwritingTraceModule.class);
     builder.registerModule("AppReviewModule", AppReviewModule.class, this);
+    pushNotifications = new PushNotificationController(this);
+    builder.registerModule("PushNotificationModule", PushNotificationModule.class, pushNotifications);
     DebugSupport.configure(builder);
-    LynxView lynxView = builder.build(this);
+    lynxView = builder.build(this);
     lynxView.addLynxViewClient(new LynxViewClient() {
       @Override public void onFirstScreen() {
         mainHandler.post(() -> AccessibilityTapBridge.sync(lynxView));
@@ -57,6 +62,7 @@ public final class MainActivity extends Activity {
       }
     });
     setContentView(lynxView);
+    pushNotifications.captureOpened();
     lynxView.renderTemplateUrl(templateUrl, "");
   }
 
@@ -94,6 +100,9 @@ public final class MainActivity extends Activity {
   @Override protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
     setIntent(intent);
+    if (pushNotifications != null && pushNotifications.captureOpened() && lynxView != null) {
+      lynxView.sendGlobalEvent("pushNotificationOpened", new JavaOnlyArray());
+    }
     String callbackUrl = intent.getDataString();
     if (authCallback != null && WebAuthContract.expectedRedirect(callbackUrl, authScheme)) {
       finishWebAuthentication("completed", callbackUrl);
@@ -113,6 +122,7 @@ public final class MainActivity extends Activity {
     finishWebAuthentication("failed", null);
     if (audioPlayback != null) audioPlayback.stop();
     if (speechRecognition != null) speechRecognition.destroy();
+    if (pushNotifications != null) pushNotifications.destroy();
     super.onDestroy();
   }
 
@@ -120,6 +130,7 @@ public final class MainActivity extends Activity {
       int requestCode, String[] permissions, int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     if (speechRecognition != null) speechRecognition.onRequestPermissionsResult(requestCode);
+    if (pushNotifications != null) pushNotifications.onRequestPermissionsResult(requestCode);
   }
 
   @Override protected void onStart() {

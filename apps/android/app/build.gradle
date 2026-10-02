@@ -2,6 +2,11 @@ plugins {
   id 'com.android.application'
 }
 
+// Local/CI builds remain possible before a Firebase Android app is registered.
+if (file('google-services.json').exists()) {
+  apply plugin: 'com.google.gms.google-services'
+}
+
 def syncAudioAssets = tasks.register('syncAudioAssets', Sync) {
   from(file('../../ios/Host/audio')) {
     include '*.m4a'
@@ -66,6 +71,8 @@ dependencies {
   implementation 'com.squareup.okhttp3:okhttp:4.9.0'
   implementation 'androidx.browser:browser:1.8.0'
   implementation 'com.google.android.play:review:2.0.2'
+  implementation platform('com.google.firebase:firebase-bom:34.19.0')
+  implementation 'com.google.firebase:firebase-messaging'
 
   implementation "org.lynxsdk.lynx:xelement:${lynxVersion}"
   implementation "org.lynxsdk.lynx:xelement-input:${lynxVersion}"
