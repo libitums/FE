@@ -1,4 +1,5 @@
 import type { SendPushEnvFrom, SendPushEnvName } from "./send-push.contract.ts";
+import { fcmServiceAccountFrom } from "./fcm.ts";
 
 export const sendPushEnvFrom: SendPushEnvFrom = (read) => {
   const value = (name: SendPushEnvName): string | null => {
@@ -24,9 +25,14 @@ export const sendPushEnvFrom: SendPushEnvFrom = (read) => {
   }
   if (!rawUrl.startsWith("https://")) return null;
 
+  const firebaseJson = value("FIREBASE_SERVICE_ACCOUNT_JSON");
+  const fcm = firebaseJson === null ? null : fcmServiceAccountFrom(firebaseJson);
+  if (firebaseJson !== null && fcm === null) return null;
+
   return {
     supabaseUrl: rawUrl.replace(/\/+$/, ""),
     supabaseServiceRoleKey,
     apns: { teamId, keyId, topic, privateKeyPem },
+    fcm,
   };
 };

@@ -4,6 +4,7 @@
 // 타입만 있습니다. 값(엔드포인트 · 문구 · 동시성)은 구현 모듈이 가집니다.
 
 import type { Outbound, SignEs256 } from "./delete-account.contract.ts";
+import type { FcmServiceAccount } from "./fcm.ts";
 
 // ------------------------------------------------------------------ 목적지
 
@@ -66,7 +67,7 @@ export type SendPushSummary = {
   readonly devices: number;
   readonly sent: number;
   readonly failed: number;
-  /** APNs가 더는 유효하지 않다고 답해 표에서 지운 토큰 수입니다. */
+  /** APNs 또는 FCM이 더는 유효하지 않다고 답해 표에서 지운 토큰 수입니다. */
   readonly removed: number;
 };
 
@@ -86,9 +87,10 @@ export type SendPushEnvName =
   | "APPLE_TEAM_ID"
   | "APPLE_CLIENT_ID"
   | "APNS_KEY_ID"
-  | "APNS_PRIVATE_KEY";
+  | "APNS_PRIVATE_KEY"
+  | "FIREBASE_SERVICE_ACCOUNT_JSON";
 
-/** 하나라도 비면 환경 전체가 `null`이고 모든 요청이 500입니다. `topic`은 번들 ID(`APPLE_CLIENT_ID`)입니다. */
+/** 필수 APNs 값이 비거나 선택적 FCM JSON이 잘못되면 `null`입니다. `topic`은 번들 ID입니다. */
 export type SendPushEnv = {
   readonly supabaseUrl: string;
   readonly supabaseServiceRoleKey: string;
@@ -98,6 +100,7 @@ export type SendPushEnv = {
     readonly topic: string;
     readonly privateKeyPem: string;
   };
+  readonly fcm?: FcmServiceAccount | null;
 };
 
 export type SendPushEnvFrom = (
@@ -106,9 +109,12 @@ export type SendPushEnvFrom = (
 
 // ------------------------------------------------------------------ 기기
 
-export type PushEnvironment = "sandbox" | "production";
+export type ApnsEnvironment = "sandbox" | "production";
+export type PushEnvironment = ApnsEnvironment | "fcm";
 
-export type PushDevice = { readonly token: string; readonly environment: PushEnvironment };
+export type PushDevice =
+  | { readonly token: string; readonly environment: ApnsEnvironment }
+  | { readonly token: string; readonly environment: "fcm" };
 
 /** PostgREST 응답 본문 → 기기 목록. 모양이 틀린 행은 버립니다. 배열이 아니면 `null`. */
 export type PushDevicesFrom = (bodyText: string) => readonly PushDevice[] | null;

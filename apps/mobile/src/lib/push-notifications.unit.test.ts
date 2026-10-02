@@ -45,6 +45,23 @@ describe("PU2 pushRegistrationFrom", () => {
     });
     expect(pushRegistrationFrom({ token })).toBeNull();
   });
+
+  test("Android의 FCM 저장 토큰을 등록하되 APNs 환경과 섞지 않는다", () => {
+    const fcm = `fcm.${"Y".repeat(40)}`;
+    expect(
+      pushRegistrationFrom({ permission: "authorized", token: fcm, environment: "fcm" }),
+    ).toEqual({
+      permission: "authorized",
+      device: { token: fcm, environment: "fcm" },
+    });
+    expect(
+      pushRegistrationFrom({ permission: "authorized", token, environment: "fcm" })?.device,
+    ).toBeNull();
+    expect(
+      pushRegistrationFrom({ permission: "authorized", token: fcm, environment: "sandbox" })
+        ?.device,
+    ).toBeNull();
+  });
 });
 
 describe("PU3 pushAllowed", () => {

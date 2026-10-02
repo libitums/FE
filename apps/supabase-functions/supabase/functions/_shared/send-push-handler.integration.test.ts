@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, test } from "vitest";
 
 import { signEs256 } from "./apple-client-secret.ts";
 import { bytesFromBase64Url } from "./base64.ts";
+import { fcmStoredTokenFrom } from "./fcm.ts";
 import type { OutboundRequest, OutboundResponse } from "./delete-account.contract.ts";
 import type { SendPushEnv, SendPushLogEntry } from "./send-push.contract.ts";
 import { createSendPushHandler, tokensPerRemoval, userIdsPerLookup } from "./send-push-handler.ts";
@@ -11,6 +12,7 @@ import { createSendPushHandler, tokensPerRemoval, userIdsPerLookup } from "./sen
 const serviceKey = "service-role-key";
 const tokens = ["a", "b", "c"].map((c) => c.repeat(64));
 let privateKeyPem: string;
+let fcmPrivateKeyPem: string;
 let publicKey: CryptoKey;
 
 beforeAll(async () => {
@@ -24,6 +26,19 @@ beforeAll(async () => {
   for (const byte of der) binary += String.fromCharCode(byte);
   const lines = btoa(binary).match(/.{1,64}/g) ?? [];
   privateKeyPem = ["-----BEGIN PRIVATE KEY-----", ...lines, "-----END PRIVATE KEY-----"].join("\n");
+  const rsa = await crypto.subtle.generateKey(
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256",
+    },
+    true,
+    ["sign", "verify"],
+  );
+  const rsaDer = new Uint8Array(await crypto.subtle.exportKey("pkcs8", rsa.privateKey));
+  const rsaBinary = Array.from(rsaDer, (byte) => String.fromCharCode(byte)).join("");
+  fcmPrivateKeyPem = `-----BEGIN PRIVATE KEY-----\n${btoa(rsaBinary)}\n-----END PRIVATE KEY-----`;
 });
 
 const env = (): SendPushEnv => ({
@@ -69,8 +84,101 @@ const devicesBody = JSON.stringify([
 ]);
 
 const announcement = { kind: "announcement", audience: "all", title: "New", body: "Episode 2" };
+const fcmStored = fcmStoredTokenFrom("bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1")!;
+const fcmEnv = (): SendPushEnv => ({
+  ...env(),
+  fcm: {
+    projectId: "duru-prod",
+    clientEmail: "push@duru.iam.gserviceaccount.com",
+    privateKeyPem: fcmPrivateKeyPem,
+  },
+});
 
 describe("send-push handler", () => {
+  test("SH16 APNs와 FCM을 같은 호출에서 발송하고 OAuth는 한 번만 받는다", async () => {
+    const h = harness(
+      (request) => {
+        if (request.url.includes("/rest/v1/push_devices"))
+          return {
+            status: 200,
+            body: JSON.stringify([
+              { token: tokens[0], environment: "sandbox" },
+              { token: fcmStored, environment: "fcm" },
+            ]),
+          };
+        if (request.url === "https://oauth2.googleapis.com/token")
+          return { status: 200, body: '{"access_token":"access","token_type":"Bearer"}' };
+        return { status: 200, body: "{}" };
+      },
+      { env: fcmEnv() },
+    );
+    const response = await h.post(announcement);
+    await expect(response.json()).resolves.toEqual({ devices: 2, sent: 2, failed: 0, removed: 0 });
+    expect(h.calls.filter((call) => call.url.includes("oauth2.googleapis.com/token"))).toHaveLength(
+      1,
+    );
+    expect(
+      h.calls.filter((call) => call.url.includes("api.sandbox.push.apple.com/3/device/")),
+    ).toHaveLength(1);
+    const fcm = h.calls.find((call) => call.url.includes("fcm.googleapis.com/v1/projects/"))!;
+    expect(fcm.headers.Authorization).toBe("Bearer access");
+    expect(JSON.parse(fcm.body!).message.token).toBe("bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1");
+  });
+
+  test("SH17 FCM 시크릿이 없어도 APNs 발송을 계속하고 FCM만 실패로 센다", async () => {
+    const h = harness((request) =>
+      request.url.includes("/rest/v1/push_devices")
+        ? {
+            status: 200,
+            body: JSON.stringify([
+              { token: tokens[0], environment: "production" },
+              { token: fcmStored, environment: "fcm" },
+            ]),
+          }
+        : { status: 200 },
+    );
+    await expect((await h.post(announcement)).json()).resolves.toEqual({
+      devices: 2,
+      sent: 1,
+      failed: 1,
+      removed: 0,
+    });
+    expect(h.calls.some((call) => call.url.includes("oauth2.googleapis.com"))).toBe(false);
+    expect(h.calls.some((call) => call.url.includes("fcm.googleapis.com"))).toBe(false);
+  });
+
+  test("SH18 FCM UNREGISTERED만 삭제하고 400 payload 오류는 보존한다", async () => {
+    const second = fcmStoredTokenFrom("another-valid-FCM-token:abcdefghijklmnopqrstuv")!;
+    const h = harness(
+      (request) => {
+        if (request.method === "DELETE") return { status: 204 };
+        if (request.url.includes("/rest/v1/push_devices"))
+          return {
+            status: 200,
+            body: JSON.stringify([
+              { token: fcmStored, environment: "fcm" },
+              { token: second, environment: "fcm" },
+            ]),
+          };
+        if (request.url.includes("oauth2.googleapis.com"))
+          return { status: 200, body: '{"access_token":"access","token_type":"Bearer"}' };
+        if (request.body?.includes("another-valid-FCM-token"))
+          return { status: 400, body: '{"error":{"details":[{"errorCode":"INVALID_ARGUMENT"}]}}' };
+        return { status: 404, body: '{"error":{"details":[{"errorCode":"UNREGISTERED"}]}}' };
+      },
+      { env: fcmEnv() },
+    );
+    await expect((await h.post(announcement)).json()).resolves.toEqual({
+      devices: 2,
+      sent: 0,
+      failed: 2,
+      removed: 1,
+    });
+    const removal = h.calls.find((call) => call.method === "DELETE")!;
+    expect(removal.url).toContain(fcmStored);
+    expect(removal.url).not.toContain(second);
+  });
+
   test("SH1 POST가 아니면 405, 환경이 없으면 500, 키가 틀리면 401 — 기기 조회 · 발송 0", async () => {
     const h = harness((request) =>
       request.url.includes("/auth/v1/admin/users") ? { status: 401 } : { status: 200, body: "[]" },

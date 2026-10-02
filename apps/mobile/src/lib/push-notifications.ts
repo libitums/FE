@@ -18,6 +18,7 @@ const permissions: readonly PushPermission[] = [
 ];
 
 const tokenPattern = /^[0-9a-f]{64,200}$/;
+const fcmTokenPattern = /^fcm\.[A-Za-z0-9_-]{27,4096}$/;
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -38,8 +39,8 @@ export const pushRegistrationFrom: PushRegistrationFrom = (payload) => {
   const environment = record?.["environment"];
   const device: PushDevice | null =
     typeof token === "string" &&
-    tokenPattern.test(token) &&
-    (environment === "sandbox" || environment === "production")
+    ((environment === "fcm" && fcmTokenPattern.test(token)) ||
+      ((environment === "sandbox" || environment === "production") && tokenPattern.test(token)))
       ? { token, environment }
       : null;
   return { permission, device };
@@ -88,7 +89,7 @@ export function takeOpenedPushTarget(): Promise<unknown> {
   return call("takeOpened", (payload) => asRecord(payload)?.["target"] ?? null);
 }
 
-/** 이 앱의 iOS 설정 페이지를 엽니다. 모듈이 없으면 아무 일도 없습니다. */
+/** 이 앱의 알림 설정 페이지를 엽니다. 모듈이 없으면 아무 일도 없습니다. */
 export function openPushSettings(): void {
   const host = nativeModule();
   if (host === undefined || typeof host.openSettings !== "function") return;
