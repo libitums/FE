@@ -1,0 +1,45 @@
+# Android guide PNG, touch stroke and native comparison on the dedicated AOSP emulator.
+appId: com.libitum.host
+---
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Journey, selected"
+    timeout: 30000
+- swipe:
+    start: "50%,80%"
+    end: "50%,22%"
+    duration: 600
+- swipe:
+    start: "50%,80%"
+    end: "50%,22%"
+    duration: 600
+- swipe:
+    start: "50%,80%"
+    end: "50%,22%"
+    duration: 600
+- waitForAnimationToEnd
+- swipe:
+    start: "50%,24%"
+    end: "50%,66%"
+    duration: 500
+- waitForAnimationToEnd
+- tapOn:
+    point: "50%,42%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "50%,78%"
+- waitForAnimationToEnd
+- assertScreenshot:
+    path: screenshots/android-handwriting-guide-390x844.png
+    thresholdPercentage: 94
+- swipe:
+    start: "36%,57%"
+    end: "36%,66%"
+    duration: 500
+- waitForAnimationToEnd
+- tapOn:
+    point: "50%,88%"
+- waitForAnimationToEnd
+- assertScreenshot:
+    path: screenshots/android-handwriting-result-390x844.png
+    thresholdPercentage: 94

@@ -43,6 +43,7 @@ public final class MainActivity extends Activity {
     speechRecognition = new SpeechRecognitionController(this);
     builder.registerModule("SpeechRecognitionModule", SpeechRecognitionModule.class,
         speechRecognition);
+    builder.registerModule("HandwritingTraceModule", HandwritingTraceModule.class);
     DebugSupport.configure(builder);
     LynxView lynxView = builder.build(this);
     lynxView.addLynxViewClient(new LynxViewClient() {
