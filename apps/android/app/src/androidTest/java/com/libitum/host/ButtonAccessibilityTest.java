@@ -117,12 +117,13 @@ public final class ButtonAccessibilityTest {
     if (bundleUrl != null) launch.putExtra("bundle-url", bundleUrl);
     MainActivity activity = (MainActivity) instrumentation.startActivitySync(launch);
 
-    UiAutomation automation = instrumentation.getUiAutomation();
+    UiAutomation automation = instrumentation.getUiAutomation(
+        UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES);
     LynxView lynxView = (LynxView) ((android.view.ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
     assertNotNull("Next accessibility node missing", await(automation, "Next"));
     assertNotNull("progress accessibility node missing", await(automation, "Step 1 of 3"));
     assertNotNull("onboarding dialogue accessibility node missing",
-        await(automation, "Welcome! Are you looking for anything?"));
+        await(automation, "Staff: 어서 오세요! 찾으시는 거 있으세요?, Welcome! Are you looking for anything?"));
     assertHeading(automation, "with Story");
     LynxBaseUI nextUI = findLynxUI(lynxView.getLynxUIRoot(), "Next");
     assertNotNull("Next Lynx UI missing", nextUI);

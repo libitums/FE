@@ -14,8 +14,8 @@ export function PageIndicator(props: PageIndicatorProps) {
       data-testid="ui-lynx-page-indicator"
       data-count={String(model.pageCount)}
       data-current={String(model.currentPage)}
-      accessibility-element={true}
-      accessibility-label={model.accessibilityLabel}
+      accessibility-element={!props.decorative}
+      accessibility-label={props.decorative ? undefined : model.accessibilityLabel}
     >
       <view className="ui-lynx-page-indicator-track" accessibility-elements-hidden={true}>
         {model.items.map((item) => (
