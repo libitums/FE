@@ -2,6 +2,7 @@ package com.libitum.host;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -114,6 +115,7 @@ final class SpeechRecognitionController {
       if (current != null) finish(current, "recognition-failed", SpeechRecognizer.ERROR_CLIENT,
           "Host was destroyed");
       settlePermissions();
+      main.removeCallbacksAndMessages(null);
     });
   }
 
@@ -138,7 +140,7 @@ final class SpeechRecognitionController {
       // Match iOS: request on-device by default, but disclose an unavailable guarantee
       // in the result rather than silently claiming one for the platform recognizer.
       recognizer = session.requiresOnDevice()
-          ? SpeechRecognizer.createOnDeviceSpeechRecognizer(activity)
+          ? Api31Impl.createOnDeviceSpeechRecognizer(activity)
           : SpeechRecognizer.createSpeechRecognizer(activity);
       Active current = new Active(session, recognizer, callback);
       active = current;
@@ -232,7 +234,7 @@ final class SpeechRecognitionController {
   }
 
   private boolean onDeviceAvailable() {
-    return Build.VERSION.SDK_INT >= 31 && SpeechRecognizer.isOnDeviceRecognitionAvailable(activity);
+    return Build.VERSION.SDK_INT >= 31 && Api31Impl.isOnDeviceRecognitionAvailable(activity);
   }
 
   private JavaOnlyMap statusPayload() {
@@ -278,5 +280,16 @@ final class SpeechRecognitionController {
     payload.putInt("errorCode", errorCode);
     payload.putString("errorMessage", errorMessage == null ? "" : errorMessage);
     return payload;
+  }
+
+  /** Keeps API 31 methods out of the controller's pre-31 bytecode path. */
+  private static final class Api31Impl {
+    static SpeechRecognizer createOnDeviceSpeechRecognizer(Context context) {
+      return SpeechRecognizer.createOnDeviceSpeechRecognizer(context);
+    }
+
+    static boolean isOnDeviceRecognitionAvailable(Context context) {
+      return SpeechRecognizer.isOnDeviceRecognitionAvailable(context);
+    }
   }
 }
