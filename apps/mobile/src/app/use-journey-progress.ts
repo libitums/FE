@@ -42,6 +42,8 @@ export function useJourneyProgress(
     readonly EpisodeIntroUnitId[]
   >(initialCompletedEpisodeIntroIds);
   const [streakDays, setStreakDays] = useState(0);
+  // 빈 초기값은 신규 사용자라는 뜻이 아닙니다. 유효한 서버 기록을 합친 뒤에만 안내를 판단합니다.
+  const [hasLoadedProgress, setHasLoadedProgress] = useState(false);
   // 연속이 **활동으로** 늘었는가입니다 — 머리가 다음에 설 때 연속 학습 모달을 한 번 띄웁니다. 부팅의 불러오기로 받은
   // 값은 축하하지 않습니다.
   const [streakCelebration, setStreakCelebration] = useState(false);
@@ -98,6 +100,7 @@ export function useJourneyProgress(
     const userId = progressUserId();
     if (userId === null) return;
     if (sync.current?.userId !== userId) {
+      setHasLoadedProgress(false);
       if (sync.current !== null) {
         sync.current.dispose();
         days.current?.dispose();
@@ -107,7 +110,12 @@ export function useJourneyProgress(
         setEpisodeSurvey(null);
         setRecordingDay(false);
       }
-      sync.current = createJourneyProgressSync(userId, () => latest.current, apply);
+      sync.current = createJourneyProgressSync(
+        userId,
+        () => latest.current,
+        apply,
+        () => setHasLoadedProgress(true),
+      );
       days.current = createLearningDaySync(userId, (streak, celebrate) => {
         if (celebrate && streak > streakRef.current) setStreakCelebration(true);
         setStreakDays(streak);
@@ -152,6 +160,7 @@ export function useJourneyProgress(
 
   return {
     ...state,
+    hasLoadedProgress,
     setCompletedStepCount,
     setCompletedMessengerUnitIds,
     setCompletedPhoneCallUnitIds,

@@ -232,6 +232,29 @@ test.each(["{bad-json", "", JSON.stringify({ version: 2 })])(
   },
 );
 
+test.each(["{bad-json", "", JSON.stringify({ version: 2 })])(
+  "유효하지 않은 서버 응답(%s)을 자동으로 반복 조회하지 않고 명시적 동기화로 복구한다",
+  async (body) => {
+    store.set(pendingKey("a"), JSON.stringify({ ...empty, completedStepCount: 1 }));
+    load = async () => ({ status: 200, body });
+    await boot();
+    expect(loads).toBe(1);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(120_000);
+    });
+    expect(loads).toBe(1);
+    expect(saves).toHaveLength(0);
+    expect(store.has(pendingKey("a"))).toBe(true);
+    load = async () => ({ status: 200, body: "null" });
+    await act(async () => {
+      await progress.syncFromServer();
+    });
+    expect(loads).toBe(2);
+    expect(saves.map((call) => call.snapshot.completedStepCount)).toEqual([1]);
+    expect(store.has(pendingKey("a"))).toBe(false);
+  },
+);
+
 test("재시작 시 서버 진행과 미전송 진행을 합쳐 저장한다", async () => {
   store.set(
     pendingKey("a"),

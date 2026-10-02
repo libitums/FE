@@ -4,7 +4,6 @@ import type { ReactNode } from "@lynx-js/react";
 import { TopBar } from "../components/TopBar";
 import type { FeedbackRating } from "../lib/feedback.contract";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
-import { GemPurchaseScreen } from "../screens/gem-purchase/GemPurchaseScreen";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import {
   streakTrack,
@@ -13,19 +12,17 @@ import {
 } from "../screens/journey-map/journey-stat";
 
 // 전역 레이아웃의 머리입니다 — 탭 루트 화면(여정 · 롤플레이 · 설정) 위에 바텀
-// 네비게이션과 짝으로 섭니다. 칩 셋과 알림 버튼(`TopBar`), 그리고 칩이 여는 겹침 레이어
-// 셋(연속 학습 · 트로피 모달 · 젬 구매 화면)을 함께 집니다.
+// 네비게이션과 짝으로 섭니다. 지표 칩 둘과 알림 버튼(`TopBar`), 연속 학습 · 트로피 모달을 집니다.
 //
 // 레이어 열림은 이 컴포넌트가 소유합니다 — 레이어는 화면 위에 겹칠 뿐 화면 전환이 아니라
 // `Nav`가 관여하지 않습니다(ADR-0007 D3). 전에는 여정 맵이 지표 모달을 소유했는데,
 // 머리가 셸로 올라오면서 모달도 함께 올라왔습니다.
 
-type AppHeaderLayer = JourneyStatKind | "gem" | "survey";
+type AppHeaderLayer = JourneyStatKind | "survey";
 
 export type AppHeaderProps = {
   readonly streakDays: number;
   readonly trophyCount: number;
-  readonly gemCount: number;
   readonly onOpenNotifications: () => void;
   /**
    * 화면 쪽 겹침 레이어(여정의 스텝 말풍선 · 롤플레이의 플러스 안내)가 떠 있는가입니다.
@@ -56,7 +53,6 @@ export type AppHeaderProps = {
 export function AppHeader({
   streakDays,
   trophyCount,
-  gemCount,
   onOpenNotifications,
   obscured = false,
   todayWeekday,
@@ -95,11 +91,9 @@ export function AppHeader({
         <TopBar
           streakDays={streakDays}
           trophyCount={trophyCount}
-          gemCount={gemCount}
           onOpenNotifications={onOpenNotifications}
           onOpenStreak={() => setOpenLayer("streak")}
           onOpenTrophy={() => setOpenLayer("trophy")}
-          onOpenGem={() => setOpenLayer("gem")}
         />
       </view>
       {openLayer === "streak" || openLayer === "trophy" ? (
@@ -114,7 +108,6 @@ export function AppHeader({
           onClose={close}
         />
       ) : null}
-      {openLayer === "gem" ? <GemPurchaseScreen gemBalance={gemCount} onClose={close} /> : null}
       {openLayer === "survey" && episodeSurvey !== null ? (
         <EpisodeSurveySheet
           episodeTitle={episodeSurvey.title}

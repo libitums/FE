@@ -9,9 +9,8 @@ import { StatChip } from "./StatChip";
 
 import "./top-bar.css";
 
-// 화면들이 함께 쓰는 상단 줄입니다 — 왼쪽에 칩 셋(연속 학습 · 트로피 · 젬), 오른쪽에 알림
-// 버튼. 지표 칩을 누르면 그 지표의 모달(연속 학습 · 트로피)이, 젬 칩을 누르면 젬 구매
-// 화면이 뜹니다. 화면 제목은 여기 없습니다. 여정 맵에서는
+// 화면들이 함께 쓰는 상단 줄입니다 — 왼쪽에 연속 학습 · 트로피, 오른쪽에 알림 버튼.
+// 젬 구매가 준비될 때까지 젬 칩과 구매 진입점은 표시하지 않습니다. 화면 제목은 여기 없습니다. 여정 맵에서는
 // 에피소드 헤더 카드가, 학습 화면에서는 세션 헤더가 「지금 어디인가」를 이미 말하므로
 // 제목 줄을 따로 두면 같은 말이 두 번 섭니다.
 
@@ -20,13 +19,10 @@ export type TopBarProps = {
   readonly streakDays: number;
   /** 얻은 트로피 수입니다. */
   readonly trophyCount: number;
-  /** 가진 젬 수입니다. */
-  readonly gemCount: number;
   readonly onOpenNotifications: () => void;
   /** 칩을 누르면 부릅니다. 모달을 여닫는 일은 화면이 집니다. */
   readonly onOpenStreak?: () => void;
   readonly onOpenTrophy?: () => void;
-  readonly onOpenGem?: () => void;
 };
 
 export function TopBar({
@@ -35,8 +31,6 @@ export function TopBar({
   onOpenNotifications,
   onOpenStreak,
   onOpenTrophy,
-  gemCount,
-  onOpenGem,
 }: TopBarProps): ReactNode {
   const copy = useUiCopy();
   const handleOpenNotifications = () => {
@@ -50,10 +44,6 @@ export function TopBar({
   const handleOpenTrophy = () => {
     "background only";
     onOpenTrophy?.();
-  };
-  const handleOpenGem = () => {
-    "background only";
-    onOpenGem?.();
   };
 
   // **칩이 버튼인지는 화면마다 다릅니다.** 여정 맵은 칩을 눌러 지표 모달을 열지만,
@@ -84,16 +74,6 @@ export function TopBar({
           testId="top-bar-trophy"
           surface="white"
           onTap={onOpenTrophy === undefined ? undefined : handleOpenTrophy}
-        />
-        {/* 젬 칩은 트로피 옆에 섭니다(Figma 65-554). 지표가 아니라 재화라 누르면 모달이
-            아니라 구매 화면이 뜹니다. */}
-        <StatChip
-          tone="diamond"
-          value={gemCount}
-          accessibilityLabel={copy.common.count.gems(gemCount)}
-          testId="top-bar-gem"
-          surface="white"
-          onTap={onOpenGem === undefined ? undefined : handleOpenGem}
         />
       </view>
       <view

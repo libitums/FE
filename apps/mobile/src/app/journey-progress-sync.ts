@@ -23,6 +23,7 @@ export function createJourneyProgressSync(
   userId: string,
   readLatest: () => JourneyProgressState,
   apply: (next: JourneyProgressState) => void,
+  onLoaded: () => void,
 ) {
   "background only";
   let disposed = false;
@@ -30,6 +31,7 @@ export function createJourneyProgressSync(
   let running: Promise<void> | null = null;
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
   let retryAttempt = 0;
+  let invalidServerSnapshot = false;
   let pending = readPendingProgress(userId);
   if (pending !== null) apply(mergeJourneyProgress(readLatest(), pending));
   let observedJson = jsonFrom(readLatest());
@@ -44,14 +46,23 @@ export function createJourneyProgressSync(
     if (!isCurrent()) return;
     if (needsLoad) {
       const loaded = await loadLearningProgress();
-      if (!isCurrent() || !loaded.ok) return;
+      if (!isCurrent()) return;
+      if (!loaded.ok) {
+        if (loaded.invalidResponse) invalidServerSnapshot = true;
+        return;
+      }
       const server = loaded.raw === null ? empty : journeyProgressFrom(loaded.raw);
       // 알 수 없는 버전·깨진 응답을 빈 진행으로 해석해 서버를 덮어쓰지 않습니다.
-      if (server === null) return;
+      // 같은 응답을 자동으로 되풀이하지 않고, 다음 명시적 동기화나 활동 때 다시 읽습니다.
+      if (server === null) {
+        invalidServerSnapshot = true;
+        return;
+      }
       const merged = mergeJourneyProgress(readLatest(), server);
       observedJson = jsonFrom(merged);
       apply(merged);
       needsLoad = false;
+      onLoaded();
       if (observedJson === jsonFrom(server)) {
         // 조회만으로 동기화가 끝나면 복구입니다. 저장이 남았으면 성공할 때까지 backoff를 유지합니다.
         retryAttempt = 0;
@@ -82,6 +93,7 @@ export function createJourneyProgressSync(
   function flush(): Promise<void> {
     if (running !== null) return running;
     if (!isCurrent()) return Promise.resolve();
+    invalidServerSnapshot = false;
     clearTimeout(retryTimer);
     running = run()
       .catch(() => {
@@ -89,7 +101,7 @@ export function createJourneyProgressSync(
       })
       .finally(() => {
         running = null;
-        if (!isCurrent() || (!needsLoad && pending === null)) return;
+        if (!isCurrent() || invalidServerSnapshot || (!needsLoad && pending === null)) return;
         const delay = retryDelays[Math.min(retryAttempt++, retryDelays.length - 1)];
         retryTimer = setTimeout(() => {
           void flush();

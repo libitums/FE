@@ -111,14 +111,15 @@ function countFrom(bodyText: string | null): number | null {
  * 둘을 가려야 실패를 「빈 진행」으로 읽어 서버의 진행을 덮어쓰지 않습니다.
  */
 export async function loadLearningProgress(): Promise<
-  { readonly ok: true; readonly raw: unknown } | { readonly ok: false }
+  | { readonly ok: true; readonly raw: unknown }
+  | { readonly ok: false; readonly invalidResponse?: true }
 > {
   const bodyText = await authorizedRpc("/rest/v1/rpc/load_learning_progress", {});
   if (bodyText === null) return { ok: false };
   try {
     return { ok: true, raw: JSON.parse(bodyText) as unknown };
   } catch {
-    return { ok: false };
+    return { ok: false, invalidResponse: true };
   }
 }
 
