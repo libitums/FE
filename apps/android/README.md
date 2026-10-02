@@ -79,7 +79,7 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 `WebAuthenticationModuleTest`는 난수와 잘못된 요청의 반환을 확인한다.
 `LegalDocumentModuleTest`는 법률 문서 이름을 두 고정 HTTPS 주소로만 연결하는지 확인한다.
 `AudioPlaybackModuleTest`는 공통 `.m4a` 자산 21개, 실제 재생 완료, 대체, 일시정지·재개,
-중단과 백그라운드 전환을 확인한다. 자산은 Gradle이 `apps/ios/Host/audio`에서
+중단·백그라운드 전환·오디오 포커스 손실과 복귀를 확인한다. 자산은 Gradle이 `apps/ios/Host/audio`에서
 빌드 산출물로 동기화하며 APK에 압축 없이 넣는다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 

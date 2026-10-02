@@ -109,7 +109,7 @@ public final class MainActivity extends Activity {
 
   @Override protected void onStart() {
     super.onStart();
-    audioPlayback.startHost();
+    if (audioPlayback != null) audioPlayback.startHost();
   }
 
   @Override protected void onStop() {

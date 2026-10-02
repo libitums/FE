@@ -2,6 +2,9 @@ package com.libitum.host;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,20 +16,38 @@ final class AudioPlaybackController {
   private final Context context;
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
   private final AudioPlaybackSession session = new AudioPlaybackSession();
+  private final AudioManager audioManager;
+  private final AudioAttributes audioAttributes;
+  private final AudioFocusRequest focusRequest;
   private long currentGeneration;
   private MediaPlayer player;
   private boolean prepared;
   private boolean paused;
   private boolean foreground = true;
+  private boolean focusRequested;
+  private boolean focusHeld;
+  private boolean resumeAfterFocusGain;
 
   AudioPlaybackController(Context context) {
     this.context = context.getApplicationContext();
+    audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
+    audioAttributes = new AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+        .build();
+    focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+        .setAudioAttributes(audioAttributes)
+        .setWillPauseWhenDucked(true)
+        .setOnAudioFocusChangeListener(this::onAudioFocusChange, mainHandler)
+        .build();
   }
 
   void play(String source, Callback done) {
     onMain(() -> {
       releasePlayer();
-      long generation = session.replace(() -> done.invoke((Object) null));
+      long generation = session.replace(() -> {
+        if (done != null) done.invoke((Object) null);
+      });
       currentGeneration = generation;
       if (!foreground) {
         session.finish(generation);
@@ -46,11 +67,12 @@ final class AudioPlaybackController {
       }
       player = next;
       try (AssetFileDescriptor asset = context.getAssets().openFd(path)) {
+        next.setAudioAttributes(audioAttributes);
         next.setDataSource(asset.getFileDescriptor(), asset.getStartOffset(), asset.getLength());
         next.setOnPreparedListener(ready -> {
           if (!session.isCurrent(generation) || player != ready) return;
           prepared = true;
-          if (!paused) ready.start();
+          if (!paused && !(resumeAfterFocusGain && !focusHeld)) startOrFinish(ready, generation);
         });
         next.setOnCompletionListener(finished -> finish(generation, finished));
         next.setOnErrorListener((failed, what, extra) -> {
@@ -75,6 +97,7 @@ final class AudioPlaybackController {
     onMain(() -> {
       if (player == null) return;
       paused = true;
+      resumeAfterFocusGain = false;
       if (prepared && player.isPlaying()) player.pause();
     });
   }
@@ -83,7 +106,8 @@ final class AudioPlaybackController {
     onMain(() -> {
       if (player == null) return;
       paused = false;
-      if (prepared && !player.isPlaying()) player.start();
+      resumeAfterFocusGain = false;
+      if (prepared && !player.isPlaying()) startOrFinish(player, currentGeneration);
     });
   }
 
@@ -98,6 +122,60 @@ final class AudioPlaybackController {
 
   void startHost() {
     onMain(() -> foreground = true);
+  }
+
+  void onAudioFocusChange(int change) {
+    onMain(() -> {
+      MediaPlayer active = player;
+      if (active == null || !focusRequested) return;
+      switch (change) {
+        case AudioManager.AUDIOFOCUS_LOSS:
+          finishCurrent(active);
+          return;
+        case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+        case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+          focusHeld = false;
+          resumeAfterFocusGain = !paused;
+          if (prepared && active.isPlaying()) active.pause();
+          return;
+        case AudioManager.AUDIOFOCUS_GAIN:
+          focusHeld = true;
+          if (resumeAfterFocusGain && !paused && prepared) {
+            resumeAfterFocusGain = false;
+            startOrFinish(active, currentGeneration);
+          }
+          return;
+        default:
+          return;
+      }
+    });
+  }
+
+  private void startOrFinish(MediaPlayer active, long generation) {
+    if (!requestFocus()) {
+      finish(generation, active);
+      return;
+    }
+    try {
+      active.start();
+    } catch (RuntimeException error) {
+      finish(generation, active);
+    }
+  }
+
+  private boolean requestFocus() {
+    if (focusHeld) return true;
+    if (audioManager == null) return false;
+    try {
+      if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+        return false;
+      }
+    } catch (RuntimeException error) {
+      return false;
+    }
+    focusRequested = true;
+    focusHeld = true;
+    return true;
   }
 
   private void finish(long generation, MediaPlayer completed) {
@@ -118,11 +196,19 @@ final class AudioPlaybackController {
     player = null;
     prepared = false;
     paused = false;
-    if (previous == null) return;
-    previous.setOnPreparedListener(null);
-    previous.setOnCompletionListener(null);
-    previous.setOnErrorListener(null);
-    previous.release();
+    resumeAfterFocusGain = false;
+    if (previous != null) {
+      previous.setOnPreparedListener(null);
+      previous.setOnCompletionListener(null);
+      previous.setOnErrorListener(null);
+      previous.release();
+    }
+    boolean requested = focusRequested;
+    focusRequested = false;
+    focusHeld = false;
+    if (requested && audioManager != null) {
+      audioManager.abandonAudioFocusRequest(focusRequest);
+    }
   }
 
   private void onMain(Runnable action) {

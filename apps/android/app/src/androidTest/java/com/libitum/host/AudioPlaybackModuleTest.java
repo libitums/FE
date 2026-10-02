@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import java.io.IOException;
@@ -112,5 +113,31 @@ public final class AudioPlaybackModuleTest {
     playback.interrupt();
     assertTrue("background interruption did not settle", complete.await(3, TimeUnit.SECONDS));
     assertEquals(1, calls.get());
+  }
+
+  @Test public void nullCompletionDoesNotCrashTheHost() throws InterruptedException {
+    module.play("../invalid", null);
+    Thread.sleep(200);
+    CountDownLatch complete = new CountDownLatch(1);
+    module.play("greeting-1", args -> complete.countDown());
+    assertTrue("host stopped after null completion", complete.await(10, TimeUnit.SECONDS));
+  }
+
+  @Test public void transientFocusLossPausesSpeechUntilFocusReturns() throws InterruptedException {
+    CountDownLatch complete = new CountDownLatch(1);
+    module.play("tutorial-cabin-announcement", args -> complete.countDown());
+    Thread.sleep(400);
+    playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS_TRANSIENT);
+    assertFalse("speech completed during focus loss", complete.await(6, TimeUnit.SECONDS));
+    playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_GAIN);
+    assertTrue("speech did not resume after focus returned", complete.await(8, TimeUnit.SECONDS));
+  }
+
+  @Test public void permanentFocusLossSettlesPlayback() throws InterruptedException {
+    CountDownLatch complete = new CountDownLatch(1);
+    module.play("tutorial-cabin-announcement", args -> complete.countDown());
+    Thread.sleep(400);
+    playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS);
+    assertTrue("permanent loss did not settle playback", complete.await(3, TimeUnit.SECONDS));
   }
 }
