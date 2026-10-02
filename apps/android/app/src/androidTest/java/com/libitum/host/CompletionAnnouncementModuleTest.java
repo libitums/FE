@@ -9,6 +9,7 @@ import android.app.UiAutomation;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -89,17 +90,27 @@ public final class CompletionAnnouncementModuleTest {
     try {
       UiAutomation automation = instrumentation.getUiAutomation(
           UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES);
+      instrumentation.waitForIdleSync();
+      View decor = activity.getWindow().getDecorView();
+      long readyDeadline = SystemClock.uptimeMillis() + 3000;
+      while ((!decor.isAttachedToWindow() || !activity.hasWindowFocus()
+          || automation.getRootInActiveWindow() == null)
+          && SystemClock.uptimeMillis() < readyDeadline) {
+        SystemClock.sleep(50);
+      }
+      assertTrue("host window is not ready for accessibility", decor.isAttachedToWindow()
+          && activity.hasWindowFocus());
       String content = "완료 안내, 결과 보기";
       JavaOnlyMap args = new JavaOnlyMap();
       args.putString("content", content);
       CompletionAnnouncementModule module = new CompletionAnnouncementModule(
-          context, activity.getWindow().getDecorView());
+          context, decor);
       CountDownLatch settled = new CountDownLatch(1);
 
       AccessibilityEvent event = automation.executeAndWaitForEvent(
           () -> module.announce(args, values -> settled.countDown()),
           candidate -> candidate.getEventType() == AccessibilityEvent.TYPE_ANNOUNCEMENT
-              && candidate.getText().contains(content),
+              && candidate.getText().stream().anyMatch(content::contentEquals),
           3000);
 
       assertEquals(AccessibilityEvent.TYPE_ANNOUNCEMENT, event.getEventType());
