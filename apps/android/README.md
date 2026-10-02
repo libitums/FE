@@ -95,6 +95,10 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 `ReviewRequestGateTest`와 `AppReviewModuleTest`는 Play 리뷰 요청의 중복 방지,
 `FakeReviewManager`를 통한 요청·실행 및 실패 후 재시도를 확인한다. 설문에서 호스트까지의
 Maestro 절차는 [Android 평점 요청 검증](../../docs/e2e/android-app-review.md)에 있다.
+`PushTokenCodecTest`와 `PushPermissionStateTest`는 FCM 저장 토큰과 권한 상태를,
+`PushNotificationModuleTest`는 브리지·알림 채널·목적지 일회성 소비를 확인한다.
+Maestro의 권한·설정·알림 탭 절차는
+[Android 푸시 검증](../../docs/e2e/android-push-notifications.md)에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
@@ -130,6 +134,8 @@ Custom Tab으로 열고 뒤로가기로 앱에 복귀하는지 확인한다.
 쓰기 화면을 열어 안내 PNG, 터치 획, 네이티브 판정과 결과 화면을 확인한다.
 `E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:review`는 모의 완료 상태에서
 에피소드 설문 5점을 골라 `AppReviewModule.requestReview` 호출 1회를 확인한다.
+`E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:push`는 모의 로그인 상태에서
+알림 권한 요청·시스템 설정·로컬 알림 탭 뒤 화면 이동을 확인한다.
 `test:e2e:android:small`은 320×640에서 글자 배율 1.0·1.3을 각각 적용해
 온보딩 세 단계의 고정 버튼과 소셜 로그인 화면을 비교한다. 실행 뒤 390×844·1.0으로
 돌린다. 네 흐름은 버튼의 접근성 이름으로 선택한다. `test:e2e:android`는 이 네 명령을
@@ -167,3 +173,9 @@ Apple 계정 삭제는 Android에서 웹 OAuth를 다시 열고 Supabase PKCE �
 `APPLE_WEB_CLIENT_ID`가 Supabase Apple provider의 첫 번째 Services ID와 같아야 한다.
 제공자 토큰이 없거나 재인증한 Supabase 사용자 ID가 다르면 삭제를 중단한다.
 실제 Apple 왕복은 제공자 설정과 테스트 계정이 준비될 때까지 미검증이다.
+
+## 푸시 알림 Firebase 설정
+
+Android 호스트는 FCM SDK와 `duru-updates` 알림 채널을 포함한다. Firebase 프로젝트에 Android 앱 `com.libitum.host`를 등록한 뒤 받은 `google-services.json`을 `apps/android/app/`에 둔다. 이 로컬 파일은 Git에서 제외한다. 파일이 있으면 Gradle의 Google services 플러그인이 적용되고 SDK가 기본 Firebase 앱을 초기화한다. 파일이 없는 빌드는 권한·알림 화면 검증은 되지만 FCM 토큰을 반환하지 않아 서버 기기 등록은 하지 않는다.
+
+서버에는 [FCM 전송 마이그레이션과 함수](../supabase-functions/README.md#android-fcm-확장-adr-0041)를 배포하고 `FIREBASE_SERVICE_ACCOUNT_JSON`을 Edge Function 시크릿으로 설정한다. 서비스 계정 키는 Android 앱이나 저장소에 넣지 않는다. 앱이 허용된 권한으로 열릴 때 현재 토큰을 읽어 기존 `register_push_device` RPC에 등록한다. FCM 토큰이 바뀌면 다음 앱 실행에서 다시 등록한다. 실제 원격 수신·백그라운드 탭은 Firebase 프로젝트와 테스트 기기가 준비될 때까지 미검증이다.

@@ -1,0 +1,16 @@
+# A local notification follows the same tap intent and opens the closed in-app target.
+appId: com.libitum.host
+---
+- swipe:
+    start: "50%,0%"
+    end: "50%,75%"
+    duration: 500
+- extendedWaitUntil:
+    visible: "Open notifications"
+    timeout: 10000
+- tapOn: "Open notifications"
+- extendedWaitUntil:
+    visible: "Back to map"
+    timeout: 15000
+- assertNotVisible: "Settings"
+- takeScreenshot: android-push-open-notifications

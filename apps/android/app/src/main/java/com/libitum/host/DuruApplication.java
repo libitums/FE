@@ -16,5 +16,6 @@ public final class DuruApplication extends Application {
     LynxServiceCenter.inst().registerService(LynxLogService.INSTANCE);
     LynxServiceCenter.inst().registerService(LynxHttpService.INSTANCE);
     LynxEnv.inst().init(this, null, null, null);
+    DuruFirebaseMessagingService.createChannel(this);
   }
 }

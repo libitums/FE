@@ -1,6 +1,6 @@
 # ADR-0034 — 서버 푸시 알림 (기기 등록 · 다시 돌아오기 · 운영 공지 · 누르면 정해진 목적지)
 
-Android의 FCM 전송 확장은 [ADR-0041](0041-android-push-transport.md)에 기록한다. 아래 결정은 iOS APNs 경로의 원래 계약이다.
+Android의 FCM 전송은 [ADR-0041](0041-android-push-transport.md), 수신 호스트는 [ADR-0042](0042-android-push-host.md)에 기록한다. 아래 결정은 iOS APNs 경로의 원래 계약이다.
 
 - 상태: **제안** — 종류와 누름 동작은 사용자 결정이다(2026-09-30). APNs 키 · App ID 기능이 준비되기 전이라 실제 발송을
   확인하지 않았다.

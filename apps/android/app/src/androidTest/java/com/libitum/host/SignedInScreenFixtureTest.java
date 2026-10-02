@@ -30,6 +30,7 @@ import org.junit.Test;
 /** Keeps a signed-in Debug activity alive while Maestro checks the settings screen. */
 public final class SignedInScreenFixtureTest {
   private static final String STOP_ACTION = "com.libitum.host.test.STOP_SIGNED_IN_FIXTURE";
+  private static final String PUSH_ACTION = "com.libitum.host.test.POST_PUSH_FIXTURE";
   private static final String REFRESH_URL =
       "https://example.invalid/auth/v1/token?grant_type=refresh_token";
   private static final String AUDIO_PROGRESS = "{\"version\":1,\"completedStepCount\":5,"
@@ -133,12 +134,19 @@ public final class SignedInScreenFixtureTest {
     BroadcastReceiver receiver = new BroadcastReceiver() {
       @Override public void onReceive(Context ignored, Intent intent) {
         if (STOP_ACTION.equals(intent.getAction())) stop.countDown();
+        if (PUSH_ACTION.equals(intent.getAction())) {
+          DuruFirebaseMessagingService.postForegroundNotification(context,
+              "Duru test", "Open notifications", "{\"kind\":\"notifications\"}");
+        }
       }
     };
+    IntentFilter controls = new IntentFilter();
+    controls.addAction(STOP_ACTION);
+    controls.addAction(PUSH_ACTION);
     if (Build.VERSION.SDK_INT >= 33) {
-      context.registerReceiver(receiver, new IntentFilter(STOP_ACTION), Context.RECEIVER_EXPORTED);
+      context.registerReceiver(receiver, controls, Context.RECEIVER_EXPORTED);
     } else {
-      context.registerReceiver(receiver, new IntentFilter(STOP_ACTION));
+      context.registerReceiver(receiver, controls);
     }
     MainActivity activity = null;
     try {

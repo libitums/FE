@@ -1,0 +1,24 @@
+# Signed-in Android Settings asks for notification permission once, then opens app settings.
+appId: com.libitum.host
+---
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Journey, selected"
+    timeout: 30000
+- tapOn:
+    point: "10%,45%"
+- waitForAnimationToEnd
+- tapOn: "Settings"
+- assertVisible: "Settings"
+- tapOn: "Notifications"
+- extendedWaitUntil:
+    visible: "Allow Duru to send you notifications?"
+    timeout: 10000
+- tapOn: "Allow"
+- assertVisible: "Settings"
+- tapOn: "Notifications"
+- extendedWaitUntil:
+    visible: "All Duru notifications"
+    timeout: 10000
+- pressKey: back
+- assertVisible: "Settings"

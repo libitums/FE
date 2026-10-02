@@ -42,7 +42,7 @@ export function forgetPushDevice(accessToken: string): void {
   void unregisterPushDevice(accessToken, token).catch(() => undefined);
 }
 
-/** 설정의 `Notifications` — 미요청이면 묻고, 물었으면 iOS 설정의 이 앱 페이지를 엽니다. */
+/** 설정의 `Notifications` — 미요청이면 묻고, 물었으면 이 앱의 시스템 알림 설정을 엽니다. */
 export async function openNotificationSettings(): Promise<void> {
   const permission = await pushPermission();
   if (permission === "not-determined") {
