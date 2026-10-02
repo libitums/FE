@@ -17,6 +17,7 @@ export function Button(props: ButtonProps) {
     "background only";
     props.bindtap?.();
   }
+  // Android의 접근성 트리에 버튼 이름을 노출하려면 실제 View가 필요합니다.
   return (
     <view
       className={contract.className}
@@ -26,9 +27,11 @@ export function Button(props: ButtonProps) {
       data-width={props.width ?? "hug"}
       data-disabled={props.disabled ? "true" : "false"}
       data-loading={props.loading ? "true" : "false"}
+      flatten={false}
       accessibility-element={true}
       accessibility-label={props.loading ? `${props.label}, loading` : props.label}
       accessibility-traits={contract.traits}
+      accessibility-enable-tap={interactive}
       bindtap={interactive ? handleTap : undefined}
     >
       <view className="ui-lynx-button-surface">

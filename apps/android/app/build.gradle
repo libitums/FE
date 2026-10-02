@@ -1,0 +1,83 @@
+plugins {
+  id 'com.android.application'
+}
+
+android {
+  namespace 'com.libitum.host'
+  compileSdk 35
+
+  defaultConfig {
+    applicationId 'com.libitum.host'
+    minSdk 26
+    targetSdk 34
+    versionCode 1
+    versionName '0.1.0'
+    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+    }
+    bundled {
+      initWith release
+      signingConfig signingConfigs.debug
+      matchingFallbacks = ['release']
+    }
+  }
+
+  buildFeatures {
+    buildConfig true
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+}
+
+def lynxVersion = '4.0.1'
+
+dependencies {
+  implementation "org.lynxsdk.lynx:lynx:${lynxVersion}"
+  implementation "org.lynxsdk.lynx:lynx-jssdk:${lynxVersion}"
+  implementation "org.lynxsdk.lynx:lynx-trace:${lynxVersion}"
+  implementation 'org.lynxsdk.lynx:primjs:4.0.0'
+
+  implementation "org.lynxsdk.lynx:lynx-service-image:${lynxVersion}"
+  implementation "org.lynxsdk.lynx:lynx-service-http:${lynxVersion}"
+  implementation "org.lynxsdk.lynx:lynx-service-log:${lynxVersion}"
+  implementation 'com.facebook.fresco:fresco:2.3.0'
+  implementation 'com.facebook.fresco:animated-gif:2.3.0'
+  implementation 'com.facebook.fresco:animated-webp:2.3.0'
+  implementation 'com.facebook.fresco:webpsupport:2.3.0'
+  implementation 'com.facebook.fresco:animated-base:2.3.0'
+  implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+  implementation 'androidx.browser:browser:1.8.0'
+
+  implementation "org.lynxsdk.lynx:xelement:${lynxVersion}"
+  implementation "org.lynxsdk.lynx:xelement-input:${lynxVersion}"
+  implementation "org.lynxsdk.lynx:xelement-overlay:${lynxVersion}"
+  implementation "org.lynxsdk.lynx:xelement-svg:${lynxVersion}"
+  implementation 'org.lynxsdk.lynx:servalsvg:0.0.1-alpha.3'
+
+  androidTestImplementation 'androidx.test:runner:1.7.0'
+  androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+}
+
+tasks.register('verifyBundledAssets') {
+  doLast {
+    def assets = file('src/main/assets')
+    if (!new File(assets, 'main.lynx.bundle').isFile()) {
+      throw new GradleException('Release bundle missing. Run pnpm bundle:android from the repository root.')
+    }
+    if (!new File(assets, 'static').isDirectory()) {
+      throw new GradleException('Release static assets missing. Run pnpm bundle:android from the repository root.')
+    }
+  }
+}
+tasks.configureEach {
+  if (name == 'preReleaseBuild' || name == 'preBundledBuild') {
+    dependsOn tasks.named('verifyBundledAssets')
+  }
+}

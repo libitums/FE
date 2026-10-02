@@ -19,6 +19,7 @@ describe("RoundButton", () => {
     expect(button).toHaveAttribute("accessibility-element", "true");
     expect(button).toHaveAttribute("accessibility-label", "정보");
     expect(button).toHaveAttribute("accessibility-traits", "button");
+    expect(button).toHaveAttribute("accessibility-enable-tap", "true");
     expect(button).toHaveAttribute("data-variant", "brand");
     expect(button).toHaveAttribute("data-size", "l");
     expect(button).toHaveAttribute("data-disabled", "false");
@@ -41,6 +42,7 @@ describe("RoundButton", () => {
     const button = screen.getByTestId("ui-lynx-round-button");
     expect(button).toHaveAttribute("accessibility-label", "정보, loading");
     expect(button).toHaveAttribute("data-loading", "true");
+    expect(button).toHaveAttribute("accessibility-enable-tap", "false");
     expect(button).toHaveClass("ui-lynx-round-button-loading");
     expect(screen.queryByTestId("ui-lynx-round-button-icon")).not.toBeInTheDocument();
     const spinner = screen.getByTestId("ui-lynx-round-button-spinner");

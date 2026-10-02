@@ -1,0 +1,26 @@
+# A2·A4 — 320×640에서 고정 온보딩 버튼과 소셜 로그인 화면을 확인한다.
+appId: com.libitum.host
+env:
+  SCALE: ${SCALE || "100"}
+---
+- setOrientation: PORTRAIT
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Welcome! Are you looking for anything?"
+    timeout: 20000
+- assertScreenshot:
+    path: screenshots/android-small-onboarding-${SCALE}.png
+    thresholdPercentage: 95
+- tapOn: "Next"
+- assertScreenshot:
+    path: screenshots/android-small-onboarding-step2-${SCALE}.png
+    thresholdPercentage: 95
+- tapOn: "Next"
+- tapOn: "Get started"
+- assertVisible: "Sign in with Apple"
+- assertVisible: "Connect with Google"
+- assertVisible: "Connect with Facebook"
+- assertScreenshot:
+    path: screenshots/android-small-login-${SCALE}.png
+    thresholdPercentage: 95

@@ -313,9 +313,34 @@ test("SA2. apple — WebAuthenticationModule 없음(Apple만) → failed/unsuppo
   expect(fetchMock).not.toHaveBeenCalled();
 });
 
-test("SA3. apple — AppleSignInModule 없음(웹만) → failed/unsupported, fetch 0회, 거부하지 않는다", async () => {
+test("SA3. apple — 네이티브 모듈이 없으면 웹 OAuth + PKCE로 로그인한다", async () => {
   stubConfig();
-  stubAppleHost({ apple: false });
+  const { start, randomBytes } = stubHost({
+    start: (_args, callback) =>
+      callback({ status: "completed", callbackUrl: `${R}?code=apple-code` }),
+  });
+  const fetchMock = vi.fn(async () =>
+    jsonResponse(200, { access_token: "at", refresh_token: "rt", expires_in: 3600 }),
+  );
+  vi.stubGlobal("fetch", fetchMock);
+
+  await expect(signInWithSocialProvider("apple")).resolves.toEqual({
+    status: "signed-in",
+    session: { accessToken: "at", refreshToken: "rt", expiresAt: expect.any(Number) },
+  });
+  expect(randomBytes).toHaveBeenCalledWith(32);
+  expect(start).toHaveBeenCalledTimes(1);
+  expect((start.mock.calls[0] as [Record<string, unknown>])[0]["url"]).toBe(
+    `https://test.supabase.co/auth/v1/authorize?provider=apple&redirect_to=duru%3A%2F%2Fauth-callback&code_challenge=${rfcChallenge}&code_challenge_method=s256`,
+  );
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const [url, init] = fetchMock.mock.calls[0] as unknown as [string, { body: string }];
+  expect(url).toBe("https://test.supabase.co/auth/v1/token?grant_type=pkce");
+  expect(JSON.parse(init.body)).toEqual({ auth_code: "apple-code", code_verifier: rfcVerifier });
+});
+
+test("SA3b. apple — 두 인증 모듈이 모두 없으면 failed/unsupported", async () => {
+  stubConfig();
   const fetchMock = vi.fn();
   vi.stubGlobal("fetch", fetchMock);
 

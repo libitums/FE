@@ -2,7 +2,12 @@
 // 난수 → PKCE → authorize URL → 창 → 콜백 파싱 → 교환을 한 함수로 집니다.
 // `pair`(PKCE)는 이 함수의 지역 변수로만 삽니다 — 반환값에 싣지 않습니다.
 
-import { appleNonceByteCount, appleNoncePairFrom, startAppleSignIn } from "./apple-sign-in";
+import {
+  appleNonceByteCount,
+  appleNoncePairFrom,
+  isAppleSignInAvailable,
+  startAppleSignIn,
+} from "./apple-sign-in";
 import type { AppleSignInResult } from "./apple-sign-in.contract";
 import { exchangeIdToken, exchangePkceCode, supabaseAuthorizeUrl } from "./api-client";
 import type { EntryLoginMethod } from "./entry-flow";
@@ -20,7 +25,7 @@ import type {
 import { supabaseConfig } from "./supabase-config";
 import { secureRandomBytes, startWebAuthentication } from "./web-authentication";
 
-/** 웹 인증 세션이 가로채는 스킴입니다. Info.plist에 등록하지 않습니다(ADR-0028). */
+/** iOS 세션이 가로채고 Android manifest가 딥링크로 받는 스킴입니다(ADR-0039). */
 export const oauthCallbackScheme: OAuthCallbackScheme = "duru";
 
 /** `redirect_to`에 싣는 값입니다. Supabase 대시보드의 리다이렉트 허용 목록과 같아야 합니다. */
@@ -116,7 +121,7 @@ export const signInWithSocialProvider: SignInWithSocialProvider = (
 ): Promise<SocialSignInResult> => {
   switch (provider) {
     case "apple": {
-      return signInWithApple();
+      return isAppleSignInAvailable() ? signInWithApple() : signInWithWebOAuth(provider);
     }
     case "google":
     case "facebook": {

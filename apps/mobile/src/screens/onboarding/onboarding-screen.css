@@ -92,15 +92,11 @@
   letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
 }
 
-/* 2026-09-21 디자인 반영: caption 타이포 · gray.500입니다. 폭·줄 제한 없이
-   줄바꿈으로 흐릅니다.
-   ⚠ 알려진 대비 미달: gray.500(#D1D3D8)은 배경 대비 약 1.5:1입니다. caption(11px)은
-   큰 텍스트 예외가 없어 4.5:1이 필요하고 design-system에 caption 예외도 없습니다.
-   피그마 값을 유지하기로 했습니다(2026-09-21) — 예외가 필요하면 design-system
-   accessibility에 먼저 제안합니다. */
+/* 작은 화면과 확대 글자에서도 안내 문구를 읽을 수 있도록 의미 색상 중
+   흰 배경 대비가 충분한 muted 전경을 사용합니다. */
 .onboarding-screen-body {
   text-align: center;
-  color: var(--libitum-color-gray-500);
+  color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-caption-font-family);
   font-weight: var(--libitum-typography-caption-font-weight);
   font-size: var(--libitum-typography-caption-font-size);
@@ -116,4 +112,7 @@
   justify-content: center;
   width: 100%;
   flex-shrink: 0;
+  position: relative;
+  z-index: var(--libitum-elevation-z-floating);
+  background: var(--libitum-color-background-primary);
 }

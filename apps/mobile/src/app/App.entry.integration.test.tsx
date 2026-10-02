@@ -1678,16 +1678,19 @@ test("[IN3] 시트 취소 → 로그인 그대로 · 오류 없음 · fetch 0 ·
   expect(events.slice(loginViewedIndex + 1)).toEqual([]);
 });
 
-// IN4 — ⭐ AC3 — `NativeModules`에 `StorageModule` · `WebAuthenticationModule`만 있고
-// `AppleSignInModule`이 없는 환경(호스트가 옛 빌드이거나 Lynx Explorer)입니다.
-// `unsupported`로 끝나고 **던지지 않습니다**(ErrorBoundary 화면이 서지 않는다는 것을
-// 로그인 화면이 그대로 있다는 것으로 짓습니다).
-test("[IN4] ⭐ Apple 모듈 없음(저장소 · 웹 인증만) → unsupported 문구 · 던지지 않는다(로그인 화면 그대로) · fetch 0", async () => {
-  stubHostWithWebAuthentication(completedWebAuthentication);
-  const fetchSpy = vi.fn<() => void>();
-  vi.stubGlobal("fetch", fetchSpy);
-  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
-  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+// IN4 — Android처럼 Apple 네이티브 모듈 없이 웹 인증 모듈만 있는 호스트입니다.
+// Apple 버튼도 authorize → PKCE 교환 → 공통 세션 저장 경로로 이어집니다.
+test("[IN4] Apple 모듈 없음(저장소 · 웹 인증만) → 웹 OAuth · PKCE 교환 · 공통 세션 저장", async () => {
+  const { store, starts } = stubHostWithWebAuthentication(completedWebAuthentication);
+  const calls = stubSupabase({
+    pkce: {
+      status: 200,
+      body: sessionResponseBody({
+        accessToken: "apple-web-access",
+        refreshToken: "apple-web-refresh",
+      }),
+    },
+  });
   vi.useFakeTimers();
   render(<App phoneSignIn="visible" />);
   advanceSplash();
@@ -1695,11 +1698,20 @@ test("[IN4] ⭐ Apple 모듈 없음(저장소 · 웹 인증만) → unsupported 
 
   await selectLoginMethodAsync("apple");
 
-  expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
-  expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
-    authFailureMessage("unsupported"),
-  );
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(starts).toHaveLength(1);
+  expect(starts[0]?.url).toContain("provider=apple&redirect_to=duru%3A%2F%2Fauth-callback");
+  expect(calls).toHaveLength(1);
+  expect(calls[0]?.url).toBe("https://test.supabase.co/auth/v1/token?grant_type=pkce");
+  expect(JSON.parse(calls[0]!.init.body)).toEqual({
+    auth_code: "abc",
+    code_verifier: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+  });
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
+  expect(JSON.parse(store.get(authSessionStorageKey)!)).toMatchObject({
+    accessToken: "apple-web-access",
+    refreshToken: "apple-web-refresh",
+  });
 });
 
 // IN5 — 교환 거절(400)입니다. 문구는 `authFailureMessage`로 비교해 리터럴에 매이지
