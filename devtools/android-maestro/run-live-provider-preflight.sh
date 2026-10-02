@@ -26,7 +26,7 @@ python3 devtools/android-maestro/check-live-providers.py \
 cd "$APP_DIR"
 ./gradlew assembleDebug
 python3 -m http.server 18768 --bind 0.0.0.0 --directory "$REPO_DIR/apps/mobile/dist" \
-  >/tmp/libitum-live-provider-preview.log 2>&1 &
+  >"$APP_DIR/app/build/live-provider-preview.log" 2>&1 &
 server_pid=$!
 trap 'kill "$server_pid" 2>/dev/null || true' EXIT HUP INT TERM
 sleep 1
@@ -41,22 +41,23 @@ run_provider() {
   name=$1
   button_y=$2
   domain=$3
-  "$ADB" -s "$E2E_UDID" shell am force-stop com.android.chrome
-  "$ADB" -s "$E2E_UDID" shell pm clear com.libitum.host
+  "$ADB" -s "$E2E_UDID" shell am force-stop com.android.chrome || return 1
+  "$ADB" -s "$E2E_UDID" shell pm clear com.libitum.host || return 1
   "$ADB" -s "$E2E_UDID" shell am start -n com.libitum.host/.MainActivity \
-    --es bundle-url http://10.0.2.2:18768/main.lynx.bundle
+    --es bundle-url http://10.0.2.2:18768/main.lynx.bundle || return 1
   # The host shows a four-second splash before onboarding is ready.
   sleep 6
-  cd "$REPO_DIR"
+  cd "$REPO_DIR" || return 1
   if maestro --udid "$E2E_UDID" test \
     -e "BUTTON_Y=$button_y" -e "PROVIDER_DOMAIN=$domain" \
     e2e/android-live-provider-preflight.yaml; then
     echo "$name: provider sign-in page reached"
   else
     echo "$name: provider sign-in page NOT reached" >&2
+    cd "$APP_DIR" || return 1
     return 1
   fi
-  cd "$APP_DIR"
+  cd "$APP_DIR" || return 1
 }
 
 status=0

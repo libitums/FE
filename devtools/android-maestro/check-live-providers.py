@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 
 def settings(path: Path) -> tuple[str, str]:
     values = {}
-    for line in path.read_text().splitlines():
+    for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
@@ -37,8 +37,15 @@ def main() -> int:
         headers={"apikey": key, "Authorization": "Bearer " + key},
     )
     with urlopen(request, timeout=15) as response:
-        external = json.load(response).get("external", {})
-    missing = [provider for provider in ("apple", "google", "facebook") if external.get(provider) is not True]
+        data = json.load(response)
+    external = data.get("external") if isinstance(data, dict) else None
+    if not isinstance(external, dict):
+        external = {}
+    missing = [
+        provider
+        for provider in ("apple", "google", "facebook")
+        if external.get(provider) is not True
+    ]
     for provider in ("apple", "google", "facebook"):
         print(f"{provider}: {'enabled' if provider not in missing else 'disabled'}")
     if missing:
