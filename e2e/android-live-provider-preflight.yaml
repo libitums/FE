@@ -1,0 +1,19 @@
+# Live provider-page smoke test on 390x844 Google Play emulator; no account credentials are entered.
+# Lynx buttons are selected by position because this emulator omits them from Maestro's tree.
+appId: com.libitum.host
+env:
+  BUTTON_Y: ${BUTTON_Y || "27%"}
+  PROVIDER_DOMAIN: ${PROVIDER_DOMAIN || "appleid.apple.com"}
+---
+- setOrientation: PORTRAIT
+- tapOn:
+    point: "50%,91%"
+- tapOn:
+    point: "50%,91%"
+- tapOn:
+    point: "50%,91%"
+- tapOn:
+    point: "50%,${BUTTON_Y}"
+- extendedWaitUntil:
+    visible: ".*${PROVIDER_DOMAIN}.*"
+    timeout: 30000
