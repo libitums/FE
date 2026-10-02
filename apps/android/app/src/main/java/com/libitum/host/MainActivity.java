@@ -19,6 +19,7 @@ public final class MainActivity extends Activity {
   private Callback authCallback;
   private String authScheme;
   private boolean leftForAuthentication;
+  private AudioPlaybackController audioPlayback;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -34,6 +35,8 @@ public final class MainActivity extends Activity {
     builder.registerModule("StorageModule", StorageModule.class);
     builder.registerModule("WebAuthenticationModule", WebAuthenticationModule.class, this);
     builder.registerModule("LegalDocumentModule", LegalDocumentModule.class, this);
+    audioPlayback = new AudioPlaybackController(this);
+    builder.registerModule("AudioPlaybackModule", AudioPlaybackModule.class, audioPlayback);
     DebugSupport.configure(builder);
     LynxView lynxView = builder.build(this);
     lynxView.addLynxViewClient(new LynxViewClient() {
@@ -100,6 +103,17 @@ public final class MainActivity extends Activity {
 
   @Override protected void onDestroy() {
     finishWebAuthentication("failed", null);
+    if (audioPlayback != null) audioPlayback.stop();
     super.onDestroy();
+  }
+
+  @Override protected void onStart() {
+    super.onStart();
+    audioPlayback.startHost();
+  }
+
+  @Override protected void onStop() {
+    if (audioPlayback != null) audioPlayback.interrupt();
+    super.onStop();
   }
 }

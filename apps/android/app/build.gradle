@@ -2,6 +2,14 @@ plugins {
   id 'com.android.application'
 }
 
+def syncAudioAssets = tasks.register('syncAudioAssets', Sync) {
+  from(file('../../ios/Host/audio')) {
+    include '*.m4a'
+    into 'audio'
+  }
+  into(layout.buildDirectory.dir('generated/audioAssets'))
+}
+
 android {
   namespace 'com.libitum.host'
   compileSdk 35
@@ -34,6 +42,9 @@ android {
     sourceCompatibility JavaVersion.VERSION_17
     targetCompatibility JavaVersion.VERSION_17
   }
+
+  sourceSets.main.assets.srcDir(syncAudioAssets)
+  androidResources.noCompress += ['m4a']
 }
 
 def lynxVersion = '4.0.1'
@@ -63,6 +74,7 @@ dependencies {
 
   androidTestImplementation 'androidx.test:runner:1.7.0'
   androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+  testImplementation 'junit:junit:4.13.2'
 }
 
 tasks.register('verifyBundledAssets') {
