@@ -115,7 +115,7 @@ export const deleteAccount: DeleteAccount = async (session, persistRefreshedSess
   const result = await requestAccountDeletion({
     accessToken,
     appleAuthorizationCode,
-    ...(appleProviderRefreshToken === undefined ? {} : { appleProviderRefreshToken }),
+    appleProviderRefreshToken,
   });
   return result.status === "deleted" ? { status: "deleted" } : result;
 };

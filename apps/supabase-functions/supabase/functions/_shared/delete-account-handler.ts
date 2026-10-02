@@ -122,7 +122,7 @@ async function decide(
       providerRefreshToken === undefined
         ? exchange?.subject
         : appleRefreshSubjectFrom(exchangeText);
-    if (providerRefreshToken !== undefined && subject === null) {
+    if (subject === null || subject === undefined) {
       return { status: 502, error: "apple_exchange_failed" };
     }
     if (subject !== user.apple.subject) {

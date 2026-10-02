@@ -420,14 +420,26 @@ describe("[FI11] 교환 실패", () => {
 });
 
 describe("[FI12] 계정 대조 실패", () => {
-  test.each<[string, string]>([
-    ["sub 불일치", exchangeBody("someone-else")],
-    ["id_token 없음", exchangeBody(null)],
-  ])("%s는 403 apple_account_mismatch · 철회 0 · 삭제 0", async (_name, body) => {
+  test("sub 불일치는 403 apple_account_mismatch · 철회 0 · 삭제 0", async () => {
     const { handler, requests } = setup(
-      okRoutes({ user: { status: 200, body: appleUserBody }, exchange: { status: 200, body } }),
+      okRoutes({
+        user: { status: 200, body: appleUserBody },
+        exchange: { status: 200, body: exchangeBody("someone-else") },
+      }),
     );
     await expectError(await handler(post(codeBody("c"))), 403, "apple_account_mismatch");
+    expect(requests.some((request) => request.url.endsWith("/auth/revoke"))).toBe(false);
+    expect(deletions(requests)).toEqual([]);
+  });
+
+  test("id_token 없음은 502 apple_exchange_failed · 철회 0 · 삭제 0", async () => {
+    const { handler, requests } = setup(
+      okRoutes({
+        user: { status: 200, body: appleUserBody },
+        exchange: { status: 200, body: exchangeBody(null) },
+      }),
+    );
+    await expectError(await handler(post(codeBody("c"))), 502, "apple_exchange_failed");
     expect(requests.some((request) => request.url.endsWith("/auth/revoke"))).toBe(false);
     expect(deletions(requests)).toEqual([]);
   });
