@@ -85,6 +85,15 @@ describe("FB2 에피소드 설문 기억", () => {
 });
 
 describe("FB3 requestAppReviewOnce", () => {
+  test("Android 브리지의 빈 저장소 값은 아직 요청하지 않은 것으로 취급한다", () => {
+    const requestReview = vi.fn<() => void>();
+    const { store } = install({ AppReviewModule: { requestReview } });
+    store.set(appReviewRequestedStorageKey, "");
+    expect(requestAppReviewOnce()).toBe(true);
+    expect(requestReview).toHaveBeenCalledTimes(1);
+    expect(store.get(appReviewRequestedStorageKey)).toBe("1");
+  });
+
   test("설치당 한 번만 요청하고, 모듈이 없으면 요청으로 치지 않는다", () => {
     const requestReview = vi.fn<() => void>();
     const { store } = install({ AppReviewModule: { requestReview } });

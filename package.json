@@ -29,6 +29,7 @@
     "test:e2e:android:completion": "sh devtools/android-maestro/run-completion-announcement.sh",
     "test:e2e:android:speech": "sh devtools/android-maestro/run-speech-recognition.sh",
     "test:e2e:android:handwriting": "sh devtools/android-maestro/run-handwriting-trace.sh",
+    "test:e2e:android:review": "sh devtools/android-maestro/run-app-review.sh",
     "test:e2e:android:talkback": "sh devtools/android-maestro/run-talkback.sh",
     "test:e2e:android": "pnpm test:e2e:android:host && pnpm test:e2e:android:social && pnpm test:e2e:android:legal && pnpm test:e2e:android:small",
     "test:coverage": "pnpm --filter @libitums/mobile test:coverage && pnpm --filter @libitums/ui-lynx test:coverage",

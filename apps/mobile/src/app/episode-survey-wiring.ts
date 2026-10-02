@@ -1,4 +1,4 @@
-// 에피소드 끝 설문의 결선입니다(ADR-0036) — 답은 서버 피드백 표 · 분석 이벤트로 가고, 별점 4 이상이면 설치당 한 번 iOS
+// 에피소드 끝 설문의 결선입니다(ADR-0036) — 답은 서버 피드백 표 · 분석 이벤트로 가고, 별점 4 이상이면 설치당 한 번 호스트
 // 평점 창을 요청합니다. 답하거나 건너뛴 에피소드는 기억해 다시 묻지 않습니다. 모두 기다리지 않고 실패를 삼킵니다.
 
 import { markEpisodeSurveyDone, requestAppReviewOnce, submitFeedback } from "../lib/feedback-api";

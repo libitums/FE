@@ -18,13 +18,13 @@ export type FeedbackSubmission = {
 
 export type SubmitFeedbackPath = "/rest/v1/rpc/submit_feedback";
 
-/** 별점 4 이상의 에피소드 설문 뒤 한 번, iOS 기본 평점 창을 띄웁니다. 띄웠는지는 이 키로 기억합니다(설치당 한 번). */
+/** 별점 4 이상의 에피소드 설문 뒤 한 번, 호스트 평점 창을 요청합니다(설치당 한 번). */
 export type AppReviewRequestedStorageKey = "libitum.app-review.requested";
 
 /** 설문을 답했거나 건너뛴 에피소드 ID 목록(JSON 배열)입니다. 에피소드마다 한 번만 묻습니다. */
 export type EpisodeSurveyDoneStorageKey = "libitum.episode-survey.done";
 
-/** 앱스토어 평점 창의 호스트 모듈입니다(Swift `AppReviewModule.swift`). */
+/** 스토어 평점 창의 호스트 모듈입니다(iOS StoreKit · Android Play Review). */
 export interface AppReviewModule {
   requestReview(): void;
 }
