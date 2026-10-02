@@ -36,8 +36,15 @@ Android 콜백 scheme은 다른 앱도 선언할 수 있다. PKCE verifier는 �
 닫힘은 Activity가 다시 전면에 올 때 관찰하므로 브라우저가 전면인 채 앱이 별도로 재개되면
 시도가 취소될 수 있다. 실제 제공자 로그인은 Supabase와 각 제공자의 설정 및 테스트 계정이
 준비될 때까지 미검증이다. Apple 웹 OAuth에는 Apple Services ID·웹용 secret 설정이 필요하다.
-Apple 계정 삭제는 현재 `AppleSignInModule`의 재인증·authorization code 경로를 사용하므로
-Android에서 아직 완료할 수 없다.
+Apple 계정 삭제는 Android에서 같은 웹 OAuth를 다시 열어 Supabase PKCE 교환 응답의
+Apple `provider_refresh_token`을 그 삭제 요청에만 사용한다. 서버는 Apple refresh grant의
+`id_token.sub`를 사용자의 Apple identity와 대조한 뒤 토큰을 철회한다. iOS 네이티브
+authorization code 경로는 그대로다. 이 흐름은 모의 인증으로 검증했으며 실제 Apple 계정
+왕복은 제공자 설정·테스트 계정이 준비될 때까지 미검증이다. Apple 제공자 토큰이
+응답에 없으면 삭제를 중단한다. 서버의 `APPLE_WEB_CLIENT_ID`는 Supabase Apple provider의
+첫 번째 Services ID와 같아야 한다.
+다른 Apple ID를 선택하면 Supabase OAuth가 별도 계정을 만들 수 있다. 앱은 원래 사용자 ID와
+재인증 결과의 사용자 ID가 다르면 삭제 요청을 보내지 않으며, 서버도 Apple subject를 다시 대조한다.
 
 ## 재검토 조건
 

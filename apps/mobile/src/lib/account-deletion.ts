@@ -1,11 +1,21 @@
 // 계정 삭제 한 번의 흐름입니다 — 설정 확인 → (필요하면) 세션 갱신 → (Apple이면) 재인증 → 삭제 요청.
 // 어휘는 `account.contract.ts`입니다. 저장소 · 분석 · 전이는 하지 않습니다(결선 `app/account-wiring.ts`의 몫).
 
-import { refreshAuthSession, requestAccountDeletion } from "./api-client";
-import { appleNonceByteCount, appleNoncePairFrom, startAppleSignIn } from "./apple-sign-in";
+import {
+  exchangeAppleReauthenticationCode,
+  refreshAuthSession,
+  requestAccountDeletion,
+} from "./api-client";
+import {
+  appleNonceByteCount,
+  appleNoncePairFrom,
+  isAppleSignInAvailable,
+  startAppleSignIn,
+} from "./apple-sign-in";
 import type { AppleSignInResult } from "./apple-sign-in.contract";
 import { accountDeletionFailureFromRefresh } from "./auth-response";
-import { authProvidersFrom } from "./auth-user-id";
+import { authProvidersFrom, authUserIdFrom } from "./auth-user-id";
+import { openWebOAuth } from "./social-sign-in";
 import { supabaseConfig } from "./supabase-config";
 import { secureRandomBytes } from "./web-authentication";
 import type {
@@ -49,6 +59,25 @@ export const reauthenticateWithApple: ReauthenticateWithApple = async () => {
   return failedReauthentication;
 };
 
+/** Android는 Apple 네이티브 시트가 없으므로 Supabase 웹 OAuth를 새로 열어 일회성 토큰을 받습니다. */
+async function reauthenticateWithAppleWeb(
+  accessToken: string,
+): Promise<AppleReauthenticationResult> {
+  const opened = await openWebOAuth("apple");
+  if (opened.status === "cancelled") return { status: "cancelled" };
+  if (opened.status !== "completed") return failedReauthentication;
+  const exchanged = await exchangeAppleReauthenticationCode({
+    authCode: opened.authCode,
+    codeVerifier: opened.codeVerifier,
+  });
+  if (exchanged.status !== "exchanged") return failedReauthentication;
+  const currentUser = authUserIdFrom(accessToken);
+  if (currentUser === null || currentUser !== authUserIdFrom(exchanged.accessToken)) {
+    return failedReauthentication;
+  }
+  return { status: "confirmed", providerRefreshToken: exchanged.providerRefreshToken };
+}
+
 export const deleteAccount: DeleteAccount = async (session, persistRefreshedSession) => {
   if (supabaseConfig() === null) {
     return { status: "failed", reason: "unconfigured" };
@@ -65,17 +94,28 @@ export const deleteAccount: DeleteAccount = async (session, persistRefreshedSess
   }
 
   let appleAuthorizationCode: string | null = null;
+  let appleProviderRefreshToken: string | undefined;
   if (requiresAppleReauthentication(authProvidersFrom(accessToken))) {
-    const reauthentication = await reauthenticateWithApple();
+    const reauthentication = isAppleSignInAvailable()
+      ? await reauthenticateWithApple()
+      : await reauthenticateWithAppleWeb(accessToken);
     if (reauthentication.status === "cancelled") {
       return { status: "cancelled" };
     }
     if (reauthentication.status === "failed") {
       return { status: "failed", reason: "apple-unconfirmed" };
     }
-    appleAuthorizationCode = reauthentication.authorizationCode;
+    if ("authorizationCode" in reauthentication) {
+      appleAuthorizationCode = reauthentication.authorizationCode;
+    } else {
+      appleProviderRefreshToken = reauthentication.providerRefreshToken;
+    }
   }
 
-  const result = await requestAccountDeletion({ accessToken, appleAuthorizationCode });
+  const result = await requestAccountDeletion({
+    accessToken,
+    appleAuthorizationCode,
+    appleProviderRefreshToken,
+  });
   return result.status === "deleted" ? { status: "deleted" } : result;
 };

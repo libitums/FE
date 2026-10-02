@@ -12,11 +12,14 @@
 
 /**
  * `POST /functions/v1/delete-account`, `Authorization: Bearer <사용자 액세스 토큰>`,
- * `Content-Type: application/json`. 키는 하나이고 **반드시 있습니다** — 값은 비지 않은 문자열 또는
- * `null`. 빈 문자열 · 다른 타입 · 키 없음 · JSON 아님은 `invalid_body`입니다. 모르는 키는 무시합니다.
+ * `Content-Type: application/json`. `apple_authorization_code`는 **반드시 있습니다** — 비지 않은
+ * 문자열 또는 `null`입니다. Android의 `apple_provider_refresh_token`은 비지 않은 문자열로만
+ * 선택적으로 싣고 코드와 동시에 싣지 않습니다. 잘못된 값·JSON은 `invalid_body`입니다.
+ * 모르는 키는 무시합니다.
  */
 export type DeleteAccountRequestBody = {
   readonly apple_authorization_code: string | null;
+  readonly apple_provider_refresh_token?: string;
 };
 
 /** 오류 응답 본문입니다(`Content-Type: application/json`). 성공(204)은 본문이 없습니다. */
@@ -63,6 +66,7 @@ export type DeleteAccountEnvName =
   | "APPLE_TEAM_ID"
   | "APPLE_KEY_ID"
   | "APPLE_CLIENT_ID"
+  | "APPLE_WEB_CLIENT_ID"
   | "APPLE_PRIVATE_KEY";
 
 /** Sign in with Apple 서버 호출의 자격입니다. 넷이 함께 있거나 함께 없습니다. */
@@ -71,13 +75,16 @@ export type AppleClientConfig = {
   readonly keyId: string;
   /** 네이티브 앱이면 번들 ID(`com.libitum.host`)입니다. */
   readonly clientId: string;
+  /** Supabase Apple OAuth의 첫 번째 Services ID와 같아야 합니다. Android 삭제에만 씁니다. */
+  readonly webClientId?: string;
   /** `.p8` 파일 내용(PKCS#8 PEM) 그대로입니다. 줄바꿈이 `\n` 두 글자로 들어와도 받습니다. */
   readonly privateKeyPem: string;
 };
 
 /**
  * - Supabase 셋(런타임 기본 제공)이 하나라도 비면 환경 전체가 `null` → 모든 요청이 500.
- * - Apple 넷 중 하나라도 비면 `apple`이 `null` → Apple 사용자만 500(다른 사용자는 지울 수 있습니다).
+ * - 필수 Apple 넷 중 하나라도 비면 `apple`이 `null` → Apple 사용자만 500입니다.
+ *   선택적 `APPLE_WEB_CLIENT_ID`가 비면 Android Apple 삭제만 500입니다.
  * - 값은 앞뒤 공백을 걷고, `supabaseUrl`은 끝 `/`를 뗍니다. `https://`로 시작하지 않으면 `null`.
  */
 export type DeleteAccountEnv = {
@@ -183,6 +190,13 @@ export type AppleTokenRequest = (
   config: AppleClientConfig,
   clientSecret: string,
   authorizationCode: string,
+) => OutboundRequest;
+
+/** Android 웹 OAuth가 방금 받은 Apple refresh token을 검증합니다. */
+export type AppleRefreshValidationRequest = (
+  config: AppleClientConfig,
+  clientSecret: string,
+  refreshToken: string,
 ) => OutboundRequest;
 
 /**

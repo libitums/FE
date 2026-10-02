@@ -22,11 +22,15 @@ export type SupabaseLogoutPath = "/auth/v1/logout?scope=local";
 export type DeleteAccountFunctionPath = "/functions/v1/delete-account";
 
 /**
- * 삭제 함수의 요청 본문입니다. 키는 이것 하나이고 **늘 싣습니다** — Apple 사용자가 아니면 `null`.
- * 값은 Apple 시트가 방금 준 `authorizationCode`(한 번 쓰면 끝, 5분 유효)이고 저장하지 않습니다.
+ * 삭제 함수의 요청 본문입니다. `apple_authorization_code`는 **늘 싣습니다** — Apple 사용자가
+ * 아니거나 Android 웹 재인증이면 `null`입니다. iOS에서는 시트가 방금 준 단회성 코드를 싣고,
+ * Android에서는 Supabase OAuth 교환이 방금 돌려준 Apple refresh token을 추가합니다.
+ * 두 자격 모두 저장하지 않습니다.
  */
 export type DeleteAccountRequestBody = {
   readonly apple_authorization_code: string | null;
+  /** Android 웹 OAuth 재인증에서만 싣습니다. 저장하지 않습니다. */
+  readonly apple_provider_refresh_token?: string;
 };
 
 // ------------------------------------------------------------------ 실패 어휘
@@ -35,7 +39,8 @@ export type DeleteAccountRequestBody = {
  * 계정 삭제 한 번이 실패한 이유입니다. 앞의 셋은 로그인과 같은 뜻입니다.
  *
  * - `session-expired` — 함수가 401을 줬거나, 삭제 전 세션 갱신을 서버가 거절했습니다.
- * - `apple-unconfirmed` — Apple 재인증이 안 됐습니다(시트 오류 · 모듈 없음 · 코드 없음 · 난수 실패),
+ * - `apple-unconfirmed` — Apple 재인증이 안 됐습니다(시트·웹 OAuth 오류, 제공자 토큰 없음,
+ *   재인증한 사용자 불일치, 난수 실패),
  *   또는 함수가 403(다른 Apple ID)을 줬습니다.
  *
  * **취소는 실패가 아닙니다** — `AccountDeletionResult`의 `cancelled`입니다.
@@ -50,6 +55,7 @@ export type AccountDeletionFailure =
 export type AccountDeletionRequest = {
   readonly accessToken: string;
   readonly appleAuthorizationCode: string | null;
+  readonly appleProviderRefreshToken?: string;
 };
 
 /** `requestAccountDeletion`의 결과입니다. 던지지 않습니다. */
@@ -72,15 +78,17 @@ export type SignOutRemotely = (accessToken: string) => Promise<void>;
 // ------------------------------------------------------------------ Apple 재인증
 
 /**
- * 삭제 확인 뒤 Apple 시트를 한 번 더 열어 받은 결과입니다. ID 토큰은 쓰지 않고 버립니다.
+ * 삭제 확인 뒤 Apple 시트(iOS) 또는 웹 OAuth(Android)를 한 번 더 열어 받은 결과입니다.
+ * ID 토큰과 새 Supabase 세션은 저장하지 않습니다.
  *
- * - `confirmed` — 시트가 끝났고 `authorizationCode`가 비지 않은 문자열입니다.
+ * - `confirmed` — iOS authorization code 또는 Android Apple provider refresh token이 있습니다.
  * - `cancelled` — 사용자가 시트를 닫았습니다(`.canceled`).
  * - `failed` — 그 밖 전부(난수 실패 · 모듈 없음 · 시트 오류 · 이미 떠 있음 · 인자 오류 · 모양 오류 ·
  *   `authorizationCode` 없음).
  */
 export type AppleReauthenticationResult =
   | { readonly status: "confirmed"; readonly authorizationCode: string }
+  | { readonly status: "confirmed"; readonly providerRefreshToken: string }
   | { readonly status: "cancelled" }
   | { readonly status: "failed" };
 

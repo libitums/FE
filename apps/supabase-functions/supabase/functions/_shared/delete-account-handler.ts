@@ -1,5 +1,11 @@
 import { appleClientSecretFor } from "./apple-client-secret.ts";
-import { appleRevokeRequest, appleTokenExchangeFrom, appleTokenRequest } from "./apple-token.ts";
+import {
+  appleRefreshSubjectFrom,
+  appleRefreshValidationRequest,
+  appleRevokeRequest,
+  appleTokenExchangeFrom,
+  appleTokenRequest,
+} from "./apple-token.ts";
 import type {
   CreateDeleteAccountHandler,
   DeleteAccountBodyFrom,
@@ -25,10 +31,18 @@ export const deleteAccountBodyFrom: DeleteAccountBodyFrom = (bodyText) => {
     return null;
   }
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return null;
-  const code = (parsed as Record<string, unknown>)["apple_authorization_code"];
-  if (code === null) return { apple_authorization_code: null };
-  if (typeof code === "string" && code !== "") return { apple_authorization_code: code };
-  return null;
+  const record = parsed as Record<string, unknown>;
+  const code = record["apple_authorization_code"];
+  const refreshToken = record["apple_provider_refresh_token"];
+  if (code !== null && (typeof code !== "string" || code === "")) return null;
+  if (refreshToken !== undefined && (typeof refreshToken !== "string" || refreshToken === "")) {
+    return null;
+  }
+  if (code !== null && refreshToken !== undefined) return null;
+  return {
+    apple_authorization_code: code,
+    ...(refreshToken === undefined ? {} : { apple_provider_refresh_token: refreshToken }),
+  };
 };
 
 export const deleteAccountResponse: DeleteAccountResponse = (outcome) => {
@@ -77,21 +91,48 @@ async function decide(
     const apple = env.apple;
     if (apple === null) return failure(500, "server_misconfigured");
     const code = body.apple_authorization_code;
-    if (code === null) return { status: 400, error: "apple_authorization_code_required" };
-    const secret = await appleClientSecretFor(apple, deps.nowMs(), deps.signEs256);
+    const providerRefreshToken = body.apple_provider_refresh_token;
+    if (code === null && providerRefreshToken === undefined) {
+      return { status: 400, error: "apple_authorization_code_required" };
+    }
+    if (providerRefreshToken !== undefined && apple.webClientId === undefined) {
+      return failure(500, "server_misconfigured");
+    }
+    const client =
+      providerRefreshToken === undefined ? apple : { ...apple, clientId: apple.webClientId! };
+    const secret = await appleClientSecretFor(client, deps.nowMs(), deps.signEs256);
     if (secret === null) return failure(500, "server_misconfigured");
 
-    const exchangeResponse = await send(deps, appleTokenRequest(apple, secret, code));
+    const exchangeResponse = await send(
+      deps,
+      providerRefreshToken === undefined
+        ? appleTokenRequest(client, secret, code!)
+        : appleRefreshValidationRequest(client, secret, providerRefreshToken),
+    );
     if (exchangeResponse === null || exchangeResponse.status !== 200) {
       return { status: 502, error: "apple_exchange_failed" };
     }
-    const exchange = appleTokenExchangeFrom(await exchangeResponse.text().catch(() => ""));
-    if (exchange === null) return { status: 502, error: "apple_exchange_failed" };
-    if (exchange.subject !== user.apple.subject) {
+    const exchangeText = await exchangeResponse.text().catch(() => "");
+    const exchange =
+      providerRefreshToken === undefined ? appleTokenExchangeFrom(exchangeText) : null;
+    if (providerRefreshToken === undefined && exchange === null) {
+      return { status: 502, error: "apple_exchange_failed" };
+    }
+    const subject =
+      providerRefreshToken === undefined
+        ? exchange?.subject
+        : appleRefreshSubjectFrom(exchangeText);
+    if (subject === null || subject === undefined) {
+      return { status: 502, error: "apple_exchange_failed" };
+    }
+    if (subject !== user.apple.subject) {
       return { status: 403, error: "apple_account_mismatch" };
     }
 
-    const revoke = await send(deps, appleRevokeRequest(apple, secret, exchange.refreshToken));
+    const revoke = await send(
+      deps,
+      appleRevokeRequest(client, secret, providerRefreshToken ?? exchange!.refreshToken),
+    );
     if (revoke === null || revoke.status !== 200) {
       return { status: 502, error: "apple_revoke_failed" };
     }

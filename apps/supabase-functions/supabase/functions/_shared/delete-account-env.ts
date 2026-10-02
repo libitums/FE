@@ -16,10 +16,11 @@ export const deleteAccountEnvFrom: DeleteAccountEnvFrom = (read) => {
   const teamId = value("APPLE_TEAM_ID");
   const keyId = value("APPLE_KEY_ID");
   const clientId = value("APPLE_CLIENT_ID");
+  const webClientId = value("APPLE_WEB_CLIENT_ID");
   const privateKeyPem = value("APPLE_PRIVATE_KEY");
   const apple =
     teamId !== null && keyId !== null && clientId !== null && privateKeyPem !== null
-      ? { teamId, keyId, clientId, privateKeyPem }
+      ? { teamId, keyId, clientId, privateKeyPem, ...(webClientId === null ? {} : { webClientId }) }
       : null;
 
   return { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey, apple };

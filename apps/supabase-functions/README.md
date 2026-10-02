@@ -47,6 +47,8 @@ PostgreSQL 실행 파일의 공유 라이브러리 링크 복원을 위해 `pnpm
    - `APPLE_KEY_ID` — 키 상세 화면의 Key ID(10자).
    - `APPLE_TEAM_ID` — 계정 Membership의 Team ID(10자).
    - `APPLE_CLIENT_ID` — 네이티브 앱이므로 번들 ID `com.libitum.host`.
+   - `APPLE_WEB_CLIENT_ID` — Android Apple 웹 OAuth에 쓰는 Services ID. Supabase Apple provider
+     Client IDs의 첫 번째 값과 같아야 한다. iOS만 운영하면 생략할 수 있다.
 
 ### 2. 프로젝트 연결과 시크릿
 
@@ -58,12 +60,14 @@ supabase secrets set \
   APPLE_TEAM_ID=<팀 ID> \
   APPLE_KEY_ID=<키 ID> \
   APPLE_CLIENT_ID=com.libitum.host \
+  APPLE_WEB_CLIENT_ID=<Apple Services ID> \
   APPLE_PRIVATE_KEY="$(cat /안전한/경로/AuthKey_XXXXXXXXXX.p8)"
 ```
 
 `SUPABASE_URL` · `SUPABASE_ANON_KEY` · `SUPABASE_SERVICE_ROLE_KEY`는 Edge 런타임이 기본 제공하므로 따로
 설정하지 않는다. 이 셋이 하나라도 비면 함수는 모든 요청에 500 `server_misconfigured`를 낸다. Apple 넷이
-하나라도 비면 Apple 사용자만 500이고 그 밖 사용자는 삭제할 수 있다.
+하나라도 비면 Apple 사용자만 500이고 그 밖 사용자는 삭제할 수 있다. `APPLE_WEB_CLIENT_ID`만
+비면 iOS Apple 삭제는 계속되지만 Android Apple 삭제는 500 `server_misconfigured`로 중단한다.
 
 **레거시 키.** 함수는 레거시 `SUPABASE_ANON_KEY` · `SUPABASE_SERVICE_ROLE_KEY`를 읽는다. 2026-09-30 기준 이
 프로젝트는 레거시 anon 키가 켜져 있어 런타임이 두 값을 주입한다. Supabase는 레거시 키를 2026년 말까지 유지한다.
@@ -97,6 +101,9 @@ supabase functions deploy delete-account --no-verify-jwt
 ## 동작 요약
 
 `POST` · `Authorization: Bearer <사용자 액세스 토큰>` · 본문 `{"apple_authorization_code": "…" | null}`.
+Android Apple 삭제는 `apple_authorization_code: null`과 `apple_provider_refresh_token`을 함께 보낸다.
+함수는 Services ID로 Apple refresh grant를 검증하고 응답의 Apple `sub`를 기존 사용자 identity와
+대조한 뒤 같은 토큰을 철회한다. 토큰은 저장하거나 로그에 남기지 않는다.
 성공은 204. 오류는 `{"error": "<code>"}`이고 CORS 헤더는 없다(호출자는 앱의 네이티브 fetch뿐).
 바깥 호출마다 제한 시간 10초, 재시도 없음. 로그는 요청당 한 줄(`event` · `status` · `error`)이고
 토큰 · 코드 · 사용자 ID · 이메일은 싣지 않는다.

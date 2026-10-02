@@ -176,7 +176,14 @@ async function signInWithApple(): Promise<SocialSignInResult> {
   }
 }
 
-async function signInWithWebOAuth(provider: WebOAuthProvider): Promise<SocialSignInResult> {
+/** 로그인과 Android Apple 재인증이 공유하는 PKCE 창입니다. 교환 코드는 이 호출 안에서만 삽니다. */
+export async function openWebOAuth(
+  provider: WebOAuthProvider,
+): Promise<
+  | { status: "completed"; authCode: string; codeVerifier: string }
+  | { status: "cancelled" }
+  | { status: "failed"; reason: "unconfigured" | "unsupported" | "sign-in-incomplete" }
+> {
   const config = supabaseConfig();
   if (config === null) {
     return { status: "failed", reason: "unconfigured" };
@@ -220,15 +227,19 @@ async function signInWithWebOAuth(provider: WebOAuthProvider): Promise<SocialSig
       if (callback.kind !== "code") {
         return { status: "failed", reason: "sign-in-incomplete" };
       }
-
-      const exchangeResult = await exchangePkceCode({
-        authCode: callback.code,
-        codeVerifier: pair.verifier,
-      });
-      if (exchangeResult.status === "exchanged") {
-        return { status: "signed-in", session: exchangeResult.session };
-      }
-      return { status: "failed", reason: exchangeResult.reason };
+      return { status: "completed", authCode: callback.code, codeVerifier: pair.verifier };
     }
   }
+}
+
+async function signInWithWebOAuth(provider: WebOAuthProvider): Promise<SocialSignInResult> {
+  const opened = await openWebOAuth(provider);
+  if (opened.status !== "completed") return opened;
+  const exchangeResult = await exchangePkceCode({
+    authCode: opened.authCode,
+    codeVerifier: opened.codeVerifier,
+  });
+  return exchangeResult.status === "exchanged"
+    ? { status: "signed-in", session: exchangeResult.session }
+    : { status: "failed", reason: exchangeResult.reason };
 }

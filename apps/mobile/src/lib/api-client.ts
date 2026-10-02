@@ -85,6 +85,34 @@ export const exchangePkceCode: ExchangePkceCode = async (
   return sessionResult(outcome, "exchanged", pkceExchangeFailureFrom);
 };
 
+/** Android Apple 삭제 재인증: Supabase 세션을 저장하지 않고 제공자 토큰만 이번 요청에 사용합니다. */
+export async function exchangeAppleReauthenticationCode(
+  request: PkceExchangeRequest,
+): Promise<
+  { status: "exchanged"; accessToken: string; providerRefreshToken: string } | { status: "failed" }
+> {
+  const body: SupabasePkceTokenRequestBody = {
+    auth_code: request.authCode,
+    code_verifier: request.codeVerifier,
+  };
+  const outcome = await send((config) => supabaseAuthRequest(config, "exchange-pkce", body), true);
+  if (!outcome.ok || !isSuccessStatus(outcome.status)) return { status: "failed" };
+  const session = authSessionFrom(outcome.bodyText, Date.now());
+  if (session === null) return { status: "failed" };
+  try {
+    const parsed: unknown = JSON.parse(outcome.bodyText);
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      return { status: "failed" };
+    }
+    const token = (parsed as Record<string, unknown>)["provider_refresh_token"];
+    return typeof token === "string" && token !== ""
+      ? { status: "exchanged", accessToken: session.accessToken, providerRefreshToken: token }
+      : { status: "failed" };
+  } catch {
+    return { status: "failed" };
+  }
+}
+
 /**
  * Apple ID 토큰 교환입니다(`POST /auth/v1/token?grant_type=id_token`, 본문
  * `{ provider: "apple", id_token, nonce }`). 판정은 PKCE 교환과 같습니다.
