@@ -30,8 +30,7 @@ enum SoundEffectAsset: String, CaseIterable {
 
 /// 메인 큐 전용. 벨과 짧은 효과음은 다른 플레이어라 대사와도 서로 중단하지 않는다.
 final class SoundEffectsPlayer {
-  private var players: [SoundEffectAsset: AVAudioPlayer] = [:]
-  private var activeOneShot: AVAudioPlayer?
+  private(set) var players: [SoundEffectAsset: AVAudioPlayer] = [:]
 
   func preload() {
     for asset in SoundEffectAsset.allCases where players[asset] == nil {
@@ -50,9 +49,8 @@ final class SoundEffectsPlayer {
     if asset == .ring_bell {
       guard !player.isPlaying else { return }
     } else {
-      // 빠른 연속 탭에서 짧은 효과음이 무한히 겹치지 않게 한다. 벨·학습 음성은 별개다.
-      activeOneShot?.stop()
-      activeOneShot = player
+      // 같은 효과음의 빠른 연속 탭만 다시 시작한다. 다른 판정음·완료음은 끝까지 재생한다.
+      player.stop()
     }
     player.currentTime = 0
     player.play()
@@ -64,9 +62,10 @@ final class SoundEffectsPlayer {
   }
 
   func stopAll() {
-    stopRing()
-    activeOneShot?.stop()
-    activeOneShot = nil
+    for player in players.values {
+      player.stop()
+      player.currentTime = 0
+    }
   }
 }
 

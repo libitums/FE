@@ -80,7 +80,7 @@ export function SentenceOrderScreen({
 
   // 아래 버튼은 정확히 하나이거나 없습니다 — `확인`(칸이 다 참) · `다음`(채점 뒤) · `결과
   // 보기`(완료). 칸이 덜 찼으면 버튼이 없습니다(「아직 할 수 없다」를 버튼의 부재로 말합니다).
-  const action =
+  const action: { label: string; run: () => void; sound?: "none" } | undefined =
     question == null
       ? {
           label: copy.common.seeResults,
@@ -91,7 +91,7 @@ export function SentenceOrderScreen({
       : state.phase === "checked"
         ? { label: copy.common.next, run: () => dispatch({ type: "nextQuestion" }) }
         : canCheckArrangement(question, state)
-          ? { label: copy.common.check, run: () => dispatch({ type: "check" }) }
+          ? { label: copy.common.check, run: () => dispatch({ type: "check" }), sound: "none" }
           : undefined;
 
   const bankFull = question == null ? true : !canPlaceChip(question, state);
@@ -107,7 +107,7 @@ export function SentenceOrderScreen({
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
-      actionSound={action?.label === copy.common.check ? "none" : "button"}
+      actionSound={action?.sound ?? "button"}
       workspace={
         question == null ? undefined : (
           // 창고 — 조각이 빠져나가도 그 자리에 회색 칸이 남아 배치가 흔들리지 않습니다.

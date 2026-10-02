@@ -20,4 +20,19 @@ final class SoundEffectsModuleTests: XCTestCase {
     XCTAssertNil(SoundEffectAsset(rawValue: "unknown"))
     XCTAssertNotNil(SoundEffectAsset(rawValue: "correct_answer"))
   }
+
+  func testDifferentEffectsOverlapAndStopAllStopsBoth() throws {
+    let effects = SoundEffectsPlayer()
+    effects.play(SoundEffectAsset.correct_answer.rawValue)
+    effects.play(SoundEffectAsset.button.rawValue)
+
+    let correct = try XCTUnwrap(effects.players[.correct_answer])
+    let button = try XCTUnwrap(effects.players[.button])
+    XCTAssertTrue(correct.isPlaying)
+    XCTAssertTrue(button.isPlaying)
+
+    effects.stopAll()
+    XCTAssertFalse(correct.isPlaying)
+    XCTAssertFalse(button.isPlaying)
+  }
 }

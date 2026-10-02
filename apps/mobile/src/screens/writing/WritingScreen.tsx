@@ -134,11 +134,11 @@ function WritingQuestionShell({
   // 판정 뒤 넘김은 문장 만들기처럼 **버튼**입니다. 듣기 · 말하기의 스스로 넘어가는 층(`advance`)은
   // 화면 전체를 덮어 누르면 넘어가는데, 쓰기는 틀린 뒤 캔버스의 `다시 쓰기`를 누를 수 있어야
   // 하고 그 층이 그 버튼을 가립니다.
-  const action =
+  const action: { label: string; run: () => void; sound?: "none" } | null =
     question.optionalPractice && state.phase === "unmeasurable"
       ? { label: copy.common.skip, run: skip }
       : practice.check !== null
-        ? { label: copy.common.check, run: practice.check }
+        ? { label: copy.common.check, run: practice.check, sound: "none" }
         : practice.next !== null
           ? { label: copy.common.next, run: practice.next }
           : null;
@@ -159,7 +159,7 @@ function WritingQuestionShell({
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
-      actionSound={action?.label === copy.common.check ? "none" : "button"}
+      actionSound={action?.sound ?? "button"}
       // 그리기 표면이 서는 작업 영역이라 스크롤을 끕니다(`workspaceScrolls`의 근거).
       workspaceScrolls={false}
       card={
