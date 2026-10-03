@@ -75,8 +75,19 @@ async function main() {
     signal: AbortSignal.timeout(15000),
   });
   if (!oauth.ok) throw new Error(`FCM OAuth request failed: HTTP ${oauth.status}`);
-  const credentials = await oauth.json();
-  if (credentials.token_type !== "Bearer" || typeof credentials.access_token !== "string") {
+  let credentials;
+  try {
+    credentials = await oauth.json();
+  } catch {
+    throw new Error("FCM OAuth response was not JSON");
+  }
+  if (
+    credentials === null ||
+    typeof credentials !== "object" ||
+    credentials.token_type !== "Bearer" ||
+    typeof credentials.access_token !== "string" ||
+    credentials.access_token === ""
+  ) {
     throw new Error("FCM OAuth response did not contain an access token");
   }
 

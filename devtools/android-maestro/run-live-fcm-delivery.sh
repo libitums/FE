@@ -15,7 +15,7 @@ ADB="$ANDROID_HOME/platform-tools/adb"
 cleanup() {
   "$ADB" -s "$FCM_UDID" shell am broadcast \
     -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE >/dev/null 2>&1 || true
-  if [ -n "${fixture_pid:-}" ]; then wait "$fixture_pid" || true; fi
+  if [ -n "${fixture_pid:-}" ]; then kill "$fixture_pid" 2>/dev/null || true; fi
   if [ -n "${server_pid:-}" ]; then kill "$server_pid" 2>/dev/null || true; fi
   "$ADB" -s "$FCM_UDID" shell am force-stop com.libitum.host >/dev/null 2>&1 || true
 }

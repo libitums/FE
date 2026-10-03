@@ -2,7 +2,7 @@
 appId: com.libitum.host
 ---
 - swipe:
-    start: "50%,0%"
+    start: "50%,5%"
     end: "50%,75%"
     duration: 500
 - extendedWaitUntil:
