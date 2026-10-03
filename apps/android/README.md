@@ -187,3 +187,5 @@ ANDROID_HOME="$HOME/Library/Android/sdk" FCM_UDID=emulator-5554 ./apps/android/t
 ```
 
 2026-10-02에는 API 35 Google Play 에뮬레이터에서 1건 통과했다. 이 검증은 토큰 발급까지만 포함한다. 원격 발송과 알림 수신에는 같은 Firebase 프로젝트에 접근할 수 있는 서버 인증이 추가로 필요하다.
+
+같은 프로젝트의 서비스 계정 JSON을 로컬 파일로 준비하면 [원격 FCM data 메시지 Maestro 절차](../../docs/e2e/android-push-notifications.md#원격-fcm-data-메시지-선택-실행)로 Android 수신·알림 탭을 따로 검증할 수 있다. 파일 경로는 `FCM_SERVICE_ACCOUNT_FILE`로만 전달하며 키를 앱이나 저장소에 복사하지 않는다.

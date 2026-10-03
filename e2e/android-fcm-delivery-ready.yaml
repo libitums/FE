@@ -1,0 +1,7 @@
+# A real Firebase-configured signed-in host is ready before the data message is sent.
+appId: com.libitum.host
+---
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: "Journey, selected"
+    timeout: 30000

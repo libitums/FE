@@ -11,3 +11,15 @@ E2E_UDID=emulator-5556 pnpm test:e2e:android:push
 2026-10-02 실행: 권한 대화상자, 앱 알림 설정, 로컬 알림 탭 뒤 화면 전이가 통과했다. Notifications 제목은 스크린샷에는 보였지만 이 에뮬레이터의 접근성 계층에서는 텍스트 노드가 노출되지 않아, Maestro는 해당 화면의 `Back to map` 접근성 버튼과 Settings 이탈을 판정한다. 수동 화면 확인도 함께 했다.
 
 2026-10-02에는 별도 Android 계측 테스트 `LiveFcmTokenTest`로 Firebase 설정을 적용한 Google Play 에뮬레이터의 실제 토큰 발급과 브리지 반환을 확인했다. 원격 알림 수신은 아직 검증하지 못했다. 배경 data 메시지 전달, 앱 종료 뒤 탭, 토큰 갱신 후 재등록, 로그아웃 후 해제는 서버 발송 권한을 준비한 뒤 Maestro로 검증한다. 로컬 알림 흐름과 토큰 발급 검증을 실서비스 발송 검증으로 간주하지 않는다.
+
+## 원격 FCM data 메시지 (선택 실행)
+
+`com.libitum.host`용 로컬 `apps/android/app/google-services.json`, 같은 Firebase 프로젝트의 서비스 계정 JSON, Google Play 에뮬레이터가 준비되면 아래 검증을 실행한다. 서비스 계정 파일 경로만 환경 변수로 전달한다. 키 내용과 FCM 토큰은 출력하거나 저장소에 넣지 않는다.
+
+```sh
+ANDROID_HOME="$HOME/Library/Android/sdk" FCM_UDID=emulator-5554 \
+  FCM_SERVICE_ACCOUNT_FILE="$HOME/Downloads/<service-account>.json" \
+  pnpm test:e2e:android:fcm
+```
+
+스크립트는 실제 토큰 발급 계측 테스트를 먼저 통과시키고, 모의 로그인 화면을 띄운 뒤 앱을 배경으로 보낸다. Firebase HTTP v1에 운영 `send-push`와 같은 높은 우선순위 data 본문을 직접 전송하고, Maestro가 시스템 알림과 탭 뒤 Notifications 화면을 판정한다. 인증·발송 실패 시 HTTP 상태만 기록한다. 이 절차는 Android 수신 호스트를 검증하며 Supabase `send-push` 배포, 실제 사용자 기기 등록, 토큰 갱신과 로그아웃 해제는 별도 검증이 필요하다.
