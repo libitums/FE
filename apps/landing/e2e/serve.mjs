@@ -3,6 +3,7 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import path from "node:path";
+import { createGzip } from "node:zlib";
 
 const [root, port] = [path.resolve(process.argv[2]), Number(process.argv[3])];
 const types = {
@@ -23,8 +24,13 @@ createServer((request, response) => {
   if (existsSync(file) && statSync(file).isDirectory()) file = path.join(file, "index.html");
   const found = existsSync(file);
   if (!found) file = path.join(root, "404.html");
+  const type = types[path.extname(file)] ?? "application/octet-stream";
+  // 실제 호스팅처럼 글자로 된 응답은 압축해 내립니다.
+  const compress = type.includes("charset") && /\bgzip\b/.test(request.headers["accept-encoding"] ?? "");
   response.writeHead(found ? 200 : 404, {
-    "Content-Type": types[path.extname(file)] ?? "application/octet-stream",
+    "Content-Type": type,
+    ...(compress ? { "Content-Encoding": "gzip" } : {}),
   });
-  createReadStream(file).pipe(response);
+  const body = createReadStream(file);
+  (compress ? body.pipe(createGzip()) : body).pipe(response);
 }).listen(port, "127.0.0.1");

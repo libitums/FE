@@ -232,6 +232,34 @@ describe("빌드 A — SITE_URL 있음", () => {
     expect(text).toContain(`(${origin}/ko/)`);
   });
 
+  it("I-A19 서체를 밖에서 받지 않고 산출물에 함께 싣는다", () => {
+    for (const { file } of pages) {
+      const document = page(build, file);
+      const hrefs = attr(document, "link[href]", "href");
+      expect(hrefs.length).toBeGreaterThan(0);
+      expect(
+        hrefs.filter((href) => /fonts\.g(oogleapis|static)\.com|cdn\.jsdelivr\.net/.test(href)),
+      ).toEqual([]);
+      const css = attr(document, 'link[rel="stylesheet"]', "href")
+        .filter((href) => href.startsWith("/"))
+        .map((href) => read(build, href.slice(1)))
+        .join("\n");
+      expect(css).toContain("Jost Variable");
+      expect(css).toContain("Pretendard Variable");
+      expect(css).not.toMatch(/url\((["']?)https?:/);
+    }
+  });
+
+  it("I-A20 밖으로 나가는 새 창 링크는 noopener와 noreferrer를 갖는다", () => {
+    for (const { file } of pages) {
+      const rels = attr(page(build, file), 'a[target="_blank"]', "rel");
+      expect(rels.length).toBeGreaterThan(0);
+      for (const rel of rels) {
+        expect(rel.split(/\s+/)).toEqual(expect.arrayContaining(["noopener", "noreferrer"]));
+      }
+    }
+  });
+
   it("I-A18 llms.txt는 영어로만 쓴다", () => {
     const text = read(build, "llms.txt");
     // 다른 언어의 페이지도 영어 이름으로 가리킵니다 — 본문에 한글이 없어 응답의 charset에 기대지 않습니다.

@@ -108,6 +108,22 @@ for (const path of paths) {
   });
 }
 
+test("서체를 다른 호스트에서 받지 않고, 두 서체가 실제로 실린다", async ({ page }) => {
+  const external: string[] = [];
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    if (url.hostname !== "127.0.0.1") external.push(url.hostname);
+  });
+  await page.goto("/ko/", { waitUntil: "load" });
+  await page.evaluate(() => document.fonts.ready);
+  expect(external).toEqual([]);
+  const loaded = await page.evaluate(() => ({
+    jost: document.fonts.check('700 32px "Jost Variable"', "Duru"),
+    pretendard: document.fonts.check('700 32px "Pretendard Variable"', "이야기"),
+  }));
+  expect(loaded).toEqual({ jost: true, pretendard: true });
+});
+
 test.describe("넓은 화면의 머리", () => {
   test.skip(({ isMobile }) => isMobile, "좁은 화면에서는 섹션 메뉴가 없습니다.");
 
