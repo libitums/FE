@@ -1,0 +1,20 @@
+---
+import type { Copy } from "../i18n/copy";
+
+interface Props {
+  t: Copy;
+}
+
+const { t } = Astro.props;
+---
+
+<section class="manifesto" id="manifesto">
+  <div class="container container--narrow">
+    <p class="manifesto__text">
+      <span data-lit>{t.manifesto1}</span>
+      <span data-lit>{t.manifesto2}</span>
+      <span data-lit>{t.manifesto3}</span>
+      <span data-lit>{t.manifesto4}</span>
+    </p>
+  </div>
+</section>

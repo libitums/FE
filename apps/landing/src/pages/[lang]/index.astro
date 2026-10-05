@@ -1,0 +1,19 @@
+---
+import Landing from "../../components/Landing.astro";
+import { type Language, defaultLanguage, languages } from "../../site";
+
+// 기본 언어는 src/pages/index.astro(`/`)가 그리고, 나머지 언어는 여기서 `/<코드>/`로 나옵니다.
+export function getStaticPaths() {
+  return languages
+    .filter((language) => language !== defaultLanguage)
+    .map((language) => ({ params: { lang: language }, props: { language } }));
+}
+
+interface Props {
+  language: Language;
+}
+
+const { language } = Astro.props;
+---
+
+<Landing language={language} />

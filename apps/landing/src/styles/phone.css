@@ -1,0 +1,296 @@
+/* 「배우는 방식」의 휴대폰 목업. 앱 화면을 찍은 것이 아니라 같은 대본으로 그린 그림입니다. */
+.phone {
+  width: min(100%, 320px);
+  padding: 10px;
+  border-radius: 48px;
+  background: var(--bg-inverted);
+  box-shadow:
+    0 40px 80px rgb(26 28 32 / 18%),
+    0 8px 20px rgb(26 28 32 / 10%);
+}
+
+.phone__screen {
+  position: relative;
+  aspect-ratio: 9 / 18.5;
+  border-radius: 38px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  animation: screen-in 360ms ease-out;
+}
+
+.screen[hidden] {
+  display: none;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+.screen small {
+  display: block;
+  margin-top: 3px;
+  color: var(--fg-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* 이야기 장면 */
+.screen--story > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dialog {
+  position: relative;
+  margin: auto 12px 14px;
+  padding: 16px 18px 18px;
+  border-radius: 20px;
+  background: rgb(255 253 252 / 94%);
+  box-shadow: 0 8px 24px rgb(26 28 32 / 16%);
+}
+
+.dialog__speaker {
+  color: var(--brand-strong);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.dialog__line {
+  margin-top: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.dialog__gloss {
+  margin-top: 6px;
+  color: var(--fg-muted);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* 메신저 */
+.chat__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 18px 12px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 700;
+}
+
+.chat__head img {
+  border-radius: 50%;
+}
+
+.chat__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 14px;
+}
+
+.bubble {
+  max-width: 84%;
+  padding: 10px 14px;
+  border-radius: 18px 18px 18px 6px;
+  background: #f3f4f5;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.bubble--self {
+  align-self: flex-end;
+  border-radius: 18px 18px 6px;
+  background: var(--bg-elevated);
+  box-shadow: inset 0 0 0 1px rgb(244 107 24 / 35%);
+}
+
+.chat__choices {
+  padding: 12px 14px 22px;
+  border-top: 1px solid var(--line);
+}
+
+.chat__choices span {
+  display: block;
+  padding: 12px 14px;
+  border: 1.5px solid var(--fg);
+  border-radius: var(--radius-lg);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 전화 */
+.screen--call {
+  align-items: center;
+  padding: 64px 18px 22px;
+  background: linear-gradient(170deg, #3a3029 0%, #1a1c20 70%);
+  color: var(--fg-inverted);
+}
+
+.call__avatar {
+  width: 96px;
+  height: 96px;
+  border: 3px solid rgb(255 255 255 / 85%);
+  border-radius: 50%;
+}
+
+.call__name {
+  margin-top: 14px;
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.call__status {
+  color: #b0b3ba;
+  font-size: 0.875rem;
+}
+
+.call__wave {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 44px;
+  margin-top: 20px;
+}
+
+.call__wave i {
+  width: 4px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--brand-secondary);
+  animation: wave 1.1s ease-in-out infinite;
+  transform: scaleY(0.25);
+}
+
+.call__wave i:nth-child(2n) {
+  animation-delay: -0.35s;
+}
+
+.call__wave i:nth-child(3n) {
+  animation-delay: -0.7s;
+}
+
+@keyframes wave {
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.call__transcript {
+  margin-top: auto;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  background: rgb(255 255 255 / 10%);
+  font-weight: 600;
+  text-align: center;
+}
+
+.call__transcript small {
+  color: #d1d3d8;
+}
+
+.call__reply {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--fg-inverted);
+  color: var(--fg);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 듣기 · 말하기 · 쓰기 */
+.screen--practice {
+  align-items: center;
+  padding: 52px 20px 22px;
+}
+
+.practice__label {
+  color: var(--fg-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.practice__pad {
+  position: relative;
+  display: grid;
+  width: 100%;
+  aspect-ratio: 1;
+  margin-top: 14px;
+  place-items: center;
+  border: 2px dashed #d1d3d8;
+  border-radius: var(--radius-xl);
+  background: var(--bg-secondary);
+  font-size: 9.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.practice__ghost,
+.practice__ink {
+  grid-area: 1 / 1;
+}
+
+.practice__ghost {
+  color: #dcdee3;
+}
+
+.practice__ink {
+  color: var(--brand);
+  clip-path: inset(0 52% 0 0);
+}
+
+.practice__phrase {
+  margin-top: 18px;
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.practice__phrase mark {
+  background: none;
+  color: var(--brand-strong);
+}
+
+.practice__gloss {
+  color: var(--fg-muted);
+  font-size: 0.875rem;
+}
+
+.practice__modes {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.practice__modes li {
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  background: #f3f4f5;
+  color: var(--fg-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.practice__modes li.is-on {
+  background: var(--bg-inverted);
+  color: var(--fg-inverted);
+}

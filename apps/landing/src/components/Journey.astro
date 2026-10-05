@@ -1,0 +1,64 @@
+---
+import { Image } from "astro:assets";
+
+import { img } from "../assets/images";
+import type { Copy } from "../i18n/copy";
+
+interface Props {
+  t: Copy;
+}
+
+const { t } = Astro.props;
+const scenes = [
+  { image: img.sceneFlight, alt: t.scene1Alt, title: t.scene1Title, desc: t.scene1Desc },
+  { image: img.sceneStreet, alt: t.scene2Alt, title: t.scene2Title, desc: t.scene2Desc },
+  { image: img.minseo, alt: t.scene3Alt, title: t.scene3Title, desc: t.scene3Desc, portrait: true },
+  { image: img.sceneCafe, alt: t.scene4Alt, title: t.scene4Title, desc: t.scene4Desc },
+  { image: img.sceneArrival, alt: t.scene5Alt, title: t.scene5Title, desc: t.scene5Desc },
+];
+---
+
+<section class="journey" id="journey" aria-labelledby="journey-title">
+  <div class="container journey__head">
+    <div>
+      <p class="eyebrow">{t.journeyEyebrow}</p>
+      <h2 id="journey-title" set:html={t.journeyTitle} />
+      <p class="section-lead">{t.journeyLead}</p>
+    </div>
+    <div class="rail-buttons">
+      <button type="button" data-rail="-1" aria-label={t.railPrev}>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7"></path>
+        </svg>
+      </button>
+      <button type="button" data-rail="1" aria-label={t.railNext}>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <ol class="journey__rail" id="journey-rail" tabindex="0" aria-labelledby="journey-title">
+    {
+      scenes.map((scene, index) => (
+        <li class:list={["scene", { "scene--portrait": scene.portrait }]}>
+          <Image
+            src={scene.image}
+            alt={scene.alt}
+            widths={[320, 480, 640]}
+            sizes="(max-width: 760px) 72vw, 320px"
+          />
+          <p class="scene__no">{String(index + 1).padStart(2, "0")}</p>
+          <h3>{scene.title}</h3>
+          <p class="scene__desc">{scene.desc}</p>
+        </li>
+      ))
+    }
+    <li class="scene scene--more">
+      <div class="scene__placeholder">
+        <h3>{t.moreTitle}</h3>
+        <p class="scene__desc">{t.moreDesc}</p>
+      </div>
+    </li>
+  </ol>
+</section>

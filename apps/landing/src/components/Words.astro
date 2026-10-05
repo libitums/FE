@@ -1,0 +1,43 @@
+---
+import { img } from "../assets/images";
+import type { Copy } from "../i18n/copy";
+
+interface Props {
+  t: Copy;
+}
+
+const { t } = Astro.props;
+// 표현 · 로마자 · 뜻풀이는 앱이 학습자에게 보여 주는 그대로입니다.
+const phrases = [
+  { ko: "안녕하세요", roman: "annyeonghaseyo", gloss: "Hello", image: img.minseo },
+  { ko: "물 주세요", roman: "mul juseyo", gloss: "Water, please", image: img.sceneFlight },
+  { ko: "내일 만나요", roman: "naeil mannayo", gloss: "See you tomorrow", image: img.sceneCafe },
+];
+---
+
+<section class="words" id="words" aria-labelledby="words-title">
+  <div class="container words__grid">
+    <header class="words__head">
+      <p class="eyebrow">{t.wordsEyebrow}</p>
+      <h2 id="words-title" set:html={t.wordsTitle} />
+    </header>
+    <ul class="words__list">
+      {
+        phrases.map((phrase) => (
+          <li class="word">
+            <img src={phrase.image.src} alt="" loading="lazy" />
+            <div>
+              <p class="word__ko" lang="ko">
+                {phrase.ko}
+              </p>
+              <p class="word__gloss">
+                <span class="word__roman">{phrase.roman}</span>
+                {phrase.gloss}
+              </p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

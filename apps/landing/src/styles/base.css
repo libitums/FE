@@ -1,0 +1,420 @@
+/* 색 · 반경 · 서체는 @libitums/design-tokens의 변수를 짧은 이름으로 잇습니다(값을 옮겨 적지 않습니다). */
+:root {
+  --bg: var(--libitum-color-background-primary);
+  --bg-secondary: var(--libitum-color-background-secondary);
+  --bg-elevated: var(--libitum-color-background-elevated);
+  --bg-inverted: var(--libitum-color-gray-950);
+  --surface-inverted: var(--libitum-color-gray-900);
+  --fg: var(--libitum-color-fg-neutral);
+  --fg-muted: var(--libitum-color-fg-neutral-muted);
+  --fg-subtle: var(--libitum-color-fg-neutral-subtle);
+  --fg-subtlest: var(--libitum-color-gray-500);
+  --fg-inverted: var(--libitum-color-fg-neutral-inverted);
+  --brand: var(--libitum-color-brand-primary);
+  --brand-secondary: var(--libitum-color-brand-secondary);
+  --brand-strong: var(--libitum-color-brand-strong);
+  --line: var(--libitum-color-gray-300);
+
+  --radius-md: var(--libitum-radius-md);
+  --radius-lg: var(--libitum-radius-lg);
+  --radius-xl: var(--libitum-radius-xl);
+  --radius-full: var(--libitum-radius-full);
+
+  --font-default: var(--libitum-font-family-default);
+  --font-accent: var(--libitum-font-family-accent);
+
+  --gutter: 24px;
+  --container: 1120px;
+  --header-height: 64px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-height);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-default);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure,
+blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/*
+ * 두 색 포커스 표시 — 요소와 외곽선 사이를 밝은 띠로 채워, 그림 · 어두운 바탕 위에서도
+ * 외곽선이 그 띠와 5.38:1의 대비를 갖습니다.
+ */
+:focus-visible {
+  outline: 3px solid var(--brand-strong);
+  outline-offset: 3px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px var(--bg);
+}
+
+h2 {
+  font-family: var(--font-accent);
+  font-size: clamp(1.75rem, 3.6vw, 2.875rem);
+  font-weight: 700;
+  line-height: 1.24;
+  letter-spacing: -0.02em;
+}
+
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.container--narrow {
+  max-width: calc(880px + var(--gutter) * 2);
+}
+
+.eyebrow {
+  margin-bottom: 12px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.section-lead {
+  max-width: 34em;
+  margin-top: 20px;
+  color: var(--fg-muted);
+  font-size: 1.125rem;
+}
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-inverted);
+  color: var(--fg-inverted);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: var(--radius-full);
+  background: var(--bg-inverted);
+  color: var(--fg-inverted);
+  font-weight: 700;
+  transition:
+    background-color 150ms,
+    color 150ms;
+  white-space: nowrap;
+}
+
+.button--small {
+  min-height: 40px;
+  padding: 0 18px;
+  font-size: 0.9375rem;
+}
+
+/* 헤더 — 히어로 위에서는 투명, 히어로를 지나면 배경을 얻습니다. */
+.site-header {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 50;
+  color: var(--fg-inverted);
+  transition:
+    background-color 200ms,
+    color 200ms,
+    box-shadow 200ms;
+}
+
+.js .site-header {
+  position: fixed;
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  height: var(--header-height);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-accent);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brand img {
+  border-radius: 9px;
+}
+
+.site-nav {
+  display: flex;
+  gap: 28px;
+  margin-left: auto;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.site-nav a {
+  padding: 8px 0;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current] {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 8px;
+}
+
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 언어 메뉴 — 언어가 늘어도 목록에 한 줄이 더해질 뿐입니다. 스크립트 없이 열립니다. */
+.lang-menu {
+  position: relative;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.lang-menu summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  list-style: none;
+}
+
+.lang-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.lang-menu summary:hover,
+.lang-menu[open] summary {
+  background: rgb(255 255 255 / 18%);
+}
+
+.lang-menu svg {
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.lang-menu[open] .lang-menu__chevron {
+  transform: rotate(180deg);
+}
+
+.lang-menu ul {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  max-height: min(60vh, 360px);
+  padding: 6px;
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  box-shadow:
+    0 12px 32px rgb(26 28 32 / 16%),
+    0 0 0 1px var(--line);
+  color: var(--fg);
+  overflow-y: auto;
+}
+
+.lang-menu li a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+}
+
+.lang-menu li a:hover {
+  background: var(--bg-secondary);
+}
+
+.lang-menu li a[aria-current] {
+  color: var(--brand-strong);
+  font-weight: 700;
+}
+
+.lang-menu li a[aria-current]::after {
+  content: "✓";
+}
+
+.site-header .button {
+  background: var(--fg-inverted);
+  color: var(--fg);
+}
+
+.site-header.is-solid {
+  background: rgb(255 253 252 / 92%);
+  color: var(--fg);
+  box-shadow: 0 1px 0 var(--line);
+  backdrop-filter: saturate(1.4) blur(12px);
+}
+
+.site-header.is-solid .lang-menu summary:hover,
+.site-header.is-solid .lang-menu[open] summary {
+  background: var(--bg-secondary);
+}
+
+.site-header.is-solid .button {
+  background: var(--bg-inverted);
+  color: var(--fg-inverted);
+}
+
+.site-footer {
+  background: var(--bg-inverted);
+  color: var(--fg-inverted);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+  padding-block: 32px 40px;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.brand--footer {
+  font-size: 1.25rem;
+}
+
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: 0.9375rem;
+}
+
+.site-footer__links a {
+  color: #d1d3d8;
+}
+
+.site-footer__links a:hover {
+  color: var(--fg-inverted);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.site-footer__copy {
+  margin-left: auto;
+  color: #b0b3ba;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --gutter: 20px;
+    --header-height: 56px;
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .site-header__actions {
+    margin-left: auto;
+  }
+
+  .site-header__inner {
+    gap: 12px;
+  }
+
+  .site-header__actions {
+    gap: 4px;
+  }
+
+  /* 좁은 화면에서는 지구본만 남깁니다. 지금 언어는 메뉴 안의 체크로 보입니다. */
+  .lang-menu summary span,
+  .lang-menu__chevron {
+    display: none;
+  }
+
+  .site-footer__copy {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
