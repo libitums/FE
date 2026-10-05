@@ -160,21 +160,41 @@ integration(`src/seo/build.integration.test.ts`)은 임시 폴더로 `astro buil
   몫인지, 지금까지 무엇이 수행됐는지는 그 문서가 진다.
 - 그 밖의 화면은 눈으로 본다 — 390px · 1440px 두 폭에서 `/`와 `/ko/`를 끝까지 내려 보고, 탭을 방향키로 옮겨 본다.
 
-## 배포
+## 배포 (Vercel)
 
-`SITE_URL`을 넣어 `pnpm landing:build`가 만든 `apps/landing/dist`를 정적 호스팅에 올린다(위 「배포 주소」).
-배포처와 도메인은 아직 정하지 않았다. 설치에 `@libitums/*`용 GitHub 토큰이 필요하다(루트 README 「GitHub Packages 인증」).
+랜딩과 Storybook은 **각각 다른 Vercel 프로젝트**다. Storybook은 자산 경로가 사이트 루트 기준이라 랜딩 주소 아래에 둘 수 없고,
+내부 카탈로그를 공개 랜딩과 묶어 배포할 이유도 없다. 설정 파일은 `apps/landing/vercel.json` · `apps/storybook-lynx/vercel.json`이다.
 
-- **없는 주소에 `404.html`을 내도록** 호스팅을 맞춘다(상태 코드 404). 파일은 빌드가 만든다.
-- **수집기 정책** — `robots.txt`는 모든 수집기를 허용하고, 답변 엔진 수집기 여섯(GPTBot · OAI-SearchBot ·
-  ChatGPT-User · ClaudeBot · PerplexityBot · Google-Extended)을 이름으로 다시 허용한다. `Disallow` 줄은 없다.
-  학습용 수집까지 여는 것은 정책 결정이고 **아직 사용자 확인 전이다**
-  ([ADR-0043](../../docs/adr/0043-landing-static-site.md) D6).
-- **`/llms.txt`** — 답변 엔진용 요약(한 문단 · 언어별 페이지 링크 · FAQ 전부)이 사이트 루트에 함께 나간다.
-- **`.txt`의 charset은 호스팅이 정한다.** `llms.txt` · `robots.txt`는 정적 파일로 구워지므로 빌드가 `Content-Type`을
-  정할 수 없다. 로컬 `preview`는 `text/plain`(charset 없음)으로 내려 브라우저에서 한글이 깨져 보였다 — 파일의 바이트는
-  올바른 UTF-8이다. 실제 호스트가 `text/plain; charset=utf-8`로 내리는지는 **미확인**이고, 깨지면 고칠 곳은 호스팅의
-  헤더 설정이다.
-- 올린 뒤의 확인(헤더 · 한글 표시 · Search Console · 답변 엔진 인용 · 실제 주소로 Lighthouse 다시)은 e2e 문서의
-  [「배포 뒤」 절](../../docs/e2e/landing-seo-geo.md#배포-뒤-이번-e2e-밖--측정-항목)에 있다. Google Search Console ·
-  네이버 서치어드바이저에 사이트를 등록하고 `sitemap-index.xml`을 낸다.
+| | 랜딩 | Storybook |
+|---|---|---|
+| Root Directory | `apps/landing` | `apps/storybook-lynx` |
+| 빌드 | Astro (자동 인식) | `pnpm build` → `dist/storybook` |
+| 검색 | 프로덕션만 색인 | 전부 `noindex`(응답 헤더) |
+
+두 프로젝트 공통 환경 변수:
+
+- `NPM_RC` — `@libitums/*`를 받는 GitHub 토큰(`read:packages`). 값은 아래 두 줄이다. 없으면 설치가 `401`로 실패한다.
+
+  ```ini
+  @libitums:registry=https://npm.pkg.github.com
+  //npm.pkg.github.com/:_authToken=<PAT>
+  ```
+
+- `ENABLE_EXPERIMENTAL_COREPACK=1` — `packageManager`에 고정한 pnpm 버전을 쓰게 한다.
+
+랜딩 프로젝트에만:
+
+- `PUBLIC_GA_MEASUREMENT_ID` — **Production 환경에만** 넣는다. (프리뷰에서는 값이 있어도 싣지 않는다.)
+- `SITE_URL` — 도메인이 정해지면 Production에 넣는다. **없으면 Vercel이 주는 프로덕션 주소**(`VERCEL_PROJECT_PRODUCTION_URL`)를 쓴다.
+
+배포 환경에 따라 달라지는 것(`src/seo/deploy-env.ts`):
+
+| | 프로덕션 | 프리뷰 (PR마다 생기는 주소) |
+|---|---|---|
+| `<meta name="robots">` | `index, follow, …` | `noindex` |
+| `robots.txt` | 수집기 허용 + sitemap | `Disallow: /` |
+| canonical · hreflang · sitemap | 있음 | 없음 |
+| GA4 | 측정 ID가 있으면 실림 | 실리지 않음 |
+
+올린 뒤에는 Google Search Console · 네이버 서치어드바이저에 사이트를 등록하고 `sitemap-index.xml`을 낸다.
+확인 절차는 [수동 절차](../../docs/e2e/landing-seo-geo.md)의 「배포 뒤」 절에 있다.

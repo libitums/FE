@@ -154,6 +154,18 @@ FAQ의 키보드 조작, 스크립트 없는 화면, 404, 폭별 넘침, 그림 
 스크롤하지 않았다. 확실한 방법은 영어 페이지의 한글을 시스템 서체로 그리거나 한글 조각의 `@font-face`를 늦게 싣는 것인데,
 앞은 보이는 모양이 달라지는 결정이라 정하지 않았다.
 
+### D12. 배포는 Vercel, 랜딩과 Storybook은 프로젝트를 나눈다
+
+배포처는 Vercel이다(사용자 결정, 2026-10-05). 도메인은 아직 없어 Vercel이 주는 프로덕션 주소를 쓴다.
+
+- 랜딩(`apps/landing`)과 Storybook(`apps/storybook-lynx`)은 **각각의 Vercel 프로젝트**다. Vercel이 제안한 한 프로젝트 · 여러 서비스
+  구성은 쓰지 않았다 — 두 앱은 서로 부르지 않고, Storybook은 루트 경로 기준으로 빌드돼 랜딩 주소 아래에 둘 수 없으며, 한 배포로 묶으면
+  Storybook 빌드 실패가 랜딩 배포를 막는다.
+- **프리뷰 배포는 검색에서 뺀다**(사용자 결정). `VERCEL_ENV`가 프로덕션이 아니면 `noindex` · `robots.txt`의 `Disallow: /` · canonical과
+  sitemap 없음 · GA4 없음이다. Vercel이 프리뷰에 붙이는 헤더에 기대지 않고 산출물에서 정한다.
+- **GA4는 프로덕션에만** 싣는다(사용자 결정).
+- Storybook은 내부 카탈로그라 모든 응답에 `X-Robots-Tag: noindex`를 붙인다. 접근 제한(Deployment Protection)은 Vercel 설정의 몫이다.
+
 ## 버린 대안
 
 - **Gatsby** — React 런타임과 GraphQL 데이터 계층이 한 페이지에 과하고, 유지보수가 눈에 띄게 느려졌다.

@@ -27,7 +27,11 @@ interface BuildResult {
   output: string;
 }
 
-function runBuild(siteUrl: string | undefined, measurementId?: string): BuildResult {
+function runBuild(
+  siteUrl: string | undefined,
+  measurementId?: string,
+  extra: Record<string, string> = {},
+): BuildResult {
   const dir = mkdtempSync(join(tmpdir(), "landing-seo-build-"));
   const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: "production", CI: "1" };
   for (const key of Object.keys(env)) if (key.startsWith("VITEST")) delete env[key];
@@ -35,6 +39,8 @@ function runBuild(siteUrl: string | undefined, measurementId?: string): BuildRes
   if (siteUrl !== undefined) env.SITE_URL = siteUrl;
   delete env.PUBLIC_GA_MEASUREMENT_ID;
   if (measurementId !== undefined) env.PUBLIC_GA_MEASUREMENT_ID = measurementId;
+  for (const key of Object.keys(env)) if (key.startsWith("VERCEL")) delete env[key];
+  Object.assign(env, extra);
   const result = spawnSync(process.execPath, [astroBin, "build", "--outDir", dir], {
     cwd: appDir,
     env,
@@ -493,6 +499,48 @@ describe("빌드 D — GA4 측정 ID", () => {
       expect(build.status).not.toBe(0);
       expect(build.output).toContain("PUBLIC_GA_MEASUREMENT_ID");
       expect(build.output).toContain("UA-12345-1");
+    } finally {
+      clean(build);
+    }
+  });
+});
+
+describe("빌드 E — Vercel 배포 환경", () => {
+  it("I-E1 프리뷰 배포는 색인에서 빠지고 canonical · sitemap이 없다", () => {
+    const build = runBuild(origin, undefined, {
+      VERCEL_ENV: "preview",
+      VERCEL_PROJECT_PRODUCTION_URL: "duru.vercel.app",
+    });
+    try {
+      expect(build.status, build.output).toBe(0);
+      for (const { file } of pages) {
+        const document = page(build, file);
+        expect(document.querySelectorAll("h1")).toHaveLength(1);
+        expect(attr(document, 'meta[name="robots"]', "content")).toEqual(["noindex"]);
+        expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(0);
+      }
+      expect(has(build, "sitemap-index.xml")).toBe(false);
+      const robots = read(build, "robots.txt");
+      expect(robots).toContain("User-agent: *\nDisallow: /");
+      expect(robots).not.toContain("Allow: /");
+    } finally {
+      clean(build);
+    }
+  });
+
+  it("I-E2 프로덕션 배포는 SITE_URL이 없어도 프로젝트 주소로 canonical · sitemap을 낸다", () => {
+    const build = runBuild(undefined, undefined, {
+      VERCEL_ENV: "production",
+      VERCEL_PROJECT_PRODUCTION_URL: "duru.vercel.app",
+    });
+    try {
+      expect(build.status, build.output).toBe(0);
+      const document = page(build, "index.html");
+      expect(attr(document, 'link[rel="canonical"]', "href")).toEqual(["https://duru.vercel.app/"]);
+      expect(attr(document, 'meta[name="robots"]', "content")[0]).toContain("index");
+      expect(read(build, "robots.txt")).toContain(
+        "Sitemap: https://duru.vercel.app/sitemap-index.xml",
+      );
     } finally {
       clean(build);
     }
