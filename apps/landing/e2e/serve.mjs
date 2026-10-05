@@ -26,7 +26,8 @@ createServer((request, response) => {
   if (!found) file = path.join(root, "404.html");
   const type = types[path.extname(file)] ?? "application/octet-stream";
   // 실제 호스팅처럼 글자로 된 응답은 압축해 내립니다.
-  const compress = type.includes("charset") && /\bgzip\b/.test(request.headers["accept-encoding"] ?? "");
+  const compress =
+    type.includes("charset") && /\bgzip\b/.test(request.headers["accept-encoding"] ?? "");
   response.writeHead(found ? 200 : 404, {
     "Content-Type": type,
     ...(compress ? { "Content-Encoding": "gzip" } : {}),
