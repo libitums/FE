@@ -49,6 +49,7 @@ pnpm test:e2e:landing                            # 브라우저 e2e (Playwright 
 | ↳ `Faq.astro` | 보이는 FAQ. 질문마다 `<details>`이고 스크립트가 없다. `SeoHead`가 받는 것과 **같은 배열**을 그린다 |
 | ↳ `NotFound.astro` | 404 본문. `noindex`이고 색인용 head와 랜딩 스크립트를 싣지 않는다. `pages/404.astro`가 기본 언어로 그린다 |
 | `src/styles/` | `base.css`(토큰 잇기 · 헤더 · 푸터) · `sections.css`(히어로 · 선언문 · 받기 · 404 · 반응형) · `showcase.css`(Features · Story · Phrases · FAQ) · `phone.css`(휴대폰 목업) |
+| `src/analytics/gtag.ts` · `components/Analytics.astro` · `scripts/analytics.ts` | GA4 측정 ID 검증 · 동의 기본값 · 초기화 스크립트 · 화면 이벤트 |
 | `src/scripts/main.ts` | 스크롤 연출과 탭. 없어도 본문은 다 보인다 |
 | `src/assets/img/` | 앱 튜토리얼 그림의 WebP 사본. Astro가 크기별로 다시 굽는다 |
 | `public/` | 아이콘과 공유 카드 그림(`og-*.jpg`) — 그대로 복사된다 |
@@ -78,6 +79,19 @@ integration(`src/seo/build.integration.test.ts`)은 임시 폴더로 `astro buil
 `/llms.txt`와 `/404.html`은 파일이 하나라 **기본 언어로만** 쓰인다. 새 언어는 거기에 링크로 걸린다.
 `llms.txt`는 다른 언어의 페이지도 **영어 이름**으로 가리킨다(`Duru in Korean`) — `pages`의 `englishName`을 채운다.
 본문에 영어 밖 글자가 없어 응답의 charset에 기대지 않는다.
+
+## 분석 (GA4)
+
+앱의 분석(PostHog)과 따로, 랜딩은 GA4로 본다 — 검색 유입과 Search Console 연동이 목적이다.
+
+- **켜기**: 빌드 환경에 `PUBLIC_GA_MEASUREMENT_ID=G-…`(GA4 웹 데이터 스트림의 측정 ID)를 준다. **없으면 아무 스크립트도 싣지 않는다** —
+  개발 서버 · 미리보기 · 테스트에서는 수집되지 않는다. 모양이 틀리면 빌드가 실패한다. 번들에 그대로 들어가는 공개 값이다.
+- **동의 배너는 없다.** EU 27개국 · EEA · 영국 · 스위스에서는 Consent Mode 기본값으로 분석 쿠키를 꺼서 쿠키 없는 신호만 나간다
+  (그 지역의 방문은 GA4에 거의 보이지 않는다). 그 밖의 지역은 평소대로 수집한다. 광고용 저장은 어디서나 꺼져 있다.
+  지역 목록은 `src/analytics/gtag.ts`의 `consentDeniedRegions`다.
+- **보내는 이벤트**(`src/scripts/analytics.ts`): `section_view`(섹션이 처음 보일 때, `section`) · `cta_click`(머리의 받기 버튼) ·
+  `download_click`(스토어 링크, `store`) · `language_switch`(`to`) · `faq_open`(`question`). 404에는 스크립트가 없어 수집하지 않는다.
+- **개인정보처리방침**에 웹사이트 분석(Google Analytics)을 적어야 한다 — 문서는 저장소 밖(Notion)에 있다.
 
 ## 자주 고치는 것
 

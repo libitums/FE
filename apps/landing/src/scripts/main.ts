@@ -1,4 +1,6 @@
-// 스크롤 연출과 탭 전환입니다. 이 스크립트가 없어도 문구와 첫 목업은 모두 보입니다.
+// 스크롤 연출과 메뉴 동작입니다. 이 스크립트가 없어도 문구와 첫 목업은 모두 보입니다.
+
+import { initAnalytics } from "./analytics";
 
 const root = document.documentElement;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -120,3 +122,4 @@ function initLanguageMenu() {
 initLanguageMenu();
 initRail();
 initScroll();
+initAnalytics();

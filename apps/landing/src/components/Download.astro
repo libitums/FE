@@ -8,8 +8,8 @@ interface Props {
 
 const { t } = Astro.props;
 const stores = [
-  { platform: "iPhone", name: "App Store", href: storeLinks.ios },
-  { platform: "Android", name: "Google Play", href: storeLinks.android },
+  { id: "ios", platform: "iPhone", name: "App Store", href: storeLinks.ios },
+  { id: "android", platform: "Android", name: "Google Play", href: storeLinks.android },
 ];
 ---
 
@@ -20,7 +20,7 @@ const stores = [
       {
         stores.map((store) =>
           store.href ? (
-            <a class="store" href={store.href} target="_blank" rel="noopener">
+            <a class="store" href={store.href} target="_blank" rel="noopener" data-store={store.id}>
               <span class="store__platform">{store.platform}</span>
               <span class="store__name">{store.name}</span>
               <span class="store__state">{t.storeGet}</span>

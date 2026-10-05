@@ -27,12 +27,14 @@ interface BuildResult {
   output: string;
 }
 
-function runBuild(siteUrl: string | undefined): BuildResult {
+function runBuild(siteUrl: string | undefined, measurementId?: string): BuildResult {
   const dir = mkdtempSync(join(tmpdir(), "landing-seo-build-"));
   const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: "production", CI: "1" };
   for (const key of Object.keys(env)) if (key.startsWith("VITEST")) delete env[key];
   delete env.SITE_URL;
   if (siteUrl !== undefined) env.SITE_URL = siteUrl;
+  delete env.PUBLIC_GA_MEASUREMENT_ID;
+  if (measurementId !== undefined) env.PUBLIC_GA_MEASUREMENT_ID = measurementId;
   const result = spawnSync(process.execPath, [astroBin, "build", "--outDir", dir], {
     cwd: appDir,
     env,
@@ -423,4 +425,45 @@ describe("빌드 C — 틀린 SITE_URL", () => {
       }
     });
   }
+});
+
+describe("빌드 D — GA4 측정 ID", () => {
+  it("I-D1 측정 ID가 있으면 두 언어 페이지에 gtag가 실리고 404에는 없다", () => {
+    const build = runBuild(origin, "G-AB12CD34EF");
+    try {
+      expect(build.status, build.output).toBe(0);
+      for (const { file } of pages) {
+        const html = read(build, file);
+        expect(html).toContain("https://www.googletagmanager.com/gtag/js?id=G-AB12CD34EF");
+        expect(html).toContain('gtag("config","G-AB12CD34EF")');
+      }
+      expect(read(build, "404.html")).not.toContain("googletagmanager");
+    } finally {
+      clean(build);
+    }
+  });
+
+  it("I-D2 측정 ID가 없으면 어느 페이지에도 gtag가 없다", () => {
+    const build = runBuild(origin);
+    try {
+      expect(build.status, build.output).toBe(0);
+      for (const { file } of pages) {
+        expect(read(build, file)).toContain("<h1");
+        expect(read(build, file)).not.toContain("googletagmanager");
+      }
+    } finally {
+      clean(build);
+    }
+  });
+
+  it("I-D3 측정 ID 모양이 틀리면 빌드가 실패하고 무엇이 틀렸는지 말한다", () => {
+    const build = runBuild(origin, "UA-12345-1");
+    try {
+      expect(build.status).not.toBe(0);
+      expect(build.output).toContain("PUBLIC_GA_MEASUREMENT_ID");
+      expect(build.output).toContain("UA-12345-1");
+    } finally {
+      clean(build);
+    }
+  });
 });
