@@ -53,7 +53,7 @@ pnpm test:e2e:landing                            # 브라우저 e2e (Playwright 
 | `src/scripts/main.ts` | 스크롤 연출과 탭. 없어도 본문은 다 보인다 |
 | `src/assets/img/` | 앱 튜토리얼 그림의 WebP 사본. Astro가 크기별로 다시 굽는다 |
 | `public/` | 아이콘과 공유 카드 그림(`og-*.jpg`) — 그대로 복사된다 |
-| ↳ `public/naver….html` | 네이버 서치어드바이저의 소유 확인 파일. **지우거나 고치지 않는다** — 네이버가 주기적으로 다시 확인한다. `public/`은 포매터 대상에서 뺐다 |
+| ↳ `public/naver….html` | 네이버 서치어드바이저의 소유 확인 파일. **지우거나 고치지 않는다** — 네이버가 주기적으로 다시 확인한다. 검색엔진 확인 파일(`naver*.html` · `google*.html`)만 포매터 대상에서 뺐다 — 한 글자도 바뀌면 안 된다 |
 
 테스트 파일은 소스 옆에 두고 이름이 계층을 가른다 — `*.unit.test.ts` · `*.ui.test.ts` · `*.integration.test.ts`
 (저장소의 다른 앱과 같은 규약이다. `.astro`를 그리는 ui 테스트도 JSX가 없어 확장자가 `.ts`다).
