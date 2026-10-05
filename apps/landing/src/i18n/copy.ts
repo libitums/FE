@@ -87,15 +87,15 @@ export const en = {
     "Yes — Duru’s lessons show Korean phrases together with their romanization and meaning, and its story scenes come with English translations, so you can start without reading Hangul. The first lessons guide you to tap a single phrase, so you can do them without a Korean keyboard.",
   faqLanguageQ: "What language is the Duru app in?",
   faqLanguageA:
-    "Duru’s app interface is in English for now. The Korean you learn is shown with English meanings and romanization.",
+    "Duru’s app interface is in English for now. The Korean you learn comes with English meanings and romanization.",
   faqWhereQ: "Where can I download Duru?",
   faqWhereASoon:
-    "Duru is not released yet. It is being prepared for iPhone (App Store) and Android (Google Play), and the store links will appear on this website when it is available.",
+    "Duru is not released yet. We are preparing it for iPhone (App Store) and Android (Google Play), and the store links will appear on this website when it is ready.",
   faqWhereAAvailable: "Duru is available now. You can get it from the store links on this website.",
   notFoundMetaTitle: "Page not found — Duru",
   notFoundTitle: "This page doesn’t exist",
   notFoundBody:
-    "The address may be mistyped, or the page may have moved. Start again from the home page.",
+    "The address may have a typo, or the page may have moved. Start again from the home page.",
   notFoundHome: "Back to Duru",
 };
 
