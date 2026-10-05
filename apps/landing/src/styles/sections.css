@@ -334,6 +334,11 @@ html:lang(ko) .hero__cue {
     opacity: 1;
   }
 
+  /* 겹쳐 있어 처음에는 보이지 않는 두 장면은 스크롤이 시작될 때까지 그리지 않습니다 — 그림도 그때 받습니다. */
+  .hero:not(.is-started) .hero__panel:not(:first-child) {
+    display: none;
+  }
+
   .is-enhanced .hero__panel {
     opacity: var(--lit);
   }

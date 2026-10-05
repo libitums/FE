@@ -69,6 +69,7 @@ function initScroll() {
     if (reducedMotion) return;
 
     const progress = travel > 0 ? clamp01(window.scrollY / travel) : 1;
+    if (progress > 0.01) hero.classList.add("is-started");
     panels[1]?.style.setProperty("--lit", ramp(progress, 0.08, 0.36).toFixed(3));
     panels[2]?.style.setProperty("--lit", ramp(progress, 0.36, 0.64).toFixed(3));
     for (const panel of panels) {

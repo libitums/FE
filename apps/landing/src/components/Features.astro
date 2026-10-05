@@ -1,4 +1,6 @@
 ---
+import { getImage } from "astro:assets";
+
 import { img } from "../assets/images";
 import type { Copy } from "../i18n/copy";
 
@@ -7,6 +9,15 @@ interface Props {
 }
 
 const { t } = Astro.props;
+
+// 배경은 흐리게 깔리는 그림이라 작게 구운 것으로 충분합니다(원본을 쓰면 장면마다 100KB 안팎을 더 받습니다).
+const small = async (image: ImageMetadata) => (await getImage({ src: image, width: 240 })).src;
+const backdrop = {
+  story: await small(img.sceneStreet),
+  messenger: await small(img.sceneCafe),
+  call: await small(img.sceneFlight),
+  practice: await small(img.sceneArrival),
+};
 ---
 
 <section class="features" id="ways" aria-labelledby="features-title">
@@ -23,7 +34,7 @@ const { t } = Astro.props;
         <p>{t.wayStoryDesc}</p>
       </div>
       <div class="feature__media">
-        <img class="feature__backdrop" src={img.sceneStreet.src} alt="" loading="lazy" />
+        <img class="feature__backdrop" src={backdrop.story} alt="" loading="lazy" />
         <div class="phone">
           <div class="phone__screen">
             <div class="screen screen--story">
@@ -49,12 +60,12 @@ const { t } = Astro.props;
         <p>{t.wayMessengerDesc}</p>
       </div>
       <div class="feature__media">
-        <img class="feature__backdrop" src={img.sceneCafe.src} alt="" loading="lazy" />
+        <img class="feature__backdrop" src={backdrop.messenger} alt="" loading="lazy" />
         <div class="phone">
           <div class="phone__screen">
             <div class="screen screen--messenger">
               <div class="chat__head">
-                <img src={img.minseo.src} alt="" width="36" height="36" />
+                <img src={img.minseo.src} alt="" width="36" height="36" loading="lazy" />
                 <span>Minseo</span>
               </div>
               <div class="chat__body">
@@ -88,11 +99,11 @@ const { t } = Astro.props;
         <p>{t.wayCallDesc}</p>
       </div>
       <div class="feature__media">
-        <img class="feature__backdrop" src={img.sceneFlight.src} alt="" loading="lazy" />
+        <img class="feature__backdrop" src={backdrop.call} alt="" loading="lazy" />
         <div class="phone">
           <div class="phone__screen">
             <div class="screen screen--call">
-              <img class="call__avatar" src={img.minseo.src} alt="" />
+              <img class="call__avatar" src={img.minseo.src} alt="" loading="lazy" />
               <p class="call__name">Minseo</p>
               <p class="call__status">On a call</p>
               <div class="call__wave" aria-hidden="true">
@@ -117,7 +128,7 @@ const { t } = Astro.props;
         <p>{t.wayPracticeDesc}</p>
       </div>
       <div class="feature__media">
-        <img class="feature__backdrop" src={img.sceneArrival.src} alt="" loading="lazy" />
+        <img class="feature__backdrop" src={backdrop.practice} alt="" loading="lazy" />
         <div class="phone">
           <div class="phone__screen">
             <div class="screen screen--practice">

@@ -16,6 +16,8 @@ resolveMeasurementId(process.env.PUBLIC_GA_MEASUREMENT_ID);
 export default defineConfig({
   site: site || undefined,
   trailingSlash: "always",
+  // CSS를 HTML에 넣어 첫 화면이 스타일시트 요청을 기다리지 않게 합니다(페이지가 둘이라 캐시 이득이 작습니다).
+  build: { inlineStylesheets: "always" },
   i18n: {
     defaultLocale: defaultLanguage,
     locales,

@@ -240,10 +240,13 @@ describe("빌드 A — SITE_URL 있음", () => {
       expect(
         hrefs.filter((href) => /fonts\.g(oogleapis|static)\.com|cdn\.jsdelivr\.net/.test(href)),
       ).toEqual([]);
-      const css = attr(document, 'link[rel="stylesheet"]', "href")
-        .filter((href) => href.startsWith("/"))
-        .map((href) => read(build, href.slice(1)))
-        .join("\n");
+      // 스타일은 HTML에 들어 있거나(inline) 같은 산출물의 파일로 나옵니다 — 둘 다 봅니다.
+      const css = [
+        ...texts(document, "style"),
+        ...attr(document, 'link[rel="stylesheet"]', "href")
+          .filter((href) => href.startsWith("/"))
+          .map((href) => read(build, href.slice(1))),
+      ].join("\n");
       expect(css).toContain("Jost Variable");
       expect(css).toContain("Pretendard Variable");
       expect(css).not.toMatch(/url\((["']?)https?:/);

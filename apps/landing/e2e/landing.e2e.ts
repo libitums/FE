@@ -35,11 +35,15 @@ for (const path of paths) {
     });
 
     test("FAQ는 키보드로 여닫고, 닫힌 답으로 포커스가 새지 않는다", async ({ page }) => {
+      // 부드러운 스크롤이 끝나기를 기다리지 않도록 끕니다.
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto(path);
       const items = page.getByTestId("faq-item");
       await expect(items).toHaveCount(7);
       const first = items.nth(0).locator("summary");
       await first.focus();
+      // 포커스를 받은 요소는 화면 안으로 와야 합니다(먼 섹션을 늦게 그리는 최적화가 이것을 깨뜨리면 안 됩니다).
+      await expect(first).toBeInViewport();
       await page.keyboard.press("Enter");
       await expect(items.nth(0)).toHaveAttribute("open", "");
       await expect(items.nth(0).getByTestId("faq-answer")).toBeVisible();

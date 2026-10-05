@@ -95,3 +95,22 @@ test("히어로 첫 그림은 높은 우선순위로 가장 먼저 요청된다"
     expect(scene.priority).not.toBe("High");
   }
 });
+
+test("좁은 화면의 첫 화면은 아직 보이지 않는 히어로 그림을 받지 않는다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const requested: string[] = [];
+  page.on("request", (request) => requested.push(new URL(request.url()).pathname));
+  await page.goto("/", { waitUntil: "networkidle" });
+  const sources = await page
+    .locator(".hero__panel img")
+    .evaluateAll((images) => images.map((image) => image.getAttribute("src") ?? ""));
+  expect(sources).toHaveLength(3);
+  expect(requested).toContain(sources[0]);
+  expect(requested).not.toContain(sources[1]);
+  expect(requested).not.toContain(sources[2]);
+
+  // 스크롤이 시작되면 두 장면이 그려지고, 그림도 그때 받습니다.
+  await page.evaluate(() => window.scrollTo({ top: 200, behavior: "instant" }));
+  await expect(page.locator(".hero.is-started")).toHaveCount(1);
+  await expect.poll(() => requested).toEqual(expect.arrayContaining(sources));
+});
