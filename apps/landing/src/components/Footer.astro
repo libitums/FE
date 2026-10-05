@@ -1,0 +1,26 @@
+---
+import { pathFor } from "../site";
+import type { FooterProps } from "./landing.contract";
+
+type Props = FooterProps;
+
+const { language, t, variant = "landing" } = Astro.props;
+const home = variant === "page" ? pathFor(language) : "#top";
+---
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <a class="brand brand--footer" href={home}>
+      <img src="/logo-duru.webp" alt="Duru" width="69" height="26" />
+    </a>
+    <ul class="site-footer__links">
+      <li>
+        <a href="https://gregarious-pharaoh-bb6.notion.site/DURU-Term-of-Use-3eb0c2540c0180ef9072f0b447b3b468" target="_blank" rel="noopener">{t.footerTerms}</a>
+      </li>
+      <li>
+        <a href="https://gregarious-pharaoh-bb6.notion.site/DURU-Privacy-Policy-3eb0c2540c01802cad91cc0430552402" target="_blank" rel="noopener">{t.footerPrivacy}</a>
+      </li>
+    </ul>
+    <p class="site-footer__copy">© 2026 Duru</p>
+  </div>
+</footer>

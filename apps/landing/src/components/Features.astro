@@ -1,0 +1,143 @@
+---
+import { img } from "../assets/images";
+import type { Copy } from "../i18n/copy";
+
+interface Props {
+  t: Copy;
+}
+
+const { t } = Astro.props;
+---
+
+<section class="features" id="ways" aria-labelledby="features-title">
+  <div class="features__stage container">
+    <header class="features__head">
+      <p class="eyebrow">{t.waysEyebrow}</p>
+      <h2 id="features-title" set:html={t.waysTitle} />
+    </header>
+
+    <article class="feature is-active">
+      <div class="feature__text">
+        <p class="feature__step">01 / 04</p>
+        <h3>{t.wayStoryTitle}</h3>
+        <p>{t.wayStoryDesc}</p>
+      </div>
+      <div class="feature__media">
+        <img class="feature__backdrop" src={img.sceneStreet.src} alt="" loading="lazy" />
+        <div class="phone">
+          <div class="phone__screen">
+            <div class="screen screen--story">
+              <img src={img.sceneCafeEvening.src} alt="" loading="lazy" />
+              <div class="dialog">
+                <p class="dialog__speaker">Me</p>
+                <p class="dialog__line" lang="ko">
+                  민서가 웃으며 손을 흔든다. 나도 웃으며 인사를 건넨다.
+                </p>
+                <p class="dialog__gloss">Minseo smiles and waves. I smile back.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="pill">{t.wayStoryTitle}</span>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__text">
+        <p class="feature__step">02 / 04</p>
+        <h3>{t.wayMessengerTitle}</h3>
+        <p>{t.wayMessengerDesc}</p>
+      </div>
+      <div class="feature__media">
+        <img class="feature__backdrop" src={img.sceneCafe.src} alt="" loading="lazy" />
+        <div class="phone">
+          <div class="phone__screen">
+            <div class="screen screen--messenger">
+              <div class="chat__head">
+                <img src={img.minseo.src} alt="" width="36" height="36" />
+                <span>Minseo</span>
+              </div>
+              <div class="chat__body">
+                <div class="bubble bubble--other">
+                  <p lang="ko">지금 뭐 해? 같이 커피 마실래?</p>
+                  <small>What are you up to? Want to get coffee?</small>
+                </div>
+                <div class="bubble bubble--self">
+                  <p lang="ko">좋아! 어디서 만나?</p>
+                  <small>Sure! Where should we meet?</small>
+                </div>
+                <div class="bubble bubble--other">
+                  <p lang="ko">골목 끝 카페에서 만나자.</p>
+                  <small>Let’s meet at the café at the end of the street.</small>
+                </div>
+              </div>
+              <div class="chat__choices" aria-hidden="true">
+                <span lang="ko">먼저 가서 창가 자리 맡아둘게.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="pill">{t.wayMessengerTitle}</span>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__text">
+        <p class="feature__step">03 / 04</p>
+        <h3>{t.wayCallTitle}</h3>
+        <p>{t.wayCallDesc}</p>
+      </div>
+      <div class="feature__media">
+        <img class="feature__backdrop" src={img.sceneFlight.src} alt="" loading="lazy" />
+        <div class="phone">
+          <div class="phone__screen">
+            <div class="screen screen--call">
+              <img class="call__avatar" src={img.minseo.src} alt="" />
+              <p class="call__name">Minseo</p>
+              <p class="call__status">On a call</p>
+              <div class="call__wave" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+              <div class="call__transcript">
+                <p lang="ko">저는 민서예요.</p>
+                <small>I’m Minseo.</small>
+              </div>
+              <div class="call__reply" lang="ko">아, 민서 씨! 내일 카페에서 봬요.</div>
+            </div>
+          </div>
+        </div>
+        <span class="pill">{t.wayCallTitle}</span>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature__text">
+        <p class="feature__step">04 / 04</p>
+        <h3>{t.wayPracticeTitle}</h3>
+        <p>{t.wayPracticeDesc}</p>
+      </div>
+      <div class="feature__media">
+        <img class="feature__backdrop" src={img.sceneArrival.src} alt="" loading="lazy" />
+        <div class="phone">
+          <div class="phone__screen">
+            <div class="screen screen--practice">
+              <p class="practice__label">Trace one letter</p>
+              <div class="practice__pad" aria-hidden="true">
+                <span class="practice__ghost" lang="ko">나</span>
+                <span class="practice__ink" lang="ko">나</span>
+              </div>
+              <p class="practice__phrase" lang="ko">내일 만<mark>나</mark>요</p>
+              <p class="practice__gloss">See you tomorrow</p>
+              <ul class="practice__modes">
+                <li>Listen</li>
+                <li>Speak</li>
+                <li class="is-on">Write</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <span class="pill">{t.wayPracticeTitle}</span>
+      </div>
+    </article>
+  </div>
+</section>

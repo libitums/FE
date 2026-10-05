@@ -1,0 +1,49 @@
+---
+import Base from "../layouts/Base.astro";
+import { robotsNoindex } from "../seo/head-meta";
+import { defaultLanguage, languages, pages, pathFor } from "../site";
+import Footer from "./Footer.astro";
+import Header from "./Header.astro";
+import type { NotFoundProps } from "./landing.contract";
+
+type Props = NotFoundProps;
+
+const { language } = Astro.props;
+const t = pages[language].copy;
+const others = languages.filter((code) => code !== defaultLanguage);
+---
+
+<Base
+  language={language}
+  title={t.notFoundMetaTitle}
+  description={t.notFoundBody}
+  robots={robotsNoindex}
+>
+  <Header language={language} t={t} variant="page" />
+  <main class="not-found" id="main" data-testid="not-found">
+    <div class="container">
+      <p class="not-found__code" aria-hidden="true">404</p>
+      <h1 class="not-found__title">{t.notFoundTitle}</h1>
+      <p class="section-lead">{t.notFoundBody}</p>
+      <div class="not-found__actions">
+        <a class="button" href={pathFor(defaultLanguage)} data-testid="not-found-home">
+          {t.notFoundHome}
+        </a>
+      </div>
+      {
+        others.length > 0 && (
+          <ul class="not-found__languages" data-testid="not-found-languages">
+            {others.map((code) => (
+              <li>
+                <a href={pathFor(code)} lang={code} hreflang={code}>
+                  {pages[code].label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </main>
+  <Footer language={language} t={t} variant="page" />
+</Base>

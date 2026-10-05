@@ -1,0 +1,46 @@
+---
+import "@libitums/design-tokens/css/variables.css";
+import "@libitums/design-tokens/css/typography.css";
+import "../styles/base.css";
+import "../styles/sections.css";
+import "../styles/showcase.css";
+import "../styles/phone.css";
+
+import type { BaseProps } from "../components/landing.contract";
+import { pages } from "../site";
+
+type Props = BaseProps;
+
+const { language, title, description, robots } = Astro.props;
+const page = pages[language];
+---
+
+<!doctype html>
+<html lang={language}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <meta name="theme-color" content="#F46B18" />
+    <link rel="icon" type="image/png" href="/icon-64.png" />
+    <link rel="apple-touch-icon" href="/icon-180.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Jost:wght@500;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{page.copy.skip}</a>
+    <slot />
+  </body>
+</html>
