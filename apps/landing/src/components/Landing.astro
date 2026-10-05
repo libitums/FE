@@ -2,7 +2,8 @@
 import { resolveMeasurementId } from "../analytics/gtag";
 import { img } from "../assets/images";
 import Base from "../layouts/Base.astro";
-import { robotsIndexable } from "../seo/head-meta";
+import { deployEnvironment } from "../seo/deploy-env";
+import { robotsIndexable, robotsNoindex } from "../seo/head-meta";
 import { buildFaq, storeAvailabilityOf } from "../seo/faq";
 import { type Language, pages, storeLinks } from "../site";
 import Analytics from "./Analytics.astro";
@@ -25,6 +26,8 @@ interface Props {
 const { language } = Astro.props;
 const page = pages[language];
 const t = page.copy;
+// 프리뷰 배포는 검색에 싣지 않고 방문도 세지 않습니다.
+const { indexable } = deployEnvironment(process.env);
 const faq = buildFaq({ copy: t, storeAvailability: storeAvailabilityOf(storeLinks) });
 ---
 
@@ -32,12 +35,14 @@ const faq = buildFaq({ copy: t, storeAvailability: storeAvailabilityOf(storeLink
   language={language}
   title={page.title}
   description={page.description}
-  robots={robotsIndexable}
+  robots={indexable ? robotsIndexable : robotsNoindex}
 >
   <Fragment slot="head">
     <SeoHead language={language} siteUrl={Astro.site?.origin ?? ""} faq={faq} />
     <link rel="preload" as="image" href={img.scenePlane.src} fetchpriority="high" />
-    <Analytics measurementId={resolveMeasurementId(import.meta.env.PUBLIC_GA_MEASUREMENT_ID)} />
+    <Analytics
+      measurementId={indexable ? resolveMeasurementId(import.meta.env.PUBLIC_GA_MEASUREMENT_ID) : ""}
+    />
   </Fragment>
   <Header language={language} t={t} />
   <main id="main">
