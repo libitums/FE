@@ -18,7 +18,12 @@ pnpm --filter @libitums/landing test:unit         # 순수 함수 (src/seo, 문�
 pnpm --filter @libitums/landing test:ui           # 컴포넌트 하나를 그려 마크업을 본다
 pnpm --filter @libitums/landing test:integration  # 실제로 빌드해 산출 파일을 본다
 pnpm --filter @libitums/landing test              # 위 셋을 차례로
+pnpm test:e2e:landing                            # 브라우저 e2e (Playwright — chromium · firefox · webkit · 모바일)
 ```
+
+브라우저 e2e는 처음 한 번 `pnpm --filter @libitums/landing exec playwright install chromium firefox webkit`로 브라우저를 받는다.
+`SITE_URL=https://example.test`로 `.e2e-dist/`에 빌드해 `e2e/serve.mjs`로 띄우므로 개발 서버(4321)와 부딪히지 않는다.
+**`pnpm verify`와 CI에는 들어 있지 않다** — CI에 브라우저를 받는 단계가 없다.
 
 루트의 `pnpm build` · `pnpm typecheck` · `pnpm test`(따라서 `pnpm verify`와 CI)가 이 앱을 함께 돈다. 테스트 셋은 루트
 `test:unit` · `test:ui` · `test:integration` 사슬의 끝에 붙어 있다

@@ -9,6 +9,27 @@
 단위 · ui · integration 테스트가 이미 보는 것(JSON-LD 모양, 화면 FAQ = `FAQPage`, 산출 파일의 줄)은 반복하지 않는다.
 여기는 **대역으로는 볼 수 없는 것**만 본다 — Lighthouse 점수, 외부 검증기, 스크립트를 끈 실제 화면, 키보드 · 보조 기술, 폭 · 그림 요청 순서.
 
+## 자동화된 것 (2026-10-05)
+
+아래 절차 가운데 브라우저만 있으면 되는 단계는 Playwright 테스트(`apps/landing/e2e/*.e2e.ts`)로 옮겼다.
+`pnpm test:e2e:landing`이 chromium · firefox · webkit · 모바일(Pixel 7) 네 구성으로 돈다(산출물의 내용만 보는 `content.e2e.ts`는 chromium만).
+
+| 케이스 | 자동화된 것 | 여전히 사람이 하는 것 |
+|---|---|---|
+| E1 | — (h1 · 제목 단계 · head 값은 테스트가 본다) | Lighthouse 점수 |
+| E2 | JSON-LD가 파싱되고 타입 셋 · 질문 일곱인지 | validator.schema.org 판정 |
+| E3 | 스크립트 끈 FAQ 일곱 · 눌러 열기 | — |
+| E4 | `Enter` · `Space` 여닫기, 닫힌 답에 포커스 가능한 요소 없음, 포커스 표시의 계산값 | 눈으로 보는 윤곽, 스크린리더 낭독 |
+| E5 | `robots.txt` · `llms.txt` · sitemap의 본문, 화면 FAQ와의 일치 | 실제 호스트의 헤더(「배포 뒤」) |
+| E6 | 404 응답 · `noindex` · canonical 없음 · 스크립트 없음 · 홈 링크 | — |
+| E7 | 390 · 1000 · 1440px 가로 넘침, 1000px 머리 한 줄, FAQ 메뉴 이동, axe(WCAG 2.1 A · AA) | 눈으로 보는 배치 |
+| E8 | 첫 그림의 처음 우선순위 High와 요청 순서(chromium, CDP) | — |
+| E9 | `/ko/`의 `lang` · canonical · `og:locale` · hreflang | 스크린리더 낭독 |
+
+- **webkit은 Safari가 아니다.** 같은 엔진이지만 실제 Safari의 키보드 설정 · VoiceOver와는 다르다.
+- webkit에서는 axe의 `color-contrast` 규칙을 끈다 — 어두운 구간의 큰 제목 글자색을 `#000`으로 잘못 읽는다(계산된 `color`는 흰색). 대비는 chromium · firefox가 본다.
+- axe는 스크롤 연출이 꺼진 상태(`prefers-reduced-motion`)에서 돈다. 연출 중의 선언문 대비는 보지 않는다.
+
 ## 표기
 
 각 단계 앞의 표지는 누가 하는지를 말한다.

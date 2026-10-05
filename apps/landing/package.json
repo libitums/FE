@@ -12,7 +12,8 @@
     "test": "pnpm test:unit && pnpm test:ui && pnpm test:integration",
     "test:unit": "vitest run unit.test",
     "test:ui": "vitest run ui.test",
-    "test:integration": "vitest run integration.test"
+    "test:integration": "vitest run integration.test",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",
@@ -22,6 +23,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
     "@types/jsdom": "27.0.0",
     "@types/node": "22.20.0",
     "jsdom": "27.4.0",

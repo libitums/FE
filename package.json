@@ -21,6 +21,7 @@
     "test:ci-wiring": "node --test devtools/ci-wiring/*.test.mjs",
     "test:android-bundle": "node --test devtools/android-bundle/*.test.mjs",
     "test:e2e": "maestro ${E2E_UDID:+--udid \"$E2E_UDID\"} test e2e/entry-flow.yaml",
+    "test:e2e:landing": "pnpm --filter @libitums/landing test:e2e",
     "test:e2e:android:host": "maestro ${E2E_UDID:+--udid \"$E2E_UDID\"} test e2e/android-host.yaml",
     "test:e2e:android:social": "sh devtools/android-maestro/run-social.sh",
     "test:e2e:android:legal": "sh devtools/android-maestro/run-legal-documents.sh",

@@ -116,6 +116,11 @@ GPTBot · OAI-SearchBot · ChatGPT-User · ClaudeBot · PerplexityBot · Google-
 - `src/pages/` 아래의 `.ts`는 전부 주소가 되므로 테스트를 거기 두지 않는다. 404의 본문을 `NotFound.astro`로 뗀 이유다.
 - `src/seo/`의 모듈은 Astro · `site.ts` · 문구를 import하지 않고 값을 인자로 받는다 — 언어가 늘어도 unit에서 잴 수 있다.
 
+브라우저 e2e는 Playwright다(`apps/landing/e2e/`, `pnpm test:e2e:landing`) — chromium · firefox · webkit · 모바일 구성으로
+FAQ의 키보드 조작, 스크립트 없는 화면, 404, 폭별 넘침, 그림 요청 우선순위, axe 검사를 본다. 이 저장소의 e2e가 수동 절차인 까닭
+(실기기 · VoiceOver)은 웹인 이 앱에는 해당하지 않는다. **`pnpm verify`와 CI에는 넣지 않았다** — CI에 브라우저를 받는 단계를
+더하는 것은 따로 정할 일이다. 스크린리더 낭독과 외부 검증기는 여전히 수동 절차(`docs/e2e/landing-seo-geo.md`)에 남는다.
+
 ## 버린 대안
 
 - **Gatsby** — React 런타임과 GraphQL 데이터 계층이 한 페이지에 과하고, 유지보수가 눈에 띄게 느려졌다.
