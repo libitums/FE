@@ -70,6 +70,7 @@ dependencies {
   implementation 'com.facebook.fresco:animated-base:2.3.0'
   implementation 'com.squareup.okhttp3:okhttp:4.9.0'
   implementation 'androidx.browser:browser:1.8.0'
+  implementation 'androidx.core:core:1.15.0'
   implementation 'com.google.android.play:review:2.0.2'
   implementation platform('com.google.firebase:firebase-bom:34.19.0')
   implementation 'com.google.firebase:firebase-messaging'
@@ -79,6 +80,21 @@ dependencies {
   implementation "org.lynxsdk.lynx:xelement-overlay:${lynxVersion}"
   implementation "org.lynxsdk.lynx:xelement-svg:${lynxVersion}"
   implementation 'org.lynxsdk.lynx:servalsvg:0.0.1-alpha.3'
+
+  constraints {
+    // Fresco 2.3.0과 Play 라이브러리가 끌어오는 버전이 Play Console SDK 경고 대상이다.
+    implementation('com.facebook.soloader:soloader:0.10.5') {
+      because 'SoLoader 0.10.4 미만은 64비트 전용 기기에서 비정상 종료한다'
+    }
+    implementation 'com.facebook.soloader:nativeloader:0.10.5'
+    implementation 'com.facebook.soloader:annotation:0.10.5'
+    implementation('androidx.fragment:fragment:1.8.9') {
+      because '1.1.0은 개발자가 오래된 버전으로 신고했다'
+    }
+    implementation('androidx.activity:activity:1.10.1') {
+      because '1.0.0은 개발자가 오래된 버전으로 신고했다'
+    }
+  }
 
   androidTestImplementation 'androidx.test:runner:1.7.0'
   androidTestImplementation 'androidx.test.ext:junit:1.3.0'

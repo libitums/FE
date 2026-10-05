@@ -2,11 +2,18 @@ package com.libitum.host;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Window;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import com.lynx.tasm.LynxBooleanOption;
 import com.lynx.tasm.LynxView;
 import com.lynx.tasm.LynxViewBuilder;
@@ -14,6 +21,7 @@ import com.lynx.tasm.LynxViewClient;
 import com.lynx.react.bridge.Callback;
 import com.lynx.react.bridge.JavaOnlyArray;
 import com.lynx.xelement.XElementBehaviors;
+import java.util.Map;
 
 public final class MainActivity extends Activity {
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -24,9 +32,11 @@ public final class MainActivity extends Activity {
   private SpeechRecognitionController speechRecognition;
   PushNotificationController pushNotifications;
   private LynxView lynxView;
+  private Map<String, Object> lastSafeAreaInsets;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    layoutEdgeToEdge();
     boolean bundled = !BuildConfig.DEBUG;
     String override = getIntent().getStringExtra("bundle-url");
     String templateUrl = HostPaths.template(BuildConfig.DEBUG, override);
@@ -62,8 +72,39 @@ public final class MainActivity extends Activity {
       }
     });
     setContentView(lynxView);
+    publishSafeAreaInsets();
     pushNotifications.captureOpened();
     lynxView.renderTemplateUrl(templateUrl, "");
+  }
+
+  /**
+   * LynxView는 시스템 바 뒤까지 전체 화면이다(iOS 호스트와 같다). targetSdk 35부터는 시스템이
+   * 이를 강제하므로 버전과 무관하게 같은 배치를 쓴다. 가려지는 크기는 globalProps
+   * `safeAreaInsets`로 넘기고 앱 셸이 그만큼 안쪽 여백을 잡는다(mobile `lib/safe-area.ts`).
+   */
+  private void layoutEdgeToEdge() {
+    Window window = getWindow();
+    WindowCompat.setDecorFitsSystemWindows(window, false);
+    window.setStatusBarColor(Color.TRANSPARENT);
+    window.setNavigationBarColor(Color.TRANSPARENT);
+    WindowInsetsControllerCompat bars =
+        WindowCompat.getInsetsController(window, window.getDecorView());
+    bars.setAppearanceLightStatusBars(true);
+    bars.setAppearanceLightNavigationBars(true);
+  }
+
+  private void publishSafeAreaInsets() {
+    ViewCompat.setOnApplyWindowInsetsListener(lynxView, (view, windowInsets) -> {
+      Insets insets = windowInsets.getInsets(
+          WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+      Map<String, Object> props = SafeAreaInsets.globalProps(insets.top, insets.bottom,
+          insets.left, insets.right, getResources().getDisplayMetrics().density);
+      if (!props.equals(lastSafeAreaInsets)) {
+        lastSafeAreaInsets = props;
+        lynxView.updateGlobalProps(props);
+      }
+      return windowInsets;
+    });
   }
 
   void startWebAuthentication(String url, String scheme, Callback callback) {
