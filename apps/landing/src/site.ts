@@ -50,7 +50,7 @@ export const pages: Record<Language, LanguagePage> = {
     locale: "en_US",
     image: "/og-en.jpg",
     imageAlt:
-      "Duru — “Korean, lived as a story.” over three scenes: a plane window above the sea, a sunlit street with a café, and an airport arrival hall at sunset.",
+      "Duru — “Korean, lived as a story” over three scenes: a plane window above the sea, a sunlit street with a café, and an airport arrival hall at sunset.",
     title: "Duru — Learn Korean by living a story",
     description:
       "Duru is a story-based Korean learning app. Step into a day in Korea, chat and talk with the people you meet, and keep the words you used.",
@@ -65,7 +65,7 @@ export const pages: Record<Language, LanguagePage> = {
       "Duru — 「이야기로 살아보는 한국어」. 바다 위 비행기 창밖, 카페가 있는 햇살 비치는 골목, 해 질 무렵 공항 도착 로비의 세 장면.",
     title: "Duru — 이야기로 배우는 한국어",
     description:
-      "Duru는 이야기 속에서 한국어를 배우는 앱입니다. 한국에서의 하루로 들어가 만나는 사람들과 메시지와 전화로 대화하고, 직접 쓴 말을 내 것으로 만드세요.",
+      "Duru는 이야기 속에서 한국어를 배우는 앱이에요. 한국에서의 하루로 들어가 만나는 사람들과 메시지와 전화로 대화하고, 직접 쓴 말을 내 것으로 만들어 보세요.",
     copy: ko,
   },
 };
