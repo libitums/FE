@@ -56,7 +56,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | 축 | 처리 | ADR |
 |---|---|---|
 | 저장소 목표·제외 범위 | 결정 | [0001](0001-repository-goal-and-scope.md) |
-| 앱 로스터 | 결정 | [0012](0012-native-host-app-minimal.md) — 0002 D1~D3 부분 대체; [0038](0038-android-minimal-host.md)가 Android 제외를 부분 대체; [0039](0039-android-social-oauth.md)이 초기 심사의 Android 소셜 인증을 연다 |
+| 앱 로스터 | 결정 | [0012](0012-native-host-app-minimal.md) — 0002 D1~D3 부분 대체; [0038](0038-android-minimal-host.md)가 Android 제외를 부분 대체; [0039](0039-android-social-oauth.md)이 초기 심사의 Android 소셜 인증을 연다; [0043](0043-landing-static-site.md)이 웹 타깃 `apps/landing`(Astro 정적 랜딩)을 더한다 — **제안**. 그 앱의 검색 · 답변 엔진 노출(수집기 허용 · `llms.txt` · FAQ 단일 출처 · 404)과 테스트 계층 셋도 같은 문서가 진다(D6~D9, 수집기 정책은 사용자 확인 전) |
 | 호스트 경계·영속 저장소 | 결정 (iOS 전체 호스트 · Android 최소 호스트) | [0012](0012-native-host-app-minimal.md), [0038](0038-android-minimal-host.md) — D2의 `두 번째 네이티브 모듈` 금지는 [0017](0017-host-native-capabilities-and-audio.md)이 부분 대체, `권한 요청` 금지는 [0026](0026-permission-entry-conditions-and-denial-handling.md)이 부분 대체 |
 | **호스트 네이티브 능력 (확장 조건 · 오디오 재생)** | 결정 (입장 조건 + 모듈 경계) + 보류 (오디오 자산의 출처) | [0017](0017-host-native-capabilities-and-audio.md) |
 | **호스트 네이티브 능력 (권한 입장 조건 · 거부 처리 · 외부 이동 경계)** | 결정 (입장 조건 다섯 + 세 상태의 처방 + 나가는 이동 하나) + **제안 (나가는 목적지 둘째 — 웹 인증 창)** | [0026](0026-permission-entry-conditions-and-denial-handling.md) — 0012 D2의 `권한 요청` 한 항목을 부분 대체. **열린 권한 목록은 그 D2의 권한 표**가 지고 이 표는 안 센다. D4의 「설정 페이지 하나」는 [0028](0028-social-oauth-web-authentication.md) D4가 부분 대체 — 인증 창 하나가 더 나간다. iOS의 URL scheme 미등록은 유지하고 Android의 딥링크 등록은 [0039](0039-android-social-oauth.md)이 정한다 |

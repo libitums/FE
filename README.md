@@ -13,6 +13,7 @@
 | [`apps/android`](apps/android) | 같은 번들을 로드하는 Android 최소 호스트 | Java · Gradle · Lynx SDK 4.0.1 |
 | [`apps/storybook-lynx`](apps/storybook-lynx) | 실제 Lynx Web bundle을 `<lynx-view>`로 보여주는 컴포넌트 카탈로그 | Storybook · Rspeedy |
 | [`apps/supabase-functions`](apps/supabase-functions) | 서버 함수(Supabase Edge Function). 지금은 계정 삭제 `delete-account` 하나 — 배포 · 시크릿은 [그 README](apps/supabase-functions/README.md) | TypeScript · Deno · Supabase CLI |
+| [`apps/landing`](apps/landing) | 서비스 소개 랜딩 페이지. 영어 `/` · 한국어 `/ko/`를 정적 HTML로 굽는다 ([ADR-0043](docs/adr/0043-landing-static-site.md)) | Astro · pnpm |
 
 공개 재사용 컴포넌트는 [`packages/ui-lynx`](packages/ui-lynx)에 있다. 현재 Button, Back Header,
 Status Indicator, Progress Header를 명시적 package export로 제공한다.
