@@ -1,5 +1,5 @@
 import type { AvatarProps } from "../avatar";
-import type { Motion } from "../motion/motion.contract";
+import { motionClassName, type Motion } from "../motion/motion.contract";
 
 type SettingsCellBase = {
   readonly title: string;
@@ -51,7 +51,6 @@ export function getSettingsCellContract(
   props: SettingsCellProps,
   contextMotion: Motion = "standard",
 ): SettingsCellContract {
-  void contextMotion;
   if (!props || typeof props !== "object") throw new Error("Settings Cell props are required");
   const title = optionalText(props.title);
   if (!title) throw new Error("Settings Cell title must not be empty");
@@ -84,6 +83,7 @@ export function getSettingsCellContract(
       `ui-lynx-settings-cell-type-${props.trailing}`,
       disabled ? "ui-lynx-settings-cell-disabled" : "ui-lynx-settings-cell-enabled",
       props.focused && !disabled ? "ui-lynx-settings-cell-focused" : "",
+      motionClassName("ui-lynx-settings-cell", contextMotion),
     ]
       .filter(Boolean)
       .join(" "),

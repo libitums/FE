@@ -1,5 +1,5 @@
 import type { ReactNode } from "@lynx-js/react";
-import type { Motion } from "../motion/motion.contract";
+import { resolveReducedMotion, type Motion } from "../motion/motion.contract";
 
 export type VisualNovelDialogVariant = "speech" | "narration" | "thought";
 export type VisualNovelDialogSurface = "opaque" | "translucent";
@@ -118,12 +118,12 @@ export function getVisualNovelDialogContract(
   props: VisualNovelDialogProps,
   contextMotion: Motion = "standard",
 ): VisualNovelDialogContract {
-  void contextMotion;
   const line = requireVisibleText(props.line, "line");
   const variant = props.variant ?? "speech";
   const surface = props.surface ?? "opaque";
   const requestedReveal = props.reveal ?? "instant";
-  const reveal = props.reducedMotion ? "instant" : requestedReveal;
+  const reduced = resolveReducedMotion(props.reducedMotion, contextMotion);
+  const reveal = reduced ? "instant" : requestedReveal;
   const requestedStatus =
     props.status ?? (requestedReveal === "typewriter" ? "revealing" : "ready");
   const status = reveal === "instant" ? "ready" : requestedStatus;
@@ -195,7 +195,7 @@ export function getVisualNovelDialogContract(
     contentLanguage,
     continueIndicator,
     direction,
-    indicatorMotion: props.reducedMotion ? "static" : "bounce",
+    indicatorMotion: reduced ? "static" : "bounce",
     ...(languageTag ? { languageTag } : {}),
     line,
     reveal,

@@ -1,6 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 import type { IconPosition } from "../button/button.contract";
-import type { Motion } from "../motion/motion.contract";
+import { resolveMotion, type Motion } from "../motion/motion.contract";
 
 export const BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD = 48;
 
@@ -59,7 +59,6 @@ export function getBottomSheetContract(
   props: BottomSheetProps,
   contextMotion: Motion = "standard",
 ): BottomSheetContract {
-  void contextMotion;
   const title = requireNonEmpty(props.title, "title");
   const closeAccessibilityLabel = requireNonEmpty(
     props.closeAccessibilityLabel,
@@ -75,7 +74,7 @@ export function getBottomSheetContract(
     actionIds.add(action.id);
   }
 
-  const motion = props.motion ?? "standard";
+  const motion = resolveMotion(props.motion, contextMotion);
   const draggable = props.draggable ?? true;
 
   return {

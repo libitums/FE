@@ -6,6 +6,6 @@ enum ReducedMotion {
 
   /// `["reducedMotion": enabled]` — Bool 그대로. 다른 키는 싣지 않는다.
   static func globalProps(enabled: Bool) -> [String: Any] {
-    return [:]
+    return [globalPropsKey: enabled]
   }
 }

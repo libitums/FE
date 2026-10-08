@@ -11,11 +11,11 @@ final class ReducedMotion {
 
   /** 둘 중 하나라도 0f면 true. */
   static boolean fromScales(float animatorDurationScale, float transitionAnimationScale) {
-    return false;
+    return animatorDurationScale == 0f || transitionAnimationScale == 0f;
   }
 
   /** {"reducedMotion": enabled} 한 키짜리 맵. */
   static Map<String, Object> globalProps(boolean enabled) {
-    return Collections.emptyMap();
+    return Collections.<String, Object>singletonMap(GLOBAL_PROPS_KEY, Boolean.valueOf(enabled));
   }
 }

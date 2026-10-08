@@ -1,5 +1,5 @@
 import type { IconPosition } from "../button/button.contract";
-import type { Motion } from "../motion/motion.contract";
+import { resolveMotion, type Motion } from "../motion/motion.contract";
 import type { OverlayPhase } from "../overlay/overlay.contract";
 
 export type DialogMotion = Motion;
@@ -50,7 +50,6 @@ export function getDialogContract(
   props: DialogProps,
   contextMotion: Motion = "standard",
 ): DialogContract {
-  void contextMotion;
   const title = requireNonEmpty(props.title, "title");
   if (props.actions.length < 1 || props.actions.length > 2) {
     throw new Error("Dialog requires one or two actions");
@@ -70,7 +69,7 @@ export function getDialogContract(
   }
   const busy = actions.some((action) => action.loading === true);
 
-  const motion = props.motion ?? "standard";
+  const motion = resolveMotion(props.motion, contextMotion);
   const phase = props.phase ?? "entering";
   const description = props.description?.trim() ? props.description : undefined;
   return {

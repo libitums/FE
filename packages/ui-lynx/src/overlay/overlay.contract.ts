@@ -1,4 +1,4 @@
-import type { Motion } from "../motion/motion.contract";
+import { resolveMotion, type Motion } from "../motion/motion.contract";
 
 export type OverlayBlur = "off" | "on";
 export type OverlayMotion = Motion;
@@ -62,10 +62,9 @@ export function getOverlayContract(
   props: OverlayProps,
   contextMotion: Motion = "standard",
 ): OverlayContract {
-  void contextMotion;
   const blur = props.blur ?? "off";
   const dismiss = props.dismiss ?? "none";
-  const motion = props.motion ?? "standard";
+  const motion = resolveMotion(props.motion, contextMotion);
   const phase = props.phase ?? "visible";
   const surface = props.scope === "screen" ? props.surface : undefined;
 
