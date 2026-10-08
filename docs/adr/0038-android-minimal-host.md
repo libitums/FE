@@ -38,3 +38,7 @@ Android 제품 흐름을 iOS와 동등하게 시연하기로 결정할 때, 또�
 2026-10-02에 `AudioPlaybackModule`의 기존 네 메서드를 Android로 이관했다. 이 ADR의
 최소 호스트 범위는 최초 생성 당시의 결정이며, 현재 모듈별 상태는
 [호스트 모듈 표](README.md#호스트-모듈-표)를 따른다.
+
+2026-10-05에 `SoundEffectsModule`을 Android로 이관하고 오디오 자산 결선을 고쳤다. 그 전의 레거시 `srcDir` 결선은 태스크 의존을 걸지 않아
+이 날까지의 Android 빌드(APK · AAB)에 오디오 자산이 0개였다. 결선 · 산출물 검사 · 효과음의 포커스 · 그림 애니메이션 자리는
+[ADR-0045](0045-android-host-audio-assets.md)가 진다.

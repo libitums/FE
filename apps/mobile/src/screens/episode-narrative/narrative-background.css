@@ -1,5 +1,6 @@
 .narrative-background,
 .narrative-background-frame,
+.narrative-background-motion,
 .narrative-background-image,
 .narrative-background-imagination-veil,
 .narrative-background-reality-veil {
@@ -23,12 +24,12 @@
   animation: narrative-background-reveal 900ms var(--libitum-motion-easing-easing) both;
 }
 
-.narrative-background-image-current {
+.narrative-background-motion-current {
   /* 서사 확대는 6초 동안 한 번만 합니다. 해당 길이의 토큰은 없습니다. */
   animation: narrative-background-drift 6000ms var(--libitum-motion-easing-easing) both;
 }
 
-.narrative-background-image-imagination-departing {
+.narrative-background-motion-imagination-departing {
   /* 상상 진입 3초: 기내를 가까이 당긴 뒤 빛 안으로 물러나게 합니다. */
   animation: narrative-imagination-depart 3000ms ease-in-out both;
 }
@@ -37,7 +38,7 @@
   animation: narrative-imagination-reveal 3000ms ease-in-out both;
 }
 
-.narrative-background-image-imagination {
+.narrative-background-motion-imagination {
   /* 3초에 확대가 가라앉고, 남은 3초는 풍경이 아주 조금 떠오릅니다. */
   animation: narrative-imagination-drift 6000ms ease-out both;
 }
@@ -61,7 +62,7 @@
   animation: narrative-reality-veil 2800ms ease-out both;
 }
 
-.narrative-background-image-reality-departing {
+.narrative-background-motion-reality-departing {
   animation: narrative-reality-depart 2800ms ease-out both;
 }
 
@@ -69,7 +70,7 @@
   animation: narrative-background-reveal 2800ms ease-out both;
 }
 
-.narrative-background-image-reality {
+.narrative-background-motion-reality {
   /* 기내는 확대가 천천히 가라앉은 뒤 정지합니다. */
   animation: narrative-background-drift 2800ms ease-in reverse both;
 }

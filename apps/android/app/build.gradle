@@ -1,3 +1,6 @@
+import com.android.build.api.artifact.SingleArtifact
+import javax.inject.Inject
+
 plugins {
   id 'com.android.application'
 }
@@ -7,12 +10,38 @@ if (file('google-services.json').exists()) {
   apply plugin: 'com.google.gms.google-services'
 }
 
-def syncAudioAssets = tasks.register('syncAudioAssets', Sync) {
-  from(file('../../ios/Host/audio')) {
-    include '*.m4a'
-    into 'audio'
+// Host audio has one source of truth: apps/ios/Host/{audio,sfx}. Each variant gets its own
+// generated assets directory; registering it through the Variant API makes every consumer
+// (merge assets, lint, bundle) depend on the sync task.
+abstract class SyncHostAudioAssets extends DefaultTask {
+  @InputDirectory
+  @PathSensitive(PathSensitivity.RELATIVE)
+  abstract DirectoryProperty getAudioSource()
+
+  @InputDirectory
+  @PathSensitive(PathSensitivity.RELATIVE)
+  abstract DirectoryProperty getSfxSource()
+
+  @OutputDirectory
+  abstract DirectoryProperty getOutputDir()
+
+  @Inject
+  abstract FileSystemOperations getFs()
+
+  @TaskAction
+  void sync() {
+    fs.sync {
+      from(audioSource) {
+        include '*.m4a'
+        into 'audio'
+      }
+      from(sfxSource) {
+        include '*.mp3'
+        into 'sfx'
+      }
+      into(outputDir)
+    }
   }
-  into(layout.buildDirectory.dir('generated/audioAssets'))
 }
 
 android {
@@ -48,8 +77,19 @@ android {
     targetCompatibility JavaVersion.VERSION_17
   }
 
-  sourceSets.main.assets.srcDir(syncAudioAssets)
-  androidResources.noCompress += ['m4a']
+  androidResources.noCompress += ['m4a', 'mp3']
+}
+
+androidComponents {
+  onVariants(selector().all()) { variant ->
+    def sync = tasks.register("sync${variant.name.capitalize()}HostAudioAssets", SyncHostAudioAssets) {
+      audioSource = file('../../ios/Host/audio')
+      sfxSource = file('../../ios/Host/sfx')
+    }
+    variant.sources.assets?.addGeneratedSourceDirectory(sync, { it.outputDir })
+    registerPackagedHostAudioChecks(variant.name, variant.artifacts.get(SingleArtifact.APK.INSTANCE),
+        variant.artifacts.get(SingleArtifact.BUNDLE.INSTANCE))
+  }
 }
 
 def lynxVersion = '4.0.1'
@@ -110,6 +150,13 @@ tasks.register('verifyBundledAssets') {
     if (!new File(assets, 'static').isDirectory()) {
       throw new GradleException('Release static assets missing. Run pnpm bundle:android from the repository root.')
     }
+    def hasFiles = { String dir, String ext ->
+      def folder = file(dir)
+      folder.isDirectory() && ((folder.listFiles() ?: new File[0]) as List<File>).any { it.name.endsWith(ext) }
+    }
+    if (!hasFiles('../../ios/Host/audio', '.m4a') || !hasFiles('../../ios/Host/sfx', '.mp3')) {
+      throw new GradleException('Host audio sources missing in apps/ios/Host/{audio,sfx}.')
+    }
   }
 }
 tasks.configureEach {
@@ -117,3 +164,5 @@ tasks.configureEach {
     dependsOn tasks.named('verifyBundledAssets')
   }
 }
+
+apply from: 'packaged-assets.gradle'

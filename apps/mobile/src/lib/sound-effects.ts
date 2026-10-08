@@ -1,4 +1,4 @@
-/** iOS 호스트의 효과음 접점. 다른 호스트에서는 조용히 무동작한다. */
+/** iOS · Android 호스트의 효과음 접점. 모듈이 없는 호스트(Explorer · 테스트)에서는 조용히 무동작한다. */
 export type SoundEffectId =
   | "button"
   | "correct_answer"

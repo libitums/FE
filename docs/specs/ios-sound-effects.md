@@ -2,11 +2,11 @@
 
 ## 요구사항
 
-- 제공된 효과음 중 8개 MP3를 `apps/ios/Host/sfx/`에 포함한다. `perfect_lesson`은 사용하지 않고 제거한다. Android 호스트와 번들에는 넣지 않는다.
+- 제공된 효과음 중 8개 MP3를 `apps/ios/Host/sfx/`에 포함한다. `perfect_lesson`은 사용하지 않고 제거한다. Android 호스트와 번들에는 넣지 않는다. (2026-10-05 Android로 이관했다 — [Android 호스트 이관](#android-호스트-이관-2026-10-05))
 - 버튼, 정오 판정, 활동·레슨 완료, 수신 통화와 통화 수락에 해당하는 소리를 화면 사건에 연결한다.
 - 반복 렌더나 이미 답한 보기의 재탭으로 소리가 중복되지 않는다.
 - 효과음은 기존 대사·듣기 재생기를 대체하거나 중지하지 않는다. 벨은 받기·나가기·백그라운드에서 멈춘다.
-- iOS 모듈이 없는 Android·테스트 환경에서는 조용히 무동작한다.
+- iOS 모듈이 없는 Android·테스트 환경에서는 조용히 무동작한다. (2026-10-05부터 Android에도 모듈이 있다 — 무동작은 모듈이 없는 Explorer·테스트 환경뿐이다)
 
 ## 계약
 
@@ -52,3 +52,60 @@ Lynx의 `SoundEffectsModule`은 `play(id)`와 `stopRing()`만 제공한다. 식�
 - 최신 `main`(`c49a8209`)에 리베이스했다. 모바일 unit 1,382개, UI 1,142개, integration 425개가 통과했고 타입 검사·린트·포맷 검사도 통과했다.
 - 새 기준에서 번들은 1,380,375 bytes로 기존 1,412,000-byte 예산 안이다. 따라서 이 PR에는 번들 예산 증액을 포함하지 않는다.
 - 리베이스한 iOS Release arm64 빌드에 8개 MP3가 들어 있고 네이티브 XCTest 2개와 별도 시뮬레이터의 Maestro `e2e/entry-flow.yaml`이 통과했다.
+
+## Android 호스트 이관 (2026-10-05)
+
+Android 호스트에도 같은 이름의 `SoundEffectsModule`이 있다. JS(`lib/sound-effects.ts`)와 소비 화면의 호출 시점은 바뀌지 않았다 — 위 계약표가
+두 플랫폼에 그대로 적용된다. 자산은 `apps/ios/Host/sfx/`가 단일 출처이고, Android 빌드가 변형마다 `assets/sfx/`로 무압축 복사한 뒤 산출물을
+검사해 빠지면 실패한다. 결선 · 산출물 검사 · 포커스 결정과 근거는 [ADR-0045](../adr/0045-android-host-audio-assets.md), 에뮬레이터 절차와 결과는
+[Android 효과음 · 대사 오디오 · 서사 배경](../e2e/android-assets.md)에 있다.
+
+### iOS 대조표
+
+| 항목 | iOS (`apps/ios/Host/SoundEffectsModule.swift`) | Android (`apps/android/app/src/main/java/com/libitum/host/SoundEffects*.java`) |
+| --- | --- | --- |
+| 메서드 | `play(id)` · `stopRing()` — 반환 · 콜백 없음 | 같음 |
+| 허용 id | `SoundEffectAsset` 8개 | `SoundEffectAsset` 8개 — 같은 문자열. 정확히 같을 때만 받는다 |
+| 모르는 id | 무시, 던지지 않음 | 같음(로그도 없음) |
+| 음량 | 자산별 상수 | 같은 값(`button` 0.25 · 판정 0.5 · 레슨 결과 0.55 · `ring_bell` 0.35 · `accept_call` 0.4) |
+| 플레이어 | 효과음마다 `AVAudioPlayer` | 짧은 효과음 7개는 `SoundPool`(동시 7), `ring_bell`은 `MediaPlayer` |
+| 미리 읽기 | 모듈 생성 때 8개 | `MainActivity.onCreate`에서 8개 로드 시작. 로드 전 요청은 로드가 끝날 때 한 번 재생 |
+| 같은 효과음 연속 | 멈추고 처음부터 | 그 효과음의 이전 스트림을 멈추고 처음부터 |
+| 다른 효과음끼리 | 겹친다 | 겹친다 |
+| `ring_bell` | 무한 반복. 이미 울리면 무시 | `setLooping(true)`. 이미 울리면 무시 |
+| `stopRing()` | 벨만 멈추고 처음으로 | 벨만 `pause` + `seekTo(0)`. 안 울리면 무동작 |
+| 백그라운드 | 전부 멈춤, 복귀 시 재개 없음 | `MainActivity.onStop` → 전부 멈춤, 복귀 시 재개 없음 |
+| 대사 재생기와의 관계 | 분리, 서로 멈추지 않음 | 분리, 서로 멈추지 않음 — 아래 차이 1 |
+| 재생 실패 | — | logcat 태그 `SoundEffects`의 `W`(`Cannot load sound effect …` · 벨 플레이어 오류) |
+
+### 의도된 차이
+
+아래 넷은 고치지 않고 기록한다. 둘째 줄부터는 후속 판단 대상이다.
+
+1. **효과음은 오디오 포커스를 요청하지 않는다 — 대사를 멈추지 않으려고.** Android 대사(`AudioPlaybackController`)는 `AUDIOFOCUS_GAIN_TRANSIENT`를
+   쥐고 `LOSS_TRANSIENT_CAN_DUCK`에 일시정지한다. 같은 앱의 효과음이 포커스를 요청하면 대사가 멈춰 위 「효과음은 대사·듣기 재생기를 중지하지
+   않는다」가 깨진다. 그래서 다른 앱 음악 위에서는 섞여 난다(iOS 기본 카테고리는 다른 앱 오디오를 끊는다). 속성은 `USAGE_MEDIA` ·
+   `CONTENT_TYPE_SONIFICATION`이다.
+2. **무음 스위치 대신 미디어 볼륨을 따른다.** Android에는 iOS 무음 스위치가 없다. 대사가 이미 미디어 볼륨이라 효과음도 미디어 볼륨을 따른다 —
+   볼륨 버튼 하나로 대사와 효과음이 같이 움직인다. 벨 소리 모드(무음 · 진동)는 효과음을 끄지 않는다.
+3. **접근성 — 수신 벨은 TalkBack 낭독 중에도 낮아지지 않는다.** Android 자동 덕킹은 포커스를 가진 앱에만 걸리는데 벨은 포커스를 쥐지 않는다(차이 1).
+   TalkBack이 「오디오 덕킹」으로 `MAY_DUCK` 포커스를 요청해도 14초 벨이 낭독과 같은 크기로 반복된다. 낭독을 끊지는 않는다(가림이지 끊김이
+   아니다). **기본 설정에서는 iOS와 같고**(VoiceOver 오디오 덕킹이 꺼져 있으면 iOS도 겹친다), 사용자가 덕킹을 켰을 때만 갈린다 — iOS는 벨까지
+   낮추고 Android는 낮추지 않는다. 벨은 받기 · 나가기 · 시스템 뒤로가기(`useScreenBack` → `stopRing`) · 백그라운드로 멈추므로 WCAG 2.1 1.4.2
+   Audio Control은 충족한다. 바꾸려면 벨만 `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`을 쥐는 안이 있다([ADR-0045](../adr/0045-android-host-audio-assets.md) 재검토 조건).
+4. **접근성 — Android에서는 TalkBack 낭독 때마다 대사가 일시정지했다가 이어진다.** 효과음이 아니라 대사(`AudioPlaybackModule`)의 동작이지만 같은
+   포커스 축이라 여기 적는다. 대사는 포커스를 `GAIN_TRANSIENT`로 요청하고(`CONTENT_TYPE_SPEECH` · `setWillPauseWhenDucked(true)`), TalkBack 낭독이
+   `LOSS_TRANSIENT_CAN_DUCK`을 보내면 멈췄다가 `GAIN`에 이어 재생한다. iOS는 기본 카테고리라 VoiceOver와 섞여 난다. 그동안 **자막 타이핑은 타이머로
+   계속 진행돼 음성보다 앞설 수 있고**, 완료 콜백을 기다리는 화면은 낭독 시간만큼 늦게 넘어간다(내용 손실은 없다). 이 상황은 이번에 Android에서
+   대사가 처음 실제로 재생되면서 생겼다 — 그 전에는 Android 패키지에 대사 자산이 없었다. 「TalkBack을 켜면 음성이 끊기는 버그」로 보고
+   `setWillPauseWhenDucked(false)`로 바꿔도 `CONTENT_TYPE_SPEECH`라 시스템이 덕킹 대신 일시정지를 보낸다.
+
+차이 3 · 4는 코드와 Android 플랫폼의 공개 동작으로 추론한 것이고 TalkBack을 켜고 들어 확인하지 않았다 — 절차는
+[Android 효과음 · 대사 오디오 · 서사 배경](../e2e/android-assets.md)의 T1 · T2(미실행)다.
+
+### Android 검증
+
+- JUnit `SoundEffectAssetTest`(id · 경로 · 음량 · 반복 · 원본 파일 8개와 1:1) · `SoundEffectsSessionTest`(로드 전 요청 · 벨 상태 · 멈춤).
+- 계측 `SoundEffectsModuleTest` 5건: 8개 자산 열기 · 준비, 모르는 id와 무동작 `stopRing`, 벨 시작 한 번과 `stopRing`, 짧은 효과음이 벨을 건드리지 않고 `stopAll`이 멈춤.
+- 에뮬레이터: AAB 분할 설치에서 8개 id 전부 플레이어 시작 기록과 짝(E2 · E3 · E4), 벨 21초 반복 뒤 받기에 `paused`, 홈 1.0초 뒤 `paused`(E8).
+  청음은 하지 않았다.

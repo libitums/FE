@@ -2,7 +2,7 @@
 
 `apps/mobile`의 Lynx 번들을 Android `LynxView` 하나에서 실행한다. 지금은 이미지·HTTP
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
-`LegalDocumentModule`·`AudioPlaybackModule`·`CompletionAnnouncementModule`·
+`LegalDocumentModule`·`AudioPlaybackModule`·`SoundEffectsModule`·`CompletionAnnouncementModule`·
 `SpeechRecognitionModule`·`HandwritingTraceModule`·`AppReviewModule`·`SystemBackModule`을
 제공한다. 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
@@ -118,8 +118,20 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 `WebAuthenticationModuleTest`는 난수와 잘못된 요청의 반환을 확인한다.
 `LegalDocumentModuleTest`는 법률 문서 이름을 두 고정 HTTPS 주소로만 연결하는지 확인한다.
 `AudioPlaybackModuleTest`는 공통 `.m4a` 자산 21개, 실제 재생 완료, 대체, 일시정지·재개,
-중단·백그라운드 전환·오디오 포커스 손실과 복귀를 확인한다. 자산은 Gradle이 `apps/ios/Host/audio`에서
-빌드 산출물로 동기화하며 APK에 압축 없이 넣는다.
+중단·백그라운드 전환·오디오 포커스 손실과 복귀, 자산을 열지 못했을 때의 경고 로그를 확인한다.
+`SoundEffectAssetTest`·`SoundEffectsSessionTest`(JUnit)는 효과음 id 8개와 `apps/ios/Host/sfx`의 1:1 대응, 로드 전 요청·벨
+상태를, 계측 `SoundEffectsModuleTest`는 8개 자산 열기·벨 반복과 `stopRing`·`stopAll`을 확인한다.
+오디오 자산(`apps/ios/Host/audio/*.m4a` 대사, `apps/ios/Host/sfx/*.mp3` 효과음)은 Android에 복사본을 두지 않는다. Gradle이 변형마다
+`sync<Variant>HostAudioAssets`로 생성 소스 디렉터리에 옮겨 `assets/audio/`·`assets/sfx/`에 압축 없이 넣고, `assemble*`·`bundle*`이
+`verify<Variant>ApkHostAudio`·`verify<Variant>BundleHostAudio`로 산출물을 검사해 원본과 다르거나 압축된 항목이 있으면 빌드를
+실패시킨다. AAB 파일 안의 항목은 원래 전부 deflate로 보이며, 기기에 설치되는 분할 APK의 무압축은 AAB의 `BundleConfig` 무압축 글롭이
+정한다. 2026-10-05 전의 결선은 태스크 의존을 걸지 않아 Android 빌드에 오디오가 0개였다
+([ADR-0045](../../docs/adr/0045-android-host-audio-assets.md)). 결선이 되돌아가지 않았는지는 `pnpm test:android-bundle`이,
+Gradle 산출물 자체는 `node --test devtools/android-bundle/packaged-assets.artifacts.mjs`(먼저 `./gradlew clean :app:assembleDebug
+:app:assembleBundled :app:bundleRelease`)가 본다. 재생 실패는 logcat 태그 `AudioPlayback`(대사)·`SoundEffects`(효과음)의 `W`로 남는다.
+효과음은 오디오 포커스를 요청하지 않고, 대사는 TalkBack 낭독 동안 멈췄다 이어진다 — iOS와의 차이는
+[효과음 계약](../../docs/specs/ios-sound-effects.md#의도된-차이)에 있다. AAB 분할 설치로 소리·서사 배경 그림을 보는 에뮬레이터 절차는
+[Android 효과음 · 대사 오디오 · 서사 배경](../../docs/e2e/android-assets.md)에 있다.
 `CompletionAnnouncementModuleTest`는 완료 안내의 원문·콜백·실제 Android 접근성
 공지 이벤트를 확인한다. 듣기 완료까지의 Maestro 절차는
 [`docs/e2e/android-completion-announcement.md`](../../docs/e2e/android-completion-announcement.md)에 있다.

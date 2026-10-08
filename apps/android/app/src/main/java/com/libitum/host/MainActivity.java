@@ -33,6 +33,7 @@ public final class MainActivity extends Activity {
   private String authScheme;
   private boolean leftForAuthentication;
   private AudioPlaybackController audioPlayback;
+  private SoundEffectsController soundEffects;
   private SpeechRecognitionController speechRecognition;
   PushNotificationController pushNotifications;
   private LynxView lynxView;
@@ -59,6 +60,8 @@ public final class MainActivity extends Activity {
         getWindow().getDecorView());
     audioPlayback = new AudioPlaybackController(this);
     builder.registerModule("AudioPlaybackModule", AudioPlaybackModule.class, audioPlayback);
+    soundEffects = new SoundEffectsController(this);
+    builder.registerModule("SoundEffectsModule", SoundEffectsModule.class, soundEffects);
     speechRecognition = new SpeechRecognitionController(this);
     builder.registerModule("SpeechRecognitionModule", SpeechRecognitionModule.class,
         speechRecognition);
@@ -233,6 +236,7 @@ public final class MainActivity extends Activity {
     }
     finishWebAuthentication("failed", null);
     if (audioPlayback != null) audioPlayback.stop();
+    if (soundEffects != null) soundEffects.release();
     if (speechRecognition != null) speechRecognition.destroy();
     if (pushNotifications != null) pushNotifications.destroy();
     super.onDestroy();
@@ -252,6 +256,7 @@ public final class MainActivity extends Activity {
 
   @Override protected void onStop() {
     if (audioPlayback != null) audioPlayback.interrupt();
+    if (soundEffects != null) soundEffects.stopAll();
     if (speechRecognition != null) speechRecognition.interrupt();
     super.onStop();
   }
