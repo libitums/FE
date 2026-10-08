@@ -13,6 +13,7 @@ import {
   type EntryLanguage,
 } from "../../lib/entry-language";
 import type { LanguageSelectScreenProps } from "./language-select.contract";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { languageFlags } from "./language-flags";
 
 import "./language-select-screen.css";
@@ -37,6 +38,8 @@ export function LanguageSelectScreen({
   onContinue,
   onBack,
 }: LanguageSelectScreenProps): ReactNode {
+  // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다(버튼이 없으면 등록하지 않습니다).
+  useScreenBack(onBack);
   return (
     <view className="language-select-screen">
       <view className="language-select-screen-header" data-testid="language-select-screen-header">

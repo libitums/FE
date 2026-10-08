@@ -25,7 +25,7 @@ adb -s <전용 에뮬레이터 ID> install -r app/build/outputs/apk/debug/app-de
 adb -s <전용 에뮬레이터 ID> install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 adb -s <전용 에뮬레이터 ID> shell am instrument -w \
   -e class com.libitum.host.HandwritingTraceModuleTest \
-  com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
 cd ../..
 E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:handwriting
 ```

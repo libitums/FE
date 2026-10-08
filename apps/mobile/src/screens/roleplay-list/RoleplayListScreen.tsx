@@ -5,6 +5,7 @@ import crown from "@libitums/icons/lynx/crown";
 import { color } from "@libitums/design-tokens";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 
+import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenLayer } from "../../lib/use-screen-layer";
 import { PremiumRoleplayCard } from "./PremiumRoleplayCard";
@@ -38,6 +39,8 @@ export function RoleplayListScreen({
   // 이 화면 밖의 전역 머리도 안내가 떠 있는 동안 가려야 합니다 — 아래 제목 · 목록 가림과
   // 같은 규칙을 셸에 알립니다.
   useScreenLayer(noticeItem !== null, onLayerChange);
+  // 시스템 뒤로가기 = 안내 닫기와 같습니다(안내가 열려 있는 동안만 등록).
+  useLayerBack(noticeItem !== null ? () => setNoticeItem(null) : null);
 
   return (
     <view className="roleplay-list-screen">

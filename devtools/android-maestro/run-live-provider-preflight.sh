@@ -42,8 +42,8 @@ run_provider() {
   button_y=$2
   domain=$3
   "$ADB" -s "$E2E_UDID" shell am force-stop com.android.chrome || return 1
-  "$ADB" -s "$E2E_UDID" shell pm clear com.libitum.host || return 1
-  "$ADB" -s "$E2E_UDID" shell am start -n com.libitum.host/.MainActivity \
+  "$ADB" -s "$E2E_UDID" shell pm clear libitum.duru.android || return 1
+  "$ADB" -s "$E2E_UDID" shell am start -n libitum.duru.android/com.libitum.host.MainActivity \
     --es bundle-url http://10.0.2.2:18768/main.lynx.bundle || return 1
   # The host shows a four-second splash before onboarding is ready.
   sleep 6

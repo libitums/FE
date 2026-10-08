@@ -44,10 +44,16 @@ until "$ADB" -s "$E2E_UDID" shell dumpsys accessibility | grep -q 'Bound service
   sleep 1
 done
 
-if [ "$("$ADB" -s "$E2E_UDID" shell settings get secure touch_exploration_enabled | tr -d '\r')" != "1" ]; then
-  echo "TalkBack touch exploration is not enabled on $E2E_UDID" >&2
-  exit 1
-fi
+# TalkBack이 바인딩된 직후에도 터치 탐색 설정은 조금 늦게 1이 된다 — 짧게 폴링한다
+attempt=0
+until [ "$("$ADB" -s "$E2E_UDID" shell settings get secure touch_exploration_enabled | tr -d '\r')" = "1" ]; do
+  attempt=$((attempt + 1))
+  if [ "$attempt" -ge 15 ]; then
+    echo "TalkBack touch exploration is not enabled on $E2E_UDID" >&2
+    exit 1
+  fi
+  sleep 1
+done
 
 cd "$REPO_DIR"
 maestro --udid "$E2E_UDID" test e2e/android-host.yaml

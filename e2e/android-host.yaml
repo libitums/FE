@@ -1,5 +1,5 @@
 # A2 — Android bundled APK가 개발 서버 없이 온보딩과 로그인 화면을 렌더한다.
-appId: com.libitum.host
+appId: libitum.duru.android
 ---
 - setOrientation: PORTRAIT
 - launchApp:

@@ -37,12 +37,12 @@ kill -0 "$server_pid"
 run_case() {
   scale=$1
   label=$2
-  "$ADB" -s "$E2E_UDID" shell pm clear com.libitum.host
+  "$ADB" -s "$E2E_UDID" shell pm clear libitum.duru.android
   "$ADB" -s "$E2E_UDID" shell settings put system font_scale "$scale"
   "$ADB" -s "$E2E_UDID" shell am instrument -w \
     -e class com.libitum.host.SignedInScreenFixtureTest \
     -e bundleUrl http://10.0.2.2:18766/main.lynx.bundle \
-    com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner \
+    libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner \
     >"/tmp/libitum-signed-in-fixture-${scale}.log" 2>&1 &
   fixture_pid=$!
   status=0
@@ -54,7 +54,7 @@ run_case() {
     -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE >/dev/null
   wait "$fixture_pid" || status=1
   cat "/tmp/libitum-signed-in-fixture-${scale}.log"
-  "$ADB" -s "$E2E_UDID" shell am force-stop com.libitum.host
+  "$ADB" -s "$E2E_UDID" shell am force-stop libitum.duru.android
   cd "$APP_DIR"
   [ "$status" -eq 0 ]
   grep -q 'OK (1 test)' "/tmp/libitum-signed-in-fixture-${scale}.log"

@@ -6,6 +6,7 @@ import { color } from "@libitums/design-tokens";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { useScreenBack } from "../../lib/use-back-handler";
 import type {
   NotificationId,
   NotificationItem,
@@ -27,6 +28,8 @@ export function NotificationsScreen({
   onExit,
 }: NotificationsScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(onExit);
   // 삭제 자리는 한 번에 하나만 열립니다 — 다른 항목을 밀면 앞의 것이 닫힙니다.
   const [revealedId, setRevealedId] = useState<NotificationId | null>(null);
 

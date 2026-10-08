@@ -8,11 +8,13 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import com.lynx.react.bridge.Callback;
 import java.io.IOException;
 
 /** Owns the Android player for one Lynx host activity. */
 final class AudioPlaybackController {
+  private static final String TAG = "AudioPlayback";
   private final Context context;
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
   private final AudioPlaybackSession session = new AudioPlaybackSession();
@@ -55,6 +57,7 @@ final class AudioPlaybackController {
       }
       String path = AudioAssetPath.forSource(source);
       if (path == null) {
+        Log.w(TAG, "Rejected audio source " + source);
         session.finish(generation);
         return;
       }
@@ -76,11 +79,13 @@ final class AudioPlaybackController {
         });
         next.setOnCompletionListener(finished -> finish(generation, finished));
         next.setOnErrorListener((failed, what, extra) -> {
+          Log.w(TAG, "Audio playback error " + what + "/" + extra);
           finish(generation, failed);
           return true;
         });
         next.prepareAsync();
       } catch (IOException | RuntimeException error) {
+        Log.w(TAG, "Cannot open audio asset " + path, error);
         finish(generation, next);
       }
     });

@@ -56,7 +56,11 @@ export default defineConfig(({ command }): Config => {
     plugins: [
       // dev 서버가 Explorer가 붙을 URL/QR을 낸다 (ADR-0006 D1)
       pluginQRCode(),
-      pluginReactLynx(),
+      // 호스트가 실행 중에 넘기는 값(Android 내비게이션 모드 전환 · 회전의 safe area)을
+      // `useGlobalProps`가 받아 다시 그리게 합니다. 기본값('reactive')에서는 갱신이 와도
+      // 다시 그려지지 않고 다음 상태 변경에야 새 값이 보였습니다(기기 확인, N9).
+      // 앱의 globalProps 읽기는 전부 `useGlobalProps`입니다(`lynx.__globalProps` 직접 읽기 없음).
+      pluginReactLynx({ globalPropsMode: "event" }),
     ],
   };
 });

@@ -1,8 +1,10 @@
 # 로그인 화면의 두 법률 문서 링크가 고정된 Custom Tab 목적지를 연다.
-appId: com.libitum.host
+# 최신 Chrome은 Custom Tab 주소창에 경로 없이 도메인만 보여 준다. 그래서 목적지는
+# 도메인(공개 Notion 사이트)과 문서 제목(Notion 페이지 제목 = 주소창 제목 줄)으로 판정한다.
+appId: libitum.duru.android
 env:
   DOCUMENT_LABEL: ${DOCUMENT_LABEL || "Terms of Use"}
-  DOCUMENT_PATH: ${DOCUMENT_PATH || "DURU-Term-of-Use-3eb0c2540c0180ef9072f0b447b3b468"}
+  DOCUMENT_TITLE: ${DOCUMENT_TITLE || "DURU Term of Use"}
 ---
 - setOrientation: PORTRAIT
 - launchApp:
@@ -16,7 +18,10 @@ env:
 - assertVisible: "Log in or Sign up"
 - tapOn: ${DOCUMENT_LABEL}
 - extendedWaitUntil:
-    visible: ".*gregarious-pharaoh-bb6.notion.site/${DOCUMENT_PATH}.*"
+    visible: "gregarious-pharaoh-bb6.notion.site"
+    timeout: 15000
+- extendedWaitUntil:
+    visible: ${DOCUMENT_TITLE}
     timeout: 15000
 - pressKey: back
 - assertVisible: "Log in or Sign up"

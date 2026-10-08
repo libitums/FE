@@ -1,5 +1,5 @@
 # A5 — Apple·Google·Facebook OAuth 창과 앱 복귀. 모의 Supabase URL로 빌드한 APK에서 실행한다.
-appId: com.libitum.host
+appId: libitum.duru.android
 env:
   PROVIDER: ${PROVIDER || "apple"}
   BUTTON_LABEL: ${BUTTON_LABEL || "Sign in with Apple"}
@@ -17,10 +17,12 @@ env:
     path: screenshots/android-login-390x844.png
     thresholdPercentage: 95
 - tapOn: ${BUTTON_LABEL}
+# 최신 Chrome은 Custom Tab 주소창에 도메인만 보여 준다. 화면으로는 모의 Supabase 도메인에서
+# 브라우저가 열렸는지만 보고, 선택한 provider · redirect_to · code_challenge가 든 전체 URL은
+# run-social.sh가 logcat(WindowManager 전환 로그의 capturedLink)으로 이 흐름 직후에 판정한다.
 - extendedWaitUntil:
-    visible: ".*provider=${PROVIDER}.*code_challenge=.*"
+    visible: "example.invalid"
     timeout: 15000
-- assertVisible: ".*redirect_to=duru%3A%2F%2Fauth-callback.*"
 - openLink: "duru://auth-callback?code=fake"
 - assertNotVisible: "Webpage not available"
 - extendedWaitUntil:

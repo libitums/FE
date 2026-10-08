@@ -1,0 +1,108 @@
+import java.nio.file.PathMatcher
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+
+// Inspects the built APK / AAB itself, so a sync that never reaches an artifact fails the build.
+// The expected names are read from the source folders at execution time.
+abstract class VerifyPackagedHostAudio extends DefaultTask {
+  @InputFiles
+  @PathSensitive(PathSensitivity.NAME_ONLY)
+  abstract ConfigurableFileCollection getArtifacts()
+
+  @InputDirectory
+  @PathSensitive(PathSensitivity.RELATIVE)
+  abstract DirectoryProperty getAudioSource()
+
+  @InputDirectory
+  @PathSensitive(PathSensitivity.RELATIVE)
+  abstract DirectoryProperty getSfxSource()
+
+  @Input
+  abstract Property<String> getPrefix()
+
+  @Input
+  abstract Property<String> getSuffix()
+
+  @TaskAction
+  void verify() {
+    def expectedAudio = names(audioSource.get().asFile, '.m4a')
+    def expectedSfx = names(sfxSource.get().asFile, '.mp3')
+    if (expectedAudio.isEmpty() || expectedSfx.isEmpty()) {
+      throw new GradleException('Host audio sources missing in apps/ios/Host/{audio,sfx}.')
+    }
+    def ext = suffix.get()
+    def files = artifacts.files.collectMany { File f ->
+      f.isDirectory() ? ((f.listFiles() ?: new File[0]) as List<File>) : [f]
+    }.findAll { it.name.endsWith(ext) }
+    if (files.isEmpty()) {
+      throw new GradleException("Packaged host audio check found no ${ext} artifact.")
+    }
+    files.each { File file ->
+      def failures = []
+      def zip = new ZipFile(file)
+      try {
+        def globs = ext == '.aab' ? uncompressedGlobs(zip) : []
+        [['audio', expectedAudio], ['sfx', expectedSfx]].each { pair ->
+          def head = "${prefix.get()}${pair[0]}/".toString()
+          def entries = zip.entries().toList().findAll { ZipEntry e -> e.name.startsWith(head) && !e.directory }
+          def actual = entries.collect { it.name.substring(head.length()) } as SortedSet
+          def missing = pair[1] - actual
+          def unexpected = actual - pair[1]
+          // An APK entry must be STORED for openFd. An AAB deflates every entry by design; what keeps
+          // the installed split APKs uncompressed is BundleConfig.pb's uncompressedGlob list.
+          def compressed = ext == '.aab'
+              ? entries.findAll { e -> !globs.any { it.matches(java.nio.file.Paths.get(e.name.substring('base/'.length()))) } }
+                  .collect { it.name }
+              : entries.findAll { it.method != ZipEntry.STORED }.collect { it.name }
+          if (missing || unexpected || compressed) {
+            failures << "${head}: missing ${missing}, unexpected ${unexpected}, compressed ${compressed}"
+          }
+        }
+      } finally {
+        zip.close()
+      }
+      if (failures) {
+        throw new GradleException("Packaged host audio check failed for ${file.name}: ${failures.join('; ')}")
+      }
+    }
+  }
+
+  // BundleConfig.pb is a protobuf whose uncompressed_glob strings all start with "**"; read them
+  // as printable runs rather than pulling a protobuf decoder into the build script.
+  static List<PathMatcher> uncompressedGlobs(ZipFile zip) {
+    def entry = zip.getEntry('BundleConfig.pb')
+    if (entry == null) throw new GradleException('BundleConfig.pb missing from the bundle.')
+    def text = new String(zip.getInputStream(entry).bytes, 'ISO-8859-1')
+    def matcher = text =~ /\*\*[\x20-\x7e]+/
+    def fs = java.nio.file.FileSystems.getDefault()
+    matcher.collect { fs.getPathMatcher("glob:${it}") }
+  }
+
+  static SortedSet<String> names(File dir, String ext) {
+    ((dir.listFiles() ?: new File[0]) as List<File>)
+        .findAll { it.name.endsWith(ext) }
+        .collect { it.name } as SortedSet
+  }
+}
+
+// build.gradle calls this per variant with that variant's APK and AAB artifact providers
+// (the AGP types live on build.gradle's classpath, not on this script's).
+ext.registerPackagedHostAudioChecks = { String variantName, Object apkArtifact, Object bundleArtifact ->
+  def cap = variantName.capitalize()
+  def verifyApk = tasks.register("verify${cap}ApkHostAudio", VerifyPackagedHostAudio) {
+    artifacts.from(apkArtifact)
+    audioSource = file('../../ios/Host/audio')
+    sfxSource = file('../../ios/Host/sfx')
+    prefix = 'assets/'
+    suffix = '.apk'
+  }
+  def verifyBundle = tasks.register("verify${cap}BundleHostAudio", VerifyPackagedHostAudio) {
+    artifacts.from(bundleArtifact)
+    audioSource = file('../../ios/Host/audio')
+    sfxSource = file('../../ios/Host/sfx')
+    prefix = 'base/assets/'
+    suffix = '.aab'
+  }
+  tasks.matching { it.name == "assemble${cap}" }.configureEach { dependsOn verifyApk }
+  tasks.matching { it.name == "bundle${cap}" }.configureEach { dependsOn verifyBundle }
+}

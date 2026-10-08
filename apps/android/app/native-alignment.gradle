@@ -1,0 +1,113 @@
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.util.zip.ZipFile
+
+// Play requires 16 KB page support for 64-bit native libraries. A LOAD p_align of 0x4000 is not enough:
+// a library whose GNU_RELRO segment ends off a 16 KB boundary still triggers the compatibility dialog.
+// This is a literal Groovy port of devtools/android-bundle/elf-page-alignment.mjs (spec §6.1),
+// kept in Groovy so the build does not need Node. Keep the two in sync.
+abstract class VerifyNativeAlignment extends DefaultTask {
+  static final long PAGE = 16384L
+  static final int PT_LOAD = 1
+  static final int PT_GNU_RELRO = 0x6474e552
+  static final java.util.regex.Pattern NATIVE_LIBRARY =
+      ~/^(?:base\/)?(?:lib|jni)\/(arm64-v8a|x86_64)\/[^\/]+\.so$/
+
+  @InputFiles
+  @PathSensitive(PathSensitivity.NAME_ONLY)
+  abstract ConfigurableFileCollection getArtifacts()
+
+  @Input
+  abstract Property<String> getSuffix()
+
+  @TaskAction
+  void verify() {
+    def ext = suffix.get()
+    def files = artifacts.files.collectMany { File f ->
+      f.isDirectory() ? ((f.listFiles() ?: new File[0]) as List<File>) : [f]
+    }.findAll { it.name.endsWith(ext) }
+    if (files.isEmpty()) {
+      throw new GradleException("Native 16 KB page alignment check found no ${ext} artifact.")
+    }
+    files.each { File file ->
+      def failures = []
+      int checked = 0
+      def zip = new ZipFile(file)
+      try {
+        zip.entries().each { entry ->
+          if (entry.directory || !NATIVE_LIBRARY.matcher(entry.name).matches()) return
+          byte[] bytes = zip.getInputStream(entry).bytes
+          def issues = issuesOf(bytes)
+          if (issues == null) return
+          checked++
+          if (!issues.isEmpty()) {
+            failures << "${entry.name} ${issues.join(', ')}".toString()
+          }
+        }
+      } finally {
+        zip.close()
+      }
+      if (checked == 0) {
+        throw new GradleException("Native 16 KB page alignment check found no 64-bit libraries in ${file.name}.")
+      }
+      if (failures) {
+        throw new GradleException("Native 16 KB page alignment check failed for ${file.name}: ${failures.join('; ')}")
+      }
+    }
+  }
+
+  // null: not an ELF64 little-endian file (not judged). Otherwise the list of problems ("kind(detail)").
+  static List<String> issuesOf(byte[] bytes) {
+    if (bytes.length < 64 || bytes[0] != 0x7f || bytes[1] != 0x45 || bytes[2] != 0x4c ||
+        bytes[3] != 0x46 || bytes[4] != 2 || bytes[5] != 1) {
+      return null
+    }
+    def buf = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+    long phoff = buf.getLong(32)
+    long phentsize = buf.getShort(54) & 0xffffL
+    int phnum = buf.getShort(56) & 0xffff
+    def issues = []
+    for (int i = 0; i < phnum; i++) {
+      long base = phoff + i * phentsize
+      if (base < 0 || base + 56 > bytes.length) {
+        return ["truncated(program header ${i} ends at 0x${Long.toHexString(base + 56)} but the file has 0x${Long.toHexString(bytes.length)} bytes)".toString()]
+      }
+      int at = (int) base
+      int type = buf.getInt(at)
+      long offset = buf.getLong(at + 8)
+      long vaddr = buf.getLong(at + 16)
+      long memsz = buf.getLong(at + 40)
+      long align = buf.getLong(at + 48)
+      if (type == PT_LOAD) {
+        if (Long.compareUnsigned(align, PAGE) < 0) {
+          issues << "load-align(p_align 0x${Long.toHexString(align)} < 0x4000)".toString()
+        }
+        if (Long.remainderUnsigned(offset - vaddr, PAGE) != 0L) {
+          issues << "load-congruence(p_offset 0x${Long.toHexString(offset)} and p_vaddr 0x${Long.toHexString(vaddr)} differ modulo 0x4000)".toString()
+        }
+      } else if (type == PT_GNU_RELRO) {
+        long end = vaddr + memsz
+        if (Long.remainderUnsigned(end, PAGE) != 0L) {
+          issues << "relro-end(GNU_RELRO ends at 0x${Long.toHexString(end)}, not a multiple of 0x4000)".toString()
+        }
+      }
+    }
+    return issues
+  }
+}
+
+// build.gradle calls this per variant with that variant's APK and AAB artifact providers
+// (same shape as registerPackagedHostAudioChecks).
+ext.registerNativeAlignmentChecks = { String variantName, Object apkArtifact, Object bundleArtifact ->
+  def cap = variantName.capitalize()
+  def verifyApk = tasks.register("verify${cap}ApkNativeAlignment", VerifyNativeAlignment) {
+    artifacts.from(apkArtifact)
+    suffix = '.apk'
+  }
+  def verifyBundle = tasks.register("verify${cap}BundleNativeAlignment", VerifyNativeAlignment) {
+    artifacts.from(bundleArtifact)
+    suffix = '.aab'
+  }
+  tasks.matching { it.name == "assemble${cap}" }.configureEach { dependsOn verifyApk }
+  tasks.matching { it.name == "bundle${cap}" }.configureEach { dependsOn verifyBundle }
+}

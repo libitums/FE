@@ -1,5 +1,5 @@
 # A signed-in listening completion reaches the Android announcement module.
-appId: com.libitum.host
+appId: libitum.duru.android
 ---
 - setOrientation: PORTRAIT
 - extendedWaitUntil:
@@ -7,16 +7,30 @@ appId: com.libitum.host
     timeout: 30000
 - tapOn:
     point: "10%,45%"
+# 지도 스크롤은 손을 뗄 때의 속도(fling)에 따라 멈추는 자리가 달라진다. 그래서 먼저 끝까지
+# 밀어(맨 끝은 늘 같은 자리) 기준을 만들고, fling이 생기지 않도록 느리게(8초) 되돌려 "Listen to a
+# Hello" 노드(상태 표시줄 아래 세로 약 38%)를 누른다. 노드 이름은 Lynx 접근성 트리에 없어
+# 좌표로 누른다. 매번 스크롤이 멈춘 뒤에 다음 동작을 한다.
+- waitForAnimationToEnd
+- repeat:
+    times: 8
+    commands:
+      - swipe:
+          start: "50%,80%"
+          end: "50%,22%"
+          duration: 600
+- waitForAnimationToEnd
 - swipe:
-    start: "50%,70%"
-    end: "50%,25%"
-    duration: 700
+    start: "50%,20%"
+    end: "50%,70%"
+    duration: 8000
 - swipe:
-    start: "50%,70%"
-    end: "50%,25%"
-    duration: 700
+    start: "50%,20%"
+    end: "50%,70%"
+    duration: 8000
+- waitForAnimationToEnd
 - tapOn:
-    point: "50%,65%"
+    point: "50%,38%"
 - tapOn:
     point: "50%,79%"
 - waitForAnimationToEnd
@@ -26,7 +40,7 @@ appId: com.libitum.host
 # The AOSP Lynx tree omits listening choices and the completion button. The
 # second tap lands on empty card space after the 2.5 s answer transition.
 - tapOn:
-    point: "50%,67%"
+    point: "50%,71%"
     repeat: 2
     delay: 3500
 - assertScreenshot:

@@ -11,11 +11,11 @@ Android API 35 전용 에뮬레이터를 세로 **390×844, 160 dpi, 글자 배�
 
 | 단계 | 행동 | 통과 기준 |
 |---|---|---|
-| A5-1 | 온보딩을 지나 Apple·Google·Facebook 버튼을 각각 누른다 | 브라우저 URL에 선택한 `provider`, `redirect_to=duru://auth-callback`, PKCE `code_challenge`가 있다 |
+| A5-1 | 온보딩을 지나 Apple·Google·Facebook 버튼을 각각 누른다 | 브라우저 URL에 선택한 `provider`, `redirect_to=duru://auth-callback`, PKCE `code_challenge`가 있다(주소창에는 도메인 `example.invalid`만 보이므로 전체 URL은 `run-social.sh`가 logcat `capturedLink`로 판정한다) |
 | A5-2 | `duru://auth-callback?code=fake`를 연다 | 앱으로 돌아와 코드 교환을 시도하고 연결 오류가 로그인 화면에 표시된다 |
 
 `e2e/android-social-login.yaml`은 제공자와 버튼 접근성 이름을 변수로 받아 세 번 실행된다.
-브라우저 URL은 접근성 트리의 문구로, 앱의 오류 화면은 390×844 화면 기준 이미지로
+브라우저는 주소창의 도메인 문구로(최신 Chrome은 쿼리를 보이지 않는다), 전체 URL은 logcat으로, 앱의 오류 화면은 390×844 화면 기준 이미지로
 단언한다. 공통 버튼에 `flatten={false}`를 적용해 Android 접근성 트리에 이름을
 노출한다. 화면 크기나 글자 배율을 바꾸면 기준 이미지를 갱신해야 한다.
 

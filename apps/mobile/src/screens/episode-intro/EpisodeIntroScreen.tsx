@@ -6,6 +6,8 @@ import { Button } from "@libitums/ui-lynx/button";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { lightStatusBarIcons } from "../../lib/status-bar-icons";
+import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeIntroScreenProps } from "./episode-intro.contract";
 
@@ -41,9 +43,16 @@ export function EpisodeIntroScreen({
       onSkip();
     }
   };
+  // 시스템 뒤로가기: 확인창이 떠 있으면 그 확인창만 닫고(건너뛰지 않습니다), 아니면 보이는 뒤로와 같습니다.
+  useScreenBack(onBack);
+  useLayerBack(confirmingSkip ? () => handleConfirmAction("stay") : null);
 
   return (
-    <view className="episode-intro-screen" data-testid="episode-intro-screen">
+    <view
+      className="episode-intro-screen"
+      data-testid="episode-intro-screen"
+      data-statusbar={lightStatusBarIcons}
+    >
       {/* 명암 두 겹은 순수 장식입니다. */}
       <view className="episode-intro-screen-backdrop" accessibility-elements-hidden={true}>
         <view className="episode-intro-screen-shade-top" />

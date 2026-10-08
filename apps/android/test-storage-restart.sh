@@ -16,13 +16,13 @@ cd "$APP_DIR"
 run_case() {
   output=$("$ADB" shell am instrument -w -e class \
     "com.libitum.host.StorageRestartTest#$1" \
-    com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner)
+    libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner)
   printf '%s\n' "$output"
   printf '%s\n' "$output" | grep -q 'OK (1 test)'
 }
 
 run_case writeSession
-"$ADB" shell am force-stop com.libitum.host
+"$ADB" shell am force-stop libitum.duru.android
 run_case readAndRemoveSession
-"$ADB" shell am force-stop com.libitum.host
+"$ADB" shell am force-stop libitum.duru.android
 run_case removedSessionStaysRemoved

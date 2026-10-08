@@ -1,5 +1,5 @@
 # A2·A4 — 320×640에서 고정 온보딩 버튼과 소셜 로그인 화면을 확인한다.
-appId: com.libitum.host
+appId: libitum.duru.android
 env:
   SCALE: ${SCALE || "100"}
 ---

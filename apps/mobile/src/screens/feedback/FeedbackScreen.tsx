@@ -11,6 +11,7 @@ import { announce } from "../../lib/accessibility";
 import { feedbackMessageMaxLength, feedbackRatings } from "../../lib/feedback-api";
 import type { FeedbackRating } from "../../lib/feedback.contract";
 import { useUiCopy } from "../../lib/ui-copy";
+import { useScreenBack } from "../../lib/use-back-handler";
 
 import type { FeedbackScreenProps, FeedbackStatus } from "./feedback.contract";
 
@@ -20,6 +21,8 @@ import "./feedback-screen.css";
 // 보내면 폼 대신 감사 문구가 서고 낭독합니다. 실패하면 폼이 남고 실패 문구를 읽어 줍니다.
 export function FeedbackScreen({ onSubmit, onExit }: FeedbackScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(onExit);
   const [rating, setRating] = useState<FeedbackRating | null>(null);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<FeedbackStatus>("editing");

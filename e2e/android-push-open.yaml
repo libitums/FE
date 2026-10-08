@@ -1,5 +1,5 @@
 # A local notification follows the same tap intent and opens the closed in-app target.
-appId: com.libitum.host
+appId: libitum.duru.android
 ---
 - swipe:
     start: "50%,0%"

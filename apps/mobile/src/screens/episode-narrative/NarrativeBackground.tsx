@@ -50,15 +50,16 @@ export function NarrativeBackground({
       accessibility-elements-hidden={true}
     >
       {showPrevious ? (
-        <image
+        <view
           className={
             profile && loaded
-              ? `narrative-background-image narrative-background-image-${profile}-departing`
-              : "narrative-background-image"
+              ? `narrative-background-motion narrative-background-motion-${profile}-departing`
+              : "narrative-background-motion"
           }
-          src={entryPreviousSrc}
-          mode="aspectFill"
-        />
+          data-testid="narrative-background-previous-motion"
+        >
+          <image className="narrative-background-image" src={entryPreviousSrc} mode="aspectFill" />
+        </view>
       ) : null}
       <view
         className={
@@ -68,20 +69,26 @@ export function NarrativeBackground({
               : "narrative-background-frame narrative-background-frame-loading"
             : "narrative-background-frame"
         }
+        data-testid="narrative-background-frame"
         bindanimationend={profile ? undefined : handleSettled}
       >
-        <image
+        <view
           className={
             motionEnabled && loaded
-              ? `narrative-background-image narrative-background-image-${profile ?? "current"}`
-              : "narrative-background-image"
+              ? `narrative-background-motion narrative-background-motion-${profile ?? "current"}`
+              : "narrative-background-motion"
           }
-          data-testid="narrative-background-image"
-          data-motion={motionEnabled ? "animated" : "static"}
-          src={src}
-          mode="aspectFill"
-          bindload={handleLoad}
-        />
+          data-testid="narrative-background-motion"
+        >
+          <image
+            className="narrative-background-image"
+            data-testid="narrative-background-image"
+            data-motion={motionEnabled ? "animated" : "static"}
+            src={src}
+            mode="aspectFill"
+            bindload={handleLoad}
+          />
+        </view>
       </view>
       {profile && loaded && !settled ? (
         <view
