@@ -118,6 +118,8 @@ A shell settings get secure navigation_mode                                   # 
 
 ⚠ `cmd overlay list | grep navbar`는 모드 확인에 쓰지 않는다 — 전환 뒤에도 threebutton · gestural이 둘 다 `[x]`로 나올 수 있다
 (작업 `android-tabbar-inset`의 에뮬레이터 실행에서 관찰).
+두 오버레이가 모두 `[x]`일 때의 일반 `enable`은 우선순위만 바꿔 앱의 Activity가 유지되지만, 한 오버레이만 켜는 전환(`enable-exclusive --category …` · 설정 앱)은 **API 35 이하에서** `MainActivity`를 재생성한다(API 36 이상에서는 `assetsPaths`를 직접 처리해 재생성되지 않는다 — 실측은 API 37과 API 30이고 경계 36은 추론이다. 2026-10-06 —
+[Android 화면 방향과 구성 변경](android-orientation.md)의 O10 (c)). 뒤로가기 항목은 모드를 바꾼 **뒤** 앱을 연 상태에서 시작하므로 어느 쪽이든 판정이 같다.
 
 ### 뒤로가기를 누르는 법
 

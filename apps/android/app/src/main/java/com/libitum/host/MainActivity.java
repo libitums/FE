@@ -2,12 +2,14 @@ package com.libitum.host;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Build;
 import android.os.Looper;
+import android.util.DisplayMetrics;
 import android.view.Window;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
@@ -23,6 +25,7 @@ import com.lynx.tasm.LynxViewBuilder;
 import com.lynx.tasm.LynxViewClient;
 import com.lynx.react.bridge.Callback;
 import com.lynx.react.bridge.JavaOnlyArray;
+import com.lynx.tasm.utils.DisplayMetricsHolder;
 import com.lynx.xelement.XElementBehaviors;
 import java.util.Map;
 
@@ -171,6 +174,19 @@ public final class MainActivity extends Activity {
       }
       return windowInsets;
     });
+  }
+
+  /**
+   * manifest `configChanges`가 선언한 값은 Activity를 재생성하지 않고 여기로 온다. Lynx는 구성
+   * 변경을 스스로 듣지 않으므로 LynxView 크기(viewport)만 측정이 따라가고, 화면 크기와 safe area는
+   * 호스트가 다시 넘긴다. 무엇이 바뀌었는지 가르지 않는다 — 값이 같으면 둘 다 아무 일도 하지 않는다.
+   */
+  @Override public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    if (lynxView == null || isFinishing() || isDestroyed()) return;
+    DisplayMetrics screen = DisplayMetricsHolder.getRealScreenDisplayMetrics(this);
+    lynxView.updateScreenMetrics(screen.widthPixels, screen.heightPixels);
+    ViewCompat.requestApplyInsets(lynxView);
   }
 
   void startWebAuthentication(String url, String scheme, Callback callback) {

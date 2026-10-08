@@ -51,6 +51,8 @@ Android 3버튼 내비게이션(◁ ○ □)에서 하단 탭 바의 알약이 �
    ```
    ⚠ `cmd overlay list | grep navbar`로 확인하지 않는다 — 전환 뒤에도 threebutton · gestural이 둘 다 `[x]`로 나와 모드를 가르지 못한다.
    바꾸는 명령(`cmd overlay enable …`)은 그대로 쓴다.
+   ⚠ **후속 정정(2026-10-06)**: 일반 `enable`은 두 오버레이가 모두 `[x]`인 AVD에서 **우선순위만** 바꾼다. 그때는 `MainActivity`가 유지되지만, 설정 앱처럼 한 오버레이만 켜는 전환
+   (`cmd overlay enable-exclusive --category …`)에서는 재생성된다 — 아래 N9의 「후속 정정」. (같은 날 다시 정정: 그것은 API 35 이하의 이야기다. API 36 이상에서는 어느 전환에도 재생성되지 않는다 — N9의 「정정의 정정」.)
 5. **16 KB 호환성 대화상자는 `pm clear` 뒤에도 뜨지 않는다.** 2026-10-05의 출시 설정 변경(작업 `android-release-config`) 이후다 — 뜨면 닫고 넘어가지 말고 회귀로 적는다([Android 출시 설정 절차](android-release-config.md)의 R1).
 6. **끝나면 에뮬레이터를 시작할 때의 모드로 되돌린다.** `wm size reset` · `wm density reset`도 한다.
 
@@ -223,6 +225,20 @@ export OUT=.agent-harness/work/android-tabbar-inset/artifacts/e2e; mkdir -p "$OU
   마지막 3버튼 화면에서 N2의 이음매 기준(바 아래가 한 면)을 다시 만족한다.
   화면에 반영되지 않고 이전 모드의 모습이 그대로면 실패다. 원인은 둘 중 하나다 — 호스트가 inset 변경 때 새 값을 보내지 않았거나, JS가 갱신 뒤 다시 그리지 않았다
   (`apps/mobile/lynx.config.ts`의 `globalPropsMode: "event"`가 빠지면 이렇게 된다 — [ADR-0044](../adr/0044-android-tappable-inset.md) D4).
+- **후속 정정(2026-10-06, 작업 `android-orientation`의 진단)**: 이 항목의 「재시작 없이」는 **threebutton · gestural 두 오버레이가 모두 `[x]`인 AVD에서 위의 일반 `enable`을 쓸 때만** 성립한다.
+  그때는 오버레이의 우선순위만 바뀌고 경로 집합이 그대로라 Activity가 유지된다 — 이 항목이 실제로 가르는 것은 「Activity가 유지된 채 inset만 바뀌었을 때 JS가 다시 그리는가」(`globalPropsMode: "event"`)이고, 그 용도로는 이 절차가 그대로 맞다.
+  - 한 오버레이만 켜는 전환(`cmd overlay enable-exclusive --category <오버레이>` · `disable` — 설정 앱의 「시스템 탐색」과 같은 동작)에서는 **`MainActivity`가 재생성된다.** API 30 · API 37 모두, 그리고 이 변경들 전의 빌드에서도 같다.
+    매니페스트 `configChanges`로 막을 수 없는 구성 변경(`CONFIG_ASSETS_PATHS`)이다([ADR-0047](../adr/0047-android-orientation-config-changes.md) D3). 그 경우의 기준(재생성 허용, 재생성 뒤 정상 화면과 새 모드의 탭 바 위치)은
+    [Android 화면 방향과 구성 변경](android-orientation.md)의 O10 (c)가 진다.
+  - 시작 때 두 오버레이의 `[x]` 상태가 다른 AVD(예: API 30 이미지 — threebutton만 `[x]`)에서는 위 명령 그대로도 재생성되고, `enable threebutton`만으로 모드가 돌아오지 않을 수 있다. 이 항목을 돌리기 전에 `cmd overlay list | grep navbar`로 **두 오버레이가 모두 `[x]`인지** 본다(모드 확인이 아니라 이 전제의 확인이다).
+  - `pidof`는 Activity 재생성을 가르지 못한다(재생성은 같은 프로세스 안에서 일어난다). 재생성 여부는 `logcat -b events`의 `wm_on_create_called` · `wm_on_destroy_called`(`MainActivity`) 개수로 본다 — 도구는 위 문서의 `mark` · `lc`.
+  - 아래 「실행 결과」의 N9 「통과 — pid 세 시점 같음」은 그 조건(Pixel_8 AVD · 두 오버레이 `[x]` · 일반 `enable`)에서의 기록이다. 지우지 않고 둔다.
+- **위 후속 정정의 정정(2026-10-06, 같은 날)**: 위의 「매니페스트 `configChanges`로 막을 수 없는 구성 변경」과 「API 30 · API 37 모두 재생성된다」는 **그 시점의 빌드에 대해서만 맞았고 이유가 틀렸다.**
+  `CONFIG_ASSETS_PATHS`는 compileSdk 36부터 `assetsPaths`로 선언할 수 있고, `MainActivity`가 이제 그것을 선언해 직접 처리한다([ADR-0047](../adr/0047-android-orientation-config-changes.md) D2).
+  - **API 36 이상**(Pixel_8 · API 37): 한 오버레이만 켜는 전환에서도 **재생성되지 않는다.** 이 항목의 「재시작 없이 바가 따라 바뀐다」가 두 오버레이의 `[x]` 상태나 명령의 종류와 무관하게 성립한다(2026-10-06: 생성 · 파괴 0회, 1080x2400 @420에서 알약 아래 끝 2243 → 2369 → 2243px).
+  - **API 35 이하**(R6_API30 · API 30에서 확인, API 31 ~ 35는 재지 않았다): 선언이 무시되어 재생성된다. 위 후속 정정의 조건과 주의(두 오버레이 `[x]` 확인 · `enable threebutton`만으로 안 돌아올 수 있음)는 이 범위에 그대로 맞다.
+  - 기준은 [Android 화면 방향과 구성 변경](android-orientation.md)의 O10 (c)가 API별로 진다.
+  - 「36 이상 / 35 이하」의 경계는 **추론**이다 — 잰 것은 API 37과 API 30 두 점이고, 36은 `assetsPaths` 속성이 SDK 36에 처음 나온다는 데서 왔다. API 31 ~ 36 기기에서는 재지 않았다.
 
 ### T1 — TalkBack: 새 요소가 정지점이 되지 않고, 모드 전환에 포커스가 남는다 (접근성 점검 A3)
 
@@ -262,6 +278,9 @@ N3는 제스처 모드를 쓰므로 N9 뒤에 한다. 픽스처가 180초 뒤 �
 | N8 | 통과(약한 표본) | 통과(약한 표본) | 3버튼 | 설정 `Delete account` `[21,627][369,699]`(바 위 끝 728까지 29). 맵 마지막 항목 약 y 374. 롤플레이 스크롤 없음, 카드 아래 약 420 |
 | N9 | **실패** — 모드를 바꿔도 알약이 그대로(제스처에서 `[67,736][131,784]`), 탭을 한 번 누르자 따라감. 호스트는 새 값을 보냈고 JS가 다시 그리지 않았다(logcat) → `globalPropsMode: "event"`(ADR-0044 D4) | 통과 | 3버튼 → 제스처 → 3버튼 | 탭 없이 Journey bottom 784 → 832 → 784(mode 0 → 2 → 0), pid 세 시점 같음, 스플래시 복귀 없음. 마지막 3버튼 화면 바 아래 한 면 |
 | T1 | 미실행 | 미실행 | 3버튼 | TalkBack을 켠 회차가 없다 |
+
+**N9 후속 정정(2026-10-06)**: 위 N9의 「통과」는 두 오버레이가 모두 `[x]`인 Pixel_8 AVD에서 일반 `enable`로 바꾼 결과다. `pid`가 같다는 것은 Activity 재생성이 없었다는 증거가 되지 못하고,
+한 오버레이만 켜는 전환에서는 재생성된다(N9의 「후속 정정」 · [ADR-0044](../adr/0044-android-tappable-inset.md)의 정정 기록) — 이 기록 시점의 빌드에서다. `assetsPaths`를 선언한 뒤로 API 36 이상에서는 재생성되지 않는다(N9의 「정정의 정정」). 알약 위치의 수치(784 → 832 → 784)는 그대로 유효하다.
 
 `globalPropsMode` 변경의 회귀 점검(둘째 회차): 스플래시 → 온보딩, 콜드 스타트(로그인 화면), 로그인 뒤 첫 로드의 safe area(15프레임 연속 — 여백 깜빡임 · 점프 없음),
 연속 칩 모달 세 번 열고 닫기에서 이상이 없었다.

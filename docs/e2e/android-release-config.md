@@ -343,9 +343,10 @@ A shell wm size reset; A shell wm density reset                                 
 cd apps/android && ./gradlew assembleDebug assembleDebugAndroidTest && cd ../..
 A install -r apps/android/app/build/outputs/apk/debug/app-debug.apk
 A install -r apps/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-# ① 일괄 — ButtonAccessibilityTest 는 전제가 달라 여기서 빼고 ②에서 따로 돌린다
+# ① 일괄 — ButtonAccessibilityTest 는 전제가 달라 여기서 빼고 ②에서 따로 돌린다.
+#    ConfigurationChangeTest 도 뺀다(에뮬레이터 전역 설정을 바꾸고 -e bundleUrl 이 필요하다 — 아래 ③)
 A shell am instrument -w \
-  -e notClass com.libitum.host.SignedInScreenFixtureTest,com.libitum.host.SessionResumeTest,com.libitum.host.StorageRestartTest,com.libitum.host.ButtonAccessibilityTest \
+  -e notClass com.libitum.host.SignedInScreenFixtureTest,com.libitum.host.SessionResumeTest,com.libitum.host.StorageRestartTest,com.libitum.host.ButtonAccessibilityTest,com.libitum.host.ConfigurationChangeTest \
   libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
 E2E_UDID=$E2E_UDID sh apps/android/test-session-resume.sh
 E2E_UDID=$E2E_UDID sh apps/android/test-storage-restart.sh
@@ -357,7 +358,11 @@ E2E_UDID=$E2E_UDID sh apps/android/test-storage-restart.sh
 번들을 줘도 TalkBack(터치 탐색)이 꺼져 있으면 Lynx 4.0.1이 평탄화된 요소의 가상 노드를 내지 않아 `onboarding dialogue accessibility node missing`으로 죽는다.
 2026-10-05에 두 조건을 맞추자 `c5d38608` · API 37 · targetSdk 36 · 재빌드한 AAR의 `debug` 빌드에서 `OK (1 test)`였다. **이 테스트의 실패를 예상된 결과로 넘기지 않는다.**
 
-**통과**: 위 Maestro 전부 통과(`speech`는 AOSP 이미지가 없으면 미실행으로 이유를 적는다 — 통과로 쓰지 않는다) · 계측 ①은 **`OK (40 tests)`**(2026-10-05, `9b15f548` · API 37 에뮬레이터에서 위 명령의 내용 그대로 돌린 결과다 — 그때는 `$A` 문자열 변수 형태를 bash에서 썼다) · 계측 ②는 `OK (1 test)` · 두 스크립트 `OK`.
+**③ `ConfigurationChangeTest`(8건)도 따로 돌린다.** 이 클래스는 번들 서빙과 `-e bundleUrl`을 요구하고 야간 모드 · 화면 크기 · 밀도 · 글꼴 배율 · 회전 · 내비게이션 모드 오버레이 같은 에뮬레이터 전역 설정을 바꾼다.
+`notClass`에서 빼고 ①을 돌리면 `Tests run: 47, Failures: 6`이 된다(2026-10-05, `396afb2b` · API 37 — 6건 모두 `precondition: instrumentation argument bundleUrl is missing`, 기존 40건은 통과. 그때 이 클래스는 7건이었다 — 8건이 된 뒤의 수는 다시 재지 않았다).
+실행법 · 통과 기준(API 37은 8 통과, API 30에서는 6 통과 + 2 건너뜀) · 되돌리기는 [Android 화면 방향과 구성 변경](android-orientation.md#계측-configurationchangetest--실행법)이 진다(여기에 되풀이하지 않는다).
+
+**통과**: 위 Maestro 전부 통과(`speech`는 AOSP 이미지가 없으면 미실행으로 이유를 적는다 — 통과로 쓰지 않는다) · 계측 ①은 **`OK (40 tests)`**(2026-10-05, `9b15f548` · API 37 에뮬레이터에서 위 명령의 내용 그대로 돌린 결과다 — 그때는 `$A` 문자열 변수 형태를 bash에서 썼다. `ConfigurationChangeTest`를 `notClass`에 더한 지금의 명령으로는 2026-10-05 `396afb2b` · 2026-10-06 `8e16f6b5` · `94097ecb` · `4f3b2927`에서 같은 `OK (40 tests)`였다) · 계측 ②는 `OK (1 test)` · 두 스크립트 `OK`.
 **`adb shell am instrument`는 테스트가 실패해도 종료 코드가 0이다.** 종료 코드로 판정하지 말고 출력 마지막의 `OK (N tests)`(실패면 `FAILURES!!!`)로 판정한다.
 실패 · 건너뜀은 이름과 사유를 결과 표에 적는다(`pnpm test:e2e:android:social:live` · `:talkback`은 실제 계정 · TalkBack이 필요해 이 항목에 넣지 않는다).
 

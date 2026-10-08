@@ -40,9 +40,35 @@ JS의 준비 신호(`SystemBackModule.ready`)는 에뮬레이터 실측에서 �
 | `tappableBottomInset` | dp — 시스템 바 가운데 **터치를 가로채는** 아래 높이. 3버튼에서만 0이 아니다(Pixel_8 48), 제스처는 0 | `tappableElement()`의 아래 값, `safeAreaInsets.bottom`을 넘지 않게 자른다 |
 
 iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽는다). 앱 셸은 탭 루트에서 이 값만큼 아래를
-비우고 탭 바 밑에 같은 색의 바닥 면을 덧댄다. 실행 중 모드를 바꾸면 재시작 없이 따라 바뀐다. 규칙과 근거는
+비우고 탭 바 밑에 같은 색의 바닥 면을 덧댄다. inset이 바뀌면(화면 크기 변경 · 모드 전환) 탭 바가 따라 바뀐다 — 내비게이션 모드 전환은 API 37에서는 Activity를 다시 만들지 않고 따라 바뀌고, API 30에서는 Activity 재생성을 거쳐 새 자리에 선다(API별 동작과 그 경계의 근거는 아래 「화면 방향과 구성 변경」). 규칙과 근거는
 [ADR-0044](../../docs/adr/0044-android-tappable-inset.md)에, 에뮬레이터 절차는
 [Android 내비게이션 바와 하단 탭 바](../../docs/e2e/android-navigation-insets.md)에 있다.
+
+## 화면 방향과 구성 변경
+
+`MainActivity`는 휴대폰에서 세로로 고정되고, 매니페스트가 선언한 구성 변경은 Activity를 다시 만들지 않고 받는다
+([ADR-0047](../../docs/adr/0047-android-orientation-config-changes.md)). **Android만 세로로 고정하는 것은 사용자 결정이다**(2026-10-06, 그 ADR의 U1) — iOS iPhone은 가로를 허용해 두 플랫폼이 다르고, 휴대폰에서 WCAG 2.1 AA SC 1.3.4(Orientation) 불충족을 알고 받아들인 상태다(가로 레이아웃 후속 작업이 끝나면 고정을 푼다).
+
+| 변경 | 동작 |
+|---|---|
+| 기기 회전(휴대폰) | 세로 그대로다(`screenOrientation="portrait"`). 구성 변경이 오지 않는다 |
+| 다크 모드 · 화면 크기 · 분할 화면 · 큰 화면의 회전 · 시스템 언어 · 키보드 연결(`configChanges` 11값 가운데 10값: `orientation` `screenSize` `smallestScreenSize` `screenLayout` `uiMode` `locale` `layoutDirection` `keyboard` `keyboardHidden` `navigation`) | **재생성 없이** 같은 화면 · 같은 진행 상태로 새 창에 다시 배치된다. 재생 중인 소리 · 진행 중인 인증 · 뒤로가기의 준비 상태가 이어진다 |
+| 내비게이션 모드 전환 · 시스템 글꼴 오버레이(11번째 값 `assetsPaths` — compileSdk 36부터 선언할 수 있다) | **API 36 이상: 재생성 없이** 탭 바가 새 모드의 자리로 간다. **API 35 이하: 선언이 무시되어 재생성된다** — 앱이 처음 화면부터 다시 서고 정상 화면이 선다. **관찰은 API 30과 API 37 두 점뿐이다. 경계를 36으로 본 것은 `assetsPaths` 속성이 SDK 36의 `attrs_manifest.xml`에 처음 나온다는 데서 온 추론이고, API 36 자체 · 26 ~ 29 · 31 ~ 35는 재지 않았다** |
+| 글꼴 크기(`fontScale`) · 디스플레이 크기(`density`) · 선언하지 않은 그 밖의 값 | **재생성된다**(이 변경 전과 같다). 앱이 처음 화면부터 다시 서고 로그인 세션은 남는다. Lynx가 실행 중에 따라가지 못하는 값이다. `resourcesUnused`는 이 재생성까지 막으므로 선언하지 않는다 |
+
+재생성 없이 받을 때 `MainActivity.onConfigurationChanged`가 하는 일은 둘이다. Lynx 4.0.1이 구성 변경을 스스로 듣지 않기 때문이다.
+
+1. 실제 디스플레이 크기를 `lynxView.updateScreenMetrics(w, h)`로 다시 넘긴다(LynxView 자체의 크기는 측정이 스스로 따라간다).
+2. `ViewCompat.requestApplyInsets(lynxView)`로 safe area를 다시 계산하게 한다(위 「시스템 바와 safe area」의 두 키가 새 창의 값으로 간다).
+
+번들을 다시 읽지 않고, 어떤 값이 바뀌었는지로 분기하지 않는다. `assetsPaths` 때문에 더한 코드는 없다 — 오버레이가 inset을 바꾸면 2번이 새 값을 보낸다.
+
+- **큰 화면**(최소 너비 600dp 이상 · API 36 이상)에서는 세로 고정이 듣지 않는다고 플랫폼 문서가 말한다(이 저장소에서 증명하지는 못했다 — 휴대폰 AVD의 흉내에서만 가로를 봤다).
+  그때는 초기화되지 않고 창을 채우는 것까지만 보장하고 가로 배치의 보기 좋음은 보장하지 않는다.
+- **분할 화면에서는 세로 고정이 유지된다.** 앱 영역이 세로 모양이면 창을 채우고, 가로로 넓은 모양이면 시스템이 세로 창을 가운데 세우고 좌우를 비운다(레터박스 — 받아들인 동작이다). 어느 쪽도 재생성되지 않고 레터박스 안의 터치는 듣는다.
+  **가로 모양의 낮은 영역에서는 아래 조작부가 잘려 닿지 못할 수 있다**(높이 823px에서 듣기 문항의 답 · 재생 버튼이 창 밖이었고 스크롤로도 닿지 않았다). 보장하지 않는 것이다 — 이 변경 전의 빌드도 같은 높이에서 똑같이 잘렸고, 그 빌드는 분할선을 움직일 때마다 재생성되어 진행까지 잃었다. 작은 창 적응은 후속 과제다.
+- `configChanges`의 값 집합은 `devtools/android-bundle/host-config-changes.mjs`가 판정으로 고정한다(`pnpm test:android-bundle`): 11값 가운데 하나라도 빠지면 `config-missing`, `density` · `fontScale`을 선언하면 `config-forbidden`,
+  그 밖의 값(`resourcesUnused` 포함)을 선언하면 `config-unlisted`. 값을 더하거나 뺄 때는 ADR과 그 함수를 함께 고친다.
 
 ## 준비
 
@@ -195,6 +221,12 @@ Maestro의 권한·설정·알림 탭 절차는
 `SafeAreaInsetsTest`는 가장자리 px → dp 변환과 `tappableBottomInset`(3버튼 48 · 제스처 0 ·
 safe 아래 값으로 자르기 · 음수와 밀도 불명은 0)을 확인하며 같은 명령으로 실행한다. 3버튼 · 제스처 ·
 실행 중 전환의 에뮬레이터 절차는 [Android 내비게이션 바와 하단 탭 바](../../docs/e2e/android-navigation-insets.md)에 있다.
+계측 `ConfigurationChangeTest`(8건)는 실제 `MainActivity`에서 구성 변경 뒤의 Activity 수명 · LynxView 크기 · screen metrics · 화면 상태 유지를 확인한다
+(세로 유지 · 야간 모드 · 화면 크기 · 큰 화면 가로 · 내비게이션 모드 오버레이 전환은 같은 인스턴스, 글꼴 배율 · 밀도는 재생성). 번들 서빙과 `-e bundleUrl`이 필요하다.
+기대는 API 37에서 8건 통과, API 30에서 6건 통과 + 2건 건너뜀(큰 화면 가로와 오버레이 전환 — 둘 다 API 36 이상에서만 성립한다. 건너뜀은 통과로 세지 않는다).
+**이 클래스는 에뮬레이터 전역 설정(야간 모드 · 화면 크기 · 밀도 · 글꼴 배율 · 회전 · 내비게이션 모드 오버레이)을 바꿨다 되돌린다.** 그래서 계측 일괄에서는 `notClass`로 빼고 따로 돌리며,
+Maestro · 다른 계측과 같은 기기에서 동시에 돌리지 않고, 중간에 죽었으면 되돌리기 명령을 한 번 더 돈다. 실행 줄 · 판정 · 되돌리기는
+[Android 화면 방향과 구성 변경](../../docs/e2e/android-orientation.md#계측-configurationchangetest--실행법)에 있고, 회전 · 다크 모드 · 크기 변경의 에뮬레이터 절차도 그 문서가 진다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
@@ -202,6 +234,8 @@ safe 아래 값으로 자르기 · 음수와 밀도 불명은 0)을 확인하며
 Maestro CLI와 전용 Android API 35 에뮬레이터를 준비한다. 흐름은 **세로 390×844,
 160 dpi, 글자 배율 1.0** 기준이다. 에뮬레이터 크기를 확인하고 필요하면
 아래처럼 맞춘다. 앱 상태를 지우므로 로그인된 기기에는 실행하지 않는다.
+**`wm density` 재정의는 앱을 띄우기 전에 건다** — 밀도 변경은 Activity를 재생성한다(글꼴 배율도 같다). `wm size`를 앱이 뜬 채 걸면
+같은 화면이 새 크기로 다시 배치된다(위 「화면 방향과 구성 변경」). 높이만 바꾸는 `wm size`는 이 변경 전의 빌드에서도 API 37에서는 재생성을 일으키지 않았다 — 「재생성이 사라졌다」의 증거로 쓰지 않는다.
 
 ```sh
 adb -s <전용 에뮬레이터 ID> shell wm size 390x844
