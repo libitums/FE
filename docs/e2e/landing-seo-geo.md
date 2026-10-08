@@ -34,11 +34,12 @@ Chrome) 구성으로 돈다 — 빌드는 둘(`.e2e-dist` 4399 · `.e2e-dist-ga`
 - axe는 스크롤 연출이 꺼진 상태(`prefers-reduced-motion`)에서 돈다. 연출 중의 선언문 대비는 보지 않는다.
 - 레이아웃 e2e는 반대로 연출이 **켜진** 상태(Playwright 기본 `no-preference`)를 본다 — `html.is-enhanced`를 먼저 확인하고, 스크롤은 `behavior: "instant"`로 옮기며 전환(opacity · 클래스)은 안정될 때까지 기다린다(`layout.support.ts`). 좌표 허용 오차는 1px이다.
 
-### GA 이벤트 (GA-E1~E6, `analytics.e2e.ts`, 2026-10-08)
+### GA 이벤트 (GA-E1~E7, `analytics.e2e.ts`, 2026-10-08)
 
 E1~E9 밖의 묶음이다 — 검색 노출이 아니라 **GA4로 무엇이 나가는가**를 본다. 테스트용 측정 ID `G-E2ETEST00`을 넣어 지은 빌드(4398)에서
 `https://www.googletagmanager.com/**` 요청을 빈 스크립트로 응답해 막고(abort가 아니라 fulfill — 콘솔 오류가 없다), 초기화 스크립트의
-`gtag()`가 `dataLayer`에 쌓는 항목을 `Array.from`으로 읽어 `["event", 이름, 속성]`만 본다. 1440px · 연출 꺼짐.
+`gtag()`가 `dataLayer`에 쌓는 항목을 `Array.from`으로 읽어 `["event", 이름, 속성]`만 본다. `analytics`(Desktop Chrome 1440px)와
+`analytics-mobile`(Pixel 7) 두 구성에서 돌고, GA-E7 말고는 연출을 끈다.
 
 | id | 무엇을 보나 |
 |---|---|
@@ -48,15 +49,15 @@ E1~E9 밖의 묶음이다 — 검색 노출이 아니라 **GA4로 무엇이 나�
 | GA-E4 | `section_view { section }`은 `top` · `faq` · `download`가 처음 보일 때 **한 번씩**. 같은 곳으로 다시 스크롤해도 늘지 않고, 속성 키는 `section`뿐 |
 | GA-E5 | `data-store` 링크 → `download_click { store }`만. 산출물에 스토어 링크가 없어(주소가 빈 값) 테스트가 `<a data-store="android" href="#download">`를 본문에 넣고 누른다 — `href="#download"`를 함께 줘 스토어가 받기 버튼보다 우선임도 본다 |
 | GA-E6 | 측정 ID 없는 빌드(4399)는 `dataLayer` · `gtag`가 없고, 같은 조작을 해도 오류 · 외부 요청이 0이다 |
+| GA-E7 | 화면의 3.3배를 넘는 Features(`ways`)도 연출을 켠 채 끝까지 스크롤하면 `section_view`가 **한 번** 온다. 처음에는 0이고, 섹션 높이 ÷ 화면 높이가 3.3 이상임을 함께 본다 |
 
-GA-E1~E5는 공통으로 콘솔 · 페이지 오류 0, 외부 요청의 호스트가 `www.googletagmanager.com` 하나임을 본다. 이벤트 로직은 엔진에 따라
-갈리지 않으므로 chromium 하나다(`content.e2e.ts`와 같은 판단).
+GA-E1~E5 · E7은 공통으로 콘솔 · 페이지 오류 0, 외부 요청의 호스트가 `www.googletagmanager.com` 하나임을 본다. 이벤트 로직은 엔진에
+따라 갈리지 않으므로 Chromium 엔진 하나이고, 섹션 높이가 달라지는 좁은 화면만 Pixel 7 프로필로 한 번 더 돈다.
 
-**알려진 한계 — 넓은 화면의 Features는 `section_view`를 보내지 않는다.** `section_view`는 섹션이 뷰포트와 30% 겹칠 때 보내는데,
-스크롤 연출이 켜진 넓은 화면에서 Features(`#ways`)는 높이가 `340vh`라 겹치는 비율의 최대가 `100/340 ≈ 0.29`로 임계에 닿지 않는다.
-좁은 화면 · 연출 꺼짐에서도 네 묶음이 쌓인 높이가 뷰포트의 3.3배를 넘으면 같다. GA-E4는 그래서 이 섹션을 단언하지 않는다.
-임계를 낮추거나 섹션별로 주는 것은 제품 변경이라 이 테스트 작업의 범위 밖이고, 고칠지는 [스펙](../specs/landing-page.md)
-「확인이 필요한 것」에 있다.
+**고친 한계 — Features의 `section_view`(2026-10-08).** 처음 GA-E4는 섹션이 뷰포트와 30% 겹칠 때를 「보였다」로 썼는데, 스크롤
+연출이 켜진 넓은 화면의 Features(`#ways`)는 높이가 `340vh`라 겹치는 비율의 최대가 `≈ 0.29`, 좁은 화면은 네 묶음이 쌓여 4~6배라
+어느 기기에서도 보내지지 않았다(Pixel 7 · iPhone 14 프로필로 직접 확인). 지금은 화면보다 긴 섹션은 **화면의 30%를 채웠을 때**로
+임계를 낮춘다(`sectionThresholdOf`, 관찰자를 섹션마다). GA-E7이 이것을 데스크톱 · Pixel 7에서 본다.
 
 ## 표기
 

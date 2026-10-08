@@ -2,7 +2,7 @@
 // 여기는 DOM에서 값을 읽어 넘기고 결과를 gtag에 전달합니다. gtag가 없으면(측정 ID 없이 빌드했으면) 아무 일도 하지 않습니다.
 
 import type { AnalyticsEvent } from "./analytics.contract";
-import { clickEventOf, faqEventOf, sectionEventOf } from "./analytics-events";
+import { clickEventOf, faqEventOf, sectionEventOf, sectionThresholdOf } from "./analytics-events";
 
 type Gtag = (command: "event", name: string, params: Record<string, string>) => void;
 
@@ -33,17 +33,27 @@ export function initAnalytics() {
     });
   }
 
-  // 섹션마다 처음 화면에 들어올 때 한 번만 보냅니다.
-  const seen = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        const event = sectionEventOf({ id: entry.target.id, isIntersecting: entry.isIntersecting });
-        if (!event) continue;
-        send(event);
-        seen.unobserve(entry.target);
-      }
-    },
-    { threshold: 0.3 },
-  );
-  for (const section of document.querySelectorAll("main section[id]")) seen.observe(section);
+  // 섹션마다 처음 화면에 들어올 때 한 번만 보냅니다. 임계값은 섹션 길이에 따라 다르므로 관찰자도 섹션마다 둡니다.
+  for (const section of document.querySelectorAll("main section[id]")) {
+    const seen = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const event = sectionEventOf({
+            id: entry.target.id,
+            isIntersecting: entry.isIntersecting,
+          });
+          if (!event) continue;
+          send(event);
+          seen.disconnect();
+        }
+      },
+      {
+        threshold: sectionThresholdOf({
+          sectionHeight: (section as HTMLElement).offsetHeight,
+          viewportHeight: window.innerHeight,
+        }),
+      },
+    );
+    seen.observe(section);
+  }
 }

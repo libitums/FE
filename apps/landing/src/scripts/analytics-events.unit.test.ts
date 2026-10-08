@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ClickedLink } from "./analytics.contract";
-import { clickEventOf, faqEventOf, sectionEventOf } from "./analytics-events";
+import { clickEventOf, faqEventOf, sectionEventOf, sectionThresholdOf } from "./analytics-events";
 
 const plain: ClickedLink = { store: undefined, hash: "", inLanguageMenu: false, hreflang: "" };
 
@@ -132,5 +132,35 @@ describe("sectionEventOf", () => {
         params: { section: id },
       });
     }
+  });
+});
+
+describe("sectionThresholdOf", () => {
+  it("U-ST1 화면보다 짧거나 같은 섹션은 섹션의 30%", () => {
+    expect(sectionThresholdOf({ sectionHeight: 600, viewportHeight: 900 })).toBe(0.3);
+    expect(sectionThresholdOf({ sectionHeight: 900, viewportHeight: 900 })).toBe(0.3);
+  });
+
+  it("U-ST2 화면보다 긴 섹션은 화면의 30%를 채우는 비율", () => {
+    // 2.2배: 0.3 × 900 ÷ 2000 = 0.135 — 화면의 30%(270px)가 섹션으로 찼을 때
+    expect(sectionThresholdOf({ sectionHeight: 2000, viewportHeight: 900 })).toBeCloseTo(0.135, 4);
+    // 4.84배(Pixel 7의 Features): 0.3 × 844 ÷ 4085 ≈ 0.062
+    expect(sectionThresholdOf({ sectionHeight: 4085, viewportHeight: 844 })).toBeCloseTo(0.062, 3);
+    // 3.4배(넓은 화면의 Features 연출 340vh)
+    expect(sectionThresholdOf({ sectionHeight: 3060, viewportHeight: 900 })).toBeCloseTo(0.0882, 4);
+  });
+
+  it("U-ST3 결과는 항상 (0, 0.3] 안이라 IntersectionObserver가 받을 수 있다", () => {
+    for (const sectionHeight of [1, 901, 3000, 100_000]) {
+      const threshold = sectionThresholdOf({ sectionHeight, viewportHeight: 900 });
+      expect(threshold).toBeGreaterThan(0);
+      expect(threshold).toBeLessThanOrEqual(0.3);
+    }
+  });
+
+  it("U-ST4 높이를 아직 모르면(0 · 음수 · NaN) 0.3", () => {
+    expect(sectionThresholdOf({ sectionHeight: 0, viewportHeight: 900 })).toBe(0.3);
+    expect(sectionThresholdOf({ sectionHeight: 900, viewportHeight: 0 })).toBe(0.3);
+    expect(sectionThresholdOf({ sectionHeight: Number.NaN, viewportHeight: 900 })).toBe(0.3);
   });
 });

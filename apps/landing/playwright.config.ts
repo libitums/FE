@@ -49,5 +49,10 @@ export default defineConfig({
       testMatch: analyticsOnly,
       use: { ...devices["Desktop Chrome"], baseURL: `http://127.0.0.1:${ports.analytics}` },
     },
+    {
+      name: "analytics-mobile",
+      testMatch: analyticsOnly,
+      use: { ...devices["Pixel 7"], baseURL: `http://127.0.0.1:${ports.analytics}` },
+    },
   ],
 });

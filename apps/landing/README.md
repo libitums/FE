@@ -21,13 +21,13 @@ pnpm --filter @libitums/landing test              # 위 셋을 차례로
 pnpm test:e2e:landing                            # 브라우저 e2e (Playwright — chromium · firefox · webkit · 모바일 · analytics)
 ```
 
-2026-10-08 기준 unit 95 · ui 100 · integration 35 · e2e 182건이다.
+2026-10-08 기준 unit 99 · ui 100 · integration 35 · e2e 190건이다.
 
 브라우저 e2e는 처음 한 번 `pnpm --filter @libitums/landing exec playwright install chromium firefox webkit`로 브라우저를 받는다.
-**빌드는 둘, 프로젝트는 다섯이다**(`playwright.config.ts`). `SITE_URL=https://example.test`로 `.e2e-dist/`에 지어 4399에 띄우고,
+**빌드는 둘, 프로젝트는 여섯이다**(`playwright.config.ts`). `SITE_URL=https://example.test`로 `.e2e-dist/`에 지어 4399에 띄우고,
 거기에 테스트용 측정 ID `G-E2ETEST00`을 더해 `.e2e-dist-ga/`에 지어 4398에 띄운다(한 `e2e/serve.mjs` 프로세스가 둘 다 내리므로 개발 서버 4321과
-부딪히지 않는다). chromium · firefox · webkit · 모바일(Pixel 7) 넷은 4399를 보고, `analytics`(Desktop Chrome)만 4398에서
-`analytics.e2e.ts`를 돈다 — 측정 ID를 넣어도 `googletagmanager.com` 요청은 빈 스크립트로 막으므로 밖으로 나가는 것은 없다.
+부딪히지 않는다). chromium · firefox · webkit · 모바일(Pixel 7) 넷은 4399를 보고, `analytics`(Desktop Chrome) · `analytics-mobile`(Pixel 7)
+둘만 4398에서 `analytics.e2e.ts`를 돈다 — 측정 ID를 넣어도 `googletagmanager.com` 요청은 빈 스크립트로 막으므로 밖으로 나가는 것은 없다.
 산출물의 내용만 보는 `content.e2e.ts`는 chromium만 돈다. 빌드 둘은 차례로 짓는다 — 동시에 지으면 Astro의 캐시 폴더(`node_modules/.astro`)를 두 빌드가 함께 써서 간헐적으로 깨질 수 있다 — 그래서 처음 한 번의 빌드 시간이 두 배다.
 **`pnpm verify`와 CI에는 들어 있지 않다** — CI에 브라우저를 받는 단계가 없다.
 
@@ -121,9 +121,11 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
   `download_click`(스토어 링크, `store`) · `language_switch`(`to`) · `faq_open`(`question`). 404에는 스크립트가 없어 수집하지 않는다.
   **어느 요소가 어떤 이벤트가 되는가는 `src/scripts/analytics-events.ts`의 순수 함수 셋이 정한다** — 눌린 링크는 스토어 링크 →
   머리의 받기 버튼(`#download`) → 언어 메뉴 순으로 하나만, FAQ는 열릴 때만, 섹션은 `id`가 있는 `main section`만 한 번. 함수는
-  unit 20이 재고, 실제 산출물에서 `dataLayer`에 쌓이는 이름 · 속성은 GA e2e 6(`e2e/analytics.e2e.ts`)이 본다.
-  `section_view`는 섹션이 뷰포트와 30% 겹칠 때 보내므로 **넓은 화면에서 연출이 켜진 Features(`340vh`)는 보내지지 않는다** —
-  알려진 한계이고 고칠지는 [스펙](../../docs/specs/landing-page.md) 「확인이 필요한 것」에 있다.
+  unit 24가 재고, 실제 산출물에서 `dataLayer`에 쌓이는 이름 · 속성은 GA e2e 7(`e2e/analytics.e2e.ts`, 데스크톱 · Pixel 7)이 본다.
+  `section_view`의 「보였다」는 화면보다 짧은 섹션은 그 30%, 화면보다 긴 섹션은 **화면의 30%를 채웠을 때**다(`sectionThresholdOf`,
+  관찰자를 섹션마다 둔다). 섹션 기준 30%만 쓰면 화면의 3.3배를 넘는 Features(넓은 화면의 연출 `340vh`, 좁은 화면은 네 묶음이
+  쌓여 4~6배)가 영원히 보내지지 않는다 — 2026-10-08까지 그랬고, GA-E7이 막는다. 임계값은 관찰을 시작할 때의 높이로 정하므로
+  창 크기를 바꿔도 다시 재지 않는다.
 - **개인정보처리방침**에 웹사이트 분석(Google Analytics)을 적어야 한다 — 문서는 저장소 밖(Notion)에 있다.
 
 ## 자주 고치는 것

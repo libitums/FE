@@ -58,3 +58,17 @@ export type FaqEventOf = (toggle: FaqToggle) => AnalyticsEvent | null;
 
 /** 보이기 시작했고 `id`가 비어 있지 않으면 `section_view { section: id }`, 아니면 `null`. 「한 번만」은 접착(unobserve)이 집니다. */
 export type SectionEventOf = (section: SectionVisibility) => AnalyticsEvent | null;
+
+/** 섹션과 화면의 높이(px)입니다. 관찰을 시작할 때 읽습니다. */
+export interface SectionSize {
+  sectionHeight: number;
+  viewportHeight: number;
+}
+
+/**
+ * 「보였다」로 칠 IntersectionObserver 임계값입니다. 화면보다 짧은 섹션은 그 30%가 보일 때, 화면보다 긴 섹션은
+ * 화면의 30%를 채웠을 때입니다: min(0.3, 0.3 × viewportHeight ÷ sectionHeight). 섹션 기준 30%만 쓰면 화면의
+ * 3.3배를 넘는 섹션(Features — 넓은 화면의 연출 340vh · 좁은 화면의 세로 쌓임)은 영원히 못 미칩니다.
+ * 높이가 0 이하이거나 수가 아니면 0.3.
+ */
+export type SectionThresholdOf = (size: SectionSize) => number;

@@ -28,7 +28,10 @@ async function watch(page: Page): Promise<Watch> {
     if (message.type() === "error") seen.errors.push(message.text());
   });
   page.on("pageerror", (error) => seen.errors.push(error.message));
-  await page.setViewportSize({ width: 1440, height: 900 });
+  // 데스크톱 프로젝트는 1440 폭, 모바일 프로젝트는 기기 프로필의 폭 그대로입니다.
+  if (!test.info().project.name.endsWith("mobile")) {
+    await page.setViewportSize({ width: 1440, height: 900 });
+  }
   await page.emulateMedia({ reducedMotion: "reduce" });
   return seen;
 }
@@ -127,6 +130,29 @@ test.describe("측정 ID가 있는 빌드", () => {
     expect(await count("faq")).toBe(1);
     expect(await count("download")).toBe(1);
     for (const params of await sections()) expect(Object.keys(params)).toEqual(["section"]);
+  });
+
+  test("GA-E7 화면보다 훨씬 긴 Features 섹션도 지나가면 section_view를 보낸다", async ({
+    page,
+  }) => {
+    // 좁은 화면에서는 네 묶음이 세로로 쌓여 섹션이 화면의 4~6배, 넓은 화면의 연출은 340vh입니다.
+    // 둘 다 「30% 이상 보임」을 영원히 못 채우므로 긴 섹션은 화면을 채우는 쪽으로 임계값을 낮춥니다.
+    await page.emulateMedia({ reducedMotion: null });
+    await page.goto("/", { waitUntil: "load" });
+    const count = async () =>
+      named(await events(page), "section_view").filter((event) => event.params.section === "ways")
+        .length;
+    expect(await count()).toBe(0);
+    const total = await page.evaluate(() => document.body.scrollHeight);
+    for (let top = 0; top <= total; top += 200) {
+      await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), top);
+      await page.waitForTimeout(20);
+    }
+    await expect.poll(count).toBe(1);
+    const ratio = await page.evaluate(
+      () => (document.getElementById("ways")?.offsetHeight ?? 0) / window.innerHeight,
+    );
+    expect(ratio).toBeGreaterThanOrEqual(3.3);
   });
 
   test("GA-E5 data-store 링크는 download_click만 보낸다", async ({ page }) => {
