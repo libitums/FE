@@ -66,6 +66,8 @@ sleep 3; A shell uiautomator dump /sdcard/ui.xml >/dev/null; A shell cat /sdcard
 `bundled`는 새 설치(`A shell pm clear libitum.duru.android`) 상태에서 스플래시 → 온보딩 → 로그인으로 가므로 **로그인 없이** 진입 구간을
 볼 수 있다. 로그인 뒤 구간은 소셜 로그인을 지날 수 없으므로 아래 픽스처를 쓴다.
 
+⟨2026-10-08⟩ **`bundled`는 R8로 축소 · 난독화된 코드가 됐다**([ADR-0052](../adr/0052-android-release-shrinking.md)). B7은 **절차가 그대로 돌고, 보는 대상이 축소된 코드로 바뀐다** — 아래 「실행 결과」의 B7 기록은 축소 전 바이너리의 것이고, 축소 뒤 빌드로 B7을 다시 돌린 적은 없다. `debug` + 픽스처 항목은 영향이 없다. **축소한 `bundled`에는 계측 픽스처가 붙지 않으므로** 픽스처 항목을 `bundled`로 옮겨 돌릴 수 없다.
+
 **두 APK는 같은 패키지(`libitum.duru.android`)라 한 번에 하나만 설치된다.** 실행 순서가 `debug` 항목 → B7(`bundled`) → B8(`debug`)이므로
 B7 뒤에는 `debug`를 **재설치(`-r`)로** 되돌린다. 지우고 새로 설치하지 않는다.
 

@@ -320,6 +320,7 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 
 `bundled`는 로컬 검증용으로 Android 디버그 키로 서명한다. `release`는 서명 없는 산출물을 만든다(아래 「패키지 이름과 출시 빌드」).
 두 빌드 모두 복사된 Lynx 번들이 없으면 빌드를 중단한다.
+**`bundled`와 `release`는 R8로 축소 · 난독화된 코드다**(`debug`는 아니다 — 아래 「코드 축소(R8)와 난독화」). `bundled`에서 난 스택 트레이스는 이름이 바뀌어 있고, 계측 픽스처는 이 두 빌드에 붙지 않는다.
 
 ## 패키지 이름과 출시 빌드
 
@@ -342,6 +343,58 @@ Play Console에 등록된 앱에 맞춘 설정이다. 결정과 버린 대안은
 - **옛 패키지와의 공존(개발 기기만).** 2026-10-05 이전 빌드로 설치한 `com.libitum.host`는 지워지지 않고 별도 앱으로 남는다(아이콘 둘 · 데이터 따로).
   둘 다 `duru://auth-callback`을 받으므로 함께 있으면 콜백에 앱 선택 창이 뜬다 — 소셜 로그인을 보기 전에 `adb uninstall com.libitum.host`.
   스크립트는 옛 앱을 지우지 않는다. Play 사용자는 처음부터 새 패키지만 가진다.
+
+## 코드 축소(R8)와 난독화
+
+`release`는 R8로 코드를 축소하고 난독화한다. 결정 · 실측 · 확인하지 못한 것은 [ADR-0052](../../docs/adr/0052-android-release-shrinking.md)가 진다 — 여기에는 다루는 법만 적는다.
+
+| 변형 | 축소 | 어떻게 정해지나 |
+|---|---|---|
+| `debug` | **안 한다** | `minifyEnabled` 선언이 없다. 계측(androidTest)의 대상도 이 변형이다 |
+| `release` | R8 코드 축소 + 난독화. 리소스 축소는 없다 | `app/build.gradle`의 `release { minifyEnabled true … }` |
+| `bundled` | `release`와 같다 | `initWith release`로 물려받는다 — `bundled` 블록에 `minifyEnabled`를 적지 않는다 |
+
+`bundled`의 `classes.dex`는 **`app/google-services.json`이 있는 워크트리에서 빌드하면 `release`와 바이트까지 같다.** 파일 없이도 `bundled`는 빌드되지만(위 「패키지 이름과 출시 빌드」) 그때는 google-services 문자열 6개가 빠져 리소스 ID가 밀리고 dex가 `release`와 달라진다 — 기동은 하되 Firebase 초기화 실패 로그가 남는다.
+**`bundled`를 `release`의 대리로 쓰는 검증은 그 파일과 함께 빌드한 APK로 한다**(ADR-0052 「검증」의 「release와 `bundled`의 dex — 리뷰 뒤의 재현」). 이 문서의 앞선 판은 「두 dex는 바이트가 같지 않다」고 적었다 — 파일 없는 빌드의 관찰을 일반화한 것이라 거둔다.
+
+싣는 ABI는 세 변형 모두 4개(`arm64-v8a` · `armeabi-v7a` · `x86` · `x86_64`) 그대로다. `ndk { abiFilters … }` · `splits` · `shrinkResources`를 더하지 않는다 — ABI는 4개 유지로 정했고 프로덕션 출시 전에 다시 정한다([ADR-0052](../../docs/adr/0052-android-release-shrinking.md)의 「재검토 조건」 · [ADR 보류 표](../../docs/adr/README.md#보류-표)).
+
+**`app/proguard-rules.pro`** 가 프로젝트의 R8 규칙이다. `-dontwarn` 7줄(Lynx가 참조하지만 이 앱이 싣지 않는 선택적 클래스 — 빼면 빌드가 실패한다)과 keep 2줄(`lynx-base` · `lynx-trace` AAR이 consumer 규칙을 싣지 않아, 네이티브가 JNI로 이름을 찾는 메서드를 지킨다)이 전부다.
+keep 한 줄(`@com.lynx.base.CalledByNative`)은 빼면 **기동 즉시 죽고**, 다른 한 줄(`@com.lynx.trace.CalledByNative`)은 충돌을 관찰하지 못한 방어 규칙이다 — 줄마다의 근거 수준은 ADR-0052 D2의 표에 있다.
+
+- **규칙을 계약 밖으로 넓히지 않는다.** `-keep class com.libitum.host.** { *; }` 같은 넓은 keep · `-dontobfuscate` · `-dontoptimize` · `-keepattributes`를 넣지 않는다. 호스트의 Lynx 모듈과 매니페스트가 가리키는 클래스는 Lynx AAR의 규칙과 AAPT가 이미 지킨다.
+- **규칙을 더해야 하면** 「무엇이 이름으로 찾는가 · 빼면 무슨 일이 나는가를 봤는가」를 먼저 계약과 ADR-0052 D2의 표에 적고, 그 다음 정적 검사의 기대값을 고친다. 검사를 먼저 고쳐 통과시키지 않는다.
+- **정적 검사가 지킨다**(`pnpm test:android-bundle` — `pnpm verify` 안, `release-shrink.integration.test.mjs`): I3은 vendor Lynx AAR의 `CalledByNative` 어노테이션이 전부 규칙으로 덮였는지, I4는 `proguard-rules.pro`가 정확히 그 9줄인지를 본다. I1 · I2는 `build.gradle`의 설정(ABI를 건드리는 선언 없음 · `minifyEnabled`는 `release`에만 · 리소스 축소 없음)을 본다.
+  **I3이 보지 못하는 것**: vendor가 아닌 AAR과 어노테이션 없이 JNI로 불리는 메서드. 그런 누락은 축소한 빌드를 기기에서 그 경로까지 돌려야 드러난다 — Lynx · Fresco · AGP를 올리면 [Android 출시 설정 절차](../../docs/e2e/android-release-config.md)의 「S — minify한 release 스모크」를 다시 돈다.
+
+**산출물 검사**는 AAB · APK가 필요해 `pnpm verify` 밖이다. 산출물이 없으면 건너뛰지 않고 실패한다.
+
+```sh
+# 저장소 루트 — 모의 값 번들 → clean 빌드 (pnpm verify 가 같은 워크트리에서 돌고 있으면 끝난 뒤)
+PUBLIC_SUPABASE_URL=https://example.invalid PUBLIC_SUPABASE_ANON_KEY=local-bridge-test pnpm bundle:android
+( cd apps/android && ANDROID_HOME=~/Library/Android/sdk ./gradlew clean :app:assembleDebug :app:assembleBundled :app:bundleRelease )
+ANDROID_HOME=~/Library/Android/sdk BUNDLETOOL_JAR=<bundletool-all.jar> \
+  node --test devtools/android-bundle/release-shrink.artifacts.mjs
+```
+
+A1 ~ A8이 release AAB의 ABI 4개 · debug APK가 축소되지 않았음 · dex 1개와 매핑 · 네이티브와 매니페스트가 이름으로 찾는 것이 매핑에 남았음 · `bundled` APK의 dex 1개 · 내장 번들이 소스와 같음 · 네 기기 스펙의 다운로드 크기 상한(18,000,000바이트) · 접근성 클래스가 축소에서 살아남았음(A8)을 본다.
+A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 Lynx 접근성 노드 제공자는 이름이 바뀌어도 살아 있으면 되고(`mapping-survival.mjs`), 완료 안내 모듈과 Lynx 가상 노드의 클래스 이름은 그대로여야 한다. A8이 실패하면 규칙을 먼저 더하지 말고 무엇이 바뀌어 사라졌는지부터 읽는다.
+`BUNDLETOOL_JAR`가 없으면 A7(다운로드 크기)만 건너뛴다 — **건너뜀은 통과가 아니다.** `release` 빌드에는 `app/google-services.json`이 필요하다(위 「패키지 이름과 출시 빌드」).
+**주의 — `native-alignment.artifacts.mjs`를 돌린 뒤의 `bundled` APK는 코드상 `google-services.json` 없이 빌드된 것이다.** 그 검사의 마지막 테스트(NA6)가 파일을 치운 채 `:app:assembleBundled`를 다시 빌드하고, 파일을 되돌린 뒤에는 `:app:bundleRelease`만 다시 빌드한다(NA6 직후의 APK를 직접 연 실행은 없다 — 최종 검증의 로그 순서가 이를 받친다: ADR-0052 「검증」). 파일 없이 빌드한 APK의 dex는 `release`와 다르다 — `bundled`로 기기 검증을 하려면 `release-shrink` 검사를 먼저 돌리거나 `:app:assembleBundled`를 다시 빌드한다([Android 출시 설정 절차](../../docs/e2e/android-release-config.md)의 S.3 사전 검사).
+
+**계측 픽스처는 축소한 빌드에 붙지 않는다.** `bundled` APK나 release AAB 설치에 `SignedInScreenFixtureTest` 같은 계측을 붙이면 러너가 `NoClassDefFoundError`(`kotlin.jvm.internal.Intrinsics` · `androidx.tracing.Trace`)로 죽는다 — 계측 APK가 기대는 앱 쪽 클래스를 R8이 지우거나 이름을 바꿨다.
+
+- 로그인 뒤 화면을 계측 · 픽스처로 보려면 **`debug` 빌드**를 쓴다(번들 서빙 + `-e bundleUrl`). debug APK와 계측 APK는 이 변경 전후로 바이트 단위로 같다.
+- 「내장 번들 + 로그인 뒤 화면」을 축소한 빌드에서 봐야 하면 [Android 출시 설정 절차](../../docs/e2e/android-release-config.md)의 「S — minify한 release 스모크」가 쓰는 일회용 탐침을 쓴다. 저장소 트리에 커밋하지 않는 사본 전용 훅이고, **그 빌드의 dex는 출시 바이너리와 같지 않다.**
+
+**스택 트레이스 풀기.** 축소한 빌드의 logcat 스택은 `r2.j` · `SourceFile:19` 같은 모양이다. 푸는 데는 **그 빌드의** 매핑이 필요하다. 같은 소스 · 의존성 · 규칙이면 `mapping.txt`는 빌드마다 같았지만(sha256 일치), 그 셋 가운데 하나라도 바뀌면 달라진다 — 그래서 출시한 빌드의 것을 보관한다.
+
+| 변형 | 매핑 |
+|---|---|
+| `release` | `app/build/outputs/mapping/release/mapping.txt` — 같은 내용이 AAB 안 `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`에 들어간다 |
+| `bundled` | `app/build/outputs/mapping/bundled/mapping.txt` |
+
+둘 다 빌드 산출물이라 추적하지 않는다. **출시한 빌드의 `mapping.txt`를 보관하는 것은 사람 몫이다**(R9). 도구는 Android SDK `cmdline-tools`의 `retrace`이고 명령은 같은 절차 문서의 「매핑으로 스택 풀기」에 있다 — **그 명령은 아직 돌려 본 적이 없다.**
 
 ## 16 KB 페이지
 
