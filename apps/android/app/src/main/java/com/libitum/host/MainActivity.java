@@ -157,8 +157,11 @@ public final class MainActivity extends Activity {
     ViewCompat.setOnApplyWindowInsetsListener(lynxView, (view, windowInsets) -> {
       Insets insets = windowInsets.getInsets(
           WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+      // 시스템 바 중 터치를 가로채는 아래 높이(3버튼). 제스처는 0이다.
+      int tappableBottom =
+          windowInsets.getInsets(WindowInsetsCompat.Type.tappableElement()).bottom;
       Map<String, Object> props = SafeAreaInsets.globalProps(insets.top, insets.bottom,
-          insets.left, insets.right, getResources().getDisplayMetrics().density);
+          insets.left, insets.right, tappableBottom, getResources().getDisplayMetrics().density);
       if (!props.equals(lastSafeAreaInsets)) {
         lastSafeAreaInsets = props;
         lynxView.updateGlobalProps(props);

@@ -26,8 +26,23 @@ JS의 준비 신호(`SystemBackModule.ready`)는 에뮬레이터 실측에서 �
 뒤로가기는 앱을 끝낸다. 판정은 Android 의존이 없는 `SystemBackGate`가 하고 `MainActivity`는
 실행만 한다. API 33 이상은 `OnBackInvokedCallback`, 26~32는 `onBackPressed()`를 쓴다.
 
-알려진 문제: 3버튼 내비게이션에서 하단 탭 바가 시스템 내비게이션 버튼과 겹쳐 그려진다.
-뒤로가기와 무관한 기존 문제이며 별도 bugfix로 진행한다.
+3버튼 내비게이션에서 하단 탭 바가 시스템 내비게이션 버튼과 겹쳐 그려지던 문제는 해결됐다
+([ADR-0044](../../docs/adr/0044-android-tappable-inset.md), 아래 「시스템 바와 safe area」).
+
+## 시스템 바와 safe area
+
+호스트는 LynxView를 시스템 바 뒤까지 전체 화면으로 그리고, inset이 바뀔 때마다 globalProps 두 키를
+한 번의 `updateGlobalProps`로 넘긴다(`MainActivity.publishSafeAreaInsets`, 값이 같으면 보내지 않는다).
+
+| 키 | 값 | 출처 |
+|---|---|---|
+| `safeAreaInsets` | `{ top, bottom, left, right }` dp — 가려지는 가장자리 | `systemBars() \| displayCutout()` |
+| `tappableBottomInset` | dp — 시스템 바 가운데 **터치를 가로채는** 아래 높이. 3버튼에서만 0이 아니다(Pixel_8 48), 제스처는 0 | `tappableElement()`의 아래 값, `safeAreaInsets.bottom`을 넘지 않게 자른다 |
+
+iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽는다). 앱 셸은 탭 루트에서 이 값만큼 아래를
+비우고 탭 바 밑에 같은 색의 바닥 면을 덧댄다. 실행 중 모드를 바꾸면 재시작 없이 따라 바뀐다. 규칙과 근거는
+[ADR-0044](../../docs/adr/0044-android-tappable-inset.md)에, 에뮬레이터 절차는
+[Android 내비게이션 바와 하단 탭 바](../../docs/e2e/android-navigation-insets.md)에 있다.
 
 ## 준비
 
@@ -126,6 +141,9 @@ Maestro의 권한·설정·알림 탭 절차는
 재누름 무시, `handled`·`leave` 응답, 500ms 무응답과 모르는 응답의 처리가 대상이며
 `./gradlew testDebugUnitTest`로 실행한다. 실제 Activity에서의 에뮬레이터 절차는
 [Android 시스템 뒤로가기 검증](../../docs/e2e/android-system-back.md)에 있다.
+`SafeAreaInsetsTest`는 가장자리 px → dp 변환과 `tappableBottomInset`(3버튼 48 · 제스처 0 ·
+safe 아래 값으로 자르기 · 음수와 밀도 불명은 0)을 확인하며 같은 명령으로 실행한다. 3버튼 · 제스처 ·
+실행 중 전환의 에뮬레이터 절차는 [Android 내비게이션 바와 하단 탭 바](../../docs/e2e/android-navigation-insets.md)에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E

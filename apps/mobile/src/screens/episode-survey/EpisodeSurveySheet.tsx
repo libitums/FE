@@ -1,3 +1,4 @@
+import { useGlobalProps } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
@@ -6,6 +7,7 @@ import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 
 import { feedbackRatings } from "../../lib/feedback-api";
 import type { FeedbackRating } from "../../lib/feedback.contract";
+import { tappableBottomInsetFrom } from "../../lib/safe-area";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 
@@ -26,6 +28,9 @@ export function EpisodeSurveySheet({
   onSkip,
 }: EpisodeSurveySheetProps): ReactNode {
   const copy = useUiCopy();
+  // 패널 아래 여백의 `env(safe-area-inset-bottom)`은 이 호스트에서 0으로 풀려, Android 3버튼 바가
+  // 건너뛰기 버튼의 아래쪽을 가립니다. 터치를 가로채는 높이만큼 시트가 스스로 비웁니다(iOS · 제스처는 0).
+  const tappableBottom = tappableBottomInsetFrom(useGlobalProps());
   // 시스템 뒤로가기 = 닫는 길 넷과 같은 건너뛰기입니다. 설문이 서 있는 동안만 등록됩니다.
   useLayerBack(onSkip);
   return (
@@ -64,6 +69,12 @@ export function EpisodeSurveySheet({
           bindtap={onSkip}
         />
       </view>
+      {tappableBottom > 0 ? (
+        <view
+          data-testid="episode-survey-inset"
+          style={{ height: `${tappableBottom}px`, flexShrink: 0 }}
+        />
+      ) : null}
     </BottomSheet>
   );
 }

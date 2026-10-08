@@ -33,3 +33,9 @@ export function safeAreaInsetsFrom(globalProps: unknown): SafeAreaInsets {
     right: edge(insets.right),
   };
 }
+
+/** 터치를 가로채는 아래쪽 시스템 바의 높이입니다. 키가 없거나 유한한 양수가 아니면 0. 던지지 않습니다. */
+export function tappableBottomInsetFrom(globalProps: unknown): number {
+  if (typeof globalProps !== "object" || globalProps === null) return 0;
+  return edge((globalProps as { tappableBottomInset?: unknown }).tappableBottomInset);
+}

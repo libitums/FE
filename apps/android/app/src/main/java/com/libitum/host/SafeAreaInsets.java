@@ -7,7 +7,9 @@ import java.util.Map;
 final class SafeAreaInsets {
   private SafeAreaInsets() {}
 
-  static Map<String, Object> globalProps(int top, int bottom, int left, int right, float density) {
+  /** tappableBottom: WindowInsetsCompat.Type.tappableElement()의 아래 값(px). */
+  static Map<String, Object> globalProps(
+      int top, int bottom, int left, int right, int tappableBottom, float density) {
     Map<String, Object> insets = new HashMap<>();
     insets.put("top", edge(top, density));
     insets.put("bottom", edge(bottom, density));
@@ -15,6 +17,8 @@ final class SafeAreaInsets {
     insets.put("right", edge(right, density));
     Map<String, Object> props = new HashMap<>();
     props.put("safeAreaInsets", insets);
+    // 키보드 등이 섞일 수 있어 safe 아래 값을 넘지 않게 자른다.
+    props.put("tappableBottomInset", edge(Math.min(tappableBottom, bottom), density));
     return props;
   }
 

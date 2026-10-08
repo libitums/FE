@@ -1,14 +1,13 @@
 import { useEffect, useGlobalProps, useReducer, useState } from "@lynx-js/react";
 
 import { FirstUnitGuideProvider } from "../components/first-unit-guide";
-import { BottomNavigator } from "../components/BottomNavigator";
 import type { AnalyticsUserAppProps } from "../lib/analytics.contract";
 import { announce } from "../lib/accessibility";
 import type { AnswerResult } from "../lib/answer-result";
 import type { EntryAppProps } from "../lib/entry-flow";
 import { loadUiLanguage } from "../lib/ui-language";
 import type { EntryLanguage } from "../lib/entry-language";
-import { safeAreaInsetsFrom, zeroSafeAreaInsets } from "../lib/safe-area";
+import { safeAreaInsetsFrom, tappableBottomInsetFrom, zeroSafeAreaInsets } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialSessionOptions } from "../lib/session-options";
 import { isMapItemComplete, journeyMapSections } from "../screens/journey-map/journey-map";
@@ -28,8 +27,10 @@ import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.
 import { productPhoneSignIn } from "../screens/login/login";
 import type { PhoneSignInVisibility } from "../screens/login/login.contract";
 import { AppHeader } from "./AppHeader";
+import { AppNavigator } from "./AppNavigator";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
+import { shellBottomLayout } from "./shell-bottom-layout";
 import { notificationList } from "./app-content";
 import type {
   EpisodeIntroUnitId,
@@ -160,7 +161,9 @@ export function AppSession({
     }),
   );
 
-  const insets = safeAreaInsetsFrom(useGlobalProps());
+  const globalProps = useGlobalProps();
+  const insets = safeAreaInsetsFrom(globalProps);
+  const tappableBottom = tappableBottomInsetFrom(globalProps);
   const wiring = screenWiring({
     safeAreaInsets: insets,
     gemCount,
@@ -209,9 +212,8 @@ export function AppSession({
   // 안쪽 여백을 잡습니다. 여백은 셸 배경이 칠하고, 스플래시일 때만 그 배경이
   // 브랜드색입니다(lib/safe-area.ts).
   //
-  // 아래쪽만 예외입니다 — 바텀 네비게이션이 서면 셸은 아래를 비우지 않습니다. 바가
-  // 화면 바닥까지 배경을 칠하고 홈 인디케이터를 피하는 여백을 스스로 지기 때문입니다.
-  // iOS 기본 탭바와 같은 형태입니다.
+  // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
+  // Android 3버튼)만 비우고 탭 바 묶음이 그 밑을 덧댑니다. iOS · 제스처는 0입니다.
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
   useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
   // Android 시스템 뒤로가기는 화면의 닫기와 같은 경로를 탑니다(ADR-0043).
@@ -223,6 +225,11 @@ export function AppSession({
   // 가장자리까지 그림을 까는 화면은 셸이 여백을 잡지 않습니다 — 셸 배경이 칠하는 띠가
   // 그림을 끊습니다. 여백은 화면이 자기 안에서 잡습니다(`wiring.safeAreaInsets`).
   const shellInsets = isFullBleedScreen(screenNow) ? zeroSafeAreaInsets : insets;
+  const bottomLayout = shellBottomLayout({
+    showsNavigator,
+    safeBottom: shellInsets.bottom,
+    tappableBottom,
+  });
 
   return (
     <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
@@ -243,11 +250,10 @@ export function AppSession({
             className={
               screenNow.name === "splash" ? "app app-splash" : isPhoneCall ? "app app-call" : "app"
             }
+            data-testid="app-shell"
             style={{
               paddingTop: `${shellInsets.top}px`,
-              // 바가 설 때 아래는 비우지 않습니다 — 바가 화면 바닥까지 배경을 칠하고,
-              // 홈 인디케이터를 피하는 여백은 바 자신의 `padding-bottom`이 집니다.
-              paddingBottom: `${showsNavigator ? 0 : shellInsets.bottom}px`,
+              paddingBottom: `${bottomLayout.shellPaddingBottom}px`,
               paddingLeft: `${shellInsets.left}px`,
               paddingRight: `${shellInsets.right}px`,
             }}
@@ -273,18 +279,18 @@ export function AppSession({
             </view>
             {/* 로그인 뒤 탭 루트에만 바를 겹칩니다. 하단 여백은 각 화면이 집니다. */}
             {showsNavigator ? (
-              <view className="app-navigator" accessibility-elements-hidden={screenLayerOpen}>
-                <BottomNavigator
-                  tab={nav.tab}
-                  onSelectTab={(tab) => {
-                    // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
-                    // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
-                    if (tab === "settings" && nav.tab !== "settings")
-                      settingsEventSink?.({ name: "settings_opened" });
-                    dispatch({ type: "switchTab", tab });
-                  }}
-                />
-              </view>
+              <AppNavigator
+                tab={nav.tab}
+                obscured={screenLayerOpen}
+                floorHeight={bottomLayout.navigatorFloorHeight}
+                onSelectTab={(tab) => {
+                  // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
+                  // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
+                  if (tab === "settings" && nav.tab !== "settings")
+                    settingsEventSink?.({ name: "settings_opened" });
+                  dispatch({ type: "switchTab", tab });
+                }}
+              />
             ) : null}
           </view>
         </ErrorBoundary>

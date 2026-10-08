@@ -112,8 +112,11 @@ $A shell am broadcast -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE
 ```sh
 $A shell cmd overlay enable com.android.internal.systemui.navbar.threebutton   # 3버튼(◁ ○ □)
 $A shell cmd overlay enable com.android.internal.systemui.navbar.gestural      # 제스처
-$A shell cmd overlay list | grep navbar                                         # [x]가 현재 모드
+$A shell settings get secure navigation_mode                                   # 현재 모드: 0 = 3버튼, 2 = 제스처
 ```
+
+⚠ `cmd overlay list | grep navbar`는 모드 확인에 쓰지 않는다 — 전환 뒤에도 threebutton · gestural이 둘 다 `[x]`로 나올 수 있다
+(작업 `android-tabbar-inset`의 에뮬레이터 실행에서 관찰).
 
 ### 뒤로가기를 누르는 법
 
@@ -133,7 +136,7 @@ $A shell cmd overlay list | grep navbar                                         
 | 온보딩 `Next` | (195,767) | B7 |
 | 로그인의 보이는 `Back` | (43,86) | B7(a) |
 | 하단 탭 `Roleplay` | (195,808) | B5 |
-| 하단 탭 `Settings` | (290,808) — 3버튼 모드에서는 탭 바가 겹쳐 (290,789)처럼 위쪽을 눌러야 한다 | B5 · B9(a) |
+| 하단 탭 `Settings` | (290,808) — 수정 전 3버튼 빌드에서는 탭 바가 겹쳐 (290,789)처럼 위쪽을 눌러야 했다. ADR-0044 뒤 3버튼은 (291,760) | B5 · B9(a) |
 | 맵의 「Listen to a Hello」 스텝(맵을 두 번 스와이프한 뒤) | (195,677) | B3 |
 | 스텝 말풍선의 `Start` | (195,698) | B3 |
 | 학습 화면의 `×` | (43,142) | B3 |
@@ -169,9 +172,11 @@ $A shell pidof com.libitum.host
 준비(16 KB 대화상자) → B1 → B2 → B4(b)(c) → B5 → B3 → B9 → B6 → (`bundled` 설치 · 앱 데이터 초기화) B7 → (`debug` 재설치) B8.
 B4(a)(첫 유닛 안내 가림막)는 이 절차에서 뺐다(B4 참고).
 
-**알려진 문제 — 3버튼 내비게이션에서 하단 탭 바 겹침**: 3버튼 모드에서는 하단 탭 바가 시스템 내비게이션 버튼(◁ ○ □)과 겹쳐 그려진다.
-기준 커밋 `444fcfd6`에서도 동일하다 — 이 작업의 회귀가 아니며 별도 bugfix로 진행한다. 따라서 **탭을 누르는 조작(B5 · B9(a))은 제스처 모드에서
-한다.** 3버튼 모드는 ◁ 동작 확인(B2 · B4 · B6)에 쓴다.
+**해결됨(ADR-0044) — 3버튼 내비게이션에서 하단 탭 바 겹침**: 이 절차를 쓸 때(제품 코드 `f23712a2`)는 3버튼 모드에서 하단 탭 바가
+시스템 내비게이션 버튼(◁ ○ □)과 겹쳐 그려졌고(기준 커밋 `444fcfd6`에서도 동일), 그래서 **탭을 누르는 조작(B5 · B9(a))을 제스처 모드에서
+했다.** 이 겹침은 [ADR-0044](../adr/0044-android-tappable-inset.md)로 고쳐졌다 — 3버튼에서 알약이 시스템 바 위 12에 서고 눌린다.
+수정이 들어간 빌드에서는 탭 조작도 3버튼에서 할 수 있다(탭 가운데 y가 3버튼 760 · 제스처 808로 다르다). 3버튼 · 제스처의 탭 바 확인은
+[Android 내비게이션 바와 하단 탭 바](android-navigation-insets.md)가 진다. 아래 「실행 결과」는 수정 전 빌드의 결과다.
 
 ## 항목
 
@@ -182,6 +187,9 @@ B4(a)(첫 유닛 안내 가림막)는 이 절차에서 뺐다(B4 참고).
 - **판정 기준**
   - 픽스처 로그 `/tmp/libitum-back-fixture.log`에 실패가 없고(`journey screen did not render` 없음) uiautomator dump에 `Journey, selected`가 있다. → 통과(준비 완료).
   - safe area: 두 모드의 스크린샷에서 헤더 · 하단 탐색이 시스템 바에 가려지지 않는다. 기준선은 커밋 `444fcfd6`(뒤로가기 작업 직전, safe area 커밋 포함; `main`에는 이 커밋이 없다)을 같은 AVD에 Debug로 빌드해 찍은 같은 화면이며, 여백이 다르면 실패. 기준선 빌드를 만들지 못했으면 「기준선 없음, 가려짐 없음만 확인」으로 적는다.
+  - ⚠ 그 기준선은 **3버튼에서 하단 탭 바가 시스템 버튼 밑에 깔린 상태**다(알약 48 중 36이 시스템 바 밑). 「여백이 같다」는 뒤로가기 작업이 여백을
+    바꾸지 않았다는 뜻일 뿐 3버튼 탭 바가 가려지지 않았다는 뜻이 아니다. [ADR-0044](../adr/0044-android-tappable-inset.md) 뒤의 빌드는 3버튼 탭 바가
+    48 올라가 있어 이 기준선과 다르다 — 그 빌드의 탭 바는 [Android 내비게이션 바와 하단 탭 바](android-navigation-insets.md)의 기준 수치로 본다.
 
 ### B2 — 알림 화면에서 뒤로가기는 맵 · 앱이 닫히지 않는다 (수용 기준 1)
 
