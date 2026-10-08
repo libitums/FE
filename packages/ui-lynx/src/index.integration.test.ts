@@ -7,6 +7,7 @@ import { describe, expect, test } from "vitest";
 
 import * as root from "./index";
 import * as typewriter from "./typewriter/index";
+import * as motion from "./motion/index";
 import * as button from "./button/index";
 import * as backHeader from "./back-header/index";
 import * as statusIndicator from "./status-indicator/index";
@@ -103,6 +104,13 @@ async function readPackageJson() {
 describe("ui-lynx package boundaries", () => {
   test("root import preserves value identity and type-compatible subpath values", () => {
     expect(root.useTypewriter).toBe(typewriter.useTypewriter);
+    // IX1: motion 모듈은 root와 subpath가 같은 값을 가리킨다(Context가 둘로 갈라지면 Provider가 먹지 않는다).
+    expect(root.MotionProvider).toBe(motion.MotionProvider);
+    expect(root.useMotion).toBe(motion.useMotion);
+    expect(root.resolveMotion).toBe(motion.resolveMotion);
+    expect(root.resolveReducedMotion).toBe(motion.resolveReducedMotion);
+    expect(root.motionFromReducedMotion).toBe(motion.motionFromReducedMotion);
+    expect(root.motionClassName).toBe(motion.motionClassName);
     expect(root.AnswerLabel).toBe(answerLabel.AnswerLabel);
     expect(root.Avatar).toBe(avatar.Avatar);
     expect(root.SettingsCell).toBe(settingsCell.SettingsCell);
@@ -226,6 +234,56 @@ describe("ui-lynx package boundaries", () => {
       "./dist/learning-unit/learning-unit.css",
     );
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
+  });
+
+  test("[IX2] ./motion subpath는 types · import · default 세 경로를 가진다", async () => {
+    const packageJson = await readPackageJson();
+    expect(packageJson.exports["./motion"]).toEqual({
+      types: "./dist/motion/index.d.ts",
+      import: "./dist/motion/index.js",
+      default: "./dist/motion/index.js",
+    });
+  });
+
+  test("[IX3] dist와 tarball에 motion 산출물이 있고 파일 규약 목록에 motion이 든다", async () => {
+    for (const file of [
+      "index.js",
+      "index.d.ts",
+      "MotionProvider.jsx",
+      "MotionProvider.d.ts",
+      "motion.contract.js",
+      "motion.contract.d.ts",
+    ]) {
+      await expect(readFile(path.join(packageRoot, "dist", "motion", file))).resolves.toBeDefined();
+    }
+    const packDir = path.join(packageRoot, ".pack");
+    const archives = (await readdir(packDir)).filter((file) => file.endsWith(".tgz"));
+    expect(archives.length).toBeGreaterThan(0);
+    const { stdout } = await execFileAsync("tar", ["-tzf", path.join(packDir, archives[0]!)]);
+    for (const file of [
+      "index.js",
+      "index.d.ts",
+      "MotionProvider.jsx",
+      "MotionProvider.d.ts",
+      "motion.contract.js",
+      "motion.contract.d.ts",
+    ]) {
+      expect(stdout).toContain(`package/dist/motion/${file}`);
+    }
+    const conventions = await readFile(
+      path.join(packageRoot, "scripts/component-file-conventions.unit.test.mjs"),
+      "utf8",
+    );
+    expect(conventions).toContain('"motion"');
+  });
+
+  test("[IX4] useTypewriter 산출물은 motion을 상대 경로로 import하고 패키지 자기 참조를 쓰지 않는다", async () => {
+    const built = await readFile(
+      path.join(packageRoot, "dist/typewriter/useTypewriter.js"),
+      "utf8",
+    );
+    expect(built).toMatch(/from\s+["']\.\.\/motion\/MotionProvider(\.js)?["']/);
+    expect(built).not.toContain("@libitums/ui-lynx");
   });
 
   test("package entry fields and dist outputs are component-specific", async () => {
