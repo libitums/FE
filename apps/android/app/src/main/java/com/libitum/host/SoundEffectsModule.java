@@ -10,14 +10,14 @@ public final class SoundEffectsModule extends LynxModule {
 
   public SoundEffectsModule(Context context, Object param) {
     super(context, param);
-    effects = (SoundEffectsController) param;
+    effects = param instanceof SoundEffectsController ? (SoundEffectsController) param : null;
   }
 
   @LynxMethod public void play(String id) {
-    effects.play(id);
+    if (effects != null) effects.play(id);
   }
 
   @LynxMethod public void stopRing() {
-    effects.stopRing();
+    if (effects != null) effects.stopRing();
   }
 }

@@ -61,7 +61,8 @@ final class StatusBarIconSync {
     List<LynxBaseUI> children = ui.getChildren();
     if (children == null) return false;
     for (int index = 0, size = children.size(); index < size; index += 1) {
-      if (collect(children.get(index))) return true;
+      LynxBaseUI child = children.get(index);
+      if (child != null && collect(child)) return true;
     }
     return false;
   }
