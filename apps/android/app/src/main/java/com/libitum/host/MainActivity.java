@@ -55,7 +55,6 @@ public final class MainActivity extends Activity {
     String templateUrl = HostPaths.template(BuildConfig.DEBUG, override);
     LynxViewBuilder builder = new LynxViewBuilder();
     builder.setTemplateProvider(new AndroidTemplateProvider(this));
-    builder.setMediaResourceFetcher(new BundledMediaFetcher(bundled, templateUrl));
     builder.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE);
     builder.setFontScale(getResources().getConfiguration().fontScale);
     builder.addBehaviors(new XElementBehaviors().create());
@@ -78,6 +77,7 @@ public final class MainActivity extends Activity {
     builder.registerModule("SystemBackModule", SystemBackModule.class, this);
     DebugSupport.configure(builder);
     lynxView = builder.build(this);
+    lynxView.setImageInterceptor(new HostImageInterceptor(bundled, templateUrl));
     lynxView.addLynxViewClient(new LynxViewClient() {
       @Override public void onFirstScreen() {
         // Same main thread call as the page patch, so the icons flip with the surface (no post).

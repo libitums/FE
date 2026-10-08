@@ -12,6 +12,7 @@
 
 `apps/mobile` 빌드 → `pnpm bundle:android` → `apps/android/app/src/main/assets/` → `TemplateProvider` → `LynxView`.
 Release 이미지의 `/static/` URL은 미디어 fetcher가 APK 자산 URL로 바꾼다. Debug의 같은 경로는 번들 URL의 서버 주소로 바꾸고, 절대 원격 URL은 그대로 둔다.
+⟨2026-10-07⟩ 바꾸는 자리가 미디어 fetcher에서 동기 `ImageInterceptor`(`HostImageInterceptor`)로 옮겨졌다 — 바뀐 뒤의 값은 위와 같다([ADR-0051](../adr/0051-android-image-url-redirect.md)).
 `StorageModule`은 현재 JS 접점의 동기 API를 같은 이름으로 구현하며, Android `SharedPreferences`에 `libitum.` 접두 키를 저장한다.
 
 ## 순수 함수와 테스트 계획

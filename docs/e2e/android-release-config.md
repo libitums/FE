@@ -22,7 +22,7 @@ Lynx 4.0.1 · Fresco 2.3.0의 64비트 `.so`를 16 KB 정렬로 다시 빌드한
 | R1 ~ R5 · R8(`speech` 제외) · R7(관찰) | 에뮬레이터 통과 | AAB `checked 31, failures 0` · 대화상자 0(기동 세 번) · `versionCode=2` · `targetSdk=36` · Maestro `host` · `social` · `legal` · `small` · `audio` · `signed-in` · `completion` · `handwriting` · `review` · 푸시 통과. 계측은 41건 가운데 40건 통과. 남은 한 건 `ButtonAccessibilityTest`는 그 일괄 실행에서 **실행 조건이 빠져** 실패했고(제품 결함이 아니다 — R8), 조건을 맞춰 따로 돌린 실행에서 `OK (1 test)`였다. `9b15f548`에서 R8의 계측 ①(이 테스트를 뺀 일괄)은 `OK (40 tests)`, 계측 ②는 `OK (1 test)`였다. R7은 관찰 기록(선택 창이 떴다)이고 통과/실패가 아니다 |
 | **x86_64 재빌드 `.so` 10개** | **미실행 — 확인되지 않았다** | 어느 기기 · 에뮬레이터에서도 실행된 적 없다(검증 에뮬레이터는 arm64-v8a). 정적 정렬 검사만 통과 |
 | **R6** — API 26 ~ 32 뒤로가기 · 4 KB 페이지 기기 | **API 30 에뮬레이터 하나에서 실행 — 그 범위만 통과** | 2026-10-05, API 30(Android 11) · 4 KB 페이지(`getconf PAGE_SIZE` 4096) · arm64 `google_apis` 에뮬레이터 · 3버튼 · `114099e3`에서 실행했다(AAB 분할 설치). 통과: 재빌드한 `.so`의 로드(로드 오류 0)와 온보딩 · Fresco 그림, `onBackPressed()` 경로(B2 · B5 · B6 · B7(b)), 3버튼 하단 겹침 없음(스크린샷 육안 — 수치 대조는 하지 않았다), 설치된 분할 APK의 오디오 자산 29개(m4a 21 · mp3 8, 무압축)와 효과음 호출 logcat, 계측 일괄 `OK (40 tests)`. **남은 미확인**: API 26 ~ 29 · 31 ~ 32, 제스처 모드, B3 · B4 · B7(a) · B8 · B9, 소리 청음(에뮬레이터를 `-no-audio`로 띄웠다), API 30에서의 `ButtonAccessibilityTest` · `test-session-resume.sh` · `test-storage-restart.sh`, 실기 4 KB 기기. 상세는 아래 R6 「실행 기록」 |
-| **R9** — 업로드 키 서명 · Play 재업로드 · 실기 | **미실행 — 확인되지 않았다** | 사용자 몫이다. **Play가 이 브랜치의 AAB(versionCode 2)를 받는지**, 실기에서 소리 · 그림 · 탭 바 · 16 KB 경고 없음은 아직 아무도 보지 않았다 |
+| **R9** — 업로드 키 서명 · Play 재업로드 · 실기 | **미실행 — 확인되지 않았다** | 사용자 몫이다. **Play가 이 브랜치의 AAB(versionCode 2)를 받는지**, 실기에서 소리 · 그림 · 탭 바 · 16 KB 경고 없음은 아직 아무도 보지 않았다. ⟨2026-10-07⟩ 실기의 스플래시 20회(확인 목록 j — **출시 조건**)도 아직 아무도 하지 않았다 |
 | **R8의 `speech`** | **미실행 — 확인되지 않았다** | 실행기가 인식 서비스가 없는 AOSP 이미지를 요구한다. 이 절차의 에뮬레이터는 Google Play 이미지다 |
 
 **위 세 줄은 통과가 아니다.** 이 문서를 근거로 「출시 설정이 검증됐다」고 말할 수 있는 범위는 16 KB 에뮬레이터 하나의 R1 ~ R5 · R7 · R8까지다.
@@ -54,6 +54,9 @@ Lynx 4.0.1 · Fresco 2.3.0의 64비트 `.so`를 16 KB 정렬로 다시 빌드한
 4. **bundletool** — `bundletool-all-<버전>.jar`(https://github.com/google/bundletool/releases). 선례 문서는 1.17.2를 썼다.
 5. **16 KB 기기 확인**: `adb shell getconf PAGE_SIZE`가 **`16384`**여야 R1 ~ R5 · R7 · R8이 의미가 있다. `4096`이면 그 기기는 R6 용이다.
 6. **옛 `com.libitum.host`를 지운다**(R7 전까지): 둘이 함께 설치되면 `duru://auth-callback`에 앱 선택 창이 떠 R4 · R8이 흔들린다.
+   **R8에서 실제로 난 모양**(2026-10-07, API 37 — 옛 앱이 남아 있던 에뮬레이터): 계측 ①에서 `WebAuthenticationFlowTest#registeredDeepLinkCompletesActiveBrowserRequestOnce` 1건이 실패하고(47건 가운데 통과 43 · 건너뜀 3 · 실패 1),
+   `SignedInScreenFixtureTest`가 선택 창과 겹쳐 `Process crashed`로 끝났다. **제품 회귀가 아니라 이 전제의 누락이다.** 그래서 R7을 돌았다면 그 절의 4번(제거)까지 끝내고 R8로 간다.
+   지울 수 없는 기기면 `pm disable-user`로 옛 앱을 꺼 두고 끝난 뒤 `pm enable`로 되돌려도 된다 — 그렇게 끈 상태에서 그 1건은 `OK (1 test)`, 계측 ①은 `OK (47 tests)`였다.
 7. **화면 설정은 구간마다 다르다 — 쓰고 나면 되돌린다.** 좌표는 이 문서에 쓰지 않는다 — 위치는 스크린샷(`shot`)으로 잡는다.
 
    | 구간 | `wm size` · `wm density` | 내비게이션 | 글자 배율 |
@@ -347,8 +350,9 @@ A install -r apps/android/app/build/outputs/apk/androidTest/debug/app-debug-andr
 # ① 일괄 — ButtonAccessibilityTest 는 전제가 달라 여기서 빼고 ②에서 따로 돌린다.
 #    ConfigurationChangeTest 도 뺀다(에뮬레이터 전역 설정을 바꾸고 -e bundleUrl 이 필요하다 — 아래 ③)
 #    StatusBarIconsHostTest 도 뺀다(-e bundleUrl 이 필요하고 야간 모드를 바꾼다 — 아래 ④)
+#    SplashWordmarkHostTest 도 뺀다(-e bundleUrl 이 필요하다 — 아래 ⑤)
 A shell am instrument -w \
-  -e notClass com.libitum.host.SignedInScreenFixtureTest,com.libitum.host.SessionResumeTest,com.libitum.host.StorageRestartTest,com.libitum.host.ButtonAccessibilityTest,com.libitum.host.ConfigurationChangeTest,com.libitum.host.StatusBarIconsHostTest \
+  -e notClass com.libitum.host.SignedInScreenFixtureTest,com.libitum.host.SessionResumeTest,com.libitum.host.StorageRestartTest,com.libitum.host.ButtonAccessibilityTest,com.libitum.host.ConfigurationChangeTest,com.libitum.host.StatusBarIconsHostTest,com.libitum.host.SplashWordmarkHostTest \
   libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
 E2E_UDID=$E2E_UDID sh apps/android/test-session-resume.sh
 E2E_UDID=$E2E_UDID sh apps/android/test-storage-restart.sh
@@ -368,15 +372,28 @@ E2E_UDID=$E2E_UDID sh apps/android/test-storage-restart.sh
 `notClass`에 넣지 않고 ①을 돌렸을 때의 실측은 이 클래스가 7건이던 때의 것이다: 54건 가운데 통과 44 · 건너뜀 3 · **실패 7**(2026-10-06, `bc44c645` · API 37 — 7건 모두 이 클래스의 `bundleUrl` 전제 실패). 그 뒤 케이스 하나(HI8)가 더해져 8건이 됐고, 그 상태로 `notClass` 없이 돌린 수는 다시 재지 않았다.
 실행법 · 통과 기준(`OK (8 tests)`) · 되돌리기는 [Android 호스트 README](../../apps/android/README.md#계측-statusbariconshosttest-실행)가 진다(여기에 되풀이하지 않는다).
 
+**⑤ `SplashWordmarkHostTest`(7건)도 따로 돌린다.** 번들 서빙과 `-e bundleUrl`을 요구하고(없으면 `precondition: instrumentation argument bundleUrl is missing`으로 실패한다) 앱 저장소를 비웠다 되돌린다.
+`notClass`에 넣지 않고 ①을 돌리면 `Tests run: 51, Failures: 3`이 된다(2026-10-07, `9bd6fd2c` · API 37 — HW1 · HW2 · HW4가 그 전제 실패이고 HW3은 인자가 없어 건너뛰어진다. 나머지 47건은 그대로다).
+**이 51 · 3은 이 클래스가 4건이던 때의 실측이다.** 같은 날 뒤(`7ba0a828`) 늦은 도착 가드 HW5 · HW6 · HW7이 더해져 7건이 됐고, 그 상태로 `notClass` 없이 돌린 수는 다시 재지 않았다(셋 모두 `-e wordmarkDelayMs`가 없으면 전제 확인 전에 건너뛰므로 54건 · 실패 3 · 건너뜀이 셋 더 느는 것이 소스로 본 기대다 — 실측이 아니다).
+일괄(①)에서 빼고 `-e bundleUrl`과 함께 따로 돌리는 클래스: `ButtonAccessibilityTest`(②) · `ConfigurationChangeTest`(③) · `StatusBarIconsHostTest`(④) · `SplashWordmarkHostTest`(⑤). (`SignedInScreenFixtureTest` · `SessionResumeTest`도 번들 URL을 받지만 각자의 절차 · 스크립트가 넘긴다.)
+실행법 · 통과 기준(`OK (7 tests)` — HW3은 `-e wordmarkMissing true`와 워드마크를 지운 번들 서버가 없으면, HW5 · HW6 · HW7은 `-e wordmarkDelayMs`와 워드마크 응답을 늦추는 번들 서버가 없으면 건너뛴다. 건너뜀은 통과로 세지 않는다) · 되돌리기는 [Android 호스트 README](../../apps/android/README.md#계측-splashwordmarkhosttest-실행)가 진다(여기에 되풀이하지 않는다).
+**7건이 된 뒤의 `OK (7 tests)`는 실측이다**: 지연 · 누락 인자 없이 `-e bundleUrl`만 준 클래스 전체 실행이 API 37 · API 30 모두 통과 3(HW1 · HW2 · HW4) + 건너뜀 4(HW3 · HW5 · HW6 · HW7)였다(2026-10-07, `5aff7932` — 에뮬레이터 한 대씩).
+
 **통과**: 위 Maestro 전부 통과(`speech`는 AOSP 이미지가 없으면 미실행으로 이유를 적는다 — 통과로 쓰지 않는다) · 계측 ①은 **`OK (47 tests)`** · 계측 ②는 `OK (1 test)` · 두 스크립트 `OK`.
-**`OK (N tests)`의 N은 건너뛴 테스트를 포함한 수다.** 계측 ①의 47은 **통과 44 + 건너뜀 3**이다(2026-10-06, `dfbe03cb` · API 37 에뮬레이터(Pixel_8 AVD)에서 위 명령에 `-r`을 더해 코드를 센 결과 — `0`이 44개, `-4`가 3개, `-2` 없음. 그 앞의 기준선 43 = 통과 40 + 건너뜀 3은 `bc9a091e`에서 같은 방법으로 셌다).
+**`OK (N tests)`의 N은 건너뛴 테스트를 포함한 수다.** 계측 ①의 47은 **기기마다 나뉘는 수가 다르다 — API 37은 통과 44 + 건너뜀 3, API 30은 통과 43 + 건너뜀 4**다(둘 다 2026-10-07 `5aff7932`의 실측 — 아래).
+API 37의 44 + 3은 이렇게 처음 셌다(2026-10-06, `dfbe03cb` · API 37 에뮬레이터(Pixel_8 AVD)에서 위 명령에 `-r`을 더해 코드를 센 결과 — `0`이 44개, `-4`가 3개, `-2` 없음. 그 앞의 기준선 43 = 통과 40 + 건너뜀 3은 `bc9a091e`에서 같은 방법으로 셌다).
 `StatusBarIconsHostTest`를 `notClass`에 더한 위 명령에서도 **47 = 통과 44 + 건너뜀 3 그대로다**(2026-10-06, `bc44c645` · API 37에서 `OK (47 tests)`. 빼는 클래스의 케이스 수는 이 수에 들지 않는다 — 그 클래스가 7건에서 8건이 된 뒤 일괄을 다시 돌리지는 않았고, 소스의 `@Test`를 세면 전체 71 − 뺀 여섯 클래스 24 = 47로 맞는다).
-건너뛰는 셋은 `LiveFcmTokenTest`의 2건(`#bridgeReturnsARealFcmRegistration` · `#relayGetsNewTokenAfterDeleteToken` — `-e liveFcm true`가 없으면 건너뛴다)과 `SpeechRecognitionModuleTest#missingRecognizerSettlesWithoutOpeningMicrophone`(AOSP 이미지 전제)이다.
+`SplashWordmarkHostTest`를 `notClass`에 더한 위 명령에서도 **47 = 통과 44 + 건너뜀 3 그대로다**(2026-10-07, `9bd6fd2c` · API 37에서 `-r`로 센 결과 — `0`이 44개, `-4`가 3개, `-2` 없음. 소스의 `@Test`를 세면 전체 75 − 뺀 일곱 클래스 28 = 47로 맞는다).
+그 뒤 `SplashWordmarkHostTest`가 4건에서 7건이 됐다(2026-10-07, `7ba0a828`). **빼는 클래스라 47은 그대로다** — 소스의 `@Test`를 다시 세면 전체 78 − 뺀 일곱 클래스 31(1 + 3 + 3 + 1 + 8 + 8 + 7) = 47로 맞는다(`ac343e11`).
+**그 뒤 두 기기에서 다시 돌렸다**(2026-10-07, `5aff7932` — 위 명령에 `-r`, 에뮬레이터 한 대씩, 전제 6대로 옛 앱이 없는(끈) 상태): **API 37 `OK (47 tests)` = 통과 44 + 건너뜀 3 · API 30 `OK (47 tests)` = 통과 43 + 건너뜀 4.**
+API 30에서 하나 더 건너뛰는 것은 `LaunchAppearanceTest#ic3_splashScreenAttributesResolveOnApi31Plus`다(API 31 이상의 스플래시 속성).
+두 기기 공통으로 건너뛰는 셋은 `LiveFcmTokenTest`의 2건(`#bridgeReturnsARealFcmRegistration` · `#relayGetsNewTokenAfterDeleteToken` — `-e liveFcm true`가 없으면 건너뛴다)과 `SpeechRecognitionModuleTest#missingRecognizerSettlesWithoutOpeningMicrophone`(AOSP 이미지 전제)이다.
 `PushTokenRefreshHostTest` 2건은 일괄에 들어가 통과한다(번들 · Firebase 없이 돈다 — [Android 푸시 호스트 E2E](android-push-notifications.md#계측-pushtokenrefreshhosttest--실행법)).
-`LaunchAppearanceTest` 4건도 일괄에 들어가 API 37에서 통과한다(번들 · 전역 설정 변경 없이 돈다. API 30 이하에서는 스플래시 속성 1건이 건너뛰어져 건너뜀 수가 하나 는다 — [ADR-0049](../adr/0049-android-launch-appearance.md)).
-건너뜀 수가 3이 아니면(이미지 종류에 따라 음성 인식 케이스가 돌 수 있다) `-r`로 다시 돌려 이름을 적는다.
+`LaunchAppearanceTest` 4건도 일괄에 들어가 API 37에서 통과한다(번들 · 전역 설정 변경 없이 돈다. API 30 이하에서는 스플래시 속성 1건이 건너뛰어져 건너뜀 수가 하나 는다 — [ADR-0049](../adr/0049-android-launch-appearance.md). API 30에서 통과 3 + 건너뜀 1로 실측됐다).
+건너뜀 수가 API 37에서 3 · API 30에서 4가 아니면(이미지 종류에 따라 음성 인식 케이스가 돌 수 있다) `-r`로 다시 돌려 이름을 적는다.
 이 수의 내력: `OK (40 tests)`(2026-10-05 `9b15f548` · API 37에서 위 명령의 내용 그대로 — 그때는 `$A` 문자열 변수 형태를 bash에서 썼다. `ConfigurationChangeTest`를 `notClass`에 더한 뒤의 명령으로 2026-10-05 `396afb2b` · 2026-10-06 `8e16f6b5` · `94097ecb` · `4f3b2927`에서도 같았다)
-→ `OK (42 tests)`(2026-10-06 `704d56fc` — `PushTokenRefreshHostTest` 2건이 더해졌다) → `OK (43 tests)`(`bc9a091e` — `LiveFcmTokenTest`에 건너뛰는 케이스 1건이 더해졌다) → `OK (47 tests)`(2026-10-06 `dfbe03cb` — `LaunchAppearanceTest` 4건이 더해졌다) → `OK (47 tests)` 그대로(2026-10-06 `bc44c645` — `StatusBarIconsHostTest`가 더해졌으나 `notClass`로 뺀다).
+→ `OK (42 tests)`(2026-10-06 `704d56fc` — `PushTokenRefreshHostTest` 2건이 더해졌다) → `OK (43 tests)`(`bc9a091e` — `LiveFcmTokenTest`에 건너뛰는 케이스 1건이 더해졌다) → `OK (47 tests)`(2026-10-06 `dfbe03cb` — `LaunchAppearanceTest` 4건이 더해졌다) → `OK (47 tests)` 그대로(2026-10-06 `bc44c645` — `StatusBarIconsHostTest`가 더해졌으나 `notClass`로 뺀다) → `OK (47 tests)` 그대로(2026-10-07 `9bd6fd2c` — `SplashWordmarkHostTest`가 더해졌으나 `notClass`로 뺀다. 같은 날 `7ba0a828`에서 그 클래스가 7건이 됐으나 일괄의 기대값은 같다 — 소스로 센 수였다)
+→ `OK (47 tests)` 실측(2026-10-07 `5aff7932` — API 37 통과 44 + 건너뜀 3 · API 30 통과 43 + 건너뜀 4).
 **이 문서와 다른 절차 문서 · ADR의 날짜 붙은 `OK (40 tests)` · `OK (43 tests)` 기록은 그때의 결과다 — 지금의 기대값이 아니다.**
 **`adb shell am instrument`는 테스트가 실패해도 종료 코드가 0이다.** 종료 코드로 판정하지 말고 출력 마지막의 `OK (N tests)`(실패면 `FAILURES!!!`)로 판정한다.
 실패 · 건너뜀은 이름과 사유를 결과 표에 적는다(`pnpm test:e2e:android:social:live` · `:talkback`은 실제 계정 · TalkBack이 필요해 이 항목에 넣지 않는다).
@@ -453,8 +470,26 @@ jarsigner -verify -verbose -certs apps/android/app/build/outputs/bundle/release/
 | g | 3버튼 탭 바 | 3버튼 내비게이션 모드(설정 → 시스템 → 제스처 → 3버튼 내비게이션)에서 하단 탭 바가 내비게이션 버튼과 겹치지 않는다 | |
 | h | 뒤로가기 | 시트 · 쌓인 화면에서 뒤로 → 한 단계씩 닫힘. 맵(탭 루트)에서 뒤로 → 앱이 백그라운드로 가고 다시 열면 같은 화면(강제 종료 아님) | |
 | i | 기동 · 충돌 | 로그인 화면 진입까지 앱이 꺼지지 않는다(수정 전 Fresco 3 시도에서 이 단계에서 충돌했다) | |
+| j | **스플래시 워드마크 — 출시 조건** | 앱을 완전히 끝낸 뒤(설정 → 앱 → Duru → 강제 종료) 다시 여는 콜드 스타트를 **20회** 한다. 매 회 주황 화면 위에 흰 손글씨 워드마크가 그려지는지(약 2.4초 동안 써진 뒤 다음 화면으로 넘어간다), **워드마크 없이 빈 주황 화면이 약 4초 가다 넘어가는 실행**(쓰다 만 워드마크에서 넘어가는 것 포함)이 있는지 본다. 결과 칸에 `그런 실행 수 / 20`을 적는다 — 아래 「j의 횟수와 한계」 | |
 
 이상이 있으면 증상 · 기기 모델 · Android 버전 · 페이지 크기를 적고(가능하면 `adb logcat` 발췌), 구현을 고치지 말고 작업 `android-release-config`로 되돌린다.
+
+**j의 횟수와 한계.** j는 사용자가 2026-10-07에 **출시 조건**으로 정한 확인이다 — Play 내부 테스트 전에 실기의 릴리스 빌드에서 스플래시 길이를 재고 그 결과로 4초 안전 타이머를 고칠지 정한다([ADR-0051](../adr/0051-android-image-url-redirect.md) 「미확인 · 후속」 10 — U1).
+
+- **왜 20회인가**: 계약이 실기에 권한 내장 번들 반복의 축약판이 20회이고(ADR-0051 「미확인 · 후속」 4), 에뮬레이터의 release AAB 스모크도 20회였다([스플래시 워드마크 절차](android-splash-wordmark.md)의 SW8). 손으로 할 수 있는 수준에 맞춘 수이고 통계로 정한 수가 아니다.
+- **20회에 0건이어도 「없다」가 아니다**: 타이머로 닫힌 실행이 관찰된 비율은 약 0.5%였다(수정 후 1 / 218 — **API 30 에뮬레이터 · dev 빌드.** 실기 · release 빌드의 비율은 재지 않아 모른다). 참 비율이 그 정도라면 20회에 한 건도 안 나올 확률이 약 90%다(0.995^20 ≈ 0.90).
+  20회 0건이 배제하는 것은 「약 14% 이상으로 자주 난다」까지다(단측 95% — 1 − 0.05^(1/20) ≈ 0.14). 0건이면 「20회에서 보이지 않았다」로 적고, 내부 테스트 기간에 같은 증상의 보고를 계속 받는다.
+- **한 건이라도 있으면 ADR-0051 U1을 다시 연다**([보류 표](../adr/README.md#보류-표)의 「스플래시 4초 안전 타이머」 행). 기기 모델 · Android 버전 · 몇 번째 실행이었는지를 적는다.
+- **눈으로는 길이를 ms로 잴 수 없다.** j가 보는 것은 「타이머로 닫히는 실행이 있는가」다. 길이의 분포를 수치로 남기려면 `adb`가 붙은 기기에서 스플래시 워드마크 절차의 「반복 실행기」를 `--build bundled --cold stop`으로 돌린다 — **실기 · Play 설치본에서 돌려 본 적은 없다**(에뮬레이터의 release AAB까지다).
+
+**권고 — 상태바 아이콘 (출시 조건으로 정해지지 않았다).** [ADR-0050](../adr/0050-android-status-bar-icons.md) 「미확인 · 후속」 1 · 2 · 10이 실기에 넘긴 것이다. 하지 않아도 출시를 막지 않는다. 해당 기기가 없으면 「기기 없음」으로 적는다.
+
+| # | 확인 | 어떻게 | 결과 |
+|---|---|---|---|
+| s1 | 전환 지연의 체감 | 밝은 화면(여정 맵)과 어두운 화면(에피소드 표지 · 서사 화면)을 오갈 때 상태바의 시계 · 아이콘 색이 화면과 함께 바뀌는지, 눈에 띄게 늦거나 잠깐 안 읽히는 순간이 있는지(API 30 에뮬레이터 실측은 다 바뀔 때까지 약 150 ~ 160 ms) | |
+| s2 | 제조사 상태바 | Pixel이 아닌 기기(제조사 SystemUI)에서 s1을 본다. 연속 학습 모달이 뜨면 장식 운석이 상태바의 시계 · 아이콘과 겹치지 않는지도 본다(제조사마다 글리프의 자리가 다르다) | |
+| s3 | Android 8 ~ 10 (API 26 ~ 29) | 그 버전의 기기에서 어두운 화면(에피소드 표지 · 서사 화면)에 들어가면 아이콘이 밝게 바뀌고 나오면 어둡게 돌아오는지 — 이 경로는 어느 기기 · 에뮬레이터에서도 실행된 적이 없다 | |
+| s4 | Android 12 ~ 16 (API 31 ~ 36)의 어두운 아이콘 색 | 밝은 화면에서 일반 대화상자(설정의 로그아웃 확인창)를 연 채 스크린샷을 찍어 어두워진 띠 위의 시계가 읽히는지 본다. Android 버전과 스크린샷을 남긴다 — 이 범위는 재지 않았고(API 30 실측 3.81 · API 37 실측 7.37), 그 값은 사용자가 2026-10-07에 수용한 범위다(ADR-0050 U2). 결과가 그 결정을 다시 여는 것은 아니고 미측정 범위를 채운다 | |
 
 ## 결과 표
 
@@ -472,4 +507,5 @@ jarsigner -verify -verbose -certs apps/android/app/build/outputs/bundle/release/
 | R8 나머지 Maestro · 계측 | 에뮬레이터 | | 실패 이름 · 계측 ① 실패 0 · 계측 ②(`ButtonAccessibilityTest`, TalkBack 켬) `OK (1 test)` |
 | R9-1~3 빌드 · 서명 · 서명 확인 | 사용자 | | `jar verified.` 여부 · 지문 대조 |
 | R9-4 Play 업로드 수락(versionCode 2) | 사용자 | | Play Console 화면 |
-| R9-5~6 실기 업데이트 · 확인 목록 a ~ i | 사용자 | | 위 확인 목록 표 |
+| R9-5~6 실기 업데이트 · 확인 목록 a ~ j | 사용자 | | 위 확인 목록 표. **j(스플래시 20회)는 출시 조건이다** — `그런 실행 수 / 20` · 기기 모델 · Android 버전 |
+| R9-6 권고 s1 ~ s4 (상태바 아이콘) | 사용자 | | 권고 — 미실행이어도 출시를 막지 않는다. 본 기기의 모델 · Android 버전 |

@@ -154,6 +154,113 @@ adb -s <기기> shell am instrument -w -r -e class com.libitum.host.StatusBarIco
   HI8의 실행값(`toneChanges=4`)은 단언의 하한과 같아 여유가 없다(ADR-0050 D7의 「HI8의 한계」). HI7은 여정 맵에서 `sync` 200회의 평균이 4 ms 미만인지 본다.
 - 계측으로 닿는 화면은 온보딩 · 여정 맵 · 에피소드 표지 · 첫 서사 · 지표 모달이다. 시스템이 실제로 그린 픽셀(대비)과 전환 영상은 계측이 보지 못한다 — [Android 상태바 아이콘 명암](../../docs/e2e/android-status-bar-icons.md)의 에뮬레이터 절차가 진다.
 
+## 번들 안 이미지 경로
+
+번들이 내는 이미지 `src`는 스킴 없는 절대 경로(`/static/image/<이름>.<해시>.<확장자>`)다. 호스트가 그것을 읽을 수 있는 URL로 바꾼다
+([ADR-0051](../../docs/adr/0051-android-image-url-redirect.md)).
+
+| 빌드 | `/static/…`이 바뀌는 값 |
+|---|---|
+| `bundled` · `release`(내장 번들) | `asset:///static/…` — `pnpm bundle:android`가 복사한 APK 자산 |
+| `debug`(원격 번들) | `<번들 URL의 scheme://authority>/static/…` — 번들을 준 그 서버 |
+| `/static/`로 시작하지 않는 값(원격 `https://…` · `data:` 등) | 그대로 |
+
+- **값을 내는 것은 `HostPaths.media`이고, Lynx에 거는 자리는 `HostImageInterceptor`(`ImageInterceptor`) 하나다.** `MainActivity`가 `builder.build(this)` 바로 다음, `renderTemplateUrl` 전에 `lynxView.setImageInterceptor(...)`로 단다.
+  인터셉터는 **불린 스레드에서 곧바로 값을 돌려준다** — 실행기 · 핸들러 · 잠금 · I/O를 두지 않는다.
+- **`setMediaResourceFetcher` · `setAsyncImageInterceptor` · `LynxMediaResourceFetcher`를 잇는 클래스를 `app/src/main`에 두지 않는다.** 2026-10-07 전에는 미디어 fetcher(`BundledMediaFetcher`)로 바꿨는데, Lynx 4.0.1은 fetcher가 달려 있으면
+  UI 스레드에서 들어온 `src`의 재작성을 다른 스레드 풀로 넘긴다. 이미지 요청 작업이 그보다 먼저 돌면 재작성 전의 `/static/…`이 그대로 나가 `Unsupported uri scheme`으로 실패하고,
+  스플래시처럼 `binderror`로 상태를 굳히는 화면은 그림을 잃는다(콜드 스타트에서 워드마크 없이 첫 화면으로 넘어가던 결함). `pnpm test:android-bundle`의 `host-image-redirect.integration.test.mjs`가 이 결선을 지킨다.
+- **Lynx 버전을 올리면 아래 계측의 HW1을 다시 돌린다.** 결선의 정적 검사는 이 호스트의 결선만 보고 Lynx의 동작은 보지 못한다.
+- **`HostImageInterceptor.loadImage`는 호출되지 않는 무동작이다.** Lynx 4.0.1에 그 메서드를 부르는 곳이 없다. 같은 정적 검사 파일의 HR7 · HR8이 저장소에 든 Lynx AAR(`vendor-maven`)을 읽어 그 전제를 지킨다 —
+  Lynx를 올려 HR7이 실패하면 기대값을 고치기 전에 새 호출자를 읽는다(호출자가 생겼다면 `loadImage`를 실제로 구현해야 한다).
+- **dev 빌드에서는 워드마크가 가끔 안 보인 채 주황 화면이 약 4초 이어질 수 있다 — 위 결함이 아니다.** 워드마크 이미지가 스플래시 마운트 뒤 약 1.6초보다 늦게 뜨면
+  공유 JS의 4초 안전 타이머가 재생(약 2.4초)보다 먼저 스플래시를 닫는다. 가르는 법: 위 결함은 logcat에 `LynxImageManager: onFailed … Unsupported uri scheme`이 찍히고 수 ms ~ 0.3초 만에 닫힌다.
+  늦은 도착은 `onFailed`도 `error`도 `finalloopcomplete`도 없이 약 4초 뒤에 닫힌다.
+  - **왜 늦게 뜨는지는 모른다.** 타이머로 닫힌 실행이 관찰된 곳은 `debug`(워드마크를 HTTP로 받는다) 빌드의 API 30 에뮬레이터이고 자연 조건에서 약 0.5%였다(218회에 1건).
+    **dev 빌드만의 일이라고 읽지 않는다** — 내장(`bundled`) 빌드에서 타이머로 닫힌 실행은 없었지만, 통과한 실행 가운데 스플래시 길이가 타이머 경계(약 4.03초 이상)에 닿은 것이 API 37 에뮬레이터에서 수정 전 · 후 모두 있었다(두 에뮬레이터를 동시에 돌린 부하 조건 — ADR-0051 「리뷰와 계약 r03의 정정」). 그 한 건은 번들 서버가 즉시 응답했는데 났다 —
+    「HTTP로 받아서 늦는다」는 원인으로 확인되지 않았다(응답을 일부러 2초 늦추면 이 증상이 난다는 것까지다).
+  - **「수정 전 빌드에도 있던 성질」은 강제 조건에서만 확인됐다**(응답을 2초 늦추면 수정 전 빌드도 같은 증상). 자연 조건의 대조(빌드당 150회)에서는 두 빌드 모두 0건이었다 —
+    수정이 2% 이상으로 늘렸다는 것은 기각되고 약 1% 안팎의 증가는 배제되지 않는다.
+  - 수치 · 한계 · 내장 빌드와 실기에서 나는지의 미확인 · 타이머를 고칠지의 보류는 ADR-0051(「재실행과 대조 측정」 · 「미확인 · 후속」)이 진다.
+- 소리 · 대사는 이 경로를 쓰지 않는다(호스트 모듈이 자체 경로로 읽는다).
+
+### 계측 `SplashWordmarkHostTest` 실행
+
+7건(HW1 ~ HW7)이다. 실제 `MainActivity`를 세션 없이 띄워(스플래시 → 온보딩) 같은 프로세스의 logcat과 LynxView 트리를 본다.
+**번들 서빙과 `-e bundleUrl`이 필수다** — 빠지면 `precondition: instrumentation argument bundleUrl is missing`으로 실패한다(건너뛰지 않는다). 그래서 계측 일괄에서는 `notClass`로 빼고 따로 돌린다([출시 설정 절차](../../docs/e2e/android-release-config.md)의 R8 ⑤).
+
+```sh
+# 저장소 루트 — 모의 값으로 만든 번들을 서빙한다 (3000 포트는 쓰지 않는다)
+PUBLIC_SUPABASE_URL=https://example.invalid PUBLIC_SUPABASE_ANON_KEY=local-bridge-test pnpm bundle:android
+python3 -m http.server 18790 --bind 0.0.0.0 --directory apps/mobile/dist &
+cd apps/android && ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+adb -s <기기> install -r -t app/build/outputs/apk/debug/app-debug.apk
+adb -s <기기> install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -s <기기> shell am instrument -w -r -e class com.libitum.host.SplashWordmarkHostTest \
+  -e bundleUrl http://10.0.2.2:18790/main.lynx.bundle \
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
+# HW1만 되풀이할 때: -e class com.libitum.host.SplashWordmarkHostTest#hw1_forcedRaceKeepsTheWordmarkRequestRewritten
+```
+
+| 케이스 | 무엇을 보는가 |
+|---|---|
+| HW1 | **경합을 강제한 상태**에서 워드마크 요청이 재작성된 URL로 나간다 — `LynxImageManager: onFailed` 0줄 · 워드마크 노드 유지 · `finalloopcomplete`. 띄우기 전에 Lynx의 스레드 풀 둘에 대기 작업을 던져 강제한다(제품 코드에 이음매가 없다) |
+| HW2 | 자연 조건으로 같은 프로세스에서 5회 다시 띄운다(콜드 스타트가 아니다 — 가드) |
+| HW3 | 워드마크 파일이 없는 번들에서 이미지가 **다른 이유로** 실패하고 `binderror`가 안전 타이머보다 먼저 스플래시를 끝낸다. **`-e wordmarkMissing true`가 없으면 건너뛴다** |
+| HW4 | 강제 조건에서 온보딩의 두 그림도 `onFailed` 0줄(가드) |
+| HW5 | 워드마크 응답이 **2000 ms** 늦는 서버에서: `onFailed` · `error` 0줄, 첫 화면 뒤 1.5초에 워드마크 노드가 있고(일찍 닫히지 않는다), 첫 화면 뒤 3.0초 ~ 타이머 + 2초에 온보딩 「Next」가 선다(갇히지 않는다). `finalloopcomplete`는 요구하지 않는다(가드). **`-e wordmarkDelayMs 2000`이 없으면 건너뛴다** |
+| HW6 | 워드마크 응답이 **1000 ms** 늦는 서버에서: 재생이 끝까지 가 `finalloopcomplete`가 오고 그 뒤 「Next」(가드). **`-e wordmarkDelayMs 1000`이 없으면 건너뛴다** |
+| HW7 | 워드마크 응답이 **8000 ms** 늦는 서버에서 HW5와 같은 단언 — 이미지가 와서 닫을 수 없으므로 안전 타이머만이 스플래시를 끝낸다(가드). **`-e wordmarkDelayMs 8000`이 없으면 건너뛴다** |
+
+- **판정**: 종료 코드가 아니라 출력 마지막의 `OK (7 tests)`(실패면 `FAILURES!!!`)와 케이스별 `INSTRUMENTATION_STATUS_CODE`로 본다. 위 명령에서는 HW3 · HW5 · HW6 · HW7이 `-4`(건너뜀)다 — **건너뜀은 통과로 세지 않는다.**
+  (HW5 ~ HW7이 더해진 뒤의 클래스 전체 실행은 API 37 · API 30 모두 `OK (7 tests)` — 통과 3(HW1 · HW2 · HW4) · 건너뜀 4였다. 2026-10-07 `5aff7932`, 에뮬레이터 한 대씩.)
+  HW1은 강제가 걸렸다는 표지(`createViewAsync not done, will create on ui thread, tagName:image`)가 logcat에 없으면 「강제 불성립」으로 **실패**한다.
+- **HW3을 돌리려면** 워드마크 파일을 지운 번들 사본을 다른 포트로 서빙하고 인자를 더한다.
+
+  ```sh
+  cp -R apps/mobile/dist <임시 폴더>/dist-nowordmark
+  rm <임시 폴더>/dist-nowordmark/static/image/logo-handwriting.*.webp
+  python3 -m http.server 18792 --bind 0.0.0.0 --directory <임시 폴더>/dist-nowordmark &
+  adb -s <기기> shell am instrument -w -r \
+    -e class com.libitum.host.SplashWordmarkHostTest#hw3_missingWordmarkEndsTheSplashThroughBinderror \
+    -e bundleUrl http://10.0.2.2:18792/main.lynx.bundle -e wordmarkMissing true \
+    libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
+  ```
+
+- **HW5 · HW6 · HW7(늦은 도착 가드)을 돌리려면** 워드마크 응답만 늦추는 번들 서버 `apps/android/tools/wordmark-delay-server.py`를 그 지연으로 띄우고 같은 값을 인자로 준다. 케이스마다 서버 하나다.
+
+  ```sh
+  # 저장소 루트 — <번들 디렉터리> <포트> <워드마크 지연 ms>. 요청마다 시각 · 경로 · 상태를 표준 출력에 찍는다 (3000 포트는 거절한다)
+  python3 apps/android/tools/wordmark-delay-server.py apps/mobile/dist 18793 2000 > <임시 폴더>/delay-2000.log &
+  adb -s <기기> shell am instrument -w -r \
+    -e class com.libitum.host.SplashWordmarkHostTest#hw5_lateWordmarkStillLetsTheSplashEndAndOnboardingStand \
+    -e bundleUrl http://10.0.2.2:18793/main.lynx.bundle -e wordmarkDelayMs 2000 \
+    libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
+  # HW6: 서버를 다른 포트에 1000 으로 띄우고 -e wordmarkDelayMs 1000  (#hw6_wordmarkLateByOneSecondStillPlaysToTheEnd)
+  # HW7: 서버를 다른 포트에 8000 으로 띄우고 -e wordmarkDelayMs 8000  (#hw7_veryLateWordmarkIsEndedBySafetyTimerAlone)
+  ```
+
+  - **인자 값은 「서버를 그 지연으로 띄웠다」는 선언이다.** 테스트는 서버의 지연을 직접 보지 못해, 지연이 걸렸다면 가능하지 않은 관찰(너무 이른 `finalloopcomplete`)이 나오면 「지연 불성립」으로 **실패**한다. 인자와 서버의 지연이 다르면 그렇게 끝난다.
+  - **케이스가 시작 전에 앱의 이미지 캐시를 스스로 비운다**(이 클래스의 모든 케이스 — 메모리와 디스크). 반복 실행 앞에 `pm clear`를 넣을 필요가 없다.
+    **비운 뒤 캐시가 비었는지는 확인하지 않는다** — Fresco 2.3.0은 비운 직후의 항목 수에 -1을 내 그 값으로는 가를 수 없다. 비우지 못해 캐시에서 그림이 뜨면 HW5 · HW6 · HW7의 「지연 불성립」이 잡는다.
+    2026-10-07에 더한 것이다: 그 전에는 HW5 · HW6를 반복하면 두 번째부터 캐시에서 그림이 떠 요청이 서버에 가지 않았고 「지연 불성립」으로 실패했다(두 기기 모두 HW5 5회 가운데 1회 · HW6 5회 가운데 0회 통과).
+    **고친 뒤의 반복 실행은 두 기기에서 확인됐다**(2026-10-07 `5aff7932`, API 37 · API 30): `pm clear` 없이 잇달아 HW5 · HW6 · HW7 각 5회 가운데 5회 통과, 매 회 서버에 워드마크 요청이 1건 왔다. 표본은 기기당 15회다.
+    처음 고침에는 「비운 뒤 항목 수가 0인가」 단언이 있었고 그것이 항상 실패해 이 클래스의 모든 케이스를 막았다 — 그 단언은 뺐다(경위와 회차 표는 [Android 스플래시 워드마크](../../docs/e2e/android-splash-wordmark.md)의 「R1」 · 「최종 검증」).
+  - 인자가 없거나 그 케이스의 값이 아니면 건너뛴다. 그래서 위의 클래스 전체 실행 · 계측 일괄 어디에도 이 셋의 통과는 들지 않는다 — 따로 돌린 것만 센다.
+  - **가드이고 재현 테스트가 아니다** — 수정 전 빌드에서도 통과한다. 구분력은 사본에 건 변이로 확인했다(안전 타이머 제거는 HW5가 아니라 HW7이 잡는다 · `entrySplashDurationMs` 3000은 HW6이 잡는다 — API 37에서만 확인).
+  - **HW6은 API 30에서 간헐적으로 실패한다**(15회 가운데 13회 통과 — 캐시를 비우기 전의 기록이고, 위 캐시 문제와 같은 원인이었는지는 확인되지 않았다. 캐시를 비우게 한 뒤의 5회에서는 나오지 않았으나 그것으로 없어졌다고 보지 않는다). 실패 2회는 번들 미로드 1 · 응답이 앱에 늦게 닿음 1이다 — 1000 ms 지연에서 타이머까지의 여유가 약 0.55초뿐이라 자연 지연이 겹치면 넘는다. 창을 넓혀 통과시키지 않는다 — 실패하면 그 실행의 서버 기록(워드마크 `END` 줄의 걸린 시간)과 logcat을 읽는다.
+  - 기록과 변이 결과의 출처는 ADR-0051의 D6이다.
+- **에뮬레이터를 한 대씩 돌린다.** 늦은 도착 가드(HW5 ~ HW7)와 아래 반복 실행기의 dev 반복은 이미지의 도착 시각에 기대고, 그 시각이 호스트 부하에 흔들린다. 다른 에뮬레이터 · 다른 계측 · Gradle 빌드 · 화면 녹화를 함께 돌리지 않는다
+  (두 에뮬레이터를 동시에 돌린 첫 반복에서 API 30의 dev 빌드가 워드마크 없이 4초 뒤 닫히는 실행을 셋 냈다 — 서버 기록이 없어 늦은 도착이었는지는 미해결이다. 한 대씩 돌린 재실행에서도 늦은 도착이 69회에 1건 났다 — 한 대씩 돌려도 0이 되지는 않는다).
+- **수정 전후의 기록**(2026-10-07, API 37 · API 30 에뮬레이터): HW1은 미디어 fetcher 결선에서 두 기기 각 10회 가운데 10회 실패했고, 지금의 결선에서 각 10회 가운데 10회 통과했다. HW3은 각 3회 가운데 3회 통과했다. 수치의 출처와 한계는 ADR-0051이 진다.
+- **기기 상태를 바꿨다 되돌린다** — 앱 저장소(`duru-storage`)를 백업하고 비운 채 시작해 끝나면 되돌린다. Maestro · 다른 계측 · e2e 절차와 같은 기기에서 동시에 돌리지 않는다.
+  러너가 중간에 죽었으면 개발용 기기에 한해 `adb -s <기기> shell pm clear libitum.duru.android`.
+- **무엇을 증명하고 무엇을 못 하는가**: HW1은 「강제한 경합에서도 요청이 재작성 뒤에 나간다」를 결정적으로 본다. **자연 조건의 콜드 스타트에서 실패가 없는지는 보지 못한다** — 프로세스를 새로 띄우는 반복은
+  [Android 스플래시 워드마크](../../docs/e2e/android-splash-wordmark.md)의 절차와 반복 실행기 `apps/android/tools/splash-wordmark-repeat.sh`가 진다(쓰는 법은 스크립트 머리말 · 판정 로직만 기기 없이 확인하려면 `--selftest`).
+  실행기는 실행마다 **넷 가운데 하나**로 센다 — PASS · FAIL(결함: `onFailed`) · FAIL(요청 없음) · LATE(늦은 도착 — 서버 기록이 있는 dev에서만 가를 수 있고, **통과가 아니며** 유효 시도에서 빠진다. 늦은 시작이 dev에서만 난다는 뜻은 아니다 — 내장 빌드의 통과 실행도 4초 타이머 경계에 닿은 적이 있다. ADR-0051 「리뷰와 계약 r03의 정정」). dev 반복은 요청 기록 서버(`wordmark-delay-server.py`를 지연 없이)와 `--server-log`가 있어야 LATE를 가른다.
+  종료 코드는 0 통과 · 1 실패 · 2 사용법 · 3 판정 불가로 못 채움 · 4 기기 소실 · **5 환경 부적합(LATE가 시도의 5% 초과 — 통과가 아니다)** 이다. 조건의 정본은 그 절차 문서의 「판정」과 「반복 실행기」다(여기에 되풀이하지 않는다).
+  로그인 뒤 화면의 그림 · 실기 · release AAB도 이 계측의 범위 밖이다.
+
 ## 준비
 
 - Android Studio, Android SDK Platform 36과 Build Tools 36.0.0 (`compileSdk` · `targetSdk` 36, `minSdk` 26)
@@ -189,7 +296,7 @@ Debug 호스트는 Rspeedy의 WebSocket 연결과 변경분 파일을 읽는다.
 저장소 루트에서 `pnpm bundle:android`로 번들을 만든 뒤 `pnpm preview`를 실행한다.
 Android 에뮬레이터에서 `./gradlew assembleDebug`로 만든 APK를 설치한다. 기본 번들 URL은
 `http://10.0.2.2:3000/main.lynx.bundle`이다. 출력된 포트가 다르거나 실기기를 쓰면
-URL을 실행 인자로 지정한다. `/static/` 이미지는 같은 서버에서 읽는다.
+URL을 실행 인자로 지정한다. `/static/` 이미지는 같은 서버에서 읽는다(호스트가 경로를 바꾸는 자리는 위 「번들 안 이미지 경로」).
 
 ```sh
 adb shell am start -n libitum.duru.android/com.libitum.host.MainActivity \
@@ -326,6 +433,10 @@ API 31 이상의 스플래시 배경과 아이콘 속성, 띄운 뒤에도 밝�
 표지의 자리 · JS와 호스트의 문자열 짝 · 등록부 · `MainActivity` 결선 · 연속 학습 모달의 운석 자리는 `pnpm test:android-bundle`(`host-status-bar-icons.unit.test.mjs` · `host-status-bar-icons.integration.test.mjs`)이 본다.
 계측 `StatusBarIconsHostTest`(8건)는 실제 `MainActivity`에서 호스트가 트리의 표지를 읽어 창의 플래그를 바꾸는지 · 같은 명암끼리의 교체에서 다시 적용하지 않는지 · 구성 변경과 재생성 뒤의 값 · 호출 비용 · 화면 갱신과 같은 콜 안에서 적용되는지를 확인한다.
 번들 서빙과 `-e bundleUrl`이 필요하고 야간 모드를 바꿨다 되돌려 계측 일괄에서는 `notClass`로 뺀다 — 실행 줄 · 판정 · 되돌리기는 위 「상태바 아이콘」의 「계측 `StatusBarIconsHostTest` 실행」에 있다.
+`HostImageInterceptorTest`(JUnit 6건)는 이미지 URL 인터셉터가 `HostPaths.media`와 같은 값을 불린 스레드에서 돌려주는지를 확인하며 `./gradlew testDebugUnitTest`로 실행한다.
+`MainActivity`의 이미지 결선(미디어 fetcher · 비동기 인터셉터 없음, `setImageInterceptor`의 자리)은 `pnpm test:android-bundle`(`host-image-redirect.integration.test.mjs`)이 본다.
+계측 `SplashWordmarkHostTest`(7건)는 실제 `MainActivity`에서 스레드 경합을 강제해도 스플래시 워드마크의 이미지 요청이 재작성된 URL로 나가는지(HW1 ~ HW4)와, 워드마크가 늦게 떠도 스플래시가 일찍 닫히거나 갇히지 않는지(HW5 ~ HW7 — 지연 서버와 인자가 있을 때만 돈다)를 확인한다.
+번들 서빙과 `-e bundleUrl`이 필요해 계측 일괄에서는 `notClass`로 뺀다 — 실행 줄 · 판정 · 되돌리기는 위 「번들 안 이미지 경로」의 「계측 `SplashWordmarkHostTest` 실행」에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
