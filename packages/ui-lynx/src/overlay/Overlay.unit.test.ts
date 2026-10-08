@@ -53,3 +53,24 @@ describe("Overlay contract", () => {
     ).toThrow("requires binddismiss");
   });
 });
+
+describe("Overlay contract: 컨텍스트 motion", () => {
+  test("OVc1. 컨텍스트를 주지 않으면 standard 그대로다", () => {
+    const contract = getOverlayContract({ scope: "area" });
+    expect(contract.motion).toBe("standard");
+    expect(contract.className).toContain("ui-lynx-overlay-motion-standard");
+  });
+
+  test("OVc2. 컨텍스트 reduced면 motion이 reduced이고 standard 토큰이 빠진다", () => {
+    const contract = getOverlayContract({ scope: "area" }, "reduced");
+    expect(contract.motion).toBe("reduced");
+    expect(contract.className).toContain("ui-lynx-overlay-motion-reduced");
+    expect(contract.className).not.toContain("ui-lynx-overlay-motion-standard");
+  });
+
+  test("OVc3. 명시한 motion이 컨텍스트를 이긴다", () => {
+    expect(getOverlayContract({ scope: "area", motion: "standard" }, "reduced").motion).toBe(
+      "standard",
+    );
+  });
+});

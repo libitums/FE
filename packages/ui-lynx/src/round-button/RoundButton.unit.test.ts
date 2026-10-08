@@ -187,7 +187,27 @@ describe("round-button.css", () => {
       /\.ui-lynx-round-button-disabled\.ui-lynx-round-button-loading\s+\.ui-lynx-round-button-spinner\s*\{[^}]*opacity:\s*1/,
     );
     expect(styles).toMatch(
-      /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*\.ui-lynx-round-button:active[\s\S]*transform:\s*none/,
+      /\.ui-lynx-round-button-motion-reduced[^{]*:active\s+\.ui-lynx-round-button-surface\s*\{[^}]*transform:\s*none/,
+    );
+  });
+});
+
+describe("getRoundButtonContract: 컨텍스트 motion", () => {
+  const props = { accessibilityLabel: "정보", icon: "<svg />" };
+
+  test("RBc1. 컨텍스트 reduced면 className 끝에 reduced 토큰이 붙고 필드 집합은 그대로다", () => {
+    const reduced = getRoundButtonContract(props, "reduced");
+    const standard = getRoundButtonContract(props);
+    expect(reduced.className).toBe(
+      "ui-lynx-round-button ui-lynx-round-button-neutral ui-lynx-round-button-m ui-lynx-round-button-motion-reduced",
+    );
+    expect(Object.keys(reduced)).toEqual(Object.keys(standard));
+    expect({ ...reduced, className: "" }).toEqual({ ...standard, className: "" });
+  });
+
+  test("RBc2. 컨텍스트를 주지 않으면 standard className에 motion 토큰이 없다", () => {
+    expect(getRoundButtonContract(props).className).toBe(
+      "ui-lynx-round-button ui-lynx-round-button-neutral ui-lynx-round-button-m",
     );
   });
 });

@@ -103,3 +103,20 @@ describe("getLearningUnitContract", () => {
     expect(() => getLearningUnitContract(props as never)).toThrow(message);
   });
 });
+
+describe("getLearningUnitContract: 컨텍스트 motion", () => {
+  test("LUc1. 컨텍스트 reduced면 className 마지막 토큰이 reduced이고 필드 집합은 그대로다", () => {
+    const props = {
+      accessibilityLabel: "쇼핑 표현 듣기",
+      icon,
+      status: "available",
+      focused: true,
+    } as const;
+    const reduced = getLearningUnitContract(props, "reduced");
+    const standard = getLearningUnitContract(props);
+    const tokens = reduced.className.split(" ");
+    expect(tokens.at(-1)).toBe("ui-lynx-learning-unit-motion-reduced");
+    expect(tokens.at(-2)).toMatch(/-focused$/);
+    expect(Object.keys(reduced)).toEqual(Object.keys(standard));
+  });
+});

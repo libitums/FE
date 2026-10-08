@@ -116,3 +116,19 @@ describe("Settings Cell contract", () => {
     );
   });
 });
+
+describe("Settings Cell contract: 컨텍스트 motion", () => {
+  test("SCc1. 컨텍스트 reduced면 className에 reduced 토큰이 들고 나머지는 그대로다", () => {
+    const props = {
+      trailing: "toggle",
+      title: "자동 재생",
+      checked: true,
+      onChange: vi.fn<(checked: boolean) => void>(),
+    } as const;
+    const reduced = getSettingsCellContract(props, "reduced");
+    const standard = getSettingsCellContract(props);
+    expect(reduced.className).toContain("ui-lynx-settings-cell-motion-reduced");
+    expect(reduced.accessibilityLabel).toBe(standard.accessibilityLabel);
+    expect(Object.keys(reduced)).toEqual(Object.keys(standard));
+  });
+});

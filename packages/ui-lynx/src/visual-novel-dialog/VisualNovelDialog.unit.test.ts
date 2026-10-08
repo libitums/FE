@@ -263,3 +263,38 @@ test("계속 표시 모션은 기본 bounce이고, reducedMotion이면 static이
       .indicatorMotion,
   ).toBe("static");
 });
+
+describe("getVisualNovelDialogContract: 컨텍스트 motion", () => {
+  const line = "오늘 하늘이 참 예쁘다.";
+  const revealing = {
+    line,
+    speakerName: "아리아",
+    reveal: "typewriter",
+    status: "revealing",
+    visibleCharacterCount: 1,
+  } as const;
+
+  test("VNc1. 컨텍스트 reduced면 즉시 표시하고 계속 표시는 정지한다", () => {
+    const contract = getVisualNovelDialogContract(revealing, "reduced");
+    expect(contract.reveal).toBe("instant");
+    expect(contract.status).toBe("ready");
+    expect(contract.visibleLine).toBe(line);
+    expect(contract.indicatorMotion).toBe("static");
+  });
+
+  test("VNc2. 명시한 reducedMotion false가 컨텍스트 reduced를 이긴다", () => {
+    const contract = getVisualNovelDialogContract(
+      { ...revealing, reducedMotion: false },
+      "reduced",
+    );
+    expect(contract.reveal).toBe("typewriter");
+    expect(contract.indicatorMotion).toBe("bounce");
+  });
+
+  test("VNc3. 컨텍스트를 주지 않으면 요청한 reveal 그대로다", () => {
+    const contract = getVisualNovelDialogContract(revealing);
+    expect(contract.reveal).toBe("typewriter");
+    expect(contract.status).toBe("revealing");
+    expect(contract.indicatorMotion).toBe("bounce");
+  });
+});
