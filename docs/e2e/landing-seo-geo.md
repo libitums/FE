@@ -15,7 +15,7 @@
 아래 절차 가운데 브라우저만 있으면 되는 단계는 Playwright 테스트(`apps/landing/e2e/*.e2e.ts`)로 옮겼다.
 `pnpm test:e2e:landing`이 chromium · firefox · webkit · 모바일(Pixel 7) 네 구성에 더해, 측정 ID가 든 빌드를 보는 `analytics`(Desktop
 Chrome) 구성으로 돈다 — 빌드는 둘(`.e2e-dist` 4399 · `.e2e-dist-ga` 4398)이고, 산출물의 내용만 보는 `content.e2e.ts`는 chromium만,
-`analytics.e2e.ts`는 `analytics`만 돈다. 2026-10-08 기준 182건이고 세 번 연속 통과했다. 구성은 [앱 README](../../apps/landing/README.md) 「명령」에 있다.
+`analytics.e2e.ts`는 `analytics` · `analytics-mobile`만 돈다. 2026-10-08 기준 190건이고 세 번 연속 통과했다. 구성은 [앱 README](../../apps/landing/README.md) 「명령」에 있다.
 
 | 케이스 | 자동화된 것 | 여전히 사람이 하는 것 |
 |---|---|---|
