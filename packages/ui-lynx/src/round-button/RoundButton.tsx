@@ -10,6 +10,8 @@ import {
 export function RoundButton(props: RoundButtonProps) {
   const motion = useMotion();
   const contract = getRoundButtonContract(props, motion);
+  // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
+  const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
   const foregroundColor = getRoundButtonForegroundColor(props);
   const iconContent = props.icon.replace(/currentColor/g, foregroundColor);
 
@@ -22,7 +24,7 @@ export function RoundButton(props: RoundButtonProps) {
     <view
       className={contract.className}
       data-testid="ui-lynx-round-button"
-      data-motion={motion === "reduced" ? "reduced" : undefined}
+      {...motionProps}
       data-variant={contract.variant}
       data-size={contract.size}
       data-disabled={props.disabled ? "true" : "false"}

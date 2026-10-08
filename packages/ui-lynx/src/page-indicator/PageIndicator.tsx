@@ -8,6 +8,8 @@ import type { PageIndicatorProps } from "./page-indicator.contract";
 export function PageIndicator(props: PageIndicatorProps) {
   const motion = useMotion();
   const model = getPageIndicatorModel(props, motion);
+  // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
+  const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
 
   if (!model.shouldRender || model.accessibilityLabel === null) return null;
 
@@ -17,7 +19,7 @@ export function PageIndicator(props: PageIndicatorProps) {
         .filter(Boolean)
         .join(" ")}
       data-testid="ui-lynx-page-indicator"
-      data-motion={motion === "reduced" ? "reduced" : undefined}
+      {...motionProps}
       data-count={String(model.pageCount)}
       data-current={String(model.currentPage)}
       accessibility-element={!props.decorative}

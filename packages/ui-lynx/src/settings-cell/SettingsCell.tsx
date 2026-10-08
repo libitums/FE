@@ -18,6 +18,8 @@ function Cell(
 ) {
   const motion = useMotion();
   const contract = getSettingsCellContract(props, motion);
+  // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
+  const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
   // 형태 토큰(position)이 motion 토큰보다 앞에 오도록 contract의 motion 토큰을 떼어 뒤에 다시 붙입니다.
   const motionToken = motionClassName("ui-lynx-settings-cell", motion);
   const className = [
@@ -39,7 +41,7 @@ function Cell(
     <view
       className={className}
       data-testid="ui-lynx-settings-cell"
-      data-motion={motion === "reduced" ? "reduced" : undefined}
+      {...motionProps}
       data-trailing={props.trailing}
       data-checked={props.trailing === "toggle" ? String(props.checked) : undefined}
       data-disabled={String(contract.disabled)}

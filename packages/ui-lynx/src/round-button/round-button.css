@@ -106,6 +106,15 @@
   transform: scale(0.95);
 }
 
+/* 움직임 줄이기: 눌림 때 surface를 줄이지 않고 전환도 걸지 않습니다. */
+.ui-lynx-round-button-motion-reduced:not(.ui-lynx-round-button-loading):not(
+    .ui-lynx-round-button-disabled
+  ):active
+  .ui-lynx-round-button-surface {
+  transition: none;
+  transform: none;
+}
+
 .ui-lynx-round-button:not(.ui-lynx-round-button-disabled):focus-visible {
   box-shadow:
     0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
