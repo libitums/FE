@@ -1,5 +1,5 @@
 # Android speech permission and unavailable-service path on the dedicated AOSP emulator.
-appId: com.libitum.host
+appId: libitum.duru.android
 ---
 - setOrientation: PORTRAIT
 - extendedWaitUntil:

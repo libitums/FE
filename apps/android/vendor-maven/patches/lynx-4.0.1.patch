@@ -1,0 +1,63 @@
+diff --git a/platform/android/BUILD.gn b/platform/android/BUILD.gn
+index 3b1aea1..99cad38 100644
+--- a/platform/android/BUILD.gn
++++ b/platform/android/BUILD.gn
+@@ -12,6 +12,7 @@ config("16kb_page") {
+       (android_app_abi == "arm64-v8a" || android_app_abi == "x86_64")) {
+     ldflags += [
+       "-Wl,-z,max-page-size=16384",
++      "-Wl,-z,common-page-size=16384",
+       "-fuse-ld=lld",
+     ]
+   }
+diff --git a/platform/android/gradle.properties b/platform/android/gradle.properties
+index 831cf2e..fddfba0 100644
+--- a/platform/android/gradle.properties
++++ b/platform/android/gradle.properties
+@@ -36,8 +36,8 @@ android.useAndroidX=true
+ android.enableJetifier=true
+ 
+ # C++ build:
+-CMAKE_VERSION=3.18.1
+-ndk_version=21.1.6352462
++CMAKE_VERSION=3.19.8
++ndk_version=28.2.13676358
+ enable_lto=true
+ enable_custom_lld=false
+ compiler_optimization_level=O3
+@@ -58,6 +58,6 @@ VERSION = 0.0.1
+ 
+ # Used to specify the architecture types for building native code. The optional values are: armeabi-v7a, x86, x86_64, arm64-v8a.
+ # When setting this value, please use commas to separate different architecture types. For example: abiList=armeabi-v7a,x86
+-abiList=arm64-v8a
++abiList=arm64-v8a,x86_64
+ 
+ python_exec=python3
+diff --git a/tools/env.sh b/tools/env.sh
+index 2d46f66..4ed4bea 100755
+--- a/tools/env.sh
++++ b/tools/env.sh
+@@ -5,7 +5,7 @@
+ 
+ # Keep the no-side-effect environment setup used by both standalone Lynx and
+ # downstream repositories in the open-source tree.
+-LYNX_OSS_ENV_ANDROID_NDK_VERSION="21.1.6352462"
++LYNX_OSS_ENV_ANDROID_NDK_VERSION="28.2.13676358"
+ LYNX_OSS_ENV_HARMONY_SDK_VERSION="6.0.0.868"
+ LYNX_OSS_ENV_COMMON_PATH_SUFFIXES=(
+   "tools_shared"
+diff --git a/tools/envsetup.sh b/tools/envsetup.sh
+index ef7c2aa..048394b 100644
+--- a/tools/envsetup.sh
++++ b/tools/envsetup.sh
+@@ -28,8 +28,8 @@ function android_env_setup() {
+   local TOOLS_REAL_PATH=$(dirname $SCRIPT_REAL_PATH)
+   echo $TOOLS_REAL_PATH
+   if [ "$ANDROID_HOME" ]; then
+-    export ANDROID_NDK=$ANDROID_HOME/ndk/21.1.6352462
+-    export ANDROID_NDK_21=$ANDROID_HOME/ndk/21.1.6352462
++    export ANDROID_NDK=$ANDROID_HOME/ndk/28.2.13676358
++    export ANDROID_NDK_21=$ANDROID_HOME/ndk/28.2.13676358
+     export ANDROID_SDK=$ANDROID_HOME
+     
+     local local_properties_file1="${LYNX_DIR}/platform/android/local.properties"

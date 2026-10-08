@@ -25,8 +25,8 @@ Android 3버튼 내비게이션(◁ ○ □)에서 하단 탭 바의 알약이 �
 
 ## 전제
 
-[Android 시스템 뒤로가기](android-system-back.md)의 「전제」 · 「준비 — 16 KB 호환성 대화상자 없애기」 · 「앱 구간 진입 (로그인 없이)」 ·
-「내비게이션 모드 전환」을 그대로 따른다(Pixel_8 AVD API 37 · `E2E_UDID` · `ADB`/`A` 변수 · `wm size 390x844` · `wm density 160` · 글자 배율 1.0 ·
+[Android 시스템 뒤로가기](android-system-back.md)의 「전제」 · 「준비 — 16 KB 호환성 대화상자가 없는지 확인」 · 「앱 구간 진입 (로그인 없이)」 ·
+「내비게이션 모드 전환」을 그대로 따른다(Pixel_8 AVD API 37 · `E2E_UDID` · `ADB` 변수 · `A` 함수 · `wm size 390x844` · `wm density 160` · 글자 배율 1.0 ·
 `SignedInScreenFixtureTest` · 번들 서버 18790). 그 내용은 여기에 되풀이하지 않는다. 이 절차만의 차이는 아래다.
 
 1. **수정이 들어간 빌드여야 한다.** 호스트(`MainActivity`)와 번들 둘 다 수정 커밋에서 새로 만든다. 번들만 새로 만들면 `tappableBottomInset`을 호스트가 보내지 않아
@@ -44,14 +44,14 @@ Android 3버튼 내비게이션(◁ ○ □)에서 하단 탭 바의 알약이 �
    - 픽스처는 **180초 뒤 스스로 끝난다.** 항목 묶음마다 남은 시간을 보고 다시 시작한다.
    - `STOP_SIGNED_IN_FIXTURE` 방송 직후 바로 다시 시작하면 새 계측이 곧바로 끝나는 경쟁이 있다. **4초 이상 둔 뒤** 다시 시작한다.
    - **픽스처가 끝나면 심어 둔 세션이 지워진다.** 그 뒤 앱을 그냥 다시 켜면 스플래시 → 로그인 화면이다(맵이 아니다). 로그인 뒤 화면은 늘
-     픽스처를 다시 시작해서 연다. `pm clear` 없이 다시 시작하면 16 KB 대화상자 없이 첫 로드를 볼 수 있다.
+     픽스처를 다시 시작해서 연다.
 4. **모드 전환은 항목 안에서 한다.** 아래 N9가 전환 자체를 판정한다. N1 ~ N8은 시작 전에 3버튼으로 맞추고 확인한다.
    ```sh
-   $A shell settings get secure navigation_mode   # 0 = 3버튼, 2 = 제스처
+   A shell settings get secure navigation_mode   # 0 = 3버튼, 2 = 제스처
    ```
    ⚠ `cmd overlay list | grep navbar`로 확인하지 않는다 — 전환 뒤에도 threebutton · gestural이 둘 다 `[x]`로 나와 모드를 가르지 못한다.
    바꾸는 명령(`cmd overlay enable …`)은 그대로 쓴다.
-5. **`pm clear` 뒤마다 16 KB 대화상자가 다시 뜬다.** 3버튼 모드의 `Don't Show Again`은 약 (285,749)다(제스처 약 (285,773)).
+5. **16 KB 호환성 대화상자는 `pm clear` 뒤에도 뜨지 않는다.** 2026-10-05의 출시 설정 변경(작업 `android-release-config`) 이후다 — 뜨면 닫고 넘어가지 말고 회귀로 적는다([Android 출시 설정 절차](android-release-config.md)의 R1).
 6. **끝나면 에뮬레이터를 시작할 때의 모드로 되돌린다.** `wm size reset` · `wm density reset`도 한다.
 
 ### 기준 수치 (390x844 · 160 dpi · 1px = 1dp)
@@ -84,9 +84,9 @@ Android 3버튼 내비게이션(◁ ○ □)에서 하단 탭 바의 알약이 �
 
 ```sh
 # 한 화면 캡처 — 파일명은 항목 id를 붙인다
-shot() { $A exec-out screencap -p > "$OUT/$1.png"; }
+shot() { A exec-out screencap -p > "$OUT/$1.png"; }
 # 접근성 트리 — 글자와 영역(bounds)을 읽는다. 인자는 content-desc의 앞부분
-dumpb() { $A shell uiautomator dump /sdcard/ui.xml >/dev/null; $A shell cat /sdcard/ui.xml | grep -o "content-desc=\"$1[^\"]*\"[^>]*bounds=\"[^\"]*\""; }
+dumpb() { A shell uiautomator dump /sdcard/ui.xml >/dev/null; A shell cat /sdcard/ui.xml | grep -o "content-desc=\"$1[^\"]*\"[^>]*bounds=\"[^\"]*\""; }
 export OUT=.agent-harness/work/android-tabbar-inset/artifacts/e2e; mkdir -p "$OUT"
 ```
 
@@ -95,15 +95,15 @@ export OUT=.agent-harness/work/android-tabbar-inset/artifacts/e2e; mkdir -p "$OU
 - **판정은 스크린샷에서 잰다. `bounds`는 같은 값을 숫자로 읽는 보조다.** 둘이 어긋나면 스크린샷을 따른다(Lynx의 `bounds`는 터치 상자라 그림과 1px 흔들릴 수 있다 — 허용 ±2).
 - `dumpb`는 `content-desc`만 읽는다. 버튼 글자가 `content-desc`가 아니면(예: 스텝 말풍선의 `Start`) 아무것도 나오지 않는다 — 그때는 스크린샷에서 잰다.
 - **`dumpb`가 빈 출력이면 먼저 앱이 앞에 있는지 본다.** 앱이 홈으로 가도 빈 출력이라 「안 가려짐」이나 「없음」으로 오독하기 쉽다.
-  `$A shell dumpsys activity activities | grep topResumedActivity`에 `com.libitum.host/.MainActivity`가 있어야 한다.
-- 누르기 전에 16 KB 호환성 대화상자(`Android App Compatibility`)가 없는지 본다(시스템 뒤로가기 문서의 전제). 있으면 그 시도는 버린다.
+  `A shell dumpsys activity activities | grep topResumedActivity`에 `libitum.duru.android/com.libitum.host.MainActivity`가 있어야 한다.
+- 누르기 전에 16 KB 호환성 대화상자(`Android App Compatibility`)가 없는지 본다(시스템 뒤로가기 문서의 전제). 있으면 그 시도는 버리고 회귀로 적는다(지금은 뜨지 않아야 한다).
 - 이 문서의 `sleep`은 전부 **시스템 UI · 스크롤 관성이 끝나기를 기다리는 것**이다.
 
 ## 항목
 
 ### N1 — 3버튼: 탭 알약이 시스템 바 위에 있고 눌린다 (수용 기준 1)
 
-- **조작**: 3버튼 모드, 인자 없는 픽스처로 맵을 세운다. `shot N1-journey`. `dumpb "Journey"`. 이어서 롤플레이 탭을 누르고(`$A shell input tap 195 760`) `sleep 1`, `shot N1-roleplay`, `dumpb "Roleplay"`.
+- **조작**: 3버튼 모드, 인자 없는 픽스처로 맵을 세운다. `shot N1-journey`. `dumpb "Journey"`. 이어서 롤플레이 탭을 누르고(`A shell input tap 195 760`) `sleep 1`, `shot N1-roleplay`, `dumpb "Roleplay"`.
   설정 탭(`input tap 291 760`) → `shot N1-settings`, `dumpb "Settings"`. 여정 탭(`input tap 99 760`)으로 돌아온다.
 - **기대 결과**: 알약 셋이 시스템 버튼(◁ ○ □) 바로 위에 선다 — 겹치지 않는다. 탭마다 화면이 바뀌고 선택 표시가 옮겨 간다.
 - **판정 기준**
@@ -184,10 +184,10 @@ export OUT=.agent-harness/work/android-tabbar-inset/artifacts/e2e; mkdir -p "$OU
   3. 시트가 서면 **아무것도 누르지 않고** `shot N7-sheet`. `dumpb "Not now"` — **한 노드만 읽힌다**(아래 건너뛰기 버튼). 두 노드가 나오면 y가 가장 큰 노드가 버튼이다.
   4. **버튼의 아래쪽을 누른다** — `bounds` 아래 끝에서 2 ~ 4 위(예: bottom 776이면 `input tap 195 772`). 가운데 한 점은 판별력이 없다: 가려진 상태에서도
      버튼 가운데가 시스템 바 위 끝(y 796) 근처라 앱으로 갈 수 있다. 누른 뒤 `sleep 1`, `dumpsys activity activities | grep topResumedActivity`, `dumpb "Journey"`, `shot N7-after`.
-  5. **반복하려면 `pm clear`가 필요하다.** 같은 앱 데이터에서는 설문이 두 번째로 서지 않는다. `pm clear` 뒤에는 16 KB 대화상자가 다시 뜬다(3버튼 `Don't Show Again` 약 (285,749)).
+  5. **반복하려면 `pm clear`가 필요하다.** 같은 앱 데이터에서는 설문이 두 번째로 서지 않는다. `pm clear` 뒤에도 16 KB 대화상자는 뜨지 않아야 한다(전제 5).
 - **기대 결과**: 건너뛰기 버튼 전체가 시스템 바(y 796 ~ 844) 위에 보이고, 아래쪽을 눌러도 시트가 닫힌다. 3버튼 Pixel_8 · 390x844에서 `Not now` 약 `[16,720][374,776]`.
 - **판정 기준**
-  - **통과**: `Not now`의 `bottom`이 796 이하이고 스크린샷에서 버튼 전체가 보이며, 4번에서 시트가 닫히고 `topResumedActivity`가 `com.libitum.host/.MainActivity`, `Journey, selected`가 읽힌다.
+  - **통과**: `Not now`의 `bottom`이 796 이하이고 스크린샷에서 버튼 전체가 보이며, 4번에서 시트가 닫히고 `topResumedActivity`가 `libitum.duru.android/com.libitum.host.MainActivity`, `Journey, selected`가 읽힌다.
     버튼 아래 끝과 y 796 사이의 값(여유, 기대 20)을 적는다.
   - **실패**: 버튼 `bottom`이 796을 넘거나, 4번에서 앞이 런처(`NexusLauncherActivity` 등)로 바뀐다(시스템 홈 버튼이 눌린 것). 이때 `dumpb`가 빈 출력이어도 「안 가려짐」이 아니다.
     `bottom`이 약 824면 빈 상자가 빠진 것이다(수정 전 모습 — `EpisodeSurveySheet`의 마지막 자식, 호스트가 `tappableBottomInset`을 보내는지 확인).
@@ -200,7 +200,7 @@ export OUT=.agent-harness/work/android-tabbar-inset/artifacts/e2e; mkdir -p "$OU
 - **조작**: 3버튼 모드. 여정 / 롤플레이 / 설정 각각에서 끝까지 스크롤한다. 끝은 **연속한 두 스크린샷이 같아질 때**다.
   ```sh
   prev=/dev/null; for i in $(seq 1 40); do
-    $A shell input swipe 195 650 195 150 300; sleep 0.8; shot "N8-$TAB-cur"
+    A shell input swipe 195 650 195 150 300; sleep 0.8; shot "N8-$TAB-cur"
     cmp -s "$OUT/N8-$TAB-cur.png" "$prev" && break; cp "$OUT/N8-$TAB-cur.png" "$OUT/N8-$TAB-prev.png"; prev="$OUT/N8-$TAB-prev.png"
   done; cp "$OUT/N8-$TAB-cur.png" "$OUT/N8-$TAB-end.png"   # TAB=journey|roleplay|settings
   ```
@@ -213,7 +213,7 @@ export OUT=.agent-harness/work/android-tabbar-inset/artifacts/e2e; mkdir -p "$OU
 
 ### N9 — 실행 중 모드 전환: 재시작 없이 바가 따라 바뀐다 (수용 기준 1 · 3)
 
-- **조작**: 인자 없는 픽스처, 3버튼 모드로 맵을 연 채(`pidof`를 적는다 — `$A shell pidof com.libitum.host`) 맵을 한 번 스크롤해 둔다. `shot N9-3btn-1`, `dumpb "Journey"`.
+- **조작**: 인자 없는 픽스처, 3버튼 모드로 맵을 연 채(`pidof`를 적는다 — `A shell pidof libitum.duru.android`) 맵을 한 번 스크롤해 둔다. `shot N9-3btn-1`, `dumpb "Journey"`.
   `cmd overlay enable com.android.internal.systemui.navbar.gestural` → `sleep 3` → `settings get secure navigation_mode`(`2`) → `shot N9-gesture`, `dumpb "Journey"`, `pidof`.
   `cmd overlay enable com.android.internal.systemui.navbar.threebutton` → `sleep 3` → `settings get secure navigation_mode`(`0`) → `shot N9-3btn-2`, `dumpb "Journey"`, `pidof`.
   앱은 앞에 두고 홈으로 가지 않으며, **세 시점 사이에 탭을 누르지 않는다**(누르면 다시 그려져 갱신 누락이 가려진다).
@@ -238,7 +238,7 @@ N1 ~ N9는 TalkBack을 끈 상태다. 이 항목만 TalkBack을 켜고 3버튼 �
 
 ## 실행 순서
 
-준비(대화상자 · 빌드 · 번들 서버) → (인자 없는 픽스처, 3버튼) N1 → N4(모달 · 확인창) → N8 → (모드 왕복) N9 → N3 →
+준비(대화상자가 없는지 확인 · 빌드 · 번들 서버) → (인자 없는 픽스처, 3버튼) N1 → N4(모달 · 확인창) → N8 → (모드 왕복) N9 → N3 →
 (`audioProgress true`) N2 → N4(말풍선) → N6 → (`reviewProgress true`, `pm clear`) N5 → N7 → 모드 되돌리기. T1은 별도 회차(TalkBack을 켠다).
 N3는 제스처 모드를 쓰므로 N9 뒤에 한다. 픽스처가 180초 뒤 끝나면 4초 이상 둔 뒤 다시 시작한다.
 

@@ -17,6 +17,7 @@ JUnit · `ui` · `integration`이 이미 진다 — 이 문서는 **실제 Activ
 - **Android 8 ~ 12(API 26 ~ 32)의 `onBackPressed()` 경로**: 이 버전대는 `OnBackInvokedCallback`이 아니라 `MainActivity`의
   `onBackPressed()` 재정의를 탄다. 이 경로는 **컴파일만 확인됐고 한 번도 실행되지 않았다** — 실행한 AVD가 API 37 하나다.
   아래 「API 32 이하 관측 항목」 L1을 적어 두었고 **아직 실행하지 않았다.**
+  ⟨2026-10-05 뒤⟩ L1이 API 30 에뮬레이터 하나(3버튼)에서 실행돼 통과했다 — 그 절의 결과 표. API 26 ~ 29 · 31 ~ 32와 제스처 모드는 여전히 실행되지 않았다.
 - **응답 간격의 숫자**: 호스트는 누름 · 응답 로그를 남기지 않는다. 간격은 읽지 않고, 「타임아웃(500ms)이 지나도 앱이 앞에 있다
   = 응답이 그 안에 왔다」로 판정한다(B2).
 - 실제 소셜 로그인 · 운영 서버 계정 · 서버 푸시. 로그인 뒤 구간은 계측 픽스처(모의 세션)로 들어가고, B9의 푸시는 픽스처가 올리는
@@ -26,51 +27,51 @@ JUnit · `ui` · `integration`이 이미 진다 — 이 문서는 **실제 Activ
 
 - 에뮬레이터 **Pixel_8 AVD(API 37)**. 전용 에뮬레이터를 쓴다(`wm size`를 바꾸고 앱 데이터를 지운다).
 - JDK 17 이상, Android SDK, `ANDROID_HOME`, `python3`, `pnpm` 의존 설치 완료.
-- **16 KB 호환성 대화상자를 먼저 없앤다.** 이 AVD(API 37, 16KB 페이지)는 프로세스가 새로 뜨거나 HOME에서 돌아올 때마다
-  「Android App Compatibility」 대화상자를 띄우고, **떠 있는 동안 뒤로가기는 대화상자가 먹는다**(앱에 가지 않는다). 아래 「준비」의
-  `Don't Show Again`으로 한 번 없앤다. 없어지지 않으면(또는 `pm clear`·재설치로 다시 뜨면) 각 항목의 누르기 전에 닫는다.
-  **모든 항목의 「누르기 전 확인」**: 스크린샷이나 dump에 이 대화상자(`Android App Compatibility`)가 없을 것. 있으면 그 시도는 버리고 닫은 뒤 다시 한다.
+- **16 KB 호환성 대화상자는 뜨지 않아야 한다.** 이 AVD(API 37, 16KB 페이지)는 2026-10-05의 출시 설정 변경(작업 `android-release-config`,
+  [ADR-0046](../adr/0046-android-play-release.md)) 전까지 프로세스가 새로 뜨거나 HOME에서 돌아올 때마다 「Android App Compatibility」
+  대화상자를 띄웠다. 그 변경 이후로는 **뜨지 않는다 — 뜨면 회귀다**(`pm clear` · 재설치 뒤에도 같다). 판정과 되돌릴 곳은
+  [Android 출시 설정 절차](android-release-config.md)의 R1이 진다. **떠 있는 동안 뒤로가기는 대화상자가 먹는다**(앱에 가지 않는다) —
+  그래서 **모든 항목의 「누르기 전 확인」** 은 그대로다: 스크린샷이나 dump에 이 대화상자(`Android App Compatibility`)가 없을 것.
+  있으면 닫고 넘어가지 말고 그 시도를 버린 뒤 회귀로 적는다.
 - 아래 변수를 한 셸에서 정한다. 이후 명령은 모두 이 셸에서 돌린다.
 
 ```sh
 export E2E_UDID=emulator-5554          # adb devices 로 확인한 전용 에뮬레이터 ID
 export ADB="${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb"
-A="$ADB -s $E2E_UDID"
-$A shell wm size 390x844; $A shell wm density 160; $A shell settings put system font_scale 1.0
+A() { "$ADB" -s "$E2E_UDID" "$@"; }   # 함수다 — `A shell …`로 부른다. 문자열 변수(`A="adb -s …"; A shell …`)는 zsh에서 command not found가 난다
+A shell wm size 390x844; A shell wm density 160; A shell settings put system font_scale 1.0
 ```
 
-### 준비 — 16 KB 호환성 대화상자 없애기
+### 준비 — 16 KB 호환성 대화상자가 없는지 확인
 
 ```sh
-$A shell am start -n com.libitum.host/.MainActivity --es bundle-url http://10.0.2.2:18790/main.lynx.bundle
-sleep 3; $A shell uiautomator dump /sdcard/ui.xml >/dev/null; $A shell cat /sdcard/ui.xml | grep -o 'Android App Compatibility\|Don.t Show Again\|text="OK"'
+A shell am start -n libitum.duru.android/com.libitum.host.MainActivity --es bundle-url http://10.0.2.2:18790/main.lynx.bundle
+sleep 3; A shell uiautomator dump /sdcard/ui.xml >/dev/null; A shell cat /sdcard/ui.xml | grep -o 'Android App Compatibility\|Don.t Show Again\|text="OK"'
 ```
 
-`Don't Show Again`은 체크박스가 아니라 **단독 버튼**이다 — 누르면 대화상자가 바로 닫히고 `OK`를 따로 누르지 않는다
-(390x844 제스처 모드에서 약 (285,773). 스크린샷으로 위치를 확인한다). 그 뒤 앱을 `force-stop`하고 다시 열어, 또 HOME으로
-나갔다가 다시 열어 대화상자가 안 뜨는지 확인한다.
+**기대**: 출력이 한 줄도 없다. 앱을 `force-stop`하고 다시 열어, 또 HOME으로 나갔다가 다시 열어서도 같은지 본다.
+`pm clear`와 APK 재설치(`bundled` ↔ `debug` 교체 포함) 뒤에도 뜨지 않아야 한다.
 
-⚠ **`pm clear`와 APK 재설치(`bundled` ↔ `debug` 교체 포함)마다 대화상자가 다시 뜬다.** B7 · B3처럼 그 뒤에 시작하는 항목은
-`Don't Show Again`을 다시 누르고 시작한다. 이번 한 번만 닫으려면 `OK`를 누른다(제스처 모드 약 (187,773), 3버튼 모드 약 (187,749)).
+`Android App Compatibility`가 나오면 **`Don't Show Again`으로 닫고 진행하지 않는다.** 재빌드한 Lynx · Fresco AAR(`apps/android/vendor-maven`)이나
+16 KB 정렬 게이트가 빠진 빌드라는 뜻이다 — 이 절차를 멈추고 [Android 출시 설정 절차](android-release-config.md)의 R1로 간다.
+(이 문서의 아래 「실행 결과」는 대화상자가 뜨던 때의 기록이라 `Don't Show Again`을 누른 흔적이 남아 있다. 기록이므로 고치지 않았다.)
 
 ### 두 가지 설치 — 쓰임이 다르다
 
 | APK | 만드는 법 | 쓰는 항목 |
 |---|---|---|
-| `bundled`(번들 내장, 네트워크 불필요) | `pnpm bundle:android` → `cd apps/android && ./gradlew assembleBundled` → `$A install -r app/build/outputs/apk/bundled/app-bundled.apk` | B7(새 설치에서 진입 구간) |
+| `bundled`(번들 내장, 네트워크 불필요) | `pnpm bundle:android` → `cd apps/android && ./gradlew assembleBundled` → `A install -r app/build/outputs/apk/bundled/app-bundled.apk` | B7(새 설치에서 진입 구간) |
 | `debug` + 계측 픽스처(로그인 뒤 구간) | 아래 「앱 구간 진입」 | B1 ~ B6, B9, B8 |
 
-`bundled`는 새 설치(`$A shell pm clear com.libitum.host`) 상태에서 스플래시 → 온보딩 → 로그인으로 가므로 **로그인 없이** 진입 구간을
+`bundled`는 새 설치(`A shell pm clear libitum.duru.android`) 상태에서 스플래시 → 온보딩 → 로그인으로 가므로 **로그인 없이** 진입 구간을
 볼 수 있다. 로그인 뒤 구간은 소셜 로그인을 지날 수 없으므로 아래 픽스처를 쓴다.
 
-**두 APK는 같은 패키지(`com.libitum.host`)라 한 번에 하나만 설치된다.** 실행 순서가 `debug` 항목 → B7(`bundled`) → B8(`debug`)이므로
+**두 APK는 같은 패키지(`libitum.duru.android`)라 한 번에 하나만 설치된다.** 실행 순서가 `debug` 항목 → B7(`bundled`) → B8(`debug`)이므로
 B7 뒤에는 `debug`를 **재설치(`-r`)로** 되돌린다. 지우고 새로 설치하지 않는다.
 
 ```sh
-$A install -r apps/android/app/build/outputs/apk/debug/app-debug.apk   # B7 뒤, B8 앞
+A install -r apps/android/app/build/outputs/apk/debug/app-debug.apk   # B7 뒤, B8 앞
 ```
-
-재설치 뒤에는 16 KB 대화상자가 다시 뜬다(위 「준비」).
 
 ### 앱 구간 진입 (로그인 없이)
 
@@ -86,21 +87,21 @@ cd apps/android && ./gradlew assembleDebug assembleDebugAndroidTest && cd ../..
 # 3) 번들 제공 (별도 터미널 또는 백그라운드)
 python3 -m http.server 18790 --bind 0.0.0.0 --directory apps/mobile/dist >/tmp/libitum-back-preview.log 2>&1 &
 # 4) 설치
-$A install -r apps/android/app/build/outputs/apk/debug/app-debug.apk
-$A install -r apps/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+A install -r apps/android/app/build/outputs/apk/debug/app-debug.apk
+A install -r apps/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 # 5) 픽스처 시작 — 여정 맵이 서면 STOP 방송을 받을 때까지 Activity를 유지한다 (최대 180초)
-$A shell pm clear com.libitum.host
-$A shell pm grant com.libitum.host android.permission.POST_NOTIFICATIONS   # B9 푸시용(pm clear가 권한을 지우므로 clear 뒤에)
-$A shell am instrument -w -e class com.libitum.host.SignedInScreenFixtureTest \
+A shell pm clear libitum.duru.android
+A shell pm grant libitum.duru.android android.permission.POST_NOTIFICATIONS   # B9 푸시용(pm clear가 권한을 지우므로 clear 뒤에). API 33 미만에서는 이 줄을 건너뛴다 — 권한이 API 33부터라 API 30에서 Unknown permission 예외가 난다
+A shell am instrument -w -e class com.libitum.host.SignedInScreenFixtureTest \
   -e audioProgress true -e bundleUrl http://10.0.2.2:18790/main.lynx.bundle \
-  com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner >/tmp/libitum-back-fixture.log 2>&1 &
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner >/tmp/libitum-back-fixture.log 2>&1 &
 # 6) 끝낼 때
-$A shell am broadcast -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE
+A shell am broadcast -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE
 ```
 
 - `-e audioProgress true`는 진행 5스텝을 심어 **학습 유닛(듣기)** 이 맵에서 바로 열리게 한다(B3). 진행이 없어도 B1 · B2 · B4(b)(c) · B5 · B6 · B7 · B9는 돈다.
 - 픽스처는 **180초 뒤 스스로 끝난다**. 항목 묶음마다 다시 시작한다(5번을 다시 실행).
-- 픽스처가 띄운 Activity도 일반 `MainActivity`다. 뒤로가기로 홈에 나간 뒤 다시 여는 것은 `$A shell am start -n com.libitum.host/.MainActivity`
+- 픽스처가 띄운 Activity도 일반 `MainActivity`다. 뒤로가기로 홈에 나간 뒤 다시 여는 것은 `A shell am start -n libitum.duru.android/com.libitum.host.MainActivity`
   (singleTask라 같은 Activity가 앞으로 온다).
 - 이 구성의 한계: 픽스처는 갱신 요청 외 모든 요청에 404를 돌려주므로 서버 진행 불러오기(`load_learning_progress`)가 끝나지 않는다. 그래서 `hasLoadedProgress`가 서지 않고 첫 유닛 안내 가림막은 이 구성에서 뜨지 않는다(B4 참고).
 - 이 구성의 한계: 모의 세션이라 서버 데이터가 없다. 서버가 필요한 화면은 이 절차의 대상이 아니다.
@@ -110,9 +111,9 @@ $A shell am broadcast -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE
 기본은 에뮬레이터 설정을 따른다. 아래로 바꾸고 확인한다(바꾼 직후 홈으로 가면 앱을 다시 연다).
 
 ```sh
-$A shell cmd overlay enable com.android.internal.systemui.navbar.threebutton   # 3버튼(◁ ○ □)
-$A shell cmd overlay enable com.android.internal.systemui.navbar.gestural      # 제스처
-$A shell settings get secure navigation_mode                                   # 현재 모드: 0 = 3버튼, 2 = 제스처
+A shell cmd overlay enable com.android.internal.systemui.navbar.threebutton   # 3버튼(◁ ○ □)
+A shell cmd overlay enable com.android.internal.systemui.navbar.gestural      # 제스처
+A shell settings get secure navigation_mode                                   # 현재 모드: 0 = 3버튼, 2 = 제스처
 ```
 
 ⚠ `cmd overlay list | grep navbar`는 모드 확인에 쓰지 않는다 — 전환 뒤에도 threebutton · gestural이 둘 다 `[x]`로 나올 수 있다
@@ -120,8 +121,8 @@ $A shell settings get secure navigation_mode                                   #
 
 ### 뒤로가기를 누르는 법
 
-- 3버튼: ◁ 탭(390x844에서 약 (83,820)). 제스처: 화면 왼쪽(또는 오른쪽) 가장자리에서 안쪽으로 스와이프(`$A shell input swipe 2 420 200 420 150`).
-- 명령: `$A shell input keyevent KEYCODE_BACK` (줄여서 `$A shell input keyevent 4`). 사람이 눌러도 되고 명령으로 눌러도 된다. 아래 기대 결과는 같다.
+- 3버튼: ◁ 탭(390x844에서 약 (83,820)). 제스처: 화면 왼쪽(또는 오른쪽) 가장자리에서 안쪽으로 스와이프(`A shell input swipe 2 420 200 420 150`).
+- 명령: `A shell input keyevent KEYCODE_BACK` (줄여서 `A shell input keyevent 4`). 사람이 눌러도 되고 명령으로 눌러도 된다. 아래 기대 결과는 같다.
 
 ### 참고 좌표 (390x844 · 160 dpi · 글자 배율 1.0)
 
@@ -130,8 +131,6 @@ $A shell settings get secure navigation_mode                                   #
 
 | 대상 | 좌표 | 쓰는 항목 |
 |---|---|---|
-| 16 KB 대화상자 `Don't Show Again` | (285,773) | 준비 |
-| 16 KB 대화상자 `OK` | 제스처 (187,773) · 3버튼 (187,749) | 준비 |
 | 3버튼 내비게이션의 ◁ | (83,820) | B2 · B4 · B6 |
 | 온보딩 `Next` | (195,767) | B7 |
 | 로그인의 보이는 `Back` | (43,86) | B7(a) |
@@ -145,12 +144,12 @@ $A shell settings get secure navigation_mode                                   #
 ### 관찰 명령 — 앱이 앞에 있나 / 떠났나 / 끝났나
 
 ```sh
-# 앞에 있는가 — 출력에 com.libitum.host/.MainActivity 가 있으면 앞(RESUMED)
-$A shell dumpsys activity activities | grep -E "topResumedActivity|mResumedActivity"
+# 앞에 있는가 — 출력에 libitum.duru.android/com.libitum.host.MainActivity 가 있으면 앞(RESUMED)
+A shell dumpsys activity activities | grep -E "topResumedActivity|mResumedActivity"
 # Activity 기록이 남았는가 — 0이면 끝남(finish), 1 이상(실제로는 여러 줄)이면 남음/떠남(moveTaskToBack)
-$A shell dumpsys activity activities | grep -c "com.libitum.host/.MainActivity"
+A shell dumpsys activity activities | grep -c "libitum.duru.android/com.libitum.host.MainActivity"
 # 프로세스 — moveTaskToBack은 pid가 그대로, 끝난 Activity도 pid는 남을 수 있다(pid로 「끝남」을 판정하지 않는다)
-$A shell pidof com.libitum.host
+A shell pidof libitum.duru.android
 ```
 
 판정 어휘(항목 전체에서 같다):
@@ -161,7 +160,7 @@ $A shell pidof com.libitum.host
 | **떠남**(`moveTaskToBack`) | 런처 등 다른 앱 | 있음 |
 | **끝남**(`finish`) | 다른 앱 | 없음(누른 뒤 2초 안에 0) |
 
-화면 내용은 `$A exec-out screencap -p > /tmp/back-<id>.png`로 남기고, 글자는 `$A shell uiautomator dump /sdcard/ui.xml && $A shell cat /sdcard/ui.xml`의
+화면 내용은 `A exec-out screencap -p > /tmp/back-<id>.png`로 남기고, 글자는 `A shell uiautomator dump /sdcard/ui.xml && A shell cat /sdcard/ui.xml`의
 `content-desc`/`text`로 읽는다(Maestro 흐름과 같은 이름: `Journey, selected`, `Back to map`, `Settings` 등).
 ⚠ **dump에 나오지 않는 글자가 있다** — 학습 문항의 문구는 읽히지 않는다(확인창의 `Leave` · `Keep going`은 읽힌다). 그런 화면이
 「이전과 같은가」는 스크린샷을 나란히 놓고 본다(B3).
@@ -169,7 +168,7 @@ $A shell pidof com.libitum.host
 
 ## 실행 순서
 
-준비(16 KB 대화상자) → B1 → B2 → B4(b)(c) → B5 → B3 → B9 → B6 → (`bundled` 설치 · 앱 데이터 초기화) B7 → (`debug` 재설치) B8.
+준비(16 KB 대화상자가 없는지 확인) → B1 → B2 → B4(b)(c) → B5 → B3 → B9 → B6 → (`bundled` 설치 · 앱 데이터 초기화) B7 → (`debug` 재설치) B8.
 B4(a)(첫 유닛 안내 가림막)는 이 절차에서 뺐다(B4 참고).
 
 **해결됨(ADR-0044) — 3버튼 내비게이션에서 하단 탭 바 겹침**: 이 절차를 쓸 때(제품 코드 `f23712a2`)는 3버튼 모드에서 하단 탭 바가
@@ -193,23 +192,23 @@ B4(a)(첫 유닛 안내 가림막)는 이 절차에서 뺐다(B4 참고).
 
 ### B2 — 알림 화면에서 뒤로가기는 맵 · 앱이 닫히지 않는다 (수용 기준 1)
 
-- **조작**: 맵에서 첫 사용 안내를 닫고(B4 앞부분을 이미 했다면 생략) 헤더의 알림 아이콘을 눌러 알림 화면(`Back to map`이 읽힌다)으로 간다. 뒤로가기를 한 번 누른다: `$A shell input keyevent KEYCODE_BACK; sleep 0.7; <앞 확인>; sleep 1; <앞 확인>`.
+- **조작**: 맵에서 첫 사용 안내를 닫고(B4 앞부분을 이미 했다면 생략) 헤더의 알림 아이콘을 눌러 알림 화면(`Back to map`이 읽힌다)으로 간다. 뒤로가기를 한 번 누른다: `A shell input keyevent KEYCODE_BACK; sleep 0.7; <앞 확인>; sleep 1; <앞 확인>`.
 - **기대 결과**: 맵이 서고(`Back to map`을 누른 것과 같다) 앱은 앞에 남는다. 0.7초 · 1.7초 두 시점 모두 **남음**이다.
 - **판정 기준**
-  - 두 시점 모두 앞이 `com.libitum.host/.MainActivity` + 화면이 맵 → 통과. 0.7초는 타임아웃(500ms) 경과 직후라, 여기서 남아 있으면 JS의 `handled` 응답이 500ms 안에 온 것이다(응답이 늦었다면 `moveTaskToBack`으로 **떠남**이 된다). 이것으로 「누름 → 응답 왕복이 500ms 안」을 한 번 적는다. 숫자 간격은 읽지 못한다(위 「확인하지 못하는 것」).
+  - 두 시점 모두 앞이 `libitum.duru.android/com.libitum.host.MainActivity` + 화면이 맵 → 통과. 0.7초는 타임아웃(500ms) 경과 직후라, 여기서 남아 있으면 JS의 `handled` 응답이 500ms 안에 온 것이다(응답이 늦었다면 `moveTaskToBack`으로 **떠남**이 된다). 이것으로 「누름 → 응답 왕복이 500ms 안」을 한 번 적는다. 숫자 간격은 읽지 못한다(위 「확인하지 못하는 것」).
   - 앞이 런처로 바뀌면 **떠남** = 실패(구현 전에는 이렇게 끝난다).
-- **하위 조작 — 대기 중 재누름 무시**: 알림 화면에서 `$A shell input keyevent KEYCODE_BACK KEYCODE_BACK`(한 호출에 두 번). 두 번째는 첫 응답이 오기 전에 도착하면 호스트가 무시한다. 기대: 맵에서 **남음**(두 번째가 맵의 「떠남」으로 처리되지 않는다). 이 하위 조작은 도착 간격에 달려 있어 확률적이다 — 떠나면 3회 재시도하고, 3회 모두 떠나면 실패로 기록한다(결정적 증거는 JUnit 게이트의 「대기 중 재누름 = IGNORE」).
+- **하위 조작 — 대기 중 재누름 무시**: 알림 화면에서 `A shell input keyevent KEYCODE_BACK KEYCODE_BACK`(한 호출에 두 번). 두 번째는 첫 응답이 오기 전에 도착하면 호스트가 무시한다. 기대: 맵에서 **남음**(두 번째가 맵의 「떠남」으로 처리되지 않는다). 이 하위 조작은 도착 간격에 달려 있어 확률적이다 — 떠나면 3회 재시도하고, 3회 모두 떠나면 실패로 기록한다(결정적 증거는 JUnit 게이트의 「대기 중 재누름 = IGNORE」).
 - 3버튼과 제스처 모두에서 한 번씩 한다(제스처는 스와이프 명령으로).
 
 ### B3 — 학습 유닛: 확인창 두 번 (수용 기준 1 · 2)
 
 - **조작**: `audioProgress true` 픽스처의 맵에서 듣기 유닛에 들어간다. 좌표는 e2e-red에서 390×844 제스처 모드로 실측한 **참고값**이며, 매번 스크린샷으로 위치를 확인하고 다르면 같은 대상을 누른다.
   ```sh
-  $A shell input swipe 195 590 195 211 700; $A shell input swipe 195 590 195 211 700   # 맵을 두 번 스와이프
-  $A shell input tap 195 677    # 「Listen to a Hello」 스텝 (참고값)
-  $A shell input tap 195 698    # 말풍선의 Start (참고값)
+  A shell input swipe 195 590 195 211 700; A shell input swipe 195 590 195 211 700   # 맵을 두 번 스와이프
+  A shell input tap 195 677    # 「Listen to a Hello」 스텝 (참고값)
+  A shell input tap 195 698    # 말풍선의 Start (참고값)
   ```
-  문항 화면(`learning-shell-exit` `×`가 왼쪽 위에 있다)이 서면: **스크린샷(문항 기준 장)** → 뒤로가기 → 스크린샷 → 뒤로가기 → 스크린샷 → `×`(`$A shell input tap 43 142`, 참고값) → 확인창의 `Leave`(`$A shell input tap 195 436`, 참고값).
+  문항 화면(`learning-shell-exit` `×`가 왼쪽 위에 있다)이 서면: **스크린샷(문항 기준 장)** → 뒤로가기 → 스크린샷 → 뒤로가기 → 스크린샷 → `×`(`A shell input tap 43 142`, 참고값) → 확인창의 `Leave`(`A shell input tap 195 436`, 참고값).
 - **기대 결과**: 1회째 나가기 확인창(`ui-lynx-dialog`)이 뜬다. 2회째는 확인창만 닫히고 **같은 문항**이 그대로다(떠나지도, 나가지도 않는다). `×` → `Leave`는 맵으로 간다.
 - **판정 기준**: 1회째 직후 uiautomator dump에 `Leave` · `Keep going`이 읽힌다. 2회째 직후 dump에서 그 둘이 사라지고, **2회째 뒤의 스크린샷이 뒤로가기 전의 문항 기준 장과 같은 문항이다.** 문항 문구는 dump에 나오지 않으므로 「같은 문항」은 dump가 아니라 **스크린샷 비교로만** 판정한다. 두 누름 모두 `sleep 1.5` 뒤 **남음**. `Leave` 뒤 맵에 `Journey, selected`. 이 중 하나라도 어긋나면 실패.
 - 좌표가 맞지 않으면(다른 화면 크기) 스크린샷을 보고 같은 위치를 누른다 — 좌표는 진입 수단일 뿐 판정이 아니다.
@@ -234,7 +233,7 @@ B4(a)(첫 유닛 안내 가림막)는 이 절차에서 뺐다(B4 참고).
 
 ### B6 — 맵에서 떠남 · 다시 열면 스플래시 없이 맵 (수용 기준 5)
 
-- **조작**: 맵에서 pid를 적고(`$A shell pidof com.libitum.host`) 뒤로가기 → 1.5초 대기 → 판정 명령 3개 → `$A shell am start -n com.libitum.host/.MainActivity` → 스크린샷을 즉시(0.3초 이내)와 2초 뒤 두 번.
+- **조작**: 맵에서 pid를 적고(`A shell pidof libitum.duru.android`) 뒤로가기 → 1.5초 대기 → 판정 명령 3개 → `A shell am start -n libitum.duru.android/com.libitum.host.MainActivity` → 스크린샷을 즉시(0.3초 이내)와 2초 뒤 두 번.
 - **기대 결과**: 홈(런처)으로 나간다. Activity 기록은 남는다. 다시 열면 스플래시나 로딩 없이 **같은 맵**이 선다. pid는 그대로다.
 - **판정 기준**: **떠남**(앞 = 런처, `grep -c`가 1 이상 — 여러 줄이 나와도 된다). 재오픈 직후 스크린샷이 이미 맵이고(스플래시 화면 없음), 앞뒤 pid가 같다. `grep -c`가 0이면(끝남) 또는 재오픈에 스플래시가 뜨면 실패. 3버튼 모드의 0.3초 프레임은 빈 흰 창일 수 있다(창 전환 프레임; 스플래시 UI가 아니다) — 그 모드는 2초 뒤 맵으로 판정한다.
 - 제스처 내비게이션에서 가장자리 스와이프로도 한 번 한다.
@@ -243,10 +242,10 @@ B4(a)(첫 유닛 안내 가림막)는 이 절차에서 뺐다(B4 참고).
 
 **`bundled` APK의 새 설치**로 한다(로그인 불필요). 픽스처를 끝낸 뒤:
 ```sh
-$A shell am broadcast -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE
-$A install -r apps/android/app/build/outputs/apk/bundled/app-bundled.apk
-$A shell pm clear com.libitum.host
-$A shell am start -n com.libitum.host/.MainActivity
+A shell am broadcast -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE
+A install -r apps/android/app/build/outputs/apk/bundled/app-bundled.apk
+A shell pm clear libitum.duru.android
+A shell am start -n libitum.duru.android/com.libitum.host.MainActivity
 ```
 - **(a) 로그인에서 뒤로** — 온보딩의 `Next`(참고값 (195,767))를 세 번 눌러 로그인 화면에 도달한다. 뒤로가기 → 뒤로가기.
   (`e2e/android-host.yaml`이 같은 구간을 자동으로 지난다.)
@@ -255,7 +254,7 @@ $A shell am start -n com.libitum.host/.MainActivity
 - **(b) 온보딩 안에서 단계 되돌림** — 로그인에 가지 않고 `Next`를 두 번 눌러 셋째 스텝(`Step 3 of 3`)까지 간다. 뒤로가기 → 둘째 → 뒤로가기 → 첫 스텝 → 뒤로가기.
   - **기대 결과**: 셋째 → 둘째 → 첫 스텝 → 앱을 떠난다(마지막 누름만 떠남). 온보딩 단계는 `onboarding-screen`의 `data-step`, 화면 문구 `Step N of 3`로 읽는다.
   - **판정 기준**: 앞의 두 번은 매번 1.5초 뒤 **남음**이고 단계 문구가 `Step 2 of 3`, `Step 1 of 3`으로 줄어든다. 세 번째는 **떠남**(기록 있음). 첫 스텝에서 떠나지 않거나 앞 단계에서 떠나면 실패.
-- 로그인 중 요청 무동작 자리는 모의 서버가 없어 이 절차의 대상이 아니다. (a)와 (b) 사이에는 `pm clear`로 다시 시작한다(대화상자가 다시 뜬다).
+- 로그인 중 요청 무동작 자리는 모의 서버가 없어 이 절차의 대상이 아니다. (a)와 (b) 사이에는 `pm clear`로 다시 시작한다.
 - B7이 끝나면 `debug` APK를 재설치로 되돌린다(위 「두 가지 설치」). B8은 `debug`에서 한다.
 
 ### B8 — 번들 로드 실패 · ready 전 첫 누름은 종료 (수용 기준 8)
@@ -264,15 +263,15 @@ JS가 준비되지(`ready`) 못한 Activity는 기다림 없이 `finish()`가 �
 
 - **(a) 닿지 않는 번들**: Debug APK(B7 뒤에 재설치로 되돌린 것)를 닿지 않는 주소로 실행하고 뒤로가기를 누른다.
   ```sh
-  $A shell am force-stop com.libitum.host
-  $A shell am start -n com.libitum.host/.MainActivity --es bundle-url http://10.0.2.2:9/none.bundle
-  sleep 3; $A shell input keyevent KEYCODE_BACK; sleep 2
+  A shell am force-stop libitum.duru.android
+  A shell am start -n libitum.duru.android/com.libitum.host.MainActivity --es bundle-url http://10.0.2.2:9/none.bundle
+  sleep 3; A shell input keyevent KEYCODE_BACK; sleep 2
   ```
 - **(b) 정상 번들의 콜드 스타트 직후 — 보조 관찰이다. 이 분기의 정본 증거는 JUnit `SystemBackGateTest` SG1(미준비 누름 = `FINISH`)이다.**
-  번들 서버(18790)를 띄운 채, 호스트의 `ready`(에뮬레이터 실측: 시작 뒤 약 2.2초) **전에** 누른다. 16 KB 대화상자는 「준비」로 이미 없애 둔 상태여야 한다(떠 있으면 뒤로가 대화상자로 간다).
+  번들 서버(18790)를 띄운 채, 호스트의 `ready`(에뮬레이터 실측: 시작 뒤 약 2.2초) **전에** 누른다. 16 KB 대화상자가 없어야 한다(전제 — 떠 있으면 뒤로가 대화상자로 가고, 뜬 것 자체가 회귀다).
   ```sh
-  $A shell am force-stop com.libitum.host
-  $A shell 'am start -n com.libitum.host/.MainActivity --es bundle-url http://10.0.2.2:18790/main.lynx.bundle; sleep 0.8; input keyevent KEYCODE_BACK'
+  A shell am force-stop libitum.duru.android
+  A shell 'am start -n libitum.duru.android/com.libitum.host.MainActivity --es bundle-url http://10.0.2.2:18790/main.lynx.bundle; sleep 0.8; input keyevent KEYCODE_BACK'
   sleep 2
   ```
   누르는 시점은 시작 뒤 약 0.8초(창이 포커스를 받은 뒤, ready 2.2초보다 앞)다. 끝나지 않으면 지연을 `0.5` · `1.0` · `1.5`초로 바꿔 시도한다(2.2초를 넘기지 않는다).
@@ -294,23 +293,27 @@ JS가 준비되지(`ready`) 못한 Activity는 기다림 없이 `finish()`가 �
 - **(a) 법률 문서(Custom Tab)**: (제스처 모드에서) 맵에서 설정 탭 → `Terms of Use`(아래로 스크롤) → Custom Tab이 열리면 뒤로가기. Custom Tab만 닫히고 **설정 화면이 그대로**다(`Settings`). 앱의 뒤로가기 경로는 이때 오지 않는다. (`e2e/android-signed-in-settings.yaml`의 마지막 단계와 같다. 외부 문서 로드 성공은 판정하지 않는다.)
 - **(b) 푸시로 진입**: 앱을 홈으로 보낸 뒤 픽스처가 올리는 로컬 알림을 연다.
   ```sh
-  $A shell input keyevent HOME
-  $A shell am broadcast -a com.libitum.host.test.POST_PUSH_FIXTURE
-  $A shell cmd statusbar expand-notifications     # 알림 `Duru test` / `Open notifications` 탭
+  A shell input keyevent HOME
+  A shell am broadcast -a com.libitum.host.test.POST_PUSH_FIXTURE
+  A shell cmd statusbar expand-notifications     # 알림 `Duru test` / `Open notifications` 탭
   ```
-  알림 화면(`Back to map` 읽힘)이 서면, HOME 복귀 때 16 KB 대화상자가 다시 떴는지 확인하고 닫은 뒤 뒤로가기. **푸시 목적지 화면의 닫기와 같다** — 맵이 서고 앱은 **남음**.
+  알림 화면(`Back to map` 읽힘)이 서면, 16 KB 대화상자가 없는지 보고(전제) 뒤로가기. **푸시 목적지 화면의 닫기와 같다** — 맵이 서고 앱은 **남음**.
 - **판정 기준**: (a) Custom Tab 닫힘 + dump에 `Settings`, 앱이 **남음**. (b) 1.5초 뒤 **남음** + 맵. 어느 쪽이든 앱이 런처로 가면 실패.
 
-## API 32 이하 관측 항목 — 아직 실행하지 않음
+## API 32 이하 관측 항목 — API 30 하나에서만 실행
 
-**L1은 한 번도 실행하지 않았다.** `MainActivity`는 API 33 이상에서만 `OnBackInvokedCallback`을 등록하고
+**L1은 한 번도 실행하지 않았다(아래 ⟨2026-10-05 같은 날 뒤⟩ 전까지의 기록).** `MainActivity`는 API 33 이상에서만 `OnBackInvokedCallback`을 등록하고
 (`registerBackCallback`이 `SDK_INT < TIRAMISU`면 바로 돌아간다) API 26 ~ 32에서는 `onBackPressed()` 재정의가 같은
 `handleSystemBack()`을 부른다. B1 ~ B9는 전부 API 37에서 돌았으므로 **`onBackPressed()` 재정의는 컴파일만 확인됐고
 실행된 적이 없다.** 앱의 `minSdk`는 26이라 이 경로는 실제 사용자 기기가 탄다.
+2026-10-05에 `targetSdk`가 36으로 올라 [ADR-0043](../adr/0043-android-system-back.md)의 재검토 조건(「36 이상이면 두 경로를 API 26 ~ 32와 함께 확인」)이
+걸렸지만, API 26 ~ 32 AVD가 없어 **여전히 미실행이다**([Android 출시 설정 절차](android-release-config.md)의 R6도 같은 이유로 미실행).
+⟨2026-10-05 같은 날 뒤 — 위 세 문장은 그 시점의 기록이다⟩ **L1이 API 30(Android 11) · 4 KB 페이지 · arm64 `google_apis` 에뮬레이터 · 3버튼 · `114099e3`에서 실행됐다**(Play 배포 형태 AAB 설치와 `debug` + 픽스처).
+B2 · B5 · B6에 더해 온보딩의 B7(b)가 통과했다. **실행되지 않은 것**: API 26 ~ 29 · 31 ~ 32, 제스처 모드, 이 경로에서의 B3 · B4 · B7(a) · B8 · B9. 환경과 나머지 관찰은 [Android 출시 설정 절차](android-release-config.md)의 R6 「실행 기록」이 진다.
 
 - **실행 수단**: API 32 이하 시스템 이미지의 AVD를 하나 만든다(예: API 30 또는 32). 이 저장소에 준비된 AVD는 API 37
-  하나다. 「전제」의 16 KB 대화상자는 API 37(16KB 페이지) 이미지의 것이라 이 AVD에서 뜨는지는 확인하지 않았다 — 뜨지 않으면
-  「준비」를 건너뛴다. 「참고 좌표」는 390x844 · 160 dpi로 맞췄을 때의 참고값이고, 다른 이미지에서는 스크린샷으로 다시 확인한다.
+  하나다. 「전제」의 16 KB 대화상자는 16 KB 페이지 이미지의 것이고 지금은 그 이미지에서도 뜨지 않아야 한다 — 이 AVD에서도
+  「준비」의 확인만 한다. 「참고 좌표」는 390x844 · 160 dpi로 맞췄을 때의 참고값이고, 다른 이미지에서는 스크린샷으로 다시 확인한다.
   3버튼 모드가 기본인 이미지에서는 ◁로 누른다.
 
 | 항목 | 조작 | 판정 기준 |
@@ -319,9 +322,12 @@ JS가 준비되지(`ready`) 못한 Activity는 기다림 없이 `finish()`가 �
 
 | 항목 | 결과 | AVD · API | 근거 |
 |---|---|---|---|
-| L1 (B2) | 미실행 | | |
-| L1 (B5) | 미실행 | | |
-| L1 (B6) | 미실행 | | |
+| L1 (B2) | 통과 (2026-10-05) | API 30 · 3버튼 · `114099e3` | 픽스처로 들어간 알림 화면(`Back to map`) → 뒤로 → 0.7초 · 1.7초 모두 `MainActivity`가 앞, 맵(`Journey, selected`) |
+| L1 (B5) | 통과 (2026-10-05) | 같음 | 롤플레이 탭 → 뒤로 → 맵 `Journey, selected`, 앱 남음. 설정 탭도 같다 |
+| L1 (B6) | 통과 (2026-10-05) | 같음 | 맵 → 뒤로 → 앞이 런처, `MainActivity` 기록 남음, pid 전후 동일(떠남). 다시 열면 2초 뒤 `Journey, selected` · pid 동일. 0초 프레임은 런처 그대로였다 — 2초 뒤 화면으로 판정했다 |
+| (B7(b)) | 통과 (2026-10-05) | 같음 — L1 항목은 아니지만 같은 경로로 함께 봤다 | `Step 3 of 3` → `Step 2 of 3` → `Step 1 of 3`(앱 남음) → 런처(떠남, pid 유지) |
+
+API 26 ~ 29 · 31 ~ 32와 제스처 모드, 이 경로에서의 B3 · B4 · B7(a) · B8 · B9는 실행하지 않았다.
 
 ## TalkBack 관측 항목 — 아직 실행하지 않음
 
@@ -334,7 +340,7 @@ JS가 준비되지(`ready`) 못한 Activity는 기다림 없이 `finish()`가 �
 **실행 수단**
 
 - TalkBack이 들어 있는 **Google Play 시스템 이미지** 에뮬레이터 또는 실기기가 필요하다(`com.google.android.marvin.talkback`).
-  B1 ~ B9를 돌린 AVD에 TalkBack이 있는지는 확인하지 않았다 — `$A shell pm path com.google.android.marvin.talkback`으로 먼저 본다.
+  B1 ~ B9를 돌린 AVD에 TalkBack이 있는지는 확인하지 않았다 — `A shell pm path com.google.android.marvin.talkback`으로 먼저 본다.
 - TalkBack을 켜는 명령은 `devtools/android-maestro/run-talkback.sh`에 있다(`enabled_accessibility_services` ·
   `accessibility_enabled` 설정과 `dumpsys accessibility`의 `Bound services` 확인). 루트의 `pnpm test:e2e:android:talkback`이
   이 스크립트를 부르지만 **그 명령은 온보딩 Maestro 흐름만 돈다 — 아래 항목을 실행하지 않는다.** 켜는 부분만 빌려 쓰고
@@ -403,6 +409,6 @@ TalkBack은 꺼져 있었다. 앱의 `FATAL EXCEPTION`은 없었다. 스크린�
 | B9(b) | 통과 | 변경 없음 | 제스처 | HOME → 로컬 알림 → 알림 화면 → (16 KB 대화상자를 닫은 뒤) 뒤로 → 맵, 앱 남음 |
 
 **이 실행으로 확인하지 못한 것**: 실제 JS 무응답(증거 JUnit SG6 · SG9) · 첫 유닛 안내 가림막(증거 `integration` IB7 · `ui` UL8) ·
-TalkBack을 켠 상태(T1 ~ T6 미실행) · API 26 ~ 32의 `onBackPressed()` 경로(L1 미실행 — AVD가 API 37 하나다. 이 경로는 컴파일만 확인됐다).
+TalkBack을 켠 상태(T1 ~ T6 미실행) · API 26 ~ 32의 `onBackPressed()` 경로(L1 미실행 — AVD가 API 37 하나다. 이 경로는 컴파일만 확인됐다. ⟨2026-10-05 뒤⟩ L1은 별도 회차로 API 30에서 실행됐다 — 「API 32 이하 관측 항목」).
 
 호스트의 JUnit은 같은 날 `./gradlew testDebugUnitTest`로 통과했다(`SystemBackGateTest` SG1 ~ SG10 포함 30건).

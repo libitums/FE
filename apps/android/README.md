@@ -46,7 +46,7 @@ iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽�
 
 ## 준비
 
-- Android Studio, Android SDK Platform 35와 Build Tools 35.0.0
+- Android Studio, Android SDK Platform 36과 Build Tools 36.0.0 (`compileSdk` · `targetSdk` 36, `minSdk` 26)
 - JDK 17 (Gradle 8.11.1 · Android Gradle Plugin 8.9.2)
 - 저장소의 [첫 설정](../../docs/conventions/workflow.md#첫-설정) 및 `pnpm install`
 
@@ -64,9 +64,12 @@ iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽�
 cd apps/android
 ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.libitum.host/.MainActivity \
+adb shell am start -n libitum.duru.android/com.libitum.host.MainActivity \
   --es bundle-url http://10.0.2.2:3001/main.lynx.bundle
 ```
+
+`-n`의 컴포넌트는 `<패키지>/<완전한 클래스 이름>`으로 쓴다. 패키지(`applicationId`)는 `libitum.duru.android`이고 Java 패키지(`namespace`)는
+`com.libitum.host` 그대로라, 축약형 `libitum.duru.android/.MainActivity`는 없는 클래스다(아래 「패키지 이름과 출시 빌드」).
 
 Debug 호스트는 Rspeedy의 WebSocket 연결과 변경분 파일을 읽는다. `apps/mobile/src`를
 수정하면 앱을 다시 실행하지 않고 화면에 반영된다. 로컬 HTTP는 Debug에만 허용한다.
@@ -79,7 +82,7 @@ Android 에뮬레이터에서 `./gradlew assembleDebug`로 만든 APK를 설치�
 URL을 실행 인자로 지정한다. `/static/` 이미지는 같은 서버에서 읽는다.
 
 ```sh
-adb shell am start -n com.libitum.host/.MainActivity \
+adb shell am start -n libitum.duru.android/com.libitum.host.MainActivity \
   --es bundle-url http://10.0.2.2:3001/main.lynx.bundle
 ```
 
@@ -98,9 +101,45 @@ cd apps/android
 adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 ```
 
-`bundled`는 로컬 검증용으로 Android 디버그 키로 서명한다. `assembleRelease`는 별도
-서명 없이 배포용 산출물을 만들며, 이 단계에서 스토어 배포를 설정하지 않는다.
+`bundled`는 로컬 검증용으로 Android 디버그 키로 서명한다. `release`는 서명 없는 산출물을 만든다(아래 「패키지 이름과 출시 빌드」).
 두 빌드 모두 복사된 Lynx 번들이 없으면 빌드를 중단한다.
+
+## 패키지 이름과 출시 빌드
+
+Play Console에 등록된 앱에 맞춘 설정이다. 결정과 버린 대안은 [ADR-0046](../../docs/adr/0046-android-play-release.md)이 진다.
+
+| 항목 | 값 | 어디에 쓰이나 |
+|---|---|---|
+| `applicationId`(패키지) | `libitum.duru.android` | Play · Firebase 앱 · `adb`/`am`/`pm`의 대상 · Maestro `appId` |
+| 계측 APK | `libitum.duru.android.test` | 러너 `libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner` |
+| `namespace`(Java 패키지) | `com.libitum.host` — 바꾸지 않았다 | 소스 경로 `app/src/main/java/com/libitum/host/` · 클래스 이름(`-e class com.libitum.host.<Test>`, `…/com.libitum.host.MainActivity`) |
+| `versionCode` · `versionName` | `2` · `0.1.0` | Play에는 `versionCode` 1이 올라가 있다 |
+
+- **`versionCode`는 손으로 올린다.** Play에 올릴 커밋에서 `app/build.gradle`의 정수를 1 올린다. 빌드 인자로 받지 않는다 — 어느 커밋이 어느 번호인지 저장소가 알아야 한다.
+- **서명은 저장소 밖이다.** `./gradlew bundleRelease`는 서명 없는 `app/build/outputs/bundle/release/app-release.aab`를 만들고, 업로드 키 서명은 사람이 `jarsigner`로 한다.
+  `release` buildType에 `signingConfig`를 두지 않는다. 키 · 비밀번호를 저장소나 명령에 쓰지 않는다. 서명 · Play 업로드 · 실기 확인 순서는
+  [Android 출시 설정 절차](../../docs/e2e/android-release-config.md)의 R9에 있다 — **2026-10-05 현재 아직 실행되지 않았다.**
+- **`release` 빌드는 `app/google-services.json`이 있어야 한다.** 없으면 `verifyReleaseFirebaseConfig`가
+  `Release build needs apps/android/app/google-services.json for libitum.duru.android …`로 멈춘다(FCM이 빠진 AAB가 Play에 올라가는 것을 막는다).
+  `debug` · `bundled`는 파일 없이도 빌드된다. 파일은 추적하지 않으므로 워크트리마다 둔다(아래 「푸시 알림 Firebase 설정」).
+- **옛 패키지와의 공존(개발 기기만).** 2026-10-05 이전 빌드로 설치한 `com.libitum.host`는 지워지지 않고 별도 앱으로 남는다(아이콘 둘 · 데이터 따로).
+  둘 다 `duru://auth-callback`을 받으므로 함께 있으면 콜백에 앱 선택 창이 뜬다 — 소셜 로그인을 보기 전에 `adb uninstall com.libitum.host`.
+  스크립트는 옛 앱을 지우지 않는다. Play 사용자는 처음부터 새 패키지만 가진다.
+
+## 16 KB 페이지
+
+Play는 64비트 네이티브 라이브러리가 16 KB 페이지를 지원하기를 요구한다. Lynx 4.0.1 · Fresco 2.3.0의 상류 AAR은 이를 통과하지 못하고 상위 버전도 풀지 못해,
+**같은 버전을 16 KB로 다시 빌드한 AAR 9개**를 [`vendor-maven/`](vendor-maven/README.md)에 둔다. 출처 · 바꾼 라이브러리 · 패치 · 다시 만드는 법(`rebuild.sh`)은 그 README가 정본이다.
+
+- **결선**: `settings.gradle`의 `exclusiveContent`가 그 9개 모듈을 `vendor-maven`에서만 찾는다. 좌표와 `app/build.gradle`의 의존 선언은 상류와 같다.
+- **빌드 게이트**: `app/native-alignment.gradle`이 변형마다 `verify<Variant>ApkNativeAlignment`(`assemble<Variant>`) · `verify<Variant>BundleNativeAlignment`(`bundle<Variant>`)를 건다.
+  APK · AAB의 64비트 `.so`(`arm64-v8a` · `x86_64`) 가운데 하나라도 기준을 어기면 `Native 16 KB page alignment check failed for <파일>: …`로 빌드가 실패하고,
+  64비트 `.so`를 하나도 못 찾아도 실패한다. 기준은 LOAD 정렬만이 아니라 `GNU_RELRO` 끝까지 본다(LOAD만 맞아도 호환성 대화상자가 떴다).
+- **같은 판정을 손으로**: `node devtools/android-bundle/elf-page-alignment.mjs <apk|aab|aar>...` — 실패가 있거나 검사한 것이 0개면 종료 코드 1.
+- **의존 조정 둘**: `primjsWasm`(WebAssembly 엔진 — 앱이 쓰지 않고 `libwasm.so`가 정렬되지 않았다)을 설정 전체에서 제외하고, `androidx.datastore:datastore-core-android`의 하한을 1.2.1로 둔다(그 아래 판의 `.so`가 정렬되지 않았다).
+- **Lynx · Fresco 버전을 올리면** `vendor-maven`을 그 버전으로 다시 만들어야 한다(`exclusiveContent`라 새 좌표를 상류에서 찾지 않는다). 상류가 판정을 통과하는 `.so`를 내면 `vendor-maven`과 `exclusiveContent`를 지운다.
+
+16 KB 에뮬레이터에서의 확인 절차는 [Android 출시 설정 절차](../../docs/e2e/android-release-config.md)에 있다. 4 KB 페이지에서는 2026-10-05에 API 30 에뮬레이터 하나에서 재빌드한 `.so`의 로드와 `onBackPressed()` 경로 일부를 확인했다(그 문서의 R6 「실행 기록」). **API 26 ~ 29 · 31 ~ 32와 실기(4 KB 기기 포함)에서의 로드는 아직 확인되지 않았다**(R9 미실행).
 
 ## 확인
 
@@ -233,14 +272,14 @@ Apple 계정 삭제는 Android에서 웹 OAuth를 다시 열고 Supabase PKCE �
 
 ## 푸시 알림 Firebase 설정
 
-Android 호스트는 FCM SDK와 `duru-updates` 알림 채널을 포함한다. Firebase 프로젝트에 Android 앱 `com.libitum.host`를 등록한 뒤 받은 `google-services.json`을 `apps/android/app/`에 둔다. 이 로컬 파일은 Git에서 제외한다. 파일이 있으면 Gradle의 Google services 플러그인이 적용되고 SDK가 기본 Firebase 앱을 초기화한다. 파일이 없는 빌드는 권한·알림 화면 검증은 되지만 FCM 토큰을 반환하지 않아 서버 기기 등록은 하지 않는다.
+Android 호스트는 FCM SDK와 `duru-updates` 알림 채널을 포함한다. Firebase 프로젝트에 Android 앱 `libitum.duru.android`를 등록한 뒤 받은 `google-services.json`을 `apps/android/app/`에 둔다. 이 로컬 파일은 Git에서 제외한다. 파일이 있으면 Gradle의 Google services 플러그인이 적용되고 SDK가 기본 Firebase 앱을 초기화한다. 파일이 없는 `debug` · `bundled` 빌드는 권한·알림 화면 검증은 되지만 FCM 토큰을 반환하지 않아 서버 기기 등록은 하지 않는다. `release` 빌드는 파일이 없으면 실패한다(위 「패키지 이름과 출시 빌드」).
 
 서버에는 [FCM 전송 마이그레이션과 함수](../supabase-functions/README.md#android-fcm-확장-adr-0041)를 배포하고 `FIREBASE_SERVICE_ACCOUNT_JSON`을 Edge Function 시크릿으로 설정한다. 서비스 계정 키는 Android 앱이나 저장소에 넣지 않는다. 앱이 허용된 권한으로 열릴 때 현재 토큰을 읽어 기존 `register_push_device` RPC에 등록한다. FCM 토큰이 바뀌면 다음 앱 실행에서 다시 등록한다. 실제 원격 수신·백그라운드 탭은 서버 발송 인증이 준비될 때까지 미검증이다.
 
-설정 파일의 `client_info.android_client_info.package_name`은 `com.libitum.host`여야 한다. Google Play 서비스를 포함한 전용 에뮬레이터에서 토큰 발급과 브리지 반환을 확인한다. 이 계측 테스트는 명시적으로 실행할 때만 네트워크를 사용하며 토큰 값을 출력하지 않는다.
+설정 파일의 `client_info.android_client_info.package_name`은 `libitum.duru.android`여야 한다. Google Play 서비스를 포함한 전용 에뮬레이터에서 토큰 발급과 브리지 반환을 확인한다. 이 계측 테스트는 명시적으로 실행할 때만 네트워크를 사용하며 토큰 값을 출력하지 않는다.
 
 ```sh
 ANDROID_HOME="$HOME/Library/Android/sdk" FCM_UDID=emulator-5554 ./apps/android/test-live-fcm-token.sh
 ```
 
-2026-10-02에는 API 35 Google Play 에뮬레이터에서 1건 통과했다. 이 검증은 토큰 발급까지만 포함한다. 원격 발송과 알림 수신에는 같은 Firebase 프로젝트에 접근할 수 있는 서버 인증이 추가로 필요하다.
+2026-10-02에는 API 35 Google Play 에뮬레이터에서 1건 통과했다(당시 패키지 `com.libitum.host`). 2026-10-05에 패키지를 `libitum.duru.android`로 바꾼 뒤 새 Firebase 앱 설정으로 API 37 Google Play 에뮬레이터에서 다시 1건 통과했다. 이 검증은 토큰 발급까지만 포함한다. 원격 발송과 알림 수신에는 같은 Firebase 프로젝트에 접근할 수 있는 서버 인증이 추가로 필요하다.

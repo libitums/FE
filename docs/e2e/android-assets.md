@@ -20,7 +20,7 @@ Gradle 결선과 산출물 검사(`devtools/android-bundle/*.test.mjs`) · 계�
   결과 표에 「청음」 열을 따로 적는다(들었다 · 못 들었다 · 안 들었다).
 - **무음 · 진동 모드**: Android에는 iOS의 무음 스위치가 없다. 효과음은 벨 소리 모드가 아니라 **미디어 볼륨**을 따른다(계약 §2.2). 벨 소리 모드를 바꿔 본 관찰은 이 절차에 없다.
 - **다른 앱의 음악과 섞임**: 효과음은 오디오 포커스를 요청하지 않아 다른 앱 음악 위에서 섞여 난다(iOS는 끊는다 — 의도된 차이). 다른 앱을 재생해 둔 상태의 관찰은 이 절차에 없다.
-- **16 KB 페이지 기기와 4 KB 기기의 실물**: 에뮬레이터 하나(Pixel_8 AVD, API 37 = 16 KB 페이지)로만 잰다. 업로드 AAB의 Fresco · Lynx `.so`가 실기 CPU에서 정상 로드되는지는 실기에서만 알 수 있다.
+- **16 KB 페이지 기기와 4 KB 기기의 실물**: 에뮬레이터 하나(Pixel_8 AVD, API 37 = 16 KB 페이지)로만 잰다. 업로드 AAB의 Fresco · Lynx `.so`가 실기 CPU에서 정상 로드되는지는 실기에서만 알 수 있다. 16 KB로 다시 빌드한 `.so`의 정렬 판정과 4 KB 기기 · 실기 항목은 [Android 출시 설정 절차](android-release-config.md)(R1 · R6 · R9)가 진다 — R6은 API 30 에뮬레이터 하나에서만 실행됐고 R9는 아직 실행되지 않았다.
 - **실기 GPU / 하드웨어 가속에서의 서사 배경**: 에뮬레이터의 소프트웨어 렌더링으로만 본다. 실기에서 다르게 보일 가능성은 낮다고 판단하지만 이 절차가 증명하지 않는다.
 - **Play가 실기에 내려주는 분할 구성 전부**: `build-apks --connected-device`가 에뮬레이터의 ABI · 밀도 · 언어에 맞춘 분할(base-master / arm64_v8a / xxhdpi / en)을 만든다. 다른 기기의 분할은 보지 않는다. 자산은 모두 base-master에 있어 영향은 없다고 본다.
 - **효과음 8종의 정확한 음색과 타이밍**: 아래 표의 조작마다 플레이어가 시작됐는가만 본다. 어느 mp3가 났는지 `dumpsys`가 알려 주지 않으므로 같은 조작에서 어느 id가 불렸는지는 logcat의 `SoundEffectsModule.play.<id>`가 진다.
@@ -31,28 +31,28 @@ Gradle 결선과 산출물 검사(`devtools/android-bundle/*.test.mjs`) · 계�
 
 ## 전제
 
-[Android 시스템 뒤로가기](android-system-back.md)의 「전제」 · 「준비 — 16 KB 호환성 대화상자 없애기」 · 「앱 구간 진입 (로그인 없이)」을 따른다
-(Pixel_8 AVD API 37 · `E2E_UDID` · `ADB`/`A` 변수 · `SignedInScreenFixtureTest` · 번들 서버). 그 내용은 되풀이하지 않는다. 이 절차만의 차이는 아래다.
+[Android 시스템 뒤로가기](android-system-back.md)의 「전제」 · 「준비 — 16 KB 호환성 대화상자가 없는지 확인」 · 「앱 구간 진입 (로그인 없이)」을 따른다
+(Pixel_8 AVD API 37 · `E2E_UDID` · `ADB` 변수 · `A` 함수 · `SignedInScreenFixtureTest` · 번들 서버). 그 내용은 되풀이하지 않는다. 이 절차만의 차이는 아래다.
 
 1. **설치 형태가 AAB다.** 아래 「AAB 만들고 분할 설치」로 `bundleRelease` 산출물을 설치한다. `debug` APK가 아니다.
 2. **`wm size` · `wm density`는 기본값으로 둔다.** 이 절차는 레이아웃 치수가 아니라 그림이 그려지는지와 플레이어를 본다. 바꿔 둔 상태라면 `wm size reset` · `wm density reset`.
-   **좌표는 스크린샷(`shot`)으로 위치를 잡는다. 이 문서의 좌표는 참고값이다.** 참고값은 기본 해상도 1080x2400(Pixel_8 AVD)에서 첫 실행(`e62cf211`)에 잰 값이다: 온보딩 `Next` (540,2262) · 맵 활성 노드 (540,2100) · 시트 `Start` (540,1934) · 화면 하단 큰 버튼 (540,2200) · 서사 독백 상자 (540,2050) · 메신저 답장 전송 (943,2242) · 전화 `Accept` (540,2000) · 16 KB 대화상자 `Don't Show Again` (800,2213). 해상도가 다르면 비례로 환산하지 말고 스크린샷에서 다시 잡는다.
-   **`Don't Show Again`을 누른 뒤 약 1.5초 기다린다** — 대화상자가 닫히고 뒤의 화면(온보딩 · 여정 맵)이 서기까지 그만큼 걸린다. 그 전에 다음 탭을 넣으면 빈 곳을 누른다.
+   **좌표는 스크린샷(`shot`)으로 위치를 잡는다. 이 문서의 좌표는 참고값이다.** 참고값은 기본 해상도 1080x2400(Pixel_8 AVD)에서 첫 실행(`e62cf211`)에 잰 값이다: 온보딩 `Next` (540,2262) · 맵 활성 노드 (540,2100) · 시트 `Start` (540,1934) · 화면 하단 큰 버튼 (540,2200) · 서사 독백 상자 (540,2050) · 메신저 답장 전송 (943,2242) · 전화 `Accept` (540,2000). 해상도가 다르면 비례로 환산하지 말고 스크린샷에서 다시 잡는다.
+   **16 KB 호환성 대화상자는 뜨지 않는다**(2026-10-05의 출시 설정 변경, 작업 `android-release-config` 이후). 뜨면 `Don't Show Again`으로 닫고 넘어가지 말고 회귀로 적는다 — 판정은 [Android 출시 설정 절차](android-release-config.md)의 R1이 진다. 이 절차의 첫 실행(`e62cf211`)은 대화상자가 뜨던 때라, 아래 기록에는 닫은 흔적이 남아 있다.
 3. **시각은 이력으로 판정한다.** 에뮬레이터 호스트가 바쁘면 `dumpsys audio` 한 번과 `screencap` 한 번이 각각 수 초 걸려 「조작 N초 뒤」 샘플이 어긋난다. 소리 판정은 샘플 시각이 아니라 `events`의 `player piid:<N> event:started|stopped|paused` 줄과 logcat 시각으로 한다. 화면 캡처는 보조다.
 4. **빌드한 SHA를 결과 표에 적는다.** AAB는 수정이 들어간 커밋에서 만든다. 수정 전 기준은 아래 「수정 전 기준선」에서 따로 만든다.
 5. **로그인 뒤 화면은 픽스처로 들어간다.** 픽스처는 `debug` 빌드의 호스트에 계측 APK를 붙여 쓰는 구성인데, release AAB의 앱도 같은 디버그 키로 서명되므로
-   같은 패키지(`com.libitum.host`)의 계측 APK를 그대로 붙여 쓸 수 있다(진단의 방법). 서명이 다르면 `INSTALL_FAILED_UPDATE_INCOMPATIBLE`이 나므로 둘 다 디버그 키로 서명한다.
+   같은 패키지(`libitum.duru.android`)의 계측 APK를 그대로 붙여 쓸 수 있다(진단의 방법). 서명이 다르면 `INSTALL_FAILED_UPDATE_INCOMPATIBLE`이 나므로 둘 다 디버그 키로 서명한다.
 
 ### 도구
 
 ```sh
 export E2E_UDID=emulator-5554
 export ADB="${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb"
-A="$ADB -s $E2E_UDID"
+A() { "$ADB" -s "$E2E_UDID" "$@"; }   # 함수다 — `A shell …`로 부른다. 문자열 변수(`A="adb -s …"; A shell …`)는 zsh에서 command not found가 난다
 # bundletool: https://github.com/google/bundletool/releases 의 bundletool-all-<버전>.jar. 진단은 1.17.2를 썼다
 export BUNDLETOOL_JAR=$HOME/tools/bundletool-all-1.17.2.jar     # 둔 자리에 맞춘다
 export OUT=.agent-harness/work/android-assets/artifacts/e2e && mkdir -p "$OUT"
-shot() { $A exec-out screencap -p > "$OUT/$1.png"; }
+shot() { A exec-out screencap -p > "$OUT/$1.png"; }
 ```
 
 `BUNDLETOOL_JAR`는 `devtools/android-bundle/packaged-assets.artifacts.mjs`의 BG2b도 쓴다(없으면 그 검사는 건너뛴다). 같은 jar를 둘 다 쓴다.
@@ -81,17 +81,21 @@ java -jar "$BUNDLETOOL_JAR" install-apks --apks="$OUT/fixed.apks" --device-id="$
 ### 수정 전 기준선 — 사용자가 Play에 올린 AAB
 
 수정 전 모습은 사용자가 Play에 올린 AAB `~/Desktop/app-release-signed-16kb.aab`(패키지 `libitum.duru.android`)에 같은 절차를 적용해 본다.
-이 파일은 이미 서명돼 있으므로 디버그 키로 **재서명**해 설치한다(Play 서명 키를 다루지 않는다). `libitum.duru.android`는 `com.libitum.host`와 다른 패키지라 둘이 함께 설치된다.
+이 파일은 이미 서명돼 있으므로 디버그 키로 **재서명**해 설치한다(Play 서명 키를 다루지 않는다).
+**2026-10-05부터 이 저장소의 빌드도 같은 패키지(`libitum.duru.android`)다**([ADR-0046](../adr/0046-android-play-release.md)). 그래서 기준선을 설치하면 수정본 설치를 **덮어쓴다**(같은 디버그 키) —
+둘을 나란히 둘 수 없으므로 기준선을 본 뒤 「AAB 만들고 분할 설치」로 수정본을 다시 설치한다. 함께 설치되는 것은 그 이전 커밋으로 만든 옛 패키지 `com.libitum.host`뿐이고,
+그 둘이 함께 있으면 `duru://auth-callback`에 앱 선택 창이 뜬다 — 소셜 로그인을 보기 전에 `adb uninstall com.libitum.host`.
+이 AAB 파일은 저장소 밖 사용자 파일이라 그 자리에 없을 수 있다(2026-10-05 `android-release-config` 계약 단계에는 없었다). 없으면 이 절은 건너뛰고 아래 저장된 스크린샷 · 로그를 기준으로 쓴다.
 
 ```sh
 UP=~/Desktop/app-release-signed-16kb.aab
 java -jar "$BUNDLETOOL_JAR" build-apks --bundle="$UP" --output="$OUT/uploaded.apks" --connected-device --device-id="$E2E_UDID" \
   --ks ~/.android/debug.keystore --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android
 java -jar "$BUNDLETOOL_JAR" install-apks --apks="$OUT/uploaded.apks" --device-id="$E2E_UDID"
-$A shell am start -n libitum.duru.android/com.libitum.host.MainActivity
+A shell am start -n libitum.duru.android/com.libitum.host.MainActivity
 ```
 
-`MainActivity`의 완전한 이름이 다르면 `$A shell cmd package resolve-activity --brief libitum.duru.android`로 확인한다.
+`MainActivity`의 완전한 이름이 다르면 `A shell cmd package resolve-activity --brief libitum.duru.android`로 확인한다.
 이 앱은 서버 주소가 실제 값이라 픽스처(모의 세션)로 들어갈 수 없다. 기준선으로 확인할 수 있는 것은 **패키지 안 내용(E1)** 과 **온보딩 `Next`의 효과음 부재(E2)** 뿐이다.
 로그인 뒤 화면(E3 ~ E8)의 수정 전 기준은 아래 저장된 스크린샷 · 로그를 쓴다.
 
@@ -110,23 +114,24 @@ $A shell am start -n libitum.duru.android/com.libitum.host.MainActivity
 
 ```sh
 # 현재 활성 플레이어. 효과음은 SoundPool(USAGE_MEDIA · CONTENT_TYPE_SONIFICATION), 벨은 MediaPlayer(같은 속성), 대사는 MediaPlayer(USAGE_MEDIA · CONTENT_TYPE_SPEECH)
-players() { $A shell dumpsys audio | grep -E "player piid|AudioPlaybackConfiguration" ; }
+players() { A shell dumpsys audio | grep -E "player piid|AudioPlaybackConfiguration" ; }
 # 플레이어 이력(시작 · 정지 이벤트)
-events()  { $A shell dumpsys audio | grep -E "player piid:[0-9]+ event:" ; }
+events()  { A shell dumpsys audio | grep -E "player piid:[0-9]+ event:" ; }
 # 조작 한 번 사이의 logcat — 조작 직전에 비우고 직후에 읽는다
-$A logcat -c        # 조작 전
-$A logcat -d | grep -E "SoundEffectsModule|AudioPlaybackModule|SoundEffects|AudioPlayback"
+A logcat -c        # 조작 전
+A logcat -d | grep -E "SoundEffectsModule|AudioPlaybackModule|SoundEffects|AudioPlayback"
 ```
 
 - `dumpsys audio`의 출력 줄 형식은 Android 버전마다 다르다. `player piid:<N> event:started`(시작)과 `event:stopped`(정지)를 찾고, 한 줄도 안 나오면
-  `$A shell dumpsys audio | grep -n -i "playback\|piid"`로 플레이어 절을 먼저 찾는다. 효과음이 짧아 조작 뒤 곧 끝나므로 **조작 직후 1초 안에** 이력(`events`)을 읽는다.
+  `A shell dumpsys audio | grep -n -i "playback\|piid"`로 플레이어 절을 먼저 찾는다. 효과음이 짧아 조작 뒤 곧 끝나므로 **조작 직후 1초 안에** 이력(`events`)을 읽는다.
+  **API 30(Android 11) 에뮬레이터의 출력에는 이 이력이 없었다**(2026-10-05 — `AudioPlaybackConfiguration piid:… state:idle` 목록만 나왔다. Android 버전에 따른 출력 형식 차이로 **추정**하며 원인을 가리지는 않았다). 그런 기기에서는 `events`로 판정하지 말고 logcat(`SoundEffectsModule.play.<id>` 호출 · `SoundEffectsModulefailed` 0 · `SoundEffects`/`AudioPlayback` 경고 0)으로 판정하고, 이력으로 보지 못했다고 결과 표에 적는다.
 - 판정에 쓰는 것은 **조작 직전과 직후의 이력 차이**다. 직전에 이미 있던 `piid`를 새 시작으로 세지 않는다. 조작 전에 `events > "$OUT/<id>-before.txt"`, 후에 `events > "$OUT/<id>-after.txt"`로 남기고 `diff`로 본다.
 - logcat에서 **있어야 하는 것**: `SoundEffectsModule.play.<id>`(Lynx가 남기는 모듈 호출 줄, 조작이 부른 id). **없어야 하는 것**: `SoundEffectsModulefailed`(모듈 부재), 태그 `SoundEffects` 또는 `AudioPlayback`의 `W`(`Cannot load sound effect` · `Cannot open audio asset` · `Audio playback error` · `Rejected audio source`).
   앱 `FATAL EXCEPTION`도 없어야 한다.
 
 ```sh
-$A logcat -d | grep -c "SoundEffectsModulefailed"                       # 0이어야 한다
-$A logcat -d | grep -E " W (SoundEffects|AudioPlayback) " ; echo "warn=$?" # 한 줄도 없어야 한다(grep 종료 코드 1)
+A logcat -d | grep -c "SoundEffectsModulefailed"                       # 0이어야 한다
+A logcat -d | grep -E " W (SoundEffects|AudioPlayback) " ; echo "warn=$?" # 한 줄도 없어야 한다(grep 종료 코드 1)
 ```
 
 ## 효과음 8종과 화면 조작 (iOS 연결 지점)
@@ -163,7 +168,7 @@ E4의 20초 이상 대기와 통화, 기내 복귀(S4 · E5)까지 한 픽스처
 | iOS | — | E7 |
 | 접근성(수동) | 항목별 | T1 ~ T3 |
 
-`pm clear` 뒤마다 16 KB 대화상자가 다시 뜬다 — 닫고 시작한다.
+`pm clear` 뒤에도 16 KB 대화상자는 뜨지 않아야 한다(전제 2 — 뜨면 회귀).
 
 ### E1 — 패키지에 오디오 29개가 무압축으로 들어 있다 (수용 기준 4)
 
@@ -185,18 +190,18 @@ E4의 20초 이상 대기와 통화, 기내 복귀(S4 · E5)까지 한 픽스처
 - **판정 기준**
   - **통과**: 첫 두 줄이 21 · 8, 세 번째 줄(`Stored`가 아닌 줄)이 0. `bundled` APK도 29개 모두 `Stored`.
   - **실패**: 개수가 21 · 8과 다르거나 `Defl:N`인 항목이 있다. 수정 전 기준은 0개다(업로드 AAB의 마지막 명령이 0).
-  - 실패 시 `$A logcat`에서 E3 · E5의 `Cannot open audio asset`(`FileNotFoundException`)이 같이 보이는지 적는다.
+  - 실패 시 `A logcat`에서 E3 · E5의 `Cannot open audio asset`(`FileNotFoundException`)이 같이 보이는지 적는다.
 - **관찰 명령**: 위 명령. 결과를 `E1-assets.txt`에 남긴다.
 
 ### E2 — 온보딩 `Next`를 누르면 효과음 모듈이 불린다 (수용 기준 1)
 
-- **조작**: 새 설치 상태(`$A shell pm clear com.libitum.host`)로 앱을 연다. 스플래시 뒤 온보딩 첫 스텝이 서면 logcat을 비우고 이력을 저장한 뒤 `Next`를 누른다
+- **조작**: 새 설치 상태(`A shell pm clear libitum.duru.android`)로 앱을 연다. 스플래시 뒤 온보딩 첫 스텝이 서면 logcat을 비우고 이력을 저장한 뒤 `Next`를 누른다
   (1080x2400 기준 약 (540,2262) — 스크린샷으로 위치를 잡는다, 참고값). 화면 크기가 다르면 같은 대상을 누른다.
   ```sh
-  $A shell pm clear com.libitum.host; $A shell am start -n com.libitum.host/.MainActivity; sleep 8   # 16 KB 대화상자가 있으면 닫고 1.5초 기다린다
-  shot E2-onboarding-1; events > "$OUT/E2-before.txt"; $A logcat -c
-  $A shell input tap 540 2262; sleep 0.5   # 참고값 — shot으로 확인
-  events > "$OUT/E2-after.txt"; $A logcat -d > "$OUT/E2-logcat.txt"; shot E2-onboarding-2
+  A shell pm clear libitum.duru.android; A shell am start -n libitum.duru.android/com.libitum.host.MainActivity; sleep 8   # 16 KB 대화상자는 뜨지 않아야 한다(전제 2)
+  shot E2-onboarding-1; events > "$OUT/E2-before.txt"; A logcat -c
+  A shell input tap 540 2262; sleep 0.5   # 참고값 — shot으로 확인
+  events > "$OUT/E2-after.txt"; A logcat -d > "$OUT/E2-logcat.txt"; shot E2-onboarding-2
   diff "$OUT/E2-before.txt" "$OUT/E2-after.txt"
   grep -c "SoundEffectsModulefailed" "$OUT/E2-logcat.txt"; grep "SoundEffectsModule.play" "$OUT/E2-logcat.txt"
   ```
@@ -212,7 +217,7 @@ E4의 20초 이상 대기와 통화, 기내 복귀(S4 · E5)까지 한 픽스처
 ### E3 — 학습의 정답 · 오답, 결과 화면에서 같은 형태의 시작 기록이 난다 (수용 기준 1)
 
 - **조작**: 픽스처를 `audioProgress true`로 시작한다(진행 5스텝 — 듣기 학습 유닛이 맵에서 바로 열린다. android-system-back의 B3와 같은 길).
-  맵은 **한 번에 약 900px씩** 위로 스와이프하고(`$A shell input swipe 540 1800 540 900 400`) 매번 스크린샷으로 확인한다 — 길이를 정하지 않으면 맵 끝까지 가 버린다. 활성 노드는 이름이 아니라 스크린샷에서 연 노드(자물쇠 없음)를 직접 고른다: 활성 노드가 「Listen to a Hello」가 아니라 단어 순서 유닛(「Asking for directions」)으로 보이는 회차도 있었다. 두 유닛을 다 쓴다 — 듣기 유닛은 `wrong_answer` · `failed_lesson`, 단어 순서 유닛은 `correct_answer` · `lesson_complete` · `pass_lesson`에 닿는다.
+  맵은 **한 번에 약 900px씩** 위로 스와이프하고(`A shell input swipe 540 1800 540 900 400`) 매번 스크린샷으로 확인한다 — 길이를 정하지 않으면 맵 끝까지 가 버린다. 활성 노드는 이름이 아니라 스크린샷에서 연 노드(자물쇠 없음)를 직접 고른다: 활성 노드가 「Listen to a Hello」가 아니라 단어 순서 유닛(「Asking for directions」)으로 보이는 회차도 있었다. 두 유닛을 다 쓴다 — 듣기 유닛은 `wrong_answer` · `failed_lesson`, 단어 순서 유닛은 `correct_answer` · `lesson_complete` · `pass_lesson`에 닿는다.
   **한 회차에서 모든 id에 닿지 않는다.** 한 레슨에 오답이 하나라도 있으면 결과는 `failed_lesson`으로 고정되므로 `pass_lesson` · `correct_answer`는 **오답 없이 푸는 별도 회차**로만 닿는다. 회차를 둘로 나눈다: (가) 오답을 하나 고르고 끝까지 간다 → `wrong_answer` · `failed_lesson`; (나) 새 회차에서 전부 정답으로 푼다 → `correct_answer` · `lesson_complete` · `pass_lesson`. **(가)의 결과 화면에서 같은 유닛의 `Try again`을 누르면 오답 0인 새 시도가 된다** — 맵으로 돌아가 노드를 다시 열 필요가 없고 가장 짧다(r02에서 이 길로 했다). 매 조작 전에 `events`와 `logcat -c`.
   1. 하단 탭 `Roleplay` → `Journey`로 이동: `button`.
   2. 학습 시작 → 듣기 재생 버튼: `button` (E5의 대사 오디오와 겹치는 첫 조작).
@@ -235,10 +240,10 @@ E4의 20초 이상 대기와 통화, 기내 복귀(S4 · E5)까지 한 픽스처
   기내 독백 3개를 넘기고, 민서와의 메시지에 두 번 답장한 뒤 `Continue`를 누르면 카페 독백(S3)이 선다. `Continue` 뒤 3 ~ 5초 두어 카페 독백의 타이핑이 끝나면
   **독백 상자를 한 번만 누른다** — 그 한 번으로 **수신 전화 화면**(`prologue-call-screen`, 상태 문구 incoming)이 선다. ⚠ 한 번 더 누르지 않는다: 같은 자리(참고값 (540,2050))가 전화의 `Accept`라
   의도치 않게 전화를 받는다(r02에서 한 번 그렇게 받아 통화 중이 됐다). 전화 화면이 선 것을 스크린샷으로 확인하고 시작한다.
-  1. 전화 화면이 선 시각에 `events > "$OUT/E4-ring-0s.txt"`, `$A logcat -c`.
+  1. 전화 화면이 선 시각에 `events > "$OUT/E4-ring-0s.txt"`, `A logcat -c`.
   2. **20초 이상 기다린다**(벨 mp3가 14.04초라 반복이 아니면 20초 시점에 이미 끝나 있다). `sleep 20; events > "$OUT/E4-ring-20s.txt"; players > "$OUT/E4-players-20s.txt"; shot E4-ring-20s`.
      조작 시간 때문에 실제 덤프는 21초 부근이 된다(r02 약 21초) — 판정은 「20초 이상 지난 시점」이고 정확히 20초일 필요는 없다.
-  3. 받기 버튼을 누른다(화면의 수락 조작 — 스크린샷으로 위치를 잡는다, 참고값 (540,2000)). `sleep 1; events > "$OUT/E4-accept.txt"; players > "$OUT/E4-players-accept.txt"; $A logcat -d > "$OUT/E4-logcat.txt"`.
+  3. 받기 버튼을 누른다(화면의 수락 조작 — 스크린샷으로 위치를 잡는다, 참고값 (540,2000)). `sleep 1; events > "$OUT/E4-accept.txt"; players > "$OUT/E4-players-accept.txt"; A logcat -d > "$OUT/E4-logcat.txt"`.
 - **기대**: 전화 화면이 서는 순간 `play.ring_bell` + 벨 플레이어 `started`. 20초 이상 지난 시점에도 같은 벨 플레이어가 **재생 중**(`players`에 남아 있고 `stopped`가 없다 — 14초 자산이 반복되는 중). 받기를 누르면 벨 플레이어가 멈추고(`stopRing`) `play.accept_call` + 새 플레이어 `started`. 「멈춘다」는 벨 `MediaPlayer`를 `pause()`하는 설계라 **`state:paused` / `event:paused`** 로 보인다(`stopped`나 목록에서 사라짐이 아니다). logcat의 `stopRing` 줄은 인자가 없어 `SoundEffectsModule.stopRing.`(끝에 마침표)로 찍힌다.
 - **판정 기준**
   - **통과**: 0초에 벨 `started`, 20초 이상 지난 시점에 벨 플레이어가 아직 활성(`E4-players-20s.txt`에 usage `USAGE_MEDIA`·`CONTENT_TYPE_SONIFICATION`이 남음), 받기 뒤 벨 플레이어가 **`paused`**(`E4-players-accept.txt`의 `state:paused` 또는 `events`의 `event:paused`)이고 `stopRing` 줄이 있고 `accept_call` 플레이어가 새로 `started`.
@@ -253,7 +258,7 @@ E4의 20초 이상 대기와 통화, 기내 복귀(S4 · E5)까지 한 픽스처
 **수용 기준 3과의 관계**: 기준 3의 「재생이 끝난 뒤에야 「완료」가 JS로 간다」에서 「완료」는 `AudioPlaybackModule.play`의 **완료 콜백**이다. 서사 화면은 그 콜백을 쓰지 않으므로(위 줄 번호) 이 화면의 탭 동작은 기준 3의 판정 대상이 아니다 — 정정은 기준 3과 어긋나지 않는다. 완료 콜백이 재생 종료 뒤에 불리는지는 integration의 AP 계측이 진다. 이 절차는 그것을 대신하지 않고, 이 화면에서는 「패키지에 자산이 있어 플레이어가 실제로 생기고 끝까지 재생된다」(수정 전에는 `openFd` 실패가 로그 없이 「끝났다」로 처리돼 소리 없이 지나갔다)만 진다.
 
 - **조작**: 프롤로그 마지막 구간의 기내 방송(`tutorial-cabin-announcement`, 자산 길이 약 5.68초 — 알림음 2초 + 안내 3.46초)에 닿는다(E4에서 전화를 끝내고 `Continue`로 기내로 돌아오면 첫 줄이 이 방송이다: 「잠시 후 인천국제공항에 도착하겠습니다.」 번역 「We will shortly be arriving at Incheon International Airport.」).
-  방송 줄이 서자마자 `$A logcat -c; events > "$OUT/E5-before.txt"`. **화면을 탭하지 않고** 약 10초 둔 뒤 `events > "$OUT/E5-after.txt"; $A logcat -d > "$OUT/E5-logcat.txt"; shot E5-end`. 중간 스크린샷(1초 · 4초 · 7초)은 글자 공개 상태를 보는 보조다 — 호스트가 바쁘면 시각이 어긋나므로 판정에 쓰지 않는다.
+  방송 줄이 서자마자 `A logcat -c; events > "$OUT/E5-before.txt"`. **화면을 탭하지 않고** 약 10초 둔 뒤 `events > "$OUT/E5-after.txt"; A logcat -d > "$OUT/E5-logcat.txt"; shot E5-end`. 중간 스크린샷(1초 · 4초 · 7초)은 글자 공개 상태를 보는 보조다 — 호스트가 바쁘면 시각이 어긋나므로 판정에 쓰지 않는다.
   듣기 문항(E3의 `Listen to a Hello`)의 음성도 같은 방식으로 한 번 본다(`AudioPlaybackModule.play.phone-call-confirm-01`, 약 1.1초).
   별도 회차로 「탭 끊김」(의도된 동작)도 한 번 남긴다: 글자가 다 나온 뒤 탭하면 `AudioPlaybackModule.stop.`이 찍히고 플레이어가 `releasing`되며 둘째 줄로 넘어간다. 통과 · 실패 판정이 아니라 관찰 기록이다.
 - **기대**: 탭하지 않으면 대사가 끝까지 재생된다 — usage `USAGE_MEDIA` · content type `CONTENT_TYPE_SPEECH`인 `MediaPlayer`가 `started` → `stopped`(약 6초, 호스트가 바쁘면 7초대; 자산 5.68초 + 시작 지연). 방송 줄은 스스로 다음 줄로 넘어가지 않는다. logcat에 `AudioPlayback`의 경고(`Cannot open audio asset` 등)가 없다.
@@ -280,13 +285,13 @@ E4의 20초 이상 대기와 통화, 기내 복귀(S4 · E5)까지 한 픽스처
 **서사 화면에 닿는 길 (로그인 없이)**
 
 1. 위 「AAB 만들고 분할 설치」의 번들(모의 서버 주소)로 AAB를 설치한다. 이 번들은 `https://example.invalid`로 만든 것이라 서버 호출은 모두 실패하고 모의 세션만 쓴다.
-2. 계측 APK를 설치한다: `cd apps/android && ./gradlew assembleDebugAndroidTest`, `$A install -r apps/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`.
+2. 계측 APK를 설치한다: `cd apps/android && ./gradlew assembleDebugAndroidTest`, `A install -r apps/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`.
 3. 번들 서버를 띄우고 픽스처를 시작한다(`pm clear` 먼저):
    ```sh
    python3 -m http.server 18797 --bind 0.0.0.0 --directory apps/mobile/dist >/tmp/libitum-assets-preview.log 2>&1 &
-   $A shell pm clear com.libitum.host
-   $A shell am instrument -w -e class com.libitum.host.SignedInScreenFixtureTest -e bundleUrl http://10.0.2.2:18797/main.lynx.bundle \
-     com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner >/tmp/libitum-assets-fixture.log 2>&1 &
+   A shell pm clear libitum.duru.android
+   A shell am instrument -w -e class com.libitum.host.SignedInScreenFixtureTest -e bundleUrl http://10.0.2.2:18797/main.lynx.bundle \
+     libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner >/tmp/libitum-assets-fixture.log 2>&1 &
    ```
    (픽스처는 `bundleUrl` 인자가 필수라 번들을 HTTP로 읽는다. 서버가 주는 `apps/mobile/dist`는 AAB에 들어간 번들과 같은 `pnpm bundle:android` 산출물이므로 서사 배경의 마크업 · CSS가 같다. 호스트 앱 자체는 release AAB 분할 설치본이다. 호스트 내장 번들로 서는 화면은 아니라는 점을 결과에 적는다.)
 4. 여정 맵이 서면 튜토리얼 표지 노드 `Episode intro`를 누른다 → 말풍선 `Start` → 표지 화면 → `Next`. 프롤로그 첫 화면은 헤더 `Before We Land` 아래에 비행기 창 그림과 독백이다.
@@ -307,7 +312,7 @@ scene() { # $1=장면 id (S1 등)
   sleep 1;  shot "$1-1s"
   sleep 6;  shot "$1-7s"
 }
-$A shell input tap <장면으로 넘기는 위치>; scene S2
+A shell input tap <장면으로 넘기는 위치>; scene S2
 ```
 
 - **기대**: 장면마다 전환 시작 1초 안에 1장(`<id>-1s`), 7초 뒤 1장(`<id>-7s`). 7초 뒤 그림이 보이고, 1초 시점보다 확대 정도가 크다(확대 drift가 6초 동안 돌고 끝난 뒤 1.035배에서 멈춘다 — `imagination` 프로필은 3초에 가라앉고 남은 3초 동안 아주 조금 떠오른다. `reality`는 2.8초 동안 천천히 가라앉고 정지한다).
@@ -366,7 +371,7 @@ $A shell input tap <장면으로 넘기는 위치>; scene S2
 
 `MainActivity.onStop`이 `stopAll()`을 부르는지를 본다(iOS의 `didEnterBackground`와 같은 계약 — 복귀 시 자동 재개 없음).
 
-- **조작**: 위 E4의 수신 전화 화면(벨이 울리는 중)에서 벨이 울리는 것을 `players`로 확인한 뒤 **홈으로 간다**(`$A shell input keyevent KEYCODE_HOME`). 홈 직후 `onStop`은 전환 애니메이션 뒤(약 1.5 ~ 2초)에 불려 2초 시점에는 아직 `started`로 보일 수 있다 — **3초 이상 기다리거나 `events`의 `event:paused` 시각(이 판정은 `onStop` 이후)으로 본다**: `sleep 4; players > "$OUT/E8-home.txt"; events > "$OUT/E8-home-events.txt"`. 앱으로 돌아온다(`$A shell am start -n com.libitum.host/.MainActivity`). `sleep 2; players > "$OUT/E8-back.txt"; shot E8-back`.
+- **조작**: 위 E4의 수신 전화 화면(벨이 울리는 중)에서 벨이 울리는 것을 `players`로 확인한 뒤 **홈으로 간다**(`A shell input keyevent KEYCODE_HOME`). 홈 직후 `onStop`은 전환 애니메이션 뒤(약 1.5 ~ 2초)에 불려 2초 시점에는 아직 `started`로 보일 수 있다 — **3초 이상 기다리거나 `events`의 `event:paused` 시각(이 판정은 `onStop` 이후)으로 본다**: `sleep 4; players > "$OUT/E8-home.txt"; events > "$OUT/E8-home-events.txt"`. 앱으로 돌아온다(`A shell am start -n libitum.duru.android/com.libitum.host.MainActivity`). `sleep 2; players > "$OUT/E8-back.txt"; shot E8-back`.
   벨이 아니라 학습 화면의 효과음으로도 한 번 한다(짧은 효과음은 곧 끝나므로 벨이 이 항목의 주 관찰이다).
 - **기대**: 홈으로 가면 벨 플레이어가 멈춘다. 돌아와도 벨이 자동으로 다시 울리지 않는다(화면이 아직 수신 전화 화면이면 이미 `stopRing`이 반영되지 않은 상태일 수 있음 — 아래 판정).
 - **판정 기준**

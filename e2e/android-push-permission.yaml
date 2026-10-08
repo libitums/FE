@@ -1,5 +1,5 @@
 # Signed-in Android Settings asks for notification permission once, then opens app settings.
-appId: com.libitum.host
+appId: libitum.duru.android
 ---
 - setOrientation: PORTRAIT
 - extendedWaitUntil:

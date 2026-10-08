@@ -1,5 +1,5 @@
 # A completed tutorial episode asks the Android host for a Play review once.
-appId: com.libitum.host
+appId: libitum.duru.android
 ---
 - setOrientation: PORTRAIT
 - extendedWaitUntil:

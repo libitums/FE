@@ -1,5 +1,5 @@
 # A4·A7 — 계측 픽스처가 띄운 로그인 이후 화면을 320×640에서 검사한다.
-appId: com.libitum.host
+appId: libitum.duru.android
 env:
   SCALE: ${SCALE || "100"}
   DOCUMENT_LABEL: ${DOCUMENT_LABEL || "Terms of Use"}

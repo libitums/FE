@@ -42,3 +42,7 @@ Android 제품 흐름을 iOS와 동등하게 시연하기로 결정할 때, 또�
 2026-10-05에 `SoundEffectsModule`을 Android로 이관하고 오디오 자산 결선을 고쳤다. 그 전의 레거시 `srcDir` 결선은 태스크 의존을 걸지 않아
 이 날까지의 Android 빌드(APK · AAB)에 오디오 자산이 0개였다. 결선 · 산출물 검사 · 효과음의 포커스 · 그림 애니메이션 자리는
 [ADR-0045](0045-android-host-audio-assets.md)가 진다.
+
+2026-10-05에 출시 설정을 Play Console 앱에 맞췄다. 패키지(`applicationId`)가 `libitum.duru.android`가 되고(Java `namespace`는 `com.libitum.host` 그대로),
+`compileSdk`/`targetSdk`가 36, `versionCode`가 2가 됐으며, 16 KB 페이지용으로 다시 빌드한 Lynx · Fresco AAR이 `apps/android/vendor-maven`에 들어왔다.
+식별자 · SDK 수준 · 버전 · 서명의 자리 · 16 KB 정렬과 빌드 게이트는 [ADR-0046](0046-android-play-release.md)이 진다.

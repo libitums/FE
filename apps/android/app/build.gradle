@@ -46,13 +46,14 @@ abstract class SyncHostAudioAssets extends DefaultTask {
 
 android {
   namespace 'com.libitum.host'
-  compileSdk 35
+  compileSdk 36
 
   defaultConfig {
-    applicationId 'com.libitum.host'
+    applicationId 'libitum.duru.android'
     minSdk 26
-    targetSdk 34
-    versionCode 1
+    targetSdk 36
+    // Play에 올릴 커밋에서 손으로 1 올린다 (spec §4). Play에는 1이 이미 올라가 있다.
+    versionCode 2
     versionName '0.1.0'
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
   }
@@ -89,7 +90,15 @@ androidComponents {
     variant.sources.assets?.addGeneratedSourceDirectory(sync, { it.outputDir })
     registerPackagedHostAudioChecks(variant.name, variant.artifacts.get(SingleArtifact.APK.INSTANCE),
         variant.artifacts.get(SingleArtifact.BUNDLE.INSTANCE))
+    registerNativeAlignmentChecks(variant.name, variant.artifacts.get(SingleArtifact.APK.INSTANCE),
+        variant.artifacts.get(SingleArtifact.BUNDLE.INSTANCE))
   }
+}
+
+// lynx의 POM이 runtime으로 끌어오는 WebAssembly 엔진이다. 앱은 WebAssembly를 쓰지 않고,
+// libwasm.so는 16 KB 정렬이 아니다. 설정 전체에 걸어 다른 경로로 다시 들어오는 것도 막는다.
+configurations.configureEach {
+  exclude group: 'org.lynxsdk.lynx', module: 'primjsWasm'
 }
 
 def lynxVersion = '4.0.1'
@@ -134,6 +143,9 @@ dependencies {
     implementation('androidx.activity:activity:1.10.1') {
       because '1.0.0은 개발자가 오래된 버전으로 신고했다'
     }
+    implementation('androidx.datastore:datastore-core-android:1.2.1') {
+      because '1.2.0 이하의 libdatastore_shared_counter.so는 16 KB RELRO 정렬이 아니다'
+    }
   }
 
   androidTestImplementation 'androidx.test:runner:1.7.0'
@@ -165,4 +177,20 @@ tasks.configureEach {
   }
 }
 
+// release AAB는 FCM 설정 없이 Play에 올라가면 안 된다. google-services.json은 추적하지 않는 파일이다.
+// bundled · debug는 파일 없이도 빌드된다.
+tasks.register('verifyReleaseFirebaseConfig') {
+  doLast {
+    if (!file('google-services.json').exists()) {
+      throw new GradleException('Release build needs apps/android/app/google-services.json for libitum.duru.android (Firebase console → Android app). The file is not tracked.')
+    }
+  }
+}
+tasks.configureEach {
+  if (name == 'preReleaseBuild') {
+    dependsOn tasks.named('verifyReleaseFirebaseConfig')
+  }
+}
+
 apply from: 'packaged-assets.gradle'
+apply from: 'native-alignment.gradle'

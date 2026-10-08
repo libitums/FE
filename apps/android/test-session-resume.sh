@@ -25,7 +25,7 @@ kill -0 "$server_pid"
 
 "$ADB" -s "$E2E_UDID" install -r app/build/outputs/apk/debug/app-debug.apk
 "$ADB" -s "$E2E_UDID" install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-"$ADB" -s "$E2E_UDID" shell pm clear com.libitum.host
+"$ADB" -s "$E2E_UDID" shell pm clear libitum.duru.android
 
 run_case() {
   case_name=$1
@@ -34,10 +34,10 @@ run_case() {
     -e class "com.libitum.host.SessionResumeTest#$case_name" \
     -e stage "$stage" \
     -e bundleUrl http://10.0.2.2:18765/main.lynx.bundle \
-    com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner)
+    libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner)
   printf '%s\n' "$output"
   printf '%s\n' "$output" | grep -q 'OK (1 test)'
-  "$ADB" -s "$E2E_UDID" shell am force-stop com.libitum.host
+  "$ADB" -s "$E2E_UDID" shell am force-stop libitum.duru.android
 }
 
 run_case seedSession 0

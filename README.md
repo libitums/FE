@@ -33,8 +33,10 @@ Android 호스트는 번들 로드, 이미지·HTTP 서비스, 입력·SVG·오�
 
 사용자에게 보이는 서비스명은 **Duru**다. 그래서 iOS 앱 아이콘 라벨은 `Duru`지만,
 `Host` 타깃·제품명과 `@libitums/*`, `--libitum-*`, `com.libitum.host`, `libitum.` 계열
-식별자는 호환성을 위한 기술 이름으로 유지한다 (ADR-0025 D1~D3). Release 빌드에서 둘의
-경계를 확인하는 절차는 [서비스명 수동 E2E](docs/e2e/service-name.md)에 있다.
+식별자는 호환성을 위한 기술 이름으로 유지한다 (ADR-0025 D1~D3). 예외는 Android의 패키지
+이름(`applicationId`)이다 — Play Console 등록 값 `libitum.duru.android`를 쓰고, Java 패키지
+(`namespace`)만 `com.libitum.host`로 남는다 ([ADR-0046](docs/adr/0046-android-play-release.md) D1).
+Release 빌드에서 둘의 경계를 확인하는 절차는 [서비스명 수동 E2E](docs/e2e/service-name.md)에 있다.
 
 첫 단계 목표는 핵심 사용자 흐름을 처음부터 끝까지 시연할 수 있는 상태다 (ADR-0001 D1).
 

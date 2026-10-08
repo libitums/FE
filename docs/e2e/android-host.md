@@ -20,6 +20,7 @@ Android SDK 35, JDK 17, Android 에뮬레이터와 `apps/android` Gradle 프로�
 | A8 | 시스템 뒤로가기(제스처·3버튼)를 층·쌓인 화면·탭 루트·여정 맵·번들 로드 전에서 누르기 | 층만 닫힘 → 화면의 닫기와 같음 → 여정 탭 → 앱을 떠남 순으로 동작하고, JS 준비 전에는 Activity가 끝남. 항목과 실행 결과는 [시스템 뒤로가기 절차](android-system-back.md)의 B1~B9가 진다 |
 | A9 | 3버튼 · 제스처 내비게이션에서 탭 루트 · 화면 위 층 · 설문 시트의 하단 조작을 누르고, 앱을 켠 채 모드를 바꾸기 | 탭 알약과 하단 버튼이 시스템 바 위에 있어 눌리고, 3버튼의 탭 바 면은 화면 바닥까지 한 면이며, 제스처 모드 수치는 그대로이고, 모드 전환에 재시작 없이 따라 바뀜. 항목과 실행 결과는 [내비게이션 바와 하단 탭 바 절차](android-navigation-insets.md)의 N1~N9가 진다 |
 | A10 | `bundleRelease` AAB를 bundletool로 분할 설치해(Play 배포 형태) 효과음 · 대사 오디오 · 서사 배경 그림 확인 | 분할 APK에 대사 m4a 21 · 효과음 mp3 8이 무압축으로 있고, 효과음 8종과 대사가 플레이어를 실제로 시작하며, 서사 배경 그림이 단색이 아니라 그려지고 움직임. 항목과 실행 결과는 [효과음 · 대사 오디오 · 서사 배경 절차](android-assets.md)의 E1~E8이 진다 |
+| A11 | `bundleRelease` AAB를 분할 설치해(Play 배포 형태) 출시 설정 확인 — 패키지 `libitum.duru.android` · `versionCode` 2 · `targetSdk` 36 · 16 KB 페이지 | 64비트 `.so`가 전부 16 KB 정렬이고 16 KB 에뮬레이터에서 호환성 대화상자가 뜨지 않으며, 새 패키지로 FCM 토큰 · 딥링크 콜백 · 앞선 항목(A8 ~ A10)이 그대로 동작. 항목과 실행 상태는 [출시 설정 절차](android-release-config.md)의 R1~R9가 진다 — **R6은 API 30 · 4 KB 에뮬레이터 하나에서만 실행(나머지 API 수준 · 실기 4 KB는 미확인) · R9(서명 · Play 업로드 · 실기)는 미실행** |
 
 ## 2026-10-01 실행 결과
 
@@ -129,8 +130,11 @@ adb -s <전용 에뮬레이터 ID> install -r app/build/outputs/apk/androidTest/
 adb -s <전용 에뮬레이터 ID> shell am instrument -w \
   -e class com.libitum.host.ButtonAccessibilityTest \
   -e bundleUrl http://10.0.2.2:<preview 포트>/main.lynx.bundle \
-  com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
 ```
+
+이 계측은 **`-e bundleUrl`과 TalkBack 켬**이 둘 다 있어야 통과한다. 하나라도 빠지면 `… accessibility node missing`으로 실패한다 —
+전제 · TalkBack을 켜고 되돌리는 명령 · 2026-10-05 결과는 [Android TalkBack 검증](android-talkback.md#계측-buttonaccessibilitytest의-전제와-실행)에 있다.
 
 ### A3 저장소 경계 재현
 
@@ -163,7 +167,7 @@ Debug 앱과 계측 APK를 설치하고 세 테스트를 각각 다른 계측 �
 `sh apps/android/test-web-auth-contract.sh`를 실행해 HTTPS authorize URL과 등록된
 콜백만 받는지 확인한다. 에뮬레이터에 Debug 앱과 계측 APK를 설치하고
 `adb shell am instrument -w -e class com.libitum.host.WebAuthenticationModuleTest,com.libitum.host.WebAuthenticationFlowTest
-com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner`를 실행한다. 계측은 난수,
+libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner`를 실행한다. 계측은 난수,
 잘못된 요청, Custom Tab 시작 뒤 모의 딥링크의 `completed` 콜백을 확인한다. 실제
 제공자 창의 복귀와 코드 교환은 설정·계정이 준비되면 세 버튼 각각에서 수동 확인한다.
 임시 `PUBLIC_SUPABASE_URL=https://example.invalid`와 테스트용 anon key로 번들을 빌드해
