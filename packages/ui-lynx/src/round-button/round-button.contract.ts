@@ -1,4 +1,5 @@
 import { color } from "@libitums/design-tokens";
+import type { Motion } from "../motion/motion.contract";
 
 // `overlay`는 FE 확장(2026-09-21 여정 입장 디자인 반영): 면 없이 흰 아이콘만 그려 어두운 그림
 // 위에 얹습니다.
@@ -24,7 +25,11 @@ export type RoundButtonContract = {
   readonly interactive: boolean;
 };
 
-export function getRoundButtonContract(props: RoundButtonProps): RoundButtonContract {
+export function getRoundButtonContract(
+  props: RoundButtonProps,
+  contextMotion: Motion = "standard",
+): RoundButtonContract {
+  void contextMotion;
   if (typeof props.accessibilityLabel !== "string" || !props.accessibilityLabel.trim()) {
     throw new Error("RoundButton accessibilityLabel must not be empty");
   }

@@ -1,7 +1,8 @@
 import type { IconPosition } from "../button/button.contract";
+import type { Motion } from "../motion/motion.contract";
 import type { OverlayPhase } from "../overlay/overlay.contract";
 
-export type DialogMotion = "standard" | "reduced";
+export type DialogMotion = Motion;
 export type DialogPhase = OverlayPhase;
 
 export type DialogAction = {
@@ -45,7 +46,11 @@ function requireNonEmpty(value: string, field: string): string {
   return value;
 }
 
-export function getDialogContract(props: DialogProps): DialogContract {
+export function getDialogContract(
+  props: DialogProps,
+  contextMotion: Motion = "standard",
+): DialogContract {
+  void contextMotion;
   const title = requireNonEmpty(props.title, "title");
   if (props.actions.length < 1 || props.actions.length > 2) {
     throw new Error("Dialog requires one or two actions");

@@ -1,4 +1,5 @@
 import type { AvatarProps } from "../avatar";
+import type { Motion } from "../motion/motion.contract";
 
 type SettingsCellBase = {
   readonly title: string;
@@ -46,7 +47,11 @@ function optionalText(value: string | undefined): string | undefined {
   return value.trim() || undefined;
 }
 
-export function getSettingsCellContract(props: SettingsCellProps): SettingsCellContract {
+export function getSettingsCellContract(
+  props: SettingsCellProps,
+  contextMotion: Motion = "standard",
+): SettingsCellContract {
+  void contextMotion;
   if (!props || typeof props !== "object") throw new Error("Settings Cell props are required");
   const title = optionalText(props.title);
   if (!title) throw new Error("Settings Cell title must not be empty");

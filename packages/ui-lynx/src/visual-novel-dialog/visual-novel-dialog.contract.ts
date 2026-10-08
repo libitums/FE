@@ -1,4 +1,5 @@
 import type { ReactNode } from "@lynx-js/react";
+import type { Motion } from "../motion/motion.contract";
 
 export type VisualNovelDialogVariant = "speech" | "narration" | "thought";
 export type VisualNovelDialogSurface = "opaque" | "translucent";
@@ -115,7 +116,9 @@ function getVisibleLine(line: string, count: number): string {
 
 export function getVisualNovelDialogContract(
   props: VisualNovelDialogProps,
+  contextMotion: Motion = "standard",
 ): VisualNovelDialogContract {
+  void contextMotion;
   const line = requireVisibleText(props.line, "line");
   const variant = props.variant ?? "speech";
   const surface = props.surface ?? "opaque";

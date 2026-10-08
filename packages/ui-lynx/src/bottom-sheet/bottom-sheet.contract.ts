@@ -1,10 +1,11 @@
 import type { ReactNode } from "@lynx-js/react";
 import type { IconPosition } from "../button/button.contract";
+import type { Motion } from "../motion/motion.contract";
 
 export const BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD = 48;
 
 export type BottomSheetDismissReason = "scrim" | "close-button" | "drag";
-export type BottomSheetMotion = "standard" | "reduced";
+export type BottomSheetMotion = Motion;
 
 export type BottomSheetAction = {
   readonly id: string;
@@ -54,7 +55,11 @@ export function shouldDismissBottomSheetDrag(startY: number, endY: number): bool
   return endY - startY >= BOTTOM_SHEET_DRAG_DISMISS_THRESHOLD;
 }
 
-export function getBottomSheetContract(props: BottomSheetProps): BottomSheetContract {
+export function getBottomSheetContract(
+  props: BottomSheetProps,
+  contextMotion: Motion = "standard",
+): BottomSheetContract {
+  void contextMotion;
   const title = requireNonEmpty(props.title, "title");
   const closeAccessibilityLabel = requireNonEmpty(
     props.closeAccessibilityLabel,

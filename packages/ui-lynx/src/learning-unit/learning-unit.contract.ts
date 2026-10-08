@@ -1,4 +1,5 @@
 import { color } from "@libitums/design-tokens";
+import type { Motion } from "../motion/motion.contract";
 
 export type LearningUnitStatus = "default" | "available" | "active" | "clear";
 export type LearningUnitNarrative = "none" | "narrative";
@@ -45,7 +46,11 @@ export type LearningUnitContract = {
 const statuses = new Set<LearningUnitStatus>(["default", "available", "active", "clear"]);
 const narratives = new Set<LearningUnitNarrative>(["none", "narrative"]);
 
-export function getLearningUnitContract(props: LearningUnitProps): LearningUnitContract {
+export function getLearningUnitContract(
+  props: LearningUnitProps,
+  contextMotion: Motion = "standard",
+): LearningUnitContract {
+  void contextMotion;
   if (!props || typeof props !== "object") {
     throw new Error("LearningUnit props must be an object");
   }

@@ -1,4 +1,6 @@
-export type ProgressHeaderMotion = "standard" | "reduced";
+import type { Motion } from "../motion/motion.contract";
+
+export type ProgressHeaderMotion = Motion;
 
 export type ProgressHeaderProps = {
   title: string;
