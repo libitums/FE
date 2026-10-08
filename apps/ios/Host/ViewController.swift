@@ -193,7 +193,8 @@ final class ViewController: UIViewController {
   private func publishReducedMotion(_ enabled: Bool) {
     guard enabled != lastReducedMotion, let lynxView else { return }
     lastReducedMotion = enabled
-    lynxView.updateGlobalProps(with: ReducedMotion.globalProps(enabled: enabled))
+    // Dictionary 오버로드는 Lynx가 Bool을 숫자 1로 바꿔 JS의 `=== true`가 깨지므로 TemplateData로 보낸다.
+    lynxView.updateGlobalProps(with: ReducedMotion.templateData(enabled: enabled))
   }
 
   /// 앱이 켜진 채 알림을 누르면 JS에 알린다. JS는 이벤트를 받고 `takeOpened`로 목적지를 꺼낸다 —

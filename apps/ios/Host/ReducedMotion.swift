@@ -8,4 +8,9 @@ enum ReducedMotion {
   static func globalProps(enabled: Bool) -> [String: Any] {
     return [globalPropsKey: enabled]
   }
+
+  /// JS가 boolean을 받도록 bool literal 변환을 켠 TemplateData다.
+  static func templateData(enabled: Bool) -> LynxTemplateData {
+    return LynxTemplateData(dictionary: globalProps(enabled: enabled), useBoolLiterals: true)
+  }
 }
