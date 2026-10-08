@@ -11,10 +11,10 @@
   <application
     android:name=".DuruApplication"
     android:label="Duru"
-    android:icon="@drawable/app_icon"
+    android:icon="@mipmap/ic_launcher"
     android:allowBackup="false"
     android:enableOnBackInvokedCallback="true"
-    android:theme="@android:style/Theme.Material.Light.NoActionBar">
+    android:theme="@style/Theme.Duru">
     <service android:name=".DuruFirebaseMessagingService" android:exported="false">
       <intent-filter>
         <action android:name="com.google.firebase.MESSAGING_EVENT" />

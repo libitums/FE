@@ -70,6 +70,42 @@ iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽�
 - `configChanges`의 값 집합은 `devtools/android-bundle/host-config-changes.mjs`가 판정으로 고정한다(`pnpm test:android-bundle`): 11값 가운데 하나라도 빠지면 `config-missing`, `density` · `fontScale`을 선언하면 `config-forbidden`,
   그 밖의 값(`resourcesUnused` 포함)을 선언하면 `config-unlisted`. 값을 더하거나 뺄 때는 ADR과 그 함수를 함께 고친다.
 
+## 실행 화면과 런처 아이콘
+
+앱을 켤 때 시스템이 그리는 구간(API 30 이하의 시작 창 · API 31 이상의 시스템 스플래시 · Lynx가 첫 프레임을 그리기 전의 창)은 JS 스플래시와 같은 주황 한 면이고,
+런처 아이콘은 적응형이다([ADR-0049](../../docs/adr/0049-android-launch-appearance.md)). 전부 `app/src/main/res/`의 리소스와 매니페스트 `<application>`의 두 속성(`android:theme` · `android:icon`)이다 — `MainActivity`와 Gradle에는 이 일을 위한 코드가 없다.
+
+| 리소스 | 내용 |
+|---|---|
+| `values/colors.xml` | `libitum_color_brand_primary`(`#F46B18` — 디자인 토큰 `--libitum-color-brand-primary`의 사본)와 그것을 가리키는 별칭 둘: `launch_background`(창 배경 · 스플래시 배경) · `ic_launcher_background`(아이콘 배경 레이어) |
+| `values/` · `values-v27/` · `values-v31/`의 `themes.xml` | `Theme.Duru`. 창 배경과 투명 · 밝은 시스템 바 설정(`MainActivity.layoutEdgeToEdge`가 코드로 적는 값과 같다)을 테마에도 적어 `onCreate` 전의 창에 닿게 한다. API 27 속성(`windowLightNavigationBar`)은 `v27`부터, API 31 속성(`windowSplashScreenBackground` · `windowSplashScreenAnimatedIcon`)은 `v31`에만 둔다 |
+| `drawable/splash_icon_none.xml` | 전부 투명한 drawable. 시스템 스플래시에 아이콘을 두지 않는다 |
+| `mipmap-anydpi-v26/ic_launcher.xml` | `<adaptive-icon>` — 배경 `@color/ic_launcher_background`, 전경 `@mipmap/ic_launcher_foreground`. `<monochrome>` · `roundIcon` · API 25 이하 폴백은 없다(`minSdk` 26) |
+| `mipmap-{mdpi,hdpi,xhdpi,xxhdpi,xxxhdpi}/ic_launcher_foreground.png` | 108 · 162 · 216 · 324 · 432px RGBA. iOS `AppIcon.png` 전체를 캔버스의 80/108로 줄여 가운데 두고 사방을 투명으로 둔 **사본**이다 |
+
+- **토큰 색이 바뀌면 `colors.xml`의 값도 함께 바꾼다.** 어긋나면 `pnpm test:android-bundle`(= `pnpm verify`)이 실패한다(`host-launch-appearance.integration.test.mjs`의 HL2).
+- **`Theme.Duru`를 고칠 때는 세 파일을 함께 고친다.** 한정자끼리 스타일이 합쳐지지 않아 `values-v27` · `values-v31`의 것이 `values/`의 것을 통째로 대체한다. `-night` 변형은 두지 않는다.
+  어긋남(한 파일만 고침 · API 수준보다 낮은 한정자에 적은 속성 · 금지한 스플래시 속성 · `monochrome` 추가 등)은 `devtools/android-bundle/host-launch-appearance.mjs`의 판정이 같은 명령에서 잡는다. 값을 바꾸려면 ADR과 그 판정을 함께 고친다.
+- **적응형 아이콘은 진짜 레이어 분리가 아니다.** 원본이 배경까지 합쳐진 한 장뿐이라 그림 전체가 전경이고 배경은 단색이다. 한계와 디자이너에게 요청할 원본은 ADR-0049의 D5 · 「후속 과제」가 진다.
+- **API 31 이상에서는 시작 구간의 상태바 아이콘이 흰색이었다가 앱이 뜬 뒤 어두운 색으로 한 번 바뀐다.** 시스템 스플래시의 아이콘 명암은 플랫폼이 스플래시 배경색으로 정해 테마로 바꿀 수 없다(API 37 에뮬레이터 실측 — 같은 ADR의 「이 작업이 만든 변화」).
+  **알고 받아들인 후퇴다(사용자 결정, 2026-10-06)** — 그 구간의 색 쌍 대비가 20.12:1에서 3.016:1로 낮아졌고 시계 글자는 텍스트 기준 4.5:1에 못 미친다. 다음 작업(어두운 화면 위에서 상태바 아이콘이 가려지는 문제의 화면별 전환)으로도 이 뒤집힘은 남는다 — 스플래시 표면은 검정 아이콘을 유지하는 것이 맞고, 없애려면 브랜드 주황 자체를 더 어둡게 해야 한다(디자인 결정).
+- **`Theme.Duru`는 `<application>`에 걸려 있어 `PushNotificationTapActivity`도 물려받는다.** 앱이 떠 있는 동안 알림을 눌러도 주황이 번쩍이는 프레임은 영상에서 관찰되지 않았다(API 37 에뮬레이터 — 한계는 [절차 문서](../../docs/e2e/android-launch-appearance.md)의 L11).
+- **리소스 검사는 `values` · `values-v27` · `values-v31`(과 `values-night*`)만 본다.** 다른 한정자(`values-v33` · `values-land` · `mipmap-anydpi-v33` · `drawable-v31` 등)로 테마 · 색 · 아이콘 · 스플래시 drawable을 더하면 검사가 놓친다 — 더하지 않거나, 더할 때 검사부터 넓힌다(ADR-0049 「후속 과제」 6).
+- **번들을 읽지 못하면 끝없는 주황 한 면이 보인다**(이 변경 전에는 회백색이었다). `debug` 빌드를 번들 서버 없이 띄웠을 때가 그렇다 — 스플래시가 길어진 것이 아니다.
+
+### 전경 PNG 다시 만들기
+
+iOS 앱 아이콘(`apps/ios/Host/Assets.xcassets/AppIcon.appiconset/AppIcon.png`)이 바뀌면 전경 다섯 장을 사람이 다시 만든다. 두 그림이 같은지 지키는 검사는 없다. macOS의 `swift`만 쓴다(CoreGraphics — ImageMagick · Pillow가 필요 없다). 저장소 루트에서:
+
+```sh
+swift apps/android/tools/generate-launcher-foreground.swift \
+  apps/ios/Host/Assets.xcassets/AppIcon.appiconset/AppIcon.png \
+  apps/android/app/src/main/res
+```
+
+밀도마다 `<밀도>: canvas …px, art …px, margin …px -> …/mipmap-<밀도>/ic_launcher_foreground.png` 한 줄을 낸다. 만든 뒤 `pnpm test:android-bundle`(HL3이 크기와 알파 채널을 본다)을 돌리고, 런처에서 마크가 잘리지 않는지는
+[Android 실행 시 색과 적응형 아이콘](../../docs/e2e/android-launch-appearance.md)의 L4로 본다. 마크만 있는 원본이 오면 이 스크립트가 아니라 레이어 파일을 교체한다(ADR-0049 D5).
+
 ## 준비
 
 - Android Studio, Android SDK Platform 36과 Build Tools 36.0.0 (`compileSdk` · `targetSdk` 36, `minSdk` 26)
@@ -232,6 +268,12 @@ safe 아래 값으로 자르기 · 음수와 밀도 불명은 0)을 확인하며
 **이 클래스는 에뮬레이터 전역 설정(야간 모드 · 화면 크기 · 밀도 · 글꼴 배율 · 회전 · 내비게이션 모드 오버레이)을 바꿨다 되돌린다.** 그래서 계측 일괄에서는 `notClass`로 빼고 따로 돌리며,
 Maestro · 다른 계측과 같은 기기에서 동시에 돌리지 않고, 중간에 죽었으면 되돌리기 명령을 한 번 더 돈다. 실행 줄 · 판정 · 되돌리기는
 [Android 화면 방향과 구성 변경](../../docs/e2e/android-orientation.md#계측-configurationchangetest--실행법)에 있고, 회전 · 다크 모드 · 크기 변경의 에뮬레이터 절차도 그 문서가 진다.
+계측 `LaunchAppearanceTest`(4건)는 실제 `MainActivity`에서 테마의 풀린 값(창 배경 `#F46B18` · 투명 바 · 밝은 상태바), 앱 아이콘이 `AdaptiveIconDrawable`이고 전경의 투명 여백이 80/108 배치와 맞는지 · `monochrome`이 없는지,
+API 31 이상의 스플래시 배경과 아이콘 속성, 띄운 뒤에도 밝은 바와 edge-to-edge가 유지되는지를 확인한다. 번들 · 전역 설정 변경 없이 계측 일괄에서 돈다.
+기대는 API 37에서 4건 통과, API 30에서 3건 통과 + 1건 건너뜀(스플래시 속성 — API 31 이상에서만 있다. 건너뜀은 통과로 세지 않는다).
+리소스 · 매니페스트의 판정과 토큰 색 대조는 `pnpm test:android-bundle`이, 패키지된 APK의 리소스(적응형 아이콘 · `Theme.Duru`의 v27 · v31 구성 · `app_icon` 없음)는
+`ANDROID_HOME=~/Library/Android/sdk node --test devtools/android-bundle/host-launch-appearance.artifacts.mjs`(먼저 `pnpm bundle:android`와 `./gradlew :app:assembleBundled`)가 본다.
+시스템이 실제로 그리는 것(콜드 스타트 프레임의 색 · 런처의 마스크)은 계측이 보지 못한다 — 에뮬레이터 절차는 [Android 실행 시 색과 적응형 아이콘](../../docs/e2e/android-launch-appearance.md)에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E

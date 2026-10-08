@@ -189,7 +189,8 @@ universal APK로 `aapt2`를 쓸 수도 있다: `java -jar "$BUNDLETOOL_JAR" buil
    A logcat -d | grep -i "Process $PKG.*died"                                                                                                          # 없다
    A shell pidof $PKG                                                                                                                                  # 프로세스가 살아 있다
    ```
-   스크린샷에 온보딩 첫 화면이 보인다(빈 화면 · 흰 화면이면 실패).
+   스크린샷에 온보딩 첫 화면이 보인다(온보딩 문구가 없는 화면이면 실패). **번들을 읽지 못한 화면은 흰색이 아니라 글자 없는 주황 한 면이다** — 창 배경이 주황으로 바뀌었다([ADR-0049](../adr/0049-android-launch-appearance.md) D6. 그 전에는 회백색 `#FAFAFA`였다).
+   주황 위에 흰 손글씨 로고가 써지는 화면은 JS 스플래시다 — 실패가 아니고 몇 초 뒤 다시 찍는다. 주황 한 면이 온보딩으로 넘어가지 않으면 실패다.
 2. **FCM 토큰**(새 Firebase 설정으로 실제 토큰이 나오는가). 같은 패키지 · 같은 디버그 키라 AAB 설치를 덮어쓴다 — **R1 · R2 · R5를 끝낸 뒤에** 돌린다:
    ```sh
    FCM_UDID=$E2E_UDID sh apps/android/test-live-fcm-token.sh        # 마지막 줄 OK (1 test)
@@ -203,7 +204,7 @@ universal APK로 `aapt2`를 쓸 수도 있다: `java -jar "$BUNDLETOOL_JAR" buil
 
 실제 소셜 로그인은 범위 밖이다. **인텐트가 새 앱에 닿고, 앱 선택 창이 없는지**만 본다.
 
-**이 수동 절차도 AAB 설치 상태에서 한다.** `debug` 빌드(R3 FCM · 푸시, R5 픽스처, R8의 자체 설치 실행기)가 같은 패키지를 덮어쓴 뒤라면 로컬 번들이 없어(번들 서버도 없다) **빈 흰 화면**이 나온다 — 판정할 수 없다.
+**이 수동 절차도 AAB 설치 상태에서 한다.** `debug` 빌드(R3 FCM · 푸시, R5 픽스처, R8의 자체 설치 실행기)가 같은 패키지를 덮어쓴 뒤라면 로컬 번들이 없어(번들 서버도 없다) **글자 없는 주황 한 면**이 끝까지 남는다(ADR-0049 전에는 빈 흰 화면이었다. 스플래시가 길어진 것이 아니다 — [Android 실행 시 색과 적응형 아이콘](android-launch-appearance.md)의 L8) — 판정할 수 없다.
 `A shell pm path $PKG`에 `split_config.*`가 보이지 않으면(`base.apk` 하나면 `debug` 설치다) 「AAB 만들고 분할 설치」 3 · 4로 AAB를 다시 설치하고 시작한다. 같은 패키지 · 같은 디버그 키라 덮어쓰면 된다.
 
 ```sh
@@ -359,17 +360,18 @@ E2E_UDID=$E2E_UDID sh apps/android/test-storage-restart.sh
 2026-10-05에 두 조건을 맞추자 `c5d38608` · API 37 · targetSdk 36 · 재빌드한 AAR의 `debug` 빌드에서 `OK (1 test)`였다. **이 테스트의 실패를 예상된 결과로 넘기지 않는다.**
 
 **③ `ConfigurationChangeTest`(8건)도 따로 돌린다.** 이 클래스는 번들 서빙과 `-e bundleUrl`을 요구하고 야간 모드 · 화면 크기 · 밀도 · 글꼴 배율 · 회전 · 내비게이션 모드 오버레이 같은 에뮬레이터 전역 설정을 바꾼다.
-`notClass`에서 빼고 ①을 돌리면 `Tests run: 47, Failures: 6`이 된다(2026-10-05, `396afb2b` · API 37 — 6건 모두 `precondition: instrumentation argument bundleUrl is missing`, 기존 40건은 통과. 그때 이 클래스는 7건이었고 일괄은 40건이었다 — 클래스가 8건, 일괄이 43건이 된 뒤의 수는 다시 재지 않았다).
+`notClass`에서 빼고 ①을 돌리면 `Tests run: 47, Failures: 6`이 된다(2026-10-05, `396afb2b` · API 37 — 6건 모두 `precondition: instrumentation argument bundleUrl is missing`, 기존 40건은 통과. 그때 이 클래스는 7건이었고 일괄은 40건이었다 — 클래스가 8건, 일괄이 47건이 된 뒤의 수는 다시 재지 않았다. **이 `47`은 아래 ①의 지금 기대값 `OK (47 tests)`와 숫자만 같다** — 그때는 40 + 7이었고 실패 6건이 있었다).
 실행법 · 통과 기준(API 37은 8 통과, API 30에서는 6 통과 + 2 건너뜀) · 되돌리기는 [Android 화면 방향과 구성 변경](android-orientation.md#계측-configurationchangetest--실행법)이 진다(여기에 되풀이하지 않는다).
 
-**통과**: 위 Maestro 전부 통과(`speech`는 AOSP 이미지가 없으면 미실행으로 이유를 적는다 — 통과로 쓰지 않는다) · 계측 ①은 **`OK (43 tests)`** · 계측 ②는 `OK (1 test)` · 두 스크립트 `OK`.
-**`OK (N tests)`의 N은 건너뛴 테스트를 포함한 수다.** 계측 ①의 43은 **통과 40 + 건너뜀 3**이다(2026-10-06, `bc9a091e` · API 37 Google Play 에뮬레이터에서 위 명령에 `-r`을 더해 코드를 센 결과 — `0`이 40개, `-4`가 3개, `-2` 없음).
+**통과**: 위 Maestro 전부 통과(`speech`는 AOSP 이미지가 없으면 미실행으로 이유를 적는다 — 통과로 쓰지 않는다) · 계측 ①은 **`OK (47 tests)`** · 계측 ②는 `OK (1 test)` · 두 스크립트 `OK`.
+**`OK (N tests)`의 N은 건너뛴 테스트를 포함한 수다.** 계측 ①의 47은 **통과 44 + 건너뜀 3**이다(2026-10-06, `dfbe03cb` · API 37 에뮬레이터(Pixel_8 AVD)에서 위 명령에 `-r`을 더해 코드를 센 결과 — `0`이 44개, `-4`가 3개, `-2` 없음. 그 앞의 기준선 43 = 통과 40 + 건너뜀 3은 `bc9a091e`에서 같은 방법으로 셌다).
 건너뛰는 셋은 `LiveFcmTokenTest`의 2건(`#bridgeReturnsARealFcmRegistration` · `#relayGetsNewTokenAfterDeleteToken` — `-e liveFcm true`가 없으면 건너뛴다)과 `SpeechRecognitionModuleTest#missingRecognizerSettlesWithoutOpeningMicrophone`(AOSP 이미지 전제)이다.
 `PushTokenRefreshHostTest` 2건은 일괄에 들어가 통과한다(번들 · Firebase 없이 돈다 — [Android 푸시 호스트 E2E](android-push-notifications.md#계측-pushtokenrefreshhosttest--실행법)).
+`LaunchAppearanceTest` 4건도 일괄에 들어가 API 37에서 통과한다(번들 · 전역 설정 변경 없이 돈다. API 30 이하에서는 스플래시 속성 1건이 건너뛰어져 건너뜀 수가 하나 는다 — [ADR-0049](../adr/0049-android-launch-appearance.md)).
 건너뜀 수가 3이 아니면(이미지 종류에 따라 음성 인식 케이스가 돌 수 있다) `-r`로 다시 돌려 이름을 적는다.
 이 수의 내력: `OK (40 tests)`(2026-10-05 `9b15f548` · API 37에서 위 명령의 내용 그대로 — 그때는 `$A` 문자열 변수 형태를 bash에서 썼다. `ConfigurationChangeTest`를 `notClass`에 더한 뒤의 명령으로 2026-10-05 `396afb2b` · 2026-10-06 `8e16f6b5` · `94097ecb` · `4f3b2927`에서도 같았다)
-→ `OK (42 tests)`(2026-10-06 `704d56fc` — `PushTokenRefreshHostTest` 2건이 더해졌다) → `OK (43 tests)`(`bc9a091e` — `LiveFcmTokenTest`에 건너뛰는 케이스 1건이 더해졌다).
-**이 문서와 다른 절차 문서의 날짜 붙은 `OK (40 tests)` 기록은 그때의 결과다 — 지금의 기대값이 아니다.**
+→ `OK (42 tests)`(2026-10-06 `704d56fc` — `PushTokenRefreshHostTest` 2건이 더해졌다) → `OK (43 tests)`(`bc9a091e` — `LiveFcmTokenTest`에 건너뛰는 케이스 1건이 더해졌다) → `OK (47 tests)`(2026-10-06 `dfbe03cb` — `LaunchAppearanceTest` 4건이 더해졌다).
+**이 문서와 다른 절차 문서 · ADR의 날짜 붙은 `OK (40 tests)` · `OK (43 tests)` 기록은 그때의 결과다 — 지금의 기대값이 아니다.**
 **`adb shell am instrument`는 테스트가 실패해도 종료 코드가 0이다.** 종료 코드로 판정하지 말고 출력 마지막의 `OK (N tests)`(실패면 `FAILURES!!!`)로 판정한다.
 실패 · 건너뜀은 이름과 사유를 결과 표에 적는다(`pnpm test:e2e:android:social:live` · `:talkback`은 실제 계정 · TalkBack이 필요해 이 항목에 넣지 않는다).
 
