@@ -96,9 +96,3 @@
   height: var(--libitum-icon-size-sm);
   flex-shrink: 0;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .ui-lynx-learning-unit:active .ui-lynx-learning-unit-visual {
-    transform: none;
-  }
-}

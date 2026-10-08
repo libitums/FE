@@ -1,5 +1,6 @@
 import type {} from "@lynx-js/react";
 
+import { useMotion } from "../motion/MotionProvider";
 import {
   getRoundButtonContract,
   getRoundButtonForegroundColor,
@@ -7,7 +8,8 @@ import {
 } from "./round-button.contract";
 
 export function RoundButton(props: RoundButtonProps) {
-  const contract = getRoundButtonContract(props);
+  const motion = useMotion();
+  const contract = getRoundButtonContract(props, motion);
   const foregroundColor = getRoundButtonForegroundColor(props);
   const iconContent = props.icon.replace(/currentColor/g, foregroundColor);
 
@@ -20,6 +22,7 @@ export function RoundButton(props: RoundButtonProps) {
     <view
       className={contract.className}
       data-testid="ui-lynx-round-button"
+      data-motion={motion === "reduced" ? "reduced" : undefined}
       data-variant={contract.variant}
       data-size={contract.size}
       data-disabled={props.disabled ? "true" : "false"}

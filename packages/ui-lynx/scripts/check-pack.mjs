@@ -184,6 +184,12 @@ const required = [
   "package/dist/typewriter/index.d.ts",
   "package/dist/typewriter/useTypewriter.js",
   "package/dist/typewriter/useTypewriter.d.ts",
+  "package/dist/motion/index.js",
+  "package/dist/motion/index.d.ts",
+  "package/dist/motion/MotionProvider.jsx",
+  "package/dist/motion/MotionProvider.d.ts",
+  "package/dist/motion/motion.contract.js",
+  "package/dist/motion/motion.contract.d.ts",
 ];
 
 for (const { directory, component, modules, css } of components) {

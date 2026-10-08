@@ -1,17 +1,23 @@
 import type {} from "@lynx-js/react";
 
+import { motionClassName } from "../motion/motion.contract";
+import { useMotion } from "../motion/MotionProvider";
 import { getPageIndicatorModel } from "./page-indicator.contract";
 import type { PageIndicatorProps } from "./page-indicator.contract";
 
 export function PageIndicator(props: PageIndicatorProps) {
-  const model = getPageIndicatorModel(props);
+  const motion = useMotion();
+  const model = getPageIndicatorModel(props, motion);
 
   if (!model.shouldRender || model.accessibilityLabel === null) return null;
 
   return (
     <view
-      className="ui-lynx-page-indicator"
+      className={["ui-lynx-page-indicator", motionClassName("ui-lynx-page-indicator", motion)]
+        .filter(Boolean)
+        .join(" ")}
       data-testid="ui-lynx-page-indicator"
+      data-motion={motion === "reduced" ? "reduced" : undefined}
       data-count={String(model.pageCount)}
       data-current={String(model.currentPage)}
       accessibility-element={!props.decorative}

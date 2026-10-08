@@ -2,6 +2,7 @@ import { FirstUnitGuide } from "../../components/FirstUnitGuide";
 import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
+import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import arrowUp02 from "@libitums/icons/lynx/arrow-up-02";
 import { color } from "@libitums/design-tokens";
@@ -32,9 +33,10 @@ export function PrologueChatScreen({
   chat,
   onComplete,
   onBack,
-  reducedMotion = false,
+  reducedMotion: reducedMotionProp,
 }: PrologueChatScreenProps): ReactNode {
   const copy = useUiCopy();
+  const reducedMotion = resolveReducedMotion(reducedMotionProp, useMotion());
   // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다.
   useScreenBack(onBack);
   const guide = useFirstUnitGuide("messenger", guided);

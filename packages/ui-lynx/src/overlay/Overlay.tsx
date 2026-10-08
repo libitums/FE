@@ -1,4 +1,5 @@
 import type { OverlayProps } from "./overlay.contract";
+import { useMotion } from "../motion/MotionProvider";
 import { getOverlayContract } from "./overlay.contract";
 
 type OverlayLayerProps = {
@@ -28,7 +29,7 @@ function OverlayLayer(props: OverlayLayerProps & { readonly blur: "off" | "on" }
 }
 
 export function Overlay(props: OverlayProps) {
-  const contract = getOverlayContract(props);
+  const contract = getOverlayContract(props, useMotion());
   const handleDismiss = () => {
     "background only";
     if (contract.interactive) props.binddismiss?.();

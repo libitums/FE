@@ -1,6 +1,7 @@
 import { CallLineBubble } from "../../components/CallCaller";
 import minseoProfile from "../../assets/characters/minseo-profile.jpg";
 import { useEffect, useState } from "@lynx-js/react";
+import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { playAudio, stopAudio } from "../../lib/audio";
 import { playSound, stopRing } from "../../lib/sound-effects";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
@@ -38,9 +39,10 @@ export function PhoneCallScreen({
   exitTo = "journey",
   onComplete,
   onExit,
-  reducedMotion = false,
+  reducedMotion: reducedMotionProp,
 }: PhoneCallScreenProps) {
   const copy = useUiCopy();
+  const reducedMotion = resolveReducedMotion(reducedMotionProp, useMotion());
   const exitLabel = specialUnitExitLabel(exitTo, copy);
   const [session, setSession] = useState(() => initialPhoneCallSessionState(completionStatus));
   const [subtitleReplayKey, setSubtitleReplayKey] = useState(0);

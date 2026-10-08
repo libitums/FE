@@ -4,6 +4,7 @@ import lock from "@libitums/icons/lynx/lock";
 import tick from "@libitums/icons/lynx/tick";
 import { color } from "@libitums/design-tokens";
 
+import { useMotion } from "../motion/MotionProvider";
 import {
   getLearningUnitContract,
   type LearningUnitProps,
@@ -16,7 +17,8 @@ const narrativeRing =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M70.074 93.049 A47.5 47.5 0 1 1 93.049 70.074" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>';
 
 export function LearningUnit(props: LearningUnitProps) {
-  const contract = getLearningUnitContract(props);
+  const motion = useMotion();
+  const contract = getLearningUnitContract(props, motion);
   const icon =
     contract.iconKind === "lock" ? lock : contract.iconKind === "tick" ? tick : props.icon;
   const iconContent = icon.replace(/currentColor/g, contract.iconColor);
@@ -36,6 +38,7 @@ export function LearningUnit(props: LearningUnitProps) {
       className={contract.className}
       data-testid={contract.testId}
       data-status={contract.status}
+      data-motion={motion === "reduced" ? "reduced" : undefined}
       data-narrative={contract.narrative}
       data-focused={contract.focused ? "true" : "false"}
       accessibility-element={true}
