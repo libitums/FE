@@ -6,8 +6,11 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Build;
 import android.os.Looper;
 import android.view.Window;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -25,6 +28,7 @@ import java.util.Map;
 
 public final class MainActivity extends Activity {
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
+  private Runnable backTimeout;
   private Callback authCallback;
   private String authScheme;
   private boolean leftForAuthentication;
@@ -33,6 +37,8 @@ public final class MainActivity extends Activity {
   PushNotificationController pushNotifications;
   private LynxView lynxView;
   private Map<String, Object> lastSafeAreaInsets;
+  private final SystemBackGate backGate = new SystemBackGate();
+  private OnBackInvokedCallback backCallback;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -60,6 +66,7 @@ public final class MainActivity extends Activity {
     builder.registerModule("AppReviewModule", AppReviewModule.class, this);
     pushNotifications = new PushNotificationController(this);
     builder.registerModule("PushNotificationModule", PushNotificationModule.class, pushNotifications);
+    builder.registerModule("SystemBackModule", SystemBackModule.class, this);
     DebugSupport.configure(builder);
     lynxView = builder.build(this);
     lynxView.addLynxViewClient(new LynxViewClient() {
@@ -75,6 +82,59 @@ public final class MainActivity extends Activity {
     publishSafeAreaInsets();
     pushNotifications.captureOpened();
     lynxView.renderTemplateUrl(templateUrl, "");
+    registerBackCallback();
+  }
+
+  // API 33+ goes through the back-invoked dispatcher; 26-32 uses onBackPressed().
+  private void registerBackCallback() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
+    backCallback = this::handleSystemBack;
+    getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+        OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+  }
+
+  @SuppressWarnings("deprecation")
+  @Override public void onBackPressed() {
+    handleSystemBack();
+  }
+
+  // Executes the gate's decision; the decision itself lives in SystemBackGate.
+  private void handleSystemBack() {
+    switch (backGate.press()) {
+      case FINISH:
+        finish();
+        break;
+      case DISPATCH:
+        final String token = backGate.pendingToken();
+        JavaOnlyArray args = new JavaOnlyArray();
+        args.pushString(token);
+        lynxView.sendGlobalEvent("systemBackPressed", args);
+        backTimeout = () -> resolveBack(backGate.timeout(token));
+        mainHandler.postDelayed(backTimeout, SystemBackGate.ACK_TIMEOUT_MS);
+        break;
+      case IGNORE:
+      default:
+        break;
+    }
+  }
+
+  private void resolveBack(SystemBackGate.Resolution resolution) {
+    if (resolution == SystemBackGate.Resolution.MOVE_TO_BACK && !isFinishing() && !isDestroyed()) {
+      moveTaskToBack(true);
+    }
+  }
+
+  // Called by SystemBackModule from the JS thread; the gate is main-thread only.
+  void onSystemBackReady() {
+    mainHandler.post(() -> {
+      if (!isFinishing() && !isDestroyed()) backGate.markReady();
+    });
+  }
+
+  void onSystemBackResponse(String token, String outcome) {
+    mainHandler.post(() -> {
+      if (!isFinishing() && !isDestroyed()) resolveBack(backGate.respond(token, outcome));
+    });
   }
 
   /**
@@ -160,6 +220,14 @@ public final class MainActivity extends Activity {
   }
 
   @Override protected void onDestroy() {
+    if (backTimeout != null) {
+      mainHandler.removeCallbacks(backTimeout);
+      backTimeout = null;
+    }
+    if (backCallback != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
+      backCallback = null;
+    }
     finishWebAuthentication("failed", null);
     if (audioPlayback != null) audioPlayback.stop();
     if (speechRecognition != null) speechRecognition.destroy();

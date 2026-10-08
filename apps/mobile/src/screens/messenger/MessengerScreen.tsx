@@ -6,6 +6,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { MessageBubble } from "./MessageBubble";
 import { MessengerChoices } from "./MessengerChoices";
@@ -61,6 +62,12 @@ export function MessengerScreen({
   const messages = visibleMessengerMessages(conversation, session);
   const reply = currentMessengerReply(conversation, session);
   const typed = composedText(composer);
+  const handleExit = () => {
+    "background only";
+    onExit(messengerExitOutcome(session));
+  };
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(handleExit);
   // 답장마다 첫 시도의 정오입니다 — 틀린 뒤 다시 쳐서 맞혀도 그 답장은 오답으로 남습니다.
   // 학습 완료 화면이 이것으로 실수 수를 셉니다.
   const [results, setResults] = useState<readonly AnswerResult[]>([]);
@@ -115,7 +122,7 @@ export function MessengerScreen({
           accessibility-element={true}
           accessibility-traits="button"
           accessibility-label={exitLabel}
-          bindtap={() => onExit(messengerExitOutcome(session))}
+          bindtap={handleExit}
         >
           <RoundButton
             accessibilityLabel={exitLabel}

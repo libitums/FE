@@ -12,6 +12,7 @@ import { useTypewriter } from "@libitums/ui-lynx/typewriter";
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playAudio, stopAudio } from "../../lib/audio";
 import { nextEpisodeNarrativeBeat, type EpisodeNarrative } from "./episode-narrative";
@@ -103,6 +104,8 @@ export function EpisodeNarrativeScreen({
     if (audioSource !== undefined) stopAudio();
     onExit();
   };
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다(오디오 정지 포함).
+  useScreenBack(handleExit);
 
   return (
     // 화면 어디를 눌러도 넘어갑니다 — 탭은 자식에서 이 루트까지 올라옵니다. 덮는 층에

@@ -45,6 +45,7 @@ import type { Screen } from "./nav-state";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useOpenedPush } from "./use-opened-push";
+import { useSystemBack } from "./use-system-back";
 import { useJourneyProgress } from "./use-journey-progress";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
 import type { AppProps } from "./app-props";
@@ -213,6 +214,8 @@ export function AppSession({
   // iOS 기본 탭바와 같은 형태입니다.
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
   useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
+  // Android 시스템 뒤로가기는 화면의 닫기와 같은 경로를 탑니다(ADR-0043).
+  useSystemBack(nav, dispatch);
 
   const screenNow = currentScreen(nav);
   const isPhoneCall = screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call";

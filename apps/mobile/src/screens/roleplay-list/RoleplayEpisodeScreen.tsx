@@ -3,6 +3,7 @@ import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { RoleplayCard } from "./RoleplayCard";
 import type { RoleplayEpisodeScreenProps } from "./roleplay-list.contract";
 
@@ -19,6 +20,8 @@ export function RoleplayEpisodeScreen({
   onExit,
 }: RoleplayEpisodeScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(onExit);
   return (
     <view className="roleplay-episode-screen">
       {/* 머리 — 나가기가 첫 자식입니다(낭독 순서 `나가기 → 에피소드 → 항목들`). */}

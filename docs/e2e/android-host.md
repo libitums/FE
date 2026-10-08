@@ -17,6 +17,7 @@ Android SDK 35, JDK 17, Android 에뮬레이터와 `apps/android` Gradle 프로�
 | A5 | 소셜 버튼에서 인증 창을 열고 `duru://auth-callback`으로 복귀 | Android 브리지의 `completed` 콜백 뒤 PKCE 교환을 수행. [Maestro 절차](android-social-login.md) 참조 |
 | A6 | 작은 화면에서 버튼 가림·진입 문구 대비·접근성 클릭 확인 | 고정 버튼과 소셜 수단을 조작할 수 있고, 안내 문구를 읽을 수 있음. Android 접근성 트리의 버튼 이름과 `ACTION_CLICK`을 확인 |
 | A7 | 로그인 화면의 이용약관·개인정보처리방침 링크 열기 | 각 링크가 호스트에 고정된 HTTPS 문서를 Custom Tab으로 열고 뒤로가기로 로그인 화면에 복귀 |
+| A8 | 시스템 뒤로가기(제스처·3버튼)를 층·쌓인 화면·탭 루트·여정 맵·번들 로드 전에서 누르기 | 층만 닫힘 → 화면의 닫기와 같음 → 여정 탭 → 앱을 떠남 순으로 동작하고, JS 준비 전에는 Activity가 끝남. 항목과 실행 결과는 [시스템 뒤로가기 절차](android-system-back.md)의 B1~B9가 진다 |
 
 ## 2026-10-01 실행 결과
 

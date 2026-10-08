@@ -7,6 +7,7 @@ import { prologueLineSeconds } from "./prologue-call";
 import { CallLineBubble } from "../../components/CallCaller";
 import { CallControls } from "../../components/CallControls";
 import { CallScreen } from "../../components/CallScreen";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound, stopRing } from "../../lib/sound-effects";
 import { usePrologueCallPlayback } from "./usePrologueCallPlayback";
@@ -58,6 +59,8 @@ export function PrologueCallScreen({
     stop();
     onBack();
   };
+  // 시스템 뒤로가기 = 보이는 뒤로와 같은 함수입니다(벨 · 재생 정지 포함).
+  useScreenBack(handleBack);
 
   const handleAccept = () => {
     "background only";

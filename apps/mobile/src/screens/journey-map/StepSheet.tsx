@@ -1,5 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
 import { stepSheetProgress } from "./journey-map-sheet";
@@ -37,6 +38,8 @@ export function StepSheet({
   onClose,
 }: StepSheetProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 가림막 탭(`onClose`)과 같은 함수입니다. 말풍선이 서 있는 동안만 등록됩니다.
+  useLayerBack(onClose);
   const progress = stepSheetProgress(completedActivityCount, totalActivityCount, copy);
 
   const handleStart = (): void => {

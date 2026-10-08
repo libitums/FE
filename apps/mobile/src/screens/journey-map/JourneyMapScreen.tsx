@@ -10,12 +10,13 @@ import { MessengerMapItem } from "./MessengerMapItem";
 import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
 import { EpisodeFinalMapItem } from "./EpisodeFinalMapItem";
+import { JourneyMapEpisodeHeader } from "./JourneyMapEpisodeHeader";
 import { StepSheet } from "./StepSheet";
 import { episodeSectionId, screenId, scrollId } from "./journey-map-scroll";
 import { useCurrentEpisode } from "./useCurrentEpisode";
 import { useStepSheet } from "./useStepSheet";
+import { useLayerBack } from "../../lib/use-back-handler";
 import { useScreenLayer } from "../../lib/use-screen-layer";
-import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
 import { EpisodePendingSection } from "./EpisodePendingSection";
 import {
   findStep,
@@ -23,7 +24,6 @@ import {
   stepStatusAt,
   learningFormsForStep,
   journeyMapSections,
-  completedMapItemCount,
   mapItemStatus,
   journeyStepOrdinal,
   type JourneyMapItem,
@@ -92,6 +92,8 @@ export function JourneyMapScreen({
   // 말풍선이 열린 동안 셸의 전역 머리(칩 · 알림 버튼)도 가려야 합니다 — 전에는 머리가 이
   // 화면 안에 있어 아래 맵 가림과 함께 가렸습니다.
   useScreenLayer(openStep !== undefined || guide.visible, onLayerChange);
+  // 시스템 뒤로가기: 첫 유닛 안내 가림막이 떠 있으면 안내만 넘깁니다(스텝 말풍선은 `StepSheet`가 등록합니다).
+  useLayerBack(guide.visible ? guide.dismiss : null);
 
   // 진행의 출처 여섯을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
   const progress = {
@@ -256,21 +258,7 @@ export function JourneyMapScreen({
           <Overlay scope="area" />
         </view>
       ) : null}
-      <view className="journey-map-screen-episode-header">
-        {headerSection?.episode.kind === "pending" ? (
-          <view className="episode-pending-card">
-            <text className="episode-pending-card-label">{headerSection.episode.label}</text>
-            <text className="episode-pending-card-title">{headerSection.episode.title}</text>
-          </view>
-        ) : headerSection === undefined ? null : (
-          <EpisodeHeader
-            episodeLabel={headerSection.episode.label}
-            title={headerSection.episode.title}
-            completedUnitCount={completedMapItemCount(headerSection.items, progress)}
-            totalUnitCount={headerSection.items.length}
-          />
-        )}
-      </view>
+      <JourneyMapEpisodeHeader section={headerSection} progress={progress} />
 
       {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식입니다. */}
       {openStep === undefined ? null : (

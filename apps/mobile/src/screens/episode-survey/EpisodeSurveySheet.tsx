@@ -6,6 +6,7 @@ import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 
 import { feedbackRatings } from "../../lib/feedback-api";
 import type { FeedbackRating } from "../../lib/feedback.contract";
+import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 
 import "./episode-survey-sheet.css";
@@ -25,6 +26,8 @@ export function EpisodeSurveySheet({
   onSkip,
 }: EpisodeSurveySheetProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 닫는 길 넷과 같은 건너뛰기입니다. 설문이 서 있는 동안만 등록됩니다.
+  useLayerBack(onSkip);
   return (
     <BottomSheet
       title={copy.feedback.survey.title}

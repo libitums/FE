@@ -3,8 +3,31 @@
 `apps/mobile`의 Lynx 번들을 Android `LynxView` 하나에서 실행한다. 지금은 이미지·HTTP
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
 `LegalDocumentModule`·`AudioPlaybackModule`·`CompletionAnnouncementModule`·
-`SpeechRecognitionModule`·`HandwritingTraceModule`·`AppReviewModule`을 제공한다. 네이티브 기능 전체의
+`SpeechRecognitionModule`·`HandwritingTraceModule`·`AppReviewModule`·`SystemBackModule`을
+제공한다. 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
+
+## 시스템 뒤로가기
+
+시스템 뒤로가기(제스처·3버튼)는 Activity를 바로 끝내지 않고 Lynx 화면에 먼저 묻는다
+([ADR-0043](../../docs/adr/0043-android-system-back.md)). `MainActivity`가 누름마다
+`systemBackPressed` 전역 이벤트를 보내고, JS가 `SystemBackModule.respond`로 답한다.
+
+| 상황 | 동작 |
+|---|---|
+| 열린 확인창·시트·모달이 있다 | 그 층만 닫힌다 |
+| 쌓인 화면 | 그 화면의 보이는 닫기를 누른 것과 같다 |
+| 롤플레이·설정 탭 루트 | 여정 탭으로 간다 |
+| 여정 맵, 뒤로 수단이 없는 화면 | 앱을 백그라운드로 보낸다(`moveTaskToBack`). 다시 열면 같은 화면이다 |
+| JS가 500ms 안에 답하지 않는다 | 앱을 백그라운드로 보낸다 |
+| JS가 아직 준비되지 않았다(번들 로드 전·로드 실패) | Activity를 끝낸다(`finish`) |
+
+JS의 준비 신호(`SystemBackModule.ready`)는 에뮬레이터 실측에서 시작 뒤 약 2.2초에 왔다. 그 전의
+뒤로가기는 앱을 끝낸다. 판정은 Android 의존이 없는 `SystemBackGate`가 하고 `MainActivity`는
+실행만 한다. API 33 이상은 `OnBackInvokedCallback`, 26~32는 `onBackPressed()`를 쓴다.
+
+알려진 문제: 3버튼 내비게이션에서 하단 탭 바가 시스템 내비게이션 버튼과 겹쳐 그려진다.
+뒤로가기와 무관한 기존 문제이며 별도 bugfix로 진행한다.
 
 ## 준비
 
@@ -99,6 +122,10 @@ Maestro 절차는 [Android 평점 요청 검증](../../docs/e2e/android-app-revi
 `PushNotificationModuleTest`는 브리지·알림 채널·목적지 일회성 소비를 확인한다.
 Maestro의 권한·설정·알림 탭 절차는
 [Android 푸시 검증](../../docs/e2e/android-push-notifications.md)에 있다.
+`SystemBackGateTest`는 시스템 뒤로가기의 판정을 확인한다. 준비 전 누름의 종료, 대기 중
+재누름 무시, `handled`·`leave` 응답, 500ms 무응답과 모르는 응답의 처리가 대상이며
+`./gradlew testDebugUnitTest`로 실행한다. 실제 Activity에서의 에뮬레이터 절차는
+[Android 시스템 뒤로가기 검증](../../docs/e2e/android-system-back.md)에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E

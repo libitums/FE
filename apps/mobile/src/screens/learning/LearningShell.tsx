@@ -10,6 +10,7 @@ import { LearningSessionHeader } from "./LearningSessionHeader";
 import type { LearningForm } from "../../lib/learning-form";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
+import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
@@ -128,6 +129,10 @@ export function LearningShell({
       onExit();
     }
   };
+
+  // 시스템 뒤로가기: 확인창이 떠 있으면 그것만 닫고(`stay`), 아니면 `×`와 같은 함수입니다.
+  useScreenBack(handleExit);
+  useLayerBack(exitAsked ? () => handleExitAction("stay") : null);
 
   const handleAction = () => {
     "background only";

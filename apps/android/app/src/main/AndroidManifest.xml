@@ -13,6 +13,7 @@
     android:label="Duru"
     android:icon="@drawable/app_icon"
     android:allowBackup="false"
+    android:enableOnBackInvokedCallback="true"
     android:theme="@android:style/Theme.Material.Light.NoActionBar">
     <service android:name=".DuruFirebaseMessagingService" android:exported="false">
       <intent-filter>

@@ -1,6 +1,7 @@
 import arrowDown03 from "@libitums/icons/lynx/arrow-down-03";
 import { color } from "@libitums/design-tokens";
 import { Overlay } from "@libitums/ui-lynx/overlay";
+import { useLayerBack } from "../lib/use-back-handler";
 import { useUiCopy } from "../lib/ui-copy";
 import type { FirstUnitGuideStep } from "./first-unit-guide";
 import "./first-unit-guide.css";
@@ -18,6 +19,8 @@ export function FirstUnitGuide({
     "background only";
     onDismiss();
   };
+  // 시스템 뒤로가기 = 아무 데나 탭과 같은 함수입니다. 안내가 서 있는 동안만 등록됩니다.
+  useLayerBack(handleDismiss);
   return (
     <view
       className="first-unit-guide"

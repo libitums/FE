@@ -11,6 +11,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
+import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { journeyStatSlotCount, type JourneyStatKind, type JourneyStatTrack } from "./journey-stat";
 
@@ -72,6 +73,8 @@ export function JourneyStatModal({
     "background only";
     onClose();
   };
+  // 시스템 뒤로가기 = 보이는 닫기와 같은 함수입니다. 모달이 서 있는 동안만 등록됩니다.
+  useLayerBack(handleClose);
 
   return (
     <view

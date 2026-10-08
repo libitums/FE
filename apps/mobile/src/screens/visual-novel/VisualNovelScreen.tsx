@@ -5,6 +5,7 @@ import { useReducer, useState } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { DialoguePanel } from "./DialoguePanel";
 import { VisualNovelScene } from "./VisualNovelScene";
@@ -70,6 +71,8 @@ export function VisualNovelScreen({
     "background only";
     onExit(visualNovelExitOutcome(progress), beat.id);
   };
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(handleExit);
 
   return (
     <view

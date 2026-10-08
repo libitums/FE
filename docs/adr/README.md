@@ -88,6 +88,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | **학습 진행 · 연속 학습 · 트로피의 서버 저장** ⟨2026-09-30⟩ | **제안** (`learning_progress` · `learning_days` + RPC 넷 · 불러오면 합치고 못 불러왔으면 저장 안 함 · 연속 = 활동을 끝낸 날 · 트로피 = 끝낸 에피소드 수, 진행에서 파생) | [0035](0035-learning-progress-and-streak-on-server.md) — ADR-0007 D1의 「진행은 영속하지 않는다」를 부분 대체 |
 | **사용자 피드백 (설정의 보내기 · 에피소드 끝 설문 · 앱스토어 평점 요청)** ⟨2026-09-30⟩ | **제안** (`feedback` 표 + `submit_feedback` · 연속 모달 다음 설문 · 별점 4 이상이면 설치당 한 번 평점 창) — 세부는 기본값, 사용자 확인 전 | [0036](0036-user-feedback-survey-and-app-review.md) |
 | 라우팅 | 결정 (전환 소유 + **나가는 수단의 목적지**) | [0007](0007-app-internals-state-routing-data-errors.md) D3·**D6** |
+| **Android 시스템 뒤로가기 (판정 순서 · 화면과 층의 등록 · 호스트 프로토콜 · 떠나는 방식)** ⟨2026-10-05⟩ | 결정 (층 > 화면의 닫기 > 여정 탭 > 떠남 · 닫기 함수는 소유자가 등록 · 응답 대기 500ms · 떠남은 `moveTaskToBack`, JS 미준비만 `finish`) — 세부 기본값 셋이 사용자 확인 전 | [0043](0043-android-system-back.md) — [0007](0007-app-internals-state-routing-data-errors.md) D3 · D6을 바꾸지 않는다(`NavAction` 불변, 적용 기록). 화면별 동작의 전수는 이 표도 ADR도 안 센다 — 훑기는 `git grep`이다. ⚠ 실제 JS 무응답과 TalkBack은 실기 미확인 |
 | 에러 경계 | 결정 | [0007](0007-app-internals-state-routing-data-errors.md) |
 | **제품 분석 전송 (PostHog · 스레드 경계 · 익명 식별)** | **제안** (sink 여섯을 `@posthog/core` Lynx 어댑터로 · background 전용 · 실행마다 메모리 익명 ID · `flushAt: 1`) — 기본값 여섯이 사용자 확인 전 | [0029](0029-product-analytics-posthog.md) — 전송은 [0007](0007-app-internals-state-routing-data-errors.md) D2의 「클라이언트 한 파일」 밖(나가기만 한다). 이벤트 카탈로그는 이 표가 아니라 `lib/analytics.contract.ts`와 GitHub wiki가 진다 |
 | **여정의 유닛 구조와 특별 유닛의 맵 자리** | 결정 및 사례별 실체화 (맵의 줄 = 유닛 목록 순서 + 스텝 노드와 별도 컴포넌트 + 완료 신호는 「끝까지 닿음」 + 표준 스텝 진행 세기는 유지) | [0024](0024-journey-units-and-special-unit-placement.md) — 역사적 결정 본문은 보존한다. **2026-09-09 LIB-254 기록**은 첫 메신저 특별 유닛의 목록 위치, 별도 화면·상태와 재진입 및 C1–C3을 연결했다. **2026-09-10 기록**은 전화 뒤·`directions` 앞의 비주얼 노벨 항목, 독립 3장면 화면, 마지막 장면 완료와 세션 재진입·replay, 일반 진행 및 기존 특별 유닛 상태 격리를 연결했다. 두 기록 모두 D1·D2·D6·D8의 사례이며 미래의 모든 특별 유닛 구성을 일반화하지 않는다. **2026-09-29에 D10·D11·D12가 같은 문서에 붙었다** — 에피소드가 유닛을 묶고 첫/마지막 자리를 타입이 지며(D10), 표지를 끝내기 전에는 그 구획의 나머지가 잠기고(D11 — **D6의 「특별 유닛은 언제나 열린다」를 뒤집는다**), 표지는 건너뛰어도 완료다(D12). **행을 새로 만들지 않았다** — 같은 축이라 ADR-0013대로 이 행의 D 목록이 진다. **2026-09-29에 D13·D14가 이어 붙었다**(브랜치 `feat/episode-accumulation` — 앞의 셋과 날짜가 같고 회차가 다르다). 에피소드가 **판별 union**이 되어 아직 유닛이 없는 에피소드에는 `units` 필드가 없고 목록의 첫 자리를 타입이 지며(D13), 그 에피소드도 **자기 구획**을 만들어 연한 가로 선 아래에 머리만 읽히고 그 아래가 가려진 채 선다(D14). **여기서도 행을 새로 만들지 않았다** — 같은 축이다. 갈린 문면은 그 문서의 `정정 기록` **2026-09-29 두 항목**이 가른다(같은 날이라 브랜치로 갈린다) |
@@ -139,6 +140,7 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 | `LegalDocumentModule` | `open(args, callback)` | **로그인의 동의 문구 링크 둘 · 설정의 법률 문서 항목 둘** — 개인정보 처리방침 · 이용약관을 앱 안 브라우저(iOS `SFSafariViewController` · Android Custom Tabs)로 연다. **제품 화면이다** | [0033](0033-legal-documents-in-app-browser.md) D2 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS·Android에 있음** — `apps/ios/Host/LegalDocumentModule.swift`, `apps/android/app/src/main/java/com/libitum/host/LegalDocumentModule.java`; 접점은 `apps/mobile/src/lib/legal-document.ts`. 목적지는 호스트 표의 `https` URL 둘뿐이고 JS는 문서 이름만 넘긴다. 권한은 요구하지 않는다 |
 | `PushNotificationModule` | `getStatus(callback)` · `register(callback)` · `takeOpened(callback)` · `openSettings()` | **여정 입장의 시작 · 설정의 `Notifications` · 누른 알림** — 서버 푸시의 권한 · 기기 토큰 · 누른 알림의 목적지. **제품 화면이다** | [0034](0034-server-push-notifications.md) D2 · [0042](0042-android-push-host.md) · [0017](0017-host-native-capabilities-and-audio.md) D1 · [0026](0026-permission-entry-conditions-and-denial-handling.md) D2 | iOS `apps/ios/Host/PushNotificationModule.swift`, Android `apps/android/app/src/main/java/com/libitum/host/PushNotificationModule.java`; 접점은 `apps/mobile/src/lib/push-notifications.ts`. iOS APNs 엔타이틀먼트와 Android Firebase 설정은 각 플랫폼 준비가 필요하다. Android 로컬 권한·알림 탭 검증 완료, 실제 FCM 미검증 |
 | `AppReviewModule` | `requestReview()` | **에피소드 끝 설문(별점 4 이상)** — 호스트의 스토어 평점 창 요청. 결과 콜백 없음. **제품 화면이다** | [0036](0036-user-feedback-survey-and-app-review.md) D4 · [0017](0017-host-native-capabilities-and-audio.md) D1 | **iOS·Android에 있음** — iOS `StoreKit`, Android Play In-App Review (`apps/android/app/src/main/java/com/libitum/host/AppReviewModule.java`); 접점은 `apps/mobile/src/lib/feedback-api.ts`(`requestAppReviewOnce`). 권한 없음. [Android 검증](../e2e/android-app-review.md) |
+| `SystemBackModule` | `ready()` · `respond(token, outcome)` — 짝이 되는 전역 이벤트는 호스트 → JS의 `systemBackPressed`(`[token]`) | **어느 화면도 아니다** — Android 시스템 뒤로가기(제스처 · 3버튼)를 앱의 닫기 경로에 잇는다. 리스너가 선 뒤 `ready`를 한 번, 누름마다 `handled` · `leave` 가운데 하나로 `respond`한다 | [0043](0043-android-system-back.md) D3 | **Android 전용** — `apps/android/app/src/main/java/com/libitum/host/SystemBackModule.java`, 판정은 `SystemBackGate.java`(JUnit `SystemBackGateTest`); 접점은 `apps/mobile/src/lib/system-back.ts`. iOS 호스트에는 모듈도 이벤트 발신자도 없고 JS 접점은 `unavailable`을 돌려준다 — 이관 대상이 아니다. 권한 없음. [Android 검증](../e2e/android-system-back.md) |
 
 **재검토 트리거는 숫자다** (ADR-0017 D2): 모듈이 **넷째**로 요구되는 시점, 또는
 **한 모듈의 메서드가 다섯을 넘는 시점**.
@@ -167,6 +169,11 @@ FE에 기존 ADR 관행이 없어 형식을 여기서 정한다.
 
 **같은 날 또 발동했다**(`AppReviewModule` — 열한째 모듈). 입장 조건 셋을 통과한다 — 판정은
 [ADR-0036 D4](0036-user-feedback-survey-and-app-review.md)에 있다. 메서드는 하나다.
+
+**2026-10-05에 다시 발동했다**(`SystemBackModule`). ⚠ **앞의 사례들과 달리 입장 조건 셋을 다시 통과시킨 기록이 없다** —
+이 모듈을 요구한 것은 화면 목록이 아니라 플랫폼 동작(Android 시스템 뒤로가기)이고, 대체 경로를 훑은 자리는 타입 정의
+하나뿐이다. 있는 사실과 빠진 것은 [ADR-0043](0043-android-system-back.md) 「대가」의 마지막 항목이 진다. 메서드는 둘이다
+(둘째 트리거에 닿지 않는다).
 
 ⚠ **트리거 문면은 고치지 않는다** — 숫자를 옮기는 것은 결정 변경이고, 두 번을 「제자리
 기록」으로 판정한 근거(결정 문장이 한 글자도 안 바뀐다)가 그 자리에서 뒤집힌다.
@@ -308,6 +315,9 @@ BEM `--`는 두 겹이 필요해진 뒤에도 버렸다. 남는 미결정(변형
 판정 환경이 iOS이고(ADR-0012 D1) iOS에는 하드웨어 백 버튼이 없다. ADR-0007 D3에서
 **확정된 제약**(모든 화면에 화면 내 back 수단)으로 바뀌었다. Android 지원이 요구되면
 그때 다시 가정으로 올린다.
+⟨2026-10-05⟩ **Android 호스트가 섰고 이 물음은 가정으로 돌아오지 않고 닫혔다** — Explorer가 전달하는지를 확인한 것이
+아니라 자체 호스트가 뒤로가기를 가로채 앱에 전달한다([ADR-0043](0043-android-system-back.md)). 제약(모든 화면에 화면 내
+back 수단)은 그대로다.
 
 **해소됨** — `디자인 토큰 값`: 보류가 아니다. 값이 design-system 저장소의
 `foundations/*.json`에 확정돼 있고, FE는 패키지로 소비한다 (ADR-0011).

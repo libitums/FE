@@ -9,6 +9,7 @@ import { ChatBubble } from "@libitums/ui-lynx/chat-bubble";
 import { Fog } from "@libitums/ui-lynx/fog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { PrologueChatScreenProps } from "./episode-intro.contract";
 import { prologueChatIncomingDelayMs, prologueChatNext } from "./prologue-chat";
@@ -34,6 +35,8 @@ export function PrologueChatScreen({
   reducedMotion = false,
 }: PrologueChatScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다.
+  useScreenBack(onBack);
   const guide = useFirstUnitGuide("messenger", guided);
   const [shownCount, setShownCount] = useState(0);
   const next = prologueChatNext(chat.messages, shownCount);

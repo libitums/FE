@@ -7,6 +7,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
 import type { AnswerResult } from "../../lib/answer-result";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeFinalScreenProps } from "./episode-final.contract";
 import { episodeFinalTestIds } from "./episode-final.contract";
@@ -40,6 +41,8 @@ export function EpisodeFinalScreen({
   onExit,
 }: EpisodeFinalScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(onExit);
   const [state, dispatch] = useReducer(episodeFinalSessionReducer, initialEpisodeFinalSessionState);
   const question = test.questions[state.questionIndex] ?? test.questions[0];
   const isLast = state.questionIndex >= test.questions.length - 1;

@@ -1,5 +1,6 @@
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
+import { useScreenBack } from "../../lib/use-back-handler";
 import type { ReactNode } from "@lynx-js/react";
 
 import { cultureScreenTitle } from "./culture";
@@ -31,6 +32,8 @@ export function CultureScreen({
   onStartQuiz,
 }: CultureScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(onExit);
   const handleStartQuiz = (): void => {
     playSound("button");
     onStartQuiz();
