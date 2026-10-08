@@ -3,6 +3,7 @@ import { color } from "@libitums/design-tokens";
 import arrowDown from "@libitums/icons/lynx/arrow-down";
 import { describe, expect, test, vi } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { VisualNovelDialog } from "./index";
 
 describe("VisualNovelDialog UI", () => {
@@ -200,5 +201,53 @@ describe("VisualNovelDialog UI", () => {
     // 핸들러가 `catchtap`에 붙으므로 catch 이벤트로 쏩니다.
     fireEvent.tap(dialog, { eventType: "catchEvent" });
     expect(onTap).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("VisualNovelDialog motion 컨텍스트", () => {
+  test("VN1: reduced Provider에서 reducedMotion prop이 없으면 대사가 즉시 전체로 서고 표시가 멈춘다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <VisualNovelDialog
+          line="A🙂BC"
+          speakerName="Mina"
+          reveal="typewriter"
+          status="revealing"
+          visibleCharacterCount={1}
+        />
+      </MotionProvider>,
+    );
+
+    const dialog = screen.getByTestId("ui-lynx-visual-novel-dialog");
+    expect(dialog).toHaveAttribute("data-reveal", "instant");
+    expect(dialog).toHaveAttribute("data-status", "ready");
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent("A🙂BC");
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
+      "data-motion",
+      "static",
+    );
+  });
+
+  test("VN2: 명시한 reducedMotion={false}가 reduced Provider를 이긴다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <VisualNovelDialog
+          line="A🙂BC"
+          speakerName="Mina"
+          reveal="typewriter"
+          status="ready"
+          reducedMotion={false}
+        />
+      </MotionProvider>,
+    );
+
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute(
+      "data-reveal",
+      "typewriter",
+    );
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
+      "data-motion",
+      "bounce",
+    );
   });
 });

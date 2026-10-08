@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { PageIndicator, PAGE_INDICATOR_MAX_PAGE_COUNT } from "./index";
 
 const css = readFileSync(resolve(import.meta.dirname, "page-indicator.css"), "utf8");
@@ -117,5 +118,38 @@ describe("PageIndicator dedicated CSS contract", () => {
     expect(css).toMatch(
       /transition:\s*width\s+var\(--libitum-motion-duration-progress\)\s+var\(--libitum-motion-easing-enter\)\s*,\s*background-color\s+var\(--libitum-motion-duration-progress\)\s+var\(--libitum-motion-easing-enter\)/,
     );
+  });
+});
+
+// 테스트 렌더러는 값이 undefined인 data-* 속성을 문자열 "null"로 남깁니다. 부재는 null 또는 "null"로 봅니다.
+describe("PageIndicator motion 컨텍스트", () => {
+  test("PI1: reduced Provider에서 data-motion을 내고 항목 속성은 그대로다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <PageIndicator pageCount={3} currentPage={2} />
+      </MotionProvider>,
+    );
+    expect(screen.getByTestId("ui-lynx-page-indicator")).toHaveAttribute("data-motion", "reduced");
+    const items = screen.getAllByTestId("ui-lynx-page-indicator-item");
+    expect(items.map((item) => item.getAttribute("data-page"))).toEqual(["1", "2", "3"]);
+    expect(items.map((item) => item.getAttribute("data-active"))).toEqual([
+      "false",
+      "true",
+      "false",
+    ]);
+  });
+
+  test("PI2: Provider가 없으면 data-motion이 없고 항목 속성은 같다", () => {
+    render(<PageIndicator pageCount={3} currentPage={2} />);
+    expect([null, "null"]).toContain(
+      screen.getByTestId("ui-lynx-page-indicator").getAttribute("data-motion"),
+    );
+    const items = screen.getAllByTestId("ui-lynx-page-indicator-item");
+    expect(items.map((item) => item.getAttribute("data-page"))).toEqual(["1", "2", "3"]);
+    expect(items.map((item) => item.getAttribute("data-active"))).toEqual([
+      "false",
+      "true",
+      "false",
+    ]);
   });
 });

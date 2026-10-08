@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import { MessageBubble } from "./MessageBubble";
 import { MessengerScreen } from "./MessengerScreen";
 import { MessengerFinishButton } from "./MessengerFinishButton";
@@ -300,5 +301,32 @@ describe("messenger UI components", () => {
     sendMessengerReply("고마워요!");
     fireEvent.tap(screen.getByTestId("messenger-finish"), {});
     expect(onFinish).toHaveBeenCalledWith("appointment-confirmation", ["correct", "correct"]);
+  });
+});
+
+describe("MessengerScreen motion 컨텍스트", () => {
+  it("MS1: reduced Provider에서 reducedMotion prop이 없으면 상대 메시지도 타이핑 없이 바로 ready다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <MessengerScreen
+          conversation={conversation}
+          completionStatus="available"
+          onExit={vi.fn()}
+          onComplete={vi.fn()}
+          onFinish={vi.fn()}
+        />
+      </MotionProvider>,
+    );
+    const bubbles = screen.getAllByTestId("ui-lynx-chat-bubble");
+    expect(bubbles.length).toBeGreaterThan(0);
+    for (const bubble of bubbles) expect(bubble).toHaveAttribute("data-status", "ready");
+    expect(screen.getByTestId("ui-lynx-chat-bubble-message")).toHaveTextContent(
+      "토요일 오후 2시에 역 앞 카페에서 만나요.",
+    );
+
+    sendMessengerReply("좋아요!");
+    for (const bubble of screen.getAllByTestId("ui-lynx-chat-bubble")) {
+      expect(bubble).toHaveAttribute("data-status", "ready");
+    }
   });
 });

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, test, vi } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { Overlay } from "./index";
 
 describe("Overlay UI", () => {
@@ -78,5 +79,18 @@ describe("Overlay UI", () => {
     expect(styles).toMatch(
       /\.ui-lynx-overlay-motion-reduced\s*\{[^}]*animation-duration:\s*var\(--libitum-motion-duration-d2\)[^}]*animation-timing-function:\s*var\(--libitum-motion-easing-linear\)/s,
     );
+  });
+});
+
+describe("Overlay motion 컨텍스트", () => {
+  test("OV1: reduced Provider에서 className이 reduced 토큰을 갖고 standard 토큰은 없다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <Overlay scope="area" />
+      </MotionProvider>,
+    );
+    const overlay = screen.getByTestId("ui-lynx-overlay");
+    expect(overlay).toHaveClass("ui-lynx-overlay-motion-reduced");
+    expect(overlay).not.toHaveClass("ui-lynx-overlay-motion-standard");
   });
 });

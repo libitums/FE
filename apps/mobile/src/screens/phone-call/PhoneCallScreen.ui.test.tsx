@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import type { PhoneCallConversation } from "./phone-call.contract";
 import { PhoneCallScreen } from "./PhoneCallScreen";
 import { UiCopyContext } from "../../lib/ui-copy";
@@ -446,3 +447,23 @@ function completeCall() {
   for (const reply of ["confirm-time-reply", "confirm-place-reply", "goodbye-reply"])
     fireEvent.tap(screen.getByTestId(`phone-call-reply-${reply}`), {});
 }
+
+describe("PhoneCallScreen motion 컨텍스트", () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it("PC1: reduced Provider에서 reducedMotion prop이 없으면 재생을 눌러도 자막이 바로 ready다", () => {
+    vi.useFakeTimers();
+    playAudio.mockReturnValue("started");
+    render(
+      <MotionProvider motion="reduced">
+        <PhoneCallScreen {...props()} />
+      </MotionProvider>,
+    );
+    const lineId = "phone-call-line-jimin-confirm-time-line";
+    fireEvent.tap(screen.getByTestId("phone-call-audio-button"), {});
+    expect(screen.getByTestId(lineId)).toHaveAttribute("data-status", "ready");
+    expect(screen.getByTestId(`${lineId}-text`)).toHaveTextContent(
+      conversation.turns[0].transcript,
+    );
+  });
+});

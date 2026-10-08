@@ -1,6 +1,7 @@
 import { render, screen } from "@lynx-js/react/testing-library";
 import { describe, expect, test } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { Tooltip } from "./index";
 
 describe("Tooltip UI", () => {
@@ -76,5 +77,22 @@ describe("Tooltip UI", () => {
     expect(tooltip).toHaveClass("ui-lynx-tooltip-positioned", "ui-lynx-tooltip-bottom");
     expect(tooltip).toHaveStyle({ left: "16px", top: "58px" });
     expect(screen.getByTestId("ui-lynx-tooltip-arrow")).toHaveStyle({ left: "44px" });
+  });
+});
+
+describe("Tooltip motion 컨텍스트", () => {
+  test("CT1: reduced Provider에서도 Tooltip은 data-motion이 없고 className이 불변이다", () => {
+    const plain = render(<Tooltip message="힌트 보기" />);
+    const baseline = screen.getByTestId("ui-lynx-tooltip").getAttribute("class");
+    plain.unmount();
+
+    render(
+      <MotionProvider motion="reduced">
+        <Tooltip message="힌트 보기" />
+      </MotionProvider>,
+    );
+    const element = screen.getByTestId("ui-lynx-tooltip");
+    expect(element).not.toHaveAttribute("data-motion");
+    expect(element.getAttribute("class")).toBe(baseline);
   });
 });

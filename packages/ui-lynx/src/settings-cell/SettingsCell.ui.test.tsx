@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 import { describe, expect, test, vi } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { SettingsCell, SettingsGroup } from "./SettingsCell";
 
 function tap(element: Element) {
@@ -114,5 +115,48 @@ describe("Settings Cell UI", () => {
     expect(cell).toHaveAttribute("accessibility-label", "프로필");
     tap(cell);
     expect(onNavigate).toHaveBeenCalledTimes(1);
+  });
+});
+
+// 테스트 렌더러는 값이 undefined인 data-* 속성을 문자열 "null"로 남깁니다. 부재는 null 또는 "null"로 봅니다.
+describe("Settings Cell motion 컨텍스트", () => {
+  test("SC1: reduced Provider에서 toggle 셀과 SettingsGroup 안의 셀이 data-motion과 reduced 클래스를 낸다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <SettingsCell trailing="toggle" title="자동 재생" checked={false} onChange={() => {}} />
+        <SettingsGroup
+          accessibilityLabel="재생"
+          items={[
+            {
+              id: "autoplay",
+              trailing: "toggle",
+              title: "자동 재생",
+              checked: true,
+              onChange: () => {},
+            },
+            {
+              id: "sound",
+              trailing: "toggle",
+              title: "효과음",
+              checked: false,
+              onChange: () => {},
+            },
+          ]}
+        />
+      </MotionProvider>,
+    );
+    const rows = screen.getAllByTestId("ui-lynx-settings-cell");
+    expect(rows).toHaveLength(3);
+    for (const row of rows) {
+      expect(row).toHaveAttribute("data-motion", "reduced");
+      expect(row).toHaveClass("ui-lynx-settings-cell-motion-reduced");
+    }
+  });
+
+  test("SC2: Provider가 없으면 data-motion과 motion 클래스가 없다", () => {
+    render(<SettingsCell trailing="toggle" title="자동 재생" checked onChange={() => {}} />);
+    const row = screen.getByTestId("ui-lynx-settings-cell");
+    expect([null, "null"]).toContain(row.getAttribute("data-motion"));
+    expect(row.getAttribute("class") ?? "").not.toContain("motion");
   });
 });

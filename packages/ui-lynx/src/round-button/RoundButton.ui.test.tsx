@@ -3,6 +3,7 @@ import { color } from "@libitums/design-tokens";
 import info02 from "@libitums/icons/lynx/info-02";
 import { describe, expect, test, vi } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { RoundButton } from "./index";
 
 describe("RoundButton", () => {
@@ -105,5 +106,37 @@ describe("RoundButton", () => {
     );
     expect(screen.getByTestId("ui-lynx-round-button-spinner")).toBeInTheDocument();
     expect(screen.queryByTestId("ui-lynx-round-button-icon")).not.toBeInTheDocument();
+  });
+});
+
+// 테스트 렌더러는 값이 undefined인 data-* 속성을 문자열 "null"로 남깁니다. 부재는 null 또는 "null"로 봅니다.
+describe("RoundButton motion 컨텍스트", () => {
+  test("RB1: reduced Provider에서 data-motion과 reduced 클래스를 낸다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <RoundButton accessibilityLabel="정보" icon={info02} />
+      </MotionProvider>,
+    );
+    const button = screen.getByTestId("ui-lynx-round-button");
+    expect(button).toHaveAttribute("data-motion", "reduced");
+    expect(button).toHaveClass("ui-lynx-round-button-motion-reduced");
+  });
+
+  test.each([
+    ["Provider 없음", false],
+    ["standard Provider", true],
+  ] as const)("RB2: %s이면 data-motion과 motion 클래스가 없다", (_name, wrapped) => {
+    render(
+      wrapped ? (
+        <MotionProvider motion="standard">
+          <RoundButton accessibilityLabel="정보" icon={info02} />
+        </MotionProvider>
+      ) : (
+        <RoundButton accessibilityLabel="정보" icon={info02} />
+      ),
+    );
+    const button = screen.getByTestId("ui-lynx-round-button");
+    expect([null, "null"]).toContain(button.getAttribute("data-motion"));
+    expect(button.getAttribute("class") ?? "").not.toContain("motion");
   });
 });

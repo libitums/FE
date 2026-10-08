@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { color } from "@libitums/design-tokens";
 import { describe, expect, test, vi } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { Card } from "./index";
 
 describe("Card UI", () => {
@@ -143,5 +144,25 @@ describe("Card UI", () => {
     );
 
     expect(screen.getByTestId("ui-lynx-card-body-text")).not.toHaveAttribute("data-lang");
+  });
+});
+
+describe("Card motion 컨텍스트", () => {
+  test("CT1: reduced Provider에서도 Card는 data-motion이 없고 className이 불변이다", () => {
+    const card = (
+      <Card padding="l">
+        <Card.Content>
+          <Card.Header title="오늘의 학습" />
+        </Card.Content>
+      </Card>
+    );
+    const plain = render(card);
+    const baseline = screen.getByTestId("ui-lynx-card").getAttribute("class");
+    plain.unmount();
+
+    render(<MotionProvider motion="reduced">{card}</MotionProvider>);
+    const element = screen.getByTestId("ui-lynx-card");
+    expect(element).not.toHaveAttribute("data-motion");
+    expect(element.getAttribute("class")).toBe(baseline);
   });
 });
