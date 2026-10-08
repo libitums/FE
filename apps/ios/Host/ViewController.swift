@@ -73,6 +73,7 @@ final class ViewController: UIViewController {
     lynxView.loadTemplate(fromURL: Self.templateURL, initData: nil)
     observeContentSizeCategory()
     observeOpenedPushNotification()
+    observeReduceMotion()
   }
 
   /// 배율 **값**을 최신으로 유지한다. **화면은 다음 실행에 바뀐다** (ADR-0020 D2).
@@ -166,6 +167,34 @@ final class ViewController: UIViewController {
   }
 
   private var lastSafeAreaInsets: UIEdgeInsets?
+  private var lastReducedMotion: Bool?
+
+  /// 시스템 「동작 줄이기」를 globalProps `reducedMotion`으로 넘긴다.
+  ///
+  /// safe-area와 **따로** 보낸다. `updateGlobalProps`는 키 단위로 병합되므로(Lynx
+  /// `LynxTemplateRender.mm` `updateGlobalPropsWithTemplateData:`) `safeAreaInsets`는 남는다.
+  /// 현재 값을 한 번 보내고 이후에는 바뀐 값만 보낸다. `lynxView`가 만들어지고
+  /// `loadTemplate`을 부른 뒤라 safe-area 첫 전송(`viewDidLayoutSubviews`)과 같은 시점이다.
+  /// 로드 전에 닿지 못하더라도 `globalPropsMode: "event"`가 값이 오면 다시 그린다.
+  ///
+  /// 이 변화는 trait이 아니라 알림이라 `registerForTraitChanges`로 받을 수 없다.
+  /// VC가 앱 수명이라 `observeOpenedPushNotification`처럼 해제하지 않는다.
+  private func observeReduceMotion() {
+    publishReducedMotion(UIAccessibility.isReduceMotionEnabled)
+    NotificationCenter.default.addObserver(
+      forName: UIAccessibility.reduceMotionStatusDidChangeNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.publishReducedMotion(UIAccessibility.isReduceMotionEnabled)
+    }
+  }
+
+  private func publishReducedMotion(_ enabled: Bool) {
+    guard enabled != lastReducedMotion, let lynxView else { return }
+    lastReducedMotion = enabled
+    lynxView.updateGlobalProps(with: ReducedMotion.globalProps(enabled: enabled))
+  }
 
   /// 앱이 켜진 채 알림을 누르면 JS에 알린다. JS는 이벤트를 받고 `takeOpened`로 목적지를 꺼낸다 —
   /// 이벤트에는 목적지를 싣지 않아, 꺼내는 자리가 하나다(ADR-0034).
