@@ -25,10 +25,10 @@ pnpm test:e2e:landing                            # 브라우저 e2e (Playwright 
 
 브라우저 e2e는 처음 한 번 `pnpm --filter @libitums/landing exec playwright install chromium firefox webkit`로 브라우저를 받는다.
 **빌드는 둘, 프로젝트는 다섯이다**(`playwright.config.ts`). `SITE_URL=https://example.test`로 `.e2e-dist/`에 지어 4399에 띄우고,
-거기에 테스트용 측정 ID `G-E2ETEST00`을 더해 `.e2e-dist-ga/`에 지어 4398에 띄운다(둘 다 `e2e/serve.mjs`라 개발 서버 4321과
+거기에 테스트용 측정 ID `G-E2ETEST00`을 더해 `.e2e-dist-ga/`에 지어 4398에 띄운다(한 `e2e/serve.mjs` 프로세스가 둘 다 내리므로 개발 서버 4321과
 부딪히지 않는다). chromium · firefox · webkit · 모바일(Pixel 7) 넷은 4399를 보고, `analytics`(Desktop Chrome)만 4398에서
 `analytics.e2e.ts`를 돈다 — 측정 ID를 넣어도 `googletagmanager.com` 요청은 빈 스크립트로 막으므로 밖으로 나가는 것은 없다.
-산출물의 내용만 보는 `content.e2e.ts`는 chromium만 돈다. 두 서버는 차례로 뜨므로 처음 한 번의 빌드 시간이 두 배다.
+산출물의 내용만 보는 `content.e2e.ts`는 chromium만 돈다. 빌드 둘은 차례로 짓는다 — 동시에 지으면 Astro의 캐시 폴더(`node_modules/.astro`)를 두 빌드가 함께 써서 간헐적으로 깨질 수 있다 — 그래서 처음 한 번의 빌드 시간이 두 배다.
 **`pnpm verify`와 CI에는 들어 있지 않다** — CI에 브라우저를 받는 단계가 없다.
 
 루트의 `pnpm build` · `pnpm typecheck` · `pnpm test`(따라서 `pnpm verify`와 CI)가 이 앱을 함께 돈다. 테스트 셋은 루트

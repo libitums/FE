@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { box, heroTravel, narrow, open, scrollTo, style, wide } from "./layout.support";
+import { box, heroTravel, narrow, open, scrollTo, wide } from "./layout.support";
 
 // 레이아웃 단언(전체): 머리 · 히어로 · 섹션 간격. 공용 도구는 layout.support.ts.
 
@@ -36,8 +36,8 @@ test.describe("머리", () => {
         expect(item.left).toBeGreaterThanOrEqual(inner.left);
         expect(item.right).toBeLessThanOrEqual(inner.right);
       }
-      const centers = new Set(items.map((item) => Math.round(item.top + item.height / 2)));
-      expect(centers.size).toBe(1);
+      const centers = items.map((item) => item.top + item.height / 2);
+      expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(1);
     });
 
     test(`L-HD2 ${viewport.width}px: 히어로가 풀리는 지점에서 머리가 배경을 얻는다`, async ({
@@ -48,15 +48,10 @@ test.describe("머리", () => {
       const travel = await heroTravel(page);
       await scrollTo(page, travel - 1);
       await expect(header).not.toHaveClass(/is-solid/);
-      await expect.poll(() => style(header, "background-color")).toBe("rgba(0, 0, 0, 0)");
+      await expect(header).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
       await scrollTo(page, travel + 1);
       await expect(header).toHaveClass(/is-solid/);
-      await expect
-        .poll(async () => {
-          const color = await style(header, "background-color");
-          return /^rgba?\(/.test(color) && !color.endsWith(", 0)");
-        })
-        .toBe(true);
+      await expect(header).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
     });
 
     test(`L-HR1 ${viewport.width}px: 히어로의 두 문장이 같은 자리에서 교대한다`, async ({
@@ -65,11 +60,11 @@ test.describe("머리", () => {
       await open(page, viewport);
       const a = page.locator(".hero__line--a");
       const b = page.locator(".hero__line--b");
-      await expect.poll(() => style(a, "opacity")).toBe("1");
-      await expect.poll(() => style(b, "opacity")).toBe("0");
+      await expect(a).toHaveCSS("opacity", "1");
+      await expect(b).toHaveCSS("opacity", "0");
       await scrollTo(page, await heroTravel(page));
-      await expect.poll(() => style(a, "opacity")).toBe("0");
-      await expect.poll(() => style(b, "opacity")).toBe("1");
+      await expect(a).toHaveCSS("opacity", "0");
+      await expect(b).toHaveCSS("opacity", "1");
       // 이동 연출(transform)과 무관한 배치 자리를 비교합니다.
       const aBottom = await a.evaluate(
         (node) => (node as HTMLElement).offsetTop + (node as HTMLElement).offsetHeight,

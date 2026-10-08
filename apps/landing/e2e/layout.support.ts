@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 // 레이아웃 e2e의 공용 측정 도구입니다. 폭을 테스트가 직접 정하고, 스크롤 연출이 켜진 상태
 // (reducedMotion 기본)를 봅니다. 스크롤은 `behavior: "instant"`로 옮기고, 전환(opacity · 클래스)은
-// poll로 안정되기를 기다립니다.
+// toHaveCSS · poll로 안정되기를 기다립니다.
 
 export interface Box {
   left: number;
@@ -29,9 +29,6 @@ export const box = (locator: Locator): Promise<Box> =>
     const { left, top, right, bottom, width, height } = node.getBoundingClientRect();
     return { left, top, right, bottom, width, height };
   });
-
-export const style = (locator: Locator, property: string): Promise<string> =>
-  locator.evaluate((node, name) => getComputedStyle(node).getPropertyValue(name), property);
 
 export const scrollTo = (page: Page, top: number) =>
   page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), top);

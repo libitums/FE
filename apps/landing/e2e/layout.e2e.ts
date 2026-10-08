@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { box, narrow, open, scrollTo, settled, style, wide } from "./layout.support";
+import { box, narrow, open, scrollTo, settled, wide } from "./layout.support";
 
 // 레이아웃 단언(본문): Features · Story 줄 · Phrases/FAQ 두 단 · 휴대폰 틀. 공용 도구는 layout.support.ts.
 
@@ -9,7 +9,7 @@ test.describe("Features", () => {
   }) => {
     await open(page, wide);
     const stage = page.locator(".features__stage");
-    expect(await style(stage, "position")).toBe("sticky");
+    await expect(stage).toHaveCSS("position", "sticky");
 
     const active = page.locator(".feature.is-active");
     await expect(active).toHaveCount(1);
@@ -25,7 +25,7 @@ test.describe("Features", () => {
     await expect(inactive).toHaveCount(3);
     for (let index = 0; index < 3; index += 1) {
       // 연출이 켜지는 순간 350ms 전환이 있어 안정되기를 기다립니다.
-      await expect.poll(() => style(inactive.nth(index), "opacity")).toBe("0");
+      await expect(inactive.nth(index)).toHaveCSS("opacity", "0");
     }
 
     const { height, innerHeight } = await page.evaluate(() => ({
@@ -63,7 +63,7 @@ test.describe("Features", () => {
 
   test("L-FT3 좁은 화면에서는 네 묶음이 글 아래 미디어로 쌓이고 모두 보인다", async ({ page }) => {
     await open(page, narrow);
-    expect(await style(page.locator(".features__stage"), "position")).toBe("static");
+    await expect(page.locator(".features__stage")).toHaveCSS("position", "static");
     const features = page.locator(".feature");
     await expect(features).toHaveCount(4);
     for (let index = 0; index < 4; index += 1) {
@@ -74,8 +74,8 @@ test.describe("Features", () => {
       expect(t.bottom, `묶음 ${index}`).toBeLessThanOrEqual(m.top + 1);
       expect(Math.abs(t.left - m.left), `묶음 ${index}`).toBeLessThanOrEqual(1);
       expect(m.height, `묶음 ${index}`).toBeGreaterThan(0);
-      expect(await style(text, "opacity"), `묶음 ${index}`).toBe("1");
-      expect(await style(media, "opacity"), `묶음 ${index}`).toBe("1");
+      await expect(text, `묶음 ${index}`).toHaveCSS("opacity", "1");
+      await expect(media, `묶음 ${index}`).toHaveCSS("opacity", "1");
     }
   });
 });

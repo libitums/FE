@@ -19,22 +19,18 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   reporter: "list",
   use: { baseURL: `http://127.0.0.1:${ports.site}` },
-  webServer: [
-    {
-      command: `astro build --outDir .e2e-dist && node e2e/serve.mjs .e2e-dist ${ports.site}`,
-      env: { SITE_URL: siteUrl },
-      url: `http://127.0.0.1:${ports.site}/robots.txt`,
-      reuseExistingServer: false,
-      timeout: 120_000,
-    },
-    {
-      command: `astro build --outDir .e2e-dist-ga && node e2e/serve.mjs .e2e-dist-ga ${ports.analytics}`,
-      env: { SITE_URL: siteUrl, PUBLIC_GA_MEASUREMENT_ID: measurementId },
-      url: `http://127.0.0.1:${ports.analytics}/robots.txt`,
-      reuseExistingServer: false,
-      timeout: 120_000,
-    },
-  ],
+  // 빌드 둘을 차례로 짓고(동시에 지으면 Astro의 캐시 폴더를 두 빌드가 함께 쓴다) 한 프로세스가 둘 다 내립니다.
+  webServer: {
+    command: [
+      `astro build --outDir .e2e-dist`,
+      `PUBLIC_GA_MEASUREMENT_ID=${measurementId} astro build --outDir .e2e-dist-ga`,
+      `node e2e/serve.mjs .e2e-dist:${ports.site} .e2e-dist-ga:${ports.analytics}`,
+    ].join(" && "),
+    env: { SITE_URL: siteUrl },
+    url: `http://127.0.0.1:${ports.site}/robots.txt`,
+    reuseExistingServer: false,
+    timeout: 180_000,
+  },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: [analyticsOnly] },
     {

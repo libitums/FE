@@ -1,11 +1,11 @@
 // e2e 전용 정적 서버입니다. 빌드 산출물을 그대로 내리고, 없는 주소는 404.html을 404로 내립니다.
 // astro preview를 쓰지 않는 이유: 개발 서버가 떠 있으면 잠금 때문에 뜨지 않고, 산출 폴더를 고를 수 없습니다.
+// 인자는 `<산출 폴더>:<포트>` 쌍이고 여럿을 받습니다 — 빌드 둘을 한 프로세스가 내립니다.
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import path from "node:path";
 import { createGzip } from "node:zlib";
 
-const [root, port] = [path.resolve(process.argv[2]), Number(process.argv[3])];
 const types = {
   ".html": "text/html; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
@@ -17,21 +17,28 @@ const types = {
   ".jpg": "image/jpeg",
 };
 
-createServer((request, response) => {
-  const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
-  let file = path.join(root, pathname);
-  if (!file.startsWith(root)) file = root;
-  if (existsSync(file) && statSync(file).isDirectory()) file = path.join(file, "index.html");
-  const found = existsSync(file);
-  if (!found) file = path.join(root, "404.html");
-  const type = types[path.extname(file)] ?? "application/octet-stream";
-  // 실제 호스팅처럼 글자로 된 응답은 압축해 내립니다.
-  const compress =
-    type.includes("charset") && /\bgzip\b/.test(request.headers["accept-encoding"] ?? "");
-  response.writeHead(found ? 200 : 404, {
-    "Content-Type": type,
-    ...(compress ? { "Content-Encoding": "gzip" } : {}),
-  });
-  const body = createReadStream(file);
-  (compress ? body.pipe(createGzip()) : body).pipe(response);
-}).listen(port, "127.0.0.1");
+function serve(root, port) {
+  createServer((request, response) => {
+    const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
+    let file = path.join(root, pathname);
+    if (!file.startsWith(root)) file = root;
+    if (existsSync(file) && statSync(file).isDirectory()) file = path.join(file, "index.html");
+    const found = existsSync(file);
+    if (!found) file = path.join(root, "404.html");
+    const type = types[path.extname(file)] ?? "application/octet-stream";
+    // 실제 호스팅처럼 글자로 된 응답은 압축해 내립니다.
+    const compress =
+      type.includes("charset") && /\bgzip\b/.test(request.headers["accept-encoding"] ?? "");
+    response.writeHead(found ? 200 : 404, {
+      "Content-Type": type,
+      ...(compress ? { "Content-Encoding": "gzip" } : {}),
+    });
+    const body = createReadStream(file);
+    (compress ? body.pipe(createGzip()) : body).pipe(response);
+  }).listen(port, "127.0.0.1");
+}
+
+for (const pair of process.argv.slice(2)) {
+  const [dir, port] = pair.split(":");
+  serve(path.resolve(dir), Number(port));
+}
