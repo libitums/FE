@@ -137,7 +137,9 @@ Canvas의 `<lynx-view>`는 Lynx Web의 시각·tap 확인 표면이다. 내부 c
 - VoiceOver/TalkBack label·traits와 읽기 순서
 - Progress Header exit의 VoiceOver/TalkBack 이름·button trait, 충분한 hit area와 focus
   동작
-- native 시스템 reduced-motion 설정이 Progress Header의 motion 설정에 매핑되는지
+- native 시스템 reduced-motion 설정이 Progress Header의 motion 설정에 매핑되는지 — 이제
+  호스트 globalProps `reducedMotion` → `MotionProvider` 한 길로 온다. 절차와 결과는
+  [동작 줄이기](motion-reduced.md)(Progress Header는 M-I7 기록 항목)
 - iOS/Android 시스템 글꼴과 Dynamic Type
 - Progress Header를 native 최대 텍스트 크기로 설정했을 때 긴/의사 현지화 title과
   activity가 잘리지 않고, exit와 caption을 포함한 모든 내용에 도달할 수 있는지

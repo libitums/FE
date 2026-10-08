@@ -42,6 +42,17 @@ Android 3버튼 바(◁ ○ □, Pixel_8에서 48dp)는 터치를 가로챈다. 
   `safeAreaInsetsFrom` · `SafeAreaInsets` 타입은 바뀌지 않았다.
 - **iOS 호스트 · Lynx Explorer · 테스트 환경에는 키가 없다 → 0.** 아래 D2 · D3의 식이 0에서 수정 전 식과 같아지므로 iOS와 Android
   제스처의 수치는 하나도 바뀌지 않는다.
+- **후속 확장(2026-10-09) — 셋째 키 `reducedMotion`**(`boolean`, **iOS · Android 둘 다**, 없으면 `false`). 시스템 「동작 줄이기」를 옮긴 값이다 —
+  iOS `UIAccessibility.isReduceMotionEnabled`(+ `reduceMotionStatusDidChangeNotification`), Android `animator_duration_scale` · `transition_animation_scale`
+  중 하나라도 0(`ContentObserver` 두 URI). **위 두 키와 따로**, 키 하나짜리 `updateGlobalProps`로 값이 바뀔 때만 보낸다. 따로 보내도 앞 두 키가 지워지지
+  않는 근거는 두 플랫폼의 `updateGlobalProps`가 키 단위 병합이라는 것이고(Android `TemplateData.updateWithTemplateData`, iOS `LynxTemplateData`
+  `updateWithTemplateData:`) [`docs/e2e/motion-reduced.md`](../e2e/motion-reduced.md) M-I3 · M-A3이 기기에서 확인했다.
+  ⚠ **iOS는 `LynxTemplateData(dictionary:useBoolLiterals:true)`로 보내야 boolean이 JS에 도달한다** — `updateGlobalProps(with: [String: Any])`
+  Dictionary 오버로드는 `DEFAULT_USE_BOOL_LITERALS = NO`(Pods `LynxTemplateData.mm:18`, `LynxTemplateRender.mm:1193~1197`의
+  `updateGlobalPropsWithDictionary:`)라 Swift `Bool`을 lepus 숫자 `1`로 바꾸고 JS의 `=== true`가 거짓이 된다(2026-10-09 시뮬레이터 확인 —
+  첫 e2e 회차의 iOS 실패 4건이 이것이었다). `safeAreaInsets`는 수 값이라 그 변환에 걸리지 않았다. JS 접점은 `apps/mobile/src/lib/reduced-motion.ts`의
+  `reducedMotionFrom(globalProps)`(`=== true`일 때만 `true`, 던지지 않음)이고 `safeAreaInsetsFrom` · `tappableBottomInsetFrom`은 바뀌지 않았다.
+  소비 쪽 결정은 [ADR-0025](0025-ui-lynx-package-and-storybook-catalog.md)의 「2026-10-09 확장」이 진다.
 
 ### D2. 탭 루트에서는 셸이 `tappableBottomInset`만큼 비우고, 탭 바 묶음이 그 밑에 바닥 면을 덧댄다
 

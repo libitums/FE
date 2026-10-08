@@ -35,6 +35,14 @@ src/page-indicator/
 사용한다. 순수 runtime export가 없는 `BackHeader`만 빈 unit test를 두지 않고, 나머지
 스물한 개는 PascalCase unit/UI test 쌍을 둔다.
 
+`src/typewriter/`와 `src/motion/`은 컴포넌트가 아니라 **UI · CSS를 소유하지 않는 공개 훅
+디렉터리**(`useTypewriter` · `MotionProvider`/`useMotion`)라 위 표의 계약 밖이다 —
+`<component>.contract.ts` · `.css`가 없다. `motion`은 순수 규칙을 `motion.contract.ts`에, Provider와
+훅을 `MotionProvider.tsx`에 두고 unit/UI test 쌍은 같은 이름으로 둔다. checker의 디렉터리 목록
+(`component-file-conventions.unit.test.mjs`)이 둘을 이름으로 제외하고, `check-pack.mjs`가 둘의
+산출물을 따로 요구하며, 공개 export는 `index.integration.test.ts`가 검증한다. 셋째 예외를 더하면
+그 세 자리를 함께 고친다.
+
 `scripts/component-file-conventions.mjs`의 순수 checker는 컴포넌트 디렉터리와 파일 목록을
 받아 canonical 구현·contract·CSS·barrel·test 이름을 검사하고, generic `contract.ts`,
 `logic.ts`, kebab-case component test와 `index.ui.test.tsx`를 거부한다. 현재 스물두

@@ -11,7 +11,8 @@ libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포
 `visibleText`, `visibleCharacterCount`, `isComplete`, `finish()`를 반환한다.
 `text`나 `resetKey`가 바뀌면 재시작하고, 완료·언마운트 시 타이머를 정리한다.
 `enabled={false}`, `reducedMotion={true}`, `intervalMs={0}`은 즉시 전체를 표시한다.
-속도나 모션 옵션을 바꿔도 재시작한다. 글자 수는 Unicode code point 단위이므로
+`reducedMotion`을 생략하면 감싸는 `MotionProvider`의 값을 따른다(Provider가 없으면 `standard` —
+아래 「Motion」). 속도나 모션 옵션을 바꿔도 재시작한다. 글자 수는 Unicode code point 단위이므로
 surrogate pair는 보존하지만 ZWJ 이모지·결합 문자는 여러 단계로 표시될 수 있다.
 
 ```tsx
@@ -33,7 +34,7 @@ function TypedLine({ text }: { text: string }) {
 전체 문장을 유지하고 번역과 계속 표시는 출력 완료 후 나타난다.
 
 `ChatBubble`은 `reveal="typewriter"`를 지정하면 같은 훅으로 메시지를 출력한다.
-`intervalMs`, `reducedMotion`을 지원하고 번역은 완료 후 표시한다. 기본은 즉시 표시이며,
+`intervalMs`, `reducedMotion`(생략하면 `MotionProvider`의 값)을 지원하고 번역은 완료 후 표시한다. 기본은 즉시 표시이며,
 새 상대 메시지에만 켜고 보낸 메시지·과거 대화는 기본값을 사용한다.
 말풍선은 전체 문장·번역 공간을 처음부터 확보하고 글자만 표시하므로 타이핑 중 크기와
 위치가 변하지 않는다. `VisualNovelDialog`도 번역과 계속 표시 공간까지 미리 확보한다.
@@ -377,6 +378,40 @@ import "@libitums/ui-lynx/styles.css";
 />;
 ```
 
+## Motion
+
+`@libitums/ui-lynx/motion`(root에서도 재수출)은 컴포넌트들이 공유하는 움직임 정책 하나를 내려
+준다. 패키지 안의 첫 교차 컴포넌트 Context다.
+
+- `Motion = "standard" | "reduced"`. `<MotionProvider motion={…}>`가 Context로 내려 주고
+  `useMotion()`이 읽는다. Provider 밖에서는 `"standard"`이고 던지지 않는다 — Storybook 스토리와
+  Provider 없는 테스트는 그대로 돈다.
+- 우선순위는 **명시 prop > 컨텍스트 > `"standard"`**. Dialog · BottomSheet · Overlay ·
+  ProgressHeader의 `motion` prop과 VisualNovelDialog · ChatBubble · `useTypewriter`의
+  `reducedMotion` prop은 override로 남는다. 순수 함수 `resolveMotion(explicit, context)` ·
+  `resolveReducedMotion(explicit, context)` · `motionFromReducedMotion(boolean)` ·
+  `motionClassName(block, motion)`이 그 규칙을 진다.
+- `reduced`에서 걷는 것과 남는 것은 design-system `foundations/motion.md`의 「컴포넌트 매핑」을
+  따른다 — 이동 · 확대 · 너비 · reveal은 즉시, 색 · 불투명도 전환은 유지. RoundButton ·
+  LearningUnit · PageIndicator · SettingsCell은 `reduced`일 때만 `<block>-motion-reduced` 클래스와
+  `data-motion="reduced"`를 낸다(standard의 DOM · 클래스는 전과 같다). Card · Tooltip은 유지할
+  것만 있어 변형이 없다. `@media (prefers-reduced-motion)`은 Lynx가 지원하지 않아 쓰지 않는다.
+- 값을 어디서 가져오는지는 패키지가 정하지 않는다. 소비 앱이 호스트가 보낸 boolean을
+  `motionFromReducedMotion`으로 옮겨 앱 루트에서 Provider를 한 번 세운다. 이 모듈에는 CSS가 없다.
+
+```tsx
+import type { ReactNode } from "@lynx-js/react";
+import { MotionProvider, motionFromReducedMotion } from "@libitums/ui-lynx/motion";
+
+function Root({ reducedMotion, children }: { reducedMotion: boolean; children: ReactNode }) {
+  return <MotionProvider motion={motionFromReducedMotion(reducedMotion)}>{children}</MotionProvider>;
+}
+```
+
+배경과 결정은 FE 저장소 `docs/adr/0025-ui-lynx-package-and-storybook-catalog.md`의 「2026-10-09
+확장」, 호스트 키 계약은 `docs/adr/0044-android-tappable-inset.md` D1의 「후속 확장」, 기기 확인
+절차는 `docs/e2e/motion-reduced.md`다.
+
 ## 공개 진입점
 
 - `@libitums/ui-lynx`
@@ -421,6 +456,8 @@ import "@libitums/ui-lynx/styles.css";
 - `@libitums/ui-lynx/option-selector/styles.css`
 - `@libitums/ui-lynx/learning-unit`
 - `@libitums/ui-lynx/learning-unit/styles.css`
+- `@libitums/ui-lynx/typewriter`
+- `@libitums/ui-lynx/motion`
 - `@libitums/ui-lynx/styles.css`
 - `@libitums/ui-lynx/progress-header.css`
 - `@libitums/ui-lynx/page-indicator.css`
@@ -536,8 +573,9 @@ Round Button 원본의 고정 규격을 직접 사용한 비차단 gap이며, FE
 fill은 입력 소수 정밀도를 유지하고 보이는 percentage 문자열만 소수 첫째 자리로 제한한다.
 0은 fill을 렌더하지 않고, 양수는 최소 8px, 100은 전체 폭이다. exit는 진행 값과 무관하게
 항상 활성인 48px button이며 tap마다 `onExit`를 한 번 호출한다. `motion`은 `"standard" |
-"reduced"`이고 생략하면 `standard`다. reduced는 progress 전환을 없애지만 host OS 설정을
-자동으로 읽지 않으므로 소비 앱이 명시적으로 매핑해야 한다.
+"reduced"`이고 생략하면 감싸는 `MotionProvider`의 값, 그것도 없으면 `standard`다. reduced는
+progress 전환을 없앤다. 컴포넌트가 host OS 설정을 직접 읽지는 않는다 — 소비 앱이 호스트 값을
+`MotionProvider`에 한 번 넣는다(아래 「Motion」).
 
 Progress Header의 `:focus` ring은 ReactLynx의 best-effort fallback이며 native focus를
 보장하지 않는다. 진행 값은 `accessibility-value` 대신 activity와 percentage를 합친 label로

@@ -166,6 +166,9 @@ Android는 짧은 전환이면 `A shell input tap x y; A exec-out screencap -p >
   - 켠 상태: `ui-lynx-dialog` 컨테이너의 폭 · 높이가 두 프레임에서 **같다**(크기 변화 없음), **불투명도만 다르다**(첫 프레임이 더 옅다).
   - 끈 상태: 첫 프레임의 컨테이너가 두 번째보다 **작다**(scale 0.96에서 1로).
   - 두 프레임이 모두 전환 전/후면 판정 불가.
+- **측정 주의(2026-10-09 r02에서 배운 것)**: 켠 상태의 첫 프레임은 **반투명**(페이드 중)이라 그림자가 임계값 아래로 떨어져, 그림자를 포함해 재는 폭 · 높이는 정착값보다
+  작게 나올 수 있다(한 회차에서 1002/780 · 984/771 · 960/756이 섞여 나왔다). 그래서 폭 · 높이 값이 아니라 **카드 상자의 위 · 아래 · 좌우 전환점**(배경과 카드 면의 경계)을
+  비교한다 — 켠 상태에서는 첫 프레임과 정착 프레임의 전환점이 같고, 끈 상태에서는 첫 프레임만 안쪽으로 들어가 있다. 폭 · 높이만 보고 「켠 상태에서도 줄었다」로 적지 않는다.
 - 증거: `motion-reduced-ios-M-I4-on-1.png`, `-on-2.png`, `-off-1.png`, `-off-2.png`.
 
 ### M-I5 — RoundButton은 눌러도 줄어들지 않는다 (AC9)
@@ -263,32 +266,47 @@ e2e-red가 이것을 확인하는 길은 둘이다.
    (`git grep -n reducedMotion 296e2eac -- apps/ios/Host apps/android/app/src/main`이 0줄)는 것 — 를 적는다. 이 경우 e2e의 red는 **기기에서 관찰한 것이 아니라 코드 근거로 대신한 것**이라고 명시하고,
    green 단계의 켠/끈 대조가 유일한 기기 증거가 된다.
 
+### 실제로 일어난 일 — 두 회차
+
+red는 위 1 · 2 어느 쪽으로도 돌지 않았다. **수정 후 빌드(`d5ff18d9`)로 절차를 한 번 돌았고**(첫 회차), Android는 7항목이 통과 · 판정 불가로 닫혔는데 **iOS가
+M-I1 · M-I2 · M-I4 · M-I5에서 실패**했다(켠 상태에서도 첫 Dialog 프레임이 930/748로 작음 · RoundButton 216→206). 진단(격리 워크트리의 화면 오버레이)에서 JS가
+받는 값이 `{reducedMotion: 1}`(number)임을 확인했다 — 원인은 iOS 호스트가 `updateGlobalProps(with: [String: Any])` Dictionary 오버로드로 보내,
+Lynx `LynxTemplateData`의 `DEFAULT_USE_BOOL_LITERALS = NO`가 Swift `Bool`을 lepus 숫자 1로 바꾸고 앱의 `=== true`가 거짓이 된 것이다. 호스트를
+`LynxTemplateData(dictionary:useBoolLiterals:true)`로 보내게 고쳤고(`d602fe08`, 계약은 그대로 boolean — [ADR-0044](../adr/0044-android-tappable-inset.md) D1
+「후속 확장」), **둘째 회차(r02)는 iOS만 다시 돌아 M-I1 ~ M-I5 통과**, M-I6은 두 회차 모두 판정 불가다. 첫 회차의 iOS 실패는 「수정 전 호스트가 값을 내지 않는다」와
+같은 모양(켠 설정에서도 움직인다)이라, 결과적으로 이 회차가 red의 관찰(켠 설정에서도 움직임)과 green의 대조(같은 절차 · 같은 측정 · 고친 빌드)를 함께 남겼다.
+
 ## 결과
 
-**아직 실행하지 않았다.** 아래 표는 비어 있다. 통과·실패는 `통과` / `실패: <관찰>` / `판정 불가: <이유>` / `미확인`으로만 적는다.
+두 회차다. 첫 회차(e2e-red, 빌드 `d5ff18d9`)는 Android 7항목과 iOS 7항목, 둘째 회차(e2e-green r02, 빌드 `d602fe08`)는 **iOS만** 다시 돌았다 —
+`d5ff18d9..d602fe08`의 차이는 `apps/ios/Host/ReducedMotion.swift` · `ViewController.swift` 두 파일뿐이라 Android 호스트 · 번들 산출물이 같다(Android 결과는 첫
+회차를 인용한다). 캡처 · 측정 스크립트는 저장소에 넣지 않았다 — 작업 `motion-reduced-motion`의 산출물 `artifacts/e2e-red/` · `artifacts/e2e-green/`에 있고 파일
+이름은 위 「증거 파일 이름」 대신 `<platform>-<id>-<구분>-<n>.png` 꼴이다. `ffmpeg`가 없어 녹화 대신 연속 캡처(iOS 약 100 ms 간격 `tools/burst.py`,
+Android 기기 안 `screencap` 루프)로 중간 프레임을 잡았다. `data-motion` 값을 읽는 수단은 찾지 못해 **캡처로 대신했다.** 통과·실패는 `통과` / `실패: <관찰>` /
+`판정 불가: <이유>` / `미확인`으로만 적는다.
 
 | 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
 |---|---|---|---|
-| M-I1 | iOS 시뮬레이터 | 아직 실행하지 않음 | |
-| M-I2 | iOS 시뮬레이터 | 아직 실행하지 않음 | |
-| M-I3 | iOS 시뮬레이터 | 아직 실행하지 않음 | |
-| M-I4 | iOS 시뮬레이터 | 아직 실행하지 않음 | |
-| M-I5 | iOS 시뮬레이터 | 아직 실행하지 않음 | |
-| M-I6 | iOS 시뮬레이터 | 아직 실행하지 않음 | |
-| M-I7(기록) | iOS 시뮬레이터 | 아직 실행하지 않음 | |
-| (실기) M-I1 · M-I4 | iOS 실기 | 미확인 | |
-| M-A1 | Android 에뮬레이터 | 아직 실행하지 않음 | |
-| M-A2 | Android 에뮬레이터 | 아직 실행하지 않음 | |
-| M-A3 | Android 에뮬레이터 | 아직 실행하지 않음 | |
-| M-A4 | Android 에뮬레이터 | 아직 실행하지 않음 | |
-| M-A5 | Android 에뮬레이터 | 아직 실행하지 않음 | |
-| M-A6 | Android 에뮬레이터 | 아직 실행하지 않음 | |
-| M-A7(선택) | Android 에뮬레이터 | 없음 | 계측 테스트 없음 |
+| M-I1 | iOS 시뮬레이터 | 통과(r02) | 끈 재실행의 첫 Dialog 930/748 → 1002/780(standard). 동작 줄이기를 켜고 재부팅한 뒤 첫 실행의 **첫 Dialog**가 첫 프레임부터 카드 상자 933..1689 · 123..1083으로 정착과 같다(reduced) — 가정 A2 성립(첫 화면부터 값이 실린다). 캡처로 대신함. `ios-M-I1-off.png` · `-on.png`. 첫 회차는 **실패**(켠 상태 첫 프레임 930/748 — 위 「실제로 일어난 일」) |
+| M-I2 | iOS 시뮬레이터 | 통과(r02) | 앱 프로세스 유지(pid 429 동일). 설정 앱 스위치 켬 → 끔 뒤 첫 Dialog 930/748 → 1002/780(standard), 끔 → 켬 뒤 첫 Dialog 960/756 → 1002/780이지만 카드 상자 불변(reduced — 「측정 주의」). 스위치는 idb 탭이 첫 번에 자주 안 먹어 2 ~ 3회 탭. `ios-M-I2-*`, `-settings-off/on.png`. 첫 회차는 **실패**(끔 → 켬 뒤 930) |
+| M-I3 | iOS 시뮬레이터 | 통과(두 회차) | 끈 · 켠 여정 맵 캡처가 상태바 시계 영역(x 249 ~ 276, y 79 ~ 116)을 빼고 픽셀 동일 — `reducedMotion` 전송이 `safeAreaInsets`를 지우지 않는다(가정 A1). `ios-M-I3-off-1.png` · `-on-1.png` |
+| M-I4 | iOS 시뮬레이터 | 통과(r02) | 켠 5회 모두 카드 상자(top 933 · bottom 1689 · 폭 961) 불변, 첫 프레임은 반투명(페이드만). 끈 3회는 첫 프레임 930/748(상자 top 944 · bottom 1678 · 138..1067) → 991/775 → 1002/780. 켠 첫 프레임의 그림자 포함 값은 1002/780 · 984/771 · 960/756으로 흔들려 카드 상자로 판정 — 「측정 주의」. `ios-M-I4-on-*` · `-off-*` · `-cardbox.txt`. 첫 회차는 **실패** |
+| M-I5 | iOS 시뮬레이터 | 통과(r02) | 켠: surface 지름 216 → 216(11프레임 전부, 축소 없음). 끈: 216 → 212 → 206(95.4 %). 눌림 색 없음은 실패가 아님(Q2). `ios-M-I5-on/off-*`. 첫 회차는 **실패**(켠 상태 216 → 206) |
+| M-I6 | iOS 시뮬레이터 | 판정 불가: 끈 상태에서도 대사가 첫 Dialog 프레임부터 전체 | 끈 ko 664 · en 0 / 켠 ko 664 · en 0(글자 잉크 픽셀) — 진입 직전 프레임만 페이드이고 켠 · 끈이 캡처로 갈리지 않는다(두 회차 같음). 계속 표시 y 비교 안 함. 즉시 표시는 코드 · ui 테스트(TW · VN · CB)로 닫혀 있다. `ios-M-I6-on/off-*` |
+| M-I7(기록) | iOS 시뮬레이터 | 부분 기록(판정 없음) | 설정 탭에 토글이 없고 알림 항목은 시스템 권한 창만 띄움(허용 안 함으로 닫음). BottomSheet · PageIndicator · ProgressHeader 진행은 도달하지 못함 → **미확인** |
+| (실기) M-I1 · M-I4 | iOS 실기 | 미확인 | 실기 없음 |
+| M-A1 | Android 에뮬레이터 | 통과(첫 회차) | a(`animator_duration_scale 0`, transition 1): reduced 모양 · b(animator 1, `transition_animation_scale 0`): 중간 프레임 카드 폭 320(축소 없음) · c(둘 다 1): 폭 310 ~ 318(축소). d 회차(`window_animation_scale`만 0)는 돌지 않음. `android-M-A1-a/b/c-*.png` · `-a-summary.txt` |
+| M-A2 | Android 에뮬레이터 | 통과(첫 회차) | 1 ~ 4 모두 **재실행 없이** 다음 Dialog가 새 값대로. 접근성 「Remove animations」 토글(세 배율 0.0 ↔ 1.0, `settings get`으로 확인)도 따라옴 — 가정 A3 성립. `android-M-A2-1~4-1.png` · `-s1~s4-summary.txt` |
+| M-A3 | Android 에뮬레이터 | 통과(첫 회차) | 3버튼, 배율 1 → 0 → 1에서 하단 행 차이 0 — `tappableBottomInset` 유지(가정 A1). `android-M-A3-off-1.png` · `-on-1.png` |
+| M-A4 | Android 에뮬레이터 | 통과(첫 회차) | (i) · (ii) 모두 카드 폭 320 불변, 잔상 · 베일 없음; 끈 상태는 중간 프레임 310 ~ 318. **배율 0에서도 Lynx 페이드 중간 프레임이 보였다** — 「배율 0이 Lynx 키프레임도 멈춘다」는 이 에뮬레이터에서 성립하지 않아 (ii)에서도 앱의 reduced 분기(페이드만 · 축소 없음)가 끈 상태(축소)와 갈렸다. 중간 프레임 포착은 운이 섞임(끈 10회 중 8회, (i) 15회 중 4회, (ii) 5회 중 3회). `android-M-A4-i/ii/off-*` |
+| M-A5 | Android 에뮬레이터 | 통과(첫 회차) | 끈 72 → 68(축소), (i) 72 → 72, (ii) 72 → 72. `android-M-A5-off-ctrl-*` · `-i-*` · `-ii-*` · `-measure.txt` |
+| M-A6 | Android 에뮬레이터 | 판정 불가: 끈 상태에서도 첫 프레임부터 대사 전체 | 켠 · 끈이 캡처로 갈리지 않아 켠 상태 캡처는 찍지 않음(M-I6과 같은 한계). `android-M-A6-off-1/2.png` |
+| M-A7(선택) | Android 에뮬레이터 | 없음 | 계측 테스트 없음(`ReducedMotionTest`는 JVM 단위 테스트) |
 
-| 시작 값(실행 전 기록) | iOS 동작 줄이기: ___ · Android `animator_duration_scale`: ___ · `transition_animation_scale`: ___ · `window_animation_scale`: ___ |
+| 시작 값(실행 전 기록) | iOS 동작 줄이기: 0(꺼짐) · Android `animator_duration_scale`: `null` · `transition_animation_scale`: 1.0 · `window_animation_scale`: 1.0 |
 |---|---|
-| 확인자 | |
-| 날짜 | |
-| 빌드 SHA (호스트 · 번들) | |
-| 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터 · Debug + `--bundle-url=main.lynx` / Pixel_8 AVD API 37 · debug |
-| 설정 복원 확인 | |
+| 확인자 | test-runner 에이전트(두 회차). 첫 회차 iOS 실패의 진단 · 재판정은 root |
+| 날짜 | 2026-10-09 — 첫 회차 Android 판정 캡처 03:42 ~ 04:00, r02 iOS 04:30 ~ 04:45 |
+| 빌드 SHA (호스트 · 번들) | Android 호스트 · 번들 `d5ff18d9`(첫 회차) / iOS 호스트 · 번들 `d602fe08`(r02; 첫 회차는 `d5ff18d9`). 번들은 로그인을 위해 `PUBLIC_SUPABASE_URL=https://localhost:18791`(iOS, 모의 TLS 서버) · `https://example.invalid`(Android)로 빌드 |
+| 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터(iOS 26.5, 전용 `motion-reduced-e2e` · `motion-green`) · **Release** Host(`CODE_SIGNING_ALLOWED=NO`, pod install 안 함) + `--bundle-url=main.lynx` — 절차의 Debug와 다르다 / Pixel_8 AVD `emulator-5554` API 37 · debug + androidTest, 번들 서버 18792(18790은 다른 세션이 점유) |
+| 설정 복원 확인 | iOS 0 → 0, 전용 시뮬레이터 `shutdown` · `delete`(목록 0건). Android `delete` · 1.0 · 1.0, `wm size`/`density` · `font_scale` · `navigation_mode` 원복. **TalkBack이 시작 시점에 켜져 있었다**(다른 세션의 잔재 — 탭이 탐색 모드로 먹혀 끄고 진행) → 끝에 세 값(`enabled_accessibility_services` · `accessibility_enabled` · `touch_exploration_enabled`)을 그대로 되돌림 |

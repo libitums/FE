@@ -77,7 +77,8 @@ apps/mobile/src/
   `<component>.css`.
 - 구현과 component-local test는 PascalCase: `<Component>.tsx`,
   `<Component>.unit.test.ts`, `<Component>.ui.test.tsx`. 순수 runtime export가 없는
-  `BackHeader`는 unit test를 두지 않는다.
+  `BackHeader`는 unit test를 두지 않는다. UI · CSS를 소유하지 않는 공개 훅 디렉터리
+  `typewriter` · `motion`은 이 파일 계약 밖이다(예외의 세부는 아래 단일 참조 문서).
 - 공개 props·상태·파생 모델 타입과 순수 계약 함수는
   `<component>.contract.ts` 하나가 소유한다. generic `contract.ts`와 별도
   `logic.ts`는 두지 않는다.
