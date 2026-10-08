@@ -46,6 +46,7 @@ import type { Screen } from "./nav-state";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useOpenedPush } from "./use-opened-push";
+import { usePushTokenRefresh } from "./use-push-token-refresh";
 import { useSystemBack } from "./use-system-back";
 import { useJourneyProgress } from "./use-journey-progress";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
@@ -208,14 +209,13 @@ export function AppSession({
     syncProgress: progress.syncFromServer,
   });
 
-  // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼
-  // 안쪽 여백을 잡습니다. 여백은 셸 배경이 칠하고, 스플래시일 때만 그 배경이
-  // 브랜드색입니다(lib/safe-area.ts).
-  //
+  // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼 안쪽 여백을 잡습니다.
+  // 여백은 셸 배경이 칠하고, 스플래시일 때만 그 배경이 브랜드색입니다(lib/safe-area.ts).
   // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
   // Android 3버튼)만 비우고 탭 바 묶음이 그 밑을 덧댑니다. iOS · 제스처는 0입니다.
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
   useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
+  usePushTokenRefresh();
   // Android 시스템 뒤로가기는 화면의 닫기와 같은 경로를 탑니다(ADR-0043).
   useSystemBack(nav, dispatch);
 

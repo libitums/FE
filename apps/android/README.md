@@ -214,6 +214,11 @@ Maestro 절차는 [Android 평점 요청 검증](../../docs/e2e/android-app-revi
 `PushNotificationModuleTest`는 브리지·알림 채널·목적지 일회성 소비를 확인한다.
 Maestro의 권한·설정·알림 탭 절차는
 [Android 푸시 검증](../../docs/e2e/android-push-notifications.md)에 있다.
+`PushTokenRefreshRelayTest`는 FCM 토큰 갱신 통지를 서비스에서 Activity로 넘기는 프로세스 안 중계의 판정
+(리스너 없음 · 전달 한 번 · 뗌 · 순서가 뒤바뀐 재생성 · 대체 · 리스너 예외 삼킴)을 확인한다. 계측
+`PushTokenRefreshHostTest`는 실제 `MainActivity`가 살아 있는 동안만 중계가 전달하는지를 보고 번들 · Firebase 설정
+없이 계측 일괄에서 돈다. SDK가 실제로 `onNewToken`을 부르는 구간과 JS의 재등록 요청은 Google Play
+에뮬레이터의 수동 절차(같은 문서의 「토큰 갱신」)가 본다.
 `SystemBackGateTest`는 시스템 뒤로가기의 판정을 확인한다. 준비 전 누름의 종료, 대기 중
 재누름 무시, `handled`·`leave` 응답, 500ms 무응답과 모르는 응답의 처리가 대상이며
 `./gradlew testDebugUnitTest`로 실행한다. 실제 Activity에서의 에뮬레이터 절차는
@@ -309,6 +314,10 @@ Apple 계정 삭제는 Android에서 웹 OAuth를 다시 열고 Supabase PKCE �
 Android 호스트는 FCM SDK와 `duru-updates` 알림 채널을 포함한다. Firebase 프로젝트에 Android 앱 `libitum.duru.android`를 등록한 뒤 받은 `google-services.json`을 `apps/android/app/`에 둔다. 이 로컬 파일은 Git에서 제외한다. 파일이 있으면 Gradle의 Google services 플러그인이 적용되고 SDK가 기본 Firebase 앱을 초기화한다. 파일이 없는 `debug` · `bundled` 빌드는 권한·알림 화면 검증은 되지만 FCM 토큰을 반환하지 않아 서버 기기 등록은 하지 않는다. `release` 빌드는 파일이 없으면 실패한다(위 「패키지 이름과 출시 빌드」).
 
 서버에는 [FCM 전송 마이그레이션과 함수](../supabase-functions/README.md#android-fcm-확장-adr-0041)를 배포하고 `FIREBASE_SERVICE_ACCOUNT_JSON`을 Edge Function 시크릿으로 설정한다. 서비스 계정 키는 Android 앱이나 저장소에 넣지 않는다. 앱이 허용된 권한으로 열릴 때 현재 토큰을 읽어 기존 `register_push_device` RPC에 등록한다. FCM 토큰이 바뀌면 다음 앱 실행에서 다시 등록한다. 실제 원격 수신·백그라운드 탭은 서버 발송 인증이 준비될 때까지 미검증이다.
+
+**앱이 살아 있는 동안 토큰이 바뀌면 다음 실행을 기다리지 않고 바로 다시 등록한다**([ADR-0048](../../docs/adr/0048-android-push-token-refresh.md)). `DuruFirebaseMessagingService.onNewToken`이 프로세스 안 중계(`PushTokenRefreshRelay`)를 부르고, 살아 있는 `MainActivity`가 인자 없는 전역 이벤트 `pushTokenRefreshed`를 메인 스레드에서 보내며, JS가 묻지 않고 등록을 다시 부른다. 이벤트는 토큰을 싣지 않고 쌓아 두지 않는다 — Activity가 없으면(서비스만 깨어난 경우) 통지는 버려지고 호스트는 아무것도 저장하지 않는다. 로그아웃 상태이거나 알림 권한이 없으면 등록하지 않는다. iOS 호스트는 이 이벤트를 보내지 않는다.
+등록 요청이 떠 있는 동안 로그아웃하거나 다른 계정으로 바뀌면, 뒤늦게 성공한 등록은 기억하지 않고 그 요청에 쓴 인증으로 바로 해제를 보낸다(같은 ADR의 D5 — 공유 JS의 동작이고 vitest로만 확인했다. 기기에서 실행된 적은 없다).
+이 경로가 닫는 것은 「앱 프로세스가 살아 있는 동안 바뀐 토큰」 하나다. 앱을 열지 않는 동안의 갱신은 여전히 다음 실행에서 반영되고, 앱을 홈 버튼으로만 오가는 동안에는(JS가 다시 부팅하지 않는다) 포그라운드 복귀 때 등록이 일어나지 않는다 — 후속 과제다(같은 ADR의 「남는 틈」). 2026-10-06에 API 37 Google Play 에뮬레이터에서 가짜 HTTP 서비스로 등록 요청이 한 번 더 나가는 것까지 확인했다. 실 서버의 행 · 원격 발송은 확인하지 않았다.
 
 설정 파일의 `client_info.android_client_info.package_name`은 `libitum.duru.android`여야 한다. Google Play 서비스를 포함한 전용 에뮬레이터에서 토큰 발급과 브리지 반환을 확인한다. 이 계측 테스트는 명시적으로 실행할 때만 네트워크를 사용하며 토큰 값을 출력하지 않는다.
 

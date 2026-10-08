@@ -43,6 +43,7 @@ public final class MainActivity extends Activity {
   private Map<String, Object> lastSafeAreaInsets;
   private final SystemBackGate backGate = new SystemBackGate();
   private OnBackInvokedCallback backCallback;
+  private final PushTokenRefreshRelay.Listener tokenRefreshListener = this::sendPushTokenRefreshed;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -89,6 +90,15 @@ public final class MainActivity extends Activity {
     pushNotifications.captureOpened();
     lynxView.renderTemplateUrl(templateUrl, "");
     registerBackCallback();
+    PushTokenRefreshRelay.PROCESS.attach(tokenRefreshListener);
+  }
+
+  // Called on the FCM executor thread; the global event goes out on the main thread, never queued.
+  private void sendPushTokenRefreshed() {
+    mainHandler.post(() -> {
+      if (lynxView == null || isFinishing() || isDestroyed()) return;
+      lynxView.sendGlobalEvent("pushTokenRefreshed", new JavaOnlyArray());
+    });
   }
 
   // API 33+ goes through the back-invoked dispatcher; 26-32 uses onBackPressed().
@@ -242,6 +252,7 @@ public final class MainActivity extends Activity {
   }
 
   @Override protected void onDestroy() {
+    PushTokenRefreshRelay.PROCESS.detach(tokenRefreshListener);
     if (backTimeout != null) {
       mainHandler.removeCallbacks(backTimeout);
       backTimeout = null;

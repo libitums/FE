@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.SystemClock;
+import android.util.Log;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.lynx.jsbridge.network.HttpRequest;
 import com.lynx.jsbridge.network.HttpResponse;
 import com.lynx.jsbridge.network.HttpStreamingDelegate;
@@ -31,6 +33,7 @@ import org.junit.Test;
 public final class SignedInScreenFixtureTest {
   private static final String STOP_ACTION = "com.libitum.host.test.STOP_SIGNED_IN_FIXTURE";
   private static final String PUSH_ACTION = "com.libitum.host.test.POST_PUSH_FIXTURE";
+  private static final String ROTATE_ACTION = "com.libitum.host.test.ROTATE_FCM_TOKEN";
   private static final String REFRESH_URL =
       "https://example.invalid/auth/v1/token?grant_type=refresh_token";
   private static final String AUDIO_PROGRESS = "{\"version\":1,\"completedStepCount\":5,"
@@ -63,6 +66,7 @@ public final class SignedInScreenFixtureTest {
     }
 
     @Override public void request(HttpRequest request, LynxHttpRequestCallback callback) {
+      Log.i("PushRefreshProbe", "http " + pathOf(request.getUrl()));
       HttpResponse response = new HttpResponse();
       response.setUrl(request.getUrl());
       JavaOnlyMap headers = new JavaOnlyMap();
@@ -83,6 +87,26 @@ public final class SignedInScreenFixtureTest {
         HttpRequest request, LynxHttpRequestCallback callback, HttpStreamingDelegate delegate) {
       request(request, callback);
     }
+  }
+
+  /** Path only: the query (tokens) and host are never logged. */
+  private static String pathOf(String url) {
+    try {
+      String path = java.net.URI.create(url).getPath();
+      return path == null ? "" : path;
+    } catch (RuntimeException error) {
+      return "(unparsable)";
+    }
+  }
+
+  /** Rotates the FCM token inside the app process (procedure T2 · T3 in docs/e2e). */
+  private static void rotateFcmToken() {
+    FirebaseMessaging fcm = FirebaseMessaging.getInstance();
+    fcm.deleteToken().addOnCompleteListener(deleted -> {
+      Log.i("PushRefreshProbe", "deleteToken ok=" + deleted.isSuccessful());
+      fcm.getToken().addOnCompleteListener(
+          got -> Log.i("PushRefreshProbe", "getToken ok=" + got.isSuccessful()));
+    });
   }
 
   private static boolean hasTestId(LynxBaseUI node, String testId) {
@@ -109,7 +133,8 @@ public final class SignedInScreenFixtureTest {
     Context context = instrumentation.getTargetContext();
     String bundleUrl = InstrumentationRegistry.getArguments().getString("bundleUrl");
     assertNotNull("bundleUrl instrumentation argument missing", bundleUrl);
-    new StorageModule(context).set("libitum.auth.session",
+    boolean noSession = "true".equals(InstrumentationRegistry.getArguments().getString("noSession"));
+    if (!noSession) new StorageModule(context).set("libitum.auth.session",
         "{\"accessToken\":\"fixture-access\",\"refreshToken\":\"fixture-seed\",\"expiresAt\":1}");
     boolean audioProgress = "true".equals(
         InstrumentationRegistry.getArguments().getString("audioProgress"));
@@ -134,6 +159,7 @@ public final class SignedInScreenFixtureTest {
     BroadcastReceiver receiver = new BroadcastReceiver() {
       @Override public void onReceive(Context ignored, Intent intent) {
         if (STOP_ACTION.equals(intent.getAction())) stop.countDown();
+        if (ROTATE_ACTION.equals(intent.getAction())) rotateFcmToken();
         if (PUSH_ACTION.equals(intent.getAction())) {
           DuruFirebaseMessagingService.postForegroundNotification(context,
               "Duru test", "Open notifications", "{\"kind\":\"notifications\"}");
@@ -143,6 +169,7 @@ public final class SignedInScreenFixtureTest {
     IntentFilter controls = new IntentFilter();
     controls.addAction(STOP_ACTION);
     controls.addAction(PUSH_ACTION);
+    controls.addAction(ROTATE_ACTION);
     if (Build.VERSION.SDK_INT >= 33) {
       context.registerReceiver(receiver, controls, Context.RECEIVER_EXPORTED);
     } else {
@@ -163,13 +190,15 @@ public final class SignedInScreenFixtureTest {
       });
       assertTrue("Activity content is missing a LynxView", firstChild[0] instanceof LynxView);
       LynxView view = (LynxView) firstChild[0];
-      long deadline = SystemClock.uptimeMillis() + 20000;
-      while (!hasTestIdOnMainThread(instrumentation, view, "journey-map-screen")
-          && SystemClock.uptimeMillis() < deadline) {
-        SystemClock.sleep(200);
+      if (!noSession) {
+        long deadline = SystemClock.uptimeMillis() + 20000;
+        while (!hasTestIdOnMainThread(instrumentation, view, "journey-map-screen")
+            && SystemClock.uptimeMillis() < deadline) {
+          SystemClock.sleep(200);
+        }
+        assertTrue("signed-in journey screen did not render",
+            hasTestIdOnMainThread(instrumentation, view, "journey-map-screen"));
       }
-      assertTrue("signed-in journey screen did not render",
-          hasTestIdOnMainThread(instrumentation, view, "journey-map-screen"));
       assertTrue("Maestro did not send the fixture stop broadcast", stop.await(180, TimeUnit.SECONDS));
     } finally {
       context.unregisterReceiver(receiver);

@@ -13,7 +13,10 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** Displays user-visible data messages in foreground and background. */
+/**
+ * Displays user-visible data messages in foreground and background. A refreshed FCM token is only
+ * relayed as a signal to the live Activity; it is never stored (ADR-0048).
+ */
 public final class DuruFirebaseMessagingService extends FirebaseMessagingService {
   static final String CHANNEL_ID = "duru-updates";
   private static final AtomicInteger nextNotificationId = new AtomicInteger(1000);
@@ -26,6 +29,11 @@ public final class DuruFirebaseMessagingService extends FirebaseMessagingService
         NotificationManager.IMPORTANCE_DEFAULT);
     channel.setDescription(context.getString(R.string.notification_channel_description));
     notifications.createNotificationChannel(channel);
+  }
+
+  // Runs on the SDK executor thread. The token is deliberately unused: JS re-reads it through register.
+  @Override public void onNewToken(String token) {
+    PushTokenRefreshRelay.PROCESS.notifyRefreshed();
   }
 
   @Override public void onMessageReceived(RemoteMessage message) {

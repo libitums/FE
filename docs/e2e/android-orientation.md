@@ -854,7 +854,7 @@ tr -d '\r' <"$OUT/instrument-$ID.raw.log" | grep '^INSTRUMENTATION_STATUS_CODE:'
 - 실패하면 어느 케이스인지 `test=` 이름과 `stack=`을 붙인다. 구현을 덧대지 않는다(계약 §6 · §14).
 - **끝나면 아래 「끝난 뒤 되돌리기」를 한 번 더 돈다** — 케이스가 중간에 죽으면 전역 설정이 남는다.
 - 기존 계측 일괄([Android 출시 설정 절차](android-release-config.md)의 R8 ①)은 `notClass`에 `com.libitum.host.ConfigurationChangeTest`를 넣어 이 클래스를 **빼고** 돈다(그 문서의 명령에 반영돼 있다) — 이 클래스가 전역 설정을 바꾸고 `-e bundleUrl`을 요구하기 때문이다.
-  기준선은 `OK (40 tests)`다. 빼지 않으면 일괄에 들어가 `bundleUrl` 없이 실패한다(이 클래스가 7건이던 때 `Tests run: 47, Failures: 6`이었다 — 8건이 된 뒤의 수는 재지 않았다).
+  기준선은 `OK (43 tests)`다(통과 40 + 건너뜀 3 — 2026-10-06 `bc9a091e`부터. 수의 내력과 건너뛰는 셋은 [출시 설정 절차](android-release-config.md) R8의 「통과」가 진다. 이 문서의 「실행 결과」에 남은 `OK (40 tests)`는 그때의 결과다). 빼지 않으면 일괄에 들어가 `bundleUrl` 없이 실패한다(이 클래스가 7건이던 때 `Tests run: 47, Failures: 6`이었다 — 8건이 된 뒤의 수는 재지 않았다).
 - **이 계측이 보증하지 않는 것**: IC2 ~ IC5의 「화면 상태 유지」 단언(구성 변경 뒤 페이지 로드 콜백 0회 · 온보딩 둘째 단계 그대로)이 **실제로 실패하는 장면은 관찰된 적이 없다** — `configChanges`만 뺀 임시 빌드에서는 재생성 단언이 먼저 실패했다.
   그 임시 빌드에서 IC3 · IC4는 통과했다(IC3은 `onConfigurationChanged`의 전달을, IC4는 세로 잠금을 가른다). ADR-0047의 「확인한 것과 확인하지 못한 것」에 같은 한계가 있다.
 

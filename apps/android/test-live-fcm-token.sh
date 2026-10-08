@@ -30,7 +30,7 @@ cd "$APP_DIR"
 "$ADB" -s "$FCM_UDID" install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 "$ADB" -s "$FCM_UDID" shell pm clear libitum.duru.android
 result=$("$ADB" -s "$FCM_UDID" shell am instrument -w \
-  -e class com.libitum.host.LiveFcmTokenTest \
+  -e class com.libitum.host.LiveFcmTokenTest#bridgeReturnsARealFcmRegistration \
   -e liveFcm true \
   libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner)
 printf '%s\n' "$result"
