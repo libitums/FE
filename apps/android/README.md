@@ -88,7 +88,7 @@ iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽�
   어긋남(한 파일만 고침 · API 수준보다 낮은 한정자에 적은 속성 · 금지한 스플래시 속성 · `monochrome` 추가 등)은 `devtools/android-bundle/host-launch-appearance.mjs`의 판정이 같은 명령에서 잡는다. 값을 바꾸려면 ADR과 그 판정을 함께 고친다.
 - **적응형 아이콘은 진짜 레이어 분리가 아니다.** 원본이 배경까지 합쳐진 한 장뿐이라 그림 전체가 전경이고 배경은 단색이다. 한계와 디자이너에게 요청할 원본은 ADR-0049의 D5 · 「후속 과제」가 진다.
 - **API 31 이상에서는 시작 구간의 상태바 아이콘이 흰색이었다가 앱이 뜬 뒤 어두운 색으로 한 번 바뀐다.** 시스템 스플래시의 아이콘 명암은 플랫폼이 스플래시 배경색으로 정해 테마로 바꿀 수 없다(API 37 에뮬레이터 실측 — 같은 ADR의 「이 작업이 만든 변화」).
-  **알고 받아들인 후퇴다(사용자 결정, 2026-10-06)** — 그 구간의 색 쌍 대비가 20.12:1에서 3.016:1로 낮아졌고 시계 글자는 텍스트 기준 4.5:1에 못 미친다. 다음 작업(어두운 화면 위에서 상태바 아이콘이 가려지는 문제의 화면별 전환)으로도 이 뒤집힘은 남는다 — 스플래시 표면은 검정 아이콘을 유지하는 것이 맞고, 없애려면 브랜드 주황 자체를 더 어둡게 해야 한다(디자인 결정).
+  **알고 받아들인 후퇴다(사용자 결정, 2026-10-06)** — 그 구간의 색 쌍 대비가 20.12:1에서 3.016:1로 낮아졌고 시계 글자는 텍스트 기준 4.5:1에 못 미친다. 화면에 따라 상태바 아이콘의 명암을 바꾸는 일(아래 「상태바 아이콘」 · ADR-0050)이 들어간 뒤에도 이 뒤집힘은 남는다 — 스플래시 표면은 표지를 달지 않아 검정 아이콘을 유지하고(그것이 맞다), 없애려면 브랜드 주황 자체를 더 어둡게 해야 한다(디자인 결정).
 - **`Theme.Duru`는 `<application>`에 걸려 있어 `PushNotificationTapActivity`도 물려받는다.** 앱이 떠 있는 동안 알림을 눌러도 주황이 번쩍이는 프레임은 영상에서 관찰되지 않았다(API 37 에뮬레이터 — 한계는 [절차 문서](../../docs/e2e/android-launch-appearance.md)의 L11).
 - **리소스 검사는 `values` · `values-v27` · `values-v31`(과 `values-night*`)만 본다.** 다른 한정자(`values-v33` · `values-land` · `mipmap-anydpi-v33` · `drawable-v31` 등)로 테마 · 색 · 아이콘 · 스플래시 drawable을 더하면 검사가 놓친다 — 더하지 않거나, 더할 때 검사부터 넓힌다(ADR-0049 「후속 과제」 6).
 - **번들을 읽지 못하면 끝없는 주황 한 면이 보인다**(이 변경 전에는 회백색이었다). `debug` 빌드를 번들 서버 없이 띄웠을 때가 그렇다 — 스플래시가 길어진 것이 아니다.
@@ -105,6 +105,54 @@ swift apps/android/tools/generate-launcher-foreground.swift \
 
 밀도마다 `<밀도>: canvas …px, art …px, margin …px -> …/mipmap-<밀도>/ic_launcher_foreground.png` 한 줄을 낸다. 만든 뒤 `pnpm test:android-bundle`(HL3이 크기와 알파 채널을 본다)을 돌리고, 런처에서 마크가 잘리지 않는지는
 [Android 실행 시 색과 적응형 아이콘](../../docs/e2e/android-launch-appearance.md)의 L4로 본다. 마크만 있는 원본이 오면 이 스크립트가 아니라 레이어 파일을 교체한다(ADR-0049 D5).
+
+## 상태바 아이콘
+
+앱의 창이 뜬 뒤 상태바 아이콘(시계 · 알림 · 신호 · 배터리)의 명암은 **화면이 단 표지를 호스트가 읽어** 정한다([ADR-0050](../../docs/adr/0050-android-status-bar-icons.md)). 새 호스트 모듈 · 전역 이벤트 · 매니페스트 · Gradle 변경은 없다.
+이름은 전부 아이콘 색 기준이다 — `setAppearanceLightStatusBars(true)`는 「밝은 바」 = **어두운 아이콘**이라 뒤집혀 있다.
+
+| 자리 | 하는 일 |
+|---|---|
+| 공유 JS `apps/mobile/src/lib/status-bar-icons.ts` | 상수 하나(`lightStatusBarIcons = "light-icons"`). 상단 띠를 어둡게 칠하는 요소가 `data-statusbar={lightStatusBarIcons}`를 단다 — 다는 자리와 새 화면의 규칙은 [화면 명세](../../docs/screens.md#상단-띠를-어둡게-칠하는-면은-상태바-표지를-단다)가 진다 |
+| `StatusBarIcons.java` | 순수 판정(Android · Lynx import 없음). dataset 키 `statusbar` · 값 `light-icons`, 표지 값들 → `Tone`(`LIGHT` · `DARK`). **표지가 하나라도 있으면 밝은 아이콘**, 그 밖(없음 · `null` · 모르는 값)은 어두운 아이콘 |
+| `StatusBarIconSync.java` | Lynx UI 트리를 걸어 표지를 모으고, 직전에 적용한 명암과 다를 때만 `setAppearanceLightStatusBars`를 부른다. 내비게이션 바는 건드리지 않는다. 트리 읽기에서 예외가 나면 로그 없이 직전 명암을 둔다(ADR-0050 「대가」) |
+| `MainActivity` | `layoutEdgeToEdge`의 기본값(어두운 아이콘)은 그대로다. `LynxViewClient`의 `onFirstScreen` · `onPageUpdate` **안에서 곧바로** `statusBarIcons.sync(lynxView)`를 부른다 |
+
+- **`sync`를 `post`로 미루지 않는다.** 미루면 62 ~ 210 ms 늦는다(API 37 에뮬레이터 실측). `StatusBarIconSync` 안에도 `post` · `Handler` · `Executor` · `Thread`를 두지 않는다 — 둘 다 `pnpm test:android-bundle`(= `pnpm verify`)의 규칙 `host-wiring`이 막는다.
+  같은 콜백의 `AccessibilityTapBridge.sync`는 원래대로 `post`한다(건드리지 않았다).
+- **JS의 상수와 호스트의 문자열 둘은 짝이다.** 한쪽만 고치면 같은 명령의 `marker-value` · `marker-key`가 실패한다. 판정은 `devtools/android-bundle/host-status-bar-icons.mjs`에 있다.
+- **기본값으로 서는 때**: 번들이 뜨기 전 · 로드 실패 · JS 스플래시 · 재생성(글꼴 배율 등) 직후. `uiMode` · 화면 크기 변경과 HOME → 복귀에서는 호스트가 다시 하지 않아도 값이 남는다.
+- **아이콘은 표면보다 늦게 바뀐다 — 확인한 범위에서 앱이 줄일 수 있는 것은 한 프레임이다.** Pixel/AOSP 에뮬레이터 이미지 둘(API 37 · API 30)의 SystemUI dex에서 아이콘 색이 120 ms 애니메이션으로 바뀌는 것을 확인했고(제조사 SystemUI는 확인하지 않았다), API 30 에뮬레이터(호스트 GPU) 실측으로 다 바뀔 때까지 약 150 ~ 160 ms다(앱 몫은 한 프레임). 기준과 판정 환경은 ADR-0050 D7이 진다.
+- **Lynx를 올리면 아래 계측을 다시 돌린다.** 호스트가 Lynx의 `getDataset` · `onPageUpdate` · 클라이언트 호출 순서에 기대는데, 그것을 보는 계측은 에뮬레이터가 필요해 `pnpm verify`에 없다.
+- iOS 호스트는 이 표지를 읽지 않는다 — iOS는 시스템이 스스로 고른다.
+
+### 계측 `StatusBarIconsHostTest` 실행
+
+8건(HI1 ~ HI8)이다. 실제 `MainActivity`를 띄워 세션을 심고 모의 HTTP로 여정 맵까지 간 뒤, 창의 외형 플래그 · `StatusBarIconSync.applyCount()` · LynxView 트리의 dataset을 본다.
+**번들 서빙과 `-e bundleUrl`이 필수다** — 빠지면 `precondition: instrumentation argument bundleUrl is missing`으로 실패한다. 그래서 계측 일괄에서는 `notClass`로 빼고 따로 돌린다([출시 설정 절차](../../docs/e2e/android-release-config.md)의 R8 ④).
+
+```sh
+# 저장소 루트 — 모의 값으로 만든 번들을 서빙한다
+PUBLIC_SUPABASE_URL=https://example.invalid PUBLIC_SUPABASE_ANON_KEY=local-bridge-test pnpm bundle:android
+python3 -m http.server 18790 --bind 0.0.0.0 --directory apps/mobile/dist &
+cd apps/android && ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+adb -s <기기> install -r -t app/build/outputs/apk/debug/app-debug.apk
+adb -s <기기> install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -s <기기> shell am instrument -w -r -e class com.libitum.host.StatusBarIconsHostTest \
+  -e bundleUrl http://10.0.2.2:18790/main.lynx.bundle \
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+- **판정**: 종료 코드가 아니라 출력 마지막의 `OK (8 tests)`(실패면 `FAILURES!!!`)와 케이스별 `INSTRUMENTATION_STATUS_CODE`로 본다.
+  **`-r` 출력에는 코드 0이 10개 나온다**(테스트 8 + hi7 · hi8의 수치 보고 2) — 「0이 8개」로 세지 않고 `OK (8 tests)`와 테스트별 코드로 판정한다.
+  API 37 · API 30 에뮬레이터 모두 `OK (8 tests)`였다(2026-10-06 — HI8은 두 기기 모두 `calls=10 toneChanges=4 mismatched=0`).
+  HI4의 야간 모드 명령은 API 29부터라 그 아래에서는 건너뛴다(`-4` — 통과로 세지 않는다).
+- **전제**: 시작할 때 시스템 야간 모드가 꺼져 있어야 한다. 끝난 뒤 일반 번들이 필요하면 `pnpm bundle:android`를 다시 돌린다.
+- **에뮬레이터 전역 상태를 바꿨다 되돌린다** — HI4가 야간 모드를 켜고, 앱 저장소(`duru-storage`)를 백업한 뒤 세션을 심거나 비운다. Maestro · 다른 계측 · e2e 절차와 같은 기기에서 동시에 돌리지 않는다.
+  러너가 중간에 죽었으면 `adb -s <기기> shell 'cmd uimode night no'`, 앱 저장소가 비거나 세션이 남았으면 개발용 기기에 한해 `adb -s <기기> shell pm clear libitum.duru.android`.
+- **무엇을 증명하고 무엇을 못 하는가**: HI2 ~ HI6은 50 ms 간격 폴링이라 「결국 바뀐다 · 유지된다 · 적용 횟수」만 본다. **「화면 갱신과 같은 콜 안에서 적용된다」를 보는 것은 HI8 하나다** — 테스트가 자기 `LynxViewClient`를 더해 그 `onPageUpdate` 안에서 트리의 명암과 창의 플래그를 견준다.
+  HI8의 실행값(`toneChanges=4`)은 단언의 하한과 같아 여유가 없다(ADR-0050 D7의 「HI8의 한계」). HI7은 여정 맵에서 `sync` 200회의 평균이 4 ms 미만인지 본다.
+- 계측으로 닿는 화면은 온보딩 · 여정 맵 · 에피소드 표지 · 첫 서사 · 지표 모달이다. 시스템이 실제로 그린 픽셀(대비)과 전환 영상은 계측이 보지 못한다 — [Android 상태바 아이콘 명암](../../docs/e2e/android-status-bar-icons.md)의 에뮬레이터 절차가 진다.
 
 ## 준비
 
@@ -274,6 +322,10 @@ API 31 이상의 스플래시 배경과 아이콘 속성, 띄운 뒤에도 밝�
 리소스 · 매니페스트의 판정과 토큰 색 대조는 `pnpm test:android-bundle`이, 패키지된 APK의 리소스(적응형 아이콘 · `Theme.Duru`의 v27 · v31 구성 · `app_icon` 없음)는
 `ANDROID_HOME=~/Library/Android/sdk node --test devtools/android-bundle/host-launch-appearance.artifacts.mjs`(먼저 `pnpm bundle:android`와 `./gradlew :app:assembleBundled`)가 본다.
 시스템이 실제로 그리는 것(콜드 스타트 프레임의 색 · 런처의 마스크)은 계측이 보지 못한다 — 에뮬레이터 절차는 [Android 실행 시 색과 적응형 아이콘](../../docs/e2e/android-launch-appearance.md)에 있다.
+`StatusBarIconsTest`(JUnit 9건)는 상태바 아이콘 명암의 순수 판정(표지 값들 → 명암 · 플래그 값 · 다시 적용해야 하는가)을 확인하며 `./gradlew testDebugUnitTest`로 실행한다.
+표지의 자리 · JS와 호스트의 문자열 짝 · 등록부 · `MainActivity` 결선 · 연속 학습 모달의 운석 자리는 `pnpm test:android-bundle`(`host-status-bar-icons.unit.test.mjs` · `host-status-bar-icons.integration.test.mjs`)이 본다.
+계측 `StatusBarIconsHostTest`(8건)는 실제 `MainActivity`에서 호스트가 트리의 표지를 읽어 창의 플래그를 바꾸는지 · 같은 명암끼리의 교체에서 다시 적용하지 않는지 · 구성 변경과 재생성 뒤의 값 · 호출 비용 · 화면 갱신과 같은 콜 안에서 적용되는지를 확인한다.
+번들 서빙과 `-e bundleUrl`이 필요하고 야간 모드를 바꿨다 되돌려 계측 일괄에서는 `notClass`로 뺀다 — 실행 줄 · 판정 · 되돌리기는 위 「상태바 아이콘」의 「계측 `StatusBarIconsHostTest` 실행」에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E

@@ -15,6 +15,7 @@ import { StepSheet } from "./StepSheet";
 import { episodeSectionId, screenId, scrollId } from "./journey-map-scroll";
 import { useCurrentEpisode } from "./useCurrentEpisode";
 import { useStepSheet } from "./useStepSheet";
+import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useScreenLayer } from "../../lib/use-screen-layer";
 import { EpisodePendingSection } from "./EpisodePendingSection";
@@ -253,6 +254,7 @@ export function JourneyMapScreen({
         <view
           className="first-unit-map-scrim"
           data-testid="first-unit-guide-map"
+          data-statusbar={lightStatusBarIcons}
           catchtap={guide.dismiss}
         >
           <Overlay scope="area" />

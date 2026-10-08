@@ -346,8 +346,9 @@ A install -r apps/android/app/build/outputs/apk/debug/app-debug.apk
 A install -r apps/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 # ① 일괄 — ButtonAccessibilityTest 는 전제가 달라 여기서 빼고 ②에서 따로 돌린다.
 #    ConfigurationChangeTest 도 뺀다(에뮬레이터 전역 설정을 바꾸고 -e bundleUrl 이 필요하다 — 아래 ③)
+#    StatusBarIconsHostTest 도 뺀다(-e bundleUrl 이 필요하고 야간 모드를 바꾼다 — 아래 ④)
 A shell am instrument -w \
-  -e notClass com.libitum.host.SignedInScreenFixtureTest,com.libitum.host.SessionResumeTest,com.libitum.host.StorageRestartTest,com.libitum.host.ButtonAccessibilityTest,com.libitum.host.ConfigurationChangeTest \
+  -e notClass com.libitum.host.SignedInScreenFixtureTest,com.libitum.host.SessionResumeTest,com.libitum.host.StorageRestartTest,com.libitum.host.ButtonAccessibilityTest,com.libitum.host.ConfigurationChangeTest,com.libitum.host.StatusBarIconsHostTest \
   libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
 E2E_UDID=$E2E_UDID sh apps/android/test-session-resume.sh
 E2E_UDID=$E2E_UDID sh apps/android/test-storage-restart.sh
@@ -363,14 +364,19 @@ E2E_UDID=$E2E_UDID sh apps/android/test-storage-restart.sh
 `notClass`에서 빼고 ①을 돌리면 `Tests run: 47, Failures: 6`이 된다(2026-10-05, `396afb2b` · API 37 — 6건 모두 `precondition: instrumentation argument bundleUrl is missing`, 기존 40건은 통과. 그때 이 클래스는 7건이었고 일괄은 40건이었다 — 클래스가 8건, 일괄이 47건이 된 뒤의 수는 다시 재지 않았다. **이 `47`은 아래 ①의 지금 기대값 `OK (47 tests)`와 숫자만 같다** — 그때는 40 + 7이었고 실패 6건이 있었다).
 실행법 · 통과 기준(API 37은 8 통과, API 30에서는 6 통과 + 2 건너뜀) · 되돌리기는 [Android 화면 방향과 구성 변경](android-orientation.md#계측-configurationchangetest--실행법)이 진다(여기에 되풀이하지 않는다).
 
+**④ `StatusBarIconsHostTest`(8건)도 따로 돌린다.** `ConfigurationChangeTest`와 같은 이유다 — 번들 서빙과 `-e bundleUrl`을 요구하고(없으면 케이스마다 `precondition: instrumentation argument bundleUrl is missing`으로 실패한다) 시스템 야간 모드와 앱 저장소를 바꿨다 되돌린다.
+`notClass`에 넣지 않고 ①을 돌렸을 때의 실측은 이 클래스가 7건이던 때의 것이다: 54건 가운데 통과 44 · 건너뜀 3 · **실패 7**(2026-10-06, `bc44c645` · API 37 — 7건 모두 이 클래스의 `bundleUrl` 전제 실패). 그 뒤 케이스 하나(HI8)가 더해져 8건이 됐고, 그 상태로 `notClass` 없이 돌린 수는 다시 재지 않았다.
+실행법 · 통과 기준(`OK (8 tests)`) · 되돌리기는 [Android 호스트 README](../../apps/android/README.md#계측-statusbariconshosttest-실행)가 진다(여기에 되풀이하지 않는다).
+
 **통과**: 위 Maestro 전부 통과(`speech`는 AOSP 이미지가 없으면 미실행으로 이유를 적는다 — 통과로 쓰지 않는다) · 계측 ①은 **`OK (47 tests)`** · 계측 ②는 `OK (1 test)` · 두 스크립트 `OK`.
 **`OK (N tests)`의 N은 건너뛴 테스트를 포함한 수다.** 계측 ①의 47은 **통과 44 + 건너뜀 3**이다(2026-10-06, `dfbe03cb` · API 37 에뮬레이터(Pixel_8 AVD)에서 위 명령에 `-r`을 더해 코드를 센 결과 — `0`이 44개, `-4`가 3개, `-2` 없음. 그 앞의 기준선 43 = 통과 40 + 건너뜀 3은 `bc9a091e`에서 같은 방법으로 셌다).
+`StatusBarIconsHostTest`를 `notClass`에 더한 위 명령에서도 **47 = 통과 44 + 건너뜀 3 그대로다**(2026-10-06, `bc44c645` · API 37에서 `OK (47 tests)`. 빼는 클래스의 케이스 수는 이 수에 들지 않는다 — 그 클래스가 7건에서 8건이 된 뒤 일괄을 다시 돌리지는 않았고, 소스의 `@Test`를 세면 전체 71 − 뺀 여섯 클래스 24 = 47로 맞는다).
 건너뛰는 셋은 `LiveFcmTokenTest`의 2건(`#bridgeReturnsARealFcmRegistration` · `#relayGetsNewTokenAfterDeleteToken` — `-e liveFcm true`가 없으면 건너뛴다)과 `SpeechRecognitionModuleTest#missingRecognizerSettlesWithoutOpeningMicrophone`(AOSP 이미지 전제)이다.
 `PushTokenRefreshHostTest` 2건은 일괄에 들어가 통과한다(번들 · Firebase 없이 돈다 — [Android 푸시 호스트 E2E](android-push-notifications.md#계측-pushtokenrefreshhosttest--실행법)).
 `LaunchAppearanceTest` 4건도 일괄에 들어가 API 37에서 통과한다(번들 · 전역 설정 변경 없이 돈다. API 30 이하에서는 스플래시 속성 1건이 건너뛰어져 건너뜀 수가 하나 는다 — [ADR-0049](../adr/0049-android-launch-appearance.md)).
 건너뜀 수가 3이 아니면(이미지 종류에 따라 음성 인식 케이스가 돌 수 있다) `-r`로 다시 돌려 이름을 적는다.
 이 수의 내력: `OK (40 tests)`(2026-10-05 `9b15f548` · API 37에서 위 명령의 내용 그대로 — 그때는 `$A` 문자열 변수 형태를 bash에서 썼다. `ConfigurationChangeTest`를 `notClass`에 더한 뒤의 명령으로 2026-10-05 `396afb2b` · 2026-10-06 `8e16f6b5` · `94097ecb` · `4f3b2927`에서도 같았다)
-→ `OK (42 tests)`(2026-10-06 `704d56fc` — `PushTokenRefreshHostTest` 2건이 더해졌다) → `OK (43 tests)`(`bc9a091e` — `LiveFcmTokenTest`에 건너뛰는 케이스 1건이 더해졌다) → `OK (47 tests)`(2026-10-06 `dfbe03cb` — `LaunchAppearanceTest` 4건이 더해졌다).
+→ `OK (42 tests)`(2026-10-06 `704d56fc` — `PushTokenRefreshHostTest` 2건이 더해졌다) → `OK (43 tests)`(`bc9a091e` — `LiveFcmTokenTest`에 건너뛰는 케이스 1건이 더해졌다) → `OK (47 tests)`(2026-10-06 `dfbe03cb` — `LaunchAppearanceTest` 4건이 더해졌다) → `OK (47 tests)` 그대로(2026-10-06 `bc44c645` — `StatusBarIconsHostTest`가 더해졌으나 `notClass`로 뺀다).
 **이 문서와 다른 절차 문서 · ADR의 날짜 붙은 `OK (40 tests)` · `OK (43 tests)` 기록은 그때의 결과다 — 지금의 기대값이 아니다.**
 **`adb shell am instrument`는 테스트가 실패해도 종료 코드가 0이다.** 종료 코드로 판정하지 말고 출력 마지막의 `OK (N tests)`(실패면 `FAILURES!!!`)로 판정한다.
 실패 · 건너뜀은 이름과 사유를 결과 표에 적는다(`pnpm test:e2e:android:social:live` · `:talkback`은 실제 계정 · TalkBack이 필요해 이 항목에 넣지 않는다).

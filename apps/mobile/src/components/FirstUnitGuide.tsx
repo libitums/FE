@@ -1,6 +1,7 @@
 import arrowDown03 from "@libitums/icons/lynx/arrow-down-03";
 import { color } from "@libitums/design-tokens";
 import { Overlay } from "@libitums/ui-lynx/overlay";
+import { lightStatusBarIcons } from "../lib/status-bar-icons";
 import { useLayerBack } from "../lib/use-back-handler";
 import { useUiCopy } from "../lib/ui-copy";
 import type { FirstUnitGuideStep } from "./first-unit-guide";
@@ -25,6 +26,7 @@ export function FirstUnitGuide({
     <view
       className="first-unit-guide"
       data-testid={`first-unit-guide-${step}`}
+      data-statusbar={lightStatusBarIcons}
       catchtap={handleDismiss}
     >
       <Overlay scope="area" />

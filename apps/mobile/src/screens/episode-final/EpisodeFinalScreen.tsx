@@ -7,6 +7,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
 import type { AnswerResult } from "../../lib/answer-result";
+import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeFinalScreenProps } from "./episode-final.contract";
@@ -79,7 +80,11 @@ export function EpisodeFinalScreen({
       : undefined;
 
   return (
-    <view className="episode-final-screen" data-testid={episodeFinalTestIds.screen}>
+    <view
+      className="episode-final-screen"
+      data-testid={episodeFinalTestIds.screen}
+      data-statusbar={lightStatusBarIcons}
+    >
       {/* 장면 그림 · 위 명암은 순수 장식입니다. 래퍼가 자손을 통째로 가립니다(ADR-0016 D5). */}
       <view className="episode-final-scene" accessibility-elements-hidden={true}>
         <image

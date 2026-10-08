@@ -6,6 +6,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeIntroScreenProps } from "./episode-intro.contract";
@@ -47,7 +48,11 @@ export function EpisodeIntroScreen({
   useLayerBack(confirmingSkip ? () => handleConfirmAction("stay") : null);
 
   return (
-    <view className="episode-intro-screen" data-testid="episode-intro-screen">
+    <view
+      className="episode-intro-screen"
+      data-testid="episode-intro-screen"
+      data-statusbar={lightStatusBarIcons}
+    >
       {/* 명암 두 겹은 순수 장식입니다. */}
       <view className="episode-intro-screen-backdrop" accessibility-elements-hidden={true}>
         <view className="episode-intro-screen-shade-top" />

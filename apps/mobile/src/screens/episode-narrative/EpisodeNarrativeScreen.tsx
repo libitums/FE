@@ -12,6 +12,7 @@ import { useTypewriter } from "@libitums/ui-lynx/typewriter";
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playAudio, stopAudio } from "../../lib/audio";
@@ -114,6 +115,7 @@ export function EpisodeNarrativeScreen({
     <view
       className="episode-narrative-screen"
       data-testid="episode-narrative-screen"
+      data-statusbar={lightStatusBarIcons}
       bindtap={handleAdvance}
     >
       {/* 장면 그림 · 위 명암은 순수 장식입니다. `<image>`는 기본 접근성 정지라 래퍼가

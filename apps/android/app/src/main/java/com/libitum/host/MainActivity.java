@@ -39,6 +39,7 @@ public final class MainActivity extends Activity {
   private SoundEffectsController soundEffects;
   private SpeechRecognitionController speechRecognition;
   PushNotificationController pushNotifications;
+  StatusBarIconSync statusBarIcons;
   private LynxView lynxView;
   private Map<String, Object> lastSafeAreaInsets;
   private final SystemBackGate backGate = new SystemBackGate();
@@ -48,6 +49,7 @@ public final class MainActivity extends Activity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     layoutEdgeToEdge();
+    statusBarIcons = new StatusBarIconSync(getWindow());
     boolean bundled = !BuildConfig.DEBUG;
     String override = getIntent().getStringExtra("bundle-url");
     String templateUrl = HostPaths.template(BuildConfig.DEBUG, override);
@@ -78,10 +80,13 @@ public final class MainActivity extends Activity {
     lynxView = builder.build(this);
     lynxView.addLynxViewClient(new LynxViewClient() {
       @Override public void onFirstScreen() {
+        // Same main thread call as the page patch, so the icons flip with the surface (no post).
+        if (!isFinishing() && !isDestroyed()) statusBarIcons.sync(lynxView);
         mainHandler.post(() -> AccessibilityTapBridge.sync(lynxView));
       }
 
       @Override public void onPageUpdate() {
+        if (!isFinishing() && !isDestroyed()) statusBarIcons.sync(lynxView);
         mainHandler.post(() -> AccessibilityTapBridge.sync(lynxView));
       }
     });

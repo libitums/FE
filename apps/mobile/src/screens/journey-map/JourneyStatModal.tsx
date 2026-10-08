@@ -11,6 +11,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
+import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { journeyStatSlotCount, type JourneyStatKind, type JourneyStatTrack } from "./journey-stat";
@@ -80,6 +81,7 @@ export function JourneyStatModal({
     <view
       className={`journey-stat-modal journey-stat-modal-${kind}`}
       data-testid={`journey-stat-modal-${kind}`}
+      data-statusbar={lightStatusBarIcons}
       // 맵으로 가는 탭을 가로챕니다 — 뒤쪽 맵은 모달이 떠 있는 동안 조작 대상이 아닙니다.
       event-through={false}
       style={{
@@ -98,6 +100,7 @@ export function JourneyStatModal({
               className={`journey-stat-modal-meteor journey-stat-modal-meteor-${slot}`}
               content={meteor}
               current-color={color.brand.primary}
+              style={slot === "c" ? { top: `${insets.top}px` } : undefined}
             />
           ))}
         </view>
