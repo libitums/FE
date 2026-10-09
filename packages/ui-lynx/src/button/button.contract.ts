@@ -39,7 +39,7 @@ export function getButtonContract(props: ButtonProps): ButtonContract {
       .filter((value): value is string => value !== undefined)
       .join(" "),
     traits: props.disabled ? "disabled" : "button",
-    contentVisibility: "visible",
+    contentVisibility: props.loading ? "hidden" : "visible",
   };
 }
 export function getButtonIconColor(props: ButtonProps): string {

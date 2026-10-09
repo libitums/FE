@@ -68,7 +68,5 @@ export function getRoundButtonForegroundColor(props: RoundButtonProps): string {
 
 /** reduced이고 overlay가 아니면 true — 눌림 막을 렌더한다. */
 export function hasPressedShade(variant: RoundButtonVariant, motion: Motion): boolean {
-  void variant;
-  void motion;
-  return false;
+  return motion === "reduced" && variant !== "overlay";
 }

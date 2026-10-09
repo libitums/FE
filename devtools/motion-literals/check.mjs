@@ -41,7 +41,7 @@ for (const [fileName, violations] of violationsByFile) {
     continue;
   }
   for (const violation of violations) {
-    failures.push(`${fileName}:${violation.line} ${violation.text} (${violation.rule})`);
+    failures.push(`${fileName}:${violation.line} ${violation.rule} — ${violation.text}`);
   }
 }
 failures.push(...allowlistProblems(allowlist, files, violationsByFile));

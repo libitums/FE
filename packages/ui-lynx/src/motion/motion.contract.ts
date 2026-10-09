@@ -32,6 +32,10 @@ export type MotionDurationToken = `${number}ms` | `${number}s`;
  * 숫자가 아니면 던집니다.
  */
 export function motionDurationMs(value: MotionDurationToken): number {
-  void value;
-  return 0;
+  const matched = /^(\d+(?:\.\d+)?)(ms|s)$/.exec(value);
+  if (matched === null) {
+    throw new Error(`motion duration must be "<n>ms" or "<n>s": ${value}`);
+  }
+  const amount = Number(matched[1]);
+  return matched[2] === "s" ? amount * 1000 : amount;
 }
