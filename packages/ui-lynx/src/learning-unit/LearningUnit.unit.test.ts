@@ -1,7 +1,7 @@
 import { color } from "@libitums/design-tokens";
 import { describe, expect, test } from "vitest";
 
-import { getLearningUnitContract } from "./learning-unit.contract";
+import { getLearningUnitContract, hasPressedShade } from "./learning-unit.contract";
 
 const icon = '<svg fill="currentColor" />';
 
@@ -118,5 +118,21 @@ describe("getLearningUnitContract: 컨텍스트 motion", () => {
     expect(tokens.at(-1)).toBe("ui-lynx-learning-unit-motion-reduced");
     expect(tokens.at(-2)).toMatch(/-focused$/);
     expect(Object.keys(reduced)).toEqual(Object.keys(standard));
+  });
+});
+
+describe("hasPressedShade (LearningUnit)", () => {
+  test.each(["available", "active", "clear"] as const)(
+    "LUs1. %s는 reduced에서 눌림 막을 낸다",
+    (status) => {
+      expect(hasPressedShade(status, "reduced")).toBe(true);
+    },
+  );
+
+  test.each([
+    ["default", "reduced"],
+    ["active", "standard"],
+  ] as const)("LUs2. (%s, %s)는 막을 내지 않는다", (status, motion) => {
+    expect(hasPressedShade(status, motion)).toBe(false);
   });
 });

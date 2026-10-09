@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+import { motion } from "@libitums/design-tokens";
 import { describe, expect, test } from "vitest";
 
 const srcDir = resolve(process.cwd(), "src");
@@ -94,5 +95,45 @@ describe("reduced motion css", () => {
       /\.ui-lynx-settings-cell-switch-knob/,
     );
     expect(knob).toMatch(/transition:\s*transform/);
+  });
+});
+
+describe("scale tokens", () => {
+  const scaleOf = (body: string): number =>
+    Number(/scale\(([\d.]+)\)/.exec(body)?.[1] ?? Number.NaN);
+
+  test("SC1. RoundButton 눌림 scale은 motion.scale.pressed다", () => {
+    const body = ruleBody(
+      readCss("round-button/round-button.css"),
+      /\.ui-lynx-round-button:not\(\.ui-lynx-round-button-loading\):not\(\.ui-lynx-round-button-disabled\):active\s+\.ui-lynx-round-button-surface/,
+    );
+    expect(scaleOf(body)).toBe(motion.scale.pressed);
+  });
+
+  test("SC2. Dialog 등장 · 퇴장 scale은 motion.scale.enter다", () => {
+    const css = readCss("dialog/dialog.css");
+    const keyframe = (name: string, edge: "from" | "to"): string =>
+      new RegExp(`@keyframes ${name}\\s*\\{[\\s\\S]*?${edge}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ??
+      "";
+    expect(scaleOf(keyframe("ui-lynx-dialog-container-enter", "from"))).toBe(motion.scale.enter);
+    expect(scaleOf(keyframe("ui-lynx-dialog-container-exit", "to"))).toBe(motion.scale.enter);
+  });
+
+  test("SC3. LearningUnit 눌림 scale은 motion.scale.pressed다", () => {
+    const body = ruleBody(
+      readCss("learning-unit/learning-unit.css"),
+      /\.ui-lynx-learning-unit:not\(\.ui-lynx-learning-unit-default\):active\s+\.ui-lynx-learning-unit-visual/,
+    );
+    expect(scaleOf(body)).toBe(motion.scale.pressed);
+  });
+
+  test("SC4. 대조 목록 밖에 새 scale 리터럴이 없다", () => {
+    // `scale(1)`은 원상태라 대조 대상이 아니다(Dialog keyframes의 반대쪽 끝). 1이 아닌 리터럴만 센다.
+    const count = (file: string): number =>
+      (readCss(file).match(/scale\(([\d.]+)\)/g) ?? []).filter((literal) => literal !== "scale(1)")
+        .length;
+    expect(count("round-button/round-button.css")).toBe(1);
+    expect(count("learning-unit/learning-unit.css")).toBe(1);
+    expect(count("dialog/dialog.css")).toBe(2);
   });
 });

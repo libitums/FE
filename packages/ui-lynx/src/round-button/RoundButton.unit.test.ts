@@ -4,7 +4,11 @@ import { resolve } from "node:path";
 import { color } from "@libitums/design-tokens";
 import { describe, expect, test } from "vitest";
 
-import { getRoundButtonContract, getRoundButtonForegroundColor } from "./round-button.contract";
+import {
+  getRoundButtonContract,
+  getRoundButtonForegroundColor,
+  hasPressedShade,
+} from "./round-button.contract";
 
 const styles = readFileSync(resolve(process.cwd(), "src/round-button/round-button.css"), "utf8");
 
@@ -127,12 +131,17 @@ describe("round-button.css", () => {
     expect(styles).toMatch(
       /\.ui-lynx-round-button-spinner[^}]*border(?:-width)?:\s*var\(--libitum-stroke-width-regular\)/,
     );
-    expect(styles).toMatch(
-      /\.ui-lynx-round-button-spinner\s*\{[^}]*border-top-color:\s*transparent/,
-    );
+    // SP3: 정적 spinner 블록에는 animation이 없다(회전은 loading 규칙이 건다).
     const spinnerBlock = styles.match(/\.ui-lynx-round-button-spinner\s*\{[^}]*\}/)?.[0] ?? "";
     expect(spinnerBlock).not.toMatch(/\banimation(?:-name)?\s*:/);
-    expect(styles).not.toMatch(/@keyframes\s+[^{}]*(?:round[-_]?button[-_]?spinner)/i);
+    // SP1: 0 → 360도 회전 keyframes
+    expect(styles).toMatch(
+      /@keyframes\s+ui-lynx-round-button-spin\s*\{\s*from\s*\{[^}]*rotate\(0deg\)[^}]*\}\s*to\s*\{[^}]*rotate\(360deg\)[^}]*\}\s*\}/,
+    );
+    // SP2: loading spinner가 토큰으로 돈다
+    expect(styles).toMatch(
+      /\.ui-lynx-round-button-loading\s+\.ui-lynx-round-button-spinner\s*\{[^}]*animation:\s*ui-lynx-round-button-spin var\(--libitum-motion-duration-spinner\) var\(--libitum-motion-easing-linear\) infinite/,
+    );
     expect(styles).toMatch(
       /\.ui-lynx-round-button(?:-surface|-spinner)[^}]*border-radius:\s*var\(--libitum-radius-full\)/,
     );
@@ -147,7 +156,7 @@ describe("round-button.css", () => {
     );
   });
 
-  test("spinner의 variant/state border-color 뒤에 top 투명 override가 온다", () => {
+  test("SP4. spinner의 variant/state border-color 뒤에 loading 한정 top 투명 override가 온다", () => {
     const borderColorRules = [
       ".ui-lynx-round-button-neutral.ui-lynx-round-button-loading",
       ".ui-lynx-round-button-brand.ui-lynx-round-button-loading",
@@ -159,12 +168,19 @@ describe("round-button.css", () => {
       expect(styles.slice(ruleStart, ruleEnd)).toMatch(/border-color\s*:/);
       return ruleStart;
     });
-    const transparentRule = styles.match(
-      /(?:\.ui-lynx-round-button-spinner[^,{]*|[^{}]*\.ui-lynx-round-button-spinner[^{}]*)\s*\{[^}]*border-top-color:\s*transparent/,
-    );
-    expect(transparentRule).not.toBeNull();
-    const transparentRuleStart = transparentRule ? styles.indexOf(transparentRule[0]) : -1;
-    expect(transparentRuleStart).toBeGreaterThan(Math.max(...borderColorRules));
+    const overlayRule =
+      /\.ui-lynx-round-button-overlay\.ui-lynx-round-button-loading[^{]*\.ui-lynx-round-button-spinner\s*\{[^}]*border-color/.exec(
+        styles,
+      );
+    if (overlayRule) borderColorRules.push(overlayRule.index);
+    const override =
+      /\.ui-lynx-round-button\.ui-lynx-round-button-loading\s+\.ui-lynx-round-button-spinner\s*\{[^}]*border-top-color:\s*transparent/.exec(
+        styles,
+      );
+    expect(override).not.toBeNull();
+    expect(override?.index ?? -1).toBeGreaterThan(Math.max(...borderColorRules));
+    // (0,1,0) 단독 규칙으로는 variant 색이 이긴다 — 그런 top 투명 규칙은 없다.
+    expect(styles).not.toMatch(/\.ui-lynx-round-button-spinner\s*\{[^}]*border-top-color/);
   });
 
   test("Pressed는 surface만 95%로 줄이고 loading/disabled에는 적용하지 않는다", () => {
@@ -209,5 +225,19 @@ describe("getRoundButtonContract: 컨텍스트 motion", () => {
     expect(getRoundButtonContract(props).className).toBe(
       "ui-lynx-round-button ui-lynx-round-button-neutral ui-lynx-round-button-m",
     );
+  });
+});
+
+describe("hasPressedShade (RoundButton)", () => {
+  test.each(["neutral", "brand"] as const)("RBs1. %s는 reduced에서 눌림 막을 낸다", (variant) => {
+    expect(hasPressedShade(variant, "reduced")).toBe(true);
+  });
+
+  test.each([
+    ["overlay", "reduced"],
+    ["neutral", "standard"],
+    ["overlay", "standard"],
+  ] as const)("RBs2. (%s, %s)는 막을 내지 않는다", (variant, motion) => {
+    expect(hasPressedShade(variant, motion)).toBe(false);
   });
 });
