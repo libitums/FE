@@ -1,6 +1,7 @@
 // 모션 리터럴 정책 — 스캔 결과를 위반으로 바꾸고 allowlist의 위생을 봅니다(순수).
 
-import { mediaQueriesIn, motionDeclarationsIn } from "./scan.mjs";
+import { mediaQueriesIn, motionDeclarationsIn, transformDeclarationsIn } from "./scan.mjs";
+import { inlineMotionDeclarationsIn } from "./scan-source.mjs";
 
 const tokenReferenceStart = "var(--libitum-";
 const easingFunctionPattern = /\b(?:cubic-bezier|steps|square-bezier)\([^)]*\)/gi;
@@ -59,10 +60,26 @@ export function valueViolations(value) {
   return violations;
 }
 
-/** `transform` 값에서 1이 아닌 `scale*()` 호출을 돌려줍니다. 지금은 비어 있는 결과를 냅니다. */
+const scaleCallPattern = /\bscale(?:3d|x|y|z)?\([^)]*\)/gi;
+
+/**
+ * `transform` 값에서 1이 아닌 `scale*()` 호출 전체를 돌려줍니다. 토큰 참조를 뺀 뒤 숫자 인자가
+ * 하나라도 1이 아니면 잡고, 숫자 인자가 없거나 전부 1이면(항등값) 건너뜁니다.
+ */
 export function scaleLiteralsIn(value) {
-  void value;
-  return [];
+  const found = [];
+  for (const match of stripTokenReferences(value).matchAll(scaleCallPattern)) {
+    const inner = match[0].slice(match[0].indexOf("(") + 1, -1);
+    const numbers = inner
+      .split(",")
+      .map((argument) => argument.trim())
+      .filter((argument) => /^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(argument))
+      .map(Number);
+    if (numbers.some((number) => number !== 1)) {
+      found.push(match[0]);
+    }
+  }
+  return found;
 }
 
 /** CSS 파일 하나의 위반을 `{ line, rule, text }`로 돌려줍니다. 줄 순서로 정렬합니다. */
@@ -77,15 +94,23 @@ export function violationsIn(css) {
       violations.push({ line, ...violation });
     }
   }
+  for (const { line, value } of transformDeclarationsIn(css)) {
+    for (const text of scaleLiteralsIn(value)) {
+      violations.push({ line, rule: "scale-literal", text });
+    }
+  }
   return violations.sort((a, b) => a.line - b.line);
 }
 
-/** 소스 파일 하나의 인라인 모션 위반을 `{ line, rule, text }`로 돌려줍니다. 지금은 비어 있는 결과를 냅니다. */
+/** 소스 파일 하나의 인라인 모션 위반을 `{ line, rule, text }`로 돌려줍니다. 줄 순서로 정렬합니다. */
 export function violationsInSource(sourceText, fileName, ts) {
-  void sourceText;
-  void fileName;
-  void ts;
-  return [];
+  const violations = [];
+  for (const { line, value } of inlineMotionDeclarationsIn(sourceText, fileName, ts)) {
+    for (const violation of valueViolations(value)) {
+      violations.push({ line, ...violation });
+    }
+  }
+  return violations.sort((a, b) => a.line - b.line);
 }
 
 /** 파일이 없거나 위반이 0인 allowlist 항목을 문장으로 돌려줍니다. */

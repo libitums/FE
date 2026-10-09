@@ -53,8 +53,8 @@ function declarationSegments(css) {
   return segments;
 }
 
-/** 모션 속성 선언을 `{ line, property, value }`로 돌려줍니다. 여러 줄 값은 합칩니다. */
-export function motionDeclarationsIn(css) {
+/** 이름이 `properties`에 드는 선언을 `{ line, property, value }`로 돌려줍니다. 여러 줄 값은 합칩니다. */
+function declarationsOf(css, properties) {
   const stripped = stripComments(css);
   const found = [];
   for (const segment of declarationSegments(stripped)) {
@@ -63,7 +63,7 @@ export function motionDeclarationsIn(css) {
       continue;
     }
     const property = segment.text.slice(0, colon).trim().toLowerCase();
-    if (!motionProperties.includes(property)) {
+    if (!properties.includes(property)) {
       continue;
     }
     const leading = segment.text.length - segment.text.trimStart().length;
@@ -79,6 +79,11 @@ export function motionDeclarationsIn(css) {
   return found;
 }
 
+/** 모션 속성 선언을 `{ line, property, value }`로 돌려줍니다. 여러 줄 값은 합칩니다. */
+export function motionDeclarationsIn(css) {
+  return declarationsOf(css, motionProperties);
+}
+
 /** `@media`가 나오는 줄을 `{ line }`로 돌려줍니다. 주석 안은 보지 않습니다. */
 export function mediaQueriesIn(css) {
   const stripped = stripComments(css);
@@ -87,8 +92,7 @@ export function mediaQueriesIn(css) {
   }));
 }
 
-/** `transform` 선언을 `{ line, property, value }`로 돌려줍니다. 지금은 비어 있는 결과를 냅니다. */
+/** `transform` 선언을 `{ line, property, value }`로 돌려줍니다. keyframe 안과 여러 줄 값도 잡습니다. */
 export function transformDeclarationsIn(css) {
-  void css;
-  return [];
+  return declarationsOf(css, ["transform"]);
 }
