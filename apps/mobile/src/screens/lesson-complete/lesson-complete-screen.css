@@ -71,11 +71,11 @@
 }
 
 /* 통과 배지가 처음 나타날 때의 성취 모션입니다. 작게 시작해 제자리로 커지며 나타납니다.
-   시작 크기는 모션 토큰 scale.reward 값이라 CSS에 리터럴로 두고 테스트가 토큰과 대조합니다. */
+   시작 크기는 모션 토큰 scale.reward 변수를 씁니다. */
 @keyframes lesson-complete-screen-badge-reward {
   from {
     opacity: 0;
-    transform: scale(0.8);
+    transform: scale(var(--libitum-motion-scale-reward));
   }
   to {
     opacity: 1;

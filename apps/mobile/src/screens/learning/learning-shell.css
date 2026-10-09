@@ -125,6 +125,13 @@
   height: var(--libitum-spacing-8);
   border-radius: var(--libitum-radius-full);
   background: var(--libitum-color-brand-primary);
+  /* 채움 폭이 바뀔 때 부드럽게 늘어납니다. 전환은 모션 토큰의 progress 길이와 enter 곡선을 씁니다. */
+  transition: width var(--libitum-motion-duration-progress) var(--libitum-motion-easing-enter);
+}
+
+/* 움직임 줄이기: 폭이 바로 바뀌도록 전환을 걸지 않습니다. */
+.learning-shell-progress-fill-motion-reduced {
+  transition: none;
 }
 
 .learning-shell-progress-row {
