@@ -119,6 +119,16 @@ describe("Settings Cell UI", () => {
 });
 
 // 테스트 렌더러는 값이 undefined인 data-* 속성을 문자열 "null"로 남깁니다. 부재는 null 또는 "null"로 봅니다.
+/** 요소와 자손의 accessibility-* 속성을 순서대로 모읍니다. */
+const accessibilitySnapshot = (root: Element): Record<string, string>[] =>
+  [root, ...Array.from(root.querySelectorAll("*"))].map((element) =>
+    Object.fromEntries(
+      Array.from(element.attributes)
+        .filter((attribute) => attribute.name.startsWith("accessibility-"))
+        .map((attribute) => [attribute.name, attribute.value]),
+    ),
+  );
+
 describe("Settings Cell motion 컨텍스트", () => {
   test("SC1: reduced Provider에서 toggle 셀과 SettingsGroup 안의 셀이 data-motion과 reduced 클래스를 낸다", () => {
     render(
@@ -156,7 +166,24 @@ describe("Settings Cell motion 컨텍스트", () => {
   test("SC2: Provider가 없으면 data-motion과 motion 클래스가 없다", () => {
     render(<SettingsCell trailing="toggle" title="자동 재생" checked onChange={() => {}} />);
     const row = screen.getByTestId("ui-lynx-settings-cell");
-    expect([null, "null"]).toContain(row.getAttribute("data-motion"));
+    expect(row).not.toHaveAttribute("data-motion");
+    expect(row.hasAttribute("data-motion")).toBe(false);
     expect(row.getAttribute("class") ?? "").not.toContain("motion");
+  });
+
+  test("SC1(R2). reduced Provider에서도 accessibility-* 속성이 Provider 없이와 같다", () => {
+    const plain = render(
+      <SettingsCell trailing="toggle" title="자동 재생" checked onChange={() => {}} />,
+    );
+    const expected = accessibilitySnapshot(screen.getByTestId("ui-lynx-settings-cell"));
+    plain.unmount();
+    render(
+      <MotionProvider motion="reduced">
+        <SettingsCell trailing="toggle" title="자동 재생" checked onChange={() => {}} />
+      </MotionProvider>,
+    );
+    const snapshot = accessibilitySnapshot(screen.getByTestId("ui-lynx-settings-cell"));
+    expect(snapshot).toEqual(expected);
+    expect(snapshot[0]).toHaveProperty("accessibility-role-description", "switch");
   });
 });

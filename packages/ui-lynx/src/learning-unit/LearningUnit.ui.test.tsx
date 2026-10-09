@@ -88,7 +88,22 @@ describe("LearningUnit", () => {
   });
 });
 
-// 테스트 렌더러는 값이 undefined인 data-* 속성을 문자열 "null"로 남깁니다. 부재는 null 또는 "null"로 봅니다.
+/** 테스트 렌더러가 조건부 자식에 두르는 <wrapper>를 풀어 논리적 자식 목록을 돌려줍니다. */
+const logicalChildren = (element: Element): Element[] =>
+  Array.from(element.children).flatMap((child) =>
+    child.tagName.toLowerCase() === "wrapper" ? logicalChildren(child) : [child],
+  );
+
+const accessibilityAttributes = [
+  "accessibility-element",
+  "accessibility-label",
+  "accessibility-traits",
+  "accessibility-role-description",
+  "accessibility-enable-tap",
+  "accessibility-value",
+  "focusable",
+] as const;
+
 describe("LearningUnit motion 컨텍스트", () => {
   test("LU1: reduced Provider에서 data-motion과 reduced 클래스를 낸다(id가 있으면 id testid)", () => {
     render(
@@ -107,6 +122,57 @@ describe("LearningUnit motion 컨텍스트", () => {
     expect(unit).toHaveClass("ui-lynx-learning-unit-motion-reduced");
   });
 
+  test.each(["default", "available", "active", "clear"] as const)(
+    "LU1(R2). reduced Provider에서도 accessibility-* 속성이 Provider 없이와 같다(%s)",
+    (status) => {
+      const plain = render(
+        <LearningUnit accessibilityLabel="발음" icon={headset} status={status} />,
+      );
+      const expected = accessibilityAttributes.map((name) =>
+        screen.getByTestId("ui-lynx-learning-unit").getAttribute(name),
+      );
+      plain.unmount();
+      render(
+        <MotionProvider motion="reduced">
+          <LearningUnit accessibilityLabel="발음" icon={headset} status={status} />
+        </MotionProvider>,
+      );
+      const unit = screen.getByTestId("ui-lynx-learning-unit");
+      expect(accessibilityAttributes.map((name) => unit.getAttribute(name))).toEqual(expected);
+    },
+  );
+
+  test.each(["available", "active", "clear"] as const)(
+    "LU3. reduced %s는 surface 첫 자식으로 막을 내고 그 뒤에 icon이 온다",
+    (status) => {
+      render(
+        <MotionProvider motion="reduced">
+          <LearningUnit id="unit-1" accessibilityLabel="발음" icon={headset} status={status} />
+        </MotionProvider>,
+      );
+      const shade = screen.getByTestId("ui-lynx-learning-unit-unit-1-shade");
+      const icon = screen.getByTestId("ui-lynx-learning-unit-unit-1-icon");
+      expect(shade).toHaveClass("ui-lynx-learning-unit-shade");
+      const surface = shade.closest(".ui-lynx-learning-unit-surface") as Element;
+      expect(surface).not.toBeNull();
+      const children = logicalChildren(surface);
+      expect(children[0]).toBe(shade);
+      expect(children[1]).toBe(icon);
+    },
+  );
+
+  test.each([
+    ["reduced default", "reduced", "default"],
+    ["Provider 없음 active", "none", "active"],
+    ["standard active", "standard", "active"],
+  ] as const)("LU4. %s에는 막이 없다", (_name, provider, status) => {
+    const unit = (
+      <LearningUnit id="unit-1" accessibilityLabel="발음" icon={headset} status={status} />
+    );
+    render(provider === "none" ? unit : <MotionProvider motion={provider}>{unit}</MotionProvider>);
+    expect(screen.queryByTestId("ui-lynx-learning-unit-unit-1-shade")).not.toBeInTheDocument();
+  });
+
   test.each([
     ["Provider 없음", false],
     ["standard Provider", true],
@@ -114,7 +180,8 @@ describe("LearningUnit motion 컨텍스트", () => {
     const unit = <LearningUnit accessibilityLabel="발음 연습" icon={headset} status="active" />;
     render(wrapped ? <MotionProvider motion="standard">{unit}</MotionProvider> : unit);
     const element = screen.getByTestId("ui-lynx-learning-unit");
-    expect([null, "null"]).toContain(element.getAttribute("data-motion"));
+    expect(element).not.toHaveAttribute("data-motion");
+    expect(element.hasAttribute("data-motion")).toBe(false);
     expect(element.getAttribute("class") ?? "").not.toContain("motion");
   });
 });

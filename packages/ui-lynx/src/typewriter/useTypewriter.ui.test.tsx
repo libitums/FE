@@ -1,6 +1,10 @@
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { motion } from "@libitums/design-tokens";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { MotionProvider } from "../motion";
+import { MotionProvider, motionDurationMs } from "../motion";
+import * as typewriterModule from "./useTypewriter";
 import { useTypewriter, type TypewriterOptions } from "./useTypewriter";
 
 function Sample(props: TypewriterOptions) {
@@ -162,4 +166,35 @@ test("TW2: 명시한 reducedMotion={false}가 reduced Provider를 이겨 글자 
   tick(40);
   expect(output()).toHaveTextContent("가🙂B");
   expect(output()).toHaveAttribute("data-complete", "true");
+});
+
+test("TW3: intervalMs를 생략하면 기본 간격 35ms로 진행한다", () => {
+  render(<Sample text="AB" />);
+  tick(34);
+  expect(output().textContent).toBe("");
+  tick(1);
+  expect(output().textContent).toBe("A");
+});
+
+test("TW4: 화면이 준 intervalMs가 기본 간격을 이긴다", () => {
+  render(<Sample text="AB" intervalMs={40} />);
+  tick(39);
+  expect(output().textContent).toBe("");
+  tick(1);
+  expect(output().textContent).toBe("A");
+});
+
+test("TW5: defaultRevealIntervalMs는 motion.duration.reveal을 파싱한 35다", () => {
+  const exported = (typewriterModule as Record<string, unknown>).defaultRevealIntervalMs;
+  expect(exported).toBe(motionDurationMs(motion.duration.reveal));
+  expect(exported).toBe(35);
+});
+
+test("TWs1: useTypewriter.ts 소스에 숫자 35가 없고 reveal 토큰을 참조해 상수를 내보낸다", () => {
+  const source = readFileSync(resolve(process.cwd(), "src/typewriter/useTypewriter.ts"), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "");
+  expect(source).not.toMatch(/(?<![\w.])35(?![\w.])/);
+  expect(source).toMatch(/export const defaultRevealIntervalMs\b/);
+  expect(source).toContain("motion.duration.reveal");
 });
