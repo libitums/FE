@@ -8,7 +8,7 @@ export function firebaseClient(config) {
   const matches =
     Array.isArray(config.client) &&
     config.client.some(
-      (client) => client?.client_info?.android_client_info?.package_name === "com.libitum.host",
+      (client) => client?.client_info?.android_client_info?.package_name === "libitum.duru.android",
     );
   if (!matches || !/^[a-z][a-z0-9-]{4,29}$/.test(projectId ?? "")) return null;
   if (!/^\d+$/.test(senderId ?? "")) return null;

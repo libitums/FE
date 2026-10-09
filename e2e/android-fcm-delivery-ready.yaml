@@ -1,5 +1,5 @@
 # A real Firebase-configured signed-in host is ready before the data message is sent.
-appId: com.libitum.host
+appId: libitum.duru.android
 ---
 - setOrientation: PORTRAIT
 - extendedWaitUntil:

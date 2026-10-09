@@ -17,7 +17,7 @@ cleanup() {
     -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE >/dev/null 2>&1 || true
   if [ -n "${fixture_pid:-}" ]; then kill "$fixture_pid" 2>/dev/null || true; fi
   if [ -n "${server_pid:-}" ]; then kill "$server_pid" 2>/dev/null || true; fi
-  "$ADB" -s "$FCM_UDID" shell am force-stop com.libitum.host >/dev/null 2>&1 || true
+  "$ADB" -s "$FCM_UDID" shell am force-stop libitum.duru.android >/dev/null 2>&1 || true
 }
 trap cleanup EXIT HUP INT TERM
 
@@ -39,7 +39,7 @@ kill -0 "$server_pid"
 "$ADB" -s "$FCM_UDID" shell am instrument -w \
   -e class com.libitum.host.SignedInScreenFixtureTest \
   -e bundleUrl http://10.0.2.2:18773/main.lynx.bundle \
-  com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner \
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner \
   >/tmp/libitum-live-fcm-fixture.log 2>&1 &
 fixture_pid=$!
 

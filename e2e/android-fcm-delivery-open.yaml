@@ -1,5 +1,5 @@
 # A remote high-priority data message must show a notification and open its target.
-appId: com.libitum.host
+appId: libitum.duru.android
 ---
 - swipe:
     start: "50%,5%"

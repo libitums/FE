@@ -11,7 +11,7 @@ import {
 
 const config = {
   project_info: { project_id: "duru-2eaed", project_number: "110633316246" },
-  client: [{ client_info: { android_client_info: { package_name: "com.libitum.host" } } }],
+  client: [{ client_info: { android_client_info: { package_name: "libitum.duru.android" } } }],
 };
 
 test("selects the exact Android package and Firebase sender", () => {

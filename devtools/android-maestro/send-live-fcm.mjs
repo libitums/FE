@@ -31,7 +31,7 @@ async function main() {
   const config = firebaseClient(
     readJson(join(repo, "apps/android/app/google-services.json"), "Android Firebase config"),
   );
-  if (config === null) throw new Error("Firebase config must contain com.libitum.host");
+  if (config === null) throw new Error("Firebase config must contain libitum.duru.android");
   const account = serviceAccountForProject(
     readJson(keyPath, "Service account JSON"),
     config.projectId,
@@ -47,7 +47,7 @@ async function main() {
         udid,
         "shell",
         "run-as",
-        "com.libitum.host",
+        "libitum.duru.android",
         "cat",
         "shared_prefs/com.google.android.gms.appid.xml",
       ],
