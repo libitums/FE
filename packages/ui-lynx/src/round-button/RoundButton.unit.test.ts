@@ -180,7 +180,9 @@ describe("round-button.css", () => {
     expect(override).not.toBeNull();
     expect(override?.index ?? -1).toBeGreaterThan(Math.max(...borderColorRules));
     // (0,1,0) 단독 규칙으로는 variant 색이 이긴다 — 그런 top 투명 규칙은 없다.
-    expect(styles).not.toMatch(/\.ui-lynx-round-button-spinner\s*\{[^}]*border-top-color/);
+    expect(styles).not.toMatch(
+      /(?:^|\n)\s*\.ui-lynx-round-button-spinner\s*\{[^}]*border-top-color/,
+    );
   });
 
   test("Pressed는 surface만 95%로 줄이고 loading/disabled에는 적용하지 않는다", () => {
