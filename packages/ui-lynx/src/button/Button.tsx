@@ -5,12 +5,16 @@ export function Button(props: ButtonProps) {
   const contract = getButtonContract(props);
   const interactive = !props.disabled && !props.loading;
   const iconPosition = props.iconPosition ?? "leading";
+  // loading이 아니면 style 속성을 아예 넘기지 않습니다 — 빈 style이 standard DOM에 남지 않게 합니다.
+  const hidden =
+    contract.contentVisibility === "hidden" ? { style: { visibility: "hidden" as const } } : {};
   const icon = props.icon ? (
     <svg
       className="ui-lynx-button-icon"
       data-testid="ui-lynx-button-icon"
       content={props.icon}
       current-color={getButtonIconColor(props)}
+      {...hidden}
     />
   ) : null;
   function handleTap() {
@@ -39,13 +43,12 @@ export function Button(props: ButtonProps) {
           <view className="ui-lynx-button-spinner-wrap" accessibility-elements-hidden={true}>
             <view className="ui-lynx-button-spinner" data-testid="ui-lynx-button-spinner" />
           </view>
-        ) : iconPosition === "leading" ? (
-          icon
         ) : null}
-        <text className="ui-lynx-button-label" data-testid="ui-lynx-button-label">
+        {iconPosition === "leading" ? icon : null}
+        <text className="ui-lynx-button-label" data-testid="ui-lynx-button-label" {...hidden}>
           {props.label}
         </text>
-        {!props.loading && iconPosition === "trailing" ? icon : null}
+        {iconPosition === "trailing" ? icon : null}
       </view>
     </view>
   );

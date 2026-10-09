@@ -32,7 +32,7 @@
 | `pnpm build`                                                 | UI package → mobile bundle → Storybook Lynx 정적 카탈로그                              | **타입 검사**                     |
 | `pnpm preview`                                               | 빌드 산출물을 Explorer로 확인                                                          | 빌드                              |
 | `pnpm typecheck`                                             | `tsc --noEmit`                                                                         | 코드 생성                         |
-| `pnpm lint`                                                  | 정적 검사 + CSS 토큰 접두사 + UI package/Storybook 순환 검사                           | **자동 수정** (`lint:fix`가 따로) |
+| `pnpm lint`                                                  | 정적 검사 + CSS 토큰 접두사 + UI package/Storybook 순환 + UI 리터럴 + 모션 리터럴 검사 | **자동 수정** (`lint:fix`가 따로) |
 | `pnpm format`                                                | 포맷 적용 (`oxfmt`)                                                                    | 검사만 (`format:check`가 따로)    |
 | `pnpm bundle:host`                                           | `build` + 호스트로 사본 복사                                                           | 네이티브 빌드                     |
 | `pnpm bundle:android`                                        | UI package·mobile 빌드 + Android 자산 복사                                             | 네이티브 빌드                     |

@@ -111,6 +111,9 @@ describe("ui-lynx package boundaries", () => {
     expect(root.resolveReducedMotion).toBe(motion.resolveReducedMotion);
     expect(root.motionFromReducedMotion).toBe(motion.motionFromReducedMotion);
     expect(root.motionClassName).toBe(motion.motionClassName);
+    // IX5: 2단계 신규 export도 root와 subpath가 같은 값을 가리킨다.
+    expect(root.motionDurationMs).toBe(motion.motionDurationMs);
+    expect(root.defaultRevealIntervalMs).toBe(typewriter.defaultRevealIntervalMs);
     expect(root.AnswerLabel).toBe(answerLabel.AnswerLabel);
     expect(root.Avatar).toBe(avatar.Avatar);
     expect(root.SettingsCell).toBe(settingsCell.SettingsCell);
@@ -275,6 +278,40 @@ describe("ui-lynx package boundaries", () => {
       "utf8",
     );
     expect(conventions).toContain('"motion"');
+  });
+
+  test("[IX3] 2단계는 motion 산출물 집합을 늘리지 않는다(dist와 tarball 모두 새 파일 0)", async () => {
+    const expected = [
+      "MotionProvider.d.ts",
+      "MotionProvider.jsx",
+      "index.d.ts",
+      "index.js",
+      "motion.contract.d.ts",
+      "motion.contract.js",
+    ];
+    const dist = (await readdir(path.join(packageRoot, "dist", "motion")))
+      .filter((file) => !file.endsWith(".map"))
+      .sort();
+    expect(dist).toEqual(expected);
+    const packDir = path.join(packageRoot, ".pack");
+    const archives = (await readdir(packDir)).filter((file) => file.endsWith(".tgz"));
+    const { stdout } = await execFileAsync("tar", ["-tzf", path.join(packDir, archives[0]!)]);
+    const packed = stdout
+      .split("\n")
+      .filter((line) => line.startsWith("package/dist/motion/") && !line.endsWith(".map"))
+      .map((line) => line.slice("package/dist/motion/".length))
+      .filter(Boolean)
+      .sort();
+    expect(packed).toEqual(expected);
+  });
+
+  test("[IX6] VisualNovelDialogIndicatorMotion 타입 제거가 dist 선언까지 갔다", async () => {
+    const declaration = await readFile(
+      path.join(packageRoot, "dist/visual-novel-dialog/visual-novel-dialog.contract.d.ts"),
+      "utf8",
+    );
+    expect(declaration).not.toContain("VisualNovelDialogIndicatorMotion");
+    expect(declaration).not.toContain("indicatorMotion");
   });
 
   test("[IX4] useTypewriter 산출물은 motion을 상대 경로로 import하고 패키지 자기 참조를 쓰지 않는다", async () => {

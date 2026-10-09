@@ -63,12 +63,26 @@
   height: 24px;
 }
 
+@keyframes ui-lynx-round-button-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .ui-lynx-round-button-spinner {
   width: 12px;
   height: 12px;
   border-width: var(--libitum-stroke-width-regular);
   border-style: solid;
   border-radius: var(--libitum-radius-full);
+}
+
+/* prettier-ignore */
+.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
+  animation: ui-lynx-round-button-spin var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear) infinite;
 }
 
 .ui-lynx-round-button-neutral.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
@@ -82,10 +96,6 @@
 
 .ui-lynx-round-button-disabled.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
   border-color: var(--libitum-color-border-default);
-}
-
-.ui-lynx-round-button-spinner {
-  border-top-color: transparent;
 }
 
 .ui-lynx-round-button-disabled .ui-lynx-round-button-surface {
@@ -115,6 +125,28 @@
   transform: none;
 }
 
+/* 움직임 줄이기 눌림 피드백: surface 위에 검정 8% 막을 깔았다가 걷습니다(overlay 제외). */
+.ui-lynx-round-button-motion-reduced .ui-lynx-round-button-surface {
+  position: relative;
+}
+
+.ui-lynx-round-button-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-black);
+  opacity: 0;
+  transition: opacity var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+/* prettier-ignore */
+.ui-lynx-round-button-motion-reduced:not(.ui-lynx-round-button-loading):not(.ui-lynx-round-button-disabled):active .ui-lynx-round-button-shade {
+  opacity: var(--libitum-opacity-pressed-shade, 0.08);
+}
+
 .ui-lynx-round-button:not(.ui-lynx-round-button-disabled):focus-visible {
   box-shadow:
     0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
@@ -138,4 +170,9 @@
 
 .ui-lynx-round-button-overlay.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
   border-color: var(--libitum-color-white);
+}
+
+/* 상단 투명 규칙: variant 색 규칙(0,3,0)에 지지 않게 같은 특이도로 파일 끝에 둡니다. */
+.ui-lynx-round-button.ui-lynx-round-button-loading .ui-lynx-round-button-spinner {
+  border-top-color: transparent;
 }

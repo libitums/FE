@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useState } from "@lynx-js/react";
 
-import { resolveReducedMotion } from "../motion/motion.contract";
+import { motion } from "@libitums/design-tokens";
+
+import { motionDurationMs, resolveReducedMotion } from "../motion/motion.contract";
 import { useMotion } from "../motion/MotionProvider";
+
+/** `motion.duration.reveal`(0.4.0: 35ms). `intervalMs`를 주지 않거나 잘못 주면 이 값입니다. */
+export const defaultRevealIntervalMs: number = motionDurationMs(motion.duration.reveal);
 
 export type TypewriterOptions = {
   readonly text: string;
-  /** Unicode code point 하나를 표시하는 간격입니다. 기본 35ms, 0이면 즉시 표시합니다. */
+  /** Unicode code point 하나를 표시하는 간격입니다. 기본 motion.duration.reveal(35ms), 0이면 즉시 표시합니다. */
   readonly intervalMs?: number;
   /** 출력 전 대기 시간입니다. 알림음 등 대사 앞 구간에 사용합니다. */
   readonly delayMs?: number;
@@ -28,7 +33,7 @@ export type TypewriterState = {
 /** 스타일과 진행 동작은 소비자가 정하고, 이 훅은 텍스트 출력만 관리합니다. */
 export function useTypewriter({
   text,
-  intervalMs = 35,
+  intervalMs = defaultRevealIntervalMs,
   delayMs = 0,
   enabled = true,
   reducedMotion,
@@ -40,7 +45,7 @@ export function useTypewriter({
       ? intervalMs === 0
         ? 0
         : Math.max(1, Math.floor(intervalMs))
-      : 35;
+      : defaultRevealIntervalMs;
   const delay = Number.isFinite(delayMs) && delayMs >= 0 ? Math.round(delayMs) : 0;
   const instant = !enabled || reduced || interval === 0;
   const characters = useMemo(() => Array.from(text), [text]);

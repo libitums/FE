@@ -6,6 +6,16 @@ import { describe, expect, test } from "vitest";
 import { MotionProvider } from "../motion";
 import { PageIndicator, PAGE_INDICATOR_MAX_PAGE_COUNT } from "./index";
 
+/** 요소와 자손의 accessibility-* 속성을 순서대로 모읍니다. */
+const accessibilitySnapshot = (root: Element): Record<string, string>[] =>
+  [root, ...Array.from(root.querySelectorAll("*"))].map((element) =>
+    Object.fromEntries(
+      Array.from(element.attributes)
+        .filter((attribute) => attribute.name.startsWith("accessibility-"))
+        .map((attribute) => [attribute.name, attribute.value]),
+    ),
+  );
+
 const css = readFileSync(resolve(import.meta.dirname, "page-indicator.css"), "utf8");
 
 describe("PageIndicator UI contract", () => {
@@ -141,9 +151,9 @@ describe("PageIndicator motion 컨텍스트", () => {
 
   test("PI2: Provider가 없으면 data-motion이 없고 항목 속성은 같다", () => {
     render(<PageIndicator pageCount={3} currentPage={2} />);
-    expect([null, "null"]).toContain(
-      screen.getByTestId("ui-lynx-page-indicator").getAttribute("data-motion"),
-    );
+    const indicator = screen.getByTestId("ui-lynx-page-indicator");
+    expect(indicator).not.toHaveAttribute("data-motion");
+    expect(indicator.hasAttribute("data-motion")).toBe(false);
     const items = screen.getAllByTestId("ui-lynx-page-indicator-item");
     expect(items.map((item) => item.getAttribute("data-page"))).toEqual(["1", "2", "3"]);
     expect(items.map((item) => item.getAttribute("data-active"))).toEqual([
@@ -152,4 +162,22 @@ describe("PageIndicator motion 컨텍스트", () => {
       "false",
     ]);
   });
+
+  test.each([
+    ["기본", {}],
+    ["decorative", { decorative: true }],
+  ] as const)(
+    "PI1(R2). reduced Provider에서도 accessibility-* 속성이 Provider 없이와 같다(%s)",
+    (_name, extra) => {
+      const plain = render(<PageIndicator pageCount={3} currentPage={2} {...extra} />);
+      const expected = accessibilitySnapshot(screen.getByTestId("ui-lynx-page-indicator"));
+      plain.unmount();
+      render(
+        <MotionProvider motion="reduced">
+          <PageIndicator pageCount={3} currentPage={2} {...extra} />
+        </MotionProvider>,
+      );
+      expect(accessibilitySnapshot(screen.getByTestId("ui-lynx-page-indicator"))).toEqual(expected);
+    },
+  );
 });

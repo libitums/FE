@@ -94,9 +94,8 @@ test("출력 중 탭은 대사만 완성하고 다음 탭에서 장면을 넘긴
 test("모션 축소에서는 대사와 번역을 즉시 표시하고 한 번 탭으로 넘긴다", () => {
   render(<EpisodeNarrativeScreen {...fixture({ reducedMotion: true })} />);
   expect(line().textContent).toBe("첫 대사");
-  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).not.toHaveAttribute(
     "data-motion",
-    "static",
   );
   advance();
   expect(line().textContent).toBe("둘째 대사");
@@ -312,9 +311,8 @@ test("시작 유닛의 움직임 감소 설정은 상상 배경과 대화 계속
   fireEvent(screen.getByTestId("narrative-background-image"), new window.Event("bindEvent:load"));
   expect(screen.getByTestId("narrative-background")).toHaveAttribute("data-transition", "none");
   expect(screen.queryByTestId("narrative-imagination-veil")).not.toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).not.toHaveAttribute(
     "data-motion",
-    "static",
   );
 });
 
@@ -333,9 +331,8 @@ test("ES1: reduced Provider에서 reducedMotion prop이 없으면 대사가 즉�
   fireEvent(screen.getByTestId("narrative-background-image"), new window.Event("bindEvent:load"));
   expect(screen.getByTestId("narrative-background")).toHaveAttribute("data-transition", "none");
   expect(screen.getByTestId("narrative-background-image")).toHaveAttribute("data-motion", "static");
-  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).not.toHaveAttribute(
     "data-motion",
-    "static",
   );
 });
 

@@ -18,6 +18,8 @@ export type ButtonProps = {
 export type ButtonContract = {
   className: string;
   traits: "button" | "disabled";
+  /** loading이면 "hidden" — 라벨 · 아이콘을 흐름에 둔 채 보이지 않게 한다(폭 · 높이 유지). */
+  contentVisibility: "visible" | "hidden";
 };
 
 import { color } from "@libitums/design-tokens";
@@ -37,6 +39,7 @@ export function getButtonContract(props: ButtonProps): ButtonContract {
       .filter((value): value is string => value !== undefined)
       .join(" "),
     traits: props.disabled ? "disabled" : "button",
+    contentVisibility: props.loading ? "hidden" : "visible",
   };
 }
 export function getButtonIconColor(props: ButtonProps): string {

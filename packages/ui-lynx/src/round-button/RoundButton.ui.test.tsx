@@ -109,7 +109,21 @@ describe("RoundButton", () => {
   });
 });
 
-// 테스트 렌더러는 값이 undefined인 data-* 속성을 문자열 "null"로 남깁니다. 부재는 null 또는 "null"로 봅니다.
+/** 테스트 렌더러가 조건부 자식에 두르는 <wrapper>를 풀어 논리적 자식 목록을 돌려줍니다. */
+const logicalChildren = (element: Element): Element[] =>
+  Array.from(element.children).flatMap((child) =>
+    child.tagName.toLowerCase() === "wrapper" ? logicalChildren(child) : [child],
+  );
+
+const accessibilityAttributes = [
+  "accessibility-element",
+  "accessibility-label",
+  "accessibility-traits",
+  "accessibility-role-description",
+  "accessibility-enable-tap",
+  "accessibility-value",
+] as const;
+
 describe("RoundButton motion 컨텍스트", () => {
   test("RB1: reduced Provider에서 data-motion과 reduced 클래스를 낸다", () => {
     render(
@@ -120,6 +134,81 @@ describe("RoundButton motion 컨텍스트", () => {
     const button = screen.getByTestId("ui-lynx-round-button");
     expect(button).toHaveAttribute("data-motion", "reduced");
     expect(button).toHaveClass("ui-lynx-round-button-motion-reduced");
+  });
+
+  test.each([
+    ["기본", {}],
+    ["disabled", { disabled: true }],
+    ["loading", { loading: true }],
+  ] as const)(
+    "R2. reduced Provider에서도 accessibility-* 속성이 Provider 없이와 같다(%s)",
+    (_name, extra) => {
+      const plain = render(<RoundButton accessibilityLabel="정보" icon={info02} {...extra} />);
+      const expected = accessibilityAttributes.map((name) =>
+        screen.getByTestId("ui-lynx-round-button").getAttribute(name),
+      );
+      plain.unmount();
+      render(
+        <MotionProvider motion="reduced">
+          <RoundButton accessibilityLabel="정보" icon={info02} {...extra} />
+        </MotionProvider>,
+      );
+      const button = screen.getByTestId("ui-lynx-round-button");
+      expect(accessibilityAttributes.map((name) => button.getAttribute(name))).toEqual(expected);
+    },
+  );
+
+  test.each(["neutral", "brand"] as const)(
+    "RB3. reduced %s는 surface 첫 자식으로 숨겨진 막을 낸다",
+    (variant) => {
+      render(
+        <MotionProvider motion="reduced">
+          <RoundButton accessibilityLabel="정보" icon={info02} variant={variant} />
+        </MotionProvider>,
+      );
+      const surface = screen.getByTestId("ui-lynx-round-button-surface");
+      const shade = screen.getByTestId("ui-lynx-round-button-shade");
+      expect(shade).toHaveClass("ui-lynx-round-button-shade");
+      expect(shade).toHaveAttribute("accessibility-elements-hidden", "true");
+      expect(logicalChildren(surface)[0]).toBe(shade);
+      expect(logicalChildren(surface)).toHaveLength(2);
+      expect(logicalChildren(surface)[1]).toBe(
+        screen.getByTestId("ui-lynx-round-button-icon").parentElement,
+      );
+    },
+  );
+
+  test("RB3. reduced loading은 막 다음에 spinner wrapper가 온다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <RoundButton accessibilityLabel="정보" icon={info02} loading={true} />
+      </MotionProvider>,
+    );
+    const surface = screen.getByTestId("ui-lynx-round-button-surface");
+    const children = logicalChildren(surface);
+    expect(children[0]).toBe(screen.getByTestId("ui-lynx-round-button-shade"));
+    expect(children[1]).toBe(screen.getByTestId("ui-lynx-round-button-spinner").parentElement);
+    expect(children).toHaveLength(2);
+  });
+
+  test.each([
+    [
+      "reduced overlay",
+      <MotionProvider motion="reduced" key="a">
+        <RoundButton accessibilityLabel="정보" icon={info02} variant="overlay" />
+      </MotionProvider>,
+    ],
+    ["Provider 없음", <RoundButton accessibilityLabel="정보" icon={info02} key="b" />],
+    [
+      "standard Provider",
+      <MotionProvider motion="standard" key="c">
+        <RoundButton accessibilityLabel="정보" icon={info02} />
+      </MotionProvider>,
+    ],
+  ] as const)("RB4. %s에서는 막이 없고 surface 자식은 하나다", (_name, element) => {
+    render(element);
+    expect(screen.queryByTestId("ui-lynx-round-button-shade")).not.toBeInTheDocument();
+    expect(logicalChildren(screen.getByTestId("ui-lynx-round-button-surface"))).toHaveLength(1);
   });
 
   test.each([
@@ -136,7 +225,8 @@ describe("RoundButton motion 컨텍스트", () => {
       ),
     );
     const button = screen.getByTestId("ui-lynx-round-button");
-    expect([null, "null"]).toContain(button.getAttribute("data-motion"));
+    expect(button).not.toHaveAttribute("data-motion");
+    expect(button.hasAttribute("data-motion")).toBe(false);
     expect(button.getAttribute("class") ?? "").not.toContain("motion");
   });
 });

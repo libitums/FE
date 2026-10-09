@@ -6,6 +6,15 @@ import { describe, expect, test, vi } from "vitest";
 import { MotionProvider } from "../motion";
 import { VisualNovelDialog } from "./index";
 
+// VN3: indicator는 움직임 속성도 움직임 클래스도 갖지 않는다(motion 분기 제거).
+function expectPlainIndicator() {
+  const indicator = screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator");
+  expect(indicator.hasAttribute("data-motion")).toBe(false);
+  expect(indicator.getAttribute("class")).toBe("ui-lynx-visual-novel-dialog-indicator-frame");
+  expect(indicator.getAttribute("class")).not.toContain("indicator-bounce");
+  expect(indicator.getAttribute("class")).not.toContain("indicator-static");
+}
+
 describe("VisualNovelDialog UI", () => {
   test("Speech 화자와 전체 대사를 하나의 접근성 node로 제공한다", () => {
     render(<VisualNovelDialog line="오늘 하늘이 참 예쁘다." speakerName="아리아" />);
@@ -96,19 +105,13 @@ describe("VisualNovelDialog UI", () => {
     expect(icon).toHaveAttribute("current-color", color.brand.primary);
   });
 
-  test("계속 표시는 기본으로 위아래로 움직이고, reducedMotion이면 멈춰 있다", () => {
+  test("VN3. 계속 표시는 기본 · reducedMotion 모두 data-motion 없이 frame 클래스 하나다", () => {
     const { unmount } = render(<VisualNovelDialog line="어서 오세요!" speakerName="이유나" />);
-    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
-      "data-motion",
-      "bounce",
-    );
+    expectPlainIndicator();
     unmount();
 
     render(<VisualNovelDialog line="어서 오세요!" speakerName="이유나" reducedMotion={true} />);
-    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
-      "data-motion",
-      "static",
-    );
+    expectPlainIndicator();
   });
 
   test("대사가 드러나는 중(revealing)에는 계속 표시가 서지 않는다", () => {
@@ -222,10 +225,7 @@ describe("VisualNovelDialog motion 컨텍스트", () => {
     expect(dialog).toHaveAttribute("data-reveal", "instant");
     expect(dialog).toHaveAttribute("data-status", "ready");
     expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent("A🙂BC");
-    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
-      "data-motion",
-      "static",
-    );
+    expectPlainIndicator();
   });
 
   test("VN2: 명시한 reducedMotion={false}가 reduced Provider를 이긴다", () => {
@@ -245,9 +245,6 @@ describe("VisualNovelDialog motion 컨텍스트", () => {
       "data-reveal",
       "typewriter",
     );
-    expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
-      "data-motion",
-      "bounce",
-    );
+    expectPlainIndicator();
   });
 });

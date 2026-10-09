@@ -59,17 +59,20 @@ describe("ui-lynx styles", () => {
     expect(styles).toMatch(
       /\.ui-lynx-button-loading\.ui-lynx-button-disabled \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-border-default\)/,
     );
-    expect(styles).toMatch(
-      /\.ui-lynx-button-loading\.ui-lynx-button-disabled \.ui-lynx-button-label\s*\{[^}]*color:\s*var\(--libitum-color-border-default\)/,
+    // BL3: 라벨은 visibility로 숨으므로 disabled loading 라벨 색 규칙은 없다.
+    expect(styles).not.toMatch(
+      /\.ui-lynx-button-loading\.ui-lynx-button-disabled \.ui-lynx-button-label\s*\{/,
     );
   });
 
   test("Button의 loading, pressed, size 계약은 design-system 원본 스펙을 따른다", () => {
     const styles = readLegacyStyles();
 
-    expect(styles).toMatch(
-      /\.ui-lynx-button-loading \.ui-lynx-button-surface\s*\{[^}]*column-gap:\s*var\(--libitum-spacing-6\)/,
-    );
+    // BL1: spinner wrap의 기준 박스가 되고 column-gap은 없다.
+    const loadingSurface =
+      /\.ui-lynx-button-loading \.ui-lynx-button-surface\s*\{([^}]*)\}/.exec(styles)?.[1] ?? "";
+    expect(loadingSurface).toMatch(/position:\s*relative/);
+    expect(loadingSurface).not.toContain("column-gap");
     expect(styles).toMatch(
       /\.ui-lynx-button-outline\.ui-lynx-button-loading \.ui-lynx-button-spinner\s*\{[^}]*border-color:\s*var\(--libitum-color-fg-neutral-muted\)/,
     );
@@ -84,6 +87,60 @@ describe("ui-lynx styles", () => {
     );
     expect(styles).not.toContain("brand-primary-pressed");
     expect(styles).not.toContain("transform: scale");
+  });
+
+  describe("button.css loading 회전", () => {
+    const css = () => readFileSync(resolve(process.cwd(), "src/button/button.css"), "utf8");
+    const bodyOf = (selector: RegExp): string =>
+      new RegExp(`(?:^|[}/])\\s*${selector.source}\\s*\\{([^}]*)\\}`).exec(css())?.[1] ?? "";
+
+    test("BL2. spinner wrap은 surface를 덮는 absolute 박스이고 width가 없다", () => {
+      const body = bodyOf(/\.ui-lynx-button-spinner-wrap/);
+      expect(body).toMatch(/position:\s*absolute/);
+      for (const side of ["top", "right", "bottom", "left"]) {
+        expect(body).toMatch(new RegExp(`${side}:\\s*0\\b`));
+      }
+      expect(body).toMatch(/display:\s*flex/);
+      expect(body).not.toMatch(/\bwidth\s*:/);
+    });
+
+    test("BL3. loading disabled의 spinner border-color는 그대로 border-default다", () => {
+      expect(
+        bodyOf(/\.ui-lynx-button-loading\.ui-lynx-button-disabled \.ui-lynx-button-spinner/),
+      ).toMatch(/border-color:\s*var\(--libitum-color-border-default\)/);
+    });
+
+    test("SP5. keyframes는 0 → 360도이고 loading spinner가 spinner 토큰으로 돈다", () => {
+      expect(css()).toMatch(
+        /@keyframes\s+ui-lynx-button-spin\s*\{\s*from\s*\{[^}]*rotate\(0deg\)[^}]*\}\s*to\s*\{[^}]*rotate\(360deg\)[^}]*\}\s*\}/,
+      );
+      expect(bodyOf(/\.ui-lynx-button-loading \.ui-lynx-button-spinner/)).toMatch(
+        /animation:\s*ui-lynx-button-spin var\(--libitum-motion-duration-spinner\) var\(--libitum-motion-easing-linear\) infinite/,
+      );
+    });
+
+    test("SP6. 상단 투명 규칙이 있고 모든 spinner border-color 규칙보다 뒤에 온다", () => {
+      const text = css();
+      const top =
+        /\.ui-lynx-button\.ui-lynx-button-loading \.ui-lynx-button-spinner\s*\{[^}]*border-top-color:\s*transparent/.exec(
+          text,
+        );
+      expect(top).not.toBeNull();
+      const colorRules = [
+        ...text.matchAll(/[^{}]*\.ui-lynx-button-spinner\s*\{[^}]*border-color:[^}]*\}/g),
+      ];
+      expect(colorRules.length).toBeGreaterThan(0);
+      for (const rule of colorRules) {
+        expect(rule.index + rule[0].length).toBeLessThanOrEqual(top?.index ?? -1);
+      }
+    });
+
+    test("BL4. 정적 spinner 블록에는 animation이 없고 12px 크기 token은 그대로다", () => {
+      const block = bodyOf(/\.ui-lynx-button-spinner/);
+      expect(block).not.toMatch(/\banimation(?:-name)?\s*:/);
+      expect(block).toMatch(/width:\s*var\(--libitum-spacing-12\)/);
+      expect(block).toMatch(/height:\s*var\(--libitum-spacing-12\)/);
+    });
   });
 
   test("BackHeader는 글자 배율에서도 DOM과 시각 읽기 순서를 유지한다", () => {

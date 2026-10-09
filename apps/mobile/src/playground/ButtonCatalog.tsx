@@ -1,6 +1,8 @@
 import type { ReactNode } from "@lynx-js/react";
+import info02 from "@libitums/icons/lynx/info-02";
 import { Button } from "@libitums/ui-lynx/button";
 import type { ButtonSize, ButtonVariant } from "@libitums/ui-lynx/button";
+import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 const variants: ButtonVariant[] = ["neutral", "brand", "outline", "subtle", "text"];
 const sizes: ButtonSize[] = ["s", "m", "l", "xl"];
@@ -25,6 +27,13 @@ export function ButtonCatalog() {
             <Button label="계속하기" variant={variant} loading />
           </view>
         ))}
+      </Section>
+      <Section title="Round Button · loading">
+        <view className="playground-row">
+          <RoundButton accessibilityLabel="정보" icon={info02} variant="neutral" />
+          <RoundButton accessibilityLabel="정보" icon={info02} variant="neutral" loading />
+          <RoundButton accessibilityLabel="정보" icon={info02} variant="brand" loading />
+        </view>
       </Section>
       <Section title="Button · size">
         {sizes.map((size) => (

@@ -30,6 +30,7 @@ describe("Button contract", () => {
   test("기본값은 neutral, m, hug이고 button trait이다", () => {
     expect(getButtonContract({ label: "계속" })).toEqual({
       className: "ui-lynx-button ui-lynx-button-neutral ui-lynx-button-m ui-lynx-button-hug",
+      contentVisibility: "visible",
       traits: "button",
     });
   });
@@ -38,6 +39,7 @@ describe("Button contract", () => {
     expect(getButtonContract({ disabled: true, label: "계속", loading: true })).toEqual({
       className:
         "ui-lynx-button ui-lynx-button-neutral ui-lynx-button-m ui-lynx-button-hug ui-lynx-button-disabled ui-lynx-button-loading",
+      contentVisibility: "hidden",
       traits: "disabled",
     });
   });
@@ -46,8 +48,26 @@ describe("Button contract", () => {
     expect(getButtonContract({ label: "계속", loading: true })).toEqual({
       className:
         "ui-lynx-button ui-lynx-button-neutral ui-lynx-button-m ui-lynx-button-hug ui-lynx-button-loading",
+      contentVisibility: "hidden",
       traits: "button",
     });
+  });
+
+  test("BTc2. loading은 아이콘이 있어도 contentVisibility만 hidden이고 className · traits는 그대로다", () => {
+    const withIcon = getButtonContract({
+      label: "저장",
+      loading: true,
+      icon: "<svg />",
+      iconPosition: "trailing",
+    });
+    const plain = getButtonContract({ label: "저장", loading: true });
+    expect(withIcon.contentVisibility).toBe("hidden");
+    expect(withIcon.className).toBe(plain.className);
+    expect(withIcon.traits).toBe(plain.traits);
+  });
+
+  test("BTc3. disabled만으로는 내용을 숨기지 않는다", () => {
+    expect(getButtonContract({ label: "저장", disabled: true }).contentVisibility).toBe("visible");
   });
 });
 

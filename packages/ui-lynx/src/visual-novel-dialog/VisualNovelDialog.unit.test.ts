@@ -21,7 +21,6 @@ describe("getVisualNovelDialogContract", () => {
       contentLanguage: "ui",
       continueIndicator: "on",
       direction: "ltr",
-      indicatorMotion: "bounce",
       line: "오늘 하늘이 참 예쁘다.",
       reveal: "instant",
       showContinueIndicator: true,
@@ -234,17 +233,15 @@ describe("visual-novel-dialog.css", () => {
     expect(styles).toContain("opacity: var(--libitum-opacity-surface, 0.9)");
   });
 
-  // 예외 하나: 계속 표시의 bounce입니다(2026-09-28 디자인 반영). 패널 · 글자는 여전히
-  // 색만 전환하고, 움직이는 것은 계속 표시 한 자리뿐입니다.
-  test("색 전환만 허용하고, animation은 계속 표시의 bounce 하나뿐이다", () => {
+  test("VNs1. 색 전환만 허용하고 animation · keyframes · bounce는 없다", () => {
     expect(styles).toContain("transition-duration: var(--libitum-motion-duration-color)");
     expect(styles).toContain("transition-timing-function: var(--libitum-motion-easing-easing)");
     expect(styles).not.toMatch(/transition-property:[^;]*(transform|width|height)/);
-    expect(styles.match(/animation:/g)).toHaveLength(1);
-    expect(styles).toMatch(
-      /\.ui-lynx-visual-novel-dialog-indicator-bounce\s*\{[^}]*animation:[^}]*infinite/s,
-    );
-    expect(styles).toMatch(/@keyframes ui-lynx-visual-novel-dialog-indicator-bounce/);
+    expect(styles.match(/animation:/g)).toBeNull();
+    expect(styles).not.toMatch(/@keyframes/);
+    expect(styles).not.toContain("indicator-bounce");
+    expect(styles).toMatch(/\.ui-lynx-visual-novel-dialog-indicator-frame\s*\{/);
+    expect(styles).toMatch(/\.ui-lynx-visual-novel-dialog-indicator\s*\{/);
   });
 });
 
@@ -254,14 +251,15 @@ test("translation이 빈 문자열이면 던진다", () => {
   ).toThrow("VisualNovelDialog translation must not be empty");
 });
 
-test("계속 표시 모션은 기본 bounce이고, reducedMotion이면 static이다", () => {
-  expect(
-    getVisualNovelDialogContract({ line: "안녕", speakerName: "이유나" }).indicatorMotion,
-  ).toBe("bounce");
-  expect(
-    getVisualNovelDialogContract({ line: "안녕", speakerName: "이유나", reducedMotion: true })
-      .indicatorMotion,
-  ).toBe("static");
+test("VNc0. 계약에 indicatorMotion 필드가 없다", () => {
+  const base = { line: "안녕", speakerName: "이유나" };
+  expect(Object.keys(getVisualNovelDialogContract(base))).not.toContain("indicatorMotion");
+  expect(Object.keys(getVisualNovelDialogContract(base, "reduced"))).not.toContain(
+    "indicatorMotion",
+  );
+  expect(Object.keys(getVisualNovelDialogContract({ ...base, reducedMotion: true }))).not.toContain(
+    "indicatorMotion",
+  );
 });
 
 describe("getVisualNovelDialogContract: 컨텍스트 motion", () => {
@@ -279,7 +277,6 @@ describe("getVisualNovelDialogContract: 컨텍스트 motion", () => {
     expect(contract.reveal).toBe("instant");
     expect(contract.status).toBe("ready");
     expect(contract.visibleLine).toBe(line);
-    expect(contract.indicatorMotion).toBe("static");
   });
 
   test("VNc2. 명시한 reducedMotion false가 컨텍스트 reduced를 이긴다", () => {
@@ -288,13 +285,11 @@ describe("getVisualNovelDialogContract: 컨텍스트 motion", () => {
       "reduced",
     );
     expect(contract.reveal).toBe("typewriter");
-    expect(contract.indicatorMotion).toBe("bounce");
   });
 
   test("VNc3. 컨텍스트를 주지 않으면 요청한 reveal 그대로다", () => {
     const contract = getVisualNovelDialogContract(revealing);
     expect(contract.reveal).toBe("typewriter");
     expect(contract.status).toBe("revealing");
-    expect(contract.indicatorMotion).toBe("bounce");
   });
 });

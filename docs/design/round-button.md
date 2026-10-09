@@ -7,7 +7,9 @@
 - 이 문서가 지지 않는 것: props·export 이름, JSX/CSS 구현, story 구성, design-system 원본 변경
 - 원본: `libitum/design-system/components/round-button.md`,
   `foundations/accessibility.md`, `color.json`, `spacing.json`, `radius.json`, `stroke.json`,
-  `motion.json`, `iconography.json` (2026-09-10 열람)
+  `motion.json`, `iconography.json` (2026-09-10 열람). Spinner 회전 · 동작 줄이기 Pressed 막은
+  design-system `v0.4.0`(`foundations/motion.md` · `opacity.json` · `round-button.md`, 2026-10-09 열람)이
+  더한 것이다 — §4.4 · §5 · 「Reduced motion」.
 - 소비 규칙: ADR-0014 D1·D2·D4·D9, ADR-0015 D2, ADR-0025 D0·D4·D5
 
 ## 1. 고정 상태
@@ -105,6 +107,13 @@ opacity를 전파하지 않는다.
 | radius | `--libitum-radius-full` |
 | color | Neutral은 `--libitum-color-fg-neutral-subtle`, Brand는 `--libitum-color-fg-brand` |
 | 위치 | Icon을 대체해 visual surface 중앙 |
+| 회전 | 한 바퀴 `--libitum-motion-duration-spinner`(1000ms) · `--libitum-motion-easing-linear` · infinite(0.4.0). keyframe `ui-lynx-round-button-spin`은 `rotate(0deg)` → `rotate(360deg)`이고 `animation`은 loading 선택자에만 건다. reduced에서도 돈다 |
+
+비고 — 상단 투명(틈)은 `border-top-color: transparent` 한 선언이지만 variant 색 규칙
+`.<variant>.<loading> .spinner { border-color }`(특이도 0,3,0)에 지지 않도록 **같은 특이도로
+파일 끝**에 둔다. Lynx는 특이도와 선언 순서를 Web대로 적용한다. 틈이 없으면 회전이 보이지 않아
+기기에서 판정할 수 없다 — [0.4.0 motion 토큰 e2e](../e2e/motion-tokens.md) M2-I4 · M2-A4가 「틈이
+보이는 호」로 닫았다.
 
 ## 5. Pressed와 motion
 
@@ -113,8 +122,13 @@ opacity를 전파하지 않는다.
 - 전환 시간은 `--libitum-motion-duration-pressed`, easing은
   `--libitum-motion-easing-easing`을 사용한다. foundation에서 pressed를 “크기 변화와 색 변화”의
   micro interaction으로 정의한다.
-- 원본은 Spinner 회전을 요구하지 않는다. 회전 주기나 keyframe을 발명하지 않고 정적인
-  Spinner로 구현한다.
+- Spinner는 0.4.0부터 회전한다(§4.4 「회전」). 0.3.0까지는 원본이 회전을 요구하지 않아 정적인
+  Spinner였고, 주기 · easing을 FE가 발명하지 않았다 — 값은 전부 `motion.duration.spinner` ·
+  `motion.easing.linear` 토큰에서 온다.
+- Pressed의 `scale(0.95)`는 CSS 리터럴로 두고 unit 테스트가 `motion.scale.pressed`(0.4.0, 0.95)와
+  숫자로 대조한다. `transform` 함수 인자 안의 `var()`는 Lynx 문서에 없어 안전한 쪽을 택했고, iOS
+  시뮬레이터 탐색(M2-I8)에서는 `scale(var(--libitum-motion-scale-pressed))`가 풀렸다 — `var()`
+  전환 조건은 [ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-10-09 2단계」.
 
 ### Reduced motion
 
@@ -131,13 +145,26 @@ opacity를 전파하지 않는다.
 - 이동·확대를 제거한다. 따라서 Pressed의 95% scale은 적용하지 않는다 — `reduced`일 때만
   `ui-lynx-round-button-motion-reduced` 클래스와 `data-motion="reduced"`가 붙고
   `:active .surface`가 `transform: none; transition: none`이 된다. standard의 선언은 그대로다.
-- ⚠ 그 결과 **Neutral · Brand의 눌림 피드백이 0이 된다.** Pressed는 standard에서도 scale뿐이고
-  색 전환이 원래 없어 scale을 걷으면 남는 것이 없다(Overlay 변형은 흰 면 0.16이 남는다). WCAG 2.1
-  AA를 막지는 않지만 정본 motion.md 원칙 5(「변화는 색과 불투명도로 계속 전달」)와 어긋나고, 뿌리는
-  정본 `round-button.md`의 Pressed 정의(95%, 색 동일)다. **정본(design-system)이 Pressed 색을 정하면
-  reduced 전용 규칙 하나로 채운다** — standard 선언은 건드리지 않는다. Learning Unit도 같은 자리다.
-- Spinner는 기본 상태부터 정적이므로 reduced motion에서 별도의 대체 animation이나 opacity
-  transition을 추가하지 않는다. accessible busy/처리 중 상태와 Icon→Spinner 교체는 유지한다.
+- 대신 **막**으로 눌림을 알린다(0.4.0 Reduced motion 표). `reduced`이고 Overlay가 아닐 때만
+  surface의 첫 자식으로 `<view class="ui-lynx-round-button-shade">`(testid
+  `ui-lynx-round-button-shade`)를 내고, `:active`에서 `background-color: var(--libitum-color-black)` ·
+  `opacity: var(--libitum-opacity-pressed-shade, 0.08)`을 `--libitum-motion-duration-pressed` ·
+  `--libitum-motion-easing-easing`으로 켠다. 막은 아이콘 **아래**에 그려져 아이콘 색은 Default와 같고,
+  지름은 변하지 않는다. standard에는 막 요소가 없다. 기기 확인은
+  [0.4.0 motion 토큰 e2e](../e2e/motion-tokens.md) M2-I5 · M2-A5(합성 색 Neutral `#F7F8F9` →
+  `#E3E4E5`). Learning Unit도 같은 막이다(`default` 상태 제외).
+- 0.3.0 시점의 ⚠ 「Neutral · Brand의 눌림 피드백이 0」(Pressed는 scale뿐이라 걷으면 남는 것이
+  없었다)은 0.4.0의 `opacity.pressed-shade`와 위 막으로 **닫혔다**. standard 선언은 그때 약속대로
+  건드리지 않았다.
+- 막 위 아이콘 대비: Neutral `fg.neutral-subtle` / 합성 `#E3E4E5`는 **2.693:1**(Default 3.220:1),
+  Brand는 2.373:1로 3:1에 못 미친다. FE는 정본대로(8% · 아이콘 색 불변) 구현했고, 정본
+  `foundations/accessibility.md` 시각 예외 표에 「동작 줄이기 Pressed」 행이 아직 없다 —
+  **design-system 승인 예외 행 추가 대기.** 150ms 일시 상태이고 식별은 Default에서 끝나며 보조기술은
+  이름으로 알기에 AA 판정을 막지 않는다.
+- Spinner는 reduced에서도 **회전을 유지**한다(정본 「진행 중임을 알리는 유일한 수단」; reduced
+  규칙에 spinner · `animation` 선언이 없다). accessible busy/처리 중 상태와 Icon→Spinner 교체는
+  유지한다. WCAG 2.2.2 essential 예외 판단은
+  [ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-10-09 2단계」.
 
 ## 6. Focus와 접근성
 
@@ -174,7 +201,7 @@ Focused는 별도 state가 아니라 Default·Pressed·Loading 위에 결합되�
 | asset | padding icon variant; Loading에서는 Spinner로 교체 |
 | icon color | TS token → `current-color` (ADR-0014의 유일한 CSS 예외) |
 | other visuals | `@libitums/design-tokens`가 내보내는 `--libitum-*` CSS 변수만 |
-| motion | pressed=d3/기본 easing; Spinner는 정적; reduced motion에서는 pressed 확대/축소 제거 |
+| motion | pressed=d3/기본 easing, `scale(0.95)` 리터럴은 unit이 `motion.scale.pressed`와 대조; Spinner는 `duration.spinner` · `easing.linear` infinite 회전(reduced에서도); reduced motion에서는 pressed 확대/축소 제거 + `opacity.pressed-shade` 막(Overlay 제외) |
 
 ## 8. Design-system gap과 blocker 판정
 

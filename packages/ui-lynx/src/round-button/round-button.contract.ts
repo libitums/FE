@@ -65,3 +65,8 @@ export function getRoundButtonForegroundColor(props: RoundButtonProps): string {
   // FE override(2026-09-21 디자인 반영): brand 아이콘은 정본의 fg.brand 대신 brand.primary.
   return props.variant === "brand" ? color.brand.primary : color.fg["neutral-subtle"];
 }
+
+/** reduced이고 overlay가 아니면 true — 눌림 막을 렌더한다. */
+export function hasPressedShade(variant: RoundButtonVariant, motion: Motion): boolean {
+  return motion === "reduced" && variant !== "overlay";
+}

@@ -4,6 +4,16 @@ import { describe, expect, test, vi } from "vitest";
 import { MotionProvider } from "../motion";
 import { Dialog } from "./Dialog";
 
+/** 요소와 자손의 accessibility-* 속성을 순서대로 모읍니다. */
+const accessibilitySnapshot = (root: Element): Record<string, string>[] =>
+  [root, ...Array.from(root.querySelectorAll("*"))].map((element) =>
+    Object.fromEntries(
+      Array.from(element.attributes)
+        .filter((attribute) => attribute.name.startsWith("accessibility-"))
+        .map((attribute) => [attribute.name, attribute.value]),
+    ),
+  );
+
 describe("Dialog", () => {
   test("Scrim, 제목, 설명과 두 action을 디자인 순서로 렌더한다", () => {
     render(
@@ -205,5 +215,38 @@ describe("Dialog motion 컨텍스트", () => {
   test("DG3: Provider 없이는 standard이다", () => {
     render(<Dialog title="학습을 계속할까요?" actions={actions} bindaction={() => undefined} />);
     expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-motion", "standard");
+  });
+
+  test("DG1(R2). reduced Provider에서도 accessibility-* 속성이 Provider 없이와 같다", () => {
+    const plain = render(
+      <Dialog title="학습을 계속할까요?" actions={actions} bindaction={() => undefined} />,
+    );
+    const expected = accessibilitySnapshot(screen.getByTestId("ui-lynx-dialog"));
+    plain.unmount();
+    render(
+      <MotionProvider motion="reduced">
+        <Dialog title="학습을 계속할까요?" actions={actions} bindaction={() => undefined} />
+      </MotionProvider>,
+    );
+    const snapshot = accessibilitySnapshot(screen.getByTestId("ui-lynx-dialog"));
+    expect(snapshot).toEqual(expected);
+    expect(snapshot.some((item) => item["accessibility-role-description"] === "dialog")).toBe(true);
+  });
+
+  test("DG4(R2). reduced Provider에서도 animationend가 bindmotionend를 한 번 전달한다", () => {
+    const bindmotionend = vi.fn<() => void>();
+    render(
+      <MotionProvider motion="reduced">
+        <Dialog
+          title="학습을 계속할까요?"
+          actions={actions}
+          phase="entering"
+          bindaction={() => undefined}
+          bindmotionend={bindmotionend}
+        />
+      </MotionProvider>,
+    );
+    fireEvent.animationend(screen.getByTestId("ui-lynx-dialog-container"));
+    expect(bindmotionend).toHaveBeenCalledTimes(1);
   });
 });

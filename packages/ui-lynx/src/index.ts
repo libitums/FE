@@ -1,16 +1,17 @@
 export { Button } from "./button";
-export { useTypewriter } from "./typewriter";
+export { defaultRevealIntervalMs, useTypewriter } from "./typewriter";
 export type { TypewriterOptions, TypewriterState } from "./typewriter";
 export {
   MotionProvider,
   defaultMotion,
   motionClassName,
+  motionDurationMs,
   motionFromReducedMotion,
   resolveMotion,
   resolveReducedMotion,
   useMotion,
 } from "./motion";
-export type { Motion, MotionProviderProps } from "./motion";
+export type { Motion, MotionDurationToken, MotionProviderProps } from "./motion";
 export type {
   ButtonContract,
   ButtonProps,

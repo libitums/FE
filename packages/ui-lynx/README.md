@@ -7,7 +7,8 @@ libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포
 `Avatar`, `Dialog`, `OptionSelector`, `LearningUnit`, `SettingsCell`·`SettingsGroup` 등이 있다.
 
 공통 타이핑 훅 `useTypewriter`는 `@libitums/ui-lynx/typewriter`에서 가져온다.
-`text`, `intervalMs`(기본 35ms), `resetKey`, `enabled`, `reducedMotion`을 받고
+`text`, `intervalMs`(기본 `motion.duration.reveal` = 35ms — 같은 값이 `defaultRevealIntervalMs`로
+export된다), `resetKey`, `enabled`, `reducedMotion`을 받고
 `visibleText`, `visibleCharacterCount`, `isComplete`, `finish()`를 반환한다.
 `text`나 `resetKey`가 바뀌면 재시작하고, 완료·언마운트 시 타이머를 정리한다.
 `enabled={false}`, `reducedMotion={true}`, `intervalMs={0}`은 즉시 전체를 표시한다.
@@ -394,8 +395,18 @@ import "@libitums/ui-lynx/styles.css";
 - `reduced`에서 걷는 것과 남는 것은 design-system `foundations/motion.md`의 「컴포넌트 매핑」을
   따른다 — 이동 · 확대 · 너비 · reveal은 즉시, 색 · 불투명도 전환은 유지. RoundButton ·
   LearningUnit · PageIndicator · SettingsCell은 `reduced`일 때만 `<block>-motion-reduced` 클래스와
-  `data-motion="reduced"`를 낸다(standard의 DOM · 클래스는 전과 같다). Card · Tooltip은 유지할
-  것만 있어 변형이 없다. `@media (prefers-reduced-motion)`은 Lynx가 지원하지 않아 쓰지 않는다.
+  `data-motion="reduced"`를 낸다(standard의 DOM · 클래스는 전과 같다). RoundButton(Overlay 제외) ·
+  LearningUnit(`default` 제외)은 `reduced`에서 축소 대신 surface 첫 자식 `<block>-shade`로
+  `opacity.pressed-shade` 막을 깔아 눌림을 알린다. Spinner 회전(Button · RoundButton)은 `reduced`에서도
+  유지한다 — 진행 중임을 알리는 유일한 수단이다. Card · Tooltip은 유지할 것만 있어 변형이 없다.
+  `@media (prefers-reduced-motion)`은 Lynx가 지원하지 않아 쓰지 않는다.
+- `motionDurationMs("35ms")`는 토큰의 duration 문자열(`"<n>ms"` · `"<n>s"`)을 밀리초 숫자로 바꾸는
+  순수 함수다. `useTypewriter`의 `defaultRevealIntervalMs`가 `motion.duration.reveal`을 이것으로
+  읽는다. 단위가 ms · s가 아니거나 숫자가 아니면 던진다(토큰은 빌드 시 상수라 런타임에 잘못될 수
+  없고, 조용한 NaN은 `setInterval(NaN)`으로 번진다).
+- CSS에서 `transition` · `animation`의 시간 · easing은 `var(--libitum-motion-…)`만 쓴다. 루트
+  `pnpm lint:motion`이 리터럴 시간 · `cubic-bezier()` · easing 키워드 · `@media`를 막는다
+  (allowlist는 `devtools/motion-literals/allowlist.json`).
 - 값을 어디서 가져오는지는 패키지가 정하지 않는다. 소비 앱이 호스트가 보낸 boolean을
   `motionFromReducedMotion`으로 옮겨 앱 루트에서 Provider를 한 번 세운다. 이 모듈에는 CSS가 없다.
 
@@ -541,13 +552,20 @@ Indicator는 점·라벨을 함께 표시하고 줄 전체를 하나의 상태�
 
 Brand Button은 design-system의 `brand.primary` #F46B18 surface와 `white` #FFFFFF label·icon·spinner를 사용한다. 이 3.016:1 조합은 design-system Accessibility 문서에서 Default·Pressed·Loading에만 승인한 예외이며, WCAG AA 통과로 기록하지 않는다.
 Neutral Button은 원본 `gray.800` 대신 `gray.900` surface를 사용한다.
-Loading spinner는 각 variant의 label 색을 따른다. `loading`과 `disabled`를 함께 주면 두
-상태를 모두 유지하고 label·spinner를 `border.default`로 표시하되 tap은 전달하지 않는다.
+Loading은 label·icon을 흐름에 둔 채 `visibility: hidden`으로 숨기고 12px spinner만 surface
+중앙에 절대 배치한다 — 그래서 폭·높이가 같은 variant의 Default와 같다(0.4.0 「폭은 바뀌지 않음」).
+spinner는 `motion.duration.spinner`(1000ms) · `motion.easing.linear`로 끝없이 회전하며 reduced에서도
+돈다. 접근성 이름은 `"<label>, loading"` 그대로다. spinner 색은 각 variant의 label 색을 따른다.
+`loading`과 `disabled`를 함께 주면 두 상태를 모두 유지하고 spinner를 `border.default`로 표시하되
+tap은 전달하지 않는다(숨긴 label의 색 규칙은 없다).
 
 RoundButton은 `neutral | brand` variant와 `s | m | l | xl` size를 제공한다. Default와
-Pressed에는 icon을 표시하고, Pressed 동안 원형 surface만 95%로 줄인다. Loading에서는 icon을
-12px Spinner로 대체하며 Loading과 Disabled는 tap handler를 연결하지 않는다. 두 상태가 함께면
-Disabled trait와 tap 차단이 우선하고 Spinner는 유지한다.
+Pressed에는 icon을 표시하고, Pressed 동안 원형 surface만 95%로 줄인다(`motion.scale.pressed`).
+Loading에서는 icon을 12px Spinner로 대체하며 Spinner는 `motion.duration.spinner` ·
+`motion.easing.linear`로 회전한다(reduced에서도). Loading과 Disabled는 tap handler를 연결하지
+않는다. 두 상태가 함께면 Disabled trait와 tap 차단이 우선하고 Spinner는 유지한다. `reduced`에서는
+축소 대신 surface 위에 `opacity.pressed-shade`(black 8%) 막(`ui-lynx-round-button-shade`)을 깔아
+눌림을 알린다 — Overlay variant는 제외하고, standard에는 막 요소가 없다.
 
 RoundButton의 focusable hit area와 접근성 node는 하나다. S/M/L은 48px, XL은 56px 정사각이며
 icon과 Spinner는 장식 자손으로 숨긴다. Loading 접근성 이름에는 `, loading`이 붙는다. Lynx Web
