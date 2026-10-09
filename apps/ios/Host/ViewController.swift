@@ -178,16 +178,19 @@ final class ViewController: UIViewController {
   /// 로드 전에 닿지 못하더라도 `globalPropsMode: "event"`가 값이 오면 다시 그린다.
   ///
   /// 이 변화는 trait이 아니라 알림이라 `registerForTraitChanges`로 받을 수 없다.
-  /// VC가 앱 수명이라 `observeOpenedPushNotification`처럼 해제하지 않는다.
+  /// 셀렉터 방식이라 VC가 해제될 때 등록이 함께 풀린다 — 토큰을 들고 있을 필요가 없다.
   private func observeReduceMotion() {
     publishReducedMotion(UIAccessibility.isReduceMotionEnabled)
     NotificationCenter.default.addObserver(
-      forName: UIAccessibility.reduceMotionStatusDidChangeNotification,
-      object: nil,
-      queue: .main
-    ) { [weak self] _ in
-      self?.publishReducedMotion(UIAccessibility.isReduceMotionEnabled)
-    }
+      self,
+      selector: #selector(reduceMotionStatusDidChange),
+      name: UIAccessibility.reduceMotionStatusDidChangeNotification,
+      object: nil
+    )
+  }
+
+  @objc private func reduceMotionStatusDidChange() {
+    publishReducedMotion(UIAccessibility.isReduceMotionEnabled)
   }
 
   private func publishReducedMotion(_ enabled: Bool) {
@@ -201,11 +204,14 @@ final class ViewController: UIViewController {
   /// 이벤트에는 목적지를 싣지 않아, 꺼내는 자리가 하나다(ADR-0034).
   private func observeOpenedPushNotification() {
     NotificationCenter.default.addObserver(
-      forName: PushNotificationHub.openedNotification,
-      object: nil,
-      queue: .main
-    ) { [weak self] _ in
-      self?.lynxView?.sendGlobalEvent("pushNotificationOpened", withParams: [])
-    }
+      self,
+      selector: #selector(pushNotificationOpened),
+      name: PushNotificationHub.openedNotification,
+      object: nil
+    )
+  }
+
+  @objc private func pushNotificationOpened() {
+    lynxView?.sendGlobalEvent("pushNotificationOpened", withParams: [])
   }
 }
