@@ -481,9 +481,75 @@ rotate · width · reveal). 새 토큰은 0이고 `@libitums/design-tokens` 0.3.
   전환(crossfade — iOS `prefersCrossFadeTransitions`를 그때 함께 본다) · 새 토큰. reduced에서
   Round Button · Learning Unit의 눌림 피드백이 0이 되는 것은 정본의 Pressed 정의(색 동일)에서 오는
   결과이고 design-system 쪽 결정으로 넘겼다 —
-  [`docs/design/round-button.md`](../design/round-button.md) 「Reduced motion」.
+  [`docs/design/round-button.md`](../design/round-button.md) 「Reduced motion」. *(2026-10-09 주: Spinner ·
+  Button Loading · 눌림 피드백은 같은 날 아래 「2단계」가 닫았다. 보상 · 화면 전환 · 새 토큰은 여전히
+  뒤 단계다.)*
 - **축 추적표에 새 행을 더하지 않는다** — 같은 「공유 ReactLynx 패키지와 브라우저 카탈로그」
   축이다. 재검토 조건의 「공개 컴포넌트가 10개를 넘을 때」와 무관하다(컴포넌트가 아니다).
+
+#### 2026-10-09 2단계 — design-tokens 0.4.0 소비 · Spinner 회전 · Button Loading · reduced 눌림 막 · `lint:motion`
+
+같은 package 경계 안에서 `@libitums/design-tokens`가 0.3.0 → **0.4.0**으로 오르며 생긴 motion 토큰
+(`motion.scale.pressed` 0.95 · `scale.enter` 0.96 · `duration.spinner` 1000ms · `easing.linear` ·
+`duration.reveal` 35ms · `opacity.pressed-shade` 0.08)을 소비한 delta다. 공개 컴포넌트는 늘지 않았고
+새 ADR 번호도 아니다 — 위 절이 「열지 않은 것」으로 예고한 자리를 채우는 적용 기록이다. 기기 확인은
+[`docs/e2e/motion-tokens.md`](../e2e/motion-tokens.md)가 진다.
+
+- **눌림 · 등장 scale은 CSS 리터럴(`scale(0.95)` · `scale(0.96)`)을 유지하고 unit 테스트가 TS 토큰과
+  숫자로 대조한다.** `transform` 함수 인자 안의 `var()`는 벤더링된 Lynx 문서에 없고 `calc()`는
+  `transform`에서 명시적으로 미지원이다. 풀리지 않으면 선언 전체가 무효가 되어 **눌림 축소 자체가
+  사라지는** 조용한 회귀라 안전한 쪽을 택했다(값이 토큰과 같아 픽셀 변화 0). 탐색(M2-I8)에서는
+  **iOS 시뮬레이터가 `scale(var(--libitum-motion-scale-pressed))`를 풀었다**(눌림 95 %, 번들 안에
+  `scale( {{--libitum-motion-scale-pressed}})`). 전환 조건: **Android에서도 풀리는 것을 같은 방법으로
+  확인하면** 3단계(`scale.reward` keyframe이 새로 들어오는 작업)가 세 자리(Round Button · Learning Unit
+  `:active`, Dialog enter/exit keyframe)를 `var()`로 바꾸고 unit 대조를 문자열 단언으로 교체한다.
+  Android에서 안 풀리면 리터럴 + unit 대조가 영구 방식이다. `lint:motion`은 scale 값을 보지 않는다 —
+  재발 방지는 unit 대조가 진다(대조 목록 밖의 새 자리는 잡지 못한다).
+- **Spinner는 `@keyframes ui-lynx-<component>-spin`(`rotate(0deg)` → `rotate(360deg)`)을 loading 선택자에
+  `var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear) infinite`로 건다.** 정적 블록은
+  byte 불변이다. 상단 투명(틈) 규칙은 variant 색 규칙(0,3,0)에 지지 않도록 같은 특이도로 **파일 끝**에
+  둔다 — Round Button은 (0,1,0)이라 져서 틈 없는 원이었고 Button에는 규칙 자체가 없었다(둘 다
+  회전해도 보이지 않는 상태). Lynx는 특이도 · 순서를 Web대로 적용한다.
+  - **끝없는 회전은 WCAG 2.2.2의 essential 예외다.** 자동 시작이 아니라 사용자가 시작한 요청
+    (login · verification · feedback의 requesting · verifying · sending)의 **유일한** 진행 표시이고,
+    정지 수단 대신 완료로 끝나며(정본 `motion.md` Reduced motion 표 「진행 중임을 알리는 유일한 수단」 ·
+    `button.md`), 12px 선 하나라 주의를 빼앗는 정도가 작다. 플랫폼 선례(iOS `UIActivityIndicatorView`)도
+    Reduce Motion에서 멈추지 않는다. 그래서 **reduced에서도 유지**한다(2.3.3 AAA의 「필수 정보」 예외) —
+    reduced 규칙에 spinner · `animation` 선언을 두지 않는다. 조건: 이 판단은 「Loading은 반드시
+    끝난다」에 기대어 있다. 타임아웃 없는 요청 경로가 생기면 2.2.2보다 먼저 그 화면의 오류 처리
+    문제다. VN continue indicator의 bounce 제거(아래)로 standard에서 멈출 수 없던 끝없는 움직임이
+    하나 줄었다 — 2.2.2 축의 개선.
+- **Button Loading은 라벨 · 아이콘을 흐름에 둔 채 `visibility: hidden`으로 숨기고 spinner wrap을
+  surface 안 절대 배치 중앙에 둔다.** 정본 산식 「Loading = Default 너비 그대로」를 측정 없이 지키는
+  유일한 길이다(같은 자식이 같은 레이아웃을 차지한다). 계약 객체에 `contentVisibility: "visible" |
+  "hidden"` 필드가 하나 늘었다 — 위 절의 「contract 객체에 필드를 더하지 않는다」는 RoundButton ·
+  LearningUnit의 `toEqual` 보호였고 Button에는 그 제약이 없다. 기존 `column-gap: spacing-6`과 숨긴
+  라벨의 색 규칙은 지웠다. 접근성 이름 `"<label>, loading"`은 그대로이고 숨긴 `<text>`는 iOS에서
+  `view.hidden` + 루트 `isAccessibilityElement`로 정지점이 되지 않는다(Android는 실기 확인 항목).
+- **reduced 눌림 막은 surface 첫 자식 `<view class="<block>-shade">`이고 reduced에서만 렌더한다.**
+  토큰만으로 「black 8%」를 만드는 CSS는 Lynx에서 자식 요소뿐이다 — `rgba()`는 생값, `color-mix()` ·
+  `filter` · `::after`는 미지원. `background-color: var(--libitum-color-black)`과
+  `opacity: var(--libitum-opacity-pressed-shade, 0.08)`을 따로 주고 `:active`에서 `duration.pressed` ·
+  `easing.easing`으로 켠다. 렌더 조건은 순수 함수 `hasPressedShade`(Round Button: overlay 제외,
+  Learning Unit: `default` 제외)이고 contract 객체는 그대로다. standard DOM · CSS는 byte 불변. 위 절의
+  「눌림 피드백 0」과 1단계 접근성 지적 R1은 이것으로 닫혔다. 막 위 아이콘 대비(Neutral 2.693:1)는
+  정본의 승인 예외 행을 기다린다 — [`docs/design/round-button.md`](../design/round-button.md).
+- **VN continue indicator의 bounce · `indicatorMotion` 필드 · `VisualNovelDialogIndicatorMotion` 타입 ·
+  `data-motion` · `-indicator-{motion}` 클래스를 전부 걷었다.** 정본 0.4.0 「애니메이션 없음」. 값이
+  `static` 하나뿐인 필드와 그 관찰 채널은 뜻이 없다. 공개 contract 필드 하나가 사라졌지만 타입은
+  패키지 밖으로 재수출된 적이 없고 저장소 소비처는 테스트뿐이었다. standard DOM이 바뀐
+  유일한 자리(클래스 토큰 하나 · 속성 하나)다.
+- **`motionDurationMs`는 `motion` 모듈의 순수 함수이고 `useTypewriter`의 기본값은
+  `defaultRevealIntervalMs = motionDurationMs(motion.duration.reveal)`이다.** 토큰의 duration이
+  문자열(`"35ms"`)이라 파싱이 한 번 필요하고, 모션 값의 변환은 모션 모듈의 관심사다. 잘못된 문자열은
+  던진다 — 토큰은 빌드 시 상수라 런타임에 잘못될 수 없고 조용한 NaN은 `setInterval(NaN)`으로 번진다.
+- **`lint:motion`(`devtools/motion-literals/`)은 CSS 선언 단위 검사다.** `transition*` · `animation*`
+  선언에서 `var(--libitum-…)` 참조를 지운 나머지에 시간 리터럴 · `cubic-bezier()` · easing 키워드가
+  있으면, 그리고 `@media`가 있으면 실패한다(`display: linear` · `linear-gradient()` · keyframe 본문은
+  대상 밖). `pnpm lint`의 사슬 끝에 들어가고 `pnpm test`가 `test:motion-literals`를 부른다 — ci-wiring ·
+  verify.yml 변경 0. allowlist(`allowlist.json`)의 유일한 항목은 episode-narrative 배경 연출(Content
+  예외 — 사유 문장이 allowlist 자체에 있다)이고, 없는 파일 · 위반 0인 항목은 실패다.
+- **축 추적표 · 색인 행은 그대로다** — 같은 축의 적용 기록이고 새 결정이 아니다.
 
 ## 버린 대안
 

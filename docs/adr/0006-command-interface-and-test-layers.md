@@ -47,7 +47,7 @@
 | `pnpm preview` | `rspeedy preview` — 빌드 산출물을 Explorer로 확인 | 빌드 |
 | `pnpm bundle:host` | `build` + 산출물을 `apps/ios`로 복사 | 네이티브 빌드 (ADR-0012 D6) |
 | `pnpm typecheck` | `tsc --noEmit` | 코드 생성 |
-| `pnpm lint` | 정적 검사 (`oxlint`) + **CSS 토큰 접두사 검사** (`lint:tokens` — ADR-0014 D8) | **자동 수정** (`lint:fix`가 따로) |
+| `pnpm lint` | 정적 검사 (`oxlint`) + **CSS 토큰 접두사 검사** (`lint:tokens` — ADR-0014 D8) + 모션 리터럴 검사 (`lint:motion`, 2026-10-09 — `transition` · `animation` 선언의 리터럴 시간 · easing과 `@media`를 막는다, ADR-0025 「2026-10-09 2단계」) | **자동 수정** (`lint:fix`가 따로) |
 | `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 하기 (`format:check`가 따로) |
 | `pnpm test` | `test:unit` + `test:ui` + `test:integration` + `test:report-policy` | e2e (D4) |
 | `pnpm performance:reports:gate` | **지금 이 브랜치가 CI의 성능 보고서 정책을 통과하나.** 범위를 스스로 구해서 검사한다 (ADR-0021 D2) | 임의 범위 감사 (`performance:reports:check`가 따로) |

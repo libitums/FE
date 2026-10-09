@@ -35,8 +35,9 @@
 - **캡처 간격의 정밀도**: `simctl io screenshot` · `screencap`은 한 번에 수백 ms가 걸린다. 전환(대개 200 ms 안팎)의 중간 프레임을 두 장 잡는 것은 운이 섞인다.
   그래서 전환 항목(M-I4 · M-I5 · M-A4 · M-A5)은 **녹화를 기본으로 하고 프레임을 뽑아 비교한다**(아래 「연속 두 장 비교」). `ffmpeg`가 이 개발 머신에 있는지는 확인하지
   않았다 — 없으면 녹화 파일을 QuickTime · 영상 플레이어에서 한 프레임씩 넘겨 스크린샷으로 남긴다.
-- **눌림 피드백이 reduced에서 사라지는 것**(`spec.md` §11 Q2): 의도된 결과다. M-I5는 「축소가 없다」만 보고 눌림 색이 없는 것을 실패로 적지 않는다.
-- Spinner · Button Loading · 보상 · 화면 전환 · Card · Tooltip(변경 없음): 이 작업의 범위 밖이다.
+- **눌림 피드백이 reduced에서 사라지는 것**(`spec.md` §11 Q2): 이 회차(0.3.0)에서는 의도된 결과였다. **2단계(0.4.0)부터는 `opacity.pressed-shade` 막이 눌림을 알린다** —
+  막의 관찰은 [0.4.0 motion 토큰 e2e](motion-tokens.md) M2-I5 · M2-A5가 진다. M-I5는 그대로 「축소가 없다」만 본다.
+- Spinner 회전 · Button Loading: [0.4.0 motion 토큰 e2e](motion-tokens.md)(M2-I3 · M2-I4 · M2-I6 · M2-A3 · M2-A4 · M2-A6). 보상 · 화면 전환 · Card · Tooltip(변경 없음): 이 작업의 범위 밖이다.
 - TalkBack · VoiceOver를 켠 상태: accessibility 단계의 몫이다.
 
 ## 전제
@@ -174,14 +175,16 @@ Android는 짧은 전환이면 `A shell input tap x y; A exec-out screencap -p >
 ### M-I5 — RoundButton은 눌러도 줄어들지 않는다 (AC9)
 
 - **조작**: **켠** 상태에서 RoundButton(여정 맵 · 학습 화면)을 눌러 둔 채 캡처하고, 누르기 전 모습도 한 장 남긴다. **끈** 상태에서 같은 조작을 한다.
-- **관찰**: 켠 상태에서는 `ui-lynx-round-button`의 surface 지름이 누르기 전과 **같다**(축소 없음). 끈 상태에서는 누른 모습이 누르기 전의 **95 %**다. 눌림 색이 없는 것은 실패가 아니다(Q2).
+- **관찰**: 켠 상태에서는 `ui-lynx-round-button`의 surface 지름이 누르기 전과 **같다**(축소 없음). 끈 상태에서는 누른 모습이 누르기 전의 **95 %**다. 눌림 색이 없는 것은 실패가 아니다(Q2) —
+  2단계(0.4.0)부터는 켠 상태에서 surface가 막으로 어두워지는데, 그 관찰은 이 항목이 아니라 [M2-I5](motion-tokens.md#m2-i5--켠-상태에서는-줄지-않고-어두워진다-ac4-가정-a2)다.
 - 증거: `motion-reduced-ios-M-I5-on-1.png`(누르기 전), `-on-2.png`(누른 중), `-off-1.png`, `-off-2.png`.
 
 ### M-I6 — 비주얼 노벨 대사가 한 번에 선다 (AC9)
 
 - **조작**: **켠** 상태에서 서사(카페 도착 비주얼 노벨)의 대사 화면에 진입한 직후를 캡처한다. **끈** 상태에서 같은 조작을 한다.
 - **관찰**: 켠 상태에서는 진입 직후의 **첫 프레임부터** `ui-lynx-visual-novel-dialog`의 대사가 **전체**다(글자 수가 이후 프레임과 같다). 끈 상태에서는 글자가 늘어나고 있다(첫 프레임이 이후 프레임보다 짧다).
-  이어서 켠 상태의 계속 표시(`ui-lynx-visual-novel-continue-indicator`)가 위아래로 튀지 않는지(두 프레임에서 y가 같다)도 본다.
+  이어서 켠 상태의 계속 표시(`ui-lynx-visual-novel-dialog-continue-indicator`)가 위아래로 튀지 않는지(두 프레임에서 y가 같다)도 본다 — 2단계(0.4.0)가 bounce keyframe 자체를 걷어
+  **standard에서도 정지**이므로, 이제 켠 · 끈 어느 쪽도 튀면 실패다([M2-I7](motion-tokens.md#m2-i7--vn-계속-표시가-튀지-않는다) · M2-A7이 끈 상태에서 본다).
 - 증거: `motion-reduced-ios-M-I6-on-1.png`, `-on-2.png`, `-off-1.png`, `-off-2.png`.
 
 ### M-I7 — 나머지 컴포넌트 (기록)
