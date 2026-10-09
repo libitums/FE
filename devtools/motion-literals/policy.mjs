@@ -54,7 +54,8 @@ export function violationsIn(css, fileName) {
     for (const match of remaining.matchAll(easingFunctionPattern)) {
       violations.push({ line, rule: "easing-function", text: match[0] });
     }
-    for (const token of remaining.replace(easingFunctionPattern, " ").split(/[\s,]+/)) {
+    // 괄호도 구분자로 본다 — calc(100ms) · var(--other, ease)처럼 괄호에 붙은 리터럴이 검사를 비껴가지 않게.
+    for (const token of remaining.replace(easingFunctionPattern, " ").split(/[\s,()]+/)) {
       if (timeLiteralPattern.test(token)) {
         violations.push({ line, rule: "time-literal", text: token });
       } else if (easingKeywords.has(token.toLowerCase())) {
