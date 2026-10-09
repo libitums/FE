@@ -20,16 +20,23 @@ const stores = [
       {
         stores.map((store) =>
           store.href ? (
-            <a class="store" href={store.href} target="_blank" rel="noopener noreferrer" data-store={store.id}>
+            <a
+              class="store"
+              href={store.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-store={store.id}
+              data-testid="store"
+            >
               <span class="store__platform">{store.platform}</span>
               <span class="store__name">{store.name}</span>
-              <span class="store__state">{t.storeGet}</span>
+              <span class="store__state" data-testid="store-state">{t.storeGet}</span>
             </a>
           ) : (
-            <div class="store">
+            <div class="store" data-testid="store">
               <span class="store__platform">{store.platform}</span>
               <span class="store__name">{store.name}</span>
-              <span class="store__state">{t.storeSoon}</span>
+              <span class="store__state" data-testid="store-state">{t.storeSoon}</span>
             </div>
           ),
         )

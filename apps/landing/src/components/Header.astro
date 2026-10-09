@@ -11,7 +11,7 @@ const home = pathFor(language);
 
 <header class:list={["site-header", { "is-solid": plain, "site-header--plain": plain }]} id="site-header">
   <div class="site-header__inner">
-    <a class="brand" href={plain ? home : "#top"}>
+    <a class="brand" href={plain ? home : "#top"} data-testid="header-brand">
       <img src="/logo-duru.webp" alt="Duru" width="80" height="30" />
     </a>
     {
@@ -58,7 +58,11 @@ const home = pathFor(language);
         </details>
         )
       }
-      <a class="button button--small" href={plain ? `${home}#download` : "#download"}>{t.navCta}</a>
+      <a
+        class="button button--small"
+        href={plain ? `${home}#download` : "#download"}
+        data-testid="header-cta"
+      >{t.navCta}</a>
     </div>
   </div>
 </header>
