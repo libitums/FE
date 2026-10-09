@@ -159,7 +159,7 @@ describe("RoundButton motion 컨텍스트", () => {
   );
 
   test.each(["neutral", "brand"] as const)(
-    "RB3. reduced %s는 surface 첫 자식으로 숨겨진 막을 낸다",
+    "RB3′. reduced %s는 surface 첫 자식으로 접근성 속성 없는 막을 낸다",
     (variant) => {
       render(
         <MotionProvider motion="reduced">
@@ -169,7 +169,17 @@ describe("RoundButton motion 컨텍스트", () => {
       const surface = screen.getByTestId("ui-lynx-round-button-surface");
       const shade = screen.getByTestId("ui-lynx-round-button-shade");
       expect(shade).toHaveClass("ui-lynx-round-button-shade");
-      expect(shade).toHaveAttribute("accessibility-elements-hidden", "true");
+      for (const name of [
+        "accessibility-element",
+        "accessibility-label",
+        "accessibility-traits",
+        "accessibility-role-description",
+        "accessibility-enable-tap",
+        "accessibility-value",
+        "accessibility-elements-hidden",
+      ]) {
+        expect(shade).not.toHaveAttribute(name);
+      }
       expect(logicalChildren(surface)[0]).toBe(shade);
       expect(logicalChildren(surface)).toHaveLength(2);
       expect(logicalChildren(surface)[1]).toBe(
