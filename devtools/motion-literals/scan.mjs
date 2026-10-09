@@ -86,3 +86,9 @@ export function mediaQueriesIn(css) {
     line: lineAt(stripped, match.index),
   }));
 }
+
+/** `transform` 선언을 `{ line, property, value }`로 돌려줍니다. 지금은 비어 있는 결과를 냅니다. */
+export function transformDeclarationsIn(css) {
+  void css;
+  return [];
+}

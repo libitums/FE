@@ -29,10 +29,7 @@ const files = roots.flatMap(cssFilesIn);
 
 const violationsByFile = new Map();
 for (const fileName of files) {
-  violationsByFile.set(
-    fileName,
-    violationsIn(readFileSync(path.join(repoRoot, fileName), "utf8"), fileName),
-  );
+  violationsByFile.set(fileName, violationsIn(readFileSync(path.join(repoRoot, fileName), "utf8")));
 }
 
 const failures = [];
@@ -44,7 +41,7 @@ for (const [fileName, violations] of violationsByFile) {
     failures.push(`${fileName}:${violation.line} ${violation.rule} — ${violation.text}`);
   }
 }
-failures.push(...allowlistProblems(allowlist, files, violationsByFile));
+failures.push(...allowlistProblems(allowlist, new Set(files), violationsByFile));
 
 if (failures.length > 0) {
   console.error(`모션 리터럴 ${failures.length}건:`);
