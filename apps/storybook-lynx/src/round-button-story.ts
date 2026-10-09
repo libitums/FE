@@ -1,4 +1,6 @@
+import type { Motion } from "@libitums/ui-lynx/motion";
 import type { RoundButtonSize, RoundButtonVariant } from "@libitums/ui-lynx/round-button";
+import { normalizeStoryMotion } from "./story-motion";
 
 export type RoundButtonInitData = {
   readonly accessibilityLabel: string;
@@ -7,6 +9,7 @@ export type RoundButtonInitData = {
   readonly size: RoundButtonSize;
   readonly disabled: boolean;
   readonly loading: boolean;
+  readonly motion: Motion;
 };
 
 export type RoundButtonStoryActionEnvelope = {
@@ -39,6 +42,7 @@ export function normalizeRoundButtonStoryArgs(input: unknown): RoundButtonInitDa
     size,
     disabled: args.disabled === true,
     loading: args.loading === true,
+    motion: normalizeStoryMotion(args.motion),
   };
 }
 

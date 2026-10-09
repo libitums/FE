@@ -1,6 +1,8 @@
 // 학습 껍데기의 세션 헤더가 내는 값들을 뽑습니다. 화면이 계산식을 들고 있지 않도록
 // 여기 모읍니다 — 같은 수에서 낱말 셋(순번 · 백분율 · 접근성 이름)과 막대가 나옵니다.
 
+import { motionClassName, type Motion } from "@libitums/ui-lynx/motion";
+
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { LearningForm } from "../../lib/learning-form";
 
@@ -105,4 +107,10 @@ export function learningSessionHeader(
       questionCount,
     ),
   };
+}
+
+/** 진행 바 채움의 클래스 문자열입니다. 동작 줄이기에서는 너비 전환을 끄는 변형 클래스가 붙습니다. */
+export function learningProgressFillClassName(motion: Motion): string {
+  const block = "learning-shell-progress-fill";
+  return [block, motionClassName(block, motion)].filter(Boolean).join(" ");
 }

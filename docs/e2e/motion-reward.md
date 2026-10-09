@@ -4,17 +4,17 @@
 `spec.md` §6(AC1 · AC3 · AC5 ~ AC8 · AC11) · §11(가정 A1 ~ A5)이 진다. 이 문서는 아래 일곱 가지만 본다.
 
 1. 통과 배지 보상 등장 — 끈(standard) 상태에서 지름 80 %(126 → 약 101 css px) · 반투명으로 시작해 약 400 ms 뒤 정착하고, 미통과(`LESSON FAILED`) 배지는 모션이 없다.
-2. 문항 전환 등장 — 무대 · 작업 영역이 불투명도 0 → 1, 오른쪽 `translateX`(최대 16 css px) → 0으로 약 300 ms에 들어온다. 헤더 · 진행 바 · 지시문 · 액션 행은 움직이지 않는다.
+2. 문항 전환 등장 — 무대 · 작업 영역이 불투명도 0 → 1, 오른쪽 `translateX`(최대 16 css px) → 0으로 약 300 ms에 들어온다. 헤더 · 진행 바 **트랙** · 지시문 · 액션 행은 움직이지 않는다 — 진행 바 **채움**은 4단계부터 `progress`로 차오르므로 M3-I9 · M3-A9가 잰다(문항 하나짜리 유닛 · 완료 장면에서는 채움이 이미 100 %라 bbox 불변이 그대로 성립한다 — [ADR-0053](../adr/0053-motion-policy.md) D5).
 3. 전환 중 입력 — 넘김 층을 누른 직후(≤ 200 ms) 다음 문항의 보기를 누르면 **새** 문항에 간다.
 4. reduced 분기 — 켠 상태에서 배지는 축소 없이 불투명도만, 문항은 이동 없이 불투명도만(약 100 ms).
 5. 2단계 회귀(R2 삭제 뒤) — RoundButton 눌림 95 %, 켠 상태 막 색.
-6. Android `transform` 안 `var()`(M3-A8, **탐색**) — 판정이 아니라 4단계의 입력이다.
+6. Android `transform` 안 `var()`(M3-A8, **탐색**) — 판정이 아니라 4단계의 입력이다. *(4단계에서 전환했다 — 탐색 항목은 닫혔고, 전환 뒤 회귀는 M3-I6 · M3-A6과 아래 「4단계 회차」가 본다.)*
 7. 보조기술 — VoiceOver · TalkBack을 켠 상태에서 문항 전환 직후 초점이 서는 자리 · 정지 수, 배지가 정지점이 아닌지 · 낭독(M3-I8 · M3-A7). 기기 없는 회차는 「미확인」으로 둔다.
 
 | 이미 지는 층 | 무엇을 |
 |---|---|
 | unit | 보상 판정(`rewardMotionFor`) · 클래스, 전환 상태 기계(키 · 초기 상태 · 전이 · 시간 · 클래스) |
-| ui | 배지 `data-reward` · 클래스 · 재렌더 불변, 무대 · 작업 영역 전환 속성과 타이머, 전환 속성이 무대 밖에 없음, RoundButton 막의 접근성 속성 부재, CSS 텍스트(keyframes · transition · reduced 규칙 · `scale(0.8)` 대조) |
+| ui | 배지 `data-reward` · 클래스 · 재렌더 불변, 무대 · 작업 영역 전환 속성과 타이머, 전환 속성이 무대 밖에 없음, RoundButton 막의 접근성 속성 부재, CSS 텍스트(keyframes · transition · reduced 규칙 · 배지 keyframe의 `scale(var(--libitum-motion-scale-reward))` 문자열 단언과 비항등 scale 리터럴 0 — 4단계 전까지는 `scale(0.8)` 숫자 대조였다), 진행 바 채움의 reduced 클래스 · `data-motion`(4단계) |
 | integration | 앱 ↔ ui-lynx `MotionProvider` Context가 앱 훅까지 하나인지, 통합 25자리의 즉시 호출 불변 |
 
 수용 기준 대응(`spec.md` §6): **AC1** = M3-I1 (a)(b) · M3-A1, **AC3** = M3-I1 (c) · M3-I7 · M3-A1, **AC5** = M3-I3 · M3-I4 · M3-A3 · M3-A4, **AC6** = M3-I3 (c) · M3-A3,
@@ -33,7 +33,8 @@
 - **Android에서 `transform` 안 `var()`가 풀리는가(A4)**: M3-A3 (b)의 x 오프셋 **유무**와 M3-A8의 탐색이 적는다. 통과/실패가 아니다. 안 풀리면 그 선언만 무효가 되어 이동 없는 fade로
   **조용히 열화**된다(불투명도 선언은 별도 줄). 결과 처리는 `spec.md` D8(4단계).
 - **캡처 간격의 한계**: iOS `simctl io screenshot`은 수백 ms, Android `screencap`은 한 장 0.4 ~ 1.2 s다. 400 ms · 300 ms 전환의 중간 프레임을 정확한 시각에 잡을 수 없다 —
-  **녹화(`recordVideo` · `screenrecord`)를 기본으로 하고 프레임을 뽑는다**([동작 줄이기 e2e의 「연속 두 장 비교」](motion-reduced.md#연속-두-장-비교)). 곡선(이징)의 모양 · 정확한 시간(400 ms ·
+  **녹화(`recordVideo` · `screenrecord`)를 기본으로 하고 프레임을 뽑는다**([동작 줄이기 e2e의 「연속 두 장 비교」](motion-reduced.md#연속-두-장-비교)). Android의 기본 수단은 `screenrecord`이고
+  (화면이 바뀔 때만 프레임을 만든다 — 변화 시 약 12 fps · 60 ~ 90 ms, **정지 구간에는 프레임이 생기지 않는다**) `screencap`은 보조다. 곡선(이징)의 모양 · 정확한 시간(400 ms ·
   300 ms · 100 ms)은 재지 않는다. 이 문서는 「첫 프레임이 작고 옅다 → 정착값」과 「정착이 약 이 시간 안에 끝난다」(±한 프레임)만 판정하고, 값은 unit(CSS 텍스트)이 진다.
 - **`data-page` 속성의 잔존**: 테스트 렌더러는 한 번 붙은 `data-*`를 조건부 spread에서 빠진 재렌더에서 지우지 않아 idle 복귀 뒤에도 `data-page="entering"`이 남는다
   (`spec.md` §14.1). 실제 기기에서 속성이 남는지는 devtool이 있어야 읽을 수 있고, CSS는 클래스만 보므로 관찰 결과에는 영향이 없다. 이 절차는 읽지 않는다 — 읽는 수단을 찾으면 비고에 적는다.
@@ -63,8 +64,9 @@
    - 문항 전환: 보기 tap 뒤 넘김 층 tap 직후(문항 → 완료 장면). 헤더 · 진행 바 · 액션 행의 bbox는 완료 장면 프레임 사이에서 비교한다 — 지시문은 완료 장면에서 조건부 렌더로 빠지므로
      전환 전후 비교가 아니라 문항 장면 안에서만 불변을 본다.
    - 켠 상태: iOS는 설정 앱 › 손쉬운 사용 › 동작 › 동작 줄이기(켜고 재실행), Android는 [Android 준비](motion-reduced.md#android-준비-에뮬레이터-pixel_8-api-37)의 배율 (i) 설정.
-4. **측정 단위는 css px**다 — iOS 시뮬레이터는 3x(캡처 px ÷ 3), Android는 `wm size 390x844` · `wm density 160`으로 1 px = 1 css px. 배지 지름은 정착 126 css px(캡처 378)이고 첫 프레임
-   기대는 약 101(캡처 302)이다. 도구는 2단계 `burst.py`(연속 캡처) · `diam.py`(원 지름) · `cardedge.py`(카드 가장자리 x)류를 재사용하고 저장소에 복사하지 않는다. 도구가 없으면 스크린샷을
+4. **측정 단위는 css px**다 — iOS 시뮬레이터는 3x(캡처 px ÷ 3), Android는 `wm size 390x844` · `wm density 160`으로 1 px = 1 css px. 배지 지름의 **비율 기준은 같은 도구로 잰 정착 bbox**다 —
+   iOS(배경과 RGB 거리 > 60인 픽셀 bbox, 3x ÷ 3) **126**, Android(같은 임계, 후광 링이 빠진다) **121**. ≤ 90 %는 그 기준으로 읽는다(iOS ≈ 113 이하 · Android ≈ 109 이하); keyframe 80 %의 기대값
+   (iOS ≈ 101)은 캡처가 첫 프레임을 한 틱 뒤에 잡기 때문에 그대로 나오지 않는다. 도구는 2단계 `burst.py`(연속 캡처) · `diam.py`(원 지름) · `cardedge.py`(카드 가장자리 x)류를 재사용하고 저장소에 복사하지 않는다. 도구가 없으면 스크린샷을
    픽셀 도구로 직접 읽고 비고에 쓴 방법을 적는다. 배지 정착색과의 비교는 중심 부근 한 픽셀의 RGB로 한다(첫 프레임이 정착색보다 옅다 = 배경 쪽으로 섞인다).
 5. **「중간 프레임」의 정의**: 카드 테두리 · 보기 글자 같은 요소의 대비가 정착 프레임보다 **낮은(배경과 섞인)** 프레임. 두 프레임이 모두 정착이면 판정 불가다(「같다 = 정지」와 같은 규칙).
 6. **Android 에뮬레이터는 다른 세션과 번갈아 쓴다**: 쓰기 전에 다른 세션이 쓰고 있는지 확인하고, 쓰는 동안 점유를 알리고, 끝에 **시작 값으로 원복**한 뒤 쓸 수 있다고 알린다.
@@ -80,27 +82,33 @@
 
 | id | 조작 | 판정 |
 |---|---|---|
-| M3-I1 | **끈** 상태, 「See results」 tap 직후 연속 캡처(또는 녹화 → 프레임) | (a) 첫 1 ~ 2 프레임의 배지(초록 원, `feedback-correct`) bbox 지름이 정착(126 css px)의 **≤ 90 %**(기대 ≈ 101)이고 색이 정착보다 옅다; (b) ≈ 400 ms 뒤 프레임부터 지름 126 · 정착색; (c) 정착 전에 「Back to map」 tap → **다음 프레임에 맵**(지연 없음 — 정착을 기다리지 않는다). 증거 `motion-reward-ios-M3-I1-off-badge-f00.png` ~ |
+| M3-I1 | **끈** 상태, 「See results」 tap 직후 연속 캡처(또는 녹화 → 프레임) | (a) 첫 1 ~ 2 프레임의 배지(초록 원, `feedback-correct`) bbox 지름이 정착(126 css px)의 **≤ 90 %**(기대 ≈ 101)이고 색이 정착보다 옅다; (b) ≈ 400 ms 뒤 프레임부터 지름 126 · 정착색; (c) 정착 전에 「Back to map」 tap → **다음 프레임에 맵**(지연 없음 — 정착을 기다리지 않는다; **즉시성은 iOS에서만 판정한다** — Android는 M3-A1 행). **4단계부터 (a)(b)는 keyframe 본문 `scale(var())`의 기기 게이트를 겸한다** — 첫 프레임이 100 %(축소 없음)면 통과가 아니라 **실패**: 4단계 fallback(keyframe 셋 리터럴 복귀 — [ADR-0053](../adr/0053-motion-policy.md) D6). 증거 `motion-reward-ios-M3-I1-off-badge-f00.png` ~ |
 | M3-I2 | **끈** 상태, 미통과(`LESSON FAILED`) 같은 캡처 | 첫 프레임부터 빨간 배지 지름 126 · 정착색(모션 0). 수정 전후 같다 |
-| M3-I3 | **끈** 상태, 듣기 보기 tap → 넘김 층 tap 직후(문항 → 완료 장면, 전제 3) 연속 캡처 | (a) 무대 카드(제목 · 아이콘 · 알약 글자)에 불투명도 **중간 프레임**이 있다(글자 · 테두리가 배경과 섞인 프레임 ≥ 1 — A1 · A2 · A3. 작업 영역은 이 장면에 없어 보지 못한다); (b) 같은 프레임에서 카드 왼쪽 x가 정착보다 **오른쪽**(≤ 16 css px)이고 ≈ 300 ms 뒤 정착; (c) **세션 헤더 · 진행 바 · 액션 행 bbox가 모든 프레임에서 같다**(AC6). 중간 프레임이 한 장도 없으면(두 프레임 모두 정착) 「판정 불가」로 다시 잡고, 녹화로도 없으면 A1 **실패**로 적는다 |
+| M3-I3 | **끈** 상태, 듣기 보기 tap → 넘김 층 tap 직후(문항 → 완료 장면, 전제 3) 연속 캡처 | (a) 무대 카드(제목 · 아이콘 · 알약 글자)에 불투명도 **중간 프레임**이 있다(글자 · 테두리가 배경과 섞인 프레임 ≥ 1 — A1 · A2 · A3. 작업 영역은 이 장면에 없어 보지 못한다); (b) 같은 프레임에서 카드 왼쪽 x가 정착보다 **오른쪽**(≤ 16 css px)이고 ≈ 300 ms 뒤 정착; (c) **세션 헤더 · 진행 바 트랙 · 액션 행 bbox가 모든 프레임에서 같다**(AC6) — 진행 바 **채움**은 M3-I9가 따로 잰다(완료 장면에서는 채움이 이미 100 %라 bbox 불변이 그대로 성립). 중간 프레임이 한 장도 없으면(두 프레임 모두 정착) 「판정 불가」로 다시 잡고, 녹화로도 없으면 A1 **실패**로 적는다 |
 | M3-I4 | **끈** 상태, 넘김 층 tap 뒤 **즉시**(≤ 200 ms) 완료 장면의 「See results」를 tap(문항이 둘 이상이면 다음 문항의 보기) | 전환이 끝나기 전에 입력이 받아져 lesson-complete로 간다(전환 중 입력이 **새** 장면에 간다 — AC5). 녹화에서 tap 시점과 다음 화면 첫 프레임의 간격을 비고에 적는다 |
 | M3-I5 | **켠** 상태, M3-I1 · M3-I3 | 배지: 첫 프레임부터 지름 126(축소 없음), 불투명도만 올라오고 ≈ 100 ms 안에 정착; 문항: 카드 x 오프셋 0(이동 없음), 불투명도만, ≈ 100 ms |
 | M3-I6 | **끈** 상태, 회귀 — [M2-I1](motion-tokens.md)(RoundButton 눌림 95 %) · 켠 상태 막([M2-I5](motion-tokens.md)) | 2단계와 같은 수치 — 눌림 165 → 157 px, 켠 상태 막 색 `#E4E5E5`(±2). R2(RoundButton 막의 접근성 속성 삭제) 뒤에도 같다 |
-| M3-I7 | 정착 전에 「Back to map」 tap(시뮬레이터에는 시스템 뒤로가기가 없어 뒤로가기는 생략) | M3-I1 (c)와 같다 — 나가기는 즉시 핸들러 1회 |
+| M3-I7 | 정착 전에 「Back to map」 tap(시뮬레이터에는 시스템 뒤로가기가 없어 뒤로가기는 생략) | M3-I1 (c)와 같다 — 나가기는 즉시 핸들러 1회. **iOS만 판정한다**(Android는 M3-A1 행의 조건) |
 | M3-I8 | **VoiceOver를 켜고** 듣기 유닛에서 보기 tap → 넘김 층 tap 직후, 이어서 lesson-complete | (a) 전환 직후 초점이 어디에 서는가 — 새 장면의 카드 · 보기 / 세션 헤더 `×` / 액션 행 / 넘김 층 — **들린 이름을 적는다**; (b) 그 직후 오른쪽 스와이프가 새 장면 내용에 닿기까지의 정지 수; (c) 약 1 초 뒤(전환이 끝난 뒤) 같은 스와이프의 정지 수 — (b)와 다르면 전환 창의 비용이다; (d) lesson-complete에서 배지가 정지점이 아니고 낭독이 2단계와 같다. 보조기술을 켜지 않은 회차는 「미확인」(통과로 적지 않는다) |
+| M3-I9 | **끈** 상태, **문항이 둘 이상인 유닛**에서 문항 n → n+1(보기 tap → 넘김 층 tap) 녹화 → 프레임; 이어서 **켠** 상태 같은 조작 | 진행 바 **채움**(`learning-shell-progress-fill`)의 오른쪽 x가 ≈ 250 ms(`progress` · `enter`)에 걸쳐 늘어난다 — 중간 프레임 ≥ 1(끈). 켠 상태는 한 프레임에 정착(즉시). 트랙 · 헤더 bbox는 불변. **이 빌드는 문항 하나라 「미확인: 문항 둘 이상 유닛 없음」이 기본값이다**(채움이 마운트부터 100 %라 폭이 바뀌지 않는다 — [ADR-0053](../adr/0053-motion-policy.md) D5). Lynx가 `width` 전환을 그리지 않으면 즉시 반영 = 지금과 같다(회귀 아님) — 그 결과도 적는다 |
 
 ## Android 항목(에뮬레이터 Pixel_8 API 37, `emulator-5554`)
 
 다른 세션과 번갈아 쓴다 — 전제 6(쓰기 전 확인 · 끝에 원복 · 알림). 세 배율 기록 · 복원은 [Android 준비](motion-reduced.md#android-준비-에뮬레이터-pixel_8-api-37)를 그대로 쓴다.
-번들은 정적 서버(`apps/mobile/dist`) 길을 쓴다.
+번들은 정적 서버(`apps/mobile/dist`) 길을 쓴다. 두 가지가 iOS와 다르다(3단계 Android 회차가 찾은 한계).
+
+- **탭은 `adb shell input tap` 대신 에뮬레이터 콘솔 `adb emu event send …`로 넣는다** — 좌표는 css × 32767 / 390(x) · / 844(y)로 바꾼다(호스트 지연 ≈ 20 ms). `input tap`은 입력 시각이 ±0.1 s라
+  전환 중 입력 · 즉시성 판정에 쓸 수 없다.
+- **로그인 픽스처 `SignedInScreenFixtureTest`는 launch 20 s 안에 지도가 안 그려지면 앱을 죽인다** — 지도가 그려질 때까지 폴링하고, 실패하면 재시작한다.
 
 | id | 조작 | 판정 |
 |---|---|---|
-| M3-A1 · M3-A2 · M3-A3 · M3-A4 | M3-I1 ~ M3-I4와 같음(끈 상태, 세 배율 1). `screencap` 한 장이 0.4 ~ 1.2 s라 간격 한계 → **녹화(`screenrecord`)** 가 기본이고 `screencap` 연속은 보조 | 같은 판정. **M3-A3 (b)의 x 오프셋 유무를 반드시 적는다** — `translateX(var())`가 Android에서 풀리는지(A4의 두 번째 근거). 오프셋 0이면 「열화(이동 없는 fade)」로 적고 실패로 보지 않는다 — 단 (a)의 불투명도 중간 프레임은 있어야 한다 |
+| M3-A1 · M3-A2 · M3-A3 · M3-A4 | M3-I1 ~ M3-I4와 같음(끈 상태, 세 배율 1). `screencap` 한 장이 0.4 ~ 1.2 s라 간격 한계 → **녹화(`screenrecord`)** 가 기본이고 `screencap` 연속은 보조 | 같은 판정 — 단 **즉시성(M3-A1 (c) · M3-A4의 tap 시각)은 tap 시각이 영상 ±한 프레임으로 맞춰진 회차(콘솔 `event send` + 영상 시각 기록)에서만 판정한다.** 새 화면의 첫 그림 전에 넣은 tap은 소실되므로(에뮬레이터 렌더 정체 0.5 ~ 1.0 s) 그 회차는 「판정 불가」 — 즉시성은 ui · integration · iOS(M3-I1 (c) · M3-I7)가 진다. 배지 지름 비율은 전제 4의 Android 기준(정착 bbox 121, ≤ 90 % = ≈ 109 이하). **4단계부터 M3-A1 (a)(b)는 keyframe 본문 `scale(var())`의 기기 게이트를 겸한다** — 첫 프레임 100 %면 **실패**(D6 fallback). (c) 「진행 바」는 트랙 bbox — 채움은 M3-A9. **M3-A3 (b)의 x 오프셋 유무를 반드시 적는다** — `translateX(var())`가 Android에서 풀리는지(A4의 두 번째 근거). 오프셋 0이면 「열화(이동 없는 fade)」로 적고 실패로 보지 않는다 — 단 (a)의 불투명도 중간 프레임은 있어야 한다 |
 | M3-A5 | 설정 **(i)** `transition_animation_scale 0` · `animator_duration_scale 1`(reduced), M3-I5 | 같은 판정. **(ii)** 접근성 「Remove animations」(세 배율 0)에서도 한 번 — 정착값으로 보이는가 |
 | M3-A6 | 회귀 [M2-A1](motion-tokens.md#android-항목) · M2-A5 (i) | 2단계와 같은 수치 — 눌림 56 → 52 px, 켠 상태 막 색 `#E4E5E5`(±2) |
 | M3-A7 | **TalkBack을 켜고** M3-I8과 같은 네 항목 — (a) 전환 직후 초점 자리(들린 이름), (b) 직후 스와이프의 정지 수, (c) 약 1 초 뒤 정지 수, (d) lesson-complete 배지 비정지 · 낭독 동일 | 켰으면 네 항목의 결과, 아니면 「미확인」(통과로 적지 않는다). Android는 Lynx 소스(AAR)를 읽을 수 없어 **실기가 유일한 근거**다 — iOS처럼 `opacity` 전환 중 트리에서 빠지는지 여기서만 안다 |
-| **M3-A8(탐색, 판정 아님)** | **버리는 워크트리**에서 `packages/ui-lynx/src/round-button/round-button.css:116`을 `scale(var(--libitum-motion-scale-pressed))`로 바꿔 `pnpm dev`(포트는 자동 — 다른 worktree가 3000을 잡으면 3001) → `A shell am start -n libitum.duru.android/com.libitum.host.MainActivity --es bundle-url http://10.0.2.2:<port>/main.lynx.bundle` → M2-A1 조작(RoundButton neutral을 3초 누른 채 캡처) | 「풀림(≈ 95 %, 56 → 52 ~ 53 px)」 · 「안 풀림(100 %)」 · 「무효(눌림 없음)」 가운데 **하나를 기록**한다. 4단계 입력(D8). 정적 `dist`에는 dev 전용 번들이 없고 main 번들도 dev 서버로 열렸다(2단계 A5 결과). 워크트리 · 번들은 버린다 |
+| **M3-A8(탐색, 판정 아님)** | **버리는 워크트리**에서 `packages/ui-lynx/src/round-button/round-button.css:116`을 `scale(var(--libitum-motion-scale-pressed))`로 바꿔 `pnpm dev`(포트는 자동 — 다른 worktree가 3000을 잡으면 3001) → **로그인 픽스처 `SignedInScreenFixtureTest`에 `-e bundleUrl http://10.0.2.2:<port>/main.lynx.bundle`**(`am start --es bundle-url …`만으로는 로그아웃 상태라 연속일 모달(M2-A1 조작)에 못 간다) → 지도 폴링 → M2-A1 조작(RoundButton neutral을 3초 누른 채 캡처) | 「풀림(≈ 95 %, 56 → 52 ~ 53 px)」 · 「안 풀림(100 %)」 · 「무효(눌림 없음)」 가운데 **하나를 기록**한다. 4단계 입력(D8). 정적 `dist`에는 dev 전용 번들이 없고 main 번들도 dev 서버로 열렸다(2단계 A5 결과). 워크트리 · 번들은 버린다. *(4단계에서 전환했다 — 탐색 항목은 닫힘. 회귀는 M3-I6 · M3-A6.)* |
+| M3-A9 | M3-I9와 같음(**문항이 둘 이상인 유닛**, 끈 · 켠 (i)) | 같은 판정 — 채움 오른쪽 x가 ≈ 250 ms에 걸쳐 늘고 중간 프레임 ≥ 1(끈), 켠 (i)는 한 프레임에 정착. **이 빌드는 문항 하나라 「미확인: 문항 둘 이상 유닛 없음」이 기본값이다** |
 
 ## red의 근거 — 수정 전 번들(`162f5648`)
 
@@ -117,7 +125,7 @@
 |---|---|
 | M3-I2 | 미통과 배지는 모션 0 |
 | M3-I1 (c) · M3-I7 | 「Back to map」 → 다음 프레임에 맵(즉시) |
-| M3-I3 (c) | 헤더 · 진행 바 · 지시문 · 액션 행 bbox 불변 |
+| M3-I3 (c) | 헤더 · 진행 바 트랙 · 지시문 · 액션 행 bbox 불변(채움은 4단계부터 M3-I9 · M3-A9 — 완료 장면에서는 100 %라 불변) |
 | M3-I4 | 전환 중 입력이 새 문항에 간다(수정 전은 전환이 없으니 당연히 간다 — 수정 후에도 같아야 한다) |
 | M3-I6 · M3-A6 | RoundButton 눌림 95 % · 켠 상태 막 색 |
 
@@ -152,14 +160,6 @@ e2e-red 회차는 iOS만 돌았고(에뮬레이터를 다른 세션이 쓰고 �
 | M3-I8 | iOS 시뮬레이터 | 미확인 | VoiceOver를 켜지 않았다 — 이 항목은 iOS 회차 뒤에 신설됐다. 다음 iOS 회차가 잰다 |
 | (실기) M3-I1 · M3-I3 | iOS 실기 | 미확인 | 실기 없음 |
 | 작업 영역 · 문항 1 → 2 · 새 문항 보기 tap(M3-I3 · M3-I4 · M3-A3 · M3-A4의 원래 조작) | iOS · Android | 미확인 | 문항이 둘 이상인 유닛이 없어 완료 장면 전환으로 근사했다 — `learning-shell-scroll` 전환(A2)과 「전환 중 입력이 새 문항에 간다」는 그런 유닛이 생긴 뒤 다시 잰다 |
-| M3-A1 | Android 에뮬레이터 | (a)(b) 통과 / (c) 판정 불가: 새 화면이 그려지기 전의 tap이 소실되고 입력 시각이 ±0.1 s라 즉시성을 가를 수 없음 | 끈: 배지 첫 보이는 프레임 지름 13회 중 최소 **104**(정착 bbox 121의 86.0 %, 126 기준 82.5 %), α 0.28; 9회 ≤ 108, 4회 112 ~ 118(샘플링이 첫 프레임을 놓침). 연속 104 → 114 → 120 → 121(+240 ms). 정착 400 ms는 첫 그림 전 구간(0.5 ~ 1.0 s 렌더 정체) 때문에 못 잼. (c)는 그려진 뒤 tap 2회가 맵까지 0.42 ~ 0.43 s(수정 전 0.07 s)였으나 표본 2 · 렌더 정체로 애니메이션 탓인지 가르지 못함 — 즉시성은 코드(ui · integration)와 iOS M3-I1 (c)가 진다. `motion-reward-android-M3-A1-off-badge-*` · `…A1c…` |
-| M3-A2 | Android 에뮬레이터 | 통과 | `LESSON FAILED` 빨간 배지 bbox(x 120) · 색 (224,87,92)이 7프레임 모두 같음(모션 0). 수정 전과 같음. `…M3-A2-off-badge-*` |
-| M3-A3 | Android 에뮬레이터 | 통과(근사 장면: 문항 → 완료 장면) | (a) 투명한 primed 프레임 3 ~ 4장 뒤 중간 프레임 0 ~ 2장(5회 중 4회 ≥ 1; 제목 minL 100 · 76 · 154 + 50 · 116 → 정착 25). (b) **x 오프셋 있음** — 제목 x 정착 105 대비 +8 · +6 · +5 · +3 · +1, 불투명도와 같은 곡선 16·(1 − α) = `translateX(var(--libitum-spacing-16))`가 **Android에서 풀린다**(A4). (c) 진행 막대 · 「Lesson 1 / 1」 · 「See results」 bbox 모든 프레임 동일. 작업 영역(보기)은 완료 장면에 없어 미관찰. `…M3-A3-off-stage-*` |
-| M3-A4 | Android 에뮬레이터 | 통과(근사 입력) | 완료 장면 전환 중(영상 t 3.13 ~ 3.45)에 닿은 「See results」 tap이 0.35 ~ 0.65 s 뒤 lesson-complete로 반영, 소실 없음. tap 시각은 ±0.1 s, 「새 문항의 보기」는 문항이 하나라 못 함. `…M3-A4-off-*` |
-| M3-A5 | Android 에뮬레이터 | 통과(부분 — 중간 프레임을 잡은 회차가 적음) | (i) `transition_animation_scale 0` · `animator 1`: 배지 첫 프레임 지름 120(축소 없음), α 0.46 · 0.63 → +66 ~ 70 ms 정착(불투명도만); 문항 중간 1프레임 x 105(오프셋 0), +72 ms 정착. (ii) 「Remove animations」: 문항 중간 1프레임 x 105(오프셋 0), 배지 지름 120 → 121 · α 0.63 → 1.0 — 이동 · 확대 없이 정착값으로. `…M3-A5i-on-*` · `…M3-A5ii-on-*` |
-| M3-A6 | Android 에뮬레이터 | 통과(회귀) | 끈: RoundButton neutral 눌림 56 → 52 px · 색 `#F7F8F9` 불변(2단계 M2-A1과 같음). 켠 (i): 56 = 56 · 눌림 색 `#E4E5E5`. 수정 전과 같음. `…M3-A6-*` |
-| M3-A7 | Android 에뮬레이터 | (d) 통과 / (a)(b)(c) 미확인 | TalkBack 켬. lesson-complete 정지점은 「Back to map」(Button) 하나, 배지 ViewGroup · 체크 ImageView는 `focusable=false` · 설명 없음 = 비정지. 수정 후 트리에 배지 ViewGroup 노드 하나가 더 있음(평탄화 안 됨, 정지 수 불변, 낭독 대상 아님). 마운트 낭독(TalkBack을 마운트 뒤에 켬)과 문항 전환 직후 초점 자리는 못 잡음 — 완료 장면에서 초점 링이 무대 카드에 서 있는 것만 관찰. `…M3-A7-on-tree-*` |
-| M3-A8(탐색) | Android 에뮬레이터 | **풀림**(≈ 95 %) | dev 번들(3001)의 `round-button.css:116` `scale(var(--libitum-motion-scale-pressed))` — 번들에 `scale( {{--libitum-motion-scale-pressed}})` 확인, RoundButton neutral 눌림 56 → 52 px(한 프레임 54) · 색 불변 = 리터럴 `scale(0.95)`와 같은 값. iOS M2-I8과 합쳐 **두 플랫폼 모두 풀림** — 4단계 입력(D8). `…M3-A8-probe-off-roundbutton-*` |
 
 **수정 전 번들(`162f5648`)에서 같은 조작 — red는 기기 관찰이다.** 달라야 할 것이 전부 모션 0으로 관찰되고, 같아야 할 것은 전후 같다. red의 이유는 구현 부재이며 러너 · 설정
 실패가 아니다(앱은 두 번들 모두 뜨고 측정 대상이 모두 화면에 있다).
@@ -173,13 +173,84 @@ e2e-red 회차는 iOS만 돌았고(에뮬레이터를 다른 세션이 쓰고 �
 
 | 칸 | 값 |
 |---|---|
-| 시작 값(실행 전 기록) | iOS 동작 줄이기: 0(끝 값 0 — 켬은 `defaults write com.apple.Accessibility ReduceMotionEnabled -bool true` + 재부팅, 읽기값 1 확인) / Android: `animator_duration_scale=null` · `transition_animation_scale=1.0` · `window_animation_scale=1.0` · `font_scale=1.0` · `wm size 1080x2400` · `density 420` · `accessibility_enabled=0` · `enabled_accessibility_services=null`(끝 값 전부 같음 — 전후 설정 덤프 diff 0) |
-| 확인자 | test-runner 에이전트(e2e-red 회차 iOS · e2e-green 회차 Android) |
-| 날짜 | 2026-10-09(iOS) · 2026-10-09 ~ 10(Android) |
+| 시작 값(실행 전 기록) | iOS 동작 줄이기: 0(끝 값 0 — 켬은 `defaults write com.apple.Accessibility ReduceMotionEnabled -bool true` + 재부팅, 읽기값 1 확인) |
+| 확인자 | test-runner 에이전트(e2e-red 회차) |
+| 날짜 | 2026-10-09 |
 | 빌드 SHA (호스트 · 번들) | 호스트: `395be1d6`(소스는 1단계 `d602fe08` 이후 불변) / 번들: `70a4b12b` 코드(= `395be1d6`, 그 뒤 커밋은 문서뿐) · 1,402,294 B (수정 전 대조 번들 `162f5648` · 1,397,447 B) |
-| 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터(전용 `motion-stage3`) · iOS 26.5 · Release Host + 내장 번들(`--bundle-url=main.lynx`), 모의 TLS 서버 18791로 로그인 시드 / Android: `emulator-5554`(Pixel_8, API 37) · Debug Host(`assembleDebug`, `bundle:android`) + 정적 서버 18792(수정 전 18793) · 로그인 픽스처 `SignedInScreenFixtureTest` · `wm size 390x844` · `wm density 160`(1 px = 1 css px) · `screenrecord`(변화 시 약 12 fps) |
+| 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터(전용 `motion-stage3`) · iOS 26.5 · Release Host + 내장 번들(`--bundle-url=main.lynx`), 모의 TLS 서버 18791로 로그인 시드 |
+| 설정 복원 확인 | 시뮬레이터 shutdown · delete(목록 0건), 동작 줄이기 0(삭제 직전 읽음), 모의 서버 종료(포트 해제), `git status --short` 0줄 |
+
+### Android 회차 — 수정 후 `70a4b12b` 번들(HEAD `395be1d6`), 수정 전 `162f5648` 대조
+
+e2e-green 회차가 iOS와 같은 빌드로 돌았다(산출물 · 측정 방식은 위 iOS 회차 머리). 행 내용은 그대로이고 플랫폼별로 갈랐을 뿐이다 — 3단계 회차의 결과 절이 한 소절에 두 플랫폼을 섞어 적었던 것을 4단계가 나눴다.
+
+| 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
+|---|---|---|---|
+| M3-A1 | Android 에뮬레이터 | (a)(b) 통과 / (c) 판정 불가: 새 화면이 그려지기 전의 tap이 소실되고 입력 시각이 ±0.1 s라 즉시성을 가를 수 없음 | 끈: 배지 첫 보이는 프레임 지름 13회 중 최소 **104**(정착 bbox 121의 86.0 %, 126 기준 82.5 %), α 0.28; 9회 ≤ 108, 4회 112 ~ 118(샘플링이 첫 프레임을 놓침). 연속 104 → 114 → 120 → 121(+240 ms). 정착 400 ms는 첫 그림 전 구간(0.5 ~ 1.0 s 렌더 정체) 때문에 못 잼. (c)는 그려진 뒤 tap 2회가 맵까지 0.42 ~ 0.43 s(수정 전 0.07 s)였으나 표본 2 · 렌더 정체로 애니메이션 탓인지 가르지 못함 — 즉시성은 코드(ui · integration)와 iOS M3-I1 (c)가 진다. `motion-reward-android-M3-A1-off-badge-*` · `…A1c…` |
+| M3-A2 | Android 에뮬레이터 | 통과 | `LESSON FAILED` 빨간 배지 bbox(x 120) · 색 (224,87,92)이 7프레임 모두 같음(모션 0). 수정 전과 같음. `…M3-A2-off-badge-*` |
+| M3-A3 | Android 에뮬레이터 | 통과(근사 장면: 문항 → 완료 장면) | (a) 투명한 primed 프레임 3 ~ 4장 뒤 중간 프레임 0 ~ 2장(5회 중 4회 ≥ 1; 제목 minL 100 · 76 · 154 + 50 · 116 → 정착 25). (b) **x 오프셋 있음** — 제목 x 정착 105 대비 +8 · +6 · +5 · +3 · +1, 불투명도와 같은 곡선 16·(1 − α) = `translateX(var(--libitum-spacing-16))`가 **Android에서 풀린다**(A4). (c) 진행 막대 · 「Lesson 1 / 1」 · 「See results」 bbox 모든 프레임 동일. 작업 영역(보기)은 완료 장면에 없어 미관찰. `…M3-A3-off-stage-*` |
+| M3-A4 | Android 에뮬레이터 | 통과(근사 입력) | 완료 장면 전환 중(영상 t 3.13 ~ 3.45)에 닿은 「See results」 tap이 0.35 ~ 0.65 s 뒤 lesson-complete로 반영, 소실 없음. tap 시각은 ±0.1 s, 「새 문항의 보기」는 문항이 하나라 못 함. `…M3-A4-off-*` |
+| M3-A5 | Android 에뮬레이터 | 통과(부분 — 중간 프레임을 잡은 회차가 적음) | (i) `transition_animation_scale 0` · `animator 1`: 배지 첫 프레임 지름 120(축소 없음), α 0.46 · 0.63 → +66 ~ 70 ms 정착(불투명도만); 문항 중간 1프레임 x 105(오프셋 0), +72 ms 정착. (ii) 「Remove animations」: 문항 중간 1프레임 x 105(오프셋 0), 배지 지름 120 → 121 · α 0.63 → 1.0 — 이동 · 확대 없이 정착값으로. `…M3-A5i-on-*` · `…M3-A5ii-on-*` |
+| M3-A6 | Android 에뮬레이터 | 통과(회귀) | 끈: RoundButton neutral 눌림 56 → 52 px · 색 `#F7F8F9` 불변(2단계 M2-A1과 같음). 켠 (i): 56 = 56 · 눌림 색 `#E4E5E5`. 수정 전과 같음. `…M3-A6-*` |
+| M3-A7 | Android 에뮬레이터 | (d) 통과 / (a)(b)(c) 미확인 | TalkBack 켬. lesson-complete 정지점은 「Back to map」(Button) 하나, 배지 ViewGroup · 체크 ImageView는 `focusable=false` · 설명 없음 = 비정지. 수정 후 트리에 배지 ViewGroup 노드 하나가 더 있음(평탄화 안 됨, 정지 수 불변, 낭독 대상 아님). 마운트 낭독(TalkBack을 마운트 뒤에 켬)과 문항 전환 직후 초점 자리는 못 잡음 — 완료 장면에서 초점 링이 무대 카드에 서 있는 것만 관찰. `…M3-A7-on-tree-*` |
+| M3-A8(탐색) | Android 에뮬레이터 | **풀림**(≈ 95 %) | dev 번들(3001)의 `round-button.css:116` `scale(var(--libitum-motion-scale-pressed))` — 번들에 `scale( {{--libitum-motion-scale-pressed}})` 확인, RoundButton neutral 눌림 56 → 52 px(한 프레임 54) · 색 불변 = 리터럴 `scale(0.95)`와 같은 값. iOS M2-I8과 합쳐 **두 플랫폼 모두 풀림** — 4단계 입력(D8). `…M3-A8-probe-off-roundbutton-*` |
+
+| 칸 | 값 |
+|---|---|
+| 시작 값(실행 전 기록) | Android: `animator_duration_scale=null` · `transition_animation_scale=1.0` · `window_animation_scale=1.0` · `font_scale=1.0` · `wm size 1080x2400` · `density 420` · `accessibility_enabled=0` · `enabled_accessibility_services=null`(끝 값 전부 같음 — 전후 설정 덤프 diff 0) |
+| 확인자 | test-runner 에이전트(e2e-green 회차) |
+| 날짜 | 2026-10-09 ~ 10 |
+| 빌드 SHA (호스트 · 번들) | 호스트: `395be1d6`(소스는 1단계 `d602fe08` 이후 불변) / 번들: `70a4b12b` 코드(= `395be1d6`, 그 뒤 커밋은 문서뿐) · 1,402,294 B (수정 전 대조 번들 `162f5648` · 1,397,447 B) |
+| 기기 · OS · 빌드 종류 | Android: `emulator-5554`(Pixel_8, API 37) · Debug Host(`assembleDebug`, `bundle:android`) + 정적 서버 18792(수정 전 18793) · 로그인 픽스처 `SignedInScreenFixtureTest` · `wm size 390x844` · `wm density 160`(1 px = 1 css px) · `screenrecord`(변화 시 약 12 fps) |
 | 에뮬레이터 점유 확인 · 알림 | e2e-red 때는 다른 세션이 사용 중(미실행). e2e-green은 그 세션의 반납 알림을 받고 시작 · 사용 중 알림 · 끝에 원복 후 반납 알림 |
-| 설정 복원 확인 | 시뮬레이터 shutdown · delete(목록 0건), 동작 줄이기 0(삭제 직전 읽음), 모의 서버 종료(포트 해제), `git status --short` 0줄 / Android: 세 배율 · wm · 접근성 서비스 · 「Remove animations」 시작 값으로 원복, 전후 덤프 diff 0, 서버 18792 · 18793 · dev 3001 종료, 탐색 워크트리 제거, 홈 화면(앱은 이 회차 빌드로 남김), TalkBack 알림 권한은 revoke(시작 값 미기록 — `USER_SET` 플래그 잔존) |
+| 설정 복원 확인 | Android: 세 배율 · wm · 접근성 서비스 · 「Remove animations」 시작 값으로 원복, 전후 덤프 diff 0, 서버 18792 · 18793 · dev 3001 종료, 탐색 워크트리 제거, 홈 화면(앱은 이 회차 빌드로 남김), TalkBack 알림 권한은 revoke(시작 값 미기록 — `USER_SET` 플래그 잔존) |
+
+### 4단계 회차 — scale `var()` 전환 뒤 회귀(iOS · Android), 기준 `2debe051` 대조
+
+4단계([ADR-0053](../adr/0053-motion-policy.md) D6)가 scale 리터럴 다섯 자리(`round-button.css` · `learning-unit.css`의 `:active`, `dialog.css` enter from · exit to, `lesson-complete-screen.css` reward from)를 `var(--libitum-motion-scale-pressed | enter | reward)`로 바꿨다. 값이 토큰과 같아
+**달라야 하는 것은 없고** 아래 행은 전부 회귀다 — 통과 기준은 위 iOS · Android 회차 표와 **같은 수치(±같은 오차)** 이지 80 · 95의 정확값이 아니다. 3단계 회차와 다른 것은 둘이다.
+
+- **M3-I1 · M3-A1 (a)(b)는 keyframe 본문 `var()`의 기기 게이트를 겸한다** — 첫 프레임이 100 %(축소 없음)면 통과가 아니라 **실패**이고 4단계 fallback(keyframe 셋만 리터럴 복귀 — ADR-0053 D6)이 선다.
+  iOS는 구현 전 탐색이 Dialog · 배지 둘 다 풀림을 봤고(배지 첫 프레임 86.2 % — 위 M3-I1 기록과 일치), Android keyframe은 이 회차가 처음 본다. Dialog 쪽 게이트는 [0.4.0 motion 토큰 e2e](motion-tokens.md#결과)의
+  M2-I2 · M2-A2 행이다.
+- **M3-I9 · M3-A9(진행 바 채움)는 이 빌드로 관찰할 수 없다** — 문항 하나짜리 유닛뿐이라 채움이 마운트부터 100 %다. 기본값 「미확인」이고 통과로 읽지 않는다.
+
+수정 전 대조는 기준 `2debe051`(3단계 병합)이고 호스트는 불변(`d602fe08` 이후)이다. **결과 행은 실행 회차가 채운다 — 「실행 중」인 행은 통과가 아니다.**
+
+#### iOS
+
+| 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
+|---|---|---|---|
+| M3-I1 (a)(b) — keyframe 게이트 | iOS 시뮬레이터 | 통과(게이트 통과) | 배지 첫 프레임 ≤ 90 %(같은 도구 정착 bbox 126 기준 ≈ 113 이하) · 옅은 색 · ≈ 400 ms 정착. **100 %면 실패**(D6 fallback) 실측: 첫 배지 프레임 지름 r1 112.7 css(89.4 %, α 0.47) · r2 108.0(85.7 %, α 0.29) → 126.0 정착 +298~300 ms, 색 정착 +300~315 ms. 첫 프레임부터 126인 회차 0. `motion-s4-ios-M3-I1-off-*` |
+| M3-I6 | iOS 시뮬레이터 | 통과 | 눌림 165 → 157 px(95 %) · 켠 상태 막 `#E4E5E5`(±2) — 일반 규칙 `var()`(`round-button.css`) 실측: 끈 눌림 165 → 157 px · 색 불변; 켠 지름 168 = 168 · 눌린 표면 `#E4E5E5`(기대 `#E3E4E5` 차 1 · 1 · 0). neutral만. `motion-s4-ios-M2-I5-on-*` |
+| M3-I9 | iOS 시뮬레이터 | 미확인: 문항 둘 이상 유닛 없음 | 문항 둘 이상 유닛이 생기면 잰다 |
+
+| 칸 | 값 |
+|---|---|
+| 시작 값(실행 전 기록) | iOS 동작 줄이기 0(켬은 M2-I5 구간만 — `defaults write … ReduceMotionEnabled -bool true` + 재부팅, 읽기값 1; 끝 값 0) |
+| 확인자 | test-runner 에이전트(e2e-red 회차, iOS 회귀) |
+| 날짜 | 2026-10-10 |
+| 빌드 SHA (호스트 · 번들) | 호스트 `91262f72`(소스는 1단계 `d602fe08` 이후 불변) / 번들 `d649e114` 코드(= `91262f72`, 그 뒤 커밋은 테스트 · 문서뿐) · 1,403,113 B. 수정 전 대조 없음(회귀 — 2 · 3단계 기록과 대조) |
+| 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터(전용 `motion-stage4`) · iOS 26.5 · Release Host + 내장 번들(`--bundle-url=main.lynx`), 모의 TLS 서버 18791로 로그인 시드. 각 항목 2회 |
+| 설정 복원 확인 | 시뮬레이터 shutdown · delete(목록 0건), 동작 줄이기 0, 모의 서버 종료, `git status --short` 0줄 |
+
+#### Android
+
+| 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
+|---|---|---|---|
+| M3-A1 (a)(b) — keyframe 게이트 | Android 에뮬레이터 | 통과(게이트 통과) | 배지 첫 프레임 ≤ 90 %(같은 도구 정착 bbox 121 기준 ≈ 109 이하) · 옅은 색. **100 %면 실패**(D6 fallback) — Android keyframe `var()`의 첫 기기 근거 실측: 13회 첫 보이는 프레임 최소 104(121의 86.0 %), 7/13이 ≤ 109, 나머지 110~116(12 fps 샘플링이 첫 프레임을 놓침), α 0.29~0.79(전부 < 1) → 정착 121. 최소가 121인 회차 0. 3단계 기록과 같은 범위. `motion-s4-android-M3-A1-off-*` |
+| M3-A6 | Android 에뮬레이터 | 통과 | 눌림 56 → 52 px · 켠 (i) 막 `#E4E5E5`(±2) — 일반 규칙 `var()` 실측: 끈 눌림 56 → 52 px · 색 불변; 켠 (i) 56 = 56 · 눌린 색 `#E4E5E5`(2회). `motion-s4-android-M2-A5-on-*` |
+| M3-A9 | Android 에뮬레이터 | 미확인: 문항 둘 이상 유닛 없음 | 문항 둘 이상 유닛이 생기면 잰다 |
+
+| 칸 | 값 |
+|---|---|
+| 시작 값(실행 전 기록) | `animator_duration_scale=null` · `transition_animation_scale=1.0` · `window_animation_scale=1.0` · `font_scale=1.0` · `wm size 1080x2400` · `density 420` · `accessibility_enabled=0` · `enabled_accessibility_services=null`(끝 값 전부 같음 — 전후 덤프 diff 0) |
+| 확인자 | test-runner 에이전트(e2e-green 회차, Android 회귀) |
+| 날짜 | 2026-10-10 |
+| 빌드 SHA (호스트 · 번들) | 호스트 `543b5762`(소스는 1단계 `d602fe08` 이후 불변) / 번들 `d649e114` 코드(= `543b5762`, 그 뒤는 테스트 · 문서) · 1,403,113 B(iOS 회차와 같은 크기). 수정 전 대조 없음(회귀) |
+| 기기 · OS · 빌드 종류 | `emulator-5554`(Pixel_8, API 37) · Debug Host(`assembleDebug`, `bundle:android`) + 정적 서버 18792 · 로그인 픽스처 `SignedInScreenFixtureTest` · `wm size 390x844` · `wm density 160`(1 px = 1 css px) · `screenrecord`(변화 시 ≈12 fps) + 기기 안 `screencap` 루프 |
+| 에뮬레이터 점유 확인 · 알림 | 다른 세션의 반납 알림을 받고 시작 · 사용 중 알림 · 끝에 원복 후 반납 알림 |
+| 설정 복원 확인 | 세 배율 · wm size · density 시작 값으로 원복(빈 `display_size_forced` · `display_density_forced` 키 삭제), 알림 권한 revoke, 전후 덤프 diff 0, 서버 18792 종료, 홈 화면(앱은 이 회차 빌드로 남김), `git status --short` 0줄 |
 
 ## 복원
 

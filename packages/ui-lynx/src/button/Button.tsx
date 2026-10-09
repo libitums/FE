@@ -40,7 +40,7 @@ export function Button(props: ButtonProps) {
     >
       <view className="ui-lynx-button-surface">
         {props.loading ? (
-          <view className="ui-lynx-button-spinner-wrap" accessibility-elements-hidden={true}>
+          <view className="ui-lynx-button-spinner-wrap">
             <view className="ui-lynx-button-spinner" data-testid="ui-lynx-button-spinner" />
           </view>
         ) : null}

@@ -1,6 +1,7 @@
 // 모션 리터럴 정책 — 스캔 결과를 위반으로 바꾸고 allowlist의 위생을 봅니다(순수).
 
-import { mediaQueriesIn, motionDeclarationsIn } from "./scan.mjs";
+import { mediaQueriesIn, motionDeclarationsIn, transformDeclarationsIn } from "./scan.mjs";
+import { inlineMotionDeclarationsIn } from "./scan-source.mjs";
 
 const tokenReferenceStart = "var(--libitum-";
 const easingFunctionPattern = /\b(?:cubic-bezier|steps|square-bezier)\([^)]*\)/gi;
@@ -41,54 +42,92 @@ export function stripTokenReferences(value) {
   }
 }
 
-/** 파일 하나의 위반을 `{ line, rule, text }`로 돌려줍니다. 줄 순서로 정렬합니다. */
-export function violationsIn(css, fileName) {
-  void fileName;
+/** 값 하나의 시간 · 이징 리터럴 위반을 `{ rule, text }`로 돌려줍니다. 토큰 참조는 뺍니다. */
+export function valueViolations(value) {
+  const violations = [];
+  const remaining = stripTokenReferences(value);
+  for (const match of remaining.matchAll(easingFunctionPattern)) {
+    violations.push({ rule: "easing-function", text: match[0] });
+  }
+  // 괄호도 구분자로 본다 — calc(100ms) · var(--other, ease)처럼 괄호에 붙은 리터럴이 검사를 비껴가지 않게.
+  for (const token of remaining.replace(easingFunctionPattern, " ").split(/[\s,()]+/)) {
+    if (timeLiteralPattern.test(token)) {
+      violations.push({ rule: "time-literal", text: token });
+    } else if (easingKeywords.has(token.toLowerCase())) {
+      violations.push({ rule: "easing-keyword", text: token });
+    }
+  }
+  return violations;
+}
+
+const scaleCallPattern = /\bscale(?:3d|x|y|z)?\([^)]*\)/gi;
+
+/**
+ * `transform` 값에서 1이 아닌 `scale*()` 호출 전체를 돌려줍니다. 토큰 참조를 뺀 뒤 숫자 인자의
+ * 절댓값이 하나라도 1이 아니면 잡고, 숫자 인자가 없거나 절댓값이 전부 1이면(항등 · 거울 반전) 건너뜁니다.
+ */
+export function scaleLiteralsIn(value) {
+  const found = [];
+  for (const match of stripTokenReferences(value).matchAll(scaleCallPattern)) {
+    const inner = match[0].slice(match[0].indexOf("(") + 1, -1);
+    const numbers = inner
+      .split(",")
+      .map((argument) => argument.trim())
+      .filter((argument) => /^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(argument))
+      .map(Number);
+    if (numbers.some((number) => Math.abs(number) !== 1)) {
+      found.push(match[0]);
+    }
+  }
+  return found;
+}
+
+/** CSS 파일 하나의 위반을 `{ line, rule, text }`로 돌려줍니다. 줄 순서로 정렬합니다. */
+export function violationsIn(css) {
   const violations = mediaQueriesIn(css).map(({ line }) => ({
     line,
     rule: "media-query",
     text: "@media",
   }));
   for (const { line, value } of motionDeclarationsIn(css)) {
-    const remaining = stripTokenReferences(value);
-    for (const match of remaining.matchAll(easingFunctionPattern)) {
-      violations.push({ line, rule: "easing-function", text: match[0] });
+    for (const violation of valueViolations(value)) {
+      violations.push({ line, ...violation });
     }
-    // 괄호도 구분자로 본다 — calc(100ms) · var(--other, ease)처럼 괄호에 붙은 리터럴이 검사를 비껴가지 않게.
-    for (const token of remaining.replace(easingFunctionPattern, " ").split(/[\s,()]+/)) {
-      if (timeLiteralPattern.test(token)) {
-        violations.push({ line, rule: "time-literal", text: token });
-      } else if (easingKeywords.has(token.toLowerCase())) {
-        violations.push({ line, rule: "easing-keyword", text: token });
-      }
+  }
+  for (const { line, value } of transformDeclarationsIn(css)) {
+    for (const text of scaleLiteralsIn(value)) {
+      violations.push({ line, rule: "scale-literal", text });
     }
   }
   return violations.sort((a, b) => a.line - b.line);
 }
 
-function violationCountOf(violationsByFile, filePath) {
-  const violations =
-    violationsByFile instanceof Map ? violationsByFile.get(filePath) : violationsByFile[filePath];
-  return violations === undefined ? 0 : violations.length;
+/** 소스 파일 하나의 인라인 모션 위반을 `{ line, rule, text }`로 돌려줍니다. 줄 순서로 정렬합니다. */
+export function violationsInSource(sourceText, fileName, ts) {
+  const violations = [];
+  for (const { line, value } of inlineMotionDeclarationsIn(sourceText, fileName, ts)) {
+    for (const violation of valueViolations(value)) {
+      violations.push({ line, ...violation });
+    }
+  }
+  return violations.sort((a, b) => a.line - b.line);
 }
 
 /** 파일이 없거나 위반이 0인 allowlist 항목을 문장으로 돌려줍니다. */
 export function allowlistProblems(allowlist, existingFiles, violationsByFile) {
-  const existing = new Set(existingFiles);
   const problems = [];
   for (const entry of allowlist) {
-    if (!existing.has(entry.path)) {
+    if (!existingFiles.has(entry.path)) {
       problems.push(`${entry.path}: allowlist에 있으나 파일이 없습니다. allowlist에서 지우세요.`);
-    } else if (violationCountOf(violationsByFile, entry.path) === 0) {
+    } else if ((violationsByFile.get(entry.path) ?? []).length === 0) {
       problems.push(`${entry.path}: allowlist에 있으나 위반이 없습니다. allowlist에서 지우세요.`);
     }
   }
   return problems;
 }
 
-/** `[{ path, reason }]` 모양을 검증해 돌려줍니다. JSON 문자열도 받습니다. 어긋나면 던집니다. */
-export function loadAllowlist(json) {
-  const entries = typeof json === "string" ? JSON.parse(json) : json;
+/** `[{ path, reason }]` 모양을 검증해 돌려줍니다. 배열이 아니거나 항목이 어긋나면 던집니다. */
+export function loadAllowlist(entries) {
   if (!Array.isArray(entries)) {
     throw new Error("allowlist는 [{ path, reason }] 배열이어야 합니다.");
   }

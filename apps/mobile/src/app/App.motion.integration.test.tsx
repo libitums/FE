@@ -142,6 +142,27 @@ test("[IT3] reducedMotion이 없으면 무대에 data-motion이 없고 배지는
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
-// IM4(실행 중 true → false 갱신)는 쓰지 않습니다 — 해당 없음. 이 하네스는 호스트의 globalProps 갱신
+// 실행 중 true → false 갱신 케이스는 쓰지 않습니다 — 해당 없음. 이 하네스는 호스트의 globalProps 갱신
 // (`updateGlobalProps`의 강제 전체 재렌더)를 흉내 낼 수 없습니다(`GlobalEventEmitter`가 없고, 억지로 이어도
 // 트리가 처음부터 다시 서서 Dialog가 사라집니다). e2e M-I2 · M-A2에서 실제 호스트로 봅니다.
+
+// motion-tokens-stage4 IM4 — 진행 바 채움이 같은 Context를 따라 reduced로 서는지 봅니다(dist ui-lynx
+// MotionProvider → 앱 헤더 한 줄).
+async function bootListeningUnit(host: HostProps): Promise<Element> {
+  await boot(host, "tutorial-listening");
+  tap("ui-lynx-learning-unit-tutorial-listening");
+  tap("step-sheet-start");
+  return screen.getByTestId("learning-shell-progress-fill");
+}
+
+test("[IM4] reducedMotion: true면 진행 바 채움이 reduced 클래스와 data-motion을 갖고, 없으면 둘 다 없다", async () => {
+  const reduced = await bootListeningUnit({ safeAreaInsets: iosInsets, reducedMotion: true });
+  expect(reduced.getAttribute("data-motion")).toBe("reduced");
+  expect(reduced).toHaveClass("learning-shell-progress-fill-motion-reduced");
+  cleanup();
+  vi.unstubAllGlobals();
+
+  const standard = await bootListeningUnit({ safeAreaInsets: iosInsets });
+  expect(standard.hasAttribute("data-motion")).toBe(false);
+  expect(standard).not.toHaveClass("learning-shell-progress-fill-motion-reduced");
+});

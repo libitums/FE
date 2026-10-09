@@ -33,10 +33,16 @@ function makeSandbox(allowlist) {
   const sandbox = mkdtempSync(path.join(tmpdir(), "motion-literals-"));
   const toolDir = path.join(sandbox, "devtools/motion-literals");
   mkdirSync(toolDir, { recursive: true });
-  for (const file of ["check.mjs", "policy.mjs", "scan.mjs"]) {
+  for (const file of ["check.mjs", "policy.mjs", "scan.mjs", "scan-source.mjs"]) {
     copyFileSync(path.join(here, file), path.join(toolDir, file));
   }
   writeFileSync(path.join(toolDir, "allowlist.json"), JSON.stringify(allowlist));
+  // check.mjs는 apps/mobile 아래 의존성에서 typescript를 풀므로 샌드박스에도 같은 자리를 이어 둡니다.
+  mkdirSync(path.join(sandbox, "apps/mobile"), { recursive: true });
+  symlinkSync(
+    path.join(repoRoot, "apps/mobile/node_modules"),
+    path.join(sandbox, "apps/mobile/node_modules"),
+  );
   return { sandbox, script: path.join(toolDir, "check.mjs") };
 }
 
@@ -46,7 +52,7 @@ function makeEmptyRoots(sandbox) {
   }
 }
 
-test("[LM1] 저장소 전체에 lint:motion을 돌리면 exit 0이다", () => {
+test("[LM1′] 저장소 전체(CSS + 소스, scale-literal 포함)에 lint:motion을 돌리면 exit 0이다", () => {
   const { status, output } = runCheck(path.join(here, "check.mjs"));
   assert.equal(status, 0, output);
 });
@@ -99,7 +105,7 @@ test("[LM2] 모션 토큰 참조만 쓴 CSS는 통과한다(오탐 없음)", () 
   }
 });
 
-test("[LM3] allowlist에서 narrative-background.css를 빼면 그 파일의 선언 10개의 위반으로 exit 1이다", () => {
+test("[LM3′] allowlist에서 narrative-background.css를 빼면 그 파일의 선언 23줄(위반 31건)로 exit 1이다", () => {
   const { sandbox, script } = makeSandbox([]);
   try {
     for (const root of roots) {
@@ -113,11 +119,70 @@ test("[LM3] allowlist에서 narrative-background.css를 빼면 그 파일의 선
     for (const line of lines) {
       assert.ok(line.startsWith(`- ${narrativeBackground}:`), line);
     }
-    // 선언 10개(줄 10개)에서 time-literal · easing-keyword가 한 줄에 둘씩 나올 수 있다.
+    // 실측(2026-10-10): 위반 31건 = time-literal 10 + easing-keyword 8 + scale-literal 13.
+    // 한 선언 줄에 time-literal · easing-keyword가 함께 나오므로 서로 다른 선언 줄은 23이다
+    // (time/easing 10줄 + scale 13줄).
+    assert.equal(lines.length, 31, output);
     const declarationLines = new Set(lines.map((line) => line.match(/css:(\d+) /)?.[1]));
-    assert.equal(declarationLines.size, 10, output);
+    assert.equal(declarationLines.size, 23, output);
+    assert.equal(lines.filter((line) => line.includes(" scale-literal — ")).length, 13, output);
   } finally {
     rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
+/** 샌드박스에 빈 뿌리를 만들고 파일 하나를 둔 채 check를 돌립니다. */
+function runWithProbe(relativePath, content) {
+  const { sandbox, script } = makeSandbox([]);
+  try {
+    makeEmptyRoots(sandbox);
+    writeFileSync(path.join(sandbox, relativePath), content);
+    return runCheck(script);
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+}
+
+test("[LM2′] 샌드박스 CSS의 scale(0.9)는 exit 1과 scale-literal로 걸린다", () => {
+  const { status, output } = runWithProbe(
+    "packages/ui-lynx/src/probe.css",
+    ".a { transform: scale(0.9); }",
+  );
+  assert.equal(status, 1, output);
+  assert.match(
+    output,
+    /packages\/ui-lynx\/src\/probe\.css:1 scale-literal — scale\(0\.9\)/,
+    output,
+  );
+});
+
+test("[LM5] 샌드박스 tsx의 inline transition 리터럴은 exit 1과 time-literal로 걸린다", () => {
+  const { status, output } = runWithProbe(
+    "packages/ui-lynx/src/probe.tsx",
+    'export const A = () => <view style={{ transition: "opacity 150ms" }} />;\n',
+  );
+  assert.equal(status, 1, output);
+  assert.match(output, /packages\/ui-lynx\/src\/probe\.tsx:\d+ time-literal — 150ms/, output);
+});
+
+test("[LM6] 토큰 참조만 쓴 inline style(객체 · 문자열)은 exit 0이다", () => {
+  const token = "var(--libitum-motion-duration-d2) var(--libitum-motion-easing-linear)";
+  const { status, output } = runWithProbe(
+    "packages/ui-lynx/src/probe.tsx",
+    [
+      `export const A = () => <view style={{ transition: "opacity ${token}" }} />;`,
+      `export const B = () => <view style="transition: opacity ${token}" />;`,
+      "",
+    ].join("\n"),
+  );
+  assert.equal(status, 0, output);
+});
+
+test("[LM7] probe.test.tsx · probe.d.ts는 리터럴이 있어도 검사에서 제외된다", () => {
+  const literal = 'export const A = () => <view style={{ transition: "opacity 150ms" }} />;\n';
+  for (const name of ["probe.test.tsx", "probe.d.ts"]) {
+    const { status, output } = runWithProbe(`packages/ui-lynx/src/${name}`, literal);
+    assert.equal(status, 0, `${name}: ${output}`);
   }
 });
 

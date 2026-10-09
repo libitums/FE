@@ -11,7 +11,7 @@
 
 | 이미 지는 층 | 무엇을 |
 |---|---|
-| unit | 토큰 값과 CSS의 `scale(0.95)` · `scale(0.96)` 숫자 대조, `motionDurationMs`, contract 파생(`contentVisibility` · `hasPressedShade`) |
+| unit | CSS의 `scale(var(--libitum-motion-scale-pressed))` · `scale(var(--libitum-motion-scale-enter))` 문자열 단언 + 비항등 scale 리터럴 0(4단계 전환 — 전에는 토큰 값과 `scale(0.95)` · `scale(0.96)` 숫자 대조), `motionDurationMs`, contract 파생(`contentVisibility` · `hasPressedShade`) |
 | ui | Loading DOM(숨긴 라벨 · Spinner · `"<label>, loading"`), 막 요소의 있고 없음, VN 속성 제거, CSS 텍스트(keyframes · 막 선언) |
 | integration | 패키지 export · 산출물, `lint:motion`, Storybook 빌드 |
 
@@ -102,6 +102,8 @@ dev에서만 더하므로, 정적 서버가 서빙하는 `apps/mobile/dist`에 �
 - **조작**: **끈** 상태에서 학습 화면 `×`로 나가기 확인창을 열고 연속 캡처(1단계 M-I4 off).
 - **관찰**: 첫 프레임의 **카드 상자 전환점**이 정착 프레임보다 안쪽이다(96 %에서 1로). 폭 · 높이 값이 아니라 전환점으로 비교한다 —
   [측정 주의](motion-reduced.md#m-i4--dialog는-불투명도만-바뀐다-ac9)는 그대로 쓴다.
+- **4단계부터 keyframe 본문 `scale(var())`의 기기 게이트를 겸한다** — Dialog enter keyframe의 `scale(0.96)`이 `scale(var(--libitum-motion-scale-enter))`로 바뀌었다. 첫 프레임이 100 %(안쪽이 아님 —
+  축소 없음)면 통과가 아니라 **실패**: 4단계 fallback(keyframe 셋만 리터럴 복귀 — [ADR-0053](../adr/0053-motion-policy.md) D6). 회귀 기준은 아래 결과 표와 같은 수치(iOS 전환점 97.1 %)이지 96 정확값이 아니다.
 - 증거: `motion-tokens-ios-M2-I2-off-1.png`, `-off-2.png`.
 
 ### M2-I3 — Button Loading은 라벨이 없고 폭이 같고 돈다 (AC2 · AC3, 가정 A1 · A3)
@@ -159,6 +161,7 @@ dev에서만 더하므로, 정적 서버가 서빙하는 `apps/mobile/dist`에 �
   - 「안 풀림(100 %)」 — 눌림이 있지만 축소가 없다.
   - 「무효(눌림 없음)」 — 눌림 자체가 보이지 않는다(선언이 통째로 무효).
 - 증거: `motion-tokens-ios-M2-I8-1.png`(누른 중), 지름 측정값.
+- *(4단계에서 전환했다 — 이 탐색 항목은 닫혔다. 전환 뒤 회귀는 M2-I1 · M2-I2 · M2-A1 · M2-A2의 「4단계 회차」 소절이 본다.)*
 
 ## Android 항목
 
@@ -167,7 +170,7 @@ dev에서만 더하므로, 정적 서버가 서빙하는 `apps/mobile/dist`에 �
 | id | 조작 | 판정 |
 |---|---|---|
 | M2-A1 | M2-I1과 같음(끈 상태). 누른 채 `A shell input swipe x y x y 3000` 중 캡처 | surface 지름 95 % — 회귀 확인. 증거 `motion-tokens-android-M2-A1-off-*.png` |
-| M2-A2 | M2-I2와 같음(끈 상태) | 첫 프레임 카드 상자가 안쪽(96 %) — 회귀 확인. 증거 `motion-tokens-android-M2-A2-off-*.png` |
+| M2-A2 | M2-I2와 같음(끈 상태) | 첫 프레임 카드 상자가 안쪽(96 %) — 회귀 확인. **4단계부터 keyframe 본문 `scale(var())`의 게이트를 겸한다** — 첫 프레임 100 %(안쪽 아님)면 **실패**(D6 fallback); Android keyframe `var()`는 기기 기록이 없어 이 행이 첫 근거다. 증거 `motion-tokens-android-M2-A2-off-*.png` |
 | M2-A3 | Button Loading. **playground를 열 수 있으면** M2-I3과 같다. **못 열면** 로그인 화면의 소셜 버튼을 눌러 요청 중(loading) 캡처와 누르기 전 캡처를 비교한다 | 폭 · 높이 같음(±1 px) · 라벨 없음 · 불규칙 10프레임 이상의 틈 각도가 계속 다름(전제 4). **playground 가부를 결과 표 「Android playground」에 적는다**(A5). (d) TalkBack을 켜고 Loading 버튼에 정지하면 이름이 「<라벨>, loading」 한 번이고 다음 스와이프가 숨긴 라벨을 따로 읽지 않는다 — 소셜 버튼 대체 경로에도 같다. Android는 AAR이라 소스 근거가 없어 **실기가 유일한 근거**이고, 안 했으면 「미확인」. 증거 `motion-tokens-android-M2-A3-*.png` |
 | M2-A4 | Round Button loading(playground 필요) | M2-I4와 같음. 못 열면 「미확인」 |
 | M2-A5 | 설정 **(i)** `transition_animation_scale 0` · `animator_duration_scale 1`([1단계 한계 절](motion-reduced.md#이-절차로-확인하지-못하는-것)), RoundButton · LearningUnit을 누른 채 | M2-I5와 같은 색 · 지름 판정(축소 없음 + 합성 색 ±2). 이어서 **(ii)** 접근성 「애니메이션 삭제」에서도 한 번 — 막의 150 ms 전환이 플랫폼 정지와 겹쳐도 색은 **정착값**으로 보여야 한다. 끈 상태는 색 불변 · 축소만. 증거 `motion-tokens-android-M2-A5-i-*.png` · `-ii-*.png` · `-off-*.png` |
@@ -236,16 +239,16 @@ iOS는 e2e-red 회차가, Android는 e2e-green 회차가 돌았다. 둘 다 **�
 | 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
 |---|---|---|---|
 | M2-I1 | iOS 시뮬레이터 | 통과 | 끈. LearningUnit active surface 216 → 212 → 206 px(95.4 %); RoundButton neutral은 M2-I5 끈 회차에서 165 → 157(95 %). `ios-M2-I1-off-*`(`measure.txt`) |
-| M2-I2 | iOS 시뮬레이터 | 통과 | 끈. 카드 상자 위/아래 첫 프레임 944/1678(높이 735) → 정착 933/1689(757) = 97.1 %, 1단계 e2e-green과 같은 수치(문서의 96 %는 전환점 기준으로 97.1 %로 나온다). `ios-M2-I2-off-*`(`cardbox.txt`) |
+| M2-I2 | iOS 시뮬레이터 | 통과 | 끈. 카드 상자 위/아래 첫 프레임 944/1678(높이 735) → 정착 933/1689(757) = 97.1 %, 1단계 e2e-green과 같은 수치(문서의 96 %는 전환점 기준으로 97.1 %로 나온다). `ios-M2-I2-off-*`(`cardbox.txt`). *(4단계 주: 이 행이 keyframe 본문 `var()` 게이트의 회귀 기준이다 — 아래 「4단계 회차」.)* |
 | M2-I3 | iOS 시뮬레이터 | 통과 | 끈, playground. (a) Default/Loading 폭 neutral 242/242 · brand 242/242 · outline 248/248 · subtle 242/242, 높이 102/102 · 102/102 · 108/108 · 108/108 — **text는 간접 근거**(spinner 중심 x 713.5가 subtle과 같음). (b) 라벨 없음, 12 px 원(bbox 36 px)만 — A1 성립. (c) 5변형 모두 프레임마다 291 → 327 → 0 → 33 → 69 → 96°(≈36°/100 ms), 틈 약 78° — A3 성립. (d) VoiceOver **미확인**. `ios-M2-I3-off-playground-1.png`, `ios-M2-I3-I4-off-f00~f05.png` |
 | M2-I4 | iOS 시뮬레이터 | 통과 | 끈. Round Button loading neutral · brand 291 → 330 → 0 → 36 → 69 → 99°, 틈이 보이는 호. 수정 전 playground에는 행이 없어 「틈 없는 원이었는가」는 Button(M2-I3 (c) 수정 전: 정지 원)으로만 안다. 같은 프레임 `ios-M2-I3-I4-off-*` |
 | M2-I5 | iOS 시뮬레이터 | 통과 | 켠: 지름 불변(active 213 = 213, available 213 = 213, neutral 165 = 165, clear 눌린 색 bbox 213). 색(±2): clear `#35A66F` → `#319966`, active `#F46B18` → `#E16316`(기대 `#E06216`), available `#FFF0E6` → `#EBDDD4`, neutral `#F7F8F9` → `#E4E5E5`(기대 `#E3E4E5`). 아이콘 픽셀은 누르기 전과 같다(흰 픽셀 수 clear 420 = 420, active 707 = 707) — A2 성립. 끈: 색 불변, 축소 213 → 201(94 %) · 165 → 157(95 %). `ios-M2-I5-on-*`, `-off-*`, `-summary.txt` |
 | M2-I6 | iOS 시뮬레이터 | 통과 | 켠, playground. Button 5변형 + Round Button neutral · brand loading 전부 75 → 111 → 147 → 174 → 210 → 249°. `ios-M2-I6-on-f00~f05.png` |
 | M2-I7 | iOS 시뮬레이터 | 통과 | 끈, EpisodeNarrativeScreen 「Before We Land」. 8프레임(간격 1.0 · 0.3 · 0.7 · 0.2 · 0.45 s) 전부 화살표 bbox y 2134 ~ 2162, 첫 프레임과 다른 픽셀 0. `ios-M2-I7-off-*` |
-| M2-I8(탐색) | iOS 시뮬레이터 | 풀림(95 %) | 버리는 워크트리에서 `round-button.css` 116행을 `scale(var(--libitum-motion-scale-pressed))`로 바꾼 번들. RoundButton neutral 165 → 157 px. `ios-M2-I8-probe-*`. Android는 [motion-reward.md](motion-reward.md#결과) M3-A8 행 |
+| M2-I8(탐색) | iOS 시뮬레이터 | 풀림(95 %) | 버리는 워크트리에서 `round-button.css` 116행을 `scale(var(--libitum-motion-scale-pressed))`로 바꾼 번들. RoundButton neutral 165 → 157 px. `ios-M2-I8-probe-*`. Android는 [motion-reward.md](motion-reward.md#결과) M3-A8 행. *(4단계 주: 두 플랫폼 모두 풀려 4단계에서 전환했다 — 회귀는 아래 「4단계 회차」 소절.)* |
 | (실기) M2-I3 · M2-I5 | iOS 실기 | 미확인 | 실기 없음 |
 | M2-A1 | Android 에뮬레이터 | 통과 | 끈, 3초 누름 중 연속 캡처. LearningUnit active 72 → 68 px(94.4 %), 색 `#F46B18` 불변; RoundButton neutral 56 → 52(92.9 %, 정수 픽셀), 색 `#F7F8F9` 불변; available · clear 72 → 68, 색 불변. `android-M2-A1-*`, `android-M2-A5-off-*` |
-| M2-A2 | Android 에뮬레이터 | 통과 | 끈, 확인창 6회(기기 안 `screencap` 루프). 중간 프레임 3회 카드 상자 폭 316 · 316 · 318, 정착 320(1단계 M-A4 끈 기준 310 ~ 318과 같다). 반투명 중간 프레임이라 96 % 정확값은 못 읽는다. `android-M2-A2-off-*` |
+| M2-A2 | Android 에뮬레이터 | 통과 | 끈, 확인창 6회(기기 안 `screencap` 루프). 중간 프레임 3회 카드 상자 폭 316 · 316 · 318, 정착 320(1단계 M-A4 끈 기준 310 ~ 318과 같다). 반투명 중간 프레임이라 96 % 정확값은 못 읽는다. `android-M2-A2-off-*`. *(4단계 주: keyframe 본문 `var()` 게이트의 회귀 기준 — 316 ~ 318 / 320이면 같은 수치, 320이면 실패.)* |
 | M2-A3 | Android 에뮬레이터 | 통과(playground) | 끈. Default/Loading 폭 · 높이 neutral 84/84 · 36/36, brand 84/84 · 36/36, subtle 84/84 · 36/36, outline 86/86 · 38/38 — **text는 간접 근거**(원 중심 x 245.5가 subtle과 같음). 라벨 없음, 12 × 12 px 원만. 회전: 10프레임(0.6 ~ 0.9 s) 틈 각도 100 · 20 · 290 · 170 · 130 · 60 · 345 · 250 · 120 · 10°, 틈 약 50 ~ 70°, 다섯 변형 동기. (d) TalkBack **미확인**(시작부터 꺼져 있었고 켜지 않았다). `android-M2-A3-off-playground-1.png`, `-width-measure.txt`, `android-M2-A3-A4-off-f00~05.png`, `-gap.txt` |
 | M2-A4 | Android 에뮬레이터 | 통과 | 같은 프레임에서 Round Button neutral · brand loading 10프레임 틈 각도가 변함(원 12 px, 틈 보임). `android-M2-A3-A4-off-gap.txt` |
 | M2-A5 | Android 에뮬레이터 | 통과 | (i) `transition_animation_scale 0` · `animator 1`: 지름 불변(active 72 = 72, RB 56 = 56, clear 72 = 72, available 72 = 72), 색(±2) active → `#E16316`, RB → `#E4E5E5`, available → `#EBDDD4`(정확), clear → `#319966`(정확); 아이콘 픽셀 불변(active 191 = 191, clear 211 = 211) — A2 성립. (ii) 「Remove animations」(세 배율 0.0): 같은 정착값, 아이콘 불변. 끈: 색 불변 + 축소만(72 → 68 · 56 → 52). `android-M2-A5-i-*`, `-ii-*`, `-off-*` |
@@ -261,3 +264,46 @@ iOS는 e2e-red 회차가, Android는 e2e-green 회차가 돌았다. 둘 다 **�
 | 빌드 SHA (호스트 · 번들) | 호스트 = 번들 = `56960511`(두 플랫폼). 번들은 로그인을 위해 `PUBLIC_SUPABASE_URL=https://localhost:18791`(iOS, 모의 TLS 서버) · `https://example.invalid`(Android)로 빌드 |
 | 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터(iOS 26.5, 전용 `motion-stage2`) · **Release** Host(`CODE_SIGNING_ALLOWED=NO`, pod install 안 함) + `--bundle-url=main.lynx` / Pixel_8 AVD `emulator-5554` API 37 · debug + androidTest, `wm size 390x844` · `density 160`, 정적 서버 18792 |
 | 설정 복원 확인 | iOS 0 → 0, 전용 시뮬레이터 `shutdown` · `delete`(목록 0건), 모의 서버 종료, 탐색 워크트리 삭제. Android 전역 · 보안 · 시스템 설정 끝 덤프가 시작 덤프와 `diff` 동일(`wm size` · `density` reset, 「Remove animations」 끔). 두 플랫폼 모두 `current.ts` 원복, 3001 dev 서버 종료(3000의 다른 worktree 서버는 그대로), `git status --short` 0줄 |
+
+### 4단계 회차 — scale `var()` 전환 뒤 회귀(iOS · Android), 기준 `2debe051` 대조
+
+4단계([ADR-0053](../adr/0053-motion-policy.md) D6)가 `round-button.css` · `learning-unit.css`의 눌림 `scale(0.95)`와 `dialog.css` enter from · exit to의 `scale(0.96)`을
+`scale(var(--libitum-motion-scale-pressed | enter))`로 바꿨다(배지 `scale(0.8)`은 [보상 · 문항 전환 e2e](motion-reward.md#결과)의 「4단계 회차」). 값이 토큰과 같아 **달라야 하는 것은 없고**
+아래 행은 전부 회귀다 — 통과 기준은 위 결과 표와 **같은 수치(±같은 오차)** 이지 95 · 96의 정확값이 아니다. 하나만 다르다: **M2-I2 · M2-A2는 keyframe 본문 `var()`의 기기 게이트를 겸한다** —
+첫 프레임이 100 %(안쪽 아님)면 통과가 아니라 **실패**이고 4단계 fallback(keyframe 셋만 리터럴 복귀 — D6)이 선다. iOS는 구현 전 탐색이 Dialog enter 첫 프레임 하단 1678(위 M2-I2 기록과 일치)로
+풀림을 봤고, Android keyframe은 이 회차가 처음 본다. 눌림(M2-I1 · M2-A1)은 일반 규칙이라 두 플랫폼 모두 근거가 있다(M2-I8 · M3-A8).
+
+수정 전 대조는 기준 `2debe051`(3단계 병합)이고 호스트는 불변(`d602fe08` 이후)이다. **결과 행은 실행 회차가 채운다 — 「실행 중」인 행은 통과가 아니다.**
+
+#### iOS
+
+| 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
+|---|---|---|---|
+| M2-I1 | iOS 시뮬레이터 | 통과(RoundButton) / 미확인(LearningUnit) | RoundButton neutral 165 → 157 px(95 %) · LearningUnit 216 → 206(95.4 %) — 일반 규칙 `var()` 실측: RoundButton neutral 165 → 157 px(2회, 1 px 정확 168 → 158) · 색 `#F7F8F9` 불변. LearningUnit은 이 회차에서 재지 않았다(같은 선언 꼴). `motion-s4-ios-M2-I1-off-*` |
+| M2-I2 — keyframe 게이트 | iOS 시뮬레이터 | 통과(게이트 통과) | 카드 상자 첫 프레임 하단 1678 · 전환점 97.1 %. **100 %(안쪽 아님)면 실패**(D6 fallback) 실측: 첫 보이는 프레임 카드 상자(그림자 포함) 930 × 747 → 정착 1003 × 779(높이비 95.9 %), 하단 전환점 1678(기록 1678) → 942/1680 → 933/1689. 첫 프레임부터 100 %인 회차 0. `motion-s4-ios-M2-I2-off-*` |
+
+| 칸 | 값 |
+|---|---|
+| 시작 값(실행 전 기록) | iOS 동작 줄이기 0(켬은 M2-I5 구간만 — `defaults write … ReduceMotionEnabled -bool true` + 재부팅, 읽기값 1; 끝 값 0) |
+| 확인자 | test-runner 에이전트(e2e-red 회차, iOS 회귀) |
+| 날짜 | 2026-10-10 |
+| 빌드 SHA (호스트 · 번들) | 호스트 `91262f72`(소스는 1단계 `d602fe08` 이후 불변) / 번들 `d649e114` 코드(= `91262f72`, 그 뒤 커밋은 테스트 · 문서뿐) · 1,403,113 B. 수정 전 대조 없음(회귀 — 2 · 3단계 기록과 대조) |
+| 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터(전용 `motion-stage4`) · iOS 26.5 · Release Host + 내장 번들(`--bundle-url=main.lynx`), 모의 TLS 서버 18791로 로그인 시드. 각 항목 2회 |
+| 설정 복원 확인 | 시뮬레이터 shutdown · delete(목록 0건), 동작 줄이기 0, 모의 서버 종료, `git status --short` 0줄 |
+
+#### Android
+
+| 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
+|---|---|---|---|
+| M2-A1 | Android 에뮬레이터 | 통과(RoundButton) / 미확인(LearningUnit) | RoundButton neutral 56 → 52 px · LearningUnit 72 → 68 — 일반 규칙 `var()` 실측: RoundButton neutral 56 → 52 px · 색 `#F7F8F9` 불변(2회). LearningUnit은 이 회차에서 재지 않았다. `motion-s4-android-M2-A1-off-*` |
+| M2-A2 — keyframe 게이트 | Android 에뮬레이터 | 통과(게이트 통과) | 중간 프레임 카드 상자 폭 316 ~ 318 / 정착 320. **320(안쪽 아님)이면 실패**(D6 fallback) — Android keyframe `var()`의 첫 기기 근거 실측: `screencap` 루프 8회 중 6회 중간 프레임 폭 312 · 318 · 316 · 318 · 318 · 318, 영상 2회 308 → 312 → 318 → 320 · 308 → 314 → 316 → 320(정착 320). 첫 프레임부터 320인 회차 0 — Android keyframe 본문 `var()` 풀림을 처음 확인. `motion-s4-android-M2-A2-off-*` |
+
+| 칸 | 값 |
+|---|---|
+| 시작 값(실행 전 기록) | `animator_duration_scale=null` · `transition_animation_scale=1.0` · `window_animation_scale=1.0` · `font_scale=1.0` · `wm size 1080x2400` · `density 420` · `accessibility_enabled=0` · `enabled_accessibility_services=null`(끝 값 전부 같음 — 전후 덤프 diff 0) |
+| 확인자 | test-runner 에이전트(e2e-green 회차, Android 회귀) |
+| 날짜 | 2026-10-10 |
+| 빌드 SHA (호스트 · 번들) | 호스트 `543b5762`(소스는 1단계 `d602fe08` 이후 불변) / 번들 `d649e114` 코드(= `543b5762`, 그 뒤는 테스트 · 문서) · 1,403,113 B(iOS 회차와 같은 크기). 수정 전 대조 없음(회귀) |
+| 기기 · OS · 빌드 종류 | `emulator-5554`(Pixel_8, API 37) · Debug Host(`assembleDebug`, `bundle:android`) + 정적 서버 18792 · 로그인 픽스처 `SignedInScreenFixtureTest` · `wm size 390x844` · `wm density 160`(1 px = 1 css px) · `screenrecord`(변화 시 ≈12 fps) + 기기 안 `screencap` 루프 |
+| 에뮬레이터 점유 확인 · 알림 | 다른 세션의 반납 알림을 받고 시작 · 사용 중 알림 · 끝에 원복 후 반납 알림 |
+| 설정 복원 확인 | 세 배율 · wm size · density 시작 값으로 원복(빈 `display_size_forced` · `display_density_forced` 키 삭제), 알림 권한 revoke, 전후 덤프 diff 0, 서버 18792 종료, 홈 화면(앱은 이 회차 빌드로 남김), `git status --short` 0줄 |

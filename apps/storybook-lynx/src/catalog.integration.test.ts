@@ -27,6 +27,7 @@ import { normalizeSettingsCellStoryArgs } from "./settings-cell-story";
 import { normalizeVisualNovelDialogStoryArgs } from "./visual-novel-dialog-story";
 import { normalizeTooltipStoryArgs } from "./tooltip-story";
 import { normalizeFogStoryArgs } from "./fog-story";
+import { normalizeStoryMotion } from "./story-motion";
 import {
   dispatchLearningUnitStoryTap,
   normalizeLearningUnitStoryArgs,
@@ -52,6 +53,16 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("SM1. normalizeStoryMotion은 reduced가 아닌 값을 모두 standard로 정리한다", () => {
+    for (const value of [undefined, null, "standard", "REDUCED", 1]) {
+      expect(normalizeStoryMotion(value)).toBe("standard");
+    }
+  });
+
+  test("SM2. normalizeStoryMotion은 정확히 reduced인 값만 reduced로 둔다", () => {
+    expect(normalizeStoryMotion("reduced")).toBe("reduced");
+  });
+
   test("settings cell init data는 직렬화 가능한 두 trailing 변형을 정규화한다", () => {
     expect(
       JSON.parse(
@@ -85,7 +96,11 @@ describe("Storybook Lynx build outputs", () => {
       icon: "audio-waves",
       focused: true,
       showAllStates: false,
+      motion: "standard",
     });
+    expect(normalizeLearningUnitStoryArgs({ motion: "reduced" }).motion).toBe("reduced");
+    expect(normalizeSettingsCellStoryArgs({ motion: "reduced" }).motion).toBe("reduced");
+    expect(normalizeSettingsCellStoryArgs({}).motion).toBe("standard");
     const calls: unknown[] = [];
     expect(dispatchLearningUnitStoryTap(data, (payload) => calls.push(payload))).toBe(true);
     expect(
@@ -492,7 +507,12 @@ describe("Storybook Lynx build outputs", () => {
       message: "See you tomorrow.",
       size: "l",
       speaker: "Mina",
+      motion: "standard",
+      reveal: "instant",
     });
+    expect(normalizeChatBubbleStoryArgs({ reveal: "typewriter" }).reveal).toBe("typewriter");
+    expect(normalizeChatBubbleStoryArgs({ reveal: "x" as never }).reveal).toBe("instant");
+    expect(normalizeChatBubbleStoryArgs({ motion: "reduced" }).motion).toBe("reduced");
   });
 
   test("chat-bubble incoming은 delivery를 Default로 고정하고 불완전한 값을 기본화한다", () => {
@@ -514,6 +534,8 @@ describe("Storybook Lynx build outputs", () => {
       message: "오늘 하루는 어땠어?",
       size: "m",
       speaker: "말랑이",
+      motion: "standard",
+      reveal: "instant",
     });
   });
 
@@ -629,7 +651,9 @@ describe("Storybook Lynx build outputs", () => {
       size: "m",
       disabled: false,
       loading: false,
+      motion: "standard",
     });
+    expect(normalizeRoundButtonStoryArgs({ motion: "reduced" }).motion).toBe("reduced");
     expect(data).not.toHaveProperty("onTap");
     expect(JSON.stringify(data)).not.toContain("<svg");
   });
@@ -693,6 +717,45 @@ describe("Storybook Lynx build outputs", () => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
     expect(bundle.subarray(0, 8).toString("ascii")).toBe("SDRAWROF");
+  });
+
+  test("ST1. index.json에 motion 스토리 일곱 id가 있다", async () => {
+    const index = JSON.parse(await readOutput("dist/storybook/index.json")) as {
+      entries: Record<string, unknown>;
+    };
+    for (const id of [
+      "components-round-button--reduced-motion",
+      "components-learning-unit--reduced-motion",
+      "components-page-indicator--reduced-motion",
+      "components-settings-cell--reduced-motion",
+      "components-chat-bubble--reduced-motion",
+      "components-visual-novel-dialog--reduced-motion",
+      "components-chat-bubble--typewriter",
+    ]) {
+      expect(Object.keys(index.entries)).toContain(id);
+    }
+  });
+
+  test("ST5. typecheck tsconfig가 @libitums/ui-lynx/motion을 소스로 매핑한다", async () => {
+    const typecheck = JSON.parse(await readOutput("tsconfig.typecheck.json")) as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+    expect(typecheck.compilerOptions.paths["@libitums/ui-lynx/motion"]).toEqual([
+      "../../packages/ui-lynx/src/motion/index.ts",
+    ]);
+  });
+
+  test.each(["round-button", "learning-unit", "page-indicator", "settings-cell", "chat-bubble"])(
+    "ST6. %s 엔트리는 motion 서브패스의 MotionProvider로 감싼다",
+    async (name) => {
+      const source = await readOutput(`src/lynx/${name}.tsx`);
+      expect(source).toContain('from "@libitums/ui-lynx/motion"');
+      expect(source).toContain("<MotionProvider motion={");
+    },
+  );
+  test("ST6. chat-bubble 엔트리는 reveal arg를 넘긴다", async () => {
+    const source = await readOutput("src/lynx/chat-bubble.tsx");
+    expect(source).toContain("reveal={args.reveal}");
   });
 
   test("정적 Storybook shell과 컴포넌트 story index를 갖는다", async () => {

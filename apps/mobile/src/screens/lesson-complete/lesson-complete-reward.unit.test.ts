@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { motion } from "@libitums/design-tokens";
 import { describe, expect, test } from "vitest";
 
 import { rewardBadgeClassName, rewardMotionFor } from "./lesson-complete-reward";
@@ -65,22 +64,20 @@ describe("lesson-complete-screen.css", () => {
       .map((line) => line.replace(/\s+/g, " ").trim())
       .filter((line) => line !== "");
 
-  test("LCR-css1. 보상 keyframe은 opacity 0 · scale 축소에서 opacity 1 · scale(1)로 간다", () => {
+  test("LCR-css1′. 보상 keyframe은 opacity 0 · reward scale 변수에서 opacity 1 · scale(1)로 간다", () => {
     const from = keyframe("lesson-complete-screen-badge-reward", "from");
     const to = keyframe("lesson-complete-screen-badge-reward", "to");
     expect(from).toMatch(/opacity:\s*0/);
-    expect(from).toMatch(/transform:\s*scale\(([\d.]+)\)/);
+    expect(from).toMatch(/transform:\s*scale\(var\(--libitum-motion-scale-reward\)\)/);
     expect(to).toMatch(/opacity:\s*1/);
     expect(to).toMatch(/transform:\s*scale\(1\)/);
   });
 
-  test("LCR-css2. from의 scale은 motion.scale.reward이고 scale 리터럴은 그것 하나뿐이다", () => {
-    const from = keyframe("lesson-complete-screen-badge-reward", "from");
-    expect(Number(/scale\(([\d.]+)\)/.exec(from)?.[1] ?? Number.NaN)).toBe(motion.scale.reward);
-    const literals = (css.match(/scale\(([\d.]+)\)/g) ?? []).filter(
-      (literal) => literal !== "scale(1)",
+  test("LCR-css2′. 비항등 scale 리터럴이 없다", () => {
+    const literals = (css.match(/scale\(\s*[\d.]+\s*\)/g) ?? []).filter(
+      (literal) => Number(/([\d.]+)/.exec(literal)?.[1] ?? Number.NaN) !== 1,
     );
-    expect(literals).toHaveLength(1);
+    expect(literals).toEqual([]);
   });
 
   test("LCR-css3. -motion-reward는 reward 시간 · enter-expressive easing으로 both 재생한다", () => {

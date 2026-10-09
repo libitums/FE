@@ -21,6 +21,7 @@ const meta = {
     size: { control: "inline-radio", options: ["s", "m", "l", "xl"] },
     disabled: { control: "boolean" },
     loading: { control: "boolean" },
+    motion: { control: "inline-radio", options: ["standard", "reduced"] },
     onTap: { control: false },
   },
   args: {
@@ -30,6 +31,7 @@ const meta = {
     size: "m",
     disabled: false,
     loading: false,
+    motion: "standard",
     onTap: fn(),
   },
 } satisfies Meta<RoundButtonStoryArgs>;
@@ -40,3 +42,4 @@ export const Default: Story = {};
 export const Brand: Story = { args: { variant: "brand" } };
 export const Loading: Story = { args: { loading: true } };
 export const Disabled: Story = { args: { disabled: true } };
+export const ReducedMotion: Story = { args: { motion: "reduced" } };

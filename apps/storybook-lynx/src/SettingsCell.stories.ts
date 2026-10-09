@@ -22,6 +22,7 @@ const meta = {
     checked: { control: "boolean" },
     disabled: { control: "boolean" },
     focused: { control: "boolean" },
+    motion: { control: "inline-radio", options: ["standard", "reduced"] },
   },
   args: {
     variant: "navigation",
@@ -32,6 +33,7 @@ const meta = {
     checked: false,
     disabled: false,
     focused: false,
+    motion: "standard",
   },
 } satisfies Meta<SettingsCellStoryArgs>;
 
@@ -57,3 +59,4 @@ export const WithAvatar: Story = {
 };
 export const Disabled: Story = { args: { disabled: true } };
 export const Group: Story = { args: { variant: "group" } };
+export const ReducedMotion: Story = { args: { variant: "toggle", motion: "reduced" } };

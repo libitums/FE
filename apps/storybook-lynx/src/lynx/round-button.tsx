@@ -1,5 +1,6 @@
 import { root, useInitData } from "@lynx-js/react";
 import info02 from "@libitums/icons/lynx/info-02";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import type { RoundButtonStoryArgs } from "../story-types";
 import { dispatchRoundButtonStoryTap, normalizeRoundButtonStoryArgs } from "../round-button-story";
@@ -26,15 +27,17 @@ function App() {
       <view className="story-card">
         <text className="story-eyebrow">LYNX COMPONENT</text>
         <text className="story-title">Round Button</text>
-        <RoundButton
-          accessibilityLabel={accessibilityLabel}
-          icon={icon}
-          variant={variant}
-          size={size}
-          disabled={disabled}
-          loading={loading}
-          bindtap={emitTap}
-        />
+        <MotionProvider motion={data.motion}>
+          <RoundButton
+            accessibilityLabel={accessibilityLabel}
+            icon={icon}
+            variant={variant}
+            size={size}
+            disabled={disabled}
+            loading={loading}
+            bindtap={emitTap}
+          />
+        </MotionProvider>
       </view>
     </view>
   );

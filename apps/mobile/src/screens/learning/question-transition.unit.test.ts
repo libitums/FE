@@ -172,16 +172,47 @@ describe("learning-shell.css", () => {
   });
 
   // 파일에 전환이 아직 없는 logic-scaffold에서도 green인 가드입니다.
-  test("LST-css5. 정적 블록에 opacity · transition이 없고 @media · 시간 리터럴이 없다", () => {
-    for (const selector of [
-      ".learning-shell-stage",
-      ".learning-shell-scroll",
-      ".learning-shell-card-scroll",
-    ]) {
+  test.each([".learning-shell-stage", ".learning-shell-scroll", ".learning-shell-card-scroll"])(
+    "LST-css5. 정적 블록 %s에 opacity · transition이 없다",
+    (selector) => {
       const rule = ruleFor(selector);
-      expect(rule.at, selector).toBeGreaterThanOrEqual(0);
-      expect(rule.body, selector).not.toMatch(/opacity|transition|animation/);
-    }
+      expect(rule.at).toBeGreaterThanOrEqual(0);
+      expect(rule.body).not.toMatch(/opacity|transition|animation/);
+    },
+  );
+
+  test("LST-css5. 파일에 @media · 시간 리터럴이 없다", () => {
+    expect(raw).not.toMatch(/@media/);
+    expect(raw).not.toMatch(/\d+ms/);
+  });
+
+  test("LSP-css1. 진행 바 채움은 progress 시간 · enter easing으로 너비를 전환한다", () => {
+    const { body } = ruleFor(".learning-shell-progress-fill");
+    expect(body).toMatch(
+      /transition:\s*width var\(--libitum-motion-duration-progress\)\s+var\(--libitum-motion-easing-enter\)/,
+    );
+  });
+
+  test("LSP-css2. reduced 채움은 transition none이고 base 규칙보다 뒤에 있다", () => {
+    const base = ruleFor(".learning-shell-progress-fill");
+    const reduced = ruleFor(".learning-shell-progress-fill-motion-reduced");
+    expect(reduced.body).toMatch(/transition:\s*none/);
+    expect(base.at).toBeGreaterThanOrEqual(0);
+    expect(reduced.at).toBeGreaterThan(base.at);
+  });
+
+  // transition 한 줄 말고는 채움 · 트랙의 모양이 그대로여야 합니다 — logic-scaffold에서도 green인 가드입니다.
+  test("LSP-css3. 채움의 height · border-radius · background와 트랙 블록은 그대로이고 파일에 @media · 시간 리터럴이 없다", () => {
+    const fill = ruleFor(".learning-shell-progress-fill").body;
+    expect(fill).toMatch(/height:\s*var\(--libitum-spacing-8\)/);
+    expect(fill).toMatch(/border-radius:\s*var\(--libitum-radius-full\)/);
+    expect(fill).toMatch(/background:\s*var\(--libitum-color-brand-primary\)/);
+    const track = ruleFor(".learning-shell-progress-track").body;
+    expect(track).toMatch(/height:\s*var\(--libitum-spacing-8\)/);
+    expect(track).toMatch(/border-radius:\s*var\(--libitum-radius-full\)/);
+    expect(track).toMatch(/background:\s*var\(--libitum-color-gray-300\)/);
+    expect(track).toMatch(/overflow:\s*hidden/);
+    expect(track).not.toMatch(/transition|animation/);
     expect(raw).not.toMatch(/@media/);
     expect(raw).not.toMatch(/\d+ms/);
   });

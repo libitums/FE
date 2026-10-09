@@ -44,8 +44,8 @@ describe("LearningUnit", () => {
     expect(onTap).toHaveBeenCalledTimes(1);
   });
 
-  test("Narrative 배지는 별도 control 없이 이름에만 이야기 연결을 추가한다", () => {
-    render(
+  test("Narrative 배지는 별도 control 없이 이름에만 이야기 연결을 추가한다 · LU-E1 가림 속성 부재", () => {
+    const { container } = render(
       <LearningUnit
         accessibilityLabel="문화 이야기"
         icon={headset}
@@ -58,13 +58,40 @@ describe("LearningUnit", () => {
       // `clear`라 상태 접미사가 먼저 붙고 이야기 연결이 뒤따릅니다.
       "문화 이야기, completed, story",
     );
-    expect(screen.getByTestId("ui-lynx-learning-unit-badge")).toHaveAttribute(
+    expect(screen.getByTestId("ui-lynx-learning-unit-badge")).not.toHaveAttribute(
       "accessibility-elements-hidden",
-      "true",
     );
+    expect(screen.getByTestId("ui-lynx-learning-unit-ring")).not.toHaveAttribute(
+      "accessibility-elements-hidden",
+    );
+    expect(container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
     expect(screen.getByTestId("ui-lynx-learning-unit-ring").getAttribute("content")).toContain(
       "<path",
     );
+  });
+
+  test("LU-E1. narrative · reduced · default 어느 트리에도 accessibility-elements-hidden이 없다", () => {
+    const narrative = render(
+      <LearningUnit
+        accessibilityLabel="이야기"
+        icon={headset}
+        status="clear"
+        narrative="narrative"
+      />,
+    );
+    expect(narrative.container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
+    narrative.unmount();
+
+    const reduced = render(
+      <MotionProvider motion="reduced">
+        <LearningUnit accessibilityLabel="듣기" icon={headset} status="active" />
+      </MotionProvider>,
+    );
+    expect(reduced.container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
+    reduced.unmount();
+
+    const plain = render(<LearningUnit accessibilityLabel="듣기" icon={headset} status="active" />);
+    expect(plain.container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
   });
 
   test("일반 Learning Unit의 바깥 링은 끊김 없는 원이다", () => {

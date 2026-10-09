@@ -418,6 +418,9 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
 
 ### 2026-10-09 확장 — `motion` 모듈과 패키지 첫 교차 컴포넌트 Provider
 
+> *(2026-10-10 주: **모션 정책 축은 [ADR-0053](0053-motion-policy.md)이 진다** — 이 절과 아래 「2단계」 ·
+> 「3단계」 소절 셋은 적용 기록이다. 본문은 고치지 않았고 날짜 주만 달았다.)*
+
 이 절은 같은 package/catalog 경계에 **공개 subpath `@libitums/ui-lynx/motion`** 과 패키지 안
 첫 **교차 컴포넌트 Context**(`MotionProvider` · `useMotion`)가 들어온 delta를 기록한다. 공개
 컴포넌트는 늘지 않는다 — 늘어난 것은 **컴포넌트들이 공유하는 값 하나**다. 정책 정본은
@@ -503,11 +506,14 @@ rotate · width · reveal). 새 토큰은 0이고 `@libitums/design-tokens` 0.3.
   `scale( {{--libitum-motion-scale-pressed}})`). 전환 조건: **Android에서도 풀리는 것을 같은 방법으로
   확인하면** 3단계(`scale.reward` keyframe이 새로 들어오는 작업)가 세 자리(Round Button · Learning Unit
   `:active`, Dialog enter/exit keyframe)를 `var()`로 바꾸고 unit 대조를 문자열 단언으로 교체한다.
-  Android에서 안 풀리면 리터럴 + unit 대조가 영구 방식이다. `lint:motion`은 scale 값을 보지 않는다 —
+  Android에서 안 풀리면 리터럴 + unit 대조가 영구 방식이다. `lint:motion`은 scale 값을 보지 않는다
+  *(2026-10-10 주: 4단계부터 본다 — `scale-literal` 규칙, [ADR-0053](0053-motion-policy.md) D1)* —
   재발 방지는 unit 대조가 진다(대조 목록 밖의 새 자리는 잡지 못한다). *(2026-10-09 주: iOS는 M2-I8로
   풀렸고 Android는 3단계의 M3-A8이 쟀다 — **풀림**(눌림 56 → 52 px, 리터럴과 같은 값), 문항 등장의
   `translateX(var())`도 x 오프셋이 보였다(M3-A3 (b)). 결과는 [`docs/e2e/motion-reward.md`](../e2e/motion-reward.md)
-  결과 표. 3단계는 전환하지 않고 리터럴을 유지했다 — 아래 「3단계」.)*
+  결과 표. 3단계는 전환하지 않고 리터럴을 유지했다 — 아래 「3단계」.)* *(2026-10-10 주: 4단계에서
+  전환했다 — 다섯 자리 `var(--libitum-motion-scale-…)`, 항등 `scale(1)`만 리터럴, unit은 문자열 단언 + 비항등
+  리터럴 0. keyframe 본문 `var()`는 iOS 탐색으로 풀림, Android는 e2e 회귀 행이 게이트 — ADR-0053 D6.)*
 - **Spinner는 `@keyframes ui-lynx-<component>-spin`(`rotate(0deg)` → `rotate(360deg)`)을 loading 선택자에
   `var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear) infinite`로 건다.** 정적 블록은
   byte 불변이다. 상단 투명(틈) 규칙은 variant 색 규칙(0,3,0)에 지지 않도록 같은 특이도로 **파일 끝**에
@@ -551,7 +557,9 @@ rotate · width · reveal). 새 토큰은 0이고 `@libitums/design-tokens` 0.3.
   있으면, 그리고 `@media`가 있으면 실패한다(`display: linear` · `linear-gradient()` · keyframe 본문은
   대상 밖). `pnpm lint`의 사슬 끝에 들어가고 `pnpm test`가 `test:motion-literals`를 부른다 — ci-wiring ·
   verify.yml 변경 0. allowlist(`allowlist.json`)의 유일한 항목은 episode-narrative 배경 연출(Content
-  예외 — 사유 문장이 allowlist 자체에 있다)이고, 없는 파일 · 위반 0인 항목은 실패다.
+  예외 — 사유 문장이 allowlist 자체에 있다)이고, 없는 파일 · 위반 0인 항목은 실패다. *(2026-10-10 주:
+  4단계부터 `transform`의 비항등 `scale*()` 리터럴(`scale-literal`)과 `.ts` · `.tsx` inline style의 모션
+  리터럴(객체 리터럴 속성의 문자열 값 · JSX `style="…"`)도 본다 — [ADR-0053](0053-motion-policy.md) D1.)*
 - **축 추적표 · 색인 행은 그대로다** — 같은 축의 적용 기록이고 새 결정이 아니다.
 
 #### 2026-10-09 3단계 — 보상 모션(통과 배지) · 문항 전환 등장 · custom 화면 전환 0 · 2단계 이월(R2 · `var()`)
@@ -659,7 +667,10 @@ RoundButton 막의 접근성 속성 한 줄 **삭제**뿐이다. 새 ADR 번호�
   사실을 이 소절에 적는다. 안 풀릴 때 `translateX(var())` 선언만 무효가 되어 이동 없는 fade로 조용히
   열화한다(불투명도 선언은 별도 줄) — 회귀가 아니다. **결과(2026-10-10 Android 회차)**: M3-A8 풀림(눌림 56 → 52 px, 리터럴과
   같은 값) · M3-A3 (b) x 오프셋 있음 — iOS(2단계 M2-I8)와 합쳐 두 플랫폼 모두 `transform` 안 `var()`를 푼다.
-  따라서 4단계 첫 묶음은 「전환」이다.
+  따라서 4단계 첫 묶음은 「전환」이다. *(2026-10-10 주: 전환했다 — Round Button · Learning Unit `:active`,
+  Dialog enter from · exit to, 배지 reward from의 다섯 자리. 일반 규칙과 달리 `@keyframes` 본문 안 `var()`는
+  기기 기록이 없어 구현 전 iOS 탐색으로 Dialog · 배지 둘 다 풀림을 봤고, Android는 4단계 e2e 회귀 행이
+  게이트다 — [ADR-0053](0053-motion-policy.md) D6.)*
 - **R2 — RoundButton 막의 `accessibility-elements-hidden`을 지웠다.** 막은 자손 · 라벨 없는 잎 `<view>`라
   세터(자손 가림)가 무동작이고, [ADR-0016](0016-assistive-technology-semantics.md) D5 「잎에는 붙이지 않는다.
   붙여도 아무 일도 하지 않는다」에 맞춰 Learning Unit의 같은 막과 모양을 맞췄다. D5 예외(D9 scrim)의
@@ -668,7 +679,9 @@ RoundButton 막의 접근성 속성 한 줄 **삭제**뿐이다. 새 ADR 번호�
   부착 한 줄이 사라져 D5의 「저장소에 남은 잎 부착 0건」 장부가 다시 맞는다. 자손이 `<svg>` · `<view>`뿐인
   래퍼 부착은 그 장부가 세지 않은 꼴이다 — 이 화면의 배지 래퍼(자손 `<svg>` 하나)는 PR 리뷰 지적으로 같은
   PR에서 지웠고(동작 차이 0, 단언 없음), Button spinner wrap · RoundButton loading · icon 래퍼는 4단계
-  첫 묶음 후보.
+  첫 묶음 후보. *(2026-10-10 주: 4단계가 그 셋과 Learning Unit의 잎 링 `<svg>` · surface · badge 셋을
+  지웠다 — [ADR-0053](0053-motion-policy.md) D7. 장부 문장의 「다시 맞는다」는 잎을 다 센 것이 아니었다 —
+  [ADR-0016](0016-assistive-technology-semantics.md) D5의 2026-10-10 주가 남은 12자리를 센다.)*
 - **번들**: main `+4,847 bytes`(1,397,447 → 1,402,294, 상한 1,412,000 안), ui-lynx dist `−71 bytes`(R2 한 줄).
   `budget.json` 변경 0.
 - **축 추적표 · 색인 행은 그대로다** — 같은 축의 적용 기록이고 새 결정이 아니다.

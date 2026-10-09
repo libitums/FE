@@ -26,6 +26,7 @@ export function useQuestionTransition(
   const previousKey = useRef(key);
 
   if (previousKey.current !== key) {
+    // oxlint-disable-next-line react/immutability -- ReactLynx useRef는 렌더 · effect에서 갱신하는 mutable ref입니다.
     previousKey.current = key;
     setPhase(questionTransitionReducer(phase, "change"));
   }

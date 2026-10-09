@@ -1,3 +1,6 @@
+import type { Motion } from "@libitums/ui-lynx/motion";
+import { normalizeStoryMotion } from "./story-motion";
+
 export type SettingsCellStoryArgs = {
   readonly variant: "navigation" | "toggle" | "group";
   readonly leading: "none" | "avatar";
@@ -7,6 +10,7 @@ export type SettingsCellStoryArgs = {
   readonly checked: boolean;
   readonly disabled: boolean;
   readonly focused: boolean;
+  readonly motion: Motion;
 };
 
 export function normalizeSettingsCellStoryArgs(input: unknown): SettingsCellStoryArgs {
@@ -20,5 +24,6 @@ export function normalizeSettingsCellStoryArgs(input: unknown): SettingsCellStor
     checked: args.checked === true,
     disabled: args.disabled === true,
     focused: args.focused === true,
+    motion: normalizeStoryMotion(args.motion),
   };
 }

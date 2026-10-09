@@ -45,8 +45,8 @@ describe("Button UI", () => {
     expect(button).toHaveAttribute("accessibility-enable-tap", "false");
   });
 
-  test("BU1. loading은 라벨을 숨긴 채 DOM에 두고 spinner만 보인다(폭 유지)", () => {
-    render(<Button label="저장" loading={true} />);
+  test("BU1. loading은 라벨을 숨긴 채 DOM에 두고 spinner만 보인다(폭 유지) · BU-E1 가림 속성 부재", () => {
+    const { container } = render(<Button label="저장" loading={true} />);
 
     const button = screen.getByTestId("ui-lynx-button");
     expect(button).toHaveAttribute("data-loading", "true");
@@ -58,7 +58,8 @@ describe("Button UI", () => {
     expect(spinner).toBeInTheDocument();
     const wrap = spinner.parentElement as Element;
     expect(wrap).toHaveClass("ui-lynx-button-spinner-wrap");
-    expect(wrap).toHaveAttribute("accessibility-elements-hidden", "true");
+    expect(wrap).not.toHaveAttribute("accessibility-elements-hidden");
+    expect(container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
     const surface = wrap.closest(".ui-lynx-button-surface") as Element;
     expect(logicalChildren(surface)[0]).toBe(wrap);
   });

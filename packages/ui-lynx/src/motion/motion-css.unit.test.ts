@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { motion, opacity } from "@libitums/design-tokens";
+import { opacity } from "@libitums/design-tokens";
 import { describe, expect, test } from "vitest";
 
 const srcDir = resolve(process.cwd(), "src");
@@ -81,9 +81,9 @@ describe("reduced motion css", () => {
     expect(readCss("tooltip/tooltip.css")).not.toContain("-motion-reduced");
   });
 
-  test("CS7. standard 선언은 그대로다", () => {
+  test("CS7′. standard 선언은 그대로다", () => {
     expect(readCss("round-button/round-button.css")).toMatch(
-      /\.ui-lynx-round-button:not\(\.ui-lynx-round-button-loading\):not\(\.ui-lynx-round-button-disabled\):active\s+\.ui-lynx-round-button-surface\s*\{[^}]*transform:\s*scale\(0\.95\)/,
+      /\.ui-lynx-round-button:not\(\.ui-lynx-round-button-loading\):not\(\.ui-lynx-round-button-disabled\):active\s+\.ui-lynx-round-button-surface\s*\{[^}]*transform:\s*scale\(var\(--libitum-motion-scale-pressed\)\)/,
     );
     const item = ruleBody(
       readCss("page-indicator/page-indicator.css"),
@@ -99,42 +99,44 @@ describe("reduced motion css", () => {
 });
 
 describe("scale tokens", () => {
-  const scaleOf = (body: string): number =>
-    Number(/scale\(([\d.]+)\)/.exec(body)?.[1] ?? Number.NaN);
+  const pressed = /transform:\s*scale\(var\(--libitum-motion-scale-pressed\)\)/;
+  const enter = /transform:\s*scale\(var\(--libitum-motion-scale-enter\)\)/;
 
-  test("SC1. RoundButton 눌림 scale은 motion.scale.pressed다", () => {
+  /** 1이 아닌 `scale(<숫자>)` 리터럴 — 항등값(원상태)은 대상이 아닙니다. */
+  const nonIdentity = (css: string): string[] =>
+    (css.match(/scale\(\s*[\d.]+\s*\)/g) ?? []).filter(
+      (literal) => Number(/([\d.]+)/.exec(literal)?.[1] ?? Number.NaN) !== 1,
+    );
+
+  test("SC1′. RoundButton 눌림 scale은 pressed 토큰 변수다", () => {
     const body = ruleBody(
       readCss("round-button/round-button.css"),
       /\.ui-lynx-round-button:not\(\.ui-lynx-round-button-loading\):not\(\.ui-lynx-round-button-disabled\):active\s+\.ui-lynx-round-button-surface/,
     );
-    expect(scaleOf(body)).toBe(motion.scale.pressed);
+    expect(body).toMatch(pressed);
   });
 
-  test("SC2. Dialog 등장 · 퇴장 scale은 motion.scale.enter다", () => {
+  test("SC2′. Dialog 등장 from · 퇴장 to scale은 enter 토큰 변수다", () => {
     const css = readCss("dialog/dialog.css");
     const keyframe = (name: string, edge: "from" | "to"): string =>
       new RegExp(`@keyframes ${name}\\s*\\{[\\s\\S]*?${edge}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ??
       "";
-    expect(scaleOf(keyframe("ui-lynx-dialog-container-enter", "from"))).toBe(motion.scale.enter);
-    expect(scaleOf(keyframe("ui-lynx-dialog-container-exit", "to"))).toBe(motion.scale.enter);
+    expect(keyframe("ui-lynx-dialog-container-enter", "from")).toMatch(enter);
+    expect(keyframe("ui-lynx-dialog-container-exit", "to")).toMatch(enter);
   });
 
-  test("SC3. LearningUnit 눌림 scale은 motion.scale.pressed다", () => {
+  test("SC3′. LearningUnit 눌림 scale은 pressed 토큰 변수다", () => {
     const body = ruleBody(
       readCss("learning-unit/learning-unit.css"),
       /\.ui-lynx-learning-unit:not\(\.ui-lynx-learning-unit-default\):active\s+\.ui-lynx-learning-unit-visual/,
     );
-    expect(scaleOf(body)).toBe(motion.scale.pressed);
+    expect(body).toMatch(pressed);
   });
 
-  test("SC4. 대조 목록 밖에 새 scale 리터럴이 없다", () => {
-    // `scale(1)`은 원상태라 대조 대상이 아니다(Dialog keyframes의 반대쪽 끝). 1이 아닌 리터럴만 센다.
-    const count = (file: string): number =>
-      (readCss(file).match(/scale\(([\d.]+)\)/g) ?? []).filter((literal) => literal !== "scale(1)")
-        .length;
-    expect(count("round-button/round-button.css")).toBe(1);
-    expect(count("learning-unit/learning-unit.css")).toBe(1);
-    expect(count("dialog/dialog.css")).toBe(2);
+  test("SC4′. 세 파일에 비항등 scale 리터럴이 없다", () => {
+    expect(nonIdentity(readCss("round-button/round-button.css"))).toEqual([]);
+    expect(nonIdentity(readCss("learning-unit/learning-unit.css"))).toEqual([]);
+    expect(nonIdentity(readCss("dialog/dialog.css"))).toEqual([]);
   });
 });
 

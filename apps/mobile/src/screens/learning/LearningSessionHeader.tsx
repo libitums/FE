@@ -4,7 +4,9 @@ import { Card } from "@libitums/ui-lynx/card";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
-import { learningSessionHeader } from "./learning-shell.contract";
+import { useMotion } from "@libitums/ui-lynx/motion";
+
+import { learningProgressFillClassName, learningSessionHeader } from "./learning-shell.contract";
 import type { LearningForm } from "../../lib/learning-form";
 import { useUiCopy } from "../../lib/ui-copy";
 
@@ -33,6 +35,7 @@ export function LearningSessionHeader({
   onExit,
 }: LearningSessionHeaderProps): ReactNode {
   const copy = useUiCopy();
+  const motion = useMotion();
   const header = learningSessionHeader(form, questionIndex, questionCount, copy);
 
   const handleExit = () => {
@@ -82,8 +85,9 @@ export function LearningSessionHeader({
                   「조금 했다」로 읽힙니다. */}
               {header.fillPercent === 0 ? null : (
                 <view
-                  className="learning-shell-progress-fill"
+                  className={learningProgressFillClassName(motion)}
                   data-testid="learning-shell-progress-fill"
+                  {...(motion === "reduced" ? { "data-motion": "reduced" } : {})}
                   style={{ width: `${String(header.fillPercent)}%` }}
                 />
               )}

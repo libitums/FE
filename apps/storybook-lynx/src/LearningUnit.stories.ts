@@ -24,6 +24,7 @@ const meta = {
     icon: { control: "inline-radio", options: ["headset", "audio-waves"] },
     focused: { control: "boolean" },
     showAllStates: { control: "boolean" },
+    motion: { control: "inline-radio", options: ["standard", "reduced"] },
     onTap: { control: false },
   },
   args: {
@@ -33,6 +34,7 @@ const meta = {
     icon: "headset",
     focused: false,
     showAllStates: false,
+    motion: "standard",
     onTap: fn(),
   },
 } satisfies Meta<LearningUnitStoryArgs>;
@@ -47,3 +49,4 @@ export const Clear: Story = { args: { status: "clear" } };
 export const Narrative: Story = { args: { narrative: "narrative" } };
 export const Focused: Story = { args: { focused: true } };
 export const AllStates: Story = { args: { showAllStates: true } };
+export const ReducedMotion: Story = { args: { motion: "reduced" } };

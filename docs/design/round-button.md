@@ -125,10 +125,12 @@ opacity를 전파하지 않는다.
 - Spinner는 0.4.0부터 회전한다(§4.4 「회전」). 0.3.0까지는 원본이 회전을 요구하지 않아 정적인
   Spinner였고, 주기 · easing을 FE가 발명하지 않았다 — 값은 전부 `motion.duration.spinner` ·
   `motion.easing.linear` 토큰에서 온다.
-- Pressed의 `scale(0.95)`는 CSS 리터럴로 두고 unit 테스트가 `motion.scale.pressed`(0.4.0, 0.95)와
-  숫자로 대조한다. `transform` 함수 인자 안의 `var()`는 Lynx 문서에 없어 안전한 쪽을 택했고, iOS
-  시뮬레이터 탐색(M2-I8)에서는 `scale(var(--libitum-motion-scale-pressed))`가 풀렸다 — `var()`
-  전환 조건은 [ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-10-09 2단계」.
+- Pressed는 `scale(var(--libitum-motion-scale-pressed))`다 — 2026-10-10 전환. 2 · 3단계는 `scale(0.95)`
+  리터럴을 두고 unit 테스트가 `motion.scale.pressed`(0.4.0, 0.95)와 숫자로 대조했다(`transform` 함수
+  인자 안의 `var()`가 Lynx 문서에 없어 안전한 쪽). 두 플랫폼 확인(iOS M2-I8 · Android M3-A8 — 둘 다
+  눌림 95 %) 뒤 토큰 변수로 바꿨고 unit은 문자열 단언 + 비항등 scale 리터럴 0을 센다 —
+  [ADR-0053](../adr/0053-motion-policy.md) D6, 전환 조건의 기록은
+  [ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-10-09 2단계」.
 
 ### Reduced motion
 
@@ -201,7 +203,7 @@ Focused는 별도 state가 아니라 Default·Pressed·Loading 위에 결합되�
 | asset | padding icon variant; Loading에서는 Spinner로 교체 |
 | icon color | TS token → `current-color` (ADR-0014의 유일한 CSS 예외) |
 | other visuals | `@libitums/design-tokens`가 내보내는 `--libitum-*` CSS 변수만 |
-| motion | pressed=d3/기본 easing, `scale(0.95)` 리터럴은 unit이 `motion.scale.pressed`와 대조; Spinner는 `duration.spinner` · `easing.linear` infinite 회전(reduced에서도); reduced motion에서는 pressed 확대/축소 제거 + `opacity.pressed-shade` 막(Overlay 제외) |
+| motion | pressed=d3/기본 easing, 축소는 `scale(var(--libitum-motion-scale-pressed))`(unit이 문자열 단언 — 2026-10-10까지는 `scale(0.95)` 리터럴을 토큰과 대조했다); Spinner는 `duration.spinner` · `easing.linear` infinite 회전(reduced에서도); reduced motion에서는 pressed 확대/축소 제거 + `opacity.pressed-shade` 막(Overlay 제외) |
 
 ## 8. Design-system gap과 blocker 판정
 

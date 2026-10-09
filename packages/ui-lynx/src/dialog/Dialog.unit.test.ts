@@ -141,7 +141,7 @@ describe("Dialog contract", () => {
     expect(styles).toContain("var(--libitum-motion-duration-dialog)");
     expect(styles).toMatch(/\.ui-lynx-dialog \.ui-lynx-overlay\s*\{[^}]*z-index:\s*0/s);
     expect(styles).not.toContain(".ui-lynx-dialog > .ui-lynx-overlay");
-    expect(styles).toContain("transform: scale(0.96)");
+    expect(styles).toContain("transform: scale(var(--libitum-motion-scale-enter))");
     expect(styles).toContain("ui-lynx-dialog-container-exit");
     expect(styles).toContain("var(--libitum-motion-easing-exit)");
   });

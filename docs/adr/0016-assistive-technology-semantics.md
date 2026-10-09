@@ -287,6 +287,22 @@ Major 5건 · Minor 3건을 냈다. 원인은 계약 위반이 아니라 **요�
 > 지워 이 문장이 다시 맞는다 — [ADR-0025](0025-ui-lynx-package-and-storybook-catalog.md)
 > 「2026-10-09 3단계」 R2. 이 수는 잎만 센 것이라 자손이 `<svg>` · `<view>`뿐인 래퍼 부착은
 > 들어 있지 않다 — 그중 학습 완료 배지 래퍼는 같은 PR에서 지웠다.)*
+> *(2026-10-10 주 — 4단계: 잎 `<svg>` 한 자리(`LearningUnit.tsx` 링 윤곽 — 위 2026-10-09 주의 「잎만
+> 센 것」에도 들지 않던 잎)와 자손이 `<svg>` · `<view>`뿐인 래퍼 다섯(`Button.tsx` spinner-wrap ·
+> `RoundButton.tsx` loading · icon · `LearningUnit.tsx` surface · badge)을 지웠다 —
+> [ADR-0053](0053-motion-policy.md) D7. **「0건」을 다시 쓰지 않는다.** 같은 날 제품 `.tsx`
+> (`packages/ui-lynx/src` · `apps/mobile/src`, 테스트 제외) 전수 스캔으로 self-closing 잎 부착이
+> **12자리 더 남아 있음**을 확인했다 — ⓐ D9 hit-testing 꼴 다섯(자기 주석 · `accessibility-element={false}` ·
+> `event-through` · `bindtap` 가운데 하나가 있다): `BottomSheet.tsx:62`(scrim) · `Fog.tsx:15` ·
+> `VisualNovelScreen.tsx:99`(shade) · `VisualNovelDialog.tsx:56`(surface) · `Tooltip.tsx:58`(arrow) —
+> 예외 등록 후보. ⓑ 사유 없는 무동작 잎 여섯: `ProfileScreen.tsx:60`(divider) · `SettingsCell.tsx:124`(group
+> divider) · `CallControls.tsx:75` · `:129`(빈 자리) · `Avatar.tsx:72`(placeholder `<svg>`) · `Avatar.tsx:54`(`<image>` —
+> `<image>`는 `LynxUIImage.mm` 1964행 기본 **YES**라 이 속성이 이미지 자신을 가리지 못하고, 실제로 가리는 것은
+> 루트의 래퍼 가림이다) — 5단계 삭제 후보. ⓒ 조작 단위 잎 하나: `EpisodeNarrativeScreen.tsx:158`(넘기기 층 —
+> `accessibility-element={true}` + button인 잎에 `accessibility-elements-hidden={guide.visible}`을 걸어 자기
+> 자신을 가리지 못한다; 가림이 아니라 요소 여부를 꺼야 한다) — 별도 지적, 5단계 또는 즉시 소형 PR.
+> **이 문장의 「0건」은 2026-09-05 시점 축의 수이고 2026-10-09 주의 「다시 맞는다」도 그 축에서 읽는다.**
+> 재집계 · 예외 등록 · 삭제는 5단계이고, 장부는 이 한 곳에만 둔다 — ADR-0053은 수를 되풀이하지 않는다.)*
 >
 > **넘긴 경고가 통했다 — 단언이 함께 뒤집혔다.** 이 줄은 원래 *"LIB-237이 자기 다섯
 > 자리를 걷을 때 매번 단언을 함께 뒤집었다 — 거기서도 같은 일이 필요하다"* 로 넘겼다.

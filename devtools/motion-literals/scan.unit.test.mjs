@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { mediaQueriesIn, motionDeclarationsIn, stripComments } from "./scan.mjs";
+import {
+  mediaQueriesIn,
+  motionDeclarationsIn,
+  stripComments,
+  transformDeclarationsIn,
+} from "./scan.mjs";
 
 const newlines = (text) => text.split("\n").length - 1;
 
@@ -46,4 +51,21 @@ test("SN4. @media는 줄 번호와 함께 잡고 주석 안은 잡지 않는다"
     ".b { color: red; }\n@media (prefers-reduced-motion: reduce) { .a { transition: none } }";
   assert.deepEqual(mediaQueriesIn(css), [{ line: 2 }]);
   assert.deepEqual(mediaQueriesIn("/* @media (x) { } */ .a { color: red; }"), []);
+});
+
+test("SN5. transformDeclarationsIn은 keyframe 안과 여러 줄 transform을 줄 번호와 함께 잡는다", () => {
+  const css =
+    ".a { transform: scale(0.95) translateX(1px); }\n@keyframes k { from { transform:\n scale(0.8); } }";
+  const found = transformDeclarationsIn(css);
+  assert.equal(found.length, 2);
+  assert.deepEqual(
+    found.map(({ property }) => property),
+    ["transform", "transform"],
+  );
+  assert.deepEqual(
+    found.map(({ line }) => line),
+    [1, 2],
+  );
+  assert.match(found[0].value, /scale\(0\.95\)/);
+  assert.match(found[1].value, /scale\(0\.8\)/);
 });

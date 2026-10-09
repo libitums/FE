@@ -187,7 +187,7 @@ describe("round-button.css", () => {
 
   test("Pressed는 surface만 95%로 줄이고 loading/disabled에는 적용하지 않는다", () => {
     expect(styles).toMatch(
-      /\.ui-lynx-round-button:not\(\.ui-lynx-round-button-loading\):not\(\.ui-lynx-round-button-disabled\):active\s+\.ui-lynx-round-button-surface\s*\{[^}]*transform:\s*scale\(0\.95\)/,
+      /\.ui-lynx-round-button:not\(\.ui-lynx-round-button-loading\):not\(\.ui-lynx-round-button-disabled\):active\s+\.ui-lynx-round-button-surface\s*\{[^}]*transform:\s*scale\(var\(--libitum-motion-scale-pressed\)\)/,
     );
   });
 
