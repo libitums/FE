@@ -1,5 +1,6 @@
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 
 import { LessonCompleteScreen } from "./LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "./lesson-complete";
@@ -361,4 +362,83 @@ test("[LA9-M] 문구표를 주입하고 미통과면 나가기 버튼의 이름�
     .getByTestId("lesson-complete-screen-exit")
     .querySelector('[data-testid="ui-lynx-button"]');
   expect(button).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
+});
+
+// ---------------------------------------------------------------- 보상 배지 (3단계)
+//
+// 통과 배지만 성취 모션을 건다 — standard는 `expressive`(scale + 불투명도), reduced는
+// `fade`(불투명도만). 속성과 클래스가 모션의 유일한 프로브입니다(곡선 · 첫 프레임은 e2e).
+
+const BADGE = "lesson-complete-screen-badge";
+const BADGE_SELECTOR = `.${BADGE}`;
+
+describe("보상 배지 모션 (3단계 LCR)", () => {
+  test("[LCR1] 통과 · Provider 없음 → data-reward=expressive, 클래스 정확히 base + -motion-reward", () => {
+    const { container } = render(<LessonCompleteScreen {...fixture()} />);
+
+    const badge = container.querySelector(BADGE_SELECTOR);
+    expect(badge).not.toBeNull();
+    expect(badge).toHaveAttribute("data-reward", "expressive");
+    expect(badge?.getAttribute("class")).toBe(`${BADGE} ${BADGE}-motion-reward`);
+    expect(badge).toHaveAttribute("data-verdict", "passed");
+  });
+
+  test("[LCR2] 통과 · reduced Provider → data-reward=fade, 클래스 -motion-fade(-motion-reward 없음)", () => {
+    const { container } = render(
+      <MotionProvider motion="reduced">
+        <LessonCompleteScreen {...fixture()} />
+      </MotionProvider>,
+    );
+
+    const badge = container.querySelector(BADGE_SELECTOR);
+    expect(badge).not.toBeNull();
+    expect(badge).toHaveAttribute("data-reward", "fade");
+    expect(badge?.getAttribute("class")).toBe(`${BADGE} ${BADGE}-motion-fade`);
+    expect(badge?.getAttribute("class")).not.toContain("-motion-reward");
+    expect(badge).toHaveAttribute("data-verdict", "passed");
+  });
+
+  test.each([
+    ["Provider 없음", false],
+    ["reduced Provider", true],
+  ] as const)("[LCR3] 미통과 · %s → data-reward 없음, 클래스는 지금과 동일", (_name, reduced) => {
+    const screenElement = <LessonCompleteScreen {...fixture({ verdict: "failed" })} />;
+    const { container } = render(
+      reduced ? <MotionProvider motion="reduced">{screenElement}</MotionProvider> : screenElement,
+    );
+
+    const badge = container.querySelector(BADGE_SELECTOR);
+    expect(badge).not.toBeNull();
+    expect(badge).not.toHaveAttribute("data-reward");
+    expect(badge?.getAttribute("class")).toBe(`${BADGE} ${BADGE}-failed`);
+    expect(badge).toHaveAttribute("data-verdict", "failed");
+  });
+
+  test("[LCR4] 통과 · 재렌더(streakDays 1→3 · trophyCount 0→2)에도 같은 노드 · 같은 속성 · 같은 클래스", () => {
+    const { container, rerender } = render(<LessonCompleteScreen {...fixture()} />);
+    const before = container.querySelector(BADGE_SELECTOR);
+    expect(before).toHaveAttribute("data-reward", "expressive");
+    const classBefore = before?.getAttribute("class");
+    expect(classBefore).toBe(`${BADGE} ${BADGE}-motion-reward`);
+
+    rerender(<LessonCompleteScreen {...fixture({ streakDays: 3, trophyCount: 2 })} />);
+
+    const after = container.querySelector(BADGE_SELECTOR);
+    expect(after).toBe(before);
+    expect(after).toHaveAttribute("data-reward", "expressive");
+    expect(after?.getAttribute("class")).toBe(classBefore);
+  });
+
+  test("[LCR5] 통과 · 보상 카드 둘에는 data-reward도 모션 클래스도 없다(두 번째 expressive 없음)", () => {
+    render(<LessonCompleteScreen {...fixture()} />);
+
+    for (const id of [
+      "lesson-complete-screen-reward-diamond",
+      "lesson-complete-screen-reward-grade",
+    ]) {
+      const card = screen.getByTestId(id);
+      expect(card).not.toHaveAttribute("data-reward");
+      expect(card.getAttribute("class") ?? "").not.toContain("motion");
+    }
+  });
 });

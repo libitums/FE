@@ -1,5 +1,6 @@
-import { expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 
 import { LearningShell } from "./LearningShell";
 import { UiCopyContext } from "../../lib/ui-copy";
@@ -438,4 +439,234 @@ test("완료 화면은 추가 문항 없이 100%를 유지하고 지시문을 �
   expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 3 / 3");
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute("data-progress", "100");
   expect(screen.queryByTestId("learning-shell-instruction")).not.toBeInTheDocument();
+});
+
+// ---------------------------------------------------------------- 문항 전환 (3단계 LST)
+//
+// 무대와 작업 영역만 `data-page`(primed → entering → idle)를 달고 클래스가 따라옵니다.
+// 곡선 · 실제 불투명도 · 두 커밋 사이 프레임은 e2e입니다. 시간은 fake timers로 밀고,
+// 상태 갱신은 act 안에서 밀어 렌더에 반영합니다.
+
+const STAGE = "learning-shell-stage";
+const SCROLL = "learning-shell-scroll";
+
+function shellElement(overrides: Partial<Parameters<typeof LearningShell>[0]>, reduced: boolean) {
+  const shell = (
+    <LearningShell
+      form="listening"
+      questionIndex={1}
+      questionCount={4}
+      instruction="대화를 완성하세요"
+      onExit={() => {}}
+      card={<text data-testid="fixture-card">카드 안</text>}
+      actionLabel="Check"
+      onAction={() => {}}
+      {...overrides}
+    />
+  );
+  return reduced ? <MotionProvider motion="reduced">{shell}</MotionProvider> : shell;
+}
+
+function renderTransition(
+  overrides: Partial<Parameters<typeof LearningShell>[0]> = {},
+  reduced = false,
+) {
+  const view = render(shellElement(overrides, reduced));
+  return {
+    ...view,
+    update: (next: Partial<Parameters<typeof LearningShell>[0]>) =>
+      view.rerender(shellElement({ ...overrides, ...next }, reduced)),
+  };
+}
+
+function advanceBy(ms: number) {
+  act(() => {
+    vi.advanceTimersByTime(ms);
+  });
+}
+
+function pageOf(testId: string): string | null {
+  return screen.getByTestId(testId).getAttribute("data-page");
+}
+
+// idle 복귀는 **클래스**로 판정한다. 테스트 렌더러는 한 번 쓴 `data-*`를 속성이 사라지는
+// 재렌더(값 undefined)에서 지우지 않아 `not.toHaveAttribute("data-page")`가 관찰되지
+// 않는다(진입 쪽 갱신 · 값 변경은 반영됨). 속성 부재는 기기 e2e가 본다. 클래스는 idle에서
+// base로 정확히 돌아온다.
+function expectIdle(testId: string, base: string) {
+  expect(screen.getByTestId(testId).getAttribute("class")).toBe(base);
+}
+
+const workspace = <text data-testid="fixture-workspace">낱말</text>;
+
+describe("문항 전환 (3단계 LST)", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test("[LST0] 첫 문항 마운트는 전환하지 않는다 — 무대 · 작업 영역에 data-page · data-motion 없음, 클래스 base", () => {
+    vi.useFakeTimers();
+    renderTransition({ questionIndex: 0, workspace });
+
+    for (const [id, base] of [
+      [STAGE, "learning-shell-stage"],
+      [SCROLL, "learning-shell-scroll"],
+    ] as const) {
+      const element = screen.getByTestId(id);
+      expect(element).not.toHaveAttribute("data-page");
+      expect(element).not.toHaveAttribute("data-motion");
+      expect(element.getAttribute("class")).toBe(base);
+    }
+  });
+
+  test("[LST1] 문항 0 → 1: primed → (tick) entering → 300ms 뒤 idle, 무대 · 작업 영역 같은 걸음", () => {
+    vi.useFakeTimers();
+    const view = renderTransition({ questionIndex: 0, workspace });
+
+    view.update({ questionIndex: 1 });
+    expect(pageOf(STAGE)).toBe("primed");
+    expect(pageOf(SCROLL)).toBe("primed");
+    expect(screen.getByTestId(STAGE).getAttribute("class")).toBe(
+      "learning-shell-stage learning-shell-stage-page-primed",
+    );
+    expect(screen.getByTestId(SCROLL).getAttribute("class")).toBe(
+      "learning-shell-scroll learning-shell-scroll-page-primed",
+    );
+
+    advanceBy(0);
+    expect(pageOf(STAGE)).toBe("entering");
+    expect(pageOf(SCROLL)).toBe("entering");
+    expect(screen.getByTestId(STAGE).getAttribute("class")).toBe(
+      "learning-shell-stage learning-shell-stage-page-entering",
+    );
+
+    advanceBy(299);
+    expect(pageOf(STAGE)).toBe("entering");
+    expect(pageOf(SCROLL)).toBe("entering");
+
+    advanceBy(1);
+    expectIdle(STAGE, "learning-shell-stage");
+    expectIdle(SCROLL, "learning-shell-scroll");
+  });
+
+  test("[LST2] 같은 문항 순번에서 complete false → true(완료 장면)도 전환이 선다", () => {
+    vi.useFakeTimers();
+    const view = renderTransition({ questionIndex: 2, questionCount: 3, complete: false });
+    advanceBy(0);
+    advanceBy(300);
+    expectIdle(STAGE, "learning-shell-stage");
+
+    view.update({ complete: true });
+    expect(pageOf(STAGE)).toBe("primed");
+
+    advanceBy(0);
+    expect(pageOf(STAGE)).toBe("entering");
+  });
+
+  test("[LST3] 0이 아닌 순번으로 마운트(Writing 재마운트 꼴)하면 처음부터 primed → entering → idle", () => {
+    vi.useFakeTimers();
+    renderTransition({ questionIndex: 2, workspace });
+
+    expect(pageOf(STAGE)).toBe("primed");
+
+    advanceBy(0);
+    expect(pageOf(STAGE)).toBe("entering");
+
+    advanceBy(300);
+    expectIdle(STAGE, "learning-shell-stage");
+  });
+
+  test("[LST4] reduced: data-page와 data-motion=reduced, 클래스에 -motion-reduced, 100ms 뒤 둘 다 없음", () => {
+    vi.useFakeTimers();
+    const view = renderTransition({ questionIndex: 0 }, true);
+
+    view.update({ questionIndex: 1 });
+    const stage = screen.getByTestId(STAGE);
+    expect(stage).toHaveAttribute("data-page", "primed");
+    expect(stage).toHaveAttribute("data-motion", "reduced");
+    expect(stage.getAttribute("class")).toContain("learning-shell-stage-motion-reduced");
+
+    advanceBy(0);
+    expect(pageOf(STAGE)).toBe("entering");
+    expect(screen.getByTestId(STAGE)).toHaveAttribute("data-motion", "reduced");
+
+    advanceBy(99);
+    expect(pageOf(STAGE)).toBe("entering");
+
+    advanceBy(1);
+    expectIdle(STAGE, "learning-shell-stage");
+  });
+
+  // 지금은 가드 — 늘 idle인 스텁에서도 「entering 유지」는 공허하게 green이었다. 상태 기계의
+  // entering+change 전이를 primed로 바꾸는 변이에서 red가 된다.
+  test("[LST5] entering 중 다시 문항이 바뀌어도 primed로 되돌지 않고 결국 idle로 끝난다", () => {
+    vi.useFakeTimers();
+    const view = renderTransition({ questionIndex: 0 });
+
+    view.update({ questionIndex: 1 });
+    advanceBy(0);
+    advanceBy(100);
+    expect(pageOf(STAGE)).toBe("entering");
+
+    view.update({ questionIndex: 2 });
+    expect(pageOf(STAGE)).toBe("entering");
+
+    advanceBy(300);
+    expectIdle(STAGE, "learning-shell-stage");
+  });
+
+  test("[LST6] 전환 중(entering)에도 넘김 층 tap은 run을 한 번만 부른다", () => {
+    vi.useFakeTimers();
+    const run = vi.fn<() => void>();
+    const advance = { label: "다음으로", run, delayMs: 2500 };
+    const view = renderTransition({ questionIndex: 0, advance });
+
+    view.update({ questionIndex: 1 });
+    advanceBy(0);
+    expect(pageOf(STAGE)).toBe("entering");
+
+    const layer = screen.getByTestId("learning-shell-advance");
+    fireEvent.tap(layer, {});
+    fireEvent.tap(layer, {});
+
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  test("[LST7] 전환 중에도 세션 헤더 · 지시문 · 액션 · 넘김 층 · 루트에는 data-page가 없다", () => {
+    vi.useFakeTimers();
+    const advance = { label: "다음으로", run: () => {}, delayMs: 2500 };
+    const view = renderTransition({ questionIndex: 0, advance, workspace });
+
+    view.update({ questionIndex: 1 });
+    expect(pageOf(STAGE)).toBe("primed");
+    for (const phase of ["primed", "entering"]) {
+      for (const id of [
+        "learning-shell-session",
+        "learning-shell-instruction",
+        "learning-shell-action",
+        "learning-shell-advance",
+        "learning-shell",
+      ]) {
+        expect(screen.getByTestId(id), `${phase} ${id}`).not.toHaveAttribute("data-page");
+      }
+      advanceBy(0);
+      expect(pageOf(STAGE)).toBe("entering");
+    }
+  });
+
+  test("[LST8] scrollCard: scroll-view에만 전환이 걸리고 안쪽 무대에는 걸리지 않는다", () => {
+    vi.useFakeTimers();
+    const view = renderTransition({ questionIndex: 0, scrollCard: true, workspace });
+
+    view.update({ questionIndex: 1 });
+
+    const scroll = screen.getByTestId(SCROLL);
+    expect(scroll).toHaveAttribute("data-page", "primed");
+    expect(scroll.getAttribute("class")).toBe(
+      "learning-shell-scroll learning-shell-card-scroll learning-shell-scroll-page-primed",
+    );
+    const stage = screen.getByTestId(STAGE);
+    expect(stage).not.toHaveAttribute("data-page");
+    expect(stage.getAttribute("class")).toBe("learning-shell-stage");
+  });
 });

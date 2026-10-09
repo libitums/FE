@@ -30,7 +30,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-async function boot(host: HostProps): Promise<void> {
+async function boot(host: HostProps, unitId = "ordering"): Promise<void> {
   setGlobalProps(host);
   vi.stubGlobal("NativeModules", {
     SystemBackModule: {
@@ -39,7 +39,7 @@ async function boot(host: HostProps): Promise<void> {
     },
   });
   await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+    <App journeySeed={journeySeedBefore(unitId)} completedEpisodeIntroIds={completedIntros} />,
   );
 }
 
@@ -98,6 +98,48 @@ test("[IM3] reducedMotion: true가 iOS inset을 건드리지 않는다", async (
   tap("top-bar-notifications");
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("app-shell").style.paddingBottom).toBe("34px");
+});
+
+// 듣기 유닛을 보기 tap(정답) → 넘김 층 tap까지 몰고 간 뒤, 무대의 전환 속성과 완료 배지를 봅니다
+// (motion-tokens-stage3 IT2 · IT3). 같은 `MotionProvider` Context가 앱 훅 `useQuestionTransition`과
+// LessonCompleteScreen까지 한 줄로 이어지는지가 경계입니다.
+async function playListeningUnit(host: HostProps): Promise<void> {
+  await boot(host, "tutorial-listening");
+  tap("ui-lynx-learning-unit-tutorial-listening");
+  tap("step-sheet-start");
+  tap("listening-choice-0");
+  tap("learning-shell-advance");
+}
+
+function rewardBadge(): Element {
+  const found = document.querySelector(".lesson-complete-screen-badge");
+  if (found === null) throw new Error("lesson-complete badge not found");
+  return found;
+}
+
+test("[IT2] reducedMotion: true면 문항 전환 무대는 reduced이고 통과 배지는 fade다", async () => {
+  await playListeningUnit({ safeAreaInsets: iosInsets, reducedMotion: true });
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(stage.getAttribute("data-page")).toBe("primed");
+  expect(stage.getAttribute("data-motion")).toBe("reduced");
+
+  tap("learning-shell-action");
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+  expect(rewardBadge().getAttribute("data-reward")).toBe("fade");
+});
+
+test("[IT3] reducedMotion이 없으면 무대에 data-motion이 없고 배지는 expressive이며 Back to map은 즉시 맵을 연다", async () => {
+  await playListeningUnit({ safeAreaInsets: iosInsets });
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(stage.getAttribute("data-page")).toBe("primed");
+  expect(stage.hasAttribute("data-motion")).toBe(false);
+
+  tap("learning-shell-action");
+  expect(rewardBadge().getAttribute("data-reward")).toBe("expressive");
+
+  const exit = screen.getByTestId("lesson-complete-screen-exit");
+  fireEvent.tap(exit.querySelector('[data-testid="ui-lynx-button"]')!, {});
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
 // IM4(실행 중 true → false 갱신)는 쓰지 않습니다 — 해당 없음. 이 하네스는 호스트의 globalProps 갱신

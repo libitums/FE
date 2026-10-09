@@ -154,7 +154,7 @@ dev에서만 더하므로, 정적 서버가 서빙하는 `apps/mobile/dist`에 �
 
 - **조작**: **버리는 워크트리**에서 `packages/ui-lynx/src/round-button/round-button.css`의 눌림 `scale(0.95)`(`:active .surface` 규칙, 116행 부근)를 `scale(var(--libitum-motion-scale-pressed))`로 바꿔 번들만 새로
   만들고 M2-I1 조작을 한다. 이 워크트리의 변경은 커밋하지 않고, 확인이 끝나면 워크트리와 번들을 버린다.
-- **기록**: 아래 셋 가운데 **하나**를 결과 표에 적는다. 통과/실패가 아니다 — 3단계의 입력이다.
+- **기록**: 아래 셋 가운데 **하나**를 결과 표에 적는다. 통과/실패가 아니다 — 3단계의 입력이다. Android 쪽은 [보상 · 문항 전환 e2e](motion-reward.md)의 **M3-A8**이 같은 방법으로 잰다.
   - 「풀림(95 %)」 — 눌림이 M2-I1과 같이 95 %다.
   - 「안 풀림(100 %)」 — 눌림이 있지만 축소가 없다.
   - 「무효(눌림 없음)」 — 눌림 자체가 보이지 않는다(선언이 통째로 무효).
@@ -224,7 +224,8 @@ iOS는 e2e-red 회차가, Android는 e2e-green 회차가 돌았다. 둘 다 **�
   가정 A5 **성립**(호스트 소스 수정 없음). `apps/mobile/dist`에는 `playground.lynx.bundle`이 없어 정적 서버 길(2)은 막혀 있다. 한계: dev 번들은 `ui-lynx`를 dist 대신 src
   alias로 읽어 main 번들과 같은 산출물이 아니다(같은 HEAD 소스).
 - **M2-I8 탐색의 결과는 「풀림(95 %)」** — iOS Lynx는 `transform: scale(var())`를 푼다(번들 안에 `scale( {{--libitum-motion-scale-pressed}})`가 있음을 확인했고
-  눌림이 165 → 157 px로 M2-I1과 같다). Android는 탐색하지 않았다. 3단계의 전환 조건은 [ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-10-09 2단계」.
+  눌림이 165 → 157 px로 M2-I1과 같다). Android는 탐색하지 않았다 — 3단계가 [보상 · 문항 전환 e2e](motion-reward.md) **M3-A8**로 잰다(결과는 그 문서의 결과 표). 전환 조건과
+  결과 처리는 [ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-10-09 2단계」 · 「3단계」.
 - **Android (ii) 「Remove animations」(세 배율 0)에서도 spinner가 돌았다** — 이 에뮬레이터에서 배율 0은 CSS keyframe 회전을 멈추지 않는다(1단계 M-A4가 페이드 중간 프레임을 본 것과
   같은 방향). 막의 150 ms 전환도 (ii)에서 정착값으로 보였다.
 
@@ -241,7 +242,7 @@ iOS는 e2e-red 회차가, Android는 e2e-green 회차가 돌았다. 둘 다 **�
 | M2-I5 | iOS 시뮬레이터 | 통과 | 켠: 지름 불변(active 213 = 213, available 213 = 213, neutral 165 = 165, clear 눌린 색 bbox 213). 색(±2): clear `#35A66F` → `#319966`, active `#F46B18` → `#E16316`(기대 `#E06216`), available `#FFF0E6` → `#EBDDD4`, neutral `#F7F8F9` → `#E4E5E5`(기대 `#E3E4E5`). 아이콘 픽셀은 누르기 전과 같다(흰 픽셀 수 clear 420 = 420, active 707 = 707) — A2 성립. 끈: 색 불변, 축소 213 → 201(94 %) · 165 → 157(95 %). `ios-M2-I5-on-*`, `-off-*`, `-summary.txt` |
 | M2-I6 | iOS 시뮬레이터 | 통과 | 켠, playground. Button 5변형 + Round Button neutral · brand loading 전부 75 → 111 → 147 → 174 → 210 → 249°. `ios-M2-I6-on-f00~f05.png` |
 | M2-I7 | iOS 시뮬레이터 | 통과 | 끈, EpisodeNarrativeScreen 「Before We Land」. 8프레임(간격 1.0 · 0.3 · 0.7 · 0.2 · 0.45 s) 전부 화살표 bbox y 2134 ~ 2162, 첫 프레임과 다른 픽셀 0. `ios-M2-I7-off-*` |
-| M2-I8(탐색) | iOS 시뮬레이터 | 풀림(95 %) | 버리는 워크트리에서 `round-button.css` 116행을 `scale(var(--libitum-motion-scale-pressed))`로 바꾼 번들. RoundButton neutral 165 → 157 px. `ios-M2-I8-probe-*` |
+| M2-I8(탐색) | iOS 시뮬레이터 | 풀림(95 %) | 버리는 워크트리에서 `round-button.css` 116행을 `scale(var(--libitum-motion-scale-pressed))`로 바꾼 번들. RoundButton neutral 165 → 157 px. `ios-M2-I8-probe-*`. Android는 [motion-reward.md](motion-reward.md#결과) M3-A8 행 |
 | (실기) M2-I3 · M2-I5 | iOS 실기 | 미확인 | 실기 없음 |
 | M2-A1 | Android 에뮬레이터 | 통과 | 끈, 3초 누름 중 연속 캡처. LearningUnit active 72 → 68 px(94.4 %), 색 `#F46B18` 불변; RoundButton neutral 56 → 52(92.9 %, 정수 픽셀), 색 `#F7F8F9` 불변; available · clear 72 → 68, 색 불변. `android-M2-A1-*`, `android-M2-A5-off-*` |
 | M2-A2 | Android 에뮬레이터 | 통과 | 끈, 확인창 6회(기기 안 `screencap` 루프). 중간 프레임 3회 카드 상자 폭 316 · 316 · 318, 정착 320(1단계 M-A4 끈 기준 310 ~ 318과 같다). 반투명 중간 프레임이라 96 % 정확값은 못 읽는다. `android-M2-A2-off-*` |

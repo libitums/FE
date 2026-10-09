@@ -70,6 +70,39 @@
   height: var(--libitum-spacing-48);
 }
 
+/* 통과 배지가 처음 나타날 때의 성취 모션입니다. 작게 시작해 제자리로 커지며 나타납니다.
+   시작 크기는 모션 토큰 scale.reward 값이라 CSS에 리터럴로 두고 테스트가 토큰과 대조합니다. */
+@keyframes lesson-complete-screen-badge-reward {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 동작 줄이기: 크기 변화 없이 불투명도만 바뀝니다. */
+@keyframes lesson-complete-screen-badge-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lesson-complete-screen-badge-motion-reward {
+  animation: lesson-complete-screen-badge-reward var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.lesson-complete-screen-badge-motion-fade {
+  animation: lesson-complete-screen-badge-fade var(--libitum-motion-duration-d2)
+    var(--libitum-motion-easing-linear) both;
+}
+
 /* 판정 묶음 — 제목 · 연속 알약 · 설명. 표식 아래 54(48 + 6)입니다. */
 .lesson-complete-screen-summary {
   display: flex;
