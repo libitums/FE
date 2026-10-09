@@ -200,4 +200,20 @@ describe("learning-shell.css", () => {
     expect(base.at).toBeGreaterThanOrEqual(0);
     expect(reduced.at).toBeGreaterThan(base.at);
   });
+
+  // transition 한 줄 말고는 채움 · 트랙의 모양이 그대로여야 합니다 — logic-scaffold에서도 green인 가드입니다.
+  test("LSP-css3. 채움의 height · border-radius · background와 트랙 블록은 그대로이고 파일에 @media · 시간 리터럴이 없다", () => {
+    const fill = ruleFor(".learning-shell-progress-fill").body;
+    expect(fill).toMatch(/height:\s*var\(--libitum-spacing-8\)/);
+    expect(fill).toMatch(/border-radius:\s*var\(--libitum-radius-full\)/);
+    expect(fill).toMatch(/background:\s*var\(--libitum-color-brand-primary\)/);
+    const track = ruleFor(".learning-shell-progress-track").body;
+    expect(track).toMatch(/height:\s*var\(--libitum-spacing-8\)/);
+    expect(track).toMatch(/border-radius:\s*var\(--libitum-radius-full\)/);
+    expect(track).toMatch(/background:\s*var\(--libitum-color-gray-300\)/);
+    expect(track).toMatch(/overflow:\s*hidden/);
+    expect(track).not.toMatch(/transition|animation/);
+    expect(raw).not.toMatch(/@media/);
+    expect(raw).not.toMatch(/\d+ms/);
+  });
 });

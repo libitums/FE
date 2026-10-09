@@ -52,6 +52,31 @@ test("첫 문항의 막대가 순번과 같은 진행률을 표시한다", () =>
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute("data-progress", "25");
 });
 
+test("[LSP1] 기본 채움은 reduced 클래스도 data-motion도 없이 data-progress 25를 유지한다", () => {
+  renderShell({ questionIndex: 0 });
+
+  const fill = screen.getByTestId("learning-shell-progress-fill");
+  expect(fill.getAttribute("class")).toBe("learning-shell-progress-fill");
+  expect(fill).not.toHaveAttribute("data-motion");
+  expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute("data-progress", "25");
+});
+
+test("[LSP2] reduced Provider의 채움은 -motion-reduced 클래스와 data-motion=reduced를 낸다", () => {
+  renderTransition({ questionIndex: 0 }, true);
+
+  const fill = screen.getByTestId("learning-shell-progress-fill");
+  expect(fill.getAttribute("class")).toBe(
+    "learning-shell-progress-fill learning-shell-progress-fill-motion-reduced",
+  );
+  expect(fill).toHaveAttribute("data-motion", "reduced");
+});
+
+test("[LSP3] reduced여도 0 %(문항 0개)면 채움을 그리지 않는다", () => {
+  renderTransition({ questionIndex: 0, questionCount: 0 }, true);
+
+  expect(screen.queryByTestId("learning-shell-progress-fill")).not.toBeInTheDocument();
+});
+
 // 껍데기는 카드 안에 무엇이 서는지 모릅니다 — 받은 것을 그 자리에 그릴 뿐입니다.
 test("카드로 받은 것이 카드 안에 선다", () => {
   renderShell();

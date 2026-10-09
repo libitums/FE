@@ -34,10 +34,11 @@ describe("RoundButton", () => {
     expect(icon).toHaveAttribute("content", info02.replace(/currentColor/g, color.brand.primary));
     expect(icon.getAttribute("content")).not.toContain("currentColor");
     expect(icon).toHaveAttribute("current-color", color.brand.primary);
-    expect(icon.parentElement).toHaveAttribute("accessibility-elements-hidden", "true");
+    // RB-E1a. 가림 선언은 두지 않습니다.
+    expect(icon.parentElement).not.toHaveAttribute("accessibility-elements-hidden");
   });
 
-  test("loading은 icon을 spinner로 대체하고 spinner를 장식 자손으로 숨긴다", () => {
+  test("RB-E1b. loading은 icon을 spinner로 대체하고 spinner wrapper에 가림 속성을 두지 않는다", () => {
     render(<RoundButton accessibilityLabel="정보" icon={info02} loading={true} />);
 
     const button = screen.getByTestId("ui-lynx-round-button");
@@ -49,7 +50,24 @@ describe("RoundButton", () => {
     const spinner = screen.getByTestId("ui-lynx-round-button-spinner");
     expect(spinner).toBeInTheDocument();
     expect(spinner).toHaveClass("ui-lynx-round-button-spinner");
-    expect(spinner.parentElement).toHaveAttribute("accessibility-elements-hidden", "true");
+    expect(spinner.parentElement).not.toHaveAttribute("accessibility-elements-hidden");
+  });
+
+  test("RB-E1c. standard · loading · reduced 트리에 accessibility-elements-hidden이 하나도 없다", () => {
+    const standard = render(<RoundButton accessibilityLabel="정보" icon={info02} />);
+    expect(standard.container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
+    standard.unmount();
+
+    const loading = render(<RoundButton accessibilityLabel="정보" icon={info02} loading={true} />);
+    expect(loading.container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
+    loading.unmount();
+
+    const reduced = render(
+      <MotionProvider motion="reduced">
+        <RoundButton accessibilityLabel="정보" icon={info02} />
+      </MotionProvider>,
+    );
+    expect(reduced.container.querySelectorAll("[accessibility-elements-hidden]")).toHaveLength(0);
   });
 
   test("활성 tap은 정확히 한 번 전달하고 loading·disabled tap은 차단한다", () => {
