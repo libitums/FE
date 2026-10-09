@@ -10,8 +10,11 @@ export type RewardMotion = "expressive" | "fade" | "none";
  * ("passed","standard") → "expressive" · ("passed","reduced") → "fade" · ("failed", *) → "none".
  * 던지지 않습니다.
  */
-export function rewardMotionFor(_verdict: AssessmentVerdict, _motion: Motion): RewardMotion {
-  return "none";
+export function rewardMotionFor(verdict: AssessmentVerdict, motion: Motion): RewardMotion {
+  if (verdict === "failed") {
+    return "none";
+  }
+  return motion === "reduced" ? "fade" : "expressive";
 }
 
 /**
@@ -19,8 +22,16 @@ export function rewardMotionFor(_verdict: AssessmentVerdict, _motion: Motion): R
  * ("failed","none") → "lesson-complete-screen-badge lesson-complete-screen-badge-failed".
  * ("passed","none")는 만들 수 없는 조합이지만 던지지 않고 base만 돌려줍니다.
  */
-export function rewardBadgeClassName(verdict: AssessmentVerdict, _reward: RewardMotion): string {
-  return verdict === "failed"
-    ? "lesson-complete-screen-badge lesson-complete-screen-badge-failed"
-    : "lesson-complete-screen-badge";
+export function rewardBadgeClassName(verdict: AssessmentVerdict, reward: RewardMotion): string {
+  const base = "lesson-complete-screen-badge";
+  const tokens = [base];
+  if (verdict === "failed") {
+    tokens.push(`${base}-failed`);
+  }
+  if (reward === "expressive") {
+    tokens.push(`${base}-motion-reward`);
+  } else if (reward === "fade") {
+    tokens.push(`${base}-motion-fade`);
+  }
+  return tokens.join(" ");
 }
