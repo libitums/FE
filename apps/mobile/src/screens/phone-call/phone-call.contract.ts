@@ -130,6 +130,7 @@ export type PhoneCallMapItemProps = {
 };
 
 export type PhoneCallScreenProps = {
+  /** 없으면 MotionProvider의 값을 따릅니다. */
   readonly reducedMotion?: boolean;
   readonly unitId: PhoneCallUnitId;
   readonly conversation: PhoneCallConversation;

@@ -7,6 +7,7 @@ import { color } from "@libitums/design-tokens";
 import { useMotion } from "../motion/MotionProvider";
 import {
   getLearningUnitContract,
+  hasPressedShade,
   type LearningUnitProps,
   type LearningUnitTapEvent,
 } from "./learning-unit.contract";
@@ -21,6 +22,7 @@ export function LearningUnit(props: LearningUnitProps) {
   const contract = getLearningUnitContract(props, motion);
   // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
+  const shaded = hasPressedShade(contract.status, motion);
   const icon =
     contract.iconKind === "lock" ? lock : contract.iconKind === "tick" ? tick : props.icon;
   const iconContent = icon.replace(/currentColor/g, contract.iconColor);
@@ -59,6 +61,12 @@ export function LearningUnit(props: LearningUnitProps) {
             accessibility-elements-hidden={true}
           />
           <view className="ui-lynx-learning-unit-surface" accessibility-elements-hidden={true}>
+            {shaded ? (
+              <view
+                className="ui-lynx-learning-unit-shade"
+                data-testid={`${contract.testId}-shade`}
+              />
+            ) : null}
             <svg
               className="ui-lynx-learning-unit-icon"
               data-testid={`${contract.testId}-icon`}

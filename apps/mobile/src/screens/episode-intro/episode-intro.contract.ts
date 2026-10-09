@@ -203,6 +203,7 @@ export type EpisodePrologue =
     };
 
 export type PrologueChatScreenProps = {
+  /** 없으면 MotionProvider의 값을 따릅니다. */
   readonly reducedMotion?: boolean;
   readonly guided?: boolean;
   readonly insets: SafeAreaInsets;
@@ -219,6 +220,7 @@ export type PrologueChatScreenProps = {
 export type PrologueCallVolume = 1 | 2 | 3 | 4 | 5;
 
 export type PrologueCallScreenProps = {
+  /** 없으면 MotionProvider의 값을 따릅니다. */
   readonly reducedMotion?: boolean;
   readonly guided?: boolean;
   readonly insets: SafeAreaInsets;

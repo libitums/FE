@@ -125,6 +125,7 @@ export type MessengerJourneyMapItemContract = {
 };
 
 export type MessengerScreenProps = {
+  /** 없으면 MotionProvider의 값을 따릅니다. */
   readonly reducedMotion?: boolean;
   readonly conversation: MessengerConversation;
   readonly completionStatus: MessengerCompletionStatus;
@@ -141,6 +142,7 @@ export type MessengerScreenProps = {
 export type MessageBubbleProps = {
   readonly message: MessengerMessage;
   readonly animate?: boolean;
+  /** 없으면 MotionProvider의 값을 따릅니다. */
   readonly reducedMotion?: boolean;
   readonly onRevealComplete?: () => void;
 };
