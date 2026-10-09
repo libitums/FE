@@ -185,4 +185,19 @@ describe("learning-shell.css", () => {
     expect(raw).not.toMatch(/@media/);
     expect(raw).not.toMatch(/\d+ms/);
   });
+
+  test("LSP-css1. 진행 바 채움은 progress 시간 · enter easing으로 너비를 전환한다", () => {
+    const { body } = ruleFor(".learning-shell-progress-fill");
+    expect(body).toMatch(
+      /transition:\s*width var\(--libitum-motion-duration-progress\)\s+var\(--libitum-motion-easing-enter\)/,
+    );
+  });
+
+  test("LSP-css2. reduced 채움은 transition none이고 base 규칙보다 뒤에 있다", () => {
+    const base = ruleFor(".learning-shell-progress-fill");
+    const reduced = ruleFor(".learning-shell-progress-fill-motion-reduced");
+    expect(reduced.body).toMatch(/transition:\s*none/);
+    expect(base.at).toBeGreaterThanOrEqual(0);
+    expect(reduced.at).toBeGreaterThan(base.at);
+  });
 });

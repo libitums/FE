@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { learningSessionHeader, learningTimingFlag } from "./learning-shell.contract";
+import {
+  learningProgressFillClassName,
+  learningSessionHeader,
+  learningTimingFlag,
+} from "./learning-shell.contract";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 
 // `unit` 계층: 순수 함수의 입출력만 봅니다 (ADR-0006 D4).
@@ -93,5 +97,17 @@ describe("learningTimingFlag", () => {
     const flags = forms.map(learningTimingFlag);
 
     expect(new Set(flags).size).toBe(forms.length);
+  });
+});
+
+describe("learningProgressFillClassName", () => {
+  it("LPF1. standard는 기본 클래스만 낸다", () => {
+    expect(learningProgressFillClassName("standard")).toBe("learning-shell-progress-fill");
+  });
+
+  it("LPF2. reduced는 reduced 변형 클래스를 더한다", () => {
+    expect(learningProgressFillClassName("reduced")).toBe(
+      "learning-shell-progress-fill learning-shell-progress-fill-motion-reduced",
+    );
   });
 });

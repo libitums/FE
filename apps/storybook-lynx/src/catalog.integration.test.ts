@@ -27,6 +27,7 @@ import { normalizeSettingsCellStoryArgs } from "./settings-cell-story";
 import { normalizeVisualNovelDialogStoryArgs } from "./visual-novel-dialog-story";
 import { normalizeTooltipStoryArgs } from "./tooltip-story";
 import { normalizeFogStoryArgs } from "./fog-story";
+import { normalizeStoryMotion } from "./story-motion";
 import {
   dispatchLearningUnitStoryTap,
   normalizeLearningUnitStoryArgs,
@@ -52,6 +53,16 @@ async function outputExists(relativePath: string): Promise<boolean> {
 }
 
 describe("Storybook Lynx build outputs", () => {
+  test("SM1. normalizeStoryMotion은 reduced가 아닌 값을 모두 standard로 정리한다", () => {
+    for (const value of [undefined, null, "standard", "REDUCED", 1]) {
+      expect(normalizeStoryMotion(value)).toBe("standard");
+    }
+  });
+
+  test("SM2. normalizeStoryMotion은 정확히 reduced인 값만 reduced로 둔다", () => {
+    expect(normalizeStoryMotion("reduced")).toBe("reduced");
+  });
+
   test("settings cell init data는 직렬화 가능한 두 trailing 변형을 정규화한다", () => {
     expect(
       JSON.parse(
