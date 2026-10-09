@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, test, vi } from "vitest";
 import headset from "@libitums/icons/lynx/headset";
 
+import { MotionProvider } from "../motion";
 import { LearningUnit } from "./LearningUnit";
 
 describe("LearningUnit", () => {
@@ -84,5 +85,36 @@ describe("LearningUnit", () => {
     expect(badgeRule).toBeDefined();
     expect(badgeRule).not.toMatch(/background/);
     expect(badgeRule).not.toMatch(/border/);
+  });
+});
+
+// 테스트 렌더러는 값이 undefined인 data-* 속성을 문자열 "null"로 남깁니다. 부재는 null 또는 "null"로 봅니다.
+describe("LearningUnit motion 컨텍스트", () => {
+  test("LU1: reduced Provider에서 data-motion과 reduced 클래스를 낸다(id가 있으면 id testid)", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <LearningUnit
+          id="unit-1"
+          accessibilityLabel="발음 연습"
+          icon={headset}
+          status="active"
+          focused
+        />
+      </MotionProvider>,
+    );
+    const unit = screen.getByTestId("ui-lynx-learning-unit-unit-1");
+    expect(unit).toHaveAttribute("data-motion", "reduced");
+    expect(unit).toHaveClass("ui-lynx-learning-unit-motion-reduced");
+  });
+
+  test.each([
+    ["Provider 없음", false],
+    ["standard Provider", true],
+  ] as const)("LU2: %s이면 data-motion과 motion 클래스가 없다", (_name, wrapped) => {
+    const unit = <LearningUnit accessibilityLabel="발음 연습" icon={headset} status="active" />;
+    render(wrapped ? <MotionProvider motion="standard">{unit}</MotionProvider> : unit);
+    const element = screen.getByTestId("ui-lynx-learning-unit");
+    expect([null, "null"]).toContain(element.getAttribute("data-motion"));
+    expect(element.getAttribute("class") ?? "").not.toContain("motion");
   });
 });

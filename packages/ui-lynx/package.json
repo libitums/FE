@@ -39,6 +39,11 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
+    "./motion": {
+      "types": "./dist/motion/index.d.ts",
+      "import": "./dist/motion/index.js",
+      "default": "./dist/motion/index.js"
+    },
     "./typewriter": {
       "types": "./dist/typewriter/index.d.ts",
       "import": "./dist/typewriter/index.js",

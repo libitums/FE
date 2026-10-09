@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import { EpisodeNarrativeScreen } from "./EpisodeNarrativeScreen";
 import type { EpisodeNarrative } from "./episode-narrative";
 import { UiCopyContext } from "../../lib/ui-copy";
@@ -314,5 +315,60 @@ test("시작 유닛의 움직임 감소 설정은 상상 배경과 대화 계속
   expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
     "data-motion",
     "static",
+  );
+});
+
+test("ES1: reduced Provider에서 reducedMotion prop이 없으면 대사가 즉시 서고 배경 전환과 표시가 멈춘다", () => {
+  const opening = tutorialPrologue.segments[0].narrative;
+  render(
+    <MotionProvider motion="reduced">
+      <EpisodeNarrativeScreen {...fixture({ narrative: opening })} />
+    </MotionProvider>,
+  );
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute(
+    "data-reveal",
+    "instant",
+  );
+  expect(line()).toHaveTextContent(opening.beats[0].line);
+  fireEvent(screen.getByTestId("narrative-background-image"), new window.Event("bindEvent:load"));
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute("data-transition", "none");
+  expect(screen.getByTestId("narrative-background-image")).toHaveAttribute("data-motion", "static");
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-continue-indicator")).toHaveAttribute(
+    "data-motion",
+    "static",
+  );
+});
+
+test("ES2: 명시한 reducedMotion={false}가 reduced Provider를 이겨 대사가 글자 단위로 진행한다", () => {
+  render(
+    <MotionProvider motion="reduced">
+      <EpisodeNarrativeScreen {...fixture({ reducedMotion: false })} />
+    </MotionProvider>,
+  );
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute(
+    "data-status",
+    "revealing",
+  );
+  act(() => {
+    vi.advanceTimersByTime(35);
+  });
+  expect(line().textContent).toBe("첫");
+});
+
+test("ES2: 명시한 reducedMotion={false}가 reduced Provider를 이겨 배경이 animated로 전환한다", () => {
+  const opening = tutorialPrologue.segments[0].narrative;
+  render(
+    <MotionProvider motion="reduced">
+      <EpisodeNarrativeScreen {...fixture({ narrative: opening, reducedMotion: false })} />
+    </MotionProvider>,
+  );
+  fireEvent(screen.getByTestId("narrative-background-image"), new window.Event("bindEvent:load"));
+  expect(screen.getByTestId("narrative-background")).toHaveAttribute(
+    "data-transition",
+    "crossfade",
+  );
+  expect(screen.getByTestId("narrative-background-image")).toHaveAttribute(
+    "data-motion",
+    "animated",
   );
 });

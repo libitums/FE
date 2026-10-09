@@ -1,4 +1,5 @@
 import { color } from "@libitums/design-tokens";
+import { motionClassName, type Motion } from "../motion/motion.contract";
 
 export type LearningUnitStatus = "default" | "available" | "active" | "clear";
 export type LearningUnitNarrative = "none" | "narrative";
@@ -45,7 +46,10 @@ export type LearningUnitContract = {
 const statuses = new Set<LearningUnitStatus>(["default", "available", "active", "clear"]);
 const narratives = new Set<LearningUnitNarrative>(["none", "narrative"]);
 
-export function getLearningUnitContract(props: LearningUnitProps): LearningUnitContract {
+export function getLearningUnitContract(
+  props: LearningUnitProps,
+  contextMotion: Motion = "standard",
+): LearningUnitContract {
   if (!props || typeof props !== "object") {
     throw new Error("LearningUnit props must be an object");
   }
@@ -79,6 +83,7 @@ export function getLearningUnitContract(props: LearningUnitProps): LearningUnitC
     `ui-lynx-learning-unit-${status}`,
     narrative === "narrative" ? "ui-lynx-learning-unit-narrative" : undefined,
     focused ? "ui-lynx-learning-unit-focused" : undefined,
+    motionClassName("ui-lynx-learning-unit", contextMotion),
   ]
     .filter((value): value is string => value !== undefined)
     .join(" ");

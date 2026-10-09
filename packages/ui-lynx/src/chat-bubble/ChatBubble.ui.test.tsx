@@ -1,6 +1,7 @@
 import { act, render, screen } from "@lynx-js/react/testing-library";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { ChatBubble } from "./index";
 
 afterEach(() => vi.useRealTimers());
@@ -150,5 +151,47 @@ describe("ChatBubble UI", () => {
     const bubble = screen.getByTestId("ui-lynx-chat-bubble");
     expect(bubble).not.toHaveAttribute("bindtap");
     expect(bubble).not.toHaveAttribute("accessibility-traits", "button");
+  });
+});
+
+describe("ChatBubble motion 컨텍스트", () => {
+  test("CB1: reduced Provider에서 reducedMotion prop이 없으면 첫 렌더에서 전체가 서고 타이머가 없다", () => {
+    vi.useFakeTimers();
+    const onRevealComplete = vi.fn<() => void>();
+    render(
+      <MotionProvider motion="reduced">
+        <ChatBubble
+          direction="incoming"
+          speaker="Minseo"
+          message="안녕🙂"
+          translation="Hi"
+          reveal="typewriter"
+          onRevealComplete={onRevealComplete}
+        />
+      </MotionProvider>,
+    );
+
+    expect(screen.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "ready");
+    expect(screen.getByTestId("ui-lynx-chat-bubble-message")).toHaveTextContent("안녕🙂");
+    expect(screen.getByTestId("ui-lynx-chat-bubble-translation")).toHaveTextContent("Hi");
+    expect(onRevealComplete).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  test("CB2: 명시한 reducedMotion={false}가 reduced Provider를 이겨 revealing에서 시작한다", () => {
+    vi.useFakeTimers();
+    render(
+      <MotionProvider motion="reduced">
+        <ChatBubble
+          direction="incoming"
+          speaker="Minseo"
+          message="안녕🙂"
+          reveal="typewriter"
+          reducedMotion={false}
+        />
+      </MotionProvider>,
+    );
+
+    expect(screen.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "revealing");
   });
 });

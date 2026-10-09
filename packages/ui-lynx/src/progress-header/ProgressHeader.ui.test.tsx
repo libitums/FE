@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { MotionProvider } from "../motion";
 import { ProgressHeader } from "./ProgressHeader";
 
 const props = {
@@ -171,6 +172,37 @@ describe("ProgressHeader CSS contract", () => {
     );
     expect(css).toMatch(
       /\.ui-lynx-progress-header-motion-reduced \.ui-lynx-progress-header-exit[\s\S]*transition:[^;]*opacity[^;]*var\(--libitum-motion-duration-d2\)[^;]*var\(--libitum-motion-easing-linear\)/,
+    );
+  });
+});
+
+describe("ProgressHeader motion 컨텍스트", () => {
+  test("PH1: reduced Provider에서 motion prop이 없으면 reduced이다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <ProgressHeader {...props} />
+      </MotionProvider>,
+    );
+    expect(screen.getByTestId("ui-lynx-progress-header")).toHaveAttribute("data-motion", "reduced");
+  });
+
+  test("PH2: 명시한 standard가 reduced Provider를 이긴다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <ProgressHeader {...props} motion="standard" />
+      </MotionProvider>,
+    );
+    expect(screen.getByTestId("ui-lynx-progress-header")).toHaveAttribute(
+      "data-motion",
+      "standard",
+    );
+  });
+
+  test("PH3: Provider 없이는 standard이다", () => {
+    render(<ProgressHeader {...props} />);
+    expect(screen.getByTestId("ui-lynx-progress-header")).toHaveAttribute(
+      "data-motion",
+      "standard",
     );
   });
 });

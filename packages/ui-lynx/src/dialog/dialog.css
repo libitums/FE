@@ -142,22 +142,3 @@
   animation-duration: var(--libitum-motion-duration-d2);
   animation-timing-function: var(--libitum-motion-easing-linear);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .ui-lynx-dialog-phase-entering .ui-lynx-dialog-container {
-    animation-name: ui-lynx-dialog-fade-enter;
-    animation-duration: var(--libitum-motion-duration-d2);
-    animation-timing-function: var(--libitum-motion-easing-linear);
-  }
-
-  .ui-lynx-dialog-phase-exiting .ui-lynx-dialog-container {
-    animation-name: ui-lynx-dialog-fade-exit;
-    animation-duration: var(--libitum-motion-duration-d2);
-    animation-timing-function: var(--libitum-motion-easing-linear);
-  }
-
-  .ui-lynx-dialog .ui-lynx-overlay {
-    animation-duration: var(--libitum-motion-duration-d2);
-    animation-timing-function: var(--libitum-motion-easing-linear);
-  }
-}

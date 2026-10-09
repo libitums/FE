@@ -155,7 +155,9 @@ activity와 정규화 percentage는 하나의 접근성 label인 caption leaf로
 standard progress 전환과 exit icon crossfade는 design-system motion duration/easing token을
 쓴다. reduced는 명시적 union 값으로만 선택하며 progress 전환은 없애고 icon crossfade는
 `d2`/`linear` token으로 줄인다. ReactLynx가 host OS reduced-motion 설정을 이 prop에 자동
-매핑하는 경로는 없으므로 소비 host가 값을 연결해야 한다. `:focus` ring은 ReactLynx에서
+매핑하는 경로는 없으므로 소비 host가 값을 연결해야 한다 ⟨2026-10-09 주: 쓰인 시점의 기록이다 —
+「2026-10-09 확장」부터 그 연결을 패키지의 `MotionProvider`가 받고 이 prop은 override로 남는다⟩.
+`:focus` ring은 ReactLynx에서
 best-effort fallback일 뿐 native focus 표시를 증명하지 않으며, `accessibility-value`도
 현재 iOS 채널에 도달하지 않아 진행 값은 caption의 합성 label로 전달한다.
 
@@ -399,7 +401,8 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
 - ⚠ **이 소비가 제품에 처음 들여온 것 둘 — 판정이 아니라 기록이다.**
   ① `.ui-lynx-text-field-surface`의 **150ms 색 `transition`**(`motion-duration-color`).
   **끄는 길이 없다** — `prefers-reduced-motion`이 이 저장소 전체에 **0건**이고 Lynx 미디어 특성
-  표에도 없다. 소비하는 화면 쪽이 *"모션을 새로 더하지 않는다"* 로 정한 것은 **컴포넌트가 자기
+  표에도 없다 ⟨2026-10-09 주: 쓰인 시점의 기록이다 — 「2026-10-09 확장」이 끄는 길(`MotionProvider`)을
+  들였다. 다만 정본 motion.md가 색 전환은 「유지」로 두므로 이 150ms 색 전환은 reduced에서도 그대로다⟩. 소비하는 화면 쪽이 *"모션을 새로 더하지 않는다"* 로 정한 것은 **컴포넌트가 자기
   CSS로 이미 가진 것에는 적용되지 않는다** — 그 구분을 여기 적어 둔다.
   ② `:focus` **box-shadow 포커스 링.** ADR-0016 **D7**이 *"포커스 링과 탭 순서를 요구하지
   않는다"* 고 적은 축에 **실물이 하나 생겼다** — *우리가 요구하지 않는다*와 *제품에 없다*는 다른
@@ -412,6 +415,75 @@ catalog 경계까지 검증한다. `.agent-harness/profile.yaml`은 패키지 �
   카탈로그」 축이다(ADR-0013: 새 행은 「새 축이다」라는 신호). **재검토 조건의 *"두 번째 제품 앱이
   `@libitums/ui-lynx`를 소비할 때"* 도 발동하지 않는다** — 이번은 **첫** 제품 앱이다. 그 행은
   그대로 열려 있다.
+
+### 2026-10-09 확장 — `motion` 모듈과 패키지 첫 교차 컴포넌트 Provider
+
+이 절은 같은 package/catalog 경계에 **공개 subpath `@libitums/ui-lynx/motion`** 과 패키지 안
+첫 **교차 컴포넌트 Context**(`MotionProvider` · `useMotion`)가 들어온 delta를 기록한다. 공개
+컴포넌트는 늘지 않는다 — 늘어난 것은 **컴포넌트들이 공유하는 값 하나**다. 정책 정본은
+design-system `foundations/motion.md`의 「Reduced motion」 · 「컴포넌트 매핑」과 `motion.json`의
+`com.libitum.reduced-motion` 확장이다(keep: color · opacity · spinner / remove: translate · scale ·
+rotate · width · reveal). 새 토큰은 0이고 `@libitums/design-tokens` 0.3.0 그대로다.
+
+**왜 새 ADR 번호가 아닌가.** D4.1 ProgressHeader 문단의 *"ReactLynx가 host OS reduced-motion
+설정을 이 prop에 자동 매핑하는 경로는 없으므로 소비 host가 값을 연결해야 한다"* 와 「2026-09-16
+확장 — `apps/mobile`의 첫 소비」 ①의 *"끄는 길이 없다"* 가 **예고한 빈자리를 채우는 적용 기록**
+이다. 두 문장은 쓰인 시점에 참이었고 이 절이 시점을 넘긴다 — 그 자리마다 날짜 주를 달았다.
+뒤집힌 결정은 없다.
+
+- **값은 Context로 흐르고 타입은 `Motion = "standard" | "reduced"` 문자열 union이다.** 기존
+  `DialogMotion` · `BottomSheetMotion` · `OverlayMotion` · `ProgressHeaderMotion`은 이 타입의
+  별칭이 됐다(구조적으로 같은 union이라 소비자 타입이 깨지지 않고 공개 이름은 남는다). boolean을
+  컨텍스트 값으로 쓰지 않은 이유: 이미 넷이 문자열 union이고, 관찰 채널 `data-motion`이
+  문자열이며, 뒤에 값이 셋 이상이 될 여지(플랫폼 crossfade 등)를 union이 받는다.
+  `reducedMotion?: boolean` prop(VisualNovelDialog · ChatBubble · `useTypewriter`)은 이름을 바꾸지
+  않고 **override로만** 남는다.
+- **우선순위는 명시 prop > 컨텍스트 > `"standard"`.** 순수 `resolveMotion` · `resolveReducedMotion`이
+  이 규칙 하나를 진다. Provider 밖(Storybook · playground · 기존 테스트)에서는 `useMotion()`이
+  `"standard"`를 돌려주고 던지지 않는다 — 그래서 **Storybook 스토리와 기존 ui · integration 테스트는
+  한 글자도 바뀌지 않았다.** ReactLynx의 `createContext` · `useContext`는 Card가 로컬 Context로
+  이미 쓰던 선례가 있어 가용성을 새로 확인할 것이 없었다.
+- **컴포넌트는 `useMotion()`을 조건 없이 한 번 부르고 계약 함수의 둘째 인자
+  `contextMotion: Motion = "standard"`로 넘긴다.** 기본값이 있어 기존 단위 테스트는 바뀌지
+  않는다. contract 객체에는 필드를 더하지 않는다 — RoundButton · LearningUnit 단위 테스트가 객체
+  전체를 `toEqual`로 고정하고 있어, reduced는 className 토큰 하나(`<block>-motion-reduced`)로만
+  contract에 드러난다.
+- ⚠ **받아들인 비대칭 — 「늘 내는 넷 / reduced만 내는 넷」.** Dialog · BottomSheet · Overlay(클래스만) ·
+  ProgressHeader는 전부터 `data-motion="standard"`를 늘 냈고 값만 컨텍스트에서 온다. 새로 변형을
+  받은 RoundButton · LearningUnit · PageIndicator · SettingsCell은 **`reduced`일 때만** 클래스와
+  `data-motion`을 낸다. 「standard에서 DOM 속성 · 클래스 · CSS 선언이 byte 단위로 같다」는 시각
+  비변경 계약의 직접 결과이고, 통일하려면 어느 한쪽의 standard DOM이 바뀌므로 이 회차 밖이다.
+  - 「내지 않는다」의 구현은 **조건부 spread**다
+    (`motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {}`).
+    `data-motion={cond ? "reduced" : undefined}`로 쓰면 테스트 렌더러가 속성을 **`"null"` 문자열로
+    남겨** 「속성 없음」 단언이 깨진다 — `TextField.tsx`가 `maxlength`를 같은 꼴로 빼는 선례와 같은
+    이유다(그쪽은 iOS native input이 `undefined`를 0으로 받던 문제. 둘 다 `undefined` 속성이
+    「없음」으로 끝나지 않는 자리다).
+- **Card · Tooltip은 변형을 만들지 않는다.** motion.md 매핑이 둘 다 「유지」라 CSS 차이가 0인
+  변형은 관찰할 것이 없다. Card에 있던 `@media (prefers-reduced-motion)` 블록은 정책과 반대로(색
+  전환을 줄이던) 죽은 코드였고 **삭제만** 했다. 같은 이유로 Dialog · BottomSheet · RoundButton ·
+  LearningUnit의 `@media` 블록도 지웠다 — Lynx는 미디어 특성을 지원하지 않아 어느 것도 픽셀을
+  바꾸지 않았다. 이제 ui-lynx CSS 어디에도 `prefers-reduced-motion` 문자열이 없다(unit 테스트가
+  0건을 고정한다). 추가된 CSS는 reduced 규칙 넷(RoundButton · LearningUnit `:active` `transform:
+  none`, PageIndicator 항목은 색 전환만, SettingsCell knob `transition: none`)이고 기존 선언 수정은
+  0이다.
+- **값의 출처는 호스트 globalProps `reducedMotion: boolean` 하나**이고 `apps/mobile`의 `App.tsx`가
+  `motionFromReducedMotion(reducedMotionFrom(useGlobalProps()))`로 `MotionProvider`를 `AppSession`
+  밖에 세운다(모션은 세션 key와 무관한 호스트 상태). 다섯 화면은 `reducedMotion` prop을
+  `resolveReducedMotion(prop, useMotion())`으로 한 번 결정해 아래로 흘린다. 호스트 쪽 키 계약은
+  [ADR-0044](0044-android-tappable-inset.md) D1 아래 「후속 확장」이, 기기 확인은
+  [`docs/e2e/motion-reduced.md`](../e2e/motion-reduced.md)가 진다.
+- **파일 규약의 예외가 하나 늘었다.** `src/motion/`은 `typewriter`처럼 UI · CSS를 소유하지 않는
+  공개 훅 디렉터리라 `<component>.contract.ts` · `.css` 계약 밖이다 —
+  [`component-file-conventions.md`](../../packages/ui-lynx/docs/component-file-conventions.md).
+  `check-pack` · 규약 unit test · index 통합 테스트가 그 예외를 이름으로 든다.
+- 이 회차가 **열지 않은 것**(정본 motion.md의 뒤 단계): Spinner · Button Loading · 보상 · 화면
+  전환(crossfade — iOS `prefersCrossFadeTransitions`를 그때 함께 본다) · 새 토큰. reduced에서
+  Round Button · Learning Unit의 눌림 피드백이 0이 되는 것은 정본의 Pressed 정의(색 동일)에서 오는
+  결과이고 design-system 쪽 결정으로 넘겼다 —
+  [`docs/design/round-button.md`](../design/round-button.md) 「Reduced motion」.
+- **축 추적표에 새 행을 더하지 않는다** — 같은 「공유 ReactLynx 패키지와 브라우저 카탈로그」
+  축이다. 재검토 조건의 「공개 컴포넌트가 10개를 넘을 때」와 무관하다(컴포넌트가 아니다).
 
 ## 버린 대안
 

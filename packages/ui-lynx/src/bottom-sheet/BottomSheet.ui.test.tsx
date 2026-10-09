@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { describe, expect, test, vi } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { BottomSheet } from "./BottomSheet";
 
 describe("BottomSheet", () => {
@@ -140,5 +141,32 @@ describe("BottomSheet", () => {
       <BottomSheet title="국가 선택" closeAccessibilityLabel="닫기" ondismiss={() => undefined} />,
     );
     expect(screen.queryByTestId("ui-lynx-bottom-sheet-content")).toBeNull();
+  });
+});
+
+describe("BottomSheet motion 컨텍스트", () => {
+  const sheet = (motion?: "standard" | "reduced") => (
+    <BottomSheet
+      title="잠깐 쉬어 갈까요?"
+      closeAccessibilityLabel="복습 시트 닫기"
+      actions={[{ id: "replay", label: "오디오 다시 듣기" }]}
+      motion={motion}
+      ondismiss={() => undefined}
+    />
+  );
+
+  test("BS1: reduced Provider에서 motion prop이 없으면 reduced이다", () => {
+    render(<MotionProvider motion="reduced">{sheet()}</MotionProvider>);
+    expect(screen.getByTestId("ui-lynx-bottom-sheet")).toHaveAttribute("data-motion", "reduced");
+  });
+
+  test("BS2: 명시한 standard가 reduced Provider를 이긴다", () => {
+    render(<MotionProvider motion="reduced">{sheet("standard")}</MotionProvider>);
+    expect(screen.getByTestId("ui-lynx-bottom-sheet")).toHaveAttribute("data-motion", "standard");
+  });
+
+  test("BS3: Provider 없이는 standard이다", () => {
+    render(sheet());
+    expect(screen.getByTestId("ui-lynx-bottom-sheet")).toHaveAttribute("data-motion", "standard");
   });
 });

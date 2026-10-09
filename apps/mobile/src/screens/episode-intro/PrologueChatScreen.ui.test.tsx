@@ -1,6 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import type { PrologueChat } from "./episode-intro.contract";
 import { PrologueChatScreen } from "./PrologueChatScreen";
 import { UiCopyContext } from "../../lib/ui-copy";
@@ -253,4 +254,25 @@ test("[ST3-M] 문구표에서 읽는다 — 보내기 이름 · 내 화자 · �
   expect(
     within(screen.getByTestId("prologue-chat-screen-back")).getByTestId("ui-lynx-round-button"),
   ).toHaveAttribute("accessibility-label", "⟦common.exitTo.journey⟧");
+});
+
+test("PR1: reduced Provider에서 reducedMotion prop이 없으면 상대 말풍선이 타이핑 없이 바로 ready다", () => {
+  vi.useFakeTimers();
+  render(
+    <MotionProvider motion="reduced">
+      <PrologueChatScreen
+        insets={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        episodeLabel="Episode 1."
+        chat={chat}
+        onComplete={vi.fn<() => void>()}
+        onBack={vi.fn<() => void>()}
+      />
+    </MotionProvider>,
+  );
+  wait(1500);
+  const incoming = within(screen.getByTestId("prologue-chat-screen-message-m1"));
+  expect(incoming.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "ready");
+  expect(incoming.getByTestId("ui-lynx-chat-bubble-message")).toHaveTextContent(
+    "한국에는 잘 도착했어?",
+  );
 });

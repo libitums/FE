@@ -391,10 +391,11 @@ TalkBack은 Google Play 시스템 이미지나 Android Accessibility Suite가 �
 |---|---|---|---|
 | T1 TalkBack 켬 + 대사 | 듣기 문항(E3의 `Listen to a Hello`)이나 E5 방송 줄이 재생되는 동안 한 번 스와이프한다 | `dumpsys audio`에서 SPEECH 플레이어가 `paused` → 낭독이 끝난 뒤 다시 `started`(포커스가 `LOSS_TRANSIENT_CAN_DUCK` → `GAIN`). 대사가 멈춘 동안 자막 타이핑은 계속 진행된다(차이 4) | 낭독이 끊기지 않는가, 재개 뒤 대사와 자막의 어긋남 |
 | T2 TalkBack 켬 + 수신 벨 | E4의 수신 전화 화면에서 벨이 우는 동안 스와이프로 `Accept`까지 간다. 두 번 탭한다 | 벨 플레이어는 낭독 동안에도 낮아지지 않는다(차이 3 — 포커스를 쥐지 않음). 두 번 탭하면 벨 `paused`, `accept_call` `started`, SPEECH `started`. 포커스 순서는 이 변경으로 바뀌지 않았다 | 낭독 문구, 벨에 낭독이 가려지는가 |
-| T3 「애니메이션 제거」 켬 | 개발자 옵션의 세 애니메이션 배율을 0으로 두거나 접근성 「애니메이션 삭제」를 켠 뒤 E6의 S1 · S2 · S4를 같은 방식(`-1s` · `-7s`)으로 찍는다 | 두 장이 같다(정지). 그림이 보이고, 베일이나 이전 그림이 남지 않는다(`animationend`가 발화해 전환이 끝난다). 근거는 Lynx Android가 키프레임을 `ObjectAnimator`로 돌린다는 것뿐이다 — 서사 화면 호출부는 `reducedMotion`을 넘기지 않는다 | — |
+| T3 「애니메이션 제거」 켬 | 개발자 옵션의 세 애니메이션 배율을 0으로 두거나 접근성 「애니메이션 삭제」를 켠 뒤 E6의 S1 · S2 · S4를 같은 방식(`-1s` · `-7s`)으로 찍는다 | 두 장이 같다(정지). 그림이 보이고, 베일이나 이전 그림이 남지 않는다(`animationend`가 발화해 전환이 끝난다). 근거는 Lynx Android가 키프레임을 `ObjectAnimator`로 돌린다는 것뿐이다 — 서사 화면 호출부는 `reducedMotion`을 넘기지 않는다 ⟨2026-10-09 주: 낡았다 — 이제 `EpisodeNarrativeScreen`이 `MotionProvider`(호스트 globalProps `reducedMotion`, 배율 하나라도 0이면 true)에서 값을 받아 `NarrativeBackground`로 흘리므로 배율 0에서는 플랫폼 정지와 앱의 즉시 교체가 **겹친다**. 가르는 절차는 [동작 줄이기](motion-reduced.md)의 설정 (i)⟩ | — |
 
 - **판정**: 기대와 다르면 「실패」가 아니라 관찰로 적고 [ADR-0045](../adr/0045-android-host-audio-assets.md)의 재검토 조건으로 넘긴다 — 셋 다 고치지 않고 기록한 동작이다.
-  T3에서 확대가 그대로 돌면 그것은 이 변경 이전부터의 문제(호출부가 `reducedMotion`을 넘기지 않음)와 같은 축이라 별도 작업으로 넘긴다.
+  T3에서 확대가 그대로 돌면 그것은 이 변경 이전부터의 문제(호출부가 `reducedMotion`을 넘기지 않음)와 같은 축이라 별도 작업으로 넘긴다
+  ⟨2026-10-09 주: 그 축은 닫혔다 — 호출부가 컨텍스트로 값을 받는다. 지금 확대가 돌면 호스트 값이나 Provider 경로의 결함이고 [동작 줄이기](motion-reduced.md) M-A1 · M-A2로 가른다⟩.
 
 ## 실행 결과
 

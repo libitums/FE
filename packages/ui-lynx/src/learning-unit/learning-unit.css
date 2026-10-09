@@ -74,6 +74,13 @@
   transform: scale(0.95);
 }
 
+/* 움직임 줄이기: 눌림 때 visual을 줄이지 않고 전환도 걸지 않습니다. surface 색 전환은 그대로입니다. */
+.ui-lynx-learning-unit-motion-reduced:not(.ui-lynx-learning-unit-default):active
+  .ui-lynx-learning-unit-visual {
+  transition: none;
+  transform: none;
+}
+
 .ui-lynx-learning-unit-focused:not(.ui-lynx-learning-unit-default) {
   box-shadow:
     0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
@@ -95,10 +102,4 @@
   width: var(--libitum-icon-size-sm);
   height: var(--libitum-icon-size-sm);
   flex-shrink: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ui-lynx-learning-unit:active .ui-lynx-learning-unit-visual {
-    transform: none;
-  }
 }

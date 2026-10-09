@@ -2,6 +2,7 @@ import { FirstUnitGuide } from "../../components/FirstUnitGuide";
 import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
+import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { Avatar } from "@libitums/ui-lynx/avatar";
@@ -33,7 +34,7 @@ export type EpisodeNarrativeScreenProps = {
   readonly onFinish: () => void;
   /** 뒤로(맵으로)입니다. */
   readonly onExit: () => void;
-  /** 배경 전환·확대와 대사 타이핑·계속 표시의 모션을 줄입니다. */
+  /** 배경 전환·확대와 대사 타이핑·계속 표시의 모션을 줄입니다. 없으면 MotionProvider의 값을 따릅니다. */
   readonly reducedMotion?: boolean;
 };
 
@@ -56,9 +57,10 @@ export function EpisodeNarrativeScreen({
   narrative,
   onFinish,
   onExit,
-  reducedMotion = false,
+  reducedMotion: reducedMotionProp,
 }: EpisodeNarrativeScreenProps): ReactNode {
   const copy = useUiCopy();
+  const reducedMotion = resolveReducedMotion(reducedMotionProp, useMotion());
   const guide = useFirstUnitGuide("story", guided);
   const [beatIndex, setBeatIndex] = useState(0);
   const beat = narrative.beats[beatIndex] ?? narrative.beats[0];

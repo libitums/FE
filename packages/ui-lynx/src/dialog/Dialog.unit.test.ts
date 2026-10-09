@@ -160,3 +160,28 @@ describe("Dialog contract", () => {
     });
   });
 });
+
+describe("Dialog contract: 컨텍스트 motion", () => {
+  const props = {
+    title: "학습을 계속할까요?",
+    actions: [{ id: "continue", label: "계속 학습하기" }],
+    bindaction: () => undefined,
+  };
+
+  test("DGc1. 컨텍스트를 주지 않으면 standard 그대로다", () => {
+    expect(getDialogContract(props)).toMatchObject({
+      motion: "standard",
+      className: "ui-lynx-dialog ui-lynx-dialog-motion-standard ui-lynx-dialog-phase-entering",
+    });
+  });
+
+  test("DGc2. 컨텍스트 reduced면 motion이 reduced이고 className에 reduced 토큰이 든다", () => {
+    const contract = getDialogContract(props, "reduced");
+    expect(contract.motion).toBe("reduced");
+    expect(contract.className).toContain("ui-lynx-dialog-motion-reduced");
+  });
+
+  test("DGc3. 명시한 motion이 컨텍스트를 이긴다", () => {
+    expect(getDialogContract({ ...props, motion: "standard" }, "reduced").motion).toBe("standard");
+  });
+});

@@ -38,6 +38,12 @@ JS의 준비 신호(`SystemBackModule.ready`)는 에뮬레이터 실측에서 �
 |---|---|---|
 | `safeAreaInsets` | `{ top, bottom, left, right }` dp — 가려지는 가장자리 | `systemBars() \| displayCutout()` |
 | `tappableBottomInset` | dp — 시스템 바 가운데 **터치를 가로채는** 아래 높이. 3버튼에서만 0이 아니다(Pixel_8 48), 제스처는 0 | `tappableElement()`의 아래 값, `safeAreaInsets.bottom`을 넘지 않게 자른다 |
+| `reducedMotion` | boolean — 시스템 「동작 줄이기」. **위 두 키와 따로**, 키 하나짜리 `updateGlobalProps`로 값이 바뀔 때만 보낸다(`MainActivity.publishReducedMotion`, `onCreate`에서 `renderTemplateUrl` 앞에 첫 값) | `Settings.Global.ANIMATOR_DURATION_SCALE` · `TRANSITION_ANIMATION_SCALE` 중 하나라도 0(`ReducedMotion.fromScales`). `ReducedMotionWatcher`가 `ContentObserver`로 두 URI를 듣는다 — 접근성 「애니메이션 삭제」는 세 배율을 0으로 두므로 같은 길로 온다. `window_animation_scale`은 보지 않는다 |
+
+따로 보내도 앞 두 키가 지워지지 않는 것은 `updateGlobalProps`가 키 단위 병합이기 때문이다(에뮬레이터 M-A3에서 확인). iOS 호스트도
+`reducedMotion`을 보낸다(`UIAccessibility.isReduceMotionEnabled`) — 단 iOS는 `LynxTemplateData(dictionary:useBoolLiterals:true)`로 보내야
+boolean이 도달한다(Dictionary 오버로드는 Bool을 숫자 1로 바꾼다 — [ADR-0044](../../docs/adr/0044-android-tappable-inset.md) D1 「후속 확장」).
+동작 줄이기의 에뮬레이터 · 시뮬레이터 절차와 결과는 [동작 줄이기 설정이 앱의 실제 움직임을 멈춘다](../../docs/e2e/motion-reduced.md)에 있다.
 
 iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽는다). 앱 셸은 탭 루트에서 이 값만큼 아래를
 비우고 탭 바 밑에 같은 색의 바닥 면을 덧댄다. inset이 바뀌면(화면 크기 변경 · 모드 전환) 탭 바가 따라 바뀐다 — 내비게이션 모드 전환은 API 37에서는 Activity를 다시 만들지 않고 따라 바뀌고, API 30에서는 Activity 재생성을 거쳐 새 자리에 선다(API별 동작과 그 경계의 근거는 아래 「화면 방향과 구성 변경」). 규칙과 근거는
@@ -470,6 +476,9 @@ Maestro의 권한·설정·알림 탭 절차는
 `SafeAreaInsetsTest`는 가장자리 px → dp 변환과 `tappableBottomInset`(3버튼 48 · 제스처 0 ·
 safe 아래 값으로 자르기 · 음수와 밀도 불명은 0)을 확인하며 같은 명령으로 실행한다. 3버튼 · 제스처 ·
 실행 중 전환의 에뮬레이터 절차는 [Android 내비게이션 바와 하단 탭 바](../../docs/e2e/android-navigation-insets.md)에 있다.
+`ReducedMotionTest`(JUnit 4건)는 두 배율 → `reducedMotion` 판정(`fromScales` — 하나라도 0이면 true, 음수 · NaN은 false)과 한 키짜리
+boolean 맵의 모양을 확인하며 같은 명령으로 실행한다. `ContentObserver` 등록 · 실행 중 토글 추종 · 실제 애니메이션 정지는 JUnit이 못 지고
+에뮬레이터 절차 [동작 줄이기](../../docs/e2e/motion-reduced.md)(M-A1 ~ M-A6)가 진다.
 계측 `ConfigurationChangeTest`(8건)는 실제 `MainActivity`에서 구성 변경 뒤의 Activity 수명 · LynxView 크기 · screen metrics · 화면 상태 유지를 확인한다
 (세로 유지 · 야간 모드 · 화면 크기 · 큰 화면 가로 · 내비게이션 모드 오버레이 전환은 같은 인스턴스, 글꼴 배율 · 밀도는 재생성). 번들 서빙과 `-e bundleUrl`이 필요하다.
 기대는 API 37에서 8건 통과, API 30에서 6건 통과 + 2건 건너뜀(큰 화면 가로와 오버레이 전환 — 둘 다 API 36 이상에서만 성립한다. 건너뜀은 통과로 세지 않는다).

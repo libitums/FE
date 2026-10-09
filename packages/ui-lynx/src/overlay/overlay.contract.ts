@@ -1,5 +1,7 @@
+import { resolveMotion, type Motion } from "../motion/motion.contract";
+
 export type OverlayBlur = "off" | "on";
-export type OverlayMotion = "standard" | "reduced";
+export type OverlayMotion = Motion;
 export type OverlayPhase = "entering" | "visible" | "exiting";
 export type OverlayScope = "screen" | "area";
 export type OverlaySurface = "sheet" | "dialog";
@@ -56,10 +58,13 @@ export type OverlayContract = {
   readonly surface?: OverlaySurface;
 };
 
-export function getOverlayContract(props: OverlayProps): OverlayContract {
+export function getOverlayContract(
+  props: OverlayProps,
+  contextMotion: Motion = "standard",
+): OverlayContract {
   const blur = props.blur ?? "off";
   const dismiss = props.dismiss ?? "none";
-  const motion = props.motion ?? "standard";
+  const motion = resolveMotion(props.motion, contextMotion);
   const phase = props.phase ?? "visible";
   const surface = props.scope === "screen" ? props.surface : undefined;
 

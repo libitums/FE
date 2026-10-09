@@ -1,3 +1,5 @@
+import type { Motion } from "../motion/motion.contract";
+
 export const PAGE_INDICATOR_MAX_PAGE_COUNT = 100;
 
 export type PageIndicatorProps = {
@@ -19,7 +21,11 @@ export type PageIndicatorModel = {
   shouldRender: boolean;
 };
 
-export function getPageIndicatorModel(props: PageIndicatorProps): PageIndicatorModel {
+export function getPageIndicatorModel(
+  props: PageIndicatorProps,
+  contextMotion: Motion = "standard",
+): PageIndicatorModel {
+  void contextMotion;
   const rawPageCount = Number.isFinite(props.pageCount)
     ? Math.max(0, Math.trunc(props.pageCount))
     : 0;

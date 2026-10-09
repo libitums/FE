@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { describe, expect, test, vi } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { Dialog } from "./Dialog";
 
 describe("Dialog", () => {
@@ -171,5 +172,38 @@ describe("Dialog", () => {
       />,
     );
     expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-cancelactionid", "b");
+  });
+});
+
+describe("Dialog motion 컨텍스트", () => {
+  const actions = [{ id: "continue", label: "계속 학습하기" }];
+
+  test("DG1: reduced Provider에서 motion prop이 없으면 reduced이고 Overlay에도 흐른다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <Dialog title="학습을 계속할까요?" actions={actions} bindaction={() => undefined} />
+      </MotionProvider>,
+    );
+    expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-motion", "reduced");
+    expect(screen.getByTestId("ui-lynx-overlay")).toHaveClass("ui-lynx-overlay-motion-reduced");
+  });
+
+  test("DG2: 명시한 standard가 reduced Provider를 이긴다", () => {
+    render(
+      <MotionProvider motion="reduced">
+        <Dialog
+          title="학습을 계속할까요?"
+          actions={actions}
+          motion="standard"
+          bindaction={() => undefined}
+        />
+      </MotionProvider>,
+    );
+    expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-motion", "standard");
+  });
+
+  test("DG3: Provider 없이는 standard이다", () => {
+    render(<Dialog title="학습을 계속할까요?" actions={actions} bindaction={() => undefined} />);
+    expect(screen.getByTestId("ui-lynx-dialog")).toHaveAttribute("data-motion", "standard");
   });
 });

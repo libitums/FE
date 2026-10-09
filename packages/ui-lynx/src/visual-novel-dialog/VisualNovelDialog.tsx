@@ -1,6 +1,7 @@
 import { color } from "@libitums/design-tokens";
 import arrowDown from "@libitums/icons/lynx/arrow-down";
 
+import { useMotion } from "../motion/MotionProvider";
 import {
   getVisualNovelDialogContract,
   type VisualNovelDialogProps,
@@ -22,7 +23,7 @@ const indicatorContents = {
 } as const satisfies Readonly<Record<VisualNovelDialogVariant, string>>;
 
 export function VisualNovelDialog(props: VisualNovelDialogProps) {
-  const contract = getVisualNovelDialogContract(props);
+  const contract = getVisualNovelDialogContract(props, useMotion());
   const tappable = props.bindtap !== undefined;
   const handleTap = () => {
     "background only";

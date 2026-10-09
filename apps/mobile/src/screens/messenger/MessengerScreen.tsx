@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useState } from "@lynx-js/react";
+import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import refresh from "@libitums/icons/lynx/refresh";
 import { Button } from "@libitums/ui-lynx/button";
@@ -50,9 +51,10 @@ export function MessengerScreen({
   onExit,
   onComplete,
   onFinish,
-  reducedMotion = false,
+  reducedMotion: reducedMotionProp,
 }: MessengerScreenProps) {
   const copy = useUiCopy();
+  const reducedMotion = resolveReducedMotion(reducedMotionProp, useMotion());
   const exitLabel = specialUnitExitLabel(exitTo, copy);
   const [session, setSession] = useState(() => initialMessengerSessionState(completionStatus));
   const [composer, dispatchComposer] = useReducer(

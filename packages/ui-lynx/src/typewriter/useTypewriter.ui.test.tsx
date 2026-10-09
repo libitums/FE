@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { MotionProvider } from "../motion";
 import { useTypewriter, type TypewriterOptions } from "./useTypewriter";
 
 function Sample(props: TypewriterOptions) {
@@ -131,4 +132,34 @@ test("소수 간격은 길어지지 않게 내림하고 양수 간격이 즉시 
   expect(output().textContent).toBe("C");
   tick(1);
   expect(output().textContent).toBe("CD");
+});
+
+test("TW1: reduced Provider에서 reducedMotion을 생략하면 즉시 전체를 표시하고 타이머가 없다", () => {
+  render(
+    <MotionProvider motion="reduced">
+      <Sample text="가🙂B" intervalMs={40} />
+    </MotionProvider>,
+  );
+  expect(output()).toHaveTextContent("가🙂B");
+  expect(output()).toHaveAttribute("data-complete", "true");
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+test("TW2: 명시한 reducedMotion={false}가 reduced Provider를 이겨 글자 단위로 진행한다", () => {
+  render(
+    <MotionProvider motion="reduced">
+      <Sample text="가🙂B" intervalMs={40} reducedMotion={false} />
+    </MotionProvider>,
+  );
+  expect(output().textContent).toBe("");
+  expect(output()).toHaveAttribute("data-complete", "false");
+  tick(39);
+  expect(output().textContent).toBe("");
+  tick(1);
+  expect(output()).toHaveTextContent("가");
+  tick(40);
+  expect(output()).toHaveTextContent("가🙂");
+  tick(40);
+  expect(output()).toHaveTextContent("가🙂B");
+  expect(output()).toHaveAttribute("data-complete", "true");
 });

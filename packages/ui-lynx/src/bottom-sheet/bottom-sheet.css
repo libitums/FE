@@ -202,12 +202,3 @@
   animation-duration: var(--libitum-motion-duration-d2);
   animation-timing-function: var(--libitum-motion-easing-linear);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .ui-lynx-bottom-sheet-scrim,
-  .ui-lynx-bottom-sheet-panel {
-    animation-name: ui-lynx-bottom-sheet-scrim-enter;
-    animation-duration: var(--libitum-motion-duration-d2);
-    animation-timing-function: var(--libitum-motion-easing-linear);
-  }
-}

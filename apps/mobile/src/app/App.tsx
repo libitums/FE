@@ -1,5 +1,7 @@
-import { useState } from "@lynx-js/react";
+import { useGlobalProps, useState } from "@lynx-js/react";
+import { MotionProvider, motionFromReducedMotion } from "@libitums/ui-lynx/motion";
 
+import { reducedMotionFrom } from "../lib/reduced-motion";
 import { AppSession } from "./AppSession";
 import type { AppProps } from "./app-props";
 import { initialAppStart, nextAppStart } from "./app-start";
@@ -11,13 +13,17 @@ export type { AppJourneySeed } from "./journey-progress";
 
 export function App(props: AppProps = {}) {
   const [start, setStart] = useState<AppStart>(initialAppStart);
+  // 동작 줄이기는 세션과 무관한 호스트 상태라 세션(key) 밖에서 Provider로 내립니다.
+  const motion = motionFromReducedMotion(reducedMotionFrom(useGlobalProps()));
   return (
-    <AppSession
-      key={start.key}
-      {...props}
-      start={start.nav}
-      exit={start.exit}
-      onLeaveApp={(exit) => setStart((current) => nextAppStart(current, exit))}
-    />
+    <MotionProvider motion={motion}>
+      <AppSession
+        key={start.key}
+        {...props}
+        start={start.nav}
+        exit={start.exit}
+        onLeaveApp={(exit) => setStart((current) => nextAppStart(current, exit))}
+      />
+    </MotionProvider>
   );
 }

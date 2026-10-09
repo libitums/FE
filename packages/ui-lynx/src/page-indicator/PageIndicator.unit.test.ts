@@ -64,3 +64,10 @@ describe("getPageIndicatorModel", () => {
     expect(model.accessibilityLabel).toBe("Scene 100 of 100");
   });
 });
+
+describe("getPageIndicatorModel: 컨텍스트 motion", () => {
+  test("PIc1. 모델은 motion을 들지 않아 컨텍스트와 무관하게 같다", () => {
+    const props = { pageCount: 3, currentPage: 2 };
+    expect(getPageIndicatorModel(props, "reduced")).toEqual(getPageIndicatorModel(props));
+  });
+});

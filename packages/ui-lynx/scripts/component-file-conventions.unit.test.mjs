@@ -111,9 +111,9 @@ describe("findComponentFileConventionViolations", () => {
       .map((item) => item.name)
       .sort();
     const entries = await Promise.all(
-      // typewriter는 UI와 CSS를 소유하지 않는 공개 훅이며 export는 index 통합 테스트가 검증한다.
+      // typewriter와 motion은 UI와 CSS를 소유하지 않는 공개 훅·Provider이며 export는 index 통합 테스트가 검증한다.
       directories
-        .filter((directory) => directory !== "typewriter")
+        .filter((directory) => directory !== "typewriter" && directory !== "motion")
         .map(async (directory) => entry(directory, await readdir(resolve(sourceRoot, directory)))),
     );
 
@@ -131,6 +131,7 @@ describe("findComponentFileConventionViolations", () => {
       "episode-header",
       "fog",
       "learning-unit",
+      "motion",
       "option-selector",
       "overlay",
       "page-indicator",

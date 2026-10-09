@@ -1,6 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import type { PrologueCall } from "./episode-intro.contract";
 import { PrologueCallScreen } from "./PrologueCallScreen";
 import { UiCopyContext } from "../../lib/ui-copy";
@@ -229,4 +230,23 @@ test("[ST2-M] 문구표에서 읽는다 — 통화 상대 · 받기 · 종료 ·
   expect(screen.getByTestId("prologue-call-screen-complete")).toHaveTextContent(
     "⟦common.continue⟧",
   );
+});
+
+test("[PC1:motion] reduced Provider에서 reducedMotion prop이 없으면 통화 자막이 바로 ready다", () => {
+  vi.useFakeTimers();
+  render(
+    <MotionProvider motion="reduced">
+      <PrologueCallScreen
+        insets={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        episodeLabel="Episode 0."
+        call={call}
+        callerPortrait="portrait.png"
+        onComplete={vi.fn<() => void>()}
+        onBack={vi.fn<() => void>()}
+      />
+    </MotionProvider>,
+  );
+  fireEvent.tap(screen.getByTestId("prologue-call-screen-accept"), {});
+  expect(screen.getByTestId("prologue-call-screen-line")).toHaveAttribute("data-status", "ready");
+  expect(screen.getByTestId("prologue-call-screen-line-text")).toHaveTextContent("여보세요?");
 });

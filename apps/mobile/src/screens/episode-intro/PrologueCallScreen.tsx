@@ -1,6 +1,7 @@
 import { FirstUnitGuide } from "../../components/FirstUnitGuide";
 import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import { useEffect, useState } from "@lynx-js/react";
+import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { Button } from "@libitums/ui-lynx/button";
 import type { PrologueCallScreenProps } from "./episode-intro.contract";
 import { prologueLineSeconds } from "./prologue-call";
@@ -22,9 +23,10 @@ export function PrologueCallScreen({
   callerPortrait,
   onComplete,
   onBack,
-  reducedMotion = false,
+  reducedMotion: reducedMotionProp,
 }: PrologueCallScreenProps) {
   const copy = useUiCopy();
+  const reducedMotion = resolveReducedMotion(reducedMotionProp, useMotion());
   const guide = useFirstUnitGuide("call", guided);
   const [accepted, setAccepted] = useState(false);
   const {

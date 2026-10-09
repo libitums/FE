@@ -3,6 +3,7 @@ import { color } from "@libitums/design-tokens";
 import cross from "@libitums/icons/lynx/cross";
 
 import { Button } from "../button/Button";
+import { useMotion } from "../motion/MotionProvider";
 import {
   getBottomSheetContract,
   shouldDismissBottomSheetDrag,
@@ -14,7 +15,7 @@ type BottomSheetTouchEvent = {
 };
 
 export function BottomSheet(props: BottomSheetProps) {
-  const contract = getBottomSheetContract(props);
+  const contract = getBottomSheetContract(props, useMotion());
   const dragStartY = useRef<number | null>(null);
 
   function handleScrimTap() {

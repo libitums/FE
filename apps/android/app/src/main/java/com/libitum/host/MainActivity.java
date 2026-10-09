@@ -42,6 +42,8 @@ public final class MainActivity extends Activity {
   StatusBarIconSync statusBarIcons;
   private LynxView lynxView;
   private Map<String, Object> lastSafeAreaInsets;
+  private final ReducedMotionWatcher reducedMotionWatcher = new ReducedMotionWatcher();
+  private Boolean lastReducedMotion;
   private final SystemBackGate backGate = new SystemBackGate();
   private OnBackInvokedCallback backCallback;
   private final PushTokenRefreshRelay.Listener tokenRefreshListener = this::sendPushTokenRefreshed;
@@ -92,6 +94,9 @@ public final class MainActivity extends Activity {
     });
     setContentView(lynxView);
     publishSafeAreaInsets();
+    // safe area와 따로 보낸다(updateGlobalProps는 키 단위 병합). 로드 앞에 첫 값을 걸어 둔다.
+    publishReducedMotion(reducedMotionWatcher.read(getContentResolver()));
+    reducedMotionWatcher.start(getContentResolver(), mainHandler, this::publishReducedMotion);
     pushNotifications.captureOpened();
     lynxView.renderTemplateUrl(templateUrl, "");
     registerBackCallback();
@@ -172,6 +177,13 @@ public final class MainActivity extends Activity {
         WindowCompat.getInsetsController(window, window.getDecorView());
     bars.setAppearanceLightStatusBars(true);
     bars.setAppearanceLightNavigationBars(true);
+  }
+
+  // 같은 값이면 보내지 않는다. 호출은 메인 루퍼다(onCreate, mainHandler 기반 ContentObserver).
+  private void publishReducedMotion(boolean enabled) {
+    if (lynxView == null || (lastReducedMotion != null && lastReducedMotion == enabled)) return;
+    lastReducedMotion = enabled;
+    lynxView.updateGlobalProps(ReducedMotion.globalProps(enabled));
   }
 
   private void publishSafeAreaInsets() {
@@ -257,6 +269,7 @@ public final class MainActivity extends Activity {
   }
 
   @Override protected void onDestroy() {
+    reducedMotionWatcher.stop();
     PushTokenRefreshRelay.PROCESS.detach(tokenRefreshListener);
     if (backTimeout != null) {
       mainHandler.removeCallbacks(backTimeout);

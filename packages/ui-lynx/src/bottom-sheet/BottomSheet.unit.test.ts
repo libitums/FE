@@ -97,3 +97,30 @@ describe("BottomSheet contract", () => {
     expect(styles).toContain("var(--libitum-color-border-strong)");
   });
 });
+
+describe("BottomSheet contract: 컨텍스트 motion", () => {
+  const props = {
+    title: "잠깐 쉬어 갈까요?",
+    closeAccessibilityLabel: "복습 시트 닫기",
+    ondismiss: () => undefined,
+  };
+
+  test("BSc1. 컨텍스트를 주지 않으면 standard 그대로다", () => {
+    expect(getBottomSheetContract(props)).toMatchObject({
+      motion: "standard",
+      className: "ui-lynx-bottom-sheet ui-lynx-bottom-sheet-motion-standard",
+    });
+  });
+
+  test("BSc2. 컨텍스트 reduced면 motion이 reduced이고 className에 reduced 토큰이 든다", () => {
+    const contract = getBottomSheetContract(props, "reduced");
+    expect(contract.motion).toBe("reduced");
+    expect(contract.className).toContain("ui-lynx-bottom-sheet-motion-reduced");
+  });
+
+  test("BSc3. 명시한 motion이 컨텍스트를 이긴다", () => {
+    expect(getBottomSheetContract({ ...props, motion: "standard" }, "reduced").motion).toBe(
+      "standard",
+    );
+  });
+});

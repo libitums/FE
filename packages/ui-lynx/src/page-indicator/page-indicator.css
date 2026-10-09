@@ -26,6 +26,12 @@
     background-color var(--libitum-motion-duration-progress) var(--libitum-motion-easing-enter);
 }
 
+/* 움직임 줄이기: 너비는 즉시 바뀌고 색 전환만 남깁니다. */
+.ui-lynx-page-indicator-motion-reduced .ui-lynx-page-indicator-item {
+  transition: background-color var(--libitum-motion-duration-progress)
+    var(--libitum-motion-easing-enter);
+}
+
 .ui-lynx-page-indicator-item-current {
   width: calc(var(--libitum-spacing-20) + var(--libitum-spacing-8));
   /* FE override(2026-09-21 디자인 반영): 정본의 brand.strong 대신 brand.primary. */

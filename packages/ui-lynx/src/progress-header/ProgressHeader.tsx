@@ -2,11 +2,13 @@ import type {} from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 import cross from "@libitums/icons/lynx/cross";
 
+import { resolveMotion } from "../motion/motion.contract";
+import { useMotion } from "../motion/MotionProvider";
 import { getProgressHeaderProgress, type ProgressHeaderProps } from "./progress-header.contract";
 
 export function ProgressHeader(props: ProgressHeaderProps) {
   const normalized = getProgressHeaderProgress(props.progress);
-  const motion = props.motion ?? "standard";
+  const motion = resolveMotion(props.motion, useMotion());
 
   function handleExit() {
     "background only";

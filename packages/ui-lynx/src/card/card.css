@@ -198,10 +198,3 @@
 .ui-lynx-card-header + .ui-lynx-card-footer {
   margin-top: var(--libitum-spacing-20);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .ui-lynx-card-interactive {
-    transition-duration: var(--libitum-motion-duration-d2);
-    transition-timing-function: var(--libitum-motion-easing-linear);
-  }
-}

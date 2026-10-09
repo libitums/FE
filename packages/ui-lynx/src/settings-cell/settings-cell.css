@@ -102,6 +102,10 @@
 .ui-lynx-settings-cell-switch-on .ui-lynx-settings-cell-switch-knob {
   transform: translateX(12px);
 }
+/* 움직임 줄이기: knob은 위치가 즉시 바뀌고, 트랙과 셀 배경의 색 전환은 그대로입니다. */
+.ui-lynx-settings-cell-motion-reduced .ui-lynx-settings-cell-switch-knob {
+  transition: none;
+}
 
 .ui-lynx-settings-group {
   width: auto;

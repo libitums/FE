@@ -3,6 +3,7 @@ import type {} from "@lynx-js/react";
 import { Button } from "../button/Button";
 import { Overlay } from "../overlay/Overlay";
 import type { DialogActionContract, DialogProps } from "./dialog.contract";
+import { useMotion } from "../motion/MotionProvider";
 import { getDialogContract } from "./dialog.contract";
 
 type DialogActionButtonProps = {
@@ -41,7 +42,7 @@ function DialogActionButton({ action, bindaction }: DialogActionButtonProps) {
 }
 
 export function Dialog(props: DialogProps) {
-  const contract = getDialogContract(props);
+  const contract = getDialogContract(props, useMotion());
 
   function handleMotionEnd() {
     "background only";

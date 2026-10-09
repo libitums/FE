@@ -120,9 +120,22 @@ opacity를 전파하지 않는다.
 
 시스템의 동작 줄이기가 켜지면 `motion.$extensions.com.libitum.reduced-motion`을 그대로 따른다.
 
-- 감지: Web `@media (prefers-reduced-motion: reduce)`; iOS
-  `UIAccessibility.isReduceMotionEnabled`; Android `Settings.Global.TRANSITION_ANIMATION_SCALE`.
-- 이동·확대를 제거한다. 따라서 Pressed의 95% scale은 적용하지 않는다.
+- 감지: 컴포넌트가 OS를 직접 읽지 않는다. 호스트가 globalProps `reducedMotion`(boolean)으로
+  보내고 — iOS `UIAccessibility.isReduceMotionEnabled`, Android는
+  `Settings.Global.ANIMATOR_DURATION_SCALE` · `TRANSITION_ANIMATION_SCALE` 중 **하나라도 0** —
+  앱이 그 값을 `MotionProvider`에 넣으면 `RoundButton`이 `useMotion()`으로 받는다. Lynx에는
+  `@media (prefers-reduced-motion)`이 없어 Web 미디어 쿼리는 쓰지 않는다. 호스트 키는
+  [ADR-0044](../adr/0044-android-tappable-inset.md) D1 「후속 확장」, Provider는
+  [ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-10-09 확장」, 기기 확인은
+  [동작 줄이기](../e2e/motion-reduced.md)(M-I5 · M-A5).
+- 이동·확대를 제거한다. 따라서 Pressed의 95% scale은 적용하지 않는다 — `reduced`일 때만
+  `ui-lynx-round-button-motion-reduced` 클래스와 `data-motion="reduced"`가 붙고
+  `:active .surface`가 `transform: none; transition: none`이 된다. standard의 선언은 그대로다.
+- ⚠ 그 결과 **Neutral · Brand의 눌림 피드백이 0이 된다.** Pressed는 standard에서도 scale뿐이고
+  색 전환이 원래 없어 scale을 걷으면 남는 것이 없다(Overlay 변형은 흰 면 0.16이 남는다). WCAG 2.1
+  AA를 막지는 않지만 정본 motion.md 원칙 5(「변화는 색과 불투명도로 계속 전달」)와 어긋나고, 뿌리는
+  정본 `round-button.md`의 Pressed 정의(95%, 색 동일)다. **정본(design-system)이 Pressed 색을 정하면
+  reduced 전용 규칙 하나로 채운다** — standard 선언은 건드리지 않는다. Learning Unit도 같은 자리다.
 - Spinner는 기본 상태부터 정적이므로 reduced motion에서 별도의 대체 animation이나 opacity
   transition을 추가하지 않는다. accessible busy/처리 중 상태와 Icon→Spinner 교체는 유지한다.
 

@@ -28,10 +28,12 @@
 		2B94A3DD2D66149800608971 /* AppleSignInModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608970 /* AppleSignInModule.swift */; };
 		2B94A3DD2D66149800608981 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608980 /* fonts */; };
 		2B94A3E12D6614980060892E /* FontScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3E02D6614980060892E /* FontScale.swift */; };
+		2B94A3E22D6614980060892E /* ReducedMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3E32D6614980060892E /* ReducedMotion.swift */; };
 		2B94A3F02D6614980060894A /* HandwritingTraceModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */; };
 		2BE49E032D7720F0000D068C /* main.lynx.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 2BE49E022D7720F0000D068C /* main.lynx.bundle */; };
 		4C1D0C5E0A1F2B3C4D6E0000 /* LegalDocumentModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4D5E0000 /* LegalDocumentModule.swift */; };
 		4C1D0C5E0A1F2B3C4D8E0000 /* LegalDocumentModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */; };
+		2B94A3E52D6614980060892E /* ReducedMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3E42D6614980060892E /* ReducedMotionTests.swift */; };
 		4C1D0C5E0A1F2B3C4DAE0000 /* PushNotificationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4D9E0000 /* PushNotificationModule.swift */; };
 		4C1D0C5E0A1F2B3C4DCE0000 /* PushNotificationModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */; };
 		4C1D0C5E0A1F2B3C4DEE0000 /* AppReviewModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4DDE0000 /* AppReviewModule.swift */; };
@@ -87,11 +89,13 @@
 		2B94A3DC2D66149800608980 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fonts; sourceTree = "<group>"; };
 		2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Host-Bridging-Header.h"; sourceTree = "<group>"; };
 		2B94A3E02D6614980060892E /* FontScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontScale.swift; sourceTree = "<group>"; };
+		2B94A3E32D6614980060892E /* ReducedMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReducedMotion.swift; sourceTree = "<group>"; };
 		2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandwritingTraceModule.swift; sourceTree = "<group>"; };
 		2BE49E022D7720F0000D068C /* main.lynx.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = main.lynx.bundle; sourceTree = "<group>"; };
 		2DDE2CDA1E9EDC74A4F93878 /* WebAuthenticationModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticationModuleTests.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4D5E0000 /* LegalDocumentModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalDocumentModule.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalDocumentModuleTests.swift; sourceTree = "<group>"; };
+		2B94A3E42D6614980060892E /* ReducedMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReducedMotionTests.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4D9E0000 /* PushNotificationModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationModule.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationModuleTests.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4DDE0000 /* AppReviewModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReviewModule.swift; sourceTree = "<group>"; };
@@ -183,6 +187,7 @@
 				2B94A3DC2D66149800608970 /* AppleSignInModule.swift */,
 				A51C0DE2E0F4B3A1C2D3E4F7 /* Host.entitlements */,
 				2B94A3E02D6614980060892E /* FontScale.swift */,
+				2B94A3E32D6614980060892E /* ReducedMotion.swift */,
 				2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */,
 			);
 			path = Host;
@@ -194,6 +199,7 @@
 				2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */,
 				D0A500000000000000000006 /* SoundEffectsModuleTests.swift */,
 				4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */,
+				2B94A3E42D6614980060892E /* ReducedMotionTests.swift */,
 				4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */,
 				4C1D0C5E0A1F2B3C4DFE0000 /* AppReviewModuleTests.swift */,
 				2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */,
@@ -415,6 +421,7 @@
 				4C1D0C5E0A1F2B3C4DEE0000 /* AppReviewModule.swift in Sources */,
 				2B94A3DD2D66149800608971 /* AppleSignInModule.swift in Sources */,
 				2B94A3E12D6614980060892E /* FontScale.swift in Sources */,
+				2B94A3E22D6614980060892E /* ReducedMotion.swift in Sources */,
 				2B94A3CD2D6613730060892C /* ViewController.swift in Sources */,
 				2B94A3C92D6613730060892C /* AppDelegate.swift in Sources */,
 				2B94A3CB2D6613730060892C /* SceneDelegate.swift in Sources */,
@@ -426,6 +433,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4C1D0C5E0A1F2B3C4D8E0000 /* LegalDocumentModuleTests.swift in Sources */,
+				2B94A3E52D6614980060892E /* ReducedMotionTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4DCE0000 /* PushNotificationModuleTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4E0E0000 /* AppReviewModuleTests.swift in Sources */,
 				2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */,

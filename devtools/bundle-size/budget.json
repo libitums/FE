@@ -12,8 +12,8 @@
     },
     {
       "path": "packages/ui-lynx/dist",
-      "maxBytes": 481000,
-      "note": "ui-lynx 빌드 산출물 전체입니다. 2026-09-28 기준 458,011 bytes이고 상한은 약 5% 여유입니다. Settings Cell·Group의 JSX, 계약, 타입 선언과 CSS가 추가되고 최신 main의 Card·Dialog 갱신도 합쳐지면서 앞선 상한(455,000)을 넘었습니다."
+      "maxBytes": 494000,
+      "note": "2026-10-09 motion 모듈(MotionProvider · useMotion · 순수 함수 · 타입 선언 · 소스맵 12파일)과 reduced 변형(RoundButton · LearningUnit · PageIndicator · SettingsCell의 data-motion 분기와 CSS 규칙, 계약 함수 8개의 contextMotion 인자)이 더해져 main(296e2eac) 478,4xx bytes에서 492,9xx bytes로 약 14.5 kB 늘었습니다. 죽은 @media 블록 5개를 지워 CSS는 일부 줄었습니다. 새 의존성은 없습니다. 상한 481,000 → 494,000 bytes로 실제 증가분만 반영합니다(여유 약 1 kB). ui-lynx 빌드 산출물 전체입니다. 2026-09-28 기준 458,011 bytes이고 상한은 약 5% 여유입니다. Settings Cell·Group의 JSX, 계약, 타입 선언과 CSS가 추가되고 최신 main의 Card·Dialog 갱신도 합쳐지면서 앞선 상한(455,000)을 넘었습니다."
     }
   ]
 }
