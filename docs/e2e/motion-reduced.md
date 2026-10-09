@@ -37,7 +37,9 @@
   않았다 — 없으면 녹화 파일을 QuickTime · 영상 플레이어에서 한 프레임씩 넘겨 스크린샷으로 남긴다.
 - **눌림 피드백이 reduced에서 사라지는 것**(`spec.md` §11 Q2): 이 회차(0.3.0)에서는 의도된 결과였다. **2단계(0.4.0)부터는 `opacity.pressed-shade` 막이 눌림을 알린다** —
   막의 관찰은 [0.4.0 motion 토큰 e2e](motion-tokens.md) M2-I5 · M2-A5가 진다. M-I5는 그대로 「축소가 없다」만 본다.
-- Spinner 회전 · Button Loading: [0.4.0 motion 토큰 e2e](motion-tokens.md)(M2-I3 · M2-I4 · M2-I6 · M2-A3 · M2-A4 · M2-A6). 보상 · 화면 전환 · Card · Tooltip(변경 없음): 이 작업의 범위 밖이다.
+- Spinner 회전 · Button Loading: [0.4.0 motion 토큰 e2e](motion-tokens.md)(M2-I3 · M2-I4 · M2-I6 · M2-A3 · M2-A4 · M2-A6). 보상 배지 · 문항 전환: 3단계
+  [보상 · 문항 전환 e2e](motion-reward.md)(M3-I1 ~ M3-I8 · M3-A1 ~ M3-A8 — reduced 분기는 M3-I5 · M3-A5). custom 화면 전환은 3단계가 적용하지 않았고 Card · Tooltip은 변경이
+  없다 — 이 작업의 범위 밖이다.
 - TalkBack · VoiceOver를 켠 상태: accessibility 단계의 몫이다.
 
 ## 전제

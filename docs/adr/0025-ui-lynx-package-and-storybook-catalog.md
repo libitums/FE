@@ -504,7 +504,9 @@ rotate · width · reveal). 새 토큰은 0이고 `@libitums/design-tokens` 0.3.
   확인하면** 3단계(`scale.reward` keyframe이 새로 들어오는 작업)가 세 자리(Round Button · Learning Unit
   `:active`, Dialog enter/exit keyframe)를 `var()`로 바꾸고 unit 대조를 문자열 단언으로 교체한다.
   Android에서 안 풀리면 리터럴 + unit 대조가 영구 방식이다. `lint:motion`은 scale 값을 보지 않는다 —
-  재발 방지는 unit 대조가 진다(대조 목록 밖의 새 자리는 잡지 못한다).
+  재발 방지는 unit 대조가 진다(대조 목록 밖의 새 자리는 잡지 못한다). *(2026-10-09 주: iOS는 M2-I8로
+  풀렸고 Android는 3단계의 M3-A8이 잰다 — 결과는 [`docs/e2e/motion-reward.md`](../e2e/motion-reward.md)
+  결과 표. 3단계는 전환하지 않고 리터럴을 유지했다 — 아래 「3단계」.)*
 - **Spinner는 `@keyframes ui-lynx-<component>-spin`(`rotate(0deg)` → `rotate(360deg)`)을 loading 선택자에
   `var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear) infinite`로 건다.** 정적 블록은
   byte 불변이다. 상단 투명(틈) 규칙은 variant 색 규칙(0,3,0)에 지지 않도록 같은 특이도로 **파일 끝**에
@@ -549,6 +551,122 @@ rotate · width · reveal). 새 토큰은 0이고 `@libitums/design-tokens` 0.3.
   대상 밖). `pnpm lint`의 사슬 끝에 들어가고 `pnpm test`가 `test:motion-literals`를 부른다 — ci-wiring ·
   verify.yml 변경 0. allowlist(`allowlist.json`)의 유일한 항목은 episode-narrative 배경 연출(Content
   예외 — 사유 문장이 allowlist 자체에 있다)이고, 없는 파일 · 위반 0인 항목은 실패다.
+- **축 추적표 · 색인 행은 그대로다** — 같은 축의 적용 기록이고 새 결정이 아니다.
+
+#### 2026-10-09 3단계 — 보상 모션(통과 배지) · 문항 전환 등장 · custom 화면 전환 0 · 2단계 이월(R2 · `var()`)
+
+같은 경계 안에서 0.4.0 motion 토큰 가운데 **보상 · 전환** 자리의 것(`duration.reward` 400ms ·
+`easing.enter-expressive` · `scale.reward` 0.8 · `duration.page` 300ms · `easing.enter`, 이동 거리는
+`spacing-16`)을 `apps/mobile`이 처음 소비한 delta다. 공개 컴포넌트는 늘지 않았고 ui-lynx의 변경은
+RoundButton 막의 접근성 속성 한 줄 **삭제**뿐이다. 새 ADR 번호가 아니다 — 위 두 절이 「뒤 단계」로
+넘긴 보상 · 화면 전환 자리를 닫거나(보상 · 문항 전환) 사유를 적고 미룬(custom 화면 전환) 적용
+기록이다. 기기 확인은 [`docs/e2e/motion-reward.md`](../e2e/motion-reward.md)가, 번들 수치는
+[성능 보고서](../performance/reports/motion-tokens-stage3-app-launch-iphone-17-pro-simulator-01.md)가
+진다.
+
+- **보상 요소는 lesson-complete의 통과 배지 하나다. 미통과 배지는 모션 0, 재화 획득 모션은 자리가
+  없어 적용하지 않았다.** 정본 `motion.md` 학습 흐름 표의 expressive는 「학습 단위를 끝냄 · 재화를
+  얻음」(성취)에만 있고 `LESSON FAILED`는 성취가 아니다 — 미통과 배지는 클래스 · 속성이 지금과 byte
+  동일하다. 재화는 **코드에 획득 순간이 없다**: `gemCount`는 setter 없는 `useState`이고, 보상 카드의
+  `+ 0 REWARD`는 placeholder(`lessonRewardPlaceholder`)이며, 상단 바의 젬 칩은 구매가 준비될 때까지
+  숨긴다. 그 카드는 배지와 **같은 화면**이라 「Expressive는 한 화면에서 한 번」에도 걸린다. 조건:
+  젬 지급 규칙이 생겨 그 수가 실제로 갱신되거나 젬 칩이 서는 날, 「배지와 한 묶음(같은 keyframe)」인지
+  「그 요소 단독」인지를 정본에 묻고 그때 연다. 판정은 순수 함수 `rewardMotionFor(verdict, motion)`
+  (`"expressive"` · `"fade"` · `"none"`)이고 `LessonCompleteScreen`이 `useMotion()`으로 모드를 읽는다 —
+  ui-lynx `motion`을 직접 쓰는 첫 앱 화면이다.
+- **「화면당 한 번」은 배지 클래스가 `(verdict, motion)`의 순수 파생이라는 사실로 보장한다 — ref ·
+  phase · `key`가 없다.** `verdict`는 라우트에 실려 화면과 함께 죽고 `motion`은 호스트 globalProps라
+  바뀌면 트리가 통째로 다시 선다. 그래서 마운트부터 언마운트까지 `className` 문자열이 같고 Lynx는 같은
+  `animation` 선언을 다시 시작하지 않는다(`AppSession`의 젬 · 진행 · inset 재렌더는 클래스를 바꾸지
+  않는다 — ui 테스트가 재렌더 전후 요소 동일성으로 고정). 반복을 막는 코드를 두면 「왜 있는가」를 다음
+  사람이 다시 묻는다. keyframe의 `scale(0.8)`은 2단계 D1과 같은 정책(리터럴 + unit이 `motion.scale.reward`와
+  대조)이다 — 아래 `var()` 항목.
+- **`exit-expressive` 퇴장은 적용하지 않았다 — 나가기 · 다시 풀기 · 시스템 뒤로가기는 즉시 핸들러 1회다.**
+  이 화면의 모든 「다음 입력」이 화면 자체를 떠나는 것이라(`renderScreen`이 다른 element를 돌려주는
+  순간 배지가 언마운트된다) 배지만의 400ms 퇴장을 보이려면 내비게이션을 400ms 늦춰야 한다. 정본의
+  「보상 motion 중에도 다음 입력을 받는다. 다음 버튼을 누르면 보상 요소는 즉시 사라진다」는 보상이
+  입력을 **막지 않는다**는 뜻이고 지연을 요구하지 않으며, 앱 어디에도 퇴장 모션을 기다리는 자리가 없고
+  (`LearningShell`은 Dialog `exiting`을 쓰지 않고 바로 `onExit`), 탭 직후 동기 단언인 통합 테스트
+  25자리를 전부 비동기로 바꾸는 회귀 비용이 크다. 「맵으로 가는 길을 400ms 늦추더라도 퇴장을 보이자」가
+  답이면 4단계에서 `leave(action)` 꼴로 연다 — 사용자 결정 대기.
+- **문항 전환은 `LearningShell`의 무대(`learning-shell-stage`)와 작업 영역(`learning-shell-scroll`)에만
+  붙는 `transition` 기반 3상 기계이고, 퇴장이 없다.** 순수 리듀서(`question-transition.ts`)가
+  `idle → primed → entering → idle`을 돌린다 — `primed`는 새 내용이 보이지 않는 시작값
+  (`opacity: 0; transform: translateX(var(--libitum-spacing-16)); transition: none`), `entering`은 정착값으로
+  가는 전환(`page` · `enter`), reduced는 `transform: none` + `opacity`만 `d2` · `linear`. 트리거는 키
+  `complete ? "complete" : String(questionIndex)`의 변화이고 완료 장면도 전환한다(정본 「다음 문제 ·
+  장면」). 인덱스 0 마운트는 idle(화면 push에 전환을 걸지 않는다), 인덱스 > 0 마운트는 primed(Writing이
+  문항마다 껍데기를 다시 세우는 길). 전환 중 재입력은 `entering`을 **유지**해 현재 값에서 이어간다(정본
+  원칙 2). 종료는 **타이머**다 — `bindtransitionend`는 벤더된 Lynx 문서에도 저장소에도 없고,
+  `motionDurationMs(page | d2)` 타이머는 테스트에서 결정적이며 `advance` 자물쇠의 fake timer 케이스와
+  간섭하지 않는다. 머리 · 세션 헤더 · 진행 바 · 지시문 · 액션 행 · 넘김 층 · Dialog에는 클래스가 붙지
+  않고 `advance` 자물쇠 · `runAdvance`는 byte 불변이다. 관찰 채널은 `data-page="primed" | "entering"`과
+  reduced일 때만 `data-motion="reduced"`(조건부 spread — 위 절의 같은 이유).
+  - **퇴장이 없는 이유**: 옛 문항을 300ms 더 보이면 그 동안의 탭이 옛 문항에 간다 — 「전환 중 입력이
+    다음 문항에 간다」와 양립하지 않는다. 새 내용은 즉시 DOM에 서서 입력을 받고 불투명도만 올라온다.
+    정본 짝 규칙(「나타남과 사라짐은 같은 시간」)은 사라짐이 **없는** 전환에는 걸리지 않는다고 읽었다 —
+    「내용이 즉시 바뀌는 전환은 등장만」을 플랫폼 매핑 행에 적을지는 design-system에 묻는다. 옛 내용의
+    사라짐을 보이고 싶다면(새 문항이 150ms 늦게 서는 대가) 4단계에서 다시 본다.
+  - **배치는 `LearningShellBody.tsx`가 진다.** `LearningShell.tsx`가 295줄이라 훅 · 클래스 · 속성을 더하면
+    `max-lines` 300을 넘어, 무대 · 작업 영역 배치 분기를 떼어 거기서 전환 클래스 · 속성을 붙인다.
+    DOM · testid · 순서는 byte 불변이고 props는 최소(`card` · `workspace` · `scrollCard` ·
+    `workspaceScrolls` · `transition`)다. 카드 스크롤 모드(말하기)에서는 바깥 `scroll-view` 하나에만 붙인다 —
+    안의 무대에도 붙이면 불투명도가 곱해진다.
+  - **iOS에서 `opacity` 전환 중 보조기술은 무대 · 작업 영역을 건너뛴다 — 「접근성 트리 불변」이 아니다.**
+    Lynx iOS의 `opacity`는 `view.layer.opacity`(모델 레이어)에 쓰고(Pod 4.0.1 `ui/LynxUI.m` 2185~2203행),
+    `transition`이 선언돼 있으면 세터가 CA 애니메이션으로 넘기고 **모델값은 완료 콜백에서야** 쓰며
+    (`animation/LynxTransitionAnimationManager.m` 157~181행, 콜백 178행), 그 애니메이션은
+    `removedOnCompletion NO` · `fillMode both`로 **표시 레이어만** 0 → 1을 그린다
+    (`animation/LynxAnimationUtils.m` 33~41행). 즉 entering 동안(standard 300ms · reduced 100ms) 두 뷰의
+    `alpha`는 0에 머물고 UIKit 보조기술은 alpha 0 뷰를 `hidden`처럼 건너뛴다(UIKit 관례 — 저장소 밖
+    추론). VoiceOver가 켜져 있으면 Lynx가 레이아웃마다 `UIAccessibilityLayoutChangedNotification`을
+    쏘므로(`ui/LynxUIOwner.m` 1036~1042행) 문항 교체 직후의 초점 재평가가 그 창 안에서 일어난다 — 초점이
+    새 문항이 아니라 세션 헤더 · 액션 행 · 넘김 층에 설 수 있다. 내용은 뷰 계층에 남고 끝나면 돌아온다
+    (모델값 1 복귀). 터치는 alpha와 무관하다(`shouldHitTest`는 `hidden` · `userInteractionEnabled` ·
+    `window`만 본다 — M3-I4가 전환 중 tap이 새 장면에 가는 것을 확인). 교체 뒤 초점 복원은
+    [ADR-0016](0016-assistive-technology-semantics.md) D8의 축이고 실기 항목은 `motion-reward.md` M3-I8 ·
+    M3-A7이다. Android는 AAR뿐이라 미확인. **4단계 조건**: M3-I8이 「초점이 매번 무대 밖에 선다」고
+    적으면 D8 경로(교체 뒤 새 문항 내용으로 초점 통지)를 연다. 전환을 걷거나 `opacity` 시작값을 0.01로
+    두는 우회는 실기 근거가 있을 때만 검토한다.
+  - **기기 관찰의 한계 — 이 빌드에는 문항이 둘 이상인 유닛이 없다.** 그래서 「문항 1 → 2」 대신 같은
+    상태 기계의 `complete` 키 경로(문항 → 완료 장면)로 등장을 판정했다(iOS: 중간 프레임 ≥ 14장 · x 오프셋
+    12.7 css px · 정착 ≈ 296ms, reduced는 오프셋 0 · ≈ 88ms). 완료 장면에는 작업 영역이 없어
+    `<scroll-view>` 자체에 건 전환은 **관찰되지 않았다** — 문항이 둘 이상인 유닛이 생기면 M3-I3의 작업
+    영역 부분을 다시 본다.
+  - **테스트 렌더러는 한 번 붙은 `data-*`를 조건부 spread에서 빠진 재렌더에서 지우지 않는다.** idle
+    복귀 뒤 클래스는 base로 돌아오지만 `data-page`가 `"entering"`으로 남는다. 그래서 ui 테스트의 idle
+    복귀는 **클래스 정확 일치**로만 판정한다. CSS는 클래스만 보므로 기기 동작과 무관하고, 관찰 채널
+    `data-page`는 primed · entering 두 값만 뜻을 갖는다.
+- **custom 화면 전환은 걸지 않았다 — 이 앱의 화면 전환은 0이다.** `AppSession`은 스택 최상단 **하나**만
+  그리고 이전 화면은 즉시 언마운트돼 퇴장을 걸 요소가 없다. `Nav`는 방향을 모른다(`navReducer`는 결과
+  스택만 남긴다 — push/pop을 상태에 더하면 [ADR-0007](0007-app-internals-state-routing-data-errors.md) D3의 「파생
+  가능한 값을 두 번 두지 않는다」에 걸린다). `AppSession.tsx`는 정확히 300줄이다. 등장만 거는 반쪽 전환은
+  짝 규칙과 어긋나고, 스플래시 · 로그인 · 전체 화면을 포함한 **모든** 화면의 첫 프레임을 바꿔 e2e 캡처와
+  성능 보고서(앱 실행 `__lynx_timing_flag`)의 비교선을 흔든다. 정본 「플랫폼이 제공하는 기본 전환을 쓸
+  때는 플랫폼 값을 바꾸지 않는다」 — 이 앱은 플랫폼 내비게이션을 쓰지 않으므로 `page`의 「custom push ·
+  pop」 행은 스택 전환기를 갖는 날의 것이다. **4단계 설계 후보(결정 아님)**: 들어오는 화면만 crossfade
+  (`page` · `enter`, reduced `d2` · `linear`), `renderScreen` 결과를 감싸는 `app-screen` 호스트(`key` = 화면
+  정체 → 재마운트 등장, 별 컴포넌트로 추출), outgoing layer 없음, 제외 목록(탭 전환 · 스플래시 · 서사 ·
+  VN — 들어오는 화면 이름으로 판정), 방향은 쓰지 않는다. 선행: `AppSession` 300줄 해소, 짝 규칙 예외를
+  정본에 묻기, e2e · 성능 기준선 재설정.
+- **scale `var()` 전환은 4단계다 — 이번 PR은 리터럴을 유지했다.** 2단계 「전환 조건」의 Android 확인은
+  이 작업의 e2e 탐색 항목 M3-A8(dev 번들로 `round-button.css`의 눌림 scale을 `var()`로 바꿔 관찰)과
+  M3-A3 (b)(문항 등장 `translateX(var())`의 x 오프셋 유무)가 함께 적는다. 결과는 `motion-reward.md`
+  결과 표가 정본이고 여기 수치를 되풀이하지 않는다. 풀리면 세 자리(Round Button · Learning Unit `:active`,
+  Dialog keyframe)와 보상 keyframe의 `var()` 전환 · unit 문자열 단언이 **4단계 첫 묶음**이다 — 같은 PR
+  안에서 e2e 뒤 구현을 한 번 더 도는 루프를 두지 않는다. 안 풀리면 리터럴 + unit 대조가 영구이고 그
+  사실을 이 소절에 적는다. 안 풀릴 때 `translateX(var())` 선언만 무효가 되어 이동 없는 fade로 조용히
+  열화한다(불투명도 선언은 별도 줄) — 회귀가 아니다.
+- **R2 — RoundButton 막의 `accessibility-elements-hidden`을 지웠다.** 막은 자손 · 라벨 없는 잎 `<view>`라
+  세터(자손 가림)가 무동작이고, [ADR-0016](0016-assistive-technology-semantics.md) D5 「잎에는 붙이지 않는다.
+  붙여도 아무 일도 하지 않는다」에 맞춰 Learning Unit의 같은 막과 모양을 맞췄다. D5 예외(D9 scrim)의
+  근거는 hit-testing인데 막은 `:active`가 루트에 걸리고 탭은 버블로 받아 그 근거가 없다 — 예외로 적지
+  않고 삭제했다. 동작 차이 0(M3-I6이 R2 뒤에도 막 색 · 눌림 95 %가 같음을 확인). 2단계가 더했던 잎
+  부착 한 줄이 사라져 D5의 「저장소에 남은 잎 부착 0건」 장부가 다시 맞는다. 자손이 `<svg>` · `<view>`뿐인
+  래퍼 부착(이 화면의 배지 래퍼 · Button spinner wrap · RoundButton loading · icon 래퍼)은 그 장부가 세지
+  않은 꼴이고 이 작업이 만든 것이 아니다 — 4단계 첫 묶음 후보.
+- **번들**: main `+4,847 bytes`(1,397,447 → 1,402,294, 상한 1,412,000 안), ui-lynx dist `−71 bytes`(R2 한 줄).
+  `budget.json` 변경 0.
 - **축 추적표 · 색인 행은 그대로다** — 같은 축의 적용 기록이고 새 결정이 아니다.
 
 ## 버린 대안
