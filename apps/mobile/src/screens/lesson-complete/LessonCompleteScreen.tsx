@@ -130,7 +130,6 @@ export function LessonCompleteScreen({
         className={rewardBadgeClassName(verdict, rewardMotion)}
         data-verdict={verdict}
         {...(rewardMotion === "none" ? {} : { "data-reward": rewardMotion })}
-        accessibility-elements-hidden={true}
       >
         <svg
           className="lesson-complete-screen-badge-icon"
