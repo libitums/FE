@@ -386,7 +386,9 @@ import "@libitums/ui-lynx/styles.css";
 
 - `Motion = "standard" | "reduced"`. `<MotionProvider motion={…}>`가 Context로 내려 주고
   `useMotion()`이 읽는다. Provider 밖에서는 `"standard"`이고 던지지 않는다 — Storybook 스토리와
-  Provider 없는 테스트는 그대로 돈다.
+  Provider 없는 테스트는 그대로 돈다. 카탈로그는 변형이 있는 컴포넌트마다 `motion` arg와
+  `ReducedMotion` 스토리를 두고, Round Button · Learning Unit · Page Indicator · Settings Cell · Chat
+  Bubble은 엔트리가 `MotionProvider`로 감싼다(컴포넌트에 prop을 주지 않는다 — 제품 앱과 같은 길).
 - 우선순위는 **명시 prop > 컨텍스트 > `"standard"`**. Dialog · BottomSheet · Overlay ·
   ProgressHeader의 `motion` prop과 VisualNovelDialog · ChatBubble · `useTypewriter`의
   `reducedMotion` prop은 override로 남는다. 순수 함수 `resolveMotion(explicit, context)` ·
@@ -404,9 +406,11 @@ import "@libitums/ui-lynx/styles.css";
   순수 함수다. `useTypewriter`의 `defaultRevealIntervalMs`가 `motion.duration.reveal`을 이것으로
   읽는다. 단위가 ms · s가 아니거나 숫자가 아니면 던진다(토큰은 빌드 시 상수라 런타임에 잘못될 수
   없고, 조용한 NaN은 `setInterval(NaN)`으로 번진다).
-- CSS에서 `transition` · `animation`의 시간 · easing은 `var(--libitum-motion-…)`만 쓴다. 루트
-  `pnpm lint:motion`이 리터럴 시간 · `cubic-bezier()` · easing 키워드 · `@media`를 막는다
-  (allowlist는 `devtools/motion-literals/allowlist.json`).
+- CSS에서 `transition` · `animation`의 시간 · easing과 `transform`의 scale은 `var(--libitum-motion-…)`만
+  쓴다(`scale(var(--libitum-motion-scale-pressed))` 꼴 — 항등 `scale(1)`과 거울 `scaleX(-1)`만 리터럴).
+  루트 `pnpm lint:motion`이 리터럴 시간 · `cubic-bezier()` · easing 키워드 · `@media` · 비항등 scale
+  리터럴을 막고, `.ts` · `.tsx`의 inline style(`style={{ transition: … }}` · `style="…"`)에도 같은 검사를
+  건다(allowlist는 `devtools/motion-literals/allowlist.json`).
 - 값을 어디서 가져오는지는 패키지가 정하지 않는다. 소비 앱이 호스트가 보낸 boolean을
   `motionFromReducedMotion`으로 옮겨 앱 루트에서 Provider를 한 번 세운다. 이 모듈에는 CSS가 없다.
 
@@ -419,9 +423,10 @@ function Root({ reducedMotion, children }: { reducedMotion: boolean; children: R
 }
 ```
 
-배경과 결정은 FE 저장소 `docs/adr/0025-ui-lynx-package-and-storybook-catalog.md`의 「2026-10-09
-확장」, 호스트 키 계약은 `docs/adr/0044-android-tappable-inset.md` D1의 「후속 확장」, 기기 확인
-절차는 `docs/e2e/motion-reduced.md`다.
+모션 정책은 FE 저장소 `docs/adr/0053-motion-policy.md`가 진다(적용 기록은
+`docs/adr/0025-ui-lynx-package-and-storybook-catalog.md`의 「2026-10-09 확장」 · 「2단계」 · 「3단계」),
+호스트 키 계약은 `docs/adr/0044-android-tappable-inset.md` D1의 「후속 확장」, 기기 확인 절차는
+`docs/e2e/motion-reduced.md` · `motion-tokens.md` · `motion-reward.md`다.
 
 ## 공개 진입점
 

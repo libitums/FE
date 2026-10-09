@@ -41,7 +41,8 @@ pnpm storybook:lynx
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
 Navigator·Step Indicator·Answer Label·Bottom Sheet·Card·Compact Numeric Input·Chat Bubble·Text
-Field·Visual Novel Dialog·Overlay·Fog·Tooltip·Avatar의 실제 `.web.bundle` 열아홉 개를 만들고,
+Field·Visual Novel Dialog·Overlay·Fog·Tooltip·Avatar·Dialog·Learning Unit·Settings Cell·Option
+Selector의 실제 `.web.bundle` 스물세 개를 만들고,
 Rspeedy watch와 Storybook dev
 server를 함께 유지한다.
 
@@ -57,9 +58,13 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Button — Default, Brand, Loading, Disabled
 - Components/Back Header — Default, Title Only
 - Components/Status Indicator — Completed, In Progress, Needs Retry, Locked
-- Components/Round Button — Default, Brand, Loading, Disabled
+- Components/Round Button — Default, Brand, Loading, Disabled, Reduced Motion
 - Components/Progress Header — Default, Zero, Minimum Fill, Complete, Reduced Motion
-- Components/Page Indicator — Default, First, Last, Single, Empty
+- Components/Page Indicator — Default, First, Last, Single, Empty, Reduced Motion
+- Components/Learning Unit — Available, Default, Active, Clear, Narrative, Focused, All States, Reduced Motion
+- Components/Settings Cell — Navigation, Toggle, With Avatar, Disabled, Group, Reduced Motion
+- Components/Dialog — Default, Single Action, Without Description, Disabled Secondary, Reduced Motion, Entering
+- Components/Option Selector — Default, Filled, Multiple, Immediate, Grid, Disabled, Long Label
 - Components/Bottom Navigator — Default, Long Accessibility Label, All Items, Disabled
 - Components/Bottom Sheet — Default, Multiple Actions
 - Components/Step Indicator — First, Middle, Last
@@ -69,8 +74,8 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Card — Static, Interactive, Large With Media, Right To Left
 - Components/Compact Numeric Input — Empty, Filled, Error, Disabled
 - Components/Fog — Bottom, Top, Horizontal RTL, Hidden, Full
-- Components/Chat Bubble — Incoming, Outgoing, Small, Large, Failed, Learning Language, Long Content
-- Components/Visual Novel Dialog — Speech, Narration, Thought, Translucent, Revealing, Auto Advance, Learning Language, Right To Left, Long Content
+- Components/Chat Bubble — Incoming, Outgoing, Small, Large, Failed, Learning Language, Long Content, Typewriter, Reduced Motion
+- Components/Visual Novel Dialog — Speech, Narration, Thought, Translucent, Revealing, Auto Advance, Learning Language, Right To Left, Long Content, Reduced Motion
 - Components/Text Field — Default, Filled, Error, ReadOnly, Disabled, Prefix And Suffix, Trailing Action, Counter
 - Components/Tooltip — Top, Bottom, Start, End, Brand, No Arrow, Aligned Start, Learning Language
 
@@ -78,8 +83,17 @@ Controls 변경은 `<lynx-view>.updateData()`를 통해 ReactLynx `useInitData()
 Button·Round Button tap과 Back Header back/info tap은
 `NativeModules.bridge.call("STORYBOOK_ACTION", …)`로 Storybook Actions에 돌아온다.
 Round Button Controls는 `accessibilityLabel`, 닫힌 icon key `info-02`, variant, size, disabled,
-loading을 제공한다. 활성 tap은 `onTap` Action을 한 번 기록하고 Loading·Disabled tap은 기록하지
+loading, `motion`을 제공한다. 활성 tap은 `onTap` Action을 한 번 기록하고 Loading·Disabled tap은 기록하지
 않는다. 함수와 SVG XML은 init data 직렬화 경계를 넘지 않는다.
+
+동작 줄이기 변형은 컴포넌트마다 `motion` Control(`standard` · `reduced`, inline radio)과 `Reduced Motion`
+스토리로 본다. Dialog·Bottom Sheet·Overlay·Progress Header는 `motion`을 prop으로 넘기고, Round
+Button·Learning Unit·Page Indicator·Settings Cell·Chat Bubble은 Lynx entry가 `@libitums/ui-lynx/motion`의
+`MotionProvider`로 트리를 감싸 컨텍스트로 전달한다(컴포넌트에 prop을 주지 않는다 — 제품 앱과 같은
+길). Visual Novel Dialog는 기존 `reducedMotion` Control이다. Button·Card·Tooltip은 동작 줄이기 변형이
+없어 스토리도 없다(Spinner 회전은 reduced에서도 유지). `standard`에서는 DOM·클래스가 전과 같고
+`reduced`일 때만 `-motion-reduced` 클래스·`data-motion`이 난다. 정책은 FE 저장소
+`docs/adr/0053-motion-policy.md`가 진다.
 Progress Header는 `title`, `activity`, `progress`,
 `exitAccessibilityLabel`, `motion` Controls를 직렬화해 같은 경계로 전달하고, exit tap은
 `onExit` bridge Action으로 돌아온다. Lynx entry는
@@ -97,10 +111,12 @@ Step Indicator Controls는 `currentStep`과 `totalSteps` 정수만 전달하며 
 `currentStep`이 1–정규화된 `totalSteps` 정수가 아니면
 `Math.min(2, totalSteps)`를 사용한다. Action bridge는 제공하지 않는다.
 
-Chat Bubble Controls는 message, speaker, direction, size, delivery, contentLanguage와 languageTag를
-직렬화한다. Incoming delivery는 runtime에서 Default로 고정한다. 학습 언어인데 languageTag가
-비어 있으면 Storybook 전용 fallback `en`을 사용한다. Bubble은 정적 텍스트이므로 Action bridge를
-제공하지 않는다.
+Chat Bubble Controls는 message, speaker, direction, size, delivery, contentLanguage, languageTag,
+`reveal`(`instant` · `typewriter`)과 `motion`을 직렬화한다. Incoming delivery는 runtime에서 Default로
+고정한다. 학습 언어인데 languageTag가 비어 있으면 Storybook 전용 fallback `en`을 사용한다.
+`Typewriter`는 글자가 `duration.reveal` 간격으로 드러나고, `Reduced Motion`은 같은 `reveal: typewriter`를
+컨텍스트 `reduced`로 즉시 ready 상태에 둔다. `intervalMs`와 완료 callback은 노출하지 않는다. Bubble은
+정적 텍스트이므로 Action bridge를 제공하지 않는다.
 
 Text Field Controls는 label, qualifier, defaultValue, placeholder, purpose, availability,
 supporting, counter와 adornment를 JSON 값으로 전달한다. icon과 Trailing Action callback은 Lynx
