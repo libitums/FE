@@ -304,3 +304,33 @@
   overflow: hidden;
   z-index: var(--libitum-elevation-z-default);
 }
+
+/* 문항이 바뀔 때의 전환입니다. primed는 오른쪽에서 투명하게 대기하고, entering이 제자리로
+   옮기며 나타냅니다. 무대와 작업 영역이 같은 단계를 함께 씁니다. */
+.learning-shell-stage-page-primed,
+.learning-shell-scroll-page-primed {
+  opacity: 0;
+  transform: translateX(var(--libitum-spacing-16));
+  transition: none;
+}
+
+.learning-shell-stage-page-entering,
+.learning-shell-scroll-page-entering {
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity var(--libitum-motion-duration-page) var(--libitum-motion-easing-enter),
+    transform var(--libitum-motion-duration-page) var(--libitum-motion-easing-enter);
+}
+
+/* 동작 줄이기: 이동 없이 불투명도만 짧게 바뀝니다. 같은 단계의 위 규칙보다 뒤에 두어 이깁니다. */
+.learning-shell-stage-motion-reduced.learning-shell-stage-page-primed,
+.learning-shell-scroll-motion-reduced.learning-shell-scroll-page-primed {
+  transform: none;
+}
+
+.learning-shell-stage-motion-reduced.learning-shell-stage-page-entering,
+.learning-shell-scroll-motion-reduced.learning-shell-scroll-page-entering {
+  transform: none;
+  transition: opacity var(--libitum-motion-duration-d2) var(--libitum-motion-easing-linear);
+}
