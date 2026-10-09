@@ -1,0 +1,23 @@
+---
+import { buildGtagBootstrap } from "../analytics/gtag";
+
+interface Props {
+  /** GA4 측정 ID입니다. 빈 문자열이면 아무것도 싣지 않습니다. */
+  measurementId: string;
+}
+
+const { measurementId } = Astro.props;
+---
+
+{
+  measurementId && (
+    <>
+      <script is:inline set:html={buildGtagBootstrap(measurementId)} />
+      <script
+        is:inline
+        async
+        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
+      />
+    </>
+  )
+}

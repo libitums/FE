@@ -4,6 +4,7 @@ import { useEffect, useState } from "@lynx-js/react";
 import { playAudio, stopAudio } from "../../lib/audio";
 import { playSound, stopRing } from "../../lib/sound-effects";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import type {
   PhoneCallScreenProps,
@@ -104,6 +105,8 @@ export function PhoneCallScreen({
     stopAudio();
     onExit(completionLatched ? "completed" : phoneCallExitOutcome(session));
   };
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다(벨 · 오디오 정지 포함).
+  useScreenBack(handleExit);
 
   return (
     <CallScreen

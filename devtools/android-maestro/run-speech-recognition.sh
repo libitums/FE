@@ -20,7 +20,7 @@ cleanup() {
     -a com.libitum.host.test.STOP_SIGNED_IN_FIXTURE >/dev/null 2>&1 || true
   if [ -n "${fixture_pid:-}" ]; then wait "$fixture_pid" || true; fi
   if [ -n "${server_pid:-}" ]; then kill "$server_pid" 2>/dev/null || true; fi
-  "$ADB" -s "$E2E_UDID" shell am force-stop com.libitum.host >/dev/null 2>&1 || true
+  "$ADB" -s "$E2E_UDID" shell am force-stop libitum.duru.android >/dev/null 2>&1 || true
 }
 trap cleanup EXIT HUP INT TERM
 
@@ -40,12 +40,12 @@ kill -0 "$server_pid"
 "$ADB" -s "$E2E_UDID" shell settings put system font_scale 1.0
 "$ADB" -s "$E2E_UDID" install -r app/build/outputs/apk/debug/app-debug.apk
 "$ADB" -s "$E2E_UDID" install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-"$ADB" -s "$E2E_UDID" shell pm clear com.libitum.host
+"$ADB" -s "$E2E_UDID" shell pm clear libitum.duru.android
 "$ADB" -s "$E2E_UDID" shell am instrument -w \
   -e class com.libitum.host.SignedInScreenFixtureTest \
   -e speechProgress true \
   -e bundleUrl http://10.0.2.2:18769/main.lynx.bundle \
-  com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner \
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner \
   >/tmp/libitum-speech-fixture.log 2>&1 &
 fixture_pid=$!
 

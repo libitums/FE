@@ -565,6 +565,13 @@ type Nav = {
 iOS에는 하드웨어 뒤로가기가 없다. **모든 화면이 화면 안에 뒤로 갈 수단을 갖는다**
 (ADR-0007).
 
+⟨2026-10-05⟩ **Android에는 시스템 뒤로가기(제스처 · 3버튼)가 있고, 위에서부터 처음 걸리는 한 건을 한다** —
+① 열린 층(확인창 · 시트 · 모달 · 안내)이 있으면 그 층만 닫는다 → ② 쌓인 화면이면 **그 화면의 보이는 닫기를 누른 것과
+같다**(학습 화면은 나가기 확인창이 뜬다) → ③ 롤플레이 · 설정 탭 루트면 여정 탭 루트로 간다 → ④ 여정 맵이면 앱을
+떠난다. 진입 구간도 ②와 같은 규칙이고, 뒤로 가는 수단이 없는 화면(스플래시 · 온보딩 첫 스텝)에서는 앱을 떠난다.
+스택에는 새 동작이 없다 — 위 표의 `backToRoot` · `push` · `replace`가 그대로다. 결정과 떠나는 방식은
+[ADR-0043](adr/0043-android-system-back.md)이 진다.
+
 ---
 
 ## 제약 (constraints)
@@ -630,6 +637,50 @@ A~I가 진다.
 > *"`HomeScreen.ui.test.tsx`가 트리 전체를 인라인 스냅샷으로 박고 있다"* 고 적혀
 > 있었는데, 그 테스트는 그 뒤에 다시 쓰여 `data-testid`와 속성만 단언했고, LIB-257에서 홈
 > 화면과 함께 지워졌다.
+
+### 상단 띠를 어둡게 칠하는 면은 상태바 표지를 단다
+
+**2026-10-06에 생긴 제약이다** ([ADR-0050](adr/0050-android-status-bar-icons.md)). Android는 상태바 아이콘(시계 · 신호 ·
+배터리)의 명암을 스스로 바꾸지 않는다. 기본값은 어두운 아이콘이고, 화면이 **표지**를 달아야 호스트가 밝은
+아이콘으로 바꾼다. iOS는 시스템이 스스로 고르므로 이 표지를 읽지 않는다.
+
+> **상단 띠를 스스로 칠하는 면(가장자리까지 까는 화면 · `position: fixed` 레이어 · 0.45가 아닌 스크림)을 만들면,
+> 띠에서 가장 밝은 지점의 합성색 휘도가 0.18 이하일 때 그 면의 요소에
+> `data-statusbar={lightStatusBarIcons}`를 단다. 달지 않으면 어두운 아이콘이다.**
+
+상수는 `apps/mobile/src/lib/status-bar-icons.ts`에 있다. 지금 표지를 단 요소는 여덟이다.
+
+| 파일(`apps/mobile/src` 기준) | 다는 요소 | 지는 표면 |
+|---|---|---|
+| `screens/episode-intro/EpisodeIntroScreen.tsx` | 루트 | 에피소드 표지 · 그 위의 건너뛰기 확인창 |
+| `screens/episode-narrative/EpisodeNarrativeScreen.tsx` | 루트 | 서사(`episode-prologue`의 서사 구간 · `episode-final`의 서사 단계) |
+| `screens/episode-final/EpisodeFinalScreen.tsx` | 루트 | 최종 테스트의 시험 단계 |
+| `screens/visual-novel/VisualNovelScreen.tsx` | 루트 | `visual-novel` · `roleplay-visual-novel` |
+| `screens/journey-entry/JourneyEntryScreen.tsx` | 루트 | 여정 입장 |
+| `screens/journey-map/JourneyStatModal.tsx` | 루트 | 지표 모달(트로피 · 연속 학습) |
+| `components/FirstUnitGuide.tsx` | 루트 | 서사 · 서사 채팅 · 서사 통화 위의 첫 단원 안내 |
+| `screens/journey-map/JourneyMapScreen.tsx` | `className="first-unit-map-scrim"`인 요소 — **화면 루트가 아니다** | 여정 맵 위의 안내 스크림 |
+
+- **표지는 조건 없이 단다.** 값을 상태에 따라 바꾸거나 불리언 prop으로 켜고 끄지 않는다 — 표지를 켜고 끄는 것은 그
+  요소의 마운트다. 값은 상수로만 넣고 리터럴을 쓰지 않는다.
+- **「표지가 하나라도 있으면 밝은 아이콘」이다.** 밝은 화면 위의 어두운 층은 층에 달고, 닫히면 아래 표면의 명암으로
+  돌아간다. 어두운 화면 위에 **밝고 불투명한** 층을 띄우는 경우는 지금 없고, 이 규칙으로는 표현할 수 없다 — 필요해지면
+  ADR-0050을 먼저 다시 본다.
+- **달지 않는 것**: 셸 · 스플래시 · 채팅 · 통화 화면 · ui-lynx의 `Dialog` · `BottomSheet` · `Overlay` · `StepSheet`(스크림
+  0.45는 어두운 아이콘을 유지한다). 젬 구매 화면은 제품에서 열리지 않아 달지 않았다 — 제품에 붙일 때 단다.
+- **휘도가 0.18 ~ 0.49 사이인 상단 띠는 만들지 않는다.** 어두운 아이콘이 검정 60%인 기기(API 30 실측)에서 어느 쪽으로도
+  시계 4.5:1이 서지 않는다. 그림을 상단까지 깔 때는 256px 명암 또는 Fog(dark)를 얹는다.
+- **상태바 띠(위쪽 inset) 안에 놓인 장식 그림 · 아이콘은 검사가 잡지 못한다.** 면의 바탕이 어두워도 글리프 뒤가 그 장식의
+  색이 된다. 연속 학습 모달의 운석 하나가 이 자리에 있어 inset 아래로 내렸고(ADR-0050 D5 — iOS에서도 그 자리가 바뀐다),
+  검사는 그 운석 하나만 본다. 다른 장식을 띠 안에 놓게 되면 그 색 위에서 시계 4.5:1 · 아이콘 3:1을 다시 잰다.
+
+**빠뜨림은 `pnpm verify`가 절반만 잡는다.** `devtools/android-bundle/host-status-bar-icons.mjs`의
+`statusBarMarkerIssues`와 등록부 `statusBarSurfaceRegistry`가 `pnpm test:android-bundle`에서 돈다. `isFullBleedScreen`에
+route를 더하거나 `position: fixed` CSS를 새로 만들면 검사가 서고, **등록부에 분류를 적어야 통과한다**(밝은 아이콘이면
+표지를 다는 파일까지). 등록부 밖의 파일에 표지가 있거나 값이 상수가 아니어도 선다.
+**검사는 「분류됐는가」만 본다 — 「어두운 색을 칠했는가」는 보지 못한다.** 분류는 사람이 위 한 줄 규칙으로 하고, 색을
+실제로 재는 것은 [Android 상태바 아이콘 명암](e2e/android-status-bar-icons.md)의 캡처 판정뿐이다. 규칙 아홉의 목록과
+검사가 놓치는 경우는 ADR-0050 D8이 진다.
 
 ---
 

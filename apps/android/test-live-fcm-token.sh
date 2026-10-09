@@ -18,20 +18,20 @@ with open(sys.argv[1], encoding="utf-8") as config_file:
     config = json.load(config_file)
 if not any(
     client.get("client_info", {}).get("android_client_info", {}).get("package_name")
-    == "com.libitum.host"
+    == "libitum.duru.android"
     for client in config.get("client", [])
 ):
-    raise SystemExit("Firebase config does not contain com.libitum.host")
+    raise SystemExit("Firebase config does not contain libitum.duru.android")
 PY
 
 cd "$APP_DIR"
 ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
 "$ADB" -s "$FCM_UDID" install -r app/build/outputs/apk/debug/app-debug.apk
 "$ADB" -s "$FCM_UDID" install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-"$ADB" -s "$FCM_UDID" shell pm clear com.libitum.host
+"$ADB" -s "$FCM_UDID" shell pm clear libitum.duru.android
 result=$("$ADB" -s "$FCM_UDID" shell am instrument -w \
-  -e class com.libitum.host.LiveFcmTokenTest \
+  -e class com.libitum.host.LiveFcmTokenTest#bridgeReturnsARealFcmRegistration \
   -e liveFcm true \
-  com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner)
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner)
 printf '%s\n' "$result"
 printf '%s\n' "$result" | grep -q '^OK (1 test)$'

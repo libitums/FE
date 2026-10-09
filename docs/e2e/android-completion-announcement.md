@@ -18,7 +18,7 @@ cd apps/android
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 adb shell am instrument -w -e class com.libitum.host.CompletionAnnouncementModuleTest \
-  com.libitum.host.test/androidx.test.runner.AndroidJUnitRunner
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
 cd ../..
 E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:completion
 ```

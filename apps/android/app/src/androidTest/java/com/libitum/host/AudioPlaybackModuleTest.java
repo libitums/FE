@@ -52,6 +52,30 @@ public final class AudioPlaybackModuleTest {
     }
   }
 
+  /** AP2 */
+  @Test public void ap2_missingAssetFinishesOnceAndLogsTheOpenFailure() throws Exception {
+    Runtime.getRuntime().exec(new String[] {"logcat", "-c"}).waitFor();
+    CountDownLatch complete = new CountDownLatch(1);
+    AtomicInteger calls = new AtomicInteger();
+    module.play("missing-audio-probe", args -> {
+      calls.incrementAndGet();
+      complete.countDown();
+    });
+    assertTrue("missing asset did not settle", complete.await(3, TimeUnit.SECONDS));
+    Thread.sleep(200);
+    assertEquals(1, calls.get());
+    Process logcat = Runtime.getRuntime().exec(new String[] {"logcat", "-d", "-s", "AudioPlayback:W"});
+    StringBuilder log = new StringBuilder();
+    try (java.io.BufferedReader reader = new java.io.BufferedReader(
+        new java.io.InputStreamReader(logcat.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+      String line;
+      while ((line = reader.readLine()) != null) log.append(line).append('\n');
+    }
+    logcat.waitFor();
+    assertTrue("no open-failure warning in logcat: " + log,
+        log.toString().contains("Cannot open audio asset audio/missing-audio-probe.m4a"));
+  }
+
   @Test public void bundledAudioCompletesOnce() throws InterruptedException {
     CountDownLatch complete = new CountDownLatch(1);
     AtomicInteger calls = new AtomicInteger();
@@ -126,8 +150,9 @@ public final class AudioPlaybackModuleTest {
   @Test public void transientFocusLossPausesSpeechUntilFocusReturns() throws InterruptedException {
     CountDownLatch complete = new CountDownLatch(1);
     module.play("tutorial-cabin-announcement", args -> complete.countDown());
-    Thread.sleep(400);
+    awaitPlaybackStarted();
     playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS_TRANSIENT);
+    assertFalse("player still playing after transient loss", isPlayerPlaying(true));
     assertFalse("speech completed during focus loss", complete.await(6, TimeUnit.SECONDS));
     playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_GAIN);
     assertTrue("speech did not resume after focus returned", complete.await(8, TimeUnit.SECONDS));
@@ -136,8 +161,37 @@ public final class AudioPlaybackModuleTest {
   @Test public void permanentFocusLossSettlesPlayback() throws InterruptedException {
     CountDownLatch complete = new CountDownLatch(1);
     module.play("tutorial-cabin-announcement", args -> complete.countDown());
-    Thread.sleep(400);
+    awaitPlaybackStarted();
     playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS);
     assertTrue("permanent loss did not settle playback", complete.await(3, TimeUnit.SECONDS));
+  }
+
+  /** Reads controller state on the main thread, which also drains earlier posted focus changes. */
+  private boolean isPlayerPlaying(boolean requireFocusRequested) {
+    boolean[] result = new boolean[1];
+    InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+      try {
+        java.lang.reflect.Field playerField = AudioPlaybackController.class.getDeclaredField("player");
+        java.lang.reflect.Field focusField = AudioPlaybackController.class.getDeclaredField("focusRequested");
+        playerField.setAccessible(true);
+        focusField.setAccessible(true);
+        android.media.MediaPlayer active = (android.media.MediaPlayer) playerField.get(playback);
+        boolean focus = focusField.getBoolean(playback);
+        result[0] = active != null && active.isPlaying() && (focus || !requireFocusRequested);
+      } catch (ReflectiveOperationException error) {
+        throw new AssertionError(error);
+      }
+    });
+    return result[0];
+  }
+
+  /** Focus callbacks are ignored until playback requested focus, so wait for real playback. */
+  private void awaitPlaybackStarted() throws InterruptedException {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+    while (System.nanoTime() < deadline) {
+      if (isPlayerPlaying(true)) return;
+      Thread.sleep(20);
+    }
+    throw new AssertionError("playback did not start (prepared, focus requested, playing) within 5s");
   }
 }

@@ -6,6 +6,8 @@ import { Fog } from "@libitums/ui-lynx/fog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { entryLanguageLabel } from "../../lib/entry-language";
+import { lightStatusBarIcons } from "../../lib/status-bar-icons";
+import { useScreenBack } from "../../lib/use-back-handler";
 import journeyBackground from "./assets/journey.png";
 import type { JourneyEntryScreenProps } from "./journey-entry.contract";
 
@@ -30,8 +32,10 @@ export function JourneyEntryScreen({
   onEnter,
   onBack,
 }: JourneyEntryScreenProps): ReactNode {
+  // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다(버튼이 없으면 등록하지 않습니다).
+  useScreenBack(onBack);
   return (
-    <view className="journey-entry-screen">
+    <view className="journey-entry-screen" data-statusbar={lightStatusBarIcons}>
       {/* 배경 그림과 Fog는 순수 장식입니다. `<image>`는 기본 접근성 정지라서
           (ADR-0016 D5) 래퍼가 가립니다. */}
       <view className="journey-entry-screen-backdrop" accessibility-elements-hidden={true}>

@@ -1,0 +1,30 @@
+---
+import type { FaqProps } from "./landing.contract";
+
+type Props = FaqProps;
+
+const { t, entries } = Astro.props;
+---
+
+<section class="faq" id="faq" aria-labelledby="faq-title" data-testid="faq">
+  <div class="container faq__grid">
+    <header class="faq__head">
+      <p class="eyebrow">{t.faqEyebrow}</p>
+      <h2 id="faq-title" set:html={t.faqTitle} />
+    </header>
+    <div class="faq__list" data-testid="faq-list">
+      {
+        entries.map((entry) => (
+          <details class="faq__item" data-testid="faq-item" data-faq-id={entry.id}>
+            <summary class="faq__q">
+              <h3 data-testid="faq-question">{entry.question}</h3>
+            </summary>
+            <p class="faq__a" data-testid="faq-answer">
+              {entry.answer}
+            </p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>

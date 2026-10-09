@@ -1,3 +1,6 @@
+import com.android.build.api.artifact.SingleArtifact
+import javax.inject.Inject
+
 plugins {
   id 'com.android.application'
 }
@@ -7,30 +10,58 @@ if (file('google-services.json').exists()) {
   apply plugin: 'com.google.gms.google-services'
 }
 
-def syncAudioAssets = tasks.register('syncAudioAssets', Sync) {
-  from(file('../../ios/Host/audio')) {
-    include '*.m4a'
-    into 'audio'
+// Host audio has one source of truth: apps/ios/Host/{audio,sfx}. Each variant gets its own
+// generated assets directory; registering it through the Variant API makes every consumer
+// (merge assets, lint, bundle) depend on the sync task.
+abstract class SyncHostAudioAssets extends DefaultTask {
+  @InputDirectory
+  @PathSensitive(PathSensitivity.RELATIVE)
+  abstract DirectoryProperty getAudioSource()
+
+  @InputDirectory
+  @PathSensitive(PathSensitivity.RELATIVE)
+  abstract DirectoryProperty getSfxSource()
+
+  @OutputDirectory
+  abstract DirectoryProperty getOutputDir()
+
+  @Inject
+  abstract FileSystemOperations getFs()
+
+  @TaskAction
+  void sync() {
+    fs.sync {
+      from(audioSource) {
+        include '*.m4a'
+        into 'audio'
+      }
+      from(sfxSource) {
+        include '*.mp3'
+        into 'sfx'
+      }
+      into(outputDir)
+    }
   }
-  into(layout.buildDirectory.dir('generated/audioAssets'))
 }
 
 android {
   namespace 'com.libitum.host'
-  compileSdk 35
+  compileSdk 36
 
   defaultConfig {
-    applicationId 'com.libitum.host'
+    applicationId 'libitum.duru.android'
     minSdk 26
-    targetSdk 34
-    versionCode 1
+    targetSdk 36
+    // Play에 올릴 커밋에서 손으로 1 올린다 (spec §4). Play에는 1이 이미 올라가 있다.
+    versionCode 2
     versionName '0.1.0'
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
   }
 
   buildTypes {
     release {
-      minifyEnabled false
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
     bundled {
       initWith release
@@ -48,8 +79,27 @@ android {
     targetCompatibility JavaVersion.VERSION_17
   }
 
-  sourceSets.main.assets.srcDir(syncAudioAssets)
-  androidResources.noCompress += ['m4a']
+  androidResources.noCompress += ['m4a', 'mp3']
+}
+
+androidComponents {
+  onVariants(selector().all()) { variant ->
+    def sync = tasks.register("sync${variant.name.capitalize()}HostAudioAssets", SyncHostAudioAssets) {
+      audioSource = file('../../ios/Host/audio')
+      sfxSource = file('../../ios/Host/sfx')
+    }
+    variant.sources.assets?.addGeneratedSourceDirectory(sync, { it.outputDir })
+    registerPackagedHostAudioChecks(variant.name, variant.artifacts.get(SingleArtifact.APK.INSTANCE),
+        variant.artifacts.get(SingleArtifact.BUNDLE.INSTANCE))
+    registerNativeAlignmentChecks(variant.name, variant.artifacts.get(SingleArtifact.APK.INSTANCE),
+        variant.artifacts.get(SingleArtifact.BUNDLE.INSTANCE))
+  }
+}
+
+// lynx의 POM이 runtime으로 끌어오는 WebAssembly 엔진이다. 앱은 WebAssembly를 쓰지 않고,
+// libwasm.so는 16 KB 정렬이 아니다. 설정 전체에 걸어 다른 경로로 다시 들어오는 것도 막는다.
+configurations.configureEach {
+  exclude group: 'org.lynxsdk.lynx', module: 'primjsWasm'
 }
 
 def lynxVersion = '4.0.1'
@@ -70,6 +120,7 @@ dependencies {
   implementation 'com.facebook.fresco:animated-base:2.3.0'
   implementation 'com.squareup.okhttp3:okhttp:4.9.0'
   implementation 'androidx.browser:browser:1.8.0'
+  implementation 'androidx.core:core:1.15.0'
   implementation 'com.google.android.play:review:2.0.2'
   implementation platform('com.google.firebase:firebase-bom:34.19.0')
   implementation 'com.google.firebase:firebase-messaging'
@@ -79,6 +130,24 @@ dependencies {
   implementation "org.lynxsdk.lynx:xelement-overlay:${lynxVersion}"
   implementation "org.lynxsdk.lynx:xelement-svg:${lynxVersion}"
   implementation 'org.lynxsdk.lynx:servalsvg:0.0.1-alpha.3'
+
+  constraints {
+    // Fresco 2.3.0과 Play 라이브러리가 끌어오는 버전이 Play Console SDK 경고 대상이다.
+    implementation('com.facebook.soloader:soloader:0.10.5') {
+      because 'SoLoader 0.10.4 미만은 64비트 전용 기기에서 비정상 종료한다'
+    }
+    implementation 'com.facebook.soloader:nativeloader:0.10.5'
+    implementation 'com.facebook.soloader:annotation:0.10.5'
+    implementation('androidx.fragment:fragment:1.8.9') {
+      because '1.1.0은 개발자가 오래된 버전으로 신고했다'
+    }
+    implementation('androidx.activity:activity:1.10.1') {
+      because '1.0.0은 개발자가 오래된 버전으로 신고했다'
+    }
+    implementation('androidx.datastore:datastore-core-android:1.2.1') {
+      because '1.2.0 이하의 libdatastore_shared_counter.so는 16 KB RELRO 정렬이 아니다'
+    }
+  }
 
   androidTestImplementation 'androidx.test:runner:1.7.0'
   androidTestImplementation 'androidx.test.ext:junit:1.3.0'
@@ -94,6 +163,13 @@ tasks.register('verifyBundledAssets') {
     if (!new File(assets, 'static').isDirectory()) {
       throw new GradleException('Release static assets missing. Run pnpm bundle:android from the repository root.')
     }
+    def hasFiles = { String dir, String ext ->
+      def folder = file(dir)
+      folder.isDirectory() && ((folder.listFiles() ?: new File[0]) as List<File>).any { it.name.endsWith(ext) }
+    }
+    if (!hasFiles('../../ios/Host/audio', '.m4a') || !hasFiles('../../ios/Host/sfx', '.mp3')) {
+      throw new GradleException('Host audio sources missing in apps/ios/Host/{audio,sfx}.')
+    }
   }
 }
 tasks.configureEach {
@@ -101,3 +177,21 @@ tasks.configureEach {
     dependsOn tasks.named('verifyBundledAssets')
   }
 }
+
+// release AAB는 FCM 설정 없이 Play에 올라가면 안 된다. google-services.json은 추적하지 않는 파일이다.
+// bundled · debug는 파일 없이도 빌드된다.
+tasks.register('verifyReleaseFirebaseConfig') {
+  doLast {
+    if (!file('google-services.json').exists()) {
+      throw new GradleException('Release build needs apps/android/app/google-services.json for libitum.duru.android (Firebase console → Android app). The file is not tracked.')
+    }
+  }
+}
+tasks.configureEach {
+  if (name == 'preReleaseBuild') {
+    dependsOn tasks.named('verifyReleaseFirebaseConfig')
+  }
+}
+
+apply from: 'packaged-assets.gradle'
+apply from: 'native-alignment.gradle'

@@ -9,6 +9,24 @@ pluginManagement {
 dependencyResolutionManagement {
   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
   repositories {
+    // Lynx 4.0.1 · Fresco 2.3.0의 64비트 .so를 16 KB 정렬로 다시 빌드한 AAR.
+    // exclusiveContent라 이 9개는 상류 저장소에서 찾지 않는다. 출처와 갱신 방법은 vendor-maven/README.md.
+    exclusiveContent {
+      forRepository {
+        maven { url = uri("$rootDir/vendor-maven") }
+      }
+      filter {
+        includeModule('org.lynxsdk.lynx', 'lynx')
+        includeModule('org.lynxsdk.lynx', 'lynx-base')
+        includeModule('org.lynxsdk.lynx', 'lynx-trace')
+        includeModule('org.lynxsdk.lynx', 'service-api')
+        includeModule('com.facebook.fresco', 'animated-gif')
+        includeModule('com.facebook.fresco', 'imagepipeline-native')
+        includeModule('com.facebook.fresco', 'nativeimagefilters')
+        includeModule('com.facebook.fresco', 'nativeimagetranscoder')
+        includeModule('com.facebook.fresco', 'webpsupport')
+      }
+    }
     google()
     mavenCentral()
   }

@@ -1,0 +1,35 @@
+---
+import type { Copy } from "../i18n/copy";
+import { img } from "../assets/images";
+
+interface Props {
+  t: Copy;
+}
+
+const { t } = Astro.props;
+---
+
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="hero__stage">
+    <div class="hero__panels" aria-hidden="true">
+      <figure class="hero__panel" data-panel="0">
+        <img src={img.scenePlane.src} alt="" width="810" height="1440" fetchpriority="high" />
+        <figcaption><b>01</b> <span>{t.panel1}</span></figcaption>
+      </figure>
+      <figure class="hero__panel" data-panel="1">
+        <img src={img.sceneStreet.src} alt="" width="810" height="1440" loading="lazy" />
+        <figcaption><b>02</b> <span>{t.panel2}</span></figcaption>
+      </figure>
+      <figure class="hero__panel" data-panel="2">
+        <img src={img.sceneArrival.src} alt="" width="810" height="1440" loading="lazy" />
+        <figcaption><b>03</b> <span>{t.panel3}</span></figcaption>
+      </figure>
+    </div>
+    <div class="hero__scrim" aria-hidden="true"></div>
+    <div class="hero__copy container">
+      <h1 class="hero__line hero__line--a" id="hero-title" set:html={t.heroA} />
+      <p class="hero__line hero__line--b" set:html={t.heroB} />
+    </div>
+    <a class="hero__cue" href="#manifesto">{t.heroCue}</a>
+  </div>
+</section>

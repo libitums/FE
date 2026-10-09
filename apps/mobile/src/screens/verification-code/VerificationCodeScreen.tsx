@@ -9,6 +9,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { announce } from "../../lib/accessibility";
 import { authFailureMessage } from "../../lib/auth-failure";
+import { useScreenBack } from "../../lib/use-back-handler";
 import {
   canSubmitVerificationCode,
   formatVerificationCountdown,
@@ -67,6 +68,12 @@ export function VerificationCodeScreen({
   // 검증 · 재전송의 화면 로컬 상태입니다.
   const [status, setStatus] = useState<VerificationCodeStatus>({ kind: "idle" });
   const busy = isVerificationCodeBusy(status);
+  // 보이는 뒤로 버튼과 시스템 뒤로가기가 같은 함수입니다 — 요청 중에는 무동작입니다.
+  const handleBack = () => {
+    if (busy) return;
+    onExit();
+  };
+  useScreenBack(handleBack);
 
   // 남은 초입니다. `round`는 재전송 회차이고, 칸을 다시 마운트하는 `key`로만 씁니다.
   const [remaining, setRemaining] = useState(verificationCodeValidSeconds);
@@ -147,10 +154,7 @@ export function VerificationCodeScreen({
           icon={arrowLeft}
           variant="neutral"
           size="xl"
-          bindtap={() => {
-            if (busy) return;
-            onExit();
-          }}
+          bindtap={handleBack}
         />
       </view>
 

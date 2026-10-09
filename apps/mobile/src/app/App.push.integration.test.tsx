@@ -1,10 +1,12 @@
 import { journeySeedBefore } from "./test-helpers/journey-seed";
 import { afterEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { resetPushWiringForTests } from "./push-wiring";
 import { pushOpenedEventName } from "./use-opened-push";
+import { pushTokenRefreshedEventName } from "./use-push-token-refresh";
+import { entrySplashDurationMs } from "../lib/entry-flow";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import type { NotificationEvent } from "../screens/notifications/notifications.contract";
 import type { SettingsEvent } from "../screens/settings/settings.contract";
@@ -16,6 +18,8 @@ const completedIntros = ["tutorial-intro"] as const;
 const token = "d4".repeat(32);
 
 type PushHost = {
+  /** `register`가 돌려주는 토큰입니다 — 테스트가 실행 중 바꿔 토큰 갱신을 흉내 냅니다. */
+  token: string;
   permission: string;
   opened: unknown;
   register: ReturnType<typeof vi.fn>;
@@ -24,11 +28,12 @@ type PushHost = {
 
 function stubPushHost(options: { permission?: string; opened?: unknown } = {}): PushHost {
   const host: PushHost = {
+    token,
     permission: options.permission ?? "authorized",
     opened: options.opened ?? null,
     register: vi.fn((callback: (payload: unknown) => void) => {
       host.permission = "authorized";
-      callback({ permission: "authorized", token, environment: "sandbox" });
+      callback({ permission: "authorized", token: host.token, environment: "sandbox" });
     }),
     openSettings: vi.fn(),
   };
@@ -191,4 +196,101 @@ test("선행 학습을 완료하지 않으면 푸시로 켜져도 잠긴 메신�
     "data-status",
     "default",
   );
+});
+
+// ---- 토큰 갱신: 호스트 `pushTokenRefreshed` 전역 이벤트 → 훅 → `syncPushDevice({ ask: false })` (IT1~IT4) ----
+// 자극은 호스트처럼 전역 이벤트 하나입니다(인자 없음). 훅 모듈을 직접 부르지 않습니다.
+
+const refreshedToken = "e5".repeat(32);
+const registerUrl = "https://test.supabase.co/rest/v1/rpc/register_push_device";
+const unregisterUrl = "https://test.supabase.co/rest/v1/rpc/unregister_push_device";
+
+function emitTokenRefreshed(): void {
+  act(() => {
+    lynx.getJSModule("GlobalEventEmitter").emit(pushTokenRefreshedEventName, []);
+  });
+}
+
+const sentTokens = (calls: { url: string; body: string }[], url: string): string[] =>
+  calls
+    .filter((call) => call.url === url)
+    .map((call) => (JSON.parse(call.body) as { p_token: string }).p_token);
+
+test("[IT1] 앱을 쓰는 중 호스트가 토큰이 바뀌었다고 알리면 새 토큰이 한 번 더 등록된다", async () => {
+  const host = stubPushHost({ permission: "authorized" });
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await flush();
+  const calls = recordFetch();
+  const registersBefore = host.register.mock.calls.length;
+
+  host.token = refreshedToken;
+  emitTokenRefreshed();
+  await flush();
+
+  expect(host.register).toHaveBeenCalledTimes(registersBefore + 1);
+  expect(sentTokens(calls, registerUrl)).toEqual([refreshedToken]);
+});
+
+test("[IT2] 로그인하지 않은 상태에서 알려도 호스트도 서버도 건드리지 않는다", async () => {
+  const host = stubPushHost({ permission: "authorized" });
+  vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
+  vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
+  const calls = recordFetch();
+  vi.useFakeTimers();
+  render(<App completedEpisodeIntroIds={completedIntros} />);
+  act(() => {
+    vi.advanceTimersByTime(entrySplashDurationMs);
+  });
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+  });
+  vi.useRealTimers();
+  expect(screen.queryByTestId("splash-screen-logo")).not.toBeInTheDocument();
+  expect(host.register).not.toHaveBeenCalled();
+
+  emitTokenRefreshed();
+  await flush();
+
+  expect(host.register).not.toHaveBeenCalled();
+  expect(calls).toEqual([]);
+});
+
+test.each(["not-determined", "denied"])(
+  "[IT3] 로그인했어도 권한이 %s이면 알려도 묻지도 등록하지도 않는다",
+  async (permission) => {
+    const host = stubPushHost({ permission });
+    await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+    await flush();
+    const calls = recordFetch();
+
+    emitTokenRefreshed();
+    await flush();
+
+    expect(host.register).not.toHaveBeenCalled();
+    expect(calls).toEqual([]);
+  },
+);
+
+test("[IT4] 실행 중 토큰이 바뀐 기기는 로그아웃 때 옛 토큰과 새 토큰이 모두 해제된다", async () => {
+  const host = stubPushHost({ permission: "authorized" });
+  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await flush();
+  // 공용 부팅 헬퍼는 기기 등록 요청을 거부하므로 첫 토큰도 이벤트로 등록합니다(T1 → T2, 둘 다 성공).
+  const calls = recordFetch();
+  emitTokenRefreshed();
+  await flush();
+  host.token = refreshedToken;
+  emitTokenRefreshed();
+  await flush();
+  expect(sentTokens(calls, registerUrl)).toEqual([token, refreshedToken]);
+
+  openSettings();
+  fireEvent.tap(cell("sign-out"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-sign-out")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  await flush();
+
+  expect(sentTokens(calls, unregisterUrl).sort()).toEqual([token, refreshedToken].sort());
 });

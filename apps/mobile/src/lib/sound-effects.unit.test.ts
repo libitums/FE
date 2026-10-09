@@ -28,7 +28,7 @@ test("벨 중지만 별도 네이티브 메서드로 보낸다", () => {
 });
 
 test.each([undefined, null, {}, { SoundEffectsModule: null }])(
-  "모듈이 %s이면 Android·테스트 환경에서 던지지 않는다",
+  "모듈이 %s이면 모듈이 없는 환경에서 던지지 않는다",
   (nativeModules) => {
     if (nativeModules !== undefined) vi.stubGlobal("NativeModules", nativeModules);
 

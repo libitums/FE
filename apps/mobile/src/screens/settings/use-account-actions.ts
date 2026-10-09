@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { announce } from "../../lib/accessibility";
 import type { AccountDeletionResult } from "../../lib/account.contract";
+import { useLayerBack } from "../../lib/use-back-handler";
 import { useScreenLayer } from "../../lib/use-screen-layer";
 import { useUiCopy } from "../../lib/ui-copy";
 import {
@@ -64,6 +65,9 @@ export const useAccountActions: UseAccountActions = (props): AccountActionsContr
   }, [state]);
 
   useScreenLayer(accountActionsLayerOpen(state), props.onLayerChange);
+  // 시스템 뒤로가기 = 대화상자의 취소(`stay` · `keep`)와 같은 `dismiss` 사건입니다. `deleting` 동안은
+  // 전이표가 `dismiss`를 무시하므로 불려도 아무 일도 하지 않습니다.
+  useLayerBack(accountActionsLayerOpen(state) ? () => dispatch({ type: "dismiss" }) : null);
 
   return {
     state,

@@ -4,6 +4,7 @@ import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { useScreenBack } from "../../lib/use-back-handler";
 
 import type { ProfileScreenProps } from "./profile.contract";
 
@@ -15,6 +16,8 @@ import "./profile-screen.css";
 // 단위는 나가기 하나입니다(카드·버튼·입력 상자 0건).
 export function ProfileScreen({ items, onExit }: ProfileScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(onExit);
   return (
     <view className="profile-screen">
       {/* 머리 — 알림 화면과 같은 모양입니다: 동그란 뒤로 버튼(첫 자식, 낭독 `설정으로`)과

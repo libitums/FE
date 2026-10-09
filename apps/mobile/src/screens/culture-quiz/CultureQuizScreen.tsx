@@ -3,6 +3,7 @@ import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { CultureQuizOption } from "./CultureQuizOption";
 import {
   choiceResultAt,
@@ -35,6 +36,8 @@ export function CultureQuizScreen({
   onExit,
 }: CultureQuizScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(onExit);
   const questions = cultureQuizQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(cultureQuizSessionReducer, initialCultureQuizSessionState);
 

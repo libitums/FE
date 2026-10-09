@@ -5,6 +5,7 @@ import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { CallCaller, CallLineBubble } from "../../components/CallCaller";
+import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { EpisodeFinalCallScreenProps } from "./episode-final.contract";
 import { episodeFinalTestIds } from "./episode-final.contract";
@@ -42,6 +43,8 @@ export function EpisodeFinalCallScreen({
   onExit,
 }: EpisodeFinalCallScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
+  useScreenBack(onExit);
   // 차례 번호는 세션 리듀서의 문항 번호를 그대로 씁니다 — 말하기 차례는 문항이고, 상대 대사는
   // 판정 없이 지나가는(`skip`) 차례입니다.
   const [state, dispatch] = useReducer(episodeFinalSessionReducer, initialEpisodeFinalSessionState);

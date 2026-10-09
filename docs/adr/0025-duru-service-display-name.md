@@ -41,6 +41,7 @@ Xcode target, scheme, product, executable, module, directory와 project 이름�
 | npm/workspace package | `@libitums/*` (`@libitums/mobile`, `@libitums/design-tokens`, `@libitums/icons` 포함) |
 | CSS custom property | `--libitum-*` |
 | iOS application/test bundle | `com.libitum.host`, `com.libitum.host.tests` |
+| Android Java `namespace` | `com.libitum.host` — Android `applicationId`는 Play 등록 값 `libitum.duru.android`다(2026-10-05, [ADR-0046](0046-android-play-release.md) D1) |
 | 영속 저장소 key | `libitum.` 접두사 |
 | 성능 수집 | `libitum:navigation:`, `com.libitum.performance-capture` |
 | 저장소 소유자 | `libitums/FE` 같은 GitHub owner 표기 |

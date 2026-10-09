@@ -5,15 +5,13 @@ import { color } from "@libitums/design-tokens";
 import arrowDown from "@libitums/icons/lynx/arrow-down-03";
 import arrowLeft from "@libitums/icons/lynx/arrow-left-03";
 import arrowRight from "@libitums/icons/lynx/arrow-right";
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 import { Button } from "@libitums/ui-lynx/button";
-import { Fog } from "@libitums/ui-lynx/fog";
-import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { TextField } from "@libitums/ui-lynx/text-field";
 
 import { announce } from "../../lib/accessibility";
 import { authFailureMessage } from "../../lib/auth-failure";
+import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
 import {
   canRequestPhoneOtp,
   defaultLoginCountryId,
@@ -26,7 +24,8 @@ import {
   phoneNumberFrom,
   type LoginCountry,
 } from "./login";
-import { loginCountries, loginCountryOptions } from "./login-countries";
+import { loginCountries } from "./login-countries";
+import { LoginCountrySheet } from "./LoginCountrySheet";
 import { LoginLegalNotice } from "./LoginLegalNotice";
 import { LoginSocialMethods } from "./LoginSocialMethods";
 import type { LoginScreenProps, LoginStatus, SocialLoginMethod } from "./login.contract";
@@ -41,8 +40,6 @@ import "./login-screen.css";
 // 국가 목록은 ui-lynx OptionSelector(outlined · s · single · immediate)로
 // 그립니다. 고르면 곧바로 확정하고 시트를 닫습니다.
 
-const noop = () => undefined;
-
 export function LoginScreen({
   phoneSignIn,
   onSelectSocialMethod,
@@ -54,8 +51,6 @@ export function LoginScreen({
     () =>
       loginCountries.find((option) => option.id === defaultLoginCountryId) ?? loginCountries[0]!,
   );
-  // 국가 목록을 내렸는지입니다 — 위쪽 Fog는 내렸을 때만 보입니다.
-  const [countryListScrolled, setCountryListScrolled] = useState(false);
   const [countrySheetOpen, setCountrySheetOpen] = useState(false);
   // 국가 선택과 번호 입력이 한 칸이라, 포커스를 바깥 칸 테두리로 올립니다.
   const [phoneFocused, setPhoneFocused] = useState(false);
@@ -76,6 +71,12 @@ export function LoginScreen({
       if (!busy) action();
     };
   }
+
+  // 시스템 뒤로가기: 시트가 열려 있으면 시트만 닫고, 아니면 보이는 뒤로와 같은 함수입니다(요청 중 무동작).
+  const handleBack = onBack ? guard(onBack) : null;
+  const closeCountrySheet = () => setCountrySheetOpen(false);
+  useScreenBack(handleBack);
+  useLayerBack(countrySheetOpen ? closeCountrySheet : null);
 
   // 실패마다 정확히 한 번만 발화합니다 — `status`는 `setStatus`마다 새
   // 객체라 같은 실패로 다시 렌더돼도 재발화하지 않습니다.
@@ -122,13 +123,13 @@ export function LoginScreen({
       {/* 국가 선택 시트가 열린 동안 뒤쪽을 보조기술에서 가립니다(ADR-0016 D9). */}
       <view className="login-screen-body" accessibility-elements-hidden={countrySheetOpen}>
         <view className="login-screen-header" data-testid="login-screen-header">
-          {onBack ? (
+          {handleBack ? (
             <RoundButton
               accessibilityLabel="Back"
               icon={arrowLeft}
               variant="neutral"
               size="xl"
-              bindtap={guard(onBack)}
+              bindtap={handleBack}
             />
           ) : null}
         </view>
@@ -250,50 +251,11 @@ export function LoginScreen({
       </view>
 
       {countrySheetOpen ? (
-        <BottomSheet
-          title="Select country"
-          closeAccessibilityLabel="Close"
-          ondismiss={() => {
-            setCountrySheetOpen(false);
-            setCountryListScrolled(false);
-          }}
-        >
-          {/* 국가 번호가 있는 모든 지역(245)을 OptionSelector로 늘어놓습니다. */}
-          <view className="login-screen-country-list">
-            <scroll-view
-              className="login-screen-country-scroll"
-              data-testid="login-screen-country-list"
-              scroll-orientation="vertical"
-              bindscroll={(event: { detail: { scrollTop: number } }) =>
-                setCountryListScrolled(event.detail.scrollTop > 0)
-              }
-            >
-              <OptionSelector
-                groupLabel="Select country"
-                options={loginCountryOptions}
-                selectedIds={[country.id]}
-                variant="outlined"
-                size="s"
-                selection="single"
-                commit="immediate"
-                onChange={noop}
-                onCommit={(id) => {
-                  const next = loginCountries.find((option) => option.id === id);
-                  if (next) handleCountryCommit(next);
-                  setCountrySheetOpen(false);
-                  setCountryListScrolled(false);
-                }}
-              />
-            </scroll-view>
-            <Fog
-              direction="top"
-              size="s"
-              color="white"
-              visibility={countryListScrolled ? "visible" : "hidden"}
-            />
-            <Fog direction="bottom" size="s" color="white" />
-          </view>
-        </BottomSheet>
+        <LoginCountrySheet
+          selected={country}
+          onCommit={handleCountryCommit}
+          onClose={closeCountrySheet}
+        />
       ) : null}
     </view>
   );

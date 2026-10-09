@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- @libitums/design-tokens의 libitum-color-brand-primary 토큰 사본. 어긋나면 pnpm verify가 선다. -->
+  <color name="libitum_color_brand_primary">#F46B18</color>
+  <color name="launch_background">@color/libitum_color_brand_primary</color>
+  <color name="ic_launcher_background">@color/libitum_color_brand_primary</color>
+</resources>

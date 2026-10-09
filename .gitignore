@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .rspeedy/
+.astro/
 coverage/
 
 .env
@@ -20,6 +21,9 @@ coverage/
 .claude/
 .codex/
 .playwright-mcp/
+.e2e-dist/
+test-results/
+playwright-report/
 
 # iOS 호스트 (apps/ios) — ADR-0012 D7
 build/

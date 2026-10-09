@@ -625,3 +625,12 @@ ADR-0016을 쌓았다 — **보조기술이 읽는 트리를 뷰 기반 도구�
 **새 번호를 쓴 근거**(ADR-0010 D10): 틀린 것은 사실이지만 그 위에 지어진 것이 있다 — `docs/e2e/`의 형식(`<flow>.e2e.test.ts`
 대응 · CSS 셀렉터 전제), 보류 표의 `e2e` 행, `.agent-harness/profile.yaml`의 `e2e: manual` 선언이다. 결정이 바뀌는
 것이라 ADR-0037로 열고, 여기에는 사실 정정과 가리키는 줄만 남긴다. D4 · D6의 옛 문면은 지우지 않았다.
+
+**2026-10-05 — 루트 사슬 셋에 랜딩 앱이 들었다** ⟨적용 기록, 새 결정 아님⟩
+([ADR-0043](0043-landing-static-site.md) D9). `apps/landing`의 `test:unit` · `test:ui` · `test:integration`이 루트의 같은 이름
+사슬 **끝에** 명시 `--filter` 하나씩으로 붙었다(D2). `typecheck` · `build`에는 그 앱이 생길 때 이미 들어 있었다. 파일
+위치와 이름 규약은 D7 그대로다 — 소스 옆, `*.unit.test.ts` · `*.ui.test.ts` · `*.integration.test.ts`, 러너는 파일명
+패턴으로 고른다. **다른 점 하나**: `.astro`를 그리는 ui 테스트는 JSX가 없어 확장자가 `.tsx`가 아니라 `.ts`다(패턴
+`ui.test`는 같다). 러너는 같은 vitest이지만 Lynx 플러그인 없이 Astro의 설정을 쓰고 환경은 node다 — D4의 Lynx 테스트
+환경 서술은 이 앱에 해당하지 않는다. **CI 워크플로 diff는 0이다** — `verify`의 잎 명령 이름이 같다(D3). 머리의
+「2026-09-14 정정 — 계층 멤버십」이 적은 순서는 그 시점의 것이고, 지금의 멤버는 루트 `package.json`이 출처다.

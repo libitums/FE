@@ -13,6 +13,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { StatChip, statChipDiamondColor } from "../../components/StatChip";
 import { announce } from "../../lib/accessibility";
 import { playSound } from "../../lib/sound-effects";
+import { useScreenBack } from "../../lib/use-back-handler";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
 import type { AssessmentVerdict } from "../assessment/assessment";
@@ -76,6 +77,8 @@ export function LessonCompleteScreen({
   onRetry,
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 시스템 뒤로가기 = 하단 나가기와 같은 함수입니다(미통과의 `Try again`이 아닙니다).
+  useScreenBack(onExit);
   const mistakeCount = lessonMistakeCount(results);
 
   useEffect(() => {

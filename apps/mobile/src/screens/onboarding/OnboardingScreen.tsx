@@ -7,6 +7,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { PageIndicator } from "@libitums/ui-lynx/page-indicator";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { playSound } from "../../lib/sound-effects";
+import { useScreenBack } from "../../lib/use-back-handler";
 
 import {
   nextOnboardingStep,
@@ -40,6 +41,9 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
       setStep(previous);
     }
   }
+
+  // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다(첫 스텝에는 버튼이 없어 등록하지 않습니다).
+  useScreenBack(previous === null ? null : handleBack);
 
   function handleNext() {
     playSound("button");

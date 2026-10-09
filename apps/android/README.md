@@ -2,13 +2,268 @@
 
 `apps/mobile`의 Lynx 번들을 Android `LynxView` 하나에서 실행한다. 지금은 이미지·HTTP
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
-`LegalDocumentModule`·`AudioPlaybackModule`·`CompletionAnnouncementModule`·
-`SpeechRecognitionModule`·`HandwritingTraceModule`·`AppReviewModule`을 제공한다. 네이티브 기능 전체의
+`LegalDocumentModule`·`AudioPlaybackModule`·`SoundEffectsModule`·`CompletionAnnouncementModule`·
+`SpeechRecognitionModule`·`HandwritingTraceModule`·`AppReviewModule`·`SystemBackModule`을
+제공한다. 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
+
+## 시스템 뒤로가기
+
+시스템 뒤로가기(제스처·3버튼)는 Activity를 바로 끝내지 않고 Lynx 화면에 먼저 묻는다
+([ADR-0043](../../docs/adr/0043-android-system-back.md)). `MainActivity`가 누름마다
+`systemBackPressed` 전역 이벤트를 보내고, JS가 `SystemBackModule.respond`로 답한다.
+
+| 상황 | 동작 |
+|---|---|
+| 열린 확인창·시트·모달이 있다 | 그 층만 닫힌다 |
+| 쌓인 화면 | 그 화면의 보이는 닫기를 누른 것과 같다 |
+| 롤플레이·설정 탭 루트 | 여정 탭으로 간다 |
+| 여정 맵, 뒤로 수단이 없는 화면 | 앱을 백그라운드로 보낸다(`moveTaskToBack`). 다시 열면 같은 화면이다 |
+| JS가 500ms 안에 답하지 않는다 | 앱을 백그라운드로 보낸다 |
+| JS가 아직 준비되지 않았다(번들 로드 전·로드 실패) | Activity를 끝낸다(`finish`) |
+
+JS의 준비 신호(`SystemBackModule.ready`)는 에뮬레이터 실측에서 시작 뒤 약 2.2초에 왔다. 그 전의
+뒤로가기는 앱을 끝낸다. 판정은 Android 의존이 없는 `SystemBackGate`가 하고 `MainActivity`는
+실행만 한다. API 33 이상은 `OnBackInvokedCallback`, 26~32는 `onBackPressed()`를 쓴다.
+
+3버튼 내비게이션에서 하단 탭 바가 시스템 내비게이션 버튼과 겹쳐 그려지던 문제는 해결됐다
+([ADR-0044](../../docs/adr/0044-android-tappable-inset.md), 아래 「시스템 바와 safe area」).
+
+## 시스템 바와 safe area
+
+호스트는 LynxView를 시스템 바 뒤까지 전체 화면으로 그리고, inset이 바뀔 때마다 globalProps 두 키를
+한 번의 `updateGlobalProps`로 넘긴다(`MainActivity.publishSafeAreaInsets`, 값이 같으면 보내지 않는다).
+
+| 키 | 값 | 출처 |
+|---|---|---|
+| `safeAreaInsets` | `{ top, bottom, left, right }` dp — 가려지는 가장자리 | `systemBars() \| displayCutout()` |
+| `tappableBottomInset` | dp — 시스템 바 가운데 **터치를 가로채는** 아래 높이. 3버튼에서만 0이 아니다(Pixel_8 48), 제스처는 0 | `tappableElement()`의 아래 값, `safeAreaInsets.bottom`을 넘지 않게 자른다 |
+
+iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽는다). 앱 셸은 탭 루트에서 이 값만큼 아래를
+비우고 탭 바 밑에 같은 색의 바닥 면을 덧댄다. inset이 바뀌면(화면 크기 변경 · 모드 전환) 탭 바가 따라 바뀐다 — 내비게이션 모드 전환은 API 37에서는 Activity를 다시 만들지 않고 따라 바뀌고, API 30에서는 Activity 재생성을 거쳐 새 자리에 선다(API별 동작과 그 경계의 근거는 아래 「화면 방향과 구성 변경」). 규칙과 근거는
+[ADR-0044](../../docs/adr/0044-android-tappable-inset.md)에, 에뮬레이터 절차는
+[Android 내비게이션 바와 하단 탭 바](../../docs/e2e/android-navigation-insets.md)에 있다.
+
+## 화면 방향과 구성 변경
+
+`MainActivity`는 휴대폰에서 세로로 고정되고, 매니페스트가 선언한 구성 변경은 Activity를 다시 만들지 않고 받는다
+([ADR-0047](../../docs/adr/0047-android-orientation-config-changes.md)). **Android만 세로로 고정하는 것은 사용자 결정이다**(2026-10-06, 그 ADR의 U1) — iOS iPhone은 가로를 허용해 두 플랫폼이 다르고, 휴대폰에서 WCAG 2.1 AA SC 1.3.4(Orientation) 불충족을 알고 받아들인 상태다(가로 레이아웃 후속 작업이 끝나면 고정을 푼다).
+
+| 변경 | 동작 |
+|---|---|
+| 기기 회전(휴대폰) | 세로 그대로다(`screenOrientation="portrait"`). 구성 변경이 오지 않는다 |
+| 다크 모드 · 화면 크기 · 분할 화면 · 큰 화면의 회전 · 시스템 언어 · 키보드 연결(`configChanges` 11값 가운데 10값: `orientation` `screenSize` `smallestScreenSize` `screenLayout` `uiMode` `locale` `layoutDirection` `keyboard` `keyboardHidden` `navigation`) | **재생성 없이** 같은 화면 · 같은 진행 상태로 새 창에 다시 배치된다. 재생 중인 소리 · 진행 중인 인증 · 뒤로가기의 준비 상태가 이어진다 |
+| 내비게이션 모드 전환 · 시스템 글꼴 오버레이(11번째 값 `assetsPaths` — compileSdk 36부터 선언할 수 있다) | **API 36 이상: 재생성 없이** 탭 바가 새 모드의 자리로 간다. **API 35 이하: 선언이 무시되어 재생성된다** — 앱이 처음 화면부터 다시 서고 정상 화면이 선다. **관찰은 API 30과 API 37 두 점뿐이다. 경계를 36으로 본 것은 `assetsPaths` 속성이 SDK 36의 `attrs_manifest.xml`에 처음 나온다는 데서 온 추론이고, API 36 자체 · 26 ~ 29 · 31 ~ 35는 재지 않았다** |
+| 글꼴 크기(`fontScale`) · 디스플레이 크기(`density`) · 선언하지 않은 그 밖의 값 | **재생성된다**(이 변경 전과 같다). 앱이 처음 화면부터 다시 서고 로그인 세션은 남는다. Lynx가 실행 중에 따라가지 못하는 값이다. `resourcesUnused`는 이 재생성까지 막으므로 선언하지 않는다 |
+
+재생성 없이 받을 때 `MainActivity.onConfigurationChanged`가 하는 일은 둘이다. Lynx 4.0.1이 구성 변경을 스스로 듣지 않기 때문이다.
+
+1. 실제 디스플레이 크기를 `lynxView.updateScreenMetrics(w, h)`로 다시 넘긴다(LynxView 자체의 크기는 측정이 스스로 따라간다).
+2. `ViewCompat.requestApplyInsets(lynxView)`로 safe area를 다시 계산하게 한다(위 「시스템 바와 safe area」의 두 키가 새 창의 값으로 간다).
+
+번들을 다시 읽지 않고, 어떤 값이 바뀌었는지로 분기하지 않는다. `assetsPaths` 때문에 더한 코드는 없다 — 오버레이가 inset을 바꾸면 2번이 새 값을 보낸다.
+
+- **큰 화면**(최소 너비 600dp 이상 · API 36 이상)에서는 세로 고정이 듣지 않는다고 플랫폼 문서가 말한다(이 저장소에서 증명하지는 못했다 — 휴대폰 AVD의 흉내에서만 가로를 봤다).
+  그때는 초기화되지 않고 창을 채우는 것까지만 보장하고 가로 배치의 보기 좋음은 보장하지 않는다.
+- **분할 화면에서는 세로 고정이 유지된다.** 앱 영역이 세로 모양이면 창을 채우고, 가로로 넓은 모양이면 시스템이 세로 창을 가운데 세우고 좌우를 비운다(레터박스 — 받아들인 동작이다). 어느 쪽도 재생성되지 않고 레터박스 안의 터치는 듣는다.
+  **가로 모양의 낮은 영역에서는 아래 조작부가 잘려 닿지 못할 수 있다**(높이 823px에서 듣기 문항의 답 · 재생 버튼이 창 밖이었고 스크롤로도 닿지 않았다). 보장하지 않는 것이다 — 이 변경 전의 빌드도 같은 높이에서 똑같이 잘렸고, 그 빌드는 분할선을 움직일 때마다 재생성되어 진행까지 잃었다. 작은 창 적응은 후속 과제다.
+- `configChanges`의 값 집합은 `devtools/android-bundle/host-config-changes.mjs`가 판정으로 고정한다(`pnpm test:android-bundle`): 11값 가운데 하나라도 빠지면 `config-missing`, `density` · `fontScale`을 선언하면 `config-forbidden`,
+  그 밖의 값(`resourcesUnused` 포함)을 선언하면 `config-unlisted`. 값을 더하거나 뺄 때는 ADR과 그 함수를 함께 고친다.
+
+## 실행 화면과 런처 아이콘
+
+앱을 켤 때 시스템이 그리는 구간(API 30 이하의 시작 창 · API 31 이상의 시스템 스플래시 · Lynx가 첫 프레임을 그리기 전의 창)은 JS 스플래시와 같은 주황 한 면이고,
+런처 아이콘은 적응형이다([ADR-0049](../../docs/adr/0049-android-launch-appearance.md)). 전부 `app/src/main/res/`의 리소스와 매니페스트 `<application>`의 두 속성(`android:theme` · `android:icon`)이다 — `MainActivity`와 Gradle에는 이 일을 위한 코드가 없다.
+
+| 리소스 | 내용 |
+|---|---|
+| `values/colors.xml` | `libitum_color_brand_primary`(`#F46B18` — 디자인 토큰 `--libitum-color-brand-primary`의 사본)와 그것을 가리키는 별칭 둘: `launch_background`(창 배경 · 스플래시 배경) · `ic_launcher_background`(아이콘 배경 레이어) |
+| `values/` · `values-v27/` · `values-v31/`의 `themes.xml` | `Theme.Duru`. 창 배경과 투명 · 밝은 시스템 바 설정(`MainActivity.layoutEdgeToEdge`가 코드로 적는 값과 같다)을 테마에도 적어 `onCreate` 전의 창에 닿게 한다. API 27 속성(`windowLightNavigationBar`)은 `v27`부터, API 31 속성(`windowSplashScreenBackground` · `windowSplashScreenAnimatedIcon`)은 `v31`에만 둔다 |
+| `drawable/splash_icon_none.xml` | 전부 투명한 drawable. 시스템 스플래시에 아이콘을 두지 않는다 |
+| `mipmap-anydpi-v26/ic_launcher.xml` | `<adaptive-icon>` — 배경 `@color/ic_launcher_background`, 전경 `@mipmap/ic_launcher_foreground`. `<monochrome>` · `roundIcon` · API 25 이하 폴백은 없다(`minSdk` 26) |
+| `mipmap-{mdpi,hdpi,xhdpi,xxhdpi,xxxhdpi}/ic_launcher_foreground.png` | 108 · 162 · 216 · 324 · 432px RGBA. iOS `AppIcon.png` 전체를 캔버스의 80/108로 줄여 가운데 두고 사방을 투명으로 둔 **사본**이다 |
+
+- **토큰 색이 바뀌면 `colors.xml`의 값도 함께 바꾼다.** 어긋나면 `pnpm test:android-bundle`(= `pnpm verify`)이 실패한다(`host-launch-appearance.integration.test.mjs`의 HL2).
+- **`Theme.Duru`를 고칠 때는 세 파일을 함께 고친다.** 한정자끼리 스타일이 합쳐지지 않아 `values-v27` · `values-v31`의 것이 `values/`의 것을 통째로 대체한다. `-night` 변형은 두지 않는다.
+  어긋남(한 파일만 고침 · API 수준보다 낮은 한정자에 적은 속성 · 금지한 스플래시 속성 · `monochrome` 추가 등)은 `devtools/android-bundle/host-launch-appearance.mjs`의 판정이 같은 명령에서 잡는다. 값을 바꾸려면 ADR과 그 판정을 함께 고친다.
+- **적응형 아이콘은 진짜 레이어 분리가 아니다.** 원본이 배경까지 합쳐진 한 장뿐이라 그림 전체가 전경이고 배경은 단색이다. 한계와 디자이너에게 요청할 원본은 ADR-0049의 D5 · 「후속 과제」가 진다.
+- **API 31 이상에서는 시작 구간의 상태바 아이콘이 흰색이었다가 앱이 뜬 뒤 어두운 색으로 한 번 바뀐다.** 시스템 스플래시의 아이콘 명암은 플랫폼이 스플래시 배경색으로 정해 테마로 바꿀 수 없다(API 37 에뮬레이터 실측 — 같은 ADR의 「이 작업이 만든 변화」).
+  **알고 받아들인 후퇴다(사용자 결정, 2026-10-06)** — 그 구간의 색 쌍 대비가 20.12:1에서 3.016:1로 낮아졌고 시계 글자는 텍스트 기준 4.5:1에 못 미친다. 화면에 따라 상태바 아이콘의 명암을 바꾸는 일(아래 「상태바 아이콘」 · ADR-0050)이 들어간 뒤에도 이 뒤집힘은 남는다 — 스플래시 표면은 표지를 달지 않아 검정 아이콘을 유지하고(그것이 맞다), 없애려면 브랜드 주황 자체를 더 어둡게 해야 한다(디자인 결정).
+- **`Theme.Duru`는 `<application>`에 걸려 있어 `PushNotificationTapActivity`도 물려받는다.** 앱이 떠 있는 동안 알림을 눌러도 주황이 번쩍이는 프레임은 영상에서 관찰되지 않았다(API 37 에뮬레이터 — 한계는 [절차 문서](../../docs/e2e/android-launch-appearance.md)의 L11).
+- **리소스 검사는 `values` · `values-v27` · `values-v31`(과 `values-night*`)만 본다.** 다른 한정자(`values-v33` · `values-land` · `mipmap-anydpi-v33` · `drawable-v31` 등)로 테마 · 색 · 아이콘 · 스플래시 drawable을 더하면 검사가 놓친다 — 더하지 않거나, 더할 때 검사부터 넓힌다(ADR-0049 「후속 과제」 6).
+- **번들을 읽지 못하면 끝없는 주황 한 면이 보인다**(이 변경 전에는 회백색이었다). `debug` 빌드를 번들 서버 없이 띄웠을 때가 그렇다 — 스플래시가 길어진 것이 아니다.
+
+### 전경 PNG 다시 만들기
+
+iOS 앱 아이콘(`apps/ios/Host/Assets.xcassets/AppIcon.appiconset/AppIcon.png`)이 바뀌면 전경 다섯 장을 사람이 다시 만든다. 두 그림이 같은지 지키는 검사는 없다. macOS의 `swift`만 쓴다(CoreGraphics — ImageMagick · Pillow가 필요 없다). 저장소 루트에서:
+
+```sh
+swift apps/android/tools/generate-launcher-foreground.swift \
+  apps/ios/Host/Assets.xcassets/AppIcon.appiconset/AppIcon.png \
+  apps/android/app/src/main/res
+```
+
+밀도마다 `<밀도>: canvas …px, art …px, margin …px -> …/mipmap-<밀도>/ic_launcher_foreground.png` 한 줄을 낸다. 만든 뒤 `pnpm test:android-bundle`(HL3이 크기와 알파 채널을 본다)을 돌리고, 런처에서 마크가 잘리지 않는지는
+[Android 실행 시 색과 적응형 아이콘](../../docs/e2e/android-launch-appearance.md)의 L4로 본다. 마크만 있는 원본이 오면 이 스크립트가 아니라 레이어 파일을 교체한다(ADR-0049 D5).
+
+## 상태바 아이콘
+
+앱의 창이 뜬 뒤 상태바 아이콘(시계 · 알림 · 신호 · 배터리)의 명암은 **화면이 단 표지를 호스트가 읽어** 정한다([ADR-0050](../../docs/adr/0050-android-status-bar-icons.md)). 새 호스트 모듈 · 전역 이벤트 · 매니페스트 · Gradle 변경은 없다.
+이름은 전부 아이콘 색 기준이다 — `setAppearanceLightStatusBars(true)`는 「밝은 바」 = **어두운 아이콘**이라 뒤집혀 있다.
+
+| 자리 | 하는 일 |
+|---|---|
+| 공유 JS `apps/mobile/src/lib/status-bar-icons.ts` | 상수 하나(`lightStatusBarIcons = "light-icons"`). 상단 띠를 어둡게 칠하는 요소가 `data-statusbar={lightStatusBarIcons}`를 단다 — 다는 자리와 새 화면의 규칙은 [화면 명세](../../docs/screens.md#상단-띠를-어둡게-칠하는-면은-상태바-표지를-단다)가 진다 |
+| `StatusBarIcons.java` | 순수 판정(Android · Lynx import 없음). dataset 키 `statusbar` · 값 `light-icons`, 표지 값들 → `Tone`(`LIGHT` · `DARK`). **표지가 하나라도 있으면 밝은 아이콘**, 그 밖(없음 · `null` · 모르는 값)은 어두운 아이콘 |
+| `StatusBarIconSync.java` | Lynx UI 트리를 걸어 표지를 모으고, 직전에 적용한 명암과 다를 때만 `setAppearanceLightStatusBars`를 부른다. 내비게이션 바는 건드리지 않는다. 트리 읽기에서 예외가 나면 로그 없이 직전 명암을 둔다(ADR-0050 「대가」) |
+| `MainActivity` | `layoutEdgeToEdge`의 기본값(어두운 아이콘)은 그대로다. `LynxViewClient`의 `onFirstScreen` · `onPageUpdate` **안에서 곧바로** `statusBarIcons.sync(lynxView)`를 부른다 |
+
+- **`sync`를 `post`로 미루지 않는다.** 미루면 62 ~ 210 ms 늦는다(API 37 에뮬레이터 실측). `StatusBarIconSync` 안에도 `post` · `Handler` · `Executor` · `Thread`를 두지 않는다 — 둘 다 `pnpm test:android-bundle`(= `pnpm verify`)의 규칙 `host-wiring`이 막는다.
+  같은 콜백의 `AccessibilityTapBridge.sync`는 원래대로 `post`한다(건드리지 않았다).
+- **JS의 상수와 호스트의 문자열 둘은 짝이다.** 한쪽만 고치면 같은 명령의 `marker-value` · `marker-key`가 실패한다. 판정은 `devtools/android-bundle/host-status-bar-icons.mjs`에 있다.
+- **기본값으로 서는 때**: 번들이 뜨기 전 · 로드 실패 · JS 스플래시 · 재생성(글꼴 배율 등) 직후. `uiMode` · 화면 크기 변경과 HOME → 복귀에서는 호스트가 다시 하지 않아도 값이 남는다.
+- **아이콘은 표면보다 늦게 바뀐다 — 확인한 범위에서 앱이 줄일 수 있는 것은 한 프레임이다.** Pixel/AOSP 에뮬레이터 이미지 둘(API 37 · API 30)의 SystemUI dex에서 아이콘 색이 120 ms 애니메이션으로 바뀌는 것을 확인했고(제조사 SystemUI는 확인하지 않았다), API 30 에뮬레이터(호스트 GPU) 실측으로 다 바뀔 때까지 약 150 ~ 160 ms다(앱 몫은 한 프레임). 기준과 판정 환경은 ADR-0050 D7이 진다.
+- **Lynx를 올리면 아래 계측을 다시 돌린다.** 호스트가 Lynx의 `getDataset` · `onPageUpdate` · 클라이언트 호출 순서에 기대는데, 그것을 보는 계측은 에뮬레이터가 필요해 `pnpm verify`에 없다.
+- iOS 호스트는 이 표지를 읽지 않는다 — iOS는 시스템이 스스로 고른다.
+
+### 계측 `StatusBarIconsHostTest` 실행
+
+8건(HI1 ~ HI8)이다. 실제 `MainActivity`를 띄워 세션을 심고 모의 HTTP로 여정 맵까지 간 뒤, 창의 외형 플래그 · `StatusBarIconSync.applyCount()` · LynxView 트리의 dataset을 본다.
+**번들 서빙과 `-e bundleUrl`이 필수다** — 빠지면 `precondition: instrumentation argument bundleUrl is missing`으로 실패한다. 그래서 계측 일괄에서는 `notClass`로 빼고 따로 돌린다([출시 설정 절차](../../docs/e2e/android-release-config.md)의 R8 ④).
+
+```sh
+# 저장소 루트 — 모의 값으로 만든 번들을 서빙한다
+PUBLIC_SUPABASE_URL=https://example.invalid PUBLIC_SUPABASE_ANON_KEY=local-bridge-test pnpm bundle:android
+python3 -m http.server 18790 --bind 0.0.0.0 --directory apps/mobile/dist &
+cd apps/android && ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+adb -s <기기> install -r -t app/build/outputs/apk/debug/app-debug.apk
+adb -s <기기> install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -s <기기> shell am instrument -w -r -e class com.libitum.host.StatusBarIconsHostTest \
+  -e bundleUrl http://10.0.2.2:18790/main.lynx.bundle \
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+- **판정**: 종료 코드가 아니라 출력 마지막의 `OK (8 tests)`(실패면 `FAILURES!!!`)와 케이스별 `INSTRUMENTATION_STATUS_CODE`로 본다.
+  **`-r` 출력에는 코드 0이 10개 나온다**(테스트 8 + hi7 · hi8의 수치 보고 2) — 「0이 8개」로 세지 않고 `OK (8 tests)`와 테스트별 코드로 판정한다.
+  API 37 · API 30 에뮬레이터 모두 `OK (8 tests)`였다(2026-10-06 — HI8은 두 기기 모두 `calls=10 toneChanges=4 mismatched=0`).
+  HI4의 야간 모드 명령은 API 29부터라 그 아래에서는 건너뛴다(`-4` — 통과로 세지 않는다).
+- **전제**: 시작할 때 시스템 야간 모드가 꺼져 있어야 한다. 끝난 뒤 일반 번들이 필요하면 `pnpm bundle:android`를 다시 돌린다.
+- **에뮬레이터 전역 상태를 바꿨다 되돌린다** — HI4가 야간 모드를 켜고, 앱 저장소(`duru-storage`)를 백업한 뒤 세션을 심거나 비운다. Maestro · 다른 계측 · e2e 절차와 같은 기기에서 동시에 돌리지 않는다.
+  러너가 중간에 죽었으면 `adb -s <기기> shell 'cmd uimode night no'`, 앱 저장소가 비거나 세션이 남았으면 개발용 기기에 한해 `adb -s <기기> shell pm clear libitum.duru.android`.
+- **무엇을 증명하고 무엇을 못 하는가**: HI2 ~ HI6은 50 ms 간격 폴링이라 「결국 바뀐다 · 유지된다 · 적용 횟수」만 본다. **「화면 갱신과 같은 콜 안에서 적용된다」를 보는 것은 HI8 하나다** — 테스트가 자기 `LynxViewClient`를 더해 그 `onPageUpdate` 안에서 트리의 명암과 창의 플래그를 견준다.
+  HI8의 실행값(`toneChanges=4`)은 단언의 하한과 같아 여유가 없다(ADR-0050 D7의 「HI8의 한계」). HI7은 여정 맵에서 `sync` 200회의 평균이 4 ms 미만인지 본다.
+- 계측으로 닿는 화면은 온보딩 · 여정 맵 · 에피소드 표지 · 첫 서사 · 지표 모달이다. 시스템이 실제로 그린 픽셀(대비)과 전환 영상은 계측이 보지 못한다 — [Android 상태바 아이콘 명암](../../docs/e2e/android-status-bar-icons.md)의 에뮬레이터 절차가 진다.
+
+## 번들 안 이미지 경로
+
+번들이 내는 이미지 `src`는 스킴 없는 절대 경로(`/static/image/<이름>.<해시>.<확장자>`)다. 호스트가 그것을 읽을 수 있는 URL로 바꾼다
+([ADR-0051](../../docs/adr/0051-android-image-url-redirect.md)).
+
+| 빌드 | `/static/…`이 바뀌는 값 |
+|---|---|
+| `bundled` · `release`(내장 번들) | `asset:///static/…` — `pnpm bundle:android`가 복사한 APK 자산 |
+| `debug`(원격 번들) | `<번들 URL의 scheme://authority>/static/…` — 번들을 준 그 서버 |
+| `/static/`로 시작하지 않는 값(원격 `https://…` · `data:` 등) | 그대로 |
+
+- **값을 내는 것은 `HostPaths.media`이고, Lynx에 거는 자리는 `HostImageInterceptor`(`ImageInterceptor`) 하나다.** `MainActivity`가 `builder.build(this)` 바로 다음, `renderTemplateUrl` 전에 `lynxView.setImageInterceptor(...)`로 단다.
+  인터셉터는 **불린 스레드에서 곧바로 값을 돌려준다** — 실행기 · 핸들러 · 잠금 · I/O를 두지 않는다.
+- **`setMediaResourceFetcher` · `setAsyncImageInterceptor` · `LynxMediaResourceFetcher`를 잇는 클래스를 `app/src/main`에 두지 않는다.** 2026-10-07 전에는 미디어 fetcher(`BundledMediaFetcher`)로 바꿨는데, Lynx 4.0.1은 fetcher가 달려 있으면
+  UI 스레드에서 들어온 `src`의 재작성을 다른 스레드 풀로 넘긴다. 이미지 요청 작업이 그보다 먼저 돌면 재작성 전의 `/static/…`이 그대로 나가 `Unsupported uri scheme`으로 실패하고,
+  스플래시처럼 `binderror`로 상태를 굳히는 화면은 그림을 잃는다(콜드 스타트에서 워드마크 없이 첫 화면으로 넘어가던 결함). `pnpm test:android-bundle`의 `host-image-redirect.integration.test.mjs`가 이 결선을 지킨다.
+- **Lynx 버전을 올리면 아래 계측의 HW1을 다시 돌린다.** 결선의 정적 검사는 이 호스트의 결선만 보고 Lynx의 동작은 보지 못한다.
+- **`HostImageInterceptor.loadImage`는 호출되지 않는 무동작이다.** Lynx 4.0.1에 그 메서드를 부르는 곳이 없다. 같은 정적 검사 파일의 HR7 · HR8이 저장소에 든 Lynx AAR(`vendor-maven`)을 읽어 그 전제를 지킨다 —
+  Lynx를 올려 HR7이 실패하면 기대값을 고치기 전에 새 호출자를 읽는다(호출자가 생겼다면 `loadImage`를 실제로 구현해야 한다).
+- **dev 빌드에서는 워드마크가 가끔 안 보인 채 주황 화면이 약 4초 이어질 수 있다 — 위 결함이 아니다.** 워드마크 이미지가 스플래시 마운트 뒤 약 1.6초보다 늦게 뜨면
+  공유 JS의 4초 안전 타이머가 재생(약 2.4초)보다 먼저 스플래시를 닫는다. 가르는 법: 위 결함은 logcat에 `LynxImageManager: onFailed … Unsupported uri scheme`이 찍히고 수 ms ~ 0.3초 만에 닫힌다.
+  늦은 도착은 `onFailed`도 `error`도 `finalloopcomplete`도 없이 약 4초 뒤에 닫힌다.
+  - **왜 늦게 뜨는지는 모른다.** 타이머로 닫힌 실행이 관찰된 곳은 `debug`(워드마크를 HTTP로 받는다) 빌드의 API 30 에뮬레이터이고 자연 조건에서 약 0.5%였다(218회에 1건).
+    **dev 빌드만의 일이라고 읽지 않는다** — 내장(`bundled`) 빌드에서 타이머로 닫힌 실행은 없었지만, 통과한 실행 가운데 스플래시 길이가 타이머 경계(약 4.03초 이상)에 닿은 것이 API 37 에뮬레이터에서 수정 전 · 후 모두 있었다(두 에뮬레이터를 동시에 돌린 부하 조건 — ADR-0051 「리뷰와 계약 r03의 정정」). 그 한 건은 번들 서버가 즉시 응답했는데 났다 —
+    「HTTP로 받아서 늦는다」는 원인으로 확인되지 않았다(응답을 일부러 2초 늦추면 이 증상이 난다는 것까지다).
+  - **「수정 전 빌드에도 있던 성질」은 강제 조건에서만 확인됐다**(응답을 2초 늦추면 수정 전 빌드도 같은 증상). 자연 조건의 대조(빌드당 150회)에서는 두 빌드 모두 0건이었다 —
+    수정이 2% 이상으로 늘렸다는 것은 기각되고 약 1% 안팎의 증가는 배제되지 않는다.
+  - 수치 · 한계 · 내장 빌드와 실기에서 나는지의 미확인 · 타이머를 고칠지의 보류는 ADR-0051(「재실행과 대조 측정」 · 「미확인 · 후속」)이 진다.
+- 소리 · 대사는 이 경로를 쓰지 않는다(호스트 모듈이 자체 경로로 읽는다).
+
+### 계측 `SplashWordmarkHostTest` 실행
+
+7건(HW1 ~ HW7)이다. 실제 `MainActivity`를 세션 없이 띄워(스플래시 → 온보딩) 같은 프로세스의 logcat과 LynxView 트리를 본다.
+**번들 서빙과 `-e bundleUrl`이 필수다** — 빠지면 `precondition: instrumentation argument bundleUrl is missing`으로 실패한다(건너뛰지 않는다). 그래서 계측 일괄에서는 `notClass`로 빼고 따로 돌린다([출시 설정 절차](../../docs/e2e/android-release-config.md)의 R8 ⑤).
+
+```sh
+# 저장소 루트 — 모의 값으로 만든 번들을 서빙한다 (3000 포트는 쓰지 않는다)
+PUBLIC_SUPABASE_URL=https://example.invalid PUBLIC_SUPABASE_ANON_KEY=local-bridge-test pnpm bundle:android
+python3 -m http.server 18790 --bind 0.0.0.0 --directory apps/mobile/dist &
+cd apps/android && ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+adb -s <기기> install -r -t app/build/outputs/apk/debug/app-debug.apk
+adb -s <기기> install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -s <기기> shell am instrument -w -r -e class com.libitum.host.SplashWordmarkHostTest \
+  -e bundleUrl http://10.0.2.2:18790/main.lynx.bundle \
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
+# HW1만 되풀이할 때: -e class com.libitum.host.SplashWordmarkHostTest#hw1_forcedRaceKeepsTheWordmarkRequestRewritten
+```
+
+| 케이스 | 무엇을 보는가 |
+|---|---|
+| HW1 | **경합을 강제한 상태**에서 워드마크 요청이 재작성된 URL로 나간다 — `LynxImageManager: onFailed` 0줄 · 워드마크 노드 유지 · `finalloopcomplete`. 띄우기 전에 Lynx의 스레드 풀 둘에 대기 작업을 던져 강제한다(제품 코드에 이음매가 없다) |
+| HW2 | 자연 조건으로 같은 프로세스에서 5회 다시 띄운다(콜드 스타트가 아니다 — 가드) |
+| HW3 | 워드마크 파일이 없는 번들에서 이미지가 **다른 이유로** 실패하고 `binderror`가 안전 타이머보다 먼저 스플래시를 끝낸다. **`-e wordmarkMissing true`가 없으면 건너뛴다** |
+| HW4 | 강제 조건에서 온보딩의 두 그림도 `onFailed` 0줄(가드) |
+| HW5 | 워드마크 응답이 **2000 ms** 늦는 서버에서: `onFailed` · `error` 0줄, 첫 화면 뒤 1.5초에 워드마크 노드가 있고(일찍 닫히지 않는다), 첫 화면 뒤 3.0초 ~ 타이머 + 2초에 온보딩 「Next」가 선다(갇히지 않는다). `finalloopcomplete`는 요구하지 않는다(가드). **`-e wordmarkDelayMs 2000`이 없으면 건너뛴다** |
+| HW6 | 워드마크 응답이 **1000 ms** 늦는 서버에서: 재생이 끝까지 가 `finalloopcomplete`가 오고 그 뒤 「Next」(가드). **`-e wordmarkDelayMs 1000`이 없으면 건너뛴다** |
+| HW7 | 워드마크 응답이 **8000 ms** 늦는 서버에서 HW5와 같은 단언 — 이미지가 와서 닫을 수 없으므로 안전 타이머만이 스플래시를 끝낸다(가드). **`-e wordmarkDelayMs 8000`이 없으면 건너뛴다** |
+
+- **판정**: 종료 코드가 아니라 출력 마지막의 `OK (7 tests)`(실패면 `FAILURES!!!`)와 케이스별 `INSTRUMENTATION_STATUS_CODE`로 본다. 위 명령에서는 HW3 · HW5 · HW6 · HW7이 `-4`(건너뜀)다 — **건너뜀은 통과로 세지 않는다.**
+  (HW5 ~ HW7이 더해진 뒤의 클래스 전체 실행은 API 37 · API 30 모두 `OK (7 tests)` — 통과 3(HW1 · HW2 · HW4) · 건너뜀 4였다. 2026-10-07 `5aff7932`, 에뮬레이터 한 대씩.)
+  HW1은 강제가 걸렸다는 표지(`createViewAsync not done, will create on ui thread, tagName:image`)가 logcat에 없으면 「강제 불성립」으로 **실패**한다.
+- **HW3을 돌리려면** 워드마크 파일을 지운 번들 사본을 다른 포트로 서빙하고 인자를 더한다.
+
+  ```sh
+  cp -R apps/mobile/dist <임시 폴더>/dist-nowordmark
+  rm <임시 폴더>/dist-nowordmark/static/image/logo-handwriting.*.webp
+  python3 -m http.server 18792 --bind 0.0.0.0 --directory <임시 폴더>/dist-nowordmark &
+  adb -s <기기> shell am instrument -w -r \
+    -e class com.libitum.host.SplashWordmarkHostTest#hw3_missingWordmarkEndsTheSplashThroughBinderror \
+    -e bundleUrl http://10.0.2.2:18792/main.lynx.bundle -e wordmarkMissing true \
+    libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
+  ```
+
+- **HW5 · HW6 · HW7(늦은 도착 가드)을 돌리려면** 워드마크 응답만 늦추는 번들 서버 `apps/android/tools/wordmark-delay-server.py`를 그 지연으로 띄우고 같은 값을 인자로 준다. 케이스마다 서버 하나다.
+
+  ```sh
+  # 저장소 루트 — <번들 디렉터리> <포트> <워드마크 지연 ms>. 요청마다 시각 · 경로 · 상태를 표준 출력에 찍는다 (3000 포트는 거절한다)
+  python3 apps/android/tools/wordmark-delay-server.py apps/mobile/dist 18793 2000 > <임시 폴더>/delay-2000.log &
+  adb -s <기기> shell am instrument -w -r \
+    -e class com.libitum.host.SplashWordmarkHostTest#hw5_lateWordmarkStillLetsTheSplashEndAndOnboardingStand \
+    -e bundleUrl http://10.0.2.2:18793/main.lynx.bundle -e wordmarkDelayMs 2000 \
+    libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
+  # HW6: 서버를 다른 포트에 1000 으로 띄우고 -e wordmarkDelayMs 1000  (#hw6_wordmarkLateByOneSecondStillPlaysToTheEnd)
+  # HW7: 서버를 다른 포트에 8000 으로 띄우고 -e wordmarkDelayMs 8000  (#hw7_veryLateWordmarkIsEndedBySafetyTimerAlone)
+  ```
+
+  - **인자 값은 「서버를 그 지연으로 띄웠다」는 선언이다.** 테스트는 서버의 지연을 직접 보지 못해, 지연이 걸렸다면 가능하지 않은 관찰(너무 이른 `finalloopcomplete`)이 나오면 「지연 불성립」으로 **실패**한다. 인자와 서버의 지연이 다르면 그렇게 끝난다.
+  - **케이스가 시작 전에 앱의 이미지 캐시를 스스로 비운다**(이 클래스의 모든 케이스 — 메모리와 디스크). 반복 실행 앞에 `pm clear`를 넣을 필요가 없다.
+    **비운 뒤 캐시가 비었는지는 확인하지 않는다** — Fresco 2.3.0은 비운 직후의 항목 수에 -1을 내 그 값으로는 가를 수 없다. 비우지 못해 캐시에서 그림이 뜨면 HW5 · HW6 · HW7의 「지연 불성립」이 잡는다.
+    2026-10-07에 더한 것이다: 그 전에는 HW5 · HW6를 반복하면 두 번째부터 캐시에서 그림이 떠 요청이 서버에 가지 않았고 「지연 불성립」으로 실패했다(두 기기 모두 HW5 5회 가운데 1회 · HW6 5회 가운데 0회 통과).
+    **고친 뒤의 반복 실행은 두 기기에서 확인됐다**(2026-10-07 `5aff7932`, API 37 · API 30): `pm clear` 없이 잇달아 HW5 · HW6 · HW7 각 5회 가운데 5회 통과, 매 회 서버에 워드마크 요청이 1건 왔다. 표본은 기기당 15회다.
+    처음 고침에는 「비운 뒤 항목 수가 0인가」 단언이 있었고 그것이 항상 실패해 이 클래스의 모든 케이스를 막았다 — 그 단언은 뺐다(경위와 회차 표는 [Android 스플래시 워드마크](../../docs/e2e/android-splash-wordmark.md)의 「R1」 · 「최종 검증」).
+  - 인자가 없거나 그 케이스의 값이 아니면 건너뛴다. 그래서 위의 클래스 전체 실행 · 계측 일괄 어디에도 이 셋의 통과는 들지 않는다 — 따로 돌린 것만 센다.
+  - **가드이고 재현 테스트가 아니다** — 수정 전 빌드에서도 통과한다. 구분력은 사본에 건 변이로 확인했다(안전 타이머 제거는 HW5가 아니라 HW7이 잡는다 · `entrySplashDurationMs` 3000은 HW6이 잡는다 — API 37에서만 확인).
+  - **HW6은 API 30에서 간헐적으로 실패한다**(15회 가운데 13회 통과 — 캐시를 비우기 전의 기록이고, 위 캐시 문제와 같은 원인이었는지는 확인되지 않았다. 캐시를 비우게 한 뒤의 5회에서는 나오지 않았으나 그것으로 없어졌다고 보지 않는다). 실패 2회는 번들 미로드 1 · 응답이 앱에 늦게 닿음 1이다 — 1000 ms 지연에서 타이머까지의 여유가 약 0.55초뿐이라 자연 지연이 겹치면 넘는다. 창을 넓혀 통과시키지 않는다 — 실패하면 그 실행의 서버 기록(워드마크 `END` 줄의 걸린 시간)과 logcat을 읽는다.
+  - 기록과 변이 결과의 출처는 ADR-0051의 D6이다.
+- **에뮬레이터를 한 대씩 돌린다.** 늦은 도착 가드(HW5 ~ HW7)와 아래 반복 실행기의 dev 반복은 이미지의 도착 시각에 기대고, 그 시각이 호스트 부하에 흔들린다. 다른 에뮬레이터 · 다른 계측 · Gradle 빌드 · 화면 녹화를 함께 돌리지 않는다
+  (두 에뮬레이터를 동시에 돌린 첫 반복에서 API 30의 dev 빌드가 워드마크 없이 4초 뒤 닫히는 실행을 셋 냈다 — 서버 기록이 없어 늦은 도착이었는지는 미해결이다. 한 대씩 돌린 재실행에서도 늦은 도착이 69회에 1건 났다 — 한 대씩 돌려도 0이 되지는 않는다).
+- **수정 전후의 기록**(2026-10-07, API 37 · API 30 에뮬레이터): HW1은 미디어 fetcher 결선에서 두 기기 각 10회 가운데 10회 실패했고, 지금의 결선에서 각 10회 가운데 10회 통과했다. HW3은 각 3회 가운데 3회 통과했다. 수치의 출처와 한계는 ADR-0051이 진다.
+- **기기 상태를 바꿨다 되돌린다** — 앱 저장소(`duru-storage`)를 백업하고 비운 채 시작해 끝나면 되돌린다. Maestro · 다른 계측 · e2e 절차와 같은 기기에서 동시에 돌리지 않는다.
+  러너가 중간에 죽었으면 개발용 기기에 한해 `adb -s <기기> shell pm clear libitum.duru.android`.
+- **무엇을 증명하고 무엇을 못 하는가**: HW1은 「강제한 경합에서도 요청이 재작성 뒤에 나간다」를 결정적으로 본다. **자연 조건의 콜드 스타트에서 실패가 없는지는 보지 못한다** — 프로세스를 새로 띄우는 반복은
+  [Android 스플래시 워드마크](../../docs/e2e/android-splash-wordmark.md)의 절차와 반복 실행기 `apps/android/tools/splash-wordmark-repeat.sh`가 진다(쓰는 법은 스크립트 머리말 · 판정 로직만 기기 없이 확인하려면 `--selftest`).
+  실행기는 실행마다 **넷 가운데 하나**로 센다 — PASS · FAIL(결함: `onFailed`) · FAIL(요청 없음) · LATE(늦은 도착 — 서버 기록이 있는 dev에서만 가를 수 있고, **통과가 아니며** 유효 시도에서 빠진다. 늦은 시작이 dev에서만 난다는 뜻은 아니다 — 내장 빌드의 통과 실행도 4초 타이머 경계에 닿은 적이 있다. ADR-0051 「리뷰와 계약 r03의 정정」). dev 반복은 요청 기록 서버(`wordmark-delay-server.py`를 지연 없이)와 `--server-log`가 있어야 LATE를 가른다.
+  종료 코드는 0 통과 · 1 실패 · 2 사용법 · 3 판정 불가로 못 채움 · 4 기기 소실 · **5 환경 부적합(LATE가 시도의 5% 초과 — 통과가 아니다)** 이다. 조건의 정본은 그 절차 문서의 「판정」과 「반복 실행기」다(여기에 되풀이하지 않는다).
+  로그인 뒤 화면의 그림 · 실기 · release AAB도 이 계측의 범위 밖이다.
 
 ## 준비
 
-- Android Studio, Android SDK Platform 35와 Build Tools 35.0.0
+- Android Studio, Android SDK Platform 36과 Build Tools 36.0.0 (`compileSdk` · `targetSdk` 36, `minSdk` 26)
 - JDK 17 (Gradle 8.11.1 · Android Gradle Plugin 8.9.2)
 - 저장소의 [첫 설정](../../docs/conventions/workflow.md#첫-설정) 및 `pnpm install`
 
@@ -26,9 +281,12 @@ iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-ho
 cd apps/android
 ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.libitum.host/.MainActivity \
+adb shell am start -n libitum.duru.android/com.libitum.host.MainActivity \
   --es bundle-url http://10.0.2.2:3001/main.lynx.bundle
 ```
+
+`-n`의 컴포넌트는 `<패키지>/<완전한 클래스 이름>`으로 쓴다. 패키지(`applicationId`)는 `libitum.duru.android`이고 Java 패키지(`namespace`)는
+`com.libitum.host` 그대로라, 축약형 `libitum.duru.android/.MainActivity`는 없는 클래스다(아래 「패키지 이름과 출시 빌드」).
 
 Debug 호스트는 Rspeedy의 WebSocket 연결과 변경분 파일을 읽는다. `apps/mobile/src`를
 수정하면 앱을 다시 실행하지 않고 화면에 반영된다. 로컬 HTTP는 Debug에만 허용한다.
@@ -38,10 +296,10 @@ Debug 호스트는 Rspeedy의 WebSocket 연결과 변경분 파일을 읽는다.
 저장소 루트에서 `pnpm bundle:android`로 번들을 만든 뒤 `pnpm preview`를 실행한다.
 Android 에뮬레이터에서 `./gradlew assembleDebug`로 만든 APK를 설치한다. 기본 번들 URL은
 `http://10.0.2.2:3000/main.lynx.bundle`이다. 출력된 포트가 다르거나 실기기를 쓰면
-URL을 실행 인자로 지정한다. `/static/` 이미지는 같은 서버에서 읽는다.
+URL을 실행 인자로 지정한다. `/static/` 이미지는 같은 서버에서 읽는다(호스트가 경로를 바꾸는 자리는 위 「번들 안 이미지 경로」).
 
 ```sh
-adb shell am start -n com.libitum.host/.MainActivity \
+adb shell am start -n libitum.duru.android/com.libitum.host.MainActivity \
   --es bundle-url http://10.0.2.2:3001/main.lynx.bundle
 ```
 
@@ -60,9 +318,98 @@ cd apps/android
 adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 ```
 
-`bundled`는 로컬 검증용으로 Android 디버그 키로 서명한다. `assembleRelease`는 별도
-서명 없이 배포용 산출물을 만들며, 이 단계에서 스토어 배포를 설정하지 않는다.
+`bundled`는 로컬 검증용으로 Android 디버그 키로 서명한다. `release`는 서명 없는 산출물을 만든다(아래 「패키지 이름과 출시 빌드」).
 두 빌드 모두 복사된 Lynx 번들이 없으면 빌드를 중단한다.
+**`bundled`와 `release`는 R8로 축소 · 난독화된 코드다**(`debug`는 아니다 — 아래 「코드 축소(R8)와 난독화」). `bundled`에서 난 스택 트레이스는 이름이 바뀌어 있고, 계측 픽스처는 이 두 빌드에 붙지 않는다.
+
+## 패키지 이름과 출시 빌드
+
+Play Console에 등록된 앱에 맞춘 설정이다. 결정과 버린 대안은 [ADR-0046](../../docs/adr/0046-android-play-release.md)이 진다.
+
+| 항목 | 값 | 어디에 쓰이나 |
+|---|---|---|
+| `applicationId`(패키지) | `libitum.duru.android` | Play · Firebase 앱 · `adb`/`am`/`pm`의 대상 · Maestro `appId` |
+| 계측 APK | `libitum.duru.android.test` | 러너 `libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner` |
+| `namespace`(Java 패키지) | `com.libitum.host` — 바꾸지 않았다 | 소스 경로 `app/src/main/java/com/libitum/host/` · 클래스 이름(`-e class com.libitum.host.<Test>`, `…/com.libitum.host.MainActivity`) |
+| `versionCode` · `versionName` | `2` · `0.1.0` | Play에는 `versionCode` 1이 올라가 있다 |
+
+- **`versionCode`는 손으로 올린다.** Play에 올릴 커밋에서 `app/build.gradle`의 정수를 1 올린다. 빌드 인자로 받지 않는다 — 어느 커밋이 어느 번호인지 저장소가 알아야 한다.
+- **서명은 저장소 밖이다.** `./gradlew bundleRelease`는 서명 없는 `app/build/outputs/bundle/release/app-release.aab`를 만들고, 업로드 키 서명은 사람이 `jarsigner`로 한다.
+  `release` buildType에 `signingConfig`를 두지 않는다. 키 · 비밀번호를 저장소나 명령에 쓰지 않는다. 서명 · Play 업로드 · 실기 확인 순서는
+  [Android 출시 설정 절차](../../docs/e2e/android-release-config.md)의 R9에 있다 — **2026-10-05 현재 아직 실행되지 않았다.**
+- **`release` 빌드는 `app/google-services.json`이 있어야 한다.** 없으면 `verifyReleaseFirebaseConfig`가
+  `Release build needs apps/android/app/google-services.json for libitum.duru.android …`로 멈춘다(FCM이 빠진 AAB가 Play에 올라가는 것을 막는다).
+  `debug` · `bundled`는 파일 없이도 빌드된다. 파일은 추적하지 않으므로 워크트리마다 둔다(아래 「푸시 알림 Firebase 설정」).
+- **옛 패키지와의 공존(개발 기기만).** 2026-10-05 이전 빌드로 설치한 `com.libitum.host`는 지워지지 않고 별도 앱으로 남는다(아이콘 둘 · 데이터 따로).
+  둘 다 `duru://auth-callback`을 받으므로 함께 있으면 콜백에 앱 선택 창이 뜬다 — 소셜 로그인을 보기 전에 `adb uninstall com.libitum.host`.
+  스크립트는 옛 앱을 지우지 않는다. Play 사용자는 처음부터 새 패키지만 가진다.
+
+## 코드 축소(R8)와 난독화
+
+`release`는 R8로 코드를 축소하고 난독화한다. 결정 · 실측 · 확인하지 못한 것은 [ADR-0052](../../docs/adr/0052-android-release-shrinking.md)가 진다 — 여기에는 다루는 법만 적는다.
+
+| 변형 | 축소 | 어떻게 정해지나 |
+|---|---|---|
+| `debug` | **안 한다** | `minifyEnabled` 선언이 없다. 계측(androidTest)의 대상도 이 변형이다 |
+| `release` | R8 코드 축소 + 난독화. 리소스 축소는 없다 | `app/build.gradle`의 `release { minifyEnabled true … }` |
+| `bundled` | `release`와 같다 | `initWith release`로 물려받는다 — `bundled` 블록에 `minifyEnabled`를 적지 않는다 |
+
+`bundled`의 `classes.dex`는 **`app/google-services.json`이 있는 워크트리에서 빌드하면 `release`와 바이트까지 같다.** 파일 없이도 `bundled`는 빌드되지만(위 「패키지 이름과 출시 빌드」) 그때는 google-services 문자열 6개가 빠져 리소스 ID가 밀리고 dex가 `release`와 달라진다 — 기동은 하되 Firebase 초기화 실패 로그가 남는다.
+**`bundled`를 `release`의 대리로 쓰는 검증은 그 파일과 함께 빌드한 APK로 한다**(ADR-0052 「검증」의 「release와 `bundled`의 dex — 리뷰 뒤의 재현」). 이 문서의 앞선 판은 「두 dex는 바이트가 같지 않다」고 적었다 — 파일 없는 빌드의 관찰을 일반화한 것이라 거둔다.
+
+싣는 ABI는 세 변형 모두 4개(`arm64-v8a` · `armeabi-v7a` · `x86` · `x86_64`) 그대로다. `ndk { abiFilters … }` · `splits` · `shrinkResources`를 더하지 않는다 — ABI는 4개 유지로 정했고 프로덕션 출시 전에 다시 정한다([ADR-0052](../../docs/adr/0052-android-release-shrinking.md)의 「재검토 조건」 · [ADR 보류 표](../../docs/adr/README.md#보류-표)).
+
+**`app/proguard-rules.pro`** 가 프로젝트의 R8 규칙이다. `-dontwarn` 7줄(Lynx가 참조하지만 이 앱이 싣지 않는 선택적 클래스 — 빼면 빌드가 실패한다)과 keep 2줄(`lynx-base` · `lynx-trace` AAR이 consumer 규칙을 싣지 않아, 네이티브가 JNI로 이름을 찾는 메서드를 지킨다)이 전부다.
+keep 한 줄(`@com.lynx.base.CalledByNative`)은 빼면 **기동 즉시 죽고**, 다른 한 줄(`@com.lynx.trace.CalledByNative`)은 충돌을 관찰하지 못한 방어 규칙이다 — 줄마다의 근거 수준은 ADR-0052 D2의 표에 있다.
+
+- **규칙을 계약 밖으로 넓히지 않는다.** `-keep class com.libitum.host.** { *; }` 같은 넓은 keep · `-dontobfuscate` · `-dontoptimize` · `-keepattributes`를 넣지 않는다. 호스트의 Lynx 모듈과 매니페스트가 가리키는 클래스는 Lynx AAR의 규칙과 AAPT가 이미 지킨다.
+- **규칙을 더해야 하면** 「무엇이 이름으로 찾는가 · 빼면 무슨 일이 나는가를 봤는가」를 먼저 계약과 ADR-0052 D2의 표에 적고, 그 다음 정적 검사의 기대값을 고친다. 검사를 먼저 고쳐 통과시키지 않는다.
+- **정적 검사가 지킨다**(`pnpm test:android-bundle` — `pnpm verify` 안, `release-shrink.integration.test.mjs`): I3은 vendor Lynx AAR의 `CalledByNative` 어노테이션이 전부 규칙으로 덮였는지, I4는 `proguard-rules.pro`가 정확히 그 9줄인지를 본다. I1 · I2는 `build.gradle`의 설정(ABI를 건드리는 선언 없음 · `minifyEnabled`는 `release`에만 · 리소스 축소 없음)을 본다.
+  **I3이 보지 못하는 것**: vendor가 아닌 AAR과 어노테이션 없이 JNI로 불리는 메서드. 그런 누락은 축소한 빌드를 기기에서 그 경로까지 돌려야 드러난다 — Lynx · Fresco · AGP를 올리면 [Android 출시 설정 절차](../../docs/e2e/android-release-config.md)의 「S — minify한 release 스모크」를 다시 돈다.
+
+**산출물 검사**는 AAB · APK가 필요해 `pnpm verify` 밖이다. 산출물이 없으면 건너뛰지 않고 실패한다.
+
+```sh
+# 저장소 루트 — 모의 값 번들 → clean 빌드 (pnpm verify 가 같은 워크트리에서 돌고 있으면 끝난 뒤)
+PUBLIC_SUPABASE_URL=https://example.invalid PUBLIC_SUPABASE_ANON_KEY=local-bridge-test pnpm bundle:android
+( cd apps/android && ANDROID_HOME=~/Library/Android/sdk ./gradlew clean :app:assembleDebug :app:assembleBundled :app:bundleRelease )
+ANDROID_HOME=~/Library/Android/sdk BUNDLETOOL_JAR=<bundletool-all.jar> \
+  node --test devtools/android-bundle/release-shrink.artifacts.mjs
+```
+
+A1 ~ A8이 release AAB의 ABI 4개 · debug APK가 축소되지 않았음 · dex 1개와 매핑 · 네이티브와 매니페스트가 이름으로 찾는 것이 매핑에 남았음 · `bundled` APK의 dex 1개 · 내장 번들이 소스와 같음 · 네 기기 스펙의 다운로드 크기 상한(18,000,000바이트) · 접근성 클래스가 축소에서 살아남았음(A8)을 본다.
+A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 Lynx 접근성 노드 제공자는 이름이 바뀌어도 살아 있으면 되고(`mapping-survival.mjs`), 완료 안내 모듈과 Lynx 가상 노드의 클래스 이름은 그대로여야 한다. A8이 실패하면 규칙을 먼저 더하지 말고 무엇이 바뀌어 사라졌는지부터 읽는다.
+`BUNDLETOOL_JAR`가 없으면 A7(다운로드 크기)만 건너뛴다 — **건너뜀은 통과가 아니다.** `release` 빌드에는 `app/google-services.json`이 필요하다(위 「패키지 이름과 출시 빌드」).
+**주의 — `native-alignment.artifacts.mjs`를 돌린 뒤의 `bundled` APK는 코드상 `google-services.json` 없이 빌드된 것이다.** 그 검사의 마지막 테스트(NA6)가 파일을 치운 채 `:app:assembleBundled`를 다시 빌드하고, 파일을 되돌린 뒤에는 `:app:bundleRelease`만 다시 빌드한다(NA6 직후의 APK를 직접 연 실행은 없다 — 최종 검증의 로그 순서가 이를 받친다: ADR-0052 「검증」). 파일 없이 빌드한 APK의 dex는 `release`와 다르다 — `bundled`로 기기 검증을 하려면 `release-shrink` 검사를 먼저 돌리거나 `:app:assembleBundled`를 다시 빌드한다([Android 출시 설정 절차](../../docs/e2e/android-release-config.md)의 S.3 사전 검사).
+
+**계측 픽스처는 축소한 빌드에 붙지 않는다.** `bundled` APK나 release AAB 설치에 `SignedInScreenFixtureTest` 같은 계측을 붙이면 러너가 `NoClassDefFoundError`(`kotlin.jvm.internal.Intrinsics` · `androidx.tracing.Trace`)로 죽는다 — 계측 APK가 기대는 앱 쪽 클래스를 R8이 지우거나 이름을 바꿨다.
+
+- 로그인 뒤 화면을 계측 · 픽스처로 보려면 **`debug` 빌드**를 쓴다(번들 서빙 + `-e bundleUrl`). debug APK와 계측 APK는 이 변경 전후로 바이트 단위로 같다.
+- 「내장 번들 + 로그인 뒤 화면」을 축소한 빌드에서 봐야 하면 [Android 출시 설정 절차](../../docs/e2e/android-release-config.md)의 「S — minify한 release 스모크」가 쓰는 일회용 탐침을 쓴다. 저장소 트리에 커밋하지 않는 사본 전용 훅이고, **그 빌드의 dex는 출시 바이너리와 같지 않다.**
+
+**스택 트레이스 풀기.** 축소한 빌드의 logcat 스택은 `r2.j` · `SourceFile:19` 같은 모양이다. 푸는 데는 **그 빌드의** 매핑이 필요하다. 같은 소스 · 의존성 · 규칙이면 `mapping.txt`는 빌드마다 같았지만(sha256 일치), 그 셋 가운데 하나라도 바뀌면 달라진다 — 그래서 출시한 빌드의 것을 보관한다.
+
+| 변형 | 매핑 |
+|---|---|
+| `release` | `app/build/outputs/mapping/release/mapping.txt` — 같은 내용이 AAB 안 `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`에 들어간다 |
+| `bundled` | `app/build/outputs/mapping/bundled/mapping.txt` |
+
+둘 다 빌드 산출물이라 추적하지 않는다. **출시한 빌드의 `mapping.txt`를 보관하는 것은 사람 몫이다**(R9). 도구는 Android SDK `cmdline-tools`의 `retrace`이고 명령은 같은 절차 문서의 「매핑으로 스택 풀기」에 있다 — **그 명령은 아직 돌려 본 적이 없다.**
+
+## 16 KB 페이지
+
+Play는 64비트 네이티브 라이브러리가 16 KB 페이지를 지원하기를 요구한다. Lynx 4.0.1 · Fresco 2.3.0의 상류 AAR은 이를 통과하지 못하고 상위 버전도 풀지 못해,
+**같은 버전을 16 KB로 다시 빌드한 AAR 9개**를 [`vendor-maven/`](vendor-maven/README.md)에 둔다. 출처 · 바꾼 라이브러리 · 패치 · 다시 만드는 법(`rebuild.sh`)은 그 README가 정본이다.
+
+- **결선**: `settings.gradle`의 `exclusiveContent`가 그 9개 모듈을 `vendor-maven`에서만 찾는다. 좌표와 `app/build.gradle`의 의존 선언은 상류와 같다.
+- **빌드 게이트**: `app/native-alignment.gradle`이 변형마다 `verify<Variant>ApkNativeAlignment`(`assemble<Variant>`) · `verify<Variant>BundleNativeAlignment`(`bundle<Variant>`)를 건다.
+  APK · AAB의 64비트 `.so`(`arm64-v8a` · `x86_64`) 가운데 하나라도 기준을 어기면 `Native 16 KB page alignment check failed for <파일>: …`로 빌드가 실패하고,
+  64비트 `.so`를 하나도 못 찾아도 실패한다. 기준은 LOAD 정렬만이 아니라 `GNU_RELRO` 끝까지 본다(LOAD만 맞아도 호환성 대화상자가 떴다).
+- **같은 판정을 손으로**: `node devtools/android-bundle/elf-page-alignment.mjs <apk|aab|aar>...` — 실패가 있거나 검사한 것이 0개면 종료 코드 1.
+- **의존 조정 둘**: `primjsWasm`(WebAssembly 엔진 — 앱이 쓰지 않고 `libwasm.so`가 정렬되지 않았다)을 설정 전체에서 제외하고, `androidx.datastore:datastore-core-android`의 하한을 1.2.1로 둔다(그 아래 판의 `.so`가 정렬되지 않았다).
+- **Lynx · Fresco 버전을 올리면** `vendor-maven`을 그 버전으로 다시 만들어야 한다(`exclusiveContent`라 새 좌표를 상류에서 찾지 않는다). 상류가 판정을 통과하는 `.so`를 내면 `vendor-maven`과 `exclusiveContent`를 지운다.
+
+16 KB 에뮬레이터에서의 확인 절차는 [Android 출시 설정 절차](../../docs/e2e/android-release-config.md)에 있다. 4 KB 페이지에서는 2026-10-05에 API 30 에뮬레이터 하나에서 재빌드한 `.so`의 로드와 `onBackPressed()` 경로 일부를 확인했다(그 문서의 R6 「실행 기록」). **API 26 ~ 29 · 31 ~ 32와 실기(4 KB 기기 포함)에서의 로드는 아직 확인되지 않았다**(R9 미실행).
 
 ## 확인
 
@@ -80,8 +427,20 @@ adb install -r app/build/outputs/apk/bundled/app-bundled.apk
 `WebAuthenticationModuleTest`는 난수와 잘못된 요청의 반환을 확인한다.
 `LegalDocumentModuleTest`는 법률 문서 이름을 두 고정 HTTPS 주소로만 연결하는지 확인한다.
 `AudioPlaybackModuleTest`는 공통 `.m4a` 자산 21개, 실제 재생 완료, 대체, 일시정지·재개,
-중단·백그라운드 전환·오디오 포커스 손실과 복귀를 확인한다. 자산은 Gradle이 `apps/ios/Host/audio`에서
-빌드 산출물로 동기화하며 APK에 압축 없이 넣는다.
+중단·백그라운드 전환·오디오 포커스 손실과 복귀, 자산을 열지 못했을 때의 경고 로그를 확인한다.
+`SoundEffectAssetTest`·`SoundEffectsSessionTest`(JUnit)는 효과음 id 8개와 `apps/ios/Host/sfx`의 1:1 대응, 로드 전 요청·벨
+상태를, 계측 `SoundEffectsModuleTest`는 8개 자산 열기·벨 반복과 `stopRing`·`stopAll`을 확인한다.
+오디오 자산(`apps/ios/Host/audio/*.m4a` 대사, `apps/ios/Host/sfx/*.mp3` 효과음)은 Android에 복사본을 두지 않는다. Gradle이 변형마다
+`sync<Variant>HostAudioAssets`로 생성 소스 디렉터리에 옮겨 `assets/audio/`·`assets/sfx/`에 압축 없이 넣고, `assemble*`·`bundle*`이
+`verify<Variant>ApkHostAudio`·`verify<Variant>BundleHostAudio`로 산출물을 검사해 원본과 다르거나 압축된 항목이 있으면 빌드를
+실패시킨다. AAB 파일 안의 항목은 원래 전부 deflate로 보이며, 기기에 설치되는 분할 APK의 무압축은 AAB의 `BundleConfig` 무압축 글롭이
+정한다. 2026-10-05 전의 결선은 태스크 의존을 걸지 않아 Android 빌드에 오디오가 0개였다
+([ADR-0045](../../docs/adr/0045-android-host-audio-assets.md)). 결선이 되돌아가지 않았는지는 `pnpm test:android-bundle`이,
+Gradle 산출물 자체는 `node --test devtools/android-bundle/packaged-assets.artifacts.mjs`(먼저 `./gradlew clean :app:assembleDebug
+:app:assembleBundled :app:bundleRelease`)가 본다. 재생 실패는 logcat 태그 `AudioPlayback`(대사)·`SoundEffects`(효과음)의 `W`로 남는다.
+효과음은 오디오 포커스를 요청하지 않고, 대사는 TalkBack 낭독 동안 멈췄다 이어진다 — iOS와의 차이는
+[효과음 계약](../../docs/specs/ios-sound-effects.md#의도된-차이)에 있다. AAB 분할 설치로 소리·서사 배경 그림을 보는 에뮬레이터 절차는
+[Android 효과음 · 대사 오디오 · 서사 배경](../../docs/e2e/android-assets.md)에 있다.
 `CompletionAnnouncementModuleTest`는 완료 안내의 원문·콜백·실제 Android 접근성
 공지 이벤트를 확인한다. 듣기 완료까지의 Maestro 절차는
 [`docs/e2e/android-completion-announcement.md`](../../docs/e2e/android-completion-announcement.md)에 있다.
@@ -99,6 +458,38 @@ Maestro 절차는 [Android 평점 요청 검증](../../docs/e2e/android-app-revi
 `PushNotificationModuleTest`는 브리지·알림 채널·목적지 일회성 소비를 확인한다.
 Maestro의 권한·설정·알림 탭 절차는
 [Android 푸시 검증](../../docs/e2e/android-push-notifications.md)에 있다.
+`PushTokenRefreshRelayTest`는 FCM 토큰 갱신 통지를 서비스에서 Activity로 넘기는 프로세스 안 중계의 판정
+(리스너 없음 · 전달 한 번 · 뗌 · 순서가 뒤바뀐 재생성 · 대체 · 리스너 예외 삼킴)을 확인한다. 계측
+`PushTokenRefreshHostTest`는 실제 `MainActivity`가 살아 있는 동안만 중계가 전달하는지를 보고 번들 · Firebase 설정
+없이 계측 일괄에서 돈다. SDK가 실제로 `onNewToken`을 부르는 구간과 JS의 재등록 요청은 Google Play
+에뮬레이터의 수동 절차(같은 문서의 「토큰 갱신」)가 본다.
+`SystemBackGateTest`는 시스템 뒤로가기의 판정을 확인한다. 준비 전 누름의 종료, 대기 중
+재누름 무시, `handled`·`leave` 응답, 500ms 무응답과 모르는 응답의 처리가 대상이며
+`./gradlew testDebugUnitTest`로 실행한다. 실제 Activity에서의 에뮬레이터 절차는
+[Android 시스템 뒤로가기 검증](../../docs/e2e/android-system-back.md)에 있다.
+`SafeAreaInsetsTest`는 가장자리 px → dp 변환과 `tappableBottomInset`(3버튼 48 · 제스처 0 ·
+safe 아래 값으로 자르기 · 음수와 밀도 불명은 0)을 확인하며 같은 명령으로 실행한다. 3버튼 · 제스처 ·
+실행 중 전환의 에뮬레이터 절차는 [Android 내비게이션 바와 하단 탭 바](../../docs/e2e/android-navigation-insets.md)에 있다.
+계측 `ConfigurationChangeTest`(8건)는 실제 `MainActivity`에서 구성 변경 뒤의 Activity 수명 · LynxView 크기 · screen metrics · 화면 상태 유지를 확인한다
+(세로 유지 · 야간 모드 · 화면 크기 · 큰 화면 가로 · 내비게이션 모드 오버레이 전환은 같은 인스턴스, 글꼴 배율 · 밀도는 재생성). 번들 서빙과 `-e bundleUrl`이 필요하다.
+기대는 API 37에서 8건 통과, API 30에서 6건 통과 + 2건 건너뜀(큰 화면 가로와 오버레이 전환 — 둘 다 API 36 이상에서만 성립한다. 건너뜀은 통과로 세지 않는다).
+**이 클래스는 에뮬레이터 전역 설정(야간 모드 · 화면 크기 · 밀도 · 글꼴 배율 · 회전 · 내비게이션 모드 오버레이)을 바꿨다 되돌린다.** 그래서 계측 일괄에서는 `notClass`로 빼고 따로 돌리며,
+Maestro · 다른 계측과 같은 기기에서 동시에 돌리지 않고, 중간에 죽었으면 되돌리기 명령을 한 번 더 돈다. 실행 줄 · 판정 · 되돌리기는
+[Android 화면 방향과 구성 변경](../../docs/e2e/android-orientation.md#계측-configurationchangetest--실행법)에 있고, 회전 · 다크 모드 · 크기 변경의 에뮬레이터 절차도 그 문서가 진다.
+계측 `LaunchAppearanceTest`(4건)는 실제 `MainActivity`에서 테마의 풀린 값(창 배경 `#F46B18` · 투명 바 · 밝은 상태바), 앱 아이콘이 `AdaptiveIconDrawable`이고 전경의 투명 여백이 80/108 배치와 맞는지 · `monochrome`이 없는지,
+API 31 이상의 스플래시 배경과 아이콘 속성, 띄운 뒤에도 밝은 바와 edge-to-edge가 유지되는지를 확인한다. 번들 · 전역 설정 변경 없이 계측 일괄에서 돈다.
+기대는 API 37에서 4건 통과, API 30에서 3건 통과 + 1건 건너뜀(스플래시 속성 — API 31 이상에서만 있다. 건너뜀은 통과로 세지 않는다).
+리소스 · 매니페스트의 판정과 토큰 색 대조는 `pnpm test:android-bundle`이, 패키지된 APK의 리소스(적응형 아이콘 · `Theme.Duru`의 v27 · v31 구성 · `app_icon` 없음)는
+`ANDROID_HOME=~/Library/Android/sdk node --test devtools/android-bundle/host-launch-appearance.artifacts.mjs`(먼저 `pnpm bundle:android`와 `./gradlew :app:assembleBundled`)가 본다.
+시스템이 실제로 그리는 것(콜드 스타트 프레임의 색 · 런처의 마스크)은 계측이 보지 못한다 — 에뮬레이터 절차는 [Android 실행 시 색과 적응형 아이콘](../../docs/e2e/android-launch-appearance.md)에 있다.
+`StatusBarIconsTest`(JUnit 9건)는 상태바 아이콘 명암의 순수 판정(표지 값들 → 명암 · 플래그 값 · 다시 적용해야 하는가)을 확인하며 `./gradlew testDebugUnitTest`로 실행한다.
+표지의 자리 · JS와 호스트의 문자열 짝 · 등록부 · `MainActivity` 결선 · 연속 학습 모달의 운석 자리는 `pnpm test:android-bundle`(`host-status-bar-icons.unit.test.mjs` · `host-status-bar-icons.integration.test.mjs`)이 본다.
+계측 `StatusBarIconsHostTest`(8건)는 실제 `MainActivity`에서 호스트가 트리의 표지를 읽어 창의 플래그를 바꾸는지 · 같은 명암끼리의 교체에서 다시 적용하지 않는지 · 구성 변경과 재생성 뒤의 값 · 호출 비용 · 화면 갱신과 같은 콜 안에서 적용되는지를 확인한다.
+번들 서빙과 `-e bundleUrl`이 필요하고 야간 모드를 바꿨다 되돌려 계측 일괄에서는 `notClass`로 뺀다 — 실행 줄 · 판정 · 되돌리기는 위 「상태바 아이콘」의 「계측 `StatusBarIconsHostTest` 실행」에 있다.
+`HostImageInterceptorTest`(JUnit 6건)는 이미지 URL 인터셉터가 `HostPaths.media`와 같은 값을 불린 스레드에서 돌려주는지를 확인하며 `./gradlew testDebugUnitTest`로 실행한다.
+`MainActivity`의 이미지 결선(미디어 fetcher · 비동기 인터셉터 없음, `setImageInterceptor`의 자리)은 `pnpm test:android-bundle`(`host-image-redirect.integration.test.mjs`)이 본다.
+계측 `SplashWordmarkHostTest`(7건)는 실제 `MainActivity`에서 스레드 경합을 강제해도 스플래시 워드마크의 이미지 요청이 재작성된 URL로 나가는지(HW1 ~ HW4)와, 워드마크가 늦게 떠도 스플래시가 일찍 닫히거나 갇히지 않는지(HW5 ~ HW7 — 지연 서버와 인자가 있을 때만 돈다)를 확인한다.
+번들 서빙과 `-e bundleUrl`이 필요해 계측 일괄에서는 `notClass`로 뺀다 — 실행 줄 · 판정 · 되돌리기는 위 「번들 안 이미지 경로」의 「계측 `SplashWordmarkHostTest` 실행」에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
@@ -106,6 +497,8 @@ Maestro의 권한·설정·알림 탭 절차는
 Maestro CLI와 전용 Android API 35 에뮬레이터를 준비한다. 흐름은 **세로 390×844,
 160 dpi, 글자 배율 1.0** 기준이다. 에뮬레이터 크기를 확인하고 필요하면
 아래처럼 맞춘다. 앱 상태를 지우므로 로그인된 기기에는 실행하지 않는다.
+**`wm density` 재정의는 앱을 띄우기 전에 건다** — 밀도 변경은 Activity를 재생성한다(글꼴 배율도 같다). `wm size`를 앱이 뜬 채 걸면
+같은 화면이 새 크기로 다시 배치된다(위 「화면 방향과 구성 변경」). 높이만 바꾸는 `wm size`는 이 변경 전의 빌드에서도 API 37에서는 재생성을 일으키지 않았다 — 「재생성이 사라졌다」의 증거로 쓰지 않는다.
 
 ```sh
 adb -s <전용 에뮬레이터 ID> shell wm size 390x844
@@ -176,16 +569,20 @@ Apple 계정 삭제는 Android에서 웹 OAuth를 다시 열고 Supabase PKCE �
 
 ## 푸시 알림 Firebase 설정
 
-Android 호스트는 FCM SDK와 `duru-updates` 알림 채널을 포함한다. Firebase 프로젝트에 Android 앱 `com.libitum.host`를 등록한 뒤 받은 `google-services.json`을 `apps/android/app/`에 둔다. 이 로컬 파일은 Git에서 제외한다. 파일이 있으면 Gradle의 Google services 플러그인이 적용되고 SDK가 기본 Firebase 앱을 초기화한다. 파일이 없는 빌드는 권한·알림 화면 검증은 되지만 FCM 토큰을 반환하지 않아 서버 기기 등록은 하지 않는다.
+Android 호스트는 FCM SDK와 `duru-updates` 알림 채널을 포함한다. Firebase 프로젝트에 Android 앱 `libitum.duru.android`를 등록한 뒤 받은 `google-services.json`을 `apps/android/app/`에 둔다. 이 로컬 파일은 Git에서 제외한다. 파일이 있으면 Gradle의 Google services 플러그인이 적용되고 SDK가 기본 Firebase 앱을 초기화한다. 파일이 없는 `debug` · `bundled` 빌드는 권한·알림 화면 검증은 되지만 FCM 토큰을 반환하지 않아 서버 기기 등록은 하지 않는다. `release` 빌드는 파일이 없으면 실패한다(위 「패키지 이름과 출시 빌드」).
 
 서버에는 [FCM 전송 마이그레이션과 함수](../supabase-functions/README.md#android-fcm-확장-adr-0041)를 배포하고 `FIREBASE_SERVICE_ACCOUNT_JSON`을 Edge Function 시크릿으로 설정한다. 서비스 계정 키는 Android 앱이나 저장소에 넣지 않는다. 앱이 허용된 권한으로 열릴 때 현재 토큰을 읽어 기존 `register_push_device` RPC에 등록한다. FCM 토큰이 바뀌면 다음 앱 실행에서 다시 등록한다. 실제 원격 수신·백그라운드 탭은 서버 발송 인증이 준비될 때까지 미검증이다.
 
-설정 파일의 `client_info.android_client_info.package_name`은 `com.libitum.host`여야 한다. Google Play 서비스를 포함한 전용 에뮬레이터에서 토큰 발급과 브리지 반환을 확인한다. 이 계측 테스트는 명시적으로 실행할 때만 네트워크를 사용하며 토큰 값을 출력하지 않는다.
+**앱이 살아 있는 동안 토큰이 바뀌면 다음 실행을 기다리지 않고 바로 다시 등록한다**([ADR-0048](../../docs/adr/0048-android-push-token-refresh.md)). `DuruFirebaseMessagingService.onNewToken`이 프로세스 안 중계(`PushTokenRefreshRelay`)를 부르고, 살아 있는 `MainActivity`가 인자 없는 전역 이벤트 `pushTokenRefreshed`를 메인 스레드에서 보내며, JS가 묻지 않고 등록을 다시 부른다. 이벤트는 토큰을 싣지 않고 쌓아 두지 않는다 — Activity가 없으면(서비스만 깨어난 경우) 통지는 버려지고 호스트는 아무것도 저장하지 않는다. 로그아웃 상태이거나 알림 권한이 없으면 등록하지 않는다. iOS 호스트는 이 이벤트를 보내지 않는다.
+등록 요청이 떠 있는 동안 로그아웃하거나 다른 계정으로 바뀌면, 뒤늦게 성공한 등록은 기억하지 않고 그 요청에 쓴 인증으로 바로 해제를 보낸다(같은 ADR의 D5 — 공유 JS의 동작이고 vitest로만 확인했다. 기기에서 실행된 적은 없다).
+이 경로가 닫는 것은 「앱 프로세스가 살아 있는 동안 바뀐 토큰」 하나다. 앱을 열지 않는 동안의 갱신은 여전히 다음 실행에서 반영되고, 앱을 홈 버튼으로만 오가는 동안에는(JS가 다시 부팅하지 않는다) 포그라운드 복귀 때 등록이 일어나지 않는다 — 후속 과제다(같은 ADR의 「남는 틈」). 2026-10-06에 API 37 Google Play 에뮬레이터에서 가짜 HTTP 서비스로 등록 요청이 한 번 더 나가는 것까지 확인했다. 실 서버의 행 · 원격 발송은 확인하지 않았다.
+
+설정 파일의 `client_info.android_client_info.package_name`은 `libitum.duru.android`여야 한다. Google Play 서비스를 포함한 전용 에뮬레이터에서 토큰 발급과 브리지 반환을 확인한다. 이 계측 테스트는 명시적으로 실행할 때만 네트워크를 사용하며 토큰 값을 출력하지 않는다.
 
 ```sh
 ANDROID_HOME="$HOME/Library/Android/sdk" FCM_UDID=emulator-5554 ./apps/android/test-live-fcm-token.sh
 ```
 
-2026-10-02에는 API 35 Google Play 에뮬레이터에서 1건 통과했다. 이 검증은 토큰 발급까지만 포함한다. 원격 발송과 알림 수신에는 같은 Firebase 프로젝트에 접근할 수 있는 서버 인증이 추가로 필요하다.
+2026-10-02에는 API 35 Google Play 에뮬레이터에서 1건 통과했다(당시 패키지 `com.libitum.host`). 2026-10-05에 패키지를 `libitum.duru.android`로 바꾼 뒤 새 Firebase 앱 설정으로 API 37 Google Play 에뮬레이터에서 다시 1건 통과했다. 이 검증은 토큰 발급까지만 포함한다. 원격 발송과 알림 수신에는 같은 Firebase 프로젝트에 접근할 수 있는 서버 인증이 추가로 필요하다.
 
 같은 프로젝트의 서비스 계정 JSON을 로컬 파일로 준비하면 [원격 FCM data 메시지 Maestro 절차](../../docs/e2e/android-push-notifications.md#원격-fcm-data-메시지-선택-실행)로 Android 수신·알림 탭을 따로 검증할 수 있다. 파일 경로는 `FCM_SERVICE_ACCOUNT_FILE`로만 전달하며 키를 앱이나 저장소에 복사하지 않는다.

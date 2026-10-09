@@ -15,6 +15,9 @@ Android의 FCM 전송은 [ADR-0041](0041-android-push-transport.md), 수신 호�
   페이지」를 두 번째 소비자(설정의 `Notifications`)가 쓴다.
   [ADR-0032](0032-account-sign-out-and-deletion.md) D2 — 계정을 지우면 기기 행도 CASCADE로 지워진다(함수는 표를 모른다).
   [ADR-0029](0029-product-analytics-posthog.md) — 이벤트 이름 둘(`push_notification_opened` · `notification_settings_opened`).
+- 받은 적용 기록(결정을 바꾸지 않는다):
+  2026-10-06 [ADR-0048](0048-android-push-token-refresh.md) D3 — D4의 「로그아웃은 이 실행에서 등록한 토큰을 먼저 뗀다」는 **이 실행에서 등록에 성공한
+  서로 다른 토큰 전부**를 뜻한다. Android가 실행 중 토큰 갱신을 다시 등록하게 되어 한 실행에 토큰이 둘일 수 있다. iOS는 그 경로가 없어 동작이 같다.
 
 ## 사용자 결정 (2026-09-30, 다시 묻지 않는다)
 
@@ -81,6 +84,7 @@ Android의 FCM 전송은 [ADR-0041](0041-android-push-transport.md), 수신 호�
 - 설정의 이동 항목 `Notifications`(계정 묶음, 프로필 다음): 미요청이면 묻고, 물었으면(허용 · 거부 모두) iOS 설정을 연다 — 끄는
   길도 거기다. 스택에 쌓이지 않는다.
 - 로그아웃은 이 실행에서 등록한 토큰을 먼저 뗀다(`unregister_push_device`). 계정 삭제는 CASCADE가 지운다.
+  ⟨2026-10-06 적용 기록⟩ 토큰이 둘 이상이면 각각 뗀다 — [ADR-0048](0048-android-push-token-refresh.md) D3.
 - **알림은 아무것도 막지 않는다** — 모든 실패를 삼키고, 로그인 · 화면 전환이 기다리지 않는다.
 
 ### D5. 발송은 Edge Function `send-push` 하나다

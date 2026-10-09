@@ -13,6 +13,7 @@
 | [`apps/android`](apps/android) | 같은 번들을 로드하는 Android 최소 호스트 | Java · Gradle · Lynx SDK 4.0.1 |
 | [`apps/storybook-lynx`](apps/storybook-lynx) | 실제 Lynx Web bundle을 `<lynx-view>`로 보여주는 컴포넌트 카탈로그 | Storybook · Rspeedy |
 | [`apps/supabase-functions`](apps/supabase-functions) | 서버 함수(Supabase Edge Function). 지금은 계정 삭제 `delete-account` 하나 — 배포 · 시크릿은 [그 README](apps/supabase-functions/README.md) | TypeScript · Deno · Supabase CLI |
+| [`apps/landing`](apps/landing) | 서비스 소개 랜딩 페이지. 영어 `/` · 한국어 `/ko/`를 정적 HTML로 굽는다 ([ADR-0043](docs/adr/0043-landing-static-site.md)) | Astro · pnpm |
 
 공개 재사용 컴포넌트는 [`packages/ui-lynx`](packages/ui-lynx)에 있다. 현재 Button, Back Header,
 Status Indicator, Progress Header를 명시적 package export로 제공한다.
@@ -32,8 +33,10 @@ Android 호스트는 번들 로드, 이미지·HTTP 서비스, 입력·SVG·오�
 
 사용자에게 보이는 서비스명은 **Duru**다. 그래서 iOS 앱 아이콘 라벨은 `Duru`지만,
 `Host` 타깃·제품명과 `@libitums/*`, `--libitum-*`, `com.libitum.host`, `libitum.` 계열
-식별자는 호환성을 위한 기술 이름으로 유지한다 (ADR-0025 D1~D3). Release 빌드에서 둘의
-경계를 확인하는 절차는 [서비스명 수동 E2E](docs/e2e/service-name.md)에 있다.
+식별자는 호환성을 위한 기술 이름으로 유지한다 (ADR-0025 D1~D3). 예외는 Android의 패키지
+이름(`applicationId`)이다 — Play Console 등록 값 `libitum.duru.android`를 쓰고, Java 패키지
+(`namespace`)만 `com.libitum.host`로 남는다 ([ADR-0046](docs/adr/0046-android-play-release.md) D1).
+Release 빌드에서 둘의 경계를 확인하는 절차는 [서비스명 수동 E2E](docs/e2e/service-name.md)에 있다.
 
 첫 단계 목표는 핵심 사용자 흐름을 처음부터 끝까지 시연할 수 있는 상태다 (ADR-0001 D1).
 
