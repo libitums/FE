@@ -505,7 +505,8 @@ rotate · width · reveal). 새 토큰은 0이고 `@libitums/design-tokens` 0.3.
   `:active`, Dialog enter/exit keyframe)를 `var()`로 바꾸고 unit 대조를 문자열 단언으로 교체한다.
   Android에서 안 풀리면 리터럴 + unit 대조가 영구 방식이다. `lint:motion`은 scale 값을 보지 않는다 —
   재발 방지는 unit 대조가 진다(대조 목록 밖의 새 자리는 잡지 못한다). *(2026-10-09 주: iOS는 M2-I8로
-  풀렸고 Android는 3단계의 M3-A8이 잰다 — 결과는 [`docs/e2e/motion-reward.md`](../e2e/motion-reward.md)
+  풀렸고 Android는 3단계의 M3-A8이 쟀다 — **풀림**(눌림 56 → 52 px, 리터럴과 같은 값), 문항 등장의
+  `translateX(var())`도 x 오프셋이 보였다(M3-A3 (b)). 결과는 [`docs/e2e/motion-reward.md`](../e2e/motion-reward.md)
   결과 표. 3단계는 전환하지 않고 리터럴을 유지했다 — 아래 「3단계」.)*
 - **Spinner는 `@keyframes ui-lynx-<component>-spin`(`rotate(0deg)` → `rotate(360deg)`)을 loading 선택자에
   `var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear) infinite`로 건다.** 정적 블록은
@@ -656,7 +657,9 @@ RoundButton 막의 접근성 속성 한 줄 **삭제**뿐이다. 새 ADR 번호�
   Dialog keyframe)와 보상 keyframe의 `var()` 전환 · unit 문자열 단언이 **4단계 첫 묶음**이다 — 같은 PR
   안에서 e2e 뒤 구현을 한 번 더 도는 루프를 두지 않는다. 안 풀리면 리터럴 + unit 대조가 영구이고 그
   사실을 이 소절에 적는다. 안 풀릴 때 `translateX(var())` 선언만 무효가 되어 이동 없는 fade로 조용히
-  열화한다(불투명도 선언은 별도 줄) — 회귀가 아니다.
+  열화한다(불투명도 선언은 별도 줄) — 회귀가 아니다. **결과(2026-10-10 Android 회차)**: M3-A8 풀림(눌림 56 → 52 px, 리터럴과
+  같은 값) · M3-A3 (b) x 오프셋 있음 — iOS(2단계 M2-I8)와 합쳐 두 플랫폼 모두 `transform` 안 `var()`를 푼다.
+  따라서 4단계 첫 묶음은 「전환」이다.
 - **R2 — RoundButton 막의 `accessibility-elements-hidden`을 지웠다.** 막은 자손 · 라벨 없는 잎 `<view>`라
   세터(자손 가림)가 무동작이고, [ADR-0016](0016-assistive-technology-semantics.md) D5 「잎에는 붙이지 않는다.
   붙여도 아무 일도 하지 않는다」에 맞춰 Learning Unit의 같은 막과 모양을 맞췄다. D5 예외(D9 scrim)의

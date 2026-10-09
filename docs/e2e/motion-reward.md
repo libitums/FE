@@ -130,7 +130,7 @@
 
 ### iOS 회차 — 수정 후 `70a4b12b` 번들(HEAD `395be1d6`), 수정 전 `162f5648` 대조
 
-e2e-red 회차가 iOS만 돌았다(에뮬레이터를 다른 세션이 쓰고 있어 **Android는 미실행** — 뒤 회차가 아래 Android 행을 채운다). 캡처 · 측정 스크립트는 저장소에 넣지 않았다 — 작업
+e2e-red 회차는 iOS만 돌았고(에뮬레이터를 다른 세션이 쓰고 있었다), e2e-green 회차가 같은 빌드로 Android 행을 채웠다(산출물 `artifacts/e2e-green/`, `motion-reward-android-<id>-<off|on>-<대상>-f<NN>.png` · `-measure.txt` · `.mp4`, 수정 전은 `…android-RED-…`). 캡처 · 측정 스크립트는 저장소에 넣지 않았다 — 작업
 `motion-tokens-stage3`의 산출물 `artifacts/e2e-red/`(`motion-reward-ios-<id>-<off|on>-<대상>-f<n>.png` · `-measure.txt` · `.mov`, 수정 전은 `motion-reward-ios-RED-…`)에 있다.
 
 - **캡처는 녹화 → 전 프레임 추출**(`simctl io recordVideo` h264, 약 16 ms 간격 = 60 fps, 변화 없는 구간은 한 장)이다. `simctl io screenshot` 연속(약 110 ms)은 첫 시도에서 중간
@@ -151,14 +151,14 @@ e2e-red 회차가 iOS만 돌았다(에뮬레이터를 다른 세션이 쓰고 �
 | M3-I7 | iOS 시뮬레이터 | 생략 | 문서대로 시뮬레이터 생략(M3-I1 (c)가 같은 경로) |
 | M3-I8 | iOS 시뮬레이터 | 미확인 | VoiceOver를 켜지 않았다 — 이 항목은 iOS 회차 뒤에 신설됐다. 다음 iOS 회차가 잰다 |
 | (실기) M3-I1 · M3-I3 | iOS 실기 | 미확인 | 실기 없음 |
-| M3-A1 | Android 에뮬레이터 | 미실행: 에뮬레이터 점유 | 뒤 회차가 채운다 |
-| M3-A2 | Android 에뮬레이터 | 미실행: 에뮬레이터 점유 | 뒤 회차가 채운다 |
-| M3-A3 | Android 에뮬레이터 | 미실행: 에뮬레이터 점유 | 뒤 회차가 채운다. x 오프셋 유무: |
-| M3-A4 | Android 에뮬레이터 | 미실행: 에뮬레이터 점유 | 뒤 회차가 채운다 |
-| M3-A5 | Android 에뮬레이터 | 미실행: 에뮬레이터 점유 | 뒤 회차가 채운다. (i): / (ii): |
-| M3-A6 | Android 에뮬레이터 | 미실행: 에뮬레이터 점유 | 뒤 회차가 채운다 |
-| M3-A7 | Android 에뮬레이터 | 미실행: 에뮬레이터 점유 | 뒤 회차가 채운다 |
-| M3-A8(탐색) | Android 에뮬레이터 | 미실행: 에뮬레이터 점유 | 뒤 회차가 채운다 — 풀림 · 안 풀림 · 무효 가운데 하나 |
+| M3-A1 | Android 에뮬레이터 | (a)(b) 통과 / (c) 판정 불가: 새 화면이 그려지기 전의 tap이 소실되고 입력 시각이 ±0.1 s라 즉시성을 가를 수 없음 | 끈: 배지 첫 보이는 프레임 지름 13회 중 최소 **104**(정착 bbox 121의 86.0 %, 126 기준 82.5 %), α 0.28; 9회 ≤ 108, 4회 112 ~ 118(샘플링이 첫 프레임을 놓침). 연속 104 → 114 → 120 → 121(+240 ms). 정착 400 ms는 첫 그림 전 구간(0.5 ~ 1.0 s 렌더 정체) 때문에 못 잼. (c)는 그려진 뒤 tap 2회가 맵까지 0.42 ~ 0.43 s(수정 전 0.07 s)였으나 표본 2 · 렌더 정체로 애니메이션 탓인지 가르지 못함 — 즉시성은 코드(ui · integration)와 iOS M3-I1 (c)가 진다. `motion-reward-android-M3-A1-off-badge-*` · `…A1c…` |
+| M3-A2 | Android 에뮬레이터 | 통과 | `LESSON FAILED` 빨간 배지 bbox(x 120) · 색 (224,87,92)이 7프레임 모두 같음(모션 0). 수정 전과 같음. `…M3-A2-off-badge-*` |
+| M3-A3 | Android 에뮬레이터 | 통과(근사 장면: 문항 → 완료 장면) | (a) 투명한 primed 프레임 3 ~ 4장 뒤 중간 프레임 0 ~ 2장(5회 중 4회 ≥ 1; 제목 minL 100 · 76 · 154 + 50 · 116 → 정착 25). (b) **x 오프셋 있음** — 제목 x 정착 105 대비 +8 · +6 · +5 · +3 · +1, 불투명도와 같은 곡선 16·(1 − α) = `translateX(var(--libitum-spacing-16))`가 **Android에서 풀린다**(A4). (c) 진행 막대 · 「Lesson 1 / 1」 · 「See results」 bbox 모든 프레임 동일. 작업 영역(보기)은 완료 장면에 없어 미관찰. `…M3-A3-off-stage-*` |
+| M3-A4 | Android 에뮬레이터 | 통과(근사 입력) | 완료 장면 전환 중(영상 t 3.13 ~ 3.45)에 닿은 「See results」 tap이 0.35 ~ 0.65 s 뒤 lesson-complete로 반영, 소실 없음. tap 시각은 ±0.1 s, 「새 문항의 보기」는 문항이 하나라 못 함. `…M3-A4-off-*` |
+| M3-A5 | Android 에뮬레이터 | 통과(부분 — 중간 프레임을 잡은 회차가 적음) | (i) `transition_animation_scale 0` · `animator 1`: 배지 첫 프레임 지름 120(축소 없음), α 0.46 · 0.63 → +66 ~ 70 ms 정착(불투명도만); 문항 중간 1프레임 x 105(오프셋 0), +72 ms 정착. (ii) 「Remove animations」: 문항 중간 1프레임 x 105(오프셋 0), 배지 지름 120 → 121 · α 0.63 → 1.0 — 이동 · 확대 없이 정착값으로. `…M3-A5i-on-*` · `…M3-A5ii-on-*` |
+| M3-A6 | Android 에뮬레이터 | 통과(회귀) | 끈: RoundButton neutral 눌림 56 → 52 px · 색 `#F7F8F9` 불변(2단계 M2-A1과 같음). 켠 (i): 56 = 56 · 눌림 색 `#E4E5E5`. 수정 전과 같음. `…M3-A6-*` |
+| M3-A7 | Android 에뮬레이터 | (d) 통과 / (a)(b)(c) 미확인 | TalkBack 켬. lesson-complete 정지점은 「Back to map」(Button) 하나, 배지 ViewGroup · 체크 ImageView는 `focusable=false` · 설명 없음 = 비정지. 수정 후 트리에 배지 ViewGroup 노드 하나가 더 있음(평탄화 안 됨, 정지 수 불변, 낭독 대상 아님). 마운트 낭독(TalkBack을 마운트 뒤에 켬)과 문항 전환 직후 초점 자리는 못 잡음 — 완료 장면에서 초점 링이 무대 카드에 서 있는 것만 관찰. `…M3-A7-on-tree-*` |
+| M3-A8(탐색) | Android 에뮬레이터 | **풀림**(≈ 95 %) | dev 번들(3001)의 `round-button.css:116` `scale(var(--libitum-motion-scale-pressed))` — 번들에 `scale( {{--libitum-motion-scale-pressed}})` 확인, RoundButton neutral 눌림 56 → 52 px(한 프레임 54) · 색 불변 = 리터럴 `scale(0.95)`와 같은 값. iOS M2-I8과 합쳐 **두 플랫폼 모두 풀림** — 4단계 입력(D8). `…M3-A8-probe-off-roundbutton-*` |
 
 **수정 전 번들(`162f5648`)에서 같은 조작 — red는 기기 관찰이다.** 달라야 할 것이 전부 모션 0으로 관찰되고, 같아야 할 것은 전후 같다. red의 이유는 구현 부재이며 러너 · 설정
 실패가 아니다(앱은 두 번들 모두 뜨고 측정 대상이 모두 화면에 있다).
@@ -172,13 +172,13 @@ e2e-red 회차가 iOS만 돌았다(에뮬레이터를 다른 세션이 쓰고 �
 
 | 칸 | 값 |
 |---|---|
-| 시작 값(실행 전 기록) | iOS 동작 줄이기: 0(끝 값 0 — 켬은 `defaults write com.apple.Accessibility ReduceMotionEnabled -bool true` + 재부팅, 읽기값 1 확인) / Android: 미실행 |
-| 확인자 | test-runner 에이전트(e2e-red 회차, iOS만) |
-| 날짜 | 2026-10-09 |
+| 시작 값(실행 전 기록) | iOS 동작 줄이기: 0(끝 값 0 — 켬은 `defaults write com.apple.Accessibility ReduceMotionEnabled -bool true` + 재부팅, 읽기값 1 확인) / Android: `animator_duration_scale=null` · `transition_animation_scale=1.0` · `window_animation_scale=1.0` · `font_scale=1.0` · `wm size 1080x2400` · `density 420` · `accessibility_enabled=0` · `enabled_accessibility_services=null`(끝 값 전부 같음 — 전후 설정 덤프 diff 0) |
+| 확인자 | test-runner 에이전트(e2e-red 회차 iOS · e2e-green 회차 Android) |
+| 날짜 | 2026-10-09(iOS) · 2026-10-09 ~ 10(Android) |
 | 빌드 SHA (호스트 · 번들) | 호스트: `395be1d6`(소스는 1단계 `d602fe08` 이후 불변) / 번들: `70a4b12b` 코드(= `395be1d6`, 그 뒤 커밋은 문서뿐) · 1,402,294 B (수정 전 대조 번들 `162f5648` · 1,397,447 B) |
-| 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터(전용 `motion-stage3`) · iOS 26.5 · Release Host + 내장 번들(`--bundle-url=main.lynx`), 모의 TLS 서버 18791로 로그인 시드 / Android: 미실행 |
-| 에뮬레이터 점유 확인 · 알림 | 다른 세션이 사용 중 — 미실행으로 적고 root가 조율 |
-| 설정 복원 확인 | 시뮬레이터 shutdown · delete(목록 0건), 동작 줄이기 0(삭제 직전 읽음), 모의 서버 종료(포트 해제), `git status --short` 0줄 / Android: 해당 없음 |
+| 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터(전용 `motion-stage3`) · iOS 26.5 · Release Host + 내장 번들(`--bundle-url=main.lynx`), 모의 TLS 서버 18791로 로그인 시드 / Android: `emulator-5554`(Pixel_8, API 37) · Debug Host(`assembleDebug`, `bundle:android`) + 정적 서버 18792(수정 전 18793) · 로그인 픽스처 `SignedInScreenFixtureTest` · `wm size 390x844` · `wm density 160`(1 px = 1 css px) · `screenrecord`(변화 시 약 12 fps) |
+| 에뮬레이터 점유 확인 · 알림 | e2e-red 때는 다른 세션이 사용 중(미실행). e2e-green은 그 세션의 반납 알림을 받고 시작 · 사용 중 알림 · 끝에 원복 후 반납 알림 |
+| 설정 복원 확인 | 시뮬레이터 shutdown · delete(목록 0건), 동작 줄이기 0(삭제 직전 읽음), 모의 서버 종료(포트 해제), `git status --short` 0줄 / Android: 세 배율 · wm · 접근성 서비스 · 「Remove animations」 시작 값으로 원복, 전후 덤프 diff 0, 서버 18792 · 18793 · dev 3001 종료, 탐색 워크트리 제거, 홈 화면(앱은 이 회차 빌드로 남김), TalkBack 알림 권한은 revoke(시작 값 미기록 — `USER_SET` 플래그 잔존) |
 
 ## 복원
 
