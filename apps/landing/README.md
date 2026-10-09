@@ -208,6 +208,8 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 
 랜딩과 Storybook은 **각각 다른 Vercel 프로젝트**다. Storybook은 자산 경로가 사이트 루트 기준이라 랜딩 주소 아래에 둘 수 없고,
 내부 카탈로그를 공개 랜딩과 묶어 배포할 이유도 없다. 설정 파일은 `apps/landing/vercel.json` · `apps/storybook-lynx/vercel.json`이다.
+`/sitemap.xml`은 Vercel이 `sitemap-index.xml`로 301 넘긴다 — Astro의 사이트맵 입구가 `sitemap-index.xml`인데 검색엔진 콘솔과 사람은
+`sitemap.xml`을 먼저 넣어 보기 때문이다(Search Console에 그렇게 제출하면 404라 「읽을 수 없음」이 뜬다).
 
 | | 랜딩 | Storybook |
 |---|---|---|
