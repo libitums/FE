@@ -1,0 +1,16 @@
+# A remote high-priority data message must show a notification and open its target.
+appId: libitum.duru.android
+---
+- swipe:
+    start: "50%,5%"
+    end: "50%,75%"
+    duration: 500
+- extendedWaitUntil:
+    visible: "Duru remote test"
+    timeout: 30000
+- tapOn: "Open notifications"
+- extendedWaitUntil:
+    visible: "Back to map"
+    timeout: 15000
+- assertNotVisible: "Settings"
+- takeScreenshot: android-fcm-remote-open-notifications

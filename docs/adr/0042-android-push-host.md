@@ -11,7 +11,7 @@ Firebase Android 앱 설정이 들어오면 SDK의 현재 FCM 토큰을 받아 [
 
 `duru-updates` 채널은 앱 시작에 만든다. FCM의 높은 우선순위 data 메시지를 받으면 `FirebaseMessagingService`가 전경과 배경에서 같은 채널로 알림을 즉시 만든다. 알림 탭은 외부에서 열 수 없는 `PushNotificationTapActivity`로 들어와 목적지를 앱 전용 저장소에 한 번 기록한 후 `MainActivity`를 연다. `MainActivity`는 저장소의 목적지만 읽으며 외부 Intent의 `target` extras는 무시한다. 실행 중 탭이면 `pushNotificationOpened` 전역 이벤트를 보낸다. JS가 기존 닫힌 목적지 목록과 유닛 ID를 다시 검증한다. URL 입구는 추가하지 않는다.
 
-기존 Lynx 화면은 바꾸지 않는다. JVM 단위 테스트, Android 계측, Maestro의 시스템 권한·설정·로컬 알림 탭 흐름으로 검증한다. 2026-10-02에 `com.libitum.host` Firebase 앱 설정을 적용한 Google Play 에뮬레이터에서 실제 FCM 토큰 발급과 브리지 반환을 확인했다. 원격 FCM 발송·수신은 서버 인증이 준비된 뒤 별도로 검증한다.
+기존 Lynx 화면은 바꾸지 않는다. JVM 단위 테스트, Android 계측, Maestro의 시스템 권한·설정·로컬 알림 탭 흐름으로 검증한다. 2026-10-02에 `com.libitum.host` Firebase 앱 설정을 적용한 Google Play 에뮬레이터에서 실제 FCM 토큰 발급과 브리지 반환을 확인했다. 같은 프로젝트의 서비스 계정 키로 직접 보낸 data 메시지의 원격 수신·탭은 선택 실행 Maestro 절차로 검증한다([원격 FCM data 메시지](../e2e/android-push-notifications.md#원격-fcm-data-메시지-선택-실행)). Supabase `send-push` 왕복은 별도다.
 
 2026-10-05에 Android 패키지가 `libitum.duru.android`로 바뀌어 Firebase Android 앱도 그 패키지의 것을 쓴다([ADR-0046](0046-android-play-release.md) D1 · D5). 위 문장의 `com.libitum.host`는 그때의 사실이다. 같은 날 새 설정으로 Google Play 에뮬레이터(API 37)에서 FCM 토큰 발급을 다시 확인했다. 원격 발송·수신은 여전히 검증하지 않았다.
 
