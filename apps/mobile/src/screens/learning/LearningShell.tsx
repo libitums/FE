@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { Card } from "@libitums/ui-lynx/card";
+import { useMotion } from "@libitums/ui-lynx/motion";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 import { LearningShellActions } from "./LearningShellActions";
+import { LearningShellBody } from "./LearningShellBody";
+import { useQuestionTransition } from "./use-question-transition";
 import { TopBar } from "../../components/TopBar";
 import { learningTimingFlag } from "./learning-shell.contract";
 import { LearningSessionHeader } from "./LearningSessionHeader";
@@ -185,13 +187,8 @@ export function LearningShell({
     };
   }, [advance]);
 
-  const stage = (
-    <view className="learning-shell-stage" data-testid="learning-shell-stage">
-      <Card elevation="stage">
-        <Card.Content>{card}</Card.Content>
-      </Card>
-    </view>
-  );
+  const motion = useMotion();
+  const phase = useQuestionTransition(questionIndex, complete, motion);
 
   return (
     <view
@@ -227,32 +224,13 @@ export function LearningShell({
         </text>
       )}
       {/* 카드 스크롤 모드는 버튼 행의 실제 높이를 먼저 확보합니다. */}
-      {scrollCard ? (
-        <scroll-view
-          className="learning-shell-scroll learning-shell-card-scroll"
-          data-testid="learning-shell-scroll"
-          scroll-orientation="vertical"
-          scroll-bar-enable={true}
-        >
-          {stage}
-          {workspace}
-        </scroll-view>
-      ) : (
-        <>
-          {stage}
-          {workspace === undefined ? null : (
-            <scroll-view
-              className="learning-shell-scroll"
-              data-testid="learning-shell-scroll"
-              scroll-orientation="vertical"
-              scroll-bar-enable={true}
-              enable-scroll={workspaceScrolls ? undefined : false}
-            >
-              {workspace}
-            </scroll-view>
-          )}
-        </>
-      )}
+      <LearningShellBody
+        card={card}
+        workspace={workspace}
+        scrollCard={scrollCard}
+        workspaceScrolls={workspaceScrolls}
+        transition={{ phase, motion }}
+      />
       {/* 스스로 넘어가는 동안 화면 전체가 이 이름의 조작 단위입니다 — 보이는 버튼은
           없지만 기다리는 것 말고 할 수 있는 일이 있어야 합니다(WCAG 2.2.1). 세션 헤더는
           이 층보다 위에 있어 `×`로 나가는 길은 막히지 않습니다. */}

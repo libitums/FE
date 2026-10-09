@@ -9,6 +9,7 @@ import tick from "@libitums/icons/lynx/tick";
 import trophy from "@libitums/icons/lynx/trophy";
 import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
+import { useMotion } from "@libitums/ui-lynx/motion";
 
 import { StatChip, statChipDiamondColor } from "../../components/StatChip";
 import { announce } from "../../lib/accessibility";
@@ -25,6 +26,7 @@ import {
   lessonStreakLabel,
   type LessonReward,
 } from "./lesson-complete";
+import { rewardBadgeClassName, rewardMotionFor } from "./lesson-complete-reward";
 
 import "./lesson-complete-screen.css";
 
@@ -77,6 +79,8 @@ export function LessonCompleteScreen({
   onRetry,
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
+  // `reward` prop(재화)과 이름이 겹치지 않도록 배지 모션은 `rewardMotion`으로 둡니다.
+  const rewardMotion = rewardMotionFor(verdict, useMotion());
   // 시스템 뒤로가기 = 하단 나가기와 같은 함수입니다(미통과의 `Try again`이 아닙니다).
   useScreenBack(onExit);
   const mistakeCount = lessonMistakeCount(results);
@@ -123,12 +127,9 @@ export function LessonCompleteScreen({
           가르는 것은 색만으로 갈리지 않게 하기 위해서입니다(WCAG 1.4.1): 면 색이
           안 보이는 환경에서도 ✓ · ✗가 갈립니다. */}
       <view
-        className={
-          verdict === "failed"
-            ? "lesson-complete-screen-badge lesson-complete-screen-badge-failed"
-            : "lesson-complete-screen-badge"
-        }
+        className={rewardBadgeClassName(verdict, rewardMotion)}
         data-verdict={verdict}
+        {...(rewardMotion === "none" ? {} : { "data-reward": rewardMotion })}
         accessibility-elements-hidden={true}
       >
         <svg
