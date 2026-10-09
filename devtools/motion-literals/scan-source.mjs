@@ -28,6 +28,10 @@ function nameOf(name, ts) {
 
 /** 문자열 계열 초기값의 텍스트를 돌려줍니다. 템플릿은 리터럴 조각만 공백으로 잇고, 그 밖은 undefined입니다. */
 function literalText(node, ts) {
+  // `"…" as const` · `("…")` 같은 감싸기는 벗겨서 봅니다 — 단언 · 괄호로 검사를 피하지 못하게.
+  while (ts.isAsExpression(node) || ts.isParenthesizedExpression(node)) {
+    node = node.expression;
+  }
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
     return node.text;
   }

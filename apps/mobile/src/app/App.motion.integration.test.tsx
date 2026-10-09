@@ -158,11 +158,11 @@ async function bootListeningUnit(host: HostProps): Promise<Element> {
 test("[IM4] reducedMotion: true면 진행 바 채움이 reduced 클래스와 data-motion을 갖고, 없으면 둘 다 없다", async () => {
   const reduced = await bootListeningUnit({ safeAreaInsets: iosInsets, reducedMotion: true });
   expect(reduced.getAttribute("data-motion")).toBe("reduced");
-  expect(reduced.getAttribute("class")).toContain("-motion-reduced");
+  expect(reduced).toHaveClass("learning-shell-progress-fill-motion-reduced");
   cleanup();
   vi.unstubAllGlobals();
 
   const standard = await bootListeningUnit({ safeAreaInsets: iosInsets });
   expect(standard.hasAttribute("data-motion")).toBe(false);
-  expect(standard.getAttribute("class")).not.toContain("-motion-reduced");
+  expect(standard).not.toHaveClass("learning-shell-progress-fill-motion-reduced");
 });

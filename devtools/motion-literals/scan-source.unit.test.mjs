@@ -60,6 +60,18 @@ test("SS5. 비리터럴 값은 빠지고 리터럴만 남는다", () => {
   assert.equal(found[0].value, "imagination");
 });
 
+test("SS6. as const · 괄호로 감싼 문자열도 잡는다", () => {
+  const source = [
+    'const a = { transition: "opacity 150ms" as const };',
+    'const b = <view style={{ animation: ("spin 1s linear") }} />;',
+  ].join("\n");
+  const found = inlineMotionDeclarationsIn(source, "a.tsx", ts);
+  assert.equal(found.length, 2);
+  assert.equal(found[0].value, "opacity 150ms");
+  assert.equal(found[1].property, "animation");
+  assert.equal(found[1].value, "spin 1s linear");
+});
+
 test("SS-names. motionPropertyNames는 camelCase와 kebab 여덟 쌍이다", () => {
   assert.equal(motionPropertyNames.length, 8);
   assert.ok(
