@@ -43,6 +43,7 @@ import type {
   OptionSelectorSize,
   OptionSelectorVariant,
 } from "@libitums/ui-lynx";
+import type { Motion } from "@libitums/ui-lynx/motion";
 import type { BottomNavigatorPreset } from "./bottom-navigator-story";
 
 export type BottomNavigatorStoryArgs = {
@@ -61,6 +62,7 @@ export type RoundButtonStoryArgs = {
   size: RoundButtonSize;
   disabled: boolean;
   loading: boolean;
+  motion: Motion;
   onTap: (accessibilityLabel: string) => void;
 };
 
@@ -100,6 +102,7 @@ export type ProgressHeaderStoryArgs = {
 export type PageIndicatorStoryArgs = {
   pageCount: number;
   currentPage: number;
+  motion: Motion;
 };
 
 export type DialogStoryArgs = {
@@ -175,6 +178,8 @@ export type ChatBubbleStoryArgs = {
   delivery: ChatBubbleDelivery;
   contentLanguage: ChatBubbleContentLanguage;
   languageTag: string;
+  reveal: "instant" | "typewriter";
+  motion: Motion;
 };
 
 export type TextFieldStoryArgs = {

@@ -1,9 +1,11 @@
+import type { Motion } from "@libitums/ui-lynx/motion";
 import type {
   ChatBubbleContentLanguage,
   ChatBubbleDelivery,
   ChatBubbleDirection,
   ChatBubbleSize,
 } from "@libitums/ui-lynx/chat-bubble";
+import { normalizeStoryMotion } from "./story-motion";
 
 export type ChatBubbleStoryData = {
   readonly contentLanguage: ChatBubbleContentLanguage;
@@ -11,6 +13,8 @@ export type ChatBubbleStoryData = {
   readonly direction: ChatBubbleDirection;
   readonly languageTag?: string;
   readonly message: string;
+  readonly motion: Motion;
+  readonly reveal: "instant" | "typewriter";
   readonly size: ChatBubbleSize;
   readonly speaker: string;
 };
@@ -49,6 +53,8 @@ export function normalizeChatBubbleStoryArgs(input: unknown): ChatBubbleStoryDat
       typeof args.message === "string" && args.message.trim()
         ? args.message
         : "오늘 하루는 어땠어?",
+    motion: normalizeStoryMotion(args.motion),
+    reveal: args.reveal === "typewriter" ? "typewriter" : "instant",
     size: sizes.has(args.size as ChatBubbleSize) ? (args.size as ChatBubbleSize) : "m",
     speaker: typeof args.speaker === "string" && args.speaker.trim() ? args.speaker : "말랑이",
   };

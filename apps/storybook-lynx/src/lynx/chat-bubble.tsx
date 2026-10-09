@@ -1,4 +1,5 @@
 import { root, useInitData } from "@lynx-js/react";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import { ChatBubble } from "@libitums/ui-lynx/chat-bubble";
 
 import { normalizeChatBubbleStoryArgs } from "../chat-bubble-story";
@@ -12,26 +13,30 @@ function App() {
       <view className="story-card">
         <text className="story-eyebrow">LYNX COMPONENT</text>
         <text className="story-title">Chat Bubble</text>
-        {args.direction === "incoming" ? (
-          <ChatBubble
-            contentLanguage={args.contentLanguage}
-            direction="incoming"
-            languageTag={args.languageTag}
-            message={args.message}
-            size={args.size}
-            speaker={args.speaker}
-          />
-        ) : (
-          <ChatBubble
-            contentLanguage={args.contentLanguage}
-            delivery={args.delivery}
-            direction="outgoing"
-            languageTag={args.languageTag}
-            message={args.message}
-            size={args.size}
-            speaker={args.speaker}
-          />
-        )}
+        <MotionProvider motion={args.motion}>
+          {args.direction === "incoming" ? (
+            <ChatBubble
+              contentLanguage={args.contentLanguage}
+              direction="incoming"
+              languageTag={args.languageTag}
+              message={args.message}
+              reveal={args.reveal}
+              size={args.size}
+              speaker={args.speaker}
+            />
+          ) : (
+            <ChatBubble
+              contentLanguage={args.contentLanguage}
+              delivery={args.delivery}
+              direction="outgoing"
+              languageTag={args.languageTag}
+              message={args.message}
+              reveal={args.reveal}
+              size={args.size}
+              speaker={args.speaker}
+            />
+          )}
+        </MotionProvider>
       </view>
     </view>
   );

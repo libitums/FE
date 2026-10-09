@@ -1,6 +1,8 @@
 import { root, useInitData } from "@lynx-js/react";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import { PageIndicator } from "@libitums/ui-lynx/page-indicator";
 import type { PageIndicatorStoryArgs } from "../story-types";
+import { normalizeStoryMotion } from "../story-motion";
 import "./story-canvas.css";
 
 function App() {
@@ -12,12 +14,16 @@ function App() {
       ? args.currentPage
       : 1;
 
+  const motion = normalizeStoryMotion(args.motion);
+
   return (
     <view className="story-canvas">
       <view className="story-card">
         <text className="story-eyebrow">LYNX COMPONENT</text>
         <text className="story-title">Page Indicator</text>
-        <PageIndicator pageCount={pageCount} currentPage={currentPage} />
+        <MotionProvider motion={motion}>
+          <PageIndicator pageCount={pageCount} currentPage={currentPage} />
+        </MotionProvider>
       </view>
     </view>
   );

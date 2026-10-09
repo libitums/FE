@@ -24,6 +24,8 @@ const meta = {
     },
     contentLanguage: { control: "inline-radio", options: ["ui", "learning"] },
     languageTag: { control: "text" },
+    reveal: { control: "inline-radio", options: ["instant", "typewriter"] },
+    motion: { control: "inline-radio", options: ["standard", "reduced"] },
   },
   args: {
     message: "오늘 하루는 어땠어?",
@@ -33,6 +35,8 @@ const meta = {
     delivery: "default",
     contentLanguage: "ui",
     languageTag: "",
+    reveal: "instant",
+    motion: "standard",
   },
 } satisfies Meta<ChatBubbleStoryArgs>;
 
@@ -62,3 +66,5 @@ export const LongContent: Story = {
       "번역된 문장이 길어지거나 https://example.com/a-very-long-continuous-message-address 같은 문자열이 있어도 내용 전체를 보여 줍니다.",
   },
 };
+export const Typewriter: Story = { args: { reveal: "typewriter" } };
+export const ReducedMotion: Story = { args: { reveal: "typewriter", motion: "reduced" } };

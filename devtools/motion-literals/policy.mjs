@@ -63,8 +63,8 @@ export function valueViolations(value) {
 const scaleCallPattern = /\bscale(?:3d|x|y|z)?\([^)]*\)/gi;
 
 /**
- * `transform` 값에서 1이 아닌 `scale*()` 호출 전체를 돌려줍니다. 토큰 참조를 뺀 뒤 숫자 인자가
- * 하나라도 1이 아니면 잡고, 숫자 인자가 없거나 전부 1이면(항등값) 건너뜁니다.
+ * `transform` 값에서 1이 아닌 `scale*()` 호출 전체를 돌려줍니다. 토큰 참조를 뺀 뒤 숫자 인자의
+ * 절댓값이 하나라도 1이 아니면 잡고, 숫자 인자가 없거나 절댓값이 전부 1이면(항등 · 거울 반전) 건너뜁니다.
  */
 export function scaleLiteralsIn(value) {
   const found = [];
@@ -75,7 +75,7 @@ export function scaleLiteralsIn(value) {
       .map((argument) => argument.trim())
       .filter((argument) => /^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(argument))
       .map(Number);
-    if (numbers.some((number) => number !== 1)) {
+    if (numbers.some((number) => Math.abs(number) !== 1)) {
       found.push(match[0]);
     }
   }

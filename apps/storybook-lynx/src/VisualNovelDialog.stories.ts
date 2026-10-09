@@ -86,3 +86,6 @@ export const LongContent: Story = {
     line: "번역된 대사가 여러 줄로 길어져도 패널은 내용을 자르지 않고 읽기 흐름과 하단 여백을 안정적으로 유지합니다.",
   },
 };
+export const ReducedMotion: Story = {
+  args: { reveal: "typewriter", status: "revealing", reducedMotion: true },
+};

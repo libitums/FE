@@ -33,10 +33,16 @@ function makeSandbox(allowlist) {
   const sandbox = mkdtempSync(path.join(tmpdir(), "motion-literals-"));
   const toolDir = path.join(sandbox, "devtools/motion-literals");
   mkdirSync(toolDir, { recursive: true });
-  for (const file of ["check.mjs", "policy.mjs", "scan.mjs"]) {
+  for (const file of ["check.mjs", "policy.mjs", "scan.mjs", "scan-source.mjs"]) {
     copyFileSync(path.join(here, file), path.join(toolDir, file));
   }
   writeFileSync(path.join(toolDir, "allowlist.json"), JSON.stringify(allowlist));
+  // check.mjs는 apps/mobile 아래 의존성에서 typescript를 풀므로 샌드박스에도 같은 자리를 이어 둡니다.
+  mkdirSync(path.join(sandbox, "apps/mobile"), { recursive: true });
+  symlinkSync(
+    path.join(repoRoot, "apps/mobile/node_modules"),
+    path.join(sandbox, "apps/mobile/node_modules"),
+  );
   return { sandbox, script: path.join(toolDir, "check.mjs") };
 }
 

@@ -15,8 +15,9 @@ const meta = {
   argTypes: {
     pageCount: { control: { type: "number", min: 0, max: 100, step: 1 } },
     currentPage: { control: { type: "number", min: 1, max: 100, step: 1 } },
+    motion: { control: "inline-radio", options: ["standard", "reduced"] },
   },
-  args: { pageCount: 4, currentPage: 2 },
+  args: { pageCount: 4, currentPage: 2, motion: "standard" },
 } satisfies Meta<PageIndicatorStoryArgs>;
 
 export default meta;
@@ -27,3 +28,4 @@ export const First: Story = { args: { pageCount: 4, currentPage: 1 } };
 export const Last: Story = { args: { pageCount: 4, currentPage: 4 } };
 export const Single: Story = { args: { pageCount: 1, currentPage: 1 } };
 export const Empty: Story = { args: { pageCount: 0, currentPage: 0 } };
+export const ReducedMotion: Story = { args: { motion: "reduced" } };

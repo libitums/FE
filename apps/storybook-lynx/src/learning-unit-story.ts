@@ -1,4 +1,6 @@
+import type { Motion } from "@libitums/ui-lynx/motion";
 import type { LearningUnitNarrative, LearningUnitStatus } from "@libitums/ui-lynx/learning-unit";
+import { normalizeStoryMotion } from "./story-motion";
 
 export type LearningUnitStoryIcon = "headset" | "audio-waves";
 
@@ -9,6 +11,7 @@ export type LearningUnitStoryArgs = {
   readonly icon: LearningUnitStoryIcon;
   readonly focused: boolean;
   readonly showAllStates: boolean;
+  readonly motion: Motion;
   readonly onTap: (accessibilityLabel: string) => void;
 };
 
@@ -36,6 +39,7 @@ export function normalizeLearningUnitStoryArgs(input: unknown): LearningUnitStor
       : "headset",
     focused: args.focused === true,
     showAllStates: args.showAllStates === true,
+    motion: normalizeStoryMotion(args.motion),
   };
 }
 

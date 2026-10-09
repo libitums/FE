@@ -115,12 +115,14 @@ test("PO9. 비항등 scale 리터럴은 scale-literal 한 건이다", () => {
   ]);
 });
 
-test("PO10. 항등값 · 토큰 참조 · scale 없는 transform은 위반이 아니다", () => {
+test("PO10. 항등값 · 거울 반전 · 토큰 참조 · scale 없는 transform은 위반이 아니다", () => {
   const css = [
     ".a { transform: scale(1); }",
     ".b { transform: scale(1, 1); }",
     ".c { transform: scale(var(--libitum-motion-scale-pressed)); }",
     ".d { transform: translateX(16px); }",
+    ".e { transform: scaleX(-1); }",
+    ".f { transform: scale(-1, 1); }",
   ].join("\n");
   assert.deepEqual(violationsIn(css), []);
 });

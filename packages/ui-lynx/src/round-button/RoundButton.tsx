@@ -42,14 +42,14 @@ export function RoundButton(props: RoundButtonProps) {
           <view className="ui-lynx-round-button-shade" data-testid="ui-lynx-round-button-shade" />
         ) : null}
         {props.loading ? (
-          <view accessibility-elements-hidden={true}>
+          <view>
             <view
               className="ui-lynx-round-button-spinner"
               data-testid="ui-lynx-round-button-spinner"
             />
           </view>
         ) : (
-          <view accessibility-elements-hidden={true}>
+          <view>
             <svg
               className="ui-lynx-round-button-icon"
               data-testid="ui-lynx-round-button-icon"
