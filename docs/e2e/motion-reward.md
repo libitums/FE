@@ -238,19 +238,19 @@ e2e-green 회차가 iOS와 같은 빌드로 돌았다(산출물 · 측정 방식
 
 | 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
 |---|---|---|---|
-| M3-A1 (a)(b) — keyframe 게이트 | Android 에뮬레이터 | 실행 중 — 실행 회차가 채운다 | 배지 첫 프레임 ≤ 90 %(같은 도구 정착 bbox 121 기준 ≈ 109 이하) · 옅은 색. **100 %면 실패**(D6 fallback) — Android keyframe `var()`의 첫 기기 근거 |
-| M3-A6 | Android 에뮬레이터 | 실행 중 — 실행 회차가 채운다 | 눌림 56 → 52 px · 켠 (i) 막 `#E4E5E5`(±2) — 일반 규칙 `var()` |
+| M3-A1 (a)(b) — keyframe 게이트 | Android 에뮬레이터 | 통과(게이트 통과) | 배지 첫 프레임 ≤ 90 %(같은 도구 정착 bbox 121 기준 ≈ 109 이하) · 옅은 색. **100 %면 실패**(D6 fallback) — Android keyframe `var()`의 첫 기기 근거 실측: 13회 첫 보이는 프레임 최소 104(121의 86.0 %), 7/13이 ≤ 109, 나머지 110~116(12 fps 샘플링이 첫 프레임을 놓침), α 0.29~0.79(전부 < 1) → 정착 121. 최소가 121인 회차 0. 3단계 기록과 같은 범위. `motion-s4-android-M3-A1-off-*` |
+| M3-A6 | Android 에뮬레이터 | 통과 | 눌림 56 → 52 px · 켠 (i) 막 `#E4E5E5`(±2) — 일반 규칙 `var()` 실측: 끈 눌림 56 → 52 px · 색 불변; 켠 (i) 56 = 56 · 눌린 색 `#E4E5E5`(2회). `motion-s4-android-M2-A5-on-*` |
 | M3-A9 | Android 에뮬레이터 | 미확인: 문항 둘 이상 유닛 없음 | 문항 둘 이상 유닛이 생기면 잰다 |
 
 | 칸 | 값 |
 |---|---|
-| 시작 값(실행 전 기록) | 실행 중 — 실행 회차가 채운다 |
-| 확인자 | 실행 중 — 실행 회차가 채운다 |
-| 날짜 | 실행 중 — 실행 회차가 채운다 |
-| 빌드 SHA (호스트 · 번들) | 실행 중 — 실행 회차가 채운다 |
-| 기기 · OS · 빌드 종류 | 실행 중 — 실행 회차가 채운다 |
-| 에뮬레이터 점유 확인 · 알림 | 실행 중 — 실행 회차가 채운다 |
-| 설정 복원 확인 | 실행 중 — 실행 회차가 채운다 |
+| 시작 값(실행 전 기록) | `animator_duration_scale=null` · `transition_animation_scale=1.0` · `window_animation_scale=1.0` · `font_scale=1.0` · `wm size 1080x2400` · `density 420` · `accessibility_enabled=0` · `enabled_accessibility_services=null`(끝 값 전부 같음 — 전후 덤프 diff 0) |
+| 확인자 | test-runner 에이전트(e2e-green 회차, Android 회귀) |
+| 날짜 | 2026-10-10 |
+| 빌드 SHA (호스트 · 번들) | 호스트 `543b5762`(소스는 1단계 `d602fe08` 이후 불변) / 번들 `d649e114` 코드(= `543b5762`, 그 뒤는 테스트 · 문서) · 1,403,113 B(iOS 회차와 같은 크기). 수정 전 대조 없음(회귀) |
+| 기기 · OS · 빌드 종류 | `emulator-5554`(Pixel_8, API 37) · Debug Host(`assembleDebug`, `bundle:android`) + 정적 서버 18792 · 로그인 픽스처 `SignedInScreenFixtureTest` · `wm size 390x844` · `wm density 160`(1 px = 1 css px) · `screenrecord`(변화 시 ≈12 fps) + 기기 안 `screencap` 루프 |
+| 에뮬레이터 점유 확인 · 알림 | 다른 세션의 반납 알림을 받고 시작 · 사용 중 알림 · 끝에 원복 후 반납 알림 |
+| 설정 복원 확인 | 세 배율 · wm size · density 시작 값으로 원복(빈 `display_size_forced` · `display_density_forced` 키 삭제), 알림 권한 revoke, 전후 덤프 diff 0, 서버 18792 종료, 홈 화면(앱은 이 회차 빌드로 남김), `git status --short` 0줄 |
 
 ## 복원
 

@@ -279,7 +279,7 @@ iOS는 e2e-red 회차가, Android는 e2e-green 회차가 돌았다. 둘 다 **�
 
 | 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
 |---|---|---|---|
-| M2-I1 | iOS 시뮬레이터 | 통과 | RoundButton neutral 165 → 157 px(95 %) · LearningUnit 216 → 206(95.4 %) — 일반 규칙 `var()` 실측: RoundButton neutral 165 → 157 px(2회, 1 px 정확 168 → 158) · 색 `#F7F8F9` 불변. LearningUnit은 이 회차에서 재지 않았다(같은 선언 꼴). `motion-s4-ios-M2-I1-off-*` |
+| M2-I1 | iOS 시뮬레이터 | 통과(RoundButton) / 미확인(LearningUnit) | RoundButton neutral 165 → 157 px(95 %) · LearningUnit 216 → 206(95.4 %) — 일반 규칙 `var()` 실측: RoundButton neutral 165 → 157 px(2회, 1 px 정확 168 → 158) · 색 `#F7F8F9` 불변. LearningUnit은 이 회차에서 재지 않았다(같은 선언 꼴). `motion-s4-ios-M2-I1-off-*` |
 | M2-I2 — keyframe 게이트 | iOS 시뮬레이터 | 통과(게이트 통과) | 카드 상자 첫 프레임 하단 1678 · 전환점 97.1 %. **100 %(안쪽 아님)면 실패**(D6 fallback) 실측: 첫 보이는 프레임 카드 상자(그림자 포함) 930 × 747 → 정착 1003 × 779(높이비 95.9 %), 하단 전환점 1678(기록 1678) → 942/1680 → 933/1689. 첫 프레임부터 100 %인 회차 0. `motion-s4-ios-M2-I2-off-*` |
 
 | 칸 | 값 |
@@ -295,15 +295,15 @@ iOS는 e2e-red 회차가, Android는 e2e-green 회차가 돌았다. 둘 다 **�
 
 | 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
 |---|---|---|---|
-| M2-A1 | Android 에뮬레이터 | 실행 중 — 실행 회차가 채운다 | RoundButton neutral 56 → 52 px · LearningUnit 72 → 68 — 일반 규칙 `var()` |
-| M2-A2 — keyframe 게이트 | Android 에뮬레이터 | 실행 중 — 실행 회차가 채운다 | 중간 프레임 카드 상자 폭 316 ~ 318 / 정착 320. **320(안쪽 아님)이면 실패**(D6 fallback) — Android keyframe `var()`의 첫 기기 근거 |
+| M2-A1 | Android 에뮬레이터 | 통과(RoundButton) / 미확인(LearningUnit) | RoundButton neutral 56 → 52 px · LearningUnit 72 → 68 — 일반 규칙 `var()` 실측: RoundButton neutral 56 → 52 px · 색 `#F7F8F9` 불변(2회). LearningUnit은 이 회차에서 재지 않았다. `motion-s4-android-M2-A1-off-*` |
+| M2-A2 — keyframe 게이트 | Android 에뮬레이터 | 통과(게이트 통과) | 중간 프레임 카드 상자 폭 316 ~ 318 / 정착 320. **320(안쪽 아님)이면 실패**(D6 fallback) — Android keyframe `var()`의 첫 기기 근거 실측: `screencap` 루프 8회 중 6회 중간 프레임 폭 312 · 318 · 316 · 318 · 318 · 318, 영상 2회 308 → 312 → 318 → 320 · 308 → 314 → 316 → 320(정착 320). 첫 프레임부터 320인 회차 0 — Android keyframe 본문 `var()` 풀림을 처음 확인. `motion-s4-android-M2-A2-off-*` |
 
 | 칸 | 값 |
 |---|---|
-| 시작 값(실행 전 기록) | 실행 중 — 실행 회차가 채운다 |
-| 확인자 | 실행 중 — 실행 회차가 채운다 |
-| 날짜 | 실행 중 — 실행 회차가 채운다 |
-| 빌드 SHA (호스트 · 번들) | 실행 중 — 실행 회차가 채운다 |
-| 기기 · OS · 빌드 종류 | 실행 중 — 실행 회차가 채운다 |
-| 에뮬레이터 점유 확인 · 알림 | 실행 중 — 실행 회차가 채운다 |
-| 설정 복원 확인 | 실행 중 — 실행 회차가 채운다 |
+| 시작 값(실행 전 기록) | `animator_duration_scale=null` · `transition_animation_scale=1.0` · `window_animation_scale=1.0` · `font_scale=1.0` · `wm size 1080x2400` · `density 420` · `accessibility_enabled=0` · `enabled_accessibility_services=null`(끝 값 전부 같음 — 전후 덤프 diff 0) |
+| 확인자 | test-runner 에이전트(e2e-green 회차, Android 회귀) |
+| 날짜 | 2026-10-10 |
+| 빌드 SHA (호스트 · 번들) | 호스트 `543b5762`(소스는 1단계 `d602fe08` 이후 불변) / 번들 `d649e114` 코드(= `543b5762`, 그 뒤는 테스트 · 문서) · 1,403,113 B(iOS 회차와 같은 크기). 수정 전 대조 없음(회귀) |
+| 기기 · OS · 빌드 종류 | `emulator-5554`(Pixel_8, API 37) · Debug Host(`assembleDebug`, `bundle:android`) + 정적 서버 18792 · 로그인 픽스처 `SignedInScreenFixtureTest` · `wm size 390x844` · `wm density 160`(1 px = 1 css px) · `screenrecord`(변화 시 ≈12 fps) + 기기 안 `screencap` 루프 |
+| 에뮬레이터 점유 확인 · 알림 | 다른 세션의 반납 알림을 받고 시작 · 사용 중 알림 · 끝에 원복 후 반납 알림 |
+| 설정 복원 확인 | 세 배율 · wm size · density 시작 값으로 원복(빈 `display_size_forced` · `display_density_forced` 키 삭제), 알림 권한 revoke, 전후 덤프 diff 0, 서버 18792 종료, 홈 화면(앱은 이 회차 빌드로 남김), `git status --short` 0줄 |

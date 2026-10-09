@@ -4,8 +4,8 @@
   [ADR-0025](0025-ui-lynx-package-and-storybook-catalog.md)의 확장 소절 셋 · [ADR-0044](0044-android-tappable-inset.md) D1 후속 확장 · [ADR-0006](0006-command-interface-and-test-layers.md) 명령표에
   흩어져 있던 결정을 **한 축으로 모은 것**이다. 새로 정한 것은 4단계의 넷(D1의 scale · inline style 규칙, D5의 진행 바, D3의 카탈로그 방식, D7의 가림 선언 정리)이고
   나머지는 그 자리의 결정을 **옮겨 적은 것**이라 뒤집힌 결정은 없다.
-  ⚠ **4단계 기기 회귀(iOS · Android)는 이 문서를 쓰는 시점에 진행 중이다** — 결과는 [`docs/e2e/motion-tokens.md`](../e2e/motion-tokens.md) · [`docs/e2e/motion-reward.md`](../e2e/motion-reward.md)의 「4단계 회차」 소절이 진다. 이 문서는 수치를 되풀이하지 않는다.
-  ⚠ **`@keyframes` 본문 안 `var()`는 iOS 탐색으로만 풀림을 봤다**(D6). Android keyframe은 4단계 Android 회차의 배지 · Dialog 행이 처음 본다 — 안 풀리면 D6의 fallback이 선다.
+  ✔ **4단계 기기 회귀(iOS · Android)는 2026-10-10에 끝났고 전부 기록과 같았다**(keyframe 게이트 두 플랫폼 통과) — 수치는 [`docs/e2e/motion-tokens.md`](../e2e/motion-tokens.md) · [`docs/e2e/motion-reward.md`](../e2e/motion-reward.md)의 「4단계 회차」 소절이 진다. 이 문서는 수치를 되풀이하지 않는다.
+  ✔ **`@keyframes` 본문 안 `var()`는 iOS(탐색 · 회귀) · Android(회귀 M2-A2 · M3-A1) 모두 풀렸다**(D6) — fallback은 서지 않았다.
   ⚠ **보조기술은 어느 단계에서도 실기로 재지 않았다**(D7 — M3-I8 · M3-A7 (a)(b)(c) 미확인). 문항 전환 직후 초점 자리의 조건은 열려 있고 5단계 이월이다.
   ⚠ 진행 바 `width` 전환(D5)은 이 빌드의 유닛이 전부 문항 하나라 **기기에서 관찰한 적이 없다**. 안 그려지면 지금처럼 즉시 반영이고 회귀가 아니다.
 - 날짜: 2026-10-10.
