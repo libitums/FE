@@ -95,9 +95,8 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
           </view>
           {contract.continueIndicator === "on" ? (
             <view
-              className={`ui-lynx-visual-novel-dialog-indicator-frame ui-lynx-visual-novel-dialog-indicator-${contract.indicatorMotion}`}
+              className="ui-lynx-visual-novel-dialog-indicator-frame"
               data-testid="ui-lynx-visual-novel-dialog-continue-indicator"
-              data-motion={contract.indicatorMotion}
               style={{ visibility: contract.showContinueIndicator ? "visible" : "hidden" }}
             >
               <svg

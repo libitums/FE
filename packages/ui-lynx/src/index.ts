@@ -5,12 +5,13 @@ export {
   MotionProvider,
   defaultMotion,
   motionClassName,
+  motionDurationMs,
   motionFromReducedMotion,
   resolveMotion,
   resolveReducedMotion,
   useMotion,
 } from "./motion";
-export type { Motion, MotionProviderProps } from "./motion";
+export type { Motion, MotionDurationToken, MotionProviderProps } from "./motion";
 export type {
   ButtonContract,
   ButtonProps,

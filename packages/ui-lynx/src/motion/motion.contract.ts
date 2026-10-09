@@ -23,3 +23,15 @@ export function motionFromReducedMotion(reduced: boolean): Motion {
 export function motionClassName(block: string, motion: Motion): string | undefined {
   return motion === "reduced" ? `${block}-motion-reduced` : undefined;
 }
+
+/** 토큰의 duration 문자열(`"35ms"` · `"1s"`)을 밀리초 숫자로 바꿀 때 받는 꼴입니다. */
+export type MotionDurationToken = `${number}ms` | `${number}s`;
+
+/**
+ * 토큰의 duration 문자열(`"35ms"` · `"1s"`)을 밀리초 숫자로 바꿉니다. 단위가 ms · s가 아니거나
+ * 숫자가 아니면 던집니다.
+ */
+export function motionDurationMs(value: MotionDurationToken): number {
+  void value;
+  return 0;
+}

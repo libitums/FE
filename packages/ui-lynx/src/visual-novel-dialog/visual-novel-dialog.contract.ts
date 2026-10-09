@@ -9,11 +9,6 @@ export type VisualNovelDialogStatus = "revealing" | "ready";
 export type VisualNovelDialogContinueIndicator = "on" | "off";
 export type VisualNovelDialogContentLanguage = "ui" | "learning";
 export type VisualNovelDialogDirection = "ltr" | "rtl";
-/**
- * 계속 표시의 움직임입니다. `bounce`는 위아래로 되풀이해 움직여 「눌러서 넘기라」를 알립니다.
- * `reducedMotion`이면 `static`입니다.
- */
-export type VisualNovelDialogIndicatorMotion = "bounce" | "static";
 
 type VisualNovelDialogBaseProps = {
   readonly line: string;
@@ -83,7 +78,6 @@ export type VisualNovelDialogContract = {
   readonly contentLanguage: VisualNovelDialogContentLanguage;
   readonly continueIndicator: VisualNovelDialogContinueIndicator;
   readonly direction: VisualNovelDialogDirection;
-  readonly indicatorMotion: VisualNovelDialogIndicatorMotion;
   readonly languageTag?: string;
   readonly line: string;
   readonly reveal: VisualNovelDialogReveal;
@@ -195,7 +189,6 @@ export function getVisualNovelDialogContract(
     contentLanguage,
     continueIndicator,
     direction,
-    indicatorMotion: reduced ? "static" : "bounce",
     ...(languageTag ? { languageTag } : {}),
     line,
     reveal,

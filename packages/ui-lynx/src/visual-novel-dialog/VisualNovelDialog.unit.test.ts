@@ -254,13 +254,21 @@ test("translation이 빈 문자열이면 던진다", () => {
   ).toThrow("VisualNovelDialog translation must not be empty");
 });
 
+type IndicatorMotionProbe = { readonly indicatorMotion?: string };
+
 test("계속 표시 모션은 기본 bounce이고, reducedMotion이면 static이다", () => {
   expect(
-    getVisualNovelDialogContract({ line: "안녕", speakerName: "이유나" }).indicatorMotion,
+    (getVisualNovelDialogContract({ line: "안녕", speakerName: "이유나" }) as IndicatorMotionProbe)
+      .indicatorMotion,
   ).toBe("bounce");
   expect(
-    getVisualNovelDialogContract({ line: "안녕", speakerName: "이유나", reducedMotion: true })
-      .indicatorMotion,
+    (
+      getVisualNovelDialogContract({
+        line: "안녕",
+        speakerName: "이유나",
+        reducedMotion: true,
+      }) as IndicatorMotionProbe
+    ).indicatorMotion,
   ).toBe("static");
 });
 
@@ -279,7 +287,7 @@ describe("getVisualNovelDialogContract: 컨텍스트 motion", () => {
     expect(contract.reveal).toBe("instant");
     expect(contract.status).toBe("ready");
     expect(contract.visibleLine).toBe(line);
-    expect(contract.indicatorMotion).toBe("static");
+    expect((contract as IndicatorMotionProbe).indicatorMotion).toBe("static");
   });
 
   test("VNc2. 명시한 reducedMotion false가 컨텍스트 reduced를 이긴다", () => {
@@ -288,13 +296,13 @@ describe("getVisualNovelDialogContract: 컨텍스트 motion", () => {
       "reduced",
     );
     expect(contract.reveal).toBe("typewriter");
-    expect(contract.indicatorMotion).toBe("bounce");
+    expect((contract as IndicatorMotionProbe).indicatorMotion).toBe("bounce");
   });
 
   test("VNc3. 컨텍스트를 주지 않으면 요청한 reveal 그대로다", () => {
     const contract = getVisualNovelDialogContract(revealing);
     expect(contract.reveal).toBe("typewriter");
     expect(contract.status).toBe("revealing");
-    expect(contract.indicatorMotion).toBe("bounce");
+    expect((contract as IndicatorMotionProbe).indicatorMotion).toBe("bounce");
   });
 });

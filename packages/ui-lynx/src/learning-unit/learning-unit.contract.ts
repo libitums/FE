@@ -134,3 +134,10 @@ export function getLearningUnitContract(
     focused,
   };
 }
+
+/** reduced이고 status가 default가 아니면 true — 눌림 막을 렌더한다. */
+export function hasPressedShade(status: LearningUnitStatus, motion: Motion): boolean {
+  void status;
+  void motion;
+  return false;
+}

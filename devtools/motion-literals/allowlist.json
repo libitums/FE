@@ -1,0 +1,6 @@
+[
+  {
+    "path": "apps/mobile/src/screens/episode-narrative/narrative-background.css",
+    "reason": "Content 예외(사용자 결정 4, 2026-10-09). 장면 그림의 등장 · 표류 · 상상/현실 베일은 서사 연출이며 길이를 내용(장면 · beat)이 정한다. design-system motion.md 「분류」의 Content 영역(「토큰이 전체 길이를 정하지 않습니다」)과 「장면은 멈춰 있습니다」 원칙에 따라 UI 전환 토큰(d0~d9 · page)으로 바꾸지 않는다. 900 · 2800 · 3000 · 6000ms와 ease-in · ease-out · ease-in-out은 연출 값이고, 가장 긴 UI 토큰(d9 1000ms)으로도 표현할 수 없다. 이 파일 밖의 새 리터럴은 허용하지 않는다. reduced에서는 motionEnabled = animated && !reducedMotion으로 연출 전체를 즉시 교체한다."
+  }
+]
