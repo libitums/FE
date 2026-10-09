@@ -1,5 +1,5 @@
 export { Button } from "./button";
-export { useTypewriter } from "./typewriter";
+export { defaultRevealIntervalMs, useTypewriter } from "./typewriter";
 export type { TypewriterOptions, TypewriterState } from "./typewriter";
 export {
   MotionProvider,

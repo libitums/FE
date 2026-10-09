@@ -21,7 +21,7 @@
 }
 
 .ui-lynx-button-loading .ui-lynx-button-surface {
-  column-gap: var(--libitum-spacing-6);
+  position: relative;
 }
 
 .ui-lynx-button-s .ui-lynx-button-surface {
@@ -160,11 +160,23 @@
 }
 
 .ui-lynx-button-spinner-wrap {
-  width: var(--libitum-spacing-12);
-  height: var(--libitum-spacing-12);
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@keyframes ui-lynx-button-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ui-lynx-button-spinner {
@@ -174,6 +186,11 @@
   border-style: solid;
   border-color: var(--libitum-color-gray-50);
   border-radius: var(--libitum-radius-full);
+}
+
+/* prettier-ignore */
+.ui-lynx-button-loading .ui-lynx-button-spinner {
+  animation: ui-lynx-button-spin var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear) infinite;
 }
 
 .ui-lynx-button-brand.ui-lynx-button-loading .ui-lynx-button-spinner {
@@ -192,10 +209,10 @@
   border-color: var(--libitum-color-fg-brand);
 }
 
-.ui-lynx-button-loading.ui-lynx-button-disabled .ui-lynx-button-label {
-  color: var(--libitum-color-border-default);
-}
-
 .ui-lynx-button-loading.ui-lynx-button-disabled .ui-lynx-button-spinner {
   border-color: var(--libitum-color-border-default);
+}
+
+.ui-lynx-button.ui-lynx-button-loading .ui-lynx-button-spinner {
+  border-top-color: transparent;
 }
