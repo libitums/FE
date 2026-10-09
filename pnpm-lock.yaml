@@ -30,8 +30,8 @@ importers:
         specifier: 5.3.0
         version: 5.3.0
       '@libitums/design-tokens':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 0.4.0
+        version: 0.4.0
       astro:
         specifier: 7.3.5
         version: 7.3.5(@types/node@22.20.0)(terser@5.50.0)(yaml@2.9.1)
@@ -70,11 +70,11 @@ importers:
   apps/mobile:
     dependencies:
       '@libitums/design-tokens':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 0.4.0
+        version: 0.4.0
       '@libitums/icons':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 0.4.0
+        version: 0.4.0
       '@libitums/ui-lynx':
         specifier: workspace:*
         version: link:../../packages/ui-lynx
@@ -125,8 +125,8 @@ importers:
   apps/storybook-lynx:
     dependencies:
       '@libitums/icons':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 0.4.0
+        version: 0.4.0
       '@libitums/ui-lynx':
         specifier: workspace:*
         version: link:../../packages/ui-lynx
@@ -195,11 +195,11 @@ importers:
   packages/ui-lynx:
     dependencies:
       '@libitums/design-tokens':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 0.4.0
+        version: 0.4.0
       '@libitums/icons':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 0.4.0
+        version: 0.4.0
     devDependencies:
       '@lynx-js/react':
         specifier: 0.125.0
@@ -1093,11 +1093,11 @@ packages:
     peerDependencies:
       tslib: '2'
 
-  '@libitums/design-tokens@0.3.0':
-    resolution: {integrity: sha512-6TUqOXt3pBVd3TUcolRFg2QNxEOETFSpecnNmI7vavaUQfwy+rvQFfI9CRTurCMb3r0PbBpYUdclvhkRHAItDQ==, tarball: https://npm.pkg.github.com/download/@libitums/design-tokens/0.3.0/64b66388fb9854e15f6f970cd0e815a5f0f75c3c}
+  '@libitums/design-tokens@0.4.0':
+    resolution: {integrity: sha512-pTwk2WmZ/9+eFBHn4nneNZfe2rfScFoft5loshu9r8bvCQhCWi9m4q9y2PjXw8eqbYnmInTPtIUxxfLA6+z/0w==, tarball: https://npm.pkg.github.com/download/@libitums/design-tokens/0.4.0/be952735a3c573ebdf92cd109b54e23294d824e8}
 
-  '@libitums/icons@0.3.0':
-    resolution: {integrity: sha512-x9XIwq7PdqL6Q7qM4ILkcnEVQADiQemKnh7/F/LRwyGSmWdEuBQcLt/ktcwtX6oZGcdG4+g8Zf20DK/tDSCK6g==, tarball: https://npm.pkg.github.com/download/@libitums/icons/0.3.0/de79138412b0d4c3f1dcdc3dfc5895ed95f17ad1}
+  '@libitums/icons@0.4.0':
+    resolution: {integrity: sha512-psOwqJwIdDlt7t7oFgK6Hre1mrzWZL0EQx4L0K3kuLQGwCeFQLEnffhoQaavKyZcG6lvQnG6d+DAdMj0zINezA==, tarball: https://npm.pkg.github.com/download/@libitums/icons/0.4.0/2f92212973e19c5f9b20ef84ccca2b1f52e82b38}
 
   '@lynx-js/cache-events-webpack-plugin@0.2.0':
     resolution: {integrity: sha512-f903x00MMmWB9yIyvACAoe4im0T58JHpKnypV/ccI2gp477RJoCgXPne2x8Obgo3fTOIMHpmNMdnxFW1ej9olQ==}
@@ -6755,9 +6755,9 @@ snapshots:
       '@jsonjoy.com/codegen': 17.67.0(tslib@2.8.1)
       tslib: 2.8.1
 
-  '@libitums/design-tokens@0.3.0': {}
+  '@libitums/design-tokens@0.4.0': {}
 
-  '@libitums/icons@0.3.0': {}
+  '@libitums/icons@0.4.0': {}
 
   '@lynx-js/cache-events-webpack-plugin@0.2.0':
     dependencies:
