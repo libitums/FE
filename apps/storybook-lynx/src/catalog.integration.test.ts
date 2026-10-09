@@ -732,7 +732,7 @@ describe("Storybook Lynx build outputs", () => {
       "components-visual-novel-dialog--reduced-motion",
       "components-chat-bubble--typewriter",
     ]) {
-      expect(Object.keys(index.entries), id).toContain(id);
+      expect(Object.keys(index.entries)).toContain(id);
     }
   });
 
@@ -751,9 +751,12 @@ describe("Storybook Lynx build outputs", () => {
       const source = await readOutput(`src/lynx/${name}.tsx`);
       expect(source).toContain('from "@libitums/ui-lynx/motion"');
       expect(source).toContain("<MotionProvider motion={");
-      if (name === "chat-bubble") expect(source).toContain("reveal={args.reveal}");
     },
   );
+  test("ST6. chat-bubble 엔트리는 reveal arg를 넘긴다", async () => {
+    const source = await readOutput("src/lynx/chat-bubble.tsx");
+    expect(source).toContain("reveal={args.reveal}");
+  });
 
   test("정적 Storybook shell과 컴포넌트 story index를 갖는다", async () => {
     expect(await readOutput("dist/storybook/index.html")).toContain("storybook-root");

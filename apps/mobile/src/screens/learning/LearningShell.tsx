@@ -157,9 +157,11 @@ export function LearningShell({
     if (spentAdvance.current === step) {
       return;
     }
+    // oxlint-disable-next-line react/immutability -- ReactLynx useRef는 렌더 · effect에서 갱신하는 mutable ref입니다.
     spentAdvance.current = step;
     if (advanceTimer.current !== null) {
       clearTimeout(advanceTimer.current);
+      // oxlint-disable-next-line react/immutability -- ReactLynx useRef는 렌더 · effect에서 갱신하는 mutable ref입니다.
       advanceTimer.current = null;
     }
     step.run();
@@ -180,6 +182,7 @@ export function LearningShell({
       return;
     }
     const timer = setTimeout(() => runAdvance(advance), advance.delayMs);
+    // oxlint-disable-next-line react/immutability -- ReactLynx useRef는 렌더 · effect에서 갱신하는 mutable ref입니다.
     advanceTimer.current = timer;
     return () => {
       clearTimeout(timer);

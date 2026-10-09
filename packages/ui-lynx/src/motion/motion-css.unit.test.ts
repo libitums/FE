@@ -139,3 +139,100 @@ describe("scale tokens", () => {
     expect(nonIdentity(readCss("dialog/dialog.css"))).toEqual([]);
   });
 });
+
+describe("pressed shade css", () => {
+  type Shade = {
+    readonly name: string;
+    readonly file: string;
+    readonly block: string;
+    readonly radius: string;
+    /** 눌림 규칙의 선택자(공백은 \\s+로 허용). */
+    readonly pressed: RegExp;
+    /** reduced surface를 기준 박스로 만드는 규칙의 선택자. */
+    readonly surface: RegExp;
+  };
+  const shades: readonly Shade[] = [
+    {
+      name: "RoundButton",
+      file: "round-button/round-button.css",
+      block: "ui-lynx-round-button-shade",
+      radius: "full",
+      pressed:
+        /\.ui-lynx-round-button-motion-reduced:not\(\.ui-lynx-round-button-loading\):not\(\.ui-lynx-round-button-disabled\):active\s+\.ui-lynx-round-button-shade/,
+      surface: /\.ui-lynx-round-button-motion-reduced\s+\.ui-lynx-round-button-surface/,
+    },
+    {
+      name: "LearningUnit",
+      file: "learning-unit/learning-unit.css",
+      block: "ui-lynx-learning-unit-shade",
+      radius: "full",
+      pressed:
+        /\.ui-lynx-learning-unit-motion-reduced:not\(\.ui-lynx-learning-unit-default\):active\s+\.ui-lynx-learning-unit-shade/,
+      surface: /\.ui-lynx-learning-unit-motion-reduced\s+\.ui-lynx-learning-unit-surface/,
+    },
+  ];
+
+  describe.each(shades)("$name", (shade) => {
+    test("SH1/SH5. 막은 surface를 덮는 검은 원이고 평소엔 투명하며 opacity로 전환한다", () => {
+      const body = ruleBody(readCss(shade.file), new RegExp(`\\.${shade.block}`));
+      expect(body).toMatch(/position:\s*absolute/);
+      for (const side of ["top", "right", "bottom", "left"]) {
+        expect(body).toMatch(new RegExp(`${side}:\\s*0\\b`));
+      }
+      expect(body).toMatch(/border-radius:\s*var\(--libitum-radius-full\)/);
+      expect(body).toMatch(/background-color:\s*var\(--libitum-color-black\)/);
+      expect(body).toMatch(/opacity:\s*0\s*;/);
+      expect(body).toMatch(
+        /transition:\s*opacity var\(--libitum-motion-duration-pressed\) var\(--libitum-motion-easing-easing\)/,
+      );
+    });
+
+    test("SH2/SH6. 눌린 막만 pressed-shade 투명도를 갖고 reduced surface가 기준 박스다", () => {
+      const css = readCss(shade.file);
+      expect(ruleBody(css, shade.pressed)).toMatch(
+        /opacity:\s*var\(--libitum-opacity-pressed-shade,\s*0\.08\)/,
+      );
+      expect(ruleBody(css, shade.surface)).toMatch(/position:\s*relative/);
+    });
+
+    test("SH3/SH7. fallback 숫자는 opacity.pressed-shade 토큰과 같다", () => {
+      const css = readCss(shade.file);
+      const fallback = Number(
+        /opacity:\s*var\(--libitum-opacity-pressed-shade,\s*([\d.]+)\)/.exec(
+          ruleBody(css, shade.pressed),
+        )?.[1] ?? Number.NaN,
+      );
+      expect(fallback).toBe(opacity["pressed-shade"]);
+    });
+  });
+
+  test("SH4. RoundButton reduced 규칙은 회전과 무관하고 1단계 transform: none 규칙이 그대로다", () => {
+    const css = readCss("round-button/round-button.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const reducedRules = [...css.matchAll(/([^{}]*-motion-reduced[^{}]*)\{([^}]*)\}/g)];
+    expect(reducedRules.length).toBeGreaterThan(0);
+    for (const [, selector, body] of reducedRules) {
+      expect(`${selector}${body}`).not.toMatch(/spinner|animation/);
+    }
+    expect(
+      ruleBody(
+        css,
+        /\.ui-lynx-round-button-motion-reduced[^{]*:active\s+\.ui-lynx-round-button-surface/,
+      ),
+    ).toMatch(
+      /transform:\s*none[\s\S]*transition:\s*none|transition:\s*none[\s\S]*transform:\s*none/,
+    );
+  });
+
+  test("SH8. LearningUnit 1단계 reduced 규칙과 surface 색 전환이 그대로다", () => {
+    const css = readCss("learning-unit/learning-unit.css");
+    expect(
+      ruleBody(
+        css,
+        /\.ui-lynx-learning-unit-motion-reduced:not\(\.ui-lynx-learning-unit-default\):active\s+\.ui-lynx-learning-unit-visual/,
+      ),
+    ).toMatch(/transition:\s*none[\s\S]*transform:\s*none/);
+    expect(ruleBody(css, /\.ui-lynx-learning-unit-surface/)).toMatch(
+      /transition:\s*background-color var\(--libitum-motion-duration-color\)\s+var\(--libitum-motion-easing-easing\)/,
+    );
+  });
+});

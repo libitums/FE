@@ -172,16 +172,16 @@ describe("learning-shell.css", () => {
   });
 
   // 파일에 전환이 아직 없는 logic-scaffold에서도 green인 가드입니다.
-  test("LST-css5. 정적 블록에 opacity · transition이 없고 @media · 시간 리터럴이 없다", () => {
-    for (const selector of [
-      ".learning-shell-stage",
-      ".learning-shell-scroll",
-      ".learning-shell-card-scroll",
-    ]) {
+  test.each([".learning-shell-stage", ".learning-shell-scroll", ".learning-shell-card-scroll"])(
+    "LST-css5. 정적 블록 %s에 opacity · transition이 없다",
+    (selector) => {
       const rule = ruleFor(selector);
-      expect(rule.at, selector).toBeGreaterThanOrEqual(0);
-      expect(rule.body, selector).not.toMatch(/opacity|transition|animation/);
-    }
+      expect(rule.at).toBeGreaterThanOrEqual(0);
+      expect(rule.body).not.toMatch(/opacity|transition|animation/);
+    },
+  );
+
+  test("LST-css5. 파일에 @media · 시간 리터럴이 없다", () => {
     expect(raw).not.toMatch(/@media/);
     expect(raw).not.toMatch(/\d+ms/);
   });
