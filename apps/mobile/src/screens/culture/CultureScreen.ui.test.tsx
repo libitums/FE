@@ -125,12 +125,12 @@ test("[X5] 문단이 하나뿐인 fixture에서는 culture-screen-paragraph-0만
 
 // ---------------------------------------------------------------- X6: 스크롤 속성
 
-test("[X6] culture-screen-scroll에 scroll-orientation='vertical'·scroll-bar-enable='true'가 붙는다", () => {
+test("[X6] culture-screen-scroll에 scroll-orientation='vertical'·scroll-bar-enable='false'가 붙는다", () => {
   renderScreen();
 
   const scroll = screen.getByTestId("culture-screen-scroll");
   expect(scroll).toHaveAttribute("scroll-orientation", "vertical");
-  expect(scroll).toHaveAttribute("scroll-bar-enable", "true");
+  expect(scroll).toHaveAttribute("scroll-bar-enable", "false");
 });
 
 // ---------------------------------------------------------------- X7: 스크롤에 accessibility-* 없음

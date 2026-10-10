@@ -7,6 +7,8 @@
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
     var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-background-primary);
+  /* 아래 fog 상자가 이 상자를 기준으로 절대 배치됩니다. */
+  position: relative;
 }
 
 .feedback-screen-header {
@@ -38,6 +40,19 @@
 .feedback-screen-scroll {
   flex: 1;
   justify-content: flex-start;
+}
+
+/* 스크롤 영역의 아래 40을 흐리는 상자입니다. 스크롤 영역의 아랫변에 맞추려고 `bottom`이
+   화면 여백 값입니다. 터치는 통과시킵니다 — TSX에서 `user-interaction-enabled={false}`로
+   이 상자를 터치 대상에서 뺍니다(`event-through`는 Lynx 안의 형제로 터치를 내려보내지
+   않아 띠 안의 탭과 끌기가 막혔습니다). */
+.feedback-screen-fog {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--libitum-layout-screen-padding-bottom);
+  height: var(--libitum-spacing-40);
+  z-index: var(--libitum-elevation-z-default);
 }
 
 /* 아래 여백은 바텀 네비게이션 몫입니다(프로필 화면과 같은 값). */

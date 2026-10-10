@@ -250,6 +250,8 @@ export function App(
 - `MessengerScreen`은 `[고정] 머리(맵으로+제목) / [흐름] 대화 / [고정] 액션 행`이다.
 - 흐름은 자식 하나인 세로 `scroll-view`이고 `scroll-orientation="vertical"`,
   `scroll-bar-enable={true}`를 명시한다. 고정 머리·액션은 스크롤 밖이다.
+  > ⟨2026-10-09⟩ 위 줄은 이 유닛을 지을 때의 기록이다. **지금 적는 값은 `scroll-bar-enable={false}`다** —
+  > [ADR-0055](../adr/0055-scroll-bars-off.md)가 ADR-0022 D3의 그 절반을 대체했다.
 - 모든 보이는 문자열은 `<text>`에 둔다. 버튼은 `<view>`에 보이는 `<text>`를 포함하고
   이름과 `accessibility-traits="button"`을 낸다. 제목은 `header`다.
 - `bindtap`을 쓰며 main-thread 이벤트는 없다. custom prop을 거쳐 `bindtap`에 닿는

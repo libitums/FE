@@ -76,7 +76,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
         className="onboarding-screen-scroll"
         data-testid="onboarding-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         <view className="onboarding-screen-content">
           {/* 2026-09-21 디자인 반영: 스텝마다 400 높이 카드 영역이 갈립니다 — 첫 스텝은

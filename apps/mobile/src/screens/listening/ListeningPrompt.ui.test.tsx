@@ -4,7 +4,7 @@ import play from "@libitums/icons/lynx/play";
 import pause from "@libitums/icons/lynx/pause";
 import { color } from "@libitums/design-tokens";
 
-import { ListeningPrompt } from "./ListeningPrompt";
+import { PlaybackPrompt } from "./ListeningPrompt.test-support";
 // 크기 단계는 문장 길이에서 나옵니다 — 리터럴로 적지 않고 같은 함수에서 뽑습니다.
 import { listeningPromptScale } from "./listening";
 // sessionOptions가 필수 prop이 됐습니다. 이 파일의 fixture는 언제나 초기값(둘
@@ -17,8 +17,8 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 // `toBeVisible`을 쓰지 않습니다 (docs/conventions/code.md).
 //
 // 이 컴포넌트는 이제 **제시 채널 + 재생 조작**입니다. 재생 상태(`idle`/`playing`)는
-// 이 컴포넌트가 소유하고 밖에서 내려오지 않습니다 — 그래서 boolean prop도 콜백
-// prop도 없습니다.
+// 화면의 `useListeningPlayback`이 소유하고, 이 파일은 훅과 표시 컴포넌트를 묶은 하네스
+// (`PlaybackPrompt`)로 그립니다 — 소유자가 달라져도 보이는 동작은 같습니다.
 //
 // **보이는 낱말이 없어졌습니다**(2026-09-27, Figma 53-14231). 컨트롤이 동그란 아이콘
 // 버튼이라 라벨 자리가 없고, 이름은 `accessibility-label`이 혼자 집니다. 그래서 상태가
@@ -92,7 +92,7 @@ afterEach(() => {
 
 function renderPrompt(overrides: { text?: string; audioSource?: string } = {}) {
   return render(
-    <ListeningPrompt
+    <PlaybackPrompt
       text={overrides.text ?? TEXT}
       romanization={ROMANIZATION}
       audioSource={overrides.audioSource ?? SOURCE}
@@ -157,7 +157,7 @@ test("audioSource가 바뀌면 호출 순서가 play(a) → stop → play(b)다"
   const { rerender } = renderPrompt();
 
   rerender(
-    <ListeningPrompt
+    <PlaybackPrompt
       text={TEXT}
       romanization={ROMANIZATION}
       audioSource={OTHER_SOURCE}
@@ -177,7 +177,7 @@ test("text만 바뀌면 play도 stop도 다시 불리지 않는다", () => {
   const { rerender } = renderPrompt();
 
   rerender(
-    <ListeningPrompt
+    <PlaybackPrompt
       text={OTHER_TEXT}
       romanization={ROMANIZATION}
       audioSource={SOURCE}
@@ -502,7 +502,7 @@ test("대역 없이도 컨트롤 둘과 아이콘 둘이 렌더된다 — 숨기
 test("[LA1-M] 문구표를 주입하면 다시듣기 · 재생 조작의 이름이 표의 경로로 나온다 — 대기 상태", () => {
   render(
     <UiCopyContext.Provider value={markedUiCopy}>
-      <ListeningPrompt
+      <PlaybackPrompt
         text={TEXT}
         romanization={ROMANIZATION}
         audioSource={SOURCE}
@@ -519,7 +519,7 @@ test("[LA1-M] 문구표를 주입하면 재생 중 이름이 pause 경로로, �
   stubHost();
   render(
     <UiCopyContext.Provider value={markedUiCopy}>
-      <ListeningPrompt
+      <PlaybackPrompt
         text={TEXT}
         romanization={ROMANIZATION}
         audioSource={SOURCE}

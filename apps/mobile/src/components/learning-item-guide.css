@@ -1,0 +1,23 @@
+.learning-item-guide {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.learning-item-guide .ui-lynx-overlay {
+  background-color: rgba(26, 28, 32, 0.8);
+}
+
+/* 글자 묶음 뒤의 바탕 판입니다. 판의 색은 이 한 곳에만 있습니다. 폭은 화면 좌우에
+   spacing-16씩 남기도록 longhand `width`에 calc를 씁니다(최대 폭 354는 기존 규칙 그대로). */
+.learning-item-guide .first-unit-guide-content {
+  width: calc(100% - var(--libitum-spacing-16) - var(--libitum-spacing-16));
+  background-color: rgba(26, 28, 32, 0.9);
+  border-radius: var(--libitum-radius-xl);
+}

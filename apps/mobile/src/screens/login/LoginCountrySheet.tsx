@@ -36,6 +36,7 @@ export function LoginCountrySheet({
       {/* 국가 번호가 있는 모든 지역(245)을 OptionSelector로 늘어놓습니다. */}
       <view className="login-screen-country-list">
         <scroll-view
+          scroll-bar-enable={false}
           className="login-screen-country-scroll"
           data-testid="login-screen-country-list"
           scroll-orientation="vertical"

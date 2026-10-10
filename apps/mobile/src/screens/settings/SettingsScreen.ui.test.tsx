@@ -104,10 +104,13 @@ test("[U9] settings-screen-scroll에 scroll-orientation='vertical'이 붙는다"
   );
 });
 
-test("[U11] settings-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
+test("[U11] settings-screen-scroll에 scroll-bar-enable='false'가 붙는다", () => {
   render(<SettingsScreen {...defaultSettingsScreenProps} />);
 
-  expect(screen.getByTestId("settings-screen-scroll")).toHaveAttribute("scroll-bar-enable", "true");
+  expect(screen.getByTestId("settings-screen-scroll")).toHaveAttribute(
+    "scroll-bar-enable",
+    "false",
+  );
 });
 
 // U10 — 목록 상자 하나(`settings-screen-list`)를 그 자리에 세워도 **직계 자식은

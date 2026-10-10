@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { LearningShell } from "./LearningShell";
 import { SentenceOrderChip } from "../sentence-order/SentenceOrderChip";
-import { ListeningPrompt } from "../listening/ListeningPrompt";
+import { PlaybackPrompt } from "../listening/ListeningPrompt.test-support";
 import { initialSessionOptions } from "../../lib/session-options";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -85,7 +85,7 @@ test("문장 만들기 칩은 넣기와 빼기 모두 클릭음을 내고 비활
 test("듣기 재생과 다시 듣기 버튼은 공통 클릭음을 낸다", () => {
   const play = stubSound();
   render(
-    <ListeningPrompt
+    <PlaybackPrompt
       text="안녕하세요"
       romanization="annyeonghaseyo"
       audioSource="fixture"

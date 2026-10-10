@@ -6,6 +6,7 @@
 
 import type { EntryLanguage } from "./entry-language";
 import type { FeedbackCopy } from "./feedback.contract";
+import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
   AssessmentCopy,
   CommonCopy,
@@ -51,6 +52,7 @@ export type UiCopy = {
   readonly sentenceOrder: SentenceOrderCopy;
   readonly speaking: SpeakingCopy;
   readonly writing: WritingCopy;
+  readonly learningItemGuide: LearningItemGuideCopy;
   readonly culture: CultureCopy;
   readonly cultureQuiz: CultureQuizCopy;
   readonly assessment: AssessmentCopy;

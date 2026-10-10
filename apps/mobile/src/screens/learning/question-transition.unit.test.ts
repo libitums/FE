@@ -7,6 +7,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   initialQuestionTransitionPhase,
+  questionTransitionAttributes,
   questionTransitionClassName,
   questionTransitionDurationMs,
   questionTransitionKey,
@@ -33,6 +34,19 @@ describe("question-transition", () => {
         "reduced",
       ),
     ).toBe("learning-shell-scroll learning-shell-card-scroll");
+  });
+
+  // 클래스와 같은 조건 — 무대 · 스크롤 어느 상자가 지든 속성이 같은 규칙을 따른다.
+  test("QT0b. 속성은 idle이면 비고, 아니면 data-page, reduced면 data-motion이 더해진다", () => {
+    expect(questionTransitionAttributes({ phase: "idle", motion: "standard" })).toEqual({});
+    expect(questionTransitionAttributes({ phase: "idle", motion: "reduced" })).toEqual({});
+    expect(questionTransitionAttributes({ phase: "primed", motion: "standard" })).toEqual({
+      "data-page": "primed",
+    });
+    expect(questionTransitionAttributes({ phase: "entering", motion: "reduced" })).toEqual({
+      "data-page": "entering",
+      "data-motion": "reduced",
+    });
   });
 
   test("QT1. 키는 문항 순번이고 완료 장면이면 complete다", () => {

@@ -7,6 +7,7 @@ import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningChoice } from "./ListeningChoice";
+import { useListeningPlayback } from "./use-listening-playback";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import {
   answeredResultOf,
@@ -60,6 +61,9 @@ export function ListeningScreen({
   // 없습니다 — 그래서 여기서 한 번만 갈라 아래에서 다시 묻지 않습니다.
   const complete = isSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
+
+  // 재생의 주인은 이 화면입니다 — 껍데기가 무대를 다시 세워도 소리가 끊기지 않습니다.
+  const playback = useListeningPlayback(question?.audioSource, sessionOptions);
 
   // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번입니다(ADR-0016 D11-2).
   // dep이 `complete` 하나입니다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이
@@ -167,8 +171,8 @@ export function ListeningScreen({
             <ListeningPrompt
               text={question.prompt}
               romanization={question.romanization}
-              audioSource={question.audioSource}
               sessionOptions={sessionOptions}
+              playback={playback}
             />
           )}
 

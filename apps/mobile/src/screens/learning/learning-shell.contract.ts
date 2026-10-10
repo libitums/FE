@@ -114,3 +114,85 @@ export function learningProgressFillClassName(motion: Motion): string {
   const block = "learning-shell-progress-fill";
   return [block, motionClassName(block, motion)].filter(Boolean).join(" ");
 }
+
+/** 작업 영역 스크롤의 세 모드입니다. 불가능한 조합(스크롤이 꺼졌는데 fog가 선다)이 값으로 없습니다. */
+export type LearningWorkspaceMode = "fixed" | "scroll" | "scroll-with-rest-fog";
+
+export type LearningWorkspaceModeInput = {
+  /** 껍데기의 `workspaceScrolls` 그대로입니다. */
+  readonly scrolls: boolean;
+  /** 액션 행이 서는가 — `actionLabel`과 `onAction`이 둘 다 있는가입니다. */
+  readonly actionsShown: boolean;
+};
+
+/** 작업 영역 스크롤이 세 모드 가운데 어느 것인지 입력 둘에서 정합니다. */
+export function learningWorkspaceMode({
+  scrolls,
+  actionsShown,
+}: LearningWorkspaceModeInput): LearningWorkspaceMode {
+  if (!scrolls) return "fixed";
+  return actionsShown ? "scroll" : "scroll-with-rest-fog";
+}
+
+/** 껍데기 몸통(지시문 · 무대 · 작업 영역)이 흐르는 두 방식입니다. */
+export type LearningShellFlow = "split" | "merged";
+
+/** 작업 영역 스크롤의 높이가 이 값(레이아웃 px) 미만이면 합칩니다. */
+export const learningShellMergeBelow = 96;
+
+export type LearningShellFlowInput = {
+  /** 지금의 흐름입니다. `merged`는 껍데기가 떠날 때까지 되돌아가지 않습니다. */
+  readonly current: LearningShellFlow;
+  readonly workspaceMode: LearningWorkspaceMode;
+  /** `split`에서 잰 작업 영역 스크롤의 높이입니다(레이아웃 px). */
+  readonly viewportHeight: number;
+};
+
+/**
+ * 다음 흐름을 정합니다. 위에서부터 먼저 맞는 규칙 하나입니다 — 걸쇠(`merged`는 그대로),
+ * 쓰기 제외(`fixed`), 못 잰 값(유한하지 않거나 음수), 문턱 미만, 그 밖.
+ */
+export function learningShellFlow({
+  current,
+  workspaceMode,
+  viewportHeight,
+}: LearningShellFlowInput): LearningShellFlow {
+  if (current === "merged") return "merged";
+  if (workspaceMode === "fixed") return "split";
+  if (!Number.isFinite(viewportHeight) || viewportHeight < 0) return "split";
+  return viewportHeight < learningShellMergeBelow ? "merged" : "split";
+}
+
+function heightIn(source: unknown): number | undefined {
+  if (typeof source !== "object" || source === null) return undefined;
+  const height = (source as { readonly height?: unknown }).height;
+  if (typeof height !== "number" || !Number.isFinite(height) || height < 0) return undefined;
+  return height;
+}
+
+/**
+ * `layoutchange` 이벤트에서 높이를 읽습니다. `detail`이 먼저이고, 없으면 Android의 낡은
+ * `params`로 내려갑니다. 0은 유효한 측정입니다. 읽을 수 없으면 `undefined`입니다.
+ */
+export function layoutHeightFrom(event: unknown): number | undefined {
+  if (typeof event !== "object" || event === null) return undefined;
+  const { detail, params } = event as { readonly detail?: unknown; readonly params?: unknown };
+  return heightIn(detail) ?? heightIn(params);
+}
+
+export type LearningShellArrangement = "split" | "merged" | "card-scroll";
+
+export type LearningShellArrangementInput = {
+  /** 껍데기의 `scrollCard` 그대로입니다. */
+  readonly scrollCard: boolean;
+  readonly flow: LearningShellFlow;
+};
+
+/** 몸통의 배치를 정합니다. 말하기(`scrollCard`)는 흐름과 상관없이 카드 스크롤입니다. */
+export function learningShellArrangement({
+  scrollCard,
+  flow,
+}: LearningShellArrangementInput): LearningShellArrangement {
+  if (scrollCard) return "card-scroll";
+  return flow;
+}

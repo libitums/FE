@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  layoutHeightFrom,
   learningProgressFillClassName,
   learningSessionHeader,
+  learningShellArrangement,
+  learningShellFlow,
+  learningShellMergeBelow,
   learningTimingFlag,
+  learningWorkspaceMode,
 } from "./learning-shell.contract";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 
@@ -109,5 +114,182 @@ describe("learningProgressFillClassName", () => {
     expect(learningProgressFillClassName("reduced")).toBe(
       "learning-shell-progress-fill learning-shell-progress-fill-motion-reduced",
     );
+  });
+});
+
+// 작업 영역 스크롤의 세 모드는 입력 둘의 표 하나로 정해집니다.
+describe("learningWorkspaceMode", () => {
+  it("[WM1] 스크롤이 꺼졌고 액션 행이 없으면 fixed다", () => {
+    expect(learningWorkspaceMode({ scrolls: false, actionsShown: false })).toBe("fixed");
+  });
+
+  it("[WM2] 스크롤이 꺼졌으면 액션 행이 있어도 fixed다", () => {
+    expect(learningWorkspaceMode({ scrolls: false, actionsShown: true })).toBe("fixed");
+  });
+
+  it("[WM3] 스크롤하고 액션 행이 없으면 아래 fog를 세운다", () => {
+    expect(learningWorkspaceMode({ scrolls: true, actionsShown: false })).toBe(
+      "scroll-with-rest-fog",
+    );
+  });
+
+  it("[WM4] 스크롤하고 액션 행이 있으면 기존 fog에 맡기고 scroll이다", () => {
+    expect(learningWorkspaceMode({ scrolls: true, actionsShown: true })).toBe("scroll");
+  });
+});
+
+// 몸통이 흐르는 방식의 판정입니다 — 다섯 규칙 가운데 위에서부터 먼저 맞는 하나입니다.
+// 입력값 78(Pixel 8 글꼴 2.2)과 117(글꼴 2.0)은 기기에서 읽은 작업 영역 스크롤의 높이입니다.
+describe("learningShellFlow", () => {
+  it("[FL1] 작업 영역 스크롤의 높이가 0이면 합친다", () => {
+    expect(
+      learningShellFlow({
+        current: "split",
+        workspaceMode: "scroll-with-rest-fog",
+        viewportHeight: 0,
+      }),
+    ).toBe("merged");
+  });
+
+  it("[FL2] 문턱 바로 아래(95.9)는 합친다 — 상수에서 계산한 값으로도 본다", () => {
+    expect(
+      learningShellFlow({
+        current: "split",
+        workspaceMode: "scroll-with-rest-fog",
+        viewportHeight: 95.9,
+      }),
+    ).toBe("merged");
+    expect(
+      learningShellFlow({
+        current: "split",
+        workspaceMode: "scroll-with-rest-fog",
+        viewportHeight: learningShellMergeBelow - 0.1,
+      }),
+    ).toBe("merged");
+  });
+
+  it("[FL3] 문턱 96은 합치지 않는다(경계는 split)", () => {
+    expect(
+      learningShellFlow({
+        current: "split",
+        workspaceMode: "scroll-with-rest-fog",
+        viewportHeight: 96,
+      }),
+    ).toBe("split");
+    expect(
+      learningShellFlow({
+        current: "split",
+        workspaceMode: "scroll-with-rest-fog",
+        viewportHeight: learningShellMergeBelow,
+      }),
+    ).toBe("split");
+  });
+
+  it("[FL4] 액션 행이 서 있는 모드(scroll)도 78이면 합친다", () => {
+    expect(
+      learningShellFlow({ current: "split", workspaceMode: "scroll", viewportHeight: 78 }),
+    ).toBe("merged");
+  });
+
+  it("[FL5] 글꼴 2.0의 117은 합치지 않는다", () => {
+    expect(
+      learningShellFlow({
+        current: "split",
+        workspaceMode: "scroll-with-rest-fog",
+        viewportHeight: 117,
+      }),
+    ).toBe("split");
+  });
+
+  it("[FL6] 이미 merged면 높이가 800이어도 merged다(걸쇠)", () => {
+    expect(
+      learningShellFlow({
+        current: "merged",
+        workspaceMode: "scroll-with-rest-fog",
+        viewportHeight: 800,
+      }),
+    ).toBe("merged");
+  });
+
+  it("[FL7] 걸쇠는 쓰기 제외(규칙 2)보다 먼저다 — merged · fixed · 800은 merged", () => {
+    expect(
+      learningShellFlow({ current: "merged", workspaceMode: "fixed", viewportHeight: 800 }),
+    ).toBe("merged");
+  });
+
+  it("[FL8] 쓰기(fixed)는 높이가 0이어도 합치지 않는다", () => {
+    expect(learningShellFlow({ current: "split", workspaceMode: "fixed", viewportHeight: 0 })).toBe(
+      "split",
+    );
+  });
+
+  it("[FL9] 못 잰 값(NaN · 음수 · 무한대)으로는 합치지 않는다", () => {
+    for (const viewportHeight of [Number.NaN, -1, Number.POSITIVE_INFINITY]) {
+      expect(
+        learningShellFlow({
+          current: "split",
+          workspaceMode: "scroll-with-rest-fog",
+          viewportHeight,
+        }),
+      ).toBe("split");
+    }
+  });
+
+  it("문턱 상수는 96이다", () => {
+    expect(learningShellMergeBelow).toBe(96);
+  });
+});
+
+describe("layoutHeightFrom", () => {
+  it("[LH1] detail.height를 읽는다", () => {
+    expect(layoutHeightFrom({ detail: { height: 77 } })).toBe(77);
+  });
+
+  it("[LH2] 0은 undefined가 아니라 0이다", () => {
+    expect(layoutHeightFrom({ detail: { height: 0 } })).toBe(0);
+  });
+
+  it("[LH3] detail이 없으면 params.height를 읽는다", () => {
+    expect(layoutHeightFrom({ params: { height: 77 } })).toBe(77);
+  });
+
+  it("[LH4] 둘 다 있으면 detail이 먼저다", () => {
+    expect(layoutHeightFrom({ detail: { height: 10 }, params: { height: 99 } })).toBe(10);
+  });
+
+  it("[LH5] 숫자가 아니거나 유한하지 않거나 음수인 높이는 undefined다", () => {
+    expect(layoutHeightFrom({ detail: { height: "77" } })).toBeUndefined();
+    expect(layoutHeightFrom({ detail: { height: Number.NaN } })).toBeUndefined();
+    expect(layoutHeightFrom({ detail: { height: -5 } })).toBeUndefined();
+  });
+
+  it("[LH6] 이벤트가 아닌 값은 던지지 않고 undefined다", () => {
+    for (const event of [null, undefined, 7, "x", {}, { detail: null }]) {
+      expect(() => layoutHeightFrom(event)).not.toThrow();
+      expect(layoutHeightFrom(event)).toBeUndefined();
+    }
+  });
+
+  it("[LH7] detail에 높이가 없으면 params.height로 내려간다", () => {
+    expect(layoutHeightFrom({ detail: {}, params: { height: 40 } })).toBe(40);
+  });
+
+  it("[LH8] 무한대는 undefined다", () => {
+    expect(layoutHeightFrom({ detail: { height: Number.POSITIVE_INFINITY } })).toBeUndefined();
+  });
+});
+
+describe("learningShellArrangement", () => {
+  it("[AR1] scrollCard면 흐름과 상관없이 card-scroll이다", () => {
+    expect(learningShellArrangement({ scrollCard: true, flow: "split" })).toBe("card-scroll");
+    expect(learningShellArrangement({ scrollCard: true, flow: "merged" })).toBe("card-scroll");
+  });
+
+  it("[AR2] scrollCard가 아니고 merged면 merged다", () => {
+    expect(learningShellArrangement({ scrollCard: false, flow: "merged" })).toBe("merged");
+  });
+
+  it("[AR3] scrollCard가 아니고 split이면 split이다", () => {
+    expect(learningShellArrangement({ scrollCard: false, flow: "split" })).toBe("split");
   });
 });

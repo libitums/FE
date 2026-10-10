@@ -10,6 +10,8 @@ import { act, render, screen } from "@lynx-js/react/testing-library";
 import type { AuthSession } from "../../lib/auth-session.contract";
 import { authSessionStorageKey, serializeAuthSession } from "../../lib/auth-session";
 import { entrySplashDurationMs } from "../../lib/entry-flow";
+import { learningItemGuideSeenStorageKey } from "../../lib/learning-item-guide";
+import { allLearningItemGuidesSeenValue } from "../../lib/learning-item-guide.test-support";
 
 /** `StorageModule` 대역의 모양입니다. */
 export type StorageModuleDouble = {
@@ -53,6 +55,12 @@ export async function renderSignedInApp(
      * 세션을 심지 않습니다 — 부를 쪽이 `authSessionStorageKey`를 넣어 둡니다.
      */
     readonly storageModule?: StorageModuleDouble;
+    /**
+     * 헬퍼가 만든 저장소에 학습 문항 안내의 「본 것」을 심을지 고릅니다. 기본 `"seen"` — 종류 여섯을 모두 본
+     * 설치라 대상 화면(문장 만들기 · 메신저 · 전화 · 비주얼 노벨 · 말하기 · 쓰기)이 안내에 막히지 않습니다.
+     * 안내 자체를 보는 테스트만 `"unseen"`을 씁니다. `storageModule`을 직접 넘기면 심지 않습니다.
+     */
+    readonly learningItemGuides?: "seen" | "unseen";
   } = {},
 ): Promise<ReturnType<typeof render>> {
   const refreshedSessionBody = refreshedSessionBodyFor(
@@ -61,6 +69,9 @@ export async function renderSignedInApp(
   const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
   const store = new Map<string, string>();
   store.set(authSessionStorageKey, serializeAuthSession(signedInBootSession));
+  if ((options.learningItemGuides ?? "seen") === "seen") {
+    store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
+  }
   vi.stubGlobal("NativeModules", {
     ...(typeof previousNativeModules === "object" && previousNativeModules !== null
       ? previousNativeModules

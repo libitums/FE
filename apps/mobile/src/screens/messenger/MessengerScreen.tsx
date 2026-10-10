@@ -5,6 +5,8 @@ import refresh from "@libitums/icons/lynx/refresh";
 import { Button } from "@libitums/ui-lynx/button";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { LearningItemGuide } from "../../components/LearningItemGuide";
+import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import type { AnswerResult } from "../../lib/answer-result";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import { useScreenBack } from "../../lib/use-back-handler";
@@ -61,8 +63,12 @@ export function MessengerScreen({
     messengerComposerReducer,
     initialMessengerComposerState,
   );
-  const messages = visibleMessengerMessages(conversation, session);
   const reply = currentMessengerReply(conversation, session);
+  const guide = useLearningItemGuide(
+    reply === null ? null : { form: "messenger", choices: reply.choices },
+  );
+  // 안내가 떠 있는 동안은 대화에 메시지가 서지 않습니다 — 닫으면 첫 메시지가 평소처럼 섭니다.
+  const messages = guide.visible ? [] : visibleMessengerMessages(conversation, session);
   const typed = composedText(composer);
   const handleExit = () => {
     "background only";
@@ -110,108 +116,124 @@ export function MessengerScreen({
   }, [messages.length]);
 
   const handleSend = () => {
+    if (guide.visible) return;
     if (reply !== null) dispatchComposer({ type: "submit", answer: reply.text });
   };
 
   return (
-    <view className="messenger-screen" data-testid="messenger-screen">
-      <view className="messenger-screen-header">
-        {/* 탭과 접근성 이름은 바깥 상자가 집니다 — 원 버튼은 모양만 빌립니다. 상자가 하나의
-            접근성 요소라 안쪽 원 버튼은 따로 읽히지 않습니다. */}
-        <view
-          className="messenger-screen-exit"
-          data-testid="messenger-screen-exit"
-          accessibility-element={true}
-          accessibility-traits="button"
-          accessibility-label={exitLabel}
-          bindtap={handleExit}
-        >
-          <RoundButton
-            accessibilityLabel={exitLabel}
-            icon={arrowLeft03}
-            variant="neutral"
-            size="xl"
-          />
-        </view>
-        <text
-          className="messenger-screen-title"
-          data-testid="messenger-screen-title"
-          accessibility-traits="header"
-        >
-          {conversation.title}
-        </text>
-      </view>
-
-      <scroll-view
-        className="messenger-screen-scroll"
-        data-testid="messenger-screen-scroll"
-        scroll-orientation="vertical"
-        scroll-bar-enable={true}
+    <>
+      <view
+        className="messenger-screen"
+        data-testid="messenger-screen"
+        accessibility-elements-hidden={guide.visible}
       >
-        {conversation.introduction ? (
-          <text className="messenger-story-context" data-testid="messenger-story-introduction">
-            {conversation.introduction}
-          </text>
-        ) : null}
-        <view className="messenger-message-list" data-testid="messenger-message-list">
-          {messages.map((message, index) => (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              animate={index === messages.length - 1}
-              reducedMotion={reducedMotion}
+        <view className="messenger-screen-header">
+          {/* 탭과 접근성 이름은 바깥 상자가 집니다 — 원 버튼은 모양만 빌립니다. 상자가 하나의
+            접근성 요소라 안쪽 원 버튼은 따로 읽히지 않습니다. */}
+          <view
+            className="messenger-screen-exit"
+            data-testid="messenger-screen-exit"
+            accessibility-element={true}
+            accessibility-traits="button"
+            accessibility-label={exitLabel}
+            bindtap={handleExit}
+          >
+            <RoundButton
+              accessibilityLabel={exitLabel}
+              icon={arrowLeft03}
+              variant="neutral"
+              size="xl"
             />
-          ))}
-        </view>
-        {session.mode === "completed" && conversation.completion ? (
-          <text className="messenger-story-context" data-testid="messenger-story-completion">
-            {conversation.completion}
+          </view>
+          <text
+            className="messenger-screen-title"
+            data-testid="messenger-screen-title"
+            accessibility-traits="header"
+          >
+            {conversation.title}
           </text>
-        ) : null}
-        <view id={messengerEndId} className="messenger-screen-end" />
-      </scroll-view>
+        </view>
 
-      {reply === null ? (
-        <view className="messenger-screen-action">
-          <MessengerFinishButton onFinish={() => onFinish(conversation.id, results)} />
-        </view>
-      ) : (
-        <view className="messenger-screen-reply" data-testid="messenger-reply">
-          <MessengerComposer
-            reply={reply}
-            typed={typed}
-            verdict={composer.verdict}
-            onSend={handleSend}
-          />
-          {composer.verdict === "incorrect" ? (
-            <view className="messenger-screen-retry" data-testid="messenger-try-again">
-              <Button
-                label="Try Again"
-                variant="brand"
-                size="xl"
-                width="fill"
-                icon={refresh}
-                iconPosition="trailing"
-                bindtap={() => dispatchComposer({ type: "retry" })}
+        <scroll-view
+          className="messenger-screen-scroll"
+          data-testid="messenger-screen-scroll"
+          scroll-orientation="vertical"
+          scroll-bar-enable={false}
+        >
+          {conversation.introduction ? (
+            <text className="messenger-story-context" data-testid="messenger-story-introduction">
+              {conversation.introduction}
+            </text>
+          ) : null}
+          <view className="messenger-message-list" data-testid="messenger-message-list">
+            {messages.map((message, index) => (
+              <MessageBubble
+                key={message.id}
+                message={message}
+                animate={index === messages.length - 1}
+                reducedMotion={reducedMotion}
               />
-            </view>
-          ) : reply.choices === undefined ? (
-            <MessengerKeyboard
-              shifted={composer.shifted}
-              onPress={(key) => dispatchComposer({ type: "press", key })}
-              onBackspace={() => dispatchComposer({ type: "backspace" })}
-              onShift={() => dispatchComposer({ type: "shift" })}
+            ))}
+          </view>
+          {session.mode === "completed" && conversation.completion ? (
+            <text className="messenger-story-context" data-testid="messenger-story-completion">
+              {conversation.completion}
+            </text>
+          ) : null}
+          <view id={messengerEndId} className="messenger-screen-end" />
+        </scroll-view>
+
+        {reply === null ? (
+          <view className="messenger-screen-action">
+            <MessengerFinishButton onFinish={() => onFinish(conversation.id, results)} />
+          </view>
+        ) : (
+          <view className="messenger-screen-reply" data-testid="messenger-reply">
+            <MessengerComposer
+              reply={reply}
+              typed={typed}
+              verdict={composer.verdict}
+              onSend={handleSend}
             />
-          ) : (
-            <MessengerChoices
-              choices={reply.choices}
-              chosen={typed}
-              onChoose={(text) => dispatchComposer({ type: "choose", text })}
-            />
-          )}
-        </view>
-      )}
-    </view>
+            {composer.verdict === "incorrect" ? (
+              <view className="messenger-screen-retry" data-testid="messenger-try-again">
+                <Button
+                  label="Try Again"
+                  variant="brand"
+                  size="xl"
+                  width="fill"
+                  icon={refresh}
+                  iconPosition="trailing"
+                  bindtap={() => dispatchComposer({ type: "retry" })}
+                />
+              </view>
+            ) : reply.choices === undefined ? (
+              <MessengerKeyboard
+                shifted={composer.shifted}
+                onPress={(key) => {
+                  if (!guide.visible) dispatchComposer({ type: "press", key });
+                }}
+                onBackspace={() => {
+                  if (!guide.visible) dispatchComposer({ type: "backspace" });
+                }}
+                onShift={() => {
+                  if (!guide.visible) dispatchComposer({ type: "shift" });
+                }}
+              />
+            ) : (
+              <MessengerChoices
+                choices={reply.choices}
+                chosen={typed}
+                onChoose={(text) => {
+                  if (!guide.visible) dispatchComposer({ type: "choose", text });
+                }}
+              />
+            )}
+          </view>
+        )}
+      </view>
+      {guide.visible ? <LearningItemGuide kind={guide.kind} onDismiss={guide.dismiss} /> : null}
+    </>
   );
 }
 

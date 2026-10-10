@@ -18,7 +18,7 @@ function Section(props: { title: string; children: ReactNode }) {
 
 export function ButtonCatalog() {
   return (
-    <scroll-view className="playground" scroll-orientation="vertical">
+    <scroll-view scroll-bar-enable={false} className="playground" scroll-orientation="vertical">
       <Section title="Button · variant">
         {variants.map((variant) => (
           <view key={variant} className="playground-row">

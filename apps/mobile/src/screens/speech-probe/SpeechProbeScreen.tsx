@@ -124,14 +124,14 @@ export function SpeechProbeScreen(): ReactNode {
         </text>
       </view>
 
-      {/* [흐름] 스크롤 — 화면당 정확히 하나, 중첩 없음. 속성은 `scroll-orientation`·
-          `scroll-bar-enable` 둘뿐이고 `accessibility-*`를 붙이지 않습니다 — 조작 단위가
+      {/* [흐름] 스크롤 — 화면당 정확히 하나, 중첩 없음. 속성은 `scroll-orientation`과
+          스크롤 바를 끄는 `scroll-bar-enable={false}` 둘뿐이고 `accessibility-*`를 붙이지 않습니다 — 조작 단위가
           아니라 상자입니다(ADR-0022 D5). */}
       <scroll-view
         className="speech-probe-screen-scroll"
         data-testid="speech-probe-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         {/* 직계 자식은 이것 하나뿐입니다(ADR-0022 D4) — `<scroll-view>`는 강제 linear라
             간격과 정렬을 이 컴포넌트의 루트가 집니다. */}

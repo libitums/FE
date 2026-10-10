@@ -28,7 +28,7 @@ test("[SP1] 스크롤 영역이 정확히 하나이고 이름·속성·자식이
   const scroll = screen.getByTestId("speech-probe-screen-scroll");
   expect(scroll.getAttribute("class")).toBe("speech-probe-screen-scroll");
   expect(scroll).toHaveAttribute("scroll-orientation", "vertical");
-  expect(scroll).toHaveAttribute("scroll-bar-enable", "true");
+  expect(scroll).toHaveAttribute("scroll-bar-enable", "false");
   expect(
     [...scroll.attributes]
       .map((attribute) => attribute.name)

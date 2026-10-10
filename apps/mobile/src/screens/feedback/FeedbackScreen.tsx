@@ -4,6 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { Button } from "@libitums/ui-lynx/button";
 import { OptionSelector } from "@libitums/ui-lynx/option-selector";
+import { Fog } from "@libitums/ui-lynx/fog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { TextField } from "@libitums/ui-lynx/text-field";
 
@@ -66,7 +67,7 @@ export function FeedbackScreen({ onSubmit, onExit }: FeedbackScreenProps): React
         className="feedback-screen-scroll"
         data-testid="feedback-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         {status === "sent" ? (
           <view className="feedback-screen-body">
@@ -123,6 +124,13 @@ export function FeedbackScreen({ onSubmit, onExit }: FeedbackScreenProps): React
           </view>
         )}
       </scroll-view>
+      <view
+        className="feedback-screen-fog"
+        data-testid="feedback-screen-fog"
+        user-interaction-enabled={false}
+      >
+        <Fog direction="bottom" size="full" color="surface-default" />
+      </view>
     </view>
   );
 }

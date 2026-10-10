@@ -83,7 +83,7 @@ test("[PR5] 스크롤 3분할 — 직계 자식이 profile-screen-list 하나이
 
   const scroll = screen.getByTestId("profile-screen-scroll");
   expect(scroll).toHaveAttribute("scroll-orientation", "vertical");
-  expect(scroll).toHaveAttribute("scroll-bar-enable", "true");
+  expect(scroll).toHaveAttribute("scroll-bar-enable", "false");
   expect(scroll).not.toHaveAttribute("accessibility-element");
   expect(scroll).not.toHaveAttribute("accessibility-label");
   expect(scroll).not.toHaveAttribute("accessibility-traits");

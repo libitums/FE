@@ -312,14 +312,14 @@ test("[A4] assessment-screen-scroll에 scroll-orientation='vertical'이 붙는�
   );
 });
 
-// A5 — scroll-bar-enable이 (JSON.stringify를 거친) 문자열 "true"로 붙습니다 — JSX는
-// `{true}`(boolean)인데 단언은 문자열입니다.
-test("[A5] assessment-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
+// A5 — scroll-bar-enable이 (JSON.stringify를 거친) 문자열 "false"로 붙습니다 — JSX는
+// `{false}`(boolean)인데 단언은 문자열입니다.
+test("[A5] assessment-screen-scroll에 scroll-bar-enable='false'가 붙는다", () => {
   renderScreen();
 
   expect(screen.getByTestId("assessment-screen-scroll")).toHaveAttribute(
     "scroll-bar-enable",
-    "true",
+    "false",
   );
 });
 

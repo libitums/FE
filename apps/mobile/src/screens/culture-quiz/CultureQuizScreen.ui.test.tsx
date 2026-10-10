@@ -280,12 +280,12 @@ test("[X10] accessibility-elements-hidden이 응답 뒤에만 나타나고 그 �
 // 빠지면 초기값이 각각 가로·꺼짐이라 세로 스크롤이 원리적으로 불가능해집니다
 // (Dynamic Type로 넘친 내용에 닿을 수 없습니다). 형제 화면(CultureScreen 등)의
 // 스크롤 속성 단언과 형태를 맞춥니다.
-test("[X10] -scroll에 scroll-orientation='vertical'·scroll-bar-enable='true'가 붙는다", () => {
+test("[X10] -scroll에 scroll-orientation='vertical'·scroll-bar-enable='false'가 붙는다", () => {
   renderOrdering();
 
   const scroll = screen.getByTestId("culture-quiz-screen-scroll");
   expect(scroll).toHaveAttribute("scroll-orientation", "vertical");
-  expect(scroll).toHaveAttribute("scroll-bar-enable", "true");
+  expect(scroll).toHaveAttribute("scroll-bar-enable", "false");
 });
 
 // AC14(a)의 「직계 자식이 정확히 하나」입니다. 저장소 선례(다른 화면들의 U10류)는

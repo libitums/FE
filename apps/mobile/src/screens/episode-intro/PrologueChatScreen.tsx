@@ -117,7 +117,7 @@ export function PrologueChatScreen({
           <scroll-view
             className="prologue-chat-screen-scroll"
             scroll-orientation="vertical"
-            scroll-bar-enable={true}
+            scroll-bar-enable={false}
           >
             <view className="prologue-chat-screen-list" data-testid="prologue-chat-screen-list">
               {shown.map((message, index) => (
