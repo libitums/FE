@@ -20,8 +20,11 @@
 ## 이 절차로 확인하지 못하는 것
 
 - **iOS 실기**: 시뮬레이터로 판정한다. 실기는 닿으면 M-I1 · M-I4를 한 번 더 하고, 못 하면 「미확인」으로 적는다. 시뮬레이터 통과를 실기 통과로 적지 않는다.
-- **`simctl`로 동작 줄이기를 켜는 수단**: 없다(`simctl ui`는 appearance · 대비 · 글자 크기만 다룬다 — 확인 못 했으면 `xcrun simctl ui` 도움말로 다시 본다). 토글은
-  시뮬레이터의 **설정 앱을 손으로** 누른다(설정 › 손쉬운 사용 › 동작 › 동작 줄이기). 그래서 iOS의 토글 전후 조작은 자동화되지 않는다.
+- **`simctl`로 동작 줄이기를 켜는 수단**: `simctl ui`에는 없다(appearance · 대비 · 글자 크기만 다룬다). *(2026-10-11 정정: **있다** —
+  `xcrun simctl spawn "$UDID" defaults write com.apple.Accessibility ReduceMotionEnabled -bool true` 뒤 앱을 재실행(`terminate` → `launch`)하면 호스트가 값을 읽는다. 재부팅도 설정 앱
+  손 조작도 필요 없다 — [0.4.0 motion 토큰 e2e](motion-tokens.md) 「눌림 확장 회차」가 확인했다(4단계 회차는 같은 `defaults write` 뒤 재부팅을 썼다). 끌 때는 `-bool false` + 재실행.
+  시작 값은 `defaults read com.apple.Accessibility ReduceMotionEnabled`로 읽어 결과 표에 적고 끝에 되돌린다. 설정 앱 손 조작은 이 명령이 서지 않을 때의 대체 수단이다.)*
+  그 회차는 **재실행 뒤만** 확인했다 — 실행 중인 앱에 바로 반영되는지는 보지 않았으므로 「실행 중 토글이 따라오는가」(M-I3)는 설정 앱 손 조작 절차 그대로다.
 - **`data-motion` 값을 직접 읽는 수단**: 없다고 본다. 이 속성은 접근성 트리에 오르지 않고(`uiautomator dump`와 시뮬레이터 접근성 검사기가 읽는 것은 접근성
   이름 · 라벨이다), 호스트는 보낸 값을 로그로 남기지 않는다. **그래서 M-I1 · M-A1의 「값」은 M-I4 ~ M-I6 · M-A4 ~ M-A6의 캡처 결과(움직이는가)로 판정한다.**
   읽는 수단을 찾았으면(예: 디버그 표시) 결과 표의 비고에 그 방법을 적고, 못 찾았으면 「캡처로 대신함」이라고 적는다. 값을 추측해 적지 않는다.
@@ -39,7 +42,8 @@
   막의 관찰은 [0.4.0 motion 토큰 e2e](motion-tokens.md) M2-I5 · M2-A5가 진다. M-I5는 그대로 「축소가 없다」만 본다.
 - Spinner 회전 · Button Loading: [0.4.0 motion 토큰 e2e](motion-tokens.md)(M2-I3 · M2-I4 · M2-I6 · M2-A3 · M2-A4 · M2-A6). 보상 배지 · 문항 전환: 3단계
   [보상 · 문항 전환 e2e](motion-reward.md)(M3-I1 ~ M3-I8 · M3-A1 ~ M3-A8 — reduced 분기는 M3-I5 · M3-A5). custom 화면 전환은 3단계가 적용하지 않았고 Card · Tooltip은 변경이
-  없다 — 이 작업의 범위 밖이다.
+  없다 — 이 작업의 범위 밖이다. *(2026-10-11 주: Card는 눌림 확장으로 변경됐다 — interactive Card · Button · OptionSelector 항목 · 앱의 bank 칩 · 롤플레이 카드의 reduced 눌림(막 또는
+  색만)은 [0.4.0 motion 토큰 e2e](motion-tokens.md) 「눌림 확장 회차」 M5-I5가 판정한다. Tooltip만 변경이 없다.)*
 - TalkBack · VoiceOver를 켠 상태: accessibility 단계의 몫이다.
 
 ## 전제
@@ -193,6 +197,7 @@ Android는 짧은 전환이면 `A shell input tap x y; A exec-out screencap -p >
 
 - **조작**: **켠** 상태에서 BottomSheet(설문 · 국가 시트), ProgressHeader 진행, 설정 토글, PageIndicator를 차례로 움직인다.
 - **관찰**: 위치 · 너비 · knob이 **즉시** 바뀌고(이동 · 확대 · 너비 전환이 없다), 색 · 불투명도 전환은 남는다. **판정하지 않고 기록한다** — 본 것을 항목마다 한 줄로 적는다.
+  *(2026-10-11 주: Button · Card · OptionSelector의 reduced 눌림은 여기서 기록하지 않는다 — 판정 항목이 따로 있다(`motion-tokens.md` M5-I5).)*
 - 증거: 필요한 것만 `motion-reduced-ios-M-I7-<컴포넌트>-<n>.png`.
 
 ## Android 항목

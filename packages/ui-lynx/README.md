@@ -119,6 +119,8 @@ import { AnswerLabel } from "@libitums/ui-lynx/answer-label";
 `onChange`로 선택을 소유하고, Variant·Size·Selection·Commit·Layout·Content language를 독립적으로
 조합한다. Multiple은 Deferred만, Immediate는 Single만 허용하며 Immediate는 선택 직후
 `onCommit(id)`을 호출한다. 제출 뒤에는 `committed`로 모든 항목을 Disabled로 전환한다.
+Enabled · Unselected 항목은 누르는 동안 variant별 pressed 색에 더해 95 %로 줄어들고(`motion.scale.pressed`),
+`reduced`에서는 색만 바뀐다(막 없음 — 표지는 컨테이너 루트에 난다).
 
 ```tsx
 import { OptionSelector } from "@libitums/ui-lynx/option-selector";
@@ -388,7 +390,8 @@ import "@libitums/ui-lynx/styles.css";
   `useMotion()`이 읽는다. Provider 밖에서는 `"standard"`이고 던지지 않는다 — Storybook 스토리와
   Provider 없는 테스트는 그대로 돈다. 카탈로그는 변형이 있는 컴포넌트마다 `motion` arg와
   `ReducedMotion` 스토리를 두고, Round Button · Learning Unit · Page Indicator · Settings Cell · Chat
-  Bubble은 엔트리가 `MotionProvider`로 감싼다(컴포넌트에 prop을 주지 않는다 — 제품 앱과 같은 길).
+  Bubble · Button · Card · Option Selector는 엔트리가 `MotionProvider`로 감싼다(컴포넌트에 prop을
+  주지 않는다 — 제품 앱과 같은 길).
 - 우선순위는 **명시 prop > 컨텍스트 > `"standard"`**. Dialog · BottomSheet · Overlay ·
   ProgressHeader의 `motion` prop과 VisualNovelDialog · ChatBubble · `useTypewriter`의
   `reducedMotion` prop은 override로 남는다. 순수 함수 `resolveMotion(explicit, context)` ·
@@ -396,12 +399,18 @@ import "@libitums/ui-lynx/styles.css";
   `motionClassName(block, motion)`이 그 규칙을 진다.
 - `reduced`에서 걷는 것과 남는 것은 design-system `foundations/motion.md`의 「컴포넌트 매핑」을
   따른다 — 이동 · 확대 · 너비 · reveal은 즉시, 색 · 불투명도 전환은 유지. RoundButton ·
-  LearningUnit · PageIndicator · SettingsCell은 `reduced`일 때만 `<block>-motion-reduced` 클래스와
-  `data-motion="reduced"`를 낸다(standard의 DOM · 클래스는 전과 같다). RoundButton(Overlay 제외) ·
-  LearningUnit(`default` 제외)은 `reduced`에서 축소 대신 surface 첫 자식 `<block>-shade`로
-  `opacity.pressed-shade` 막을 깔아 눌림을 알린다. Spinner 회전(Button · RoundButton)은 `reduced`에서도
-  유지한다 — 진행 중임을 알리는 유일한 수단이다. Card · Tooltip은 유지할 것만 있어 변형이 없다.
-  `@media (prefers-reduced-motion)`은 Lynx가 지원하지 않아 쓰지 않는다.
+  LearningUnit · PageIndicator · SettingsCell · Button · Card · OptionSelector는 `reduced`일 때만
+  `<block>-motion-reduced` 클래스와 `data-motion="reduced"`를 낸다(standard의 DOM · 클래스는 전과
+  같다; OptionSelector는 컨테이너 루트에 내고 항목 className은 그대로다). 눌림 축소(`motion.scale.pressed`
+  95 %)는 RoundButton · LearningUnit · Button · Card interactive · OptionSelector 항목이 갖고
+  `reduced`에서는 `transform: none`으로 걷는다. 축소 대신 막을 까는 곳은 **눌림에 색 변화가 없는 면**
+  뿐이다 — RoundButton(Overlay 제외) · LearningUnit(`default` 제외) · Button neutral · brand는
+  `reduced`에서 surface 첫 자식 `<block>-shade`로 `opacity.pressed-shade` 막을 깔아 눌림을 알린다(어두운
+  면인 Button neutral은 흰 막 — 검정 8 %는 `gray.900` 위에서 보이지 않는다). 색이 이미 바뀌는
+  Button outline · subtle · text · Card · OptionSelector는 막 없이 색 전환만 남는다(막과 색이 겹치면
+  두 번 어두워진다). Spinner 회전(Button · RoundButton)은 `reduced`에서도 유지한다 — 진행 중임을
+  알리는 유일한 수단이다. Tooltip은 유지할 것만 있어 변형이 없다. `@media (prefers-reduced-motion)`은
+  Lynx가 지원하지 않아 쓰지 않는다.
 - `motionDurationMs("35ms")`는 토큰의 duration 문자열(`"<n>ms"` · `"<n>s"`)을 밀리초 숫자로 바꾸는
   순수 함수다. `useTypewriter`의 `defaultRevealIntervalMs`가 `motion.duration.reveal`을 이것으로
   읽는다. 단위가 ms · s가 아니거나 숫자가 아니면 던진다(토큰은 빌드 시 상수라 런타임에 잘못될 수
@@ -522,7 +531,9 @@ Dialog는 `components/dialog.md` revision `133322d7b080e464303a38456f4da45c8accd
 Card는 design-system `components/card.md` revision
 `b53b03ac887bd89ab246f8de1c1d4716900d1c4d`를 따른다. M/L content padding, surface/shadow,
 Header·Body·Footer 간격, optional Media clipping과 Interactive pressed/focus 상태를 토큰으로
-구현한다. Static은 내부 조합을 그대로 노출하고 Interactive는 Card 하나만 접근성 control로
+구현한다. Interactive pressed는 `gray.100` 배경에 더해 카드 전체를 95 %로 줄이고(`motion.scale.pressed`,
+원본 매핑에서 벗어난 제품 결정 — ADR-0053 정정 기록 1), `reduced`에서는 색 전환만 남긴다(막 없음).
+Static은 내부 조합을 그대로 노출하고 Interactive는 Card 하나만 접근성 control로
 노출한다.
 
 ChatBubble은 design-system `components/chat-bubble.md` revision
@@ -557,8 +568,17 @@ Indicator는 점·라벨을 함께 표시하고 줄 전체를 하나의 상태�
 
 Brand Button은 design-system의 `brand.primary` #F46B18 surface와 `white` #FFFFFF label·icon·spinner를 사용한다. 이 3.016:1 조합은 design-system Accessibility 문서에서 Default·Pressed·Loading에만 승인한 예외이며, WCAG AA 통과로 기록하지 않는다.
 Neutral Button은 원본 `gray.800` 대신 `gray.900` surface를 사용한다.
-Loading은 label·icon을 흐름에 둔 채 `visibility: hidden`으로 숨기고 12px spinner만 surface
+Pressed는 모든 variant에서 surface를 95 %로 줄인다(`motion.scale.pressed` · `motion.duration.pressed`,
+누를 때 · 놓을 때 모두 전환) — 원본의 「Pressed = 색만」에서 벗어난 제품 결정이고(ADR-0053 정정
+기록 1), outline · subtle · text의 기존 눌림 색은 그대로 **더해진다**. Loading · Disabled는 줄이지
+않는다. `reduced`에서는 줄이지 않고, 눌림에 색 변화가 없는 neutral · brand만 surface 첫 자식 막
+`ui-lynx-button-shade`로 눌림을 알린다(brand는 black, 어두운 면인 neutral은 white — 둘 다
+`opacity.pressed-shade` 8 %). standard에는 막 요소가 없다.
+Loading은 label·icon을 흐름에 둔 채 inline `opacity: 0`으로 숨기고 12px spinner만 surface
 중앙에 절대 배치한다 — 그래서 폭·높이가 같은 variant의 Default와 같다(0.4.0 「폭은 바뀌지 않음」).
+`visibility: hidden`이 아닌 이유: Lynx iOS에서 `<text>`의 `visibility: hidden`은 글자를 지우지
+않았다. spinner 래퍼는 네 변 `0`이 아니라 `top/left: 0` + `width/height: 100%`다 — 네 변 `0`은
+`width="fill"` surface에서 박스를 받지 못해 spinner가 왼쪽에 붙었다(2026-10-10 시뮬레이터 관찰).
 spinner는 `motion.duration.spinner`(1000ms) · `motion.easing.linear`로 끝없이 회전하며 reduced에서도
 돈다. 접근성 이름은 `"<label>, loading"` 그대로다. spinner 색은 각 variant의 label 색을 따른다.
 `loading`과 `disabled`를 함께 주면 두 상태를 모두 유지하고 spinner를 `border.default`로 표시하되

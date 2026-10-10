@@ -8,6 +8,8 @@
   ✔ **`@keyframes` 본문 안 `var()`는 iOS(탐색 · 회귀) · Android(회귀 M2-A2 · M3-A1) 모두 풀렸다**(D6) — fallback은 서지 않았다.
   ⚠ **보조기술은 어느 단계에서도 실기로 재지 않았다**(D7 — M3-I8 · M3-A7 (a)(b)(c) 미확인). 문항 전환 직후 초점 자리의 조건은 열려 있고 5단계 이월이다.
   ⚠ 진행 바 `width` 전환(D5)은 이 빌드의 유닛이 전부 문항 하나라 **기기에서 관찰한 적이 없다**. 안 그려지면 지금처럼 즉시 반영이고 회귀가 아니다.
+  ⚠ **2026-10-11 정정 기록 1** — D3의 「Button · Card는 변형을 만들지 않는다」가 사용자 결정으로 뒤집혔다(Button 전 variant · interactive Card · OptionSelector 항목 · 앱의 문장 순서 bank 칩 ·
+  롤플레이 카드에 95 % 눌림 축소, reduced는 막 또는 색만). D1의 scale `var()` 자리는 다섯 → 열. 결정 본문은 고치지 않았고 날짜 주와 정정 기록으로만 적었다.
 - 날짜: 2026-10-10.
 - 다루는 축: 앱 전체의 **모션 정책** — 값의 출처(토큰만), reduced의 전달 경로와 우선순위, reduced에서 걷는 것과 남는 것, 보상 모션의 횟수 · 퇴장, 전환의 꼴(등장만 · 입력 비차단 · 종료 방식 · 진행 바),
   scale 리터럴의 `var()` 전환, 정적 검사(`lint:motion`)의 범위, 모션이 보조기술에 닿는 자리, 모션과 무관한 무동작 가림 선언의 정리, 검증 계층, 카탈로그 노출.
@@ -39,7 +41,8 @@
    세터는 `view.accessibilityElementsHidden`(자손 가림, Pod 4.0.1 `ui/LynxUI.m` 2603 ~ 2606행)이고 `<view>` · `<svg>`는 `enableAccessibilityByDefault` NO라 여섯 자리 모두 무동작이다.
 6. **Storybook은 Lynx Web 번들을 `<lynx-view>`에 띄우고 `args`를 `useInitData()`로 넘긴다** [코드]. 테스트는 node 환경 vitest가 `normalize*` 순수 결과 · `index.json` 스토리 id · 엔트리 소스
    텍스트를 본다 — 브라우저 · 툴바 · 전역 상태는 보지 않는다. reduced 변형이 있는 컴포넌트 열 가운데 넷(Dialog · Bottom Sheet · Overlay · Progress Header)만 `motion` arg + `ReducedMotion`
-   스토리가 있었고 `MotionProvider`를 쓰는 엔트리는 0이었다. Button에는 reduced 변형이 없다(Spinner는 reduced에서도 돈다 — D3).
+   스토리가 있었고 `MotionProvider`를 쓰는 엔트리는 0이었다. Button에는 reduced 변형이 없다(Spinner는 reduced에서도 돈다 — D3). *(2026-10-11 주: 이 문장은 쓰인 시점에 참이었다 —
+   눌림 확장으로 Button · Card · Option Selector에도 `motion` arg · `ReducedMotion` 스토리가 생겼다. 정정 기록 1.)*
 7. **ADR 번호 0043이 두 파일에 쓰였다**(`0043-android-system-back.md` · `0043-landing-static-site.md`) [코드]. README 규칙 「한 번 붙이면 재사용하지 않는다」와 어긋난다. 이 문서는 0052 다음
    번호 0053을 쓰고 중복은 고치지 않는다 — 사용자 결정 자리(「미확인 · 후속」 8).
 
@@ -50,7 +53,9 @@
 - CSS `transition*` · `animation*` 선언의 시간 · easing은 `var(--libitum-motion-…)`만 쓴다. `@media (prefers-reduced-motion)`은 쓰지 않는다(Lynx가 미디어 특성을 지원하지 않아 픽셀을
   바꾸지 않는다 [Lynx] · [e2e]). *(2단계에서 정함 — ADR-0025 「2단계」 `lint:motion` 항목.)*
 - **`transform`의 scale도 토큰이다**(4단계). `scale(0.95)` · `scale(0.96)` · `scale(0.8)` 다섯 자리(`round-button.css` · `learning-unit.css` `:active`, `dialog.css` enter from · exit to,
-  `lesson-complete-screen.css` reward from)를 `scale(var(--libitum-motion-scale-pressed | enter | reward))`로 바꿨다 — D6. **항등값 `scale(1)`은 리터럴로 둔다**(「원상태」이지 토큰의 세 경우가
+  `lesson-complete-screen.css` reward from)를 `scale(var(--libitum-motion-scale-pressed | enter | reward))`로 바꿨다 — D6. *(2026-10-11 주: 눌림 확장이 `button.css` · `card.css` ·
+  `option-selector.css` · `sentence-order-chip.css` · `roleplay-card.css`의 `:active`에 같은 꼴 다섯 자리를 더해 **열 자리**다 — 정정 기록 1. 규칙 · allowlist는 그대로다.)*
+  **항등값 `scale(1)`은 리터럴로 둔다**(「원상태」이지 토큰의 세 경우가
   아니다). **거울 반전 `scaleX(-1)`도 리터럴이다**(`card.css` RTL 화살표 — 토큰이 없는 방향 반전이지 크기가 아니다). 규칙의 항등 예외는 「숫자 인자의 절댓값이 전부 1」이다.
 - **`.ts` · `.tsx`의 inline style도 같은 정책이다**(4단계). 객체 리터럴의 `transition*` · `animation*` 속성(camelCase · kebab 둘 다)의 **문자열 리터럴 값**과 JSX `style="…"` 문자열에
   CSS와 같은 값 검사를 건다. 식별자 · 호출 · 조건식 · 스프레드로 들어온 값과 `*.test.ts(x)` · `.d.ts`는 보지 않는다 — 변수에 담긴 리터럴은 객체 리터럴 속성으로 적힌 자리에서만 잡힌다.
@@ -86,6 +91,8 @@
   「black 8 %」를 만드는 CSS는 Lynx에서 자식 요소뿐이다(`rgba()`는 생값, `color-mix()` · `filter` · `::after` 미지원). 막 위 아이콘 대비(Neutral 2.693:1 등)는 design-system
   `foundations/accessibility.md`의 시각 예외 표 3행(PR #78)이 승인했다 — 2단계 Q2 닫힘.
 - **Card · Tooltip · Button은 변형을 만들지 않는다** — 정본 매핑이 「유지」뿐이라 CSS 차이가 0인 변형은 관찰할 것이 없다. Button의 Spinner는 위 예외라 Button에는 reduced 경로 자체가 없다.
+  *(2026-10-11 주: **뒤집혔다** — Button · Card에 눌림 축소가 생겨 reduced 변형이 생겼다. 막 목록에 Button neutral(white) · brand(black) · 롤플레이 카드(white)가 더해졌고 Tooltip만 변형이 없다.
+  정정 기록 1.)*
 - **카탈로그(Storybook)는 컴포넌트별 `motion` arg + `ReducedMotion` 스토리다**(4단계). 새 다섯(Round Button · Learning Unit · Page Indicator · Settings Cell · Chat Bubble)은 **컨텍스트 경로** —
   엔트리가 `<MotionProvider motion={data.motion}>`로 감싸고 컴포넌트에 prop을 주지 않는다(제품 앱과 같은 길). 기존 넷은 prop 경로 그대로, Visual Novel Dialog는 `reducedMotion` prop arg로 스토리만.
   Chat Bubble은 `reveal: "instant" | "typewriter"` arg와 `Typewriter` 스토리를 더했다 — `reveal` 없이는 reduced가 보일 것이 없다. 순수 함수 `normalizeStoryMotion(value)`(`"reduced"`만 reduced)을
@@ -172,7 +179,7 @@
 | ui | reduced일 때만 나는 클래스 · `data-motion`, standard DOM byte 불변, 가림 속성 부재 + 트리 개수 0, 전환 속성 · 타이머, 배지 재렌더 불변 | 컴포넌트 · 화면 `*.ui.test.tsx` |
 | integration | 앱 ↔ ui-lynx `MotionProvider` Context가 앱 훅 · 헤더까지 하나인지, 통합 25자리의 즉시 호출 불변, `lint:motion` 샌드박스(CSS · `.tsx` 위반 exit 1, 저장소 위반 0), Storybook `index.json` id · 엔트리 소스 텍스트 · companion 정규화 | `App.motion.integration.test.tsx` · `devtools/motion-literals/check.integration.test.mjs` · `apps/storybook-lynx/src/catalog.integration.test.ts` |
 | e2e(수동) | 기기 비율 · 중간 프레임 · 막 색 · 전환 중 입력 · reduced 분기 · 보조기술, 「4단계 회차」 회귀 | [`motion-reduced.md`](../e2e/motion-reduced.md) · [`motion-tokens.md`](../e2e/motion-tokens.md) · [`motion-reward.md`](../e2e/motion-reward.md) |
-| 카탈로그 | 변형이 있는 컴포넌트마다 `ReducedMotion` 스토리(Dialog · Bottom Sheet · Overlay · Progress Header · Round Button · Learning Unit · Page Indicator · Settings Cell · Chat Bubble · Visual Novel Dialog) | [`apps/storybook-lynx`](../../apps/storybook-lynx/README.md) |
+| 카탈로그 | 변형이 있는 컴포넌트마다 `ReducedMotion` 스토리(Dialog · Bottom Sheet · Overlay · Progress Header · Round Button · Learning Unit · Page Indicator · Settings Cell · Chat Bubble · Visual Novel Dialog). *(2026-10-11 주: + Button · Card · Option Selector — 열셋. 정정 기록 1.)* | [`apps/storybook-lynx`](../../apps/storybook-lynx/README.md) |
 
 e2e의 판정 조건은 플랫폼으로 가른다 — 즉시성(정착 전 나가기)은 iOS만 판정하고 Android는 tap 시각이 영상 ±한 프레임으로 맞춰진 회차에서만 판정한다(3단계 Android 회차가 찾은 한계,
 `motion-reward.md` 「전제」). 「미확인」 행은 통과로 읽지 않는다.
@@ -184,7 +191,8 @@ e2e의 판정 조건은 플랫폼으로 가른다 — 즉시성(정착 전 나�
 3. **Storybook 전역 툴바(`globalTypes.motion` → `createLynxView({ globalProps })` → 엔트리가 `useGlobalProps()`로 Provider)** — (1) Storybook `lynx.config.ts`에 `globalPropsMode: "event"`가 필요하고
    Lynx **Web** 런타임이 `updateGlobalProps`로 `useGlobalProps` 소비자를 다시 그리는지 모른다 [미확인]; (2) prop 경로를 가진 넷은 `resolveMotion`이 prop > 컨텍스트라 툴바 「reduced」 + arg
    「standard」가 standard를 그린다 — 두 조작이 서로 거짓말하는 모양; (3) 23개 스토리 파일이 각자 `render`를 정의해 공통 헬퍼와 둘째 채널(`useGlobalProps`)이 들어온다; (4) node 환경 vitest가
-   툴바 상태를 볼 수 없다. 장점(같은 인스턴스에서 전후 비교 · 「차이 0」인 Button · Card · Tooltip이 같게 보이는 것)은 인정한다 — 「재검토 조건」 2.
+   툴바 상태를 볼 수 없다. 장점(같은 인스턴스에서 전후 비교 · 「차이 0」인 Button · Card · Tooltip이 같게 보이는 것)은 인정한다 — 「재검토 조건」 2. *(2026-10-11 주: 「차이 0」은 이제
+   Tooltip뿐이다 — 정정 기록 1.)*
 4. **scale 리터럴 영구 유지 + unit 숫자 대조** — 2 · 3단계의 안전한 쪽. 두 플랫폼 근거가 생겨 전환했고, 대조 목록 밖의 새 자리를 잡지 못하던 구멍은 `scale-literal` 규칙이 닫는다. keyframe 본문만
    되돌리는 fallback은 D6에 남아 있다.
 5. **진행 바를 ui-lynx `ProgressHeader`로 교체** — 헤더 구조 · 낭독 · 테스트 전부 바뀐다(범위 밖). **0 %에서도 그리기** — 「점이 남는다」는 시각 변경으로 2026-09-28 결정과 충돌.
@@ -206,7 +214,42 @@ e2e의 판정 조건은 플랫폼으로 가른다 — 즉시성(정착 전 나�
 
 ## 정정 기록
 
-(없음.)
+1. **2026-10-11 — D3의 「Card · Tooltip · Button은 변형을 만들지 않는다」는 사용자 결정으로 뒤집혔다. 눌림 축소가 다섯 대상으로 넓어졌고 D1의 scale `var()` 자리는 열이다.**
+   사용자 발화(2026-10-10)는 「액션 버튼 등 요소들도 클릭했을 때 scale 애니메이션이 있으면 더 게이미피케이션적으로 좋지 않을까」와 범위 결정 「전부 넣는 쪽으로 진행」이다 —
+   이유는 **눌림 피드백의 일관성**: RoundButton · LearningUnit만 줄어들고 액션 버튼 · 선택지 · 카드는 색만 바뀌어 같은 화면에서 반응이 갈렸다. 브랜치 `feat/press-motion`, 기준 `ab1c7994`.
+   - **눌림 축소가 생긴 자리 다섯**: ui-lynx `Button`(neutral · brand · outline · subtle · text — loading · disabled 제외) · `Card` interactive · `OptionSelector` 항목(Enabled · Unselected —
+     `-item-pressable`만) · 앱 `sentence-order-chip.css` bank 칩(placed · placeholder 제외) · `roleplay-card.css` 열린 카드(잠긴 카드 제외). 다섯 모두 LearningUnit 꼴 — 변형 요소의
+     **base 규칙**에 `transition: transform duration.pressed easing.easing`, `:active`에 `transform: scale(var(--libitum-motion-scale-pressed))`. 기존 색 전환 목록이 있는 자리(Card
+     longhand · OptionSelector shorthand)는 목록 끝에 `transform`을 덧붙였고 색 전환 시간은 손대지 않았다. RoundButton 꼴(`:active` 안에 전환 — 놓을 때 즉시 복귀)은 쓰지 않았고 RoundButton
+     자체도 고치지 않았다(byte 불변).
+   - **design-system 정본에서 벗어난다**: 정본 Button 매핑은 「Pressed = 색만」이다. 이 저장소는 벗어남만 기록하고 정본은 고치지 않는다 — DS-Q12(「되묻는 것」).
+   - **D3 막 목록이 늘었다**: 막은 「`:active` 색 변화가 없는 면」에만 — **Button neutral · brand**(`ui-lynx-button-shade`, surface 첫 자식) · **롤플레이 열린 카드**(`roleplay-card-pressed-shade`,
+     루트 첫 자식 — 기존 `.roleplay-card-shade`는 아래쪽 그러데이션이지 막이 아니라 이름을 달리했다). 색이 이미 바뀌는 자리(Button outline · subtle · text · Card · OptionSelector · bank 칩)에는
+     막을 더하지 않는다 — 막과 색이 겹치면 두 번 어두워진다. **어두운 면은 흰 막이다**: neutral `#2A3038`(롤플레이 카드도 같은 면) 위의 black 8 %는 `#272C34`(채널 Δ 3 ~ 4)라 보이지 않고,
+     같은 토큰 `opacity.pressed-shade`로 white를 깔면 `#3B4148`(Δ 16 ~ 17)이다. brand `#F46B18`는 black 8 % → `#E06216`(LearningUnit active와 같은 합성). 정본 Reduced 표는 「막」까지만
+     적고 색을 정하지 않는다 — DS-Q11. 막의 박스는 네 변 `0`이 아니라 `top/left: 0; width/height: 100%`(아래 로딩 래퍼와 같은 이유).
+   - **reduced 표지의 자리**: Button · Card · 칩 · 롤플레이 카드는 루트, OptionSelector는 **컨테이너 루트**(`ui-lynx-option-selector-motion-reduced` — 항목 className · contract 불변).
+     reduced `:active` 규칙은 `transform: none` 하나다(`transition: none`을 더하면 Card · OptionSelector의 색 전환까지 걷힌다).
+   - **D2 「standard DOM byte 불변」의 예외 하나**: 잠긴 롤플레이 카드에 상태 클래스 `roleplay-card-locked`가 붙는다. Lynx CSS 속성 선택자(`[data-locked="true"]`) 지원 기록이 저장소에
+     없어 클래스로 제외했다(순수 `roleplayCardClassName`). 잠긴 카드가 줄어드는 것은 「버튼이 아니라고 낭독하면서 버튼처럼 반응」하는 오신호라 제외는 필요했다. 열린 카드 · 다른 넷의 standard
+     DOM은 불변이고 Button loading의 inline `style` 값만 바뀌었다(아래).
+   - **Button 로딩 결함 수정(결정 아님 — 정본 0.4.0 「Loading 폭 불변 · 라벨 숨김 · spinner 중앙」을 Lynx에서 지키게 한 것)**: 2026-10-10 시뮬레이터에서 제품의 로딩 버튼(전부 `xl` · `fill`,
+     넷은 아이콘)이 스피너를 왼쪽에 붙이고 라벨을 드러냈다. 래퍼의 네 변 `0` 절대 배치가 `fill` surface(`width: 100%`)에서 서지 않았고 `<text>` inline `visibility: hidden`이 글자를 지우지
+     않았다. 래퍼는 `top/left: 0; width/height: 100%`로, 숨김은 inline `opacity: 0`으로 바꿨다. 2단계 e2e M2-I3 · M2-A3이 통과였던 이유는 playground 행이 전부 `hug` · size m · 아이콘 없음이라
+     제품 조합을 한 번도 보지 않았기 때문이다 — playground `ButtonCatalog`에 「Button · fill · icon · loading」 행을 더했다(dev 전용). RoundButton 로딩은 아이콘을 흐름 안에서 스피너로
+     교체하는 꼴이라 같은 결함이 없다.
+   - **D8 검증 표**: unit은 다섯 CSS 파일의 선택자 · 토큰 · reduced 규칙 · 비항등 리터럴 0(`motion-css.unit.test.ts` SC4″가 여섯 파일 합본)과 순수 함수 여섯(계약 셋의 `contextMotion` 인자 ·
+     `hasPressedShade` · `sentenceOrderChipClassName` · `roleplayCardClassName` · `hasRoleplayCardPressedShade`), ui는 reduced 렌더의 클래스 · `data-motion` · 막 요소와 standard 부재, integration은
+     더하지 않았다(`App.motion.integration.test.tsx` IM1 · IM4가 호스트 → Provider → 소비자 경로를 이미 고정 — 새 배선 0). 카탈로그 열은 Button · Card · Option Selector를 더해 열셋.
+     e2e는 [`motion-tokens.md`](../e2e/motion-tokens.md) 「눌림 확장 회차」 — **iOS 시뮬레이터 실행**(M5-I1 ~ M5-I5: 축소 94.8 ~ 95.1 %, 로딩 스피너 중앙 · 라벨 숨김 · 폭 불변, reduced에서
+     neutral 막 `#3B4048`(기대 `#3B4148` ±2) · brand `#E06216` · 잠긴 카드 막 없음 · OptionSelector 색만), **미측정 셋**(reduced 열린 카드의 흰 막 · reduced bank 칩 — 계정 진행도, M5-I6 —
+     playground 엔트리에 `MotionProvider`가 없어 늘 standard), **Android는 절차만**(M5-A1 ~ M5-A6 미실행). 이번 변경의 Lynx 선택자 파싱 실패는 0이다(기존 `:focus-visible` 규칙 10종만).
+   - **대가**: ui-lynx dist 상한 500,000 → 507,000 bytes(실측 498,496 → 505,513(최종 HEAD 505,453), `devtools/bundle-size/budget.json` note) · main 번들 1,403,255 → 1,410,167(상한 1,412,000 안, 여유 약 1.8 kB) —
+     [성능 보고서](../performance/reports/press-motion-app-launch-iphone-17-pro-simulator-01.md)(렌더링 · 메모리 미측정). 「대가」 3의 비대칭에 줄 하나가 더 붙는다(잠긴 카드 상태 클래스).
+   - **바뀌지 않은 것**: D1 규칙 다섯 · allowlist · D2 전달 경로 · Spinner 예외 · RoundButton · LearningUnit · Tooltip · PremiumRoleplayCard · placed 칩 · Card static · disabled bank 칩의
+     기존 `:active` 색(disabled 클래스가 없어 색이 걸리는 기존 결함 — 같은 경계로 scale도 걸린다, 고치지 않음) · OptionSelector item/surface 전환 시간 차이(둘 다 150 ms).
+   - **기본값으로 닫은 사용자 결정 넷**(답이 오면 이 기록에 덧붙인다): 눌림 확장 **Q1** 어두운 면 막 = white(black이면 CSS 한 줄 · e2e 기대값 두 칸) · **Q2** 잠긴 카드 제외 = 상태 클래스 ·
+     **Q3** placed 칩 · disabled bank 칩 = 그대로(줄이지 않음 / 기존 경계) · **Q4** `PremiumRoleplayCard` = 범위 밖(같은 목록에서 혼자 안 줄어든다).
 
 ## 되묻는 것 — design-system
 
@@ -217,9 +260,12 @@ e2e의 판정 조건은 플랫폼으로 가른다 — 즉시성(정착 전 나�
 | DS-Q8 | `scale.enter`가 Dialog **퇴장**의 끝 값이기도 함을 `motion.md` Scale 표 설명에 명문화(지금은 `dialog.md` 「역방향」만) | 4단계 design(이 문서 D6) | 같은 토큰으로 쓴다. 토큰 추가 불필요 |
 | DS-Q9 | 진행 바가 0 %를 그리지 않는 구현에서 「첫 채움」 규칙 — `progress-header.md`는 「0 % 초과 최소 8px」이고 0 % 표현은 컴포넌트마다 다를 수 있다 | 4단계 design(이 문서 D5) | 세션 안에서는 첫 렌더부터 1/N이라 실제 쟁점 없음. 기록만 |
 | DS-Q10 | 카탈로그(Storybook)에서 reduced 변형 노출 규칙을 `CONSUMING.md` ReactLynx 절에 둘지(호스트 키 `reducedMotion`을 카탈로그가 흉내 내는 것이 권장 경로인지) | 4단계 design(이 문서 D3) | 지금은 컴포넌트별 arg(D3). 전역 툴바로 가면 FE가 선례가 된다 |
+| DS-Q11 | reduced 눌림 막의 **색 규칙** — 정본 Reduced 표는 「막」까지만 적는다. 어두운 면(Button neutral `gray.900` · 롤플레이 카드)에는 black 8 %가 보이지 않아(Δ 3 ~ 4) **white** 막을 깔았다 | 눌림 확장(정정 기록 1) | 「밝은 면 black · 어두운 면 white, 불투명도는 `opacity.pressed-shade` 하나」로 읽었다. 정본이 색을 정하면 CSS 한 줄만 바뀐다 |
+| DS-Q12 | Button Pressed가 정본 매핑 「색만」에서 벗어나 95 % 축소를 더한 것의 승인 — Card interactive · OptionSelector 항목도 같다 | 눌림 확장(정정 기록 1) | 사용자 결정(게이미피케이션 피드백 일관성)으로 벗어났다. 정본이 거부하면 CSS 다섯 파일의 `:active` transform만 걷는다 |
 | 닫힘 | 2단계 Q2 — reduced 눌림 막 위 Neutral 아이콘 2.693:1 예외 | PR #78 | **닫힘** — design-system `foundations/accessibility.md` 시각 예외 표 3행(Round Button Neutral 2.693:1 · Brand 2.373:1 · Learning Unit Available 2.267:1) |
 
 사용자 결정 대기(정본 아님, 전부 5단계): **Q1** 배지 퇴장을 위한 맵 이동 400 ms 지연 · **Q2** 재화 획득 자리 · **Q3** custom 화면 전환 여부와 제외 목록 · **Q4** 옛 문항 사라짐을 위한 150 ms 지연.
+눌림 확장의 Q1 ~ Q4(막 색 · 잠긴 카드 클래스 · placed 칩 · PremiumRoleplayCard)는 기본값으로 닫혀 있다 — 정정 기록 1.
 
 ## 미확인 · 후속
 
@@ -233,6 +279,8 @@ e2e의 판정 조건은 플랫폼으로 가른다 — 즉시성(정착 전 나�
 7. **iOS 실기** — 전 단계 시뮬레이터만.
 8. **ADR 번호 0043 중복** — 고치지 않았다. 사용자 결정 자리.
 9. **Storybook 브라우저에서 reduced 스토리가 실제로 막 · 즉시 반영을 그리는지** — 테스트는 id · 정규화 · 엔트리 텍스트까지(카탈로그 README 「한계」와 같다).
+10. **눌림 확장(정정 기록 1)의 Android 회차** — M5-A1 ~ M5-A6은 절차만 있고 실행하지 않았다. iOS에서도 reduced 열린 롤플레이 카드의 흰 막 · reduced bank 칩 · reduced 로딩 스피너(M5-I6)는
+    미측정이다(계정 진행도 · playground에 `MotionProvider` 없음). 결과 칸은 `motion-tokens.md` 「눌림 확장 회차」.
 
 ## 재검토 조건
 
