@@ -39,6 +39,11 @@
 }
 
 /* 움직임 줄이기: 줄이지 않고 색 변화만 남깁니다. */
+/* 움직임 줄이기에서는 transform 전환 자체를 끕니다 — bank 칩에 다른 전환은 없습니다. */
+.sentence-order-chip-motion-reduced.sentence-order-chip-bank {
+  transition: none;
+}
+
 .sentence-order-chip-motion-reduced.sentence-order-chip-bank:active {
   transform: none;
 }

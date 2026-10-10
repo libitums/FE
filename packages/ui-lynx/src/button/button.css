@@ -172,8 +172,10 @@
   transform: none;
 }
 
+/* 움직임 줄이기에서는 surface의 transform 전환 자체를 끕니다 — surface에 다른 전환은 없습니다. */
 .ui-lynx-button-motion-reduced .ui-lynx-button-surface {
   position: relative;
+  transition: none;
 }
 
 .ui-lynx-button-shade {

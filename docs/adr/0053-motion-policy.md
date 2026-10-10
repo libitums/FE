@@ -229,7 +229,7 @@ e2e의 판정 조건은 플랫폼으로 가른다 — 즉시성(정착 전 나�
      같은 토큰 `opacity.pressed-shade`로 white를 깔면 `#3B4148`(Δ 16 ~ 17)이다. brand `#F46B18`는 black 8 % → `#E06216`(LearningUnit active와 같은 합성). 정본 Reduced 표는 「막」까지만
      적고 색을 정하지 않는다 — DS-Q11. 막의 박스는 네 변 `0`이 아니라 `top/left: 0; width/height: 100%`(아래 로딩 래퍼와 같은 이유).
    - **reduced 표지의 자리**: Button · Card · 칩 · 롤플레이 카드는 루트, OptionSelector는 **컨테이너 루트**(`ui-lynx-option-selector-motion-reduced` — 항목 className · contract 불변).
-     reduced `:active` 규칙은 `transform: none` 하나다(`transition: none`을 더하면 Card · OptionSelector의 색 전환까지 걷힌다).
+     reduced `:active` 규칙은 `transform: none`이고, 전환은 Card처럼 색 전환만 남긴다 — Button · 칩 · 롤플레이 카드는 transform 전환뿐이라 `transition: none`(RoundButton · LearningUnit 선례), OptionSelector는 `transition-property: background-color, border-color`(PR 리뷰 반영, 2026-10-11).
    - **D2 「standard DOM byte 불변」의 예외 하나**: 잠긴 롤플레이 카드에 상태 클래스 `roleplay-card-locked`가 붙는다. Lynx CSS 속성 선택자(`[data-locked="true"]`) 지원 기록이 저장소에
      없어 클래스로 제외했다(순수 `roleplayCardClassName`). 잠긴 카드가 줄어드는 것은 「버튼이 아니라고 낭독하면서 버튼처럼 반응」하는 오신호라 제외는 필요했다. 열린 카드 · 다른 넷의 standard
      DOM은 불변이고 Button loading의 inline `style` 값만 바뀌었다(아래).

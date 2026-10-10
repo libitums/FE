@@ -66,6 +66,11 @@
 }
 
 /* 움직임 줄이기: 색만 바뀌고 항목은 줄지 않습니다. */
+/* 움직임 줄이기: 색 전환은 남기고 transform 전환만 뺍니다(Card와 같은 방식). */
+.ui-lynx-option-selector-motion-reduced .ui-lynx-option-selector-item {
+  transition-property: background-color, border-color;
+}
+
 .ui-lynx-option-selector-motion-reduced .ui-lynx-option-selector-item-pressable:active {
   transform: none;
 }

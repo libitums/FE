@@ -20,6 +20,11 @@
 }
 
 /* 움직임 줄이기: 줄이지 않고 흰 막(어두운 면)으로 눌림을 알립니다. */
+/* 움직임 줄이기에서는 카드의 transform 전환 자체를 끕니다 — 막의 opacity 전환은 자식 규칙이라 그대로입니다. */
+.roleplay-card-motion-reduced {
+  transition: none;
+}
+
 .roleplay-card-motion-reduced:not(.roleplay-card-locked):active {
   transform: none;
 }
