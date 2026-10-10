@@ -26,6 +26,7 @@
 .sentence-order-chip-bank {
   background-color: var(--libitum-color-white);
   border-color: var(--libitum-color-gray-300);
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
 }
 
 .sentence-order-chip-bank .sentence-order-chip-label {
@@ -34,6 +35,12 @@
 
 .sentence-order-chip-bank:active {
   background-color: var(--libitum-color-gray-100);
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+/* 움직임 줄이기: 줄이지 않고 색 변화만 남깁니다. */
+.sentence-order-chip-motion-reduced.sentence-order-chip-bank:active {
+  transform: none;
 }
 
 /* 놓인 조각 — 브랜드 면 · 흰 글자. 답 칸 줄에 섭니다. */

@@ -4,11 +4,14 @@
 // (`docs/conventions/code.md` 「import」 — 화면 폴더 사이 값 금지). 그래서
 // `roleplayItemsFrom`은 목록을 인자로 받습니다.
 
+import type { Motion } from "@libitums/ui-lynx/motion";
+
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { JourneyMapItem, JourneyMapSection } from "../journey-map/journey-map";
 import type {
   PremiumRoleplayItem,
   PremiumRoleplayLock,
+  RoleplayCardLayout,
   RoleplayEpisodeId,
   RoleplayItem,
   RoleplaySection,
@@ -127,4 +130,21 @@ export function premiumRoleplayAccessibilityLabel(
 /** 결제 잠김 카드를 눌렀을 때 뜨는 안내의 본문입니다. */
 export function premiumRoleplayNotice(item: PremiumRoleplayItem, copy: UiCopy): string {
   return copy.roleplay.premiumNotice(item.title);
+}
+
+// 롤플레이 카드 루트의 클래스를 만드는 순수 함수입니다. 잠긴 카드는 눌림 반응에서 빠지도록
+// 상태 클래스를 달고, 동작 줄이기면 끝에 reduced 표지가 붙습니다.
+export function roleplayCardClassName(input: {
+  readonly layout: RoleplayCardLayout;
+  readonly locked: boolean;
+  readonly motion: Motion;
+}): string {
+  const base = `roleplay-card roleplay-card-${input.layout}`;
+  const withLock = input.locked ? `${base} roleplay-card-locked` : base;
+  return input.motion === "reduced" ? `${withLock} roleplay-card-motion-reduced` : withLock;
+}
+
+// 눌림 막은 동작 줄이기에서 열린 카드에만 그립니다 — 줄이지 않는 대신 막으로 눌림을 알립니다.
+export function hasRoleplayCardPressedShade(locked: boolean, motion: Motion): boolean {
+  return motion === "reduced" && !locked;
 }

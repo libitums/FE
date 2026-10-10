@@ -1,5 +1,6 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 
 import { SentenceOrderChip } from "./SentenceOrderChip";
 import { UiCopyContext } from "../../lib/ui-copy";
@@ -220,4 +221,80 @@ test("[LA3-M] 문구표를 주입해도 안 놓인 조각의 이름은 글 그�
     "accessibility-label",
     "밥을",
   );
+});
+
+// ------------------------------------------------------------- 동작 줄이기 표지
+
+// 클래스는 순수 함수 unit이 지고(U-S4), 이 계층은 `data-motion` 속성만 봅니다.
+for (const placedOrdinal of [null, 2] as const) {
+  test(`UI-S1. reduced Provider에서 루트에 data-motion=reduced가 붙고 data-placed는 그대로다 — placedOrdinal=${String(placedOrdinal)}`, () => {
+    render(
+      <MotionProvider motion="reduced">
+        <SentenceOrderChip index={0} text="밥을" placedOrdinal={placedOrdinal} onTap={() => {}} />
+      </MotionProvider>,
+    );
+
+    const root = screen.getByTestId("sentence-order-chip-0");
+    expect(root).toHaveAttribute("data-motion", "reduced");
+    expect(root).toHaveAttribute("data-placed", placedOrdinal === null ? "none" : "2");
+  });
+}
+
+test("UI-S2. Provider 없음 · standard Provider에서는 data-motion 속성이 없다", () => {
+  const { unmount } = render(
+    <SentenceOrderChip index={0} text="밥을" placedOrdinal={null} onTap={() => {}} />,
+  );
+  expect(screen.getByTestId("sentence-order-chip-0").hasAttribute("data-motion")).toBe(false);
+  unmount();
+
+  const { container } = render(
+    <MotionProvider motion="standard">
+      <SentenceOrderChip index={0} text="밥을" placedOrdinal={null} onTap={() => {}} />
+    </MotionProvider>,
+  );
+  expect(screen.getByTestId("sentence-order-chip-0").hasAttribute("data-motion")).toBe(false);
+  expect(container.querySelectorAll("[data-motion]")).toHaveLength(0);
+});
+
+test("UI-S2. reduced에서도 접근성 이름 · traits · tap 전달이 Provider 없음과 같다", () => {
+  const onTap = vi.fn<(index: number) => void>();
+  const { unmount } = render(
+    <SentenceOrderChip index={0} text="밥을" placedOrdinal={null} onTap={() => {}} />,
+  );
+  const plain = screen.getByTestId("sentence-order-chip-0");
+  const expected = {
+    label: plain.getAttribute("accessibility-label"),
+    traits: plain.getAttribute("accessibility-traits"),
+    element: plain.getAttribute("accessibility-element"),
+  };
+  unmount();
+
+  render(
+    <MotionProvider motion="reduced">
+      <SentenceOrderChip index={0} text="밥을" placedOrdinal={null} onTap={onTap} />
+    </MotionProvider>,
+  );
+  const root = screen.getByTestId("sentence-order-chip-0");
+  expect({
+    label: root.getAttribute("accessibility-label"),
+    traits: root.getAttribute("accessibility-traits"),
+    element: root.getAttribute("accessibility-element"),
+  }).toEqual(expected);
+  fireEvent.tap(root, {});
+  expect(onTap).toHaveBeenCalledTimes(1);
+  expect(onTap).toHaveBeenCalledWith(0);
+});
+
+test("UI-S2. reduced disabled 칩도 traits가 disabled이고 tap을 전달하지 않는다", () => {
+  const onTap = vi.fn<(index: number) => void>();
+  render(
+    <MotionProvider motion="reduced">
+      <SentenceOrderChip index={0} text="밥을" placedOrdinal={null} disabled={true} onTap={onTap} />
+    </MotionProvider>,
+  );
+
+  const root = screen.getByTestId("sentence-order-chip-0");
+  expect(root).toHaveAttribute("accessibility-traits", "disabled");
+  fireEvent.tap(root, {});
+  expect(onTap).not.toHaveBeenCalled();
 });

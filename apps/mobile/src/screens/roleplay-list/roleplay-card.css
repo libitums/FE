@@ -11,6 +11,33 @@
   overflow: hidden;
   border-radius: var(--libitum-radius-md);
   background: var(--libitum-color-gray-900);
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+/* 눌림 — 잠긴 카드는 눌러도 아무 일이 없으므로 반응하지 않습니다. */
+.roleplay-card:not(.roleplay-card-locked):active {
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+/* 움직임 줄이기: 줄이지 않고 흰 막(어두운 면)으로 눌림을 알립니다. */
+.roleplay-card-motion-reduced:not(.roleplay-card-locked):active {
+  transform: none;
+}
+
+.roleplay-card-pressed-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-white);
+  opacity: 0;
+  transition: opacity var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+.roleplay-card-motion-reduced:not(.roleplay-card-locked):active .roleplay-card-pressed-shade {
+  opacity: var(--libitum-opacity-pressed-shade, 0.08);
 }
 
 .roleplay-card-row {

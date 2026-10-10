@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -8,6 +11,7 @@ import {
   isSentenceOrderSessionComplete,
   judgeSentenceOrder,
   sentenceOrderAnnouncement,
+  sentenceOrderChipClassName,
   sentenceOrderCompletionAnnouncement,
   sentenceOrderResultAt,
   sentenceOrderSessionReducer,
@@ -304,5 +308,63 @@ describe("canPlaceChip · composedSentence", () => {
 
   it("놓인 조각을 순서대로 공백으로 잇는다", () => {
     expect(composedSentence(question, [1, 0])).toBe("b a");
+  });
+});
+
+describe("sentenceOrderChipClassName", () => {
+  it("U-S4. reduced이면 bank · placed 모두 클래스 끝에 motion-reduced가 붙는다", () => {
+    expect(sentenceOrderChipClassName("bank", "reduced")).toBe(
+      "sentence-order-chip sentence-order-chip-bank sentence-order-chip-motion-reduced",
+    );
+    expect(sentenceOrderChipClassName("placed", "reduced")).toBe(
+      "sentence-order-chip sentence-order-chip-placed sentence-order-chip-motion-reduced",
+    );
+  });
+
+  it("U-S5. standard이면 motion 문자열이 없다", () => {
+    expect(sentenceOrderChipClassName("bank", "standard")).toBe(
+      "sentence-order-chip sentence-order-chip-bank",
+    );
+    expect(sentenceOrderChipClassName("placed", "standard")).toBe(
+      "sentence-order-chip sentence-order-chip-placed",
+    );
+    expect(sentenceOrderChipClassName("bank", "standard")).not.toContain("motion");
+    expect(sentenceOrderChipClassName("placed", "standard")).not.toContain("motion");
+  });
+});
+
+// CSS 텍스트는 파일을 읽어 정규식으로 봅니다. unit 명령(`*.unit.test.ts`)으로 돌 뿐입니다.
+describe("sentence-order-chip.css", () => {
+  const css = readFileSync(
+    resolve(process.cwd(), "src/screens/sentence-order/sentence-order-chip.css"),
+    "utf8",
+  ).replace(/\/\*[\s\S]*?\*\//g, "");
+
+  /** 선택자 정규식에 맞는 첫 규칙의 본문. 규칙이 없으면 빈 문자열이라 이어지는 단언이 값 불일치로 실패합니다. */
+  const ruleBody = (selector: RegExp): string =>
+    new RegExp(`(?:^|\\})\\s*${selector.source}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? "";
+
+  it("U-S1. bank 칩 눌림은 pressed 토큰 scale이고 기존 색 변화를 유지한다", () => {
+    const body = ruleBody(/\.sentence-order-chip-bank:active/);
+    expect(body).toMatch(/transform:\s*scale\(var\(--libitum-motion-scale-pressed\)\)/);
+    expect(body).toMatch(/background-color:\s*var\(--libitum-color-gray-100\)/);
+  });
+
+  it("U-S2. bank base에 transform 전환이 있고 reduced 눌림은 transform: none이다", () => {
+    expect(ruleBody(/\.sentence-order-chip-bank/)).toMatch(
+      /transition:\s*transform var\(--libitum-motion-duration-pressed\) var\(--libitum-motion-easing-easing\)/,
+    );
+    expect(
+      ruleBody(/\.sentence-order-chip-motion-reduced\.sentence-order-chip-bank:active/),
+    ).toMatch(/transform:\s*none/);
+  });
+
+  it("U-S3. 비항등 scale 리터럴이 없고 placed · placeholder는 transform이 없다", () => {
+    const nonIdentity = (css.match(/scale\(\s*[\d.]+\s*\)/g) ?? []).filter(
+      (literal) => Number(/([\d.]+)/.exec(literal)?.[1] ?? Number.NaN) !== 1,
+    );
+    expect(nonIdentity).toEqual([]);
+    expect(ruleBody(/\.sentence-order-chip-placed/)).not.toMatch(/transform/);
+    expect(ruleBody(/\.sentence-order-chip-placeholder/)).not.toMatch(/transform/);
   });
 });

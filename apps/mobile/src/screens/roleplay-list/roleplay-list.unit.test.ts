@@ -1,3 +1,7 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import { opacity } from "@libitums/design-tokens";
 import { describe, expect, it } from "vitest";
 
 import type {
@@ -8,9 +12,11 @@ import type {
 } from "../journey-map/journey-map";
 import {
   findRoleplaySection,
+  hasRoleplayCardPressedShade,
   premiumRoleplayAccessibilityLabel,
   premiumRoleplayLock,
   premiumRoleplayNotice,
+  roleplayCardClassName,
   roleplayFormLabel,
   roleplayItemAccessibilityLabel,
   roleplayItemsFrom,
@@ -438,5 +444,109 @@ describe("premiumRoleplayNotice", () => {
     expect(premiumRoleplayNotice(wrongOrder, uiCopyEn)).toBe(
       "“주문이 잘못 나왔어요” is a Plus roleplay. Plus isn't available yet.",
     );
+  });
+});
+
+describe("roleplayCardClassName", () => {
+  it("U-R6. 열린 카드가 reduced이면 클래스 끝에 motion-reduced가 붙는다", () => {
+    expect(roleplayCardClassName({ layout: "row", locked: false, motion: "reduced" })).toBe(
+      "roleplay-card roleplay-card-row roleplay-card-motion-reduced",
+    );
+  });
+
+  it("U-R8. 잠긴 카드는 locked가 motion-reduced보다 앞이고 standard에서도 locked가 붙는다", () => {
+    expect(roleplayCardClassName({ layout: "list", locked: true, motion: "reduced" })).toBe(
+      "roleplay-card roleplay-card-list roleplay-card-locked roleplay-card-motion-reduced",
+    );
+    expect(roleplayCardClassName({ layout: "list", locked: true, motion: "standard" })).toBe(
+      "roleplay-card roleplay-card-list roleplay-card-locked",
+    );
+  });
+
+  it("U-R9. 열린 standard 카드는 기존 클래스 그대로다", () => {
+    expect(roleplayCardClassName({ layout: "row", locked: false, motion: "standard" })).toBe(
+      "roleplay-card roleplay-card-row",
+    );
+    expect(roleplayCardClassName({ layout: "list", locked: false, motion: "standard" })).toBe(
+      "roleplay-card roleplay-card-list",
+    );
+  });
+});
+
+describe("hasRoleplayCardPressedShade", () => {
+  it("U-R7. reduced이고 열린 카드만 막을 그린다", () => {
+    expect(hasRoleplayCardPressedShade(false, "reduced")).toBe(true);
+    expect(hasRoleplayCardPressedShade(true, "reduced")).toBe(false);
+    expect(hasRoleplayCardPressedShade(false, "standard")).toBe(false);
+    expect(hasRoleplayCardPressedShade(true, "standard")).toBe(false);
+  });
+});
+
+// CSS 텍스트는 파일을 읽어 정규식으로 봅니다. unit 명령(`*.unit.test.ts`)으로 돌 뿐입니다.
+describe("roleplay-card.css", () => {
+  const css = readFileSync(
+    resolve(process.cwd(), "src/screens/roleplay-list/roleplay-card.css"),
+    "utf8",
+  ).replace(/\/\*[\s\S]*?\*\//g, "");
+
+  /** 선택자 정규식에 맞는 첫 규칙의 본문. 규칙이 없으면 빈 문자열이라 이어지는 단언이 값 불일치로 실패합니다. */
+  const ruleBody = (selector: RegExp): string =>
+    new RegExp(`(?:^|\\})\\s*${selector.source}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? "";
+
+  const pressedShadeRule =
+    /\.roleplay-card-motion-reduced:not\(\.roleplay-card-locked\):active\s+\.roleplay-card-pressed-shade/;
+
+  it("U-R1. 열린 카드 눌림은 pressed 토큰 scale이다", () => {
+    expect(ruleBody(/\.roleplay-card:not\(\.roleplay-card-locked\):active/)).toMatch(
+      /transform:\s*scale\(var\(--libitum-motion-scale-pressed\)\)/,
+    );
+  });
+
+  it("U-R2. base에 transform 전환이 있고 기존 position · overflow를 유지한다", () => {
+    const body = ruleBody(/\.roleplay-card/);
+    expect(body).toMatch(
+      /transition:\s*transform var\(--libitum-motion-duration-pressed\) var\(--libitum-motion-easing-easing\)/,
+    );
+    expect(body).toMatch(/position:\s*relative/);
+    expect(body).toMatch(/overflow:\s*hidden/);
+  });
+
+  it("U-R3. reduced 열린 카드 눌림은 transform: none이다", () => {
+    expect(ruleBody(/\.roleplay-card-motion-reduced:not\(\.roleplay-card-locked\):active/)).toMatch(
+      /transform:\s*none/,
+    );
+  });
+
+  it("U-R4. 눌림 막은 흰 막이고 reduced 눌림에서 pressed-shade 토큰 불투명도다", () => {
+    const body = ruleBody(/\.roleplay-card-pressed-shade/);
+    expect(body).toMatch(/position:\s*absolute/);
+    expect(body).toMatch(/top:\s*0\b/);
+    expect(body).toMatch(/left:\s*0\b/);
+    expect(body).toMatch(/width:\s*100%/);
+    expect(body).toMatch(/height:\s*100%/);
+    expect(body).toMatch(/border-radius:\s*var\(--libitum-radius-md\)/);
+    expect(body).toMatch(/background-color:\s*var\(--libitum-color-white\)/);
+    expect(body).toMatch(/opacity:\s*0\s*;/);
+    expect(body).toMatch(
+      /transition:\s*opacity var\(--libitum-motion-duration-pressed\) var\(--libitum-motion-easing-easing\)/,
+    );
+
+    const pressed = ruleBody(pressedShadeRule);
+    expect(pressed).toMatch(/opacity:\s*var\(--libitum-opacity-pressed-shade,\s*0\.08\)/);
+    const fallback = Number(
+      /opacity:\s*var\(--libitum-opacity-pressed-shade,\s*([\d.]+)\)/.exec(pressed)?.[1] ??
+        Number.NaN,
+    );
+    expect(fallback).toBe(opacity["pressed-shade"]);
+  });
+
+  it("U-R5. 비항등 scale 리터럴이 없고 그러데이션 규칙에 opacity · transform이 없다", () => {
+    const nonIdentity = (css.match(/scale\(\s*[\d.]+\s*\)/g) ?? []).filter(
+      (literal) => Number(/([\d.]+)/.exec(literal)?.[1] ?? Number.NaN) !== 1,
+    );
+    expect(nonIdentity).toEqual([]);
+    const gradient = ruleBody(/\.roleplay-card-shade/);
+    expect(gradient).toMatch(/linear-gradient/);
+    expect(gradient).not.toMatch(/opacity|transform/);
   });
 });

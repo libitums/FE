@@ -1,7 +1,8 @@
 import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
+import { useMotion } from "@libitums/ui-lynx/motion";
 
-import { chipAccessibilityLabel } from "./sentence-order";
+import { chipAccessibilityLabel, sentenceOrderChipClassName } from "./sentence-order";
 import { playSound } from "../../lib/sound-effects";
 
 import "./sentence-order-chip.css";
@@ -28,17 +29,21 @@ export function SentenceOrderChip({
   onTap,
 }: SentenceOrderChipProps): ReactNode {
   const copy = useUiCopy();
+  const motion = useMotion();
   const handleTap = () => {
     "background only";
     playSound("button");
     onTap(index);
   };
   const variant = placedOrdinal === null ? "bank" : "placed";
+  // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
+  const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
 
   return (
     <view
-      className={`sentence-order-chip sentence-order-chip-${variant}`}
+      className={sentenceOrderChipClassName(variant, motion)}
       data-testid={`sentence-order-chip-${index}`}
+      {...motionProps}
       data-placed={placedOrdinal ?? "none"}
       accessibility-element={true}
       accessibility-label={chipAccessibilityLabel(text, placedOrdinal, copy)}
