@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { color } from "@libitums/design-tokens";
 
+import { hasPressedShade } from "./button.contract";
 import { getButtonContract, getButtonIconColor } from "./index";
 import type { ButtonSize, ButtonVariant, ButtonWidth } from "./index";
 
@@ -89,5 +90,47 @@ describe("Button icon color", () => {
     expect(getButtonIconColor({ disabled: true, label: "계속", variant: "text" })).toBe(
       color.gray[300],
     );
+  });
+});
+
+describe("Button motion 계약", () => {
+  const standard = getButtonContract({ label: "계속" });
+  const reduced = getButtonContract({ label: "계속" }, "reduced");
+
+  test("U-B4. reduced면 className 끝에 reduced 토큰이 붙고 필드 집합은 그대로다", () => {
+    expect(reduced.className).toBe(
+      "ui-lynx-button ui-lynx-button-neutral ui-lynx-button-m ui-lynx-button-hug ui-lynx-button-motion-reduced",
+    );
+    expect(Object.keys(reduced)).toEqual(Object.keys(standard));
+    expect({ ...reduced, className: "" }).toEqual({ ...standard, className: "" });
+  });
+
+  test("U-B4. loading + reduced는 motion 토큰이 마지막이다", () => {
+    expect(getButtonContract({ label: "계속", loading: true }, "reduced").className).toBe(
+      "ui-lynx-button ui-lynx-button-neutral ui-lynx-button-m ui-lynx-button-hug ui-lynx-button-loading ui-lynx-button-motion-reduced",
+    );
+  });
+
+  test("U-B4. 컨텍스트를 주지 않거나 standard면 motion 토큰이 없다", () => {
+    expect(standard.className).not.toContain("motion");
+    expect(getButtonContract({ label: "계속" }, "standard").className).toBe(standard.className);
+  });
+
+  test.each(["neutral", "brand", undefined] as const)(
+    "U-B5. hasPressedShade(%s, reduced)는 true다",
+    (variant) => {
+      expect(hasPressedShade(variant, "reduced")).toBe(true);
+    },
+  );
+
+  test.each([
+    ["outline", "reduced"],
+    ["subtle", "reduced"],
+    ["text", "reduced"],
+    ["neutral", "standard"],
+    ["brand", "standard"],
+    [undefined, "standard"],
+  ] as const)("U-B6. hasPressedShade(%s, %s)는 false다", (variant, motion) => {
+    expect(hasPressedShade(variant, motion)).toBe(false);
   });
 });

@@ -19,6 +19,7 @@
 **AC4** = M2-I5 · M2-A5, **AC10** = 이 문서. VN 계속 표시 정지는 M2-I7 · M2-A7이다.
 가정 대응(`spec.md` §11): **A1**(`visibility: hidden`이 자리를 지킨 채 숨김) = M2-I3, **A2**(막이 아이콘 아래) = M2-I5, **A3**(`border-top-color` cascade, 틈이 보임) =
 M2-I3(c) · M2-I4, **A4**(`transform: scale(var())` 풀림) = M2-I8(탐색, 기록만), **A5**(Android에서 playground를 열 수 있는가) = 아래 「playground 실행 경로」와 M2-A3 · M2-A4.
+*(2026-10-11 주: 숨김은 inline `opacity: 0`으로 바뀌었고 래퍼는 `width/height: 100%`다 — `hug` 행만 보던 M2-I3이 놓친 `fill` · 아이콘 조합은 아래 「눌림 확장 회차」 M5-I4가 본다.)*
 
 ## 이 절차로 확인하지 못하는 것
 
@@ -31,7 +32,10 @@ M2-I3(c) · M2-I4, **A4**(`transform: scale(var())` 풀림) = M2-I8(탐색, 기�
 - Android 배율 0에서 앱의 `reduced` 분기와 플랫폼 정지를 가르는 한계, 캡처 간격의 정밀도, `data-motion` 값을 직접 못 읽는 것: [동작 줄이기 e2e의 「이 절차로 확인하지 못하는 것」](motion-reduced.md#이-절차로-확인하지-못하는-것)과 같다.
 - TalkBack · VoiceOver를 켠 상태: 이 절차의 판정 항목이 아니다. 다만 Button Loading이 라벨을 `visibility: hidden`으로 숨긴 뒤 **숨긴 `<text>`가 별도 정지가 되지 않는가**는
   iOS는 Lynx Pod 소스(hidden → `view.hidden`, 루트 `isAccessibilityElement`로 잎)로 닫혔지만 Android는 AAR뿐이라 실기가 유일한 근거다 — M2-I3 · M2-A3의 비고에 확인 항목을 두고,
-  기기 없는 회차에는 「미확인」으로 남긴다.
+  기기 없는 회차에는 「미확인」으로 남긴다. *(2026-10-11 주: 숨김이 `opacity: 0`으로 바뀌어 iOS의 `view.hidden` 근거는 더 이상 서지 않는다 — 루트 `isAccessibilityElement` 잎 근거만
+  남고, 두 플랫폼 모두 실기 미확인이다.)*
+- **눌림 확장 회차의 Android**(M5-A1 ~ M5-A6): 절차만 적었고 실행하지 않았다 — 결과 칸은 「미확인」이고 통과로 읽지 않는다. iOS에서도 켠 상태의 로딩 스피너(M5-I6)는
+  미측정이다(아래 결과 표의 사유).
 
 ## 전제
 
@@ -57,6 +61,12 @@ M2-I3(c) · M2-I4, **A4**(`transform: scale(var())` 풀림) = M2-I8(탐색, 기�
 | LearningUnit available | `#FFF0E6` | `#EBDDD4` |
 | LearningUnit active | `#F46B18` | `#E06216` |
 | LearningUnit clear | `#35A66F` | `#319966` |
+| Button brand(눌림 확장 회차) | `#F46B18` | `#E06216`(black 막) |
+| Button neutral(〃) | `#2A3038` | `#3B4148`(**white** 막 — 어두운 면의 black 8 %는 Δ 3 ~ 4라 보이지 않는다) |
+| 롤플레이 열린 카드(〃) | `#2A3038` | `#3B4148`(white 막) |
+
+색만 바뀌는 자리(막 없음): OptionSelector outlined 항목 · 문장 순서 bank 칩 · Card interactive → `#F7F8F9`(`gray-100`). 눌림 확장 회차부터 막 · 색의 기대값은
+[ADR-0053](../adr/0053-motion-policy.md) 정정 기록 1이 진다.
 
 ### 증거 파일 이름
 
@@ -113,6 +123,9 @@ dev에서만 더하므로, 정적 서버가 서빙하는 `apps/mobile/dist`에 �
 - **관찰**:
   - (a) **폭 · 높이**: Loading 버튼의 폭 · 높이가 같은 행 Default와 같다(**±1 px**, 버튼 상자 가장자리를 측정). 수정 전은 폭이 **+18 px**다.
   - (b) **라벨**: Loading에 라벨 글자가 보이지 않고 12 px 원만 가운데에 있다. 자리는 남는다((a)가 같으므로 `visibility: hidden`이 자리를 지킨다 — 가정 A1).
+    *(2026-10-11 주: 이 행은 전부 `hug` · size m · 아이콘 없음이다. 제품의 로딩 버튼 다섯 자리는 전부 `xl` · `fill`(넷은 아이콘)이고 그 조합에서는 스피너가 왼쪽에 붙고 라벨이 보였다 —
+    네 변 `0` 절대 배치가 `fill` surface에서 서지 않고 `<text>`의 `visibility: hidden`이 글자를 지우지 않았다(2026-10-10 시뮬레이터). 숨김은 inline `opacity: 0`, 래퍼는 `width/height: 100%`로
+    바뀌었고 playground에 「Button · fill · icon · loading」 행이 생겼다 — 아래 「눌림 확장 회차」 M5-I4.)*
   - (c) **회전**: 100 ms 간격 두 프레임에서 원의 틈 각도가 **다르다**. 틈이 보이지 않으면 A3 실패로 적는다(전제 4).
   - 다섯 변형 모두 (a) ~ (c)를 본다. 한 변형만 어긋나도 그 변형을 비고에 적는다. **text 변형은 상자(surface)가 투명이라 폭을 직접 잴 수 없다** — 같은 행 구조의 subtle과
     spinner 중심 x가 같고 Default 라벨 중심 간격이 같다는 **간접 근거**로 적고, 비고에 그렇게 밝힌다.
@@ -307,3 +320,64 @@ iOS는 e2e-red 회차가, Android는 e2e-green 회차가 돌았다. 둘 다 **�
 | 기기 · OS · 빌드 종류 | `emulator-5554`(Pixel_8, API 37) · Debug Host(`assembleDebug`, `bundle:android`) + 정적 서버 18792 · 로그인 픽스처 `SignedInScreenFixtureTest` · `wm size 390x844` · `wm density 160`(1 px = 1 css px) · `screenrecord`(변화 시 ≈12 fps) + 기기 안 `screencap` 루프 |
 | 에뮬레이터 점유 확인 · 알림 | 다른 세션의 반납 알림을 받고 시작 · 사용 중 알림 · 끝에 원복 후 반납 알림 |
 | 설정 복원 확인 | 세 배율 · wm size · density 시작 값으로 원복(빈 `display_size_forced` · `display_density_forced` 키 삭제), 알림 권한 revoke, 전후 덤프 diff 0, 서버 18792 종료, 홈 화면(앱은 이 회차 빌드로 남김), `git status --short` 0줄 |
+
+### 눌림 확장 회차(2026-10-11) — 다섯 대상의 95 % 눌림 · reduced 막 또는 색 · Button 로딩 스피너 중앙, 기준 `ab1c7994` 대조
+
+[ADR-0053](../adr/0053-motion-policy.md) 정정 기록 1이 Button(전 variant) · Card interactive · OptionSelector 항목 · 문장 순서 bank 칩 · 롤플레이 열린 카드의 `:active`에
+`scale(var(--libitum-motion-scale-pressed))`를 더하고, reduced에서는 막(Button neutral · brand · 롤플레이 카드) 또는 기존 색만 남기며, Button 로딩 래퍼를 `width/height: 100%` ·
+숨김을 `opacity: 0`으로 바꿨다. 기기만 아는 것 셋을 본다 — (1) Lynx가 새 다섯 자리(`fill` surface · 카드 루트 · `flex: 1 1 0` 항목 · 칩 · 고정 160 px 카드)에서 일반 규칙
+`transform: scale(var())`를 그리는가, (2) `position: relative` 안의 절대 `width/height: 100%` 박스가 surface를 받는가(래퍼 · 막), (3) `<text>` inline `opacity: 0`이 글자를 지우는가.
+전제 · 도구 · 켬/끔 절차는 위 「전제」와 [동작 줄이기 e2e](motion-reduced.md) 그대로이고, 막 색 기대값은 전제 5의 표(눌림 확장 행)다. **iOS는 실행했고 Android는 절차만 적었다**(실행 후속).
+
+**켬 전환은 설정 앱 손 조작 없이 된다** — 이 회차가 확인했다: `xcrun simctl spawn "$UDID" defaults write com.apple.Accessibility ReduceMotionEnabled -bool true` 뒤 앱을 재실행하면
+호스트가 값을 읽어 막 · 축소 없음으로 바뀐다(4단계 회차는 같은 `defaults write` 뒤 재부팅을 썼다 — 재부팅은 필요 없다). 끌 때는 `-bool false`로 되돌리고 다시 재실행한다.
+[동작 줄이기 e2e](motion-reduced.md)의 「`simctl`로 켜는 수단은 없다」 문장은 이 발견으로 정정했다.
+
+**증거 파일 이름**: `motion-tokens-ios-M5-<id>-<off|on>-<대상>-<before|press>.png`(예 `motion-tokens-ios-M5-I5-on-neutral-press.png`), M5-I4는 `-catalog` · `-fill` · `-frame-1` · `-frame-2`.
+22장 전부 저장소 밖 작업 산출물에 보관했다 — 위 M2 행과 같은 방식(저장소에 복사하지 않는다). 측정 요약은 같은 곳의 `measure.txt`.
+
+**red의 근거(비공허)**: 눌림 넷(M5-I1 ~ M5-I3 · M5-I5의 축소 없음)은 코드 근거다 — 기준 `ab1c7994`의 다섯 CSS 파일(`button.css` · `card.css` · `option-selector.css` ·
+`sentence-order-chip.css` · `roleplay-card.css`)에 `scale-pressed` 문자열 0건, HEAD에서 각 1건; reduced 막 선언 0건. 로딩(M5-I4)은 **기기 관찰**이다 — 2026-10-10 시뮬레이터 스크린샷
+작업에서 제품 로딩 버튼(`xl` · `fill` · 아이콘)의 스피너가 왼쪽에 붙고 라벨이 보였다(기준 `ab1c7994`의 `button.css` 래퍼는 네 변 `0`, `Button.tsx`는 `visibility: hidden`).
+수정 전 번들로 M5 항목을 다시 돌리지는 않았다.
+
+#### iOS 절차(시뮬레이터 iPhone 17 Pro)
+
+측정은 `idb ui tap --duration 4` 중 2 s 시점 캡처(전환 150 ms가 정착한 뒤), 폭은 surface 색(또는 배경과 다른 픽셀)의 bbox다. 단위는 물리 px(3x).
+
+| id | 조작(끔 = 동작 줄이기 0) | 판정 |
+|---|---|---|
+| M5-I1 | 끔. Button neutral `xl` · `fill`(온보딩 Next)과 brand `xl` · `fill`(playground `catalog:button` 「Button · fill」)을 누르기 전 한 장 · 누른 채 한 장 | surface 폭 **95 % ± 1 %**(누르기 전 대비), 색 불변(neutral `#2A3038` · brand `#F46B18`). 수정 전 100 % |
+| M5-I2 | 끔. OptionSelector outlined 항목(unselected — 설정 › Send feedback의 「3 · Okay」)과 문장 순서 bank 칩(playground `tutorial-practice`의 greeting) | 폭 95 % ± 1 %, 색은 기존 pressed `#FFFFFF` → `#F7F8F9`. 수정 전 100 % |
+| M5-I3 | 끔. 롤플레이 목록의 열린 카드(튜토리얼 완료 계정) · 잠긴 카드 | 열린 카드 160 → 152 ± 2 css px(95 %), 색 `#2A3038` 불변; 잠긴 카드 160 = 160. 수정 전 둘 다 160 |
+| M5-I4 | 끔. playground `catalog:button`의 brand Loading(2행 3열, `hug`)과 새 행 「Button · fill · icon · loading」(Default · Loading), Loading은 150 ms 간격 두 프레임 더 | 스피너 중심 x = surface 중심 x ± 1 css px; 라벨 · 아이콘 픽셀 0(스피너 픽셀만 남음); 폭 · 높이 = 같은 행 Default ± 1 px; 두 프레임 스피너 영역이 다름(회전). 수정 전: `fill` 행에서 스피너 왼쪽 · 라벨 보임 |
+| M5-I5 | **켬**(위 `defaults write` + 재실행). M5-I1의 neutral · brand 버튼(brand는 에피소드 인트로 Next) · 롤플레이 열린 · 잠긴 카드 · OptionSelector 항목 · bank 칩 — 누르기 전 / 누른 중(정착 뒤) | 폭 전부 **100 %**. 막(±2): brand `#F46B18` → `#E06216`, neutral `#2A3038` → `#3B4148`, 열린 롤플레이 카드 `#2A3038` → `#3B4148`(글자 픽셀 불변); 잠긴 카드 색 불변(막 없음); 색만: OptionSelector · 칩 → `#F7F8F9`. 끔에서 막이 보이면 실패 |
+| M5-I6 | 켬. M5-I4 행 | 회전 유지(두 프레임 다름) · 중앙 · 라벨 없음 |
+
+#### Android 절차(에뮬레이터 Pixel_8 API 37 — 이 회차 **실행하지 않았다**)
+
+| id | 절차 | 결과 칸 |
+|---|---|---|
+| M5-A1 ~ M5-A6 | iOS와 같은 조작과 판정. [Android 준비](motion-reduced.md#android-준비-에뮬레이터-pixel_8-api-37)(`wm size 390x844` · `density 160`, 세 배율 기록 · 복원) 그대로, 누른 채 `A shell input swipe x y x y 3000` 중 기기 안 `screencap` 루프. 켬은 M2-A5와 같이 (i) `transition_animation_scale 0` · `animator_duration_scale 1`, 이어서 (ii) 「Remove animations」. playground는 위 「playground 실행 경로」(가정 A5 성립 — `10.0.2.2:<port>`) | **미확인(실행 후속)** — 통과로 읽지 않는다. 1 px = 1 css px라 M5-I3 기대값은 160 → 152 그대로 |
+
+#### 결과 — iOS
+
+| 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
+|---|---|---|---|
+| M5-I1 | iOS 시뮬레이터 | 통과 | 끔. neutral `xl` `fill`(온보딩 Next) 320 → 304 px(**95.0 %**), 색 `#2A3038` 불변; brand `xl` `fill`(playground 「Button · fill」) 1086 → 1030(**94.8 %**), 색 `#F46B18` 불변. `ios-M5-I1-off-neutral-*`, `-off-brand-*` |
+| M5-I2 | iOS 시뮬레이터 | 통과 | 끔. OptionSelector outlined 항목(Send feedback 「3 · Okay」) 1110 → 1054(**95.0 %**), 색 `#FFFFFF` → `#F7F8F9`; bank 칩(playground tutorial-practice greeting) 284 → 270(**95.1 %**), 색 `#FFFFFF` → `#F7F8F9`. `ios-M5-I2-off-*`, `-off-chip-*` |
+| M5-I3 | iOS 시뮬레이터 | 통과(열린 카드) | 끔, 튜토리얼 완료 계정. 열린 카드 480 → 456(**95.0 %** = 160 → 152 css px), 색 `#2A3038` 불변. 잠긴 카드의 끔 폭은 이 회차에 따로 재지 않았다(켬 회차 M5-I5에서 480 = 480). `ios-M5-I3-off-*` |
+| M5-I4 | iOS 시뮬레이터 | 통과 | 끔, playground. brand Loading(`hug`, 2행 3열): surface 폭 242 = Default 242, surface 중심 x 712.5 / 스피너 bbox 중심 x 709.5(차 3 물리 px = 1 css px) · 중심 y 389.5 = 389.5; 라벨 픽셀 1236 → 322(스피너만). 「Button · fill · icon · loading」: surface 폭 1086 = Default 1086, 중심 x 602.5 = 스피너 602.5, 중심 y 2279.5 / 2280.5; 라벨 · 아이콘 픽셀 2095 → 322; 150 ms 두 프레임 스피너 영역 차 264 px(회전). 가정 (2) · (3) 성립. `ios-M5-I4-catalog`, `-fill`, `-frame-1`, `-frame-2` |
+| M5-I5 | iOS 시뮬레이터 | 통과 | 켬(`ReduceMotionEnabled=1` + 앱 재실행). neutral(온보딩 Next) 320 = 320, 색 `#2A3038` → **`#3B4048`**(기대 `#3B4148` ±2 — 흰 막 성립); brand(에피소드 인트로 Next) 813 = 813, 색 `#F46B18` → **`#E06216`**(기대값과 같음); 롤플레이 **잠긴** 카드 480 = 480, 색 `#2A3038` 불변(막 없음); OptionSelector 항목 1110 = 1110, 색 `#FFFFFF` → `#F7F8F9`(색만). 2차 회차(튜토리얼 완료 계정의 시뮬레이터에서 같은 방법으로 켬): 롤플레이 **열린** 카드 480 = 480, 색 `#2A3038` → **`#3B4048`**(흰 막), 제목의 흰 글자 픽셀 9028 → 9051(막이 글자 아래 — 글자 불변); bank 칩(레슨 1 다시 열기) 284 = 284, 색 `#FFFFFF` → `#F7F8F9`(색만). 끔에서 막 없음은 M5-I1 ~ M5-I3의 색 불변이 진다. `ios-M5-I5-on-neutral-*`, `-on-brand-*`, `-on-locked-*`, `-on-option-*`, `-on-open-*`, `-on-chip-*` |
+| M5-I6 | iOS 시뮬레이터 | **미측정** | playground 엔트리에는 `MotionProvider`가 없어 playground는 늘 standard다 — 켬 상태의 로딩 행을 reduced로 볼 수 없다. 끔 상태의 회전은 M5-I4가 봤다. 제품 로딩 버튼은 요청 중에만 보여 이 회차에 잡지 못했다 |
+| M5-A1 ~ M5-A6 | Android 에뮬레이터 | 미확인 | 실행하지 않았다(절차만) |
+
+| 칸 | 값 |
+|---|---|
+| 시작 값(실행 전 기록) | iOS 동작 줄이기 0(켬은 M5-I5 구간만 — `simctl spawn … defaults write … ReduceMotionEnabled -bool true` + 앱 재실행) |
+| 확인자 | test-runner 에이전트(iOS 수동 회차) |
+| 날짜 | 2026-10-11 |
+| 빌드 SHA (호스트 · 번들) | 번들 `17754f84`(브랜치 `feat/press-motion`, 그 뒤 커밋은 예산 · 보고서 · 문서) / 호스트 불변(1단계 `d602fe08` 이후). 수정 전 대조는 위 「red의 근거」(코드 근거 + 2026-10-10 관찰) |
+| 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터 · iOS 26.5 · 3x. 눌림은 `idb ui tap --duration 4` 중 2 s 시점 캡처, 폭은 surface 색 bbox |
+| Lynx 로그 | 이번 변경의 CSS 선택자 파싱 실패 0 — 「CSS selector parse failed」는 기존 `:focus-visible` 규칙 10종뿐 |
+| 설정 복원 확인 | 1차 회차의 전용 시뮬레이터는 `delete`(끝 값 안 읽음). 2차 회차의 시뮬레이터는 끝에 `ReduceMotionEnabled`를 `false`로 되돌리고 `defaults read`로 0 확인. 모의 서버 · 3001 dev 서버 종료, playground `current.ts` · 임시 설정 파일 원복, `git status --short` 0줄 |

@@ -55,7 +55,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 
 ## 카탈로그
 
-- Components/Button — Default, Brand, Loading, Disabled
+- Components/Button — Default, Brand, Loading, Disabled, Reduced Motion
 - Components/Back Header — Default, Title Only
 - Components/Status Indicator — Completed, In Progress, Needs Retry, Locked
 - Components/Round Button — Default, Brand, Loading, Disabled, Reduced Motion
@@ -64,14 +64,14 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Learning Unit — Available, Default, Active, Clear, Narrative, Focused, All States, Reduced Motion
 - Components/Settings Cell — Navigation, Toggle, With Avatar, Disabled, Group, Reduced Motion
 - Components/Dialog — Default, Single Action, Without Description, Disabled Secondary, Reduced Motion, Entering
-- Components/Option Selector — Default, Filled, Multiple, Immediate, Grid, Disabled, Long Label
+- Components/Option Selector — Default, Filled, Multiple, Immediate, Grid, Disabled, Long Label, Reduced Motion
 - Components/Bottom Navigator — Default, Long Accessibility Label, All Items, Disabled
 - Components/Bottom Sheet — Default, Multiple Actions
 - Components/Step Indicator — First, Middle, Last
 - Components/Overlay — Sheet Dismissible, Dialog Modal, Area, Area Blur, Reduced Motion
 - Components/Answer Label — Pending, Correct, Incorrect, Subtle, Large, Long Label
 - Components/Avatar — Image, Initials, CJK Initials, Placeholder, Broken Image, All Sizes, Decorative
-- Components/Card — Static, Interactive, Large With Media, Right To Left
+- Components/Card — Static, Interactive, Large With Media, Right To Left, Reduced Motion
 - Components/Compact Numeric Input — Empty, Filled, Error, Disabled
 - Components/Fog — Bottom, Top, Horizontal RTL, Hidden, Full
 - Components/Chat Bubble — Incoming, Outgoing, Small, Large, Failed, Learning Language, Long Content, Typewriter, Reduced Motion
@@ -88,12 +88,14 @@ loading, `motion`을 제공한다. 활성 tap은 `onTap` Action을 한 번 기�
 
 동작 줄이기 변형은 컴포넌트마다 `motion` Control(`standard` · `reduced`, inline radio)과 `Reduced Motion`
 스토리로 본다. Dialog·Bottom Sheet·Overlay·Progress Header는 `motion`을 prop으로 넘기고, Round
-Button·Learning Unit·Page Indicator·Settings Cell·Chat Bubble은 Lynx entry가 `@libitums/ui-lynx/motion`의
-`MotionProvider`로 트리를 감싸 컨텍스트로 전달한다(컴포넌트에 prop을 주지 않는다 — 제품 앱과 같은
-길). Visual Novel Dialog는 기존 `reducedMotion` Control이다. Button·Card·Tooltip은 동작 줄이기 변형이
-없어 스토리도 없다(Spinner 회전은 reduced에서도 유지). `standard`에서는 DOM·클래스가 전과 같고
-`reduced`일 때만 `-motion-reduced` 클래스·`data-motion`이 난다. 정책은 FE 저장소
-`docs/adr/0053-motion-policy.md`가 진다.
+Button·Learning Unit·Page Indicator·Settings Cell·Chat Bubble·Button·Card·Option Selector는 Lynx entry가
+`@libitums/ui-lynx/motion`의 `MotionProvider`로 트리를 감싸 컨텍스트로 전달한다(컴포넌트에 prop을
+주지 않는다 — 제품 앱과 같은 길). Visual Novel Dialog는 기존 `reducedMotion` Control이다. Button·Card·
+Option Selector의 `Reduced Motion`은 눌림 축소(95 %)가 걷히고 Button neutral·brand는 눌림 막, 나머지는
+눌림 색만 남는 것을 보는 스토리다 — Card는 `interaction: "interactive"`로 연다(static은 보일 것이
+없다). Tooltip은 동작 줄이기 변형이 없어 스토리도 없다(Button Spinner 회전은 reduced에서도 유지).
+`standard`에서는 DOM·클래스가 전과 같고 `reduced`일 때만 `-motion-reduced` 클래스·`data-motion`이
+난다. 정책은 FE 저장소 `docs/adr/0053-motion-policy.md`가 진다(눌림 확장은 그 문서의 정정 기록 1).
 Progress Header는 `title`, `activity`, `progress`,
 `exitAccessibilityLabel`, `motion` Controls를 직렬화해 같은 경계로 전달하고, exit tap은
 `onExit` bridge Action으로 돌아온다. Lynx entry는

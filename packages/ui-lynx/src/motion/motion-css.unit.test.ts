@@ -76,8 +76,8 @@ describe("reduced motion css", () => {
     expect(track).toMatch(/transition:\s*background-color/);
   });
 
-  test("CS6. Card와 Tooltip에는 reduced 변형 규칙이 없다", () => {
-    expect(readCss("card/card.css")).not.toContain("-motion-reduced");
+  test("CS6′. Tooltip에는 reduced 변형 규칙이 없고 Card에는 있다", () => {
+    expect(readCss("card/card.css")).toContain("ui-lynx-card-motion-reduced");
     expect(readCss("tooltip/tooltip.css")).not.toContain("-motion-reduced");
   });
 
@@ -133,10 +133,13 @@ describe("scale tokens", () => {
     expect(body).toMatch(pressed);
   });
 
-  test("SC4′. 세 파일에 비항등 scale 리터럴이 없다", () => {
+  test("SC4″. 여섯 파일에 비항등 scale 리터럴이 없다", () => {
+    expect(nonIdentity(readCss("button/button.css"))).toEqual([]);
     expect(nonIdentity(readCss("round-button/round-button.css"))).toEqual([]);
     expect(nonIdentity(readCss("learning-unit/learning-unit.css"))).toEqual([]);
     expect(nonIdentity(readCss("dialog/dialog.css"))).toEqual([]);
+    expect(nonIdentity(readCss("card/card.css"))).toEqual([]);
+    expect(nonIdentity(readCss("option-selector/option-selector.css"))).toEqual([]);
   });
 });
 

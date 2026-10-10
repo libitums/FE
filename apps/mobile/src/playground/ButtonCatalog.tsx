@@ -1,4 +1,5 @@
 import type { ReactNode } from "@lynx-js/react";
+import arrowRight from "@libitums/icons/lynx/arrow-right";
 import info02 from "@libitums/icons/lynx/info-02";
 import { Button } from "@libitums/ui-lynx/button";
 import type { ButtonSize, ButtonVariant } from "@libitums/ui-lynx/button";
@@ -44,6 +45,25 @@ export function ButtonCatalog() {
       </Section>
       <Section title="Button · fill">
         <Button label="계속하기" variant="brand" size="xl" width="fill" />
+      </Section>
+      <Section title="Button · fill · icon · loading">
+        <Button
+          label="계속하기"
+          variant="brand"
+          size="xl"
+          width="fill"
+          icon={arrowRight}
+          iconPosition="trailing"
+        />
+        <Button
+          label="계속하기"
+          variant="brand"
+          size="xl"
+          width="fill"
+          icon={arrowRight}
+          iconPosition="trailing"
+          loading
+        />
       </Section>
     </scroll-view>
   );

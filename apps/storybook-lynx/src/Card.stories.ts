@@ -22,6 +22,7 @@ const meta = {
     overline: { control: "text" },
     body: { control: "text" },
     showMedia: { control: "boolean" },
+    motion: { control: "inline-radio", options: ["standard", "reduced"] },
     onTap: { control: false },
   },
   args: {
@@ -32,6 +33,7 @@ const meta = {
     overline: "추천",
     body: "카페에서 자연스럽게 주문하는 표현을 연습해 보세요.",
     showMedia: false,
+    motion: "standard",
     onTap: fn(),
   },
 } satisfies Meta<CardStoryArgs>;
@@ -43,3 +45,4 @@ export const Static: Story = {};
 export const Interactive: Story = { args: { interaction: "interactive" } };
 export const LargeWithMedia: Story = { args: { padding: "l", showMedia: true } };
 export const RightToLeft: Story = { args: { interaction: "interactive", direction: "rtl" } };
+export const ReducedMotion: Story = { args: { interaction: "interactive", motion: "reduced" } };

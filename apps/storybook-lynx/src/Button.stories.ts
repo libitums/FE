@@ -24,6 +24,7 @@ const meta = {
     width: { control: "inline-radio", options: ["hug", "fill"] },
     disabled: { control: "boolean" },
     loading: { control: "boolean" },
+    motion: { control: "inline-radio", options: ["standard", "reduced"] },
     onTap: { control: false },
   },
   args: {
@@ -33,6 +34,7 @@ const meta = {
     width: "hug",
     disabled: false,
     loading: false,
+    motion: "standard",
     onTap: fn(),
   },
 } satisfies Meta<ButtonStoryArgs>;
@@ -44,3 +46,4 @@ export const Default: Story = {};
 export const Brand: Story = { args: { variant: "brand" } };
 export const Loading: Story = { args: { label: "처리 중", loading: true } };
 export const Disabled: Story = { args: { label: "사용할 수 없음", disabled: true } };
+export const ReducedMotion: Story = { args: { motion: "reduced" } };

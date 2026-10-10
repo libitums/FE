@@ -1,7 +1,9 @@
 import { root, useInitData } from "@lynx-js/react";
 import { Button } from "@libitums/ui-lynx/button";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import type { ButtonSize, ButtonVariant, ButtonWidth } from "@libitums/ui-lynx/button";
 
+import { normalizeStoryMotion } from "../story-motion";
 import type { ButtonStoryArgs } from "../story-types";
 import "./story-canvas.css";
 
@@ -30,15 +32,17 @@ function App() {
       <view className="story-card">
         <text className="story-eyebrow">LYNX COMPONENT</text>
         <text className="story-title">Button</text>
-        <Button
-          label={label}
-          variant={variant}
-          size={size}
-          width={width}
-          disabled={args.disabled === true}
-          loading={args.loading === true}
-          bindtap={emitTap}
-        />
+        <MotionProvider motion={normalizeStoryMotion(args.motion)}>
+          <Button
+            label={label}
+            variant={variant}
+            size={size}
+            width={width}
+            disabled={args.disabled === true}
+            loading={args.loading === true}
+            bindtap={emitTap}
+          />
+        </MotionProvider>
       </view>
     </view>
   );

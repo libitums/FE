@@ -1,4 +1,6 @@
 import type { CardDirection, CardPadding } from "@libitums/ui-lynx/card";
+import type { Motion } from "@libitums/ui-lynx/motion";
+import { normalizeStoryMotion } from "./story-motion";
 
 export type CardInteraction = "static" | "interactive";
 
@@ -10,6 +12,7 @@ export type CardInitData = {
   readonly overline: string;
   readonly body: string;
   readonly showMedia: boolean;
+  readonly motion: Motion;
 };
 
 export type CardStoryActionEnvelope = {
@@ -46,6 +49,8 @@ export function normalizeCardStoryArgs(input: unknown): CardInitData {
         ? args.body
         : "카페에서 자연스럽게 주문하는 표현을 연습해 보세요.",
     showMedia: args.showMedia === true,
+    // 동작 줄이기 값은 다른 companion과 같은 규칙으로 정규화합니다.
+    motion: normalizeStoryMotion(args.motion),
   };
 }
 

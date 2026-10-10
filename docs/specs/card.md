@@ -31,7 +31,10 @@ Interactive 안의 Footer와 사용자 제공 trailing은 런타임 오류로 �
 - surface.default, radius.md, shadow.s1, z.default를 사용하고 부모 너비를 채운다.
 - M은 16px, L은 24px Content padding을 사용한다.
 - Overline↔Title 4px, Header↔Body 12px, Body/Header↔Footer 20px, Footer actions 8px이다.
-- Interactive pressed는 gray.100 배경으로 150ms 전환한다. reduced motion에서는 100ms linear다.
+- Interactive pressed는 gray.100 배경과 95 % 축소(`motion.scale.pressed`)로 `motion.duration.pressed`(150ms)
+  전환한다. reduced motion에서는 축소 없이 색 전환만 남는다(막 없음 — 색이 이미 바뀐다). 축소는
+  원본 매핑 「색만」에서 벗어난 제품 결정이다(`docs/adr/0053-motion-policy.md` 정정 기록 1, 2026-10-11).
+  `getCardContract(props, contextMotion)`이 reduced일 때만 `ui-lynx-card-motion-reduced` 클래스를 더한다.
 - Interactive focus는 white 2px inner ring과 border.strong 2px outer ring을 더한다.
 - Media만 overflow hidden으로 상단 모서리를 자르고 Content는 focus ring을 자르지 않는다.
 - RTL에서는 이동 화살표를 좌우 반전한다.
@@ -41,5 +44,5 @@ Interactive 안의 Footer와 사용자 제공 trailing은 런타임 오류로 �
 - unit: 기본값, interactive 접근성 계약, 빈 입력, token/CSS 상태
 - UI: Static slot 순서, Interactive tap/단일 접근성 node, nested action 거부, Media 의미
 - integration: root/subpath identity, aggregate/component CSS, pack 산출물
-- Storybook: Static, Interactive, Large with Media, RTL
+- Storybook: Static, Interactive, Large with Media, RTL, Reduced Motion(`motion` arg — 엔트리가 `MotionProvider`로 감싼다)
 - 전체 `pnpm verify`

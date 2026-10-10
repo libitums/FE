@@ -1,9 +1,15 @@
 import type { ReactNode } from "@lynx-js/react";
 import lock from "@libitums/icons/lynx/lock";
 import { color } from "@libitums/design-tokens";
+import { useMotion } from "@libitums/ui-lynx/motion";
 
 import { useUiCopy } from "../../lib/ui-copy";
-import { roleplayFormLabel, roleplayItemAccessibilityLabel } from "./roleplay-list";
+import {
+  hasRoleplayCardPressedShade,
+  roleplayCardClassName,
+  roleplayFormLabel,
+  roleplayItemAccessibilityLabel,
+} from "./roleplay-list";
 import type { RoleplayCardProps } from "./roleplay-list.contract";
 
 import "./roleplay-card.css";
@@ -21,6 +27,10 @@ import "./roleplay-card.css";
  */
 export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardProps): ReactNode {
   const copy = useUiCopy();
+  const motion = useMotion();
+  // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
+  const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
+  const shaded = hasRoleplayCardPressedShade(locked, motion);
   const handleTap = () => {
     "background only";
     onSelect(item);
@@ -28,8 +38,9 @@ export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardPro
 
   return (
     <view
-      className={`roleplay-card roleplay-card-${layout}`}
+      className={roleplayCardClassName({ layout, locked, motion })}
       data-testid={`roleplay-list-item-${item.unitId}`}
+      {...motionProps}
       data-locked={locked ? "true" : "false"}
       accessibility-element={true}
       // 잠긴 카드는 버튼이 아닙니다 — 눌러도 아무 일이 없는 것을 버튼이라 읽히게 두지
@@ -38,6 +49,12 @@ export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardPro
       accessibility-label={roleplayItemAccessibilityLabel(item, locked, copy)}
       bindtap={locked ? undefined : handleTap}
     >
+      {shaded ? (
+        <view
+          className="roleplay-card-pressed-shade"
+          data-testid={`roleplay-list-item-pressed-shade-${item.unitId}`}
+        />
+      ) : null}
       <view className="roleplay-card-shade" />
       <view className="roleplay-card-text">
         <text

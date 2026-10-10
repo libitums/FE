@@ -1,6 +1,7 @@
 import type {} from "@lynx-js/react";
 import tick from "@libitums/icons/lynx/tick";
 
+import { useMotion } from "../motion/MotionProvider";
 import {
   type OptionSelectorContract,
   type OptionSelectorItemContract,
@@ -107,7 +108,10 @@ function OptionSelectorRow({
 }
 
 export function OptionSelector(props: OptionSelectorProps) {
-  const selector = getOptionSelectorContract(props);
+  const motion = useMotion();
+  const selector = getOptionSelectorContract(props, motion);
+  // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
+  const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
 
   function handleSelect(id: string) {
     "background only";
@@ -127,6 +131,7 @@ export function OptionSelector(props: OptionSelectorProps) {
     <view
       className={selector.className}
       data-testid="ui-lynx-option-selector"
+      {...motionProps}
       data-variant={selector.variant}
       data-size={selector.size}
       data-selection={selector.selection}

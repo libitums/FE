@@ -462,7 +462,9 @@ rotate · width · reveal). 새 토큰은 0이고 `@libitums/design-tokens` 0.3.
     남겨** 「속성 없음」 단언이 깨진다 — `TextField.tsx`가 `maxlength`를 같은 꼴로 빼는 선례와 같은
     이유다(그쪽은 iOS native input이 `undefined`를 0으로 받던 문제. 둘 다 `undefined` 속성이
     「없음」으로 끝나지 않는 자리다).
-- **Card · Tooltip은 변형을 만들지 않는다.** motion.md 매핑이 둘 다 「유지」라 CSS 차이가 0인
+- **Card · Tooltip은 변형을 만들지 않는다.** *(2026-10-11 주: Card는 뒤집혔다 — 눌림 확장이 interactive Card에
+  95 % 축소와 reduced 변형(색만)을 더했다. 결정은 [ADR-0053](0053-motion-policy.md) 정정 기록 1이 진다. Tooltip만
+  변형이 없다.)* motion.md 매핑이 둘 다 「유지」라 CSS 차이가 0인
   변형은 관찰할 것이 없다. Card에 있던 `@media (prefers-reduced-motion)` 블록은 정책과 반대로(색
   전환을 줄이던) 죽은 코드였고 **삭제만** 했다. 같은 이유로 Dialog · BottomSheet · RoundButton ·
   LearningUnit의 `@media` 블록도 지웠다 — Lynx는 미디어 특성을 지원하지 않아 어느 것도 픽셀을
@@ -529,7 +531,10 @@ rotate · width · reveal). 새 토큰은 0이고 `@libitums/design-tokens` 0.3.
     문제다. VN continue indicator의 bounce 제거(아래)로 standard에서 멈출 수 없던 끝없는 움직임이
     하나 줄었다 — 2.2.2 축의 개선.
 - **Button Loading은 라벨 · 아이콘을 흐름에 둔 채 `visibility: hidden`으로 숨기고 spinner wrap을
-  surface 안 절대 배치 중앙에 둔다.** 정본 산식 「Loading = Default 너비 그대로」를 측정 없이 지키는
+  surface 안 절대 배치 중앙에 둔다.** *(2026-10-11 주: 숨김은 inline `opacity: 0`, 래퍼는 네 변 `0` 대신
+  `width/height: 100%`로 바뀌었다 — Lynx iOS에서 `<text>`의 `visibility: hidden`이 글자를 지우지 않았고 네 변 `0`이
+  `fill` surface에서 서지 않았다. 산식 「Loading = Default 너비 그대로」는 그대로다. [ADR-0053](0053-motion-policy.md)
+  정정 기록 1.)* 정본 산식 「Loading = Default 너비 그대로」를 측정 없이 지키는
   유일한 길이다(같은 자식이 같은 레이아웃을 차지한다). 계약 객체에 `contentVisibility: "visible" |
   "hidden"` 필드가 하나 늘었다 — 위 절의 「contract 객체에 필드를 더하지 않는다」는 RoundButton ·
   LearningUnit의 `toEqual` 보호였고 Button에는 그 제약이 없다. 기존 `column-gap: spacing-6`과 숨긴

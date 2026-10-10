@@ -148,21 +148,80 @@ describe("Card UI", () => {
 });
 
 describe("Card motion 컨텍스트", () => {
-  test("CT1: reduced Provider에서도 Card는 data-motion이 없고 className이 불변이다", () => {
-    const card = (
-      <Card padding="l">
-        <Card.Content>
-          <Card.Header title="오늘의 학습" />
-        </Card.Content>
-      </Card>
-    );
-    const plain = render(card);
-    const baseline = screen.getByTestId("ui-lynx-card").getAttribute("class");
-    plain.unmount();
+  const staticCard = (
+    <Card padding="l">
+      <Card.Content>
+        <Card.Header title="오늘의 학습" />
+      </Card.Content>
+    </Card>
+  );
+  const interactiveCard = (
+    <Card
+      interaction="interactive"
+      accessibilityLabel="오늘의 학습"
+      accessibilityDescription="새로운 표현 5개"
+      accessibilityRole="link"
+      bindtap={() => undefined}
+    >
+      <Card.Content>
+        <Card.Header title="오늘의 학습" />
+      </Card.Content>
+    </Card>
+  );
 
-    render(<MotionProvider motion="reduced">{card}</MotionProvider>);
-    const element = screen.getByTestId("ui-lynx-card");
-    expect(element).not.toHaveAttribute("data-motion");
-    expect(element.getAttribute("class")).toBe(baseline);
+  test.each([
+    ["static", staticCard],
+    ["interactive", interactiveCard],
+  ] as const)(
+    "UI-C1: reduced Provider에서 %s Card 루트에 표지가 붙고 interaction은 그대로다",
+    (interaction, card) => {
+      render(<MotionProvider motion="reduced">{card}</MotionProvider>);
+      const element = screen.getByTestId("ui-lynx-card");
+      expect(element).toHaveAttribute("data-motion", "reduced");
+      expect(element).toHaveClass("ui-lynx-card-motion-reduced");
+      expect(element).toHaveAttribute("data-interaction", interaction);
+    },
+  );
+
+  test("UI-C2: Provider가 없거나 standard면 표지도 막도 없다", () => {
+    const bare = render(staticCard);
+    expect(screen.getByTestId("ui-lynx-card")).not.toHaveAttribute("data-motion");
+    expect(screen.getByTestId("ui-lynx-card").getAttribute("class")).not.toContain("motion");
+    expect(bare.container.querySelector("[data-motion]")).toBeNull();
+    bare.unmount();
+
+    const standard = render(<MotionProvider motion="standard">{interactiveCard}</MotionProvider>);
+    expect(screen.getByTestId("ui-lynx-card")).not.toHaveAttribute("data-motion");
+    expect(screen.getByTestId("ui-lynx-card").getAttribute("class")).not.toContain("motion");
+    expect(standard.container.querySelector("[data-motion]")).toBeNull();
+    standard.unmount();
+
+    // 막은 영구히 없다 — reduced에서도 shade 요소를 만들지 않는다.
+    const reduced = render(<MotionProvider motion="reduced">{interactiveCard}</MotionProvider>);
+    expect(screen.queryByTestId("ui-lynx-card-shade")).not.toBeInTheDocument();
+    expect(reduced.container.querySelector(".ui-lynx-card-shade")).toBeNull();
+  });
+
+  test("UI-C3: reduced interactive Card의 접근성 속성은 plain과 같다", () => {
+    const attrs = [
+      "accessibility-element",
+      "accessibility-label",
+      "accessibility-value",
+      "accessibility-traits",
+      "focusable",
+    ] as const;
+    const read = () => {
+      const root = screen.getByTestId("ui-lynx-card");
+      return [
+        ...attrs.map((name) => root.getAttribute(name)),
+        root.firstElementChild?.getAttribute("accessibility-elements-hidden"),
+      ];
+    };
+    const plain = render(interactiveCard);
+    const baseline = read();
+    plain.unmount();
+    render(<MotionProvider motion="reduced">{interactiveCard}</MotionProvider>);
+    expect(baseline[0]).toBe("true");
+    expect(read()).toEqual(baseline);
   });
 });

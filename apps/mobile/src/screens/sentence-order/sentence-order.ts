@@ -3,6 +3,8 @@
 // 화면 컴포넌트를 참조하지 않는 순수 모듈입니다(listening.ts · assessment.ts와
 // 같은 판단입니다).
 
+import type { Motion } from "@libitums/ui-lynx/motion";
+
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
@@ -244,4 +246,15 @@ export function sentenceOrderAnnouncement(result: AnswerResult, copy: UiCopy): s
  */
 export function sentenceOrderCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
   return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
+}
+
+export type SentenceOrderChipVariant = "bank" | "placed";
+
+// 칩 루트의 클래스를 만드는 순수 함수입니다. 동작 줄이기면 끝에 reduced 표지가 붙습니다.
+export function sentenceOrderChipClassName(
+  variant: SentenceOrderChipVariant,
+  motion: Motion,
+): string {
+  const base = `sentence-order-chip sentence-order-chip-${variant}`;
+  return motion === "reduced" ? `${base} sentence-order-chip-motion-reduced` : base;
 }

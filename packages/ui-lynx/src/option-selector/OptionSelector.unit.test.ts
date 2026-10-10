@@ -185,6 +185,26 @@ describe("getOptionSelectorContract", () => {
   });
 });
 
+describe("getOptionSelectorContract motion", () => {
+  test("U-O4: reduced면 컨테이너 className 끝에만 표지가 붙고 항목 · 목록은 불변이다", () => {
+    const standard = getOptionSelectorContract(props());
+    const reduced = getOptionSelectorContract(props(), "reduced");
+    expect(reduced.className).toBe(
+      "ui-lynx-option-selector ui-lynx-option-selector-outlined ui-lynx-option-selector-m ui-lynx-option-selector-stack ui-lynx-option-selector-motion-reduced",
+    );
+    expect(reduced.items).toEqual(standard.items);
+    expect(reduced.listClassName).toBe(standard.listClassName);
+    expect(JSON.stringify(reduced.items)).not.toContain("motion");
+  });
+
+  test("U-O5: 인자가 없거나 standard면 className에 motion이 없다", () => {
+    expect(getOptionSelectorContract(props()).className).not.toContain("motion");
+    expect(getOptionSelectorContract(props(), "standard")).toEqual(
+      getOptionSelectorContract(props()),
+    );
+  });
+});
+
 describe("nextOptionSelection", () => {
   test("Single은 누른 항목 하나로 바꾸고 다시 눌러도 유지한다", () => {
     expect(nextOptionSelection({ options, selection: "single", selectedIds: [], id: "a" })).toEqual(
@@ -321,5 +341,43 @@ describe("option-selector.css", () => {
     );
     expect(styles).toMatch(/row-gap:\s*var\(--libitum-spacing-8\)/);
     expect(styles).toMatch(/column-gap:\s*var\(--libitum-spacing-12\)/);
+  });
+});
+
+describe("option-selector.css motion", () => {
+  const css = readFileSync(
+    resolve(process.cwd(), "src/option-selector/option-selector.css"),
+    "utf8",
+  );
+  /** 선택자 정규식에 맞는 첫 규칙의 본문. 규칙이 없으면 빈 문자열이라 단언이 값 불일치로 실패합니다. */
+  const ruleBody = (css: string, selector: RegExp): string =>
+    new RegExp(`(?:^|[}/])\\s*${selector.source}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? "";
+  const body = (selector: RegExp): string => ruleBody(css, selector);
+
+  test("U-O1: pressable 눌림은 variant 공통으로 pressed scale 토큰을 쓴다", () => {
+    expect(body(/\.ui-lynx-option-selector-item-pressable:active/)).toMatch(
+      /transform:\s*scale\(var\(--libitum-motion-scale-pressed\)\)/,
+    );
+  });
+
+  test("U-O2: 항목 base는 색 전환을 유지하고 transform 전환을 더한다", () => {
+    const item = body(/\.ui-lynx-option-selector-item/);
+    expect(item).toMatch(
+      /background-color var\(--libitum-motion-duration-color\) var\(--libitum-motion-easing-easing\)/,
+    );
+    expect(item).toMatch(
+      /border-color var\(--libitum-motion-duration-color\) var\(--libitum-motion-easing-easing\)/,
+    );
+    expect(item).toMatch(
+      /transform var\(--libitum-motion-duration-pressed\) var\(--libitum-motion-easing-easing\)/,
+    );
+  });
+
+  test("U-O3: reduced 컨테이너 안의 눌린 pressable은 transform이 없다", () => {
+    expect(
+      body(
+        /\.ui-lynx-option-selector-motion-reduced\s+\.ui-lynx-option-selector-item-pressable:active/,
+      ),
+    ).toMatch(/transform:\s*none/);
   });
 });

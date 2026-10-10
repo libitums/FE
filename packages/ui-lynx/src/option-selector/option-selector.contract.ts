@@ -1,5 +1,7 @@
 import { color } from "@libitums/design-tokens";
 
+import { motionClassName, type Motion } from "../motion/motion.contract";
+
 export type OptionSelectorVariant = "filled" | "outlined";
 export type OptionSelectorSize = "s" | "m" | "l";
 export type OptionSelectorSelection = "single" | "multiple";
@@ -163,7 +165,10 @@ export function isSameOptionSelection(a: readonly string[], b: readonly string[]
   return a.length === b.length && a.every((id, index) => id === b[index]);
 }
 
-export function getOptionSelectorContract(props: OptionSelectorProps): OptionSelectorContract {
+export function getOptionSelectorContract(
+  props: OptionSelectorProps,
+  contextMotion: Motion = "standard",
+): OptionSelectorContract {
   const groupLabel = requireText(props.groupLabel, "groupLabel");
   const variant = requireOption(props.variant ?? "outlined", variants, "variant");
   const size = requireOption(props.size ?? "m", sizes, "size");
@@ -234,7 +239,10 @@ export function getOptionSelectorContract(props: OptionSelectorProps): OptionSel
       `ui-lynx-option-selector-${variant}`,
       `ui-lynx-option-selector-${size}`,
       `ui-lynx-option-selector-${layout}`,
-    ].join(" "),
+      motionClassName("ui-lynx-option-selector", contextMotion),
+    ]
+      .filter((value): value is string => value !== undefined)
+      .join(" "),
     listClassName: `ui-lynx-option-selector-list ui-lynx-option-selector-list-${layout}`,
     groupLabel,
     variant,

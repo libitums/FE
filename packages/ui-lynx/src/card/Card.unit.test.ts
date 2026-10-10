@@ -121,6 +121,40 @@ describe("getCardContract", () => {
   });
 });
 
+describe("getCardContract motion", () => {
+  const staticProps = { children: null };
+  const interactiveProps = {
+    children: null,
+    interaction: "interactive" as const,
+    accessibilityLabel: "학습",
+    accessibilityRole: "button" as const,
+    bindtap: () => undefined,
+  };
+
+  test("U-C4: reduced면 static · interactive 모두 className 끝에 motion 표지가 붙고 나머지는 같다", () => {
+    for (const [props, interaction] of [
+      [staticProps, "static"],
+      [interactiveProps, "interactive"],
+    ] as const) {
+      const standard = getCardContract(props);
+      const reduced = getCardContract(props, "reduced");
+      expect(reduced.className).toBe(`${standard.className} ui-lynx-card-motion-reduced`);
+      expect(reduced.className).toMatch(
+        new RegExp(`ui-lynx-card-${interaction} ui-lynx-card-motion-reduced$`),
+      );
+      expect({ ...reduced, className: "" }).toEqual({ ...standard, className: "" });
+    }
+  });
+
+  test("U-C5: 인자가 없거나 standard면 className에 motion이 없다", () => {
+    expect(getCardContract(staticProps).className).not.toContain("motion");
+    expect(getCardContract(interactiveProps, "standard").className).not.toContain("motion");
+    expect(getCardContract(interactiveProps, "standard")).toEqual(
+      getCardContract(interactiveProps),
+    );
+  });
+});
+
 describe("validateCardHeader", () => {
   test.each([
     ["", undefined, "Card title must not be empty"],
@@ -187,5 +221,33 @@ describe("card.css", () => {
     expect(styles).toMatch(
       /\.ui-lynx-card-rtl \.ui-lynx-card-arrow\s*\{[^}]*transform:\s*scaleX\(-1\)/,
     );
+  });
+});
+
+describe("card.css motion", () => {
+  /** 선택자 정규식에 맞는 첫 규칙의 본문. 규칙이 없으면 빈 문자열이라 단언이 값 불일치로 실패합니다. */
+  const ruleBody = (css: string, selector: RegExp): string =>
+    new RegExp(`(?:^|[}/])\\s*${selector.source}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? "";
+  const body = (selector: RegExp): string => ruleBody(styles, selector);
+
+  test("U-C1: interactive 눌림은 pressed scale 토큰을 쓰고 기존 색을 유지한다", () => {
+    const active = body(/\.ui-lynx-card-interactive:active/);
+    expect(active).toMatch(/transform:\s*scale\(var\(--libitum-motion-scale-pressed\)\)/);
+    expect(active).toMatch(/background-color:\s*var\(--libitum-color-gray-100\)/);
+  });
+
+  test("U-C2: interactive base는 background-color와 transform을 전환한다", () => {
+    const base = body(/\.ui-lynx-card-interactive/);
+    expect(base).toMatch(/transition-property:\s*background-color,\s*transform/);
+    expect(base).toMatch(/transition-duration:\s*var\(--libitum-motion-duration-pressed\)/);
+  });
+
+  test("U-C3: reduced는 눌림 transform을 없애고 색 전환만 남긴다", () => {
+    expect(body(/\.ui-lynx-card-motion-reduced\.ui-lynx-card-interactive:active/)).toMatch(
+      /transform:\s*none/,
+    );
+    const base = body(/\.ui-lynx-card-motion-reduced\.ui-lynx-card-interactive/);
+    expect(base).toMatch(/transition-property:\s*background-color\s*;/);
+    expect(base).not.toMatch(/transform/);
   });
 });

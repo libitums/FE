@@ -43,13 +43,23 @@
 
 .ui-lynx-card-interactive {
   min-height: var(--libitum-spacing-48);
-  transition-property: background-color;
+  transition-property: background-color, transform;
   transition-duration: var(--libitum-motion-duration-pressed);
   transition-timing-function: var(--libitum-motion-easing-easing);
 }
 
 .ui-lynx-card-interactive:active {
   background-color: var(--libitum-color-gray-100);
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+/* 움직임 줄이기: 색 전환만 남기고 카드를 줄이지 않습니다. */
+.ui-lynx-card-motion-reduced.ui-lynx-card-interactive {
+  transition-property: background-color;
+}
+
+.ui-lynx-card-motion-reduced.ui-lynx-card-interactive:active {
+  transform: none;
 }
 
 /* 포커스 고리입니다. 바탕 그림자를 함께 적는 것은 `box-shadow`가 통째로 덮이기
