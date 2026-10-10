@@ -24,6 +24,7 @@ const meta = {
     longLabels: { control: "boolean" },
     disabledLast: { control: "boolean" },
     committed: { control: "boolean" },
+    motion: { control: "inline-radio", options: ["standard", "reduced"] },
     onChange: { control: false },
     onCommit: { control: false },
   },
@@ -37,6 +38,7 @@ const meta = {
     longLabels: false,
     disabledLast: false,
     committed: false,
+    motion: "standard",
     onChange: fn(),
     onCommit: fn(),
   },
@@ -52,3 +54,4 @@ export const Immediate: Story = { args: { commit: "immediate", size: "l", longLa
 export const Grid: Story = { args: { layout: "grid", size: "s" } };
 export const Disabled: Story = { args: { disabledLast: true } };
 export const LongLabel: Story = { args: { longLabels: true } };
+export const ReducedMotion: Story = { args: { motion: "reduced" } };

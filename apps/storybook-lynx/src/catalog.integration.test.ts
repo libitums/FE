@@ -681,6 +681,7 @@ describe("Storybook Lynx build outputs", () => {
       overline: "추천",
       body: "카페에서 자연스럽게 주문하는 표현을 연습해 보세요.",
       showMedia: true,
+      motion: "standard",
     });
     expect(dispatchCardStoryTap(interactive, (envelope) => calls.push(envelope))).toBe(true);
     expect(
@@ -689,6 +690,17 @@ describe("Storybook Lynx build outputs", () => {
       ),
     ).toBe(false);
     expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onTap", args: ["말하기 연습"] }]);
+  });
+  test("SB-2. card story args는 motion을 reduced만 reduced로 정리하고 tap은 motion과 무관하다", () => {
+    expect(normalizeCardStoryArgs({ motion: "reduced" }).motion).toBe("reduced");
+    expect(normalizeCardStoryArgs({}).motion).toBe("standard");
+    expect(normalizeCardStoryArgs({ motion: "REDUCED" }).motion).toBe("standard");
+    for (const motion of ["standard", "reduced"]) {
+      const calls: unknown[] = [];
+      const data = normalizeCardStoryArgs({ interaction: "interactive", motion, title: "카드" });
+      expect(dispatchCardStoryTap(data, (envelope) => calls.push(envelope))).toBe(true);
+      expect(calls).toEqual([{ channel: "STORYBOOK_ACTION", name: "onTap", args: ["카드"] }]);
+    }
   });
   test.each([
     "button",
@@ -719,7 +731,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(bundle.subarray(0, 8).toString("ascii")).toBe("SDRAWROF");
   });
 
-  test("ST1. index.json에 motion 스토리 일곱 id가 있다", async () => {
+  test("ST1. index.json에 motion 스토리 열 id가 있다", async () => {
     const index = JSON.parse(await readOutput("dist/storybook/index.json")) as {
       entries: Record<string, unknown>;
     };
@@ -731,6 +743,9 @@ describe("Storybook Lynx build outputs", () => {
       "components-chat-bubble--reduced-motion",
       "components-visual-novel-dialog--reduced-motion",
       "components-chat-bubble--typewriter",
+      "components-button--reduced-motion",
+      "components-card--reduced-motion",
+      "components-option-selector--reduced-motion",
     ]) {
       expect(Object.keys(index.entries)).toContain(id);
     }
@@ -745,12 +760,32 @@ describe("Storybook Lynx build outputs", () => {
     ]);
   });
 
-  test.each(["round-button", "learning-unit", "page-indicator", "settings-cell", "chat-bubble"])(
-    "ST6. %s 엔트리는 motion 서브패스의 MotionProvider로 감싼다",
+  test.each([
+    "round-button",
+    "learning-unit",
+    "page-indicator",
+    "settings-cell",
+    "chat-bubble",
+    "button",
+    "card",
+    "option-selector",
+  ])("ST6. %s 엔트리는 motion 서브패스의 MotionProvider로 감싼다", async (name) => {
+    const source = await readOutput(`src/lynx/${name}.tsx`);
+    expect(source).toContain('from "@libitums/ui-lynx/motion"');
+    expect(source).toContain("<MotionProvider motion={");
+  });
+  test.each(["button", "option-selector"])(
+    "SB-3. %s 엔트리는 normalizeStoryMotion으로 motion arg를 정리해 Provider에 넘긴다",
     async (name) => {
       const source = await readOutput(`src/lynx/${name}.tsx`);
-      expect(source).toContain('from "@libitums/ui-lynx/motion"');
-      expect(source).toContain("<MotionProvider motion={");
+      expect(source).toContain("normalizeStoryMotion(");
+    },
+  );
+  test.each(["Button", "Card", "OptionSelector"])(
+    "SB-3. %s.stories.ts는 ReducedMotion 스토리를 export한다",
+    async (name) => {
+      const source = await readOutput(`src/${name}.stories.ts`);
+      expect(source).toMatch(/export\s+const\s+ReducedMotion\b/);
     },
   );
   test("ST6. chat-bubble 엔트리는 reveal arg를 넘긴다", async () => {

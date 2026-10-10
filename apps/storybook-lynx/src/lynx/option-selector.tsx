@@ -1,4 +1,5 @@
 import { root, useEffect, useInitData, useState } from "@lynx-js/react";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 import type {
   OptionSelectorCommit,
@@ -9,6 +10,7 @@ import type {
   OptionSelectorVariant,
 } from "@libitums/ui-lynx/option-selector";
 
+import { normalizeStoryMotion } from "../story-motion";
 import type { OptionSelectorStoryArgs } from "../story-types";
 import "./story-canvas.css";
 
@@ -85,22 +87,24 @@ function App() {
       <view className="story-card">
         <text className="story-eyebrow">LYNX COMPONENT</text>
         <text className="story-title">Option Selector</text>
-        <OptionSelector
-          groupLabel="알맞은 응답을 고르세요"
-          options={options}
-          selectedIds={selectedIds}
-          onChange={handleChange}
-          onCommit={handleCommit}
-          committed={committed}
-          variant={variant}
-          size={size}
-          selection={selection}
-          commit={commit}
-          layout={layout}
-          {...(learning
-            ? { contentLanguage: "learning" as const, languageTag: "en-US" }
-            : { contentLanguage: "ui" as const })}
-        />
+        <MotionProvider motion={normalizeStoryMotion(args.motion)}>
+          <OptionSelector
+            groupLabel="알맞은 응답을 고르세요"
+            options={options}
+            selectedIds={selectedIds}
+            onChange={handleChange}
+            onCommit={handleCommit}
+            committed={committed}
+            variant={variant}
+            size={size}
+            selection={selection}
+            commit={commit}
+            layout={layout}
+            {...(learning
+              ? { contentLanguage: "learning" as const, languageTag: "en-US" }
+              : { contentLanguage: "ui" as const })}
+          />
+        </MotionProvider>
       </view>
     </view>
   );

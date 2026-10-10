@@ -73,6 +73,7 @@ export type ButtonStoryArgs = {
   width: ButtonWidth;
   disabled: boolean;
   loading: boolean;
+  motion: Motion;
   onTap: (label: string) => void;
 };
 
@@ -132,6 +133,7 @@ export type OptionSelectorStoryArgs = {
   longLabels: boolean;
   disabledLast: boolean;
   committed: boolean;
+  motion: Motion;
   onChange: (selectedIds: readonly string[]) => void;
   onCommit: (id: string) => void;
 };
@@ -144,6 +146,7 @@ export type CardStoryArgs = {
   overline: string;
   body: string;
   showMedia: boolean;
+  motion: Motion;
   onTap: (title: string) => void;
 };
 
