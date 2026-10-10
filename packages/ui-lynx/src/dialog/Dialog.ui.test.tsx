@@ -4,15 +4,20 @@ import { describe, expect, test, vi } from "vitest";
 import { MotionProvider } from "../motion";
 import { Dialog } from "./Dialog";
 
-/** 요소와 자손의 accessibility-* 속성을 순서대로 모읍니다. */
+/**
+ * 요소와 자손 가운데 accessibility-* 속성을 가진 것만 순서대로 모읍니다. 속성이 없는 장식 요소(reduced에서
+ * Button이 더하는 눌림 막 등)는 접근성 트리에 없으므로 세지 않습니다.
+ */
 const accessibilitySnapshot = (root: Element): Record<string, string>[] =>
-  [root, ...Array.from(root.querySelectorAll("*"))].map((element) =>
-    Object.fromEntries(
-      Array.from(element.attributes)
-        .filter((attribute) => attribute.name.startsWith("accessibility-"))
-        .map((attribute) => [attribute.name, attribute.value]),
-    ),
-  );
+  [root, ...Array.from(root.querySelectorAll("*"))]
+    .map((element) =>
+      Object.fromEntries(
+        Array.from(element.attributes)
+          .filter((attribute) => attribute.name.startsWith("accessibility-"))
+          .map((attribute) => [attribute.name, attribute.value]),
+      ),
+    )
+    .filter((item) => Object.keys(item).length > 0);
 
 describe("Dialog", () => {
   test("Scrim, 제목, 설명과 두 action을 디자인 순서로 렌더한다", () => {

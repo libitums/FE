@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { opacity } from "@libitums/design-tokens";
 import { describe, expect, test } from "vitest";
 
 describe("ui-lynx styles", () => {
@@ -86,7 +87,11 @@ describe("ui-lynx styles", () => {
       /\.ui-lynx-button-l \.ui-lynx-button-label\s*\{[^}]*font-size:\s*var\(--libitum-typography-button-l-font-size\)/,
     );
     expect(styles).not.toContain("brand-primary-pressed");
-    expect(styles).not.toContain("transform: scale");
+    // U-B2: scale 리터럴 금지는 Button 밖 두 파일에 그대로 건다(Button은 아래 눌림 케이스가 진다).
+    const others = ["back-header/back-header.css", "status-indicator/status-indicator.css"]
+      .map((file) => readFileSync(resolve(process.cwd(), "src", file), "utf8"))
+      .join("\n");
+    expect(others).not.toContain("transform: scale");
   });
 
   describe("button.css loading 회전", () => {
@@ -94,14 +99,15 @@ describe("ui-lynx styles", () => {
     const bodyOf = (selector: RegExp): string =>
       new RegExp(`(?:^|[}/])\\s*${selector.source}\\s*\\{([^}]*)\\}`).exec(css())?.[1] ?? "";
 
-    test("BL2. spinner wrap은 surface를 덮는 absolute 박스이고 width가 없다", () => {
+    test("U-B7 · BL2′. spinner wrap은 top·left 0과 width·height 100%로 surface를 덮고 right·bottom이 없다", () => {
       const body = bodyOf(/\.ui-lynx-button-spinner-wrap/);
       expect(body).toMatch(/position:\s*absolute/);
-      for (const side of ["top", "right", "bottom", "left"]) {
-        expect(body).toMatch(new RegExp(`${side}:\\s*0\\b`));
-      }
+      expect(body).toMatch(/top:\s*0\b/);
+      expect(body).toMatch(/left:\s*0\b/);
+      expect(body).toMatch(/width:\s*100%/);
+      expect(body).toMatch(/height:\s*100%/);
       expect(body).toMatch(/display:\s*flex/);
-      expect(body).not.toMatch(/\bwidth\s*:/);
+      expect(body).not.toMatch(/\b(?:right|bottom)\s*:/);
     });
 
     test("BL3. loading disabled의 spinner border-color는 그대로 border-default다", () => {
@@ -140,6 +146,81 @@ describe("ui-lynx styles", () => {
       expect(block).not.toMatch(/\banimation(?:-name)?\s*:/);
       expect(block).toMatch(/width:\s*var\(--libitum-spacing-12\)/);
       expect(block).toMatch(/height:\s*var\(--libitum-spacing-12\)/);
+    });
+  });
+
+  describe("button.css 눌림 · 막", () => {
+    const css = () => readFileSync(resolve(process.cwd(), "src/button/button.css"), "utf8");
+    const rule = (selector: RegExp): string =>
+      new RegExp(`(?:^|[}/])\\s*${selector.source}\\s*\\{([^}]*)\\}`).exec(css())?.[1] ?? "";
+    const pressedActive =
+      /\.ui-lynx-button:not\(\.ui-lynx-button-loading\):not\(\.ui-lynx-button-disabled\):active\s+\.ui-lynx-button-surface/;
+    const reducedActive =
+      /\.ui-lynx-button-motion-reduced:not\(\.ui-lynx-button-loading\):not\(\.ui-lynx-button-disabled\):active\s+\.ui-lynx-button-surface/;
+    const reducedShade =
+      /\.ui-lynx-button-motion-reduced:not\(\.ui-lynx-button-loading\):not\(\.ui-lynx-button-disabled\):active\s+\.ui-lynx-button-shade/;
+
+    test("U-B1. loading · disabled가 아닌 눌림 surface가 pressed scale 토큰으로 줄어든다", () => {
+      expect(rule(pressedActive)).toMatch(
+        /transform:\s*scale\(var\(--libitum-motion-scale-pressed\)\)/,
+      );
+    });
+
+    test("U-B2. surface base가 transform 전환을 갖는다", () => {
+      expect(rule(/\.ui-lynx-button-surface/)).toMatch(
+        /transition:\s*transform var\(--libitum-motion-duration-pressed\) var\(--libitum-motion-easing-easing\)/,
+      );
+    });
+
+    test("U-B2. button.css에 비항등 scale 리터럴이 없다", () => {
+      const literals = (css().match(/scale\(\s*[\d.]+\s*\)/g) ?? []).filter(
+        (literal) => Number(/([\d.]+)/.exec(literal)?.[1] ?? Number.NaN) !== 1,
+      );
+      expect(literals).toEqual([]);
+    });
+
+    test("U-B3. reduced 눌림은 transform: none이고 reduced surface가 기준 박스다", () => {
+      expect(rule(reducedActive)).toMatch(/transform:\s*none/);
+      expect(rule(/\.ui-lynx-button-motion-reduced\s+\.ui-lynx-button-surface/)).toMatch(
+        /position:\s*relative/,
+      );
+    });
+
+    test("U-B8. 막은 surface를 덮는 투명 박스이고 neutral은 white, size별 radius를 따른다", () => {
+      const body = rule(/\.ui-lynx-button-shade/);
+      expect(body).toMatch(/position:\s*absolute/);
+      expect(body).toMatch(/top:\s*0\b/);
+      expect(body).toMatch(/left:\s*0\b/);
+      expect(body).toMatch(/width:\s*100%/);
+      expect(body).toMatch(/height:\s*100%/);
+      expect(body).toMatch(/background-color:\s*var\(--libitum-color-black\)/);
+      expect(body).toMatch(/opacity:\s*0\s*;/);
+      expect(body).toMatch(
+        /transition:\s*opacity var\(--libitum-motion-duration-pressed\) var\(--libitum-motion-easing-easing\)/,
+      );
+      expect(rule(/\.ui-lynx-button-neutral \.ui-lynx-button-shade/)).toMatch(
+        /background-color:\s*var\(--libitum-color-white\)/,
+      );
+      expect(
+        rule(
+          /\.ui-lynx-button-s \.ui-lynx-button-shade,\s*\.ui-lynx-button-m \.ui-lynx-button-shade/,
+        ),
+      ).toMatch(/border-radius:\s*var\(--libitum-radius-md\)/);
+      expect(
+        rule(
+          /\.ui-lynx-button-l \.ui-lynx-button-shade,\s*\.ui-lynx-button-xl \.ui-lynx-button-shade/,
+        ),
+      ).toMatch(/border-radius:\s*var\(--libitum-radius-lg\)/);
+    });
+
+    test("U-B9. 눌린 reduced 막만 pressed-shade 투명도를 갖고 fallback이 토큰과 같다", () => {
+      const body = rule(reducedShade);
+      expect(body).toMatch(/opacity:\s*var\(--libitum-opacity-pressed-shade,\s*0\.08\)/);
+      const fallback = Number(
+        /opacity:\s*var\(--libitum-opacity-pressed-shade,\s*([\d.]+)\)/.exec(body)?.[1] ??
+          Number.NaN,
+      );
+      expect(fallback).toBe(opacity["pressed-shade"]);
     });
   });
 

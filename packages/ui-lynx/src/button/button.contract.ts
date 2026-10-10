@@ -23,7 +23,13 @@ export type ButtonContract = {
 };
 
 import { color } from "@libitums/design-tokens";
-export function getButtonContract(props: ButtonProps): ButtonContract {
+
+import { motionClassName, type Motion } from "../motion/motion.contract";
+
+export function getButtonContract(
+  props: ButtonProps,
+  contextMotion: Motion = "standard",
+): ButtonContract {
   const variant = props.variant ?? "neutral";
   const size = props.size ?? "m";
   const width = props.width ?? "hug";
@@ -35,6 +41,7 @@ export function getButtonContract(props: ButtonProps): ButtonContract {
       `ui-lynx-button-${width}`,
       props.disabled ? "ui-lynx-button-disabled" : undefined,
       props.loading ? "ui-lynx-button-loading" : undefined,
+      motionClassName("ui-lynx-button", contextMotion),
     ]
       .filter((value): value is string => value !== undefined)
       .join(" "),
@@ -42,6 +49,13 @@ export function getButtonContract(props: ButtonProps): ButtonContract {
     contentVisibility: props.loading ? "hidden" : "visible",
   };
 }
+/** reduced에서 neutral · brand만 눌림 막을 갖습니다. 나머지 variant는 눌림 때 색이 바뀝니다. */
+export function hasPressedShade(variant: ButtonVariant | undefined, motion: Motion): boolean {
+  return (
+    motion === "reduced" && (variant === undefined || variant === "neutral" || variant === "brand")
+  );
+}
+
 export function getButtonIconColor(props: ButtonProps): string {
   if (props.disabled)
     return props.variant === "subtle" || props.variant === "text"

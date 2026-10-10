@@ -1,13 +1,22 @@
 import type {} from "@lynx-js/react";
-import { getButtonContract, getButtonIconColor, type ButtonProps } from "./button.contract";
+import { useMotion } from "../motion/MotionProvider";
+import {
+  getButtonContract,
+  getButtonIconColor,
+  hasPressedShade,
+  type ButtonProps,
+} from "./button.contract";
 
 export function Button(props: ButtonProps) {
-  const contract = getButtonContract(props);
+  const motion = useMotion();
+  const contract = getButtonContract(props, motion);
+  // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
+  const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
+  const shaded = hasPressedShade(props.variant, motion);
   const interactive = !props.disabled && !props.loading;
   const iconPosition = props.iconPosition ?? "leading";
   // loading이 아니면 style 속성을 아예 넘기지 않습니다 — 빈 style이 standard DOM에 남지 않게 합니다.
-  const hidden =
-    contract.contentVisibility === "hidden" ? { style: { visibility: "hidden" as const } } : {};
+  const hidden = contract.contentVisibility === "hidden" ? { style: { opacity: 0 } } : {};
   const icon = props.icon ? (
     <svg
       className="ui-lynx-button-icon"
@@ -26,6 +35,7 @@ export function Button(props: ButtonProps) {
     <view
       className={contract.className}
       data-testid="ui-lynx-button"
+      {...motionProps}
       data-variant={props.variant ?? "neutral"}
       data-size={props.size ?? "m"}
       data-width={props.width ?? "hug"}
@@ -39,6 +49,9 @@ export function Button(props: ButtonProps) {
       bindtap={interactive ? handleTap : undefined}
     >
       <view className="ui-lynx-button-surface">
+        {shaded ? (
+          <view className="ui-lynx-button-shade" data-testid="ui-lynx-button-shade" />
+        ) : null}
         {props.loading ? (
           <view className="ui-lynx-button-spinner-wrap">
             <view className="ui-lynx-button-spinner" data-testid="ui-lynx-button-spinner" />
