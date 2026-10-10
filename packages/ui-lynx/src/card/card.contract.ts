@@ -1,5 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { motionClassName, type Motion } from "../motion/motion.contract";
+
 export type CardPadding = "m" | "l";
 
 /**
@@ -95,7 +97,10 @@ function requireVisibleText(value: string, name: string): string {
   return value;
 }
 
-export function getCardContract(props: CardProps): CardContract {
+export function getCardContract(
+  props: CardProps,
+  contextMotion: Motion = "standard",
+): CardContract {
   const interaction = props.interaction ?? "static";
   const padding = props.padding ?? "m";
   const direction = props.direction ?? "ltr";
@@ -108,7 +113,10 @@ export function getCardContract(props: CardProps): CardContract {
     `ui-lynx-card-surface-${surface}`,
     `ui-lynx-card-elevation-${elevation}`,
     interaction === "interactive" ? "ui-lynx-card-interactive" : "ui-lynx-card-static",
-  ].join(" ");
+    motionClassName("ui-lynx-card", contextMotion),
+  ]
+    .filter((value): value is string => value !== undefined)
+    .join(" ");
 
   if (props.interaction !== "interactive") {
     return {

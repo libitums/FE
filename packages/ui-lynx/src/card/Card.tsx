@@ -2,6 +2,7 @@ import { createContext, useContext } from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 import arrowRight from "@libitums/icons/lynx/arrow-right";
 
+import { useMotion } from "../motion/MotionProvider";
 import {
   getCardContract,
   validateCardHeader,
@@ -29,7 +30,10 @@ function useCardContext(component: string): CardContextValue {
 }
 
 function CardRoot(props: CardProps) {
-  const contract = getCardContract(props);
+  const motion = useMotion();
+  const contract = getCardContract(props, motion);
+  // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
+  const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
 
   function handleTap() {
     "background only";
@@ -45,6 +49,7 @@ function CardRoot(props: CardProps) {
       <view
         className={contract.className}
         data-testid="ui-lynx-card"
+        {...motionProps}
         data-interaction={contract.interaction}
         data-padding={contract.padding}
         data-direction={contract.direction}

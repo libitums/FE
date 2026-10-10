@@ -3,6 +3,7 @@ import tick from "@libitums/icons/lynx/tick";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { describe, expect, test, vi } from "vitest";
 
+import { MotionProvider } from "../motion";
 import { OptionSelector } from "./index";
 import type { OptionSelectorOption } from "./index";
 
@@ -265,5 +266,45 @@ describe("OptionSelector UI", () => {
     expect(screen.getByTestId("ui-lynx-option-selector-label-kr")).toHaveTextContent(
       "🇰🇷 South Korea +82",
     );
+  });
+});
+
+describe("OptionSelector motion 컨텍스트", () => {
+  const selector = (
+    <OptionSelector
+      groupLabel="알맞은 응답을 고르세요"
+      options={options}
+      selectedIds={["b"]}
+      onChange={() => undefined}
+    />
+  );
+
+  test("UI-O1: reduced Provider에서 표지는 컨테이너에만 붙고 항목에는 없다", () => {
+    render(<MotionProvider motion="reduced">{selector}</MotionProvider>);
+    const root = screen.getByTestId("ui-lynx-option-selector");
+    expect(root).toHaveAttribute("data-motion", "reduced");
+    expect(root).toHaveClass("ui-lynx-option-selector-motion-reduced");
+    for (const id of ["a", "b", "c"]) {
+      const item = screen.getByTestId(`ui-lynx-option-selector-item-${id}`);
+      expect(item).not.toHaveAttribute("data-motion");
+      expect(item.getAttribute("class")).not.toContain("motion");
+    }
+  });
+
+  test("UI-O2: Provider가 없거나 standard면 표지가 없다", () => {
+    const bare = render(selector);
+    expect(screen.getByTestId("ui-lynx-option-selector")).not.toHaveAttribute("data-motion");
+    expect(screen.getByTestId("ui-lynx-option-selector").getAttribute("class")).not.toContain(
+      "motion",
+    );
+    expect(bare.container.querySelector("[data-motion]")).toBeNull();
+    bare.unmount();
+
+    const standard = render(<MotionProvider motion="standard">{selector}</MotionProvider>);
+    expect(screen.getByTestId("ui-lynx-option-selector")).not.toHaveAttribute("data-motion");
+    expect(screen.getByTestId("ui-lynx-option-selector").getAttribute("class")).not.toContain(
+      "motion",
+    );
+    expect(standard.container.querySelector("[data-motion]")).toBeNull();
   });
 });

@@ -56,7 +56,18 @@
   box-shadow: none;
   transition:
     background-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing),
-    border-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+    border-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing),
+    transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+/* 눌림 scale — 색 규칙은 아래 variant 절이 맡고, 여기서는 Enabled · Unselected 항목만 줄입니다. */
+.ui-lynx-option-selector-item-pressable:active {
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+/* 움직임 줄이기: 색만 바뀌고 항목은 줄지 않습니다. */
+.ui-lynx-option-selector-motion-reduced .ui-lynx-option-selector-item-pressable:active {
+  transform: none;
 }
 
 .ui-lynx-option-selector-surface {
