@@ -138,7 +138,7 @@ export function LoginScreen({
           className="login-screen-scroll"
           data-testid="login-screen-scroll"
           scroll-orientation="vertical"
-          scroll-bar-enable={true}
+          scroll-bar-enable={false}
         >
           <view className="login-screen-content">
             <view className="login-screen-heading">

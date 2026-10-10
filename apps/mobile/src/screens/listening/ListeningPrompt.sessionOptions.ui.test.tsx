@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import play from "@libitums/icons/lynx/play";
 
-import { ListeningPrompt } from "./ListeningPrompt";
+import { PlaybackPrompt } from "./ListeningPrompt.test-support";
 import { initialSessionOptions } from "../../lib/session-options";
 import type { SessionOptions } from "../../lib/session-options";
 
@@ -44,7 +44,7 @@ afterEach(() => {
 
 function renderPrompt(sessionOptions: SessionOptions) {
   return render(
-    <ListeningPrompt
+    <PlaybackPrompt
       text={TEXT}
       romanization={ROMANIZATION}
       audioSource={SOURCE}

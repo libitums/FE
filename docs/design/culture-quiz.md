@@ -426,6 +426,8 @@ N_max = floor((525 − 고정합 + 8) / 66)      고정합 = 진행 16 + 제시 
 - 적는 프롭은 **둘**(`scroll-orientation="vertical"` · `scroll-bar-enable={true}`), 안 적는 것도
   **둘**(`enable-scroll` · **`bounces`** — 후자는 초기값이 **참**인 것이 2026-09-04 실기로
   확인됐다. 다시 적지 않는다)(D3).
+  > ⟨2026-10-09⟩ 위 줄은 이 화면을 설계할 때의 기록이다. **지금 적는 값은 `scroll-bar-enable={false}`다** —
+  > [ADR-0055](../adr/0055-scroll-bars-off.md)가 ADR-0022 D3의 그 절반을 대체했다.
 - **스크롤 상자의 직계 자식은 하나**(`-content`)이고 flex 어휘와 `gap`은 전부 그 자식이 진다(D4).
   남는 세로를 받는 것도 `-scroll` 하나다 — 안쪽에 `flex: 1`을 남기지 않는다.
 - 겹침 레이어가 없다 — `position: relative`를 두지 않는다.

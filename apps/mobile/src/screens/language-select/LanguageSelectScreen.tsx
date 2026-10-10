@@ -58,7 +58,7 @@ export function LanguageSelectScreen({
         className="language-select-screen-scroll"
         data-testid="language-select-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         <view className="language-select-screen-content">
           <view className="language-select-screen-heading">

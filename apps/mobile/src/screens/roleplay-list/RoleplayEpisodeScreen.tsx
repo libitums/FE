@@ -47,7 +47,7 @@ export function RoleplayEpisodeScreen({
         className="roleplay-episode-screen-scroll"
         data-testid="roleplay-episode-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         <view className="roleplay-episode-screen-list" data-testid="roleplay-episode-screen-list">
           {section.items.map((item) => (

@@ -177,8 +177,34 @@ const statModalCss = ({ meteorC = "  right: 21px;\n" } = {}) =>
 ${meteorC}}
 `;
 
+/**
+ * 등록부에 올라 있는 표지 파일 · position: fixed CSS 가운데 아래 손으로 만든 픽스처가 채우지 않은 것을
+ * 채운다. 등록부가 늘어도(예: learning-item-guides) 기존 케이스의 픽스처가 계약대로 건강하게 남는다.
+ */
+function registryFill({ componentSources, cssSources }) {
+  const fillComponents = { ...componentSources };
+  const fillCss = { ...cssSources };
+  for (const [cssPath, layer] of Object.entries(statusBarSurfaceRegistry.fixedLayers)) {
+    if (!(cssPath in fillCss)) fillCss[cssPath] = FIXED_CSS;
+    for (const carrier of layer.carriers) {
+      if (carrier.file in fillComponents) continue;
+      const name = carrier.component;
+      fillComponents[carrier.file] =
+        carrier.className === undefined
+          ? carrierComponent(name, name)
+          : journeyMapScreen({ scrimAttr: "data-statusbar={lightStatusBarIcons}" });
+    }
+  }
+  return { componentSources: fillComponents, cssSources: fillCss };
+}
+
 /** A contract-conforming input (spec 4 + r02 + r03); every part can be overridden. */
 function healthy(overrides = {}) {
+  const base = healthyBase(overrides);
+  return { ...base, ...registryFill(base) };
+}
+
+function healthyBase(overrides = {}) {
   return {
     markerSource: MARKER_SOURCE,
     hostSource: hostSource(),
@@ -409,7 +435,7 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (six routes, three CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (six routes, four CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
     "episode-final",
@@ -430,6 +456,7 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, three CSS
 
   assert.deepEqual(Object.keys(fixedLayers).sort(), [
     "components/first-unit-guide.css",
+    "components/learning-item-guide.css",
     "screens/gem-purchase/gem-purchase-screen.css",
     "screens/journey-map/journey-stat-modal.css",
   ]);
@@ -535,5 +562,69 @@ test("SM14: the streak-modal meteor c must sit below the top inset — no CSS to
       }),
     ).includes("band-decor"),
     "a top: -17px inside a CSS comment must not be counted",
+  );
+});
+
+// ---- learning-item-guides: 새 안내의 표지 파일과 position: fixed CSS(계약 r02.3 · r02.4) ----
+
+const LEARNING_GUIDE_TSX = "components/LearningItemGuide.tsx";
+const LEARNING_GUIDE_CSS = "components/learning-item-guide.css";
+
+/** 건강한 입력에 새 안내의 TSX · CSS를 명시로 얹는다(등록부 채우기에 기대지 않는다). */
+function withLearningGuide({ tsx, css } = {}) {
+  const base = healthy();
+  return healthy({
+    componentSources: {
+      ...base.componentSources,
+      [LEARNING_GUIDE_TSX]: tsx ?? carrierComponent("LearningItemGuide", "learning-item-guide"),
+    },
+    cssSources: { ...base.cssSources, [LEARNING_GUIDE_CSS]: css ?? FIXED_CSS },
+  });
+}
+
+test("SG1: the registry has its own fixed layer for learning-item-guide.css; first-unit-guide.css keeps its two carriers", () => {
+  const { fixedLayers } = statusBarSurfaceRegistry;
+  const own = fixedLayers[LEARNING_GUIDE_CSS];
+  assert.ok(own !== undefined, `fixedLayers must have a ${LEARNING_GUIDE_CSS} key`);
+  assert.equal(own.classification, "light-icons");
+  assert.deepEqual(
+    own.carriers.map((carrier) => carrier.file),
+    [LEARNING_GUIDE_TSX],
+  );
+  const first = fixedLayers["components/first-unit-guide.css"];
+  assert.deepEqual(first.carriers.map((carrier) => carrier.file).sort(), [
+    "components/FirstUnitGuide.tsx",
+    "screens/journey-map/JourneyMapScreen.tsx",
+  ]);
+  assert.ok(
+    !JSON.stringify(first).includes("LearningItemGuide"),
+    "the new file must not be registered under first-unit-guide.css",
+  );
+});
+
+test("SG2: LearningItemGuide.tsx carrying the marker constant and a registered fixed CSS has no issue", () => {
+  assert.deepEqual(statusBarMarkerIssues(withLearningGuide()), []);
+});
+
+test("SG3: LearningItemGuide.tsx without the marker is a carrier issue naming the file", () => {
+  assertRule(
+    withLearningGuide({ tsx: plainComponent("LearningItemGuide", "learning-item-guide") }),
+    "carrier",
+    LEARNING_GUIDE_TSX,
+  );
+});
+
+test("SG4: learning-item-guide.css must hold position: fixed — present is clean, removed is one registry issue", () => {
+  assert.ok(
+    !rulesOf(withLearningGuide()).includes("fixed-layer-registry"),
+    "a registered fixed CSS must not be a fixed-layer-registry issue",
+  );
+  const removed = statusBarMarkerIssues(
+    withLearningGuide({ css: ".learning-item-guide {\n  display: flex;\n}\n" }),
+  ).filter((issue) => issue.rule === "fixed-layer-registry");
+  assert.equal(removed.length, 1, JSON.stringify(removed));
+  assert.ok(
+    removed[0].message.includes(`등록부의 ${LEARNING_GUIDE_CSS}에 position: fixed가 없습니다`),
+    removed[0].message,
   );
 });

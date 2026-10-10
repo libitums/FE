@@ -3,6 +3,8 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { useReducer, useState } from "@lynx-js/react";
 
+import { LearningItemGuide } from "../../components/LearningItemGuide";
+import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { announceCompletion } from "../../lib/accessibility";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
@@ -46,10 +48,12 @@ export function VisualNovelScreen({
   const beat = currentVisualNovelBeat(story, session);
   const [showReply, setShowReply] = useState(false);
   const line = showReply && beat.reply ? beat.reply : beat;
+  const guide = useLearningItemGuide({ form: "visual-novel" });
   const finishing = session.mode === "final" && (showReply || !beat.reply);
 
   const handleAdvance = () => {
     "background only";
+    if (guide.visible) return;
     if (beat.reply && !showReply) {
       setShowReply(true);
       return;
@@ -76,79 +80,83 @@ export function VisualNovelScreen({
   useScreenBack(handleExit);
 
   return (
-    <view
-      className="visual-novel-screen visual-novel-large-text-reflow"
-      data-testid="visual-novel-screen"
-      data-statusbar={lightStatusBarIcons}
-      style={{
-        paddingTop: `${insets.top}px`,
-        paddingBottom: `${insets.bottom}px`,
-        paddingLeft: `${insets.left}px`,
-        paddingRight: `${insets.right}px`,
-      }}
-    >
-      <VisualNovelScene
-        beat={beat}
-        backgroundArtwork={artworkFor(beat.backgroundId)}
-        characterArtwork={artworkFor(beat.characterPoseId)}
-        replaying={session.replaying}
-      />
+    <>
       <view
-        className="visual-novel-shade"
-        event-through={true}
-        accessibility-elements-hidden={true}
-      />
-      <view className="visual-novel-header visual-novel-large-text-reflow">
+        className="visual-novel-screen visual-novel-large-text-reflow"
+        data-testid="visual-novel-screen"
+        data-statusbar={lightStatusBarIcons}
+        accessibility-elements-hidden={guide.visible}
+        style={{
+          paddingTop: `${insets.top}px`,
+          paddingBottom: `${insets.bottom}px`,
+          paddingLeft: `${insets.left}px`,
+          paddingRight: `${insets.right}px`,
+        }}
+      >
+        <VisualNovelScene
+          beat={beat}
+          backgroundArtwork={artworkFor(beat.backgroundId)}
+          characterArtwork={artworkFor(beat.characterPoseId)}
+          replaying={session.replaying}
+        />
         <view
-          className="visual-novel-exit"
-          data-testid="visual-novel-exit-button"
-          accessibility-element={true}
-          accessibility-traits="button"
-          accessibility-label={exitLabel}
-          bindtap={handleExit}
-        >
-          <view accessibility-elements-hidden={true}>
-            <RoundButton
-              accessibilityLabel={exitLabel}
-              icon={arrowLeft03}
-              variant="neutral"
-              size="xl"
-            />
+          className="visual-novel-shade"
+          event-through={true}
+          accessibility-elements-hidden={true}
+        />
+        <view className="visual-novel-header visual-novel-large-text-reflow">
+          <view
+            className="visual-novel-exit"
+            data-testid="visual-novel-exit-button"
+            accessibility-element={true}
+            accessibility-traits="button"
+            accessibility-label={exitLabel}
+            bindtap={handleExit}
+          >
+            <view accessibility-elements-hidden={true}>
+              <RoundButton
+                accessibilityLabel={exitLabel}
+                icon={arrowLeft03}
+                variant="neutral"
+                size="xl"
+              />
+            </view>
+          </view>
+          <view className="visual-novel-header-text">
+            <text
+              className="visual-novel-title"
+              data-testid="visual-novel-title"
+              accessibility-traits="header"
+            >
+              {story.title}
+            </text>
+            <text className="visual-novel-progress" data-testid="visual-novel-progress">
+              {copy.visualNovel.sceneProgress(session.beatIndex + 1, story.beats.length)}
+            </text>
+            {beat.context ? (
+              <text className="visual-novel-context" data-testid="visual-novel-context">
+                {beat.context}
+              </text>
+            ) : null}
           </view>
         </view>
-        <view className="visual-novel-header-text">
-          <text
-            className="visual-novel-title"
-            data-testid="visual-novel-title"
-            accessibility-traits="header"
-          >
-            {story.title}
-          </text>
-          <text className="visual-novel-progress" data-testid="visual-novel-progress">
-            {copy.visualNovel.sceneProgress(session.beatIndex + 1, story.beats.length)}
-          </text>
-          {beat.context ? (
-            <text className="visual-novel-context" data-testid="visual-novel-context">
-              {beat.context}
-            </text>
-          ) : null}
+        <view className="visual-novel-scene-shell">
+          <DialoguePanel
+            beatId={beat.id}
+            speakerRole={showReply ? "self" : "partner"}
+            speakerName={showReply ? copy.common.me : beat.speakerName}
+            dialogue={line.dialogue}
+            translation={line.translation}
+            romanization={line.romanization}
+            action={
+              finishing
+                ? { kind: "finish", label: copy.common.continue, onSelect: handleAdvance }
+                : { kind: "advance", label: copy.common.next, onSelect: handleAdvance }
+            }
+          />
         </view>
       </view>
-      <view className="visual-novel-scene-shell">
-        <DialoguePanel
-          beatId={beat.id}
-          speakerRole={showReply ? "self" : "partner"}
-          speakerName={showReply ? copy.common.me : beat.speakerName}
-          dialogue={line.dialogue}
-          translation={line.translation}
-          romanization={line.romanization}
-          action={
-            finishing
-              ? { kind: "finish", label: copy.common.continue, onSelect: handleAdvance }
-              : { kind: "advance", label: copy.common.next, onSelect: handleAdvance }
-          }
-        />
-      </view>
-    </view>
+      {guide.visible ? <LearningItemGuide kind={guide.kind} onDismiss={guide.dismiss} /> : null}
+    </>
   );
 }

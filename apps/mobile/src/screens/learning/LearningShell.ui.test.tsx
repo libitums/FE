@@ -466,6 +466,145 @@ test("완료 화면은 추가 문항 없이 100%를 유지하고 지시문을 �
   expect(screen.queryByTestId("learning-shell-instruction")).not.toBeInTheDocument();
 });
 
+// ---------------------------------------------------------------- 답하기 전 아래 fog
+
+const workspace = <text data-testid="fixture-workspace">낱말</text>;
+const noAction = { actionLabel: undefined, onAction: undefined } as const;
+
+function allFogs(): HTMLElement[] {
+  return screen.queryAllByTestId("ui-lynx-fog");
+}
+
+function expectRestFogShape(box: HTMLElement): void {
+  // 속성의 존재만 본다 — 실제 통과는 e2e S8(c)의 몫. event-through는 Lynx 안의 형제로 터치를 내려보내지 않아
+  // 띠 안의 탭 · 끌기를 삼켰다(e2e r02). 그 옛 방식이 돌아오면 실패한다.
+  expect(box).toHaveAttribute("user-interaction-enabled", "false");
+  expect(box).not.toHaveAttribute("event-through");
+  const inner = within(box).queryAllByTestId("ui-lynx-fog");
+  expect(inner).toHaveLength(1);
+  expect(inner[0]).toHaveAttribute("data-direction", "bottom");
+  const className = inner[0].getAttribute("class") ?? "";
+  expect(className).toContain("ui-lynx-fog-size-full");
+  expect(className).toContain("ui-lynx-fog-color-surface-default");
+}
+
+function expectNoRestFog(): void {
+  expect(screen.queryByTestId("learning-shell-rest-fog")).toBeNull();
+  expect(screen.queryByTestId("learning-shell-scroll-end")).toBeNull();
+}
+
+test("[LF1] 액션 행이 없고 작업 영역이 스크롤하면 fog 상자와 끝 상자가 선다", () => {
+  renderShell({ workspace, ...noAction });
+
+  const box = screen.queryByTestId("learning-shell-rest-fog");
+  expect(box).not.toBeNull();
+  expectRestFogShape(box as HTMLElement);
+
+  const scroll = screen.getByTestId("learning-shell-scroll");
+  const end = screen.queryByTestId("learning-shell-scroll-end");
+  expect(end).not.toBeNull();
+  expect(scroll.lastElementChild).toBe(end);
+  expect(scroll.contains(box)).toBe(false);
+});
+
+// 가드: 지금도 참입니다. 「늘 선다」 변이로 red를 확인합니다.
+test("[LF2] 액션 행이 서면 신규 둘은 없고 기존 fog 하나만 남는다", () => {
+  renderShell({ workspace });
+
+  expectNoRestFog();
+  expect(screen.getByTestId("learning-shell-actions")).toBeInTheDocument();
+  expect(allFogs()).toHaveLength(1);
+});
+
+test("[LF3] 작업 영역 스크롤이 꺼지면 신규 둘이 없다", () => {
+  renderShell({ workspace, workspaceScrolls: false, ...noAction });
+
+  expectNoRestFog();
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("enable-scroll", "false");
+});
+
+test("[LF4] scrollCard는 액션 행이 있든 없든 신규 둘과 fog가 없다", () => {
+  renderShell({ scrollCard: true, workspace, ...noAction });
+  expectNoRestFog();
+  expect(allFogs()).toHaveLength(0);
+  cleanup();
+
+  renderShell({ scrollCard: true, workspace });
+  expectNoRestFog();
+  expect(allFogs()).toHaveLength(0);
+});
+
+test("[LF5] 작업 영역이 없으면 스크롤도 신규 둘도 없다", () => {
+  renderShell({ ...noAction });
+
+  expect(screen.queryByTestId("learning-shell-scroll")).toBeNull();
+  expectNoRestFog();
+});
+
+// 껍데기 안의 fog는 어느 순간에도 하나 이하입니다.
+test("[LF6] 액션 행이 서는 순간 신규 fog가 기존 fog로 바뀌며 둘이 겹치지 않는다", () => {
+  const { rerender } = renderShell({ workspace, ...noAction });
+  expect(allFogs()).toHaveLength(1);
+  expect(screen.queryByTestId("learning-shell-rest-fog")).not.toBeNull();
+
+  rerender(
+    <LearningShell
+      form="listening"
+      questionIndex={1}
+      questionCount={4}
+      instruction="대화를 완성하세요"
+      onExit={() => {}}
+      card={<text data-testid="fixture-card">카드 안</text>}
+      workspace={workspace}
+      actionLabel="Check"
+      onAction={() => {}}
+    />,
+  );
+
+  expect(allFogs()).toHaveLength(1);
+  expectNoRestFog();
+  expect(screen.getByTestId("learning-shell-actions")).toBeInTheDocument();
+});
+
+// 가드: 순수 이동이라 스크롤의 모양이 그대로입니다. 첫 문항(0)으로 세웁니다 — 0이 아닌 순번으로
+// 마운트하면 문항 전환이 primed로 시작해 전환 클래스가 붙습니다(LST3).
+test("[LF7] 옮긴 스크롤의 클래스와 속성이 그대로다", () => {
+  renderShell({ questionIndex: 0, workspace, ...noAction });
+
+  const scroll = screen.getByTestId("learning-shell-scroll");
+  expect(scroll.getAttribute("class")).toBe("learning-shell-scroll");
+  expect(scroll).toHaveAttribute("scroll-orientation", "vertical");
+  expect(scroll).toHaveAttribute("scroll-bar-enable", "false");
+  expect(scroll).not.toHaveAttribute("enable-scroll");
+  expect(scroll.getAttributeNames().filter((n) => n.startsWith("accessibility-"))).toEqual([]);
+});
+
+test("[LF8] 스스로 넘어가는 구간(advance)에도 신규 둘이 서 있다", () => {
+  renderShell({
+    workspace,
+    ...noAction,
+    advance: { label: "다음으로", run: () => {}, delayMs: 2500 },
+  });
+
+  expect(screen.queryByTestId("learning-shell-rest-fog")).not.toBeNull();
+  expect(screen.queryByTestId("learning-shell-scroll-end")).not.toBeNull();
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
+});
+
+test("[LF9] 끝 상자와 fog 상자는 접근성 요소가 아닌 속성 없는 view다", () => {
+  renderShell({ workspace, ...noAction });
+
+  const boxes = [
+    screen.queryByTestId("learning-shell-scroll-end"),
+    screen.queryByTestId("learning-shell-rest-fog"),
+  ];
+  for (const box of boxes) {
+    expect(box).not.toBeNull();
+    expect(box).not.toHaveAttribute("accessibility-element");
+    expect(box).not.toHaveAttribute("accessibility-label");
+  }
+});
+
 // ---------------------------------------------------------------- 문항 전환 (3단계 LST)
 //
 // 무대와 작업 영역만 `data-page`(primed → entering → idle)를 달고 클래스가 따라옵니다.
@@ -521,8 +660,6 @@ function pageOf(testId: string): string | null {
 function expectIdle(testId: string, base: string) {
   expect(screen.getByTestId(testId).getAttribute("class")).toBe(base);
 }
-
-const workspace = <text data-testid="fixture-workspace">낱말</text>;
 
 describe("문항 전환 (3단계 LST)", () => {
   afterEach(() => {

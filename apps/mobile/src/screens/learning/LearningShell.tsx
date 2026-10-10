@@ -5,11 +5,17 @@ import { useMotion } from "@libitums/ui-lynx/motion";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 import { LearningShellActions } from "./LearningShellActions";
 import { LearningShellBody } from "./LearningShellBody";
+import { useLearningShellFlow } from "./use-learning-shell-flow";
 import { useQuestionTransition } from "./use-question-transition";
 import { TopBar } from "../../components/TopBar";
-import { learningTimingFlag } from "./learning-shell.contract";
+import {
+  learningShellArrangement,
+  learningTimingFlag,
+  learningWorkspaceMode,
+} from "./learning-shell.contract";
 import { LearningSessionHeader } from "./LearningSessionHeader";
 import type { LearningForm } from "../../lib/learning-form";
+import { scrollLearningShellToTop, useLearningShellScrollReset } from "./learning-shell-scroll";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
 import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
@@ -44,11 +50,16 @@ export type LearningShellProps = {
   /** 카드 위 회색 한 줄 — 「무엇을 하라」입니다. */
   instruction: string;
   onExit: () => void;
-  /** 가운데 카드 안입니다. 활동이 여기서 전개되고 판정도 여기서 납니다. */
+  /**
+   * 가운데 카드 안입니다. 활동이 여기서 전개되고 판정도 여기서 납니다. 껍데기는 배치가 바뀔
+   * 때 이 내용을 한 번 다시 세울 수 있습니다(다시 mount) — 이 안에 mount 효과로 부작용을
+   * 두지 마세요. 듣기 재생은 그래서 화면의 `useListeningPlayback`이 소유합니다.
+   */
   card: ReactNode;
   /**
    * 카드 밖 작업 영역입니다 — 고를 낱말 칩처럼 활동마다 다른 것이 섭니다. 없는
-   * 활동도 있으므로 선택입니다.
+   * 활동도 있으므로 선택입니다. `card`처럼 배치가 바뀔 때 한 번 다시 설 수 있으니(다시
+   * mount) mount 효과로 부작용을 두지 마세요.
    */
   workspace?: ReactNode;
   /**
@@ -86,6 +97,8 @@ export type LearningShellProps = {
   trophyCount?: number;
   gemCount?: number;
   onOpenNotifications?: () => void;
+  /** 학습 문항 안내가 위를 덮는 동안 true입니다. 루트를 낭독에서 가립니다(닫히면 false). */
+  obscured?: boolean;
 };
 
 export function LearningShell({
@@ -107,8 +120,19 @@ export function LearningShell({
   streakDays = 0,
   trophyCount = 0,
   onOpenNotifications = () => {},
+  obscured,
 }: LearningShellProps): ReactNode {
   const copy = useUiCopy();
+  const actionsShown = actionLabel !== undefined && onAction !== undefined;
+  const workspaceMode = learningWorkspaceMode({ scrolls: workspaceScrolls, actionsShown });
+  const { flow, reportViewportHeight } = useLearningShellFlow(workspaceMode);
+  const arrangement = learningShellArrangement({ scrollCard, flow });
+  useLearningShellScrollReset({
+    arrangement,
+    questionIndex,
+    complete,
+    answered: advance !== undefined,
+  });
   // 나가기는 **두 걸음**입니다 ⟨2026-09-28⟩. `×`는 묻기만 하고, 실제로 떠나는 것은
   // 모달의 `그만두기`입니다.
   //
@@ -139,6 +163,8 @@ export function LearningShell({
   const handleAction = () => {
     "background only";
     if (actionSound === "button") playSound("button");
+    // 문장 만들기의 `Check`는 프롭을 바꾸지 않아 효과가 못 봅니다 — 답한 순간이라 여기서 보냅니다.
+    if (arrangement === "merged") scrollLearningShellToTop();
     onAction?.();
   };
 
@@ -197,6 +223,7 @@ export function LearningShell({
     <view
       className="learning-shell"
       data-testid="learning-shell"
+      accessibility-elements-hidden={obscured}
       // 이 화면이 서는 한 바퀴를 SDK가 재게 하는 표식입니다 — 값과 근거는 계약이 집니다.
       __lynx_timing_flag={learningTimingFlag(form)}
     >
@@ -221,17 +248,14 @@ export function LearningShell({
           onExit={handleExit}
         />
       </view>
-      {complete ? null : (
-        <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
-          {instruction}
-        </text>
-      )}
       {/* 카드 스크롤 모드는 버튼 행의 실제 높이를 먼저 확보합니다. */}
       <LearningShellBody
+        arrangement={arrangement}
+        instruction={complete ? undefined : instruction}
         card={card}
         workspace={workspace}
-        scrollCard={scrollCard}
-        workspaceScrolls={workspaceScrolls}
+        workspaceMode={workspaceMode}
+        onViewportHeight={reportViewportHeight}
         transition={{ phase, motion }}
       />
       {/* 스스로 넘어가는 동안 화면 전체가 이 이름의 조작 단위입니다 — 보이는 버튼은
@@ -247,14 +271,14 @@ export function LearningShell({
           bindtap={handleAdvance}
         />
       )}
-      {actionLabel === undefined || onAction === undefined ? null : (
+      {actionsShown ? (
         <LearningShellActions
           label={actionLabel}
           onAction={handleAction}
           secondaryAction={secondaryAction}
-          inFlow={scrollCard}
+          inFlow={arrangement !== "split"}
         />
-      )}
+      ) : null}
       {/* 나가기 확인입니다. **무엇을 잃는지 본문에 적습니다** — 「그만두시겠어요?」만
           물으면 사용자가 대가를 모른 채 고릅니다.
 

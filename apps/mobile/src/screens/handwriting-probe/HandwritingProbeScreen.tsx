@@ -112,14 +112,14 @@ export function HandwritingProbeScreen(): ReactNode {
       </view>
 
       {/* [흐름] 스크롤 — 화면당 정확히 하나, 중첩 없음. 클래스와 `data-testid`가
-          같은 문자열입니다. 속성은 `scroll-orientation`·`scroll-bar-enable`
+          같은 문자열입니다. 속성은 `scroll-orientation`과 스크롤 바를 끄는 `scroll-bar-enable={false}`
           둘뿐이고 `bounces`·`enable-scroll`을 쓰지 않습니다. `accessibility-*`는
           붙이지 않습니다 — 조작 단위가 아니라 상자입니다(ADR-0022 D5). */}
       <scroll-view
         className="handwriting-probe-screen-scroll"
         data-testid="handwriting-probe-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         {/* 직계 자식은 이것 하나뿐입니다(ADR-0022 D4). 전역 목록이 한 벌로 두
             값을 합니다: 표면이 스크롤과 다투지 않는다는 관측에는 **다툴 스크롤이

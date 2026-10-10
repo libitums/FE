@@ -111,7 +111,7 @@ test("[NS4] notifications-screen-scroll에 scroll-orientation·scroll-bar-enable
 
   const scroll = screen.getByTestId("notifications-screen-scroll");
   expect(scroll).toHaveAttribute("scroll-orientation", "vertical");
-  expect(scroll).toHaveAttribute("scroll-bar-enable", "true");
+  expect(scroll).toHaveAttribute("scroll-bar-enable", "false");
   expect(scroll).not.toHaveAttribute("accessibility-element");
   expect(scroll).not.toHaveAttribute("accessibility-label");
   expect(scroll).not.toHaveAttribute("accessibility-traits");

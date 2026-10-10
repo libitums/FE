@@ -155,6 +155,15 @@ UIFontMetrics(forTextStyle: .body).scaledValue(for: 100) / 100
 > 스크롤이 한 곳도 없다는 것**이었고, 그래서 그 상한은 「고친 것」이 아니라 「막아 둔
 > 것」이었다. 스크롤이 들어온 지금 그 이유가 사라졌으므로 상한도 사라진다.
 > **최대 배율은 다시 약 3.1배이고**, 그 배율에서 화면을 훑는 것이 `docs/e2e/`의 몫이다.
+>
+> ⟨2026-10-09⟩ **같은 종류의 손실이 학습 껍데기에서 되돌아왔고, 상한이 아니라 레이아웃으로 닫았다.** 2026-09-28의
+> 학습 껍데기가 무대를 스크롤 밖 고정 슬롯으로 세우면서([ADR-0022](0022-scroll-regions-and-fixed-affordances.md) D1-2),
+> 큰 글꼴에서 고정 슬롯이 화면을 넘으면 보기 영역의 높이가 0이 됐다(Android 에뮬레이터 Pixel_8 · 글꼴 2.35, 글꼴 2.0 +
+> 밀도 540). 작업 `learning-shell-large-font`가 「작업 영역이 96dp 미만이면 지시문 · 무대 · 작업 영역을 한 스크롤로」로
+> 닫았다(ADR-0022 D1-2의 갈래). **상한은 여전히 두 플랫폼 모두 없다** — iOS는 `FontScale.current`의 `UIFontMetrics`
+> 값을, Android는 시스템 `Configuration.fontScale`을 그대로 코어에 넘긴다. 상한을 다시 거는 안은 버렸다(Android 설정의
+> 최대가 이미 200%라 실사용자에게 무동작이고, 2.0 + 밀도 540(adb 강제 — 설정 UI의 「화면 크기」 최대 단계가 540인지는
+> 확인하지 않았다)은 상한 아래에서도 고장이다 — ADR-0022 `정정 기록` 2026-10-09).
 
 **처음에는 상한 없이 넣고 무엇이 깨지는지 보기로 했다.** 상한을 먼저 걸면 깨지는
 자리가 가려지고, 가려진 것은 고칠 대상이 되지 못하기 때문이다.
@@ -358,3 +367,8 @@ Apple의 최대 접근성 크기는 `.body` 기준 **약 3.1배**(17pt → 53pt)
   본다
 - **Android가 붙을 때.** `fontScale`은 Lynx 코어의 축이라 그대로 가지만, 값을 만드는
   쪽(`UIFontMetrics`)은 iOS 전용이다
+  ⟨2026-10-09 주⟩ Android 쪽의 값을 만드는 자리는
+  `apps/android/app/src/main/java/com/libitum/host/MainActivity.java`의
+  `builder.setFontScale(getResources().getConfiguration().fontScale)` 한 줄이다 — 시스템 값을 상한 없이 그대로
+  넘긴다(adb로 넣은 2.35 · 2.5 · 3.0도 그대로 적용됐다). 결정 2의 「다음 실행에 반영」은 Android에서는 글꼴 설정이
+  바뀌면 Activity가 다시 만들어지는 쪽으로 닿는다([ADR-0047](0047-android-orientation-config-changes.md) D3)

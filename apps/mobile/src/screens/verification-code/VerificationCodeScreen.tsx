@@ -162,7 +162,7 @@ export function VerificationCodeScreen({
         className="verification-code-screen-scroll"
         data-testid="verification-code-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         <view className="verification-code-screen-content">
           <view className="verification-code-screen-heading">

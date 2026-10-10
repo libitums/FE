@@ -487,7 +487,7 @@ test("[U9] journey-map-screen-scroll에 scroll-orientation='vertical'이 붙는�
   );
 });
 
-test("[U11] journey-map-screen-scroll에 scroll-bar-enable='true'가 붙는다", () => {
+test("[U11] journey-map-screen-scroll에 scroll-bar-enable='false'가 붙는다", () => {
   render(
     <JourneyMapScreen
       {...mapFixture}
@@ -498,7 +498,7 @@ test("[U11] journey-map-screen-scroll에 scroll-bar-enable='true'가 붙는다",
 
   expect(screen.getByTestId("journey-map-screen-scroll")).toHaveAttribute(
     "scroll-bar-enable",
-    "true",
+    "false",
   );
 });
 

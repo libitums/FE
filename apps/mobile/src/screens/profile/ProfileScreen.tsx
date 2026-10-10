@@ -46,7 +46,7 @@ export function ProfileScreen({ items, onExit }: ProfileScreenProps): ReactNode 
         className="profile-screen-scroll"
         data-testid="profile-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         <view className="profile-screen-list" data-testid="profile-screen-list">
           {/* 항목을 설정 화면의 설정 그룹과 같은 카드로 묶습니다 — 흰 면 · 연한 테두리 · 둥근

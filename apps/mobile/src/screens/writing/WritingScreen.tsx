@@ -4,9 +4,11 @@ import type { ReactNode } from "@lynx-js/react";
 import { Button } from "@libitums/ui-lynx/button";
 
 import { AnswerVerdict } from "../../components/AnswerVerdict";
+import { LearningItemGuide } from "../../components/LearningItemGuide";
 import { SyllableSlots } from "../../components/SyllableSlots";
 import { WritingCanvas, type WritingCanvasBadge } from "../../components/WritingCanvas";
 import { WritingPrompt } from "../../components/WritingPrompt";
+import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { useWritingPractice } from "../../components/use-writing-practice";
 import { announceCompletion } from "../../lib/accessibility";
 import { playSound } from "../../lib/sound-effects";
@@ -43,6 +45,13 @@ export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps):
   const [skippedCount, setSkippedCount] = useState(0);
   const question = questions[screenState.questionIndex] ?? null;
   const complete = question === null;
+  // 문항이 바뀌어도 다시 판정하지 않도록 문항 껍데기가 아니라 이 화면에서 부릅니다.
+  const firstQuestion = questions[0];
+  const guide = useLearningItemGuide(
+    firstQuestion === undefined
+      ? null
+      : { form: "writing", optionalPractice: firstQuestion.optionalPractice },
+  );
 
   useEffect(() => {
     if (!complete) {
@@ -52,52 +61,62 @@ export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps):
   }, [complete]);
 
   return (
-    <view className="writing-screen">
-      {question === null ? (
-        <LearningShell
-          form="writing"
-          questionIndex={Math.max(0, questions.length - 1)}
-          questionCount={questions.length}
-          complete={complete}
-          instruction={copy.writing.instruction}
-          onExit={onExit}
-          actionLabel={copy.common.seeResults}
-          onAction={() => onFinish(stepId, screenState.results, skippedCount)}
-          card={
-            <view className="writing-screen-content" data-testid="writing-screen-content">
-              <LearningActivityComplete
-                questionCount={questions.length}
-                testId="writing-screen-complete"
-              />
-            </view>
-          }
-        />
-      ) : (
-        <WritingQuestionShell
-          // 문항이 바뀌면 음절 흐름을 처음부터 새로 씁니다 — 훅의 상태가 문항 하나의 것입니다.
-          key={question.id}
-          question={question}
-          questionIndex={screenState.questionIndex}
-          questionCount={questions.length}
-          onExit={onExit}
-          onQuestionDone={(result) =>
-            setScreenState((state) => finishWritingQuestion(state, result))
-          }
-          onQuestionSkipped={() => {
-            "background only";
-            setSkippedCount((count) => count + 1);
-            setScreenState((state) => finishWritingQuestion(state, "correct"));
-          }}
-        />
-      )}
-    </view>
+    <>
+      <view className="writing-screen">
+        {question === null ? (
+          <LearningShell
+            form="writing"
+            questionIndex={Math.max(0, questions.length - 1)}
+            questionCount={questions.length}
+            complete={complete}
+            obscured={guide.visible}
+            instruction={copy.writing.instruction}
+            onExit={onExit}
+            actionLabel={copy.common.seeResults}
+            onAction={() => onFinish(stepId, screenState.results, skippedCount)}
+            card={
+              <view className="writing-screen-content" data-testid="writing-screen-content">
+                <LearningActivityComplete
+                  questionCount={questions.length}
+                  testId="writing-screen-complete"
+                />
+              </view>
+            }
+          />
+        ) : (
+          <WritingQuestionShell
+            // 문항이 바뀌면 음절 흐름을 처음부터 새로 씁니다 — 훅의 상태가 문항 하나의 것입니다.
+            key={question.id}
+            question={question}
+            questionIndex={screenState.questionIndex}
+            questionCount={questions.length}
+            guideVisible={guide.visible}
+            onExit={onExit}
+            onQuestionDone={(result) =>
+              setScreenState((state) => finishWritingQuestion(state, result))
+            }
+            onQuestionSkipped={() => {
+              "background only";
+              setSkippedCount((count) => count + 1);
+              setScreenState((state) => finishWritingQuestion(state, "correct"));
+            }}
+          />
+        )}
+      </view>
+      {guide.visible ? <LearningItemGuide kind={guide.kind} onDismiss={guide.dismiss} /> : null}
+    </>
   );
 }
+
+// 안내가 떠 있는 동안 캔버스가 넘기는 획을 받지 않습니다.
+const ignoreStroke = () => {};
 
 type WritingQuestionShellProps = {
   readonly question: WritingQuestion;
   readonly questionIndex: number;
   readonly questionCount: number;
+  /** 학습 문항 안내가 떠 있는 동안 true입니다 — 획과 `Skip`이 상태를 바꾸지 않습니다. */
+  readonly guideVisible: boolean;
   readonly onExit: () => void;
   readonly onQuestionDone: (result: AnswerResult | null) => void;
   readonly onQuestionSkipped: () => void;
@@ -107,6 +126,7 @@ function WritingQuestionShell({
   question,
   questionIndex,
   questionCount,
+  guideVisible,
   onExit,
   onQuestionDone,
   onQuestionSkipped,
@@ -117,13 +137,18 @@ function WritingQuestionShell({
   const skipped = useRef(false);
   const skip = () => {
     "background only";
-    if (skipped.current || (state.phase !== "writing" && state.phase !== "unmeasurable")) return;
+    if (
+      guideVisible ||
+      skipped.current ||
+      (state.phase !== "writing" && state.phase !== "unmeasurable")
+    )
+      return;
     skipped.current = true;
     onQuestionSkipped();
   };
   const skipFromButton = () => {
     "background only";
-    if (skipped.current) return;
+    if (guideVisible || skipped.current) return;
     playSound("button");
     skip();
   };
@@ -155,6 +180,7 @@ function WritingQuestionShell({
       form="writing"
       questionIndex={questionIndex}
       questionCount={questionCount}
+      obscured={guideVisible}
       instruction={question.instruction ?? copy.writing.instruction}
       onExit={onExit}
       actionLabel={action?.label}
@@ -193,7 +219,7 @@ function WritingQuestionShell({
               strokes={state.strokes}
               badge={badge}
               erase={practice.erase}
-              onStrokeComplete={practice.addStroke}
+              onStrokeComplete={guideVisible ? ignoreStroke : practice.addStroke}
             />
           )}
           {question.optionalPractice && state.phase === "writing" ? (

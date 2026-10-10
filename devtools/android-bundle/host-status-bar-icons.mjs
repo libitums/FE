@@ -69,6 +69,10 @@ export const statusBarSurfaceRegistry = {
         },
       ],
     },
+    "components/learning-item-guide.css": {
+      classification: "light-icons",
+      carriers: [{ component: "LearningItemGuide", file: "components/LearningItemGuide.tsx" }],
+    },
   },
 };
 

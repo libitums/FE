@@ -24,7 +24,7 @@ export function DialoguePanel({
       <scroll-view
         className="visual-novel-dialogue-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
         data-testid={`visual-novel-dialogue-content-${beatId}`}
       >
         <VisualNovelDialog

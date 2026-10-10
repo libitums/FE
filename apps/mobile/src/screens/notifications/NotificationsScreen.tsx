@@ -78,7 +78,7 @@ export function NotificationsScreen({
         className="notifications-screen-scroll"
         data-testid="notifications-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         {items.length === 0 ? (
           <view className="notifications-screen-empty" data-testid="notifications-screen-empty">

@@ -98,7 +98,7 @@ export function GemPurchaseScreen({ gemBalance, onClose }: GemPurchaseScreenProp
       <scroll-view
         className="gem-purchase-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
         accessibility-elements-hidden={noticeOpen}
       >
         <view className="gem-purchase-screen-body">

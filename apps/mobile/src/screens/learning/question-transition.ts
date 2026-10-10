@@ -66,3 +66,25 @@ export function questionTransitionClassName(
   }
   return tokens.join(" ");
 }
+
+/** 전환을 입는 상자가 받는 현재 단계와 모션 모드입니다. */
+export type QuestionTransition = {
+  readonly phase: QuestionTransitionPhase;
+  readonly motion: Motion;
+};
+
+/**
+ * 요소의 `data-page` · `data-motion` 속성 — phase가 idle이면 비고, reduced는 idle이 아닐 때만
+ * `data-motion`이 붙습니다. 클래스(`questionTransitionClassName`)와 같은 조건입니다.
+ */
+export function questionTransitionAttributes({ phase, motion }: QuestionTransition): {
+  readonly "data-page"?: QuestionTransitionPhase;
+  readonly "data-motion"?: "reduced";
+} {
+  if (phase === "idle") {
+    return {};
+  }
+  return motion === "reduced"
+    ? { "data-page": phase, "data-motion": "reduced" }
+    : { "data-page": phase };
+}

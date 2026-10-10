@@ -434,8 +434,13 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   것은 둘이고 스크롤 화면 전부다**(개수를 여기서 세지 않는다 — 목록의 정본은
   [ADR-0022](../adr/0022-scroll-regions-and-fixed-affordances.md) **D2 표**다):
   `scroll-orientation="vertical"`(안 적으면 초기값이
-  **가로**라 세로 스크롤이 원리적으로 불가능하다) · `scroll-bar-enable={true}`(초기값이
-  `NO`라 **적어야 켜진다**). `enable-scroll`은 초기값이 `YES`라 안 적고, `bounces`도
+  **가로**라 세로 스크롤이 원리적으로 불가능하다) · `scroll-bar-enable={false}`(스크롤 바는
+  **모든 스크롤 영역에서 끈다** — [ADR-0055](../adr/0055-scroll-bars-off.md). 초기값이 꺼짐이라
+  안 적어도 지금은 같지만 **글자 그대로 적는다**: 「일부러 껐다」와 「잊었다」가 소스에서 갈려야 하고,
+  JSDoc은 기본값을 `true`로 적고 있다). **둘째는 `pnpm lint:scroll-bars`가 강제한다** — D2 표에
+  행이 있든 없든, 세로든 가로든, 소스의 `<scroll-view>` · `<list>` 전부에서 누락 · `{true}` ·
+  리터럴이 아닌 식 · 스프레드 속성을 잡고 `pnpm lint`에서 돈다. 첫째(`scroll-orientation`)를 보는
+  정적 검사는 없다. `enable-scroll`은 초기값이 `YES`라 안 적고, `bounces`도
   안 적는다 — **UIKit 기본값이 `YES`이고 그것이 우리가 원하는 값임을 실기로 확인했다**
   (2026-09-04, LIB-226 S7). **결론은 확인 전과 같고 근거가 다르다** — 전에는
   「모르니까 안 적는다」였고 지금은 「재봤더니 같으니까 안 적는다」다.

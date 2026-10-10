@@ -102,7 +102,7 @@ test("[U1] 세로 스크롤 컨테이너가 서고 세로 · 스크롤바 켜짐
 
   const scroll = screen.getByTestId("roleplay-list-screen-scroll");
   expect(scroll).toHaveAttribute("scroll-orientation", "vertical");
-  expect(scroll).toHaveAttribute("scroll-bar-enable", "true");
+  expect(scroll).toHaveAttribute("scroll-bar-enable", "false");
 });
 
 test("[U3] 화면 제목이 스크롤 컨테이너 밖에 있다", () => {

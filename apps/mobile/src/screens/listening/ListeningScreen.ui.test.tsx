@@ -1049,10 +1049,10 @@ test("[U9] learning-shell-scroll에 scroll-orientation='vertical'이 붙는다",
   );
 });
 
-test("[U11] learning-shell-scroll에 scroll-bar-enable='true'가 붙는다", () => {
+test("[U11] learning-shell-scroll에 scroll-bar-enable='false'가 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("scroll-bar-enable", "true");
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("scroll-bar-enable", "false");
 });
 
 // U10 — 듣기는 문항 상태와 완료 상태 둘 다 봅니다 — 문항 상태는 오늘 자식이
@@ -1203,4 +1203,25 @@ test("[LA1-M] 문구표를 주입하고 문항을 마치면 완료 문구 · 마
   expect(completion).toHaveLength(1);
   expect(completion[0]?.content).toBe("⟦common.allQuestionsDone⟧, ⟦common.seeResults⟧");
   expect(announce).toHaveLength(0);
+});
+
+// 학습 화면 하나를 지나 껍데기의 아래 fog가 닿는지 봅니다. 듣기는 보기를 고른 뒤 버튼이 아니라
+// 넘김 층이 서므로 그 구간에도 신규 fog가 남고, 액션 행은 마치기에서야 섭니다.
+test("[LS1] 답하기 전과 넘김 구간에는 아래 fog가 서고 마치기의 액션 행이 서면 사라진다", () => {
+  renderOrdering();
+
+  expect(screen.queryByTestId("learning-shell-rest-fog")).not.toBeNull();
+  expect(screen.queryByTestId("learning-shell-actions")).toBeNull();
+
+  fireEvent.tap(screen.getByTestId(`listening-choice-${ORDERING_QUESTIONS[0].answerIndex}`), {});
+  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-rest-fog")).not.toBeNull();
+  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
+  answerCorrectlyAndAdvance(1);
+  answerCorrectlyAndAdvance(2);
+
+  expect(screen.getByTestId("learning-shell-actions")).toBeInTheDocument();
+  expect(screen.queryByTestId("learning-shell-rest-fog")).toBeNull();
+  expect(screen.queryByTestId("learning-shell-scroll-end")).toBeNull();
+  expect(screen.queryAllByTestId("ui-lynx-fog")).toHaveLength(1);
 });

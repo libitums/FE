@@ -19,6 +19,8 @@ type CallScreenProps = {
   readonly backTestId: string;
   readonly children?: ReactNode;
   readonly actions: ReactNode;
+  /** 학습 문항 안내가 위를 덮는 동안 true입니다. 루트를 낭독에서 가립니다(닫히면 false). */
+  readonly obscured?: boolean;
 };
 
 /** 서사와 학습 통화가 공유하는 수신 · 통화 중 · 종료 화면 배치입니다. */
@@ -37,9 +39,14 @@ export function CallScreen({
   backTestId,
   children,
   actions,
+  obscured,
 }: CallScreenProps) {
   return (
-    <view className={`phone-call-screen phone-call-screen-${phase}`} data-testid={testId}>
+    <view
+      className={`phone-call-screen phone-call-screen-${phase}`}
+      data-testid={testId}
+      accessibility-elements-hidden={obscured}
+    >
       <view className="phone-call-screen-header">
         <view
           className="phone-call-screen-exit"
@@ -69,7 +76,7 @@ export function CallScreen({
       <scroll-view
         className="phone-call-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         <view className="phone-call-screen-content">
           <view data-testid={`${testIdPrefix}-contact-name`}>

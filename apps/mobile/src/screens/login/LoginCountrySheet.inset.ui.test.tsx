@@ -52,3 +52,12 @@ test("[UC4b] tappableBottomInset 0 → 상자 없음", () => {
 
   expect(screen.queryByTestId("login-screen-country-inset")).toBeNull();
 });
+
+// 국가 목록 스크롤 상자도 스크롤 바를 끕니다 — 속성이 없으면 다른 스크롤 상자와 규칙이 갈립니다.
+test("[UC5] login-screen-country-list에 scroll-bar-enable='false'·scroll-orientation='vertical'이 붙는다", () => {
+  renderSheet();
+
+  const list = screen.getByTestId("login-screen-country-list");
+  expect(list).toHaveAttribute("scroll-bar-enable", "false");
+  expect(list).toHaveAttribute("scroll-orientation", "vertical");
+});

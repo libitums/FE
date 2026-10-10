@@ -631,17 +631,37 @@ test("[A4] scroll-orientation='vertical'이 붙는다", () => {
 });
 
 // `@lynx-js/testing-environment`의 `__SetAttribute`가 boolean을 `JSON.stringify`로
-// 직렬화합니다 — 단언은 문자열 "true"입니다.
-test("[A5] scroll-bar-enable='true'가 붙는다", () => {
+// 직렬화합니다 — 단언은 문자열 "false"입니다.
+test("[A5] scroll-bar-enable='false'가 붙는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("scroll-bar-enable", "true");
+  expect(screen.getByTestId("learning-shell-scroll")).toHaveAttribute("scroll-bar-enable", "false");
 });
 
-test("[A6] 문항 상태에서 스크롤 컨테이너의 직계 자식이 하나를 넘지 않는다", () => {
+// 끝 상자(`learning-shell-scroll-end`)는 높이만 가진 상자라 `<scroll-view>`가 linear라 `gap`이
+// 읽히지 않는다는 ADR-0022 D4의 근거에 걸리지 않습니다(r02.5). 그래서 끝 상자를 뺀 직계 자식이
+// 하나 이하이고, 끝 상자가 있다면 그것이 마지막 자식입니다. 다른 둘째 자식은 여전히 실패합니다.
+// ReactLynx가 자식 컴포넌트의 루트를 `<wrapper>`로 감싸므로 끝 상자의 자리는 그 상자 자신이거나
+// 상자 하나만 품은 wrapper입니다.
+test("[A6] 문항 상태에서 스크롤 컨테이너의 직계 자식이 끝 상자를 빼고 하나를 넘지 않는다", () => {
   renderOrdering();
 
-  expect(screen.getByTestId("learning-shell-scroll").children.length).toBeLessThanOrEqual(1);
+  const scroll = screen.getByTestId("learning-shell-scroll");
+  const children = Array.from(scroll.children);
+  const slotOf = (el: Element): Element | undefined =>
+    children.find((child) => child === el || child.firstElementChild === el);
+
+  const end = screen.queryByTestId("learning-shell-scroll-end");
+  const others = end === null ? children : children.filter((child) => child !== slotOf(end));
+  if (end !== null) {
+    const slot = slotOf(end);
+    expect(slot).toBeDefined();
+    expect(children[children.length - 1]).toBe(slot);
+    if (slot !== end) {
+      expect(slot?.children).toHaveLength(1);
+    }
+  }
+  expect(others.length).toBeLessThanOrEqual(1);
 });
 
 // 완료 상태에는 스크롤 컨테이너가 아예 없습니다 — 「직계 자식이 하나 이하」가 공허하게

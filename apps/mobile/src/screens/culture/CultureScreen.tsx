@@ -61,15 +61,15 @@ export function CultureScreen({
         </text>
       </view>
 
-      {/* [흐름] 내용 슬롯 — ADR-0022 D3. `scroll-orientation`·`scroll-bar-enable`을
-          적습니다 — 안 적으면 초기값이 각각 가로·꺼짐이라 세로 스크롤이 원리적으로
-          불가능합니다. accessibility-*를 붙이지 않습니다 — 조작 단위가 아니라
+      {/* [흐름] 내용 슬롯 — ADR-0022 D3. `scroll-orientation`은 적습니다 — 안 적으면
+          초기값이 가로라 세로 스크롤이 원리적으로 불가능합니다. 스크롤 바는
+          `scroll-bar-enable={false}`로 끕니다. accessibility-*를 붙이지 않습니다 — 조작 단위가 아니라
           상자입니다(ADR-0022 D5). */}
       <scroll-view
         className="culture-screen-scroll"
         data-testid="culture-screen-scroll"
         scroll-orientation="vertical"
-        scroll-bar-enable={true}
+        scroll-bar-enable={false}
       >
         {/* 직계 자식은 이것 하나뿐입니다 — flex 어휘와 gap은 이 상자가 집니다
             (ADR-0022 D4). */}

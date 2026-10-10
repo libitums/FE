@@ -2,11 +2,11 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useMemo, useReducer, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import audioWaves from "@libitums/icons/lynx/audio-waves";
-import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 
 import { AnswerVerdict } from "../../components/AnswerVerdict";
+import { LearningItemGuide } from "../../components/LearningItemGuide";
+import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import type { AnswerResult } from "../../lib/answer-result";
 import {
@@ -17,6 +17,7 @@ import {
 import type { SpeechResult } from "../../lib/speech-recognition";
 import { canListen } from "../../lib/speaking-judge";
 import { playSound } from "../../lib/sound-effects";
+import { SpeakingSentenceCard } from "./SpeakingSentenceCard";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import type { JourneyStepId } from "../journey-map/journey-map";
@@ -29,7 +30,6 @@ import {
   speakingCompletionAnnouncement,
   speakingQuestionsForStep,
   speakingSessionReducer,
-  speakingWords,
 } from "./speaking";
 
 import "./speaking-screen.css";
@@ -46,6 +46,12 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
   const questions = speakingQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(speakingSessionReducer, initialSpeakingSessionState);
   const [dictationDisabled, setDictationDisabled] = useState(false);
+  const firstQuestion = questions[0];
+  const guide = useLearningItemGuide(
+    firstQuestion === undefined
+      ? null
+      : { form: "speaking", optionalPractice: firstQuestion.optionalPractice },
+  );
 
   // 화면이 떠 있는가입니다. 권한 조회 · 인식은 호스트를 거쳐 늦게 돌아오므로, 떠난 뒤에
   // 돌아온 콜백이 인식을 새로 시작하거나(마이크가 켜진 채 남습니다) 상태를 바꾸지 않게 막습니다.
@@ -53,10 +59,6 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
 
   const complete = isSpeakingSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
-  const words = useMemo(
-    () => (question == null ? [] : speakingWords(question.sentence)),
-    [question],
-  );
 
   const judged = question != null && state.phase === "judged";
   const matched = judged ? matchedWordCount(question.sentence, state.recognized) : 0;
@@ -101,6 +103,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
   };
   // 권한을 먼저 확인하고(미요청인 것만 묻습니다), 들을 수 있으면 인식을 시작합니다.
   const startListening = (sentence: string) => {
+    if (guide.visible) return;
     setDictationDisabled(false);
     dispatch({ type: "start" });
     const requested = requestSpeechPermissions((status) => {
@@ -148,6 +151,7 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
   // 둡니다 — 맵 항목 어댑터들과 같은 경계입니다.
   const handleSkip = () => {
     "background only";
+    if (guide.visible) return;
     playSound("button");
     dispatch({ type: "skip" });
   };
@@ -171,130 +175,91 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
     state.phase === "ready" || state.phase === "listening" ? action : undefined;
   const handleRecording = () => {
     "background only";
+    if (guide.visible) return;
     if (recordingAction !== undefined) playSound("button");
     recordingAction?.run();
   };
 
   return (
-    <LearningShell
-      form="speaking"
-      questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
-      questionCount={questions.length}
-      complete={complete}
-      instruction={
-        retryAvailable
-          ? copy.speaking.dictationDisabled
-          : (question?.support?.instruction ?? copy.speaking.instruction)
-      }
-      onExit={onExit}
-      actionLabel={action?.label}
-      onAction={action?.run}
-      advance={advance}
-      scrollCard={true}
-      secondaryAction={
-        question != null && (state.phase === "ready" || retryAvailable) ? (
-          <view
-            className="speaking-screen-skip"
-            data-testid={retryAvailable ? "speaking-screen-retry" : "speaking-screen-skip"}
-          >
-            <Button
-              label={retryAvailable ? copy.speaking.tryAgain : copy.common.skip}
-              variant="outline"
-              size="xl"
-              width="hug"
-              bindtap={retryAvailable ? handleRetry : handleSkip}
-            />
-          </view>
-        ) : undefined
-      }
-      workspace={
-        question == null ? undefined : (
-          <>
-            <view className="speaking-screen-hint-slot">
-              {state.phase === "judged" ? (
-                <text className="speaking-screen-hint" data-testid="speaking-screen-hint">
-                  {copy.speaking.tapToContinue}
-                </text>
-              ) : state.phase === "unavailable" && !dictationDisabled ? (
-                <text className="speaking-screen-hint" data-testid="speaking-screen-unavailable">
-                  {copy.speaking.recognitionUnavailable}
-                </text>
-              ) : null}
+    <>
+      <LearningShell
+        form="speaking"
+        obscured={guide.visible}
+        actionSound={guide.visible ? "none" : "button"}
+        questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
+        questionCount={questions.length}
+        complete={complete}
+        instruction={
+          retryAvailable
+            ? copy.speaking.dictationDisabled
+            : (question?.support?.instruction ?? copy.speaking.instruction)
+        }
+        onExit={onExit}
+        actionLabel={action?.label}
+        onAction={action?.run}
+        advance={advance}
+        scrollCard={true}
+        secondaryAction={
+          question != null && (state.phase === "ready" || retryAvailable) ? (
+            <view
+              className="speaking-screen-skip"
+              data-testid={retryAvailable ? "speaking-screen-retry" : "speaking-screen-skip"}
+            >
+              <Button
+                label={retryAvailable ? copy.speaking.tryAgain : copy.common.skip}
+                variant="outline"
+                size="xl"
+                width="hug"
+                bindtap={retryAvailable ? handleRetry : handleSkip}
+              />
             </view>
-          </>
-        )
-      }
-      card={
-        <view className="speaking-screen-content" data-testid="speaking-screen-content">
-          {/* 판정 배지 자리 — 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다. */}
-          <view className="speaking-screen-verdict-slot">
-            {result === null ? null : <AnswerVerdict result={result} />}
-          </view>
-
-          {question == null ? (
-            <LearningActivityComplete
-              questionCount={questions.length}
-              testId="speaking-screen-complete"
-            />
-          ) : (
+          ) : undefined
+        }
+        workspace={
+          question == null ? undefined : (
             <>
-              {/* 판정 뒤에는 연속으로 맞힌 낱말을 칠합니다. */}
-              <text
-                className={`speaking-screen-sentence speaking-screen-sentence-${judged ? "judged" : "plain"}`}
-                data-testid="speaking-screen-sentence"
-                data-matched={String(matched)}
-                accessibility-label={question.sentence}
-              >
-                {words.map((word, index) => (
-                  <text
-                    key={index}
-                    className={
-                      judged && index < matched
-                        ? "speaking-screen-word speaking-screen-word-matched"
-                        : "speaking-screen-word"
-                    }
-                  >
-                    {index === 0 ? word : ` ${word}`}
+              <view className="speaking-screen-hint-slot">
+                {state.phase === "judged" ? (
+                  <text className="speaking-screen-hint" data-testid="speaking-screen-hint">
+                    {copy.speaking.tapToContinue}
                   </text>
-                ))}
-              </text>
-              <text
-                className="speaking-screen-romanization"
-                data-testid="speaking-screen-romanization"
-              >
-                {question.romanization}
-              </text>
-              {question.support ? (
-                <text
-                  className="speaking-screen-translation"
-                  data-testid="speaking-screen-translation"
-                >
-                  {question.support.translation}
-                </text>
-              ) : null}
-
-              {/* 녹음 아이콘과 하단 버튼이 같은 시작·중지 동작을 제공합니다. */}
-              <view
-                className="speaking-screen-waves"
-                data-testid="speaking-screen-waves"
-                data-listening={state.phase === "listening" ? "true" : "false"}
-                accessibility-element={recordingAction !== undefined}
-                accessibility-traits={recordingAction === undefined ? undefined : "button"}
-                accessibility-label={recordingAction?.label}
-                bindtap={recordingAction === undefined ? undefined : handleRecording}
-              >
-                <svg
-                  className="speaking-screen-waves-icon"
-                  content={audioWaves}
-                  current-color={
-                    state.phase === "listening" ? color.brand.primary : color.gray[300]
-                  }
-                />
+                ) : state.phase === "unavailable" && !dictationDisabled ? (
+                  <text className="speaking-screen-hint" data-testid="speaking-screen-unavailable">
+                    {copy.speaking.recognitionUnavailable}
+                  </text>
+                ) : null}
               </view>
             </>
-          )}
-        </view>
-      }
-    />
+          )
+        }
+        card={
+          <view className="speaking-screen-content" data-testid="speaking-screen-content">
+            {/* 판정 배지 자리 — 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다. */}
+            <view className="speaking-screen-verdict-slot">
+              {result === null ? null : <AnswerVerdict result={result} />}
+            </view>
+
+            {question == null ? (
+              <LearningActivityComplete
+                questionCount={questions.length}
+                testId="speaking-screen-complete"
+              />
+            ) : (
+              <>
+                <SpeakingSentenceCard
+                  question={question}
+                  judged={judged}
+                  matched={matched}
+                  listening={state.phase === "listening"}
+                  recordingLabel={recordingAction?.label}
+                  onRecording={recordingAction === undefined ? undefined : handleRecording}
+                />
+              </>
+            )}
+          </view>
+        }
+      />
+      {guide.visible ? <LearningItemGuide kind={guide.kind} onDismiss={guide.dismiss} /> : null}
+    </>
   );
 }

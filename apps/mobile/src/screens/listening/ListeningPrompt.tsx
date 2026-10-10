@@ -1,4 +1,3 @@
-import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import pause from "@libitums/icons/lynx/pause";
@@ -6,12 +5,11 @@ import play from "@libitums/icons/lynx/play";
 import refresh from "@libitums/icons/lynx/refresh";
 import { color } from "@libitums/design-tokens";
 
-import { listeningPromptScale, playbackActionFor, playbackStateAfterPlay } from "./listening";
-import type { ListeningPlaybackAction, ListeningPlaybackState } from "./listening";
-import { pauseAudio, playAudio, resumeAudio, stopAudio } from "../../lib/audio";
+import { listeningPromptScale, playbackActionFor } from "./listening";
+import type { ListeningPlaybackAction } from "./listening";
+import type { ListeningPlayback } from "./use-listening-playback";
 import type { SessionOptions } from "../../lib/session-options";
 import { useUiCopy } from "../../lib/ui-copy";
-import { playSound } from "../../lib/sound-effects";
 
 import "./listening-prompt.css";
 
@@ -25,8 +23,10 @@ import "./listening-prompt.css";
 // 열리면서 둘이 **다른 일**을 하게 됐습니다 — 하나는 그 자리에서 멈추고 잇고, 다른
 // 하나는 처음부터 다시 텁니다.
 //
-// **`NativeModules`를 직접 만지지 않습니다**(ADR-0017 D3). 접점은 `lib/audio.ts`
-// 하나이고 그 파일이 모듈 부재 · 늦게 온 완료 · 중복 완료를 전부 흡수합니다.
+// **이 컴포넌트는 표시만 합니다.** 재생 상태 · 자동 재생 · 조작은 화면의
+// `useListeningPlayback`이 주인이고(학습 껍데기가 배치를 바꿀 때 무대 내용을 다시 세워도
+// 소리가 끊기지 않게 하려는 것입니다), 여기에는 `playback` 묶음 하나로 내려옵니다.
+// `NativeModules`도 직접 만지지 않습니다(ADR-0017 D3) — 접점은 `lib/audio.ts` 하나입니다.
 //
 // **`<audio>`·`<video>`를 렌더하지 않습니다.** 판정 환경(Pod 4.0.1)에 미등록이라
 // 렌더하면 페이지 전체가 죽습니다 — 소리는 네이티브 모듈이 냅니다.
@@ -53,72 +53,22 @@ const playbackIconByAction: Record<ListeningPlaybackAction, string> = {
 export type ListeningPromptProps = {
   text: string;
   romanization: string;
-  audioSource: string;
+  /** 대본을 보일지(`show-transcript`)만 읽습니다. */
   sessionOptions: SessionOptions;
+  /** 재생 상태와 조작을 묶어 받습니다 — 주인은 화면의 `useListeningPlayback`입니다. */
+  playback: ListeningPlayback;
 };
 
 export function ListeningPrompt({
   text,
   romanization,
-  audioSource,
   sessionOptions,
+  playback: { playback, toggle, replay },
 }: ListeningPromptProps): ReactNode {
   const copy = useUiCopy();
-  // **재생 상태의 주인은 이 `useState` 하나입니다.** `lib/audio.ts`에도 두면 진실이
-  // 둘이 되고 어긋나는 순간을 판정할 수단이 없습니다 — ADR-0017 D3이 상태 조회 API를
-  // 거부한 그 근거입니다.
-  const [playback, setPlayback] = useState<ListeningPlaybackState>("idle");
-
-  useEffect(() => {
-    // 문항이 화면에 뜨면 재생합니다 — **자동 재생**입니다. 화면 정체성이 듣기이고,
-    // 수동 재생만 두면 문항마다 첫 조작이 언제나 `듣기` 탭이라 완료까지의 탭 수가
-    // 문항 수만큼 늡니다.
-    //
-    // **`playbackStateAfterPlay`를 지납니다.** 삼항으로 다시 쓰면 전이의 정본이 둘이
-    // 되고 `unit`이 보던 자리가 사라집니다. `"unavailable"` → `"idle"`이 **모듈이 없을
-    // 때 「멈춤」에 영구히 갇히는 것**을 막는 유일한 자리입니다.
-    if (sessionOptions["auto-play-audio"]) {
-      setPlayback(playbackStateAfterPlay(playAudio(audioSource, () => setPlayback("idle"))));
-    }
-
-    // **cleanup 하나가 넷을 집니다** — 문항 변경 · 완료 · 출구 둘 · 탭 전환입니다.
-    // 각각 손으로 이으면 다섯째 경로가 생겼을 때 조용히 빠지고, 그러면 화면을 떠나도
-    // 소리가 계속 납니다.
-    return () => stopAudio();
-
-    // **dep은 `audioSource` 하나입니다.** `text`가 바뀔 때 다시 트는 것은 「문항마다
-    // 처음부터 다시 튼다」가 아니라 「리렌더마다 다시 튼다」이고, 그 둘은 다릅니다.
-  }, [audioSource]);
 
   const action = playbackActionFor(playback);
   const scale = listeningPromptScale(text);
-
-  // 세 갈래가 전부입니다. 갈래를 컴포넌트 안 삼항이 아니라 `playbackActionFor`가
-  // 정하므로, 상태가 늘면 `tsc`가 그 함수를 가리킵니다.
-  const handlePlaybackTap = (): void => {
-    "background only";
-    playSound("button");
-    switch (action) {
-      case "pause":
-        pauseAudio();
-        setPlayback("paused");
-        return;
-      case "resume":
-        resumeAudio();
-        setPlayback("playing");
-        return;
-      case "play":
-        setPlayback(playbackStateAfterPlay(playAudio(audioSource, () => setPlayback("idle"))));
-    }
-  };
-
-  // **다시듣기는 언제나 「처음부터」입니다.** 메서드가 아니라 `play`를 다시 부르는
-  // 것이고(ADR-0017 D3), 그래서 재생 중이든 멈춰 뒀든 같은 일을 합니다.
-  const handleReplayTap = (): void => {
-    "background only";
-    playSound("button");
-    setPlayback(playbackStateAfterPlay(playAudio(audioSource, () => setPlayback("idle"))));
-  };
 
   return (
     <view className="listening-prompt">
@@ -158,7 +108,7 @@ export function ListeningPrompt({
           accessibility-element={true}
           accessibility-label={copy.listening.playFromStart}
           accessibility-traits="button"
-          bindtap={handleReplayTap}
+          bindtap={replay}
         >
           {/* 아이콘은 장식이 아니라 **유일한 보이는 채널**입니다. 그래도 접근성 속성을
               붙이지 않습니다 — 이름은 감싼 상자가 지고(ADR-0016 D5), `<svg>`에 붙이면
@@ -179,7 +129,7 @@ export function ListeningPrompt({
           accessibility-element={true}
           accessibility-label={copy.listening.playback[action]}
           accessibility-traits="button"
-          bindtap={handlePlaybackTap}
+          bindtap={toggle}
         >
           <svg
             className="listening-prompt-playback-icon"

@@ -32,7 +32,7 @@ test("[SC1] 스크롤 영역이 정확히 하나이고 이름·속성·자식이
   expect(scroll.getAttribute("class")).toBe("handwriting-probe-screen-scroll");
 
   expect(scroll).toHaveAttribute("scroll-orientation", "vertical");
-  expect(scroll).toHaveAttribute("scroll-bar-enable", "true");
+  expect(scroll).toHaveAttribute("scroll-bar-enable", "false");
   // 스크롤 설정 축은 저 둘뿐입니다 — `bounces`·`enable-scroll`을 쓰지 않습니다.
   expect(
     [...scroll.attributes]
