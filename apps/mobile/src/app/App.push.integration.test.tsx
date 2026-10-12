@@ -10,6 +10,7 @@ import { entrySplashDurationMs } from "../lib/entry-flow";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import type { NotificationEvent } from "../screens/notifications/notifications.contract";
 import type { SettingsEvent } from "../screens/settings/settings.contract";
+import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 
 // 「호스트 푸시 모듈 대역 → 결선 → 화면 전환 · 기기 등록 요청」을 한 트리에서 봅니다(IP1~IP6, ADR-0034).
 // 대역은 경계뿐입니다 — `PushNotificationModule` · `fetch`(Supabase RPC).
@@ -56,6 +57,7 @@ function stubPushHost(options: { permission?: string; opened?: unknown } = {}): 
 function recordFetch(): { url: string; body: string }[] {
   const calls: { url: string; body: string }[] = [];
   vi.stubGlobal("fetch", (url: string, init: { body: string }) => {
+    if (isContentRequest(url)) return Promise.resolve(contentNotFoundResponse());
     calls.push({ url, body: init.body });
     return Promise.resolve({ status: 204, text: async () => "" });
   });
