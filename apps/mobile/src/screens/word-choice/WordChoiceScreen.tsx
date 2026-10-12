@@ -55,8 +55,14 @@ export type WordChoiceActivityProps = {
 /**
  * 보기 글자 수가 이보다 길면 보기를 세로로 쌓습니다. 낱말 길이(튜토리얼)는 한 줄 칩이 맞고,
  * 문장 길이(카탈로그의 역할 대사 · 번역 보기)는 칩이 바닥까지 줄어 글자가 접히기 때문입니다.
+ * 기기 확인(2026-10-12): 다섯 글자(「괜찮아요.」) 보기 셋도 한 줄에서는 글자가 테두리에 닿아
+ * 잘렸습니다 — 그래서 4자를 넘으면 쌓습니다.
  */
-const stackedChoiceLength = 6;
+const stackedChoiceLength = 4;
+
+function isStackedChoices(choices: readonly string[]): boolean {
+  return choices.some((text) => text.length > stackedChoiceLength);
+}
 
 /** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
 export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
@@ -148,10 +154,12 @@ export function WordChoiceActivity({
         question === null ? undefined : (
           <view
             className={
-              question.choices.some((text) => text.length > stackedChoiceLength)
+              isStackedChoices(question.choices)
                 ? "word-choice-screen-options word-choice-screen-options-stacked"
                 : "word-choice-screen-options"
             }
+            data-testid="word-choice-screen-options"
+            data-layout={isStackedChoices(question.choices) ? "stacked" : "row"}
           >
             {question.choices.map((choiceText, choiceIndex) => (
               <WordChoiceOption

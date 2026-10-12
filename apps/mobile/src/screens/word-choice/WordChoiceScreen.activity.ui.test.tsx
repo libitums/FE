@@ -91,3 +91,29 @@ test("UW4. 튜토리얼 꼴 문항은 지원 줄이 없고 지시문은 문구�
     uiCopyEn.wordChoice.instruction,
   );
 });
+
+const clozeSentenceChoices: WordChoiceQuestion = {
+  prompt: "아니요, ___",
+  romanization: "aniyo, ___",
+  choices: ["드릴까요?", "괜찮아요.", "현금"],
+  answerIndex: 1,
+  instruction: "Fill in the blank.",
+};
+
+const clozeWordChoices: WordChoiceQuestion = {
+  prompt: "___로 할게요.",
+  romanization: "___ro halgeyo.",
+  choices: ["현금", "봉투", "카드"],
+  answerIndex: 2,
+  instruction: "Fill in the blank.",
+};
+
+// 기기 확인(2026-10-12): 다섯 글자 보기 셋이 한 줄에 서면 칩이 바닥까지 줄어 글자가 테두리에 닿거나 잘렸다.
+test("UW5. 보기 중 하나라도 다섯 글자 이상이면 세로로 쌓고, 짧은 낱말만이면 한 줄에 둔다", () => {
+  const { unmount } = mount([clozeSentenceChoices]);
+  expect(screen.getByTestId("word-choice-screen-options")).toHaveAttribute("data-layout", "stacked");
+  unmount();
+
+  mount([clozeWordChoices]);
+  expect(screen.getByTestId("word-choice-screen-options")).toHaveAttribute("data-layout", "row");
+});
