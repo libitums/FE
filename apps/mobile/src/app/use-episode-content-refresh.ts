@@ -1,4 +1,4 @@
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { hostContentStore } from "../lib/episode-cache";
 import { bundledCatalogInput } from "../lib/episode-bundled";
@@ -22,6 +22,11 @@ import { loadEpisodeContent } from "./episode-content-loader";
  */
 export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeContent {
   const [content, setContent] = useState<EpisodeContent>(noEpisodeContent);
+  // 갱신은 비동기로 늦게 끝납니다 — 그사이 sink가 바뀌면 최신 것으로 보내도록 ref로 읽습니다.
+  const sinkRef = useRef(sink);
+  useEffect(() => {
+    sinkRef.current = sink;
+  }, [sink]);
   useEffect(() => {
     setContent(loadEpisodeContent());
     void refreshEpisodeCatalog({
@@ -31,7 +36,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
     })
       .then((summary) => {
         const event = episodeContentRefreshedEventOf(summary);
-        if (event !== null) sink?.(event);
+        if (event !== null) sinkRef.current?.(event);
         if (!refreshChangesCatalog(summary)) return;
         const next = loadEpisodeContent();
         setContent((previous) => ({
@@ -40,7 +45,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         }));
       })
       .catch(() => undefined);
-    // 실행마다 한 번입니다 — sink는 App prop이라 바뀌어도 다시 돌지 않습니다.
+    // 실행마다 한 번입니다 — sink가 바뀌어도 다시 돌지 않고, 보낼 때는 ref의 최신 sink를 씁니다.
   }, []);
   return content;
 }
