@@ -11,7 +11,11 @@ import {
 } from "./learning-progress";
 import type { JourneyProgressState } from "./learning-progress";
 
-const empty: JourneyProgressState = { ...productJourneySeed, completedEpisodeIntroIds: [] };
+const empty: JourneyProgressState = {
+  ...productJourneySeed,
+  completedEpisodeIntroIds: [],
+  catalogProgress: {},
+};
 const full: JourneyProgressState = {
   completedStepCount: 1000,
   completedEpisodeIntroIds: ["tutorial-intro"],
@@ -19,6 +23,7 @@ const full: JourneyProgressState = {
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
   visualNovelProgress: { status: "completed", beatIndex: 2 },
   completedEpisodeFinalIds: ["tutorial-final-test"],
+  catalogProgress: {},
 };
 
 describe("LP1 스냅숏 왕복", () => {
@@ -90,5 +95,57 @@ describe("LP3 파생 수", () => {
     const trophies = trophyCountFrom(journeyMapSections, full);
     expect(trophies).toBeGreaterThanOrEqual(1);
     expect(trophies).toBeLessThanOrEqual(journeyMapSections.length);
+  });
+});
+
+describe("L 카탈로그 진행", () => {
+  const wire = JSON.parse(JSON.stringify(learningProgressSnapshotFrom(empty))) as Record<
+    string,
+    unknown
+  >;
+
+  test("L1 필드 없는 v1 스냅숏은 catalogProgress가 빈 객체다", () => {
+    expect("catalogProgress" in wire).toBe(false);
+    expect(journeyProgressFrom(wire)?.catalogProgress).toEqual({});
+  });
+
+  test("L2 필드 있는 v1 스냅숏은 정규화된 값을 싣는다", () => {
+    const state = journeyProgressFrom({
+      ...wire,
+      catalogProgress: { a: ["intro", "intro", "", 3, "S1"], "": ["x"], b: "x", c: [] },
+    });
+    expect(state?.catalogProgress).toEqual({ a: ["intro", "S1"] });
+  });
+
+  test("L3 스냅숏은 카탈로그 진행이 비면 키를 생략하고, 있으면 그대로 싣는다", () => {
+    expect("catalogProgress" in learningProgressSnapshotFrom(empty)).toBe(false);
+    const filled = { ...empty, catalogProgress: { a: ["intro", "S1"] } };
+    const snapshot = learningProgressSnapshotFrom(filled);
+    expect(snapshot.catalogProgress).toEqual({ a: ["intro", "S1"] });
+    expect(journeyProgressFrom(JSON.parse(JSON.stringify(snapshot)))).toEqual(filled);
+  });
+
+  test("L4 mergeJourneyProgress는 카탈로그 진행을 합집합으로 합친다", () => {
+    const a = { ...empty, catalogProgress: { x: ["intro"], y: ["S1"] } };
+    const b = { ...empty, catalogProgress: { x: ["S1"], z: ["intro"] } };
+    expect(mergeJourneyProgress(a, b).catalogProgress).toEqual({
+      x: ["intro", "S1"],
+      y: ["S1"],
+      z: ["intro"],
+    });
+    expect(mergeJourneyProgress(b, a).catalogProgress).toEqual({
+      x: ["S1", "intro"],
+      y: ["S1"],
+      z: ["intro"],
+    });
+  });
+
+  test("L5 카탈로그 필드 값이 잘못돼도 스냅숏 전체는 null이 아니고 다른 필드를 유지한다", () => {
+    for (const bad of ["x", 1, [], [["a"]], { a: "x" }]) {
+      const state = journeyProgressFrom({ ...wire, completedStepCount: 7, catalogProgress: bad });
+      expect(state).not.toBeNull();
+      expect(state?.completedStepCount).toBe(7);
+      expect(state?.catalogProgress).toEqual({});
+    }
   });
 });

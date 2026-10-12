@@ -7,7 +7,11 @@ import { productJourneySeed } from "./journey-progress";
 import { learningProgressSnapshotFrom } from "./learning-progress";
 
 type Reply = { status: number; body: string };
-const empty = learningProgressSnapshotFrom({ ...productJourneySeed, completedEpisodeIntroIds: [] });
+const empty = learningProgressSnapshotFrom({
+  ...productJourneySeed,
+  completedEpisodeIntroIds: [],
+  catalogProgress: {},
+});
 const pendingKey = (user: string) => `libitum.progress.pending.${user}`;
 const store = new Map<string, string>();
 const saves: { owner: string; snapshot: typeof empty }[] = [];
