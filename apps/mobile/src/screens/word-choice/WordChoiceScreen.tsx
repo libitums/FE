@@ -52,6 +52,12 @@ export type WordChoiceActivityProps = {
   readonly onFinish: ActivityFinish;
 };
 
+/**
+ * 보기 글자 수가 이보다 길면 보기를 세로로 쌓습니다. 낱말 길이(튜토리얼)는 한 줄 칩이 맞고,
+ * 문장 길이(카탈로그의 역할 대사 · 번역 보기)는 칩이 바닥까지 줄어 글자가 접히기 때문입니다.
+ */
+const stackedChoiceLength = 6;
+
 /** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
 export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
   return (
@@ -127,7 +133,7 @@ export function WordChoiceActivity({
       questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
       questionCount={questions.length}
       complete={complete}
-      instruction={copy.wordChoice.instruction}
+      instruction={question?.instruction ?? copy.wordChoice.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -140,7 +146,13 @@ export function WordChoiceActivity({
          낱말이라, 폭이 낱말의 길이를 말하는 것이 읽기에 낫습니다. */
       workspace={
         question === null ? undefined : (
-          <view className="word-choice-screen-options">
+          <view
+            className={
+              question.choices.some((text) => text.length > stackedChoiceLength)
+                ? "word-choice-screen-options word-choice-screen-options-stacked"
+                : "word-choice-screen-options"
+            }
+          >
             {question.choices.map((choiceText, choiceIndex) => (
               <WordChoiceOption
                 key={choiceIndex}
@@ -173,6 +185,25 @@ export function WordChoiceActivity({
           {question === null ? null : (
             <text className="word-choice-screen-prompt" data-testid="word-choice-screen-prompt">
               {question.prompt}
+            </text>
+          )}
+
+          {/* 카탈로그 문항의 지원 줄입니다 — 값이 있을 때만 섭니다. 뜻 줄은 정답을 드러내는
+              문항에는 실리지 않습니다(그 판단은 문항을 만드는 쪽이 집니다). */}
+          {question?.romanization === undefined ? null : (
+            <text
+              className="word-choice-screen-support"
+              data-testid="word-choice-screen-romanization"
+            >
+              {question.romanization}
+            </text>
+          )}
+          {question?.translation === undefined ? null : (
+            <text
+              className="word-choice-screen-support"
+              data-testid="word-choice-screen-translation"
+            >
+              {question.translation}
             </text>
           )}
 

@@ -4,6 +4,7 @@ import bookmark from "@libitums/icons/lynx/bookmark";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { catalogCoverAccessibilityLabel } from "./catalog-map";
 import type { CatalogCoverMapItemProps } from "./catalog-map.contract";
 
 import "./journey-special-unit.css";
@@ -19,6 +20,7 @@ const unitStatusByStatus = {
 // 탭을 흘리지 않는 것에만 기대지 않고 여기서도 막습니다.
 export function CatalogCoverMapItem({
   episodeId,
+  ordinal,
   status,
   onSelect,
 }: CatalogCoverMapItemProps): ReactNode {
@@ -34,7 +36,7 @@ export function CatalogCoverMapItem({
     <view className="journey-special-unit">
       <LearningUnit
         id={`catalog-cover-${episodeId}`}
-        accessibilityLabel={copy.catalogMap.coverTitle}
+        accessibilityLabel={catalogCoverAccessibilityLabel(ordinal, copy)}
         icon={bookmark}
         status={unitStatusByStatus[status]}
         narrative="narrative"

@@ -6,6 +6,7 @@ import { announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { ListeningPrompt } from "./ListeningPrompt";
+import { ListeningSilentPrompt } from "./ListeningSilentPrompt";
 import { ListeningChoice } from "./ListeningChoice";
 import { useListeningPlayback } from "./use-listening-playback";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
@@ -194,7 +195,10 @@ export function ListeningActivity({
           </view>
 
           {/* 제시 채널입니다. 오디오가 생기면 **이 컴포넌트만** 통째로 갈립니다. */}
-          {question === null ? null : (
+          {question === null ? null : question.audioSource === null ? (
+            // 소리가 없는 문항입니다 — 대본이 유일한 단서라 `show-transcript`와 무관하게 섭니다.
+            <ListeningSilentPrompt text={question.prompt} romanization={question.romanization} />
+          ) : (
             <ListeningPrompt
               text={question.prompt}
               romanization={question.romanization}

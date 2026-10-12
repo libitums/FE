@@ -1,0 +1,21 @@
+/* 정답 공개 상자입니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   연초록 면 위 `feedback-correct-text`는 AA(4.5:1)를 넘습니다. */
+.answer-reveal {
+  align-self: stretch;
+  padding-top: var(--libitum-spacing-12);
+  padding-bottom: var(--libitum-spacing-12);
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-feedback-correct-surface);
+}
+
+.answer-reveal-text {
+  color: var(--libitum-color-feedback-correct-text);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  text-align: center;
+}

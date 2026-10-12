@@ -25,15 +25,24 @@ export function NarrativeBackground({
     transition,
     previousSrc,
   });
-  const [loaded, setLoaded] = useState(false);
+  const [loadedRaw, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [settled, setSettled] = useState(false);
+  // 실패는 걸쇠입니다 — 실패한 뒤 같은 요소에 로드 신호가 와도 전환을 시작하지 않습니다.
+  const loaded = loadedRaw && !failed;
   const motionEnabled = animated && !reducedMotion;
   const profile = motionEnabled ? entryTransition : undefined;
+  // 새 그림이 실패하면 이전 그림 층을 걷습니다 — 로드되지 않은 그림 뒤에 앞 컷이 남으면
+  // 다른 장면의 그림 위에 지금 장면의 글이 서게 됩니다. 호출자의 단색 바탕이 보입니다.
   const showPrevious =
-    motionEnabled && !settled && entryPreviousSrc !== null && entryPreviousSrc !== src;
+    motionEnabled && !settled && !failed && entryPreviousSrc !== null && entryPreviousSrc !== src;
   const handleLoad = () => {
     "background only";
     setLoaded(true);
+  };
+  const handleError = () => {
+    "background only";
+    setFailed(true);
   };
   const handleSettled = (event: AnimationEvent) => {
     "background only";
@@ -47,6 +56,8 @@ export function NarrativeBackground({
       className="narrative-background"
       data-testid="narrative-background"
       data-transition={motionEnabled ? (profile ?? "crossfade") : "none"}
+      // 데이터셋 키는 카멜로 적습니다(하이픈 키는 테스트 환경이 거부합니다) — 속성 이름은 `data-load-state`가 됩니다.
+      data-loadState={failed ? "failed" : loaded ? "loaded" : "loading"}
       accessibility-elements-hidden={true}
     >
       {showPrevious ? (
@@ -87,6 +98,7 @@ export function NarrativeBackground({
             src={src}
             mode="aspectFill"
             bindload={handleLoad}
+            binderror={handleError}
           />
         </view>
       </view>

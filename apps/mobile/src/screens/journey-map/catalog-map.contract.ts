@@ -38,12 +38,6 @@ export type CatalogGate = {
 
 export type CatalogCaptionKind = "pending" | "update" | "unavailable";
 
-export type CatalogLockedNode = {
-  readonly key: CatalogUnitKey;
-  readonly role: "lesson" | "final";
-  readonly ordinal: number;
-};
-
 /** 레슨 · 최종 노드 — 상태가 사슬(표지 → 레슨들 → 최종)에서 파생됩니다. */
 export type CatalogUnitNode = {
   readonly key: CatalogUnitKey;
@@ -60,22 +54,22 @@ export type JourneyMapCatalogProps = {
   readonly progress: CatalogProgress;
   readonly onStartCover: (episodeId: string) => void;
   /** 레슨 · 최종 노드를 눌렀을 때. 열린 노드에서만 불립니다. */
-  readonly onStartUnit?: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
 };
 
 export type CatalogMapSectionsProps = {
   readonly sections: readonly CatalogMapSection[];
   readonly gate: CatalogGate;
   readonly onStartCover: (episodeId: string) => void;
-  readonly onStartUnit?: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
 };
 
 export type CatalogEpisodeSectionProps = {
   readonly section: CatalogReadySection;
   readonly coverStatus: JourneyMapItemStatus;
-  readonly progress?: CatalogProgress;
+  readonly progress: CatalogProgress;
   readonly onStartCover: (episodeId: string) => void;
-  readonly onStartUnit?: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
 };
 
 export type CatalogUnavailableSectionProps = { readonly section: CatalogUnavailableSection };
@@ -83,14 +77,9 @@ export type CatalogUnavailableSectionProps = { readonly section: CatalogUnavaila
 export type CatalogCoverMapItemProps = {
   readonly episodeId: string;
   /** 낭독의 `Episode n.` 자리입니다. */
-  readonly ordinal?: number;
+  readonly ordinal: number;
   readonly status: JourneyMapItemStatus;
   readonly onSelect: (episodeId: string) => void;
-};
-
-export type CatalogLockedUnitNodeProps = {
-  readonly episodeId: string;
-  readonly node: CatalogLockedNode;
 };
 
 export type CatalogUnitNodeProps = {

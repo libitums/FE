@@ -140,7 +140,9 @@ export function SentenceOrderActivity({
         questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
         questionCount={questions.length}
         complete={complete}
-        instruction={question?.support?.instruction ?? copy.sentenceOrder.instruction}
+        instruction={
+          question?.instruction ?? question?.support?.instruction ?? copy.sentenceOrder.instruction
+        }
         onExit={onExit}
         actionLabel={action?.label}
         onAction={action?.run}
