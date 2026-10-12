@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import { en } from "../i18n/copy";
 import Closing from "./Closing.astro";
 import { render } from "./render.support";
 
@@ -6,7 +7,7 @@ describe("Closing", () => {
   let document: Document;
 
   beforeAll(async () => {
-    ({ document } = await render(Closing));
+    ({ document } = await render(Closing, { props: { t: en } }));
   });
 
   it("UI-CL1 인용구", () => {
@@ -25,7 +26,8 @@ describe("Closing", () => {
   it("UI-CL2 장식 그림 · 제목 없음", () => {
     const images = document.querySelectorAll("img");
     expect(images.length).toBe(1);
-    expect(images[0]?.getAttribute("alt")).toBe("");
+    expect(images[0]?.getAttribute("alt")).toBe(en.sceneDescentAlt);
+    expect(images[0]?.getAttribute("aria-hidden")).toBe("true");
     expect(images[0]?.getAttribute("loading")).toBe("lazy");
     expect(document.querySelectorAll("h1, h2, h3, h4, h5, h6").length).toBe(0);
   });

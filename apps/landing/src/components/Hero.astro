@@ -13,15 +13,15 @@ const { t } = Astro.props;
   <div class="hero__stage">
     <div class="hero__panels" aria-hidden="true">
       <figure class="hero__panel" data-panel="0">
-        <img src={img.scenePlane.src} alt="" width="810" height="1440" fetchpriority="high" />
+        <img src={img.scenePlane.src} alt={t.scenePlaneAlt} width="810" height="1440" fetchpriority="high" />
         <figcaption><b>01</b> <span>{t.panel1}</span></figcaption>
       </figure>
       <figure class="hero__panel" data-panel="1">
-        <img src={img.sceneStreet.src} alt="" width="810" height="1440" loading="lazy" />
+        <img src={img.sceneStreet.src} alt={t.scene2Alt} width="810" height="1440" loading="lazy" />
         <figcaption><b>02</b> <span>{t.panel2}</span></figcaption>
       </figure>
       <figure class="hero__panel" data-panel="2">
-        <img src={img.sceneArrival.src} alt="" width="810" height="1440" loading="lazy" />
+        <img src={img.sceneArrival.src} alt={t.scene5Alt} width="810" height="1440" loading="lazy" />
         <figcaption><b>03</b> <span>{t.panel3}</span></figcaption>
       </figure>
     </div>
