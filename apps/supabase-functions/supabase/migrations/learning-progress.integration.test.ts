@@ -231,3 +231,50 @@ test.each(["active", "completed"])(
     });
   },
 );
+
+test("S1 카탈로그 진행을 처음 저장하면 그대로 읽힌다", async () => {
+  await save(writerA, { ...empty, catalogProgress: { a: ["intro"] } });
+  expect(await load(writerB)).toEqual({ ...empty, catalogProgress: { a: ["intro"] } });
+});
+
+test("S2 카탈로그 진행은 키별 합집합이며 원소는 C 정렬이다", async () => {
+  await save(writerA, { ...empty, catalogProgress: { a: ["intro"] } });
+  await save(writerB, { ...empty, catalogProgress: { a: ["S1"], b: ["intro"] } });
+  expect(await load(writerA)).toEqual({
+    ...empty,
+    catalogProgress: { a: ["S1", "intro"], b: ["intro"] },
+  });
+});
+
+test("S3 필드 없는 옛 앱의 저장은 기존 카탈로그 진행을 지우지 않는다", async () => {
+  await save(writerA, { ...empty, catalogProgress: { a: ["intro"] } });
+  await save(writerB, first);
+  expect(await load(writerA)).toEqual({ ...first, catalogProgress: { a: ["intro"] } });
+});
+
+test("S4 양쪽 모두 카탈로그 진행이 없으면 결과에도 키가 없다", async () => {
+  await save(writerA, first);
+  await save(writerB, second);
+  const result = await load(writerA);
+  expect(result).toEqual(merged);
+  expect(result).not.toHaveProperty("catalogProgress");
+});
+
+test.each([
+  ["값이 배열이 아님", { a: "intro" }],
+  ["원소가 숫자", { a: [1] }],
+  ["원소가 빈 문자열", { a: [""] }],
+  ["catalogProgress가 배열", ["intro"]],
+  ["빈 키", { "": ["intro"] }],
+] as const)(
+  "S5 잘못된 카탈로그 진행(%s)은 22023으로 거절하고 기존 진행을 보존한다",
+  async (_name, bad) => {
+    await save(writerA, { ...first, catalogProgress: { a: ["intro"] } });
+    // 코드만 보면 jsonb 내장 함수가 던지는 22023과 구분되지 않는다 — 마이그레이션의 메시지까지 본다.
+    await expect(save(writerB, { ...empty, catalogProgress: bad })).rejects.toMatchObject({
+      code: "22023",
+      message: "invalid catalog progress",
+    });
+    expect(await load(writerA)).toEqual({ ...first, catalogProgress: { a: ["intro"] } });
+  },
+);

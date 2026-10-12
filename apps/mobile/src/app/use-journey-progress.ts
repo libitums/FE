@@ -1,5 +1,6 @@
 // 여정 진행과 연속 학습 상태입니다. 미전송 기록·계정별 복구·재시도는 journey-progress-sync가 담당합니다.
 
+import type { CatalogProgress } from "../lib/catalog-progress";
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { localDayFrom } from "../lib/progress-api";
@@ -41,6 +42,8 @@ export function useJourneyProgress(
   const [completedEpisodeIntroIds, setCompletedEpisodeIntroIds] = useState<
     readonly EpisodeIntroUnitId[]
   >(initialCompletedEpisodeIntroIds);
+  // 카탈로그 에피소드 진행(3b-1). 맵 · 컷 화면이 쓰는 것은 3b-2입니다.
+  const [catalogProgress, setCatalogProgress] = useState<CatalogProgress>({});
   const [streakDays, setStreakDays] = useState(0);
   // 빈 초기값은 신규 사용자라는 뜻이 아닙니다. 유효한 서버 기록을 합친 뒤에만 안내를 판단합니다.
   const [hasLoadedProgress, setHasLoadedProgress] = useState(false);
@@ -62,6 +65,7 @@ export function useJourneyProgress(
     visualNovelProgress,
     completedEpisodeFinalIds,
     completedEpisodeIntroIds,
+    catalogProgress,
   };
   const latest = useRef(state);
   latest.current = state;
@@ -92,6 +96,7 @@ export function useJourneyProgress(
     setVisualNovelProgress(next.visualNovelProgress);
     setCompletedEpisodeFinalIds(next.completedEpisodeFinalIds);
     setCompletedEpisodeIntroIds(next.completedEpisodeIntroIds);
+    setCatalogProgress(next.catalogProgress);
   };
 
   /** 로그인 뒤 호출합니다. 로컬 미전송 진행을 즉시 복구한 다음 서버와 합칩니다. */

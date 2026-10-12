@@ -3,6 +3,8 @@
 // 스냅숏을 읽을 때 **이 앱에 있는 유닛 ID만** 남깁니다 — 표가 유닛 타입의 모든 값을 키로 가져야 컴파일되므로,
 // 유닛이 늘면 여기서 섭니다(`push-target.ts`와 같은 방식).
 
+import { catalogProgressFrom, mergeCatalogProgress } from "../lib/catalog-progress";
+import type { CatalogProgress } from "../lib/catalog-progress";
 import type { LearningProgressSnapshotV1 } from "../lib/learning-progress.contract";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
@@ -17,6 +19,8 @@ import type { AppJourneySeed } from "./journey-progress";
 /** 저장하는 진행 전부입니다 — 부팅 씨앗에 끝낸 표지 유닛을 더한 것입니다. */
 export type JourneyProgressState = AppJourneySeed & {
   readonly completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
+  /** 카탈로그 에피소드 진행(`lib/catalog-progress.ts`). 없으면 `{}`. */
+  readonly catalogProgress: CatalogProgress;
 };
 
 const introUnits: Record<EpisodeIntroUnitId, true> = { "tutorial-intro": true };
@@ -62,6 +66,10 @@ export function learningProgressSnapshotFrom(
     completedPhoneCallUnitIds: state.completedPhoneCallUnitIds,
     visualNovel: state.visualNovelProgress,
     completedEpisodeFinalIds: state.completedEpisodeFinalIds,
+    // 비면 싣지 않습니다 — 옛 서버 · 옛 앱이 보는 스냅숏과 바이트가 같게.
+    ...(Object.keys(state.catalogProgress).length > 0
+      ? { catalogProgress: state.catalogProgress }
+      : {}),
   };
 }
 
@@ -93,6 +101,8 @@ export function journeyProgressFrom(raw: unknown): JourneyProgressState | null {
     completedPhoneCallUnitIds: phoneCall,
     visualNovelProgress: visualNovel,
     completedEpisodeFinalIds: finals,
+    // 모양이 틀린 값은 그 부분만 버립니다 — 스냅숏 전체를 버리지 않습니다.
+    catalogProgress: catalogProgressFrom(record["catalogProgress"]),
   };
 }
 
@@ -169,6 +179,7 @@ export function mergeJourneyProgress(
     completedPhoneCallUnitIds: union(a.completedPhoneCallUnitIds, b.completedPhoneCallUnitIds),
     visualNovelProgress: aheadVisualNovel,
     completedEpisodeFinalIds: union(a.completedEpisodeFinalIds, b.completedEpisodeFinalIds),
+    catalogProgress: mergeCatalogProgress(a.catalogProgress, b.catalogProgress),
   };
 }
 
