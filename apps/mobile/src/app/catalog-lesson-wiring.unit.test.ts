@@ -14,6 +14,7 @@ import type {
 } from "../screens/episode-intro/episode-intro.contract";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import { catalogLessonWiring } from "./catalog-lesson-wiring";
+import { catalogWiring } from "./catalog-wiring";
 import type { CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
 import type { EpisodeContent } from "./episode-content";
 import type { NavAction } from "./nav-state";
@@ -592,15 +593,10 @@ describe("튜토리얼 진행과 sink 없음", () => {
 });
 
 describe("catalogWiring — 표지 결선과 레슨 결선을 합친다", () => {
-  test("LW14. 표지 콜백 셋 · 학습 콜백 여섯 · 값 셋이 모두 있다", async () => {
-    // 합치는 모듈은 이 단계에서 새로 생기므로 수집 단계에서 해석하지 않고 실행 때 불러옵니다.
-    const modulePath = "./catalog-wiring";
-    const loaded = (await import(/* @vite-ignore */ modulePath)) as {
-      catalogWiring: (args: unknown) => Record<string, unknown>;
-    };
+  test("LW14. 표지 콜백 셋 · 학습 콜백 여섯 · 값 셋이 모두 있다", () => {
     const { args } = harness({ progress: { "u01-water": ["intro", "S1"] } });
 
-    const wiring = loaded.catalogWiring(args);
+    const wiring: Record<string, unknown> = catalogWiring(args);
 
     for (const name of [
       "onStartCatalogCover",

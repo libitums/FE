@@ -539,7 +539,7 @@ test("L6. (AC6) 최종 테스트: 턴을 타일로 맞히면 결과 → 통과 �
   const { rpcs, events } = await boot({ progress: throughS9 });
   const plan = finalPlan(u01, 1);
   expect(status(u01, "RP")).toBe("available");
-  expect(status(u02, "intro")).toBe("default");
+  expect(cover(u02)).toHaveAttribute("data-status", "default");
 
   tapNode(u01, "RP");
   expect(screen.getByTestId("catalog-final-screen")).toBeInTheDocument();
@@ -620,7 +620,7 @@ test("L8. 레슨 도중 나가기 · 최종 도중 시스템 뒤로는 기록 �
   tapId("learning-shell-exit");
   tapButtonIn("ui-lynx-dialog-action-leave");
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(status(u01, "S9")).toBe("available");
+  expect(status(u01, "S9")).toBe("clear");
 
   tapNode(u01, "RP");
   expect(screen.getByTestId("catalog-final-screen")).toBeInTheDocument();
