@@ -3,7 +3,7 @@
 상태: **합의 대기** (콘텐츠 생산 쪽과 아래 「합의 항목」을 닫은 뒤 **계약 고정**으로 바꾼다)
 작성: 2026-10-12 · 정정 2026-10-12 (파일 하나 = 유닛이 아니라 **에피소드 하나**. 아래 전부 그 기준)
 근거 파일: `u01-water.json` · `u02-checkin.json` · `u03-mina.json` (`schema: "delivery-2"`, **각각 에피소드 1 · 2 · 3**)
-후속: **2단계(와이어 스키마 + 디코더 + 픽스처)는 2026-10-12에 끝났다** — 산출은 §12. 합의는 여전히 대기이고, 합의로 모양이 바뀌면 이 문서와 §12의 모듈을 같이 고친다. 3단계(앱 구조 연결)는 §12 끝의 표. 이 문서는 ADR 「콘텐츠 스키마와 전달」의 부록이 된다.
+후속: **2단계(와이어 스키마 + 디코더 + 픽스처)는 2026-10-12에 끝났다** — 산출은 §12. 합의는 여전히 대기이고, 합의로 모양이 바뀌면 이 문서와 §12의 모듈을 같이 고친다. 3단계(앱 구조 연결)는 §12 끝의 표. **3a(콘텐츠 소스 — 매니페스트 · 내장 · 원격 · 캐시)는 2026-10-12에 섰다** — §10이 계약이 됐고 전달 결정은 [ADR-0056](../adr/0056-episode-content-delivery.md)이 진다.
 
 > 이 문서의 「필수 / 선택」은 **세 파일을 전수 측정한 관찰값**이다. `n/N`은 「그 키가 있는 개수 / 전체 개수」.
 > 관찰값은 의도와 다를 수 있다. 다르면 합의 항목에서 가른다. 측정은 전 문항 288개 · 컷 25개 · 대화 34줄 · 단어 38개 · 패턴 4개를 대상으로 했다.
@@ -189,30 +189,52 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 
 앱의 현재 자산 경로(참고): 이미지는 번들 import → `/static/…`(Android는 호스트가 재작성, ADR-0051). 오디오는 확장자 없는 **불투명 id**를 호스트 `AudioPlaybackModule`이 번들에서 찾는다(ADR-0017 D3). 원격 fallback은 아직 없다(ADR README 보류 표 「오디오 자산의 출처·형식」). → 합의 Q6 · Q21.
 
-## 10. 매니페스트 (아직 없음 — 제안)
+## 10. 매니페스트 — 계약 (`manifest-1`, 2026-10-12)
 
-에피소드 JSON만으로는 「몇 번째 에피소드인가」와 「바뀌었는가」를 알 수 없다. 앱 변경 없이 에피소드가 쌓이려면 아래 수준의 매니페스트가 필요하다. 유닛 목록은 매니페스트에 두지 않는다 — 에피소드 JSON의 `steps`가 정본이고, 맵은 그것으로 노드를 그린다.
+에피소드 JSON만으로는 「몇 번째 에피소드인가」와 「바뀌었는가」를 알 수 없다. 앱 변경 없이 에피소드가 쌓이려면 매니페스트가 필요하다. 유닛 목록은 매니페스트에 두지 않는다 — 에피소드 JSON의 `steps`가 정본이고, 맵은 그것으로 노드를 그린다.
+
+**이 절은 제안이 아니라 계약이다** — FE가 3a(콘텐츠 소스)에서 `manifest-1`로 고정했다(2026-10-12). 앱 쪽 디코더는 `apps/mobile/src/lib/episode-manifest.schema.ts` · `episode-manifest.ts`이고, 전달 · 결합 · 캐시 · 잠금 규칙은 [ADR-0056](../adr/0056-episode-content-delivery.md)이 진다.
 
 ```jsonc
 {
   "schema": "manifest-1",
   "generated_at": "2026-10-12T00:00:00Z",
-  "min_app_version": "1.3.0",          // 이보다 낮은 앱은 이 매니페스트를 무시
+  "min_client_level": 1,               // 선택. 정수. 앱의 CONTENT_CLIENT_LEVEL보다 크면 원격 항목을 잠근다
   "episodes": [
     { "id": "u01-water", "order": 1, "title": "익선동 골목 어귀 편의점",
       "schema": "delivery-2", "version": "2026-10-12.1",
-      "sha256": "…", "bytes": 79346, "url": "episodes/u01-water.json" },
+      "sha256": "eb7624ae…15d9", "bytes": 79346, "url": "episodes/u01-water.json" },
     { "id": "u02-checkin", "order": 2, "title": "익선 게스트하우스 프런트", "schema": "delivery-2", "…": "…" },
     { "id": "u03-mina",    "order": 3, "title": "익선 게스트하우스 여성 도미토리", "schema": "delivery-2", "…": "…" }
   ]
 }
 ```
 
+| 키 | 필수 | 타입 | 뜻 |
+|---|---|---|---|
+| `schema` | 필수 | `"manifest-1"` | 다르면 매니페스트 전체를 버린다(`schema-mismatch`) |
+| `generated_at` | 필수 | string | 생성 시각. 앱은 비교에 쓰지 않는다 |
+| `min_client_level` | 선택 | int | 이보다 낮은 앱은 이 매니페스트에서 온 항목을 `client-too-old`로 잠근다. 앱은 지금 `CONTENT_CLIENT_LEVEL = 1` |
+| `episodes[].id` | 필수 | string | 에피소드 id(= 파일의 `unit_id`, §0 · Q1). 매니페스트 안에서 중복이면 전체 거부(`duplicate-episode-id`) |
+| `episodes[].order` | 필수 | int | 맵 순서. 오름차순, 같으면 `id` 사전순 |
+| `episodes[].title` | 필수 | string | 본문을 받기 전에도 보이는 제목 |
+| `episodes[].schema` | 필수 | string | 에피소드 JSON의 `schema`. 앱이 모르면 `unsupported-schema`로 잠근다 |
+| `episodes[].version` | 필수 | string | `YYYY-MM-DD.n`. 숫자 인식 비교로 높은 쪽이 이긴다(같으면 내장) |
+| `episodes[].sha256` | 필수 | string | 원문 UTF-8 바이트의 SHA-256, 소문자 hex 64자. 다르면 버리고 `integrity-mismatch` |
+| `episodes[].bytes` | 필수 | int | 원문 UTF-8 바이트 수. 다르면 위와 같다 |
+| `episodes[].url` | 필수 | string | 기준 상대 경로. 빈 값 · 선두 `/` · `..` 조각 · `://`가 든 값은 거부한다 |
+
+모르는 키는 버린다(`.strict()` 아님).
+
+- **`min_app_version` → `min_client_level`(정수)로 정정했다.** 제안본은 semver `min_app_version: "1.3.0"`이었는데, 앱의 JS에는 비교할 앱 버전 상수가 없다(`import.meta.env`는 SUPABASE · POSTHOG · ANALYTICS_ENVIRONMENT뿐). 그래서 콘텐츠가 요구하는 「클라이언트 수준」을 정수로 두고, 앱이 그 수준을 그릴 수 있게 되면 앱의 상수를 올린다. Q18의 「`min_app_version`으로 1차 차단」은 이 키로 읽는다.
 - `title`을 매니페스트에도 두는 이유: 아직 내려받지 않은 에피소드도 맵에 **「준비 중」 구획으로 머리만** 보여야 한다(ADR-0024 D13 · D14의 `pending` 에피소드가 바로 이 상태다). 본문은 받은 뒤 채운다.
-- `version` · `sha256`: 바뀐 에피소드만 다시 받는다. 받은 파일의 해시가 다르면 버린다.
-- `schema`: 에피소드마다 둔다. 앱이 모르는 스키마의 에피소드는 **잠근 채 보여주거나 숨긴다**(어느 쪽인지는 합의 Q18).
-- `url`은 매니페스트 기준 상대 경로. 이미지 · 오디오도 같은 기준.
+- `version` · `sha256` · `bytes`: 바뀐 에피소드만 다시 받는다. 받은 파일의 해시나 바이트 수가 다르면 버린다.
+- `schema`: 에피소드마다 둔다. 앱이 모르는 스키마의 에피소드는 **잠근 채 목록에 세운다**(숨기지 않는다 — Q18의 FE 제안대로 앱 쪽을 정했다. 서버 쪽 정책 확인은 Q18에 남는다).
+- **원격 경로**: 기준은 `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/content/`(Supabase Storage 공개 버킷 `content`). 그 아래 `manifest.json` · `episodes/<id>.json` · `images/<id>/…`. 에피소드 `url`과 컷 `image_url`은 이 기준의 상대 경로다. 오디오 파일의 출처는 아직 정하지 않았다(ADR README 보류 표 「오디오 자산의 출처·형식」). ⚠ 버킷은 아직 없다 — 생성 · 업로드는 사용자 확인 뒤(ADR README 보류 표).
+- **내장 매니페스트**: `apps/mobile/content/manifest.json` — 번들에 실은 세 에피소드(`content/episodes/*.json`)의 실제 `sha256` · `bytes`를 적은 같은 형식의 파일이다. 사본을 바꾸면 이 파일도 같이 바꾼다.
 - `day` · `time_of_day` · `place` · `counterpart`는 에피소드 JSON에 그대로 둔다.
+
+> 2026-10-12 3a 리뷰 반영: 카탈로그 비교는 `compareVersions`(숫자 조각 비교 — `localeCompare` 금지, PrimJS), 원격이 이긴 항목이 준비되지 않으면 같은 id의 내장본으로 폴백, `episode-catalog.ts`가 `compareVersions` · `checkEpisodeText` · `parseCachedManifest`를 공용 검증 자리로 export(결합과 갱신이 같은 검사를 쓴다). 상세는 [ADR-0056](../adr/0056-episode-content-delivery.md) D2 · D3.
 
 ## 11. 합의 항목
 
@@ -220,7 +242,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 
 | # | 관찰 | FE 제안 | 답 |
 |---|---|---|---|
-| **Q1** | 식별자 키가 `unit_id`인데 값은 에피소드다. 순서 · 버전 · 해시는 없다 | 순서 · 버전 · 해시는 §10 매니페스트에. 키 이름은 **`episode_id`로 바꾸기**를 제안하되, 바꾸기 어렵다면 `unit_id` 그대로 두고 이 문서 §0이 뜻을 진다 | |
+| **Q1** | 식별자 키가 `unit_id`인데 값은 에피소드다. 순서 · 버전 · 해시는 없다 | 순서 · 버전 · 해시는 §10 매니페스트에. 키 이름은 **`episode_id`로 바꾸기**를 제안하되, 바꾸기 어렵다면 `unit_id` 그대로 두고 이 문서 §0이 뜻을 진다 | 순서 · 버전 · 해시: **FE가 `manifest-1`로 고정(2026-10-12)** — §10. 키 이름은 콘텐츠 쪽 답 대기 |
 | **Q2** ⏸ | `ROLEPLAY_TURN.roleplay`가 상위 `context` · `stimulus` · `tiles` · `answers` · `mode`를 다른 모양으로 다시 담는다. `accepted_answers`는 한 곳에서 `answers`와 어긋난다 | `roleplay`에서 **`line_id` · `tiles_gloss`만** 남기고 나머지는 지운다. 정답의 정본은 `answers`. **RP 수정본이 오면 다시 본다** | |
 | **Q3** | `LISTEN_SELECT` E 3개는 `options`가 없고 `context`가 있다. R 34개는 반대 | 모양이 다르면 타입을 나눈다: `LISTEN_EXPOSE`(E, options 없음) · `LISTEN_SELECT`(R, options 필수). `event`로 모양을 갈라 읽지 않는다 | |
 | **Q4** | 에피소드 3이 에피소드 2에만 있는 단어 3개를 ref로 가리킨다(23문항) | 각 에피소드는 **자기 `words`로 모든 ref를 해결**한다. 앞 에피소드 단어는 `role: "prereq"`로 다시 싣는다(이미 그 role이 있다). 앱은 에피소드 단위로 받으므로 전역 사전을 가정하지 않는다. 대안은 매니페스트에 공용 사전 파일을 하나 더 두는 것인데, 에피소드 하나만 받아도 열려야 한다는 조건이 깨져 권하지 않는다 | |
@@ -254,7 +276,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 
 | 파일 | 역할 | 스레드 |
 |---|---|---|
-| `episode-content.schema.ts` | 와이어 스키마 `deliveryEpisodeSchema`(`zod/mini`) · `KNOWN_ITEM_TYPES`(§7.2의 13종) · `z.infer` 타입. **`src/` 안에서 `zod`를 import하는 유일한 파일**(unit 테스트가 고정) | `background-only` |
+| `episode-content.schema.ts` | 와이어 스키마 `deliveryEpisodeSchema`(`zod/mini`) · `KNOWN_ITEM_TYPES`(§7.2의 13종) · `z.infer` 타입. **`src/` 안에서 `zod`를 import하는 파일은 이것과 매니페스트 스키마 `episode-manifest.schema.ts` 둘뿐이다**(unit 테스트가 고정, 3a에서 둘로) | `background-only` |
 | `episode-content.model.ts` | 도메인 타입만(`Episode` · `LearningItem` · `DecodeResult` …). import 0 | 타입만 |
 | `episode-content.normalize.ts` | 공통 헬퍼 · 컷 · 대화 · 단어 변환 | `background-only` |
 | `episode-content.items.ts` | 문항 변환 · TURN_ORDER / PAIR_MATCH 문자열 정답 풀이 | `background-only` |
@@ -262,7 +284,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 
 런타임 모듈 넷의 첫 줄은 `import "background-only";`다 — 메인 스레드 번들에 실리면 빌드가 깨진다(`posthog-client.ts` 선례, ADR-0029 D3). `zod` `4.6.5`는 `apps/mobile` `dependencies`에 있다(ADR-0013 D5 「첫 설치 뒤 더해진 `dependencies`」).
 
-**픽스처** — `apps/mobile/content/episodes/u01-water.json` · `u02-checkin.json` · `u03-mina.json`. 원본의 **바이트 사본**(sha256 동일, 포맷터 글롭에서 제외). `src/` 밖이라 번들에 들어가지 않는다. 콘텐츠의 사본이므로 손으로 고치지 않는다 — 합의로 원본이 바뀌면 통째로 바꾼다(Q4가 「제안대로」면 u03은 고쳐진 파일로).
+**픽스처** — `apps/mobile/content/episodes/u01-water.json` · `u02-checkin.json` · `u03-mina.json`. 원본의 **바이트 사본**(sha256 동일, 포맷터 글롭에서 제외). ⟨2026-10-12⟩ 3a부터 **번들에 들어간다** — `src/lib/episode-bundled.ts`가 내장 에피소드로 import한다(ADR-0056 D1). 그래서 이 사본이 곧 내장본이고, 바꾸면 `content/manifest.json`의 `sha256` · `bytes`도 바꾼다. 콘텐츠의 사본이므로 손으로 고치지 않는다 — 합의로 원본이 바뀌면 통째로 바꾼다(Q4가 「제안대로」면 u03은 고쳐진 파일로).
 
 **디코더 정책**
 

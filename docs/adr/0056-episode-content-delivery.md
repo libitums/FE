@@ -1,0 +1,163 @@
+# ADR-0056 — 에피소드 콘텐츠 전달: 초반은 번들에 싣고 이후는 서버 매니페스트로 받아 기기에 남기며, 검증을 못 넘은 에피소드는 그것만 잠근다
+
+- 상태: **채택 — 클라이언트 쪽.** 전달 방식(초반 에피소드 내장 + 이후 서버 · 기기 캐시) · 이번 단계 범위(지금 있는 세 에피소드 내장 + 서버 경로 구현) ·
+  이미지(서버에서 받고 기기 캐시) · 자리표시자(앱이 프로필로 치환)는 **사용자 결정이다**(2026-10-12). 매니페스트 형식 · 결합 규칙 · 잠금 사유 · 저장 키 · 치환 조사 규칙은
+  계약 단계가 정했다(사용자에게 따로 묻지 않았다).
+  ⚠ **원격 쪽은 아직 없다.** Supabase Storage 공개 버킷 `content`는 만들어지지 않았고 아무것도 올라가 있지 않다 — 버킷 생성 · 업로드는 외부 반영이라 **사용자 확인 뒤** 따로 한다
+  (ADR README 보류 표 「Supabase 콘텐츠 버킷 생성 · 업로드」). 그때까지 앱은 매 실행 매니페스트 요청이 404(또는 미설정)를 받고 D4대로 조용히 내장분만 쓴다.
+  버킷 이름 `content`와 경로 규약(D8)은 계약 문서 §10 · 부록 D에서 이어 온 **[추론]** 이고 버킷을 만들 때 사용자 확인이 필요하다.
+  ⚠ **화면은 0이다.** 카탈로그는 아직 아무 화면도 읽지 않는다 — 맵에 에피소드를 세우는 것은 3b, 문항 연결은 3c · 3d다. 이 문서의 「잠근 채 보인다」는 카탈로그가 내는 **상태**까지이고
+  그리는 모습은 3b가 정한다.
+- 날짜: 2026-10-12.
+- 다루는 축: 에피소드 콘텐츠가 앱에 **오는 길** — 출처(번들 · 기기 캐시 · 원격 매니페스트)와 그 결합, 같은 에피소드의 버전 선택, 무결성 검사, 잠금 사유, 원격 실패의 처리,
+  기기 캐시에 쓰는 것과 지우는 것, 원격 경로 규약, 매니페스트 형식과 클라이언트 수준, 갱신을 거는 자리, 이미지의 출처, 자리표시자 치환 규칙.
+  **다루지 않는 것**: 에피소드 JSON 자체의 모양(`delivery-2` — [계약 문서](../specs/episode-content-json-contract.md)와 그 §12 디코더), 맵 · 문항 화면(3b ~ 3d),
+  오디오 파일의 출처(ADR README 보류 표 「오디오 자산의 출처·형식」), 서버 쪽 매니페스트 생성 스크립트, 캐시 용량 정리.
+- 이어받는 결정: [ADR-0007](0007-app-internals-state-routing-data-errors.md) D1(저장소 모듈 — **새 저장 예외**, 그 문서 D1 인용 블록 ⟨2026-10-12⟩) · D2(캐시 라이브러리 없음 ·
+  서버 응답을 전역 store에 두지 않음 — 카탈로그는 저장소 + 순수 결합이라 그대로 지켜진다), [ADR-0012](0012-native-host-app-minimal.md) D2(호스트 저장소 모듈),
+  [ADR-0051](0051-android-image-url-redirect.md)(Android 이미지 URL 재작성은 `/static/…`만 — `https://`는 그대로 지나간다), [ADR-0031](0031-ui-language-catalog.md) D7(한글 리터럴의 자리),
+  [ADR-0024](0024-journey-units-and-special-unit-placement.md) D13 · D14(`pending` 에피소드 — 3b가 카탈로그의 `pending`을 그 자리에 놓는다), [ADR-0029](0029-product-analytics-posthog.md)(분석 — D11).
+  **바꾸는 결정은 없다.** ADR-0007 D1에는 예외 한 줄이 붙었을 뿐 결정 문장은 그대로다.
+
+근거 표시: **[코드]** 저장소 코드 · **[실측]** 번들 빌드 크기 · **[추론]** 관찰 없이 이어 붙인 것. 계약의 정본은 하네스 작업 폴더(`.agent-harness/work/episode-content-source/` — 저장소 밖)의
+`spec.md`(§1 ~ §8, §8은 정정 기록)이고 이 문서는 그중 **결정**만 옮긴다. 모듈 시그니처는 코드가 진다.
+
+## 맥락
+
+1. **에피소드 JSON 셋이 이미 저장소에 있고 디코더가 있다** [코드]. `apps/mobile/content/episodes/{u01-water,u02-checkin,u03-mina}.json`(원문 바이트 사본, 79,346 · 121,744 · 98,347 bytes)과
+   `decodeEpisode`(PR #235, 계약 문서 §12). 소비자는 없었다.
+2. **에피소드는 계속 늘어난다.** 앱 출시 없이 새 에피소드가 기기에 닿아야 하고, 첫 실행은 네트워크 없이도 열려야 한다 — 그래서 사용자가 「초반 10개 정도만 내장하고 이후 서버 + 기기 캐시」를 골랐다.
+3. **JS에 앱 버전 상수가 없다** [코드]. `import.meta.env`는 SUPABASE · POSTHOG · ANALYTICS_ENVIRONMENT뿐이다. 계약 문서 §10 제안의 `min_app_version`(semver)은 비교할 대상이 없다.
+4. **전송은 이미 한 곳에 있다** [코드]. `supabase-transport`의 `send`는 제한 시간(10 s)이 있고 던지지 않으며 `{ ok: true, status, bodyText } | { ok: false, reason: "network" | "unconfigured" }`를
+   돌려준다. 404도 `ok: true, status: 404`다.
+5. **저장소 모듈은 동기 문자열 키-값이다** [코드]. `lib/storage.ts`(`isStorageAvailable` · `getItem` · `setItem` · `removeItem`) — 호스트의 `UserDefaults` · `SharedPreferences`.
+   파일 저장 모듈은 없다.
+6. **`<image src>`는 원격 URL을 받는다** [코드]. 호스트 이미지 로더가 받아 캐시한다. Android 호스트의 재작성은 `/static/…`만 건드린다(ADR-0051).
+7. **Lynx 백그라운드 스레드에 Web Crypto가 있다는 근거가 저장소 · 벤더된 Lynx 문서 어디에도 없다** [코드].
+
+## 결정
+
+### D1. 출처는 셋이고, 결합은 순수 함수 하나다
+
+- **내장**(번들 — `content/manifest.json` + 세 에피소드 JSON을 모듈로 import) · **캐시**(저장소에 남긴 원문) · **원격 매니페스트**(저장소에 남긴 마지막 것)를
+  `buildEpisodeCatalog(input)`(`lib/episode-catalog.ts`)이 합쳐 `order` 오름차순(같으면 `id` 사전순) 목록을 낸다. 순수 · 예외 없음.
+- **네트워크는 `refreshEpisodeCatalog`(`lib/episode-refresh.ts`)만 만진다.** 갱신은 결과를 저장소에 남기고, 다음 결합이 그것을 읽는다. 갱신 결과를 화면이 기다리지 않는다.
+- 항목 상태는 셋이다 — `ready`(본문 있음, `source` = `bundled` | `cache`) · `pending`(매니페스트에만 있고 본문을 아직 못 받음) · `locked`(D3).
+- **런타임 무예외의 유일한 예외**: 내장 매니페스트가 디코드에 실패하면 `lib/episode-bundled.ts`가 모듈 평가에서 던진다. 코드와 함께 배포되는 데이터라 빌드 시점 결함이고, unit이 잡는다.
+- 새 런타임 모듈은 전부 첫 줄 `import "background-only";`다. `src/` 안에서 `zod`를 import하는 파일은 `episode-content.schema.ts` · `episode-manifest.schema.ts` 둘이다(unit이 고정).
+
+### D2. 같은 id는 `version`이 높은 쪽이 이긴다 — 같으면 내장
+
+- `version`은 `YYYY-MM-DD.n` 꼴 문자열이고 `compareVersions`가 숫자 조각은 수로, 문자 조각은 코드 단위로 차례로 비교한다(조각이 모두 같으면 조각이 많은 쪽이 크다). **`localeCompare` · `Intl`을 쓰지 않는다** — Lynx 백그라운드 엔진(PrimJS)은 `localeCompare`의 옵션을 무시하고 Intl이 없어, 기기에서 `2026-10-12.10`이 `.9`보다 작게 판정된다(최종 리뷰가 엔진 소스로 확인 · Node 테스트는 통과했다). `src/lib/episode-*.ts`에 두 낱말이 들어오면 unit 소스 검사가 막는다. 이긴 쪽의 **매니페스트 항목**(제목 · 순서 · 해시)을 쓴다.
+- 그래서 내장 에피소드도 서버에서 고칠 수 있다 — 더 높은 `version`을 올리면 다음 갱신 뒤부터 캐시본이 이긴다. 낮거나 같은 원격본은 받지 않는다.
+
+### D3. 잠금은 항목 단위이고 사유 코드가 붙는다 — 잠긴 항목도 목록에 선다
+
+| 사유 | 언제 |
+|---|---|
+| `unsupported-schema` | 항목 `schema`가 `SUPPORTED_EPISODE_SCHEMAS`(지금 `["delivery-2"]`) 밖 |
+| `client-too-old` | 원격 매니페스트의 `min_client_level` > `CONTENT_CLIENT_LEVEL` — **원격에서 이긴 항목만**. 내장이 이긴 항목은 영향이 없다 |
+| `integrity-mismatch` | 받은 원문의 SHA-256(소문자 hex) 또는 UTF-8 바이트 수가 항목과 다르다 |
+| `decode-failed` | `JSON.parse` 또는 `decodeEpisode` 실패(모르는 문항 `type` 포함 — 계약 문서 §12) |
+
+**내장 폴백.** 원격이 이긴 항목이 `pending`이거나 위 사유로 `locked`가 되는데 **같은 id의 내장본이 있으면 카탈로그는 내장본을 `ready`(source `bundled`)로 낸다** — 이미 열리던 에피소드가 서버 쪽 문제(업로드 중 · 손상 · 스키마 선행)로 닫히지 않게 한다. 갱신 요약(`RefreshSummary.locked`)은 그대로 원격 상태를 보고한다. 내장본이 없는 id만 `pending`/`locked`로 선다.
+
+다른 항목은 영향이 없다. 숨기지 않고 잠근 채 세우는 것은 계약 문서 Q18의 FE 제안(「잠근 채 표시」)을 따른 것이다 — 그리는 모습은 3b.
+
+### D4. 원격 실패는 침묵한다 — 마지막으로 성공한 상태를 그대로 쓴다
+
+- 매니페스트를 못 받으면(`network` · `unconfigured` · 비 200 · 파싱 · 디코드 실패) 이전 캐시 매니페스트를 그대로 쓰고 아무것도 지우지 않는다. 요약은 `unavailable` 또는 `invalid`.
+- 에피소드 하나를 못 받으면 그 항목만 `pending`에 남는다(`failed/network` · `failed/http`). 다음 실행에 다시 받는다.
+- 전송 호출 하나가 reject해도 그 호출만 연결 실패로 보고, `store.set`이 던지면 그 키만 저장 실패로 본다. `refreshEpisodeCatalog`는 던지지 않는다 — 결선 쪽도 결과와 실패를 버린다.
+- 사용자에게 알리지 않는다. 오프라인 첫 실행은 내장 셋으로 열리고, 이것이 사용자 결정 「처음 실행에도 바로 열린다」의 뜻이다.
+
+### D5. 캐시에는 검증을 통과한 것만 쓰고, 원격에서 사라진 에피소드의 캐시는 지운다
+
+- 에피소드 원문은 해시 · 바이트 · 디코드를 **모두** 통과해야 `setItem`한다. 원격 매니페스트는 디코드를 통과해야 저장한다. 값은 받은 텍스트 그대로이고 읽을 때 다시 디코드한다.
+- 받을 대상은 「지원 스키마 && (내장보다 version이 높거나 내장에 없음) && (캐시 원문이 없거나 그 해시가 항목과 다름)」인 원격 항목뿐이다 — 바뀐 것만 받는다.
+- 이전 캐시 매니페스트에 있었고 새 매니페스트에 없는 id는 에피소드 캐시를 지운다(`removed`). 내장분은 번들에 있으니 남는다.
+- **저장 키**: `libitum.content.manifest`(원격 매니페스트 원문) · `libitum.content.episode.<id>`(에피소드 원문). ADR-0007 D1의 새 예외다 — **서버 응답을 저장소에 두는 첫 예외**이고,
+  D1이 막으려던 「무효화가 사람 손으로 넘어온다」는 매니페스트의 `version` · `sha256`이 무효화를 기계적으로 지기 때문에 생기지 않는다.
+- 로그아웃 · 계정 삭제는 이 키들을 지우지 않는다 — 계정과 무관한 공개 콘텐츠다([ADR-0032](0032-account-sign-out-and-deletion.md) D6 표).
+
+### D6. 저장소 모듈이 없으면 메모리만 쓴다
+
+`isStorageAvailable() === false`면 갱신은 요약을 돌려주되 아무것도 쓰지 않는다(`persisted: false`). 카탈로그는 내장분만으로 선다.
+
+### D7. 치환은 조사 규칙 표 하나다 — 받침은 ko 값의 마지막 글자로 판정한다
+
+- 토큰은 `{이름}`(name) · `{나라}`(country) 둘(계약 문서 Q14 답 — 앱이 프로필로 치환). 값이 없거나 공백뿐이면 기본값(ko 「이름」 · 「나라」, roman `ireum` · `nara`). 프로필 입력은 3d 온보딩이라 지금은 늘 기본값이다.
+- 토큰 **바로 뒤**에 붙은 조사 표기만 고른다 — ko `(으)로` · `은/는` · `이/가` · `을/를` · `이에요`, roman `(eu)ro` · `eun/neun` · `i/ga` · `eul/reul` · `ieyo`.
+- 받침 판정: 한글 음절은 `(code - 0xAC00) % 28 !== 0`, `(으)로`는 ㄹ 받침이면 「로」. 라틴은 마지막 글자가 `[aeiouy]`(대소문자 무시)면 모음 끝, 아니면 자음 끝(ㄹ 예외 없음).
+  숫자 · 기호 · 빈 값은 기본값의 판정을 쓴다. roman 쪽도 판정은 **ko 값**으로 한다(로마자 이름 필드는 3d에서 정한다).
+- 한글 리터럴은 최상위 상수 셋(`DEFAULT_PROFILE_TEXT` · `PLACEHOLDER_TOKENS` · `PARTICLE_RULES`)에만 두고 `devtools/ui-copy-literals/policy.mjs`의 `learningContentDeclarations`에 등록했다(ADR-0031 D7).
+  함수 본문의 한글 리터럴은 0이다. 순수 · 예외 없음(`lib/placeholder-fill.ts`).
+
+### D8. 원격 경로와 매니페스트 형식 — `manifest-1`, 정수 `min_client_level`
+
+- **기준**: `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/content/`(공개 버킷 `content`, `apikey` 헤더만). 그 아래 `manifest.json` · `episodes/<id>.json` · `images/<id>/…`.
+  매니페스트 항목의 `url`과 컷의 `image_url`은 **기준 상대 경로**이고, 빈 값 · 선두 `/` · `..` 조각 · `://`가 든 값은 거부한다(`resolveContentUrlSafe`) — 매니페스트가 다른 호스트를 가리킬 수 없다.
+- 요청은 `send`만 쓴다(제한 시간 · 무예외 재사용). 다른 HTTP 경로를 만들지 않는다.
+- **형식 `manifest-1`**: `schema` · `generated_at` · `min_client_level`(정수, 선택) · `episodes[{ id, order, title, schema, version, sha256, bytes, url }]`. 모르는 키는 버린다.
+  디코드 실패 코드는 `schema-mismatch` · `invalid-shape` · `duplicate-episode-id`. 정본 서술은 [계약 문서](../specs/episode-content-json-contract.md) §10이다.
+- **클라이언트 수준**: 앱은 상수 `CONTENT_CLIENT_LEVEL = 1`(`lib/episode-catalog.ts`)을 가진다. 콘텐츠가 이 앱이 못 그리는 것을 요구하게 되면 서버가 매니페스트의
+  `min_client_level`을 올리고, 그것을 그리는 앱이 상수를 올린다. 맥락 3 때문에 semver `min_app_version`이 아니라 정수다.
+- 무결성은 순수 JS SHA-256(`lib/sha256.ts`, 외부 의존 0)이다 — 맥락 7.
+
+### D9. 갱신은 앱 실행마다 한 번, App 루트(세션 밖)에서 건다
+
+- `src/app/use-episode-content-refresh.ts`의 `useEffect`가 마운트 뒤 한 번 `refreshEpisodeCatalog`를 부르고 결과를 버린다. `App.tsx`의 세션 key **밖**에 걸어
+  로그아웃 · 재진입마다 다시 받지 않는다. 렌더 경로 · 부팅 순서에 영향이 없다.
+- 계약은 처음에 `AppSession`을 자리로 적었다 — `AppSession.tsx`가 정확히 300줄이라 `max-lines`에 걸리고, 의미로도 「앱 실행마다 한 번」이 맞아 바깥으로 옮겼다(계약 §8 정정 기록).
+- 이 결선으로 앱 시작에 요청이 하나 늘었다. 인증 요청 수를 세던 기존 integration 단언(App.entry · App.account · App.push)은 콘텐츠 버킷 URL을 걸러 세는 것으로 바뀐다(기대 동작 변경의 짝 — test-design 소유).
+
+### D10. 이미지는 원격 URL을 호스트 이미지 로더에 넘긴다 — 호스트 변경 0, 사전 다운로드 없음
+
+- 서버 에피소드의 컷 이미지(`images/<id>/…`)는 D8의 기준으로 절대 URL을 만들어 `<image src>`에 그대로 넘긴다. 받기 · 캐시는 호스트 이미지 로더가 한다(맥락 6). 호스트 코드는 바꾸지 않는다.
+- 이 PR은 이미지를 그리지 않는다 — 컷을 처음 그리는 3b가 이 규칙을 적용한다. 내장 에피소드의 이미지를 번들에 싣는지(계약 문서 부록 D 「D-IMG」)는 3b의 몫이다.
+- 미리 받지 않는다. 첫 표시 때 네트워크가 없으면 이미지가 비고, 그 처리(자리 · 대체 텍스트)는 3b가 정한다.
+- **대체 텍스트는 `image_brief`가 아니다.** 이미지가 비거나 보조기술이 읽을 때의 텍스트는 [계약 문서](../specs/episode-content-json-contract.md) Q23(`image_alt` 별도 키, IMG_MATCH alt에 정답 단어 미포함)을 따른다. `image_brief`는 생성 지시문이라 alt로 쓰지 않는다 — Q23 답이 오기 전에 3b가 컷을 그리면 alt는 비워 두고(장식 취급) 대사 · 지문 텍스트가 장면을 전한다.
+- 오디오도 같은 원칙이다: 오디오 파일이 원격으로 붙어도 짝 텍스트(`stimulus.audio` · `dialogue[].text`)는 텍스트 대체로 계속 필수다(계약 Q6 · Q21 답).
+
+### D11. 측정(분석 이벤트)은 3b로 미룬다 — 이 PR은 요약 값만 낸다
+
+`refreshEpisodeCatalog`는 `RefreshSummary`(`manifest` · `fetched` · `locked` · `failed` · `removed` · `persisted`)를 돌려주지만 아무 데도 보내지 않는다.
+「서버 에피소드가 실제로 기기에 닿는가」는 카탈로그가 맵에 드러나는 3b에서 PostHog 이벤트로 잰다 — 화면 없이 분석 계약(ADR-0029 sink · 이벤트 목록)을 먼저 고치면 이벤트를 낼 자리가 없다.
+
+## 버린 대안
+
+1. **전부 내장** — 에피소드마다 앱을 출시해야 하고, 에피소드당 약 80 ~ 120 KB가 번들에 쌓인다. 사용자 결정(초반만 내장)과 어긋난다.
+2. **전부 서버** — 첫 실행이 네트워크에 묶이고 오프라인 첫 실행은 빈 앱이다. 버킷이 아직 없는 지금은 어떤 사용자도 에피소드를 볼 수 없게 된다.
+3. **파일 저장 호스트 모듈** — 에피소드 원문은 파일이 더 맞는 자리지만 두 호스트에 새 네이티브 모듈(ADR-0017 D1의 입장 조건)을 여는 일이다. 지금은 원격 에피소드 0개 · 예상 수십 개라
+   `UserDefaults` · `SharedPreferences` 문자열로 충분하다. 넘으면 연다(재검토 조건 1).
+4. **Web Crypto(`crypto.subtle.digest`)** — Lynx 백그라운드 스레드에 있다는 근거가 없다(맥락 7). 없는 기기에서 무결성 검사가 통째로 꺼지는 것보다 123줄짜리 순수 구현이 낫다.
+5. **semver `min_app_version`** — 비교할 앱 버전 상수가 JS에 없다(맥락 3). 호스트에서 버전을 받아 오는 배선은 이 축 밖의 일이다.
+6. **캐시 매니페스트 없이 매번 원격 매니페스트만 믿기** — 오프라인 실행에서 받은 에피소드가 목록에서 사라진다. AC 2(「다음 실행에 네트워크 없이 `ready`」)와 어긋난다.
+
+## 대가
+
+1. **번들 +251,771 bytes**(1,426,482 → 1,678,253, +17.6 %) [실측]. 내장 JSON 셋 · 매니페스트 · 디코더와 `zod/mini`(탐침 +25,679) · 3a 모듈이다. 상한은 1,679,000으로 올렸고
+   내장 에피소드를 하나 더할 때마다 약 +80 ~ 120 KB를 다시 올려야 한다 — [성능 보고서](../performance/reports/episode-content-source-iphone-17-pro-simulator-01.md) · `devtools/bundle-size/budget.json` note.
+2. **`UserDefaults` · `SharedPreferences`에 에피소드 원문이 들어간다** — 에피소드당 약 100 KB 문자열. 플랫폼이 이 저장소를 큰 값용으로 두지 않았고, 용량 정리(LRU)도 없다.
+   원격에서 사라진 에피소드만 지운다(D5).
+3. **전송 경로가 둘이다.** 인증 POST의 `send`와 콘텐츠 GET의 `sendGet`이 `supabase-transport.ts`에 나란히 있다(제한 시간 경주는 내부 `raceRequest` 하나를 공유). `HttpRequestInit`을 union으로 넓히면 `init.body`를 읽는 기존 테스트 넷이 깨져 GET 전용 타입(`HttpGetTransport`)을 따로 두었다. `sendGet`만 URL · 헤더 콜백의 예외를 `network`로 감싼다(`send`와 한 점 다름).
+4. **버킷이 생길 때까지 매 실행 요청 하나가 헛돈다**(404). 사용자 영향은 없고(D4) 제한 시간 안에서 백그라운드로 끝난다.
+5. **내장본과 원문 사본이 둘이다.** 내장 매니페스트의 `sha256` · `bytes`는 `content/episodes/*.json`의 실제 값이고, 사본을 바꾸면 매니페스트도 같이 바꿔야 한다(어긋나면 unit이 잡는다).
+
+## 미확인 · 후속
+
+1. **Supabase 버킷 `content` 생성 · 업로드** — 외부 반영이라 사용자 확인 뒤. 버킷 이름 · 경로 규약도 그때 확인한다(D8은 [추론]). Supabase MCP 인증이 만료돼(2026-10-12) 버킷 유무를 확인하지 못했다.
+2. **실서버 왕복은 한 번도 돌지 않았다.** unit · integration은 주입한 가짜 전송 · 저장소로 돈다. 버킷이 생긴 뒤 기기에서 매니페스트 → 에피소드 → 캐시 → 다음 실행 오프라인 `ready`를 본다.
+3. **3b**: 카탈로그를 맵에 세우기(`pending` · `locked`의 모습) · 컷 이미지(D10) · 갱신 요약의 분석 이벤트(D11).
+4. **서버 쪽 매니페스트 생성 스크립트**(해시 · 바이트 계산)는 범위 밖이다. 손으로 쓰면 해시가 어긋나기 쉽다 — 어긋나면 그 항목이 `integrity-mismatch`로 잠길 뿐 다른 항목은 무사하다.
+5. **렌더링 · 메모리 · 해시 · 디코드 시간은 재지 않았다** — 성능 보고서 「제한 사항」.
+
+## 재검토 조건
+
+1. **원격 에피소드가 수십 개를 넘으면** — 저장소 문자열 대신 파일 저장 호스트 모듈을 연다(「버린 대안」 3). 용량 정리도 그때 함께 본다.
+2. **이미지를 미리 받아야 하면**(오프라인 학습 요구 · 첫 표시 지연이 문제가 되면) — D10의 「사전 다운로드 없음」을 다시 본다.
+3. **콘텐츠 합의(계약 문서 §11)로 스키마가 바뀌면** — 새 `schema` 값(예: `delivery-3`)을 `SUPPORTED_EPISODE_SCHEMAS`에 더하거나 `CONTENT_CLIENT_LEVEL`을 올린다. 매니페스트 형식 자체가 바뀌면
+   `manifest-2`로 새로 정한다.
+4. **Lynx 백그라운드에 Web Crypto가 확인되면** — 순수 SHA-256을 걷을지 본다(번들 · 속도).
+5. **전송 계약을 하나로 합칠 때** — 「대가」 3의 두 경로를 `send` 하나로 모은다.
+6. **캐시된 원격 에피소드가 생겨 실행마다 재해시가 측정되면** — 지금은 갱신(`hasCurrentCache`)과 카탈로그 읽기가 캐시 원문을 매번 다시 해시한다(D5 — 읽을 때도 무결성 확인). 원격이 이긴 항목에만 돌아 현재 비용은 0이다. 기기 측정(`performance:capture`)에서 문제가 되면 해시를 원문 옆 키에 저장해 비교만 하는 안(PR #236 봇 리뷰 제안)을 연다 — 그때 읽기 쪽 무결성 확인을 무엇으로 대신할지 함께 정한다.

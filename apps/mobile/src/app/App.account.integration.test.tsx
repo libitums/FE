@@ -13,6 +13,7 @@ import { analyticsQueueStorageKey, createAnalyticsSession } from "../lib/posthog
 import { uiLanguageStorageKey } from "../lib/ui-language";
 import { notificationItems } from "../screens/notifications/notification-items";
 import type { SettingsEvent } from "../screens/settings/settings.contract";
+import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 
 // 알림 동작 검증에만 목업을 주입합니다. 제품의 기본 알림 목록은 비어 있습니다.
 vi.mock(
@@ -85,6 +86,7 @@ function installNet(h: Pick<Harness, "calls" | "net" | "order">): void {
   vi.stubGlobal(
     "fetch",
     (url: string, init: { method: string; headers: Record<string, string>; body: string }) => {
+      if (isContentRequest(url)) return Promise.resolve(contentNotFoundResponse());
       h.calls.push({ url, method: init.method, headers: init.headers, body: init.body });
       let reply: Reply;
       if (url.includes("/auth/v1/logout")) reply = h.net.logout;

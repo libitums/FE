@@ -9,6 +9,11 @@ import { entryLoginMethods, entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent, EntryLoginMethod } from "../lib/entry-flow";
 import { entryLanguageLabel, initialEntryLanguage } from "../lib/entry-language";
 import { uiLanguageStorageKey } from "../lib/ui-language";
+import {
+  contentNotFoundResponse,
+  isContentRequest,
+  nonContentCalls,
+} from "./test-helpers/content-requests";
 
 // `integration` 계층: 진입 흐름 여섯 화면이 **한 트리에서** 실제로 이어지는지를
 // 봅니다(ADR-0006 D4) — `ui`가 화면을 고립 렌더해서는 볼 수 없는 것(부팅 화면 선택 ·
@@ -131,6 +136,7 @@ function stubSupabase(routes: SupabaseRoutes): SupabaseCall[] {
       // 학습 진행 RPC(ADR-0035)는 로그인 뒤 저절로 나가는 별 축이라 기록하지 않고 빈 진행으로 답합니다 —
       // 이 파일이 세는 것은 인증 요청입니다. 진행 불러오기는 `App.progress.integration.test.tsx`가 봅니다.
       if (url.includes("/rest/v1/rpc/")) return { status: 200, text: async () => "null" };
+      if (isContentRequest(url)) return contentNotFoundResponse();
       calls.push({ url, init });
       const route = routeFor(url, routes);
       if (route === undefined) {
@@ -533,7 +539,11 @@ test("[IA2] OTP 요청 fetch가 던지면(연결 실패) 로그인이 그대로�
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.stubGlobal(
     "fetch",
-    vi.fn(() => Promise.reject(new Error("connection failed"))),
+    vi.fn((url: string) =>
+      isContentRequest(url)
+        ? Promise.resolve(contentNotFoundResponse())
+        : Promise.reject(new Error("connection failed")),
+    ),
   );
   vi.useFakeTimers();
   render(<App phoneSignIn="visible" />);
@@ -747,7 +757,11 @@ test("[IA9] 갱신 fetch가 던지면 로그인이 서고 세션 키가 남아 �
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.stubGlobal(
     "fetch",
-    vi.fn(() => Promise.reject(new Error("connection failed"))),
+    vi.fn((url: string) =>
+      isContentRequest(url)
+        ? Promise.resolve(contentNotFoundResponse())
+        : Promise.reject(new Error("connection failed")),
+    ),
   );
   vi.useFakeTimers();
   render(<App phoneSignIn="visible" />);
@@ -802,7 +816,7 @@ test("[IA11] 설정이 없으면 Continue를 눌러도 fetch가 0회이고 uncon
   emptyStorageStub();
   // spec C2 — stubEnv 없이 fetch만 세웁니다. `supabaseConfig()`가 `null`이라
   // api-client는 전송하지 않습니다.
-  const fetchSpy = vi.fn<() => void>();
+  const fetchSpy = vi.fn<(url: string) => unknown>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.useFakeTimers();
   render(<App phoneSignIn="visible" />);
@@ -811,7 +825,7 @@ test("[IA11] 설정이 없으면 Continue를 눌러도 fetch가 0회이고 uncon
 
   await submitPhoneNumber("10 1234 5678");
 
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(nonContentCalls(fetchSpy)).toHaveLength(0);
   expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
     authFailureMessage("unconfigured"),
   );
@@ -1021,7 +1035,7 @@ test("[IT1] ⭐ 옛 임시 토큰만 있는 저장소로 켜면 스플래시 뒤
   const store = new Map<string, string>([[legacyKey, "existing-token"]]);
   const gets: string[] = [];
   vi.stubGlobal("NativeModules", { StorageModule: storageModuleFor(store, gets) });
-  const fetchSpy = vi.fn<() => void>();
+  const fetchSpy = vi.fn<(url: string) => unknown>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.useFakeTimers();
   render(<App phoneSignIn="visible" />);
@@ -1033,7 +1047,7 @@ test("[IT1] ⭐ 옛 임시 토큰만 있는 저장소로 켜면 스플래시 뒤
   expect(screen.getByTestId("onboarding-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("login-screen-title")).not.toBeInTheDocument();
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(nonContentCalls(fetchSpy)).toHaveLength(0);
   expect(gets).not.toContain(legacyKey);
   expect(store.get(legacyKey)).toBe("existing-token");
 });
@@ -1379,7 +1393,7 @@ test("[IS2] ⭐ 콜백 code=abc → 교환 1회(정확한 본문) → 언어 선
 // 0으로 요구하는 공허한 단언을 피합니다.
 test("[IS3] 취소 → 로그인 그대로 · 오류 없음 · fetch 0 · 저장 키 0 · entry_* 이벤트가 로그인 열람 뒤로 0개", async () => {
   const { store } = stubHostWithWebAuthentication(() => ({ status: "cancelled" }));
-  const fetchSpy = vi.fn<() => void>();
+  const fetchSpy = vi.fn<(url: string) => unknown>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
@@ -1393,7 +1407,7 @@ test("[IS3] 취소 → 로그인 그대로 · 오류 없음 · fetch 0 · 저장
 
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("login-screen-error")).not.toBeInTheDocument();
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(nonContentCalls(fetchSpy)).toHaveLength(0);
   expect(Array.from(store.keys())).toEqual([]);
 
   const loginViewedIndex = events.findIndex(
@@ -1432,7 +1446,11 @@ test("[IS5] 교환 fetch가 던지면(연결 실패) network 문구 · 저장 �
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   vi.stubGlobal(
     "fetch",
-    vi.fn(() => Promise.reject(new Error("connection failed"))),
+    vi.fn((url: string) =>
+      isContentRequest(url)
+        ? Promise.resolve(contentNotFoundResponse())
+        : Promise.reject(new Error("connection failed")),
+    ),
   );
   vi.useFakeTimers();
   render(<App phoneSignIn="visible" />);
@@ -1451,7 +1469,7 @@ test("[IS5] 교환 fetch가 던지면(연결 실패) network 문구 · 저장 �
 // 것을 로그인 화면이 그대로 있다는 것으로 짓습니다).
 test("[IS6] ⭐ StorageModule만(웹 인증 모듈 없음) → unsupported 문구 · 던지지 않는다(로그인 화면 그대로) · fetch 0", async () => {
   emptyStorageStub();
-  const fetchSpy = vi.fn<() => void>();
+  const fetchSpy = vi.fn<(url: string) => unknown>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
@@ -1466,7 +1484,7 @@ test("[IS6] ⭐ StorageModule만(웹 인증 모듈 없음) → unsupported 문�
   expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
     authFailureMessage("unsupported"),
   );
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(nonContentCalls(fetchSpy)).toHaveLength(0);
 });
 
 // IS7 — 콜백에 `error`가 실려 있으면(사용자가 동의 화면에서 거절해도 포함, spec
@@ -1497,7 +1515,7 @@ test("[IS7] 콜백 ?error=access_denied → sign-in-incomplete 문구 · fetch 0
 test("[IS8] 콜백을 보류한 채: Continue → OTP fetch 0 · apple 탭에도 Apple start 0회(웹 start는 여전히 1회) · 뒤로가기 → 로그인 그대로", async () => {
   const pending = deferred<unknown>();
   const { appleStarts, webStarts } = stubHostWithApple(completedAppleSignIn, () => pending.promise);
-  const fetchSpy = vi.fn<() => void>();
+  const fetchSpy = vi.fn<(url: string) => unknown>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
@@ -1510,7 +1528,7 @@ test("[IS8] 콜백을 보류한 채: Continue → OTP fetch 0 · apple 탭에도
   expect(webStarts).toHaveLength(1);
 
   await submitPhoneNumber("10 1234 5678");
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(nonContentCalls(fetchSpy)).toHaveLength(0);
 
   selectLoginMethod("apple");
   expect(appleStarts).toHaveLength(0);
@@ -1573,7 +1591,7 @@ test("[IS9] ⭐ 소셜로 로그인한 저장소를 그대로 들고 App을 새�
 // `start` 0회로 짓습니다.
 test("[IS10] 설정 없음(stubEnv 없이 호스트 · fetch만) → unconfigured 문구 · start 0회 · fetch 0회", async () => {
   const { starts } = stubHostWithWebAuthentication(completedWebAuthentication);
-  const fetchSpy = vi.fn<() => void>();
+  const fetchSpy = vi.fn<(url: string) => unknown>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.useFakeTimers();
   render(<App phoneSignIn="visible" />);
@@ -1583,7 +1601,7 @@ test("[IS10] 설정 없음(stubEnv 없이 호스트 · fetch만) → unconfigure
   await selectLoginMethodAsync("google");
 
   expect(starts).toHaveLength(0);
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(nonContentCalls(fetchSpy)).toHaveLength(0);
   expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
     authFailureMessage("unconfigured"),
   );
@@ -1654,7 +1672,7 @@ test("[IN2] ⭐ 시트 completed → id_token 교환 1회(정확한 본문) → 
 // 피합니다(IS3와 같은 형태).
 test("[IN3] 시트 취소 → 로그인 그대로 · 오류 없음 · fetch 0 · 저장 키 0 · entry_* 이벤트가 로그인 열람 뒤로 0개", async () => {
   const { store } = stubHostWithApple(() => ({ status: "cancelled" }));
-  const fetchSpy = vi.fn<() => void>();
+  const fetchSpy = vi.fn<(url: string) => unknown>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
@@ -1668,7 +1686,7 @@ test("[IN3] 시트 취소 → 로그인 그대로 · 오류 없음 · fetch 0 ·
 
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("login-screen-error")).not.toBeInTheDocument();
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(nonContentCalls(fetchSpy)).toHaveLength(0);
   expect(Array.from(store.keys())).toEqual([]);
 
   const loginViewedIndex = events.findIndex(
@@ -1738,7 +1756,7 @@ test("[IN5] id_token 교환 400 → 로그인 · sign-in-incomplete 문구 · �
 // 않습니다.
 test("[IN6] 호스트 failed → unsupported 문구 · fetch 0 · 저장 키 0", async () => {
   const { store } = stubHostWithApple(() => ({ status: "failed" }));
-  const fetchSpy = vi.fn<() => void>();
+  const fetchSpy = vi.fn<(url: string) => unknown>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
@@ -1753,7 +1771,7 @@ test("[IN6] 호스트 failed → unsupported 문구 · fetch 0 · 저장 키 0",
   expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
     authFailureMessage("unsupported"),
   );
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(nonContentCalls(fetchSpy)).toHaveLength(0);
   expect(Array.from(store.keys())).toEqual([]);
 });
 
@@ -1762,7 +1780,7 @@ test("[IN6] 호스트 failed → unsupported 문구 · fetch 0 · 저장 키 0",
 test("[IN7] Apple 콜백을 보류한 채: google 탭 → 웹 start 0 · Continue → OTP fetch 0 · 뒤로가기 → 로그인 그대로", async () => {
   const pending = deferred<unknown>();
   const { appleStarts, webStarts } = stubHostWithApple(() => pending.promise);
-  const fetchSpy = vi.fn<() => void>();
+  const fetchSpy = vi.fn<(url: string) => unknown>();
   vi.stubGlobal("fetch", fetchSpy);
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
@@ -1779,7 +1797,7 @@ test("[IN7] Apple 콜백을 보류한 채: google 탭 → 웹 start 0 · Continu
   expect(appleStarts).toHaveLength(1);
 
   await submitPhoneNumber("10 1234 5678");
-  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(nonContentCalls(fetchSpy)).toHaveLength(0);
 
   fireEvent.tap(
     within(screen.getByTestId("login-screen-header")).getByTestId("ui-lynx-round-button"),

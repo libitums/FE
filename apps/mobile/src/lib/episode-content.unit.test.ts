@@ -513,7 +513,7 @@ describe("decodeEpisode", () => {
   });
 
   // 가드: 스캐폴드가 이미 import와 첫 줄을 갖습니다.
-  test("U25. zod를 import하는 src 파일은 스키마 모듈 하나이고 두 모듈은 background-only로 시작한다", () => {
+  test("U25′. zod를 import하는 src 파일은 두 스키마 모듈이고 런타임 모듈은 background-only로 시작한다", () => {
     const srcRoot = resolve(process.cwd(), "src");
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -528,8 +528,24 @@ describe("decodeEpisode", () => {
       .filter((file) => /from\s+["']zod/.test(readFileSync(file, "utf8")))
       .map(toPosix)
       .sort();
-    expect(importers).toEqual(["src/lib/episode-content.schema.ts"]);
-    for (const name of ["episode-content.schema.ts", "episode-content.ts"]) {
+    expect(importers).toEqual([
+      "src/lib/episode-content.schema.ts",
+      "src/lib/episode-manifest.schema.ts",
+    ]);
+    const runtimeModules = [
+      "episode-content.schema.ts",
+      "episode-content.ts",
+      "episode-manifest.schema.ts",
+      "episode-manifest.ts",
+      "sha256.ts",
+      "episode-catalog.ts",
+      "episode-bundled.ts",
+      "episode-remote.ts",
+      "episode-cache.ts",
+      "episode-refresh.ts",
+      "placeholder-fill.ts",
+    ];
+    for (const name of runtimeModules) {
       const first = readFileSync(resolve(srcRoot, "lib", name), "utf8").split("\n")[0];
       expect(first).toBe('import "background-only";');
     }
