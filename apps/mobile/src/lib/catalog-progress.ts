@@ -10,6 +10,16 @@ export const CATALOG_FINAL_KEY = "RP";
 // 객체 기본 속성 이름 — 키로 쓰면 대입이 프로토타입을 바꾼다(JSON.parse는 자기 속성으로 만든다).
 const UNSAFE_KEY = "__proto__";
 
+// 자기 속성만 읽습니다 — `{}`에서 "toString" 같은 이름은 프로토타입의 함수를 돌려줍니다(id는 서버 매니페스트가 정한다).
+function ownUnits(
+  progress: CatalogProgress,
+  episodeId: string,
+): readonly CatalogUnitKey[] | undefined {
+  return Object.prototype.hasOwnProperty.call(progress, episodeId)
+    ? progress[episodeId]
+    : undefined;
+}
+
 function isUsableId(id: string): boolean {
   return id !== "" && id !== UNSAFE_KEY;
 }
@@ -34,9 +44,10 @@ export function mergeCatalogProgress(a: CatalogProgress, b: CatalogProgress): Ca
   const result: Record<string, readonly CatalogUnitKey[]> = { ...a };
   for (const [episodeId, units] of Object.entries(b)) {
     if (!isUsableId(episodeId)) continue;
-    const own = result[episodeId] ?? [];
+    const existing = ownUnits(result, episodeId);
+    const own = existing ?? [];
     const added = units.filter((unit) => !own.includes(unit));
-    if (added.length > 0 || result[episodeId] === undefined) result[episodeId] = [...own, ...added];
+    if (added.length > 0 || existing === undefined) result[episodeId] = [...own, ...added];
   }
   return result;
 }
@@ -46,7 +57,7 @@ export function isCatalogUnitDone(
   episodeId: string,
   unit: CatalogUnitKey,
 ): boolean {
-  return progress[episodeId]?.includes(unit) ?? false;
+  return ownUnits(progress, episodeId)?.includes(unit) ?? false;
 }
 
 /** 끝낸 유닛을 더합니다. 이미 있으면 같은 참조를 돌려줘 상태가 바뀌지 않게 합니다. */
@@ -58,7 +69,7 @@ export function markCatalogUnitDone(
   // 빈 값은 서버가 거절해 모든 진행의 저장이 멈추므로 기록하지 않습니다.
   if (!isUsableId(episodeId) || unit === "") return progress;
   if (isCatalogUnitDone(progress, episodeId, unit)) return progress;
-  return { ...progress, [episodeId]: [...(progress[episodeId] ?? []), unit] };
+  return { ...progress, [episodeId]: [...(ownUnits(progress, episodeId) ?? []), unit] };
 }
 
 /** 최종 테스트(RP)를 통과했는가 — 다음 에피소드가 열리는 조건입니다. */
