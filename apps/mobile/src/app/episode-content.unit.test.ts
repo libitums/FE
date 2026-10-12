@@ -47,7 +47,7 @@ function summary(overrides: Partial<RefreshSummary> = {}): RefreshSummary {
 }
 
 describe("mergeCatalogForSession", () => {
-  test("EC1. next가 기준이고 prev의 ready 중 next에 없는 것은 남으며 order → id로 정렬된다", () => {
+  test("EC1′. 이미 ready였던 항목은 next의 새 버전이 와도 prev를 유지하고 order → id로 정렬된다", () => {
     const prevU01 = ready("u01-water", 1, "v1");
     const prevU04 = ready("u04-x", 4, "v1", "cache");
     const nextU01 = ready("u01-water", 1, "v2");
@@ -56,10 +56,19 @@ describe("mergeCatalogForSession", () => {
     const merged = mergeCatalogForSession([prevU01, prevU04], [nextU01, nextU02]);
 
     expect(merged.map((entry) => entry.id)).toEqual(["u01-water", "u02-checkin", "u04-x"]);
-    expect(merged[0]).toBe(nextU01);
-    expect((merged[0] as ReadyEntry).version).toBe("v2");
+    expect(merged[0]).toBe(prevU01);
+    expect((merged[0] as ReadyEntry).version).toBe("v1");
     expect(merged[1]?.status).toBe("pending");
     expect(merged[2]).toBe(prevU04);
+  });
+
+  test("EC1″. prev에서 pending이던 항목이 next에서 ready면 next의 ready를 쓴다", () => {
+    const nextU05 = ready("u05-x", 5, "v1", "cache");
+
+    const merged = mergeCatalogForSession([pending("u05-x", 5)], [nextU05]);
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toBe(nextU05);
   });
 
   test("EC1. order가 같으면 id 순으로 정렬한다", () => {

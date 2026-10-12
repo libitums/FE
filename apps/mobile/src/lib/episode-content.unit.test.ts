@@ -10,6 +10,7 @@ import {
   type Episode,
 } from "./episode-content";
 import { KNOWN_ITEM_TYPES } from "./episode-content.schema";
+import { minimalRoleplayTurnWire } from "./episode-content.test-support";
 
 // `unit` 계층: 순수 함수 `decodeEpisode`의 입출력만 봅니다 (ADR-0006 D4).
 // 와이어 모양은 `docs/specs/episode-content-json-contract.md` §2 ~ §8을 따릅니다.
@@ -114,9 +115,9 @@ function item(type: ItemType, id: string, extra: Wire = {}): Wire {
       tiles_gloss_en: "a / b / c / d",
       answers: [t2("A=a | B=b | C=c | D=d")],
     },
-    ROLEPLAY_TURN: {},
+    ROLEPLAY_TURN: minimalRoleplayTurnWire(id),
   };
-  return type === "ROLEPLAY_TURN" ? { id, type, ...extra } : { ...base, ...bodies[type], ...extra };
+  return { ...base, ...bodies[type], ...extra };
 }
 
 const roleLine = (id: string, extra: Wire = {}): Wire => item("ROLE_LINE", id, extra);
@@ -424,22 +425,68 @@ describe("decodeEpisode", () => {
     });
   });
 
-  test("U19. ROLEPLAY_TURN은 불투명하다: 임의 키를 raw로 보존하고 event 기본값은 R", () => {
-    const rp: Wire = {
-      id: "RP-01",
-      type: "ROLEPLAY_TURN",
-      image: { image_url: "images/x.jpg" },
-      foo: 1,
-    };
-    const input = minimalEpisode({
-      steps: [step("S1", 1, [roleLine("S1-01")]), step("RP", 2, [rp])],
+  describe("ROLEPLAY_TURN은 엄격한 모양으로 읽는다", () => {
+    const withRp = (rp: Wire): Wire =>
+      minimalEpisode({ steps: [step("S1", 1, [roleLine("S1-01")]), step("RP", 2, [rp])] });
+    const rpWire = (): Wire => minimalRoleplayTurnWire("RP-01");
+    const roleplayOf = (rp: Wire): Wire => rp["roleplay"] as Wire;
+
+    test("RP1. 유효한 최소 RP가 도메인 모양으로 디코드된다", () => {
+      const { episode } = passed(decodeEpisode(withRp(rpWire())));
+      const turn = episode.finalTest.items[0];
+
+      expect(turn).toMatchObject({
+        id: "RP-01",
+        type: "ROLEPLAY_TURN",
+        tiles: [
+          { ko: "내", roman: "nae" },
+          { ko: "대사", roman: "daesa" },
+        ],
+        answers: [{ ko: "내 대사", roman: "nae daesa", en: "My line" }],
+        feedback: { correct: { ko: "맞아요" } },
+        roleplay: { lineId: "D1", tilesGloss: [{ tile: "내" }, { tile: "대사", en: "line" }] },
+      });
+      expect(turn).not.toHaveProperty("raw");
+      expect(collectKeys(turn).filter((key) => key.includes("_"))).toEqual([]);
     });
-    const { episode } = passed(decodeEpisode(input));
-    expect(episode.finalTest.items[0]).toEqual({
-      id: "RP-01",
-      type: "ROLEPLAY_TURN",
-      event: "R",
-      raw: rp,
+
+    test.each([
+      ["tiles가 빈 배열", { ...rpWire(), tiles: [] }],
+      ["answers가 빈 배열", { ...rpWire(), answers: [] }],
+      ["answers 없음", without(rpWire(), "answers")],
+      ["context 없음", without(rpWire(), "context")],
+      [
+        "roleplay.line_id 없음",
+        { ...rpWire(), roleplay: without(roleplayOf(rpWire()), "line_id") },
+      ],
+    ] as const)("RP2. %s이면 invalid-shape로 실패한다", (_name, rp) => {
+      const errors = failed(decodeEpisode(withRp(rp)));
+
+      expect(errors.map(({ code }) => code)).toContain("invalid-shape");
+    });
+
+    test("RP3. roleplay의 다른 키와 문항의 모르는 키는 버려지고 디코드는 성공한다", () => {
+      const rp: Wire = {
+        ...rpWire(),
+        bogus: 1,
+        roleplay: {
+          ...roleplayOf(rpWire()),
+          counterpart_line: "상대",
+          player_line: "나",
+          tiles: ["내", "대사"],
+          accepted_answers: [{ text: "내 대사" }],
+          modes: ["speech", "tiles"],
+        },
+      };
+      const { episode } = passed(decodeEpisode(withRp(rp)));
+      const turn = episode.finalTest.items[0];
+
+      expect(turn).not.toHaveProperty("bogus");
+      expect(turn).toHaveProperty("roleplay");
+      expect(Object.keys((turn as unknown as { roleplay: object }).roleplay).sort()).toEqual([
+        "lineId",
+        "tilesGloss",
+      ]);
     });
   });
 
@@ -456,7 +503,7 @@ describe("decodeEpisode", () => {
       const { episode } = passed(decodeEpisode(withItem(item(type, "S1-01"))));
       const found = unitItem(episode);
       expect(found.type).toBe(type);
-      const keys = type === "ROLEPLAY_TURN" ? [] : collectKeys(found);
+      const keys = collectKeys(found);
       expect(keys.filter((key) => key.includes("_"))).toEqual([]);
       const camelCases: Partial<Record<ItemType, string[]>> = {
         VOCAB_CARD: ["cardKind"],

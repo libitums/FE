@@ -11,6 +11,7 @@ import { pushOpenedEventName } from "./use-opened-push";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { CONTENT_MANIFEST_KEY } from "../lib/episode-cache";
+import { minimalRoleplayTurnWire } from "../lib/episode-content.test-support";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
@@ -104,7 +105,7 @@ function minimalEpisodeText(unitId: string, preCuts: readonly unknown[]): string
     post_cuts: [post],
     steps: [
       { id: "S1", order: 1, items: [roleLine] },
-      { id: "RP", order: 2, items: [{ id: "RP-01", type: "ROLEPLAY_TURN" }] },
+      { id: "RP", order: 2, items: [minimalRoleplayTurnWire("RP-01")] },
     ],
     words: [{ id: "voca:1", ko: "물", roman: "mul", gloss_en: "water", role: "target" }],
     patterns: [{ id: "patt:1", ko: "{명사} 주세요", roman: "juseyo", gloss_en: "please give me" }],

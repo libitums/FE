@@ -18,14 +18,18 @@ import {
   canStartCatalogCover,
   catalogCaptionKindOf,
   catalogCoverStatus,
-  catalogLockedNodeAccessibilityLabel,
-  catalogLockedNodeTitle,
-  catalogLockedNodesOf,
+  canStartCatalogUnit,
+  catalogCoverAccessibilityLabel,
   catalogMapSectionsOf,
   catalogSectionDomId,
   catalogSectionProgress,
   catalogSelectorToken,
   catalogUnavailableAccessibilityLabel,
+  catalogUnitNodeAccessibilityLabel,
+  catalogUnitNodeTitle,
+  catalogUnitNodesOf,
+  catalogUnitRoleOf,
+  catalogUnitStatus,
   noCatalogMapSections,
   tutorialPassedFrom,
 } from "./catalog-map";
@@ -228,15 +232,16 @@ describe("잠긴 노드와 진행", () => {
   // 수집 단계에서 던지지 않도록 테스트 안에서 만듭니다.
   const u01Section = () => readySection(catalogMapSectionsOf(realCatalog), 0);
 
-  test("CM8. 레슨 여덟 + 최종 하나, 순서와 번호가 맞다", () => {
+  test("CM8′. 레슨 여덟 + 최종 하나, 순서 · 번호 · 상태가 맞다", () => {
     const u01 = u01Section();
-    const nodes = catalogLockedNodesOf(u01);
+    const nodes = catalogUnitNodesOf(u01, {});
 
     expect(nodes).toHaveLength(9);
     expect(nodes.slice(0, 8).map((node) => node.role)).toEqual(Array(8).fill("lesson"));
     expect(nodes.slice(0, 8).map((node) => node.ordinal)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(nodes.slice(0, 8).map((node) => node.key)).toEqual(u01.lessonKeys);
-    expect(nodes[8]).toEqual({ key: "RP", role: "final", ordinal: 9 });
+    expect(nodes[8]).toEqual({ key: "RP", role: "final", ordinal: 9, status: "locked" });
+    expect(nodes.every((node) => node.status === "locked")).toBe(true);
   });
 
   test("CM9. 끝낸 유닛 수는 표지와 알려진 키만 센다", () => {
@@ -254,6 +259,77 @@ describe("잠긴 노드와 진행", () => {
       completed: 0,
       total: 10,
     });
+  });
+});
+
+describe("사슬 잠금 — 표지 → 레슨들 → 최종", () => {
+  const u01Section = () => readySection(catalogMapSectionsOf(realCatalog), 0);
+  const statusesOf = (progress: CatalogProgress) =>
+    Object.fromEntries(
+      catalogUnitNodesOf(u01Section(), progress).map((node) => [node.key, node.status]),
+    );
+  const allKeys = ["S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "RP"];
+
+  test("CM-U1. 진행이 없으면 레슨 · 최종이 전부 잠겨 있다", () => {
+    const statuses = statusesOf({});
+
+    expect(allKeys.map((key) => statuses[key])).toEqual(Array(9).fill("locked"));
+    expect(catalogUnitStatus(u01Section(), "S1", {})).toBe("locked");
+  });
+
+  test("CM-U2. 표지를 끝내면 첫 레슨만 열린다", () => {
+    const statuses = statusesOf({ "u01-water": ["intro"] });
+
+    expect(statuses["S1"]).toBe("available");
+    expect(allKeys.slice(1).map((key) => statuses[key])).toEqual(Array(8).fill("locked"));
+    expect(catalogUnitStatus(u01Section(), "S1", { "u01-water": ["intro"] })).toBe("available");
+  });
+
+  test("CM-U3. 바로 앞을 끝내면 열리고 끝낸 유닛은 앞이 아직이어도 completed다", () => {
+    expect(statusesOf({ "u01-water": ["intro", "S1"] })["S3"]).toBe("available");
+    expect(statusesOf({ "u01-water": ["intro", "S1"] })["S1"]).toBe("completed");
+    expect(
+      statusesOf({ "u01-water": ["intro", "S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"] })["RP"],
+    ).toBe("available");
+
+    const skipped = statusesOf({ "u01-water": ["S5"] });
+    expect(skipped["S5"]).toBe("completed");
+    expect(skipped["S6"]).toBe("available");
+    expect(skipped["S1"]).toBe("locked");
+    expect(skipped["S7"]).toBe("locked");
+  });
+
+  test("CM-U3. 모르는 키는 잠겨 있고 다른 에피소드의 진행은 세지 않는다", () => {
+    expect(catalogUnitStatus(u01Section(), "X", { "u01-water": ["intro", "S1"] })).toBe("locked");
+    expect(statusesOf({ "u02-checkin": ["intro"] })["S1"]).toBe("locked");
+  });
+
+  test("CM-U4. 열린 레슨과 끝낸 레슨만 시작할 수 있다", () => {
+    const sections = catalogMapSectionsOf(realCatalog);
+    const openS1: CatalogProgress = { "u01-water": ["intro"] };
+    const doneS5: CatalogProgress = { "u01-water": ["intro", "S1", "S3", "S4", "S5"] };
+
+    expect(canStartCatalogUnit(sections, "u01-water", "S1", openS1)).toBe(true);
+    expect(canStartCatalogUnit(sections, "u01-water", "S3", openS1)).toBe(false);
+    expect(canStartCatalogUnit(sections, "u01-water", "S5", doneS5)).toBe(true);
+    expect(canStartCatalogUnit(sections, "u01-water", "S2", openS1)).toBe(false);
+    expect(canStartCatalogUnit(sections, "u01-water", "intro", openS1)).toBe(false);
+    expect(canStartCatalogUnit(sections, "nope", "S1", openS1)).toBe(false);
+  });
+
+  test("CM-U4. 준비 안 된 구획은 시작할 수 없다", () => {
+    const sections = catalogMapSectionsOf([pending("p1", 1)]);
+
+    expect(canStartCatalogUnit(sections, "p1", "S1", { p1: ["intro"] })).toBe(false);
+  });
+
+  test("CM-U5. 유닛 역할은 레슨 · 최종 · 그 밖은 null이다", () => {
+    const section = u01Section();
+
+    expect(catalogUnitRoleOf(section, "S1")).toBe("lesson");
+    expect(catalogUnitRoleOf(section, "RP")).toBe("final");
+    expect(catalogUnitRoleOf(section, "intro")).toBeNull();
+    expect(catalogUnitRoleOf(section, "X")).toBeNull();
   });
 });
 
@@ -279,14 +355,15 @@ describe("캡션과 라벨", () => {
     reason,
   });
 
-  test("CM11. 잠긴 노드의 이름과 낭독을 문구표가 낸다", () => {
-    const lesson = { key: "S1", role: "lesson", ordinal: 1 } as const;
-    const final = { key: "RP", role: "final", ordinal: 9 } as const;
+  test("CM11′. 레슨 · 최종 · 표지 노드의 이름과 낭독을 문구표가 낸다", () => {
+    const lesson = { key: "S1", role: "lesson", ordinal: 1, status: "locked" } as const;
+    const final = { key: "RP", role: "final", ordinal: 9, status: "locked" } as const;
 
-    expect(catalogLockedNodeTitle(lesson, uiCopyEn)).toBe("Lesson 1");
-    expect(catalogLockedNodeTitle(final, uiCopyEn)).toBe("Final test");
-    expect(catalogLockedNodeAccessibilityLabel(lesson, uiCopyEn)).toBe("Lesson 1, coming soon");
-    expect(catalogLockedNodeAccessibilityLabel(final, uiCopyEn)).toBe("Final test, coming soon");
+    expect(catalogUnitNodeTitle(lesson, uiCopyEn)).toBe("Lesson 1");
+    expect(catalogUnitNodeTitle(final, uiCopyEn)).toBe("Final test");
+    expect(catalogUnitNodeAccessibilityLabel(1, lesson, uiCopyEn)).toBe("Episode 1. Lesson 1");
+    expect(catalogUnitNodeAccessibilityLabel(1, final, uiCopyEn)).toBe("Episode 1. Final test");
+    expect(catalogCoverAccessibilityLabel(1, uiCopyEn)).toBe("Episode 1. Episode intro");
   });
 
   test("CM11. 준비 안 된 구획의 낭독은 사유 종류별 꼬리를 문다", () => {
@@ -311,12 +388,12 @@ describe("순수성", () => {
     const first = catalogMapSectionsOf(catalog);
     const second = catalogMapSectionsOf(catalog);
     const section = readySection(first, 0);
-    const nodes = catalogLockedNodesOf(section);
+    const nodes = catalogUnitNodesOf(section, progress);
     const status = catalogCoverStatus(first, 1, gate(true, progress));
 
     expect({ catalog, progress }).toEqual(snapshot);
     expect(second).toEqual(first);
-    expect(catalogLockedNodesOf(section)).toEqual(nodes);
+    expect(catalogUnitNodesOf(section, progress)).toEqual(nodes);
     expect(catalogCoverStatus(first, 1, gate(true, progress))).toBe(status);
     expect(catalogSectionProgress(section, progress)).toEqual(
       catalogSectionProgress(section, progress),

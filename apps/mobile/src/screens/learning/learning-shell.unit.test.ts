@@ -293,3 +293,10 @@ describe("learningShellArrangement", () => {
     expect(learningShellArrangement({ scrollCard: false, flow: "split" })).toBe("split");
   });
 });
+
+describe("타자 입력 껍데기", () => {
+  it("LS-T1. 세션 머리 형 라벨과 측정 깃발이 타자 입력 이름을 낸다", () => {
+    expect(learningSessionHeader("typing", 0, 3, uiCopyEn).formLabel).toBe("Typing");
+    expect(learningTimingFlag("typing")).toBe("libitum:navigation:learning-typing");
+  });
+});

@@ -101,7 +101,6 @@ test("UC-C1. 카탈로그 맵 · 표지 문구가 문구표 값과 같다", () =
   expect(c.catalogMap.coverTitle).toBe("Episode intro");
   expect(c.catalogMap.lessonTitle(2)).toBe("Lesson 2");
   expect(c.catalogMap.finalTitle).toBe("Final test");
-  expect(c.catalogMap.preparing("Ep")).toBe("Ep, coming soon");
   expect(c.catalogMap.caption).toEqual({
     pending: "COMING SOON",
     update: "UPDATE REQUIRED",
@@ -122,4 +121,20 @@ test("UC-C1. 카탈로그 맵 · 표지 문구가 문구표 값과 같다", () =
   });
   expect(c.catalogCover.nextCut(2, 6)).toBe("Next scene, 2 of 6");
   expect(c.catalogCover.finishCover).toBe("Finish intro");
+});
+
+test("UC-L1. 카탈로그 학습 문구가 문구표 값과 같고 준비 중 문구는 없다", () => {
+  expect(c.catalogMap.nodeLabel("Episode 1.", "Lesson 1")).toBe("Episode 1. Lesson 1");
+  expect("preparing" in c.catalogMap).toBe(false);
+  expect(c.catalogCover.finishEpilogue).toBe("Finish episode");
+  expect(c.typing.instruction).toBe("Type the sentence in Korean.");
+  expect(c.typing.answerField("여권")).toBe("Your answer: 여권");
+  expect(c.typing.answerFieldEmpty).toBe("Your answer, empty");
+  expect(c.typing.answerReveal("여권")).toBe("Answer: 여권");
+  expect(c.catalogFinal.turnProgress(2, 3)).toBe("Turn 2 of 3");
+  expect(c.catalogFinal.replyLabel("네")).toBe("Your reply: 네");
+  expect(c.catalogFinal.replyEmpty).toBe("Your reply, empty");
+  expect(c.catalogFinal.replyHint("No")).toBe("Say: No");
+  expect(c.catalogFinal.correctAnswer("네")).toBe("Answer: 네");
+  expect(c.audioUnavailable.label).toBe("Audio not available yet");
 });
