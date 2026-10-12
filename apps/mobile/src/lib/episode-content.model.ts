@@ -76,8 +76,15 @@ export type LearningItem =
       tiles: Text[];
       pairs: { left: Text; right: string }[];
     })
-  // 최종 테스트(RP) 문항은 콘텐츠 쪽이 수정 중이라 불투명하게 보존합니다(계약 D4).
-  | (ItemBase<"ROLEPLAY_TURN"> & { raw: unknown });
+  | (ItemBase<"ROLEPLAY_TURN"> & {
+      prompt: Text;
+      context: Text;
+      stimulus: Stimulus;
+      tiles: Text[];
+      answers: Text[];
+      feedback: { correct: Text };
+      roleplay: { lineId: string; tilesGloss: { tile: string; en?: string }[] };
+    });
 
 export type LearningUnit = { id: string; order: number; items: LearningItem[] };
 /** `id`는 `"RP"`입니다. 마지막 자리 최종 테스트(ADR-0024 D10). */

@@ -17,7 +17,6 @@ export const catalogMapEn: CatalogMapCopy = {
   coverTitle: "Episode intro",
   lessonTitle: (ordinal) => `Lesson ${ordinal}`,
   finalTitle: "Final test",
-  preparing: (title) => `${title}, coming soon`,
   nodeLabel: (label, title) => `${label} ${title}`,
   caption: {
     pending: "COMING SOON",

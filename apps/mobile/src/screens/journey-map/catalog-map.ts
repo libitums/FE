@@ -13,7 +13,6 @@ import type { JourneyMapItemStatus } from "./journey-map-types";
 import type {
   CatalogCaptionKind,
   CatalogGate,
-  CatalogLockedNode,
   CatalogMapSection,
   CatalogReadySection,
   CatalogSectionProgress,
@@ -98,17 +97,6 @@ export function canStartCatalogCover(
   return index >= 0 && catalogCoverStatus(sections, index, gate) !== "locked";
 }
 
-export function catalogLockedNodesOf(section: CatalogReadySection): readonly CatalogLockedNode[] {
-  return [
-    ...section.lessonKeys.map((key, index): CatalogLockedNode => ({
-      key,
-      role: "lesson",
-      ordinal: index + 1,
-    })),
-    { key: section.finalKey, role: "final", ordinal: section.lessonKeys.length + 1 },
-  ];
-}
-
 export function catalogSectionProgress(
   section: CatalogReadySection,
   progress: CatalogProgress,
@@ -125,16 +113,6 @@ export function catalogCaptionKindOf(reason: CatalogUnavailableReason): CatalogC
   return reason === "client-too-old" || reason === "unsupported-schema" ? "update" : "unavailable";
 }
 
-export function catalogLockedNodeTitle(node: CatalogLockedNode, copy: UiCopy): string {
-  return node.role === "lesson"
-    ? copy.catalogMap.lessonTitle(node.ordinal)
-    : copy.catalogMap.finalTitle;
-}
-
-export function catalogLockedNodeAccessibilityLabel(node: CatalogLockedNode, copy: UiCopy): string {
-  return copy.catalogMap.preparing(catalogLockedNodeTitle(node, copy));
-}
-
 export function catalogUnavailableAccessibilityLabel(
   section: CatalogUnavailableSection,
   copy: UiCopy,
@@ -146,54 +124,91 @@ export function catalogUnavailableAccessibilityLabel(
   );
 }
 
-/** 사슬(표지 → 레슨들 → 최종)에서 그 키의 상태를 파생합니다. */
+/** 표지 → 레슨들 → 최종 사슬입니다. */
+const chainOf = (section: CatalogReadySection): readonly CatalogUnitKey[] => [
+  CATALOG_INTRO_KEY,
+  ...section.lessonKeys,
+  section.finalKey,
+];
+
+/**
+ * 사슬에서 그 키의 상태를 파생합니다 — 끝낸 키는 앞이 아직이어도 `completed`, 바로 앞을 끝냈으면
+ * `available`, 그 밖(모르는 키 포함)은 `locked`.
+ */
 export function catalogUnitStatus(
-  _section: CatalogReadySection,
-  _unitKey: CatalogUnitKey,
-  _progress: CatalogProgress,
+  section: CatalogReadySection,
+  unitKey: CatalogUnitKey,
+  progress: CatalogProgress,
 ): JourneyMapItemStatus {
-  return "locked";
+  if (isCatalogUnitDone(progress, section.episodeId, unitKey)) return "completed";
+  const chain = chainOf(section);
+  const index = chain.indexOf(unitKey);
+  const previous = index > 0 ? chain[index - 1] : undefined;
+  if (previous === undefined) return "locked";
+  return isCatalogUnitDone(progress, section.episodeId, previous) ? "available" : "locked";
+}
+
+export function catalogUnitRoleOf(
+  section: CatalogReadySection,
+  unitKey: CatalogUnitKey,
+): "lesson" | "final" | null {
+  if (unitKey === section.finalKey) return "final";
+  return section.lessonKeys.includes(unitKey) ? "lesson" : null;
 }
 
 export function catalogUnitNodesOf(
   section: CatalogReadySection,
-  _progress: CatalogProgress,
+  progress: CatalogProgress,
 ): readonly CatalogUnitNode[] {
-  return catalogLockedNodesOf(section).map((node): CatalogUnitNode => ({
-    ...node,
-    status: "locked",
-  }));
+  return [
+    ...section.lessonKeys.map((key, index): CatalogUnitNode => ({
+      key,
+      role: "lesson",
+      ordinal: index + 1,
+      status: catalogUnitStatus(section, key, progress),
+    })),
+    {
+      key: section.finalKey,
+      role: "final",
+      ordinal: section.lessonKeys.length + 1,
+      status: catalogUnitStatus(section, section.finalKey, progress),
+    },
+  ];
 }
 
 /** 맵 노드와 시작 결선이 같이 쓰는 가드입니다. */
 export function canStartCatalogUnit(
-  _sections: readonly CatalogMapSection[],
-  _episodeId: string,
-  _unitKey: CatalogUnitKey,
-  _progress: CatalogProgress,
+  sections: readonly CatalogMapSection[],
+  episodeId: string,
+  unitKey: CatalogUnitKey,
+  progress: CatalogProgress,
 ): boolean {
-  return false;
+  const section = sections.find((candidate) => candidate.episodeId === episodeId);
+  if (section === undefined || section.kind !== "catalog-ready") return false;
+  if (catalogUnitRoleOf(section, unitKey) === null) return false;
+  return catalogUnitStatus(section, unitKey, progress) !== "locked";
 }
 
-export function catalogUnitRoleOf(
-  _section: CatalogReadySection,
-  _unitKey: CatalogUnitKey,
-): "lesson" | "final" | null {
-  return null;
-}
-
-export function catalogUnitNodeTitle(_node: CatalogUnitNode, _copy: UiCopy): string {
-  return "";
+export function catalogUnitNodeTitle(node: CatalogUnitNode, copy: UiCopy): string {
+  return node.role === "lesson"
+    ? copy.catalogMap.lessonTitle(node.ordinal)
+    : copy.catalogMap.finalTitle;
 }
 
 export function catalogUnitNodeAccessibilityLabel(
-  _episodeOrdinal: number,
-  _node: CatalogUnitNode,
-  _copy: UiCopy,
+  episodeOrdinal: number,
+  node: CatalogUnitNode,
+  copy: UiCopy,
 ): string {
-  return "";
+  return copy.catalogMap.nodeLabel(
+    copy.catalogMap.episodeLabel(episodeOrdinal),
+    catalogUnitNodeTitle(node, copy),
+  );
 }
 
-export function catalogCoverAccessibilityLabel(_episodeOrdinal: number, _copy: UiCopy): string {
-  return "";
+export function catalogCoverAccessibilityLabel(episodeOrdinal: number, copy: UiCopy): string {
+  return copy.catalogMap.nodeLabel(
+    copy.catalogMap.episodeLabel(episodeOrdinal),
+    copy.catalogMap.coverTitle,
+  );
 }

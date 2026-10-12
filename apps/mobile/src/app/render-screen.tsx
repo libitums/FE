@@ -252,6 +252,12 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return renderEpisodeFinalFlow(screen, wiring);
     case "catalog-cover":
       return renderCatalogCover(screen, wiring);
+    // 카탈로그 학습 화면은 결선 단계에서 이어집니다.
+    case "catalog-lesson":
+    case "catalog-final":
+    case "catalog-unit-complete":
+    case "catalog-epilogue":
+      return null;
     // `never` 망라가 이 case를 강제합니다. 결선이 없습니다 — 탐침 화면은 props도
     // 콜백도 받지 않습니다. **아무 코드도 이 화면을 push하지 않습니다** — 닿으려면
     // `navigation.ts`가 둔 개발용 부팅 상태(`handwritingProbeNav`)를 바꿔 끼웁니다.

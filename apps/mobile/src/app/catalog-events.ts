@@ -9,6 +9,9 @@ import type {
 import type { AnswerResult } from "../lib/answer-result";
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
 
+const correctCountOf = (results: readonly AnswerResult[]): string =>
+  String(results.filter((result) => result === "correct").length);
+
 export function lessonStartedEventOf(
   start: {
     readonly episodeId: string;
@@ -23,8 +26,8 @@ export function lessonStartedEventOf(
     episodeId: start.episodeId,
     unitKey: start.unitKey,
     unitRole: role,
-    questionCount: "",
-    skippedItemCount: "",
+    questionCount: String(start.questionCount),
+    skippedItemCount: String(start.skippedItemCount),
   };
 }
 
@@ -32,8 +35,8 @@ export function lessonFinishedEventOf(
   episodeId: string,
   unitKey: string,
   role: CatalogUnitRole,
-  _results: readonly AnswerResult[],
-  _questionCount: number,
+  results: readonly AnswerResult[],
+  questionCount: number,
   verdict: AssessmentVerdict,
 ): EpisodeLessonFinishedEvent {
   return {
@@ -42,15 +45,20 @@ export function lessonFinishedEventOf(
     unitKey,
     unitRole: role,
     verdict,
-    correctCount: "",
-    questionCount: "",
+    correctCount: correctCountOf(results),
+    questionCount: String(questionCount),
   };
 }
 
 export function finalPassedEventOf(
   episodeId: string,
-  _results: readonly AnswerResult[],
-  _turnCount: number,
+  results: readonly AnswerResult[],
+  turnCount: number,
 ): EpisodeFinalPassedEvent {
-  return { name: "episode_final_passed", episodeId, correctCount: "", turnCount: "" };
+  return {
+    name: "episode_final_passed",
+    episodeId,
+    correctCount: correctCountOf(results),
+    turnCount: String(turnCount),
+  };
 }

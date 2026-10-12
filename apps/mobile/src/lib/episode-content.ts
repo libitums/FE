@@ -122,10 +122,9 @@ function collectWarnings(wire: DeliveryEpisodeV2): DecodeIssue[] {
   const warnings: DecodeIssue[] = [];
   wire.steps.forEach((step, i) => {
     step.items.forEach((item, j) => {
-      // 와이어의 `ref`만 읽습니다 — 문항 전체를 변환(toItem)할 이유가 없습니다. RP 문항은 looseObject라
-      // `ref`가 없을 수 있고, 빈 문자열은 디코더 규칙대로 「없음」입니다.
-      const rawRef = item.type === "ROLEPLAY_TURN" ? Reflect.get(item, "ref") : item.ref;
-      const ref = typeof rawRef === "string" ? nonEmpty(rawRef) : undefined;
+      // 와이어의 `ref`만 읽습니다 — 문항 전체를 변환(toItem)할 이유가 없습니다. 빈 문자열은 디코더 규칙대로
+      // 「없음」입니다.
+      const ref = nonEmpty(item.ref);
       if (ref !== undefined && !known.has(ref)) {
         warnings.push(
           issue(

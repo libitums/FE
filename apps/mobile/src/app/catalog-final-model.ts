@@ -2,6 +2,7 @@
 //
 // 화면 경로가 닿는 파일이라 `lib/episode-*`는 타입만 가져옵니다.
 
+import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearningItem } from "../lib/episode-content";
 import type {
@@ -10,7 +11,11 @@ import type {
   CatalogRoleplayTurns,
 } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
+import { noLearnerProfile } from "./catalog-cover-wiring";
+import { koOf, latinOf } from "./catalog-item-text";
+import { catalogFillOf } from "./catalog-lesson-plan";
 import type { CatalogFill, CatalogItemPort } from "./catalog-lesson-plan";
+import { shuffledOrder } from "./catalog-shuffle";
 import type { EpisodeContent } from "./episode-content";
 
 export type { CatalogRoleplayTile, CatalogRoleplayTurn, CatalogRoleplayTurns };
@@ -32,32 +37,89 @@ export type CatalogRoleplayPort = CatalogItemPort & {
 
 /** RP 문항이 아니거나 그릴 수 없는 모양이면 `null`(건너뜀)입니다. */
 export function catalogRoleplayTurnOf(
-  _item: LearningItem,
-  _port: CatalogRoleplayPort,
+  item: LearningItem,
+  port: CatalogRoleplayPort,
 ): CatalogRoleplayTurn | null {
-  return null;
+  if (item.type !== "ROLEPLAY_TURN") return null;
+  const original = item.tiles.map((tile) => koOf(port, tile.ko));
+  const accepted = item.answers.map((answer) => koOf(port, answer.ko)).filter((ko) => ko !== "");
+  const lineKo = koOf(port, item.context.ko);
+  const [firstAccepted, ...restAccepted] = accepted;
+  if (original.length === 0 || original.includes("") || lineKo === "") return null;
+  if (firstAccepted === undefined) return null;
+  if (!isTypedAnswerAccepted(original.join(" "), accepted)) return null;
+
+  const order = shuffledOrder(`${port.episodeId}/${item.id}`, original.length);
+  const shuffled = order.map((index): CatalogRoleplayTile => ({
+    ko: original[index] ?? "",
+    roman: latinOf(port, item.tiles[index]?.roman) ?? "",
+  }));
+  const [firstTile, ...restTiles] = shuffled;
+  if (firstTile === undefined) return null;
+
+  const imagePath = item.stimulus.imageUrl;
+  return {
+    id: item.id,
+    instruction: latinOf(port, item.prompt.en) ?? "",
+    line: {
+      ko: lineKo,
+      roman: latinOf(port, item.context.roman) ?? null,
+      en: latinOf(port, item.context.en) ?? null,
+    },
+    tiles: [firstTile, ...restTiles],
+    accepted: [firstAccepted, ...restAccepted],
+    replyTranslation:
+      latinOf(port, item.answers[0]?.en) ?? latinOf(port, item.stimulus.text?.en) ?? null,
+    imageUrl: imagePath === undefined ? port.sceneImageUrl : port.imageUrlOf(imagePath),
+  };
 }
 
 export function catalogFinalPlanOf(
   entry: Extract<CatalogEntry, { status: "ready" }>,
   ordinal: number,
-  _fill: CatalogFill,
-  _imageUrlOf: (relativePath: string) => string | null,
+  fill: CatalogFill,
+  imageUrlOf: (relativePath: string) => string | null,
 ): CatalogFinalPlan {
+  const scenePath = [...entry.episode.prologue]
+    .reverse()
+    .find((cut) => cut.imageUrl !== undefined)?.imageUrl;
+  const port: CatalogRoleplayPort = {
+    fill,
+    episodeId: entry.id,
+    sceneImageUrl: scenePath === undefined ? null : imageUrlOf(scenePath),
+    imageUrlOf,
+  };
+  const attempts = entry.episode.finalTest.items.map((item) => catalogRoleplayTurnOf(item, port));
+  const turns = attempts.filter((turn): turn is CatalogRoleplayTurn => turn !== null);
   return {
     episodeId: entry.id,
     ordinal,
     counterpartName: entry.episode.counterpart.trim(),
-    turns: [],
-    skippedItemCount: 0,
+    turns,
+    skippedItemCount: attempts.length - turns.length,
   };
 }
 
+// 같은 ready 항목 참조면 같은 계획 참조입니다(`catalogLessonPlanFor`와 같은 까닭).
+const memo = new WeakMap<object, CatalogFinalPlan>();
+
 /** 같은 ready 항목 참조면 같은 계획 참조를 돌려줍니다(메모). */
 export function catalogFinalPlanFor(
-  _content: EpisodeContent,
-  _sections: readonly CatalogMapSection[],
-  _episodeId: string,
+  content: EpisodeContent,
+  sections: readonly CatalogMapSection[],
+  episodeId: string,
 ): CatalogFinalPlan | null {
-  return null;
+  const entry = content.catalog.find((candidate) => candidate.id === episodeId);
+  const section = sections.find((candidate) => candidate.episodeId === episodeId);
+  if (entry === undefined || entry.status !== "ready" || section === undefined) return null;
+  const known = memo.get(entry);
+  if (known !== undefined && known.ordinal === section.ordinal) return known;
+  const plan = catalogFinalPlanOf(
+    entry,
+    section.ordinal,
+    catalogFillOf(content, noLearnerProfile),
+    content.imageUrlOf,
+  );
+  memo.set(entry, plan);
+  return plan;
 }

@@ -225,11 +225,11 @@ export function maskedAnswer(text: string): string {
 }
 
 /** 정답 목록 중 하나라도 입력과 같은 말이면 참입니다. */
-export function isTypedAnswerAccepted(_typed: string, _answers: readonly string[]): boolean {
-  return false;
+export function isTypedAnswerAccepted(typed: string, answers: readonly string[]): boolean {
+  return answers.some((answer) => isTypedAnswerCorrect(typed, answer));
 }
 
 /** 이 자판만으로 칠 수 있는 정답인지 봅니다(정규화 뒤 남은 글자가 전부 한글). */
-export function isTypeableAnswer(_answer: string): boolean {
-  return false;
+export function isTypeableAnswer(answer: string): boolean {
+  return /^[\u3131-\u318e\uac00-\ud7a3]+$/.test(normalize(answer));
 }

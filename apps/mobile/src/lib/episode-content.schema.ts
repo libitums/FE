@@ -198,8 +198,21 @@ const itemSchema = z.discriminatedUnion("type", [
     tiles_gloss_en: z.string(),
     answers: z.array(textSchema),
   }),
-  // 최종 테스트(RP) 문항은 콘텐츠 쪽이 수정 중이라 `id`와 `type`만 검사하고 나머지는 통과시킵니다.
-  z.looseObject({ id: z.string(), type: z.literal("ROLEPLAY_TURN") }),
+  // 최종 테스트(RP) 문항 — 앱이 읽는 키만 검사하고 `roleplay`의 나머지 키는 버립니다(정답의 정본은 `answers`).
+  z.object({
+    ...itemCommon,
+    type: z.literal("ROLEPLAY_TURN"),
+    prompt: promptSchema,
+    context: textSchema,
+    stimulus: stimulusSchema,
+    tiles: z.array(textSchema).check(z.minLength(1)),
+    answers: z.array(textSchema).check(z.minLength(1)),
+    feedback: z.object({ correct: z.object({ ko: z.string(), en: optionalString }) }),
+    roleplay: z.object({
+      line_id: z.string(),
+      tiles_gloss: z.array(z.object({ tile: z.string(), en: optionalString })),
+    }),
+  }),
 ]);
 
 const stepSchema = z.object({

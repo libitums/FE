@@ -6,104 +6,135 @@
 
 import type { CatalogUnitKey } from "../lib/catalog-progress";
 import type { CatalogEntry } from "../lib/episode-catalog";
-import type { LearningItem } from "../lib/episode-content";
-import type { NonEmpty } from "../lib/non-empty";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { AssessmentPassCriterion } from "../screens/assessment/assessment";
-import type { ListeningQuestion } from "../screens/listening/listening-questions";
-import type { SentenceOrderQuestion } from "../screens/sentence-order/sentence-order-questions";
-import type { TypingQuestion } from "../screens/typing/typing.contract";
-import type { WordChoiceQuestion } from "../screens/word-choice/word-choice-questions";
+import { catalogItemOf } from "./catalog-item-map";
+import { noLearnerProfile } from "./catalog-cover-wiring";
+import type {
+  CatalogActivity,
+  CatalogFill,
+  CatalogLessonPlan,
+  CatalogMappedItem,
+} from "./catalog-lesson-types";
 import type { EpisodeContent } from "./episode-content";
 
-export type { NonEmpty };
+export type {
+  CatalogActivity,
+  CatalogActivityForm,
+  CatalogFill,
+  CatalogItemPort,
+  CatalogLessonPlan,
+  CatalogMappedItem,
+  CatalogSkipReason,
+  NonEmpty,
+} from "./catalog-lesson-types";
+export { catalogItemOf } from "./catalog-item-map";
+export { shuffledOrder } from "./catalog-shuffle";
 
-export type CatalogActivity =
-  | { readonly form: "listening"; readonly questions: NonEmpty<ListeningQuestion> }
-  | { readonly form: "sentence-order"; readonly questions: NonEmpty<SentenceOrderQuestion> }
-  | { readonly form: "word-choice"; readonly questions: NonEmpty<WordChoiceQuestion> }
-  | { readonly form: "typing"; readonly questions: NonEmpty<TypingQuestion> };
+type PlayableItem = Exclude<CatalogMappedItem, { kind: "skipped" }>;
 
-export type CatalogActivityForm = CatalogActivity["form"];
-
-export type CatalogSkipReason =
-  | "screen-pending"
-  | "no-options"
-  | "no-source"
-  | "untypeable"
-  | "malformed";
-
-export type CatalogMappedItem =
-  | { readonly kind: "listening"; readonly itemId: string; readonly question: ListeningQuestion }
-  | {
-      readonly kind: "sentence-order";
-      readonly itemId: string;
-      readonly question: SentenceOrderQuestion;
-    }
-  | {
-      readonly kind: "word-choice";
-      readonly itemId: string;
-      readonly question: WordChoiceQuestion;
-    }
-  | { readonly kind: "typing"; readonly itemId: string; readonly question: TypingQuestion }
-  | {
-      readonly kind: "skipped";
-      readonly itemId: string;
-      readonly type: LearningItem["type"];
-      readonly reason: CatalogSkipReason;
-    };
-
-/** 학습자 프로필을 묶은 치환입니다. 영어 문자열은 `"roman"` 스크립트로 치환합니다. */
-export type CatalogFill = (text: string, script: "ko" | "roman") => string;
-
-export type CatalogItemPort = { readonly fill: CatalogFill; readonly episodeId: string };
-
-export type CatalogLessonPlan = {
-  readonly episodeId: string;
-  readonly unitKey: CatalogUnitKey;
-  readonly activities: readonly CatalogActivity[];
-  /** 활동 문항 수의 합입니다. */
-  readonly questionCount: number;
-  readonly skippedItemCount: number;
-};
-
-/** 결정적 타일 순서입니다. `order[p]` = 자리 `p`에 보일 원래 인덱스. */
-export function shuffledOrder(_seed: string, _length: number): readonly number[] {
-  return [];
+/** 학습형이 같으면 앞 활동에 잇고, 아니면 `null`입니다. */
+function appended(last: CatalogActivity, item: PlayableItem): CatalogActivity | null {
+  switch (item.kind) {
+    case "listening":
+      return last.form === "listening"
+        ? { form: "listening", questions: [...last.questions, item.question] }
+        : null;
+    case "sentence-order":
+      return last.form === "sentence-order"
+        ? { form: "sentence-order", questions: [...last.questions, item.question] }
+        : null;
+    case "word-choice":
+      return last.form === "word-choice"
+        ? { form: "word-choice", questions: [...last.questions, item.question] }
+        : null;
+    case "typing":
+      return last.form === "typing"
+        ? { form: "typing", questions: [...last.questions, item.question] }
+        : null;
+  }
 }
 
-export function catalogItemOf(item: LearningItem, _port: CatalogItemPort): CatalogMappedItem {
-  return { kind: "skipped", itemId: item.id, type: item.type, reason: "screen-pending" };
+function startedBy(item: PlayableItem): CatalogActivity {
+  switch (item.kind) {
+    case "listening":
+      return { form: "listening", questions: [item.question] };
+    case "sentence-order":
+      return { form: "sentence-order", questions: [item.question] };
+    case "word-choice":
+      return { form: "word-choice", questions: [item.question] };
+    case "typing":
+      return { form: "typing", questions: [item.question] };
+  }
 }
 
+/** 건너뜀을 빼고, 같은 학습형이 이어지는 구간을 한 활동으로 묶습니다. */
 export function catalogActivitiesOf(
-  _items: readonly CatalogMappedItem[],
+  items: readonly CatalogMappedItem[],
 ): readonly CatalogActivity[] {
-  return [];
+  const activities: CatalogActivity[] = [];
+  for (const item of items) {
+    if (item.kind === "skipped") continue;
+    const last = activities[activities.length - 1];
+    const joined = last === undefined ? null : appended(last, item);
+    if (joined === null) {
+      activities.push(startedBy(item));
+    } else {
+      activities[activities.length - 1] = joined;
+    }
+  }
+  return activities;
 }
 
 /** 그 키의 유닛이 없으면 `null`입니다. */
 export function catalogLessonPlanOf(
-  _entry: Extract<CatalogEntry, { status: "ready" }>,
-  _unitKey: CatalogUnitKey,
-  _fill: CatalogFill,
+  entry: Extract<CatalogEntry, { status: "ready" }>,
+  unitKey: CatalogUnitKey,
+  fill: CatalogFill,
 ): CatalogLessonPlan | null {
-  return null;
+  const unit = entry.episode.units.find((candidate) => candidate.id === unitKey);
+  if (unit === undefined) return null;
+  const port = { fill, episodeId: entry.id };
+  const mapped = unit.items.map((item) => catalogItemOf(item, port));
+  const activities = catalogActivitiesOf(mapped);
+  return {
+    episodeId: entry.id,
+    unitKey,
+    activities,
+    questionCount: activities.reduce((sum, activity) => sum + activity.questions.length, 0),
+    skippedItemCount: mapped.filter((item) => item.kind === "skipped").length,
+  };
 }
 
-export function catalogPassCriterion(_questionCount: number): AssessmentPassCriterion {
-  return { minCorrectCount: 1 };
+/** 통과 = 채점 문항의 60% 올림(최소 1)을 맞힘입니다. 채점할 문항이 없으면 0 — 막지 않습니다. */
+export function catalogPassCriterion(questionCount: number): AssessmentPassCriterion {
+  if (questionCount <= 0) return { minCorrectCount: 0 };
+  return { minCorrectCount: Math.max(1, Math.floor((3 * questionCount + 4) / 5)) };
 }
 
-export function catalogFillOf(_content: EpisodeContent, _profile: LearnerProfile): CatalogFill {
-  return (text) => text;
+export function catalogFillOf(content: EpisodeContent, profile: LearnerProfile): CatalogFill {
+  return (text, script) => content.fillText(text, profile, script);
 }
+
+// 같은 ready 항목 참조 + 같은 키면 같은 계획 참조입니다 — 활동 화면의 자동 넘김 걸음이 문항 참조에
+// 걸려 있어, 렌더마다 새 문항을 만들면 관계없는 리렌더가 기다림을 되돌립니다.
+const memo = new WeakMap<object, Map<string, CatalogLessonPlan | null>>();
 
 /** 같은 ready 항목 참조 + 같은 키면 같은 계획 참조를 돌려줍니다(메모). */
 export function catalogLessonPlanFor(
-  _content: EpisodeContent,
-  _episodeId: string,
-  _unitKey: CatalogUnitKey,
+  content: EpisodeContent,
+  episodeId: string,
+  unitKey: CatalogUnitKey,
 ): CatalogLessonPlan | null {
-  return null;
+  const entry = content.catalog.find((candidate) => candidate.id === episodeId);
+  if (entry === undefined || entry.status !== "ready") return null;
+  let plans = memo.get(entry);
+  if (plans === undefined) {
+    plans = new Map();
+    memo.set(entry, plans);
+  }
+  if (plans.has(unitKey)) return plans.get(unitKey) ?? null;
+  const plan = catalogLessonPlanOf(entry, unitKey, catalogFillOf(content, noLearnerProfile));
+  plans.set(unitKey, plan);
+  return plan;
 }

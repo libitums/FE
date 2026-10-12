@@ -119,7 +119,6 @@ export type CatalogMapCopy = {
   readonly coverTitle: string;
   readonly lessonTitle: (ordinal: number) => string;
   readonly finalTitle: string;
-  readonly preparing: (title: string) => string;
   /** 표지 · 레슨 · 최종 노드의 낭독 이름 — `Episode n. <제목>`. */
   readonly nodeLabel: (episodeLabel: string, title: string) => string;
   readonly caption: Readonly<Record<CatalogCaptionKind, string>>;
