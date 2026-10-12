@@ -8,6 +8,7 @@
 - 적용 기록(결정을 바꾸지 않는다): [ADR-0032](0032-account-sign-out-and-deletion.md) — 계정을 지우면 두 표도 CASCADE로 지워진다.
 
 - 적용 기록 ⟨2026-10-12⟩(결정을 바꾸지 않는다 — 스냅숏은 version 1 그대로): **카탈로그 에피소드 진행** `catalogProgress`(에피소드 id → 끝낸 유닛 키 배열, 키는 `"intro"` · 스텝 id `S1`…`S9` · 최종 테스트 `"RP"`)를 **선택 필드**로 더했다. 앱은 비어 있으면 싣지 않아 옛 서버 · 옛 앱과 바이트 호환이고, 읽을 때 모양이 틀린 부분만 버린다(스냅숏 전체는 버리지 않는다). 서버는 마이그레이션 `20261012120000_learning_progress_catalog.sql`이 `merge_learning_progress_v1`을 바꿔 이 필드를 검증(어기면 `22023`)하고 **에피소드별 합집합**(원소 `collate "C"` 정렬)으로 합친다. 옛 앱이 이 키 없이 저장해도 저장된 값이 남는다. 행의 16 KiB CHECK로 보면 에피소드당 약 70 bytes라 **약 200 에피소드**까지 담긴다 — 넘기 전에 재검토(아래 재검토 조건에 더한다). 튜토리얼 진행(`completedStepCount`)은 그대로다. ⚠ 원격 DB 적용은 아직이다(ADR README 보류 표). 순수 질의는 `apps/mobile/src/lib/catalog-progress.ts`.
+- 적용 기록 ⟨2026-10-12 — 3b-2⟩(결정을 바꾸지 않는다): **앱이 처음으로 `catalogProgress`를 쓴다** — 카탈로그 에피소드 표지(컷 화면)의 마지막 `Continue`가 `"intro"`를 적는다([ADR-0024](0024-journey-units-and-special-unit-placement.md) D15). 진행 훅이 저장 effect 의존에 `catalogProgress`를 넣고 setter를 결선에 내준다. **활동 수(연속 학습 — U2)에 카탈로그 유닛 키 수를 더한다** — 표지를 끝낸 날도 「활동 하나를 끝낸 날」이다. 서버 병합으로 늘어난 키는 지금 규칙대로 축하하지 않는다. 트로피 · 에피소드 설문은 카탈로그를 세지 않는다(카탈로그 `RP`는 3c부터 열린다). ⚠ 위 마이그레이션이 원격 DB에 적용되기 전에는 이 PR을 출시하지 않는다(ADR README 보류 표).
 
 ## 맥락
 

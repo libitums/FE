@@ -13,6 +13,10 @@
 | UI 테스트                  | PascalCase + `.ui.test.tsx`  | `PageIndicator.ui.test.tsx`  |
 | 공개 배럴                  | `index.ts`                   | `index.ts`                   |
 
+UI 테스트가 한 파일로 길어지면 `PageIndicator.<topic>.ui.test.tsx`(topic은 kebab-case)로 주제별로 나눌 수
+있다. 기본 `PageIndicator.ui.test.tsx`는 늘 있어야 하고, 이름에 점이 없는 `index.ui.test.tsx`나
+kebab-case 컴포넌트 이름은 여전히 거부한다.
+
 contract 파일은 props·상태·파생 모델 타입과 그 계약을 계산하는 순수 함수를 함께 소유한다.
 순수 runtime export가 없어도 타입은 같은 `<component>.contract.ts`에 둔다. 일반 이름의
 `contract.ts`나 별도 `logic.ts`는 허용하지 않는다. `index.ts`는 컴포넌트, 공개 타입과

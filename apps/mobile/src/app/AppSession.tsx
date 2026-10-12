@@ -1,4 +1,4 @@
-import { useEffect, useGlobalProps, useReducer, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useMemo, useReducer, useState } from "@lynx-js/react";
 
 import { FirstUnitGuideProvider } from "../components/first-unit-guide";
 import type { AnalyticsUserAppProps } from "../lib/analytics.contract";
@@ -42,7 +42,9 @@ import type { EpisodeFinalTest } from "../screens/episode-final/episode-final.co
 import { episodeFinalTestFor as productEpisodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-progress";
 import type { AppJourneySeed } from "./journey-progress";
-import type { Screen } from "./nav-state";
+import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
+import type { AppSessionContent } from "./episode-content";
+import { isFullBleedScreen } from "./full-bleed-screens";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useOpenedPush } from "./use-opened-push";
@@ -57,25 +59,6 @@ import "./app.css";
 
 // 루트 구성의 몸통입니다(`App`이 key로 세웁니다) — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다(ADR-0003 D5).
 // `phoneCallEventSink`는 메신저·비주얼 노벨과 같은 방식으로 App 경계에서 `null`로 정규화됩니다.
-// 가장자리(상태바 · 홈 인디케이터 뒤)까지 배경을 까는 화면입니다. 서사 표지 · 그 뒤의
-// 서사(비주얼 노벨) · 서사 통화 · 최종 테스트는 화면 전체를 한 장면으로 덮습니다(Figma 80-7869 ·
-// 79-6304 · 80-7797 · 79-6484).
-//
-// ⟨2026-09-28⟩ **여정 입장도 같은 자리입니다.** 그 화면의 디자인 의도가 「그림을 화면
-// 전체에 깐다」인데 셸이 여백을 잡아 위 · 아래에 그림이 닿지 않는 흰 띠가 남았습니다
-// (기기에서 확인). 스플래시는 셸 배경색을 바꿔 같은 문제를 풀지만(`app-splash`), 배경이
-// 색이 아니라 사진인 둘은 그 방법이 안 통합니다.
-function isFullBleedScreen(screen: Screen): boolean {
-  return (
-    screen.name === "episode-intro" ||
-    screen.name === "episode-prologue" ||
-    screen.name === "episode-final" ||
-    screen.name === "visual-novel" ||
-    screen.name === "roleplay-visual-novel" ||
-    screen.name === "journey-entry"
-  );
-}
-
 export function AppSession({
   journeySeed = productJourneySeed,
   completedEpisodeIntroIds: initialCompletedEpisodeIntroIds = [],
@@ -94,7 +77,8 @@ export function AppSession({
   start,
   exit,
   onLeaveApp,
-}: AppProps & AppSessionControl) {
+  episodeContent,
+}: AppProps & AppSessionControl & AppSessionContent) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다
   // — 셸은 `NavAction`도 `dispatch`도 받지 않습니다(ADR-0007 D3).
   // 초기값이 `entryInitialNav`입니다 — 부팅이 진입 스택 `[{ name: "splash" }]`로
@@ -128,7 +112,14 @@ export function AppSession({
     setCompletedEpisodeFinalIds,
     completedEpisodeIntroIds,
     setCompletedEpisodeIntroIds,
+    catalogProgress,
+    setCatalogProgress,
   } = progress;
+  // 카탈로그 구획은 카탈로그가 바뀔 때만 새로 만듭니다 — 진행은 섞지 않고 렌더에서 파생합니다.
+  const catalogSections = useMemo(
+    () => catalogMapSectionsOf(episodeContent.catalog),
+    [episodeContent.catalog],
+  );
   // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
   // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.
   const [notifications, setNotifications] = useState<readonly NotificationItem[]>(notificationList);
@@ -207,6 +198,10 @@ export function AppSession({
     streakDays: progress.streakDays,
     trophyCount: progress.trophyCount,
     syncProgress: progress.syncFromServer,
+    episodeContent,
+    catalogSections,
+    catalogProgress,
+    setCatalogProgress,
   });
 
   // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼 안쪽 여백을 잡습니다.

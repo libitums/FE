@@ -10,9 +10,11 @@ import { MessengerMapItem } from "./MessengerMapItem";
 import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
 import { EpisodeFinalMapItem } from "./EpisodeFinalMapItem";
-import { JourneyMapEpisodeHeader } from "./JourneyMapEpisodeHeader";
+import { JourneyMapCatalogSlot } from "./JourneyMapCatalogSlot";
+import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
 import { StepSheet } from "./StepSheet";
 import { episodeSectionId, screenId, scrollId } from "./journey-map-scroll";
+import { noCatalogMapSections } from "./catalog-map";
 import { useCurrentEpisode } from "./useCurrentEpisode";
 import { useStepSheet } from "./useStepSheet";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
@@ -23,7 +25,7 @@ import {
   findStep,
   journeySteps,
   stepStatusAt,
-  learningFormsForStep,
+  stepSheetFiguresFor,
   journeyMapSections,
   mapItemStatus,
   journeyStepOrdinal,
@@ -35,6 +37,7 @@ import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
 import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
+import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 
 import "./journey-map-screen.css";
 
@@ -55,6 +58,8 @@ export type JourneyMapScreenProps = {
   onStartEpisodeFinal: (id: EpisodeFinalUnitId) => void;
   /** 스텝 말풍선이 열리고 닫힐 때 부릅니다 — 전역 머리를 그 동안 낭독에서 가리는 데 씁니다. */
   onLayerChange?: (open: boolean) => void;
+  /** 카탈로그 구획 슬롯입니다. 없으면 튜토리얼만 있는 맵입니다. */
+  readonly catalog?: JourneyMapCatalogProps;
 };
 
 // 화면 컴포넌트: 파일명 PascalCase, export 이름과 일치, `~Screen` 접미사 (ADR-0003 D6).
@@ -73,13 +78,16 @@ export function JourneyMapScreen({
   completedEpisodeFinalIds,
   onStartEpisodeFinal,
   onLayerChange,
+  catalog,
 }: JourneyMapScreenProps): ReactNode {
   const guide = useFirstUnitGuide("map");
   const { sheetState, sheetTop, handleScroll, handleSelectStep, handleCloseSheet } = useStepSheet();
   // 머리 카드는 구획 밖에 **하나만** 섭니다 — 무엇을 말할지는 스크롤 자리가 고릅니다
   // (`useCurrentEpisode`의 주석에 `position: sticky`를 쓸 수 없는 이유를 적었습니다).
-  const currentEpisode = useCurrentEpisode(journeyMapSections);
-  const headerSection = journeyMapSections[currentEpisode.index] ?? journeyMapSections[0];
+  const currentEpisode = useCurrentEpisode(
+    journeyMapSections,
+    catalog?.sections ?? noCatalogMapSections,
+  );
 
   // 스크롤 한 번에 둘이 답합니다 — 말풍선 자리와 머리 카드 내용입니다. 인라인 화살표로
   // 묶으면 `"background only"`가 중첩돼 바인딩이 서지 않습니다.
@@ -244,6 +252,11 @@ export function JourneyMapScreen({
               </view>
             ),
           )}
+          <JourneyMapCatalogSlot
+            catalog={catalog}
+            completedEpisodeFinalIds={completedEpisodeFinalIds}
+            hidden={guide.visible}
+          />
         </view>
       </scroll-view>
       {/* [겹침 레이어] 머리 카드입니다 — **스크롤 밖에 하나만** 섭니다. 구획마다 두고
@@ -260,7 +273,12 @@ export function JourneyMapScreen({
           <Overlay scope="area" />
         </view>
       ) : null}
-      <JourneyMapEpisodeHeader section={headerSection} progress={progress} />
+      <JourneyMapHeaderSlot
+        index={currentEpisode.index}
+        tutorialSections={journeyMapSections}
+        progress={progress}
+        catalog={catalog}
+      />
 
       {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식입니다. */}
       {openStep === undefined ? null : (
@@ -269,16 +287,7 @@ export function JourneyMapScreen({
           /* 잰 자리에 그 뒤의 스크롤 변화량을 더합니다 — 유닛이 가운데로 옮겨 가는
              동안 말풍선이 그 유닛에 붙어 함께 움직입니다. */
           top={sheetTop}
-          lessonOrdinal={journeyStepOrdinal(openStep.id)}
-          /* 진행은 「끝낸 활동 수 / 그 스텝이 잡은 활동 수」입니다. 오늘 활동은
-             스텝 단위로만 저장되므로, 끝난 스텝이면 전부이고 아니면 0입니다 —
-             중간에서 그만둔 자리는 아직 어디에도 남지 않습니다. */
-          completedActivityCount={
-            stepStatusAt(journeyStepOrdinal(openStep.id) - 1, completedStepCount) === "done"
-              ? learningFormsForStep(openStep.id).length
-              : 0
-          }
-          totalActivityCount={learningFormsForStep(openStep.id).length}
+          {...stepSheetFiguresFor(openStep.id, completedStepCount)}
           /* `시작`의 목적지는 이 화면이 정하지 않습니다 — 열린 스텝의 id를 그대로
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}

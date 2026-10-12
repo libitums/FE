@@ -314,7 +314,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 
 | 파일 | 지금 앱 | 필요한 일 |
 |---|---|---|
-| `pre_cuts` | `EpisodePrologue`는 `call \| messenger \| visual-novel` 세그먼트 | 컷(이미지 + 대사/지문 + 화자) 세그먼트 종류를 하나 더 두거나, 기존 `EpisodeNarrativeBeat`(이미 `speech \| narration`)에 얹는다 |
+| `pre_cuts` | `EpisodePrologue`는 `call \| messenger \| visual-novel` 세그먼트 | ~~컷 세그먼트 종류를 하나 더 두거나, 기존 `EpisodeNarrativeBeat`에 얹는다~~ **결정(2026-10-12, 3b-2)**: 튜토리얼 서사에 얹지 않고 **새 화면** `catalog-cover`(`screens/catalog-cover/`)가 그린다 — 대사 · 내레이션 · 독백(`thought` 패널, 괄호) · 지문(패널 안 ko + en), 화자 `플레이어`는 `Me`. [ADR-0024](../adr/0024-journey-units-and-special-unit-placement.md) D15 · `docs/screens.md` 「카탈로그 표지(컷)」 |
 | `S1` ~ `S9` | 유닛 → `JourneyStep`(닫힌 8개 id) → 학습형별 문항표 | 유닛 id를 열고(`<episode>/<step.id>`), 유닛 안 문항 목록은 `items`를 그대로 순서대로 낸다. 학습형 7개 테이블은 `type` 판별 하나로 합친다 |
 | `RP` | `EpisodeFinalTest`는 `format: visual-novel \| call` + `speaking \| word-choice \| writing` | RP 수정본을 보고 결정. 지금 모양은 `ROLEPLAY_TURN` 하나뿐이다 |
 | `post_cuts` | **자리 없음** — D10은 「마지막 자리 = 최종 테스트」 | 최종 테스트 결과 화면 뒤에 컷 열람을 붙이거나, 튜플에 네 번째 자리(통과 뒤 화면)를 더한다. 어느 쪽이든 ADR-0024 D10의 확장이라 결정 기록이 필요하다 |
@@ -441,10 +441,11 @@ id 규약(Q6 제안): `<episode_id>/<kind>-<n>` — 확장자 없는 불투명 i
 
 | 에피소드 | 필요(컷 image_url) | 수령 | 빠짐 |
 |---|---|---|---|
-| u01-water | 9 | 0 | u01-water/pre-1.jpg, u01-water/pre-1.jpg, u01-water/pre-3.jpg, u01-water/pre-4.jpg, u01-water/pre-5.jpg, u01-water/pre-6.jpg, u01-water/post-1.jpg, u01-water/pre-1.jpg, u01-water/post-3.jpg |
+| u01-water | 9 (고유 7) | 7 | 없음 — 컷 9개가 고유 그림 7장(pre-1 · 3 · 4 · 5 · 6 · post-1 · 3)을 쓴다. ⟨2026-10-12⟩ 버킷 `content`에 올라갔다 |
 | u02-checkin | 9 | 0 | u02-checkin/pre-1.jpg, u02-checkin/pre-2.jpg, u02-checkin/pre-3.jpg, u02-checkin/pre-4.jpg, u02-checkin/pre-5.jpg, u02-checkin/post-1.jpg, u02-checkin/post-2.jpg, u02-checkin/post-3.jpg, u02-checkin/post-3.jpg |
 | u03-mina | 7 | 0 | u03-mina/pre-1.jpg, u03-mina/pre-2.jpg, u03-mina/pre-3.jpg, u03-mina/pre-4.jpg, u03-mina/post-1.jpg, u03-mina/post-2.jpg, u03-mina/post-3.jpg |
 
 - IMG_MATCH 문항 10개(`stimulus.image_url: ""`)는 아직 어느 에피소드도 이미지가 없다. 경로 규약 제안: `images/<episode_id>/item-<item.id>.jpg`(예: `images/u02-checkin/item-S1-09.jpg`).
 - **크기**: 941 × 1672 · 평균 440 KB는 번들에 실을 수 없다(현재 `static/image` 8.3 MB / 상한 11.5 MB — 에피소드 셋이면 약 +11 MB). 번들 내장분은 **긴 변 1,200 px · JPEG 품질 80 · 장당 ≤ 180 KB**를 목표로 다시 내보내고, 원본은 서버(3단계 원격 소스)에 둔다. 어느 쪽이든 경로 규약은 같다 → 결정 D-IMG.
 - 대체 텍스트(Q23)는 아직 없다. 수령본 7장의 `image_brief`를 alt 초안으로 쓸 수 있는지는 Q23 답에 달렸다.
+- ⟨2026-10-12 — 3b-2⟩ 위 표의 u01 행은 처음에 「수령 0」으로 머리 문장(7장 수령)과 어긋나 있었다 — 고쳤다. **D-IMG 결정**: 3b-2는 컷 그림을 번들에 싣지 않고 버킷에서 받는다(`static/image` 변화 0 — [ADR-0056](../adr/0056-episode-content-delivery.md) 「적용 기록」). 컷 화면은 alt를 비우고(장식) 대사 · 지문 텍스트가 장면을 전한다.

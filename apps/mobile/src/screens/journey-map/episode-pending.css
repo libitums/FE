@@ -82,7 +82,7 @@
 .episode-pending-caption {
   /* 문구 아래로도 한 화면 가까이 비웁니다 — 위 `margin-bottom`과 같은 이유입니다. */
   margin-bottom: 320px;
-  color: var(--libitum-color-fg-neutral-subtle);
+  color: var(--libitum-color-fg-neutral-muted);
   text-align: center;
   font-family: var(--libitum-typography-label-l-font-family);
   font-size: var(--libitum-typography-label-l-font-size);

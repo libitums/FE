@@ -88,19 +88,10 @@ export type JourneyMapItem =
 export type JourneyMapItemStatus = "locked" | "available" | "completed";
 
 /**
- * 에피소드를 가려내는 이름입니다.
- *
- * 유닛 id가 전부 닫힌 union인데 여기만 열려 있었습니다. 닫으면 에피소드 id의 오타가
- * 컴파일에 섭니다 — `"tutoria1"`을 쓰면 `TS2322`이고, 가까운 이름이 있으면
- * `TS2820`(`Did you mean …?`)입니다.
- *
- * ⟨2026-09-29⟩ **`customs`가 늘었습니다.** 전에 이 자리가 *"아직 없는 에피소드 이름을
- * 미리 넣지 않습니다"* 라고 적었는데, 그것은 **유닛이 없는 에피소드를 표현할 방법이
- * 없었을 때**의 규칙입니다. 이제 `JourneyPendingEpisode`가 그것을 지므로, 이름을 미리
- * 적는 것이 「데이터에 없는 값」이 아니라 **「아직 유닛이 없는 에피소드」라는 실재하는
- * 상태**가 됩니다.
+ * 튜토리얼 에피소드를 가려내는 이름입니다. 본편 에피소드는 카탈로그가 맵의 별도 구획으로 싣고
+ * (ADR-0024 D15) 닫힌 id 대신 서버가 주는 문자열 id를 씁니다.
  */
-export type JourneyEpisodeId = "tutorial" | "customs";
+export type JourneyEpisodeId = "tutorial";
 
 /**
  * 에피소드 **가운데**에 올 수 있는 유닛입니다. 표지도 최종 테스트도 여기 올 수

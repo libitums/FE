@@ -37,6 +37,19 @@
   letter-spacing: var(--libitum-typography-accent-chapter-letter-spacing);
 }
 
+/* 제목 줄(`titleLines`) — 줄마다 text 하나가 서고 `compact`이면 글자 크기가 `heading-s` 단계로 내려갑니다. */
+.ui-lynx-episode-header-title-lines {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ui-lynx-episode-header-title-compact {
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
 .ui-lynx-episode-header-progress {
   width: 100%;
   display: flex;

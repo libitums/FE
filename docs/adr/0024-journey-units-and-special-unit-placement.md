@@ -357,6 +357,75 @@ type JourneyEpisodes = readonly [JourneyFilledEpisode, ...JourneyEpisode[]];
 자체를 흐리게** 그린다. 같은 제약에서 **에피소드 머리 카드도 구획 밖으로 나가 하나만 서고**
 스크롤 자리가 그 내용을 고른다 — **그 자리를 정하는 것은 이 ADR이 아니라 ADR-0022 D4다.**
 
+⟨2026-10-12 — 3b-2⟩ **제품 데이터에서 준비 중 에피소드가 사라졌다.** `customs` 줄을 지우고
+`JourneyEpisodeId`를 `"tutorial"`로 좁혔다 — 그 자리는 **카탈로그 구획**(D15)이 잇는다. 준비 중
+갈래(`JourneyPendingEpisode` · `EpisodePendingSection` · `mapSectionsOf`의 pending 갈래 · 머리 카드의
+pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고, 걷는 것은 안정성 이득이 없다. 위 문면은
+그대로 참이고 **값이 0건**이 됐을 뿐이다.
+
+### D15 — 카탈로그 에피소드는 튜토리얼과 **다른 종류의 구획**이다. 에피소드 사이에 잠금이 서고, 아직 열 수 없는 유닛은 **잠긴 채 보인다**
+
+> 채택 2026-10-12 (브랜치 `feat/episode-catalog-map`, 3b-2). 같은 축이라 **새 번호도 축 추적표의
+> 새 행도 만들지 않는다**(D13 머리와 같은 근거). 에피소드 간 잠금 · 첫 카탈로그 에피소드의 문 ·
+> 유닛이 잠긴 채 보이는 것 · 머리 카드의 한국어 제목은 **사용자 결정**이다(2026-10-12). 카탈로그
+> 자체(출처 · 상태 셋)는 [ADR-0056](0056-episode-content-delivery.md)이 진다.
+
+**구획의 종류가 둘이 됐다.** 튜토리얼 구획(`JourneyMapSection` — 모듈 상수 `journeyMapSections`)은
+**한 글자도 안 바뀌었고**, 카탈로그 항목마다 새 종류
+`CatalogMapSection = catalog-ready | catalog-unavailable`(`screens/journey-map/catalog-map.contract.ts`)이
+하나씩 선다. 맵은 튜토리얼 구획 루프 **뒤에** `CatalogMapSections`를 하나 둔다. 카탈로그 구획은 세션이
+카탈로그에서 만들고(카탈로그가 바뀔 때만 새 배열), 튜토리얼만 다루는 독자 다섯은 상수를 그대로 읽는다.
+
+- **카탈로그 항목은 `JourneyMapItem`이 아니다.** `JourneyMapItem.kind`의 망라 `switch` 넷 · 닫힌
+  `JourneyStepId` · 진행 파생(`mapItemStatus` · `completedMapItemCount`) · 롤플레이 파생에 들어가지
+  않는다. 근거: 카탈로그를 그 union에 끼우면 유닛 id가 열린 문자열이 되어 D5가 세운 tsc 축이 약해지고,
+  두 쪽은 **진행의 출처**(튜토리얼 = 완료 id 목록, 카탈로그 = `catalogProgress` — ADR-0035 적용 기록)와
+  **잠금 규칙**이 달라 같은 파생을 쓸 이득이 없다.
+- **에피소드 사이에 잠금이 선다.** 첫 카탈로그 에피소드의 표지는 **튜토리얼 최종 테스트
+  (`tutorial-final-test`) 완료 뒤**, n번째는 **n−1번째 에피소드의 `RP` 완료 뒤** 열린다(앞 구획의
+  종류와 무관하게 id로 본다). 이미 끝낸 표지는 앞이 아직이어도 늘 완료로 선다 — 다른 기기 진행 ·
+  순서 변경으로 끝낸 것을 숨기지 않는다. 맵과 표지 시작 결선이 **같은 순수 함수**
+  (`canStartCatalogCover`)를 부른다. 알림 · 푸시 목적지 표에는 카탈로그가 없다 — 그 날이 오면 같은
+  함수를 쓴다.
+- **아직 열 수 없는 유닛은 잠긴 채 보인다.** 레슨(`Lesson 1` …)과 최종 테스트(`Final test`) 노드가
+  데이터의 유닛 수대로 서고, 3b-2에서는 **늘 잠김**이다 — 눌러도 아무 일이 없고 낭독은
+  `Lesson 1, coming soon, locked`다. 상태 파생은 3c가 붙인다. ⚠ **D14의 「가려진 자리는 장식」과 다른
+  판단이다** — 거기는 유닛이 0건이라 표식 하나가 장식이었고, 여기는 데이터에 유닛이 있어 그 수만큼
+  선다. 머리 카드의 분모(`0 / 10`)도 그 수(표지 + 레슨 + 최종)이고 분자는 `catalogProgress`의 키로
+  센다 — 「세어지지 않는 항목」이 생기지 않는다.
+- **본문이 없거나 잠긴 카탈로그 항목**(`pending` · `locked` — ADR-0056 D3)은 `catalog-unavailable`
+  구획으로 선다 — D14의 준비 중 꼴 그대로이고 캡션만 셋으로 갈린다: `COMING SOON`(본문 미수신) ·
+  `UPDATE REQUIRED`(`client-too-old` · `unsupported-schema`) · `NOT AVAILABLE`(`integrity-mismatch` ·
+  `decode-failed`). 준비된 구획의 표지 아래에도 `COMING SOON` 캡션이 하나 선다(3c 전까지 그 아래가
+  열리지 않는다는 표시).
+- **표지 완료는 결과 화면을 거치지 않는다.** 카탈로그 표지는 새 화면 `catalog-cover`(컷 화면 —
+  `docs/screens.md` 「여정 탭」)이고, 마지막 컷의 `Continue`가 `catalogProgress[id]`에 `"intro"`를
+  적고 맵으로 간다. D12의 「완료를 적는 자리는 결과 화면 하나」는 **튜토리얼 표지**에만 걸린다.
+- **구획 DOM id는 셀렉터 안전 토큰이다.** 서버가 어떤 id를 보내도 `#…` 셀렉터가 깨지지 않게
+  `[A-Za-z0-9-]` 밖의 코드 포인트(`_` 포함)를 `_<16진>_`로 바꾼다(단사). 셀렉터가 하나라도 깨지면
+  `measureRects` 전체가 `null`이 되어 머리 카드가 영영 안 바뀐다(ADR-0022 D4의 머리 카드 자리).
+- **머리 카드의 한국어 제목은 띄어쓰기에서만 두 줄로 끊는다.** 매니페스트에 영어 제목이 없어
+  `익선동 골목 어귀 편의점`이 영어 UI의 머리 카드에 그대로 선다(사용자 결정 — 콘텐츠 그대로).
+  `catalogTitleLines(title, 8)`이 두 줄의 글자 수 차가 가장 작은 띄어쓰기에서 나누고, 한 줄이 8자를
+  넘으면 작은 글자 단계(`compact`)로 내린다. 띄어쓰기가 없으면 한 줄 + `compact`다. 8은 시뮬레이터
+  실측(기본 크기 한 줄에 「익선 게스트하우」 8자)이다. ui-lynx `EpisodeHeader`의 선택 prop
+  `titleLines` · `titleSize`가 받고 **튜토리얼 머리는 불변**이다.
+
+⚠ **같은 회차의 초안을 두 번 뒤집었다** — 둘 다 시뮬레이터가 답했다([카탈로그 맵 e2e](../e2e/catalog-map.md)
+1차 회차). ① 제목: 초안은 `-x-auto-font-size` + preset 크기 + `text-maxline` 2였는데 기기에서 맞춤이
+먹지 않아 낱말 중간에서 끊겼다(「익선 게스트하우/스 여성 도미토리」) — Lynx가 `word-break: keep-all`을
+문서화하지 않아 그것에도 기대지 않고 **줄을 순수 함수가 정한다.** ② 컷 화면: 초안은 대사 즉시 표시 ·
+배경 정지였는데 사용자가 「애니메이션이 없다」고 지적해 **튜토리얼처럼 타자기 · 컷마다 배경 페이드**로
+되돌렸다. 단 그림 층과 글 층은 형제라 글 · 버튼은 첫 프레임부터 서고, 로드 전 투명은 그림 층에만
+걸린다(동작 줄이기에서는 둘 다 끈다 — ADR-0053). 같은 회차에 **독백 컷**이 일반 대사와 같은 패널로
+그려지던 구현 결함도 고쳤다 — 독백은 `thought` 패널(주황 테두리 · 주황 화자)이고 대사 · 번역 줄을
+괄호로 감싼다(사용자 요구). 낭독은 괄호 대신 화자 뒤에 `thinking`을 붙인다.
+
+**버린 대안** — (a) 한 목록에 판별자 `tutorial-filled | pending | catalog`: `JourneyMapSection`에
+필드가 늘면 `mapSectionsOf` 결과 단언과 맵 ui 테스트 36곳의 렌더 경로가 함께 흔들린다. (b) 카탈로그를
+`JourneyFilledEpisode`로 옮겨 튜플에 넣기: 표지 · 최종 유닛의 contract가 닫힌 id라 불가능하다.
+(c) 키 `${episodeId}:${unitKey}`를 DOM id로: `:`이 셀렉터를 깬다.
+
 ## 버린 대안
 
 ### D1이 버린 것 — 특별 유닛을 어디에 두는가
@@ -470,6 +539,20 @@ type JourneyEpisodes = readonly [JourneyFilledEpisode, ...JourneyEpisode[]];
   규칙의 다음 사례이지 새 갈래가 아니라** `docs/conventions/code.md`의 「임시 입력값의 이음매」에
   행을 더하지 않는다. 그 절이 기다리는 「둘째」는 *다른 성질*의 이음매다.
 
+### 2026-10-12 (브랜치 `feat/episode-catalog-map`) — 카탈로그 구획이 서면서 D12 · D13 · D14의 정의역이 좁혀졌다
+
+**뒤집힌 결론이 0건이다.** 새로 선 것은 D15이고, 여기 적는 것은 결론이 참인 채로 정의역이 좁혀진
+자리뿐이다.
+
+- **D12 — 튜토리얼 표지에만 걸린다.** 카탈로그 표지는 마지막 컷의 `Continue`가 곧장 완료를 적고
+  결과 화면을 거치지 않는다(D15). 「건너뛰어도 완료」도 튜토리얼 표지의 규칙이다 — 카탈로그 컷
+  화면에는 `Skip`이 없다.
+- **D13 — 그대로 참이다.** 목록의 첫 자리는 여전히 채워진 튜토리얼이고, 준비 중 갈래의 값이 0건이
+  됐다. 카탈로그 구획은 이 union 밖의 **다른 타입**이라 튜플 · 첫 자리 강제에 닿지 않는다.
+- **D14 — 문면은 참이고 제품 화면에서 그 꼴을 쓰는 것은 카탈로그의 `catalog-unavailable` 구획이다.**
+  예시로 적힌 `Episode 1.` / `Customs.`는 그때의 값이다. 캡션 색은 대비 때문에
+  `fg-neutral-subtle` → `fg-neutral-muted`(6.53:1)로 진해졌다(기존 준비 중 구획도 함께).
+
 ## 재검토 조건
 
 - **특별 유닛의 항목이 맵의 줄에서 자리를 차지하지 않는 형태**(예: 스텝 노드 위의 배지)로
@@ -503,6 +586,10 @@ type JourneyEpisodes = readonly [JourneyFilledEpisode, ...JourneyEpisode[]];
 - **표지 말고 다른 것이 잠금을 걸어야 하면**(예: 앞 에피소드를 끝내야 다음 에피소드가 열린다)
   → **D11의 좁은 읽기를 다시 잰다.** 그때 열리는 것은 이 ADR이 아니라 먼저 **보류 표의
   「특별 유닛이 진행에 어떻게 세어지는가」** 행이다 — 잠김의 단위가 바뀌면 세는 단위도 바뀐다.
+  ⟨2026-10-12⟩ **발동했고 D15가 받았다** — 카탈로그 에피소드는 앞 에피소드의 `RP`를 끝내야 열린다.
+  D11은 튜토리얼 구획 안에서 그대로이고, 세는 단위는 튜토리얼과 섞지 않고 `catalogProgress`의
+  유닛 키로 따로 정했다(ADR-0035 적용 기록 ⟨2026-10-12⟩). 보류 표의 그 행은 튜토리얼 특별 유닛의
+  것이라 다시 열지 않았다.
 - **건너뛰기가 표지 밖에서 유닛 전체에 생기면**(예: 비주얼 노벨에 `Skip`) → **D12가 다시
   열린다.** 그날 물을 것은 「그 유닛에 잴 것이 있는가」이고, 있으면 만점이 따라오지 않는다.
 - **특별 유닛의 완료 신호를 코드가 받게 되면**(6번) → D6이 실체화되고, **그때 진행 세기의
@@ -592,3 +679,19 @@ type JourneyEpisodes = readonly [JourneyFilledEpisode, ...JourneyEpisode[]];
 있지만, 뒤에 완료 기록이 있더라도 앞선 미완료 항목을 건너뛰어 새로운 항목을 열지는 않는다.
 진행 스키마와 완료 판정 자체는 유지한다. 상세 수용 기준은
 `docs/specs/journey-sequential-unlock.md`에 기록한다.
+
+### 2026-10-12 — 카탈로그 에피소드가 맵에 섰다 (3b-2)
+
+위 D15를 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
+
+- **구획**: 튜토리얼 구획 아래에 연한 가로 선과 카탈로그 구획 셋(에피소드 1 · 2 · 3 — 내장 셋)이
+  선다. 그리는 것은 `CatalogMapSections` · `CatalogEpisodeSection` · `CatalogUnavailableSection`
+  (`screens/journey-map/`)이고, 머리 카드는 `JourneyMapHeaderSlot`이 튜토리얼과 카탈로그 중 지금
+  스크롤 자리의 구획을 고른다.
+- **잠금**: 순수 함수는 `screens/journey-map/catalog-map.ts`(`catalogCoverStatus` ·
+  `canStartCatalogCover` · `catalogSectionProgress`), 진입 결선은 `app/catalog-cover-wiring.ts`다.
+- **컷 화면**: `screens/catalog-cover/CatalogCoverScreen.tsx` — 기존 `EpisodeNarrativeScreen`은
+  바뀌지 않았다. 지문은 ui-lynx `VisualNovelDialog`의 선택 prop `aside` · `asideTranslation`으로 패널
+  안에 선다.
+- **기기 확인**: iOS 시뮬레이터 두 회차 — [카탈로그 맵 e2e](../e2e/catalog-map.md).
+

@@ -80,10 +80,19 @@ import { SettingsCell, SettingsGroup } from "@libitums/ui-lynx/settings-cell";
 import "@libitums/ui-lynx/settings-cell/styles.css";
 
 <SettingsCell trailing="toggle" title="자동 재생" checked={autoplay} onChange={setAutoplay} />;
-<SettingsGroup accessibilityLabel="계정 설정" items={[
-  { id: "profile", trailing: "navigation", title: "프로필", onNavigate: openProfile },
-  { id: "language", trailing: "navigation", title: "언어", value: "한국어", onNavigate: openLanguage },
-]} />;
+<SettingsGroup
+  accessibilityLabel="계정 설정"
+  items={[
+    { id: "profile", trailing: "navigation", title: "프로필", onNavigate: openProfile },
+    {
+      id: "language",
+      trailing: "navigation",
+      title: "언어",
+      value: "한국어",
+      onNavigate: openLanguage,
+    },
+  ]}
+/>;
 ```
 
 ```tsx
@@ -333,6 +342,14 @@ import "@libitums/ui-lynx/visual-novel-dialog/styles.css";
 Typewriter의 `visibleCharacterCount`는 대사 전환 시점의 상태 경합에도 안전하도록 현재 문장 길이
 범위로 clamp한다. 번역된 접근성 문장 형식이 필요하면 호스트가 `accessibilityLabel`을 제공한다.
 
+`aside`(Speech/Thought 전용)는 화자 줄과 대사 줄 사이에 서는 작은 기울임 지문이고, `asideTranslation`은
+그 아래 같은 모양의 둘째 줄이다(`aside`가 있어야 한다). 기본 접근성 이름은 `화자, 지문: 대사`
+순서로 지문을 읽는다. Narration에는 지문 자리가 없고 주면 던진다.
+
+`EpisodeHeader`의 `titleLines`는 호출자가 띄어쓰기에서 나눈 제목 줄이다. 줄마다 `text` 하나(`text-maxline` 1)를
+그리고, `titleSize="compact"`이면 글자 크기를 토큰 `heading-s` 단계로 내리며 표지 `data-title-size="compact"`가
+선다. 둘 다 안 주면 지금 모양 그대로다. 줄 나눔 계산은 호출자 몫이고 컴포넌트는 그리기만 한다.
+
 `TextField`는 native 단일 행 입력을 사용하며 label 또는 `accessibilityLabel` 중 하나를
 필수로 받는다. Prefix/Suffix/Icon/Action, Helper/Error, Counter를 선택적으로 조합하고
 Disabled → ReadOnly → Error → Focused → Content 순서로 시각 상태를 결정한다.
@@ -428,7 +445,9 @@ import type { ReactNode } from "@lynx-js/react";
 import { MotionProvider, motionFromReducedMotion } from "@libitums/ui-lynx/motion";
 
 function Root({ reducedMotion, children }: { reducedMotion: boolean; children: ReactNode }) {
-  return <MotionProvider motion={motionFromReducedMotion(reducedMotion)}>{children}</MotionProvider>;
+  return (
+    <MotionProvider motion={motionFromReducedMotion(reducedMotion)}>{children}</MotionProvider>
+  );
 }
 ```
 

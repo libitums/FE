@@ -232,6 +232,29 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 - ⟨2026-09-29 — 표지가 맵의 첫 유닛이 되면서(#153) 「표지 뒤에 열 유닛」이 없어졌다.
   `episode_intro_viewed`의 `targetKind`를 뺐다. 운영 이벤트가 들어오기 전이라 지난 데이터와
   어긋나는 것은 없다. 끝낸 표지를 맵에서 다시 열어도 `episode_intro_viewed`가 난다⟩
+- ⟨2026-10-12 — 3b-2 카탈로그 에피소드. 적용 기록이고 결정을 바꾸지 않는다⟩ **sink는 일곱 그대로이고 이벤트
+  이름은 30개다**(`lib/analytics.contract.ts`의 `AnalyticsEventName` — 위 「23개」 뒤에 설문 둘과 아래 하나가
+  더해졌다). 매핑 · 전송 · 대기열 · `environment`는 그대로다.
+  - **카탈로그 표지는 기존 이름을 쓴다** — 컷 화면을 쌓기 직전 `episode_intro_viewed`, 나가기 · 시스템 뒤로
+    `episode_intro_exited`(`stage: "prologue"`), 마지막 컷의 `Continue` `episode_prologue_completed`. 튜토리얼과는
+    `episodeId`로 갈린다(`tutorial` vs `u01-water` …). 완료의 `prologueKind`에 값 **`"cuts"`**가 하나 늘었다
+    (`EpisodePrologue["kind"] | "cuts"`). 컷 화면에는 `Skip`이 없어 `episode_intro_skipped` · `continued`는 나지 않는다.
+  - **새 이름 `episode_content_refreshed`** — 에피소드 콘텐츠 갱신([ADR-0056](0056-episode-content-delivery.md))이
+    끝났고 **매니페스트를 받았을 때만**(`manifest ≠ unavailable`), 그중 `unchanged`이면서 받은 · 잠근 · 실패한 ·
+    지운 것이 모두 없는 실행은 빼고, 실행마다 최대 1회. 속성은 `manifest`(`updated` | `unchanged` | `invalid`) ·
+    `fetchedCount` · `lockedCount` · `failedCount`(10진 문자열) · `lockReasons` · `failReasons`(중복 제거 · 사전순 ·
+    `,` 연결, 없으면 `""`) · `persisted`. 같은 `episodeIntroEventSink`로 보낸다 — 새 sink를 만들면 sink 목록을
+    펼치는 기존 테스트와 계약 다섯 곳이 행동 변화 없이 바뀐다. 정본은 `episode-intro.contract.ts`의
+    `EpisodeIntroEvent`다.
+  - **한계** — 매니페스트에 닿지 못한 실행(오프라인 · 404 · 설정 없음)은 세지 않는다. 404 실행에서 이벤트를 내면
+    sink 호출을 정확한 목록으로 단언하는 기존 integration 테스트가 비동기 경쟁으로 깨지고, 버킷이 없던 동안은
+    정보도 없었다. 그래서 「매니페스트 자체가 닿지 않는 비율」은 이 이벤트로 잴 수 없다.
+  - 묻는 질문: 「튜토리얼 뒤 실제 에피소드로 넘어가는가」 = `episode_intro_viewed`(`episodeId ≠ tutorial`) 사용자 수와 그중
+    `episode_prologue_completed`(`prologueKind = cuts`)까지 간 사용자 수. 「서버 에피소드가 기기에 닿는가」 =
+    `episode_content_refreshed`의 `fetchedCount > 0` 비율과 `failReasons` · `lockReasons` 분포. 대시보드에 인사이트를
+    더하는 것은 이 회차 범위 밖이다.
+  - ⚠ sink 이름(`episodeIntroEventSink`)이 이제 갱신 이벤트까지 진다 — 이름과 책임이 어긋난다. sink를 나누는 날
+    `contentEventSink`로 가른다.
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 

@@ -1,4 +1,5 @@
 import { AppSession } from "../app/AppSession";
+import { noEpisodeContent } from "../app/episode-content";
 import { initialNav } from "../app/nav-state";
 import { productJourneySeed } from "../app/journey-progress";
 
@@ -9,6 +10,7 @@ export function TutorialJourneyFixture({ onExit }: { onExit: () => void }) {
     <AppSession
       start={initialNav}
       exit={null}
+      episodeContent={noEpisodeContent}
       onLeaveApp={onExit}
       journeySeed={{ ...productJourneySeed, completedStepCount: 0 }}
     />

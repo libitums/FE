@@ -77,6 +77,19 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
             </text>
           </view>
         ) : null}
+        {contract.aside ? (
+          <view
+            className="ui-lynx-visual-novel-dialog-aside"
+            data-testid="ui-lynx-visual-novel-dialog-aside"
+          >
+            <text className="ui-lynx-visual-novel-dialog-aside-text">{contract.aside}</text>
+            {contract.asideTranslation ? (
+              <text className="ui-lynx-visual-novel-dialog-aside-text">
+                {contract.asideTranslation}
+              </text>
+            ) : null}
+          </view>
+        ) : null}
         <view className="ui-lynx-visual-novel-dialog-line-row">
           <view className="ui-lynx-visual-novel-dialog-line-slot">
             <text

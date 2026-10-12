@@ -76,7 +76,7 @@ export type AnalyticsConfigFrom = (
 
 // ------------------------------------------------------------------ 이벤트 → capture
 
-/** sink 일곱이 내는 이벤트 전부입니다(이름 29개 · 모양 33개 — 열림 이벤트 셋이 출처별 두 모양). */
+/** sink 일곱이 내는 이벤트 전부입니다(이름 30개 · 모양 34개 — 열림 이벤트 셋이 출처별 두 모양). */
 export type AnalyticsEvent =
   | EntryEvent
   | MessengerEvent
@@ -119,6 +119,7 @@ export type AnalyticsEventName =
   | "episode_intro_continued"
   | "episode_intro_exited"
   | "episode_prologue_completed"
+  | "episode_content_refreshed"
   | "episode_survey_answered"
   | "episode_survey_skipped";
 

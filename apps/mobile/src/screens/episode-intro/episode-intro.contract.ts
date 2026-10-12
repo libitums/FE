@@ -47,6 +47,7 @@ export type EpisodeIntroMapItemProps = {
  *   - `episode_intro_continued` — `Next`. 서사가 없는 에피소드면 곧장 유닛이 열립니다(`hasPrologue: false`)
  *   - `episode_intro_exited` — 표지(`intro`)나 서사(`prologue`)에서 뒤로 나갈 때
  *   - `episode_prologue_completed` — 서사를 끝까지 보고 하단 버튼을 눌렀을 때
+ *   - `episode_content_refreshed` — 에피소드 콘텐츠 갱신이 끝났고 매니페스트를 받았을 때
  *
  * 끝낸 표지는 영속하지 않아 앱을 다시 켜면 표지부터 다시 지납니다 — 같은 사람이 같은
  * 표지를 여러 번 봅니다.
@@ -70,10 +71,24 @@ export type EpisodeIntroExitedEvent = {
   readonly episodeId: string;
   readonly stage: EpisodeIntroExitStage;
 };
+export type EpisodePrologueCompletedKind = EpisodePrologue["kind"] | "cuts";
 export type EpisodePrologueCompletedEvent = {
   readonly name: "episode_prologue_completed";
   readonly episodeId: string;
-  readonly prologueKind: EpisodePrologue["kind"];
+  readonly prologueKind: EpisodePrologueCompletedKind;
+};
+export type EpisodeContentRefreshedEvent = {
+  readonly name: "episode_content_refreshed";
+  readonly manifest: "updated" | "unchanged" | "invalid";
+  /** 10진 문자열입니다. */
+  readonly fetchedCount: string;
+  readonly lockedCount: string;
+  readonly failedCount: string;
+  /** `LockReason` 중복 제거 · 사전순 · "," 연결, 없으면 "". */
+  readonly lockReasons: string;
+  /** "http" | "network" 중복 제거 · 사전순 · "," 연결, 없으면 "". */
+  readonly failReasons: string;
+  readonly persisted: boolean;
 };
 /** 에피소드 끝 설문의 답입니다(ADR-0036). `rating`은 `"1"` … `"5"`. */
 export type EpisodeSurveyAnsweredEvent = {
@@ -91,6 +106,7 @@ export type EpisodeIntroEvent =
   | EpisodeIntroContinuedEvent
   | EpisodeIntroExitedEvent
   | EpisodePrologueCompletedEvent
+  | EpisodeContentRefreshedEvent
   | EpisodeSurveyAnsweredEvent
   | EpisodeSurveySkippedEvent;
 /** 보내지 않을 때는 `null`입니다 — no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */

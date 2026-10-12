@@ -25,6 +25,8 @@ const meta = {
     direction: { control: "inline-radio", options: ["ltr", "rtl"] },
     line: { control: "text" },
     speakerName: { control: "text" },
+    aside: { control: "text" },
+    asideTranslation: { control: "text" },
     languageTag: { control: "text" },
     visibleCharacterCount: { control: { type: "number", min: 0, max: 200 } },
     showAvatar: { control: "boolean" },
@@ -42,6 +44,8 @@ const meta = {
     direction: "ltr",
     line: "달빛이 비치는 숲길에서 드디어 다시 만났네.",
     speakerName: "아리아",
+    aside: "",
+    asideTranslation: "",
     languageTag: "",
     visibleCharacterCount: 12,
     showAvatar: true,
@@ -58,6 +62,12 @@ export const Narration: Story = {
 };
 export const Thought: Story = {
   args: { variant: "thought", line: "지금이라면 내 진심을 말할 수 있을까?" },
+};
+export const WithAside: Story = {
+  args: {
+    aside: "점원이 고개를 들어 웃는다.",
+    asideTranslation: "The clerk looks up and smiles.",
+  },
 };
 export const Translucent: Story = { args: { surface: "translucent" } };
 export const Revealing: Story = {

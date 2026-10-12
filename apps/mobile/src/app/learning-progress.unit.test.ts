@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { journeyMapSections } from "../screens/journey-map/journey-map-units";
 import { productJourneySeed } from "./journey-progress";
 import {
+  catalogActivityCount,
   completedActivityCount,
   journeyProgressFrom,
   learningProgressSnapshotFrom,
@@ -95,6 +96,21 @@ describe("LP3 파생 수", () => {
     const trophies = trophyCountFrom(journeyMapSections, full);
     expect(trophies).toBeGreaterThanOrEqual(1);
     expect(trophies).toBeLessThanOrEqual(journeyMapSections.length);
+  });
+});
+
+describe("LP-C 카탈로그 활동 수", () => {
+  test("LP-C1. 활동 수는 에피소드별 끝낸 유닛 키 수의 합이고 활동 합계에 더해진다", () => {
+    const progress = { a: ["intro", "S1"], b: ["intro"] };
+
+    expect(catalogActivityCount({})).toBe(0);
+    expect(catalogActivityCount(progress)).toBe(3);
+    expect(completedActivityCount({ ...full, catalogProgress: progress })).toBe(
+      completedActivityCount(full) + 3,
+    );
+    expect(completedActivityCount({ ...full, catalogProgress: {} })).toBe(
+      completedActivityCount(full),
+    );
   });
 });
 

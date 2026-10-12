@@ -72,6 +72,26 @@
   transition-timing-function: var(--libitum-motion-easing-easing);
 }
 
+/* 지문 — 화자 줄과 대사 줄 사이의 작은 기울임 줄입니다. 한글 글꼴에 기울임 면이 없으면 기울지
+   않으므로, 크기(12 · 16)와 색(gray-600 · gray-300)만으로도 대사와 갈리게 잡았습니다. */
+.ui-lynx-visual-novel-dialog-aside {
+  width: 100%;
+  margin-bottom: var(--libitum-spacing-8);
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-lynx-visual-novel-dialog-aside-text {
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+  font-style: italic;
+  white-space: normal;
+}
+
 .ui-lynx-visual-novel-dialog-line-row {
   width: 100%;
   display: flex;

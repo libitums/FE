@@ -42,7 +42,7 @@ export function useJourneyProgress(
   const [completedEpisodeIntroIds, setCompletedEpisodeIntroIds] = useState<
     readonly EpisodeIntroUnitId[]
   >(initialCompletedEpisodeIntroIds);
-  // 카탈로그 에피소드 진행(3b-1). 맵 · 컷 화면이 쓰는 것은 3b-2입니다.
+  // 카탈로그 에피소드 진행 — 표지 컷을 끝내면 결선이 setter로 적습니다.
   const [catalogProgress, setCatalogProgress] = useState<CatalogProgress>({});
   const [streakDays, setStreakDays] = useState(0);
   // 빈 초기값은 신규 사용자라는 뜻이 아닙니다. 유효한 서버 기록을 합친 뒤에만 안내를 판단합니다.
@@ -161,6 +161,7 @@ export function useJourneyProgress(
     visualNovelProgress,
     completedEpisodeFinalIds,
     completedEpisodeIntroIds,
+    catalogProgress,
   ]);
 
   return {
@@ -172,6 +173,7 @@ export function useJourneyProgress(
     setVisualNovelProgress,
     setCompletedEpisodeFinalIds,
     setCompletedEpisodeIntroIds,
+    setCatalogProgress,
     streakDays,
     streakCelebration,
     onStreakCelebrated: () => setStreakCelebration(false),

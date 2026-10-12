@@ -43,6 +43,8 @@ export const uiCopyLiteralPolicy = {
     "placeholder-fill.ts#DEFAULT_PROFILE_TEXT",
     "placeholder-fill.ts#PLACEHOLDER_TOKENS",
     "placeholder-fill.ts#PARTICLE_RULES",
+    // 카탈로그 표지 컷의 자기 화자 값 비교 — 콘텐츠 데이터와 맞대는 값입니다(화면 문구가 아님).
+    "catalog-cover.ts#CATALOG_SELF_SPEAKER",
   ],
   // 아직 옮기지 않은 파일 — 줄어들기만 합니다(위반이 0이 되면 `check.mjs`가 지우라고 실패합니다).
   // `node devtools/ui-copy-literals/check.mjs --print-pending`이 지금 남은 파일을 찍습니다.

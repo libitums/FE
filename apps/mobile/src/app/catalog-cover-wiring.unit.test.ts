@@ -1,0 +1,222 @@
+import type { SetStateAction } from "@lynx-js/react";
+import { describe, expect, test, vi } from "vitest";
+
+import type { CatalogProgress } from "../lib/catalog-progress";
+import { bundledCatalogInput } from "../lib/episode-bundled";
+import { buildEpisodeCatalog } from "../lib/episode-catalog";
+import type { CatalogEntry } from "../lib/episode-catalog";
+import { fillPlaceholders } from "../lib/placeholder-fill";
+import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
+import type {
+  EpisodeIntroEvent,
+  EpisodeIntroEventSink,
+} from "../screens/episode-intro/episode-intro.contract";
+import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
+import { catalogCoverModelOf, catalogCoverWiring } from "./catalog-cover-wiring";
+import type { EpisodeContent } from "./episode-content";
+import type { NavAction } from "./nav-state";
+
+// `unit` 계층: 표지 결선의 가드 · 이벤트 순서 · 진행 기록 · 이동과 route 모델 만들기의 입출력만 봅니다.
+
+type ReadyEntry = Extract<CatalogEntry, { status: "ready" }>;
+
+const realCatalog = buildEpisodeCatalog({
+  bundled: bundledCatalogInput,
+  cache: { manifest: null, episodes: {} },
+});
+
+function contentOf(catalog: readonly CatalogEntry[]): EpisodeContent {
+  return {
+    catalog,
+    imageUrlOf: (path) => `https://cdn/${path}`,
+    fillText: fillPlaceholders,
+  };
+}
+
+const tutorialDone: readonly EpisodeFinalUnitId[] = ["tutorial-final-test"];
+
+type SetProgress = (value: SetStateAction<CatalogProgress>) => void;
+
+type Harness = {
+  readonly wiring: ReturnType<typeof catalogCoverWiring>;
+  readonly dispatch: ReturnType<typeof vi.fn<(action: NavAction) => void>>;
+  readonly setCatalogProgress: ReturnType<typeof vi.fn<SetProgress>>;
+  readonly sink: ReturnType<typeof vi.fn<(event: EpisodeIntroEvent) => void>>;
+};
+
+function harness(
+  options: {
+    catalog?: readonly CatalogEntry[];
+    finals?: readonly EpisodeFinalUnitId[];
+    progress?: CatalogProgress;
+    sinkNull?: boolean;
+  } = {},
+): Harness {
+  const catalog = options.catalog ?? realCatalog;
+  const dispatch = vi.fn<(action: NavAction) => void>();
+  const setCatalogProgress = vi.fn<SetProgress>();
+  const sink = vi.fn<(event: EpisodeIntroEvent) => void>();
+  const episodeIntroEventSink: EpisodeIntroEventSink = options.sinkNull === true ? null : sink;
+  const wiring = catalogCoverWiring({
+    episodeContent: contentOf(catalog),
+    catalogSections: catalogMapSectionsOf(catalog),
+    catalogProgress: options.progress ?? {},
+    setCatalogProgress,
+    completedEpisodeFinalIds: options.finals ?? [],
+    dispatch,
+    episodeIntroEventSink,
+  });
+  return { wiring, dispatch, setCatalogProgress, sink };
+}
+
+function firstOrder(...mocks: { mock: { invocationCallOrder: number[] } }[]): number[] {
+  return mocks.map((mock) => mock.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY);
+}
+
+describe("onStartCatalogCover", () => {
+  test("CW1. 열린 표지는 viewed 이벤트 뒤에 컷 화면을 쌓는다", () => {
+    const { wiring, dispatch, sink } = harness({ finals: tutorialDone });
+
+    wiring.onStartCatalogCover("u01-water");
+
+    expect(sink.mock.calls.map(([event]) => event)).toEqual([
+      { name: "episode_intro_viewed", episodeId: "u01-water" },
+    ]);
+    expect(dispatch.mock.calls.map(([action]) => action)).toEqual([
+      { type: "push", screen: { name: "catalog-cover", episodeId: "u01-water" } },
+    ]);
+    const [sinkAt, dispatchAt] = firstOrder(sink, dispatch);
+    expect(sinkAt).toBeLessThan(dispatchAt ?? 0);
+  });
+
+  test("CW2. 튜토리얼 전이면 아무 일도 없다", () => {
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({ finals: [] });
+
+    wiring.onStartCatalogCover("u01-water");
+
+    expect(sink).not.toHaveBeenCalled();
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(setCatalogProgress).not.toHaveBeenCalled();
+  });
+
+  test("CW2. 앞 에피소드를 못 끝낸 둘째 표지와 없는 id도 아무 일이 없다", () => {
+    const { wiring, dispatch, sink } = harness({ finals: tutorialDone });
+
+    wiring.onStartCatalogCover("u02-checkin");
+    wiring.onStartCatalogCover("nope");
+
+    expect(sink).not.toHaveBeenCalled();
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  test("CW2. 앞 에피소드의 최종 테스트를 끝내면 둘째 표지가 열린다", () => {
+    const { wiring, dispatch } = harness({
+      finals: tutorialDone,
+      progress: { "u01-water": ["intro", "RP"] },
+    });
+
+    wiring.onStartCatalogCover("u02-checkin");
+
+    expect(dispatch.mock.calls.map(([action]) => action)).toEqual([
+      { type: "push", screen: { name: "catalog-cover", episodeId: "u02-checkin" } },
+    ]);
+  });
+
+  test("CW6. 프롤로그 컷이 없는 에피소드는 화면을 쌓지 않고 바로 완료로 기록한다", () => {
+    const base = realCatalog[0] as ReadyEntry;
+    const empty: ReadyEntry = { ...base, episode: { ...base.episode, prologue: [] } };
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({
+      catalog: [empty],
+      finals: tutorialDone,
+    });
+
+    wiring.onStartCatalogCover("u01-water");
+
+    expect(dispatch.mock.calls.filter(([action]) => action.type === "push")).toHaveLength(0);
+    expect(sink.mock.calls.map(([event]) => event)).toEqual([
+      { name: "episode_intro_viewed", episodeId: "u01-water" },
+      { name: "episode_prologue_completed", episodeId: "u01-water", prologueKind: "cuts" },
+    ]);
+    expect(setCatalogProgress).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("onCompleteCatalogCover", () => {
+  test("CW3. 완료 이벤트 → 진행 기록 → 뒤로 순서로 한 번씩 낸다", () => {
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({ finals: tutorialDone });
+
+    wiring.onCompleteCatalogCover("u01-water");
+
+    expect(sink.mock.calls.map(([event]) => event)).toEqual([
+      { name: "episode_prologue_completed", episodeId: "u01-water", prologueKind: "cuts" },
+    ]);
+    expect(setCatalogProgress).toHaveBeenCalledTimes(1);
+    expect(dispatch.mock.calls.map(([action]) => action)).toEqual([{ type: "back" }]);
+    const [sinkAt, setterAt, dispatchAt] = firstOrder(sink, setCatalogProgress, dispatch);
+    expect(sinkAt).toBeLessThan(setterAt ?? 0);
+    expect(setterAt).toBeLessThan(dispatchAt ?? 0);
+
+    const updater = setCatalogProgress.mock.calls[0]?.[0] as (
+      p: CatalogProgress,
+    ) => CatalogProgress;
+    expect(typeof updater).toBe("function");
+    expect(updater({})).toEqual({ "u01-water": ["intro"] });
+    const already: CatalogProgress = { "u01-water": ["intro", "S1"] };
+    expect(updater(already)).toBe(already);
+  });
+});
+
+describe("onExitCatalogCover", () => {
+  test("CW4. 나가기는 exited 이벤트 뒤에 뒤로만 가고 진행은 기록하지 않는다", () => {
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({ finals: tutorialDone });
+
+    wiring.onExitCatalogCover("u01-water");
+
+    expect(sink.mock.calls.map(([event]) => event)).toEqual([
+      { name: "episode_intro_exited", episodeId: "u01-water", stage: "prologue" },
+    ]);
+    expect(dispatch.mock.calls.map(([action]) => action)).toEqual([{ type: "back" }]);
+    expect(setCatalogProgress).not.toHaveBeenCalled();
+    const [sinkAt, dispatchAt] = firstOrder(sink, dispatch);
+    expect(sinkAt).toBeLessThan(dispatchAt ?? 0);
+  });
+});
+
+describe("catalogCoverModelOf", () => {
+  const sections = catalogMapSectionsOf(realCatalog);
+  const content = contentOf(realCatalog);
+
+  test("CW5. 준비된 에피소드는 자리 · 버전 · 컷을 낸다", () => {
+    const model = catalogCoverModelOf(content, sections, "u01-water", {});
+
+    expect(model?.ordinal).toBe(1);
+    expect(model?.version).toBe("2026-10-12.1");
+    expect(model?.cuts).toHaveLength(6);
+  });
+
+  test("CW5. 없는 id와 준비 안 된 항목은 null이다", () => {
+    const withPending: readonly CatalogEntry[] = [
+      ...realCatalog,
+      { status: "pending", id: "u04-x", order: 4, title: "제목", version: "v1" },
+    ];
+
+    expect(catalogCoverModelOf(content, sections, "nope", {})).toBeNull();
+    expect(
+      catalogCoverModelOf(contentOf(withPending), catalogMapSectionsOf(withPending), "u04-x", {}),
+    ).toBeNull();
+  });
+});
+
+describe("sink가 null일 때", () => {
+  test("CW7. 어느 콜백도 던지지 않는다", () => {
+    const { wiring, dispatch } = harness({ finals: tutorialDone, sinkNull: true });
+
+    expect(() => wiring.onStartCatalogCover("u01-water")).not.toThrow();
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "push",
+      screen: { name: "catalog-cover", episodeId: "u01-water" },
+    });
+    expect(() => wiring.onExitCatalogCover("u01-water")).not.toThrow();
+    expect(() => wiring.onCompleteCatalogCover("u01-water")).not.toThrow();
+  });
+});

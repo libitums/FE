@@ -34,6 +34,7 @@ import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
 import type { Screen } from "./nav-state";
+import { renderCatalogCover } from "./render-catalog-cover";
 import { renderShellLearningScreen, renderWordChoiceScreen } from "./render-learning-screen";
 import { renderMessengerCompleteScreen } from "./render-messenger-complete";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
@@ -62,6 +63,11 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           completedEpisodeFinalIds={wiring.completedEpisodeFinalIds}
           onStartEpisodeFinal={wiring.onStartEpisodeFinal}
           onLayerChange={wiring.onScreenLayerChange}
+          catalog={{
+            sections: wiring.catalogSections,
+            progress: wiring.catalogProgress,
+            onStartCover: wiring.onStartCatalogCover,
+          }}
         />
       );
     case "roleplay-list":
@@ -244,6 +250,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "episode-final":
     case "episode-final-complete":
       return renderEpisodeFinalFlow(screen, wiring);
+    case "catalog-cover":
+      return renderCatalogCover(screen, wiring);
     // `never` 망라가 이 case를 강제합니다. 결선이 없습니다 — 탐침 화면은 props도
     // 콜백도 받지 않습니다. **아무 코드도 이 화면을 push하지 않습니다** — 닿으려면
     // `navigation.ts`가 둔 개발용 부팅 상태(`handwritingProbeNav`)를 바꿔 끼웁니다.

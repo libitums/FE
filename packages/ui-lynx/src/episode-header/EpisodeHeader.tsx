@@ -21,9 +21,30 @@ export function EpisodeHeader(props: EpisodeHeaderProps) {
       <text className="ui-lynx-episode-header-label" data-testid="ui-lynx-episode-header-label">
         {contract.episodeLabel}
       </text>
-      <text className="ui-lynx-episode-header-title" data-testid="ui-lynx-episode-header-title">
-        {contract.title}
-      </text>
+      {props.titleLines ? (
+        // 줄 나눔은 호출자가 띄어쓰기에서 끝냈습니다 — 여기서는 줄마다 text 하나만 그립니다.
+        <view
+          className="ui-lynx-episode-header-title-lines"
+          data-testid="ui-lynx-episode-header-title"
+          // 데이터셋 키는 카멜로 적습니다(하이픈 키는 테스트 환경이 거부합니다) — 속성 이름은 `data-title-size`가 됩니다.
+          data-titleSize={props.titleSize === "compact" ? "compact" : undefined}
+        >
+          {props.titleLines.map((line, index) => (
+            <text
+              key={`${index}:${line}`}
+              className={`ui-lynx-episode-header-title${props.titleSize === "compact" ? " ui-lynx-episode-header-title-compact" : ""}`}
+              data-testid={`ui-lynx-episode-header-title-line-${index}`}
+              text-maxline="1"
+            >
+              {line}
+            </text>
+          ))}
+        </view>
+      ) : (
+        <text className="ui-lynx-episode-header-title" data-testid="ui-lynx-episode-header-title">
+          {contract.title}
+        </text>
+      )}
       <view className="ui-lynx-episode-header-progress">
         <view className="ui-lynx-episode-header-track" data-testid="ui-lynx-episode-header-track">
           {/* 채움은 0%일 때 그리지 않습니다 — 폭 0짜리 상자를 두면 그 안의 별이

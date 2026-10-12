@@ -210,6 +210,8 @@ export type VisualNovelDialogStoryArgs = {
   direction: VisualNovelDialogDirection;
   line: string;
   speakerName: string;
+  aside: string;
+  asideTranslation: string;
   languageTag: string;
   visibleCharacterCount: number;
   showAvatar: boolean;
