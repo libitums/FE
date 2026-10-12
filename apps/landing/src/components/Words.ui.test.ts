@@ -35,7 +35,9 @@ describe.each(languages)("Words (%s)", (language) => {
     expect(found.length).toBe(3);
     found.forEach((li, index) => {
       const expected = phrases[index];
-      expect(li.querySelectorAll('img[alt=""][loading="lazy"]').length).toBe(1);
+      const img = li.querySelectorAll('img[aria-hidden="true"][loading="lazy"]');
+      expect(img.length).toBe(1);
+      expect(img[0]?.getAttribute("alt")).toBe([t.scene3Alt, t.scene1Alt, t.scene4Alt][index]);
       const ko = li.querySelectorAll('[lang="ko"]');
       expect(ko.length).toBe(1);
       expect(ko[0]?.textContent?.trim()).toBe(expected?.ko);
