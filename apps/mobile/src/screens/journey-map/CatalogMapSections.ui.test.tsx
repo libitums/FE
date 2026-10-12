@@ -1,0 +1,199 @@
+import { describe, expect, test, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+
+import { MotionProvider } from "@libitums/ui-lynx/motion";
+import { CatalogMapSections } from "./CatalogMapSections";
+import { catalogSectionDomId } from "./catalog-map";
+import type {
+  CatalogGate,
+  CatalogMapSection,
+  CatalogReadySection,
+  CatalogUnavailableSection,
+} from "./catalog-map.contract";
+
+// `ui` 계층: 구획 렌더 — 잠긴 노드 무동작 · 표지 상태 · 접근성 이름 · 낭독 요소 하나. 상태 파생과
+// 라벨 계산은 순수 함수 unit이 지므로(여기서 다시 단언하지 않습니다) 렌더가 그 결과를 내는지만
+// 봅니다. 데이터는 손으로 세운 구획입니다 — 순수 함수의 스캐폴드 상태와 무관하게 단언 실패로 서도록.
+
+const lessonKeys = ["S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"];
+
+function ready(episodeId: string, ordinal: number, title: string): CatalogReadySection {
+  return { kind: "catalog-ready", episodeId, ordinal, title, lessonKeys, finalKey: "RP" };
+}
+
+function unavailable(
+  episodeId: string,
+  ordinal: number,
+  title: string,
+  reason: CatalogUnavailableSection["reason"],
+): CatalogUnavailableSection {
+  return { kind: "catalog-unavailable", episodeId, ordinal, title, reason };
+}
+
+const sections: readonly CatalogMapSection[] = [
+  ready("u01-water", 1, "익선동 골목 어귀 편의점"),
+  ready("u02-checkin", 2, "익선 게스트하우스 프런트"),
+  ready("u03-mina", 3, "익선 게스트하우스 여성 도미토리"),
+  unavailable("u04-x", 4, "Ep", "pending"),
+  unavailable("u05-x", 5, "Ep", "client-too-old"),
+  unavailable("u06-x", 6, "Ep", "decode-failed"),
+];
+
+const openGate: CatalogGate = { tutorialPassed: true, progress: {} };
+
+function mount(gate: CatalogGate = openGate) {
+  const onStartCover = vi.fn<(episodeId: string) => void>();
+  render(<CatalogMapSections sections={sections} gate={gate} onStartCover={onStartCover} />);
+  return onStartCover;
+}
+
+const coverId = (id: string) => `ui-lynx-learning-unit-catalog-cover-${id}`;
+const nodeId = (id: string, key: string) => `ui-lynx-learning-unit-catalog-unit-${id}-${key}`;
+const unitKeys = [...lessonKeys, "RP"];
+
+describe("CatalogMapSections", () => {
+  test("UM1. 표지 아래 레슨 8 + 최종 1이 순서대로 default로 서고 낭독 이름에 준비 중 · 잠김이 든다", () => {
+    mount();
+
+    const section = screen.getByTestId("catalog-section-u01-water");
+    const rendered = Array.from(section.querySelectorAll("[data-testid]"))
+      .map((el) => el.getAttribute("data-testid") ?? "")
+      .filter((id) => /^ui-lynx-learning-unit-catalog-(cover|unit)-/.test(id))
+      .filter((id) => !/-(ring|icon|badge|shade)$/.test(id));
+    expect(rendered).toEqual([
+      coverId("u01-water"),
+      ...unitKeys.map((key) => nodeId("u01-water", key)),
+    ]);
+
+    for (const key of unitKeys) {
+      const node = within(section).getByTestId(nodeId("u01-water", key));
+      expect(node).toHaveAttribute("data-status", "default");
+      const label = node.getAttribute("accessibility-label") ?? "";
+      expect(label).toContain(", coming soon");
+      expect(label).toContain("locked");
+    }
+
+    for (let n = 1; n <= 8; n += 1) {
+      expect(within(section).getByText(`Lesson ${n}`)).toBeInTheDocument();
+    }
+    expect(within(section).getByText("Final test")).toBeInTheDocument();
+    expect(within(section).getByText("Episode intro")).toBeInTheDocument();
+  });
+
+  test("UM2. 레슨 · 최종 노드는 탭해도 시작을 올리지 않는다", () => {
+    const onStartCover = mount();
+
+    for (const key of unitKeys) {
+      fireEvent.tap(screen.getByTestId(nodeId("u01-water", key)), {});
+    }
+
+    expect(onStartCover).toHaveBeenCalledTimes(0);
+  });
+
+  test("UM3a. 열린 첫 표지를 탭하면 에피소드 id로 한 번 올린다", () => {
+    const onStartCover = mount();
+
+    expect(screen.getByTestId(coverId("u01-water"))).toHaveAttribute("data-status", "available");
+    fireEvent.tap(screen.getByTestId(coverId("u01-water")), {});
+
+    expect(onStartCover).toHaveBeenCalledTimes(1);
+    expect(onStartCover).toHaveBeenCalledWith("u01-water");
+  });
+
+  test("UM3b. 앞 에피소드를 끝내지 않은 표지는 잠겨 있고 탭해도 올리지 않는다", () => {
+    const onStartCover = mount();
+
+    expect(screen.getByTestId(coverId("u02-checkin"))).toHaveAttribute("data-status", "default");
+    fireEvent.tap(screen.getByTestId(coverId("u02-checkin")), {});
+
+    expect(onStartCover).toHaveBeenCalledTimes(0);
+  });
+
+  test("UM3c. 표지를 끝낸 에피소드는 clear로 서고 다시 열 수 있다", () => {
+    const onStartCover = mount({ tutorialPassed: true, progress: { "u01-water": ["intro"] } });
+
+    expect(screen.getByTestId(coverId("u01-water"))).toHaveAttribute("data-status", "clear");
+    fireEvent.tap(screen.getByTestId(coverId("u01-water")), {});
+
+    expect(onStartCover).toHaveBeenCalledTimes(1);
+    expect(onStartCover).toHaveBeenCalledWith("u01-water");
+  });
+
+  test("UM3d. 튜토리얼을 지나지 않았으면 첫 표지도 잠겨 있다", () => {
+    const onStartCover = mount({ tutorialPassed: false, progress: {} });
+
+    expect(screen.getByTestId(coverId("u01-water"))).toHaveAttribute("data-status", "default");
+    fireEvent.tap(screen.getByTestId(coverId("u01-water")), {});
+
+    expect(onStartCover).toHaveBeenCalledTimes(0);
+  });
+
+  test.each([
+    ["u04-x", "Episode 4. Ep, coming soon", "COMING SOON"],
+    ["u05-x", "Episode 5. Ep, update the app to open", "UPDATE REQUIRED"],
+    ["u06-x", "Episode 6. Ep, not available", "NOT AVAILABLE"],
+  ])("UM4. %s 구획은 낭독 요소 하나이고 캡션을 사유별로 낸다", (id, spoken, caption) => {
+    const onStartCover = mount();
+
+    const section = screen.getByTestId(`catalog-unavailable-${id}`);
+    expect(section).toHaveAttribute("accessibility-element", "true");
+    expect(section).toHaveAttribute("accessibility-label", spoken);
+    expect(screen.getByTestId(`catalog-unavailable-caption-${id}`)).toHaveTextContent(caption);
+
+    // 안쪽 흐린 표식은 장식입니다 — 탭해도 아무 일도 일어나지 않습니다.
+    const mark = section.querySelector('[data-testid^="ui-lynx-learning-unit"]');
+    expect(mark).not.toBeNull();
+    fireEvent.tap(mark as Element, {});
+    expect(onStartCover).toHaveBeenCalledTimes(0);
+  });
+
+  test("UM5. 구획 루트의 id 속성은 셀렉터 안전 id다(본문 있음 · 없음 모두)", () => {
+    mount();
+
+    expect(catalogSectionDomId("u01-water")).toMatch(/^journey-map-screen-catalog-.+/);
+    for (const id of ["u01-water", "u02-checkin", "u03-mina"]) {
+      expect(screen.getByTestId(`catalog-section-${id}`)).toHaveAttribute(
+        "id",
+        catalogSectionDomId(id),
+      );
+    }
+    for (const id of ["u04-x", "u05-x", "u06-x"]) {
+      expect(screen.getByTestId(`catalog-unavailable-${id}`)).toHaveAttribute(
+        "id",
+        catalogSectionDomId(id),
+      );
+    }
+  });
+
+  test("UM6. 구획 아래에는 heading trait 요소가 없다(머리말 축은 머리 카드 하나)", () => {
+    mount();
+
+    const root = screen.getByTestId("journey-map-screen-catalog");
+    expect(root.querySelectorAll('[accessibility-traits*="header"]')).toHaveLength(0);
+  });
+
+  // 눌림 막(`-shade`)은 모션 정책(ADR-0053)이 reduced에서 더 그리는 노드라 구획 구조 비교에서 뺀다.
+  const structuralNodeCount = (): number =>
+    [...screen.getByTestId("journey-map-screen-catalog").querySelectorAll("*")].filter(
+      (el) => !(el.getAttribute("data-testid") ?? "").endsWith("-shade"),
+    ).length;
+
+  test("UM7. 모션 축소 컨텍스트에서도 눌림 막을 뺀 구획 구조가 같다", () => {
+    mount();
+    const standard = structuralNodeCount();
+    cleanup();
+
+    render(
+      <MotionProvider motion="reduced">
+        <CatalogMapSections
+          sections={sections}
+          gate={openGate}
+          onStartCover={vi.fn<(episodeId: string) => void>()}
+        />
+      </MotionProvider>,
+    );
+
+    const reduced = structuralNodeCount();
+    expect(reduced).toBe(standard);
+  });
+});

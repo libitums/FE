@@ -1,6 +1,7 @@
 // 영어 문구표입니다. 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 
 import type { UiCopy } from "./ui-copy.contract";
+import { catalogCoverEn, catalogMapEn } from "./ui-copy-en-catalog";
 import {
   feedbackEn,
   gemPurchaseEn,
@@ -58,4 +59,6 @@ export const uiCopyEn: UiCopy = {
   profile: profileEn,
   feedback: feedbackEn,
   gemPurchase: gemPurchaseEn,
+  catalogMap: catalogMapEn,
+  catalogCover: catalogCoverEn,
 };

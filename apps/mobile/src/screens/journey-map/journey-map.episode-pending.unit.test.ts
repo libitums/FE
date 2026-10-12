@@ -62,27 +62,10 @@ function pending(id: string, title: string): JourneyPendingEpisode {
 }
 
 describe("실데이터의 구획", () => {
-  // **에피소드 하나가 구획 하나**입니다 — 준비 중도 예외가 아닙니다. 머리가 읽히고 그
-  // 아래가 가려진 채 서기 때문에 그릴 자리가 있습니다.
-  it("[U-S1] 준비 중 에피소드도 자기 구획을 만든다", () => {
-    expect(journeyMapSections.map((section) => section.episode.id)).toEqual([
-      "tutorial",
-      "customs",
-    ]);
-  });
-
-  it("[U-S2] 준비 중 구획은 유닛이 없고 머리 두 줄만 진다", () => {
-    const pendingSection = journeyMapSections[1];
-
-    expect(pendingSection?.episode).toEqual({
-      kind: "pending",
-      id: "customs",
-      label: "Episode 1.",
-      title: "Customs.",
-    });
-    // 가려진 자리에 서는 표식은 **장식**이라 맵 항목이 아닙니다 — 데이터로 만들면
-    // 「눌리지도 세어지지도 않는 항목」이 생깁니다.
-    expect(pendingSection?.items).toEqual([]);
+  // 제품 데이터에는 준비 중 구획이 없습니다 — 아직 오지 않은 에피소드는 카탈로그 구획이 대신합니다.
+  // 준비 중 구획이 구획을 만드는 성질은 아래 `mapSectionsOf` 절의 픽스처가 집니다.
+  it("[U-S1] 실데이터에 준비 중 구획이 없다 — 카탈로그가 대신한다", () => {
+    expect(journeyMapSections.map((section) => section.episode.id)).toEqual(["tutorial"]);
   });
 
   // ⚠ **red가 아닙니다 — 파수꾼입니다.** 「고치는 김에 세로 맵을 건드리지 않았는가」를

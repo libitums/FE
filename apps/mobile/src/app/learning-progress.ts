@@ -117,8 +117,14 @@ export function completedActivityCount(state: JourneyProgressState): number {
     state.completedMessengerUnitIds.length +
     state.completedPhoneCallUnitIds.length +
     (state.visualNovelProgress.status === "completed" ? 1 : 0) +
-    state.completedEpisodeFinalIds.length
+    state.completedEpisodeFinalIds.length +
+    catalogActivityCount(state.catalogProgress)
   );
+}
+
+/** 카탈로그 에피소드에서 끝낸 유닛 키의 수입니다(에피소드별 키 수의 합). */
+export function catalogActivityCount(progress: CatalogProgress): number {
+  return Object.values(progress).reduce((sum, keys) => sum + keys.length, 0);
 }
 
 /** 항목을 모두 끝낸 에피소드입니다. 아직 유닛이 없는 에피소드는 들지 않습니다. */

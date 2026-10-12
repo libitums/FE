@@ -106,6 +106,7 @@ const CARRIER_PATHS = {
   final: "screens/episode-final/EpisodeFinalScreen.tsx",
   visualNovel: "screens/visual-novel/VisualNovelScreen.tsx",
   entry: "screens/journey-entry/JourneyEntryScreen.tsx",
+  catalogCover: "screens/catalog-cover/CatalogCoverScreen.tsx",
   statModal: "screens/journey-map/JourneyStatModal.tsx",
   guide: "components/FirstUnitGuide.tsx",
   map: "screens/journey-map/JourneyMapScreen.tsx",
@@ -121,6 +122,7 @@ const appSession = (
     "visual-novel",
     "roleplay-visual-novel",
     "journey-entry",
+    "catalog-cover",
   ],
 ) => `function isFullBleedScreen(screen: Screen): boolean {
   return (
@@ -216,6 +218,7 @@ function healthyBase(overrides = {}) {
       [CARRIER_PATHS.final]: carrierComponent("EpisodeFinalScreen", "episode-final-screen"),
       [CARRIER_PATHS.visualNovel]: carrierComponent("VisualNovelScreen", "visual-novel-screen"),
       [CARRIER_PATHS.entry]: carrierComponent("JourneyEntryScreen", "journey-entry-screen"),
+      [CARRIER_PATHS.catalogCover]: carrierComponent("CatalogCoverScreen", "catalog-cover-screen"),
       [CARRIER_PATHS.statModal]: statModalComponent(),
       [CARRIER_PATHS.guide]: carrierComponent("FirstUnitGuide", "first-unit-guide"),
       [CARRIER_PATHS.map]: journeyMapScreen(),
@@ -435,9 +438,10 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (six routes, four CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, four CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
+    "catalog-cover",
     "episode-final",
     "episode-intro",
     "episode-prologue",
@@ -453,6 +457,7 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, four CSS 
   assert.match(routeText("visual-novel"), /VisualNovelScreen/);
   assert.match(routeText("roleplay-visual-novel"), /VisualNovelScreen/);
   assert.match(routeText("journey-entry"), /JourneyEntryScreen/);
+  assert.match(routeText("catalog-cover"), /CatalogCoverScreen/);
 
   assert.deepEqual(Object.keys(fixedLayers).sort(), [
     "components/first-unit-guide.css",

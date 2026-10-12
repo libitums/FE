@@ -31,8 +31,12 @@ export function findComponentFileConventionViolations(entries) {
     const uiTests = files.filter((file) => file.endsWith(".ui.test.tsx"));
     if (!has(`${component}.ui.test.tsx`))
       add("missing-ui-test", uiTests[0], `${component}.ui.test.tsx`);
+    // 기본 파일 하나 외에 주제별로 나눈 `<Component>.<topic>.ui.test.tsx`(topic은 kebab-case)를 허용합니다.
+    const topicUiTest = new RegExp(
+      `^${component}\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.ui\\.test\\.tsx$`,
+    );
     for (const actual of uiTests) {
-      if (actual !== `${component}.ui.test.tsx`)
+      if (actual !== `${component}.ui.test.tsx` && !topicUiTest.test(actual))
         add("noncanonical-ui-test", actual, `${component}.ui.test.tsx`);
     }
     const unitTests = files.filter((file) => file.endsWith(".unit.test.ts"));

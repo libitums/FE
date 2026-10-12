@@ -39,18 +39,26 @@ export type VisualNovelDialogSpeechProps = VisualNovelDialogBaseProps & {
   readonly variant?: "speech";
   readonly speakerName: string;
   readonly avatar?: ReactNode;
+  /** 화자 줄과 대사 줄 사이에 서는 지문입니다(speech · thought 전용). */
+  readonly aside?: string;
+  /** 지문 아래 같은 작은 기울임으로 서는 둘째 줄입니다(지문의 번역). `aside`가 있어야 합니다. */
+  readonly asideTranslation?: string;
 };
 
 export type VisualNovelDialogNarrationProps = VisualNovelDialogBaseProps & {
   readonly variant: "narration";
   readonly speakerName?: never;
   readonly avatar?: never;
+  readonly aside?: never;
+  readonly asideTranslation?: never;
 };
 
 export type VisualNovelDialogThoughtProps = VisualNovelDialogBaseProps & {
   readonly variant: "thought";
   readonly speakerName: string;
   readonly avatar?: ReactNode;
+  readonly aside?: string;
+  readonly asideTranslation?: string;
 };
 
 type VisualNovelDialogTapAdvanceProps = {
@@ -83,6 +91,8 @@ export type VisualNovelDialogContract = {
   readonly reveal: VisualNovelDialogReveal;
   readonly showContinueIndicator: boolean;
   readonly speakerName?: string;
+  readonly aside?: string;
+  readonly asideTranslation?: string;
   readonly status: VisualNovelDialogStatus;
   readonly translation?: string;
   readonly showTranslation: boolean;
@@ -144,6 +154,21 @@ export function getVisualNovelDialogContract(
     throw new Error("VisualNovelDialog narration must not have an avatar");
   }
 
+  if (
+    variant === "narration" &&
+    (props.aside !== undefined || props.asideTranslation !== undefined)
+  ) {
+    throw new Error("VisualNovelDialog narration must not have an aside");
+  }
+  const aside = props.aside === undefined ? undefined : requireVisibleText(props.aside, "aside");
+  const asideTranslation =
+    props.asideTranslation === undefined
+      ? undefined
+      : requireVisibleText(props.asideTranslation, "asideTranslation");
+  if (asideTranslation !== undefined && aside === undefined) {
+    throw new Error("VisualNovelDialog asideTranslation requires an aside");
+  }
+
   const characterCount = Array.from(line).length;
   const visibleCharacterCount = Number.isInteger(props.visibleCharacterCount)
     ? Math.max(0, Math.min(props.visibleCharacterCount as number, characterCount))
@@ -161,12 +186,14 @@ export function getVisualNovelDialogContract(
     props.translation === undefined
       ? undefined
       : requireVisibleText(props.translation, "translation");
+  // 지문이 있으면 화자 뒤, 대사 앞에서 읽습니다(화면에 선 순서).
+  const asideLead = aside === undefined ? "" : `, ${aside}`;
   const defaultAccessibilityLabel =
     variant === "narration"
       ? line
       : variant === "thought"
-        ? `${speakerName}, thinking: ${line}`
-        : `${speakerName}: ${line}`;
+        ? `${speakerName}, thinking${asideLead}: ${line}`
+        : `${speakerName}${asideLead}: ${line}`;
   // 번역이 있으면 대사 뒤에 이어 읽습니다 — 화면에 선 두 줄을 한 요소가 함께 냅니다.
   const accessibilityLabel =
     props.accessibilityLabel === undefined
@@ -194,6 +221,8 @@ export function getVisualNovelDialogContract(
     reveal,
     showContinueIndicator: continueIndicator === "on" && status === "ready",
     ...(speakerName ? { speakerName } : {}),
+    ...(aside ? { aside } : {}),
+    ...(asideTranslation ? { asideTranslation } : {}),
     status,
     surface,
     ...(translation ? { translation } : {}),

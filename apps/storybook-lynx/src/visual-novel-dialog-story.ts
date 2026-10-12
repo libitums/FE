@@ -11,6 +11,8 @@ import type {
 
 export type VisualNovelDialogStoryData = {
   readonly accessibilityLabel?: string;
+  readonly aside?: string;
+  readonly asideTranslation?: string;
   readonly advance: VisualNovelDialogAdvance;
   readonly contentLanguage: VisualNovelDialogContentLanguage;
   readonly continueIndicator: VisualNovelDialogContinueIndicator;
@@ -46,6 +48,11 @@ export function normalizeVisualNovelDialogStoryArgs(input: unknown): VisualNovel
   const visibleCharacterCount = Number.isInteger(args.visibleCharacterCount)
     ? Math.max(0, Math.min(args.visibleCharacterCount as number, Array.from(line).length))
     : 0;
+  const aside = typeof args.aside === "string" && args.aside.trim() ? args.aside.trim() : undefined;
+  const asideTranslation =
+    aside !== undefined && typeof args.asideTranslation === "string" && args.asideTranslation.trim()
+      ? args.asideTranslation.trim()
+      : undefined;
   const accessibilityLabel =
     typeof args.accessibilityLabel === "string" && args.accessibilityLabel.trim()
       ? args.accessibilityLabel.trim()
@@ -53,6 +60,8 @@ export function normalizeVisualNovelDialogStoryArgs(input: unknown): VisualNovel
 
   return {
     ...(accessibilityLabel ? { accessibilityLabel } : {}),
+    ...(aside === undefined ? {} : { aside }),
+    ...(asideTranslation === undefined ? {} : { asideTranslation }),
     advance: allowed(["tap", "auto"] as const, args.advance, "tap"),
     contentLanguage,
     continueIndicator: allowed(["on", "off"] as const, args.continueIndicator, "on"),

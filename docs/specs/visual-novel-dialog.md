@@ -43,6 +43,11 @@ Auto Advance, Learning Language, Right To Left, Long Content를 제공한다.
 현재 `@libitums/design-tokens@0.2.0`에는 정본의 `opacity.surface` CSS 변수가 아직 없어
 `var(--libitum-opacity-surface, 0.9)` 호환 fallback을 쓴다.
 
+> ⟨2026-10-12⟩ **지문(FE 확장)** — `speech` · `thought`에 선택 prop `aside`(지문)와 `asideTranslation`(지문의 번역, `aside`가 있어야 함)을
+> 더했다. 화자 줄과 대사 줄 사이에 작은 기울임 두 줄로 서고(`ui-lynx-visual-novel-dialog-aside`), 접근성 이름은 `{화자}, {지문}: {대사}` +
+> 번역 꼴이다. `narration`은 지문을 받지 않는다(타입이 `never`). 주지 않으면 DOM은 전과 같다. 소비자는 카탈로그 표지 컷 화면
+> ([ADR-0024](../adr/0024-journey-units-and-special-unit-placement.md) D15). 한글은 폰트에 기울임이 없어 기울지 않는다(영어 줄만 기운다).
+
 ## 범위 밖
 
 - 장면 art, 선택지, 대사 queue와 persistence

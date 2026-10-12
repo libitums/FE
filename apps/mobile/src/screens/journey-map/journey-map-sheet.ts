@@ -2,6 +2,8 @@
 // `initialStepSheetState`·`canOpenStep`·`stepSheetReducer`입니다.
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
+import { learningFormsForStep } from "./journey-map-learning-form";
+import { journeyStepOrdinal, stepStatusAt } from "./journey-map-progress";
 import type { JourneyStepId, JourneyStepStatus } from "./journey-map-units";
 
 export type StepSheetState = {
@@ -214,4 +216,26 @@ export function stepSheetPlacement(measure: StepMeasure): StepPlacement {
 export function stepSheetTop(state: StepSheetState, scrollTop: number): number {
   const top = state.anchorY + sheetGap + (state.anchorScrollTop - scrollTop);
   return state.anchorLimit === null ? top : Math.min(top, state.anchorLimit);
+}
+
+/**
+ * 스텝 말풍선에 넘기는 수치 셋입니다. 진행은 「끝낸 활동 수 / 그 스텝이 잡은 활동 수」인데, 오늘 활동은 스텝
+ * 단위로만 저장되므로 끝난 스텝이면 전부이고 아니면 0입니다 — 중간에서 그만둔 자리는 아직 어디에도 남지
+ * 않습니다.
+ */
+export function stepSheetFiguresFor(
+  stepId: JourneyStepId,
+  completedStepCount: number,
+): {
+  readonly lessonOrdinal: number;
+  readonly completedActivityCount: number;
+  readonly totalActivityCount: number;
+} {
+  const ordinal = journeyStepOrdinal(stepId);
+  const total = learningFormsForStep(stepId).length;
+  return {
+    lessonOrdinal: ordinal,
+    completedActivityCount: stepStatusAt(ordinal - 1, completedStepCount) === "done" ? total : 0,
+    totalActivityCount: total,
+  };
 }

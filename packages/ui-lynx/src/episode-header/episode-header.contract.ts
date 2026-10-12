@@ -7,6 +7,10 @@ export type EpisodeHeaderProps = {
   readonly completedUnitCount: number;
   /** 이 에피소드의 유닛 수입니다. */
   readonly totalUnitCount: number;
+  /** 호출자가 띄어쓰기에서 나눈 제목 줄입니다. 줄마다 text 하나를 그립니다. 없으면 제목 하나 그대로입니다. */
+  readonly titleLines?: readonly string[];
+  /** `compact`이면 제목 글자를 토큰 `heading-s` 단계로 내립니다. `titleLines`와 함께 씁니다. */
+  readonly titleSize?: "default" | "compact";
 };
 
 export type EpisodeHeaderContract = {

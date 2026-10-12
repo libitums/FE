@@ -110,6 +110,34 @@ function withoutName(event: AnalyticsEvent): Record<string, unknown> {
   return rest;
 }
 
+describe("episode_content_refreshed", () => {
+  test("AE-R1. 이름은 그대로, properties는 name만 뺀 일곱 필드다", () => {
+    const event = {
+      name: "episode_content_refreshed",
+      manifest: "updated",
+      fetchedCount: "1",
+      lockedCount: "3",
+      failedCount: "2",
+      lockReasons: "client-too-old,decode-failed",
+      failReasons: "http,network",
+      persisted: true,
+    } as const satisfies AnalyticsEvent;
+
+    expect(analyticsCaptureFrom(event)).toStrictEqual({
+      event: "episode_content_refreshed",
+      properties: {
+        manifest: "updated",
+        fetchedCount: "1",
+        lockedCount: "3",
+        failedCount: "2",
+        lockReasons: "client-too-old,decode-failed",
+        failReasons: "http,network",
+        persisted: true,
+      },
+    });
+  });
+});
+
 describe("analyticsCaptureFrom", () => {
   test("AE1: 표가 이름 29개 · 모양 33개를 다 덮는다", () => {
     expect(events).toHaveLength(33);

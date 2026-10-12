@@ -16,13 +16,15 @@ export function App(props: AppProps = {}) {
   const [start, setStart] = useState<AppStart>(initialAppStart);
   // 동작 줄이기는 세션과 무관한 호스트 상태라 세션(key) 밖에서 Provider로 내립니다.
   const motion = motionFromReducedMotion(reducedMotionFrom(useGlobalProps()));
-  // 서버의 새 에피소드를 앱 실행마다 한 번 받아 기기에 둡니다 — 세션(key) 밖이라 로그아웃 · 재진입에 다시 돌지 않습니다.
-  useEpisodeContentRefresh();
+  // 에피소드 카탈로그를 읽고 서버의 새 에피소드를 앱 실행마다 한 번 받아 기기에 둡니다 — 세션(key) 밖이라
+  // 로그아웃 · 재진입에 다시 돌지 않고, 결과는 세션에 prop으로 내립니다.
+  const episodeContent = useEpisodeContentRefresh(props.episodeIntroEventSink ?? null);
   return (
     <MotionProvider motion={motion}>
       <AppSession
         key={start.key}
         {...props}
+        episodeContent={episodeContent}
         start={start.nav}
         exit={start.exit}
         onLeaveApp={(exit) => setStart((current) => nextAppStart(current, exit))}

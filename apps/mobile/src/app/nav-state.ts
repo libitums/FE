@@ -65,6 +65,8 @@ export type Screen =
   // 화면은 그 둘을 구별하지 않습니다(spec §2.5).
   | { name: "episode-prologue-complete"; unitId: EpisodeIntroUnitId }
   | { name: "episode-final"; unitId: EpisodeFinalUnitId }
+  // 카탈로그 에피소드의 표지 컷입니다. 에피소드는 카탈로그 id입니다.
+  | { name: "catalog-cover"; episodeId: string }
   | { name: "episode-final-complete"; unitId: EpisodeFinalUnitId; results: readonly AnswerResult[] }
   // 학습 화면 넷은 `activityIndex`를 함께 집니다. 유닛 하나가 활동 여럿을 잇기
   // 때문입니다(`learningFormsByStep`) — 몇 번째 활동인지는 「지금 어느 화면인가」의

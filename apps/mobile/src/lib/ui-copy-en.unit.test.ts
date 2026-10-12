@@ -95,3 +95,31 @@ test("UE5. 부록 B 대표 문구와 문자열이 같다", () => {
   expect(c.phoneCall.status.playing).toBe("Speaking…");
   expect(c.roleplay.premiumNotice("T")).toBe("“T” is a Plus roleplay. Plus isn't available yet.");
 });
+
+test("UC-C1. 카탈로그 맵 · 표지 문구가 문구표 값과 같다", () => {
+  expect(c.catalogMap.episodeLabel(4)).toBe("Episode 4.");
+  expect(c.catalogMap.coverTitle).toBe("Episode intro");
+  expect(c.catalogMap.lessonTitle(2)).toBe("Lesson 2");
+  expect(c.catalogMap.finalTitle).toBe("Final test");
+  expect(c.catalogMap.preparing("Ep")).toBe("Ep, coming soon");
+  expect(c.catalogMap.caption).toEqual({
+    pending: "COMING SOON",
+    update: "UPDATE REQUIRED",
+    unavailable: "NOT AVAILABLE",
+  });
+  expect(c.catalogMap.unavailableSection("Episode 4.", "Ep", "pending")).toBe(
+    "Episode 4. Ep, coming soon",
+  );
+  expect(c.catalogMap.unavailableSection("Episode 4.", "Ep", "update")).toBe(
+    "Episode 4. Ep, update the app to open",
+  );
+  expect(c.catalogMap.unavailableSection("Episode 4.", "Ep", "unavailable")).toBe(
+    "Episode 4. Ep, not available",
+  );
+  expect(c.catalogCover.toggleScript).toEqual({
+    en: "Show romanization",
+    roman: "Show English",
+  });
+  expect(c.catalogCover.nextCut(2, 6)).toBe("Next scene, 2 of 6");
+  expect(c.catalogCover.finishCover).toBe("Finish intro");
+});

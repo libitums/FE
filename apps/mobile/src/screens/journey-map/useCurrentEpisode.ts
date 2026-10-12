@@ -3,6 +3,8 @@ import type { ScrollEvent } from "@lynx-js/types";
 
 import { episodeSectionId, measureRects } from "./journey-map-scroll";
 import type { JourneyMapSection } from "./journey-map";
+import type { CatalogMapSection } from "./catalog-map.contract";
+import { catalogSectionDomId, noCatalogMapSections } from "./catalog-map";
 
 /**
  * 지금 보고 있는 에피소드가 몇 번째인지 집니다. 머리 카드 하나가 구획 밖에 서고, 이
@@ -16,7 +18,11 @@ import type { JourneyMapSection } from "./journey-map";
  * 스크롤 한 프레임마다 다시 그리지 않습니다 — 경계를 넘는 순간에만 값이 바뀝니다
  * (`useStepSheet`이 열림 상태에서만 state를 건드리는 것과 같은 판단).
  */
-export function useCurrentEpisode(sections: readonly JourneyMapSection[]): {
+export function useCurrentEpisode(
+  sections: readonly JourneyMapSection[],
+  // 모듈 상수가 기본값입니다 — 새 `[]` 리터럴이면 아래 effect가 매 렌더 다시 돕니다.
+  catalogSections: readonly CatalogMapSection[] = noCatalogMapSections,
+): {
   readonly index: number;
   readonly handleScroll: (event: ScrollEvent) => void;
 } {
@@ -27,17 +33,19 @@ export function useCurrentEpisode(sections: readonly JourneyMapSection[]): {
   const indexRef = useRef(0);
 
   useEffect(() => {
-    measureRects(
-      sections.map((section) => episodeSectionId(section.episode.id)),
-      (rects) => {
-        if (rects === null || rects.length !== sections.length) {
-          return;
-        }
-        // oxlint-disable-next-line react/immutability
-        tops.current = rects.map((rect) => rect.top);
-      },
-    );
-  }, [sections]);
+    // 튜토리얼 구획 뒤에 카탈로그 구획을 이어 잽니다 — index는 그 이은 목록의 자리입니다.
+    const ids = [
+      ...sections.map((section) => episodeSectionId(section.episode.id)),
+      ...catalogSections.map((section) => catalogSectionDomId(section.episodeId)),
+    ];
+    measureRects(ids, (rects) => {
+      if (rects === null || rects.length !== ids.length) {
+        return;
+      }
+      // oxlint-disable-next-line react/immutability
+      tops.current = rects.map((rect) => rect.top);
+    });
+  }, [sections, catalogSections]);
 
   const handleScroll = (event: ScrollEvent) => {
     "background only";

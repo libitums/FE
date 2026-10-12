@@ -50,6 +50,8 @@ function App() {
           variant={args.variant}
           speakerName={args.speakerName}
           avatar={avatar}
+          aside={args.aside}
+          asideTranslation={args.asideTranslation}
         />
       );
     }
@@ -61,6 +63,8 @@ function App() {
         variant={args.variant}
         speakerName={args.speakerName}
         avatar={avatar}
+        aside={args.aside}
+        asideTranslation={args.asideTranslation}
       />
     );
   }

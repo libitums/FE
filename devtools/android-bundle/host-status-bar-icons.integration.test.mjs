@@ -80,7 +80,8 @@ function realInput() {
     syncSource: readFileSync(join(hostDir, "StatusBarIconSync.java"), "utf8"),
     componentSources: sourcesBy(".tsx"),
     cssSources: sourcesBy(".css"),
-    appSessionSource: readFileSync(join(mobileSrc, "app/AppSession.tsx"), "utf8"),
+    // 전체 화면 route 판정은 AppSession이 아니라 이 파일이 쥡니다.
+    appSessionSource: readFileSync(join(mobileSrc, "app/full-bleed-screens.ts"), "utf8"),
   };
 }
 
