@@ -154,4 +154,15 @@ describe("K6 isCatalogEpisodePassed", () => {
     expect(Object.getPrototypeOf(marked)).toBe(Object.prototype);
     expect(marked).toEqual({});
   });
+
+  test.each(["toString", "constructor", "hasOwnProperty", "valueOf"])(
+    "K9. 객체 기본 속성 이름(%s)의 에피소드 id도 던지지 않고 자기 값만 본다",
+    (id) => {
+      expect(isCatalogUnitDone({}, id, "intro")).toBe(false);
+      expect(isCatalogEpisodePassed({}, id)).toBe(false);
+      expect(markCatalogUnitDone({}, id, "intro")).toEqual({ [id]: ["intro"] });
+      expect(mergeCatalogProgress({}, { [id]: ["S1"] })).toEqual({ [id]: ["S1"] });
+      expect(catalogProgressFrom(JSON.parse(`{"${id}": ["RP"]}`))).toEqual({ [id]: ["RP"] });
+    },
+  );
 });
