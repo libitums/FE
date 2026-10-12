@@ -8,7 +8,11 @@ import { renderSignedInApp, signedInBootSession } from "./test-helpers/signed-in
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 
 const token = `e30.${btoa(JSON.stringify({ sub: "returning-learner" }))}.sig`;
-const empty = learningProgressSnapshotFrom({ ...productJourneySeed, completedEpisodeIntroIds: [] });
+const empty = learningProgressSnapshotFrom({
+  ...productJourneySeed,
+  completedEpisodeIntroIds: [],
+  catalogProgress: {},
+});
 type Reply = { status: number; body: string };
 
 function deferred() {

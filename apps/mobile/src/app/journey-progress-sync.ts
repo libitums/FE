@@ -16,7 +16,11 @@ import {
 const jsonFrom = (state: JourneyProgressState) =>
   JSON.stringify(learningProgressSnapshotFrom(state));
 const retryDelays = [1_000, 5_000, 15_000, 30_000, 60_000];
-const empty: JourneyProgressState = { ...productJourneySeed, completedEpisodeIntroIds: [] };
+const empty: JourneyProgressState = {
+  ...productJourneySeed,
+  completedEpisodeIntroIds: [],
+  catalogProgress: {},
+};
 
 /** 로그인한 한 사용자의 미전송 진행과 재시도를 소유합니다. 렌더 중에는 만들지 않습니다. */
 export function createJourneyProgressSync(

@@ -13,6 +13,8 @@ export type LearningProgressSnapshotV1 = {
   readonly completedPhoneCallUnitIds: readonly string[];
   readonly visualNovel: { readonly status: "active" | "completed"; readonly beatIndex: number };
   readonly completedEpisodeFinalIds: readonly string[];
+  /** 카탈로그 에피소드 id → 끝낸 유닛 키(⟨2026-10-12⟩ 선택 필드 — 비면 싣지 않아 옛 서버 · 옛 앱과 호환). */
+  readonly catalogProgress?: Readonly<Record<string, readonly string[]>>;
 };
 
 /** 기기 시간대의 날짜 `YYYY-MM-DD`입니다. 연속 학습은 이 날짜로 셉니다. */
