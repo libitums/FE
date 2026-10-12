@@ -9,9 +9,9 @@ interface Props {
 const { t } = Astro.props;
 // 표현 · 로마자 · 뜻풀이는 앱이 학습자에게 보여 주는 그대로입니다.
 const phrases = [
-  { ko: "안녕하세요", roman: "annyeonghaseyo", gloss: "Hello", image: img.minseo },
-  { ko: "물 주세요", roman: "mul juseyo", gloss: "Water, please", image: img.sceneFlight },
-  { ko: "내일 만나요", roman: "naeil mannayo", gloss: "See you tomorrow", image: img.sceneCafe },
+  { ko: "안녕하세요", roman: "annyeonghaseyo", gloss: "Hello", image: img.minseo, alt: t.scene3Alt },
+  { ko: "물 주세요", roman: "mul juseyo", gloss: "Water, please", image: img.sceneFlight, alt: t.scene1Alt },
+  { ko: "내일 만나요", roman: "naeil mannayo", gloss: "See you tomorrow", image: img.sceneCafe, alt: t.scene4Alt },
 ];
 ---
 
@@ -25,7 +25,7 @@ const phrases = [
       {
         phrases.map((phrase) => (
           <li class="word">
-            <img src={phrase.image.src} alt="" loading="lazy" />
+            <img src={phrase.image.src} alt={phrase.alt} aria-hidden="true" loading="lazy" />
             <div>
               <p class="word__ko" lang="ko">
                 {phrase.ko}
