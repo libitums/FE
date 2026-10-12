@@ -23,6 +23,8 @@ export type SentenceOrderQuestion = {
    * chips의 부분집합이고, 이 길이가 곧 「놓을 칸 수」입니다.
    */
   readonly answerOrder: readonly number[];
+  /** 있으면 `support.instruction` · 문구표 기본보다 앞서는 지시문입니다(카탈로그 문항). */
+  readonly instruction?: string;
 };
 
 // 첫 인사는 한글을 모르는 사용자도 뜻과 발음 표기를 보며 한 번 답하는 안내 활동입니다.

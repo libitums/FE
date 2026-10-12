@@ -40,8 +40,12 @@ export type CatalogCutPort = {
   readonly fill: (text: string, script: "ko" | "roman") => string;
 };
 
+/** 같은 컷 화면이 서는 자리 — 에피소드 앞(표지)과 최종 테스트 통과 뒤. */
+export type CatalogCutStage = "prologue" | "epilogue";
+
 export type CatalogCoverScreenProps = {
   readonly insets: SafeAreaInsets;
+  readonly stage: CatalogCutStage;
   /** 제목은 화면이 `copy.catalogMap.episodeLabel(ordinal)`로 만듭니다. */
   readonly ordinal: number;
   readonly cuts: CatalogCuts;
@@ -58,6 +62,8 @@ export type CatalogCoverCopy = {
   readonly nextCut: (ordinal: number, total: number) => string;
   /** 진행 버튼 낭독(마지막) */
   readonly finishCover: string;
+  /** 진행 버튼 낭독(통과 뒤 컷의 마지막) */
+  readonly finishEpilogue: string;
   /** 독백 낭독에서 화자 뒤에 붙는 말 — 괄호를 기호로 읽지 않게. */
   readonly thinking: string;
 };

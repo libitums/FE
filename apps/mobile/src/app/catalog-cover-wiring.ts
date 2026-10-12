@@ -60,6 +60,21 @@ export function catalogCoverModelOf(
   return cuts === null ? null : { ordinal: section.ordinal, version: entry.version, cuts };
 }
 
+export type CatalogEpilogueModel = {
+  readonly ordinal: number;
+  readonly cuts: CatalogCuts;
+};
+
+/** 최종 테스트 통과 뒤 컷의 모델입니다. 컷이 없거나 준비되지 않았으면 `null`. */
+export function catalogEpilogueModelOf(
+  _content: EpisodeContent,
+  _sections: readonly CatalogMapSection[],
+  _episodeId: string,
+  _profile: LearnerProfile,
+): CatalogEpilogueModel | null {
+  return null;
+}
+
 export function catalogCoverWiring(args: CatalogCoverWiringArgs): CatalogCoverWiring {
   const {
     episodeContent,

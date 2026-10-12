@@ -24,6 +24,7 @@ export function renderCatalogCover(
   }
   return (
     <CatalogCoverScreen
+      stage="prologue"
       key={`${episodeId}:${model.version}`}
       insets={wiring.safeAreaInsets}
       ordinal={model.ordinal}

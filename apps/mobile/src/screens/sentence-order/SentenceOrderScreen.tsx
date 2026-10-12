@@ -24,6 +24,8 @@ import {
   sentenceOrderSessionResults,
 } from "./sentence-order";
 import type { JourneyStepId } from "../journey-map/journey-map";
+import type { ActivityFinish } from "../learning/activity-finish";
+import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
 import "./sentence-order-screen.css";
 
@@ -40,17 +42,40 @@ export type SentenceOrderScreenProps = {
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
 
+export type SentenceOrderActivityProps = {
+  readonly questions: readonly SentenceOrderQuestion[];
+  readonly gemCount: number;
+  readonly onExit: () => void;
+  readonly onFinish: ActivityFinish;
+};
+
 /** 내 말풍선이 비어 있을 때의 표시입니다 — 디자인 표기 그대로입니다. */
 const emptyReplyMark = "----";
 
+/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
 export function SentenceOrderScreen({
   stepId,
   gemCount = 0,
   onExit,
   onFinish,
 }: SentenceOrderScreenProps): ReactNode {
+  return (
+    <SentenceOrderActivity
+      questions={sentenceOrderQuestionsForStep(stepId)}
+      gemCount={gemCount}
+      onExit={onExit}
+      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
+    />
+  );
+}
+
+export function SentenceOrderActivity({
+  questions,
+  gemCount,
+  onExit,
+  onFinish,
+}: SentenceOrderActivityProps): ReactNode {
   const copy = useUiCopy();
-  const questions = sentenceOrderQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(
     sentenceOrderSessionReducer,
     initialSentenceOrderSessionState,
@@ -96,8 +121,7 @@ export function SentenceOrderScreen({
       ? {
           label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
-          run: () =>
-            onFinish(stepId, sentenceOrderSessionResults(questions, state.submittedOrders), 0),
+          run: () => onFinish(sentenceOrderSessionResults(questions, state.submittedOrders), 0),
         }
       : state.phase === "checked"
         ? { label: copy.common.next, run: () => dispatch({ type: "nextQuestion" }) }

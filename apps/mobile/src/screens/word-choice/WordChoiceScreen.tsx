@@ -20,6 +20,8 @@ import {
 } from "./word-choice";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
+import type { ActivityFinish } from "../learning/activity-finish";
+import type { WordChoiceQuestion } from "./word-choice-questions";
 
 import "./word-choice-screen.css";
 
@@ -44,9 +46,29 @@ export type WordChoiceScreenProps = {
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
 
+export type WordChoiceActivityProps = {
+  readonly questions: readonly WordChoiceQuestion[];
+  readonly onExit: () => void;
+  readonly onFinish: ActivityFinish;
+};
+
+/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
 export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
+  return (
+    <WordChoiceActivity
+      questions={wordChoiceQuestionsForStep(stepId)}
+      onExit={onExit}
+      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
+    />
+  );
+}
+
+export function WordChoiceActivity({
+  questions,
+  onExit,
+  onFinish,
+}: WordChoiceActivityProps): ReactNode {
   const copy = useUiCopy();
-  const questions = wordChoiceQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(wordChoiceSessionReducer, initialWordChoiceSessionState);
 
   // 완료는 파생입니다. 완료 시점에는 `questionIndex`가 문항 수와 같아
@@ -76,8 +98,7 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
       ? {
           label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
-          run: () =>
-            onFinish(stepId, wordChoiceSessionResults(questions, state.answeredChoiceIndexes), 0),
+          run: () => onFinish(wordChoiceSessionResults(questions, state.answeredChoiceIndexes), 0),
         }
       : undefined;
 

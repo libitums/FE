@@ -14,7 +14,7 @@ import {
   learningWorkspaceMode,
 } from "./learning-shell.contract";
 import { LearningSessionHeader } from "./LearningSessionHeader";
-import type { LearningForm } from "../../lib/learning-form";
+import type { LearningActivityForm } from "../../lib/learning-form";
 import { scrollLearningShellToTop, useLearningShellScrollReset } from "./learning-shell-scroll";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
@@ -35,7 +35,7 @@ import "./learning-shell.css";
  * 껍데기는 정답 판정 없이 활동의 카드와 완료 여부를 받아 그립니다.
  */
 export type LearningShellProps = {
-  form: LearningForm;
+  form: LearningActivityForm;
   /**
    * 활동 안에서 지금 몇 번째 문항인가입니다(0부터). 세션 헤더의 `Lesson n / N`과 진행
    * 막대가 이 값에서 납니다.

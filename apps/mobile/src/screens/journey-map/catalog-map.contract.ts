@@ -44,6 +44,14 @@ export type CatalogLockedNode = {
   readonly ordinal: number;
 };
 
+/** 레슨 · 최종 노드 — 상태가 사슬(표지 → 레슨들 → 최종)에서 파생됩니다. */
+export type CatalogUnitNode = {
+  readonly key: CatalogUnitKey;
+  readonly role: "lesson" | "final";
+  readonly ordinal: number;
+  readonly status: JourneyMapItemStatus;
+};
+
 export type CatalogSectionProgress = { readonly completed: number; readonly total: number };
 
 /** 맵 화면의 카탈로그 슬롯입니다. 없으면(undefined) 카탈로그 구획이 없는 맵 — 튜토리얼만. */
@@ -51,24 +59,31 @@ export type JourneyMapCatalogProps = {
   readonly sections: readonly CatalogMapSection[];
   readonly progress: CatalogProgress;
   readonly onStartCover: (episodeId: string) => void;
+  /** 레슨 · 최종 노드를 눌렀을 때. 열린 노드에서만 불립니다. */
+  readonly onStartUnit?: (episodeId: string, unitKey: CatalogUnitKey) => void;
 };
 
 export type CatalogMapSectionsProps = {
   readonly sections: readonly CatalogMapSection[];
   readonly gate: CatalogGate;
   readonly onStartCover: (episodeId: string) => void;
+  readonly onStartUnit?: (episodeId: string, unitKey: CatalogUnitKey) => void;
 };
 
 export type CatalogEpisodeSectionProps = {
   readonly section: CatalogReadySection;
   readonly coverStatus: JourneyMapItemStatus;
+  readonly progress?: CatalogProgress;
   readonly onStartCover: (episodeId: string) => void;
+  readonly onStartUnit?: (episodeId: string, unitKey: CatalogUnitKey) => void;
 };
 
 export type CatalogUnavailableSectionProps = { readonly section: CatalogUnavailableSection };
 
 export type CatalogCoverMapItemProps = {
   readonly episodeId: string;
+  /** 낭독의 `Episode n.` 자리입니다. */
+  readonly ordinal?: number;
   readonly status: JourneyMapItemStatus;
   readonly onSelect: (episodeId: string) => void;
 };
@@ -76,6 +91,13 @@ export type CatalogCoverMapItemProps = {
 export type CatalogLockedUnitNodeProps = {
   readonly episodeId: string;
   readonly node: CatalogLockedNode;
+};
+
+export type CatalogUnitNodeProps = {
+  readonly episodeId: string;
+  readonly episodeOrdinal: number;
+  readonly node: CatalogUnitNode;
+  readonly onSelect: (episodeId: string, unitKey: CatalogUnitKey) => void;
 };
 
 export type CatalogEpisodeHeaderProps = {
@@ -98,6 +120,8 @@ export type CatalogMapCopy = {
   readonly lessonTitle: (ordinal: number) => string;
   readonly finalTitle: string;
   readonly preparing: (title: string) => string;
+  /** 표지 · 레슨 · 최종 노드의 낭독 이름 — `Episode n. <제목>`. */
+  readonly nodeLabel: (episodeLabel: string, title: string) => string;
   readonly caption: Readonly<Record<CatalogCaptionKind, string>>;
   readonly unavailableSection: (label: string, title: string, kind: CatalogCaptionKind) => string;
 };

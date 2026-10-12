@@ -23,6 +23,8 @@ import {
 import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import type { SessionOptions } from "../../lib/session-options";
+import type { ActivityFinish } from "../learning/activity-finish";
+import type { ListeningQuestion } from "./listening-questions";
 
 import "./listening-screen.css";
 
@@ -46,6 +48,15 @@ export type ListeningScreenProps = {
   gemCount?: number;
 };
 
+export type ListeningActivityProps = {
+  readonly questions: readonly ListeningQuestion[];
+  readonly onExit: () => void;
+  readonly onFinish: ActivityFinish;
+  readonly sessionOptions: SessionOptions;
+  readonly gemCount: number;
+};
+
+/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
 export function ListeningScreen({
   stepId,
   onExit,
@@ -53,8 +64,25 @@ export function ListeningScreen({
   sessionOptions,
   gemCount = 0,
 }: ListeningScreenProps): ReactNode {
+  return (
+    <ListeningActivity
+      questions={questionsForStep(stepId)}
+      onExit={onExit}
+      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
+      sessionOptions={sessionOptions}
+      gemCount={gemCount}
+    />
+  );
+}
+
+export function ListeningActivity({
+  questions,
+  onExit,
+  onFinish,
+  sessionOptions,
+  gemCount,
+}: ListeningActivityProps): ReactNode {
   const copy = useUiCopy();
-  const questions = questionsForStep(stepId);
   const [state, dispatch] = useReducer(listeningSessionReducer, initialListeningSessionState);
 
   // 완료는 파생입니다. 완료 시점에는 `questionIndex`가 문항 수와 같아 조회할 문항이
@@ -63,7 +91,7 @@ export function ListeningScreen({
   const question = complete ? null : questions[state.questionIndex];
 
   // 재생의 주인은 이 화면입니다 — 껍데기가 무대를 다시 세워도 소리가 끊기지 않습니다.
-  const playback = useListeningPlayback(question?.audioSource, sessionOptions);
+  const playback = useListeningPlayback(question?.audioSource ?? undefined, sessionOptions);
 
   // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번입니다(ADR-0016 D11-2).
   // dep이 `complete` 하나입니다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이
@@ -88,8 +116,7 @@ export function ListeningScreen({
       ? {
           label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
-          run: () =>
-            onFinish(stepId, sessionAnswerResults(questions, state.answeredChoiceIndexes), 0),
+          run: () => onFinish(sessionAnswerResults(questions, state.answeredChoiceIndexes), 0),
         }
       : undefined;
 

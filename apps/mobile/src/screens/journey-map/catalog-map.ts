@@ -5,7 +5,7 @@ import {
   isCatalogEpisodePassed,
   isCatalogUnitDone,
 } from "../../lib/catalog-progress";
-import type { CatalogProgress } from "../../lib/catalog-progress";
+import type { CatalogProgress, CatalogUnitKey } from "../../lib/catalog-progress";
 import type { CatalogEntry } from "../../lib/episode-catalog";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
@@ -19,6 +19,7 @@ import type {
   CatalogSectionProgress,
   CatalogUnavailableReason,
   CatalogUnavailableSection,
+  CatalogUnitNode,
 } from "./catalog-map.contract";
 
 /** 기본값 동일성용 모듈 상수입니다 — 새 `[]` 리터럴 대신 이것을 씁니다. */
@@ -143,4 +144,56 @@ export function catalogUnavailableAccessibilityLabel(
     section.title,
     catalogCaptionKindOf(section.reason),
   );
+}
+
+/** 사슬(표지 → 레슨들 → 최종)에서 그 키의 상태를 파생합니다. */
+export function catalogUnitStatus(
+  _section: CatalogReadySection,
+  _unitKey: CatalogUnitKey,
+  _progress: CatalogProgress,
+): JourneyMapItemStatus {
+  return "locked";
+}
+
+export function catalogUnitNodesOf(
+  section: CatalogReadySection,
+  _progress: CatalogProgress,
+): readonly CatalogUnitNode[] {
+  return catalogLockedNodesOf(section).map((node): CatalogUnitNode => ({
+    ...node,
+    status: "locked",
+  }));
+}
+
+/** 맵 노드와 시작 결선이 같이 쓰는 가드입니다. */
+export function canStartCatalogUnit(
+  _sections: readonly CatalogMapSection[],
+  _episodeId: string,
+  _unitKey: CatalogUnitKey,
+  _progress: CatalogProgress,
+): boolean {
+  return false;
+}
+
+export function catalogUnitRoleOf(
+  _section: CatalogReadySection,
+  _unitKey: CatalogUnitKey,
+): "lesson" | "final" | null {
+  return null;
+}
+
+export function catalogUnitNodeTitle(_node: CatalogUnitNode, _copy: UiCopy): string {
+  return "";
+}
+
+export function catalogUnitNodeAccessibilityLabel(
+  _episodeOrdinal: number,
+  _node: CatalogUnitNode,
+  _copy: UiCopy,
+): string {
+  return "";
+}
+
+export function catalogCoverAccessibilityLabel(_episodeOrdinal: number, _copy: UiCopy): string {
+  return "";
 }
