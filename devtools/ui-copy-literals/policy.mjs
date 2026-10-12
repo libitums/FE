@@ -39,6 +39,10 @@ export const uiCopyLiteralPolicy = {
     "hangul-keyboard.ts#compoundFinals",
     "hangul-keyboard.ts#shiftedKeys",
     "hangul-keyboard.ts#hangulKeyRows",
+    // 콘텐츠 자리표시자 치환 — 토큰과 조사 규칙 표입니다(학습 문장을 고치는 언어 도구, 화면 문구가 아님).
+    "placeholder-fill.ts#DEFAULT_PROFILE_TEXT",
+    "placeholder-fill.ts#PLACEHOLDER_TOKENS",
+    "placeholder-fill.ts#PARTICLE_RULES",
   ],
   // 아직 옮기지 않은 파일 — 줄어들기만 합니다(위반이 0이 되면 `check.mjs`가 지우라고 실패합니다).
   // `node devtools/ui-copy-literals/check.mjs --print-pending`이 지금 남은 파일을 찍습니다.

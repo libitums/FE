@@ -4,6 +4,7 @@
     "lib": ["ES2022"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "jsx": "react-jsx",
     "jsxImportSource": "@lynx-js/react",
     "types": ["@lynx-js/rspeedy/client"],
