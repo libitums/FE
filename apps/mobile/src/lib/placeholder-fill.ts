@@ -44,8 +44,12 @@ const RIEUL_FINAL = 8;
 type Ending = "final" | "open" | "rieul" | "unknown";
 
 /** 마지막 글자로 받침을 판정합니다. 한글 음절과 라틴 글자 밖은 `unknown`. */
+// 받침 판정에서 건너뛰는 끝 문자 — 라틴 문자 · 숫자 · 한글 음절이 아닌 것(문장 부호 · 공백 · 이모지).
+const TRAILING_NON_WORD = /[^A-Za-z0-9\uAC00-\uD7A3]+$/;
+
 function endingOf(text: string): Ending {
-  const last = text.length === 0 ? undefined : text.charAt(text.length - 1);
+  const word = text.replace(TRAILING_NON_WORD, "");
+  const last = word.length === 0 ? undefined : word.charAt(word.length - 1);
   if (last === undefined) {
     return "unknown";
   }

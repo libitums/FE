@@ -75,4 +75,14 @@ describe("fillPlaceholders", () => {
   ])("P5. roman %s / %s -> %s", (text, name, expected) => {
     expect(fillPlaceholders(text, { name }, "roman")).toBe(expected);
   });
+
+  // 이름 끝의 문장 부호 · 공백 · 이모지는 받침 판정에서 건너뛴다(값 표시는 그대로).
+  test.each([
+    ["{이름}(으)로", "민지!", "민지!로"],
+    ["{이름}(으)로", "은정 ", "은정으로"], // 값의 앞뒤 공백은 표시에서도 걷는다
+    ["{이름}은/는", "John.", "John.은"],
+    ["{이름}은/는", "Anna😊", "Anna😊는"],
+  ])("P6. ko %s / %j -> %s (끝 기호 건너뜀)", (text, name, expected) => {
+    expect(fillPlaceholders(text, { name }, "ko")).toBe(expected);
+  });
 });
