@@ -162,7 +162,7 @@ find apps/android/app/build/intermediates/merged_manifests/bundled -name Android
 **1회차의 A6 실측으로 파싱 규칙 둘을 고쳤다**(커밋 `1c626045`, spec §11). 메인 스레드 오류는 `rawError.message`가 `main-thread.js exception: Error: probe-main-thread `(접두 + 끝 공백)로,
 `rawError.stack`의 첫 줄이 `backtrace:`로 왔다. 고치기 전의 규칙으로는 이름이 늘 `Error`로 떨어지고 지문의 넷째 값이 모든 메인 스레드 오류에서 `backtrace:`가 돼 한 이슈로 묶였다.
 (가) 그 접두를 떼고 trim한 뒤 이름을 나누고, (나) 스택의 첫 비공백 줄이 `backtrace:`면 버린다. **수정 뒤 기기 재실행은 하지 않았다** — 파싱이 순수 함수라, 아래 「도착한 문자열」의
-실측 문자열을 고정값으로 넣은 JUnit(`CrashReportPayloadObservedTest` — 고치기 전 5건 중 3건 실패 → 수정 뒤 호스트 JUnit 126/126)으로 판정했다. 다음 회차가 A6을 다시 돌려도 `DuruCrash` 줄의
+실측 문자열을 고정값으로 넣은 JUnit(`CrashReportPayloadObservedTest` — 고치기 전 5건 중 3건 실패 → 수정 뒤 호스트 JUnit 126/126, 리뷰 정정 뒤 145/145)으로 판정했다. 다음 회차가 A6을 다시 돌려도 `DuruCrash` 줄의
 모양은 같다(그 로그는 깔때기에 들어가기 전의 원문이다) — 고친 결과가 보이는 곳은 B단계의 Sentry 이슈다.
 
 ### A7 — 탐침을 전부 되돌리고 `git status`가 깨끗하다
@@ -236,8 +236,10 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 
 ### 전제
 
-1. **Sentry 프로젝트** — ⟨2026-10-13⟩ 사용자가 조직과 Android 프로젝트를 만들었고 DSN이 발급됐다(저장소 · 빌드에는 아직 넣지 않았다). **데이터 지역(US/EU)은 확인하지 못했다** —
+1. **Sentry 프로젝트** — ⟨2026-10-13⟩ 사용자가 Sentry에서 프로젝트 셋(Android · iOS · Astro)을 만들었고 Android DSN을 추적하지 않는 `apps/android/sentry.properties`에 넣었다.
+   **`auth.token` · 조직 · 프로젝트 이름은 아직 없다** — 매핑 업로드(B4)는 그 셋이 들어가야 돈다. **데이터 지역(US/EU)은 확인하지 못했다** —
    지역은 프로젝트를 만든 뒤 바꿀 수 없다(spec §9 U4). 실행 전에 Sentry 콘솔에서 지역을 확인해 실행 기록에 적는다.
+   ⚠ 그 파일이 있는 작업 트리에서는 **A1의 전제(「`sentry.properties`가 없다」)가 성립하지 않는다** — A단계를 다시 돌리려면 파일을 잠시 치우고 돌린 뒤 되돌린다.
 2. **Sentry 프로젝트 설정에서 「IP 주소 저장 안 함」(Prevent Storing of IP Addresses)을 켠다.** (spec §9 U4.) B6의 `ip_address` 확인은 이 설정과 별개로 SDK가 보낸 원문을 본다.
 3. **`apps/android/sentry.properties`를 만든다** — **추적하지 않는 파일이다**(`.gitignore`에 `apps/android/sentry.properties`가 있다. 토큰이 든다. 커밋하지 않는다). 키는 spec §5 표 그대로:
 
@@ -259,9 +261,10 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 | B1 | DSN을 넣은 `bundled` 빌드를 설치 · 실행 | Sentry에 세션이 선다(`environment: bundled` · `release: libitum.duru.android@<versionName>+<versionCode>`) | 5 | 대기 |
 | B2 | A3과 같은 throw를 임시로 넣은 번들로 `bundled` 빌드 · 실행(임시 코드 — 커밋하지 않음) | 이슈 **1건** — 태그 `lynx.source: js-background` · `handled: yes` · User 칸 비어 있음 · breadcrumb 0 · 기기 화면에는 에러 화면 **외의 표시가 없다** | 1 · 4 | 대기 |
 | B3 | 메시지에 `a@b.co` · `010-1234-5678` · 한글을 넣은 임시 throw | Sentry에 `[email]` · `[number]` · `[text]`로 보인다 | 4 | 대기 |
+| B3-b | ⟨2026-10-13 리뷰 정정⟩ 스킴 없는 쿼리를 넣은 임시 throw 한 줄 — `throw new Error("GET /auth/v1/verify?token=123456&type=sms failed")`(계약 기준 벡터 V16) | Sentry에 `GET /auth/v1/verify?[redacted] failed`로 보인다 — `token=` · `123456`이 이슈 제목 · 메시지 · 지문 어디에도 없다 | 4 | 대기 |
 | B4 | `adb shell am crash libitum.duru.android` 뒤 앱을 다시 실행 | Java 크래시 이벤트 1건 · 세션이 crashed · `uploadSentryMappingBundled`를 돌린 뒤 스택이 **풀린 클래스 이름**으로 보인다 | 6 | 대기 |
 | B5 | (API 30 이상 에뮬레이터) 네이티브 크래시를 일으킨 뒤 재실행 | tombstone 이벤트가 오는지 · 프레임 모양을 **기록**한다(통과/실패 아님) | — | 대기 |
-| B6 | Sentry 세션 · 이벤트 원문(JSON)에서 `user` · `did` · `ip_address`를 찾는다 | 셋 다 **없다**(spec §0 F12 · C10 확인). 있으면 U2의 전제가 달라진다 → 정정 | 4 | 대기 |
+| B6 | Sentry 세션 · 이벤트 원문(JSON)에서 `user` · `did` · `ip_address` · **`contexts.device.id`**를 찾는다. **JS 예외 이벤트(B2)와 Java 크래시 이벤트(B4) 둘 다**에서 본다(tombstone이 왔으면 B5의 것도) | 넷 다 **없다**(spec §0 F12 · C10 · §11 RV1 확인). `contexts.device`의 다른 키는 있어도 된다 — 어떤 키가 실렸는지 아래 메모에 옮긴다. `device.id`는 SDK가 설치 id를 넣는 자리이고 `beforeSend`가 지우게 고쳤다(리뷰 1회차의 Critical) — **여기서 보이면 식별자가 나가고 있는 것이다. 멈추고 정정으로 되돌린다.** 나머지 셋이 있으면 U2의 전제가 달라진다 → 정정 | 4 | 대기 |
 | B7 | M1 ~ M3 쿼리(spec §7)를 Sentry에서 한 번씩 연다 | spec §7의 쿼리가 수를 낸다 · 통합별 mechanism 이름을 아래 칸에 적는다 | — | 대기 |
 
 B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(어디에도 매달려 있지 않다 — spec §5). 작업 이름 이외의 인자 · 매핑 파일 경로는 계약이 정하지 않았다 — 실행 때 Gradle 출력으로 확인해 아래 「B 단계 메모」에 적는다.
@@ -275,6 +278,9 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 | B7 — tombstone의 mechanism 이름 | |
 | B5 — tombstone 프레임 모양 | |
 | B4 — `uploadSentryMappingBundled` 실행 명령 · 결과 | |
+| B6 — 이벤트 원문의 `contexts.device` 키 목록(값은 옮기지 않는다) | |
+| B6 — 넷(`user` · `did` · `ip_address` · `contexts.device.id`) 각각의 유무, 이벤트 종류별 | |
+| B2 — 오류 탐침부터 화면이 다시 반응할 때까지의 체감 · 측정(메인 스레드 동기 수집 — 리뷰 S4) | |
 
 ## 이 절차로 확인하지 못하는 것
 

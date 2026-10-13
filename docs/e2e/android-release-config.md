@@ -442,6 +442,10 @@ R1 ~ R8의 모의 값 인라인 지정은 그 명령 한 줄에만 적용되므�
 
 - **DSN을 넣지 않고 올려도 된다.** `apps/android/sentry.properties`와 `SENTRY_*` 환경 변수가 없으면 `bundleRelease`는 그대로 성공하고 그 AAB는 Sentry를 초기화하지 않는다(아무것도 보내지 않는다).
   출력 끝의 `> Task :app:uploadSentryMappingRelease SKIPPED` · `Sentry mapping upload skipped: token, org or project is not set.`가 그 상태다.
+- ⚠ ⟨2026-10-13⟩ **`apps/android/sentry.properties`가 이미 있는 작업 트리가 있다** — 사용자가 Android DSN을 그 파일에 넣었다(`auth.token` · 조직 · 프로젝트는 아직 없다). 그 작업 트리에서 만든
+  `release` · `bundled`는 **Sentry로 보내는 빌드다.** 빌드 전에 `test -e apps/android/sentry.properties && cut -d= -f1 apps/android/sentry.properties`로 어떤 키가 들어 있는지 본다(값은 출력하지 않는다).
+  B단계와 데이터 보안 확인이 끝나기 전에 Play에 올릴 AAB는 그 파일을 치운 채(또는 파일이 없는 작업 트리에서) 만든다. 특히 **B6(원문에 `user` · `did` · `ip_address` · `contexts.device.id`가 없다)이 통과하기 전에는
+  DSN을 넣은 AAB를 올리지 않는다** — 설치 id가 나가지 않는다는 근거가 그 전에는 단위 테스트뿐이다(ADR-0058 「정정 기록」).
 - **DSN을 넣어 올리려면** 위 `bundleRelease` **전에** 추적하지 않는 `apps/android/sentry.properties`(`.gitignore`)에 `dsn` · `auth.token` · `defaults.org` · `defaults.project`를 둔다(또는 환경 변수
   `SENTRY_DSN` · `SENTRY_AUTH_TOKEN` · `SENTRY_ORG` · `SENTRY_PROJECT` — 환경 변수가 이긴다). **DSN · 토큰 값은 명령 · 결과 표 · 스크린샷에 적지 않는다.**
   그 전에 [크래시 리포팅 e2e](crash-reporting.md)의 **B단계가 통과해 있어야 한다**(지금은 「대기」다) — 그리고 [Android 데이터 보안](../android-data-safety.md)의 「제출 전에 확인할 것」이 끝나 있어야 한다.
