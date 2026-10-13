@@ -4,7 +4,8 @@
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
 `LegalDocumentModule`·`AudioPlaybackModule`·`SoundEffectsModule`·`CompletionAnnouncementModule`·
 `SpeechRecognitionModule`·`HandwritingTraceModule`·`AppReviewModule`·`SystemBackModule`을
-제공한다. 네이티브 기능 전체의
+제공한다. `MetaAppEventsModule`은 Meta 앱 ID · 클라이언트 토큰이 든 빌드에서만 등록된다(아래 「Meta 앱 이벤트」).
+네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
 크래시 수집(Sentry)은 모듈이 아니다 — 아래 「크래시 리포팅(Sentry)」.
 
@@ -559,6 +560,10 @@ API 31 이상의 스플래시 배경과 아이콘 속성, 띄운 뒤에도 밝�
 `MainActivity`의 이미지 결선(미디어 fetcher · 비동기 인터셉터 없음, `setImageInterceptor`의 자리)은 `pnpm test:android-bundle`(`host-image-redirect.integration.test.mjs`)이 본다.
 계측 `SplashWordmarkHostTest`(7건)는 실제 `MainActivity`에서 스레드 경합을 강제해도 스플래시 워드마크의 이미지 요청이 재작성된 URL로 나가는지(HW1 ~ HW4)와, 워드마크가 늦게 떠도 스플래시가 일찍 닫히거나 갇히지 않는지(HW5 ~ HW7 — 지연 서버와 인자가 있을 때만 돈다)를 확인한다.
 번들 서빙과 `-e bundleUrl`이 필요해 계측 일괄에서는 `notClass`로 뺀다 — 실행 줄 · 판정 · 되돌리기는 위 「번들 안 이미지 경로」의 「계측 `SplashWordmarkHostTest` 실행」에 있다.
+`MetaAppEventsConfigTest` · `MetaAppEventParametersTest` · `MetaAppEventNamesTest`(JUnit 6 · 2 · 1건)는 Meta 앱 이벤트 설정의 순수 판정(값이 없거나 형식이 틀리면 `null`),
+문자열 값만 남기는 파라미터 변환, 와이어 이름 넷이 SDK 상수와 같은지를 확인하며 `./gradlew testDebugUnitTest`로 실행한다.
+매니페스트 · Gradle · 호출 자리의 판정은 `pnpm test:android-bundle`(`host-meta-app-events.integration.test.mjs`)이, 실제 기기에서 SDK가 시작됐는지는 계측 `MetaAppEventsHostTest`(3건)가 본다 —
+실행 줄은 아래 「Meta 앱 이벤트」에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
@@ -655,3 +660,33 @@ ANDROID_HOME="$HOME/Library/Android/sdk" FCM_UDID=emulator-5554 ./apps/android/t
 2026-10-02에는 API 35 Google Play 에뮬레이터에서 1건 통과했다(당시 패키지 `com.libitum.host`). 2026-10-05에 패키지를 `libitum.duru.android`로 바꾼 뒤 새 Firebase 앱 설정으로 API 37 Google Play 에뮬레이터에서 다시 1건 통과했다. 이 검증은 토큰 발급까지만 포함한다. 원격 발송과 알림 수신에는 같은 Firebase 프로젝트에 접근할 수 있는 서버 인증이 추가로 필요하다.
 
 같은 프로젝트의 서비스 계정 JSON을 로컬 파일로 준비하면 [원격 FCM data 메시지 Maestro 절차](../../docs/e2e/android-push-notifications.md#원격-fcm-data-메시지-선택-실행)로 Android 수신·알림 탭을 따로 검증할 수 있다. 파일 경로는 `FCM_SERVICE_ACCOUNT_FILE`로만 전달하며 키를 앱이나 저장소에 복사하지 않는다.
+
+## Meta 앱 이벤트
+
+광고 측정용 Meta(Facebook) 앱 이벤트 SDK `com.facebook.android:facebook-core` `18.3.0`이 들어 있다. 결정은 [ADR-0057](../../docs/adr/0057-meta-app-events.md), 값 넣기 · 수신 확인 · Play Console 순서는 [운영 안내](../../docs/meta-app-events.md), 기기 절차는 [Meta 앱 이벤트 e2e](../../docs/e2e/meta-app-events.md)가 진다. 여기는 이 호스트에서 달라진 것만 적는다.
+
+**값 파일.** `app/meta.properties.example`을 `app/meta.properties`로 복사해 `META_APP_ID`(숫자만) · `META_CLIENT_TOKEN`(공백 없는 한 덩어리)을 채운다. 이 로컬 파일은 Git에서 제외한다(`google-services.json`과 같다). `app/build.gradle`이 파일이 있으면 읽어 `BuildConfig.META_APP_ID` · `BuildConfig.META_CLIENT_TOKEN`에 넣고, 없으면 빈 문자열을 넣는다. 값은 빌드 시점에 박히므로 고친 뒤 다시 빌드한다. **`debug` · `bundled` · `release` 어느 빌드도 값이 없다는 이유로 실패하지 않는다** — `google-services.json`과 달리 release 관문이 없다. 값은 매니페스트로 가지 않는다(`manifestPlaceholders`를 쓰지 않는다).
+
+**값이 없으면 SDK를 부르지 않는다.** `DuruApplication.onCreate`의 끝에서 `MetaAppEventsConfig.from`이 두 값을 판정하고, `null`이면 `MetaAppEvents.start`가 아무것도 하지 않는다. SDK가 스스로 초기화하는 길인 `com.facebook.internal.FacebookInitProvider`는 매니페스트에서 `tools:node="remove"`로 뺐다. 값이 유효하면 `setApplicationId` → `setClientToken` → `sdkInitialize`를 한 번 부른다.
+
+**모듈.** `MetaAppEventsModule`(`logEvent(name, parameters)` 하나)은 SDK가 시작된 빌드에서만 등록된다. 등록은 `MainActivity`의 `registerModule(` 줄이 아니라 `MetaAppEvents.configure(builder)` 안에 있다 — `MainActivity`의 호출 수를 세는 정적 검사(HS2, 11개)는 그래서 이 모듈을 세지 않는다. SDK 클래스를 직접 부르는 파일은 `MetaAppEvents.java` 하나다.
+
+**권한.** 앱 매니페스트가 `com.google.android.gms.permission.AD_ID`를 명시한다. ⚠ **값이 없는 빌드에도 이 권한은 실린다** — Play Console의 「광고 ID」 선언과 데이터 보안 양식을 고치기 전에 이 변경이 든 AAB를 올리지 않는다([운영 안내](../../docs/meta-app-events.md#스토어-고지에서-바뀌는-것)). 병합 매니페스트에는 그 밖에 SDK의 `ACCESS_ADSERVICES_ATTRIBUTION` · `ACCESS_ADSERVICES_AD_ID` · `ACCESS_ADSERVICES_CUSTOM_AUDIENCE` · `ACCESS_ADSERVICES_TOPICS`와 전이 의존 `installreferrer`의 `com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE`가 새로 들어온다. 사용자에게 뜨는 대화상자는 없다. SDK의 비공개 BroadcastReceiver 둘(`com.facebook.CurrentAccessTokenExpirationBroadcastReceiver` · `com.facebook.AuthenticationTokenManager$CurrentAuthenticationTokenChangedBroadcastReceiver`)도 병합된다. 매니페스트 `meta-data`는 `com.facebook.sdk.AutoLogAppEventsEnabled` · `com.facebook.sdk.AdvertiserIDCollectionEnabled` 둘이고 둘 다 `true`다.
+
+**R8.** `proguard-rules.pro`와 `settings.gradle`은 고치지 않았다. `facebook-core`의 소비자 규칙과 Lynx AAR의 모듈 keep으로 `:app:assembleBundled`가 통과한다. `com.facebook.android` 그룹은 vendor-maven 필터 밖이라 `mavenCentral()`에서 받는다. AAR에 네이티브 `.so`가 없어 16 KB 정렬 검사 대상이 늘지 않는다.
+
+### 계측 `MetaAppEventsHostTest` 실행
+
+SDK가 빌드의 값과 같은 상태인지(`MetaAppEvents.started()` · `FacebookSdk.isInitialized()`)와 `FacebookInitProvider`가 설치되지 않았는지를 본다. 번들 서빙 없이 돈다. `bundled` APK와 서명이 달라 덮어쓰지 못하므로 먼저 지운다.
+
+```sh
+cd apps/android
+./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+adb -s <기기> uninstall libitum.duru.android
+adb -s <기기> install -r -t app/build/outputs/apk/debug/app-debug.apk
+adb -s <기기> install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -s <기기> shell am instrument -w -r -e class com.libitum.host.MetaAppEventsHostTest \
+  libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+기대는 `OK (3 tests)`다. **값이 없는 빌드에서는 「꺼짐」인 채로 통과한다**(`false == false`) — 통과가 SDK가 동작한다는 뜻이 아니다. 2026-10-13에 API 37 에뮬레이터(Pixel_8 AVD)에서 값 없는 상태로 3건 통과했다. **값이 있는 빌드로는 기기에서 돌린 적이 없다.**

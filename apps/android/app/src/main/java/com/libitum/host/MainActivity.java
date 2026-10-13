@@ -79,6 +79,7 @@ public final class MainActivity extends Activity {
     builder.registerModule("PushNotificationModule", PushNotificationModule.class, pushNotifications);
     builder.registerModule("SystemBackModule", SystemBackModule.class, this);
     DebugSupport.configure(builder);
+    MetaAppEvents.configure(builder);
     lynxView = builder.build(this);
     lynxView.setImageInterceptor(new HostImageInterceptor(bundled, templateUrl));
     lynxView.addLynxViewClient(new LynxViewClient() {
