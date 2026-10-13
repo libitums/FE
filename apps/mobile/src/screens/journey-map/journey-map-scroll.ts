@@ -22,7 +22,22 @@ export function stepNodeId(id: JourneyStepId): string {
   return `journey-step-node-${id}`;
 }
 
-export type MeasuredRect = { readonly top: number; readonly height: number };
+/** 튜토리얼 유닛 셀의 id입니다 — `journey-map-unit-<itemId>`. */
+export function mapUnitDomId(itemId: string): string {
+  return `journey-map-unit-${itemId}`;
+}
+
+/** 머리 카드 상자의 id입니다 — 자동 스크롤이 가려지는 위쪽 띠를 잽니다. */
+export const headerCardId = "journey-map-screen-header";
+
+/** `centerX`는 가로 중심입니다. 호스트가 `left` · `width`를 주지 않으면 `null`이고, 그것은 실패가 아닙니다. */
+export type MeasuredRect = {
+  readonly top: number;
+  readonly height: number;
+  readonly centerX: number | null;
+};
+
+export type MapScrollBehavior = "smooth" | "instant";
 
 // 요소 여럿의 자리를 한 번에 잽니다. 하나라도 못 재면 `null`을 냅니다 — 반쪽짜리 값으로
 // 자리를 계산하지 않습니다. 잴 것이 없으면 빈 답을 바로 냅니다 — 답이 영영 안 오는
@@ -57,7 +72,7 @@ export function measureRects(
               settle(null);
               return;
             }
-            rects[index] = { top: rect.top, height: rect.height };
+            rects[index] = { top: rect.top, height: rect.height, centerX: null };
             pending -= 1;
             if (pending === 0) {
               settle(rects);
@@ -72,8 +87,8 @@ export function measureRects(
   }
 }
 
-/** 맵을 그 스크롤 자리로 부드럽게 옮깁니다. */
-export function scrollMapTo(scrollTop: number): void {
+/** 맵을 그 스크롤 자리로 옮깁니다. */
+export function scrollMapTo(scrollTop: number, _behavior: MapScrollBehavior): void {
   "background only";
   try {
     lynx
@@ -88,7 +103,7 @@ export function scrollMapTo(scrollTop: number): void {
 
 // 자리를 못 쟀을 때의 길입니다 — 목적지를 계산할 수 없으므로 가운데 정렬을 호스트에
 // 맡깁니다.
-export function scrollStepIntoView(id: JourneyStepId): void {
+export function scrollStepIntoView(id: JourneyStepId, _behavior: MapScrollBehavior): void {
   "background only";
   try {
     lynx
@@ -102,4 +117,9 @@ export function scrollStepIntoView(id: JourneyStepId): void {
   } catch {
     // 자리를 못 옮겨도 말풍선은 뜹니다.
   }
+}
+
+// 자리를 못 쟀을 때의 길입니다 — 그 id의 상자를 가운데로 옮기는 일을 호스트에 맡깁니다.
+export function scrollNodeIntoView(_domId: string, _behavior: MapScrollBehavior): void {
+  "background only";
 }

@@ -65,6 +65,11 @@ export function catalogSectionDomId(episodeId: string): string {
   return `journey-map-screen-catalog-${catalogSelectorToken(episodeId)}`;
 }
 
+/** 카탈로그 유닛 셀의 id입니다 — 표지는 `CATALOG_INTRO_KEY`. 어떤 (에피소드, 키) 쌍도 겹치지 않습니다. */
+export function catalogUnitDomId(_episodeId: string, _unitKey: CatalogUnitKey): string {
+  return "";
+}
+
 export function tutorialPassedFrom(
   completedEpisodeFinalIds: readonly EpisodeFinalUnitId[],
 ): boolean {

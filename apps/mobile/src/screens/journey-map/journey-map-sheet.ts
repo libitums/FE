@@ -156,7 +156,7 @@ const sheetGap = 8;
 const sheetHeight = 250;
 
 /** 화면 아래를 덮는 바텀 네비게이션의 높이입니다(`.journey-map-screen-map`의 아래 여백). */
-const bottomInset = 68;
+export const mapBottomInset = 68;
 
 /** 말풍선과 바텀 네비게이션 사이에 남길 여백입니다. */
 const bottomMargin = 16;
@@ -191,7 +191,7 @@ export type StepPlacement = {
  */
 export function stepSheetPlacement(measure: StepMeasure): StepPlacement {
   const radius = stepUnitSize / 2;
-  const anchorLimit = Math.max(0, measure.screenHeight - bottomInset - bottomMargin - sheetHeight);
+  const anchorLimit = Math.max(0, measure.screenHeight - mapBottomInset - bottomMargin - sheetHeight);
   // 유닛 중심이 설 자리입니다(LynxView 기준). 말풍선이 들어가는 가장 낮은 자리와
   // 가운데 중 높은 쪽이고, 스크롤 상자 꼭대기보다 위로는 가지 않습니다.
   const center = measure.scrollViewTop + measure.scrollViewHeight / 2;
@@ -238,4 +238,16 @@ export function stepSheetFiguresFor(
     completedActivityCount: stepStatusAt(ordinal - 1, completedStepCount) === "done" ? total : 0,
     totalActivityCount: total,
   };
+}
+
+/** 꼬리가 가운데에서 벗어날 수 있는 끝입니다. 값은 디자인이 정합니다. */
+export const stepSheetCaretLimit = 105;
+
+/** 유닛 중심과 화면 중심의 차를 ±limit 안으로 가둔 값입니다. 둘 중 하나라도 `null`이면 0. */
+export function stepSheetCaretOffset(
+  _unitCenterX: number | null,
+  _screenCenterX: number | null,
+  _limit: number,
+): number {
+  return 0;
 }

@@ -28,6 +28,7 @@
 		2B94A3DD2D66149800608971 /* AppleSignInModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608970 /* AppleSignInModule.swift */; };
 		2B94A3DD2D66149800608981 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = 2B94A3DC2D66149800608980 /* fonts */; };
 		2B94A3E12D6614980060892E /* FontScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3E02D6614980060892E /* FontScale.swift */; };
+		7C1D0A012E1000010060AA01 /* ViewportMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A012E1000010060AA02 /* ViewportMetrics.swift */; };
 		2B94A3E22D6614980060892E /* ReducedMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3E32D6614980060892E /* ReducedMotion.swift */; };
 		2B94A3F02D6614980060894A /* HandwritingTraceModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */; };
 		2BE49E032D7720F0000D068C /* main.lynx.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 2BE49E022D7720F0000D068C /* main.lynx.bundle */; };
@@ -93,6 +94,7 @@
 		2B94A3DC2D66149800608980 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = fonts; sourceTree = "<group>"; };
 		2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Host-Bridging-Header.h"; sourceTree = "<group>"; };
 		2B94A3E02D6614980060892E /* FontScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontScale.swift; sourceTree = "<group>"; };
+		7C1D0A012E1000010060AA02 /* ViewportMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewportMetrics.swift; sourceTree = "<group>"; };
 		2B94A3E32D6614980060892E /* ReducedMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReducedMotion.swift; sourceTree = "<group>"; };
 		2B94A3F12D6614980060894B /* HandwritingTraceModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandwritingTraceModule.swift; sourceTree = "<group>"; };
 		2BE49E022D7720F0000D068C /* main.lynx.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = main.lynx.bundle; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 				A51C0DE2E0F4B3A1C2D3E4F7 /* Host.entitlements */,
 				2B94A3E02D6614980060892E /* FontScale.swift */,
 				2B94A3E32D6614980060892E /* ReducedMotion.swift */,
+				7C1D0A012E1000010060AA02 /* ViewportMetrics.swift */,
 				2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */,
 			);
 			path = Host;
@@ -470,6 +473,7 @@
 				4C1D0C5E0A1F2B3C4DCE0003 /* MetaAppEventsModule.swift in Sources */,
 				2B94A3E12D6614980060892E /* FontScale.swift in Sources */,
 				2B94A3E22D6614980060892E /* ReducedMotion.swift in Sources */,
+				7C1D0A012E1000010060AA01 /* ViewportMetrics.swift in Sources */,
 				2B94A3CD2D6613730060892C /* ViewController.swift in Sources */,
 				2B94A3C92D6613730060892C /* AppDelegate.swift in Sources */,
 				2B94A3CB2D6613730060892C /* SceneDelegate.swift in Sources */,

@@ -81,7 +81,7 @@ export function useStepSheet(): StepSheetControls {
       measuringStepId.current = null;
       const [unit, scroll, screen] = rects ?? [];
       if (unit === undefined || scroll === undefined || screen === undefined) {
-        scrollStepIntoView(id);
+        scrollStepIntoView(id, "smooth");
         return;
       }
       const scrollTop = latestScrollTop.current;
@@ -101,7 +101,7 @@ export function useStepSheet(): StepSheetControls {
         anchorLimit: placement.anchorLimit,
       });
       setOpenScrollTop(scrollTop);
-      scrollMapTo(placement.targetScrollTop);
+      scrollMapTo(placement.targetScrollTop, "smooth");
     });
   };
 
