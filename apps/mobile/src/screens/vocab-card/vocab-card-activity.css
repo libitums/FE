@@ -90,7 +90,8 @@
 }
 
 /* 예문 상자 — `AnswerReveal`과 같은 상자 치수입니다. */
-.vocab-card-activity-example {
+.vocab-card-activity-example,
+.learner-profile-preview {
   align-self: stretch;
   display: flex;
   flex-direction: column;
@@ -104,7 +105,8 @@
   background-color: var(--libitum-color-gray-100);
 }
 
-.vocab-card-activity-example-title {
+.vocab-card-activity-example-title,
+.learner-profile-preview-title {
   text-align: center;
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-m-font-family);
@@ -114,7 +116,8 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-.vocab-card-activity-example-text {
+.vocab-card-activity-example-text,
+.learner-profile-preview-text {
   text-align: center;
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-body-l-font-family);
@@ -142,7 +145,8 @@
   letter-spacing: var(--libitum-typography-body-s-letter-spacing);
 }
 
-.vocab-card-activity-example-translation {
+.vocab-card-activity-example-translation,
+.learner-profile-preview-translation {
   text-align: center;
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-body-m-font-family);

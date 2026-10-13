@@ -21,6 +21,7 @@ import "./settings-screen.css";
 // 계정 정보·알림·문서 및 계정 동작을 표시합니다.
 export function SettingsScreen({
   onSelectNavTarget,
+  learnerProfileSummary,
   onSignOut,
   onDeleteAccount,
   onLayerChange,
@@ -35,10 +36,12 @@ export function SettingsScreen({
     title: copy.settings.action[id],
     onNavigate: () => account.open(id),
   }));
+  // 「레슨에 쓰는 이름 · 나라」 줄의 설명이 지금 값을 보입니다.
   const accountItems: readonly SettingsGroupItem[] = settingsNavTargets.map((target) => ({
     id: target,
     trailing: "navigation",
     title: settingsNavLabel(target, copy),
+    description: target === "learner-profile" ? learnerProfileSummary : undefined,
     onNavigate: () => onSelectNavTarget(target),
   }));
 

@@ -8,7 +8,7 @@ import type {
   LearnerProfileRecord,
 } from "../../lib/learner-profile.contract";
 
-export type OnboardingStep = 0 | 1 | 2;
+export type OnboardingStep = 0 | 1 | 2 | 3;
 export type OnboardingActionLabel = "Next" | "Get started";
 // `titleEmphasis`가 있으면 제목 뒤에 한 칸 띄워 강조색으로 잇습니다("with" + "Story").
 export type OnboardingCopy = {

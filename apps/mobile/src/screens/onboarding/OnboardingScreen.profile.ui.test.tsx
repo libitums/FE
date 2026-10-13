@@ -281,10 +281,7 @@ describe("OnboardingScreen — 넷째 스텝(이름 · 나라)", () => {
 
     expect(screen.getByTestId("onboarding-screen")).toHaveAttribute("data-step", "3");
     expect(screen.getByTestId("ui-lynx-text-field-input")).toHaveAttribute("default-value", "Emma");
-    expect(countryCell()).toHaveAttribute(
-      "accessibility-label",
-      `${copy.countryLabel}, France`,
-    );
+    expect(countryCell()).toHaveAttribute("accessibility-label", `${copy.countryLabel}, France`);
   });
 
   it("[UO-8] 스텝 3의 뒤로는 data-step 2로 가고, 시스템 뒤로도 같다 · 나라 고르기가 서 있으면 양식으로만 돌아간다", () => {
@@ -317,10 +314,7 @@ describe("OnboardingScreen — 넷째 스텝(이름 · 나라)", () => {
     goToProfileStep();
 
     expect(screen.getByTestId("ui-lynx-text-field-input")).toHaveAttribute("default-value", "Emma");
-    expect(countryCell()).toHaveAttribute(
-      "accessibility-label",
-      `${copy.countryLabel}, Germany`,
-    );
+    expect(countryCell()).toHaveAttribute("accessibility-label", `${copy.countryLabel}, Germany`);
     expect(screen.getByTestId("learner-profile-preview")).toHaveAttribute("data-kind", "yours");
   });
 

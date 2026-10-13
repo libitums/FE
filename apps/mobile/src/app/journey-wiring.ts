@@ -243,6 +243,8 @@ export function journeyWiring(args: JourneyWiringArgs) {
         dispatch({ type: "push", screen: { name: target } });
         return;
       }
+      // 학습자 프로필 화면의 route가 서면 위 `push` 갈래로 옮깁니다. 그 전에는 열림 이벤트만 셉니다.
+      if (target === "learner-profile") return;
       if (target === "notifications") {
         void openNotificationSettings();
         return;

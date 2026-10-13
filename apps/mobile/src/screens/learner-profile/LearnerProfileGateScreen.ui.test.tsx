@@ -42,7 +42,12 @@ function renderGate() {
   const onSkip = vi.fn<() => void>();
   const onCancel = vi.fn<() => void>();
   render(
-    <LearnerProfileGateScreen port={port} onSubmit={onSubmit} onSkip={onSkip} onCancel={onCancel} />,
+    <LearnerProfileGateScreen
+      port={port}
+      onSubmit={onSubmit}
+      onSkip={onSkip}
+      onCancel={onCancel}
+    />,
   );
   return { onSubmit, onSkip, onCancel };
 }
@@ -160,9 +165,7 @@ describe("LearnerProfileGateScreen", () => {
     fireEvent.tap(wrappedButton("learner-profile-gate-submit"), {});
 
     expect(onSubmit).not.toHaveBeenCalled();
-    expect(screen.getByTestId("learner-profile-fields").textContent).toContain(
-      copy.countryMissing,
-    );
+    expect(screen.getByTestId("learner-profile-fields").textContent).toContain(copy.countryMissing);
     expect(nameField()).toHaveAttribute("data-validation", "none");
     expect(announced).toHaveLength(1);
   });

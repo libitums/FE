@@ -5,8 +5,10 @@
 //
 // **키 union** — `lib/` 밖(화면 · 앱)이 소유한 union은 import하지 않고 같은 멤버를 여기
 // 적습니다(`lib/`는 `screens/` · `app/`을 import하지 않습니다 — ADR-0003). 소비자가
-// `copy.x[key]`로 색인하므로 소유자 쪽 union이 늘면 그 자리에서 TS 오류로 섭니다.
+// `copy.x[key]`로 색인하므로 소유자 쪽 union이 늘면 그 자리에서 TS 오류로 섭니다. 설정 이동 항목
+// (`SettingsNavTarget`)만 타입으로 import합니다 — 항목이 늘면 문구 행이 따라오게 하려는 것입니다.
 
+import type { SettingsNavTarget } from "../screens/settings/settings.contract";
 import type { AnswerResult } from "./answer-result";
 import type { SessionOptionKey } from "./session-options";
 import type { SpecialUnitEntrySource } from "./special-unit-entry-source";
@@ -255,9 +257,7 @@ export type NotificationsCopy = {
 export type SettingsCopy = {
   readonly title: string;
   readonly group: Readonly<Record<"account" | "learning" | "accountActions", string>>;
-  readonly nav: Readonly<
-    Record<"profile" | "notifications" | "feedback" | "privacy-policy" | "terms-of-use", string>
-  >;
+  readonly nav: Readonly<Record<SettingsNavTarget, string>>;
   readonly sessionOption: Readonly<Record<SessionOptionKey, string>>;
   /** 접미 낱말(소문자) — `Auto-play, on` */
   readonly optionState: Readonly<Record<"on" | "off", string>>;

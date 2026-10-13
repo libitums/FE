@@ -39,6 +39,8 @@ export type LearnerProfileForm = {
   readonly draft: LearnerProfileDraft;
   /** 지금 이름 칸에 보일 오류입니다. 금지 문자 · 길이는 치는 즉시, 빈 값은 `noticeIncomplete()` 뒤에만. */
   readonly nameIssue: LearnerNameIssue | null;
+  /** `nameIssue`가 이름 칸에 세울 문구입니다 — 빈 값의 문구는 진입점이 고른 `emptyMessage`입니다. */
+  readonly nameIssueMessage: string | null;
   /** 나라 줄에 보일 오류입니다. 나라가 비었고 `noticeIncomplete()`를 부른 뒤에만. */
   readonly countryIssue: "missing" | null;
   readonly selectedCountry: LearnerCountry | null;
@@ -98,7 +100,11 @@ export type LearnerProfileCopy = {
 };
 
 export type LearnerProfileFieldsProps = { readonly form: LearnerProfileForm };
-export type LearnerCountryPickerProps = { readonly form: LearnerProfileForm };
+export type LearnerCountryPickerProps = {
+  readonly form: LearnerProfileForm;
+  /** 머리 행 오른쪽 끝 자리입니다(에피소드 전 화면의 Skip). */
+  readonly trailing?: ReactNode;
+};
 export type LearnerProfileFrameProps = {
   readonly form: LearnerProfileForm;
   /** 고정 머리 행(뒤로 · 건너뛰기)입니다. */
@@ -116,6 +122,7 @@ export type LearnerProfileTestId =
   | "learner-profile-preview"
   | "learner-profile-preview-line"
   | "learner-profile-name"
+  | "learner-profile-country-error"
   | "ui-lynx-settings-group-item-country"
   | "learner-country-picker"
   | "learner-country-picker-back"

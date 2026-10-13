@@ -47,7 +47,12 @@ function renderSettings(record: LearnerProfileRecord | null) {
   const onSubmit = vi.fn<(next: LearnerProfileRecord) => void>();
   const onExit = vi.fn<() => void>();
   render(
-    <LearnerProfileSettingsScreen record={record} port={port} onSubmit={onSubmit} onExit={onExit} />,
+    <LearnerProfileSettingsScreen
+      record={record}
+      port={port}
+      onSubmit={onSubmit}
+      onExit={onExit}
+    />,
   );
   return { onSubmit, onExit };
 }
@@ -221,7 +226,10 @@ describe("LearnerProfileSettingsScreen", () => {
     stubAnnounceHost();
     const { onSubmit } = renderSettings(null);
 
-    expect(screen.getByTestId("ui-lynx-text-field-input")).not.toHaveAttribute("default-value", "Emma");
+    expect(screen.getByTestId("ui-lynx-text-field-input")).not.toHaveAttribute(
+      "default-value",
+      "Emma",
+    );
     expect(screen.getByTestId("learner-profile-preview")).toHaveAttribute("data-kind", "example");
 
     save();

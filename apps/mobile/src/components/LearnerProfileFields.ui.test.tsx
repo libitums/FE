@@ -186,10 +186,7 @@ describe("LearnerProfileFields", () => {
     render(<Host initial={{ name: "Emma", countryCode: "DE" }} />);
 
     expect(nameInput()).toHaveAttribute("default-value", "Emma");
-    expect(countryCell()).toHaveAttribute(
-      "accessibility-label",
-      `${copy.countryLabel}, Germany`,
-    );
+    expect(countryCell()).toHaveAttribute("accessibility-label", `${copy.countryLabel}, Germany`);
     expect(previewKind()).toBe("yours");
     const expected = port.previewOf("Emma", port.byCode("DE")).lines;
     expect(expected).toHaveLength(2);

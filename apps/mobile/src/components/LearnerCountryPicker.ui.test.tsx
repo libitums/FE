@@ -105,7 +105,9 @@ function rowCodes(): string[] {
     screen
       .getByTestId("learner-country-picker-list")
       .querySelectorAll('[data-testid^="ui-lynx-option-selector-item-"]'),
-  ).map((row) => (row.getAttribute("data-testid") ?? "").replace("ui-lynx-option-selector-item-", ""));
+  ).map((row) =>
+    (row.getAttribute("data-testid") ?? "").replace("ui-lynx-option-selector-item-", ""),
+  );
 }
 
 function row(code: string): HTMLElement {
