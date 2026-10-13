@@ -16,8 +16,9 @@ final class MetaAppEventsModule: NSObject, LynxModule {
   @objc override init() { super.init() }
   @objc init(param _: Any) { super.init() }
 
-  @objc func logEvent(_ name: String, parameters: [String: Any]) {
-    MetaAppEvents.log(name, parameters: Self.stringParameters(from: parameters))
+  /// JS가 `parameters`를 빼거나 `null`로 넘겨도 브리지에서 죽지 않게 옵셔널로 받는다(Android와 같다).
+  @objc func logEvent(_ name: String, parameters: [String: Any]?) {
+    MetaAppEvents.log(name, parameters: Self.stringParameters(from: parameters ?? [:]))
   }
 
   /// 문자열 값만 남긴다. 순수.

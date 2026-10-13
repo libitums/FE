@@ -31,13 +31,13 @@ function mapEvent(event: AnalyticsEvent): MetaAppEvent | null {
 export const metaAppEventFrom: MetaAppEventFrom = mapEvent;
 
 // 원래 sink(PostHog)와 Meta 전달은 서로의 예외를 막지 않습니다 — 각각 삼킵니다.
-function forwardTo(
-  original: ((event: never) => void) | null,
+function forwardTo<T extends AnalyticsEvent>(
+  original: ((event: T) => void) | null,
   logger: MetaAppEventLogger,
-): (event: AnalyticsEvent) => void {
+): (event: T) => void {
   return (event) => {
     try {
-      original?.(event as never);
+      original?.(event);
     } catch {
       // PostHog 쪽 실패가 Meta 전달을 막지 않습니다.
     }
