@@ -438,18 +438,18 @@ R1 ~ R8의 모의 값 인라인 지정은 그 명령 한 줄에만 적용되므�
 빌드가 `Release build needs … google-services.json` 또는 `Native 16 KB page alignment check failed`로 멈추면 업로드하지 말고 메시지를 결과 표에 적어 되돌린다.
 
 **크래시 수집(Sentry) 설정 — ⟨2026-10-13⟩ 이 단계에 값 넷과 도구 하나가 더해졌다.** 결정은 [ADR-0058](../adr/0058-crash-reporting-sentry.md), 값의 자리는 [`apps/android/README.md`](../../apps/android/README.md)의 「크래시 리포팅(Sentry)」이 진다.
-**이 단계(DSN을 넣은 release AAB · 매핑 업로드)는 아직 한 번도 실행되지 않았다.** 본 것은 값이 없을 때 빌드가 그대로 되고 업로드 작업이 SKIPPED라는 것([크래시 리포팅 e2e](crash-reporting.md) A1)과, DSN을 넣은 **`bundled`**가 에뮬레이터에서 이벤트를 만들어 전송을 시도한 것(같은 문서 B단계 1회차 — Sentry 수신은 미확인)까지다.
+**이 단계(DSN을 넣은 release AAB · 매핑 업로드)는 아직 한 번도 실행되지 않았다.** 본 것은 값이 없을 때 빌드가 그대로 되고 업로드 작업이 SKIPPED라는 것([크래시 리포팅 e2e](crash-reporting.md) A1)과, DSN을 넣은 **`bundled`**가 에뮬레이터에서 이벤트를 만들어 전송을 시도한 것(같은 문서 B단계 1회차 — 수신은 사용자가 대시보드에서 확인했다)까지다.
 
 - **DSN을 넣지 않고 올려도 된다.** `apps/android/sentry.properties`와 `SENTRY_*` 환경 변수가 없으면 `bundleRelease`는 그대로 성공하고 그 AAB는 Sentry를 초기화하지 않는다(아무것도 보내지 않는다).
   출력 끝의 `> Task :app:uploadSentryMappingRelease SKIPPED` · `Sentry mapping upload skipped: token, org or project is not set.`가 그 상태다.
 - ⚠ ⟨2026-10-13⟩ **`apps/android/sentry.properties`가 이미 있는 작업 트리가 있다** — 사용자가 Android DSN을 그 파일에 넣었다(`auth.token` · 조직 · 프로젝트는 아직 없다). 그 작업 트리에서 만든
   `release` · `bundled`는 **Sentry로 보내는 빌드다.** 빌드 전에 `test -e apps/android/sentry.properties && cut -d= -f1 apps/android/sentry.properties`로 어떤 키가 들어 있는지 본다(값은 출력하지 않는다).
-  B단계와 데이터 보안 확인이 끝나기 전에 Play에 올릴 AAB는 그 파일을 치운 채(또는 파일이 없는 작업 트리에서) 만든다. B6(원문에 `user` · `did` · `ip_address` · `contexts.device.id`가 없다)은 기기 쪽에서 통과했다(에뮬레이터 1대 · `bundled`) — 남은 것은 대시보드에서의 수신 확인과 서버가 붙이는 IP(프로젝트 설정)다.
+  B단계와 데이터 보안 확인이 끝나기 전에 Play에 올릴 AAB는 그 파일을 치운 채(또는 파일이 없는 작업 트리에서) 만든다. B6(원문에 `user` · `did` · `ip_address` · `contexts.device.id`가 없다)은 기기 쪽에서 통과했다(에뮬레이터 1대 · `bundled`) — 수신과 대시보드의 모습(사용자 수 0 · Device 컨텍스트에 `id` · `name` · `boot_time` 없음)은 사용자가 확인했다(2026-10-13). 남은 것은 서버가 붙이는 IP(프로젝트 설정 「IP 주소 저장 안 함」)다.
   **네이티브(C/C++) 크래시는 API 30 이하 기기에서 Sentry에 보이지 않는다고 보고 출시한다** — API 30에서는 tombstone 이벤트가 오지 않았고 API 34에서는 왔다(31 ~ 33 · 실기 미확인 — ADR-0058 D5). 세션 지표(크래시 없는 세션 비율)는 앱이 세션을 직접 관리하는 우회 뒤의 값이다 — 기기 쪽에서 크래시를 `crashed`로 세는 것은 확인됐고 강제 종료는 정상으로 셈된다(ADR-0058 D6 · 「대가」 12).
   DSN을 넣은 AAB를 올리지 않는다** — 설치 id가 나가지 않는다는 근거가 그 전에는 단위 테스트뿐이다(ADR-0058 「정정 기록」).
 - **DSN을 넣어 올리려면** 위 `bundleRelease` **전에** 추적하지 않는 `apps/android/sentry.properties`(`.gitignore`)에 `dsn` · `auth.token` · `defaults.org` · `defaults.project`를 둔다(또는 환경 변수
   `SENTRY_DSN` · `SENTRY_AUTH_TOKEN` · `SENTRY_ORG` · `SENTRY_PROJECT` — 환경 변수가 이긴다). **DSN · 토큰 값은 명령 · 결과 표 · 스크린샷에 적지 않는다.**
-  그 전에 [크래시 리포팅 e2e](crash-reporting.md)의 **B단계의 남은 것이 끝나 있어야 한다**(1회차는 기기 쪽만 돌았다 — Sentry 수신 · 대시보드 · 매핑으로 풀린 스택이 미확인이다) — 그리고 [Android 데이터 보안](../android-data-safety.md)의 「제출 전에 확인할 것」이 끝나 있어야 한다.
+  그 전에 [크래시 리포팅 e2e](crash-reporting.md)의 **B단계의 남은 것이 끝나 있어야 한다**(수신 · 이슈 · 세션 집계는 사용자가 대시보드에서 확인했다 — 서버가 붙이는 IP · 매핑으로 풀린 스택 · M2 / M3 쿼리가 남았다) — 그리고 [Android 데이터 보안](../android-data-safety.md)의 「제출 전에 확인할 것」이 끝나 있어야 한다.
 - **`sentry-cli`가 PATH에 있어야 한다**(`sentry-cli --version`). 토큰 · 조직 · 프로젝트가 다 있으면 `bundleRelease` 뒤에 `uploadSentryMappingRelease`가 이어서 돌아 `outputs/mapping/release/mapping.txt`를 올린다.
   **토큰은 있는데 `sentry-cli`가 없으면 그 작업이 실패하고 Gradle 호출이 실패로 끝난다** — AAB는 이미 만들어져 있지만([추론] — `finalizedBy`의 순서. 실행해 본 적은 없다), 매핑이 올라가지 않은 AAB를 Play에 올리면 그 버전의 Java 스택을 Sentry에서 읽을 수 없다.
   CLI를 깔고 `./gradlew :app:uploadSentryMappingRelease`만 다시 돌린다(같은 빌드 산출물이 남아 있을 때).

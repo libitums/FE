@@ -12,7 +12,7 @@
 | 단계 | 상태 | 무엇 |
 |---|---|---|
 | **A** | **2026-10-13 실행 — 1회차**(API 30 에뮬레이터 한 대 · 에이전트 실행, 사람 미확인). 아래 「실행 기록」 | DSN 없이 — 빌드 · 초기화 안 됨 · 탐침 P1 ~ P4 · 되돌리기 |
-| **B** | **2026-10-13 실행 — 1회차, 기기 쪽만**(API 30 에뮬레이터 한 대 · `bundled` · 에이전트 실행, 사람 미확인). envelope 원문 확인과 전송 시도까지. **Sentry 수신 · 대시보드 쪽은 미확인(사용자 몫)** · B7과 매핑 업로드는 미실행 | Sentry로 나가는 것 — 세션 · JS 예외 이벤트 · 지우기 · Java 크래시와 매핑 · tombstone · 식별자 없음 · 측정 쿼리 |
+| **B** | **2026-10-13 실행 — 1회차, 기기 쪽만**(API 30 에뮬레이터 한 대 · `bundled` · 에이전트 실행, 사람 미확인). envelope 원문 확인과 전송까지. **수신 · 이슈 · 세션 집계는 사용자가 대시보드에서 확인(2026-10-13, 사람 확인)** — 서버가 붙이는 IP는 미확인 · B7(M2 · M3)과 매핑 업로드는 미실행 | Sentry로 나가는 것 — 세션 · JS 예외 이벤트 · 지우기 · Java 크래시와 매핑 · tombstone · 식별자 없음 · 측정 쿼리 |
 
 ## 전제
 
@@ -230,9 +230,9 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 10-13 13:37:16.196  5871  5871 D DuruCrash: DISABLED 1101 {"rawError":{"stack":"backtrace:\n    at <anonymous> (main-thread.js:3465:13)\n    at <anonymous> (file:///worklet-runtime/main-thread.js:7122:2473963297)\n    at profile (file:///worklet-runtime/main-thread.js:7073:36)\n    at runWorkletImpl (file:///worklet-runtime/main-thread.js:7123:76)\n    at workletRuntime_runWorklet (file:///worklet-runtime/main-thread.js:7119:145)\n","message":"main-thread.js exception: Error: probe-main-thread ","cause":{"cause":"main-thread.js exception: Error: probe-
 ```
 
-## B — DSN을 넣은 빌드 (**상태: 1회차 실행됨 — 기기 쪽만. 수신 · 대시보드는 미확인**)
+## B — DSN을 넣은 빌드 (**상태: 기기 쪽 1회차 + 대시보드 확인(사용자). 서버가 붙이는 IP · 매핑 · B7은 남음**)
 
-2026-10-13에 한 회차가 돌았다(아래 「실행 기록」). **그 회차가 본 것은 기기 밖으로 나가기 직전의 envelope 원문과 전송 시도까지다** — Sentry가 받았는지, 대시보드에 어떻게 보이는지는 아무도 보지 않았다.
+2026-10-13에 한 회차가 돌았다(아래 「실행 기록」). 그 회차가 본 것은 기기 밖으로 나가기 직전의 envelope 원문과 전송 시도까지였고, **수신과 대시보드의 모습은 같은 날 사용자가 직접 확인했다**(아래 「대시보드 확인」).
 아래 단계 표의 「관찰」은 **기기 쪽(envelope)**과 **대시보드 쪽**으로 나뉜다. 대시보드 쪽은 Sentry 계정이 있는 사람이 한다.
 
 ### 방법 — 오프라인에서 envelope을 먼저 읽고, 그 다음에 보낸다
@@ -248,7 +248,7 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 
 ⚠ **캐시가 비는 것은 수신의 증거가 아니다.** SDK가 재시도하지 않는 거절 응답에서도 비워질 수 있다 [추론 — SDK debug 로그가 꺼져 있어 HTTP 응답을 볼 수 없다]. 수신은 대시보드에서 `event_id`로 확인한다.
 
-⚠ **메인 스레드 탐침(`main-thread:bindtap`)을 넣은 번들은 크기 상한을 넘는다** — 1회차의 탐침 번들이 1,731,799 bytes였다(상한 1,722,000. 탐침을 되돌리면 1,721,225). `pnpm size:check`를 탐침 번들에 돌리지 않는다.
+⚠ **메인 스레드 탐침(`main-thread:bindtap`)을 넣은 번들은 크기 상한을 넘는다** — 1회차의 탐침 번들이 1,731,799 bytes였다(당시 상한 1,722,000 — 지금은 1,723,000. 탐침을 되돌리면 1,721,225). `pnpm size:check`를 탐침 번들에 돌리지 않는다.
 
 ### 전제
 
@@ -274,16 +274,16 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 
 | id | 단계 | 관찰(통과 조건) | 대응 AC | 상태 |
 |---|---|---|---|---|
-| B1 | DSN을 넣은 `bundled` 빌드를 설치 · 실행 | **기기**: 캐시에 세션 envelope이 바로 생긴다 — `status: ok` · `init: true` · `attrs = {release: libitum.duru.android@<versionName>+<versionCode>, environment: bundled}`. **대시보드**: 세션이 선다 | 5 | 기기 통과 · **대시보드 미확인** |
-| B2 | A3과 같은 throw를 임시로 넣은 번들로 `bundled` 빌드 · 실행(임시 코드 — 커밋하지 않음) | **기기**: 이벤트 1건 — 태그 `lynx.source: js-background` · `mechanism{type: lynx, handled: true}` · `user` 없음 · `breadcrumbs` 키 없음 · 기기 화면에는 에러 화면 **외의 표시가 없다**. **대시보드**: 이슈 1건 · `handled: yes` · User 칸 비어 있음 | 1 · 4 | 기기 통과 · **대시보드 미확인** |
-| B3 | 메시지에 `a@b.co` · `010-1234-5678` · 한글을 넣은 임시 throw | **기기**: 이벤트의 `value`가 `[email]` · `[number]` · `[text]`이고 envelope 전체에 원문 조각이 0건. **대시보드**: 같은 모습 | 4 | 기기 통과 · **대시보드 미확인** |
-| B3-b | ⟨2026-10-13 리뷰 정정⟩ 스킴 없는 쿼리를 넣은 임시 throw — `GET /auth/v1/verify?token=123456&type=sms`(계약 기준 벡터 V16의 꼴. B3과 한 메시지에 합쳐도 된다) | `…/verify?[redacted]`로 나간다 — `token=` · `123456` · `type=sms`가 메시지 · 지문 · 스택 어디에도 없다 | 4 | 기기 통과 · **대시보드 미확인** |
+| B1 | DSN을 넣은 `bundled` 빌드를 설치 · 실행 | **기기**: 캐시에 세션 envelope이 바로 생긴다 — `status: ok` · `init: true` · `attrs = {release: libitum.duru.android@<versionName>+<versionCode>, environment: bundled}`. **대시보드**: 세션이 선다 | 5 | 기기 통과 · **대시보드 확인**(세션 15 — 사용자) |
+| B2 | A3과 같은 throw를 임시로 넣은 번들로 `bundled` 빌드 · 실행(임시 코드 — 커밋하지 않음) | **기기**: 이벤트 1건 — 태그 `lynx.source: js-background` · `mechanism{type: lynx, handled: true}` · `user` 없음 · `breadcrumbs` 키 없음 · 기기 화면에는 에러 화면 **외의 표시가 없다**. **대시보드**: 이슈 1건 · `handled: yes` · User 칸 비어 있음 | 1 · 4 | 기기 통과 · **대시보드 확인**(이슈 1건 · Unhandled 표시 없음 · 사용자 수 0 — 사용자) |
+| B3 | 메시지에 `a@b.co` · `010-1234-5678` · 한글을 넣은 임시 throw | **기기**: 이벤트의 `value`가 `[email]` · `[number]` · `[text]`이고 envelope 전체에 원문 조각이 0건. **대시보드**: 같은 모습 | 4 | 기기 통과 · **대시보드 확인**(지워진 모습 그대로 — 사용자) |
+| B3-b | ⟨2026-10-13 리뷰 정정⟩ 스킴 없는 쿼리를 넣은 임시 throw — `GET /auth/v1/verify?token=123456&type=sms`(계약 기준 벡터 V16의 꼴. B3과 한 메시지에 합쳐도 된다) | `…/verify?[redacted]`로 나간다 — `token=` · `123456` · `type=sms`가 메시지 · 지문 · 스택 어디에도 없다 | 4 | 기기 통과 · **대시보드 확인**(지워진 모습 그대로 — 사용자) |
 | B2-b | ⟨1회차가 더한 것⟩ 핸들러 throw 하나와, **서로 다른 줄의 메인 스레드 throw 둘**(이름도 다르게) | 핸들러: `js-background` 이벤트 1건. 메인 스레드: `js-main-thread` 이벤트 2건 — 이름이 접두(`main-thread.js exception: `) 없이 제대로 갈리고, **지문 넷째 값(첫 스택 줄)이 서로 다르며 열이 `[number]`가 아니다** | 2 | 기기 통과 |
-| B4-a | `adb shell am crash libitum.duru.android` | **기기**: **죽는 순간**(재실행 전) envelope 1개가 캐시에 써진다 — `level: fatal` · `mechanism{type: UncaughtExceptionHandler, handled: false}` · 같은 envelope의 세션 `status: crashed`. `debug_meta`에 매핑 UUID. 전송은 다음 실행에서 일어난다. **대시보드**: Java 크래시 이벤트 1건 · 세션 crashed | 6 | 기기 통과 · **대시보드 미확인** |
+| B4-a | `adb shell am crash libitum.duru.android` | **기기**: **죽는 순간**(재실행 전) envelope 1개가 캐시에 써진다 — `level: fatal` · `mechanism{type: UncaughtExceptionHandler, handled: false}` · 같은 envelope의 세션 `status: crashed`. `debug_meta`에 매핑 UUID. 전송은 다음 실행에서 일어난다. **대시보드**: Java 크래시 이벤트 1건 · 세션 crashed | 6 | 기기 통과 · **대시보드 확인**(이슈 1건 · Unhandled — 사용자) |
 | B4-b | ⟨2026-10-13 정정⟩ **앱 코드의 프레임이 든 Java 크래시**를 일으키고 `uploadSentryMappingBundled`를 돌린다. **`am crash`로는 안 된다** — 그 이벤트의 프레임 7개는 전부 프레임워크(`ActivityThread$H.handleMessage` 등)라 매핑을 올려도 풀릴 이름이 없다. 앱 코드에서 잡히지 않는 예외를 던지는 임시 줄이 필요하다(커밋하지 않음) — **어디에 어떻게 넣을지는 계약이 아직 정하지 않았다** | 대시보드에서 스택이 **풀린 클래스 이름**(`com.libitum.host.…`)으로 보인다 | 6 | **미실행** — 인증 토큰 없음 · 던지는 방법 미정 |
 | B5 | ⟨2026-10-13 정정⟩ **API 31 이상** 에뮬레이터에서 네이티브 크래시를 일으킨 뒤 재실행(1회차: `A root` 뒤 `A shell kill -SEGV <pid>` → 재실행 → 30초 대기) | tombstone 이벤트가 오는지 · 프레임 모양 · 죽은 실행의 세션 `status`를 **기록**한다(통과/실패 아님) | — | **API 30: 오지 않았다** · **API 34: 왔다**(세 회차, 3회차 전송) · API 37: 부팅 실패로 미측정 · API 31 ~ 33: 미실행(아래) |
-| B6 | 세션 · 이벤트 원문(JSON)에서 `user` · `did` · `ip_address` · **`contexts.device.id`**를 찾는다. **JS 예외 이벤트와 Java 크래시 이벤트 둘 다**에서 본다(tombstone이 왔으면 그것도). 기기의 설치 id · `android_id` 문자열도 envelope 전체에서 찾는다 | 넷 다 **없다**(spec §0 F12 · C10 · §11 RV1). 문자열 대조 0건. `contexts.device`의 다른 키는 있어도 된다 — 어떤 키가 실렸는지 메모에 옮긴다. `contexts.device.boot_time`도 **없어야 한다**(`438cc723`부터 지운다 — 1회차의 envelope에는 있었다). **넷 가운데 하나라도 보이면 식별자가 나가고 있는 것이다. 보내지 말고 멈추고 정정으로 되돌린다.** **대시보드**: 받은 이벤트에 서버가 붙인 IP가 없는지(프로젝트 설정 「IP 주소 저장 안 함」) | 4 | 기기 통과 · **서버 쪽 미확인** |
-| B7 | M1 ~ M3 쿼리(spec §7)를 Sentry에서 한 번씩 연다 | spec §7의 쿼리가 수를 낸다 · 통합별 mechanism 이름을 아래 칸에 적는다 | — | **미실행** — 대시보드 접근 없음 |
+| B6 | 세션 · 이벤트 원문(JSON)에서 `user` · `did` · `ip_address` · **`contexts.device.id`**를 찾는다. **JS 예외 이벤트와 Java 크래시 이벤트 둘 다**에서 본다(tombstone이 왔으면 그것도). 기기의 설치 id · `android_id` 문자열도 envelope 전체에서 찾는다 | 넷 다 **없다**(spec §0 F12 · C10 · §11 RV1). 문자열 대조 0건. `contexts.device`의 다른 키는 있어도 된다 — 어떤 키가 실렸는지 메모에 옮긴다. `contexts.device.boot_time`도 **없어야 한다**(`438cc723`부터 지운다 — 1회차의 envelope에는 있었다). **넷 가운데 하나라도 보이면 식별자가 나가고 있는 것이다. 보내지 말고 멈추고 정정으로 되돌린다.** **대시보드**: 받은 이벤트에 서버가 붙인 IP가 없는지(프로젝트 설정 「IP 주소 저장 안 함」) | 4 | 기기 통과 · 대시보드의 사용자 수 0 · Device 컨텍스트 확인(사용자) · **서버가 붙이는 IP는 미확인** |
+| B7 | M1 ~ M3 쿼리(spec §7)를 Sentry에서 한 번씩 연다 | spec §7의 쿼리가 수를 낸다 · 통합별 mechanism 이름을 아래 칸에 적는다 | — | **M1만 확인**(사용자 — 세션 15 · Crash Free 80 %) · M2 · M3 쿼리는 미실행 |
 
 **B5 — API 30에서는 오지 않았고 API 34에서는 왔다.** API 30의 결과는 실패가 아니라 계약의 범위가 틀린 것이었다.
 
@@ -340,7 +340,7 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 - **JS 소스맵** — 이번 조각에 넣지 않았다(spec C9). Sentry의 JS 스택은 줄여진 줄 · 열(`main.lynx.bundle:1:<열>`) 그대로다. **열을 손으로 푸는 절차는 계약이 정하지 않았다** — 이 문서에 적지 않는다(보류).
 - **debug 빌드의 Sentry 전송** — debug는 DSN이 있어도 보내지 않는다(spec C7 · U5).
 - **C/C++ 크래시의 나머지 범위** — API 30에서는 오지 않고 API 34에서는 온다(B5). **API 31 ~ 33 · 35 이상 · 실기 · 앱 라이브러리 안에서 난 크래시는 [미확인]이다.**
-- **Sentry가 받았는지와 대시보드에 보이는 모든 것**(이슈 묶음 · `handled` 표시 · 세션 수치 · M1 ~ M3 · 서버가 붙이는 IP) — 계정이 있는 사람이 본다.
+- **대시보드에서 아직 안 본 것** — 서버가 붙이는 IP(프로젝트 설정 「IP 주소 저장 안 함」) · M2 · M3 쿼리 · 앱 라이브러리 안에서 난 네이티브 크래시의 이슈 묶임. 수신 · 이슈 묶음 · `handled` 표시 · 세션 수치는 사용자가 확인했다(아래 「대시보드 확인」).
 - **ANR 이벤트** · 거부된 promise · 타이머 throw의 **이벤트** 모양 · 온라인에서 바로 보낼 때의 envelope — 1회차 탐침에 없었다.
 - **`boot_time`을 지운 뒤의 envelope** — `438cc723` 뒤로 기기에서 다시 뜨지 않았다.
 - ~~**`bundled`(R8) APK에서 JS 오류가 호스트에 닿는지**~~ — B단계 1회차가 봤다(경계 렌더 · 핸들러 · 메인 스레드). A단계로는 볼 수 없다(`DuruCrash` 로그가 debug 전용).
@@ -391,7 +391,7 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 **B 1회차 메모**
 
 - **수신 여부는 미확인이다.** 네트워크를 켜고 재실행하자 캐시의 envelope 9개가 약 2초 뒤 2개, 약 5초 뒤 0개가 됐고 30초 뒤에도 0이었다. logcat에 `Sentry` 태그 0줄(SDK debug 꺼짐) · 예외 0.
-  **본 것은 「전송을 시도했고 캐시가 비워졌다」까지다** — HTTP 응답을 보지 못했다. 아래 표의 `event_id`를 대시보드에서 찾는 것은 사용자 몫이다.
+  실행자가 본 것은 「전송을 시도했고 캐시가 비워졌다」까지다 — HTTP 응답을 보지 못했다. **⟨갱신⟩ 그 뒤 사용자가 대시보드에서 다섯 건이 모두 도착한 것을 확인했다**(아래 「대시보드 확인」).
 - **대시보드에서 찾을 것.** 전송 시각은 전부 2026-10-13 05:36:50 ~ 05:36:55Z(KST 14:36:50 ~ 55) — 그 전까지는 오프라인 캐시에 있었다. 공통: `release: libitum.duru.android@0.1.0+2` · `environment: bundled` · `dist: 2` ·
   기기 `sdk_gphone_arm64`(에뮬레이터).
 
@@ -428,7 +428,7 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 | 2026-10-13 (KST) | 임시 AVD — API 37 `google_apis_playstore_ps16k` · arm64-v8a · pixel_8. HEAD `669a48a5` | 에이전트 실행, 사람 미확인 | **측정하지 못함** — AVD가 부팅되지 않음 | 콜드 부팅 · `-accel on` 등 네 번 모두 `hvf is not enabled` · `mprotect failed: Permission denied`. 같은 셸에서 API 30 이미지는 떴다. 우회하지 않고 멈췄다 |
 | 2026-10-13 15:36 ~ 15:45 | 임시 AVD — API 34 `google_apis` · arm64-v8a · pixel_8. HEAD `669a48a5` · `bundled`(DSN · R8 · 탐침 없음) | 에이전트 실행, 사람 미확인 | **tombstone 이벤트가 왔다 · 보내지 않음** | 이벤트에 무작위 앱 설치 경로가 48번(`debug_meta.images[].code_file` 7 · 스레드 프레임 `package` 41) — 같은 설치의 크래시를 잇는 값이라 멈추고 앱을 지웠다. 그 뒤 `1130979c`가 지우게 고쳤다 |
 | 2026-10-13 15:41 ~ 15:47 | 같은 이미지(다시 만듦) · HEAD `1130979c` | 에이전트 실행, 사람 미확인 | **설치 경로 0건 · 보내지 않음** | `[install]`로 바뀐 자리 48. 시스템 라이브러리의 로드 주소가 다른 프로세스의 `/proc/<pid>/maps`와 같다(재부팅 전까지 기기 전체에서 같은 값)는 것을 찾아 멈췄다 — 사용자가 「남는 위험으로 두고 보낸다」를 골랐다 |
-| 2026-10-13 16:00 ~ 16:05 | 같은 이미지(다시 만듦) · HEAD `1130979c` | 에이전트 실행, 사람 미확인 | **tombstone 이벤트 1건 전송 시도 · 수신 미확인** | `event_id` `eeab5ab5c65e4e1380bc0f8989720c2f` — 발생 07:02:40 UTC(KST 16:02:40), 전송 07:03:46 ~ 49 UTC. envelope 7개가 3초 안에 비워졌고 연결 오류 로그 0. 식별자 · 설치 경로 · `boot_time` · `ro.serialno` 0건. 대시보드에 보일 모양: `SIGSEGV: Segfault` · `platform: native` · `level: fatal` · mechanism `Tombstone` · `release: libitum.duru.android@0.1.0+2` · `environment: bundled`. 세션 관찰은 B5 아래 문단 |
+| 2026-10-13 16:00 ~ 16:05 | 같은 이미지(다시 만듦) · HEAD `1130979c` | 에이전트 실행, 사람 미확인 | **tombstone 이벤트 1건 전송 · 수신 확인(사용자, 대시보드 — 이슈 DURU-ANDROID-6)** | `event_id` `eeab5ab5c65e4e1380bc0f8989720c2f` — 발생 07:02:40 UTC(KST 16:02:40), 전송 07:03:46 ~ 49 UTC. envelope 7개가 3초 안에 비워졌고 연결 오류 로그 0. 식별자 · 설치 경로 · `boot_time` · `ro.serialno` 0건. 대시보드에 보일 모양: `SIGSEGV: Segfault` · `platform: native` · `level: fatal` · mechanism `Tombstone` · `release: libitum.duru.android@0.1.0+2` · `environment: bundled`. 세션 관찰은 B5 아래 문단 |
 
 세 회차 모두 앱을 지우고 임시 AVD를 삭제했다. 원문(envelope 사본 — DSN · public key · 설치 경로 토큰을 지운 것)은 하네스 작업 폴더의 `logs/e2e-tombstone-api34*/`에 있다(저장소 밖).
 
@@ -436,4 +436,28 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 
 | 일시 | 기기 | 확인자 | 결과 | 메모 |
 |---|---|---|---|---|
-| 2026-10-13 16:16 ~ 16:25 (KST) | 임시 AVD — API 34 `google_apis` · arm64-v8a · pixel_8. HEAD `48bc8607` · `bundled`(DSN · R8 · 탐침 없음) | 에이전트 실행, 사람 미확인 | **통과**(B5 아래 「세션 우회 확인」 표) · 이벤트 2건 전송 시도 · **수신 미확인** | 전부 오프라인에서 단계마다 캐시를 꺼내 새 envelope만 읽고 마지막에 보냈다(envelope 12개 → 9초 뒤 0개 · 전송 오류 로그 0). `event_id`: tombstone `465a16e08abb4441a008758a628c8b15`(발생 07:19:38 UTC · KST 16:19:38) · Java 크래시 `c6c88867b50e45bba656018a78f36a82`(07:20:09 UTC · KST 16:20:09). 식별자 · 설치 경로 · `boot_time` · `ro.serialno` 0건, 세션 `attrs`는 `release` · `environment` 둘뿐. `am crash` 직후 재실행에서 시스템의 「keeps stopping」 대화상자가 떠 한 번 닫고 다시 실행했다(시스템 동작). **못 한 것**: 서버 집계 · 마지막 두 세션의 끝 상태(즉시 전송) · ANR · API 30 |
+| 2026-10-13 16:16 ~ 16:25 (KST) | 임시 AVD — API 34 `google_apis` · arm64-v8a · pixel_8. HEAD `48bc8607` · `bundled`(DSN · R8 · 탐침 없음) | 에이전트 실행, 사람 미확인 | **통과**(B5 아래 「세션 우회 확인」 표) · 이벤트 2건 전송 · **수신 확인(사용자, 대시보드 — 이슈 DURU-ANDROID-6 · -7)** | 전부 오프라인에서 단계마다 캐시를 꺼내 새 envelope만 읽고 마지막에 보냈다(envelope 12개 → 9초 뒤 0개 · 전송 오류 로그 0). `event_id`: tombstone `465a16e08abb4441a008758a628c8b15`(발생 07:19:38 UTC · KST 16:19:38) · Java 크래시 `c6c88867b50e45bba656018a78f36a82`(07:20:09 UTC · KST 16:20:09). 식별자 · 설치 경로 · `boot_time` · `ro.serialno` 0건, 세션 `attrs`는 `release` · `environment` 둘뿐. `am crash` 직후 재실행에서 시스템의 「keeps stopping」 대화상자가 떠 한 번 닫고 다시 실행했다(시스템 동작). **못 한 것**: 서버 집계 · 마지막 두 세션의 끝 상태(즉시 전송) · ANR · API 30 |
+
+### 대시보드 확인
+
+| 일시 | 대상 | 확인자 | 결과 | 메모 |
+|---|---|---|---|---|
+| 2026-10-13 | Sentry 대시보드 — Android 프로젝트, 릴리스 `libitum.duru.android@0.1.0+2` · `environment: bundled` | **사용자, 대시보드(사람 확인)** | **보낸 이벤트 8건 전부 도착 · 이슈 7개 · 사용자 수 0 · 세션 15 · Crash Free Sessions 80 %** | 아래 |
+
+| 이슈 | 제목 | 이벤트 수 | 보낸 회차 · `event_id` |
+|---|---|---|---|
+| DURU-ANDROID-5 | `Error: probe-b [email] [number] [text] GET /auth/v1/verify?[redacted]` | 1 | B 1회차 · `7afec8f2…` |
+| DURU-ANDROID-3 | `TypeError: probe-b-handler` | 1 | B 1회차 · `701f929b…` |
+| DURU-ANDROID-2 | `TypeError: probe-b-mt-one` | 1 | B 1회차 · `275f3897…` |
+| DURU-ANDROID-4 | `RangeError: probe-b-mt-two` | 1 | B 1회차 · `ab8ee1ae…` |
+| DURU-ANDROID-1 | `RemoteServiceException: shell-induced crash` | 1 | B 1회차 · `9b9d538c…` |
+| DURU-ANDROID-6 | `__epoll_pwait` Segfault | 2 | tombstone 3회차 `eeab5ab5…` · 세션 우회 확인 회차 `465a16e0…` |
+| DURU-ANDROID-7 | `RemoteServiceException$CrashedByAdbException` | 1 | 세션 우회 확인 회차 `c6c88867…` |
+
+- **보내지 않은 tombstone 둘**(1 · 2회차 — `fd385651…` · `28e4d140…`)**은 대시보드에 없다**(이슈 6의 이벤트 수가 2). 「캐시가 비워진 것은 수신의 증거가 아니다」라는 위 주의는 절차로는 그대로 두되, 이 회차들에 대해서는 수신이 확인됐다.
+- **사용자 수**: 모든 이슈에서 0. **Unhandled 표시**: JS 예외 넷에는 없고 크래시 셋(이슈 1 · 6 · 7)에만 있다. **메인 스레드 둘은 다른 이슈로 갈렸다**(2 · 4). **지우기 결과가 제목에 그대로 보인다**(5).
+- **세션**: Total Sessions 15 = B 1회차 4 + tombstone 3회차 4 + 세션 우회 확인 회차 7. Crash Free Sessions 80 % = crashed 3/15 — B 1회차의 Java 크래시 · 우회 확인 회차의 SEGV · Java 크래시.
+  **우회 전인 tombstone 3회차의 SEGV는 crashed에 들지 않았다**(그때 그 세션이 버려졌다는 기기 쪽 관찰과 맞는다). → tombstone 쪽 `crashed` 세션이 이벤트와 다른 envelope이어도 서버가 집계한다.
+- **Device 컨텍스트**(API 34 이벤트): Architectures · Brand · Family · Manufacturer · Memory Size · Model · Model Id · Processor Count · Processor Frequency · Screen Density · Screen DPI · Screen Height / Width Pixels · Simulator. `id` · `name` · `boot_time` 없음.
+- 네이티브 크래시 이슈의 제목은 크래시 스레드 맨 위 프레임 `__epoll_pwait`다 — 외부 신호로 죽여 대기 프레임이 맨 위였다. 앱 라이브러리 안에서 난 크래시가 어떻게 묶이는지는 미확인.
+- **이 확인이 보지 않은 것**: 서버가 붙이는 IP(프로젝트 설정 「IP 주소 저장 안 함」을 켰는지 사용자 확인 없음) · M2 · M3 쿼리(B7) · 매핑으로 풀린 스택 · release 빌드 · ANR · API 31 ~ 33 · 실기.

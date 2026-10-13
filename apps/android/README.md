@@ -408,7 +408,7 @@ A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 L
 
 `release` · `bundled` 빌드는 DSN이 들어 있으면 Java/Kotlin 크래시 · JS 예외 · 세션을 Sentry로 보낸다(ANR 통합도 켜져 있다 — 이벤트를 본 적은 없다). **네이티브(C/C++) 크래시는 API 34에서는 오고 API 30에서는 오지 않는다**(아래 「NDK를 넣지 않았다」). 결정 · 확인한 것과 못 한 것은
 [ADR-0058](../../docs/adr/0058-crash-reporting-sentry.md)이, 내보내는 값의 목록은 [Android 데이터 보안](../../docs/android-data-safety.md)이 진다 — 여기에는 다루는 법만 적는다.
-**2026-10-13에 DSN을 넣은 `bundled`가 API 30 에뮬레이터에서 한 번 돌았다**(Android DSN은 사용자가 `sentry.properties`에 넣었고 인증 토큰 · 조직 · 프로젝트는 아직 없다). 기기 밖으로 나가기 직전의 envelope 원문을 확인했고 전송을 시도했다 — **Sentry가 받았는지는 미확인이다**([크래시 리포팅 e2e](../../docs/e2e/crash-reporting.md) B단계 실행 기록).
+**2026-10-13에 DSN을 넣은 `bundled`가 API 30 에뮬레이터에서 한 번 돌았다**(Android DSN은 사용자가 `sentry.properties`에 넣었고 인증 토큰 · 조직 · 프로젝트는 아직 없다). 기기 밖으로 나가기 직전의 envelope 원문을 확인했고 보냈다. 같은 날 API 34에서 tombstone과 세션 우회도 확인해 보냈다 — **사용자가 Sentry 대시보드에서 수신을 확인했다**(이벤트 8건 전부 도착 · 이슈 7개 · 사용자 수 0 · 세션 15 · Crash Free Sessions 80 % — 서버가 붙이는 IP · 매핑으로 풀린 스택 · release 빌드는 아직 확인되지 않았다. [크래시 리포팅 e2e](../../docs/e2e/crash-reporting.md) B단계 실행 기록).
 
 **설정 값 넷.** 환경 변수를 먼저 읽고, 없으면 추적하지 않는 `apps/android/sentry.properties`(`.gitignore` — 토큰이 든다. 커밋하지 않는다)를 읽고, 그것도 없으면 빈 값이다(`app/sentry.gradle`).
 
