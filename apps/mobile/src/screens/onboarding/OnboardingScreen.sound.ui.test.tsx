@@ -32,6 +32,7 @@ test("온보딩의 다음·뒤로·시작 버튼은 탭마다 가벼운 버튼�
   next();
   next();
   next();
+  next();
 
-  expect(sounds).toEqual(["button", "button", "button", "button", "button", "complete"]);
+  expect(sounds).toEqual(["button", "button", "button", "button", "button", "button", "complete"]);
 });

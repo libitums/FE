@@ -107,7 +107,7 @@ describe("OnboardingScreen", () => {
     expect(currentPage()).toBe("3");
   });
 
-  it("[OB-U5] 마지막 스텝 전에는 onComplete가 0회, 마지막에서 1회다", () => {
+  it("[OB-U5] 마지막(넷째) 스텝 전에는 onComplete가 0회, 마지막에서 1회다", () => {
     const onComplete = vi.fn();
     render(
       <OnboardingScreen
@@ -121,11 +121,13 @@ describe("OnboardingScreen", () => {
     expect(onComplete).not.toHaveBeenCalled();
     next(); // 1 → 2
     expect(onComplete).not.toHaveBeenCalled();
-    next(); // 2 → 완료
+    next(); // 2 → 3(이름 · 나라 양식) — 셋째 뒤에도 완료가 아니다
+    expect(onComplete).not.toHaveBeenCalled();
+    next(); // 3 → 완료(양식이 빈 채라 건너뜀)
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
-  it("[OB-U6] 액션 라벨이 마지막에서 갈린다(Next → Get started)", () => {
+  it("[OB-U6] 액션 라벨이 마지막(넷째)에서 갈린다(Next → Get started)", () => {
     render(
       <OnboardingScreen
         onComplete={vi.fn()}
@@ -139,8 +141,13 @@ describe("OnboardingScreen", () => {
     next();
     expect(action).toHaveTextContent(onboardingActionLabel(1));
     next();
+    // 셋째 스텝도 아직 `Next`이고, 마지막(넷째) 스텝에서 `Get started`로 갈린다.
     expect(action).toHaveTextContent(onboardingActionLabel(2));
-    expect(onboardingActionLabel(2)).not.toBe(onboardingActionLabel(0));
+    expect(onboardingActionLabel(2)).toBe(onboardingActionLabel(0));
+    next();
+    expect(screen.getByTestId("onboarding-screen")).toHaveAttribute("data-step", "3");
+    expect(action).toHaveTextContent("Get started");
+    expect(action).not.toHaveTextContent(onboardingActionLabel(0));
   });
 
   // OB-U7 — 진행 래퍼에 이름 있는 accessibility-element가 실재하고, 그 이름이
@@ -297,7 +304,7 @@ describe("OnboardingScreen", () => {
       );
       expect(screen.getByTestId("onboarding-screen-progress")).toHaveAttribute(
         "accessibility-label",
-        "Step 1 of 3",
+        "Step 1 of 4",
       );
       expect(screen.getByTestId("ui-lynx-page-indicator")).toHaveAttribute(
         "accessibility-element",
