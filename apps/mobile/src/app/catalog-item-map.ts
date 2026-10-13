@@ -48,7 +48,10 @@ function wordOrderItemOf(item: ItemOf<"WORD_ORDER">, port: CatalogItemPort): Cat
 const isPermutation = (values: readonly number[]): boolean =>
   [...values].sort((a, b) => a - b).every((value, index) => value === index);
 
-/** 대화 순서 맞추기입니다. 정답 인덱스는 원래 타일 기준이라 섞인 자리로 옮깁니다. */
+/**
+ * 대화 순서 맞추기입니다 — 대화 조립으로 그려집니다(지시문 말풍선 없이 칸마다 화자가 번갈아 섭니다). 정답
+ * 인덱스는 원래 타일 기준이라 섞인 자리로 옮깁니다.
+ */
 function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): CatalogMappedItem {
   const tiles = item.tiles.map((tile) => koOf(port, tile.ko));
   const prompt = koOf(port, item.context.ko);
@@ -60,21 +63,12 @@ function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): Cat
     isPermutation(item.answer);
   if (!valid) return skippedItem(item, "malformed");
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
-  const instruction = instructionOf(port, item.prompt);
   return sentenceOrder(item.id, {
     prompt,
     chips: order.map((index) => tiles[index] ?? ""),
     answerOrder: item.answer.map((tile) => order.indexOf(tile)),
-    ...(instruction === undefined
-      ? {}
-      : {
-          instruction,
-          support: {
-            romanization: latinOf(port, item.context.roman) ?? "",
-            translation: instruction,
-            instruction,
-          },
-        }),
+    dialogue: true,
+    ...optionalField("instruction", instructionOf(port, item.prompt)),
   });
 }
 

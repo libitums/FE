@@ -24,7 +24,8 @@ import {
 import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import type { SessionOptions } from "../../lib/session-options";
-import type { ActivityFinish } from "../learning/activity-finish";
+import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
+import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import type { ListeningQuestion } from "./listening-questions";
 
 import "./listening-screen.css";
@@ -55,6 +56,8 @@ export type ListeningActivityProps = {
   readonly onFinish: ActivityFinish;
   readonly sessionOptions: SessionOptions;
   readonly gemCount: number;
+  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  readonly lesson?: LessonPosition;
 };
 
 /** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
@@ -82,6 +85,7 @@ export function ListeningActivity({
   onFinish,
   sessionOptions,
   gemCount,
+  lesson,
 }: ListeningActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(listeningSessionReducer, initialListeningSessionState);
@@ -135,24 +139,33 @@ export function ListeningActivity({
   // 응답했는가(`selectedChoiceIndex`). 응답 여부를 `hasAnswered`로 읽으면서 dep에는
   // 그것이 보는 필드를 적습니다 — 「응답했다」의 정본은 여전히 그 함수 하나입니다.
   // `dispatch`는 `useReducer`가 고정해 줍니다.
-  const advance = useMemo(
-    () =>
-      question !== null && hasAnswered(state)
-        ? {
-            label: copy.common.continue,
-            run: () => dispatch({ type: "nextQuestion" }),
-            delayMs: 2500,
-          }
-        : undefined,
-    [question, state.selectedChoiceIndex, copy],
+  //
+  // 레슨의 중간 활동이면 마지막 문항에서 완료 카드를 거치지 않고 곧바로 결과를 올려 다음 학습형으로 갑니다.
+  const advance = useMemo(() => {
+    const selected = state.selectedChoiceIndex;
+    if (question === null || selected === null) return undefined;
+    const handsOff = handsOffAfter(lesson, state.questionIndex, questions.length);
+    return {
+      label: copy.common.continue,
+      run: () =>
+        handsOff
+          ? onFinish(sessionAnswerResults(questions, [...state.answeredChoiceIndexes, selected]), 0)
+          : dispatch({ type: "nextQuestion" }),
+      delayMs: 2500,
+    };
+  }, [question, state.selectedChoiceIndex, copy]);
+  const counter = lessonCounter(
+    lesson,
+    question === null ? Math.max(0, questions.length - 1) : state.questionIndex,
+    questions.length,
   );
 
   return (
     <LearningShell
       form="listening"
       // 완료 화면은 마지막 문항의 N/N을 유지하며 별도 문항으로 세지 않습니다.
-      questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
-      questionCount={questions.length}
+      questionIndex={counter.questionIndex}
+      questionCount={counter.questionCount}
       complete={complete}
       instruction={question?.instruction ?? copy.listening.instruction}
       onExit={onExit}

@@ -6,6 +6,7 @@ import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { AudioUnavailableControl } from "../../components/AudioUnavailableControl";
 import { announceCompletion } from "../../lib/accessibility";
 import { useUiCopy } from "../../lib/ui-copy";
+import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { LearningShell } from "../learning/LearningShell";
 import { MessengerKeyboard } from "../messenger/MessengerKeyboard";
@@ -36,6 +37,7 @@ export function TypingActivity({
   gemCount,
   onExit,
   onFinish,
+  lesson,
 }: TypingActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(typingSessionReducer, initialTypingSessionState);
@@ -44,6 +46,11 @@ export function TypingActivity({
   const question = complete ? null : questions[state.questionIndex];
   const result = question == null ? null : typingResultAt(question, state);
   const typed = typedTextOf(state);
+  const counter = lessonCounter(
+    lesson,
+    question == null ? Math.max(0, questions.length - 1) : state.questionIndex,
+    questions.length,
+  );
 
   // 종료 상태가 처음 존재하게 되는 순간 한 번입니다(듣기와 같은 규칙 — 취소할 자원이 아닙니다).
   useEffect(() => {
@@ -63,7 +70,14 @@ export function TypingActivity({
           run: () => onFinish(typingSessionResults(questions, state.submitted), 0),
         }
       : state.phase === "checked"
-        ? { label: copy.common.next, run: () => dispatch({ type: "nextQuestion" }) }
+        ? {
+            label: copy.common.next,
+            // 레슨의 중간 활동은 마지막 문항 뒤 완료 카드 없이 곧바로 결과를 올립니다.
+            run: () =>
+              handsOffAfter(lesson, state.questionIndex, questions.length)
+                ? onFinish(typingSessionResults(questions, state.submitted), 0)
+                : dispatch({ type: "nextQuestion" }),
+          }
         : canCheckTyping(state)
           ? { label: copy.common.check, run: () => dispatch({ type: "check" }), sound: "none" }
           : undefined;
@@ -77,8 +91,8 @@ export function TypingActivity({
     <LearningShell
       form="typing"
       gemCount={gemCount}
-      questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
-      questionCount={questions.length}
+      questionIndex={counter.questionIndex}
+      questionCount={counter.questionCount}
       complete={complete}
       instruction={question?.instruction || copy.typing.instruction}
       onExit={onExit}

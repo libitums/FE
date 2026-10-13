@@ -1,6 +1,6 @@
 // 타자 입력 활동의 계약입니다. 타입만 둡니다.
 
-import type { ActivityFinish } from "../learning/activity-finish";
+import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 
 export type TypingCueKind = "dictation" | "translation" | "pattern";
 
@@ -40,6 +40,8 @@ export type TypingActivityProps = {
   readonly gemCount: number;
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
+  /** 카탈로그 레슨 안의 위치입니다. 주지 않으면 이 활동이 한 세션입니다. */
+  readonly lesson?: LessonPosition;
 };
 
 export type TypingCopy = {

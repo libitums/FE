@@ -110,11 +110,7 @@ export type ListeningCopy = {
 
 export type WordChoiceCopy = { readonly instruction: string };
 
-export type SentenceOrderCopy = {
-  readonly instruction: string;
-  /** 놓인 조각의 낭독 — 서수 접미 대신 `position n` */
-  readonly placedChip: (text: string, position: number) => string;
-};
+export type { SentenceOrderCopy } from "./sentence-order-copy.contract";
 
 export type SpeakingCopy = {
   readonly instruction: string;

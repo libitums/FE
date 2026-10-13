@@ -20,7 +20,8 @@ import {
 } from "./word-choice";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
-import type { ActivityFinish } from "../learning/activity-finish";
+import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
+import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import type { WordChoiceQuestion } from "./word-choice-questions";
 
 import "./word-choice-screen.css";
@@ -50,6 +51,8 @@ export type WordChoiceActivityProps = {
   readonly questions: readonly WordChoiceQuestion[];
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
+  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  readonly lesson?: LessonPosition;
 };
 
 /**
@@ -79,6 +82,7 @@ export function WordChoiceActivity({
   questions,
   onExit,
   onFinish,
+  lesson,
 }: WordChoiceActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(wordChoiceSessionReducer, initialWordChoiceSessionState);
@@ -119,16 +123,28 @@ export function WordChoiceActivity({
   //
   // **참조가 곧 걸음의 정체입니다**(껍데기가 그것으로 타이머를 갈고 겹침을 막습니다).
   // 매 렌더 새로 만들면 관계없는 리렌더 하나가 기다림을 처음부터 되돌립니다.
-  const advance = useMemo(
-    () =>
-      question !== null && hasAnswered(state)
-        ? {
-            label: copy.common.continue,
-            run: () => dispatch({ type: "nextQuestion" }),
-            delayMs: 2500,
-          }
-        : undefined,
-    [question, state.selectedChoiceIndex, copy],
+  //
+  // 레슨의 중간 활동이면 마지막 문항에서 완료 카드를 거치지 않고 곧바로 결과를 올려 다음 학습형으로 갑니다.
+  const advance = useMemo(() => {
+    const selected = state.selectedChoiceIndex;
+    if (question === null || selected === null) return undefined;
+    const handsOff = handsOffAfter(lesson, state.questionIndex, questions.length);
+    return {
+      label: copy.common.continue,
+      run: () =>
+        handsOff
+          ? onFinish(
+              wordChoiceSessionResults(questions, [...state.answeredChoiceIndexes, selected]),
+              0,
+            )
+          : dispatch({ type: "nextQuestion" }),
+      delayMs: 2500,
+    };
+  }, [question, state.selectedChoiceIndex, copy]);
+  const counter = lessonCounter(
+    lesson,
+    question === null ? Math.max(0, questions.length - 1) : state.questionIndex,
+    questions.length,
   );
 
   return (
@@ -136,8 +152,8 @@ export function WordChoiceActivity({
       form="word-choice"
       // 세션 헤더가 세는 것은 문항입니다. 완료 상태에는 지금 푸는 문항이 없으므로
       // 마지막 문항 자리에 둡니다 — 문항이 0개인 스텝에서는 계약이 순번을 안 읽습니다.
-      questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
-      questionCount={questions.length}
+      questionIndex={counter.questionIndex}
+      questionCount={counter.questionCount}
       complete={complete}
       instruction={question?.instruction ?? copy.wordChoice.instruction}
       onExit={onExit}

@@ -101,6 +101,16 @@ export function canPlaceChip(
   );
 }
 
+export type DialogueSpeaker = "counterpart" | "me";
+
+/**
+ * 대화 조립에서 그 칸(0부터)의 화자입니다 — 짝수 칸은 상대, 홀수 칸은 나입니다. 콘텐츠에 턴별 화자가
+ * 없어 정한 앱의 가정입니다(계약 문서의 열린 질문).
+ */
+export function dialogueSpeakerAt(position: number): DialogueSpeaker {
+  return position % 2 === 0 ? "counterpart" : "me";
+}
+
 /** 놓인 조각을 순서대로 이은 문장입니다 — 채점 뒤 내 말풍선에 섭니다. */
 export function composedSentence(
   question: SentenceOrderQuestion,

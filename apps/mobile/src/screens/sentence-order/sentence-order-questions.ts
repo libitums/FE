@@ -23,6 +23,12 @@ export type SentenceOrderQuestion = {
    * chips의 부분집합이고, 이 길이가 곧 「놓을 칸 수」입니다.
    */
   readonly answerOrder: readonly number[];
+  /**
+   * 대화 조립 문항입니다(카탈로그 대화 순서). 지시문 말풍선 없이 정답 길이만큼 칸이 화자를 번갈아
+   * (짝수 칸 = 상대 · 홀수 칸 = 나) 말풍선으로 서고, 이때 `prompt`는 화면에 그리지 않습니다.
+   * 채점은 다른 문장 순서와 같습니다.
+   */
+  readonly dialogue?: true;
   /** 있으면 `support.instruction` · 문구표 기본보다 앞서는 지시문입니다(카탈로그 문항). */
   readonly instruction?: string;
 };

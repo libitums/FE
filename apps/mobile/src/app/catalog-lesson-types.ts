@@ -22,6 +22,7 @@ export type CatalogSkipReason =
   | "screen-pending"
   | "no-options"
   | "no-source"
+  | "audio-missing"
   | "untypeable"
   | "malformed";
 

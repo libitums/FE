@@ -18,6 +18,14 @@ const isQuad = (values: readonly string[]): values is readonly [string, string, 
 const slotOfFour = (index: number): 0 | 1 | 2 | 3 =>
   index === 0 ? 0 : index === 1 ? 1 : index === 2 ? 2 : 3;
 
+/**
+ * 그 문항의 재생 출처입니다. 3c는 오디오를 연결하지 않아(콘텐츠의 `audio_url`을 쓰지 않습니다 — 앱의
+ * `playAudio`는 번들 id만 해석합니다) 늘 `null`입니다. 오디오 전달 작업이 이 자리를 채웁니다.
+ */
+function audioSourceOf(_item: ItemOf<"LISTEN_SELECT">): string | null {
+  return null;
+}
+
 export function listeningItemOf(
   item: ItemOf<"LISTEN_SELECT">,
   port: CatalogItemPort,
@@ -32,10 +40,15 @@ export function listeningItemOf(
   if (prompt === "" || romanization === undefined || answer < 0 || choices.includes("")) {
     return skippedItem(item, "malformed");
   }
+  // 보기가 둘 · 넷이 아니면 소리 사유보다 먼저 모양이 틀린 문항입니다.
+  if (!isPair(choices) && !isQuad(choices)) return skippedItem(item, "malformed");
+  // 모양이 맞아도 소리가 없는 듣기는 3c에서 보이지 않습니다(E-2) — 오디오가 연결되면 자동으로 섭니다.
+  const audioSource = audioSourceOf(item);
+  if (audioSource === null) return skippedItem(item, "audio-missing");
   const common = {
     prompt,
     romanization,
-    audioSource: null,
+    audioSource,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   };
   let question: ListeningQuestion;

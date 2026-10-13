@@ -8,6 +8,7 @@ import type { CatalogUnitKey } from "../lib/catalog-progress";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { AssessmentPassCriterion } from "../screens/assessment/assessment";
+import type { LessonPosition } from "../screens/learning/activity-finish";
 import { catalogItemOf } from "./catalog-item-map";
 import { noLearnerProfile } from "./catalog-cover-wiring";
 import type {
@@ -103,6 +104,25 @@ export function catalogLessonPlanOf(
     activities,
     questionCount: activities.reduce((sum, activity) => sum + activity.questions.length, 0),
     skippedItemCount: mapped.filter((item) => item.kind === "skipped").length,
+  };
+}
+
+/**
+ * 그 활동이 레슨 안의 어디인가입니다 — 오프셋은 앞 활동들의 문항 수 합, 전체는 계획 문항 수, 마지막
+ * 활동만 `last`입니다. 없는 순번이면 `null`입니다.
+ */
+export function catalogActivityPositionOf(
+  plan: CatalogLessonPlan,
+  activityIndex: number,
+): LessonPosition | null {
+  if (plan.activities[activityIndex] === undefined) return null;
+  const offset = plan.activities
+    .slice(0, activityIndex)
+    .reduce((sum, activity) => sum + activity.questions.length, 0);
+  return {
+    offset,
+    total: plan.questionCount,
+    last: activityIndex === plan.activities.length - 1,
   };
 }
 

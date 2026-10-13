@@ -4,6 +4,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import type { AnswerResult } from "../lib/answer-result";
+import type { LessonPosition } from "../screens/learning/activity-finish";
 import { CatalogCoverScreen } from "../screens/catalog-cover/CatalogCoverScreen";
 import { CatalogFinalScreen } from "../screens/catalog-final/CatalogFinalScreen";
 import type {
@@ -19,7 +20,11 @@ import { TypingActivity } from "../screens/typing/TypingActivity";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
 import { catalogEpilogueModelOf, noLearnerProfile } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
-import { catalogLessonPlanFor, catalogPassCriterion } from "./catalog-lesson-plan";
+import {
+  catalogActivityPositionOf,
+  catalogLessonPlanFor,
+  catalogPassCriterion,
+} from "./catalog-lesson-plan";
 import type { CatalogActivity } from "./catalog-lesson-plan";
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
@@ -38,6 +43,7 @@ function nonEmptyTurns(turns: readonly CatalogRoleplayTurn[]): CatalogRoleplayTu
 // 활동 하나를 그 학습형의 화면으로 그립니다. 망라 `switch`가 새 학습형을 컴파일 타임에 강제합니다.
 function renderActivity(
   activity: CatalogActivity,
+  lesson: LessonPosition,
   screen: LessonScreen,
   wiring: ScreenWiring,
 ): ReactNode {
@@ -56,6 +62,7 @@ function renderActivity(
           onFinish={onFinish}
           sessionOptions={wiring.sessionOptions}
           gemCount={wiring.gemCount}
+          lesson={lesson}
         />
       );
     case "sentence-order":
@@ -66,6 +73,7 @@ function renderActivity(
           gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
+          lesson={lesson}
         />
       );
     case "word-choice":
@@ -75,6 +83,7 @@ function renderActivity(
           questions={activity.questions}
           onExit={onExit}
           onFinish={onFinish}
+          lesson={lesson}
         />
       );
     case "typing":
@@ -85,6 +94,7 @@ function renderActivity(
           gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
+          lesson={lesson}
         />
       );
     default: {
@@ -100,12 +110,13 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
     case "catalog-lesson": {
       const plan = catalogLessonPlanFor(wiring.episodeContent, screen.episodeId, screen.unitKey);
       const activity = plan?.activities[screen.activityIndex];
-      if (activity === undefined) {
+      const lesson = plan === null ? null : catalogActivityPositionOf(plan, screen.activityIndex);
+      if (activity === undefined || lesson === null) {
         throw new Error(
           `Catalog lesson has no activity: ${screen.episodeId}/${screen.unitKey}/${screen.activityIndex}`,
         );
       }
-      return renderActivity(activity, screen, wiring);
+      return renderActivity(activity, lesson, screen, wiring);
     }
     case "catalog-final": {
       const { episodeId } = screen;

@@ -653,10 +653,10 @@ describe("catalogLessonPlanOf — 실데이터", () => {
     expect(planTable.map(([episodeId, key]) => `${episodeId}/${key}`)).toEqual(planned);
   });
 
-  test("LP15. u01 S3의 구간 문항 수는 3,1,2,3,1이다", () => {
+  test("LP15. u01 S3의 구간 문항 수는 3,3이다 — 듣기가 빠져 양옆의 문장 순서가 한 구간이 된다", () => {
     const plan = catalogLessonPlanOf(readyOf("u01-water"), "S3", fill);
 
-    expect(plan?.activities.map((activity) => activity.questions.length)).toEqual([3, 1, 2, 3, 1]);
+    expect(plan?.activities.map((activity) => activity.questions.length)).toEqual([3, 3]);
   });
 
   test("LP-0. 실데이터에는 문항이 0개인 유닛이 없다 — u01 S1도 단어 선택 셋이 선다", () => {

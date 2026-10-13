@@ -111,7 +111,10 @@ const clozeWordChoices: WordChoiceQuestion = {
 // 기기 확인(2026-10-12): 다섯 글자 보기 셋이 한 줄에 서면 칩이 바닥까지 줄어 글자가 테두리에 닿거나 잘렸다.
 test("UW5. 보기 중 하나라도 다섯 글자 이상이면 세로로 쌓고, 짧은 낱말만이면 한 줄에 둔다", () => {
   const { unmount } = mount([clozeSentenceChoices]);
-  expect(screen.getByTestId("word-choice-screen-options")).toHaveAttribute("data-layout", "stacked");
+  expect(screen.getByTestId("word-choice-screen-options")).toHaveAttribute(
+    "data-layout",
+    "stacked",
+  );
   unmount();
 
   mount([clozeWordChoices]);

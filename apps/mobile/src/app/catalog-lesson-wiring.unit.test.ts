@@ -166,8 +166,8 @@ describe("onStartCatalogUnit — 레슨", () => {
         episodeId: "u01-water",
         unitKey: "S3",
         unitRole: "lesson",
-        questionCount: "10",
-        skippedItemCount: "0",
+        questionCount: "6",
+        skippedItemCount: "4",
       },
     ]);
     expect(dispatches(log)).toEqual([
@@ -263,7 +263,9 @@ describe("onStartCatalogUnit — 레슨", () => {
 });
 
 describe("onFinishCatalogActivity", () => {
-  const sixCorrectPending = (): AnswerResult[] => many(9, correct);
+  // u01 S3는 활동 둘(단어 선택 3 · 문장 순서 3)에 6문항입니다 — 마지막 활동 순번은 1이고, 앞 활동이 쌓은
+  // 결과가 5개일 때 마지막 한 개를 더하면 6개입니다.
+  const sixCorrectPending = (): AnswerResult[] => many(5, correct);
 
   test("LW4. 활동이 남았으면 결과를 쌓고 다음 활동으로 갈아탄다", () => {
     const { wiring, log } = harness({
@@ -293,7 +295,7 @@ describe("onFinishCatalogActivity", () => {
       pendingSkippedCount: 2,
     });
 
-    wiring.onFinishCatalogActivity("u01-water", "S3", 4, [correct], 1);
+    wiring.onFinishCatalogActivity("u01-water", "S3", 1, [correct], 1);
 
     expect(events(log)).toEqual([
       {
@@ -302,8 +304,8 @@ describe("onFinishCatalogActivity", () => {
         unitKey: "S3",
         unitRole: "lesson",
         verdict: "passed",
-        correctCount: "10",
-        questionCount: "10",
+        correctCount: "6",
+        questionCount: "6",
       },
     ]);
     expect(updaters).toHaveLength(1);
@@ -317,9 +319,9 @@ describe("onFinishCatalogActivity", () => {
           name: "catalog-unit-complete",
           episodeId: "u01-water",
           unitKey: "S3",
-          results: many(10, correct),
+          results: many(6, correct),
           skippedCount: 3,
-          questionCount: 10,
+          questionCount: 6,
         },
       },
     ]);
@@ -330,32 +332,32 @@ describe("onFinishCatalogActivity", () => {
     expect(progressIndex(log)).toBeLessThan(dispatchIndex(log, "replace"));
   });
 
-  test("LW5. 기준에 딱 닿는 6개 정답이면 통과한다", () => {
+  test("LW5. 기준에 딱 닿는 4개 정답이면 통과한다(6문항의 60% 올림)", () => {
     const { wiring, log } = harness({
-      pendingResults: [...many(5, correct), ...many(4, incorrect)],
+      pendingResults: [...many(3, correct), ...many(2, incorrect)],
     });
 
-    wiring.onFinishCatalogActivity("u01-water", "S3", 4, [correct], 0);
+    wiring.onFinishCatalogActivity("u01-water", "S3", 1, [correct], 0);
 
     expect(events(log)).toEqual([
-      expect.objectContaining({ verdict: "passed", correctCount: "6" }),
+      expect.objectContaining({ verdict: "passed", correctCount: "4", questionCount: "6" }),
     ]);
   });
 
   test("LW6. 정답이 모자라면 실패로 알리고 기록은 하지 않지만 결과 화면은 쌓는다", () => {
     const { wiring, log } = harness({
       progress: { "u01-water": ["intro", "S1"] },
-      pendingResults: many(9, incorrect),
+      pendingResults: many(5, incorrect),
     });
 
-    wiring.onFinishCatalogActivity("u01-water", "S3", 4, [correct], 0);
+    wiring.onFinishCatalogActivity("u01-water", "S3", 1, [correct], 0);
 
     expect(events(log)).toEqual([
       expect.objectContaining({
         name: "episode_lesson_finished",
         verdict: "failed",
         correctCount: "1",
-        questionCount: "10",
+        questionCount: "6",
       }),
     ]);
     expect(kinds(log, "progress")).toEqual([]);
@@ -374,7 +376,7 @@ describe("onFinishCatalogActivity", () => {
       pendingResults: sixCorrectPending(),
     });
 
-    wiring.onFinishCatalogActivity("u01-water", "S3", 4, [correct], 0);
+    wiring.onFinishCatalogActivity("u01-water", "S3", 1, [correct], 0);
 
     expect(events(log)).toEqual([expect.objectContaining({ verdict: "passed" })]);
     expect(updaters).toHaveLength(1);
@@ -544,7 +546,7 @@ describe("결과 뒤 이동", () => {
 describe("튜토리얼 진행과 sink 없음", () => {
   test("LW12. 어느 콜백도 튜토리얼 진행 setter를 부르지 않는다", () => {
     const run = (progress: CatalogProgress, act: (h: Harness) => void): Harness => {
-      const h = harness({ progress, pendingResults: many(9, correct) });
+      const h = harness({ progress, pendingResults: many(5, correct) });
       act(h);
       return h;
     };
@@ -555,7 +557,7 @@ describe("튜토리얼 진행과 sink 없음", () => {
         h.wiring.onFinishCatalogActivity("u01-water", "S3", 0, [correct], 0),
       ),
       run({ "u01-water": ["intro"] }, (h) =>
-        h.wiring.onFinishCatalogActivity("u01-water", "S3", 4, [correct], 0),
+        h.wiring.onFinishCatalogActivity("u01-water", "S3", 1, [correct], 0),
       ),
       run(allLessonsDone, (h) => h.wiring.onStartCatalogUnit("u01-water", "RP")),
       run(allLessonsDone, (h) =>
@@ -575,11 +577,11 @@ describe("튜토리얼 진행과 sink 없음", () => {
     const { wiring, log } = harness({
       sinkNull: true,
       progress: allLessonsDone,
-      pendingResults: many(9, correct),
+      pendingResults: many(5, correct),
     });
 
     expect(() => wiring.onStartCatalogUnit("u01-water", "S3")).not.toThrow();
-    expect(() => wiring.onFinishCatalogActivity("u01-water", "S3", 4, [correct], 0)).not.toThrow();
+    expect(() => wiring.onFinishCatalogActivity("u01-water", "S3", 1, [correct], 0)).not.toThrow();
     expect(() => wiring.onStartCatalogUnit("u01-water", "RP")).not.toThrow();
     expect(() =>
       wiring.onFinishCatalogFinal("u01-water", [correct, correct, correct]),
