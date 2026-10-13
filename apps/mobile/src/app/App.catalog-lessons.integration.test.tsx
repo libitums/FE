@@ -267,8 +267,11 @@ function typeAnswer(question: TypingQuestion): void {
   typeKeys(lettersOnly(question.answers.find(isTypeableAnswer) ?? question.answers[0]));
 }
 
-/** 활동 하나를 끝까지 풀고 `See results`까지 누릅니다. `right`가 거짓이면 전부 틀립니다. */
-function solveActivity(activity: CatalogActivity, right: boolean): void {
+/**
+ * 활동 하나를 끝까지 풉니다. 레슨의 마지막 활동이면 완료 카드의 `See results`까지 누르고, 중간 활동이면
+ * 마지막 문항 뒤 곧바로 다음 활동으로 넘어가므로 누르지 않습니다(E-1). `right`가 거짓이면 전부 틀립니다.
+ */
+function solveActivity(activity: CatalogActivity, right: boolean, last = true): void {
   switch (activity.form) {
     case "word-choice":
       for (const question of activity.questions) {
@@ -303,18 +306,18 @@ function solveActivity(activity: CatalogActivity, right: boolean): void {
       }
       break;
   }
-  tapId("learning-shell-action");
+  if (last) tapId("learning-shell-action");
 }
 
 /** 계획의 활동을 순서대로 풀며 서는 화면의 루트 testid를 모읍니다. */
 function solveLesson(plan: CatalogLessonPlan, right: boolean): string[] {
   const seen: string[] = [];
-  for (const activity of plan.activities) {
+  plan.activities.forEach((activity, index) => {
     const id = contentIdOf[activity.form];
     expect(screen.getByTestId(id)).toBeInTheDocument();
     seen.push(id);
-    solveActivity(activity, right);
-  }
+    solveActivity(activity, right, index === plan.activities.length - 1);
+  });
   return seen;
 }
 
@@ -344,14 +347,6 @@ function solveFinal(turns: readonly CatalogRoleplayTurn[], right: boolean): void
     tapButtonIn("catalog-final-screen-action");
     tapButtonIn("catalog-final-screen-action");
   }
-}
-
-function checkSilentListening(): void {
-  expect(screen.getByTestId("listening-silent-prompt-text")).toBeInTheDocument();
-  expect(screen.getByTestId("listening-silent-prompt-romanization")).toBeInTheDocument();
-  const control = screen.getByTestId("listening-silent-prompt-audio");
-  expect(control).toHaveAttribute("accessibility-traits", "disabled");
-  fireEvent.tap(control, {});
 }
 
 const title = () => screen.getByTestId("lesson-complete-screen-title");
@@ -438,27 +433,20 @@ test("L2b. (D5 고정) 실데이터의 어느 레슨 · 최종 테스트도 보�
   }
 });
 
-test("L3. (AC2 · 4) S3: 활동 다섯이 계획 순서로 서고 소리 없는 듣기는 꺼져 있으며 전부 맞히면 기록된다", async () => {
+test("L3. (AC2 · 4) S3: 소리 없는 듣기는 계획에서 빠져 활동 둘이 서고 전부 맞히면 기록된다", async () => {
   const { rpcs, events, play } = await boot({ progress: upTo("S1") });
   const plan = lessonPlan(u01, "S3");
   expect(plan.activities.map((activity) => activity.form)).toEqual([
     "word-choice",
-    "listening",
-    "sentence-order",
-    "listening",
     "sentence-order",
   ]);
+  expect(plan.skippedItemCount).toBeGreaterThan(0);
 
   tapNode(u01, "S3");
-  const seen: string[] = [];
-  for (const activity of plan.activities) {
-    const id = contentIdOf[activity.form];
-    expect(screen.getByTestId(id)).toBeInTheDocument();
-    seen.push(id);
-    if (activity.form === "listening") checkSilentListening();
-    solveActivity(activity, true);
-  }
-  expect(seen).toEqual(plan.activities.map((activity) => contentIdOf[activity.form]));
+  expect(solveLesson(plan, true)).toEqual(
+    plan.activities.map((activity) => contentIdOf[activity.form]),
+  );
+  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
   expect(play).toHaveBeenCalledTimes(0);
   expect(title()).toHaveTextContent("PERFECT LESSON!");
   exitResult();
@@ -473,6 +461,43 @@ test("L3. (AC2 · 4) S3: 활동 다섯이 계획 순서로 서고 소리 없는 
     correctCount: String(plan.questionCount),
     questionCount: String(plan.questionCount),
   });
+});
+
+test("L3b. (E-1) 다학습형 레슨: 중간 활동은 완료 카드 없이 이어지고 카운터는 레슨 전체 기준이며 결과 화면은 한 번이다", async () => {
+  const { rpcs, events } = await boot({ progress: upTo("S1", "S3") });
+  const plan = lessonPlan(u01, "S4");
+  expect(plan.activities.map((activity) => activity.form)).toEqual([
+    "word-choice",
+    "typing",
+    "word-choice",
+  ]);
+  expect(plan.questionCount).toBe(4);
+
+  tapNode(u01, "S4");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 4");
+  let ordinal = 0;
+  plan.activities.forEach((activity, index) => {
+    const last = index === plan.activities.length - 1;
+    expect(screen.getByTestId(contentIdOf[activity.form])).toBeInTheDocument();
+    expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent(
+      `Lesson ${ordinal + 1} / 4`,
+    );
+    ordinal += activity.questions.length;
+    solveActivity(activity, true, last);
+    // 중간 활동이 끝난 자리에는 완료 카드도 결과 화면도 없고 곧바로 다음 학습형의 첫 문항이다.
+    if (!last) {
+      expect(screen.queryByTestId("learning-activity-complete")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
+    }
+  });
+  expect(title()).toHaveTextContent("PERFECT LESSON!");
+  expect(screen.getAllByTestId("lesson-complete-screen")).toHaveLength(1);
+  exitResult();
+
+  await vi.waitFor(() => expect(savedUnits(rpcs, u01)).toContain("S4"));
+  expect(
+    learningEvents(events).filter((event) => event.name === "episode_lesson_finished"),
+  ).toHaveLength(1);
 });
 
 test("L4. (AC2 실패) S3를 전부 틀리면 기록이 없고 Try again이 첫 활동 첫 문항을 연다", async () => {
