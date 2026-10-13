@@ -166,3 +166,40 @@ test("UC-I1. 단어 카드 · 짝 맞추기 · 그림 제시 문구가 문구표
   expect(c.wordChoicePicture.answerSubline("mul", "water")).toBe("mul · water");
   expect(c.wordChoicePicture.answerSubline(null, "water")).toBe("water");
 });
+
+test("UC-L. 학습자 프로필 구획의 모든 잎이 비지 않은 문자열이고 함수는 문자열을 낸다", () => {
+  const leaves = leavesOf(c.learnerProfile, "learnerProfile");
+
+  const emptyPaths = leaves
+    .filter((leaf) => {
+      const out =
+        typeof leaf.value === "string"
+          ? leaf.value
+          : (leaf.value as (...args: unknown[]) => unknown)(...sampleArgs);
+      return typeof out !== "string" || out.trim() === "";
+    })
+    .map((leaf) => leaf.path);
+
+  expect(leaves.length).toBeGreaterThan(20);
+  expect(emptyPaths).toEqual([]);
+});
+
+test("UC-L. 학습자 프로필 문구 함수가 인자를 문장에 싣는다", () => {
+  const p = c.learnerProfile;
+
+  expect(p.picker.matches(1)).not.toBe(p.picker.matches(2));
+  expect(p.picker.matches(3)).toContain("3");
+  expect(p.picker.allCountries(199)).toContain("199");
+  expect(p.picker.row("France", "프랑스")).toContain("France");
+  expect(p.picker.row("France", "프랑스")).toContain("프랑스");
+  expect(p.picker.countrySet("France")).toContain("France");
+  expect(p.summary.both("Emma", "France")).toContain("Emma");
+  expect(p.summary.both("Emma", "France")).toContain("France");
+  expect(p.summary.pending("Emma · France")).toContain("Emma · France");
+  expect(p.preview.label("yours", "Emma로 예약했어요.", "I booked under Emma.")).toContain(
+    "I booked under Emma.",
+  );
+  expect(p.nameIssue.empty).not.toBe(p.nameIssue["forbidden-character"]);
+  expect(p.nameEmptyOnGate).not.toBe(p.nameIssue.empty);
+  expect(p.countryMissing).not.toBe(p.nameIssue.empty);
+});

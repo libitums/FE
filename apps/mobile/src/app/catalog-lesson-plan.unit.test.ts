@@ -9,6 +9,7 @@ import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearningItem, Option, Text } from "../lib/episode-content.model";
 import { fillPlaceholders } from "../lib/placeholder-fill";
+import type { LearnerProfile } from "../lib/placeholder-fill";
 import { judgeAssessment } from "../screens/assessment/assessment";
 import {
   catalogActivitiesOf,
@@ -864,6 +865,82 @@ describe("catalogLessonPlanFor — 메모", () => {
     expect(catalogLessonPlanFor(content, "nope", "S3", noLearnerProfile)).toBeNull();
     expect(catalogLessonPlanFor(content, "u04-x", "S1", noLearnerProfile)).toBeNull();
     expect(catalogLessonPlanFor(content, "u01-water", "RP", noLearnerProfile)).toBeNull();
+  });
+});
+
+describe("catalogLessonPlanFor — 프로필 참조가 메모 키다", () => {
+  const emma: LearnerProfile = { name: "Emma" };
+  const liam: LearnerProfile = { name: "Liam" };
+
+  test("MK-1. 같은 항목 · 같은 프로필 참조 · 같은 키는 같은 계획 참조다", () => {
+    const content = contentOf(realCatalog);
+
+    const first = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+    const second = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+
+    expect(first).not.toBeNull();
+    expect(second).toBe(first);
+  });
+
+  test("MK-2. 다른 프로필 참조는 다른 계획이고 문항 글자에 그 이름이 선다", () => {
+    const content = contentOf(realCatalog);
+
+    const forEmma = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+    const forLiam = catalogLessonPlanFor(content, "u02-checkin", "S3", liam);
+
+    expect(forEmma).not.toBeNull();
+    expect(forLiam).not.toBe(forEmma);
+    expect(JSON.stringify(forEmma)).toContain("Emma");
+    expect(JSON.stringify(forEmma)).not.toContain("Liam");
+    expect(JSON.stringify(forLiam)).toContain("Liam");
+    expect(JSON.stringify(forLiam)).not.toContain("Emma");
+  });
+
+  test("MK-2. 첫 프로필로 다시 부르면 첫 계획 참조가 돌아온다", () => {
+    const content = contentOf(realCatalog);
+
+    const forEmma = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+    catalogLessonPlanFor(content, "u02-checkin", "S3", liam);
+
+    expect(catalogLessonPlanFor(content, "u02-checkin", "S3", emma)).toBe(forEmma);
+  });
+
+  test("MK-3. noLearnerProfile로 부른 계획은 빈 프로필 치환과 글자가 같다", () => {
+    const content = contentOf(realCatalog);
+    const entry = readyOf("u02-checkin");
+
+    const memoized = catalogLessonPlanFor(content, "u02-checkin", "S3", noLearnerProfile);
+    const direct = catalogLessonPlanOf(
+      entry,
+      "S3",
+      (text, script) => fillPlaceholders(text, {}, script),
+      content.imageUrlOf,
+    );
+
+    expect(memoized).not.toBeNull();
+    expect(memoized).toEqual(direct);
+  });
+
+  test("MK-4. 정답에 {이름}이 든 타자 문항은 프로필에 따라 문항 수가 달라진다", () => {
+    const base = readyOf("u02-checkin");
+    const units = base.episode.units.map((unit) =>
+      unit.id === "S3"
+        ? {
+            ...unit,
+            items: [
+              translateToKo("T", [t("저는 {이름}이에요.", "jeoneun {이름}ieyo.", "I'm {이름}.")]),
+            ],
+          }
+        : unit,
+    );
+    const entry: CatalogEntry = { ...base, episode: { ...base.episode, units } };
+    const content = contentOf([entry]);
+
+    const blank = catalogLessonPlanFor(content, "u02-checkin", "S3", noLearnerProfile);
+    const named = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+
+    expect(blank).toMatchObject({ shownItemCount: 1, skippedItemCount: 0 });
+    expect(named).toMatchObject({ shownItemCount: 0, skippedItemCount: 1 });
   });
 });
 
