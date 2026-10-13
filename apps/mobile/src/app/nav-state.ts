@@ -79,6 +79,7 @@ export type Screen =
       unitKey: CatalogUnitKey;
       results: readonly AnswerResult[];
       skippedCount: number;
+      /** 채점 문항 수입니다(카드처럼 채점하지 않는 문항은 세지 않습니다) — 통과 기준의 분모입니다. */
       questionCount: number;
     }
   // 최종 테스트 통과 뒤 컷입니다.

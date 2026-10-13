@@ -84,7 +84,7 @@ function readyEntry(episodeId: string) {
 }
 
 function lessonPlan(episodeId: string, key: string): CatalogLessonPlan {
-  const plan = catalogLessonPlanOf(readyEntry(episodeId), key, fill);
+  const plan = catalogLessonPlanOf(readyEntry(episodeId), key, fill, () => null);
   if (plan === null) throw new Error(`no unit: ${key}`);
   return plan;
 }
@@ -257,6 +257,8 @@ const contentIdOf: Record<CatalogActivity["form"], string> = {
   listening: "listening-screen-content",
   "sentence-order": "sentence-order-screen-content",
   typing: "typing-activity-content",
+  "vocab-card": "vocab-card-content",
+  "pair-match": "pair-match-content",
 };
 
 const lettersOnly = (text: string) => text.normalize("NFC").replace(/[^ㄱ-ㆎ가-힣]/g, "");
@@ -275,6 +277,9 @@ function solveActivity(activity: CatalogActivity, right: boolean, last = true): 
   switch (activity.form) {
     case "word-choice":
       for (const question of activity.questions) {
+        // 그림 문항은 그림이 서야 답을 받습니다 — 먼저 load를 쏩니다.
+        const picture = screen.queryByTestId("word-choice-picture-image");
+        if (picture !== null) fireEvent(picture, new window.Event("bindEvent:load"));
         tapId(
           `word-choice-option-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
         );
@@ -301,6 +306,22 @@ function solveActivity(activity: CatalogActivity, right: boolean, last = true): 
       for (const question of activity.questions) {
         if (right) typeAnswer(question);
         else typeKeys("가");
+        tapId("learning-shell-action");
+        tapId("learning-shell-action");
+      }
+      break;
+    case "vocab-card":
+      // 카드는 문항 수만큼 버튼을 누릅니다 — 마지막 카드의 버튼이 곧 다음 걸음이라 완료 카드가 없습니다.
+      for (let index = 0; index < activity.questions.length; index += 1) {
+        tapId("learning-shell-action");
+      }
+      return;
+    case "pair-match":
+      for (const question of activity.questions) {
+        question.answer.forEach((meaning, word) => {
+          tapId(`pair-match-word-${word}`);
+          tapId(`pair-match-meaning-${right ? meaning : (meaning + 1) % question.meanings.length}`);
+        });
         tapId("learning-shell-action");
         tapId("learning-shell-action");
       }
@@ -386,12 +407,12 @@ test("L1b. (낭독) 표지 · 레슨 · 최종 노드의 이름은 Episode n.으
   expect(document.querySelectorAll('[data-testid^="catalog-section-caption"]')).toHaveLength(0);
 });
 
-test("L2. (AC1 · 5) 빈칸 고르기만 있는 S1: 단어 선택 → 결과 PERFECT → 나가기 → S1 완료 · S3 열림 · 저장 · 이벤트", async () => {
+test("L2. (AC1 · 5) 카드 뒤 빈칸 고르기가 이어지는 S1: 카드 → 단어 선택 → 결과 PERFECT → 나가기 → S1 완료 · S3 열림 · 저장 · 이벤트", async () => {
   const { rpcs, events } = await boot({ progress: upTo() });
   const plan = lessonPlan(u01, "S1");
 
   tapNode(u01, "S1");
-  expect(solveLesson(plan, true)).toEqual(["word-choice-screen-content"]);
+  expect(solveLesson(plan, true)).toEqual(["vocab-card-content", "word-choice-screen-content"]);
   expect(title()).toHaveTextContent("PERFECT LESSON!");
   exitResult();
   await flush();
@@ -408,6 +429,7 @@ test("L2. (AC1 · 5) 빈칸 고르기만 있는 S1: 단어 선택 → 결과 PER
       unitKey: "S1",
       unitRole: "lesson",
       questionCount: String(plan.questionCount),
+      shownItemCount: String(plan.shownItemCount),
       skippedItemCount: String(plan.skippedItemCount),
     },
     {
@@ -467,20 +489,22 @@ test("L3b. (E-1) 다학습형 레슨: 중간 활동은 완료 카드 없이 이�
   const { rpcs, events } = await boot({ progress: upTo("S1", "S3") });
   const plan = lessonPlan(u01, "S4");
   expect(plan.activities.map((activity) => activity.form)).toEqual([
+    "vocab-card",
     "word-choice",
     "typing",
     "word-choice",
   ]);
   expect(plan.questionCount).toBe(4);
+  expect(plan.shownItemCount).toBe(9);
 
   tapNode(u01, "S4");
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 4");
+  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 9");
   let ordinal = 0;
   plan.activities.forEach((activity, index) => {
     const last = index === plan.activities.length - 1;
     expect(screen.getByTestId(contentIdOf[activity.form])).toBeInTheDocument();
     expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent(
-      `Lesson ${ordinal + 1} / 4`,
+      `Lesson ${ordinal + 1} / 9`,
     );
     ordinal += activity.questions.length;
     solveActivity(activity, true, last);
@@ -592,6 +616,7 @@ test("L6. (AC6) 최종 테스트: 턴을 타일로 맞히면 결과 → 통과 �
       unitKey: "RP",
       unitRole: "final",
       questionCount: count,
+      shownItemCount: count,
       skippedItemCount: String(plan.skippedItemCount),
     },
     {

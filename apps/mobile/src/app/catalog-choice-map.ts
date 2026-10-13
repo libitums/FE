@@ -3,7 +3,11 @@
 import type { LearningItem, Option, Text } from "../lib/episode-content.model";
 import type { ListeningQuestion } from "../screens/listening/listening-questions";
 import type { WordChoiceQuestion } from "../screens/word-choice/word-choice-questions";
-import type { CatalogItemPort, CatalogMappedItem } from "./catalog-lesson-types";
+import type {
+  CatalogItemPort,
+  CatalogLessonItemPort,
+  CatalogMappedItem,
+} from "./catalog-lesson-types";
 import { instructionOf, koOf, latinOf, optionalField, skippedItem } from "./catalog-item-text";
 import { shuffledOrder } from "./catalog-shuffle";
 
@@ -136,4 +140,33 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
     choices,
     answerIndex: answer === "" ? -1 : choices.indexOf(answer),
   });
+}
+
+/**
+ * 그림 고르기입니다 — 그림이 붙은 단어 선택 문항이며 제시문은 정답 낱말의 영어 뜻입니다. 검사 순서는
+ * 모양 → 그림 → 뜻입니다.
+ */
+export function pictureChoiceItemOf(
+  item: ItemOf<"IMG_MATCH">,
+  port: CatalogLessonItemPort,
+): CatalogMappedItem {
+  const choices = item.options.map((option) => koOf(port, option.ko));
+  const answerIndex = correctIndex(item.options);
+  if (!hasTwo(choices) || choices.includes("") || answerIndex < 0) {
+    return skippedItem(item, "malformed");
+  }
+  const correct = item.options[answerIndex];
+  const path = item.stimulus.imageUrl;
+  const url = path === undefined ? null : port.imageUrlOf(path);
+  if (url === null) return skippedItem(item, "image-missing");
+  const prompt = latinOf(port, correct?.en) ?? port.glossOf(item.ref);
+  if (prompt === undefined || prompt === null) return skippedItem(item, "no-gloss");
+  const question: WordChoiceQuestion = {
+    prompt,
+    choices,
+    answerIndex,
+    ...optionalField("instruction", instructionOf(port, item.prompt)),
+    picture: { url, answerRomanization: latinOf(port, correct?.roman) ?? null },
+  };
+  return { kind: "word-choice", itemId: item.id, question };
 }

@@ -19,6 +19,8 @@ const formLabels: Record<LearningActivityForm, string> = {
   speaking: "Speaking",
   writing: "Writing",
   typing: "Typing",
+  "vocab-card": "New words",
+  "pair-match": "Matching",
 };
 
 /**

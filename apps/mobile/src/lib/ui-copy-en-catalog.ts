@@ -4,7 +4,10 @@ import type { AudioUnavailableCopy } from "../components/audio-unavailable.contr
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
+import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
 import type { TypingCopy } from "../screens/typing/typing.contract";
+import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
+import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-picture";
 
 const unavailableTail = {
   pending: "coming soon",
@@ -42,6 +45,43 @@ export const typingEn: TypingCopy = {
   answerField: (typed) => `Your answer: ${typed}`,
   answerFieldEmpty: "Your answer, empty",
   answerReveal: (answer) => `Answer: ${answer}`,
+};
+
+export const vocabCardEn: VocabCardCopy = {
+  instruction: "Learn this word.",
+  badge: "New word",
+  exampleTitle: "Example",
+  pronunciation: (romanization) => `Pronunciation: ${romanization}`,
+  meaning: (meaning) => `Meaning: ${meaning}`,
+  example: (text) => `Example: ${text}`,
+};
+
+export const pairMatchEn: PairMatchCopy = {
+  instruction: "Tap a word, then its meaning.",
+  progress: (matched, total) => `${matched} / ${total} matched`,
+  progressLabel: (matched, total) => `${matched} of ${total} pairs matched`,
+  selected: (text) => `${text}, selected`,
+  matched: (text, ordinal, partner) => `${text}, pair ${ordinal}, matched with ${partner}`,
+  judged: (text, partner) => `${text}, matched with ${partner}`,
+  answerPair: (word, meaning) => `${word} = ${meaning}`,
+  linked: (word, meaning, matched, total) =>
+    `Matched: ${word}, ${meaning}. ${matched} of ${total}.`,
+  unlinked: (text) => `Unmatched: ${text}`,
+  missedPairs: (pairs) => `Correct pairs: ${pairs}`,
+  spokenPair: (word, meaning) => `${word}, ${meaning}.`,
+};
+
+export const wordChoicePictureEn: WordChoicePictureCopy = {
+  picture: (meaning) => `Picture: ${meaning}`,
+  loading: "Picture, loading",
+  unavailable: (meaning) => `Picture unavailable. Meaning: ${meaning}`,
+  unavailableCaption: "Picture unavailable",
+  answer: (word, romanization, meaning) =>
+    romanization === null
+      ? `Answer: ${word}, ${meaning}`
+      : `Answer: ${word}, ${romanization}, ${meaning}`,
+  answerSubline: (romanization, meaning) =>
+    romanization === null ? meaning : `${romanization} · ${meaning}`,
 };
 
 export const catalogFinalEn: CatalogFinalCopy = {

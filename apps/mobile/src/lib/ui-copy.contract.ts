@@ -9,7 +9,10 @@ import type { AudioUnavailableCopy } from "../components/audio-unavailable.contr
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
+import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
 import type { TypingCopy } from "../screens/typing/typing.contract";
+import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
+import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-picture";
 import type { FeedbackCopy } from "./feedback.contract";
 import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
@@ -77,6 +80,9 @@ export type UiCopy = {
   readonly catalogMap: CatalogMapCopy;
   readonly catalogCover: CatalogCoverCopy;
   readonly typing: TypingCopy;
+  readonly vocabCard: VocabCardCopy;
+  readonly pairMatch: PairMatchCopy;
+  readonly wordChoicePicture: WordChoicePictureCopy;
   readonly catalogFinal: CatalogFinalCopy;
   readonly audioUnavailable: AudioUnavailableCopy;
 };

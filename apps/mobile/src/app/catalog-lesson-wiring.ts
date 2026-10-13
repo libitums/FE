@@ -117,8 +117,9 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     releaseFinish();
     clearSession();
     sink?.(lessonStartedEventOf(plan, "lesson"));
-    if (plan.questionCount === 0) {
-      // 보일 문항이 하나도 없는 유닛은 화면 없이 막지 않고 결과 화면으로 바로 보냅니다.
+    if (plan.activities.length === 0) {
+      // 보일 문항이 하나도 없는 유닛은 화면 없이 막지 않고 결과 화면으로 바로 보냅니다. 채점 문항이 0개여도
+      // 카드가 있으면 카드를 한 장씩 보여야 하므로 기준은 채점 수가 아니라 표시 수(활동 유무)입니다.
       sink?.(lessonFinishedEventOf(episodeId, unitKey, "lesson", [], 0, "passed"));
       markDone(episodeId, unitKey);
       showComplete("push", episodeId, unitKey, [], 0, 0);
@@ -142,6 +143,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
           episodeId,
           unitKey,
           questionCount: turnCount,
+          shownItemCount: turnCount,
           skippedItemCount: plan.skippedItemCount,
         },
         "final",

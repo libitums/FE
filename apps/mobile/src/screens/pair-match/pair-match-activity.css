@@ -1,0 +1,63 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않습니다.
+   뼈대(상단 바 · 세션 헤더 · 지시문 · 무대 카드 · 아래 버튼)는 `LearningShell`이 집니다. 여기 남는 것은
+   카드 안의 배치 — 판정(진행) 자리 · 두 열의 판 · 정답 공개입니다. 타일 하나의 모양은 `pair-match-tile.css`
+   입니다. */
+
+/* 카드 안 — 위에서 아래로 섭니다. 완료 상태에서 남는 것이 문구 한 줄뿐이라 가운데에 둡니다. */
+.pair-match-activity-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--libitum-spacing-12);
+}
+
+/* 판정(진행) 자리 — 비어 있어도 높이를 지킵니다(다른 학습 화면과 같은 값 · 같은 근거). 하한이지 고정이
+   아닙니다(ADR-0020 D5). */
+.pair-match-activity-verdict-slot {
+  min-height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 진행 표식 `n / m matched` — 왜 아래 버튼이 아직 없는지를 말합니다. 판정이 아니라 안내라서 판정 색이
+   없습니다. 면 `background-elevated` 위 `fg-brand`(12px 굵은 글씨)가 AA입니다. */
+.pair-match-activity-progress {
+  padding-top: var(--libitum-spacing-4);
+  padding-bottom: var(--libitum-spacing-4);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.pair-match-activity-progress-text {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 판 — 두 열이 가로로 나란합니다. 큰 글자에서도 두 열을 유지합니다(한 열로 쌓으면 짝을 찾는 스크롤이
+   길어집니다) — 타일이 높아지고 카드가 스크롤됩니다. */
+.pair-match-activity-board {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  column-gap: var(--libitum-spacing-12);
+}
+
+/* 열 — 폭을 반씩 나눠 갖고, 줄 사이는 타일 gap만큼 뜹니다. */
+.pair-match-activity-column {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+  min-width: 0;
+  row-gap: var(--libitum-spacing-8);
+}

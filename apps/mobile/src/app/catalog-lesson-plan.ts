@@ -13,17 +13,26 @@ import { catalogItemOf } from "./catalog-item-map";
 import { noLearnerProfile } from "./catalog-cover-wiring";
 import type {
   CatalogActivity,
+  CatalogActivityForm,
+  CatalogActivityScoring,
   CatalogFill,
+  CatalogImageUrlOf,
+  CatalogLessonItemPort,
   CatalogLessonPlan,
   CatalogMappedItem,
 } from "./catalog-lesson-types";
+import { catalogGlossOf } from "./catalog-card-map";
 import type { EpisodeContent } from "./episode-content";
 
 export type {
   CatalogActivity,
   CatalogActivityForm,
+  CatalogActivityScoring,
   CatalogFill,
+  CatalogGlossOf,
+  CatalogImageUrlOf,
   CatalogItemPort,
+  CatalogLessonItemPort,
   CatalogLessonPlan,
   CatalogMappedItem,
   CatalogSkipReason,
@@ -31,6 +40,17 @@ export type {
 } from "./catalog-lesson-types";
 export { catalogItemOf } from "./catalog-item-map";
 export { shuffledOrder } from "./catalog-shuffle";
+
+/** 활동 문항이 채점되는가의 표입니다 — 새 학습형이 생기면 tsc가 답을 강제합니다. */
+export const catalogActivityScoring: Readonly<Record<CatalogActivityForm, CatalogActivityScoring>> =
+  {
+    listening: "graded",
+    "sentence-order": "graded",
+    "word-choice": "graded",
+    typing: "graded",
+    "vocab-card": "ungraded",
+    "pair-match": "graded",
+  };
 
 type PlayableItem = Exclude<CatalogMappedItem, { kind: "skipped" }>;
 
@@ -53,6 +73,14 @@ function appended(last: CatalogActivity, item: PlayableItem): CatalogActivity | 
       return last.form === "typing"
         ? { form: "typing", questions: [...last.questions, item.question] }
         : null;
+    case "vocab-card":
+      return last.form === "vocab-card"
+        ? { form: "vocab-card", questions: [...last.questions, item.question] }
+        : null;
+    case "pair-match":
+      return last.form === "pair-match"
+        ? { form: "pair-match", questions: [...last.questions, item.question] }
+        : null;
   }
 }
 
@@ -66,6 +94,10 @@ function startedBy(item: PlayableItem): CatalogActivity {
       return { form: "word-choice", questions: [item.question] };
     case "typing":
       return { form: "typing", questions: [item.question] };
+    case "vocab-card":
+      return { form: "vocab-card", questions: [item.question] };
+    case "pair-match":
+      return { form: "pair-match", questions: [item.question] };
   }
 }
 
@@ -92,23 +124,33 @@ export function catalogLessonPlanOf(
   entry: Extract<CatalogEntry, { status: "ready" }>,
   unitKey: CatalogUnitKey,
   fill: CatalogFill,
+  imageUrlOf: CatalogImageUrlOf,
 ): CatalogLessonPlan | null {
   const unit = entry.episode.units.find((candidate) => candidate.id === unitKey);
   if (unit === undefined) return null;
-  const port = { fill, episodeId: entry.id };
+  const port: CatalogLessonItemPort = {
+    fill,
+    episodeId: entry.id,
+    glossOf: catalogGlossOf(entry.episode.words, fill),
+    imageUrlOf,
+  };
   const mapped = unit.items.map((item) => catalogItemOf(item, port));
   const activities = catalogActivitiesOf(mapped);
+  const countOf = (activity: CatalogActivity): number => activity.questions.length;
   return {
     episodeId: entry.id,
     unitKey,
     activities,
-    questionCount: activities.reduce((sum, activity) => sum + activity.questions.length, 0),
+    questionCount: activities
+      .filter((activity) => catalogActivityScoring[activity.form] === "graded")
+      .reduce((sum, activity) => sum + countOf(activity), 0),
+    shownItemCount: activities.reduce((sum, activity) => sum + countOf(activity), 0),
     skippedItemCount: mapped.filter((item) => item.kind === "skipped").length,
   };
 }
 
 /**
- * 그 활동이 레슨 안의 어디인가입니다 — 오프셋은 앞 활동들의 문항 수 합, 전체는 계획 문항 수, 마지막
+ * 그 활동이 레슨 안의 어디인가입니다 — 오프셋은 앞 활동들의 문항 수 합, 전체는 표시 문항 수, 마지막
  * 활동만 `last`입니다. 없는 순번이면 `null`입니다.
  */
 export function catalogActivityPositionOf(
@@ -121,7 +163,7 @@ export function catalogActivityPositionOf(
     .reduce((sum, activity) => sum + activity.questions.length, 0);
   return {
     offset,
-    total: plan.questionCount,
+    total: plan.shownItemCount,
     last: activityIndex === plan.activities.length - 1,
   };
 }
@@ -154,7 +196,12 @@ export function catalogLessonPlanFor(
     memo.set(entry, plans);
   }
   if (plans.has(unitKey)) return plans.get(unitKey) ?? null;
-  const plan = catalogLessonPlanOf(entry, unitKey, catalogFillOf(content, noLearnerProfile));
+  const plan = catalogLessonPlanOf(
+    entry,
+    unitKey,
+    catalogFillOf(content, noLearnerProfile),
+    content.imageUrlOf,
+  );
   plans.set(unitKey, plan);
   return plan;
 }

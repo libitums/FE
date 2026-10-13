@@ -6,7 +6,10 @@ import {
   catalogCoverEn,
   catalogFinalEn,
   catalogMapEn,
+  pairMatchEn,
   typingEn,
+  vocabCardEn,
+  wordChoicePictureEn,
 } from "./ui-copy-en-catalog";
 import {
   feedbackEn,
@@ -68,6 +71,9 @@ export const uiCopyEn: UiCopy = {
   catalogMap: catalogMapEn,
   catalogCover: catalogCoverEn,
   typing: typingEn,
+  vocabCard: vocabCardEn,
+  pairMatch: pairMatchEn,
+  wordChoicePicture: wordChoicePictureEn,
   catalogFinal: catalogFinalEn,
   audioUnavailable: audioUnavailableEn,
 };

@@ -1,5 +1,5 @@
 import { useUiCopy } from "../../lib/ui-copy";
-import { useEffect, useMemo, useReducer } from "@lynx-js/react";
+import { useEffect, useMemo, useReducer, useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { announceCompletion } from "../../lib/accessibility";
@@ -7,6 +7,9 @@ import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { WordChoiceOption } from "./WordChoiceOption";
+import { WordChoicePresentation } from "./WordChoicePresentation";
+import { useWordChoicePicture } from "./use-word-choice-picture";
+import { canAnswerWordChoice } from "./word-choice-picture";
 import {
   answeredResultOf,
   choiceResultAt,
@@ -67,6 +70,21 @@ function isStackedChoices(choices: readonly string[]): boolean {
   return choices.some((text) => text.length > stackedChoiceLength);
 }
 
+type ChoiceLayout = "row" | "stacked" | "grid";
+
+// 그림 문항의 보기는 2 × 2 격자입니다 — 세로 넷은 그림 카드 아래에 안 들어가고, 한 줄 넷은 다섯 글자
+// 낱말에서 접힙니다. 그 밖은 지금 규칙(낱말 길이면 가로 한 줄, 문장 길이면 세로)입니다.
+function choiceLayoutOf(question: WordChoiceQuestion): ChoiceLayout {
+  if (question.picture !== undefined) return "grid";
+  return isStackedChoices(question.choices) ? "stacked" : "row";
+}
+
+function optionsClassName(question: WordChoiceQuestion, answerable: boolean): string {
+  const layout = choiceLayoutOf(question);
+  const layoutClass = layout === "row" ? "" : ` word-choice-screen-options-${layout}`;
+  return `word-choice-screen-options${layoutClass}${answerable ? "" : " word-choice-screen-options-disabled"}`;
+}
+
 /** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
 export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
   return (
@@ -93,6 +111,19 @@ export function WordChoiceActivity({
   const complete = isWordChoiceSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
 
+  // 그림 문항이면 그림이 설 때까지(최대 6초) 보기를 잠급니다. 그림 문항이 아니면 상태도 타이머도 없이
+  // 처음부터 열려 있습니다.
+  const picture = useWordChoicePicture(question, state.questionIndex);
+  const answerable = question == null ? false : canAnswerWordChoice(question, picture.state);
+
+  // 연타해도 결과는 한 번만 올라갑니다 — 부모가 화면을 걷기 전의 두 번째 탭을 막습니다.
+  const finished = useRef(false);
+  const finishOnce = (results: readonly AnswerResult[]): void => {
+    if (finished.current) return;
+    finished.current = true;
+    onFinish(results, 0);
+  };
+
   // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번입니다(ADR-0016 D11-2).
   // dep이 `complete` 하나입니다 — 리듀서가 `questionIndex`를 늘리기만 하므로
   // 이 파생값은 false→true로 **한 번만** 갈립니다. 그래서 재렌더로는 다시
@@ -114,7 +145,7 @@ export function WordChoiceActivity({
       ? {
           label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
-          run: () => onFinish(wordChoiceSessionResults(questions, state.answeredChoiceIndexes), 0),
+          run: () => finishOnce(wordChoiceSessionResults(questions, state.answeredChoiceIndexes)),
         }
       : undefined;
 
@@ -133,9 +164,8 @@ export function WordChoiceActivity({
       label: copy.common.continue,
       run: () =>
         handsOff
-          ? onFinish(
+          ? finishOnce(
               wordChoiceSessionResults(questions, [...state.answeredChoiceIndexes, selected]),
-              0,
             )
           : dispatch({ type: "nextQuestion" }),
       delayMs: 2500,
@@ -169,13 +199,10 @@ export function WordChoiceActivity({
       workspace={
         question === null ? undefined : (
           <view
-            className={
-              isStackedChoices(question.choices)
-                ? "word-choice-screen-options word-choice-screen-options-stacked"
-                : "word-choice-screen-options"
-            }
+            className={optionsClassName(question, answerable)}
             data-testid="word-choice-screen-options"
-            data-layout={isStackedChoices(question.choices) ? "stacked" : "row"}
+            data-layout={choiceLayoutOf(question)}
+            data-interaction={answerable ? "enabled" : "locked"}
           >
             {question.choices.map((choiceText, choiceIndex) => (
               <WordChoiceOption
@@ -185,7 +212,11 @@ export function WordChoiceActivity({
                 // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는
                 // null입니다.
                 result={choiceResultAt(state, question, choiceIndex)}
-                onSelect={(index) => dispatch({ type: "selectChoice", choiceIndex: index })}
+                // 그림을 기다리는 동안의 탭은 흡수합니다 — 근거 없이 찍지 않게 합니다. 보기는 계속
+                // `button`입니다(ADR-0016 D10: `disabled`는 영구히 조작 불가한 것에만 줍니다).
+                onSelect={(index) => {
+                  if (answerable) dispatch({ type: "selectChoice", choiceIndex: index });
+                }}
               />
             ))}
           </view>
@@ -207,28 +238,14 @@ export function WordChoiceActivity({
           </view>
 
           {question === null ? null : (
-            <text className="word-choice-screen-prompt" data-testid="word-choice-screen-prompt">
-              {question.prompt}
-            </text>
-          )}
-
-          {/* 카탈로그 문항의 지원 줄입니다 — 값이 있을 때만 섭니다. 뜻 줄은 정답을 드러내는
-              문항에는 실리지 않습니다(그 판단은 문항을 만드는 쪽이 집니다). */}
-          {question?.romanization === undefined ? null : (
-            <text
-              className="word-choice-screen-support"
-              data-testid="word-choice-screen-romanization"
-            >
-              {question.romanization}
-            </text>
-          )}
-          {question?.translation === undefined ? null : (
-            <text
-              className="word-choice-screen-support"
-              data-testid="word-choice-screen-translation"
-            >
-              {question.translation}
-            </text>
+            <WordChoicePresentation
+              question={question}
+              questionIndex={state.questionIndex}
+              answered={hasAnswered(state)}
+              pictureState={picture.state}
+              onLoad={picture.onLoad}
+              onError={picture.onError}
+            />
           )}
 
           {/* 완료문입니다. 문항이 서 있던 그 카드 안에 결과가 대신 섭니다. */}
@@ -240,9 +257,11 @@ export function WordChoiceActivity({
           ) : null}
 
           {/* 배지 자리와 마주 보는 빈 자리입니다 — 왜 필요한지는 CSS에 적혀 있습니다.
-              언제나 섭니다: 배지 자리도 언제나 서므로, 조건부로 두면 완료 상태에서만
-              다시 쏠립니다. */}
-          <view className="word-choice-screen-verdict-balance" />
+              글자 제시문과 완료 상태에는 언제나 섭니다(배지 자리가 언제나 서므로, 조건부로 두면
+              완료 상태에서만 다시 쏠립니다). 그림 문항만 뺍니다 — 그림 틀이 카드를 채웁니다. */}
+          {question?.picture === undefined ? (
+            <view className="word-choice-screen-verdict-balance" />
+          ) : null}
         </view>
       }
     />
