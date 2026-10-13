@@ -1,1 +1,167 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 타일의 모양은 UI 구현 단계가 채웁니다. */
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 짝 맞추기 타일 하나입니다.
+
+   상태 클래스는 base 바로 뒤에 같은 파일에서 선언합니다 — 특이도가 같아 순서가 결과를 가르고, 뒤집히면
+   에러 없이 표시가 안 보입니다(ADR-0003 D7). 순서는 고름(`-selected`) → 맺힘(`-linked`) → 잠김(`-disabled`)
+   → 판정(`-correct` · `-incorrect`)입니다. 판정이 마지막이라 맺힌 꼴 위에 덮입니다.
+
+   **높이는 56이 하한입니다**(셸 아래 버튼과 같은 값). 두 줄로 접히는 뜻(`nice to meet, happy`)도 그 안에
+   들어가 네 줄의 높이가 같고, 더 길어지면(375 폭 · 큰 글자) 그 타일만 자랍니다 — 낱말을 줄이거나 자르지
+   않습니다(WCAG 1.4.4). */
+.pair-match-tile {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  padding-top: var(--libitum-spacing-8);
+  padding-bottom: var(--libitum-spacing-8);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-white);
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+.pair-match-tile:active {
+  background-color: var(--libitum-color-gray-100);
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+/* 움직임 줄이기: 눌림의 축소를 끄고 면 색만 남깁니다. */
+.pair-match-tile-motion-reduced {
+  transition: none;
+}
+
+.pair-match-tile-motion-reduced:active {
+  transform: none;
+}
+
+/* 고른 타일(짝을 기다림) — 테두리가 굵어집니다. 굵기가 바뀌어도 타일 바깥 크기가 변하지 않게 안쪽
+   여백에서 굵기 차(strong − thin)를 뺍니다. */
+.pair-match-tile-selected {
+  padding-top: calc(
+    var(--libitum-spacing-8) - var(--libitum-stroke-width-strong) + var(--libitum-stroke-width-thin)
+  );
+  padding-bottom: calc(
+    var(--libitum-spacing-8) - var(--libitum-stroke-width-strong) + var(--libitum-stroke-width-thin)
+  );
+  padding-left: calc(
+    var(--libitum-spacing-12) - var(--libitum-stroke-width-strong) +
+      var(--libitum-stroke-width-thin)
+  );
+  padding-right: calc(
+    var(--libitum-spacing-12) - var(--libitum-stroke-width-strong) +
+      var(--libitum-stroke-width-thin)
+  );
+  border-width: var(--libitum-stroke-width-strong);
+  border-color: var(--libitum-color-brand-strong);
+}
+
+/* 맺힌 타일 — 옅은 면에 얇은 브랜드 테두리, 번호 자리가 채워집니다. 놓인 칩의 `brand-primary` 면 + 흰
+   글자(3.02:1)를 쓰지 않고 `fg-neutral`(15.65:1)로 갑니다. */
+.pair-match-tile-linked {
+  border-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.pair-match-tile-linked .pair-match-tile-ordinal {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+/* 확인 뒤 — 눌러도 아무 일도 없으니 눌림 모양도 없습니다. 판정 꼴을 흐리게 하지 않습니다(읽어야 합니다). */
+.pair-match-tile-disabled:active {
+  background-color: var(--libitum-color-white);
+  transform: none;
+}
+
+/* 판정 — 테두리와 번호 면이 갈립니다. 타일 면은 칠하지 않습니다: `feedback-correct` 테두리가 연초록
+   면 위에서 2.96:1로 비텍스트 기준 3:1에 못 미치고, 흰 면 위에서는 3.07 · 3.94입니다. 색이 유일한
+   채널이 아닙니다 — 맞은 짝은 tick, 틀린 짝은 숫자이고 틀린 낱말은 정답 상자에 실립니다. */
+.pair-match-tile-correct,
+.pair-match-tile-incorrect {
+  background-color: var(--libitum-color-white);
+  border-width: var(--libitum-stroke-width-strong);
+  padding-top: calc(
+    var(--libitum-spacing-8) - var(--libitum-stroke-width-strong) + var(--libitum-stroke-width-thin)
+  );
+  padding-bottom: calc(
+    var(--libitum-spacing-8) - var(--libitum-stroke-width-strong) + var(--libitum-stroke-width-thin)
+  );
+  padding-left: calc(
+    var(--libitum-spacing-12) - var(--libitum-stroke-width-strong) +
+      var(--libitum-stroke-width-thin)
+  );
+  padding-right: calc(
+    var(--libitum-spacing-12) - var(--libitum-stroke-width-strong) +
+      var(--libitum-stroke-width-thin)
+  );
+}
+
+.pair-match-tile-correct {
+  border-color: var(--libitum-color-feedback-correct);
+}
+
+.pair-match-tile-correct .pair-match-tile-ordinal {
+  background-color: var(--libitum-color-feedback-correct-text);
+}
+
+.pair-match-tile-incorrect {
+  border-color: var(--libitum-color-feedback-incorrect);
+}
+
+.pair-match-tile-incorrect .pair-match-tile-ordinal {
+  background-color: var(--libitum-color-feedback-incorrect-text);
+}
+
+/* 낱말(왼쪽 열) — 한글입니다. 단어 선택 보기 글자와 같은 값입니다. */
+.pair-match-tile-word,
+.pair-match-tile-meaning {
+  flex-grow: 1;
+  flex-shrink: 1;
+  min-width: 0;
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+}
+
+.pair-match-tile-word {
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  line-height: var(--libitum-typography-label-xl-line-height);
+  letter-spacing: var(--libitum-typography-label-xl-letter-spacing);
+}
+
+/* 뜻(오른쪽 열) — 영어이고 줄바꿈을 막지 않습니다. */
+.pair-match-tile-meaning {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 번호 자리 — 맺히지 않았어도 자리를 지킵니다(면은 맺힐 때 채워집니다). */
+.pair-match-tile-ordinal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  border-radius: var(--libitum-radius-full);
+}
+
+.pair-match-tile-ordinal-text {
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.pair-match-tile-tick {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}

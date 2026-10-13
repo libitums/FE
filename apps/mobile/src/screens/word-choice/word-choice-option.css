@@ -39,8 +39,8 @@
   justify-content: center;
   min-width: 60px;
   min-height: 60px;
-  padding-left: var(--libitum-spacing-14);
-  padding-right: var(--libitum-spacing-14);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
   border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
   border-radius: var(--libitum-radius-md);
   background: var(--libitum-color-background-primary);
