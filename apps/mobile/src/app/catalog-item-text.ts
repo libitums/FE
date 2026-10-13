@@ -37,4 +37,4 @@ export function optionalField<K extends string>(
 
 /** 문항 지시문(`prompt.en`)입니다. */
 export const instructionOf = (port: CatalogItemPort, prompt: Text): string | undefined =>
-  latinOf(port, prompt.en);
+  englishOf(port, prompt.en);

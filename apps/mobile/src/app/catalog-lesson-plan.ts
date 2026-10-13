@@ -10,7 +10,6 @@ import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { AssessmentPassCriterion } from "../screens/assessment/assessment";
 import type { LessonPosition } from "../screens/learning/activity-finish";
 import { catalogItemOf } from "./catalog-item-map";
-import { noLearnerProfile } from "./catalog-cover-wiring";
 import type {
   CatalogActivity,
   CatalogActivityForm,
@@ -178,29 +177,35 @@ export function catalogFillOf(content: EpisodeContent, profile: LearnerProfile):
   return (text, script) => content.fillText(text, profile, script);
 }
 
-// 같은 ready 항목 참조 + 같은 키면 같은 계획 참조입니다 — 활동 화면의 자동 넘김 걸음이 문항 참조에
-// 걸려 있어, 렌더마다 새 문항을 만들면 관계없는 리렌더가 기다림을 되돌립니다.
-const memo = new WeakMap<object, Map<string, CatalogLessonPlan | null>>();
+// 같은 ready 항목 참조 + 같은 프로필 참조 + 같은 키면 같은 계획 참조입니다 — 활동 화면의 자동 넘김 걸음이
+// 문항 참조에 걸려 있어, 렌더마다 새 문항을 만들면 관계없는 리렌더가 기다림을 되돌립니다. 프로필 참조가 키에
+// 들어서, 프로필이 바뀌면 새 계획이 서고 같은 참조로 돌아오면 먼저 만든 계획이 돌아옵니다.
+const memo = new WeakMap<object, WeakMap<object, Map<string, CatalogLessonPlan | null>>>();
 
-/** 같은 ready 항목 참조 + 같은 키면 같은 계획 참조를 돌려줍니다(메모). */
+/** 같은 ready 항목 · 프로필 참조 · 키면 같은 계획 참조를 돌려줍니다(메모). */
 export function catalogLessonPlanFor(
   content: EpisodeContent,
   episodeId: string,
   unitKey: CatalogUnitKey,
-  _profile: LearnerProfile,
+  profile: LearnerProfile,
 ): CatalogLessonPlan | null {
   const entry = content.catalog.find((candidate) => candidate.id === episodeId);
   if (entry === undefined || entry.status !== "ready") return null;
-  let plans = memo.get(entry);
+  let byProfile = memo.get(entry);
+  if (byProfile === undefined) {
+    byProfile = new WeakMap();
+    memo.set(entry, byProfile);
+  }
+  let plans = byProfile.get(profile);
   if (plans === undefined) {
     plans = new Map();
-    memo.set(entry, plans);
+    byProfile.set(profile, plans);
   }
   if (plans.has(unitKey)) return plans.get(unitKey) ?? null;
   const plan = catalogLessonPlanOf(
     entry,
     unitKey,
-    catalogFillOf(content, noLearnerProfile),
+    catalogFillOf(content, profile),
     content.imageUrlOf,
   );
   plans.set(unitKey, plan);

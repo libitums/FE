@@ -1,6 +1,7 @@
 // 카탈로그 표지 컷의 순수 표시 모델입니다 — 컷 → 표시 모델, 번역 · 토글 · 다음 · 낭독.
 
 import type { EpisodeCut, Text } from "../../lib/episode-content.model";
+import type { FillScript } from "../../lib/placeholder-fill";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   CatalogCutPort,
@@ -16,7 +17,7 @@ export const CATALOG_SELF_SPEAKER = "플레이어";
 
 function filled(
   value: string | undefined,
-  script: "ko" | "roman",
+  script: FillScript,
   port: CatalogCutPort,
 ): string | null {
   if (value === undefined) return null;
@@ -24,13 +25,13 @@ function filled(
   return text.trim() === "" ? null : text;
 }
 
-// 영어 문장 속 자리표시자도 로마자 기본값을 씁니다(한국어 기본값 「이름」이 영어 문장에 서지 않게).
+// 영어 줄은 `"en"` 스크립트로 채웁니다 - 나라는 영어 이름으로 서고, 기본값은 로마자와 같습니다.
 function textOf(text: Text, port: CatalogCutPort): CatalogCutText | null {
   const ko = filled(text.ko, "ko", port);
   if (ko === null) return null;
   return {
     ko,
-    en: filled(text.en, "roman", port),
+    en: filled(text.en, "en", port),
     roman: filled(text.roman, "roman", port),
   };
 }

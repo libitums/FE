@@ -4,7 +4,7 @@ import { isTypeableAnswer } from "../lib/hangul-keyboard";
 import type { LearningItem } from "../lib/episode-content.model";
 import type { TypingCueKind } from "../screens/typing/typing.contract";
 import type { CatalogItemPort, CatalogMappedItem } from "./catalog-lesson-types";
-import { instructionOf, koOf, latinOf, skippedItem } from "./catalog-item-text";
+import { englishOf, instructionOf, koOf, latinOf, skippedItem } from "./catalog-item-text";
 
 type TypingSource = Extract<LearningItem, { type: "DICTATION" | "TRANSLATE_TO_KO" | "SENT_BUILD" }>;
 
@@ -43,7 +43,7 @@ function typingItem(
 /** 첫 영어 뜻이 있는 정답의 영어입니다. */
 function firstEnglish(item: TypingSource, port: CatalogItemPort): string | undefined {
   for (const answer of item.answers) {
-    const english = latinOf(port, answer.en);
+    const english = englishOf(port, answer.en);
     if (english !== undefined) return english;
   }
   return undefined;
@@ -57,7 +57,7 @@ export function typingItemOf(item: TypingSource, port: CatalogItemPort): Catalog
       return typingItem(item, port, {
         kind: "dictation",
         cue,
-        cueSupport: latinOf(port, item.stimulus.audio?.en) ?? null,
+        cueSupport: englishOf(port, item.stimulus.audio?.en) ?? null,
         hint: null,
       });
     }

@@ -3,7 +3,7 @@
 // 화면 경로가 닿는 파일이라 `lib/episode-*`는 타입만 가져옵니다.
 
 import type { LearningItem } from "../lib/episode-content.model";
-import { koOf, latinOf, skippedItem } from "./catalog-item-text";
+import { englishOf, koOf, skippedItem } from "./catalog-item-text";
 import type { CatalogLessonItemPort, CatalogMappedItem } from "./catalog-lesson-types";
 import { shuffledOrder } from "./catalog-shuffle";
 
@@ -16,7 +16,7 @@ export function pairMatchItemOf(
   port: CatalogLessonItemPort,
 ): CatalogMappedItem {
   const words = item.pairs.map((pair) => koOf(port, pair.left.ko));
-  const glosses = item.pairs.map((pair) => latinOf(port, pair.right) ?? "");
+  const glosses = item.pairs.map((pair) => englishOf(port, pair.right) ?? "");
   const malformed =
     words.length < 2 ||
     words.length !== item.tiles.length ||

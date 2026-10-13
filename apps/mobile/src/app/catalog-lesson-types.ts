@@ -59,7 +59,7 @@ export type CatalogMappedItem =
       readonly reason: CatalogSkipReason;
     };
 
-/** 학습자 프로필을 묶은 치환입니다. 영어 문자열은 `"roman"` 스크립트로 치환합니다. */
+/** 학습자 프로필을 묶은 치환입니다. 한글 줄은 `"ko"`, 로마자 줄은 `"roman"`, 영어 줄은 `"en"` 스크립트로 치환합니다. */
 export type CatalogFill = (text: string, script: FillScript) => string;
 
 export type CatalogItemPort = { readonly fill: CatalogFill; readonly episodeId: string };
