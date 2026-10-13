@@ -28,6 +28,9 @@ public final class CrashReportPayload {
   private static final Pattern NAME_AND_MESSAGE =
       Pattern.compile("^([A-Za-z_$][A-Za-z0-9_$]*(?: rejection)?): ([\\s\\S]*)$");
   private static final Pattern LINE_BREAK = Pattern.compile("\\r?\\n");
+  // Main-thread errors arrive as "main-thread.js exception: TypeError: x " under a "backtrace:" line.
+  private static final String MAIN_THREAD_PREFIX = "main-thread.js exception: ";
+  private static final String BACKTRACE_HEADER = "backtrace:";
 
   public final Source source;
   public final String name;
@@ -57,6 +60,9 @@ public final class CrashReportPayload {
         String[] lines = LINE_BREAK.split(text.trim(), 2);
         rawMessage = lines[0];
         rawStack = lines.length > 1 ? lines[1] : "";
+      }
+      if (rawMessage.startsWith(MAIN_THREAD_PREFIX)) {
+        rawMessage = rawMessage.substring(MAIN_THREAD_PREFIX.length()).trim();
       }
       String name = "Error";
       String message = rawMessage;
@@ -100,6 +106,7 @@ public final class CrashReportPayload {
     for (String line : LINE_BREAK.split(rawStack)) {
       if (lines.size() >= STACK_MAX_LINES) break;
       if (line.trim().isEmpty()) continue;
+      if (lines.isEmpty() && BACKTRACE_HEADER.equals(line.trim())) continue;
       String clean = CrashScrub.scrub(line);
       // Line and column sit at the end of a frame, so keep the tail.
       lines.add(clean.length() > STACK_LINE_MAX ? clean.substring(clean.length() - STACK_LINE_MAX) : clean);
