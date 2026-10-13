@@ -1,0 +1,6 @@
+# Airbridge 앱 측정 값. 이 파일을 airbridge.properties로 복사해 채운다(airbridge.properties는 추적하지 않는다).
+# 둘 다 유효할 때만 SDK가 시작된다. 비어 있으면 앱은 Airbridge 없이 지금과 똑같이 동작한다.
+# 값은 Airbridge 대시보드 [Settings] > [Tokens]에서 온다. 앱 이름은 영문 · 숫자 · 밑줄 · 하이픈만,
+# 토큰은 App SDK Token(Web SDK Token 아님)으로 공백 없는 한 덩어리.
+AIRBRIDGE_APP_NAME=
+AIRBRIDGE_SDK_TOKEN=

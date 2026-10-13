@@ -1,7 +1,7 @@
-// meta-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0057.
+// airbridge-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0063.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
 
-/** 계약의 이름 33개 전부입니다 — 손으로 적고 타입에 묶습니다. */
+/** 계약의 이름 39개 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
   "entry_screen_viewed",
   "entry_login_method_selected",
@@ -33,12 +33,18 @@ export const allEventNames = [
   "episode_content_refreshed",
   "episode_survey_answered",
   "episode_survey_skipped",
+  "episode_lesson_started",
+  "episode_lesson_finished",
+  "episode_final_passed",
+  "learner_profile_saved",
+  "learner_profile_skipped",
+  "learner_profile_opened",
   "progress_load_delayed",
   "progress_load_failed",
   "progress_load_recovered",
 ] as const satisfies readonly AnalyticsEventName[];
 
-/** 위 셋을 뺀 30개 이름마다 최소 이벤트 하나입니다. */
+/** 위 셋을 뺀 36개 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
@@ -102,6 +108,28 @@ export const unmappedEvents = [
   },
   { name: "episode_survey_answered", episodeId: "tutorial", rating: "4" },
   { name: "episode_survey_skipped", episodeId: "tutorial" },
+  {
+    name: "episode_lesson_started",
+    episodeId: "u01",
+    unitKey: "S1",
+    unitRole: "lesson",
+    questionCount: "3",
+    shownItemCount: "4",
+    skippedItemCount: "0",
+  },
+  {
+    name: "episode_lesson_finished",
+    episodeId: "u01",
+    unitKey: "S1",
+    unitRole: "lesson",
+    verdict: "passed",
+    correctCount: "3",
+    questionCount: "3",
+  },
+  { name: "episode_final_passed", episodeId: "u01", correctCount: "2", turnCount: "2" },
+  { name: "learner_profile_saved", entry: "onboarding", change: "created" },
+  { name: "learner_profile_skipped", entry: "episode" },
+  { name: "learner_profile_opened" },
   { name: "progress_load_delayed" },
   { name: "progress_load_failed", attempt: "first" },
   { name: "progress_load_failed", attempt: "retry" },
