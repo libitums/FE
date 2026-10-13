@@ -124,4 +124,47 @@ public final class CrashEventPolicyTest {
   @Test public void e4_beforeSendKeepsACleanEvent() {
     assertFalse(CrashEventPolicy.beforeSend(javaCrashEvent("boom")) == null);
   }
+
+  private static SentryEvent withDeviceId(SentryEvent event) {
+    Device device = new Device();
+    device.setId("install-id");
+    device.setName("Kim's Pixel");
+    event.getContexts().setDevice(device);
+    return event;
+  }
+
+  @Test public void rv1_beforeSendClearsDeviceIdOfAJsExceptionEvent() {
+    CrashReportPayload p =
+        CrashReportPayload.fromLynxError(201, "error", "TypeError: x\n    at a (f:1:2)");
+    assertNotNull(p);
+    SentryEvent result = CrashEventPolicy.beforeSend(withDeviceId(CrashEventPolicy.eventFrom(p)));
+    assertNotNull(result);
+    Device after = result.getContexts().getDevice();
+    assertTrue("RV1 device.id must be null", after == null || after.getId() == null);
+    assertNull(result.getUser());
+  }
+
+  @Test public void rv1_beforeSendClearsDeviceIdOfAnyOtherEvent() {
+    SentryEvent event = withDeviceId(javaCrashEvent("boom"));
+    User user = new User();
+    user.setId("install-id");
+    event.setUser(user);
+    SentryEvent result = CrashEventPolicy.beforeSend(event);
+    assertNotNull(result);
+    Device after = result.getContexts().getDevice();
+    assertTrue("RV1 device.id must be null", after == null || after.getId() == null);
+    assertNull(result.getUser());
+  }
+
+  @Test public void rv2_beforeSendClearsMessageParams() {
+    SentryEvent event = javaCrashEvent("x");
+    Message message = new Message();
+    message.setMessage("hello %s");
+    message.setParams(new ArrayList<>(Arrays.asList("a@b.co", "010-1234-5678")));
+    event.setMessage(message);
+    SentryEvent result = CrashEventPolicy.beforeSend(event);
+    assertNotNull(result);
+    assertNotNull(result.getMessage());
+    assertNull("RV2 message.params must be null", result.getMessage().getParams());
+  }
 }

@@ -152,6 +152,33 @@ public final class CrashReportPayloadTest {
     for (String line : p.stackLines) assertFalse(line.contains("\r"));
   }
 
+  @Test public void rv6_unknownNameShapeFallsBackToErrorWithFullMessage() {
+    CrashReportPayload p = make(201, "kimsehyun: hello\n    at a (f:1:2)");
+    assertNotNull(p);
+    assertEquals("Error", p.name);
+    assertEquals("kimsehyun: hello", p.message);
+    assertEquals(Arrays.asList("lynx", "js-background", "Error"), p.fingerprint().subList(0, 3));
+  }
+
+  @Test public void rv6_unknownNameMessageStillPassesThroughScrub() {
+    CrashReportPayload p = make(201, "kim: mail a@b.co");
+    assertNotNull(p);
+    assertEquals("Error", p.name);
+    assertEquals("kim: mail [email]", p.message);
+  }
+
+  @Test public void rv6_knownNameShapesKeepTheirName() {
+    String[] names = {
+      "TypeError", "MyCustomError", "IllegalStateException", "unhandled rejection", "Error"
+    };
+    for (String n : names) {
+      CrashReportPayload p = make(201, n + ": x");
+      assertNotNull(n, p);
+      assertEquals(n, p.name);
+      assertEquals(n, "x", p.message);
+    }
+  }
+
   @Test public void p8_nameIsCappedAtEighty() {
     CrashReportPayload p = make(201, repeat("A", 100) + ": msg");
     assertNotNull(p);

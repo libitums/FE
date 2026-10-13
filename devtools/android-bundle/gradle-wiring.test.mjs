@@ -207,3 +207,26 @@ test("GW-S7: only CrashEventPolicy and CrashReporting import io.sentry in host s
   await walk(join(android, "app/src/main/java"));
   assert.deepEqual(importers.sort(), allowed);
 });
+
+test("GW-S8: CrashReporting.java carries the Sentry option lines the contract fixes", async () => {
+  const source = withoutComments(await readOptional(join(hostDir, "CrashReporting.java")));
+  const required = [
+    "setSendDefaultPii(false)",
+    "setDistinctId(null)",
+    "setBeforeSend(",
+    "setBeforeBreadcrumb(",
+    "setMaxBreadcrumbs(0)",
+    "setAttachScreenshot(false)",
+    "setAttachViewHierarchy(false)",
+    "setEnableNdk(false)",
+    "setTracesSampleRate(null)",
+    "setSendModules(false)",
+  ];
+  const lines = source.split("\n").map((line) => line.trim());
+  for (const option of required) {
+    assert.ok(
+      lines.some((line) => line.includes(option)),
+      `CrashReporting.java lacks ${option}`,
+    );
+  }
+});
