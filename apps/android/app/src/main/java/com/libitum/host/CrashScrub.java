@@ -1,5 +1,6 @@
 package com.libitum.host;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Strips personal-data patterns from crash text. The rule order is part of the contract. */
@@ -8,12 +9,15 @@ public final class CrashScrub {
   // Scheme-less query tail: possessive prefix keeps the scan linear.
   private static final Pattern BARE_QUERY = Pattern.compile("\\?[^\\s?#=]*+=\\S*");
   private static final Pattern EMAIL = Pattern.compile("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}");
-  // `Class@1a2b3c` is a Java identity hash, not an address, so a hex-only tail is left alone.
-  private static final Pattern DOTLESS_EMAIL = Pattern.compile(
-      "[^\\s@<>()\\[\\]]++@(?![0-9a-fA-F]{1,16}(?![A-Za-z0-9]))[^\\s@<>()\\[\\]]+");
-  // `basic` alone is an ordinary word; it counts only behind an authorization head.
-  private static final Pattern AUTH_HEAD =
-      Pattern.compile("\\b(authorization:?\\s*basic|bearer)\\s+\\S+", Pattern.CASE_INSENSITIVE);
+  private static final Pattern DOTLESS_EMAIL = Pattern.compile("([^\\s@<>()\\[\\]]++)@([^\\s@<>()\\[\\]]+)");
+  // `pkg.Class@1a2b3c` is a Java identity hash, not an address: a class-like name before a hex tail.
+  private static final Pattern CLASS_NAME = Pattern.compile("(?:[A-Za-z_$][\\w$]*\\.)*[A-Z][\\w$]*");
+  private static final Pattern HEX_TAIL = Pattern.compile("[0-9a-fA-F]{1,16}");
+  private static final Pattern BEARER = Pattern.compile("\\b(bearer)\\s+\\S+", Pattern.CASE_INSENSITIVE);
+  // `basic` is an ordinary word; the value after it counts only when it looks like base64 (a digit,
+  // `+`, `/` or an upper-case letter somewhere), so header dumps in any quoting are covered.
+  private static final Pattern BASIC =
+      Pattern.compile("\\b([Bb][Aa][Ss][Ii][Cc])\\s+(?=[a-z]*[0-9+/A-Z])[A-Za-z0-9+/]{8,}+={0,2}");
   private static final Pattern JWT =
       Pattern.compile("eyJ[A-Za-z0-9_-]{5,}\\.[A-Za-z0-9_-]{5,}\\.[A-Za-z0-9_-]{5,}");
   private static final Pattern OPAQUE = Pattern.compile("[A-Za-z0-9_-]{32,}");
@@ -29,8 +33,9 @@ public final class CrashScrub {
       String out = URL_QUERY.matcher(text).replaceAll("$1?[redacted]");
       out = BARE_QUERY.matcher(out).replaceAll("?[redacted]");
       out = EMAIL.matcher(out).replaceAll("[email]");
-      out = DOTLESS_EMAIL.matcher(out).replaceAll("[email]");
-      out = AUTH_HEAD.matcher(out).replaceAll("$1 [token]");
+      out = dotlessEmails(out);
+      out = BEARER.matcher(out).replaceAll("$1 [token]");
+      out = BASIC.matcher(out).replaceAll("$1 [token]");
       out = JWT.matcher(out).replaceAll("[token]");
       out = OPAQUE.matcher(out).replaceAll("[token]");
       out = NUMBER.matcher(out).replaceAll("[number]");
@@ -38,5 +43,17 @@ public final class CrashScrub {
     } catch (RuntimeException | StackOverflowError error) {
       return "";
     }
+  }
+
+  private static String dotlessEmails(String text) {
+    Matcher m = DOTLESS_EMAIL.matcher(text);
+    StringBuilder out = new StringBuilder();
+    while (m.find()) {
+      boolean identityHash =
+          CLASS_NAME.matcher(m.group(1)).matches() && HEX_TAIL.matcher(m.group(2)).matches();
+      m.appendReplacement(out, identityHash ? Matcher.quoteReplacement(m.group()) : "[email]");
+    }
+    m.appendTail(out);
+    return out.toString();
   }
 }
