@@ -42,6 +42,7 @@ public final class CrashEventPolicy {
       if (device != null) {
         device.setName(null);
         device.setId(null);
+        device.setBootTime(null);
       }
       List<SentryException> exceptions = e.getExceptions();
       if (exceptions != null) {

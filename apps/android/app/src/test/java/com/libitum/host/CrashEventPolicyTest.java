@@ -156,6 +156,16 @@ public final class CrashEventPolicyTest {
     assertNull(result.getUser());
   }
 
+  @Test public void rb1_beforeSendClearsDeviceBootTime() {
+    // A millisecond boot time is the same on every event until reboot, so it can tie events to a device.
+    SentryEvent event = withDeviceId(javaCrashEvent("boom"));
+    event.getContexts().getDevice().setBootTime(new java.util.Date(1_700_000_000_000L));
+    SentryEvent result = CrashEventPolicy.beforeSend(event);
+    assertNotNull(result);
+    Device after = result.getContexts().getDevice();
+    assertTrue("device.boot_time must be null", after == null || after.getBootTime() == null);
+  }
+
   @Test public void rv2_beforeSendClearsMessageParams() {
     SentryEvent event = javaCrashEvent("x");
     Message message = new Message();
