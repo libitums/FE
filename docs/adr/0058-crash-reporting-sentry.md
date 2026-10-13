@@ -97,7 +97,7 @@
   근거: 상한이 없던 지우기는 구분자 없는 50,000자 한 덩이에 **18초대**가 걸렸고(제곱 시간 — 이 콜백은 메인 스레드에서 돈다), 사전 상한 뒤에는 같은 입력이 **0.1초 안**(0.06 ~ 0.08초)에 끝난다
   [실측 — 데스크톱 JVM의 JUnit `CrashPreCapTest`]. **Android의 정규식 엔진(ICU)에서의 수치는 [미확인]이다** — 기기에서 잰 적이 없다.
 - **지우기의 정본은 `CrashScrub.scrub`이다.** 아홉 규칙을 이 순서로 적용한다: URL의 쿼리 · 프래그먼트 → `?[redacted]` · **스킴 없는 쿼리 꼬리**(`?` 뒤에 `key=`가 오는 것) → `?[redacted]` ·
-  이메일 → `[email]` · **점 없는 이메일**(`kim@localhost`, 단 `@` 뒤가 16자 이하 16진수뿐인 `Class@4a5b6c7` 꼴은 Java 식별 해시라 두고 간다) → `[email]` · **인증 머리**(`Bearer …`, `Authorization: Basic …` — 대소문자 무시. 낱말 `basic` 혼자는 걸지 않는다) → `<머리> [token]` · JWT → `[token]` ·
+  이메일 → `[email]` · **점 없는 이메일**(`kim@localhost`, 단 `@` 앞이 Java 클래스 이름 꼴(마지막 조각이 대문자로 시작)이고 뒤가 16자 이하 16진수인 `android.os.BinderProxy@4a5b6c7` 꼴은 Java 식별 해시라 두고 간다) → `[email]` · **인증 머리**(`Bearer …` 뒤 값 전부, `Basic …`은 뒤 값이 base64 꼴 — 숫자 · `+` · `/` · 대문자가 한 번이라도 든 8자 이상 — 일 때. JSON · `=` · 줄바꿈 등 머리 꼴과 무관. `the basic idea` 같은 낱말은 두고 간다) → `<머리> [token]` · JWT → `[token]` ·
   32자 이상의 불투명한 값(갱신 토큰 · API 키 · 해시 · 사용자 UUID) → `[token]` · 숫자 9개 이상의 전화번호 · 긴 숫자 → `[number]` · ASCII 밖 글자(한글 등 — 학습 답 · 음성 인식 결과 · 이름) → `[text]`.
   굵게 적은 셋이 리뷰 뒤에 더해졌다(Bearer 규칙이 인증 머리 규칙으로 넓어졌다). 패턴과 기준 벡터 V1 ~ V19는 계약 §3.2 · §11이 정본이고 JUnit(`CrashScrubTest` · `CrashScrubCorrectionTest`)이 그 표를 그대로 쓴다.
 - **Sentry로 나가는 모든 이벤트**(JS 예외 · Java 크래시 · ANR · tombstone)는 `CrashEventPolicy.beforeSend`를 한 번 더 지난다: `user` · breadcrumb · `serverName` · `request`를 지우고,
@@ -390,6 +390,12 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
   이 번들 · 이 버전의 관찰이다 — 빌드 설정이 메인 스레드 스크립트를 한 줄로 줄이게 바뀌면 다시 열린다. (나) `contexts.device.boot_time`은 B6에서 실려 나간 것을 본 뒤 지우기로 정했다(아래 B단계 정정).
   (다) ANR 스레드 덤프 첨부의 SDK 기본값은 여전히 바이트코드로 확인하지 않았다.
 - 판정: `CrashReviewRoundTwoTest` 7건(red 5 → green), JUnit 152/152.
+
+### 2026-10-13 — 리뷰 3회차(PASS with warnings)의 경고 처리
+
+- **W10.** 2회차에 인증 머리를 `authorization` 뒤로 좁히면서 JSON · `=` · 줄바꿈 뒤의 `Basic <base64>`가 다시 나가게 됐다(후퇴). `Basic` 뒤 값이 base64 꼴이면 머리 꼴과 무관하게 지운다.
+- **S9.** 16진수 꼬리 예외가 `user@abc123` · `kim@cafe` 같은 점 없는 주소까지 빼냈다. 예외를 `@` 앞이 Java 클래스 이름 꼴일 때로 좁혔다.
+- 판정: `CrashReviewRoundThreeTest` 4건(red 2 → green), JUnit 157/157. 재리뷰는 받지 않았다.
 
 ### 2026-10-13 — e2e B단계 실측에 따른 정정
 

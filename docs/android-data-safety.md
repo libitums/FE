@@ -132,8 +132,8 @@ JS 예외의 네 값은 계약이 닫은 것이고 [코드], 그 밖은 **B단�
 | 1 | URL의 쿼리 · 프래그먼트(인증 코드 · 토큰이 실린다) | `https://…/verify?[redacted]` |
 | 2 | **스킴 없는 쿼리 꼬리** — `?` 뒤에 `key=`가 오는 것 | `/auth/v1/verify?[redacted]` |
 | 3 | 이메일 | `[email]` |
-| 4 | **점 없는 이메일**(`kim@localhost`) — `@`가 든 토막(`Class@4a5b6c7` 꼴의 16진수 꼬리는 예외) | `[email]` |
-| 5 | **인증 머리** — `Bearer …`와 `Authorization: Basic …`(대소문자 무시) 뒤의 값. 낱말 `basic` 혼자는 걸지 않는다 | `Bearer [token]` · `Authorization: Basic [token]` |
+| 4 | **점 없는 이메일**(`kim@localhost`) — `@`가 든 토막(Java 클래스 이름 `@` 16진수 꼴 — `BinderProxy@4a5b6c7` — 만 예외) | `[email]` |
+| 5 | **인증 값** — `Bearer` 뒤의 값, `Basic` 뒤의 base64 꼴 값(헤더 덤프의 따옴표 · `=` · 줄바꿈과 무관). 낱말 `basic` 뒤의 평범한 단어는 두고 간다 | `Bearer [token]` · `Basic [token]` |
 | 6 | JWT | `[token]` |
 | 7 | 32자 이상의 불투명한 값(갱신 토큰 · API 키 · 해시 · 사용자 UUID) | `[token]` |
 | 8 | 전화번호 · 긴 숫자(숫자 9개 이상) | `[number]` |
