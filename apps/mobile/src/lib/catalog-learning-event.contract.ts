@@ -10,7 +10,10 @@ export type EpisodeLessonStartedEvent = {
   readonly episodeId: string;
   readonly unitKey: string;
   readonly unitRole: CatalogUnitRole;
+  /** 채점 문항 수입니다. */
   readonly questionCount: string;
+  /** 표시 문항 수입니다(채점 문항 + 단어 카드). */
+  readonly shownItemCount: string;
   readonly skippedItemCount: string;
 };
 

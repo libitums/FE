@@ -17,6 +17,7 @@ export function lessonStartedEventOf(
     readonly episodeId: string;
     readonly unitKey: string;
     readonly questionCount: number;
+    readonly shownItemCount: number;
     readonly skippedItemCount: number;
   },
   role: CatalogUnitRole,
@@ -27,6 +28,7 @@ export function lessonStartedEventOf(
     unitKey: start.unitKey,
     unitRole: role,
     questionCount: String(start.questionCount),
+    shownItemCount: String(start.shownItemCount),
     skippedItemCount: String(start.skippedItemCount),
   };
 }

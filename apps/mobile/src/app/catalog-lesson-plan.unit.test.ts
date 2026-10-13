@@ -32,7 +32,14 @@ const realCatalog = buildEpisodeCatalog({
 });
 
 const fill: CatalogFill = (text, script) => fillPlaceholders(text, {}, script);
-const port = { fill, episodeId: "u01-water" } as const;
+const port = {
+  fill,
+  episodeId: "u01-water",
+  glossOf: () => null,
+  imageUrlOf: () => null,
+} as const;
+
+const noImageUrl = (): null => null;
 
 function readyOf(episodeId: string): ReadyEntry {
   const entry = realCatalog.find((candidate) => candidate.id === episodeId);
@@ -188,17 +195,6 @@ describe("shuffledOrder", () => {
 // ---- catalogItemOf ----
 
 describe("catalogItemOf — 건너뜀", () => {
-  test("LP3. 3d 화면이 없는 유형은 screen-pending으로 건너뛴다", () => {
-    expect(catalogItemOf(vocabCard("V"), port)).toEqual({
-      kind: "skipped",
-      itemId: "V",
-      type: "VOCAB_CARD",
-      reason: "screen-pending",
-    });
-    expect(catalogItemOf(imgMatch("I"), port)).toMatchObject(skippedWith("screen-pending"));
-    expect(catalogItemOf(pairMatch("P"), port)).toMatchObject(skippedWith("screen-pending"));
-  });
-
   test("LP3. 레슨 안의 ROLEPLAY_TURN은 malformed로 건너뛴다", () => {
     expect(catalogItemOf(roleplay("RP-01"), port)).toEqual({
       kind: "skipped",
@@ -265,12 +261,12 @@ describe("catalogItemOf — 듣기", () => {
     for (const entry of realCatalog) {
       if (entry.status !== "ready") continue;
       for (const unit of entry.episode.units) {
-        const plan = catalogLessonPlanOf(entry, unit.id, fill);
+        const plan = catalogLessonPlanOf(entry, unit.id, fill, noImageUrl);
         expect(plan?.activities.some((activity) => activity.form === "listening")).toBe(false);
         for (const item of unit.items) {
           if (item.type !== "LISTEN_SELECT" || item.options === undefined) continue;
           listenItems += 1;
-          expect(catalogItemOf(item, { fill, episodeId: entry.id })).toMatchObject(
+          expect(catalogItemOf(item, { ...port, episodeId: entry.id })).toMatchObject(
             skippedWith("audio-missing"),
           );
         }
@@ -538,7 +534,7 @@ describe("catalogActivitiesOf", () => {
     kind: "skipped",
     itemId: `X${n}`,
     type: "VOCAB_CARD",
-    reason: "screen-pending",
+    reason: "malformed",
   });
 
   const shape = (activities: readonly CatalogActivity[]) =>
@@ -592,6 +588,8 @@ const lessonLetter: Record<CatalogActivity["form"], string> = {
   "sentence-order": "O",
   "word-choice": "W",
   typing: "T",
+  "vocab-card": "C",
+  "pair-match": "P",
 };
 
 function runsOf(activities: readonly CatalogActivity[]): string {
@@ -634,7 +632,7 @@ describe("catalogLessonPlanOf — 실데이터", () => {
   test.each(planTable)(
     "LP15. %s %s → 제시 %i · 건너뜀 %i · 구간 %s",
     (episodeId, key, shown, skipped, runs) => {
-      const plan = catalogLessonPlanOf(readyOf(episodeId), key, fill);
+      const plan = catalogLessonPlanOf(readyOf(episodeId), key, fill, noImageUrl);
 
       expect(plan).not.toBeNull();
       expect(plan?.episodeId).toBe(episodeId);
@@ -654,18 +652,20 @@ describe("catalogLessonPlanOf — 실데이터", () => {
   });
 
   test("LP15. u01 S3의 구간 문항 수는 3,3이다 — 듣기가 빠져 양옆의 문장 순서가 한 구간이 된다", () => {
-    const plan = catalogLessonPlanOf(readyOf("u01-water"), "S3", fill);
+    const plan = catalogLessonPlanOf(readyOf("u01-water"), "S3", fill, noImageUrl);
 
     expect(plan?.activities.map((activity) => activity.questions.length)).toEqual([3, 3]);
   });
 
   test("LP-0. 실데이터에는 문항이 0개인 유닛이 없다 — u01 S1도 단어 선택 셋이 선다", () => {
-    const plan = catalogLessonPlanOf(readyOf("u01-water"), "S1", fill);
+    const plan = catalogLessonPlanOf(readyOf("u01-water"), "S1", fill, noImageUrl);
 
     expect(plan?.questionCount).toBe(3);
     expect(plan?.activities.map((activity) => activity.form)).toEqual(["word-choice"]);
     for (const [episodeId, key, shown] of planTable) {
-      expect(catalogLessonPlanOf(readyOf(episodeId), key, fill)?.questionCount).toBe(shown);
+      expect(catalogLessonPlanOf(readyOf(episodeId), key, fill, noImageUrl)?.questionCount).toBe(
+        shown,
+      );
       expect(shown).toBeGreaterThan(0);
     }
   });
@@ -680,20 +680,20 @@ describe("catalogLessonPlanOf — 실데이터", () => {
       },
     };
 
-    const plan = catalogLessonPlanOf(onlyCards, "S1", fill);
+    const plan = catalogLessonPlanOf(onlyCards, "S1", fill, noImageUrl);
 
     expect(plan).toMatchObject({ activities: [], questionCount: 0, skippedItemCount: 3 });
   });
 
   test("LP16. 없는 키와 최종 테스트 키는 계획이 없다", () => {
-    expect(catalogLessonPlanOf(readyOf("u01-water"), "S2", fill)).toBeNull();
-    expect(catalogLessonPlanOf(readyOf("u01-water"), "RP", fill)).toBeNull();
+    expect(catalogLessonPlanOf(readyOf("u01-water"), "S2", fill, noImageUrl)).toBeNull();
+    expect(catalogLessonPlanOf(readyOf("u01-water"), "RP", fill, noImageUrl)).toBeNull();
   });
 });
 
 describe("catalogActivityPositionOf", () => {
   const positions = (episodeId: string, key: string) => {
-    const plan = catalogLessonPlanOf(readyOf(episodeId), key, fill);
+    const plan = catalogLessonPlanOf(readyOf(episodeId), key, fill, noImageUrl);
     if (plan === null) throw new Error("no plan");
     return plan.activities.map((_, index) => catalogActivityPositionOf(plan, index));
   };
@@ -725,7 +725,7 @@ describe("catalogActivityPositionOf", () => {
   });
 
   test("LP-E1. 마지막 활동의 오프셋 + 문항 수는 전체와 같다", () => {
-    const plan = catalogLessonPlanOf(readyOf("u02-checkin"), "S9", fill);
+    const plan = catalogLessonPlanOf(readyOf("u02-checkin"), "S9", fill, noImageUrl);
     const lastIndex = (plan?.activities.length ?? 0) - 1;
     const last = plan?.activities[lastIndex];
 
@@ -735,7 +735,7 @@ describe("catalogActivityPositionOf", () => {
   });
 
   test("LP-E1. 없는 활동 순번은 위치가 없다", () => {
-    const plan = catalogLessonPlanOf(readyOf("u01-water"), "S3", fill);
+    const plan = catalogLessonPlanOf(readyOf("u01-water"), "S3", fill, noImageUrl);
 
     expect(plan === null ? 1 : catalogActivityPositionOf(plan, 2)).toBeNull();
     expect(plan === null ? 1 : catalogActivityPositionOf(plan, -1)).toBeNull();
@@ -838,8 +838,8 @@ describe("순수성", () => {
     const entry = readyOf("u02-checkin");
     const snapshot = structuredClone(entry);
 
-    const first = catalogLessonPlanOf(entry, "S3", fill);
-    const second = catalogLessonPlanOf(entry, "S3", fill);
+    const first = catalogLessonPlanOf(entry, "S3", fill, noImageUrl);
+    const second = catalogLessonPlanOf(entry, "S3", fill, noImageUrl);
 
     expect(entry).toEqual(snapshot);
     expect(second).toEqual(first);
@@ -875,6 +875,8 @@ describe("스레드 경계 소스 검사", () => {
 
   const files = [
     "app/catalog-lesson-plan.ts",
+    "app/catalog-card-map.ts",
+    "app/catalog-pair-map.ts",
     "app/catalog-final-model.ts",
     "app/catalog-lesson-wiring.ts",
     "app/catalog-wiring.ts",

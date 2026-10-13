@@ -122,6 +122,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
           episodeId,
           unitKey,
           questionCount: turnCount,
+          shownItemCount: turnCount,
           skippedItemCount: plan.skippedItemCount,
         },
         "final",

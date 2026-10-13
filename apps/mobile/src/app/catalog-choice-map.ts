@@ -3,7 +3,11 @@
 import type { LearningItem, Option, Text } from "../lib/episode-content.model";
 import type { ListeningQuestion } from "../screens/listening/listening-questions";
 import type { WordChoiceQuestion } from "../screens/word-choice/word-choice-questions";
-import type { CatalogItemPort, CatalogMappedItem } from "./catalog-lesson-types";
+import type {
+  CatalogItemPort,
+  CatalogLessonItemPort,
+  CatalogMappedItem,
+} from "./catalog-lesson-types";
 import { instructionOf, koOf, latinOf, optionalField, skippedItem } from "./catalog-item-text";
 import { shuffledOrder } from "./catalog-shuffle";
 
@@ -136,4 +140,12 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
     choices,
     answerIndex: answer === "" ? -1 : choices.indexOf(answer),
   });
+}
+
+/** 그림 고르기입니다 — 그림이 붙은 단어 선택 문항입니다. */
+export function pictureChoiceItemOf(
+  item: ItemOf<"IMG_MATCH">,
+  _port: CatalogLessonItemPort,
+): CatalogMappedItem {
+  return skippedItem(item, "malformed");
 }

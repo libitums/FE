@@ -5,14 +5,21 @@
 import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
 import type { LearningItem } from "../lib/episode-content.model";
 import type { SentenceOrderQuestion } from "../screens/sentence-order/sentence-order-questions";
+import { vocabCardItemOf } from "./catalog-card-map";
 import {
   clozeItemOf,
   listeningItemOf,
+  pictureChoiceItemOf,
   roleLineItemOf,
   translateToEnItemOf,
 } from "./catalog-choice-map";
 import { instructionOf, koOf, latinOf, optionalField, skippedItem } from "./catalog-item-text";
-import type { CatalogItemPort, CatalogMappedItem } from "./catalog-lesson-types";
+import type {
+  CatalogItemPort,
+  CatalogLessonItemPort,
+  CatalogMappedItem,
+} from "./catalog-lesson-types";
+import { pairMatchItemOf } from "./catalog-pair-map";
 import { shuffledOrder } from "./catalog-shuffle";
 import { typingItemOf } from "./catalog-typing-map";
 
@@ -72,7 +79,7 @@ function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): Cat
   });
 }
 
-export function catalogItemOf(item: LearningItem, port: CatalogItemPort): CatalogMappedItem {
+export function catalogItemOf(item: LearningItem, port: CatalogLessonItemPort): CatalogMappedItem {
   switch (item.type) {
     case "LISTEN_SELECT":
       return listeningItemOf(item, port);
@@ -94,8 +101,10 @@ export function catalogItemOf(item: LearningItem, port: CatalogItemPort): Catalo
       // 최종 테스트 문항은 최종 테스트 화면에서만 씁니다.
       return skippedItem(item, "malformed");
     case "VOCAB_CARD":
+      return vocabCardItemOf(item, port);
     case "IMG_MATCH":
+      return pictureChoiceItemOf(item, port);
     case "PAIR_MATCH":
-      return skippedItem(item, "screen-pending");
+      return pairMatchItemOf(item, port);
   }
 }

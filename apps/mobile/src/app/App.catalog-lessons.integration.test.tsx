@@ -84,7 +84,7 @@ function readyEntry(episodeId: string) {
 }
 
 function lessonPlan(episodeId: string, key: string): CatalogLessonPlan {
-  const plan = catalogLessonPlanOf(readyEntry(episodeId), key, fill);
+  const plan = catalogLessonPlanOf(readyEntry(episodeId), key, fill, () => null);
   if (plan === null) throw new Error(`no unit: ${key}`);
   return plan;
 }
@@ -257,6 +257,8 @@ const contentIdOf: Record<CatalogActivity["form"], string> = {
   listening: "listening-screen-content",
   "sentence-order": "sentence-order-screen-content",
   typing: "typing-activity-content",
+  "vocab-card": "vocab-card-content",
+  "pair-match": "pair-match-content",
 };
 
 const lettersOnly = (text: string) => text.normalize("NFC").replace(/[^ㄱ-ㆎ가-힣]/g, "");
@@ -408,6 +410,7 @@ test("L2. (AC1 · 5) 빈칸 고르기만 있는 S1: 단어 선택 → 결과 PER
       unitKey: "S1",
       unitRole: "lesson",
       questionCount: String(plan.questionCount),
+      shownItemCount: String(plan.shownItemCount),
       skippedItemCount: String(plan.skippedItemCount),
     },
     {
@@ -592,6 +595,7 @@ test("L6. (AC6) 최종 테스트: 턴을 타일로 맞히면 결과 → 통과 �
       unitKey: "RP",
       unitRole: "final",
       questionCount: count,
+      shownItemCount: count,
       skippedItemCount: String(plan.skippedItemCount),
     },
     {

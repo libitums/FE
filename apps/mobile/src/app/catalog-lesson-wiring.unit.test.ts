@@ -167,6 +167,7 @@ describe("onStartCatalogUnit — 레슨", () => {
         unitKey: "S3",
         unitRole: "lesson",
         questionCount: "6",
+        shownItemCount: "6",
         skippedItemCount: "4",
       },
     ]);
@@ -212,6 +213,7 @@ describe("onStartCatalogUnit — 레슨", () => {
         unitKey: "S1",
         unitRole: "lesson",
         questionCount: "0",
+        shownItemCount: "0",
         skippedItemCount: "3",
       },
       {
@@ -397,6 +399,7 @@ describe("최종 테스트", () => {
         unitKey: "RP",
         unitRole: "final",
         questionCount: "3",
+        shownItemCount: "3",
         skippedItemCount: "0",
       },
     ]);

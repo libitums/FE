@@ -15,8 +15,10 @@ import { judgeAssessment } from "../screens/assessment/assessment";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 import { ListeningActivity } from "../screens/listening/ListeningScreen";
+import { PairMatchActivity } from "../screens/pair-match/PairMatchActivity";
 import { SentenceOrderActivity } from "../screens/sentence-order/SentenceOrderScreen";
 import { TypingActivity } from "../screens/typing/TypingActivity";
+import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
 import { catalogEpilogueModelOf, noLearnerProfile } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
@@ -89,6 +91,28 @@ function renderActivity(
     case "typing":
       return (
         <TypingActivity
+          key={key}
+          questions={activity.questions}
+          gemCount={wiring.gemCount}
+          onExit={onExit}
+          onFinish={onFinish}
+          lesson={lesson}
+        />
+      );
+    case "vocab-card":
+      return (
+        <VocabCardActivity
+          key={key}
+          questions={activity.questions}
+          gemCount={wiring.gemCount}
+          onExit={onExit}
+          onFinish={onFinish}
+          lesson={lesson}
+        />
+      );
+    case "pair-match":
+      return (
+        <PairMatchActivity
           key={key}
           questions={activity.questions}
           gemCount={wiring.gemCount}

@@ -9,7 +9,13 @@ describe("이벤트 만들기", () => {
   test("EV1. 시작 이벤트는 필드가 정확하고 수는 10진 문자열이다", () => {
     expect(
       lessonStartedEventOf(
-        { episodeId: "u01-water", unitKey: "S3", questionCount: 10, skippedItemCount: 0 },
+        {
+          episodeId: "u01-water",
+          unitKey: "S3",
+          questionCount: 10,
+          shownItemCount: 10,
+          skippedItemCount: 0,
+        },
         "lesson",
       ),
     ).toEqual({
@@ -18,6 +24,7 @@ describe("이벤트 만들기", () => {
       unitKey: "S3",
       unitRole: "lesson",
       questionCount: "10",
+      shownItemCount: "10",
       skippedItemCount: "0",
     });
   });
@@ -25,7 +32,13 @@ describe("이벤트 만들기", () => {
   test("EV1. 시작 이벤트는 최종 테스트 역할도 낸다", () => {
     expect(
       lessonStartedEventOf(
-        { episodeId: "u01-water", unitKey: "RP", questionCount: 3, skippedItemCount: 2 },
+        {
+          episodeId: "u01-water",
+          unitKey: "RP",
+          questionCount: 3,
+          shownItemCount: 3,
+          skippedItemCount: 2,
+        },
         "final",
       ),
     ).toEqual({
@@ -34,6 +47,7 @@ describe("이벤트 만들기", () => {
       unitKey: "RP",
       unitRole: "final",
       questionCount: "3",
+      shownItemCount: "3",
       skippedItemCount: "2",
     });
   });
@@ -76,7 +90,13 @@ describe("이벤트 만들기", () => {
 describe("capture 매핑", () => {
   test("EV2. 이름은 event가 되고 나머지 필드는 properties로 그대로 간다", () => {
     const started = lessonStartedEventOf(
-      { episodeId: "u01-water", unitKey: "S3", questionCount: 10, skippedItemCount: 0 },
+      {
+        episodeId: "u01-water",
+        unitKey: "S3",
+        questionCount: 10,
+        shownItemCount: 10,
+        skippedItemCount: 0,
+      },
       "lesson",
     );
     const finished = lessonFinishedEventOf("u01-water", "S3", "lesson", ["correct"], 10, "failed");
@@ -89,6 +109,7 @@ describe("capture 매핑", () => {
         unitKey: "S3",
         unitRole: "lesson",
         questionCount: "10",
+        shownItemCount: "10",
         skippedItemCount: "0",
       },
     });
