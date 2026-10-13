@@ -437,7 +437,7 @@ A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 L
 cd apps/android && ANDROID_HOME=~/Library/Android/sdk ./gradlew :app:testDebugUnitTest
 ```
 
-Gradle 결선(의존 고정 · DSN 기본값 · 업로드 작업의 조건 · 매니페스트 · `.gitignore` · 초기화 순서 · `io.sentry` import 범위)은 정적 검사 `pnpm test:android-bundle`(GW-S1 ~ S8 — `pnpm verify` 안)이 지킨다. GW-S8은 `CrashReporting.java`가 개인 정보에 닿는 옵션 열 줄을 싣는지 본다 — 한 줄을 지우면 떨어진다.
+Gradle 결선(의존 고정 · DSN 기본값 · 업로드 작업의 조건 · 매니페스트 · `.gitignore` · 초기화 순서 · `io.sentry` import 범위)은 정적 검사 `pnpm test:android-bundle`(GW-S1 ~ S9 — `pnpm verify` 안)이 지킨다. GW-S8은 `CrashReporting.java`가 개인 정보에 닿는 옵션 열 줄을 싣는지 본다 — 한 줄을 지우면 떨어진다.
 
 **R8 매핑 업로드.** Sentry Gradle 플러그인을 쓰지 않는다. `app/sentry.gradle`이 `Exec` 작업 둘을 등록한다.
 
@@ -459,7 +459,7 @@ Gradle 결선(의존 고정 · DSN 기본값 · 업로드 작업의 조건 · �
 (`platform: native` · mechanism `Tombstone` — 함수 이름이 풀린 프레임 · 모든 스레드 · 레지스터 · 로드된 라이브러리 목록을 싣는다). API 31 ~ 33 · 실기 · 앱 라이브러리 안에서 난 크래시의 모양은 확인되지 않았다.
 **`minSdk` 26 ~ 30 기기의 C/C++ 크래시(Lynx 엔진 안의 크래시 포함)는 Sentry에 보이지 않는다고 보고 다룬다** — 그 기기들의 네이티브 크래시는 여전히 `adb logcat` · tombstone으로 읽는다. NDK를 넣을지는 사용자 확인 전이다.
 - `beforeSend`가 tombstone의 스택 프레임 · `debug_meta`에서 **무작위 앱 설치 경로**를 `/data/app/[install]/`로 바꾼다(`CrashInstallPathTest`). 시스템 라이브러리의 **로드 주소**(재부팅 전까지 기기 전체에서 같다)는 사용자 결정으로 남는 위험으로 두고 보낸다 — [Android 데이터 보안](../../docs/android-data-safety.md).
-- **세션 지표(크래시 없는 세션 비율)는 지금 믿을 수 없다** — 콜드 스타트마다 방금 시작한 세션의 가짜 `exited`가 써지고 크래시로 죽은 세션은 끝 기록 없이 버려진다(원인 조사 중 — [ADR 보류 표](../../docs/adr/README.md#보류-표)의 세션 행).
+- **세션은 앱이 시작하고 끝낸다.** SDK 8.60.0의 자동 세션은 콜드 스타트마다 가짜 `exited`를 쓰고 크래시로 죽은 앞 세션을 버리는 경합이 있어 끈다(`setEnableAutoSessionTracking(false)`). 대신 `CrashReporting.watchSessions`가 `ProcessLifecycleOwner`의 `onStart`에서 SDK 작업 큐로 `Sentry.startSession`을, `onStop` 30초 뒤(그 사이 복귀가 없으면) `Sentry.endSession`을 넣는다(순수 판정은 `CrashSessionGate`, 결선 검사 GW-S9). API 34 에뮬레이터에서 가짜 `exited` 0건 · 크래시 세션 `crashed`를 봤다. **전면 강제 종료는 `exited`(정상)로 셈된다.** SDK를 올리면 경합이 고쳐졌는지 보고 이 우회를 걷을 수 있다([ADR-0058](../../docs/adr/0058-crash-reporting-sentry.md) D6 · 재검토 조건 12).
 넣으려면 `sentry-native`를 16 KB로 다시 빌드해 [`vendor-maven/`](vendor-maven/README.md)에 싣는다 — 아직 하지 않았다([ADR 보류 표](../../docs/adr/README.md#보류-표)). `.so`는 하나도 늘지 않았다.
 
 ## 16 KB 페이지

@@ -298,10 +298,23 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 **B5에서 envelope을 읽을 때 더 볼 것**(API 34에서 찾은 것): 앱 설치 경로의 무작위 토막(`pm path <패키지>`가 돌려준 경로의 `~~` 뒤 · `<패키지>-` 뒤 토막)이 envelope 전체에서 **0건**이고 `/data/app/[install]/`로 바뀌어 있어야 한다(`1130979c`부터).
 있으면 보내지 말고 멈춘다. 시스템 라이브러리의 로드 주소(`image_addr` · `instruction_addr` · 레지스터)는 사용자 결정으로 두고 보낸다 — 멈춤 조건이 아니다.
 
-**세션 관찰 — M1이 크래시를 세지 못한다(원인 조사 중).** API 34 세 회차에서: 콜드 스타트마다 새 세션이 시작되고 **약 0.03초 뒤 같은 `sid`로 `exited`가 디스크에 써졌다**(액티비티가 만들어지기도 전).
+**세션 관찰 — ⟨우회 전⟩ M1이 크래시를 세지 못했다.** 아래는 세션 경합을 우회하기 전(`48bc8607` 이전)의 관찰이다 — 원인과 우회 뒤의 확인은 그 아래 「세션 우회 확인」. API 34 세 회차에서: 콜드 스타트마다 새 세션이 시작되고 **약 0.03초 뒤 같은 `sid`로 `exited`가 디스크에 써졌다**(액티비티가 만들어지기도 전).
 진짜 세션은 메모리에서 계속 살아 배경 전환 30초 뒤에 같은 `sid`로 한 번 더 `exited`가 써졌다. 같은 프로세스에서 전면으로 돌아와 시작한 세션에는 가짜 `exited`가 없었다. **SEGV로 죽은 세션은 끝 기록 없이 사라졌다**(`crashed`도 `abnormal`도 없음).
-API 30(B 1회차)에서도 크래시 뒤 재실행한 세션이 0.009초 뒤 `exited`였다 — 같은 현상이다. 세션 지표(크래시 없는 세션 비율)는 이 문제가 풀릴 때까지 믿을 수 없다.
-다음 회차는 세션 envelope마다 `sid` · `init` · `status` · `seq` · `duration`과 그 실행의 액티비티 생명주기 로그 시각을 함께 적는다.
+API 30(B 1회차)에서도 크래시 뒤 재실행한 세션이 0.009초 뒤 `exited`였다 — 같은 현상이다.
+
+**세션 우회 확인 — ⟨2026-10-13, `48bc8607` 뒤⟩.** 원인은 SDK 8.60.0에서 앞 세션 이사 · 마무리(작업 큐)와 새 세션 시작 기록(전송 스레드)의 순서 경합이었고 [확인 — SDK 소스],
+사용자 결정(「앱에서 우회」)으로 자동 세션 추적을 끄고 앱이 `ProcessLifecycleOwner`로 SDK 작업 큐에 시작 · 30초 뒤 종료를 넣는다([ADR-0058](../adr/0058-crash-reporting-sentry.md) D6).
+다음 회차는 아래 관찰을 다시 본다 — 세션 envelope마다 `sid` · `init` · `status` · `seq` · `duration`과 그 실행의 액티비티 생명주기 로그 시각(logcat `events` 버퍼)을 함께 적는다.
+
+| 볼 것 | 통과 조건 | API 34 실측(2026-10-13) |
+|---|---|---|
+| 콜드 스타트 직후 | 같은 `sid`의 `exited`가 **없다** · 세션 시작이 `MainActivity` `onResume` 무렵 | 다섯 번(새 설치 · SEGV 뒤 · `am crash` 뒤 · 일반 · 전면 강제 종료 뒤) 모두 0건, 시작은 `onResume`과 같은 ms |
+| SEGV로 죽은 세션 | 다음 실행에서 **같은 `sid`로 `crashed`** | `crashed` · `errors: 1` · `timestamp`가 tombstone 이벤트와 같은 ms. **이벤트와 별도 envelope** |
+| Java 크래시 | 죽는 순간 이벤트와 같은 envelope에 `crashed` | 그대로(회귀 없음) |
+| 배경 30초 이상 | `onStop` + 30초에 `exited` 한 번, 복귀하면 새 `sid` | `onStop` + 30.03초 |
+| 배경 30초 미만 | 같은 세션이 이어지고 `exited`가 없다 | 10초 복귀에서 그대로 |
+| 전면 강제 종료 | (기록) | 다음 실행이 앞 세션을 **`exited`**로 닫는다 — `abnormal`이 아니다(SDK 동작, 우회와 무관) |
+
 
 B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(어디에도 매달려 있지 않다 — spec §5). 작업 이름 이외의 인자 · 매핑 파일 경로는 계약이 정하지 않았다 — 실행 때 Gradle 출력으로 확인해 아래 「B 단계 메모」에 적는다.
 
@@ -418,3 +431,9 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 | 2026-10-13 16:00 ~ 16:05 | 같은 이미지(다시 만듦) · HEAD `1130979c` | 에이전트 실행, 사람 미확인 | **tombstone 이벤트 1건 전송 시도 · 수신 미확인** | `event_id` `eeab5ab5c65e4e1380bc0f8989720c2f` — 발생 07:02:40 UTC(KST 16:02:40), 전송 07:03:46 ~ 49 UTC. envelope 7개가 3초 안에 비워졌고 연결 오류 로그 0. 식별자 · 설치 경로 · `boot_time` · `ro.serialno` 0건. 대시보드에 보일 모양: `SIGSEGV: Segfault` · `platform: native` · `level: fatal` · mechanism `Tombstone` · `release: libitum.duru.android@0.1.0+2` · `environment: bundled`. 세션 관찰은 B5 아래 문단 |
 
 세 회차 모두 앱을 지우고 임시 AVD를 삭제했다. 원문(envelope 사본 — DSN · public key · 설치 경로 토큰을 지운 것)은 하네스 작업 폴더의 `logs/e2e-tombstone-api34*/`에 있다(저장소 밖).
+
+### 세션 우회 확인 회차
+
+| 일시 | 기기 | 확인자 | 결과 | 메모 |
+|---|---|---|---|---|
+| 2026-10-13 16:16 ~ 16:25 (KST) | 임시 AVD — API 34 `google_apis` · arm64-v8a · pixel_8. HEAD `48bc8607` · `bundled`(DSN · R8 · 탐침 없음) | 에이전트 실행, 사람 미확인 | **통과**(B5 아래 「세션 우회 확인」 표) · 이벤트 2건 전송 시도 · **수신 미확인** | 전부 오프라인에서 단계마다 캐시를 꺼내 새 envelope만 읽고 마지막에 보냈다(envelope 12개 → 9초 뒤 0개 · 전송 오류 로그 0). `event_id`: tombstone `465a16e08abb4441a008758a628c8b15`(발생 07:19:38 UTC · KST 16:19:38) · Java 크래시 `c6c88867b50e45bba656018a78f36a82`(07:20:09 UTC · KST 16:20:09). 식별자 · 설치 경로 · `boot_time` · `ro.serialno` 0건, 세션 `attrs`는 `release` · `environment` 둘뿐. `am crash` 직후 재실행에서 시스템의 「keeps stopping」 대화상자가 떠 한 번 닫고 다시 실행했다(시스템 동작). **못 한 것**: 서버 집계 · 마지막 두 세션의 끝 상태(즉시 전송) · ANR · API 30 |

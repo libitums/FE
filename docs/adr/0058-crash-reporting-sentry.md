@@ -3,11 +3,12 @@
 - 상태: **제안** — 구현과 `pnpm verify` 안의 계층, 기기 확인 둘(e2e A단계 — DSN 없이, B단계 — DSN을 넣은 `bundled`)이 돌았다. ⚠ **이벤트 5건과 세션이 기기를 떠났으나 Sentry가 받았는지는 아직
   아무도 보지 않았다** — B단계가 본 것은 기기 밖으로 나가기 직전의 envelope 원문과 「네트워크를 켜자 캐시가 비었다」까지다. 「Sentry 화면에 이렇게 보인다」는 문장은 여전히 전부 [미확인]이고,
   대시보드에서 찾을 `event_id` 다섯은 e2e 문서의 B단계 실행 기록에 있다(사용자 몫).
-  ⟨2026-10-13⟩ **사용자가 계약 기본값 셋을 확정했다**: 호스트 모듈 없이 `lynx.reportError`로 받기(U1) · 오류에 사용자 식별자를 붙이지 않기(U2) · debug 빌드는 보내지 않기(U5). 같은 날
+  ⟨2026-10-13⟩ 사용자가 세션 문제를 「앱에서 우회」로 정했다. 같은 날 **사용자가 계약 기본값 셋을 확정했다**: 호스트 모듈 없이 `lynx.reportError`로 받기(U1) · 오류에 사용자 식별자를 붙이지 않기(U2) · debug 빌드는 보내지 않기(U5). 같은 날
   C/C++ 크래시는 「Android 12 이상에서 오는지 먼저 확인」을 골랐고(그 확인용 Android 14 `google_apis` 이미지 내려받기를 승인), 시스템 라이브러리의 로드 주소는 「남는 위험으로 두고 보낸다」를 골랐다.
   아래 「사용자 결정」 절.
   ⚠ **아직 사용자 확인이 없는 것이 셋 남았다** — 조각 순서 · 측정 지표 셋 · NDK를 넣을지(U3의 최종 결론). 그래서 상태는 `제안`에 머문다(「사용자 확인 필요」 절).
-  ⚠ **측정 M1(크래시 없는 세션 비율)은 지금 믿을 수 없다** — 콜드 스타트마다 방금 시작한 세션의 가짜 `exited`가 써지고 크래시로 죽은 앞 세션은 끝 기록 없이 버려진다 [실측 — API 34 · API 30]. 원인은 조사 중이다(「대가」 12).
+  ⟨2026-10-13 — 세션⟩ 콜드 스타트마다 가짜 `exited`가 써지고 크래시로 죽은 앞 세션이 버려지던 문제는 **원인이 SDK 8.60.0 안의 순서 경합으로 밝혀졌고, 사용자 결정(「앱에서 우회」)으로 앱이 세션을 직접 시작 · 종료한다**(D6).
+  API 34 에뮬레이터에서 가짜 `exited` 0건 · 네이티브와 Java 크래시의 세션이 `crashed`로 마무리되는 것을 기기 쪽에서 확인했다. 서버 집계는 미확인이고 전면 강제 종료는 정상(`exited`)으로 셈된다(「대가」 12).
   **사용자 결정 · 사용자가 한 일은 여기까지다**: 「Sentry로 간다」 · 「랜딩에도 단다」 · 「추천 방안을 하나씩 진행한다」(2026-10-13), 그리고 같은 날 Sentry에서 프로젝트 셋(Android · iOS · Astro)을
   만들고 Android DSN을 추적하지 않는 `apps/android/sentry.properties`에 넣었다. 그 파일에 `auth.token` · 조직 · 프로젝트 이름은 아직 없다 — **매핑 업로드는 설정되지 않았다.**
   데이터 지역은 사용자에게 확인받지 못했다(B단계에서 빌드에 들어간 DSN의 호스트가 `…ingest.us.sentry.io` 계열이었다는 관찰만 있다).
@@ -144,7 +145,7 @@
   - [추론] 플랫폼이 네이티브 크래시의 tombstone을 `ApplicationExitInfo`로 읽게 해 주는 것이 API 31부터라 API 30이 대상이 아니었을 것이다 — 이 회차에 플랫폼 문서를 조회하지 않았고 31 ~ 33은 돌려 보지 않았다.
 - **이 앱의 `minSdk`는 26이다** — 26 ~ 30 기기의 C/C++ 크래시(Lynx 엔진 안의 크래시 포함)는 Sentry에 오지 않는다고 보고 다룬다. 그 범위까지 받으려면 NDK가 필요하다([보류 표](README.md#보류-표)의 NDK 행).
   **NDK를 넣을지는 사용자 확인 전이다**(U3의 최종 결론 — 사용자가 고른 것은 「Android 12 이상에서 오는지 먼저 확인」까지이고 그 확인이 API 34에서 「온다」로 나왔다).
-- **세션 쪽**: 네이티브로 죽은 세션은 `crashed`로 끝나지 않는다 — 끝 기록 없이 버려진다 [실측 — API 34]. 원인 조사 중인 세션 문제와 같은 것이다(「대가」 12).
+- **세션 쪽**: 우회 전에는 네이티브로 죽은 세션이 끝 기록 없이 버려졌다 [실측 — API 34]. 우회 뒤(`48bc8607`)에는 SEGV로 죽은 세션이 다음 실행에서 같은 `sid`로 `crashed`로 마무리된다 [실측 — API 34] — D6의 세션 항목.
 - Java/Kotlin 크래시는 받는다 — B4에서 `UncaughtExceptionHandler` 이벤트가 죽는 순간 캐시에 써지고 같은 envelope의 세션이 `crashed`가 되는 것을 봤다 [실측]. ANR은 통합(`AnrV2`)이 켜져 있다는 것까지만
   봤고 이벤트는 유도하지 않았다 [미확인].
 - JS 쪽 npm 의존은 0이다([ADR-0013](0013-dependencies-and-version-notation.md) D5의 목록 변화 없음).
@@ -159,10 +160,19 @@
 - DSN은 `^https://[A-Za-z0-9]+@[A-Za-z0-9.-]+/[0-9]+$`를 통과해야 한다. 빈 값 · `http://` · `key:secret@` 옛 형식 · 경로 뒤 꼬리는 전부 「없음」이다.
 - 깔때기의 결말은 다섯이다 — `REJECTED`(받지 않는 오류) · `DISABLED`(sink 없음) · `OVER_BUDGET` · `FAILED`(보내다 던짐 — 삼킨다) · `SENT`. `onLynxError`는 던지지 않는다.
   `BuildConfig.DEBUG`일 때만 `DuruCrash` 태그로 결말 · 코드 · 원문 앞 500자를 한 줄 찍는다(탐침용 — release형 빌드에는 로그가 없다).
+- **세션은 앱이 시작하고 끝낸다**(⟨2026-10-13⟩ 사용자 결정 「앱에서 우회」 — 계약 §11 「S 정정」 S1 ~ S3, `48bc8607`).
+  - **원인** [확인 — SDK 8.60.0 소스]: `Sentry.init`은 앞 실행 세션의 이사와 마무리를 SDK 작업 큐에 넣고, `SentryAndroid.init`은 그 직후 메인 스레드에서 `startSession()`을 부른다. 시작 기록은 전송 스레드에서 디스크에 써지므로
+    둘 사이에 순서 보장이 없다 — 시작 기록이 먼저 끝나면 크래시로 죽은 앞 세션 파일이 지워지고, 새 세션이 「앞 세션」으로 마무리돼 같은 `sid`의 `exited`가 된다. **앱 설정과 무관하다**(provider 제거 · 수동 초기화 탓이 아니다).
+    상류에 같은 이슈는 찾지 못했고 8.60.0이 최신이다(계약 단계의 조회).
+  - **우회**: `setEnableAutoSessionTracking(false)`로 SDK의 자동 세션을 끄고, `ProcessLifecycleOwner`의 `onStart`에서 순수 게이트(`CrashSessionGate`)가 허락하면 **SDK 작업 큐(`options.getExecutorService()`)에 `Sentry.startSession`을 넣는다**
+    — 큐가 차례로 돌아 이사 · 마무리 · Tombstone 처리 뒤에 시작이 온다. `onStop`에서는 30초 뒤 게이트가 허락하면(그 사이 전면 복귀가 없었으면) 큐에 `Sentry.endSession`. DSN이 있을 때만 걸고 모든 진입점은 던지지 않는다.
+    의존 `androidx.lifecycle:lifecycle-process:2.6.2`(이미 런타임에 있던 버전을 컴파일에도 명시). 판정: JUnit `CrashSessionGateTest`(호스트 JUnit 165/165) · 결선 검사 **GW-S9**(자동 세션 끔 · `ProcessLifecycleOwner` · `getExecutorService()` · `startSession` / `endSession`, 결선 136/136).
+  - **확인** [실측 — API 34 에뮬레이터 1대, `bundled`, 에이전트 실행]: 콜드 스타트 다섯 번 모두 가짜 `exited` 0건(세션 시작이 `MainActivity` `onResume`과 같은 ms) · SEGV로 죽은 세션이 다음 실행에서 **같은 `sid`로 `crashed`** ·
+    Java 크래시는 이벤트와 같은 envelope에 `crashed`(회귀 없음) · 배경 30초 뒤 `exited` 한 번 · 10초 만에 돌아오면 같은 세션이 이어진다 · 식별자 0건.
 - 옵션은 명시로 고정한다(계약 §4 표 — `CrashReporting.start`가 그대로 싣는다). 그 가운데 열 줄(`setSendDefaultPii(false)` · `setDistinctId(null)` · `setBeforeSend(` · `setBeforeBreadcrumb(` ·
   `setMaxBreadcrumbs(0)` · `setAttachScreenshot(false)` · `setAttachViewHierarchy(false)` · `setEnableNdk(false)` · `setTracesSampleRate(null)` · `setSendModules(false)`)은 **결선 검사 GW-S8이 지킨다** —
   한 줄이 빠지면 `pnpm test:android-bundle`이 떨어진다. 나머지 옵션은 검사가 없다. 요지: `sendDefaultPii` 끔 · breadcrumb 0(`maxBreadcrumbs` 0 + `beforeBreadcrumb`이 전부 버림 + 자동 breadcrumb 여섯 끔) ·
-  성능 추적 끔 · 스크린샷 · 뷰 계층 첨부 끔(화면에 학습 답 · 이름이 있다) · 외부 저장소 · 루트 검사 · 모듈 목록 · 서버 이름 끔 · 세션 추적 켬 · Java 크래시 켬 · ANR 켬 ·
+  성능 추적 끔 · 스크린샷 · 뷰 계층 첨부 끔(화면에 학습 답 · 이름이 있다) · 외부 저장소 · 루트 검사 · 모듈 목록 · 서버 이름 끔 · **자동 세션 추적 끔**(앱이 관리 — 위) · Java 크래시 켬 · ANR 켬 ·
   tombstone 켬 · 과거 ANR · 과거 tombstone · tombstone 원문 첨부 끔 · NDK · scope sync 끔.
 
 ### D7. DSN은 추적하지 않는 빌드 설정으로 넣고, `debug`는 늘 보내지 않는다
@@ -223,7 +233,7 @@ SDK가 설치 id를 싣는 자리가 셋이고(맥락 8) 셋을 각각 끈다.
 
 | 지표 | Sentry에서 재는 것 | 이 결정이 대는 재료 |
 |---|---|---|
-| M1 크래시 없는 세션 비율 | Release Health — `release = libitum.duru.android@<versionName>+<versionCode>`, `environment = release` | 세션 추적 켬. JS 예외는 `handled = true`라 crashed로 세지 않는다 — envelope에서 JS 예외 4건 뒤의 세션은 `errors`만 올랐고 Java 크래시에서 `crashed`가 됐다 [실측]. ⚠ **이 지표는 지금 믿을 수 없다** — 콜드 스타트마다 가짜 `exited`가 써지고 크래시로 죽은 앞 세션이 끝 기록 없이 버려진다(「대가」 12, 원인 조사 중). Sentry 화면의 수치는 [미확인] |
+| M1 크래시 없는 세션 비율 | Release Health — `release = libitum.duru.android@<versionName>+<versionCode>`, `environment = release` | 앱이 관리하는 세션(D6). JS 예외는 `handled = true`라 crashed로 세지 않는다 — envelope에서 JS 예외 4건 뒤의 세션은 `errors`만 올랐다 [실측]. **네이티브(API 34) · Java 크래시는 세션이 `crashed`로 마무리되는 것을 기기 쪽에서 확인했다** [실측 — 우회 뒤]. ⚠ 서버 집계는 [미확인] · 전면 강제 종료 · 저메모리 종료는 정상(`exited`)으로 셈된다 · API 30 · ANR은 우회 뒤 확인하지 않았다(「대가」 12) |
 | M2 주간 JS 예외 건수 · 상위 원인 | 태그 `lynx.source`가 있는 이벤트 수(7일) · 이슈별 묶음 | 태그 · 지문 넷 · 예외 `type`/`value` |
 | M3 네이티브 크래시 건수 | 태그 `lynx.source`가 **없는** `level:fatal` 이벤트(Java 크래시 · tombstone) + ANR | SDK 통합. Java 크래시의 mechanism은 `UncaughtExceptionHandler`(`handled: false`)였다 [실측 — envelope]. tombstone은 `Tombstone`(`handled: false`) [실측 — API 34 envelope]. ANR의 이름은 [미확인]. ⚠ **C/C++ 크래시는 API 30에서 이벤트가 오지 않았다**(D5) — 26 ~ 30 기기의 엔진 크래시는 이 지표에 잡히지 않는다 |
 
@@ -253,7 +263,7 @@ SDK가 설치 id를 싣는 자리가 셋이고(맥락 8) 셋을 각각 끈다.
 4. **DSN 없는 빌드**: `testDebugUnitTest`(JUnit 121건 · 실패 0) · `assembleDebug` · `assembleBundled` 성공, `verify*NativeAlignment` 통과, bundled · debug APK에 `libsentry*.so` 0개,
    병합 매니페스트에 provider 둘 없음, `bundled` 설치 · 실행에서 logcat에 `Sentry` · `DuruCrash` 태그 0줄. `uploadSentryMappingBundled` · `uploadSentryMappingRelease`는
    **이름으로 불렀을 때** SKIPPED였다(assemble 작업 그래프에는 들어 있지 않다). R8 쪽 수치는 [ADR-0052](0052-android-release-shrinking.md)의 적용 기록 ⟨2026-10-13⟩이 진다.
-5. **자동 계층**(root 실행): vitest unit 1,871/1,871 · ui 1,461/1,461 · integration 533/533, 호스트 JUnit **160/160**(리뷰 정정 셋 · `boot_time` · 설치 경로 제거 뒤 — 정정 전 126), Gradle 결선 검사 **135/135**(GW-S1 ~ S8).
+5. **자동 계층**(root 실행): vitest unit 1,871/1,871 · ui 1,461/1,461 · integration 533/533, 호스트 JUnit **165/165**(리뷰 정정 셋 · `boot_time` · 설치 경로 제거 · 세션 게이트 뒤 — 정정 전 126), Gradle 결선 검사 **136/136**(GW-S1 ~ S9).
    리뷰 정정의 테스트 20건은 구현 전에 먼저 서서 14건이 실패했고(나머지는 「잘린 이메일 조각」 · 깊은 JSON 둘 · 멱등 · 알려진 이름 · GW-S8 — 구현 전에도 통과하던 것) 구현 뒤 전부 통과했다.
 
 ### 확인한 것 — e2e B단계 [실측]
@@ -291,7 +301,7 @@ SDK가 설치 id를 싣는 자리가 셋이고(맥락 8) 셋을 각각 끈다.
    zygote가 미리 올린 시스템 라이브러리는 **재부팅 전까지 기기 전체에서 같은 주소**다. 사용자가 「남는 위험으로 두고 보낸다」를 골랐다(「대가」 15).
 4. **3회차는 보냈다.** tombstone `event_id` `eeab5ab5c65e4e1380bc0f8989720c2f`(발생 07:02:40 UTC · KST 16:02:40, 전송 07:03:46 ~ 49 UTC). 네트워크를 켜자 envelope 7개가 3초 안에 비워졌고 연결 오류 로그는 없었다.
    **수신은 미확인이다**(대시보드는 사용자 몫).
-5. **세션 문제를 찾았다**(「대가」 12).
+5. **세션 문제를 찾았다**(콜드 스타트의 가짜 `exited` · 버려지는 크래시 세션). 그 뒤 원인을 찾아 우회했다(D6).
 
 ### 확인하지 못한 것 [미확인]
 
@@ -315,7 +325,7 @@ SDK가 설치 id를 싣는 자리가 셋이고(맥락 8) 셋을 각각 끈다.
 12. **기기에서의 지우기 시간.** D4의 수치는 데스크톱 JVM의 것이다. Android(ICU 정규식)에서 사전 상한 뒤의 최악 입력이 얼마 걸리는지는 재지 않았다.
 13. **`StackOverflowError`를 실제로 일으키는 입력에서의 동작**(D4 — JVM 테스트로 재현하지 못했다).
 14. ~~**`boot_time`을 지운 뒤의 실제 envelope**~~ — API 34 tombstone 측정의 envelope(`438cc723` 뒤 빌드)에 `boot_time`이 없었다. JS 예외 이벤트로는 다시 보지 않았다.
-15. **세션 문제의 원인**(「대가」 12) — 조사 중.
+15. ~~**세션 문제의 원인**~~ — 찾아서 우회했다(D6). 남은 것: 서버의 세션 집계, tombstone 쪽 `crashed` 세션이 이벤트와 다른 envelope으로 가는데 서버가 둘을 잇는지, API 30에서의 같은 확인, ANR의 세션.
 
 ## 잡지 못하는 것
 
@@ -340,6 +350,7 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
 | U2 | 사용자 식별자(D10) | **확정 — 붙이지 않는다** | 「몇 명이 겪었나」를 못 센다. 붙이는 쪽으로 바꾸면 `beforeSend` 두 줄과 `setDistinctId` 한 줄이 바뀌고 데이터 보안 양식 · 처리방침이 같이 바뀐다 |
 | U5 | `debug`는 DSN이 있어도 보내지 않는다(D7) | **확정 — 보내지 않는다** | dev 서버 · HMR 오류가 섞이지 않는다 |
 | — | C/C++ 크래시(U3의 앞 단계) | **「Android 12 이상에서 오는지 먼저 확인」** — 그 확인을 위해 Android 14 `google_apis` 이미지 내려받기를 승인 | API 34에서 「온다」로 나왔다(D5). NDK를 넣을지는 아래 「사용자 확인 필요」 |
+| — | 세션 경합(콜드 스타트의 가짜 `exited`) | **「앱에서 우회」** | 자동 세션 추적을 끄고 앱이 SDK 작업 큐로 시작 · 종료한다(D6) |
 | — | 시스템 라이브러리의 로드 주소 | **「남는 위험으로 두고 보낸다」** | tombstone 이벤트의 `image_addr` · `instruction_addr` · 레지스터를 지우지 않는다(「대가」 15) |
 
 ## 사용자 확인 필요
@@ -350,7 +361,7 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
 |---|---|---|---|
 | U3 | NDK를 넣을지(D5의 최종 결론) | NDK 없음 — tombstone이 API 34에서 오는 것은 확인됐고 API 30에서는 오지 않는다(31 ~ 33 미확인) | 넣으려면 `sentry-native`를 16 KB RELRO로 다시 빌드해 `vendor-maven`에 싣는다(Lynx · Fresco 선례). `minSdk` 26 ~ 30 기기의 엔진 크래시까지 받게 된다 |
 | — | 조각 순서(Android → iOS → Renovate → 랜딩 → Edge Functions) | 이 순서로 시작했다 | 사용자 발화는 「Sentry 달고」 · 「랜딩에도 달 것」 · 「추천 방안 하나씩 진행」까지다. 자른 순서는 root의 판단이다 |
-| — | 측정 지표 셋(D12) | M1 ~ M3 | 요구사항 단계가 적었다. M1은 세션 문제가 풀릴 때까지 믿을 수 없다(「대가」 12) |
+| — | 측정 지표 셋(D12) | M1 ~ M3 | 요구사항 단계가 적었다. M1은 우회 뒤 기기 쪽에서 크래시를 `crashed`로 세는 것을 봤으나 강제 종료를 정상으로 센다(「대가」 12) |
 
 사용자 몫으로 남은 것(U4 · U6 — Sentry 프로젝트의 지역 · 설정, 처리방침 · Play 양식 제출)과 U7(JS 번들 상한 — 올리지 않았다)은 [보류 표](README.md#보류-표)와 「대가」 5가 진다.
 
@@ -395,11 +406,12 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
     (매핑 파일이 없으면 그 작업도 실패한다). 빌드 결과를 바꾸지는 않는다.
 11. **수집이 메인 스레드에서 동기로 돈다**(리뷰 S4 — 이번에 고치지 않았다). `onReceivedError` → 깔때기 → `Sentry.captureEvent`가 호출 스레드에서 기기 정보를 모은다. 사전 상한(D4)이 지우기의 시간을 묶었으나
     `captureEvent` 쪽 시간은 **B단계에서도 직접 재지 못했다** — 간접 값 2 ~ 7 ms(「확인하지 못한 것」 6)가 전부다. 오류가 연달아 나도 프로세스당 20건이 위쪽 한계다.
-12. **크래시 없는 세션 비율(M1)은 이 문제가 풀릴 때까지 믿을 수 없다 — 원인 조사 중** [실측 — API 34 세 회차, API 30 B단계 재해석]. 콜드 스타트마다 새 세션이 시작되고 **약 0.03초 뒤 같은 `sid`로 `exited`가 디스크에 써진다**
-    (액티비티가 만들어지기도 전이다). 진짜 세션은 메모리에서 계속 살아 배경 전환 30초 뒤 정상으로 끝났다. 그리고 **크래시로 죽은 앞 세션은 끝 기록(`crashed`/`abnormal`) 없이 버려진다** — API 34의 SEGV로 죽은 세션이 그랬다.
-    그래서 네이티브 크래시가 세션 지표에 `crashed`로 잡히지 않고, 서버가 같은 `sid`의 가짜 `exited`를 어떻게 집계하는지에 따라 세션 수 · 길이도 틀어질 수 있다 [추론 — 서버 집계는 미확인].
-    API 30에서도 크래시 뒤의 콜드 스타트에서 같은 일이 났다. [추론] SDK가 시작할 때 앞 실행의 세션을 마무리하는 단계가 방금 쓴 현재 세션 파일을 잘못 읽는 경합으로 보이나 확정하지 않았다.
-    **「크래시 없는 세션 99 %」가 크래시가 없다는 뜻이 아니다.** Java 크래시는 B단계(API 30, 새 설치 첫 실행)에서 `crashed`로 붙는 것을 봤으나 이 문제가 있는 한 그것도 믿고 쓰지 않는다([보류 표](README.md#보류-표)의 세션 행).
+12. **세션을 앱이 관리한다 — 크래시 없는 세션 비율(M1)의 한계.** SDK 8.60.0의 세션 시작 경합(D6) 때문에 자동 세션 추적을 끄고 앱이 `ProcessLifecycleOwner`로 세션을 시작 · 종료한다(사용자 결정 「앱에서 우회」).
+    그 값: ① SDK의 세션 동작을 앱이 흉내 내므로 SDK를 올릴 때마다 우회가 아직 필요한지 봐야 한다(재검토 조건 12). ② 의존 `lifecycle-process`를 컴파일에 명시했다. ③ 남는 한계 —
+    **전면에서 강제 종료된 세션은 `abnormal`이 아니라 `exited`로 마무리된다** [실측 — API 34]. 다음 실행이 「크래시 표식 없음 = 정상 종료」로 닫는 SDK 동작이라 우회와 무관하고,
+    강제 종료 · 저메모리 종료가 M1에서 정상으로 셈된다는 뜻이다 [추론]. **tombstone 쪽 `crashed` 세션은 이벤트와 다른 envelope으로 간다**(Java 크래시는 같은 envelope) — 서버가 둘을 잇는지는 [미확인].
+    **서버의 집계 · 대시보드의 수치는 [미확인]**이고 **API 30에서는 우회 뒤 확인하지 않았다**(API 34만). ANR의 세션도 재지 않았다.
+    우회 전에는 콜드 스타트마다 가짜 `exited`가 써지고 크래시로 죽은 앞 세션이 버려져 M1이 크래시를 세지 못했다 — 그 기간의 기록(B단계 · tombstone 측정 1 ~ 3회차)으로 M1을 읽지 않는다.
 13. **식별자는 아니지만 서로 잇는 값이 실린다** [실측 — B단계 envelope]. `trace_id`(`contexts.trace`와 envelope 헤더 — 한 프로세스 실행 동안 모든 이벤트가 같고 재실행하면 바뀐다) ·
     `contexts.trace.data.thread.id`(실제로는 프로세스 id였다) · `contexts.app.app_start_time` · `permissions` · `contexts.os.kernel_version` · `build` · 기기의 `timezone` · `locale` · `memory_size` · `storage_size` ·
     태그 `isSideLoaded`. 계약은 이것들을 이름으로 다루지 않았고(「표에 없는 것은 SDK 기본값」) 지우지 않는다 — 같은 실행 안의 이벤트를 묶는 것은 원인 읽기에 쓰이는 값이기도 하다. `boot_time`만 지웠다(재부팅 전까지
@@ -465,6 +477,13 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
   같은 회차의 앞 세션(`am crash`)은 이미 `crashed`로 끝나 있었다. 실제 문제는 콜드 스타트마다 써지는 가짜 `exited`와 크래시로 죽은 세션의 끝 기록이 버려지는 것이다(「대가」 12 — 원인 조사 중).
 - **사용자 결정**(U1 · U2 · U5 확정, C/C++ 크래시의 확인 순서, 로드 주소)을 「사용자 결정」 절로 옮겼다. 상태는 `제안` 그대로다 — 조각 순서 · 측정 지표 · NDK가 남았다.
 
+### 2026-10-13 — 세션 경합의 원인과 우회
+
+- **원인**: SDK 8.60.0에서 앞 세션 이사 · 마무리(작업 큐)와 새 세션 시작 기록(전송 스레드) 사이에 순서 보장이 없었다 [확인 — SDK 소스]. 앱 설정과 무관하다 — 앞선 판이 적은 「원인에 따라 초기화 방식(D6)이 다시 열릴 수 있다」는 닫혔다.
+- **우회**(사용자 결정 「앱에서 우회」, `48bc8607`): 자동 세션 추적 끔 · `ProcessLifecycleOwner`로 SDK 작업 큐에 시작 · 30초 뒤 종료(D6). JUnit 165/165 · 결선 136/136(GW-S9).
+- **기기 확인**(API 34): 가짜 `exited` 0건 · SEGV 세션과 Java 크래시 세션이 `crashed` · 배경 처리 정상 · 식별자 0. 이벤트 둘을 보냈다(tombstone `465a16e08abb4441a008758a628c8b15` · Java `c6c88867b50e45bba656018a78f36a82`) — 수신은 미확인.
+- 「대가」 12 · D12의 M1 · 보류 표의 세션 행을 이 결과로 고쳤다.
+
 ## 재검토 조건
 
 1. **B단계에서 `user` · `did` · `ip_address` · `contexts.device.id` 가운데 하나라도 원문에 있으면** — D10의 전제가 틀렸다. 끄는 줄을 다시 본다.
@@ -479,4 +498,5 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
 9. **iOS 조각을 열 때** — D1 ~ D4를 iOS에서 다시 판정한다. 지우기 규칙(D4)이 둘째 구현을 갖게 되므로 기준 벡터를 두 호스트가 같이 쓰게 할 수단을 먼저 정한다.
 10. **SDK(`sentry-android-core`)를 올리면** — 맥락 8을 바이트코드로 다시 읽는다. 설치 id를 싣는 자리가 넷째로 늘면 D10의 표가 틀린다(셋째 자리를 놓친 선례가 「정정 기록」이다).
 11. **B단계에서 메인 스레드 수집 시간이 화면을 늦추는 것으로 재어지면** — 깔때기를 다른 스레드로 옮길지 본다(「대가」 11).
-12. **세션 문제의 원인이 밝혀지면**(「대가」 12) — 초기화 방식(D6)을 바꿔야 하는지 본다. 고쳐질 때까지 M1을 판단에 쓰지 않는다.
+12. **`sentry-android-core`를 올리면** — 세션 시작 경합(D6)이 고쳐졌는지 SDK 소스와 기기(콜드 스타트 뒤 가짜 `exited` · SEGV 세션의 `crashed`)로 보고, 고쳐졌으면 우회(`CrashSessionGate` · `watchSessions`)를 걷고 자동 세션 추적으로 돌아갈 수 있다.
+13. **M1이 강제 종료 · 저메모리 종료를 정상으로 세는 것이 판단을 흐리면** — 그 종료를 따로 세는 길(SDK 옵션 또는 앱 쪽 표식)을 본다(「대가」 12).

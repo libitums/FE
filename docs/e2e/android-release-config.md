@@ -445,7 +445,7 @@ R1 ~ R8의 모의 값 인라인 지정은 그 명령 한 줄에만 적용되므�
 - ⚠ ⟨2026-10-13⟩ **`apps/android/sentry.properties`가 이미 있는 작업 트리가 있다** — 사용자가 Android DSN을 그 파일에 넣었다(`auth.token` · 조직 · 프로젝트는 아직 없다). 그 작업 트리에서 만든
   `release` · `bundled`는 **Sentry로 보내는 빌드다.** 빌드 전에 `test -e apps/android/sentry.properties && cut -d= -f1 apps/android/sentry.properties`로 어떤 키가 들어 있는지 본다(값은 출력하지 않는다).
   B단계와 데이터 보안 확인이 끝나기 전에 Play에 올릴 AAB는 그 파일을 치운 채(또는 파일이 없는 작업 트리에서) 만든다. B6(원문에 `user` · `did` · `ip_address` · `contexts.device.id`가 없다)은 기기 쪽에서 통과했다(에뮬레이터 1대 · `bundled`) — 남은 것은 대시보드에서의 수신 확인과 서버가 붙이는 IP(프로젝트 설정)다.
-  **네이티브(C/C++) 크래시는 API 30 이하 기기에서 Sentry에 보이지 않는다고 보고 출시한다** — API 30에서는 tombstone 이벤트가 오지 않았고 API 34에서는 왔다(31 ~ 33 · 실기 미확인 — ADR-0058 D5). 세션 지표(크래시 없는 세션 비율)는 원인 조사 중인 세션 문제로 지금 믿을 수 없다.
+  **네이티브(C/C++) 크래시는 API 30 이하 기기에서 Sentry에 보이지 않는다고 보고 출시한다** — API 30에서는 tombstone 이벤트가 오지 않았고 API 34에서는 왔다(31 ~ 33 · 실기 미확인 — ADR-0058 D5). 세션 지표(크래시 없는 세션 비율)는 앱이 세션을 직접 관리하는 우회 뒤의 값이다 — 기기 쪽에서 크래시를 `crashed`로 세는 것은 확인됐고 강제 종료는 정상으로 셈된다(ADR-0058 D6 · 「대가」 12).
   DSN을 넣은 AAB를 올리지 않는다** — 설치 id가 나가지 않는다는 근거가 그 전에는 단위 테스트뿐이다(ADR-0058 「정정 기록」).
 - **DSN을 넣어 올리려면** 위 `bundleRelease` **전에** 추적하지 않는 `apps/android/sentry.properties`(`.gitignore`)에 `dsn` · `auth.token` · `defaults.org` · `defaults.project`를 둔다(또는 환경 변수
   `SENTRY_DSN` · `SENTRY_AUTH_TOKEN` · `SENTRY_ORG` · `SENTRY_PROJECT` — 환경 변수가 이긴다). **DSN · 토큰 값은 명령 · 결과 표 · 스크린샷에 적지 않는다.**
