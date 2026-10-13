@@ -21,6 +21,12 @@ import {
 } from "../lib/entry-flow";
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
+import {
+  learnerProfileSavedEvent,
+  learnerProfileSkippedEvent,
+  sameLearnerProfile,
+} from "../lib/learner-profile";
+import type { LearnerProfileOutcome, LearnerProfileRecord } from "../lib/learner-profile.contract";
 import { saveUiLanguage } from "../lib/ui-language";
 import type {
   AuthSession,
@@ -44,6 +50,13 @@ export type EntryWiringArgs = {
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
   // 로그인 뒤 서버 진행을 불러와 합칩니다(ADR-0035). 기다리지 않습니다 — 실패해도 진입은 이어집니다.
   readonly syncProgress: () => Promise<void>;
+  // 온보딩 넷째 스텝의 결과를 담고(로그인 전이라 손님 칸), 로그인 뒤 서버와 맞춥니다. 던지지 않습니다.
+  readonly learnerRecord: LearnerProfileRecord | null;
+  readonly saveLearnerProfile: (record: LearnerProfileRecord) => unknown;
+  readonly markLearnerProfileAsked: () => void;
+  // 온보딩에서 사용자가 건너뛴 값이 손님 칸에 남아 로그인 뒤 서버로 올라가지 않게 지웁니다.
+  readonly clearGuestLearnerProfile: () => void;
+  readonly syncLearnerProfile: () => Promise<void>;
 };
 
 export function entryWiring({
@@ -53,6 +66,11 @@ export function entryWiring({
   entryLanguage,
   setEntryLanguage,
   syncProgress,
+  learnerRecord,
+  saveLearnerProfile,
+  markLearnerProfileAsked,
+  clearGuestLearnerProfile,
+  syncLearnerProfile,
 }: EntryWiringArgs) {
   // 세션을 저장한 자리마다 그 사용자로 분석을 식별합니다(ADR-0029 D8). 저장한 세션에는 사용자
   // ID가 없어 손에 든 액세스 토큰에서 읽습니다. 못 읽으면 식별하지 않고, 식별의 실패는 로그인을
@@ -60,6 +78,7 @@ export function entryWiring({
   const storeSession = (session: AuthSession) => {
     saveAuthSession(session);
     void syncProgress().catch(() => undefined);
+    void syncLearnerProfile().catch(() => undefined);
     const userId = authUserIdFrom(session.accessToken);
     if (userId === null) return;
     try {
@@ -107,8 +126,19 @@ export function entryWiring({
         }
       }
     },
-    // 온보딩 완료 → 로그인 열람 → push.
-    onOnboardingComplete: () => {
+    // 온보딩 완료 → (이름 · 나라 저장 또는 건너뜀) → 로그인 열람 → push. 건너뛰면 이번 실행에는 에피소드 전에 다시
+    // 묻지 않습니다. 이미 담은 같은 값을 다시 누른 것은 저장도 이벤트도 아닙니다.
+    onOnboardingComplete: (outcome: LearnerProfileOutcome) => {
+      if (outcome.kind === "saved") {
+        if (!sameLearnerProfile(learnerRecord, outcome.record)) {
+          saveLearnerProfile(outcome.record);
+          entryEventSink?.(learnerProfileSavedEvent("onboarding", learnerRecord));
+        }
+      } else {
+        clearGuestLearnerProfile();
+        markLearnerProfileAsked();
+        entryEventSink?.(learnerProfileSkippedEvent("onboarding"));
+      }
       entryEventSink?.(entryScreenViewedEvent("login"));
       dispatch({ type: "push", screen: { name: "login" } });
     },

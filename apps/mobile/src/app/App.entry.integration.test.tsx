@@ -389,21 +389,16 @@ function tapResend(): void {
   );
 }
 
-// 온보딩 세 스텝을 끝까지 넘깁니다(0→1→2→onComplete). `onboarding-screen-next`는
-// 스텝마다 같은 testid입니다 — 세 번 누르면 로그인에 닿습니다.
+// 온보딩 네 스텝을 끝까지 넘깁니다(0→1→2→3→onComplete). `onboarding-screen-next`는
+// 스텝마다 같은 testid입니다 — 네 번 누르면 로그인에 닿습니다. 넷째(이름 · 나라) 스텝은 빈 채
+// `Get started`이므로 건너뜀입니다.
 function completeOnboarding(): void {
-  fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
-  fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
-  fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
+  for (let step = 0; step < 4; step += 1) {
+    fireEvent.tap(
+      within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+      {},
+    );
+  }
 }
 
 function selectLoginMethod(method: EntryLoginMethod): void {

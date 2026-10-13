@@ -17,6 +17,9 @@ env:
     path: screenshots/android-small-onboarding-step2-${SCALE}.png
     thresholdPercentage: 95
 - tapOn: "Next"
+- tapOn: "Next"
+# 넷째(이름 · 나라) 스텝은 기준 스크린숏 없이 제목으로만 확인하고 비운 채 건너뛴다.
+- assertVisible: "Make it yours"
 - tapOn: "Get started"
 - assertVisible: "Sign in with Apple"
 - assertVisible: "Connect with Google"

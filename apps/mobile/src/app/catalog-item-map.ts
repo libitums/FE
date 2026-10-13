@@ -13,7 +13,7 @@ import {
   roleLineItemOf,
   translateToEnItemOf,
 } from "./catalog-choice-map";
-import { instructionOf, koOf, latinOf, optionalField, skippedItem } from "./catalog-item-text";
+import { englishOf, instructionOf, koOf, optionalField, skippedItem } from "./catalog-item-text";
 import type {
   CatalogItemPort,
   CatalogLessonItemPort,
@@ -43,7 +43,7 @@ function wordOrderItemOf(item: ItemOf<"WORD_ORDER">, port: CatalogItemPort): Cat
     return skippedItem(item, "malformed");
   }
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
-  const english = latinOf(port, item.answers[0]?.en);
+  const english = englishOf(port, item.answers[0]?.en);
   return sentenceOrder(item.id, {
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),

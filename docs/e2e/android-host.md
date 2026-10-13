@@ -94,8 +94,8 @@ API 35 에뮬레이터에서 `UiAutomation`으로 `ACTION_CLICK`을 실행했다
 Android View 기반 접근성 경로에서 Lynx의 `accessibility-enable-tap` 속성이 자동으로
 클릭 동작으로 연결되지 않았다. 공통 `Button`·`RoundButton`은 활성 상태에만 이 속성을
 설정하고, 최소 호스트의 `AccessibilityTapBridge`가 해당 View에 클릭 동작을 연결한다.
-계측 테스트는 `Next`→`Back`→`Next`→`Next`→`Get started`를 접근성 클릭만으로
-실행한 뒤 Apple·Google·Facebook 버튼의 `isClickable`과 `ACTION_CLICK`을 확인한다.
+계측 테스트는 `Next`→`Back`→`Next`→`Next`→`Next`→`Get started`를 접근성 클릭만으로
+실행한 뒤(⟨2026-10-13⟩ 온보딩 넷째 스텝 `Make it yours`를 비운 채 넘긴다 — 진행 문구는 `Step 1 of 4`) Apple·Google·Facebook 버튼의 `isClickable`과 `ACTION_CLICK`을 확인한다.
 온보딩 진행 상태·제목·본문과 로그인 제목·설명·약관 문구·인증 실패 문구는 Lynx의
 텍스트 평탄화를 해제해 Android 접근성 노드로 노출한다. 약관 링크 두 개는
 `ACTION_CLICK`도 노출한다. 독립된 약관 텍스트 노드 사이의 시각적 간격은 CSS로 유지한다.

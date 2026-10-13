@@ -20,7 +20,7 @@ import { SentenceOrderActivity } from "../screens/sentence-order/SentenceOrderSc
 import { TypingActivity } from "../screens/typing/TypingActivity";
 import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
-import { catalogEpilogueModelOf, noLearnerProfile } from "./catalog-cover-wiring";
+import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
 import {
   catalogActivityPositionOf,
@@ -132,7 +132,12 @@ function renderActivity(
 export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWiring): ReactNode {
   switch (screen.name) {
     case "catalog-lesson": {
-      const plan = catalogLessonPlanFor(wiring.episodeContent, screen.episodeId, screen.unitKey);
+      const plan = catalogLessonPlanFor(
+        wiring.episodeContent,
+        screen.episodeId,
+        screen.unitKey,
+        wiring.learnerFill,
+      );
       const activity = plan?.activities[screen.activityIndex];
       const lesson = plan === null ? null : catalogActivityPositionOf(plan, screen.activityIndex);
       if (activity === undefined || lesson === null) {
@@ -144,7 +149,12 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
     }
     case "catalog-final": {
       const { episodeId } = screen;
-      const plan = catalogFinalPlanFor(wiring.episodeContent, wiring.catalogSections, episodeId);
+      const plan = catalogFinalPlanFor(
+        wiring.episodeContent,
+        wiring.catalogSections,
+        episodeId,
+        wiring.learnerFill,
+      );
       const turns = plan === null ? null : nonEmptyTurns(plan.turns);
       if (plan === null || turns === null) {
         throw new Error(`Catalog final test has no playable turns: ${episodeId}`);
@@ -185,7 +195,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
         wiring.episodeContent,
         wiring.catalogSections,
         episodeId,
-        noLearnerProfile,
+        wiring.learnerFill,
       );
       if (model === null) {
         throw new Error(`Catalog epilogue has no playable cuts: ${episodeId}`);

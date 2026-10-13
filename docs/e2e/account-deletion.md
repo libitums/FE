@@ -5,6 +5,10 @@
 `.agent-harness/work/account-deletion/spec.md`, 셈하는 자리는 같은 폴더 `test-plan.md` §5이고 이 문서는 그
 절차 사본이다. 그 폴더는 추적되지 않으므로 저장소에 남는 근거는 이 흐름을 세운 PR과 ADR이 진다.
 
+> ⟨2026-10-13 — 학습자 프로필⟩ 계정 삭제가 지우는 것이 하나 늘었다 — 서버 `learner_profiles` 행(`auth.users` CASCADE)과 기기의
+> `libitum.learner-profile.<userId>`(삭제 성공 뒤 앱이 지운다, [ADR-0032](../adr/0032-account-sign-out-and-deletion.md) D6 표). **로그아웃은 그 기기 칸을 남긴다.**
+> 이 문서의 단계는 바뀌지 않는다 — 삭제 뒤 다시 가입해 이름이 남지 않는지는 [학습자 프로필 e2e](learner-profile.md) E16이 본다.
+
 ## 범위
 
 설정 화면 끝의 **「Account actions」 묶음**(`Sign out` · `Delete account`)이 실제 호스트 앱에서 —

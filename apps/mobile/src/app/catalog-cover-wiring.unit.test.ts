@@ -5,6 +5,7 @@ import type { CatalogProgress } from "../lib/catalog-progress";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
+import { noLearnerProfilePort } from "../lib/learner-profile";
 import { fillPlaceholders } from "../lib/placeholder-fill";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type {
@@ -16,6 +17,7 @@ import {
   catalogCoverModelOf,
   catalogCoverWiring,
   catalogEpilogueModelOf,
+  noLearnerProfile,
 } from "./catalog-cover-wiring";
 import type { EpisodeContent } from "./episode-content";
 import type { NavAction } from "./nav-state";
@@ -69,6 +71,10 @@ function harness(
     completedEpisodeFinalIds: options.finals ?? [],
     dispatch,
     episodeIntroEventSink,
+    learnerFill: noLearnerProfile,
+    learnerRecord: null,
+    learnerSync: "none",
+    learnerPort: noLearnerProfilePort,
   });
   return { wiring, dispatch, setCatalogProgress, sink };
 }

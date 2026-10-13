@@ -8,7 +8,14 @@ import type {
   CatalogLessonItemPort,
   CatalogMappedItem,
 } from "./catalog-lesson-types";
-import { instructionOf, koOf, latinOf, optionalField, skippedItem } from "./catalog-item-text";
+import {
+  englishOf,
+  instructionOf,
+  koOf,
+  latinOf,
+  optionalField,
+  skippedItem,
+} from "./catalog-item-text";
 import { shuffledOrder } from "./catalog-shuffle";
 
 type ItemOf<T extends LearningItem["type"]> = Extract<LearningItem, { type: T }>;
@@ -107,7 +114,7 @@ export function roleLineItemOf(
   return wordChoiceItem(item, port, item.prompt, {
     prompt: koOf(port, item.context.ko),
     romanization: latinOf(port, item.context.roman),
-    translation: latinOf(port, item.context.en),
+    translation: englishOf(port, item.context.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
     answerIndex: correctIndex(item.options),
   });
@@ -136,7 +143,7 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
   return wordChoiceItem(item, port, item.prompt, {
     prompt: koOf(port, item.context.ko),
     romanization: latinOf(port, item.context.roman),
-    translation: latinOf(port, item.context.en),
+    translation: englishOf(port, item.context.en),
     choices,
     answerIndex: answer === "" ? -1 : choices.indexOf(answer),
   });
@@ -159,7 +166,7 @@ export function pictureChoiceItemOf(
   const path = item.stimulus.imageUrl;
   const url = path === undefined ? null : port.imageUrlOf(path);
   if (url === null) return skippedItem(item, "image-missing");
-  const prompt = latinOf(port, correct?.en) ?? port.glossOf(item.ref);
+  const prompt = englishOf(port, correct?.en) ?? port.glossOf(item.ref);
   if (prompt === undefined || prompt === null) return skippedItem(item, "no-gloss");
   const question: WordChoiceQuestion = {
     prompt,

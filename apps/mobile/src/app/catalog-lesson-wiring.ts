@@ -11,7 +11,7 @@ import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { canStartCatalogUnit, catalogUnitRoleOf } from "../screens/journey-map/catalog-map";
 import type { CatalogReadySection } from "../screens/journey-map/catalog-map.contract";
-import { catalogEpilogueModelOf, noLearnerProfile } from "./catalog-cover-wiring";
+import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import type { CatalogWiringValues } from "./catalog-cover-wiring";
 import { finalPassedEventOf, lessonFinishedEventOf, lessonStartedEventOf } from "./catalog-events";
 import { catalogFinalPlanFor } from "./catalog-final-model";
@@ -60,6 +60,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     catalogSections,
     catalogProgress,
     setCatalogProgress,
+    learnerFill,
     dispatch,
     episodeIntroEventSink: sink,
     pendingResults,
@@ -112,7 +113,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
   };
 
   const startLesson = (episodeId: string, unitKey: CatalogUnitKey): void => {
-    const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey);
+    const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill);
     if (plan === null) return;
     releaseFinish();
     clearSession();
@@ -132,7 +133,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
   };
 
   const startFinal = (episodeId: string, unitKey: CatalogUnitKey): void => {
-    const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId);
+    const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill);
     if (plan === null) return;
     releaseFinish();
     clearSession();
@@ -181,7 +182,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       dispatch({ type: "backToRoot" });
     },
     onFinishCatalogActivity: (episodeId, unitKey, activityIndex, results, skippedCount) => {
-      const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey);
+      const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill);
       if (plan === null) return;
       if (!claimFinish(`${episodeId}|${unitKey}|${activityIndex}`)) return;
       const gathered = [...pendingResults, ...results];
@@ -210,7 +211,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       showComplete("replace", episodeId, unitKey, gathered, skippedTotal, plan.questionCount);
     },
     onFinishCatalogFinal: (episodeId, results) => {
-      const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId);
+      const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill);
       const section = sectionOf(episodeId);
       if (plan === null || section === null) return;
       const turnCount = plan.turns.length;
@@ -231,8 +232,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
         section !== null &&
         catalogUnitRoleOf(section, unitKey) === "final" &&
         assessmentCompletesStep(verdict) &&
-        catalogEpilogueModelOf(episodeContent, catalogSections, episodeId, noLearnerProfile) !==
-          null;
+        catalogEpilogueModelOf(episodeContent, catalogSections, episodeId, learnerFill) !== null;
       if (toEpilogue) {
         dispatch({ type: "replace", screen: { name: "catalog-epilogue", episodeId } });
         return;

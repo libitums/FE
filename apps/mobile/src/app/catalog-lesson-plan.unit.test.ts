@@ -9,7 +9,9 @@ import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearningItem, Option, Text } from "../lib/episode-content.model";
 import { fillPlaceholders } from "../lib/placeholder-fill";
+import type { LearnerProfile } from "../lib/placeholder-fill";
 import { judgeAssessment } from "../screens/assessment/assessment";
+import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import {
   catalogActivitiesOf,
   catalogActivityPositionOf,
@@ -21,6 +23,8 @@ import {
   shuffledOrder,
 } from "./catalog-lesson-plan";
 import type { CatalogActivity, CatalogFill, CatalogMappedItem } from "./catalog-lesson-plan";
+import { noLearnerProfile } from "./catalog-cover-wiring";
+import { catalogFinalPlanFor } from "./catalog-final-model";
 import type { EpisodeContent } from "./episode-content";
 
 // `unit` 계층: 문항 → 학습형 문항 매핑 · 구간 묶기 · 판정 기준 · 결정적 순서 · 계획 메모의 입출력만 봅니다.
@@ -813,26 +817,36 @@ describe("catalogLessonPlanFor — 메모", () => {
   test("LP18. 같은 콘텐츠로 두 번 부르면 같은 참조다", () => {
     const content = contentOf(realCatalog);
 
-    const first = catalogLessonPlanFor(content, "u01-water", "S3");
-    const second = catalogLessonPlanFor(content, "u01-water", "S3");
+    const first = catalogLessonPlanFor(content, "u01-water", "S3", noLearnerProfile);
+    const second = catalogLessonPlanFor(content, "u01-water", "S3", noLearnerProfile);
 
     expect(first).not.toBeNull();
     expect(second).toBe(first);
   });
 
   test("LP18. 같은 ready 항목을 담은 다른 콘텐츠 객체도 같은 참조다", () => {
-    const first = catalogLessonPlanFor(contentOf(realCatalog), "u01-water", "S3");
-    const second = catalogLessonPlanFor(contentOf([...realCatalog]), "u01-water", "S3");
+    const first = catalogLessonPlanFor(contentOf(realCatalog), "u01-water", "S3", noLearnerProfile);
+    const second = catalogLessonPlanFor(
+      contentOf([...realCatalog]),
+      "u01-water",
+      "S3",
+      noLearnerProfile,
+    );
 
     expect(first).not.toBeNull();
     expect(second).toBe(first);
   });
 
   test("LP18. 다른 항목 객체(새 버전)는 다른 참조다", () => {
-    const original = catalogLessonPlanFor(contentOf(realCatalog), "u01-water", "S3");
+    const original = catalogLessonPlanFor(
+      contentOf(realCatalog),
+      "u01-water",
+      "S3",
+      noLearnerProfile,
+    );
     const copy: CatalogEntry[] = [{ ...readyOf("u01-water") }, ...realCatalog.slice(1)];
 
-    const fromCopy = catalogLessonPlanFor(contentOf(copy), "u01-water", "S3");
+    const fromCopy = catalogLessonPlanFor(contentOf(copy), "u01-water", "S3", noLearnerProfile);
 
     expect(fromCopy).not.toBeNull();
     expect(fromCopy).not.toBe(original);
@@ -845,14 +859,103 @@ describe("catalogLessonPlanFor — 메모", () => {
       { status: "pending", id: "u04-x", order: 4, title: "제목", version: "v1" },
     ]);
 
-    const s3 = catalogLessonPlanFor(content, "u01-water", "S3");
-    const s4 = catalogLessonPlanFor(content, "u01-water", "S4");
+    const s3 = catalogLessonPlanFor(content, "u01-water", "S3", noLearnerProfile);
+    const s4 = catalogLessonPlanFor(content, "u01-water", "S4", noLearnerProfile);
 
     expect(s3?.unitKey).toBe("S3");
     expect(s4?.unitKey).toBe("S4");
-    expect(catalogLessonPlanFor(content, "nope", "S3")).toBeNull();
-    expect(catalogLessonPlanFor(content, "u04-x", "S1")).toBeNull();
-    expect(catalogLessonPlanFor(content, "u01-water", "RP")).toBeNull();
+    expect(catalogLessonPlanFor(content, "nope", "S3", noLearnerProfile)).toBeNull();
+    expect(catalogLessonPlanFor(content, "u04-x", "S1", noLearnerProfile)).toBeNull();
+    expect(catalogLessonPlanFor(content, "u01-water", "RP", noLearnerProfile)).toBeNull();
+  });
+});
+
+describe("catalogLessonPlanFor — 프로필 참조가 메모 키다", () => {
+  const emma: LearnerProfile = { name: "Emma" };
+  const liam: LearnerProfile = { name: "Liam" };
+
+  test("MK-1. 같은 항목 · 같은 프로필 참조 · 같은 키는 같은 계획 참조다", () => {
+    const content = contentOf(realCatalog);
+
+    const first = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+    const second = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+
+    expect(first).not.toBeNull();
+    expect(second).toBe(first);
+  });
+
+  test("MK-2. 다른 프로필 참조는 다른 계획 참조다", () => {
+    const content = contentOf(realCatalog);
+
+    const forEmma = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+    const forLiam = catalogLessonPlanFor(content, "u02-checkin", "S3", liam);
+
+    expect(forEmma).not.toBeNull();
+    expect(forLiam).not.toBeNull();
+    expect(forLiam).not.toBe(forEmma);
+  });
+
+  // 이름이 화면에 서는 곳은 실데이터에서 최종 테스트(RP)뿐입니다 - 레슨 문항에는 이름 토큰이 없습니다.
+  test("MK-2. 최종 테스트 계획의 대사 글자에 그 이름이 선다", () => {
+    const content = contentOf(realCatalog);
+    const sections = catalogMapSectionsOf(realCatalog);
+
+    const forEmma = catalogFinalPlanFor(content, sections, "u02-checkin", emma);
+    const forLiam = catalogFinalPlanFor(content, sections, "u02-checkin", liam);
+
+    expect(forEmma).not.toBeNull();
+    expect(forLiam).not.toBe(forEmma);
+    expect(JSON.stringify(forEmma)).toContain("Emma");
+    expect(JSON.stringify(forEmma)).not.toContain("Liam");
+    expect(JSON.stringify(forLiam)).toContain("Liam");
+    expect(JSON.stringify(forLiam)).not.toContain("Emma");
+  });
+
+  test("MK-2. 첫 프로필로 다시 부르면 첫 계획 참조가 돌아온다", () => {
+    const content = contentOf(realCatalog);
+
+    const forEmma = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+    catalogLessonPlanFor(content, "u02-checkin", "S3", liam);
+
+    expect(catalogLessonPlanFor(content, "u02-checkin", "S3", emma)).toBe(forEmma);
+  });
+
+  test("MK-3. noLearnerProfile로 부른 계획은 빈 프로필 치환과 글자가 같다", () => {
+    const content = contentOf(realCatalog);
+    const entry = readyOf("u02-checkin");
+
+    const memoized = catalogLessonPlanFor(content, "u02-checkin", "S3", noLearnerProfile);
+    const direct = catalogLessonPlanOf(
+      entry,
+      "S3",
+      (text, script) => fillPlaceholders(text, {}, script),
+      content.imageUrlOf,
+    );
+
+    expect(memoized).not.toBeNull();
+    expect(memoized).toEqual(direct);
+  });
+
+  test("MK-4. 정답에 {이름}이 든 타자 문항은 프로필에 따라 문항 수가 달라진다", () => {
+    const base = readyOf("u02-checkin");
+    const units = base.episode.units.map((unit) =>
+      unit.id === "S3"
+        ? {
+            ...unit,
+            items: [
+              translateToKo("T", [t("저는 {이름}이에요.", "jeoneun {이름}ieyo.", "I'm {이름}.")]),
+            ],
+          }
+        : unit,
+    );
+    const entry: CatalogEntry = { ...base, episode: { ...base.episode, units } };
+    const content = contentOf([entry]);
+
+    const blank = catalogLessonPlanFor(content, "u02-checkin", "S3", noLearnerProfile);
+    const named = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
+
+    expect(blank).toMatchObject({ shownItemCount: 1, skippedItemCount: 0 });
+    expect(named).toMatchObject({ shownItemCount: 0, skippedItemCount: 1 });
   });
 });
 
@@ -1065,8 +1168,8 @@ describe("catalogLessonPlanFor — 그림 주소 함수와 메모", () => {
     const first = contentOf(realCatalog);
     const second: EpisodeContent = { ...first, imageUrlOf: () => null };
 
-    const a = catalogLessonPlanFor(first, "u01-water", "S1");
-    const b = catalogLessonPlanFor(second, "u01-water", "S1");
+    const a = catalogLessonPlanFor(first, "u01-water", "S1", noLearnerProfile);
+    const b = catalogLessonPlanFor(second, "u01-water", "S1", noLearnerProfile);
 
     expect(a).not.toBeNull();
     expect(b).toBe(a);

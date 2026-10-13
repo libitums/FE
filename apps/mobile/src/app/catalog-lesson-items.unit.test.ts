@@ -11,6 +11,7 @@ import { fillPlaceholders } from "../lib/placeholder-fill";
 import { catalogGlossOf, vocabCardItemOf } from "./catalog-card-map";
 import { pictureChoiceItemOf } from "./catalog-choice-map";
 import { catalogItemOf } from "./catalog-item-map";
+import { englishOf } from "./catalog-item-text";
 import type { CatalogFill, CatalogLessonItemPort, CatalogMappedItem } from "./catalog-lesson-types";
 import { pairMatchItemOf } from "./catalog-pair-map";
 
@@ -555,6 +556,240 @@ describe("catalogItemOf — 세 유형", () => {
 });
 
 // ---- 스레드 경계 소스 검사 ----
+
+// ---- 3d-2: 스크립트 셋 — 영어 출처에는 영어 나라 이름, 로마자 출처에는 로마자, 한글 출처에는 한글 ----
+
+const GERMANY = { ko: "독일", roman: "dogil", en: "Germany" } as const;
+const germanFill: CatalogFill = (text, script) =>
+  fillPlaceholders(text, { country: GERMANY }, script);
+const option = (id: string, ko: string, correct: boolean, en?: string) => ({
+  id,
+  ko,
+  roman: `r-${ko}`,
+  ...(en === undefined ? {} : { en }),
+  correct,
+});
+const asItem = (value: Record<string, unknown>): LearningItem => value as unknown as LearningItem;
+
+function germanPortOf(words: readonly Word[] = []): CatalogLessonItemPort {
+  return {
+    fill: germanFill,
+    episodeId: "ep",
+    glossOf: catalogGlossOf(words, germanFill),
+    imageUrlOf: cdn,
+  };
+}
+
+describe("englishOf", () => {
+  test("EN-0. 없거나 빈 문자열은 undefined, 나라는 영어 이름으로 선다", () => {
+    expect(englishOf(germanPortOf(), undefined)).toBeUndefined();
+    expect(englishOf(germanPortOf(), "   ")).toBeUndefined();
+    expect(englishOf(germanPortOf(), " I'm from {나라}. ")).toBe("I'm from Germany.");
+  });
+});
+
+describe("catalogItemOf — 나라 객체 프로필", () => {
+  const fromGermany = {
+    ko: "저는 {나라}에서 왔어요.",
+    roman: "jeoneun {나라}eseo wasseoyo.",
+    en: "I'm from {나라}.",
+  };
+
+  test("EN-1. 빈칸 채우기: 지시문 · 번역은 영어, 로마자 줄은 로마자, 문장은 한글이다", () => {
+    const mapped = catalogItemOf(
+      asItem({
+        id: "C1",
+        event: "E",
+        type: "CLOZE",
+        prompt: { ko: "질문", en: "Where is {나라}?" },
+        context: fromGermany,
+        tiles: [{ ko: "왔어요" }, { ko: "갔어요" }],
+        answers: [{ ko: "왔어요" }],
+      }),
+      germanPortOf(),
+    );
+
+    expect(questionOf(mapped)).toMatchObject({
+      instruction: "Where is Germany?",
+      translation: "I'm from Germany.",
+      romanization: "jeoneun dogireseo wasseoyo.",
+      prompt: "저는 독일에서 왔어요.",
+    });
+  });
+
+  test("EN-1. 역할 대사 고르기: 번역은 영어, 로마자 줄은 로마자, 문장은 한글이다", () => {
+    const mapped = catalogItemOf(
+      asItem({
+        id: "R1",
+        event: "E",
+        type: "ROLE_LINE",
+        prompt: { ko: "질문", en: "Answer." },
+        context: {
+          ko: "{나라}에서 오셨어요?",
+          roman: "{나라}eseo osyeosseoyo?",
+          en: "Are you from {나라}?",
+        },
+        options: [option("a", "네", true), option("b", "아니요", false)],
+      }),
+      germanPortOf(),
+    );
+
+    expect(questionOf(mapped)).toMatchObject({
+      prompt: "독일에서 오셨어요?",
+      romanization: "dogireseo osyeosseoyo?",
+      translation: "Are you from Germany?",
+    });
+  });
+
+  test("EN-1. 문장 순서: 영어 번역이 제시문이다", () => {
+    const mapped = catalogItemOf(
+      asItem({
+        id: "W1",
+        event: "E",
+        type: "WORD_ORDER",
+        prompt: { ko: "질문", en: "Put it in order: {나라}" },
+        tiles: [{ ko: "저는" }, { ko: "{나라}에서" }, { ko: "왔어요" }],
+        answers: [{ ko: "저는 {나라}에서 왔어요", roman: "x", en: "I'm from {나라}." }],
+      }),
+      germanPortOf(),
+    );
+
+    expect(questionOf(mapped)).toMatchObject({
+      prompt: "I'm from Germany.",
+      instruction: "Put it in order: Germany",
+    });
+  });
+
+  test("EN-1. 한국어로 쓰기: 영어 단서에 영어 나라 이름이 서고 정답은 한글이다", () => {
+    const mapped = catalogItemOf(
+      asItem({
+        id: "T1",
+        event: "E",
+        type: "TRANSLATE_TO_KO",
+        prompt: { ko: "질문", en: "Type it." },
+        answers: [{ ko: "저는 {나라}에서 왔어요", roman: "x", en: "I'm from {나라}." }],
+      }),
+      germanPortOf(),
+    );
+
+    expect(questionOf(mapped)).toMatchObject({
+      cue: "I'm from Germany.",
+      answers: ["저는 독일에서 왔어요"],
+    });
+  });
+
+  test("EN-1. 받아쓰기: 로마자 단서는 로마자, 보조 영어 뜻은 영어다", () => {
+    const mapped = catalogItemOf(
+      asItem({
+        id: "D1",
+        event: "E",
+        type: "DICTATION",
+        prompt: { ko: "질문", en: "Type what you hear." },
+        stimulus: {
+          audio: {
+            ko: "저는 {나라}에서 왔어요",
+            roman: "jeoneun {나라}eseo wasseoyo",
+            en: "I'm from {나라}.",
+          },
+        },
+        answers: [{ ko: "저는 {나라}에서 왔어요" }],
+      }),
+      germanPortOf(),
+    );
+
+    expect(questionOf(mapped)).toMatchObject({
+      cue: "jeoneun dogireseo wasseoyo",
+      cueSupport: "I'm from Germany.",
+    });
+  });
+
+  test("EN-1. 패턴 쓰기: 영어 단서에 영어 나라 이름이 서고 힌트는 한글이다", () => {
+    const mapped = catalogItemOf(
+      asItem({
+        id: "S1",
+        event: "E",
+        type: "SENT_BUILD",
+        prompt: { ko: "질문", en: "Build it." },
+        context: { ko: "{나라}에서 왔어요", roman: "r" },
+        answers: [{ ko: "저는 {나라}에서 왔어요", roman: "x", en: "I'm from {나라}." }],
+      }),
+      germanPortOf(),
+    );
+
+    expect(questionOf(mapped)).toMatchObject({ cue: "I'm from Germany.", hint: "독일에서 왔어요" });
+  });
+
+  test("EN-1. 단어 카드: 낱말 뜻 · 맥락 번역 · 예문 번역은 영어, 로마자는 로마자, 낱말은 한글이다", () => {
+    const mapped = catalogItemOf(
+      asItem({
+        ...cardItem("V1"),
+        context: { ko: "{나라}", roman: "{나라}eseo", en: "from {나라}" },
+        example: fromGermany,
+      }),
+      germanPortOf(),
+    );
+
+    expect(questionOf(mapped)).toMatchObject({
+      word: "독일",
+      romanization: "dogireseo",
+      meaning: "from Germany",
+      example: {
+        text: "저는 독일에서 왔어요.",
+        romanization: "jeoneun dogireseo wasseoyo.",
+        translation: "I'm from Germany.",
+      },
+    });
+  });
+
+  test("EN-1. 단어 카드: ref로 찾은 낱말 뜻(glossEn)은 영어 나라 이름이다", () => {
+    const mapped = catalogItemOf(
+      asItem({ ...cardItem("V2"), ref: "w:from" }),
+      germanPortOf([word("w:from", "from {나라}")]),
+    );
+
+    expect(questionOf(mapped)).toMatchObject({ meaning: "from Germany" });
+  });
+
+  test("EN-1. 짝 맞추기: 뜻 열은 영어, 낱말 열은 한글이다", () => {
+    const mapped = catalogItemOf(
+      asItem({
+        id: "P1",
+        event: "E",
+        type: "PAIR_MATCH",
+        prompt: { ko: "질문", en: "Match." },
+        tiles: [{ ko: "A" }, { ko: "B" }],
+        pairs: [
+          { left: { ko: "{나라}", roman: "{나라}" }, right: "{나라}" },
+          { left: { ko: "가", roman: "ga" }, right: "left" },
+        ],
+      }),
+      germanPortOf(),
+    );
+
+    const question = questionOf(mapped);
+    expect(question?.["words"]).toEqual(["독일", "가"]);
+    expect(question?.["meanings"]).toEqual(expect.arrayContaining(["Germany", "left"]));
+  });
+
+  test("EN-1. 그림 고르기: 정답 보기의 영어 뜻이 제시문이고 지시문도 영어다", () => {
+    const mapped = catalogItemOf(
+      asItem({
+        id: "I1",
+        event: "E",
+        type: "IMG_MATCH",
+        prompt: { ko: "질문", en: "Which is {나라}?" },
+        stimulus: { imageUrl: "images/a.jpg" },
+        options: [option("a", "독일", true, "{나라}"), option("b", "가", false, "other")],
+      }),
+      germanPortOf(),
+    );
+
+    expect(questionOf(mapped)).toMatchObject({
+      prompt: "Germany",
+      instruction: "Which is Germany?",
+    });
+  });
+});
 
 describe("스레드 경계 소스 검사", () => {
   const srcRoot = resolve(process.cwd(), "src");

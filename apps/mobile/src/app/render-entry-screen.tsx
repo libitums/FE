@@ -39,7 +39,13 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
     case "splash":
       return <SplashScreen onTimeout={wiring.onSplashTimeout} />;
     case "onboarding":
-      return <OnboardingScreen onComplete={wiring.onOnboardingComplete} />;
+      return (
+        <OnboardingScreen
+          learnerRecord={wiring.learnerRecord}
+          learnerPort={wiring.learnerPort}
+          onComplete={wiring.onOnboardingComplete}
+        />
+      );
     case "login":
       return (
         <LoginScreen

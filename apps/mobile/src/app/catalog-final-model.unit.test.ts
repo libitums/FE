@@ -5,6 +5,7 @@ import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { EpisodeCut, LearningItem, Text } from "../lib/episode-content.model";
 import { fillPlaceholders } from "../lib/placeholder-fill";
+import type { LearnerProfile } from "../lib/placeholder-fill";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import {
   catalogFinalPlanFor,
@@ -12,6 +13,7 @@ import {
   catalogRoleplayTurnOf,
 } from "./catalog-final-model";
 import type { CatalogFill } from "./catalog-lesson-plan";
+import { noLearnerProfile } from "./catalog-cover-wiring";
 import type { EpisodeContent } from "./episode-content";
 
 // `unit` 계층: 최종 테스트 문항 → 턴 모델 변환과 계획 메모의 입출력만 봅니다.
@@ -265,6 +267,61 @@ describe("catalogFinalPlanOf — 건너뜀과 그림", () => {
   });
 });
 
+describe("catalogFinalPlanFor — 프로필 참조가 메모 키다", () => {
+  const germany = { ko: "독일", roman: "dogil", en: "Germany" } as const;
+  const france = { ko: "프랑스", roman: "peurangseu", en: "France" } as const;
+  const emma: LearnerProfile = { name: "Emma", country: germany };
+  const liam: LearnerProfile = { name: "Liam", country: france };
+  const contentOf = (catalog: readonly CatalogEntry[]): EpisodeContent => ({
+    catalog,
+    imageUrlOf,
+    fillText: fillPlaceholders,
+  });
+  const sections = catalogMapSectionsOf(realCatalog);
+
+  test("MK-5. 같은 프로필 참조는 같은 계획 참조다", () => {
+    const content = contentOf(realCatalog);
+
+    const first = catalogFinalPlanFor(content, sections, "u03-mina", emma);
+    const second = catalogFinalPlanFor(content, sections, "u03-mina", emma);
+
+    expect(first).not.toBeNull();
+    expect(second).toBe(first);
+  });
+
+  test("MK-5. 다른 프로필 참조는 다른 계획이고 타일 · 정답에 그 값이 선다", () => {
+    const content = contentOf(realCatalog);
+
+    const forEmma = catalogFinalPlanFor(content, sections, "u03-mina", emma);
+    const forLiam = catalogFinalPlanFor(content, sections, "u03-mina", liam);
+
+    expect(forEmma).not.toBeNull();
+    expect(forLiam).not.toBe(forEmma);
+    expect(JSON.stringify(forEmma)).toContain("독일");
+    expect(JSON.stringify(forEmma)).toContain("Emma");
+    expect(JSON.stringify(forEmma)).not.toContain("프랑스");
+    expect(JSON.stringify(forLiam)).toContain("프랑스");
+    expect(JSON.stringify(forLiam)).toContain("Liam");
+    expect(JSON.stringify(forLiam)).not.toContain("독일");
+  });
+
+  test("MK-5. 첫 프로필로 다시 부르면 첫 계획 참조가 돌아온다", () => {
+    const content = contentOf(realCatalog);
+
+    const forEmma = catalogFinalPlanFor(content, sections, "u03-mina", emma);
+    catalogFinalPlanFor(content, sections, "u03-mina", liam);
+
+    expect(catalogFinalPlanFor(content, sections, "u03-mina", emma)).toBe(forEmma);
+  });
+
+  test("MK-5. 영어 줄(번역)에는 영어 나라 이름이 선다", () => {
+    const plan = catalogFinalPlanFor(contentOf(realCatalog), sections, "u03-mina", emma);
+
+    expect(JSON.stringify(plan)).toContain("Germany");
+    expect(JSON.stringify(plan)).toContain("dogireseo");
+  });
+});
+
 describe("catalogFinalPlanFor — 메모", () => {
   const contentOf = (catalog: readonly CatalogEntry[]): EpisodeContent => ({
     catalog,
@@ -276,8 +333,8 @@ describe("catalogFinalPlanFor — 메모", () => {
     const content = contentOf(realCatalog);
     const sections = catalogMapSectionsOf(realCatalog);
 
-    const first = catalogFinalPlanFor(content, sections, "u01-water");
-    const second = catalogFinalPlanFor(content, sections, "u01-water");
+    const first = catalogFinalPlanFor(content, sections, "u01-water", noLearnerProfile);
+    const second = catalogFinalPlanFor(content, sections, "u01-water", noLearnerProfile);
 
     expect(first).not.toBeNull();
     expect(second).toBe(first);
@@ -291,14 +348,16 @@ describe("catalogFinalPlanFor — 메모", () => {
     const content = contentOf(catalog);
     const sections = catalogMapSectionsOf(catalog);
 
-    expect(catalogFinalPlanFor(content, sections, "nope")).toBeNull();
-    expect(catalogFinalPlanFor(content, sections, "u04-x")).toBeNull();
+    expect(catalogFinalPlanFor(content, sections, "nope", noLearnerProfile)).toBeNull();
+    expect(catalogFinalPlanFor(content, sections, "u04-x", noLearnerProfile)).toBeNull();
   });
 
   test("FM6. 에피소드 번호는 구획 자리에서 온다", () => {
     const content = contentOf(realCatalog);
     const sections = catalogMapSectionsOf(realCatalog);
 
-    expect(catalogFinalPlanFor(content, sections, "u02-checkin")?.ordinal).toBe(2);
+    expect(catalogFinalPlanFor(content, sections, "u02-checkin", noLearnerProfile)?.ordinal).toBe(
+      2,
+    );
   });
 });

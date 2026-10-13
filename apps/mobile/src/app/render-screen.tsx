@@ -40,6 +40,11 @@ import { renderShellLearningScreen, renderWordChoiceScreen } from "./render-lear
 import { renderMessengerCompleteScreen } from "./render-messenger-complete";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
 import { renderEntryScreen } from "./render-entry-screen";
+import {
+  learnerSettingsSummary,
+  renderLearnerProfileGate,
+  renderLearnerProfileSettings,
+} from "./render-learner-profile";
 import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import type { ScreenWiring } from "./screen-wiring";
@@ -101,6 +106,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <SettingsScreen
           onSelectNavTarget={wiring.onSelectNavTarget}
+          learnerProfileSummary={learnerSettingsSummary(wiring)}
           onSignOut={wiring.onSignOut}
           onDeleteAccount={wiring.onDeleteAccount}
           onLayerChange={wiring.onScreenLayerChange}
@@ -108,6 +114,10 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       );
     case "profile":
       return <AccountProfileScreen onExit={wiring.onExitSettingsStack} />;
+    case "learner-profile":
+      return renderLearnerProfileSettings(wiring);
+    case "learner-profile-gate":
+      return renderLearnerProfileGate(screen, wiring);
     case "feedback":
       return (
         <FeedbackScreen onSubmit={wiring.onSubmitFeedback} onExit={wiring.onExitSettingsStack} />

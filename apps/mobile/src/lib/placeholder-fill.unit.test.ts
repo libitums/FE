@@ -86,3 +86,129 @@ describe("fillPlaceholders", () => {
     expect(fillPlaceholders(text, { name }, "ko")).toBe(expected);
   });
 });
+
+// ---- 3d-2: 영어 스크립트 · 나라의 세 표기 · 로마자 연음 ----
+
+const GERMANY = { ko: "독일", roman: "dogil", en: "Germany" } as const;
+const KOREA = { ko: "한국", roman: "hanguk", en: "South Korea" } as const;
+const UNITED_STATES = { ko: "미국", roman: "miguk", en: "the United States" } as const;
+const FRANCE = { ko: "프랑스", roman: "peurangseu", en: "France" } as const;
+const AUSTRALIA = { ko: "호주", roman: "hoju", en: "Australia" } as const;
+const JAPAN = { ko: "일본", roman: "ilbon", en: "Japan" } as const;
+const HONG_KONG = { ko: "홍콩", roman: "hongkong", en: "Hong Kong" } as const;
+
+describe("fillPlaceholders — en 스크립트", () => {
+  test.each([...KO_ROWS, ...ROMAN_ROWS])(
+    "PF-1. 프로필이 문자열 · 빈 값이면 en은 roman과 같다: %s / %j",
+    (text, profile) => {
+      expect(fillPlaceholders(text, profile, "en")).toBe(fillPlaceholders(text, profile, "roman"));
+    },
+  );
+
+  test("PF-2. 나라 객체는 스크립트마다 다른 표기로 선다", () => {
+    const profile = { country: GERMANY };
+
+    expect(fillPlaceholders("저는 {나라}에서 왔어요.", profile, "ko")).toBe(
+      "저는 독일에서 왔어요.",
+    );
+    expect(fillPlaceholders("I'm from {나라}.", profile, "en")).toBe("I'm from Germany.");
+    expect(fillPlaceholders("{나라}", profile, "roman")).toBe("dogil");
+    expect(fillPlaceholders("{나라}", profile, "en")).toBe("Germany");
+  });
+
+  test("PF-3. 관사가 든 영어 이름이 그대로 선다", () => {
+    expect(fillPlaceholders("I'm from {나라}.", { country: UNITED_STATES }, "en")).toBe(
+      "I'm from the United States.",
+    );
+  });
+
+  test.each([
+    ["{나라}(으)로", GERMANY, "독일로"],
+    ["{나라}(으)로", UNITED_STATES, "미국으로"],
+    ["{나라}(으)로", FRANCE, "프랑스로"],
+    ["{나라}은/는", GERMANY, "독일은"],
+    ["{나라}은/는", AUSTRALIA, "호주는"],
+  ])("PF-4. ko 조사는 나라의 ko로 고른다: %s / %j -> %s", (text, country, expected) => {
+    expect(fillPlaceholders(text, { country }, "ko")).toBe(expected);
+  });
+});
+
+describe("fillPlaceholders — 로마자 연음", () => {
+  test.each([
+    [UNITED_STATES, "migugeseo"],
+    [GERMANY, "dogireseo"],
+    [JAPAN, "ilboneseo"],
+    [HONG_KONG, "hongkongeseo"],
+    [FRANCE, "peurangseueseo"],
+  ])("PF-L1. 모음 앞에서 받침이 이어진다: %j -> %s", (country, expected) => {
+    expect(fillPlaceholders("{나라}eseo", { country }, "roman")).toBe(expected);
+  });
+
+  test.each([
+    ["{나라}(eu)ro", UNITED_STATES, "migugeuro"],
+    ["{나라}(eu)ro", GERMANY, "dogillo"],
+    ["{나라}(eu)ro", JAPAN, "ilboneuro"],
+    ["{나라}(eu)ro", FRANCE, "peurangseuro"],
+    ["{나라}eun/neun", UNITED_STATES, "migugeun"],
+    ["{나라}eun/neun", GERMANY, "dogireun"],
+    ["{나라}eun/neun", AUSTRALIA, "hojuneun"],
+    ["{나라}i/ga", UNITED_STATES, "migugi"],
+    ["{나라}i/ga", AUSTRALIA, "hojuga"],
+  ])("PF-L2. 조사와 연음이 함께 선다: %s / %j -> %s", (text, country, expected) => {
+    expect(fillPlaceholders(text, { country }, "roman")).toBe(expected);
+  });
+
+  test.each([
+    ["{나라} saram", UNITED_STATES, "miguk saram"],
+    ["{나라}.", GERMANY, "dogil."],
+    ["{나라}", UNITED_STATES, "miguk"],
+    ["{나라}?", KOREA, "hanguk?"],
+  ])("PF-L3. 뒤가 모음이 아니면 그대로다: %s / %j -> %s", (text, country, expected) => {
+    expect(fillPlaceholders(text, { country }, "roman")).toBe(expected);
+  });
+
+  test("PF-L4. 연음은 나라 객체에만 건다 — 이름과 나라 문자열은 그대로다", () => {
+    expect(fillPlaceholders("{이름}(eu)ro", { name: "John" }, "roman")).toBe("Johneuro");
+    expect(fillPlaceholders("{이름}eseo", { name: "Jack" }, "roman")).toBe("Jackeseo");
+    expect(fillPlaceholders("{나라}eseo", { country: "스위스" }, "roman")).toBe("스위스eseo");
+  });
+});
+
+describe("fillPlaceholders — 이름과 나라가 함께", () => {
+  test("PF-5. 이름은 세 스크립트에 같은 값으로 선다", () => {
+    const profile = { name: "Emma" };
+
+    expect(fillPlaceholders("{이름}(으)로 예약했어요.", profile, "ko")).toBe("Emma로 예약했어요.");
+    expect(fillPlaceholders("{이름}(eu)ro yeyakaesseoyo.", profile, "roman")).toBe(
+      "Emmaro yeyakaesseoyo.",
+    );
+    expect(fillPlaceholders("I booked under {이름}.", profile, "en")).toBe("I booked under Emma.");
+  });
+
+  test("PF-6. 한 문장에 이름과 나라가 둘 다 선다", () => {
+    const profile = { name: "Emma", country: KOREA };
+
+    expect(fillPlaceholders("{이름}은/는 {나라}에서 왔어요.", profile, "ko")).toBe(
+      "Emma는 한국에서 왔어요.",
+    );
+    expect(fillPlaceholders("{이름} is from {나라}.", profile, "en")).toBe(
+      "Emma is from South Korea.",
+    );
+  });
+
+  test("PF-7. 나라 객체의 ko가 공백뿐이면 기본 문구로 서고 던지지 않는다", () => {
+    const profile = { country: { ko: "   ", roman: "x", en: "Y" } };
+
+    expect(() => fillPlaceholders("{나라}에서", profile, "ko")).not.toThrow();
+    expect(fillPlaceholders("{나라}에서", profile, "ko")).toBe("나라에서");
+    expect(fillPlaceholders("{나라}", profile, "roman")).toBe("nara");
+    expect(fillPlaceholders("{나라}", profile, "en")).toBe("nara");
+  });
+
+  test("PF-8. 이름만 있고 나라 키가 없으면 {나라}는 기본 문구다", () => {
+    expect(fillPlaceholders("저는 {나라}에서 왔어요.", { name: "Emma" }, "ko")).toBe(
+      "저는 나라에서 왔어요.",
+    );
+    expect(fillPlaceholders("I'm from {나라}.", { name: "Emma" }, "en")).toBe("I'm from nara.");
+  });
+});

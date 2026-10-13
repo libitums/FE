@@ -3,7 +3,7 @@
 // 화면 경로가 닿는 파일이라 `lib/episode-*`는 타입만 가져옵니다.
 
 import type { LearningItem, Word } from "../lib/episode-content.model";
-import { koOf, latinOf, skippedItem } from "./catalog-item-text";
+import { englishOf, koOf, latinOf, skippedItem } from "./catalog-item-text";
 import type {
   CatalogFill,
   CatalogGlossOf,
@@ -20,7 +20,7 @@ export function catalogGlossOf(words: readonly Word[], fill: CatalogFill): Catal
     if (ref === undefined) return null;
     const found = words.find((candidate) => candidate.id === ref);
     if (found === undefined) return null;
-    const gloss = fill(found.glossEn, "roman").trim();
+    const gloss = fill(found.glossEn, "en").trim();
     return gloss === "" ? null : gloss;
   };
 }
@@ -31,7 +31,7 @@ export function vocabCardItemOf(
 ): CatalogMappedItem {
   const word = koOf(port, item.context.ko);
   if (word === "") return skippedItem(item, "malformed");
-  const meaning = port.glossOf(item.ref) ?? latinOf(port, item.context.en);
+  const meaning = port.glossOf(item.ref) ?? englishOf(port, item.context.en);
   if (meaning === undefined || meaning === null) return skippedItem(item, "no-gloss");
   const exampleText = koOf(port, item.example.ko);
   const example =
@@ -40,7 +40,7 @@ export function vocabCardItemOf(
       : {
           text: exampleText,
           romanization: latinOf(port, item.example.roman) ?? null,
-          translation: latinOf(port, item.example.en) ?? null,
+          translation: englishOf(port, item.example.en) ?? null,
         };
   return {
     kind: "vocab-card",

@@ -4,6 +4,7 @@
 
 import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
 import type { CatalogEntry } from "../lib/episode-catalog";
+import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { LearningItem } from "../lib/episode-content";
 import type {
   CatalogRoleplayTile,
@@ -11,8 +12,7 @@ import type {
   CatalogRoleplayTurns,
 } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
-import { noLearnerProfile } from "./catalog-cover-wiring";
-import { koOf, latinOf } from "./catalog-item-text";
+import { englishOf, koOf, latinOf } from "./catalog-item-text";
 import { catalogFillOf } from "./catalog-lesson-plan";
 import type { CatalogFill, CatalogItemPort } from "./catalog-lesson-plan";
 import { shuffledOrder } from "./catalog-shuffle";
@@ -60,16 +60,16 @@ export function catalogRoleplayTurnOf(
   const imagePath = item.stimulus.imageUrl;
   return {
     id: item.id,
-    instruction: latinOf(port, item.prompt.en) ?? "",
+    instruction: englishOf(port, item.prompt.en) ?? "",
     line: {
       ko: lineKo,
       roman: latinOf(port, item.context.roman) ?? null,
-      en: latinOf(port, item.context.en) ?? null,
+      en: englishOf(port, item.context.en) ?? null,
     },
     tiles: [firstTile, ...restTiles],
     accepted: [firstAccepted, ...restAccepted],
     replyTranslation:
-      latinOf(port, item.answers[0]?.en) ?? latinOf(port, item.stimulus.text?.en) ?? null,
+      englishOf(port, item.answers[0]?.en) ?? englishOf(port, item.stimulus.text?.en) ?? null,
     imageUrl: imagePath === undefined ? port.sceneImageUrl : port.imageUrlOf(imagePath),
   };
 }
@@ -100,26 +100,32 @@ export function catalogFinalPlanOf(
   };
 }
 
-// 같은 ready 항목 참조면 같은 계획 참조입니다(`catalogLessonPlanFor`와 같은 까닭).
-const memo = new WeakMap<object, CatalogFinalPlan>();
+// 같은 ready 항목 참조 + 같은 프로필 참조면 같은 계획 참조입니다(`catalogLessonPlanFor`와 같은 까닭).
+const memo = new WeakMap<object, WeakMap<object, CatalogFinalPlan>>();
 
-/** 같은 ready 항목 참조면 같은 계획 참조를 돌려줍니다(메모). */
+/** 같은 ready 항목 · 프로필 참조면 같은 계획 참조를 돌려줍니다(메모). */
 export function catalogFinalPlanFor(
   content: EpisodeContent,
   sections: readonly CatalogMapSection[],
   episodeId: string,
+  profile: LearnerProfile,
 ): CatalogFinalPlan | null {
   const entry = content.catalog.find((candidate) => candidate.id === episodeId);
   const section = sections.find((candidate) => candidate.episodeId === episodeId);
   if (entry === undefined || entry.status !== "ready" || section === undefined) return null;
-  const known = memo.get(entry);
+  let byProfile = memo.get(entry);
+  if (byProfile === undefined) {
+    byProfile = new WeakMap();
+    memo.set(entry, byProfile);
+  }
+  const known = byProfile.get(profile);
   if (known !== undefined && known.ordinal === section.ordinal) return known;
   const plan = catalogFinalPlanOf(
     entry,
     section.ordinal,
-    catalogFillOf(content, noLearnerProfile),
+    catalogFillOf(content, profile),
     content.imageUrlOf,
   );
-  memo.set(entry, plan);
+  byProfile.set(profile, plan);
   return plan;
 }

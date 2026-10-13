@@ -9,14 +9,18 @@
    `login-screen-social-error`가 전화번호 오류 줄과 같은 모양으로 섭니다
    . */
 
-.login-screen {
+.login-screen,
+.learner-profile-screen,
+.learner-profile-frame {
   display: flex;
   flex-direction: column;
   flex: 1;
   background: var(--libitum-color-background-primary);
 }
 
-.login-screen-body {
+.login-screen-body,
+.learner-profile-body,
+.learner-profile-picker {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -27,7 +31,8 @@
 
 /* 뒤로가기 행입니다. RoundButton xl(56)만큼 높이를 늘 잡아 둡니다. spacing에 56이
    없어 48 + 8로 짓습니다. */
-.login-screen-header {
+.login-screen-header,
+.learner-profile-header {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -35,12 +40,15 @@
   flex-shrink: 0;
 }
 
-.login-screen-scroll {
+.login-screen-scroll,
+.learner-profile-scroll {
   flex: 1;
   justify-content: flex-start;
 }
 
-.login-screen-content {
+.login-screen-content,
+.learner-profile-content,
+.learner-profile-fields {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -48,14 +56,16 @@
 }
 
 /* 제목 · 안내 묶음입니다. 입력과는 section 간격으로 뗍니다. */
-.login-screen-heading {
+.login-screen-heading,
+.learner-profile-heading {
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-8);
   margin-bottom: var(--libitum-spacing-16);
 }
 
-.login-screen-title {
+.login-screen-title,
+.learner-profile-title {
   color: var(--libitum-color-gray-900);
   font-family: var(--libitum-typography-heading-l-font-family);
   font-weight: var(--libitum-typography-heading-l-font-weight);
@@ -65,7 +75,8 @@
 }
 
 /* 작은 글자 안내에도 충분한 대비를 주는 의미 전경색입니다. */
-.login-screen-caption {
+.login-screen-caption,
+.learner-profile-caption {
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-caption-font-family);
   font-weight: var(--libitum-typography-caption-font-weight);
@@ -104,7 +115,8 @@
    (`.verification-code-screen-resend` 선례와 같은 기법). 전화번호 오류는 번호
    칸이 내용 폭 전체라 왼쪽 정렬, 소셜 오류는 소셜 셋과 같은 가운데 정렬입니다. */
 .login-screen-error,
-.login-screen-social-error {
+.login-screen-social-error,
+.learner-profile-country-error {
   margin-top: calc(-1 * var(--libitum-spacing-8));
   text-align: left;
   color: var(--libitum-color-feedback-incorrect-text);
@@ -168,8 +180,14 @@
   padding-left: var(--libitum-spacing-12);
 }
 
-.login-screen-method {
+.login-screen-method,
+.learner-profile-footer {
   width: 100%;
+}
+
+/* 에피소드 전 묻기의 Skip을 머리 행 오른쪽 끝으로 보냅니다. */
+.learner-profile-skip {
+  margin-left: auto;
 }
 
 /* 플랫폼 로고는 라벨 옆이 아니라 버튼 왼쪽 끝에 붙입니다. 라벨은 가운데

@@ -20,6 +20,7 @@ import { isTypeableAnswer, isTypedAnswerCorrect, keystrokesFor } from "../lib/ha
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import { fillPlaceholders } from "../lib/placeholder-fill";
+import type { FillScript } from "../lib/placeholder-fill";
 import { sha256Hex, utf8Bytes } from "../lib/sha256";
 import { systemBackEventName } from "../lib/system-back";
 import type { TypingQuestion } from "../screens/typing/typing.contract";
@@ -75,7 +76,7 @@ const realCatalog = buildEpisodeCatalog({
   bundled: bundledCatalogInput,
   cache: { manifest: null, episodes: {} },
 });
-const fill = (text: string, script: "ko" | "roman") => fillPlaceholders(text, {}, script);
+const fill = (text: string, script: FillScript) => fillPlaceholders(text, {}, script);
 
 function readyEntry(episodeId: string) {
   const entry = realCatalog.find((candidate) => candidate.id === episodeId);

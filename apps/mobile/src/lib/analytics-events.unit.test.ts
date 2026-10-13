@@ -12,6 +12,7 @@ import {
   noAnalyticsEventSinks,
   noAnalyticsSession,
 } from "./analytics-events";
+import { learnerProfileSavedEvent, learnerProfileSkippedEvent } from "./learner-profile";
 
 const sinkKeys = [
   "entryEventSink",
@@ -178,6 +179,59 @@ describe("analyticsCaptureFrom", () => {
       entrySource: "journey",
     });
     expect(Object.keys(capture.properties)).toStrictEqual(["unitId", "beatId", "entrySource"]);
+  });
+});
+
+describe("학습자 프로필 이벤트", () => {
+  const emma = { name: "Emma", countryCode: "DE" } as const;
+  const profileEvents: readonly AnalyticsEvent[] = [
+    learnerProfileSavedEvent("onboarding", null),
+    learnerProfileSavedEvent("episode", null),
+    learnerProfileSavedEvent("settings", emma),
+    learnerProfileSkippedEvent("onboarding"),
+    learnerProfileSkippedEvent("episode"),
+    { name: "learner_profile_opened" },
+  ];
+
+  test("AE-L. 저장 · 건너뜀 · 열림 이벤트의 properties는 entry · change뿐이다 (값이 새지 않는다)", () => {
+    const keysOf = (event: AnalyticsEvent): string[] =>
+      Object.keys(analyticsCaptureFrom(event).properties).sort();
+
+    expect(keysOf(profileEvents[0]!)).toEqual(["change", "entry"]);
+    expect(keysOf(profileEvents[2]!)).toEqual(["change", "entry"]);
+    expect(keysOf(profileEvents[3]!)).toEqual(["entry"]);
+    expect(keysOf(profileEvents[5]!)).toEqual([]);
+  });
+
+  test("AE-L. 이름은 그대로 capture 이름이 되고 직렬화에 이름 · 나라 코드가 없다", () => {
+    expect(profileEvents.map((event) => analyticsCaptureFrom(event).event)).toEqual([
+      "learner_profile_saved",
+      "learner_profile_saved",
+      "learner_profile_saved",
+      "learner_profile_skipped",
+      "learner_profile_skipped",
+      "learner_profile_opened",
+    ]);
+    expect(JSON.stringify(profileEvents.map(analyticsCaptureFrom))).not.toMatch(/Emma|"DE"/);
+  });
+
+  test("AE-L. 세 sink 모두 capture를 정확히 1회 부른다", () => {
+    const { client, capture } = fakeClient();
+    const sinks = analyticsEventSinksFrom(client);
+
+    for (const sink of [
+      sinks.entryEventSink,
+      sinks.episodeIntroEventSink,
+      sinks.settingsEventSink,
+    ]) {
+      capture.mockClear();
+      (sink as unknown as (event: AnalyticsEvent) => void)(profileEvents[0]!);
+      expect(capture).toHaveBeenCalledTimes(1);
+      expect(capture).toHaveBeenCalledWith("learner_profile_saved", {
+        entry: "onboarding",
+        change: "created",
+      });
+    }
   });
 });
 

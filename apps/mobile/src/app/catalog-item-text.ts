@@ -13,6 +13,13 @@ export function latinOf(port: CatalogItemPort, text: string | undefined): string
   return filled === "" ? undefined : filled;
 }
 
+/** 영어 자리 문자열입니다 — 없거나 비면 `undefined`. 나라는 영어 이름으로 섭니다. */
+export function englishOf(port: CatalogItemPort, text: string | undefined): string | undefined {
+  if (text === undefined) return undefined;
+  const filled = port.fill(text, "en").trim();
+  return filled === "" ? undefined : filled;
+}
+
 export const skippedItem = (item: LearningItem, reason: CatalogSkipReason): CatalogMappedItem => ({
   kind: "skipped",
   itemId: item.id,
@@ -30,4 +37,4 @@ export function optionalField<K extends string>(
 
 /** 문항 지시문(`prompt.en`)입니다. */
 export const instructionOf = (port: CatalogItemPort, prompt: Text): string | undefined =>
-  latinOf(port, prompt.en);
+  englishOf(port, prompt.en);

@@ -636,7 +636,7 @@ Custom Tab이 떠 있는 동안 구성 변경이 오면(구현 전에는) `MainA
   ```sh
   A shell pm clear libitum.duru.android
   A shell am start -n libitum.duru.android/com.libitum.host.MainActivity --es bundle-url http://10.0.2.2:18790/main.lynx.bundle
-  # 온보딩: 「Welcome! Are you looking for anything?」 → Next → Next → Get started → 로그인 화면(위치는 스크린샷으로)
+  # 온보딩: 「Welcome! Are you looking for anything?」 → Next → Next → Next → (넷째 스텝 이름 · 나라는 비운 채) Get started → 로그인 화면(위치는 스크린샷으로)
   ```
   로그인 화면이 서면 `snap O9-login`. **「Connect with Google」**을 눌러 Custom Tab을 연다(`tapdesc "Connect with Google"` — 버튼 이름은 「Sign in with Google」이 아니다. Apple만 「Sign in with Apple」이다) — `texts`가 아니라 브라우저 쪽이므로 `A shell uiautomator dump`의 `example.invalid`로 Custom Tab이 떴는지 확인한다.
 - **조작**(두 회차 중 하나 이상, 가능하면 둘 다)

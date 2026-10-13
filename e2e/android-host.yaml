@@ -11,6 +11,7 @@ appId: libitum.duru.android
 - tapOn: "Next"
 - assertNotVisible: "Welcome! Are you looking for anything?"
 - tapOn: "Next"
+- tapOn: "Next"
 - tapOn: "Get started"
 - assertVisible: "Log in or Sign up"
 - assertVisible: "Choose how you'd like to continue"

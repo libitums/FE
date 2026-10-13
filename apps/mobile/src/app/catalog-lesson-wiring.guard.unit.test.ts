@@ -1,3 +1,5 @@
+import { noLearnerProfilePort } from "../lib/learner-profile";
+import { noLearnerProfile } from "./catalog-cover-wiring";
 import type { SetStateAction } from "@lynx-js/react";
 import { describe, expect, test } from "vitest";
 
@@ -39,6 +41,10 @@ function setup(progress: CatalogProgress, pending: readonly AnswerResult[] = [])
       },
       catalogSections: catalogMapSectionsOf(catalog),
       catalogProgress: progress,
+      learnerFill: noLearnerProfile,
+      learnerRecord: null,
+      learnerSync: "none",
+      learnerPort: noLearnerProfilePort,
       setCatalogProgress: (action: SetStateAction<CatalogProgress>) =>
         void progressWrites.push(action),
       completedEpisodeFinalIds: [],

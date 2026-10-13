@@ -3,7 +3,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { CatalogCoverScreen } from "../screens/catalog-cover/CatalogCoverScreen";
-import { catalogCoverModelOf, noLearnerProfile } from "./catalog-cover-wiring";
+import { catalogCoverModelOf } from "./catalog-cover-wiring";
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -16,7 +16,7 @@ export function renderCatalogCover(
     wiring.episodeContent,
     wiring.catalogSections,
     episodeId,
-    noLearnerProfile,
+    wiring.learnerFill,
   );
   // 시작 가드와 세션 병합이 이 경우를 막으므로 여기 닿으면 결함입니다 — 에러 경계가 받습니다.
   if (model === null) {

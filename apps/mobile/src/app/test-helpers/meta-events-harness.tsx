@@ -121,7 +121,8 @@ export async function runEntryFlow(
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
   });
-  for (let step = 0; step < 3; step++) tapButton("onboarding-screen-next");
+  // 온보딩은 네 스텝입니다(넷째 = 이름 · 나라, 비운 채 넘기면 건너뜀 — ADR-0059).
+  for (let step = 0; step < 4; step++) tapButton("onboarding-screen-next");
   tapButton("login-screen-method-apple");
   await advance(0);
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
