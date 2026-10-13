@@ -244,7 +244,7 @@ describe("onStartCatalogUnit — 레슨", () => {
     expect(progressIndex(log)).toBeLessThan(dispatchIndex(log, "push"));
   });
 
-  test("LW3. 실데이터 u01 S1은 문항이 있어 활동 화면으로 간다", () => {
+  test("LW3. 실데이터 u01 S1은 카드 셋을 포함해 표시 6 · 채점 3으로 활동 화면에 간다", () => {
     const { wiring, log } = harness({ progress: { "u01-water": ["intro"] } });
 
     wiring.onStartCatalogUnit("u01-water", "S1");
@@ -253,13 +253,198 @@ describe("onStartCatalogUnit — 레슨", () => {
       expect.objectContaining({
         name: "episode_lesson_started",
         questionCount: "3",
-        skippedItemCount: "5",
+        shownItemCount: "6",
+        skippedItemCount: "2",
       }),
     ]);
     expect(dispatches(log)).toEqual([
       expect.objectContaining({
         screen: expect.objectContaining({ name: "catalog-lesson", activityIndex: 0 }),
       }),
+    ]);
+  });
+});
+
+/** u01의 S1을 주어진 문항으로 갈아 끼운 카탈로그입니다(낱말은 그대로라 카드의 ref 뜻을 찾을 수 있습니다). */
+function catalogWithS1(items: readonly LearningItem[]): readonly CatalogEntry[] {
+  const source = realCatalog[0] as ReadyEntry;
+  const units = source.episode.units.map((unit) =>
+    unit.id === "S1" ? { ...unit, items: [...items] } : unit,
+  );
+  return [{ ...source, episode: { ...source.episode, units } }, ...realCatalog.slice(1)];
+}
+
+const glossCard = (id: string): LearningItem => ({
+  id,
+  event: "E",
+  type: "VOCAB_CARD",
+  ref: "voca:e70ba1ce",
+  context: { ko: "물", roman: "mul" },
+  example: { ko: "물 주세요.", roman: "mul juseyo." },
+  cardKind: "단어",
+});
+
+describe("카드가 든 레슨의 결선", () => {
+  const cardsOnly = () => catalogWithS1([glossCard("V1"), glossCard("V2")]);
+  const started = (questionCount: string, shownItemCount: string, skippedItemCount: string) => ({
+    name: "episode_lesson_started",
+    episodeId: "u01-water",
+    unitKey: "S1",
+    unitRole: "lesson",
+    questionCount,
+    shownItemCount,
+    skippedItemCount,
+  });
+
+  test("LW-C1. 카드뿐인 유닛은 곧장 결과로 가지 않고 시작 이벤트 뒤 활동 화면을 쌓는다", () => {
+    const { wiring, log } = harness({
+      catalog: cardsOnly(),
+      progress: { "u01-water": ["intro"] },
+    });
+
+    wiring.onStartCatalogUnit("u01-water", "S1");
+
+    expect(events(log)).toEqual([started("0", "2", "0")]);
+    expect(kinds(log, "progress")).toEqual([]);
+    expect(dispatches(log)).toEqual([
+      {
+        type: "push",
+        screen: { name: "catalog-lesson", episodeId: "u01-water", unitKey: "S1", activityIndex: 0 },
+      },
+    ]);
+  });
+
+  test("LW-C2. 카드뿐인 유닛은 카드 활동이 빈 결과를 올리면 통과로 기록하고 빈 결과 화면으로 간다", () => {
+    const { wiring, log, updaters } = harness({
+      catalog: cardsOnly(),
+      progress: { "u01-water": ["intro"] },
+    });
+
+    wiring.onFinishCatalogActivity("u01-water", "S1", 0, [], 0);
+
+    expect(events(log)).toEqual([
+      {
+        name: "episode_lesson_finished",
+        episodeId: "u01-water",
+        unitKey: "S1",
+        unitRole: "lesson",
+        verdict: "passed",
+        correctCount: "0",
+        questionCount: "0",
+      },
+    ]);
+    expect(updaters).toHaveLength(1);
+    expect(updaters[0]?.({ "u01-water": ["intro"] })).toEqual({ "u01-water": ["intro", "S1"] });
+    expect(dispatches(log)).toEqual([
+      {
+        type: "replace",
+        screen: {
+          name: "catalog-unit-complete",
+          episodeId: "u01-water",
+          unitKey: "S1",
+          results: [],
+          skippedCount: 0,
+          questionCount: 0,
+        },
+      },
+    ]);
+    const cleared = sessionClearedAt(log);
+    expect(cleared).toBeGreaterThanOrEqual(0);
+    expect(cleared).toBeLessThan(eventIndex(log, "episode_lesson_finished"));
+    expect(eventIndex(log, "episode_lesson_finished")).toBeLessThan(progressIndex(log));
+    expect(progressIndex(log)).toBeLessThan(dispatchIndex(log, "replace"));
+  });
+
+  test("LW-C3. 실데이터 u01 S1의 카드 활동이 빈 결과로 끝나면 판정 없이 단어 선택 활동으로 갈아탄다", () => {
+    const { wiring, log } = harness({ progress: { "u01-water": ["intro"] } });
+
+    wiring.onFinishCatalogActivity("u01-water", "S1", 0, [], 0);
+
+    expect(kinds(log, "pending")).toEqual([[]]);
+    expect(dispatches(log)).toEqual([
+      {
+        type: "replace",
+        screen: { name: "catalog-lesson", episodeId: "u01-water", unitKey: "S1", activityIndex: 1 },
+      },
+    ]);
+    expect(events(log)).toEqual([]);
+    expect(kinds(log, "progress")).toEqual([]);
+  });
+
+  test("LW-C4. 마지막 활동의 판정은 채점 문항 3개 기준(2개 정답이면 통과)이다", () => {
+    const passing = harness({ progress: { "u01-water": ["intro"] } });
+    passing.wiring.onFinishCatalogActivity("u01-water", "S1", 1, [correct, correct, incorrect], 0);
+
+    expect(events(passing.log)).toEqual([
+      expect.objectContaining({
+        name: "episode_lesson_finished",
+        verdict: "passed",
+        correctCount: "2",
+        questionCount: "3",
+      }),
+    ]);
+    expect(passing.updaters).toHaveLength(1);
+    expect(passing.updaters[0]?.({ "u01-water": ["intro"] })).toEqual({
+      "u01-water": ["intro", "S1"],
+    });
+    expect(dispatches(passing.log)).toEqual([
+      expect.objectContaining({
+        type: "replace",
+        screen: expect.objectContaining({ name: "catalog-unit-complete", questionCount: 3 }),
+      }),
+    ]);
+
+    const failing = harness({ progress: { "u01-water": ["intro"] } });
+    failing.wiring.onFinishCatalogActivity(
+      "u01-water",
+      "S1",
+      1,
+      [correct, incorrect, incorrect],
+      0,
+    );
+
+    expect(events(failing.log)).toEqual([
+      expect.objectContaining({ verdict: "failed", correctCount: "1", questionCount: "3" }),
+    ]);
+    expect(failing.updaters).toHaveLength(0);
+  });
+
+  test("LW-C5. 보일 문항이 하나도 없는 유닛(활동 0개)만 시작하자마자 통과로 기록한다", () => {
+    const { wiring, log, updaters } = harness({
+      catalog: catalogWithEmptyS1(),
+      progress: { "u01-water": ["intro"] },
+    });
+
+    wiring.onStartCatalogUnit("u01-water", "S1");
+
+    expect(events(log)).toEqual([
+      started("0", "0", "3"),
+      expect.objectContaining({ name: "episode_lesson_finished", verdict: "passed" }),
+    ]);
+    expect(updaters).toHaveLength(1);
+    expect(dispatches(log)).toEqual([
+      expect.objectContaining({
+        type: "push",
+        screen: expect.objectContaining({ name: "catalog-unit-complete", questionCount: 0 }),
+      }),
+    ]);
+  });
+
+  test("LW-C6. 최종 테스트의 시작 이벤트는 채점 수와 표시 수가 턴 수로 같다", () => {
+    const { wiring, log } = harness({ progress: allLessonsDone });
+
+    wiring.onStartCatalogUnit("u01-water", "RP");
+
+    expect(events(log)).toEqual([
+      {
+        name: "episode_lesson_started",
+        episodeId: "u01-water",
+        unitKey: "RP",
+        unitRole: "final",
+        questionCount: "3",
+        shownItemCount: "3",
+        skippedItemCount: "0",
+      },
     ]);
   });
 });

@@ -13,6 +13,7 @@ import { judgeAssessment } from "../screens/assessment/assessment";
 import {
   catalogActivitiesOf,
   catalogActivityPositionOf,
+  catalogActivityScoring,
   catalogItemOf,
   catalogLessonPlanFor,
   catalogLessonPlanOf,
@@ -598,50 +599,64 @@ function runsOf(activities: readonly CatalogActivity[]): string {
     .join("");
 }
 
-// 유닛 × 에피소드 24칸 — [에피소드, 키, 제시 문항 수, 건너뛴 문항 수, 구간(학습형 글자 + 문항 수)].
-// 빈칸 채우기(CLOZE)는 단어 선택(W)으로 선다. 소리 없는 듣기는 audio-missing으로 건너뛰어 구간(L)이 없고,
-// 듣기가 끼어 있던 자리 양옆의 같은 학습형은 한 구간으로 이어진다(E-2).
+// 유닛 × 에피소드 24칸 — [에피소드, 키, 표시 문항 수, 채점 문항 수, 건너뛴 문항 수, 구간(학습형 글자 + 문항 수)].
+// 단어 카드(C)는 표시에는 세고 채점에는 세지 않는다. 빈칸 채우기(CLOZE)는 단어 선택(W)으로 선다. 소리 없는
+// 듣기는 audio-missing으로, 그림 없는 그림 고르기는 image-missing으로 건너뛰어 구간이 없고, 그 자리 양옆의
+// 같은 학습형은 한 구간으로 이어진다(E-2).
 const planTable = [
-  ["u01-water", "S1", 3, 5, "W3"],
-  ["u01-water", "S3", 6, 4, "W3O3"],
-  ["u01-water", "S4", 4, 6, "W2T1W1"],
-  ["u01-water", "S5", 6, 5, "W1O1W2O2"],
-  ["u01-water", "S6", 12, 0, "T12"],
-  ["u01-water", "S7", 6, 0, "T2W2T2"],
-  ["u01-water", "S8", 6, 0, "W2T1W3"],
-  ["u01-water", "S9", 9, 3, "W2T1W2T2W1T1"],
-  ["u02-checkin", "S1", 8, 8, "W4O1W3"],
-  ["u02-checkin", "S3", 10, 5, "O2W2O2W3O1"],
-  ["u02-checkin", "S4", 5, 8, "W4T1"],
-  ["u02-checkin", "S5", 10, 7, "W1O1W2O1W1O2W1O1"],
-  ["u02-checkin", "S6", 19, 0, "T19"],
-  ["u02-checkin", "S7", 12, 0, "W1T1W1T1O1W2T2W1T2"],
-  ["u02-checkin", "S8", 7, 0, "W3T2W2"],
-  ["u02-checkin", "S9", 15, 4, "W1T2W4T3W2T1W2"],
-  ["u03-mina", "S1", 5, 5, "W4O1"],
-  ["u03-mina", "S3", 5, 3, "O2W1O1W1"],
-  ["u03-mina", "S4", 1, 8, "T1"],
-  ["u03-mina", "S5", 8, 5, "W2O1W1O2W1O1"],
-  ["u03-mina", "S6", 14, 0, "T14"],
-  ["u03-mina", "S7", 6, 3, "T1W3T2"],
-  ["u03-mina", "S8", 5, 1, "W5"],
-  ["u03-mina", "S9", 8, 5, "W3T1W2T1W1"],
+  ["u01-water", "S1", 6, 3, 2, "C3W3"],
+  ["u01-water", "S3", 6, 6, 4, "W3O3"],
+  ["u01-water", "S4", 9, 4, 1, "C5W2T1W1"],
+  ["u01-water", "S5", 6, 6, 5, "W1O1W2O2"],
+  ["u01-water", "S6", 12, 12, 0, "T12"],
+  ["u01-water", "S7", 6, 6, 0, "T2W2T2"],
+  ["u01-water", "S8", 6, 6, 0, "W2T1W3"],
+  ["u01-water", "S9", 9, 9, 3, "W2T1W2T2W1T1"],
+  ["u02-checkin", "S1", 14, 8, 2, "C6W4O1W3"],
+  ["u02-checkin", "S3", 10, 10, 5, "O2W2O2W3O1"],
+  ["u02-checkin", "S4", 10, 5, 3, "C5W4T1"],
+  ["u02-checkin", "S5", 10, 10, 7, "W1O1W2O1W1O2W1O1"],
+  ["u02-checkin", "S6", 19, 19, 0, "T19"],
+  ["u02-checkin", "S7", 12, 12, 0, "W1T1W1T1O1W2T2W1T2"],
+  ["u02-checkin", "S8", 7, 7, 0, "W3T2W2"],
+  ["u02-checkin", "S9", 15, 15, 4, "W1T2W4T3W2T1W2"],
+  ["u03-mina", "S1", 9, 5, 1, "C4W4O1"],
+  ["u03-mina", "S3", 5, 5, 3, "O2W1O1W1"],
+  ["u03-mina", "S4", 6, 1, 3, "C5T1"],
+  ["u03-mina", "S5", 8, 8, 5, "W2O1W1O2W1O1"],
+  ["u03-mina", "S6", 14, 14, 0, "T14"],
+  ["u03-mina", "S7", 6, 6, 3, "T1W3T2"],
+  ["u03-mina", "S8", 5, 5, 1, "W5"],
+  ["u03-mina", "S9", 10, 10, 3, "W1P1W2T1P1W2T1W1"],
 ] as const;
 
 describe("catalogLessonPlanOf — 실데이터", () => {
   test.each(planTable)(
-    "LP15. %s %s → 제시 %i · 건너뜀 %i · 구간 %s",
-    (episodeId, key, shown, skipped, runs) => {
+    "LP15′. %s %s → 표시 %i · 채점 %i · 건너뜀 %i · 구간 %s",
+    (episodeId, key, shown, graded, skipped, runs) => {
       const plan = catalogLessonPlanOf(readyOf(episodeId), key, fill, noImageUrl);
 
       expect(plan).not.toBeNull();
       expect(plan?.episodeId).toBe(episodeId);
       expect(plan?.unitKey).toBe(key);
-      expect(plan?.questionCount).toBe(shown);
+      expect(plan?.shownItemCount).toBe(shown);
+      expect(plan?.questionCount).toBe(graded);
       expect(plan?.skippedItemCount).toBe(skipped);
       expect(runsOf(plan?.activities ?? [])).toBe(runs);
     },
   );
+
+  test("LP15′. 그림 주소가 없는 실데이터에서는 어느 단어 선택 문항에도 picture 키가 없다", () => {
+    for (const [episodeId, key] of planTable) {
+      const plan = catalogLessonPlanOf(readyOf(episodeId), key, fill, noImageUrl);
+      for (const activity of plan?.activities ?? []) {
+        if (activity.form !== "word-choice") continue;
+        for (const question of activity.questions) {
+          expect("picture" in question).toBe(false);
+        }
+      }
+    }
+  });
 
   test("LP15. 모든 유닛이 계획되고 표에 빠진 칸이 없다", () => {
     const planned = realCatalog.flatMap((entry) =>
@@ -657,20 +672,23 @@ describe("catalogLessonPlanOf — 실데이터", () => {
     expect(plan?.activities.map((activity) => activity.questions.length)).toEqual([3, 3]);
   });
 
-  test("LP-0. 실데이터에는 문항이 0개인 유닛이 없다 — u01 S1도 단어 선택 셋이 선다", () => {
+  test("LP-0. 실데이터에는 보일 문항이 0개인 유닛이 없다 — u01 S1은 카드 셋 뒤 단어 선택 셋이 선다", () => {
     const plan = catalogLessonPlanOf(readyOf("u01-water"), "S1", fill, noImageUrl);
 
     expect(plan?.questionCount).toBe(3);
-    expect(plan?.activities.map((activity) => activity.form)).toEqual(["word-choice"]);
-    for (const [episodeId, key, shown] of planTable) {
-      expect(catalogLessonPlanOf(readyOf(episodeId), key, fill, noImageUrl)?.questionCount).toBe(
-        shown,
-      );
+    expect(plan?.activities.map((activity) => activity.form)).toEqual([
+      "vocab-card",
+      "word-choice",
+    ]);
+    for (const [episodeId, key, shown, graded] of planTable) {
+      const found = catalogLessonPlanOf(readyOf(episodeId), key, fill, noImageUrl);
+      expect(found?.shownItemCount).toBe(shown);
+      expect(found?.questionCount).toBe(graded);
       expect(shown).toBeGreaterThan(0);
     }
   });
 
-  test("LP-0. 보일 수 있는 문항이 하나도 없는 유닛은 구간 0 · 문항 0 · 건너뜀 전부다", () => {
+  test("LP-0. 보일 문항이 없는 유닛은 구간 0 · 표시 0 · 채점 0 · 건너뜀 전부다", () => {
     const base = readyOf("u01-water");
     const onlyCards: ReadyEntry = {
       ...base,
@@ -682,7 +700,12 @@ describe("catalogLessonPlanOf — 실데이터", () => {
 
     const plan = catalogLessonPlanOf(onlyCards, "S1", fill, noImageUrl);
 
-    expect(plan).toMatchObject({ activities: [], questionCount: 0, skippedItemCount: 3 });
+    expect(plan).toMatchObject({
+      activities: [],
+      questionCount: 0,
+      shownItemCount: 0,
+      skippedItemCount: 3,
+    });
   });
 
   test("LP16. 없는 키와 최종 테스트 키는 계획이 없다", () => {
@@ -713,7 +736,7 @@ describe("catalogActivityPositionOf", () => {
   });
 
   test("LP-E1. 마지막 활동만 last이고 활동 하나뿐인 유닛은 오프셋 0 · 마지막이다", () => {
-    for (const [episodeId, key, , , runs] of planTable) {
+    for (const [episodeId, key, , , , runs] of planTable) {
       const found = positions(episodeId, key);
       expect(found.map((position) => position?.last)).toEqual(
         found.map((_, index) => index === found.length - 1),
@@ -731,7 +754,7 @@ describe("catalogActivityPositionOf", () => {
 
     const position = plan === null ? null : catalogActivityPositionOf(plan, lastIndex);
 
-    expect((position?.offset ?? 0) + (last?.questions.length ?? 0)).toBe(plan?.questionCount);
+    expect((position?.offset ?? 0) + (last?.questions.length ?? 0)).toBe(plan?.shownItemCount);
   });
 
   test("LP-E1. 없는 활동 순번은 위치가 없다", () => {
@@ -854,6 +877,199 @@ describe("순수성", () => {
 
     expect(item).toEqual(snapshot);
     expect(second).toEqual(first);
+  });
+});
+
+// ---- 계획의 두 수 — 채점 문항 수와 표시 문항 수 ----
+
+const cdn = (path: string): string => `https://cdn/${path}`;
+
+/** 뜻을 찾을 수 있는 카드 문항입니다(u01 낱말 `물`의 ref). */
+const glossCard = (id: string): LearningItem => ({
+  ...base(id),
+  type: "VOCAB_CARD",
+  ref: "voca:e70ba1ce",
+  context: t("물", "mul"),
+  example: t("물 주세요.", "mul juseyo."),
+  cardKind: "단어",
+});
+
+const choiceCloze = (id: string): LearningItem => cloze(id, [t("가"), t("나")], [t("가")]);
+
+/** u01 에피소드의 낱말을 그대로 두고 S1 한 유닛만 주어진 문항으로 갈아 끼운 ready 항목입니다. */
+function entryWithS1(items: readonly LearningItem[]): ReadyEntry {
+  const source = readyOf("u01-water");
+  return {
+    ...source,
+    episode: { ...source.episode, units: [{ id: "S1", order: 1, items: [...items] }] },
+  };
+}
+
+const repeated = (count: number, make: (id: string) => LearningItem, prefix: string) =>
+  Array.from({ length: count }, (_, index) => make(`${prefix}${String(index + 1)}`));
+
+describe("catalogActivityScoring", () => {
+  test("LP-G1. 단어 카드만 채점하지 않고 나머지 다섯은 채점한다", () => {
+    expect(catalogActivityScoring).toEqual({
+      listening: "graded",
+      "sentence-order": "graded",
+      "word-choice": "graded",
+      typing: "graded",
+      "vocab-card": "ungraded",
+      "pair-match": "graded",
+    });
+    expect(Object.keys(catalogActivityScoring).sort()).toEqual(Object.keys(lessonLetter).sort());
+  });
+});
+
+describe("catalogLessonPlanOf — 채점 문항 수와 표시 문항 수", () => {
+  test.each([
+    ["카드 0장", 0, 3],
+    ["카드 3장", 3, 6],
+    ["카드 30장", 30, 33],
+  ] as const)(
+    "LP-G2. 채점 3문항 앞의 %s — 통과 기준은 카드 수와 상관없이 2다",
+    (_name, cards, shown) => {
+      const items = [...repeated(cards, glossCard, "V"), ...repeated(3, choiceCloze, "W")];
+
+      const plan = catalogLessonPlanOf(entryWithS1(items), "S1", fill, noImageUrl);
+
+      expect(plan?.questionCount).toBe(3);
+      expect(plan?.shownItemCount).toBe(shown);
+      expect(catalogPassCriterion(plan?.questionCount ?? 0).minCorrectCount).toBe(2);
+    },
+  );
+
+  test("LP-G3. 카드뿐인 유닛은 활동 하나(카드 둘) · 채점 0 · 표시 2 · 건너뜀 0이고 빈 결과로 통과한다", () => {
+    const plan = catalogLessonPlanOf(
+      entryWithS1(repeated(2, glossCard, "V")),
+      "S1",
+      fill,
+      noImageUrl,
+    );
+
+    expect(plan?.activities.map((activity) => [activity.form, activity.questions.length])).toEqual([
+      ["vocab-card", 2],
+    ]);
+    expect(plan).toMatchObject({ questionCount: 0, shownItemCount: 2, skippedItemCount: 0 });
+    expect(judgeAssessment([], catalogPassCriterion(plan?.questionCount ?? -1))).toBe("passed");
+  });
+
+  test("LP-G4. 실데이터 24유닛 모두 표시 + 건너뜀 = 문항 수이고 카드 수 = 표시 − 채점이다", () => {
+    let checked = 0;
+    for (const entry of realCatalog) {
+      if (entry.status !== "ready") continue;
+      for (const unit of entry.episode.units) {
+        const plan = catalogLessonPlanOf(entry, unit.id, fill, noImageUrl);
+        const cards = (plan?.activities ?? [])
+          .filter((activity) => activity.form === "vocab-card")
+          .reduce((sum, activity) => sum + activity.questions.length, 0);
+
+        expect((plan?.shownItemCount ?? -1) + (plan?.skippedItemCount ?? -1)).toBe(
+          unit.items.length,
+        );
+        expect(plan?.questionCount).toBeLessThanOrEqual(plan?.shownItemCount ?? -1);
+        expect((plan?.shownItemCount ?? 0) - (plan?.questionCount ?? 0)).toBe(cards);
+        checked += 1;
+      }
+    }
+    expect(checked).toBe(24);
+  });
+
+  test("LP-G5. u01 S1의 활동 위치는 카드를 센 분모 6에서 시작한다", () => {
+    const plan = catalogLessonPlanOf(readyOf("u01-water"), "S1", fill, noImageUrl);
+
+    expect(
+      plan === null ? [] : [0, 1].map((index) => catalogActivityPositionOf(plan, index)),
+    ).toEqual([
+      { offset: 0, total: 6, last: false },
+      { offset: 3, total: 6, last: true },
+    ]);
+  });
+
+  test("LP-G8. 그림 주소가 얹힌 문항은 옆의 빈칸 채우기와 한 단어 선택 구간에 선다", () => {
+    const source = readyOf("u01-water");
+    const units = source.episode.units.map((unit) =>
+      unit.id === "S1"
+        ? {
+            ...unit,
+            items: unit.items.map((item) =>
+              item.type === "IMG_MATCH" && item.id === "S1-05"
+                ? {
+                    ...item,
+                    stimulus: { ...item.stimulus, imageUrl: "images/u01-water/s1-05.jpg" },
+                  }
+                : item,
+            ),
+          }
+        : unit,
+    );
+    const entry: ReadyEntry = { ...source, episode: { ...source.episode, units } };
+
+    const plan = catalogLessonPlanOf(entry, "S1", fill, cdn);
+    const choice = plan?.activities[1];
+    const hasPicture = (choice?.questions ?? []).map((question) => "picture" in question);
+
+    expect(
+      plan?.activities.map((activity) => `${activity.form}:${activity.questions.length}`),
+    ).toEqual(["vocab-card:3", "word-choice:4"]);
+    expect(plan).toMatchObject({ shownItemCount: 7, questionCount: 4, skippedItemCount: 1 });
+    expect(hasPicture).toEqual([false, true, false, false]);
+  });
+});
+
+describe("catalogActivitiesOf — 새 학습형 구간", () => {
+  const card = (n: number): CatalogMappedItem => ({
+    kind: "vocab-card",
+    itemId: `C${n}`,
+    question: { word: `c${n}`, romanization: null, meaning: `m${n}`, example: null },
+  });
+  const pair = (n: number): CatalogMappedItem => ({
+    kind: "pair-match",
+    itemId: `P${n}`,
+    question: { words: ["a", "b"], meanings: ["x", "y"], answer: [0, 1] },
+  });
+  const word = (n: number, withPicture: boolean): CatalogMappedItem => ({
+    kind: "word-choice",
+    itemId: `W${n}`,
+    question: {
+      prompt: `w${n}`,
+      choices: ["a", "b"],
+      answerIndex: 0,
+      ...(withPicture
+        ? { picture: { url: cdn(`p${String(n)}.jpg`), answerRomanization: null } }
+        : {}),
+    },
+  });
+
+  test("LP-G6. 같은 학습형끼리 구간이 되고 그림 문항은 옆의 단어 선택과 한 구간이다", () => {
+    const items = [
+      card(1),
+      card(2),
+      word(1, false),
+      pair(1),
+      pair(2),
+      word(2, true),
+      word(3, false),
+      card(3),
+    ];
+
+    expect(
+      catalogActivitiesOf(items).map((activity) => `${activity.form}:${activity.questions.length}`),
+    ).toEqual(["vocab-card:2", "word-choice:1", "pair-match:2", "word-choice:2", "vocab-card:1"]);
+  });
+});
+
+describe("catalogLessonPlanFor — 그림 주소 함수와 메모", () => {
+  test("LP-G7. imageUrlOf만 다른 두 콘텐츠도 같은 ready 항목이면 같은 계획 참조다", () => {
+    const first = contentOf(realCatalog);
+    const second: EpisodeContent = { ...first, imageUrlOf: () => null };
+
+    const a = catalogLessonPlanFor(first, "u01-water", "S1");
+    const b = catalogLessonPlanFor(second, "u01-water", "S1");
+
+    expect(a).not.toBeNull();
+    expect(b).toBe(a);
   });
 });
 

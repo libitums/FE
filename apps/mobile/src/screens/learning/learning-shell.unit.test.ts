@@ -57,6 +57,13 @@ describe("learningSessionHeader", () => {
     ]);
   });
 
+  it("LS-I1. 카탈로그 새 학습형의 머리 이름과 타이밍 플래그가 정해져 있다", () => {
+    expect(learningSessionHeader("vocab-card", 0, 3, uiCopyEn).formLabel).toBe("New words");
+    expect(learningSessionHeader("pair-match", 0, 3, uiCopyEn).formLabel).toBe("Matching");
+    expect(learningTimingFlag("vocab-card")).toBe("libitum:navigation:learning-vocab-card");
+    expect(learningTimingFlag("pair-match")).toBe("libitum:navigation:learning-pair-match");
+  });
+
   it("학습형마다 이름이 갈린다", () => {
     expect(learningSessionHeader("sentence-order", 0, 1, uiCopyEn).formLabel).toBe("Word order");
     expect(learningSessionHeader("culture", 0, 1, uiCopyEn).formLabel).toBe("Culture");

@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { analyticsCaptureFrom } from "../lib/analytics-events";
 import { finalPassedEventOf, lessonFinishedEventOf, lessonStartedEventOf } from "./catalog-events";
+import type { CatalogLessonPlan } from "./catalog-lesson-types";
 
 // `unit` 계층: 카탈로그 학습 측정 이벤트 만들기의 입출력만 봅니다.
 
@@ -84,6 +85,73 @@ describe("이벤트 만들기", () => {
       correctCount: "2",
       turnCount: "3",
     });
+  });
+});
+
+describe("시작 이벤트의 표시 문항 수", () => {
+  test("EV-S1. 채점 · 표시 · 건너뜀 수가 각자의 10진 문자열로 간다", () => {
+    expect(
+      lessonStartedEventOf(
+        {
+          episodeId: "u01-water",
+          unitKey: "S1",
+          questionCount: 3,
+          shownItemCount: 6,
+          skippedItemCount: 2,
+        },
+        "lesson",
+      ),
+    ).toEqual({
+      name: "episode_lesson_started",
+      episodeId: "u01-water",
+      unitKey: "S1",
+      unitRole: "lesson",
+      questionCount: "3",
+      shownItemCount: "6",
+      skippedItemCount: "2",
+    });
+  });
+
+  test("EV-S2. 수업 계획 객체를 그대로 넘길 수 있다", () => {
+    const plan: CatalogLessonPlan = {
+      episodeId: "u01-water",
+      unitKey: "S1",
+      activities: [],
+      questionCount: 3,
+      shownItemCount: 6,
+      skippedItemCount: 2,
+    };
+
+    expect(lessonStartedEventOf(plan, "lesson")).toEqual({
+      name: "episode_lesson_started",
+      episodeId: "u01-water",
+      unitKey: "S1",
+      unitRole: "lesson",
+      questionCount: "3",
+      shownItemCount: "6",
+      skippedItemCount: "2",
+    });
+  });
+
+  test("EV-S3. 끝 이벤트와 최종 통과 이벤트는 표시 문항 수를 싣지 않는다", () => {
+    expect(
+      Object.keys(
+        lessonFinishedEventOf("u01-water", "S3", "lesson", ["correct"], 10, "passed"),
+      ).sort(),
+    ).toEqual(
+      [
+        "correctCount",
+        "episodeId",
+        "name",
+        "questionCount",
+        "unitKey",
+        "unitRole",
+        "verdict",
+      ].sort(),
+    );
+    expect(Object.keys(finalPassedEventOf("u01-water", ["correct"], 3)).sort()).toEqual(
+      ["correctCount", "episodeId", "name", "turnCount"].sort(),
+    );
   });
 });
 

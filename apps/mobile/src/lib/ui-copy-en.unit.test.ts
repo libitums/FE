@@ -138,3 +138,29 @@ test("UC-L1. 카탈로그 학습 문구가 문구표 값과 같고 준비 중 �
   expect(c.catalogFinal.correctAnswer("네")).toBe("Answer: 네");
   expect(c.audioUnavailable.label).toBe("Audio not available yet");
 });
+
+test("UC-I1. 단어 카드 · 짝 맞추기 · 그림 제시 문구가 문구표 값과 같다", () => {
+  expect(c.vocabCard.instruction).toBe("Learn this word.");
+  expect(c.vocabCard.badge).toBe("New word");
+  expect(c.vocabCard.exampleTitle).toBe("Example");
+  expect(c.vocabCard.pronunciation("mul")).toBe("Pronunciation: mul");
+  expect(c.vocabCard.meaning("water")).toBe("Meaning: water");
+  expect(c.vocabCard.example("x")).toBe("Example: x");
+  expect(c.pairMatch.instruction).toBe("Tap a word, then its meaning.");
+  expect(c.pairMatch.progress(1, 4)).toBe("1 / 4 matched");
+  expect(c.pairMatch.progressLabel(1, 4)).toBe("1 of 4 pairs matched");
+  expect(c.pairMatch.selected("a")).toBe("a, selected");
+  expect(c.pairMatch.matched("a", 2, "b")).toBe("a, pair 2, matched with b");
+  expect(c.pairMatch.judged("a", "b")).toBe("a, matched with b");
+  expect(c.pairMatch.answerPair("a", "b")).toBe("a = b");
+  expect(c.pairMatch.linked("a", "b", 1, 4)).toBe("Matched: a, b. 1 of 4.");
+  expect(c.pairMatch.unlinked("a")).toBe("Unmatched: a");
+  expect(c.pairMatch.missedPairs("a, b.")).toBe("Correct pairs: a, b.");
+  expect(c.pairMatch.spokenPair("a", "b")).toBe("a, b.");
+  expect(c.wordChoicePicture.picture("water")).toBe("Picture: water");
+  expect(c.wordChoicePicture.loading).toBe("Picture, loading");
+  expect(c.wordChoicePicture.unavailable("water")).toBe("Picture unavailable. Meaning: water");
+  expect(c.wordChoicePicture.unavailableCaption).toBe("Picture unavailable");
+  expect(c.wordChoicePicture.answer("x", "y", "water")).toBe("Answer: x, y, water");
+  expect(c.wordChoicePicture.answer("x", null, "water")).toBe("Answer: x, water");
+});
