@@ -255,6 +255,21 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
     더하는 것은 이 회차 범위 밖이다.
   - ⚠ sink 이름(`episodeIntroEventSink`)이 이제 갱신 이벤트까지 진다 — 이름과 책임이 어긋난다. sink를 나누는 날
     `contentEventSink`로 가른다.
+- ⟨2026-10-13 — 3c 카탈로그 레슨 · 최종 테스트. 적용 기록이고 결정을 바꾸지 않는다⟩ **sink는 일곱 그대로이고 이벤트 이름은 33개다.**
+  이름 목록(`AnalyticsEventName`)은 **`lib/analytics-event-names.ts`로 옮겼다** — `lib/analytics.contract.ts`는 그 타입을 다시 내보낸다(파일 300줄 상한).
+  매핑 · 전송 · 대기열 · `environment`는 그대로다. 새 이름 셋의 타입 정본은 `lib/catalog-learning-event.contract.ts`이고 `EpisodeIntroEvent` union에 든다.
+  - **`episode_lesson_started`** — 레슨 · 최종 노드를 눌러 시작 가드를 지난 순간(첫 화면을 쌓기 직전). 다시 하기 · 다시 풀기도 매번 난다. 속성 `episodeId` ·
+    `unitKey`(`S1` … `RP`) · `unitRole`(`lesson` | `final`) · `questionCount`(제시 문항 · 턴 수) · `skippedItemCount`(건너뛴 문항 수). 수는 10진 문자열이다.
+  - **`episode_lesson_finished`** — 판정 순간(마지막 활동 · 마지막 턴의 `See results`, 문항 0개면 시작 직후). 속성 `episodeId` · `unitKey` · `unitRole` ·
+    `verdict`(`passed` | `failed`) · `correctCount` · `questionCount`. 레슨과 최종 테스트가 같은 이름을 쓰고 `unitRole`로 갈린다.
+  - **`episode_final_passed`** — 최종 테스트 판정이 통과인 순간(`finished` 바로 뒤, 진행 기록 직전). 속성 `episodeId` · `correctCount` · `turnCount`.
+  - 통과 뒤 컷은 이벤트를 내지 않는다(읽을거리 — 표지 이벤트를 다시 쓰지 않았다).
+  - **한계** — 중도 이탈 지점(몇 번째 활동에서 나갔는지)은 세지 않는다(`started` − `finished` 차로만). 문항별 정오도 없다. `skippedItemCount`는 사유를 가르지 않는다.
+  - 묻는 질문: 「카탈로그 학습이 실제로 진행되는가」 = 유닛별 `finished` / `started`, 통과율(`verdict = passed` 비율), `episode_final_passed` 사용자 수,
+    `skippedItemCount` 분포(3d · 오디오 우선순위의 근거). 다음 에피소드 진입은 `episode_intro_viewed`(`episodeId` u02 …)로 잇는다. 대시보드 인사이트 추가는 이 회차 범위 밖이다.
+  - ⚠ sink 이름과 책임의 어긋남이 더 커졌다 — 학습 이벤트까지 `episodeIntroEventSink`가 진다. 새 sink를 만들면 sink 목록을 펼치는 테스트 · 진입점 · App props가
+    행동 변화 없이 바뀌어 미뤘다([ADR-0057](0057-catalog-learning-session.md) 「버린 대안」 8).
+  - PostHog에 실제로 도착했는지는 보지 않았다 — unit · integration의 sink 호출까지다.
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 
