@@ -4,17 +4,14 @@ import "../../components/first-unit-guide.css";
 import type { ReactNode } from "@lynx-js/react";
 import type { ScrollEvent } from "@lynx-js/types";
 
-import { EpisodeIntroMapItem } from "./EpisodeIntroMapItem";
-import { JourneyStepNode } from "./JourneyStepNode";
-import { MessengerMapItem } from "./MessengerMapItem";
-import { PhoneCallMapItem } from "./PhoneCallMapItem";
-import { VisualNovelMapItem } from "./VisualNovelMapItem";
-import { EpisodeFinalMapItem } from "./EpisodeFinalMapItem";
+import { TutorialEpisodeSection } from "./TutorialEpisodeSection";
 import { JourneyMapCatalogSlot } from "./JourneyMapCatalogSlot";
 import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
 import { StepSheet } from "./StepSheet";
-import { episodeSectionId, screenId, scrollId } from "./journey-map-scroll";
+import { screenId, scrollId } from "./journey-map-scroll";
 import { noCatalogMapSections } from "./catalog-map";
+import { mapScrollTargetOf } from "./journey-map-next-unit";
+import { useAutoScrollToNext } from "./useAutoScrollToNext";
 import { useCurrentEpisode } from "./useCurrentEpisode";
 import { useStepSheet } from "./useStepSheet";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
@@ -24,12 +21,8 @@ import { EpisodePendingSection } from "./EpisodePendingSection";
 import {
   findStep,
   journeySteps,
-  stepStatusAt,
   stepSheetFiguresFor,
   journeyMapSections,
-  mapItemStatus,
-  journeyStepOrdinal,
-  type JourneyMapItem,
   type JourneyStepId,
 } from "./journey-map";
 import type { MessengerUnitId } from "../messenger/messenger.contract";
@@ -81,7 +74,14 @@ export function JourneyMapScreen({
   catalog,
 }: JourneyMapScreenProps): ReactNode {
   const guide = useFirstUnitGuide("map");
-  const { sheetState, sheetTop, handleScroll, handleSelectStep, handleCloseSheet } = useStepSheet();
+  const {
+    sheetState,
+    sheetTop,
+    sheetCaretOffset,
+    handleScroll,
+    handleSelectStep,
+    handleCloseSheet,
+  } = useStepSheet();
   // 머리 카드는 구획 밖에 **하나만** 섭니다 — 무엇을 말할지는 스크롤 자리가 고릅니다
   // (`useCurrentEpisode`의 주석에 `position: sticky`를 쓸 수 없는 이유를 적었습니다).
   const currentEpisode = useCurrentEpisode(
@@ -89,13 +89,6 @@ export function JourneyMapScreen({
     catalog?.sections ?? noCatalogMapSections,
   );
 
-  // 스크롤 한 번에 둘이 답합니다 — 말풍선 자리와 머리 카드 내용입니다. 인라인 화살표로
-  // 묶으면 `"background only"`가 중첩돼 바인딩이 서지 않습니다.
-  const handleMapScroll = (event: ScrollEvent) => {
-    "background only";
-    handleScroll(event);
-    currentEpisode.handleScroll(event);
-  };
   const openStep =
     sheetState.openStepId === null ? undefined : findStep(journeySteps, sheetState.openStepId);
   // 말풍선이 열린 동안 셸의 전역 머리(칩 · 알림 버튼)도 가려야 합니다 — 전에는 머리가 이
@@ -114,91 +107,34 @@ export function JourneyMapScreen({
     completedEpisodeFinalIds,
   };
 
-  // 모든 잠김은 mapItemStatus에서 파생합니다. default 없는 switch로 새 종류의 누락을 잡습니다.
-  const renderMapItem = (
-    item: JourneyMapItem,
-    sectionItems: readonly JourneyMapItem[],
-  ): ReactNode => {
-    const status = mapItemStatus(item, sectionItems, progress);
-    switch (item.kind) {
-      case "episode-intro": {
-        return (
-          <EpisodeIntroMapItem
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            status={status}
-            guided={guide.visible && item.id === "tutorial-intro"}
-            onSelect={(id) => {
-              guide.dismiss();
-              onStartEpisodeIntroUnit(id);
-            }}
-          />
-        );
-      }
-      case "messenger": {
-        return (
-          <MessengerMapItem
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            status={status}
-            onSelect={onStartMessengerUnit}
-          />
-        );
-      }
-      case "phone-call": {
-        return (
-          <PhoneCallMapItem
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            status={status}
-            onSelect={onStartPhoneCallUnit}
-          />
-        );
-      }
-      case "visual-novel": {
-        return (
-          <VisualNovelMapItem
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            status={status}
-            onSelect={onStartVisualNovelUnit}
-          />
-        );
-      }
-      case "episode-final": {
-        return (
-          <EpisodeFinalMapItem
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            status={status}
-            onSelect={onStartEpisodeFinal}
-          />
-        );
-      }
-      case "standard": {
-        return (
-          <JourneyStepNode
-            key={item.step.id}
-            id={item.step.id}
-            title={item.step.title}
-            /* 표지 미완료면 `locked`로 덮는 한 겹이 앞에 붙습니다 — 그 아래는 씨앗이
-               남긴 완료가 **지워진 것이 아니라 가려진 것**이고, 표지를 끝내면 그대로
-               드러납니다(spec §2.9). */
-            status={
-              status === "locked"
-                ? "locked"
-                : stepStatusAt(journeyStepOrdinal(item.step.id) - 1, completedStepCount)
-            }
-            onSelect={handleSelectStep}
-          />
-        );
-      }
-    }
+  // 다음에 풀 유닛으로 맵이 서자마자 스스로 스크롤합니다. 말풍선이 열려 있거나 첫 유닛 가이드가
+  // 떠 있으면 옮기지 않고 이 마운트에서 잠급니다.
+  const autoScroll = useAutoScrollToNext({
+    target: mapScrollTargetOf({
+      tutorialSections: journeyMapSections,
+      progress,
+      catalogSections: catalog?.sections ?? noCatalogMapSections,
+      catalogProgress: catalog?.progress ?? {},
+    }),
+    blocked: openStep !== undefined || guide.visible,
+  });
+
+  // 스크롤 한 번에 셋이 답합니다 — 말풍선 자리 · 머리 카드 내용 · 자동 스크롤의 잠금입니다. 인라인
+  // 화살표로 묶으면 `"background only"`가 중첩돼 바인딩이 서지 않습니다.
+  const handleMapScroll = (event: ScrollEvent) => {
+    "background only";
+    handleScroll(event);
+    currentEpisode.handleScroll(event);
+    autoScroll.handleScroll(event);
+  };
+
+  const actions = {
+    onSelectStep: handleSelectStep,
+    onStartEpisodeIntroUnit,
+    onStartMessengerUnit,
+    onStartPhoneCallUnit,
+    onStartVisualNovelUnit,
+    onStartEpisodeFinal,
   };
 
   return (
@@ -223,6 +159,7 @@ export function JourneyMapScreen({
           className="journey-map-screen-map"
           data-testid="journey-map-screen-map"
           accessibility-elements-hidden={openStep !== undefined}
+          bindtouchstart={autoScroll.handleTouchStart}
         >
           {journeyMapSections.map((section) =>
             // 에피소드 하나가 헤더 + 유닛 줄입니다. 조각(Fragment)이 아니라 상자로
@@ -233,23 +170,14 @@ export function JourneyMapScreen({
             section.episode.kind === "pending" ? (
               <EpisodePendingSection key={section.episode.id} episode={section.episode} />
             ) : (
-              <view
-                id={episodeSectionId(section.episode.id)}
-                className="journey-map-screen-episode"
+              <TutorialEpisodeSection
                 key={section.episode.id}
-              >
-                {section.items.map((item) => (
-                  <view
-                    key={item.kind === "standard" ? item.step.id : item.id}
-                    accessibility-elements-hidden={
-                      guide.visible &&
-                      !(item.kind === "episode-intro" && item.id === "tutorial-intro")
-                    }
-                  >
-                    {renderMapItem(item, section.items)}
-                  </view>
-                ))}
-              </view>
+                episode={section.episode}
+                items={section.items}
+                progress={progress}
+                guide={guide}
+                actions={actions}
+              />
             ),
           )}
           <JourneyMapCatalogSlot
@@ -287,7 +215,7 @@ export function JourneyMapScreen({
           /* 잰 자리에 그 뒤의 스크롤 변화량을 더합니다 — 유닛이 가운데로 옮겨 가는
              동안 말풍선이 그 유닛에 붙어 함께 움직입니다. */
           top={sheetTop}
-          caretOffset={0}
+          caretOffset={sheetCaretOffset}
           {...stepSheetFiguresFor(openStep.id, completedStepCount)}
           /* `시작`의 목적지는 이 화면이 정하지 않습니다 — 열린 스텝의 id를 그대로
              위로 올립니다. 화면 전환은 `App`의 것입니다. */

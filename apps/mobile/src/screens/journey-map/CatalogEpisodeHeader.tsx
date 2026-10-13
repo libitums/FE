@@ -5,6 +5,7 @@ import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
 import { useUiCopy } from "../../lib/ui-copy";
 import { catalogSectionProgress } from "./catalog-map";
 import { catalogTitleLines } from "./catalog-title";
+import { headerCardId } from "./journey-map-scroll";
 import type { CatalogEpisodeHeaderProps } from "./catalog-map.contract";
 
 import "./episode-pending.css";
@@ -20,7 +21,7 @@ export function CatalogEpisodeHeader({ section, progress }: CatalogEpisodeHeader
 
   if (section.kind === "catalog-unavailable") {
     return (
-      <view className="journey-map-screen-episode-header">
+      <view id={headerCardId} className="journey-map-screen-episode-header">
         <view className="episode-pending-card" data-testid="catalog-header-unavailable">
           <text className="episode-pending-card-label">{label}</text>
           <text className="episode-pending-card-title">{section.title}</text>
@@ -32,7 +33,7 @@ export function CatalogEpisodeHeader({ section, progress }: CatalogEpisodeHeader
   const { completed, total } = catalogSectionProgress(section, progress);
   const titleLines = catalogTitleLines(section.title, TITLE_MAX_CHARS_PER_LINE);
   return (
-    <view className="journey-map-screen-episode-header">
+    <view id={headerCardId} className="journey-map-screen-episode-header">
       <EpisodeHeader
         episodeLabel={label}
         title={section.title}

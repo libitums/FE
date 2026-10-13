@@ -1,6 +1,7 @@
 import { useReducer, useRef, useState } from "@lynx-js/react";
 import type { ScrollEvent } from "@lynx-js/types";
 
+import { useMotion } from "@libitums/ui-lynx/motion";
 import {
   measureRects,
   screenId,
@@ -9,8 +10,11 @@ import {
   scrollStepIntoView,
   stepNodeId,
 } from "./journey-map-scroll";
+import { mapScrollBehaviorFor } from "./journey-map-scroll-position";
 import {
   initialStepSheetState,
+  stepSheetCaretLimit,
+  stepSheetCaretOffset,
   stepSheetPlacement,
   stepSheetReducer,
   stepSheetTop,
@@ -23,6 +27,8 @@ export type StepSheetControls = {
   readonly sheetState: StepSheetState;
   /** 말풍선 꼭대기의 세로 자리입니다 — 유닛을 따라 스크롤과 함께 움직입니다. */
   readonly sheetTop: number;
+  /** 꼬리의 가로 치우침입니다(px, 가운데가 0). 재기 전 · 못 쟀을 때 · 닫힌 동안은 0. */
+  readonly sheetCaretOffset: number;
   readonly handleScroll: (event: ScrollEvent) => void;
   readonly handleSelectStep: (id: JourneyStepId, tapY: number) => void;
   readonly handleCloseSheet: () => void;
@@ -41,6 +47,11 @@ export function useStepSheet(): StepSheetControls {
   // 그리는 값을 치르지 않기 위해서입니다.
   const latestScrollTop = useRef(0);
   const [openScrollTop, setOpenScrollTop] = useState(0);
+  // 두 열에서는 유닛이 화면 가운데에 서지 않으므로 꼬리가 가운데에서 벗어납니다. 값은 잰 뒤에야 알고,
+  // 상태 객체 · 배치 계산은 건드리지 않으려고 지역 상태로 둡니다.
+  const [caretOffset, setCaretOffset] = useState(0);
+  // 동작 줄이기에서는 이동이 즉시입니다(ADR-0053 D3).
+  const behavior = mapScrollBehaviorFor(useMotion());
   // 지금 자리를 재고 있는 스텝입니다. 재는 일이 비동기라, 그 사이에 말풍선이 닫히거나
   // 다른 스텝으로 바뀌면 늦게 온 답이 화면을 옛 유닛 쪽으로 끌고 갑니다 — 답이 왔을 때
   // 이 값이 자기 스텝이 아니면 버립니다.
@@ -69,6 +80,7 @@ export function useStepSheet(): StepSheetControls {
       scrollTop: tapScrollTop,
     });
     setOpenScrollTop(tapScrollTop);
+    setCaretOffset(0);
     // 그다음 유닛을 실제로 재서 자리를 바로잡고, 유닛을 스크롤 가운데로 옮깁니다 —
     // 탭 좌표는 손가락이 유닛의 어디를 눌렀는지에 따라 달라지므로, 그 값만으로는
     // 말풍선이 유닛에 맞지 않습니다. 못 재도 탭을 막지 않습니다: 말풍선은 이미 떴습니다.
@@ -81,7 +93,7 @@ export function useStepSheet(): StepSheetControls {
       measuringStepId.current = null;
       const [unit, scroll, screen] = rects ?? [];
       if (unit === undefined || scroll === undefined || screen === undefined) {
-        scrollStepIntoView(id, "smooth");
+        scrollStepIntoView(id, behavior);
         return;
       }
       const scrollTop = latestScrollTop.current;
@@ -101,7 +113,8 @@ export function useStepSheet(): StepSheetControls {
         anchorLimit: placement.anchorLimit,
       });
       setOpenScrollTop(scrollTop);
-      scrollMapTo(placement.targetScrollTop, "smooth");
+      setCaretOffset(stepSheetCaretOffset(unit.centerX, screen.centerX, stepSheetCaretLimit));
+      scrollMapTo(placement.targetScrollTop, behavior);
     });
   };
 
@@ -110,11 +123,13 @@ export function useStepSheet(): StepSheetControls {
     // oxlint-disable-next-line react/immutability
     measuringStepId.current = null;
     dispatch({ type: "closeSheet" });
+    setCaretOffset(0);
   };
 
   return {
     sheetState,
     sheetTop: stepSheetTop(sheetState, openScrollTop),
+    sheetCaretOffset: caretOffset,
     handleScroll,
     handleSelectStep,
     handleCloseSheet,

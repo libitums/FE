@@ -11,6 +11,12 @@ final class ViewController: UIViewController {
     super.viewDidLoad()
     view.backgroundColor = .white
 
+    // 코어에 주는 배율입니다. JS에도 **이 값**을 보냅니다 — 실행 중 글자 크기가 바뀌어도 화면은 이
+    // 배율로 그려지므로(아래 `observeContentSizeCategory`), 새 값을 보내면 글자는 옛 크기인데 배치만
+    // 한 열로 바뀝니다.
+    let coreFontScale = FontScale.current(compatibleWith: nil)
+    self.coreFontScale = coreFontScale
+
     let lynxView = LynxView { builder in
       let config = LynxConfig(provider: TemplateProvider())
       // **개수 상한은 없다. 입장 조건 셋이 있다** (ADR-0017 D1이 ADR-0012 D2의
@@ -67,7 +73,7 @@ final class ViewController: UIViewController {
       // 이 줄은 원래 `= 1.0`이었다. 그것은 끄는 코드가 아니라 **프레임워크 기본값을
       // 다시 적은 것**이었고(`LynxBaseConfigurator.mm:26`), 그래서 「의도적으로 정한
       // 값」처럼 읽혀 아무도 의심하지 않았다. **켜는 코드가 없어서 꺼져 있었다.**
-      builder.fontScale = FontScale.current(compatibleWith: nil)
+      builder.fontScale = coreFontScale
     }
     lynxView.layoutWidthMode = .exact
     lynxView.layoutHeightMode = .exact
@@ -163,6 +169,8 @@ final class ViewController: UIViewController {
       ])
     }
 
+    publishViewportMetrics(width: view.bounds.width)
+
     let bounds = view.bounds
     guard lynxView.frame != bounds else { return }
     lynxView.frame = bounds
@@ -173,6 +181,20 @@ final class ViewController: UIViewController {
 
   private var lastSafeAreaInsets: UIEdgeInsets?
   private var lastReducedMotion: Bool?
+  private var coreFontScale: CGFloat = 1
+  private var lastViewportMetrics: [String: Double]?
+
+  /// 코어가 그리는 글자 배율과 화면 폭을 globalProps `fontScale` · `viewportWidth`로 넘긴다.
+  /// 맵이 이 둘로 열 수(두 열 · 한 열)를 정한다(mobile `lib/viewport-metrics.ts`).
+  ///
+  /// safe-area · 동작 줄이기와 **따로** 보낸다(`updateGlobalProps`는 키 단위로 병합된다). 배율은
+  /// 코어에 준 값으로 고정이고 폭만 바뀔 수 있다 — 앞서 보낸 것과 같으면 보내지 않는다.
+  private func publishViewportMetrics(width: CGFloat) {
+    let metrics = ViewportMetrics.globalProps(fontScale: coreFontScale, width: width)
+    guard let lynxView, metrics as? [String: Double] != lastViewportMetrics else { return }
+    lastViewportMetrics = metrics as? [String: Double]
+    lynxView.updateGlobalProps(with: metrics)
+  }
 
   /// 시스템 「동작 줄이기」를 globalProps `reducedMotion`으로 넘긴다.
   ///

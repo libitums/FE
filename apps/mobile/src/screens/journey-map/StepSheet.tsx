@@ -33,6 +33,7 @@ export type StepSheetProps = {
 export function StepSheet({
   title,
   top,
+  caretOffset,
   lessonOrdinal,
   completedActivityCount,
   totalActivityCount,
@@ -74,8 +75,15 @@ export function StepSheet({
           가질 수 없어 인라인 스타일이 집니다. */}
       <view className="step-sheet-anchor" style={{ top: `${String(top)}px` }}>
         {/* 꼬리입니다. 45도 돌린 네모의 아래 절반을 말풍선이 덮어 삼각형만 남습니다 —
-            순수 장식이라 접근성 트리에 올리지 않습니다. */}
-        <view className="step-sheet-caret" />
+            순수 장식이라 접근성 트리에 올리지 않습니다. 두 열에서는 유닛이 화면 가운데에
+            서지 않으므로 가운데에서 `caretOffset`만큼 치우쳐 그 유닛을 가리킵니다(패널은
+            가운데 그대로입니다). */}
+        <view
+          className="step-sheet-caret"
+          data-testid="step-sheet-caret"
+          data-caretOffset={String(caretOffset)}
+          style={{ left: `${String(caretOffset)}px` }}
+        />
         <view className="step-sheet-panel" data-testid="step-sheet-panel">
           <text
             className="step-sheet-title"

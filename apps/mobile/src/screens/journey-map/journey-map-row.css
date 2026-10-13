@@ -24,3 +24,18 @@
   flex-direction: column;
   align-items: center;
 }
+
+/* 셀 — 유닛 하나의 칸입니다. 안쪽 유닛을 칸 가운데에 세우고, 칸 폭을 넘지 못하게 합니다(라벨이
+   칸 폭에서 줄바꿈되도록). 가림 상자(`.journey-map-cell-body`)도 같은 폭 안에 있습니다. */
+.journey-map-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.journey-map-cell-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100%;
+}

@@ -5,6 +5,7 @@ import { episodeSectionId, measureRects } from "./journey-map-scroll";
 import type { JourneyMapSection } from "./journey-map";
 import type { CatalogMapSection } from "./catalog-map.contract";
 import { catalogSectionDomId, noCatalogMapSections } from "./catalog-map";
+import { currentEpisodeIndexAt } from "./journey-map-scroll-position";
 
 /**
  * 지금 보고 있는 에피소드가 몇 번째인지 집니다. 머리 카드 하나가 구획 밖에 서고, 이
@@ -31,6 +32,18 @@ export function useCurrentEpisode(
   // 에피소드를 말합니다 — 맨 위에서 시작하므로 그것이 맞습니다.
   const tops = useRef<readonly number[]>([]);
   const indexRef = useRef(0);
+  // 마지막으로 본 스크롤 자리입니다. 구획 자리를 재는 답이 스크롤 이벤트보다 늦게 닿으면 그
+  // 이벤트들은 버려지므로, 답이 닿는 순간 이 값으로 한 번 더 판정합니다(자동 스크롤이 마운트
+  // 직후에 만드는 이벤트가 그 예입니다).
+  const latestScrollTop = useRef(0);
+
+  const select = (next: number): void => {
+    if (next !== indexRef.current) {
+      // oxlint-disable-next-line react/immutability
+      indexRef.current = next;
+      setIndex(next);
+    }
+  };
 
   useEffect(() => {
     // 튜토리얼 구획 뒤에 카탈로그 구획을 이어 잽니다 — index는 그 이은 목록의 자리입니다.
@@ -44,30 +57,18 @@ export function useCurrentEpisode(
       }
       // oxlint-disable-next-line react/immutability
       tops.current = rects.map((rect) => rect.top);
+      select(currentEpisodeIndexAt(tops.current, latestScrollTop.current));
     });
   }, [sections, catalogSections]);
 
   const handleScroll = (event: ScrollEvent) => {
     "background only";
-    const measured = tops.current;
-    if (measured.length === 0) {
+    // oxlint-disable-next-line react/immutability
+    latestScrollTop.current = event.detail.scrollTop;
+    if (tops.current.length === 0) {
       return;
     }
-    // 첫 구획의 자리를 원점으로 삼습니다 — 잰 값이 화면 좌표라 스크롤 양과 자릿수가
-    // 다릅니다. 두 구획의 **차이**만 쓰면 원점이 어디든 같은 답이 나옵니다.
-    const origin = measured[0] ?? 0;
-    const offset = event.detail.scrollTop;
-    let next = 0;
-    for (let i = 1; i < measured.length; i += 1) {
-      if (offset >= (measured[i] ?? 0) - origin) {
-        next = i;
-      }
-    }
-    if (next !== indexRef.current) {
-      // oxlint-disable-next-line react/immutability
-      indexRef.current = next;
-      setIndex(next);
-    }
+    select(currentEpisodeIndexAt(tops.current, event.detail.scrollTop));
   };
 
   return { index, handleScroll };
