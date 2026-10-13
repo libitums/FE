@@ -18,6 +18,7 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 test("제목이 순번과 함께 props 문자열을 텍스트로 낸다", () => {
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -35,6 +36,7 @@ test("제목이 순번과 함께 props 문자열을 텍스트로 낸다", () => 
 test("제목이 accessibility-traits='header'를 갖는다", () => {
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -52,6 +54,7 @@ test("제목이 accessibility-traits='header'를 갖는다", () => {
 test("[JM1-E] 시작 버튼이 접근성 속성과 라벨 텍스트를 갖는다", () => {
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -74,6 +77,7 @@ test("[JM1-E] 시작 버튼이 접근성 속성과 라벨 텍스트를 갖는다
 test("[JM1-E] 가림막이 닫기의 접근성 속성을 갖고, 보이는 낱말은 없다", () => {
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -96,6 +100,7 @@ test("닫기를 tap하면 onClose가 정확히 한 번 불린다", () => {
   const onClose = vi.fn<() => void>();
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -123,6 +128,7 @@ test("시작을 tap하면 onStart가 정확히 한 번 불린다", () => {
   const onStart = vi.fn<() => void>();
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -145,6 +151,7 @@ test("시작을 tap해도 onClose는 불리지 않는다", () => {
   const onClose = vi.fn<() => void>();
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -166,6 +173,7 @@ test("닫기를 tap해도 onStart는 불리지 않는다", () => {
   const onStart = vi.fn<() => void>();
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -185,6 +193,7 @@ test("닫기를 tap해도 onStart는 불리지 않는다", () => {
 test("[JM1-E] 진행 줄이 활동 수와 백분율을 같은 값에서 낸다", () => {
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -208,6 +217,7 @@ test("[JM1-E] 진행 줄이 활동 수와 백분율을 같은 값에서 낸다",
 test("끝낸 활동이 없으면 채움 막대를 그리지 않는다", () => {
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -224,6 +234,7 @@ test("끝낸 활동이 없으면 채움 막대를 그리지 않는다", () => {
 test("[JM1-E] 활동이 하나뿐이면 activity를 단수로 말한다", () => {
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}
@@ -242,6 +253,7 @@ test("[JM1-M] 문구표를 주입하면 시작 · 닫기 · 진행 줄이 표의
   render(
     <UiCopyContext.Provider value={markedUiCopy}>
       <StepSheet
+        caretOffset={0}
         title="Ordering"
         top={0}
         lessonOrdinal={3}

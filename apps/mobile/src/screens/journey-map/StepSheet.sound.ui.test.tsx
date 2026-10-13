@@ -15,6 +15,7 @@ test("여정의 시작 탭은 작은 버튼음을 한 번 낸 뒤 학습을 시�
   });
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={1}

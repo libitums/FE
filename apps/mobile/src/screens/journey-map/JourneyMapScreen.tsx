@@ -287,6 +287,7 @@ export function JourneyMapScreen({
           /* 잰 자리에 그 뒤의 스크롤 변화량을 더합니다 — 유닛이 가운데로 옮겨 가는
              동안 말풍선이 그 유닛에 붙어 함께 움직입니다. */
           top={sheetTop}
+          caretOffset={0}
           {...stepSheetFiguresFor(openStep.id, completedStepCount)}
           /* `시작`의 목적지는 이 화면이 정하지 않습니다 — 열린 스텝의 id를 그대로
              위로 올립니다. 화면 전환은 `App`의 것입니다. */

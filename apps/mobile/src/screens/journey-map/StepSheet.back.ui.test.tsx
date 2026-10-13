@@ -28,6 +28,7 @@ test("[UL7] 스텝 말풍선 → 뒤로가기는 onClose 1회(가림막 탭과 �
   const onStart = vi.fn<() => void>();
   render(
     <StepSheet
+      caretOffset={0}
       title="Ordering"
       top={0}
       lessonOrdinal={3}

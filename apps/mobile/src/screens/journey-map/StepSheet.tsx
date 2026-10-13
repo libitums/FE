@@ -20,6 +20,8 @@ export type StepSheetProps = {
    * 정해서 넘깁니다.
    */
   top: number;
+  /** 꼬리의 가로 치우침입니다(px, 가운데가 0). */
+  caretOffset: number;
   /** 제목 앞에 서는 순번입니다. `Lesson 3: "주문하기"`의 3입니다. */
   lessonOrdinal: number;
   completedActivityCount: number;
