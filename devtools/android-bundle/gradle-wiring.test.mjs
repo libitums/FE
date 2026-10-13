@@ -86,17 +86,29 @@ test("GW-S1: sentry-android-core is pinned exactly and no heavier Sentry artifac
     /['"]io\.sentry:sentry-android-core:8\.60\.0['"]/,
     "build.gradle lacks the exact io.sentry:sentry-android-core:8.60.0 pin",
   );
-  assert.doesNotMatch(body, /sentry-android-core:[^'"]*[+\[\](,]/, "sentry-android-core version is not exact");
+  assert.doesNotMatch(
+    body,
+    /sentry-android-core:[^'"]*[+\[\](,]/,
+    "sentry-android-core version is not exact",
+  );
   assert.ok(sentryGradle.length > 0, "app/sentry.gradle is missing or empty");
   for (const [name, text] of [
     ["app/build.gradle", body],
     ["app/sentry.gradle", sentryGradle],
     ["build.gradle", rootGradle],
   ]) {
-    assert.doesNotMatch(text, /io\.sentry:sentry-android['"]/, `${name} wires the sentry-android bundle`);
+    assert.doesNotMatch(
+      text,
+      /io\.sentry:sentry-android['"]/,
+      `${name} wires the sentry-android bundle`,
+    );
     assert.doesNotMatch(text, /sentry-android-ndk/, `${name} wires sentry-android-ndk`);
     assert.doesNotMatch(text, /sentry-android-replay/, `${name} wires sentry-android-replay`);
-    assert.doesNotMatch(text, /io\.sentry\.android\.gradle/, `${name} applies the Sentry Gradle plugin`);
+    assert.doesNotMatch(
+      text,
+      /io\.sentry\.android\.gradle/,
+      `${name} applies the Sentry Gradle plugin`,
+    );
   }
 });
 
@@ -151,7 +163,10 @@ test("GW-S4: auto-init is off and both Sentry providers are removed from the man
 test("GW-S5: the Sentry properties file is not tracked", async () => {
   const ignore = await readOptional(join(root, ".gitignore"));
   const lines = ignore.split("\n").map((line) => line.trim());
-  assert.ok(lines.includes("apps/android/sentry.properties"), ".gitignore lacks apps/android/sentry.properties");
+  assert.ok(
+    lines.includes("apps/android/sentry.properties"),
+    ".gitignore lacks apps/android/sentry.properties",
+  );
 });
 
 test("GW-S6: crash reporting starts before Fresco and the Lynx error callback is wired", async () => {
@@ -162,8 +177,16 @@ test("GW-S6: crash reporting starts before Fresco and the Lynx error callback is
   assert.ok(frescoAt >= 0, "DuruApplication lost Fresco.initialize");
   assert.ok(startAt < frescoAt, "CrashReporting.start(this) must come before Fresco.initialize");
   const activity = withoutComments(await readOptional(join(hostDir, "MainActivity.java")));
-  assert.match(activity, /onReceivedError\(\s*LynxError/, "MainActivity lacks an onReceivedError(LynxError ...) override");
-  assert.equal(activity.match(/registerModule\(/g)?.length ?? 0, 11, "registerModule( call count changed from 11");
+  assert.match(
+    activity,
+    /onReceivedError\(\s*LynxError/,
+    "MainActivity lacks an onReceivedError(LynxError ...) override",
+  );
+  assert.equal(
+    activity.match(/registerModule\(/g)?.length ?? 0,
+    11,
+    "registerModule( call count changed from 11",
+  );
 });
 
 test("GW-S7: only CrashEventPolicy and CrashReporting import io.sentry in host sources", async () => {
@@ -173,7 +196,10 @@ test("GW-S7: only CrashEventPolicy and CrashReporting import io.sentry in host s
     for (const entry of await readdir(dir, { withFileTypes: true })) {
       const path = join(dir, entry.name);
       if (entry.isDirectory()) await walk(path);
-      else if (entry.name.endsWith(".java") && /^\s*import\s+io\.sentry/m.test(await readFile(path, "utf8"))) {
+      else if (
+        entry.name.endsWith(".java") &&
+        /^\s*import\s+io\.sentry/m.test(await readFile(path, "utf8"))
+      ) {
         importers.push(entry.name);
       }
     }
