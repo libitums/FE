@@ -180,7 +180,7 @@ public final class CrashReportPayloadTest {
   }
 
   @Test public void p8_nameIsCappedAtEighty() {
-    CrashReportPayload p = make(201, repeat("A", 100) + ": msg");
+    CrashReportPayload p = make(201, repeat("A", 100) + "Error: msg");
     assertNotNull(p);
     assertEquals(80, p.name.length());
   }
