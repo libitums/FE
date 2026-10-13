@@ -27,7 +27,7 @@ public final class CrashReportPayload {
   // Pre-scrub caps: bound the work the scrub rules do and keep partial secrets out of their reach.
   public static final int TEXT_PRE_MAX = 65_536;
   public static final int MESSAGE_PRE_MAX = 2_000;
-  public static final int STACK_LINE_PRE_MAX = 2_000;
+  public static final int STACK_LINE_PRE_MAX = 800;
 
   private static final Pattern NAME_AND_MESSAGE =
       Pattern.compile("^([A-Za-z_$][A-Za-z0-9_$]*(?: rejection)?): ([\\s\\S]*)$");
@@ -68,10 +68,10 @@ public final class CrashReportPayload {
         rawMessage = lines[0];
         rawStack = lines.length > 1 ? lines[1] : "";
       }
-      rawMessage = preCapMessage(rawMessage);
       if (rawMessage.startsWith(MAIN_THREAD_PREFIX)) {
         rawMessage = rawMessage.substring(MAIN_THREAD_PREFIX.length()).trim();
       }
+      // The name is split off before the pre-scrub cap, so a long message keeps its name.
       String name = "Error";
       String message = rawMessage;
       Matcher split = NAME_AND_MESSAGE.matcher(rawMessage);
@@ -80,7 +80,10 @@ public final class CrashReportPayload {
         message = split.group(2);
       }
       return new CrashReportPayload(
-          source, cap(name, NAME_MAX), cap(CrashScrub.scrub(message), MESSAGE_MAX), stackOf(rawStack));
+          source,
+          cap(name, NAME_MAX),
+          cap(CrashScrub.scrub(preCapMessage(message)), MESSAGE_MAX),
+          stackOf(rawStack));
     } catch (RuntimeException | StackOverflowError error) {
       return null;
     }
@@ -128,13 +131,23 @@ public final class CrashReportPayload {
       if (lines.size() >= STACK_MAX_LINES) break;
       if (line.trim().isEmpty()) continue;
       if (lines.isEmpty() && BACKTRACE_HEADER.equals(line.trim())) continue;
-      String bounded = line.length() > STACK_LINE_PRE_MAX
-          ? line.substring(line.length() - STACK_LINE_PRE_MAX) : line;
-      String clean = CrashScrub.scrub(bounded);
+      String clean = CrashScrub.scrub(preCapStackLine(line));
       // Line and column sit at the end of a frame, so keep the tail.
       lines.add(clean.length() > STACK_LINE_MAX ? clean.substring(clean.length() - STACK_LINE_MAX) : clean);
     }
     return lines;
+  }
+
+  // Keeps the tail of a long frame. The head piece up to the first separator is dropped with it,
+  // so a token cut in half cannot slip past the scrub rules.
+  private static String preCapStackLine(String line) {
+    if (line.length() <= STACK_LINE_PRE_MAX) return line;
+    String tail = line.substring(line.length() - STACK_LINE_PRE_MAX);
+    for (int i = 0; i < tail.length(); i++) {
+      char c = tail.charAt(i);
+      if (Character.isWhitespace(c) || c == '/' || c == '(') return tail.substring(i + 1);
+    }
+    return tail;
   }
 
   private static String cap(String value, int max) {

@@ -8,9 +8,12 @@ public final class CrashScrub {
   // Scheme-less query tail: possessive prefix keeps the scan linear.
   private static final Pattern BARE_QUERY = Pattern.compile("\\?[^\\s?#=]*+=\\S*");
   private static final Pattern EMAIL = Pattern.compile("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}");
-  private static final Pattern DOTLESS_EMAIL = Pattern.compile("[^\\s@<>()\\[\\]]++@[^\\s@<>()\\[\\]]+");
+  // `Class@1a2b3c` is a Java identity hash, not an address, so a hex-only tail is left alone.
+  private static final Pattern DOTLESS_EMAIL = Pattern.compile(
+      "[^\\s@<>()\\[\\]]++@(?![0-9a-fA-F]{1,16}(?![A-Za-z0-9]))[^\\s@<>()\\[\\]]+");
+  // `basic` alone is an ordinary word; it counts only behind an authorization head.
   private static final Pattern AUTH_HEAD =
-      Pattern.compile("\\b(basic|bearer)\\s+\\S+", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("\\b(authorization:?\\s*basic|bearer)\\s+\\S+", Pattern.CASE_INSENSITIVE);
   private static final Pattern JWT =
       Pattern.compile("eyJ[A-Za-z0-9_-]{5,}\\.[A-Za-z0-9_-]{5,}\\.[A-Za-z0-9_-]{5,}");
   private static final Pattern OPAQUE = Pattern.compile("[A-Za-z0-9_-]{32,}");
