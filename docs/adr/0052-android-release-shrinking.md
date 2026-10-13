@@ -467,6 +467,40 @@ r02 조합으로 다시 재지 않았다. 계약은 「기기 다운로드는 AB
 4. 출시 빌드의 `mapping.txt` 보관(「대가」 5).
 5. API 30 E8 E1의 「통과(주석)」 규칙 수용 — **2026-10-08 사용자가 수용했다**(질문에 규칙이 실행 뒤에 만들어졌다는 것을 적어 물었다). 아래는 답을 받기 전의 기록이다. e2e red `moot`의 조건 1이 여기에 걸려 있다(위 P1-3의 기록). r01은 원본 두 줄을 보고 「실패를 정의로 지운 것」으로 보지 않았다.
 
+## 적용 기록
+
+### 2026-10-13 — Sentry SDK가 의존에 들어왔다 ([ADR-0058](0058-crash-reporting-sentry.md))
+
+결정을 바꾸지 않는다. `app/proguard-rules.pro`는 **9줄 그대로다**(D2 — 정적 검사 I4가 `pnpm test:android-bundle`에서 통과). 들어온 것은 `io.sentry:sentry-android-core:8.60.0` 하나이고
+(`.so` 0개 · NDK · Gradle 플러그인 없음), 이 기록은 그 의존이 축소에 닿는 자리만 적는다.
+
+- **consumer 규칙이 앱 전체에 세 줄을 건다** [정적 — core AAR의 `proguard.txt`, 그리고 A1이 남긴 병합 설정 `outputs/mapping/bundled/configuration.txt`의 `sentry-android-core-8.60.0/proguard.txt` 구간에서 다시 읽었다]:
+  `-keepattributes LineNumberTable,SourceFile` · `-keep,allowshrinking,allowobfuscation class * extends java.lang.Throwable` · `-keeppackagenames io.sentry.**`.
+  D2의 「넣지 않는 것」(`-keepattributes` 등)은 **프로젝트 규칙**의 범위이고 그대로 지켜진다 — 이 세 줄은 의존 AAR이 싣고 온 것이다. 그 밖의 Sentry 규칙은 `io.sentry` 안에 걸리거나
+  싣지 않은 선택적 통합의 `-dontwarn`이다. **이 세 줄이 dex 크기 · 난독화 결과에 준 몫은 따로 재지 않았다.**
+- **A1에서 본 것** [실측 — 2026-10-13, HEAD `3dcf0292`, `./gradlew clean :app:testDebugUnitTest :app:assembleDebug :app:assembleBundled`, 모의 값 번들, **`google-services.json` 없는 워크트리**,
+  에이전트 실행 — [크래시 리포팅 e2e](../e2e/crash-reporting.md) A1]:
+
+  | 항목 | 값 |
+  |---|---|
+  | R8 경고(`minifyBundledWithR8`) | **3줄, 전부 `com.lynx.xelement.refresh.LynxUIRefresh$createView$1`의 것**(`has multiple definitions` 하나 · `Ignoring an implementation of the method … because it has multiple definitions` 둘). `io.sentry`를 가리키는 경고 **0줄** |
+  | `missing_rules.txt` | 없음 — `-dontwarn`을 더할 일이 없었다 |
+  | `.so` 추가 | **0** — bundled · debug APK에 `libsentry*.so` 0개(네 ABI 전부). bundled APK의 `lib/arm64-v8a/`는 16개 그대로다 |
+  | `verifyDebugApkNativeAlignment` · `verifyBundledApkNativeAlignment` | 통과 |
+  | `bundled`의 dex | **1개**, `classes.dex` **3,552,224 bytes**(비압축) |
+
+- **Sentry 이전 값은 이 회차에 재지 않았다.** 위 dex 크기와 「실측」 절의 2,934,436은 **견줄 수 없다** — 그 값은 `google-services.json`이 있는 빌드의 것이고 커밋도 다르다
+  (파일 없는 `bundled`의 dex는 다르다 — 「검증」의 「리뷰 뒤의 재현」). 같은 조건(같은 워크트리 · 파일 유무)에서 의존 한 줄만 빼고 다시 빌드한 수치가 없으므로
+  **「Sentry가 dex를 얼마 늘렸다」는 이 문서에 적지 않는다.**
+- **다시 돌리지 않은 것** [미확인]: `release-shrink.artifacts.mjs`(A1 ~ A8 — release AAB가 필요한데 `:app:bundleRelease`를 `google-services.json`이 없어 돌리지 않았다).
+  그러므로 **A3의 dex 상한(4,000,000 bytes) · A7의 기기 다운로드 상한(18,000,000 bytes) · A4 · A8의 매핑 생존 검사가 Sentry를 넣은 release에서 통과하는지는 보지 않았다.**
+  위 `bundled` dex 3,552,224는 A3의 상한 아래이나 그것은 release의 값이 아니다. release와 `bundled`의 dex가 바이트로 같은지(D3) · 매핑의 sha256(앞선 값 `657d490a…`와는 의존이 달라져
+  같지 않을 것이다 [추론]) · 클래스 수 · 기기 다운로드 크기도 다시 재지 않았다.
+- **축소한 빌드에서 Sentry가 실제로 도는지는 아직 아무도 보지 않았다.** A단계의 `bundled` 설치는 DSN이 없어 `io.sentry` 코드를 한 줄도 부르지 않았다(기동과 logcat의 `Sentry` 태그 0줄까지).
+  R8 뒤의 초기화 · 전송 · 매핑으로 풀린 스택은 DSN을 넣은 e2e B단계가 처음 본다(ADR-0058 「확인하지 못한 것」 1 ~ 3).
+- **출시 전에 할 일이 하나 늘었다**: `google-services.json`이 있는 워크트리에서 「지키는 검사」(D5)의 산출물 검사를 Sentry를 넣은 release AAB에 다시 돌린다. 절차는
+  [Android 출시 설정](../e2e/android-release-config.md) R9의 1이 이미 그 검사를 싣고 있다.
+
 ## 버린 대안
 
 | 대안 | 버린 까닭 |

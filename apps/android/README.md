@@ -6,6 +6,7 @@
 `SpeechRecognitionModule`·`HandwritingTraceModule`·`AppReviewModule`·`SystemBackModule`을
 제공한다. 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
+크래시 수집(Sentry)은 모듈이 아니다 — 아래 「크래시 리포팅(Sentry)」.
 
 ## 시스템 뒤로가기
 
@@ -401,6 +402,59 @@ A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 L
 | `bundled` | `app/build/outputs/mapping/bundled/mapping.txt` |
 
 둘 다 빌드 산출물이라 추적하지 않는다. **출시한 빌드의 `mapping.txt`를 보관하는 것은 사람 몫이다**(R9). 도구는 Android SDK `cmdline-tools`의 `retrace`이고 명령은 같은 절차 문서의 「매핑으로 스택 풀기」에 있다 — **그 명령은 아직 돌려 본 적이 없다.**
+
+## 크래시 리포팅(Sentry)
+
+`release` · `bundled` 빌드는 DSN이 들어 있으면 Java/Kotlin 크래시 · ANR · (API 30 이상) 네이티브 크래시 tombstone · JS 예외를 Sentry로 보낸다. 결정 · 확인한 것과 못 한 것은
+[ADR-0058](../../docs/adr/0058-crash-reporting-sentry.md)이, 내보내는 값의 목록은 [Android 데이터 보안](../../docs/android-data-safety.md)이 진다 — 여기에는 다루는 법만 적는다.
+**2026-10-13 현재 DSN을 넣은 빌드는 한 번도 돌지 않았다** — Sentry로 실제로 나간 이벤트는 0건이다([크래시 리포팅 e2e](../../docs/e2e/crash-reporting.md) B단계 대기).
+
+**설정 값 넷.** 환경 변수를 먼저 읽고, 없으면 추적하지 않는 `apps/android/sentry.properties`(`.gitignore` — 토큰이 든다. 커밋하지 않는다)를 읽고, 그것도 없으면 빈 값이다(`app/sentry.gradle`).
+
+| 값 | 환경 변수 | `sentry.properties` 키 | 없으면 |
+|---|---|---|---|
+| DSN | `SENTRY_DSN` | `dsn` | SDK를 초기화하지 않는다 — **빌드는 그대로 된다**(`google-services.json`과 같은 태도) |
+| 인증 토큰 | `SENTRY_AUTH_TOKEN` | `auth.token` | 매핑 업로드 작업이 SKIPPED |
+| 조직 | `SENTRY_ORG` | `defaults.org` | 같음 |
+| 프로젝트 | `SENTRY_PROJECT` | `defaults.project` | 같음 |
+
+- **`debug`는 DSN이 있어도 보내지 않는다.** `BuildConfig.SENTRY_DSN`이 `debug`에서는 늘 `""`다 — dev 서버 · HMR 오류가 수집기를 더럽히지 않게 한다. DSN을 읽는 것은 `release`이고 `bundled`는 `initWith release`로 물려받는다.
+- **DSN은 `https://<키>@<호스트>/<숫자>` 꼴만 받는다.** 빈 값 · `http://` · `키:비밀@` 옛 형식 · 경로 뒤에 꼬리가 붙은 값은 「DSN 없음」으로 처리된다(`CrashReportConfig.dsnFrom`) — 오타가 나도 앱은 뜨고 조용히 안 보낸다.
+- **초기화는 손으로 한다.** 매니페스트가 `io.sentry.auto-init=false`를 두고 SDK의 provider 둘(`SentryInitProvider` · `SentryPerformanceProvider`)을 `tools:node="remove"`로 걷는다. `DuruApplication.onCreate`가 첫 일로
+  `CrashReporting.start(this)`를 부르고, DSN이 유효할 때만 `SentryAndroid.init`이 돈다. DSN 없는 빌드에서는 `io.sentry` 코드가 한 줄도 돌지 않는다.
+- **JS 예외는 호스트 모듈이 아니라 `LynxViewClient.onReceivedError`로 받는다**(`MainActivity`). 받는 것은 Lynx 오류 코드 200번대(background) · 1100번대(메인 스레드)뿐이고, `CrashReportPayload` → `CrashScrub`이
+  이름 · 메시지 · 스택 넷으로 닫고 지운 뒤 자른다. 프로세스당 20건까지 보낸다. `io.sentry`를 import하는 소스는 `CrashEventPolicy` · `CrashReporting` 둘뿐이다.
+- **사용자 식별자 · breadcrumb · 스크린샷 · 뷰 계층은 보내지 않는다.** 옵션은 `CrashReporting.start`에 명시로 고정돼 있다 — 옵션을 더하거나 뺄 때는 ADR-0058 D6과 데이터 보안 문서를 같이 고친다.
+
+**debug 빌드에서 도착을 보는 법.** `adb logcat -s DuruCrash` — 호스트에 닿은 Lynx 오류마다 `<결말> <코드> <원문 앞 500자>` 한 줄이 찍힌다(`BuildConfig.DEBUG`일 때만). debug는 DSN이 없으므로 결말은
+`DISABLED`(받는 오류) 또는 `REJECTED`(받지 않는 오류)다. **이 줄에는 지우기 전 원문이 그대로 찍힌다.** `release` · `bundled`에는 이 로그가 없다.
+
+**깔때기의 판정은 JVM JUnit이다**(`app/src/test/java/com/libitum/host/Crash*Test.java`). `pnpm verify`와 CI에는 Gradle이 없으므로 호스트 Java를 고치면 손으로 돌린다:
+
+```sh
+cd apps/android && ANDROID_HOME=~/Library/Android/sdk ./gradlew :app:testDebugUnitTest
+```
+
+Gradle 결선(의존 고정 · DSN 기본값 · 업로드 작업의 조건 · 매니페스트 · `.gitignore` · 초기화 순서 · `io.sentry` import 범위)은 정적 검사 `pnpm test:android-bundle`(GW-S1 ~ S7 — `pnpm verify` 안)이 지킨다.
+
+**R8 매핑 업로드.** Sentry Gradle 플러그인을 쓰지 않는다. `app/sentry.gradle`이 `Exec` 작업 둘을 등록한다.
+
+| 작업 | 언제 도나 | 올리는 것 |
+|---|---|---|
+| `uploadSentryMappingRelease` | `bundleRelease`의 `finalizedBy` — 출시 AAB를 만들면 뒤따라 돈다 | `app/build/outputs/mapping/release/mapping.txt` |
+| `uploadSentryMappingBundled` | **어디에도 매달려 있지 않다** — 기기 확인 때 `./gradlew :app:uploadSentryMappingBundled`로 손으로 | `app/build/outputs/mapping/bundled/mapping.txt` |
+
+- 토큰 · 조직 · 프로젝트가 **모두** 있을 때만 돌고, 하나라도 없으면 `Sentry mapping upload skipped: token, org or project is not set.` 한 줄 뒤 SKIPPED다. 두 작업 모두 `assemble*`의 작업 그래프에는 없다 —
+  SKIPPED를 보려면 이름으로 부른다.
+- **`sentry-cli`를 따로 깔아야 한다**(PATH). 토큰은 있는데 CLI가 없으면 작업이 **실패한다** — 조용히 넘어가지 않는다. 토큰은 환경 변수로만 넘어가고 명령줄에 실리지 않는다.
+- 매핑 UUID는 `applicationId:versionName:versionCode:buildType`에서 만든 이름 기반 UUID이고 `BuildConfig.SENTRY_PROGUARD_UUID`와 `sentry-cli upload-proguard --uuid`가 같은 값을 쓴다. **같은 `versionCode`로 코드를 바꿔
+  다시 빌드해 올리면 Sentry의 매핑이 덮인다** — `versionCode`를 올리지 않은 빌드의 매핑을 올리지 않는다.
+- **실제 업로드는 한 번도 돌지 않았다.** 본 것은 인증 값이 없을 때의 SKIPPED까지다(2026-10-13).
+- `app/proguard-rules.pro`는 그대로 9줄이다. Sentry의 keep 규칙은 AAR이 싣고 온다(위 「코드 축소(R8)와 난독화」 · ADR-0052 적용 기록 ⟨2026-10-13⟩).
+
+**NDK를 넣지 않았다.** 의존은 `io.sentry:sentry-android-core:8.60.0` 하나이고 `sentry-android`(묶음) · `sentry-android-ndk` · `sentry-android-replay`를 넣지 않는다. `sentry-android-ndk`가 싣는 64비트 `.so`가
+아래 「16 KB 페이지」의 판정(`GNU_RELRO` 끝)을 통과하지 못해 `verify*NativeAlignment`가 깨진다. 그래서 C/C++ 크래시는 **API 30 이상에서만, 심볼 없는 프레임으로** 올라간다(SDK의 tombstone 통합).
+넣으려면 `sentry-native`를 16 KB로 다시 빌드해 [`vendor-maven/`](vendor-maven/README.md)에 싣는다 — 아직 하지 않았다([ADR 보류 표](../../docs/adr/README.md#보류-표)). `.so`는 하나도 늘지 않았다.
 
 ## 16 KB 페이지
 
