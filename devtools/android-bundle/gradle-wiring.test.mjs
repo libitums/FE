@@ -230,3 +230,30 @@ test("GW-S8: CrashReporting.java carries the Sentry option lines the contract fi
     );
   }
 });
+
+test("GW-S9: sessions are owned by the app and started through the SDK queue", async () => {
+  const source = withoutComments(await readOptional(join(hostDir, "CrashReporting.java")));
+  for (const needle of [
+    "setEnableAutoSessionTracking(false)",
+    "ProcessLifecycleOwner",
+    "getExecutorService()",
+  ]) {
+    assert.ok(source.includes(needle), `CrashReporting.java lacks ${needle}`);
+  }
+  for (const call of ["startSession", "endSession"]) {
+    assert.match(
+      source,
+      new RegExp(`Sentry(?:\\.|::)${call}`),
+      `CrashReporting.java lacks Sentry ${call}`,
+    );
+  }
+  assert.ok(
+    !source.includes("setEnableAutoSessionTracking(true)"),
+    "auto session tracking must stay off",
+  );
+  const gradle = await readOptional(join(android, "app/build.gradle"));
+  assert.ok(
+    gradle.includes("androidx.lifecycle:lifecycle-process:2.6.2"),
+    "lifecycle-process must be pinned",
+  );
+});

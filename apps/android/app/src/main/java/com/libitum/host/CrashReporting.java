@@ -1,16 +1,24 @@
 package com.libitum.host;
 
 import android.app.Application;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import com.lynx.tasm.LynxError;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ProcessLifecycleOwner;
 import io.sentry.Sentry;
 import io.sentry.android.core.SentryAndroid;
+import io.sentry.android.core.SentryAndroidOptions;
 
 /**
  * The only place that touches Android and Sentry for crash reporting. Without a valid DSN no
  * io.sentry code runs and the funnel has no sink. Nothing here may stop the app (docs/adr/0058).
  */
 final class CrashReporting {
+  private static volatile SentryAndroidOptions sentryOptions;
   private static volatile CrashReporter reporter = new CrashReporter(null, new CrashReportBudget());
 
   private CrashReporting() {}
@@ -24,6 +32,7 @@ final class CrashReporting {
         return;
       }
       SentryAndroid.init(app, options -> {
+        sentryOptions = options;
         options.setDsn(dsn);
         options.setEnvironment(BuildConfig.BUILD_TYPE);
         options.setRelease(CrashReportConfig.releaseOf(
@@ -52,7 +61,8 @@ final class CrashReporting {
         options.setEnableRootCheck(false);
         options.setSendModules(false);
         options.setAttachServerName(false);
-        options.setEnableAutoSessionTracking(true);
+        // The app owns the session clock; see watchSessions.
+        options.setEnableAutoSessionTracking(false);
         options.setEnableUncaughtExceptionHandler(true);
         options.setAnrEnabled(true);
         options.setReportHistoricalAnrs(false);
@@ -63,8 +73,39 @@ final class CrashReporting {
         options.setEnableScopeSync(false);
       });
       reporter = new CrashReporter(payload -> Sentry.captureEvent(CrashEventPolicy.eventFrom(payload)), budget);
+      watchSessions();
     } catch (RuntimeException | LinkageError error) {
       reporter = new CrashReporter(null, budget);
+    }
+  }
+
+  // Sessions start on the SDK's own queue, behind the work that finalizes the previous session, so a
+  // crashed session is not overwritten by the new one (SDK 8.60.0 race, docs/adr/0058).
+  private static void watchSessions() {
+    SentryAndroidOptions options = sentryOptions;
+    if (options == null) return;
+    CrashSessionGate gate = new CrashSessionGate();
+    Handler main = new Handler(Looper.getMainLooper());
+    ProcessLifecycleOwner.get().getLifecycle().addObserver(new DefaultLifecycleObserver() {
+      @Override public void onStart(LifecycleOwner owner) {
+        if (gate.shouldStartOnForeground()) submit(options, Sentry::startSession);
+      }
+
+      @Override public void onStop(LifecycleOwner owner) {
+        long stoppedAt = SystemClock.elapsedRealtime();
+        gate.onBackground(stoppedAt);
+        main.postDelayed(() -> {
+          if (gate.shouldEndAt(SystemClock.elapsedRealtime())) submit(options, Sentry::endSession);
+        }, CrashSessionGate.END_AFTER_MS);
+      }
+    });
+  }
+
+  private static void submit(SentryAndroidOptions options, Runnable work) {
+    try {
+      options.getExecutorService().submit(work);
+    } catch (RuntimeException ignored) {
+      // A closed SDK queue means no session bookkeeping; the app keeps running.
     }
   }
 
