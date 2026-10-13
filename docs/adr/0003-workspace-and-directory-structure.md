@@ -376,7 +376,7 @@ D6이 적지 않은 넷을 닫는다. **넷 다 코드에는 이미 패턴이 �
 판단과 같다).
 
 **무엇이 요구했나.** 카탈로그 레슨의 짝 맞추기 타일(`screens/pair-match/PairMatchTile.tsx`,
-[ADR-0057](0057-catalog-learning-session.md) 적용 기록 A5)이다. 타일이 **골라 둠 · 짝 맺힘**
+[ADR-0058](0058-catalog-learning-session.md) 적용 기록 A5)이다. 타일이 **골라 둠 · 짝 맺힘**
 둘로 그려지는데 `selected` 하나로는 둘을 부를 수 없다. 뜻과 `selected` · `done`으로 합치지
 않은 이유는 D7 표 아래 항목이 진다.
 

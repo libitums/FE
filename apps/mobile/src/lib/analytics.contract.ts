@@ -124,8 +124,8 @@ export type AnalyticsCaptureClient = {
 
 /**
  * App이 받는 sink 일곱입니다. 키 이름이 App props 이름과 같습니다. **옵셔널이 없습니다**
- * (ADR-0007 D5) — 보내지 않을 때는 각 값이 `null`입니다. no-op 함수로 수집을 가장하지
- * 않는다는 기존 sink 규약(`MessengerEventSink` 주석)을 그대로 따릅니다.
+ * (ADR-0007 D5) — 보낼 곳이 하나도 없을 때는 각 값이 `null`입니다(Meta 로거 합성은 진입점,
+ * docs/adr/0057-meta-app-events.md D8). no-op 함수로 수집을 가장하지 않는다는 기존 sink 규약을 따릅니다.
  */
 export type AnalyticsEventSinks = {
   readonly entryEventSink: EntryEventSink;
