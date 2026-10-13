@@ -1,0 +1,7 @@
+// Meta 앱 이벤트 SDK 값(ADR-0057). 이 파일은 추적하고 값은 비워 둔다.
+// 값은 추적하지 않는 Meta.local.xcconfig에 적는다(Meta.local.xcconfig.example 참조).
+// 둘 다 비어 있으면 SDK를 시작하지 않고 모듈도 등록하지 않는다 — 앱은 이 SDK가 없을 때와 같다.
+META_APP_ID =
+META_CLIENT_TOKEN =
+
+#include? "Meta.local.xcconfig"

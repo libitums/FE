@@ -62,6 +62,14 @@ payload는 바꾸지 않는다 — 새 이벤트도 없다.
   **`phc_`로 시작하는 프로젝트 키만** 받는다. 비었거나 `phx_`(개인 API 키) 등이면 설정이 `null`이다.
 - 설정이나 전송 수단 중 하나라도 `null`이면 **클라이언트를 만들지 않고 sink 여섯이 `null`** 이다.
   요청은 0건이다. 호출 지점의 `sink?.(event)`가 이미 「보내지 않음」을 뜻한다 — 맥락 4의 규약 그대로.
+- ⟨2026-10-13 — 적용 기록이고 결정을 바꾸지 않는다⟩ **sink가 `null`이 아닌 조건이 「PostHog 클라이언트가 있다」에서
+  「보낼 곳이 하나라도 있다」로 넓어졌다.** 진입점이 이 ADR의 세션이 낸 sink 일곱을 Meta 앱 이벤트 로거와 한 번 합친다
+  (`productEventSinks` — [ADR-0057](0057-meta-app-events.md) D8). 호스트에 `MetaAppEventsModule`이 등록된 빌드에서는
+  `entryEventSink` · `messengerEventSink` · `visualNovelEventSink` 셋이 **PostHog 키가 없어도 함수다** — 원래 sink가
+  `null`이면 PostHog 쪽은 건너뛰고 Meta 쪽만 부른다. 나머지 넷과, 모듈이 없는 빌드의 일곱은 이 절 그대로다.
+  PostHog로 나가는 것은 달라지지 않았다 — 이벤트 이름 · 속성 · `capture` 매핑 · 「PostHog 요청 0건」의 조건은 그대로이고,
+  두 전송은 서로의 예외를 막지 않는다(D11과 같은 방향). 「no-op으로 가장하지 않는다」도 그대로다 — 보낼 곳이 하나도
+  없으면 여전히 `null`이다.
 
 ### D3. SDK는 background 스레드 전용이다 — **빌드가** 막는다
 
@@ -268,7 +276,7 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - 묻는 질문: 「카탈로그 학습이 실제로 진행되는가」 = 유닛별 `finished` / `started`, 통과율(`verdict = passed` 비율), `episode_final_passed` 사용자 수,
     `skippedItemCount` 분포(3d · 오디오 우선순위의 근거). 다음 에피소드 진입은 `episode_intro_viewed`(`episodeId` u02 …)로 잇는다. 대시보드 인사이트 추가는 이 회차 범위 밖이다.
   - ⚠ sink 이름과 책임의 어긋남이 더 커졌다 — 학습 이벤트까지 `episodeIntroEventSink`가 진다. 새 sink를 만들면 sink 목록을 펼치는 테스트 · 진입점 · App props가
-    행동 변화 없이 바뀌어 미뤘다([ADR-0057](0057-catalog-learning-session.md) 「버린 대안」 8).
+    행동 변화 없이 바뀌어 미뤘다([ADR-0058](0058-catalog-learning-session.md) 「버린 대안」 8).
   - PostHog에 실제로 도착했는지는 보지 않았다 — unit · integration의 sink 호출까지다.
 - ⟨2026-10-13 — 3d-1 단어 카드 · 짝 맞추기 · 그림 고르기. 적용 기록이고 결정을 바꾸지 않는다⟩ **새 이벤트는 없고 이름은 33개 그대로다.**
   `episode_lesson_started`에 속성 하나가 더해졌다.
@@ -282,14 +290,14 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - 묻는 질문: 「새 유형이 들어온 전후로 레슨 완료율이 어떻게 바뀌는가」 = 유닛별 `finished(verdict = passed)` / `started`를 앱 버전 · 날짜로 가른다.
     새 유형이 든 유닛은 `shownItemCount − questionCount > 0`(카드 수)과 `skippedItemCount` 감소로 식별한다. 대시보드 인사이트 추가는 이 회차 범위 밖이다.
   - **한계** — 카드에서의 이탈과 채점 문항에서의 이탈을 가르지 못한다. 그림 로드 실패 횟수는 세지 않는다(지금 데이터에 그림 문항이 0이라 잴 것이 없다 —
-    [ADR-0057](0057-catalog-learning-session.md) 적용 기록 A6). PostHog 도착은 이번에도 보지 않았다.
-- ⟨2026-10-13 — 3d-2 학습자 프로필. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 셋이 더해져 이름이 33 → 36개다**(모양 37 → 40). 결정은 [ADR-0058](0058-learner-profile.md) D8.
+    [ADR-0058](0058-catalog-learning-session.md) 적용 기록 A6). PostHog 도착은 이번에도 보지 않았다.
+- ⟨2026-10-13 — 3d-2 학습자 프로필. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 셋이 더해져 이름이 33 → 36개다**(모양 37 → 40). 결정은 [ADR-0059](0059-learner-profile.md) D8.
   - **`learner_profile_saved`** — 이름 · 나라를 저장한 순간. 속성 `entry`(`onboarding` | `episode` | `settings`) · `change`(`created` | `updated`). 설정에서 같은 값으로 저장하면 나지 않는다.
   - **`learner_profile_skipped`** — 건너뛴 순간. 속성 `entry`(`onboarding` — 넷째 스텝을 빈 채 넘김 | `episode` — 에피소드 전 `Skip`). 에피소드 전 화면에서 **뒤로**는 건너뜀이 아니라 나지 않는다.
   - **`learner_profile_opened`** — 설정에서 `Name and country in lessons`를 연 순간(형제 `profile_opened` · `feedback_opened`와 같은 꼴). 속성 없음.
   - **값은 어떤 속성으로도 싣지 않는다** — 이름 · 나라 · 길이 · 문자 종류 같은 파생값도 없다. 계약 단계의 `fields` 속성은 「둘 다 필수」(사용자 결정)로 쓸모가 없어 뺐다.
   - sink는 새로 만들지 않았다 — 온보딩 `entryEventSink` · 에피소드 전 `episodeIntroEventSink` · 설정 `settingsEventSink`. 셋째 계약 union에 같은 이벤트 타입이 들어간다.
-  - 묻는 질문: 「학습자가 이름 · 나라를 넣는가」 = 진입점별 `saved` / (`saved` + `skipped`). 건너뜀 비율이 높으면 ADR-0058 재검토 조건 5.
+  - 묻는 질문: 「학습자가 이름 · 나라를 넣는가」 = 진입점별 `saved` / (`saved` + `skipped`). 건너뜀 비율이 높으면 ADR-0059 재검토 조건 5.
   - **한계** — 에피소드 전 화면이 보인 수는 세지 않는다(보임 이벤트 없음 — 뒤로 나간 수는 모른다). GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다. PostHog 도착은 보지 않았다.
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다

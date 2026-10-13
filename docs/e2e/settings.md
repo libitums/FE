@@ -19,7 +19,7 @@
 > `terms_opened` 대신 `legal_document_opened`다.
 
 > ⟨2026-10-13 — 학습자 프로필⟩ **이동 항목에 `Name and country in lessons`가 `User profile` 바로 다음에 섰다**
-> ([ADR-0058](../adr/0058-learner-profile.md)). 지금 이동 항목은 여섯이다 — `User profile` · `Name and country in lessons` · `Notifications` ·
+> ([ADR-0059](../adr/0059-learner-profile.md)). 지금 이동 항목은 여섯이다 — `User profile` · `Name and country in lessons` · `Notifications` ·
 > `Send feedback` · `Privacy Policy` · `Terms of Use`. T1 · V3′의 순서 기대값은 둘째 자리에 이 행이 끼는 것으로 읽는다(VoiceOver 이름은
 > `Name and country in lessons, Not set` 또는 지금 값). 이 행을 누르는 흐름은 [학습자 프로필 e2e](learner-profile.md) E10이 진다.
 

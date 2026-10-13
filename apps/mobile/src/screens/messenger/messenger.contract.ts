@@ -87,7 +87,8 @@ export type MessengerEvent =
     };
 
 /**
- * `null`은 이 실행에서 보내지 않는다는 뜻입니다(PostHog 키가 없거나 메인 스레드).
+ * `null`은 이 실행에서 보낼 곳이 하나도 없다는 뜻입니다(PostHog 클라이언트도 Meta 로거도
+ * 없거나 메인 스레드 — docs/adr/0057-meta-app-events.md D8).
  * no-op 함수나 메모리 배열로 수집을 가장하지 않습니다. 대화 본문·답장 문구는
  * 이벤트에 없습니다.
  */

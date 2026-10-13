@@ -2,7 +2,7 @@
 
 학습자가 이름과 나라를 넣고, 그 값이 레슨 문장의 `{이름}` · `{나라}`에 서는 것을 기기에서 확인하는 **수동 절차**다 — 세 진입점(온보딩 넷째 스텝 · 에피소드 전 · 설정)이
 계약대로 서는지, 나라 고르기와 미리보기가 기기에서 어떻게 보이는지, 서버 저장이 원격 DB 적용 전후로 어떻게 다르게 도는지.
-결정은 [ADR-0058](../adr/0058-learner-profile.md), 화면은 [화면 명세](../screens.md)의 온보딩 · 「학습자 프로필 묻기」 · 「Name and country」 행,
+결정은 [ADR-0059](../adr/0059-learner-profile.md), 화면은 [화면 명세](../screens.md)의 온보딩 · 「학습자 프로필 묻기」 · 「Name and country」 행,
 측정 이벤트는 [ADR-0029](../adr/0029-product-analytics-posthog.md) D14 적용 기록 ⟨2026-10-13 — 3d-2⟩, 개인정보는 [iOS 개인정보](../ios-privacy.md) 「학습자 프로필」이 진다.
 
 | 이미 지는 층     | 무엇을                                                                                                                                                                         |
@@ -51,7 +51,7 @@
 | E17     | VoiceOver(실기)                                                                                          | 미리보기가 한 요소(`You'll say: … Meaning: …`) · 이름 칸 `Your name, …` · 오류 `Error: …` · 나라 줄 `Country, Germany` · 목록 줄 `Germany, selected` · 결과 수 낭독 · `Country set to Germany` · 제목이 머리말                                                         |
 | E18     | 동작 줄이기를 켜고 E1 ~ E5 · E11                                                                         | 같은 흐름 · 양식 ↔ 나라 고르기 교체에 움직임 없음                                                                                                                                                                                                                     |
 | E19     | 최대 Dynamic Type · 375×667                                                                              | 미리보기 · 셀 · 목록 줄이 줄바꿈되고 잘리지 않는다 · 온보딩 넷째 스텝에서 양식과 점 · 제목이 겹치지 않는다 · 자판이 올라와도 이름 칸이 보인다                                                                                                                          |
-| E20     | 한글 자판으로 이름 `민지`                                                                                | 저장된다 · 「민지로 예약했어요.」 · 「저는 민지예요.」 · **로마자 줄에는 「민지」가 한글로 선다**(ADR-0058 D5의 한계). **[모름 닫기]** 조합 중 입력 값                                                                                                                       |
+| E20     | 한글 자판으로 이름 `민지`                                                                                | 저장된다 · 「민지로 예약했어요.」 · 「저는 민지예요.」 · **로마자 줄에는 「민지」가 한글로 선다**(ADR-0059 D5의 한계). **[모름 닫기]** 조합 중 입력 값                                                                                                                       |
 | E21     | 튜토리얼 학습 하나 · u01 레슨 하나                                                                       | 3d-2 전과 같은 화면 · 판정(회귀)                                                                                                                                                                                                                                      |
 | E22     | PostHog Live events(`environment = development`)                                                         | `learner_profile_saved`(`entry` · `change`) · `learner_profile_skipped`(`entry`) · `learner_profile_opened` — **속성에 이름 · 나라가 없다**                                                                                                                              |
 | E23     | Maestro `e2e/entry-flow.yaml`                                                                            | `Next` 셋 · `Get started`로 로그인 화면에 닿는다(넷째 스텝을 빈 채 건너뜀)                                                                                                                                                                                             |

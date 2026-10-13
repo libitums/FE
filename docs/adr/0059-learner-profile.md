@@ -1,4 +1,4 @@
-# ADR-0058 — 학습자 프로필: 이름과 나라를 계정에 두고, 레슨 문장의 `{이름}` · `{나라}`를 채운다
+# ADR-0059 — 학습자 프로필: 이름과 나라를 계정에 두고, 레슨 문장의 `{이름}` · `{나라}`를 채운다
 
 - 상태: **채택 — 클라이언트 쪽.** 서버 표 · RPC는 저장소와 embedded Postgres 테스트에서만 돌았고 **원격 DB에는 아직 적용하지 않았다**(ADR README 보류 표).
   사용자 결정(2026-10-13)은 넷이다 — **이름과 나라는 둘 다 있어야 저장된다** · 온보딩의 **넷째(마지막) 스텝**에서 묻는다 · 에피소드 전에는 **기록이 없을 때만** 묻는다 ·
@@ -9,9 +9,9 @@
 - 다루는 축: **학습자 프로필** — 무엇을 저장하는가(저장 단위) · 어디에 두는가(서버 표와 기기 캐시) · 기기와 서버가 어긋날 때 누가 이기는가 · 나라 목록의 범위와 한국어 · 로마자 · 영어 표기 ·
   이름으로 받는 글자 · 언제 묻는가(세 진입점) · 레슨 문장에 어떻게 서는가(치환 스크립트 셋) · 개인정보로서 무엇을 내보내지 않는가.
   **다루지 않는 것**: 계정 정보(소셜 계정의 이름 · 이메일 — 설정의 `User profile`은 그대로 읽기 전용이다), 콘텐츠가 앱에 오는 길([ADR-0056](0056-episode-content-delivery.md)),
-  레슨 화면 자체([ADR-0057](0057-catalog-learning-session.md)), 분석 전송([ADR-0029](0029-product-analytics-posthog.md)).
+  레슨 화면 자체([ADR-0058](0058-catalog-learning-session.md)), 분석 전송([ADR-0029](0029-product-analytics-posthog.md)).
 - 이어받는 결정: [ADR-0056](0056-episode-content-delivery.md) D7(치환은 조사 규칙 표 하나 — 아래 D6이 **스크립트를 셋으로 넓히고** 「로마자 이름 필드는 3d에서 정한다」에 답한다),
-  [ADR-0057](0057-catalog-learning-session.md) D12(계획 메모 — 아래 D9가 **키에 프로필을 더한다**),
+  [ADR-0058](0058-catalog-learning-session.md) D12(계획 메모 — 아래 D9가 **키에 프로필을 더한다**),
   [ADR-0035](0035-learning-progress-and-streak-on-server.md) D1(표 + RPC, 앱은 표에 닿지 않는다 — 같은 틀의 셋째 표),
   [ADR-0032](0032-account-sign-out-and-deletion.md) D6(로그아웃 · 삭제 뒤처리 — 키 둘이 표에 붙는다),
   [ADR-0007](0007-app-internals-state-routing-data-errors.md) D1(영속 저장소의 예외 — 둘이 는다),
@@ -155,7 +155,7 @@
 
 ### D9. 계획 메모 — 프로필 참조를 키에 더한다
 
-`catalogLessonPlanFor` · `catalogFinalPlanFor`가 넷째 인자 `profile`을 **필수로** 받고 메모 키에 그 참조를 더한다(ADR-0057 D12의 「3d가 프로필을 내리면」).
+`catalogLessonPlanFor` · `catalogFinalPlanFor`가 넷째 인자 `profile`을 **필수로** 받고 메모 키에 그 참조를 더한다(ADR-0058 D12의 「3d가 프로필을 내리면」).
 훅이 지키는 규율: 프로필 참조는 값이 바뀔 때만 새로 서고, 기록이 없으면 늘 `noLearnerProfile` 그 참조다 — 프로필 없는 실행의 메모 동작은 지금과 같다.
 기본값 인자를 두지 않는 이유 — 넘기는 것을 잊은 호출이 조용히 빈 프로필로 컴파일되는 것이 이번에 고친 결함의 꼴이다.
 

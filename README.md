@@ -167,3 +167,4 @@ PUBLIC_POSTHOG_KEY=phc_<프로젝트 API 키>
 | [docs/adr/](docs/adr/) | 왜 그렇게 정했는가 — 결정 기록. 코드보다 먼저 읽는 곳 |
 | [docs/e2e/](docs/e2e/) | 수동으로 통과시킬 흐름 |
 | [docs/ios-privacy.md](docs/ios-privacy.md) | iOS 앱 API 선언, Archive 확인과 남은 SDK 배포 조건 |
+| [docs/meta-app-events.md](docs/meta-app-events.md) | Meta 앱 이벤트 SDK — 값 넣기, 수신 확인, 스토어 고지에서 바뀌는 것 |
