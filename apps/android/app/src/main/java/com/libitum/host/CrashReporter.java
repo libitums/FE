@@ -1,6 +1,6 @@
 package com.libitum.host;
 
-/** Funnel from Lynx errors to a sink; no Android dependency. Scaffold only. */
+/** Funnel from Lynx errors to a sink; no Android dependency. */
 final class CrashReporter {
   interface CrashSink { void send(CrashReportPayload payload); }
 
@@ -14,5 +14,17 @@ final class CrashReporter {
     this.budget = budget;
   }
 
-  Outcome report(int code, String level, String text) { return Outcome.REJECTED; }
+  /** Never throws. REJECTED and DISABLED spend no budget. */
+  Outcome report(int code, String level, String text) {
+    try {
+      CrashReportPayload payload = CrashReportPayload.fromLynxError(code, level, text);
+      if (payload == null) return Outcome.REJECTED;
+      if (sink == null) return Outcome.DISABLED;
+      if (!budget.tryAcquire()) return Outcome.OVER_BUDGET;
+      sink.send(payload);
+      return Outcome.SENT;
+    } catch (RuntimeException error) {
+      return Outcome.FAILED;
+    }
+  }
 }

@@ -11,6 +11,7 @@ import com.lynx.tasm.service.LynxServiceCenter;
 public final class DuruApplication extends Application {
   @Override public void onCreate() {
     super.onCreate();
+    CrashReporting.start(this);
     Fresco.initialize(this);
     LynxServiceCenter.inst().registerService(LynxImageService.getInstance());
     LynxServiceCenter.inst().registerService(LynxLogService.INSTANCE);

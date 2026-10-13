@@ -1,0 +1,59 @@
+// Crash reporting build settings (docs/adr/0058). Applied from build.gradle before the android block.
+// Without a DSN the build still succeeds and the app never initializes Sentry, the same stance as
+// google-services.json. The Sentry Gradle plugin is deliberately not used.
+
+def sentryProps = new Properties()
+def sentryFile = rootProject.file('sentry.properties')
+if (sentryFile.exists()) {
+  sentryFile.withInputStream { sentryProps.load(it) }
+}
+
+// Environment variable first, then the untracked sentry.properties, then ''.
+ext.sentrySetting = { String envName, String propName ->
+  def value = System.getenv(envName) ?: sentryProps.getProperty(propName) ?: ''
+  value.trim()
+}
+
+// A value that is safe inside a Java string literal (a DSN has neither quotes nor backslashes).
+ext.sentryJavaLiteral = { String value ->
+  "\"${value.replace('\\', '').replace('"', '')}\"".toString()
+}
+
+// Fixed before the build, so BuildConfig and `sentry-cli upload-proguard --uuid` can share it.
+ext.sentryProguardUuid = { String applicationId, String versionName, int versionCode, String buildType ->
+  UUID.nameUUIDFromBytes("${applicationId}:${versionName}:${versionCode}:${buildType}".getBytes('UTF-8')).toString()
+}
+
+afterEvaluate {
+  def token = sentrySetting('SENTRY_AUTH_TOKEN', 'auth.token')
+  def org = sentrySetting('SENTRY_ORG', 'defaults.org')
+  def project = sentrySetting('SENTRY_PROJECT', 'defaults.project')
+  def config = android.defaultConfig
+
+  def registerUpload = { String buildType ->
+    def uuid = sentryProguardUuid(config.applicationId, config.versionName, config.versionCode, buildType)
+    tasks.register("uploadSentryMapping${buildType.capitalize()}", Exec) {
+      group = 'upload'
+      description = "Uploads the ${buildType} R8 mapping to Sentry when token, org and project are set."
+      // The token goes through the environment, never the command line.
+      environment 'SENTRY_AUTH_TOKEN', token
+      commandLine([
+          'sentry-cli', 'upload-proguard',
+          '--uuid', uuid,
+          '--org', org,
+          '--project', project,
+          layout.buildDirectory.file("outputs/mapping/${buildType}/mapping.txt").get().asFile.path,
+      ])
+      onlyIf {
+        def ready = !token.isEmpty() && !org.isEmpty() && !project.isEmpty()
+        if (!ready) logger.lifecycle("Sentry mapping upload skipped: token, org or project is not set.")
+        ready
+      }
+    }
+  }
+
+  def releaseUpload = registerUpload('release')
+  // Run by hand after a device-check build; nothing depends on it.
+  registerUpload('bundled')
+  tasks.named('bundleRelease') { finalizedBy releaseUpload }
+}

@@ -10,6 +10,8 @@ if (file('google-services.json').exists()) {
   apply plugin: 'com.google.gms.google-services'
 }
 
+apply from: 'sentry.gradle'
+
 // Host audio has one source of truth: apps/ios/Host/{audio,sfx}. Each variant gets its own
 // generated assets directory; registering it through the Variant API makes every consumer
 // (merge assets, lint, bundle) depend on the sync task.
@@ -56,15 +58,23 @@ android {
     versionCode 2
     versionName '0.1.0'
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    // debug keeps these empty: dev-server and HMR errors must not reach the collector.
+    buildConfigField 'String', 'SENTRY_DSN', '""'
+    buildConfigField 'String', 'SENTRY_PROGUARD_UUID', '""'
   }
 
   buildTypes {
     release {
       minifyEnabled true
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+      buildConfigField 'String', 'SENTRY_DSN', sentryJavaLiteral(sentrySetting('SENTRY_DSN', 'dsn'))
+      buildConfigField 'String', 'SENTRY_PROGUARD_UUID', sentryJavaLiteral(sentryProguardUuid(
+          defaultConfig.applicationId, defaultConfig.versionName, defaultConfig.versionCode, 'release'))
     }
     bundled {
       initWith release
+      buildConfigField 'String', 'SENTRY_PROGUARD_UUID', sentryJavaLiteral(sentryProguardUuid(
+          defaultConfig.applicationId, defaultConfig.versionName, defaultConfig.versionCode, 'bundled'))
       signingConfig signingConfigs.debug
       matchingFallbacks = ['release']
     }
