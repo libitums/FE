@@ -1,0 +1,26 @@
+/* 맵의 줄 — 구획 상자의 직계 자식입니다. 줄 사이 간격은 구획 상자의 `gap`이 줍니다.
+   종류는 클래스로 가릅니다(Lynx CSS의 속성 선택자 지원을 확인하지 못했습니다). */
+.journey-map-row {
+  align-self: stretch;
+}
+
+/* 일반 유닛 둘 — 두 칸이 같은 폭이고, 한쪽 라벨만 두 줄이 돼도 표식 둘이 한 선에 섭니다. */
+.journey-map-row-pair {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-16);
+  align-items: flex-start;
+}
+
+.journey-map-row-pair .journey-map-cell {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* 한 칸 줄 — 한 줄 전용 유닛과 짝을 잃은 일반 유닛은 줄 가운데에 섭니다. */
+.journey-map-row-solo,
+.journey-map-row-orphan {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

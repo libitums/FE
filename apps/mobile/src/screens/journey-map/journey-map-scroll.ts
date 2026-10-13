@@ -67,12 +67,22 @@ export function measureRects(
         .select(`#${id}`)
         .invoke({
           method: "boundingClientRect",
-          success: (rect: Partial<MeasuredRect> | null | undefined) => {
+          success: (
+            rect:
+              | { top?: number; height?: number; left?: number; width?: number }
+              | null
+              | undefined,
+          ) => {
             if (typeof rect?.top !== "number" || typeof rect.height !== "number") {
               settle(null);
               return;
             }
-            rects[index] = { top: rect.top, height: rect.height, centerX: null };
+            // 가로 값을 못 읽어도 실패가 아닙니다 — 꼬리만 가운데로 남습니다.
+            const centerX =
+              typeof rect.left === "number" && typeof rect.width === "number"
+                ? rect.left + rect.width / 2
+                : null;
+            rects[index] = { top: rect.top, height: rect.height, centerX };
             pending -= 1;
             if (pending === 0) {
               settle(rects);
@@ -87,14 +97,19 @@ export function measureRects(
   }
 }
 
+// `scrollIntoView`의 `behavior`는 `"smooth" | "none"`입니다.
+function intoViewBehavior(behavior: MapScrollBehavior): "smooth" | "none" {
+  return behavior === "smooth" ? "smooth" : "none";
+}
+
 /** 맵을 그 스크롤 자리로 옮깁니다. */
-export function scrollMapTo(scrollTop: number, _behavior: MapScrollBehavior): void {
+export function scrollMapTo(scrollTop: number, behavior: MapScrollBehavior): void {
   "background only";
   try {
     lynx
       .createSelectorQuery()
       .select(`#${scrollId}`)
-      .invoke({ method: "scrollTo", params: { offset: scrollTop, smooth: true } })
+      .invoke({ method: "scrollTo", params: { offset: scrollTop, smooth: behavior === "smooth" } })
       .exec();
   } catch {
     // 자리를 못 옮겨도 말풍선은 유닛 곁에 떠 있습니다.
@@ -103,7 +118,7 @@ export function scrollMapTo(scrollTop: number, _behavior: MapScrollBehavior): vo
 
 // 자리를 못 쟀을 때의 길입니다 — 목적지를 계산할 수 없으므로 가운데 정렬을 호스트에
 // 맡깁니다.
-export function scrollStepIntoView(id: JourneyStepId, _behavior: MapScrollBehavior): void {
+export function scrollStepIntoView(id: JourneyStepId, behavior: MapScrollBehavior): void {
   "background only";
   try {
     lynx
@@ -111,7 +126,9 @@ export function scrollStepIntoView(id: JourneyStepId, _behavior: MapScrollBehavi
       .select(`#${stepNodeId(id)}`)
       .invoke({
         method: "scrollIntoView",
-        params: { scrollIntoViewOptions: { block: "center", behavior: "smooth" } },
+        params: {
+          scrollIntoViewOptions: { block: "center", behavior: intoViewBehavior(behavior) },
+        },
       })
       .exec();
   } catch {
@@ -120,6 +137,20 @@ export function scrollStepIntoView(id: JourneyStepId, _behavior: MapScrollBehavi
 }
 
 // 자리를 못 쟀을 때의 길입니다 — 그 id의 상자를 가운데로 옮기는 일을 호스트에 맡깁니다.
-export function scrollNodeIntoView(_domId: string, _behavior: MapScrollBehavior): void {
+export function scrollNodeIntoView(domId: string, behavior: MapScrollBehavior): void {
   "background only";
+  try {
+    lynx
+      .createSelectorQuery()
+      .select(`#${domId}`)
+      .invoke({
+        method: "scrollIntoView",
+        params: {
+          scrollIntoViewOptions: { block: "center", behavior: intoViewBehavior(behavior) },
+        },
+      })
+      .exec();
+  } catch {
+    // 자리를 못 옮겨도 맵은 그대로 쓸 수 있습니다.
+  }
 }

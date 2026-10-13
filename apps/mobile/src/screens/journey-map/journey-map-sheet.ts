@@ -191,7 +191,10 @@ export type StepPlacement = {
  */
 export function stepSheetPlacement(measure: StepMeasure): StepPlacement {
   const radius = stepUnitSize / 2;
-  const anchorLimit = Math.max(0, measure.screenHeight - mapBottomInset - bottomMargin - sheetHeight);
+  const anchorLimit = Math.max(
+    0,
+    measure.screenHeight - mapBottomInset - bottomMargin - sheetHeight,
+  );
   // 유닛 중심이 설 자리입니다(LynxView 기준). 말풍선이 들어가는 가장 낮은 자리와
   // 가운데 중 높은 쪽이고, 스크롤 상자 꼭대기보다 위로는 가지 않습니다.
   const center = measure.scrollViewTop + measure.scrollViewHeight / 2;
@@ -245,9 +248,10 @@ export const stepSheetCaretLimit = 105;
 
 /** 유닛 중심과 화면 중심의 차를 ±limit 안으로 가둔 값입니다. 둘 중 하나라도 `null`이면 0. */
 export function stepSheetCaretOffset(
-  _unitCenterX: number | null,
-  _screenCenterX: number | null,
-  _limit: number,
+  unitCenterX: number | null,
+  screenCenterX: number | null,
+  limit: number,
 ): number {
-  return 0;
+  if (unitCenterX === null || screenCenterX === null) return 0;
+  return Math.max(-limit, Math.min(limit, unitCenterX - screenCenterX));
 }
