@@ -1,12 +1,15 @@
 # ADR-0058 — 크래시 리포팅: JS 예외는 Lynx의 오류 통로로 호스트에 모으고, Android 호스트가 Sentry로 보낸다 (호스트 모듈 없음 · 한 깔때기 · NDK 없음)
 
-- 상태: **제안** — 구현과 `pnpm verify` 안의 계층, DSN 없는 기기 확인(e2e A단계)은 끝났다. ⚠ **Sentry로 실제로 나간 이벤트는 아직 한 건도 없다** — DSN을 넣은
-  빌드의 확인(e2e B단계)이 남았고, 그때까지 「Sentry에 이렇게 보인다」는 문장은 전부 [미확인]이다.
+- 상태: **제안** — 구현과 `pnpm verify` 안의 계층, 기기 확인 둘(e2e A단계 — DSN 없이, B단계 — DSN을 넣은 `bundled`)이 돌았다. ⚠ **이벤트 5건과 세션이 기기를 떠났으나 Sentry가 받았는지는 아직
+  아무도 보지 않았다** — B단계가 본 것은 기기 밖으로 나가기 직전의 envelope 원문과 「네트워크를 켜자 캐시가 비었다」까지다. 「Sentry 화면에 이렇게 보인다」는 문장은 여전히 전부 [미확인]이고,
+  대시보드에서 찾을 `event_id` 다섯은 e2e 문서의 B단계 실행 기록에 있다(사용자 몫).
   ⚠ **계약 기본값 여럿이 사용자 확인 전이다.** 그 목록이 아래 「사용자 확인 필요」 절이고, 확인되기 전까지 `채택`으로 올리지 않는다.
   **사용자 결정 · 사용자가 한 일은 여기까지다**: 「Sentry로 간다」 · 「랜딩에도 단다」 · 「추천 방안을 하나씩 진행한다」(2026-10-13), 그리고 같은 날 Sentry에서 프로젝트 셋(Android · iOS · Astro)을
   만들고 Android DSN을 추적하지 않는 `apps/android/sentry.properties`에 넣었다. 그 파일에 `auth.token` · 조직 · 프로젝트 이름은 아직 없다 — **매핑 업로드는 설정되지 않았다.**
-  데이터 지역은 확인하지 못했다. DSN이 파일에 있을 뿐 **그 DSN으로 빌드해 돌린 실행은 아직 없다.**
+  데이터 지역은 사용자에게 확인받지 못했다(B단계에서 빌드에 들어간 DSN의 호스트가 `…ingest.us.sentry.io` 계열이었다는 관찰만 있다).
   ⟨2026-10-13 정정⟩ 리뷰 1회차가 FAIL(Critical 1 — 설치 id가 `contexts.device.id`로 나갈 뻔했다)을 냈고 계약 · 구현 · 이 문서가 고쳐졌다. 아래 「정정 기록」.
+  ⟨2026-10-13 정정 — B단계⟩ **C/C++ 크래시의 범위가 틀려 있었다**: 「API 30 이상에서 tombstone으로 받는다」고 적었으나 API 30에서 이벤트가 오지 않았다(D5). 그리고 B단계에서 나간 5건에는
+  기기 부팅 시각(`contexts.device.boot_time`)이 실려 있었다 — 그 뒤 `438cc723`부터 지운다(D4).
 - 날짜: 2026-10-13.
 - 다루는 축: **크래시 · 오류 수집** (새 축 — 기존 ADR의 `다루는 축`이 덮지 않는다). 잡히지 않은 JS 예외와 에러 경계가 잡은 렌더 예외를 어디서 받는가 · 호스트 밖으로 나가는
   값의 닫힌 모양과 개인 정보를 지우는 자리 · SDK 아티팩트와 초기화 · DSN 주입 · R8 매핑 업로드 · 사용자 식별자 · 과다 전송 · 무엇을 재는가.
@@ -98,7 +101,7 @@
   32자 이상의 불투명한 값(갱신 토큰 · API 키 · 해시 · 사용자 UUID) → `[token]` · 숫자 9개 이상의 전화번호 · 긴 숫자 → `[number]` · ASCII 밖 글자(한글 등 — 학습 답 · 음성 인식 결과 · 이름) → `[text]`.
   굵게 적은 셋이 리뷰 뒤에 더해졌다(Bearer 규칙이 인증 머리 규칙으로 넓어졌다). 패턴과 기준 벡터 V1 ~ V19는 계약 §3.2 · §11이 정본이고 JUnit(`CrashScrubTest` · `CrashScrubCorrectionTest`)이 그 표를 그대로 쓴다.
 - **Sentry로 나가는 모든 이벤트**(JS 예외 · Java 크래시 · ANR · tombstone)는 `CrashEventPolicy.beforeSend`를 한 번 더 지난다: `user` · breadcrumb · `serverName` · `request`를 지우고,
-  **`contexts.device.id`**(SDK가 넣는 설치 id — D10)와 `contexts.device.name`(기기 이름에 사람 이름이 들어간다)을 비우고, 예외 `value`와 메시지 본문을 사전 상한 → `scrub` → 300자로 다루고,
+  **`contexts.device.id`**(SDK가 넣는 설치 id — D10) · `contexts.device.name`(기기 이름에 사람 이름이 들어간다) · **`contexts.device.boot_time`**(밀리초 단위 부팅 시각 — 재부팅 전까지 한 기기의 이벤트를 서로 잇는 값이다. B단계에서 실려 나간 것을 본 뒤 `438cc723`에서 더했다)을 비우고, 예외 `value`와 메시지 본문을 사전 상한 → `scrub` → 300자로 다루고,
   **`Message.params`를 지운다**(형식 문자열에 끼울 인자 원문). 안에서 실패하면 **`null`을 돌려 그 이벤트를 버린다** — 지우지 못한 것을 보내지 않는다.
 - **깔때기는 `StackOverflowError`도 삼킨다.** `fromLynxError` · `CrashReporter.report` · `CrashReporting.onLynxError` · `beforeSend`의 catch가 `RuntimeException | StackOverflowError`다
   (깊게 중첩된 JSON이 Lynx 콜백으로 오류를 올려 보내지 않게). `fromLynxError`는 그때 `null`(받지 않음)이고 **`beforeSend`는 그 이벤트를 버린다.** `OutOfMemoryError`는 삼키지 않는다.
@@ -120,9 +123,17 @@
 
 - `sentry-android`(core + ndk + replay 묶음) · `sentry-android-ndk` · `sentry-android-replay` · Sentry Gradle 플러그인을 넣지 않는다(결선 검사 GW-S1).
   core AAR은 `.so`가 0개이고 minSdk 21이다 [확인]. JVM 테스트용으로 `testImplementation 'org.json:json:20260814'` 하나가 늘었다.
-- **NDK를 넣지 않는 이유는 맥락 7이다** — `verify*NativeAlignment`가 깨진다. 네이티브(C/C++) 크래시는 core의 `TombstoneIntegration`(`ApplicationExitInfo` 기반)으로 받는다.
-  그래서 **C/C++ 크래시는 API 30 이상에서만, 심볼 없는 프레임으로** 올라간다 — 요구사항의 「네이티브 크래시 수집」을 좁힌 것이고 사용자 확인 전이다(U3).
-  Java/Kotlin 크래시와 ANR은 전 버전에서 받는다.
+- **NDK를 넣지 않는 이유는 맥락 7이다** — `verify*NativeAlignment`가 깨진다. 계약은 네이티브(C/C++) 크래시를 core의 `TombstoneIntegration`(`ApplicationExitInfo` 기반, `setTombstoneEnabled(true)`)으로
+  받는다고 적었다.
+- ⚠ **그 범위는 틀렸다 — API 30에서는 C/C++ 크래시가 오지 않는다** [실측 — B5, API 30 에뮬레이터 1대, `bundled`]. `setTombstoneEnabled(true)`인 빌드에서 `kill -SEGV`로 프로세스를 죽인 뒤 재실행했으나
+  tombstone 이벤트가 생기지 않았고, 이벤트가 싣는 `sdk.integrations` 목록에도 tombstone 통합의 이름이 없었다. 시스템은 그 종료를 `APP CRASH(NATIVE)`로 기록했다(`dumpsys activity exit-info`).
+  **API 31 이상에서 오는지는 [미확인]이다** — 플랫폼이 네이티브 크래시의 tombstone을 `ApplicationExitInfo`로 읽게 해 주는 것이 API 31부터라 API 30이 대상이 아니었을 수 있다 [추론 — 이 회차에 문서를 조회하지 않았고
+  API 31 이상 기기에서 돌려 보지도 않았다]. 오더라도 프레임은 심볼 없이 올라간다 [정적].
+- **그래서 지금 확인된 범위는 「C/C++ 크래시를 받는 기기가 하나도 확인되지 않았다」다.** 이 앱의 네이티브 코드는 대부분 Lynx 엔진(`liblynx.so` 등)이므로, 엔진 크래시를 보려면 NDK가 사실상 필요해질 수 있다
+  ([보류 표](README.md#보류-표)의 NDK 행). 요구사항의 「네이티브 크래시 수집」을 좁힌 것이고 사용자 확인 전이다(U3).
+- **네이티브로 죽은 세션은 API 30에서 `crashed`가 아니라 `exited`로 적힌다** [실측 — B5]. 그 대가는 「대가」 12다.
+- Java/Kotlin 크래시는 받는다 — B4에서 `UncaughtExceptionHandler` 이벤트가 죽는 순간 캐시에 써지고 같은 envelope의 세션이 `crashed`가 되는 것을 봤다 [실측]. ANR은 통합(`AnrV2`)이 켜져 있다는 것까지만
+  봤고 이벤트는 유도하지 않았다 [미확인].
 - JS 쪽 npm 의존은 0이다([ADR-0013](0013-dependencies-and-version-notation.md) D5의 목록 변화 없음).
 
 ### D6. 초기화는 손으로, DSN이 유효할 때만 — DSN 없는 빌드에서는 Sentry 코드가 한 줄도 돌지 않는다
@@ -176,16 +187,20 @@ SDK가 설치 id를 싣는 자리가 셋이고(맥락 8) 셋을 각각 끈다.
 | **이벤트의 `contexts.device.id`**(`sendDefaultPii`와 무관) | `beforeSend`의 `device.setId(null)` — JS 예외 · Java 크래시 · ANR · tombstone 모든 이벤트 |
 
 - 판정은 JUnit(`CrashEventPolicyTest`)이 진다 — `beforeSend`를 지난 이벤트에 `user`와 `device.id`가 없다.
-- ⚠ **실제 payload에서 정말 없는지는 아직 아무도 보지 않았다** [미확인]. SDK가 `beforeSend` **뒤에** 식별자를 다시 붙이는 자리가 없다는 것, 세션 쪽 `did`가 비어 있다는 것은
+- ✔ **기기 밖으로 나가기 직전의 envelope에서 넷이 없는 것을 봤다** [실측 — B6, API 30 에뮬레이터 1대 · `bundled`(R8) · 새로 설치한 앱]. JS 예외 이벤트 4건 · Java 크래시 이벤트 1건 · 세션 전부의 원문에
+  `user` · `did` · `ip_address` · `contexts.device.id`가 없었고, 그 기기의 설치 id 파일 내용과 `android_id`를 envelope 전체에서 문자열로 찾아 **0건**이었다. envelope 헤더에도 `user` 계열이 없다.
+  **서버가 접속에서 붙이는 IP는 기기에서 볼 수 없다** [미확인 — 프로젝트 설정 「IP 주소 저장 안 함」에 달려 있다]. 아래 문단은 그 전의 기록이다.
+- ⟨B6 이전⟩ **실제 payload에서 정말 없는지는 아직 아무도 보지 않았다** [미확인]. SDK가 `beforeSend` **뒤에** 식별자를 다시 붙이는 자리가 없다는 것, 세션 쪽 `did`가 비어 있다는 것은
   Sentry가 받은 원문(JSON)으로만 확인된다 — [크래시 리포팅 e2e](../e2e/crash-reporting.md)의 **B6**이 `user` · `did` · `ip_address` · `contexts.device.id` 넷을 본다.
-  **B6이 통과하기 전에는 「식별자를 수집하지 않는다」를 Play 양식에 내지 않는다**([Android 데이터 보안](../android-data-safety.md)).
+  **B6이 통과하기 전에는 「식별자를 수집하지 않는다」를 Play 양식에 내지 않는다**([Android 데이터 보안](../android-data-safety.md)) — ⟨B6 뒤⟩ 기기 쪽 근거는 섰다. 양식에 내기 전에 남은 것은
+  서버 쪽(IP 저장 설정)과 **식별자는 아니지만 같은 실행 · 같은 기기를 잇는 값**(`trace_id` 등 — 「대가」 13)의 판단이다.
 - 붙이는 선택지와 그때 달라지는 것은 「사용자 확인 필요」 U2와 데이터 보안 문서가 진다.
 
 ### D11. JS 예외는 `handled = true`로 보내고, 프로세스당 20건까지만 보낸다
 
 - JS 예외 이벤트: `level = error` · 예외 하나(`type` = 이름, `value` = 메시지) · `mechanism.type = "lynx"` · `mechanism.handled = true` · 태그 `lynx.source` ·
   지문 넷(`"lynx"` · source · 이름 · 첫 스택 줄 — 스택이 없으면 메시지) · `contexts.lynx.stack`에 스택 원문. 그 밖의 필드를 채우지 않는다.
-- **`handled = true`인 이유**: 앱이 죽지 않았다. `false`면 Sentry가 그 세션을 crashed로 세어 「크래시 없는 세션 비율」이 JS 오류로 떨어진다 [추론 — Sentry의 세션 규칙. B단계에서 확인].
+- **`handled = true`인 이유**: 앱이 죽지 않았다. `false`면 Sentry가 그 세션을 crashed로 세어 「크래시 없는 세션 비율」이 JS 오류로 떨어진다 [추론 — Sentry의 세션 규칙]. B단계의 envelope에서는 JS 예외 4건이 세션의 `errors`만 올리고 `status`를 바꾸지 않았다 [실측] — 서버의 집계가 그렇게 세는지는 [미확인].
 - **20건 상한**(`CrashReportBudget`): 렌더 루프 · 타이머에서 같은 오류가 초당 수십 번 날 수 있다. 받지 않는 오류와 sink 없는 상태는 예산을 쓰지 않는다.
 - 같은 버그가 두 스레드에서 각각 던지면(첫 렌더) 이벤트가 둘 생긴다 — `source`가 달라 구분되고, 막지 않는다 [정적 — 기기에서 재지 않았다].
 
@@ -193,9 +208,9 @@ SDK가 설치 id를 싣는 자리가 셋이고(맥락 8) 셋을 각각 끈다.
 
 | 지표 | Sentry에서 재는 것 | 이 결정이 대는 재료 |
 |---|---|---|
-| M1 크래시 없는 세션 비율 | Release Health — `release = libitum.duru.android@<versionName>+<versionCode>`, `environment = release` | 세션 추적 켬. JS 예외는 `handled = true`라 crashed로 세지 않는다 |
+| M1 크래시 없는 세션 비율 | Release Health — `release = libitum.duru.android@<versionName>+<versionCode>`, `environment = release` | 세션 추적 켬. JS 예외는 `handled = true`라 crashed로 세지 않는다 — envelope에서 JS 예외 4건 뒤의 세션은 `errors`만 올랐고 Java 크래시에서 `crashed`가 됐다 [실측]. ⚠ **네이티브로 죽은 세션은 API 30에서 `exited`로 적혀 이 비율이 그 크래시를 세지 못한다**(「대가」 12). Sentry 화면의 수치는 [미확인] |
 | M2 주간 JS 예외 건수 · 상위 원인 | 태그 `lynx.source`가 있는 이벤트 수(7일) · 이슈별 묶음 | 태그 · 지문 넷 · 예외 `type`/`value` |
-| M3 네이티브 크래시 건수 | 태그 `lynx.source`가 **없는** `level:fatal` 이벤트(Java 크래시 · tombstone) + ANR | SDK 통합. 통합별 mechanism 이름은 [미확인 — B단계에서 기록] |
+| M3 네이티브 크래시 건수 | 태그 `lynx.source`가 **없는** `level:fatal` 이벤트(Java 크래시 · tombstone) + ANR | SDK 통합. Java 크래시의 mechanism은 `UncaughtExceptionHandler`(`handled: false`)였다 [실측 — envelope]. ANR · tombstone의 이름은 [미확인]. ⚠ **C/C++ 크래시는 API 30에서 이벤트가 오지 않았으므로 이 지표에 잡히지 않는다**(D5) |
 
 지표 셋은 요구사항 단계가 적은 것을 계약이 그대로 받았다 — **사용자 미확인이다.** PostHog 이벤트는 늘지 않았다([ADR-0029](0029-product-analytics-posthog.md) 변화 0).
 
@@ -223,29 +238,53 @@ SDK가 설치 id를 싣는 자리가 셋이고(맥락 8) 셋을 각각 끈다.
 4. **DSN 없는 빌드**: `testDebugUnitTest`(JUnit 121건 · 실패 0) · `assembleDebug` · `assembleBundled` 성공, `verify*NativeAlignment` 통과, bundled · debug APK에 `libsentry*.so` 0개,
    병합 매니페스트에 provider 둘 없음, `bundled` 설치 · 실행에서 logcat에 `Sentry` · `DuruCrash` 태그 0줄. `uploadSentryMappingBundled` · `uploadSentryMappingRelease`는
    **이름으로 불렀을 때** SKIPPED였다(assemble 작업 그래프에는 들어 있지 않다). R8 쪽 수치는 [ADR-0052](0052-android-release-shrinking.md)의 적용 기록 ⟨2026-10-13⟩이 진다.
-5. **자동 계층**(root 실행): vitest unit 1,871/1,871 · ui 1,461/1,461 · integration 533/533, 호스트 JUnit **152/152**(리뷰 정정 뒤 — 정정 전 126), Gradle 결선 검사 **135/135**(GW-S1 ~ S8).
+5. **자동 계층**(root 실행): vitest unit 1,871/1,871 · ui 1,461/1,461 · integration 533/533, 호스트 JUnit **153/153**(리뷰 정정 둘과 `boot_time` 제거 뒤 — 정정 전 126), Gradle 결선 검사 **135/135**(GW-S1 ~ S8).
    리뷰 정정의 테스트 20건은 구현 전에 먼저 서서 14건이 실패했고(나머지는 「잘린 이메일 조각」 · 깊은 JSON 둘 · 멱등 · 알려진 이름 · GW-S8 — 구현 전에도 통과하던 것) 구현 뒤 전부 통과했다.
+
+### 확인한 것 — e2e B단계 [실측]
+
+2026-10-13 14:30 ~ 14:40 KST, 같은 AVD(API 30 · arm64-v8a), **`bundled`(R8 켜짐 · `DEBUG=false`) · DSN 있음 · 운영 번들**, HEAD `b11ef1b6`. **에이전트가 실행했고 사람이 다시 보지 않았다.**
+방법: 네트워크를 끊은 채 앱을 새로 설치해 탐침을 돌리고, 캐시에 쌓인 envelope 원문을 기기에서 꺼내 읽은 뒤, 식별자가 없음을 확인하고 네트워크를 켰다. 키 목록 · 지문 · `event_id`는 [크래시 리포팅 e2e](../e2e/crash-reporting.md)의 B단계 실행 기록에 있다.
+
+1. **실제 payload의 모양.** JS 예외 이벤트는 `exception.values[0]`(`type` · `value` · `mechanism{type: lynx, handled: true}`) · 태그 `lynx.source` · `fingerprint` 넷 · `contexts.lynx.stack`으로 나간다(D11 그대로).
+   `user` · `breadcrumbs` · `server_name` · `modules` · `request` · `message` · `extra` 키가 **없다.** SDK가 붙인 `contexts.app` · `contexts.device` · `contexts.os` · `contexts.trace` · 태그 `isSideLoaded`의 키 목록은
+   [Android 데이터 보안](../android-data-safety.md)이 실측으로 싣는다.
+2. **식별자 부재**(D10) — `user` · `did` · `ip_address` · `contexts.device.id` 없음, 설치 id · `android_id` 문자열 0건. JS 이벤트 4건과 Java 크래시 1건 모두.
+3. **지우기가 실제 이벤트에서 동작한다.** `probe-b a@b.co 010-1234-5678 한글 GET /auth/v1/verify?token=123456&type=sms`를 던진 이벤트의 `value`가
+   `probe-b [email] [number] [text] GET /auth/v1/verify?[redacted]`였고, envelope 전체(메시지 · 지문 · 스택)에서 원문 조각이 0건이었다. 지문에는 메시지가 들어가지 않았다(첫 스택 줄).
+4. **운영 번들 · R8 APK에서도 오류가 호스트에 닿고, 메인 스레드의 접두와 `backtrace:`가 같다.** A단계가 debug APK로만 본 것이 닫혔다 — 경계 렌더 · 핸들러 · 메인 스레드 둘, 네 이벤트가 만들어졌다.
+   메인 스레드 원문은 여전히 `main-thread.js exception: TypeError: …`와 `backtrace:` 줄이었고, 이벤트에서는 걷혀 `type: TypeError` · 첫 스택 줄이 프레임이었다 — **D4의 파싱 규칙 둘(`1c626045`)이 기기에서 확인됐다**
+   (A단계 뒤에는 JUnit으로만 판정했던 것).
+5. **메인 스레드 오류 둘의 지문이 갈린다.** 넷째 값이 `…(main-thread.js:2405:10)`과 `…(main-thread.js:2404:10)`으로 달랐다. **열이 `[number]`가 되지 않았다** — 운영 번들의 메인 스레드 스크립트는 한 줄로
+   줄여져 있지 않아 줄 번호로 갈렸고, A6(dev 번들)에서 10자리 열이던 프레임도 운영 번들에서는 `…main-thread.js:2824:65`였다(「정정 기록」의 「남겨 둔 것」이 이 관찰로 닫혔다).
+6. **Java 크래시**(`am crash`): 죽는 순간 envelope이 캐시에 써졌다(전송은 다음 실행) — `level: fatal` · `mechanism{type: UncaughtExceptionHandler, handled: false}` · 같은 envelope의 세션 `crashed`.
+   `debug_meta`에 매핑 UUID가 `type: proguard`로 실렸다.
+7. **세션**: `attrs`의 키는 `release` · `environment` 둘뿐이었다(`libitum.duru.android@0.1.0+2` · `bundled`).
+8. **전송 시도**: 네트워크를 켜고 재실행하자 캐시의 envelope 9개가 약 5초 안에 0개가 됐다. **이것은 수신의 증거가 아니다**(아래 1).
+9. **B단계에서 나간 5건에는 `contexts.device.boot_time`이 실려 있었다.** 그 뒤 `beforeSend`가 지우게 고쳤다(`438cc723` — 테스트 `rb1_*`). **고친 뒤의 빌드를 기기에서 다시 돌려 envelope을 보지는 않았다.**
 
 ### 확인하지 못한 것 [미확인]
 
-1. **Sentry에 실제로 도착한 것이 없다.** 깔때기가 만드는 payload · 지문 · 이벤트의 모습, 지우기가 Sentry 화면에서 `[email]` · `[number]` · `[text]`로 보이는지,
-   `handled = true`가 세션을 crashed로 세지 않는지, `user` · `did` · `ip_address` · **`contexts.device.id`**가 원문에 없는지(D10), 난독화된 Java 스택이 매핑으로 풀리는지, M1 ~ M3 쿼리가 수를 내는지 —
-   전부 B단계다. A단계의 깔때기는 다섯 번 모두 `DISABLED`에서 끝났다.
-2. **`bundled`(R8) APK에서의 도착.** 진단 로그가 debug 전용이라 축소한 빌드에서 `onReceivedError`가 불리는지 볼 수단이 없었다. 운영 모드 **번들**은 debug APK로 한 번(경계 탐침만) 봤다.
-3. **release 빌드.** `:app:bundleRelease`는 `google-services.json`이 없어 돌리지 않았다 — release 변형의 R8 · 정렬 검사 · `finalizedBy`로 매달린 업로드 작업의 동작을 보지 못했다.
-4. **tombstone.** API 30 이상에서 C/C++ 크래시가 실제로 오는지, 프레임이 읽을 만한지, API 30 미만에서 무슨 일이 나는지.
-5. **서버 쪽.** Sentry 프로젝트의 데이터 지역(US/EU), 「IP 주소 저장 안 함」 설정이 켜져 있는지, 보존 기간. 프로젝트 셋은 사용자가 만들었고 이 회차는 그 설정을 보지 않았다.
-   매핑 업로드(`sentry-cli upload-proguard --uuid`가 `BuildConfig`의 UUID와 실제로 맞물리는지)도 인증 값이 없어 한 번도 돌지 않았다.
-6. **탐침에 없던 길**: `requestAnimationFrame` 콜백 · 생명주기 이벤트 · ref · data processor의 throw([정적]으로만 안다), 첫 렌더에서 두 스레드가 각각 보고하는지,
-   `error.getLevel()`의 실제 값(로그에 찍히지 않았다), 이번 실행의 background JS 엔진이 무엇이었는지.
-7. **API 30 에뮬레이터 한 대뿐이다.** 다른 API 수준 · 실기 · 로그인 뒤 화면(탐침은 로그인 없이 닿는 온보딩 화면에 넣었다 — 경계가 루트에 하나라 같은 경계가 잡는다)은 보지 않았다.
-8. **Android AAR이 싣는 코어 JS**가 맥락 2에서 읽은 iOS Pod 사본과 같은 파일인지.
-9. **수집기가 없는 호스트에서 경계가 잡은 오류가 어떻게 보이는지.** `reportCrash`는 iOS 호스트 · Lynx Explorer에서도 `lynx.reportError`를 부른다(D2). DevTool이 켜진 debug 호스트 ·
-   Explorer에서 그 호출이 LogBox를 띄우는지는 보지 않았다 — 본 것은 Android debug 호스트 하나다(위 3). iOS 자체 호스트는 리뷰가 Lynx 4.0.1 소스(`LynxTemplateRender.mm`)를 읽어 「로그 한 줄이
-   새로 생길 뿐이다(DevTool pod 없음)」로 판정했다 [정적] — 기기에서 본 것은 아니고, Lynx Explorer의 LogBox는 여전히 [미확인]이다.
-10. **기기에서의 지우기 시간.** D4의 수치는 데스크톱 JVM의 것이다. Android(ICU 정규식)에서 사전 상한 뒤의 최악 입력이 얼마 걸리는지, `Sentry.captureEvent`가 메인 스레드에서 기기 정보를 모으는 데
-    얼마 걸리는지는 재지 않았다(「대가」 11).
-11. **`StackOverflowError`를 실제로 일으키는 입력에서의 동작**(D4 — JVM 테스트로 재현하지 못했다).
+1. **Sentry가 받았는지.** SDK의 debug 로그가 꺼져 있어 HTTP 응답을 보지 못했다. 캐시가 비는 것은 수신 성공뿐 아니라 SDK가 재시도하지 않는 거절 응답에서도 일어날 수 있다 [추론]. 대시보드에서
+   `event_id` 다섯을 찾아야 닫힌다(사용자 몫 — e2e 문서).
+2. **대시보드 쪽 표시 전부.** 이슈가 어떻게 묶여 보이는지, `handled`가 화면에서 어떻게 읽히는지, 크래시 없는 세션 비율의 수치, M1 ~ M3 쿼리(B7), 서버가 붙이는 `ip_address`와 프로젝트의 IP 저장 설정,
+   데이터 지역(사용자 확인), 보존 기간.
+3. **매핑 업로드와 풀린 스택.** 인증 토큰이 없어 `sentry-cli upload-proguard --uuid`는 한 번도 돌지 않았다. 그리고 **`am crash`가 만드는 이벤트는 프레임 7개가 전부 프레임워크 프레임이라
+   매핑을 올려도 「풀린 클래스 이름」을 확인하는 데 쓸 수 없다** — 앱 코드에서 던지는 Java 크래시가 따로 필요하다(e2e B4의 절차를 그렇게 고쳤다).
+4. **ANR 이벤트.** 유도하지 않았다. ANR 스레드 덤프 첨부의 SDK 기본값도 바이트코드로 확인하지 않았다.
+5. **API 31 이상의 tombstone**(D5) — 오는지, 프레임이 읽을 만한지.
+6. **`captureEvent`에 걸리는 시간.** 직접 재지 못했다. 간접 값만 있다 [추론]: Lynx가 오류를 낸 로그 줄부터 호스트 콜백이 돌아온 뒤의 로그 줄까지 첫 이벤트 7 ms · 둘째 2 ms였고, 그 구간에는
+   깔때기와 `captureEvent` 말고 다른 리스너도 들어 있다. 에뮬레이터 한 대 · 두 표본이다.
+7. **release 빌드.** `:app:bundleRelease`는 `google-services.json`이 없어 돌리지 않았다 — release 변형의 R8 · 정렬 검사 · `finalizedBy`로 매달린 업로드 작업의 동작을 보지 못했다. B단계는 `bundled`다.
+8. **B단계 탐침에 없던 것**: 거부된 promise · 타이머 throw의 **이벤트** 모양(A단계는 도착까지만 봤다), 온라인 상태에서 바로 보낼 때의 envelope(전부 오프라인에서 만들어 나중에 보냈다),
+   `requestAnimationFrame` 콜백 · 생명주기 이벤트 · ref · data processor의 throw([정적]으로만 안다), 첫 렌더에서 두 스레드가 각각 보고하는지, `error.getLevel()`의 실제 값, background JS 엔진이 무엇이었는지.
+9. **API 30 에뮬레이터 한 대뿐이다.** 다른 API 수준 · 실기 · 로그인 뒤 화면(탐침은 로그인 없이 닿는 온보딩 화면에 넣었다 — 경계가 루트에 하나라 같은 경계가 잡는다)은 보지 않았다.
+10. **Android AAR이 싣는 코어 JS**가 맥락 2에서 읽은 iOS Pod 사본과 같은 파일인지.
+11. **수집기가 없는 호스트에서 경계가 잡은 오류가 어떻게 보이는지.** `reportCrash`는 iOS 호스트 · Lynx Explorer에서도 `lynx.reportError`를 부른다(D2). 본 것은 Android 호스트뿐이다. iOS 자체 호스트는 리뷰가
+    Lynx 4.0.1 소스(`LynxTemplateRender.mm`)를 읽어 「로그 한 줄이 새로 생길 뿐이다(DevTool pod 없음)」로 판정했다 [정적] — 기기에서 본 것은 아니고, Lynx Explorer의 LogBox는 여전히 [미확인]이다.
+12. **기기에서의 지우기 시간.** D4의 수치는 데스크톱 JVM의 것이다. Android(ICU 정규식)에서 사전 상한 뒤의 최악 입력이 얼마 걸리는지는 재지 않았다.
+13. **`StackOverflowError`를 실제로 일으키는 입력에서의 동작**(D4 — JVM 테스트로 재현하지 못했다).
+14. **`boot_time`을 지운 뒤의 실제 envelope**(위 「B단계」 9).
 
 ## 잡지 못하는 것
 
@@ -254,11 +293,11 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
 1. **코드 범위 밖의 Lynx 오류**(이미지 · 리소스 · 레이아웃 등 — 200번대 · 1100번대가 아닌 것)와 `warn` 수준. 받지 않기로 정했다(D1).
 2. **프로세스당 스물한 번째부터의 JS 예외**(D11). 건수는 그만큼 낮게 세어진다.
 3. **거부된 promise의 원래 오류 이름.** `unhandled rejection`으로만 온다 — 지문도 그 이름으로 묶인다.
-4. **API 30 미만 기기의 C/C++ 크래시**, 그리고 모든 기기에서 그 프레임의 심볼(D5).
+4. **C/C++ 크래시** — API 30에서 오지 않는 것을 봤고(D5) 그 아래도 올 근거가 없다. API 31 이상은 [미확인]이고, 오더라도 프레임에 심볼이 없다. Lynx 엔진 안에서 죽는 크래시가 여기 든다.
 5. **`debug` 빌드의 모든 오류**(D7)와 **DSN 없이 만든 빌드의 모든 오류**(D6).
 6. **iOS에서 난 모든 것.** 이번에는 iOS에서 아무것도 나가지 않는다 — `reportCrash`는 iOS에서도 `lynx.reportError`를 부르지만 받는 수집기가 없다.
 7. **`beforeSend`가 실패한 이벤트**(D4 — `RuntimeException` · `StackOverflowError` 모두 버린다. Java 크래시 · ANR · tombstone 이벤트도 같다)와 **`SentryAndroid.init`이 던진 실행의 모든 오류**(D6 — sink 없이 돈다). 둘 다 조용하다.
-8. 「확인하지 못한 것」 6의 길들 — 닿는지 모른다.
+8. 「확인하지 못한 것」 8의 길들 — 닿는지 모른다.
 
 ## 사용자 확인 필요
 
@@ -268,7 +307,7 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
 |---|---|---|---|
 | U1 | 호스트 모듈을 열지 않는 것(D3) | 열지 않는다 | 요구사항대로 `CrashReportModule`을 열면 ADR-0017 D1 조건 1 · 2의 예외를 적어야 하고, 지우기 구현이 JS · Java 둘이 되며, JS 번들이 더 는다 |
 | U2 | 사용자 식별자(D10) | 안 붙임 | 「몇 명이 겪었나」를 못 센다. SDK 설치 id를 붙이면 Play 양식에 「기기 또는 기타 ID」가 늘고, PostHog의 로그인 전 익명 id(실행마다 새 값 — ADR-0029 D8)보다 **오래 남는 식별자**가 된다. 로그인 사용자 id를 붙이면 양식의 「사용자 ID」 · 처리방침 개정 · 계정 삭제 때 Sentry 쪽 삭제 절차가 든다. 어느 쪽이든 `beforeSend` · `setDistinctId` 두 줄만 바뀐다 |
-| U3 | C/C++ 크래시의 범위(D5) | API 30 이상만, 심볼 없음 | NDK를 넣으려면 `sentry-native`를 16 KB RELRO로 다시 빌드해 `vendor-maven`에 싣는다(Lynx · Fresco 선례) |
+| U3 | C/C++ 크래시의 범위(D5) | NDK 없음 — 계약은 「API 30 이상만, 심볼 없음」이라 적었으나 **API 30에서는 오지 않았다**(API 31 이상은 미확인) | NDK를 넣으려면 `sentry-native`를 16 KB RELRO로 다시 빌드해 `vendor-maven`에 싣는다(Lynx · Fresco 선례) |
 | U5 | `debug`는 DSN이 있어도 보내지 않는다(D7) | 안 보낸다 | 보내게 하려면 `environment = debug`로 가르되 dev 서버 오류가 섞인다 |
 | — | 조각 순서(Android → iOS → Renovate → 랜딩 → Edge Functions) | 이 순서로 시작했다 | 사용자 발화는 「Sentry 달고」 · 「랜딩에도 달 것」 · 「추천 방안 하나씩 진행」까지다. 자른 순서는 root의 판단이다 |
 | — | 측정 지표 셋(D12) | M1 ~ M3 | 요구사항 단계가 적었다 |
@@ -307,14 +346,22 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
    `-keeppackagenames io.sentry.**`) — [ADR-0052](0052-android-release-shrinking.md) 적용 기록.
 7. **`pnpm verify`와 CI에는 Gradle이 없다.** 깔때기의 판정(JUnit)은 `cd apps/android && ./gradlew :app:testDebugUnitTest`로 손으로 돌려야 한다. verify 안에서 지켜지는 것은
    vitest와 Gradle 결선의 정적 검사(`pnpm test:android-bundle`)뿐이다.
-8. **요구사항에서 달라진 자리가 다섯이다** — 호스트 모듈 없음 · 잡히지 않은 JS 예외가 JS 보고 함수를 거치지 않음 · 지우기와 그 판정이 호스트 Java로 · C/C++ 크래시는 API 30 이상 tombstone만 ·
+8. **요구사항에서 달라진 자리가 다섯이다** — 호스트 모듈 없음 · 잡히지 않은 JS 예외가 JS 보고 함수를 거치지 않음 · 지우기와 그 판정이 호스트 Java로 · C/C++ 크래시는 tombstone만(그마저 API 30에서는 오지 않았다 — D5) ·
    debug는 안 보냄. 전부 계약 단계가 근거와 함께 바꾼 것이고 사용자 확인 전이다.
-9. **스택의 10자리 열 번호가 `[number]`가 된다**(리뷰 S3 — 받지 않았다). 숫자 9개 이상을 지우는 규칙이 줄 · 열을 가리지 않는다. 운영 번들의 열은 7자리라 걸리지 않는다는 것이 받지 않은 근거이고,
-   A6에서 본 메인 스레드 프레임 하나(`…main-thread.js:7122:2473963297`)는 걸린다 [정적 — 실측 문자열에 패턴을 대 본 것] — 그 프레임의 열은 Sentry에서 읽을 수 없다.
+9. **스택의 10자리 열 번호가 `[number]`가 된다**(리뷰 S3 — 받지 않았다). 숫자 9개 이상을 지우는 규칙이 줄 · 열을 가리지 않는다. 운영 번들의 열은 걸리지 않는다는 것이 받지 않은 근거였고,
+   **B단계의 운영 번들 이벤트에서는 걸린 프레임이 없었다** [실측 — background `…js:7:371`, 메인 스레드 `…:2405:10` · `…:2824:65`]. 걸리는 것이 확인된 것은 dev 번들의 프레임 하나(A6 `…:7122:2473963297`)뿐이고
+   dev 번들은 debug 빌드라 보내지 않는다. 번들이 커져 열이 9자리를 넘으면 다시 걸린다.
 10. **`finalizedBy`는 실패한 빌드 뒤에도 업로드를 시도한다**(리뷰 S5 — 받지 않았다). `bundleRelease`가 실패해도 인증 값이 다 있으면 `uploadSentryMappingRelease`가 돌아 오류 한 줄이 더 찍힌다
     (매핑 파일이 없으면 그 작업도 실패한다). 빌드 결과를 바꾸지는 않는다.
 11. **수집이 메인 스레드에서 동기로 돈다**(리뷰 S4 — 이번에 고치지 않았다). `onReceivedError` → 깔때기 → `Sentry.captureEvent`가 호출 스레드에서 기기 정보를 모은다. 사전 상한(D4)이 지우기의 시간을 묶었으나
-    `captureEvent` 쪽 시간은 재지 않았다 — **B단계에서 잰다.** 오류가 연달아 나도 프로세스당 20건이 위쪽 한계다.
+    `captureEvent` 쪽 시간은 **B단계에서도 직접 재지 못했다** — 간접 값 2 ~ 7 ms(「확인하지 못한 것」 6)가 전부다. 오류가 연달아 나도 프로세스당 20건이 위쪽 한계다.
+12. **크래시 없는 세션 비율이 네이티브 크래시를 세지 못한다 — 적어도 API 30에서.** SEGV로 죽은 실행의 세션이 `exited`로 적혔다 [실측 — B5](그 세션 envelope은 시작 9 ms 뒤에 이미 `exited`로 써져 있었다).
+    이벤트도 오지 않으므로(D5) 그 기기들에서 Lynx 엔진이 죽어도 M1은 떨어지지 않고 M3에도 잡히지 않는다 — **「크래시 없는 세션 99 %」가 네이티브 크래시가 없다는 뜻이 아니다.** API 31 이상에서 어떤지는 모른다.
+13. **식별자는 아니지만 서로 잇는 값이 실린다** [실측 — B단계 envelope]. `trace_id`(`contexts.trace`와 envelope 헤더 — 한 프로세스 실행 동안 모든 이벤트가 같고 재실행하면 바뀐다) ·
+    `contexts.trace.data.thread.id`(실제로는 프로세스 id였다) · `contexts.app.app_start_time` · `permissions` · `contexts.os.kernel_version` · `build` · 기기의 `timezone` · `locale` · `memory_size` · `storage_size` ·
+    태그 `isSideLoaded`. 계약은 이것들을 이름으로 다루지 않았고(「표에 없는 것은 SDK 기본값」) 지우지 않는다 — 같은 실행 안의 이벤트를 묶는 것은 원인 읽기에 쓰이는 값이기도 하다. `boot_time`만 지웠다(재부팅 전까지
+    **실행을 넘어** 한 기기를 잇는다). 나머지를 Play 양식의 「사용자와 연결: 아니오」로 볼지는 데이터 보안 문서의 제출 전 확인에 올렸다 — 사용자 확인 전이다.
+14. **B단계에서 이미 나간 5건에는 `boot_time`이 들어 있다.** 받아졌다면 Sentry에 남아 있다(에뮬레이터의 값이고 같은 실행의 5건이 같은 값이다). 지울지는 사용자 몫이다.
 
 ## 정정 기록
 
@@ -338,8 +385,22 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
 - **과하게 지우던 둘을 좁혔다**(W8). `BinderProxy@4a5b6c7` 꼴(Java 식별 해시)은 이메일로 보지 않고, 낱말 `basic`은 `authorization` 머리 뒤에서만 인증 머리로 본다. `Bearer`는 그대로다.
 - **긴 메시지가 이름을 잃지 않는다**(S6). 이름을 먼저 나누고 메시지에 사전 상한을 건다.
 - **넷째 자리는 찾지 못했다** [정적 — AAR 바이트코드]: `Installation.id`를 부르는 곳은 `user.id` · `device.id` · `distinctId`와 하이브리드 SDK용 진입점(core 안에서 부르는 곳 없음)뿐이고, ANDROID_ID · 광고 id · 시리얼을 읽는 코드가 없다. 세션의 `did`는 `distinctId` 그대로다. 실제 payload는 여전히 B6이 닫는다.
-- **남겨 둔 것**: 메인 스레드 프레임의 10자리 열이 `[number]`가 되면 그 프레임이 첫 스택 줄일 때 지문 넷째 값이 `…:<줄>:[number])`가 된다 — 운영 번들의 메인 스레드 스크립트가 한 줄로 줄여져 있으면 이름이 같은 서로 다른 오류가 한 이슈로 묶일 수 있다 [추론 — 메인 스레드 운영 프레임은 잰 적이 없다. A6에서 그 프레임은 셋째 줄이었다]. B단계에서 메인 스레드 오류 둘의 지문을 견준다. `contexts.device.boot_time`은 식별자는 아니지만 재부팅 전까지 같은 기기의 이벤트를 묶을 수 있다 — B6에서 `contexts.device` 키 목록을 옮길 때 「사용자와 연결: 아니오」 판단에 넣는다. ANR 스레드 덤프 첨부의 SDK 기본값은 바이트코드로 확인하지 않았다.
+- **남겨 둔 것 — ⟨B단계 뒤 갱신⟩.** (가) 「메인 스레드 프레임의 10자리 열이 `[number]`가 되면 이름이 같은 서로 다른 오류가 한 지문으로 묶일 수 있다」(W9)는 [추론]이었고 운영 프레임을 잰 적이 없었다.
+  **B단계가 쟀다**: 운영 번들의 메인 스레드 스크립트는 한 줄로 줄여져 있지 않았고, 서로 다른 줄의 오류 둘의 지문 넷째 값이 `…:2405:10` · `…:2404:10`으로 갈렸으며 열은 `[number]`가 되지 않았다 [실측].
+  이 번들 · 이 버전의 관찰이다 — 빌드 설정이 메인 스레드 스크립트를 한 줄로 줄이게 바뀌면 다시 열린다. (나) `contexts.device.boot_time`은 B6에서 실려 나간 것을 본 뒤 지우기로 정했다(아래 B단계 정정).
+  (다) ANR 스레드 덤프 첨부의 SDK 기본값은 여전히 바이트코드로 확인하지 않았다.
 - 판정: `CrashReviewRoundTwoTest` 7건(red 5 → green), JUnit 152/152.
+
+### 2026-10-13 — e2e B단계 실측에 따른 정정
+
+- **어떻게 틀렸나 — C/C++ 크래시의 범위.** 계약과 이 문서(D5 · 「잡지 못하는 것」 · U3 · 보류 표 · 호스트 README · 데이터 보안 문서)가 「C/C++ 크래시는 API 30 이상에서 tombstone으로 받는다」고 적었다.
+  근거는 core AAR에 `TombstoneIntegration`이 있다는 [정적] 읽기뿐이었고 계약도 「API 30 미만에서의 동작 · 프레임 가독성은 미확인」이라고만 했다. **API 30 에뮬레이터에서 `setTombstoneEnabled(true)`인데
+  이벤트가 생기지 않았고 `sdk.integrations`에도 그 이름이 없었다** [실측]. 「API 30 이상」은 근거 없는 경계였다. API 31 이상은 [미확인]이다. 문서 전부를 「확인된 기기 없음」으로 고쳤다.
+- **네이티브로 죽은 세션이 `exited`로 적힌다**는 것과 그 대가(크래시 없는 세션 비율이 네이티브 크래시를 세지 못한다)를 「대가」 12에 더했다.
+- **`boot_time`.** 리뷰 2회차가 「B6에서 판단」으로 넘겼고, B단계에서 **실제로 전송된(전송을 시도한) 이벤트 5건 모두에 실려 있는 것을 봤다.** 식별자 넷은 아니라 실행자가 멈춤 조건으로 보지 않고 전송을 진행했다.
+  그 뒤 `beforeSend`가 `contexts.device.boot_time`도 지우게 고쳤다(`438cc723`, 테스트 `rb1_*`, JUnit 153/153 — root가 직접, 재리뷰 없음). 고친 빌드의 envelope은 기기에서 다시 보지 않았다.
+- **`am crash`는 매핑 확인에 쓸 수 없다**(프레임이 전부 프레임워크) — e2e B4의 절차를 고쳤다. **Java 크래시 envelope은 재실행이 아니라 죽는 순간 써진다** — 같은 문서의 문면을 고쳤다.
+- 「확인한 것 / 확인하지 못한 것」을 B단계 결과로 다시 썼다. **수신은 여전히 미확인이다.**
 
 ## 재검토 조건
 
@@ -347,7 +408,7 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
 2. **B단계에서 JS 예외가 세션을 crashed로 세면** — D11의 `handled = true` 근거가 틀렸다.
 3. **매핑 누락이 실제로 생기거나 CI 출시 자동화가 서면** — D8을 Sentry Gradle 플러그인으로 바꿀지 본다.
 4. **DSN을 넣은 빌드가 돌고 도착 스택이 Sentry에서 읽기 어려우면** — D9의 소스맵을 넣는다(도착 스택의 모양은 이미 기록됐다).
-5. **네이티브(C/C++) 크래시가 Sentry에 실제로 보이거나 API 30 미만 기기의 비중이 문제가 되면** — D5의 NDK를 `vendor-maven` 재빌드로 넣을지 본다(U3).
+5. **Lynx 엔진 등 네이티브(C/C++) 크래시를 봐야 하게 되면**(신고는 있는데 Sentry에 아무것도 없는 종료가 쌓일 때), **또는 API 31 이상 기기에서 tombstone 이벤트가 오는지 확인됐을 때** — D5의 NDK를 `vendor-maven` 재빌드로 넣을지 본다(U3). 지금은 C/C++ 크래시를 받는 기기가 하나도 확인되지 않았다.
 6. **「몇 명이 겪었나」가 필요해지면** — D10(U2).
 7. **Lynx · ReactLynx를 올리면** — 맥락 2 ~ 5와 「확인한 것」 1 · 2를 다시 본다. 도착 문자열의 모양과 코드(201 · 1101)는 공개 계약이 아니라 이 버전의 관찰이다.
    D4의 파싱 규칙 둘(`main-thread.js exception: ` · `backtrace:`)이 그 관찰에 기대어 있다.

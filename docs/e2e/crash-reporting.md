@@ -7,18 +7,18 @@
 
 정본: `.agent-harness/work/crash-reporting-sentry/spec.md`(§0 실측 · §2.1 어떤 JS 오류가 어느 길로 닿는가 · §3 호스트 계약 · §5 빌드 · §7 측정 · §9 사용자 결정) ·
 `test-plan.md` §5. **이 문서에 없는 단계를 현장에서 만들지 않는다.** 계약이 「미확인」으로 둔 것은 이 문서도 미확인으로 두고, 관찰 칸을 비워 둔다.
-결정은 [ADR-0058](../adr/0058-crash-reporting-sentry.md)이 진다. 1회차의 실행 원문(단계별 명령 · logcat · 스크린샷)은 하네스 작업 폴더의 `logs/e2e-a.md` · `logs/e2e-a-*`에 있다(저장소 밖).
+결정은 [ADR-0058](../adr/0058-crash-reporting-sentry.md)이 진다. 실행 원문(단계별 명령 · logcat · 스크린샷 · envelope 사본)은 하네스 작업 폴더의 `logs/e2e-a.md` · `logs/e2e-a-*` · `logs/e2e-b.md` · `logs/e2e-b-envelopes/`에 있다(저장소 밖 — envelope 사본은 DSN · public key를 지운 것이다).
 
 | 단계 | 상태 | 무엇 |
 |---|---|---|
 | **A** | **2026-10-13 실행 — 1회차**(API 30 에뮬레이터 한 대 · 에이전트 실행, 사람 미확인). 아래 「실행 기록」 | DSN 없이 — 빌드 · 초기화 안 됨 · 탐침 P1 ~ P4 · 되돌리기 |
-| **B** | **대기 — DSN 발급 뒤** | Sentry 수신 — 세션 · JS 예외 이슈 · 지우기 · Java 크래시와 매핑 · tombstone · 식별자 없음 · 측정 쿼리 |
+| **B** | **2026-10-13 실행 — 1회차, 기기 쪽만**(API 30 에뮬레이터 한 대 · `bundled` · 에이전트 실행, 사람 미확인). envelope 원문 확인과 전송 시도까지. **Sentry 수신 · 대시보드 쪽은 미확인(사용자 몫)** · B7과 매핑 업로드는 미실행 | Sentry로 나가는 것 — 세션 · JS 예외 이벤트 · 지우기 · Java 크래시와 매핑 · tombstone · 식별자 없음 · 측정 쿼리 |
 
 ## 전제
 
 공통 전제([README](README.md))를 따르되, 이 흐름은 **로그인이 필요 없는 구간이 대부분**이다. 탐침이 닿는 화면(여정 맵 · 설정 탭)을 보려면 로그인된 상태에서 시작한다.
 
-1. **에뮬레이터 하나**(전용). B5(tombstone)는 **API 30 이상**이어야 한다(`ApplicationExitInfo` 기반). `adb`는 아래 함수로 부른다:
+1. **에뮬레이터 하나**(전용). ⟨2026-10-13 정정⟩ B5(tombstone)는 **API 31 이상**에서 본다 — API 30에서는 tombstone 이벤트가 오지 않았다(1회차 실측. 「API 30 이상」이라는 앞선 문면이 틀렸다). envelope을 기기에서 꺼내려면 `adb root`가 되는 이미지여야 한다. `adb`는 아래 함수로 부른다:
    ```sh
    export E2E_UDID=emulator-5554          # adb devices 로 확인한 전용 에뮬레이터 ID
    export ADB="${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb"
@@ -230,9 +230,25 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 10-13 13:37:16.196  5871  5871 D DuruCrash: DISABLED 1101 {"rawError":{"stack":"backtrace:\n    at <anonymous> (main-thread.js:3465:13)\n    at <anonymous> (file:///worklet-runtime/main-thread.js:7122:2473963297)\n    at profile (file:///worklet-runtime/main-thread.js:7073:36)\n    at runWorkletImpl (file:///worklet-runtime/main-thread.js:7123:76)\n    at workletRuntime_runWorklet (file:///worklet-runtime/main-thread.js:7119:145)\n","message":"main-thread.js exception: Error: probe-main-thread ","cause":{"cause":"main-thread.js exception: Error: probe-
 ```
 
-## B — DSN 발급 뒤 (**상태: 대기 — DSN 발급 뒤**)
+## B — DSN을 넣은 빌드 (**상태: 1회차 실행됨 — 기기 쪽만. 수신 · 대시보드는 미확인**)
 
-이 단계는 이번 작업에서 실행하지 않는다. DSN이 생기기 전까지 아래 행의 결과 칸은 모두 「대기」다.
+2026-10-13에 한 회차가 돌았다(아래 「실행 기록」). **그 회차가 본 것은 기기 밖으로 나가기 직전의 envelope 원문과 전송 시도까지다** — Sentry가 받았는지, 대시보드에 어떻게 보이는지는 아무도 보지 않았다.
+아래 단계 표의 「관찰」은 **기기 쪽(envelope)**과 **대시보드 쪽**으로 나뉜다. 대시보드 쪽은 Sentry 계정이 있는 사람이 한다.
+
+### 방법 — 오프라인에서 envelope을 먼저 읽고, 그 다음에 보낸다
+
+1회차가 쓴 순서다. **식별자가 실려 있는지 보기 전에 보내지 않는다.**
+
+1. 탐침을 넣은 번들로 `:app:assembleBundled`(임시 코드 — 커밋하지 않는다).
+2. **네트워크를 먼저 끊는다**: `A shell svc wifi disable` · `A shell svc data disable` · `A shell cmd connectivity airplane-mode enable` → `A shell ping -c 1 8.8.8.8`이 `Network is unreachable`.
+3. 앱을 지우고 새로 설치(설치 id가 새로 만들어지는 조건) → 실행 → 탐침을 돌린다.
+4. `A root` 뒤 `/data/data/libitum.duru.android/cache/sentry/<DSN 해시>/`를 통째로 꺼내 원문을 읽는다. 대조용으로 그 기기의 설치 id 파일(`files/INSTALLATION`)과 `android_id`를 읽어 **envelope 전체에서 그 문자열을 찾는다**(값은 기록하지 않는다).
+5. B6의 넷과 지워지지 않은 가짜 값이 **없음을 확인한 뒤에만** 네트워크를 켜고 앱을 재실행한다 → 캐시가 비는지 본다.
+6. envelope 사본을 남길 때는 DSN · public key · DSN 해시 디렉터리 이름을 지운다.
+
+⚠ **캐시가 비는 것은 수신의 증거가 아니다.** SDK가 재시도하지 않는 거절 응답에서도 비워질 수 있다 [추론 — SDK debug 로그가 꺼져 있어 HTTP 응답을 볼 수 없다]. 수신은 대시보드에서 `event_id`로 확인한다.
+
+⚠ **메인 스레드 탐침(`main-thread:bindtap`)을 넣은 번들은 크기 상한을 넘는다** — 1회차의 탐침 번들이 1,731,799 bytes였다(상한 1,722,000. 탐침을 되돌리면 1,721,225). `pnpm size:check`를 탐침 번들에 돌리지 않는다.
 
 ### 전제
 
@@ -258,37 +274,50 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 
 | id | 단계 | 관찰(통과 조건) | 대응 AC | 상태 |
 |---|---|---|---|---|
-| B1 | DSN을 넣은 `bundled` 빌드를 설치 · 실행 | Sentry에 세션이 선다(`environment: bundled` · `release: libitum.duru.android@<versionName>+<versionCode>`) | 5 | 대기 |
-| B2 | A3과 같은 throw를 임시로 넣은 번들로 `bundled` 빌드 · 실행(임시 코드 — 커밋하지 않음) | 이슈 **1건** — 태그 `lynx.source: js-background` · `handled: yes` · User 칸 비어 있음 · breadcrumb 0 · 기기 화면에는 에러 화면 **외의 표시가 없다** | 1 · 4 | 대기 |
-| B3 | 메시지에 `a@b.co` · `010-1234-5678` · 한글을 넣은 임시 throw | Sentry에 `[email]` · `[number]` · `[text]`로 보인다 | 4 | 대기 |
-| B3-b | ⟨2026-10-13 리뷰 정정⟩ 스킴 없는 쿼리를 넣은 임시 throw 한 줄 — `throw new Error("GET /auth/v1/verify?token=123456&type=sms failed")`(계약 기준 벡터 V16) | Sentry에 `GET /auth/v1/verify?[redacted] failed`로 보인다 — `token=` · `123456`이 이슈 제목 · 메시지 · 지문 어디에도 없다 | 4 | 대기 |
-| B4 | `adb shell am crash libitum.duru.android` 뒤 앱을 다시 실행 | Java 크래시 이벤트 1건 · 세션이 crashed · `uploadSentryMappingBundled`를 돌린 뒤 스택이 **풀린 클래스 이름**으로 보인다 | 6 | 대기 |
-| B5 | (API 30 이상 에뮬레이터) 네이티브 크래시를 일으킨 뒤 재실행 | tombstone 이벤트가 오는지 · 프레임 모양을 **기록**한다(통과/실패 아님) | — | 대기 |
-| B6 | Sentry 세션 · 이벤트 원문(JSON)에서 `user` · `did` · `ip_address` · **`contexts.device.id`**를 찾는다. **JS 예외 이벤트(B2)와 Java 크래시 이벤트(B4) 둘 다**에서 본다(tombstone이 왔으면 B5의 것도) | 넷 다 **없다**(spec §0 F12 · C10 · §11 RV1 확인). `contexts.device`의 다른 키는 있어도 된다 — 어떤 키가 실렸는지 아래 메모에 옮긴다. `device.id`는 SDK가 설치 id를 넣는 자리이고 `beforeSend`가 지우게 고쳤다(리뷰 1회차의 Critical) — **여기서 보이면 식별자가 나가고 있는 것이다. 멈추고 정정으로 되돌린다.** 나머지 셋이 있으면 U2의 전제가 달라진다 → 정정 | 4 | 대기 |
-| B7 | M1 ~ M3 쿼리(spec §7)를 Sentry에서 한 번씩 연다 | spec §7의 쿼리가 수를 낸다 · 통합별 mechanism 이름을 아래 칸에 적는다 | — | 대기 |
+| B1 | DSN을 넣은 `bundled` 빌드를 설치 · 실행 | **기기**: 캐시에 세션 envelope이 바로 생긴다 — `status: ok` · `init: true` · `attrs = {release: libitum.duru.android@<versionName>+<versionCode>, environment: bundled}`. **대시보드**: 세션이 선다 | 5 | 기기 통과 · **대시보드 미확인** |
+| B2 | A3과 같은 throw를 임시로 넣은 번들로 `bundled` 빌드 · 실행(임시 코드 — 커밋하지 않음) | **기기**: 이벤트 1건 — 태그 `lynx.source: js-background` · `mechanism{type: lynx, handled: true}` · `user` 없음 · `breadcrumbs` 키 없음 · 기기 화면에는 에러 화면 **외의 표시가 없다**. **대시보드**: 이슈 1건 · `handled: yes` · User 칸 비어 있음 | 1 · 4 | 기기 통과 · **대시보드 미확인** |
+| B3 | 메시지에 `a@b.co` · `010-1234-5678` · 한글을 넣은 임시 throw | **기기**: 이벤트의 `value`가 `[email]` · `[number]` · `[text]`이고 envelope 전체에 원문 조각이 0건. **대시보드**: 같은 모습 | 4 | 기기 통과 · **대시보드 미확인** |
+| B3-b | ⟨2026-10-13 리뷰 정정⟩ 스킴 없는 쿼리를 넣은 임시 throw — `GET /auth/v1/verify?token=123456&type=sms`(계약 기준 벡터 V16의 꼴. B3과 한 메시지에 합쳐도 된다) | `…/verify?[redacted]`로 나간다 — `token=` · `123456` · `type=sms`가 메시지 · 지문 · 스택 어디에도 없다 | 4 | 기기 통과 · **대시보드 미확인** |
+| B2-b | ⟨1회차가 더한 것⟩ 핸들러 throw 하나와, **서로 다른 줄의 메인 스레드 throw 둘**(이름도 다르게) | 핸들러: `js-background` 이벤트 1건. 메인 스레드: `js-main-thread` 이벤트 2건 — 이름이 접두(`main-thread.js exception: `) 없이 제대로 갈리고, **지문 넷째 값(첫 스택 줄)이 서로 다르며 열이 `[number]`가 아니다** | 2 | 기기 통과 |
+| B4-a | `adb shell am crash libitum.duru.android` | **기기**: **죽는 순간**(재실행 전) envelope 1개가 캐시에 써진다 — `level: fatal` · `mechanism{type: UncaughtExceptionHandler, handled: false}` · 같은 envelope의 세션 `status: crashed`. `debug_meta`에 매핑 UUID. 전송은 다음 실행에서 일어난다. **대시보드**: Java 크래시 이벤트 1건 · 세션 crashed | 6 | 기기 통과 · **대시보드 미확인** |
+| B4-b | ⟨2026-10-13 정정⟩ **앱 코드의 프레임이 든 Java 크래시**를 일으키고 `uploadSentryMappingBundled`를 돌린다. **`am crash`로는 안 된다** — 그 이벤트의 프레임 7개는 전부 프레임워크(`ActivityThread$H.handleMessage` 등)라 매핑을 올려도 풀릴 이름이 없다. 앱 코드에서 잡히지 않는 예외를 던지는 임시 줄이 필요하다(커밋하지 않음) — **어디에 어떻게 넣을지는 계약이 아직 정하지 않았다** | 대시보드에서 스택이 **풀린 클래스 이름**(`com.libitum.host.…`)으로 보인다 | 6 | **미실행** — 인증 토큰 없음 · 던지는 방법 미정 |
+| B5 | ⟨2026-10-13 정정⟩ **API 31 이상** 에뮬레이터에서 네이티브 크래시를 일으킨 뒤 재실행(1회차: `A root` 뒤 `A shell kill -SEGV <pid>` → 재실행 → 30초 대기) | tombstone 이벤트가 오는지 · 프레임 모양 · 죽은 실행의 세션 `status`를 **기록**한다(통과/실패 아님) | — | **API 30: 오지 않았다**(아래) · API 31 이상: 미실행 |
+| B6 | 세션 · 이벤트 원문(JSON)에서 `user` · `did` · `ip_address` · **`contexts.device.id`**를 찾는다. **JS 예외 이벤트와 Java 크래시 이벤트 둘 다**에서 본다(tombstone이 왔으면 그것도). 기기의 설치 id · `android_id` 문자열도 envelope 전체에서 찾는다 | 넷 다 **없다**(spec §0 F12 · C10 · §11 RV1). 문자열 대조 0건. `contexts.device`의 다른 키는 있어도 된다 — 어떤 키가 실렸는지 메모에 옮긴다. `contexts.device.boot_time`도 **없어야 한다**(`438cc723`부터 지운다 — 1회차의 envelope에는 있었다). **넷 가운데 하나라도 보이면 식별자가 나가고 있는 것이다. 보내지 말고 멈추고 정정으로 되돌린다.** **대시보드**: 받은 이벤트에 서버가 붙인 IP가 없는지(프로젝트 설정 「IP 주소 저장 안 함」) | 4 | 기기 통과 · **서버 쪽 미확인** |
+| B7 | M1 ~ M3 쿼리(spec §7)를 Sentry에서 한 번씩 연다 | spec §7의 쿼리가 수를 낸다 · 통합별 mechanism 이름을 아래 칸에 적는다 | — | **미실행** — 대시보드 접근 없음 |
+
+**B5 — API 30에서 tombstone 이벤트가 오지 않았다. 실패가 아니라 계약의 범위가 틀렸다.** `setTombstoneEnabled(true)`인 `bundled`에서 SEGV로 죽인 뒤 재실행했으나 캐시에 새로 생긴 것은 세션 envelope뿐이었고,
+이벤트가 싣는 `sdk.integrations` 목록에도 tombstone 통합의 이름이 없었다. 시스템은 그 종료를 `APP CRASH(NATIVE)`로 기록했고(`dumpsys activity exit-info`) logcat에는 tombstone backtrace가 찍혔다.
+**SEGV로 죽은 실행의 세션은 `crashed`가 아니라 `exited`로 적혔다.** 계약과 이 문서의 앞선 판은 「API 30 이상」이라 적었다 — 플랫폼이 네이티브 크래시의 tombstone을 앱에 읽게 해 주는 것이 API 31부터일 수 있다 [추론].
+API 31 이상에서 다시 봐야 닫힌다([ADR-0058](../adr/0058-crash-reporting-sentry.md) D5 · 「정정 기록」).
 
 B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(어디에도 매달려 있지 않다 — spec §5). 작업 이름 이외의 인자 · 매핑 파일 경로는 계약이 정하지 않았다 — 실행 때 Gradle 출력으로 확인해 아래 「B 단계 메모」에 적는다.
 
-### B 단계 메모 (실행 뒤 채운다 — 지금은 비어 있다)
+### B 단계 메모 (1회차 — 2026-10-13)
 
 | 항목 | 값 |
 |---|---|
-| B7 — Java 크래시의 mechanism 이름 | |
-| B7 — ANR의 mechanism 이름 | |
-| B7 — tombstone의 mechanism 이름 | |
-| B5 — tombstone 프레임 모양 | |
-| B4 — `uploadSentryMappingBundled` 실행 명령 · 결과 | |
-| B6 — 이벤트 원문의 `contexts.device` 키 목록(값은 옮기지 않는다) | |
-| B6 — 넷(`user` · `did` · `ip_address` · `contexts.device.id`) 각각의 유무, 이벤트 종류별 | |
-| B2 — 오류 탐침부터 화면이 다시 반응할 때까지의 체감 · 측정(메인 스레드 동기 수집 — 리뷰 S4) | |
+| B7 — Java 크래시의 mechanism 이름 | `UncaughtExceptionHandler`(`handled: false`) — envelope에서 읽은 값. 대시보드 표시는 미확인 |
+| B7 — ANR의 mechanism 이름 | 미확인 — ANR을 유도하지 않았다(`sdk.integrations`에 `AnrV2`가 있다는 것만) |
+| B7 — tombstone의 mechanism 이름 | 미확인 — API 30에서 이벤트가 오지 않았다 |
+| B5 — tombstone 프레임 모양 | 미확인 — 같음 |
+| B4 — `uploadSentryMappingBundled` 실행 명령 · 결과 | 미실행 — `auth.token` 없음 |
+| B6 — 이벤트 원문의 `contexts.device` 키 목록(값은 옮기지 않는다) | 26개: `archs` · `battery_level` · `battery_temperature` · **`boot_time`** · `brand` · `charging` · `family` · `free_memory` · `free_storage` · `locale` · `low_memory` · `manufacturer` · `memory_size` · `model` · `model_id` · `online` · `orientation` · `processor_count` · `processor_frequency` · `screen_density` · `screen_dpi` · `screen_height_pixels` · `screen_width_pixels` · `simulator` · `storage_size` · `timezone`. `id` · `name` 없음. **`boot_time`은 이 회차 뒤 `438cc723`에서 지우게 고쳤다 — 이 회차의 5건에는 실려 나갔다.** `contexts.app` · `contexts.os` · `contexts.trace` · 태그의 키는 [Android 데이터 보안](../android-data-safety.md)에 옮겼다 |
+| B6 — 넷(`user` · `did` · `ip_address` · `contexts.device.id`) 각각의 유무, 이벤트 종류별 | JS 이벤트 4건 · Java 크래시 1건 · 세션 전부에서 **넷 다 없음**. `contexts.device.name` · `server_name` · `modules` · `request` · `breadcrumbs`도 없음. 설치 id 문자열 0건 · `android_id` 0건 |
+| B2 — 오류 탐침부터 화면이 다시 반응할 때까지의 체감 · 측정(메인 스레드 동기 수집 — 리뷰 S4) | **직접 재지 못했다**(SDK debug 로그 꺼짐 · 호스트에 시간 로그 없음). 간접 값만 [추론]: Lynx가 오류를 낸 로그 줄부터 호스트 콜백 뒤의 로그 줄까지 첫 이벤트 7 ms · 둘째 2 ms — 그 구간에는 다른 리스너도 들어 있다. 화면이 멈춘 체감은 없었다(자동 탭이라 근거는 약하다) |
+| 지문(전부 4원소) | 메인 스레드 둘: `["lynx","js-main-thread","TypeError","    at <anonymous> (main-thread.js:2405:10)"]` · `[…,"RangeError","    at <anonymous> (main-thread.js:2404:10)"]` — 넷째 값이 갈린다. 핸들러: `[…,"js-background","TypeError","    at bindtap (/.rspeedy/main/background.<해시>.js:7:915)"]`. 경계 렌더: `[…,"js-background","Error","    at fj (/.rspeedy/main/background.<해시>.js:7:371)"]` — 메시지는 지문에 들어가지 않는다 |
+| 운영 번들 · R8 APK의 메인 스레드 원문 | logcat의 원문은 여전히 `main-thread.js exception: TypeError: probe-b-mt-one` + `backtrace:` 줄. 이벤트에서는 걷혀 `type: TypeError` · `value: probe-b-mt-one` · 첫 스택 줄이 프레임 — **A6 뒤의 파싱 수정(`1c626045`)이 기기에서 확인됐다.** 운영 번들의 메인 스레드 스크립트는 한 줄로 줄여져 있지 않았고(줄 2404 · 2405) A6에서 10자리 열이던 프레임은 `…main-thread.js:2824:65`였다 |
+| 그 밖에 실려 나간 것(계약이 이름으로 다루지 않은 것) | `trace_id`(한 실행 동안 5건 모두 같고 재실행하면 바뀐다 — envelope 헤더에도) · `contexts.trace.data.thread.id`(실제로는 프로세스 id) · `contexts.app.permissions` · `app_start_time` · `view_names` · `contexts.os.kernel_version` · `build` · 태그 `isSideLoaded` |
 
 ## 이 절차로 확인하지 못하는 것
 
 - **iOS** — 이번에는 iOS에서 아무것도 나가지 않는다(다음 조각). `reportCrash`는 iOS 호스트 · Explorer에서도 `lynx.reportError`를 부른다 — 수집기가 없는 그 호스트들에서 화면에 무엇이 더해지는지는 이 절차에 없다.
 - **JS 소스맵** — 이번 조각에 넣지 않았다(spec C9). Sentry의 JS 스택은 줄여진 줄 · 열(`main.lynx.bundle:1:<열>`) 그대로다. **열을 손으로 푸는 절차는 계약이 정하지 않았다** — 이 문서에 적지 않는다(보류).
 - **debug 빌드의 Sentry 전송** — debug는 DSN이 있어도 보내지 않는다(spec C7 · U5).
-- **C/C++ 크래시의 API 30 미만 동작** — [미확인](spec F13).
-- **`bundled`(R8) APK에서 JS 오류가 호스트에 닿는지** — A단계의 판정 수단인 `DuruCrash` 로그가 debug 전용이다. 축소한 빌드의 도착은 B2(Sentry 이슈)가 처음 본다.
+- **C/C++ 크래시** — API 30에서는 이벤트가 오지 않았다(B5). **API 31 이상 · 그 미만 모두 [미확인]이다.**
+- **Sentry가 받았는지와 대시보드에 보이는 모든 것**(이슈 묶음 · `handled` 표시 · 세션 수치 · M1 ~ M3 · 서버가 붙이는 IP) — 계정이 있는 사람이 본다.
+- **ANR 이벤트** · 거부된 promise · 타이머 throw의 **이벤트** 모양 · 온라인에서 바로 보낼 때의 envelope — 1회차 탐침에 없었다.
+- **`boot_time`을 지운 뒤의 envelope** — `438cc723` 뒤로 기기에서 다시 뜨지 않았다.
+- ~~**`bundled`(R8) APK에서 JS 오류가 호스트에 닿는지**~~ — B단계 1회차가 봤다(경계 렌더 · 핸들러 · 메인 스레드). A단계로는 볼 수 없다(`DuruCrash` 로그가 debug 전용).
 - **탐침에 없는 길** — `requestAnimationFrame` 콜백 · 생명주기 이벤트 · ref · data processor의 throw, 첫 렌더(스플래시)에서 두 스레드가 각각 보고하는지, `error.getLevel()`의 실제 값.
 - Sentry 쪽 개인정보 처리방침 · Play 데이터 보안 양식 제출(spec U6 — 저장소 밖).
 
@@ -327,8 +356,39 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 - **이 회차가 보지 못한 것**: `bundled`(R8) APK에서의 A3 ~ A6 · 깔때기가 실제로 만드는 payload(전부 `DISABLED`에서 끝났다) · `:app:bundleRelease` · API 30 외 수준과 실기 ·
   이번 실행의 background JS 엔진이 무엇이었는지(APK에 `libquick.so`와 `libnapi_v8.so`가 함께 있다).
 
-### B단계 (대기 — DSN 발급 뒤)
+### B단계
 
 | 일시 | 기기 | 확인자 | 결과 | 메모 |
 |---|---|---|---|---|
-| | | | | |
+| 2026-10-13 14:30 ~ 14:40 (KST) | AVD `R6_API30`(`emulator-5580`) — API 30 · arm64-v8a 에뮬레이터. **`bundled`(R8 켜짐 · `DEBUG=false`)** · 운영 번들(모의 접속 값) · DSN 있음 · HEAD `b11ef1b6` | **에이전트 실행, 사람 미확인** | **기기 쪽**: B1 통과 · B2 통과 · B3 · B3-b 통과 · B2-b 통과 · B4-a 통과 · **B5 — API 30에서 tombstone 이벤트가 오지 않았다(계약의 범위가 틀렸다)** · B6 통과(넷 없음). **미실행**: B4-b(매핑 업로드 · 풀린 스택) · B7. **미확인**: Sentry 수신과 대시보드 쪽 전부 | 아래 「B 1회차 메모」 |
+
+**B 1회차 메모**
+
+- **수신 여부는 미확인이다.** 네트워크를 켜고 재실행하자 캐시의 envelope 9개가 약 2초 뒤 2개, 약 5초 뒤 0개가 됐고 30초 뒤에도 0이었다. logcat에 `Sentry` 태그 0줄(SDK debug 꺼짐) · 예외 0.
+  **본 것은 「전송을 시도했고 캐시가 비워졌다」까지다** — HTTP 응답을 보지 못했다. 아래 표의 `event_id`를 대시보드에서 찾는 것은 사용자 몫이다.
+- **대시보드에서 찾을 것.** 전송 시각은 전부 2026-10-13 05:36:50 ~ 05:36:55Z(KST 14:36:50 ~ 55) — 그 전까지는 오프라인 캐시에 있었다. 공통: `release: libitum.duru.android@0.1.0+2` · `environment: bundled` · `dist: 2` ·
+  기기 `sdk_gphone_arm64`(에뮬레이터).
+
+  | # | `event_id` | 발생(UTC) | 종류 | 대시보드에 보일 모양 |
+  |---|---|---|---|---|
+  | 1 | `275f38978b8c4c6b9aa22e8cc998fd40` | 05:33:36 | JS 메인 스레드 | `TypeError: probe-b-mt-one` · `lynx.source: js-main-thread` · handled |
+  | 2 | `ab8ee1ae4d0048aba91540f158cde57a` | 05:33:39 | JS 메인 스레드 | `RangeError: probe-b-mt-two` · `lynx.source: js-main-thread` · handled |
+  | 3 | `701f929b670a4f9391f9487320ebe9c3` | 05:33:43 | JS 핸들러 | `TypeError: probe-b-handler` · `lynx.source: js-background` · handled |
+  | 4 | `7afec8f207ac4a758052c1ad6d388713` | 05:33:47 | JS 경계 렌더 | `Error: probe-b [email] [number] [text] GET /auth/v1/verify?[redacted]` · `lynx.source: js-background` · handled |
+  | 5 | `9b9d538c42394d2bbd585c92c8ea7629` | 05:35:07 | Java 크래시(`am crash`) | `RemoteServiceException: shell-induced crash` · `level: fatal` · unhandled |
+
+  세션은 넷이다: 05:33:12 시작(오류 5 · `crashed`로 끝남) · 05:35:36 시작(`exited` — SEGV로 죽은 실행) · 05:35:52 시작 · 온라인 재실행의 것(05:36:50경). **다섯 건이 보이면 수신이 확인된 것이고, 안 보이면
+  거절됐을 수 있다 — 그때는 SDK debug 로그를 켠 빌드로 응답을 본다.** 보이는 다섯 건 모두에 `contexts.device.boot_time`이 들어 있다(이 회차 뒤에 지우게 고쳤다) — 남길지 지울지는 사용자가 정한다.
+- **방법.** 위 「방법」 그대로 — 오프라인에서 새로 설치하고 탐침 넷을 돌린 뒤 envelope을 꺼내 읽고, `am crash` · `kill -SEGV`까지 오프라인으로 한 다음, 식별자와 지워지지 않은 가짜 값이 없음을 확인하고 네트워크를 켰다.
+- **탐침 자리.** A단계와 같이 전부 `OnboardingScreen`이다(모의 값 번들이라 로그인 뒤 화면에 닿지 못한다) — 메인 스레드 throw 둘(제목 · 진행 점의 `main-thread:bindtap`), `handleNext()` 첫 탭의 핸들러 throw,
+  둘째 스텝 렌더의 throw(가짜 이메일 · 전화번호 · 한글 · 스킴 없는 쿼리를 한 메시지에).
+- **B3**: 던진 것 `probe-b a@b.co 010-1234-5678 한글 GET /auth/v1/verify?token=123456&type=sms` → 이벤트의 `value`는 `probe-b [email] [number] [text] GET /auth/v1/verify?[redacted]`.
+  envelope 전체에서 `a@b.co` · `010-1234` · `5678` · `한글` · `token=` · `123456` · `type=sms` 0건. **기기 화면의 에러 화면 본문과 기기의 logcat(`lynx` 태그)에는 원문이 그대로 보였다** — 에러 화면은 `ErrorBoundary`의
+  기존 동작이고 Lynx는 `bundled`에서도 오류 원문을 찍는다. 둘 다 기기 안의 일이다.
+- **B4-a**: 이벤트의 프레임 7개가 전부 프레임워크 프레임이었다 — 매핑 확인에 쓸 수 없어 절차를 B4-a / B4-b로 나눴다. envelope은 재실행이 아니라 **죽는 순간** 캐시에 써져 있었다(절차 문면을 그렇게 고쳤다).
+- **B5**: 위 단계 표 아래 문단. 죽은 실행의 세션 envelope은 시작 9 ms 뒤에 이미 `exited`로 써져 있었다.
+- **`boot_time`**: 이 회차의 실행자는 B6의 넷이 아니라 멈춤 조건으로 보지 않고 전송을 진행했다. 그 뒤 `beforeSend`가 지우게 고쳤고(`438cc723`) **고친 빌드의 envelope은 다시 뜨지 않았다.**
+- **되돌림**: 탐침 파일 `git checkout --` · 탐침 없는 번들과 APK 재생성 · 앱 제거(캐시 · 설치 id 포함) · 네트워크를 다시 켠 뒤 에뮬레이터 종료. `git status --short`에는 추적하지 않는 `apps/android/local.properties`뿐.
+  **`sentry.properties`가 있는 한 다시 만든 `bundled` APK에도 DSN이 들어 있다.**
+- **이 회차가 보지 못한 것**: Sentry 수신과 대시보드(B7 포함) · 매핑 업로드와 풀린 스택 · ANR · API 31 이상의 tombstone · `captureEvent`의 직접 시간 · 거부된 promise · 타이머 throw의 이벤트 모양 ·
+  온라인에서 바로 보낼 때의 envelope · 실기와 다른 API 수준 · release AAB.

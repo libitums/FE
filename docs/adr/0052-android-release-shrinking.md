@@ -497,6 +497,9 @@ r02 조합으로 다시 재지 않았다. 계약은 「기기 다운로드는 AB
   위 `bundled` dex 3,552,224는 A3의 상한 아래이나 그것은 release의 값이 아니다. release와 `bundled`의 dex가 바이트로 같은지(D3) · 매핑의 sha256(앞선 값 `657d490a…`와는 의존이 달라져
   같지 않을 것이다 [추론]) · 클래스 수 · 기기 다운로드 크기도 다시 재지 않았다.
 - **축소한 빌드에서 Sentry가 실제로 도는지는 아직 아무도 보지 않았다.** A단계의 `bundled` 설치는 DSN이 없어 `io.sentry` 코드를 한 줄도 부르지 않았다(기동과 logcat의 `Sentry` 태그 0줄까지).
+  ⟨2026-10-13 뒤 — e2e B단계⟩ **DSN을 넣은 `bundled`(R8)에서 초기화 · 이벤트 생성 · 전송 시도까지 돌았다** [실측 — API 30 에뮬레이터 1대, 에이전트 실행]: 세션과 JS 예외 이벤트 4건 · `am crash`의 Java 크래시 이벤트 1건이
+  만들어졌고 앱은 평소대로 온보딩을 띄웠다(전송 구간의 logcat에 예외 0). 이벤트의 `debug_meta`에 매핑 UUID가 `type: proguard`로 실렸다. **보지 못한 것**: Sentry의 수신, 매핑 업로드와 풀린 스택(토큰 없음 — 그리고 `am crash`의 프레임은
+  전부 프레임워크라 매핑 확인에 쓸 수 없다), ANR, tombstone(API 30에서 오지 않았다), release AAB. 이 회차의 dex 크기는 재지 않았다.
   R8 뒤의 초기화 · 전송 · 매핑으로 풀린 스택은 DSN을 넣은 e2e B단계가 처음 본다(ADR-0058 「확인하지 못한 것」 1 ~ 3).
 - **출시 전에 할 일이 하나 늘었다**: `google-services.json`이 있는 워크트리에서 「지키는 검사」(D5)의 산출물 검사를 Sentry를 넣은 release AAB에 다시 돌린다. 절차는
   [Android 출시 설정](../e2e/android-release-config.md) R9의 1이 이미 그 검사를 싣고 있다.
