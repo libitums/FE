@@ -257,9 +257,12 @@ function belowHeader(
 ): Placement {
   const value = (sheet as unknown as Record<string, unknown>)["stepSheetPlacementBelowHeader"];
   expect(typeof value, "stepSheetPlacementBelowHeader가 export되어 있다").toBe("function");
-  return (
-    value as (m: Measure, x: number | null, h: HeaderCard | null, gap: number) => Placement
-  )(measure, unitCenterX, header, gap);
+  return (value as (m: Measure, x: number | null, h: HeaderCard | null, gap: number) => Placement)(
+    measure,
+    unitCenterX,
+    header,
+    gap,
+  );
 }
 
 describe("stepSheetPlacementBelowHeader", () => {
