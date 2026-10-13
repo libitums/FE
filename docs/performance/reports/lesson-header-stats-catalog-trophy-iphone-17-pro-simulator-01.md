@@ -4,7 +4,7 @@
 
 - 상태: 미측정 — 번들만. 렌더링 · 메모리 캡처(`performance:capture`)를 돌리지 않았습니다. 번들 크기만 재었습니다.
 - 기능 PR: 학습 화면의 연속 학습 · 트로피 칩이 0으로 서던 문제와, 카탈로그 에피소드를 통과해도 트로피가 늘지 않던 문제의 수정(이 보고서와 같은 PR)
-- 대상: `fix/lesson-header-stats-catalog-trophy`(기준 main `e1e2ada2`). `pnpm verify`의 빌드 산출로 한 번 재었습니다.
+- 대상 commit: `fix/lesson-header-stats-catalog-trophy`의 `0a6a51ac`(기준 main `e1e2ada2`). 같은 코드의 작업 트리에서 `pnpm verify`의 빌드 산출로 한 번 재었습니다.
 - 기기: iPhone 17 Pro 시뮬레이터 — 여정 맵의 트로피 칩만 화면으로 확인했고 성능 캡처는 하지 않았습니다.
 - OS: iOS 26.5
 - Lynx SDK: 4.0.1
