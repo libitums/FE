@@ -353,7 +353,9 @@ function answerWordChoice(
     const picture = screen.queryByTestId("word-choice-picture-image");
     if (picture !== null) fireEvent(picture, new window.Event("bindEvent:load"));
     const right = rights[index] ?? true;
-    tapId(`word-choice-option-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`);
+    tapId(
+      `word-choice-option-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
+    );
     advance();
   });
 }
@@ -498,8 +500,16 @@ test("I2. (AC2 기준) 카드를 다 넘겨도 통과에 세지 않는다: 셋 �
     "episode_lesson_started",
     "episode_lesson_finished",
   ]);
-  expect(lessonEvents[1]).toMatchObject({ verdict: "failed", correctCount: "1", questionCount: "3" });
-  expect(lessonEvents[3]).toMatchObject({ verdict: "passed", correctCount: "2", questionCount: "3" });
+  expect(lessonEvents[1]).toMatchObject({
+    verdict: "failed",
+    correctCount: "1",
+    questionCount: "3",
+  });
+  expect(lessonEvents[3]).toMatchObject({
+    verdict: "passed",
+    correctCount: "2",
+    questionCount: "3",
+  });
 });
 
 test("I3. (AC3) u03 S9: 짝 맞추기가 단어 선택 · 받아쓰기 사이에 서고, 틀린 짝만 정답이 공개되며, 하나 틀려도 통과한다", async () => {
