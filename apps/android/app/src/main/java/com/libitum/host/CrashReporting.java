@@ -78,7 +78,7 @@ final class CrashReporting {
         String head = text == null ? "" : text.substring(0, Math.min(text.length(), 500));
         Log.d("DuruCrash", outcome + " " + code + " " + head);
       }
-    } catch (RuntimeException ignored) {
+    } catch (RuntimeException | StackOverflowError ignored) {
       // Reporting must never throw into the Lynx callback.
     }
   }

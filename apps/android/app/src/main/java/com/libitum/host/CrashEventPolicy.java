@@ -39,27 +39,32 @@ public final class CrashEventPolicy {
       e.setServerName(null);
       e.setRequest(null);
       Device device = e.getContexts().getDevice();
-      if (device != null) device.setName(null);
+      if (device != null) {
+        device.setName(null);
+        device.setId(null);
+      }
       List<SentryException> exceptions = e.getExceptions();
       if (exceptions != null) {
         for (SentryException exception : exceptions) {
           String value = exception.getValue();
-          if (value != null) exception.setValue(cap(CrashScrub.scrub(value)));
+          if (value != null) exception.setValue(clean(value));
         }
       }
       Message message = e.getMessage();
       if (message != null) {
-        if (message.getMessage() != null) message.setMessage(cap(CrashScrub.scrub(message.getMessage())));
-        if (message.getFormatted() != null) message.setFormatted(cap(CrashScrub.scrub(message.getFormatted())));
+        if (message.getMessage() != null) message.setMessage(clean(message.getMessage()));
+        if (message.getFormatted() != null) message.setFormatted(clean(message.getFormatted()));
+        message.setParams(null);
       }
       return e;
-    } catch (RuntimeException error) {
+    } catch (RuntimeException | StackOverflowError error) {
       return null;
     }
   }
 
-  private static String cap(String value) {
+  private static String clean(String value) {
+    String scrubbed = CrashScrub.scrub(CrashReportPayload.preCapMessage(value));
     int max = CrashReportPayload.MESSAGE_MAX;
-    return value.length() > max ? value.substring(0, max) : value;
+    return scrubbed.length() > max ? scrubbed.substring(0, max) : scrubbed;
   }
 }

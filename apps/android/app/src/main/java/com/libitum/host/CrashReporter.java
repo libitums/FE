@@ -23,7 +23,7 @@ final class CrashReporter {
       if (!budget.tryAcquire()) return Outcome.OVER_BUDGET;
       sink.send(payload);
       return Outcome.SENT;
-    } catch (RuntimeException error) {
+    } catch (RuntimeException | StackOverflowError error) {
       return Outcome.FAILED;
     }
   }

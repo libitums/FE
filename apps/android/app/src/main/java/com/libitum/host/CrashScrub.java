@@ -5,8 +5,12 @@ import java.util.regex.Pattern;
 /** Strips personal-data patterns from crash text. The rule order is part of the contract. */
 public final class CrashScrub {
   private static final Pattern URL_QUERY = Pattern.compile("([A-Za-z][A-Za-z0-9+.-]*://[^\\s?#]+)[?#]\\S*");
+  // Scheme-less query tail: possessive prefix keeps the scan linear.
+  private static final Pattern BARE_QUERY = Pattern.compile("\\?[^\\s?#=]*+=\\S*");
   private static final Pattern EMAIL = Pattern.compile("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}");
-  private static final Pattern BEARER = Pattern.compile("Bearer\\s+\\S+", Pattern.CASE_INSENSITIVE);
+  private static final Pattern DOTLESS_EMAIL = Pattern.compile("[^\\s@<>()\\[\\]]++@[^\\s@<>()\\[\\]]+");
+  private static final Pattern AUTH_HEAD =
+      Pattern.compile("\\b(basic|bearer)\\s+\\S+", Pattern.CASE_INSENSITIVE);
   private static final Pattern JWT =
       Pattern.compile("eyJ[A-Za-z0-9_-]{5,}\\.[A-Za-z0-9_-]{5,}\\.[A-Za-z0-9_-]{5,}");
   private static final Pattern OPAQUE = Pattern.compile("[A-Za-z0-9_-]{32,}");
@@ -20,8 +24,10 @@ public final class CrashScrub {
     if (text == null) return "";
     try {
       String out = URL_QUERY.matcher(text).replaceAll("$1?[redacted]");
+      out = BARE_QUERY.matcher(out).replaceAll("?[redacted]");
       out = EMAIL.matcher(out).replaceAll("[email]");
-      out = BEARER.matcher(out).replaceAll("Bearer [token]");
+      out = DOTLESS_EMAIL.matcher(out).replaceAll("[email]");
+      out = AUTH_HEAD.matcher(out).replaceAll("$1 [token]");
       out = JWT.matcher(out).replaceAll("[token]");
       out = OPAQUE.matcher(out).replaceAll("[token]");
       out = NUMBER.matcher(out).replaceAll("[number]");

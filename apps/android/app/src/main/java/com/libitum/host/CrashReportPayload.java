@@ -24,9 +24,15 @@ public final class CrashReportPayload {
   public static final int MESSAGE_MAX = 300;
   public static final int STACK_MAX_LINES = 30;
   public static final int STACK_LINE_MAX = 400;
+  // Pre-scrub caps: bound the work the scrub rules do and keep partial secrets out of their reach.
+  public static final int TEXT_PRE_MAX = 65_536;
+  public static final int MESSAGE_PRE_MAX = 2_000;
+  public static final int STACK_LINE_PRE_MAX = 2_000;
 
   private static final Pattern NAME_AND_MESSAGE =
       Pattern.compile("^([A-Za-z_$][A-Za-z0-9_$]*(?: rejection)?): ([\\s\\S]*)$");
+  private static final Pattern KNOWN_NAME =
+      Pattern.compile("^(?:[A-Z][A-Za-z0-9]*(?:Error|Exception)|Error|unhandled rejection)$");
   private static final Pattern LINE_BREAK = Pattern.compile("\\r?\\n");
   // Main-thread errors arrive as "main-thread.js exception: TypeError: x " under a "backtrace:" line.
   private static final String MAIN_THREAD_PREFIX = "main-thread.js exception: ";
@@ -50,32 +56,47 @@ public final class CrashReportPayload {
       Source source = sourceOf(code);
       if (source == null || "warn".equals(level)) return null;
       if (text == null || text.trim().isEmpty()) return null;
+      String body = (text.length() > TEXT_PRE_MAX ? text.substring(0, TEXT_PRE_MAX) : text).trim();
       String rawMessage;
       String rawStack;
-      String[] raw = rawErrorOf(text.trim());
+      String[] raw = rawErrorOf(body);
       if (raw != null) {
         rawMessage = raw[0];
         rawStack = raw[1];
       } else {
-        String[] lines = LINE_BREAK.split(text.trim(), 2);
+        String[] lines = LINE_BREAK.split(body, 2);
         rawMessage = lines[0];
         rawStack = lines.length > 1 ? lines[1] : "";
       }
+      rawMessage = preCapMessage(rawMessage);
       if (rawMessage.startsWith(MAIN_THREAD_PREFIX)) {
         rawMessage = rawMessage.substring(MAIN_THREAD_PREFIX.length()).trim();
       }
       String name = "Error";
       String message = rawMessage;
       Matcher split = NAME_AND_MESSAGE.matcher(rawMessage);
-      if (split.matches()) {
+      if (split.matches() && KNOWN_NAME.matcher(split.group(1)).matches()) {
         name = split.group(1);
         message = split.group(2);
       }
       return new CrashReportPayload(
           source, cap(name, NAME_MAX), cap(CrashScrub.scrub(message), MESSAGE_MAX), stackOf(rawStack));
-    } catch (RuntimeException error) {
+    } catch (RuntimeException | StackOverflowError error) {
       return null;
     }
+  }
+
+  /**
+   * Cuts a message to MESSAGE_PRE_MAX. When it was cut, the trailing piece after the last
+   * whitespace is dropped so a half token cannot slip past the scrub rules.
+   */
+  static String preCapMessage(String value) {
+    if (value == null || value.length() <= MESSAGE_PRE_MAX) return value;
+    String head = value.substring(0, MESSAGE_PRE_MAX);
+    for (int i = head.length() - 1; i >= 0; i--) {
+      if (Character.isWhitespace(head.charAt(i))) return head.substring(0, i);
+    }
+    return head;
   }
 
   /** Four elements: "lynx", source tag, name, first stack line (message when there is no stack). */
@@ -107,7 +128,9 @@ public final class CrashReportPayload {
       if (lines.size() >= STACK_MAX_LINES) break;
       if (line.trim().isEmpty()) continue;
       if (lines.isEmpty() && BACKTRACE_HEADER.equals(line.trim())) continue;
-      String clean = CrashScrub.scrub(line);
+      String bounded = line.length() > STACK_LINE_PRE_MAX
+          ? line.substring(line.length() - STACK_LINE_PRE_MAX) : line;
+      String clean = CrashScrub.scrub(bounded);
       // Line and column sit at the end of a frame, so keep the tail.
       lines.add(clean.length() > STACK_LINE_MAX ? clean.substring(clean.length() - STACK_LINE_MAX) : clean);
     }
