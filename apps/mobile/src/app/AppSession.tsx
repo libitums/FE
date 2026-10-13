@@ -51,6 +51,7 @@ import { useOpenedPush } from "./use-opened-push";
 import { usePushTokenRefresh } from "./use-push-token-refresh";
 import { useSystemBack } from "./use-system-back";
 import { useJourneyProgress } from "./use-journey-progress";
+import { useLearnerProfile } from "./use-learner-profile";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
 import type { AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
@@ -99,6 +100,7 @@ export function AppSession({
   // `Nav`에 적지 않습니다(ADR-0007 D3). ⟨2026-09-30⟩ **서버에 저장합니다**(ADR-0035) — 로그인 뒤 불러와 합치고
   // 바뀔 때마다 저장합니다. 연속 학습 · 트로피도 이 훅이 냅니다.
   const progress = useJourneyProgress(journeySeed, initialCompletedEpisodeIntroIds);
+  const learner = useLearnerProfile();
   const {
     completedStepCount,
     setCompletedStepCount,
@@ -202,6 +204,7 @@ export function AppSession({
     catalogSections,
     catalogProgress,
     setCatalogProgress,
+    ...learner,
   });
 
   // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼 안쪽 여백을 잡습니다.

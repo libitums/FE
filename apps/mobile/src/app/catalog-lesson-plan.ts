@@ -187,6 +187,7 @@ export function catalogLessonPlanFor(
   content: EpisodeContent,
   episodeId: string,
   unitKey: CatalogUnitKey,
+  _profile: LearnerProfile,
 ): CatalogLessonPlan | null {
   const entry = content.catalog.find((candidate) => candidate.id === episodeId);
   if (entry === undefined || entry.status !== "ready") return null;

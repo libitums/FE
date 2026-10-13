@@ -20,6 +20,7 @@ import { isTypeableAnswer, keystrokesFor } from "../lib/hangul-keyboard";
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import { fillPlaceholders } from "../lib/placeholder-fill";
+import type { FillScript } from "../lib/placeholder-fill";
 import { sha256Hex, utf8Bytes } from "../lib/sha256";
 import { systemBackEventName } from "../lib/system-back";
 import type { PairMatchQuestion } from "../screens/pair-match/pair-match.contract";
@@ -72,7 +73,7 @@ const upTo = (...keys: string[]) => ({ [u01]: ["intro", ...keys] });
 
 // ---------------------------------------------------------------- 계획 (정답의 출처)
 
-const fill = (text: string, script: "ko" | "roman") => fillPlaceholders(text, {}, script);
+const fill = (text: string, script: FillScript) => fillPlaceholders(text, {}, script);
 // 빈 경로는 거절합니다 — 앱의 `imageUrlOf`와 같은 규칙입니다.
 const imageUrlOf = (path: string): string | null => (path === "" ? null : `${imageBase}${path}`);
 

@@ -101,6 +101,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <SettingsScreen
           onSelectNavTarget={wiring.onSelectNavTarget}
+          learnerProfileSummary=""
           onSignOut={wiring.onSignOut}
           onDeleteAccount={wiring.onDeleteAccount}
           onLayerChange={wiring.onScreenLayerChange}

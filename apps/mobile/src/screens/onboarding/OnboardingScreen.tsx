@@ -49,7 +49,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
     playSound("button");
     const next = nextOnboardingStep(step);
     if (next === null) {
-      onComplete();
+      onComplete({ kind: "skipped" });
       return;
     }
     setStep(next);

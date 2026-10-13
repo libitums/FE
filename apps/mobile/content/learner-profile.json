@@ -1,0 +1,8 @@
+{
+  "preview": {
+    "sampleName": "Emma",
+    "name": { "ko": "{이름}(으)로 예약했어요.", "en": "I booked under {이름}." },
+    "country": { "ko": "저는 {나라}에서 왔어요.", "en": "I'm from {나라}." }
+  },
+  "countries": []
+}

@@ -13,12 +13,13 @@ import { canStartCatalogCover, tutorialPassedFrom } from "../screens/journey-map
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
 import type { EpisodeContent } from "./episode-content";
 import type { NavAction } from "./nav-state";
+import type { LearnerProfileValues } from "./use-learner-profile";
 
 export type CatalogWiringValues = {
   readonly episodeContent: EpisodeContent;
   readonly catalogSections: readonly CatalogMapSection[];
   readonly catalogProgress: CatalogProgress;
-};
+} & LearnerProfileValues;
 
 export type CatalogCoverWiring = CatalogWiringValues & {
   readonly onStartCatalogCover: (episodeId: string) => void;
@@ -39,7 +40,7 @@ export type CatalogCoverModel = {
   readonly cuts: CatalogCuts;
 };
 
-// 온보딩이 프로필을 내리기 전까지(3d) 비어 있는 프로필입니다.
+// 기록이 없을 때의 프로필입니다.
 export const noLearnerProfile: LearnerProfile = {};
 
 export function catalogCoverModelOf(
@@ -93,6 +94,10 @@ export function catalogCoverWiring(args: CatalogCoverWiringArgs): CatalogCoverWi
     completedEpisodeFinalIds,
     dispatch,
     episodeIntroEventSink,
+    learnerFill,
+    learnerRecord,
+    learnerSync,
+    learnerPort,
   } = args;
 
   // 표지 끝: 이벤트 → 진행 기록 순서입니다. 이동은 호출자가 이어서 합니다.
@@ -109,6 +114,10 @@ export function catalogCoverWiring(args: CatalogCoverWiringArgs): CatalogCoverWi
     episodeContent,
     catalogSections,
     catalogProgress,
+    learnerFill,
+    learnerRecord,
+    learnerSync,
+    learnerPort,
     onStartCatalogCover: (episodeId) => {
       const gate = {
         tutorialPassed: tutorialPassedFrom(completedEpisodeFinalIds),

@@ -3,7 +3,17 @@ import "background-only";
 // 콘텐츠 자리표시자 `{이름}` · `{나라}`를 학습자 프로필로 채우고 뒤 조사를 받침 규칙으로 고릅니다.
 // 이 파일의 한글 리터럴은 아래 최상위 상수 셋에만 둡니다.
 
-export type LearnerProfile = { name?: string; country?: string };
+/** 나라의 세 표기입니다 — 문장의 스크립트마다 하나씩 섭니다. `en`은 문장 안 꼴입니다(`the United States`). */
+export type LearnerCountryText = {
+  readonly ko: string;
+  readonly roman: string;
+  readonly en: string;
+};
+
+/** `country`가 문자열이면 세 스크립트에 같은 값이 섭니다. */
+export type LearnerProfile = { name?: string; country?: string | LearnerCountryText };
+
+export type FillScript = "ko" | "roman" | "en";
 
 export const DEFAULT_PROFILE_TEXT = { name: "이름", country: "나라" } as const;
 
@@ -101,13 +111,14 @@ function replaceToken(
 export function fillPlaceholders(
   text: string,
   profile: LearnerProfile,
-  script: "ko" | "roman",
+  script: FillScript,
 ): string {
-  const rules = PARTICLE_RULES[script];
+  const rules = PARTICLE_RULES[script === "ko" ? "ko" : "roman"];
   const fields = ["name", "country"] as const;
   let result = text;
   for (const field of fields) {
-    const value = (profile[field] ?? "").trim();
+    const entered = profile[field];
+    const value = (typeof entered === "object" ? entered.ko : (entered ?? "")).trim();
     const given = value.length > 0;
     const koText = given ? value : DEFAULT_PROFILE_TEXT[field];
     const display = given || script === "ko" ? koText : ROMAN_DEFAULTS[field];

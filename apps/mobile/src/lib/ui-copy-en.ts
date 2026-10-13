@@ -30,6 +30,7 @@ import {
   wordChoiceEn,
   writingEn,
 } from "./ui-copy-en-learning";
+import { learnerProfileEn } from "./ui-copy-en-profile";
 import { commonEn, journeyMapEn, learningShellEn, shellEn } from "./ui-copy-en-shell";
 import {
   episodeFinalEn,
@@ -76,4 +77,5 @@ export const uiCopyEn: UiCopy = {
   wordChoicePicture: wordChoicePictureEn,
   catalogFinal: catalogFinalEn,
   audioUnavailable: audioUnavailableEn,
+  learnerProfile: learnerProfileEn,
 };

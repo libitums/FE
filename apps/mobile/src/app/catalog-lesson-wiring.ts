@@ -94,7 +94,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
   };
 
   const startLesson = (episodeId: string, unitKey: CatalogUnitKey): void => {
-    const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey);
+    const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey, noLearnerProfile);
     if (plan === null) return;
     clearSession();
     sink?.(lessonStartedEventOf(plan, "lesson"));
@@ -113,7 +113,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
   };
 
   const startFinal = (episodeId: string, unitKey: CatalogUnitKey): void => {
-    const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId);
+    const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId, noLearnerProfile);
     if (plan === null) return;
     clearSession();
     const turnCount = plan.turns.length;
@@ -160,7 +160,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       dispatch({ type: "backToRoot" });
     },
     onFinishCatalogActivity: (episodeId, unitKey, activityIndex, results, skippedCount) => {
-      const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey);
+      const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey, noLearnerProfile);
       if (plan === null) return;
       const gathered = [...pendingResults, ...results];
       const skippedTotal = pendingSkippedCount + skippedCount;
@@ -188,7 +188,12 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       showComplete("replace", episodeId, unitKey, gathered, skippedTotal, plan.questionCount);
     },
     onFinishCatalogFinal: (episodeId, results) => {
-      const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId);
+      const plan = catalogFinalPlanFor(
+        episodeContent,
+        catalogSections,
+        episodeId,
+        noLearnerProfile,
+      );
       const section = sectionOf(episodeId);
       if (plan === null || section === null) return;
       const turnCount = plan.turns.length;

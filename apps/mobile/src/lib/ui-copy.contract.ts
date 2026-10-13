@@ -6,6 +6,7 @@
 
 import type { EntryLanguage } from "./entry-language";
 import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
+import type { LearnerProfileCopy } from "../components/learner-profile.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
@@ -85,6 +86,7 @@ export type UiCopy = {
   readonly wordChoicePicture: WordChoicePictureCopy;
   readonly catalogFinal: CatalogFinalCopy;
   readonly audioUnavailable: AudioUnavailableCopy;
+  readonly learnerProfile: LearnerProfileCopy;
 };
 
 /**

@@ -4,6 +4,7 @@
 
 import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
 import type { CatalogEntry } from "../lib/episode-catalog";
+import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { LearningItem } from "../lib/episode-content";
 import type {
   CatalogRoleplayTile,
@@ -108,6 +109,7 @@ export function catalogFinalPlanFor(
   content: EpisodeContent,
   sections: readonly CatalogMapSection[],
   episodeId: string,
+  _profile: LearnerProfile,
 ): CatalogFinalPlan | null {
   const entry = content.catalog.find((candidate) => candidate.id === episodeId);
   const section = sections.find((candidate) => candidate.episodeId === episodeId);

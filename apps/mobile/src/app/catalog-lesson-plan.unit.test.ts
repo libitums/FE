@@ -21,6 +21,7 @@ import {
   shuffledOrder,
 } from "./catalog-lesson-plan";
 import type { CatalogActivity, CatalogFill, CatalogMappedItem } from "./catalog-lesson-plan";
+import { noLearnerProfile } from "./catalog-cover-wiring";
 import type { EpisodeContent } from "./episode-content";
 
 // `unit` 계층: 문항 → 학습형 문항 매핑 · 구간 묶기 · 판정 기준 · 결정적 순서 · 계획 메모의 입출력만 봅니다.
@@ -813,26 +814,36 @@ describe("catalogLessonPlanFor — 메모", () => {
   test("LP18. 같은 콘텐츠로 두 번 부르면 같은 참조다", () => {
     const content = contentOf(realCatalog);
 
-    const first = catalogLessonPlanFor(content, "u01-water", "S3");
-    const second = catalogLessonPlanFor(content, "u01-water", "S3");
+    const first = catalogLessonPlanFor(content, "u01-water", "S3", noLearnerProfile);
+    const second = catalogLessonPlanFor(content, "u01-water", "S3", noLearnerProfile);
 
     expect(first).not.toBeNull();
     expect(second).toBe(first);
   });
 
   test("LP18. 같은 ready 항목을 담은 다른 콘텐츠 객체도 같은 참조다", () => {
-    const first = catalogLessonPlanFor(contentOf(realCatalog), "u01-water", "S3");
-    const second = catalogLessonPlanFor(contentOf([...realCatalog]), "u01-water", "S3");
+    const first = catalogLessonPlanFor(contentOf(realCatalog), "u01-water", "S3", noLearnerProfile);
+    const second = catalogLessonPlanFor(
+      contentOf([...realCatalog]),
+      "u01-water",
+      "S3",
+      noLearnerProfile,
+    );
 
     expect(first).not.toBeNull();
     expect(second).toBe(first);
   });
 
   test("LP18. 다른 항목 객체(새 버전)는 다른 참조다", () => {
-    const original = catalogLessonPlanFor(contentOf(realCatalog), "u01-water", "S3");
+    const original = catalogLessonPlanFor(
+      contentOf(realCatalog),
+      "u01-water",
+      "S3",
+      noLearnerProfile,
+    );
     const copy: CatalogEntry[] = [{ ...readyOf("u01-water") }, ...realCatalog.slice(1)];
 
-    const fromCopy = catalogLessonPlanFor(contentOf(copy), "u01-water", "S3");
+    const fromCopy = catalogLessonPlanFor(contentOf(copy), "u01-water", "S3", noLearnerProfile);
 
     expect(fromCopy).not.toBeNull();
     expect(fromCopy).not.toBe(original);
@@ -845,14 +856,14 @@ describe("catalogLessonPlanFor — 메모", () => {
       { status: "pending", id: "u04-x", order: 4, title: "제목", version: "v1" },
     ]);
 
-    const s3 = catalogLessonPlanFor(content, "u01-water", "S3");
-    const s4 = catalogLessonPlanFor(content, "u01-water", "S4");
+    const s3 = catalogLessonPlanFor(content, "u01-water", "S3", noLearnerProfile);
+    const s4 = catalogLessonPlanFor(content, "u01-water", "S4", noLearnerProfile);
 
     expect(s3?.unitKey).toBe("S3");
     expect(s4?.unitKey).toBe("S4");
-    expect(catalogLessonPlanFor(content, "nope", "S3")).toBeNull();
-    expect(catalogLessonPlanFor(content, "u04-x", "S1")).toBeNull();
-    expect(catalogLessonPlanFor(content, "u01-water", "RP")).toBeNull();
+    expect(catalogLessonPlanFor(content, "nope", "S3", noLearnerProfile)).toBeNull();
+    expect(catalogLessonPlanFor(content, "u04-x", "S1", noLearnerProfile)).toBeNull();
+    expect(catalogLessonPlanFor(content, "u01-water", "RP", noLearnerProfile)).toBeNull();
   });
 });
 
@@ -1065,8 +1076,8 @@ describe("catalogLessonPlanFor — 그림 주소 함수와 메모", () => {
     const first = contentOf(realCatalog);
     const second: EpisodeContent = { ...first, imageUrlOf: () => null };
 
-    const a = catalogLessonPlanFor(first, "u01-water", "S1");
-    const b = catalogLessonPlanFor(second, "u01-water", "S1");
+    const a = catalogLessonPlanFor(first, "u01-water", "S1", noLearnerProfile);
+    const b = catalogLessonPlanFor(second, "u01-water", "S1", noLearnerProfile);
 
     expect(a).not.toBeNull();
     expect(b).toBe(a);

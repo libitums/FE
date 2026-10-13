@@ -1,6 +1,10 @@
 // 에피소드 서사 표지의 타입 전용 계약입니다 — 구현 · JSX를 두지 않습니다.
 
 import type { CatalogLearningEvent } from "../../lib/catalog-learning-event.contract";
+import type {
+  LearnerProfileSavedEvent,
+  LearnerProfileSkippedEvent,
+} from "../../lib/learner-profile.contract";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
 import type { JourneyMapItemStatus } from "../journey-map/journey-map";
@@ -112,7 +116,9 @@ export type EpisodeIntroEvent =
   | EpisodeContentRefreshedEvent
   | EpisodeSurveyAnsweredEvent
   | EpisodeSurveySkippedEvent
-  | CatalogLearningEvent;
+  | CatalogLearningEvent
+  | LearnerProfileSavedEvent
+  | LearnerProfileSkippedEvent;
 /** 보내지 않을 때는 `null`입니다 — no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */
 export type EpisodeIntroEventSink = ((event: EpisodeIntroEvent) => void) | null;
 export type EpisodeIntroAppProps = { readonly episodeIntroEventSink?: EpisodeIntroEventSink };

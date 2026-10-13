@@ -13,6 +13,7 @@ function renderSettings() {
   render(
     <SettingsScreen
       onSelectNavTarget={() => undefined}
+      learnerProfileSummary="Not set"
       onSignOut={onSignOut}
       onDeleteAccount={onDeleteAccount}
       onLayerChange={() => undefined}

@@ -3,6 +3,7 @@
 import type { CatalogUnitKey } from "../lib/catalog-progress";
 import type { LearningItem } from "../lib/episode-content";
 import type { NonEmpty } from "../lib/non-empty";
+import type { FillScript } from "../lib/placeholder-fill";
 import type { ListeningQuestion } from "../screens/listening/listening-questions";
 import type { SentenceOrderQuestion } from "../screens/sentence-order/sentence-order-questions";
 import type { PairMatchQuestion } from "../screens/pair-match/pair-match.contract";
@@ -59,7 +60,7 @@ export type CatalogMappedItem =
     };
 
 /** 학습자 프로필을 묶은 치환입니다. 영어 문자열은 `"roman"` 스크립트로 치환합니다. */
-export type CatalogFill = (text: string, script: "ko" | "roman") => string;
+export type CatalogFill = (text: string, script: FillScript) => string;
 
 export type CatalogItemPort = { readonly fill: CatalogFill; readonly episodeId: string };
 

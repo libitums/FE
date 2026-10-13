@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { onboardingActionLabel, onboardingSteps } from "./onboarding";
+import { noLearnerProfilePort } from "../../lib/learner-profile";
 import { OnboardingScreen } from "./OnboardingScreen";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 스텝 진행·진행 점·액션 라벨을 봅니다 (ADR-0006 D4).
@@ -23,7 +24,13 @@ function next() {
 describe("OnboardingScreen", () => {
   // OB-U1 — 스크롤 상자에 accessibility-*가 0건임을 얹습니다(SP1과 같은 형태입니다).
   it("[OB-U1] 첫 렌더가 data-step='0'이고 그 스텝의 제목·본문이 공백이 아니다", () => {
-    render(<OnboardingScreen onComplete={vi.fn()} />);
+    render(
+      <OnboardingScreen
+        onComplete={vi.fn()}
+        learnerRecord={null}
+        learnerPort={noLearnerProfilePort}
+      />,
+    );
 
     const root = screen.getByTestId("onboarding-screen");
     expect(root).toHaveAttribute("data-step", "0");
@@ -41,7 +48,13 @@ describe("OnboardingScreen", () => {
   });
 
   it("[OB-U2] 액션을 누르면 data-step이 0→1→2로 간다", () => {
-    render(<OnboardingScreen onComplete={vi.fn()} />);
+    render(
+      <OnboardingScreen
+        onComplete={vi.fn()}
+        learnerRecord={null}
+        learnerPort={noLearnerProfilePort}
+      />,
+    );
     const root = screen.getByTestId("onboarding-screen");
 
     expect(root).toHaveAttribute("data-step", "0");
@@ -52,7 +65,13 @@ describe("OnboardingScreen", () => {
   });
 
   it("[OB-U3] 스텝이 바뀌면 같은 testid의 제목·본문 텍스트가 바뀐다", () => {
-    render(<OnboardingScreen onComplete={vi.fn()} />);
+    render(
+      <OnboardingScreen
+        onComplete={vi.fn()}
+        learnerRecord={null}
+        learnerPort={noLearnerProfilePort}
+      />,
+    );
 
     const titleBefore = screen.getByTestId("onboarding-screen-title").textContent;
     const bodyBefore = screen.getByTestId("onboarding-screen-body").textContent;
@@ -67,7 +86,13 @@ describe("OnboardingScreen", () => {
   });
 
   it("[OB-U4] 페이지 표시의 현재 페이지가 스텝을 따라 옮겨 간다", () => {
-    render(<OnboardingScreen onComplete={vi.fn()} />);
+    render(
+      <OnboardingScreen
+        onComplete={vi.fn()}
+        learnerRecord={null}
+        learnerPort={noLearnerProfilePort}
+      />,
+    );
 
     function currentPage(): string | null {
       return within(screen.getByTestId("onboarding-screen-progress"))
@@ -84,7 +109,13 @@ describe("OnboardingScreen", () => {
 
   it("[OB-U5] 마지막 스텝 전에는 onComplete가 0회, 마지막에서 1회다", () => {
     const onComplete = vi.fn();
-    render(<OnboardingScreen onComplete={onComplete} />);
+    render(
+      <OnboardingScreen
+        onComplete={onComplete}
+        learnerRecord={null}
+        learnerPort={noLearnerProfilePort}
+      />,
+    );
 
     next(); // 0 → 1
     expect(onComplete).not.toHaveBeenCalled();
@@ -95,7 +126,13 @@ describe("OnboardingScreen", () => {
   });
 
   it("[OB-U6] 액션 라벨이 마지막에서 갈린다(Next → Get started)", () => {
-    render(<OnboardingScreen onComplete={vi.fn()} />);
+    render(
+      <OnboardingScreen
+        onComplete={vi.fn()}
+        learnerRecord={null}
+        learnerPort={noLearnerProfilePort}
+      />,
+    );
     const action = screen.getByTestId("onboarding-screen-next");
 
     expect(action).toHaveTextContent(onboardingActionLabel(0));
@@ -113,7 +150,13 @@ describe("OnboardingScreen", () => {
   // element+label+traits="button" 셋을 함께 갖는다도 겁니다(오늘 그 조합을 함께
   // 보는 자리가 없습니다).
   it("[OB-U7] 진행 래퍼가 accessibility-element이고 이름이 스텝마다 갈린다", () => {
-    render(<OnboardingScreen onComplete={vi.fn()} />);
+    render(
+      <OnboardingScreen
+        onComplete={vi.fn()}
+        learnerRecord={null}
+        learnerPort={noLearnerProfilePort}
+      />,
+    );
 
     const progress = screen.getByTestId("onboarding-screen-progress");
     expect(progress).toHaveAttribute("accessibility-element", "true");
@@ -132,7 +175,13 @@ describe("OnboardingScreen", () => {
 
   // OB-U8 — 2026-09-21 디자인 반영: 좌상단 뒤로가기입니다.
   it("[OB-U8] 첫 스텝에는 뒤로가기가 없고, 다음 스텝부터 누르면 한 칸 돌아간다", () => {
-    render(<OnboardingScreen onComplete={vi.fn()} />);
+    render(
+      <OnboardingScreen
+        onComplete={vi.fn()}
+        learnerRecord={null}
+        learnerPort={noLearnerProfilePort}
+      />,
+    );
     const root = screen.getByTestId("onboarding-screen");
     const header = screen.getByTestId("onboarding-screen-header");
 
@@ -151,7 +200,13 @@ describe("OnboardingScreen", () => {
   it("[OB-U9] 재생하면 표현이 한 글자씩 칠해지고 끝나면 멈추며, 다시 듣기는 처음부터 칠한다", () => {
     vi.useFakeTimers();
     try {
-      render(<OnboardingScreen onComplete={vi.fn()} />);
+      render(
+        <OnboardingScreen
+          onComplete={vi.fn()}
+          learnerRecord={null}
+          learnerPort={noLearnerProfilePort}
+        />,
+      );
       next(); // 0 → 1
 
       const roundButton = (label: string) =>
@@ -190,7 +245,13 @@ describe("OnboardingScreen", () => {
   it("[OB-U10] 셋째 스텝의 학습 유닛이 학습 중으로 보이다가 잠시 뒤 완료로 바뀐다", () => {
     vi.useFakeTimers();
     try {
-      render(<OnboardingScreen onComplete={vi.fn()} />);
+      render(
+        <OnboardingScreen
+          onComplete={vi.fn()}
+          learnerRecord={null}
+          learnerPort={noLearnerProfilePort}
+        />,
+      );
       next(); // 0 → 1
       next(); // 1 → 2
 
@@ -211,7 +272,13 @@ describe("OnboardingScreen", () => {
 
   // OB-U11 — 장식 그림(배경·튀어나온 인물)이 이름 없는 접근성 정지로 남지 않습니다.
   it("[OB-U11] 첫 스텝 그림 카드는 래퍼가 접근성 자손을 통째로 가린다", () => {
-    render(<OnboardingScreen onComplete={vi.fn()} />);
+    render(
+      <OnboardingScreen
+        onComplete={vi.fn()}
+        learnerRecord={null}
+        learnerPort={noLearnerProfilePort}
+      />,
+    );
     const hero = screen.getByTestId("onboarding-screen-hero");
     expect(hero).toHaveAttribute("accessibility-elements-hidden", "true");
     expect(hero.querySelectorAll("image").length).toBeGreaterThan(0);
@@ -221,7 +288,13 @@ describe("OnboardingScreen", () => {
   it("[OB-U12] 진행 표시·학습 유닛 상태의 보조기술 이름이 화면 문구와 같은 영어다", () => {
     vi.useFakeTimers();
     try {
-      render(<OnboardingScreen onComplete={vi.fn()} />);
+      render(
+        <OnboardingScreen
+          onComplete={vi.fn()}
+          learnerRecord={null}
+          learnerPort={noLearnerProfilePort}
+        />,
+      );
       expect(screen.getByTestId("onboarding-screen-progress")).toHaveAttribute(
         "accessibility-label",
         "Step 1 of 3",
@@ -256,7 +329,13 @@ describe("OnboardingScreen", () => {
   it("[OB-U13] 재생 중에 다른 스텝으로 갔다 돌아오면 재생이 멈춰 있고 칠하기가 처음부터다", () => {
     vi.useFakeTimers();
     try {
-      render(<OnboardingScreen onComplete={vi.fn()} />);
+      render(
+        <OnboardingScreen
+          onComplete={vi.fn()}
+          learnerRecord={null}
+          learnerPort={noLearnerProfilePort}
+        />,
+      );
       next(); // 0 → 1
 
       const roundButton = (label: string) =>

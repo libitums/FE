@@ -13,6 +13,7 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 // `SettingsScreenProps`가 필수 prop 여섯을 요구합니다(계정 콜백 셋 포함, 계약 `AccountActionsProps`).
 // 기존 케이스는 `defaultSettingsScreenProps`(초기값 · no-op 콜백)만 채웁니다.
 const accountNoopProps = {
+  learnerProfileSummary: "Not set",
   onSignOut: () => undefined,
   onDeleteAccount: () => new Promise<AccountDeletionResult>(() => undefined),
   onLayerChange: () => undefined,
@@ -294,6 +295,7 @@ function renderAccount(options: { marked?: boolean } = {}) {
   const screenElement = (
     <SettingsScreen
       onSelectNavTarget={() => undefined}
+      learnerProfileSummary="Not set"
       onSignOut={onSignOut}
       onDeleteAccount={onDeleteAccount}
       onLayerChange={onLayerChange}

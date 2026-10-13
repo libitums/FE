@@ -2,6 +2,10 @@
 
 import type { AccountActionsProps, AccountActionsTestId } from "./account-actions.contract";
 import type { SessionOptionKey } from "../../lib/session-options";
+import type {
+  LearnerProfileOpenedEvent,
+  LearnerProfileSavedEvent,
+} from "../../lib/learner-profile.contract";
 import type { LegalDocument, LegalDocumentOpenedEvent } from "../../lib/legal-document.contract";
 
 // 이동 항목 넷입니다. `profile`은 route 이름과 같은 문자열이라 App이 `push`로 옮기고, 문서
@@ -15,6 +19,8 @@ export type SettingsNavTarget = "profile" | "notifications" | "feedback" | Legal
 
 export type SettingsScreenProps = {
   readonly onSelectNavTarget: (target: SettingsNavTarget) => void;
+  /** 「Name and country in lessons」 줄의 설명입니다 — 지금 값 · `Not set` · 기기에만 저장됨. */
+  readonly learnerProfileSummary: string;
 } & AccountActionsProps;
 
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };
@@ -40,7 +46,9 @@ export type SettingsEvent =
   | FeedbackOpenedEvent
   | FeedbackSubmittedEvent
   | LegalDocumentOpenedEvent
-  | SessionOptionChangedEvent;
+  | SessionOptionChangedEvent
+  | LearnerProfileSavedEvent
+  | LearnerProfileOpenedEvent;
 export type SettingsEventSink = ((event: SettingsEvent) => void) | null;
 export type SettingsAppProps = { readonly settingsEventSink?: SettingsEventSink };
 

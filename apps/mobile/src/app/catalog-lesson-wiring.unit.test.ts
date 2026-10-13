@@ -7,12 +7,14 @@ import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearningItem } from "../lib/episode-content.model";
+import { noLearnerProfilePort } from "../lib/learner-profile";
 import { fillPlaceholders } from "../lib/placeholder-fill";
 import type {
   EpisodeIntroEvent,
   EpisodeIntroEventSink,
 } from "../screens/episode-intro/episode-intro.contract";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
+import { noLearnerProfile } from "./catalog-cover-wiring";
 import { catalogLessonWiring } from "./catalog-lesson-wiring";
 import { catalogWiring } from "./catalog-wiring";
 import type { CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
@@ -85,6 +87,10 @@ function harness(
     episodeContent: contentOf(catalog),
     catalogSections: catalogMapSectionsOf(catalog),
     catalogProgress: progress,
+    learnerFill: noLearnerProfile,
+    learnerRecord: null,
+    learnerSync: "none",
+    learnerPort: noLearnerProfilePort,
     setCatalogProgress: (action) => {
       if (typeof action === "function")
         updaters.push(action as (value: CatalogProgress) => CatalogProgress);

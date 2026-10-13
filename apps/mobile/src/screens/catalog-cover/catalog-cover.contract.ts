@@ -1,5 +1,6 @@
 // 카탈로그 표지 컷 화면의 계약입니다. 타입만 둡니다.
 
+import type { FillScript } from "../../lib/placeholder-fill";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 
 export type CatalogCutScript = "en" | "roman";
@@ -37,7 +38,7 @@ export type CatalogCuts = readonly [CatalogCutView, ...CatalogCutView[]];
 export type CatalogCutPort = {
   readonly imageUrlOf: (relativePath: string) => string | null;
   /** 프로필을 묶은 치환입니다. */
-  readonly fill: (text: string, script: "ko" | "roman") => string;
+  readonly fill: (text: string, script: FillScript) => string;
 };
 
 /** 같은 컷 화면이 서는 자리 — 에피소드 앞(표지)과 최종 테스트 통과 뒤. */

@@ -12,6 +12,7 @@ import {
   catalogRoleplayTurnOf,
 } from "./catalog-final-model";
 import type { CatalogFill } from "./catalog-lesson-plan";
+import { noLearnerProfile } from "./catalog-cover-wiring";
 import type { EpisodeContent } from "./episode-content";
 
 // `unit` 계층: 최종 테스트 문항 → 턴 모델 변환과 계획 메모의 입출력만 봅니다.
@@ -276,8 +277,8 @@ describe("catalogFinalPlanFor — 메모", () => {
     const content = contentOf(realCatalog);
     const sections = catalogMapSectionsOf(realCatalog);
 
-    const first = catalogFinalPlanFor(content, sections, "u01-water");
-    const second = catalogFinalPlanFor(content, sections, "u01-water");
+    const first = catalogFinalPlanFor(content, sections, "u01-water", noLearnerProfile);
+    const second = catalogFinalPlanFor(content, sections, "u01-water", noLearnerProfile);
 
     expect(first).not.toBeNull();
     expect(second).toBe(first);
@@ -291,14 +292,16 @@ describe("catalogFinalPlanFor — 메모", () => {
     const content = contentOf(catalog);
     const sections = catalogMapSectionsOf(catalog);
 
-    expect(catalogFinalPlanFor(content, sections, "nope")).toBeNull();
-    expect(catalogFinalPlanFor(content, sections, "u04-x")).toBeNull();
+    expect(catalogFinalPlanFor(content, sections, "nope", noLearnerProfile)).toBeNull();
+    expect(catalogFinalPlanFor(content, sections, "u04-x", noLearnerProfile)).toBeNull();
   });
 
   test("FM6. 에피소드 번호는 구획 자리에서 온다", () => {
     const content = contentOf(realCatalog);
     const sections = catalogMapSectionsOf(realCatalog);
 
-    expect(catalogFinalPlanFor(content, sections, "u02-checkin")?.ordinal).toBe(2);
+    expect(catalogFinalPlanFor(content, sections, "u02-checkin", noLearnerProfile)?.ordinal).toBe(
+      2,
+    );
   });
 });
