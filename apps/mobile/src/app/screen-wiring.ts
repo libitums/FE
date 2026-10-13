@@ -29,6 +29,7 @@ import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
+import type { LearnerProfileOutcome } from "../lib/learner-profile.contract";
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { PhoneSignInVisibility, SocialLoginMethod } from "../screens/login/login.contract";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
@@ -196,7 +197,7 @@ export type ScreenWiring = {
   // 진입 흐름 화면 여섯의 결선입니다. `entryLanguage`만 App 상태를 그대로
   // 내리고, 나머지는 전이·이벤트·토큰 저장을 여는 콜백입니다.
   onSplashTimeout: () => void;
-  onOnboardingComplete: () => void;
+  onOnboardingComplete: (outcome: LearnerProfileOutcome) => void;
   onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
   onRequestPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
@@ -262,14 +263,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     visualNovelEventSink: args.visualNovelEventSink,
     dispatch: args.dispatch,
   });
-  const entry = entryWiring({
-    entryEventSink: args.entryEventSink,
-    analyticsUser: args.analyticsUser,
-    dispatch: args.dispatch,
-    entryLanguage: args.entryLanguage,
-    setEntryLanguage: args.setEntryLanguage,
-    syncProgress: args.syncProgress,
-  });
+  const entry = entryWiring(args);
 
   return {
     ...journey,

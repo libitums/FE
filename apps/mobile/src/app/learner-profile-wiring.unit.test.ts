@@ -35,6 +35,7 @@ const content: EpisodeContent = {
   fillText: fillPlaceholders,
 };
 
+// 최종 테스트(RP)까지 끝나야 다음 에피소드의 표지가 열립니다.
 const u01Done: CatalogProgress["u01-water"] = [
   "intro",
   "S1",
@@ -45,6 +46,7 @@ const u01Done: CatalogProgress["u01-water"] = [
   "S7",
   "S8",
   "S9",
+  "RP",
 ];
 /** u01을 끝내 u02의 표지가 열려 있고 u02의 첫 레슨(S1)은 아직 잠긴 진행입니다. */
 const coverOpen: CatalogProgress = { "u01-water": u01Done };
@@ -235,28 +237,41 @@ describe("시작 가드 — 묻는 경우", () => {
   });
 
   test("PW-13. catalogWiring이 낸 시작 함수가 가드판이다", () => {
-    const log: Entry[] = [];
-    const learnerArgs = argsOf({ progress: lessonOpen }, log);
-    const args: CatalogWiringArgs = {
-      ...learnerArgs,
-      setCatalogProgress: () => undefined,
-      pendingResults: [],
-      setPendingResults: () => undefined,
-      pendingSkippedCount: 0,
-      setPendingSkippedCount: () => undefined,
+    const wiringOf = (progress: CatalogProgress, log: Entry[]) => {
+      const args: CatalogWiringArgs = {
+        ...argsOf({ progress }, log),
+        setCatalogProgress: () => undefined,
+        pendingResults: [],
+        setPendingResults: () => undefined,
+        pendingSkippedCount: 0,
+        setPendingSkippedCount: () => undefined,
+      };
+      return catalogWiring(args);
     };
+    const unitLog: Entry[] = [];
+    const coverLog: Entry[] = [];
 
-    const wiring = catalogWiring(args);
-    wiring.onStartCatalogUnit("u02-checkin", "S1");
-    wiring.onStartCatalogCover("u02-checkin");
+    wiringOf(lessonOpen, unitLog).onStartCatalogUnit("u02-checkin", "S1");
+    wiringOf(coverOpen, coverLog).onStartCatalogCover("u02-checkin");
 
-    expect(dispatches(log)).toEqual([
+    expect(dispatches(unitLog)).toEqual([
       {
         type: "push",
         screen: { name: "learner-profile-gate", episodeId: "u02-checkin", unitKey: "S1" },
       },
     ]);
-    expect(events(log, "episode")).toEqual([]);
+    expect(dispatches(coverLog)).toEqual([
+      {
+        type: "push",
+        screen: {
+          name: "learner-profile-gate",
+          episodeId: "u02-checkin",
+          unitKey: CATALOG_INTRO_KEY,
+        },
+      },
+    ]);
+    expect(events(unitLog, "episode")).toEqual([]);
+    expect(events(coverLog, "episode")).toEqual([]);
   });
 });
 

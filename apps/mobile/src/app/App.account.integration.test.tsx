@@ -258,7 +258,11 @@ function expectSignedOutEnd(h: Harness, scope: "identity" | "identity-and-queue"
   expect(h.order.filter((entry) => !entry.startsWith("fetch:") && entry !== "apple:start")).toEqual(
     [
       ...(scope === "identity-and-queue"
-        ? ["remove:libitum.progress.pending.user-1", "remove:libitum.learning-days.pending.user-1"]
+        ? [
+            "remove:libitum.progress.pending.user-1",
+            "remove:libitum.learning-days.pending.user-1",
+            "remove:libitum.learner-profile.user-1",
+          ]
         : []),
       `remove:${sessionKey}`,
       `reset:${scope}`,

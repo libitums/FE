@@ -12,6 +12,7 @@ env:
     timeout: 20000
 - tapOn: "Next"
 - tapOn: "Next"
+- tapOn: "Next"
 - tapOn: "Get started"
 - assertScreenshot:
     path: screenshots/android-login-390x844.png

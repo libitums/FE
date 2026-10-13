@@ -127,12 +127,7 @@ export function catalogCoverWiring(args: CatalogCoverWiringArgs): CatalogCoverWi
       const entry = episodeContent.catalog.find((item) => item.id === episodeId);
       if (entry === undefined || entry.status !== "ready") return;
       episodeIntroEventSink?.({ name: "episode_intro_viewed", episodeId });
-      const model = catalogCoverModelOf(
-        episodeContent,
-        catalogSections,
-        episodeId,
-        noLearnerProfile,
-      );
+      const model = catalogCoverModelOf(episodeContent, catalogSections, episodeId, learnerFill);
       if (model === null) {
         // 컷이 없는 에피소드는 화면을 쌓지 않고 바로 끝낸 것으로 기록합니다.
         recordCoverDone(episodeId);

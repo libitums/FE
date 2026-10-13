@@ -50,6 +50,11 @@ export type Screen =
   // 넘깁니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0033).
   | { name: "profile" }
   | { name: "feedback" }
+  // 설정 탭의 「레슨에 쓰는 이름 · 나라」 화면입니다. 필드가 없습니다 - 지금 값은 App이 넘깁니다.
+  | { name: "learner-profile" }
+  // 이름 · 나라가 드는 에피소드에 들어서기 전 묻는 화면입니다. 열려던 유닛을 들고 있다가(표지는 표지 키)
+  // 저장 · 건너뜀으로 풀 때 그 유닛을 시작합니다.
+  | { name: "learner-profile-gate"; episodeId: string; unitKey: CatalogUnitKey }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
   // 에피소드의 서사 표지입니다. 필드는 **표지 유닛 id 하나**입니다 — 표지가 스스로 맵에

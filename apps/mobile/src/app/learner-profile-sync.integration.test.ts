@@ -1,10 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
-import {
-  guestLearnerProfileKey,
-  learnerProfileCacheKey,
-} from "../lib/learner-profile-cache";
+import { guestLearnerProfileKey, learnerProfileCacheKey } from "../lib/learner-profile-cache";
 import type {
   LearnerProfileCacheEntry,
   LearnerProfileRecord,
@@ -33,11 +30,16 @@ const sessionFor = (sub: string): string =>
 
 type Reply = { readonly status: number; readonly body: string } | "offline";
 type Handler = (body: Record<string, unknown>) => Reply | Promise<Reply>;
-type Call = { readonly name: "load_learner_profile" | "save_learner_profile"; readonly body: Record<string, unknown> };
+type Call = {
+  readonly name: "load_learner_profile" | "save_learner_profile";
+  readonly body: Record<string, unknown>;
+};
 
 const served = (record: LearnerProfileRecord | null): Reply => ({
   status: 200,
-  body: JSON.stringify(record === null ? null : { name: record.name, countryCode: record.countryCode }),
+  body: JSON.stringify(
+    record === null ? null : { name: record.name, countryCode: record.countryCode },
+  ),
 });
 const accepted: Reply = { status: 204, body: "" };
 const missing: Reply = { status: 404, body: "" };

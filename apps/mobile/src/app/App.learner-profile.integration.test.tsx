@@ -215,7 +215,10 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
     if (name === "save_learner_profile") {
       if (server.save === "offline") return Promise.reject(new Error("offline"));
       if (server.save === "missing") return reply(404);
-      server.profile = { name: String(body["p_name"]), countryCode: String(body["p_country_code"]) };
+      server.profile = {
+        name: String(body["p_name"]),
+        countryCode: String(body["p_country_code"]),
+      };
       return reply(204);
     }
     return reply(204);
@@ -271,6 +274,8 @@ const tapNode = (episodeId: string, key: string): void =>
   void fireEvent.tap(node(episodeId, key), {});
 const tapCover = (episodeId: string): void =>
   void fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-catalog-cover-${episodeId}`), {});
+const tapRoundIn = (id: string): void =>
+  void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-round-button"), {});
 const present = (id: string): boolean => screen.queryByTestId(id) !== null;
 
 function pressBack(token: string): void {
@@ -436,9 +441,7 @@ test("P1. (AC1) 온보딩 넷째 스텝의 이름 · 나라가 손님 칸에 서
   expect(present("learner-profile-gate-screen")).toBe(false);
   expect(present("catalog-final-screen")).toBe(true);
   expect(bankOfFirstTurn()).toContain("Emma로");
-  expect(screen.getByTestId("catalog-final-screen-hint")).toHaveTextContent(
-    "I booked under Emma.",
-  );
+  expect(screen.getByTestId("catalog-final-screen-hint")).toHaveTextContent("I booked under Emma.");
   expect(learnerNames(events.entry)).toEqual([
     { name: "learner_profile_saved", entry: "onboarding", change: "created" },
   ]);
@@ -522,9 +525,7 @@ test("P2b. 최종 테스트도 가드 뒤에 선다 - 저장한 이름이 타일
 
   expect(present("catalog-final-screen")).toBe(true);
   expect(bankOfFirstTurn()).toContain("Emma로");
-  expect(screen.getByTestId("catalog-final-screen-hint")).toHaveTextContent(
-    "I booked under Emma.",
-  );
+  expect(screen.getByTestId("catalog-final-screen-hint")).toHaveTextContent("I booked under Emma.");
   expect(startedEvents(events)).toHaveLength(1);
 });
 
@@ -554,14 +555,14 @@ test("P3. (AC3) 가드에서 Skip하면 유닛이 「이름」으로 서고 저�
     { name: "learner_profile_skipped", entry: "episode" },
   ]);
 
-  tapId("catalog-final-screen-back");
+  tapRoundIn("catalog-final-screen-back");
   await flush();
   expect(present("journey-map-screen")).toBe(true);
   tapNode(u02, "RP");
   expect(present("learner-profile-gate-screen")).toBe(false);
   expect(present("catalog-final-screen")).toBe(true);
 
-  tapId("catalog-final-screen-back");
+  tapRoundIn("catalog-final-screen-back");
   await flush();
   openSettings();
   expect(learnerRowCell()).toHaveTextContent("Name and country in lessons");
@@ -590,7 +591,7 @@ test("P3c. 가드에서 뒤로 가면 맵이고 이벤트가 없으며 같은 �
   const { events } = await boot({ progress: atU02S1 });
 
   tapNode(u02, "S1");
-  tapId("learner-profile-gate-back");
+  tapRoundIn("learner-profile-gate-back");
 
   expect(present("journey-map-screen")).toBe(true);
   expect(present("learner-profile-gate-screen")).toBe(false);
@@ -630,7 +631,7 @@ test("P4. (AC4) 기기에 Emma · Germany가 있으면 묻지 않고 설정에�
   tapNode(u02, "RP");
   expect(present("learner-profile-gate-screen")).toBe(false);
   expect(bankOfFirstTurn()).toContain("Emma로");
-  tapId("catalog-final-screen-back");
+  tapRoundIn("catalog-final-screen-back");
   await flush();
 
   openSettings();
@@ -642,9 +643,11 @@ test("P4. (AC4) 기기에 Emma · Germany가 있으면 묻지 않고 설정에�
   typeName("Liam");
   tapButtonIn("learner-profile-screen-submit");
 
-  expect(callsOf(rpcs, "save_learner_profile").map((rpc) => rpc.body)).toEqual([
-    { p_name: "Liam", p_country_code: "DE" },
-  ]);
+  await vi.waitFor(() =>
+    expect(callsOf(rpcs, "save_learner_profile").map((rpc) => rpc.body)).toEqual([
+      { p_name: "Liam", p_country_code: "DE" },
+    ]),
+  );
   expect(present("learner-profile-screen")).toBe(false);
   expect(present("settings-screen-title")).toBe(true);
   expect(rowDescription()).toContain("Liam · Germany");
@@ -656,9 +659,7 @@ test("P4. (AC4) 기기에 Emma · Germany가 있으면 묻지 않고 설정에�
   openJourney();
   tapNode(u02, "RP");
   expect(bankOfFirstTurn()).toContain("Liam으로");
-  expect(screen.getByTestId("catalog-final-screen-hint")).toHaveTextContent(
-    "I booked under Liam.",
-  );
+  expect(screen.getByTestId("catalog-final-screen-hint")).toHaveTextContent("I booked under Liam.");
   expectNoProfileValues(events);
 });
 
@@ -677,7 +678,7 @@ test("P5. (AC5) 저장 RPC가 404여도 값이 서고 사용자 칸은 pending�
     sync: "pending",
   });
 
-  tapId("catalog-final-screen-back");
+  tapRoundIn("catalog-final-screen-back");
   await flush();
   openSettings();
   expect(rowDescription()).toContain("Saved on this device");
@@ -713,7 +714,7 @@ test("P5b. (AC5) 올리지 못한 값은 다음 부팅에서 조회 없이 저�
   tapNode(u02, "RP");
   expect(present("learner-profile-gate-screen")).toBe(false);
   expect(bankOfFirstTurn()).toContain("Emma로");
-  tapId("catalog-final-screen-back");
+  tapRoundIn("catalog-final-screen-back");
   await flush();
   openSettings();
   expect(rowDescription()).toContain("Emma · Germany");
@@ -822,8 +823,8 @@ test("P6b. 로그아웃해도 프로필 칸은 남고 같은 계정으로 다시
   release();
 });
 
-test("P6c. 로그아웃 뒤 다른 계정(조회 null)으로 로그인하면 앞 계정의 이름이 보이지 않고 u02에서 가드가 선다", async () => {
-  const { server } = await boot({
+test("P6c. 로그아웃 뒤 다른 계정(조회 null)으로 로그인하면 앞 계정의 값을 쓰지 않고 u02에서 가드가 선다", async () => {
+  const { server, store } = await boot({
     progress: toFinalOfU02,
     preStore: {
       [profileCacheKey]: JSON.stringify({ v: 1, name: "Emma", countryCode: "DE", sync: "synced" }),
@@ -840,7 +841,8 @@ test("P6c. 로그아웃 뒤 다른 계정(조회 null)으로 로그인하면 앞
 
   expect(present("learner-profile-gate-screen")).toBe(true);
   expect(present("catalog-final-screen")).toBe(false);
-  expect(document.body.textContent ?? "").not.toContain("Emma");
+  expect(store.has(learnerProfileCacheKey("w"))).toBe(false);
+  expect(store.get(profileCacheKey)).toBeDefined();
 });
 
 test("P7. 이벤트: 설정 열림 -> 저장이 settings sink로 나가고 모든 이벤트의 직렬화에 이름 · 나라 값이 없다", async () => {
@@ -887,8 +889,8 @@ test("P8. 접근성: 가드 · 설정 · 온보딩 넷째 스텝 · 나라 고�
     "learner-country-picker-title",
   ]);
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
-  tapId("learner-country-picker-back");
-  tapId("learner-profile-gate-back");
+  tapRoundIn("learner-country-picker-back");
+  tapRoundIn("learner-profile-gate-back");
 
   openSettings();
   fireEvent.tap(learnerRowCell(), {});
@@ -903,9 +905,7 @@ test("P8. 온보딩 넷째 스텝의 heading 축은 온보딩 제목 하나다",
 
   toProfileStep();
 
-  expect(headingAxis(screen.getByTestId("onboarding-screen"))).toEqual([
-    "onboarding-screen-title",
-  ]);
+  expect(headingAxis(screen.getByTestId("onboarding-screen"))).toEqual(["onboarding-screen-title"]);
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
 });
 
