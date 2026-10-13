@@ -155,7 +155,8 @@ function advanceSplash(): void {
 }
 
 function completeOnboarding(): void {
-  // 온보딩 세 스텝 — `onboarding-screen-next`는 스텝마다 같은 testid입니다.
+  // 온보딩 네 스텝(넷째는 빈 채 건너뜀) — `onboarding-screen-next`는 스텝마다 같은 testid입니다.
+  tapButtonIn("onboarding-screen-next");
   tapButtonIn("onboarding-screen-next");
   tapButtonIn("onboarding-screen-next");
   tapButtonIn("onboarding-screen-next");

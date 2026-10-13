@@ -270,6 +270,8 @@ const node = (episodeId: string, key: string) =>
   screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`);
 const tapNode = (episodeId: string, key: string): void =>
   void fireEvent.tap(node(episodeId, key), {});
+// u02 · u03은 이름 · 나라가 드는 에피소드라 기록이 없으면 첫 유닛 앞에 가드 화면이 섭니다 - 건너뛰면 기본 문구로 이어집니다.
+const skipProfileGate = (): void => tapButtonIn("learner-profile-gate-skip");
 const status = (episodeId: string, key: string) => node(episodeId, key).getAttribute("data-status");
 const exitResult = () => tapButtonIn("lesson-complete-screen-exit");
 const title = () => screen.getByTestId("lesson-complete-screen-title");
@@ -521,6 +523,7 @@ test("I3. (AC3) u03 S9: 짝 맞추기가 단어 선택 · 받아쓰기 사이에
   expect(status(u03, "S9")).toBe("available");
 
   tapNode(u03, "S9");
+  skipProfileGate();
   const seen: string[] = [];
   let pairScreens = 0;
   plan.activities.forEach((activity, index) => {
@@ -719,6 +722,7 @@ test("I6. 카드 화면의 나가기와 짝 화면의 시스템 뒤로는 기록
 
   const plan = lessonPlan(u03, "S9");
   tapNode(u03, "S9");
+  skipProfileGate();
   solveActivity(plan.activities[0] as CatalogActivity, true, false);
   expect(screen.getByTestId("pair-match-content")).toBeInTheDocument();
   pressBack("1");

@@ -625,6 +625,15 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계�
     {},
   );
 
+  // 상태 onboarding profile - 넷째 스텝도 제목 하나(heading)만 갖습니다.
+  expect(screen.getByTestId("onboarding-screen")).toHaveAttribute("data-step", "3");
+  expect(headingAxis(container)).toEqual(["onboarding-screen-title"]);
+
+  fireEvent.tap(
+    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    {},
+  );
+
   // 상태 login
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
   expect(headingAxis(container)).toEqual(["login-screen-title"]);

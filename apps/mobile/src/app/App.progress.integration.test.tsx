@@ -118,10 +118,16 @@ test("[IPG1] 부팅 뒤 서버 진행을 불러와 맵에 그리고, 연속 칩�
     "accessibility-label",
     "5-day streak",
   );
-  expect(rpcs.map((rpc) => rpc.name)).toEqual(["load_learning_progress", "learning_streak"]);
+  // 이 파일의 갱신 토큰은 `sub`를 든 JWT 모양이라 프로필 동기화도 돌아 `load_learner_profile`이 낍니다 -
+  // 진행 RPC 둘만 걸러 견줍니다(프로필 조회는 이 파일의 대역이 모르는 RPC라 204로 답받습니다).
+  const progressRpcs = rpcs.filter((rpc) => !rpc.name.endsWith("_learner_profile"));
+  expect(progressRpcs.map((rpc) => rpc.name)).toEqual([
+    "load_learning_progress",
+    "learning_streak",
+  ]);
   // 부팅으로 받은 일수는 축하하지 않습니다 — 모달이 저절로 뜨지 않습니다.
   expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
-  expect(rpcs[1]!.body).toEqual({ p_today: localDayFrom(new Date()) });
+  expect(progressRpcs[1]!.body).toEqual({ p_today: localDayFrom(new Date()) });
 });
 
 test("[IPG2] 활동을 끝내면 오늘을 적고 진행을 저장하며, 연속 칩이 새 일수로 바뀐다", async () => {

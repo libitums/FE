@@ -11,6 +11,7 @@ import type { LearningItem, Option, Text } from "../lib/episode-content.model";
 import { fillPlaceholders } from "../lib/placeholder-fill";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import { judgeAssessment } from "../screens/assessment/assessment";
+import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import {
   catalogActivitiesOf,
   catalogActivityPositionOf,
@@ -23,6 +24,7 @@ import {
 } from "./catalog-lesson-plan";
 import type { CatalogActivity, CatalogFill, CatalogMappedItem } from "./catalog-lesson-plan";
 import { noLearnerProfile } from "./catalog-cover-wiring";
+import { catalogFinalPlanFor } from "./catalog-final-model";
 import type { EpisodeContent } from "./episode-content";
 
 // `unit` 계층: 문항 → 학습형 문항 매핑 · 구간 묶기 · 판정 기준 · 결정적 순서 · 계획 메모의 입출력만 봅니다.
@@ -882,11 +884,24 @@ describe("catalogLessonPlanFor — 프로필 참조가 메모 키다", () => {
     expect(second).toBe(first);
   });
 
-  test("MK-2. 다른 프로필 참조는 다른 계획이고 문항 글자에 그 이름이 선다", () => {
+  test("MK-2. 다른 프로필 참조는 다른 계획 참조다", () => {
     const content = contentOf(realCatalog);
 
     const forEmma = catalogLessonPlanFor(content, "u02-checkin", "S3", emma);
     const forLiam = catalogLessonPlanFor(content, "u02-checkin", "S3", liam);
+
+    expect(forEmma).not.toBeNull();
+    expect(forLiam).not.toBeNull();
+    expect(forLiam).not.toBe(forEmma);
+  });
+
+  // 이름이 화면에 서는 곳은 실데이터에서 최종 테스트(RP)뿐입니다 - 레슨 문항에는 이름 토큰이 없습니다.
+  test("MK-2. 최종 테스트 계획의 대사 글자에 그 이름이 선다", () => {
+    const content = contentOf(realCatalog);
+    const sections = catalogMapSectionsOf(realCatalog);
+
+    const forEmma = catalogFinalPlanFor(content, sections, "u02-checkin", emma);
+    const forLiam = catalogFinalPlanFor(content, sections, "u02-checkin", liam);
 
     expect(forEmma).not.toBeNull();
     expect(forLiam).not.toBe(forEmma);
