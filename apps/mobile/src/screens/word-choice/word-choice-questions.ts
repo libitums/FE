@@ -12,8 +12,14 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 export type WordChoiceQuestion = {
   /** 문항 제시문입니다. 빈칸 문장이면 그 빈칸이 이 문자열 안에 있습니다 — 요소로 쪼개지 않습니다. */
   readonly prompt: string;
-  readonly choices: readonly [string, string, string, string];
-  readonly answerIndex: 0 | 1 | 2 | 3;
+  readonly choices: readonly [string, string, ...string[]];
+  readonly answerIndex: number;
+  /** 제시문 아래 작은 로마자 줄입니다. */
+  readonly romanization?: string;
+  /** 그 아래 작은 뜻 줄입니다 — 정답을 드러내는 문항에는 싣지 않습니다. */
+  readonly translation?: string;
+  /** 있으면 `copy.wordChoice.instruction` 대신 서는 지시문입니다. */
+  readonly instruction?: string;
 };
 
 // ---------------------------------------------------------------- 고정 데이터

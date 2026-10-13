@@ -1,0 +1,20 @@
+/* 오디오 없음 재생 조작의 스타일입니다. 값은 듣기 제시 채널의 다시듣기 원
+   (`listening-prompt-replay`)과 같고, 그 위에 비활성 불투명도만 얹습니다. 누름 반응이
+   없습니다. */
+.audio-unavailable-control {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-100);
+  opacity: var(--libitum-opacity-disabled);
+}
+
+.audio-unavailable-control-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  flex-shrink: 0;
+}

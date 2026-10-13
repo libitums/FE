@@ -11,6 +11,7 @@ import {
   type CatalogEntry,
   type CatalogInput,
 } from "./episode-catalog";
+import { minimalRoleplayTurnWire } from "./episode-content.test-support";
 import type { ManifestEntry } from "./episode-manifest";
 import { sha256Hex, utf8Bytes } from "./sha256";
 
@@ -72,10 +73,7 @@ function minimalEpisode(unitId: string): Wire {
     pre_cuts: [cut("pre")],
     dialogue: [line(1), line(2)],
     post_cuts: [cut("post")],
-    steps: [
-      step("S1", 1, [roleLine("S1-01")]),
-      step("RP", 2, [{ id: "RP-01", type: "ROLEPLAY_TURN" }]),
-    ],
+    steps: [step("S1", 1, [roleLine("S1-01")]), step("RP", 2, [minimalRoleplayTurnWire("RP-01")])],
     words: [{ id: "voca:1", ko: "물", roman: "mul", gloss_en: "water", role: "target" }],
     patterns: [{ id: "patt:1", ko: "{명사} 주세요", roman: "juseyo", gloss_en: "please give me" }],
   };

@@ -35,6 +35,7 @@ function catalogProps(onStartCover: (episodeId: string) => void = vi.fn()): Jour
     })),
     progress: {},
     onStartCover,
+    onStartUnit: vi.fn<(episodeId: string, unitKey: string) => void>(),
   };
 }
 

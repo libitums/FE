@@ -20,6 +20,9 @@ import {
 } from "./word-choice";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
+import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
+import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
+import type { WordChoiceQuestion } from "./word-choice-questions";
 
 import "./word-choice-screen.css";
 
@@ -44,9 +47,44 @@ export type WordChoiceScreenProps = {
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
 
+export type WordChoiceActivityProps = {
+  readonly questions: readonly WordChoiceQuestion[];
+  readonly onExit: () => void;
+  readonly onFinish: ActivityFinish;
+  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  readonly lesson?: LessonPosition;
+};
+
+/**
+ * 보기 글자 수가 이보다 길면 보기를 세로로 쌓습니다. 낱말 길이(튜토리얼)는 한 줄 칩이 맞고,
+ * 문장 길이(카탈로그의 역할 대사 · 번역 보기)는 칩이 바닥까지 줄어 글자가 접히기 때문입니다.
+ * 기기 확인(2026-10-12): 다섯 글자(「괜찮아요.」) 보기 셋도 한 줄에서는 글자가 테두리에 닿아
+ * 잘렸습니다 — 그래서 4자를 넘으면 쌓습니다.
+ */
+const stackedChoiceLength = 4;
+
+function isStackedChoices(choices: readonly string[]): boolean {
+  return choices.some((text) => text.length > stackedChoiceLength);
+}
+
+/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
 export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
+  return (
+    <WordChoiceActivity
+      questions={wordChoiceQuestionsForStep(stepId)}
+      onExit={onExit}
+      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
+    />
+  );
+}
+
+export function WordChoiceActivity({
+  questions,
+  onExit,
+  onFinish,
+  lesson,
+}: WordChoiceActivityProps): ReactNode {
   const copy = useUiCopy();
-  const questions = wordChoiceQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(wordChoiceSessionReducer, initialWordChoiceSessionState);
 
   // 완료는 파생입니다. 완료 시점에는 `questionIndex`가 문항 수와 같아
@@ -76,8 +114,7 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
       ? {
           label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
-          run: () =>
-            onFinish(stepId, wordChoiceSessionResults(questions, state.answeredChoiceIndexes), 0),
+          run: () => onFinish(wordChoiceSessionResults(questions, state.answeredChoiceIndexes), 0),
         }
       : undefined;
 
@@ -86,16 +123,28 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
   //
   // **참조가 곧 걸음의 정체입니다**(껍데기가 그것으로 타이머를 갈고 겹침을 막습니다).
   // 매 렌더 새로 만들면 관계없는 리렌더 하나가 기다림을 처음부터 되돌립니다.
-  const advance = useMemo(
-    () =>
-      question !== null && hasAnswered(state)
-        ? {
-            label: copy.common.continue,
-            run: () => dispatch({ type: "nextQuestion" }),
-            delayMs: 2500,
-          }
-        : undefined,
-    [question, state.selectedChoiceIndex, copy],
+  //
+  // 레슨의 중간 활동이면 마지막 문항에서 완료 카드를 거치지 않고 곧바로 결과를 올려 다음 학습형으로 갑니다.
+  const advance = useMemo(() => {
+    const selected = state.selectedChoiceIndex;
+    if (question === null || selected === null) return undefined;
+    const handsOff = handsOffAfter(lesson, state.questionIndex, questions.length);
+    return {
+      label: copy.common.continue,
+      run: () =>
+        handsOff
+          ? onFinish(
+              wordChoiceSessionResults(questions, [...state.answeredChoiceIndexes, selected]),
+              0,
+            )
+          : dispatch({ type: "nextQuestion" }),
+      delayMs: 2500,
+    };
+  }, [question, state.selectedChoiceIndex, copy]);
+  const counter = lessonCounter(
+    lesson,
+    question === null ? Math.max(0, questions.length - 1) : state.questionIndex,
+    questions.length,
   );
 
   return (
@@ -103,10 +152,10 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
       form="word-choice"
       // 세션 헤더가 세는 것은 문항입니다. 완료 상태에는 지금 푸는 문항이 없으므로
       // 마지막 문항 자리에 둡니다 — 문항이 0개인 스텝에서는 계약이 순번을 안 읽습니다.
-      questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
-      questionCount={questions.length}
+      questionIndex={counter.questionIndex}
+      questionCount={counter.questionCount}
       complete={complete}
-      instruction={copy.wordChoice.instruction}
+      instruction={question?.instruction ?? copy.wordChoice.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}
@@ -119,7 +168,15 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
          낱말이라, 폭이 낱말의 길이를 말하는 것이 읽기에 낫습니다. */
       workspace={
         question === null ? undefined : (
-          <view className="word-choice-screen-options">
+          <view
+            className={
+              isStackedChoices(question.choices)
+                ? "word-choice-screen-options word-choice-screen-options-stacked"
+                : "word-choice-screen-options"
+            }
+            data-testid="word-choice-screen-options"
+            data-layout={isStackedChoices(question.choices) ? "stacked" : "row"}
+          >
             {question.choices.map((choiceText, choiceIndex) => (
               <WordChoiceOption
                 key={choiceIndex}
@@ -152,6 +209,25 @@ export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenP
           {question === null ? null : (
             <text className="word-choice-screen-prompt" data-testid="word-choice-screen-prompt">
               {question.prompt}
+            </text>
+          )}
+
+          {/* 카탈로그 문항의 지원 줄입니다 — 값이 있을 때만 섭니다. 뜻 줄은 정답을 드러내는
+              문항에는 실리지 않습니다(그 판단은 문항을 만드는 쪽이 집니다). */}
+          {question?.romanization === undefined ? null : (
+            <text
+              className="word-choice-screen-support"
+              data-testid="word-choice-screen-romanization"
+            >
+              {question.romanization}
+            </text>
+          )}
+          {question?.translation === undefined ? null : (
+            <text
+              className="word-choice-screen-support"
+              data-testid="word-choice-screen-translation"
+            >
+              {question.translation}
             </text>
           )}
 

@@ -25,6 +25,9 @@ export const wordChoiceEn: WordChoiceCopy = { instruction: "Choose the word that
 export const sentenceOrderEn: SentenceOrderCopy = {
   instruction: "Complete the conversation.",
   placedChip: (text, position) => `${text}, position ${position}`,
+  dialogueSpeaker: { counterpart: "Partner", me: "You" },
+  dialogueTurn: (speaker, position, text) => `${speaker}, turn ${position}: ${text}`,
+  dialogueEmptyTurn: (speaker, position) => `${speaker}, turn ${position}, empty`,
 };
 
 export const speakingEn: SpeakingCopy = {

@@ -1,0 +1,180 @@
+/* 카탈로그 최종 테스트 화면의 스타일입니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   머리 · 장면 · 명암은 컷 화면(`catalog-cover-screen.css`)과 같은 값입니다. */
+
+/* 가장자리까지 까는 화면입니다 — 셸이 여백을 잡지 않습니다(`isFullBleedScreen`). 단색 바탕과 장면 층은
+   절대 배치로 화면을 덮고, 머리 · 대사 · 답안 판은 여백 상자 안에 섭니다. */
+.catalog-final-screen {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.catalog-final-screen-backdrop,
+.catalog-final-screen-scene {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* 그림이 없거나 늦거나 실패해도 그 위에 글이 읽히는 어두운 면입니다. */
+.catalog-final-screen-backdrop {
+  background-color: var(--libitum-color-gray-950);
+}
+
+/* 위 명암 — 흰 머리 글자가 밝은 그림 위에서도 읽히게 합니다. */
+.catalog-final-screen-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: calc(var(--libitum-spacing-64) * 4);
+  background-image: linear-gradient(to bottom, var(--libitum-color-gray-950), transparent);
+}
+
+.catalog-final-screen-safe {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.catalog-final-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-layout-gap-inline);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x);
+  flex-shrink: 0;
+}
+
+.catalog-final-screen-header-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
+.catalog-final-screen-title {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.catalog-final-screen-progress {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.catalog-final-screen-spacer {
+  flex: 1;
+}
+
+/* 상대 대사 — 패널과 답안 판 사이가 12입니다. */
+.catalog-final-screen-line {
+  flex-shrink: 0;
+  padding: 0 var(--libitum-layout-screen-padding-x) var(--libitum-spacing-12);
+}
+
+/* 답안 판 — 흰 면에 위 두 모서리만 둥글고 그림자가 섭니다(자판 판과 같은 갈래). 판 안쪽은 스크롤하고
+   버튼은 그 밖에 붙어 큰 글꼴에서도 밀려나지 않습니다. */
+.catalog-final-screen-panel {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding-top: var(--libitum-spacing-16);
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+  padding-bottom: var(--libitum-layout-screen-padding-bottom);
+  border-top-left-radius: var(--libitum-radius-xl);
+  border-top-right-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.catalog-final-screen-panel-scroll {
+  max-height: 50vh;
+  width: 100%;
+}
+
+.catalog-final-screen-panel-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--libitum-spacing-12);
+}
+
+/* 지시문 — 대답을 어떻게 만드는지 한 줄입니다. */
+.catalog-final-screen-instruction {
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 내 대답 줄 — 놓인 타일이 가운데에서 줄바꿈하며 섭니다. 위아래 가는 선이 줄의 자리를 보이고, 타일이
+   없어도 한 줄 높이를 지켜 선이 붙지 않습니다(문장 만들기의 답 칸 줄과 같은 값). */
+.catalog-final-screen-reply {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-16);
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-100);
+  border-bottom: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-100);
+  flex-shrink: 0;
+}
+
+/* 내 대답의 뜻 힌트 — 지시문과 같은 한 단 뒤의 색입니다. */
+.catalog-final-screen-hint {
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 판정 배지 자리 — 비어 있어도 높이를 지킵니다(학습 화면과 같은 값). 하한이지 고정이 아닙니다. */
+.catalog-final-screen-verdict-slot {
+  min-height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 타일 창고 — 가운데에서 줄바꿈하며 섭니다. */
+.catalog-final-screen-bank {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 버튼 자리 — 버튼이 없어도 높이를 지켜 판이 흔들리지 않습니다. */
+.catalog-final-screen-action {
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+}

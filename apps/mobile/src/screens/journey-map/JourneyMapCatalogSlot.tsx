@@ -31,6 +31,7 @@ export function JourneyMapCatalogSlot({
           progress: catalog.progress,
         }}
         onStartCover={catalog.onStartCover}
+        onStartUnit={catalog.onStartUnit}
       />
     </view>
   );

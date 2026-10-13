@@ -30,8 +30,9 @@ function byOrderThenId(a: CatalogEntry, b: CatalogEntry): number {
 }
 
 /**
- * 갱신 뒤 다시 읽은 카탈로그(`next`)를 기준으로, 이전에 열려 있던(`ready`) 항목은 닫지 않습니다 — 갱신이
- * 원격에서 사라졌거나 쓸 수 없게 만든 항목이라도 같은 실행 안에서는 이전 본문을 유지합니다.
+ * 갱신 뒤 다시 읽은 카탈로그(`next`)를 기준으로 하되, 이전에 열려 있던(`ready`) 항목은 닫지도 바꾸지도
+ * 않습니다 — 갱신이 새 버전을 들였거나 원격에서 사라졌거나 쓸 수 없게 만든 항목이라도 같은 실행 안에서는
+ * 이전 본문을 유지합니다(레슨 도중 문항이 바뀌지 않게). 새 버전은 캐시에 저장되어 다음 실행에 반영됩니다.
  */
 export function mergeCatalogForSession(
   previous: readonly CatalogEntry[],
@@ -40,7 +41,7 @@ export function mergeCatalogForSession(
   const merged: CatalogEntry[] = [];
   for (const entry of next) {
     const before = previous.find((candidate) => candidate.id === entry.id);
-    merged.push(entry.status !== "ready" && before?.status === "ready" ? before : entry);
+    merged.push(before?.status === "ready" ? before : entry);
   }
   for (const entry of previous) {
     if (entry.status === "ready" && !next.some((candidate) => candidate.id === entry.id)) {

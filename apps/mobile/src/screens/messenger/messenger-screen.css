@@ -113,9 +113,10 @@
   text-overflow: ellipsis;
 }
 
-/* 가린 정답은 학습자가 읽어야 하는 단서라 흐린 자리 표시(gray-500)보다 한 단계 진합니다. */
+/* 가린 정답은 학습자가 읽어야 하는 단서라 흐린 자리 표시보다 진해야 합니다. 흰 면 위
+   `fg-neutral-muted`가 AA(4.5:1)를 넘습니다. */
 .messenger-composer-placeholder {
-  color: var(--libitum-color-gray-600);
+  color: var(--libitum-color-fg-neutral-muted);
 }
 
 /* 힌트 줄 — 말풍선의 번역 줄과 같은 작은 본문(Body/small · gray-600)입니다. */
@@ -128,12 +129,14 @@
   letter-spacing: var(--libitum-typography-body-s-letter-spacing);
 }
 
+/* 판정 뒤 글자는 18px 굵은 글씨라 큰 글자 기준에 못 미쳐 4.5:1이 필요합니다. 테두리(비텍스트
+   3:1)는 위의 `feedback-correct` · `feedback-incorrect`를 그대로 씁니다. */
 .messenger-composer-correct .messenger-composer-text {
-  color: var(--libitum-color-feedback-correct);
+  color: var(--libitum-color-feedback-correct-text);
 }
 
 .messenger-composer-incorrect .messenger-composer-text {
-  color: var(--libitum-color-feedback-incorrect);
+  color: var(--libitum-color-feedback-incorrect-text);
 }
 
 /* 보내기 — 지름 48의 원입니다. 보낼 말이 없거나 판정이 난 동안은 옅은 주황(디자인)입니다. */

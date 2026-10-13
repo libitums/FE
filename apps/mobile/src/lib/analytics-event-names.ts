@@ -1,0 +1,41 @@
+// PostHog 이벤트 이름의 목록입니다. 타입만 둡니다 — `analytics.contract.ts`가 재수출합니다.
+
+/**
+ * PostHog 이벤트 이름입니다. **목록을 손으로 적습니다** — 화면 계약에 이벤트가 늘거나
+ * 줄면 `analytics.contract.ts`의 `AnalyticsContractChecks`가 컴파일 오류로 서고, 그때 wiki
+ * 카탈로그도 함께 고칩니다(ADR-0029).
+ */
+export type AnalyticsEventName =
+  | "entry_screen_viewed"
+  | "entry_login_method_selected"
+  | "entry_completed"
+  | "messenger_unit_opened"
+  | "messenger_unit_completed"
+  | "messenger_unit_exited_incomplete"
+  | "visual_novel_unit_opened"
+  | "visual_novel_unit_completed"
+  | "visual_novel_unit_exited_incomplete"
+  | "visual_novel_unit_replay_started"
+  | "phone_call_unit_opened"
+  | "notifications_opened"
+  | "notification_item_tapped"
+  | "notification_item_deleted"
+  | "push_notification_opened"
+  | "settings_opened"
+  | "profile_opened"
+  | "notification_settings_opened"
+  | "feedback_opened"
+  | "feedback_submitted"
+  | "legal_document_opened"
+  | "session_option_changed"
+  | "episode_intro_viewed"
+  | "episode_intro_skipped"
+  | "episode_intro_continued"
+  | "episode_intro_exited"
+  | "episode_prologue_completed"
+  | "episode_content_refreshed"
+  | "episode_survey_answered"
+  | "episode_survey_skipped"
+  | "episode_lesson_started"
+  | "episode_lesson_finished"
+  | "episode_final_passed";

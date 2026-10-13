@@ -12,18 +12,6 @@
   align-self: stretch;
 }
 
-/* 표지 아래가 잠긴 채인 이유를 한 번 말하는 구획 캡션입니다. 색은 `fg-neutral-muted`(6.53:1)입니다 —
-   `subtle`은 14px 라벨에서 AA에 못 미칩니다. */
-.catalog-section-caption {
-  color: var(--libitum-color-fg-neutral-muted);
-  text-align: center;
-  font-family: var(--libitum-typography-label-l-font-family);
-  font-size: var(--libitum-typography-label-l-font-size);
-  font-weight: var(--libitum-typography-label-l-font-weight);
-  line-height: var(--libitum-typography-label-l-line-height);
-  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
-}
-
 /* 본문이 없는 구획의 사유 캡션입니다 — `episode-pending-caption`과 같은 글꼴이고 아래 여백이 없습니다.
    구획이 맨 끝일 때만 `catalog-map-tail`이 꼬리 여백을 줍니다(CSS가 마지막 자식을 고를 수 없습니다). */
 .catalog-unavailable-caption {

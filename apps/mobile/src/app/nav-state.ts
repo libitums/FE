@@ -10,6 +10,7 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // 판정 어휘는 `lib/answer-result.ts`에서 옵니다 — 화면 폴더가 아니라 `lib/`에서
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
+import type { CatalogUnitKey } from "../lib/catalog-progress";
 import type { SpecialUnitEntrySource } from "../lib/special-unit-entry-source";
 // 전화번호 로그인(Supabase OTP)의 공용 어휘입니다 — 코드 검증 화면이 보여 줄 번호를
 // 나릅니다.
@@ -67,6 +68,21 @@ export type Screen =
   | { name: "episode-final"; unitId: EpisodeFinalUnitId }
   // 카탈로그 에피소드의 표지 컷입니다. 에피소드는 카탈로그 id입니다.
   | { name: "catalog-cover"; episodeId: string }
+  // 카탈로그 레슨의 활동 하나입니다. 유닛 하나가 같은 학습형이 이어지는 구간 여럿을 잇습니다.
+  | { name: "catalog-lesson"; episodeId: string; unitKey: CatalogUnitKey; activityIndex: number }
+  // 카탈로그 최종 테스트(RP)입니다.
+  | { name: "catalog-final"; episodeId: string }
+  // 레슨 · 최종 테스트 공용 결과 화면입니다. 역할은 결선이 `finalKey`와 견줘 파생합니다.
+  | {
+      name: "catalog-unit-complete";
+      episodeId: string;
+      unitKey: CatalogUnitKey;
+      results: readonly AnswerResult[];
+      skippedCount: number;
+      questionCount: number;
+    }
+  // 최종 테스트 통과 뒤 컷입니다.
+  | { name: "catalog-epilogue"; episodeId: string }
   | { name: "episode-final-complete"; unitId: EpisodeFinalUnitId; results: readonly AnswerResult[] }
   // 학습 화면 넷은 `activityIndex`를 함께 집니다. 유닛 하나가 활동 여럿을 잇기
   // 때문입니다(`learningFormsByStep`) — 몇 번째 활동인지는 「지금 어느 화면인가」의

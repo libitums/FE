@@ -60,6 +60,30 @@ export function catalogCoverModelOf(
   return cuts === null ? null : { ordinal: section.ordinal, version: entry.version, cuts };
 }
 
+export type CatalogEpilogueModel = {
+  readonly ordinal: number;
+  readonly cuts: CatalogCuts;
+};
+
+/** 최종 테스트 통과 뒤 컷의 모델입니다. 컷이 없거나 준비되지 않았으면 `null`. */
+export function catalogEpilogueModelOf(
+  content: EpisodeContent,
+  sections: readonly CatalogMapSection[],
+  episodeId: string,
+  profile: LearnerProfile,
+): CatalogEpilogueModel | null {
+  const entry = content.catalog.find((item) => item.id === episodeId);
+  const section = sections.find((item) => item.episodeId === episodeId);
+  if (entry === undefined || entry.status !== "ready" || section === undefined) return null;
+  const cuts = catalogCutsOf(
+    catalogCutViewsOf(entry.episode.epilogue, {
+      imageUrlOf: content.imageUrlOf,
+      fill: (text, script) => content.fillText(text, profile, script),
+    }),
+  );
+  return cuts === null ? null : { ordinal: section.ordinal, cuts };
+}
+
 export function catalogCoverWiring(args: CatalogCoverWiringArgs): CatalogCoverWiring {
   const {
     episodeContent,

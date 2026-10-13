@@ -1,4 +1,4 @@
-import { useEffect, useGlobalProps, useMemo, useReducer, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useMemo, useReducer, useRef, useState } from "@lynx-js/react";
 
 import { FirstUnitGuideProvider } from "../components/first-unit-guide";
 import type { AnalyticsUserAppProps } from "../lib/analytics.contract";
@@ -51,6 +51,7 @@ import { useOpenedPush } from "./use-opened-push";
 import { usePushTokenRefresh } from "./use-push-token-refresh";
 import { useSystemBack } from "./use-system-back";
 import { useJourneyProgress } from "./use-journey-progress";
+import { newCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
 import type { AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
@@ -131,6 +132,8 @@ export function AppSession({
   // 모양으로** 듭니다 — 건너뛰기가 있는 활동이 스텝의 어느 자리에 오든 수가 새지
   // 않게 하려면 둘이 함께 만들어지고 함께 버려져야 합니다.
   const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
+  // 방금 끝낸 카탈로그 활동의 표식입니다 — 같은 렌더 안의 연타를 거르려고 상태가 아닌 ref입니다.
+  const finishGuard = useRef(newCatalogFinishGuard()).current;
   // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
   // 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
   const [gemCount] = useState(initialGemCount);
@@ -202,6 +205,7 @@ export function AppSession({
     catalogSections,
     catalogProgress,
     setCatalogProgress,
+    finishGuard,
   });
 
   // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼 안쪽 여백을 잡습니다.

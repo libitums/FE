@@ -12,8 +12,8 @@ import type {
 } from "../screens/episode-intro/episode-intro.contract";
 import type { SafeAreaInsets } from "../lib/safe-area";
 import { accountWiring } from "./account-wiring";
-import { catalogCoverWiring } from "./catalog-cover-wiring";
-import type { CatalogCoverWiring, CatalogCoverWiringArgs } from "./catalog-cover-wiring";
+import { catalogWiring } from "./catalog-wiring";
+import type { CatalogWiring, CatalogWiringArgs } from "./catalog-wiring";
 import type { AccountWiring } from "./leave-app.contract";
 
 import type { AnswerResult } from "../lib/answer-result";
@@ -213,7 +213,7 @@ export type ScreenWiring = {
 } & EpisodeFinalWiring &
   AccountWiring &
   JourneyStats &
-  CatalogCoverWiring;
+  CatalogWiring;
 
 export type ScreenWiringArgs = {
   readonly messengerEventSink: MessengerEventSink;
@@ -253,7 +253,7 @@ export type ScreenWiringArgs = {
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
 } & Omit<EpisodeFinalWiringArgs, "dispatch"> &
   ProgressWiringArgs &
-  Omit<CatalogCoverWiringArgs, "dispatch" | "episodeIntroEventSink" | "completedEpisodeFinalIds">;
+  Omit<CatalogWiringArgs, "dispatch" | "episodeIntroEventSink" | "completedEpisodeFinalIds">;
 
 export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   const journey = journeyWiring(args);
@@ -295,6 +295,6 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       leaveApp: args.leaveApp,
     }),
     ...guardedEpisodeFinalWiring(args),
-    ...catalogCoverWiring(args),
+    ...catalogWiring(args),
   };
 }

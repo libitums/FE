@@ -12,7 +12,11 @@ import type {
   EpisodeIntroEventSink,
 } from "../screens/episode-intro/episode-intro.contract";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
-import { catalogCoverModelOf, catalogCoverWiring } from "./catalog-cover-wiring";
+import {
+  catalogCoverModelOf,
+  catalogCoverWiring,
+  catalogEpilogueModelOf,
+} from "./catalog-cover-wiring";
 import type { EpisodeContent } from "./episode-content";
 import type { NavAction } from "./nav-state";
 
@@ -204,6 +208,40 @@ describe("catalogCoverModelOf", () => {
     expect(
       catalogCoverModelOf(contentOf(withPending), catalogMapSectionsOf(withPending), "u04-x", {}),
     ).toBeNull();
+  });
+});
+
+describe("catalogEpilogueModelOf", () => {
+  const sections = catalogMapSectionsOf(realCatalog);
+  const content = contentOf(realCatalog);
+
+  test("CW-E1. 준비된 에피소드는 자리와 통과 뒤 컷을 낸다", () => {
+    const model = catalogEpilogueModelOf(content, sections, "u01-water", {});
+
+    expect(model?.ordinal).toBe(1);
+    expect(model?.cuts).toHaveLength(3);
+  });
+
+  test("CW-E1. 통과 뒤 컷이 없는 픽스처와 준비 안 된 항목과 없는 id는 null이다", () => {
+    const base = realCatalog[0] as ReadyEntry;
+    const empty: ReadyEntry = { ...base, episode: { ...base.episode, epilogue: [] } };
+    const withPending: readonly CatalogEntry[] = [
+      ...realCatalog,
+      { status: "pending", id: "u04-x", order: 4, title: "제목", version: "v1" },
+    ];
+
+    expect(
+      catalogEpilogueModelOf(contentOf([empty]), catalogMapSectionsOf([empty]), "u01-water", {}),
+    ).toBeNull();
+    expect(
+      catalogEpilogueModelOf(
+        contentOf(withPending),
+        catalogMapSectionsOf(withPending),
+        "u04-x",
+        {},
+      ),
+    ).toBeNull();
+    expect(catalogEpilogueModelOf(content, sections, "nope", {})).toBeNull();
   });
 });
 

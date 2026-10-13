@@ -348,11 +348,29 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   그 화면일 때만이다.** 값(`const`·함수·컴포넌트)은 가져오지 않는다. 지금 있는 형태는
   전부 `JourneyStepId` 하나를 여정 맵에서 가져오는 것이다 — 듣기 · 문장 순서 · 단어 선택.
   **`app/`은 이 규칙 밖이다**(루트가 화면을 결선하므로 값도 가져온다).
+- **값 import 예외는 아래 표가 전부다** ⟨2026-10-13⟩. 카탈로그 화면이 튜토리얼 화면의 부품을 다시 쓰는데,
+  그 부품을 `components/`로 옮기면 **파일 경로를 읽는** 기존 테스트 · 도구 허용 목록이 함께 바뀐다 — 튜토리얼
+  테스트를 고치지 않는다는 조건과 부딪혀 제자리에 뒀다([ADR-0058](../adr/0058-catalog-learning-session.md) D14).
+  부품 쪽은 소비 화면을 import하지 않는다(`import/no-cycle` 성립). **표에 없는 값 import는 여전히 금지다** —
+  새 자리가 필요하면 표에 행을 더하기 전에 승격을 먼저 본다.
+
+  | 부품(소유 화면) | 값으로 가져오는 화면 | 이동을 막는 경로 |
+  |---|---|---|
+  | `episode-narrative/NarrativeBackground` | `catalog-cover` · `catalog-final` | `NarrativeBackground.ui.test.tsx`가 `narrative-background.css`를 경로로 읽는다 · `devtools/motion-literals/allowlist.json`과 그 검사 테스트가 같은 경로를 적는다 |
+  | `sentence-order/SentenceOrderChip` · `SentenceOrderChipPlaceholder` | `catalog-final` | `sentence-order.unit.test.ts`가 `sentence-order-chip.css`를 경로로 읽는다 |
+  | `messenger/MessengerKeyboard` | `typing` | props 타입이 `messenger.contract.ts`에 있고 testid가 `messenger-key-*`다 — 옮기면 메신저 테스트가 함께 바뀐다 |
+
+  **정리 조건**: 경로를 읽는 테스트 · 허용 목록을 옮기는 정리 작업을 따로 열 때 셋을 `components/`로 올리고 이 표를
+  지운다. 쓰는 화면이 더 늘면 그 작업을 먼저 한다.
 - **소유가 흐려지면 `src/lib/`로 승격한다.** 흐려진다는 것은 둘 중 하나다 — 그 어휘를
   **화면 셋 이상이 쓰거나**, 타입 이름이 가리키는 화면의 것이 아니게 되거나.
   `AnswerResult`가 그렇게 올라왔고(`lib/answer-result.ts`), `JourneyStepId`는 **올라가지
   않는다** — 소비자가 여럿이어도 스텝 id는 여정 맵의 어휘다. **소유자가 있으면 그 자리에
   둔다.**
+  ⟨2026-10-13⟩ **순수 한글 자판 모듈도 그렇게 올라왔다** — `screens/messenger/hangul-keyboard.ts`의 본문이
+  `lib/hangul-keyboard.ts`로 옮겨졌다(메신저 · 타자 입력 · 카탈로그 최종 테스트 · 수업 계획 넷이 쓴다). 옛 경로는
+  재수출 한 줄로 남아 메신저의 import · 테스트 경로가 그대로다. 경로를 읽는 테스트가 없어 위 예외 표와 달리 옮길 수
+  있었다.
 
 ([ADR-0004 D3·D4·D5](../adr/0004-package-boundaries-and-dependency-direction.md) ·
 [ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md))

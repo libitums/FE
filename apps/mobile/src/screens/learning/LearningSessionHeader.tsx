@@ -7,7 +7,7 @@ import { color } from "@libitums/design-tokens";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
 import { learningProgressFillClassName, learningSessionHeader } from "./learning-shell.contract";
-import type { LearningForm } from "../../lib/learning-form";
+import type { LearningActivityForm } from "../../lib/learning-form";
 import { useUiCopy } from "../../lib/ui-copy";
 
 // 학습 껍데기의 세션 헤더입니다 — 나가기 · 문항 순번 · 진행 막대 · 학습형 이름.
@@ -21,7 +21,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 // 눌렸다는 것만 올려 보냅니다.
 
 export type LearningSessionHeaderProps = {
-  readonly form: LearningForm;
+  readonly form: LearningActivityForm;
   /** 활동 안에서 지금 몇 번째 문항인가입니다(0부터). */
   readonly questionIndex: number;
   readonly questionCount: number;
