@@ -92,17 +92,20 @@ final class CrashReporting {
     if (options == null) return;
     CrashSessionGate gate = new CrashSessionGate();
     Handler main = new Handler(Looper.getMainLooper());
+    Runnable endSession = () -> {
+      if (gate.shouldEndAt(SystemClock.elapsedRealtime())) submit(options, Sentry::endSession);
+    };
     ProcessLifecycleOwner.get().getLifecycle().addObserver(new DefaultLifecycleObserver() {
       @Override public void onStart(LifecycleOwner owner) {
+        // The gate already ignores a stale end; dropping it keeps the main queue clean.
+        main.removeCallbacks(endSession);
         if (gate.shouldStartOnForeground()) submit(options, Sentry::startSession);
       }
 
       @Override public void onStop(LifecycleOwner owner) {
-        long stoppedAt = SystemClock.elapsedRealtime();
-        gate.onBackground(stoppedAt);
-        main.postDelayed(() -> {
-          if (gate.shouldEndAt(SystemClock.elapsedRealtime())) submit(options, Sentry::endSession);
-        }, CrashSessionGate.END_AFTER_MS);
+        gate.onBackground(SystemClock.elapsedRealtime());
+        main.removeCallbacks(endSession);
+        main.postDelayed(endSession, CrashSessionGate.END_AFTER_MS);
       }
     });
   }
