@@ -137,7 +137,7 @@ API 34의 세 회차 envelope에서 읽은 키(값은 옮기지 않는다):
 | 세션 리플레이 · 프로파일링 · 성능 추적 · 사용자 피드백 | 아티팩트가 없거나 표본율을 주지 않았다 · 추적 옵션 끔 |
 | 기기 이름 · 서버 이름 · 외부 저장소 정보 · 루트 여부 · 설치된 모듈 목록 · 메시지 인자(`Message.params`) | `beforeSend` · 옵션 끔 |
 | tombstone 원문 · SDK를 넣기 전의 과거 ANR · tombstone | 첨부 · 과거 보고 끔 |
-| 앱 설치 경로의 무작위 토막(`/data/app/~~…==/<패키지>-…==/`) | `beforeSend`가 스택 프레임 · `debug_meta`에서 `/data/app/[install]/`로 바꾼다(`1130979c`부터) [코드 · 실측 — API 34] |
+| 앱 설치 경로의 무작위 토막(`/data/app/~~…==/<패키지>-…==/`) | `beforeSend`가 스택 프레임 · `debug_meta`에서(`1130979c`부터), 지우기 규칙이 예외 메시지 · 메시지 본문 · JS 스택에서(`f8976799`부터) `/data/app/[install]/`로 바꾼다 [코드 · 실측 — API 34. 메시지 쪽은 단위 테스트만] |
 | 기기 부팅 시각(`contexts.device.boot_time`) | `beforeSend`가 지운다(`438cc723`부터 — **그 전에 B단계에서 나간 5건에는 실려 있었다**) |
 | JS 예외의 화면 이름 · props · 전역 상태 · 임의 객체 | payload에 자리가 없다. JS는 `Error`가 아닌 객체를 문자열로 풀지 않고 `Non-error value thrown`으로 바꿔 넘긴다 |
 | 이미지 · 리소스 · 레이아웃 등 JS 밖의 Lynx 오류 | 코드 범위(200번대 · 1100번대) 밖은 받지 않는다 — URL이 실린다 |
@@ -153,7 +153,7 @@ API 34의 세 회차 envelope에서 읽은 키(값은 옮기지 않는다):
 | 1 | URL의 쿼리 · 프래그먼트(인증 코드 · 토큰이 실린다) | `https://…/verify?[redacted]` |
 | 2 | **스킴 없는 쿼리 꼬리** — `?` 뒤에 `key=`가 오는 것 | `/auth/v1/verify?[redacted]` |
 | 3 | 이메일 | `[email]` |
-| 4 | **점 없는 이메일**(`kim@localhost`) — `@`가 든 토막(Java 클래스 이름 `@` 16진수 꼴 — `BinderProxy@4a5b6c7` — 만 예외) | `[email]` |
+| 4 | **점 없는 이메일**(`kim@localhost`) — `@`가 든 토막(Java 클래스 이름 `@` 16진수 꼴 — `BinderProxy@4a5b6c7` — 만 예외. 그래서 대문자 이름 + 16진수 꼬리의 주소 `Kim@cafe`는 남는다) | `[email]` |
 | 5 | **인증 값** — `Bearer` 뒤의 값, `Basic` 뒤의 base64 꼴 값(헤더 덤프의 따옴표 · `=` · 줄바꿈과 무관). 낱말 `basic` 뒤의 평범한 단어는 두고 간다 | `Bearer [token]` · `Basic [token]` |
 | 6 | JWT | `[token]` |
 | 7 | 32자 이상의 불투명한 값(갱신 토큰 · API 키 · 해시 · 사용자 UUID) | `[token]` |

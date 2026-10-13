@@ -111,7 +111,7 @@
   **`contexts.device.id`**(SDK가 넣는 설치 id — D10) · `contexts.device.name`(기기 이름에 사람 이름이 들어간다) · **`contexts.device.boot_time`**(밀리초 단위 부팅 시각 — 재부팅 전까지 한 기기의 이벤트를 서로 잇는 값이다. B단계에서 실려 나간 것을 본 뒤 `438cc723`에서 더했다)을 비우고, 예외 `value`와 메시지 본문을 사전 상한 → `scrub` → 300자로 다루고,
   **`Message.params`를 지운다**(형식 문자열에 끼울 인자 원문). **⟨`1130979c`⟩ 무작위 앱 설치 경로를 지운다** — 예외 · 스레드의 스택 프레임 `package` · `filename` · `abs_path` · `module`과
   `debug_meta.images[]`의 `code_file` · `debug_file`에서 `/data/app/~~<무작위>==/<패키지>-<무작위>==/`를 `/data/app/[install]/`로 바꾼다(Android가 설치 · 업데이트마다 정하는 디렉터리라 같은 설치의 모든 네이티브 크래시를 잇는다.
-  JUnit `CrashInstallPathTest`, 호스트 JUnit 160/160). **시스템 라이브러리의 로드 주소는 지우지 않는다**(사용자 결정 — 「대가」 15). 안에서 실패하면 **`null`을 돌려 그 이벤트를 버린다** — 지우지 못한 것을 보내지 않는다.
+  JUnit `CrashInstallPathTest`). ⟨`f8976799`⟩ 같은 경로가 **예외 메시지 · 메시지 본문 · JS 스택**에 실려도 지운다 — 이 규칙은 지우기 규칙의 첫 줄(`CrashScrub`)이라 JS 경로와 `beforeSend` 둘 다 지난다(리뷰 4회차 W11, `CrashInstallPathMessageTest`). **시스템 라이브러리의 로드 주소는 지우지 않는다**(사용자 결정 — 「대가」 15). 안에서 실패하면 **`null`을 돌려 그 이벤트를 버린다** — 지우지 못한 것을 보내지 않는다.
 - **깔때기는 `StackOverflowError`도 삼킨다.** `fromLynxError` · `CrashReporter.report` · `CrashReporting.onLynxError` · `beforeSend`의 catch가 `RuntimeException | StackOverflowError`다
   (깊게 중첩된 JSON이 Lynx 콜백으로 오류를 올려 보내지 않게). `fromLynxError`는 그때 `null`(받지 않음)이고 **`beforeSend`는 그 이벤트를 버린다.** `OutOfMemoryError`는 삼키지 않는다.
   ⚠ **실제 오버플로 입력은 재현하지 못했다** — JVM 테스트가 쓰는 `org.json`에는 중첩 상한이 있어 깊은 JSON이 오버플로까지 가지 않는다. 테스트가 본 것은 「깊이 6,000의 JSON에 던지지 않는다」와
@@ -263,7 +263,7 @@ SDK가 설치 id를 싣는 자리가 셋이고(맥락 8) 셋을 각각 끈다.
 4. **DSN 없는 빌드**: `testDebugUnitTest`(JUnit 121건 · 실패 0) · `assembleDebug` · `assembleBundled` 성공, `verify*NativeAlignment` 통과, bundled · debug APK에 `libsentry*.so` 0개,
    병합 매니페스트에 provider 둘 없음, `bundled` 설치 · 실행에서 logcat에 `Sentry` · `DuruCrash` 태그 0줄. `uploadSentryMappingBundled` · `uploadSentryMappingRelease`는
    **이름으로 불렀을 때** SKIPPED였다(assemble 작업 그래프에는 들어 있지 않다). R8 쪽 수치는 [ADR-0052](0052-android-release-shrinking.md)의 적용 기록 ⟨2026-10-13⟩이 진다.
-5. **자동 계층**(root 실행): vitest unit 1,871/1,871 · ui 1,461/1,461 · integration 533/533, 호스트 JUnit **165/165**(리뷰 정정 셋 · `boot_time` · 설치 경로 제거 · 세션 게이트 뒤 — 정정 전 126), Gradle 결선 검사 **136/136**(GW-S1 ~ S9).
+5. **자동 계층**(root 실행): vitest unit 1,871/1,871 · ui 1,461/1,461 · integration 533/533, 호스트 JUnit **168/168**(리뷰 정정 셋 · `boot_time` · 설치 경로 제거 · 세션 게이트 뒤 — 정정 전 126), Gradle 결선 검사 **136/136**(GW-S1 ~ S9).
    리뷰 정정의 테스트 20건은 구현 전에 먼저 서서 14건이 실패했고(나머지는 「잘린 이메일 조각」 · 깊은 JSON 둘 · 멱등 · 알려진 이름 · GW-S8 — 구현 전에도 통과하던 것) 구현 뒤 전부 통과했다.
 
 ### 확인한 것 — e2e B단계 [실측]
@@ -483,6 +483,14 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
 - **우회**(사용자 결정 「앱에서 우회」, `48bc8607`): 자동 세션 추적 끔 · `ProcessLifecycleOwner`로 SDK 작업 큐에 시작 · 30초 뒤 종료(D6). JUnit 165/165 · 결선 136/136(GW-S9).
 - **기기 확인**(API 34): 가짜 `exited` 0건 · SEGV 세션과 Java 크래시 세션이 `crashed` · 배경 처리 정상 · 식별자 0. 이벤트 둘을 보냈다(tombstone `465a16e08abb4441a008758a628c8b15` · Java `c6c88867b50e45bba656018a78f36a82`) — 수신은 미확인.
 - 「대가」 12 · D12의 M1 · 보류 표의 세션 행을 이 결과로 고쳤다.
+
+### 2026-10-13 — 리뷰 4회차(PASS with warnings)의 경고 처리
+
+- **W11.** 설치 경로 지우기가 스택 프레임 · `debug_meta`에만 걸려, 예외 메시지 · 메시지 본문에 실린 경로(`UnsatisfiedLinkError: dlopen failed: library "/data/app/~~…/lib/arm64/liblynx.so"` · `ClassNotFoundException`의 `DexPathList`)는 그대로 나갔다. 무작위 토막(22자 + `==`)은 불투명 값 규칙(32자 이상)에 걸리지 않는다. 설치 경로 규칙을 `CrashScrub`의 첫 규칙으로 옮겨 JS 경로 · `beforeSend`의 예외 값 · 메시지 본문이 모두 지나게 했다(`CrashInstallPathMessageTest` red 3 → green).
+- **S12.** 세션 결선(`watchSessions`)의 실패가 JS 예외 sink까지 되돌리지 않게 따로 감쌌다.
+- **받지 않은 것 — 대가로 적는다.** S10: `Basic` 뒤 대문자로 시작하는 8자 이상 낱말(`Basic Authentication required`)은 `[token]`이 된다(안전한 쪽). S11: 대문자 이름 + 16진수 꼬리(`Kim@cafe`)는 Java 식별 해시로 보고 남긴다 — 점 없는 16진수 도메인 주소는 드물다. S13: 세션 종료 지연은 uptime 기준이라 깊은 잠에서 늦게 돈다(SDK 기본과 같은 성질).
+- `lifecycle-process` 2.6.2는 런타임 의존 트리에 이미 있었다 [확인 — `bundledRuntimeClasspath`에서 `2.2.0 -> 2.6.2`].
+- 판정: JUnit 168/168, 결선 136/136. 이 처리는 재리뷰를 받지 않았다.
 
 ## 재검토 조건
 
