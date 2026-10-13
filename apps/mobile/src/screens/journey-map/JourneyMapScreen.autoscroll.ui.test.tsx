@@ -330,3 +330,254 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     expect(screen.queryByText("Alley")).toBeNull();
   });
 });
+
+// 도착 뒤 한 번 바로잡기(정정 2). 도착 전 · 후의 rect 표를 테스트가 갈아 끼웁니다: 목적지 X(448)로 간 뒤
+// 머리 카드가 30 커져(아래 모서리 258 → 정렬선 282) 대상이 정렬선 위 30(252)에 서 있는 상태입니다.
+const unitSelector = "#journey-map-unit-ordering";
+const headerSelector = "#journey-map-screen-header";
+const arrival = 448;
+
+const measureCount = (host: HostStub): number =>
+  host.measured().filter((selector) => selector === unitSelector).length;
+
+/** 도착 뒤의 표 — 대상이 `top`에 서 있고 머리 카드가 30 커졌다. */
+function swapToArrived(host: HostStub, targetTop = 700 - arrival): void {
+  host.rects[unitSelector] = unitRect(targetTop);
+  host.rects[headerSelector] = { top: 60, height: 198 };
+}
+
+function mountArrived(element: ReactElement = mapScreen({ progress: twoStepsDone })) {
+  const host = stubHost({ rects: asRects() });
+  const view = mount(element);
+  expect(host.scrollTos()).toEqual([scrollToCall(arrival, true)]);
+  return { host, view };
+}
+
+describe("JourneyMapScreen 도착 뒤 보정", () => {
+  test("AC1. 도착하면 대상 셀 · 스크롤 · 머리 카드를 다시 재고 30만큼 되돌린 목적지로 한 번 더 간다", () => {
+    const { host } = mountArrived();
+    const measuredBefore = host.measured().length;
+    swapToArrived(host);
+
+    host.scroll(arrival);
+
+    expect(host.measured().slice(measuredBefore)).toEqual(
+      expect.arrayContaining([unitSelector, "#journey-map-screen-scroll", headerSelector]),
+    );
+    expect(host.scrollTos()).toEqual([
+      scrollToCall(arrival, true),
+      scrollToCall(arrival - 30, true),
+    ]);
+    expect(host.scrollIntoViews()).toEqual([]);
+  });
+
+  test("AC2. 보정 뒤의 스크롤 이벤트(418 · 448)를 더 받아도 다시 옮기지 않는다(대상당 한 번)", () => {
+    const { host } = mountArrived();
+    swapToArrived(host);
+    host.scroll(arrival);
+    expect(host.scrollTos()).toHaveLength(2);
+    const measuredAfterCorrection = measureCount(host);
+
+    host.scroll(arrival - 30);
+    host.scroll(arrival);
+
+    expect(host.scrollTos()).toHaveLength(2);
+    expect(measureCount(host)).toBe(measuredAfterCorrection);
+  });
+
+  test("AC3. 카드가 그대로면 도착해서 다시 재되 옮기지 않는다", () => {
+    const { host } = mountArrived();
+    const before = measureCount(host);
+    host.rects[unitSelector] = unitRect(700 - arrival);
+
+    host.scroll(arrival);
+
+    expect(measureCount(host)).toBe(before + 1);
+    expect(host.scrollTos()).toHaveLength(1);
+  });
+
+  test("AC3b. 카드가 작아져 대상이 정렬선보다 아래에 서면 다시 재도 아래로 밀지 않는다", () => {
+    const { host } = mountArrived();
+    const before = measureCount(host);
+    host.rects[unitSelector] = unitRect(700 - arrival);
+    host.rects[headerSelector] = { top: 60, height: 138 };
+
+    host.scroll(arrival);
+
+    expect(measureCount(host)).toBe(before + 1);
+    expect(host.scrollTos()).toHaveLength(1);
+  });
+
+  test("AC4. 도착 전의 스크롤(248)은 다시 재지 않는다", () => {
+    const { host } = mountArrived();
+    const before = host.measured().length;
+    swapToArrived(host);
+
+    host.scroll(arrival - 200);
+
+    expect(host.measured()).toHaveLength(before);
+    expect(host.scrollTos()).toHaveLength(1);
+  });
+
+  test("AC5. 요청과 이벤트가 반올림만큼 다른(447.6) 도착도 도착이다", () => {
+    const { host } = mountArrived();
+    swapToArrived(host);
+
+    host.scroll(arrival - 0.4);
+
+    const calls = host.scrollTos();
+    expect(calls).toHaveLength(2);
+    expect(calls[1]?.params?.smooth).toBe(true);
+    expect(calls[1]?.params?.offset).toBeCloseTo(arrival - 0.4 - 30, 9);
+  });
+
+  test("AC6. 옮긴 뒤 맵에 손대면 도착해도 다시 재지도 옮기지도 않는다", () => {
+    const { host } = mountArrived();
+    const before = host.measured().length;
+    touchMap();
+    swapToArrived(host);
+
+    host.scroll(arrival);
+
+    expect(host.measured()).toHaveLength(before);
+    expect(host.scrollTos()).toHaveLength(1);
+  });
+
+  test("AC7. 다시 재는 답을 기다리는 사이에 손대면 늦게 온 답으로 옮기지 않는다", () => {
+    const { host } = mountArrived();
+    swapToArrived(host);
+    host.defer = () => true;
+    const before = measureCount(host);
+
+    host.scroll(arrival);
+    // 다시 재는 질의가 나가 있어야 아래 0회가 공허하지 않다.
+    expect(measureCount(host)).toBe(before + 1);
+    touchMap();
+    host.flush();
+
+    expect(host.scrollTos()).toHaveLength(1);
+  });
+
+  test("AC8. 다시 재는 답을 기다리는 사이에 스텝을 눌러 말풍선이 열리면 보정하지 않는다", () => {
+    const { host } = mountArrived();
+    swapToArrived(host);
+    host.defer = () => true;
+    const before = measureCount(host);
+
+    host.scroll(arrival);
+    expect(measureCount(host)).toBe(before + 1);
+    act(() => {
+      fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 750 } });
+    });
+    host.flush();
+
+    expect(screen.queryByTestId("step-sheet-panel")).not.toBeNull();
+    // 처음 이동 하나 + 말풍선의 것 하나뿐입니다 — 보정(418)이 끼지 않는다.
+    expect(host.scrollTos()).toHaveLength(2);
+    expect(host.scrollTos().map((call) => call.params?.offset)).not.toContain(arrival - 30);
+  });
+
+  test("AC9. 다시 잴 때 머리 카드 측정이 실패하면 아무것도 하지 않는다", () => {
+    const { host } = mountArrived();
+    const before = measureCount(host);
+    delete host.rects[headerSelector];
+
+    host.scroll(arrival);
+
+    expect(measureCount(host)).toBe(before + 1);
+    expect(host.scrollTos()).toHaveLength(1);
+    expect(host.scrollIntoViews()).toEqual([]);
+  });
+
+  test("AC10. 동작 줄이기에서는 보정도 smooth 거짓이다", () => {
+    const host = stubHost({ rects: asRects() });
+    mount(reduced(mapScreen({ progress: twoStepsDone })));
+    expect(host.scrollTos()).toEqual([scrollToCall(arrival, false)]);
+    swapToArrived(host);
+
+    host.scroll(arrival);
+
+    expect(host.scrollTos()).toEqual([
+      scrollToCall(arrival, false),
+      scrollToCall(arrival - 30, false),
+    ]);
+  });
+
+  test("AC11. 처음 측정이 실패해 폴백으로 가면 어떤 스크롤에도 다시 재지 않는다", () => {
+    const host = stubHost({ measurable: false });
+    mount(mapScreen({ progress: twoStepsDone }));
+    expect(host.scrollIntoViews()).toHaveLength(1);
+    const before = host.measured().length;
+
+    host.scroll(arrival);
+    host.scroll(500);
+
+    expect(host.measured()).toHaveLength(before);
+    expect(host.scrollTos()).toEqual([]);
+  });
+
+  test("AC12. 도착 전에 대상이 바뀌면 옛 목적지의 도착은 무시하고 새 목적지에서 새 대상을 잰다", () => {
+    const host = stubHost({
+      rects: { ...asRects(), "#journey-map-unit-appointment": unitRect(900) },
+    });
+    const view = mount(mapScreen({ progress: twoStepsDone }));
+    rerender(view, mapScreen({ progress: threeStepsDone }));
+    expect(host.scrollTos()).toEqual([scrollToCall(arrival, true), scrollToCall(648, true)]);
+    const before = host.measured().length;
+    host.rects[unitSelector] = unitRect(700 - arrival);
+    host.rects["#journey-map-unit-appointment"] = unitRect(900 - 648);
+    host.rects[headerSelector] = { top: 60, height: 198 };
+
+    host.scroll(arrival);
+
+    expect(host.measured()).toHaveLength(before);
+    expect(host.scrollTos()).toHaveLength(2);
+
+    host.scroll(648);
+
+    expect(host.measured().slice(before)).toContain("#journey-map-unit-appointment");
+    expect(host.measured().slice(before)).not.toContain(unitSelector);
+    expect(host.scrollTos()).toEqual([
+      scrollToCall(arrival, true),
+      scrollToCall(648, true),
+      scrollToCall(648 - 30, true),
+    ]);
+  });
+
+  test("AC13. 즉시 이동의 도착이 구획 경계도 넘으면 다시 잰 시점의 머리 카드가 도착 구획의 것이다", () => {
+    // 대상이 둘째 카탈로그 구획 안(목적지 2048 ≥ 2000)에 있다.
+    const host = stubHost({
+      rects: {
+        ...asRects(),
+        [unitSelector]: unitRect(2300),
+        "#journey-map-screen-episode-tutorial": unitRect(100),
+        [`#${catalogSectionDomId("u01-water")}`]: unitRect(1100),
+        [`#${catalogSectionDomId("u02-checkin")}`]: unitRect(2100),
+        [`#${catalogSectionDomId("u03-mina")}`]: unitRect(3100),
+      },
+    });
+    // 머리 카드의 높이를 잰 순간의 화면에서 읽습니다 — 둘째 구획의 카드(Lobby)가 그려진 뒤에만 30 큽니다.
+    Object.defineProperty(host.rects, headerSelector, {
+      enumerable: true,
+      get: (): Rect => ({ top: 60, height: screen.queryByText("Lobby") === null ? 168 : 198 }),
+    });
+    mount(
+      reduced(
+        mapScreen({
+          progress: twoStepsDone,
+          catalog: catalogProps({ sections: catalogReadySections }),
+        }),
+      ),
+    );
+    expect(host.scrollTos()).toEqual([scrollToCall(2300 - 252, false)]);
+    host.rects[unitSelector] = unitRect(252);
+
+    host.scroll(2300 - 252);
+
+    expect(screen.queryByText("Lobby")).not.toBeNull();
+    expect(host.scrollTos()).toEqual([
+      scrollToCall(2300 - 252, false),
+      scrollToCall(2300 - 252 - 30, false),
+    ]);
+  });
+});

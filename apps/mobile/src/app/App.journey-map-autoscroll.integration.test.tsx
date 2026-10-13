@@ -222,3 +222,83 @@ test("I8. 튜토리얼 통과 + 카탈로그 진행이면 대상이 카탈로그
   expect(measuredUnits().at(-1)).toBe(`#${s3}`);
   expect(scrollsOnMap().at(-1)).toEqual(smoothTo(1234));
 });
+
+// 도착 뒤 한 번 바로잡기(정정 2) — D-1의 재현 조건: 도착 전에는 한 줄 카드(아래 228), 도착 뒤에는 30 큰 카드(아래
+// 258)이고 대상은 정렬선(282) 위 30(252)에 서 있다. 씨앗은 I8과 같다(대상은 S3).
+const correctedTo = (offset: number) => ({
+  selector: scrollSelector,
+  method: "scrollTo",
+  params: { offset, smooth: true },
+});
+
+const tutorialDoneSeed: AppJourneySeed = {
+  completedStepCount: journeySeedBefore("tutorial-final-test").completedStepCount,
+  completedMessengerUnitIds: ["appointment-confirmation"],
+  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
+  visualNovelProgress: { status: "completed", beatIndex: 2 },
+  completedEpisodeFinalIds: ["tutorial-final-test"],
+};
+
+async function bootCatalogLesson(domId: string): Promise<void> {
+  unitRect(domId, unitTop);
+  const body = JSON.stringify(
+    learningProgressSnapshotFrom({
+      ...tutorialDoneSeed,
+      completedEpisodeIntroIds: ["tutorial-intro"],
+      catalogProgress: { "u01-water": ["intro", "S1"] },
+    }),
+  );
+  await renderSignedInApp(
+    <App journeySeed={tutorialDoneSeed} completedEpisodeIntroIds={completedIntros} />,
+    { ...learner, loadProgress: async () => ({ status: 200, body }) },
+  );
+  await flushAsync();
+}
+
+/** 도착 뒤의 표 — 대상이 정렬선 위 30에 서 있고 카드가 30 크다. */
+function arrive(domId: string): void {
+  host.rects[`#${domId}`] = { top: unitTop - offsetFor(unitTop), height: 100 };
+  host.rects["#journey-map-screen-header"] = { top: 60, height: 198 };
+  host.scroll(offsetFor(unitTop));
+}
+
+function departAgain(domId: string): void {
+  host.rects[`#${domId}`] = { top: unitTop, height: 100 };
+  host.rects["#journey-map-screen-header"] = { top: 60, height: 168 };
+}
+
+test("I11. 앱 세션에서 도착하면 카드가 30 커진 만큼 되돌린 목적지로 한 번 더 간다", async () => {
+  const s3 = catalogUnitDomId("u01-water", "S3");
+  await bootCatalogLesson(s3);
+  expect(scrollsOnMap().at(-1)).toEqual(smoothTo(unitTop));
+  const moves = scrollsOnMap().length;
+
+  arrive(s3);
+
+  expect(scrollsOnMap()).toHaveLength(moves + 1);
+  expect(scrollsOnMap().at(-2)).toEqual(smoothTo(unitTop));
+  expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
+});
+
+test("I12. 도착 뒤 탭을 바꿨다 돌아오면 새 마운트에서 다시 이동 한 번 · 보정 한 번이다", async () => {
+  const s3 = catalogUnitDomId("u01-water", "S3");
+  await bootCatalogLesson(s3);
+  arrive(s3);
+  const first = scrollsOnMap().length;
+  expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
+
+  tapTab("roleplay");
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  departAgain(s3);
+  tapTab("journey");
+  await flushAsync();
+
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(scrollsOnMap()).toHaveLength(first + 1);
+  expect(scrollsOnMap().at(-1)).toEqual(smoothTo(unitTop));
+
+  arrive(s3);
+
+  expect(scrollsOnMap()).toHaveLength(first + 2);
+  expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
+});
