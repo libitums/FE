@@ -13,15 +13,9 @@ import io.sentry.protocol.SentryStackTrace;
 import io.sentry.protocol.SentryThread;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /** Builds and sanitizes Sentry events. Every event that leaves the app passes beforeSend. */
 public final class CrashEventPolicy {
-  // `/data/app/~~<random>==/<package>-<random>==/` is fixed per install, so native frames and debug
-  // images would tie every crash to one device.
-  private static final Pattern INSTALL_DIR =
-      Pattern.compile("/data/app/(?:~~[A-Za-z0-9_=-]++/)?[A-Za-z0-9._]++-[A-Za-z0-9_=-]++/");
-
   private CrashEventPolicy() {}
 
   public static SentryEvent eventFrom(CrashReportPayload p) {
@@ -87,7 +81,7 @@ public final class CrashEventPolicy {
   }
 
   static String withoutInstallPath(String value) {
-    return value == null ? null : INSTALL_DIR.matcher(value).replaceAll("/data/app/[install]/");
+    return CrashScrub.withoutInstallPath(value);
   }
 
   private static void clearInstallPath(SentryStackTrace trace) {

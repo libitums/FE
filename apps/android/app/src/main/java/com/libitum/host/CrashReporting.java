@@ -73,9 +73,15 @@ final class CrashReporting {
         options.setEnableScopeSync(false);
       });
       reporter = new CrashReporter(payload -> Sentry.captureEvent(CrashEventPolicy.eventFrom(payload)), budget);
-      watchSessions();
     } catch (RuntimeException | LinkageError error) {
       reporter = new CrashReporter(null, budget);
+      return;
+    }
+    // Separate from the block above: a failure here loses sessions, not JS exception reports.
+    try {
+      watchSessions();
+    } catch (RuntimeException | LinkageError ignored) {
+      // No session bookkeeping; crash and exception events still go out.
     }
   }
 

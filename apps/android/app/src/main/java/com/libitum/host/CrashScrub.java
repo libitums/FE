@@ -5,6 +5,10 @@ import java.util.regex.Pattern;
 
 /** Strips personal-data patterns from crash text. The rule order is part of the contract. */
 public final class CrashScrub {
+  // `/data/app/~~<random>==/<package>-<random>==/` is fixed per install, so it ties crashes to one
+  // device. Its random pieces are too short for the opaque-value rule, hence a rule of its own.
+  private static final Pattern INSTALL_DIR =
+      Pattern.compile("/data/app/(?:~~[A-Za-z0-9_=-]++/)?[A-Za-z0-9._]++-[A-Za-z0-9_=-]++/");
   private static final Pattern URL_QUERY = Pattern.compile("([A-Za-z][A-Za-z0-9+.-]*://[^\\s?#]+)[?#]\\S*");
   // Scheme-less query tail: possessive prefix keeps the scan linear.
   private static final Pattern BARE_QUERY = Pattern.compile("\\?[^\\s?#=]*+=\\S*");
@@ -30,7 +34,8 @@ public final class CrashScrub {
   public static String scrub(String text) {
     if (text == null) return "";
     try {
-      String out = URL_QUERY.matcher(text).replaceAll("$1?[redacted]");
+      String out = withoutInstallPath(text);
+      out = URL_QUERY.matcher(out).replaceAll("$1?[redacted]");
       out = BARE_QUERY.matcher(out).replaceAll("?[redacted]");
       out = EMAIL.matcher(out).replaceAll("[email]");
       out = dotlessEmails(out);
@@ -43,6 +48,11 @@ public final class CrashScrub {
     } catch (RuntimeException | StackOverflowError error) {
       return "";
     }
+  }
+
+  /** Replaces the per-install directory with a fixed marker; leaves everything else as it is. */
+  static String withoutInstallPath(String value) {
+    return value == null ? null : INSTALL_DIR.matcher(value).replaceAll("/data/app/[install]/");
   }
 
   private static String dotlessEmails(String text) {
