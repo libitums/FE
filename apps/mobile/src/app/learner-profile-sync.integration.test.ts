@@ -302,6 +302,60 @@ describe("동기화 객체 - 실패와 재시도", () => {
     sync.dispose();
   });
 
+  test("Y-8b. 재시도를 다 쓴 뒤 진행 중인 업로드가 실패해도 그 사이 새로 저장한 값은 1초 뒤 사다리 처음부터 다시 올라간다", async () => {
+    const world = stubWorld();
+    const last = deferred<Reply>();
+    world.handlers.save = () => (world.saves().length === 6 ? last.promise : missing);
+    const sync = startSync(world);
+    await sync.flush();
+
+    sync.save(emma);
+    await settle();
+    for (const delay of learnerProfileRetryDelaysMs) {
+      await vi.advanceTimersByTimeAsync(delay);
+    }
+    expect(world.saves()).toHaveLength(6);
+
+    sync.save(liam);
+    last.resolve(missing);
+    await settle();
+    expect(world.saves()).toHaveLength(6);
+    await vi.advanceTimersByTimeAsync(999);
+    expect(world.saves()).toHaveLength(6);
+    world.handlers.save = () => accepted;
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(
+      world
+        .saves()
+        .map((call) => call.body["p_name"])
+        .slice(5),
+    ).toEqual(["Emma", "Liam"]);
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(world.saves()).toHaveLength(7);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(cacheOf(world)).toEqual(shapeOf(liam, "synced"));
+    sync.dispose();
+  });
+
+  test("Y-8c. 진행 중인 업로드가 성공해 한 번 더 도는 경로와 겹쳐도 새 값은 한 번만 올라간다", async () => {
+    const world = stubWorld();
+    const first = deferred<Reply>();
+    world.handlers.save = () => (world.saves().length === 1 ? first.promise : accepted);
+    const sync = startSync(world);
+    await sync.flush();
+
+    sync.save(emma);
+    await settle();
+    sync.save(liam);
+    first.resolve(accepted);
+    await vi.advanceTimersByTimeAsync(120_000);
+
+    expect(world.saves().map((call) => call.body["p_name"])).toEqual(["Emma", "Liam"]);
+    expect(vi.getTimerCount()).toBe(0);
+    sync.dispose();
+  });
+
   test.each([
     ["연결 실패", "offline" as Reply],
     ["서버 오류", { status: 500, body: "" } as Reply],

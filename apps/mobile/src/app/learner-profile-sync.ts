@@ -156,6 +156,8 @@ export function createLearnerProfileSync(
       if (!isCurrent()) return;
       // 네트워크 요청보다 먼저 영속화합니다. 실패 · 종료 · 로그아웃 때도 남습니다.
       commit({ record, sync: "pending" });
+      // 명시적 저장은 새 요청입니다 — 진행 중인 업로드가 있어도 백오프를 처음부터 다시 셉니다.
+      retryAttempt = 0;
       void start(false);
     },
     dispose(): void {
