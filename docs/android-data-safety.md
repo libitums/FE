@@ -51,7 +51,7 @@ B6에서 하나라도 보이면 그 칸은 「수집함」이고 위 두 항목�
 | `source` | `js-background` 또는 `js-main-thread`(태그 `lynx.source`) | 닫힌 값 둘 | — |
 | 이름 | 예외 이름 — **알려진 꼴만**(`…Error` · `…Exception` · `Error` · `unhandled rejection`). 그 밖의 앞부분(문자열 throw `"kimsehyun: …"` 등)은 이름이 되지 않고 메시지에 남아 지우기를 지난다 | 80자 | 닫힌 꼴이라 지우기를 지나지 않는다 |
 | 메시지 | 예외 메시지 | 300자 | 사전 상한 2,000자 → `CrashScrub.scrub` → 자른다 |
-| 스택 | 프레임 줄(파일 · 줄 · 열 — 줄여진 그대로) | 30줄 · 줄당 400자(뒤쪽을 남긴다) | 줄마다 사전 상한 2,000자(뒤쪽) → `scrub` |
+| 스택 | 프레임 줄(파일 · 줄 · 열 — 줄여진 그대로) | 30줄 · 줄당 400자(뒤쪽을 남긴다) | 줄마다 사전 상한 800자(뒤쪽, 잘린 앞 토막 버림) → `scrub` |
 
 이벤트에는 그 넷으로 만든 지문(`"lynx"` · source · 이름 · 첫 스택 줄)과 `mechanism`(`lynx` · `handled = true`)이 붙는다. 프로세스당 20건까지만 보낸다.
 
@@ -89,8 +89,8 @@ B6에서 하나라도 보이면 그 칸은 「수집함」이고 위 두 항목�
 | 1 | URL의 쿼리 · 프래그먼트(인증 코드 · 토큰이 실린다) | `https://…/verify?[redacted]` |
 | 2 | **스킴 없는 쿼리 꼬리** — `?` 뒤에 `key=`가 오는 것 | `/auth/v1/verify?[redacted]` |
 | 3 | 이메일 | `[email]` |
-| 4 | **점 없는 이메일**(`kim@localhost`) — `@`가 든 토막 | `[email]` |
-| 5 | **인증 머리** — `Basic` · `Bearer`(대소문자 무시) 뒤의 값 | `Basic [token]` · `Bearer [token]` |
+| 4 | **점 없는 이메일**(`kim@localhost`) — `@`가 든 토막(`Class@4a5b6c7` 꼴의 16진수 꼬리는 예외) | `[email]` |
+| 5 | **인증 머리** — `Bearer …`와 `Authorization: Basic …`(대소문자 무시) 뒤의 값. 낱말 `basic` 혼자는 걸지 않는다 | `Bearer [token]` · `Authorization: Basic [token]` |
 | 6 | JWT | `[token]` |
 | 7 | 32자 이상의 불투명한 값(갱신 토큰 · API 키 · 해시 · 사용자 UUID) | `[token]` |
 | 8 | 전화번호 · 긴 숫자(숫자 9개 이상) | `[number]` |
