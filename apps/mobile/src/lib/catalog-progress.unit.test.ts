@@ -8,6 +8,7 @@ import {
   isCatalogUnitDone,
   markCatalogUnitDone,
   mergeCatalogProgress,
+  passedCatalogEpisodeCount,
 } from "./catalog-progress";
 import type { CatalogProgress } from "./catalog-progress";
 
@@ -165,4 +166,18 @@ describe("K6 isCatalogEpisodePassed", () => {
       expect(catalogProgressFrom(JSON.parse(`{"${id}": ["RP"]}`))).toEqual({ [id]: ["RP"] });
     },
   );
+});
+
+describe("트로피에 더하는 통과 에피소드 수", () => {
+  test("K10. 최종 테스트(RP)를 통과한 에피소드만 센다", () => {
+    expect(passedCatalogEpisodeCount({})).toBe(0);
+    expect(passedCatalogEpisodeCount({ "u01-water": ["intro", "S1", "S9"] })).toBe(0);
+    expect(
+      passedCatalogEpisodeCount({
+        "u01-water": ["intro", "S1", "RP"],
+        "u02-checkin": ["intro"],
+        "u03-mina": ["RP"],
+      }),
+    ).toBe(2);
+  });
 });
