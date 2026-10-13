@@ -75,7 +75,8 @@
 }
 
 /* 확인 뒤 — 눌러도 아무 일도 없으니 눌림 모양도 없습니다. 판정 꼴을 흐리게 하지 않습니다(읽어야 합니다). */
-.pair-match-tile-disabled:active {
+.pair-match-tile-correct:active,
+.pair-match-tile-incorrect:active {
   background-color: var(--libitum-color-white);
   transform: none;
 }

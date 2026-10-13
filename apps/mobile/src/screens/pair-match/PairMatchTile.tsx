@@ -37,11 +37,12 @@ export function PairMatchTile({
     onTap(side, index);
   };
   const locked = interaction === "locked";
+  // 상태 클래스는 한 요소에 하나입니다(ADR-0003 D7) — 판정이 서면 판정이, 아니면 고름/맺힘이 섭니다.
+  // 확인 뒤에는 모든 타일이 판정을 가지므로 잠김(눌림 모양 없음)은 판정 클래스가 함께 집니다.
+  const stateName = result ?? (mark === "idle" ? null : mark);
   const classes = [
     "pair-match-tile",
-    mark === "idle" ? undefined : `pair-match-tile-${mark}`,
-    locked ? "pair-match-tile-disabled" : undefined,
-    result === null ? undefined : `pair-match-tile-${result}`,
+    stateName === null ? undefined : `pair-match-tile-${stateName}`,
     motionClassName("pair-match-tile", motion),
   ]
     .filter(Boolean)
