@@ -27,6 +27,8 @@ export function EpisodeIntroScreen({
   insets,
   label,
   title,
+  titleLines,
+  skipDescription,
   onBack,
   onSkip,
   onNext,
@@ -91,14 +93,33 @@ export function EpisodeIntroScreen({
               data-testid="episode-intro-screen-heading"
               accessibility-element={true}
               accessibility-traits="header"
-              accessibility-label={`${label} ${title}`}
+              accessibility-label={`${label} ${titleLines === undefined ? title : titleLines.join(" ")}`}
             >
               <text className="episode-intro-screen-label" data-testid="episode-intro-screen-label">
                 {label}
               </text>
-              <text className="episode-intro-screen-title" data-testid="episode-intro-screen-title">
-                {title}
-              </text>
+              {titleLines === undefined ? (
+                <text
+                  className="episode-intro-screen-title"
+                  data-testid="episode-intro-screen-title"
+                >
+                  {title}
+                </text>
+              ) : (
+                // 줄마다 글자 하나입니다 — 줄 사이 간격은 줄 높이가 집니다.
+                <view className="episode-intro-screen-title-lines">
+                  {titleLines.map((line, index) => (
+                    <text
+                      // 같은 글자의 줄이 둘일 수 있어 자리로 구분합니다(줄은 재배열되지 않습니다).
+                      key={`${index}:${line}`}
+                      className="episode-intro-screen-title"
+                      data-testid="episode-intro-screen-title"
+                    >
+                      {line}
+                    </text>
+                  ))}
+                </view>
+              )}
             </view>
           </view>
 
@@ -132,7 +153,7 @@ export function EpisodeIntroScreen({
         <view className="episode-intro-screen-confirm" data-testid="episode-intro-screen-confirm">
           <Dialog
             title={copy.episodeIntro.skipDialog.title}
-            description={copy.episodeIntro.skipDialog.description}
+            description={skipDescription ?? copy.episodeIntro.skipDialog.description}
             actions={[
               { id: "skip", label: copy.episodeIntro.skipDialog.skip },
               { id: "stay", label: copy.episodeIntro.skipDialog.keepWatching },

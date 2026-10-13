@@ -200,6 +200,15 @@ Android는 짧은 전환이면 `A shell input tap x y; A exec-out screencap -p >
   *(2026-10-11 주: Button · Card · OptionSelector의 reduced 눌림은 여기서 기록하지 않는다 — 판정 항목이 따로 있다(`motion-tokens.md` M5-I5).)*
 - 증거: 필요한 것만 `motion-reduced-ios-M-I7-<컴포넌트>-<n>.png`.
 
+### M-I8 — 에피소드 배너 글자가 크기 변화 없이 나타난다 ⟨2026-10-14⟩
+
+보상 모션의 둘째 자리(카탈로그 에피소드 배너 — [ADR-0053](../adr/0053-motion-policy.md) D4의 날짜 주 ⟨2026-10-14⟩)의 reduced 변형이다. 계약은 작업 `motion-reduced-motion`이 아니라
+[ADR-0058](../adr/0058-catalog-learning-session.md) 적용 기록 ⟨2026-10-14⟩이 진다. 도달 길과 측정은 [보상 모션 e2e](motion-reward.md) 「둘째 자리」와 같다.
+
+- **조작**: **켠** 상태에서 카탈로그 표지 컷을 끝까지 넘겨 「Episode start!」 배너를 녹화한다. **끈** 상태에서 같은 조작을 한다.
+- **관찰**: 켠 상태에서는 **첫 프레임부터** 글자 bbox 폭이 정착과 같고(축소 없음) 불투명도만 올라온다(≈ 100 ms). 끈 상태에서는 첫 프레임의 글자가 정착보다 작다. 면(검정)과 유지 시간(약 1.6초)은 켠 · 끈이 같다.
+- 증거: `motion-reduced-ios-M-I8-on-1.png`, `-on-2.png`, `-off-1.png`, `-off-2.png`.
+
 ## Android 항목
 
 시작: 위 「Android 준비」를 마치고 세 배율을 기록한 상태. 픽스처를 시작해 여정 맵이 선 상태에서 시작한다(`audioProgress true` — Dialog 열 스텝이 필요하다).
@@ -258,6 +267,10 @@ M-I4 · M-I5 · M-I6과 같은 조작·측정으로 캡처한다(Android: Dialog
 `ReducedMotionHostTest`(계측: `settings put global …` 뒤 `MainActivity`가 마지막으로 보낸 값을 읽음)는 **이 변경에 없다**(`ReducedMotionTest`는 JVM 단위 테스트다). 만들지 않았고, 만들더라도
 이 문서의 M-A1 · M-A2 판정을 대신하지 않는다. 결과 표에 「없음」으로 적는다.
 
+### M-A8 — 에피소드 배너 ⟨2026-10-14⟩
+
+M-I8과 같은 조작 · 관찰을 설정 (i)(`transition_animation_scale 0` · `animator_duration_scale 1`)과 (ii) 「Remove animations」에서 한다. 증거 이름은 `motion-reduced-android-M-A8-<i|ii|off>-<1|2>.png`.
+
 ## red의 근거 — 수정 전 호스트(`296e2eac`)
 
 `296e2eac`(수정 직전) 호스트는 `reducedMotion` 키를 **보내지 않는다.** 앱은 키가 없으면 늘 `standard`다. 따라서 수정 전 호스트 + 수정 전 번들에서:
@@ -304,6 +317,7 @@ Android 기기 안 `screencap` 루프)로 중간 프레임을 잡았다. `data-m
 | M-I5 | iOS 시뮬레이터 | 통과(r02) | 켠: surface 지름 216 → 216(11프레임 전부, 축소 없음). 끈: 216 → 212 → 206(95.4 %). 눌림 색 없음은 실패가 아님(Q2). `ios-M-I5-on/off-*`. 첫 회차는 **실패**(켠 상태 216 → 206) |
 | M-I6 | iOS 시뮬레이터 | 판정 불가: 끈 상태에서도 대사가 첫 Dialog 프레임부터 전체 | 끈 ko 664 · en 0 / 켠 ko 664 · en 0(글자 잉크 픽셀) — 진입 직전 프레임만 페이드이고 켠 · 끈이 캡처로 갈리지 않는다(두 회차 같음). 계속 표시 y 비교 안 함. 즉시 표시는 코드 · ui 테스트(TW · VN · CB)로 닫혀 있다. `ios-M-I6-on/off-*` |
 | M-I7(기록) | iOS 시뮬레이터 | 부분 기록(판정 없음) | 설정 탭에 토글이 없고 알림 항목은 시스템 권한 창만 띄움(허용 안 함으로 닫음). BottomSheet · PageIndicator · ProgressHeader 진행은 도달하지 못함 → **미확인** |
+| M-I8 | iOS 시뮬레이터 | 미확인 ⟨2026-10-14⟩ | 항목이 더해진 뒤 동작 줄이기 회차가 없다. 2026-10-14의 시뮬레이터 확인은 끈 상태에서 배너가 서고 스스로 닫히는 것만 봤다. reduced 변형은 ui 테스트(`data-motion="fade"` · keyframes에 `transform` 없음)로만 참이다 |
 | (실기) M-I1 · M-I4 | iOS 실기 | 미확인 | 실기 없음 |
 | M-A1 | Android 에뮬레이터 | 통과(첫 회차) | a(`animator_duration_scale 0`, transition 1): reduced 모양 · b(animator 1, `transition_animation_scale 0`): 중간 프레임 카드 폭 320(축소 없음) · c(둘 다 1): 폭 310 ~ 318(축소). d 회차(`window_animation_scale`만 0)는 돌지 않음. `android-M-A1-a/b/c-*.png` · `-a-summary.txt` |
 | M-A2 | Android 에뮬레이터 | 통과(첫 회차) | 1 ~ 4 모두 **재실행 없이** 다음 Dialog가 새 값대로. 접근성 「Remove animations」 토글(세 배율 0.0 ↔ 1.0, `settings get`으로 확인)도 따라옴 — 가정 A3 성립. `android-M-A2-1~4-1.png` · `-s1~s4-summary.txt` |
@@ -312,6 +326,7 @@ Android 기기 안 `screencap` 루프)로 중간 프레임을 잡았다. `data-m
 | M-A5 | Android 에뮬레이터 | 통과(첫 회차) | 끈 72 → 68(축소), (i) 72 → 72, (ii) 72 → 72. `android-M-A5-off-ctrl-*` · `-i-*` · `-ii-*` · `-measure.txt` |
 | M-A6 | Android 에뮬레이터 | 판정 불가: 끈 상태에서도 첫 프레임부터 대사 전체 | 켠 · 끈이 캡처로 갈리지 않아 켠 상태 캡처는 찍지 않음(M-I6과 같은 한계). `android-M-A6-off-1/2.png` |
 | M-A7(선택) | Android 에뮬레이터 | 없음 | 계측 테스트 없음(`ReducedMotionTest`는 JVM 단위 테스트) |
+| M-A8 | Android 에뮬레이터 | 미확인 ⟨2026-10-14⟩ | 절차만 있다 |
 
 | 시작 값(실행 전 기록) | iOS 동작 줄이기: 0(꺼짐) · Android `animator_duration_scale`: `null` · `transition_animation_scale`: 1.0 · `window_animation_scale`: 1.0 |
 |---|---|

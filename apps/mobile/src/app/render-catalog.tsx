@@ -5,7 +5,6 @@ import type { ReactNode } from "@lynx-js/react";
 
 import type { AnswerResult } from "../lib/answer-result";
 import type { LessonPosition } from "../screens/learning/activity-finish";
-import { CatalogCoverScreen } from "../screens/catalog-cover/CatalogCoverScreen";
 import { CatalogFinalScreen } from "../screens/catalog-final/CatalogFinalScreen";
 import type {
   CatalogRoleplayTurn,
@@ -20,6 +19,7 @@ import { SentenceOrderActivity } from "../screens/sentence-order/SentenceOrderSc
 import { TypingActivity } from "../screens/typing/TypingActivity";
 import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
+import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
 import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
 import {
@@ -201,14 +201,13 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
         throw new Error(`Catalog epilogue has no playable cuts: ${episodeId}`);
       }
       return (
-        <CatalogCoverScreen
-          stage="epilogue"
+        <CatalogEpilogueFlow
           key={`${episodeId}:epilogue`}
           insets={wiring.safeAreaInsets}
           ordinal={model.ordinal}
           cuts={model.cuts}
-          onComplete={wiring.onLeaveCatalogEpilogue}
           onExit={wiring.onLeaveCatalogEpilogue}
+          onClose={wiring.onLeaveCatalogEpilogue}
         />
       );
     }

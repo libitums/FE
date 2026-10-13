@@ -791,7 +791,7 @@ describe("튜토리얼 진행과 sink 없음", () => {
 });
 
 describe("catalogWiring — 표지 결선과 레슨 결선을 합친다", () => {
-  test("LW14. 표지 콜백 셋 · 학습 콜백 여섯 · 프로필 콜백 셋 · 값 넷이 모두 있다", () => {
+  test("LW14. 표지 콜백 여섯 · 학습 콜백 여섯 · 프로필 콜백 셋 · 값 넷이 모두 있다", () => {
     const { args } = harness({ progress: { "u01-water": ["intro", "S1"] } });
 
     const wiring: Record<string, unknown> = catalogWiring({
@@ -807,7 +807,10 @@ describe("catalogWiring — 표지 결선과 레슨 결선을 합친다", () => 
     for (const name of [
       "onStartCatalogCover",
       "onExitCatalogCover",
-      "onCompleteCatalogCover",
+      "onSkipCatalogCover",
+      "onContinueCatalogCover",
+      "onFinishCatalogCoverCuts",
+      "onCloseCatalogCover",
       "onStartCatalogUnit",
       "onExitCatalogSession",
       "onFinishCatalogActivity",

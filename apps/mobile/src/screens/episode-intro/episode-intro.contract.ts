@@ -133,6 +133,10 @@ export type EpisodeIntroScreenProps = {
   readonly label: string;
   /** 둘째 줄입니다 — 에피소드의 이름입니다. */
   readonly title: string;
+  /** 둘째 줄을 이 줄들로 나눠 그립니다. 없으면 `title` 한 덩어리입니다. 낭독 이름은 줄을 공백으로 이은 것입니다(`title`을 나눈 줄이면 `title`과 같습니다). */
+  readonly titleLines?: readonly [string, ...string[]];
+  /** 건너뛰기 확인 모달의 설명입니다. 없으면 튜토리얼의 기본 문구(다시 서지 않는다)입니다. */
+  readonly skipDescription?: string;
   /** 표지를 보지 않은 것으로 두고 맵으로 돌아갑니다. 다음에 유닛을 열면 다시 뜹니다. */
   readonly onBack: () => void;
   /** 확인 모달에서 `건너뛰기`를 골랐을 때만 불립니다. `Skip`을 누른 것만으로는 불리지 않습니다. */

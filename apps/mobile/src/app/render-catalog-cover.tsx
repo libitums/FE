@@ -1,8 +1,8 @@
-// `catalog-cover` route를 표지 컷 화면으로 옮깁니다.
+// `catalog-cover` route를 표지 → 컷 → 시작 배너 흐름으로 옮깁니다.
 
 import type { ReactNode } from "@lynx-js/react";
 
-import { CatalogCoverScreen } from "../screens/catalog-cover/CatalogCoverScreen";
+import { CatalogCoverFlow } from "./CatalogCutsFlow";
 import { catalogCoverModelOf } from "./catalog-cover-wiring";
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
@@ -23,14 +23,17 @@ export function renderCatalogCover(
     throw new Error(`Catalog cover has no playable cuts: ${episodeId}`);
   }
   return (
-    <CatalogCoverScreen
-      stage="prologue"
+    <CatalogCoverFlow
       key={`${episodeId}:${model.version}`}
       insets={wiring.safeAreaInsets}
       ordinal={model.ordinal}
+      title={model.title}
       cuts={model.cuts}
-      onComplete={() => wiring.onCompleteCatalogCover(episodeId)}
-      onExit={() => wiring.onExitCatalogCover(episodeId)}
+      onSkip={() => wiring.onSkipCatalogCover(episodeId)}
+      onContinue={() => wiring.onContinueCatalogCover(episodeId)}
+      onExit={(stage) => wiring.onExitCatalogCover(episodeId, stage)}
+      onCutsDone={() => wiring.onFinishCatalogCoverCuts(episodeId)}
+      onClose={wiring.onCloseCatalogCover}
     />
   );
 }
