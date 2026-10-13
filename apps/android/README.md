@@ -405,7 +405,7 @@ A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 L
 
 ## 크래시 리포팅(Sentry)
 
-`release` · `bundled` 빌드는 DSN이 들어 있으면 Java/Kotlin 크래시 · JS 예외 · 세션을 Sentry로 보낸다(ANR 통합도 켜져 있다 — 이벤트를 본 적은 없다). **네이티브(C/C++) 크래시는 지금 받는 것이 확인되지 않았다**(아래 「NDK를 넣지 않았다」). 결정 · 확인한 것과 못 한 것은
+`release` · `bundled` 빌드는 DSN이 들어 있으면 Java/Kotlin 크래시 · JS 예외 · 세션을 Sentry로 보낸다(ANR 통합도 켜져 있다 — 이벤트를 본 적은 없다). **네이티브(C/C++) 크래시는 API 34에서는 오고 API 30에서는 오지 않는다**(아래 「NDK를 넣지 않았다」). 결정 · 확인한 것과 못 한 것은
 [ADR-0058](../../docs/adr/0058-crash-reporting-sentry.md)이, 내보내는 값의 목록은 [Android 데이터 보안](../../docs/android-data-safety.md)이 진다 — 여기에는 다루는 법만 적는다.
 **2026-10-13에 DSN을 넣은 `bundled`가 API 30 에뮬레이터에서 한 번 돌았다**(Android DSN은 사용자가 `sentry.properties`에 넣었고 인증 토큰 · 조직 · 프로젝트는 아직 없다). 기기 밖으로 나가기 직전의 envelope 원문을 확인했고 전송을 시도했다 — **Sentry가 받았는지는 미확인이다**([크래시 리포팅 e2e](../../docs/e2e/crash-reporting.md) B단계 실행 기록).
 
@@ -424,7 +424,7 @@ A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 L
   `CrashReporting.start(this)`를 부르고, DSN이 유효할 때만 `SentryAndroid.init`이 돈다. DSN 없는 빌드에서는 `io.sentry` 코드가 한 줄도 돌지 않는다.
 - **JS 예외는 호스트 모듈이 아니라 `LynxViewClient.onReceivedError`로 받는다**(`MainActivity`). 받는 것은 Lynx 오류 코드 200번대(background) · 1100번대(메인 스레드)뿐이고, `CrashReportPayload` → `CrashScrub`이
   이름 · 메시지 · 스택 넷으로 닫고 **사전 상한 → 지우기 → 자르기** 순서로 다룬다(이름은 `…Error` · `…Exception` 같은 알려진 꼴만). 프로세스당 20건까지 보낸다. `io.sentry`를 import하는 소스는 `CrashEventPolicy` · `CrashReporting` 둘뿐이다.
-- **사용자 식별자 · breadcrumb · 스크린샷 · 뷰 계층은 보내지 않는다.** 옵션은 `CrashReporting.start`에 명시로 고정돼 있다 — 옵션을 더하거나 뺄 때는 ADR-0058 D6과 데이터 보안 문서를 같이 고친다.
+- **사용자 식별자 · breadcrumb · 스크린샷 · 뷰 계층은 보내지 않는다**(식별자를 붙이지 않는 것과 debug는 보내지 않는 것은 2026-10-13 사용자 결정이다). 옵션은 `CrashReporting.start`에 명시로 고정돼 있다 — 옵션을 더하거나 뺄 때는 ADR-0058 D6과 데이터 보안 문서를 같이 고친다.
   SDK는 설치 id를 `user.id` · 세션 `distinctId` · **`contexts.device.id`** 세 자리에 싣는다. 끄는 줄도 셋이다(`beforeSend`의 `setUser(null)` · `device.setId(null)`, 옵션의 `setDistinctId(null)`) —
   **SDK 버전을 올리면 넷째 자리가 생기지 않았는지 다시 읽는다**(ADR-0058 D10 · 「정정 기록」). 기기 밖으로 나가기 직전의 envelope에서 넷(`user` · `did` · `ip_address` · `contexts.device.id`)이 없는 것은 봤다(e2e B6 — 에뮬레이터 1대). `beforeSend`는 기기 부팅 시각(`contexts.device.boot_time`)도 지운다. SDK가 붙이는 나머지 context 키는 [Android 데이터 보안](../../docs/android-data-safety.md)에 실측 목록이 있다 — **SDK를 올리면 envelope을 다시 떠서 그 목록과 견준다.**
 
@@ -455,8 +455,11 @@ Gradle 결선(의존 고정 · DSN 기본값 · 업로드 작업의 조건 · �
 - `app/proguard-rules.pro`는 그대로 9줄이다. Sentry의 keep 규칙은 AAR이 싣고 온다(위 「코드 축소(R8)와 난독화」 · ADR-0052 적용 기록 ⟨2026-10-13⟩).
 
 **NDK를 넣지 않았다.** 의존은 `io.sentry:sentry-android-core:8.60.0` 하나이고 `sentry-android`(묶음) · `sentry-android-ndk` · `sentry-android-replay`를 넣지 않는다. `sentry-android-ndk`가 싣는 64비트 `.so`가
-아래 「16 KB 페이지」의 판정(`GNU_RELRO` 끝)을 통과하지 못해 `verify*NativeAlignment`가 깨진다. NDK 없이 받는 길로 SDK의 tombstone 통합을 켜 두었으나(`setTombstoneEnabled(true)`) **API 30 에뮬레이터에서 네이티브 크래시(SEGV) 뒤에 이벤트가 오지 않았다**(2026-10-13 실측 — 앞선 판의 「API 30 이상에서 올라간다」는 틀렸다). API 31 이상에서 오는지는 확인되지 않았다.
-**지금은 C/C++ 크래시(Lynx 엔진 안의 크래시 포함)가 Sentry에 보이지 않는다고 보고 다룬다** — 그리고 그렇게 죽은 실행의 세션은 `crashed`가 아니라 `exited`로 적혀 크래시 없는 세션 비율에도 잡히지 않는다. 네이티브 크래시는 여전히 `adb logcat` · tombstone으로 읽는다.
+아래 「16 KB 페이지」의 판정(`GNU_RELRO` 끝)을 통과하지 못해 `verify*NativeAlignment`가 깨진다. NDK 없이 받는 길로 SDK의 tombstone 통합을 켜 두었다(`setTombstoneEnabled(true)`). 2026-10-13 실측으로 **API 30 에뮬레이터에서는 네이티브 크래시(SEGV) 뒤에 이벤트가 오지 않았고, API 34 에뮬레이터에서는 왔다**
+(`platform: native` · mechanism `Tombstone` — 함수 이름이 풀린 프레임 · 모든 스레드 · 레지스터 · 로드된 라이브러리 목록을 싣는다). API 31 ~ 33 · 실기 · 앱 라이브러리 안에서 난 크래시의 모양은 확인되지 않았다.
+**`minSdk` 26 ~ 30 기기의 C/C++ 크래시(Lynx 엔진 안의 크래시 포함)는 Sentry에 보이지 않는다고 보고 다룬다** — 그 기기들의 네이티브 크래시는 여전히 `adb logcat` · tombstone으로 읽는다. NDK를 넣을지는 사용자 확인 전이다.
+- `beforeSend`가 tombstone의 스택 프레임 · `debug_meta`에서 **무작위 앱 설치 경로**를 `/data/app/[install]/`로 바꾼다(`CrashInstallPathTest`). 시스템 라이브러리의 **로드 주소**(재부팅 전까지 기기 전체에서 같다)는 사용자 결정으로 남는 위험으로 두고 보낸다 — [Android 데이터 보안](../../docs/android-data-safety.md).
+- **세션 지표(크래시 없는 세션 비율)는 지금 믿을 수 없다** — 콜드 스타트마다 방금 시작한 세션의 가짜 `exited`가 써지고 크래시로 죽은 세션은 끝 기록 없이 버려진다(원인 조사 중 — [ADR 보류 표](../../docs/adr/README.md#보류-표)의 세션 행).
 넣으려면 `sentry-native`를 16 KB로 다시 빌드해 [`vendor-maven/`](vendor-maven/README.md)에 싣는다 — 아직 하지 않았다([ADR 보류 표](../../docs/adr/README.md#보류-표)). `.so`는 하나도 늘지 않았다.
 
 ## 16 KB 페이지

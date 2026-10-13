@@ -6,7 +6,7 @@ iOS 쪽의 짝은 [`docs/ios-privacy.md`](ios-privacy.md)다. 결정과 그 근�
 **이 문서의 범위는 크래시 수집 하나다.** Android 앱이 이미 내보내는 다른 것(Supabase 계정 · 학습 진행 · 피드백 · FCM 토큰 · PostHog 이벤트)의 Play 양식 대조는 이 문서가
 하지 않았다 — iOS 쪽 대조표(`ios-privacy.md` 「수집 항목 대조」)에 해당하는 Android 표는 아직 없다.
 
-근거 표시: **[코드]** 저장소 코드와 JUnit · **[실측]** 기기에서 꺼낸 envelope 원문(e2e B단계 — 2026-10-13, API 30 에뮬레이터 1대, `bundled`) · **[정적]** SDK 바이트코드를 읽은 것 · **[추론]** · **[미확인]**.
+근거 표시: **[코드]** 저장소 코드와 JUnit · **[실측]** 기기에서 꺼낸 envelope 원문(e2e B단계 — 2026-10-13, API 30 에뮬레이터 1대 · tombstone 측정 — 같은 날, API 34 에뮬레이터 1대, 둘 다 `bundled`) · **[정적]** SDK 바이트코드를 읽은 것 · **[추론]** · **[미확인]**.
 
 ## 지금 상태 (2026-10-13)
 
@@ -25,7 +25,7 @@ iOS 쪽의 짝은 [`docs/ios-privacy.md`](ios-privacy.md)다. 결정과 그 근�
 
 | 양식의 데이터 유형 | 수집 | 사용자와 연결 | 목적 | 근거 |
 |---|---|---|---|---|
-| 앱 정보 및 성능 → **비정상 종료 로그** | 예 | **아니오** — 사용자 식별자 · 설치 id를 붙이지 않는다 | 앱 기능 · 분석 | Java/Kotlin 크래시 · JS 예외 [실측] · ANR [미확인 — 통합은 켜져 있으나 이벤트를 본 적이 없다]. **네이티브(C/C++) 크래시는 지금 수집된다고 적을 근거가 없다** — API 30에서 tombstone 이벤트가 오지 않았고 API 31 이상은 미확인이다(아래 「네이티브 크래시」) |
+| 앱 정보 및 성능 → **비정상 종료 로그** | 예 | **아니오** — 사용자 식별자 · 설치 id를 붙이지 않는다 | 앱 기능 · 분석 | Java/Kotlin 크래시 · JS 예외 [실측] · ANR [미확인 — 통합은 켜져 있으나 이벤트를 본 적이 없다]. **네이티브(C/C++) 크래시 tombstone** [실측 — API 34 에뮬레이터 1대에서 온다. API 30에서는 오지 않는다. API 31 ~ 33 · 실기는 미확인](아래 「네이티브 크래시」) |
 | 앱 정보 및 성능 → **진단** | 예 | **아니오** | 앱 기능 · 분석 | 세션(크래시 없는 세션 비율의 재료 — 시작 · 끝 · 상태) · 이벤트에 붙는 `release` · `environment` · 기기 · OS context |
 | 기기 또는 기타 ID | **아니오 — 기기 쪽 근거는 섰다. 서버 쪽 확인 하나가 남았다** | — | — | SDK 기본값은 설치 id를 **세 자리**에 싣는다: 이벤트의 `user.id` · 세션의 `distinctId` · 이벤트의 `contexts.device.id`(`sendDefaultPii`와 무관) [정적 — AAR 바이트코드]. 이 앱은 `beforeSend`에서 `user`와 `device.id`를 지우고 `setDistinctId(null)`로 세션 쪽을 끈다 [코드 — JUnit `CrashEventPolicyTest`]. **기기 밖으로 나가기 직전의 envelope에서 `user` · `did` · `ip_address` · `contexts.device.id`가 없었고, 그 기기의 설치 id · `android_id` 문자열을 envelope 전체에서 찾아 0건이었다** [실측 — 에뮬레이터 1대, `bundled`, JS 이벤트 4건 · Java 크래시 1건 · 세션 전부] |
 
@@ -95,10 +95,30 @@ JS 예외의 네 값은 계약이 닫은 것이고 [코드], 그 밖은 **B단�
 키: `sid` · `init` · `started` · `status` · `errors` · `seq` · `duration` · `timestamp` · `attrs`. `attrs`의 키는 **`release` · `environment` 둘뿐**이었다 — `did` · `ip_address` · `user_agent` 없음.
 `sid`는 실행마다 새로 만들어지는 세션 id다.
 
-### 네이티브 크래시 — 지금은 나가는 것이 확인되지 않았다
+### 네이티브 크래시(tombstone) — API 34에서 실측
 
-`setTombstoneEnabled(true)`인데도 API 30 에뮬레이터에서 네이티브 크래시(`SEGV`) 뒤에 tombstone 이벤트가 만들어지지 않았다 [실측]. 그 실행의 세션은 `exited`로 적혔다. API 31 이상에서 이벤트가 오는지,
-온다면 어떤 키가 실리는지는 [미확인]이다 — **오는 것이 확인되면 그 envelope으로 이 절을 채운다**(tombstone 원문 첨부는 옵션으로 꺼 두었다).
+**API 30에서는 이벤트가 오지 않았고 API 34에서는 왔다** [실측 — 각각 에뮬레이터 1대, `kill -SEGV`로 외부에서 죽인 크래시]. API 31 ~ 33 · 실기 · 앱 라이브러리 안에서 난 크래시의 모양은 [미확인]이다.
+API 34의 세 회차 envelope에서 읽은 키(값은 옮기지 않는다):
+
+| 자리 | 키 · 내용 |
+|---|---|
+| 이벤트 최상위 | `contexts` · `debug_meta` · `dist` · `environment` · `event_id` · `exception` · `level`(`fatal`) · `message` · `platform`(`native`) · `release` · `sdk` · `tags` · `threads` · `timestamp`. `fingerprint` · `user` · `breadcrumbs` · `server_name` · `modules` · `request` 없음 |
+| `message.formatted` | `Fatal signal SIGSEGV (11), SI_USER (0), pid = <PID> (<패키지>)` — 프로세스 id와 패키지 이름 |
+| `exception.values[0]` | `type`(신호 이름) · `value` · `thread_id` · `mechanism{type: Tombstone, handled: false, synthetic: true, meta{name, number, code, code_name}}` · `stacktrace{frames, registers, instruction_addr_adjustment}` |
+| 스택 프레임 | `function`(이름이 풀려 있다 — 시스템 라이브러리 · `liblynxbase.so` 등) · `in_app` · `package`(라이브러리 경로 — 앱 설치 경로는 `/data/app/[install]/`로 지운다) · ⚠ `image_addr` · ⚠ `instruction_addr` |
+| ⚠ `registers` | 크래시 순간의 **CPU 레지스터 값 전부**(x0 … lr 등). 포인터가 가리키는 메모리 내용은 실리지 않는다 |
+| `threads` | **프로세스의 모든 스레드**(이번 측정 49개)의 `id` · `name`(`Lynx_JS` · `RenderThread` 등, `binder:<PID>_1` 꼴에는 프로세스 id가 든다) · `main` · `crashed` · `stacktrace`. R8로 줄인 Java 프레임 이름이 그대로 실린다 |
+| `debug_meta.images` | 로드된 라이브러리 전부(이번 측정 327개) — `code_file`(경로 — 앱 설치 경로는 지운다) · `code_id` · `debug_id`(라이브러리 빌드 단위) · ⚠ `image_addr` · `image_size`, 그리고 매핑 UUID 하나 |
+| `contexts.app` | `app_identifier` · `app_name` · `app_version` · `app_build` · `view_names` · `is_split_apks`(JS 예외 이벤트보다 적다 — `permissions` · `app_start_time` · `in_foreground` 없음) |
+| `contexts.device` | 14개: `manufacturer` · `brand` · `family` · `model` · `model_id` · `archs` · `simulator` · `memory_size` · `screen_width_pixels` · `screen_height_pixels` · `screen_density` · `screen_dpi` · `processor_count` · `processor_frequency`. `id` · `name` · `boot_time` 없음 |
+| `contexts.os` · `contexts.trace` · `tags` | `name` · `version` · `build` · `kernel_version` / `trace_id` · `span_id` · `op` · `origin` · `data{thread.name, thread.id}` / `isSideLoaded`만 |
+
+- **식별자 점검** [실측]: 세 회차 모두 `user` · `did` · `ip_address` · `contexts.device.id` · `device.name` · `boot_time` · 설치 id 파일 문자열 · `android_id` · `ro.serialno` 0건.
+- **설치 경로**: 첫 회차의 이벤트에 Android가 설치마다 무작위로 정하는 경로(`/data/app/~~<무작위>==/<패키지>-<무작위>==/`)가 48번 실려 있었다 — 같은 설치의 모든 크래시를 잇는 값이라 그 회차는 보내지 않았다.
+  `1130979c`부터 `beforeSend`가 `/data/app/[install]/`로 바꾸고, 그 뒤 두 회차에서 0건이었다 [실측 · 코드 — JUnit `CrashInstallPathTest`].
+- ⚠ **로드 주소** — 아래 「남는 위험」. 사용자 결정으로 지우지 않는다.
+- 3회차의 이벤트 1건을 보냈다(전송 시도 — 수신은 미확인).
+- 세션: 네이티브로 죽은 세션은 `crashed`로 끝나지 않고 끝 기록 없이 버려졌다 — 크래시 없는 세션 비율은 지금 믿을 수 없다(ADR-0058 「대가」 12, 원인 조사 중). 양식의 「진단」 칸에는 영향이 없다.
 
 ### ANR — 원문을 본 적이 없다
 
@@ -117,6 +137,7 @@ JS 예외의 네 값은 계약이 닫은 것이고 [코드], 그 밖은 **B단�
 | 세션 리플레이 · 프로파일링 · 성능 추적 · 사용자 피드백 | 아티팩트가 없거나 표본율을 주지 않았다 · 추적 옵션 끔 |
 | 기기 이름 · 서버 이름 · 외부 저장소 정보 · 루트 여부 · 설치된 모듈 목록 · 메시지 인자(`Message.params`) | `beforeSend` · 옵션 끔 |
 | tombstone 원문 · SDK를 넣기 전의 과거 ANR · tombstone | 첨부 · 과거 보고 끔 |
+| 앱 설치 경로의 무작위 토막(`/data/app/~~…==/<패키지>-…==/`) | `beforeSend`가 스택 프레임 · `debug_meta`에서 `/data/app/[install]/`로 바꾼다(`1130979c`부터) [코드 · 실측 — API 34] |
 | 기기 부팅 시각(`contexts.device.boot_time`) | `beforeSend`가 지운다(`438cc723`부터 — **그 전에 B단계에서 나간 5건에는 실려 있었다**) |
 | JS 예외의 화면 이름 · props · 전역 상태 · 임의 객체 | payload에 자리가 없다. JS는 `Error`가 아닌 객체를 문자열로 풀지 않고 `Non-error value thrown`으로 바꿔 넘긴다 |
 | 이미지 · 리소스 · 레이아웃 등 JS 밖의 Lynx 오류 | 코드 범위(200번대 · 1100번대) 밖은 받지 않는다 — URL이 실린다 |
@@ -143,6 +164,9 @@ JS 예외의 네 값은 계약이 닫은 것이고 [코드], 그 밖은 **B단�
 
 - **ASCII로 된 짧은 사용자 입력(영문 이름 · 8자리 이하 숫자)은 패턴으로 가릴 수 없다.** 그런 값이 예외 메시지에 들어가면 그대로 나간다. 길이 상한(메시지 300자 · 스택 줄 400자)이
   노출 폭을 묶을 뿐이다.
+- **⟨사용자 결정 2026-10-13⟩ tombstone 이벤트에 시스템 라이브러리의 로드 주소가 실린다** — `debug_meta.images[].image_addr`, 프레임의 `image_addr` · `instruction_addr`, 레지스터. `libc.so` 등 zygote가 미리 올린 시스템 라이브러리의 주소는
+  **재부팅 전까지 그 기기의 모든 앱 · 모든 실행에서 같다** [실측 — API 34, 다른 프로세스의 `/proc/<pid>/maps`와 일치. 다른 부팅에서는 값이 달랐다]. 그래서 재부팅 사이에 난 tombstone들을, 원리상 같은 기기의 다른 앱이 보낸 tombstone과도 이을 수 있다 [추론].
+  지우면 네이티브 스택을 풀 수 없게 된다. **사용자가 「남는 위험으로 두고 보낸다」를 골랐다.** 양식의 「사용자와 연결」 판단에 이것도 넣는다(아래 「제출 전에 확인할 것」 2).
 - **경로 조각에 든 이름은 지우지 않는다**(`/users/kim.sehyun/profile`). 쿼리 꼬리(`?key=…`)는 지우지만 경로는 그대로 나간다 — 리뷰가 짚었고 계약이 남는 위험으로 받았다.
 - **스택 프레임의 파일 경로도 같은 이유로 그대로 나간다.** 지금 번들의 프레임은 `/.rspeedy/main/background.<해시>.js` 꼴이라 사람 이름이 들 자리가 없다(e2e A단계 실측) — Java 스택은 `scrub`을 지나지 않는다(난독화된 클래스 이름).
 - 사전 상한 때문에 2,000자를 넘는 메시지는 뒤가 잘리고 잘린 끝의 토막까지 버려진다(반쯤 잘린 이메일 · 토큰이 패턴을 빠져나가지 않게). 65,536자를 넘는 도착 원문은 앞에서 잘린다.
@@ -153,7 +177,7 @@ JS 예외의 네 값은 계약이 닫은 것이고 [코드], 그 밖은 **B단�
 
 ## 식별자를 붙이면 달라지는 칸
 
-지금 값은 「안 붙임」이고 **계약 기본값으로 진행한 것이다 — 사용자가 확인하지 않았다**(ADR-0058 「사용자 확인 필요」 U2). 바꾸면 이 문서와 양식이 같이 바뀐다.
+지금 값은 「안 붙임」이고 **⟨2026-10-13⟩ 사용자가 확정했다**(ADR-0058 「사용자 결정」 U2). 바꾸면 이 문서와 양식이 같이 바뀐다.
 
 | 선택 | 얻는 것 | 양식에서 바뀌는 칸 | 그 밖에 드는 것 |
 |---|---|---|---|
@@ -168,7 +192,7 @@ JS 예외의 네 값은 계약이 닫은 것이고 [코드], 그 밖은 **B단�
 1. ~~e2e B6 — 원문에 `user` · `did` · `ip_address` · `contexts.device.id`가 없다~~ — **기기 쪽은 확인됐다**(2026-10-13, 에뮬레이터 1대 · `bundled`). 남은 것: Sentry 프로젝트의 「IP 주소 저장 안 함」 설정과,
    대시보드에서 받은 이벤트(e2e 문서의 `event_id` 다섯)에 서버가 붙인 `user.ip_address` 류가 없는지.
 2. ~~SDK가 붙인 context의 실제 키를 옮긴다~~ — 옮겼다(위 「이벤트에 실리는 키」). 남은 것: **⚠ 표시한 값(`trace_id` · `thread.id` · `app_start_time` · `permissions` · `kernel_version` 등)을 두고
-   「진단 — 사용자와 연결: 아니오」로 낼지 사용자가 정한다.** 지우기로 정하면 `beforeSend`에 줄이 는다. 그리고 ANR · (오는 것이 확인되면) tombstone 이벤트의 키를 같은 방법으로 뜬다.
+   「진단 — 사용자와 연결: 아니오」로 낼지 사용자가 정한다.** 지우기로 정하면 `beforeSend`에 줄이 는다. tombstone의 로드 주소는 사용자가 남는 위험으로 두기로 정했으니 그 판단에 함께 넣는다. tombstone 키는 API 34에서 떴다(위) — ANR 이벤트의 키는 아직이다.
 3. Sentry 프로젝트의 데이터 지역 · 「IP 주소 저장 안 함」 · 보존 기간을 확인해 이 문서와 공개 처리방침에 적는다.
 4. 공개 개인정보 처리방침의 처리자 목록에 Sentry(비정상 종료 로그 · 진단)를 더한다 — 문안은 아직 준비하지 않았다.
 5. Play Console 「데이터 보안」 양식을 위 표로 고치고, Android 앱의 다른 수집 항목(이 문서 밖)과 함께 한 번에 대조한다.

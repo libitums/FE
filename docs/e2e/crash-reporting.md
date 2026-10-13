@@ -18,7 +18,7 @@
 
 공통 전제([README](README.md))를 따르되, 이 흐름은 **로그인이 필요 없는 구간이 대부분**이다. 탐침이 닿는 화면(여정 맵 · 설정 탭)을 보려면 로그인된 상태에서 시작한다.
 
-1. **에뮬레이터 하나**(전용). ⟨2026-10-13 정정⟩ B5(tombstone)는 **API 31 이상**에서 본다 — API 30에서는 tombstone 이벤트가 오지 않았다(1회차 실측. 「API 30 이상」이라는 앞선 문면이 틀렸다). envelope을 기기에서 꺼내려면 `adb root`가 되는 이미지여야 한다. `adb`는 아래 함수로 부른다:
+1. **에뮬레이터 하나**(전용). ⟨2026-10-13 정정⟩ B5(tombstone)는 **API 31 이상**에서 본다 — API 30에서는 tombstone 이벤트가 오지 않았고 API 34에서는 왔다(실측. 「API 30 이상」이라는 앞선 문면이 틀렸다). API 37 16 KB 이미지는 임시 AVD가 부팅되지 않았다. envelope을 기기에서 꺼내려면 `adb root`가 되는 이미지여야 한다. `adb`는 아래 함수로 부른다:
    ```sh
    export E2E_UDID=emulator-5554          # adb devices 로 확인한 전용 에뮬레이터 ID
    export ADB="${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb"
@@ -281,14 +281,27 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 | B2-b | ⟨1회차가 더한 것⟩ 핸들러 throw 하나와, **서로 다른 줄의 메인 스레드 throw 둘**(이름도 다르게) | 핸들러: `js-background` 이벤트 1건. 메인 스레드: `js-main-thread` 이벤트 2건 — 이름이 접두(`main-thread.js exception: `) 없이 제대로 갈리고, **지문 넷째 값(첫 스택 줄)이 서로 다르며 열이 `[number]`가 아니다** | 2 | 기기 통과 |
 | B4-a | `adb shell am crash libitum.duru.android` | **기기**: **죽는 순간**(재실행 전) envelope 1개가 캐시에 써진다 — `level: fatal` · `mechanism{type: UncaughtExceptionHandler, handled: false}` · 같은 envelope의 세션 `status: crashed`. `debug_meta`에 매핑 UUID. 전송은 다음 실행에서 일어난다. **대시보드**: Java 크래시 이벤트 1건 · 세션 crashed | 6 | 기기 통과 · **대시보드 미확인** |
 | B4-b | ⟨2026-10-13 정정⟩ **앱 코드의 프레임이 든 Java 크래시**를 일으키고 `uploadSentryMappingBundled`를 돌린다. **`am crash`로는 안 된다** — 그 이벤트의 프레임 7개는 전부 프레임워크(`ActivityThread$H.handleMessage` 등)라 매핑을 올려도 풀릴 이름이 없다. 앱 코드에서 잡히지 않는 예외를 던지는 임시 줄이 필요하다(커밋하지 않음) — **어디에 어떻게 넣을지는 계약이 아직 정하지 않았다** | 대시보드에서 스택이 **풀린 클래스 이름**(`com.libitum.host.…`)으로 보인다 | 6 | **미실행** — 인증 토큰 없음 · 던지는 방법 미정 |
-| B5 | ⟨2026-10-13 정정⟩ **API 31 이상** 에뮬레이터에서 네이티브 크래시를 일으킨 뒤 재실행(1회차: `A root` 뒤 `A shell kill -SEGV <pid>` → 재실행 → 30초 대기) | tombstone 이벤트가 오는지 · 프레임 모양 · 죽은 실행의 세션 `status`를 **기록**한다(통과/실패 아님) | — | **API 30: 오지 않았다**(아래) · API 31 이상: 미실행 |
+| B5 | ⟨2026-10-13 정정⟩ **API 31 이상** 에뮬레이터에서 네이티브 크래시를 일으킨 뒤 재실행(1회차: `A root` 뒤 `A shell kill -SEGV <pid>` → 재실행 → 30초 대기) | tombstone 이벤트가 오는지 · 프레임 모양 · 죽은 실행의 세션 `status`를 **기록**한다(통과/실패 아님) | — | **API 30: 오지 않았다** · **API 34: 왔다**(세 회차, 3회차 전송) · API 37: 부팅 실패로 미측정 · API 31 ~ 33: 미실행(아래) |
 | B6 | 세션 · 이벤트 원문(JSON)에서 `user` · `did` · `ip_address` · **`contexts.device.id`**를 찾는다. **JS 예외 이벤트와 Java 크래시 이벤트 둘 다**에서 본다(tombstone이 왔으면 그것도). 기기의 설치 id · `android_id` 문자열도 envelope 전체에서 찾는다 | 넷 다 **없다**(spec §0 F12 · C10 · §11 RV1). 문자열 대조 0건. `contexts.device`의 다른 키는 있어도 된다 — 어떤 키가 실렸는지 메모에 옮긴다. `contexts.device.boot_time`도 **없어야 한다**(`438cc723`부터 지운다 — 1회차의 envelope에는 있었다). **넷 가운데 하나라도 보이면 식별자가 나가고 있는 것이다. 보내지 말고 멈추고 정정으로 되돌린다.** **대시보드**: 받은 이벤트에 서버가 붙인 IP가 없는지(프로젝트 설정 「IP 주소 저장 안 함」) | 4 | 기기 통과 · **서버 쪽 미확인** |
 | B7 | M1 ~ M3 쿼리(spec §7)를 Sentry에서 한 번씩 연다 | spec §7의 쿼리가 수를 낸다 · 통합별 mechanism 이름을 아래 칸에 적는다 | — | **미실행** — 대시보드 접근 없음 |
 
-**B5 — API 30에서 tombstone 이벤트가 오지 않았다. 실패가 아니라 계약의 범위가 틀렸다.** `setTombstoneEnabled(true)`인 `bundled`에서 SEGV로 죽인 뒤 재실행했으나 캐시에 새로 생긴 것은 세션 envelope뿐이었고,
-이벤트가 싣는 `sdk.integrations` 목록에도 tombstone 통합의 이름이 없었다. 시스템은 그 종료를 `APP CRASH(NATIVE)`로 기록했고(`dumpsys activity exit-info`) logcat에는 tombstone backtrace가 찍혔다.
-**SEGV로 죽은 실행의 세션은 `crashed`가 아니라 `exited`로 적혔다.** 계약과 이 문서의 앞선 판은 「API 30 이상」이라 적었다 — 플랫폼이 네이티브 크래시의 tombstone을 앱에 읽게 해 주는 것이 API 31부터일 수 있다 [추론].
-API 31 이상에서 다시 봐야 닫힌다([ADR-0058](../adr/0058-crash-reporting-sentry.md) D5 · 「정정 기록」).
+**B5 — API 30에서는 오지 않았고 API 34에서는 왔다.** API 30의 결과는 실패가 아니라 계약의 범위가 틀린 것이었다.
+
+- **API 30**(B 1회차): `setTombstoneEnabled(true)`인 `bundled`에서 SEGV로 죽인 뒤 재실행했으나 캐시에 새로 생긴 것은 세션 envelope뿐이었고, `sdk.integrations`에도 tombstone 통합의 이름이 없었다.
+  시스템은 그 종료를 `APP CRASH(NATIVE)`로 기록했고(`dumpsys activity exit-info`) logcat에는 tombstone backtrace가 찍혔다.
+- **API 37**: `google_apis_playstore_ps16k` 임시 AVD가 부팅되지 않아(`hvf is not enabled` · `mprotect failed`) 측정하지 못했다. 같은 셸에서 API 30 이미지는 떴다.
+- **API 34**(`google_apis` 임시 AVD, 세 회차 — 아래 실행 기록): 재실행에서 tombstone 이벤트가 왔다 — `platform: native` · `level: fatal` · `mechanism{type: Tombstone, handled: false}` · `sdk.integrations`에 `Tombstone`.
+  크래시 스레드 프레임의 함수 이름이 풀려 있었고 스레드 49개 · 레지스터 · `debug_meta.images` 327개가 실렸다. 외부 신호라 크래시 스레드는 프레임워크 대기 프레임뿐이다 — **앱 라이브러리 안에서 난 크래시의 모양은 미확인이다.**
+- [추론] 플랫폼이 네이티브 크래시의 tombstone을 앱에 읽게 해 주는 것이 API 31부터라 API 30이 대상이 아니었을 것이다. 31 ~ 33 · 실기는 돌리지 않았다([ADR-0058](../adr/0058-crash-reporting-sentry.md) D5).
+- ⟨정정⟩ 앞선 판은 「SEGV로 죽은 실행의 세션은 `crashed`가 아니라 `exited`로 적혔다」고 적었다 — **잘못 읽은 것이다.** 그 `exited`는 SEGV 뒤 재실행해 새로 시작한 세션의 가짜 `exited`였다(아래 「세션 관찰」).
+
+**B5에서 envelope을 읽을 때 더 볼 것**(API 34에서 찾은 것): 앱 설치 경로의 무작위 토막(`pm path <패키지>`가 돌려준 경로의 `~~` 뒤 · `<패키지>-` 뒤 토막)이 envelope 전체에서 **0건**이고 `/data/app/[install]/`로 바뀌어 있어야 한다(`1130979c`부터).
+있으면 보내지 말고 멈춘다. 시스템 라이브러리의 로드 주소(`image_addr` · `instruction_addr` · 레지스터)는 사용자 결정으로 두고 보낸다 — 멈춤 조건이 아니다.
+
+**세션 관찰 — M1이 크래시를 세지 못한다(원인 조사 중).** API 34 세 회차에서: 콜드 스타트마다 새 세션이 시작되고 **약 0.03초 뒤 같은 `sid`로 `exited`가 디스크에 써졌다**(액티비티가 만들어지기도 전).
+진짜 세션은 메모리에서 계속 살아 배경 전환 30초 뒤에 같은 `sid`로 한 번 더 `exited`가 써졌다. 같은 프로세스에서 전면으로 돌아와 시작한 세션에는 가짜 `exited`가 없었다. **SEGV로 죽은 세션은 끝 기록 없이 사라졌다**(`crashed`도 `abnormal`도 없음).
+API 30(B 1회차)에서도 크래시 뒤 재실행한 세션이 0.009초 뒤 `exited`였다 — 같은 현상이다. 세션 지표(크래시 없는 세션 비율)는 이 문제가 풀릴 때까지 믿을 수 없다.
+다음 회차는 세션 envelope마다 `sid` · `init` · `status` · `seq` · `duration`과 그 실행의 액티비티 생명주기 로그 시각을 함께 적는다.
 
 B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(어디에도 매달려 있지 않다 — spec §5). 작업 이름 이외의 인자 · 매핑 파일 경로는 계약이 정하지 않았다 — 실행 때 Gradle 출력으로 확인해 아래 「B 단계 메모」에 적는다.
 
@@ -298,8 +311,8 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 |---|---|
 | B7 — Java 크래시의 mechanism 이름 | `UncaughtExceptionHandler`(`handled: false`) — envelope에서 읽은 값. 대시보드 표시는 미확인 |
 | B7 — ANR의 mechanism 이름 | 미확인 — ANR을 유도하지 않았다(`sdk.integrations`에 `AnrV2`가 있다는 것만) |
-| B7 — tombstone의 mechanism 이름 | 미확인 — API 30에서 이벤트가 오지 않았다 |
-| B5 — tombstone 프레임 모양 | 미확인 — 같음 |
+| B7 — tombstone의 mechanism 이름 | `Tombstone`(`handled: false` · `synthetic: true`) — API 34 envelope에서 읽은 값. API 30에서는 이벤트가 오지 않았다. 대시보드 표시는 미확인 |
+| B5 — tombstone 프레임 모양 | API 34: 크래시 스레드 프레임 15개, 함수 이름이 풀린 시스템 프레임(`__epoll_pwait` → `android::Looper::pollOnce` → … → `__libc_init`)과 다른 스레드의 `liblynxbase.so` `lynx::fml::…` 프레임 · 이름 없는 프레임 · R8로 줄인 Java 프레임. 외부 SIGSEGV라 앱 라이브러리 안의 크래시 모양은 미확인 |
 | B4 — `uploadSentryMappingBundled` 실행 명령 · 결과 | 미실행 — `auth.token` 없음 |
 | B6 — 이벤트 원문의 `contexts.device` 키 목록(값은 옮기지 않는다) | 26개: `archs` · `battery_level` · `battery_temperature` · **`boot_time`** · `brand` · `charging` · `family` · `free_memory` · `free_storage` · `locale` · `low_memory` · `manufacturer` · `memory_size` · `model` · `model_id` · `online` · `orientation` · `processor_count` · `processor_frequency` · `screen_density` · `screen_dpi` · `screen_height_pixels` · `screen_width_pixels` · `simulator` · `storage_size` · `timezone`. `id` · `name` 없음. **`boot_time`은 이 회차 뒤 `438cc723`에서 지우게 고쳤다 — 이 회차의 5건에는 실려 나갔다.** `contexts.app` · `contexts.os` · `contexts.trace` · 태그의 키는 [Android 데이터 보안](../android-data-safety.md)에 옮겼다 |
 | B6 — 넷(`user` · `did` · `ip_address` · `contexts.device.id`) 각각의 유무, 이벤트 종류별 | JS 이벤트 4건 · Java 크래시 1건 · 세션 전부에서 **넷 다 없음**. `contexts.device.name` · `server_name` · `modules` · `request` · `breadcrumbs`도 없음. 설치 id 문자열 0건 · `android_id` 0건 |
@@ -313,7 +326,7 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 - **iOS** — 이번에는 iOS에서 아무것도 나가지 않는다(다음 조각). `reportCrash`는 iOS 호스트 · Explorer에서도 `lynx.reportError`를 부른다 — 수집기가 없는 그 호스트들에서 화면에 무엇이 더해지는지는 이 절차에 없다.
 - **JS 소스맵** — 이번 조각에 넣지 않았다(spec C9). Sentry의 JS 스택은 줄여진 줄 · 열(`main.lynx.bundle:1:<열>`) 그대로다. **열을 손으로 푸는 절차는 계약이 정하지 않았다** — 이 문서에 적지 않는다(보류).
 - **debug 빌드의 Sentry 전송** — debug는 DSN이 있어도 보내지 않는다(spec C7 · U5).
-- **C/C++ 크래시** — API 30에서는 이벤트가 오지 않았다(B5). **API 31 이상 · 그 미만 모두 [미확인]이다.**
+- **C/C++ 크래시의 나머지 범위** — API 30에서는 오지 않고 API 34에서는 온다(B5). **API 31 ~ 33 · 35 이상 · 실기 · 앱 라이브러리 안에서 난 크래시는 [미확인]이다.**
 - **Sentry가 받았는지와 대시보드에 보이는 모든 것**(이슈 묶음 · `handled` 표시 · 세션 수치 · M1 ~ M3 · 서버가 붙이는 IP) — 계정이 있는 사람이 본다.
 - **ANR 이벤트** · 거부된 promise · 타이머 throw의 **이벤트** 모양 · 온라인에서 바로 보낼 때의 envelope — 1회차 탐침에 없었다.
 - **`boot_time`을 지운 뒤의 envelope** — `438cc723` 뒤로 기기에서 다시 뜨지 않았다.
@@ -377,7 +390,7 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
   | 4 | `7afec8f207ac4a758052c1ad6d388713` | 05:33:47 | JS 경계 렌더 | `Error: probe-b [email] [number] [text] GET /auth/v1/verify?[redacted]` · `lynx.source: js-background` · handled |
   | 5 | `9b9d538c42394d2bbd585c92c8ea7629` | 05:35:07 | Java 크래시(`am crash`) | `RemoteServiceException: shell-induced crash` · `level: fatal` · unhandled |
 
-  세션은 넷이다: 05:33:12 시작(오류 5 · `crashed`로 끝남) · 05:35:36 시작(`exited` — SEGV로 죽은 실행) · 05:35:52 시작 · 온라인 재실행의 것(05:36:50경). **다섯 건이 보이면 수신이 확인된 것이고, 안 보이면
+  세션은 넷이다: 05:33:12 시작(오류 5 · `crashed`로 끝남) · 05:35:36 시작(`exited` — ⟨정정⟩ 앞선 판은 「SEGV로 죽은 실행」이라 적었으나 크래시 뒤 재실행에서 써진 가짜 `exited`로 읽힌다 — B5의 「세션 관찰」) · 05:35:52 시작 · 온라인 재실행의 것(05:36:50경). **다섯 건이 보이면 수신이 확인된 것이고, 안 보이면
   거절됐을 수 있다 — 그때는 SDK debug 로그를 켠 빌드로 응답을 본다.** 보이는 다섯 건 모두에 `contexts.device.boot_time`이 들어 있다(이 회차 뒤에 지우게 고쳤다) — 남길지 지울지는 사용자가 정한다.
 - **방법.** 위 「방법」 그대로 — 오프라인에서 새로 설치하고 탐침 넷을 돌린 뒤 envelope을 꺼내 읽고, `am crash` · `kill -SEGV`까지 오프라인으로 한 다음, 식별자와 지워지지 않은 가짜 값이 없음을 확인하고 네트워크를 켰다.
 - **탐침 자리.** A단계와 같이 전부 `OnboardingScreen`이다(모의 값 번들이라 로그인 뒤 화면에 닿지 못한다) — 메인 스레드 throw 둘(제목 · 진행 점의 `main-thread:bindtap`), `handleNext()` 첫 탭의 핸들러 throw,
@@ -386,9 +399,22 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
   envelope 전체에서 `a@b.co` · `010-1234` · `5678` · `한글` · `token=` · `123456` · `type=sms` 0건. **기기 화면의 에러 화면 본문과 기기의 logcat(`lynx` 태그)에는 원문이 그대로 보였다** — 에러 화면은 `ErrorBoundary`의
   기존 동작이고 Lynx는 `bundled`에서도 오류 원문을 찍는다. 둘 다 기기 안의 일이다.
 - **B4-a**: 이벤트의 프레임 7개가 전부 프레임워크 프레임이었다 — 매핑 확인에 쓸 수 없어 절차를 B4-a / B4-b로 나눴다. envelope은 재실행이 아니라 **죽는 순간** 캐시에 써져 있었다(절차 문면을 그렇게 고쳤다).
-- **B5**: 위 단계 표 아래 문단. 죽은 실행의 세션 envelope은 시작 9 ms 뒤에 이미 `exited`로 써져 있었다.
+- **B5**: 위 단계 표 아래 문단. 시작 9 ms 뒤에 이미 `exited`로 써져 있던 세션 envelope은 ⟨정정⟩ SEGV로 죽은 세션이 아니라 재실행한 새 세션의 가짜 `exited`였다(「세션 관찰」).
 - **`boot_time`**: 이 회차의 실행자는 B6의 넷이 아니라 멈춤 조건으로 보지 않고 전송을 진행했다. 그 뒤 `beforeSend`가 지우게 고쳤고(`438cc723`) **고친 빌드의 envelope은 다시 뜨지 않았다.**
 - **되돌림**: 탐침 파일 `git checkout --` · 탐침 없는 번들과 APK 재생성 · 앱 제거(캐시 · 설치 id 포함) · 네트워크를 다시 켠 뒤 에뮬레이터 종료. `git status --short`에는 추적하지 않는 `apps/android/local.properties`뿐.
   **`sentry.properties`가 있는 한 다시 만든 `bundled` APK에도 DSN이 들어 있다.**
 - **이 회차가 보지 못한 것**: Sentry 수신과 대시보드(B7 포함) · 매핑 업로드와 풀린 스택 · ANR · API 31 이상의 tombstone · `captureEvent`의 직접 시간 · 거부된 promise · 타이머 throw의 이벤트 모양 ·
   온라인에서 바로 보낼 때의 envelope · 실기와 다른 API 수준 · release AAB.
+
+### B5 추가 회차 — tombstone 측정(Android 12 이상)
+
+사용자가 2026-10-13에 「Android 12 이상에서 오는지 먼저 확인」을 골랐고, 그 확인을 위해 Android 14 `google_apis` 이미지 내려받기를 승인했다.
+
+| 일시 | 기기 | 확인자 | 결과 | 메모 |
+|---|---|---|---|---|
+| 2026-10-13 (KST) | 임시 AVD — API 37 `google_apis_playstore_ps16k` · arm64-v8a · pixel_8. HEAD `669a48a5` | 에이전트 실행, 사람 미확인 | **측정하지 못함** — AVD가 부팅되지 않음 | 콜드 부팅 · `-accel on` 등 네 번 모두 `hvf is not enabled` · `mprotect failed: Permission denied`. 같은 셸에서 API 30 이미지는 떴다. 우회하지 않고 멈췄다 |
+| 2026-10-13 15:36 ~ 15:45 | 임시 AVD — API 34 `google_apis` · arm64-v8a · pixel_8. HEAD `669a48a5` · `bundled`(DSN · R8 · 탐침 없음) | 에이전트 실행, 사람 미확인 | **tombstone 이벤트가 왔다 · 보내지 않음** | 이벤트에 무작위 앱 설치 경로가 48번(`debug_meta.images[].code_file` 7 · 스레드 프레임 `package` 41) — 같은 설치의 크래시를 잇는 값이라 멈추고 앱을 지웠다. 그 뒤 `1130979c`가 지우게 고쳤다 |
+| 2026-10-13 15:41 ~ 15:47 | 같은 이미지(다시 만듦) · HEAD `1130979c` | 에이전트 실행, 사람 미확인 | **설치 경로 0건 · 보내지 않음** | `[install]`로 바뀐 자리 48. 시스템 라이브러리의 로드 주소가 다른 프로세스의 `/proc/<pid>/maps`와 같다(재부팅 전까지 기기 전체에서 같은 값)는 것을 찾아 멈췄다 — 사용자가 「남는 위험으로 두고 보낸다」를 골랐다 |
+| 2026-10-13 16:00 ~ 16:05 | 같은 이미지(다시 만듦) · HEAD `1130979c` | 에이전트 실행, 사람 미확인 | **tombstone 이벤트 1건 전송 시도 · 수신 미확인** | `event_id` `eeab5ab5c65e4e1380bc0f8989720c2f` — 발생 07:02:40 UTC(KST 16:02:40), 전송 07:03:46 ~ 49 UTC. envelope 7개가 3초 안에 비워졌고 연결 오류 로그 0. 식별자 · 설치 경로 · `boot_time` · `ro.serialno` 0건. 대시보드에 보일 모양: `SIGSEGV: Segfault` · `platform: native` · `level: fatal` · mechanism `Tombstone` · `release: libitum.duru.android@0.1.0+2` · `environment: bundled`. 세션 관찰은 B5 아래 문단 |
+
+세 회차 모두 앱을 지우고 임시 AVD를 삭제했다. 원문(envelope 사본 — DSN · public key · 설치 경로 토큰을 지운 것)은 하네스 작업 폴더의 `logs/e2e-tombstone-api34*/`에 있다(저장소 밖).
