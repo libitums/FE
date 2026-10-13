@@ -43,28 +43,38 @@ export const wordChoicePictureTimeoutMs = 6000;
 
 export function wordChoicePictureStateAfter(
   state: WordChoicePictureState,
-  _event: WordChoicePictureEvent,
+  event: WordChoicePictureEvent,
 ): WordChoicePictureState {
-  return state;
+  if (state !== "loading") return state;
+  return event === "load" ? "loaded" : "failed";
 }
 
 export function canAnswerWordChoice(
-  _question: WordChoiceQuestion,
-  _pictureState: WordChoicePictureState,
+  question: WordChoiceQuestion,
+  pictureState: WordChoicePictureState,
 ): boolean {
-  return true;
+  return question.picture === undefined || pictureState !== "loading";
 }
 
 export function wordChoicePictureLabel(
-  _meaning: string,
-  _state: WordChoicePictureState,
-  _copy: UiCopy,
+  meaning: string,
+  state: WordChoicePictureState,
+  copy: UiCopy,
 ): string {
-  return "";
+  switch (state) {
+    case "loading":
+      return copy.wordChoicePicture.loading;
+    case "loaded":
+      return copy.wordChoicePicture.picture(meaning);
+    case "failed":
+      return copy.wordChoicePicture.unavailable(meaning);
+  }
 }
 
 export function wordChoicePictureAnswerOf(
-  _question: WordChoiceQuestion,
+  question: WordChoiceQuestion,
 ): WordChoicePictureAnswer | null {
-  return null;
+  if (question.picture === undefined) return null;
+  const word = question.choices[question.answerIndex];
+  return word === undefined ? null : { word, romanization: question.picture.answerRomanization };
 }

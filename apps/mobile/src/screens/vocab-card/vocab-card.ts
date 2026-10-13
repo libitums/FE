@@ -13,22 +13,29 @@ export const initialVocabCardSessionState: VocabCardSessionState = { cardIndex: 
 
 export function vocabCardSessionReducer(
   state: VocabCardSessionState,
-  _action: VocabCardSessionAction,
+  action: VocabCardSessionAction,
 ): VocabCardSessionState {
-  return state;
+  switch (action.type) {
+    case "nextCard":
+      return { cardIndex: state.cardIndex + 1 };
+  }
 }
 
 export function vocabCardStepOf(
-  _lesson: LessonPosition | undefined,
-  _cardIndex: number,
-  _total: number,
+  lesson: LessonPosition | undefined,
+  cardIndex: number,
+  total: number,
 ): VocabCardStep {
-  return "advance";
+  if (cardIndex < total - 1) return "advance";
+  return lesson !== undefined && !lesson.last ? "hand-off" : "finish";
 }
 
 export function vocabCardExampleSupportLabel(
-  _example: VocabCardExample,
-  _copy: UiCopy,
+  example: VocabCardExample,
+  copy: UiCopy,
 ): string | null {
-  return null;
+  const parts: string[] = [];
+  if (example.romanization !== null) parts.push(copy.vocabCard.pronunciation(example.romanization));
+  if (example.translation !== null) parts.push(copy.vocabCard.meaning(example.translation));
+  return parts.length === 0 ? null : parts.join(" ");
 }

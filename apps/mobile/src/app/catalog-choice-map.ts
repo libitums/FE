@@ -142,10 +142,31 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
   });
 }
 
-/** 그림 고르기입니다 — 그림이 붙은 단어 선택 문항입니다. */
+/**
+ * 그림 고르기입니다 — 그림이 붙은 단어 선택 문항이며 제시문은 정답 낱말의 영어 뜻입니다. 검사 순서는
+ * 모양 → 그림 → 뜻입니다.
+ */
 export function pictureChoiceItemOf(
   item: ItemOf<"IMG_MATCH">,
-  _port: CatalogLessonItemPort,
+  port: CatalogLessonItemPort,
 ): CatalogMappedItem {
-  return skippedItem(item, "malformed");
+  const choices = item.options.map((option) => koOf(port, option.ko));
+  const answerIndex = correctIndex(item.options);
+  if (!hasTwo(choices) || choices.includes("") || answerIndex < 0) {
+    return skippedItem(item, "malformed");
+  }
+  const correct = item.options[answerIndex];
+  const path = item.stimulus.imageUrl;
+  const url = path === undefined ? null : port.imageUrlOf(path);
+  if (url === null) return skippedItem(item, "image-missing");
+  const prompt = latinOf(port, correct?.en) ?? port.glossOf(item.ref);
+  if (prompt === undefined || prompt === null) return skippedItem(item, "no-gloss");
+  const question: WordChoiceQuestion = {
+    prompt,
+    choices,
+    answerIndex,
+    ...optionalField("instruction", instructionOf(port, item.prompt)),
+    picture: { url, answerRomanization: latinOf(port, correct?.roman) ?? null },
+  };
+  return { kind: "word-choice", itemId: item.id, question };
 }
