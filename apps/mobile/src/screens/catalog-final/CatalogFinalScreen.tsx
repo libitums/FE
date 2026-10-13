@@ -199,11 +199,13 @@ export function CatalogFinalScreen({
                 {turn.instruction}
               </text>
 
-              {/* 내 대답 줄입니다 — 놓인 타일이 순서대로 섭니다. 누르면 창고로 돌아갑니다. */}
+              {/* 내 대답 줄입니다 — 놓인 타일이 순서대로 섭니다. 누르면 창고로 돌아갑니다.
+                  줄은 **비었을 때만** 접근성 요소입니다 — 타일이 놓인 뒤에도 줄이 요소면 iOS에서
+                  안쪽 칩이 가려져 되돌릴 수 없습니다(튜토리얼 문장 순서의 줄과 같은 규칙). */}
               <view
                 className="catalog-final-screen-reply"
                 data-testid="catalog-final-screen-reply"
-                accessibility-element={true}
+                accessibility-element={state.placed.length === 0}
                 accessibility-label={
                   state.placed.length === 0
                     ? copy.catalogFinal.replyEmpty

@@ -149,6 +149,7 @@ describe("CatalogFinalScreen", () => {
       within(screen.getByTestId("catalog-final-screen-action")).queryByTestId("ui-lynx-button"),
     ).not.toBeInTheDocument();
     expect(reply()).toHaveAttribute("accessibility-label", "Your reply, empty");
+    expect(reply()).toHaveAttribute("accessibility-element", "true");
   });
 
   test("UF2. 창고 칩을 탭하면 대답 줄로 가고 그 자리는 빈 칸이 되며 다시 탭하면 돌아온다", () => {
@@ -160,6 +161,8 @@ describe("CatalogFinalScreen", () => {
       "data-placed",
       "1",
     );
+    // 타일이 놓이면 줄은 접근성 요소가 아닙니다 — 줄이 요소면 iOS에서 안쪽 칩이 가려져 되돌릴 수 없습니다.
+    expect(reply()).toHaveAttribute("accessibility-element", "false");
     expect(within(bank()).queryByTestId("sentence-order-chip-0")).not.toBeInTheDocument();
     expect(within(bank()).getByTestId("sentence-order-bank-slot-0")).toBeInTheDocument();
     expect(
