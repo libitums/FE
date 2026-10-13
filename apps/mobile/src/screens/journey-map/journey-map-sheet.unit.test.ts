@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   initialStepSheetState,
+  mapBottomInset,
+  stepSheetCaretOffset,
   stepSheetPlacement,
   stepSheetProgress,
   stepSheetReducer,
@@ -202,5 +204,37 @@ describe("stepSheetReducer — anchorStep", () => {
     });
 
     expect(next).toBe(state);
+  });
+});
+
+describe("stepSheetCaretOffset", () => {
+  it("SC1. 유닛 중심 − 화면 중심이다", () => {
+    expect(stepSheetCaretOffset(120, 201, 105)).toBe(-81);
+    expect(stepSheetCaretOffset(282, 201, 105)).toBe(81);
+  });
+
+  it("SC2. 한도 밖은 ±한도로 가둔다", () => {
+    expect(stepSheetCaretOffset(10, 201, 105)).toBe(-105);
+    expect(stepSheetCaretOffset(400, 201, 105)).toBe(105);
+  });
+
+  it("SC3. 둘 중 하나라도 모르면 0이다", () => {
+    expect(stepSheetCaretOffset(null, 201, 105)).toBe(0);
+    expect(stepSheetCaretOffset(120, null, 105)).toBe(0);
+  });
+
+  it("SC4. 바텀 네비게이션 높이는 68이고 기존 배치 계산은 그대로다", () => {
+    expect(mapBottomInset).toBe(68);
+    // anchorLimit = 812 − 68 − 16 − 250 = 478, 유닛 중심 750이 설 자리는 가운데 406.
+    expect(
+      stepSheetPlacement({
+        unitTop: 700,
+        scrollViewTop: 0,
+        scrollViewHeight: 812,
+        screenTop: 0,
+        screenHeight: 812,
+        scrollTop: 0,
+      }),
+    ).toEqual({ targetScrollTop: 344, anchorY: 800, anchorLimit: 478 });
   });
 });
