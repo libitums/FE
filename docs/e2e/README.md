@@ -117,4 +117,6 @@ UI 언어 문구표(영어 UI 둘러보기 · VoiceOver 낭독 · 레이아웃 �
 
 학습 화면이 큰 글꼴 · 낮은 화면에서 지시문 · 무대 · 작업 영역을 한 스크롤로 합치는 것(보기에 닿는가 · 지시문이 가려지지 않는가 · 글꼴 2.0 이하의 모습이 한 행도 안 바뀌는가 · 아래 흐림 · 진입 직후의 재배치)의 수동 흐름은 [학습 껍데기 큰 글꼴 e2e](learning-shell-large-font.md)에 있다. 결정은 [ADR-0022](../adr/0022-scroll-regions-and-fixed-affordances.md) D1-2의 갈래가 진다. Android 에뮬레이터 한 대(Pixel_8 · API 37)에서 2026-10-09에 세 회차가 돌았다 — 첫 회차는 흐림 결함으로 FAIL, 수정 뒤 재실행이 PASS(재실행 범위), 3회차가 답한 직후 판정 배지(L10)와 TalkBack 쓸기 순서(L11)를 판정해 PASS. 문항 전환 뒤 맨 위(L9)는 제품 데이터상 닿지 못했고 **iOS는 실행된 회차가 없다** — 항목별 상태는 그 문서의 「실행 상태」가 진다.
 
+크래시 리포팅(Android 호스트의 Sentry — DSN 없이 빌드 · 초기화 안 됨 · JS 예외 탐침 P1 ~ P4, DSN 발급 뒤 세션 · 이슈 · 지우기 · 매핑 · tombstone · 식별자 없음 · 측정 쿼리)의 수동 흐름은 [크래시 리포팅 e2e](crash-reporting.md)에 있다. A(DSN 없이)와 B(DSN 발급 뒤 — 대기)로 나뉘며 아직 실행된 회차가 없다.
+
 iOS 출시 전에 실기에서 확인할 **출시 조건**의 목록은 [iOS 출시 확인 목록](ios-release-checks.md)에 있다(Android 쪽은 [Android 출시 설정](android-release-config.md) R9의 확인 목록). 흐름이 아니라 목록이다 — 각 행의 절차는 그 행이 가리키는 흐름 문서에 있다. 첫 행은 학습 문항 안내의 VoiceOver · 실기 모습 넷(i1 ~ i4, [ADR-0054](../adr/0054-learning-item-guides.md))이고 아직 아무도 하지 않았다.
