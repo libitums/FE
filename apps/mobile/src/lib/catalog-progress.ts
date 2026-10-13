@@ -76,3 +76,9 @@ export function markCatalogUnitDone(
 export function isCatalogEpisodePassed(progress: CatalogProgress, episodeId: string): boolean {
   return isCatalogUnitDone(progress, episodeId, CATALOG_FINAL_KEY);
 }
+
+/** 최종 테스트(RP)를 통과한 에피소드 수입니다 — 트로피에 더합니다. */
+export function passedCatalogEpisodeCount(progress: CatalogProgress): number {
+  return Object.keys(progress).filter((episodeId) => isCatalogEpisodePassed(progress, episodeId))
+    .length;
+}
