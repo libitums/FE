@@ -6,6 +6,29 @@
 	<string>Duru</string>
 	<!-- dev 서버가 localhost 평문 HTTP다. 임의 HTTP를 여는 NSAllowsArbitraryLoads가
 	     아니라 로컬 네트워킹만 여는 좁은 키를 쓴다 (ADR-0012 D2). -->
+	<!-- Meta 앱 이벤트 SDK(ADR-0057). 앱 ID · 클라이언트 토큰은 Config/Meta.xcconfig에서 들어온다.
+	     비어 있으면 SDK를 시작하지 않는다. ATT 문구(NSUserTrackingUsageDescription)와 URL scheme은 두지 않는다. -->
+	<key>FacebookAppID</key>
+	<string>$(META_APP_ID)</string>
+	<key>FacebookClientToken</key>
+	<string>$(META_CLIENT_TOKEN)</string>
+	<key>FacebookDisplayName</key>
+	<string>Duru</string>
+	<key>FacebookAutoLogAppEventsEnabled</key>
+	<true/>
+	<key>FacebookAdvertiserIDCollectionEnabled</key>
+	<false/>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>v9wttpbfk9.skadnetwork</string>
+		</dict>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>n38lu8286q.skadnetwork</string>
+		</dict>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

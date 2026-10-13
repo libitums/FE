@@ -44,6 +44,17 @@ abstract class SyncHostAudioAssets extends DefaultTask {
   }
 }
 
+// Meta 앱 이벤트 값은 추적하지 않는 meta.properties에서 읽는다. 없거나 비어 있으면 빈 문자열이고,
+// 그때 호스트는 SDK를 건드리지 않는다(MetaAppEventsConfig). manifestPlaceholders로는 보내지 않는다.
+def metaProperties = new Properties()
+def metaPropertiesFile = file('meta.properties')
+if (metaPropertiesFile.exists()) {
+  metaPropertiesFile.withInputStream { metaProperties.load(it) }
+}
+def metaValue = { String key ->
+  (metaProperties.getProperty(key) ?: '').trim().replace('\\', '\\\\').replace('"', '\\"')
+}
+
 android {
   namespace 'com.libitum.host'
   compileSdk 36
@@ -56,6 +67,8 @@ android {
     versionCode 2
     versionName '0.1.0'
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    buildConfigField 'String', 'META_APP_ID', "\"${metaValue('META_APP_ID')}\""
+    buildConfigField 'String', 'META_CLIENT_TOKEN', "\"${metaValue('META_CLIENT_TOKEN')}\""
   }
 
   buildTypes {
@@ -122,6 +135,7 @@ dependencies {
   implementation 'androidx.browser:browser:1.8.0'
   implementation 'androidx.core:core:1.15.0'
   implementation 'com.google.android.play:review:2.0.2'
+  implementation 'com.facebook.android:facebook-core:18.3.0'
   implementation platform('com.google.firebase:firebase-bom:34.19.0')
   implementation 'com.google.firebase:firebase-messaging'
 

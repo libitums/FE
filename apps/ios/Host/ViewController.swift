@@ -50,6 +50,11 @@ final class ViewController: UIViewController {
       config.register(PushNotificationModule.self)
       // 열한째 — iOS 기본 평점 창 요청(ADR-0036). 언제 청할지는 JS가 정한다.
       config.register(AppReviewModule.self)
+      // Meta 앱 이벤트 전달(ADR-0057). **설정이 있어 SDK가 시작된 빌드에서만** 등록한다 —
+      // 없으면 JS의 `NativeModules`에 이 이름이 없고, 그것이 「보낼 곳 없음」의 신호다.
+      if MetaAppEvents.isStarted {
+        config.register(MetaAppEventsModule.self)
+      }
       builder.config = config
       // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).
       // 이미지 서비스는 generic resource fetcher가 켜져 있을 때만 `shouldRedirectUrl`을

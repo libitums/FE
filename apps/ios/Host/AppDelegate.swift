@@ -16,6 +16,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // 알림을 눌러 앱이 켜진 경우에도 그 응답을 받으려면 실행이 끝나기 전에 대리자를 둬야 한다(ADR-0034).
     UNUserNotificationCenter.current().delegate = PushNotificationHub.shared
 
+    // Meta 앱 이벤트(ADR-0057). 설정이 없으면 SDK를 한 줄도 부르지 않는다 — 이 앱은 이 SDK가 없을 때와 같다.
+    if let config = MetaAppEventsConfig.fromBundle() {
+      MetaAppEvents.start(config, application: application, launchOptions: launchOptions)
+    }
+
     let environment = LynxEnv.sharedInstance()
     performanceCapture = LynxPerformanceCapture.makeIfEnabled(
       arguments: ProcessInfo.processInfo.arguments

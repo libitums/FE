@@ -555,7 +555,7 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 ### 2026-10-13 (브랜치 `feat/episode-catalog-lessons`) — 레슨이 열리면서 D15의 「잠긴 채 보인다」가 사슬이 되고, D10의 마지막 자리 뒤에 통과 뒤 컷이 붙었다
 
-**뒤집힌 결론이 0건이다.** 결정은 [ADR-0057](0057-catalog-learning-session.md)이 진다. 여기 적는 것은 이 문서의 문면이 그때의 상태가 된 자리다.
+**뒤집힌 결론이 0건이다.** 결정은 [ADR-0058](0058-catalog-learning-session.md)이 진다. 여기 적는 것은 이 문서의 문면이 그때의 상태가 된 자리다.
 
 - **D15 — 「레슨 · 최종 노드는 늘 잠김」 · 「낭독 `Lesson 1, coming soon, locked`」 · 준비된 구획의 `COMING SOON` 캡션은 3b-2의 상태다.**
   이제 사슬 `intro → 레슨들 → RP`로 열린다 — 끝낸 유닛은 `completed`(다시 풀 수 있다), 바로 앞을 끝냈으면 `available`, 아니면 `locked`(눌러도 아무 일 없음).
@@ -710,7 +710,7 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 ### 2026-10-13 — 카탈로그 레슨 · 최종 테스트 · 통과 뒤 컷이 열렸다 (3c)
 
-위 `정정 기록` 2026-10-13과 [ADR-0057](0057-catalog-learning-session.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
+위 `정정 기록` 2026-10-13과 [ADR-0058](0058-catalog-learning-session.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
 
 - **노드 상태**: `screens/journey-map/catalog-map.ts`(`catalogUnitStatus` · `canStartCatalogUnit` · `catalogUnitNodesOf`)와 `CatalogUnitNode.tsx`.
 - **세션**: 수업 계획 `app/catalog-lesson-plan.ts`, 결선 `app/catalog-lesson-wiring.ts` · `app/catalog-wiring.ts`, 렌더 `app/render-catalog.tsx`(route 넷).

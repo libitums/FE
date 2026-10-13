@@ -350,7 +350,7 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   **`app/`은 이 규칙 밖이다**(루트가 화면을 결선하므로 값도 가져온다).
 - **값 import 예외는 아래 표가 전부다** ⟨2026-10-13⟩. 카탈로그 화면이 튜토리얼 화면의 부품을 다시 쓰는데,
   그 부품을 `components/`로 옮기면 **파일 경로를 읽는** 기존 테스트 · 도구 허용 목록이 함께 바뀐다 — 튜토리얼
-  테스트를 고치지 않는다는 조건과 부딪혀 제자리에 뒀다([ADR-0057](../adr/0057-catalog-learning-session.md) D14).
+  테스트를 고치지 않는다는 조건과 부딪혀 제자리에 뒀다([ADR-0058](../adr/0058-catalog-learning-session.md) D14).
   부품 쪽은 소비 화면을 import하지 않는다(`import/no-cycle` 성립). **표에 없는 값 import는 여전히 금지다** —
   새 자리가 필요하면 표에 행을 더하기 전에 승격을 먼저 본다.
 
