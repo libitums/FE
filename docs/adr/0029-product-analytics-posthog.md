@@ -270,6 +270,19 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - ⚠ sink 이름과 책임의 어긋남이 더 커졌다 — 학습 이벤트까지 `episodeIntroEventSink`가 진다. 새 sink를 만들면 sink 목록을 펼치는 테스트 · 진입점 · App props가
     행동 변화 없이 바뀌어 미뤘다([ADR-0057](0057-catalog-learning-session.md) 「버린 대안」 8).
   - PostHog에 실제로 도착했는지는 보지 않았다 — unit · integration의 sink 호출까지다.
+- ⟨2026-10-13 — 3d-1 단어 카드 · 짝 맞추기 · 그림 고르기. 적용 기록이고 결정을 바꾸지 않는다⟩ **새 이벤트는 없고 이름은 33개 그대로다.**
+  `episode_lesson_started`에 속성 하나가 더해졌다.
+  - **`shownItemCount`**(10진 문자열) — 그 유닛에서 화면에 서는 문항 수다(**채점 문항 + 단어 카드**). 최종 테스트는 턴 수와 같다.
+  - **`questionCount`는 「채점 문항 수」로 뜻을 유지한다**(`started` · `finished` 둘 다). 단어 카드는 채점하지 않아 여기 들지 않는다. 3c까지는 표시 = 채점이었으므로
+    과거 데이터와 같은 뜻으로 이어진다 — **`shownItemCount`가 없는 3c 이벤트는 그 값이 `questionCount`와 같다고 읽는다.** 위 3c 기록의 「제시 문항 · 턴 수」는 그 시점의 문면이다.
+  - `episode_lesson_finished` · `episode_final_passed`는 모양이 그대로다. `finished`에 같은 값을 싣지 않은 이유 — 완료율은 `finished` / `started`로 보고 카드 수는 `started`에서 읽으면 된다.
+  - 예: u01 `S1`의 시작 이벤트는 `shownItemCount "6"` · `questionCount "3"` · `skippedItemCount "2"`(카드 셋 + 빈칸 채우기 셋, 그림 문항 둘은 그림이 없어 건너뜀)이고
+    끝 이벤트의 `questionCount`는 `"3"`이다.
+  - 불변식(분석 쪽 점검용): `shownItemCount + skippedItemCount` = 그 유닛의 문항 수, `correctCount ≤ questionCount ≤ shownItemCount`.
+  - 묻는 질문: 「새 유형이 들어온 전후로 레슨 완료율이 어떻게 바뀌는가」 = 유닛별 `finished(verdict = passed)` / `started`를 앱 버전 · 날짜로 가른다.
+    새 유형이 든 유닛은 `shownItemCount − questionCount > 0`(카드 수)과 `skippedItemCount` 감소로 식별한다. 대시보드 인사이트 추가는 이 회차 범위 밖이다.
+  - **한계** — 카드에서의 이탈과 채점 문항에서의 이탈을 가르지 못한다. 그림 로드 실패 횟수는 세지 않는다(지금 데이터에 그림 문항이 0이라 잴 것이 없다 —
+    [ADR-0057](0057-catalog-learning-session.md) 적용 기록 A6). PostHog 도착은 이번에도 보지 않았다.
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 
