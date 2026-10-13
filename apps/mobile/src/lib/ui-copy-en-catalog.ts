@@ -38,6 +38,9 @@ export const catalogCoverEn: CatalogCoverCopy = {
   finishCover: "Finish intro",
   finishEpilogue: "Finish episode",
   thinking: "thinking",
+  episodeStart: "Episode start!",
+  episodeClear: "Episode clear!",
+  skipDescription: "You can watch it again anytime from the episode intro.",
 };
 
 export const typingEn: TypingCopy = {

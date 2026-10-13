@@ -1,0 +1,70 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). CSS 상속이 꺼져 있어 글자
+   요소에 색 · 타이포를 직접 적습니다. */
+
+/* 검정 면 위에 브랜드 주황 글자 한 줄이 서는 배너입니다. 면은 가장자리까지 깔립니다. */
+.episode-banner-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: var(--libitum-color-black);
+}
+
+/* 가장자리 여백 상자입니다. 여백 값은 인라인 스타일이 집니다. */
+.episode-banner-screen-safe {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.episode-banner-screen-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: var(--libitum-layout-screen-padding-x);
+}
+
+/* 글자 상자에는 폭 · 높이 · 줄 수 제한을 걸지 않습니다 — 큰 글자에서는 줄이 바뀝니다. */
+.episode-banner-screen-text {
+  color: var(--libitum-color-brand-primary);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+  text-align: center;
+}
+
+/* 등장 모션입니다. 작게 시작해 제자리로 커지며 나타납니다. 시작 크기는 모션 토큰
+   scale.reward 변수를 씁니다. */
+@keyframes episode-banner-screen-text-reward {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 동작 줄이기: 크기 변화 없이 불투명도만 바뀝니다. */
+@keyframes episode-banner-screen-text-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.episode-banner-screen-text-motion-reward {
+  animation: episode-banner-screen-text-reward var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.episode-banner-screen-text-motion-fade {
+  animation: episode-banner-screen-text-fade var(--libitum-motion-duration-d2)
+    var(--libitum-motion-easing-linear) both;
+}

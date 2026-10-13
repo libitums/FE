@@ -247,6 +247,8 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
     `episode_intro_exited`(`stage: "prologue"`), 마지막 컷의 `Continue` `episode_prologue_completed`. 튜토리얼과는
     `episodeId`로 갈린다(`tutorial` vs `u01-water` …). 완료의 `prologueKind`에 값 **`"cuts"`**가 하나 늘었다
     (`EpisodePrologue["kind"] | "cuts"`). 컷 화면에는 `Skip`이 없어 `episode_intro_skipped` · `continued`는 나지 않는다.
+    ⟨2026-10-14⟩ **이 마지막 문장은 3b-2 ~ 3d-2 빌드의 것이다** — 표지 유닛이 컷 앞에 표지 화면(`Skip` · `Next`)을 세우게 되어 이제 둘 다 난다.
+    발생 시점은 아래 ⟨2026-10-14⟩ 기록이 진다.
   - **새 이름 `episode_content_refreshed`** — 에피소드 콘텐츠 갱신([ADR-0056](0056-episode-content-delivery.md))이
     끝났고 **매니페스트를 받았을 때만**(`manifest ≠ unavailable`), 그중 `unchanged`이면서 받은 · 잠근 · 실패한 ·
     지운 것이 모두 없는 실행은 빼고, 실행마다 최대 1회. 속성은 `manifest`(`updated` | `unchanged` | `invalid`) ·
@@ -299,6 +301,29 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - sink는 새로 만들지 않았다 — 온보딩 `entryEventSink` · 에피소드 전 `episodeIntroEventSink` · 설정 `settingsEventSink`. 셋째 계약 union에 같은 이벤트 타입이 들어간다.
   - 묻는 질문: 「학습자가 이름 · 나라를 넣는가」 = 진입점별 `saved` / (`saved` + `skipped`). 건너뜀 비율이 높으면 ADR-0059 재검토 조건 5.
   - **한계** — 에피소드 전 화면이 보인 수는 세지 않는다(보임 이벤트 없음 — 뒤로 나간 수는 모른다). GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다. PostHog 도착은 보지 않았다.
+- ⟨2026-10-14 — 카탈로그 표지 화면 · 시작/클리어 배너. 적용 기록이고 결정을 바꾸지 않는다⟩ **카탈로그 표지에서도 서사 이벤트 다섯이 모두 난다.**
+  새 이름 · 속성 · 타입은 **0**이고 sink도 그대로다 — 이미 있는 이벤트를 카탈로그 `episodeId`로 낸다. 바뀐 것은 발생 시점이다
+  (화면과 결선은 [ADR-0058](0058-catalog-learning-session.md) 적용 기록 ⟨2026-10-14⟩).
+
+  | 이벤트 | 속성 | 카탈로그 표지에서의 발생 시점 | 바뀜 |
+  |---|---|---|---|
+  | `episode_intro_viewed` | `episodeId` | 표지 노드 탭이 시작 가드(와 학습자 프로필 가드)를 지나 화면을 쌓기 직전. 끝낸 표지를 다시 열어도 난다 | 불변(이제 정말 표지 화면이 선다) |
+  | `episode_intro_skipped` | `episodeId` | 확인 모달에서 건너뛰기를 골랐을 때. `Skip` 버튼만으로는 나지 않는다 | **새로 난다** |
+  | `episode_intro_continued` | `episodeId` · `hasPrologue: true` | 표지 화면의 `Next` | **새로 난다** |
+  | `episode_intro_exited` | `episodeId` · `stage` | 표지 화면에서 뒤로(`"intro"`) · 컷에서 나가기(`"prologue"`). 시스템 뒤로 포함 | `"intro"`가 **새로 난다** |
+  | `episode_prologue_completed` | `episodeId` · `prologueKind: "cuts"` | 마지막 컷의 버튼 — 배너가 서기 **전**. 건너뛰기에서는 나지 않는다 | 불변 |
+
+  - 묻는 질문: 「카탈로그 표지를 얼마나 건너뛰는가」 = `episode_intro_skipped` ÷ `episode_intro_viewed`(`episodeId`가 카탈로그 id인 것).
+    보조로 「이어 간 사람이 컷을 끝까지 보는가」 = `episode_prologue_completed` ÷ `episode_intro_continued`.
+  - **분모 읽는 법** — `episode_intro_viewed`는 컷이 없는 에피소드에서도 나고(곧장 완료) 그때는 건너뛸 화면이 없다. 실데이터에는 그런 에피소드가 없다.
+    학습자 프로필 가드가 서면 가드를 지난 **뒤에** 나므로 가드에서 뒤로 간 방문은 분모에 없다.
+  - 한 번의 표지 방문은 `skipped` · `exited` · (`continued` → `exited(prologue)` 또는 `completed`) 가운데 하나로 끝난다.
+  - `hasPrologue`가 늘 `true`인 것은 이 route가 컷이 있을 때만 쌓이기 때문이다.
+  - **해석 단절** — 이 변경 이전 빌드에서는 카탈로그 id의 `skipped` · `continued` · `exited(intro)`가 0이었다(화면이 없었다). 비율은 이 변경이 든 출시 버전 이후로 걸러 본다.
+  - 통과 뒤 컷과 「Episode clear!」 배너에는 이벤트가 없다. 배너가 어떻게 닫혔는지(시간 · 탭)도 재지 않는다.
+  - Meta 앱 이벤트 전달([ADR-0057](0057-meta-app-events.md))은 이 이벤트들을 옮기지 않아 영향이 없다.
+  - **한계** — PostHog 도착은 이번에도 보지 않았다. **GitHub wiki 이벤트 사전은 저장소 밖이라 이 변경에 들어 있지 않다** — 위 표 · `stage: "intro"` · 건너뛰기 비율의 정의 · 해석 단절을 따로 옮겨야 한다(후속). **⟨2026-10-14 사용자 결정⟩ 이미 끝낸 표지를 다시 열어 건너뛴 것은 세지 않는다** — 진행에 `intro`가 있으면 `episode_intro_skipped`를 내지 않고 맵으로만 돌아간다(진행 기록도 다시 하지 않는다). `episode_intro_viewed`는 다시 열 때도 나므로 건너뛰기 비율의 분모는 에피소드별 **첫 조회**로 잡아야 한다.
+    `screens/episode-intro/episode-intro.contract.ts`의 이벤트 설명 주석은 튜토리얼만 말한다 — 카탈로그에서의 시점은 이 기록이 진다.
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 

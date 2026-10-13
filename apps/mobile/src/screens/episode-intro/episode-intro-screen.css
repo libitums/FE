@@ -61,6 +61,11 @@
   background-image: linear-gradient(to top, #1b1613, rgba(27, 22, 19, 0));
 }
 
+/* 긴 이름이 큰 글자에서 넘쳐도 눌리지 않게 합니다. */
+.episode-intro-screen-back {
+  flex-shrink: 0;
+}
+
 .episode-intro-screen-top {
   z-index: 1;
   display: flex;
@@ -74,6 +79,13 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--libitum-spacing-4);
+}
+
+/* 이름을 줄로 나눠 그릴 때의 묶음입니다 — 줄 사이에 간격을 두지 않습니다. */
+.episode-intro-screen-title-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .episode-intro-screen-label {
@@ -99,6 +111,7 @@
    글자가 커지거나 낱말이 길어지면 `Skip`이 자라고 `Next`가 그만큼 줄어듭니다. */
 .episode-intro-screen-actions {
   z-index: 1;
+  flex-shrink: 0;
   display: flex;
   flex-direction: row;
   align-items: stretch;

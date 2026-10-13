@@ -25,6 +25,7 @@ import { sha256Hex, utf8Bytes } from "../lib/sha256";
 import { systemBackEventName } from "../lib/system-back";
 import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
+import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { journeySteps } from "../screens/journey-map/journey-map";
 
 // `integration` 계층: 앱 세션에서 「맵 레슨 노드 → 활동들 → 결과 → 진행 기록 → 다음 노드 열림」과
@@ -217,6 +218,22 @@ const status = (episodeId: string, key: string) => node(episodeId, key).getAttri
 const cover = (episodeId: string) =>
   screen.getByTestId(`ui-lynx-learning-unit-catalog-cover-${episodeId}`);
 const tapNext = () => tapButtonIn("catalog-cover-screen-next");
+const tapIntroNext = () => tapButtonIn("episode-intro-screen-next");
+// 배너의 유지 시간만 가짜 시계로 밉니다 - 통과 뒤 컷 앞에서 켜고 `passBanner`가 실제 시계로 되돌립니다.
+const useBannerClock = () => void vi.useFakeTimers();
+async function settleFake(): Promise<void> {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+  });
+}
+function passBanner(): void {
+  if (screen.queryByTestId("episode-banner-screen") !== null) {
+    act(() => {
+      vi.advanceTimersByTime(EPISODE_BANNER_HOLD_MS);
+    });
+  }
+  vi.useRealTimers();
+}
 const exitResult = () => tapButtonIn("lesson-complete-screen-exit");
 
 function readAllCuts(count: number): void {
@@ -598,13 +615,23 @@ test("L6. (AC6) 최종 테스트: 턴을 타일로 맞히면 결과 → 통과 �
   );
   solveFinal(plan.turns, true);
   expect(title()).toHaveTextContent("PERFECT LESSON!");
+  useBannerClock();
   exitResult();
 
   expect(screen.getByTestId("catalog-cover-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("episode-intro-screen")).not.toBeInTheDocument();
   expect(screen.queryByTestId("catalog-final-screen")).not.toBeInTheDocument();
   readAllCuts(3);
+  await settleFake();
+
+  const banner = screen.getByTestId("episode-banner-screen");
+  expect(banner).toHaveAttribute("data-kind", "clear");
+  expect(banner).toHaveAttribute("accessibility-label", "Episode clear!");
+  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  passBanner();
   await flush();
 
+  expect(screen.queryByTestId("episode-banner-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(status(u01, "RP")).toBe("clear");
   expect(cover(u02)).toHaveAttribute("data-status", "available");
@@ -693,6 +720,7 @@ test("L8. 레슨 도중 나가기 · 최종 도중 시스템 뒤로는 기록 �
   tapRoundIn("catalog-cover-screen-back");
   await flush();
 
+  expect(screen.queryByTestId("episode-banner-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(status(u01, "RP")).toBe("clear");
   expect(cover(u02)).toHaveAttribute("data-status", "available");
@@ -701,6 +729,7 @@ test("L8. 레슨 도중 나가기 · 최종 도중 시스템 뒤로는 기록 �
 test("L9. (AC7) 컷의 새 그림이 error를 내면 이전 그림 층이 걷히고 실패 상태가 되며 글과 버튼은 그대로다", async () => {
   await boot({ progress: {} });
   fireEvent.tap(cover(u01), {});
+  tapIntroNext();
   readAllCuts(2);
 
   expect(screen.getByTestId("narrative-background-previous-motion")).toBeInTheDocument();
@@ -788,7 +817,7 @@ test("L12. 카탈로그 학습을 하지 않은 실행은 학습 이벤트를 �
   const { events } = await boot({ progress: {} });
 
   fireEvent.tap(cover(u01), {});
-  tapRoundIn("catalog-cover-screen-back");
+  tapRoundIn("episode-intro-screen-back");
 
   expect(learningEvents(events)).toEqual([]);
 });

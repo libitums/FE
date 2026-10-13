@@ -18,6 +18,7 @@ import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-
 import { fillPlaceholders } from "../lib/placeholder-fill";
 import { systemBackEventName } from "../lib/system-back";
 import { uiCopyEn } from "../lib/ui-copy-en";
+import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { journeySteps } from "../screens/journey-map/journey-map";
 
 // `integration` 계층(3d-2): 이름 · 나라가 「온보딩 넷째 스텝 -> 로그인 -> 업로드」, 「에피소드 전 묻기 -> 저장 / 건너뜀 ->
@@ -350,13 +351,27 @@ async function signedOutToApp(): Promise<void> {
 function tapCoverNext(): void {
   tapButtonIn("catalog-cover-screen-next");
 }
-/** 표지 컷을 모두 넘겨 맵으로 돌아옵니다. 대사를 쓰는 중이면 첫 탭은 완성이라 한 번 더 누릅니다. */
+function tapIntroNext(): void {
+  tapButtonIn("episode-intro-screen-next");
+}
+/**
+ * 표지의 Next → 컷을 모두 넘김 → 배너를 지나 맵으로 돌아옵니다. 대사를 쓰는 중이면 첫 탭은 완성이라 한 번 더
+ * 누릅니다. 배너의 유지 시간만 가짜 시계로 밀고 끝에 실제 시계로 되돌립니다.
+ */
 function finishCover(): void {
+  tapIntroNext();
+  vi.useFakeTimers();
   for (let guard = 0; guard < 30 && present("catalog-cover-screen"); guard += 1) {
     const dialog = screen.queryByTestId("ui-lynx-visual-novel-dialog");
     if (dialog?.getAttribute("data-status") === "revealing") tapCoverNext();
     tapCoverNext();
   }
+  if (present("episode-banner-screen")) {
+    act(() => {
+      vi.advanceTimersByTime(EPISODE_BANNER_HOLD_MS);
+    });
+  }
+  vi.useRealTimers();
 }
 
 const learnerNames = (list: readonly NamedEvent[]): NamedEvent[] =>
@@ -448,7 +463,7 @@ test("P1. (AC1) 온보딩 넷째 스텝의 이름 · 나라가 손님 칸에 서
   expectNoProfileValues(events);
 });
 
-test("P2. (AC2) 기록이 없으면 u02 표지를 열 때 묻고 저장하면 표지 컷이 서며 컷에서 뒤로 가면 맵이다", async () => {
+test("P2. (AC2) 기록이 없으면 u02 표지를 열 때 묻고 저장하면 표지 화면이 서며 Next 뒤 컷에서 뒤로 가면 맵이다", async () => {
   const { events } = await boot({ progress: atU02Cover });
 
   tapCover(u02);
@@ -461,12 +476,15 @@ test("P2. (AC2) 기록이 없으면 u02 표지를 열 때 묻고 저장하면 �
   submitGate();
 
   expect(present("learner-profile-gate-screen")).toBe(false);
-  expect(present("catalog-cover-screen")).toBe(true);
+  expect(present("episode-intro-screen")).toBe(true);
+  expect(present("catalog-cover-screen")).toBe(false);
   expect(learnerNames(events.episode)).toEqual([
     { name: "learner_profile_saved", entry: "episode", change: "created" },
   ]);
   expect(events.episode.filter((event) => event.name === "episode_intro_viewed")).toHaveLength(1);
 
+  tapIntroNext();
+  expect(present("catalog-cover-screen")).toBe(true);
   fireEvent.tap(
     within(screen.getByTestId("catalog-cover-screen-back")).getByTestId("ui-lynx-round-button"),
     {},
@@ -476,7 +494,7 @@ test("P2. (AC2) 기록이 없으면 u02 표지를 열 때 묻고 저장하면 �
 
   tapCover(u02);
   expect(present("learner-profile-gate-screen")).toBe(false);
-  expect(present("catalog-cover-screen")).toBe(true);
+  expect(present("episode-intro-screen")).toBe(true);
   finishCover();
   await flush();
 

@@ -127,6 +127,11 @@ test("UC-L1. 카탈로그 학습 문구가 문구표 값과 같고 준비 중 �
   expect(c.catalogMap.nodeLabel("Episode 1.", "Lesson 1")).toBe("Episode 1. Lesson 1");
   expect("preparing" in c.catalogMap).toBe(false);
   expect(c.catalogCover.finishEpilogue).toBe("Finish episode");
+  expect(c.catalogCover.episodeStart).toBe("Episode start!");
+  expect(c.catalogCover.episodeClear).toBe("Episode clear!");
+  expect(c.catalogCover.skipDescription).toBe(
+    "You can watch it again anytime from the episode intro.",
+  );
   expect(c.typing.instruction).toBe("Type the sentence in Korean.");
   expect(c.typing.answerField("여권")).toBe("Your answer: 여권");
   expect(c.typing.answerFieldEmpty).toBe("Your answer, empty");

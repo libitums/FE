@@ -110,6 +110,13 @@
 - **재화 획득 모션은 자리가 없다** — `gemCount`는 setter 없는 `useState`, 보상 카드의 `+ 0 REWARD`는 placeholder, 젬 칩은 숨긴다. 그 카드는 배지와 같은 화면이라 「한 화면 한 번」에도 걸린다.
   조건(Q2, 5단계): 젬 지급 규칙이 생겨 수가 실제로 갱신되는 날, 「배지와 한 묶음」인지 「그 요소 단독」인지 정본에 묻고 연다.
 - *(3단계에서 정함 — ADR-0025 「3단계」.)*
+- ⟨2026-10-14 — 적용 기록이고 결정을 바꾸지 않는다⟩ **보상 조합(`reward` · `enter-expressive` · `scale.reward`)을 쓰는 자리가 둘이 됐다.** 첫 줄의 「통과 배지 하나」는 그때의 수다.
+  둘째 자리는 카탈로그 에피소드 배너의 글자다(`EpisodeBannerScreen` — 「Episode start!」 · 「Episode clear!」, [ADR-0058](0058-catalog-learning-session.md) 적용 기록 ⟨2026-10-14⟩ B4).
+  위 세 규칙은 그대로 지킨다 — ① **한 화면 한 번**: 배너 화면에 다른 모션이 없고 통과 배지와는 다른 화면이다. ② **순수 파생**: 변형은 `episodeBannerMotionOf(useMotion())`
+  (`"reward"` · `"fade"`)의 클래스이고 ref · phase · `key`가 없다. ③ **퇴장 없음**: 닫히면 다음 화면으로 즉시 바뀐다.
+  reduced 변형은 불투명도만(`d2` · `linear`)이고 `transform`이 없다. 새 토큰 · allowlist · `lint:motion` 규칙 변경은 0이다.
+  배너가 머무는 시간(1,600 ms)은 전환의 시간이 아니라 화면 상수이고 토큰이 아니다 — 그 근거는 ADR-0058 쪽이 진다.
+  ⚠ 기기에서는 배너가 서고 스스로 닫히는 것만 봤다 — **등장 모션의 체감과 reduced 변형은 미확인**이다([보상 모션 e2e](../e2e/motion-reward.md) 「둘째 자리」).
 
 ### D5. 전환은 등장만 있고 입력을 막지 않으며 타이머로 끝난다 — 진행 바 채움은 `progress` · `enter`로 차오르고, custom 화면 전환은 0이다
 
