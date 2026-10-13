@@ -118,3 +118,58 @@ export function autoScrollReducer(
 export function canSettleAutoScroll(state: AutoScrollState, domId: string): boolean {
   return !state.locked && state.pendingDomId === domId;
 }
+
+/** 도착 판정과 「보정이 필요 없다」에 같이 쓰는 허용오차(dp · pt)입니다 — 요청과 이벤트의 차가 0.2 ~ 0.7로 관찰됩니다. */
+export const autoScrollTolerance = 1;
+
+/** 도착한 뒤 다시 잰 값 → 한 번 더 옮길 목적지. 대상이 설 자리보다 위에 있을 때만 수를 냅니다. */
+export function autoScrollCorrection(
+  measure: AutoScrollMeasure,
+  placement: AutoScrollPlacement,
+  tolerance: number,
+): number | null {
+  const next = autoScrollOffset(measure, placement);
+  return measure.scrollTop - next > tolerance ? next : null;
+}
+
+export type AutoScrollCorrectionState =
+  | { readonly phase: "idle" }
+  /** 계산한 목적지로 보냈고, 그 자리에 닿기를 기다립니다. */
+  | { readonly phase: "travelling"; readonly domId: string; readonly offset: number }
+  /** 닿았고, 머리 카드와 대상을 다시 재는 중입니다. */
+  | { readonly phase: "measuring"; readonly domId: string };
+
+export type AutoScrollCorrectionAction =
+  | { readonly type: "sent"; readonly domId: string; readonly offset: number }
+  | { readonly type: "scroll"; readonly scrollTop: number }
+  | { readonly type: "cancel" }
+  | { readonly type: "done"; readonly domId: string };
+
+export const initialAutoScrollCorrectionState: AutoScrollCorrectionState = { phase: "idle" };
+
+/** 변화가 없으면 같은 참조를 돌려줍니다. */
+export function autoScrollCorrectionReducer(
+  state: AutoScrollCorrectionState,
+  action: AutoScrollCorrectionAction,
+  tolerance: number,
+): AutoScrollCorrectionState {
+  switch (action.type) {
+    case "sent":
+      return { phase: "travelling", domId: action.domId, offset: action.offset };
+    case "scroll":
+      return state.phase === "travelling" && Math.abs(action.scrollTop - state.offset) <= tolerance
+        ? { phase: "measuring", domId: state.domId }
+        : state;
+    case "cancel":
+      return state.phase === "idle" ? state : initialAutoScrollCorrectionState;
+    case "done":
+      return state.phase === "measuring" && state.domId === action.domId
+        ? initialAutoScrollCorrectionState
+        : state;
+  }
+}
+
+/** 다시 잰 답을 써도 되는가 — 아직 그 대상을 재는 중일 때만. */
+export function canCorrectAutoScroll(state: AutoScrollCorrectionState, domId: string): boolean {
+  return state.phase === "measuring" && state.domId === domId;
+}

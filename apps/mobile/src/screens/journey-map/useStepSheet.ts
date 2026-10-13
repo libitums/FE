@@ -3,19 +3,20 @@ import type { ScrollEvent } from "@lynx-js/types";
 
 import { useMotion } from "@libitums/ui-lynx/motion";
 import {
-  measureRects,
+  headerCardId,
+  measureRectsWithOptional,
   screenId,
   scrollId,
   scrollMapTo,
   scrollStepIntoView,
   stepNodeId,
 } from "./journey-map-scroll";
-import { mapScrollBehaviorFor } from "./journey-map-scroll-position";
+import { autoScrollPlacement, mapScrollBehaviorFor } from "./journey-map-scroll-position";
 import {
   initialStepSheetState,
   stepSheetCaretLimit,
   stepSheetCaretOffset,
-  stepSheetPlacement,
+  stepSheetPlacementBelowHeader,
   stepSheetReducer,
   stepSheetTop,
   stepUnitSize,
@@ -84,38 +85,50 @@ export function useStepSheet(): StepSheetControls {
     // 그다음 유닛을 실제로 재서 자리를 바로잡고, 유닛을 스크롤 가운데로 옮깁니다 —
     // 탭 좌표는 손가락이 유닛의 어디를 눌렀는지에 따라 달라지므로, 그 값만으로는
     // 말풍선이 유닛에 맞지 않습니다. 못 재도 탭을 막지 않습니다: 말풍선은 이미 떴습니다.
-    measureRects([stepNodeId(id), scrollId, screenId], (rects) => {
-      "background only";
-      if (measuringStepId.current !== id) {
-        return;
-      }
-      // oxlint-disable-next-line react/immutability
-      measuringStepId.current = null;
-      const [unit, scroll, screen] = rects ?? [];
-      if (unit === undefined || scroll === undefined || screen === undefined) {
-        scrollStepIntoView(id, behavior);
-        return;
-      }
-      const scrollTop = latestScrollTop.current;
-      const placement = stepSheetPlacement({
-        unitTop: unit.top,
-        scrollViewTop: scroll.top,
-        scrollViewHeight: scroll.height,
-        screenTop: screen.top,
-        screenHeight: screen.height,
-        scrollTop,
-      });
-      dispatch({
-        type: "anchorStep",
-        stepId: id,
-        anchorY: placement.anchorY,
-        scrollTop,
-        anchorLimit: placement.anchorLimit,
-      });
-      setOpenScrollTop(scrollTop);
-      setCaretOffset(stepSheetCaretOffset(unit.centerX, screen.centerX, stepSheetCaretLimit));
-      scrollMapTo(placement.targetScrollTop, behavior);
-    });
+    // 머리 카드는 없어도 됩니다 — 못 재면 카드를 피하지 않고 말풍선은 지금처럼 섭니다.
+    measureRectsWithOptional(
+      [stepNodeId(id), scrollId, screenId],
+      [headerCardId],
+      (rects, [card]) => {
+        "background only";
+        if (measuringStepId.current !== id) {
+          return;
+        }
+        // oxlint-disable-next-line react/immutability
+        measuringStepId.current = null;
+        const [unit, scroll, screen] = rects ?? [];
+        if (unit === undefined || scroll === undefined || screen === undefined) {
+          scrollStepIntoView(id, behavior);
+          return;
+        }
+        const scrollTop = latestScrollTop.current;
+        const placement = stepSheetPlacementBelowHeader(
+          {
+            unitTop: unit.top,
+            scrollViewTop: scroll.top,
+            scrollViewHeight: scroll.height,
+            screenTop: screen.top,
+            screenHeight: screen.height,
+            scrollTop,
+          },
+          unit.centerX,
+          card === undefined || card === null
+            ? null
+            : { bottom: card.top + card.height, left: card.left, width: card.width },
+          autoScrollPlacement.gap,
+        );
+        dispatch({
+          type: "anchorStep",
+          stepId: id,
+          anchorY: placement.anchorY,
+          scrollTop,
+          anchorLimit: placement.anchorLimit,
+        });
+        setOpenScrollTop(scrollTop);
+        setCaretOffset(stepSheetCaretOffset(unit.centerX, screen.centerX, stepSheetCaretLimit));
+        scrollMapTo(placement.targetScrollTop, behavior);
+      },
+    );
   };
 
   const handleCloseSheet = () => {

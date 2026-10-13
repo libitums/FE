@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ScrollEvent } from "@lynx-js/types";
 
 import { useMotion } from "@libitums/ui-lynx/motion";
@@ -11,13 +11,20 @@ import {
   scrollNodeIntoView,
 } from "./journey-map-scroll";
 import {
+  autoScrollCorrection,
+  autoScrollCorrectionReducer,
   autoScrollOffset,
   autoScrollPlacement,
   autoScrollReducer,
+  autoScrollTolerance,
+  canCorrectAutoScroll,
   canSettleAutoScroll,
+  initialAutoScrollCorrectionState,
   initialAutoScrollState,
   mapScrollBehaviorFor,
   type AutoScrollAction,
+  type AutoScrollCorrectionAction,
+  type AutoScrollMeasure,
 } from "./journey-map-scroll-position";
 
 export type AutoScrollToNextInput = {
@@ -39,6 +46,10 @@ export type AutoScrollToNextControls = {
  * 맵은 다른 화면이 서면 언마운트되고 돌아오면 다시 마운트되므로, 입장과 복귀가 같은 규칙을
  * 탑니다. 진행은 마운트 **뒤에** 올 수 있어서(콜드 스타트) 「대상(DOM id)당 한 번, 사용자가
  * 손대기 전까지」입니다.
+ *
+ * 도착한 뒤에는 한 번 바로잡습니다 — 잰 순간의 카드가 도착한 자리의 카드와 다를 수 있어서(제목이 한
+ * 줄에서 두 줄이 되는 식) 대상이 정렬선보다 위로 숨을 수 있습니다. 도착은 스크롤 이벤트의 자리가
+ * 보낸 목적지와 맞는 것으로 알고, 다시 재는 일은 도착을 적은 상태가 커밋된 **뒤의** effect가 합니다.
  */
 export function useAutoScrollToNext({
   target,
@@ -51,12 +62,32 @@ export function useAutoScrollToNext({
   // 대상 객체는 매 렌더 새로 만들어지므로 effect는 DOM id 문자열에 겁니다.
   const targetDomId = target.kind === "unit" ? target.domId : null;
 
+  const correction = useRef(initialAutoScrollCorrectionState);
+  // 목적지에 닿은 대상의 DOM id입니다 — 다시 재는 effect를 커밋 뒤로 미루는 신호입니다.
+  const [arrivedDomId, setArrivedDomId] = useState<string | null>(null);
+
   const dispatch = (action: AutoScrollAction): void => {
     // oxlint-disable-next-line react/immutability
     state.current = autoScrollReducer(state.current, action);
   };
 
+  const dispatchCorrection = (action: AutoScrollCorrectionAction): void => {
+    // oxlint-disable-next-line react/immutability
+    correction.current = autoScrollCorrectionReducer(
+      correction.current,
+      action,
+      autoScrollTolerance,
+    );
+  };
+
+  const cancelCorrection = (): void => {
+    dispatchCorrection({ type: "cancel" });
+    setArrivedDomId(null);
+  };
+
   useEffect(() => {
+    // 새 대상(또는 대상 없음)의 이동이 앞의 보정을 덮습니다.
+    cancelCorrection();
     // 말풍선 · 가이드가 이깁니다 — 손이 닿은 것으로 치고 이 마운트에서 잠급니다.
     if (blocked) {
       dispatch({ type: "interact" });
@@ -83,32 +114,71 @@ export function useAutoScrollToNext({
         scrollNodeIntoView(pending, behavior);
         return;
       }
-      scrollMapTo(
-        autoScrollOffset(
-          {
-            targetTop: unit.top,
-            scrollViewTop: scroll.top,
-            scrollViewHeight: scroll.height,
-            headerBottom: header.top + header.height,
-            scrollTop: scrollTop.current,
-          },
-          autoScrollPlacement,
-        ),
-        behavior,
+      const offset = autoScrollOffset(
+        {
+          targetTop: unit.top,
+          scrollViewTop: scroll.top,
+          scrollViewHeight: scroll.height,
+          headerBottom: header.top + header.height,
+          scrollTop: scrollTop.current,
+        },
+        autoScrollPlacement,
       );
+      dispatchCorrection({ type: "sent", domId: pending, offset });
+      scrollMapTo(offset, behavior);
     });
   }, [targetDomId, blocked]);
+
+  // 도착한 뒤 카드와 대상을 다시 재서, 대상이 정렬선보다 위로 숨었으면 한 번 옮깁니다.
+  useEffect(() => {
+    if (arrivedDomId === null) {
+      return;
+    }
+    const domId = arrivedDomId;
+    measureRects([domId, scrollId, headerCardId], (rects) => {
+      // 재는 사이에 손댔거나 대상이 바뀌었으면 버립니다.
+      if (!canCorrectAutoScroll(correction.current, domId)) {
+        return;
+      }
+      dispatchCorrection({ type: "done", domId });
+      const [unit, scroll, header] = rects ?? [];
+      if (
+        state.current.locked ||
+        unit === undefined ||
+        scroll === undefined ||
+        header === undefined
+      ) {
+        return;
+      }
+      const measure: AutoScrollMeasure = {
+        targetTop: unit.top,
+        scrollViewTop: scroll.top,
+        scrollViewHeight: scroll.height,
+        headerBottom: header.top + header.height,
+        scrollTop: scrollTop.current,
+      };
+      const next = autoScrollCorrection(measure, autoScrollPlacement, autoScrollTolerance);
+      if (next !== null) {
+        scrollMapTo(next, behavior);
+      }
+    });
+  }, [arrivedDomId]);
 
   const handleScroll = (event: ScrollEvent): void => {
     "background only";
     // oxlint-disable-next-line react/immutability
     scrollTop.current = event.detail.scrollTop;
     dispatch({ type: "scroll", scrollTop: event.detail.scrollTop });
+    dispatchCorrection({ type: "scroll", scrollTop: event.detail.scrollTop });
+    if (correction.current.phase === "measuring") {
+      setArrivedDomId(correction.current.domId);
+    }
   };
 
   const handleTouchStart = (): void => {
     "background only";
     dispatch({ type: "interact" });
+    cancelCorrection();
   };
 
   return { handleScroll, handleTouchStart };

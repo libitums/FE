@@ -35,9 +35,41 @@ export type MeasuredRect = {
   readonly top: number;
   readonly height: number;
   readonly centerX: number | null;
+  readonly left: number | null;
+  readonly width: number | null;
 };
 
 export type MapScrollBehavior = "smooth" | "instant";
+
+// 요소 하나의 자리를 묻습니다. 못 재면(실패 · 값 없음 · 던짐) `null`을 냅니다.
+function queryRect(id: string, onRect: (rect: MeasuredRect | null) => void): void {
+  "background only";
+  try {
+    lynx
+      .createSelectorQuery()
+      .select(`#${id}`)
+      .invoke({
+        method: "boundingClientRect",
+        success: (
+          rect: { top?: number; height?: number; left?: number; width?: number } | null | undefined,
+        ) => {
+          if (typeof rect?.top !== "number" || typeof rect.height !== "number") {
+            onRect(null);
+            return;
+          }
+          // 가로 값을 못 읽어도 실패가 아닙니다 — 꼬리만 가운데로 남습니다.
+          const left = typeof rect.left === "number" ? rect.left : null;
+          const width = typeof rect.width === "number" ? rect.width : null;
+          const centerX = left !== null && width !== null ? left + width / 2 : null;
+          onRect({ top: rect.top, height: rect.height, centerX, left, width });
+        },
+        fail: () => onRect(null),
+      })
+      .exec();
+  } catch {
+    onRect(null);
+  }
+}
 
 // 요소 여럿의 자리를 한 번에 잽니다. 하나라도 못 재면 `null`을 냅니다 — 반쪽짜리 값으로
 // 자리를 계산하지 않습니다. 잴 것이 없으면 빈 답을 바로 냅니다 — 답이 영영 안 오는
@@ -47,54 +79,59 @@ export function measureRects(
   onDone: (rects: readonly MeasuredRect[] | null) => void,
 ): void {
   "background only";
+  measureRectsWithOptional(ids, [], (rects) => onDone(rects));
+}
+
+/**
+ * `ids`는 하나라도 못 재면 `rects`가 `null`입니다(`measureRects`와 같은 규칙). `optionalIds`는 못 잰 자리만
+ * `null`이고 나머지에 영향을 주지 않습니다. 질의는 전부 한꺼번에 냅니다 — 차례로 내면 답이 미뤄지는
+ * 대역에서 선택 답이 한 번 더 늦습니다.
+ */
+export function measureRectsWithOptional(
+  ids: readonly string[],
+  optionalIds: readonly string[],
+  onDone: (
+    rects: readonly MeasuredRect[] | null,
+    optional: readonly (MeasuredRect | null)[],
+  ) => void,
+): void {
+  "background only";
   const rects: MeasuredRect[] = [];
-  let pending = ids.length;
+  const optional: (MeasuredRect | null)[] = optionalIds.map(() => null);
+  let pending = ids.length + optionalIds.length;
   let settled = false;
   const settle = (result: readonly MeasuredRect[] | null) => {
     if (!settled) {
       settled = true;
-      onDone(result);
+      onDone(result, result === null ? optionalIds.map(() => null) : optional);
+    }
+  };
+  const answered = () => {
+    pending -= 1;
+    if (pending === 0) {
+      settle(rects);
     }
   };
   if (pending === 0) {
     settle(rects);
     return;
   }
-  try {
-    ids.forEach((id, index) => {
-      lynx
-        .createSelectorQuery()
-        .select(`#${id}`)
-        .invoke({
-          method: "boundingClientRect",
-          success: (
-            rect:
-              | { top?: number; height?: number; left?: number; width?: number }
-              | null
-              | undefined,
-          ) => {
-            if (typeof rect?.top !== "number" || typeof rect.height !== "number") {
-              settle(null);
-              return;
-            }
-            // 가로 값을 못 읽어도 실패가 아닙니다 — 꼬리만 가운데로 남습니다.
-            const centerX =
-              typeof rect.left === "number" && typeof rect.width === "number"
-                ? rect.left + rect.width / 2
-                : null;
-            rects[index] = { top: rect.top, height: rect.height, centerX };
-            pending -= 1;
-            if (pending === 0) {
-              settle(rects);
-            }
-          },
-          fail: () => settle(null),
-        })
-        .exec();
+  ids.forEach((id, index) => {
+    queryRect(id, (rect) => {
+      if (rect === null) {
+        settle(null);
+        return;
+      }
+      rects[index] = rect;
+      answered();
     });
-  } catch {
-    settle(null);
-  }
+  });
+  optionalIds.forEach((id, index) => {
+    queryRect(id, (rect) => {
+      optional[index] = rect;
+      answered();
+    });
+  });
 }
 
 // `scrollIntoView`의 `behavior`는 `"smooth" | "none"`입니다.

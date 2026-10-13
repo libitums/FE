@@ -208,6 +208,49 @@ export function stepSheetPlacement(measure: StepMeasure): StepPlacement {
   };
 }
 
+export type StepHeaderCard = {
+  /** 머리 카드의 아래 모서리입니다(LynxView 기준). */
+  readonly bottom: number;
+  readonly left: number | null;
+  readonly width: number | null;
+};
+
+/**
+ * `stepSheetPlacement`의 답이 누른 유닛을 머리 카드 뒤에 세우면, 카드 아래로 내린 답을 냅니다.
+ * 카드를 모르거나 걸리지 않으면 `stepSheetPlacement`와 글자 그대로 같습니다.
+ *
+ * 양보의 순서: 남는 자리 → 간격 → (그래도 모자라면) 카드를 피하는 쪽이 이깁니다. `gap`은 인자입니다 —
+ * 자동 스크롤의 자리 모듈이 이 모듈을 읽으므로 거꾸로 읽으면 순환입니다.
+ */
+export function stepSheetPlacementBelowHeader(
+  measure: StepMeasure,
+  unitCenterX: number | null,
+  header: StepHeaderCard | null,
+  gap: number,
+): StepPlacement {
+  const base = stepSheetPlacement(measure);
+  if (header === null) return base;
+  const baseTop = measure.unitTop - (base.targetScrollTop - measure.scrollTop);
+  if (baseTop >= header.bottom + gap) return base;
+  // 모르는 가로 값이 하나라도 있으면 겹친다고 봅니다 — 세로로도 걸려야 바뀝니다.
+  const half = stepUnitSize / 2;
+  const overlaps =
+    unitCenterX === null ||
+    header.left === null ||
+    header.width === null ||
+    (unitCenterX - half < header.left + header.width && header.left < unitCenterX + half);
+  if (!overlaps) return base;
+  const lowestTop = measure.screenTop + base.anchorLimit - sheetGap - stepUnitSize;
+  const wantedTop = Math.max(
+    baseTop,
+    Math.min(header.bottom + gap, Math.max(lowestTop, header.bottom)),
+  );
+  return {
+    ...base,
+    targetScrollTop: Math.max(0, measure.scrollTop + (measure.unitTop - wantedTop)),
+  };
+}
+
 /**
  * 말풍선 꼭대기의 세로 자리입니다. 잰 자리에 그 뒤의 스크롤 변화량을 더해 유닛을
  * 따라가고, 화면 아래로 넘치지 않게 가둡니다.
