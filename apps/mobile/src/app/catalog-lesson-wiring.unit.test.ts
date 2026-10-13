@@ -16,6 +16,7 @@ import type {
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import { noLearnerProfile } from "./catalog-cover-wiring";
 import { catalogLessonWiring } from "./catalog-lesson-wiring";
+import { newCatalogFinishGuard } from "./catalog-finish-guard";
 import { catalogWiring } from "./catalog-wiring";
 import type { CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
 import type { EpisodeContent } from "./episode-content";
@@ -105,6 +106,7 @@ function harness(
     pendingSkippedCount,
     setPendingSkippedCount: (action) =>
       void log.push({ kind: "skipped", value: resolveAction(action, pendingSkippedCount) }),
+    finishGuard: newCatalogFinishGuard(),
   };
   const setCompletedStepCount = vi.fn<(count: number) => void>();
   // 튜토리얼 진행 setter도 인자에 함께 넣어 카탈로그가 건드리지 않는지 봅니다.

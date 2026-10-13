@@ -16,6 +16,7 @@ import type { CatalogWiringValues } from "./catalog-cover-wiring";
 import { finalPassedEventOf, lessonFinishedEventOf, lessonStartedEventOf } from "./catalog-events";
 import { catalogFinalPlanFor } from "./catalog-final-model";
 import { catalogLessonPlanFor, catalogPassCriterion } from "./catalog-lesson-plan";
+import type { CatalogFinishGuard } from "./catalog-finish-guard";
 import type { NavAction } from "./nav-state";
 
 export type CatalogLessonWiring = {
@@ -46,6 +47,11 @@ export type CatalogLessonWiringArgs = CatalogWiringValues & {
   readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
   readonly pendingSkippedCount: number;
   readonly setPendingSkippedCount: Dispatch<SetStateAction<number>>;
+  /**
+   * 방금 끝낸 활동의 표식입니다. 결선은 렌더마다 새로 만들어지고 같은 렌더 안의 연타는 상태를
+   * 보지 못하므로, 렌더 사이에 살아남는 가변 값(ref)이어야 합니다.
+   */
+  readonly finishGuard: CatalogFinishGuard;
 };
 
 export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLessonWiring {
@@ -61,7 +67,19 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     setPendingResults,
     pendingSkippedCount,
     setPendingSkippedCount,
+    finishGuard,
   } = args;
+
+  // 같은 활동 · 같은 최종 테스트의 두 번째 finish를 거릅니다 — 처음 오면 표식을 남기고 true.
+  // 시작 · 나가기 · 결과 나가기가 표식을 지워 재시도와 다음 세션은 다시 끝낼 수 있습니다.
+  const claimFinish = (mark: string): boolean => {
+    if (finishGuard.current === mark) return false;
+    finishGuard.current = mark;
+    return true;
+  };
+  const releaseFinish = (): void => {
+    finishGuard.current = null;
+  };
 
   // 세션이 드는 둘을 한 자리에서 비웁니다 — 한쪽만 리셋하는 자리가 생기지 않게 합니다.
   const clearSession = (): void => {
@@ -97,6 +115,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
   const startLesson = (episodeId: string, unitKey: CatalogUnitKey): void => {
     const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill);
     if (plan === null) return;
+    releaseFinish();
     clearSession();
     sink?.(lessonStartedEventOf(plan, "lesson"));
     if (plan.activities.length === 0) {
@@ -116,6 +135,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
   const startFinal = (episodeId: string, unitKey: CatalogUnitKey): void => {
     const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill);
     if (plan === null) return;
+    releaseFinish();
     clearSession();
     const turnCount = plan.turns.length;
     sink?.(
@@ -157,12 +177,14 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       }
     },
     onExitCatalogSession: () => {
+      releaseFinish();
       clearSession();
       dispatch({ type: "backToRoot" });
     },
     onFinishCatalogActivity: (episodeId, unitKey, activityIndex, results, skippedCount) => {
       const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill);
       if (plan === null) return;
+      if (!claimFinish(`${episodeId}|${unitKey}|${activityIndex}`)) return;
       const gathered = [...pendingResults, ...results];
       const skippedTotal = pendingSkippedCount + skippedCount;
       // 활동이 남았으면 판정하지 않고 다음 활동으로 갈아탑니다 — 판정은 유닛 전체를 놓고 한 번만 합니다.
@@ -194,6 +216,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       if (plan === null || section === null) return;
       const turnCount = plan.turns.length;
       const unitKey = section.finalKey;
+      if (!claimFinish(`${episodeId}|${unitKey}|final`)) return;
       const verdict = judgeAssessment(results, catalogPassCriterion(turnCount));
       sink?.(lessonFinishedEventOf(episodeId, unitKey, "final", results, turnCount, verdict));
       if (assessmentCompletesStep(verdict)) {
@@ -203,6 +226,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       showComplete("replace", episodeId, unitKey, results, 0, turnCount);
     },
     onExitCatalogUnitComplete: (episodeId, unitKey, verdict) => {
+      releaseFinish();
       const section = sectionOf(episodeId);
       const toEpilogue =
         section !== null &&

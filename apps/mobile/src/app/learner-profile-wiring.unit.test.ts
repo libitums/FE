@@ -1,3 +1,4 @@
+import { newCatalogFinishGuard } from "./catalog-finish-guard";
 import { describe, expect, test } from "vitest";
 
 import { CATALOG_INTRO_KEY } from "../lib/catalog-progress";
@@ -246,6 +247,7 @@ describe("시작 가드 — 묻는 경우", () => {
         setPendingResults: () => undefined,
         pendingSkippedCount: 0,
         setPendingSkippedCount: () => undefined,
+        finishGuard: newCatalogFinishGuard(),
       };
       return catalogWiring(args);
     };
