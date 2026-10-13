@@ -797,6 +797,7 @@ describe("catalogWiring — 표지 결선과 레슨 결선을 합친다", () => 
       learnerPrompt: "open",
       saveLearnerProfile: () => noLearnerProfile,
       markLearnerProfileAsked: () => undefined,
+      clearGuestLearnerProfile: () => undefined,
       syncLearnerProfile: async () => undefined,
       settingsEventSink: null,
     });

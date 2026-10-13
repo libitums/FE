@@ -35,9 +35,19 @@ function isForbiddenNameUnit(code: number): boolean {
   );
 }
 
+// 짝 없는 서로게이트(U+D800 ~ DFFF 단독)는 서버 jsonb가 받지 못해 업로드가 영구히 실패합니다 - 코드 단위로 짝을
+// 직접 봅니다(`isWellFormed` · `normalize`는 PrimJS에 기대지 않습니다).
 function hasForbiddenNameCharacter(name: string): boolean {
   for (let index = 0; index < name.length; index += 1) {
-    if (isForbiddenNameUnit(name.charCodeAt(index))) return true;
+    const code = name.charCodeAt(index);
+    if (isForbiddenNameUnit(code)) return true;
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = index + 1 < name.length ? name.charCodeAt(index + 1) : 0;
+      if (next < 0xdc00 || next > 0xdfff) return true;
+      index += 1;
+    } else if (code >= 0xdc00 && code <= 0xdfff) {
+      return true;
+    }
   }
   return false;
 }

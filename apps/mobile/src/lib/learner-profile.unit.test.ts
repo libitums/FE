@@ -103,6 +103,24 @@ describe("learnerNameFrom", () => {
     expect(() => learnerNameFrom("\uD800")).not.toThrow();
     expect(() => learnerNameFrom("a\uDC00b")).not.toThrow();
   });
+
+  const high = String.fromCharCode(0xd800);
+  const low = String.fromCharCode(0xdc00);
+  test.each([
+    ["앞선 서로게이트 단독", `Em${high}ma`],
+    ["뒤따르는 서로게이트 단독", low],
+    ["앞선 서로게이트가 끝에서 짝 없이", `Emma${high}`],
+    ["뒤따르는 서로게이트가 앞에서 짝 없이", `${low}Emma`],
+    ["순서가 뒤집힌 짝", `${low}${high}`],
+    ["앞선 둘 연속 뒤 뒤따르는 하나", `${high}${high}${low}`],
+  ])("PN-8. 짝 없는 서로게이트는 forbidden-character다: %s", (_label, input) => {
+    expect(learnerNameFrom(input)).toEqual({ ok: false, issue: "forbidden-character" });
+  });
+
+  test("PN-8. 짝이 맞는 서로게이트(이모지)는 통과한다", () => {
+    const pair = `${String.fromCharCode(0xd83d)}${String.fromCharCode(0xde0a)}`;
+    expect(learnerNameFrom(`Emma${pair}`)).toEqual({ ok: true, name: `Emma${pair}` });
+  });
 });
 
 describe("isLearnerCountryCode", () => {

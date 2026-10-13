@@ -102,6 +102,7 @@ function argsOf(options: Options, log: Entry[]): LearnerProfileWiringArgs {
       return savedFill;
     },
     markLearnerProfileAsked: () => void log.push({ kind: "asked" }),
+    clearGuestLearnerProfile: () => undefined,
     syncLearnerProfile: async () => undefined,
     completedEpisodeFinalIds: [],
     dispatch: (action) => void log.push({ kind: "dispatch", action }),

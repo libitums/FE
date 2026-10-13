@@ -3,7 +3,11 @@
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
-import { readGuestLearnerProfile, writeGuestLearnerProfile } from "../lib/learner-profile-cache";
+import {
+  clearGuestLearnerProfile,
+  readGuestLearnerProfile,
+  writeGuestLearnerProfile,
+} from "../lib/learner-profile-cache";
 import { learnerProfilePort } from "../lib/learner-profile-data";
 import { noLearnerProfilePort, sameLearnerProfile } from "../lib/learner-profile";
 import type {
@@ -32,6 +36,8 @@ export type LearnerProfileControls = {
   /** 저장하고(로그인 전이면 손님 칸) **다음 렌더의 `learnerFill`과 같은 참조**를 돌려줍니다. */
   readonly saveLearnerProfile: (record: LearnerProfileRecord) => LearnerProfile;
   readonly markLearnerProfileAsked: () => void;
+  /** 로그인 전 손님 칸과 거기서 온 담은 값을 지웁니다(온보딩에서 비우고 건너뛴 경우). 로그인 뒤에는 하지 않습니다. */
+  readonly clearGuestLearnerProfile: () => void;
   /** 로그인 뒤 부릅니다. 캐시를 곧바로 반영한 다음 서버와 맞춥니다. 던지지 않습니다. */
   readonly syncLearnerProfile: () => Promise<void>;
 };
@@ -130,6 +136,17 @@ export function useLearnerProfile(): LearnerProfileValues & LearnerProfileContro
     return fill;
   };
 
+  const clearGuest = (): void => {
+    "background only";
+    if (sync.current !== null) return;
+    clearGuestLearnerProfile();
+    setState((previous) =>
+      previous.signedIn || previous.entry === null
+        ? previous
+        : { ...previous, entry: null, fill: noLearnerProfile },
+    );
+  };
+
   const syncLearnerProfile = async (): Promise<void> => {
     "background only";
     const userId = progressUserId();
@@ -149,6 +166,7 @@ export function useLearnerProfile(): LearnerProfileValues & LearnerProfileContro
     learnerPrompt: prompt,
     saveLearnerProfile,
     markLearnerProfileAsked: () => setPrompt("asked"),
+    clearGuestLearnerProfile: clearGuest,
     syncLearnerProfile,
   };
 }

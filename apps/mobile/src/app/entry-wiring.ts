@@ -54,6 +54,8 @@ export type EntryWiringArgs = {
   readonly learnerRecord: LearnerProfileRecord | null;
   readonly saveLearnerProfile: (record: LearnerProfileRecord) => unknown;
   readonly markLearnerProfileAsked: () => void;
+  // 온보딩에서 사용자가 건너뛴 값이 손님 칸에 남아 로그인 뒤 서버로 올라가지 않게 지웁니다.
+  readonly clearGuestLearnerProfile: () => void;
   readonly syncLearnerProfile: () => Promise<void>;
 };
 
@@ -67,6 +69,7 @@ export function entryWiring({
   learnerRecord,
   saveLearnerProfile,
   markLearnerProfileAsked,
+  clearGuestLearnerProfile,
   syncLearnerProfile,
 }: EntryWiringArgs) {
   // 세션을 저장한 자리마다 그 사용자로 분석을 식별합니다(ADR-0029 D8). 저장한 세션에는 사용자
@@ -132,6 +135,7 @@ export function entryWiring({
           entryEventSink?.(learnerProfileSavedEvent("onboarding", learnerRecord));
         }
       } else {
+        clearGuestLearnerProfile();
         markLearnerProfileAsked();
         entryEventSink?.(learnerProfileSkippedEvent("onboarding"));
       }
