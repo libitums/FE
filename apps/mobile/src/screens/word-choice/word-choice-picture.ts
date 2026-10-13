@@ -18,6 +18,8 @@ export type WordChoicePictureCopy = {
   readonly unavailable: (meaning: string) => string;
   readonly unavailableCaption: string;
   readonly answer: (word: string, romanization: string | null, meaning: string) => string;
+  /** 이름표의 보이는 둘째 줄입니다 — 로마자가 있으면 뜻과 함께 한 줄로 잇습니다. */
+  readonly answerSubline: (romanization: string | null, meaning: string) => string;
 };
 
 export type WordChoicePictureProps = {

@@ -38,8 +38,10 @@
 }
 
 /* 고른 타일(짝을 기다림) — 테두리가 굵어집니다. 굵기가 바뀌어도 타일 바깥 크기가 변하지 않게 안쪽
-   여백에서 굵기 차(strong − thin)를 뺍니다. */
-.pair-match-tile-selected {
+   여백에서 굵기 차(strong − thin)를 뺍니다. 판정 뒤의 타일(맞음 · 틀림)도 같은 굵기라 같은 여백을 씁니다. */
+.pair-match-tile-selected,
+.pair-match-tile-correct,
+.pair-match-tile-incorrect {
   padding-top: calc(
     var(--libitum-spacing-8) - var(--libitum-stroke-width-strong) + var(--libitum-stroke-width-thin)
   );
@@ -54,6 +56,9 @@
     var(--libitum-spacing-12) - var(--libitum-stroke-width-strong) +
       var(--libitum-stroke-width-thin)
   );
+}
+
+.pair-match-tile-selected {
   border-width: var(--libitum-stroke-width-strong);
   border-color: var(--libitum-color-brand-strong);
 }
@@ -82,20 +87,6 @@
 .pair-match-tile-incorrect {
   background-color: var(--libitum-color-white);
   border-width: var(--libitum-stroke-width-strong);
-  padding-top: calc(
-    var(--libitum-spacing-8) - var(--libitum-stroke-width-strong) + var(--libitum-stroke-width-thin)
-  );
-  padding-bottom: calc(
-    var(--libitum-spacing-8) - var(--libitum-stroke-width-strong) + var(--libitum-stroke-width-thin)
-  );
-  padding-left: calc(
-    var(--libitum-spacing-12) - var(--libitum-stroke-width-strong) +
-      var(--libitum-stroke-width-thin)
-  );
-  padding-right: calc(
-    var(--libitum-spacing-12) - var(--libitum-stroke-width-strong) +
-      var(--libitum-stroke-width-thin)
-  );
 }
 
 .pair-match-tile-correct {

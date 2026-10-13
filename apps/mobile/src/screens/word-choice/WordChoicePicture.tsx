@@ -70,7 +70,7 @@ export function WordChoicePicture({
         >
           <text className="word-choice-picture-answer-word">{answer.word}</text>
           <text className="word-choice-picture-answer-meaning">
-            {answer.romanization === null ? meaning : `${answer.romanization} · ${meaning}`}
+            {copy.wordChoicePicture.answerSubline(answer.romanization, meaning)}
           </text>
         </view>
       )}

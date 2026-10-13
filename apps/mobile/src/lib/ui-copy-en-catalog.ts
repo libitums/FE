@@ -80,6 +80,8 @@ export const wordChoicePictureEn: WordChoicePictureCopy = {
     romanization === null
       ? `Answer: ${word}, ${meaning}`
       : `Answer: ${word}, ${romanization}, ${meaning}`,
+  answerSubline: (romanization, meaning) =>
+    romanization === null ? meaning : `${romanization} · ${meaning}`,
 };
 
 export const catalogFinalEn: CatalogFinalCopy = {

@@ -163,4 +163,6 @@ test("UC-I1. 단어 카드 · 짝 맞추기 · 그림 제시 문구가 문구표
   expect(c.wordChoicePicture.unavailableCaption).toBe("Picture unavailable");
   expect(c.wordChoicePicture.answer("x", "y", "water")).toBe("Answer: x, y, water");
   expect(c.wordChoicePicture.answer("x", null, "water")).toBe("Answer: x, water");
+  expect(c.wordChoicePicture.answerSubline("mul", "water")).toBe("mul · water");
+  expect(c.wordChoicePicture.answerSubline(null, "water")).toBe("water");
 });

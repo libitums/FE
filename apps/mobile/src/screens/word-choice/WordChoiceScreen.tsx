@@ -7,9 +7,9 @@ import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { WordChoiceOption } from "./WordChoiceOption";
-import { WordChoicePicture } from "./WordChoicePicture";
+import { WordChoicePresentation } from "./WordChoicePresentation";
 import { useWordChoicePicture } from "./use-word-choice-picture";
-import { canAnswerWordChoice, wordChoicePictureAnswerOf } from "./word-choice-picture";
+import { canAnswerWordChoice } from "./word-choice-picture";
 import {
   answeredResultOf,
   choiceResultAt,
@@ -237,42 +237,15 @@ export function WordChoiceActivity({
             )}
           </view>
 
-          {question === null ? null : question.picture !== undefined ? (
-            // 그림 문항은 제시문 대신 그림 틀이 섭니다. 문항마다 새 요소로 세워 앞 문항 그림의 늦은
-            // 이벤트가 새 문항에 닿지 않게 합니다.
-            <WordChoicePicture
-              key={state.questionIndex}
-              url={question.picture.url}
-              meaning={question.prompt}
-              state={picture.state}
-              answer={hasAnswered(state) ? wordChoicePictureAnswerOf(question) : null}
+          {question === null ? null : (
+            <WordChoicePresentation
+              question={question}
+              questionIndex={state.questionIndex}
+              answered={hasAnswered(state)}
+              pictureState={picture.state}
               onLoad={picture.onLoad}
               onError={picture.onError}
             />
-          ) : (
-            <>
-              <text className="word-choice-screen-prompt" data-testid="word-choice-screen-prompt">
-                {question.prompt}
-              </text>
-              {/* 카탈로그 문항의 지원 줄입니다 — 값이 있을 때만 섭니다. 뜻 줄은 정답을 드러내는
-                  문항에는 실리지 않습니다(그 판단은 문항을 만드는 쪽이 집니다). */}
-              {question.romanization === undefined ? null : (
-                <text
-                  className="word-choice-screen-support"
-                  data-testid="word-choice-screen-romanization"
-                >
-                  {question.romanization}
-                </text>
-              )}
-              {question.translation === undefined ? null : (
-                <text
-                  className="word-choice-screen-support"
-                  data-testid="word-choice-screen-translation"
-                >
-                  {question.translation}
-                </text>
-              )}
-            </>
           )}
 
           {/* 완료문입니다. 문항이 서 있던 그 카드 안에 결과가 대신 섭니다. */}

@@ -4,7 +4,7 @@
 // 시간 초과를 두는 까닭: 그림 요소의 `error` 이벤트가 실패마다 오는지 기기에서 확인된 적이 없습니다. 이벤트가
 // 영영 안 오는 경우를 타이머가 끝내서, 보기가 잠긴 채로 막히는 일이 없습니다.
 
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { announce } from "../../lib/accessibility";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -34,7 +34,12 @@ export function useWordChoicePicture(
   // 다른 문항 몫의 상태는 읽지 않습니다 — 문항이 바뀌면 곧바로 `loading`입니다.
   const state = entry.index === questionIndex ? entry.state : "loading";
 
+  // 가장 나중에 그려진 문항 번호입니다. 걷힌 앞 문항의 핸들러가 뒤늦게 불려도 새 문항 상태를 덮지 않게 합니다.
+  const latestIndex = useRef(questionIndex);
+  latestIndex.current = questionIndex;
+
   const send = (event: WordChoicePictureEvent): void => {
+    if (latestIndex.current !== questionIndex) return;
     setEntry((current) => {
       const before = current.index === questionIndex ? current.state : "loading";
       const next = wordChoicePictureStateAfter(before, event);
