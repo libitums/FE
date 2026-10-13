@@ -62,6 +62,43 @@ App Store Connect의 공개된 응답과 배포 코드 경로를 대조했다. �
 
 기존 “Usage information: up to 1 year”는 **PostHog analytics records**로 범위를 명확히 하여 학습 진행의 계정 보존과 구분해야 한다. 특히 [PostHog 공식 보존 안내](https://posthog.com/docs/data/events-retention)는 플랜의 조회 가능 기간이 자동 삭제를 뜻하지 않는다고 명시한다. 이번 MCP에는 보존 기간 조회 도구가 없고 웹은 로그인이 필요해 현재 플랜의 기간을 확정하지 못했다. **1년 후 삭제한다고 단정하는 문구는 사용하지 않는다.** 공개 문안 확정 전에 실제 보존·삭제 절차를 확인하거나 그 절차에 맞춰 기간을 수정해야 한다. 개인정보처리방침 변경 후 공개 URL을 로그아웃 상태에서도 읽을 수 있는지 확인한다.
 
+## 학습자 프로필 — 이름 · 나라 (2026-10-13)
+
+> **App Store Connect 신고 갱신 필요.** 아래 대조는 코드 근거만 정리했다. 신고 화면 · 앱 manifest(`PrivacyInfo.xcprivacy`) · 공개 처리방침은 **아직 바꾸지 않았다**
+> (ADR README 보류 표). 3d-2 출시 전에 사용자가 갱신한다.
+
+3d-2([ADR-0058](adr/0058-learner-profile.md))가 **사용자가 직접 입력한 학습용 이름과 고른 나라**를 받는다. 온보딩 마지막 스텝 · 에피소드 전 화면 · 설정
+`Name and country in lessons`에서 입력하고, 레슨 문장의 `{이름}` · `{나라}`를 채우는 데만 쓴다. 둘 다 있어야 저장되고 건너뛰면 아무것도 저장하지 않는다.
+
+| 데이터 | 어디에 저장하나 | 목적 | 사용자 연결 | 추적 | 코드 근거 |
+| --- | --- | --- | --- | --- | --- |
+| 학습용 이름(자유 입력, 1 ~ 30자) | **서버** — Supabase `learner_profiles.name`(계정당 1행) · 기기 `UserDefaults` | App Functionality(레슨 문장에 넣기) | 예 — `user_id`로 계정에 묶인다 | 아니다 | `learner-profile-api.ts` → `save_learner_profile` · `load_learner_profile`, 마이그레이션 `20261013120000_learner_profiles.sql` |
+| 나라(목록에서 고름, ISO 코드 두 글자) | 위와 같음 — `learner_profiles.country_code` | App Functionality | 예 | 아니다 | 위와 같음 |
+
+- **기기 저장**: `libitum.learner-profile.<userId>`(서버가 확인한 값도 둔다 — 부팅 직후 · 오프라인에서 문장을 채우려고)와 로그인 전 온보딩에서 입력했을 때만 생기는
+  `libitum.learner-profile.guest`(로그인 직후 사용자별 칸으로 옮기고 지운다). 위 「앱의 API 사용 사유」의 UserDefaults `CA92.1` 범위 안이다 — 앱 자체 정보다.
+- **보존 · 삭제**: 서버 행은 계정을 지우면 `auth.users` CASCADE로 지워진다. 기기 칸은 계정 삭제 성공에 지우고, **로그아웃에는 남긴다**(같은 계정으로 다시 들어오면
+  미전송 값을 이어 올리려고 — 다른 계정은 읽지 않는다). 앱을 지우면 기기 칸도 사라진다. 사용자가 기록만 지우는 기능은 아직 없다(바꾸기만 된다).
+- **분석에는 값이 없다.** PostHog 이벤트 `learner_profile_saved` · `learner_profile_skipped` · `learner_profile_opened`는 진입점과 처음/수정 여부만 싣고,
+  이름 · 나라 · 그 길이 같은 파생값을 싣지 않는다([ADR-0029](adr/0029-product-analytics-posthog.md) D14 적용 기록). 로그에도 남기지 않는다.
+- **나라는 위치 추정이 아니다.** 사용자가 스스로 고른 값이고, PostHog GeoIP의 「대략적인 위치」(위 표)와 따로 있으며 서로 합치지 않는다.
+
+**신고 화면에서 고칠 것(판단은 사용자)**:
+
+1. **이름 / `Name`** — 이미 App Functionality · 사용자 연결로 신고돼 있다. 코드 근거에 「사용자가 입력한 학습용 이름(Supabase `learner_profiles`)」을 더한다. 신고 항목 자체는 그대로일 수 있다.
+2. **나라** — Apple 항목 가운데 딱 맞는 것이 없다. 후보는 ① **기타 사용자 콘텐츠 / `OtherUserContent`**(사용자가 앱에 입력한 값) ② **기타 데이터 유형 / `OtherDataTypes`**.
+   자기 신고 국가를 「위치」로 보지 않는 쪽이 사실에 가깝다(GPS · IP에서 나온 값이 아니다) — 그러나 어느 쪽으로 신고할지는 정하지 않았다. 고른 항목은 목적 App Functionality · 사용자 연결 예 · 추적 아니오로 신고하고,
+   같은 항목을 앱 manifest에도 선언한다.
+3. 신고를 바꾸면 이 문서 「수집 항목 대조」 표에 행을 더한다(지금 표는 2026-10-01 공개 상태 그대로다).
+
+**공개 개인정보처리방침에 더할 문안 초안**(공개 페이지에는 아직 반영하지 않았다):
+
+> Learner profile. If you choose to, you can enter a name and select a country to use in lesson sentences (for example, "I'm from Germany."). We store them, linked to your account, so they appear in your lessons on any device. They are not used for advertising or tracking and are not sent to our analytics provider. You can change them in Settings. They are deleted when you delete your account.
+>
+> On your device, the App keeps a copy of your name and country so lessons can show them before a connection is available. Signing out keeps this copy for the same account; deleting your account removes it.
+
+Section 3의 Supabase 행에 「learner profile (name and country you enter)」을 더한다.
+
 ## 배포 산출물 확인
 
 1. `pnpm bundle:host`로 production 번들을 준비합니다.

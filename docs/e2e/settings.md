@@ -18,6 +18,11 @@
 > 브라우저 시트로 연다. T1 · T3 · D1 · V1 · V3의 약관 기대값은 아래 **T3′ · V3′**가 대신한다. 이벤트는
 > `terms_opened` 대신 `legal_document_opened`다.
 
+> ⟨2026-10-13 — 학습자 프로필⟩ **이동 항목에 `Name and country in lessons`가 `User profile` 바로 다음에 섰다**
+> ([ADR-0058](../adr/0058-learner-profile.md)). 지금 이동 항목은 여섯이다 — `User profile` · `Name and country in lessons` · `Notifications` ·
+> `Send feedback` · `Privacy Policy` · `Terms of Use`. T1 · V3′의 순서 기대값은 둘째 자리에 이 행이 끼는 것으로 읽는다(VoiceOver 이름은
+> `Name and country in lessons, Not set` 또는 지금 값). 이 행을 누르는 흐름은 [학습자 프로필 e2e](learner-profile.md) E10이 진다.
+
 | # | 조작 | 기대 | 환경 | 결과 |
 |---|---|---|---|---|
 | T3′ | `설정`에서 `Privacy Policy`를 누르고 닫은 뒤 `Terms of Use`를 누른다 | 각각 앱 안 브라우저 시트가 뜨고 주소가 `gregarious-pharaoh-bb6.notion.site`의 해당 문서다. `완료`로 닫으면 설정 화면 그대로다(스택이 늘지 않는다) | 시뮬레이터 또는 실기 · 네트워크 필요 | 미실행 |

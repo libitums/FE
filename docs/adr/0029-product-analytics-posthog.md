@@ -283,6 +283,14 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
     새 유형이 든 유닛은 `shownItemCount − questionCount > 0`(카드 수)과 `skippedItemCount` 감소로 식별한다. 대시보드 인사이트 추가는 이 회차 범위 밖이다.
   - **한계** — 카드에서의 이탈과 채점 문항에서의 이탈을 가르지 못한다. 그림 로드 실패 횟수는 세지 않는다(지금 데이터에 그림 문항이 0이라 잴 것이 없다 —
     [ADR-0057](0057-catalog-learning-session.md) 적용 기록 A6). PostHog 도착은 이번에도 보지 않았다.
+- ⟨2026-10-13 — 3d-2 학습자 프로필. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 셋이 더해져 이름이 33 → 36개다**(모양 37 → 40). 결정은 [ADR-0058](0058-learner-profile.md) D8.
+  - **`learner_profile_saved`** — 이름 · 나라를 저장한 순간. 속성 `entry`(`onboarding` | `episode` | `settings`) · `change`(`created` | `updated`). 설정에서 같은 값으로 저장하면 나지 않는다.
+  - **`learner_profile_skipped`** — 건너뛴 순간. 속성 `entry`(`onboarding` — 넷째 스텝을 빈 채 넘김 | `episode` — 에피소드 전 `Skip`). 에피소드 전 화면에서 **뒤로**는 건너뜀이 아니라 나지 않는다.
+  - **`learner_profile_opened`** — 설정에서 `Name and country in lessons`를 연 순간(형제 `profile_opened` · `feedback_opened`와 같은 꼴). 속성 없음.
+  - **값은 어떤 속성으로도 싣지 않는다** — 이름 · 나라 · 길이 · 문자 종류 같은 파생값도 없다. 계약 단계의 `fields` 속성은 「둘 다 필수」(사용자 결정)로 쓸모가 없어 뺐다.
+  - sink는 새로 만들지 않았다 — 온보딩 `entryEventSink` · 에피소드 전 `episodeIntroEventSink` · 설정 `settingsEventSink`. 셋째 계약 union에 같은 이벤트 타입이 들어간다.
+  - 묻는 질문: 「학습자가 이름 · 나라를 넣는가」 = 진입점별 `saved` / (`saved` + `skipped`). 건너뜀 비율이 높으면 ADR-0058 재검토 조건 5.
+  - **한계** — 에피소드 전 화면이 보인 수는 세지 않는다(보임 이벤트 없음 — 뒤로 나간 수는 모른다). GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다. PostHog 도착은 보지 않았다.
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 
