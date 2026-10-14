@@ -52,6 +52,8 @@ final class AudioPlaybackModuleTests: XCTestCase {
     }
 
     wait(for: [finished], timeout: 10)
+    // 늦게 오는 두 번째 `done`을 잡을 관찰 창 — 오면 `assertForOverFulfill`이 실패시킨다.
+    RunLoop.current.run(until: Date().addingTimeInterval(0.5))
     withExtendedLifetime(module) {}
   }
 }
