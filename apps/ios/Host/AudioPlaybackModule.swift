@@ -213,6 +213,9 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   /// 이름이 어긋난 `source`가 그 경로로 간다.
   static func resolve(_ source: String) -> URL? {
     if let remote = remoteURL(source) { return remote }
+    // 번들 id는 경로 조각 하나다. 빈 이름은 `Bundle`이 폴더의 아무 파일로 풀어 버리고,
+    // `/` · `..`은 폴더 밖을 가리킨다 — Android `AudioAssetPath`와 같은 경계.
+    guard !source.isEmpty, !source.contains("/"), !source.contains("..") else { return nil }
     return Bundle.main.url(
       forResource: source,
       withExtension: audioFileExtension,
