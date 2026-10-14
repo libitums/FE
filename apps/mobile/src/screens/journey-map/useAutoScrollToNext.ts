@@ -63,6 +63,8 @@ export function useAutoScrollToNext({
   const targetDomId = target.kind === "unit" ? target.domId : null;
 
   const correction = useRef(initialAutoScrollCorrectionState);
+  // 맵이 내려간 뒤 늦게 온 측정 답이 새로 선 맵(같은 스크롤 상자 id)을 옮기지 않게 합니다.
+  const mounted = useRef(true);
   // 목적지에 닿은 대상의 DOM id입니다 — 다시 재는 effect를 커밋 뒤로 미루는 신호입니다.
   const [arrivedDomId, setArrivedDomId] = useState<string | null>(null);
 
@@ -86,6 +88,15 @@ export function useAutoScrollToNext({
   };
 
   useEffect(() => {
+    // oxlint-disable-next-line react/immutability
+    mounted.current = true;
+    return () => {
+      // oxlint-disable-next-line react/immutability
+      mounted.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
     // 새 대상(또는 대상 없음)의 이동이 앞의 보정을 덮습니다.
     cancelCorrection();
     // 말풍선 · 가이드가 이깁니다 — 손이 닿은 것으로 치고 이 마운트에서 잠급니다.
@@ -103,8 +114,8 @@ export function useAutoScrollToNext({
       return;
     }
     measureRects([pending, scrollId, headerCardId], (rects) => {
-      // 재는 사이에 사용자가 손댔거나 대상이 바뀌었으면 늦게 온 답을 버립니다.
-      if (!canSettleAutoScroll(state.current, pending)) {
+      // 재는 사이에 맵이 내려갔거나 사용자가 손댔거나 대상이 바뀌었으면 늦게 온 답을 버립니다.
+      if (!mounted.current || !canSettleAutoScroll(state.current, pending)) {
         return;
       }
       // 먼저 정착으로 적습니다 — 옮기는 순간 오는 스크롤 이벤트가 사용자의 손길로 읽히지 않게.
@@ -136,8 +147,8 @@ export function useAutoScrollToNext({
     }
     const domId = arrivedDomId;
     measureRects([domId, scrollId, headerCardId], (rects) => {
-      // 재는 사이에 손댔거나 대상이 바뀌었으면 버립니다.
-      if (!canCorrectAutoScroll(correction.current, domId)) {
+      // 재는 사이에 맵이 내려갔거나 손댔거나 대상이 바뀌었으면 버립니다.
+      if (!mounted.current || !canCorrectAutoScroll(correction.current, domId)) {
         return;
       }
       dispatchCorrection({ type: "done", domId });

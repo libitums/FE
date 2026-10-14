@@ -127,6 +127,18 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     expect(host.scrollIntoViews()).toEqual([]);
   });
 
+  test("AS5b. 답이 오기 전에 맵이 내려가면 늦게 온 답으로는 옮기지 않는다", () => {
+    const host = stubHost({ rects: asRects() });
+    deferAll(host);
+    const view = mount(mapScreen({ progress: twoStepsDone }));
+
+    view.unmount();
+    host.flush();
+
+    expect(host.scrollTos()).toEqual([]);
+    expect(host.scrollIntoViews()).toEqual([]);
+  });
+
   test("AS5. 답이 오기 전에 맵을 터치하면 늦게 온 답으로는 옮기지 않는다", () => {
     const host = stubHost({ rects: asRects() });
     deferAll(host);
