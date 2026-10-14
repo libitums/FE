@@ -61,6 +61,18 @@ describe("JourneyMapScreen 줄 결선", () => {
     }
   });
 
+  test("UG-A1b. 유닛 아래 라벨은 따로 낭독 정지가 되지 않는다(이름은 유닛 표식이 진다)", () => {
+    render(mapScreen({ catalog: catalogProps() }));
+
+    const labels = Array.from(
+      mapBox().querySelectorAll(".journey-step-node-label, .journey-special-unit-label"),
+    );
+    expect(labels.length).toBeGreaterThan(0);
+    for (const label of labels) {
+      expect(label.getAttribute("accessibility-element")).toBe("false");
+    }
+  });
+
   test("UG-A2. 맵 상자의 직계 자식은 튜토리얼 구획 → 카탈로그 슬롯 그대로이고 줄이 구획 밖으로 새지 않는다", () => {
     render(mapScreen({ catalog: catalogProps() }));
 

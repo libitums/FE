@@ -32,7 +32,9 @@ export function PhoneCallMapItem({ id, title, status, onSelect }: PhoneCallMapIt
         narrative="narrative"
         bindtap={handleSelect}
       />
-      <text className="journey-special-unit-label">{title}</text>
+      <text className="journey-special-unit-label" accessibility-element={false}>
+        {title}
+      </text>
     </view>
   );
 }

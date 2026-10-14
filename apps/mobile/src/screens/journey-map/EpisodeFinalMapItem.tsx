@@ -32,7 +32,9 @@ export function EpisodeFinalMapItem({ id, title, status, onSelect }: EpisodeFina
         narrative="narrative"
         bindtap={handleSelect}
       />
-      <text className="journey-special-unit-label">{title}</text>
+      <text className="journey-special-unit-label" accessibility-element={false}>
+        {title}
+      </text>
     </view>
   );
 }

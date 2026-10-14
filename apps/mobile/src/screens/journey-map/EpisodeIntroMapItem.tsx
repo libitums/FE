@@ -61,7 +61,9 @@ export function EpisodeIntroMapItem({
         narrative="narrative"
         bindtap={handleSelect}
       />
-      <text className="journey-special-unit-label">{title}</text>
+      <text className="journey-special-unit-label" accessibility-element={false}>
+        {title}
+      </text>
       {guided ? (
         <view className="first-unit-map-tooltip" bindtap={handleSelect}>
           <Tooltip

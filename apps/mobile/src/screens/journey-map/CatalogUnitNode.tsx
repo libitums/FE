@@ -45,7 +45,9 @@ export function CatalogUnitNode({
         narrative={isFinal ? "narrative" : "none"}
         bindtap={handleSelect}
       />
-      <text className="journey-special-unit-label">{catalogUnitNodeTitle(node, copy)}</text>
+      <text className="journey-special-unit-label" accessibility-element={false}>
+        {catalogUnitNodeTitle(node, copy)}
+      </text>
     </view>
   );
 }

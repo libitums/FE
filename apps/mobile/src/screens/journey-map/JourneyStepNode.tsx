@@ -71,7 +71,9 @@ export function JourneyStepNode({ id, title, status, onSelect }: JourneyStepProp
         status={unitStatusByStatus[status]}
         bindtap={handleSelect}
       />
-      <text className="journey-step-node-label">{title}</text>
+      <text className="journey-step-node-label" accessibility-element={false}>
+        {title}
+      </text>
     </view>
   );
 }
