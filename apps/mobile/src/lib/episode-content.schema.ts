@@ -67,6 +67,7 @@ const cutCommon = {
   kind: z.enum(["pre", "post"]),
   image_brief: z.string(),
   image_url: z.string(),
+  audio_url: optionalString,
 };
 
 const cutSchema = z.discriminatedUnion("cut_kind", [

@@ -62,10 +62,21 @@ export function judgeRoleplayTurn(
 
 /** 턴 상태에서 지금 나야 할 소리입니다. 소리가 없으면 `null`입니다. */
 export function catalogFinalAudioCueOf(
-  _turn: CatalogRoleplayTurn,
-  _state: CatalogFinalState,
+  turn: CatalogRoleplayTurn,
+  state: CatalogFinalState,
 ): AudioCue | null {
-  return null;
+  const { turnIndex } = state;
+  // 정답 판정 직후에만 내 줄로 바뀝니다. 오답이거나 내 줄이 없으면 상대 줄 단서 그대로라 아무 일도 없습니다.
+  if (
+    state.phase === "checked" &&
+    state.results[turnIndex] === "correct" &&
+    turn.replyAudioSource !== undefined
+  ) {
+    return { key: `${turnIndex}:reply`, source: turn.replyAudioSource };
+  }
+  return turn.counterpartAudioSource === undefined
+    ? null
+    : { key: `${turnIndex}:counterpart`, source: turn.counterpartAudioSource };
 }
 
 export function isCatalogFinalComplete(state: CatalogFinalState, total: number): boolean {

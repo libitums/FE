@@ -89,6 +89,7 @@ export function toStimulus(wire: WireStimulus): Stimulus {
 
 export function toCut(wire: DeliveryCut): EpisodeCut {
   const imageUrl = maybe("imageUrl", nonEmpty(wire.image_url));
+  const audioUrl = maybe("audioUrl", nonEmpty(wire.audio_url));
   switch (wire.cut_kind) {
     case "speech":
       return {
@@ -99,6 +100,7 @@ export function toCut(wire: DeliveryCut): EpisodeCut {
         aside: toText(wire.aside),
         imageBrief: wire.image_brief,
         ...imageUrl,
+        ...audioUrl,
       };
     case "monologue":
       return {
@@ -108,6 +110,7 @@ export function toCut(wire: DeliveryCut): EpisodeCut {
         line: toText(wire.line),
         imageBrief: wire.image_brief,
         ...imageUrl,
+        ...audioUrl,
       };
     case "narration":
       return {
@@ -116,6 +119,7 @@ export function toCut(wire: DeliveryCut): EpisodeCut {
         narration: toText(wire.narration),
         imageBrief: wire.image_brief,
         ...imageUrl,
+        ...audioUrl,
       };
   }
 }

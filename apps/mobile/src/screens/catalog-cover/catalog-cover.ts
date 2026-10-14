@@ -1,5 +1,6 @@
 // 카탈로그 표지 컷의 순수 표시 모델입니다 — 컷 → 표시 모델, 번역 · 토글 · 다음 · 낭독.
 
+import { contentAudioSourceOf } from "../../lib/content-audio";
 import type { EpisodeCut, Text } from "../../lib/episode-content.model";
 import type { FillScript } from "../../lib/placeholder-fill";
 import type { AudioCue } from "../../lib/use-audio-cue";
@@ -49,17 +50,26 @@ function speakerOf(speaker: string): CatalogCutSpeaker | null {
   return name === CATALOG_SELF_SPEAKER ? { kind: "self" } : { kind: "named", name };
 }
 
+// 소리는 치환 전 원문 ko로 판정합니다 - 프로필이 채워져 중괄호가 사라져도 자리표시자 줄은 소리가 없습니다.
+function audioOf(cut: EpisodeCut, rawKo: string, port: CatalogCutPort): { audioSource?: string } {
+  const source = contentAudioSourceOf(cut.audioUrl, rawKo, port.imageUrlOf);
+  return source === null ? {} : { audioSource: source };
+}
+
 function viewOf(cut: EpisodeCut, port: CatalogCutPort): CatalogCutView | null {
   const imageUrl = cut.imageUrl === undefined ? null : port.imageUrlOf(cut.imageUrl);
   if (cut.kind === "narration") {
     const text = textOf(cut.narration, port);
-    return text === null ? null : { kind: "narration", index: cut.index, text, imageUrl };
+    if (text === null) return null;
+    const audio = audioOf(cut, cut.narration.ko, port);
+    return { kind: "narration", index: cut.index, text, imageUrl, ...audio };
   }
   const text = textOf(cut.line, port);
   if (text === null) return null;
   const speaker = speakerOf(cut.speaker);
+  const audio = audioOf(cut, cut.line.ko, port);
   // 패널이 빈 화자에 던지므로 화자 없는 대사는 내레이션으로 그립니다.
-  if (speaker === null) return { kind: "narration", index: cut.index, text, imageUrl };
+  if (speaker === null) return { kind: "narration", index: cut.index, text, imageUrl, ...audio };
   if (cut.kind === "monologue") {
     const thought = inParentheses(text);
     return {
@@ -70,10 +80,20 @@ function viewOf(cut: EpisodeCut, port: CatalogCutPort): CatalogCutView | null {
       text: thought,
       aside: null,
       imageUrl,
+      ...audio,
     };
   }
   const aside = textOf(cut.aside, port);
-  return { kind: "line", voice: "speech", index: cut.index, speaker, text, aside, imageUrl };
+  return {
+    kind: "line",
+    voice: "speech",
+    index: cut.index,
+    speaker,
+    text,
+    aside,
+    imageUrl,
+    ...audio,
+  };
 }
 
 export function catalogCutViewsOf(
@@ -89,8 +109,8 @@ export function catalogCutViewsOf(
 }
 
 /** 컷이 설 때 나야 할 소리입니다. 소리가 없으면 `null`입니다. */
-export function catalogCutAudioCueOf(_cut: CatalogCutView, _index: number): AudioCue | null {
-  return null;
+export function catalogCutAudioCueOf(cut: CatalogCutView, index: number): AudioCue | null {
+  return cut.audioSource === undefined ? null : { key: String(index), source: cut.audioSource };
 }
 
 export function catalogCutsOf(views: readonly CatalogCutView[]): CatalogCuts | null {
