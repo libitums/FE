@@ -45,10 +45,13 @@ final class AudioPlaybackModuleTests: XCTestCase {
     let finished = expectation(description: "done")
     finished.assertForOverFulfill = true
 
-    AudioPlaybackModule().play("https://127.0.0.1:9/a.m4a") { _ in
+    // 모듈을 붙잡아 둔다 — 놓으면 `deinit`이 관찰을 걷어 `done`이 오지 않는다.
+    let module = AudioPlaybackModule()
+    module.play("https://127.0.0.1:9/a.m4a") { _ in
       finished.fulfill()
     }
 
     wait(for: [finished], timeout: 10)
+    withExtendedLifetime(module) {}
   }
 }
