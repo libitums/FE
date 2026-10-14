@@ -239,7 +239,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
     sessionOptions,
     onSelectNavTarget: (target: SettingsNavTarget) => {
       settingsEventSink?.(settingsNavOpenedEvent(target));
-      if (target === "profile" || target === "feedback") {
+      if (target === "profile" || target === "feedback" || target === "learner-profile") {
         dispatch({ type: "push", screen: { name: target } });
         return;
       }

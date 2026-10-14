@@ -4,20 +4,23 @@
 import { motionClassName, type Motion } from "@libitums/ui-lynx/motion";
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
-import type { LearningForm } from "../../lib/learning-form";
+import type { LearningActivityForm } from "../../lib/learning-form";
 
 /**
  * 세션 헤더에 서는 학습형 이름입니다. 영문인 것은 디자인(Figma 65-14)의 어휘이고,
  * 에피소드 헤더(`Episode 0.` · `Tutorial.`) · 말풍선(`Lesson 1:`)과 같은 갈래입니다 —
  * 메타 문구는 영문, 학습 내용은 한국어입니다.
  */
-const formLabels: Record<LearningForm, string> = {
+const formLabels: Record<LearningActivityForm, string> = {
   listening: "Listening",
   "sentence-order": "Word order",
   "word-choice": "Word choice",
   culture: "Culture",
   speaking: "Speaking",
   writing: "Writing",
+  typing: "Typing",
+  "vocab-card": "New words",
+  "pair-match": "Matching",
 };
 
 /**
@@ -39,7 +42,7 @@ const formLabels: Record<LearningForm, string> = {
  *
  * **제품 비식별입니다** — 학습형 이름뿐이고 사용자 · 콘텐츠를 가리키는 것이 없습니다.
  */
-export function learningTimingFlag(form: LearningForm): string {
+export function learningTimingFlag(form: LearningActivityForm): string {
   return `libitum:navigation:learning-${form}`;
 }
 
@@ -72,7 +75,7 @@ export type LearningSessionHeader = {
  * 분모에 포함하지 않습니다. 첫 문항은 1/N, 마지막 문항은 N/N으로 이미 100%입니다.
  */
 export function learningSessionHeader(
-  form: LearningForm,
+  form: LearningActivityForm,
   questionIndex: number,
   questionCount: number,
   copy: UiCopy,

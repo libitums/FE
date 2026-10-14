@@ -622,7 +622,7 @@ revid 37 cold37-plain; revid 37 cold37-show-icon; revid 30 cold30; revid 30 cold
 | R1 | 구성 변경 뒤 재생성 없음([android-orientation.md](android-orientation.md) O2) | bundled로 첫 화면이 선 뒤 `mark; A shell cmd uimode night yes; sleep 1.5; lc; A shell cmd uimode night no; sleep 1.5; lc` | 두 `lc` 모두 `create: 0 destroy: 0 relaunch_resume: 0`(`mark` 한 번이므로 합계). 화면이 같은 첫 화면 |
 | R2 | edge-to-edge · safe area([android-orientation.md](android-orientation.md) O3, ADR-0044) | 첫 화면에서 `appframe`과 `shot R2`, `python3 "$TOOLS/px.py" expect "$OUT/R2.png" '#FFFDFC' 16 status,top` | `appframe`이 ` frame=[0,0][<화면 폭>,<화면 높이>]`(앱 창 전체 — 상태바 · 내비게이션 바 자리까지 덮는다), 상태바 영역(status 점)과 top 점이 첫 화면 셸 색 `#FFFDFC` ± 16(투명 상태바 위에 앱이 그려진다 — 회색 띠 · 검정 띠 없음). `appframe`은 기기에서 확인됐다(실행 ② — ` frame=[0,0][1080,2400]`). **`lynxbounds`로 판정하지 않는다** — 온보딩 화면에서 실행 ①은 빈 값, 실행 ②는 `0,0-1080,2400`이었고 빈 값이 나오는 조건을 모른다(결함 D7은 재현되지 않았다) |
 | R3 | 3버튼 탭 바 위치([android-navigation-insets.md](android-navigation-insets.md) N1) | 그 문서의 N1 한 번만(3버튼 전환 · 160 dpi 조건 포함 — 그 문서의 「전제」를 따른다) | 그 문서의 N1 판정 그대로. 끝나면 내비게이션 모드 · 크기 · 밀도를 시작 값으로 되돌린다 |
-| R4 | 시스템 뒤로가기([android-system-back.md](android-system-back.md) B7) | `pm clear` 뒤 bundled를 켜 온보딩 1단계(`Step 1 of 3`)에서 `A shell input keyevent KEYCODE_BACK; sleep 1.5; front` | 앱이 떠난다(앞이 `MainActivity`가 아니다 — 런처). 그 문서의 B7 (b) 마지막 단계와 같다 |
+| R4 | 시스템 뒤로가기([android-system-back.md](android-system-back.md) B7) | `pm clear` 뒤 bundled를 켜 온보딩 1단계(`Step 1 of 4` — ⟨2026-10-13⟩ 전에는 `of 3`)에서 `A shell input keyevent KEYCODE_BACK; sleep 1.5; front` | 앱이 떠난다(앞이 `MainActivity`가 아니다 — 런처). 그 문서의 B7 (b) 마지막 단계와 같다 |
 
 R1 · R2는 `integration`의 IC4(`isAppearanceLightStatusBars` · inset)가 기기 안에서 같은 것을 본다 — 이 두 줄은 화면에서의 확인이다.
 

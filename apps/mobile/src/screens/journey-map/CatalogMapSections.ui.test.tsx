@@ -43,8 +43,16 @@ const openGate: CatalogGate = { tutorialPassed: true, progress: {} };
 
 function mount(gate: CatalogGate = openGate) {
   const onStartCover = vi.fn<(episodeId: string) => void>();
-  render(<CatalogMapSections sections={sections} gate={gate} onStartCover={onStartCover} />);
-  return onStartCover;
+  const onStartUnit = vi.fn<(episodeId: string, unitKey: string) => void>();
+  render(
+    <CatalogMapSections
+      sections={sections}
+      gate={gate}
+      onStartCover={onStartCover}
+      onStartUnit={onStartUnit}
+    />,
+  );
+  return Object.assign(onStartCover, { onStartUnit });
 }
 
 const coverId = (id: string) => `ui-lynx-learning-unit-catalog-cover-${id}`;
@@ -52,7 +60,7 @@ const nodeId = (id: string, key: string) => `ui-lynx-learning-unit-catalog-unit-
 const unitKeys = [...lessonKeys, "RP"];
 
 describe("CatalogMapSections", () => {
-  test("UM1. 표지 아래 레슨 8 + 최종 1이 순서대로 default로 서고 낭독 이름에 준비 중 · 잠김이 든다", () => {
+  test("UM1′. 진행 없이 열린 구획은 표지 아래 레슨 8 + 최종 1이 순서대로 default로 서고 낭독은 에피소드 번호로 시작해 잠김을 말한다", () => {
     mount();
 
     const section = screen.getByTestId("catalog-section-u01-water");
@@ -65,13 +73,21 @@ describe("CatalogMapSections", () => {
       ...unitKeys.map((key) => nodeId("u01-water", key)),
     ]);
 
-    for (const key of unitKeys) {
+    unitKeys.forEach((key, position) => {
       const node = within(section).getByTestId(nodeId("u01-water", key));
       expect(node).toHaveAttribute("data-status", "default");
       const label = node.getAttribute("accessibility-label") ?? "";
-      expect(label).toContain(", coming soon");
+      const title = key === "RP" ? "Final test" : `Lesson ${position + 1}`;
+      expect(label.startsWith(`Episode 1. ${title}`)).toBe(true);
       expect(label).toContain("locked");
-    }
+      expect(label.toLowerCase()).not.toContain("coming soon");
+    });
+
+    const cover = within(section).getByTestId(coverId("u01-water"));
+    expect(
+      (cover.getAttribute("accessibility-label") ?? "").startsWith("Episode 1. Episode intro"),
+    ).toBe(true);
+    expect(section.textContent ?? "").not.toContain("COMING SOON");
 
     for (let n = 1; n <= 8; n += 1) {
       expect(within(section).getByText(`Lesson ${n}`)).toBeInTheDocument();
@@ -80,7 +96,7 @@ describe("CatalogMapSections", () => {
     expect(within(section).getByText("Episode intro")).toBeInTheDocument();
   });
 
-  test("UM2. 레슨 · 최종 노드는 탭해도 시작을 올리지 않는다", () => {
+  test("UM2′. 진행 없이는 레슨 · 최종 노드를 탭해도 시작을 올리지 않는다", () => {
     const onStartCover = mount();
 
     for (const key of unitKeys) {
@@ -88,6 +104,56 @@ describe("CatalogMapSections", () => {
     }
 
     expect(onStartCover).toHaveBeenCalledTimes(0);
+    expect(onStartCover.onStartUnit).toHaveBeenCalledTimes(0);
+  });
+
+  test("UM-U1. 표지를 끝내면 첫 레슨이 열려 탭하면 에피소드 id와 키로 올리고 둘째 레슨은 여전히 닫혀 있다", () => {
+    const onStartCover = mount({ tutorialPassed: true, progress: { "u01-water": ["intro"] } });
+
+    expect(screen.getByTestId(nodeId("u01-water", "S1"))).toHaveAttribute(
+      "data-status",
+      "available",
+    );
+    fireEvent.tap(screen.getByTestId(nodeId("u01-water", "S1")), {});
+    expect(onStartCover.onStartUnit).toHaveBeenCalledTimes(1);
+    expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "S1");
+
+    expect(screen.getByTestId(nodeId("u01-water", "S3"))).toHaveAttribute("data-status", "default");
+    fireEvent.tap(screen.getByTestId(nodeId("u01-water", "S3")), {});
+    expect(onStartCover.onStartUnit).toHaveBeenCalledTimes(1);
+    expect(onStartCover).toHaveBeenCalledTimes(0);
+  });
+
+  test("UM-U2. 첫 레슨을 끝내면 clear로 서고 다시 풀 수 있으며 다음 레슨이 열린다", () => {
+    const onStartCover = mount({
+      tutorialPassed: true,
+      progress: { "u01-water": ["intro", "S1"] },
+    });
+
+    expect(screen.getByTestId(nodeId("u01-water", "S1"))).toHaveAttribute("data-status", "clear");
+    expect(screen.getByTestId(nodeId("u01-water", "S3"))).toHaveAttribute(
+      "data-status",
+      "available",
+    );
+    fireEvent.tap(screen.getByTestId(nodeId("u01-water", "S1")), {});
+
+    expect(onStartCover.onStartUnit).toHaveBeenCalledTimes(1);
+    expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "S1");
+  });
+
+  test("UM-U3. 레슨을 모두 끝내면 최종 테스트가 열리고 이야기 표시가 낭독에 들며 탭하면 RP 키로 올린다", () => {
+    const onStartCover = mount({
+      tutorialPassed: true,
+      progress: { "u01-water": ["intro", ...lessonKeys] },
+    });
+
+    const finalNode = screen.getByTestId(nodeId("u01-water", "RP"));
+    expect(finalNode).toHaveAttribute("data-status", "available");
+    expect(finalNode).toHaveAttribute("accessibility-label", "Episode 1. Final test, story");
+    fireEvent.tap(finalNode, {});
+
+    expect(onStartCover.onStartUnit).toHaveBeenCalledTimes(1);
+    expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "RP");
   });
 
   test("UM3a. 열린 첫 표지를 탭하면 에피소드 id로 한 번 올린다", () => {
@@ -189,6 +255,7 @@ describe("CatalogMapSections", () => {
           sections={sections}
           gate={openGate}
           onStartCover={vi.fn<(episodeId: string) => void>()}
+          onStartUnit={vi.fn<(episodeId: string, unitKey: string) => void>()}
         />
       </MotionProvider>,
     );

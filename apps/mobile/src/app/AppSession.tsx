@@ -51,6 +51,8 @@ import { useOpenedPush } from "./use-opened-push";
 import { usePushTokenRefresh } from "./use-push-token-refresh";
 import { useSystemBack } from "./use-system-back";
 import { useJourneyProgress } from "./use-journey-progress";
+import { useLearnerProfile } from "./use-learner-profile";
+import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
 import type { AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
@@ -99,6 +101,7 @@ export function AppSession({
   // `Nav`에 적지 않습니다(ADR-0007 D3). ⟨2026-09-30⟩ **서버에 저장합니다**(ADR-0035) — 로그인 뒤 불러와 합치고
   // 바뀔 때마다 저장합니다. 연속 학습 · 트로피도 이 훅이 냅니다.
   const progress = useJourneyProgress(journeySeed, initialCompletedEpisodeIntroIds);
+  const learner = useLearnerProfile();
   const {
     completedStepCount,
     setCompletedStepCount,
@@ -127,10 +130,10 @@ export function AppSession({
   // 한 스텝의 활동들이 지나오며 쌓는 결과입니다. 유닛 하나가 활동 여럿을 잇고 평가는
   // 마지막에 한 번만 돌므로, 그때까지의 정오를 여기 모읍니다(journey-wiring.ts).
   const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
-  // 같은 스텝에서 사용자가 건너뛴 문항 수입니다. `pendingResults`와 **같은 자리에 같은
-  // 모양으로** 듭니다 — 건너뛰기가 있는 활동이 스텝의 어느 자리에 오든 수가 새지
-  // 않게 하려면 둘이 함께 만들어지고 함께 버려져야 합니다.
+  // 같은 스텝에서 건너뛴 문항 수입니다. `pendingResults`와 같은 자리 · 같은 모양으로
+  // 듭니다 — 둘이 함께 만들어지고 함께 버려져야 수가 새지 않습니다.
   const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
+  const finishGuard = useCatalogFinishGuard();
   // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
   // 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
   const [gemCount] = useState(initialGemCount);
@@ -202,6 +205,8 @@ export function AppSession({
     catalogSections,
     catalogProgress,
     setCatalogProgress,
+    ...learner,
+    finishGuard,
   });
 
   // 호스트가 LynxView를 전체 화면으로 띄우므로 셸이 가려지는 가장자리만큼 안쪽 여백을 잡습니다.

@@ -10,6 +10,7 @@ import type { JourneyStepId } from "../screens/journey-map/journey-map";
 // 판정 어휘는 `lib/answer-result.ts`에서 옵니다 — 화면 폴더가 아니라 `lib/`에서
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
+import type { CatalogUnitKey } from "../lib/catalog-progress";
 import type { SpecialUnitEntrySource } from "../lib/special-unit-entry-source";
 // 전화번호 로그인(Supabase OTP)의 공용 어휘입니다 — 코드 검증 화면이 보여 줄 번호를
 // 나릅니다.
@@ -49,6 +50,11 @@ export type Screen =
   // 넘깁니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0033).
   | { name: "profile" }
   | { name: "feedback" }
+  // 설정 탭의 「레슨에 쓰는 이름 · 나라」 화면입니다. 필드가 없습니다 - 지금 값은 App이 넘깁니다.
+  | { name: "learner-profile" }
+  // 이름 · 나라가 드는 에피소드에 들어서기 전 묻는 화면입니다. 열려던 유닛을 들고 있다가(표지는 표지 키)
+  // 저장 · 건너뜀으로 풀 때 그 유닛을 시작합니다.
+  | { name: "learner-profile-gate"; episodeId: string; unitKey: CatalogUnitKey }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
   // 에피소드의 서사 표지입니다. 필드는 **표지 유닛 id 하나**입니다 — 표지가 스스로 맵에
@@ -67,6 +73,22 @@ export type Screen =
   | { name: "episode-final"; unitId: EpisodeFinalUnitId }
   // 카탈로그 에피소드의 표지 컷입니다. 에피소드는 카탈로그 id입니다.
   | { name: "catalog-cover"; episodeId: string }
+  // 카탈로그 레슨의 활동 하나입니다. 유닛 하나가 같은 학습형이 이어지는 구간 여럿을 잇습니다.
+  | { name: "catalog-lesson"; episodeId: string; unitKey: CatalogUnitKey; activityIndex: number }
+  // 카탈로그 최종 테스트(RP)입니다.
+  | { name: "catalog-final"; episodeId: string }
+  // 레슨 · 최종 테스트 공용 결과 화면입니다. 역할은 결선이 `finalKey`와 견줘 파생합니다.
+  | {
+      name: "catalog-unit-complete";
+      episodeId: string;
+      unitKey: CatalogUnitKey;
+      results: readonly AnswerResult[];
+      skippedCount: number;
+      /** 채점 문항 수입니다(카드처럼 채점하지 않는 문항은 세지 않습니다) — 통과 기준의 분모입니다. */
+      questionCount: number;
+    }
+  // 최종 테스트 통과 뒤 컷입니다.
+  | { name: "catalog-epilogue"; episodeId: string }
   | { name: "episode-final-complete"; unitId: EpisodeFinalUnitId; results: readonly AnswerResult[] }
   // 학습 화면 넷은 `activityIndex`를 함께 집니다. 유닛 하나가 활동 여럿을 잇기
   // 때문입니다(`learningFormsByStep`) — 몇 번째 활동인지는 「지금 어느 화면인가」의

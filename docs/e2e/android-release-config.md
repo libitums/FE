@@ -437,7 +437,7 @@ ls -l apps/android/app/build/outputs/bundle/release/app-release.aab     # 서명
 R1 ~ R8의 모의 값 인라인 지정은 그 명령 한 줄에만 적용되므로 셸에 남지 않는다. 그래도 `env | grep PUBLIC_SUPABASE`가 모의 값을 보이면 `unset` 한다. 번들 뒤 `grep -c example.invalid apps/mobile/dist/main.lynx.bundle`이 0인지로 모의 값이 안 섞였음을 확인한다.
 빌드가 `Release build needs … google-services.json` 또는 `Native 16 KB page alignment check failed`로 멈추면 업로드하지 말고 메시지를 결과 표에 적어 되돌린다.
 
-**크래시 수집(Sentry) 설정 — ⟨2026-10-13⟩ 이 단계에 값 넷과 도구 하나가 더해졌다.** 결정은 [ADR-0058](../adr/0058-crash-reporting-sentry.md), 값의 자리는 [`apps/android/README.md`](../../apps/android/README.md)의 「크래시 리포팅(Sentry)」이 진다.
+**크래시 수집(Sentry) 설정 — ⟨2026-10-13⟩ 이 단계에 값 넷과 도구 하나가 더해졌다.** 결정은 [ADR-0061](../adr/0061-crash-reporting-sentry.md), 값의 자리는 [`apps/android/README.md`](../../apps/android/README.md)의 「크래시 리포팅(Sentry)」이 진다.
 **이 단계(DSN을 넣은 release AAB · 매핑 업로드)는 아직 한 번도 실행되지 않았다.** 본 것은 값이 없을 때 빌드가 그대로 되고 업로드 작업이 SKIPPED라는 것([크래시 리포팅 e2e](crash-reporting.md) A1)과, DSN을 넣은 **`bundled`**가 에뮬레이터에서 이벤트를 만들어 전송을 시도한 것(같은 문서 B단계 1회차 — 수신은 사용자가 대시보드에서 확인했다)까지다.
 
 - **DSN을 넣지 않고 올려도 된다.** `apps/android/sentry.properties`와 `SENTRY_*` 환경 변수가 없으면 `bundleRelease`는 그대로 성공하고 그 AAB는 Sentry를 초기화하지 않는다(아무것도 보내지 않는다).
@@ -445,8 +445,8 @@ R1 ~ R8의 모의 값 인라인 지정은 그 명령 한 줄에만 적용되므�
 - ⚠ ⟨2026-10-13⟩ **`apps/android/sentry.properties`가 이미 있는 작업 트리가 있다** — 사용자가 Android DSN을 그 파일에 넣었다(`auth.token` · 조직 · 프로젝트는 아직 없다). 그 작업 트리에서 만든
   `release` · `bundled`는 **Sentry로 보내는 빌드다.** 빌드 전에 `test -e apps/android/sentry.properties && cut -d= -f1 apps/android/sentry.properties`로 어떤 키가 들어 있는지 본다(값은 출력하지 않는다).
   B단계와 데이터 보안 확인이 끝나기 전에 Play에 올릴 AAB는 그 파일을 치운 채(또는 파일이 없는 작업 트리에서) 만든다. B6(원문에 `user` · `did` · `ip_address` · `contexts.device.id`가 없다)은 기기 쪽에서 통과했다(에뮬레이터 1대 · `bundled`) — 수신과 대시보드의 모습(사용자 수 0 · Device 컨텍스트에 `id` · `name` · `boot_time` 없음)은 사용자가 확인했다(2026-10-13). 남은 것은 서버가 붙이는 IP(프로젝트 설정 「IP 주소 저장 안 함」)다.
-  **네이티브(C/C++) 크래시는 API 30 이하 기기에서 Sentry에 보이지 않는다고 보고 출시한다** — API 30에서는 tombstone 이벤트가 오지 않았고 API 34에서는 왔다(31 ~ 33 · 실기 미확인 — ADR-0058 D5). 세션 지표(크래시 없는 세션 비율)는 앱이 세션을 직접 관리하는 우회 뒤의 값이다 — 기기 쪽에서 크래시를 `crashed`로 세는 것은 확인됐고 강제 종료는 정상으로 셈된다(ADR-0058 D6 · 「대가」 12).
-  DSN을 넣은 AAB를 올리지 않는다** — 설치 id가 나가지 않는다는 근거가 그 전에는 단위 테스트뿐이다(ADR-0058 「정정 기록」).
+  **네이티브(C/C++) 크래시는 API 30 이하 기기에서 Sentry에 보이지 않는다고 보고 출시한다** — API 30에서는 tombstone 이벤트가 오지 않았고 API 34에서는 왔다(31 ~ 33 · 실기 미확인 — ADR-0061 D5). 세션 지표(크래시 없는 세션 비율)는 앱이 세션을 직접 관리하는 우회 뒤의 값이다 — 기기 쪽에서 크래시를 `crashed`로 세는 것은 확인됐고 강제 종료는 정상으로 셈된다(ADR-0061 D6 · 「대가」 12).
+  DSN을 넣은 AAB를 올리지 않는다** — 설치 id가 나가지 않는다는 근거가 그 전에는 단위 테스트뿐이다(ADR-0061 「정정 기록」).
 - **DSN을 넣어 올리려면** 위 `bundleRelease` **전에** 추적하지 않는 `apps/android/sentry.properties`(`.gitignore`)에 `dsn` · `auth.token` · `defaults.org` · `defaults.project`를 둔다(또는 환경 변수
   `SENTRY_DSN` · `SENTRY_AUTH_TOKEN` · `SENTRY_ORG` · `SENTRY_PROJECT` — 환경 변수가 이긴다). **DSN · 토큰 값은 명령 · 결과 표 · 스크린샷에 적지 않는다.**
   그 전에 [크래시 리포팅 e2e](crash-reporting.md)의 **B단계의 남은 것이 끝나 있어야 한다**(수신 · 이슈 · 세션 집계는 사용자가 대시보드에서 확인했다 — 서버가 붙이는 IP · 매핑으로 풀린 스택 · M2 / M3 쿼리가 남았다) — 그리고 [Android 데이터 보안](../android-data-safety.md)의 「제출 전에 확인할 것」이 끝나 있어야 한다.
@@ -717,9 +717,9 @@ tap_text() {            # $1 = text 또는 content-desc(정확히 일치). 노�
   A shell input tap "$x" "$y"
 }
 tap_xy() { A shell input tap "$1" "$2"; }   # tap_text 가 1로 끝난 화면(API 30)의 대체 — 좌표는 shot 으로 읽는다. 390x844 · 160 의 온보딩 Next 는 (195,743)이었다
-step_now() {            # 온보딩의 「Step N of 3」
+step_now() {            # 온보딩의 「Step N of 4」(2026-10-13 전 빌드는 「of 3」)
   dumpui step-now
-  grep -o 'Step [0-9] of 3' "$OUT/step-now.xml" | head -1
+  grep -o 'Step [0-9] of [34]' "$OUT/step-now.xml" | head -1
 }
 app_pid() { A shell pidof "$PKG" | tr -d '\r'; }
 
@@ -828,7 +828,7 @@ A logcat -c
 A shell am start -W -n "$ACT"
 sleep 12; app_pid                                # 12초 뒤 pid가 있다
 shot e1-12s; dumpui e1-12s
-grep -c 'Step 1 of 3' "$OUT/e1-12s.xml"          # 1 이상 — 온보딩 첫 화면
+grep -c -E 'Step 1 of [34]' "$OUT/e1-12s.xml"   # 1 이상 — 온보딩 첫 화면(2026-10-13부터 of 4)
 grep -c -i -E "App Compatibility|16 KB|16KB|page size" "$OUT/e1-12s.xml"     # 0 — 16 KB 호환성 대화상자 없음
 shrink_scan e1
 # 축소 전 빌드와의 경고 · 오류 서명 비교(같은 기기 · 같은 번들 · 한 번씩)
@@ -843,7 +843,7 @@ install_aab "$AAB" release        # 이후 케이스를 위해 축소된 빌드�
 
 | 판정 | 조건 |
 |---|---|
-| **통과** | 설치된 분할이 `base` + `config.arm64_v8a`(+ 언어 · 밀도) · 12초 뒤 pid 있음 · `Step 1 of 3` 보임 · 대화상자 문구 0 · `shrink_scan` 0줄 · **서명 차이 0** |
+| **통과** | 설치된 분할이 `base` + `config.arm64_v8a`(+ 언어 · 밀도) · 12초 뒤 pid 있음 · `Step 1 of 4`(2026-10-13 전 빌드는 `of 3`) 보임 · 대화상자 문구 0 · `shrink_scan` 0줄 · **서명 차이 0** |
 | **통과(주석)** | 위와 같고, 서명의 원본 차이가 있으나 **아래 규칙의 「이름만 다른 줄」뿐**이다 — 그 줄의 전 · 후를 모두 결과에 적는다 |
 | **판정 보류** | 규칙 밖의 차이(줄이 새로 생겼거나 사라졌거나, 이름 말고 다른 곳이 다르다)이면서 오류 판정 패턴에는 걸리지 않는다. 통과로 세지 않는다 |
 | **실패** | 프로세스 종료 · 오류 판정 줄(서명 차이 줄이 패턴에 걸리는 경우 포함) · 온보딩에 닿지 못함(주황 한 면이 남음 — 번들을 못 읽은 것) · 대화상자 |
@@ -901,10 +901,10 @@ done
 ```sh
 # E3
 install_aab "$AAB" release; A logcat -c; A shell am start -n "$ACT"; sleep 12
-step_now                                                 # Step 1 of 3
+step_now                                                 # Step 1 of 4
 tap_text "Next" || shot e3-no-next                        # 노드가 없거나 bounds가 비면 1 — 스크린샷으로 위치를 읽어 tap_xy (API 30은 항상 이쪽, 아래)
-sleep 2; step_now                                         # Step 2 of 3
-A shell input keyevent KEYCODE_BACK; sleep 2; step_now    # Step 1 of 3
+sleep 2; step_now                                         # Step 2 of 4
+A shell input keyevent KEYCODE_BACK; sleep 2; step_now    # Step 1 of 4
 A logcat -d | grep -c -F "InvokeMethod, method: (SystemBackModule.respond"       # 1 이상
 A shell input keyevent KEYCODE_BACK; sleep 2
 A shell dumpsys activity activities | grep -E "topResumedActivity|mResumedActivity"   # MainActivity가 아니라 런처
@@ -929,14 +929,14 @@ A shell settings put system font_scale 1.0
 
 | 케이스 | 통과 | 실패 |
 |---|---|---|
-| **E3** | `Step 2 of 3` → 뒤로 → `Step 1 of 3`(`SystemBackModule.respond` 호출 줄 1 이상) → 한 번 더 뒤로 → 런처가 최상위 · 프로세스 생존 · 오류 판정 0줄 | 뒤로가기에 앱이 종료됨 · 단계가 그대로 · 호출 줄 없음 · 오류 판정 줄 |
-| **E4** | 야간 모드 켬 · 끔 전후로 **pid가 같고 `ActivityRecord` 해시가 같고** `Step N of 3`이 같다 · **events 로그의 MainActivity `wm_on_create_called` · `wm_on_destroy_called`가 야간 토글 동안 0이고, 양성 대조(글자 배율 1.3)에서는 1 이상** · `e4-0` · `e4-yes` · `e4-no` 스크린샷이 같은 화면 · 오류 판정 0줄 | pid나 해시가 바뀜(재생성) · events 로그에 생성 · 파괴가 있음 · 화면이 바뀜 · 오류 판정 줄 |
+| **E3** | `Step 2 of 4` → 뒤로 → `Step 1 of 4`(2026-10-13 전 빌드는 `of 3`)(`SystemBackModule.respond` 호출 줄 1 이상) → 한 번 더 뒤로 → 런처가 최상위 · 프로세스 생존 · 오류 판정 0줄 | 뒤로가기에 앱이 종료됨 · 단계가 그대로 · 호출 줄 없음 · 오류 판정 줄 |
+| **E4** | 야간 모드 켬 · 끔 전후로 **pid가 같고 `ActivityRecord` 해시가 같고** `Step N of 4`가 같다 · **events 로그의 MainActivity `wm_on_create_called` · `wm_on_destroy_called`가 야간 토글 동안 0이고, 양성 대조(글자 배율 1.3)에서는 1 이상** · `e4-0` · `e4-yes` · `e4-no` 스크린샷이 같은 화면 · 오류 판정 0줄 | pid나 해시가 바뀜(재생성) · events 로그에 생성 · 파괴가 있음 · 화면이 바뀜 · 오류 판정 줄 |
 
 **pid와 `ActivityRecord` 해시는 재생성을 가리지 못한다**(같은 프로세스에서 Activity만 다시 만들어도 같고, 해시는 기록이 남는 한 같다). 그래서 재생성은 events의 생성 · 파괴 호출로 보고, 양성 대조가 0이면 그 숫자를 근거로 쓰지 않는다. events 줄의 정확한 모양은 저장하지 않았다(실행 기록은 센 수만 남겼다) — `grep MainActivity`가 맞지 않으면 `A logcat -b events -d | grep wm_on_create`로 모양을 먼저 본다.
 스크린샷 비교는 보조다: 실행에서 `e4-yes`와 `e4-no`는 바이트가 같았으나 `e4-0`만 바이트가 달랐다(원인 미확인 — 육안 · 구조는 같았다). 바이트 동일을 통과 조건으로 쓰지 않는다.
 
 `tap_text`가 노드를 못 찾으면(`Next`가 접근성 트리에 다른 이름일 때) 그 사실을 적고 스크린샷의 위치로 탭한다 — 그래도 못 하면 「닿지 못함」이고 통과로 세지 않는다.
-**API 30에서는 `tap_text`가 동작하지 않는다**: Lynx 접근성 노드의 `bounds`가 `[0,0][0,0]`이라 (0,0)을 누르게 된다(`Next` · `Step 1 of 3` 같은 모든 Lynx 노드 — `Step N of 3` 문구 읽기는 된다). `tap_text`는 그 경우 1로 끝나므로 `tap_xy`로 좌표를 눌러야 한다(390x844 · 160의 `Next`는 `tap_xy 195 743`).
+**API 30에서는 `tap_text`가 동작하지 않는다**: Lynx 접근성 노드의 `bounds`가 `[0,0][0,0]`이라 (0,0)을 누르게 된다(`Next` · `Step 1 of 4` 같은 모든 Lynx 노드 — `Step N of 4` 문구 읽기는 된다). `tap_text`는 그 경우 1로 끝나므로 `tap_xy`로 좌표를 눌러야 한다(390x844 · 160의 `Next`는 `tap_xy 195 743`).
 이것은 **축소와 무관한 이 이미지 · Lynx의 기존 성질이다** — 축소 전 빌드(`fd6052d9` 사본)의 덤프도 같다(`a30-before-dump.xml`).
 **E4는 끝에 야간 모드를 시작 전 값(`$NIGHT0`)으로 되돌린다**(`cmd uimode night yes|no|auto`) — 위 블록은 `no`로 끝나므로 원래 값이 `auto`였다면 되돌려야 한다.
 

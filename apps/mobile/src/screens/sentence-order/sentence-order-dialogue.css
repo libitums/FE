@@ -1,0 +1,58 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 대화 조립(대화 순서 문항)의 카드 안입니다.
+   말풍선 모양은 문장 순서의 상대 · 내 말풍선(`sentence-order-screen.css`)과 같은 값입니다 — 꼬리 쪽
+   한 모서리만 각지고(상대는 왼쪽 아래, 나는 오른쪽 아래) 폭은 내용을 따르되 카드 폭의 80%를 넘지
+   않습니다. */
+.sentence-order-dialogue {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--libitum-spacing-12);
+}
+
+.sentence-order-dialogue-bubble {
+  max-width: 80%;
+  padding: var(--libitum-spacing-24);
+  border: var(--libitum-stroke-width-thin) solid transparent;
+  border-radius: var(--libitum-radius-md);
+  flex-shrink: 0;
+}
+
+.sentence-order-dialogue-bubble-counterpart {
+  align-self: flex-start;
+  background-color: var(--libitum-color-gray-100);
+  border-bottom-left-radius: 0;
+}
+
+.sentence-order-dialogue-bubble-me {
+  align-self: flex-end;
+  background-color: var(--libitum-color-brand-primary);
+  border-bottom-right-radius: 0;
+}
+
+/* 아직 놓지 않은 칸 — 면을 걷고 연한 테두리만 남겨 자리표시로 읽히게 합니다. */
+.sentence-order-dialogue-bubble-empty {
+  background-color: transparent;
+  border-color: var(--libitum-color-gray-300);
+}
+
+.sentence-order-dialogue-text {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.sentence-order-dialogue-text-counterpart {
+  color: var(--libitum-color-gray-900);
+}
+
+.sentence-order-dialogue-text-me {
+  color: var(--libitum-color-white);
+  text-align: center;
+}
+
+/* 빈 칸의 표시는 어느 화자 쪽이든 같은 회색 글자입니다. */
+.sentence-order-dialogue-bubble-empty .sentence-order-dialogue-text {
+  color: var(--libitum-color-gray-700);
+}

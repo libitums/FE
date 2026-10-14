@@ -2,6 +2,10 @@
 // `screens/` 사이 값 import를 만들지 않기 위해서입니다(`code.md` 「import」 승격
 // 규칙: 화면 셋 이상이 쓰는 어휘). 이 모듈은 `screens/`를 import하지 않습니다.
 
+import type {
+  LearnerProfileSavedEvent,
+  LearnerProfileSkippedEvent,
+} from "./learner-profile.contract";
 import type { LegalDocumentOpenedEvent } from "./legal-document.contract";
 
 export type EntryScreenName =
@@ -60,7 +64,10 @@ export type EntryEvent =
   | EntryLoginMethodSelectedEvent
   | EntryCompletedEvent
   // 로그인 화면의 방침 · 약관 링크입니다(ADR-0033). 설정 sink와 같은 모양입니다.
-  | LegalDocumentOpenedEvent;
+  | LegalDocumentOpenedEvent
+  // 온보딩 넷째 스텝의 저장 · 건너뜀입니다. 값(이름 · 나라)은 싣지 않습니다.
+  | LearnerProfileSavedEvent
+  | LearnerProfileSkippedEvent;
 export type EntryEventSink = ((event: EntryEvent) => void) | null;
 export type EntryAppProps = { readonly entryEventSink?: EntryEventSink };
 

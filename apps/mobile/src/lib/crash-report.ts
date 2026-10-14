@@ -5,7 +5,7 @@ export const NON_ERROR_THROWN_MESSAGE = "Non-error value thrown";
 
 /**
  * 던져진 값을 오류 통로가 받는 모양으로 바꿉니다. 임의 객체는 문자열로 풀지 않습니다 —
- * 안에 무엇이 들었는지 모르기 때문입니다(docs/adr/0058).
+ * 안에 무엇이 들었는지 모르기 때문입니다(docs/adr/0061).
  */
 export function crashReportableFrom(thrown: unknown): CrashReportable {
   if (thrown instanceof Error) return thrown;

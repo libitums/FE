@@ -469,7 +469,7 @@ r02 조합으로 다시 재지 않았다. 계약은 「기기 다운로드는 AB
 
 ## 적용 기록
 
-### 2026-10-13 — Sentry SDK가 의존에 들어왔다 ([ADR-0058](0058-crash-reporting-sentry.md))
+### 2026-10-13 — Sentry SDK가 의존에 들어왔다 ([ADR-0061](0061-crash-reporting-sentry.md))
 
 결정을 바꾸지 않는다. `app/proguard-rules.pro`는 **9줄 그대로다**(D2 — 정적 검사 I4가 `pnpm test:android-bundle`에서 통과). 들어온 것은 `io.sentry:sentry-android-core:8.60.0` 하나이고
 (`.so` 0개 · NDK · Gradle 플러그인 없음), 이 기록은 그 의존이 축소에 닿는 자리만 적는다.
@@ -500,7 +500,7 @@ r02 조합으로 다시 재지 않았다. 계약은 「기기 다운로드는 AB
   ⟨2026-10-13 뒤 — e2e B단계⟩ **DSN을 넣은 `bundled`(R8)에서 초기화 · 이벤트 생성 · 전송 시도까지 돌았다** [실측 — API 30 에뮬레이터 1대, 에이전트 실행]: 세션과 JS 예외 이벤트 4건 · `am crash`의 Java 크래시 이벤트 1건이
   만들어졌고 앱은 평소대로 온보딩을 띄웠다(전송 구간의 logcat에 예외 0). 이벤트의 `debug_meta`에 매핑 UUID가 `type: proguard`로 실렸다. **보지 못한 것**: Sentry의 수신, 매핑 업로드와 풀린 스택(토큰 없음 — 그리고 `am crash`의 프레임은
   전부 프레임워크라 매핑 확인에 쓸 수 없다), ANR, tombstone(API 30에서 오지 않았다), release AAB. 이 회차의 dex 크기는 재지 않았다.
-  R8 뒤의 초기화 · 전송 · 매핑으로 풀린 스택은 DSN을 넣은 e2e B단계가 처음 본다(ADR-0058 「확인하지 못한 것」 1 ~ 3).
+  R8 뒤의 초기화 · 전송 · 매핑으로 풀린 스택은 DSN을 넣은 e2e B단계가 처음 본다(ADR-0061 「확인하지 못한 것」 1 ~ 3).
 - **출시 전에 할 일이 하나 늘었다**: `google-services.json`이 있는 워크트리에서 「지키는 검사」(D5)의 산출물 검사를 Sentry를 넣은 release AAB에 다시 돌린다. 절차는
   [Android 출시 설정](../e2e/android-release-config.md) R9의 1이 이미 그 검사를 싣고 있다.
 

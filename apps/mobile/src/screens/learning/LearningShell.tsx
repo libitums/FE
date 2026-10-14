@@ -5,16 +5,16 @@ import { useMotion } from "@libitums/ui-lynx/motion";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 import { LearningShellActions } from "./LearningShellActions";
 import { LearningShellBody } from "./LearningShellBody";
+import { LearningTopBar } from "./LearningTopBar";
 import { useLearningShellFlow } from "./use-learning-shell-flow";
 import { useQuestionTransition } from "./use-question-transition";
-import { TopBar } from "../../components/TopBar";
 import {
   learningShellArrangement,
   learningTimingFlag,
   learningWorkspaceMode,
 } from "./learning-shell.contract";
 import { LearningSessionHeader } from "./LearningSessionHeader";
-import type { LearningForm } from "../../lib/learning-form";
+import type { LearningActivityForm } from "../../lib/learning-form";
 import { scrollLearningShellToTop, useLearningShellScrollReset } from "./learning-shell-scroll";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
@@ -35,7 +35,7 @@ import "./learning-shell.css";
  * 껍데기는 정답 판정 없이 활동의 카드와 완료 여부를 받아 그립니다.
  */
 export type LearningShellProps = {
-  form: LearningForm;
+  form: LearningActivityForm;
   /**
    * 활동 안에서 지금 몇 번째 문항인가입니다(0부터). 세션 헤더의 `Lesson n / N`과 진행
    * 막대가 이 값에서 납니다.
@@ -117,8 +117,8 @@ export function LearningShell({
   onAction,
   actionSound = "button",
   advance,
-  streakDays = 0,
-  trophyCount = 0,
+  streakDays,
+  trophyCount,
   onOpenNotifications = () => {},
   obscured,
 }: LearningShellProps): ReactNode {
@@ -227,7 +227,7 @@ export function LearningShell({
       // 이 화면이 서는 한 바퀴를 SDK가 재게 하는 표식입니다 — 값과 근거는 계약이 집니다.
       __lynx_timing_flag={learningTimingFlag(form)}
     >
-      <TopBar
+      <LearningTopBar
         streakDays={streakDays}
         trophyCount={trophyCount}
         onOpenNotifications={onOpenNotifications}

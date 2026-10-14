@@ -6,6 +6,7 @@ import { announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { ListeningPrompt } from "./ListeningPrompt";
+import { ListeningSilentPrompt } from "./ListeningSilentPrompt";
 import { ListeningChoice } from "./ListeningChoice";
 import { useListeningPlayback } from "./use-listening-playback";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
@@ -23,6 +24,9 @@ import {
 import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import type { SessionOptions } from "../../lib/session-options";
+import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
+import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
+import type { ListeningQuestion } from "./listening-questions";
 
 import "./listening-screen.css";
 
@@ -46,6 +50,17 @@ export type ListeningScreenProps = {
   gemCount?: number;
 };
 
+export type ListeningActivityProps = {
+  readonly questions: readonly ListeningQuestion[];
+  readonly onExit: () => void;
+  readonly onFinish: ActivityFinish;
+  readonly sessionOptions: SessionOptions;
+  readonly gemCount: number;
+  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  readonly lesson?: LessonPosition;
+};
+
+/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
 export function ListeningScreen({
   stepId,
   onExit,
@@ -53,8 +68,26 @@ export function ListeningScreen({
   sessionOptions,
   gemCount = 0,
 }: ListeningScreenProps): ReactNode {
+  return (
+    <ListeningActivity
+      questions={questionsForStep(stepId)}
+      onExit={onExit}
+      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
+      sessionOptions={sessionOptions}
+      gemCount={gemCount}
+    />
+  );
+}
+
+export function ListeningActivity({
+  questions,
+  onExit,
+  onFinish,
+  sessionOptions,
+  gemCount,
+  lesson,
+}: ListeningActivityProps): ReactNode {
   const copy = useUiCopy();
-  const questions = questionsForStep(stepId);
   const [state, dispatch] = useReducer(listeningSessionReducer, initialListeningSessionState);
 
   // 완료는 파생입니다. 완료 시점에는 `questionIndex`가 문항 수와 같아 조회할 문항이
@@ -63,7 +96,7 @@ export function ListeningScreen({
   const question = complete ? null : questions[state.questionIndex];
 
   // 재생의 주인은 이 화면입니다 — 껍데기가 무대를 다시 세워도 소리가 끊기지 않습니다.
-  const playback = useListeningPlayback(question?.audioSource, sessionOptions);
+  const playback = useListeningPlayback(question?.audioSource ?? undefined, sessionOptions);
 
   // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번입니다(ADR-0016 D11-2).
   // dep이 `complete` 하나입니다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이
@@ -88,8 +121,7 @@ export function ListeningScreen({
       ? {
           label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
-          run: () =>
-            onFinish(stepId, sessionAnswerResults(questions, state.answeredChoiceIndexes), 0),
+          run: () => onFinish(sessionAnswerResults(questions, state.answeredChoiceIndexes), 0),
         }
       : undefined;
 
@@ -107,24 +139,33 @@ export function ListeningScreen({
   // 응답했는가(`selectedChoiceIndex`). 응답 여부를 `hasAnswered`로 읽으면서 dep에는
   // 그것이 보는 필드를 적습니다 — 「응답했다」의 정본은 여전히 그 함수 하나입니다.
   // `dispatch`는 `useReducer`가 고정해 줍니다.
-  const advance = useMemo(
-    () =>
-      question !== null && hasAnswered(state)
-        ? {
-            label: copy.common.continue,
-            run: () => dispatch({ type: "nextQuestion" }),
-            delayMs: 2500,
-          }
-        : undefined,
-    [question, state.selectedChoiceIndex, copy],
+  //
+  // 레슨의 중간 활동이면 마지막 문항에서 완료 카드를 거치지 않고 곧바로 결과를 올려 다음 학습형으로 갑니다.
+  const advance = useMemo(() => {
+    const selected = state.selectedChoiceIndex;
+    if (question === null || selected === null) return undefined;
+    const handsOff = handsOffAfter(lesson, state.questionIndex, questions.length);
+    return {
+      label: copy.common.continue,
+      run: () =>
+        handsOff
+          ? onFinish(sessionAnswerResults(questions, [...state.answeredChoiceIndexes, selected]), 0)
+          : dispatch({ type: "nextQuestion" }),
+      delayMs: 2500,
+    };
+  }, [question, state.selectedChoiceIndex, copy]);
+  const counter = lessonCounter(
+    lesson,
+    question === null ? Math.max(0, questions.length - 1) : state.questionIndex,
+    questions.length,
   );
 
   return (
     <LearningShell
       form="listening"
       // 완료 화면은 마지막 문항의 N/N을 유지하며 별도 문항으로 세지 않습니다.
-      questionIndex={question === null ? Math.max(0, questions.length - 1) : state.questionIndex}
-      questionCount={questions.length}
+      questionIndex={counter.questionIndex}
+      questionCount={counter.questionCount}
       complete={complete}
       instruction={question?.instruction ?? copy.listening.instruction}
       onExit={onExit}
@@ -167,7 +208,10 @@ export function ListeningScreen({
           </view>
 
           {/* 제시 채널입니다. 오디오가 생기면 **이 컴포넌트만** 통째로 갈립니다. */}
-          {question === null ? null : (
+          {question === null ? null : question.audioSource === null ? (
+            // 소리가 없는 문항입니다 — 대본이 유일한 단서라 `show-transcript`와 무관하게 섭니다.
+            <ListeningSilentPrompt text={question.prompt} romanization={question.romanization} />
+          ) : (
             <ListeningPrompt
               text={question.prompt}
               romanization={question.romanization}

@@ -9,6 +9,10 @@
 // 예외는 미전송 분석 이벤트(`analytics.queue`, ADR-0029 D12)와 사용자별 미전송 학습 진행
 // (`libitum.progress.pending.<userId>`, ADR-0035 D3)과 학습 날짜
 // (`libitum.learning-days.pending.<userId>`, ADR-0035 D6)입니다. 서버 확인 뒤 지웁니다.
+// 학습자 프로필(이름 · 나라)의 새 예외 둘: 사용자별 칸(`libitum.learner-profile.<userId>`, 확인된 값도 둡니다 -
+// 부팅 직후 내려받기 전에도 문장이 채워져야 하고 서버 표가 없는 상태에서도 동작해야 합니다)과 로그인 전 손님 칸
+// (`libitum.learner-profile.guest`, 로그인 뒤 첫 동기화가 사용자별 칸으로 옮기며 지웁니다). 사용자별 칸은
+// 로그아웃에 남고 계정 삭제 성공에 지웁니다. 이름과 나라는 개인정보라 분석 · 로그로 내보내지 않습니다.
 // 기기 범위로 남는 예외는 넷입니다. 서버로 가지 않고 로그아웃·계정 삭제에서도 지우지 않습니다.
 // - `libitum.ui.language` — UI 언어(ADR-0031 D4, 지우지 않는 근거는 ADR-0032)
 // - `libitum.episode-survey.done` — 설문을 답했거나 건너뛴 에피소드 목록(ADR-0036)

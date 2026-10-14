@@ -15,7 +15,7 @@ import io.sentry.android.core.SentryAndroidOptions;
 
 /**
  * The only place that touches Android and Sentry for crash reporting. Without a valid DSN no
- * io.sentry code runs and the funnel has no sink. Nothing here may stop the app (docs/adr/0058).
+ * io.sentry code runs and the funnel has no sink. Nothing here may stop the app (docs/adr/0061).
  */
 final class CrashReporting {
   private static volatile SentryAndroidOptions sentryOptions;
@@ -86,7 +86,7 @@ final class CrashReporting {
   }
 
   // Sessions start on the SDK's own queue, behind the work that finalizes the previous session, so a
-  // crashed session is not overwritten by the new one (SDK 8.60.0 race, docs/adr/0058).
+  // crashed session is not overwritten by the new one (SDK 8.60.0 race, docs/adr/0061).
   private static void watchSessions() {
     SentryAndroidOptions options = sentryOptions;
     if (options == null) return;

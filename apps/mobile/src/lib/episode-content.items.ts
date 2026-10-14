@@ -74,19 +74,6 @@ export function resolvePairs(
 }
 
 export function toItem(item: DeliveryItem): LearningItem {
-  if (item.type === "ROLEPLAY_TURN") {
-    const event = Reflect.get(item, "event");
-    const ref = Reflect.get(item, "ref");
-    return {
-      id: item.id,
-      type: "ROLEPLAY_TURN",
-      event: event === "E" ? "E" : "R",
-      ...maybe("ref", typeof ref === "string" ? nonEmpty(ref) : undefined),
-      // `structuredClone`은 Lynx 백그라운드 런타임(PrimJS)에 있다는 근거가 없어 쓰지 않습니다.
-      // 입력은 `JSON.parse` 결과라 JSON 왕복이 손실 없는 깊은 복사입니다.
-      raw: JSON.parse(JSON.stringify(item)) as unknown,
-    };
-  }
   const base = { id: item.id, event: item.event, ...maybe("ref", nonEmpty(item.ref)) };
   switch (item.type) {
     case "VOCAB_CARD":
@@ -184,6 +171,24 @@ export function toItem(item: DeliveryItem): LearningItem {
         prompt: toText(item.prompt),
         tiles: toTexts(item.tiles),
         pairs: resolvePairs(item.tiles, item.answers[0]?.ko) ?? [],
+      };
+    case "ROLEPLAY_TURN":
+      return {
+        ...base,
+        type: item.type,
+        prompt: toText(item.prompt),
+        context: toText(item.context),
+        stimulus: toStimulus(item.stimulus),
+        tiles: toTexts(item.tiles),
+        answers: toTexts(item.answers),
+        feedback: { correct: toText(item.feedback.correct) },
+        roleplay: {
+          lineId: item.roleplay.line_id,
+          tilesGloss: item.roleplay.tiles_gloss.map((gloss) => ({
+            tile: gloss.tile,
+            ...maybe("en", gloss.en),
+          })),
+        },
       };
   }
 }

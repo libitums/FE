@@ -101,7 +101,6 @@ test("UC-C1. 카탈로그 맵 · 표지 문구가 문구표 값과 같다", () =
   expect(c.catalogMap.coverTitle).toBe("Episode intro");
   expect(c.catalogMap.lessonTitle(2)).toBe("Lesson 2");
   expect(c.catalogMap.finalTitle).toBe("Final test");
-  expect(c.catalogMap.preparing("Ep")).toBe("Ep, coming soon");
   expect(c.catalogMap.caption).toEqual({
     pending: "COMING SOON",
     update: "UPDATE REQUIRED",
@@ -122,4 +121,90 @@ test("UC-C1. 카탈로그 맵 · 표지 문구가 문구표 값과 같다", () =
   });
   expect(c.catalogCover.nextCut(2, 6)).toBe("Next scene, 2 of 6");
   expect(c.catalogCover.finishCover).toBe("Finish intro");
+});
+
+test("UC-L1. 카탈로그 학습 문구가 문구표 값과 같고 준비 중 문구는 없다", () => {
+  expect(c.catalogMap.nodeLabel("Episode 1.", "Lesson 1")).toBe("Episode 1. Lesson 1");
+  expect("preparing" in c.catalogMap).toBe(false);
+  expect(c.catalogCover.finishEpilogue).toBe("Finish episode");
+  expect(c.catalogCover.episodeStart).toBe("Episode start!");
+  expect(c.catalogCover.episodeClear).toBe("Episode clear!");
+  expect(c.catalogCover.skipDescription).toBe(
+    "You can watch it again anytime from the episode intro.",
+  );
+  expect(c.typing.instruction).toBe("Type the sentence in Korean.");
+  expect(c.typing.answerField("여권")).toBe("Your answer: 여권");
+  expect(c.typing.answerFieldEmpty).toBe("Your answer, empty");
+  expect(c.typing.answerReveal("여권")).toBe("Answer: 여권");
+  expect(c.catalogFinal.turnProgress(2, 3)).toBe("Turn 2 of 3");
+  expect(c.catalogFinal.replyLabel("네")).toBe("Your reply: 네");
+  expect(c.catalogFinal.replyEmpty).toBe("Your reply, empty");
+  expect(c.catalogFinal.replyHint("No")).toBe("Say: No");
+  expect(c.catalogFinal.correctAnswer("네")).toBe("Answer: 네");
+  expect(c.audioUnavailable.label).toBe("Audio not available yet");
+});
+
+test("UC-I1. 단어 카드 · 짝 맞추기 · 그림 제시 문구가 문구표 값과 같다", () => {
+  expect(c.vocabCard.instruction).toBe("Learn this word.");
+  expect(c.vocabCard.badge).toBe("New word");
+  expect(c.vocabCard.exampleTitle).toBe("Example");
+  expect(c.vocabCard.pronunciation("mul")).toBe("Pronunciation: mul");
+  expect(c.vocabCard.meaning("water")).toBe("Meaning: water");
+  expect(c.vocabCard.example("x")).toBe("Example: x");
+  expect(c.pairMatch.instruction).toBe("Tap a word, then its meaning.");
+  expect(c.pairMatch.progress(1, 4)).toBe("1 / 4 matched");
+  expect(c.pairMatch.progressLabel(1, 4)).toBe("1 of 4 pairs matched");
+  expect(c.pairMatch.selected("a")).toBe("a, selected");
+  expect(c.pairMatch.matched("a", 2, "b")).toBe("a, pair 2, matched with b");
+  expect(c.pairMatch.judged("a", "b")).toBe("a, matched with b");
+  expect(c.pairMatch.answerPair("a", "b")).toBe("a = b");
+  expect(c.pairMatch.linked("a", "b", 1, 4)).toBe("Matched: a, b. 1 of 4.");
+  expect(c.pairMatch.unlinked("a")).toBe("Unmatched: a");
+  expect(c.pairMatch.missedPairs("a, b.")).toBe("Correct pairs: a, b.");
+  expect(c.pairMatch.spokenPair("a", "b")).toBe("a, b.");
+  expect(c.wordChoicePicture.picture("water")).toBe("Picture: water");
+  expect(c.wordChoicePicture.loading).toBe("Picture, loading");
+  expect(c.wordChoicePicture.unavailable("water")).toBe("Picture unavailable. Meaning: water");
+  expect(c.wordChoicePicture.unavailableCaption).toBe("Picture unavailable");
+  expect(c.wordChoicePicture.answer("x", "y", "water")).toBe("Answer: x, y, water");
+  expect(c.wordChoicePicture.answer("x", null, "water")).toBe("Answer: x, water");
+  expect(c.wordChoicePicture.answerSubline("mul", "water")).toBe("mul · water");
+  expect(c.wordChoicePicture.answerSubline(null, "water")).toBe("water");
+});
+
+test("UC-L. 학습자 프로필 구획의 모든 잎이 비지 않은 문자열이고 함수는 문자열을 낸다", () => {
+  const leaves = leavesOf(c.learnerProfile, "learnerProfile");
+
+  const emptyPaths = leaves
+    .filter((leaf) => {
+      const out =
+        typeof leaf.value === "string"
+          ? leaf.value
+          : (leaf.value as (...args: unknown[]) => unknown)(...sampleArgs);
+      return typeof out !== "string" || out.trim() === "";
+    })
+    .map((leaf) => leaf.path);
+
+  expect(leaves.length).toBeGreaterThan(20);
+  expect(emptyPaths).toEqual([]);
+});
+
+test("UC-L. 학습자 프로필 문구 함수가 인자를 문장에 싣는다", () => {
+  const p = c.learnerProfile;
+
+  expect(p.picker.matches(1)).not.toBe(p.picker.matches(2));
+  expect(p.picker.matches(3)).toContain("3");
+  expect(p.picker.allCountries(199)).toContain("199");
+  expect(p.picker.row("France", "프랑스")).toContain("France");
+  expect(p.picker.row("France", "프랑스")).toContain("프랑스");
+  expect(p.picker.countrySet("France")).toContain("France");
+  expect(p.summary.both("Emma", "France")).toContain("Emma");
+  expect(p.summary.both("Emma", "France")).toContain("France");
+  expect(p.summary.pending("Emma · France")).toContain("Emma · France");
+  expect(p.preview.label("yours", "Emma로 예약했어요.", "I booked under Emma.")).toContain(
+    "I booked under Emma.",
+  );
+  expect(p.nameIssue.empty).not.toBe(p.nameIssue["forbidden-character"]);
+  expect(p.nameEmptyOnGate).not.toBe(p.nameIssue.empty);
+  expect(p.countryMissing).not.toBe(p.nameIssue.empty);
 });

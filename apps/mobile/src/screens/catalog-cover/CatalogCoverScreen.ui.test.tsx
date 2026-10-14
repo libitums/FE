@@ -87,6 +87,7 @@ function mount(list: readonly CatalogCutView[] = views, motion?: "reduced") {
   const onExit = vi.fn<() => void>();
   const screenElement = (
     <CatalogCoverScreen
+      stage="prologue"
       insets={insets}
       ordinal={1}
       cuts={cutsOf(list)}

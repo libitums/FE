@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-/** Second review round (docs/adr/0058, correction record): cut heads, over-scrubbing, name order. */
+/** Second review round (docs/adr/0061, correction record): cut heads, over-scrubbing, name order. */
 public final class CrashReviewRoundTwoTest {
   private static String repeat(String s, int n) {
     StringBuilder sb = new StringBuilder();

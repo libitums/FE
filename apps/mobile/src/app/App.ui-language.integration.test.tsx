@@ -184,7 +184,7 @@ async function walkEntryFlow(
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
   });
-  for (let index = 0; index < 3; index += 1) tapButtonIn("onboarding-screen-next");
+  for (let index = 0; index < 4; index += 1) tapButtonIn("onboarding-screen-next");
   tapButtonIn("login-screen-method-google");
   await advanceTimersAsync(0);
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
@@ -272,7 +272,12 @@ test("[IL3] ⭐ 언어 선택의 Continue가 고른 언어를 1회 저장하고,
   // 고르지 않고 Continue만 누른 흐름도 확정 순간에 같은 값을 1회 저장한다(spec §5 개정 — 저장은 확정 때).
   expect(languageKeyCalls(controlStorage).sets).toEqual(["en"]);
   expect(events.length).toBeGreaterThan(0);
-  expect(events.every((event) => event.name.startsWith("entry_"))).toBe(true);
+  // 온보딩 넷째 스텝을 빈 채 넘기면 건너뜀 이벤트(`learner_profile_skipped`)가 진입 sink로 한 번 나갑니다.
+  expect(
+    events.every(
+      (event) => event.name.startsWith("entry_") || event.name.startsWith("learner_profile_"),
+    ),
+  ).toBe(true);
   // 선택은 저장일 뿐 이벤트가 아니다 — 고르지 않은 흐름과 같은 이벤트가 같은 순서로 난다.
   expect(events).toEqual(controlEvents);
 });

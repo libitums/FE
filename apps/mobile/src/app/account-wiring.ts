@@ -2,6 +2,7 @@
 // `entry_screen_viewed(login)` → App 세션 재시작)를 잇습니다. 어휘는 `leave-app.contract.ts`입니다.
 
 import { authUserIdFrom } from "../lib/auth-user-id";
+import { clearLearnerProfileCache } from "../lib/learner-profile-cache";
 import { clearPendingLearningDays } from "./pending-learning-days";
 import { clearPendingProgress } from "./pending-learning-progress";
 import { deleteAccount } from "../lib/account-deletion";
@@ -65,6 +66,7 @@ export function accountWiring({
         if (userId !== null) {
           clearPendingProgress(userId);
           clearPendingLearningDays(userId);
+          clearLearnerProfileCache(userId);
         }
         leave("deleted");
       }

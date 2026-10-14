@@ -553,6 +553,19 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
   예시로 적힌 `Episode 1.` / `Customs.`는 그때의 값이다. 캡션 색은 대비 때문에
   `fg-neutral-subtle` → `fg-neutral-muted`(6.53:1)로 진해졌다(기존 준비 중 구획도 함께).
 
+### 2026-10-13 (브랜치 `feat/episode-catalog-lessons`) — 레슨이 열리면서 D15의 「잠긴 채 보인다」가 사슬이 되고, D10의 마지막 자리 뒤에 통과 뒤 컷이 붙었다
+
+**뒤집힌 결론이 0건이다.** 결정은 [ADR-0058](0058-catalog-learning-session.md)이 진다. 여기 적는 것은 이 문서의 문면이 그때의 상태가 된 자리다.
+
+- **D15 — 「레슨 · 최종 노드는 늘 잠김」 · 「낭독 `Lesson 1, coming soon, locked`」 · 준비된 구획의 `COMING SOON` 캡션은 3b-2의 상태다.**
+  이제 사슬 `intro → 레슨들 → RP`로 열린다 — 끝낸 유닛은 `completed`(다시 풀 수 있다), 바로 앞을 끝냈으면 `available`, 아니면 `locked`(눌러도 아무 일 없음).
+  맵과 시작 결선이 같은 순수 함수(`catalogUnitStatus` · `canStartCatalogUnit`)를 부른다(D15의 「같은 함수」 원칙 그대로). 노드는 `CatalogLockedUnitNode`를
+  대체한 `CatalogUnitNode`이고, 레슨 노드는 시트 없이 곧장 세션을 연다. 낭독 이름에 에피소드가 든다 — `Episode 1. Lesson 1` + 상태 접미사(표지도 `Episode 1. Episode intro`).
+  `coming soon` 낭독과 준비된 구획의 `COMING SOON` 캡션은 걷었다(유닛이 열리면 거짓이 된다). 미준비 구획(`catalog-unavailable`)의 캡션 셋은 그대로다.
+  에피소드 사이 잠금(n번째 표지 = n−1번째 `RP` 뒤)은 그대로이고, 그 `RP`를 실제로 적는 자리가 생겼다.
+- **D10 — 「마지막 자리는 최종 테스트」는 그대로 참이다.** 콘텐츠의 통과 뒤 컷(`post_cuts`)은 맵의 자리가 아니라 **최종 테스트 결과 화면의 나가기 뒤**에 선다(통과일 때만,
+  노드 없음). 튜플에 넷째 자리를 더하지 않았으므로 에피소드의 최소 길이 · 맵 노드 수 · 진행 분모는 그대로다. `RP` 기록은 판정 순간이라 통과 뒤 컷을 중간에 나가도 다음 표지가 열린다.
+
 ## 재검토 조건
 
 - **특별 유닛의 항목이 맵의 줄에서 자리를 차지하지 않는 형태**(예: 스텝 노드 위의 배지)로
@@ -695,3 +708,11 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
   안에 선다.
 - **기기 확인**: iOS 시뮬레이터 두 회차 — [카탈로그 맵 e2e](../e2e/catalog-map.md).
 
+### 2026-10-13 — 카탈로그 레슨 · 최종 테스트 · 통과 뒤 컷이 열렸다 (3c)
+
+위 `정정 기록` 2026-10-13과 [ADR-0058](0058-catalog-learning-session.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
+
+- **노드 상태**: `screens/journey-map/catalog-map.ts`(`catalogUnitStatus` · `canStartCatalogUnit` · `catalogUnitNodesOf`)와 `CatalogUnitNode.tsx`.
+- **세션**: 수업 계획 `app/catalog-lesson-plan.ts`, 결선 `app/catalog-lesson-wiring.ts` · `app/catalog-wiring.ts`, 렌더 `app/render-catalog.tsx`(route 넷).
+- **최종 테스트 · 통과 뒤 컷**: `screens/catalog-final/CatalogFinalScreen.tsx`, `CatalogCoverScreen`의 `stage="epilogue"`.
+- **기기 확인**: iOS 시뮬레이터 두 회차 — 레슨 노드 · 사슬 열림 · 낭독 이름까지 봤고, 최종 테스트 · 통과 뒤 컷은 순차 잠금이라 닿지 못했다 — [카탈로그 레슨 e2e](../e2e/catalog-lessons.md).

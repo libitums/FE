@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-/** RS1..RS5: the app-owned session clock that replaces the SDK's racy auto tracking (docs/adr/0058). */
+/** RS1..RS5: the app-owned session clock that replaces the SDK's racy auto tracking (docs/adr/0061). */
 public final class CrashSessionGateTest {
   @Test public void rs1_firstForegroundStartsOnce() {
     CrashSessionGate gate = new CrashSessionGate();

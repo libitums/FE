@@ -1,7 +1,16 @@
 // 영어 문구표입니다. 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 
 import type { UiCopy } from "./ui-copy.contract";
-import { catalogCoverEn, catalogMapEn } from "./ui-copy-en-catalog";
+import {
+  audioUnavailableEn,
+  catalogCoverEn,
+  catalogFinalEn,
+  catalogMapEn,
+  pairMatchEn,
+  typingEn,
+  vocabCardEn,
+  wordChoicePictureEn,
+} from "./ui-copy-en-catalog";
 import {
   feedbackEn,
   gemPurchaseEn,
@@ -21,6 +30,7 @@ import {
   wordChoiceEn,
   writingEn,
 } from "./ui-copy-en-learning";
+import { learnerProfileEn } from "./ui-copy-en-profile";
 import { commonEn, journeyMapEn, learningShellEn, shellEn } from "./ui-copy-en-shell";
 import {
   episodeFinalEn,
@@ -61,4 +71,11 @@ export const uiCopyEn: UiCopy = {
   gemPurchase: gemPurchaseEn,
   catalogMap: catalogMapEn,
   catalogCover: catalogCoverEn,
+  typing: typingEn,
+  vocabCard: vocabCardEn,
+  pairMatch: pairMatchEn,
+  wordChoicePicture: wordChoicePictureEn,
+  catalogFinal: catalogFinalEn,
+  audioUnavailable: audioUnavailableEn,
+  learnerProfile: learnerProfileEn,
 };

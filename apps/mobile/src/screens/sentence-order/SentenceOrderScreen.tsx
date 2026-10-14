@@ -10,6 +10,7 @@ import type { AnswerResult } from "../../lib/answer-result";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { SentenceOrderChip, SentenceOrderChipPlaceholder } from "./SentenceOrderChip";
+import { SentenceOrderDialogue } from "./SentenceOrderDialogue";
 import {
   canCheckArrangement,
   canPlaceChip,
@@ -24,6 +25,9 @@ import {
   sentenceOrderSessionResults,
 } from "./sentence-order";
 import type { JourneyStepId } from "../journey-map/journey-map";
+import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
+import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
+import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
 import "./sentence-order-screen.css";
 
@@ -40,17 +44,43 @@ export type SentenceOrderScreenProps = {
   onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
 };
 
+export type SentenceOrderActivityProps = {
+  readonly questions: readonly SentenceOrderQuestion[];
+  readonly gemCount: number;
+  readonly onExit: () => void;
+  readonly onFinish: ActivityFinish;
+  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  readonly lesson?: LessonPosition;
+};
+
 /** 내 말풍선이 비어 있을 때의 표시입니다 — 디자인 표기 그대로입니다. */
 const emptyReplyMark = "----";
 
+/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
 export function SentenceOrderScreen({
   stepId,
   gemCount = 0,
   onExit,
   onFinish,
 }: SentenceOrderScreenProps): ReactNode {
+  return (
+    <SentenceOrderActivity
+      questions={sentenceOrderQuestionsForStep(stepId)}
+      gemCount={gemCount}
+      onExit={onExit}
+      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
+    />
+  );
+}
+
+export function SentenceOrderActivity({
+  questions,
+  gemCount,
+  onExit,
+  onFinish,
+  lesson,
+}: SentenceOrderActivityProps): ReactNode {
   const copy = useUiCopy();
-  const questions = sentenceOrderQuestionsForStep(stepId);
   const [state, dispatch] = useReducer(
     sentenceOrderSessionReducer,
     initialSentenceOrderSessionState,
@@ -96,16 +126,27 @@ export function SentenceOrderScreen({
       ? {
           label: copy.common.seeResults,
           // 이 화면에는 건너뛰기가 없습니다 — 셋째 인자는 늘 0입니다(D8, speaking만 다른 값을 냅니다).
-          run: () =>
-            onFinish(stepId, sentenceOrderSessionResults(questions, state.submittedOrders), 0),
+          run: () => onFinish(sentenceOrderSessionResults(questions, state.submittedOrders), 0),
         }
       : state.phase === "checked"
-        ? { label: copy.common.next, run: () => dispatch({ type: "nextQuestion" }) }
+        ? {
+            label: copy.common.next,
+            // 레슨의 중간 활동은 마지막 문항 뒤 완료 카드 없이 곧바로 결과를 올립니다.
+            run: () =>
+              handsOffAfter(lesson, state.questionIndex, questions.length)
+                ? onFinish(sentenceOrderSessionResults(questions, state.submittedOrders), 0)
+                : dispatch({ type: "nextQuestion" }),
+          }
         : canCheckArrangement(question, state)
           ? { label: copy.common.check, run: () => dispatch({ type: "check" }), sound: "none" }
           : undefined;
 
   const bankFull = question == null ? true : !canPlaceChip(question, state);
+  const counter = lessonCounter(
+    lesson,
+    question == null ? Math.max(0, questions.length - 1) : state.questionIndex,
+    questions.length,
+  );
 
   return (
     <>
@@ -113,10 +154,12 @@ export function SentenceOrderScreen({
         form="sentence-order"
         obscured={guide.visible}
         gemCount={gemCount}
-        questionIndex={question == null ? Math.max(0, questions.length - 1) : state.questionIndex}
-        questionCount={questions.length}
+        questionIndex={counter.questionIndex}
+        questionCount={counter.questionCount}
         complete={complete}
-        instruction={question?.support?.instruction ?? copy.sentenceOrder.instruction}
+        instruction={
+          question?.instruction ?? question?.support?.instruction ?? copy.sentenceOrder.instruction
+        }
         onExit={onExit}
         actionLabel={action?.label}
         onAction={action?.run}
@@ -157,6 +200,14 @@ export function SentenceOrderScreen({
                 questionCount={questions.length}
                 testId="sentence-order-screen-complete"
               />
+            ) : question.dialogue === true ? (
+              <SentenceOrderDialogue
+                slotCount={question.answerOrder.length}
+                chips={question.chips}
+                placedChipIndexes={state.placedChipIndexes}
+                locked={state.phase === "checked"}
+                onReturn={toggle}
+              />
             ) : (
               <>
                 {/* 상대의 말 — 왼쪽 말풍선. */}
@@ -186,7 +237,7 @@ export function SentenceOrderScreen({
                 </view>
 
                 {/* 내 말 — 오른쪽 말풍선. 채우는 동안은 빈 표시(`----`)이고 낭독하지 않습니다.
-                  채점하면 만든 문장이 섭니다. */}
+                    채점하면 만든 문장이 섭니다. */}
                 <view
                   className="sentence-order-screen-reply"
                   data-testid="sentence-order-screen-reply"
@@ -200,7 +251,7 @@ export function SentenceOrderScreen({
                 </view>
 
                 {/* 답 칸 줄 — 놓인 조각이 순서대로 섭니다. 누르면 창고로 돌아갑니다. 위아래
-                  가는 선이 줄의 자리를 보입니다. */}
+                    가는 선이 줄의 자리를 보입니다. */}
                 <view
                   className="sentence-order-screen-sentence"
                   data-testid="sentence-order-screen-sentence"

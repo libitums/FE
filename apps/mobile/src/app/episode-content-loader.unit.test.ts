@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { CONTENT_MANIFEST_KEY, contentEpisodeKey } from "../lib/episode-cache";
+import { minimalRoleplayTurnWire } from "../lib/episode-content.test-support";
 import { sha256Hex, utf8Bytes } from "../lib/sha256";
 
 // `unit` 계층: 로더는 호스트 저장소 경계(`NativeModules.StorageModule`)와 Supabase 설정만 대역으로 두고
@@ -86,7 +87,7 @@ function minimalEpisodeText(unitId: string): string {
     post_cuts: [cut("post")],
     steps: [
       { id: "S1", order: 1, items: [roleLine] },
-      { id: "RP", order: 2, items: [{ id: "RP-01", type: "ROLEPLAY_TURN" }] },
+      { id: "RP", order: 2, items: [minimalRoleplayTurnWire("RP-01")] },
     ],
     words: [{ id: "voca:1", ko: "물", roman: "mul", gloss_en: "water", role: "target" }],
     patterns: [{ id: "patt:1", ko: "{명사} 주세요", roman: "juseyo", gloss_en: "please give me" }],

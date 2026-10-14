@@ -22,3 +22,10 @@ export type LearningForm =
   | "culture"
   | "speaking"
   | "writing";
+
+/**
+ * 학습 껍데기가 그리는 활동 종류입니다 — 기본 학습형에 카탈로그 전용 타자 입력 · 단어 카드 · 짝 맞추기를 더한
+ * 어휘입니다. `LearningForm`을 넓히지 않는 것은 튜토리얼의 화면 배정 · 라우팅 표가 이
+ * 어휘를 망라하기 때문입니다.
+ */
+export type LearningActivityForm = LearningForm | "typing" | "vocab-card" | "pair-match";

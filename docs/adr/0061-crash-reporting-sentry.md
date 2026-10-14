@@ -1,4 +1,4 @@
-# ADR-0058 — 크래시 리포팅: JS 예외는 Lynx의 오류 통로로 호스트에 모으고, Android 호스트가 Sentry로 보낸다 (호스트 모듈 없음 · 한 깔때기 · NDK 없음)
+# ADR-0061 — 크래시 리포팅: JS 예외는 Lynx의 오류 통로로 호스트에 모으고, Android 호스트가 Sentry로 보낸다 (호스트 모듈 없음 · 한 깔때기 · NDK 없음)
 
 - 상태: **채택** ⟨2026-10-14 — 남아 있던 사용자 확인 셋(NDK 없이 출시 · 조각 순서 · 측정 지표)을 사용자가 확정했다⟩ — 구현과 `pnpm verify` 안의 계층, 기기 확인(e2e A단계 — DSN 없이, B단계 — DSN을 넣은 `bundled`, tombstone 측정, 세션 우회 확인)이 돌았다.
   ✔ **Sentry 수신이 확인됐다** [실측 — 사용자가 대시보드에서 직접 확인, 2026-10-13]: 보낸 이벤트 8건이 전부 도착해 이슈 7개로 보이고(보내지 않은 tombstone 둘은 없다), 지우기 결과가 화면에 그대로 보이며,
@@ -30,8 +30,7 @@
   [ADR-0031](0031-ui-language-catalog.md) D7(한글 리터럴의 자리), [ADR-0029](0029-product-analytics-posthog.md)(제품 분석 — 이벤트 추가 0).
   **바꾸는 결정은 없다.**
 
-**왜 새 번호인가** — 없던 축을 처음 정한다(ADR-0010 D10). 0057은 main에서 Meta 앱 이벤트(ADR-0057)가 썼고, 이 PR은 어느 쪽이 먼저 머지돼도 충돌하지 않게
-그 다음 번호를 쓴다(ADR-0029 때와 같은 처리).
+**왜 새 번호인가** — 없던 축을 처음 정한다(ADR-0010 D10). 처음에는 0058로 열었으나 그 사이 main에 0057(Meta 앱 이벤트) · 0058(카탈로그 학습 세션) · 0059(학습자 프로필)가 들어왔고, 열린 PR #245가 0058을 쓰고 있어 **0061로 옮겼다**(2026-10-14) — 0060은 #245가 번호를 다시 받을 자리로 비워 둔다.
 
 근거 표시: **[확인]** 이 회차에 실물(설치된 타입 · AAR 바이트코드 · Maven Central · 저장소 스크립트 실행)로 본 것 · **[실측]** 빌드하거나 에뮬레이터에서 돌려 로그 · 수치로 본 것 ·
 **[정적]** 소스 · 바이트코드로 경로는 읽었으나 기기에서 돌려 보지 않은 것 · **[추론]** 근거에서 끌어낸 판단 · **[미확인]** 못 본 것.
@@ -414,6 +413,7 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
    호스트는 읽지 않는다)의 `exception.values[].value` · `tags.extra`에 원문 메시지가 한 번 더 실려 있다 [실측]. debug 빌드의 logcat에 한정된 일이고 밖으로 나가는 길은 없다 [추론 — `fromLynxError`는 `rawError`만 읽는다].
 5. **JS 번들 상한을 1 kB 올렸다.** 이 브랜치 단독의 `main.lynx.bundle`은 병합 전 마지막 실측 1,721,225 bytes로 상한 1,722,000 안이었다 [실측]. main(#242)을 병합한 뒤 1,722,103 bytes가 돼 103 bytes를 넘었고,
    **사용자 결정으로 상한을 1,723,000으로 올렸다**(여유 897 bytes — `devtools/bundle-size/budget.json` note · [성능 보고서](../performance/reports/crash-reporting-api30-emulator-01.md)).
+   ⟨2026-10-14⟩ 그 뒤 main이 다른 작업으로 상한을 1,915,000으로 올렸고, main(`81609f6e`)을 병합한 이 브랜치의 실측은 **1,913,530 bytes**로 그 안이다 — 상한을 다시 바꾸지 않았다(`budget.json`은 main 값).
    이 변경의 JS 몫(`crash-report.ts`와 `ErrorBoundary`의 한 줄)만의 증가분은 따로 재지 않았다. 맥락 6의 「여유 1,063 bytes」는 계약을 고정할 때의 값이다.
 6. **Android 쪽 크기와 R8.** `.so`는 늘지 않았다. `bundled`의 `classes.dex`는 3,552,224 bytes다 [실측] — Sentry를 넣기 전 값은 이 회차에 재지 않았다.
    core AAR의 consumer 규칙이 앱 전체에 세 줄을 건다(`-keepattributes LineNumberTable,SourceFile` · `-keep,allowshrinking,allowobfuscation class * extends java.lang.Throwable` ·

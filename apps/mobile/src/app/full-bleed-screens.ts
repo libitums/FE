@@ -10,6 +10,8 @@ export function isFullBleedScreen(screen: Screen): boolean {
     screen.name === "visual-novel" ||
     screen.name === "roleplay-visual-novel" ||
     screen.name === "journey-entry" ||
-    screen.name === "catalog-cover"
+    screen.name === "catalog-cover" ||
+    screen.name === "catalog-final" ||
+    screen.name === "catalog-epilogue"
   );
 }

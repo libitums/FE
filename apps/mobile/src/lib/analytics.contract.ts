@@ -13,6 +13,7 @@
 
 import type { PostHogCore, PostHogCoreOptions } from "@posthog/core";
 
+import type { AnalyticsEventName } from "./analytics-event-names";
 import type { AnalyticsUser } from "./analytics-user.contract";
 import type { EntryAppProps, EntryEvent, EntryEventSink } from "./entry-flow";
 import type {
@@ -76,7 +77,7 @@ export type AnalyticsConfigFrom = (
 
 // ------------------------------------------------------------------ 이벤트 → capture
 
-/** sink 일곱이 내는 이벤트 전부입니다(이름 30개 · 모양 34개 — 열림 이벤트 셋이 출처별 두 모양). */
+/** sink 일곱이 내는 이벤트 전부입니다(이름 36개 · 모양 40개 — 열림 이벤트 셋이 출처별 두 모양). */
 export type AnalyticsEvent =
   | EntryEvent
   | MessengerEvent
@@ -87,41 +88,11 @@ export type AnalyticsEvent =
   | EpisodeIntroEvent;
 
 /**
- * PostHog 이벤트 이름입니다. **목록을 손으로 적습니다** — 화면 계약에 이벤트가 늘거나
- * 줄면 아래 `AnalyticsContractChecks`가 컴파일 오류로 서고, 그때 wiki 카탈로그도 함께
- * 고칩니다(ADR-0029).
+ * PostHog 이벤트 이름입니다. 목록은 `analytics-event-names.ts`에 손으로 적습니다 — 화면 계약에
+ * 이벤트가 늘거나 줄면 아래 `AnalyticsContractChecks`가 컴파일 오류로 서고, 그때 wiki 카탈로그도
+ * 함께 고칩니다(ADR-0029).
  */
-export type AnalyticsEventName =
-  | "entry_screen_viewed"
-  | "entry_login_method_selected"
-  | "entry_completed"
-  | "messenger_unit_opened"
-  | "messenger_unit_completed"
-  | "messenger_unit_exited_incomplete"
-  | "visual_novel_unit_opened"
-  | "visual_novel_unit_completed"
-  | "visual_novel_unit_exited_incomplete"
-  | "visual_novel_unit_replay_started"
-  | "phone_call_unit_opened"
-  | "notifications_opened"
-  | "notification_item_tapped"
-  | "notification_item_deleted"
-  | "push_notification_opened"
-  | "settings_opened"
-  | "profile_opened"
-  | "notification_settings_opened"
-  | "feedback_opened"
-  | "feedback_submitted"
-  | "legal_document_opened"
-  | "session_option_changed"
-  | "episode_intro_viewed"
-  | "episode_intro_skipped"
-  | "episode_intro_continued"
-  | "episode_intro_exited"
-  | "episode_prologue_completed"
-  | "episode_content_refreshed"
-  | "episode_survey_answered"
-  | "episode_survey_skipped";
+export type { AnalyticsEventName };
 
 /** 이벤트 필드 값은 문자열 · 불리언뿐입니다. 숫자 필드가 생기면 검사가 섭니다. */
 export type AnalyticsPropertyValue = string | boolean;

@@ -107,6 +107,8 @@ const CARRIER_PATHS = {
   visualNovel: "screens/visual-novel/VisualNovelScreen.tsx",
   entry: "screens/journey-entry/JourneyEntryScreen.tsx",
   catalogCover: "screens/catalog-cover/CatalogCoverScreen.tsx",
+  catalogFinal: "screens/catalog-final/CatalogFinalScreen.tsx",
+  episodeBanner: "screens/catalog-cover/EpisodeBannerScreen.tsx",
   statModal: "screens/journey-map/JourneyStatModal.tsx",
   guide: "components/FirstUnitGuide.tsx",
   map: "screens/journey-map/JourneyMapScreen.tsx",
@@ -123,6 +125,8 @@ const appSession = (
     "roleplay-visual-novel",
     "journey-entry",
     "catalog-cover",
+    "catalog-final",
+    "catalog-epilogue",
   ],
 ) => `function isFullBleedScreen(screen: Screen): boolean {
   return (
@@ -219,6 +223,11 @@ function healthyBase(overrides = {}) {
       [CARRIER_PATHS.visualNovel]: carrierComponent("VisualNovelScreen", "visual-novel-screen"),
       [CARRIER_PATHS.entry]: carrierComponent("JourneyEntryScreen", "journey-entry-screen"),
       [CARRIER_PATHS.catalogCover]: carrierComponent("CatalogCoverScreen", "catalog-cover-screen"),
+      [CARRIER_PATHS.catalogFinal]: carrierComponent("CatalogFinalScreen", "catalog-final-screen"),
+      [CARRIER_PATHS.episodeBanner]: carrierComponent(
+        "EpisodeBannerScreen",
+        "episode-banner-screen",
+      ),
       [CARRIER_PATHS.statModal]: statModalComponent(),
       [CARRIER_PATHS.guide]: carrierComponent("FirstUnitGuide", "first-unit-guide"),
       [CARRIER_PATHS.map]: journeyMapScreen(),
@@ -438,10 +447,12 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, four CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (nine routes, four CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
     "catalog-cover",
+    "catalog-epilogue",
+    "catalog-final",
     "episode-final",
     "episode-intro",
     "episode-prologue",
@@ -458,6 +469,15 @@ test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, four CS
   assert.match(routeText("roleplay-visual-novel"), /VisualNovelScreen/);
   assert.match(routeText("journey-entry"), /JourneyEntryScreen/);
   assert.match(routeText("catalog-cover"), /CatalogCoverScreen/);
+  assert.match(routeText("catalog-cover"), /EpisodeIntroScreen/);
+  assert.match(routeText("catalog-cover"), /EpisodeBannerScreen/);
+  assert.match(routeText("catalog-epilogue"), /EpisodeBannerScreen/);
+  assert.equal(
+    statusBarSurfaceRegistry.componentFiles.EpisodeBannerScreen,
+    "screens/catalog-cover/EpisodeBannerScreen.tsx",
+  );
+  assert.match(routeText("catalog-final"), /CatalogFinalScreen/);
+  assert.match(routeText("catalog-epilogue"), /CatalogCoverScreen/);
 
   assert.deepEqual(Object.keys(fixedLayers).sort(), [
     "components/first-unit-guide.css",
@@ -475,6 +495,28 @@ test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, four CS
   assert.match(guide, /FirstUnitGuide\.tsx/);
   assert.match(guide, /JourneyMapScreen\.tsx/);
   assert.match(guide, /first-unit-map-scrim/);
+});
+
+test("SM-B1: the banner file must carry the marker, and a literal value is a stray-marker (carrier)", () => {
+  assertRule(
+    withComponent(
+      CARRIER_PATHS.episodeBanner,
+      plainComponent("EpisodeBannerScreen", "episode-banner-screen"),
+    ),
+    "carrier",
+    CARRIER_PATHS.episodeBanner,
+  );
+  assertRule(
+    withComponent(
+      CARRIER_PATHS.episodeBanner,
+      carrierComponent(
+        "EpisodeBannerScreen",
+        "episode-banner-screen",
+        'data-statusbar="light-icons"',
+      ),
+    ),
+    "stray-marker",
+  );
 });
 
 test("SM12: empty strings and empty objects do not throw and are reported as issues", () => {

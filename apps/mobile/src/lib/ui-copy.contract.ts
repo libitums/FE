@@ -5,8 +5,15 @@
 // 받아쓰기 대상은 늘 한국어이고, 문구표는 그 둘레의 UI 문구만 집니다.
 
 import type { EntryLanguage } from "./entry-language";
+import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
+import type { LearnerProfileCopy } from "../components/learner-profile.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
+import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
+import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
+import type { TypingCopy } from "../screens/typing/typing.contract";
+import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
+import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-picture";
 import type { FeedbackCopy } from "./feedback.contract";
 import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
@@ -73,6 +80,13 @@ export type UiCopy = {
   readonly gemPurchase: GemPurchaseCopy;
   readonly catalogMap: CatalogMapCopy;
   readonly catalogCover: CatalogCoverCopy;
+  readonly typing: TypingCopy;
+  readonly vocabCard: VocabCardCopy;
+  readonly pairMatch: PairMatchCopy;
+  readonly wordChoicePicture: WordChoicePictureCopy;
+  readonly catalogFinal: CatalogFinalCopy;
+  readonly audioUnavailable: AudioUnavailableCopy;
+  readonly learnerProfile: LearnerProfileCopy;
 };
 
 /**

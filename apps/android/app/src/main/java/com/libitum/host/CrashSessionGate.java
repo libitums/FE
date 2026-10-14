@@ -3,7 +3,7 @@ package com.libitum.host;
 /**
  * Decides when the app starts and ends a Sentry session. The SDK's own tracking starts a session
  * before the previous one is finalized and loses crashed sessions, so the app keeps the clock
- * (docs/adr/0058).
+ * (docs/adr/0061).
  */
 final class CrashSessionGate {
   static final long END_AFTER_MS = 30_000;

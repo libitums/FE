@@ -4,6 +4,7 @@
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import { legalDocumentOpenedEvent } from "../../lib/legal-document";
 import type { LegalDocumentOpenedEvent } from "../../lib/legal-document.contract";
+import type { LearnerProfileOpenedEvent } from "../../lib/learner-profile.contract";
 import type {
   FeedbackOpenedEvent,
   NotificationSettingsOpenedEvent,
@@ -15,6 +16,7 @@ import type { SessionOptionKey } from "../../lib/session-options";
 
 export const settingsNavTargets: readonly SettingsNavTarget[] = [
   "profile",
+  "learner-profile",
   "notifications",
   "feedback",
   "privacy-policy",
@@ -30,12 +32,15 @@ export function settingsNavOpenedEvent(
   target: SettingsNavTarget,
 ):
   | ProfileOpenedEvent
+  | LearnerProfileOpenedEvent
   | NotificationSettingsOpenedEvent
   | FeedbackOpenedEvent
   | LegalDocumentOpenedEvent {
   switch (target) {
     case "profile":
       return { name: "profile_opened" };
+    case "learner-profile":
+      return { name: "learner_profile_opened" };
     case "notifications":
       return { name: "notification_settings_opened" };
     case "feedback":

@@ -14,10 +14,11 @@ const allNavTargets: readonly SettingsNavTarget[] = ["profile", "privacy-policy"
 const allSessionOptionKeys: readonly SessionOptionKey[] = ["auto-play-audio", "show-transcript"];
 
 describe("settingsNavTargets", () => {
-  it("SN1. 길이가 5이고 순서가 [profile, notifications, feedback, privacy-policy, terms-of-use]다", () => {
-    expect(settingsNavTargets).toHaveLength(5);
+  it("SN1. 길이가 6이고 순서가 [profile, learner-profile, notifications, feedback, privacy-policy, terms-of-use]다", () => {
+    expect(settingsNavTargets).toHaveLength(6);
     expect(settingsNavTargets).toEqual([
       "profile",
+      "learner-profile",
       "notifications",
       "feedback",
       "privacy-policy",
@@ -40,6 +41,7 @@ describe("settingsNavLabel", () => {
 describe("settingsNavOpenedEvent", () => {
   it("SN3. profile → profile_opened, 문서 둘 → legal_document_opened(document, source: settings)", () => {
     expect(settingsNavOpenedEvent("profile")).toEqual({ name: "profile_opened" });
+    expect(settingsNavOpenedEvent("learner-profile")).toEqual({ name: "learner_profile_opened" });
     expect(settingsNavOpenedEvent("privacy-policy")).toEqual({
       name: "legal_document_opened",
       document: "privacy-policy",

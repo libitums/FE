@@ -1,7 +1,7 @@
 # Android 데이터 보안 — 크래시 수집(Sentry)이 내보내는 것과 Play 양식에 넣을 항목
 
 Android 호스트가 크래시 수집으로 **기기 밖에 내보내는 것**을 코드 근거와 함께 적고, Play Console 「데이터 보안」 양식에 넣을 항목을 준비한다.
-iOS 쪽의 짝은 [`docs/ios-privacy.md`](ios-privacy.md)다. 결정과 그 근거는 [ADR-0058](adr/0058-crash-reporting-sentry.md)이 진다 — 여기에는 **무엇이 나가는가**만 적는다.
+iOS 쪽의 짝은 [`docs/ios-privacy.md`](ios-privacy.md)다. 결정과 그 근거는 [ADR-0061](adr/0061-crash-reporting-sentry.md)이 진다 — 여기에는 **무엇이 나가는가**만 적는다.
 
 **이 문서의 범위는 크래시 수집 하나다.** Android 앱이 이미 내보내는 다른 것(Supabase 계정 · 학습 진행 · 피드백 · FCM 토큰 · PostHog 이벤트)의 Play 양식 대조는 이 문서가
 하지 않았다 — iOS 쪽 대조표(`ios-privacy.md` 「수집 항목 대조」)에 해당하는 Android 표는 아직 없다.
@@ -10,7 +10,7 @@ iOS 쪽의 짝은 [`docs/ios-privacy.md`](ios-privacy.md)다. 결정과 그 근�
 
 ## 지금 상태 (2026-10-13)
 
-- **출시본은 아직 아무것도 보내지 않는다.** Play에 올라간 빌드에는 DSN이 없다 — DSN 없는 빌드에서는 Sentry 코드가 한 줄도 돌지 않는다(ADR-0058 D6). 사용자가 2026-10-13에 Sentry 프로젝트 셋
+- **출시본은 아직 아무것도 보내지 않는다.** Play에 올라간 빌드에는 DSN이 없다 — DSN 없는 빌드에서는 Sentry 코드가 한 줄도 돌지 않는다(ADR-0061 D6). 사용자가 2026-10-13에 Sentry 프로젝트 셋
   (Android · iOS · Astro)을 만들고 Android DSN을 추적하지 않는 `apps/android/sentry.properties`에 넣었다(`auth.token` · 조직 · 프로젝트 이름은 아직 없다).
 - **DSN을 넣은 `bundled` 빌드가 에뮬레이터에서 한 번 돌았다**([크래시 리포팅 e2e](e2e/crash-reporting.md) B단계, 2026-10-13 — 에이전트 실행, 사람 미확인). 네트워크를 끊은 채 만든 이벤트 5건과 세션의 **envelope 원문을 기기에서 꺼내 읽었고**,
   아래 「보내는 것」은 그 원문의 키 목록이다. 그 뒤 네트워크를 켜 전송을 시도했다 — **사용자가 Sentry 대시보드에서 수신을 확인했다**(2026-10-13 — 아래 「서버 화면」).
@@ -31,7 +31,7 @@ iOS 쪽의 짝은 [`docs/ios-privacy.md`](ios-privacy.md)다. 결정과 그 근�
 | 앱 정보 및 성능 → **진단** | 예 | **아니오** | 앱 기능 · 분석 | 세션(크래시 없는 세션 비율의 재료 — 시작 · 끝 · 상태) · 이벤트에 붙는 `release` · `environment` · 기기 · OS context |
 | 기기 또는 기타 ID | **아니오 — 기기 쪽 근거는 섰다. 서버 쪽 확인 하나가 남았다** | — | — | SDK 기본값은 설치 id를 **세 자리**에 싣는다: 이벤트의 `user.id` · 세션의 `distinctId` · 이벤트의 `contexts.device.id`(`sendDefaultPii`와 무관) [정적 — AAR 바이트코드]. 이 앱은 `beforeSend`에서 `user`와 `device.id`를 지우고 `setDistinctId(null)`로 세션 쪽을 끈다 [코드 — JUnit `CrashEventPolicyTest`]. **기기 밖으로 나가기 직전의 envelope에서 `user` · `did` · `ip_address` · `contexts.device.id`가 없었고, 그 기기의 설치 id · `android_id` 문자열을 envelope 전체에서 찾아 0건이었다** [실측 — 에뮬레이터 1대, `bundled`, JS 이벤트 4건 · Java 크래시 1건 · 세션 전부]. **서버 화면에서도 모든 이슈의 사용자 수가 0이고 Device 컨텍스트에 `id` · `name` · `boot_time`이 없었다** [실측 — 사용자가 대시보드에서 확인, 2026-10-13] |
 
-**식별자 칸의 근거와 남은 것.** 처음 구현은 `contexts.device.name`만 지워 **설치 id가 `contexts.device.id`로 모든 이벤트에 실려 나갈 뻔했고 리뷰가 잡았다**(ADR-0058 「정정 기록」 2026-10-13) —
+**식별자 칸의 근거와 남은 것.** 처음 구현은 `contexts.device.name`만 지워 **설치 id가 `contexts.device.id`로 모든 이벤트에 실려 나갈 뻔했고 리뷰가 잡았다**(ADR-0061 「정정 기록」 2026-10-13) —
 이 문서의 앞선 판도 그 자리를 모른 채 「아니오」라고 적었고, 그 뒤 판은 「B6 전에는 아니오로 내지 않는다」고 적었다. **B6은 기기 쪽에서 통과했고, 서버 화면의 사용자 수 0 · Device 컨텍스트도 사용자가 확인했다**(위 표). 양식에 「수집 안 함」을 내기 전에 남은 것은 셋이다:
 
 1. **서버가 붙이는 IP** [미확인]. 기기가 보내는 원문에 `ip_address`가 없다는 것과 Sentry가 접속 IP를 저장하지 않는다는 것은 다른 일이다 — 뒤엣것은 프로젝트 설정 「IP 주소 저장 안 함」에 달려 있고 대시보드로만 확인된다.
@@ -179,7 +179,7 @@ API 34의 세 회차 envelope에서 읽은 키(값은 옮기지 않는다):
 
 ## 식별자를 붙이면 달라지는 칸
 
-지금 값은 「안 붙임」이고 **⟨2026-10-13⟩ 사용자가 확정했다**(ADR-0058 「사용자 결정」 U2). 바꾸면 이 문서와 양식이 같이 바뀐다.
+지금 값은 「안 붙임」이고 **⟨2026-10-13⟩ 사용자가 확정했다**(ADR-0061 「사용자 결정」 U2). 바꾸면 이 문서와 양식이 같이 바뀐다.
 
 | 선택 | 얻는 것 | 양식에서 바뀌는 칸 | 그 밖에 드는 것 |
 |---|---|---|---|

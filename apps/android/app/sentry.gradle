@@ -1,4 +1,4 @@
-// Crash reporting build settings (docs/adr/0058). Applied from build.gradle before the android block.
+// Crash reporting build settings (docs/adr/0061). Applied from build.gradle before the android block.
 // Without a DSN the build still succeeds and the app never initializes Sentry, the same stance as
 // google-services.json. The Sentry Gradle plugin is deliberately not used.
 

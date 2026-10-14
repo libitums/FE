@@ -57,6 +57,13 @@ describe("learningSessionHeader", () => {
     ]);
   });
 
+  it("LS-I1. 카탈로그 새 학습형의 머리 이름과 타이밍 플래그가 정해져 있다", () => {
+    expect(learningSessionHeader("vocab-card", 0, 3, uiCopyEn).formLabel).toBe("New words");
+    expect(learningSessionHeader("pair-match", 0, 3, uiCopyEn).formLabel).toBe("Matching");
+    expect(learningTimingFlag("vocab-card")).toBe("libitum:navigation:learning-vocab-card");
+    expect(learningTimingFlag("pair-match")).toBe("libitum:navigation:learning-pair-match");
+  });
+
   it("학습형마다 이름이 갈린다", () => {
     expect(learningSessionHeader("sentence-order", 0, 1, uiCopyEn).formLabel).toBe("Word order");
     expect(learningSessionHeader("culture", 0, 1, uiCopyEn).formLabel).toBe("Culture");
@@ -291,5 +298,12 @@ describe("learningShellArrangement", () => {
 
   it("[AR3] scrollCard가 아니고 split이면 split이다", () => {
     expect(learningShellArrangement({ scrollCard: false, flow: "split" })).toBe("split");
+  });
+});
+
+describe("타자 입력 껍데기", () => {
+  it("LS-T1. 세션 머리 형 라벨과 측정 깃발이 타자 입력 이름을 낸다", () => {
+    expect(learningSessionHeader("typing", 0, 3, uiCopyEn).formLabel).toBe("Typing");
+    expect(learningTimingFlag("typing")).toBe("libitum:navigation:learning-typing");
   });
 });

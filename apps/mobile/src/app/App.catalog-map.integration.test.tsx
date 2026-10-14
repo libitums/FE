@@ -11,12 +11,17 @@ import { pushOpenedEventName } from "./use-opened-push";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { CONTENT_MANIFEST_KEY } from "../lib/episode-cache";
+import { minimalRoleplayTurnWire } from "../lib/episode-content.test-support";
 import { entrySplashDurationMs } from "../lib/entry-flow";
+import { bundledCatalogInput } from "../lib/episode-bundled";
+import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import { sha256Hex, utf8Bytes } from "../lib/sha256";
 import { systemBackEventName } from "../lib/system-back";
+import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { journeySteps } from "../screens/journey-map/journey-map";
+import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 
 // `integration` 계층: 앱 세션에서 「카탈로그 읽기 → 맵 구획 → 표지 열기 → 컷 끝 → 진행 저장 → 다음 실행」과
@@ -104,7 +109,7 @@ function minimalEpisodeText(unitId: string, preCuts: readonly unknown[]): string
     post_cuts: [post],
     steps: [
       { id: "S1", order: 1, items: [roleLine] },
-      { id: "RP", order: 2, items: [{ id: "RP-01", type: "ROLEPLAY_TURN" }] },
+      { id: "RP", order: 2, items: [minimalRoleplayTurnWire("RP-01")] },
     ],
     words: [{ id: "voca:1", ko: "물", roman: "mul", gloss_en: "water", role: "target" }],
     patterns: [{ id: "patt:1", ko: "{명사} 주세요", roman: "juseyo", gloss_en: "please give me" }],
@@ -286,16 +291,61 @@ afterEach(() => {
 const cover = (episodeId: string) =>
   screen.getByTestId(`ui-lynx-learning-unit-catalog-cover-${episodeId}`);
 const tapCover = (episodeId: string) => void fireEvent.tap(cover(episodeId), {});
+// 이름이 드는 표지는 기록이 없으면 앞에 가드 화면이 섭니다 - 건너뛰면 기본 문구(「이름」)로 표지가 이어집니다.
+const skipProfileGate = () =>
+  void fireEvent.tap(
+    within(screen.getByTestId("learner-profile-gate-skip")).getByTestId("ui-lynx-button"),
+    {},
+  );
 const tapNext = () =>
   void fireEvent.tap(
     within(screen.getByTestId("catalog-cover-screen-next")).getByTestId("ui-lynx-button"),
     {},
   );
-const tapBack = () =>
+const tapIntroNext = () =>
   void fireEvent.tap(
-    within(screen.getByTestId("catalog-cover-screen-back")).getByTestId("ui-lynx-round-button"),
+    within(screen.getByTestId("episode-intro-screen-next")).getByTestId("ui-lynx-button"),
     {},
   );
+const tapIntroSkip = () =>
+  void fireEvent.tap(
+    within(screen.getByTestId("episode-intro-screen-skip")).getByTestId("ui-lynx-button"),
+    {},
+  );
+const tapIntroBack = () =>
+  void fireEvent.tap(
+    within(screen.getByTestId("episode-intro-screen-back")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+const tapDialogAction = (id: "skip" | "stay") =>
+  void fireEvent.tap(
+    within(screen.getByTestId(`ui-lynx-dialog-action-${id}`)).getByTestId("ui-lynx-button"),
+    {},
+  );
+
+// 배너의 유지 시간만 가짜 시계로 밉니다 - 부팅 뒤 배너 앞에서 켜고 `passBanner`가 되돌립니다.
+const useBannerClock = () => void vi.useFakeTimers();
+async function settleFake(): Promise<void> {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+  });
+}
+/** 배너가 서 있으면 유지 시간만큼 밀어 닫고 실제 시계로 돌아갑니다. */
+function passBanner(): void {
+  if (screen.queryByTestId("episode-banner-screen") !== null) {
+    act(() => {
+      vi.advanceTimersByTime(EPISODE_BANNER_HOLD_MS);
+    });
+  }
+  vi.useRealTimers();
+}
+const presentId = (id: string): boolean => screen.queryByTestId(id) !== null;
+const realCatalog = buildEpisodeCatalog({
+  bundled: bundledCatalogInput,
+  cache: { manifest: null, episodes: {} },
+});
+const sectionTitleOf = (episodeId: string): string =>
+  catalogMapSectionsOf(realCatalog).find((section) => section.episodeId === episodeId)?.title ?? "";
 
 /** 컷을 끝까지 넘깁니다 — 컷 여섯 개면 Next 다섯 번 + 마지막 Continue. 대사를 쓰는 중이면 첫 탭은 완성이라 한 번 더 누릅니다. */
 function readAllCuts(count: number): void {
@@ -344,7 +394,7 @@ test("I1. (AC1) 콘텐츠 404 · 진행 없음: 튜토리얼 다음에 에피소
   expect(headingAxis(document.body)).toEqual(["ui-lynx-episode-header"]);
 });
 
-test("I2. (AC2 · 3) 튜토리얼 완료 씨앗: 첫 표지만 열리고 레슨 노드는 무반응 · 컷 끝에서 진행이 저장된다", async () => {
+test("I2. (AC1 · 2 · 3) 튜토리얼 완료 씨앗: 첫 표지만 열리고 레슨 노드는 무반응 · 표지 → Next → 컷 → 배너 → 맵 · 진행은 배너 전에 저장된다", async () => {
   const { rpcs } = await boot({ seed: tutorialDoneSeed });
 
   expect(cover("u01-water")).toHaveAttribute("data-status", "available");
@@ -354,22 +404,42 @@ test("I2. (AC2 · 3) 튜토리얼 완료 씨앗: 첫 표지만 열리고 레슨 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-S1"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-RP"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("catalog-cover-screen")).not.toBeInTheDocument();
+  expect(presentId("episode-intro-screen")).toBe(false);
 
+  useBannerClock();
   tapCover("u01-water");
+  expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
+  expect(presentId("catalog-cover-screen")).toBe(false);
+
+  tapIntroNext();
   expect(screen.getByTestId("catalog-cover-screen")).toBeInTheDocument();
+  expect(presentId("episode-intro-screen")).toBe(false);
 
   readAllCuts(6);
-  await flush();
+  await settleFake();
 
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(cover("u01-water")).toHaveAttribute("data-status", "clear");
+  const banner = screen.getByTestId("episode-banner-screen");
+  expect(banner).toHaveAttribute("data-kind", "start");
+  expect(banner).toHaveAttribute("accessibility-label", "Episode start!");
+  expect(presentId("journey-map-screen")).toBe(false);
+  expect(presentId("catalog-cover-screen")).toBe(false);
+  // 진행 기록은 배너가 서 있는 동안 이미 저장 본문에 있다.
   await vi.waitFor(() => {
     const last = savedProgress(rpcs).at(-1);
     expect(last).toBeDefined();
     expect(catalogProgressOf(last as Record<string, unknown>)?.["u01-water"]).toContain("intro");
   });
-  expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(true);
+  expect(presentId("episode-banner-screen")).toBe(true);
+
+  passBanner();
+  await flush();
+
+  expect(presentId("episode-banner-screen")).toBe(false);
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(cover("u01-water")).toHaveAttribute("data-status", "clear");
+  await vi.waitFor(() =>
+    expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(true),
+  );
 });
 
 test("I3. (AC2 유지) 저장된 스냅숏으로 새 앱을 부팅하면 첫 표지는 완료, 둘째 표지는 잠김이다", async () => {
@@ -415,6 +485,8 @@ test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」
 
   expect(cover("u04-x")).toHaveAttribute("data-status", "available");
   tapCover("u04-x");
+  skipProfileGate();
+  tapIntroNext();
 
   // 대사는 타자기로 쓰이므로 끝까지 보일 때까지 기다립니다.
   await vi.waitFor(() =>
@@ -435,6 +507,7 @@ test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」
 test("I6. (AC5) 이미지는 공개 버킷 주소로 서고 load 전에도 글과 버튼이 있다", async () => {
   await boot({ seed: tutorialDoneSeed });
   tapCover("u01-water");
+  tapIntroNext();
 
   expect(screen.getByTestId("narrative-background-image")).toHaveAttribute(
     "src",
@@ -457,32 +530,38 @@ test("I6b. (AC5) 이미지 경로가 비어 있는 컷은 이미지 요소 없�
   releaseBodies();
   await vi.waitFor(() => expect(screen.getByTestId("catalog-section-u04-x")).toBeInTheDocument());
   tapCover("u04-x");
+  skipProfileGate();
+  tapIntroNext();
 
   expect(screen.queryByTestId("narrative-background-image")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toBeInTheDocument();
   expect(screen.getByTestId("catalog-cover-screen-next")).toBeInTheDocument();
 });
 
-test("I7. (측정) 열기 · 나가기 · 다시 열기 · 끝내기가 순서대로 나가고 404 실행은 갱신 이벤트가 없다", async () => {
+test("I7. (측정) 열기 · 표지에서 나가기 · 다시 열기 · Next · 끝내기가 순서대로 나가고 404 실행은 갱신 이벤트가 없다", async () => {
   const { events } = await boot({ seed: tutorialDoneSeed });
 
   tapCover("u01-water");
-  tapBack();
+  tapIntroBack();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   tapCover("u01-water");
+  tapIntroNext();
   readAllCuts(6);
 
   expect(events).toEqual([
     { name: "episode_intro_viewed", episodeId: "u01-water" },
-    { name: "episode_intro_exited", episodeId: "u01-water", stage: "prologue" },
+    { name: "episode_intro_exited", episodeId: "u01-water", stage: "intro" },
     { name: "episode_intro_viewed", episodeId: "u01-water" },
+    { name: "episode_intro_continued", episodeId: "u01-water", hasPrologue: true },
     { name: "episode_prologue_completed", episodeId: "u01-water", prologueKind: "cuts" },
   ]);
 });
 
 test("I8. 컷 화면에서 시스템 뒤로를 누르면 맵으로 돌아가고 진행을 기록하지 않는다", async () => {
   const respond = vi.fn<(token: string, outcome: string) => void>();
-  const { rpcs } = await boot({ seed: tutorialDoneSeed, backHost: { respond } });
+  const { rpcs, events } = await boot({ seed: tutorialDoneSeed, backHost: { respond } });
   tapCover("u01-water");
+  tapIntroNext();
   expect(screen.getByTestId("catalog-cover-screen")).toBeInTheDocument();
 
   act(() => {
@@ -497,6 +576,12 @@ test("I8. 컷 화면에서 시스템 뒤로를 누르면 맵으로 돌아가고 
   for (const snapshot of savedProgress(rpcs)) {
     expect(catalogProgressOf(snapshot)).toBeUndefined();
   }
+  // 컷에서 나가면 stage는 prologue입니다(표지에서 나갈 때의 intro와 갈립니다).
+  expect(events.at(-1)).toEqual({
+    name: "episode_intro_exited",
+    episodeId: "u01-water",
+    stage: "prologue",
+  });
 });
 
 test.each<[string, unknown]>([
@@ -523,4 +608,195 @@ test("I10b. 켜진 채 받은 푸시도 잠긴 카탈로그 표지를 열지 못
 
   expect(screen.queryByTestId("catalog-cover-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+});
+
+// ---------------------------------------------------------------- 표지 화면 · 시작 배너
+
+const pressSystemBack = (token: string): void =>
+  void act(() => {
+    lynx.getJSModule("GlobalEventEmitter").emit(systemBackEventName, [token]);
+  });
+const levelOf = (episodeId: string, key: string) =>
+  screen
+    .getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`)
+    .getAttribute("data-status");
+
+test("I11. (AC1 · 3) 표지 화면: 첫 줄 Episode 1. · 둘째 줄 에피소드 이름 · Skip · Next · 머리말 축 하나이고 Next가 컷 1을 연다", async () => {
+  const { events } = await boot({ seed: tutorialDoneSeed });
+
+  tapCover("u01-water");
+
+  expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
+  expect(presentId("catalog-cover-screen")).toBe(false);
+  expect(screen.getByTestId("episode-intro-screen-label")).toHaveTextContent("Episode 1.");
+  const title = sectionTitleOf("u01-water");
+  expect(title).not.toBe("");
+  const titleLines = screen
+    .getAllByTestId("episode-intro-screen-title")
+    .map((line) => line.textContent ?? "");
+  expect(titleLines.join(" ")).toBe(title);
+  expect(screen.getByTestId("episode-intro-screen-heading")).toHaveAttribute(
+    "accessibility-label",
+    `Episode 1. ${title}`,
+  );
+  expect(screen.getByTestId("episode-intro-screen-skip")).toBeInTheDocument();
+  expect(screen.getByTestId("episode-intro-screen-next")).toBeInTheDocument();
+  expect(headingAxis(screen.getByTestId("episode-intro-screen"))).toEqual([
+    "episode-intro-screen-heading",
+  ]);
+  expect(events).toEqual([{ name: "episode_intro_viewed", episodeId: "u01-water" }]);
+
+  tapIntroNext();
+
+  expect(screen.getByTestId("catalog-cover-screen")).toBeInTheDocument();
+  expect(presentId("episode-intro-screen")).toBe(false);
+  expect(events).toEqual([
+    { name: "episode_intro_viewed", episodeId: "u01-water" },
+    { name: "episode_intro_continued", episodeId: "u01-water", hasPrologue: true },
+  ]);
+});
+
+test("I12b. (측정) 이미 끝낸 표지를 다시 열어 건너뛰면 skipped 이벤트가 나가지 않는다", async () => {
+  const { events } = await boot({ seed: tutorialDoneSeed });
+
+  tapCover("u01-water");
+  tapIntroSkip();
+  tapDialogAction("skip");
+  await flush();
+  expect(cover("u01-water")).toHaveAttribute("data-status", "clear");
+
+  tapCover("u01-water");
+  tapIntroSkip();
+  tapDialogAction("skip");
+  await flush();
+
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(events).toEqual([
+    { name: "episode_intro_viewed", episodeId: "u01-water" },
+    { name: "episode_intro_skipped", episodeId: "u01-water" },
+    { name: "episode_intro_viewed", episodeId: "u01-water" },
+  ]);
+});
+
+test("I12. (AC2) Skip 모달의 계속 보기는 표지에 남고, 건너뛰기는 배너 없이 맵 · 표지 완료 · 레슨 1 열림 · 진행 저장", async () => {
+  const { rpcs, events } = await boot({ seed: tutorialDoneSeed });
+  useBannerClock();
+
+  tapCover("u01-water");
+  tapIntroSkip();
+  tapDialogAction("stay");
+  await settleFake();
+
+  expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
+  expect(events).toEqual([{ name: "episode_intro_viewed", episodeId: "u01-water" }]);
+
+  tapIntroSkip();
+  tapDialogAction("skip");
+  await settleFake();
+
+  expect(presentId("episode-banner-screen")).toBe(false);
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(cover("u01-water")).toHaveAttribute("data-status", "clear");
+  expect(levelOf("u01-water", "S1")).toBe("available");
+  await vi.waitFor(() => {
+    const last = savedProgress(rpcs).at(-1);
+    expect(last).toBeDefined();
+    expect(catalogProgressOf(last as Record<string, unknown>)?.["u01-water"]).toContain("intro");
+  });
+  act(() => {
+    vi.advanceTimersByTime(EPISODE_BANNER_HOLD_MS);
+  });
+  expect(presentId("episode-banner-screen")).toBe(false);
+  expect(events).toEqual([
+    { name: "episode_intro_viewed", episodeId: "u01-water" },
+    { name: "episode_intro_skipped", episodeId: "u01-water" },
+  ]);
+});
+
+test("I13. (AC4) 표지에서 시스템 뒤로는 맵으로 돌아가 진행을 기록하지 않고, 모달이 떠 있으면 모달만 닫는다", async () => {
+  const respond = vi.fn<(token: string, outcome: string) => void>();
+  const { rpcs, events } = await boot({ seed: tutorialDoneSeed, backHost: { respond } });
+
+  tapCover("u01-water");
+  pressSystemBack("1");
+  await flush();
+
+  expect(respond).toHaveBeenCalledWith("1", "handled");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(presentId("episode-intro-screen")).toBe(false);
+  expect(cover("u01-water")).toHaveAttribute("data-status", "available");
+  for (const snapshot of savedProgress(rpcs)) {
+    expect(catalogProgressOf(snapshot)).toBeUndefined();
+  }
+  expect(events).toEqual([
+    { name: "episode_intro_viewed", episodeId: "u01-water" },
+    { name: "episode_intro_exited", episodeId: "u01-water", stage: "intro" },
+  ]);
+
+  tapCover("u01-water");
+  tapIntroSkip();
+  expect(presentId("ui-lynx-dialog-action-skip")).toBe(true);
+  const before = events.length;
+  pressSystemBack("2");
+  await flush();
+
+  expect(respond).toHaveBeenCalledWith("2", "handled");
+  expect(presentId("ui-lynx-dialog-action-skip")).toBe(false);
+  expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
+  expect(events).toHaveLength(before);
+});
+
+test("I14. (AC6) 배너에서 탭하면 곧장 맵이고 스택은 맵 하나이며 유지 시간이 지나도 변화가 없다", async () => {
+  const respond = vi.fn<(token: string, outcome: string) => void>();
+  const { events } = await boot({ seed: tutorialDoneSeed, backHost: { respond } });
+  useBannerClock();
+
+  tapCover("u01-water");
+  tapIntroNext();
+  readAllCuts(6);
+  await settleFake();
+  expect(screen.getByTestId("episode-banner-screen")).toBeInTheDocument();
+  const before = events.length;
+
+  fireEvent.tap(screen.getByTestId("episode-banner-screen"), {});
+  await settleFake();
+
+  expect(presentId("episode-banner-screen")).toBe(false);
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  act(() => {
+    vi.advanceTimersByTime(EPISODE_BANNER_HOLD_MS);
+  });
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(events).toHaveLength(before);
+  pressSystemBack("1");
+  await settleFake();
+  expect(respond).toHaveBeenCalledWith("1", "leave");
+});
+
+test("I14b. (AC6) 배너에서 시스템 뒤로는 넘어가기이고 맵 하나만 남아 다음 뒤로는 앱을 떠난다", async () => {
+  const respond = vi.fn<(token: string, outcome: string) => void>();
+  const { events } = await boot({ seed: tutorialDoneSeed, backHost: { respond } });
+  useBannerClock();
+
+  tapCover("u01-water");
+  tapIntroNext();
+  readAllCuts(6);
+  await settleFake();
+  expect(screen.getByTestId("episode-banner-screen")).toBeInTheDocument();
+  const before = events.length;
+
+  pressSystemBack("1");
+  await settleFake();
+
+  expect(respond).toHaveBeenCalledWith("1", "handled");
+  expect(presentId("episode-banner-screen")).toBe(false);
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  act(() => {
+    vi.advanceTimersByTime(EPISODE_BANNER_HOLD_MS);
+  });
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(events).toHaveLength(before);
+  pressSystemBack("2");
+  await settleFake();
+  expect(respond).toHaveBeenCalledWith("2", "leave");
 });

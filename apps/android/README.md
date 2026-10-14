@@ -407,7 +407,7 @@ A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 L
 ## 크래시 리포팅(Sentry)
 
 `release` · `bundled` 빌드는 DSN이 들어 있으면 Java/Kotlin 크래시 · JS 예외 · 세션을 Sentry로 보낸다(ANR 통합도 켜져 있다 — 이벤트를 본 적은 없다). **네이티브(C/C++) 크래시는 API 34에서는 오고 API 30에서는 오지 않는다**(아래 「NDK를 넣지 않았다」). 결정 · 확인한 것과 못 한 것은
-[ADR-0058](../../docs/adr/0058-crash-reporting-sentry.md)이, 내보내는 값의 목록은 [Android 데이터 보안](../../docs/android-data-safety.md)이 진다 — 여기에는 다루는 법만 적는다.
+[ADR-0061](../../docs/adr/0061-crash-reporting-sentry.md)이, 내보내는 값의 목록은 [Android 데이터 보안](../../docs/android-data-safety.md)이 진다 — 여기에는 다루는 법만 적는다.
 **2026-10-13에 DSN을 넣은 `bundled`가 API 30 에뮬레이터에서 한 번 돌았다**(Android DSN은 사용자가 `sentry.properties`에 넣었고 인증 토큰 · 조직 · 프로젝트는 아직 없다). 기기 밖으로 나가기 직전의 envelope 원문을 확인했고 보냈다. 같은 날 API 34에서 tombstone과 세션 우회도 확인해 보냈다 — **사용자가 Sentry 대시보드에서 수신을 확인했다**(이벤트 8건 전부 도착 · 이슈 7개 · 사용자 수 0 · 세션 15 · Crash Free Sessions 80 % — 서버가 붙이는 IP · 매핑으로 풀린 스택 · release 빌드는 아직 확인되지 않았다. [크래시 리포팅 e2e](../../docs/e2e/crash-reporting.md) B단계 실행 기록).
 
 **설정 값 넷.** 환경 변수를 먼저 읽고, 없으면 추적하지 않는 `apps/android/sentry.properties`(`.gitignore` — 토큰이 든다. 커밋하지 않는다)를 읽고, 그것도 없으면 빈 값이다(`app/sentry.gradle`).
@@ -425,9 +425,9 @@ A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 L
   `CrashReporting.start(this)`를 부르고, DSN이 유효할 때만 `SentryAndroid.init`이 돈다. DSN 없는 빌드에서는 `io.sentry` 코드가 한 줄도 돌지 않는다.
 - **JS 예외는 호스트 모듈이 아니라 `LynxViewClient.onReceivedError`로 받는다**(`MainActivity`). 받는 것은 Lynx 오류 코드 200번대(background) · 1100번대(메인 스레드)뿐이고, `CrashReportPayload` → `CrashScrub`이
   이름 · 메시지 · 스택 넷으로 닫고 **사전 상한 → 지우기 → 자르기** 순서로 다룬다(이름은 `…Error` · `…Exception` 같은 알려진 꼴만). 프로세스당 20건까지 보낸다. `io.sentry`를 import하는 소스는 `CrashEventPolicy` · `CrashReporting` 둘뿐이다.
-- **사용자 식별자 · breadcrumb · 스크린샷 · 뷰 계층은 보내지 않는다**(식별자를 붙이지 않는 것과 debug는 보내지 않는 것은 2026-10-13 사용자 결정이다). 옵션은 `CrashReporting.start`에 명시로 고정돼 있다 — 옵션을 더하거나 뺄 때는 ADR-0058 D6과 데이터 보안 문서를 같이 고친다.
+- **사용자 식별자 · breadcrumb · 스크린샷 · 뷰 계층은 보내지 않는다**(식별자를 붙이지 않는 것과 debug는 보내지 않는 것은 2026-10-13 사용자 결정이다). 옵션은 `CrashReporting.start`에 명시로 고정돼 있다 — 옵션을 더하거나 뺄 때는 ADR-0061 D6과 데이터 보안 문서를 같이 고친다.
   SDK는 설치 id를 `user.id` · 세션 `distinctId` · **`contexts.device.id`** 세 자리에 싣는다. 끄는 줄도 셋이다(`beforeSend`의 `setUser(null)` · `device.setId(null)`, 옵션의 `setDistinctId(null)`) —
-  **SDK 버전을 올리면 넷째 자리가 생기지 않았는지 다시 읽는다**(ADR-0058 D10 · 「정정 기록」). 기기 밖으로 나가기 직전의 envelope에서 넷(`user` · `did` · `ip_address` · `contexts.device.id`)이 없는 것은 봤다(e2e B6 — 에뮬레이터 1대). `beforeSend`는 기기 부팅 시각(`contexts.device.boot_time`)도 지운다. SDK가 붙이는 나머지 context 키는 [Android 데이터 보안](../../docs/android-data-safety.md)에 실측 목록이 있다 — **SDK를 올리면 envelope을 다시 떠서 그 목록과 견준다.**
+  **SDK 버전을 올리면 넷째 자리가 생기지 않았는지 다시 읽는다**(ADR-0061 D10 · 「정정 기록」). 기기 밖으로 나가기 직전의 envelope에서 넷(`user` · `did` · `ip_address` · `contexts.device.id`)이 없는 것은 봤다(e2e B6 — 에뮬레이터 1대). `beforeSend`는 기기 부팅 시각(`contexts.device.boot_time`)도 지운다. SDK가 붙이는 나머지 context 키는 [Android 데이터 보안](../../docs/android-data-safety.md)에 실측 목록이 있다 — **SDK를 올리면 envelope을 다시 떠서 그 목록과 견준다.**
 
 **debug 빌드에서 도착을 보는 법.** `adb logcat -s DuruCrash` — 호스트에 닿은 Lynx 오류마다 `<결말> <코드> <원문 앞 500자>` 한 줄이 찍힌다(`BuildConfig.DEBUG`일 때만). debug는 DSN이 없으므로 결말은
 `DISABLED`(받는 오류) 또는 `REJECTED`(받지 않는 오류)다. **이 줄에는 지우기 전 원문이 그대로 찍힌다.** `release` · `bundled`에는 이 로그가 없다.
@@ -460,7 +460,7 @@ Gradle 결선(의존 고정 · DSN 기본값 · 업로드 작업의 조건 · �
 (`platform: native` · mechanism `Tombstone` — 함수 이름이 풀린 프레임 · 모든 스레드 · 레지스터 · 로드된 라이브러리 목록을 싣는다). API 31 ~ 33 · 실기 · 앱 라이브러리 안에서 난 크래시의 모양은 확인되지 않았다.
 **`minSdk` 26 ~ 30 기기의 C/C++ 크래시(Lynx 엔진 안의 크래시 포함)는 Sentry에 보이지 않는다고 보고 다룬다** — 그 기기들의 네이티브 크래시는 여전히 `adb logcat` · tombstone으로 읽는다. NDK를 넣을지는 사용자 확인 전이다.
 - `beforeSend`가 tombstone의 스택 프레임 · `debug_meta`에서 **무작위 앱 설치 경로**를 `/data/app/[install]/`로 바꾼다(`CrashInstallPathTest`). 시스템 라이브러리의 **로드 주소**(재부팅 전까지 기기 전체에서 같다)는 사용자 결정으로 남는 위험으로 두고 보낸다 — [Android 데이터 보안](../../docs/android-data-safety.md).
-- **세션은 앱이 시작하고 끝낸다.** SDK 8.60.0의 자동 세션은 콜드 스타트마다 가짜 `exited`를 쓰고 크래시로 죽은 앞 세션을 버리는 경합이 있어 끈다(`setEnableAutoSessionTracking(false)`). 대신 `CrashReporting.watchSessions`가 `ProcessLifecycleOwner`의 `onStart`에서 SDK 작업 큐로 `Sentry.startSession`을, `onStop` 30초 뒤(그 사이 복귀가 없으면) `Sentry.endSession`을 넣는다(순수 판정은 `CrashSessionGate`, 결선 검사 GW-S9). API 34 에뮬레이터에서 가짜 `exited` 0건 · 크래시 세션 `crashed`를 봤다. **전면 강제 종료는 `exited`(정상)로 셈된다.** SDK를 올리면 경합이 고쳐졌는지 보고 이 우회를 걷을 수 있다([ADR-0058](../../docs/adr/0058-crash-reporting-sentry.md) D6 · 재검토 조건 12).
+- **세션은 앱이 시작하고 끝낸다.** SDK 8.60.0의 자동 세션은 콜드 스타트마다 가짜 `exited`를 쓰고 크래시로 죽은 앞 세션을 버리는 경합이 있어 끈다(`setEnableAutoSessionTracking(false)`). 대신 `CrashReporting.watchSessions`가 `ProcessLifecycleOwner`의 `onStart`에서 SDK 작업 큐로 `Sentry.startSession`을, `onStop` 30초 뒤(그 사이 복귀가 없으면) `Sentry.endSession`을 넣는다(순수 판정은 `CrashSessionGate`, 결선 검사 GW-S9). API 34 에뮬레이터에서 가짜 `exited` 0건 · 크래시 세션 `crashed`를 봤다. **전면 강제 종료는 `exited`(정상)로 셈된다.** SDK를 올리면 경합이 고쳐졌는지 보고 이 우회를 걷을 수 있다([ADR-0061](../../docs/adr/0061-crash-reporting-sentry.md) D6 · 재검토 조건 12).
 넣으려면 `sentry-native`를 16 KB로 다시 빌드해 [`vendor-maven/`](vendor-maven/README.md)에 싣는다 — 아직 하지 않았다([ADR 보류 표](../../docs/adr/README.md#보류-표)). `.so`는 하나도 늘지 않았다.
 
 ## 16 KB 페이지

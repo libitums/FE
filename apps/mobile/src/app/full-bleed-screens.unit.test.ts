@@ -5,6 +5,9 @@ import type { Screen } from "./nav-state";
 
 // `unit` 계층: 셸이 여백을 잡지 않는 route 판정의 입출력만 봅니다.
 
+// 카탈로그 학습 route는 이 단계에서 `Screen`에 더해지므로 모양만 흉내 낸 값을 `Screen`으로 다룹니다.
+const asScreen = (screen: object): Screen => screen as unknown as Screen;
+
 describe("isFullBleedScreen", () => {
   test.each<[string, Screen]>([
     ["episode-intro", { name: "episode-intro", unitId: "tutorial-intro" }],
@@ -19,6 +22,33 @@ describe("isFullBleedScreen", () => {
     ["catalog-cover", { name: "catalog-cover", episodeId: "u01-water" }],
   ])("FB1. %s는 전체 화면이다", (_name, screen) => {
     expect(isFullBleedScreen(screen)).toBe(true);
+  });
+
+  test.each<[string, Screen]>([
+    ["catalog-final", asScreen({ name: "catalog-final", episodeId: "u01-water" })],
+    ["catalog-epilogue", asScreen({ name: "catalog-epilogue", episodeId: "u01-water" })],
+  ])("FB1′. %s는 전체 화면이다", (_name, screen) => {
+    expect(isFullBleedScreen(screen)).toBe(true);
+  });
+
+  test.each<[string, Screen]>([
+    [
+      "catalog-lesson",
+      asScreen({ name: "catalog-lesson", episodeId: "u01-water", unitKey: "S3", activityIndex: 0 }),
+    ],
+    [
+      "catalog-unit-complete",
+      asScreen({
+        name: "catalog-unit-complete",
+        episodeId: "u01-water",
+        unitKey: "S3",
+        results: [],
+        skippedCount: 0,
+        questionCount: 0,
+      }),
+    ],
+  ])("FB1′. %s는 전체 화면이 아니다", (_name, screen) => {
+    expect(isFullBleedScreen(screen)).toBe(false);
   });
 
   test.each<[string, Screen]>([

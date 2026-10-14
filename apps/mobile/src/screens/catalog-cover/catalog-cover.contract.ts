@@ -1,5 +1,6 @@
 // 카탈로그 표지 컷 화면의 계약입니다. 타입만 둡니다.
 
+import type { FillScript } from "../../lib/placeholder-fill";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 
 export type CatalogCutScript = "en" | "roman";
@@ -37,11 +38,15 @@ export type CatalogCuts = readonly [CatalogCutView, ...CatalogCutView[]];
 export type CatalogCutPort = {
   readonly imageUrlOf: (relativePath: string) => string | null;
   /** 프로필을 묶은 치환입니다. */
-  readonly fill: (text: string, script: "ko" | "roman") => string;
+  readonly fill: (text: string, script: FillScript) => string;
 };
+
+/** 같은 컷 화면이 서는 자리 — 에피소드 앞(표지)과 최종 테스트 통과 뒤. */
+export type CatalogCutStage = "prologue" | "epilogue";
 
 export type CatalogCoverScreenProps = {
   readonly insets: SafeAreaInsets;
+  readonly stage: CatalogCutStage;
   /** 제목은 화면이 `copy.catalogMap.episodeLabel(ordinal)`로 만듭니다. */
   readonly ordinal: number;
   readonly cuts: CatalogCuts;
@@ -51,6 +56,21 @@ export type CatalogCoverScreenProps = {
   readonly onExit: () => void;
 };
 
+/** 배너의 종류 — 표지 컷 뒤(`start`) · 통과 뒤 컷 뒤(`clear`). */
+export type EpisodeBannerKind = "start" | "clear";
+
+/** 글자의 등장 변형 — `reward`는 커지며, `fade`는 크기 변화 없이(동작 줄이기). */
+export type EpisodeBannerMotion = "reward" | "fade";
+
+/** 컷을 끝까지 본 뒤 한 번 서는 배너입니다. */
+export type EpisodeBannerScreenProps = {
+  /** 면은 가장자리까지 깔고 글자만 이 여백 안에 둡니다. */
+  readonly insets: SafeAreaInsets;
+  readonly kind: EpisodeBannerKind;
+  /** 유지 시간이 지나거나 화면을 누르거나 시스템 뒤로를 누르면 — 화면이 한 번만 부릅니다. */
+  readonly onDone: () => void;
+};
+
 export type CatalogCoverCopy = {
   /** 지금 보이는 것이 key일 때 누르면 일어날 일 */
   readonly toggleScript: Readonly<Record<CatalogCutScript, string>>;
@@ -58,8 +78,16 @@ export type CatalogCoverCopy = {
   readonly nextCut: (ordinal: number, total: number) => string;
   /** 진행 버튼 낭독(마지막) */
   readonly finishCover: string;
+  /** 진행 버튼 낭독(통과 뒤 컷의 마지막) */
+  readonly finishEpilogue: string;
   /** 독백 낭독에서 화자 뒤에 붙는 말 — 괄호를 기호로 읽지 않게. */
   readonly thinking: string;
+  /** 표지 컷을 끝까지 본 뒤의 배너 */
+  readonly episodeStart: string;
+  /** 통과 뒤 컷을 끝까지 본 뒤의 배너 */
+  readonly episodeClear: string;
+  /** 표지의 건너뛰기 확인 모달 설명 — 카탈로그 표지는 다시 열 수 있습니다. */
+  readonly skipDescription: string;
 };
 
 export type CatalogCoverTestId =
@@ -70,4 +98,7 @@ export type CatalogCoverTestId =
   | "catalog-cover-screen-title"
   | "catalog-cover-screen-line"
   | "catalog-cover-screen-aside"
-  | "catalog-cover-screen-next";
+  | "catalog-cover-screen-next"
+  | "episode-banner-screen"
+  | "episode-banner-screen-safe"
+  | "episode-banner-screen-text";

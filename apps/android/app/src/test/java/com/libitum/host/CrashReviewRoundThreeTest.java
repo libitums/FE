@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
-/** Third review round (docs/adr/0058, correction record): Basic credentials in header dumps, dotless hosts. */
+/** Third review round (docs/adr/0061, correction record): Basic credentials in header dumps, dotless hosts. */
 public final class CrashReviewRoundThreeTest {
   private static void gone(String input, String secret) {
     String out = CrashScrub.scrub(input);

@@ -31,7 +31,8 @@ function claimCompletion(guard: { done: boolean }): boolean {
   return true;
 }
 
-// 카탈로그 에피소드의 표지 컷 화면입니다. 컷을 차례로 보이고, 대사 상자를 누르면 영어와 로마자를 번갈아 보이며,
+// 카탈로그 에피소드의 컷 화면입니다 — 에피소드 앞(표지, `stage="prologue"`)과 최종 테스트
+// 통과 뒤(`"epilogue"`)가 같은 화면이고, 다른 것은 마지막 버튼의 낭독 하나뿐입니다. 컷을 차례로 보이고, 대사 상자를 누르면 영어와 로마자를 번갈아 보이며,
 // 진행은 아래 버튼 하나뿐입니다(화면 어디를 눌러도 넘어가지 않습니다 — 토글 탭과 겹치지 않게).
 //
 // 그림과 글은 **형제 층**입니다. 글 층은 그림의 상태를 읽지 않으므로 그림이 없거나 늦거나 실패해도 머리 ·
@@ -39,6 +40,7 @@ function claimCompletion(guard: { done: boolean }): boolean {
 // 대사는 튜토리얼처럼 타자기로 쓰이고, 쓰는 중 첫 탭은 대사를 완성하며 다음 탭이 컷을 넘깁니다.
 export function CatalogCoverScreen({
   insets,
+  stage,
   ordinal,
   cuts,
   onComplete,
@@ -208,7 +210,11 @@ export function CatalogCoverScreen({
             accessibility-element={true}
             accessibility-traits="button"
             accessibility-label={
-              isLast ? copy.catalogCover.finishCover : copy.catalogCover.nextCut(index + 1, total)
+              isLast
+                ? stage === "prologue"
+                  ? copy.catalogCover.finishCover
+                  : copy.catalogCover.finishEpilogue
+                : copy.catalogCover.nextCut(index + 1, total)
             }
             bindtap={handleNext}
           >

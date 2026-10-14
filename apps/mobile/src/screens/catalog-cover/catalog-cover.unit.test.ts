@@ -81,6 +81,52 @@ const clerkView: CatalogCutView = {
   imageUrl: null,
 };
 
+describe("catalogCutViewsOf — 나라 객체 프로필", () => {
+  const germany = { ko: "독일", roman: "dogil", en: "Germany" } as const;
+  const fromGermany: Text = {
+    ko: "저는 {나라}에서 왔어요.",
+    roman: "jeoneun {나라}eseo wasseoyo.",
+    en: "I'm from {나라}.",
+  };
+
+  test("EN-3. 컷의 en에는 영어 나라 이름, roman에는 연음이 적용된 로마자, ko에는 한글이 선다", () => {
+    const [view] = catalogCutViewsOf([narration(1, fromGermany)], portFor({ country: germany }));
+
+    expect(view).toMatchObject({
+      kind: "narration",
+      text: {
+        ko: "저는 독일에서 왔어요.",
+        en: "I'm from Germany.",
+        roman: "jeoneun dogireseo wasseoyo.",
+      },
+    });
+  });
+
+  test("EN-3. 방백(aside)도 같은 규칙이다", () => {
+    const [view] = catalogCutViewsOf(
+      [speech(1, "점원", { ko: "네." }, fromGermany)],
+      portFor({ country: germany }),
+    );
+
+    expect(view).toMatchObject({
+      kind: "line",
+      aside: { en: "I'm from Germany.", roman: "jeoneun dogireseo wasseoyo." },
+    });
+  });
+
+  test("EN-3. 프로필이 비면 영어 줄은 지금과 같은 기본 문구다", () => {
+    const [view] = catalogCutViewsOf([narration(1, fromGermany)], portFor({}));
+
+    expect(view).toMatchObject({
+      text: {
+        ko: "저는 나라에서 왔어요.",
+        en: "I'm from nara.",
+        roman: "jeoneun naraeseo wasseoyo.",
+      },
+    });
+  });
+});
+
 describe("catalogCutViewsOf", () => {
   test("CC1. u01 프롤로그는 여섯 컷의 표시 모델이 된다", () => {
     const views = catalogCutViewsOf(u01.episode.prologue, portFor({}));

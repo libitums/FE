@@ -1,0 +1,157 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않습니다.
+   뼈대(상단 바 · 세션 헤더 · 지시문 · 무대 카드 · 아래 버튼)는 `LearningShell`이 집니다. 여기 남는 것은
+   카드 안의 배치 — 표식 · 표제어 · 뜻 · 예문 상자입니다. 모든 글줄은 가운데 정렬이고 줄바꿈을 막지
+   않습니다(WCAG 1.4.4) — 말줄임도 없습니다. */
+
+/* 카드 안 — 위에서 아래로, 가로 가운데입니다. */
+.vocab-card-activity-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-12);
+}
+
+/* 표식 자리 — 다른 학습 화면의 판정 배지 자리와 같은 위치 · 높이입니다. 하한이지 고정이 아닙니다
+   (ADR-0020 D5). */
+.vocab-card-activity-badge-slot {
+  min-height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* `New word` 표식 — 판정이 아니라 안내라서 아이콘도 판정 색도 없습니다. 면 `background-elevated` 위
+   `fg-brand`(12px 굵은 글씨)가 AA입니다. */
+.vocab-card-activity-badge {
+  padding-top: var(--libitum-spacing-4);
+  padding-bottom: var(--libitum-spacing-4);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.vocab-card-activity-badge-text {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 표제어 묶음 — 한글과 로마자는 한 덩어리로 붙어 섭니다. */
+.vocab-card-activity-headword {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+/* 한글 — `fg-brand`입니다. 단어 선택 제시문의 `brand-primary`(흰 면 위 3.02:1)와 달리 크기와 무관하게
+   AA(5.46:1)여서, 같은 빚을 새 화면에 늘리지 않습니다. */
+.vocab-card-activity-word {
+  text-align: center;
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+.vocab-card-activity-romanization {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* 표제어와 뜻 사이의 가는 선 — 장식입니다. */
+.vocab-card-activity-divider {
+  align-self: stretch;
+  height: var(--libitum-stroke-width-thin);
+  background-color: var(--libitum-color-gray-300);
+}
+
+.vocab-card-activity-meaning {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 예문 상자 — `AnswerReveal`과 같은 상자 치수입니다. */
+.vocab-card-activity-example,
+.learner-profile-preview {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding-top: var(--libitum-spacing-12);
+  padding-bottom: var(--libitum-spacing-12);
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.vocab-card-activity-example-title,
+.learner-profile-preview-title {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.vocab-card-activity-example-text,
+.learner-profile-preview-text {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* 예문 지원 줄 — 로마자와 영어 뜻이 한 접근성 요소로 묶여 한 덩어리로 섭니다. */
+.vocab-card-activity-example-support {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.vocab-card-activity-example-romanization {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.vocab-card-activity-example-translation,
+.learner-profile-preview-translation {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}

@@ -34,16 +34,34 @@ import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
 import type { Screen } from "./nav-state";
+import { renderCatalogFlow } from "./render-catalog";
 import { renderCatalogCover } from "./render-catalog-cover";
 import { renderShellLearningScreen, renderWordChoiceScreen } from "./render-learning-screen";
 import { renderMessengerCompleteScreen } from "./render-messenger-complete";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
 import { renderEntryScreen } from "./render-entry-screen";
+import {
+  learnerSettingsSummary,
+  renderLearnerProfileGate,
+  renderLearnerProfileSettings,
+} from "./render-learner-profile";
 import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
+import { LearningStatsContext } from "../screens/learning/LearningTopBar";
 import type { ScreenWiring } from "./screen-wiring";
 
+// 학습 화면의 머리 칩(연속 학습 · 트로피)은 여기서 한 번 공급합니다 — 학습형마다 prop으로 내리지 않습니다.
 export function renderScreen(screen: Screen, wiring: ScreenWiring) {
+  return (
+    <LearningStatsContext.Provider
+      value={{ streakDays: wiring.streakDays, trophyCount: wiring.trophyCount }}
+    >
+      {renderScreenBody(screen, wiring)}
+    </LearningStatsContext.Provider>
+  );
+}
+
+function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
   switch (screen.name) {
     case "journey-map":
       return (
@@ -67,6 +85,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
             sections: wiring.catalogSections,
             progress: wiring.catalogProgress,
             onStartCover: wiring.onStartCatalogCover,
+            onStartUnit: wiring.onStartCatalogUnit,
           }}
         />
       );
@@ -99,6 +118,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <SettingsScreen
           onSelectNavTarget={wiring.onSelectNavTarget}
+          learnerProfileSummary={learnerSettingsSummary(wiring)}
           onSignOut={wiring.onSignOut}
           onDeleteAccount={wiring.onDeleteAccount}
           onLayerChange={wiring.onScreenLayerChange}
@@ -106,6 +126,10 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       );
     case "profile":
       return <AccountProfileScreen onExit={wiring.onExitSettingsStack} />;
+    case "learner-profile":
+      return renderLearnerProfileSettings(wiring);
+    case "learner-profile-gate":
+      return renderLearnerProfileGate(screen, wiring);
     case "feedback":
       return (
         <FeedbackScreen onSubmit={wiring.onSubmitFeedback} onExit={wiring.onExitSettingsStack} />
@@ -252,6 +276,11 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return renderEpisodeFinalFlow(screen, wiring);
     case "catalog-cover":
       return renderCatalogCover(screen, wiring);
+    case "catalog-lesson":
+    case "catalog-final":
+    case "catalog-unit-complete":
+    case "catalog-epilogue":
+      return renderCatalogFlow(screen, wiring);
     // `never` 망라가 이 case를 강제합니다. 결선이 없습니다 — 탐침 화면은 props도
     // 콜백도 받지 않습니다. **아무 코드도 이 화면을 push하지 않습니다** — 닿으려면
     // `navigation.ts`가 둔 개발용 부팅 상태(`handwritingProbeNav`)를 바꿔 끼웁니다.

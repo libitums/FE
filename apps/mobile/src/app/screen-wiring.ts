@@ -12,8 +12,8 @@ import type {
 } from "../screens/episode-intro/episode-intro.contract";
 import type { SafeAreaInsets } from "../lib/safe-area";
 import { accountWiring } from "./account-wiring";
-import { catalogCoverWiring } from "./catalog-cover-wiring";
-import type { CatalogCoverWiring, CatalogCoverWiringArgs } from "./catalog-cover-wiring";
+import { catalogWiring } from "./catalog-wiring";
+import type { CatalogWiring, CatalogWiringArgs } from "./catalog-wiring";
 import type { AccountWiring } from "./leave-app.contract";
 
 import type { AnswerResult } from "../lib/answer-result";
@@ -29,6 +29,7 @@ import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
 import type { EntryEventSink } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
+import type { LearnerProfileOutcome } from "../lib/learner-profile.contract";
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { PhoneSignInVisibility, SocialLoginMethod } from "../screens/login/login.contract";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
@@ -196,7 +197,7 @@ export type ScreenWiring = {
   // 진입 흐름 화면 여섯의 결선입니다. `entryLanguage`만 App 상태를 그대로
   // 내리고, 나머지는 전이·이벤트·토큰 저장을 여는 콜백입니다.
   onSplashTimeout: () => void;
-  onOnboardingComplete: () => void;
+  onOnboardingComplete: (outcome: LearnerProfileOutcome) => void;
   onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
   onRequestPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
@@ -213,7 +214,7 @@ export type ScreenWiring = {
 } & EpisodeFinalWiring &
   AccountWiring &
   JourneyStats &
-  CatalogCoverWiring;
+  CatalogWiring;
 
 export type ScreenWiringArgs = {
   readonly messengerEventSink: MessengerEventSink;
@@ -253,7 +254,7 @@ export type ScreenWiringArgs = {
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
 } & Omit<EpisodeFinalWiringArgs, "dispatch"> &
   ProgressWiringArgs &
-  Omit<CatalogCoverWiringArgs, "dispatch" | "episodeIntroEventSink" | "completedEpisodeFinalIds">;
+  Omit<CatalogWiringArgs, "dispatch" | "episodeIntroEventSink" | "completedEpisodeFinalIds">;
 
 export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   const journey = journeyWiring(args);
@@ -262,14 +263,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     visualNovelEventSink: args.visualNovelEventSink,
     dispatch: args.dispatch,
   });
-  const entry = entryWiring({
-    entryEventSink: args.entryEventSink,
-    analyticsUser: args.analyticsUser,
-    dispatch: args.dispatch,
-    entryLanguage: args.entryLanguage,
-    setEntryLanguage: args.setEntryLanguage,
-    syncProgress: args.syncProgress,
-  });
+  const entry = entryWiring(args);
 
   return {
     ...journey,
@@ -295,6 +289,6 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       leaveApp: args.leaveApp,
     }),
     ...guardedEpisodeFinalWiring(args),
-    ...catalogCoverWiring(args),
+    ...catalogWiring(args),
   };
 }

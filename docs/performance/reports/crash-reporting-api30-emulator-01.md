@@ -58,3 +58,7 @@
 ## 2026-10-13 main(#242) 병합 뒤
 
 - `main.lynx.bundle` 1,722,103 bytes [실측] — 상한 1,722,000을 103 bytes 넘어 1,723,000으로 올렸다(사용자 결정, `devtools/bundle-size/budget.json` note). 이 브랜치 단독의 병합 전 실측은 1,721,225 bytes였다.
+
+## 2026-10-14 main(`81609f6e`) 병합 뒤
+
+- `main.lynx.bundle` 1,913,530 bytes [실측] — main의 상한 1,915,000 안. 상한은 바꾸지 않았다(`budget.json`은 main 값).

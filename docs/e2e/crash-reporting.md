@@ -7,7 +7,7 @@
 
 정본: `.agent-harness/work/crash-reporting-sentry/spec.md`(§0 실측 · §2.1 어떤 JS 오류가 어느 길로 닿는가 · §3 호스트 계약 · §5 빌드 · §7 측정 · §9 사용자 결정) ·
 `test-plan.md` §5. **이 문서에 없는 단계를 현장에서 만들지 않는다.** 계약이 「미확인」으로 둔 것은 이 문서도 미확인으로 두고, 관찰 칸을 비워 둔다.
-결정은 [ADR-0058](../adr/0058-crash-reporting-sentry.md)이 진다. 실행 원문(단계별 명령 · logcat · 스크린샷 · envelope 사본)은 하네스 작업 폴더의 `logs/e2e-a.md` · `logs/e2e-a-*` · `logs/e2e-b.md` · `logs/e2e-b-envelopes/`에 있다(저장소 밖 — envelope 사본은 DSN · public key를 지운 것이다).
+결정은 [ADR-0061](../adr/0061-crash-reporting-sentry.md)이 진다. 실행 원문(단계별 명령 · logcat · 스크린샷 · envelope 사본)은 하네스 작업 폴더의 `logs/e2e-a.md` · `logs/e2e-a-*` · `logs/e2e-b.md` · `logs/e2e-b-envelopes/`에 있다(저장소 밖 — envelope 사본은 DSN · public key를 지운 것이다).
 
 | 단계 | 상태 | 무엇 |
 |---|---|---|
@@ -45,7 +45,7 @@ A3 ~ A6의 탐침(`throw` 한 줄 · `Promise.reject` 등)은 **측정을 위한
 ### 판정 규칙
 
 - **A1 · A2 · A3 · A4 · A7**은 통과/실패로 판정한다.
-- **A5 · A6은 통과/실패가 아니다 — 있는 그대로 기록하는 측정이다.** 로그 줄이 나오든 안 나오든 실패로 세지 않는다. 안 나오는 경로는 spec §2.1 표와 ADR-0058 「잡지 못하는 것」에 **정정으로 적는다**(그 정정이 이 측정의 산출이다).
+- **A5 · A6은 통과/실패가 아니다 — 있는 그대로 기록하는 측정이다.** 로그 줄이 나오든 안 나오든 실패로 세지 않는다. 안 나오는 경로는 spec §2.1 표와 ADR-0061 「잡지 못하는 것」에 **정정으로 적는다**(그 정정이 이 측정의 산출이다).
 - **A3이 실패하면(경계가 잡은 오류가 호스트에 닿지 않음) 계약 C2가 무너진다 — 멈춘다.** 이어서 A4 이후를 돌리지 않고, 계약 §9 U1의 **(나)로 정정한다**: 요구사항대로 호스트 모듈 `CrashReportModule.report(source, name, message, stack)`을 연다(경계가 잡은 오류가 F5의 미확인 구간에 기대지 않게 된다. 대가로 ADR-0017 D1 조건 1 · 2의 예외를 ADR에 적어야 하고, 지우기 구현이 JS · Java 둘이 되며, JS 번들이 더 는다). 정정은 `specification`으로 되돌려 spec §11에 기록한다 — 현장에서 구현을 바꾸지 않는다.
 - A3은 unit · ui가 green인 뒤 **e2e 계층의 첫 일**로 돈다.
 
@@ -149,7 +149,7 @@ find apps/android/app/build/intermediates/merged_manifests/bundled -name Android
 - 각각 `DuruCrash` 줄이 **나오는지 안 나오는지**.
 - 나오면 `unhandled rejection` 이름이 붙었는지(`rejection` 접두 — spec F4의 [미확인]을 닫는다).
 - 줄 원문 모양.
-- 안 나오는 경로는 **실패가 아니다.** spec §2.1 표와 ADR-0058 「잡지 못하는 것」에 정정으로 적는다.
+- 안 나오는 경로는 **실패가 아니다.** spec §2.1 표와 ADR-0061 「잡지 못하는 것」에 정정으로 적는다.
 
 ### A6 — 탐침 P4(메인 스레드) — 측정, 통과/실패 아님
 
@@ -292,7 +292,7 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 - **API 37**: `google_apis_playstore_ps16k` 임시 AVD가 부팅되지 않아(`hvf is not enabled` · `mprotect failed`) 측정하지 못했다. 같은 셸에서 API 30 이미지는 떴다.
 - **API 34**(`google_apis` 임시 AVD, 세 회차 — 아래 실행 기록): 재실행에서 tombstone 이벤트가 왔다 — `platform: native` · `level: fatal` · `mechanism{type: Tombstone, handled: false}` · `sdk.integrations`에 `Tombstone`.
   크래시 스레드 프레임의 함수 이름이 풀려 있었고 스레드 49개 · 레지스터 · `debug_meta.images` 327개가 실렸다. 외부 신호라 크래시 스레드는 프레임워크 대기 프레임뿐이다 — **앱 라이브러리 안에서 난 크래시의 모양은 미확인이다.**
-- [추론] 플랫폼이 네이티브 크래시의 tombstone을 앱에 읽게 해 주는 것이 API 31부터라 API 30이 대상이 아니었을 것이다. 31 ~ 33 · 실기는 돌리지 않았다([ADR-0058](../adr/0058-crash-reporting-sentry.md) D5).
+- [추론] 플랫폼이 네이티브 크래시의 tombstone을 앱에 읽게 해 주는 것이 API 31부터라 API 30이 대상이 아니었을 것이다. 31 ~ 33 · 실기는 돌리지 않았다([ADR-0061](../adr/0061-crash-reporting-sentry.md) D5).
 - ⟨정정⟩ 앞선 판은 「SEGV로 죽은 실행의 세션은 `crashed`가 아니라 `exited`로 적혔다」고 적었다 — **잘못 읽은 것이다.** 그 `exited`는 SEGV 뒤 재실행해 새로 시작한 세션의 가짜 `exited`였다(아래 「세션 관찰」).
 
 **B5에서 envelope을 읽을 때 더 볼 것**(API 34에서 찾은 것): 앱 설치 경로의 무작위 토막(`pm path <패키지>`가 돌려준 경로의 `~~` 뒤 · `<패키지>-` 뒤 토막)이 envelope 전체에서 **0건**이고 `/data/app/[install]/`로 바뀌어 있어야 한다(`1130979c`부터).
@@ -303,7 +303,7 @@ spec §0 F5 · §3.3 3번의 [미확인]을 닫은 기록이다. 호스트 로�
 API 30(B 1회차)에서도 크래시 뒤 재실행한 세션이 0.009초 뒤 `exited`였다 — 같은 현상이다.
 
 **세션 우회 확인 — ⟨2026-10-13, `48bc8607` 뒤⟩.** 원인은 SDK 8.60.0에서 앞 세션 이사 · 마무리(작업 큐)와 새 세션 시작 기록(전송 스레드)의 순서 경합이었고 [확인 — SDK 소스],
-사용자 결정(「앱에서 우회」)으로 자동 세션 추적을 끄고 앱이 `ProcessLifecycleOwner`로 SDK 작업 큐에 시작 · 30초 뒤 종료를 넣는다([ADR-0058](../adr/0058-crash-reporting-sentry.md) D6).
+사용자 결정(「앱에서 우회」)으로 자동 세션 추적을 끄고 앱이 `ProcessLifecycleOwner`로 SDK 작업 큐에 시작 · 30초 뒤 종료를 넣는다([ADR-0061](../adr/0061-crash-reporting-sentry.md) D6).
 다음 회차는 아래 관찰을 다시 본다 — 세션 envelope마다 `sid` · `init` · `status` · `seq` · `duration`과 그 실행의 액티비티 생명주기 로그 시각(logcat `events` 버퍼)을 함께 적는다.
 
 | 볼 것 | 통과 조건 | API 34 실측(2026-10-13) |

@@ -1,5 +1,10 @@
 // 에피소드 서사 표지의 타입 전용 계약입니다 — 구현 · JSX를 두지 않습니다.
 
+import type { CatalogLearningEvent } from "../../lib/catalog-learning-event.contract";
+import type {
+  LearnerProfileSavedEvent,
+  LearnerProfileSkippedEvent,
+} from "../../lib/learner-profile.contract";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
 import type { JourneyMapItemStatus } from "../journey-map/journey-map";
@@ -48,6 +53,8 @@ export type EpisodeIntroMapItemProps = {
  *   - `episode_intro_exited` — 표지(`intro`)나 서사(`prologue`)에서 뒤로 나갈 때
  *   - `episode_prologue_completed` — 서사를 끝까지 보고 하단 버튼을 눌렀을 때
  *   - `episode_content_refreshed` — 에피소드 콘텐츠 갱신이 끝났고 매니페스트를 받았을 때
+ *   - `episode_lesson_started` · `episode_lesson_finished` · `episode_final_passed` — 카탈로그
+ *     레슨 · 최종 테스트의 시작 · 판정 · 최종 통과(`CatalogLearningEvent`)
  *
  * 끝낸 표지는 영속하지 않아 앱을 다시 켜면 표지부터 다시 지납니다 — 같은 사람이 같은
  * 표지를 여러 번 봅니다.
@@ -108,7 +115,10 @@ export type EpisodeIntroEvent =
   | EpisodePrologueCompletedEvent
   | EpisodeContentRefreshedEvent
   | EpisodeSurveyAnsweredEvent
-  | EpisodeSurveySkippedEvent;
+  | EpisodeSurveySkippedEvent
+  | CatalogLearningEvent
+  | LearnerProfileSavedEvent
+  | LearnerProfileSkippedEvent;
 /** 보내지 않을 때는 `null`입니다 — no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */
 export type EpisodeIntroEventSink = ((event: EpisodeIntroEvent) => void) | null;
 export type EpisodeIntroAppProps = { readonly episodeIntroEventSink?: EpisodeIntroEventSink };
@@ -123,6 +133,10 @@ export type EpisodeIntroScreenProps = {
   readonly label: string;
   /** 둘째 줄입니다 — 에피소드의 이름입니다. */
   readonly title: string;
+  /** 둘째 줄을 이 줄들로 나눠 그립니다. 없으면 `title` 한 덩어리입니다. 낭독 이름은 줄을 공백으로 이은 것입니다(`title`을 나눈 줄이면 `title`과 같습니다). */
+  readonly titleLines?: readonly [string, ...string[]];
+  /** 건너뛰기 확인 모달의 설명입니다. 없으면 튜토리얼의 기본 문구(다시 서지 않는다)입니다. */
+  readonly skipDescription?: string;
   /** 표지를 보지 않은 것으로 두고 맵으로 돌아갑니다. 다음에 유닛을 열면 다시 뜹니다. */
   readonly onBack: () => void;
   /** 확인 모달에서 `건너뛰기`를 골랐을 때만 불립니다. `Skip`을 누른 것만으로는 불리지 않습니다. */
