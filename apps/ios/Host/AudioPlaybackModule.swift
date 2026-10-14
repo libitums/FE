@@ -181,7 +181,7 @@ final class AudioPlaybackModule: NSObject, LynxModule {
     DispatchQueue.main.async { self.player?.play() }
   }
 
-  // MARK: - 해석 — **번들 리소스 조회 한 줄**
+  // MARK: - 해석 — **원격 https 주소 또는 번들 리소스 조회**
 
   /// 자산 디렉터리 이름. `.app` 안에서도 같은 이름의 디렉터리로 남는다 —
   /// `project.pbxproj`가 `apps/ios/Host/audio`를 **폴더 참조**(`lastKnownFileType = folder`)로
@@ -199,7 +199,7 @@ final class AudioPlaybackModule: NSObject, LynxModule {
 
   /// `source`를 재생할 것으로 옮기는 **유일한 자리**.
   ///
-  /// **번들 리소스 조회다.** `apps/ios/Host/audio/<source>.m4a`가 `.app` 안
+  /// **기본은 번들 리소스 조회다.** `apps/ios/Host/audio/<source>.m4a`가 `.app` 안
   /// `audio/<source>.m4a`로 복사돼 있고, 파일 이름이 `audioSource` 값과 **정확히 같다.**
   /// 그래서 이 몸통은 추측이 아니라 사실 위에 서 있다 — 그것이 이 자리를 비워 뒀던
   /// 이유가 없어진 지점이다.

@@ -30,8 +30,8 @@ const slotOfFour = (index: number): 0 | 1 | 2 | 3 =>
   index === 0 ? 0 : index === 1 ? 1 : index === 2 ? 2 : 3;
 
 /**
- * 그 문항의 재생 출처입니다. 3c는 오디오를 연결하지 않아(콘텐츠의 `audio_url`을 쓰지 않습니다 — 앱의
- * `playAudio`는 번들 id만 해석합니다) 늘 `null`입니다. 오디오 전달 작업이 이 자리를 채웁니다.
+ * 그 문항의 재생 출처입니다. 학습 문항의 음성은 아직 연결하지 않아(콘텐츠의 `audio_url`을 쓰지 않습니다 —
+ * 컷 · 최종 테스트만 버킷 음성을 씁니다, ADR-0060) 늘 `null`입니다. 학습 문항 오디오 작업이 이 자리를 채웁니다.
  */
 function audioSourceOf(_item: ItemOf<"LISTEN_SELECT">): string | null {
   return null;
