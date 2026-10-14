@@ -584,7 +584,7 @@ invoke해야 하는데, **이 저장소에 element ref 사용 선례가 0건이�
 ⟨2026-10-13, 카탈로그 레슨(3c) — 적용 기록, 새 결정 아님⟩ **「영구히」가 아닌 자리에 `disabled`를 준 예외가 하나 섰다** — 오디오가 아직 없는
 받아쓰기 문항의 재생 조작(`components/AudioUnavailableControl.tsx` — `accessibility-traits="disabled"`, 낭독 `Audio not available yet`, `bindtap` 없음). 오디오
 파일과 원격 해석이 오면 걷힌다. 위 잣대(*걷어낼 날이 정해져 있는가*)로는 주지 않는 쪽인데, **콘텐츠 쪽 답이 「파일이 오기 전까지 텍스트를 보여 주고 재생 버튼을
-비활성」**이었고([콘텐츠 계약](../specs/episode-content-json-contract.md) Q21) 걷을 날의 조건이 ADR README 보류 표 「오디오 자산의 출처·형식」에 있어 예외로 적는다.
+비활성」**이었고([콘텐츠 계약](../specs/episode-content-json-contract.md) Q21) 걷을 날의 조건이 ADR README 보류 표 「오디오 자산의 출처·형식」(⟨2026-10-14⟩ 닫힘 — 출처는 [ADR-0060](0060-episode-voice-remote-audio.md). 이 조작을 걷을 날의 조건은 「학습 문항 오디오의 연결」 행으로 옮겼다)에 있어 예외로 적는다.
 범위는 이 컴포넌트 하나다 — 결정과 근거는 [ADR-0058](0058-catalog-learning-session.md) D3. 같은 컴포넌트를 쓰는 소리 없는 듣기 프롬프트는 시뮬레이터 확인 뒤
 실데이터 경로에서 빠졌다(오디오 없는 듣기는 건너뜀). 접근성 이름 `Audio not available yet`는 시뮬레이터 1차 회차(빠지기 전의 듣기 프롬프트)에서 봤고, 받아쓰기 카드의 것과 VoiceOver 실기의 dimmed 표기는 확인하지 못했다.
 
