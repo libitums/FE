@@ -2,6 +2,7 @@
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { isTypedAnswerAccepted } from "../../lib/hangul-keyboard";
+import type { AudioCue } from "../../lib/use-audio-cue";
 import type {
   CatalogFinalAction,
   CatalogFinalState,
@@ -57,6 +58,14 @@ export function judgeRoleplayTurn(
   return isTypedAnswerAccepted(composedReply(turn, placed), turn.accepted)
     ? "correct"
     : "incorrect";
+}
+
+/** 턴 상태에서 지금 나야 할 소리입니다. 소리가 없으면 `null`입니다. */
+export function catalogFinalAudioCueOf(
+  _turn: CatalogRoleplayTurn,
+  _state: CatalogFinalState,
+): AudioCue | null {
+  return null;
 }
 
 export function isCatalogFinalComplete(state: CatalogFinalState, total: number): boolean {

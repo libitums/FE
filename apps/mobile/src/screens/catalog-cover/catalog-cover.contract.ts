@@ -25,12 +25,16 @@ export type CatalogCutView =
       readonly text: CatalogCutText;
       readonly aside: CatalogCutText | null;
       readonly imageUrl: string | null;
+      /** 재생할 전체 주소. 소리가 없으면 키가 없습니다. */
+      readonly audioSource?: string;
     }
   | {
       readonly kind: "narration";
       readonly index: number;
       readonly text: CatalogCutText;
       readonly imageUrl: string | null;
+      /** 재생할 전체 주소. 소리가 없으면 키가 없습니다. */
+      readonly audioSource?: string;
     };
 
 export type CatalogCuts = readonly [CatalogCutView, ...CatalogCutView[]];
