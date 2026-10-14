@@ -11,7 +11,7 @@ export type FillText = typeof fillPlaceholders;
 /** 세션이 받는 콘텐츠 포트입니다. 함수 둘은 백그라운드가 닫아 만듭니다(화면은 값 import 없이 씁니다). */
 export type EpisodeContent = {
   readonly catalog: readonly CatalogEntry[];
-  /** 컷 `image_url`(기준 상대) → 절대 URL. 설정 없음 · 경로 거부면 null. */
+  /** 버킷 기준 상대 경로(컷 그림 · 음성) → 절대 URL. 설정 없음 · 경로 거부면 null. */
   readonly imageUrlOf: (relativePath: string) => string | null;
   readonly fillText: FillText;
 };

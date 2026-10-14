@@ -214,7 +214,7 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   ///
   /// `nil`을 돌려주면 `play`는 재생하지 않고 `done`을 한 번 부른다. 등록되지 않았거나
   /// 이름이 어긋난 `source`가 그 경로로 간다.
-  private static func resolve(_ source: String) -> URL? {
+  static func resolve(_ source: String) -> URL? {
     Bundle.main.url(
       forResource: source,
       withExtension: audioFileExtension,

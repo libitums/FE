@@ -2,6 +2,7 @@
 
 import type { EpisodeCut, Text } from "../../lib/episode-content.model";
 import type { FillScript } from "../../lib/placeholder-fill";
+import type { AudioCue } from "../../lib/use-audio-cue";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   CatalogCutPort,
@@ -85,6 +86,11 @@ export function catalogCutViewsOf(
     if (view !== null) views.push(view);
   }
   return views;
+}
+
+/** 컷이 설 때 나야 할 소리입니다. 소리가 없으면 `null`입니다. */
+export function catalogCutAudioCueOf(_cut: CatalogCutView, _index: number): AudioCue | null {
+  return null;
 }
 
 export function catalogCutsOf(views: readonly CatalogCutView[]): CatalogCuts | null {

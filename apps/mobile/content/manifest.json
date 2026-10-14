@@ -7,9 +7,9 @@
       "order": 1,
       "title": "익선동 골목 어귀 편의점",
       "schema": "delivery-2",
-      "version": "2026-10-12.1",
-      "sha256": "eb7624ae0cddcfafc8c2022af93dea4c845e0f8e3fbbb4cb039edb8ac27515d9",
-      "bytes": 79346,
+      "version": "2026-10-14.1",
+      "sha256": "56cc484dce9dfa05410ff1dce696e47abe4091452b873cdd81e5c5f16ae48c94",
+      "bytes": 79485,
       "url": "episodes/u01-water.json"
     },
     {

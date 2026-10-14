@@ -23,6 +23,10 @@ export type CatalogRoleplayTurn = {
   /** en(answers[0].en) ?? en(stimulus.text.en) */
   readonly replyTranslation: string | null;
   readonly imageUrl: string | null;
+  /** 상대 줄(seq n-1)의 전체 주소. 없으면 키가 없습니다. */
+  readonly counterpartAudioSource?: string;
+  /** 정답 뒤 들려줄 내 줄(seq n)의 전체 주소. 없으면 키가 없습니다. */
+  readonly replyAudioSource?: string;
 };
 
 export type CatalogRoleplayTurns = NonEmpty<CatalogRoleplayTurn>;

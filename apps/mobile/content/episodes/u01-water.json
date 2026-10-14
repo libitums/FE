@@ -48,7 +48,8 @@
     "en": "Looking up at the sound of the door bell."
    },
    "image_brief": "편의점 문을 열고 들어선다.",
-   "image_url": "images/u01-water/pre-3.jpg"
+   "image_url": "images/u01-water/pre-3.jpg",
+   "audio_url": "u01-water/pre-3"
   },
   {
    "index": 4,
@@ -96,7 +97,8 @@
     "en": "Scanning the barcode."
    },
    "image_brief": "계산대의 점원이 바코드를 찍는다.",
-   "image_url": "images/u01-water/pre-6.jpg"
+   "image_url": "images/u01-water/pre-6.jpg",
+   "audio_url": "u01-water/d-01"
   }
  ],
  "dialogue": [
@@ -108,7 +110,7 @@
     "roman": "bongtu deurilkkayo?",
     "en": "Would you like a bag?"
    },
-   "audio_url": ""
+   "audio_url": "u01-water/d-01"
   },
   {
    "seq": 2,
@@ -118,7 +120,7 @@
     "roman": "aniyo, gwaenchanayo.",
     "en": "No, I'm fine."
    },
-   "audio_url": ""
+   "audio_url": "u01-water/d-02"
   },
   {
    "seq": 3,
@@ -128,7 +130,7 @@
     "roman": "samcheon wonimnida.",
     "en": "That's three thousand won."
    },
-   "audio_url": ""
+   "audio_url": "u01-water/d-03"
   },
   {
    "seq": 4,
@@ -138,7 +140,7 @@
     "roman": "kadeuro halgeyo.",
     "en": "I'll pay by card."
    },
-   "audio_url": ""
+   "audio_url": "u01-water/d-04"
   },
   {
    "seq": 5,
@@ -148,7 +150,7 @@
     "roman": "yeongsujeung deurilkkayo?",
     "en": "Would you like a receipt?"
    },
-   "audio_url": ""
+   "audio_url": "u01-water/d-05"
   },
   {
    "seq": 6,

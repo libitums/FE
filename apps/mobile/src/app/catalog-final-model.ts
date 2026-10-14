@@ -6,6 +6,7 @@ import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { LearningItem } from "../lib/episode-content";
+import type { DialogueLine } from "../lib/episode-content.model";
 import type {
   CatalogRoleplayTile,
   CatalogRoleplayTurn,
@@ -72,6 +73,33 @@ export function catalogRoleplayTurnOf(
       englishOf(port, item.answers[0]?.en) ?? englishOf(port, item.stimulus.text?.en) ?? null,
     imageUrl: imagePath === undefined ? port.sceneImageUrl : port.imageUrlOf(imagePath),
   };
+}
+
+export type CatalogRoleplayLines = {
+  readonly counterpart: DialogueLine;
+  readonly player: DialogueLine;
+};
+
+/** `line_id`가 가리키는 플레이어 줄과 그 앞 상대 줄입니다. 어긋나면 `null`입니다. */
+export function catalogRoleplayLinesOf(
+  _lineId: string,
+  _dialogue: readonly DialogueLine[],
+): CatalogRoleplayLines | null {
+  return null;
+}
+
+export type CatalogRoleplayAudio = Pick<
+  CatalogRoleplayTurn,
+  "counterpartAudioSource" | "replyAudioSource"
+>;
+
+/** 턴에 붙일 소리입니다. 있는 것만 키로 냅니다. */
+export function catalogRoleplayAudioOf(
+  _item: LearningItem,
+  _dialogue: readonly DialogueLine[],
+  _contentUrlOf: (relativePath: string) => string | null,
+): CatalogRoleplayAudio {
+  return {};
 }
 
 export function catalogFinalPlanOf(

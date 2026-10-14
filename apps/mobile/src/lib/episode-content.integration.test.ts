@@ -23,7 +23,7 @@ type Fixture = {
 };
 
 const FIXTURES: readonly Fixture[] = [
-  { file: "u01-water", bytes: 79_346, prologue: 6, epilogue: 3, dialogue: 8, words: 10, items: 78 },
+  { file: "u01-water", bytes: 79_485, prologue: 6, epilogue: 3, dialogue: 8, words: 10, items: 78 },
   {
     file: "u02-checkin",
     bytes: 121_744,
