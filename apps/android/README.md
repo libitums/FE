@@ -40,12 +40,20 @@ JS의 준비 신호(`SystemBackModule.ready`)는 에뮬레이터 실측에서 �
 |---|---|---|
 | `safeAreaInsets` | `{ top, bottom, left, right }` dp — 가려지는 가장자리 | `systemBars() \| displayCutout()` |
 | `tappableBottomInset` | dp — 시스템 바 가운데 **터치를 가로채는** 아래 높이. 3버튼에서만 0이 아니다(Pixel_8 48), 제스처는 0 | `tappableElement()`의 아래 값, `safeAreaInsets.bottom`을 넘지 않게 자른다 |
+| `fontScale` | number — **코어에 준** 글자 배율(`builder.setFontScale`에 넣은 `Configuration.fontScale` 그대로, 상한 없음). 여정 맵이 2.0을 넘으면 한 열로 선다. **아래 `viewportWidth`와 한 맵으로, 다른 키와 따로** `updateGlobalProps`로 보낸다(`MainActivity.publishViewportMetrics`, `onCreate`와 `onConfigurationChanged`, 앞서 보낸 맵과 같으면 보내지 않는다). 배율이 바뀌면 Activity가 다시 서므로 `onCreate`의 값이 곧 코어의 값이다 | 순수 변환 `ViewportMetrics.globalProps(fontScale, widthPx, density)` — 유한한 양수가 아닌 값의 키는 싣지 않는다(JS가 없음으로 읽고 두 열 쪽이 된다) |
+| `viewportWidth` | number — LynxView 가로 폭 dp(`widthPixels / density`). 여정 맵이 320 미만이면 한 열로 선다. 화면 크기 변경은 재생성 없이 `onConfigurationChanged`로 와서 바뀐 값을 다시 보낸다 | 같은 변환. `density ≤ 0`이면 키가 없다 |
 | `reducedMotion` | boolean — 시스템 「동작 줄이기」. **위 두 키와 따로**, 키 하나짜리 `updateGlobalProps`로 값이 바뀔 때만 보낸다(`MainActivity.publishReducedMotion`, `onCreate`에서 `renderTemplateUrl` 앞에 첫 값) | `Settings.Global.ANIMATOR_DURATION_SCALE` · `TRANSITION_ANIMATION_SCALE` 중 하나라도 0(`ReducedMotion.fromScales`). `ReducedMotionWatcher`가 `ContentObserver`로 두 URI를 듣는다 — 접근성 「애니메이션 삭제」는 세 배율을 0으로 두므로 같은 길로 온다. `window_animation_scale`은 보지 않는다 |
 
 따로 보내도 앞 두 키가 지워지지 않는 것은 `updateGlobalProps`가 키 단위 병합이기 때문이다(에뮬레이터 M-A3에서 확인). iOS 호스트도
 `reducedMotion`을 보낸다(`UIAccessibility.isReduceMotionEnabled`) — 단 iOS는 `LynxTemplateData(dictionary:useBoolLiterals:true)`로 보내야
 boolean이 도달한다(Dictionary 오버로드는 Bool을 숫자 1로 바꾼다 — [ADR-0044](../../docs/adr/0044-android-tappable-inset.md) D1 「후속 확장」).
 동작 줄이기의 에뮬레이터 · 시뮬레이터 절차와 결과는 [동작 줄이기 설정이 앱의 실제 움직임을 멈춘다](../../docs/e2e/motion-reduced.md)에 있다.
+
+iOS 호스트도 `fontScale` · `viewportWidth`를 한 맵으로 보낸다(`ViewController.publishViewportMetrics`, 순수 변환 `ViewportMetrics.globalProps(fontScale:width:)`, 숫자는 `Double`).
+`fontScale`은 실행 시 `builder.fontScale`에 넣은 값 그대로이고 실행 중 글자 크기가 바뀌어도 **다시 보내지 않는다** — iOS 코어는 실행 중 배율 변경을 다시 그리지 않으므로, 새 값을
+보내면 글자는 옛 크기인데 맵 배치만 한 열로 바뀐다([ADR-0020](../../docs/adr/0020-dynamic-type-font-scale.md) 결정 2 · 적용 기록 ⟨2026-10-14⟩). `viewportWidth`는 `view.bounds.width`(pt)이고
+`viewDidLayoutSubviews`에서 바뀌었을 때 다시 보낸다. iOS에서 이 숫자가 JS에 number로 닿는지는 아직 기기에서 보지 못했다(Android는 number로 닿았다 — 2026-10-14 에뮬레이터).
+두 키의 절차와 결과는 [여정 맵 e2e](../../docs/e2e/journey-map.md) 「두 열 배치 · 한 열 폴백 · 다음 유닛으로 자동 스크롤」과 [Android 호스트](../../docs/e2e/android-host.md) A14에 있다.
 
 iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽는다). 앱 셸은 탭 루트에서 이 값만큼 아래를
 비우고 탭 바 밑에 같은 색의 바닥 면을 덧댄다. inset이 바뀌면(화면 크기 변경 · 모드 전환) 탭 바가 따라 바뀐다 — 내비게이션 모드 전환은 API 37에서는 Activity를 다시 만들지 않고 따라 바뀌고, API 30에서는 Activity 재생성을 거쳐 새 자리에 선다(API별 동작과 그 경계의 근거는 아래 「화면 방향과 구성 변경」). 규칙과 근거는
@@ -540,6 +548,9 @@ safe 아래 값으로 자르기 · 음수와 밀도 불명은 0)을 확인하며
 `ReducedMotionTest`(JUnit 4건)는 두 배율 → `reducedMotion` 판정(`fromScales` — 하나라도 0이면 true, 음수 · NaN은 false)과 한 키짜리
 boolean 맵의 모양을 확인하며 같은 명령으로 실행한다. `ContentObserver` 등록 · 실행 중 토글 추종 · 실제 애니메이션 정지는 JUnit이 못 지고
 에뮬레이터 절차 [동작 줄이기](../../docs/e2e/motion-reduced.md)(M-A1 ~ M-A6)가 진다.
+`ViewportMetricsTest`(JUnit 3건)는 `fontScale` · `viewportWidth` 변환(폭 = `widthPx / density` · `density ≤ 0`과 `NaN` 배율은 키가 없고 던지지 않음 · 같은 입력이면 같은 맵)을
+확인하며 같은 명령으로 실행한다(iOS 짝은 XCTest `ViewportMetricsTests` 2건). 둘 다 `pnpm verify` 밖이라 사람이 돌린다. 실제 전송 시점 · 실행 중 폭 변화 · 맵이 한 열로 서는지는
+[Android 호스트](../../docs/e2e/android-host.md) A14와 [여정 맵 e2e](../../docs/e2e/journey-map.md)가 진다.
 계측 `ConfigurationChangeTest`(8건)는 실제 `MainActivity`에서 구성 변경 뒤의 Activity 수명 · LynxView 크기 · screen metrics · 화면 상태 유지를 확인한다
 (세로 유지 · 야간 모드 · 화면 크기 · 큰 화면 가로 · 내비게이션 모드 오버레이 전환은 같은 인스턴스, 글꼴 배율 · 밀도는 재생성). 번들 서빙과 `-e bundleUrl`이 필요하다.
 기대는 API 37에서 8건 통과, API 30에서 6건 통과 + 2건 건너뜀(큰 화면 가로와 오버레이 전환 — 둘 다 API 36 이상에서만 성립한다. 건너뜀은 통과로 세지 않는다).
