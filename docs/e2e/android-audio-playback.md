@@ -6,6 +6,9 @@
 `stop()`, `pause()`, `resume()`을 Android에 연결한다. Android 앱은 iOS의
 `apps/ios/Host/audio/*.m4a` 21개를 APK 자산으로 동기화한다. `source`는 확장자와
 경로가 없는 콘텐츠 ID이며 한 번에 하나만 재생한다.
+⟨2026-10-14⟩ **`source`가 `https` 스킴에 호스트가 있는 절대 URL이면 원격이다** — `AudioRemoteSource`가 판정하고
+`MediaPlayer.setDataSource(url)` → 같은 리스너 · `prepareAsync`로 재생한다(카탈로그 에피소드 음성, [ADR-0060](../adr/0060-episode-voice-remote-audio.md) D3).
+그 밖의 `source`는 지금처럼 자산 경로로 간다. 원격 실패(닿지 않음 · 404 · 형식)는 `done` 한 번이다.
 
 ⚠ **2026-10-05 전에는 이 동기화가 어떤 빌드에서도 실행되지 않았다.** `sourceSets.main.assets.srcDir(syncAudioAssets)`가
 태스크 의존을 걸지 않아 `syncAudioAssets`가 태스크 그래프에 없었고, 생성 폴더가 남아 있던 기계에서만 자산이 우연히
@@ -42,6 +45,10 @@ Android 모듈로 호출됐는지 로그로 확인한다. 테스트는 앱 데�
 **Maestro는 호출 수만 센다** — logcat의 `AudioPlaybackModule.play…` 줄을 셀 뿐 플레이어가 실제로 생겼는지 보지 않는다. 자산이
 없어도 통과하는 판정이라 위 결함을 잡지 못했다. 실제 재생은 위 계측과 `dumpsys audio`의 플레이어 기록(android-assets E5)이 진다.
 
+원격 재생(2026-10-14 추가): JVM unit `AudioRemoteSourceTest`(원격 판정 — `testDebugUnitTest`에 포함)와 위 계측 클래스에 더한 두 건 —
+**AP-R1** 닿지 않는 https(`https://127.0.0.1:9/a.m4a`)의 `done`이 10초 안에 정확히 1회 · **AP-R2** 같은 주소로 `play` 직후 `stop`이면 `done` 0회이고
+다음 번들 `play`의 `done`은 정상 1회. 에뮬레이터에서 카탈로그 컷 · 최종 테스트를 듣는 절차는 [에피소드 음성 e2e](episode-audio.md)의 S1 ~ S4 · S9다.
+
 ## 결과
 
 - 2026-10-02, Android 15 API 35 ARM 에뮬레이터, 390×844·160 dpi: 계측 10건과
@@ -51,5 +58,6 @@ Android 모듈로 호출됐는지 로그로 확인한다. 테스트는 앱 데�
 - Maestro에서 맵 항목과 듣기 컨트롤은 화면에 표시됐으나 이 AOSP 에뮬레이터의
   Lynx 접근성 트리에는 나타나지 않았다. 그래서 맵과 컨트롤 탭은 고정 화면 크기의
   좌표를 쓰고, 화면은 기준 이미지로 비교한다. 이 현상은 별도 접근성 조사 대상이다.
+- 2026-10-14 원격 재생: JVM unit(`AudioRemoteSourceTest`)은 통과했다. **계측 AP-R1 · AP-R2와 에뮬레이터 청음은 실행하지 않았다.**
 - 실제 스피커에서 들리는 음질·음량과 오디오 포커스의 다른 앱 간 상호작용은
   자동 테스트로 판정하지 않았다. 실기에서 한 번 재생·중단을 들어 확인해야 한다.
