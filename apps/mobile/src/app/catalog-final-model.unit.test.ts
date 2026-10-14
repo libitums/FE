@@ -3,13 +3,15 @@ import { describe, expect, test } from "vitest";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
-import type { EpisodeCut, LearningItem, Text } from "../lib/episode-content.model";
+import type { DialogueLine, EpisodeCut, LearningItem, Text } from "../lib/episode-content.model";
 import { fillPlaceholders } from "../lib/placeholder-fill";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import {
   catalogFinalPlanFor,
   catalogFinalPlanOf,
+  catalogRoleplayAudioOf,
+  catalogRoleplayLinesOf,
   catalogRoleplayTurnOf,
 } from "./catalog-final-model";
 import type { CatalogFill } from "./catalog-lesson-plan";
@@ -359,5 +361,93 @@ describe("catalogFinalPlanFor — 메모", () => {
     expect(catalogFinalPlanFor(content, sections, "u02-checkin", noLearnerProfile)?.ordinal).toBe(
       2,
     );
+  });
+});
+
+describe("대화 줄 찾기 · 턴 소리", () => {
+  const line = (
+    seq: number,
+    role: DialogueLine["role"],
+    ko: string,
+    audioUrl?: string,
+  ): DialogueLine => ({
+    seq,
+    role,
+    text: { ko },
+    ...(audioUrl === undefined ? {} : { audioUrl }),
+  });
+  const dialogue: readonly DialogueLine[] = [
+    line(1, "counterpart", "봉투 드릴까요?", "u01-water/d-01"),
+    line(2, "player", "아니요, 괜찮아요.", "u01-water/d-02"),
+    line(3, "counterpart", "삼천 원입니다.", "u01-water/d-03"),
+    line(4, "player", "카드로 할게요."),
+    line(5, "player", "{이름}입니다.", "u01-water/d-05"),
+  ];
+  const cdn = (path: string): string | null => `https://cdn/${path}`;
+  const rpAt = (lineId: string): LearningItem => rpItem({ roleplay: { lineId, tilesGloss: [] } });
+
+  test("FMA1. D2는 seq 1 상대 줄과 seq 2 플레이어 줄(같은 참조)을 낸다", () => {
+    const found = catalogRoleplayLinesOf("D2", dialogue);
+    expect(found?.counterpart).toBe(dialogue[0]);
+    expect(found?.player).toBe(dialogue[1]);
+  });
+
+  test.each(["D1", "D3", "D9", "d2", "D02", "D", "X2", "D2a", " D2", "", "D5"])(
+    "FMA2. line_id %j는 줄을 못 찾아 null이다",
+    (lineId) => {
+      expect(catalogRoleplayLinesOf(lineId, dialogue)).toBeNull();
+    },
+  );
+
+  test("FMA3. RP가 아니거나 줄을 못 찾거나 두 줄 모두 id가 없으면 빈 객체다", () => {
+    const notRoleplay = asItem({ id: "S1-01", type: "CLOZE" });
+    expect(catalogRoleplayAudioOf(notRoleplay, dialogue, cdn)).toEqual({});
+    expect(catalogRoleplayAudioOf(rpAt("D9"), dialogue, cdn)).toEqual({});
+    const silent = [line(1, "counterpart", "가"), line(2, "player", "나")];
+    expect(catalogRoleplayAudioOf(rpAt("D2"), silent, cdn)).toEqual({});
+  });
+
+  test("FMA4. 두 줄 다 id가 있으면 두 주소를 낸다", () => {
+    expect(catalogRoleplayAudioOf(rpAt("D2"), dialogue, cdn)).toEqual({
+      counterpartAudioSource: "https://cdn/audio/u01-water/d-01.m4a",
+      replyAudioSource: "https://cdn/audio/u01-water/d-02.m4a",
+    });
+  });
+
+  test("FMA4. 플레이어 줄 원문에 자리표시자가 있으면 내 소리 키가 없다", () => {
+    const withPlaceholder = [
+      line(1, "counterpart", "성함이 어떻게 되세요?", "u02-checkin/d-01"),
+      line(2, "player", "{이름}(으)로 예약했어요.", "u02-checkin/d-02"),
+    ];
+    const audio = catalogRoleplayAudioOf(rpAt("D2"), withPlaceholder, cdn);
+    expect(audio).toEqual({ counterpartAudioSource: "https://cdn/audio/u02-checkin/d-01.m4a" });
+    expect("replyAudioSource" in audio).toBe(false);
+  });
+
+  test("FMA5. 실데이터 u01 계획: 턴 1 · 2는 두 소리, 턴 3은 상대 소리만이다", () => {
+    const turns = catalogFinalPlanOf(readyOf("u01-water"), 1, fill, imageUrlOf).turns;
+    expect(turns.map((turn) => turn.counterpartAudioSource)).toEqual([
+      "https://cdn/audio/u01-water/d-01.m4a",
+      "https://cdn/audio/u01-water/d-03.m4a",
+      "https://cdn/audio/u01-water/d-05.m4a",
+    ]);
+    expect(turns.map((turn) => turn.replyAudioSource)).toEqual([
+      "https://cdn/audio/u01-water/d-02.m4a",
+      "https://cdn/audio/u01-water/d-04.m4a",
+      undefined,
+    ]);
+    expect(turns[2] !== undefined && "replyAudioSource" in turns[2]).toBe(false);
+  });
+
+  test.each([
+    ["u02-checkin", 2],
+    ["u03-mina", 3],
+  ])("FMA5. 실데이터 %s 계획: 첫 턴만 상대 소리가 있고 내 소리는 없다", (episodeId, ordinal) => {
+    const turns = catalogFinalPlanOf(readyOf(episodeId), ordinal, fill, imageUrlOf).turns;
+    expect(turns[0]?.counterpartAudioSource).toBe(`https://cdn/audio/${episodeId}/d-01.m4a`);
+    for (const [at, turn] of turns.entries()) {
+      expect("replyAudioSource" in turn).toBe(false);
+      expect("counterpartAudioSource" in turn).toBe(at === 0);
+    }
   });
 });
