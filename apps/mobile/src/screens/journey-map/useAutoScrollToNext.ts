@@ -158,8 +158,10 @@ export function useAutoScrollToNext({
         scrollTop: scrollTop.current,
       };
       const next = autoScrollCorrection(measure, autoScrollPlacement, autoScrollTolerance);
+      // 보정은 늘 즉시 옮깁니다 — 부드럽게 보내면 본 이동의 끝과 겹쳐 반동이나 한 프레임 점프로
+      // 갈려 보였습니다(사용자 결정, docs/e2e/journey-map.md E-C1).
       if (next !== null) {
-        scrollMapTo(next, behavior);
+        scrollMapTo(next, "instant");
       }
     });
   }, [arrivedDomId]);

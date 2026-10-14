@@ -224,11 +224,11 @@ test("I8. 튜토리얼 통과 + 카탈로그 진행이면 대상이 카탈로그
 });
 
 // 도착 뒤 한 번 바로잡기(정정 2) — D-1의 재현 조건: 도착 전에는 한 줄 카드(아래 228), 도착 뒤에는 30 큰 카드(아래
-// 258)이고 대상은 정렬선(282) 위 30(252)에 서 있다. 씨앗은 I8과 같다(대상은 S3).
+// 258)이고 대상은 정렬선(282) 위 30(252)에 서 있다. 씨앗은 I8과 같다(대상은 S3). 보정은 늘 즉시 옮긴다.
 const correctedTo = (offset: number) => ({
   selector: scrollSelector,
   method: "scrollTo",
-  params: { offset, smooth: true },
+  params: { offset, smooth: false },
 });
 
 const tutorialDoneSeed: AppJourneySeed = {

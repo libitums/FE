@@ -354,7 +354,7 @@ function mountArrived(element: ReactElement = mapScreen({ progress: twoStepsDone
 }
 
 describe("JourneyMapScreen 도착 뒤 보정", () => {
-  test("AC1. 도착하면 대상 셀 · 스크롤 · 머리 카드를 다시 재고 30만큼 되돌린 목적지로 한 번 더 간다", () => {
+  test("AC1. 도착하면 대상 셀 · 스크롤 · 머리 카드를 다시 재고 30만큼 되돌린 목적지로 한 번 더 간다(보정은 늘 즉시)", () => {
     const { host } = mountArrived();
     const measuredBefore = host.measured().length;
     swapToArrived(host);
@@ -366,7 +366,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
     );
     expect(host.scrollTos()).toEqual([
       scrollToCall(arrival, true),
-      scrollToCall(arrival - 30, true),
+      scrollToCall(arrival - 30, false),
     ]);
     expect(host.scrollIntoViews()).toEqual([]);
   });
@@ -427,7 +427,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
 
     const calls = host.scrollTos();
     expect(calls).toHaveLength(2);
-    expect(calls[1]?.params?.smooth).toBe(true);
+    expect(calls[1]?.params?.smooth).toBe(false);
     expect(calls[1]?.params?.offset).toBeCloseTo(arrival - 0.4 - 30, 9);
   });
 
@@ -540,7 +540,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
     expect(host.scrollTos()).toEqual([
       scrollToCall(arrival, true),
       scrollToCall(648, true),
-      scrollToCall(648 - 30, true),
+      scrollToCall(648 - 30, false),
     ]);
   });
 
