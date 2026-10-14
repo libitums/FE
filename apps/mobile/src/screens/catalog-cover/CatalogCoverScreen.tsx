@@ -10,10 +10,12 @@ import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
+import { useAudioCue } from "../../lib/use-audio-cue";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { NarrativeBackground } from "../episode-narrative/NarrativeBackground";
 import {
   catalogCutAccessibilityLabel,
+  catalogCutAudioCueOf,
   catalogCutHasToggle,
   catalogCutSpeakerName,
   catalogCutTranslation,
@@ -55,6 +57,7 @@ export function CatalogCoverScreen({
 
   const cut = cuts[index] ?? cuts[0];
   const total = cuts.length;
+  const audio = useAudioCue(catalogCutAudioCueOf(cut, index));
   const hasToggle = catalogCutHasToggle(cut.text);
   const isLast = nextCatalogCutIndex(index, total) === null;
   const typing = useTypewriter({
@@ -98,6 +101,7 @@ export function CatalogCoverScreen({
   };
   const handleExit = () => {
     "background only";
+    audio.stop();
     onExit();
   };
   // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
