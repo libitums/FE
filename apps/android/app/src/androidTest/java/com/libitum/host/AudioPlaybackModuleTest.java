@@ -126,6 +126,35 @@ public final class AudioPlaybackModuleTest {
     assertFalse("stopped source completed", complete.await(6, TimeUnit.SECONDS));
   }
 
+  /** AP-R1 */
+  @Test public void apR1_unreachableHttpsFinishesExactlyOnce() throws InterruptedException {
+    CountDownLatch complete = new CountDownLatch(1);
+    AtomicInteger calls = new AtomicInteger();
+    module.play("https://127.0.0.1:9/a.m4a", args -> {
+      calls.incrementAndGet();
+      complete.countDown();
+    });
+    assertTrue("unreachable remote did not settle", complete.await(10, TimeUnit.SECONDS));
+    Thread.sleep(500);
+    assertEquals(1, calls.get());
+  }
+
+  /** AP-R2 */
+  @Test public void apR2_stoppingWhilePreparingRemoteDiscardsCompletion() throws InterruptedException {
+    CountDownLatch remoteComplete = new CountDownLatch(1);
+    module.play("https://127.0.0.1:9/a.m4a", args -> remoteComplete.countDown());
+    module.stop();
+    assertFalse("stopped remote completed", remoteComplete.await(1, TimeUnit.SECONDS));
+    CountDownLatch bundledComplete = new CountDownLatch(1);
+    AtomicInteger bundledCalls = new AtomicInteger();
+    module.play("greeting-1", args -> {
+      bundledCalls.incrementAndGet();
+      bundledComplete.countDown();
+    });
+    assertTrue("bundled greeting did not finish", bundledComplete.await(10, TimeUnit.SECONDS));
+    assertEquals(1, bundledCalls.get());
+  }
+
   @Test public void backgroundInterruptionFinishesCurrentRequest() throws InterruptedException {
     CountDownLatch complete = new CountDownLatch(1);
     AtomicInteger calls = new AtomicInteger();
