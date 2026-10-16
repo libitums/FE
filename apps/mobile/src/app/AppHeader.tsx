@@ -22,7 +22,8 @@ type AppHeaderLayer = JourneyStatKind | "survey";
 
 export type AppHeaderProps = {
   readonly streakDays: number;
-  readonly trophyCount: number;
+  /** `null`이면 아직 모르는 값입니다. */
+  readonly trophyCount: number | null;
   readonly onOpenNotifications: () => void;
   /**
    * 화면 쪽 겹침 레이어(여정의 스텝 말풍선 · 롤플레이의 플러스 안내)가 떠 있는가입니다.
@@ -99,11 +100,11 @@ export function AppHeader({
       {openLayer === "streak" || openLayer === "trophy" ? (
         <JourneyStatModal
           kind={openLayer}
-          value={openLayer === "streak" ? streakDays : trophyCount}
+          value={openLayer === "streak" ? streakDays : (trophyCount ?? 0)}
           track={
             openLayer === "streak"
               ? streakTrack(streakDays, todayWeekday ?? new Date().getDay())
-              : trophyTrack(trophyCount)
+              : trophyTrack(trophyCount ?? 0)
           }
           onClose={close}
         />

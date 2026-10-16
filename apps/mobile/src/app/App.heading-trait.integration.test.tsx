@@ -372,7 +372,8 @@ test("[I3] 제목 축 닫힌 집합이 상태 journey-map에서 계약이 고정
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual(filledSections.map(() => "ui-lynx-episode-header"));
+  // spec §20: 띠는 스텝 말풍선이 열린 동안만 선다 - 맵만 보일 때는 제목 축이 비어 있다.
+  expect(headingAxis(container)).toEqual([]);
 });
 
 test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고정한 목록과 정확히 같다", async () => {
@@ -415,10 +416,8 @@ test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 �
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
-  expect(headingAxis(container)).toEqual([
-    ...filledSections.map(() => "ui-lynx-episode-header"),
-    "step-sheet-title",
-  ]);
+  // spec §20: 말풍선이 열려 있는 동안 띠는 하나(열린 스텝의 구획)다.
+  expect(headingAxis(container)).toEqual(["ui-lynx-episode-header", "step-sheet-title"]);
 });
 
 // 듣기의 문항 상태 — `startStep`으로 세션에 들어간 직후, 아직 한 문항도 안 풀었습니다

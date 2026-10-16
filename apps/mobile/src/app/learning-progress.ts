@@ -16,6 +16,7 @@ import { isMapItemComplete } from "../screens/journey-map/journey-map-progress";
 import type { JourneyMapSection } from "../screens/journey-map/journey-map-types";
 import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
+import type { JourneyMapProgressLoad } from "../screens/journey-map/journey-map-load.contract";
 import type { VisualNovelProgress } from "../screens/visual-novel/visual-novel.contract";
 import { completedVisualNovelUnitIdsFrom } from "./journey-progress";
 import type { AppJourneySeed } from "./journey-progress";
@@ -200,5 +201,35 @@ export function mergeJourneyProgress(
 /** 상단 지표 칩 둘의 값입니다(연속 학습 일수 · 트로피). 화면 결선이 머리 칩을 그리는 화면들에 내립니다. */
 export type JourneyStats = { readonly streakDays: number; readonly trophyCount: number };
 
-/** 화면 결선이 받는 진행 쪽 값입니다 — 칩 둘과, 로그인 뒤 서버 진행을 불러오는 함수. */
-export type ProgressWiringArgs = JourneyStats & { readonly syncProgress: () => Promise<void> };
+/** 화면 결선이 받는 진행 쪽 값입니다 — 칩 둘, 로그인 뒤 서버 진행을 불러오는 함수, 맵이 받는 불러오기 상태. */
+export type ProgressWiringArgs = JourneyStats & {
+  readonly syncProgress: () => Promise<void>;
+  readonly journeyMapProgressLoad: JourneyMapProgressLoad;
+};
+
+function includesAll<T>(whole: readonly T[], part: readonly T[]): boolean {
+  return part.every((item) => whole.includes(item));
+}
+
+function catalogCovers(server: CatalogProgress, local: CatalogProgress): boolean {
+  return Object.entries(local).every(([episodeId, units]) => {
+    const own = Object.prototype.hasOwnProperty.call(server, episodeId) ? server[episodeId] : [];
+    return includesAll(own ?? [], units);
+  });
+}
+
+/** server에 local을 합쳐도 늘어나는 것이 없으면 true입니다. 순서·중복은 보지 않습니다. */
+export function journeyProgressCovers(
+  server: JourneyProgressState,
+  local: JourneyProgressState,
+): boolean {
+  return (
+    server.completedStepCount >= local.completedStepCount &&
+    includesAll(server.completedEpisodeIntroIds, local.completedEpisodeIntroIds) &&
+    includesAll(server.completedMessengerUnitIds, local.completedMessengerUnitIds) &&
+    includesAll(server.completedPhoneCallUnitIds, local.completedPhoneCallUnitIds) &&
+    includesAll(server.completedEpisodeFinalIds, local.completedEpisodeFinalIds) &&
+    server.visualNovelProgress.beatIndex >= local.visualNovelProgress.beatIndex &&
+    catalogCovers(server.catalogProgress, local.catalogProgress)
+  );
+}

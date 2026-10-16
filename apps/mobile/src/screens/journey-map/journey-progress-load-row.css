@@ -1,0 +1,98 @@
+/* 진행 불러오기 줄 — 머리 카드 아래에 서는 알약입니다. 토큰만 씁니다. */
+
+/* 면 · 테두리는 머리 카드와 같습니다. 줄이 길어지면 문구가 꺾이고 버튼이 다음 줄로 내려갑니다. */
+.journey-progress-load-row {
+  min-height: var(--libitum-spacing-40);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+  padding: 0 var(--libitum-spacing-12);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-disabled);
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-color-white);
+}
+
+/* 실패 줄은 오른쪽 여백만 줄입니다 — 버튼이 자기 안쪽 여백을 가져 글자 오른쪽이 맞습니다. */
+.journey-progress-load-row-failed {
+  padding-right: var(--libitum-spacing-4);
+}
+
+/* 등장만 불투명도로 서고 퇴장 모션은 없습니다. 움직임 줄이기는 더 짧고 가속 없는 같은 전환입니다. */
+@keyframes journey-progress-load-row-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* prettier-ignore */
+.journey-progress-load-row-enter {
+  animation: journey-progress-load-row-fade var(--libitum-motion-duration-d4) var(--libitum-motion-easing-enter);
+}
+
+/* prettier-ignore */
+.journey-progress-load-row-enter-quick {
+  animation: journey-progress-load-row-fade var(--libitum-motion-duration-d2) var(--libitum-motion-easing-linear);
+}
+
+/* 표시 자리입니다 — 회전 고리(12)와 정지 시계(16)가 같은 칸을 써서 폭이 같습니다. */
+.journey-progress-load-row-mark {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.journey-progress-load-row-clock {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+/* 고리 모양은 Button 안 스피너와 같습니다. 그 회전 규칙이 Button에 묶여 있어 한 벌을 따로 둡니다. */
+.journey-progress-load-row-ring {
+  width: var(--libitum-spacing-12);
+  height: var(--libitum-spacing-12);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: var(--libitum-color-fg-neutral-muted);
+  border-top-color: transparent;
+  border-radius: var(--libitum-radius-full);
+}
+
+@keyframes journey-progress-load-row-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* prettier-ignore */
+.journey-progress-load-row-spin {
+  animation: journey-progress-load-row-spin var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear) infinite;
+}
+
+.journey-progress-load-row-message {
+  padding: var(--libitum-spacing-8) 0;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.journey-progress-load-row-message-loading {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* 붉은색을 쓰지 않습니다 — 기록이 망가진 것이 아니라 아직 못 가져온 것입니다. */
+.journey-progress-load-row-message-failed {
+  color: var(--libitum-color-fg-neutral);
+}

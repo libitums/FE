@@ -8,6 +8,8 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { catalogUnitNodeAccessibilityLabel, catalogUnitNodeTitle } from "./catalog-map";
 import type { CatalogUnitNodeProps } from "./catalog-map.contract";
 
+import { canSelectMapNode } from "./journey-map-load";
+
 import "./journey-special-unit.css";
 
 // 표지의 상태 어휘를 `LearningUnit`의 어휘로 옮깁니다 — 표지 노드와 같은 표입니다.
@@ -15,6 +17,7 @@ const unitStatusByStatus = {
   locked: "default",
   available: "available",
   completed: "clear",
+  checking: "checking",
 } as const;
 
 // 카탈로그 레슨 · 최종 노드입니다 — 상태(잠김 · 열림 · 끝)는 사슬에서 파생되어 내려오고, 열린 노드만
@@ -30,7 +33,7 @@ export function CatalogUnitNode({
   const isFinal = node.role === "final";
   const handleSelect = () => {
     "background only";
-    if (node.status !== "locked") {
+    if (canSelectMapNode(node.status)) {
       onSelect(episodeId, node.key);
     }
   };

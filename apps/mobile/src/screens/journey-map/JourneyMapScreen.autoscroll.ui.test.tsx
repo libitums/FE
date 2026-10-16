@@ -4,10 +4,9 @@ import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-
 
 import { MotionProvider } from "@libitums/ui-lynx/motion";
 import { FirstUnitGuideProvider } from "../../components/first-unit-guide";
-import { catalogSectionDomId, catalogUnitDomId } from "./catalog-map";
+import { catalogUnitDomId } from "./catalog-map";
 import {
   catalogProps,
-  catalogReadySections,
   mapScreen,
   noProgress,
   scrollSelector,
@@ -309,38 +308,6 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     // 말풍선의 목적지(유닛 중심 750을 가운데 460으로)는 290이고, 자동 스크롤의 448과 다릅니다.
     expect(host.actions()).toEqual([scrollToCall(290, true)]);
   });
-
-  test("AS14. 구획 자리 측정이 자동 스크롤 뒤에 닿아도 그때 스크롤 자리로 머리 카드가 구획을 고른다", () => {
-    const host = stubHost({
-      rects: {
-        ...asRects(),
-        "#journey-map-screen-episode-tutorial": unitRect(100),
-        [`#${catalogSectionDomId("u01-water")}`]: unitRect(1100),
-        [`#${catalogSectionDomId("u02-checkin")}`]: unitRect(2100),
-        [`#${catalogSectionDomId("u03-mina")}`]: unitRect(3100),
-      },
-    });
-    host.defer = (selector) =>
-      selector.startsWith("#journey-map-screen-episode-") ||
-      selector.startsWith("#journey-map-screen-catalog-");
-    mount(
-      mapScreen({
-        progress: twoStepsDone,
-        catalog: catalogProps({ sections: catalogReadySections }),
-      }),
-    );
-    // 자동 스크롤은 구획 답과 상관없이 먼저 돕니다(대상: ordering).
-    expect(host.scrollTos()).toHaveLength(1);
-
-    // 둘째 카탈로그 구획 안(2100 − 100 = 2000 이상)입니다. 구획 자리를 아직 모르는 때의 이벤트입니다.
-    host.scroll(2500);
-    expect(screen.queryByText("Lobby")).toBeNull();
-
-    host.flush();
-
-    expect(screen.queryByText("Lobby")).not.toBeNull();
-    expect(screen.queryByText("Alley")).toBeNull();
-  });
 });
 
 // 도착 뒤 한 번 바로잡기(정정 2). 도착 전 · 후의 rect 표를 테스트가 갈아 끼웁니다: 목적지 X(448)로 간 뒤
@@ -553,43 +520,6 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
       scrollToCall(arrival, true),
       scrollToCall(648, true),
       scrollToCall(648 - 30, false),
-    ]);
-  });
-
-  test("AC13. 즉시 이동의 도착이 구획 경계도 넘으면 다시 잰 시점의 머리 카드가 도착 구획의 것이다", () => {
-    // 대상이 둘째 카탈로그 구획 안(목적지 2048 ≥ 2000)에 있다.
-    const host = stubHost({
-      rects: {
-        ...asRects(),
-        [unitSelector]: unitRect(2300),
-        "#journey-map-screen-episode-tutorial": unitRect(100),
-        [`#${catalogSectionDomId("u01-water")}`]: unitRect(1100),
-        [`#${catalogSectionDomId("u02-checkin")}`]: unitRect(2100),
-        [`#${catalogSectionDomId("u03-mina")}`]: unitRect(3100),
-      },
-    });
-    // 머리 카드의 높이를 잰 순간의 화면에서 읽습니다 — 둘째 구획의 카드(Lobby)가 그려진 뒤에만 30 큽니다.
-    Object.defineProperty(host.rects, headerSelector, {
-      enumerable: true,
-      get: (): Rect => ({ top: 60, height: screen.queryByText("Lobby") === null ? 168 : 198 }),
-    });
-    mount(
-      reduced(
-        mapScreen({
-          progress: twoStepsDone,
-          catalog: catalogProps({ sections: catalogReadySections }),
-        }),
-      ),
-    );
-    expect(host.scrollTos()).toEqual([scrollToCall(2300 - 252, false)]);
-    host.rects[unitSelector] = unitRect(252);
-
-    host.scroll(2300 - 252);
-
-    expect(screen.queryByText("Lobby")).not.toBeNull();
-    expect(host.scrollTos()).toEqual([
-      scrollToCall(2300 - 252, false),
-      scrollToCall(2300 - 252 - 30, false),
     ]);
   });
 });

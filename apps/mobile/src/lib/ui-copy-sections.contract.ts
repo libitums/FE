@@ -82,6 +82,8 @@ export type JourneyMapCopy = {
   readonly episodePendingLabel: string;
   /** 같은 구획의 접근성 이름입니다 — `${이름}, ${상태낱말}`로 스텝·롤플레이와 같은 자리입니다. */
   readonly episodePending: (label: string, title: string) => string;
+  /** 띠 설명 줄 — `("Episode 0.", 3)` → `Episode 0, unit 03`. */
+  readonly episodeUnitLabel: (episodeLabel: string, unit: number) => string;
   readonly statModal: {
     readonly streakHero: (days: number) => string;
     readonly episodesClearedHero: (count: number) => string;

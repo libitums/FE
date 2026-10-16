@@ -16,9 +16,8 @@ export type EpisodePendingSectionProps = {
 // 아래가 안개에 가려집니다 — 「더 있긴 한데 준비 중이구나」만 전하면 되는 자리라 실제
 // 유닛이 없어도 됩니다.
 //
-// **머리를 그리지 않습니다.** 맵에 머리 카드가 **하나만** 서고 스크롤 자리가 그 내용을
-// 고릅니다 — 가로 선을 넘으면 따라다니던 카드가 이 에피소드를 말합니다
-// (`useCurrentEpisode`). 흐름 안에 카드를 또 두면 같은 것이 두 번 보입니다.
+// **머리를 그리지 않습니다.** 머리 띠는 스텝 말풍선이 열린 동안만 맵 위에 겹쳐 서고, 열린 스텝은
+// 늘 유닛이 있는 구획에 있습니다.
 export function EpisodePendingSection({ episode }: EpisodePendingSectionProps) {
   const copy = useUiCopy();
 

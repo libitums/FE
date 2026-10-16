@@ -2,6 +2,8 @@ import type { EpisodeFinalMapItemProps } from "../episode-final/episode-final.co
 import flag from "@libitums/icons/lynx/flag";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
+import { canSelectMapNode } from "./journey-map-load";
+
 import "./journey-special-unit.css";
 
 // `LearningUnit`의 상태 어휘로 옮깁니다. 잠긴 동안은 `default`(자물쇠)이고, 열리면
@@ -10,6 +12,7 @@ const unitStatusByStatus = {
   locked: "default",
   available: "available",
   completed: "clear",
+  checking: "checking",
 } as const;
 
 // 최종 테스트의 맵 항목입니다 — 다른 특별 유닛과 같은 어댑터이고, 다른 것은 **잠김**이
@@ -17,7 +20,7 @@ const unitStatusByStatus = {
 export function EpisodeFinalMapItem({ id, title, status, onSelect }: EpisodeFinalMapItemProps) {
   const handleSelect = () => {
     "background only";
-    if (status !== "locked") {
+    if (canSelectMapNode(status)) {
       onSelect(id);
     }
   };

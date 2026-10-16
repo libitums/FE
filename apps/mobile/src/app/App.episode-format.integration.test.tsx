@@ -19,7 +19,6 @@ import type { FillScript } from "../lib/placeholder-fill";
 import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { journeySteps } from "../screens/journey-map/journey-map";
-import { catalogMapSectionsOf, catalogSectionProgress } from "../screens/journey-map/catalog-map";
 
 // `integration` 계층: 새 형식 내장본(모킹 없음) 그대로 앱 전체를 걷습니다 - 활동이 0개인 CULT 단계의 즉시 완료,
 // 완료 키(`completion.requires`)에 따른 트로피 · 다음 표지 열림, 건너뜀이 섞인 단계의 진행, 대화 조립의 칸
@@ -420,20 +419,10 @@ test("EF5. (D9) S2의 대화 조립: 칸 0의 화자가 콘텐츠 턴 화자를 
   expect(shown).toContain("counterpart");
 });
 
-test("EF6. (A3 옛 키) 옛 키 S9가 섞인 진행도 맵 · 진행 수 · 시작이 던지지 않고 S9는 세지 않는다", async () => {
+test("EF6. (A3 옛 키) 옛 키 S9가 섞인 진행도 맵 · 시작이 던지지 않고 S9 노드는 서지 않는다", async () => {
   await boot({ [u01]: ["intro", "S1", "S9"] });
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  // 구획 머리는 스크롤 위치의 한 구획만 서므로 진행 수는 실제 카탈로그의 구획 모델에서 읽습니다.
-  const section = catalogMapSectionsOf(realCatalog).find(
-    (candidate) => candidate.episodeId === u01,
-  );
-  if (section === undefined || section.kind !== "catalog-ready")
-    throw new Error("no ready section");
-  expect(catalogSectionProgress(section, { [u01]: ["intro", "S1", "S9"] })).toEqual({
-    completed: 2,
-    total: 11,
-  });
   expect(status(u01, "S1")).toBe("clear");
   expect(status(u01, "S2")).toBe("available");
   expect(document.querySelector('[data-testid$="-u01-water-S9"]')).toBeNull();

@@ -119,13 +119,15 @@ describe("JourneyMapScreen 줄 결선", () => {
       screen.getByTestId("journey-map-screen").querySelectorAll("#journey-map-screen-header"),
     );
 
+  // 머리 띠는 스텝 말풍선이 열린 동안만 섭니다. 자동 스크롤 · 말풍선이 재는 `#journey-map-screen-header`는
+  // 띠 자리의 측정 손잡이가 늘 지고, 말풍선이 없으면 높이가 0입니다.
   test.each([
-    ["튜토리얼", null, undefined],
-    ["카탈로그 본문", 1500, undefined],
-    ["카탈로그 본문 없음", 2500, "catalog-header-unavailable"],
+    ["튜토리얼", null],
+    ["카탈로그 본문", 1500],
+    ["카탈로그 본문 없음", 2500],
   ] as const)(
-    "UG-A3. %s 구획의 머리 카드 상자에 id가 붙는다",
-    (_label, scrollTop, unavailableTestId) => {
+    "UG-A3. %s 자리에서도 측정 손잡이 하나가 id를 진다(띠 없음 · 높이 0)",
+    (_label, scrollTop) => {
       const host = stubHost({ rects: sectionRects() });
       act(() => {
         render(mapScreen({ progress: tutorialAllDone, catalog: catalogProps({ sections }) }));
@@ -137,11 +139,10 @@ describe("JourneyMapScreen 줄 결선", () => {
       const boxes = headerBoxes();
       expect(boxes).toHaveLength(1);
       expect((boxes[0]?.getAttribute("class") ?? "").split(/\s+/)).toContain(
-        "journey-map-screen-episode-header",
+        "journey-map-screen-header-anchor",
       );
-      expect(boxes[0]?.querySelector('[data-testid="catalog-header-unavailable"]') !== null).toBe(
-        unavailableTestId !== undefined,
-      );
+      expect(boxes[0]?.getAttribute("style") ?? "").toMatch(/height:\s*0px/);
+      expect(screen.queryByTestId("ui-lynx-episode-header")).toBeNull();
     },
   );
 });

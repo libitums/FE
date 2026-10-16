@@ -17,7 +17,13 @@ export type LearningUnitStoryArgs = {
 
 export type LearningUnitStoryData = Omit<LearningUnitStoryArgs, "onTap">;
 
-const statuses = new Set<LearningUnitStatus>(["default", "available", "active", "clear"]);
+const statuses = new Set<LearningUnitStatus>([
+  "default",
+  "available",
+  "active",
+  "clear",
+  "checking",
+]);
 const narratives = new Set<LearningUnitNarrative>(["none", "narrative"]);
 const icons = new Set<LearningUnitStoryIcon>(["headset", "audio-waves"]);
 
@@ -47,7 +53,7 @@ export function dispatchLearningUnitStoryTap(
   data: LearningUnitStoryData,
   emit: (payload: Record<string, unknown>) => void,
 ): boolean {
-  if (data.status === "default") return false;
+  if (data.status === "default" || data.status === "checking") return false;
   emit({
     channel: "STORYBOOK_ACTION",
     name: "onTap",

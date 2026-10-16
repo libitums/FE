@@ -3,7 +3,7 @@
 
 import type { AnswerResult } from "../../lib/answer-result";
 import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
-import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
+import type { JourneyMapNodeStatus } from "../journey-map/journey-map-units";
 
 export type MessengerUnitId = "appointment-confirmation";
 
@@ -106,7 +106,7 @@ export type MessengerAppProps = {
 export type MessengerMapItemProps = {
   readonly id: MessengerUnitId;
   readonly title: MessengerConversation["title"];
-  readonly status: JourneyMapItemStatus;
+  readonly status: JourneyMapNodeStatus;
   readonly onSelect: (id: MessengerUnitId) => void;
 };
 

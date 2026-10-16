@@ -7,7 +7,7 @@
 
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
-import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
+import type { JourneyMapNodeStatus } from "../journey-map/journey-map-units";
 
 export type VisualNovelUnitId = "cafe-arrival-visual-novel";
 export type VisualNovelTitle = "Our Imagined Café";
@@ -228,7 +228,7 @@ export type VisualNovelAppProps = {
 export type VisualNovelMapItemProps = {
   readonly id: VisualNovelUnitId;
   readonly title: VisualNovelTitle;
-  readonly status: JourneyMapItemStatus;
+  readonly status: JourneyMapNodeStatus;
   readonly onSelect: (id: VisualNovelUnitId) => void;
 };
 

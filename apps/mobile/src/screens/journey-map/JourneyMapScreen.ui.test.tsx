@@ -56,7 +56,8 @@ test("여정 맵 화면이 제목을 렌더한다", () => {
 // 재고정 2026-09-27: 화면 제목 줄이 없어졌습니다(상단 바 디자인 반영). 이 화면에서
 // heading을 지는 것은 에피소드 헤더 카드입니다 — 「지금 어느 에피소드인가」가 화면의
 // 제목 자리를 대신 맡습니다.
-test("여정 맵의 heading은 에피소드 헤더 카드다", () => {
+// ⟨§20⟩ 띠는 스텝 말풍선이 열려 있는 동안만 섭니다 — 스텝을 탭해 연 뒤에 본다.
+test("여정 맵의 heading은 에피소드 헤더 카드다 (말풍선이 열린 동안)", () => {
   render(
     <JourneyMapScreen
       {...mapFixture}
@@ -64,6 +65,7 @@ test("여정 맵의 heading은 에피소드 헤더 카드다", () => {
       onStartStep={() => {}}
     />,
   );
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-greeting"), { detail: { y: 300 } });
 
   expect(screen.getAllByTestId("ui-lynx-episode-header")[0]).toHaveAttribute(
     "accessibility-traits",
@@ -539,6 +541,8 @@ test("[U12] 맵 상자에 선 유닛 수가 에피소드 헤더의 분모와 같
   );
   expect(rendered).toHaveLength(mapUnitTestIds.length);
 
+  // ⟨§20⟩ 띠는 말풍선이 열린 동안만 서므로 스텝을 눌러 연 뒤에 분모를 읽는다.
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-greeting"), { detail: { y: 300 } });
   const count = screen.getAllByTestId("ui-lynx-episode-header-count")[0]?.textContent ?? "";
   expect(count.split(" / ")[1]).toBe(String(rendered.length));
 });

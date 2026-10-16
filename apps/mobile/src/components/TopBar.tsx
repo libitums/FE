@@ -17,8 +17,8 @@ import "./top-bar.css";
 export type TopBarProps = {
   /** 연속으로 학습한 날 수입니다. */
   readonly streakDays: number;
-  /** 얻은 트로피 수입니다. */
-  readonly trophyCount: number;
+  /** 얻은 트로피 수입니다. `null`이면 아직 모르는 값입니다. */
+  readonly trophyCount: number | null;
   readonly onOpenNotifications: () => void;
   /** 칩을 누르면 부릅니다. 모달을 여닫는 일은 화면이 집니다. */
   readonly onOpenStreak?: () => void;
@@ -67,14 +67,17 @@ export function TopBar({
           surface="white"
           onTap={onOpenStreak === undefined ? undefined : handleOpenStreak}
         />
-        <StatChip
-          tone="trophy"
-          value={trophyCount}
-          accessibilityLabel={copy.common.count.trophies(trophyCount)}
-          testId="top-bar-trophy"
-          surface="white"
-          onTap={onOpenTrophy === undefined ? undefined : handleOpenTrophy}
-        />
+        {/* 트로피 수를 아직 모르면(null) 0을 보이지 않고 칩을 그리지 않습니다. */}
+        {trophyCount === null ? null : (
+          <StatChip
+            tone="trophy"
+            value={trophyCount}
+            accessibilityLabel={copy.common.count.trophies(trophyCount)}
+            testId="top-bar-trophy"
+            surface="white"
+            onTap={onOpenTrophy === undefined ? undefined : handleOpenTrophy}
+          />
+        )}
       </view>
       <view
         className="top-bar-notifications"

@@ -10,6 +10,7 @@ import type { LearnerProfileCopy } from "../components/learner-profile.contract"
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
+import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
 import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
 import type { TypingCopy } from "../screens/typing/typing.contract";
 import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
@@ -87,6 +88,7 @@ export type UiCopy = {
   readonly catalogFinal: CatalogFinalCopy;
   readonly audioUnavailable: AudioUnavailableCopy;
   readonly learnerProfile: LearnerProfileCopy;
+  readonly progressLoad: ProgressLoadCopy;
 };
 
 /**

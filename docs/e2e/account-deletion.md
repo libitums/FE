@@ -9,6 +9,10 @@
 > `libitum.learner-profile.<userId>`(삭제 성공 뒤 앱이 지운다, [ADR-0032](../adr/0032-account-sign-out-and-deletion.md) D6 표). **로그아웃은 그 기기 칸을 남긴다.**
 > 이 문서의 단계는 바뀌지 않는다 — 삭제 뒤 다시 가입해 이름이 남지 않는지는 [학습자 프로필 e2e](learner-profile.md) E16이 본다.
 
+> ⟨2026-10-15 — 학습 진행 저장본⟩ 계정 삭제가 지우는 기기 키가 하나 늘었다 — 서버가 마지막으로 확인한 진행 `libitum.progress.cached.<userId>`(삭제 성공 뒤 앱이 미전송 진행 · 학습 날짜 ·
+> 프로필 칸과 같은 묶음에서 지운다, [ADR-0032](../adr/0032-account-sign-out-and-deletion.md) D6 표). **로그아웃은 남긴다.** 이 문서의 단계는 바뀌지 않는다 —
+> 삭제 뒤 다시 가입해 옛 진행이 보이지 않는지는 [진행 저장본 e2e](progress-cache-first.md) E8이 본다.
+
 ## 범위
 
 설정 화면 끝의 **「Account actions」 묶음**(`Sign out` · `Delete account`)이 실제 호스트 앱에서 —

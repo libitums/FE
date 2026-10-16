@@ -9,10 +9,7 @@ import type { JourneyStepId } from "./journey-map";
 export const screenId = "journey-map-screen";
 export const scrollId = "journey-map-screen-scroll";
 
-/**
- * 구획 하나의 상자 id입니다. **머리 카드가 어느 에피소드를 말할지**를 스크롤 자리로
- * 고르려면 각 구획이 어디서 시작하는지 재야 하고, 재려면 id가 있어야 합니다.
- */
+/** 구획 하나의 상자 id입니다 — 구획이 어디서 시작하는지 `#id`로 잴 수 있게 둡니다. */
 export function episodeSectionId(episodeId: string): string {
   return `journey-map-screen-episode-${episodeId}`;
 }

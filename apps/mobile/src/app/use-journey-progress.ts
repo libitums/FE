@@ -21,6 +21,8 @@ import type { CompletedEpisode, JourneyProgressState } from "./learning-progress
 import { createLearningDaySync } from "./learning-day-sync";
 import { createJourneyProgressSync } from "./journey-progress-sync";
 import { progressUserId } from "./pending-learning-progress";
+import { journeyMapProgressLoadOf } from "./progress-load";
+import { useProgressLoad } from "./use-progress-load";
 
 export function useJourneyProgress(
   journeySeed: AppJourneySeed,
@@ -47,7 +49,9 @@ export function useJourneyProgress(
   const [catalogProgress, setCatalogProgress] = useState<CatalogProgress>({});
   const [streakDays, setStreakDays] = useState(0);
   // 빈 초기값은 신규 사용자라는 뜻이 아닙니다. 유효한 서버 기록을 합친 뒤에만 안내를 판단합니다.
-  const [hasLoadedProgress, setHasLoadedProgress] = useState(false);
+  // 기기 저장본을 적용한 것만으로는 참이 아닙니다.
+  const progressLoad = useProgressLoad();
+  const hasLoadedProgress = progressLoad.phase === "loaded";
   // 연속이 **활동으로** 늘었는가입니다 — 머리가 다음에 설 때 연속 학습 모달을 한 번 띄웁니다. 부팅의 불러오기로 받은
   // 값은 축하하지 않습니다.
   const [streakCelebration, setStreakCelebration] = useState(false);
@@ -106,7 +110,6 @@ export function useJourneyProgress(
     const userId = progressUserId();
     if (userId === null) return;
     if (sync.current?.userId !== userId) {
-      setHasLoadedProgress(false);
       if (sync.current !== null) {
         sync.current.dispose();
         days.current?.dispose();
@@ -120,8 +123,9 @@ export function useJourneyProgress(
         userId,
         () => latest.current,
         apply,
-        () => setHasLoadedProgress(true),
+        progressLoad.settle,
       );
+      progressLoad.start(sync.current.restoredLocal);
       days.current = createLearningDaySync(userId, (streak, celebrate) => {
         if (celebrate && streak > streakRef.current) setStreakCelebration(true);
         setStreakDays(streak);
@@ -165,9 +169,24 @@ export function useJourneyProgress(
     catalogProgress,
   ]);
 
+  const trophyCount = trophyCountFrom(journeyMapSections, state, completionKeysOf);
+  // 전역 머리의 트로피 칩입니다. 노드가 「확인 중」인 동안(응답을 기다리는 동안)은 0을 보이지 않도록 `null`입니다.
+  const headerTrophyCount: number | null =
+    progressLoad.phase === "checking" || progressLoad.phase === "loading" ? null : trophyCount;
+
   return {
     ...state,
     hasLoadedProgress,
+    progressLoadPhase: progressLoad.phase,
+    wiring: {
+      streakDays,
+      trophyCount,
+      syncProgress: syncFromServer,
+      journeyMapProgressLoad: journeyMapProgressLoadOf(progressLoad.phase, () => {
+        progressLoad.requestRetry();
+        void sync.current?.flush();
+      }),
+    },
     setCompletedStepCount,
     setCompletedMessengerUnitIds,
     setCompletedPhoneCallUnitIds,
@@ -180,7 +199,8 @@ export function useJourneyProgress(
     onStreakCelebrated: () => setStreakCelebration(false),
     episodeSurvey: recordingDay ? null : episodeSurvey,
     onEpisodeSurveyClosed: () => setEpisodeSurvey(null),
-    trophyCount: trophyCountFrom(journeyMapSections, state, completionKeysOf),
+    trophyCount,
+    headerTrophyCount,
     syncFromServer,
   };
 }

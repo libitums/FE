@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { FirstUnitGuideProvider } from "../../components/first-unit-guide";
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
@@ -12,7 +12,7 @@ import { journeySteps } from "./journey-map";
 import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 
 // `ui` 계층: 맵 화면의 카탈로그 슬롯 — 튜토리얼 구획 뒤에 서고, 튜토리얼 통과로 열리며, 첫 유닛
-// 안내 동안 낭독에서 가려지고, 구획 자리를 재는 목록에 든다. 구획 안쪽 동작은
+// 안내 동안 낭독에서 가려진다. 구획 안쪽 동작은
 // `CatalogMapSections.ui.test.tsx`가 봅니다.
 
 const lessonKeys = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"];
@@ -96,7 +96,7 @@ describe("JourneyMapScreen catalog slot", () => {
     const wrapper = children[children.length - 1] as Element;
     expect(wrapper === catalog || wrapper.contains(catalog)).toBe(true);
     const previous = children[children.length - 2] as Element;
-    expect(previous).toHaveAttribute("id", "journey-map-screen-episode-tutorial");
+    expect(previous.contains(screen.getByTestId("ui-lynx-learning-unit-greeting"))).toBe(true);
     expect(screen.getByTestId("ui-lynx-learning-unit-catalog-cover-u01-water")).toHaveAttribute(
       "data-status",
       "default",
@@ -154,42 +154,5 @@ describe("JourneyMapScreen catalog slot", () => {
     const hidden = catalog.closest('[accessibility-elements-hidden="true"]');
     expect(hidden).not.toBeNull();
     expect(hidden === screen.getByTestId("journey-map-screen-map")).toBe(false);
-  });
-
-  test("UJ5. 머리 카드가 말할 구획 자리를 재는 목록이 튜토리얼 뒤에 카탈로그 구획을 잇는다", () => {
-    const selectors: string[] = [];
-    vi.spyOn(lynx, "createSelectorQuery").mockImplementation(
-      () =>
-        ({
-          select: (selector: string) => ({
-            invoke: (options: { method: string; success?: (res: unknown) => void }) => ({
-              exec: () => {
-                if (options.method !== "boundingClientRect") {
-                  return;
-                }
-                selectors.push(selector);
-                options.success?.({ top: 0, height: 100 });
-              },
-            }),
-          }),
-        }) as unknown as ReturnType<typeof lynx.createSelectorQuery>,
-    );
-
-    act(() => {
-      render(mapScreen({ catalog: catalogProps() }));
-    });
-
-    expect(
-      selectors.filter(
-        (selector) =>
-          selector.startsWith("#journey-map-screen-episode-") ||
-          selector.startsWith("#journey-map-screen-catalog-"),
-      ),
-    ).toEqual([
-      "#journey-map-screen-episode-tutorial",
-      "#journey-map-screen-catalog-u01-water",
-      "#journey-map-screen-catalog-u02-checkin",
-      "#journey-map-screen-catalog-u03-mina",
-    ]);
   });
 });

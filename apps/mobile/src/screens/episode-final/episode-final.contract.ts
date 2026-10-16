@@ -8,7 +8,7 @@ import type { EpisodeFinalStory } from "./episode-final-story.contract";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { WritingQuestion } from "../../lib/writing-session";
-import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
+import type { JourneyMapItemStatus, JourneyMapNodeStatus } from "../journey-map/journey-map-units";
 
 export type EpisodeFinalUnitId = "tutorial-final-test";
 export type EpisodeFinalTitle = "Final test";
@@ -114,7 +114,7 @@ export type EpisodeFinalStatus = JourneyMapItemStatus;
 export type EpisodeFinalMapItemProps = {
   readonly id: EpisodeFinalUnitId;
   readonly title: EpisodeFinalTitle;
-  readonly status: EpisodeFinalStatus;
+  readonly status: JourneyMapNodeStatus;
   readonly onSelect: (id: EpisodeFinalUnitId) => void;
 };
 

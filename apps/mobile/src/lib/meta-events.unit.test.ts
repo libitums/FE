@@ -54,10 +54,10 @@ describe("metaAppEventFrom", () => {
     expect(Object.keys(mapped?.parameters ?? {})).toHaveLength(2);
   });
 
-  test("U3. the 27 table rows plus the three mapped names cover all 30 names", () => {
+  test("U3. the 30 table names plus the three mapped names cover all 33 names", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
     const mapped = ["entry_completed", "messenger_unit_completed", "visual_novel_unit_completed"];
-    expect(tableNames.size).toBe(27);
+    expect(tableNames.size).toBe(30);
     expect([...tableNames, ...mapped].sort()).toEqual([...allEventNames].sort());
   });
 

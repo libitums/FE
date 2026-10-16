@@ -51,6 +51,7 @@ import { useOpenedPush } from "./use-opened-push";
 import { usePushTokenRefresh } from "./use-push-token-refresh";
 import { useSystemBack } from "./use-system-back";
 import { useJourneyProgress } from "./use-journey-progress";
+import { useProgressLoadEvents } from "./use-progress-load-events";
 import { useLearnerProfile } from "./use-learner-profile";
 import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
@@ -106,6 +107,7 @@ export function AppSession({
     initialCompletedEpisodeIntroIds,
     catalogCompletionKeysOf(catalogSections),
   );
+  useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile();
   const {
     completedStepCount,
@@ -198,9 +200,7 @@ export function AppSession({
     roleplaySections,
     entryLanguage,
     setEntryLanguage,
-    streakDays: progress.streakDays,
-    trophyCount: progress.trophyCount,
-    syncProgress: progress.syncFromServer,
+    ...progress.wiring,
     episodeContent,
     catalogSections,
     catalogProgress,
@@ -264,7 +264,7 @@ export function AppSession({
               {showsNavigator ? (
                 <AppHeader
                   streakDays={progress.streakDays}
-                  trophyCount={progress.trophyCount}
+                  trophyCount={progress.headerTrophyCount}
                   celebrateStreak={progress.streakCelebration}
                   onStreakCelebrated={progress.onStreakCelebrated}
                   episodeSurvey={progress.episodeSurvey}

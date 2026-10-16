@@ -81,6 +81,7 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
           completedEpisodeFinalIds={wiring.completedEpisodeFinalIds}
           onStartEpisodeFinal={wiring.onStartEpisodeFinal}
           onLayerChange={wiring.onScreenLayerChange}
+          progressLoad={wiring.journeyMapProgressLoad}
           catalog={{
             sections: wiring.catalogSections,
             progress: wiring.catalogProgress,

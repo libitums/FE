@@ -1,7 +1,7 @@
 // meta-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0057.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
 
-/** 계약의 이름 30개 전부입니다 — 손으로 적고 타입에 묶습니다. */
+/** 계약의 이름 33개 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
   "entry_screen_viewed",
   "entry_login_method_selected",
@@ -33,9 +33,12 @@ export const allEventNames = [
   "episode_content_refreshed",
   "episode_survey_answered",
   "episode_survey_skipped",
+  "progress_load_delayed",
+  "progress_load_failed",
+  "progress_load_recovered",
 ] as const satisfies readonly AnalyticsEventName[];
 
-/** 위 셋을 뺀 27개 이름마다 최소 이벤트 하나입니다. */
+/** 위 셋을 뺀 30개 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
@@ -99,6 +102,11 @@ export const unmappedEvents = [
   },
   { name: "episode_survey_answered", episodeId: "tutorial", rating: "4" },
   { name: "episode_survey_skipped", episodeId: "tutorial" },
+  { name: "progress_load_delayed" },
+  { name: "progress_load_failed", attempt: "first" },
+  { name: "progress_load_failed", attempt: "retry" },
+  { name: "progress_load_recovered", trigger: "auto" },
+  { name: "progress_load_recovered", trigger: "manual" },
 ] as const satisfies readonly AnalyticsEvent[];
 
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;

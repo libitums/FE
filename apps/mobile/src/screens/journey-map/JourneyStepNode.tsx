@@ -5,7 +5,7 @@ import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 import type { LearningUnitStatus, LearningUnitTapEvent } from "@libitums/ui-lynx/learning-unit";
 
 import { canOpenStep } from "./journey-map";
-import type { JourneyStepId, JourneyStepStatus } from "./journey-map";
+import type { JourneyStepId, JourneyStepNodeStatus } from "./journey-map";
 
 import { stepNodeId } from "./journey-map-scroll";
 
@@ -19,10 +19,11 @@ import "./journey-step-node.css";
 
 // 상태 표입니다. `LearningUnit`의 `available`(열려 있지만 아직 손대지 않음)은 쓰지
 // 않습니다 — 여정 스텝은 열리는 순간이 곧 현재 스텝이라 그 자리가 없습니다.
-const unitStatusByStatus: Record<JourneyStepStatus, LearningUnitStatus> = {
+const unitStatusByStatus: Record<JourneyStepNodeStatus, LearningUnitStatus> = {
   done: "clear",
   current: "active",
   locked: "default",
+  checking: "checking",
 };
 
 // `LearningUnit`은 `clear`·`default`에서 아이콘을 스스로 정합니다(체크·자물쇠). 넘긴
@@ -32,7 +33,7 @@ const activeIcon = play;
 export type JourneyStepProps = {
   id: JourneyStepId;
   title: string;
-  status: JourneyStepStatus;
+  status: JourneyStepNodeStatus;
   /** 탭의 세로 좌표를 함께 올립니다 — 유닛을 재기 전까지 말풍선이 설 어림 자리입니다. */
   onSelect: (id: JourneyStepId, tapY: number) => void;
 };

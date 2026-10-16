@@ -7,6 +7,8 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { catalogCoverAccessibilityLabel } from "./catalog-map";
 import type { CatalogCoverMapItemProps } from "./catalog-map.contract";
 
+import { canSelectMapNode } from "./journey-map-load";
+
 import "./journey-special-unit.css";
 
 // 표지의 상태 어휘를 `LearningUnit`의 어휘로 옮깁니다 — 튜토리얼 표지와 같은 표입니다.
@@ -14,6 +16,7 @@ const unitStatusByStatus = {
   locked: "default",
   available: "available",
   completed: "clear",
+  checking: "checking",
 } as const;
 
 // 카탈로그 에피소드의 표지 노드입니다. 잠김이면 고름을 올리지 않습니다 — `LearningUnit`이 `default`에서
@@ -27,7 +30,7 @@ export function CatalogCoverMapItem({
   const copy = useUiCopy();
   const handleSelect = () => {
     "background only";
-    if (status !== "locked") {
+    if (canSelectMapNode(status)) {
       onSelect(episodeId);
     }
   };

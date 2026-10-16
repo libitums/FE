@@ -9,7 +9,7 @@
 // 두 변형이 리터럴 `"journey"`·`"roleplay"`라 오늘은 `SpecialUnitExitLabel`만
 // 필요합니다.
 import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
-import type { JourneyMapItemStatus } from "../journey-map/journey-map-units";
+import type { JourneyMapNodeStatus } from "../journey-map/journey-map-units";
 
 export type PhoneCallUnitId = "appointment-confirmation-phone-call";
 
@@ -125,7 +125,7 @@ export type PhoneCallTranscriptEntry =
 export type PhoneCallMapItemProps = {
   readonly id: PhoneCallUnitId;
   readonly title: "A Call from Minseo";
-  readonly status: JourneyMapItemStatus;
+  readonly status: JourneyMapNodeStatus;
   readonly onSelect: (id: PhoneCallUnitId) => void;
 };
 

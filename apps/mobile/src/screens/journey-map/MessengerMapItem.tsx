@@ -2,6 +2,8 @@ import type { MessengerMapItemProps } from "../messenger/messenger.contract";
 import message02 from "@libitums/icons/lynx/message-02";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
+import { canSelectMapNode } from "./journey-map-load";
+
 import "./journey-special-unit.css";
 
 // `LearningUnit`의 상태 어휘로 옮깁니다 — `EpisodeFinalMapItem`·`EpisodeIntroMapItem`과
@@ -10,6 +12,7 @@ const unitStatusByStatus = {
   locked: "default",
   available: "available",
   completed: "clear",
+  checking: "checking",
 } as const;
 
 // 특별 유닛은 스텝 진행과 독립적으로 열려 있습니다 — 다만 **표지 뒤에서만** 그렇습니다
@@ -26,7 +29,7 @@ export function MessengerMapItem({ id, title, status, onSelect }: MessengerMapIt
   // `'background only'`를 둡니다(docs/specs/messenger-special-unit.md).
   const handleSelect = () => {
     "background only";
-    if (status !== "locked") {
+    if (canSelectMapNode(status)) {
       onSelect(id);
     }
   };

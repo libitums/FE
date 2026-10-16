@@ -136,3 +136,95 @@ describe("hasPressedShade (LearningUnit)", () => {
     expect(hasPressedShade(status, motion)).toBe(false);
   });
 });
+
+// `unit` 계층: 「확인 중」(checking) 상태 계약. 진행을 아직 모르는 노드라 잠김 · 열림 · 완료 어느
+// 쪽으로도 읽히면 안 됩니다.
+
+describe("LearningUnit checking 계약", () => {
+  test("LU1. 누를 수 없고 학습 아이콘을 유지하며 이름 뒤에 loading이 붙는다", () => {
+    const contract = getLearningUnitContract({
+      accessibilityLabel: "Lesson 1",
+      icon,
+      status: "checking",
+    });
+
+    expect(contract.status).toBe("checking");
+    expect(contract.interactive).toBe(false);
+    expect(contract.traits).toBe("disabled");
+    expect(contract.iconKind).toBe("learning");
+    expect(contract.className.split(" ")).toContain("ui-lynx-learning-unit-checking");
+    expect(contract.accessibilityLabel).toBe("Lesson 1, loading");
+  });
+
+  test("LU2. narrative가 있으면 loading 뒤에 story가 붙는다", () => {
+    expect(
+      getLearningUnitContract({
+        accessibilityLabel: "Lesson 1",
+        icon,
+        status: "checking",
+        narrative: "narrative",
+      }).accessibilityLabel,
+    ).toBe("Lesson 1, loading, story");
+  });
+
+  test("LU3. focused를 줘도 포커스되지 않는다", () => {
+    const contract = getLearningUnitContract({
+      accessibilityLabel: "Lesson 1",
+      icon,
+      status: "checking",
+      focused: true,
+    });
+
+    expect(contract.focused).toBe(false);
+    expect(contract.className).not.toContain("-focused");
+  });
+
+  test.each([
+    ["reduced", false],
+    ["standard", false],
+  ] as const)("LU4. hasPressedShade(checking, %s) -> %s", (motion, expected) => {
+    expect(hasPressedShade("checking", motion)).toBe(expected);
+  });
+
+  test("LU6. 링 · 아이콘 색은 토큰 값이고 정답 색 · 브랜드 색이 아니다", () => {
+    const tokenValues = new Set<string>();
+    const collect = (node: unknown): void => {
+      if (typeof node === "string") tokenValues.add(node);
+      else if (node !== null && typeof node === "object") Object.values(node).forEach(collect);
+    };
+    collect(color);
+
+    const contract = getLearningUnitContract({
+      accessibilityLabel: "Lesson 1",
+      icon,
+      status: "checking",
+    });
+
+    for (const value of [contract.ringColor, contract.iconColor]) {
+      expect(tokenValues.has(value)).toBe(true);
+      expect(value).not.toBe(color.feedback.correct);
+      expect(value).not.toBe(color.brand.primary);
+    }
+  });
+});
+
+describe("LearningUnit 기존 status 넷 (LU5 가드)", () => {
+  test.each([
+    ["default", false, "disabled", "lock", "locked"],
+    ["available", true, "button", "learning", undefined],
+    ["active", true, "button", "learning", "current"],
+    ["clear", true, "button", "tick", "completed"],
+  ] as const)("LU5. %s", (status, interactive, traits, iconKind, suffix) => {
+    const contract = getLearningUnitContract({ accessibilityLabel: "Lesson 1", icon, status });
+
+    expect(contract.status).toBe(status);
+    expect(contract.interactive).toBe(interactive);
+    expect(contract.traits).toBe(traits);
+    expect(contract.iconKind).toBe(iconKind);
+    expect(contract.accessibilityLabel).toBe(
+      suffix === undefined ? "Lesson 1" : `Lesson 1, ${suffix}`,
+    );
+    expect(hasPressedShade(status, "reduced")).toBe(status !== "default");
+    expect(hasPressedShade(status, "standard")).toBe(false);
+  });
+});
