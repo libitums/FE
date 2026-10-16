@@ -8,6 +8,7 @@ import tick from "@libitums/icons/lynx/tick";
 import trophy from "@libitums/icons/lynx/no-padding/trophy";
 import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
+import { useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
@@ -17,6 +18,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { journeyStatSlotCount, type JourneyStatKind, type JourneyStatTrack } from "./journey-stat";
 
 import "./journey-stat-modal.css";
+import "./journey-stat-modal-motion.css";
 
 // 상단 지표 칩(연속 학습 · 트로피)을 누르면 맵 위에 뜨는 전체 화면 모달입니다
 // (Figma 47-14057 · 74-419). 두 모달은 뼈대가 같고 색 · 머리 아이콘 · 문구만 갈립니다.
@@ -60,6 +62,9 @@ export function JourneyStatModal({
   // 이 레이어는 셸 밖(`position: fixed`)이라 셸의 safe area 여백을 받지 못합니다 —
   // 같은 값을 스스로 읽어 안쪽 여백으로 잡습니다(lib/safe-area.ts).
   const insets = safeAreaInsetsFrom(useGlobalProps());
+  // 열릴 때 큰 숫자 · 제목 · 아이콘이 커지며 나타나고, 떠 있는 동안 불꽃 · 운석 · 트로피 빛이 잔잔히 움직입니다
+  // (ADR-0064 — 시안 ②C). 움직임 줄이기에서는 페이드로 나타나고 반복이 없습니다 — 반복 층은 아예 서지 않습니다.
+  const alive = useMotion() === "standard";
   const copy = useUiCopy();
   const { title, message } = kindCopy[kind];
   // 스크린리더가 큰 숫자와 제목을 한 문장으로 읽게 하는 이름입니다.
@@ -95,13 +100,21 @@ export function JourneyStatModal({
       {kind === "streak" ? (
         <view className="journey-stat-modal-decor" accessibility-elements-hidden={true}>
           {(["a", "b", "c"] as const).map((slot) => (
-            <svg
+            <view
               key={slot}
               className={`journey-stat-modal-meteor journey-stat-modal-meteor-${slot}`}
-              content={meteor}
-              current-color={color.brand.primary}
               style={slot === "c" ? { top: `${insets.top}px` } : undefined}
-            />
+            >
+              <view className={alive ? `journey-stat-modal-meteor-in-${slot}` : undefined}>
+                <view className={alive ? `journey-stat-modal-meteor-bob-${slot}` : undefined}>
+                  <svg
+                    className="journey-stat-modal-meteor-icon"
+                    content={meteor}
+                    current-color={color.brand.primary}
+                  />
+                </view>
+              </view>
+            </view>
           ))}
         </view>
       ) : null}
@@ -118,7 +131,7 @@ export function JourneyStatModal({
       </view>
 
       <view
-        className="journey-stat-modal-hero"
+        className={`journey-stat-modal-hero ${alive ? "journey-stat-modal-hero-enter" : "journey-stat-modal-hero-fade"}`}
         data-testid="journey-stat-modal-hero"
         accessibility-element={true}
         accessibility-traits="header"
@@ -131,20 +144,42 @@ export function JourneyStatModal({
           {/* 트로피는 숫자 바로 위 가운데에 얹힙니다. */}
           {kind === "trophy" ? (
             <view className="journey-stat-modal-trophy-anchor">
-              <svg
-                className="journey-stat-modal-trophy-icon"
-                content={trophy}
-                current-color={color.feedback.warning}
-              />
+              <view
+                className={
+                  alive
+                    ? "journey-stat-modal-trophy-icon journey-stat-modal-trophy-wobble"
+                    : "journey-stat-modal-trophy-icon"
+                }
+              >
+                <svg
+                  className="journey-stat-modal-trophy-art"
+                  content={trophy}
+                  current-color={color.feedback.warning}
+                />
+                {/* 빛 — 같은 모양의 흰 트로피를 겹쳐 잠깐 밝혔다가 걷습니다. */}
+                {alive ? (
+                  <svg
+                    className="journey-stat-modal-trophy-art journey-stat-modal-trophy-glint"
+                    content={trophy}
+                    current-color={color.white}
+                  />
+                ) : null}
+              </view>
             </view>
           ) : null}
           {/* 불꽃은 숫자의 오른쪽 위 끝에 걸칩니다 — 숫자 폭이 달라져도 끝을 따라갑니다. */}
           {kind === "streak" ? (
-            <svg
-              className="journey-stat-modal-fire"
-              content={fire}
-              current-color={color.brand.primary}
-            />
+            <view className="journey-stat-modal-fire">
+              <view className={alive ? "journey-stat-modal-fire-flicker" : undefined}>
+                <view className={alive ? "journey-stat-modal-fire-breathe" : undefined}>
+                  <svg
+                    className="journey-stat-modal-fire-art"
+                    content={fire}
+                    current-color={color.brand.primary}
+                  />
+                </view>
+              </view>
+            </view>
           ) : null}
         </view>
         <text className="journey-stat-modal-title" data-testid="journey-stat-modal-title">
@@ -179,11 +214,20 @@ export function JourneyStatModal({
             <view className="journey-stat-modal-done" data-testid="journey-stat-modal-done">
               {done.map((index) => (
                 <view className="journey-stat-modal-slot" key={index}>
-                  <svg
-                    className="journey-stat-modal-tick"
-                    content={tick}
-                    current-color={color.white}
-                  />
+                  {/* 가장 최근 칸(오늘 · 이번 에피소드)의 체크는 등장 뒤에 톡 찍힙니다. */}
+                  <view
+                    className={
+                      alive && index === done.length - 1
+                        ? "journey-stat-modal-tick-box journey-stat-modal-tick-latest"
+                        : "journey-stat-modal-tick-box"
+                    }
+                  >
+                    <svg
+                      className="journey-stat-modal-tick"
+                      content={tick}
+                      current-color={color.white}
+                    />
+                  </view>
                 </view>
               ))}
             </view>

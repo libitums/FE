@@ -4,6 +4,8 @@ import type { CatalogProgress } from "../lib/catalog-progress";
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { localDayFrom } from "../lib/progress-api";
+import { clearStatBump, noStatBumps, recordStatBump } from "../lib/stat-bump";
+import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
 import { journeyMapSections } from "../screens/journey-map/journey-map-units";
@@ -56,6 +58,8 @@ export function useJourneyProgress(
   const [streakCelebration, setStreakCelebration] = useState(false);
   const streakRef = useRef(0);
   streakRef.current = streakDays;
+  // 지표 칩이 굴릴 「오르기 전 값」입니다(ADR-0064). 연속 모달과 같은 조건(활동으로 늘었을 때)에서만 남깁니다.
+  const [statBumps, setStatBumps] = useState<StatBumps>(noStatBumps);
   // 활동으로 끝낸 에피소드의 설문입니다(ADR-0036). 머리가 연속 모달 다음에 띄웁니다. 에피소드마다 한 번만 묻습니다.
   const [episodeSurvey, setEpisodeSurvey] = useState<CompletedEpisode | null>(null);
   // 오늘을 기록하는 중인가입니다. 그동안 설문을 내놓지 않습니다 — 연속이 늘었는지 알기 전에 설문이 먼저 뜨지 않게
@@ -89,11 +93,14 @@ export function useJourneyProgress(
   const completedEpisodeIds = useRef(
     completedEpisodesFrom(journeyMapSections, state).map((e) => e.id),
   );
+  // 트로피 수의 직전 값입니다. 활동 기준과 같이 `apply`(불러오기)가 먼저 맞춰 두므로 불러온 값은 오름이 아닙니다.
+  const trophyBaseline = useRef(trophyCountFrom(journeyMapSections, state));
 
   const apply = (next: JourneyProgressState): void => {
     latest.current = next;
     activityCount.current = completedActivityCount(next);
     completedEpisodeIds.current = completedEpisodesFrom(journeyMapSections, next).map((e) => e.id);
+    trophyBaseline.current = trophyCountFrom(journeyMapSections, next);
     setCompletedStepCount(next.completedStepCount);
     setCompletedMessengerUnitIds(next.completedMessengerUnitIds);
     setCompletedPhoneCallUnitIds(next.completedPhoneCallUnitIds);
@@ -115,6 +122,7 @@ export function useJourneyProgress(
         apply(initial.current);
         setStreakDays(0);
         setStreakCelebration(false);
+        setStatBumps(noStatBumps);
         setEpisodeSurvey(null);
         setRecordingDay(false);
       }
@@ -126,7 +134,11 @@ export function useJourneyProgress(
       );
       progressLoad.start(sync.current.restoredLocal);
       days.current = createLearningDaySync(userId, (streak, celebrate) => {
-        if (celebrate && streak > streakRef.current) setStreakCelebration(true);
+        if (celebrate && streak > streakRef.current) {
+          const previous = streakRef.current;
+          setStreakCelebration(true);
+          setStatBumps((bumps) => recordStatBump(bumps, "streak", previous, streak));
+        }
         setStreakDays(streak);
       });
     }
@@ -142,6 +154,10 @@ export function useJourneyProgress(
     const episodes = completedEpisodesFrom(journeyMapSections, state);
     const newlyCompleted = episodes.filter((e) => !completedEpisodeIds.current.includes(e.id));
     completedEpisodeIds.current = episodes.map((e) => e.id);
+    const trophies = trophyCountFrom(journeyMapSections, state);
+    const trophyBefore = trophyBaseline.current;
+    trophyBaseline.current = trophies;
+    if (grew) setStatBumps((bumps) => recordStatBump(bumps, "trophy", trophyBefore, trophies));
     if (grew) {
       const done = loadEpisodeSurveyDone();
       const next = newlyCompleted.find((e) => !done.includes(e.id));
@@ -168,6 +184,8 @@ export function useJourneyProgress(
     catalogProgress,
   ]);
 
+  const onStatBumped = (kind: StatBumpKind): void =>
+    setStatBumps((bumps) => clearStatBump(bumps, kind));
   const trophyCount = trophyCountFrom(journeyMapSections, state);
   // 전역 머리의 트로피 칩입니다. 노드가 「확인 중」인 동안(응답을 기다리는 동안)은 0을 보이지 않도록 `null`입니다.
   const headerTrophyCount: number | null =
@@ -180,6 +198,8 @@ export function useJourneyProgress(
     wiring: {
       streakDays,
       trophyCount,
+      statBumps,
+      onStatBumped,
       syncProgress: syncFromServer,
       journeyMapProgressLoad: journeyMapProgressLoadOf(progressLoad.phase, () => {
         progressLoad.requestRetry();
@@ -196,6 +216,8 @@ export function useJourneyProgress(
     streakDays,
     streakCelebration,
     onStreakCelebrated: () => setStreakCelebration(false),
+    statBumps,
+    onStatBumped,
     episodeSurvey: recordingDay ? null : episodeSurvey,
     onEpisodeSurveyClosed: () => setEpisodeSurvey(null),
     trophyCount,

@@ -1,3 +1,5 @@
+import { motion } from "@libitums/design-tokens";
+import { motionDurationMs } from "@libitums/ui-lynx/motion";
 import type { Motion } from "@libitums/ui-lynx/motion";
 
 import type { AssessmentVerdict } from "../assessment/assessment";
@@ -34,4 +36,37 @@ export function rewardBadgeClassName(verdict: AssessmentVerdict, reward: RewardM
     tokens.push(`${base}-motion-fade`);
   }
   return tokens.join(" ");
+}
+
+/** 통과 폭죽의 조각 수입니다(ADR-0064 — 시안 ④A). 조각마다 축 각도를 360° / 수로 나눕니다(`LessonCompleteBadge`). */
+export const lessonCompleteConfettiCount = 28;
+
+/** 폭죽은 성취 모션이 선 때만 터집니다 — 미통과(`none`)와 움직임 줄이기(`fade`)에는 없습니다. */
+export function lessonCompleteHasConfetti(reward: RewardMotion): boolean {
+  return reward === "expressive";
+}
+
+/**
+ * 제목 묶음 · 보상 카드가 배지 뒤에 올라오는 클래스입니다. 성취면 아래에서 올라오고(`-rise`), 줄이기면 페이드만
+ * (`-rise-fade`), 미통과면 움직이지 않습니다(undefined).
+ */
+export function lessonCompleteRiseClassName(
+  reward: RewardMotion,
+  slot: "summary" | "rewards",
+): string | undefined {
+  if (reward === "none") return undefined;
+  return reward === "expressive"
+    ? `lesson-complete-screen-rise lesson-complete-screen-rise-${slot}`
+    : "lesson-complete-screen-rise-fade";
+}
+
+/**
+ * 머리 칩이 오르기 전에 기다리는 시간입니다(시안 ③ 「배지 뒤에」). 성취면 배지(`reward`)가 자리 잡고 제목이
+ * 올라오기 시작한 뒤(`d4`), 줄이기면 배지 페이드(`d2`) 뒤, 미통과면 기다리지 않습니다.
+ */
+export function lessonCompleteChipBumpDelayMs(reward: RewardMotion): number {
+  if (reward === "expressive") {
+    return motionDurationMs(motion.duration.reward) + motionDurationMs(motion.duration.d4);
+  }
+  return reward === "fade" ? motionDurationMs(motion.duration.d2) : 0;
 }

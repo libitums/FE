@@ -10,6 +10,8 @@
   padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
   border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-50);
   border-radius: var(--libitum-radius-sm);
+  /* 오름 재생의 알갱이 · 빛 · 테두리 막이 이 상자를 기준으로 겹칩니다(`stat-chip-motion.css`). */
+  position: relative;
   /* 기본은 면을 칠하지 않습니다 — 화면 바탕이 그대로 비칩니다(학습 완료 머리). 면이
      필요한 자리는 `surface`로 고릅니다(아래 `-surface-white`). */
   flex-shrink: 0;
@@ -19,6 +21,13 @@
    있어, 면이 없으면 뒤로 지나가는 유닛 · 카드와 칩이 섞여 읽힙니다(2026-09-28). */
 .stat-chip-surface-white {
   background-color: var(--libitum-color-white);
+}
+
+.stat-chip-icon-box {
+  position: relative;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  flex-shrink: 0;
 }
 
 .stat-chip-icon {

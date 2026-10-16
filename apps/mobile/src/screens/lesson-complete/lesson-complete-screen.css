@@ -234,3 +234,43 @@
 .lesson-complete-screen-action-secondary {
   margin-top: var(--libitum-spacing-12);
 }
+
+/* 배지 뒤에 올라오는 글 · 카드입니다(ADR-0064 — 시안 ④). 배지가 커지는 동안(`reward`) 제목 묶음이, 그 뒤
+   보상 카드가 아래 12에서 올라옵니다. 줄이기면 불투명도만 바뀝니다. 미통과에는 클래스가 붙지 않습니다. */
+@keyframes lesson-complete-screen-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--libitum-spacing-12));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lesson-complete-screen-rise {
+  animation: lesson-complete-screen-rise var(--libitum-motion-duration-d6)
+    var(--libitum-motion-easing-enter) both;
+}
+
+.lesson-complete-screen-rise-summary {
+  animation-delay: var(--libitum-motion-duration-d6);
+}
+
+.lesson-complete-screen-rise-rewards {
+  animation-delay: var(--libitum-motion-duration-d7);
+}
+
+.lesson-complete-screen-rise-fade {
+  animation: lesson-complete-screen-badge-fade var(--libitum-motion-duration-d2)
+    var(--libitum-motion-easing-linear) both;
+}
+
+/* 배지와 폭죽의 무대입니다 — 폭죽 기준점이 배지 가운데에 섭니다. */
+.lesson-complete-screen-badge-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
