@@ -11,11 +11,7 @@ import {
   lessonPlan,
   node,
   resetApp,
-  rightTiles,
   savedUnits,
-  solveActivity,
-  solveLesson,
-  solveSyllable,
   status,
   tapButtonIn,
   tapId,
@@ -25,8 +21,14 @@ import {
   u01,
   u02,
   u03,
-  wrongTiles,
 } from "./test-helpers/episode-format-harness";
+import {
+  rightTiles,
+  solveActivity,
+  solveLesson,
+  solveSyllable,
+  wrongTiles,
+} from "./test-helpers/episode-format-solvers";
 
 // `integration` 계층: 새 형식 내장본(모킹 없음) 그대로 앱 전체를 걷습니다 - CULT가 문화 카드 → 문화 확인(보기 번역이
 // 서는 단어 선택)으로 서서 통과 · 실패하고, 음절 조립이 섞인 S3가 진행되며, 같은 음절을 바꿔 놓아도 문자열로

@@ -13,8 +13,6 @@ import {
   node,
   resetApp,
   savedUnits,
-  solveActivity,
-  solveLesson,
   status,
   tapNode,
   throughS8,
@@ -23,6 +21,7 @@ import {
   u01,
   u02,
 } from "./test-helpers/episode-format-harness";
+import { solveActivity, solveLesson } from "./test-helpers/episode-format-solvers";
 
 // `integration` 계층: 새 형식 내장본(모킹 없음) 그대로 앱 전체를 걷습니다 - CULT 단계가 문화 카드 → 단어 선택으로
 // 실제로 서고, 완료 키(`completion.requires`)에 따른 트로피 · 다음 표지 열림, 건너뜀이 섞인 단계의 진행,

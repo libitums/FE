@@ -54,6 +54,8 @@
 /* 한국어 제목 — 단어 카드의 표제어(`display`)보다 한 단 낮은 `heading-m`입니다. 제목이 최대 열네 글자라
    `display`면 좁은 폭에서 세 줄이 됩니다. `fg-brand`는 크기와 무관하게 AA(5.46:1)입니다. */
 .culture-card-activity-title {
+  /* 한국어는 어절(띄어쓰기) 단위로만 접습니다 — 기본값은 음절 사이에서도 끊습니다(기기 확인 2026-10-16). */
+  word-break: keep-all;
   text-align: center;
   color: var(--libitum-color-fg-brand);
   font-family: var(--libitum-typography-heading-m-font-family);
@@ -129,6 +131,8 @@
 }
 
 .culture-card-activity-korean-text {
+  /* 한국어는 어절(띄어쓰기) 단위로만 접습니다 — 기본값은 음절 사이에서도 끊습니다(기기 확인 2026-10-16). */
+  word-break: keep-all;
   text-align: left;
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-body-m-font-family);

@@ -21,6 +21,10 @@
   border-bottom: var(--libitum-stroke-width-thin) solid transparent;
 }
 
+/* 빈 칸끼리는 좌우로 띄워 밑줄이 칸마다 따로 보입니다 — 간격이 없으면 밑줄이 한 줄로 이어져 칸 수가
+   보이지 않습니다(기기 확인 2026-10-16). 채워진 칸은 띄우지 않아 놓인 음절은 그대로 붙어 읽힙니다. */
 .syllable-build-slot-empty {
+  margin-left: var(--libitum-spacing-4);
+  margin-right: var(--libitum-spacing-4);
   border-bottom-color: var(--libitum-color-border-default);
 }
