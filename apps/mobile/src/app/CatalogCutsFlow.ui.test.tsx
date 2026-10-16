@@ -6,6 +6,13 @@ import type { CatalogCutView, CatalogCuts } from "../screens/catalog-cover/catal
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { CatalogCoverFlow, CatalogEpilogueFlow } from "./CatalogCutsFlow";
 
+const audio = vi.hoisted(() => ({
+  playAudio: vi.fn<(source: string, onFinished: () => void) => string>(),
+  stopAudio: vi.fn<() => void>(),
+}));
+vi.mock("../lib/audio", () => audio);
+const { playAudio, stopAudio } = audio;
+
 // `ui` 계층: 흐름 컴포넌트가 걸음마다 화면을 갈아 끼우고, 걸음이 바뀔 때만 콜백을 부른다.
 // 관찰은 자식 화면의 testid로만 합니다. 시간은 가짜 타이머로 밉니다.
 
@@ -39,6 +46,9 @@ function cutsOf(list: readonly CatalogCutView[]): CatalogCuts {
 
 beforeEach(() => {
   vi.useFakeTimers();
+  playAudio.mockReset();
+  stopAudio.mockReset();
+  playAudio.mockReturnValue("started");
 });
 
 afterEach(() => {
@@ -49,7 +59,9 @@ afterEach(() => {
   }
 });
 
-function mountCover(overrides: { readonly title?: string } = {}) {
+function mountCover(
+  overrides: { readonly title?: string; readonly list?: readonly CatalogCutView[] } = {},
+) {
   const calls: string[] = [];
   const props = {
     onSkip: vi.fn<() => void>(() => calls.push("skip")),
@@ -64,19 +76,19 @@ function mountCover(overrides: { readonly title?: string } = {}) {
       insets={bannerInsets}
       ordinal={1}
       title={overrides.title ?? "Water"}
-      cuts={cutsOf(views)}
+      cuts={cutsOf(overrides.list ?? views)}
       {...props}
     />,
   );
   return { ...props, calls, bannerInsets };
 }
 
-function mountEpilogue() {
+function mountEpilogue(list: readonly CatalogCutView[] = views) {
   const props = {
     onExit: vi.fn<() => void>(),
     onClose: vi.fn<() => void>(),
   };
-  render(<CatalogEpilogueFlow insets={insets} ordinal={1} cuts={cutsOf(views)} {...props} />);
+  render(<CatalogEpilogueFlow insets={insets} ordinal={1} cuts={cutsOf(list)} {...props} />);
   return props;
 }
 
@@ -310,5 +322,57 @@ describe("CatalogEpilogueFlow", () => {
     expect(props.onExit).toHaveBeenCalledTimes(1);
     expect(props.onClose).toHaveBeenCalledTimes(0);
     expect(has("episode-banner-screen")).toBe(false);
+  });
+});
+
+describe("컷 흐름의 음성", () => {
+  const lastCutAudio = "https://cdn/audio/u01-water/pre-3.m4a";
+  const soundLast: readonly CatalogCutView[] = [
+    views[0] as CatalogCutView,
+    { ...(views[1] as CatalogCutView), audioSource: lastCutAudio },
+  ];
+
+  test("[UFL1a] 표지 · Skip 모달 동안 소리가 없고, 마지막 컷의 소리는 배너가 서며 멈추고 배너 동안 다시 나지 않는다", () => {
+    mountCover({ list: soundLast });
+
+    expect(playAudio).toHaveBeenCalledTimes(0);
+    tapIntro("skip");
+    fireEvent.tap(dialogAction("stay"), {});
+    expect(playAudio).toHaveBeenCalledTimes(0);
+    expect(stopAudio).toHaveBeenCalledTimes(0);
+
+    tapIntro("next");
+    settle();
+    tapCutNext();
+    expect(playAudio).toHaveBeenCalledTimes(1);
+    expect(playAudio).toHaveBeenCalledWith(lastCutAudio, expect.any(Function));
+
+    settle();
+    tapCutNext();
+    const stopsAtBanner = stopAudio.mock.calls.length;
+    holdBanner();
+
+    expect(has("episode-banner-screen")).toBe(true);
+    expect(stopsAtBanner).toBeGreaterThanOrEqual(1);
+    expect(playAudio).toHaveBeenCalledTimes(1);
+  });
+
+  test("[UFL1b] 통과 뒤 컷 흐름도 마지막 컷의 소리를 배너가 서며 멈추고 배너 동안 다시 내지 않는다", () => {
+    mountEpilogue(soundLast);
+    expect(playAudio).toHaveBeenCalledTimes(0);
+
+    settle();
+    tapCutNext();
+    expect(playAudio).toHaveBeenCalledTimes(1);
+    expect(playAudio).toHaveBeenCalledWith(lastCutAudio, expect.any(Function));
+
+    settle();
+    tapCutNext();
+    const stopsAtBanner = stopAudio.mock.calls.length;
+    holdBanner();
+
+    expect(has("episode-banner-screen")).toBe(true);
+    expect(stopsAtBanner).toBeGreaterThanOrEqual(1);
+    expect(playAudio).toHaveBeenCalledTimes(1);
   });
 });

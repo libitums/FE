@@ -4,8 +4,10 @@
 
 import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
 import type { CatalogEntry } from "../lib/episode-catalog";
+import { contentAudioSourceOf } from "../lib/content-audio";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { LearningItem } from "../lib/episode-content";
+import type { DialogueLine } from "../lib/episode-content.model";
 import type {
   CatalogRoleplayTile,
   CatalogRoleplayTurn,
@@ -74,6 +76,54 @@ export function catalogRoleplayTurnOf(
   };
 }
 
+const LINE_ID = /^D([1-9][0-9]*)$/;
+
+export type CatalogRoleplayLines = {
+  readonly counterpart: DialogueLine;
+  readonly player: DialogueLine;
+};
+
+/** `line_id`가 가리키는 플레이어 줄과 그 앞 상대 줄입니다. 어긋나면 `null`입니다. */
+export function catalogRoleplayLinesOf(
+  lineId: string,
+  dialogue: readonly DialogueLine[],
+): CatalogRoleplayLines | null {
+  const matched = LINE_ID.exec(lineId);
+  if (matched === null) return null;
+  const seq = Number(matched[1]);
+  const player = dialogue.find((line) => line.seq === seq);
+  const counterpart = dialogue.find((line) => line.seq === seq - 1);
+  if (player === undefined || counterpart === undefined) return null;
+  if (player.role !== "player" || counterpart.role !== "counterpart") return null;
+  return { counterpart, player };
+}
+
+export type CatalogRoleplayAudio = Pick<
+  CatalogRoleplayTurn,
+  "counterpartAudioSource" | "replyAudioSource"
+>;
+
+/** 턴에 붙일 소리입니다. 있는 것만 키로 냅니다. */
+export function catalogRoleplayAudioOf(
+  item: LearningItem,
+  dialogue: readonly DialogueLine[],
+  contentUrlOf: (relativePath: string) => string | null,
+): CatalogRoleplayAudio {
+  if (item.type !== "ROLEPLAY_TURN") return {};
+  const lines = catalogRoleplayLinesOf(item.roleplay.lineId, dialogue);
+  if (lines === null) return {};
+  const counterpart = contentAudioSourceOf(
+    lines.counterpart.audioUrl,
+    lines.counterpart.text.ko,
+    contentUrlOf,
+  );
+  const reply = contentAudioSourceOf(lines.player.audioUrl, lines.player.text.ko, contentUrlOf);
+  return {
+    ...(counterpart === null ? {} : { counterpartAudioSource: counterpart }),
+    ...(reply === null ? {} : { replyAudioSource: reply }),
+  };
+}
+
 export function catalogFinalPlanOf(
   entry: Extract<CatalogEntry, { status: "ready" }>,
   ordinal: number,
@@ -89,7 +139,11 @@ export function catalogFinalPlanOf(
     sceneImageUrl: scenePath === undefined ? null : imageUrlOf(scenePath),
     imageUrlOf,
   };
-  const attempts = entry.episode.finalTest.items.map((item) => catalogRoleplayTurnOf(item, port));
+  const attempts = entry.episode.finalTest.items.map((item) => {
+    const turn = catalogRoleplayTurnOf(item, port);
+    if (turn === null) return null;
+    return { ...turn, ...catalogRoleplayAudioOf(item, entry.episode.dialogue, imageUrlOf) };
+  });
   const turns = attempts.filter((turn): turn is CatalogRoleplayTurn => turn !== null);
   return {
     episodeId: entry.id,

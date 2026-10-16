@@ -138,3 +138,7 @@ Play Console 비공개 테스트에 올린 AAB를 실기에서 열자 효과음 
 - **TalkBack 실기 확인에서 벨이 낭독을 알아듣기 어렵게 가린다고 판정되면** → D3. 벨만 `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`을 쥐는 안(짧은 효과음은 그대로)을 본다.
   벨이 우는 동안 같은 앱의 대사가 재생 중이면 그 대사가 멈추므로, 앞 화면 대사가 확실히 멈췄는지를 먼저 확인한다.
 - **오디오 자산이 원격에서 오게 되면**(ADR 추적표 「오디오 자산의 출처·형식」) → D1 · D2. 검사 대상이 번들 자산이 아니게 된다.
+  ⟨2026-10-14 — 발동, 재검토 기록⟩ **에피소드 음성이 원격에서 온다**([ADR-0060](0060-episode-voice-remote-audio.md) — 공개 버킷 `audio/<id>.m4a`). 다시 봤고 **D1 · D2는 그대로 산다**:
+  원격 음성은 `AudioRemoteSource`가 `https` 절대 URL로 판정해 `MediaPlayer.setDataSource(url)`로 가는 **별도 갈래**라 산출물 자산 검사의 대상이 아니고,
+  튜토리얼의 번들 자산(`apps/ios/Host/audio`)은 여전히 같은 결선 · 같은 검사로 실린다. 원격이 아닌 `source`는 지금처럼 `AudioAssetPath`로 간다.
+  원격 재생의 계측(닿지 않는 https의 `done` 한 번 · 준비 중 `stop`)은 [Android 오디오 재생 검증](../e2e/android-audio-playback.md)에 절차가 있고 아직 실행하지 않았다.

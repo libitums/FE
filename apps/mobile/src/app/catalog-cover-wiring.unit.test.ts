@@ -292,8 +292,31 @@ describe("catalogCoverModelOf", () => {
     expect(model?.ordinal).toBe(1);
     expect(model?.title).toBe(sections.find((item) => item.episodeId === "u01-water")?.title);
     expect(model?.title).not.toBe("");
-    expect(model?.version).toBe("2026-10-12.1");
+    expect(model?.version).toBe("2026-10-14.1");
     expect(model?.cuts).toHaveLength(6);
+  });
+
+  test("CWA1. 컷에 음성 주소가 실리고 통과 뒤 컷에는 없다", () => {
+    const model = catalogCoverModelOf(content, sections, "u01-water", {});
+    expect(model?.cuts[2]?.audioSource).toBe("https://cdn/audio/u01-water/pre-3.m4a");
+    expect(model?.cuts[5]?.audioSource).toBe("https://cdn/audio/u01-water/d-01.m4a");
+
+    const epilogue = catalogEpilogueModelOf(content, sections, "u01-water", {});
+    expect(epilogue?.cuts.map((cut) => "audioSource" in cut)).toEqual([false, false, false]);
+  });
+
+  test("CWA1. u02 표지 컷도 개정 표대로 주소가 실린다", () => {
+    const model = catalogCoverModelOf(content, sections, "u02-checkin", {});
+    const sources = Object.fromEntries(
+      (model?.cuts ?? []).flatMap((cut) =>
+        cut.audioSource === undefined ? [] : [[cut.index, cut.audioSource]],
+      ),
+    );
+    expect(sources).toEqual({
+      1: "https://cdn/audio/u02-checkin/pre-1.m4a",
+      3: "https://cdn/audio/u02-checkin/pre-3.m4a",
+      5: "https://cdn/audio/u02-checkin/d-01.m4a",
+    });
   });
 
   test("CW5. 없는 id와 준비 안 된 항목은 null이다", () => {

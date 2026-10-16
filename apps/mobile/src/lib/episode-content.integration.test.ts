@@ -23,17 +23,17 @@ type Fixture = {
 };
 
 const FIXTURES: readonly Fixture[] = [
-  { file: "u01-water", bytes: 79_346, prologue: 6, epilogue: 3, dialogue: 8, words: 10, items: 78 },
+  { file: "u01-water", bytes: 79_485, prologue: 6, epilogue: 3, dialogue: 8, words: 10, items: 78 },
   {
     file: "u02-checkin",
-    bytes: 121_744,
+    bytes: 121_908,
     prologue: 5,
     epilogue: 4,
     dialogue: 13,
     words: 13,
     items: 123,
   },
-  { file: "u03-mina", bytes: 98_347, prologue: 4, epilogue: 3, dialogue: 13, words: 15, items: 87 },
+  { file: "u03-mina", bytes: 98_497, prologue: 4, epilogue: 3, dialogue: 13, words: 15, items: 87 },
 ];
 
 const raws = new Map<string, string>();

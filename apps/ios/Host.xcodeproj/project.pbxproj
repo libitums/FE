@@ -49,6 +49,7 @@
 		D0A500000000000000000001 /* SoundEffectsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A500000000000000000004 /* SoundEffectsModule.swift */; };
 		D0A500000000000000000002 /* sfx in Resources */ = {isa = PBXBuildFile; fileRef = D0A500000000000000000005 /* sfx */; };
 		D0A500000000000000000003 /* SoundEffectsModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A500000000000000000006 /* SoundEffectsModuleTests.swift */; };
+		D0A5000000000000000000A1 /* AudioPlaybackModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5000000000000000000A2 /* AudioPlaybackModuleTests.swift */; };
 		CF6E66CAE06A00C80CD48C53 /* ImageServiceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0870E09825A129BCC80CB945 /* ImageServiceTests.m */; };
 		4C1D0C5E0A1F2B3C4DCE0002 /* MetaAppEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4DBE0002 /* MetaAppEvents.swift */; };
 		4C1D0C5E0A1F2B3C4DCE0003 /* MetaAppEventsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4DBE0003 /* MetaAppEventsModule.swift */; };
@@ -115,6 +116,7 @@
 		D0A500000000000000000004 /* SoundEffectsModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffectsModule.swift; sourceTree = "<group>"; };
 		D0A500000000000000000005 /* sfx */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sfx; sourceTree = "<group>"; };
 		D0A500000000000000000006 /* SoundEffectsModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffectsModuleTests.swift; sourceTree = "<group>"; };
+		D0A5000000000000000000A2 /* AudioPlaybackModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlaybackModuleTests.swift; sourceTree = "<group>"; };
 		C4B67B2104D0445A811952B8 /* libPods-Host.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Host.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F97220D3A6966BCDDA0405F8 /* Pods-HostTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HostTests.release.xcconfig"; path = "Target Support Files/Pods-HostTests/Pods-HostTests.release.xcconfig"; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4DBE0002 /* MetaAppEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaAppEvents.swift; sourceTree = "<group>"; };
@@ -218,6 +220,7 @@
 			children = (
 				2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */,
 				D0A500000000000000000006 /* SoundEffectsModuleTests.swift */,
+				D0A5000000000000000000A2 /* AudioPlaybackModuleTests.swift */,
 				4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */,
 				2B94A3E42D6614980060892E /* ReducedMotionTests.swift */,
 				4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */,
@@ -484,6 +487,7 @@
 				4C1D0C5E0A1F2B3C4E0E0000 /* AppReviewModuleTests.swift in Sources */,
 				2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */,
 				D0A500000000000000000003 /* SoundEffectsModuleTests.swift in Sources */,
+				D0A5000000000000000000A1 /* AudioPlaybackModuleTests.swift in Sources */,
 				2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */,
 				A030C0DE0000000000000004 /* RecordingAudioSessionTests.swift in Sources */,
 				2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */,

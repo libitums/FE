@@ -21,8 +21,8 @@ import Foundation
 ///
 /// **진행 조회는 아직 안 연다.** 그것을 부를 자리가 노래방식 글자 강조 하나인데, 그
 /// 기능은 **낱말별 시각 데이터**를 요구하고 그 데이터는 실제 오디오 자산이 정해져야
-/// 만들 수 있다(`docs/adr/README.md` 보류 표의 「오디오 자산의 출처·형식」이 아직 열린
-/// 행이다). 부를 자리가 없는 API를 먼저 열면 그것이 D3이 막으려던 바로 그것이다.
+/// 만들 수 있다(학습 문항 오디오의 연결은 `docs/adr/README.md` 보류 표에 남아 있다).
+/// 부를 자리가 없는 API를 먼저 열면 그것이 D3이 막으려던 바로 그것이다.
 ///
 /// **다시듣기는 메서드가 아니다** — `play`를 다시 부르는 것이다. 그래서 이 파일에
 /// `replay`라는 이름이 없다.
@@ -181,7 +181,7 @@ final class AudioPlaybackModule: NSObject, LynxModule {
     DispatchQueue.main.async { self.player?.play() }
   }
 
-  // MARK: - 해석 — **번들 리소스 조회 한 줄**
+  // MARK: - 해석 — **원격 https 주소 또는 번들 리소스 조회**
 
   /// 자산 디렉터리 이름. `.app` 안에서도 같은 이름의 디렉터리로 남는다 —
   /// `project.pbxproj`가 `apps/ios/Host/audio`를 **폴더 참조**(`lastKnownFileType = folder`)로
@@ -199,27 +199,39 @@ final class AudioPlaybackModule: NSObject, LynxModule {
 
   /// `source`를 재생할 것으로 옮기는 **유일한 자리**.
   ///
-  /// **번들 리소스 조회다.** `apps/ios/Host/audio/<source>.m4a`가 `.app` 안
+  /// **기본은 번들 리소스 조회다.** `apps/ios/Host/audio/<source>.m4a`가 `.app` 안
   /// `audio/<source>.m4a`로 복사돼 있고, 파일 이름이 `audioSource` 값과 **정확히 같다.**
   /// 그래서 이 몸통은 추측이 아니라 사실 위에 서 있다 — 그것이 이 자리를 비워 뒀던
   /// 이유가 없어진 지점이다.
   ///
-  /// **보류는 그대로 열려 있다.** `docs/adr/README.md` 보류 표의 「오디오 자산의
-  /// 출처·형식」 행은 **실제 문항 오디오의 공급 경로**를 묻는다. 지금 번들에 있는 것은
-  /// `tooling/audio/generate.sh`가 macOS `say`로 만든 **테스트 자산**이고, 테스트 자산이
-  /// 있다는 것과 컨텐츠 공급 경로가 정해졌다는 것은 다르다. 원격 컨텐츠가 오면 이
-  /// 함수에 **분기가 하나 는다** — 번들에 없으면 원격으로 가는 형태이고, 반환 타입이
-  /// `URL?`인 것이 정확히 그 여지를 위한 것이다 (`URL`은 번들 파일 URL과 원격 URL을
-  /// 둘 다 담는다. 그래서 재생 수단도 `AVPlayer`다 — `AVAudioPlayer`는 로컬만 받는다).
+  /// **원격 분기가 하나 있다.** `source`가 `https` 스킴에 호스트가 있는 절대 URL이면 그
+  /// URL을 그대로 돌려준다(콘텐츠 음성은 버킷에서 스트리밍한다 — ADR-0060). 반환 타입이
+  /// `URL?`이고 재생 수단이 `AVPlayer`인 것이 그 여지를 위한 것이었다(`AVAudioPlayer`는
+  /// 로컬만 받는다). 원격 로드 실패는 아래 `.failed` 관찰이 `done` 한 번으로 모은다.
   ///
   /// `nil`을 돌려주면 `play`는 재생하지 않고 `done`을 한 번 부른다. 등록되지 않았거나
   /// 이름이 어긋난 `source`가 그 경로로 간다.
-  private static func resolve(_ source: String) -> URL? {
-    Bundle.main.url(
+  static func resolve(_ source: String) -> URL? {
+    if let remote = remoteURL(source) { return remote }
+    // 번들 id는 경로 조각 하나다. 빈 이름은 `Bundle`이 폴더의 아무 파일로 풀어 버리고,
+    // `/` · `..`은 폴더 밖을 가리킨다 — Android `AudioAssetPath`와 같은 경계.
+    guard !source.isEmpty, !source.contains("/"), !source.contains("..") else { return nil }
+    return Bundle.main.url(
       forResource: source,
       withExtension: audioFileExtension,
       subdirectory: audioSubdirectory
     )
+  }
+
+  /// `https` 스킴에 호스트가 있는 절대 URL만 원격으로 본다. 그 밖의 스킴(`http` · `file` ·
+  /// `content` …)과 호스트 없는 주소는 원격이 아니라서 번들 id 해석으로 넘어가고, 거기서
+  /// 걸러진다. 호스트 제한은 주소를 만드는 JS 한 자리에 있다.
+  private static func remoteURL(_ source: String) -> URL? {
+    guard let url = URL(string: source),
+      url.scheme?.lowercased() == "https",
+      let host = url.host, !host.isEmpty
+    else { return nil }
+    return url
   }
 
   // MARK: - 정리

@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import type { CatalogFinalState, CatalogRoleplayTurn } from "./catalog-final.contract";
 import {
   canCheckTurn,
+  catalogFinalAudioCueOf,
   catalogFinalLineAccessibilityLabel,
   catalogFinalReducer,
   composedReply,
@@ -141,5 +142,69 @@ describe("상대 대사 낭독", () => {
     const noEnglish: CatalogRoleplayTurn = { ...turn, line: { ...turn.line, en: null } };
 
     expect(catalogFinalLineAccessibilityLabel(noEnglish, "점원")).toBe("점원: 봉투 드릴까요?");
+  });
+});
+
+describe("catalogFinalAudioCueOf", () => {
+  const counterpartOnly: CatalogRoleplayTurn = {
+    ...turn,
+    counterpartAudioSource: "https://cdn/c.m4a",
+  };
+  const both: CatalogRoleplayTurn = { ...counterpartOnly, replyAudioSource: "https://cdn/r.m4a" };
+  const stateOf = (
+    phase: CatalogFinalState["phase"],
+    turnIndex: number,
+    results: CatalogFinalState["results"],
+  ): CatalogFinalState => ({ turnIndex, placed: [1, 0], phase, results });
+  const arranging = (turnIndex: number): CatalogFinalState => stateOf("arranging", turnIndex, []);
+  const checkedAs = (result: "correct" | "incorrect"): CatalogFinalState =>
+    stateOf("checked", 0, [result]);
+
+  test("FAC1. arranging이면 상대 줄 소리를 턴 번호 key로 낸다", () => {
+    expect(catalogFinalAudioCueOf(both, arranging(0))).toEqual({
+      key: "0:counterpart",
+      source: "https://cdn/c.m4a",
+    });
+    expect(catalogFinalAudioCueOf(both, arranging(1))?.key).toBe("1:counterpart");
+  });
+
+  test("FAC2. arranging이고 상대 소리가 없으면 null이다", () => {
+    expect(catalogFinalAudioCueOf(turn, arranging(0))).toBeNull();
+    expect(
+      catalogFinalAudioCueOf({ ...turn, replyAudioSource: "https://cdn/r.m4a" }, arranging(0)),
+    ).toBeNull();
+  });
+
+  test("FAC3. 정답 뒤에는 내 줄 소리를 낸다", () => {
+    expect(catalogFinalAudioCueOf(both, checkedAs("correct"))).toEqual({
+      key: "0:reply",
+      source: "https://cdn/r.m4a",
+    });
+  });
+
+  test("FAC4. 정답이어도 내 소리가 없으면 arranging과 같은 값이다", () => {
+    expect(catalogFinalAudioCueOf(counterpartOnly, checkedAs("correct"))).toEqual(
+      catalogFinalAudioCueOf(counterpartOnly, arranging(0)),
+    );
+    expect(catalogFinalAudioCueOf(turn, checkedAs("correct"))).toBeNull();
+  });
+
+  test("FAC5. 오답이면 내 소리가 있어도 arranging과 같은 값이다", () => {
+    const cue = catalogFinalAudioCueOf(both, checkedAs("incorrect"));
+    expect(cue).toEqual(catalogFinalAudioCueOf(both, arranging(0)));
+    expect(cue?.key).toBe("0:counterpart");
+  });
+
+  test("FAC6. 리듀서로 밟은 전이의 key 열은 상대 줄 → 내 줄 → 다음 턴 상대 줄이다", () => {
+    const placed = catalogFinalReducer(initialCatalogFinalState, {
+      type: "toggleTile",
+      tileIndex: 0,
+    });
+    const ready = catalogFinalReducer(placed, { type: "toggleTile", tileIndex: 1 });
+    const checked = catalogFinalReducer(ready, { type: "check", result: "correct" });
+    const next = catalogFinalReducer(checked, { type: "nextTurn" });
+
+    const keys = [ready, checked, next].map((state) => catalogFinalAudioCueOf(both, state)?.key);
+    expect(keys).toEqual(["0:counterpart", "0:reply", "1:counterpart"]);
   });
 });

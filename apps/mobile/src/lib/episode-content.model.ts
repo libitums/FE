@@ -28,6 +28,7 @@ export type EpisodeCut =
       aside: Text;
       imageBrief: string;
       imageUrl?: string;
+      audioUrl?: string;
     }
   | {
       kind: "monologue";
@@ -36,8 +37,16 @@ export type EpisodeCut =
       line: Text;
       imageBrief: string;
       imageUrl?: string;
+      audioUrl?: string;
     }
-  | { kind: "narration"; index: number; narration: Text; imageBrief: string; imageUrl?: string };
+  | {
+      kind: "narration";
+      index: number;
+      narration: Text;
+      imageBrief: string;
+      imageUrl?: string;
+      audioUrl?: string;
+    };
 
 export type DialogueLine = {
   seq: number;

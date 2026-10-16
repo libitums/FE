@@ -18,6 +18,7 @@ import type {
 import {
   CATALOG_SELF_SPEAKER,
   catalogCutAccessibilityLabel,
+  catalogCutAudioCueOf,
   catalogCutHasToggle,
   catalogCutSpeakerName,
   catalogCutTranslation,
@@ -447,5 +448,85 @@ describe("독백", () => {
     const label = catalogCutAccessibilityLabel(view, "en", uiCopyEn);
     expect(label.startsWith("Me, thinking: 목이 마르다. I'm thirsty.")).toBe(true);
     expect(label).not.toContain("(");
+  });
+});
+
+describe("컷 음성", () => {
+  const AUDIO_ID = "u01-water/pre-3";
+  const AUDIO_SOURCE = "https://cdn/audio/u01-water/pre-3.m4a";
+  const nullPort: CatalogCutPort = { ...portFor({}), imageUrlOf: () => null };
+  const line = { ko: "어서 오세요.", roman: "eoseo oseyo.", en: "Welcome." };
+  const speechWith = (audioUrl: string | undefined, text: Text = line): EpisodeCut => ({
+    ...speech(1, "점원", text, { ko: "고개를 들며" }),
+    ...(audioUrl === undefined ? {} : { audioUrl }),
+  });
+  const monologueWith = (audioUrl: string): EpisodeCut => ({
+    kind: "monologue",
+    index: 1,
+    speaker: "플레이어",
+    line,
+    imageBrief: "brief",
+    audioUrl,
+  });
+  const narrationWith = (audioUrl: string): EpisodeCut => ({
+    ...narration(1, line),
+    audioUrl,
+  });
+  const lineView = (audioSource?: string): CatalogCutView => ({
+    ...clerkView,
+    ...(audioSource === undefined ? {} : { audioSource }),
+  });
+
+  test.each([
+    ["speech", speechWith(AUDIO_ID)],
+    ["monologue", monologueWith(AUDIO_ID)],
+    ["narration", narrationWith(AUDIO_ID)],
+    ["화자 없는 speech", { ...speech(1, "", line, { ko: "지문" }), audioUrl: AUDIO_ID }],
+  ])("CCA1. %s 컷의 audioUrl이 뷰의 전체 주소가 된다", (_name, cut) => {
+    const [view] = catalogCutViewsOf([cut], portFor({}));
+    expect(view).toHaveProperty("audioSource", AUDIO_SOURCE);
+  });
+
+  test.each([
+    ["audioUrl 없음", speechWith(undefined), portFor({})],
+    ["규약 밖 id", speechWith("../pre-3"), portFor({})],
+    ["원문 ko에 자리표시자", speechWith(AUDIO_ID, { ko: "{이름}(으)로 예약했어요." }), portFor({})],
+    ["해석기가 null", speechWith(AUDIO_ID), nullPort],
+  ])("CCA2. %s이면 audioSource 키가 없다", (_name, cut, port) => {
+    const [view] = catalogCutViewsOf([cut], port);
+    expect(view).toBeDefined();
+    expect(view !== undefined && "audioSource" in view).toBe(false);
+  });
+
+  test("CCA3. 자리표시자 판정은 치환 전 원문 기준이다", () => {
+    const cut = speechWith(AUDIO_ID, { ko: "{이름}(으)로 예약했어요." });
+    const [view] = catalogCutViewsOf([cut], portFor({ name: "Mina" }));
+    expect(view?.text.ko).not.toMatch(/[{}]/);
+    expect(view !== undefined && "audioSource" in view).toBe(false);
+  });
+
+  test("CCA4. 실데이터 u01 표지 컷: 3번 · 6번만 소리 주소가 있다", () => {
+    const views = catalogCutViewsOf(u01.episode.prologue, portFor({}));
+    expect(views).toHaveLength(6);
+    const sources = Object.fromEntries(
+      views.flatMap((view) =>
+        view.audioSource === undefined ? [] : [[view.index, view.audioSource]],
+      ),
+    );
+    expect(sources).toEqual({
+      3: "https://cdn/audio/u01-water/pre-3.m4a",
+      6: "https://cdn/audio/u01-water/d-01.m4a",
+    });
+  });
+
+  test("CCA5. catalogCutAudioCueOf: 소리가 있으면 index를 key로 한 단서, 없으면 null", () => {
+    expect(catalogCutAudioCueOf(lineView(AUDIO_SOURCE), 2)).toEqual({
+      key: "2",
+      source: AUDIO_SOURCE,
+    });
+    expect(catalogCutAudioCueOf(lineView(), 2)).toBeNull();
+    const first = catalogCutAudioCueOf(lineView(AUDIO_SOURCE), 0);
+    const second = catalogCutAudioCueOf(lineView(AUDIO_SOURCE), 1);
+    expect(first?.key).not.toBe(second?.key);
   });
 });

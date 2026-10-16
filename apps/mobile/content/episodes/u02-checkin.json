@@ -23,7 +23,8 @@
     "en": "Setting the bag down and turning toward the yard."
    },
    "image_brief": "거실의 낯선 사람이 짐을 내려놓고 마당 쪽으로 고개를 돌린다.",
-   "image_url": "images/u02-checkin/pre-1.jpg"
+   "image_url": "images/u02-checkin/pre-1.jpg",
+   "audio_url": "u02-checkin/pre-1"
   },
   {
    "index": 2,
@@ -53,7 +54,8 @@
     "en": "Glancing down at the suitcase and its dusty wheels."
    },
    "image_brief": "사장님이 캐리어와 플레이어를 번갈아 본다.",
-   "image_url": "images/u02-checkin/pre-3.jpg"
+   "image_url": "images/u02-checkin/pre-3.jpg",
+   "audio_url": "u02-checkin/pre-3"
   },
   {
    "index": 4,
@@ -83,7 +85,8 @@
     "en": "Opening the notebook to today's page."
    },
    "image_brief": "데스크 안쪽의 사장님이 공책을 펼치고 펜을 든다.",
-   "image_url": "images/u02-checkin/pre-5.jpg"
+   "image_url": "images/u02-checkin/pre-5.jpg",
+   "audio_url": "u02-checkin/d-01"
   }
  ],
  "dialogue": [
@@ -95,7 +98,7 @@
     "roman": "ireumi eotteoke doeseyo?",
     "en": "May I have your name?"
    },
-   "audio_url": ""
+   "audio_url": "u02-checkin/d-01"
   },
   {
    "seq": 2,
@@ -235,7 +238,8 @@
     "en": "Pausing mid-handover of the key to point at the shoe rack."
    },
    "image_brief": "같은 프런트. 사장님이 열쇠를 건네다 말고 신발장 쪽을 가리킨다.",
-   "image_url": "images/u02-checkin/post-1.jpg"
+   "image_url": "images/u02-checkin/post-1.jpg",
+   "audio_url": "u02-checkin/post-1"
   },
   {
    "index": 2,

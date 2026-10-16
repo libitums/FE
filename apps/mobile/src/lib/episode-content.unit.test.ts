@@ -10,6 +10,7 @@ import {
   type Episode,
 } from "./episode-content";
 import { KNOWN_ITEM_TYPES } from "./episode-content.schema";
+import { bundledCatalogInput } from "./episode-bundled";
 import { minimalRoleplayTurnWire } from "./episode-content.test-support";
 
 // `unit` 계층: 순수 함수 `decodeEpisode`의 입출력만 봅니다 (ADR-0006 D4).
@@ -636,5 +637,89 @@ describe("decodeEpisode", () => {
       code: "invalid-shape",
       path: "steps[1].items[2].options[3].correct",
     });
+  });
+});
+
+describe("decodeEpisode - 컷 음성 id", () => {
+  const speechCut = (extra: Wire): Wire =>
+    cut(1, {
+      cut_kind: "speech",
+      speaker: "점원",
+      line: t3("어서 오세요."),
+      aside: t3("문이 열린다"),
+      ...extra,
+    });
+  const monologueCut = (extra: Wire): Wire =>
+    cut(1, { cut_kind: "monologue", speaker: "나", line: t3("흠."), ...extra });
+  const narrationCut = (extra: Wire): Wire => cut(1, extra);
+
+  test.each([
+    ["speech", speechCut],
+    ["monologue", monologueCut],
+    ["narration", narrationCut],
+  ])("DA1. %s 컷의 audio_url이 도메인 audioUrl이 된다", (_name, make) => {
+    const input = minimalEpisode({ pre_cuts: [make({ audio_url: "u01-water/pre-3" })] });
+    const { episode } = passed(decodeEpisode(input));
+    expect(episode.prologue[0]).toHaveProperty("audioUrl", "u01-water/pre-3");
+  });
+
+  test.each([
+    ["빈 문자열", { audio_url: "" }],
+    ["키 없음", {}],
+  ])("DA2. 컷 audio_url이 %s이면 audioUrl 키가 없고 디코드는 성공한다", (_name, extra) => {
+    const { episode } = passed(decodeEpisode(minimalEpisode({ pre_cuts: [cut(1, extra)] })));
+    const first = episode.prologue[0];
+    expect(first).toBeDefined();
+    expect(first !== undefined && "audioUrl" in first).toBe(false);
+  });
+
+  test("DA4. 컷 audio_url이 문자열이 아니면 기존 코드로 실패한다", () => {
+    const errors = failed(decodeEpisode(minimalEpisode({ pre_cuts: [cut(1, { audio_url: 3 })] })));
+    expect(errors.length).toBeGreaterThan(0);
+    for (const issue of errors) {
+      expect(["schema-mismatch", "invalid-shape"]).toContain(issue.code);
+    }
+  });
+});
+
+describe("내장 에피소드 음성 id 배치", () => {
+  type Audible = { readonly audioUrl?: string };
+  const decoded = (id: "u01-water" | "u02-checkin" | "u03-mina"): Episode =>
+    passed(decodeEpisode(bundledCatalogInput.episodes[id])).episode;
+  const placed = (list: readonly Audible[]): Record<number, string> =>
+    Object.fromEntries(
+      list.flatMap((entry, at) => (entry.audioUrl === undefined ? [] : [[at, entry.audioUrl]])),
+    );
+
+  test("DA3. u01: 컷 · 대화 줄의 음성 id가 표대로 놓이고 나머지는 키가 없다", () => {
+    const episode = decoded("u01-water");
+    expect(placed(episode.prologue)).toEqual({ 2: "u01-water/pre-3", 5: "u01-water/d-01" });
+    expect(placed(episode.epilogue)).toEqual({});
+    expect(placed(episode.dialogue)).toEqual({
+      0: "u01-water/d-01",
+      1: "u01-water/d-02",
+      2: "u01-water/d-03",
+      3: "u01-water/d-04",
+      4: "u01-water/d-05",
+    });
+    expect(episode.dialogue.map((line) => line.seq)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+  });
+
+  test("DA3. u02: 컷 · 대화 줄의 음성 id가 표대로 놓이고 나머지는 키가 없다", () => {
+    const episode = decoded("u02-checkin");
+    expect(placed(episode.prologue)).toEqual({
+      0: "u02-checkin/pre-1",
+      2: "u02-checkin/pre-3",
+      4: "u02-checkin/d-01",
+    });
+    expect(placed(episode.epilogue)).toEqual({ 0: "u02-checkin/post-1" });
+    expect(placed(episode.dialogue)).toEqual({ 0: "u02-checkin/d-01" });
+  });
+
+  test("DA3. u03: 컷 · 대화 줄의 음성 id가 표대로 놓이고 나머지는 키가 없다", () => {
+    const episode = decoded("u03-mina");
+    expect(placed(episode.prologue)).toEqual({ 1: "u03-mina/pre-2", 3: "u03-mina/d-01" });
+    expect(placed(episode.epilogue)).toEqual({ 0: "u03-mina/post-1", 2: "u03-mina/post-3" });
+    expect(placed(episode.dialogue)).toEqual({ 0: "u03-mina/d-01" });
   });
 });

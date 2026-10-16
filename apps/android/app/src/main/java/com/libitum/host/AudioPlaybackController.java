@@ -55,8 +55,9 @@ final class AudioPlaybackController {
         session.finish(generation);
         return;
       }
-      String path = AudioAssetPath.forSource(source);
-      if (path == null) {
+      String remote = AudioRemoteSource.forSource(source);
+      String path = remote == null ? AudioAssetPath.forSource(source) : null;
+      if (remote == null && path == null) {
         Log.w(TAG, "Rejected audio source " + source);
         session.finish(generation);
         return;
@@ -69,9 +70,10 @@ final class AudioPlaybackController {
         return;
       }
       player = next;
-      try (AssetFileDescriptor asset = context.getAssets().openFd(path)) {
+      try {
         next.setAudioAttributes(audioAttributes);
-        next.setDataSource(asset.getFileDescriptor(), asset.getStartOffset(), asset.getLength());
+        if (remote != null) next.setDataSource(remote);
+        else attachAsset(next, path);
         next.setOnPreparedListener(ready -> {
           if (!session.isCurrent(generation) || player != ready) return;
           prepared = true;
@@ -85,10 +87,16 @@ final class AudioPlaybackController {
         });
         next.prepareAsync();
       } catch (IOException | RuntimeException error) {
-        Log.w(TAG, "Cannot open audio asset " + path, error);
+        Log.w(TAG, "Cannot open audio source", error);
         finish(generation, next);
       }
     });
+  }
+
+  private void attachAsset(MediaPlayer target, String path) throws IOException {
+    try (AssetFileDescriptor asset = context.getAssets().openFd(path)) {
+      target.setDataSource(asset.getFileDescriptor(), asset.getStartOffset(), asset.getLength());
+    }
   }
 
   void stop() {

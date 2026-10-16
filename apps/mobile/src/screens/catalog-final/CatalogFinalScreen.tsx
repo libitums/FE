@@ -12,6 +12,7 @@ import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { playSound } from "../../lib/sound-effects";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
+import { useAudioCue } from "../../lib/use-audio-cue";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { NarrativeBackground } from "../episode-narrative/NarrativeBackground";
 import {
@@ -20,6 +21,7 @@ import {
 } from "../sentence-order/SentenceOrderChip";
 import {
   canCheckTurn,
+  catalogFinalAudioCueOf,
   catalogFinalLineAccessibilityLabel,
   catalogFinalReducer,
   composedReply,
@@ -55,10 +57,12 @@ export function CatalogFinalScreen({
   const isLastTurn = state.turnIndex >= turns.length - 1;
   // 판정은 리듀서가 확인 때 `results`에 적은 값입니다 — 화면이 다시 계산하지 않습니다.
   const result = checked ? (state.results[state.turnIndex] ?? null) : null;
+  const audio = useAudioCue(catalogFinalAudioCueOf(turn, state));
   const previousImageUrl = turns[state.turnIndex - 1]?.imageUrl ?? null;
 
   const handleExit = () => {
     "background only";
+    audio.stop();
     onExit();
   };
   // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
