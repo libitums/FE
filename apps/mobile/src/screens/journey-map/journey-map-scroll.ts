@@ -9,6 +9,11 @@ import type { JourneyStepId } from "./journey-map";
 export const screenId = "journey-map-screen";
 export const scrollId = "journey-map-screen-scroll";
 
+/** 구획 하나의 상자 id입니다 — 구획이 어디서 시작하는지 `#id`로 잴 수 있게 둡니다. */
+export function episodeSectionId(episodeId: string): string {
+  return `journey-map-screen-episode-${episodeId}`;
+}
+
 /** 스텝 상자의 `id`입니다 — `JourneyStepNode`가 붙이고 맵이 집습니다. */
 export function stepNodeId(id: JourneyStepId): string {
   return `journey-step-node-${id}`;

@@ -13,8 +13,8 @@ export type TutorialEpisodeSectionProps = {
   readonly episode: JourneyFilledEpisode;
   readonly items: readonly JourneyMapItem[];
   readonly progress: JourneyProgress;
-  /** 노드를 누를 수 있는가입니다 — 진행을 확인하는 동안은 `checking`입니다. */
-  readonly access: JourneyMapNodeAccess;
+  /** 노드를 누를 수 있는가입니다 — 진행을 확인하는 동안은 `checking`입니다. 없으면 `open`입니다. */
+  readonly access?: JourneyMapNodeAccess;
   readonly guide: TutorialGuide;
   readonly actions: TutorialMapActions;
 };
@@ -26,7 +26,7 @@ export function TutorialEpisodeSection({
   episode,
   items,
   progress,
-  access,
+  access = "open",
   guide,
   actions,
 }: TutorialEpisodeSectionProps): ReactNode {

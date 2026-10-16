@@ -1,6 +1,7 @@
 import lock from "@libitums/icons/lynx/lock";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
+import { episodeSectionId } from "./journey-map-scroll";
 import { episodePendingAccessibilityLabel } from "./journey-map";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { JourneyPendingEpisode } from "./journey-map";
@@ -24,6 +25,10 @@ export function EpisodePendingSection({ episode }: EpisodePendingSectionProps) {
     // 구획 전체가 접근성 요소 하나입니다 — 번호 · 이름 · 상태가 따로 읽히면 「준비 중」이
     // 무엇의 준비 중인지 잃습니다. 안쪽 표식은 장식이라 낭독에 이름이 없습니다.
     <view
+      // ⚠ **`id`입니다.** 머리 카드가 무엇을 말할지 고르려면 이 구획이 어디서 시작하는지
+      // 재야 하고, `measureRects`는 `#id` 선택자만 씁니다 — `data-testid`로는 못 찾고,
+      // 하나라도 못 찾으면 **측정 전체가 `null`**이라 머리 카드가 영영 안 바뀝니다.
+      id={episodeSectionId(episode.id)}
       className="journey-map-screen-episode"
       data-testid={`episode-pending-${episode.id}`}
       accessibility-element={true}

@@ -134,7 +134,7 @@ describe("SC3 화면 쪽 새 파일", () => {
       (name) => /^journey-map-load.*\.ts$/.test(name) && !name.includes(".test."),
     ),
     "JourneyProgressLoadRow.tsx",
-    "JourneyMapItemNode.tsx",
+    "TutorialMapItem.tsx",
   ];
 
   const limitedFiles = [

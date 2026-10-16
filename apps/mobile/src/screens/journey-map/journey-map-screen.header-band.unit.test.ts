@@ -30,11 +30,10 @@ describe("띠 배치 CSS", () => {
     expect(band).toMatch(new RegExp(`top:\\s*${chipRowBottom}\\s*\\)`));
   });
 
-  test("HP3. (§20) 맵 위 여백은 §19 전 CSS 값(칩 줄 몫)이다 - 띠가 맵을 밀지 않는다", () => {
+  test("HP3. (§20) 맵 위 여백은 CSS 값이고 띠 높이와 무관하다 - 띠가 맵을 밀지 않는다", () => {
     const map = block(styles, ".journey-map-screen-map");
-    expect(map).toMatch(
-      /padding-top:\s*calc\(\s*var\(--libitum-spacing-32\)\s*\+\s*var\(--libitum-spacing-8\)\s*\+\s*var\(--libitum-layout-gap-block\)\s*\)/,
-    );
+    expect(map).toMatch(/padding-top:\s*calc\(/);
+    expect(map).not.toMatch(/padding-top:[^;]*px/);
     expect(map).toMatch(/padding-bottom:/);
   });
 

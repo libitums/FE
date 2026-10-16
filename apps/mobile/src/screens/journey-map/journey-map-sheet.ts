@@ -61,8 +61,7 @@ const stepOpensSheet: Record<JourneyStepNodeStatus, boolean> = {
   checking: false,
 };
 
-// 판정만 합니다 — 아무것도 막지 않습니다. 차단은 `JourneyStepNode`의 `bindtap`
-// 핸들러가 집니다.
+// 판정만 합니다 — 차단은 `JourneyStepNode`의 `bindtap` 핸들러가 집니다.
 export function canOpenStep(status: JourneyStepNodeStatus): boolean {
   return stepOpensSheet[status];
 }

@@ -4,7 +4,11 @@ import lock from "@libitums/icons/lynx/lock";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
 import { useUiCopy } from "../../lib/ui-copy";
-import { catalogCaptionKindOf, catalogUnavailableAccessibilityLabel } from "./catalog-map";
+import {
+  catalogCaptionKindOf,
+  catalogSectionDomId,
+  catalogUnavailableAccessibilityLabel,
+} from "./catalog-map";
 import type { CatalogUnavailableSectionProps } from "./catalog-map.contract";
 
 import "./episode-pending.css";
@@ -18,6 +22,8 @@ export function CatalogUnavailableSection({ section }: CatalogUnavailableSection
 
   return (
     <view
+      // 구획 자리를 `#id` 선택자로 잴 수 있게 둡니다.
+      id={catalogSectionDomId(section.episodeId)}
       className="journey-map-screen-episode"
       data-testid={`catalog-unavailable-${section.episodeId}`}
       accessibility-element={true}
