@@ -23,7 +23,7 @@
 | 파일 하나 (`unit_id`) | **에피소드** 하나 | | 키 이름이 `unit_id`지만 에피소드다 → Q1 |
 | `title` | 에피소드 제목 | | |
 | `pre_cuts` | 첫 자리 **표지**(`episode-intro`) | 없음 | 컷을 차례로 읽는 특별 유닛 |
-| `steps[]` 중 `S1` ~ `S9` | 가운데 **일반 학습 유닛** 하나씩 | 있음 | 유닛 하나 = 스텝 하나. `items`가 그 유닛의 문항. ⟨2026-10-16 — 새 형식⟩ `S1` ~ `S8`과 문화 단계 `CULT`. `CULT`도 일반 학습 유닛 하나다(맵의 `Lesson 9`) → §6 |
+| `steps[]` 중 `S1` ~ `S9` | 가운데 **일반 학습 유닛** 하나씩 | 있음 | 유닛 하나 = 스텝 하나. `items`가 그 유닛의 문항. ⟨2026-10-16 — 새 형식⟩ `S1` ~ `S8`과 문화 단계 `CULT`. `CULT`도 일반 학습 유닛 하나다(맵의 `Lesson 9`) → §6. ⟨2026-10-16 — PR ②⟩ 맵의 `Culture` 노드다 — 앱이 문항 유형으로 가린다(§6) |
 | `completion` ⟨2026-10-16 — 새 형식⟩ | 에피소드 **완료 조건** | | 끝내야 할 스텝 id 목록. 앱은 이것이 모두 끝나야 에피소드를 완료로 본다(없으면 `RP` 하나) → §2 |
 | `steps[]` 중 `RP` | 마지막 자리 **최종 테스트**(`episode-final`) | 있음 | **콘텐츠 쪽 수정 중** — 모양 미확정. ⟨2026-10-13⟩ 앱은 지금 모양을 **엄격하게** 읽어 새 화면 `catalog-final`로 그린다 → §7.4 · §12 |
 | `post_cuts` | 최종 테스트 **통과 뒤** 진행 화면 | 없음 | ⟨2026-10-13⟩ 최종 테스트를 통과한 결과 화면 뒤에 선다(맵에 노드 없음) → §12 |
@@ -124,6 +124,10 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 - ⟨2026-10-16 — 새 형식⟩ **스텝 구성이 열 개로 바뀌었다** — `S1` ~ `S8` · 문화 단계 `CULT`(문화 카드 `CULTURE_CARD` · 문화 확인 `CULTURE_CHECK`만) · `RP`. 앱은 `"RP"`만 특별히 보고
   **`CULT`를 이름으로 가르지 않는다** — `order`대로 아홉째 학습 유닛(`Lesson 9`)이다. 지금 `CULT`의 문항은 앱에 화면이 없어 전부 건너뛰므로 `CULT`는 누르면 곧장 끝나는 유닛이다(§12 · ADR-0061 D7 · D10).
   옛 스텝 id로 기기에 남은 진행(`S9` 등)은 옮기지 않는다 — 새 콘텐츠에 없는 id는 세지 않는다. 구성 표는 부록 B.
+- ⟨2026-10-16 — PR ②⟩ **문화 단계의 판별 규칙 — 콘텐츠 쪽이 알아야 할 것.** 앱은 **문항이 하나 이상이고 모든 문항이 `CULTURE_CARD` · `CULTURE_CHECK`인 스텝**을 문화 단계로 보고 맵에 `Culture` 노드(전용 아이콘 · 한 줄 전용)로 그린다.
+  스텝 id(`CULT`)는 보지 않는다 — 이름을 바꿔도 같고, **다른 유형을 하나라도 섞으면 그 스텝은 `Lesson n` 노드로 돌아간다**(오류가 아니라 조용한 강등이다). 진행 키 · 완료 키는 지금처럼 스텝 id다.
+  지금 `CULT`는 문화 카드 3 → 문화 확인 3의 실단계이고(위 「곧장 끝나는 유닛」은 PR ① 빌드의 상태다), 통과는 문화 확인 셋 중 둘이다. 문화 단계가 레슨 사이로 오면 그 뒤 레슨 번호가 하나 건너뛴다.
+  결정은 [ADR-0063](../adr/0063-episode-format-screens.md) D7 · D9.
 
 ## 7. 문항 (`steps[].items[]`)
 
@@ -182,13 +186,18 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `MIN_PAIR_AB` | 6 | choice | **D** | `prompt` · `stimulus`(`audio` …) · `options`(2개) · `feedback.correct` | `stimulus.audio.en`(1/6) | 듣기 모양이지만 문항 음성이 없어 건너뜀(`audio-missing`) |
 | `PARTICLE_FILL` | 6 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(2개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(빈칸 문장) |
 | `PARTICLE_SWAP` | 9 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(3개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(틀린 구) |
-| `CULTURE_CHECK` | 9 | choice | R | `prompt` · `context` · `options` · `feedback.correct` | — (`ref` 없음) | 건너뜀(`screen-pending` — 문화 카드와 함께 화면이 선다) |
-| `CULTURE_CARD` | 9 | card | E | `context` · `stimulus`(`text` …) · `feedback.correct` | — (`prompt` · `ref` 없음) | 건너뜀(`screen-pending`) |
-| `LISTEN_BUILD` | 13 | tiles | R | `prompt` · `stimulus`(`audio` …) · `tiles`(오답 조각 포함) · `answers` | `tiles[].en` | 건너뜀(`screen-pending` — 소리가 와도 문장 조립에 소리 자리가 없다) |
-| `SYLLABLE_BUILD` | 7 | tiles | R | `prompt` · `stimulus`(`en` · `audio_url` · `image_url`) · `tiles`(음절, 오답 포함) · `answers` | `tiles[].en` · `answers[].en` | 건너뜀(`screen-pending`) |
+| `CULTURE_CHECK` | 9 | choice | R | `prompt` · `context` · `options` · `feedback.correct` | — (`ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **단어 선택** — 제시문 `context`(+ `roman` · `en` 줄), 보기 `options[].ko` 파일 순서, **보기마다 번역 줄 `options[].en`**(전부 있을 때만) |
+| `CULTURE_CARD` | 9 | card | E | `context` · `stimulus`(`text` …) · `feedback.correct` | — (`prompt` · `ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **문화 카드** — 제목 `context.ko` · `roman` · `en`, 본문 `stimulus.text.en`(크게) · `.ko`(작게) |
+| `LISTEN_BUILD` | 13 | tiles | R | `prompt` · `stimulus`(`audio` …) · `tiles`(오답 조각 포함) · `answers` | `tiles[].en` | 건너뜀(~~`screen-pending`~~ ⟨PR ②⟩ **`audio-missing`** — 문항 음성이 오면 그때 화면을 만든다. 소리가 와도 저절로 서지 않는다) |
+| `SYLLABLE_BUILD` | 7 | tiles | R | `prompt` · `stimulus`(`en` · `audio_url` · `image_url`) · `tiles`(음절, 오답 포함) · `answers` | `tiles[].en` · `answers[].en` | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **음절 조립** — 뜻 `stimulus.en`, 타일 `tiles[].ko`(섞음), 정답 `answers[].ko`(공백 제거) |
 | `SHADOW` | 9 | speech | E | `prompt` · `stimulus`(`text` · `audio` …) · `answers` | — | 건너뜀(`screen-pending` — 말하기) |
 | `SPEAK_WORD` | 6 | speech | R | `prompt` · `stimulus`(`image_brief` · `image_url` · `audio_url`) · `answers` | — | 건너뜀(`screen-pending` — 말하기) |
 
+- ⟨2026-10-16 — PR ②⟩ **세 유형에서 앱이 읽는 것과 읽지 않는 것**(결정은 [ADR-0063](../adr/0063-episode-format-screens.md)):
+  - `CULTURE_CARD` — 읽음: 제목 `context.ko`(비면 건너뜀 `malformed`) · `context.roman`(제목 아래 로마자) · `context.en`(영어 제목), 본문 `stimulus.text.en`(비면 `no-gloss`) · `stimulus.text.ko`. **읽지 않음**: `stimulus.text.roman`(본문 로마자 — 최대 226자 산문이라 싣지 않는다) · `feedback.correct`(요령) · `stimulus.audio_url` · `image_url`(9/9 빈 값).
+  - `CULTURE_CHECK` — 보기 번역 `options[].en`은 27/27 있고 **고르기 전부터 보인다**. 하나라도 비면 그 문항은 번역 줄 없이 선다. `options[].roman` · `why_wrong` · `feedback`은 읽지 않는다. 보기는 섞지 않는다(정답 자리가 이미 흩어져 있다).
+  - `SYLLABLE_BUILD` — **타일은 정답 순서로 실려 오고 오답 음절이 뒤에 붙는다**(7/7, 예 `괜 찮 아 요 | 세 원`). 그대로 보이면 앞에서부터 누르는 것이 답이라 **앱이 섞는다**(문항마다 정해진 순서). 같은 음절 타일이 두 장인 문항(u02 `일주일` · `와이파이`)도 받는다 — 판정은 놓은 음절을 이은 **낱말 문자열**이다.
+    정답은 앱이 **공백을 모두 지운** 꼴로 비교하고, 칸 수는 첫 정답을 타일로 맞춰 정한다(타일로 만들 수 없는 정답이면 건너뜀 `malformed`). 정답이 둘 이상이면 첫 정답과 길이가 같은 것만 만들 수 있다. 뜻은 `stimulus.en`(7/7) → `answers[].en`(6/7) 순이다. `tiles[].roman` · `stimulus.audio_url`은 읽지 않는다.
 - `options[].why_wrong`은 새 파일에서도 **오답 보기마다** 있다(355/355). 값은 337개가 `"이 자리에 맞는 말이 아니다"`, 18개가 `"카드에 적힌 사실과 다르다"`(`CULTURE_CHECK`). 앱은 디코드만 하고 보이지 않는다(Q8).
 - 새 문항의 `stimulus.audio_url`은 **전부 빈 값**이다. `stimulus.image_url`은 `IMG_MATCH` 7 · `SPEAK_WORD` 6 · `ROLEPLAY_TURN` 13에만 값이 있다(`images/items/*.jpg` 등 버킷 기준 상대 경로).
 

@@ -6,6 +6,8 @@
   **Q5 ~ Q8은 사용자에게 묻지 않고 추천안으로 정했다** — 명시 승인이 아니다(아래 「사용자 결정과 사용자 미확인」). 그 밖(와이어 모양 · 매핑 · 사유 · 완료 판정의 자리)은 계약 단계가 정했다.
   ⚠ **기기 확인이 일부다.** iOS 시뮬레이터 한 회차가 옛 진행을 가진 계정으로 돌았다 — 대화 조립의 화자 · 건너뜀 뒤 분모 · 문화 단계의 곧장 결과와 트로피 · 재실행 유지는 봤고,
   **새 설치의 처음부터 끝까지 · 그림 문항 · `CLOZE_CHOICE` · 최종 테스트 소리 · VoiceOver · Android는 보지 못했다**([새 에피소드 형식 e2e](../e2e/episode-format.md)).
+  ⟨2026-10-16 — PR ②⟩ **문화 · 조립 화면이 섰다** — D8 표의 `CULTURE_CARD` · `CULTURE_CHECK` · `SYLLABLE_BUILD` · `LISTEN_BUILD` 네 행, D7의 `Lesson 9`, D10(0문항 `CULT`)을 [ADR-0063](0063-episode-format-screens.md)이 부분 대체한다.
+  「이름으로 분기하지 않는다」는 그대로다. 끝의 「적용 기록」 ⟨PR ②⟩. 재검토 조건 2는 닫혔다.
 - 날짜: 2026-10-16.
 - 다루는 축: **새 형식의 콘텐츠를 앱이 받는 규칙** — 디코더를 넓히는 방식(판별자 · 실패 단위), 새 문항 유형의 와이어 모양과 공통 새 필드, 에피소드 완료 조건(`completion.requires`)의 검사와 판정,
   문화 단계(`CULT`)의 자리, 새 유형을 기존 화면에 싣는 기준과 건너뜀 사유, 문항이 0개가 되는 단계, 대화 조립의 화자 출처, 옛 내장본의 보존, 내장 version.
@@ -88,6 +90,8 @@
 
 디코더는 `"RP"`만 특별히 본다(지금 그대로). `CULT`는 `units`의 아홉째라 맵 노드 **`Lesson 9`**(role `lesson`, 낭독 `Episode 1. Lesson 9`) · 진행 키 `"CULT"` · 이벤트 `unitKey: "CULT"` ·
 `unitRole: "lesson"` · 계획 · 결과 화면이 모두 기존 레슨 경로를 탄다. 제품 코드에 `"CULT"` 리터럴이 없다. 문화 단계 전용 라벨 · 아이콘은 PR ②와 함께 본다(Q5).
+⟨2026-10-16 — PR ②⟩ **노드 `Lesson 9`는 이 변경의 상태다** — 이제 문항이 모두 문화 유형인 유닛은 콘텐츠로 가려 노드 role `culture`(`Culture` · `lantern-05` · `Episode n. Culture` · 한 줄 전용)로 선다([ADR-0063](0063-episode-format-screens.md) D7).
+진행 키 · 이벤트 `unitRole` · 계획 · 결과 화면은 그대로 레슨 경로이고 **`"CULT"` 리터럴 0도 그대로다.**
 
 ### D8. 매핑 — 「베끼기 기준」으로 소리 없는 유형을 가르고, 화면이 없는 유형은 `screen-pending`으로 건너뛴다
 
@@ -104,6 +108,9 @@
 | `CULTURE_CARD` | **건너뜀 `screen-pending`** | 단어 카드는 「New word · Learn this word.」 화면이라 세 문장 산문을 실으면 뜻이 바뀐다 |
 | `CULTURE_CHECK` | **건너뜀 `screen-pending`** | 「카드에 적힌 사실」을 묻는 문항이고, 단어 선택은 보기의 번역을 보이지 않아 긴 한국어 보기를 초급자가 못 읽는다. 카드와 함께 PR ②에서 연다(Q2) |
 | `SHADOW` · `SPEAK_WORD` | **건너뜀 `screen-pending`** | 말하기 — PR ③ |
+
+⟨2026-10-16 — PR ②⟩ **위 표의 `LISTEN_BUILD` · `SYLLABLE_BUILD` · `CULTURE_CARD` · `CULTURE_CHECK` 네 행은 이 변경의 상태다** — 문화 카드 · 음절 조립은 새 학습형, 문화 확인은 보기 번역 줄을 단 단어 선택으로 서고,
+`LISTEN_BUILD`는 **`audio-missing`**으로 건너뛴다(사용자 결정 — 소리가 먼저, [ADR-0063](0063-episode-format-screens.md) D1 · D8). `screen-pending`은 이제 말하기 둘만 낸다. 사유는 여덟 그대로다.
 
 - **건너뜀 사유 `screen-pending`을 되살렸다** — 3d-1이 지운 이름이다(ADR-0058 적용 기록 A2). 「유형에 맞는 화면이 아직 없음」이라는 뜻이 같고, PR ② · ③의 목록이 곧 이 사유를 받는 유형이다.
   사유는 **여덟**이 됐다 — `screen-pending` · `no-options` · `no-source` · `audio-missing` · `image-missing` · `no-gloss` · `untypeable` · `malformed`.
@@ -127,6 +134,7 @@
 `CULT`는 문항 여섯(`CULTURE_CARD` · `CULTURE_CHECK`)이 전부 `screen-pending`이라 활동이 0개다. 노드를 누르면 ADR-0058 D5 · A4의 경로 그대로 —
 `episode_lesson_started`(questionCount `"0"` · shownItemCount `"0"` · skippedItemCount `"6"`) → `episode_lesson_finished`(verdict `passed`) → 진행에 `CULT` 기록 →
 결과 화면(`PERFECT LESSON!`)이 쌓인다. **코드 변경은 0이고 테스트로 고정했다.** 새 빈 상태 · 안내 문구는 만들지 않았다. **0문항 그대로가 사용자 결정**이다(Q2).
+⟨2026-10-16 — PR ②⟩ **해소됐다** — `CULT`는 문화 카드 3 → 문화 확인 3의 실단계이고(채점 3 · 표시 6) 레슨 공통 통과 기준(셋 중 둘)이 걸린다(사용자 결정, [ADR-0063](0063-episode-format-screens.md) D9). 0문항 경로는 코드에 남고 합성 픽스처 테스트가 지킨다.
 버린 대안: `CULT` 노드를 숨기고 자동 완료 — 맵 · 진행 규칙에 예외가 생기고 콘텐츠의 `requires`에 든 `CULT`를 앱이 몰래 채운다.
 
 ### D11. 옛 내장본은 테스트 픽스처로 남긴다
@@ -150,6 +158,7 @@
 새 이벤트 · 속성은 없다. 새 문항이 든 단계가 끝나는지는 기존 `episode_lesson_finished`(`unitKey` · `verdict`)로, 건너뛴 양은 `episode_lesson_started.skippedItemCount`로 본다.
 PR ②의 우선순위(유형별 건너뜀 수)는 **콘텐츠에서 정적으로 셀 수 있어** 기기 신호가 필요 없다.
 **대시보드 해석 메모**: 이 PR의 `CULT`는 늘 `questionCount "0"` · `skippedItemCount "6"` · `passed`다 — **`CULT`의 완료율은 「노드를 열었는가」만 뜻한다.** 학습 성과로 읽지 않는다.
+⟨2026-10-16 — PR ②⟩ **이 메모는 PR ① 빌드에만 맞는다** — PR ②부터 `CULT`는 `questionCount "3"` · `shownItemCount "6"`이고 `failed`가 생겨 완료율이 「풀었는가」를 뜻한다. 두 빌드가 섞인 기간은 앱 버전으로 가른다([ADR-0063](0063-episode-format-screens.md) 「측정」).
 
 ## 버린 대안
 
@@ -225,9 +234,26 @@ PR ②의 우선순위(유형별 건너뜀 수)는 **콘텐츠에서 정적으�
 ## 재검토 조건
 
 1. **문항 음성이 오면** — `MIN_PAIR_AB`는 매핑 변경 없이 서는지 보고, `REPLY_SELECT`를 듣기로 옮길지 다시 본다(D8 · Q3).
-2. **PR ②에서 문화 · 조립 화면이 서면** — 해당 유형이 `screen-pending`에서 빠지고 `CULT`의 0문항 경로가 사라진다. 그때 「`CULT`의 완료율」 해석 메모(「측정」)와
-   [ADR-0016](0016-assistive-technology-semantics.md) D8의 「0문항 단계」 적용 기록을 걷는다.
+2. ~~**PR ②에서 문화 · 조립 화면이 서면** — 해당 유형이 `screen-pending`에서 빠지고 `CULT`의 0문항 경로가 사라진다. 그때 「`CULT`의 완료율」 해석 메모(「측정」)와
+   [ADR-0016](0016-assistive-technology-semantics.md) D8의 「0문항 단계」 적용 기록을 걷는다.~~ — **발동했고 닫혔다**(2026-10-16, PR ② — [ADR-0063](0063-episode-format-screens.md)). 해석 메모 옆 표시 · ADR-0016 D8 기록의 닫힘 · 끝의 「적용 기록」 ⟨PR ②⟩.
 3. **콘텐츠가 판별자나 필수 키의 모양을 바꾸면** — D1의 「추가만 하는 확장」이 성립하지 않는다. 새 `schema` 값이나 `CONTENT_CLIENT_LEVEL`을 그때 정한다(Q6).
 4. **화면이 `level` · `skill`을 써야 하면** — D3의 「쓰지 않음」을 다시 연다. 열거하지 않는다는 결정은 그대로 둔다.
 5. **출시 뒤 사용자 기기에 다른 버전의 진행 키가 남는 일이 생기면** — Q1의 엄격 규칙을 다시 본다(단조 규칙 · 이전표).
 6. **콘텐츠가 같은 화자가 연이어 서는 대화 조립을 실으면** — D9의 그림이 기기에서 처음 선다. 낭독 단언은 ui 테스트가 지고 있다.
+
+## 적용 기록
+
+### ⟨2026-10-16 — PR ②⟩ 문화 카드 · 문화 확인 · 음절 조립 화면과 문화 노드
+
+적용 기록이다. 결정은 [ADR-0063](0063-episode-format-screens.md)이 지고, 이 문서의 결정 가운데 **D8 표의 네 행 · D7의 `Lesson 9` · D10 · 「구현 판단」 2 · 「측정」의 해석 메모**만 그때의 상태가 됐다.
+D1 ~ D6 · D9 · D11 · D12와 「이름으로 분기하지 않는다」는 그대로다.
+
+- **D7** — 문화 단계 전용 라벨 · 아이콘이 섰다(Q5가 닫혔다). 판별은 이름이 아니라 **콘텐츠**다 — 문항이 하나 이상이고 모두 `CULTURE_CARD` · `CULTURE_CHECK`인 유닛. 맵 구획이 `cultureKeys`로 싣고 노드 role만 `culture`가 된다.
+  제품 코드의 `"CULT"` 리터럴은 여전히 0이다. 배치(한 줄 전용) · 아이콘(`lantern-05`)은 사용자 미확인이다(ADR-0063 Q4 · Q5).
+- **D8** — 네 행: `CULTURE_CARD` → 새 학습형 `culture-card`, `CULTURE_CHECK` → 단어 선택(보기 번역 줄 — 늘 보임, 사용자 결정), `SYLLABLE_BUILD` → 새 학습형 `syllable-build`, `LISTEN_BUILD` → `audio-missing`(사용자 결정).
+  **「구현 판단」 2의 `screen-pending`은 사용자 결정으로 디자인 쪽(`audio-missing`)으로 닫혔다.** 「소리가 와도 서지 않는다」는 사실은 그대로다 — 그래서 `LISTEN_BUILD`의 `audio-missing`은 「소리가 오면 화면을 만든다」는 뜻이다(ADR-0063 D8).
+  건너뜀 사유 분포(세 에피소드 합)는 `screen-pending` 53 → 15(말하기 둘), `audio-missing` +13.
+- **D10** — `CULT`는 더 이상 0문항이 아니다. 카드 3 → 확인 3, 통과는 셋 중 둘(레슨 공통 기준 — 사용자 결정). PR ① 빌드에서 곧장 끝낸 진행의 `CULT`는 그대로 끝남이다.
+- **「측정」** — 해석 메모는 PR ① 빌드에만 맞는다(본문 옆 표시). 새 이벤트 · 속성은 PR ②에도 없다.
+- **[ADR-0016](0016-assistive-technology-semantics.md) D8의 「0문항 단계」 적용 기록**을 닫았다(재검토 조건 2가 그것을 걷게 했다). 그 기록의 「건너뜀 여섯을 접미사로 넣지 않는다」 문장은 남겼다.
+- ⚠ **기기 확인은 일부다** — [문화 · 조립 화면 e2e](../e2e/episode-format-screens.md). 이 문서의 [새 에피소드 형식 e2e](../e2e/episode-format.md) S1의 「`Lesson 9` → 곧장 결과」 · S4의 건너뛰는 유형 목록 · S6은 PR ① 빌드의 절차다(그 문서 머리 메모).
