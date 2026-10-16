@@ -336,18 +336,15 @@ describe("유형별 결과 표와 결정성", () => {
     [particleFill(), "word-choice"],
     [particleSwap(), "word-choice"],
     [minPair(2), "audio-missing"],
-    [
-      nonSpeech("CULTURE_CHECK", { context: t("문맥"), options: opts3, feedback }),
-      "screen-pending",
-    ],
-    [nonSpeech("CULTURE_CARD", { context: t("문맥"), stimulus: stim, feedback }), "screen-pending"],
+    [nonSpeech("CULTURE_CHECK", { context: t("문맥"), options: opts3, feedback }), "word-choice"],
+    [nonSpeech("CULTURE_CARD", { context: t("문맥"), stimulus: stim, feedback }), "culture-card"],
     [
       nonSpeech("LISTEN_BUILD", {
         stimulus: stim,
         tiles: [t("가"), t("나")],
         answers: [t("가 나")],
       }),
-      "screen-pending",
+      "audio-missing",
     ],
     [
       nonSpeech("SYLLABLE_BUILD", {
@@ -355,7 +352,7 @@ describe("유형별 결과 표와 결정성", () => {
         tiles: [t("카"), t("드")],
         answers: [t("카드")],
       }),
-      "screen-pending",
+      "syllable-build",
     ],
     [nonSpeech("SHADOW", { stimulus: stim, answers: [t("따라 말하기")] }), "screen-pending"],
     [
@@ -366,7 +363,7 @@ describe("유형별 결과 표와 결정성", () => {
 
   const labelled = cases.map(([item, expected]) => [item.type, item, expected] as const);
 
-  test.each(labelled)("MAP1. 새 유형 %s의 결과는 표와 같다", (_type, item, expected) => {
+  test.each(labelled)("MAP1′. 새 유형 %s의 결과는 표와 같다", (_type, item, expected) => {
     const mapped = catalogItemOf(item, port);
     const actual = mapped.kind === "skipped" ? mapped.reason : mapped.kind;
     expect(actual).toBe(expected);
@@ -381,6 +378,17 @@ describe("유형별 결과 표와 결정성", () => {
       expect(item).toEqual(snapshot);
     },
   );
+
+  test("LB1. LISTEN_BUILD는 타일 · 정답이 비어 있어도(모양 검사 없이) audio-missing으로 건너뛴다", () => {
+    const empty = nonSpeech("LISTEN_BUILD", { stimulus: stim, tiles: [], answers: [] });
+
+    expect(catalogItemOf(empty, port)).toEqual({
+      kind: "skipped",
+      itemId: "X-LISTEN_BUILD",
+      type: "LISTEN_BUILD",
+      reason: "audio-missing",
+    });
+  });
 
   test("MAP1. 스킵 결과는 어떤 유형이든 itemId · type을 싣는다", () => {
     const mapped = catalogItemOf(

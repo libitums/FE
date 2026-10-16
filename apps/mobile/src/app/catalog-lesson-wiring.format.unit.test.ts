@@ -15,7 +15,7 @@ import { catalogLessonWiring } from "./catalog-lesson-wiring";
 import type { CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
 import type { NavAction } from "./nav-state";
 
-// `unit` 계층: 새 내장본에서 문항이 전부 건너뛰어지는 CULT 단계의 결선(시작 → 곧장 통과 기록 → 결과 화면)만 봅니다.
+// `unit` 계층: 새 내장본에서 문화 단계(CULT)의 결선(시작 → 카드 활동 → 확인 활동 → 판정 · 기록 · 결과 화면)만 봅니다.
 
 const catalog = buildEpisodeCatalog({
   bundled: bundledCatalogInput,
@@ -35,10 +35,9 @@ const throughS8: CatalogProgress = {
   "u01-water": ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"],
 };
 
-function start(unitKey: string, progress: CatalogProgress) {
+function wiringOf(progress: CatalogProgress, pendingResults: readonly AnswerResult[] = []) {
   const log: Entry[] = [];
   const updaters: ((value: CatalogProgress) => CatalogProgress)[] = [];
-  const pending: AnswerResult[] = [];
   const args: CatalogLessonWiringArgs = {
     episodeContent: {
       catalog,
@@ -60,13 +59,18 @@ function start(unitKey: string, progress: CatalogProgress) {
     completedEpisodeFinalIds: [],
     dispatch: (action) => void log.push({ kind: "dispatch", value: action }),
     episodeIntroEventSink: (event) => void log.push({ kind: "event", value: event }),
-    pendingResults: pending,
+    pendingResults,
     setPendingResults: () => undefined,
     pendingSkippedCount: 0,
     setPendingSkippedCount: () => undefined,
     finishGuard: newCatalogFinishGuard(),
   };
-  catalogLessonWiring(args).onStartCatalogUnit("u01-water", unitKey);
+  return { wiring: catalogLessonWiring(args), log, updaters };
+}
+
+function start(unitKey: string, progress: CatalogProgress) {
+  const { wiring, log, updaters } = wiringOf(progress);
+  wiring.onStartCatalogUnit("u01-water", unitKey);
   return { log, updaters };
 }
 
@@ -75,8 +79,11 @@ const eventsOf = (log: readonly Entry[]) =>
 const dispatchesOf = (log: readonly Entry[]) =>
   log.flatMap((entry) => (entry.kind === "dispatch" ? [entry.value] : []));
 
+const correct: AnswerResult = "correct";
+const incorrect: AnswerResult = "incorrect";
+
 describe("CULT 단계 시작 (LWF)", () => {
-  test("LWF1. 이벤트는 시작(문항 0 · 표시 0 · 건너뜀 6) → 끝(passed · 맞힘 0 · 문항 0) 순이다", () => {
+  test("LWF1′. 시작 이벤트 하나(문항 3 · 표시 6 · 건너뜀 0)만 나가고 끝 이벤트는 없다", () => {
     const { log } = start("CULT", throughS8);
 
     expect(eventsOf(log)).toEqual([
@@ -85,61 +92,128 @@ describe("CULT 단계 시작 (LWF)", () => {
         episodeId: "u01-water",
         unitKey: "CULT",
         unitRole: "lesson",
-        questionCount: "0",
-        shownItemCount: "0",
-        skippedItemCount: "6",
-      },
-      {
-        name: "episode_lesson_finished",
-        episodeId: "u01-water",
-        unitKey: "CULT",
-        unitRole: "lesson",
-        verdict: "passed",
-        correctCount: "0",
-        questionCount: "0",
+        questionCount: "3",
+        shownItemCount: "6",
+        skippedItemCount: "0",
       },
     ]);
   });
 
-  test("LWF1. 진행에 CULT를 더하고 결과 화면(catalog-unit-complete)만 쌓는다 — 활동 화면은 쌓지 않는다", () => {
+  test("LWF1′. 첫 활동 화면(catalog-lesson)을 쌓고 아직 풀지 않았으니 진행에 CULT를 더하지 않는다", () => {
     const { log, updaters } = start("CULT", throughS8);
 
-    expect(updaters).toHaveLength(1);
-    expect(updaters[0]?.(throughS8)).toEqual({
-      "u01-water": [...(throughS8["u01-water"] ?? []), "CULT"],
-    });
-    const pushed = dispatchesOf(log);
-    expect(pushed).toHaveLength(1);
-    expect(pushed[0]).toEqual(
-      expect.objectContaining({
+    expect(updaters).toHaveLength(0);
+    expect(log.some((entry) => entry.kind === "progress")).toBe(false);
+    expect(dispatchesOf(log)).toEqual([
+      {
         type: "push",
-        screen: expect.objectContaining({
-          name: "catalog-unit-complete",
+        screen: {
+          name: "catalog-lesson",
           episodeId: "u01-water",
           unitKey: "CULT",
-          results: [],
-          questionCount: 0,
-        }),
-      }),
-    );
-    expect(pushed.some((action) => JSON.stringify(action).includes("catalog-lesson"))).toBe(false);
-  });
-
-  test("LWF1. 끝 이벤트가 기록보다 먼저, 결과 화면이 기록보다 나중이다", () => {
-    const { log } = start("CULT", throughS8);
-    const at = (pick: (entry: Entry) => boolean) => log.findIndex(pick);
-    const finished = at((e) => e.kind === "event" && e.value.name === "episode_lesson_finished");
-    const recorded = at((e) => e.kind === "progress");
-    const pushed = at((e) => e.kind === "dispatch" && e.value.type === "push");
-
-    expect(finished).toBeGreaterThanOrEqual(0);
-    expect(finished).toBeLessThan(recorded);
-    expect(recorded).toBeLessThan(pushed);
+          activityIndex: 0,
+        },
+      },
+    ]);
   });
 
   test("LWF1. S8을 끝내지 않았으면 CULT는 잠겨 있어 아무 일도 하지 않는다", () => {
     const { log } = start("CULT", { "u01-water": ["intro", "S1", "S2"] });
 
     expect(log).toEqual([]);
+  });
+
+  test("LWF2. 카드 활동이 빈 결과로 끝나면 이벤트 없이 확인 활동(순번 1)으로 갈아탄다", () => {
+    const { wiring, log, updaters } = wiringOf(throughS8);
+
+    wiring.onFinishCatalogActivity("u01-water", "CULT", 0, [], 0);
+
+    expect(eventsOf(log)).toEqual([]);
+    expect(updaters).toHaveLength(0);
+    expect(dispatchesOf(log)).toEqual([
+      {
+        type: "replace",
+        screen: {
+          name: "catalog-lesson",
+          episodeId: "u01-water",
+          unitKey: "CULT",
+          activityIndex: 1,
+        },
+      },
+    ]);
+  });
+
+  test("LWF2. 확인 셋 중 둘을 맞히면 통과 이벤트 · CULT 기록 · 결과 화면(결과 셋 · 문항 3)이다", () => {
+    const { wiring, log, updaters } = wiringOf(throughS8);
+
+    wiring.onFinishCatalogActivity("u01-water", "CULT", 1, [correct, correct, incorrect], 0);
+
+    expect(eventsOf(log)).toEqual([
+      {
+        name: "episode_lesson_finished",
+        episodeId: "u01-water",
+        unitKey: "CULT",
+        unitRole: "lesson",
+        verdict: "passed",
+        correctCount: "2",
+        questionCount: "3",
+      },
+    ]);
+    expect(updaters).toHaveLength(1);
+    expect(updaters[0]?.(throughS8)).toEqual({
+      "u01-water": [...(throughS8["u01-water"] ?? []), "CULT"],
+    });
+    expect(dispatchesOf(log)).toEqual([
+      {
+        type: "replace",
+        screen: {
+          name: "catalog-unit-complete",
+          episodeId: "u01-water",
+          unitKey: "CULT",
+          results: [correct, correct, incorrect],
+          skippedCount: 0,
+          questionCount: 3,
+        },
+      },
+    ]);
+  });
+
+  test("LWF2. 끝 이벤트가 기록보다 먼저, 결과 화면이 기록보다 나중이다", () => {
+    const { wiring, log } = wiringOf(throughS8);
+    wiring.onFinishCatalogActivity("u01-water", "CULT", 1, [correct, correct, correct], 0);
+    const at = (pick: (entry: Entry) => boolean) => log.findIndex(pick);
+    const finished = at((e) => e.kind === "event" && e.value.name === "episode_lesson_finished");
+    const recorded = at((e) => e.kind === "progress");
+    const pushed = at((e) => e.kind === "dispatch" && e.value.type === "replace");
+
+    expect(finished).toBeGreaterThanOrEqual(0);
+    expect(finished).toBeLessThan(recorded);
+    expect(recorded).toBeLessThan(pushed);
+  });
+
+  test("LWF3. 확인 셋 중 하나만 맞히면 실패 이벤트이고 CULT를 기록하지 않는다", () => {
+    const { wiring, log, updaters } = wiringOf(throughS8);
+
+    wiring.onFinishCatalogActivity("u01-water", "CULT", 1, [correct, incorrect, incorrect], 0);
+
+    expect(eventsOf(log)).toEqual([
+      {
+        name: "episode_lesson_finished",
+        episodeId: "u01-water",
+        unitKey: "CULT",
+        unitRole: "lesson",
+        verdict: "failed",
+        correctCount: "1",
+        questionCount: "3",
+      },
+    ]);
+    expect(updaters).toHaveLength(0);
+    expect(log.some((entry) => entry.kind === "progress")).toBe(false);
+    expect(dispatchesOf(log)).toEqual([
+      expect.objectContaining({
+        type: "replace",
+        screen: expect.objectContaining({ name: "catalog-unit-complete", questionCount: 3 }),
+      }),
+    ]);
   });
 });

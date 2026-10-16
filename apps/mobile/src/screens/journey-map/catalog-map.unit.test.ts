@@ -113,7 +113,7 @@ describe("catalogMapSectionsOf", () => {
         lessonKeys: a.episode.units.map((unit) => unit.id),
         finalKey: a.episode.finalTest.id,
         completionKeys: ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"],
-        cultureKeys: [],
+        cultureKeys: ["CULT"],
       },
       {
         kind: "catalog-unavailable",
@@ -245,12 +245,13 @@ describe("잠긴 노드와 진행", () => {
   // 수집 단계에서 던지지 않도록 테스트 안에서 만듭니다.
   const u01Section = () => readySection(catalogMapSectionsOf(realCatalog), 0);
 
-  test("CM8′. 레슨 아홉 + 최종 하나, 순서 · 번호 · 상태가 맞다", () => {
+  test("CM8′. 레슨 여덟 + 문화 + 최종 하나, 순서 · 번호 · 상태가 맞다", () => {
     const u01 = u01Section();
     const nodes = catalogUnitNodesOf(u01, {});
 
     expect(nodes).toHaveLength(10);
-    expect(nodes.slice(0, 9).map((node) => node.role)).toEqual(Array(9).fill("lesson"));
+    expect(nodes.slice(0, 8).map((node) => node.role)).toEqual(Array(8).fill("lesson"));
+    expect(nodes[8]?.role).toBe("culture");
     expect(nodes.slice(0, 9).map((node) => node.ordinal)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(nodes.slice(0, 9).map((node) => node.key)).toEqual(u01.lessonKeys);
     expect(nodes[9]).toEqual({ key: "RP", role: "final", ordinal: 10, status: "locked" });
@@ -411,7 +412,7 @@ describe("완료 키 (CMF)", () => {
     expect(keysOf("toString")).toEqual(["RP"]);
   });
 
-  test("CMF4. u01은 레슨 아홉(CULT가 아홉째)과 최종으로 이어지고 사슬 잠금이 CULT를 지난다", () => {
+  test("CMF4′. u01은 레슨 아홉(CULT가 아홉째, 문화 노드)과 최종으로 이어지고 사슬 잠금이 CULT를 지난다", () => {
     const u01 = readySection(catalogMapSectionsOf(realCatalog), 0);
     const statusesOf = (progress: CatalogProgress) =>
       Object.fromEntries(catalogUnitNodesOf(u01, progress).map((node) => [node.key, node.status]));
@@ -421,7 +422,7 @@ describe("완료 키 (CMF)", () => {
     expect(u01.finalKey).toBe("RP");
     expect(catalogUnitNodesOf(u01, {})[8]).toEqual({
       key: "CULT",
-      role: "lesson",
+      role: "culture",
       ordinal: 9,
       status: "locked",
     });

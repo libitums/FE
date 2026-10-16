@@ -25,7 +25,10 @@ const placementOf = (cell: Cell): MapUnitPlacement => cell.placement;
 const rowsOf = (cells: readonly Cell[]) => mapRowsOf(cells, placementOf);
 const kindsOf = (rows: readonly MapRow<unknown>[]) => rows.map((row) => row.kind);
 
-function readySection(lessonCount: number): CatalogReadySection {
+function readySection(
+  lessonCount: number,
+  cultureKeys: readonly string[] = [],
+): CatalogReadySection {
   return {
     kind: "catalog-ready",
     episodeId: "u01-water",
@@ -34,7 +37,7 @@ function readySection(lessonCount: number): CatalogReadySection {
     lessonKeys: Array.from({ length: lessonCount }, (_, index) => `S${index + 1}`),
     finalKey: "RP",
     completionKeys: ["RP"],
-    cultureKeys: [],
+    cultureKeys,
   };
 }
 
@@ -204,6 +207,21 @@ describe("tutorialRowsOf · catalogRowsOf", () => {
       expect(first.left.key).toBe("S1");
       expect(first.right.key).toBe("S2");
     }
+  });
+
+  test("CN6. 레슨 8 + 문화 + 최종은 pair 넷 뒤 문화와 최종이 각자 한 줄이다", () => {
+    const section = { ...readySection(9, ["S9"]) };
+    const rows = catalogRowsOf(catalogUnitNodesOf(section, {}), 2);
+
+    expect(kindsOf(rows)).toEqual(["pair", "pair", "pair", "pair", "solo", "solo"]);
+    const culture = rows[4];
+    expect(culture?.kind === "solo" ? culture.item.role : null).toBe("culture");
+  });
+
+  test("CN6. 한 칸 배치에서는 문화도 모두 solo다", () => {
+    const rows = catalogRowsOf(catalogUnitNodesOf(readySection(9, ["S9"]), {}), 1);
+
+    expect(new Set(kindsOf(rows))).toEqual(new Set(["solo"]));
   });
 
   test("R10. 레슨 7 + 최종은 pair 셋 · orphan · solo다", () => {

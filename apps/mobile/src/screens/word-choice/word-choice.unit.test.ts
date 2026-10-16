@@ -515,3 +515,26 @@ describe("wordChoiceCompletionAnnouncement", () => {
     );
   });
 });
+
+describe("optionAccessibilityLabel — 보기 번역 (WT)", () => {
+  const bag = "봉투는 보통 따로 돈을 내요.";
+  const gloss = "Bags usually cost extra.";
+
+  it("WT1. 번역이 있으면 글자 뒤에 쉼표 + 공백으로 번역이 붙는다", () => {
+    expect(optionAccessibilityLabel(bag, null, uiCopyEn, gloss)).toBe(`${bag}, ${gloss}`);
+  });
+
+  it("WT1. 판정이 있으면 번역 뒤에 판정 접미사가 붙는다", () => {
+    expect(optionAccessibilityLabel(bag, "correct", uiCopyEn, gloss)).toBe(
+      `${bag}, ${gloss}, correct`,
+    );
+    expect(optionAccessibilityLabel(bag, "incorrect", uiCopyEn, gloss)).toBe(
+      `${bag}, ${gloss}, incorrect`,
+    );
+  });
+
+  it("WT2. 번역이 없으면 지금 결과와 같다", () => {
+    expect(optionAccessibilityLabel(bag, null, uiCopyEn)).toBe(bag);
+    expect(optionAccessibilityLabel(bag, "correct", uiCopyEn, undefined)).toBe(`${bag}, correct`);
+  });
+});

@@ -7,7 +7,7 @@ import { fillPlaceholders } from "../lib/placeholder-fill";
 import { catalogLessonPlanOf } from "./catalog-lesson-plan";
 import type { CatalogFill } from "./catalog-lesson-plan";
 
-// `unit` 계층: 새 내장본(2026-10-15.1)의 모든 단계를 수업 계획으로 바꾼 결과의 수만 봅니다(순수 함수).
+// `unit` 계층: 새 내장본(2026-10-16.1)의 모든 단계를 수업 계획으로 바꾼 결과의 수만 봅니다(순수 함수).
 
 type ReadyEntry = Extract<CatalogEntry, { status: "ready" }>;
 type EpisodeId = "u01-water" | "u02-checkin" | "u03-mina";
@@ -34,35 +34,35 @@ const EXPECTED: Record<EpisodeId, readonly (readonly [number, number])[]> = {
   "u01-water": [
     [13, 15],
     [8, 14],
-    [9, 13],
+    [11, 13],
     [8, 15],
     [6, 12],
     [7, 8],
     [5, 5],
     [8, 13],
-    [0, 6],
+    [6, 6],
   ],
   "u02-checkin": [
     [16, 19],
     [11, 17],
-    [13, 19],
+    [16, 19],
     [11, 20],
     [6, 12],
     [11, 13],
     [7, 7],
     [10, 15],
-    [0, 6],
+    [6, 6],
   ],
   "u03-mina": [
     [12, 14],
     [6, 12],
-    [12, 16],
+    [14, 16],
     [10, 18],
     [7, 12],
     [10, 12],
     [7, 7],
     [11, 16],
-    [0, 6],
+    [6, 6],
   ],
 };
 
@@ -89,27 +89,35 @@ describe("새 내장본의 단계별 수업 계획 (MAP11)", () => {
     },
   );
 
-  test("MAP11. 활동이 0개인 단계는 세 에피소드의 CULT 정확히 셋이고 건너뜀이 6이다", () => {
+  test("MAP11′. 활동이 0개인 단계는 어느 에피소드에도 없다", () => {
     const empty = EPISODE_IDS.flatMap((episodeId) =>
-      readyOf(episodeId).episode.units.flatMap((unit) => {
-        const plan = planOf(episodeId, unit.id);
-        return plan.activities.length === 0
-          ? [{ episodeId, key: unit.id, skipped: plan.skippedItemCount }]
-          : [];
-      }),
+      readyOf(episodeId).episode.units.flatMap((unit) =>
+        planOf(episodeId, unit.id).activities.length === 0 ? [{ episodeId, key: unit.id }] : [],
+      ),
     );
 
-    expect(empty).toEqual([
-      { episodeId: "u01-water", key: "CULT", skipped: 6 },
-      { episodeId: "u02-checkin", key: "CULT", skipped: 6 },
-      { episodeId: "u03-mina", key: "CULT", skipped: 6 },
-    ]);
+    expect(empty).toEqual([]);
   });
 
   test.each(EPISODE_IDS)(
-    "MAP11. %s의 그 밖 단계는 활동이 하나 이상이고 표시 문항이 있다",
+    "MAP11′. %s의 CULT는 문화 카드 → 단어 선택, 채점 3 · 표시 6 · 건너뜀 0이다",
     (episodeId) => {
-      for (const key of STEP_KEYS.filter((candidate) => candidate !== "CULT")) {
+      const plan = planOf(episodeId, "CULT");
+
+      expect(plan.activities.map((activity) => activity.form)).toEqual([
+        "culture-card",
+        "word-choice",
+      ]);
+      expect(plan.questionCount).toBe(3);
+      expect(plan.shownItemCount).toBe(6);
+      expect(plan.skippedItemCount).toBe(0);
+    },
+  );
+
+  test.each(EPISODE_IDS)(
+    "MAP11′. %s의 모든 단계는 활동이 하나 이상이고 표시 문항이 있다",
+    (episodeId) => {
+      for (const key of STEP_KEYS) {
         const plan = planOf(episodeId, key);
         expect(plan.activities.length).toBeGreaterThanOrEqual(1);
         expect(plan.shownItemCount).toBeGreaterThanOrEqual(1);
