@@ -38,15 +38,15 @@ import "@libitums/ui-lynx/status-indicator/styles.css";
 import "@libitums/ui-lynx/visual-novel-dialog/styles.css";
 
 import { noAnalyticsSession } from "../lib/analytics-events";
-import { productEventSinks } from "../lib/meta-app-events-module";
+import { productEventSinks } from "../lib/airbridge-events-module";
 import { productAnalyticsSession } from "../lib/posthog-client";
 import { App } from "./App";
 
 // 메인 스레드에서는 SDK 모듈이 번들에서 빠집니다(ADR-0029). 두 스레드의 첫 렌더가
 // 다른 sink를 받지만 sink는 이벤트 핸들러(background)에서만 불리므로 그려지는 것은 같습니다.
 const analytics = __BACKGROUND__ ? productAnalyticsSession() : noAnalyticsSession;
-// Meta 앱 이벤트 로거는 background 전용 모듈에서만 풉니다. PostHog 키가 없어도 Meta는 동작합니다
-// (docs/adr/0057-meta-app-events.md D7 · D8).
+// Airbridge tracker는 background 전용 모듈에서만 풉니다. PostHog 키가 없어도 Airbridge는 동작합니다
+// (docs/adr/0063-airbridge-events.md D8 · D9).
 const sinks = __BACKGROUND__ ? productEventSinks(analytics.sinks) : analytics.sinks;
 
 // `GlobalPropsProvider`가 있어야 호스트가 뒤늦게 넘기는 safe area 값에

@@ -11,13 +11,13 @@ import {
   fakeTransport,
   runEntryFlow,
   sentEventNames,
-  stubMetaHost,
-} from "./test-helpers/meta-events-harness";
-import type { MetaHostMode } from "./test-helpers/meta-events-harness";
+  stubAirbridgeHost,
+} from "./test-helpers/airbridge-events-harness";
+import type { AirbridgeHostMode } from "./test-helpers/airbridge-events-harness";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
-// 「App의 한 사용자 흐름 → 합성 sink → 매핑 → logger → NativeModules.MetaAppEventsModule」을 한
-// 트리에서 봅니다. 대역은 호스트 모듈(`logEvent` 기록) · PostHog 가짜 transport · 저장소뿐이고
+// 「App의 한 사용자 흐름 → 합성 sink → 매핑 → tracker → NativeModules.AirbridgeEventsModule」을 한
+// 트리에서 봅니다. 대역은 호스트 모듈(`trackEvent` 기록) · PostHog 가짜 transport · 저장소뿐이고
 // 매핑 · 합성 · 해석은 진짜입니다. 조립은 진입점을 따라 합니다(`assembleSinks`). 진입점
 // (`index.tsx`)이 그 조립을 실제로 하는지는 `pnpm build`와 e2e의 몫입니다.
 
@@ -92,18 +92,18 @@ async function completeJourneyVisualNovel(sinks: ReturnType<typeof assembleSinks
   tap("visual-novel-finish-button");
 }
 
-const registration = ["fb_mobile_complete_registration", {}] as const;
+const registration = ["airbridge.user.signup", {}] as const;
 const messengerLevel = [
-  "fb_mobile_level_achieved",
-  { fb_level: messengerUnit, fb_content_type: "messenger" },
+  "airbridge.achieveLevel",
+  { level: messengerUnit, label: "messenger" },
 ] as const;
 const visualNovelLevel = [
-  "fb_mobile_level_achieved",
-  { fb_level: visualNovelUnit, fb_content_type: "visual_novel" },
+  "airbridge.achieveLevel",
+  { level: visualNovelUnit, label: "visual_novel" },
 ] as const;
 
-test("I1. 진입 흐름을 「여정 시작하기」까지 가면 logEvent가 가입 완료로 정확히 1회 불리고 그 앞에서는 0회다", async () => {
-  const calls = stubMetaHost("ok");
+test("I1. 진입 흐름을 「여정 시작하기」까지 가면 trackEvent가 가입 완료로 정확히 1회 불리고 그 앞에서는 0회다", async () => {
+  const calls = stubAirbridgeHost("ok");
   const { transport } = fakeTransport();
   let before = -1;
 
@@ -115,19 +115,19 @@ test("I1. 진입 흐름을 「여정 시작하기」까지 가면 logEvent가 �
   expect(calls).toEqual([registration]);
 });
 
-test("I2. 메신저 유닛 완료와 비주얼 노벨 유닛 완료가 각각 level_achieved로 1회씩 불린다", async () => {
-  const messengerCalls = stubMetaHost("ok");
+test("I2. 메신저 유닛 완료와 비주얼 노벨 유닛 완료가 각각 achieveLevel로 1회씩 불린다", async () => {
+  const messengerCalls = stubAirbridgeHost("ok");
   await completeJourneyMessenger(assembleSinks(fakeTransport().transport));
   expect(messengerCalls).toEqual([messengerLevel]);
   nextPhase();
 
-  const visualNovelCalls = stubMetaHost("ok");
+  const visualNovelCalls = stubAirbridgeHost("ok");
   await completeJourneyVisualNovel(assembleSinks(fakeTransport().transport));
   expect(visualNovelCalls).toEqual([visualNovelLevel]);
 });
 
-test("I3. 완료가 아닌 이벤트(열기 · 중도 이탈 · 설정 · 알림)는 logEvent 0회이고 PostHog에는 실린다", async () => {
-  const calls = stubMetaHost("ok");
+test("I3. 완료가 아닌 이벤트(열기 · 중도 이탈 · 설정 · 알림)는 trackEvent 0회이고 PostHog에는 실린다", async () => {
+  const calls = stubAirbridgeHost("ok");
   const { transport, calls: sent } = fakeTransport();
   await renderSignedInApp(
     <App
@@ -155,8 +155,8 @@ test("I3. 완료가 아닌 이벤트(열기 · 중도 이탈 · 설정 · 알림
   expect(calls).toEqual([]);
 });
 
-test("I3. 롤플레이에서 연 메신저를 끝내도 logEvent 0회이고 PostHog에는 completed가 실린다", async () => {
-  const calls = stubMetaHost("ok");
+test("I3. 롤플레이에서 연 메신저를 끝내도 trackEvent 0회이고 PostHog에는 completed가 실린다", async () => {
+  const calls = stubAirbridgeHost("ok");
   const { transport, calls: sent } = fakeTransport();
   await renderSignedInApp(
     <App
@@ -173,10 +173,10 @@ test("I3. 롤플레이에서 연 메신저를 끝내도 logEvent 0회이고 Post
   expect(calls).toEqual([]);
 });
 
-test.each<MetaHostMode>(["absent", "throws"])(
+test.each<AirbridgeHostMode>(["absent", "throws"])(
   "I4/I5. 호스트 모듈이 %s여도 흐름이 끝까지 가고 PostHog 전송이 유지되며 처리되지 않은 예외가 없다",
   async (mode) => {
-    const calls = stubMetaHost(mode);
+    const calls = stubAirbridgeHost(mode);
     const entry = fakeTransport();
     await runEntryFlow(assembleSinks(entry.transport));
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -184,7 +184,7 @@ test.each<MetaHostMode>(["absent", "throws"])(
     expect(calls.length).toBe(mode === "absent" ? 0 : 1);
     nextPhase();
 
-    stubMetaHost(mode);
+    stubAirbridgeHost(mode);
     const lesson = fakeTransport();
     await completeJourneyMessenger(assembleSinks(lesson.transport));
     expect(screen.getByTestId("messenger-finish")).toBeInTheDocument();
@@ -196,16 +196,16 @@ test.each<MetaHostMode>(["absent", "throws"])(
   },
 );
 
-test("I6. PostHog 없이 호스트 모듈만 있어도 I1 · I2와 같은 logEvent가 불리고 transport 호출은 0이다", async () => {
-  const calls = stubMetaHost("ok");
-  const idle = fakeTransport();
-  await runEntryFlow(assembleSinks(null));
+test("I6. PostHog 설정 없이 호스트 모듈만 있어도 I1 · I2와 같은 trackEvent가 불리고 꽂은 transport 호출은 0이다", async () => {
+  const calls = stubAirbridgeHost("ok");
+  const recording = fakeTransport();
+  await runEntryFlow(assembleSinks(recording.transport, null));
   expect(calls).toEqual([registration]);
   nextPhase();
 
-  const lessonCalls = stubMetaHost("ok");
-  await completeJourneyMessenger(assembleSinks(null));
+  const lessonCalls = stubAirbridgeHost("ok");
+  await completeJourneyMessenger(assembleSinks(recording.transport, null));
   expect(lessonCalls).toEqual([messengerLevel]);
   await settle();
-  expect(idle.calls).toHaveLength(0);
+  expect(recording.calls).toHaveLength(0);
 });

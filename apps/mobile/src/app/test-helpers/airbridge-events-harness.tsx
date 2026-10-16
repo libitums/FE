@@ -1,4 +1,4 @@
-// Meta 앱 이벤트 결선 integration 테스트의 공용 대역 · 조립 · 진입 흐름 구동입니다.
+// Airbridge 이벤트 결선 integration 테스트의 공용 대역 · 조립 · 진입 흐름 구동입니다.
 // 제품 코드가 import하지 않습니다. 이름에 `.test.`를 넣지 않습니다.
 //
 // 이 헬퍼는 스스로 풀지 않습니다. 쓰는 파일의 `afterEach`가 `vi.unstubAllGlobals()`와
@@ -16,25 +16,28 @@ import type {
 } from "../../lib/analytics.contract";
 import { analyticsConfigFrom } from "../../lib/analytics-config";
 import { entrySplashDurationMs } from "../../lib/entry-flow";
-import { withMetaAppEvents } from "../../lib/meta-events";
-import { resolveMetaAppEventLogger } from "../../lib/meta-app-events-module";
+import { withAirbridgeEvents } from "../../lib/airbridge-events";
+import { resolveAirbridgeEventTracker } from "../../lib/airbridge-events-module";
 import { createAnalyticsSession } from "../../lib/posthog-client";
 import { contentNotFoundResponse, isContentRequest } from "./content-requests";
 
 const config: AnalyticsConfig | null = analyticsConfigFrom("phc_integration_test", "development");
 
-export type LogEventCall = readonly [string, Record<string, string>];
-export type MetaHostMode = "ok" | "throws" | "absent";
+export type TrackEventCall = readonly [string, Record<string, string>];
+export type AirbridgeHostMode = "ok" | "throws" | "absent";
 export type TransportCall = { url: string; init: AnalyticsRequestInit };
 
-/** 호스트 `MetaAppEventsModule` 대역을 세웁니다. `absent`는 모듈 없이 `NativeModules`만 비웁니다. */
-export function stubMetaHost(mode: MetaHostMode): LogEventCall[] {
-  const calls: LogEventCall[] = [];
-  const logEvent = (name: string, parameters: Record<string, string>) => {
-    calls.push([name, parameters]);
-    if (mode === "throws") throw new Error("host logEvent failed");
+/** 호스트 `AirbridgeEventsModule` 대역을 세웁니다. `absent`는 모듈 없이 `NativeModules`만 비웁니다. */
+export function stubAirbridgeHost(mode: AirbridgeHostMode): TrackEventCall[] {
+  const calls: TrackEventCall[] = [];
+  const trackEvent = (category: string, semanticAttributes: Record<string, string>) => {
+    calls.push([category, semanticAttributes]);
+    if (mode === "throws") throw new Error("host trackEvent failed");
   };
-  vi.stubGlobal("NativeModules", mode === "absent" ? {} : { MetaAppEventsModule: { logEvent } });
+  vi.stubGlobal(
+    "NativeModules",
+    mode === "absent" ? {} : { AirbridgeEventsModule: { trackEvent } },
+  );
   return calls;
 }
 
@@ -55,10 +58,16 @@ export function sentEventNames(calls: readonly TransportCall[]): string[] {
   });
 }
 
-/** 진입점의 조립 그대로 — `withMetaAppEvents(session.sinks, resolveMetaAppEventLogger())`. */
-export function assembleSinks(transport: AnalyticsTransport | null): AnalyticsEventSinks {
-  const session = createAnalyticsSession(transport === null ? null : config, transport);
-  return withMetaAppEvents(session.sinks, resolveMetaAppEventLogger());
+/**
+ * 진입점의 조립 그대로 — `withAirbridgeEvents(session.sinks, resolveAirbridgeEventTracker())`.
+ * `analyticsConfig`를 `null`로 주면 transport가 꽂혀 있어도 PostHog만 꺼집니다(I6).
+ */
+export function assembleSinks(
+  transport: AnalyticsTransport | null,
+  analyticsConfig: AnalyticsConfig | null = config,
+): AnalyticsEventSinks {
+  const session = createAnalyticsSession(analyticsConfig, transport);
+  return withAirbridgeEvents(session.sinks, resolveAirbridgeEventTracker());
 }
 
 const tapButton = (testId: string) =>
@@ -109,7 +118,7 @@ function stubEntryHost(): void {
 /**
  * 진입 흐름을 「여정 시작하기」까지 구동합니다(Apple 시트 대역). `beforeStart`는 로그인 수단 선택 ·
  * 언어 선택을 지난 뒤 마지막 버튼 직전에 불립니다. 끝나면 실제 타이머로 돌아옵니다.
- * 호스트 모듈 대역은 부르기 전에 `stubMetaHost`로 세웁니다.
+ * 호스트 모듈 대역은 부르기 전에 `stubAirbridgeHost`로 세웁니다.
  */
 export async function runEntryFlow(
   sinks: AnalyticsEventSinks,

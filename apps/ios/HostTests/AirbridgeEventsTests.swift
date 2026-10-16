@@ -1,0 +1,132 @@
+import Airbridge
+import XCTest
+
+@testable import Host
+
+/// Airbridge 이벤트 호스트 계약(N-I1 ~ N-I7, docs/adr/0063-airbridge-events.md). 실제 SDK 수신은 보지 않는다 —
+/// 판정 · 이름 · 번들 선언 · 조건부 등록까지다.
+final class AirbridgeEventsTests: XCTestCase {
+  // N-I1: 앱 이름은 영문 · 숫자 · 밑줄 · 하이픈만, 토큰은 공백 없는 한 덩어리일 때만 설정이 선다(앞뒤 공백은 trim).
+  func testNI1ValidValuesBuildAConfig() {
+    let config = AirbridgeEventsConfig.from(appName: "duru", sdkToken: "0a1b2c")
+    XCTAssertEqual(config?.appName, "duru")
+    XCTAssertEqual(config?.sdkToken, "0a1b2c")
+  }
+
+  func testNI1SurroundingWhitespaceIsTrimmed() {
+    let config = AirbridgeEventsConfig.from(appName: "  duru\n", sdkToken: "\t0a1b2c  ")
+    XCTAssertEqual(config?.appName, "duru")
+    XCTAssertEqual(config?.sdkToken, "0a1b2c")
+  }
+
+  func testNI1UnderscoreAndHyphenInTheNameAreAllowed() {
+    let config = AirbridgeEventsConfig.from(appName: "du_ru-1", sdkToken: "0a1b2c")
+    XCTAssertEqual(config?.appName, "du_ru-1")
+  }
+
+  func testNI1MissingBlankOrOneSidedValuesYieldNil() {
+    let cases: [(Any?, Any?)] = [
+      (nil, nil), ("", ""), ("   ", "   "),
+      (nil, "0a1b2c"), ("duru", nil),
+      ("duru", ""), ("", "0a1b2c"), ("duru", "   "), ("   ", "0a1b2c"),
+    ]
+    for (appName, sdkToken) in cases {
+      XCTAssertNil(AirbridgeEventsConfig.from(appName: appName, sdkToken: sdkToken))
+    }
+  }
+
+  func testNI1NameWithSpaceDotOrNonAsciiYieldsNil() {
+    XCTAssertNil(AirbridgeEventsConfig.from(appName: "du ru", sdkToken: "0a1b2c"))
+    XCTAssertNil(AirbridgeEventsConfig.from(appName: "du.ru", sdkToken: "0a1b2c"))
+    XCTAssertNil(AirbridgeEventsConfig.from(appName: "두루", sdkToken: "0a1b2c"))
+  }
+
+  func testNI1TokenWithInnerWhitespaceYieldsNil() {
+    XCTAssertNil(AirbridgeEventsConfig.from(appName: "duru", sdkToken: "ab c"))
+  }
+
+  func testNI1NonStringInputsYieldNil() {
+    XCTAssertNil(AirbridgeEventsConfig.from(appName: 123, sdkToken: "0a1b2c"))
+    XCTAssertNil(AirbridgeEventsConfig.from(appName: "duru", sdkToken: ["x"]))
+    XCTAssertNil(AirbridgeEventsConfig.from(appName: true, sdkToken: "0a1b2c"))
+  }
+
+  // N-I2: 모듈 이름과 메서드 표.
+  func testNI2ModuleNameAndMethodLookup() {
+    XCTAssertEqual(AirbridgeEventsModule.name, "AirbridgeEventsModule")
+    XCTAssertEqual(Set(AirbridgeEventsModule.methodLookup.keys), ["trackEvent"])
+    XCTAssertEqual(
+      AirbridgeEventsModule.methodLookup["trackEvent"], "trackEvent:semanticAttributes:")
+  }
+
+  // N-I3: 문자열 값만 남긴다.
+  func testNI3StringAttributesKeepOnlyStrings() {
+    let attributes: [String: Any] = [
+      "level": "appointment-confirmation",
+      "label": "messenger",
+      "count": 3,
+      "ratio": 0.5,
+      "flag": true,
+      "nested": ["inner": "x"],
+    ]
+
+    XCTAssertEqual(
+      AirbridgeEventsModule.stringAttributes(from: attributes),
+      ["level": "appointment-confirmation", "label": "messenger"]
+    )
+  }
+
+  func testNI3EmptyAttributesYieldAnEmptyDictionary() {
+    XCTAssertEqual(AirbridgeEventsModule.stringAttributes(from: [:]), [:])
+  }
+
+  // N-I4: JS 계약의 와이어 값 넷이 SDK 상수와 같다. 다르면 계약을 정정한다.
+  func testNI4WireNamesMatchSdkConstants() {
+    XCTAssertEqual(AirbridgeCategory.SIGN_UP, "airbridge.user.signup")
+    XCTAssertEqual(AirbridgeCategory.ACHIEVE_LEVEL, "airbridge.achieveLevel")
+    XCTAssertEqual(AirbridgeAttribute.LEVEL, "level")
+    XCTAssertEqual(AirbridgeAttribute.LABEL, "label")
+  }
+
+  // N-I5: 테스트 호스트 앱의 시작 여부가 번들 값 유무와 같다. 값 없는 빌드에서는 false여야 한다.
+  func testNI5StartedMatchesTheBundleValues() {
+    XCTAssertEqual(AirbridgeEvents.isStarted, AirbridgeEventsConfig.fromBundle() != nil)
+  }
+
+  func testNI5TrackEventWhenNotStartedDoesNothing() throws {
+    try XCTSkipIf(AirbridgeEvents.isStarted, "값이 있는 빌드에서는 실제 이벤트가 나가므로 부르지 않는다")
+    let module = AirbridgeEventsModule()
+
+    module.trackEvent("airbridge.user.signup", semanticAttributes: [:])
+    module.trackEvent("", semanticAttributes: ["level": "u"])
+    module.trackEvent("airbridge.achieveLevel", semanticAttributes: nil)
+
+    XCTAssertFalse(AirbridgeEvents.isStarted)
+  }
+
+  // N-I6: 추적 허용 문구 · SKAdNetworkItems 없음, 앱 이름 키 있음, Facebook 접두 키 없음.
+  func testNI6InfoDictionaryDeclaresNoTrackingPromptAndNoFacebookKeys() {
+    let info = Bundle.main.infoDictionary ?? [:]
+
+    XCTAssertNil(info["NSUserTrackingUsageDescription"])
+    XCTAssertNil(info["SKAdNetworkItems"])
+    XCTAssertNotNil(info["AirbridgeAppName"])
+    XCTAssertTrue(info.keys.filter { $0.hasPrefix("Facebook") }.isEmpty)
+  }
+
+  // N-I7: 모듈 등록은 SDK 시작 여부와 같다 — 값 없는 빌드에서는 등록되지 않는다.
+  func testNI7ModuleIsRegisteredOnlyWhenStarted() throws {
+    let viewController = ViewController()
+    viewController.loadViewIfNeeded()
+    let lynxView = try XCTUnwrap(
+      viewController.view.subviews.compactMap { $0 as? LynxView }.first,
+      "ViewController가 LynxView를 만들지 않았습니다"
+    )
+    let templateRender = try XCTUnwrap(
+      lynxView.value(forKey: "templateRender") as? LynxTemplateRender,
+      "LynxView의 templateRender seam을 찾지 못했습니다"
+    )
+
+    XCTAssertEqual(templateRender.isModuleExist("AirbridgeEventsModule"), AirbridgeEvents.isStarted)
+  }
+}
