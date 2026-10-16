@@ -24,7 +24,7 @@ export function catalogSpellingOf(
     if (position === word.length) return true;
     for (let index = 0; index < tiles.length; index += 1) {
       const tile = tiles[index] ?? "";
-      if (used[index] === true || tile === "" || !word.startsWith(tile, position)) continue;
+      if (used[index] || tile === "" || !word.startsWith(tile, position)) continue;
       used[index] = true;
       path.push(index);
       if (walk(position + tile.length)) return true;
@@ -49,16 +49,14 @@ export function syllableBuildItemOf(
 ): CatalogMappedItem {
   const tiles = item.tiles.map((tile) => koOf(port, tile.ko));
   if (tiles.length === 0 || tiles.includes("")) return skippedItem(item, "malformed");
-  const answers = item.answers
-    .map((answer) => withoutSpaces(koOf(port, answer.ko)))
-    .filter((answer) => answer !== "");
+  // 한국어가 빈 정답은 걷습니다. 뜻도 걷고 남은 첫 정답에서 읽어야 정답과 뜻이 같은 묶음입니다.
+  const kept = item.answers.filter((answer) => withoutSpaces(koOf(port, answer.ko)) !== "");
+  const answers = kept.map((answer) => withoutSpaces(koOf(port, answer.ko)));
   if (!isNonEmpty(answers)) return skippedItem(item, "malformed");
   const spelling = catalogSpellingOf(tiles, answers[0]);
   if (spelling === null) return skippedItem(item, "malformed");
   const meaning =
-    englishOf(port, item.stimulus.en) ??
-    englishOf(port, item.answers[0]?.en) ??
-    port.glossOf(item.ref);
+    englishOf(port, item.stimulus.en) ?? englishOf(port, kept[0]?.en) ?? port.glossOf(item.ref);
   if (meaning === undefined || meaning === null) return skippedItem(item, "no-gloss");
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
   const question: SyllableBuildQuestion = {

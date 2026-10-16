@@ -4,7 +4,7 @@
 서비스, 입력·SVG·오버레이 요소와 `StorageModule`·`WebAuthenticationModule`·
 `LegalDocumentModule`·`AudioPlaybackModule`·`SoundEffectsModule`·`CompletionAnnouncementModule`·
 `SpeechRecognitionModule`·`HandwritingTraceModule`·`AppReviewModule`·`SystemBackModule`을
-제공한다. `MetaAppEventsModule`은 Meta 앱 ID · 클라이언트 토큰이 든 빌드에서만 등록된다(아래 「Meta 앱 이벤트」).
+제공한다. `AirbridgeEventsModule`은 Airbridge App Name · App SDK Token이 든 빌드에서만 등록된다(아래 「Airbridge 앱 이벤트」).
 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
 크래시 수집(Sentry)은 모듈이 아니다 — 아래 「크래시 리포팅(Sentry)」.
@@ -571,10 +571,10 @@ API 31 이상의 스플래시 배경과 아이콘 속성, 띄운 뒤에도 밝�
 `MainActivity`의 이미지 결선(미디어 fetcher · 비동기 인터셉터 없음, `setImageInterceptor`의 자리)은 `pnpm test:android-bundle`(`host-image-redirect.integration.test.mjs`)이 본다.
 계측 `SplashWordmarkHostTest`(7건)는 실제 `MainActivity`에서 스레드 경합을 강제해도 스플래시 워드마크의 이미지 요청이 재작성된 URL로 나가는지(HW1 ~ HW4)와, 워드마크가 늦게 떠도 스플래시가 일찍 닫히거나 갇히지 않는지(HW5 ~ HW7 — 지연 서버와 인자가 있을 때만 돈다)를 확인한다.
 번들 서빙과 `-e bundleUrl`이 필요해 계측 일괄에서는 `notClass`로 뺀다 — 실행 줄 · 판정 · 되돌리기는 위 「번들 안 이미지 경로」의 「계측 `SplashWordmarkHostTest` 실행」에 있다.
-`MetaAppEventsConfigTest` · `MetaAppEventParametersTest` · `MetaAppEventNamesTest`(JUnit 6 · 2 · 1건)는 Meta 앱 이벤트 설정의 순수 판정(값이 없거나 형식이 틀리면 `null`),
-문자열 값만 남기는 파라미터 변환, 와이어 이름 넷이 SDK 상수와 같은지를 확인하며 `./gradlew testDebugUnitTest`로 실행한다.
-매니페스트 · Gradle · 호출 자리의 판정은 `pnpm test:android-bundle`(`host-meta-app-events.integration.test.mjs`)이, 실제 기기에서 SDK가 시작됐는지는 계측 `MetaAppEventsHostTest`(3건)가 본다 —
-실행 줄은 아래 「Meta 앱 이벤트」에 있다.
+`AirbridgeEventsConfigTest` · `AirbridgeEventAttributesTest` · `AirbridgeEventNamesTest`(JUnit 7 · 2 · 1건)는 Airbridge 설정의 순수 판정(값이 없거나 형식이 틀리면 `null`),
+문자열 값만 남기는 시맨틱 속성 변환, 와이어 값 넷이 SDK 상수와 같은지를 확인하며 `./gradlew testDebugUnitTest`로 실행한다.
+매니페스트 · Gradle · 저장소 블록 · 호출 자리의 판정은 `pnpm test:android-bundle`(`host-airbridge-events.integration.test.mjs`)이, 실제 기기에서 SDK가 빌드 값대로 시작됐는지는 계측 `AirbridgeEventsHostTest`(1건)가 본다 —
+실행 줄은 아래 「Airbridge 앱 이벤트」에 있다.
 기기 절차는 [`docs/e2e/android-host.md`](../../docs/e2e/android-host.md)에 있다.
 
 ## Maestro E2E
@@ -672,23 +672,25 @@ ANDROID_HOME="$HOME/Library/Android/sdk" FCM_UDID=emulator-5554 ./apps/android/t
 
 같은 프로젝트의 서비스 계정 JSON을 로컬 파일로 준비하면 [원격 FCM data 메시지 Maestro 절차](../../docs/e2e/android-push-notifications.md#원격-fcm-data-메시지-선택-실행)로 Android 수신·알림 탭을 따로 검증할 수 있다. 파일 경로는 `FCM_SERVICE_ACCOUNT_FILE`로만 전달하며 키를 앱이나 저장소에 복사하지 않는다.
 
-## Meta 앱 이벤트
+## Airbridge 앱 이벤트
 
-광고 측정용 Meta(Facebook) 앱 이벤트 SDK `com.facebook.android:facebook-core` `18.3.0`이 들어 있다. 결정은 [ADR-0057](../../docs/adr/0057-meta-app-events.md), 값 넣기 · 수신 확인 · Play Console 순서는 [운영 안내](../../docs/meta-app-events.md), 기기 절차는 [Meta 앱 이벤트 e2e](../../docs/e2e/meta-app-events.md)가 진다. 여기는 이 호스트에서 달라진 것만 적는다.
+광고 측정용 Airbridge(MMP) SDK `io.airbridge:sdk-android` `4.11.3`이 들어 있다 — 2026-10-13에 Meta 앱 이벤트 SDK(`facebook-core`, [ADR-0057](../../docs/adr/0057-meta-app-events.md))를 대신했다. 결정은 [ADR-0063](../../docs/adr/0063-airbridge-events.md), 값 넣기 · 대시보드 연동 · Play Console 순서는 [운영 안내](../../docs/airbridge-events.md), 기기 절차와 결과는 [Airbridge 앱 이벤트 e2e](../../docs/e2e/airbridge-events.md)가 진다. 여기는 이 호스트에서 달라진 것만 적는다.
 
-**값 파일.** `app/meta.properties.example`을 `app/meta.properties`로 복사해 `META_APP_ID`(숫자만) · `META_CLIENT_TOKEN`(공백 없는 한 덩어리)을 채운다. 이 로컬 파일은 Git에서 제외한다(`google-services.json`과 같다). `app/build.gradle`이 파일이 있으면 읽어 `BuildConfig.META_APP_ID` · `BuildConfig.META_CLIENT_TOKEN`에 넣고, 없으면 빈 문자열을 넣는다. 값은 빌드 시점에 박히므로 고친 뒤 다시 빌드한다. **`debug` · `bundled` · `release` 어느 빌드도 값이 없다는 이유로 실패하지 않는다** — `google-services.json`과 달리 release 관문이 없다. 값은 매니페스트로 가지 않는다(`manifestPlaceholders`를 쓰지 않는다).
+**저장소.** Airbridge SDK는 Maven Central에 없다. `settings.gradle`의 `dependencyResolutionManagement`에 vendor-maven 블록 다음 · `google()` 앞으로 두 번째 `exclusiveContent`가 있다 — 저장소 `https://sdk-download.airbridge.io/maven`에서 `io.airbridge` 그룹만 받고, 그 그룹은 그 저장소에서만 받는다. 첫 `exclusiveContent`는 여전히 vendor-maven이라 정적 검사 RC4는 그대로 통과한다.
 
-**값이 없으면 SDK를 부르지 않는다.** `DuruApplication.onCreate`의 끝에서 `MetaAppEventsConfig.from`이 두 값을 판정하고, `null`이면 `MetaAppEvents.start`가 아무것도 하지 않는다. SDK가 스스로 초기화하는 길인 `com.facebook.internal.FacebookInitProvider`는 매니페스트에서 `tools:node="remove"`로 뺐다. 값이 유효하면 `setApplicationId` → `setClientToken` → `sdkInitialize`를 한 번 부른다.
+**값 파일.** `app/airbridge.properties.example`을 `app/airbridge.properties`로 복사한 뒤 **두 값을 직접 채운다** — 예시는 값이 비어 있어 복사만 하면 「값 없음」 빌드와 같다. `AIRBRIDGE_APP_NAME`(영문 · 숫자 · 밑줄 · 하이픈만) · `AIRBRIDGE_SDK_TOKEN`(대시보드 [Settings] > [Tokens]의 App SDK Token, 공백 없는 한 덩어리). 이 로컬 파일은 Git에서 제외한다(`.gitignore`의 `apps/android/app/*.properties` — 옛 `meta.properties`도 함께 무시된다). `app/build.gradle`이 파일이 있으면 읽어 `BuildConfig.AIRBRIDGE_APP_NAME` · `BuildConfig.AIRBRIDGE_SDK_TOKEN`에 넣고, 없으면 빈 문자열을 넣는다. 값은 빌드 시점에 박히므로 고친 뒤 다시 빌드한다 — 들어갔는지는 `app/build/generated/source/buildConfig/<변형>/com/libitum/host/BuildConfig.java`에서 빈 문자열이 아닌지로 본다. **`debug` · `bundled` · `release` 어느 빌드도 값이 없다는 이유로 실패하지 않는다.** 값은 매니페스트로 가지 않는다(`manifestPlaceholders`를 쓰지 않는다).
 
-**모듈.** `MetaAppEventsModule`(`logEvent(name, parameters)` 하나)은 SDK가 시작된 빌드에서만 등록된다. 등록은 `MainActivity`의 `registerModule(` 줄이 아니라 `MetaAppEvents.configure(builder)` 안에 있다 — `MainActivity`의 호출 수를 세는 정적 검사(HS2, 11개)는 그래서 이 모듈을 세지 않는다. SDK 클래스를 직접 부르는 파일은 `MetaAppEvents.java` 하나다.
+**값이 없으면 SDK를 시작하지 않는다.** `DuruApplication.onCreate`의 끝에서 `AirbridgeEventsConfig.from`이 두 값을 판정하고, `null`이면 `AirbridgeEvents.start`가 `Airbridge.initializeSDK`를 부르지 않는다. 값이 유효하면 `AirbridgeOptionBuilder(name, token).setTrackMetaDeferredAppLinkEnabled(false).build()`로 한 번 시작한다. Airbridge에는 SDK가 스스로 초기화하는 provider가 없다. **SDK의 `co.ab180.airbridge.internal.lifecycle.AirbridgeLifecycleProvider`는 제거하지 않았다** — 초기화 · 네트워크 없이 수명주기 콜백 하나를 등록하는 provider라 값이 없는 빌드에서도 프로세스 시작 때 돈다(요청은 0 — e2e A).
 
-**권한.** 앱 매니페스트가 `com.google.android.gms.permission.AD_ID`를 명시한다. ⚠ **값이 없는 빌드에도 이 권한은 실린다** — Play Console의 「광고 ID」 선언과 데이터 보안 양식을 고치기 전에 이 변경이 든 AAB를 올리지 않는다([운영 안내](../../docs/meta-app-events.md#스토어-고지에서-바뀌는-것)). 병합 매니페스트에는 그 밖에 SDK의 `ACCESS_ADSERVICES_ATTRIBUTION` · `ACCESS_ADSERVICES_AD_ID` · `ACCESS_ADSERVICES_CUSTOM_AUDIENCE` · `ACCESS_ADSERVICES_TOPICS`와 전이 의존 `installreferrer`의 `com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE`가 새로 들어온다. 사용자에게 뜨는 대화상자는 없다. SDK의 비공개 BroadcastReceiver 둘(`com.facebook.CurrentAccessTokenExpirationBroadcastReceiver` · `com.facebook.AuthenticationTokenManager$CurrentAuthenticationTokenChangedBroadcastReceiver`)도 병합된다. 매니페스트 `meta-data`는 `com.facebook.sdk.AutoLogAppEventsEnabled` · `com.facebook.sdk.AdvertiserIDCollectionEnabled` 둘이고 둘 다 `true`다.
+**모듈.** `AirbridgeEventsModule`(`trackEvent(category, semanticAttributes)` 하나)은 SDK가 시작된 빌드에서만 등록된다. 등록은 `MainActivity`의 `registerModule(` 줄이 아니라 `AirbridgeEvents.configure(builder)` 안에 있다 — `MainActivity`의 호출 수를 세는 정적 검사(HS2, 11개)는 그래서 이 모듈을 세지 않는다. SDK 클래스를 직접 부르는 파일은 `AirbridgeEvents.java` 하나다.
 
-**R8.** `proguard-rules.pro`와 `settings.gradle`은 고치지 않았다. `facebook-core`의 소비자 규칙과 Lynx AAR의 모듈 keep으로 `:app:assembleBundled`가 통과한다. `com.facebook.android` 그룹은 vendor-maven 필터 밖이라 `mavenCentral()`에서 받는다. AAR에 네이티브 `.so`가 없어 16 KB 정렬 검사 대상이 늘지 않는다.
+**권한 · 매니페스트.** 앱 매니페스트가 `com.google.android.gms.permission.AD_ID`를 명시한다(SDK도 병합으로 넣는다). ⚠ **값이 없는 빌드에도 이 권한은 실린다** — Play Console의 「광고 ID」 선언과 데이터 보안 양식을 맞추기 전에 이 변경이 든 AAB를 올리지 않는다([운영 안내](../../docs/airbridge-events.md#스토어-고지에서-바뀌는-것)). Meta SDK에서 바뀐 병합 매니페스트: `ACCESS_ADSERVICES_*` 넷과 Facebook 로그인 토큰용 receiver 둘이 **빠졌고**, `BIND_GET_INSTALL_REFERRER_SERVICE`는 Airbridge가 다시 넣어 **남았다.** 새 권한은 없다. 새로 든 것은 `<queries>`의 패키지 둘(`com.facebook.katana` · `com.instagram.android`)과 위 provider다. 앱 매니페스트의 `FacebookInitProvider` 제거 선언 · `com.facebook.sdk.*` 메타데이터 · `xmlns:tools`는 지웠다. 사용자에게 뜨는 대화상자는 없다.
 
-### 계측 `MetaAppEventsHostTest` 실행
+**R8 · 산출물.** `proguard-rules.pro`는 고치지 않았다(9줄). ⚠ **Airbridge의 소비자 규칙 `-keep class com.facebook.** { *; }`가 Fresco · SoLoader 전체를 축소에서 뺀다** — release AAB의 dex가 4,116,320 bytes가 되어 「코드 축소」 절의 산출물 가드 A3 한도를 4,300,000으로 올렸다(사용자 승인 2026-10-13). AAR에 `libairbridgelib.so`가 ABI마다 하나 있어 A1의 기대가 17 · 17 · 17 · 16, 64비트 `.so`가 33개가 됐다(16 KB 정렬 실패 0). A4의 호스트 모듈 수는 12다. `native-alignment.artifacts.mjs` NA3의 기대도 33개로 고쳤다([ADR-0063](../../docs/adr/0063-airbridge-events.md) D14).
 
-SDK가 빌드의 값과 같은 상태인지(`MetaAppEvents.started()` · `FacebookSdk.isInitialized()`)와 `FacebookInitProvider`가 설치되지 않았는지를 본다. 번들 서빙 없이 돈다. `bundled` APK와 서명이 달라 덮어쓰지 못하므로 먼저 지운다.
+### 계측 `AirbridgeEventsHostTest` 실행
+
+`AirbridgeEvents.started()`가 빌드의 값과 같은 상태인지(값이 유효하면 `true`, 아니면 `false`)를 본다. 번들 서빙 없이 돈다. `bundled` APK와 서명이 달라 덮어쓰지 못하므로 먼저 지운다.
 
 ```sh
 cd apps/android
@@ -696,8 +698,8 @@ cd apps/android
 adb -s <기기> uninstall libitum.duru.android
 adb -s <기기> install -r -t app/build/outputs/apk/debug/app-debug.apk
 adb -s <기기> install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-adb -s <기기> shell am instrument -w -r -e class com.libitum.host.MetaAppEventsHostTest \
+adb -s <기기> shell am instrument -w -r -e class com.libitum.host.AirbridgeEventsHostTest \
   libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-기대는 `OK (3 tests)`다. **값이 없는 빌드에서는 「꺼짐」인 채로 통과한다**(`false == false`) — 통과가 SDK가 동작한다는 뜻이 아니다. 2026-10-13에 API 37 에뮬레이터(Pixel_8 AVD)에서 값 없는 상태로 3건 통과했다. **값이 있는 빌드로는 기기에서 돌린 적이 없다.**
+기대는 `OK (1 test)`다. **값이 없는 빌드에서는 「꺼짐」인 채로 통과한다**(`false == false`) — 통과가 SDK가 동작한다는 뜻이 아니다. 2026-10-13에 API 37 에뮬레이터(Pixel_8 AVD)에서 값 없는 빌드와 가짜 값 빌드 둘 다 `OK (1 test)`였다(가짜 값에서는 logcat에 `{initializeSDK} is called`). **실제 값으로는 기기에서 돌린 적이 없다.**

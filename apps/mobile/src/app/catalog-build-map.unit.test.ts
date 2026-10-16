@@ -86,6 +86,17 @@ describe("음절 조립 매핑 (SBM)", () => {
     }
   });
 
+  test("SBM3. 한국어가 빈 앞 정답은 걷히고 뜻도 남은 첫 정답의 en이다", () => {
+    const item = syllableBuild({
+      stimulus: {},
+      answers: [t("  ", "", "blank answer"), t("카드", "kadeu", "credit card")],
+    });
+
+    expect(questionOf(syllableBuildItemOf(item, port))).toEqual(
+      expect.objectContaining({ meaning: "credit card", answers: ["카드"] }),
+    );
+  });
+
   test("SBM3. 둘 다 없으면 ref의 낱말 뜻이고 그것도 없으면 no-gloss다", () => {
     const withRef = syllableBuild({ stimulus: {}, ref: "voca:card" });
     const glossing = portOf({ glossOf: (ref) => (ref === "voca:card" ? "card (gloss)" : null) });

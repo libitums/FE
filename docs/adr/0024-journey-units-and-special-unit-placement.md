@@ -388,7 +388,7 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
   (`canStartCatalogCover`)를 부른다. 알림 · 푸시 목적지 표에는 카탈로그가 없다 — 그 날이 오면 같은
   함수를 쓴다. ⟨2026-10-16⟩ **「n−1번째의 `RP` 완료 뒤」는 「n−1번째 에피소드의 완료 뒤」가 됐다** —
   완료는 콘텐츠의 완료 키(`completion.requires`)가 모두 끝난 것이고, 완료 조건이 없는 에피소드는 지금처럼
-  `RP` 하나다([ADR-0061](0061-episode-format-additions.md) D6). 아래 `정정 기록` 2026-10-16.
+  `RP` 하나다([ADR-0065](0065-episode-format-additions.md) D6). 아래 `정정 기록` 2026-10-16.
 - **아직 열 수 없는 유닛은 잠긴 채 보인다.** 레슨(`Lesson 1` …)과 최종 테스트(`Final test`) 노드가
   데이터의 유닛 수대로 서고, 3b-2에서는 **늘 잠김**이다 — 눌러도 아무 일이 없고 낭독은
   `Lesson 1, coming soon, locked`다. 상태 파생은 3c가 붙인다. ⚠ **D14의 「가려진 자리는 장식」과 다른
@@ -592,28 +592,28 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 ### 2026-10-16 (브랜치 `feat/episode-format-v3`) — 콘텐츠가 완료 조건을 싣게 되면서 D15의 에피소드 사이 잠금이 「`RP`」에서 「완료」로 바뀌었다
 
-**결정은 [ADR-0061](0061-episode-format-additions.md)이 진다.** 여기 적는 것은 이 문서의 문면이 그때의 상태가 된 자리다. 제자리 기록인 이유: 옛 판정으로 지어진 코드
+**결정은 [ADR-0065](0065-episode-format-additions.md)이 진다.** 여기 적는 것은 이 문서의 문면이 그때의 상태가 된 자리다. 제자리 기록인 이유: 옛 판정으로 지어진 코드
 (`isCatalogEpisodePassed` · `passedCatalogEpisodeCount`)를 **같은 변경에서 지우고** 새 판정으로 갈았다 — 추적할 옛 파일이 남지 않는다(ADR-0010 D10).
 
 - **D15 — 「n번째 표지는 n−1번째 에피소드의 `RP` 완료 뒤」는 이 변경 전의 규칙이다.** 이제 **n−1번째 에피소드의 완료 뒤**다. 완료는 콘텐츠 최상위
   `completion.requires`의 단계가 모두 끝난 것이고(지금 데이터 = `S1` ~ `S8` · `CULT` · `RP`), 그 키가 없는 에피소드 · 콘텐츠를 모르는 id는 `RP` 하나다 — **옛 데이터에서는 결과가 같다.**
   맵 · 시작 결선이 같은 순수 함수를 부르는 원칙은 그대로다(`catalogCoverStatus`가 앞 구획의 완료 키로 `isCatalogEpisodeComplete`를 부른다). 트로피도 같은 판정을 쓴다.
   **어떻게 틀렸나**: 「`RP`를 끝냈다 = 에피소드를 끝냈다」는 **사슬 잠금이 지켜 주는 동안만** 참이었다 — 앱 안에서는 `RP` 앞의 단계가 늘 이미 끝나 있었다. 콘텐츠 버전이 바뀌어 단계 id가
-  달라지면(옛 `S3` ~ `S9` → 새 `S1` ~ `S8` · `CULT`) 옛 진행의 `RP`가 새 콘텐츠의 앞 단계를 끝낸 것을 보장하지 않는다. 그 진행은 이제 완료가 아니다 — **사용자 결정**(엄격 규칙, ADR-0061 Q1).
+  달라지면(옛 `S3` ~ `S9` → 새 `S1` ~ `S8` · `CULT`) 옛 진행의 `RP`가 새 콘텐츠의 앞 단계를 끝낸 것을 보장하지 않는다. 그 진행은 이제 완료가 아니다 — **사용자 결정**(엄격 규칙, ADR-0065 Q1).
 - **D10 — 「가운데에는 규칙이 없다」는 그대로 참이다.** 새 문화 단계 `CULT`는 가운데의 아홉째 유닛(`Lesson 9`)이고 이름으로 분기하지 않는다. 노드 수는 데이터대로 레슨 9 + 최종이 됐다(머리 카드 분모 `0 / 11`).
   ⟨2026-10-16 — PR ②⟩ `Lesson 9`는 이 변경의 상태다 — 아래 정정 기록 2026-10-16(`feat/episode-format-screens`)에서 문화 노드(`Culture`)가 됐다.
 
 ### 2026-10-16 (브랜치 `feat/episode-format-screens`) — 문화 단계가 노드 role 셋째 값이 되면서 D15의 카탈로그 노드 배치와 ⟨2026-10-14⟩ 줄 규칙에 행 하나가 더해졌다
 
-**결정은 [ADR-0063](0063-episode-format-screens.md) D7이 진다.** 뒤집힌 결론은 0건이다 — 새 번호도 축 추적표의 새 행도 이 문서에 만들지 않는다(같은 축의 표에 값이 하나 는 것이다).
+**결정은 [ADR-0066](0066-episode-format-screens.md) D7이 진다.** 뒤집힌 결론은 0건이다 — 새 번호도 축 추적표의 새 행도 이 문서에 만들지 않는다(같은 축의 표에 값이 하나 는 것이다).
 
 - **D7 — 「어느 유닛이 특별한가」는 콘텐츠 판단이다**를 카탈로그에서 처음 실체화했다. 문항이 하나 이상이고 **모두** 문화 유형(`CULTURE_CARD` · `CULTURE_CHECK`)인 유닛이 문화 유닛이다 — 이름(`"CULT"`)이 아니라 문항 유형으로 가린다.
   판별은 맵 구획이 한 번 하고(`catalogCultureKeysOf` → `CatalogReadySection.cultureKeys`) 노드는 그 목록을 읽는다.
 - **D15 — 카탈로그 노드는 role 셋**이다: `lesson` · **`culture`** · `final`. 문화 노드는 라벨 `Culture` · 아이콘 `lantern-05`(열린 상태에서만 — 잠김 · 끝은 다른 노드처럼 자물쇠 · 체크) · 낭독 `Episode n. Culture`이고,
   **상태 셋 · 사슬 잠금 · 진행 키 · 시작 결선은 레슨과 같다**(D11 · D15의 「같은 함수」 원칙 그대로 — `catalogUnitRoleOf`는 문화를 `"lesson"`으로 본다).
-- **⟨2026-10-14⟩ 줄 규칙 — 문화 노드는 한 줄을 다 쓴다**(`catalogNodePlacement.culture = "solo"`). 표지 · 최종 · 특별 유닛과 같은 「특별한 자리」로 본 것이고 **사용자 미확인**이다(ADR-0063 Q4).
+- **⟨2026-10-14⟩ 줄 규칙 — 문화 노드는 한 줄을 다 쓴다**(`catalogNodePlacement.culture = "solo"`). 표지 · 최종 · 특별 유닛과 같은 「특별한 자리」로 본 것이고 **사용자 미확인**이다(ADR-0066 Q4).
   지금 데이터(레슨 8 + 문화 + 최종)에서 구획은 표지 한 줄 → 레슨 둘씩 네 줄 → `Culture` 한 줄 → `Final test` 한 줄이다. 문화 노드도 「다음에 풀 유닛」(자동 스크롤)의 대상이다.
-- **D10 — 「가운데에는 규칙이 없다」는 그대로 참이다.** 문화 노드는 가운데의 유닛이고 자리 규칙을 만들지 않았다. 문화 단계가 레슨 사이로 오면 그 뒤 레슨 번호에 빈칸이 생긴다(ADR-0063 「대가」 3).
+- **D10 — 「가운데에는 규칙이 없다」는 그대로 참이다.** 문화 노드는 가운데의 유닛이고 자리 규칙을 만들지 않았다. 문화 단계가 레슨 사이로 오면 그 뒤 레슨 번호에 빈칸이 생긴다(ADR-0066 「대가」 3).
 
 ## 재검토 조건
 
@@ -781,7 +781,7 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 ### 2026-10-16 — 에피소드 사이 잠금이 완료 키로 열린다 (새 에피소드 형식)
 
-위 `정정 기록` 2026-10-16과 [ADR-0061](0061-episode-format-additions.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
+위 `정정 기록` 2026-10-16과 [ADR-0065](0065-episode-format-additions.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
 
 - **판정**: `lib/catalog-progress.ts`(`isCatalogEpisodeComplete` · `completedCatalogEpisodeCount` · `DEFAULT_CATALOG_COMPLETION`), 완료 키는 맵 구획의 `completionKeys`(`screens/journey-map/catalog-map.contract.ts`)와
   `catalogCompletionKeysOf`(`catalog-map.ts`). 표지 열림은 `catalogCoverStatus`, 트로피는 `app/learning-progress.ts`의 `trophyCountFrom`(셋째 인자), 진행 훅 `useJourneyProgress`가 판정 규칙을 셋째 인자로 받는다.
@@ -789,7 +789,7 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 ### 2026-10-16 — 문화 단계가 `Culture` 노드로 선다 (새 에피소드 형식 ②)
 
-위 `정정 기록` 2026-10-16(`feat/episode-format-screens`)과 [ADR-0063](0063-episode-format-screens.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
+위 `정정 기록` 2026-10-16(`feat/episode-format-screens`)과 [ADR-0066](0066-episode-format-screens.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
 
 - **판별 · 노드**: `screens/journey-map/catalog-map.ts`(`catalogCultureKeysOf` · `catalogUnitNodesOf`의 role · `catalogUnitNodeTitle`), 계약 `catalog-map.contract.ts`(`CatalogUnitNodeRole` · `cultureKeys` · `cultureTitle`).
 - **아이콘 · 배치**: `CatalogUnitNode.tsx`의 role → 아이콘 표(`play` · `lantern-05` · `flag`), `journey-map-rows.ts`의 `catalogNodePlacement.culture`. 표가 `Record`라 role이 늘면 `tsc`가 선다.

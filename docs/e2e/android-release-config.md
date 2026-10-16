@@ -142,7 +142,7 @@ R5 ①②③은 로그인 뒤 화면이 필요하다.
 1. **패키지 안 정렬(CLI, 기기 불필요)**:
    ```sh
    node devtools/android-bundle/elf-page-alignment.mjs "$AAB"
-   # 기대: <aab>: checked 31, failures 0 — 종료 코드 0  (arm64-v8a 16 + x86_64 15. 아래 숫자가 다르면 결과 표에 적는다)
+   # 기대: <aab>: checked 33, failures 0 — 종료 코드 0  (arm64-v8a 17 + x86_64 16 — 2026-10-13 Airbridge의 libairbridgelib.so로 31 → 33, ADR-0063. 아래 숫자가 다르면 결과 표에 적는다)
    unzip -Z1 "$AAB" | grep -E '^base/lib/(arm64-v8a|x86_64)/.*\.so$' | wc -l      # 위 checked와 같다
    unzip -Z1 "$AAB" | grep -c libwasm                                             # 0 (primjsWasm 제외)
    ```
@@ -158,6 +158,7 @@ R5 ①②③은 로그인 뒤 화면이 필요하다.
    ANDROID_HOME=~/Library/Android/sdk BUNDLETOOL_JAR="$BUNDLETOOL_JAR" \
      node --test devtools/android-bundle/native-alignment.artifacts.mjs                 # 6건 — 반드시 release-shrink 뒤에
    ```
+   2026-10-13부터 NA3의 기대는 64비트 `.so` 33개다(Airbridge SDK의 `libairbridgelib.so` — [ADR-0063](../adr/0063-airbridge-events.md) D14).
    **`release-shrink.artifacts.mjs`(A1 ~ A8)** — 축소된 release AAB의 dex 1개 · 매핑의 K1 · K2 대상 생존 · 접근성 클래스 생존 · 4개 ABI · 다운로드 크기를 본다. 위 빌드의 세 산출물(`assembleDebug` · `assembleBundled` · `bundleRelease`)을 모두 읽으므로 위 `gradlew`에서 셋 중 하나라도 빼면 `no .apk/.aab under …`로 실패한다(테스트 파일 머리의 실행법과 같다). 판정 로직은 `release-shrink.mjs`, 이 파일은 산출물을 읽어 단언만 한다.
    **순서가 중요하다**: `native-alignment`의 NA6은 `google-services.json`을 치우고 `:app:assembleBundled`를 다시 만든 뒤 `bundleRelease`만 다시 만든다(테스트 코드를 읽은 것 — 이 문서 수정에서 돌려 보지 않았다). 그 뒤의 `app-bundled.apk`는 **코드상 Firebase 설정 없이 만든 것이다**(NA6이 json 없이 `:app:assembleBundled`를 다시 빌드하고 json과 함께는 다시 빌드하지 않는다 — NA6 직후의 APK를 직접 연 실행은 없다. S.3의 「`bundled`를 검증에 쓰기 전에」). 그래서 `native-alignment`는 마지막에 돌리거나, 돌린 뒤 `bundled`를 다시 빌드한다.
    **`:app:assembleDebugAndroidTest`를 빼면 `native-alignment`의 NA5가 `no .apk under apps/android/app/build/outputs/apk/androidTest/debug`로 실패한다**(2026-10-05에 실제로 그렇게 실패했고, 그 태스크를 돌린 뒤 6/6이었다 — 제품 회귀가 아니라 선행 빌드 누락이다).
@@ -611,7 +612,7 @@ release AAB(와 `bundled` APK)를 **R8로 축소 · 난독화**하도록 바꾼 
 - 안 닫은 것: json 없는 `bundled`의 로그인 뒤 푸시 경로(기동 12초 안에서 `FirebaseApp initialization unsuccessful` 경고 뒤 앱은 정상 기동 · FATAL 0까지만 봤다) · API 30 · 3버튼→제스처 전환.
 
 - **빌드**: release AAB sha256 `7df2fa84c05ea580eeb43e91e0adcaaeda8a1aa665bd70587d98312ed0bcbc48` · bundled APK `c0a90384aadfcce11aadf7385518e98b111d1bf20c67fafdfa93bd6a3bf20461` · `mapping.txt` `657d490acdc5455575ec6180cf81d6184352cce353fbe499807944c591bb2ba3`(계약 값과 같다) · 번들 `main.lynx.bundle` `0a1c34fb…`(모의 값 `example.invalid` · `local-bridge-test`).
-  축소 표지: AAB `base/dex/` 1개 · `proguard.map` 1개 · bundled `classes*.dex` 1개 · lib 16/16/16/15(4 ABI). 축소 전 비교 빌드: `fd6052d9`(`minifyEnabled false`) 일회용 사본의 release AAB — `base/dex/` 3개.
+  축소 표지: AAB `base/dex/` 1개 · `proguard.map` 1개 · bundled `classes*.dex` 1개 · lib 16/16/16/15(4 ABI — 그때의 값. 2026-10-13 Airbridge SDK 뒤로는 17/17/17/16, [ADR-0063](../adr/0063-airbridge-events.md) D14). 축소 전 비교 빌드: `fd6052d9`(`minifyEnabled false`) 일회용 사본의 release AAB — `base/dex/` 3개.
 - **기기**: Pixel_8 API 37(`PAGE_SIZE` 16384 · Google Play 이미지) · R6_API30 Android 11(4096 · arm64). 한 대씩 — API 30은 Pixel_8을 끄고 띄웠다. 3000 포트 서버는 시작 · 끝 모두 그대로.
 - **탐침 빌드**(E5 · E8의 (a) · E9): dex가 출시 바이너리와 같지 않다(S.1). 표에 「탐침」이라고 표시했다.
 - **이 실행에서 이 문서가 그대로는 돌지 않았다**: 판정 함수가 건강한 빌드에서도 오탐했다(시스템 HAL의 `SIGABRT`). 실행 쪽이 고쳐 쓴 함수로 돌렸고, 그 고침을 이 문서에 옮겼다. **옮긴 함수는 기기에서 다시 돌려 보지 않았다** — 저장한 logcat 28개(건강한 release · 탐침 · API 30)와 K1 변이 로그로 다시 판정만 했다(결과는 S.4 · S.14).
@@ -761,7 +762,7 @@ shasum -a 256 "$AAB" "$BUNDLED" "$MAPPING" | tee "$OUT/build-sha.txt"
 unzip -Z1 "$AAB" | grep -c '^base/dex/'                                                      # 1
 unzip -Z1 "$AAB" | grep -c '^BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map$'   # 1
 unzip -Z1 "$BUNDLED" | grep -c '^classes.*\.dex$'                                            # 1
-unzip -Z1 "$AAB" | grep -E '^base/lib/[^/]+/.*\.so$' | cut -d/ -f3 | sort | uniq -c           # 4개 ABI: 16 · 16 · 16 · 15 (arm64-v8a · armeabi-v7a · x86 · x86_64)
+unzip -Z1 "$AAB" | grep -E '^base/lib/[^/]+/.*\.so$' | cut -d/ -f3 | sort | uniq -c           # 4개 ABI: 17 · 17 · 17 · 16 (arm64-v8a · armeabi-v7a · x86 · x86_64 — 2026-10-13부터, ADR-0063)
 ```
 
 dex 개수가 1이 아니면 **여기서 멈춘다**(`minifyEnabled`가 꺼진 빌드 — 구현이 아니라 빌드 환경을 먼저 본다).

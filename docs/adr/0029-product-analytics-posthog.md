@@ -63,10 +63,11 @@ payload는 바꾸지 않는다 — 새 이벤트도 없다.
 - 설정이나 전송 수단 중 하나라도 `null`이면 **클라이언트를 만들지 않고 sink 여섯이 `null`** 이다.
   요청은 0건이다. 호출 지점의 `sink?.(event)`가 이미 「보내지 않음」을 뜻한다 — 맥락 4의 규약 그대로.
 - ⟨2026-10-13 — 적용 기록이고 결정을 바꾸지 않는다⟩ **sink가 `null`이 아닌 조건이 「PostHog 클라이언트가 있다」에서
-  「보낼 곳이 하나라도 있다」로 넓어졌다.** 진입점이 이 ADR의 세션이 낸 sink 일곱을 Meta 앱 이벤트 로거와 한 번 합친다
-  (`productEventSinks` — [ADR-0057](0057-meta-app-events.md) D8). 호스트에 `MetaAppEventsModule`이 등록된 빌드에서는
+  「보낼 곳이 하나라도 있다」로 넓어졌다.** 진입점이 이 ADR의 세션이 낸 sink 일곱을 Airbridge tracker와 한 번 합친다
+  (`productEventSinks` — [ADR-0063](0063-airbridge-events.md) D9. 같은 날 처음 넓힌 것은 Meta 앱 이벤트 로거였고
+  [ADR-0057](0057-meta-app-events.md) D8, 대체됨). 호스트에 `AirbridgeEventsModule`이 등록된 빌드에서는
   `entryEventSink` · `messengerEventSink` · `visualNovelEventSink` 셋이 **PostHog 키가 없어도 함수다** — 원래 sink가
-  `null`이면 PostHog 쪽은 건너뛰고 Meta 쪽만 부른다. 나머지 넷과, 모듈이 없는 빌드의 일곱은 이 절 그대로다.
+  `null`이면 PostHog 쪽은 건너뛰고 Airbridge 쪽만 부른다. 나머지 넷과, 모듈이 없는 빌드의 일곱은 이 절 그대로다.
   PostHog로 나가는 것은 달라지지 않았다 — 이벤트 이름 · 속성 · `capture` 매핑 · 「PostHog 요청 0건」의 조건은 그대로이고,
   두 전송은 서로의 예외를 막지 않는다(D11과 같은 방향). 「no-op으로 가장하지 않는다」도 그대로다 — 보낼 곳이 하나도
   없으면 여전히 `null`이다.

@@ -40,6 +40,11 @@
   height: 86px;
 }
 
+.journey-stat-modal-meteor-icon {
+  width: 86px;
+  height: 86px;
+}
+
 .journey-stat-modal-meteor-a {
   left: -29px;
   top: 238px;
@@ -111,6 +116,11 @@
   height: 95px;
 }
 
+.journey-stat-modal-fire-art {
+  width: 95px;
+  height: 95px;
+}
+
 /* 트로피 — 여백 없는 아이콘이라 상자가 정사각 58이고 그림은 가운데 47 높이만
    차지합니다. 그림 아래 끝(상자 위에서 52.5)이 숫자 윗변에 닿게 올립니다(디자인
    실측값). 좌우를 펴고 가운데 정렬로 숫자 가운데에 세웁니다. */
@@ -124,9 +134,18 @@
 }
 
 .journey-stat-modal-trophy-icon {
+  position: relative;
   width: 58px;
   height: 58px;
   flex-shrink: 0;
+}
+
+.journey-stat-modal-trophy-art {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 58px;
+  height: 58px;
 }
 
 .journey-stat-modal-streak .journey-stat-modal-value {
@@ -208,6 +227,11 @@
 .journey-stat-modal-trophy .journey-stat-modal-done {
   background-color: var(--libitum-color-feedback-warning);
   border-color: var(--libitum-color-feedback-warning);
+}
+
+.journey-stat-modal-tick-box {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
 }
 
 .journey-stat-modal-tick {
