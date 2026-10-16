@@ -31,12 +31,19 @@ export const noCatalogMapSections: readonly CatalogMapSection[] = [];
 
 export const TUTORIAL_GATE_UNIT: EpisodeFinalUnitId = "tutorial-final-test";
 
+const CULTURE_ITEM_TYPES: ReadonlySet<string> = new Set(["CULTURE_CARD", "CULTURE_CHECK"]);
+
 /**
- * 문항이 하나 이상이고 모두 문화 유형(CULTURE_CARD · CULTURE_CHECK)인 유닛의 id입니다(유닛 순서). 뼈대만 선
- * 상태라 아직 빈 목록입니다.
+ * 문항이 하나 이상이고 모두 문화 유형(CULTURE_CARD · CULTURE_CHECK)인 유닛의 id입니다(유닛 순서). 유닛
+ * 이름이 아니라 내용으로 가립니다.
  */
-export function catalogCultureKeysOf(_units: readonly LearningUnit[]): readonly CatalogUnitKey[] {
-  return [];
+export function catalogCultureKeysOf(units: readonly LearningUnit[]): readonly CatalogUnitKey[] {
+  return units
+    .filter(
+      (unit) =>
+        unit.items.length > 0 && unit.items.every((item) => CULTURE_ITEM_TYPES.has(item.type)),
+    )
+    .map((unit) => unit.id);
 }
 
 export function catalogMapSectionsOf(
@@ -188,7 +195,7 @@ export function catalogUnitNodesOf(
   return [
     ...section.lessonKeys.map((key, index): CatalogUnitNode => ({
       key,
-      role: "lesson",
+      role: section.cultureKeys.includes(key) ? "culture" : "lesson",
       ordinal: index + 1,
       status: catalogUnitStatus(section, key, progress),
     })),
@@ -218,9 +225,14 @@ export function catalogUnitNodeTitle(
   node: Pick<CatalogUnitNode, "role" | "ordinal">,
   copy: UiCopy,
 ): string {
-  return node.role === "lesson"
-    ? copy.catalogMap.lessonTitle(node.ordinal)
-    : copy.catalogMap.finalTitle;
+  switch (node.role) {
+    case "lesson":
+      return copy.catalogMap.lessonTitle(node.ordinal);
+    case "culture":
+      return copy.catalogMap.cultureTitle;
+    case "final":
+      return copy.catalogMap.finalTitle;
+  }
 }
 
 export function catalogUnitNodeAccessibilityLabel(

@@ -51,10 +51,30 @@ export function vocabCardItemOf(
   };
 }
 
-/** 문화 카드(CULTURE_CARD)입니다 — 화면 연결만 서 있고 아직 건너뜁니다. */
+/**
+ * 문화 카드(CULTURE_CARD)입니다 — 판정 순서: 제목 malformed → 본문 없음 malformed → 영어 본문 no-gloss.
+ * 요령(`feedback`) · 본문 로마자 · 음원 · 그림은 싣지 않습니다.
+ */
 export function cultureCardItemOf(
   item: Extract<LearningItem, { type: "CULTURE_CARD" }>,
-  _port: CatalogItemPort,
+  port: CatalogItemPort,
 ): CatalogMappedItem {
-  return skippedItem(item, "screen-pending");
+  const title = koOf(port, item.context.ko);
+  if (title === "") return skippedItem(item, "malformed");
+  const text = item.stimulus.text;
+  if (text === undefined) return skippedItem(item, "malformed");
+  const body = englishOf(port, text.en);
+  if (body === undefined) return skippedItem(item, "no-gloss");
+  const koreanBody = koOf(port, text.ko);
+  return {
+    kind: "culture-card",
+    itemId: item.id,
+    question: {
+      title,
+      titleTranslation: englishOf(port, item.context.en) ?? null,
+      titleRomanization: latinOf(port, item.context.roman) ?? null,
+      body,
+      koreanBody: koreanBody === "" ? null : koreanBody,
+    },
+  };
 }

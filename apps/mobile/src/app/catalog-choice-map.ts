@@ -101,6 +101,9 @@ function wordChoiceItem(
     ...optionalField("romanization", parts.romanization),
     ...optionalField("translation", parts.translation),
     ...optionalField("instruction", instructionOf(port, promptText)),
+    ...(parts.choiceTranslations !== undefined && parts.choiceTranslations.length === choices.length
+      ? { choiceTranslations: parts.choiceTranslations }
+      : {}),
   };
   return { kind: "word-choice", itemId: item.id, question };
 }
@@ -226,10 +229,28 @@ export function pictureChoiceItemOf(
   return { kind: "word-choice", itemId: item.id, question };
 }
 
-/** 문화 확인(CULTURE_CHECK)입니다 — 화면 연결만 서 있고 아직 건너뜁니다. */
+/** 보기 번역입니다 — 모든 보기에 영어가 있을 때만 싣습니다. */
+function choiceTranslationsOf(
+  port: CatalogItemPort,
+  options: readonly Option[],
+): readonly string[] | undefined {
+  const translations = options.map((option) => englishOf(port, option.en));
+  return translations.every((value) => value !== undefined)
+    ? translations.map((value) => value ?? "")
+    : undefined;
+}
+
+/** 문화 확인(CULTURE_CHECK)입니다 — 질문 · 보기(콘텐츠 순서) · 보기 번역(전부 있을 때만). */
 export function cultureCheckItemOf(
   item: ItemOf<"CULTURE_CHECK">,
-  _port: CatalogItemPort,
+  port: CatalogItemPort,
 ): CatalogMappedItem {
-  return skippedItem(item, "screen-pending");
+  return wordChoiceItem(item, port, item.prompt, {
+    prompt: koOf(port, item.context.ko),
+    romanization: latinOf(port, item.context.roman),
+    translation: englishOf(port, item.context.en),
+    choices: item.options.map((option) => koOf(port, option.ko)),
+    answerIndex: correctIndex(item.options),
+    choiceTranslations: choiceTranslationsOf(port, item.options),
+  });
 }

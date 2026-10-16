@@ -128,6 +128,8 @@ export function catalogItemOf(item: LearningItem, port: CatalogLessonItemPort): 
     case "SYLLABLE_BUILD":
       return syllableBuildItemOf(item, port);
     case "LISTEN_BUILD":
+      // 소리가 먼저 있어야 화면을 만듭니다.
+      return skippedItem(item, "audio-missing");
     case "SHADOW":
     case "SPEAK_WORD":
       // 맞는 학습 화면이 아직 없는 유형입니다.
