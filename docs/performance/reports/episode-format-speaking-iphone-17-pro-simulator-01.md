@@ -4,7 +4,7 @@
 
 - 상태: 미측정 — 번들만. 렌더링 · 메모리 캡처(`performance:capture`)를 돌리지 않았습니다. 새 두 활동의 첫 렌더 타이밍 표식(`libitum:navigation:learning-read-aloud` · `…-speak-word`)은 재지 않았습니다.
 - 첫 렌더 타이밍(`learning-read-aloud` · `learning-speak-word`)을 재지 않은 이유: 이 시뮬레이터는 음성 인식기를 쓸 수 없어 말하기 화면이 곧바로 「인식 불가」 국면으로 바뀐다(e2e 회차 2) — 실기와 국면이 달라 렌더 이후 경로를 잴 의미가 없다. 실기 측정을 후속으로 둔다.
-- 기능 PR: 새 에피소드 형식 지원 ③ — 말하기 두 학습형(`read-aloud` · `speak-word`), 공유 인식 결선 훅 · 마이크 부품, 그림 로드 순수 규칙 승격, 통과 분모 · 이벤트 속성 `skippedCount`(이 보고서와 같은 PR, [ADR-0064](../../adr/0064-episode-format-speaking.md))
+- 기능 PR: 새 에피소드 형식 지원 ③ — 말하기 두 학습형(`read-aloud` · `speak-word`), 공유 인식 결선 훅 · 마이크 부품, 그림 로드 순수 규칙 승격, 통과 분모 · 이벤트 속성 `skippedCount`(이 보고서와 같은 PR, [ADR-0067](../../adr/0067-episode-format-speaking.md))
 - 대상 commit: `c3b03d000587978521f9db0be5a48cb182b4ae0a`(`feat/episode-format-speaking`의 `c3b03d00` — 구현 · 테스트 · 접근성 수정까지 든 마지막 commit). 문서 단계가 이 commit의 패치 없는 깨끗한 작업 트리에서 다시 빌드해 잰 값입니다. 기준은 직전 실측(`budget.json` note — 새 에피소드 형식 ②의 운영 설정 2,092,803 bytes)입니다.
 - 기기: iPhone 17 Pro 시뮬레이터 — 화면 확인(e2e)은 `02161638` 운영 설정 번들로 한 회차 돌았고([말하기 화면 e2e](../../e2e/episode-format-speaking.md)), 성능 캡처는 하지 않았습니다.
 - OS: iOS 26.5

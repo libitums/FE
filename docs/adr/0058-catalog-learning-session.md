@@ -13,7 +13,7 @@
   D7의 「짝수 = 상대 · 홀수 = 나」와 A2의 「`screen-pending`을 지웠다」를 [ADR-0065](0065-episode-format-additions.md)이 부분 대체한다. 끝의 「적용 기록」 ⟨2026-10-16⟩.
   ⟨2026-10-16 — 새 에피소드 형식 ②⟩ **학습형이 둘 늘었다**(문화 카드 `culture-card` · 음절 조립 `syllable-build` — 결정은 [ADR-0066](0066-episode-format-screens.md)). 문화 확인은 단어 선택에 보기 번역 줄을 달아 서고,
   `LISTEN_BUILD`의 사유가 `audio-missing`이 됐다. 이 문서의 결정 문장은 그대로다. 끝의 「적용 기록」 ⟨2026-10-16 — PR ②⟩.
-  ⟨2026-10-16 — 새 에피소드 형식 ③⟩ **말하기 학습형이 둘 늘고**(읽기 `read-aloud` · 낱말 말하기 `speak-word` — 결정은 [ADR-0064](0064-episode-format-speaking.md)) 사유 `screen-pending`이 다시 지워졌다(사유 일곱).
+  ⟨2026-10-16 — 새 에피소드 형식 ③⟩ **말하기 학습형이 둘 늘고**(읽기 `read-aloud` · 낱말 말하기 `speak-word` — 결정은 [ADR-0067](0067-episode-format-speaking.md)) 사유 `screen-pending`이 다시 지워졌다(사유 일곱).
   **D5의 통과 분모가 「판정한 채점 문항 수」가 됐다** — 건너뛴 말하기 문항은 분모에서 빠진다(60 % 규칙은 그대로). 끝의 「적용 기록」 ⟨2026-10-16 — PR ③⟩.
 - 날짜: 2026-10-13.
 - 다루는 축: 카탈로그 에피소드의 **학습 유닛(레슨)과 최종 테스트가 화면에 서는 방식** — 콘텐츠 문항을 학습형에 매핑하는 규칙, 레슨 안 활동의 순서와 전환,
@@ -69,8 +69,8 @@
 
 건너뜀 사유는 여섯이다 — `screen-pending` · `no-options` · `no-source` · `audio-missing` · `untypeable` · `malformed`. 계측(`skippedItemCount`)이 3d 우선순위의 근거가 된다.
 ⟨2026-10-13 — 3d-1⟩ **위 표의 `VOCAB_CARD` · `IMG_MATCH` · `PAIR_MATCH` 행과 사유 `screen-pending`은 3c 시점의 것이다** — 세 유형은 화면을 얻었고 사유는 일곱이 됐다(「적용 기록」 A2).
-⟨2026-10-16 — 새 에피소드 형식⟩ **위 표는 13종 시점의 것이다** — 새 유형 11종이 더해져 24종이 됐고 `screen-pending`이 되살아나 사유가 여덟이다(「적용 기록」 ⟨2026-10-16⟩ · [ADR-0061](0061-episode-format-additions.md) D8).
-⟨2026-10-16 — PR ③⟩ 말하기 둘이 화면을 얻어 `screen-pending`이 다시 지워졌다 — **사유는 일곱**이다(「적용 기록」 ⟨2026-10-16 — PR ③⟩ · [ADR-0064](0064-episode-format-speaking.md) D9).
+⟨2026-10-16 — 새 에피소드 형식⟩ **위 표는 13종 시점의 것이다** — 새 유형 11종이 더해져 24종이 됐고 `screen-pending`이 되살아나 사유가 여덟이다(「적용 기록」 ⟨2026-10-16⟩ · [ADR-0065](0065-episode-format-additions.md) D8).
+⟨2026-10-16 — PR ③⟩ 말하기 둘이 화면을 얻어 `screen-pending`이 다시 지워졌다 — **사유는 일곱**이다(「적용 기록」 ⟨2026-10-16 — PR ③⟩ · [ADR-0067](0067-episode-format-speaking.md) D9).
 `{이름}` · `{나라}`는 화면에 서는 ko · 로마자 문자열을 모두 치환한다(프로필은 3d 전까지 기본값). 타일(낱말 순서 · 대화 순서 · 빈칸 채우기 · 최종 테스트)은 **결정적으로 섞는다** — 씨앗 `${episodeId}/${itemId}`,
 다시 풀어도 같은 순서이고 항등 순열이 나오면 한 칸 돌린다(계약 문서 Q20 「앱이 섞는다」). `options` 보기는 파일 순서 그대로다. 보기 중 하나라도 네 글자를 넘으면 단어 선택은 보기를 세로로 쌓는다(칩 안 글자 잘림 — [실기]).
 
@@ -582,7 +582,7 @@ route · 진행 저장 형식 · 이벤트 이름은 그대로라 새 ADR을 만
 
 ### ⟨2026-10-16 — 새 에피소드 형식 ③⟩ 말하기 둘이 학습형이 되고, 건너뜀 수가 활동에서 나오며, 통과 분모가 판정한 문항이 된다
 
-적용 기록이다. 결정은 [ADR-0064](0064-episode-format-speaking.md)이 진다. 이 문서의 결정 가운데 **D5의 분모 문면**(「채점 문항」 → 판정한 채점 문항)만 그때의 상태가 됐고(D5 옆 표시), 나머지 결정 문장은 그대로다.
+적용 기록이다. 결정은 [ADR-0067](0067-episode-format-speaking.md)이 진다. 이 문서의 결정 가운데 **D5의 분모 문면**(「채점 문항」 → 판정한 채점 문항)만 그때의 상태가 됐고(D5 옆 표시), 나머지 결정 문장은 그대로다.
 
 - **D2 매핑 표 — 두 행**(위 ⟨2026-10-16⟩ 표의 마지막 행):
 
@@ -595,7 +595,7 @@ route · 진행 저장 형식 · 이벤트 이름은 그대로라 새 ADR을 만
 - **학습형 열** — `listening` · `sentence-order` · `word-choice` · `typing` · `vocab-card` · `pair-match` · `culture-card` · `syllable-build` · **`read-aloud`** · **`speak-word`**. 머리 라벨은 둘 다 `Speaking`.
 - **A3 채점 표** — `read-aloud`는 **`ungraded`**(카운터에는 들고 통과 분모 밖), `speak-word`는 `graded`. 단계 표시 수는 세 에피소드의 `S5`가 +3, `S6` · `S8`이 +1이다(채점 수는 `S6` · `S8`만 +1).
 - **런타임 건너뜀 수를 내는 첫 카탈로그 활동** — 지금까지 모든 카탈로그 활동은 `onFinish(results, 0)`이었다. 읽기는 불가 국면 `Skip` 수, 낱말 말하기는 건너뛴 문항 수(사용자 · 불가)를 낸다. 결선은 이미 있던 레슨 합계로 잇고 결과 화면이 받는다(만점 아님 · 낭독 `n skipped`) — 새 세션 상태 0.
-- **D5 통과 분모** — `catalogJudgedCountOf(plan.questionCount, results)`(= 판정한 채점 문항 수)로 `catalogPassCriterion`을 부른다. 60 % · 최소 1 · 0이면 0은 그대로다(사용자 결정 — ADR-0064 D7).
+- **D5 통과 분모** — `catalogJudgedCountOf(plan.questionCount, results)`(= 판정한 채점 문항 수)로 `catalogPassCriterion`을 부른다. 60 % · 최소 1 · 0이면 0은 그대로다(사용자 결정 — ADR-0067 D7).
   **결과 route의 `questionCount`는 이 판정 분모다** — 그 필드의 정의(「통과 기준의 분모」)가 같아 결과 화면이 같은 판정을 다시 낸다. 이벤트의 `questionCount`는 계획의 채점 문항 수 그대로다.
 - **측정** — `episode_lesson_finished`에 `skippedCount`(레슨의 런타임 건너뜀 합, 최종 테스트 · 0개 경로는 `"0"`). 정의 · 읽는 법은 [ADR-0029](0029-product-analytics-posthog.md) D14 적용 기록 ⟨2026-10-16 — PR ③⟩.
 - **A6(그림 로드 실패 처리)** — 낱말 말하기도 같은 규칙(6초 · 뜻 글자 + `Picture unavailable`)이고 순수 전이 · 시한을 `lib/picture-load.ts`로 올려 둘이 함께 쓴다.

@@ -374,7 +374,7 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   있었다.
   ⟨2026-10-16⟩ **그림 로드 순수 규칙도 올라왔다** — `screens/word-choice/word-choice-picture.ts`의 로드 전이 · 6초 시한
   (`PictureLoadState` · `PictureLoadEvent` · `pictureLoadTimeoutMs` · `pictureLoadStateAfter`)이 `lib/picture-load.ts`로
-  옮겨졌다(단어 선택 그림 문항 · 낱말 말하기 둘이 쓴다 — [ADR-0064](../adr/0064-episode-format-speaking.md) D6). 옛 이름 넷
+  옮겨졌다(단어 선택 그림 문항 · 낱말 말하기 둘이 쓴다 — [ADR-0067](../adr/0067-episode-format-speaking.md) D6). 옛 이름 넷
   (`WordChoicePictureState` · `…Event` · `wordChoicePictureTimeoutMs` · `wordChoicePictureStateAfter`)은 옛 경로에 같은 값 · 타입의 별칭으로 남아
   단어 선택의 import · 테스트가 그대로다. 근거는 한글 자판과 같다 — 경로를 읽는 테스트가 없다.
   화면 둘이 쓰는 **훅 · 부품**(`useWordChoicePicture` · `WordChoicePicture`)은 단어 선택의 testid · 이름표에 묶여 옮기지
