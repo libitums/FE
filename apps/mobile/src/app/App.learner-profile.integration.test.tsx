@@ -119,6 +119,8 @@ const contentIdOf: Record<CatalogActivity["form"], string> = {
   typing: "typing-activity-content",
   "vocab-card": "vocab-card-content",
   "pair-match": "pair-match-content",
+  "culture-card": "culture-card-content",
+  "syllable-build": "syllable-build-content",
 };
 
 // ---------------------------------------------------------------- 부팅

@@ -223,3 +223,30 @@ test.each(["correct", "incorrect"] as const)(
     expect(root).toHaveTextContent("학교");
   },
 );
+
+// ---------------------------------------------------------------- 보기 번역 줄
+
+test("UWT5. 번역이 있으면 보기 아래 번역 줄이 서고 라벨이 글자 · 번역 · 판정 순으로 이어지며 번역 줄은 접근성 요소가 아니다", () => {
+  render(
+    <WordChoiceOption
+      index={2}
+      text="비밀번호"
+      translation="password"
+      result="correct"
+      onSelect={() => {}}
+    />,
+  );
+
+  const root = screen.getByTestId("word-choice-option-2");
+  expect(root).toHaveAttribute("accessibility-label", "비밀번호, password, correct");
+  const line = screen.getByTestId("word-choice-option-2-translation");
+  expect(line).toHaveTextContent("password");
+  expect(line.getAttribute("accessibility-element")).not.toBe("true");
+});
+
+test("UWT6. 번역이 없으면 번역 줄이 없고 라벨은 글자 그대로다", () => {
+  render(<WordChoiceOption index={0} text="학교" result={null} onSelect={() => {}} />);
+
+  expect(screen.queryByTestId("word-choice-option-0-translation")).not.toBeInTheDocument();
+  expect(screen.getByTestId("word-choice-option-0")).toHaveAttribute("accessibility-label", "학교");
+});

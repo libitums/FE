@@ -76,6 +76,8 @@ type ChoiceLayout = "row" | "stacked" | "grid";
 // 낱말에서 접힙니다. 그 밖은 지금 규칙(낱말 길이면 가로 한 줄, 문장 길이면 세로)입니다.
 function choiceLayoutOf(question: WordChoiceQuestion): ChoiceLayout {
   if (question.picture !== undefined) return "grid";
+  // 번역 줄이 있는 보기는 두 줄이라 가로 칩에 넣지 않습니다 — 4자 이하 보기도 세로로 쌓습니다.
+  if (question.choiceTranslations !== undefined) return "stacked";
   return isStackedChoices(question.choices) ? "stacked" : "row";
 }
 
@@ -209,6 +211,7 @@ export function WordChoiceActivity({
                 key={choiceIndex}
                 index={choiceIndex}
                 text={choiceText}
+                translation={question.choiceTranslations?.[choiceIndex]}
                 // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는
                 // null입니다.
                 result={choiceResultAt(state, question, choiceIndex)}

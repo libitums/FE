@@ -2,8 +2,8 @@
   "targets": [
     {
       "path": "apps/mobile/dist/main.lynx.bundle",
-      "maxBytes": 2078000,
-      "note": "2026-10-17 새 에피소드 형식 ①을 main(#253 지표 모션 병합 뒤) 위로 다시 병합한 CI 설정(.env.local 없음) 실측은 2,077,069 bytes입니다. 직전 이 브랜치 실측(main #245 위, 2,047.2 kB) + #253 증가분 29,876 bytes와 맞아 새 증가 요인은 없습니다. 상한을 2,049,000 → 2,078,000 bytes로 올렸습니다(kB 올림). 근거: docs/performance/reports/episode-format-v3-iphone-17-pro-simulator-01.md · docs/adr/0065-episode-format-additions.md · docs/adr/0064-stat-motion.md."
+      "maxBytes": 2123000,
+      "note": "2026-10-17 새 에피소드 형식 ②를 갱신된 ①(main #253 지표 모션 병합 뒤) 위로 다시 병합한 CI 설정(.env.local 없음) 실측은 2,122,706 bytes입니다. 직전 이 브랜치 실측(2,092.8 kB) + #253 증가분 29,876 bytes와 맞아 새 증가 요인은 없습니다. 상한을 2,094,000 → 2,123,000 bytes로 올렸습니다(kB 올림). 근거: docs/performance/reports/episode-format-screens-iphone-17-pro-simulator-01.md · docs/adr/0066-episode-format-screens.md · docs/adr/0064-stat-motion.md."
     },
     {
       "path": "apps/mobile/dist/static/image",

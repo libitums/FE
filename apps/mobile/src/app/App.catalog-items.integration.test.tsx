@@ -324,6 +324,8 @@ const contentIdOf: Record<CatalogActivity["form"], string> = {
   typing: "typing-activity-content",
   "vocab-card": "vocab-card-content",
   "pair-match": "pair-match-content",
+  "culture-card": "culture-card-content",
+  "syllable-build": "syllable-build-content",
 };
 
 /** 활동의 모양을 「W3」 같은 구간 표기로 적습니다 — 계획의 구간 열과 같은 표기입니다. */
@@ -334,6 +336,8 @@ const spanLetter: Record<CatalogActivity["form"], string> = {
   "vocab-card": "C",
   listening: "L",
   "sentence-order": "O",
+  "culture-card": "U",
+  "syllable-build": "B",
 };
 const spanOf = (plan: CatalogLessonPlan): string[] =>
   plan.activities.map((activity) => `${spanLetter[activity.form]}${activity.questions.length}`);

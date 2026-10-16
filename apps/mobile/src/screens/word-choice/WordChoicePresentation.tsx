@@ -54,7 +54,12 @@ export function WordChoicePresentation({
   return (
     <>
       <text
-        className="word-choice-screen-prompt"
+        // 번역 줄이 있는 문항(문화 확인)은 질문이 산문 길이라 제시문이 문장 크기로 섭니다.
+        className={
+          question.choiceTranslations === undefined
+            ? "word-choice-screen-prompt"
+            : "word-choice-screen-prompt word-choice-screen-prompt-sentence"
+        }
         data-testid="word-choice-screen-prompt"
         accessibility-label={spokenOf(question.prompt)}
       >

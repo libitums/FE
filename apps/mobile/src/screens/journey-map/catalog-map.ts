@@ -12,6 +12,7 @@ import type {
   CatalogUnitKey,
 } from "../../lib/catalog-progress";
 import type { CatalogEntry } from "../../lib/episode-catalog";
+import type { LearningUnit } from "../../lib/episode-content.model";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
 import type { JourneyMapItemStatus } from "./journey-map-types";
@@ -30,6 +31,21 @@ export const noCatalogMapSections: readonly CatalogMapSection[] = [];
 
 export const TUTORIAL_GATE_UNIT: EpisodeFinalUnitId = "tutorial-final-test";
 
+const CULTURE_ITEM_TYPES: ReadonlySet<string> = new Set(["CULTURE_CARD", "CULTURE_CHECK"]);
+
+/**
+ * 문항이 하나 이상이고 모두 문화 유형(CULTURE_CARD · CULTURE_CHECK)인 유닛의 id입니다(유닛 순서). 유닛
+ * 이름이 아니라 내용으로 가립니다.
+ */
+export function catalogCultureKeysOf(units: readonly LearningUnit[]): readonly CatalogUnitKey[] {
+  return units
+    .filter(
+      (unit) =>
+        unit.items.length > 0 && unit.items.every((item) => CULTURE_ITEM_TYPES.has(item.type)),
+    )
+    .map((unit) => unit.id);
+}
+
 export function catalogMapSectionsOf(
   catalog: readonly CatalogEntry[],
 ): readonly CatalogMapSection[] {
@@ -42,6 +58,7 @@ export function catalogMapSectionsOf(
         lessonKeys: entry.episode.units.map((unit) => unit.id),
         finalKey: entry.episode.finalTest.id,
         completionKeys: entry.episode.completion?.requires ?? [entry.episode.finalTest.id],
+        cultureKeys: catalogCultureKeysOf(entry.episode.units),
       };
     }
     return {
@@ -178,7 +195,7 @@ export function catalogUnitNodesOf(
   return [
     ...section.lessonKeys.map((key, index): CatalogUnitNode => ({
       key,
-      role: "lesson",
+      role: section.cultureKeys.includes(key) ? "culture" : "lesson",
       ordinal: index + 1,
       status: catalogUnitStatus(section, key, progress),
     })),
@@ -208,9 +225,14 @@ export function catalogUnitNodeTitle(
   node: Pick<CatalogUnitNode, "role" | "ordinal">,
   copy: UiCopy,
 ): string {
-  return node.role === "lesson"
-    ? copy.catalogMap.lessonTitle(node.ordinal)
-    : copy.catalogMap.finalTitle;
+  switch (node.role) {
+    case "lesson":
+      return copy.catalogMap.lessonTitle(node.ordinal);
+    case "culture":
+      return copy.catalogMap.cultureTitle;
+    case "final":
+      return copy.catalogMap.finalTitle;
+  }
 }
 
 export function catalogUnitNodeAccessibilityLabel(

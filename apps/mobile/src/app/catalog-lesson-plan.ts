@@ -49,6 +49,8 @@ export const catalogActivityScoring: Readonly<Record<CatalogActivityForm, Catalo
     typing: "graded",
     "vocab-card": "ungraded",
     "pair-match": "graded",
+    "culture-card": "ungraded",
+    "syllable-build": "graded",
   };
 
 type PlayableItem = Exclude<CatalogMappedItem, { kind: "skipped" }>;
@@ -80,6 +82,14 @@ function appended(last: CatalogActivity, item: PlayableItem): CatalogActivity | 
       return last.form === "pair-match"
         ? { form: "pair-match", questions: [...last.questions, item.question] }
         : null;
+    case "culture-card":
+      return last.form === "culture-card"
+        ? { form: "culture-card", questions: [...last.questions, item.question] }
+        : null;
+    case "syllable-build":
+      return last.form === "syllable-build"
+        ? { form: "syllable-build", questions: [...last.questions, item.question] }
+        : null;
   }
 }
 
@@ -97,6 +107,10 @@ function startedBy(item: PlayableItem): CatalogActivity {
       return { form: "vocab-card", questions: [item.question] };
     case "pair-match":
       return { form: "pair-match", questions: [item.question] };
+    case "culture-card":
+      return { form: "culture-card", questions: [item.question] };
+    case "syllable-build":
+      return { form: "syllable-build", questions: [item.question] };
   }
 }
 

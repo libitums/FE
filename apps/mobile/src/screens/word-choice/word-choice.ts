@@ -68,11 +68,13 @@ export function optionAccessibilityLabel(
   text: string,
   result: AnswerResult | null,
   copy: UiCopy,
+  translation?: string,
 ): string {
+  const base = translation === undefined ? text : `${text}, ${translation}`;
   if (result === null) {
-    return text;
+    return base;
   }
-  return `${text}, ${copy.common.answerResultSuffix[result]}`;
+  return `${base}, ${copy.common.answerResultSuffix[result]}`;
 }
 
 // 응답 여부는 파생입니다. null 비교라 0번 보기도 응답으로 셉니다.

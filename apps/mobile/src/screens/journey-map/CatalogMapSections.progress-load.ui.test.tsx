@@ -17,6 +17,7 @@ const section: CatalogReadySection = {
   lessonKeys,
   finalKey: "RP",
   completionKeys: ["RP"],
+  cultureKeys: [],
 };
 const gate: CatalogGate = { tutorialPassed: true, progress: { "u01-water": ["intro", "S1"] } };
 

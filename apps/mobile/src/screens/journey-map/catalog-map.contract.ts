@@ -27,6 +27,8 @@ export type CatalogReadySection = {
   readonly finalKey: CatalogUnitKey;
   /** 에피소드 완료 키 — `episode.completion?.requires ?? [episode.finalTest.id]`. 비지 않는다. */
   readonly completionKeys: readonly CatalogUnitKey[];
+  /** 문화 유닛의 키 — `lessonKeys`의 부분집합(유닛 순서)입니다. 없으면 빈 배열. */
+  readonly cultureKeys: readonly CatalogUnitKey[];
 };
 
 export type CatalogUnavailableSection = {
@@ -46,10 +48,12 @@ export type CatalogGate = {
 
 export type CatalogCaptionKind = "pending" | "update" | "unavailable";
 
-/** 레슨 · 최종 노드 — 상태가 사슬(표지 → 레슨들 → 최종)에서 파생됩니다. */
+export type CatalogUnitNodeRole = "lesson" | "culture" | "final";
+
+/** 레슨 · 문화 · 최종 노드 — 상태가 사슬(표지 → 레슨들 → 최종)에서 파생됩니다. */
 export type CatalogUnitNode = {
   readonly key: CatalogUnitKey;
-  readonly role: "lesson" | "final";
+  readonly role: CatalogUnitNodeRole;
   readonly ordinal: number;
   readonly status: JourneyMapItemStatus;
 };
@@ -114,6 +118,7 @@ export type CatalogMapCopy = {
   readonly coverTitle: string;
   readonly lessonTitle: (ordinal: number) => string;
   readonly finalTitle: string;
+  readonly cultureTitle: string;
   /** 표지 · 레슨 · 최종 노드의 낭독 이름 — `Episode n. <제목>`. */
   readonly nodeLabel: (episodeLabel: string, title: string) => string;
   readonly caption: Readonly<Record<CatalogCaptionKind, string>>;

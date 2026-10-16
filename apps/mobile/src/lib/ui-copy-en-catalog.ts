@@ -4,7 +4,9 @@ import type { AudioUnavailableCopy } from "../components/audio-unavailable.contr
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
+import type { CultureCardCopy } from "../screens/culture-card/culture-card.contract";
 import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
+import type { SyllableBuildCopy } from "../screens/syllable-build/syllable-build.contract";
 import type { TypingCopy } from "../screens/typing/typing.contract";
 import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
 import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-picture";
@@ -20,6 +22,7 @@ export const catalogMapEn: CatalogMapCopy = {
   coverTitle: "Episode intro",
   lessonTitle: (ordinal) => `Lesson ${ordinal}`,
   finalTitle: "Final test",
+  cultureTitle: "Culture",
   nodeLabel: (label, title) => `${label} ${title}`,
   caption: {
     pending: "COMING SOON",
@@ -57,6 +60,22 @@ export const vocabCardEn: VocabCardCopy = {
   pronunciation: (romanization) => `Pronunciation: ${romanization}`,
   meaning: (meaning) => `Meaning: ${meaning}`,
   example: (text) => `Example: ${text}`,
+};
+
+export const cultureCardEn: CultureCardCopy = {
+  instruction: "Learn about life in Korea.",
+  badge: "Culture",
+  koreanBodyTitle: "In Korean",
+  pronunciation: (romanization) => `Pronunciation: ${romanization}`,
+};
+
+export const syllableBuildEn: SyllableBuildCopy = {
+  instruction: "Tap the syllables to spell the word.",
+  meaning: (meaning) => `Meaning: ${meaning}`,
+  placedTile: (text, position, slotCount) => `${text}, position ${position} of ${slotCount}`,
+  wordEmpty: (slotCount) =>
+    `Your word, empty, ${slotCount} ${slotCount === 1 ? "syllable" : "syllables"}`,
+  word: (word) => `Your word: ${word}`,
 };
 
 export const pairMatchEn: PairMatchCopy = {

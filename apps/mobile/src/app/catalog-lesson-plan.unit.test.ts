@@ -597,6 +597,8 @@ const lessonLetter: Record<CatalogActivity["form"], string> = {
   typing: "T",
   "vocab-card": "C",
   "pair-match": "P",
+  "culture-card": "U",
+  "syllable-build": "B",
 };
 
 function runsOf(activities: readonly CatalogActivity[]): string {
@@ -1022,6 +1024,8 @@ describe("catalogActivityScoring", () => {
       typing: "graded",
       "vocab-card": "ungraded",
       "pair-match": "graded",
+      "culture-card": "ungraded",
+      "syllable-build": "graded",
     });
     expect(Object.keys(catalogActivityScoring).sort()).toEqual(Object.keys(lessonLetter).sort());
   });

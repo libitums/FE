@@ -4,9 +4,11 @@ import type { CatalogUnitKey } from "../lib/catalog-progress";
 import type { LearningItem } from "../lib/episode-content";
 import type { NonEmpty } from "../lib/non-empty";
 import type { FillScript } from "../lib/placeholder-fill";
+import type { CultureCardQuestion } from "../screens/culture-card/culture-card.contract";
 import type { ListeningQuestion } from "../screens/listening/listening-questions";
 import type { SentenceOrderQuestion } from "../screens/sentence-order/sentence-order-questions";
 import type { PairMatchQuestion } from "../screens/pair-match/pair-match.contract";
+import type { SyllableBuildQuestion } from "../screens/syllable-build/syllable-build.contract";
 import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { VocabCardQuestion } from "../screens/vocab-card/vocab-card.contract";
 import type { WordChoiceQuestion } from "../screens/word-choice/word-choice-questions";
@@ -19,7 +21,9 @@ export type CatalogActivity =
   | { readonly form: "word-choice"; readonly questions: NonEmpty<WordChoiceQuestion> }
   | { readonly form: "typing"; readonly questions: NonEmpty<TypingQuestion> }
   | { readonly form: "vocab-card"; readonly questions: NonEmpty<VocabCardQuestion> }
-  | { readonly form: "pair-match"; readonly questions: NonEmpty<PairMatchQuestion> };
+  | { readonly form: "pair-match"; readonly questions: NonEmpty<PairMatchQuestion> }
+  | { readonly form: "culture-card"; readonly questions: NonEmpty<CultureCardQuestion> }
+  | { readonly form: "syllable-build"; readonly questions: NonEmpty<SyllableBuildQuestion> };
 
 export type CatalogActivityForm = CatalogActivity["form"];
 
@@ -54,6 +58,16 @@ export type CatalogMappedItem =
   | { readonly kind: "typing"; readonly itemId: string; readonly question: TypingQuestion }
   | { readonly kind: "vocab-card"; readonly itemId: string; readonly question: VocabCardQuestion }
   | { readonly kind: "pair-match"; readonly itemId: string; readonly question: PairMatchQuestion }
+  | {
+      readonly kind: "culture-card";
+      readonly itemId: string;
+      readonly question: CultureCardQuestion;
+    }
+  | {
+      readonly kind: "syllable-build";
+      readonly itemId: string;
+      readonly question: SyllableBuildQuestion;
+    }
   | {
       readonly kind: "skipped";
       readonly itemId: string;

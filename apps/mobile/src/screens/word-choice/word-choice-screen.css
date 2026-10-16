@@ -55,6 +55,19 @@
   letter-spacing: var(--libitum-typography-display-letter-spacing);
 }
 
+/* 문장 크기의 제시문 — 번역 줄이 있는 문항(문화 확인)의 질문입니다. 질문이 산문 길이(최대 31자 한국어)라
+   `display`면 네다섯 줄이 되어 카드가 질문으로 가득 찹니다. 22px로 내려가므로 위 주석의 규칙대로 색을
+   `fg-brand`(= `brand-strong` 값, 흰 면 5.46:1)로 함께 돌립니다 — `brand-primary`는 큰 글자일 때만 AA입니다.
+   기존 문항은 이 클래스가 붙지 않아 한 픽셀도 바뀌지 않습니다. */
+.word-choice-screen-prompt-sentence {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
 /* 판정 배지 자리입니다 — 비어 있어도 높이를 지킵니다. 배지가 뜨고 질 때 카드 높이가
    흔들리면 그 아래 보기가 함께 밀립니다.
 

@@ -32,6 +32,8 @@ export type WordChoiceQuestion = {
    * 그림이 못 설 때 그 자리에 서는 글자입니다.
    */
   readonly picture?: WordChoicePicture;
+  /** 보기마다 아래 작은 번역 줄입니다. 있으면 길이 = `choices.length`(매핑이 보장)이고 보기는 세로로 쌓입니다. */
+  readonly choiceTranslations?: readonly string[];
 };
 
 // ---------------------------------------------------------------- 고정 데이터
