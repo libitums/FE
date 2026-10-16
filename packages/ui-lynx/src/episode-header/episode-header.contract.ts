@@ -1,5 +1,5 @@
 export type EpisodeHeaderProps = {
-  /** 에피소드 번호 줄입니다 — 디자인의 「Episode 1.」 자리입니다. */
+  /** 에피소드 번호 줄입니다 — 설명 줄입니다 — 「Episode 1, unit 02」처럼 호출자가 만들어 넘깁니다. */
   readonly episodeLabel: string;
   /** 에피소드 이름입니다 — 디자인의 「Cosmetic.」 자리입니다. */
   readonly title: string;
@@ -7,10 +7,6 @@ export type EpisodeHeaderProps = {
   readonly completedUnitCount: number;
   /** 이 에피소드의 유닛 수입니다. */
   readonly totalUnitCount: number;
-  /** 호출자가 띄어쓰기에서 나눈 제목 줄입니다. 줄마다 text 하나를 그립니다. 없으면 제목 하나 그대로입니다. */
-  readonly titleLines?: readonly string[];
-  /** `compact`이면 제목 글자를 토큰 `heading-s` 단계로 내립니다. `titleLines`와 함께 씁니다. */
-  readonly titleSize?: "default" | "compact";
 };
 
 export type EpisodeHeaderContract = {
@@ -58,6 +54,6 @@ export function getEpisodeHeaderContract(props: EpisodeHeaderProps): EpisodeHead
     fillPercent: (props.completedUnitCount / props.totalUnitCount) * 100,
     // 「7 / 20」은 눈으로 보면 막대 옆이라 뜻이 붙지만, 낭독되면 무엇의 7인지 알 수
     // 없습니다. 이름에서 단위를 밝힙니다.
-    accessibilityLabel: `${episodeLabel} ${title}, ${props.completedUnitCount} of ${props.totalUnitCount} unit${props.totalUnitCount === 1 ? "" : "s"} completed`,
+    accessibilityLabel: `${episodeLabel}, ${title}, ${props.completedUnitCount} of ${props.totalUnitCount} unit${props.totalUnitCount === 1 ? "" : "s"} completed`,
   };
 }

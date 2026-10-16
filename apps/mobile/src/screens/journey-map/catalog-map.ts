@@ -15,7 +15,6 @@ import type {
   CatalogGate,
   CatalogMapSection,
   CatalogReadySection,
-  CatalogSectionProgress,
   CatalogUnavailableReason,
   CatalogUnavailableSection,
   CatalogUnitNode,
@@ -104,17 +103,6 @@ export function canStartCatalogCover(
   return index >= 0 && catalogCoverStatus(sections, index, gate) !== "locked";
 }
 
-export function catalogSectionProgress(
-  section: CatalogReadySection,
-  progress: CatalogProgress,
-): CatalogSectionProgress {
-  const keys = [CATALOG_INTRO_KEY, ...section.lessonKeys, section.finalKey];
-  return {
-    completed: keys.filter((key) => isCatalogUnitDone(progress, section.episodeId, key)).length,
-    total: keys.length,
-  };
-}
-
 export function catalogCaptionKindOf(reason: CatalogUnavailableReason): CatalogCaptionKind {
   if (reason === "pending") return "pending";
   return reason === "client-too-old" || reason === "unsupported-schema" ? "update" : "unavailable";
@@ -196,7 +184,10 @@ export function canStartCatalogUnit(
   return catalogUnitStatus(section, unitKey, progress) !== "locked";
 }
 
-export function catalogUnitNodeTitle(node: CatalogUnitNode, copy: UiCopy): string {
+export function catalogUnitNodeTitle(
+  node: Pick<CatalogUnitNode, "role" | "ordinal">,
+  copy: UiCopy,
+): string {
   return node.role === "lesson"
     ? copy.catalogMap.lessonTitle(node.ordinal)
     : copy.catalogMap.finalTitle;
@@ -204,7 +195,7 @@ export function catalogUnitNodeTitle(node: CatalogUnitNode, copy: UiCopy): strin
 
 export function catalogUnitNodeAccessibilityLabel(
   episodeOrdinal: number,
-  node: CatalogUnitNode,
+  node: Pick<CatalogUnitNode, "role" | "ordinal">,
   copy: UiCopy,
 ): string {
   return copy.catalogMap.nodeLabel(

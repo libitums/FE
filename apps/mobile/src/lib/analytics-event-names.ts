@@ -41,4 +41,7 @@ export type AnalyticsEventName =
   | "episode_final_passed"
   | "learner_profile_saved"
   | "learner_profile_skipped"
-  | "learner_profile_opened";
+  | "learner_profile_opened"
+  | "progress_load_delayed"
+  | "progress_load_failed"
+  | "progress_load_recovered";

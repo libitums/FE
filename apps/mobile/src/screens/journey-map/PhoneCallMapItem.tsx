@@ -2,6 +2,8 @@ import type { PhoneCallMapItemProps } from "../phone-call/phone-call.contract";
 import phone from "@libitums/icons/lynx/phone";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
+import { canSelectMapNode } from "./journey-map-load";
+
 import "./journey-special-unit.css";
 
 // `LearningUnit`의 상태 어휘로 옮깁니다 — `MessengerMapItem`과 **같은 표**입니다.
@@ -9,6 +11,7 @@ const unitStatusByStatus = {
   locked: "default",
   available: "available",
   completed: "clear",
+  checking: "checking",
 } as const;
 
 // `MessengerMapItem`과 같은 어댑터입니다 — 어휘와 아이콘만 다릅니다. 잠김도 같습니다:
@@ -16,7 +19,7 @@ const unitStatusByStatus = {
 export function PhoneCallMapItem({ id, title, status, onSelect }: PhoneCallMapItemProps) {
   const handleSelect = () => {
     "background only";
-    if (status !== "locked") {
+    if (canSelectMapNode(status)) {
       onSelect(id);
     }
   };

@@ -12,7 +12,6 @@ import { screenId, scrollId } from "./journey-map-scroll";
 import { noCatalogMapSections } from "./catalog-map";
 import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
-import { useCurrentEpisode } from "./useCurrentEpisode";
 import { useStepSheet } from "./useStepSheet";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
@@ -31,6 +30,8 @@ import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
 import type { JourneyMapCatalogProps } from "./catalog-map.contract";
+import { knownProgressLoad, nodeAccessOf } from "./journey-map-load";
+import type { JourneyMapProgressLoad } from "./journey-map-load.contract";
 
 import "./journey-map-screen.css";
 
@@ -53,6 +54,7 @@ export type JourneyMapScreenProps = {
   onLayerChange?: (open: boolean) => void;
   /** 카탈로그 구획 슬롯입니다. 없으면 튜토리얼만 있는 맵입니다. */
   readonly catalog?: JourneyMapCatalogProps;
+  readonly progressLoad?: JourneyMapProgressLoad;
 };
 
 // 화면 컴포넌트: 파일명 PascalCase, export 이름과 일치, `~Screen` 접미사 (ADR-0003 D6).
@@ -72,6 +74,7 @@ export function JourneyMapScreen({
   onStartEpisodeFinal,
   onLayerChange,
   catalog,
+  progressLoad = knownProgressLoad,
 }: JourneyMapScreenProps): ReactNode {
   const guide = useFirstUnitGuide("map");
   const {
@@ -82,12 +85,6 @@ export function JourneyMapScreen({
     handleSelectStep,
     handleCloseSheet,
   } = useStepSheet();
-  // 머리 카드는 구획 밖에 **하나만** 섭니다 — 무엇을 말할지는 스크롤 자리가 고릅니다
-  // (`useCurrentEpisode`의 주석에 `position: sticky`를 쓸 수 없는 이유를 적었습니다).
-  const currentEpisode = useCurrentEpisode(
-    journeyMapSections,
-    catalog?.sections ?? noCatalogMapSections,
-  );
 
   const openStep =
     sheetState.openStepId === null ? undefined : findStep(journeySteps, sheetState.openStepId);
@@ -119,15 +116,15 @@ export function JourneyMapScreen({
     blocked: openStep !== undefined || guide.visible,
   });
 
-  // 스크롤 한 번에 셋이 답합니다 — 말풍선 자리 · 머리 카드 내용 · 자동 스크롤의 잠금입니다. 인라인
+  // 스크롤 한 번에 둘이 답합니다 — 말풍선 자리 · 자동 스크롤의 잠금입니다. 인라인
   // 화살표로 묶으면 `"background only"`가 중첩돼 바인딩이 서지 않습니다.
   const handleMapScroll = (event: ScrollEvent) => {
     "background only";
     handleScroll(event);
-    currentEpisode.handleScroll(event);
     autoScroll.handleScroll(event);
   };
 
+  const access = nodeAccessOf(progressLoad);
   const actions = {
     onSelectStep: handleSelectStep,
     onStartEpisodeIntroUnit,
@@ -175,6 +172,7 @@ export function JourneyMapScreen({
                 episode={section.episode}
                 items={section.items}
                 progress={progress}
+                access={access}
                 guide={guide}
                 actions={actions}
               />
@@ -184,13 +182,12 @@ export function JourneyMapScreen({
             catalog={catalog}
             completedEpisodeFinalIds={completedEpisodeFinalIds}
             hidden={guide.visible}
+            access={access}
           />
         </view>
       </scroll-view>
-      {/* [겹침 레이어] 머리 카드입니다 — **스크롤 밖에 하나만** 섭니다. 구획마다 두고
-          `position: sticky`로 달라붙이면 Lynx에서 첫 카드가 풀리지 않아 경계를 넘어도
-          내용이 안 바뀝니다(`useCurrentEpisode`의 주석). 여기 두면 언제나 같은 자리에
-          서고, 무엇을 말할지는 스크롤 자리가 고릅니다. */}
+      {/* [겹침 레이어] 머리 띠입니다 — 스텝 말풍선이 열린 동안만 **스크롤 밖에** 섭니다(구획마다
+          `position: sticky`로 두면 Lynx에서 첫 카드가 풀리지 않습니다). */}
       {guide.visible ? (
         <view
           className="first-unit-map-scrim"
@@ -202,10 +199,11 @@ export function JourneyMapScreen({
         </view>
       ) : null}
       <JourneyMapHeaderSlot
-        index={currentEpisode.index}
         tutorialSections={journeyMapSections}
         progress={progress}
-        catalog={catalog}
+        load={progressLoad}
+        obscured={openStep !== undefined || guide.visible}
+        openStepId={sheetState.openStepId}
       />
 
       {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식입니다. */}

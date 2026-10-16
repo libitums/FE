@@ -18,7 +18,7 @@ const meta = {
     accessibilityLabel: { control: "text" },
     status: {
       control: "inline-radio",
-      options: ["default", "available", "active", "clear"],
+      options: ["default", "available", "active", "clear", "checking"],
     },
     narrative: { control: "inline-radio", options: ["none", "narrative"] },
     icon: { control: "inline-radio", options: ["headset", "audio-waves"] },
@@ -46,6 +46,7 @@ export const Available: Story = {};
 export const Default: Story = { args: { status: "default" } };
 export const Active: Story = { args: { status: "active" } };
 export const Clear: Story = { args: { status: "clear" } };
+export const Checking: Story = { args: { status: "checking" } };
 export const Narrative: Story = { args: { narrative: "narrative" } };
 export const Focused: Story = { args: { focused: true } };
 export const AllStates: Story = { args: { showAllStates: true } };

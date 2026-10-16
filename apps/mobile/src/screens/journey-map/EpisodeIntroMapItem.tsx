@@ -4,6 +4,8 @@ import type { EpisodeIntroMapItemProps } from "../episode-intro/episode-intro.co
 import bookmark from "@libitums/icons/lynx/bookmark";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
+import { canSelectMapNode } from "./journey-map-load";
+
 import "./journey-special-unit.css";
 
 // `LearningUnit`의 상태 어휘로 옮깁니다 — `EpisodeFinalMapItem`과 **같은 표**입니다.
@@ -13,6 +15,7 @@ const unitStatusByStatus = {
   locked: "default",
   available: "available",
   completed: "clear",
+  checking: "checking",
 } as const;
 
 // 에피소드 표지의 맵 항목입니다 — 구획의 **첫 항목**이고, 이것을 끝내야 그 에피소드의
@@ -42,7 +45,7 @@ export function EpisodeIntroMapItem({
   // 스스로 막은 것이 아닙니다. 그 조각의 내부 동작이 바뀌면 넷은 버티고 여기만 깨집니다.
   const handleSelect = () => {
     "background only";
-    if (status !== "locked") {
+    if (canSelectMapNode(status)) {
       onSelect(id);
     }
   };

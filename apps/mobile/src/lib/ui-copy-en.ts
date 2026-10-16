@@ -31,7 +31,13 @@ import {
   writingEn,
 } from "./ui-copy-en-learning";
 import { learnerProfileEn } from "./ui-copy-en-profile";
-import { commonEn, journeyMapEn, learningShellEn, shellEn } from "./ui-copy-en-shell";
+import {
+  commonEn,
+  journeyMapEn,
+  learningShellEn,
+  progressLoadEn,
+  shellEn,
+} from "./ui-copy-en-shell";
 import {
   episodeFinalEn,
   episodeIntroEn,
@@ -78,4 +84,5 @@ export const uiCopyEn: UiCopy = {
   catalogFinal: catalogFinalEn,
   audioUnavailable: audioUnavailableEn,
   learnerProfile: learnerProfileEn,
+  progressLoad: progressLoadEn,
 };

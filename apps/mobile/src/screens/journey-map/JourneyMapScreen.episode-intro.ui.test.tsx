@@ -152,12 +152,11 @@ test("[UI-I6] 표지의 낭독 이름이 상태에 따라 갈린다", () => {
 // 헤더 막대가 재는 것은 **그 아래 줄에 선 것**의 진행입니다 — 화면에 열 줄이 서는데
 // 아홉을 세면 사용자가 대조할 수 없습니다(spec §2.7). 분자도 같은 단위입니다.
 test("[UI-I7] 에피소드 헤더의 분모가 13이고 분자가 끝낸 맵 항목 수다", () => {
-  const { unmount } = renderMap();
-  expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("0 / 13");
-  unmount();
-
-  // 표지를 끝내면 분자가 하나 늡니다 — 표지가 진행의 여섯째 출처입니다.
+  // ⟨§20⟩ 띠는 스텝 말풍선이 열린 동안만 선다. 표지 전에는 스텝이 잠겨 열 수 없으므로
+  // 표지를 끝낸 맵에서 첫 스텝을 눌러 연 뒤 읽는다 — 표지가 진행의 여섯째 출처라 분자가 1이다.
   renderMap({ completedEpisodeIntroIds: introDone });
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-greeting"), { detail: { y: 300 } });
+
   expect(screen.getAllByTestId("ui-lynx-episode-header-count")[0]).toHaveTextContent("1 / 13");
 });
 

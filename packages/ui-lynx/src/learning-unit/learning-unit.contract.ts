@@ -1,7 +1,7 @@
 import { color } from "@libitums/design-tokens";
 import { motionClassName, type Motion } from "../motion/motion.contract";
 
-export type LearningUnitStatus = "default" | "available" | "active" | "clear";
+export type LearningUnitStatus = "default" | "available" | "active" | "clear" | "checking";
 export type LearningUnitNarrative = "none" | "narrative";
 
 /** Lynx 탭 이벤트에서 이 컴포넌트가 쓰는 부분만 적습니다(BottomSheet와 같은 갈래). */
@@ -43,7 +43,13 @@ export type LearningUnitContract = {
   readonly focused: boolean;
 };
 
-const statuses = new Set<LearningUnitStatus>(["default", "available", "active", "clear"]);
+const statuses = new Set<LearningUnitStatus>([
+  "default",
+  "available",
+  "active",
+  "clear",
+  "checking",
+]);
 const narratives = new Set<LearningUnitNarrative>(["none", "narrative"]);
 
 export function getLearningUnitContract(
@@ -76,7 +82,7 @@ export function getLearningUnitContract(
     throw new Error("LearningUnit bindtap must be a function");
   }
 
-  const interactive = status !== "default";
+  const interactive = status !== "default" && status !== "checking";
   const focused = interactive && props.focused === true;
   const className = [
     "ui-lynx-learning-unit",
@@ -88,13 +94,17 @@ export function getLearningUnitContract(
     .filter((value): value is string => value !== undefined)
     .join(" ");
 
+  // 「확인 중」은 유닛 아이콘을 넘겨받은 채로 두되 면과 같은 색으로 칠해 자리만 잡습니다 —
+  // 자물쇠 · 체크는 모르는 상태를 주장하므로 쓰지 않고, 채워질 때 아이콘 칸이 움직이지 않습니다.
   const iconKind = status === "default" ? "lock" : status === "clear" ? "tick" : "learning";
   const iconColor =
     status === "default"
       ? color.gray[700]
-      : status === "available"
-        ? color.brand.primary
-        : color.white;
+      : status === "checking"
+        ? color.gray[300]
+        : status === "available"
+          ? color.brand.primary
+          : color.white;
   const ringColor = status === "clear" ? color.feedback.correct : color.gray[400];
 
   // 상태와 이야기 연결은 둘 다 **이름 뒤 접미사**로 냅니다(ADR-0016 D3). 원래 상태는
@@ -108,11 +118,13 @@ export function getLearningUnitContract(
   const statusSuffix =
     status === "default"
       ? "locked"
-      : status === "active"
-        ? "current"
-        : status === "clear"
-          ? "completed"
-          : undefined;
+      : status === "checking"
+        ? "loading"
+        : status === "active"
+          ? "current"
+          : status === "clear"
+            ? "completed"
+            : undefined;
 
   return {
     testId: props.id ? `ui-lynx-learning-unit-${props.id}` : "ui-lynx-learning-unit",
@@ -137,5 +149,5 @@ export function getLearningUnitContract(
 
 /** reduced이고 status가 default가 아니면 true — 눌림 막을 렌더한다. */
 export function hasPressedShade(status: LearningUnitStatus, motion: Motion): boolean {
-  return motion === "reduced" && status !== "default";
+  return motion === "reduced" && status !== "default" && status !== "checking";
 }

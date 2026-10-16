@@ -51,6 +51,7 @@ import { useOpenedPush } from "./use-opened-push";
 import { usePushTokenRefresh } from "./use-push-token-refresh";
 import { useSystemBack } from "./use-system-back";
 import { useJourneyProgress } from "./use-journey-progress";
+import { useProgressLoadEvents } from "./use-progress-load-events";
 import { useLearnerProfile } from "./use-learner-profile";
 import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
@@ -101,6 +102,7 @@ export function AppSession({
   // `Nav`에 적지 않습니다(ADR-0007 D3). ⟨2026-09-30⟩ **서버에 저장합니다**(ADR-0035) — 로그인 뒤 불러와 합치고
   // 바뀔 때마다 저장합니다. 연속 학습 · 트로피도 이 훅이 냅니다.
   const progress = useJourneyProgress(journeySeed, initialCompletedEpisodeIntroIds);
+  useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile();
   const {
     completedStepCount,
@@ -198,9 +200,7 @@ export function AppSession({
     roleplaySections,
     entryLanguage,
     setEntryLanguage,
-    streakDays: progress.streakDays,
-    trophyCount: progress.trophyCount,
-    syncProgress: progress.syncFromServer,
+    ...progress.wiring,
     episodeContent,
     catalogSections,
     catalogProgress,
@@ -264,7 +264,7 @@ export function AppSession({
               {showsNavigator ? (
                 <AppHeader
                   streakDays={progress.streakDays}
-                  trophyCount={progress.trophyCount}
+                  trophyCount={progress.headerTrophyCount}
                   celebrateStreak={progress.streakCelebration}
                   onStreakCelebrated={progress.onStreakCelebrated}
                   episodeSurvey={progress.episodeSurvey}

@@ -379,19 +379,19 @@ function precedes(a: Element, b: Element): boolean {
 test("I1. (AC1) 콘텐츠 404 · 진행 없음: 튜토리얼 다음에 에피소드 1 · 2 · 3 구획이 서고 표지는 모두 잠겨 있다", async () => {
   await boot();
 
-  const tutorial = document.getElementById("journey-map-screen-episode-tutorial");
-  expect(tutorial).not.toBeNull();
+  const tutorial = screen.getByTestId("ui-lynx-learning-unit-greeting");
   const sections = ["u01-water", "u02-checkin", "u03-mina"].map((id) =>
     screen.getByTestId(`catalog-section-${id}`),
   );
-  expect(precedes(tutorial as Element, sections[0] as Element)).toBe(true);
+  expect(precedes(tutorial, sections[0] as Element)).toBe(true);
   expect(precedes(sections[0] as Element, sections[1] as Element)).toBe(true);
   expect(precedes(sections[1] as Element, sections[2] as Element)).toBe(true);
   expect(screen.queryByTestId("episode-pending-customs")).not.toBeInTheDocument();
   for (const id of ["u01-water", "u02-checkin", "u03-mina"]) {
     expect(cover(id)).toHaveAttribute("data-status", "default");
   }
-  expect(headingAxis(document.body)).toEqual(["ui-lynx-episode-header"]);
+  // spec §20: 띠는 스텝 말풍선이 열린 동안만 서므로 맵만 보일 때 제목 축에 머리 띠가 없다.
+  expect(headingAxis(document.body)).toEqual([]);
 });
 
 test("I2. (AC1 · 2 · 3) 튜토리얼 완료 씨앗: 첫 표지만 열리고 레슨 노드는 무반응 · 표지 → Next → 컷 → 배너 → 맵 · 진행은 배너 전에 저장된다", async () => {

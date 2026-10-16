@@ -40,6 +40,9 @@ Brand Button은 design-system의 `brand.primary` #F46B18 surface와 `white` #FFF
 label·icon·loading spinner를 사용한다. 이 3.016:1 조합은 design-system Accessibility
 문서에서 Default·Pressed·Loading에만 승인한 제품 예외이며, 최종 검증에서도 WCAG AA
 통과가 아닌 `approved-exception`으로 기록한다. 다른 저대비 조합으로 예외를 확장하지 않는다.
+⟨2026-10-16 — 적용 기록, 결정 문장은 바꾸지 않는다⟩ **같은 조합(흰 / `brand-primary`, 3.02:1)이 Button 밖 `EpisodeHeader` 띠로 넓어졌다 — 사용자 결정 「미달로 반영」**
+([ADR-0062](0062-progress-cache-first.md) D13). 24px 굵은 제목은 큰 글자 기준 3:1을 겨우 넘고 12px 설명 줄 · 진행 숫자는 4.5:1에 못 미친다. design-system 승인 범위
+(Button Default · Pressed · Loading) 밖이라 `approved-exception`이 아니라 **사용자 수용 미달**로 기록한다.
 Neutral Button의 surface는 원본 `gray.800` 대신 `gray.900`을 사용하는 FE override로 둔다.
 또한 `loading`과 `disabled`가 함께 주어질 수 있는 소비 API 현실을 반영해 두 상태 class를
 동시에 유지한다. 모든 loading spinner는 같은 variant의 label token을 사용한다. disabled

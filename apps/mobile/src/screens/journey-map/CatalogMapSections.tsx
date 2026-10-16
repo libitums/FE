@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { CatalogEpisodeSection } from "./CatalogEpisodeSection";
 import { CatalogUnavailableSection } from "./CatalogUnavailableSection";
 import { catalogCoverStatus } from "./catalog-map";
+import { mapNodeStatusUnder } from "./journey-map-load";
 import type { CatalogMapSectionsProps } from "./catalog-map.contract";
 
 import "./catalog-map.css";
@@ -12,6 +13,7 @@ import "./catalog-map.css";
 export function CatalogMapSections({
   sections,
   gate,
+  access = "open",
   onStartCover,
   onStartUnit,
 }: CatalogMapSectionsProps): ReactNode {
@@ -22,7 +24,8 @@ export function CatalogMapSections({
           <CatalogEpisodeSection
             key={section.episodeId}
             section={section}
-            coverStatus={catalogCoverStatus(sections, index, gate)}
+            coverStatus={mapNodeStatusUnder(access, catalogCoverStatus(sections, index, gate))}
+            access={access}
             progress={gate.progress}
             onStartCover={onStartCover}
             onStartUnit={onStartUnit}

@@ -4,6 +4,7 @@
 import { authUserIdFrom } from "../lib/auth-user-id";
 import { clearLearnerProfileCache } from "../lib/learner-profile-cache";
 import { clearPendingLearningDays } from "./pending-learning-days";
+import { clearCachedProgress } from "./cached-learning-progress";
 import { clearPendingProgress } from "./pending-learning-progress";
 import { deleteAccount } from "../lib/account-deletion";
 import { signOutRemotely } from "../lib/api-client";
@@ -65,6 +66,7 @@ export function accountWiring({
         const userId = authUserIdFrom(session.accessToken);
         if (userId !== null) {
           clearPendingProgress(userId);
+          clearCachedProgress(userId);
           clearPendingLearningDays(userId);
           clearLearnerProfileCache(userId);
         }

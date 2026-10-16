@@ -410,6 +410,8 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
   넘으면 작은 글자 단계(`compact`)로 내린다. 띄어쓰기가 없으면 한 줄 + `compact`다. 8은 시뮬레이터
   실측(기본 크기 한 줄에 「익선 게스트하우」 8자)이다. ui-lynx `EpisodeHeader`의 선택 prop
   `titleLines` · `titleSize`가 받고 **튜토리얼 머리는 불변**이다.
+  ⟨2026-10-16 — 적용 기록⟩ **머리에서는 더 나누지 않는다** — 머리 카드가 가로 여백 안쪽 전체 폭의 띠가 되어 「줄당 8자」(151px 실측)의 뜻이 사라졌다.
+  머리는 제목 하나를 주고 넘치면 줄바꿈이다([ADR-0062](0062-progress-cache-first.md) D13). `catalogTitleLines`는 카탈로그 표지 화면이 계속 쓴다(ADR-0058). ui-lynx `EpisodeHeader`의 `titleLines` · `titleSize`는 남았지만 앱 소비자가 없다.
 
 ⚠ **같은 회차의 초안을 두 번 뒤집었다** — 둘 다 시뮬레이터가 답했다([카탈로그 맵 e2e](../e2e/catalog-map.md)
 1차 회차). ① 제목: 초안은 `-x-auto-font-size` + preset 크기 + `text-maxline` 2였는데 기기에서 맞춤이
