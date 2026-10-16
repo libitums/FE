@@ -20,6 +20,7 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import com.lynx.tasm.LynxBooleanOption;
+import com.lynx.tasm.LynxError;
 import com.lynx.tasm.LynxView;
 import com.lynx.tasm.LynxViewBuilder;
 import com.lynx.tasm.LynxViewClient;
@@ -91,6 +92,10 @@ public final class MainActivity extends Activity {
       @Override public void onPageUpdate() {
         if (!isFinishing() && !isDestroyed()) statusBarIcons.sync(lynxView);
         mainHandler.post(() -> AccessibilityTapBridge.sync(lynxView));
+      }
+
+      @Override public void onReceivedError(LynxError error) {
+        CrashReporting.onLynxError(error);
       }
     });
     setContentView(lynxView);

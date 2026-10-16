@@ -18,6 +18,12 @@
     android:allowBackup="false"
     android:enableOnBackInvokedCallback="true"
     android:theme="@style/Theme.Duru">
+    <!-- Sentry starts from DuruApplication only when a DSN is built in (docs/adr/0061). -->
+    <meta-data android:name="io.sentry.auto-init" android:value="false" />
+    <provider android:name="io.sentry.android.core.SentryInitProvider"
+        android:authorities="${applicationId}.SentryInitProvider" tools:node="remove" />
+    <provider android:name="io.sentry.android.core.SentryPerformanceProvider"
+        android:authorities="${applicationId}.SentryPerformanceProvider" tools:node="remove" />
     <!-- SDK 자동 초기화를 닫는다. MetaAppEvents가 유효한 값이 있을 때만 손으로 시작한다. -->
     <provider
       android:name="com.facebook.internal.FacebookInitProvider"
