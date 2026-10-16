@@ -111,7 +111,7 @@ export function SyllableBuildActivity({
       questionIndex={counter.questionIndex}
       questionCount={counter.questionCount}
       complete={complete}
-      instruction={question?.instruction || copy.syllableBuild.instruction}
+      instruction={question?.instruction ?? copy.syllableBuild.instruction}
       onExit={onExit}
       actionLabel={action?.label}
       onAction={action?.run}

@@ -29,7 +29,7 @@ const iconByRole: Readonly<Record<CatalogUnitNodeRole, string>> = {
 
 // 카탈로그 레슨 · 문화 · 최종 노드입니다 — 상태(잠김 · 열림 · 끝)는 사슬에서 파생되어 내려오고, 열린 노드만
 // 고름을 올립니다. 잠김이면 `LearningUnit`이 `default`에서 탭을 흘리지 않는 것에만 기대지 않고 여기서도
-// 막습니다(표지 노드와 같은 이중 방어). 학습 유닛은 `play`, 문화 유닛은 `lantern`, 최종 테스트는 `flag`
+// 막습니다(표지 노드와 같은 이중 방어). 학습 유닛은 `play`, 문화 유닛은 `lantern-05`, 최종 테스트는 `flag`
 // 아이콘입니다.
 export function CatalogUnitNode({
   episodeId,
