@@ -333,6 +333,22 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - 묻는 질문: 「로딩 줄이 얼마나 자주 뜨는가」 = `delayed` · `failed` 횟수의 추이, 「막힌 채 끝난 세션」 = `failed` − `recovered`.
   - **한계** — **분모(저장본 없이 시작한 횟수)는 재지 않는다** — 비율이 아니라 절대 횟수의 추이로 본다(이름 하나를 더하면 잴 수 있다 — ADR-0062 재검토 조건 1). 대기 시간은 싣지 않는다(값은 문자열 · 불리언뿐).
     Meta 앱 이벤트 매핑([ADR-0057](0057-meta-app-events.md))은 셋을 옮기지 않는다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 이 변경에 들어 있지 않다(후속).
+- ⟨2026-10-16 — PR ③ 카탈로그 말하기. 적용 기록이고 결정을 바꾸지 않는다⟩ **새 이벤트는 없고 이름은 39개 그대로다.** `episode_lesson_finished`에 속성 하나가 더해졌다 — 사용자 결정([ADR-0064](0064-episode-format-speaking.md) Q4).
+  타입 정본은 `lib/catalog-learning-event.contract.ts`(`EpisodeLessonFinishedEvent.skippedCount`)이고 sink · 발생 시점은 그대로다.
+
+  | 이벤트 | 속성 | 값 | 발생 시점 |
+  |---|---|---|---|
+  | `episode_lesson_finished` | **`skippedCount`**(새, 10진 문자열) | 그 레슨의 활동들이 **런타임에** 건너뛴 문항 수의 합 = 읽기(`SHADOW`)의 막힘 국면 `Skip` + 낱말 말하기(`SPEAK_WORD`)의 `Skip`(사용자 · 막힘). 최종 테스트 · 문항 0개 경로는 `"0"` | 그대로(레슨 판정 순간 한 번) |
+  | 〃 | `questionCount`(기존) | **뜻 불변** — 계획의 채점 문항 수(건너뛴 낱말 말하기도 든다). 통과 기준의 분모(판정한 채점 문항 수)와 다를 수 있다 | 〃 |
+
+  - **`skippedItemCount`(시작 이벤트)와 다르다** — 그쪽은 **매핑 때** 화면이 서지 않은 문항 수이고, 이쪽은 화면에 섰다가 사용자가 넘긴 수다. 이 변경부터 말하기는 매핑에서 빠지지 않아 `S5`의 `skippedItemCount`가 줄었다(u01 6 → 3).
+  - **읽는 법** — `S5`(말하기는 읽기만 있는 단계)의 `skippedCount > 0` ⇔ 그 기기에서 인식을 쓸 수 없었다(권한 거부 · 인식기 없음 · 인식 실패 — 읽기의 사용자 넘김은 `Next`라 세지 않는다) → **인식 불가 비율의 깨끗한 신호**.
+    `S6` · `S8`의 `skippedCount`는 사용자 `Skip`이 섞인 상한이다. 그 두 단계의 판정 분모 = `questionCount − skippedCount`(한 단계에 말하기 유형이 하나뿐이라 성립 — 섞이면 ADR-0064 재검토 조건 2), 정답률 = `correctCount ÷ (questionCount − skippedCount)`.
+  - **연속성** — 이 변경 전 모든 카탈로그 활동은 건너뜀 0을 냈으므로 **`skippedCount`가 없는 옛 이벤트는 `"0"`으로 읽는다.** `questionCount`의 뜻은 바뀌지 않았다.
+    단, 같은 레슨의 `verdict`는 이 변경부터 판정 분모로 낸 것이다 — 낱말 말하기를 건너뛴 레슨은 옛 규칙이었다면 실패였을 수 있다.
+  - 불변식(분석 쪽 점검용): `correctCount ≤ questionCount − skippedCount`는 레슨에 읽기 건너뜀이 없을 때만 참이다(읽기 건너뜀은 채점 밖이라 빼면 안 된다) — 늘 참인 것은 `correctCount ≤ questionCount`다.
+  - **한계** — 막힘과 사용자 `Skip`을 가르지 않는다(`S5`만 깨끗하다). 권한 거부 · 인식기 없음 · 일반 실패도 가르지 않는다. PostHog 도착은 보지 않았다.
+    **GitHub wiki 이벤트 사전은 저장소 밖이라 이 변경에 들어 있지 않다** — 위 표의 `skippedCount` 행 · 읽는 법 · 연속성을 옮겨야 한다(후속 — wiki 갱신 필요).
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 

@@ -13,6 +13,8 @@
   D7의 「짝수 = 상대 · 홀수 = 나」와 A2의 「`screen-pending`을 지웠다」를 [ADR-0061](0061-episode-format-additions.md)이 부분 대체한다. 끝의 「적용 기록」 ⟨2026-10-16⟩.
   ⟨2026-10-16 — 새 에피소드 형식 ②⟩ **학습형이 둘 늘었다**(문화 카드 `culture-card` · 음절 조립 `syllable-build` — 결정은 [ADR-0063](0063-episode-format-screens.md)). 문화 확인은 단어 선택에 보기 번역 줄을 달아 서고,
   `LISTEN_BUILD`의 사유가 `audio-missing`이 됐다. 이 문서의 결정 문장은 그대로다. 끝의 「적용 기록」 ⟨2026-10-16 — PR ②⟩.
+  ⟨2026-10-16 — 새 에피소드 형식 ③⟩ **말하기 학습형이 둘 늘고**(읽기 `read-aloud` · 낱말 말하기 `speak-word` — 결정은 [ADR-0064](0064-episode-format-speaking.md)) 사유 `screen-pending`이 다시 지워졌다(사유 일곱).
+  **D5의 통과 분모가 「판정한 채점 문항 수」가 됐다** — 건너뛴 말하기 문항은 분모에서 빠진다(60 % 규칙은 그대로). 끝의 「적용 기록」 ⟨2026-10-16 — PR ③⟩.
 - 날짜: 2026-10-13.
 - 다루는 축: 카탈로그 에피소드의 **학습 유닛(레슨)과 최종 테스트가 화면에 서는 방식** — 콘텐츠 문항을 학습형에 매핑하는 규칙, 레슨 안 활동의 순서와 전환,
   통과 기준, 오디오가 없는 문항의 처리, 새 학습형(타자 입력), 최종 테스트 화면, 통과 뒤 컷의 자리, route, 실행 안에서 콘텐츠를 고정하는 범위, 원격 그림 실패 처리,
@@ -68,6 +70,7 @@
 건너뜀 사유는 여섯이다 — `screen-pending` · `no-options` · `no-source` · `audio-missing` · `untypeable` · `malformed`. 계측(`skippedItemCount`)이 3d 우선순위의 근거가 된다.
 ⟨2026-10-13 — 3d-1⟩ **위 표의 `VOCAB_CARD` · `IMG_MATCH` · `PAIR_MATCH` 행과 사유 `screen-pending`은 3c 시점의 것이다** — 세 유형은 화면을 얻었고 사유는 일곱이 됐다(「적용 기록」 A2).
 ⟨2026-10-16 — 새 에피소드 형식⟩ **위 표는 13종 시점의 것이다** — 새 유형 11종이 더해져 24종이 됐고 `screen-pending`이 되살아나 사유가 여덟이다(「적용 기록」 ⟨2026-10-16⟩ · [ADR-0061](0061-episode-format-additions.md) D8).
+⟨2026-10-16 — PR ③⟩ 말하기 둘이 화면을 얻어 `screen-pending`이 다시 지워졌다 — **사유는 일곱**이다(「적용 기록」 ⟨2026-10-16 — PR ③⟩ · [ADR-0064](0064-episode-format-speaking.md) D9).
 `{이름}` · `{나라}`는 화면에 서는 ko · 로마자 문자열을 모두 치환한다(프로필은 3d 전까지 기본값). 타일(낱말 순서 · 대화 순서 · 빈칸 채우기 · 최종 테스트)은 **결정적으로 섞는다** — 씨앗 `${episodeId}/${itemId}`,
 다시 풀어도 같은 순서이고 항등 순열이 나오면 한 칸 돌린다(계약 문서 Q20 「앱이 섞는다」). `options` 보기는 파일 순서 그대로다. 보기 중 하나라도 네 글자를 넘으면 단어 선택은 보기를 세로로 쌓는다(칩 안 글자 잘림 — [실기]).
 
@@ -107,6 +110,7 @@
 ⟨2026-10-16 — PR ②⟩ **「실데이터에서는 일어나지 않는다」가 다시 참이다** — 문화 카드 · 문화 확인이 화면을 얻어 `CULT`가 활동 둘(채점 3 · 표시 6)이 됐다. 0개 경로는 코드에 남고 합성 픽스처 테스트가 지킨다(「적용 기록」 ⟨2026-10-16 — PR ②⟩).
 
 ⟨2026-10-13 — 3d-1⟩ 단어 카드가 들어오면서 **「채점 문항」은 카드를 뺀 수**가 됐고, **「곧장 결과」의 조건은 채점 문항 0개가 아니라 활동 0개**로 좁혀졌다(「적용 기록」 A3 · A4).
+⟨2026-10-16 — PR ③⟩ **분모는 이제 「판정한 채점 문항 수」다** — 런타임에 건너뛴 채점 문항(낱말 말하기의 `Skip`)은 분모에서 빠진다(`catalogJudgedCountOf` = 채점 문항 수와 결과 수 중 작은 값). 위 「채점 문항은 건너뛰지 않은 문항이다」는 **매핑 때의 건너뜀**만 말하던 문면이다. 결과 route의 `questionCount`도 이 분모를 싣는다(「적용 기록」 ⟨2026-10-16 — PR ③⟩).
 
 ### D6. 타자 입력 — 새 활동 `TypingActivity`
 
@@ -178,6 +182,7 @@
 
 새 sink 없이 `episodeIntroEventSink`로 이벤트 셋 — `episode_lesson_started` · `episode_lesson_finished` · `episode_final_passed`. 발생 조건 · 속성 · 한계는
 [ADR-0029](0029-product-analytics-posthog.md) D14 적용 기록 ⟨2026-10-13⟩이 진다. ⟨3d-1⟩ 시작 이벤트에 속성 하나가 더해졌다(「적용 기록」 A7).
+⟨2026-10-16 — PR ③⟩ 끝 이벤트에 속성 하나(`skippedCount` — 런타임 건너뜀 수)가 더해졌다(「적용 기록」 ⟨2026-10-16 — PR ③⟩).
 
 ## 버린 대안
 
@@ -574,3 +579,25 @@ route · 진행 저장 형식 · 이벤트 이름은 그대로라 새 ADR을 만
 - **D14 import 예외 — 늘지 않았다.** 새 두 화면은 셸 · 공용 부품만 값으로 가져온다(음절 타일은 `SentenceOrderChip`을 쓰지 않고 자기 컴포넌트다 — ADR-0063 D5).
 - 결선(`catalog-lesson-wiring.ts`) · route · 리듀서 · 이벤트 · 세션 파일은 바뀌지 않았다. 렌더(`render-catalog.tsx`)에 갈래 둘이 더해졌다.
 - ⚠ **기기 확인은 일부다** [실기] — [문화 · 조립 화면 e2e](../e2e/episode-format-screens.md).
+
+### ⟨2026-10-16 — 새 에피소드 형식 ③⟩ 말하기 둘이 학습형이 되고, 건너뜀 수가 활동에서 나오며, 통과 분모가 판정한 문항이 된다
+
+적용 기록이다. 결정은 [ADR-0064](0064-episode-format-speaking.md)이 진다. 이 문서의 결정 가운데 **D5의 분모 문면**(「채점 문항」 → 판정한 채점 문항)만 그때의 상태가 됐고(D5 옆 표시), 나머지 결정 문장은 그대로다.
+
+- **D2 매핑 표 — 두 행**(위 ⟨2026-10-16⟩ 표의 마지막 행):
+
+  | 콘텐츠 `type` | 학습형 · 결과 |
+  |---|---|
+  | `SHADOW` | **읽기**(`read-aloud`) — 문장 · 로마자 · 영어를 한 묶음에서(`answers[0]`, 한국어가 비면 `stimulus.text`). 둘 다 비면 `malformed`. `prompt` · `stimulus.audio` · `audio_url` · `image_url`은 읽지 않는다 |
+  | `SPEAK_WORD` | **낱말 말하기**(`speak-word`) — 그림 `stimulus.image_url` · 뜻 `answers[0].en`(→ 낱말 목록) · 정답 `answers[].ko` · 로마자 `answers[0].roman` · 지시문 `prompt.en`. `malformed` → `image-missing` → `no-gloss` 순서(그림 고르기와 같다) |
+
+  매핑은 새 모듈 `app/catalog-speech-map.ts`가 지고 `catalog-item-map.ts`는 갈래 둘만 잇는다. **사유 `screen-pending`을 지웠다 — 사유 일곱**(`no-options` · `no-source` · `audio-missing` · `image-missing` · `no-gloss` · `untypeable` · `malformed`).
+- **학습형 열** — `listening` · `sentence-order` · `word-choice` · `typing` · `vocab-card` · `pair-match` · `culture-card` · `syllable-build` · **`read-aloud`** · **`speak-word`**. 머리 라벨은 둘 다 `Speaking`.
+- **A3 채점 표** — `read-aloud`는 **`ungraded`**(카운터에는 들고 통과 분모 밖), `speak-word`는 `graded`. 단계 표시 수는 세 에피소드의 `S5`가 +3, `S6` · `S8`이 +1이다(채점 수는 `S6` · `S8`만 +1).
+- **런타임 건너뜀 수를 내는 첫 카탈로그 활동** — 지금까지 모든 카탈로그 활동은 `onFinish(results, 0)`이었다. 읽기는 불가 국면 `Skip` 수, 낱말 말하기는 건너뛴 문항 수(사용자 · 불가)를 낸다. 결선은 이미 있던 레슨 합계로 잇고 결과 화면이 받는다(만점 아님 · 낭독 `n skipped`) — 새 세션 상태 0.
+- **D5 통과 분모** — `catalogJudgedCountOf(plan.questionCount, results)`(= 판정한 채점 문항 수)로 `catalogPassCriterion`을 부른다. 60 % · 최소 1 · 0이면 0은 그대로다(사용자 결정 — ADR-0064 D7).
+  **결과 route의 `questionCount`는 이 판정 분모다** — 그 필드의 정의(「통과 기준의 분모」)가 같아 결과 화면이 같은 판정을 다시 낸다. 이벤트의 `questionCount`는 계획의 채점 문항 수 그대로다.
+- **측정** — `episode_lesson_finished`에 `skippedCount`(레슨의 런타임 건너뜀 합, 최종 테스트 · 0개 경로는 `"0"`). 정의 · 읽는 법은 [ADR-0029](0029-product-analytics-posthog.md) D14 적용 기록 ⟨2026-10-16 — PR ③⟩.
+- **A6(그림 로드 실패 처리)** — 낱말 말하기도 같은 규칙(6초 · 뜻 글자 + `Picture unavailable`)이고 순수 전이 · 시한을 `lib/picture-load.ts`로 올려 둘이 함께 쓴다.
+- **D14 import 예외 — 늘지 않았다.** 새 두 화면은 셸 · `components/` · `lib/`만 값으로 가져온다. 렌더(`render-catalog.tsx`)에 갈래 둘, 결선에 분모 · 이벤트 속성이 더해졌다. route · 리듀서 · 세션 파일은 바뀌지 않았다.
+- ⚠ **기기 확인은 일부다** [실기] — [말하기 화면 e2e](../e2e/episode-format-speaking.md).

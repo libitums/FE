@@ -8,6 +8,8 @@
   **새 설치의 처음부터 끝까지 · 그림 문항 · `CLOZE_CHOICE` · 최종 테스트 소리 · VoiceOver · Android는 보지 못했다**([새 에피소드 형식 e2e](../e2e/episode-format.md)).
   ⟨2026-10-16 — PR ②⟩ **문화 · 조립 화면이 섰다** — D8 표의 `CULTURE_CARD` · `CULTURE_CHECK` · `SYLLABLE_BUILD` · `LISTEN_BUILD` 네 행, D7의 `Lesson 9`, D10(0문항 `CULT`)을 [ADR-0063](0063-episode-format-screens.md)이 부분 대체한다.
   「이름으로 분기하지 않는다」는 그대로다. 끝의 「적용 기록」 ⟨PR ②⟩. 재검토 조건 2는 닫혔다.
+  ⟨2026-10-16 — PR ③⟩ **말하기 둘이 섰다** — D8 표의 `SHADOW` · `SPEAK_WORD` 행과 사유 `screen-pending`을 [ADR-0064](0064-episode-format-speaking.md)이 부분 대체한다.
+  머리의 「(PR ③) 말하기 권한이 없으면 건너뛴다」는 **건너뜀 수에 들고 통과 분모에서 빠지는** 방식으로 이행됐다. 끝의 「적용 기록」 ⟨PR ③⟩.
 - 날짜: 2026-10-16.
 - 다루는 축: **새 형식의 콘텐츠를 앱이 받는 규칙** — 디코더를 넓히는 방식(판별자 · 실패 단위), 새 문항 유형의 와이어 모양과 공통 새 필드, 에피소드 완료 조건(`completion.requires`)의 검사와 판정,
   문화 단계(`CULT`)의 자리, 새 유형을 기존 화면에 싣는 기준과 건너뜀 사유, 문항이 0개가 되는 단계, 대화 조립의 화자 출처, 옛 내장본의 보존, 내장 version.
@@ -111,6 +113,7 @@
 
 ⟨2026-10-16 — PR ②⟩ **위 표의 `LISTEN_BUILD` · `SYLLABLE_BUILD` · `CULTURE_CARD` · `CULTURE_CHECK` 네 행은 이 변경의 상태다** — 문화 카드 · 음절 조립은 새 학습형, 문화 확인은 보기 번역 줄을 단 단어 선택으로 서고,
 `LISTEN_BUILD`는 **`audio-missing`**으로 건너뛴다(사용자 결정 — 소리가 먼저, [ADR-0063](0063-episode-format-screens.md) D1 · D8). `screen-pending`은 이제 말하기 둘만 낸다. 사유는 여덟 그대로다.
+⟨2026-10-16 — PR ③⟩ **위 표의 `SHADOW` · `SPEAK_WORD` 행도 이 변경의 상태다** — 읽기(`read-aloud`, 채점 없음) · 낱말 말하기(`speak-word`, 채점)로 서고 `screen-pending`은 지워졌다(사유 일곱 — [ADR-0064](0064-episode-format-speaking.md) D1 · D9).
 
 - **건너뜀 사유 `screen-pending`을 되살렸다** — 3d-1이 지운 이름이다(ADR-0058 적용 기록 A2). 「유형에 맞는 화면이 아직 없음」이라는 뜻이 같고, PR ② · ③의 목록이 곧 이 사유를 받는 유형이다.
   사유는 **여덟**이 됐다 — `screen-pending` · `no-options` · `no-source` · `audio-missing` · `image-missing` · `no-gloss` · `untypeable` · `malformed`.
@@ -228,6 +231,7 @@ PR ②의 우선순위(유형별 건너뜀 수)는 **콘텐츠에서 정적으�
    `REPLY_SELECT` · `PARTICLE_FILL` · `PARTICLE_SWAP`이 단어 선택으로 서는 것 · `CULT` 탭 → 곧장 결과 → 트로피 1 → 2 · 재실행 뒤 진행 유지와 서버 진행의 `CULT`.
    **보지 못한 것**: 새 설치의 처음부터 끝까지 · `CLOZE_CHOICE` · 그림 문항 · 최종 테스트 소리 · 빈칸 낭독과 `CULT` 탭의 낭독(VoiceOver) · Android. 목록은 [새 에피소드 형식 e2e](../e2e/episode-format.md) 「미확인」.
 2. **PR ② · ③** — 화면이 없는 유형 여섯(`screen-pending`)과 문화 단계 전용 노드 모양. ADR README 보류 표 「새 형식의 화면이 없는 유형」 · 「문화 단계 노드의 모양」.
+   ⟨2026-10-16⟩ PR ②([ADR-0063](0063-episode-format-screens.md)) · PR ③([ADR-0064](0064-episode-format-speaking.md))이 섰다 — 남은 것은 `LISTEN_BUILD`의 화면(문항 음성이 먼저)이다.
 3. **버킷 갱신** — 이 PR이 출시된 뒤 버킷의 에피소드 셋을 내장본과 같은 바이트로, 매니페스트를 내장 매니페스트와 같게 올린다(D12 — 사용자 손 작업).
 4. **런타임 성능** — 내장 셋이 원문 기준 +46 % 커져 부팅 때 디코드 · 해시 시간이 늘었을 것이다 [추론]. 재지 않았다(성능 보고서 「제한 사항」).
 
@@ -257,3 +261,16 @@ D1 ~ D6 · D9 · D11 · D12와 「이름으로 분기하지 않는다」는 그�
 - **「측정」** — 해석 메모는 PR ① 빌드에만 맞는다(본문 옆 표시). 새 이벤트 · 속성은 PR ②에도 없다.
 - **[ADR-0016](0016-assistive-technology-semantics.md) D8의 「0문항 단계」 적용 기록**을 닫았다(재검토 조건 2가 그것을 걷게 했다). 그 기록의 「건너뜀 여섯을 접미사로 넣지 않는다」 문장은 남겼다.
 - ⚠ **기기 확인은 일부다** — [문화 · 조립 화면 e2e](../e2e/episode-format-screens.md). 이 문서의 [새 에피소드 형식 e2e](../e2e/episode-format.md) S1의 「`Lesson 9` → 곧장 결과」 · S4의 건너뛰는 유형 목록 · S6은 PR ① 빌드의 절차다(그 문서 머리 메모).
+
+### ⟨2026-10-16 — PR ③⟩ 말하기 두 학습형과 건너뜀 · 통과 분모
+
+적용 기록이다. 결정은 [ADR-0064](0064-episode-format-speaking.md)이 지고, 이 문서의 결정 가운데 **D8 표의 `SHADOW` · `SPEAK_WORD` 행과 「건너뜀 사유 `screen-pending`을 되살렸다」**만 그때의 상태가 됐다.
+D1 ~ D7 · D9 ~ D12는 그대로다.
+
+- **D8 표 — 말하기 두 행**: `SHADOW` → 새 학습형 `read-aloud`(문장 · 로마자 · 영어를 정답 묶음 `answers[0]`에서 먼저 읽는다, 채점 없음), `SPEAK_WORD` → 새 학습형 `speak-word`(그림 + 영어 뜻, 판정은 기존 말하기 규칙, 정답 상자). 매핑 모듈은 `app/catalog-speech-map.ts`다.
+- **사유 `screen-pending`** — 내는 유형이 0이 되어 **지웠다**(여덟 → 일곱). 3d-1이 지웠다가 이 문서가 되살린 이름이 다시 사라졌다 — 화면 없는 유형이 오면 되살린다(ADR-0064 D9).
+- **머리 「(PR ③) 말하기 권한이 없으면 건너뛴다」의 이행** — 매핑에서 건너뛰지 않는다. 화면이 서고, 권한 거부 · 인식기 없음이면 그 활동의 남은 문항이 처음부터 막힌 국면(안내 + `Skip`)으로 서며 자동으로 넘기지 않는다.
+  `Skip`은 **건너뜀 수에 들고**(만점 아님) 낱말 말하기는 **통과 분모에서 빠진다**(사용자 결정 — ADR-0064 D5 · D7).
+- **「측정」** — 이 문서의 이벤트 해석은 그대로이고, `episode_lesson_finished`에 속성 `skippedCount`가 더해졌다([ADR-0029](0029-product-analytics-posthog.md) D14 적용 기록 ⟨2026-10-16 — PR ③⟩).
+  `S5`의 `skippedItemCount`는 말하기 셋이 매핑에서 빠지지 않아 줄었다(u01 6 → 3).
+- ⚠ **기기 확인은 일부다** — [말하기 화면 e2e](../e2e/episode-format-speaking.md).

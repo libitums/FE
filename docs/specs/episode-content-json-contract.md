@@ -190,14 +190,23 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `CULTURE_CARD` | 9 | card | E | `context` · `stimulus`(`text` …) · `feedback.correct` | — (`prompt` · `ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **문화 카드** — 제목 `context.ko` · `roman` · `en`, 본문 `stimulus.text.en`(크게) · `.ko`(작게) |
 | `LISTEN_BUILD` | 13 | tiles | R | `prompt` · `stimulus`(`audio` …) · `tiles`(오답 조각 포함) · `answers` | `tiles[].en` | 건너뜀(~~`screen-pending`~~ ⟨PR ②⟩ **`audio-missing`** — 문항 음성이 오면 그때 화면을 만든다. 소리가 와도 저절로 서지 않는다) |
 | `SYLLABLE_BUILD` | 7 | tiles | R | `prompt` · `stimulus`(`en` · `audio_url` · `image_url`) · `tiles`(음절, 오답 포함) · `answers` | `tiles[].en` · `answers[].en` | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **음절 조립** — 뜻 `stimulus.en`, 타일 `tiles[].ko`(섞음), 정답 `answers[].ko`(공백 제거) |
-| `SHADOW` | 9 | speech | E | `prompt` · `stimulus`(`text` · `audio` …) · `answers` | — | 건너뜀(`screen-pending` — 말하기) |
-| `SPEAK_WORD` | 6 | speech | R | `prompt` · `stimulus`(`image_brief` · `image_url` · `audio_url`) · `answers` | — | 건너뜀(`screen-pending` — 말하기) |
+| `SHADOW` | 9 | speech | E | `prompt` · `stimulus`(`text` · `audio` …) · `answers` | — | ~~건너뜀(`screen-pending` — 말하기)~~ ⟨PR ③⟩ **읽기**(채점 없음) — 문장 · 로마자 · 영어를 한 묶음에서(`answers[0]`, 한국어가 비면 `stimulus.text`) |
+| `SPEAK_WORD` | 6 | speech | R | `prompt` · `stimulus`(`image_brief` · `image_url` · `audio_url`) · `answers` | — | ~~건너뜀(`screen-pending` — 말하기)~~ ⟨PR ③⟩ **낱말 말하기**(채점) — 그림 `stimulus.image_url`(필수) · 뜻 `answers[0].en` · 정답 `answers[].ko` · 로마자 `answers[0].roman` |
 
 - ⟨2026-10-16 — PR ②⟩ **세 유형에서 앱이 읽는 것과 읽지 않는 것**(결정은 [ADR-0063](../adr/0063-episode-format-screens.md)):
   - `CULTURE_CARD` — 읽음: 제목 `context.ko`(비면 건너뜀 `malformed`) · `context.roman`(제목 아래 로마자) · `context.en`(영어 제목), 본문 `stimulus.text.en`(비면 `no-gloss`) · `stimulus.text.ko`. **읽지 않음**: `stimulus.text.roman`(본문 로마자 — 최대 226자 산문이라 싣지 않는다) · `feedback.correct`(요령) · `stimulus.audio_url` · `image_url`(9/9 빈 값).
   - `CULTURE_CHECK` — 보기 번역 `options[].en`은 27/27 있고 **고르기 전부터 보인다**. 하나라도 비면 그 문항은 번역 줄 없이 선다. `options[].roman` · `why_wrong` · `feedback`은 읽지 않는다. 보기는 섞지 않는다(정답 자리가 이미 흩어져 있다).
   - `SYLLABLE_BUILD` — **타일은 정답 순서로 실려 오고 오답 음절이 뒤에 붙는다**(7/7, 예 `괜 찮 아 요 | 세 원`). 그대로 보이면 앞에서부터 누르는 것이 답이라 **앱이 섞는다**(문항마다 정해진 순서). 같은 음절 타일이 두 장인 문항(u02 `일주일` · `와이파이`)도 받는다 — 판정은 놓은 음절을 이은 **낱말 문자열**이다.
     정답은 앱이 **공백을 모두 지운** 꼴로 비교하고, 칸 수는 첫 정답을 타일로 맞춰 정한다(타일로 만들 수 없는 정답이면 건너뜀 `malformed`). 정답이 둘 이상이면 첫 정답과 길이가 같은 것만 만들 수 있다. 뜻은 `stimulus.en`(7/7) → `answers[].en`(6/7) 순이다. `tiles[].roman` · `stimulus.audio_url`은 읽지 않는다.
+- ⟨2026-10-16 — PR ③⟩ **말하기 두 유형에서 앱이 읽는 것과 읽지 않는 것**(결정은 [ADR-0064](../adr/0064-episode-format-speaking.md)). 이 변경 뒤 건너뜀 사유 `screen-pending`은 없다(사유 일곱):
+  - `SHADOW` — 읽음: **출처 묶음 하나** — `answers[0]`의 `ko`가 비지 않으면 `answers[0]`의 `ko` · `roman` · `en`, 비면 `stimulus.text`의 세 값(둘 다 비면 `malformed`). `answers[0].ko` = `stimulus.text.ko`는 9/9 같다.
+    문장 부호(9/9 — `.` `,` `?`)는 보이는 문장에 그대로 남고 판정에서는 뗀다. **읽지 않음**: `prompt`(「듣고 따라 말하세요 / Listen and repeat.」 — 음성이 없어 앱 지시문 `Read the sentence out loud.`과 맞지 않는다) · `stimulus.audio` · `audio_url`(9/9 빈 값) · `image_url`.
+    **채점하지 않는다** — 맞은 낱말 수를 보이기만 한다.
+  - ⚠ **콘텐츠 쪽 관찰(정정 대상)**: u03 `S5-10`의 `stimulus.text.en`이 「Hello, I'm **{이름}**.」인데 한국어는 고정 이름 「…저는 **은지**예요.」이고 `audio.en` · `answers[0].en`은 「Hello, I'm Eunji.」다. 앱은 `answers[0]`을 먼저 읽어 이 줄을 피한다.
+    `prompt`의 「듣고 따라 말하세요」도 음성이 오기 전까지는 화면과 뜻이 다르다(문항 음성이 오면 화면을 다시 정한다 — ADR-0064 재검토 조건 1).
+  - `SPEAK_WORD` — 읽음: 정답 `answers[].ko`(치환 · trim, 빈 값 제외 — 0개면 `malformed`) · **그림 `stimulus.image_url`이 필수**(없거나 주소로 풀리지 않으면 건너뜀 `image-missing` — `IMG_MATCH`와 같다, 지금 6/6 있음) ·
+    뜻 `answers[0].en`(없으면 낱말 목록 — 그래도 없으면 `no-gloss`, 지금 6/6 있음) · 로마자 `answers[0].roman`(정답 상자 `Answer: 낱말 · 로마자`) · 지시문 `prompt.en`(「Say the word for the picture.」). **읽지 않음**: `image_brief` · `audio_url`.
+    판정은 들은 글자의 앞 낱말이 정답 낱말과 같은가다(띄어쓰기 · 어미는 너그럽지 않다 — 「비밀 번호」 · 「카드요」는 오답).
 - `options[].why_wrong`은 새 파일에서도 **오답 보기마다** 있다(355/355). 값은 337개가 `"이 자리에 맞는 말이 아니다"`, 18개가 `"카드에 적힌 사실과 다르다"`(`CULTURE_CHECK`). 앱은 디코드만 하고 보이지 않는다(Q8).
 - 새 문항의 `stimulus.audio_url`은 **전부 빈 값**이다. `stimulus.image_url`은 `IMG_MATCH` 7 · `SPEAK_WORD` 6 · `ROLEPLAY_TURN` 13에만 값이 있다(`images/items/*.jpg` 등 버킷 기준 상대 경로).
 
