@@ -1,0 +1,59 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 낱말 말하기 카드 안의 그림 틀입니다 — 틀 · 그림 ·
+   뜻 글자 대체. 화면 폴더끼리는 값을 import하지 않아(ADR-0008) 단어 선택의 그림 틀 값을 그대로 옮겼습니다.
+
+   **새 모션이 없습니다.** 그림은 로드되면 즉시 서고(페이드 없음), 대체 글자도 즉시 섭니다. */
+
+/* 루트 — 카드 폭을 채웁니다. */
+.speak-word-picture {
+  position: relative;
+  align-self: stretch;
+}
+
+/* 틀 — 가로:세로 4:3입니다(비율은 토큰이 아닌 설계 상수). 면 `gray-100`은 로딩 중의 빈 틀입니다. */
+.speak-word-picture-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-gray-100);
+}
+
+/* 그림 — 틀을 채웁니다(가운데 기준으로 넘치는 쪽을 자릅니다). 장식 테두리가 없습니다. */
+.speak-word-picture-image {
+  width: 100%;
+  height: 100%;
+}
+
+/* 그림이 못 서면 같은 틀 · 같은 높이에 뜻 글자가 섭니다. 틀 가운데에서 줄바꿈합니다. */
+.speak-word-picture-fallback-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-4);
+  width: 100%;
+  height: 100%;
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+}
+
+.speak-word-picture-fallback {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.speak-word-picture-caption {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
