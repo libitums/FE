@@ -24,7 +24,7 @@ import type {
   PhoneOtpVerifyRequest,
 } from "../lib/auth-session.contract";
 import type { FeedbackScreenProps } from "../screens/feedback/feedback.contract";
-import type { JourneyStats, ProgressWiringArgs } from "./learning-progress";
+import type { JourneyStats, ProgressWiringArgs, StatBumpWiring } from "./learning-progress";
 import type { JourneyMapProgressLoad } from "../screens/journey-map/journey-map-load.contract";
 import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
@@ -216,6 +216,7 @@ export type ScreenWiring = {
 } & EpisodeFinalWiring &
   AccountWiring &
   JourneyStats &
+  StatBumpWiring &
   CatalogWiring;
 
 export type ScreenWiringArgs = {
@@ -274,6 +275,8 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     gemCount: args.gemCount,
     streakDays: args.streakDays,
     trophyCount: args.trophyCount,
+    statBumps: args.statBumps,
+    onStatBumped: args.onStatBumped,
     journeyMapProgressLoad: args.journeyMapProgressLoad,
     phoneSignIn: args.phoneSignIn,
     onScreenLayerChange: args.setScreenLayerOpen,
