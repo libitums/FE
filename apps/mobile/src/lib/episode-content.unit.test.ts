@@ -808,7 +808,7 @@ describe("내장 에피소드 음성 id 배치", () => {
   test("DA3. u03: 컷 · 대화 줄의 음성 id가 표대로 놓이고 나머지는 키가 없다", () => {
     const episode = decoded("u03-mina");
     expect(placed(episode.prologue)).toEqual({ 1: "u03-mina/pre-2", 3: "u03-mina/d-01" });
-    expect(placed(episode.epilogue)).toEqual({ 0: "u03-mina/post-1", 2: "u03-mina/post-3" });
+    expect(placed(episode.epilogue)).toEqual({ 2: "u03-mina/post-3" });
     expect(placed(episode.dialogue)).toEqual({ 0: "u03-mina/d-01" });
   });
 });

@@ -92,9 +92,12 @@ describe("표지 둘째 줄의 줄 나눔", () => {
     }
   });
 
+  // 실데이터 제목은 2026-10-16부터 모두 짧다 — 긴 이름은 옛 제목으로 고정한다.
   test("CF6. 상한을 넘는 긴 이름은 두 줄로 나뉜다", () => {
-    const longest = [...sections].sort((a, b) => b.title.length - a.title.length)[0];
-    const { lines } = catalogTitleLines(longest?.title ?? "", CATALOG_INTRO_TITLE_MAX_CHARS);
+    const { lines } = catalogTitleLines(
+      "익선 게스트하우스 여성 도미토리",
+      CATALOG_INTRO_TITLE_MAX_CHARS,
+    );
     expect(lines).toHaveLength(2);
   });
 });

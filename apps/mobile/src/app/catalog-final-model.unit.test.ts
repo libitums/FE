@@ -104,7 +104,7 @@ describe("catalogFinalPlanOf — 실데이터", () => {
     expect(first?.tiles.map((tile) => tile.ko)).toHaveLength(2);
     expect(first?.tiles.map((tile) => tile.ko)).not.toEqual(["아니요,", "괜찮아요."]);
     expect(plan.turns.map((turn) => turn.imageUrl)).toEqual(
-      Array(3).fill("https://cdn/images/u01-water/pre-6.jpg"),
+      Array(3).fill("https://cdn/content/images/u01-water/pre-6.jpg"),
     );
   });
 

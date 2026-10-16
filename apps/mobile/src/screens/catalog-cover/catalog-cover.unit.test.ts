@@ -152,7 +152,8 @@ describe("catalogCutViewsOf", () => {
       "(bihaenggireul orae tatdeoni mogi mareuda. pyeonuijeomi eodi itji?)",
     );
     expect(first.voice).toBe("thought");
-    expect(first.imageUrl).toBe("https://cdn/images/u01-water/pre-1.jpg");
+    // 콘텐츠 경로가 버킷 이름을 붙인 꼴이다 — 이 포트는 받은 경로를 그대로 붙이고, 앱의 해석기가 앞 조각을 뗀다.
+    expect(first.imageUrl).toBe("https://cdn/content/images/u01-water/pre-1.jpg");
     const clerk = views[2];
     if (clerk?.kind !== "line") throw new Error("line expected");
     expect(clerk.speaker).toEqual({ kind: "named", name: "점원" });

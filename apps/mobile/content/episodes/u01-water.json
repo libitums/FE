@@ -1,7 +1,8 @@
 {
  "schema": "delivery-2",
  "unit_id": "u01-water",
- "title": "익선동 골목 어귀 편의점",
+ "title": "물 사기",
+ "title_en": "Buying Water",
  "day": 1,
  "time_of_day": "낮",
  "place": "익선동 골목 어귀 편의점",
@@ -18,7 +19,8 @@
     "en": "Thirsty after that long flight. Where's a convenience store?"
    },
    "image_brief": "게스트하우스 앞 골목에서 플레이어가 두리번거린다.",
-   "image_url": "images/u01-water/pre-1.jpg"
+   "image_url": "content/images/u01-water/pre-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 2,
@@ -30,7 +32,8 @@
     "en": "A convenience store sign is visible at the corner of the alley."
    },
    "image_brief": "골목 어귀에 편의점 간판이 보인다.",
-   "image_url": "images/u01-water/pre-1.jpg"
+   "image_url": "content/images/u01-water/pre-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 3,
@@ -48,7 +51,7 @@
     "en": "Looking up at the sound of the door bell."
    },
    "image_brief": "편의점 문을 열고 들어선다.",
-   "image_url": "images/u01-water/pre-3.jpg",
+   "image_url": "content/images/u01-water/pre-3.jpg",
    "audio_url": "u01-water/pre-3"
   },
   {
@@ -67,7 +70,8 @@
     "en": "Carefully squeezing past the suitcase blocking the aisle."
    },
    "image_brief": "캐리어를 끌고 좁은 통로를 지나가느라 진땀을 빼고 있다.",
-   "image_url": "images/u01-water/pre-4.jpg"
+   "image_url": "content/images/u01-water/pre-4.jpg",
+   "audio_url": ""
   },
   {
    "index": 5,
@@ -79,7 +83,8 @@
     "en": "Goes inside, takes a bottle of water from the fridge and places it on the counter."
    },
    "image_brief": "계산대 위에 생수 한 병. 건너편에 점원이 서 있다.",
-   "image_url": "images/u01-water/pre-5.jpg"
+   "image_url": "content/images/u01-water/pre-5.jpg",
+   "audio_url": ""
   },
   {
    "index": 6,
@@ -97,7 +102,7 @@
     "en": "Scanning the barcode."
    },
    "image_brief": "계산대의 점원이 바코드를 찍는다.",
-   "image_url": "images/u01-water/pre-6.jpg",
+   "image_url": "content/images/u01-water/pre-6.jpg",
    "audio_url": "u01-water/d-01"
   }
  ],
@@ -204,7 +209,8 @@
     "en": "Leaves the convenience store with the water and heads to the guesthouse."
    },
    "image_brief": "편의점 문 앞에서 본 골목. 안쪽으로 게스트하우스가 보인다.",
-   "image_url": "images/u01-water/post-1.jpg"
+   "image_url": "content/images/u01-water/post-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 2,
@@ -216,7 +222,8 @@
     "en": "The guesthouse sign is visible further down the alley."
    },
    "image_brief": "골목 안쪽에 게스트하우스 간판이 보인다.",
-   "image_url": "images/u01-water/pre-1.jpg"
+   "image_url": "content/images/u01-water/pre-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 3,
@@ -234,7 +241,8 @@
     "en": "Opening the guesthouse door, there's someone in the living room sorting through their bags, back turned."
    },
    "image_brief": "게스트하우스 문을 열고 들어가자, 거실에서 짐을 정리하는 낯선 사람의 뒷모습이 보인다.",
-   "image_url": "images/u01-water/post-3.jpg"
+   "image_url": "content/images/u01-water/post-3.jpg",
+   "audio_url": ""
   }
  ],
  "steps": [
@@ -261,7 +269,9 @@
       "roman": "mul juseyo.",
       "en": "Water, please."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-02",
@@ -282,7 +292,9 @@
       "roman": "aniyo, gwaenchanayo.",
       "en": "No, I'm fine."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-03",
@@ -303,7 +315,9 @@
       "roman": "bongtu deurilkkayo?",
       "en": "Would you like a bag?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-04",
@@ -324,7 +338,9 @@
       "roman": "kadeuro halgeyo.",
       "en": "I'll pay by card."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-05",
@@ -345,7 +361,9 @@
       "roman": "hyeongeumeuro halgeyo.",
       "en": "I'll pay in cash."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-06",
@@ -366,7 +384,9 @@
       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
       "en": "No, I don't need the receipt."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-07",
@@ -387,7 +407,9 @@
       "roman": "juseu juseyo.",
       "en": "Juice, please."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-08",
@@ -448,7 +470,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "plastic bag - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/bag.jpg"
+      "image_url": "content/images/items/bag.jpg"
      },
      "options": [
       {
@@ -556,7 +578,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "receipt - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/receipt.jpg"
+      "image_url": "content/images/items/receipt.jpg"
      },
      "options": [
       {
@@ -1554,7 +1576,9 @@
       "roman": "bongtu deurilkkayo?",
       "en": "Would you like a bag?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-02",
@@ -1575,7 +1599,9 @@
       "roman": "samcheon wonimnida.",
       "en": "That's three thousand won."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-03",
@@ -1596,7 +1622,9 @@
       "roman": "gamsahamnida. annyeonghi gaseyo.",
       "en": "Thank you. Goodbye."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-04",
@@ -1617,7 +1645,9 @@
       "roman": "ttatteuthan mul juseyo.",
       "en": "Warm water, please."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-05",
@@ -3563,7 +3593,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "card - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/card.jpg"
+      "image_url": "content/images/items/card.jpg"
      },
      "answers": [
       {
@@ -4161,7 +4191,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "receipt - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/receipt.jpg"
+      "image_url": "content/images/items/receipt.jpg"
      },
      "answers": [
       {
@@ -4714,7 +4744,7 @@
        "en": "No, I'm fine."
       },
       "audio_url": "",
-      "image_url": "images/u01-water/pre-6.jpg"
+      "image_url": "content/images/u01-water/pre-6.jpg"
      },
      "tiles": [
       {
@@ -4772,7 +4802,8 @@
          "ko": "봉투 드릴까요?",
          "roman": "bongtu deurilkkayo?",
          "en": "Would you like a bag?"
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -4781,8 +4812,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -4809,7 +4842,7 @@
        "en": "I'll pay by card."
       },
       "audio_url": "",
-      "image_url": "images/u01-water/pre-6.jpg"
+      "image_url": "content/images/u01-water/pre-6.jpg"
      },
      "tiles": [
       {
@@ -4866,7 +4899,8 @@
          "ko": "삼천 원입니다.",
          "roman": "samcheon wonimnida.",
          "en": "That's three thousand won."
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -4875,8 +4909,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -4903,7 +4939,7 @@
        "en": "No, I don't need the receipt."
       },
       "audio_url": "",
-      "image_url": "images/u01-water/pre-6.jpg"
+      "image_url": "content/images/u01-water/pre-6.jpg"
      },
      "tiles": [
       {
@@ -4970,7 +5006,8 @@
          "ko": "영수증 드릴까요?",
          "roman": "yeongsujeung deurilkkayo?",
          "en": "Would you like a receipt?"
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -4979,13 +5016,15 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     }
    ],
    "scene": {
-    "background_image_url": "images/u01-water/pre-6.jpg",
+    "background_image_url": "content/images/u01-water/pre-6.jpg",
     "counterpart": "점원",
     "closing": [
      {
@@ -4994,10 +5033,11 @@
        "ko": "감사합니다. 안녕히 가세요.",
        "roman": "gamsahamnida. annyeonghi gaseyo.",
        "en": "Thank you. Goodbye."
-      }
+      },
+      "audio_url": ""
      }
     ],
-    "closing_image_url": "images/u01-water/rp-end.jpg",
+    "closing_image_url": "content/images/u01-water/rp-end.jpg",
     "retry": {
      "hint_after_misses": 1,
      "reveal_after_misses": 2

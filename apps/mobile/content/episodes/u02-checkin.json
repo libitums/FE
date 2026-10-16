@@ -1,7 +1,8 @@
 {
  "schema": "delivery-2",
  "unit_id": "u02-checkin",
- "title": "익선 게스트하우스 프런트",
+ "title": "체크인",
+ "title_en": "Check-in",
  "day": 1,
  "time_of_day": "낮",
  "place": "익선 게스트하우스 프런트",
@@ -23,7 +24,7 @@
     "en": "Setting the bag down and turning toward the yard."
    },
    "image_brief": "거실의 낯선 사람이 짐을 내려놓고 마당 쪽으로 고개를 돌린다.",
-   "image_url": "images/u02-checkin/pre-1.jpg",
+   "image_url": "content/images/u02-checkin/pre-1.jpg",
    "audio_url": "u02-checkin/pre-1"
   },
   {
@@ -36,7 +37,8 @@
     "en": "The person sweeping the yard leans the broom by the door and comes in."
    },
    "image_brief": "마당에서 사장님이 빗자루를 문틀에 세워 두고 들어온다.",
-   "image_url": "images/u02-checkin/pre-2.jpg"
+   "image_url": "content/images/u02-checkin/pre-2.jpg",
+   "audio_url": ""
   },
   {
    "index": 3,
@@ -54,7 +56,7 @@
     "en": "Glancing down at the suitcase and its dusty wheels."
    },
    "image_brief": "사장님이 캐리어와 플레이어를 번갈아 본다.",
-   "image_url": "images/u02-checkin/pre-3.jpg",
+   "image_url": "content/images/u02-checkin/pre-3.jpg",
    "audio_url": "u02-checkin/pre-3"
   },
   {
@@ -67,7 +69,8 @@
     "en": "Follows the owner to the front desk by the entrance. A notebook and a few keys lie on top."
    },
    "image_brief": "현관 옆 프런트. 사장님이 데스크 안쪽으로 들어선다. 데스크 위에 공책과 열쇠 몇 개가 놓여 있다.",
-   "image_url": "images/u02-checkin/pre-4.jpg"
+   "image_url": "content/images/u02-checkin/pre-4.jpg",
+   "audio_url": ""
   },
   {
    "index": 5,
@@ -85,7 +88,7 @@
     "en": "Opening the notebook to today's page."
    },
    "image_brief": "데스크 안쪽의 사장님이 공책을 펼치고 펜을 든다.",
-   "image_url": "images/u02-checkin/pre-5.jpg",
+   "image_url": "content/images/u02-checkin/pre-5.jpg",
    "audio_url": "u02-checkin/d-01"
   }
  ],
@@ -238,7 +241,7 @@
     "en": "Pausing mid-handover of the key to point at the shoe rack."
    },
    "image_brief": "같은 프런트. 사장님이 열쇠를 건네다 말고 신발장 쪽을 가리킨다.",
-   "image_url": "images/u02-checkin/post-1.jpg",
+   "image_url": "content/images/u02-checkin/post-1.jpg",
    "audio_url": "u02-checkin/post-1"
   },
   {
@@ -251,7 +254,8 @@
     "en": "Tucks the sneakers into an empty slot, then carries the suitcase up to the second floor with both hands."
    },
    "image_brief": "2층으로 이어지는 가파른 나무 계단. 옆 신발장에 운동화가 놓여 있다.",
-   "image_url": "images/u02-checkin/post-2.jpg"
+   "image_url": "content/images/u02-checkin/post-2.jpg",
+   "audio_url": ""
   },
   {
    "index": 3,
@@ -263,7 +267,8 @@
     "en": "Room 201's door is half open. On the window-side bed sits the backpack from the living room."
    },
    "image_brief": "반쯤 열린 201호 문 너머 창가 침대에 낯익은 배낭이 놓여 있다.",
-   "image_url": "images/u02-checkin/post-3.jpg"
+   "image_url": "content/images/u02-checkin/post-3.jpg",
+   "audio_url": ""
   },
   {
    "index": 4,
@@ -276,7 +281,8 @@
     "en": "Wait, am I sharing a room with that person?"
    },
    "image_brief": "같은 자리. 문고리를 잡은 채 멈춘다.",
-   "image_url": "images/u02-checkin/post-3.jpg"
+   "image_url": "content/images/u02-checkin/post-3.jpg",
+   "audio_url": ""
   }
  ],
  "steps": [
@@ -303,7 +309,9 @@
       "roman": "bang boyeo juseyo.",
       "en": "Please show me the room."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-02",
@@ -324,7 +332,9 @@
       "roman": "eunjiro yeyakaesseoyo.",
       "en": "I booked under Eunji."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-03",
@@ -345,7 +355,9 @@
       "roman": "yeogwon yeogi isseoyo.",
       "en": "Here's my passport."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-04",
@@ -366,7 +378,9 @@
       "roman": "ireumi mwoyeyo?",
       "en": "What's your name?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-05",
@@ -387,7 +401,9 @@
       "roman": "iljuil mugeoyo.",
       "en": "I'm staying a week."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-06",
@@ -408,7 +424,9 @@
       "roman": "iljuil mugeoyo.",
       "en": "I'm staying a week."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-07",
@@ -429,7 +447,9 @@
       "roman": "waipai bimilbeonhoga mwoyeyo?",
       "en": "What's the wifi password?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-08",
@@ -932,7 +952,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "passport - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/passport.jpg"
+      "image_url": "content/images/items/passport.jpg"
      },
      "options": [
       {
@@ -1922,7 +1942,9 @@
       "roman": "waipai bimilbeonhoga mwoyeyo?",
       "en": "What's the wifi password?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-02",
@@ -1943,7 +1965,9 @@
       "roman": "chekeuauseun ojeon 11si matjyo?",
       "en": "Checkout is 11 in the morning, right?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-03",
@@ -1964,7 +1988,9 @@
       "roman": "ohue wayo.",
       "en": "I'm coming in the afternoon."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-04",
@@ -1980,7 +2006,8 @@
       "roman": "ireumi eotteoke doeseyo?",
       "en": "May I have your name?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": ""
     },
     {
      "id": "S3-05",
@@ -2001,7 +2028,9 @@
       "roman": "myeochil mugeusijyo?",
       "en": "How many nights will you be staying?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-06",
@@ -2022,7 +2051,9 @@
       "roman": "waipai bimilbeonhoga mwoyeyo?",
       "en": "What's the wifi password?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-07",
@@ -2043,7 +2074,9 @@
       "roman": "bangi myeot cheungieyo?",
       "en": "What floor is the room on?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-08",
@@ -2242,7 +2275,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "password - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/password.jpg"
+      "image_url": "content/images/items/password.jpg"
      },
      "options": [
       {
@@ -4260,7 +4293,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "password - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/password.jpg"
+      "image_url": "content/images/items/password.jpg"
      },
      "answers": [
       {
@@ -5005,7 +5038,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "passport - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/passport.jpg"
+      "image_url": "content/images/items/passport.jpg"
      },
      "answers": [
       {
@@ -5888,7 +5921,7 @@
        "en": "I booked under {이름}."
       },
       "audio_url": "",
-      "image_url": "images/u02-checkin/pre-5.jpg"
+      "image_url": "content/images/u02-checkin/pre-5.jpg"
      },
      "tiles": [
       {
@@ -5945,7 +5978,8 @@
          "ko": "이름이 어떻게 되세요?",
          "roman": "ireumi eotteoke doeseyo?",
          "en": "May I have your name?"
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -5954,8 +5988,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -5982,7 +6018,7 @@
        "en": "Here's my passport."
       },
       "audio_url": "",
-      "image_url": "images/u02-checkin/pre-5.jpg"
+      "image_url": "content/images/u02-checkin/pre-5.jpg"
      },
      "tiles": [
       {
@@ -6048,7 +6084,8 @@
          "ko": "네, 여권 좀 보여주세요.",
          "roman": "ne, yeogwon jom boyeojuseyo.",
          "en": "Okay, may I see your passport?"
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -6057,8 +6094,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -6085,7 +6124,7 @@
        "en": "I'm staying a week."
       },
       "audio_url": "",
-      "image_url": "images/u02-checkin/pre-5.jpg"
+      "image_url": "content/images/u02-checkin/pre-5.jpg"
      },
      "tiles": [
       {
@@ -6143,7 +6182,8 @@
          "ko": "며칠 묵으시죠?",
          "roman": "myeochil mugeusijyo?",
          "en": "How many nights will you be staying?"
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -6152,8 +6192,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -6180,7 +6222,7 @@
        "en": "What's the wifi password?"
       },
       "audio_url": "",
-      "image_url": "images/u02-checkin/pre-5.jpg"
+      "image_url": "content/images/u02-checkin/pre-5.jpg"
      },
      "tiles": [
       {
@@ -6247,7 +6289,8 @@
          "ko": "방은 201호예요.",
          "roman": "bangeun 201hoyeyo.",
          "en": "Your room is 201."
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -6256,8 +6299,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -6284,7 +6329,7 @@
        "en": "Checkout is 11 in the morning, right?"
       },
       "audio_url": "",
-      "image_url": "images/u02-checkin/pre-5.jpg"
+      "image_url": "content/images/u02-checkin/pre-5.jpg"
      },
      "tiles": [
       {
@@ -6358,7 +6403,8 @@
          "ko": "duruduru예요.",
          "roman": "duruduruyeyo.",
          "en": "It's duruduru."
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -6367,13 +6413,15 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     }
    ],
    "scene": {
-    "background_image_url": "images/u02-checkin/pre-5.jpg",
+    "background_image_url": "content/images/u02-checkin/pre-5.jpg",
     "counterpart": "사장님",
     "closing": [
      {
@@ -6382,10 +6430,11 @@
        "ko": "네 맞아요. 잘 쉬어요.",
        "roman": "ne majayo. jal swieoyo.",
        "en": "Yes, that's right. Enjoy your stay."
-      }
+      },
+      "audio_url": ""
      }
     ],
-    "closing_image_url": "images/u02-checkin/rp-end.jpg",
+    "closing_image_url": "content/images/u02-checkin/rp-end.jpg",
     "retry": {
      "hint_after_misses": 1,
      "reveal_after_misses": 2

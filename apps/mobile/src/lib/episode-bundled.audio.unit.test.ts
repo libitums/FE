@@ -5,15 +5,16 @@ import { bundledCatalogInput } from "./episode-bundled";
 import { decodeEpisode } from "./episode-content";
 import type { Episode } from "./episode-content";
 
-// `unit` 계층: 새 내장본(2026-10-15.1)을 디코드한 결과에서 음성 id 배치와 최종 테스트 줄 규칙만 봅니다.
-// 소리는 컷 · 대화 줄의 `ko`(문장)로 대조해 붙인 14개 id입니다(ADR-0060).
+// `unit` 계층: 새 내장본(2026-10-16.1)을 디코드한 결과에서 음성 id 배치와 최종 테스트 줄 규칙만 봅니다.
+// 소리는 컷 · 대화 줄의 `ko`(문장)로 대조해 붙인 13개 id입니다(ADR-0060). u03 통과 뒤 컷 1은 2026-10-16 콘텐츠에서
+// 문장이 바뀌어(백반집 → 식당) 녹음과 맞는지 확인 전이라 비워 둡니다.
 
 type EpisodeId = "u01-water" | "u02-checkin" | "u03-mina";
 type Area = "prologue" | "dialogue" | "epilogue";
 
 const EPISODE_IDS: readonly EpisodeId[] = ["u01-water", "u02-checkin", "u03-mina"];
 
-/** [에피소드, 자리, 컷 index 또는 대화 seq, 음성 id, 그 자리의 한국어 문장] — 14개. */
+/** [에피소드, 자리, 컷 index 또는 대화 seq, 음성 id, 그 자리의 한국어 문장] — 15자리, id 13개. */
 const PLACEMENTS: readonly (readonly [EpisodeId, Area, number, string, string])[] = [
   ["u01-water", "prologue", 3, "u01-water/pre-3", "어서 오세요."],
   ["u01-water", "prologue", 6, "u01-water/d-01", "봉투 드릴까요?"],
@@ -36,7 +37,6 @@ const PLACEMENTS: readonly (readonly [EpisodeId, Area, number, string, string])[
   ],
   ["u03-mina", "prologue", 4, "u03-mina/d-01", "안녕하세요. 이름이 뭐예요?"],
   ["u03-mina", "dialogue", 1, "u03-mina/d-01", "안녕하세요. 이름이 뭐예요?"],
-  ["u03-mina", "epilogue", 1, "u03-mina/post-1", "여기 백반집 가 봐요. 걸어서 오 분이에요."],
   [
     "u03-mina",
     "epilogue",
@@ -101,14 +101,20 @@ describe("새 내장본의 음성 id", () => {
     },
   );
 
-  test("BF3. 쓰인 id 집합은 14개이고 에피소드 접두를 가진 서로 다른 값이다", () => {
+  test("BF3. 쓰인 id 집합은 13개이고 에피소드 접두를 가진 서로 다른 값이다", () => {
     const used = new Set(
       EPISODE_IDS.flatMap((id) =>
         locate(decoded(id)).flatMap((f) => (f.audioUrl === undefined ? [] : [f.audioUrl])),
       ),
     );
-    expect(used.size).toBe(14);
+    expect(used.size).toBe(13);
     expect([...used].sort()).toEqual([...new Set(PLACEMENTS.map(([, , , audio]) => audio))].sort());
+  });
+
+  test("BF6. u03 통과 뒤 컷 1은 문장이 바뀌어 소리가 없다", () => {
+    const found = locate(decoded("u03-mina")).find((entry) => entry.key === "epilogue:1");
+    expect(found?.ko).toBe("여기 식당 가 봐요. 걸어서 오 분이에요.");
+    expect(found?.audioUrl).toBeUndefined();
   });
 
   test("BF2. u01 대화에서 소리가 없는 줄은 seq 6 ~ 9이고 키가 없다", () => {

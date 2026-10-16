@@ -1,7 +1,8 @@
 {
  "schema": "delivery-2",
  "unit_id": "u03-mina",
- "title": "익선 게스트하우스 여성 도미토리",
+ "title": "미나 만나기",
+ "title_en": "Meeting Mina",
  "day": 1,
  "time_of_day": "낮",
  "place": "익선 게스트하우스 여성 도미토리",
@@ -17,7 +18,8 @@
     "en": "No one's inside. Looks around, wondering where to put the suitcase."
    },
    "image_brief": "이층 침대 네 개가 놓인 빈 방. 창가 오른쪽 침대에 배낭이 놓여 있다. 플레이어 앞에 캐리어가 세워져 있다.",
-   "image_url": "images/u03-mina/pre-1.jpg"
+   "image_url": "content/images/u03-mina/pre-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 2,
@@ -35,7 +37,7 @@
     "en": "Back from the shower, towel-drying wet hair and pointing under the bed."
    },
    "image_brief": "씻고 온 낯선 사람이 흰 나시 차림으로 창가 오른쪽 침대 옆에 서서 수건으로 젖은 머리를 털며 침대 밑을 가리킨다.",
-   "image_url": "images/u03-mina/pre-2.jpg",
+   "image_url": "content/images/u03-mina/pre-2.jpg",
    "audio_url": "u03-mina/pre-2"
   },
   {
@@ -48,7 +50,8 @@
     "en": "Lays the suitcase flat and slides it under the bed. A perfect fit."
    },
    "image_brief": "아래 침대 밑 빈칸에 눕혀 넣은 캐리어.",
-   "image_url": "images/u03-mina/pre-3.jpg"
+   "image_url": "content/images/u03-mina/pre-3.jpg",
+   "audio_url": ""
   },
   {
    "index": 4,
@@ -66,7 +69,7 @@
     "en": "Draping the towel over one shoulder and turning this way."
    },
    "image_brief": "같은 구도. 낯선 사람이 수건을 어깨에 걸치고 플레이어를 보며 손을 살짝 든다.",
-   "image_url": "images/u03-mina/pre-4.jpg",
+   "image_url": "content/images/u03-mina/pre-4.jpg",
    "audio_url": "u03-mina/d-01"
   }
  ],
@@ -214,9 +217,9 @@
    "cut_kind": "speech",
    "speaker": "미나",
    "line": {
-    "ko": "여기 백반집 가 봐요. 걸어서 오 분이에요.",
-    "roman": "yeogi baekbanjip ga bwayo. georeoseo o bunieyo.",
-    "en": "Try this rice place. It's five minutes on foot."
+    "ko": "여기 식당 가 봐요. 걸어서 오 분이에요.",
+    "roman": "yeogi sikdang ga bwayo. georeoseo o bunieyo.",
+    "en": "Try this restaurant. It's five minutes on foot."
    },
    "aside": {
     "ko": "배낭에서 메모지를 꺼내 뭔가를 적으며",
@@ -224,8 +227,8 @@
     "en": "Pulling a memo pad from the backpack and jotting something down."
    },
    "image_brief": "같은 구도. 미나가 메모지에 뭔가를 적는다.",
-   "image_url": "images/u03-mina/post-1.jpg",
-   "audio_url": "u03-mina/post-1"
+   "image_url": "content/images/u03-mina/post-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 2,
@@ -237,7 +240,8 @@
     "en": "The name \"Yujin Sikdang\" and a little sketch map of the alleys."
    },
    "image_brief": "메모지에 '유진식당' 글씨와 손으로 그린 약도. 게스트하우스 · 편의점 · 화살표 · 5분이 적혀 있다.",
-   "image_url": "images/u03-mina/post-2.jpg"
+   "image_url": "content/images/u03-mina/post-2.jpg",
+   "audio_url": ""
   },
   {
    "index": 3,
@@ -255,7 +259,7 @@
     "en": "Grabbing a jacket and turning back at the door."
    },
    "image_brief": "미나가 나시 위에 겉옷을 걸치며 방문 쪽에서 돌아본다.",
-   "image_url": "images/u03-mina/post-3.jpg",
+   "image_url": "content/images/u03-mina/post-3.jpg",
    "audio_url": "u03-mina/post-3"
   }
  ],
@@ -283,7 +287,9 @@
       "roman": "eoneu nara saramieyo?",
       "en": "Where are you from?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-02",
@@ -304,7 +310,9 @@
       "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
       "en": "Hello, I'm Eunji."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-03",
@@ -325,7 +333,9 @@
       "roman": "mina ssi, mannaseo bangapseumnida.",
       "en": "Mina, nice to meet you."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-04",
@@ -346,7 +356,9 @@
       "roman": "mina ssineun eoneu naraeseo wasseoyo?",
       "en": "Mina, what country are you from?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-05",
@@ -367,7 +379,9 @@
       "roman": "mina ssineun eoneu naraeseo wasseoyo?",
       "en": "Mina, what country are you from?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-06",
@@ -388,7 +402,9 @@
       "roman": "junggugeseo wasseoyo.",
       "en": "I'm from China."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-07",
@@ -449,7 +465,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "country - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/country.jpg"
+      "image_url": "content/images/items/country.jpg"
      },
      "options": [
       {
@@ -709,7 +725,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "person, man - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/person.jpg"
+      "image_url": "content/images/items/person.jpg"
      },
      "options": [
       {
@@ -1462,7 +1478,9 @@
       "roman": "mina ssineun eoneu naraeseo wasseoyo?",
       "en": "Mina, what country are you from?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-02",
@@ -1483,7 +1501,9 @@
       "roman": "ilboneseo wasseoyo.",
       "en": "I'm from Japan."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-03",
@@ -1504,7 +1524,9 @@
       "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
       "en": "I'm Mina. I use the bed by the window."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-04",
@@ -1525,7 +1547,9 @@
       "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
       "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-05",
@@ -1546,7 +1570,9 @@
       "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
       "en": "I came two days earlier, and I'll stay two weeks."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-06",
@@ -1567,7 +1593,9 @@
       "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
       "en": "Mina, nice to meet you. I'm a student."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S3-07",
@@ -1769,7 +1797,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "student - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/student.jpg"
+      "image_url": "content/images/items/student.jpg"
      },
      "options": [
       {
@@ -3528,7 +3556,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "student - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/student.jpg"
+      "image_url": "content/images/items/student.jpg"
      },
      "answers": [
       {
@@ -4613,7 +4641,7 @@
      "stimulus": {
       "audio_url": "",
       "image_brief": "country - 한 컷으로 알아볼 수 있게",
-      "image_url": "images/items/country.jpg"
+      "image_url": "content/images/items/country.jpg"
      },
      "answers": [
       {
@@ -5224,7 +5252,7 @@
        "en": "Hello, I'm {이름}."
       },
       "audio_url": "",
-      "image_url": "images/u03-mina/pre-4.jpg"
+      "image_url": "content/images/u03-mina/pre-4.jpg"
      },
      "tiles": [
       {
@@ -5290,7 +5318,8 @@
          "ko": "안녕하세요. 이름이 뭐예요?",
          "roman": "annyeonghaseyo. ireumi mwoyeyo?",
          "en": "Hello. What's your name?"
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -5299,8 +5328,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -5327,7 +5358,7 @@
        "en": "Mina, nice to meet you."
       },
       "audio_url": "",
-      "image_url": "images/u03-mina/pre-4.jpg"
+      "image_url": "content/images/u03-mina/pre-4.jpg"
      },
      "tiles": [
       {
@@ -5405,7 +5436,8 @@
          "ko": "저는 미나예요. 창가 쪽 침대 써요.",
          "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
          "en": "I'm Mina. I use the bed by the window."
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -5414,8 +5446,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -5442,7 +5476,7 @@
        "en": "Mina, what country are you from?"
       },
       "audio_url": "",
-      "image_url": "images/u03-mina/pre-4.jpg"
+      "image_url": "content/images/u03-mina/pre-4.jpg"
      },
      "tiles": [
       {
@@ -5525,7 +5559,8 @@
          "ko": "네, 저도 반가워요.",
          "roman": "ne, jeodo bangawoyo.",
          "en": "Yes, nice to meet you too."
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -5534,8 +5569,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -5562,7 +5599,7 @@
        "en": "I'm from {나라}. How many days are you staying here?"
       },
       "audio_url": "",
-      "image_url": "images/u03-mina/pre-4.jpg"
+      "image_url": "content/images/u03-mina/pre-4.jpg"
      },
      "tiles": [
       {
@@ -5651,7 +5688,8 @@
          "ko": "저는 스위스에서 한국어 배우러 왔어요. {이름}은/는요?",
          "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. {이름}eun/neunyo?",
          "en": "I came from Switzerland to learn Korean. How about you, {이름}?"
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -5660,8 +5698,10 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -5688,7 +5728,7 @@
        "en": "I'm staying a week."
       },
       "audio_url": "",
-      "image_url": "images/u03-mina/pre-4.jpg"
+      "image_url": "content/images/u03-mina/pre-4.jpg"
      },
      "tiles": [
       {
@@ -5753,7 +5793,8 @@
          "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
          "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
          "en": "I came two days earlier, and I'll stay two weeks."
-        }
+        },
+        "audio_url": ""
        }
       ],
       "reask": {
@@ -5762,13 +5803,15 @@
         "ko": "네?",
         "roman": "ne?",
         "en": "Sorry?"
-       }
-      }
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     }
    ],
    "scene": {
-    "background_image_url": "images/u03-mina/pre-4.jpg",
+    "background_image_url": "content/images/u03-mina/pre-4.jpg",
     "counterpart": "낯선 사람",
     "closing": [
      {
@@ -5777,10 +5820,11 @@
        "ko": "우리 친하게 지내요.",
        "roman": "uri chinhage jinaeyo.",
        "en": "Let's be good friends."
-      }
+      },
+      "audio_url": ""
      }
     ],
-    "closing_image_url": "images/u03-mina/rp-end.jpg",
+    "closing_image_url": "content/images/u03-mina/rp-end.jpg",
     "retry": {
      "hint_after_misses": 1,
      "reveal_after_misses": 2

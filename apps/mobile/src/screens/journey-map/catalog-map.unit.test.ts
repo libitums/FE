@@ -98,7 +98,7 @@ describe("catalogMapSectionsOf", () => {
     expect(first.lessonKeys).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"]);
     expect(first.finalKey).toBe("RP");
     expect(first.title).toBe(realCatalog[0]?.title);
-    expect(first.title).toBe("익선동 골목 어귀 편의점");
+    expect(first.title).toBe("물 사기");
   });
 
   test("CM2. pending · locked 항목은 사유가 붙은 unavailable 구획이 된다", () => {

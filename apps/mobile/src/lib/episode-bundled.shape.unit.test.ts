@@ -28,17 +28,17 @@ type Shape = {
 };
 
 const BUNDLED_SHAPES: readonly Shape[] = [
-  { id: "u01-water", bytes: 125_327, prologue: 6, epilogue: 3, dialogue: 9, words: 13, items: 104 },
+  { id: "u01-water", bytes: 126_449, prologue: 6, epilogue: 3, dialogue: 9, words: 13, items: 104 },
   {
     id: "u02-checkin",
-    bytes: 159_188,
+    bytes: 160_563,
     prologue: 5,
     epilogue: 4,
     dialogue: 13,
     words: 14,
     items: 133,
   },
-  { id: "u03-mina", bytes: 154_196, prologue: 4, epilogue: 3, dialogue: 13, words: 15, items: 118 },
+  { id: "u03-mina", bytes: 155_429, prologue: 4, epilogue: 3, dialogue: 13, words: 15, items: 118 },
 ];
 
 const LEGACY_SHAPES: readonly Shape[] = [

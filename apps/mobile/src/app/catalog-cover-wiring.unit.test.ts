@@ -294,7 +294,7 @@ describe("catalogCoverModelOf", () => {
     expect(model?.ordinal).toBe(1);
     expect(model?.title).toBe(sections.find((item) => item.episodeId === "u01-water")?.title);
     expect(model?.title).not.toBe("");
-    expect(model?.version).toBe("2026-10-15.1");
+    expect(model?.version).toBe("2026-10-16.1");
     expect(model?.cuts).toHaveLength(6);
   });
 
