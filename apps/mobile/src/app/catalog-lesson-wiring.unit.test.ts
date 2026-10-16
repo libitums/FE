@@ -232,6 +232,7 @@ describe("onStartCatalogUnit — 레슨", () => {
         verdict: "passed",
         correctCount: "0",
         questionCount: "0",
+        skippedCount: "0",
       },
     ]);
     expect(updaters).toHaveLength(1);
@@ -339,6 +340,7 @@ describe("카드가 든 레슨의 결선", () => {
         verdict: "passed",
         correctCount: "0",
         questionCount: "0",
+        skippedCount: "0",
       },
     ]);
     expect(updaters).toHaveLength(1);
@@ -389,6 +391,7 @@ describe("카드가 든 레슨의 결선", () => {
         verdict: "passed",
         correctCount: "2",
         questionCount: "3",
+        skippedCount: "0",
       }),
     ]);
     expect(passing.updaters).toHaveLength(1);
@@ -501,6 +504,8 @@ describe("onFinishCatalogActivity", () => {
         verdict: "passed",
         correctCount: "6",
         questionCount: "6",
+        // 건너뜀 수는 결과 화면과 같은 합(앞 활동 2 + 이 활동 1)입니다.
+        skippedCount: "3",
       },
     ]);
     expect(updaters).toHaveLength(1);
@@ -553,6 +558,7 @@ describe("onFinishCatalogActivity", () => {
         verdict: "failed",
         correctCount: "1",
         questionCount: "6",
+        skippedCount: "0",
       }),
     ]);
     expect(kinds(log, "progress")).toEqual([]);
@@ -624,6 +630,7 @@ describe("최종 테스트", () => {
         verdict: "passed",
         correctCount: "2",
         questionCount: "3",
+        skippedCount: "0",
       },
       {
         name: "episode_final_passed",

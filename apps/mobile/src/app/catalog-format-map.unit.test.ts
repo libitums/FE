@@ -354,10 +354,13 @@ describe("유형별 결과 표와 결정성", () => {
       }),
       "syllable-build",
     ],
-    [nonSpeech("SHADOW", { stimulus: stim, answers: [t("따라 말하기")] }), "screen-pending"],
+    [nonSpeech("SHADOW", { stimulus: stim, answers: [t("따라 말하기")] }), "read-aloud"],
     [
-      nonSpeech("SPEAK_WORD", { stimulus: { imageUrl: "images/a.jpg" }, answers: [t("단어")] }),
-      "screen-pending",
+      nonSpeech("SPEAK_WORD", {
+        stimulus: { imageUrl: "images/a.jpg" },
+        answers: [t("단어", "danyeo", "word")],
+      }),
+      "speak-word",
     ],
   ];
 
@@ -392,15 +395,15 @@ describe("유형별 결과 표와 결정성", () => {
 
   test("MAP1. 스킵 결과는 어떤 유형이든 itemId · type을 싣는다", () => {
     const mapped = catalogItemOf(
-      nonSpeech("SHADOW", { stimulus: stim, answers: [t("따라 말하기")] }),
+      nonSpeech("LISTEN_BUILD", { stimulus: stim, tiles: [], answers: [] }),
       port,
     );
 
     expect(mapped).toEqual({
       kind: "skipped",
-      itemId: "X-SHADOW",
-      type: "SHADOW",
-      reason: "screen-pending",
+      itemId: "X-LISTEN_BUILD",
+      type: "LISTEN_BUILD",
+      reason: "audio-missing",
     });
   });
 });

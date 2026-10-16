@@ -4,7 +4,8 @@ import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import { fillPlaceholders } from "../lib/placeholder-fill";
-import { catalogLessonPlanOf } from "./catalog-lesson-plan";
+import { catalogGlossOf } from "./catalog-card-map";
+import { catalogItemOf, catalogLessonPlanOf } from "./catalog-lesson-plan";
 import type { CatalogFill } from "./catalog-lesson-plan";
 
 // `unit` 계층: 새 내장본(2026-10-16.1)의 모든 단계를 수업 계획으로 바꾼 결과의 수만 봅니다(순수 함수).
@@ -36,10 +37,10 @@ const EXPECTED: Record<EpisodeId, readonly (readonly [number, number])[]> = {
     [8, 14],
     [11, 13],
     [8, 15],
-    [6, 12],
-    [7, 8],
+    [9, 12],
+    [8, 8],
     [5, 5],
-    [8, 13],
+    [9, 13],
     [6, 6],
   ],
   "u02-checkin": [
@@ -47,10 +48,10 @@ const EXPECTED: Record<EpisodeId, readonly (readonly [number, number])[]> = {
     [11, 17],
     [16, 19],
     [11, 20],
-    [6, 12],
-    [11, 13],
+    [9, 12],
+    [12, 13],
     [7, 7],
-    [10, 15],
+    [11, 15],
     [6, 6],
   ],
   "u03-mina": [
@@ -58,10 +59,10 @@ const EXPECTED: Record<EpisodeId, readonly (readonly [number, number])[]> = {
     [6, 12],
     [14, 16],
     [10, 18],
-    [7, 12],
     [10, 12],
+    [11, 12],
     [7, 7],
-    [11, 16],
+    [12, 16],
     [6, 6],
   ],
 };
@@ -141,4 +142,64 @@ describe("새 내장본의 단계별 수업 계획 (MAP11)", () => {
     expect(second.activities).toEqual(first.activities);
     expect(second.shownItemCount).toBe(first.shownItemCount);
   });
+
+  test.each(EPISODE_IDS)(
+    "MAP11″. %s의 S5는 마지막 활동이 읽기 3문항이고 S6 · S8의 낱말 활동은 문항이 하나다",
+    (episodeId) => {
+      const s5 = planOf(episodeId, "S5").activities;
+      const last = s5[s5.length - 1];
+
+      expect(last?.form).toBe("read-aloud");
+      expect(last?.questions.length).toBe(3);
+      for (const key of ["S6", "S8"] as const) {
+        const speakWords = planOf(episodeId, key).activities.filter(
+          (activity) => activity.form === "speak-word",
+        );
+        expect(speakWords.map((activity) => activity.questions.length)).toEqual([1]);
+      }
+    },
+  );
+
+  test("MAP11″. 내장본에는 screen-pending 사유로 건너뛰는 문항이 없다", () => {
+    const reasons = EPISODE_IDS.flatMap((episodeId) => {
+      const entry = readyOf(episodeId);
+      const port = {
+        fill,
+        episodeId,
+        glossOf: catalogGlossOf(entry.episode.words, fill),
+        imageUrlOf,
+      };
+      return entry.episode.units.flatMap((unit) =>
+        unit.items.map((item) => {
+          const mapped = catalogItemOf(item, port);
+          return mapped.kind === "skipped" ? String(mapped.reason) : "";
+        }),
+      );
+    });
+
+    expect(reasons).not.toContain("screen-pending");
+  });
+
+  test.each(EPISODE_IDS)(
+    "MAP11″. %s의 말하기 문항(SHADOW · SPEAK_WORD)은 건너뛰지 않는다",
+    (episodeId) => {
+      const entry = readyOf(episodeId);
+      const port = {
+        fill,
+        episodeId,
+        glossOf: catalogGlossOf(entry.episode.words, fill),
+        imageUrlOf,
+      };
+      const skipped = entry.episode.units.flatMap((unit) =>
+        unit.items.flatMap((item) =>
+          (item.type === "SHADOW" || item.type === "SPEAK_WORD") &&
+          catalogItemOf(item, port).kind === "skipped"
+            ? [item.id]
+            : [],
+        ),
+      );
+
+      expect(skipped).toEqual([]);
+    },
+  );
 });

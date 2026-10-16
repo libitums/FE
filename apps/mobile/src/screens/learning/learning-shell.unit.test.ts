@@ -64,6 +64,13 @@ describe("learningSessionHeader", () => {
     expect(learningTimingFlag("pair-match")).toBe("libitum:navigation:learning-pair-match");
   });
 
+  it("LS-I2. 말하기 두 학습형의 머리 이름은 Speaking이고 타이밍 플래그는 학습형마다 갈린다", () => {
+    expect(learningSessionHeader("read-aloud", 0, 3, uiCopyEn).formLabel).toBe("Speaking");
+    expect(learningSessionHeader("speak-word", 0, 1, uiCopyEn).formLabel).toBe("Speaking");
+    expect(learningTimingFlag("read-aloud")).toBe("libitum:navigation:learning-read-aloud");
+    expect(learningTimingFlag("speak-word")).toBe("libitum:navigation:learning-speak-word");
+  });
+
   it("학습형마다 이름이 갈린다", () => {
     expect(learningSessionHeader("sentence-order", 0, 1, uiCopyEn).formLabel).toBe("Word order");
     expect(learningSessionHeader("culture", 0, 1, uiCopyEn).formLabel).toBe("Culture");

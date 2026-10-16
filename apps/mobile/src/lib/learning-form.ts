@@ -34,4 +34,6 @@ export type LearningActivityForm =
   | "vocab-card"
   | "pair-match"
   | "culture-card"
-  | "syllable-build";
+  | "syllable-build"
+  | "read-aloud"
+  | "speak-word";

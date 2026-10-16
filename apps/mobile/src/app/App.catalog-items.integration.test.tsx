@@ -326,6 +326,8 @@ const contentIdOf: Record<CatalogActivity["form"], string> = {
   "pair-match": "pair-match-content",
   "culture-card": "culture-card-content",
   "syllable-build": "syllable-build-content",
+  "read-aloud": "read-aloud-content",
+  "speak-word": "speak-word-content",
 };
 
 /** 활동의 모양을 「W3」 같은 구간 표기로 적습니다 — 계획의 구간 열과 같은 표기입니다. */
@@ -338,6 +340,8 @@ const spanLetter: Record<CatalogActivity["form"], string> = {
   "sentence-order": "O",
   "culture-card": "U",
   "syllable-build": "B",
+  "read-aloud": "R",
+  "speak-word": "S",
 };
 const spanOf = (plan: CatalogLessonPlan): string[] =>
   plan.activities.map((activity) => `${spanLetter[activity.form]}${activity.questions.length}`);
@@ -486,6 +490,7 @@ test("I1. (AC1 · 2) S1: 카드 셋(결과 없음) → 단어 선택 셋 → 결
       verdict: "passed",
       correctCount: "3",
       questionCount: "3",
+      skippedCount: "0",
     },
   ]);
 });
@@ -575,6 +580,7 @@ test("I3. (AC3) u03 S9: 짝 맞추기가 단어 선택 · 받아쓰기 사이에
     verdict: "passed",
     correctCount: "9",
     questionCount: "10",
+    skippedCount: "0",
   });
 });
 
@@ -787,6 +793,7 @@ test("I7. (3c 회귀) S3 전부 정답: 3c와 같은 흐름이고 시작 이벤�
       verdict: "passed",
       correctCount: "6",
       questionCount: "6",
+      skippedCount: "0",
     },
   ]);
 });

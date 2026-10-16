@@ -58,6 +58,29 @@ export function solveSyllable(question: SyllableQuestion, right: boolean): void 
   tapId("learning-shell-action");
 }
 
+const phaseOf = (testId: string): string | null =>
+  screen.getByTestId(testId).getAttribute("data-phase");
+
+/** 읽기: 말하기를 눌러 국면을 읽고, 들렸으면 `Next`(마지막이면 `See results`), 불가면 `Skip`을 누릅니다. */
+function solveReadAloud(questionCount: number): void {
+  for (let index = 0; index < questionCount; index += 1) {
+    if (phaseOf("read-aloud-content") === "ready") tapId("learning-shell-action");
+    expect(["heard", "unavailable"]).toContain(phaseOf("read-aloud-content"));
+    tapId("learning-shell-action");
+  }
+}
+
+/** 낱말: 그림이 서면 말하기를 누르고, 들렸으면 넘김(`advance`), 불가면 `Skip`을 누릅니다. */
+function solveSpeakWord(questionCount: number): void {
+  for (let index = 0; index < questionCount; index += 1) {
+    const picture = screen.queryByTestId("speak-word-picture-image");
+    if (picture !== null) fireEvent(picture, new window.Event("bindEvent:load"));
+    if (phaseOf("speak-word-content") === "ready") tapId("learning-shell-action");
+    if (phaseOf("speak-word-content") === "heard") tapId("learning-shell-advance");
+    else tapId("learning-shell-action");
+  }
+}
+
 /**
  * 활동 하나를 끝까지 풉니다. 레슨의 마지막 활동이면 완료 카드의 `See results`까지 누르고, 중간 활동이면
  * 마지막 문항 뒤 곧바로 다음 활동으로 넘어가므로 누르지 않습니다(E-1). `right`가 거짓이면 전부 틀립니다.
@@ -118,6 +141,13 @@ export function solveActivity(activity: CatalogActivity, right: boolean, last = 
       break;
     case "syllable-build":
       for (const question of activity.questions) solveSyllable(question, right);
+      break;
+    case "read-aloud":
+      // 마지막 문항의 버튼이 곧 결과 보기라 완료 카드가 없습니다.
+      solveReadAloud(activity.questions.length);
+      return;
+    case "speak-word":
+      solveSpeakWord(activity.questions.length);
       break;
   }
   if (last) tapId("learning-shell-action");

@@ -25,6 +25,8 @@ export type EpisodeLessonFinishedEvent = {
   readonly verdict: AssessmentVerdict;
   readonly correctCount: string;
   readonly questionCount: string;
+  /** 그 레슨에서 말하기를 건너뛴 문항 수입니다(읽기의 불가 Skip + 낱말의 Skip). 최종 테스트 · 0개 경로는 "0". */
+  readonly skippedCount: string;
 };
 
 export type EpisodeFinalPassedEvent = {

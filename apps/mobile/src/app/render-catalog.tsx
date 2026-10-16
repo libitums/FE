@@ -16,7 +16,9 @@ import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteS
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 import { ListeningActivity } from "../screens/listening/ListeningScreen";
 import { PairMatchActivity } from "../screens/pair-match/PairMatchActivity";
+import { ReadAloudActivity } from "../screens/read-aloud/ReadAloudActivity";
 import { SentenceOrderActivity } from "../screens/sentence-order/SentenceOrderScreen";
+import { SpeakWordActivity } from "../screens/speak-word/SpeakWordActivity";
 import { SyllableBuildActivity } from "../screens/syllable-build/SyllableBuildActivity";
 import { TypingActivity } from "../screens/typing/TypingActivity";
 import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
@@ -137,6 +139,28 @@ function renderActivity(
     case "syllable-build":
       return (
         <SyllableBuildActivity
+          key={key}
+          questions={activity.questions}
+          gemCount={wiring.gemCount}
+          onExit={onExit}
+          onFinish={onFinish}
+          lesson={lesson}
+        />
+      );
+    case "read-aloud":
+      return (
+        <ReadAloudActivity
+          key={key}
+          questions={activity.questions}
+          gemCount={wiring.gemCount}
+          onExit={onExit}
+          onFinish={onFinish}
+          lesson={lesson}
+        />
+      );
+    case "speak-word":
+      return (
+        <SpeakWordActivity
           key={key}
           questions={activity.questions}
           gemCount={wiring.gemCount}

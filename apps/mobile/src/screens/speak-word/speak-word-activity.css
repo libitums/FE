@@ -1,0 +1,58 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않습니다.
+   뼈대(상단 바 · 세션 헤더 · 지시문 · 무대 카드 · 아래 버튼)는 `LearningShell`이 집니다. 여기 남는 것은
+   카드 안의 배치 — 판정 자리 · 그림 틀 · 뜻 줄 · 정답 상자 · 파형과 안내 줄입니다. 모든 글줄은 가운데 정렬이고
+   줄바꿈을 막지 않습니다(WCAG 1.4.4) — 말줄임도 없습니다. */
+
+/* 카드 안 — 위에서 아래로, 가로 가운데입니다. 높이 하한 244는 말하기 카드와 같습니다. 하한이지 고정이
+   아닙니다. */
+.speak-word-activity-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-16);
+  min-height: 244px;
+}
+
+.speak-word-activity-verdict-slot {
+  min-height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 영어 뜻 줄 — 그림 틀 바로 아래, 타자 입력 단서와 같은 값(`heading-s` + `gray-900`)입니다. */
+.speak-word-activity-meaning {
+  text-align: center;
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 고정 버튼 행의 보조 동작: 준비에서는 Skip, 받아쓰기 오류에서는 Try again. */
+.speak-word-activity-secondary {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 작업 영역의 안내 한 줄 — `Tap the screen to continue` 또는 불가 안내입니다. 자리는 비어도 지킵니다. */
+.speak-word-activity-hint-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--libitum-spacing-48);
+}
+
+.speak-word-activity-hint {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}

@@ -1,11 +1,13 @@
 // 단어 선택의 그림 제시 — 로드 상태의 타입과 순수 전이입니다. UI를 import하지 않습니다.
 
+import { pictureLoadStateAfter, pictureLoadTimeoutMs } from "../../lib/picture-load";
+import type { PictureLoadEvent, PictureLoadState } from "../../lib/picture-load";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { WordChoiceQuestion } from "./word-choice-questions";
 
-export type WordChoicePictureState = "loading" | "loaded" | "failed";
+export type WordChoicePictureState = PictureLoadState;
 
-export type WordChoicePictureEvent = "load" | "error" | "timeout";
+export type WordChoicePictureEvent = PictureLoadEvent;
 
 export type WordChoicePictureAnswer = {
   readonly word: string;
@@ -40,16 +42,10 @@ export type WordChoicePictureTestId =
   | "word-choice-picture-caption"
   | "word-choice-picture-answer";
 
-/** 그림이 이 시간 안에 끝 상태가 아니면 실패로 칩니다 — `binderror`가 오지 않는 실패를 끝냅니다. */
-export const wordChoicePictureTimeoutMs = 6000;
+/** 전이 · 시한의 정본은 `lib/picture-load.ts`입니다 — 옛 이름을 그대로 냅니다. */
+export const wordChoicePictureTimeoutMs = pictureLoadTimeoutMs;
 
-export function wordChoicePictureStateAfter(
-  state: WordChoicePictureState,
-  event: WordChoicePictureEvent,
-): WordChoicePictureState {
-  if (state !== "loading") return state;
-  return event === "load" ? "loaded" : "failed";
-}
+export const wordChoicePictureStateAfter = pictureLoadStateAfter;
 
 export function canAnswerWordChoice(
   question: WordChoiceQuestion,

@@ -125,6 +125,7 @@ export const unmappedEvents = [
     verdict: "passed",
     correctCount: "3",
     questionCount: "3",
+    skippedCount: "0",
   },
   { name: "episode_final_passed", episodeId: "u01", correctCount: "2", turnCount: "2" },
   { name: "learner_profile_saved", entry: "onboarding", change: "created" },

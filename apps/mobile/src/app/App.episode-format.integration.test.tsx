@@ -100,15 +100,22 @@ test("EF3. (AC3) 옛 키 모양 진행(S2 · CULT 없음)은 완료가 아니고
 });
 
 test("EF4. (AC5) 건너뜀이 섞인 S5: 계획의 단어 선택 · 타자 문항을 끝까지 맞히면 PERFECT · 기록 · 이벤트의 건너뜀 수가 계획과 같다", async () => {
-  const { rpcs, events } = await boot({ [u01]: ["intro", "S1", "S2", "S3", "S4"] });
   const plan = lessonPlan(u01, "S5");
+  const sentences = plan.activities.flatMap((activity) =>
+    activity.form === "read-aloud" ? activity.questions.map((question) => question.sentence) : [],
+  );
+  const { rpcs, events } = await boot(
+    { [u01]: ["intro", "S1", "S2", "S3", "S4"] },
+    { speech: { granted: true, heard: (attempt) => sentences[attempt] ?? null } },
+  );
   expect(plan.skippedItemCount).toBeGreaterThan(0);
   expect(plan.activities.map((activity) => activity.form)).toContain("word-choice");
+  expect(plan.activities.map((activity) => activity.form)).toContain("read-aloud");
 
   tapNode(u01, "S5");
-  expect(solveLesson(plan, true)).toEqual(
-    plan.activities.map((activity) => contentIdOf[activity.form]),
-  );
+  const seen = solveLesson(plan, true);
+  expect(seen).toEqual(plan.activities.map((activity) => contentIdOf[activity.form]));
+  expect(seen).toContain("read-aloud-content");
   expect(title()).toHaveTextContent("PERFECT LESSON!");
   exitResult();
   await flush();
@@ -134,6 +141,7 @@ test("EF4. (AC5) 건너뜀이 섞인 S5: 계획의 단어 선택 · 타자 문�
       verdict: "passed",
       correctCount: String(plan.questionCount),
       questionCount: String(plan.questionCount),
+      skippedCount: "0",
     },
   ]);
 });

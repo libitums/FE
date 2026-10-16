@@ -6,6 +6,8 @@ import type { NonEmpty } from "../lib/non-empty";
 import type { FillScript } from "../lib/placeholder-fill";
 import type { CultureCardQuestion } from "../screens/culture-card/culture-card.contract";
 import type { ListeningQuestion } from "../screens/listening/listening-questions";
+import type { ReadAloudQuestion } from "../screens/read-aloud/read-aloud.contract";
+import type { SpeakWordQuestion } from "../screens/speak-word/speak-word.contract";
 import type { SentenceOrderQuestion } from "../screens/sentence-order/sentence-order-questions";
 import type { PairMatchQuestion } from "../screens/pair-match/pair-match.contract";
 import type { SyllableBuildQuestion } from "../screens/syllable-build/syllable-build.contract";
@@ -23,7 +25,9 @@ export type CatalogActivity =
   | { readonly form: "vocab-card"; readonly questions: NonEmpty<VocabCardQuestion> }
   | { readonly form: "pair-match"; readonly questions: NonEmpty<PairMatchQuestion> }
   | { readonly form: "culture-card"; readonly questions: NonEmpty<CultureCardQuestion> }
-  | { readonly form: "syllable-build"; readonly questions: NonEmpty<SyllableBuildQuestion> };
+  | { readonly form: "syllable-build"; readonly questions: NonEmpty<SyllableBuildQuestion> }
+  | { readonly form: "read-aloud"; readonly questions: NonEmpty<ReadAloudQuestion> }
+  | { readonly form: "speak-word"; readonly questions: NonEmpty<SpeakWordQuestion> };
 
 export type CatalogActivityForm = CatalogActivity["form"];
 
@@ -31,8 +35,6 @@ export type CatalogActivityForm = CatalogActivity["form"];
 export type CatalogActivityScoring = "graded" | "ungraded";
 
 export type CatalogSkipReason =
-  /** 유형에 맞는 학습 화면이 아직 없음. */
-  | "screen-pending"
   | "no-options"
   | "no-source"
   | "audio-missing"
@@ -68,6 +70,8 @@ export type CatalogMappedItem =
       readonly itemId: string;
       readonly question: SyllableBuildQuestion;
     }
+  | { readonly kind: "read-aloud"; readonly itemId: string; readonly question: ReadAloudQuestion }
+  | { readonly kind: "speak-word"; readonly itemId: string; readonly question: SpeakWordQuestion }
   | {
       readonly kind: "skipped";
       readonly itemId: string;

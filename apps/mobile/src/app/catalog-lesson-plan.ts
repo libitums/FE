@@ -4,6 +4,7 @@
 // 화면 경로가 닿는 파일이라 `lib/episode-*`는 타입만 가져옵니다(값을 가져오면 메인 스레드 빌드가
 // 깨집니다).
 
+import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearnerProfile } from "../lib/placeholder-fill";
@@ -51,6 +52,8 @@ export const catalogActivityScoring: Readonly<Record<CatalogActivityForm, Catalo
     "pair-match": "graded",
     "culture-card": "ungraded",
     "syllable-build": "graded",
+    "read-aloud": "ungraded",
+    "speak-word": "graded",
   };
 
 type PlayableItem = Exclude<CatalogMappedItem, { kind: "skipped" }>;
@@ -90,6 +93,14 @@ function appended(last: CatalogActivity, item: PlayableItem): CatalogActivity | 
       return last.form === "syllable-build"
         ? { form: "syllable-build", questions: [...last.questions, item.question] }
         : null;
+    case "read-aloud":
+      return last.form === "read-aloud"
+        ? { form: "read-aloud", questions: [...last.questions, item.question] }
+        : null;
+    case "speak-word":
+      return last.form === "speak-word"
+        ? { form: "speak-word", questions: [...last.questions, item.question] }
+        : null;
   }
 }
 
@@ -111,6 +122,10 @@ function startedBy(item: PlayableItem): CatalogActivity {
       return { form: "culture-card", questions: [item.question] };
     case "syllable-build":
       return { form: "syllable-build", questions: [item.question] };
+    case "read-aloud":
+      return { form: "read-aloud", questions: [item.question] };
+    case "speak-word":
+      return { form: "speak-word", questions: [item.question] };
   }
 }
 
@@ -185,6 +200,17 @@ export function catalogActivityPositionOf(
 export function catalogPassCriterion(questionCount: number): AssessmentPassCriterion {
   if (questionCount <= 0) return { minCorrectCount: 0 };
   return { minCorrectCount: Math.max(1, Math.floor((3 * questionCount + 4) / 5)) };
+}
+
+/**
+ * 통과 기준의 분모 — 판정한 채점 문항 수(= 결과 수, 채점 문항 수 상한)입니다. 건너뛴 말하기 문항은
+ * 빠집니다.
+ */
+export function catalogJudgedCountOf(
+  questionCount: number,
+  results: readonly AnswerResult[],
+): number {
+  return Math.min(questionCount, results.length);
 }
 
 export function catalogFillOf(content: EpisodeContent, profile: LearnerProfile): CatalogFill {

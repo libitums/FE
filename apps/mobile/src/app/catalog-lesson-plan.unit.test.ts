@@ -17,6 +17,7 @@ import {
   catalogActivityPositionOf,
   catalogActivityScoring,
   catalogItemOf,
+  catalogJudgedCountOf,
   catalogLessonPlanFor,
   catalogLessonPlanOf,
   catalogPassCriterion,
@@ -599,6 +600,8 @@ const lessonLetter: Record<CatalogActivity["form"], string> = {
   "pair-match": "P",
   "culture-card": "U",
   "syllable-build": "B",
+  "read-aloud": "R",
+  "speak-word": "S",
 };
 
 function runsOf(activities: readonly CatalogActivity[]): string {
@@ -1026,6 +1029,8 @@ describe("catalogActivityScoring", () => {
       "pair-match": "graded",
       "culture-card": "ungraded",
       "syllable-build": "graded",
+      "read-aloud": "ungraded",
+      "speak-word": "graded",
     });
     expect(Object.keys(catalogActivityScoring).sort()).toEqual(Object.keys(lessonLetter).sort());
   });
@@ -1249,5 +1254,105 @@ describe("스레드 경계 소스 검사", () => {
     }
 
     expect(violations).toEqual([]);
+  });
+});
+
+// ---- 말하기 두 학습형의 계획 · 통과 분모 ----
+
+const shadowItem = (id: string): LearningItem => ({
+  ...base(id),
+  type: "SHADOW",
+  prompt: { ko: "듣고 따라 말하세요.", en: "Listen and repeat." },
+  stimulus: {},
+  answers: [t("카드로 할게요.", "kadeuro halgeyo.", "I'll pay by card.")],
+});
+
+const speakWordItem = (id: string): LearningItem => ({
+  ...base(id),
+  type: "SPEAK_WORD",
+  prompt: { ko: "그림을 보고 말하세요.", en: "Say the word for the picture." },
+  stimulus: { imageUrl: "content/images/items/card.jpg" },
+  answers: [t("카드", "kadeu", "card")],
+});
+
+const listenBuildItem = (id: string): LearningItem =>
+  ({
+    ...base(id),
+    type: "LISTEN_BUILD",
+    prompt: ask,
+    stimulus: { audio: t("듣기", "deutgi", "Listening") },
+    tiles: [t("가"), t("나")],
+    answers: [t("가 나")],
+  }) as unknown as LearningItem;
+
+const shapeOf = (plan: ReturnType<typeof catalogLessonPlanOf>): string[] =>
+  (plan?.activities ?? []).map((activity) => `${activity.form}:${activity.questions.length}`);
+
+describe("catalogLessonPlanOf — 말하기 학습형", () => {
+  test("PLS1. 읽기 셋은 채점하지 않는 한 활동이다 — 채점 2 · 표시 5 · 건너뜀 1", () => {
+    const items = [
+      choiceCloze("C1"),
+      translateToKo("T1", [t("물", "mul", "water")]),
+      shadowItem("R1"),
+      shadowItem("R2"),
+      shadowItem("R3"),
+      listenBuildItem("L1"),
+    ];
+
+    const plan = catalogLessonPlanOf(entryWithS1(items), "S1", fill, cdn);
+
+    expect(shapeOf(plan)).toEqual(["word-choice:1", "typing:1", "read-aloud:3"]);
+    expect(plan).toMatchObject({ questionCount: 2, shownItemCount: 5, skippedItemCount: 1 });
+  });
+
+  test("PLS2. 낱말 문항은 채점하고 앞뒤 단어 선택 사이에서 한 문항짜리 활동으로 선다", () => {
+    const items = [choiceCloze("C1"), speakWordItem("W1"), choiceCloze("C2")];
+
+    const plan = catalogLessonPlanOf(entryWithS1(items), "S1", fill, cdn);
+
+    expect(shapeOf(plan)).toEqual(["word-choice:1", "speak-word:1", "word-choice:1"]);
+    expect(plan).toMatchObject({ questionCount: 3, shownItemCount: 3, skippedItemCount: 0 });
+  });
+
+  test("PLS2. 이어진 낱말 문항 둘은 한 활동이다", () => {
+    const items = [choiceCloze("C1"), speakWordItem("W1"), speakWordItem("W2")];
+
+    const plan = catalogLessonPlanOf(entryWithS1(items), "S1", fill, cdn);
+
+    expect(shapeOf(plan)).toEqual(["word-choice:1", "speak-word:2"]);
+    expect(plan?.questionCount).toBe(3);
+  });
+
+  test("PLS2. 그림 주소를 못 풀면 낱말 문항은 image-missing으로 건너뛴다", () => {
+    const plan = catalogLessonPlanOf(
+      entryWithS1([choiceCloze("C1"), speakWordItem("W1")]),
+      "S1",
+      fill,
+      noImageUrl,
+    );
+
+    expect(shapeOf(plan)).toEqual(["word-choice:1"]);
+    expect(plan).toMatchObject({ questionCount: 1, skippedItemCount: 1 });
+  });
+});
+
+describe("catalogJudgedCountOf", () => {
+  const results = (count: number): readonly AnswerResult[] =>
+    Array.from({ length: count }, () => "correct" as const);
+
+  test("JC1. 결과 수가 채점 문항 수보다 적으면 결과 수다", () => {
+    expect(catalogJudgedCountOf(8, results(7))).toBe(7);
+  });
+
+  test("JC1. 결과 수가 채점 문항 수와 같으면 그 수다", () => {
+    expect(catalogJudgedCountOf(8, results(8))).toBe(8);
+  });
+
+  test("JC1. 결과가 없으면 0이다", () => {
+    expect(catalogJudgedCountOf(3, [])).toBe(0);
+  });
+
+  test("JC1. 결과가 더 많아도 채점 문항 수를 넘지 않는다", () => {
+    expect(catalogJudgedCountOf(2, results(3))).toBe(2);
   });
 });

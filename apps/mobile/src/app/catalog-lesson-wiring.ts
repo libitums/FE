@@ -15,7 +15,11 @@ import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import type { CatalogWiringValues } from "./catalog-cover-wiring";
 import { finalPassedEventOf, lessonFinishedEventOf, lessonStartedEventOf } from "./catalog-events";
 import { catalogFinalPlanFor } from "./catalog-final-model";
-import { catalogLessonPlanFor, catalogPassCriterion } from "./catalog-lesson-plan";
+import {
+  catalogJudgedCountOf,
+  catalogLessonPlanFor,
+  catalogPassCriterion,
+} from "./catalog-lesson-plan";
 import type { CatalogFinishGuard } from "./catalog-finish-guard";
 import type { NavAction } from "./nav-state";
 
@@ -121,7 +125,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     if (plan.activities.length === 0) {
       // 보일 문항이 하나도 없는 유닛은 화면 없이 막지 않고 결과 화면으로 바로 보냅니다. 채점 문항이 0개여도
       // 카드가 있으면 카드를 한 장씩 보여야 하므로 기준은 채점 수가 아니라 표시 수(활동 유무)입니다.
-      sink?.(lessonFinishedEventOf(episodeId, unitKey, "lesson", [], 0, "passed"));
+      sink?.(lessonFinishedEventOf(episodeId, unitKey, "lesson", [], 0, "passed", 0));
       markDone(episodeId, unitKey);
       showComplete("push", episodeId, unitKey, [], 0, 0);
       return;
@@ -151,7 +155,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       ),
     );
     if (turnCount === 0) {
-      sink?.(lessonFinishedEventOf(episodeId, unitKey, "final", [], 0, "passed"));
+      sink?.(lessonFinishedEventOf(episodeId, unitKey, "final", [], 0, "passed", 0));
       sink?.(finalPassedEventOf(episodeId, [], 0));
       markDone(episodeId, unitKey);
       showComplete("push", episodeId, unitKey, [], 0, 0);
@@ -203,12 +207,21 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
         return;
       }
       clearSession();
-      const verdict = judgeAssessment(gathered, catalogPassCriterion(plan.questionCount));
+      const judged = catalogJudgedCountOf(plan.questionCount, gathered);
+      const verdict = judgeAssessment(gathered, catalogPassCriterion(judged));
       sink?.(
-        lessonFinishedEventOf(episodeId, unitKey, "lesson", gathered, plan.questionCount, verdict),
+        lessonFinishedEventOf(
+          episodeId,
+          unitKey,
+          "lesson",
+          gathered,
+          plan.questionCount,
+          verdict,
+          skippedTotal,
+        ),
       );
       if (assessmentCompletesStep(verdict)) markDone(episodeId, unitKey);
-      showComplete("replace", episodeId, unitKey, gathered, skippedTotal, plan.questionCount);
+      showComplete("replace", episodeId, unitKey, gathered, skippedTotal, judged);
     },
     onFinishCatalogFinal: (episodeId, results) => {
       const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill);
@@ -218,7 +231,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       const unitKey = section.finalKey;
       if (!claimFinish(`${episodeId}|${unitKey}|final`)) return;
       const verdict = judgeAssessment(results, catalogPassCriterion(turnCount));
-      sink?.(lessonFinishedEventOf(episodeId, unitKey, "final", results, turnCount, verdict));
+      sink?.(lessonFinishedEventOf(episodeId, unitKey, "final", results, turnCount, verdict, 0));
       if (assessmentCompletesStep(verdict)) {
         sink?.(finalPassedEventOf(episodeId, results, turnCount));
         markDone(episodeId, unitKey);

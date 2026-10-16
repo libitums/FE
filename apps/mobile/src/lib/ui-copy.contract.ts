@@ -13,6 +13,8 @@ import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
 import type { CultureCardCopy } from "../screens/culture-card/culture-card.contract";
 import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
+import type { ReadAloudCopy } from "../screens/read-aloud/read-aloud.contract";
+import type { SpeakWordCopy } from "../screens/speak-word/speak-word.contract";
 import type { SyllableBuildCopy } from "../screens/syllable-build/syllable-build.contract";
 import type { TypingCopy } from "../screens/typing/typing.contract";
 import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
@@ -87,6 +89,8 @@ export type UiCopy = {
   readonly vocabCard: VocabCardCopy;
   readonly pairMatch: PairMatchCopy;
   readonly cultureCard: CultureCardCopy;
+  readonly readAloud: ReadAloudCopy;
+  readonly speakWord: SpeakWordCopy;
   readonly syllableBuild: SyllableBuildCopy;
   readonly wordChoicePicture: WordChoicePictureCopy;
   readonly catalogFinal: CatalogFinalCopy;

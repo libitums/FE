@@ -372,6 +372,13 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   `lib/hangul-keyboard.ts`로 옮겨졌다(메신저 · 타자 입력 · 카탈로그 최종 테스트 · 수업 계획 넷이 쓴다). 옛 경로는
   재수출 한 줄로 남아 메신저의 import · 테스트 경로가 그대로다. 경로를 읽는 테스트가 없어 위 예외 표와 달리 옮길 수
   있었다.
+  ⟨2026-10-16⟩ **그림 로드 순수 규칙도 올라왔다** — `screens/word-choice/word-choice-picture.ts`의 로드 전이 · 6초 시한
+  (`PictureLoadState` · `PictureLoadEvent` · `pictureLoadTimeoutMs` · `pictureLoadStateAfter`)이 `lib/picture-load.ts`로
+  옮겨졌다(단어 선택 그림 문항 · 낱말 말하기 둘이 쓴다 — [ADR-0067](../adr/0067-episode-format-speaking.md) D6). 옛 이름 넷
+  (`WordChoicePictureState` · `…Event` · `wordChoicePictureTimeoutMs` · `wordChoicePictureStateAfter`)은 옛 경로에 같은 값 · 타입의 별칭으로 남아
+  단어 선택의 import · 테스트가 그대로다. 근거는 한글 자판과 같다 — 경로를 읽는 테스트가 없다.
+  화면 둘이 쓰는 **훅 · 부품**(`useWordChoicePicture` · `WordChoicePicture`)은 단어 선택의 testid · 이름표에 묶여 옮기지
+  않았고, 낱말 말하기는 자기 것을 둔다. 위 예외 표는 바뀌지 않았다.
 
 ([ADR-0004 D3·D4·D5](../adr/0004-package-boundaries-and-dependency-direction.md) ·
 [ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md))

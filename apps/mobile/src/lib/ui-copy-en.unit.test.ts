@@ -172,6 +172,15 @@ test("UC-I1. 단어 카드 · 짝 맞추기 · 그림 제시 문구가 문구표
   expect(c.wordChoicePicture.answerSubline(null, "water")).toBe("water");
 });
 
+test("UE-SP. 말하기 두 학습형의 문구 다섯 키", () => {
+  expect(c.readAloud.badge).toBe("Practice");
+  expect(c.readAloud.matched(1, 1)).toBe("You said the word.");
+  expect(c.readAloud.matched(2, 5)).toBe("You said the first 2 of 5 words.");
+  expect(c.readAloud.pronunciation("kadeu")).toBe("Pronunciation: kadeu");
+  expect(c.speakWord.instruction).toBe("Say the word for the picture.");
+  expect(c.speakWord.recognitionUnavailable.trim()).not.toBe("");
+});
+
 test("UC-L. 학습자 프로필 구획의 모든 잎이 비지 않은 문자열이고 함수는 문자열을 낸다", () => {
   const leaves = leavesOf(c.learnerProfile, "learnerProfile");
 

@@ -4,7 +4,7 @@
 // 대역은 경계뿐입니다 - `NativeModules`(저장소 · 오디오) · `fetch`(Supabase 갱신 · 학습 RPC · 콘텐츠 버킷) ·
 // `vi.stubEnv`. 카탈로그 · 계획 · 화면은 실물입니다. 쓰는 파일의 `afterEach`가 `resetApp`을 부릅니다.
 
-import { expect, vi } from "vitest";
+import { vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "../App";
@@ -86,7 +86,37 @@ export async function flush(): Promise<void> {
   });
 }
 
-export async function boot(progress: Record<string, string[]>): Promise<Booted> {
+/** 음성 인식 대역입니다. `heard(n)`은 n번째 `start`의 인식 글자이고 `null`이면 인식 실패입니다. */
+export type SpeechOption = {
+  readonly granted: boolean;
+  readonly heard: (attempt: number) => string | null;
+};
+export type BootOptions = { readonly speech?: SpeechOption };
+
+function speechModuleOf(speech: SpeechOption) {
+  let attempts = 0;
+  const status = speech.granted ? "granted" : "denied";
+  return {
+    getStatus: () => {},
+    requestPermissions: (callback: (payload: unknown) => void) =>
+      callback({ microphone: status, speechRecognition: status, recognizerAvailable: true }),
+    start: (_args: unknown, callback: (payload: unknown) => void) => {
+      const text = speech.heard(attempts);
+      attempts += 1;
+      callback(
+        text === null
+          ? { status: "recognition-failed", text: "", isFinal: true }
+          : { status: "recognized", text, isFinal: true },
+      );
+    },
+    stop: () => {},
+  };
+}
+
+export async function boot(
+  progress: Record<string, string[]>,
+  options: BootOptions = {},
+): Promise<Booted> {
   const store = new Map<string, string>();
   store.set(
     authSessionStorageKey,
@@ -94,6 +124,9 @@ export async function boot(progress: Record<string, string[]>): Promise<Booted> 
   );
   store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
   vi.stubGlobal("NativeModules", {
+    ...(options.speech === undefined
+      ? {}
+      : { SpeechRecognitionModule: speechModuleOf(options.speech) }),
     StorageModule: {
       get: (key: string) => store.get(key) ?? null,
       set: (key: string, value: string) => void store.set(key, value),
@@ -195,5 +228,7 @@ export const contentIdOf: Record<CatalogActivity["form"], string> = {
   "pair-match": "pair-match-content",
   "culture-card": "culture-card-content",
   "syllable-build": "syllable-build-content",
+  "read-aloud": "read-aloud-content",
+  "speak-word": "speak-word-content",
 };
 export const activityScreenIds = Object.values(contentIdOf);

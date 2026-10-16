@@ -23,6 +23,8 @@ const formLabels: Record<LearningActivityForm, string> = {
   "pair-match": "Matching",
   "culture-card": "Culture",
   "syllable-build": "Spelling",
+  "read-aloud": "Speaking",
+  "speak-word": "Speaking",
 };
 
 /**

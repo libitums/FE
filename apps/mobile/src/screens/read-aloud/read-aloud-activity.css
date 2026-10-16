@@ -1,0 +1,122 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않습니다.
+   뼈대(상단 바 · 세션 헤더 · 지시문 · 무대 카드 · 아래 버튼)는 `LearningShell`이 집니다. 여기 남는 것은
+   카드 안의 배치 — 표식 · 문장 묶음 · 영어 줄 · 안내 줄입니다. 모든 글줄은 가운데 정렬이고 줄바꿈을
+   막지 않습니다(WCAG 1.4.4) — 말줄임도 없습니다. */
+
+/* 카드 안 — 표식 · 문장 묶음 · 영어 · 파형이 가운데 줄로 섭니다. 높이 하한 244는 말하기 카드와 같습니다
+   (문항마다 카드가 흔들리지 않게). 하한이지 고정이 아닙니다. */
+.read-aloud-activity-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-16);
+  min-height: 244px;
+}
+
+/* 표식 자리 — 다른 학습 화면의 판정 배지 자리와 같은 위치 · 높이입니다. */
+.read-aloud-activity-badge-slot {
+  min-height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* `Practice` 표식 — 판정이 아니라 안내라서 아이콘도 판정 색도 없습니다. 면 `background-elevated` 위
+   `fg-brand`(12px 굵은 글씨)가 AA입니다. */
+.read-aloud-activity-badge {
+  padding-top: var(--libitum-spacing-4);
+  padding-bottom: var(--libitum-spacing-4);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.read-aloud-activity-badge-text {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 한국어 문장 + 로마자는 한 묶음으로 붙어 섭니다. */
+.read-aloud-activity-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  gap: var(--libitum-spacing-4);
+}
+
+/* 따라 읽을 문장 — `heading-l`(28) 글꼴입니다. 최대 17자 문장이 좁은 폭에서도 두 줄에 듭니다. */
+.read-aloud-activity-sentence {
+  text-align: center;
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+/* 낱말 조각 — Lynx에서 안쪽 `<text>`는 바깥의 글꼴 크기를 물려받지 않아(기기 확인) 같은 글꼴을 다시
+   줍니다. 맞게 말한 조각만 칠하고, 나머지는 물러나지 않고 본문색 그대로 둡니다. */
+.read-aloud-activity-chunk {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.read-aloud-activity-chunk-matched {
+  color: var(--libitum-color-fg-brand);
+}
+
+.read-aloud-activity-romanization {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+.read-aloud-activity-translation {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 고정 버튼 행의 보조 동작: 준비에서는 Next, 인식 뒤와 받아쓰기 오류에서는 Try again. */
+.read-aloud-activity-secondary {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 작업 영역의 안내 한 줄 — 인식 뒤 맞은 낱말 수, 불가일 때 안내입니다. 자리는 비어도 지킵니다. */
+.read-aloud-activity-hint-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--libitum-spacing-48);
+}
+
+.read-aloud-activity-hint {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}

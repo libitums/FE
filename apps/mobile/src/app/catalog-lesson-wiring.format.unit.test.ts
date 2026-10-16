@@ -11,6 +11,7 @@ import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.c
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import { noLearnerProfile } from "./catalog-cover-wiring";
 import { newCatalogFinishGuard } from "./catalog-finish-guard";
+import { catalogLessonPlanOf } from "./catalog-lesson-plan";
 import { catalogLessonWiring } from "./catalog-lesson-wiring";
 import type { CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
 import type { NavAction } from "./nav-state";
@@ -157,6 +158,7 @@ describe("CULT 단계 시작 (LWF)", () => {
         verdict: "passed",
         correctCount: "2",
         questionCount: "3",
+        skippedCount: "0",
       },
     ]);
     expect(updaters).toHaveLength(1);
@@ -205,6 +207,7 @@ describe("CULT 단계 시작 (LWF)", () => {
         verdict: "failed",
         correctCount: "1",
         questionCount: "3",
+        skippedCount: "0",
       },
     ]);
     expect(updaters).toHaveLength(0);
@@ -215,5 +218,122 @@ describe("CULT 단계 시작 (LWF)", () => {
         screen: expect.objectContaining({ name: "catalog-unit-complete", questionCount: 3 }),
       }),
     ]);
+  });
+});
+
+const throughS4: CatalogProgress = { "u01-water": ["intro", "S1", "S2", "S3", "S4"] };
+const throughS5U02: CatalogProgress = { "u02-checkin": ["intro", "S1", "S2", "S3", "S4", "S5"] };
+const manyOf = (count: number, result: AnswerResult): AnswerResult[] =>
+  Array.from({ length: count }, () => result);
+
+describe("말하기 단계의 끝 (LWS)", () => {
+  test("LWS1. u01 S5의 읽기를 끝내며 건너뜀 3을 내면 이벤트 · 결과 화면 · 기록이 건너뜀 3을 싣는다", () => {
+    const { wiring, log, updaters } = wiringOf(throughS4, manyOf(6, correct));
+
+    wiring.onFinishCatalogActivity("u01-water", "S5", 2, [], 3);
+
+    expect(eventsOf(log)).toEqual([
+      {
+        name: "episode_lesson_finished",
+        episodeId: "u01-water",
+        unitKey: "S5",
+        unitRole: "lesson",
+        verdict: "passed",
+        correctCount: "6",
+        questionCount: "6",
+        skippedCount: "3",
+      },
+    ]);
+    expect(dispatchesOf(log)).toEqual([
+      {
+        type: "replace",
+        screen: {
+          name: "catalog-unit-complete",
+          episodeId: "u01-water",
+          unitKey: "S5",
+          results: manyOf(6, correct),
+          skippedCount: 3,
+          questionCount: 6,
+        },
+      },
+    ]);
+    expect(updaters).toHaveLength(1);
+    expect(updaters[0]?.(throughS4)).toEqual({
+      "u01-water": [...(throughS4["u01-water"] ?? []), "S5"],
+    });
+  });
+
+  describe("u02 S6 — 낱말을 건너뛰면 통과 분모에서 빠진다", () => {
+    const lastActivityIndex = (): number => {
+      const entry = catalog.find((candidate) => candidate.id === "u02-checkin");
+      if (entry === undefined || entry.status !== "ready")
+        throw new Error("u02가 ready가 아닙니다");
+      const plan = catalogLessonPlanOf(
+        entry,
+        "S6",
+        (text, script) => fillPlaceholders(text, {}, script),
+        (path) => `https://cdn/${path}`,
+      );
+      if (plan === null) throw new Error("S6 계획이 없습니다");
+      return plan.activities.length - 1;
+    };
+
+    test("LWS2. 채점 12 중 낱말을 건너뛰고 나머지 11에서 7을 맞히면 분모 11로 통과한다", () => {
+      const { wiring, log, updaters } = wiringOf(throughS5U02);
+
+      wiring.onFinishCatalogActivity(
+        "u02-checkin",
+        "S6",
+        lastActivityIndex(),
+        [...manyOf(7, correct), ...manyOf(4, incorrect)],
+        1,
+      );
+
+      expect(eventsOf(log)).toEqual([
+        {
+          name: "episode_lesson_finished",
+          episodeId: "u02-checkin",
+          unitKey: "S6",
+          unitRole: "lesson",
+          verdict: "passed",
+          correctCount: "7",
+          questionCount: "12",
+          skippedCount: "1",
+        },
+      ]);
+      expect(dispatchesOf(log)).toEqual([
+        expect.objectContaining({
+          type: "replace",
+          screen: expect.objectContaining({
+            name: "catalog-unit-complete",
+            skippedCount: 1,
+            questionCount: 11,
+          }),
+        }),
+      ]);
+      expect(updaters).toHaveLength(1);
+    });
+
+    test("LWS2. 같은 정답 7에 낱말을 오답으로 판정하면 분모 12 · 기준 8로 실패하고 기록하지 않는다", () => {
+      const { wiring, log, updaters } = wiringOf(throughS5U02);
+
+      wiring.onFinishCatalogActivity(
+        "u02-checkin",
+        "S6",
+        lastActivityIndex(),
+        [...manyOf(7, correct), ...manyOf(5, incorrect)],
+        0,
+      );
+
+      expect(eventsOf(log)).toEqual([
+        expect.objectContaining({ verdict: "failed", questionCount: "12", skippedCount: "0" }),
+      ]);
+      expect(dispatchesOf(log)).toEqual([
+        expect.objectContaining({
+          screen: expect.objectContaining({ skippedCount: 0, questionCount: 12 }),
+        }),
+      ]);
+      expect(updaters).toHaveLength(0);
+    });
   });
 });
