@@ -10,14 +10,18 @@ export function useProgressLoadEvents(
   sink: ((event: ProgressLoadEvent) => void) | null,
 ): void {
   const previous = useRef(phase);
+  // 전이가 일어난 렌더의 sink를 씁니다 — sink가 바뀌어도 이펙트를 다시 돌리지 않습니다.
+  const latestSink = useRef(sink);
+  latestSink.current = sink;
   useEffect(() => {
     const before = previous.current;
     previous.current = phase;
-    if (sink === null) return;
+    const current = latestSink.current;
+    if (current === null) return;
     const event = progressLoadEventFor(before, phase);
     if (event === null) return;
     try {
-      sink(event);
+      current(event);
     } catch {
       // 측정 실패는 화면을 막지 않습니다.
     }

@@ -49,7 +49,12 @@ export function useProgressLoad(): {
     clearTimeout(timer.current);
     timer.current = undefined;
   };
-  useEffect(() => clearTimer, []);
+  useEffect(
+    () => () => {
+      clearTimeout(timer.current);
+    },
+    [],
+  );
   return {
     phase,
     start: (local) => {
