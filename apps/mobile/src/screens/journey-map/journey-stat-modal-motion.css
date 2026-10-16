@@ -1,0 +1,183 @@
+/* 지표 모달의 움직임입니다(ADR-0064 — 시안 ②C 「계속 살아 있음」). 열릴 때 큰 숫자 · 제목 · 아이콘이 커지며
+   나타나고(토큰 `reward` · `enter-expressive` · `scale.reward`), 불꽃이 세 번 일렁인 뒤 잔잔히 숨 쉬고, 트로피가
+   한 번 흔들린 뒤 4초마다 빛이 지나가고, 운석이 비스듬히 들어와 둥실 떠 있습니다. 가장 최근 칸의 체크는 등장
+   뒤에 톡 찍힙니다.
+
+   반복 층(숨 · 빛 · 둥실)의 길이(2.4 · 4 · 5.5 ~ 7초)와 그 시작 시각, 불꽃 · 트로피의 크기 변화는 UI 전환 토큰으로
+   표현할 수 없는 연출 값이라 이 파일이 `lint:motion` allowlist에 있습니다 — 사유는 allowlist가 집니다. 반복은
+   모달이 떠 있는 동안만 돌고(닫히면 요소가 사라집니다), 움직임 줄이기에서는 반복 층의 클래스가 붙지 않고 등장이
+   페이드(`-hero-fade`)로 바뀝니다. 한 요소에 애니메이션을 하나만 걸고, 둘이 필요하면 감싼 view에 나눕니다. */
+
+/* 등장 */
+@keyframes journey-stat-modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes journey-stat-modal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.journey-stat-modal-hero-enter {
+  animation: journey-stat-modal-enter var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.journey-stat-modal-hero-fade {
+  animation: journey-stat-modal-fade var(--libitum-motion-duration-d2)
+    var(--libitum-motion-easing-linear) both;
+}
+
+/* 불꽃 — 아래쪽을 축으로 세 번 크게 일렁이고(400ms × 3), 그 뒤로 2.4초마다 잔잔히 숨 쉽니다. */
+.journey-stat-modal-fire-flicker {
+  transform-origin: 50% 85%;
+  animation: journey-stat-modal-flicker var(--libitum-motion-duration-d7)
+    var(--libitum-motion-easing-easing) var(--libitum-motion-duration-reward) 3;
+}
+
+.journey-stat-modal-fire-breathe {
+  transform-origin: 50% 85%;
+  animation: journey-stat-modal-breathe 2400ms var(--libitum-motion-easing-easing) 1600ms infinite;
+}
+
+@keyframes journey-stat-modal-flicker {
+  0% {
+    transform: scaleX(1) scaleY(1) rotate(0deg);
+  }
+  30% {
+    transform: scaleX(0.96) scaleY(1.08) rotate(-3deg);
+  }
+  65% {
+    transform: scaleX(1.03) scaleY(0.97) rotate(2deg);
+  }
+  100% {
+    transform: scaleX(1) scaleY(1) rotate(0deg);
+  }
+}
+
+@keyframes journey-stat-modal-breathe {
+  0% {
+    transform: scaleX(1) scaleY(1) rotate(0deg);
+  }
+  50% {
+    transform: scaleX(0.985) scaleY(1.03) rotate(-1.5deg);
+  }
+  100% {
+    transform: scaleX(1) scaleY(1) rotate(0deg);
+  }
+}
+
+/* 트로피 — 등장 뒤 한 번 들썩이며 흔들리고, 흰 트로피가 4초마다 잠깐 겹쳐 빛납니다. */
+.journey-stat-modal-trophy-wobble {
+  transform-origin: 50% 90%;
+  animation: journey-stat-modal-wobble var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-easing) var(--libitum-motion-duration-reward) both;
+}
+
+@keyframes journey-stat-modal-wobble {
+  0% {
+    transform: rotate(0deg) translateY(0px);
+  }
+  25% {
+    transform: rotate(-9deg) translateY(-6px);
+  }
+  55% {
+    transform: rotate(6deg) translateY(-2px);
+  }
+  80% {
+    transform: rotate(-2deg) translateY(0px);
+  }
+  100% {
+    transform: rotate(0deg) translateY(0px);
+  }
+}
+
+.journey-stat-modal-trophy-glint {
+  opacity: 0;
+  animation: journey-stat-modal-glint 4000ms var(--libitum-motion-easing-easing) 700ms infinite;
+}
+
+@keyframes journey-stat-modal-glint {
+  0% {
+    opacity: 0;
+  }
+  9% {
+    opacity: 0.7;
+  }
+  18% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 운석 셋 — 오른쪽 위에서 비스듬히 들어오고(150ms씩 어긋남), 자리마다 다른 길이로 둥실 떠 있습니다. */
+@keyframes journey-stat-modal-meteor-in {
+  from {
+    opacity: 0;
+    transform: translate(60px, -60px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0px, 0px);
+  }
+}
+
+@keyframes journey-stat-modal-meteor-bob {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  50% {
+    transform: translate(-6px, 8px);
+  }
+  100% {
+    transform: translate(0px, 0px);
+  }
+}
+
+.journey-stat-modal-meteor-in-a {
+  animation: journey-stat-modal-meteor-in var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-enter) both;
+}
+
+.journey-stat-modal-meteor-in-b {
+  animation: journey-stat-modal-meteor-in var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-enter) var(--libitum-motion-duration-d3) both;
+}
+
+.journey-stat-modal-meteor-in-c {
+  animation: journey-stat-modal-meteor-in var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-enter) var(--libitum-motion-duration-d6) both;
+}
+
+.journey-stat-modal-meteor-bob-a {
+  animation: journey-stat-modal-meteor-bob 6000ms var(--libitum-motion-easing-easing) 700ms infinite;
+}
+
+.journey-stat-modal-meteor-bob-b {
+  animation: journey-stat-modal-meteor-bob 7000ms var(--libitum-motion-easing-easing) 900ms infinite
+    reverse;
+}
+
+.journey-stat-modal-meteor-bob-c {
+  animation: journey-stat-modal-meteor-bob 5500ms var(--libitum-motion-easing-easing) 1100ms
+    infinite;
+}
+
+/* 가장 최근 칸의 체크 — 등장이 끝날 즈음(`d8`) 작게 시작해 제자리로 찍힙니다. */
+.journey-stat-modal-tick-latest {
+  animation: journey-stat-modal-enter var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) var(--libitum-motion-duration-d8) both;
+}

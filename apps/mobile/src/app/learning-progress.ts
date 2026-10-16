@@ -3,6 +3,7 @@
 // 스냅숏을 읽을 때 **이 앱에 있는 유닛 ID만** 남깁니다 — 표가 유닛 타입의 모든 값을 키로 가져야 컴파일되므로,
 // 유닛이 늘면 여기서 섭니다(`push-target.ts`와 같은 방식).
 
+import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import {
   catalogProgressFrom,
   mergeCatalogProgress,
@@ -200,9 +201,16 @@ export function mergeJourneyProgress(
 export type JourneyStats = { readonly streakDays: number; readonly trophyCount: number };
 
 /** 화면 결선이 받는 진행 쪽 값입니다 — 칩 둘, 로그인 뒤 서버 진행을 불러오는 함수, 맵이 받는 불러오기 상태. */
-export type ProgressWiringArgs = JourneyStats & {
-  readonly syncProgress: () => Promise<void>;
-  readonly journeyMapProgressLoad: JourneyMapProgressLoad;
+export type ProgressWiringArgs = JourneyStats &
+  StatBumpWiring & {
+    readonly syncProgress: () => Promise<void>;
+    readonly journeyMapProgressLoad: JourneyMapProgressLoad;
+  };
+
+/** 지표 칩이 굴릴 「오르기 전 값」과 재생을 마쳤다는 알림입니다(ADR-0064). 학습 완료 화면의 칩이 씁니다. */
+export type StatBumpWiring = {
+  readonly statBumps: StatBumps;
+  readonly onStatBumped: (kind: StatBumpKind) => void;
 };
 
 function includesAll<T>(whole: readonly T[], part: readonly T[]): boolean {

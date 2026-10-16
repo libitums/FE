@@ -1,0 +1,190 @@
+/* 지표 칩의 오름 재생입니다(ADR-0064 — 시안 ①D 「불씨 + 빛 훑기」). 길이 · 가속은 토큰이고, 아이콘이 튀는
+   크기(1.4 · 0.94)만 토큰에 없는 연출 값이라 이 파일이 `lint:motion` allowlist에 있습니다 — 사유는 allowlist가
+   집니다. 재생 요소(빛 · 테두리 막 · 알갱이 · 굴림 상자)는 재생하는 동안만 DOM에 서고, 칩이 타이머로 걷습니다.
+   움직임 줄이기에서는 이 요소들이 서지 않고 숫자 페이드(`-value-fade`)만 남습니다. */
+
+/* 아이콘 톡 — 커졌다가 살짝 기울며 제자리로 돌아옵니다. */
+@keyframes stat-chip-pop {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  35% {
+    transform: scale(1.4) rotate(-6deg);
+  }
+  70% {
+    transform: scale(0.94) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.stat-chip-pop {
+  animation: stat-chip-pop var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+/* 숫자 굴림 — 높이 한 줄 상자에 두 줄(옛 값 · 새 값)을 세우고 한 줄만큼 밀어 올립니다. */
+.stat-chip-digits {
+  height: var(--libitum-typography-label-m-line-height);
+  overflow: hidden;
+}
+
+.stat-chip-roll {
+  display: flex;
+  flex-direction: column;
+  animation: stat-chip-roll var(--libitum-motion-duration-d6) var(--libitum-motion-easing-enter)
+    both;
+}
+
+@keyframes stat-chip-roll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+/* 움직임 줄이기 — 크기 · 이동 없이 새 숫자가 나타납니다. */
+.stat-chip-value-fade {
+  animation: stat-chip-fade var(--libitum-motion-duration-d2) var(--libitum-motion-easing-linear)
+    both;
+}
+
+@keyframes stat-chip-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 알갱이 여섯 — 아이콘 가운데의 0 × 0 축(`-ray`)을 60°씩 돌려 두고(인라인 `rotate`, 정지값), 알갱이가 축의
+   위쪽으로 19만큼 날아가며 사라집니다. keyframe은 하나입니다. 스트릭은 둥근 불씨, 트로피는 각진 반짝임입니다. */
+.stat-chip-spark-ray {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  width: 0;
+  height: 0;
+}
+
+.stat-chip-spark {
+  position: absolute;
+  left: -2.5px;
+  top: -2.5px;
+  width: 5px;
+  height: 5px;
+  opacity: 0;
+  animation: stat-chip-spark var(--libitum-motion-duration-d8) var(--libitum-motion-easing-enter)
+    var(--libitum-motion-duration-d1) both;
+}
+
+.stat-chip-spark-streak {
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-secondary);
+}
+
+.stat-chip-spark-trophy {
+  border-radius: 1px;
+  background-color: var(--libitum-color-feedback-warning);
+}
+
+@keyframes stat-chip-spark {
+  from {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-19px);
+  }
+}
+
+/* 테두리 막 — 칩 테두리 위에 같은 자리 · 같은 굵기로 칩 색 테두리를 겹쳐 물들였다가 걷습니다. 테두리 색 자체를
+   전환하지 않는 것은 Lynx에서 확인된 애니메이션 속성이 불투명도 · transform이기 때문입니다. −2px은 테두리
+   굵기(`stroke-width-strong`)만큼 바깥으로 내는 값입니다. */
+.stat-chip-glow {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: var(--libitum-stroke-width-strong) solid;
+  border-radius: var(--libitum-radius-sm);
+  opacity: 0;
+  animation: stat-chip-glow var(--libitum-motion-duration-d8) var(--libitum-motion-easing-easing)
+    both;
+}
+
+.stat-chip-glow-streak {
+  border-color: var(--libitum-color-brand-secondary);
+}
+
+.stat-chip-glow-trophy {
+  border-color: var(--libitum-color-feedback-warning);
+}
+
+@keyframes stat-chip-glow {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 빛 훑기 — 칩 안쪽만 보이게 자른 상자 안에서 칩 폭의 40 % 띠가 왼쪽 밖에서 오른쪽 밖으로 지나갑니다
+   (띠 폭의 −100 % → 250 %). 칩의 첫 자식이라 아이콘 · 숫자 뒤에 깔립니다. */
+.stat-chip-sheen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  border-radius: var(--libitum-radius-sm);
+}
+
+.stat-chip-sheen-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  animation: stat-chip-sheen var(--libitum-motion-duration-d8) var(--libitum-motion-easing-easing)
+    both;
+}
+
+/* 띠 색은 칩 색에 알파 0.35를 얹은 값입니다 — 알파가 붙은 색 토큰이 없어 rgba로 적습니다. */
+.stat-chip-sheen-band-streak {
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 141, 40, 0),
+    rgba(255, 141, 40, 0.35),
+    rgba(255, 141, 40, 0)
+  );
+}
+
+.stat-chip-sheen-band-trophy {
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 197, 0, 0),
+    rgba(255, 197, 0, 0.35),
+    rgba(255, 197, 0, 0)
+  );
+}
+
+@keyframes stat-chip-sheen {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}

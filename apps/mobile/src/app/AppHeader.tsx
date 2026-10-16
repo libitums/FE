@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
 import type { FeedbackRating } from "../lib/feedback.contract";
+import type { StatBumpWiring } from "./learning-progress";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import {
@@ -49,6 +50,11 @@ export type AppHeaderProps = {
   readonly episodeSurvey?: { readonly id: string; readonly title: string } | null;
   readonly onAnswerEpisodeSurvey?: (episodeId: string, rating: FeedbackRating) => void;
   readonly onSkipEpisodeSurvey?: (episodeId: string) => void;
+  /**
+   * 활동으로 오르기 전 값입니다(ADR-0064). 칩은 레이어가 모두 닫힌 뒤 한 번 굴립니다 — 연속 모달이 곧 열릴 참이면
+   * (`celebrateStreak`) 그 모달을 닫은 뒤입니다. 모달이 「4 day streak」을 말하고, 닫으면 칩이 3 → 4로 오릅니다.
+   */
+  readonly statBump?: StatBumpWiring;
 };
 
 export function AppHeader({
@@ -62,6 +68,7 @@ export function AppHeader({
   episodeSurvey = null,
   onAnswerEpisodeSurvey,
   onSkipEpisodeSurvey,
+  statBump,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
   const close = () => setOpenLayer(null);
@@ -95,6 +102,9 @@ export function AppHeader({
           onOpenNotifications={onOpenNotifications}
           onOpenStreak={() => setOpenLayer("streak")}
           onOpenTrophy={() => setOpenLayer("trophy")}
+          bumps={statBump?.statBumps}
+          bumpHeld={openLayer !== null || obscured || celebrateStreak}
+          onBumped={statBump?.onStatBumped}
         />
       </view>
       {openLayer === "streak" || openLayer === "trophy" ? (

@@ -174,6 +174,8 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
           verdict={verdict}
           streakDays={wiring.streakDays}
           trophyCount={wiring.trophyCount}
+          statBumps={wiring.statBumps}
+          onStatBumped={wiring.onStatBumped}
           reward={lessonRewardPlaceholder}
           onExit={wiring.onExitAssessment}
           // 미통과에서만 씁니다 — 같은 스텝을 첫 활동부터 새로 엽니다. 맵을 거쳐

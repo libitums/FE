@@ -3,6 +3,8 @@ import type { ReactNode } from "@lynx-js/react";
 import notification from "@libitums/icons/lynx/notification";
 import { color } from "@libitums/design-tokens";
 
+import { noStatBumps } from "../lib/stat-bump";
+import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import { useUiCopy } from "../lib/ui-copy";
 
 import { StatChip } from "./StatChip";
@@ -23,6 +25,11 @@ export type TopBarProps = {
   /** 칩을 누르면 부릅니다. 모달을 여닫는 일은 화면이 집니다. */
   readonly onOpenStreak?: () => void;
   readonly onOpenTrophy?: () => void;
+  /** 활동으로 오르기 전 값입니다(ADR-0064). 칩이 그 값에서 지금 값으로 한 번 굴립니다. */
+  readonly bumps?: StatBumps;
+  /** 참인 동안 오름 재생을 미룹니다 — 모달이 덮고 있거나 곧 열릴 때입니다. */
+  readonly bumpHeld?: boolean;
+  readonly onBumped?: (kind: StatBumpKind) => void;
 };
 
 export function TopBar({
@@ -31,6 +38,9 @@ export function TopBar({
   onOpenNotifications,
   onOpenStreak,
   onOpenTrophy,
+  bumps = noStatBumps,
+  bumpHeld = false,
+  onBumped,
 }: TopBarProps): ReactNode {
   const copy = useUiCopy();
   const handleOpenNotifications = () => {
@@ -66,6 +76,9 @@ export function TopBar({
           testId="top-bar-streak"
           surface="white"
           onTap={onOpenStreak === undefined ? undefined : handleOpenStreak}
+          bumpFrom={bumps.streak}
+          bumpHeld={bumpHeld}
+          onBumped={() => onBumped?.("streak")}
         />
         {/* 트로피 수를 아직 모르면(null) 0을 보이지 않고 칩을 그리지 않습니다. */}
         {trophyCount === null ? null : (
@@ -76,6 +89,9 @@ export function TopBar({
             testId="top-bar-trophy"
             surface="white"
             onTap={onOpenTrophy === undefined ? undefined : handleOpenTrophy}
+            bumpFrom={bumps.trophy}
+            bumpHeld={bumpHeld}
+            onBumped={() => onBumped?.("trophy")}
           />
         )}
       </view>

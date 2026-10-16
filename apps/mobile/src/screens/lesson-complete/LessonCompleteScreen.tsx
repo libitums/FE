@@ -4,8 +4,6 @@ import type { ReactNode } from "@lynx-js/react";
 
 import diamond from "@libitums/icons/lynx/diamond";
 import fire from "@libitums/icons/lynx/fire";
-import cross from "@libitums/icons/lynx/cross";
-import tick from "@libitums/icons/lynx/tick";
 import trophy from "@libitums/icons/lynx/trophy";
 import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
@@ -26,7 +24,14 @@ import {
   lessonStreakLabel,
   type LessonReward,
 } from "./lesson-complete";
-import { rewardBadgeClassName, rewardMotionFor } from "./lesson-complete-reward";
+import {
+  lessonCompleteChipBumpDelayMs,
+  lessonCompleteRiseClassName,
+  rewardMotionFor,
+} from "./lesson-complete-reward";
+import { LessonCompleteBadge } from "./LessonCompleteBadge";
+import { noStatBumps } from "../../lib/stat-bump";
+import type { StatBumpKind, StatBumps } from "../../lib/stat-bump";
 
 import "./lesson-complete-screen.css";
 
@@ -65,6 +70,12 @@ export type LessonCompleteScreenProps = {
    * 것이고, 뒤로 가는 길은 여전히 `onExit` 하나입니다.
    */
   readonly onRetry?: () => void;
+  /**
+   * 활동으로 오르기 전 지표 값입니다(ADR-0064). 머리 칩이 배지가 자리 잡은 뒤 그 값에서 지금 값으로 한 번
+   * 굴리고 `onStatBumped`로 알립니다. 이 화면에서 굴리면 맵의 머리 칩은 다시 굴리지 않습니다.
+   */
+  readonly statBumps?: StatBumps;
+  readonly onStatBumped?: (kind: StatBumpKind) => void;
 };
 
 export function LessonCompleteScreen({
@@ -77,10 +88,13 @@ export function LessonCompleteScreen({
   exitTo = "journey",
   onExit,
   onRetry,
+  statBumps = noStatBumps,
+  onStatBumped,
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
   // `reward` prop(재화)과 이름이 겹치지 않도록 배지 모션은 `rewardMotion`으로 둡니다.
   const rewardMotion = rewardMotionFor(verdict, useMotion());
+  const chipBumpDelayMs = lessonCompleteChipBumpDelayMs(rewardMotion);
   // 시스템 뒤로가기 = 하단 나가기와 같은 함수입니다(미통과의 `Try again`이 아닙니다).
   useScreenBack(onExit);
   const mistakeCount = lessonMistakeCount(results);
@@ -112,33 +126,34 @@ export function LessonCompleteScreen({
           value={streakDays}
           accessibilityLabel={copy.common.count.streakDays(streakDays)}
           testId="lesson-complete-screen-streak"
+          bumpFrom={statBumps.streak}
+          bumpDelayMs={chipBumpDelayMs}
+          onBumped={() => onStatBumped?.("streak")}
         />
         <StatChip
           tone="trophy"
           value={trophyCount}
           accessibilityLabel={copy.common.count.trophies(trophyCount)}
           testId="lesson-complete-screen-trophy"
+          bumpFrom={statBumps.trophy}
+          bumpDelayMs={chipBumpDelayMs}
+          onBumped={() => onStatBumped?.("trophy")}
         />
       </view>
 
       <view className="lesson-complete-screen-spacer-top" />
 
-      {/* 판정 표식 — 장식입니다. 판정은 아래 제목과 낭독이 말합니다. 그래도 모양을
-          가르는 것은 색만으로 갈리지 않게 하기 위해서입니다(WCAG 1.4.1): 면 색이
-          안 보이는 환경에서도 ✓ · ✗가 갈립니다. */}
-      <view
-        className={rewardBadgeClassName(verdict, rewardMotion)}
-        data-verdict={verdict}
-        {...(rewardMotion === "none" ? {} : { "data-reward": rewardMotion })}
-      >
-        <svg
-          className="lesson-complete-screen-badge-icon"
-          content={verdict === "failed" ? cross : tick}
-          current-color={color.white}
-        />
-      </view>
+      {/* 판정 표식과 통과 폭죽입니다(`LessonCompleteBadge`) — 장식이고 판정은 아래 제목과 낭독이 말합니다. */}
+      <LessonCompleteBadge verdict={verdict} rewardMotion={rewardMotion} />
 
-      <view className="lesson-complete-screen-summary">
+      <view
+        className={[
+          "lesson-complete-screen-summary",
+          lessonCompleteRiseClassName(rewardMotion, "summary"),
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
         <text
           className="lesson-complete-screen-title"
           data-testid="lesson-complete-screen-title"
@@ -178,7 +193,14 @@ export function LessonCompleteScreen({
           합니다. 빈 상자도 두지 않습니다: 「자리는 있는데 비었다」와 「자리가 없다」가
           구분되지 않고, 다음 화면이 그 빈 상자를 복사합니다(ADR-0022 D1과 같은 근거). */}
       {verdict === "failed" ? null : (
-        <view className="lesson-complete-screen-rewards">
+        <view
+          className={[
+            "lesson-complete-screen-rewards",
+            lessonCompleteRiseClassName(rewardMotion, "rewards"),
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <view
             className="lesson-complete-screen-reward lesson-complete-screen-reward-diamond"
             data-testid="lesson-complete-screen-reward-diamond"
