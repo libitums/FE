@@ -24,7 +24,7 @@ export function catalogSpellingOf(
     if (position === word.length) return true;
     for (let index = 0; index < tiles.length; index += 1) {
       const tile = tiles[index] ?? "";
-      if (used[index] === true || tile === "" || !word.startsWith(tile, position)) continue;
+      if (used[index] || tile === "" || !word.startsWith(tile, position)) continue;
       used[index] = true;
       path.push(index);
       if (walk(position + tile.length)) return true;
