@@ -60,7 +60,7 @@ export type SpeakWordPictureProps = {
 export type SpeakWordCopy = {
   /** 콘텐츠 지시문이 없을 때의 지시문입니다. */
   readonly instruction: string;
-  /** 불가(blocked · failed) 안내 줄 — 낱말을 건너뛰라고 말합니다. */
+  /** 불가(blocked · failed) 안내 줄 — Skip으로 이어 가라고 말합니다(다음 자리를 말하지 않음). */
   readonly recognitionUnavailable: string;
 };
 
