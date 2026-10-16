@@ -4,6 +4,7 @@ import type { CatalogProgress } from "../../lib/catalog-progress";
 import { bundledCatalogInput } from "../../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../../lib/episode-catalog";
 import type { CatalogEntry, LockReason } from "../../lib/episode-catalog";
+import { legacyCatalogInput } from "../../lib/episode-legacy.test-support";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 import type {
   CatalogGate,
@@ -17,6 +18,7 @@ import {
   TUTORIAL_GATE_UNIT,
   canStartCatalogCover,
   catalogCaptionKindOf,
+  catalogCompletionKeysOf,
   catalogCoverStatus,
   canStartCatalogUnit,
   catalogCoverAccessibilityLabel,
@@ -48,6 +50,15 @@ const baseReady = realCatalog[0] as ReadyEntry;
 function ready(id: string, order: number, title = `제목 ${id}`): ReadyEntry {
   return { ...baseReady, id, order, title };
 }
+
+// 완료 조건이 없는 옛 형식 에피소드 — 기본 완료 키(RP)로 판정되는 구획을 만듭니다.
+const legacyReady = (id: string, order: number): ReadyEntry => {
+  const [first] = buildEpisodeCatalog({
+    bundled: legacyCatalogInput,
+    cache: { manifest: null, episodes: {} },
+  });
+  return { ...(first as ReadyEntry), id, order, title: `제목 ${id}` };
+};
 
 function pending(id: string, order: number): CatalogEntry {
   return { status: "pending", id, order, title: `제목 ${id}`, version: "v1" };
@@ -83,10 +94,10 @@ describe("catalogMapSectionsOf", () => {
       "u03-mina",
     ]);
     const first = readySection(sections, 0);
-    expect(first.lessonKeys).toEqual(["S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"]);
+    expect(first.lessonKeys).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"]);
     expect(first.finalKey).toBe("RP");
     expect(first.title).toBe(realCatalog[0]?.title);
-    expect(first.title).toBe("익선동 골목 어귀 편의점");
+    expect(first.title).toBe("물 사기");
   });
 
   test("CM2. pending · locked 항목은 사유가 붙은 unavailable 구획이 된다", () => {
@@ -101,6 +112,7 @@ describe("catalogMapSectionsOf", () => {
         title: "제목 a",
         lessonKeys: a.episode.units.map((unit) => unit.id),
         finalKey: a.episode.finalTest.id,
+        completionKeys: ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"],
       },
       {
         kind: "catalog-unavailable",
@@ -173,10 +185,10 @@ describe("셀렉터 토큰", () => {
 describe("표지 잠금", () => {
   // A ready · B ready · C unavailable · D ready
   const sections = catalogMapSectionsOf([
-    ready("A", 1),
-    ready("B", 2),
+    legacyReady("A", 1),
+    legacyReady("B", 2),
     pending("C", 3),
-    ready("D", 4),
+    legacyReady("D", 4),
   ]);
 
   test("CM6. 첫 표지는 튜토리얼을 통과해야 열린다", () => {
@@ -232,15 +244,15 @@ describe("잠긴 노드와 진행", () => {
   // 수집 단계에서 던지지 않도록 테스트 안에서 만듭니다.
   const u01Section = () => readySection(catalogMapSectionsOf(realCatalog), 0);
 
-  test("CM8′. 레슨 여덟 + 최종 하나, 순서 · 번호 · 상태가 맞다", () => {
+  test("CM8′. 레슨 아홉 + 최종 하나, 순서 · 번호 · 상태가 맞다", () => {
     const u01 = u01Section();
     const nodes = catalogUnitNodesOf(u01, {});
 
-    expect(nodes).toHaveLength(9);
-    expect(nodes.slice(0, 8).map((node) => node.role)).toEqual(Array(8).fill("lesson"));
-    expect(nodes.slice(0, 8).map((node) => node.ordinal)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-    expect(nodes.slice(0, 8).map((node) => node.key)).toEqual(u01.lessonKeys);
-    expect(nodes[8]).toEqual({ key: "RP", role: "final", ordinal: 9, status: "locked" });
+    expect(nodes).toHaveLength(10);
+    expect(nodes.slice(0, 9).map((node) => node.role)).toEqual(Array(9).fill("lesson"));
+    expect(nodes.slice(0, 9).map((node) => node.ordinal)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(nodes.slice(0, 9).map((node) => node.key)).toEqual(u01.lessonKeys);
+    expect(nodes[9]).toEqual({ key: "RP", role: "final", ordinal: 10, status: "locked" });
     expect(nodes.every((node) => node.status === "locked")).toBe(true);
   });
 });
@@ -251,12 +263,12 @@ describe("사슬 잠금 — 표지 → 레슨들 → 최종", () => {
     Object.fromEntries(
       catalogUnitNodesOf(u01Section(), progress).map((node) => [node.key, node.status]),
     );
-  const allKeys = ["S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "RP"];
+  const allKeys = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"];
 
   test("CM-U1. 진행이 없으면 레슨 · 최종이 전부 잠겨 있다", () => {
     const statuses = statusesOf({});
 
-    expect(allKeys.map((key) => statuses[key])).toEqual(Array(9).fill("locked"));
+    expect(allKeys.map((key) => statuses[key])).toEqual(Array(10).fill("locked"));
     expect(catalogUnitStatus(u01Section(), "S1", {})).toBe("locked");
   });
 
@@ -264,15 +276,17 @@ describe("사슬 잠금 — 표지 → 레슨들 → 최종", () => {
     const statuses = statusesOf({ "u01-water": ["intro"] });
 
     expect(statuses["S1"]).toBe("available");
-    expect(allKeys.slice(1).map((key) => statuses[key])).toEqual(Array(8).fill("locked"));
+    expect(allKeys.slice(1).map((key) => statuses[key])).toEqual(Array(9).fill("locked"));
     expect(catalogUnitStatus(u01Section(), "S1", { "u01-water": ["intro"] })).toBe("available");
   });
 
   test("CM-U3. 바로 앞을 끝내면 열리고 끝낸 유닛은 앞이 아직이어도 completed다", () => {
-    expect(statusesOf({ "u01-water": ["intro", "S1"] })["S3"]).toBe("available");
+    expect(statusesOf({ "u01-water": ["intro", "S1"] })["S2"]).toBe("available");
     expect(statusesOf({ "u01-water": ["intro", "S1"] })["S1"]).toBe("completed");
     expect(
-      statusesOf({ "u01-water": ["intro", "S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"] })["RP"],
+      statusesOf({
+        "u01-water": ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"],
+      })["RP"],
     ).toBe("available");
 
     const skipped = statusesOf({ "u01-water": ["S5"] });
@@ -313,6 +327,108 @@ describe("사슬 잠금 — 표지 → 레슨들 → 최종", () => {
     expect(catalogUnitRoleOf(section, "RP")).toBe("final");
     expect(catalogUnitRoleOf(section, "intro")).toBeNull();
     expect(catalogUnitRoleOf(section, "X")).toBeNull();
+  });
+});
+
+describe("완료 키 (CMF)", () => {
+  const readyWith = (
+    episodeId: string,
+    ordinal: number,
+    completionKeys: readonly string[],
+  ): CatalogReadySection => ({
+    kind: "catalog-ready",
+    episodeId,
+    ordinal,
+    title: `제목 ${episodeId}`,
+    lessonKeys: ["S1", "CULT"],
+    finalKey: "RP",
+    completionKeys,
+  });
+  const unavailable = (episodeId: string, ordinal: number): CatalogUnavailableSection => ({
+    kind: "catalog-unavailable",
+    episodeId,
+    ordinal,
+    title: `제목 ${episodeId}`,
+    reason: "pending",
+  });
+
+  test("CMF1. completion이 있는 에피소드는 requires가, 없는 에피소드는 RP가 완료 키다", () => {
+    const withCompletion = catalogMapSectionsOf([ready("a", 1)]);
+    expect(readySection(withCompletion, 0).completionKeys).toEqual([
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7",
+      "S8",
+      "CULT",
+      "RP",
+    ]);
+
+    const legacy = buildEpisodeCatalog({
+      bundled: legacyCatalogInput,
+      cache: { manifest: null, episodes: {} },
+    });
+    const legacySections = catalogMapSectionsOf(legacy);
+    expect(legacySections.map((section) => readySection([section], 0).completionKeys)).toEqual([
+      ["RP"],
+      ["RP"],
+      ["RP"],
+    ]);
+  });
+
+  test("CMF2. 다음 표지는 앞 에피소드의 완료 키를 모두 끝내야 열린다", () => {
+    const sections = [readyWith("a", 1, ["S1", "CULT", "RP"]), readyWith("b", 2, ["RP"])];
+    const noCult = gate(true, { a: ["intro", "S1", "RP"] });
+    const withCult = gate(true, { a: ["intro", "S1", "CULT", "RP"] });
+
+    expect(catalogCoverStatus(sections, 1, noCult)).toBe("locked");
+    expect(catalogCoverStatus(sections, 1, withCult)).toBe("available");
+    expect(canStartCatalogCover(sections, "b", noCult)).toBe(false);
+    expect(canStartCatalogCover(sections, "b", withCult)).toBe(true);
+  });
+
+  test("CMF2. 앞 구획이 준비 안 됐으면 RP 규칙이다", () => {
+    const sections = [unavailable("a", 1), readyWith("b", 2, ["RP"])];
+
+    expect(catalogCoverStatus(sections, 1, gate(true, { a: ["S1"] }))).toBe("locked");
+    expect(catalogCoverStatus(sections, 1, gate(true, { a: ["RP"] }))).toBe("available");
+  });
+
+  test("CMF3. 완료 키 해석기는 준비된 구획의 키를, 모르는 id · 준비 안 된 구획은 RP를 낸다", () => {
+    const keysOf = catalogCompletionKeysOf([
+      readyWith("a", 1, ["S1", "CULT", "RP"]),
+      unavailable("b", 2),
+    ]);
+
+    expect(keysOf("a")).toEqual(["S1", "CULT", "RP"]);
+    expect(keysOf("b")).toEqual(["RP"]);
+    expect(keysOf("nope")).toEqual(["RP"]);
+    expect(keysOf("toString")).toEqual(["RP"]);
+  });
+
+  test("CMF4. u01은 레슨 아홉(CULT가 아홉째)과 최종으로 이어지고 사슬 잠금이 CULT를 지난다", () => {
+    const u01 = readySection(catalogMapSectionsOf(realCatalog), 0);
+    const statusesOf = (progress: CatalogProgress) =>
+      Object.fromEntries(catalogUnitNodesOf(u01, progress).map((node) => [node.key, node.status]));
+    const throughS8 = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];
+
+    expect(u01.lessonKeys).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"]);
+    expect(u01.finalKey).toBe("RP");
+    expect(catalogUnitNodesOf(u01, {})[8]).toEqual({
+      key: "CULT",
+      role: "lesson",
+      ordinal: 9,
+      status: "locked",
+    });
+    const afterS8 = statusesOf({ "u01-water": throughS8 });
+    expect(afterS8["CULT"]).toBe("available");
+    expect(afterS8["RP"]).toBe("locked");
+    const afterCult = statusesOf({ "u01-water": [...throughS8, "CULT"] });
+    expect(afterCult["CULT"]).toBe("completed");
+    expect(afterCult["RP"]).toBe("available");
   });
 });
 

@@ -23,14 +23,14 @@ describe("bundledCatalogInput", () => {
     expect(Object.keys(episodes).sort()).toEqual([...IDS].sort());
   });
 
-  test("BA1. 내장 매니페스트 version이 셋 모두 2026-10-14.1이다", () => {
+  test("BA1. 내장 매니페스트 version이 셋 모두 2026-10-16.1이다", () => {
     const versions = Object.fromEntries(
       bundledCatalogInput.manifest.episodes.map((e) => [e.id, e.version]),
     );
     expect(versions).toEqual({
-      "u01-water": "2026-10-14.1",
-      "u02-checkin": "2026-10-14.1",
-      "u03-mina": "2026-10-14.1",
+      "u01-water": "2026-10-16.1",
+      "u02-checkin": "2026-10-16.1",
+      "u03-mina": "2026-10-16.1",
     });
   });
 });

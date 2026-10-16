@@ -1,6 +1,6 @@
 // 여정 진행과 연속 학습 상태입니다. 미전송 기록·계정별 복구·재시도는 journey-progress-sync가 담당합니다.
 
-import type { CatalogProgress } from "../lib/catalog-progress";
+import type { CatalogCompletionKeysOf, CatalogProgress } from "../lib/catalog-progress";
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { localDayFrom } from "../lib/progress-api";
@@ -29,6 +29,7 @@ import { useProgressLoad } from "./use-progress-load";
 export function useJourneyProgress(
   journeySeed: AppJourneySeed,
   initialCompletedEpisodeIntroIds: readonly EpisodeIntroUnitId[],
+  completionKeysOf: CatalogCompletionKeysOf,
 ) {
   const [completedStepCount, setCompletedStepCount] = useState(journeySeed.completedStepCount);
   const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
@@ -94,13 +95,13 @@ export function useJourneyProgress(
     completedEpisodesFrom(journeyMapSections, state).map((e) => e.id),
   );
   // 트로피 수의 직전 값입니다. 활동 기준과 같이 `apply`(불러오기)가 먼저 맞춰 두므로 불러온 값은 오름이 아닙니다.
-  const trophyBaseline = useRef(trophyCountFrom(journeyMapSections, state));
+  const trophyBaseline = useRef(trophyCountFrom(journeyMapSections, state, completionKeysOf));
 
   const apply = (next: JourneyProgressState): void => {
     latest.current = next;
     activityCount.current = completedActivityCount(next);
     completedEpisodeIds.current = completedEpisodesFrom(journeyMapSections, next).map((e) => e.id);
-    trophyBaseline.current = trophyCountFrom(journeyMapSections, next);
+    trophyBaseline.current = trophyCountFrom(journeyMapSections, next, completionKeysOf);
     setCompletedStepCount(next.completedStepCount);
     setCompletedMessengerUnitIds(next.completedMessengerUnitIds);
     setCompletedPhoneCallUnitIds(next.completedPhoneCallUnitIds);
@@ -154,7 +155,7 @@ export function useJourneyProgress(
     const episodes = completedEpisodesFrom(journeyMapSections, state);
     const newlyCompleted = episodes.filter((e) => !completedEpisodeIds.current.includes(e.id));
     completedEpisodeIds.current = episodes.map((e) => e.id);
-    const trophies = trophyCountFrom(journeyMapSections, state);
+    const trophies = trophyCountFrom(journeyMapSections, state, completionKeysOf);
     const trophyBefore = trophyBaseline.current;
     trophyBaseline.current = trophies;
     if (grew) setStatBumps((bumps) => recordStatBump(bumps, "trophy", trophyBefore, trophies));
@@ -186,7 +187,7 @@ export function useJourneyProgress(
 
   const onStatBumped = (kind: StatBumpKind): void =>
     setStatBumps((bumps) => clearStatBump(bumps, kind));
-  const trophyCount = trophyCountFrom(journeyMapSections, state);
+  const trophyCount = trophyCountFrom(journeyMapSections, state, completionKeysOf);
   // 전역 머리의 트로피 칩입니다. 노드가 「확인 중」인 동안(응답을 기다리는 동안)은 0을 보이지 않도록 `null`입니다.
   const headerTrophyCount: number | null =
     progressLoad.phase === "checking" || progressLoad.phase === "loading" ? null : trophyCount;

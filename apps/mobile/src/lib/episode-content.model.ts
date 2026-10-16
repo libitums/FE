@@ -17,6 +17,8 @@ export type Stimulus = {
   imageBrief?: string;
   audioUrl?: string;
   imageUrl?: string;
+  /** 와이어 `stimulus.en` — 옮길 영어 원문(TRANSLATE_TO_KO · WORD_ORDER · SYLLABLE_BUILD). 빈 값은 없음. */
+  en?: string;
 };
 
 export type EpisodeCut =
@@ -56,27 +58,49 @@ export type DialogueLine = {
   audioUrl?: string;
 };
 
-type ItemBase<T extends string> = { id: string; type: T; event: "E" | "R"; ref?: string };
+/** 와이어 `event` — E 노출 · R 회상 · D 변별(2026-10-15 MIN_PAIR_AB). */
+export type ItemEvent = "E" | "R" | "D";
+
+type ItemBase<T extends string> = {
+  id: string;
+  type: T;
+  event: ItemEvent;
+  ref?: string;
+  /** 디코드만 하고 쓰지 않습니다(난이도 · 스킬은 뒤 작업). `skill`은 콘텐츠의 불투명 문자열입니다. */
+  level?: number;
+  skill?: string;
+  skillLevel?: number;
+};
+
+/** 문항 피드백의 정답 줄 — `feedback.correct`. */
+export type CorrectFeedback = { correct: Text };
+/** TURN_ORDER 타일 — 2026-10-15부터 화자가 실려 옵니다. */
+export type TurnTile = Text & { speaker?: DialogueLine["role"] };
 
 export type LearningItem =
-  | (ItemBase<"VOCAB_CARD"> & { context: Text; example: Text; cardKind: string })
+  | (ItemBase<"VOCAB_CARD"> & { context: Text; example?: Text; cardKind: string })
   | (ItemBase<"CLOZE"> & { prompt: Text; context: Text; tiles: Text[]; answers: Text[] })
   | (ItemBase<"IMG_MATCH"> & { prompt: Text; stimulus: Stimulus; options: Option[] })
-  | (ItemBase<"WORD_ORDER"> & { prompt: Text; tiles: Text[]; answers: Text[] })
+  | (ItemBase<"WORD_ORDER"> & {
+      prompt: Text;
+      stimulus?: Stimulus;
+      tiles: Text[];
+      answers: Text[];
+    })
   | (ItemBase<"LISTEN_SELECT"> & {
       prompt: Text;
       context?: Text;
       stimulus: Stimulus;
       options?: Option[];
     })
-  | (ItemBase<"TURN_ORDER"> & { prompt: Text; context: Text; tiles: Text[]; answer: number[] })
+  | (ItemBase<"TURN_ORDER"> & { prompt: Text; context: Text; tiles: TurnTile[]; answer: number[] })
   | (ItemBase<"ROLE_LINE"> & {
       prompt: Text;
       context: Text;
       options: Option[];
       feedback: { correct: Text; wrong?: Text; wrongOption?: string };
     })
-  | (ItemBase<"TRANSLATE_TO_KO"> & { prompt: Text; answers: Text[] })
+  | (ItemBase<"TRANSLATE_TO_KO"> & { prompt: Text; stimulus?: Stimulus; answers: Text[] })
   | (ItemBase<"TRANSLATE_TO_EN"> & { prompt: Text; stimulus: Stimulus; options: Option[] })
   | (ItemBase<"DICTATION"> & { prompt: Text; stimulus: Stimulus; answers: Text[] })
   | (ItemBase<"SENT_BUILD"> & { prompt: Text; context: Text; answers: Text[] })
@@ -93,7 +117,47 @@ export type LearningItem =
       answers: Text[];
       feedback: { correct: Text };
       roleplay: { lineId: string; tilesGloss: { tile: string; en?: string }[] };
-    });
+    })
+  | AddedLearningItem;
+
+/** 2026-10-15에 더한 11종(와이어 `episode-content.schema-items.ts`). `ItemOf<T>`로 좁힐 수 있게 유형마다 한 갈래입니다. */
+type StimulusChoice<T extends string> = ItemBase<T> & {
+  prompt: Text;
+  stimulus: Stimulus;
+  options: Option[];
+  feedback: CorrectFeedback;
+};
+type TilesBuild<T extends string> = ItemBase<T> & {
+  prompt: Text;
+  stimulus: Stimulus;
+  tiles: Text[];
+  answers: Text[];
+};
+type Speech<T extends string> = ItemBase<T> & { prompt: Text; stimulus: Stimulus; answers: Text[] };
+
+export type AddedLearningItem =
+  | (ItemBase<"CLOZE_CHOICE"> & {
+      prompt: Text;
+      context: Text;
+      options: Option[];
+      answers: Text[];
+      feedback: CorrectFeedback;
+    })
+  | StimulusChoice<"REPLY_SELECT">
+  | StimulusChoice<"MIN_PAIR_AB">
+  | StimulusChoice<"PARTICLE_FILL">
+  | StimulusChoice<"PARTICLE_SWAP">
+  | (ItemBase<"CULTURE_CHECK"> & {
+      prompt: Text;
+      context: Text;
+      options: Option[];
+      feedback: CorrectFeedback;
+    })
+  | (ItemBase<"CULTURE_CARD"> & { context: Text; stimulus: Stimulus; feedback: CorrectFeedback })
+  | TilesBuild<"LISTEN_BUILD">
+  | TilesBuild<"SYLLABLE_BUILD">
+  | Speech<"SHADOW">
+  | Speech<"SPEAK_WORD">;
 
 export type LearningUnit = { id: string; order: number; items: LearningItem[] };
 /** `id`는 `"RP"`입니다. 마지막 자리 최종 테스트(ADR-0024 D10). */
@@ -109,6 +173,9 @@ export type Word = {
   example?: Text;
 };
 export type Pattern = { id: string; ko: string; roman: string; glossEn: string };
+
+/** 와이어 `completion` — 에피소드 완료에 필요한 단계 id(중복 제거, 와이어 순서). 비지 않습니다. */
+export type EpisodeCompletion = { requires: string[] };
 
 export type Episode = {
   /** 와이어의 `unit_id` — 이름은 유닛이지만 에피소드 식별자입니다(계약 문서 §0 · Q1). */
@@ -131,6 +198,8 @@ export type Episode = {
   epilogue: EpisodeCut[];
   words: Word[];
   patterns: Pattern[];
+  /** 없으면 기존 규칙(최종 테스트 통과 = 완료). */
+  completion?: EpisodeCompletion;
 };
 
 export type DecodeIssueCode =
@@ -142,6 +211,8 @@ export type DecodeIssueCode =
   | "final-test-missing"
   | "final-test-position"
   | "string-answer-malformed"
+  /** `completion.requires`가 비었거나 없는 단계 id를 가리킴. */
+  | "completion-malformed"
   /** 경고 전용 — 성공 결과의 `warnings`에만 나옵니다. */
   | "unresolved-ref";
 

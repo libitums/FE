@@ -10,6 +10,9 @@ import {
 } from "./learning-progress";
 import type { JourneyProgressState } from "./learning-progress";
 
+// 트로피 판정의 완료 규칙 — 이 파일의 진행에는 카탈로그 에피소드가 없어 기본 규칙(최종 테스트)이면 된다.
+const defaultCompletion = (): readonly string[] => ["RP"];
+
 // 기존 learning-progress.unit.test.ts가 300줄에 가까워 판정 · 단조성 절은 이 파일에 둔다.
 // 기존 파일의 「LP-C1」(카탈로그 활동 수)과 id가 겹치지 않도록 이 파일의 케이스는 「LP-C」 뒤에 covers를 붙인다.
 
@@ -169,9 +172,16 @@ describe("MG 합치기 불변식", () => {
   test.each(pairs.map((pair, index) => [index + 1, ...pair] as const))(
     "MG3. 쌍 %i — 합친 트로피는 어느 쪽보다 적지 않다",
     (_index, a, b) => {
-      const merged = trophyCountFrom(journeyMapSections, mergeJourneyProgress(a, b));
+      const merged = trophyCountFrom(
+        journeyMapSections,
+        mergeJourneyProgress(a, b),
+        defaultCompletion,
+      );
       expect(merged).toBeGreaterThanOrEqual(
-        Math.max(trophyCountFrom(journeyMapSections, a), trophyCountFrom(journeyMapSections, b)),
+        Math.max(
+          trophyCountFrom(journeyMapSections, a, defaultCompletion),
+          trophyCountFrom(journeyMapSections, b, defaultCompletion),
+        ),
       );
     },
   );

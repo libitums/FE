@@ -7,9 +7,9 @@ import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import {
   catalogProgressFrom,
   mergeCatalogProgress,
-  passedCatalogEpisodeCount,
+  completedCatalogEpisodeCount,
 } from "../lib/catalog-progress";
-import type { CatalogProgress } from "../lib/catalog-progress";
+import type { CatalogCompletionKeysOf, CatalogProgress } from "../lib/catalog-progress";
 import type { LearningProgressSnapshotV1 } from "../lib/learning-progress.contract";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
@@ -157,13 +157,15 @@ export function completedEpisodesFrom(
     .map((section) => ({ id: section.episode.id, title: section.episode.title }));
 }
 
-/** 트로피 = 항목을 모두 끝낸 에피소드 수 + 최종 테스트를 통과한 카탈로그 에피소드 수입니다. */
+/** 트로피 = 항목을 모두 끝낸 에피소드 수 + 완료 키를 모두 끝낸 카탈로그 에피소드 수입니다. */
 export function trophyCountFrom(
   sections: readonly JourneyMapSection[],
   state: JourneyProgressState,
+  completionKeysOf: CatalogCompletionKeysOf,
 ): number {
   return (
-    completedEpisodesFrom(sections, state).length + passedCatalogEpisodeCount(state.catalogProgress)
+    completedEpisodesFrom(sections, state).length +
+    completedCatalogEpisodeCount(state.catalogProgress, completionKeysOf)
   );
 }
 

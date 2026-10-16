@@ -59,8 +59,8 @@ const tutorialDoneSnapshot = {
   completedEpisodeFinalIds: ["tutorial-final-test"],
 };
 
-const throughS9 = {
-  [u01]: ["intro", "S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"],
+const throughCult = {
+  [u01]: ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"],
   [u02]: [],
 };
 
@@ -317,7 +317,7 @@ test("EA2. 소리 중인 컷 3에서 머리 나가기 · 시스템 뒤로는 정
 });
 
 test("EA3. u01 최종 테스트: 상대 줄은 턴마다 자동, 내 줄은 정답 뒤에만, 오답과 소리 없는 줄은 추가 재생이 없다", async () => {
-  const { play } = await boot({ progress: throughS9 });
+  const { play } = await boot({ progress: throughCult });
   const turns = finalTurns(u01);
   expect(turns).toHaveLength(3);
 
@@ -350,7 +350,7 @@ test("EA3. u01 최종 테스트: 상대 줄은 턴마다 자동, 내 줄은 정�
 });
 
 test("EA3b. 전부 맞힌 최종 테스트: 재생 열은 다섯이고 결과 · 통과 뒤 컷 · 맵까지 추가 재생이 없다", async () => {
-  const { play, rpcs } = await boot({ progress: throughS9 });
+  const { play, rpcs } = await boot({ progress: throughCult });
   const turns = finalTurns(u01);
 
   fireEvent.tap(unitNode(u01, "RP"), {});
@@ -406,7 +406,7 @@ test("EA4a. 컷 3에서 실패가 즉시 알려져도 그 컷에 남는다", asy
 });
 
 test("EA4b. 실패하는 소리에도 최종 테스트는 같은 화면 열과 결과(오답 하나 포함)로 끝난다", async () => {
-  const { play, rpcs } = await boot({ progress: throughS9, failAudio: true });
+  const { play, rpcs } = await boot({ progress: throughCult, failAudio: true });
   const turns = finalTurns(u01);
 
   fireEvent.tap(unitNode(u01, "RP"), {});
@@ -429,7 +429,7 @@ const everRecorded = (rpcs: readonly Rpc[]): boolean => savedUnits(rpcs, u01).in
 
 test("EA5. (개정 A) u02 표지: 컷 1 · 3 · 5가 u02 버킷 주소로 재생되고 소리 id가 없는 컷은 조용하다", async () => {
   const { play } = await boot({
-    progress: { [u01]: ["intro", "S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "RP"] },
+    progress: { [u01]: ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"] },
   });
 
   fireEvent.tap(cover(u02), {});

@@ -196,8 +196,8 @@ test("I7. (AC7) 진행이 닿기 전에 사용자가 맵을 스크롤하면 닿�
 });
 
 test("I8. 튜토리얼 통과 + 카탈로그 진행이면 대상이 카탈로그의 다음 레슨으로 넘어간다", async () => {
-  const s3 = catalogUnitDomId("u01-water", "S3");
-  unitRect(s3, 1234);
+  const s2 = catalogUnitDomId("u01-water", "S2");
+  unitRect(s2, 1234);
   const tutorialDone: AppJourneySeed = {
     completedStepCount: journeySeedBefore("tutorial-final-test").completedStepCount,
     completedMessengerUnitIds: ["appointment-confirmation"],
@@ -218,13 +218,13 @@ test("I8. 튜토리얼 통과 + 카탈로그 진행이면 대상이 카탈로그
   );
   await flushAsync();
 
-  // u01의 레슨 순서는 S1 → S3입니다 — 표지와 S1이 끝났으니 대상은 S3이고, 튜토리얼 안의 유닛이 아니다.
-  expect(measuredUnits().at(-1)).toBe(`#${s3}`);
+  // u01의 레슨 순서는 S1 → S2입니다 — 표지와 S1이 끝났으니 대상은 S2이고, 튜토리얼 안의 유닛이 아니다.
+  expect(measuredUnits().at(-1)).toBe(`#${s2}`);
   expect(scrollsOnMap().at(-1)).toEqual(smoothTo(1234));
 });
 
 // 도착 뒤 한 번 바로잡기(정정 2) — D-1의 재현 조건: 도착 전에는 한 줄 카드(아래 228), 도착 뒤에는 30 큰 카드(아래
-// 258)이고 대상은 정렬선(282) 위 30(252)에 서 있다. 씨앗은 I8과 같다(대상은 S3). 보정은 늘 즉시 옮긴다.
+// 258)이고 대상은 정렬선(282) 위 30(252)에 서 있다. 씨앗은 I8과 같다(대상은 S2). 보정은 늘 즉시 옮긴다.
 const correctedTo = (offset: number) => ({
   selector: scrollSelector,
   method: "scrollTo",
@@ -268,12 +268,12 @@ function departAgain(domId: string): void {
 }
 
 test("I11. 앱 세션에서 도착하면 카드가 30 커진 만큼 되돌린 목적지로 한 번 더 간다", async () => {
-  const s3 = catalogUnitDomId("u01-water", "S3");
-  await bootCatalogLesson(s3);
+  const s2 = catalogUnitDomId("u01-water", "S2");
+  await bootCatalogLesson(s2);
   expect(scrollsOnMap().at(-1)).toEqual(smoothTo(unitTop));
   const moves = scrollsOnMap().length;
 
-  arrive(s3);
+  arrive(s2);
 
   expect(scrollsOnMap()).toHaveLength(moves + 1);
   expect(scrollsOnMap().at(-2)).toEqual(smoothTo(unitTop));
@@ -281,15 +281,15 @@ test("I11. 앱 세션에서 도착하면 카드가 30 커진 만큼 되돌린 �
 });
 
 test("I12. 도착 뒤 탭을 바꿨다 돌아오면 새 마운트에서 다시 이동 한 번 · 보정 한 번이다", async () => {
-  const s3 = catalogUnitDomId("u01-water", "S3");
-  await bootCatalogLesson(s3);
-  arrive(s3);
+  const s2 = catalogUnitDomId("u01-water", "S2");
+  await bootCatalogLesson(s2);
+  arrive(s2);
   const first = scrollsOnMap().length;
   expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
 
   tapTab("roleplay");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
-  departAgain(s3);
+  departAgain(s2);
   tapTab("journey");
   await flushAsync();
 
@@ -297,7 +297,7 @@ test("I12. 도착 뒤 탭을 바꿨다 돌아오면 새 마운트에서 다시 �
   expect(scrollsOnMap()).toHaveLength(first + 1);
   expect(scrollsOnMap().at(-1)).toEqual(smoothTo(unitTop));
 
-  arrive(s3);
+  arrive(s2);
 
   expect(scrollsOnMap()).toHaveLength(first + 2);
   expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));

@@ -18,7 +18,15 @@ import type {
 const lessonKeys = ["S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"];
 
 function ready(episodeId: string, ordinal: number, title: string): CatalogReadySection {
-  return { kind: "catalog-ready", episodeId, ordinal, title, lessonKeys, finalKey: "RP" };
+  return {
+    kind: "catalog-ready",
+    episodeId,
+    ordinal,
+    title,
+    lessonKeys,
+    finalKey: "RP",
+    completionKeys: ["RP"],
+  };
 }
 
 function unavailable(

@@ -1,7 +1,8 @@
 {
  "schema": "delivery-2",
  "unit_id": "u01-water",
- "title": "익선동 골목 어귀 편의점",
+ "title": "물 사기",
+ "title_en": "Buying Water",
  "day": 1,
  "time_of_day": "낮",
  "place": "익선동 골목 어귀 편의점",
@@ -18,7 +19,8 @@
     "en": "Thirsty after that long flight. Where's a convenience store?"
    },
    "image_brief": "게스트하우스 앞 골목에서 플레이어가 두리번거린다.",
-   "image_url": "images/u01-water/pre-1.jpg"
+   "image_url": "content/images/u01-water/pre-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 2,
@@ -30,7 +32,8 @@
     "en": "A convenience store sign is visible at the corner of the alley."
    },
    "image_brief": "골목 어귀에 편의점 간판이 보인다.",
-   "image_url": "images/u01-water/pre-1.jpg"
+   "image_url": "content/images/u01-water/pre-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 3,
@@ -48,7 +51,7 @@
     "en": "Looking up at the sound of the door bell."
    },
    "image_brief": "편의점 문을 열고 들어선다.",
-   "image_url": "images/u01-water/pre-3.jpg",
+   "image_url": "content/images/u01-water/pre-3.jpg",
    "audio_url": "u01-water/pre-3"
   },
   {
@@ -67,7 +70,8 @@
     "en": "Carefully squeezing past the suitcase blocking the aisle."
    },
    "image_brief": "캐리어를 끌고 좁은 통로를 지나가느라 진땀을 빼고 있다.",
-   "image_url": "images/u01-water/pre-4.jpg"
+   "image_url": "content/images/u01-water/pre-4.jpg",
+   "audio_url": ""
   },
   {
    "index": 5,
@@ -78,8 +82,9 @@
     "roman": "anjjogeuro deureoga naengjanggoeseo saengsureul hana kkeonae gyesandaee ollinda.",
     "en": "Goes inside, takes a bottle of water from the fridge and places it on the counter."
    },
-   "image_brief": "냉장고에서 생수를 꺼내 계산대에 올린다.",
-   "image_url": "images/u01-water/pre-5.jpg"
+   "image_brief": "계산대 위에 생수 한 병. 건너편에 점원이 서 있다.",
+   "image_url": "content/images/u01-water/pre-5.jpg",
+   "audio_url": ""
   },
   {
    "index": 6,
@@ -97,7 +102,7 @@
     "en": "Scanning the barcode."
    },
    "image_brief": "계산대의 점원이 바코드를 찍는다.",
-   "image_url": "images/u01-water/pre-6.jpg",
+   "image_url": "content/images/u01-water/pre-6.jpg",
    "audio_url": "u01-water/d-01"
   }
  ],
@@ -157,13 +162,23 @@
    "role": "player",
    "text": {
     "ko": "아니요, 영수증은 괜찮아요.",
-    "roman": "aniyo, yeongsujeueun gwaenchanayo.",
+    "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
     "en": "No, I don't need the receipt."
    },
    "audio_url": ""
   },
   {
    "seq": 7,
+   "role": "counterpart",
+   "text": {
+    "ko": "감사합니다. 안녕히 가세요.",
+    "roman": "gamsahamnida. annyeonghi gaseyo.",
+    "en": "Thank you. Goodbye."
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 8,
    "role": "player",
    "text": {
     "ko": "따뜻한 물 주세요.",
@@ -173,7 +188,7 @@
    "audio_url": ""
   },
   {
-   "seq": 8,
+   "seq": 9,
    "role": "counterpart",
    "text": {
     "ko": "네, 여기 있어요.",
@@ -193,8 +208,9 @@
     "roman": "saengsureul deulgo pyeonuijeomeul nawa geseuteuhauseuro hyanghanda.",
     "en": "Leaves the convenience store with the water and heads to the guesthouse."
    },
-   "image_brief": "생수를 들고 편의점을 나선다.",
-   "image_url": "images/u01-water/post-1.jpg"
+   "image_brief": "편의점 문 앞에서 본 골목. 안쪽으로 게스트하우스가 보인다.",
+   "image_url": "content/images/u01-water/post-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 2,
@@ -206,7 +222,8 @@
     "en": "The guesthouse sign is visible further down the alley."
    },
    "image_brief": "골목 안쪽에 게스트하우스 간판이 보인다.",
-   "image_url": "images/u01-water/pre-1.jpg"
+   "image_url": "content/images/u01-water/pre-1.jpg",
+   "audio_url": ""
   },
   {
    "index": 3,
@@ -224,7 +241,8 @@
     "en": "Opening the guesthouse door, there's someone in the living room sorting through their bags, back turned."
    },
    "image_brief": "게스트하우스 문을 열고 들어가자, 거실에서 짐을 정리하는 낯선 사람의 뒷모습이 보인다.",
-   "image_url": "images/u01-water/post-3.jpg"
+   "image_url": "content/images/u01-water/post-3.jpg",
+   "audio_url": ""
   }
  ],
  "steps": [
@@ -237,56 +255,170 @@
      "type": "VOCAB_CARD",
      "mode": "card",
      "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
      "ref": "voca:e70ba1ce",
      "context": {
       "ko": "물",
-      "roman": "mul"
+      "roman": "mul",
+      "en": "water"
      },
      "example": {
       "ko": "물 주세요.",
-      "roman": "mul juseyo."
+      "roman": "mul juseyo.",
+      "en": "Water, please."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-02",
      "type": "VOCAB_CARD",
      "mode": "card",
      "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
      "ref": "expr:a04464f0",
      "context": {
       "ko": "괜찮아요.",
-      "roman": "gwaenchanayo."
+      "roman": "gwaenchanayo.",
+      "en": "No thanks. / I'm fine."
      },
      "example": {
       "ko": "아니요, 괜찮아요.",
       "roman": "aniyo, gwaenchanayo.",
       "en": "No, I'm fine."
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-03",
      "type": "VOCAB_CARD",
      "mode": "card",
      "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
      "ref": "voca:c5cd4239",
      "context": {
       "ko": "봉투",
-      "roman": "bongtu"
+      "roman": "bongtu",
+      "en": "plastic bag"
      },
      "example": {
       "ko": "봉투 드릴까요?",
       "roman": "bongtu deurilkkayo?",
       "en": "Would you like a bag?"
      },
-     "card_kind": "단어"
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
     },
     {
      "id": "S1-04",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "ref": "voca:be2eb7e3",
+     "context": {
+      "ko": "카드",
+      "roman": "kadeu",
+      "en": "card"
+     },
+     "example": {
+      "ko": "카드로 할게요.",
+      "roman": "kadeuro halgeyo.",
+      "en": "I'll pay by card."
+     },
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
+    },
+    {
+     "id": "S1-05",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "ref": "voca:0ced4e5b",
+     "context": {
+      "ko": "현금",
+      "roman": "hyeongeum",
+      "en": "cash"
+     },
+     "example": {
+      "ko": "현금으로 할게요.",
+      "roman": "hyeongeumeuro halgeyo.",
+      "en": "I'll pay in cash."
+     },
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
+    },
+    {
+     "id": "S1-06",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "ref": "voca:fe376448",
+     "context": {
+      "ko": "영수증",
+      "roman": "yeongsujeung",
+      "en": "receipt"
+     },
+     "example": {
+      "ko": "아니요, 영수증은 괜찮아요.",
+      "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+      "en": "No, I don't need the receipt."
+     },
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
+    },
+    {
+     "id": "S1-07",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "ref": "voca:3cc830ff",
+     "context": {
+      "ko": "주스",
+      "roman": "juseu",
+      "en": "juice"
+     },
+     "example": {
+      "ko": "주스 주세요.",
+      "roman": "juseu juseyo.",
+      "en": "Juice, please."
+     },
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
+    },
+    {
+     "id": "S1-08",
      "type": "CLOZE",
      "mode": "tiles",
      "event": "E",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
      "ref": "patt:b3d9256a",
      "prompt": {
       "ko": "빈칸을 채우세요.",
@@ -294,118 +426,42 @@
      },
      "context": {
       "ko": "___로 할게요.",
-      "roman": "___ro halgeyo."
+      "roman": "___ro halgeyo.",
+      "en": "I'll pay by card."
      },
      "tiles": [
       {
        "ko": "카드",
-       "roman": "kadeu"
-      },
-      {
-       "ko": "현금",
-       "roman": "hyeongeum"
+       "roman": "kadeu",
+       "en": "card"
       },
       {
        "ko": "봉투",
-       "roman": "bongtu"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "카드",
-       "roman": "kadeu"
-      }
-     ]
-    },
-    {
-     "id": "S1-05",
-     "type": "IMG_MATCH",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:e70ba1ce",
-     "prompt": {
-      "ko": "사진에 맞는 말을 고르세요.",
-      "en": "Which word matches the picture?"
-     },
-     "stimulus": {
-      "audio_url": "",
-      "image_brief": "water - 한 컷으로 알아볼 수 있게",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "카드",
-       "roman": "kadeu",
-       "en": "card",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
+       "roman": "bongtu",
+       "en": "plastic bag"
       },
       {
-       "id": "o2",
-       "ko": "현금",
-       "roman": "hyeongeum",
-       "en": "cash",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
        "ko": "물",
        "roman": "mul",
-       "en": "water",
-       "correct": true
-      },
-      {
-       "id": "o4",
-       "ko": "영수증",
-       "roman": "yeongsujeung",
-       "en": "receipt",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ]
-    },
-    {
-     "id": "S1-07",
-     "type": "CLOZE",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "expr:a04464f0",
-     "prompt": {
-      "ko": "빈칸을 채우세요.",
-      "en": "Fill in the blank."
-     },
-     "context": {
-      "ko": "아니요, ___",
-      "roman": "aniyo, ___"
-     },
-     "tiles": [
-      {
-       "ko": "괜찮아요.",
-       "roman": "gwaenchanayo."
-      },
-      {
-       "ko": "드릴까요?",
-       "roman": "deurilkkayo?"
-      },
-      {
-       "ko": "현금",
-       "roman": "hyeongeum"
+       "en": "water"
       }
      ],
      "answers": [
       {
-       "ko": "괜찮아요.",
-       "roman": "gwaenchanayo."
+       "ko": "카드",
+       "roman": "kadeu",
+       "en": "card"
       }
      ]
     },
     {
-     "id": "S1-08",
+     "id": "S1-09",
      "type": "IMG_MATCH",
      "mode": "choice",
      "event": "R",
+     "level": 1,
+     "skill": "읽기",
+     "skill_level": 1,
      "ref": "voca:c5cd4239",
      "prompt": {
       "ko": "사진에 맞는 말을 고르세요.",
@@ -413,12 +469,27 @@
      },
      "stimulus": {
       "audio_url": "",
-      "image_brief": "bag - 한 컷으로 알아볼 수 있게",
-      "image_url": ""
+      "image_brief": "plastic bag - 한 컷으로 알아볼 수 있게",
+      "image_url": "content/images/items/bag.jpg"
      },
      "options": [
       {
        "id": "o1",
+       "ko": "봉투",
+       "roman": "bongtu",
+       "en": "plastic bag",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "원",
+       "roman": "won",
+       "en": "won (Korean money)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
        "ko": "카드",
        "roman": "kadeu",
        "en": "card",
@@ -426,15 +497,92 @@
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
+       "id": "o4",
+       "ko": "물",
+       "roman": "mul",
+       "en": "water",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S1-10",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "voca:e70ba1ce",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": true
+      },
+      {
        "id": "o2",
-       "ko": "영수증",
-       "roman": "yeongsujeung",
-       "en": "receipt",
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
        "id": "o3",
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Have a nice day.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like the receipt?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S1-11",
+     "type": "IMG_MATCH",
+     "mode": "choice",
+     "event": "R",
+     "level": 1,
+     "skill": "읽기",
+     "skill_level": 1,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "사진에 맞는 말을 고르세요.",
+      "en": "Which word matches the picture?"
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_brief": "receipt - 한 컷으로 알아볼 수 있게",
+      "image_url": "content/images/items/receipt.jpg"
+     },
+     "options": [
+      {
+       "id": "o1",
        "ko": "주스",
        "roman": "juseu",
        "en": "juice",
@@ -442,61 +590,403 @@
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
-       "id": "o4",
-       "ko": "봉투",
-       "roman": "bongtu",
-       "en": "bag",
+       "id": "o2",
+       "ko": "영수증",
+       "roman": "yeongsujeung",
+       "en": "receipt",
        "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "카드",
+       "roman": "kadeu",
+       "en": "card",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "물",
+       "roman": "mul",
+       "en": "water",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
       }
      ]
     },
     {
-     "id": "S1-09",
+     "id": "S1-12",
      "type": "CLOZE",
      "mode": "tiles",
      "event": "R",
-     "ref": "patt:b3d9256a",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:e70ba1ce",
      "prompt": {
       "ko": "빈칸을 채우세요.",
       "en": "Fill in the blank."
      },
      "context": {
-      "ko": "___로 할게요.",
-      "roman": "___ro halgeyo."
+      "ko": "따뜻한 ___ 주세요.",
+      "roman": "ttatteuthan ___ juseyo.",
+      "en": "Warm water, please."
      },
      "tiles": [
       {
-       "ko": "카드",
-       "roman": "kadeu"
-      },
-      {
-       "ko": "봉투",
-       "roman": "bongtu"
-      },
-      {
        "ko": "물",
-       "roman": "mul"
+       "roman": "mul",
+       "en": "water"
+      },
+      {
+       "ko": "삼천",
+       "roman": "samcheon",
+       "en": "three thousand"
+      },
+      {
+       "ko": "주스",
+       "roman": "juseu",
+       "en": "juice"
       }
      ],
      "answers": [
       {
-       "ko": "카드",
-       "roman": "kadeu"
+       "ko": "물",
+       "roman": "mul",
+       "en": "water"
       }
      ]
+    },
+    {
+     "id": "S1-13",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "patt:b3d9256a",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S1-14",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "expr:a04464f0",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "아니요, ___",
+      "roman": "aniyo, ___",
+      "en": "No, I'm fine."
+     },
+     "tiles": [
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      },
+      {
+       "ko": "주세요.",
+       "roman": "juseyo."
+      },
+      {
+       "ko": "할게요.",
+       "roman": "halgeyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      }
+     ]
+    },
+    {
+     "id": "S1-15",
+     "type": "CLOZE_CHOICE",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "voca:be2eb7e3",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 할게요.",
+      "roman": "___ halgeyo.",
+      "en": "I'll pay by card."
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "봉투로",
+       "roman": "bongturo",
+       "en": "plastic bag",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "주스로",
+       "roman": "juseuro",
+       "en": "juice",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "카드로",
+       "roman": "kadeuro",
+       "en": "card",
+       "correct": true
+      }
+     ],
+     "answers": [
+      {
+       "ko": "카드로",
+       "roman": "kadeuro"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "「카드로 할게요.」",
+       "en": "I'll pay by card."
+      }
+     }
     }
    ]
   },
   {
-   "id": "S3",
+   "id": "S2",
    "order": 2,
    "items": [
     {
-     "id": "S3-01",
+     "id": "S2-01",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "expr:a04464f0",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like the receipt?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S2-02",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:be2eb7e3",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noeuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Would you like a bag?",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "speaker": "player"
+      },
+      {
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "speaker": "player"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "봉투 드릴까요? | 아니요, 괜찮아요. | 삼천 원입니다. | 카드로 할게요.",
+       "roman": "bongtu deurilkkayo? | aniyo, gwaenchanayo. | samcheon wonimnida. | kadeuro halgeyo."
+      }
+     ]
+    },
+    {
+     "id": "S2-03",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "voca:c5cd4239",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Would you like a bag?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Do you need a bag?",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like the receipt?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Have a nice day.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S2-04",
      "type": "ROLE_LINE",
      "mode": "choice",
      "event": "R",
-     "ref": "expr:a04464f0",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "voca:c5cd4239",
      "prompt": {
       "ko": "뭐라고 말할까요?",
       "en": "What do you say?"
@@ -509,21 +999,13 @@
      "options": [
       {
        "id": "o1",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
        "ko": "아니요, 괜찮아요.",
        "roman": "aniyo, gwaenchanayo.",
        "en": "No, I'm fine.",
        "correct": true
       },
       {
-       "id": "o3",
+       "id": "o2",
        "ko": "카드로 할게요.",
        "roman": "kadeuro halgeyo.",
        "en": "I'll pay by card.",
@@ -533,34 +1015,40 @@
      ],
      "feedback": {
       "correct": {
-       "ko": "이 자리에서는 「아니요, 괜찮아요.」 라고 한다.",
+       "ko": "이 자리에서는 「아니요, 괜찮아요.」라고 해요.",
        "en": "Here you say \"No, I'm fine.\"."
       }
      }
     },
     {
-     "id": "S3-02",
-     "type": "ROLE_LINE",
+     "id": "S2-05",
+     "type": "REPLY_SELECT",
      "mode": "choice",
      "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 2,
      "ref": "voca:be2eb7e3",
      "prompt": {
-      "ko": "뭐라고 말할까요?",
-      "en": "What do you say?"
+      "ko": "뭐라고 대답할까요?",
+      "en": "How do you reply?"
      },
-     "context": {
-      "ko": "삼천 원입니다.",
-      "roman": "samcheon wonimnida.",
-      "en": "That's three thousand won."
+     "stimulus": {
+      "audio": {
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won."
+      },
+      "audio_url": "",
+      "image_url": ""
      },
      "options": [
       {
        "id": "o1",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": true
       },
       {
        "id": "o2",
@@ -572,71 +1060,233 @@
       },
       {
        "id": "o3",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": true
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
       }
      ],
      "feedback": {
       "correct": {
-       "ko": "이 자리에서는 「카드로 할게요.」 라고 한다.",
+       "ko": "이 자리에서는 「카드로 할게요.」라고 해요.",
        "en": "Here you say \"I'll pay by card.\"."
       }
      }
     },
     {
-     "id": "S3-03",
+     "id": "S2-06",
      "type": "ROLE_LINE",
      "mode": "choice",
      "event": "R",
-     "ref": "expr:a04464f0",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "voca:e70ba1ce",
      "prompt": {
       "ko": "뭐라고 말할까요?",
       "en": "What do you say?"
      },
      "context": {
-      "ko": "봉투 드릴까요?",
-      "roman": "bongtu deurilkkayo?",
-      "en": "Would you like a bag?"
+      "ko": "차가운 물 말고 따뜻한 물을 사고 싶다.",
+      "roman": "chagaun mul malgo ttatteuthan mureul sago sipda.",
+      "en": "You want warm water, not a cold one."
      },
      "options": [
       {
        "id": "o1",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
        "id": "o2",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
        "correct": true
       },
       {
        "id": "o3",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       }
      ],
      "feedback": {
       "correct": {
-       "ko": "이 자리에서는 「아니요, 괜찮아요.」 라고 한다.",
-       "en": "Here you say \"No, I'm fine.\"."
-      }
+       "ko": "이 자리에서는 「따뜻한 물 주세요.」라고 해요.",
+       "en": "Here you say \"Warm water, please.\"."
+      },
+      "wrong": {
+       "ko": "이번에는 차가운 물 말고 따뜻한 물을 사고 싶어서 「아니요, 괜찮아요.」는 안 맞아요.",
+       "en": "This time you want warm water, not a cold one, so \"No, I'm fine.\" does not fit."
+      },
+      "wrong_option": "o1"
      }
     },
     {
-     "id": "S3-04",
+     "id": "S2-07",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:c5cd4239",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noeuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "speaker": "player"
+      },
+      {
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "speaker": "player"
+      },
+      {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?",
+       "speaker": "counterpart"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "아니요, 괜찮아요. | 삼천 원입니다. | 카드로 할게요. | 영수증 드릴까요?",
+       "roman": "aniyo, gwaenchanayo. | samcheon wonimnida. | kadeuro halgeyo. | yeongsujeung deurilkkayo?"
+      }
+     ]
+    },
+    {
+     "id": "S2-08",
+     "type": "LISTEN_BUILD",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "듣기",
+     "skill_level": 3,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "듣고 문장을 만드세요.",
+      "en": "Listen and build the sentence."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "tiles": [
+      {
+       "ko": "영수증",
+       "roman": "yeongsujeung",
+       "en": "receipt"
+      },
+      {
+       "ko": "드릴까요?",
+       "roman": "deurilkkayo?",
+       "en": "Would you like ~? (offering)"
+      },
+      {
+       "ko": "주세요.",
+       "roman": "juseyo."
+      },
+      {
+       "ko": "가세요.",
+       "roman": "gaseyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?"
+      }
+     ]
+    },
+    {
+     "id": "S2-09",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noeuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "speaker": "player"
+      },
+      {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "speaker": "player"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "삼천 원입니다. | 카드로 할게요. | 영수증 드릴까요? | 아니요, 영수증은 괜찮아요.",
+       "roman": "samcheon wonimnida. | kadeuro halgeyo. | yeongsujeung deurilkkayo? | aniyo, yeongsujeungeun gwaenchanayo."
+      }
+     ]
+    },
+    {
+     "id": "S2-10",
      "type": "LISTEN_SELECT",
      "mode": "choice",
      "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
      "ref": "voca:be2eb7e3",
      "prompt": {
       "ko": "무엇을 들었나요?",
@@ -654,21 +1304,14 @@
      "options": [
       {
        "id": "o1",
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won.",
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like the receipt?",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
        "id": "o2",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": true
-      },
-      {
-       "id": "o3",
        "ko": "아니요, 괜찮아요.",
        "roman": "aniyo, gwaenchanayo.",
        "en": "No, I'm fine.",
@@ -676,98 +1319,415 @@
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
+       "id": "o3",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": true
+      },
+      {
        "id": "o4",
-       "ko": "네, 여기 있어요.",
-       "roman": "ne, yeogi isseoyo.",
-       "en": "Sure, here you go.",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       }
      ]
     },
     {
-     "id": "S3-05",
+     "id": "S2-11",
+     "type": "REPLY_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 2,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "뭐라고 대답할까요?",
+      "en": "How do you reply?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「아니요, 영수증은 괜찮아요.」라고 해요.",
+       "en": "Here you say \"No, I don't need the receipt.\"."
+      }
+     }
+    },
+    {
+     "id": "S2-12",
      "type": "TURN_ORDER",
      "mode": "tiles",
      "event": "R",
-     "ref": "expr:a04464f0",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:3cc830ff",
      "prompt": {
       "ko": "대화 순서대로 놓으세요.",
       "en": "Put the conversation in order."
      },
      "context": {
       "ko": "대화 순서대로 놓으세요.",
-      "roman": "daehwa sunseodaero noheuseyo."
+      "roman": "daehwa sunseodaero noeuseyo."
      },
      "tiles": [
       {
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine."
-      },
-      {
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won."
-      },
-      {
        "ko": "카드로 할게요.",
        "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
+       "en": "I'll pay by card.",
+       "speaker": "player"
       },
       {
        "ko": "영수증 드릴까요?",
        "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like a receipt?"
+       "en": "Would you like a receipt?",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "speaker": "player"
+      },
+      {
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Goodbye.",
+       "speaker": "counterpart"
       }
      ],
      "answers": [
       {
-       "ko": "아니요, 괜찮아요. | 삼천 원입니다. | 카드로 할게요. | 영수증 드릴까요?",
-       "roman": "aniyo, gwaenchanayo. | samcheon wonimnida. | kadeuro halgeyo. | yeongsujeung deurilkkayo?"
+       "ko": "카드로 할게요. | 영수증 드릴까요? | 아니요, 영수증은 괜찮아요. | 감사합니다. 안녕히 가세요.",
+       "roman": "kadeuro halgeyo. | yeongsujeung deurilkkayo? | aniyo, yeongsujeungeun gwaenchanayo. | gamsahamnida. annyeonghi gaseyo."
+      }
+     ]
+    },
+    {
+     "id": "S2-13",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like the receipt?",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Do you need a bag?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S2-14",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "voca:289ede0e",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Have a nice day.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Do you need a bag?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "correct": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S3",
+   "order": 3,
+   "items": [
+    {
+     "id": "S3-01",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "ref": "expr:0e57ea3d",
+     "context": {
+      "ko": "드릴까요?",
+      "roman": "deurilkkayo?",
+      "en": "Would you like ~? (offering)"
+     },
+     "example": {
+      "ko": "봉투 드릴까요?",
+      "roman": "bongtu deurilkkayo?",
+      "en": "Would you like a bag?"
+     },
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
+    },
+    {
+     "id": "S3-02",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "ref": "voca:289ede0e",
+     "context": {
+      "ko": "원",
+      "roman": "won",
+      "en": "won (Korean money)"
+     },
+     "example": {
+      "ko": "삼천 원입니다.",
+      "roman": "samcheon wonimnida.",
+      "en": "That's three thousand won."
+     },
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
+    },
+    {
+     "id": "S3-03",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "ref": "expr:ee4a4712",
+     "context": {
+      "ko": "안녕히 가세요.",
+      "roman": "annyeonghi gaseyo.",
+      "en": "Goodbye. (to someone leaving)"
+     },
+     "example": {
+      "ko": "감사합니다. 안녕히 가세요.",
+      "roman": "gamsahamnida. annyeonghi gaseyo.",
+      "en": "Thank you. Goodbye."
+     },
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
+    },
+    {
+     "id": "S3-04",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "ref": "voca:5d8be8cf",
+     "context": {
+      "ko": "따뜻하다",
+      "roman": "ttatteuthada",
+      "en": "warm"
+     },
+     "example": {
+      "ko": "따뜻한 물 주세요.",
+      "roman": "ttatteuthan mul juseyo.",
+      "en": "Warm water, please."
+     },
+     "card_kind": "단어",
+     "audio_url": "",
+     "example_audio_url": ""
+    },
+    {
+     "id": "S3-05",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:289ede0e",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "삼천 ___",
+      "roman": "samcheon ___",
+      "en": "That's three thousand won."
+     },
+     "tiles": [
+      {
+       "ko": "원입니다.",
+       "roman": "wonimnida."
+      },
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      },
+      {
+       "ko": "할게요.",
+       "roman": "halgeyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "원입니다.",
+       "roman": "wonimnida."
       }
      ]
     },
     {
      "id": "S3-06",
-     "type": "TURN_ORDER",
+     "type": "CLOZE",
      "mode": "tiles",
      "event": "R",
-     "ref": "voca:be2eb7e3",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "expr:0e57ea3d",
      "prompt": {
-      "ko": "대화 순서대로 놓으세요.",
-      "en": "Put the conversation in order."
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
      },
      "context": {
-      "ko": "대화 순서대로 놓으세요.",
-      "roman": "daehwa sunseodaero noheuseyo."
+      "ko": "봉투 ___",
+      "roman": "bongtu ___",
+      "en": "Would you like a bag?"
      },
      "tiles": [
       {
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won."
+       "ko": "드릴까요?",
+       "roman": "deurilkkayo?",
+       "en": "Would you like ~? (offering)"
       },
       {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
+       "ko": "주세요.",
+       "roman": "juseyo."
       },
       {
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like a receipt?"
-      },
-      {
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt."
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
       }
      ],
      "answers": [
       {
-       "ko": "삼천 원입니다. | 카드로 할게요. | 영수증 드릴까요? | 아니요, 영수증은 괜찮아요.",
-       "roman": "samcheon wonimnida. | kadeuro halgeyo. | yeongsujeung deurilkkayo? | aniyo, yeongsujeueun gwaenchanayo."
+       "ko": "드릴까요?",
+       "roman": "deurilkkayo?",
+       "en": "Would you like ~? (offering)"
       }
      ]
     },
@@ -776,6 +1736,201 @@
      "type": "LISTEN_SELECT",
      "mode": "choice",
      "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "voca:5d8be8cf",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Have a nice day.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S3-08",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "expr:a04464f0",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "아니요, 영수증은 ___",
+      "roman": "aniyo, yeongsujeungeun ___",
+      "en": "No, I don't need the receipt."
+     },
+     "tiles": [
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      },
+      {
+       "ko": "할게요.",
+       "roman": "halgeyo."
+      },
+      {
+       "ko": "주세요.",
+       "roman": "juseyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      }
+     ]
+    },
+    {
+     "id": "S3-09",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:c5cd4239",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 드릴까요?",
+      "roman": "___ deurilkkayo?",
+      "en": "Would you like a bag?"
+     },
+     "tiles": [
+      {
+       "ko": "봉투",
+       "roman": "bongtu",
+       "en": "plastic bag"
+      },
+      {
+       "ko": "현금",
+       "roman": "hyeongeum",
+       "en": "cash"
+      },
+      {
+       "ko": "주스",
+       "roman": "juseu",
+       "en": "juice"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "봉투",
+       "roman": "bongtu",
+       "en": "plastic bag"
+      }
+     ]
+    },
+    {
+     "id": "S3-10",
+     "type": "SYLLABLE_BUILD",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "쓰기",
+     "skill_level": 1,
+     "ref": "expr:a04464f0",
+     "prompt": {
+      "ko": "음절을 골라 낱말을 만드세요.",
+      "en": "Tap the syllables to spell the word."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "No thanks. / I'm fine."
+     },
+     "tiles": [
+      {
+       "ko": "괜",
+       "roman": "gwaen"
+      },
+      {
+       "ko": "찮",
+       "roman": "chan"
+      },
+      {
+       "ko": "아",
+       "roman": "a"
+      },
+      {
+       "ko": "요",
+       "roman": "yo"
+      },
+      {
+       "ko": "세",
+       "roman": "se"
+      },
+      {
+       "ko": "원",
+       "roman": "won",
+       "en": "won (Korean money)"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "괜찮아요",
+       "roman": "gwaenchanayo"
+      }
+     ]
+    },
+    {
+     "id": "S3-11",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
      "ref": "voca:c5cd4239",
      "prompt": {
       "ko": "무엇을 들었나요?",
@@ -793,62 +1948,9 @@
      "options": [
       {
        "id": "o1",
-       "ko": "봉투 드릴까요?",
-       "roman": "bongtu deurilkkayo?",
-       "en": "Do you need a bag?",
-       "correct": true
-      },
-      {
-       "id": "o2",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o4",
        "ko": "영수증 드릴까요?",
        "roman": "yeongsujeung deurilkkayo?",
        "en": "Would you like the receipt?",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ]
-    },
-    {
-     "id": "S3-08",
-     "type": "LISTEN_SELECT",
-     "mode": "choice",
-     "event": "R",
-     "ref": "expr:a04464f0",
-     "prompt": {
-      "ko": "무엇을 들었나요?",
-      "en": "What did you hear?"
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "봉투 드릴까요?",
-       "roman": "bongtu deurilkkayo?",
-       "en": "Do you need a bag?",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
@@ -862,114 +1964,101 @@
       },
       {
        "id": "o3",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
-       "correct": true
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Have a nice day.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
        "id": "o4",
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ]
-    },
-    {
-     "id": "S3-09",
-     "type": "LISTEN_SELECT",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:e70ba1ce",
-     "prompt": {
-      "ko": "무엇을 들었나요?",
-      "en": "What did you hear?"
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
        "ko": "봉투 드릴까요?",
        "roman": "bongtu deurilkkayo?",
        "en": "Do you need a bag?",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o4",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
        "correct": true
       }
      ]
     },
     {
-     "id": "S3-10",
-     "type": "TURN_ORDER",
+     "id": "S3-12",
+     "type": "SYLLABLE_BUILD",
      "mode": "tiles",
      "event": "R",
-     "ref": "expr:a04464f0",
+     "level": 3,
+     "skill": "쓰기",
+     "skill_level": 1,
+     "ref": "voca:be2eb7e3",
      "prompt": {
-      "ko": "대화 순서대로 놓으세요.",
-      "en": "Put the conversation in order."
+      "ko": "음절을 골라 낱말을 만드세요.",
+      "en": "Tap the syllables to spell the word."
      },
-     "context": {
-      "ko": "대화 순서대로 놓으세요.",
-      "roman": "daehwa sunseodaero noheuseyo."
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "card"
      },
      "tiles": [
       {
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine."
+       "ko": "카",
+       "roman": "ka"
       },
       {
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won."
+       "ko": "드",
+       "roman": "deu"
       },
       {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
+       "ko": "찮",
+       "roman": "chan"
       },
       {
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like a receipt?"
+       "ko": "현",
+       "roman": "hyeon"
       }
      ],
      "answers": [
       {
-       "ko": "아니요, 괜찮아요. | 삼천 원입니다. | 카드로 할게요. | 영수증 드릴까요?",
-       "roman": "aniyo, gwaenchanayo. | samcheon wonimnida. | kadeuro halgeyo. | yeongsujeung deurilkkayo?"
+       "ko": "카드",
+       "roman": "kadeu",
+       "en": "card"
+      }
+     ]
+    },
+    {
+     "id": "S3-13",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "아니요, ___ 괜찮아요.",
+      "roman": "aniyo, ___ gwaenchanayo.",
+      "en": "No, I don't need the receipt."
+     },
+     "tiles": [
+      {
+       "ko": "영수증은",
+       "roman": "yeongsujeungeun"
+      },
+      {
+       "ko": "원은",
+       "roman": "woneun"
+      },
+      {
+       "ko": "주스는",
+       "roman": "juseuneun"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "영수증은",
+       "roman": "yeongsujeungeun"
       }
      ]
     }
@@ -977,278 +2066,16 @@
   },
   {
    "id": "S4",
-   "order": 3,
-   "items": [
-    {
-     "id": "S4-01",
-     "type": "VOCAB_CARD",
-     "mode": "card",
-     "event": "E",
-     "ref": "voca:be2eb7e3",
-     "context": {
-      "ko": "카드",
-      "roman": "kadeu"
-     },
-     "example": {
-      "ko": "카드로 할게요.",
-      "roman": "kadeuro halgeyo.",
-      "en": "I'll pay by card."
-     },
-     "card_kind": "단어"
-    },
-    {
-     "id": "S4-02",
-     "type": "VOCAB_CARD",
-     "mode": "card",
-     "event": "E",
-     "ref": "voca:0ced4e5b",
-     "context": {
-      "ko": "현금",
-      "roman": "hyeongeum"
-     },
-     "example": {
-      "ko": "현금으로 할게요.",
-      "roman": "hyeongeumeuro halgeyo."
-     },
-     "card_kind": "단어"
-    },
-    {
-     "id": "S4-03",
-     "type": "VOCAB_CARD",
-     "mode": "card",
-     "event": "E",
-     "ref": "voca:fe376448",
-     "context": {
-      "ko": "영수증",
-      "roman": "yeongsujeung"
-     },
-     "example": {
-      "ko": "아니요, 영수증은 괜찮아요.",
-      "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-      "en": "No, I don't need the receipt."
-     },
-     "card_kind": "단어"
-    },
-    {
-     "id": "S4-04",
-     "type": "VOCAB_CARD",
-     "mode": "card",
-     "event": "E",
-     "ref": "voca:3cc830ff",
-     "context": {
-      "ko": "주스",
-      "roman": "juseu"
-     },
-     "example": {
-      "ko": "주스 주세요.",
-      "roman": "juseu juseyo."
-     },
-     "card_kind": "단어"
-    },
-    {
-     "id": "S4-05",
-     "type": "VOCAB_CARD",
-     "mode": "card",
-     "event": "E",
-     "ref": "voca:5d8be8cf",
-     "context": {
-      "ko": "따뜻하다",
-      "roman": "ttatteuthada"
-     },
-     "example": {
-      "ko": "따뜻한 물 주세요.",
-      "roman": "ttatteuthan mul juseyo.",
-      "en": "Warm water, please."
-     },
-     "card_kind": "단어"
-    },
-    {
-     "id": "S4-06",
-     "type": "CLOZE",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "빈칸을 채우세요.",
-      "en": "Fill in the blank."
-     },
-     "context": {
-      "ko": "___ 드릴까요?",
-      "roman": "___ deurilkkayo?"
-     },
-     "tiles": [
-      {
-       "ko": "영수증",
-       "roman": "yeongsujeung"
-      },
-      {
-       "ko": "봉투",
-       "roman": "bongtu"
-      },
-      {
-       "ko": "삼천",
-       "roman": "samcheon"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "영수증",
-       "roman": "yeongsujeung"
-      }
-     ]
-    },
-    {
-     "id": "S4-08",
-     "type": "IMG_MATCH",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:be2eb7e3",
-     "prompt": {
-      "ko": "사진에 맞는 말을 고르세요.",
-      "en": "Which word matches the picture?"
-     },
-     "stimulus": {
-      "audio_url": "",
-      "image_brief": "card - 한 컷으로 알아볼 수 있게",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "영수증",
-       "roman": "yeongsujeung",
-       "en": "receipt",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "주스",
-       "roman": "juseu",
-       "en": "juice",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
-       "ko": "현금",
-       "roman": "hyeongeum",
-       "en": "cash",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o4",
-       "ko": "카드",
-       "roman": "kadeu",
-       "en": "card",
-       "correct": true
-      }
-     ]
-    },
-    {
-     "id": "S4-09",
-     "type": "CLOZE",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:e70ba1ce",
-     "prompt": {
-      "ko": "빈칸을 채우세요.",
-      "en": "Fill in the blank."
-     },
-     "context": {
-      "ko": "따뜻한 ___ 주세요.",
-      "roman": "ttatteuthan ___ juseyo."
-     },
-     "tiles": [
-      {
-       "ko": "물",
-       "roman": "mul"
-      },
-      {
-       "ko": "봉투",
-       "roman": "bongtu"
-      },
-      {
-       "ko": "삼천",
-       "roman": "samcheon"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "물",
-       "roman": "mul"
-      }
-     ]
-    },
-    {
-     "id": "S4-10",
-     "type": "TRANSLATE_TO_KO",
-     "mode": "typing",
-     "event": "R",
-     "ref": "expr:a04464f0",
-     "prompt": {
-      "ko": "한국어로 쓰세요.",
-      "en": "Say this in Korean."
-     },
-     "answers": [
-      {
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine."
-      },
-      {
-       "ko": "아니요, 괜찮아요",
-       "roman": "aniyo, gwaenchanayo"
-      }
-     ]
-    },
-    {
-     "id": "S4-11",
-     "type": "CLOZE",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:c5cd4239",
-     "prompt": {
-      "ko": "빈칸을 채우세요.",
-      "en": "Fill in the blank."
-     },
-     "context": {
-      "ko": "___ 드릴까요?",
-      "roman": "___ deurilkkayo?"
-     },
-     "tiles": [
-      {
-       "ko": "봉투",
-       "roman": "bongtu"
-      },
-      {
-       "ko": "카드",
-       "roman": "kadeu"
-      },
-      {
-       "ko": "물",
-       "roman": "mul"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "봉투",
-       "roman": "bongtu"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "S5",
    "order": 4,
    "items": [
     {
-     "id": "S5-01",
+     "id": "S4-01",
      "type": "ROLE_LINE",
      "mode": "choice",
      "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
      "ref": "voca:fe376448",
      "prompt": {
       "ko": "뭐라고 말할까요?",
@@ -1263,1318 +2090,42 @@
       {
        "id": "o1",
        "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
        "en": "No, I don't need the receipt.",
        "correct": true
       },
       {
        "id": "o2",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
        "id": "o3",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       }
      ],
      "feedback": {
       "correct": {
-       "ko": "이 자리에서는 「아니요, 영수증은 괜찮아요.」 라고 한다.",
+       "ko": "이 자리에서는 「아니요, 영수증은 괜찮아요.」라고 해요.",
        "en": "Here you say \"No, I don't need the receipt.\"."
       }
      }
     },
     {
-     "id": "S5-02",
-     "type": "LISTEN_SELECT",
-     "mode": "choice",
-     "event": "E",
-     "ref": "voca:5d8be8cf",
-     "prompt": {
-      "ko": "무엇을 들었나요?",
-      "en": "What did you hear?"
-     },
-     "context": {
-      "ko": "따뜻한 물 주세요.",
-      "roman": "ttatteuthan mul juseyo.",
-      "en": "Warm water, please."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please."
-      },
-      "audio_url": "",
-      "image_url": ""
-     }
-    },
-    {
-     "id": "S5-03",
+     "id": "S4-02",
      "type": "LISTEN_SELECT",
      "mode": "choice",
      "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "무엇을 들었나요?",
-      "en": "What did you hear?"
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like a receipt?"
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o4",
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like the receipt?",
-       "correct": true
-      }
-     ]
-    },
-    {
-     "id": "S5-04",
-     "type": "TURN_ORDER",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "대화 순서대로 놓으세요.",
-      "en": "Put the conversation in order."
-     },
-     "context": {
-      "ko": "대화 순서대로 놓으세요.",
-      "roman": "daehwa sunseodaero noheuseyo."
-     },
-     "tiles": [
-      {
-       "ko": "봉투 드릴까요?",
-       "roman": "bongtu deurilkkayo?",
-       "en": "Would you like a bag?"
-      },
-      {
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine."
-      },
-      {
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won."
-      },
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      }
-     ],
-     "answers": [
-      {
-       "ko": "봉투 드릴까요? | 아니요, 괜찮아요. | 삼천 원입니다. | 카드로 할게요.",
-       "roman": "bongtu deurilkkayo? | aniyo, gwaenchanayo. | samcheon wonimnida. | kadeuro halgeyo."
-      }
-     ]
-    },
-    {
-     "id": "S5-05",
-     "type": "LISTEN_SELECT",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "무엇을 들었나요?",
-      "en": "What did you hear?"
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like a receipt?"
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like the receipt?",
-       "correct": true
-      },
-      {
-       "id": "o3",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o4",
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ]
-    },
-    {
-     "id": "S5-06",
-     "type": "ROLE_LINE",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "뭐라고 말할까요?",
-      "en": "What do you say?"
-     },
-     "context": {
-      "ko": "영수증 드릴까요?",
-      "roman": "yeongsujeung deurilkkayo?",
-      "en": "Would you like a receipt?"
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": true
-      },
-      {
-       "id": "o3",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ],
-     "feedback": {
-      "correct": {
-       "ko": "이 자리에서는 「아니요, 영수증은 괜찮아요.」 라고 한다.",
-       "en": "Here you say \"No, I don't need the receipt.\"."
-      }
-     }
-    },
-    {
-     "id": "S5-07",
-     "type": "LISTEN_SELECT",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "무엇을 들었나요?",
-      "en": "What did you hear?"
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like a receipt?"
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like the receipt?",
-       "correct": true
-      },
-      {
-       "id": "o3",
-       "ko": "봉투 드릴까요?",
-       "roman": "bongtu deurilkkayo?",
-       "en": "Do you need a bag?",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o4",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ]
-    },
-    {
-     "id": "S5-08",
-     "type": "ROLE_LINE",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:5d8be8cf",
-     "prompt": {
-      "ko": "뭐라고 말할까요?",
-      "en": "What do you say?"
-     },
-     "context": {
-      "ko": "봉투 드릴까요?",
-      "roman": "bongtu deurilkkayo?",
-      "en": "Would you like a bag?"
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": true
-      },
-      {
-       "id": "o3",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ],
-     "feedback": {
-      "correct": {
-       "ko": "이 자리에서는 「따뜻한 물 주세요.」 라고 한다.",
-       "en": "Here you say \"Warm water, please.\"."
-      },
-      "wrong": {
-       "ko": "「아니요, 괜찮아요.」 은 원래 대화에서 한 말이다. 이번 상황에는 안 맞는다."
-      },
-      "wrong_option": "o1"
-     }
-    },
-    {
-     "id": "S5-09",
-     "type": "TURN_ORDER",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "대화 순서대로 놓으세요.",
-      "en": "Put the conversation in order."
-     },
-     "context": {
-      "ko": "대화 순서대로 놓으세요.",
-      "roman": "daehwa sunseodaero noheuseyo."
-     },
-     "tiles": [
-      {
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine."
-      },
-      {
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won."
-      },
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like a receipt?"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "아니요, 괜찮아요. | 삼천 원입니다. | 카드로 할게요. | 영수증 드릴까요?",
-       "roman": "aniyo, gwaenchanayo. | samcheon wonimnida. | kadeuro halgeyo. | yeongsujeung deurilkkayo?"
-      }
-     ]
-    },
-    {
-     "id": "S5-10",
-     "type": "LISTEN_SELECT",
-     "mode": "choice",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "무엇을 들었나요?",
-      "en": "What did you hear?"
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": true
-      },
-      {
-       "id": "o4",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ]
-    },
-    {
-     "id": "S5-11",
-     "type": "TURN_ORDER",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "대화 순서대로 놓으세요.",
-      "en": "Put the conversation in order."
-     },
-     "context": {
-      "ko": "대화 순서대로 놓으세요.",
-      "roman": "daehwa sunseodaero noheuseyo."
-     },
-     "tiles": [
-      {
-       "ko": "봉투 드릴까요?",
-       "roman": "bongtu deurilkkayo?",
-       "en": "Would you like a bag?"
-      },
-      {
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine."
-      },
-      {
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won."
-      },
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      }
-     ],
-     "answers": [
-      {
-       "ko": "봉투 드릴까요? | 아니요, 괜찮아요. | 삼천 원입니다. | 카드로 할게요.",
-       "roman": "bongtu deurilkkayo? | aniyo, gwaenchanayo. | samcheon wonimnida. | kadeuro halgeyo."
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "S6",
-   "order": 5,
-   "items": [
-    {
-     "id": "S6-01",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-02",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-03",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-04",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-05",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-06",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-07",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-08",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-09",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-10",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-11",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S6-12",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "S7",
-   "order": 6,
-   "items": [
-    {
-     "id": "S7-02",
-     "type": "TRANSLATE_TO_KO",
-     "mode": "typing",
-     "event": "R",
-     "ref": "expr:a04464f0",
-     "prompt": {
-      "ko": "한국어로 쓰세요.",
-      "en": "Say this in Korean."
-     },
-     "answers": [
-      {
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine."
-      },
-      {
-       "ko": "아니요, 괜찮아요",
-       "roman": "aniyo, gwaenchanayo"
-      }
-     ]
-    },
-    {
-     "id": "S7-03",
-     "type": "TRANSLATE_TO_KO",
-     "mode": "typing",
-     "event": "R",
-     "ref": "voca:be2eb7e3",
-     "prompt": {
-      "ko": "한국어로 쓰세요.",
-      "en": "Say this in Korean."
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S7-04",
-     "type": "CLOZE",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:e70ba1ce",
-     "prompt": {
-      "ko": "빈칸을 채우세요.",
-      "en": "Fill in the blank."
-     },
-     "context": {
-      "ko": "따뜻한 ___ 주세요.",
-      "roman": "ttatteuthan ___ juseyo."
-     },
-     "tiles": [
-      {
-       "ko": "물",
-       "roman": "mul"
-      },
-      {
-       "ko": "현금",
-       "roman": "hyeongeum"
-      },
-      {
-       "ko": "영수증",
-       "roman": "yeongsujeung"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "물",
-       "roman": "mul"
-      }
-     ]
-    },
-    {
-     "id": "S7-05",
-     "type": "CLOZE",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "빈칸을 채우세요.",
-      "en": "Fill in the blank."
-     },
-     "context": {
-      "ko": "___ 드릴까요?",
-      "roman": "___ deurilkkayo?"
-     },
-     "tiles": [
-      {
-       "ko": "영수증",
-       "roman": "yeongsujeung"
-      },
-      {
-       "ko": "삼천",
-       "roman": "samcheon"
-      },
-      {
-       "ko": "물",
-       "roman": "mul"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "영수증",
-       "roman": "yeongsujeung"
-      }
-     ]
-    },
-    {
-     "id": "S7-06",
-     "type": "TRANSLATE_TO_KO",
-     "mode": "typing",
-     "event": "R",
-     "ref": "voca:5d8be8cf",
-     "prompt": {
-      "ko": "한국어로 쓰세요.",
-      "en": "Say this in Korean."
-     },
-     "answers": [
-      {
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please."
-      },
-      {
-       "ko": "따뜻한 물 주세요",
-       "roman": "ttatteuthan mul juseyo"
-      }
-     ]
-    },
-    {
-     "id": "S7-08",
-     "type": "TRANSLATE_TO_KO",
-     "mode": "typing",
-     "event": "R",
-     "ref": "voca:5d8be8cf",
-     "prompt": {
-      "ko": "한국어로 쓰세요.",
-      "en": "Say this in Korean."
-     },
-     "answers": [
-      {
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please."
-      },
-      {
-       "ko": "따뜻한 물 주세요",
-       "roman": "ttatteuthan mul juseyo"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "S8",
-   "order": 7,
-   "items": [
-    {
-     "id": "S8-01",
-     "type": "ROLE_LINE",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "뭐라고 말할까요?",
-      "en": "What do you say?"
-     },
-     "context": {
-      "ko": "영수증 드릴까요?",
-      "roman": "yeongsujeung deurilkkayo?",
-      "en": "Would you like a receipt?"
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": true
-      },
-      {
-       "id": "o3",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ],
-     "feedback": {
-      "correct": {
-       "ko": "이 자리에서는 「아니요, 영수증은 괜찮아요.」 라고 한다.",
-       "en": "Here you say \"No, I don't need the receipt.\"."
-      }
-     }
-    },
-    {
-     "id": "S8-02",
-     "type": "ROLE_LINE",
-     "mode": "choice",
-     "event": "R",
-     "ref": "expr:a04464f0",
-     "prompt": {
-      "ko": "뭐라고 말할까요?",
-      "en": "What do you say?"
-     },
-     "context": {
-      "ko": "봉투 드릴까요?",
-      "roman": "bongtu deurilkkayo?",
-      "en": "Would you like a bag?"
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
-       "correct": true
-      },
-      {
-       "id": "o3",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ],
-     "feedback": {
-      "correct": {
-       "ko": "이 자리에서는 「아니요, 괜찮아요.」 라고 한다.",
-       "en": "Here you say \"No, I'm fine.\"."
-      }
-     }
-    },
-    {
-     "id": "S8-03",
-     "type": "SENT_BUILD",
-     "mode": "typing",
-     "event": "R",
-     "ref": "patt:b3d9256a",
-     "prompt": {
-      "ko": "뭐라고 말할지 쓰세요.",
-      "en": "Write what you would say."
-     },
-     "context": {
-      "ko": "「{수단}로 할게요.」 을 써서",
-      "roman": "「{수단}ro halgeyo.」 eul sseoseo"
-     },
-     "answers": [
-      {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      {
-       "ko": "카드로 할게요",
-       "roman": "kadeuro halgeyo"
-      }
-     ]
-    },
-    {
-     "id": "S8-04",
-     "type": "ROLE_LINE",
-     "mode": "choice",
-     "event": "R",
-     "ref": "expr:a04464f0",
-     "prompt": {
-      "ko": "뭐라고 말할까요?",
-      "en": "What do you say?"
-     },
-     "context": {
-      "ko": "봉투 드릴까요?",
-      "roman": "bongtu deurilkkayo?",
-      "en": "Would you like a bag?"
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
-       "correct": true
-      },
-      {
-       "id": "o2",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ],
-     "feedback": {
-      "correct": {
-       "ko": "이 자리에서는 「아니요, 괜찮아요.」 라고 한다.",
-       "en": "Here you say \"No, I'm fine.\"."
-      }
-     }
-    },
-    {
-     "id": "S8-05",
-     "type": "ROLE_LINE",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:be2eb7e3",
-     "prompt": {
-      "ko": "뭐라고 말할까요?",
-      "en": "What do you say?"
-     },
-     "context": {
-      "ko": "삼천 원입니다.",
-      "roman": "samcheon wonimnida.",
-      "en": "That's three thousand won."
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": true
-      }
-     ],
-     "feedback": {
-      "correct": {
-       "ko": "이 자리에서는 「카드로 할게요.」 라고 한다.",
-       "en": "Here you say \"I'll pay by card.\"."
-      }
-     }
-    },
-    {
-     "id": "S8-06",
-     "type": "ROLE_LINE",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:c5cd4239",
-     "prompt": {
-      "ko": "뭐라고 말할까요?",
-      "en": "What do you say?"
-     },
-     "context": {
-      "ko": "봉투 드릴까요?",
-      "roman": "bongtu deurilkkayo?",
-      "en": "Would you like a bag?"
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "아니요, 괜찮아요.",
-       "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine.",
-       "correct": true
-      },
-      {
-       "id": "o3",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ],
-     "feedback": {
-      "correct": {
-       "ko": "이 자리에서는 「아니요, 괜찮아요.」 라고 한다.",
-       "en": "Here you say \"No, I'm fine.\"."
-      }
-     }
-    }
-   ]
-  },
-  {
-   "id": "S9",
-   "order": 8,
-   "items": [
-    {
-     "id": "S9-01",
-     "type": "LISTEN_SELECT",
-     "mode": "choice",
-     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
      "ref": "voca:5d8be8cf",
      "prompt": {
       "ko": "무엇을 들었나요?",
@@ -2592,22 +2143,14 @@
      "options": [
       {
        "id": "o1",
-       "ko": "봉투 드릴까요?",
-       "roman": "bongtu deurilkkayo?",
-       "en": "Do you need a bag?",
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Have a nice day.",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
        "id": "o2",
-       "ko": "영수증 드릴까요?",
-       "roman": "yeongsujeung deurilkkayo?",
-       "en": "Would you like the receipt?",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
        "ko": "네, 여기 있어요.",
        "roman": "ne, yeogi isseoyo.",
        "en": "Sure, here you go.",
@@ -2615,99 +2158,40 @@
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
       {
-       "id": "o4",
+       "id": "o3",
        "ko": "따뜻한 물 주세요.",
        "roman": "ttatteuthan mul juseyo.",
        "en": "Warm water, please.",
        "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
       }
      ]
     },
     {
-     "id": "S9-02",
-     "type": "CLOZE",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:e70ba1ce",
-     "prompt": {
-      "ko": "빈칸을 채우세요.",
-      "en": "Fill in the blank."
-     },
-     "context": {
-      "ko": "따뜻한 ___ 주세요.",
-      "roman": "ttatteuthan ___ juseyo."
-     },
-     "tiles": [
-      {
-       "ko": "물",
-       "roman": "mul"
-      },
-      {
-       "ko": "현금",
-       "roman": "hyeongeum"
-      },
-      {
-       "ko": "영수증",
-       "roman": "yeongsujeung"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "물",
-       "roman": "mul"
-      }
-     ]
-    },
-    {
-     "id": "S9-03",
-     "type": "CLOZE",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "expr:a04464f0",
-     "prompt": {
-      "ko": "빈칸을 채우세요.",
-      "en": "Fill in the blank."
-     },
-     "context": {
-      "ko": "아니요, ___",
-      "roman": "aniyo, ___"
-     },
-     "tiles": [
-      {
-       "ko": "괜찮아요.",
-       "roman": "gwaenchanayo."
-      },
-      {
-       "ko": "드릴까요?",
-       "roman": "deurilkkayo?"
-      },
-      {
-       "ko": "주스",
-       "roman": "juseu"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "괜찮아요.",
-       "roman": "gwaenchanayo."
-      }
-     ]
-    },
-    {
-     "id": "S9-04",
-     "type": "LISTEN_SELECT",
+     "id": "S4-03",
+     "type": "REPLY_SELECT",
      "mode": "choice",
      "event": "R",
-     "ref": "voca:e70ba1ce",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 2,
+     "ref": "patt:b3d9256a",
      "prompt": {
-      "ko": "무엇을 들었나요?",
-      "en": "What did you hear?"
+      "ko": "뭐라고 대답할까요?",
+      "en": "How do you reply?"
      },
      "stimulus": {
       "audio": {
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please."
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won."
       },
       "audio_url": "",
       "image_url": ""
@@ -2715,16 +2199,121 @@
      "options": [
       {
        "id": "o1",
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please.",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
        "correct": true
       },
       {
        "id": "o2",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「카드로 할게요.」라고 해요.",
+       "en": "Here you say \"I'll pay by card.\"."
+      }
+     }
+    },
+    {
+     "id": "S4-04",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "expr:0e57ea3d",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noeuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Would you like a bag?",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "speaker": "player"
+      },
+      {
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "speaker": "player"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "봉투 드릴까요? | 아니요, 괜찮아요. | 삼천 원입니다. | 카드로 할게요.",
+       "roman": "bongtu deurilkkayo? | aniyo, gwaenchanayo. | samcheon wonimnida. | kadeuro halgeyo."
+      }
+     ]
+    },
+    {
+     "id": "S4-05",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
        "correct": false,
        "why_wrong": "이 자리에 맞는 말이 아니다"
       },
@@ -2738,315 +2327,22 @@
       },
       {
        "id": "o4",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ]
-    },
-    {
-     "id": "S9-05",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt."
-      },
-      {
-       "ko": "아니요, 영수증은 괜찮아요",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo"
-      }
-     ]
-    },
-    {
-     "id": "S9-06",
-     "type": "TRANSLATE_TO_EN",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:be2eb7e3",
-     "prompt": {
-      "ko": "무슨 뜻인가요?",
-      "en": "What does this mean?"
-     },
-     "stimulus": {
-      "text": {
-       "ko": "카드",
-       "roman": "kadeu"
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "cash",
-       "roman": "cash",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "card",
-       "roman": "card",
-       "correct": true
-      },
-      {
-       "id": "o3",
-       "ko": "envelope",
-       "roman": "envelope",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o4",
-       "ko": "Shall we give you that?",
-       "roman": "Shall we give you that?",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      }
-     ]
-    },
-    {
-     "id": "S9-07",
-     "type": "TRANSLATE_TO_EN",
-     "mode": "choice",
-     "event": "R",
-     "ref": "expr:a04464f0",
-     "prompt": {
-      "ko": "무슨 뜻인가요?",
-      "en": "What does this mean?"
-     },
-     "stimulus": {
-      "text": {
-       "ko": "괜찮아요.",
-       "roman": "gwaenchanayo."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "three thousand",
-       "roman": "three thousand",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o2",
-       "ko": "card",
-       "roman": "card",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
-       "ko": "cash",
-       "roman": "cash",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o4",
-       "ko": "It's okay.",
-       "roman": "It's okay.",
-       "correct": true
-      }
-     ]
-    },
-    {
-     "id": "S9-08",
-     "type": "DICTATION",
-     "mode": "typing",
-     "event": "R",
-     "ref": "voca:c5cd4239",
-     "prompt": {
-      "ko": "들은 대로 쓰세요.",
-      "en": "Type what you hear."
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "봉투 드릴까요?",
-       "roman": "bongtu deurilkkayo?",
-       "en": "Would you like a bag?"
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "answers": [
-      {
-       "ko": "봉투 드릴까요?",
-       "roman": "bongtu deurilkkayo?",
-       "en": "Would you like a bag?"
-      },
-      {
-       "ko": "봉투 드릴까요",
-       "roman": "bongtu deurilkkayo"
-      }
-     ]
-    },
-    {
-     "id": "S9-09",
-     "type": "TRANSLATE_TO_KO",
-     "mode": "typing",
-     "event": "R",
-     "ref": "voca:5d8be8cf",
-     "prompt": {
-      "ko": "한국어로 쓰세요.",
-      "en": "Say this in Korean."
-     },
-     "answers": [
-      {
-       "ko": "따뜻한 물 주세요.",
-       "roman": "ttatteuthan mul juseyo.",
-       "en": "Warm water, please."
-      },
-      {
-       "ko": "따뜻한 물 주세요",
-       "roman": "ttatteuthan mul juseyo"
-      }
-     ]
-    },
-    {
-     "id": "S9-10",
-     "type": "CLOZE",
-     "mode": "tiles",
-     "event": "R",
-     "ref": "voca:fe376448",
-     "prompt": {
-      "ko": "빈칸을 채우세요.",
-      "en": "Fill in the blank."
-     },
-     "context": {
-      "ko": "___ 드릴까요?",
-      "roman": "___ deurilkkayo?"
-     },
-     "tiles": [
-      {
-       "ko": "영수증",
-       "roman": "yeongsujeung"
-      },
-      {
-       "ko": "삼천",
-       "roman": "samcheon"
-      },
-      {
-       "ko": "물",
-       "roman": "mul"
-      }
-     ],
-     "answers": [
-      {
-       "ko": "영수증",
-       "roman": "yeongsujeung"
-      }
-     ]
-    },
-    {
-     "id": "S9-11",
-     "type": "TRANSLATE_TO_KO",
-     "mode": "typing",
-     "event": "R",
-     "ref": "voca:c5cd4239",
-     "prompt": {
-      "ko": "한국어로 쓰세요.",
-      "en": "Say this in Korean."
-     },
-     "answers": [
-      {
-       "ko": "봉투 드릴까요?",
-       "roman": "bongtu deurilkkayo?",
-       "en": "Would you like a bag?"
-      },
-      {
-       "ko": "봉투 드릴까요",
-       "roman": "bongtu deurilkkayo"
-      }
-     ]
-    },
-    {
-     "id": "S9-12",
-     "type": "LISTEN_SELECT",
-     "mode": "choice",
-     "event": "R",
-     "ref": "voca:be2eb7e3",
-     "prompt": {
-      "ko": "무엇을 들었나요?",
-      "en": "What did you hear?"
-     },
-     "stimulus": {
-      "audio": {
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card."
-      },
-      "audio_url": "",
-      "image_url": ""
-     },
-     "options": [
-      {
-       "id": "o1",
-       "ko": "카드로 할게요.",
-       "roman": "kadeuro halgeyo.",
-       "en": "I'll pay by card.",
-       "correct": true
-      },
-      {
-       "id": "o2",
-       "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
-       "en": "No, I don't need the receipt.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o3",
        "ko": "영수증 드릴까요?",
        "roman": "yeongsujeung deurilkkayo?",
        "en": "Would you like the receipt?",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
-      },
-      {
-       "id": "o4",
-       "ko": "삼천 원입니다.",
-       "roman": "samcheon wonimnida.",
-       "en": "That's three thousand won.",
-       "correct": false,
-       "why_wrong": "이 자리에 맞는 말이 아니다"
+       "correct": true
       }
      ]
-    }
-   ]
-  },
-  {
-   "id": "RP",
-   "order": 9,
-   "items": [
+    },
     {
-     "id": "RP-01",
-     "type": "ROLEPLAY_TURN",
-     "mode": "either",
+     "id": "S4-06",
+     "type": "ROLE_LINE",
+     "mode": "choice",
      "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "expr:a04464f0",
      "prompt": {
       "ko": "뭐라고 말할까요?",
       "en": "What do you say?"
@@ -3056,11 +2352,131 @@
       "roman": "bongtu deurilkkayo?",
       "en": "Would you like a bag?"
      },
-     "stimulus": {
-      "text": {
+     "options": [
+      {
+       "id": "o1",
        "ko": "아니요, 괜찮아요.",
        "roman": "aniyo, gwaenchanayo.",
-       "en": "No, I'm fine."
+       "en": "No, I'm fine.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「아니요, 괜찮아요.」라고 해요.",
+       "en": "Here you say \"No, I'm fine.\"."
+      }
+     }
+    },
+    {
+     "id": "S4-07",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "voca:5d8be8cf",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "차가운 물 말고 따뜻한 물을 사고 싶다.",
+      "roman": "chagaun mul malgo ttatteuthan mureul sago sipda.",
+      "en": "You want warm water, not a cold one."
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「따뜻한 물 주세요.」라고 해요.",
+       "en": "Here you say \"Warm water, please.\"."
+      },
+      "wrong": {
+       "ko": "이번에는 차가운 물 말고 따뜻한 물을 사고 싶어서 「아니요, 괜찮아요.」는 안 맞아요.",
+       "en": "This time you want warm water, not a cold one, so \"No, I'm fine.\" does not fit."
+      },
+      "wrong_option": "o1"
+     }
+    },
+    {
+     "id": "S4-08",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "E",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "voca:5d8be8cf",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "context": {
+      "ko": "네, 여기 있어요.",
+      "roman": "ne, yeogi isseoyo.",
+      "en": "Sure, here you go."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go."
+      },
+      "audio_url": "",
+      "image_url": ""
+     }
+    },
+    {
+     "id": "S4-09",
+     "type": "LISTEN_BUILD",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "듣기",
+     "skill_level": 3,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "듣고 문장을 만드세요.",
+      "en": "Listen and build the sentence."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt."
       },
       "audio_url": "",
       "image_url": ""
@@ -3071,8 +2487,2274 @@
        "roman": "aniyo,"
       },
       {
+       "ko": "영수증은",
+       "roman": "yeongsujeungeun"
+      },
+      {
        "ko": "괜찮아요.",
-       "roman": "gwaenchanayo."
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      },
+      {
+       "ko": "가세요.",
+       "roman": "gaseyo."
+      },
+      {
+       "ko": "할게요.",
+       "roman": "halgeyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt."
+      }
+     ]
+    },
+    {
+     "id": "S4-10",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noeuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "speaker": "player"
+      },
+      {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "speaker": "player"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "삼천 원입니다. | 카드로 할게요. | 영수증 드릴까요? | 아니요, 영수증은 괜찮아요.",
+       "roman": "samcheon wonimnida. | kadeuro halgeyo. | yeongsujeung deurilkkayo? | aniyo, yeongsujeungeun gwaenchanayo."
+      }
+     ]
+    },
+    {
+     "id": "S4-11",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "patt:b3d9256a",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S4-12",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:3cc830ff",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noeuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "speaker": "player"
+      },
+      {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "speaker": "player"
+      },
+      {
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Goodbye.",
+       "speaker": "counterpart"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "카드로 할게요. | 영수증 드릴까요? | 아니요, 영수증은 괜찮아요. | 감사합니다. 안녕히 가세요.",
+       "roman": "kadeuro halgeyo. | yeongsujeung deurilkkayo? | aniyo, yeongsujeungeun gwaenchanayo. | gamsahamnida. annyeonghi gaseyo."
+      }
+     ]
+    },
+    {
+     "id": "S4-13",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noeuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "speaker": "player"
+      },
+      {
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "speaker": "counterpart"
+      },
+      {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "speaker": "player"
+      },
+      {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?",
+       "speaker": "counterpart"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "아니요, 괜찮아요. | 삼천 원입니다. | 카드로 할게요. | 영수증 드릴까요?",
+       "roman": "aniyo, gwaenchanayo. | samcheon wonimnida. | kadeuro halgeyo. | yeongsujeung deurilkkayo?"
+      }
+     ]
+    },
+    {
+     "id": "S4-14",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "expr:0e57ea3d",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Would you like a bag?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like the receipt?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Do you need a bag?",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S4-15",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "expr:ee4a4712",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Goodbye."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Have a nice day.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Do you need a bag?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S5",
+   "order": 5,
+   "items": [
+    {
+     "id": "S5-01",
+     "type": "PARTICLE_FILL",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "voca:e70ba1ce",
+     "prompt": {
+      "ko": "알맞은 조사를 고르세요.",
+      "en": "Which particle fits?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "카드___ 할게요.",
+       "roman": "kadeu___ halgeyo.",
+       "en": "I'll pay by card."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "으로",
+       "roman": "euro",
+       "en": "by, with, to (after a consonant)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "로",
+       "roman": "ro",
+       "en": "by, with, to (after a vowel or ㄹ)",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "앞말에 받침이 있는지 보고 조사를 골라요.",
+       "en": "The particle depends on whether the word before it ends in a consonant."
+      }
+     }
+    },
+    {
+     "id": "S5-02",
+     "type": "PARTICLE_FILL",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "voca:c5cd4239",
+     "prompt": {
+      "ko": "알맞은 조사를 고르세요.",
+      "en": "Which particle fits?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "아니요, 영수증___ 괜찮아요.",
+       "roman": "aniyo, yeongsujeung___ gwaenchanayo.",
+       "en": "No, I don't need the receipt."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "는",
+       "roman": "neun",
+       "en": "topic marker (after a vowel)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "은",
+       "roman": "eun",
+       "en": "topic marker (after a consonant)",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "앞말에 받침이 있는지 보고 조사를 골라요.",
+       "en": "The particle depends on whether the word before it ends in a consonant."
+      }
+     }
+    },
+    {
+     "id": "S5-03",
+     "type": "PARTICLE_SWAP",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "expr:ee4a4712",
+     "prompt": {
+      "ko": "조사를 고치세요.",
+      "en": "Fix the particle."
+     },
+     "stimulus": {
+      "text": {
+       "ko": "봉투이",
+       "roman": "bongtui",
+       "en": "plastic bag"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "으로",
+       "roman": "euro",
+       "en": "by, with, to (after a consonant)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "가",
+       "roman": "ga",
+       "en": "subject marker (after a vowel)",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "은",
+       "roman": "eun",
+       "en": "topic marker (after a consonant)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "조사가 뜻을 바꿔요. 이 자리에 맞는 조사를 써야 해요.",
+       "en": "The particle changes the meaning. This slot needs a different one."
+      }
+     }
+    },
+    {
+     "id": "S5-04",
+     "type": "PARTICLE_SWAP",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "patt:b3d9256a",
+     "prompt": {
+      "ko": "조사를 고치세요.",
+      "en": "Fix the particle."
+     },
+     "stimulus": {
+      "text": {
+       "ko": "봉투은",
+       "roman": "bongtueun",
+       "en": "plastic bag"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "으로",
+       "roman": "euro",
+       "en": "by, with, to (after a consonant)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "는",
+       "roman": "neun",
+       "en": "topic marker (after a vowel)",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "을",
+       "roman": "eul",
+       "en": "object marker (after a consonant)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "조사가 뜻을 바꿔요. 이 자리에 맞는 조사를 써야 해요.",
+       "en": "The particle changes the meaning. This slot needs a different one."
+      }
+     }
+    },
+    {
+     "id": "S5-05",
+     "type": "PARTICLE_SWAP",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "voca:be2eb7e3",
+     "prompt": {
+      "ko": "조사를 고치세요.",
+      "en": "Fix the particle."
+     },
+     "stimulus": {
+      "text": {
+       "ko": "카드이",
+       "roman": "kadeui",
+       "en": "card"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "은",
+       "roman": "eun",
+       "en": "topic marker (after a consonant)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "을",
+       "roman": "eul",
+       "en": "object marker (after a consonant)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "가",
+       "roman": "ga",
+       "en": "subject marker (after a vowel)",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "조사가 뜻을 바꿔요. 이 자리에 맞는 조사를 써야 해요.",
+       "en": "The particle changes the meaning. This slot needs a different one."
+      }
+     }
+    },
+    {
+     "id": "S5-06",
+     "type": "MIN_PAIR_AB",
+     "mode": "choice",
+     "event": "D",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 2,
+     "ref": "voca:5d8be8cf",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "Which one did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "빵",
+       "roman": "ppang"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "방",
+       "roman": "bang",
+       "en": "room",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "빵",
+       "roman": "ppang",
+       "en": "bread",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "한 소리만 다른 말이에요. 천천히 다시 들어 보세요.",
+       "en": "These two words differ by one sound. Listen again slowly."
+      }
+     }
+    },
+    {
+     "id": "S5-07",
+     "type": "MIN_PAIR_AB",
+     "mode": "choice",
+     "event": "D",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 2,
+     "ref": "expr:ee4a4712",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "Which one did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "불",
+       "roman": "bul"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "풀",
+       "roman": "pul",
+       "en": "grass",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "불",
+       "roman": "bul",
+       "en": "fire, electrical light",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "한 소리만 다른 말이에요. 천천히 다시 들어 보세요.",
+       "en": "These two words differ by one sound. Listen again slowly."
+      }
+     }
+    },
+    {
+     "id": "S5-08",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "level": 4,
+     "skill": "쓰기",
+     "skill_level": 2,
+     "ref": "voca:289ede0e",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "원입니다",
+       "roman": "wonimnida"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "원입니다",
+       "roman": "wonimnida"
+      }
+     ]
+    },
+    {
+     "id": "S5-09",
+     "type": "SHADOW",
+     "mode": "speech",
+     "event": "E",
+     "level": 3,
+     "skill": "말하기",
+     "skill_level": 1,
+     "ref": "patt:b3d9256a",
+     "prompt": {
+      "ko": "듣고 따라 말하세요.",
+      "en": "Listen and repeat."
+     },
+     "stimulus": {
+      "text": {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card."
+      },
+      "audio": {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card."
+      }
+     ]
+    },
+    {
+     "id": "S5-10",
+     "type": "SHADOW",
+     "mode": "speech",
+     "event": "E",
+     "level": 3,
+     "skill": "말하기",
+     "skill_level": 1,
+     "ref": "voca:e70ba1ce",
+     "prompt": {
+      "ko": "듣고 따라 말하세요.",
+      "en": "Listen and repeat."
+     },
+     "stimulus": {
+      "text": {
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please."
+      },
+      "audio": {
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please."
+      }
+     ]
+    },
+    {
+     "id": "S5-11",
+     "type": "SHADOW",
+     "mode": "speech",
+     "event": "E",
+     "level": 3,
+     "skill": "말하기",
+     "skill_level": 1,
+     "ref": "expr:a04464f0",
+     "prompt": {
+      "ko": "듣고 따라 말하세요.",
+      "en": "Listen and repeat."
+     },
+     "stimulus": {
+      "text": {
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine."
+      },
+      "audio": {
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine."
+      }
+     ]
+    },
+    {
+     "id": "S5-12",
+     "type": "LISTEN_BUILD",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "듣기",
+     "skill_level": 3,
+     "ref": "expr:0e57ea3d",
+     "prompt": {
+      "ko": "듣고 문장을 만드세요.",
+      "en": "Listen and build the sentence."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Would you like a bag?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "tiles": [
+      {
+       "ko": "봉투",
+       "roman": "bongtu",
+       "en": "plastic bag"
+      },
+      {
+       "ko": "드릴까요?",
+       "roman": "deurilkkayo?",
+       "en": "Would you like ~? (offering)"
+      },
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      },
+      {
+       "ko": "가세요.",
+       "roman": "gaseyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Would you like a bag?"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S6",
+   "order": 6,
+   "items": [
+    {
+     "id": "S6-01",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "patt:b3d9256a",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___로 할게요.",
+      "roman": "___ro halgeyo.",
+      "en": "I'll pay by card."
+     },
+     "tiles": [
+      {
+       "ko": "카드",
+       "roman": "kadeu",
+       "en": "card"
+      },
+      {
+       "ko": "삼천",
+       "roman": "samcheon",
+       "en": "three thousand"
+      },
+      {
+       "ko": "원",
+       "roman": "won",
+       "en": "won (Korean money)"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "카드",
+       "roman": "kadeu",
+       "en": "card"
+      }
+     ]
+    },
+    {
+     "id": "S6-02",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "expr:0e57ea3d",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "영수증 ___",
+      "roman": "yeongsujeung ___",
+      "en": "Would you like a receipt?"
+     },
+     "tiles": [
+      {
+       "ko": "드릴까요?",
+       "roman": "deurilkkayo?",
+       "en": "Would you like ~? (offering)"
+      },
+      {
+       "ko": "주세요.",
+       "roman": "juseyo."
+      },
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "드릴까요?",
+       "roman": "deurilkkayo?",
+       "en": "Would you like ~? (offering)"
+      }
+     ]
+    },
+    {
+     "id": "S6-03",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "level": 4,
+     "skill": "쓰기",
+     "skill_level": 3,
+     "ref": "voca:5d8be8cf",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "warm"
+     },
+     "answers": [
+      {
+       "ko": "따뜻하다",
+       "roman": "ttatteuthada",
+       "en": "warm"
+      }
+     ]
+    },
+    {
+     "id": "S6-04",
+     "type": "WORD_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "expr:ee4a4712",
+     "prompt": {
+      "ko": "문장을 만드세요.",
+      "en": "Build the sentence."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "Thank you. Goodbye."
+     },
+     "tiles": [
+      {
+       "ko": "감사합니다.",
+       "roman": "gamsahamnida."
+      },
+      {
+       "ko": "안녕히",
+       "roman": "annyeonghi",
+       "en": "in peace, safely"
+      },
+      {
+       "ko": "가세요.",
+       "roman": "gaseyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Goodbye."
+      }
+     ]
+    },
+    {
+     "id": "S6-05",
+     "type": "TRANSLATE_TO_EN",
+     "mode": "choice",
+     "event": "R",
+     "level": 1,
+     "skill": "읽기",
+     "skill_level": 1,
+     "ref": "expr:ee4a4712",
+     "prompt": {
+      "ko": "무슨 뜻인가요?",
+      "en": "What does this mean?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "안녕히 가세요.",
+       "roman": "annyeonghi gaseyo."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "Sure, here you go.",
+       "roman": "Sure, here you go.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "Goodbye. (to someone leaving)",
+       "roman": "Goodbye. (to someone leaving)",
+       "en": "Goodbye. (to someone leaving)",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "No thanks. / I'm fine.",
+       "roman": "No thanks. / I'm fine.",
+       "en": "No thanks. / I'm fine.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "No, I don't need the receipt.",
+       "roman": "No, I don't need the receipt.",
+       "en": "No, I don't need the receipt.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S6-06",
+     "type": "SPEAK_WORD",
+     "mode": "speech",
+     "event": "R",
+     "level": 4,
+     "skill": "말하기",
+     "skill_level": 2,
+     "ref": "voca:be2eb7e3",
+     "prompt": {
+      "ko": "그림을 보고 말하세요.",
+      "en": "Say the word for the picture."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_brief": "card - 한 컷으로 알아볼 수 있게",
+      "image_url": "content/images/items/card.jpg"
+     },
+     "answers": [
+      {
+       "ko": "카드",
+       "roman": "kadeu",
+       "en": "card"
+      }
+     ]
+    },
+    {
+     "id": "S6-07",
+     "type": "WORD_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:5d8be8cf",
+     "prompt": {
+      "ko": "문장을 만드세요.",
+      "en": "Build the sentence."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "Warm water, please."
+     },
+     "tiles": [
+      {
+       "ko": "따뜻한",
+       "roman": "ttatteuthan"
+      },
+      {
+       "ko": "물",
+       "roman": "mul",
+       "en": "water"
+      },
+      {
+       "ko": "주세요.",
+       "roman": "juseyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please."
+      }
+     ]
+    },
+    {
+     "id": "S6-08",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "level": 4,
+     "skill": "쓰기",
+     "skill_level": 3,
+     "ref": "voca:e70ba1ce",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "water"
+     },
+     "answers": [
+      {
+       "ko": "물",
+       "roman": "mul",
+       "en": "water"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S7",
+   "order": 7,
+   "items": [
+    {
+     "id": "S7-01",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "expr:a04464f0",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "봉투 드릴까요?",
+      "roman": "bongtu deurilkkayo?",
+      "en": "Would you like a bag?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「아니요, 괜찮아요.」라고 해요.",
+       "en": "Here you say \"No, I'm fine.\"."
+      }
+     }
+    },
+    {
+     "id": "S7-02",
+     "type": "WORD_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "읽기",
+     "skill_level": 3,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "문장을 만드세요.",
+      "en": "Build the sentence."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "No, I don't need the receipt."
+     },
+     "tiles": [
+      {
+       "ko": "아니요,",
+       "roman": "aniyo,"
+      },
+      {
+       "ko": "영수증은",
+       "roman": "yeongsujeungeun"
+      },
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt."
+      }
+     ]
+    },
+    {
+     "id": "S7-03",
+     "type": "REPLY_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 2,
+     "ref": "voca:be2eb7e3",
+     "prompt": {
+      "ko": "뭐라고 대답할까요?",
+      "en": "How do you reply?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "삼천 원입니다.",
+       "roman": "samcheon wonimnida.",
+       "en": "That's three thousand won."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「카드로 할게요.」라고 해요.",
+       "en": "Here you say \"I'll pay by card.\"."
+      }
+     }
+    },
+    {
+     "id": "S7-04",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "영수증 드릴까요?",
+      "roman": "yeongsujeung deurilkkayo?",
+      "en": "Would you like a receipt?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「아니요, 영수증은 괜찮아요.」라고 해요.",
+       "en": "Here you say \"No, I don't need the receipt.\"."
+      }
+     }
+    },
+    {
+     "id": "S7-05",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "읽기",
+     "skill_level": 2,
+     "ref": "voca:5d8be8cf",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "차가운 물 말고 따뜻한 물을 사고 싶다.",
+      "roman": "chagaun mul malgo ttatteuthan mureul sago sipda.",
+      "en": "You want warm water, not a cold one."
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "아니요, 영수증은 괜찮아요.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+       "en": "No, I don't need the receipt.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「따뜻한 물 주세요.」라고 해요.",
+       "en": "Here you say \"Warm water, please.\"."
+      },
+      "wrong": {
+       "ko": "이번에는 차가운 물 말고 따뜻한 물을 사고 싶어서 「아니요, 괜찮아요.」는 안 맞아요.",
+       "en": "This time you want warm water, not a cold one, so \"No, I'm fine.\" does not fit."
+      },
+      "wrong_option": "o1"
+     }
+    }
+   ]
+  },
+  {
+   "id": "S8",
+   "order": 8,
+   "items": [
+    {
+     "id": "S8-01",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "voca:e70ba1ce",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Have a nice day.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like the receipt?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S8-02",
+     "type": "TRANSLATE_TO_EN",
+     "mode": "choice",
+     "event": "R",
+     "level": 1,
+     "skill": "읽기",
+     "skill_level": 1,
+     "ref": "voca:5d8be8cf",
+     "prompt": {
+      "ko": "무슨 뜻인가요?",
+      "en": "What does this mean?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "따뜻하다",
+       "roman": "ttatteuthada"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "card",
+       "roman": "card",
+       "en": "card",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "receipt",
+       "roman": "receipt",
+       "en": "receipt",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "cash",
+       "roman": "cash",
+       "en": "cash",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "warm",
+       "roman": "warm",
+       "en": "warm",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S8-03",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "level": 4,
+     "skill": "쓰기",
+     "skill_level": 3,
+     "ref": "expr:a04464f0",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "No thanks. / I'm fine."
+     },
+     "answers": [
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
+      },
+      {
+       "ko": "괜찮아요",
+       "roman": "gwaenchanayo"
+      }
+     ]
+    },
+    {
+     "id": "S8-04",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "expr:0e57ea3d",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Would you like a bag?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "네, 여기 있어요.",
+       "roman": "ne, yeogi isseoyo.",
+       "en": "Sure, here you go.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like the receipt?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Do you need a bag?",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S8-05",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "level": 4,
+     "skill": "쓰기",
+     "skill_level": 2,
+     "ref": "expr:0e57ea3d",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "드릴까요",
+       "roman": "deurilkkayo"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "드릴까요",
+       "roman": "deurilkkayo"
+      }
+     ]
+    },
+    {
+     "id": "S8-06",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "level": 4,
+     "skill": "쓰기",
+     "skill_level": 3,
+     "ref": "voca:289ede0e",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "won (Korean money)"
+     },
+     "answers": [
+      {
+       "ko": "원",
+       "roman": "won",
+       "en": "won (Korean money)"
+      }
+     ]
+    },
+    {
+     "id": "S8-07",
+     "type": "SPEAK_WORD",
+     "mode": "speech",
+     "event": "R",
+     "level": 4,
+     "skill": "말하기",
+     "skill_level": 2,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "그림을 보고 말하세요.",
+      "en": "Say the word for the picture."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_brief": "receipt - 한 컷으로 알아볼 수 있게",
+      "image_url": "content/images/items/receipt.jpg"
+     },
+     "answers": [
+      {
+       "ko": "영수증",
+       "roman": "yeongsujeung",
+       "en": "receipt"
+      }
+     ]
+    },
+    {
+     "id": "S8-08",
+     "type": "TRANSLATE_TO_EN",
+     "mode": "choice",
+     "event": "R",
+     "level": 1,
+     "skill": "읽기",
+     "skill_level": 1,
+     "ref": "voca:c5cd4239",
+     "prompt": {
+      "ko": "무슨 뜻인가요?",
+      "en": "What does this mean?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "봉투",
+       "roman": "bongtu"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "card",
+       "roman": "card",
+       "en": "card",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "plastic bag",
+       "roman": "plastic bag",
+       "en": "plastic bag",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "juice",
+       "roman": "juice",
+       "en": "juice",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "cash",
+       "roman": "cash",
+       "en": "cash",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S8-09",
+     "type": "LISTEN_BUILD",
+     "mode": "tiles",
+     "event": "R",
+     "level": 3,
+     "skill": "듣기",
+     "skill_level": 3,
+     "ref": "expr:ee4a4712",
+     "prompt": {
+      "ko": "듣고 문장을 만드세요.",
+      "en": "Listen and build the sentence."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Goodbye."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "tiles": [
+      {
+       "ko": "감사합니다.",
+       "roman": "gamsahamnida."
+      },
+      {
+       "ko": "안녕히",
+       "roman": "annyeonghi",
+       "en": "in peace, safely"
+      },
+      {
+       "ko": "가세요.",
+       "roman": "gaseyo."
+      },
+      {
+       "ko": "할게요.",
+       "roman": "halgeyo."
+      },
+      {
+       "ko": "있어요.",
+       "roman": "isseoyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Goodbye."
+      }
+     ]
+    },
+    {
+     "id": "S8-10",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "level": 4,
+     "skill": "쓰기",
+     "skill_level": 3,
+     "ref": "voca:c5cd4239",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_url": "",
+      "en": "plastic bag"
+     },
+     "answers": [
+      {
+       "ko": "봉투",
+       "roman": "bongtu",
+       "en": "plastic bag"
+      }
+     ]
+    },
+    {
+     "id": "S8-11",
+     "type": "TRANSLATE_TO_EN",
+     "mode": "choice",
+     "event": "R",
+     "level": 1,
+     "skill": "읽기",
+     "skill_level": 1,
+     "ref": "voca:be2eb7e3",
+     "prompt": {
+      "ko": "무슨 뜻인가요?",
+      "en": "What does this mean?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "카드",
+       "roman": "kadeu"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "receipt",
+       "roman": "receipt",
+       "en": "receipt",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "warm",
+       "roman": "warm",
+       "en": "warm",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "card",
+       "roman": "card",
+       "en": "card",
+       "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "water",
+       "roman": "water",
+       "en": "water",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S8-12",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "level": 2,
+     "skill": "듣기",
+     "skill_level": 1,
+     "ref": "voca:fe376448",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like a receipt?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "봉투 드릴까요?",
+       "roman": "bongtu deurilkkayo?",
+       "en": "Do you need a bag?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "영수증 드릴까요?",
+       "roman": "yeongsujeung deurilkkayo?",
+       "en": "Would you like the receipt?",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "카드로 할게요.",
+       "roman": "kadeuro halgeyo.",
+       "en": "I'll pay by card.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "따뜻한 물 주세요.",
+       "roman": "ttatteuthan mul juseyo.",
+       "en": "Warm water, please.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S8-13",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "level": 4,
+     "skill": "쓰기",
+     "skill_level": 2,
+     "ref": "voca:be2eb7e3",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "카드로",
+       "roman": "kadeuro"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "카드로",
+       "roman": "kadeuro"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "CULT",
+   "order": 9,
+   "items": [
+    {
+     "id": "CULT-01",
+     "type": "CULTURE_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "context": {
+      "ko": "편의점 봉투",
+      "roman": "pyeonuijeom bongtu",
+      "en": "Bags at the convenience store"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "한국 편의점에서 봉투는 보통 따로 돈을 내고 사요. 계산할 때 점원이 봉투가 필요한지 물어볼 수도 있어요. 그래서 물건 하나만 살 때는 봉투 없이 들고 가는 사람이 많아요.",
+       "roman": "hanguk pyeonuijeomeseo bongtuneun botong ttaro doneul naego sayo. gyesanhal ttae jeomwoni bongtuga piryohanji mureobol sudo isseoyo. geuraeseo mulgeon hanaman sal ttaeneun bongtu eopsi deulgo ganeun sarami manayo.",
+       "en": "At Korean convenience stores, bags usually cost a little extra. The clerk may ask whether you need one when you pay. So many people just carry a single item out by hand."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "feedback": {
+      "correct": {
+       "ko": "봉투가 필요 없으면 「아니요, 괜찮아요」라고 하면 돼요.",
+       "en": "If you don't need one, just say \"No, I'm fine.\""
+      }
+     }
+    },
+    {
+     "id": "CULT-02",
+     "type": "CULTURE_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "context": {
+      "ko": "카드로 계산하기",
+      "roman": "kadeuro gyesanhagi",
+      "en": "Paying by card"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "한국은 거의 모든 가게에서 카드를 받아요. 편의점에서는 물 한 병처럼 작은 물건도 카드로 계산하는 사람이 많아요. 카드는 직원에게 건네기도 하고, 계산대 단말기에 직접 꽂기도 해요.",
+       "roman": "hangugeun geoui modeun gageeseo kadeureul badayo. pyeonuijeomeseoneun mul han byeongcheoreom jageun mulgeondo kadeuro gyesanhaneun sarami manayo. kadeuneun jigwonege geonnegido hago, gyesandae danmalgie jikjeop kkotgido haeyo.",
+       "en": "Almost every shop in Korea takes cards. At convenience stores, people pay by card even for something as small as a bottle of water. You either hand the card to the clerk or insert it into the terminal yourself."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "feedback": {
+      "correct": {
+       "ko": "「카드로 할게요」라고 말하고 카드를 건네면 돼요.",
+       "en": "Say \"I'll pay by card\" and hand over your card."
+      }
+     }
+    },
+    {
+     "id": "CULT-03",
+     "type": "CULTURE_CARD",
+     "mode": "card",
+     "event": "E",
+     "level": 0,
+     "skill": "노출",
+     "skill_level": 0,
+     "context": {
+      "ko": "원 플러스 원(1+1)",
+      "roman": "won peulleoseu won(1+1)",
+      "en": "One plus one (1+1)"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "편의점 진열대에는 「1+1」, 「2+1」 스티커가 붙은 물건이 많아요. 하나를 사면 하나를 더 주는 행사예요. 읽을 때는 「원 플러스 원」이라고 해요.",
+       "roman": "pyeonuijeom jinyeoldaeeneun 「1+1」, 「2+1」 seutikeoga buteun mulgeoni manayo. hanareul samyeon hanareul deo juneun haengsayeyo. ilgeul ttaeneun 「won peulleoseu won」irago haeyo.",
+       "en": "Convenience store shelves are full of items with \"1+1\" or \"2+1\" stickers. Buy one and you get one more free. People read it out as \"one plus one.\""
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "feedback": {
+      "correct": {
+       "ko": "행사 물건은 개수만 맞춰 계산대에 가져가면 돼요.",
+       "en": "Just bring the right number of promo items to the counter."
+      }
+     }
+    },
+    {
+     "id": "CULT-04",
+     "type": "CULTURE_CHECK",
+     "mode": "choice",
+     "event": "R",
+     "level": 1,
+     "skill": "읽기",
+     "skill_level": 1,
+     "prompt": {
+      "ko": "맞는 것을 고르세요.",
+      "en": "Pick the right one."
+     },
+     "context": {
+      "ko": "한국 편의점에서 봉투는 어떨까요?",
+      "roman": "hanguk pyeonuijeomeseo bongtuneun eotteolkkayo?",
+      "en": "What should you know about bags at Korean convenience stores?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "봉투에 이름을 써야 해요.",
+       "roman": "bongtue ireumeul sseoya haeyo.",
+       "en": "You have to write your name on the bag.",
+       "correct": false,
+       "why_wrong": "카드에 적힌 사실과 다르다"
+      },
+      {
+       "id": "o2",
+       "ko": "봉투는 보통 따로 돈을 내요.",
+       "roman": "bongtuneun botong ttaro doneul naeyo.",
+       "en": "Bags usually cost extra.",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "봉투가 있어야 계산할 수 있어요.",
+       "roman": "bongtuga isseoya gyesanhal su isseoyo.",
+       "en": "You can't pay without a bag.",
+       "correct": false,
+       "why_wrong": "카드에 적힌 사실과 다르다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "봉투는 보통 따로 사요. 필요 없으면 「아니요, 괜찮아요」라고 하면 돼요.",
+       "en": "Bags are usually sold separately. If you don't need one, say \"No, I'm fine.\""
+      }
+     }
+    },
+    {
+     "id": "CULT-05",
+     "type": "CULTURE_CHECK",
+     "mode": "choice",
+     "event": "R",
+     "level": 1,
+     "skill": "읽기",
+     "skill_level": 1,
+     "prompt": {
+      "ko": "맞는 것을 고르세요.",
+      "en": "Pick the right one."
+     },
+     "context": {
+      "ko": "한국 편의점에서 물 한 병을 살 때 카드는 어떨까요?",
+      "roman": "hanguk pyeonuijeomeseo mul han byeongeul sal ttae kadeuneun eotteolkkayo?",
+      "en": "Can you pay by card for just one bottle of water?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "작은 물건도 카드로 계산할 수 있어요.",
+       "roman": "jageun mulgeondo kadeuro gyesanhal su isseoyo.",
+       "en": "Yes, even small items can go on a card.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "큰 물건만 카드로 계산할 수 있어요.",
+       "roman": "keun mulgeonman kadeuro gyesanhal su isseoyo.",
+       "en": "Only large purchases can go on a card.",
+       "correct": false,
+       "why_wrong": "카드에 적힌 사실과 다르다"
+      },
+      {
+       "id": "o3",
+       "ko": "편의점에서는 현금만 받아요.",
+       "roman": "pyeonuijeomeseoneun hyeongeumman badayo.",
+       "en": "Convenience stores take cash only.",
+       "correct": false,
+       "why_wrong": "카드에 적힌 사실과 다르다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "한국은 거의 모든 가게가 카드를 받아요. 작은 물건도 카드로 계산해요.",
+       "en": "Almost every shop takes cards, even for small items."
+      }
+     }
+    },
+    {
+     "id": "CULT-06",
+     "type": "CULTURE_CHECK",
+     "mode": "choice",
+     "event": "R",
+     "level": 1,
+     "skill": "읽기",
+     "skill_level": 1,
+     "prompt": {
+      "ko": "맞는 것을 고르세요.",
+      "en": "Pick the right one."
+     },
+     "context": {
+      "ko": "물병에 「1+1」 스티커가 붙어 있으면 무슨 뜻일까요?",
+      "roman": "mulbyeonge 「1+1」 seutikeoga buteo isseumyeon museun tteusilkkayo?",
+      "en": "What does a \"1+1\" sticker on a water bottle mean?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "한 사람이 하나만 살 수 있어요.",
+       "roman": "han sarami hanaman sal su isseoyo.",
+       "en": "Only one per customer.",
+       "correct": false,
+       "why_wrong": "카드에 적힌 사실과 다르다"
+      },
+      {
+       "id": "o2",
+       "ko": "하나를 사면 하나를 더 줘요.",
+       "roman": "hanareul samyeon hanareul deo jwoyo.",
+       "en": "Buy one, get one free.",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "오늘 처음 들어온 물건이에요.",
+       "roman": "oneul cheoeum deureoon mulgeonieyo.",
+       "en": "It just arrived today.",
+       "correct": false,
+       "why_wrong": "카드에 적힌 사실과 다르다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "「1+1」은 하나를 사면 하나를 더 주는 행사예요.",
+       "en": "\"1+1\" means buy one, get one free."
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "RP",
+   "order": 10,
+   "items": [
+    {
+     "id": "RP-01",
+     "type": "ROLEPLAY_TURN",
+     "mode": "either",
+     "event": "R",
+     "level": 5,
+     "skill": "말하기",
+     "skill_level": 3,
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "봉투 드릴까요?",
+      "roman": "bongtu deurilkkayo?",
+      "en": "Would you like a bag?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "아니요, 괜찮아요.",
+       "roman": "aniyo, gwaenchanayo.",
+       "en": "No, I'm fine."
+      },
+      "audio_url": "",
+      "image_url": "content/images/u01-water/pre-6.jpg"
+     },
+     "tiles": [
+      {
+       "ko": "아니요,",
+       "roman": "aniyo,"
+      },
+      {
+       "ko": "괜찮아요.",
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
       }
      ],
      "answers": [
@@ -3101,7 +4783,7 @@
        },
        {
         "tile": "괜찮아요.",
-        "en": "It's okay."
+        "en": "No thanks. / I'm fine."
        }
       ],
       "accepted_answers": [
@@ -3112,7 +4794,28 @@
       "modes": [
        "speech",
        "tiles"
-      ]
+      ],
+      "lead": [
+       {
+        "speaker": "점원",
+        "line": {
+         "ko": "봉투 드릴까요?",
+         "roman": "bongtu deurilkkayo?",
+         "en": "Would you like a bag?"
+        },
+        "audio_url": ""
+       }
+      ],
+      "reask": {
+       "speaker": "점원",
+       "line": {
+        "ko": "네?",
+        "roman": "ne?",
+        "en": "Sorry?"
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -3120,6 +4823,9 @@
      "type": "ROLEPLAY_TURN",
      "mode": "either",
      "event": "R",
+     "level": 5,
+     "skill": "말하기",
+     "skill_level": 3,
      "prompt": {
       "ko": "뭐라고 말할까요?",
       "en": "What do you say?"
@@ -3136,7 +4842,7 @@
        "en": "I'll pay by card."
       },
       "audio_url": "",
-      "image_url": ""
+      "image_url": "content/images/u01-water/pre-6.jpg"
      },
      "tiles": [
       {
@@ -3185,7 +4891,28 @@
       "modes": [
        "speech",
        "tiles"
-      ]
+      ],
+      "lead": [
+       {
+        "speaker": "점원",
+        "line": {
+         "ko": "삼천 원입니다.",
+         "roman": "samcheon wonimnida.",
+         "en": "That's three thousand won."
+        },
+        "audio_url": ""
+       }
+      ],
+      "reask": {
+       "speaker": "점원",
+       "line": {
+        "ko": "네?",
+        "roman": "ne?",
+        "en": "Sorry?"
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     },
     {
@@ -3193,6 +4920,9 @@
      "type": "ROLEPLAY_TURN",
      "mode": "either",
      "event": "R",
+     "level": 5,
+     "skill": "말하기",
+     "skill_level": 3,
      "prompt": {
       "ko": "뭐라고 말할까요?",
       "en": "What do you say?"
@@ -3205,11 +4935,11 @@
      "stimulus": {
       "text": {
        "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
        "en": "No, I don't need the receipt."
       },
       "audio_url": "",
-      "image_url": ""
+      "image_url": "content/images/u01-water/pre-6.jpg"
      },
      "tiles": [
       {
@@ -3218,17 +4948,18 @@
       },
       {
        "ko": "영수증은",
-       "roman": "yeongsujeueun"
+       "roman": "yeongsujeungeun"
       },
       {
        "ko": "괜찮아요.",
-       "roman": "gwaenchanayo."
+       "roman": "gwaenchanayo.",
+       "en": "No thanks. / I'm fine."
       }
      ],
      "answers": [
       {
        "ko": "아니요, 영수증은 괜찮아요.",
-       "roman": "aniyo, yeongsujeueun gwaenchanayo.",
+       "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
        "en": "No, I don't need the receipt."
       }
      ],
@@ -3256,7 +4987,7 @@
        },
        {
         "tile": "괜찮아요.",
-        "en": "It's okay."
+        "en": "No thanks. / I'm fine."
        }
       ],
       "accepted_answers": [
@@ -3267,25 +4998,80 @@
       "modes": [
        "speech",
        "tiles"
-      ]
+      ],
+      "lead": [
+       {
+        "speaker": "점원",
+        "line": {
+         "ko": "영수증 드릴까요?",
+         "roman": "yeongsujeung deurilkkayo?",
+         "en": "Would you like a receipt?"
+        },
+        "audio_url": ""
+       }
+      ],
+      "reask": {
+       "speaker": "점원",
+       "line": {
+        "ko": "네?",
+        "roman": "ne?",
+        "en": "Sorry?"
+       },
+       "audio_url": ""
+      },
+      "player_audio_url": ""
      }
     }
-   ]
+   ],
+   "scene": {
+    "background_image_url": "content/images/u01-water/pre-6.jpg",
+    "counterpart": "점원",
+    "closing": [
+     {
+      "speaker": "점원",
+      "line": {
+       "ko": "감사합니다. 안녕히 가세요.",
+       "roman": "gamsahamnida. annyeonghi gaseyo.",
+       "en": "Thank you. Goodbye."
+      },
+      "audio_url": ""
+     }
+    ],
+    "closing_image_url": "content/images/u01-water/rp-end.jpg",
+    "retry": {
+     "hint_after_misses": 1,
+     "reveal_after_misses": 2
+    }
+   }
   }
  ],
+ "completion": {
+  "requires": [
+   "S1",
+   "S2",
+   "S3",
+   "S4",
+   "S5",
+   "S6",
+   "S7",
+   "S8",
+   "CULT",
+   "RP"
+  ]
+ },
  "words": [
   {
    "id": "expr:a04464f0",
    "ko": "괜찮아요.",
    "roman": "gwaenchanayo.",
-   "gloss_en": "It's okay.",
+   "gloss_en": "No thanks. / I'm fine.",
    "role": "target"
   },
   {
    "id": "voca:c5cd4239",
    "ko": "봉투",
    "roman": "bongtu",
-   "gloss_en": "envelope",
+   "gloss_en": "plastic bag",
    "grade": "2급",
    "role": "target"
   },
@@ -3306,6 +5092,31 @@
    "role": "target"
   },
   {
+   "id": "expr:0e57ea3d",
+   "ko": "드릴까요?",
+   "roman": "deurilkkayo?",
+   "gloss_en": "Would you like ~? (offering)",
+   "role": "target",
+   "use": "counterpart"
+  },
+  {
+   "id": "voca:289ede0e",
+   "ko": "원",
+   "roman": "won",
+   "gloss_en": "won (Korean money)",
+   "grade": "1급",
+   "role": "target",
+   "use": "counterpart"
+  },
+  {
+   "id": "expr:ee4a4712",
+   "ko": "안녕히 가세요.",
+   "roman": "annyeonghi gaseyo.",
+   "gloss_en": "Goodbye. (to someone leaving)",
+   "role": "target",
+   "use": "counterpart"
+  },
+  {
    "id": "voca:5d8be8cf",
    "ko": "따뜻하다",
    "roman": "ttatteuthada",
@@ -3324,17 +5135,18 @@
    "example_roman": "mul juseyo."
   },
   {
-   "id": "expr:0e57ea3d",
-   "ko": "드릴까요?",
-   "roman": "deurilkkayo?",
-   "gloss_en": "Shall we give you that?",
-   "role": "exposure"
-  },
-  {
    "id": "voca:3ad94910",
    "ko": "삼천",
    "roman": "samcheon",
    "gloss_en": "three thousand",
+   "role": "exposure"
+  },
+  {
+   "id": "voca:fbdf81c0",
+   "ko": "안녕히",
+   "roman": "annyeonghi",
+   "gloss_en": "in peace, safely",
+   "grade": "1급",
    "role": "exposure"
   },
   {

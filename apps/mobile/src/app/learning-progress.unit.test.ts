@@ -12,6 +12,8 @@ import {
 } from "./learning-progress";
 import type { JourneyProgressState } from "./learning-progress";
 
+const defaultCompletion = () => ["RP"];
+
 const empty: JourneyProgressState = {
   ...productJourneySeed,
   completedEpisodeIntroIds: [],
@@ -92,14 +94,14 @@ describe("LP3 파생 수", () => {
   });
 
   test("트로피는 모든 항목을 끝낸 에피소드 수다", () => {
-    expect(trophyCountFrom(journeyMapSections, empty)).toBe(0);
-    const trophies = trophyCountFrom(journeyMapSections, full);
+    expect(trophyCountFrom(journeyMapSections, empty, defaultCompletion)).toBe(0);
+    const trophies = trophyCountFrom(journeyMapSections, full, defaultCompletion);
     expect(trophies).toBeGreaterThanOrEqual(1);
     expect(trophies).toBeLessThanOrEqual(journeyMapSections.length);
   });
 
   test("트로피는 최종 테스트를 통과한 카탈로그 에피소드마다 하나씩 는다", () => {
-    const base = trophyCountFrom(journeyMapSections, full);
+    const base = trophyCountFrom(journeyMapSections, full, defaultCompletion);
     const lessonsOnly = { ...full, catalogProgress: { "u01-water": ["intro", "S1", "S9"] } };
     const onePassed = { ...full, catalogProgress: { "u01-water": ["intro", "RP"] } };
     const twoPassed = {
@@ -107,9 +109,22 @@ describe("LP3 파생 수", () => {
       catalogProgress: { "u01-water": ["RP"], "u02-checkin": ["RP"], "u03-mina": ["intro"] },
     };
 
-    expect(trophyCountFrom(journeyMapSections, lessonsOnly)).toBe(base);
-    expect(trophyCountFrom(journeyMapSections, onePassed)).toBe(base + 1);
-    expect(trophyCountFrom(journeyMapSections, twoPassed)).toBe(base + 2);
+    expect(trophyCountFrom(journeyMapSections, lessonsOnly, defaultCompletion)).toBe(base);
+    expect(trophyCountFrom(journeyMapSections, onePassed, defaultCompletion)).toBe(base + 1);
+    expect(trophyCountFrom(journeyMapSections, twoPassed, defaultCompletion)).toBe(base + 2);
+  });
+});
+
+describe("LPF 트로피의 카탈로그 몫", () => {
+  test("LPF1. 완료 키 해석기가 정한 키를 모두 끝낸 에피소드만 센다", () => {
+    const progress = { "u01-water": ["RP"], "u02-checkin": ["S1", "RP"] };
+    const state = { ...full, catalogProgress: progress };
+    const base = trophyCountFrom(journeyMapSections, full, defaultCompletion);
+    const strictForA = (episodeId: string) => (episodeId === "u01-water" ? ["S1", "RP"] : ["RP"]);
+
+    expect(trophyCountFrom(journeyMapSections, state, strictForA)).toBe(base + 1);
+    expect(trophyCountFrom(journeyMapSections, state, defaultCompletion)).toBe(base + 2);
+    expect(trophyCountFrom(journeyMapSections, state, () => ["S1", "CULT", "RP"])).toBe(base);
   });
 });
 

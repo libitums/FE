@@ -11,9 +11,11 @@ import type {
   DecodeIssueCode,
   DialogueLine,
   EpisodeCut,
+  ItemEvent,
   Option,
   Stimulus,
   Text,
+  TurnTile,
   Word,
 } from "./episode-content.model";
 
@@ -54,6 +56,34 @@ export function toText(wire: WireText): Text {
   return { ko: wire.ko, ...maybe("roman", wire.roman), ...maybe("en", wire.en) };
 }
 
+type WireItemCommon = {
+  id: string;
+  event: ItemEvent;
+  ref?: string | undefined;
+  level?: number | undefined;
+  skill?: string | undefined;
+  skill_level?: number | undefined;
+};
+
+/** 모든 문항이 함께 갖는 키 — 값이 없으면 키를 싣지 않습니다. */
+export function itemBaseOf(item: WireItemCommon) {
+  return {
+    id: item.id,
+    event: item.event,
+    ...maybe("ref", nonEmpty(item.ref)),
+    ...maybe("level", item.level),
+    ...maybe("skill", nonEmpty(item.skill)),
+    ...maybe("skillLevel", item.skill_level),
+  };
+}
+
+/** TURN_ORDER 타일 — 화자가 있으면 싣습니다. */
+export function toTurnTile(
+  wire: WireText & { speaker?: TurnTile["speaker"] | undefined },
+): TurnTile {
+  return { ...toText(wire), ...maybe("speaker", wire.speaker) };
+}
+
 export const toTexts = (wires: WireText[]): Text[] => wires.map(toText);
 export const optText = (wire: WireText | undefined): Text | undefined =>
   wire === undefined ? undefined : toText(wire);
@@ -75,6 +105,7 @@ export type WireStimulus = {
   image_brief?: string | undefined;
   audio_url?: string | undefined;
   image_url?: string | undefined;
+  en?: string | undefined;
 };
 
 export function toStimulus(wire: WireStimulus): Stimulus {
@@ -84,6 +115,7 @@ export function toStimulus(wire: WireStimulus): Stimulus {
     ...maybe("imageBrief", wire.image_brief),
     ...maybe("audioUrl", nonEmpty(wire.audio_url)),
     ...maybe("imageUrl", nonEmpty(wire.image_url)),
+    ...maybe("en", nonEmpty(wire.en)),
   };
 }
 

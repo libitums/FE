@@ -9,7 +9,7 @@ import type { SentenceOrderQuestion } from "./sentence-order-questions";
 // `ui` 계층: 대화 조립(E-3) — 대화 순서 문항(`dialogue`)은 지시문 말풍선 없이 정답 순서의 칸마다
 // 화자가 번갈아(짝수 칸 = 상대 · 홀수 칸 = 나) 말풍선으로 섭니다. 타일을 누르면 다음 빈 칸에 그 화자
 // 모양으로 들어가고, 놓은 말풍선을 누르면 되돌아갑니다. 채점은 기존 문장 순서와 같습니다.
-// 문항은 계획 모듈이 내는 꼴로 손으로 세웠습니다.
+// 문항은 계획 모듈이 내는 꼴로 손으로 세웠습니다. 칸의 화자는 문항 데이터(`dialogue.speakers`)에서 옵니다.
 
 // 정답 대화: 0 네, 여권 좀 보여주세요. / 1 여권 여기 있어요. / 2 며칠 묵으시죠? / 3 일주일 묵어요.
 // 창고 순서는 정답 순서가 아닙니다 — 칩 인덱스 3 · 2 · 0 · 1 순으로 놓아야 맞습니다.
@@ -18,7 +18,7 @@ const turns: SentenceOrderQuestion = {
   chips: ["며칠 묵으시죠?", "일주일 묵어요.", "여권 여기 있어요.", "네, 여권 좀 보여주세요."],
   answerOrder: [3, 2, 0, 1],
   instruction: "Put the conversation in order.",
-  dialogue: true,
+  dialogue: { speakers: ["counterpart", "me", "counterpart", "me"] },
 };
 
 const plain: SentenceOrderQuestion = {
@@ -144,6 +144,75 @@ test("UD5. 말풍선은 화자와 순서를 낭독하고 빈 칸도 화자와 �
   );
   expect(slot(1)).toHaveAttribute("accessibility-traits", "button");
   expect(dialogueSpeaker).toEqual({ counterpart: "Partner", me: "You" });
+});
+
+test("USO1. 데이터가 나부터 말하게 하면 첫 칸이 나 모양이고 빈 칸 낭독도 나다", () => {
+  const meFirst: SentenceOrderQuestion = {
+    ...turns,
+    dialogue: { speakers: ["me", "counterpart", "me", "counterpart"] },
+  };
+  mount([meFirst]);
+  const { dialogueSpeaker, dialogueEmptyTurn } = uiCopyEn.sentenceOrder;
+
+  expect([0, 1, 2, 3].map(speakerOf)).toEqual(["me", "counterpart", "me", "counterpart"]);
+  expect(slot(0).getAttribute("class") ?? "").toContain("-bubble-me");
+  expect(slot(1).getAttribute("class") ?? "").toContain("-bubble-counterpart");
+  expect(slot(0)).toHaveAttribute("accessibility-label", dialogueEmptyTurn(dialogueSpeaker.me, 1));
+
+  tapChip(3);
+  expect(speakerOf(0)).toBe("me");
+  expect(slot(0)).toHaveTextContent("네, 여권 좀 보여주세요.");
+});
+
+test("USO3. 칸 수는 speakers 길이이고 같은 화자가 연이어 서는 칸도 데이터대로 선다", () => {
+  const three: SentenceOrderQuestion = {
+    prompt: "대화 순서대로 놓으세요.",
+    chips: ["B", "C", "A"],
+    answerOrder: [2, 0, 1],
+    instruction: "Put the conversation in order.",
+    dialogue: { speakers: ["me", "me", "counterpart"] },
+  };
+  mount([three]);
+  const { dialogueSpeaker, dialogueTurn, dialogueEmptyTurn } = uiCopyEn.sentenceOrder;
+
+  expect([0, 1, 2].map(speakerOf)).toEqual(["me", "me", "counterpart"]);
+  expect(slot(1)).toHaveAttribute("accessibility-label", dialogueEmptyTurn(dialogueSpeaker.me, 2));
+  expect(screen.queryByTestId("sentence-order-dialogue-slot-3")).not.toBeInTheDocument();
+
+  tapChip(2);
+  tapChip(0);
+  expect(slot(0)).toHaveTextContent("A");
+  expect(slot(1)).toHaveTextContent("B");
+  expect(speakerOf(1)).toBe("me");
+  expect(slot(1).getAttribute("class") ?? "").toContain("-bubble-me");
+  expect(slot(1)).toHaveAttribute("accessibility-label", dialogueTurn(dialogueSpeaker.me, 2, "B"));
+  expect(slot(2)).toHaveAttribute("data-filled", "false");
+
+  fireEvent.tap(slot(1), {});
+  expect(slot(1)).toHaveAttribute("data-filled", "false");
+  expect(chip(0)).toHaveTextContent("B");
+});
+
+test("USO4. 채점은 화자와 무관하게 answerOrder 기준이다", () => {
+  const onFinish = vi.fn<(results: readonly AnswerResult[], skippedCount: number) => void>();
+  const meFirst: SentenceOrderQuestion = {
+    ...turns,
+    dialogue: { speakers: ["me", "me", "counterpart", "counterpart"] },
+  };
+  mount([meFirst, meFirst], onFinish);
+
+  for (const index of meFirst.answerOrder) tapChip(index);
+  tapAction();
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
+  tapAction();
+
+  for (const index of [...meFirst.answerOrder].reverse()) tapChip(index);
+  tapAction();
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "incorrect");
+  tapAction();
+  tapAction();
+
+  expect(onFinish).toHaveBeenCalledWith(["correct", "incorrect"], 0);
 });
 
 test("UD6. 대화 순서가 아닌 문항은 한 활동 안에서도 기존 말풍선 모양을 그대로 쓴다", () => {

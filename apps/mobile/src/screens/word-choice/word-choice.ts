@@ -176,3 +176,11 @@ export function wordChoiceSessionResults(
 export function wordChoiceCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
   return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
 }
+
+/**
+ * 빈칸 문항의 낭독 문장입니다 — 밑줄 줄(`___`)은 보조기술 기본 설정에서 읽히지 않아 빈칸이 사라진
+ * 문장으로 들립니다. 밑줄 둘 이상을 앞뒤 낱말과 떼어 `blank` 낱말로 바꿉니다(최종 테스트 빈칸과 같은 낱말).
+ */
+export function wordChoiceSpokenText(text: string, blank: string): string {
+  return text.replace(/_{2,}/g, ` ${blank} `).replace(/\s+/g, " ").trim();
+}

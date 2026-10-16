@@ -30,6 +30,25 @@ describe("episode-remote", () => {
   ])("R3. 상대 경로가 아니면 null (%s)", (_name, relative) => {
     expect(resolveContentUrlSafe(BASE, relative)).toBeNull();
   });
+
+  // 콘텐츠가 버킷 이름을 붙여 적은 경로(`content/images/…`)도 같은 파일을 가리킨다 — 기준이 이미 버킷이다.
+  test.each([
+    ["content/images/u01-water/pre-1.jpg", "images/u01-water/pre-1.jpg"],
+    ["content/images/items/bag.jpg", "images/items/bag.jpg"],
+    ["content/audio/u01-water/d-01.m4a", "audio/u01-water/d-01.m4a"],
+  ])("R4. 선두 버킷 이름 조각 %s는 한 번 떼고 붙인다", (relative, stripped) => {
+    expect(resolveContentUrlSafe(BASE, relative)).toBe(`${BASE}${stripped}`);
+  });
+
+  test("R5. 버킷 이름 조각만 있으면 null, 조각은 한 번만 뗀다", () => {
+    expect(resolveContentUrlSafe(BASE, "content/")).toBeNull();
+    expect(resolveContentUrlSafe(BASE, "content/content/x.jpg")).toBe(`${BASE}content/x.jpg`);
+    expect(resolveContentUrlSafe(BASE, "contents/x.jpg")).toBe(`${BASE}contents/x.jpg`);
+  });
+
+  test("R6. 버킷 이름 조각을 뗀 뒤에도 상위 조각은 null", () => {
+    expect(resolveContentUrlSafe(BASE, "content/../x")).toBeNull();
+  });
 });
 
 describe("fetchContentText", () => {

@@ -178,6 +178,7 @@ function ready(episodeId: string, ordinal: number, title: string): CatalogMapSec
     title,
     lessonKeys: catalogLessonKeys,
     finalKey: "RP",
+    completionKeys: ["RP"],
   };
 }
 

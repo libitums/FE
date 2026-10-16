@@ -15,6 +15,7 @@ import {
   canCheckArrangement,
   canPlaceChip,
   composedSentence,
+  dialogueSpeakersOf,
   initialSentenceOrderSessionState,
   isSentenceOrderSessionComplete,
   sentenceOrderAnnouncement,
@@ -200,9 +201,9 @@ export function SentenceOrderActivity({
                 questionCount={questions.length}
                 testId="sentence-order-screen-complete"
               />
-            ) : question.dialogue === true ? (
+            ) : question.dialogue !== undefined ? (
               <SentenceOrderDialogue
-                slotCount={question.answerOrder.length}
+                speakers={dialogueSpeakersOf(question)}
                 chips={question.chips}
                 placedChipIndexes={state.placedChipIndexes}
                 locked={state.phase === "checked"}

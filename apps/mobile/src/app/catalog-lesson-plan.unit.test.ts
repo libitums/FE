@@ -4,7 +4,7 @@ import { join, relative, resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
 import type { AnswerResult } from "../lib/answer-result";
-import { bundledCatalogInput } from "../lib/episode-bundled";
+import { legacyCatalogInput } from "../lib/episode-legacy.test-support";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearningItem, Option, Text } from "../lib/episode-content.model";
@@ -32,7 +32,7 @@ import type { EpisodeContent } from "./episode-content";
 type ReadyEntry = Extract<CatalogEntry, { status: "ready" }>;
 
 const realCatalog = buildEpisodeCatalog({
-  bundled: bundledCatalogInput,
+  bundled: legacyCatalogInput,
   cache: { manifest: null, episodes: {} },
 });
 
@@ -407,7 +407,7 @@ describe("catalogItemOf — 문장 순서", () => {
       answerOrder: number[];
       prompt: string;
       instruction: string;
-      dialogue?: true;
+      dialogue?: { speakers: string[] };
       support?: unknown;
     };
 
@@ -416,7 +416,9 @@ describe("catalogItemOf — 문장 순서", () => {
       item.answer.map((index) => item.tiles[index]?.ko),
     );
     expect(question.chips).not.toEqual(item.tiles.map((tile) => tile.ko));
-    expect(question.dialogue).toBe(true);
+    expect(question.dialogue).toEqual({
+      speakers: item.answer.map((_, at) => (at % 2 === 0 ? "counterpart" : "me")),
+    });
     expect(question.support).toBeUndefined();
     expect(question.instruction).toBe(item.prompt.en);
   });

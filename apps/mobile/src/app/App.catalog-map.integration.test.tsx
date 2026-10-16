@@ -471,11 +471,14 @@ test("I4. (AC6) 본문 없는 넷째 에피소드는 준비 중 구획으로 서
   expect(refreshed[0]).toMatchObject({ manifest: "unchanged", fetchedCount: "1" });
 });
 
+// 새 완료 규칙은 completion.requires 전부를 끝내야 에피소드 완료입니다 — u03의 완료 키 전부를 시드로 씁니다.
+const u03CompletedKeys = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"];
+
 test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」으로 보이고 대사를 누르면 로마자로 바뀐다", async () => {
   const manifest = remoteManifestText();
   const { releaseBodies } = await boot({
     seed: tutorialDoneSeed,
-    load: { ...tutorialDoneSnapshot, catalogProgress: { "u03-mina": ["RP"] } },
+    load: { ...tutorialDoneSnapshot, catalogProgress: { "u03-mina": u03CompletedKeys } },
     preStore: { [CONTENT_MANIFEST_KEY]: manifest },
     serve: { manifest, episodes: { "u04-x": u04Text } },
     holdBodies: true,
@@ -522,7 +525,7 @@ test("I6b. (AC5) 이미지 경로가 비어 있는 컷은 이미지 요소 없�
   const manifest = remoteManifestText();
   const { releaseBodies } = await boot({
     seed: tutorialDoneSeed,
-    load: { ...tutorialDoneSnapshot, catalogProgress: { "u03-mina": ["RP"] } },
+    load: { ...tutorialDoneSnapshot, catalogProgress: { "u03-mina": u03CompletedKeys } },
     preStore: { [CONTENT_MANIFEST_KEY]: manifest },
     serve: { manifest, episodes: { "u04-x": u04Text } },
     holdBodies: true,

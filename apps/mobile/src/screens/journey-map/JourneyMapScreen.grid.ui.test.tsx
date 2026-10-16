@@ -98,6 +98,7 @@ describe("JourneyMapScreen 줄 결선", () => {
       title: "Alley",
       lessonKeys: catalogLessonKeys,
       finalKey: "RP",
+      completionKeys: ["RP"],
     },
     {
       kind: "catalog-unavailable",

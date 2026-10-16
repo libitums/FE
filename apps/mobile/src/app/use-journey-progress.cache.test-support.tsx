@@ -45,7 +45,7 @@ export function signIn(user: string) {
   });
 }
 function Harness() {
-  env.progress = useJourneyProgress(productJourneySeed, []);
+  env.progress = useJourneyProgress(productJourneySeed, [], () => ["RP"]);
   useProgressLoadEvents(env.progress.progressLoadPhase, (event) => env.events.push(event));
   return null;
 }

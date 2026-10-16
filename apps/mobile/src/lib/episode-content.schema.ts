@@ -6,11 +6,23 @@ import "background-only";
 //
 // 백그라운드 전용입니다. zod는 메인 스레드 번들에 실리지 않습니다 — 첫 줄의
 // `background-only`가 메인 스레드 import를 빌드 오류로 막습니다(`posthog-client.ts` 선례).
-// `src/` 안에서 zod를 import하는 파일은 이 하나뿐이어야 합니다(unit 테스트가 고정).
+// `src/` 안에서 zod를 import하는 파일은 콘텐츠 스키마 셋(이 파일 · `schema-parts` · `schema-items`)과
+// 매니페스트 스키마뿐이어야 합니다(unit 테스트가 고정).
 import { z } from "zod/mini";
+import {
+  correctFeedbackSchema,
+  itemCommon,
+  optionalString,
+  optionSchema,
+  optionsSchema,
+  promptSchema,
+  stimulusSchema,
+  textSchema,
+} from "./episode-content.schema-parts";
+import { ADDED_ITEM_TYPES, addedItemSchemas } from "./episode-content.schema-items";
 
-/** 문항 `type`의 닫힌 목록 — 계약 문서 §7.2의 13종, 이 순서. */
-export const KNOWN_ITEM_TYPES = [
+/** 문항 `type`의 닫힌 목록 — 13종, 이 순서. */
+const BASE_ITEM_TYPES = [
   "VOCAB_CARD",
   "CLOZE",
   "IMG_MATCH",
@@ -26,41 +38,8 @@ export const KNOWN_ITEM_TYPES = [
   "ROLEPLAY_TURN",
 ] as const;
 
-const optionalString = z.optional(z.string());
-
-/** 컷 · 대화 · tiles · answers 등 — 관찰에서 `en`이 없던 자리도 있으나 있으면 보존합니다. */
-const textSchema = z.object({
-  ko: z.string(),
-  roman: z.string(),
-  en: optionalString,
-});
-
-/** `prompt`만 로마자가 없고 영어가 필수입니다. */
-const promptSchema = z.object({ ko: z.string(), en: z.string() });
-
-const optionSchema = z.object({
-  id: z.string(),
-  ko: z.string(),
-  roman: z.string(),
-  en: optionalString,
-  correct: z.boolean(),
-  why_wrong: optionalString,
-});
-
-/** 정답(`correct === true`)이 정확히 하나여야 합니다. 디코더가 이 message로 코드를 고릅니다. */
-const optionsSchema = z.array(optionSchema).check(
-  z.refine((options) => options.filter((option) => option.correct).length === 1, {
-    message: "option-correct-count",
-  }),
-);
-
-const stimulusSchema = z.object({
-  audio: z.optional(textSchema),
-  text: z.optional(textSchema),
-  image_brief: optionalString,
-  audio_url: optionalString,
-  image_url: optionalString,
-});
+/** 문항 `type`의 닫힌 목록 — 앞 13종 + 2026-10-15에 더한 11종, 이 순서. */
+export const KNOWN_ITEM_TYPES = [...BASE_ITEM_TYPES, ...ADDED_ITEM_TYPES] as const;
 
 const cutCommon = {
   index: z.int(),
@@ -99,19 +78,20 @@ const dialogueLineSchema = z.object({
   textbook: z.optional(textSchema),
 });
 
-const itemCommon = {
-  id: z.string(),
-  mode: z.string(),
-  event: z.enum(["E", "R"]),
-  ref: optionalString,
-};
+/** TURN_ORDER 타일 — 2026-10-15부터 `speaker`가 실려 옵니다(없는 옛 데이터도 받습니다). */
+const turnTileSchema = z.object({
+  ko: z.string(),
+  roman: z.string(),
+  en: optionalString,
+  speaker: z.optional(z.enum(["counterpart", "player"])),
+});
 
 const itemSchema = z.discriminatedUnion("type", [
   z.object({
     ...itemCommon,
     type: z.literal("VOCAB_CARD"),
     context: textSchema,
-    example: textSchema,
+    example: z.optional(textSchema),
     card_kind: z.string(),
   }),
   z.object({
@@ -133,6 +113,7 @@ const itemSchema = z.discriminatedUnion("type", [
     ...itemCommon,
     type: z.literal("WORD_ORDER"),
     prompt: promptSchema,
+    stimulus: z.optional(stimulusSchema),
     tiles: z.array(textSchema),
     answers: z.array(textSchema),
   }),
@@ -149,7 +130,7 @@ const itemSchema = z.discriminatedUnion("type", [
     type: z.literal("TURN_ORDER"),
     prompt: promptSchema,
     context: textSchema,
-    tiles: z.array(textSchema),
+    tiles: z.array(turnTileSchema),
     answers: z.array(textSchema),
   }),
   z.object({
@@ -160,7 +141,7 @@ const itemSchema = z.discriminatedUnion("type", [
     options: optionsSchema,
     feedback: z.object({
       correct: z.object({ ko: z.string(), en: optionalString }),
-      wrong: z.optional(z.object({ ko: z.string() })),
+      wrong: z.optional(z.object({ ko: z.string(), en: optionalString })),
       wrong_option: optionalString,
     }),
   }),
@@ -168,6 +149,7 @@ const itemSchema = z.discriminatedUnion("type", [
     ...itemCommon,
     type: z.literal("TRANSLATE_TO_KO"),
     prompt: promptSchema,
+    stimulus: z.optional(stimulusSchema),
     answers: z.array(textSchema),
   }),
   z.object({
@@ -208,12 +190,13 @@ const itemSchema = z.discriminatedUnion("type", [
     stimulus: stimulusSchema,
     tiles: z.array(textSchema).check(z.minLength(1)),
     answers: z.array(textSchema).check(z.minLength(1)),
-    feedback: z.object({ correct: z.object({ ko: z.string(), en: optionalString }) }),
+    feedback: correctFeedbackSchema,
     roleplay: z.object({
       line_id: z.string(),
       tiles_gloss: z.array(z.object({ tile: z.string(), en: optionalString })),
     }),
   }),
+  ...addedItemSchemas,
 ]);
 
 const stepSchema = z.object({
@@ -252,6 +235,7 @@ export const deliveryEpisodeSchema = z.object({
   dialogue: z.array(dialogueLineSchema),
   post_cuts: z.array(cutSchema),
   steps: z.array(stepSchema),
+  completion: z.optional(z.object({ requires: z.array(z.string()) })),
   words: z.array(wordSchema),
   patterns: z.array(patternSchema),
 });
@@ -265,3 +249,5 @@ export type DeliveryStep = z.infer<typeof stepSchema>;
 export type DeliveryWord = z.infer<typeof wordSchema>;
 export type DeliveryPattern = z.infer<typeof patternSchema>;
 export type DeliveryEpisodeV2 = z.infer<typeof deliveryEpisodeSchema>;
+export type DeliveryCompletion = NonNullable<DeliveryEpisodeV2["completion"]>;
+export type DeliveryAddedItem = Extract<DeliveryItem, { type: (typeof ADDED_ITEM_TYPES)[number] }>;

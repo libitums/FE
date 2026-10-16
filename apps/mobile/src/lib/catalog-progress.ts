@@ -1,5 +1,5 @@
 // 카탈로그 에피소드의 진행 — 에피소드 id → 끝낸 유닛 키 목록입니다(ADR-0035 적용 기록 2026-10-12).
-// 유닛 키는 표지 "intro" 또는 스텝 id(S1 … S9 · 최종 테스트 "RP")입니다. 순수 함수만 둡니다.
+// 유닛 키는 표지 "intro" 또는 콘텐츠 단계 id(지금 S1 … S8 · CULT · 최종 테스트 "RP")입니다. 순수 함수만 둡니다.
 
 export type CatalogUnitKey = string;
 export type CatalogProgress = Readonly<Record<string, readonly CatalogUnitKey[]>>;
@@ -72,13 +72,28 @@ export function markCatalogUnitDone(
   return { ...progress, [episodeId]: [...(ownUnits(progress, episodeId) ?? []), unit] };
 }
 
-/** 최종 테스트(RP)를 통과했는가 — 다음 에피소드가 열리는 조건입니다. */
-export function isCatalogEpisodePassed(progress: CatalogProgress, episodeId: string): boolean {
-  return isCatalogUnitDone(progress, episodeId, CATALOG_FINAL_KEY);
+/** 완료 조건이 없는 에피소드의 완료 키 — 최종 테스트 하나(지금 규칙). */
+export const DEFAULT_CATALOG_COMPLETION: readonly CatalogUnitKey[] = [CATALOG_FINAL_KEY];
+
+/** 에피소드 id → 그 에피소드의 완료 키. 콘텐츠를 모르는 id는 `DEFAULT_CATALOG_COMPLETION`. */
+export type CatalogCompletionKeysOf = (episodeId: string) => readonly CatalogUnitKey[];
+
+/** 완료 키가 모두 끝났는가. 키가 비면 `DEFAULT_CATALOG_COMPLETION`으로 봅니다. 자기 속성만 읽습니다. */
+export function isCatalogEpisodeComplete(
+  progress: CatalogProgress,
+  episodeId: string,
+  completionKeys: readonly CatalogUnitKey[],
+): boolean {
+  const keys = completionKeys.length === 0 ? DEFAULT_CATALOG_COMPLETION : completionKeys;
+  return keys.every((key) => isCatalogUnitDone(progress, episodeId, key));
 }
 
-/** 최종 테스트(RP)를 통과한 에피소드 수입니다 — 트로피에 더합니다. */
-export function passedCatalogEpisodeCount(progress: CatalogProgress): number {
-  return Object.keys(progress).filter((episodeId) => isCatalogEpisodePassed(progress, episodeId))
-    .length;
+/** `progress`의 에피소드 중 완료인 수 — 트로피에 더합니다. */
+export function completedCatalogEpisodeCount(
+  progress: CatalogProgress,
+  completionKeysOf: CatalogCompletionKeysOf,
+): number {
+  return Object.keys(progress).filter((episodeId) =>
+    isCatalogEpisodeComplete(progress, episodeId, completionKeysOf(episodeId)),
+  ).length;
 }

@@ -9,6 +9,7 @@ import { KNOWN_ITEM_TYPES } from "./episode-content.schema";
 
 // `integration` 계층: 디스크의 실제 에피소드 JSON 바이트 → `JSON.parse` → `decodeEpisode`를
 // 이어서 봅니다 (ADR-0006 D4). 외부 IO 대체 없음 — 픽스처는 콘텐츠의 바이트 사본입니다.
+// 이 파일의 픽스처는 옛 형식 내장본(2026-10-14)입니다 — 새 형식 내장본은 따로 봅니다.
 // 케이스 단위 합성 입력은 같은 모듈의 unit 테스트가 맡고, 여기서는 실제 파일 경계에서만
 // 드러나는 것(13종 타입 합집합 · 전수 순회 · 미해결 ref 23개)을 봅니다.
 
@@ -40,7 +41,7 @@ const raws = new Map<string, string>();
 const decoded = new Map<string, DecodeResult>();
 
 function pathOf(file: string): string {
-  return resolve(process.cwd(), "content/episodes", `${file}.json`);
+  return resolve(process.cwd(), "content/test-fixtures/delivery-2-2026-10-14", `${file}.json`);
 }
 
 function episodeOf(file: string): Episode {
@@ -156,14 +157,14 @@ describe.each(FIXTURES)("에피소드 픽스처 $file", (fixture) => {
 });
 
 describe("에피소드 픽스처 합집합", () => {
-  test("I4. 세 파일의 문항 type 합집합이 닫힌 13종과 같다", () => {
+  test("I4. 세 파일의 문항 type 합집합이 닫힌 목록의 앞 13종과 같다", () => {
     const types = new Set<string>();
     for (const { file } of FIXTURES) {
       for (const item of allItems(episodeOf(file))) {
         types.add(item.type);
       }
     }
-    expect(types).toEqual(new Set<string>(KNOWN_ITEM_TYPES));
+    expect(types).toEqual(new Set<string>(KNOWN_ITEM_TYPES.slice(0, 13)));
     expect(types.size).toBe(13);
   });
 });

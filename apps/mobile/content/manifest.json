@@ -1,35 +1,35 @@
 {
   "schema": "manifest-1",
-  "generated_at": "2026-10-12T00:00:00Z",
+  "generated_at": "2026-10-16T00:00:00Z",
   "episodes": [
     {
       "id": "u01-water",
       "order": 1,
-      "title": "익선동 골목 어귀 편의점",
+      "title": "물 사기",
       "schema": "delivery-2",
-      "version": "2026-10-14.1",
-      "sha256": "56cc484dce9dfa05410ff1dce696e47abe4091452b873cdd81e5c5f16ae48c94",
-      "bytes": 79485,
+      "version": "2026-10-16.1",
+      "sha256": "8318e0dab44c4ff94fb904eaa92175b9df70a0cd4f7feb1d84e4402a7b487ff1",
+      "bytes": 126449,
       "url": "episodes/u01-water.json"
     },
     {
       "id": "u02-checkin",
       "order": 2,
-      "title": "익선 게스트하우스 프런트",
+      "title": "체크인",
       "schema": "delivery-2",
-      "version": "2026-10-14.1",
-      "sha256": "bfddd0e681d7016c1099f256361a6ae4dc61a87fb74e40dd48d9355750ecbbc6",
-      "bytes": 121908,
+      "version": "2026-10-16.1",
+      "sha256": "b249328f2279c03d803a45b36e693aa39070e2195aee496e9bcbd373ff360cba",
+      "bytes": 160563,
       "url": "episodes/u02-checkin.json"
     },
     {
       "id": "u03-mina",
       "order": 3,
-      "title": "익선 게스트하우스 여성 도미토리",
+      "title": "미나 만나기",
       "schema": "delivery-2",
-      "version": "2026-10-14.1",
-      "sha256": "3015accf92a7190b88efd770a8d961acbc7ef2f095f3601c4e7bf5e96e34f24a",
-      "bytes": 98497,
+      "version": "2026-10-16.1",
+      "sha256": "0694fd2d2c4bc48b156e61c16ab8ae0c4b09c95030df749c6db54a3ad17421a3",
+      "bytes": 155429,
       "url": "episodes/u03-mina.json"
     }
   ]

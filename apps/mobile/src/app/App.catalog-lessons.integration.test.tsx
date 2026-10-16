@@ -28,6 +28,12 @@ import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.c
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { journeySteps } from "../screens/journey-map/journey-map";
 
+// 옛 형식 내장본(2026-10-14)의 흐름을 걷는 테스트입니다 — 내장본 자리를 옛 픽스처로 바꿉니다.
+vi.mock("../lib/episode-bundled", async () => {
+  const legacy = await import("../lib/episode-legacy.test-support");
+  return { bundledCatalogInput: legacy.legacyCatalogInput };
+});
+
 // `integration` 계층: 앱 세션에서 「맵 레슨 노드 → 활동들 → 결과 → 진행 기록 → 다음 노드 열림」과
 // 「최종 테스트 → 결과 → 통과 뒤 컷 → 다음 에피소드 표지」, 이벤트 sink, 실행 안 세션 고정, 그림 실패를
 // 한 트리에서 봅니다. 대역은 경계뿐입니다 — `NativeModules`(저장소 · 시스템 뒤로 · 오디오) ·
@@ -760,7 +766,10 @@ test("L10. 결과의 Try again 뒤 나가면 스택은 맵 하나라 시스템 �
 
 test("L11. (D12) 레슨 도중 갱신이 새 버전을 들여도 화면 · 문항 · 판정 기준은 실행 시작 때 그대로다", async () => {
   const bundledBody = JSON.parse(
-    readFileSync(resolve(process.cwd(), "content/episodes/u01-water.json"), "utf8"),
+    readFileSync(
+      resolve(process.cwd(), "content/test-fixtures/delivery-2-2026-10-14/u01-water.json"),
+      "utf8",
+    ),
   ) as { steps: { id: string; items: unknown[] }[] };
   const body = JSON.stringify({
     ...bundledBody,
@@ -769,7 +778,10 @@ test("L11. (D12) 레슨 도중 갱신이 새 버전을 들여도 화면 · 문�
     ),
   });
   const bundledManifest = JSON.parse(
-    readFileSync(resolve(process.cwd(), "content/manifest.json"), "utf8"),
+    readFileSync(
+      resolve(process.cwd(), "content/test-fixtures/delivery-2-2026-10-14/manifest.json"),
+      "utf8",
+    ),
   ) as { episodes: { id: string }[] } & Record<string, unknown>;
   const manifest = JSON.stringify({
     ...bundledManifest,

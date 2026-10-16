@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogProgress } from "../lib/catalog-progress";
-import { bundledCatalogInput } from "../lib/episode-bundled";
+import { legacyCatalogInput } from "../lib/episode-legacy.test-support";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearningItem } from "../lib/episode-content.model";
@@ -27,7 +27,7 @@ import type { NavAction } from "./nav-state";
 type ReadyEntry = Extract<CatalogEntry, { status: "ready" }>;
 
 const realCatalog = buildEpisodeCatalog({
-  bundled: bundledCatalogInput,
+  bundled: legacyCatalogInput,
   cache: { manifest: null, episodes: {} },
 });
 

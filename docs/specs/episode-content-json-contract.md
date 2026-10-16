@@ -7,6 +7,12 @@
 
 > 이 문서의 「필수 / 선택」은 **세 파일을 전수 측정한 관찰값**이다. `n/N`은 「그 키가 있는 개수 / 전체 개수」.
 > 관찰값은 의도와 다를 수 있다. 다르면 합의 항목에서 가른다. 측정은 전 문항 288개 · 컷 25개 · 대화 34줄 · 단어 38개 · 패턴 4개를 대상으로 했다.
+>
+> ⟨2026-10-16 — 새 형식⟩ **콘텐츠 쪽이 새 형식을 보냈고 내장본이 그것으로 바뀌었다**(같은 `schema: "delivery-2"`, 내장 version `2026-10-15.1`). 위 수치와 아래 본문의 `n/N`은 **옛 세 파일 기준**이고,
+>
+> ⟨2026-10-16 오후 갱신⟩ 같은 날 11:45 버킷 판으로 내장 셋을 한 번 더 바꿨다 — version `2026-10-16.1`. 바뀐 것: 제목이 짧아짐(`물 사기` · `체크인` · `미나 만나기`) · 최상위 `title_en`(앱은 버림) · 그림 경로가 `content/images/…` 꼴(앱이 선두 `content/`를 뗀다) · 모든 소리 자리에 빈 `audio_url` · u03 통과 뒤 컷 1 문장(`백반집` → `식당`). 음성 id는 같은 문장 자리에 다시 붙여 **13개**다 — u03 통과 뒤 컷 1(`u03-mina/post-1`)은 문장이 바뀌어 녹음과 맞는지 확인 전이라 비웠다.
+> 새 세 파일(문항 355 · 컷 25 · 대화 35줄 · 단어 42 · 패턴 5)의 관찰은 각 절의 ⟨2026-10-16⟩ 줄과 §7.2 끝의 「새 형식」 표가 진다. 옛 세 파일은 테스트 픽스처
+> `apps/mobile/content/test-fixtures/delivery-2-2026-10-14/`로 바이트 그대로 남았다. 앱이 새 형식을 받는 결정은 [ADR-0065](../adr/0065-episode-format-additions.md)이 진다.
 
 ## 0. 용어 대응 — 파일의 이름과 앱의 이름
 
@@ -17,7 +23,8 @@
 | 파일 하나 (`unit_id`) | **에피소드** 하나 | | 키 이름이 `unit_id`지만 에피소드다 → Q1 |
 | `title` | 에피소드 제목 | | |
 | `pre_cuts` | 첫 자리 **표지**(`episode-intro`) | 없음 | 컷을 차례로 읽는 특별 유닛 |
-| `steps[]` 중 `S1` ~ `S9` | 가운데 **일반 학습 유닛** 하나씩 | 있음 | 유닛 하나 = 스텝 하나. `items`가 그 유닛의 문항 |
+| `steps[]` 중 `S1` ~ `S9` | 가운데 **일반 학습 유닛** 하나씩 | 있음 | 유닛 하나 = 스텝 하나. `items`가 그 유닛의 문항. ⟨2026-10-16 — 새 형식⟩ `S1` ~ `S8`과 문화 단계 `CULT`. `CULT`도 일반 학습 유닛 하나다(맵의 `Lesson 9`) → §6 |
+| `completion` ⟨2026-10-16 — 새 형식⟩ | 에피소드 **완료 조건** | | 끝내야 할 스텝 id 목록. 앱은 이것이 모두 끝나야 에피소드를 완료로 본다(없으면 `RP` 하나) → §2 |
 | `steps[]` 중 `RP` | 마지막 자리 **최종 테스트**(`episode-final`) | 있음 | **콘텐츠 쪽 수정 중** — 모양 미확정. ⟨2026-10-13⟩ 앱은 지금 모양을 **엄격하게** 읽어 새 화면 `catalog-final`로 그린다 → §7.4 · §12 |
 | `post_cuts` | 최종 테스트 **통과 뒤** 진행 화면 | 없음 | ⟨2026-10-13⟩ 최종 테스트를 통과한 결과 화면 뒤에 선다(맵에 노드 없음) → §12 |
 | `dialogue` | 에피소드의 본 대화 | | TURN_ORDER · ROLE_LINE · RP가 이 줄을 가리킨다 |
@@ -45,11 +52,13 @@
 | `pre_cuts` | 필수 | Cut[] | 4 ~ 6개. 표지 |
 | `dialogue` | 필수 | DialogueLine[] | 8 ~ 13줄 |
 | `post_cuts` | 필수 | Cut[] | 3 ~ 4개. 최종 테스트 통과 뒤 |
-| `steps` | 필수 | Step[] | 9개 고정 = 학습 유닛 8 + 최종 테스트 1 |
-| `words` | 필수 | Word[] | 10 ~ 15개 |
-| `patterns` | 필수 | Pattern[] | 1 ~ 2개 |
+| `steps` | 필수 | Step[] | 9개 고정 = 학습 유닛 8 + 최종 테스트 1 ⟨2026-10-16 — 새 형식⟩ **10개** = 학습 유닛 8 + 문화 단계 1 + 최종 테스트 1(세 파일 같음 — §6) |
+| `words` | 필수 | Word[] | 10 ~ 15개 ⟨새 형식⟩ 13 ~ 15개 |
+| `patterns` | 필수 | Pattern[] | 1 ~ 2개 ⟨새 형식⟩ 1 ~ 3개 |
+| `completion` ⟨2026-10-16 — 새 형식⟩ | **선택** | `{ requires: string[] }` | 옛 파일 0/3 · 새 파일 3/3. `requires` = `["S1" … "S8", "CULT", "RP"]`(셋 같음). 앱은 **목록의 스텝이 모두 끝나야 에피소드 완료**로 보고(트로피 · 다음 에피소드 표지), 키가 없으면 `["RP"]`로 본다. 목록이 비었거나 `steps[].id`에 없는 값(`"intro"` 포함)을 가리키면 그 에피소드 전체가 디코드 실패(`completion-malformed`)다. 중복은 앞의 것만 남긴다 — [ADR-0065](../adr/0065-episode-format-additions.md) D5 · D6 |
 
 없는 것: 에피소드 **순서**, 버전, 콘텐츠 해시. 식별자는 있지만 이름이 `unit_id`다. → §10, 합의 Q1.
+⟨2026-10-16 — 새 형식⟩ 최상위에 `completion` 하나가 더해졌다. 그 밖의 최상위 키는 같다.
 
 ## 3. 공통 텍스트 객체
 
@@ -81,6 +90,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 - `speaker` 값: `낯선 사람` · `미나` · `사장님` · `앞손님` · `점원` · `플레이어`. 자유 문자열이고 `counterpart`와 일치하지 않는 경우가 있다(u02: `counterpart: 정윤경`, 컷 speaker: `사장님`). `플레이어`는 앱이 `Me`로 그린다(비주얼 노벨 `speakerRole: self`와 같은 자리).
 - 두 배열은 모양이 같고 **자리만 다르다**. 표지는 D11에 따라 끝내기 전까지 뒤를 잠그고, 통과 뒤 화면은 RP 통과가 조건이다. 조건은 앱이 쥔다(§12).
 - `image_url`은 25/25 채워져 있고 전부 `images/<unit_id>/<pre|post>-<index>.jpg` 상대 경로.
+- ⟨2026-10-16⟩ 경로는 `content` 버킷 기준 상대 경로다. 버킷 이름을 붙인 `content/images/…`도 받는다 — 앱이 선두 `content/` 조각을 한 번 떼고 같은 파일로 푼다(그림 · 음성 · 본문 공통, `resolveContentUrlSafe`). 2026-10-16 버킷 업로드가 이 꼴로 바뀌었다.
 - ⟨2026-10-14⟩ **선택 키 `audio_url`**(세 종류 공통 — 대화와 같은 이름, 값은 URL이 아니라 부록 C의 **음성 id**). 없음 · 빈 문자열은 소리 없음이다. 내장본에서 10/25 채움(u01 2 · u02 4 · u03 4 — `image_url` 바로 뒤에 둔다). 앱은 컷이 서면 그 소리를 한 번 재생한다([ADR-0060](../adr/0060-episode-voice-remote-audio.md) D5). 모르는 키를 버리는 옛 앱은 그대로 디코드한다.
 
 ## 5. 본 대화 (`dialogue`) — 에피소드 하나의 전체 대화
@@ -90,10 +100,12 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `seq` | 필수 | 1부터 연속 |
 | `role` | 필수 | `"counterpart" \| "player"` |
 | `text` | 필수 | Text(en 필수) |
-| `audio_url` | 필수 키 | **34/34 빈 문자열** ⟨2026-10-14⟩ 내장본 7/34 채움 — u01 seq 1 ~ 5 · u02 seq 1 · u03 seq 1(부록 C id). 최종 테스트가 `line_id`로 찾아 재생한다([ADR-0060](../adr/0060-episode-voice-remote-audio.md) D6) |
+| `audio_url` | 필수 키 | **34/34 빈 문자열** ⟨2026-10-14⟩ 내장본 7/34 채움 — u01 seq 1 ~ 5 · u02 seq 1 · u03 seq 1(부록 C id). 최종 테스트가 `line_id`로 찾아 재생한다([ADR-0060](../adr/0060-episode-voice-remote-audio.md) D6) ⟨2026-10-16 — 새 형식⟩ 원본은 35/35 빈 값, 내장본 7/35(같은 줄) |
 | `textbook` | 선택 (1/34) | 교과서체 변형(u03 seq 4: 「반가워요」→「반갑습니다」) |
 
 - 엄격히 번갈아 나오지 않는다(u01 seq 6 → 7 둘 다 player). FE는 교대를 가정하지 않는다.
+  ⟨2026-10-16 — 새 형식⟩ u01에 seq 7 「감사합니다. 안녕히 가세요.」(counterpart)가 끼어 대화가 9줄이 됐고(옛 seq 7 · 8 → 8 · 9) **세 파일 모두 엄격히 번갈아 나온다.** FE는 여전히 교대를 가정하지 않는다.
+  `ko`가 바뀐 줄은 이 하나뿐이고, 그 밖에는 로마자만 고쳐졌다(ㅇ 받침 표기 등). 새 줄은 녹음이 없다(부록 C).
 - 세 에피소드 모두 counterpart로 시작한다.
 - `{이름}` · `{나라}` 자리표시자가 player 줄에 들어 있다. → 합의 Q14.
 
@@ -101,14 +113,17 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 
 | 키 | 필수 | 관찰 |
 |---|---|---|
-| `id` | 필수 | 세 에피소드 모두 `S1, S3, S4, S5, S6, S7, S8, S9, RP` — **S2 없음** |
-| `order` | 필수 | 1 ~ 9 연속 |
-| `items` | 필수 | 3 ~ 19개 |
+| `id` | 필수 | 세 에피소드 모두 `S1, S3, S4, S5, S6, S7, S8, S9, RP` — **S2 없음** ⟨2026-10-16 — 새 형식⟩ 세 에피소드 모두 **`S1, S2, S3, S4, S5, S6, S7, S8, CULT, RP`** — 이름이 다시 매겨졌다(옛 `S3`과 새 `S3`은 다른 스텝이다) |
+| `order` | 필수 | 1 ~ 9 연속 ⟨새 형식⟩ 1 ~ 10 연속(`CULT` 9 · `RP` 10) |
+| `items` | 필수 | 3 ~ 19개 ⟨새 형식⟩ 3 ~ 20개(`CULT`는 셋 다 6) |
 
 - `S1` ~ `S9`는 가운데 일반 학습 유닛 하나씩, `RP`는 마지막 자리 최종 테스트다(§0). 맵은 이 순서대로 노드를 그린다.
 - 문항 `id`는 항상 `<step.id>-<2자리>`이고 에피소드 안에서 유일하다.
 - 스텝별 문항 타입 구성은 세 에피소드가 거의 같다(S1 카드·CLOZE·IMG_MATCH, S3·S5 듣기·역할·순서, S6 받아쓰기, S8 역할·문장 만들기, S9 복습 혼합, RP 롤플레이). 이것이 **규칙인지 우연인지**는 합의 Q5. 규칙이면 에피소드마다 유닛 수가 8 + 1로 고정된다.
 - **`RP`는 콘텐츠 쪽이 수정 중**(이미지 등 타입 추가). §7.4와 Q2 · Q15 · Q16은 수정본이 오면 다시 측정한다.
+- ⟨2026-10-16 — 새 형식⟩ **스텝 구성이 열 개로 바뀌었다** — `S1` ~ `S8` · 문화 단계 `CULT`(문화 카드 `CULTURE_CARD` · 문화 확인 `CULTURE_CHECK`만) · `RP`. 앱은 `"RP"`만 특별히 보고
+  **`CULT`를 이름으로 가르지 않는다** — `order`대로 아홉째 학습 유닛(`Lesson 9`)이다. 지금 `CULT`의 문항은 앱에 화면이 없어 전부 건너뛰므로 `CULT`는 누르면 곧장 끝나는 유닛이다(§12 · ADR-0065 D7 · D10).
+  옛 스텝 id로 기기에 남은 진행(`S9` 등)은 옮기지 않는다 — 새 콘텐츠에 없는 id는 세지 않는다. 구성 표는 부록 B.
 
 ## 7. 문항 (`steps[].items[]`)
 
@@ -120,8 +135,12 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `type` | 필수 | 아래 13종 |
 | `mode` | 필수 | `card \| tiles \| choice \| typing \| match \| either`. **타입이 정하면 mode는 1:1로 따라온다**(예외 없음) |
 | `event` | 필수 | `"E"`(노출) `\| "R"`(회상). E는 VOCAB_CARD(28/28) · CLOZE(4/41) · LISTEN_SELECT(3/37)에만 |
-| `ref` | 필수 키 | `voca:` 190 · `patt:` 72 · `expr:` 13. **ROLEPLAY_TURN 13개는 빈 문자열** |
-| `prompt` | VOCAB_CARD 빼고 필수 | `{ko, en}` |
+| `ref` | 필수 키 | `voca:` 190 · `patt:` 72 · `expr:` 13. **ROLEPLAY_TURN 13개는 빈 문자열** ⟨2026-10-16 — 새 형식⟩ **선택**이다 — `ROLEPLAY_TURN` 13 · `CULTURE_CARD` 9 · `CULTURE_CHECK` 9 · `LISTEN_SELECT` 2에 키가 없다. 앱은 지금처럼 선택으로 받는다 |
+| `prompt` | VOCAB_CARD 빼고 필수 | `{ko, en}` ⟨새 형식⟩ `CULTURE_CARD`에도 없다 |
+| `level` · `skill` · `skill_level` ⟨2026-10-16 — 새 형식⟩ | 선택 | 새 파일 355/355 · 옛 파일 0. `level` · `skill_level`은 정수, `skill`은 문자열 — 지금 값은 `노출` · `듣기` · `말하기` · `쓰기` · `읽기` 다섯이다. **앱은 디코드만 하고 쓰지 않으며 `skill`을 열거하지 않는다**(값이 늘어도 거부하지 않는다 — ADR-0065 D3) |
+
+⟨2026-10-16 — 새 형식⟩ `type`은 **24종**(새 11종 — 아래 §7.2 끝)이고 새 파일에는 그 가운데 22종이 있다(`PAIR_MATCH` · `SENT_BUILD`는 새 파일에 없다). `event`에 **`"D"`**(`MIN_PAIR_AB` 6)가 더해졌다 —
+앱의 `event`는 여전히 닫힌 목록이라 모르는 값이 오면 그 에피소드가 `invalid-shape`로 실패한다. `mode`에는 **`speech`**(`SHADOW` · `SPEAK_WORD`)가 더해졌다 — 앱은 `mode`를 문자열로 받고 쓰지 않는다. 「타입이 정하면 mode는 1:1」은 새 파일에서도 성립한다.
 
 ### 7.2 타입별 필드 (13종, 288문항)
 
@@ -154,11 +173,46 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 - 뜻 조회는 **그 에피소드 파일의 `words[]`만** 본다 — `patterns`는 보지 않고 다른 에피소드의 낱말도 보지 않는다(Q4와 같은 전제). 지금 데이터의 카드 28장은 전부 자기 `words[]`에서 뜻을 찾는다.
 - 뜻 열(짝 맞추기)은 앱이 섞는다(Q20과 같은 결정적 섞기). 낱말 열은 파일 순서다.
 
+⟨2026-10-16 — 새 형식⟩ **새 11종**(새 세 파일 전수 관찰 — 앱은 「관찰에서 전부 있으면 필수, 일부면 선택」으로 받는다. 공통 필드는 §7.1, 앱의 처리 결정은 [ADR-0065](../adr/0065-episode-format-additions.md) D8).
+
+| type | n | mode | event | 필수(전부 있음) | 선택(일부만) | 앱 처리 |
+|---|---|---|---|---|---|---|
+| `CLOZE_CHOICE` | 4 | choice | R | `prompt` · `context`(`ko`에 `___`) · `options` · `answers` · `feedback.correct` | `answers[].en` | 단어 선택 — 보기는 `options` 파일 순서 그대로 |
+| `REPLY_SELECT` | 16 | choice | R | `prompt` · `stimulus`(`audio: Text` · `audio_url` · `image_url`) · `options` · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.audio`(상대 말). 소리 없이 글로 보인다 |
+| `MIN_PAIR_AB` | 6 | choice | **D** | `prompt` · `stimulus`(`audio` …) · `options`(2개) · `feedback.correct` | `stimulus.audio.en`(1/6) | 듣기 모양이지만 문항 음성이 없어 건너뜀(`audio-missing`) |
+| `PARTICLE_FILL` | 6 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(2개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(빈칸 문장) |
+| `PARTICLE_SWAP` | 9 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(3개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(틀린 구) |
+| `CULTURE_CHECK` | 9 | choice | R | `prompt` · `context` · `options` · `feedback.correct` | — (`ref` 없음) | 건너뜀(`screen-pending` — 문화 카드와 함께 화면이 선다) |
+| `CULTURE_CARD` | 9 | card | E | `context` · `stimulus`(`text` …) · `feedback.correct` | — (`prompt` · `ref` 없음) | 건너뜀(`screen-pending`) |
+| `LISTEN_BUILD` | 13 | tiles | R | `prompt` · `stimulus`(`audio` …) · `tiles`(오답 조각 포함) · `answers` | `tiles[].en` | 건너뜀(`screen-pending` — 소리가 와도 문장 조립에 소리 자리가 없다) |
+| `SYLLABLE_BUILD` | 7 | tiles | R | `prompt` · `stimulus`(`en` · `audio_url` · `image_url`) · `tiles`(음절, 오답 포함) · `answers` | `tiles[].en` · `answers[].en` | 건너뜀(`screen-pending`) |
+| `SHADOW` | 9 | speech | E | `prompt` · `stimulus`(`text` · `audio` …) · `answers` | — | 건너뜀(`screen-pending` — 말하기) |
+| `SPEAK_WORD` | 6 | speech | R | `prompt` · `stimulus`(`image_brief` · `image_url` · `audio_url`) · `answers` | — | 건너뜀(`screen-pending` — 말하기) |
+
+- `options[].why_wrong`은 새 파일에서도 **오답 보기마다** 있다(355/355). 값은 337개가 `"이 자리에 맞는 말이 아니다"`, 18개가 `"카드에 적힌 사실과 다르다"`(`CULTURE_CHECK`). 앱은 디코드만 하고 보이지 않는다(Q8).
+- 새 문항의 `stimulus.audio_url`은 **전부 빈 값**이다. `stimulus.image_url`은 `IMG_MATCH` 7 · `SPEAK_WORD` 6 · `ROLEPLAY_TURN` 13에만 값이 있다(`images/items/*.jpg` 등 버킷 기준 상대 경로).
+
+⟨2026-10-16 — 새 형식⟩ **기존 13종에서 바뀐 것**(나머지 키는 위 표 그대로다):
+
+| 자리 | 새 파일 관찰 | 앱 처리 |
+|---|---|---|
+| `VOCAB_CARD.example` | 36/37 — u02 `S3-04`에 없다 | **선택**이 됐다. 없으면 예문 없이 선다(옛 디코더는 이 한 장 때문에 u02 전체를 거부했다) |
+| `VOCAB_CARD.context.en` | 37/37 | 이미 선택 — 뜻의 대체로 쓴다(위 표) |
+| `TRANSLATE_TO_KO.stimulus` · `WORD_ORDER.stimulus` | 새로 `{audio_url, image_url, en}` — 21/21 · 8/8. `en`이 옮길(제시할) 영어 원문 | 단서 · 제시 영어는 **`stimulus.en`을 먼저**, 없으면 정답의 `en` |
+| `TURN_ORDER.tiles[].speaker` | 새로 `"counterpart" \| "player"` 29/29. **15문항이 player부터** 시작한다 | 대화 조립 칸의 화자로 쓴다 — 모두 있으면 그대로, 모두 없으면 짝수 칸 상대 · 홀수 칸 나(옛 규칙), 일부만 있으면 그 문항을 건너뛴다 → Q25 |
+| `ROLE_LINE.feedback.wrong.en` | 8/25 | 받는다(화면은 쓰지 않는다) |
+| `CLOZE.context.en` | 38/38 | 빈칸 문장 아래 **번역 줄**이 선다(옛 데이터에는 없던 줄) |
+| `IMG_MATCH.stimulus.image_url` | **7/7 채움** | 그림 문항이 처음으로 선다(부록 D) |
+| `LISTEN_SELECT.ref` | 56/58 | 이미 선택 |
+| `ROLEPLAY_TURN.stimulus.image_url` | 13/13 장면 그림 | 읽지 않는다 — 최종 테스트 장면은 지금처럼 표지 컷에서 고른다 |
+
 ### 7.3 `options[]` 불변식 (IMG_MATCH · LISTEN_SELECT · ROLE_LINE · TRANSLATE_TO_EN, 327개)
 
 - `id`는 `o1` ~ `o4`, 문항 안에서 순서대로.
 - `correct: true`는 **정확히 하나**.
 - `why_wrong`은 **오답에만** 있고, 값은 327개 중 236개가 전부 같은 문자열 `"이 자리에 맞는 말이 아니다"`. → 합의 Q8.
+- ⟨2026-10-16 — 새 형식⟩ **대상이 열 종이 됐다** — 위 넷에 `CLOZE_CHOICE` · `REPLY_SELECT` · `MIN_PAIR_AB` · `PARTICLE_FILL` · `PARTICLE_SWAP` · `CULTURE_CHECK`가 더해져 새 파일에서 150문항 · 보기 505개다.
+  「`correct: true`는 정확히 하나」는 앱이 열 종 전부에 같은 검사로 건다 — 어기면 그 에피소드 전체가 `option-correct-count`로 실패한다. 보기 수는 유형마다 다르다(2 ~ 4).
 
 ### 7.4 `ROLEPLAY_TURN.roleplay` (13개) — ⚠ 최종 테스트. **수정 중이라 관찰값만 적는다**
 
@@ -180,6 +234,11 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 (Q2 제안대로 정답의 정본은 상위 `answers`). ⚠ **그래서 RP 수정본이 위 필수 키의 모양을 바꾸거나 빼면 그 에피소드 전체가 `decode-failed`로 잠긴다**(맵에 `NOT AVAILABLE`).
 키를 **더하는** 것은 무해하다(모르는 키는 버린다). 모양을 바꾸는 수정본은 앱 디코더를 먼저 고쳐야 하므로 **미리 알려 달라.**
 
+⟨2026-10-16 — 새 형식(RP 수정본의 첫 관찰)⟩ 새 파일의 `roleplay`에는 위 일곱 키에 **`lead`**(배열) · **`reask`**가 더해졌고, 스텝 `RP` 자체에 **`scene`**(`background_image_url` · `counterpart` · `closing[]` ·
+`closing_image_url` · `retry`)이 생겼다. 턴의 `stimulus.image_url`에는 장면 그림이 13/13 채워졌다. **앱은 이 넷을 모두 읽지 않는다** — 더해진 키라 위 규칙대로 버리고, 최종 테스트 장면은 지금처럼 표지 컷에서 고른다.
+필수 키의 모양은 바뀌지 않아 그대로 디코드된다. `line_id` 규칙(`D<n>` = 플레이어 줄 seq n · 상대 줄 seq n−1)은 새 대화에서도 13턴 모두 성립한다. 맺음말 `closing`의 「감사합니다. 안녕히 가세요.」는 u01 대화 seq 7로도 들어 있다.
+Q2 · Q15 · Q16은 이 관찰로 닫지 않았다(⏸ 그대로).
+
 ## 8. 단어 · 패턴 (`words` · `patterns`)
 
 **Word** (38개)
@@ -194,6 +253,9 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 
 **Pattern** (4개): `id`(`patt:`) · `ko` · `roman` · `gloss_en` 전부 필수. `ko`에 `{명사}` · `{수단}` 슬롯.
 
+⟨2026-10-16 — 새 형식⟩ 단어 42개 · 패턴 5개. 새 키 **`use`**가 단어 8 · 패턴 1에 있다(값은 모두 `"counterpart"`). **앱은 읽지 않고 버린다**(모르는 키). ref 무결성은 아래 문단과 같은 모양이다 —
+u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 낱말)를 가리켜 `unresolved-ref` 경고다(Q4 그대로).
+
 **ref 무결성**: u01 75/75 · u02 118/118 해결. **u03(에피소드 3)은 82개 중 23개가 자기 `words`에 없는 id를 가리킨다** — `voca:ec5d9a98`(일주일) · `voca:e3c30bfa`(이름) · `voca:9710a021`(며칠), 셋 다 **에피소드 2의 words에만** 있다. 앞 에피소드 어휘를 다시 쓰는 것 자체는 자연스럽지만, 에피소드는 **따로 내려받는 단위**라 참조가 파일 밖으로 나가면 그 에피소드만으로 열 수 없다. → 합의 Q4.
 
 ## 9. 자산 참조
@@ -204,7 +266,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | 컷 · IMG_MATCH | `image_brief` | 생성용 지시문. 앱은 아직 렌더하지 않지만 디코더가 `imageBrief`로 **보존**한다(대체 텍스트 후보 → Q23) |
 | 컷 | `audio_url` ⟨2026-10-14 — 새 선택 키⟩ | 10/25 채움(내장본) |
 | 대화 | `audio_url` | 0/34 채움 ⟨2026-10-14⟩ 7/34(내장본) |
-| 문항 `stimulus` | `audio_url` · `image_url` | 0/121 채움. IMG_MATCH조차 `image_url: ""` |
+| 문항 `stimulus` | `audio_url` · `image_url` | 0/121 채움. IMG_MATCH조차 `image_url: ""` ⟨2026-10-16 — 새 형식⟩ `audio_url`은 여전히 전부 빈 값, `image_url`은 26문항에 채움(`IMG_MATCH` 7 · `SPEAK_WORD` 6 · `ROLEPLAY_TURN` 13 — §7.2 끝) |
 
 앱의 현재 자산 경로(참고): 이미지는 번들 import → `/static/…`(Android는 호스트가 재작성, ADR-0051). 오디오는 확장자 없는 **불투명 id**를 호스트 `AudioPlaybackModule`이 번들에서 찾는다(ADR-0017 D3). 원격 fallback은 아직 없다(ADR README 보류 표 「오디오 자산의 출처·형식」). → 합의 Q6 · Q21.
 ⟨2026-10-14 — 위 문장의 오디오 부분은 그때의 상태다⟩ **에피소드 음성은 버킷에서 재생한다.** 앱(JS 한 자리 `lib/content-audio.ts`)이 id를 규약으로 검사해 `audio/<id>.m4a` → 버킷 절대 URL로 바꾸고, 재생 모듈은 `https` 절대 URL을 받아 스트리밍한다. 튜토리얼의 번들 id는 지금처럼 번들에서 난다. 지금 재생하는 자리는 카탈로그 컷 · 최종 테스트뿐이고 **학습 문항의 `stimulus.audio_url`은 읽지 않는다**(ADR README 보류 표 「학습 문항 오디오의 연결」). 결정은 [ADR-0060](../adr/0060-episode-voice-remote-audio.md).
@@ -250,7 +312,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 - `title`을 매니페스트에도 두는 이유: 아직 내려받지 않은 에피소드도 맵에 **「준비 중」 구획으로 머리만** 보여야 한다(ADR-0024 D13 · D14의 `pending` 에피소드가 바로 이 상태다). 본문은 받은 뒤 채운다.
 - `version` · `sha256` · `bytes`: 바뀐 에피소드만 다시 받는다. 받은 파일의 해시나 바이트 수가 다르면 버린다.
 - `schema`: 에피소드마다 둔다. 앱이 모르는 스키마의 에피소드는 **잠근 채 목록에 세운다**(숨기지 않는다 — Q18의 FE 제안대로 앱 쪽을 정했다. 서버 쪽 정책 확인은 Q18에 남는다).
-- **원격 경로**: 기준은 `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/content/`(Supabase Storage 공개 버킷 `content`). 그 아래 `manifest.json` · `episodes/<id>.json` · `images/<id>/…`. 에피소드 `url`과 컷 `image_url`은 이 기준의 상대 경로다. 오디오 파일의 출처는 아직 정하지 않았다(ADR README 보류 표 「오디오 자산의 출처·형식」). ⟨2026-10-14⟩ 정했다 — 같은 기준 아래 `audio/<id>.m4a`(정적 파일 · **매니페스트에 등록하지 않는다** · 기기 캐시 없음, [ADR-0060](../adr/0060-episode-voice-remote-audio.md) D1). 음성 id가 바뀐 내장 에피소드 셋의 `version`은 `2026-10-14.1`이다. ⚠ 버킷은 아직 없다 — 생성 · 업로드는 사용자 확인 뒤(ADR README 보류 표).
+- **원격 경로**: 기준은 `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/content/`(Supabase Storage 공개 버킷 `content`). 그 아래 `manifest.json` · `episodes/<id>.json` · `images/<id>/…`. 에피소드 `url`과 컷 `image_url`은 이 기준의 상대 경로다. 오디오 파일의 출처는 아직 정하지 않았다(ADR README 보류 표 「오디오 자산의 출처·형식」). ⟨2026-10-14⟩ 정했다 — 같은 기준 아래 `audio/<id>.m4a`(정적 파일 · **매니페스트에 등록하지 않는다** · 기기 캐시 없음, [ADR-0060](../adr/0060-episode-voice-remote-audio.md) D1). 음성 id가 바뀐 내장 에피소드 셋의 `version`은 `2026-10-14.1`이다. ⚠ 버킷은 아직 없다 — 생성 · 업로드는 사용자 확인 뒤(ADR README 보류 표). ⟨2026-10-16 — 새 형식⟩ 내장 셋이 새 형식으로 바뀌어 **`version`은 `2026-10-15.1`**이다(`generated_at` `2026-10-15T00:00:00Z`, `sha256` · `bytes`는 새 파일의 값 — u01 125,327 · u02 159,188 · u03 154,196 bytes). 버킷에는 **내장본과 같은 바이트**(음성 id 포함)를 올린다 — 원본(음성 id 없음)을 올리면 원격본이 이길 때 소리가 사라진다. 옛 빌드는 새 본문을 받아도 디코드에 실패해 내장 폴백으로 지금 콘텐츠를 연다 — 그래서 `min_client_level`을 넣지 않는다([ADR-0065](../adr/0065-episode-format-additions.md) D12).
 - **내장 매니페스트**: `apps/mobile/content/manifest.json` — 번들에 실은 세 에피소드(`content/episodes/*.json`)의 실제 `sha256` · `bytes`를 적은 같은 형식의 파일이다. 사본을 바꾸면 이 파일도 같이 바꾼다.
 - `day` · `time_of_day` · `place` · `counterpart`는 에피소드 JSON에 그대로 둔다.
 
@@ -266,7 +328,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | **Q2** ⏸ | `ROLEPLAY_TURN.roleplay`가 상위 `context` · `stimulus` · `tiles` · `answers` · `mode`를 다른 모양으로 다시 담는다. `accepted_answers`는 한 곳에서 `answers`와 어긋난다 | `roleplay`에서 **`line_id` · `tiles_gloss`만** 남기고 나머지는 지운다. 정답의 정본은 `answers`. **RP 수정본이 오면 다시 본다** | **FE 처리(2026-10-13, 3c)**: 콘텐츠 답은 아직 없다. 앱은 제안대로 읽는다 — `roleplay`에서 `line_id` · `tiles_gloss`만, 정답은 `answers`. 디코드는 엄격하다(§7.4) — RP 모양이 바뀌면 에피소드가 잠기므로 수정본은 미리 알려 달라 |
 | **Q3** | `LISTEN_SELECT` E 3개는 `options`가 없고 `context`가 있다. R 34개는 반대 | 모양이 다르면 타입을 나눈다: `LISTEN_EXPOSE`(E, options 없음) · `LISTEN_SELECT`(R, options 필수). `event`로 모양을 갈라 읽지 않는다 | |
 | **Q4** | 에피소드 3이 에피소드 2에만 있는 단어 3개를 ref로 가리킨다(23문항) | 각 에피소드는 **자기 `words`로 모든 ref를 해결**한다. 앞 에피소드 단어는 `role: "prereq"`로 다시 싣는다(이미 그 role이 있다). 앱은 에피소드 단위로 받으므로 전역 사전을 가정하지 않는다. 대안은 매니페스트에 공용 사전 파일을 하나 더 두는 것인데, 에피소드 하나만 받아도 열려야 한다는 조건이 깨져 권하지 않는다 | |
-| **Q5** | 스텝 id가 S1 · S3 ~ S9 · RP로 S2가 비어 있고, 세 에피소드의 스텝 구성이 같다 | 앱은 `order`만 믿고 `id`는 표시용 불투명 문자열로 본다. S2가 **예약 자리인지 삭제된 자리인지**, 그리고 「학습 유닛 8 + 최종 테스트 1」이 모든 에피소드의 규칙인지 답을 달라. 맵이 에피소드마다 노드 수를 바꿔 그려야 하는지가 여기서 정해진다 | |
+| **Q5** | 스텝 id가 S1 · S3 ~ S9 · RP로 S2가 비어 있고, 세 에피소드의 스텝 구성이 같다 | 앱은 `order`만 믿고 `id`는 표시용 불투명 문자열로 본다. S2가 **예약 자리인지 삭제된 자리인지**, 그리고 「학습 유닛 8 + 최종 테스트 1」이 모든 에피소드의 규칙인지 답을 달라. 맵이 에피소드마다 노드 수를 바꿔 그려야 하는지가 여기서 정해진다 | **답(2026-10-15, 새 형식으로)**: 스텝 구성이 `S1` ~ `S8` · `CULT` · `RP`(order 1 ~ 10)로 다시 매겨져 왔다 — S2 빈자리는 없어졌고, 세 에피소드가 같은 구성이며, 끝내야 할 스텝은 새 최상위 키 `completion.requires`가 말한다(§2 · §6). 「모든 에피소드의 규칙인지」는 답이 없다 — **앱은 지금처럼 `order`만 믿고 노드를 스텝 수대로 그리므로**(구획마다 레슨 9 + 최종) 구성이 에피소드마다 달라도 앱 변경이 없다. `id`는 `RP`만 특별하고 나머지(`CULT` 포함)는 불투명 문자열이다([ADR-0065](../adr/0065-episode-format-additions.md) D7) |
 | **Q6** | `audio_url` · 문항 `image_url`이 전부 `""`. 컷 `image_url`은 상대 경로 | **빈 문자열 금지**: 없으면 키를 뺀다. 있으면 매니페스트 기준 상대 경로. 오디오는 URL이 아니라 **불투명 id**(예: `u01-water/d-02`)로 주면 호스트 모듈 규약(ADR-0017 D3)에 바로 맞는다. 오디오 id는 항상 같은 객체의 텍스트(`audio: Text` 또는 `text: Text`)와 **쌍으로** 온다 — id만 있고 텍스트가 없는 자리는 계약 위반 | **답(2026-10-12, 부분)**: 오디오는 id 규약으로(부록 C). 이미지는 상대 경로 유지, 수령본은 부록 D. 빈 문자열 금지 여부는 미답 ⟨2026-10-14 — FE 처리⟩ 컷에 **선택** 키 `audio_url`을 더했다(§4). 앱은 없음 · 빈 문자열을 같게 읽는다(키 생략 권장은 그대로). id는 앱이 규약 `^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$`로 검사하고 어긋나면 재생하지 않는다 — 대문자 · `.` · 확장자 · 스킴 · 공백을 넣지 않는다. 텍스트와 쌍이라는 원칙도 앱이 지킨다: 소리를 붙인 줄의 `ko`가 `{…}` 자리표시자를 품으면 그 줄은 무음이다 |
 | **Q7** | `TRANSLATE_TO_EN.options[]`가 영어를 `ko` · `roman`에 넣는다 | 보기는 `{ id, text: string, correct, why_wrong? }`로 바꾸거나, 최소한 `en`에 넣고 `ko` · `roman`을 뺀다 | |
 | **Q8** | `why_wrong` 236개가 전부 같은 자리표시자 문장 | 실제 문구가 올 때까지 **키를 뺀다**. 앱은 자리표시자를 렌더하지 않는다 | |
@@ -285,7 +347,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | **Q21** | 오디오가 하나도 없다(§9) | 에피소드 1 ~ 3 출시 범위에 **오디오가 들어가는지** 먼저 답을 달라. 들어가면 Q6의 id 규약 + 파일 형식(m4a) + 매니페스트 등록. 안 들어가면 `LISTEN_SELECT` · `DICTATION`은 `stimulus.audio` 텍스트만으로 성립하지 않으므로 그 문항들의 처리(숨김 / TTS / 텍스트 노출)를 정해야 한다. **들어가든 안 들어가든** `stimulus.audio`(LISTEN_SELECT · DICTATION)와 `dialogue[].text`의 `ko · roman · en`은 오디오의 **텍스트 대체(전사)** 로 계속 필수다 — 오디오가 추가돼도 빼지 않는다(WCAG 1.2.1). 앱은 재생 불가 · 무음 · 스크린리더 환경에서 이 텍스트를 노출할 수 있어야 하며, DICTATION처럼 텍스트 노출이 문항을 무너뜨리는 타입은 **노출 시점(답 제출 뒤)** 을 제품이 정한다 | **답(2026-10-12)**: 오디오 **들어간다** — 파일은 부록 C 목록대로 제작. 파일이 오기 전까지 앱은 텍스트를 보여 주고 재생 버튼을 비활성 ⟨2026-10-13 — 3c 앱 처리, 위 답의 뒷부분을 좁힌다⟩ 파일이 오기 전까지: **오디오 없는 `LISTEN_SELECT`는 레슨에서 건너뛴다**(사용자 결정 — 대본을 보이면 보기와 같은 문장이라 베끼기가 된다. 세 에피소드의 듣기 문항은 지금 전부 서지 않는다). **`DICTATION`은 로마자 + 영어 뜻을 보이고 재생 버튼을 비활성**으로 두며 한글은 답을 낸 뒤 공개한다. 3c 앱은 오디오 id가 와도 아직 재생하지 않는다 — 연결은 별도 작업([ADR-0058](../adr/0058-catalog-learning-session.md) D3) ⟨2026-10-14 — 연결됨, 일부⟩ **카탈로그 컷과 최종 테스트가 소리를 낸다** — 컷은 서면 자동, 최종 테스트는 상대 줄 자동 + 정답 뒤 내 줄, 다시 듣기 조작 없음(사용자 결정, [ADR-0060](../adr/0060-episode-voice-remote-audio.md)). **학습 문항(`LISTEN_SELECT` · `DICTATION`)은 아직이다** — 위 3c 처리(듣기 건너뜀 · 받아쓰기 재생 비활성)가 그대로 산다. 텍스트 대체 원칙은 그대로다 — 소리는 화면 대사의 보조 채널이다 |
 | **Q22** | `post_cuts`의 등장 조건이 파일에 없다 | 「RP 통과 시 한 번」으로 앱이 쥔다. 재진입 시 다시 볼 수 있는지(표지는 D12로 건너뛰어도 완료다)와 **RP 불통과 시 재시도 규칙**은 콘텐츠가 아니라 제품 결정이므로 여기서는 묻기만 한다 | **앱 처리(2026-10-13, 3c — 제품 결정)**: `post_cuts`는 최종 테스트를 **통과한** 결과 화면의 나가기 뒤에 선다. 완료는 판정 순간에 적으므로 컷을 중간에 나가도 다음 에피소드가 열린다. 최종 테스트는 다시 풀 수 있고 다시 통과하면 컷도 다시 선다. 불통과는 결과 화면의 `Try again`으로 첫 턴부터 — 횟수 제한 없음. 통과 기준은 턴의 60 % 이상(올림) |
 | **Q23** | 컷 · IMG_MATCH 이미지의 **대체 텍스트** 출처가 없다. `image_brief`가 유일한 텍스트인데 컷은 한국어 장면 묘사, IMG_MATCH는 `"<영어 키워드> - 한 컷으로 알아볼 수 있게"`로 생성 지시문이 섞여 있다 | 이미지가 있는 자리(컷 · `stimulus.image_url`)에 `image_alt: { ko, en }`을 **별도 키**로 추가한다. `image_brief`는 생성용으로 남기고 앱은 alt로 쓰지 않는다. IMG_MATCH의 `image_alt`는 **정답 한국어 단어를 담지 않는다**(영어 묘사만, 예: `"a glass of water"`). 컷의 `image_alt`는 장면 묘사이되 대사 · 지문(`line` · `aside` · `narration`)과 중복하지 않는다(그 텍스트는 이미 화면에 읽힌다). 추가가 어렵다면 **IMG_MATCH에 한해** `image_brief`의 `" - "` 앞 영어 키워드를 alt로 쓰는 것을 허용하고 그 형식을 불변식으로 고정한다 | **FE 처리(2026-10-13, 3d-1 — IMG_MATCH만)**: 콘텐츠 답은 아직 없다. 앱은 그림 문항의 대체 텍스트로 **정답 보기의 `en`**을 쓴다(없으면 `words[]`의 `gloss_en`) — 낭독 `Picture: water`, 그림을 못 보일 때 그 자리에 서는 글자도 같은 값이다. **`image_brief`는 쓰지 않는다**(생성 지시문이 섞여 있다). 한글 · 로마자는 넣지 않는다(정답을 흘린다). `image_alt`가 오면 출처만 바꾼다. 컷 그림은 3b-2 그대로 alt를 비운다 |
-| **Q25** | **`TURN_ORDER`에 턴별 화자 표기가 없다.** `tiles` · 정답 순서 어디에도 그 턴이 상대 말인지 학습자 말인지 적혀 있지 않다 | 앱은 정답 순서의 **짝수 칸(0, 2, …) = 상대 · 홀수 칸 = 학습자**로 번갈아 가정해 대화 조립(좌 회색 · 우 주황 말풍선)을 그린다(2026-10-13 사용자 결정). 가정이 틀리지 않게 `tiles[]`에 `role: "counterpart" \| "player"`(`dialogue[].role`과 같은 어휘)를 싣거나, 최소한 문항에 첫 화자(`first_speaker`)를 달라. Q13처럼 대화가 엄격히 교대하지 않는 문항이 있으면 가정이 어긋난다 | |
+| **Q25** | **`TURN_ORDER`에 턴별 화자 표기가 없다.** `tiles` · 정답 순서 어디에도 그 턴이 상대 말인지 학습자 말인지 적혀 있지 않다 | 앱은 정답 순서의 **짝수 칸(0, 2, …) = 상대 · 홀수 칸 = 학습자**로 번갈아 가정해 대화 조립(좌 회색 · 우 주황 말풍선)을 그린다(2026-10-13 사용자 결정). 가정이 틀리지 않게 `tiles[]`에 `role: "counterpart" \| "player"`(`dialogue[].role`과 같은 어휘)를 싣거나, 최소한 문항에 첫 화자(`first_speaker`)를 달라. Q13처럼 대화가 엄격히 교대하지 않는 문항이 있으면 가정이 어긋난다 | **답(2026-10-15, 새 형식으로)**: `tiles[]`에 **`speaker: "counterpart" \| "player"`**가 실려 왔다(29/29 — 제안한 `role`이 아니라 `speaker`라는 이름). 29문항 중 15문항이 player부터 시작해 짝 · 홀 가정이 실제로 어긋나 있었다. **FE 처리(2026-10-16)**: 앱은 칸의 화자를 그 값으로 그린다. 화자가 문항의 타일 **전부**에 있어야 하고, 하나도 없으면 옛 짝 · 홀 규칙, **일부에만 있으면 그 문항을 건너뛴다**(뒤바뀐 대화를 그리지 않는다). 같은 화자가 연이어 서는 순서도 그대로 그린다([ADR-0065](../adr/0065-episode-format-additions.md) D9) |
 | **Q26** | **`u01-water`의 S3-05 · S3-10 · S5-09 정답 순서 확인.** 세 `TURN_ORDER`의 정답이 `아니요, 괜찮아요. \| 삼천 원입니다. \| 카드로 할게요. \| 영수증 드릴까요?` 순서로 「아니요, 괜찮아요.」로 시작해 대화 흐름과 어긋나 보인다(영수증을 묻기 전에 「괜찮아요」라고 답한다) | 앱은 데이터대로 채점한다 — 이 순서가 맞는지 확인하고, 틀리면 정답 순서(`answers[0].ko`)를 바로잡아 달라 | |
 | **Q27** | **「봉투」의 뜻이 두 자리에서 다르다**(`u01-water`). 단어 목록 `words[]`(`voca:c5cd4239`)의 `gloss_en`은 `envelope`인데, 같은 낱말을 묻는 `IMG_MATCH` `S1-08`의 정답 보기 `en`과 `image_brief`는 `bag`이다(카드 `S1-03`의 예문 번역도 `Would you like a bag?`) | 앱은 데이터 그대로 보인다 — 단어 카드의 뜻은 `envelope`, 그림 문항의 대체 글자 · 이름표는 `bag`. 이 장면(편의점)의 뜻은 `bag`으로 보인다. 어느 쪽이 맞는지 정해 **한 값으로 맞춰** 달라. 일반 규칙으로는 「보기의 `en`은 그 낱말 `words[].gloss_en`과 같다」를 불변식으로 두기를 제안한다 | |
 | **Q28** | **단어 카드 예문에 고정 이름 「은지」가 박혀 있다.** `u02-checkin` `S1-02`(「은지로 예약했어요.」) · `u03-mina` `S1-02`(「안녕하세요, 저는 은지예요.」) — `{이름}` 자리표시자가 아니다 | 학습자 자신의 말이면 `{이름}`으로 바꿔 달라(Q14 — 앱이 프로필로 치환한다). 예문 속 다른 사람이면 그대로 둔다. 앱은 데이터 그대로 보인다 | |
@@ -309,9 +371,15 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `episode-content.items.ts` | 문항 변환 · TURN_ORDER / PAIR_MATCH 문자열 정답 풀이 | `background-only` |
 | `episode-content.ts` | `decodeEpisode(input: unknown): DecodeResult` + 도메인 타입 re-export. **소비자는 이 경로 하나만 import한다** | `background-only` |
 
+⟨2026-10-16 — 새 형식⟩ 와이어 스키마가 300줄을 넘어 셋으로 나뉘고 새 유형 변환이 따로 섰다 — `episode-content.schema-parts.ts`(공통 조각: 텍스트 · 지시문 · 보기와 정답 하나 검사 · 자극 · 공통 필드) ·
+`episode-content.schema-items.ts`(새 11종 `ADDED_ITEM_TYPES` · 갈래), `episode-content.items-added.ts`(새 11종 와이어 → 모델). 셋 다 `background-only`다. `KNOWN_ITEM_TYPES`는 **24종**이다.
+그래서 **`src/` 안에서 `zod`를 import하는 파일은 넷**이다(콘텐츠 스키마 셋 + 매니페스트 스키마 — unit 테스트가 목록을 고정한다). 위 표의 「둘뿐」과 「13종」은 그 전의 상태다.
+
 런타임 모듈 넷의 첫 줄은 `import "background-only";`다 — 메인 스레드 번들에 실리면 빌드가 깨진다(`posthog-client.ts` 선례, ADR-0029 D3). `zod` `4.6.5`는 `apps/mobile` `dependencies`에 있다(ADR-0013 D5 「첫 설치 뒤 더해진 `dependencies`」).
 
 **픽스처** — `apps/mobile/content/episodes/u01-water.json` · `u02-checkin.json` · `u03-mina.json`. 원본의 **바이트 사본**(sha256 동일, 포맷터 글롭에서 제외). ⟨2026-10-12⟩ 3a부터 **번들에 들어간다** — `src/lib/episode-bundled.ts`가 내장 에피소드로 import한다(ADR-0056 D1). 그래서 이 사본이 곧 내장본이고, 바꾸면 `content/manifest.json`의 `sha256` · `bytes`도 바꾼다. 콘텐츠의 사본이므로 손으로 고치지 않는다 — 합의로 원본이 바뀌면 통째로 바꾼다(Q4가 「제안대로」면 u03은 고쳐진 파일로).
+⟨2026-10-16 — 새 형식⟩ **통째로 바꿨다** — 내장 셋은 새 형식 원본에 음성 id 14개를 문장 대조로 다시 붙인 바이트다(원본과 바이트가 같지 않다 — 부록 C · [ADR-0060](../adr/0060-episode-voice-remote-audio.md) 적용 기록). 손으로 고친 자리는 없다.
+옛 셋은 `apps/mobile/content/test-fixtures/delivery-2-2026-10-14/`(매니페스트 포함)에 바이트 그대로 있고 테스트만 읽는다 — 번들에 실리지 않는다.
 
 **디코더 정책**
 
@@ -334,6 +402,9 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `final-test-position` | RP의 `order`가 마지막이 아님(다른 스텝이 RP 이상이면 — 동점 포함) | 실패 |
 | `string-answer-malformed` | TURN_ORDER / PAIR_MATCH 문자열 정답을 풀 수 없음(§7.2 · Q17) | 실패 |
 | `unresolved-ref` | 문항 `ref`가 자기 `words` · `patterns`에 없음(§8 · Q4). 문항마다 하나 | **경고** |
+| `completion-malformed` ⟨2026-10-16⟩ | `completion.requires`가 비었음(경로 `completion.requires`) 또는 원소가 `steps[].id`에 없음(경로 `completion.requires[i]` — `"intro"` 포함)(§2) | 실패 |
+
+⟨2026-10-16⟩ `unknown-item-type`의 「13종 밖」은 이제 **24종 밖**이다. **옛 디코더(이 변경 전 빌드)는 새 파일 셋을 모두 `unknown-item-type`으로 거부한다** — 버킷에 새 본문이 올라가도 옛 빌드는 내장 폴백으로 옛 콘텐츠를 연다(§10).
 
 **테스트** — unit 50(`episode-content.unit.test.ts`: 최소 에피소드 변이 · 정규화 · 거부 · `zod` import 단일성 · `background-only` 첫 줄) · integration 27(`episode-content.integration.test.ts`: 디스크의 실제 세 파일 → `decodeEpisode`, 13종 전부 디코드 · 와이어 키 잔존 0 · u03 경고 23 · 결정성).
 
@@ -358,6 +429,19 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | 단어 / 패턴 | 10 / 1 | 13 / 2 | 15 / 1 |
 | 미해결 ref | 0 | 0 | 23 (3개 id) |
 
+⟨2026-10-16 — 새 형식⟩ 위 표는 옛 세 파일이다(지금 테스트 픽스처). 새 내장본(음성 id 포함 바이트):
+
+| | u01-water | u02-checkin | u03-mina |
+|---|---|---|---|
+| 바이트 | 125,327 | 159,188 | 154,196 |
+| pre / post 컷 | 6 / 3 | 5 / 4 | 4 / 3 |
+| 대화 줄 | 9 | 13 | 13 |
+| 스텝 / 문항 | 8 + CULT + RP / 104 | 8 + CULT + RP / 133 | 8 + CULT + RP / 118 |
+| 단어 / 패턴 | 13 / 1 | 14 / 3 | 15 / 1 |
+| 미해결 ref | 0 | 0 | 18 (3개 id) |
+
+원문 합은 299,890 → 438,711 bytes(+46 %)다.
+
 ## 부록 B. 유닛(스텝)별 문항 타입 구성 (세 에피소드 합집합)
 
 | 유닛 | order | 타입 |
@@ -371,6 +455,23 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | S8 | 7 | ROLE_LINE · SENT_BUILD |
 | S9 | 8 | CLOZE · DICTATION · LISTEN_SELECT · TRANSLATE_TO_EN · TRANSLATE_TO_KO · PAIR_MATCH |
 | RP (최종 테스트) | 9 | ROLEPLAY_TURN — 수정 중 |
+
+⟨2026-10-16 — 새 형식⟩ 위 표는 옛 세 파일이다. 새 세 파일(합집합 — 스텝 id가 다시 매겨져 위 표와 행끼리 대응하지 않는다):
+
+| 유닛(스텝) | order | 타입 |
+|---|---|---|
+| S1 | 1 | VOCAB_CARD · CLOZE · IMG_MATCH · LISTEN_SELECT · CLOZE_CHOICE · WORD_ORDER |
+| S2 | 2 | LISTEN_SELECT · REPLY_SELECT · ROLE_LINE · TURN_ORDER · LISTEN_BUILD |
+| S3 | 3 | VOCAB_CARD · CLOZE · IMG_MATCH · LISTEN_SELECT · SYLLABLE_BUILD |
+| S4 | 4 | LISTEN_SELECT · REPLY_SELECT · ROLE_LINE · TURN_ORDER · LISTEN_BUILD |
+| S5 | 5 | PARTICLE_FILL · PARTICLE_SWAP · MIN_PAIR_AB · DICTATION · SHADOW · LISTEN_BUILD |
+| S6 | 6 | CLOZE · TRANSLATE_TO_KO · WORD_ORDER · LISTEN_SELECT · TRANSLATE_TO_EN · SPEAK_WORD |
+| S7 | 7 | REPLY_SELECT · ROLE_LINE · WORD_ORDER |
+| S8 | 8 | CLOZE · DICTATION · LISTEN_SELECT · TRANSLATE_TO_EN · TRANSLATE_TO_KO · LISTEN_BUILD · SPEAK_WORD |
+| CULT | 9 | CULTURE_CARD · CULTURE_CHECK |
+| RP (최종 테스트) | 10 | ROLEPLAY_TURN |
+
+`PAIR_MATCH` · `SENT_BUILD`는 새 파일에 없다. 셀 안의 순서에는 뜻이 없다 — 문항 순서의 정본은 파일이다.
 
 ## 부록 C. 오디오 제작 목록 (Q21 — 사용자 「필요한 부분 정리해 주면 만들게」 2026-10-12)
 
@@ -477,6 +578,10 @@ id 규약(Q6 제안): `<episode_id>/<kind>-<n>` — 확장자 없는 불투명 i
 | u01-water | `d-01` ~ `d-05` · `pre-3` (6) | 대화 seq 1 ~ 5 · 컷 pre 3 · pre 6(`d-01`) |
 | u02-checkin | `d-01` · `pre-1` · `pre-3` · `post-1` (4) | 대화 seq 1 · 컷 pre 1 · 3 · 5(`d-01`) · post 1 |
 | u03-mina | `d-01` · `pre-2` · `post-1` · `post-3` (4) | 대화 seq 1 · 컷 pre 2 · 4(`d-01`) · post 1 · 3 |
+
+⟨2026-10-16 — 새 형식⟩ **새 내장본에도 같은 14개가 같은 자리에 붙었다** — 새 형식 원본에는 음성 id가 없어(컷 키 없음 · 대화 빈 값) 옛 내장본과 문장(`ko`) · 화자가 같은 컷 · 줄에 다시 붙였다.
+14 id 모두 쓰였고 사라진 문장은 0이다. **u01 대화는 9줄이다** — 위 u01 표의 `d-06` ~ `d-08`(제작 목록 번호)은 옛 seq 6 ~ 8이고, 새 대화에서는 seq 6 · 8 · 9다.
+새로 끼어든 seq 7 「감사합니다. 안녕히 가세요.」(counterpart)는 **녹음이 없다** — 녹음하면 이 목록에 더할 자리다(id를 seq와 맞출지는 정하지 않았다 — 지금 id가 붙은 seq 1 ~ 5는 이름과 seq가 같다).
 
 나머지 id는 아직 녹음이 없다 — 내장 JSON에 키가 없거나 빈 값이다. 플레이어 줄 가운데 녹음이 있는 것은 u01 `d-02` · `d-04`이고, 최종 테스트가 **정답 뒤 내 줄**로 들려준다(아래 Q24의 「정답 들려주기 용도」가 이것이다).
 

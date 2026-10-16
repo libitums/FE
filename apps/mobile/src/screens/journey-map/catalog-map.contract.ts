@@ -25,6 +25,8 @@ export type CatalogReadySection = {
   readonly lessonKeys: readonly CatalogUnitKey[];
   /** `episode.finalTest.id` ("RP") */
   readonly finalKey: CatalogUnitKey;
+  /** 에피소드 완료 키 — `episode.completion?.requires ?? [episode.finalTest.id]`. 비지 않는다. */
+  readonly completionKeys: readonly CatalogUnitKey[];
 };
 
 export type CatalogUnavailableSection = {

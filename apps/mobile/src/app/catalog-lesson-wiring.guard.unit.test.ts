@@ -5,7 +5,7 @@ import { describe, expect, test } from "vitest";
 
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogProgress } from "../lib/catalog-progress";
-import { bundledCatalogInput } from "../lib/episode-bundled";
+import { legacyCatalogInput } from "../lib/episode-legacy.test-support";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import { fillPlaceholders } from "../lib/placeholder-fill";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
@@ -18,7 +18,7 @@ import type { NavAction } from "./nav-state";
 // 두 번째 호출은 첫 호출이 낳은 상태가 아직 렌더되지 않은 같은 결선(낡은 pendingResults)으로 옵니다.
 
 const catalog = buildEpisodeCatalog({
-  bundled: bundledCatalogInput,
+  bundled: legacyCatalogInput,
   cache: { manifest: null, episodes: {} },
 });
 const correct: AnswerResult = "correct";

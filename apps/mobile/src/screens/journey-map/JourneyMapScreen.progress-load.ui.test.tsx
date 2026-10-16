@@ -46,6 +46,7 @@ function catalogOf(h: Handlers, withUnavailable = false): JourneyMapCatalogProps
         title: "Title",
         lessonKeys,
         finalKey: "RP",
+        completionKeys: ["RP"],
       })),
       ...(withUnavailable
         ? [

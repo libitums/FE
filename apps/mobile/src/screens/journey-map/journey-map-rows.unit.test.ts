@@ -33,6 +33,7 @@ function readySection(lessonCount: number): CatalogReadySection {
     title: "T",
     lessonKeys: Array.from({ length: lessonCount }, (_, index) => `S${index + 1}`),
     finalKey: "RP",
+    completionKeys: ["RP"],
   };
 }
 

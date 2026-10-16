@@ -4,11 +4,12 @@ import {
   CATALOG_FINAL_KEY,
   CATALOG_INTRO_KEY,
   catalogProgressFrom,
-  isCatalogEpisodePassed,
+  DEFAULT_CATALOG_COMPLETION,
+  completedCatalogEpisodeCount,
+  isCatalogEpisodeComplete,
   isCatalogUnitDone,
   markCatalogUnitDone,
   mergeCatalogProgress,
-  passedCatalogEpisodeCount,
 } from "./catalog-progress";
 import type { CatalogProgress } from "./catalog-progress";
 
@@ -131,14 +132,17 @@ describe("K5 markCatalogUnitDone", () => {
   });
 });
 
-describe("K6 isCatalogEpisodePassed", () => {
-  test("RP가 있을 때만 통과다", () => {
+describe("K6 기본 완료 키(RP)로 본 에피소드 완료", () => {
+  // CP3: 지운 isCatalogEpisodePassed의 기대를 기본 키 판정으로 옮긴 것입니다.
+  test("CP3. RP가 있을 때만 완료다", () => {
     expect(CATALOG_FINAL_KEY).toBe("RP");
     expect(CATALOG_INTRO_KEY).toBe("intro");
-    expect(isCatalogEpisodePassed({ a: [CATALOG_INTRO_KEY, "S1"] }, "a")).toBe(false);
-    expect(isCatalogEpisodePassed({ a: ["intro", "RP"] }, "a")).toBe(true);
-    expect(isCatalogEpisodePassed({ a: ["RP"] }, "b")).toBe(false);
-    expect(isCatalogEpisodePassed({}, "a")).toBe(false);
+    const done = (progress: CatalogProgress, id: string) =>
+      isCatalogEpisodeComplete(progress, id, DEFAULT_CATALOG_COMPLETION);
+    expect(done({ a: [CATALOG_INTRO_KEY, "S1"] }, "a")).toBe(false);
+    expect(done({ a: ["intro", "RP"] }, "a")).toBe(true);
+    expect(done({ a: ["RP"] }, "b")).toBe(false);
+    expect(done({}, "a")).toBe(false);
   });
 
   test("K7. 빈 에피소드 id · 빈 유닛 키는 기록하지 않는다(서버가 거절해 저장이 멈추지 않게)", () => {
@@ -160,7 +164,7 @@ describe("K6 isCatalogEpisodePassed", () => {
     "K9. 객체 기본 속성 이름(%s)의 에피소드 id도 던지지 않고 자기 값만 본다",
     (id) => {
       expect(isCatalogUnitDone({}, id, "intro")).toBe(false);
-      expect(isCatalogEpisodePassed({}, id)).toBe(false);
+      expect(isCatalogEpisodeComplete({}, id, DEFAULT_CATALOG_COMPLETION)).toBe(false);
       expect(markCatalogUnitDone({}, id, "intro")).toEqual({ [id]: ["intro"] });
       expect(mergeCatalogProgress({}, { [id]: ["S1"] })).toEqual({ [id]: ["S1"] });
       expect(catalogProgressFrom(JSON.parse(`{"${id}": ["RP"]}`))).toEqual({ [id]: ["RP"] });
@@ -168,16 +172,51 @@ describe("K6 isCatalogEpisodePassed", () => {
   );
 });
 
-describe("트로피에 더하는 통과 에피소드 수", () => {
-  test("K10. 최종 테스트(RP)를 통과한 에피소드만 센다", () => {
-    expect(passedCatalogEpisodeCount({})).toBe(0);
-    expect(passedCatalogEpisodeCount({ "u01-water": ["intro", "S1", "S9"] })).toBe(0);
-    expect(
-      passedCatalogEpisodeCount({
-        "u01-water": ["intro", "S1", "RP"],
-        "u02-checkin": ["intro"],
-        "u03-mina": ["RP"],
-      }),
-    ).toBe(2);
+describe("에피소드 완료 판정", () => {
+  test("CP1. 완료 키가 모두 끝났을 때만 완료다 — 하나 빠지면 아니고 다른 에피소드 진행은 무관하다", () => {
+    const keys = ["S1", "CULT", "RP"];
+    expect(isCatalogEpisodeComplete({ a: ["intro", "S1", "CULT", "RP"] }, "a", keys)).toBe(true);
+    expect(isCatalogEpisodeComplete({ a: ["RP", "CULT", "S1"] }, "a", keys)).toBe(true);
+    expect(isCatalogEpisodeComplete({ a: ["intro", "S1", "RP"] }, "a", keys)).toBe(false);
+    expect(isCatalogEpisodeComplete({ a: ["S1", "CULT"] }, "a", keys)).toBe(false);
+    expect(isCatalogEpisodeComplete({ b: ["S1", "CULT", "RP"] }, "a", keys)).toBe(false);
+    expect(isCatalogEpisodeComplete({}, "a", keys)).toBe(false);
   });
+
+  test("CP2. 완료 키가 비면 기본 키(RP)로 판정하고 기본 키는 RP 하나다", () => {
+    expect(DEFAULT_CATALOG_COMPLETION).toEqual(["RP"]);
+    expect(isCatalogEpisodeComplete({ a: ["intro", "S1"] }, "a", [])).toBe(false);
+    expect(isCatalogEpisodeComplete({ a: ["RP"] }, "a", [])).toBe(true);
+  });
+
+  test("CP4. 완료한 에피소드 수 — 해석기의 키로 판정하고 해석기는 진행에 있는 id로만 불린다", () => {
+    const asked: string[] = [];
+    const keysOf = (episodeId: string) => {
+      asked.push(episodeId);
+      return episodeId === "a" ? ["S1", "RP"] : DEFAULT_CATALOG_COMPLETION;
+    };
+    const progress: CatalogProgress = { a: ["RP"], b: ["intro", "RP"] };
+
+    expect(completedCatalogEpisodeCount(progress, keysOf)).toBe(1);
+    expect([...new Set(asked)].sort()).toEqual(["a", "b"]);
+    expect(completedCatalogEpisodeCount({}, keysOf)).toBe(0);
+  });
+
+  test("CP4. 해석기의 키가 바뀌면 같은 진행의 완료 수가 바뀐다", () => {
+    const progress: CatalogProgress = { a: ["S1", "RP"], b: ["RP"] };
+    expect(completedCatalogEpisodeCount(progress, () => ["S1", "RP"])).toBe(1);
+    expect(completedCatalogEpisodeCount(progress, () => DEFAULT_CATALOG_COMPLETION)).toBe(2);
+  });
+
+  test.each(["toString", "__proto__", "constructor"])(
+    "CP5. 에피소드 id %s에도 던지지 않고 false · 0이며 입력을 바꾸지 않는다",
+    (id) => {
+      const progress: CatalogProgress = { a: ["RP"] };
+      const before = JSON.stringify(progress);
+      expect(isCatalogEpisodeComplete(progress, id, ["RP"])).toBe(false);
+      expect(isCatalogEpisodeComplete({}, id, DEFAULT_CATALOG_COMPLETION)).toBe(false);
+      expect(completedCatalogEpisodeCount({}, () => DEFAULT_CATALOG_COMPLETION)).toBe(0);
+      expect(JSON.stringify(progress)).toBe(before);
+    },
+  );
 });

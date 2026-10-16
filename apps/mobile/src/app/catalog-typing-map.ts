@@ -42,6 +42,10 @@ function typingItem(
 
 /** 첫 영어 뜻이 있는 정답의 영어입니다. */
 function firstEnglish(item: TypingSource, port: CatalogItemPort): string | undefined {
+  if (item.type === "TRANSLATE_TO_KO") {
+    const stimulusEnglish = englishOf(port, item.stimulus?.en);
+    if (stimulusEnglish !== undefined) return stimulusEnglish;
+  }
   for (const answer of item.answers) {
     const english = englishOf(port, answer.en);
     if (english !== undefined) return english;
