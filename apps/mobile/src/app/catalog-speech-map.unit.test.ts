@@ -263,6 +263,16 @@ describe("speakWordItemOf — SPEAK_WORD", () => {
     });
   });
 
+  test("SWM4. 한국어가 빈 앞 정답은 걷히고 뜻 · 로마자도 남은 첫 정답의 것이다", () => {
+    const item = speakWord([t(" ", "blank", "blank"), t("카드", "kadeu", "card")]);
+
+    expect(questionOf(speakWordItemOf(item, portOf()))).toMatchObject({
+      answers: ["카드"],
+      meaning: "card",
+      romanization: "kadeu",
+    });
+  });
+
   test("SWM4. 로마자가 없으면 null이고 prompt.en이 공백이면 instruction 키가 없다", () => {
     const item = speakWord([{ ko: "카드", en: "card" }], undefined, {
       prompt: { ko: "그림을 보고 말하세요.", en: "   " },

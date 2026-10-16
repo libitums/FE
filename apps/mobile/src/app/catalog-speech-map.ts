@@ -44,14 +44,14 @@ export function speakWordItemOf(
   item: ItemOf<"SPEAK_WORD">,
   port: CatalogLessonItemPort,
 ): CatalogMappedItem {
-  const [first, ...rest] = item.answers
-    .map((answer) => koOf(port, answer.ko))
-    .filter((ko) => ko !== "");
+  // 한국어가 빈 정답은 걷습니다. 뜻 · 로마자도 걷고 남은 첫 정답에서 읽어야 정답과 같은 묶음입니다.
+  const kept = item.answers.filter((answer) => koOf(port, answer.ko) !== "");
+  const [first, ...rest] = kept.map((answer) => koOf(port, answer.ko));
   if (first === undefined) return skippedItem(item, "malformed");
   const path = item.stimulus.imageUrl;
   const pictureUrl = path === undefined ? null : port.imageUrlOf(path);
   if (pictureUrl === null) return skippedItem(item, "image-missing");
-  const head = item.answers[0];
+  const head = kept[0];
   const meaning = englishOf(port, head?.en) ?? port.glossOf(item.ref);
   if (meaning === undefined || meaning === null) return skippedItem(item, "no-gloss");
   return {
