@@ -17,6 +17,7 @@ import {
   speakWordMeaningShown,
   speakWordPictureLabel,
   speakWordResultAt,
+  speakWordResultAnnouncement,
   speakWordRevealText,
   speakWordSessionReducer,
   speakWordSessionResults,
@@ -316,6 +317,16 @@ describe("안내 · 지시문 · 문구", () => {
     expect(speakWordRevealText(question({ answers: answers("카드", "카아드") }), uiCopyEn)).toBe(
       "Answer: 카드 · kadeu",
     );
+  });
+
+  it("SW9b. 판정 알림은 맞으면 판정만, 틀리면 정답 문구를 싣는다", () => {
+    expect(speakWordResultAnnouncement(question(), "correct", uiCopyEn)).toBe("Result, correct");
+    expect(speakWordResultAnnouncement(question(), "incorrect", uiCopyEn)).toBe(
+      "Result, incorrect, Answer: 카드 · kadeu",
+    );
+    expect(
+      speakWordResultAnnouncement(question({ romanization: null }), "incorrect", uiCopyEn),
+    ).toBe("Result, incorrect, Answer: 카드");
   });
 
   it("SW10. 뜻 줄은 그림이 실패했을 때만 숨긴다", () => {

@@ -80,7 +80,7 @@ test("UC2. 말하기 두 구획의 다섯 키는 vi · es · ja에서 영어로 
   for (const language of ["vi", "es", "ja"] as const) {
     const table = uiCopyFor(language);
     expect(table.readAloud.badge).toBe(uiCopyEn.readAloud.badge);
-    expect(table.readAloud.matched(2, 5)).toBe("You said 2 of 5 words.");
+    expect(table.readAloud.matched(2, 5)).toBe("You said the first 2 of 5 words.");
     expect(table.readAloud.pronunciation("kadeu")).toBe("Pronunciation: kadeu");
     expect(table.speakWord.instruction).toBe(uiCopyEn.speakWord.instruction);
     expect(table.speakWord.recognitionUnavailable).toBe(uiCopyEn.speakWord.recognitionUnavailable);

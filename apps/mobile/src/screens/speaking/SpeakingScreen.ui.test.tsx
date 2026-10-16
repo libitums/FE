@@ -285,7 +285,7 @@ test("[UI-K3] unavailable 국면의 문구와 주 버튼은 그대로다", () =>
   tapAction("Speak");
 
   expect(screen.getByTestId("speaking-screen-unavailable")).toHaveTextContent(
-    "Speech recognition isn't available right now. Skip to the next sentence.",
+    "Speech recognition isn't available right now. Tap Skip to continue.",
   );
   expect(actionLabel()).toBe("Skip");
   // 같은 낱말의 버튼이 둘 서지 않습니다 — 주 버튼이 이미 그 일을 합니다(design §2.6).

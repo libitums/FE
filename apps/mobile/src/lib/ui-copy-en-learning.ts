@@ -38,8 +38,7 @@ export const speakingEn: SpeakingCopy = {
   dictationDisabled:
     "Siri or Dictation is off. Turn on Settings > General > Keyboard > Enable Dictation, then try again.",
   tapToContinue: "Tap the screen to continue",
-  recognitionUnavailable:
-    "Speech recognition isn't available right now. Skip to the next sentence.",
+  recognitionUnavailable: "Speech recognition isn't available right now. Tap Skip to continue.",
 };
 
 export const writingEn: WritingCopy = {

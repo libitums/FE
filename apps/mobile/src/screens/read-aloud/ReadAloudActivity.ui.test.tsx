@@ -29,7 +29,7 @@ const card: ReadAloudQuestion = {
 };
 
 const recognitionUnavailableText =
-  "Speech recognition isn't available right now. Skip to the next sentence.";
+  "Speech recognition isn't available right now. Tap Skip to continue.";
 
 type Finish = (results: readonly AnswerResult[], skippedCount: number) => void;
 
@@ -113,8 +113,8 @@ test("URA2. 듣는 중에는 Stop speaking만 서고 낭독이 없으며, 결과
   expect(id("read-aloud-content")).toHaveAttribute("data-phase", "heard");
   expect(chunk(0)).toHaveAttribute("data-matched", "true");
   expect(chunk(1)).toHaveAttribute("data-matched", "false");
-  expect(hintText()).toBe("You said 1 of 2 words.");
-  expect(host.announced.builtin).toEqual(["You said 1 of 2 words."]);
+  expect(hintText()).toBe("You said the first 1 of 2 words.");
+  expect(host.announced.builtin).toEqual(["You said the first 1 of 2 words."]);
   expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Next");
   expect(id("read-aloud-secondary")).toHaveAttribute("data-control", "retry");
   expect(id("read-aloud-secondary")).toHaveTextContent("Try again");
@@ -136,7 +136,7 @@ test("URA3. Try again은 다시 듣고 전부 맞히면 모든 조각을 칠한�
 
   expect(chunk(0)).toHaveAttribute("data-matched", "true");
   expect(chunk(1)).toHaveAttribute("data-matched", "true");
-  expect(hintText()).toBe("You said 2 of 2 words.");
+  expect(hintText()).toBe("You said all 2 words.");
 
   tapSecondary("retry", "Try again");
   fireEvent.tap(id("read-aloud-waves"), {});

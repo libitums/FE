@@ -177,7 +177,7 @@ test("SPK2. (AC2 인식) S5: 들은 글자가 문장과 같으면 조각이 모�
     expect(chunks.length).toBeGreaterThanOrEqual(words.length);
     for (const chunk of chunks) expect(chunk.getAttribute("data-matched")).toBe("true");
     expect(screen.getByTestId("read-aloud-hint")).toHaveTextContent(
-      `You said ${words.length} of ${words.length} words.`,
+      `You said all ${words.length} words.`,
     );
     expect(screen.getByTestId("learning-shell-action")).toHaveTextContent(
       index === sentences.length - 1 ? "See results" : "Next",

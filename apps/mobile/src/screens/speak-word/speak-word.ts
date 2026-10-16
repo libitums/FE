@@ -145,6 +145,16 @@ export function speakWordInstructionOf(
   return question.instruction ?? copy.speakWord.instruction;
 }
 
+/** 판정 알림 — 틀리면 정답 문구를 이어 싣습니다(자동으로 넘어가 정답 상자를 순회할 틈이 없습니다). */
+export function speakWordResultAnnouncement(
+  question: SpeakWordQuestion,
+  result: AnswerResult,
+  copy: UiCopy,
+): string {
+  const verdict = copy.common.resultAnnouncement(result);
+  return result === "correct" ? verdict : `${verdict}, ${speakWordRevealText(question, copy)}`;
+}
+
 export function speakWordRevealText(question: SpeakWordQuestion, copy: UiCopy): string {
   const [first] = question.answers;
   return copy.typing.answerReveal(

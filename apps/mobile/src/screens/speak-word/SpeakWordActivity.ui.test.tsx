@@ -32,7 +32,7 @@ const passport: SpeakWordQuestion = {
 };
 
 const recognitionUnavailableText =
-  "Speech recognition isn't available right now. Skip to the next word.";
+  "Speech recognition isn't available right now. Tap Skip to continue.";
 
 type Finish = (results: readonly AnswerResult[], skippedCount: number) => void;
 
@@ -90,7 +90,7 @@ test("USW1. 첫 화면은 빈 틀 · 뜻 줄 · 보조 Skip만 서고 Speak가 �
   expect(id("speak-word-picture")).toHaveAttribute("data-loadState", "loading");
   expect(id("speak-word-picture-frame")).toHaveAttribute("accessibility-label", "Picture, loading");
   expect(id("speak-word-meaning")).toHaveTextContent("card");
-  expect(id("speak-word-meaning")).not.toHaveAttribute("accessibility-element", "true");
+  expect(id("speak-word-meaning")).toHaveAttribute("accessibility-element", "false");
   expect(maybe("learning-shell-action")).not.toBeInTheDocument();
   expect(id("speak-word-secondary")).toHaveAttribute("data-control", "skip");
   expect(id("speak-word-secondary")).toHaveTextContent("Skip");
@@ -163,7 +163,7 @@ test("USW3. 오답이면 오답 배지와 정답 상자가 서고 재시도 버�
   tapAction("Speak");
 
   expect(id("answer-verdict")).toHaveAttribute("data-result", "incorrect");
-  expect(speech.announced.builtin).toEqual(["Result, incorrect"]);
+  expect(speech.announced.builtin).toEqual(["Result, incorrect, Answer: 카드 · kadeu"]);
   expect(id("speak-word-reveal")).toHaveTextContent("Answer: 카드 · kadeu");
   expect(maybe("speak-word-secondary")).not.toBeInTheDocument();
   expect(id("learning-shell").textContent).not.toContain("카트");

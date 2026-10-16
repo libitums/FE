@@ -83,13 +83,20 @@ export const syllableBuildEn: SyllableBuildCopy = {
 
 export const readAloudEn: ReadAloudCopy = {
   badge: "Practice",
-  matched: (matched, total) => `You said ${matched} of ${n(total, "word", "words")}.`,
+  matched: (matched, total) => {
+    if (matched === total) {
+      return total === 1 ? "You said the word." : `You said all ${total} words.`;
+    }
+    // 앞에서부터 이어 맞은 수입니다 — 0이면 "first"를 붙이지 않습니다.
+    const lead = matched === 0 ? "" : "the first ";
+    return `You said ${lead}${matched} of ${n(total, "word", "words")}.`;
+  },
   pronunciation: (romanization) => `Pronunciation: ${romanization}`,
 };
 
 export const speakWordEn: SpeakWordCopy = {
   instruction: "Say the word for the picture.",
-  recognitionUnavailable: "Speech recognition isn't available right now. Skip to the next word.",
+  recognitionUnavailable: "Speech recognition isn't available right now. Tap Skip to continue.",
 };
 
 export const pairMatchEn: PairMatchCopy = {

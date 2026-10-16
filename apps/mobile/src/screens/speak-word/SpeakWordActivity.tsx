@@ -24,6 +24,7 @@ import {
   speakWordInstructionOf,
   speakWordMeaningShown,
   speakWordResultAt,
+  speakWordResultAnnouncement,
   speakWordRevealText,
   speakWordSessionReducer,
   speakWordSessionResults,
@@ -70,8 +71,8 @@ export function SpeakWordActivity({
   // 판정은 서는 순간, 불가 안내(또는 받아쓰기 지시문)도 서는 순간 한 번 알립니다. 듣는 중에는 알리지 않습니다 —
   // 마이크가 켜진 동안의 화면 낭독은 인식기에 그대로 들어갑니다.
   useEffect(() => {
-    if (result !== null) {
-      announce(copy.common.resultAnnouncement(result));
+    if (result !== null && question != null) {
+      announce(speakWordResultAnnouncement(question, result, copy));
     } else if (phase.kind === "unavailable") {
       const content = dictationOff ? copy.speaking.dictationDisabled : hint;
       if (content !== null) announce(content);
@@ -244,7 +245,7 @@ export function SpeakWordActivity({
                 <text
                   className="speak-word-activity-meaning"
                   data-testid="speak-word-meaning"
-                  accessibility-elements-hidden={true}
+                  accessibility-element={false}
                 >
                   {question.meaning}
                 </text>
