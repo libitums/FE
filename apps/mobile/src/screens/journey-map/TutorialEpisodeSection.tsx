@@ -5,6 +5,7 @@ import { TutorialMapItem, type TutorialGuide, type TutorialMapActions } from "./
 import { episodeSectionId, mapUnitDomId } from "./journey-map-scroll";
 import { mapRowItems, tutorialItemId, tutorialRowsOf } from "./journey-map-rows";
 import type { JourneyProgress } from "./journey-map-progress";
+import type { JourneyMapNodeAccess } from "./journey-map-load.contract";
 import type { JourneyFilledEpisode, JourneyMapItem } from "./journey-map-types";
 import { useMapColumns } from "./useMapColumns";
 
@@ -12,6 +13,8 @@ export type TutorialEpisodeSectionProps = {
   readonly episode: JourneyFilledEpisode;
   readonly items: readonly JourneyMapItem[];
   readonly progress: JourneyProgress;
+  /** 노드를 누를 수 있는가입니다 — 진행을 확인하는 동안은 `checking`입니다. 없으면 `open`입니다. */
+  readonly access?: JourneyMapNodeAccess;
   readonly guide: TutorialGuide;
   readonly actions: TutorialMapActions;
 };
@@ -23,12 +26,13 @@ export function TutorialEpisodeSection({
   episode,
   items,
   progress,
+  access = "open",
   guide,
   actions,
 }: TutorialEpisodeSectionProps): ReactNode {
   const columns = useMapColumns();
   return (
-    // ⚠ `id`입니다 — 머리 카드가 구획 자리를 `#id` 선택자로 잽니다.
+    // 구획 자리를 `#id` 선택자로 잴 수 있게 둡니다.
     <view id={episodeSectionId(episode.id)} className="journey-map-screen-episode">
       {tutorialRowsOf(items, columns).map((row) => {
         const rowItems = mapRowItems(row);
@@ -49,6 +53,7 @@ export function TutorialEpisodeSection({
                       item={item}
                       sectionItems={items}
                       progress={progress}
+                      access={access}
                       guide={guide}
                       actions={actions}
                     />

@@ -3,7 +3,13 @@
 
 import type { LockReason } from "../../lib/episode-catalog";
 import type { CatalogProgress, CatalogUnitKey } from "../../lib/catalog-progress";
-import type { JourneyMapItemStatus, JourneyMapSection } from "./journey-map-types";
+import type {
+  JourneyMapItemStatus,
+  JourneyMapNodeStatus,
+  JourneyMapSection,
+  JourneyStepId,
+} from "./journey-map-types";
+import type { JourneyMapNodeAccess, JourneyMapProgressLoad } from "./journey-map-load.contract";
 import type { JourneyProgress } from "./journey-map-progress";
 
 export type CatalogUnavailableReason = "pending" | LockReason;
@@ -46,8 +52,6 @@ export type CatalogUnitNode = {
   readonly status: JourneyMapItemStatus;
 };
 
-export type CatalogSectionProgress = { readonly completed: number; readonly total: number };
-
 /** 맵 화면의 카탈로그 슬롯입니다. 없으면(undefined) 카탈로그 구획이 없는 맵 — 튜토리얼만. */
 export type JourneyMapCatalogProps = {
   readonly sections: readonly CatalogMapSection[];
@@ -60,13 +64,16 @@ export type JourneyMapCatalogProps = {
 export type CatalogMapSectionsProps = {
   readonly sections: readonly CatalogMapSection[];
   readonly gate: CatalogGate;
+  /** 없으면 열려 있습니다. */
+  readonly access?: JourneyMapNodeAccess;
   readonly onStartCover: (episodeId: string) => void;
   readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
 };
 
 export type CatalogEpisodeSectionProps = {
   readonly section: CatalogReadySection;
-  readonly coverStatus: JourneyMapItemStatus;
+  readonly coverStatus: JourneyMapNodeStatus;
+  readonly access: JourneyMapNodeAccess;
   readonly progress: CatalogProgress;
   readonly onStartCover: (episodeId: string) => void;
   readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
@@ -78,29 +85,26 @@ export type CatalogCoverMapItemProps = {
   readonly episodeId: string;
   /** 낭독의 `Episode n.` 자리입니다. */
   readonly ordinal: number;
-  readonly status: JourneyMapItemStatus;
+  readonly status: JourneyMapNodeStatus;
   readonly onSelect: (episodeId: string) => void;
 };
 
 export type CatalogUnitNodeProps = {
   readonly episodeId: string;
   readonly episodeOrdinal: number;
-  readonly node: CatalogUnitNode;
+  readonly node: Omit<CatalogUnitNode, "status"> & { readonly status: JourneyMapNodeStatus };
   readonly onSelect: (episodeId: string, unitKey: CatalogUnitKey) => void;
 };
 
-export type CatalogEpisodeHeaderProps = {
-  readonly section: CatalogMapSection;
-  readonly progress: CatalogProgress;
-};
-
 export type JourneyMapHeaderSlotProps = {
-  /** `useCurrentEpisode`의 index(튜토리얼 + 카탈로그 이어 센 자리) */
-  readonly index: number;
   /** 화면이 배럴에서 읽은 값을 넘깁니다(테스트 mock이 닿게). */
   readonly tutorialSections: readonly JourneyMapSection[];
   readonly progress: JourneyProgress;
-  readonly catalog: JourneyMapCatalogProps | undefined;
+  readonly load: JourneyMapProgressLoad;
+  /** 화면 겹침 레이어가 떠 있으면 참 — 실패 줄의 재시도 버튼을 낭독에서 가립니다(ADR-0016 D9). */
+  readonly obscured?: boolean;
+  /** 열려 있는 스텝 말풍선의 스텝입니다 — 띠의 unit 번호가 그 스텝을 따릅니다. 없으면 `null`과 같습니다. */
+  readonly openStepId?: JourneyStepId | null;
 };
 
 export type CatalogMapCopy = {

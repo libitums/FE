@@ -23,7 +23,6 @@ import {
   catalogMapSectionsOf,
   catalogSectionDomId,
   catalogUnitDomId,
-  catalogSectionProgress,
   catalogSelectorToken,
   catalogUnavailableAccessibilityLabel,
   catalogUnitNodeAccessibilityLabel,
@@ -244,23 +243,6 @@ describe("잠긴 노드와 진행", () => {
     expect(nodes[8]).toEqual({ key: "RP", role: "final", ordinal: 9, status: "locked" });
     expect(nodes.every((node) => node.status === "locked")).toBe(true);
   });
-
-  test("CM9. 끝낸 유닛 수는 표지와 알려진 키만 센다", () => {
-    const u01 = u01Section();
-    expect(catalogSectionProgress(u01, { "u01-water": ["intro", "S1", "X"] })).toEqual({
-      completed: 2,
-      total: 10,
-    });
-    expect(catalogSectionProgress(u01, {})).toEqual({ completed: 0, total: 10 });
-  });
-
-  test("CM9. 다른 에피소드의 진행은 세지 않는다", () => {
-    const u01 = u01Section();
-    expect(catalogSectionProgress(u01, { "u02-checkin": ["intro", "S1"] })).toEqual({
-      completed: 0,
-      total: 10,
-    });
-  });
 });
 
 describe("사슬 잠금 — 표지 → 레슨들 → 최종", () => {
@@ -396,9 +378,6 @@ describe("순수성", () => {
     expect(second).toEqual(first);
     expect(catalogUnitNodesOf(section, progress)).toEqual(nodes);
     expect(catalogCoverStatus(first, 1, gate(true, progress))).toBe(status);
-    expect(catalogSectionProgress(section, progress)).toEqual(
-      catalogSectionProgress(section, progress),
-    );
   });
 });
 

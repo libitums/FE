@@ -71,34 +71,41 @@
   align-self: stretch;
 }
 
-/* 에피소드 헤더 상자 — 스크롤을 올려도 꼭대기에 달라붙습니다. 「지금 어느
-   에피소드인가」는 유닛을 훑는 내내 답이 필요한 물음이라, 스크롤 밖으로 흘려보내지
-   않습니다.
+/* 에피소드 띠 — 스텝 말풍선이 열린 동안만 맵 위에 겹쳐 서고, 스크롤 밖에 있어 맵을 밀지 않습니다.
 
-   폭이 카드 폭(151, Figma 79-5692 실측값)입니다. 줄 폭으로 펴지 않습니다 — 편 적이
-   있었는데, 면이 없어도 **손가락을 먹습니다**: 카드 오른쪽 빈 자리에서 유닛을 눌러도
-   탭이 이 상자에 막혔습니다. 폭을 아는 쪽이 여기여야 하는 이유입니다.
+   폭은 화면 가로 여백 안쪽 전체입니다(`left` · `right`) — 띠가 가로를 덮으므로 띠 자리의
+   탭은 띠가 먹습니다. 보이는 면이라 맞습니다.
 
-   `align-self: flex-start`가 왼쪽에 붙입니다 — 카드 왼쪽 모서리가 상단 바의 스트릭
-   칩과 같은 세로선에 섭니다(에피소드 상자가 `align-items: center`라 그냥 두면
-   가운데로 갑니다).
-
-   면을 칠하지 않습니다. 가리는 것은 카드 자신이고, 카드 옆은 그대로 비칩니다 —
-   달라붙은 헤더가 줄 전체를 덮는 띠가 아니라 떠 있는 카드로 읽힙니다. `z-index`는
-   카드가 유닛 위에 서기 위한 것입니다. */
+   위치는 칩 줄 아래입니다(칩 줄 = 위 여백 12 + 칩 40 + 아래 여백 12). `z-index`는 띠가 유닛
+   위에 서기 위한 것입니다. */
 .journey-map-screen-episode-header {
-  align-self: flex-start;
-  width: 151px;
   display: flex;
   flex-direction: column;
   position: absolute;
-  /* 0이 아니라 바 높이 40pt입니다 — 상단 바가 스크롤 꼭대기를 덮으므로, 0으로 두면
-     달라붙은 카드가 칩 · 버튼과 겹칩니다. 위 `.journey-map-screen-map`의 여백과 같은
-     수에서 나옵니다. */
-  /* 겹침 레이어로 옮기면서 자리를 화면 기준으로 다시 잡습니다 — 상단 바(칩 · 알림)
-     아래에 서야 하므로 그 높이만큼 내립니다. 스크롤 안에 있을 때는 맵 상자의 위 여백이
-     이 몫을 지고 있었습니다. */
-  top: calc(var(--libitum-spacing-80) + var(--libitum-spacing-24));
+  top: calc(var(--libitum-spacing-12) + var(--libitum-spacing-40) + var(--libitum-spacing-12));
   left: var(--libitum-layout-screen-padding-x);
+  right: var(--libitum-layout-screen-padding-x);
+  z-index: var(--libitum-elevation-z-sticky);
+}
+
+/* 띠 자리의 측정 손잡이입니다 — 자동 스크롤과 말풍선이 이 상자의 아래 모서리에 맞춥니다. 띠가 없으면
+   높이 0이라 칩 줄 아래 모서리가 기준이 됩니다. 보이는 것도 탭을 받는 것도 없습니다. */
+.journey-map-screen-header-anchor {
+  position: absolute;
+  top: calc(var(--libitum-spacing-12) + var(--libitum-spacing-40) + var(--libitum-spacing-12));
+  left: var(--libitum-layout-screen-padding-x);
+  right: var(--libitum-layout-screen-padding-x);
+}
+
+/* 진행을 불러오는 줄의 자리입니다. 띠와 같은 위 모서리에서 띠 높이(인라인 위 여백)와 간격
+   spacing-8만큼 내려옵니다. 폭은 줄 내용에 맞추고 화면 안에 가둡니다. */
+.journey-map-screen-progress-row {
+  position: absolute;
+  top: calc(
+    var(--libitum-spacing-12) + var(--libitum-spacing-40) + var(--libitum-spacing-12) +
+      var(--libitum-spacing-8)
+  );
+  left: var(--libitum-layout-screen-padding-x);
+  max-width: calc(100% - var(--libitum-layout-screen-padding-x) * 2);
   z-index: var(--libitum-elevation-z-sticky);
 }

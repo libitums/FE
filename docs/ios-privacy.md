@@ -96,6 +96,8 @@ Section 3(제3자) 표에는 Meta Platforms 행을 더한다 — 기능 「adver
 
    > Learning progress and learning dates that could not be sent are stored on your device and retried when a connection is available. Signing out keeps these pending records for the same account; deleting your account clears them. Uninstalling the App removes pending records that have not reached our servers.
 
+   ⟨2026-10-15 — 이 초안은 더는 사실의 전부가 아니다. **서버가 확인한 진행도 기기에 남는다**([ADR-0062](adr/0062-progress-cache-first.md)) — 고친 초안은 아래 「학습 진행 저장본」⟩
+
 3. Section 2 목적에 추가:
 
    > To save and restore learning progress, calculate learning streaks, and send reminders when you enable them.
@@ -109,6 +111,8 @@ Section 3(제3자) 표에는 Meta Platforms 행을 더한다 — 기능 「adver
 5. Section 4에 추가:
 
    > Learning progress, learning dates, and feedback are kept until you delete your account. Notification registrations are deleted when you delete your account. Signing out requests removal of the current device registration and requires a working connection. Disabling notifications in iOS stops delivery but does not itself delete the server registration. Pending learning records on your device are cleared after successful sync or account deletion.
+
+   ⟨2026-10-15 — 마지막 문장은 미전송 기록에만 맞다. 확인된 진행의 기기 사본은 동기화 뒤에도 남고 계정 삭제 · 앱 삭제로 지워진다 — 아래 「학습 진행 저장본」⟩
 
 기존 “Usage information: up to 1 year”는 **PostHog analytics records**로 범위를 명확히 하여 학습 진행의 계정 보존과 구분해야 한다. 특히 [PostHog 공식 보존 안내](https://posthog.com/docs/data/events-retention)는 플랜의 조회 가능 기간이 자동 삭제를 뜻하지 않는다고 명시한다. 이번 MCP에는 보존 기간 조회 도구가 없고 웹은 로그인이 필요해 현재 플랜의 기간을 확정하지 못했다. **1년 후 삭제한다고 단정하는 문구는 사용하지 않는다.** 공개 문안 확정 전에 실제 보존·삭제 절차를 확인하거나 그 절차에 맞춰 기간을 수정해야 한다. 개인정보처리방침 변경 후 공개 URL을 로그아웃 상태에서도 읽을 수 있는지 확인한다.
 
@@ -148,6 +152,34 @@ Section 3(제3자) 표에는 Meta Platforms 행을 더한다 — 기능 「adver
 > On your device, the App keeps a copy of your name and country so lessons can show them before a connection is available. Signing out keeps this copy for the same account; deleting your account removes it.
 
 Section 3의 Supabase 행에 「learner profile (name and country you enter)」을 더한다.
+
+## 학습 진행 저장본 (2026-10-15)
+
+> **공개 처리방침 문구의 수정 여부는 사용자 판단으로 남겼다**(사용자 결정 2026-10-15 — 저장소 안 문서만 고친다, ADR README 보류 표). 아래는 코드 근거의 대조와 문안 초안이다.
+> App Store 신고 항목은 바뀌지 않는다 — 새로 모으는 데이터가 아니라 이미 서버에 두는 학습 진행(위 「수집 항목 대조」의 제품 상호작용)의 **기기 사본**이다.
+
+[ADR-0062](adr/0062-progress-cache-first.md)이 **서버가 마지막으로 확인한 학습 진행을 기기에 남긴다** — 켤 때 서버 응답 전에 여정 맵을 지난 진행으로 그리려는 것이다.
+전에는 보내지 못한 진행(미전송)만 기기에 두고 서버가 확인하면 지웠다(ADR-0035 D3).
+
+| 데이터 | 어디에 저장하나 | 목적 | 사용자 연결 | 추적 | 코드 근거 |
+| --- | --- | --- | --- | --- | --- |
+| 학습 진행 스냅숏(끝낸 스텝 · 유닛 · 카탈로그 유닛 키 — 서버 `learning_progress.progress`와 같은 모양) | 기기 `UserDefaults` — 키 `libitum.progress.cached.<userId>` | App Functionality(켤 때 진행을 바로 보이기) | 키에 사용자 id(이 기기 안에서만) | 아니다 | `app/cached-learning-progress.ts`, 쓰는 자리 `app/journey-progress-sync.ts` |
+
+- **담는 것**: 진행 스냅숏만이다. 이름 · 이메일 · 토큰 같은 식별 정보는 없다. 위 「앱의 API 사용 사유」의 UserDefaults `CA92.1` 범위 안이다 — 앱 자체 정보다.
+- **보존 · 삭제**: **로그아웃에는 남긴다**(같은 계정으로 다시 들어오면 응답 전에 맵을 채우려고 — 다른 계정은 키가 달라 읽지 않는다). 계정 삭제 성공에 지운다. 앱을 지우면 함께 사라진다.
+  서버의 진행은 그대로 계정 삭제 때 CASCADE로 지워진다.
+- **분석**: 새 PostHog 이벤트 셋(`progress_load_delayed` · `progress_load_failed` · `progress_load_recovered`)은 상태 전이와 `attempt` · `trigger`만 싣고 진행 내용 · 사용자 id · 대기 시간을 싣지 않는다
+  ([ADR-0029](adr/0029-product-analytics-posthog.md) D14 적용 기록).
+
+**공개 개인정보처리방침 문안 초안**(공개 페이지에는 반영하지 않았다 — 위 「공개 개인정보처리방침에 반영할 문안」 2 · 5를 바꾸는 꼴):
+
+- 2 “Information stored on your device”:
+
+  > Your learning progress is also stored on your device, so the App can show it right away when you open it, before it reaches our servers. Progress and learning dates that could not be sent are kept on your device and retried when a connection is available. Signing out keeps these records for the same account; deleting your account clears them. Uninstalling the App removes them.
+
+- 5 Section 4의 마지막 문장:
+
+  > The copy of your learning progress on your device is kept until you delete your account or uninstall the App.
 
 ## 배포 산출물 확인
 

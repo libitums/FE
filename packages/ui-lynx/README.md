@@ -149,6 +149,8 @@ import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 
 `LearningUnit`은 학습 목록의 원형 단위 control이다. 제목·진행 문구·연결선은 상위 목록이
 조합하며, 컴포넌트는 상태별 Ring·Surface·Icon과 선택적인 Narrative 배지만 소유한다.
+상태는 `default | available | active | clear | checking`이고, `checking`(상위 목록이 상태를 아직 모름)은
+누를 수 없고 접미사 `loading`을 단다 — 상세는 [`docs/learning-unit.md`](docs/learning-unit.md).
 ReactLynx의 focus-visible 상태는 제품 host가 `focused`로 전달한다.
 
 ```tsx
@@ -346,9 +348,15 @@ Typewriter의 `visibleCharacterCount`는 대사 전환 시점의 상태 경합�
 그 아래 같은 모양의 둘째 줄이다(`aside`가 있어야 한다). 기본 접근성 이름은 `화자, 지문: 대사`
 순서로 지문을 읽는다. Narration에는 지문 자리가 없고 주면 던진다.
 
-`EpisodeHeader`의 `titleLines`는 호출자가 띄어쓰기에서 나눈 제목 줄이다. 줄마다 `text` 하나(`text-maxline` 1)를
-그리고, `titleSize="compact"`이면 글자 크기를 토큰 `heading-s` 단계로 내리며 표지 `data-title-size="compact"`가
-선다. 둘 다 안 주면 지금 모양 그대로다. 줄 나눔 계산은 호출자 몫이고 컴포넌트는 그리기만 한다.
+`EpisodeHeader`는 에피소드 띠다(2026-10-16 — 앞선 흰 면 · 가운데 정렬 카드를 바꿨다). 면은 `brand-primary`(테두리 없음 · `radius-xl` ·
+안쪽 여백 16 / 20 / 16), 글자는 전부 `white`이고 왼쪽 정렬이다. **폭은 부모가 정한다** — 컴포넌트가 폭을 고정하지 않는다. 순서는 설명 줄
+(`episodeLabel` 그대로, `body-s`) → 제목(`accent-chapter`) → 진행 줄(막대 `flex: 1` · 높이 10 · 트랙 `brand-reward-border` · 채움 `white` · 별 없음,
+숫자 `body-s`)이다. `episodeLabel`은 호출자가 만든 문장 조각(예: `Episode 1, unit 02`)이라 접근성 이름의 구분자가 쉼표다 —
+`<episodeLabel>, <title>, <n> of <m> unit(s) completed`. 흰 글자 / `brand-primary`는 3.02:1로 본문 대비 미달이고 사용자가 수용했다
+(ADR-0025 D0 적용 기록). 앱의 쓰임은 ADR-0062 D13.
+
+2026-10-16 정리: `titleLines` · `titleSize` · `progressPending`(자리 막대 포함) prop을 걷었다. 앱의 맵 띠는 스텝 말풍선이 열린 동안만 서고
+그때 진행을 아는 상태라 이 셋을 쓰는 길이 없어졌다(ADR-0062 D13). 진행 숫자의 글자색은 2026-10-16 띠 개편에서 `white`가 됐다.
 
 `TextField`는 native 단일 행 입력을 사용하며 label 또는 `accessibilityLabel` 중 하나를
 필수로 받는다. Prefix/Suffix/Icon/Action, Helper/Error, Counter를 선택적으로 조합하고

@@ -29,7 +29,7 @@ describe("EpisodeHeader", () => {
   test("카드가 하나의 접근성 요소이고 이름이 단위를 밝힌다", () => {
     render(
       <EpisodeHeader
-        episodeLabel="Episode 1."
+        episodeLabel="Episode 1, unit 02"
         title="Cosmetic."
         completedUnitCount={3}
         totalUnitCount={8}
@@ -41,7 +41,7 @@ describe("EpisodeHeader", () => {
     expect(header).toHaveAttribute("accessibility-traits", "header");
     expect(header).toHaveAttribute(
       "accessibility-label",
-      "Episode 1. Cosmetic., 3 of 8 units completed",
+      "Episode 1, unit 02, Cosmetic., 3 of 8 units completed",
     );
   });
 
@@ -75,5 +75,56 @@ describe("EpisodeHeader", () => {
       "style",
       expect.stringContaining("25%"),
     );
+  });
+
+  // spec §19 H-1: 위에서 아래로 설명 줄 -> 제목 -> 진행 줄입니다.
+  test("HU1. 설명 줄 -> 제목 -> 진행 줄 순서로 그린다", () => {
+    render(
+      <EpisodeHeader
+        episodeLabel="Episode 0, unit 03"
+        title="Tutorial."
+        completedUnitCount={2}
+        totalUnitCount={8}
+      />,
+    );
+
+    const label = screen.getByTestId("ui-lynx-episode-header-label");
+    const title = screen.getByTestId("ui-lynx-episode-header-title");
+    const track = screen.getByTestId("ui-lynx-episode-header-track");
+    const count = screen.getByTestId("ui-lynx-episode-header-count");
+    const before = Node.DOCUMENT_POSITION_FOLLOWING;
+    expect(label.compareDocumentPosition(title) & before).toBeTruthy();
+    expect(title.compareDocumentPosition(track) & before).toBeTruthy();
+    expect(track.compareDocumentPosition(count) & before).toBeTruthy();
+    expect(label).toHaveTextContent("Episode 0, unit 03");
+  });
+
+  test("HU2. 설명 줄은 episodeLabel을 그대로 그린다 (마침표를 더하거나 떼지 않는다)", () => {
+    render(
+      <EpisodeHeader
+        episodeLabel="Episode 2, unit 02"
+        title="Cosmetic."
+        completedUnitCount={1}
+        totalUnitCount={8}
+      />,
+    );
+
+    expect(screen.getByTestId("ui-lynx-episode-header-label").textContent).toBe(
+      "Episode 2, unit 02",
+    );
+  });
+
+  test("HU3. 별을 그리지 않는다 (채움이 있어도)", () => {
+    const { container } = render(
+      <EpisodeHeader
+        episodeLabel="Episode 0, unit 03"
+        title="Tutorial."
+        completedUnitCount={4}
+        totalUnitCount={8}
+      />,
+    );
+
+    expect(screen.getByTestId("ui-lynx-episode-header-fill")).toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeNull();
   });
 });

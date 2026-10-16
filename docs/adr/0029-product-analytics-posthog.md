@@ -324,6 +324,15 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - Meta 앱 이벤트 전달([ADR-0057](0057-meta-app-events.md))은 이 이벤트들을 옮기지 않아 영향이 없다.
   - **한계** — PostHog 도착은 이번에도 보지 않았다. **GitHub wiki 이벤트 사전은 저장소 밖이라 이 변경에 들어 있지 않다** — 위 표 · `stage: "intro"` · 건너뛰기 비율의 정의 · 해석 단절을 따로 옮겨야 한다(후속). **⟨2026-10-14 사용자 결정⟩ 이미 끝낸 표지를 다시 열어 건너뛴 것은 세지 않는다** — 진행에 `intro`가 있으면 `episode_intro_skipped`를 내지 않고 맵으로만 돌아간다(진행 기록도 다시 하지 않는다). `episode_intro_viewed`는 다시 열 때도 나므로 건너뛰기 비율의 분모는 에피소드별 **첫 조회**로 잡아야 한다.
     `screens/episode-intro/episode-intro.contract.ts`의 이벤트 설명 주석은 튜토리얼만 말한다 — 카탈로그에서의 시점은 이 기록이 진다.
+- ⟨2026-10-15 — 진행 저장본 먼저 · 로딩 줄. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 셋이 더해져 이름이 36 → 39개다**(모양 40 → 43). 결정은 [ADR-0062](0062-progress-cache-first.md) D11.
+  sink는 새로 만들지 않았다 — 화면 밖 훅(`useProgressLoadEvents`)이 `episodeIntroEventSink`로 낸다(`episode_content_refreshed`와 같은 자리). 타입 정본은 `lib/progress-load-event.contract.ts`이고 `EpisodeIntroEvent` union에 든다.
+  - **`progress_load_delayed`** — 기기에 저장본이 없는 사용자의 진행 조회가 1,000 ms를 넘긴 순간(상태 `checking → loading`). 속성 없음.
+  - **`progress_load_failed`** — 조회가 실패해 실패 줄이 서는 전이. 속성 `attempt`(`first` — 첫 대기 중 실패 | `retry` — `Try again` 뒤 실패). 자동 재시도의 되풀이 실패는 상태가 그대로라 다시 나지 않는다.
+  - **`progress_load_recovered`** — 실패 뒤 결국 들어간 전이. 속성 `trigger`(`auto` — 자동 재시도 성공 | `manual` — `Try again` 뒤 성공).
+  - 상태 전이로 센다 — 탭을 오가 줄이 다시 서도 다시 세지 않는다. **저장본이 있는 사용자는 셋 다 내지 않는다**(신규 설치 · 새 기기 · 재설치에서만 난다).
+  - 묻는 질문: 「로딩 줄이 얼마나 자주 뜨는가」 = `delayed` · `failed` 횟수의 추이, 「막힌 채 끝난 세션」 = `failed` − `recovered`.
+  - **한계** — **분모(저장본 없이 시작한 횟수)는 재지 않는다** — 비율이 아니라 절대 횟수의 추이로 본다(이름 하나를 더하면 잴 수 있다 — ADR-0062 재검토 조건 1). 대기 시간은 싣지 않는다(값은 문자열 · 불리언뿐).
+    Meta 앱 이벤트 매핑([ADR-0057](0057-meta-app-events.md))은 셋을 옮기지 않는다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 이 변경에 들어 있지 않다(후속).
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 

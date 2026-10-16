@@ -25,6 +25,7 @@ import type {
 } from "../lib/auth-session.contract";
 import type { FeedbackScreenProps } from "../screens/feedback/feedback.contract";
 import type { JourneyStats, ProgressWiringArgs } from "./learning-progress";
+import type { JourneyMapProgressLoad } from "../screens/journey-map/journey-map-load.contract";
 import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
 import type { EntryEventSink } from "../lib/entry-flow";
@@ -95,6 +96,7 @@ export type RoleplayUnitWiring = {
 // 모릅니다(ADR-0007 D3). 화면이 받는 것은 "무엇이 일어났다"는 콜백뿐이고,
 // 그것을 무슨 네비게이션 동작으로 옮길지는 `App`이 정합니다.
 export type ScreenWiring = {
+  journeyMapProgressLoad: JourneyMapProgressLoad;
   messengerEventSink: MessengerEventSink;
   completedMessengerUnitIds: readonly MessengerUnitId[];
   onStartMessengerUnit: (id: MessengerUnitId) => void;
@@ -272,6 +274,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     gemCount: args.gemCount,
     streakDays: args.streakDays,
     trophyCount: args.trophyCount,
+    journeyMapProgressLoad: args.journeyMapProgressLoad,
     phoneSignIn: args.phoneSignIn,
     onScreenLayerChange: args.setScreenLayerOpen,
     episodePrologueFor: args.episodePrologueFor,

@@ -104,6 +104,11 @@
   엔트리가 `<MotionProvider motion={data.motion}>`로 감싸고 컴포넌트에 prop을 주지 않는다(제품 앱과 같은 길). 기존 넷은 prop 경로 그대로, Visual Novel Dialog는 `reducedMotion` prop arg로 스토리만.
   Chat Bubble은 `reveal: "instant" | "typewriter"` arg와 `Typewriter` 스토리를 더했다 — `reveal` 없이는 reduced가 보일 것이 없다. 순수 함수 `normalizeStoryMotion(value)`(`"reduced"`만 reduced)을
   다섯 companion · 엔트리가 공유한다. 전역 툴바를 버린 이유는 「버린 대안」 3.
+- ⟨2026-10-15 — 적용 기록이고 결정을 바꾸지 않는다⟩ **여정 맵의 진행 불러오기 줄의 회전 고리는 reduced에서 멈춘다 — 위 Spinner 예외 밖이다**([ADR-0062](0062-progress-cache-first.md) D9).
+  예외의 조건은 「**사용자가 시작한** 요청의 유일한 진행 표시」인데, 이 줄의 조회는 앱이 켤 때 **스스로 시작한** 것이고 문구(`Loading your progress…`)가 진행 중임을 따로 말한다.
+  그래서 정본 매핑의 「회전은 즉시」를 따른다 — reduced에서는 고리 대신 `time` 아이콘을 멈춘 채 그리고 루트에 `data-motion="reduced"`를 단다. `Try again`을 누른 뒤의 로딩도 같은 줄이라 멈춘다.
+  회전 길이 · 가속은 토큰(`--libitum-motion-duration-spinner` · `--libitum-motion-easing-linear`), 줄의 등장은 불투명도만(standard `d4` · `enter`, reduced `d2` · `linear`)이다.
+  고리 규칙은 Button 안 스피너와 같은 모양을 앱 CSS에 한 벌 더 둔 것이다(Button의 선택자가 `.ui-lynx-button-loading`에 묶여 있다). 기기에서 reduced 정지 표시는 보지 않았다.
 
 ### D4. 보상 모션은 한 화면에서 한 번이고 순수 파생이며 퇴장이 없다 — 재화 자리는 없다
 

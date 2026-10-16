@@ -2,6 +2,8 @@ import type { VisualNovelMapItemProps } from "../visual-novel/visual-novel.contr
 import book from "@libitums/icons/lynx/book";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
+import { canSelectMapNode } from "./journey-map-load";
+
 import "./journey-special-unit.css";
 
 // `LearningUnit`의 상태 어휘로 옮깁니다 — `MessengerMapItem`과 **같은 표**입니다.
@@ -9,6 +11,7 @@ const unitStatusByStatus = {
   locked: "default",
   available: "available",
   completed: "clear",
+  checking: "checking",
 } as const;
 
 // `MessengerMapItem`과 같은 어댑터입니다 — 어휘와 아이콘만 다릅니다. 잠김도 같습니다:
@@ -16,7 +19,7 @@ const unitStatusByStatus = {
 export function VisualNovelMapItem({ id, title, status, onSelect }: VisualNovelMapItemProps) {
   const handleSelect = () => {
     "background only";
-    if (status !== "locked") {
+    if (canSelectMapNode(status)) {
       onSelect(id);
     }
   };

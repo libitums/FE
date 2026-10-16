@@ -1,13 +1,14 @@
 // 에피소드 서사 표지의 타입 전용 계약입니다 — 구현 · JSX를 두지 않습니다.
 
 import type { CatalogLearningEvent } from "../../lib/catalog-learning-event.contract";
+import type { ProgressLoadEvent } from "../../lib/progress-load-event.contract";
 import type {
   LearnerProfileSavedEvent,
   LearnerProfileSkippedEvent,
 } from "../../lib/learner-profile.contract";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
-import type { JourneyMapItemStatus } from "../journey-map/journey-map";
+import type { JourneyMapNodeStatus } from "../journey-map/journey-map";
 
 export type EpisodeIntroUnitId = "tutorial-intro";
 /**
@@ -41,7 +42,7 @@ export type EpisodeIntroMapItemProps = {
   readonly id: EpisodeIntroUnitId;
   readonly title: EpisodeIntroTitle;
   /** 표지는 구획의 첫 항목이라 `locked`가 오지 않습니다 — 그래도 타입은 공용을 씁니다. */
-  readonly status: JourneyMapItemStatus;
+  readonly status: JourneyMapNodeStatus;
   readonly onSelect: (id: EpisodeIntroUnitId) => void;
 };
 
@@ -118,7 +119,8 @@ export type EpisodeIntroEvent =
   | EpisodeSurveySkippedEvent
   | CatalogLearningEvent
   | LearnerProfileSavedEvent
-  | LearnerProfileSkippedEvent;
+  | LearnerProfileSkippedEvent
+  | ProgressLoadEvent;
 /** 보내지 않을 때는 `null`입니다 — no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */
 export type EpisodeIntroEventSink = ((event: EpisodeIntroEvent) => void) | null;
 export type EpisodeIntroAppProps = { readonly episodeIntroEventSink?: EpisodeIntroEventSink };

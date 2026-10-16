@@ -39,6 +39,9 @@ export type JourneyStepId =
 
 export type JourneyStepStatus = "done" | "current" | "locked";
 
+/** 스텝 노드가 받는 상태입니다 — `JourneyMapNodeStatus`와 같은 갈래입니다. */
+export type JourneyStepNodeStatus = JourneyStepStatus | "checking";
+
 export type JourneyStep = {
   readonly id: JourneyStepId;
   readonly title: string;
@@ -86,6 +89,12 @@ export type JourneyMapItem =
  * 잠김을 실제로 내는 파생은 `mapItemStatus`입니다(`journey-map-progress.ts`).
  */
 export type JourneyMapItemStatus = "locked" | "available" | "completed";
+
+/**
+ * 맵 노드가 받는 상태입니다 — 진행에서 파생되는 상태에 「확인 중」이 더해집니다. 파생 함수의
+ * 반환 타입은 넓히지 않고, 화면 경계(`journey-map-load.ts`)에서만 덮습니다.
+ */
+export type JourneyMapNodeStatus = JourneyMapItemStatus | "checking";
 
 /**
  * 튜토리얼 에피소드를 가려내는 이름입니다. 본편 에피소드는 카탈로그가 맵의 별도 구획으로 싣고

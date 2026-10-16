@@ -9,6 +9,8 @@
 // 예외는 미전송 분석 이벤트(`analytics.queue`, ADR-0029 D12)와 사용자별 미전송 학습 진행
 // (`libitum.progress.pending.<userId>`, ADR-0035 D3)과 학습 날짜
 // (`libitum.learning-days.pending.<userId>`, ADR-0035 D6)입니다. 서버 확인 뒤 지웁니다.
+// 마지막으로 서버가 확인한 학습 진행(`libitum.progress.cached.<userId>`, ADR-0062)은 이 규칙의 예외입니다 -
+// 확인 뒤에도 남겨 켠 직후 응답 전에 맵을 채웁니다. 로그아웃에 남고 계정 삭제 성공에 지웁니다.
 // 학습자 프로필(이름 · 나라)의 새 예외 둘: 사용자별 칸(`libitum.learner-profile.<userId>`, 확인된 값도 둡니다 -
 // 부팅 직후 내려받기 전에도 문장이 채워져야 하고 서버 표가 없는 상태에서도 동작해야 합니다)과 로그인 전 손님 칸
 // (`libitum.learner-profile.guest`, 로그인 뒤 첫 동기화가 사용자별 칸으로 옮기며 지웁니다). 사용자별 칸은

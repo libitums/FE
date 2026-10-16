@@ -5,12 +5,17 @@ import { describe, expect, test } from "vitest";
 
 import { getEpisodeHeaderContract } from "./episode-header.contract";
 
-const base = { episodeLabel: "Episode 0.", title: "Tutorial.", totalUnitCount: 20 } as const;
+// 설명 줄은 호출자가 「Episode 0, unit 03」처럼 만들어 넘깁니다(spec §19 H-1).
+const base = {
+  episodeLabel: "Episode 0, unit 03",
+  title: "Tutorial.",
+  totalUnitCount: 20,
+} as const;
 
 describe("getEpisodeHeaderContract", () => {
   test("번호 · 이름 · 개수 라벨을 그대로 낸다", () => {
     expect(getEpisodeHeaderContract({ ...base, completedUnitCount: 7 })).toMatchObject({
-      episodeLabel: "Episode 0.",
+      episodeLabel: "Episode 0, unit 03",
       title: "Tutorial.",
       countLabel: "7 / 20",
     });
@@ -19,12 +24,12 @@ describe("getEpisodeHeaderContract", () => {
   test("앞뒤 공백을 다듬는다", () => {
     expect(
       getEpisodeHeaderContract({
-        episodeLabel: "  Episode 1. ",
+        episodeLabel: "  Episode 1, unit 00 ",
         title: " Cosmetic. ",
         totalUnitCount: 3,
         completedUnitCount: 1,
       }),
-    ).toMatchObject({ episodeLabel: "Episode 1.", title: "Cosmetic." });
+    ).toMatchObject({ episodeLabel: "Episode 1, unit 00", title: "Cosmetic." });
   });
 
   // 채움 폭은 끝낸 수 ÷ 전체입니다. 양끝을 함께 답니다 — 0%는 채움을 그리지 않는
@@ -47,12 +52,14 @@ describe("getEpisodeHeaderContract", () => {
   test("단위가 하나면 단수로 낭독한다", () => {
     expect(
       getEpisodeHeaderContract({ ...base, totalUnitCount: 1, completedUnitCount: 1 }),
-    ).toMatchObject({ accessibilityLabel: "Episode 0. Tutorial., 1 of 1 unit completed" });
+    ).toMatchObject({
+      accessibilityLabel: "Episode 0, unit 03, Tutorial., 1 of 1 unit completed",
+    });
   });
 
   test("접근성 이름이 번호 · 이름과 함께 단위를 밝힌다", () => {
     expect(getEpisodeHeaderContract({ ...base, completedUnitCount: 7 })).toMatchObject({
-      accessibilityLabel: "Episode 0. Tutorial., 7 of 20 units completed",
+      accessibilityLabel: "Episode 0, unit 03, Tutorial., 7 of 20 units completed",
     });
   });
 
@@ -94,36 +101,69 @@ describe("episode-header.css", () => {
     "utf8",
   );
 
-  test("카드의 정본 token을 고정한다", () => {
-    expect(styles).toMatch(
-      /\.ui-lynx-episode-header\s*\{[^}]*border:\s*var\(--libitum-stroke-width-thin\) solid var\(--libitum-color-border-disabled\)/,
+  const block = (selector: string): string => {
+    const match = new RegExp(`${selector.replace(/\./g, "\\.")}\\s*\\{([^}]*)\\}`).exec(styles);
+    return match?.[1] ?? "";
+  };
+
+  // spec §19 H-1: 면은 브랜드 주황, 테두리 없음, 왼쪽 정렬, 폭은 부모가 정한다.
+  test("HC1. 띠는 brand-primary 면에 테두리가 없고 radius-xl이다", () => {
+    const card = block(".ui-lynx-episode-header");
+    expect(card).toMatch(/background:\s*var\(--libitum-color-brand-primary\)/);
+    expect(card).toMatch(/border-radius:\s*var\(--libitum-radius-xl\)/);
+    expect(card).not.toMatch(/(^|[\s;])border:/);
+    expect(card).not.toMatch(/background:\s*var\(--libitum-color-white\)/);
+  });
+
+  test("HC2. 안쪽 여백은 위 16 · 좌우 20 · 아래 16이고 왼쪽 정렬이다", () => {
+    const card = block(".ui-lynx-episode-header");
+    expect(card).toMatch(
+      /padding:\s*var\(--libitum-spacing-16\)\s+var\(--libitum-spacing-20\)\s+var\(--libitum-spacing-16\)/,
     );
-    expect(styles).toMatch(
-      /\.ui-lynx-episode-header\s*\{[^}]*border-radius:\s*var\(--libitum-radius-xl\)/,
-    );
-    expect(styles).toMatch(
-      /\.ui-lynx-episode-header\s*\{[^}]*background:\s*var\(--libitum-color-white\)/,
-    );
+    expect(card).toMatch(/align-items:\s*flex-start/);
+  });
+
+  test("HC3. 카드가 폭을 고정하지 않는다 (px 폭 없음)", () => {
+    expect(block(".ui-lynx-episode-header")).not.toMatch(/(^|[\s;])width:\s*\d+px/);
+  });
+
+  test("HC4. 설명 줄 · 숫자는 흰색이고 body-s 타이포다", () => {
+    const label = block(".ui-lynx-episode-header-label");
+    expect(label).toMatch(/color:\s*var\(--libitum-color-white\)/);
+    expect(label).toMatch(/font-size:\s*var\(--libitum-typography-body-s-font-size\)/);
+    expect(block(".ui-lynx-episode-header-count")).toMatch(/color:\s*var\(--libitum-color-white\)/);
   });
 
   // 이름은 accent/chapter입니다 — 이 토큰이 Jost 뒤에 한글 폴백을 달고 있어 한글
   // 이름도 그려집니다. 다른 타이포로 바꾸면 디자인의 글자 모양이 사라집니다.
-  test("이름이 accent chapter 타이포와 브랜드색을 쓴다", () => {
-    expect(styles).toMatch(
-      /\.ui-lynx-episode-header-title\s*\{[^}]*color:\s*var\(--libitum-color-brand-primary\)/,
+  test("HC5. 이름이 accent chapter 타이포와 흰색을 쓴다", () => {
+    const title = block(".ui-lynx-episode-header-title");
+    expect(title).toMatch(/color:\s*var\(--libitum-color-white\)/);
+    expect(title).toMatch(/font-family:\s*var\(--libitum-typography-accent-chapter-font-family\)/);
+    expect(title).not.toMatch(/color:\s*var\(--libitum-color-brand-primary\)/);
+  });
+
+  test("HC6. 진행 막대의 트랙은 reward-border, 채움은 흰색으로 갈린다", () => {
+    expect(block(".ui-lynx-episode-header-track")).toMatch(
+      /background:\s*var\(--libitum-color-brand-reward-border\)/,
     );
-    expect(styles).toMatch(
-      /\.ui-lynx-episode-header-title\s*\{[^}]*font-family:\s*var\(--libitum-typography-accent-chapter-font-family\)/,
+    expect(block(".ui-lynx-episode-header-fill")).toMatch(
+      /background:\s*var\(--libitum-color-white\)/,
     );
   });
 
-  test("진행 막대의 트랙과 채움 색이 갈린다", () => {
-    expect(styles).toMatch(
-      /\.ui-lynx-episode-header-track\s*\{[^}]*background:\s*var\(--libitum-color-gray-200\)/,
-    );
-    expect(styles).toMatch(
-      /\.ui-lynx-episode-header-fill\s*\{[^}]*background:\s*var\(--libitum-color-feedback-warning\)/,
-    );
+  test("HC7. 트랙은 남는 폭을 채운다 (flex: 1, 높이 10)", () => {
+    const track = block(".ui-lynx-episode-header-track");
+    expect(track).toMatch(/flex:\s*1/);
+    expect(track).toMatch(/height:\s*10px/);
+  });
+
+  test("HC8. 진행 줄은 왼쪽 정렬이다", () => {
+    expect(block(".ui-lynx-episode-header-progress")).not.toMatch(/justify-content:\s*center/);
+  });
+
+  test("HC9. 별 스타일이 없다", () => {
+    expect(styles).not.toContain("ui-lynx-episode-header-star");
   });
 
   // 채움이 넘치면 별이 트랙 밖으로 빠져나옵니다.

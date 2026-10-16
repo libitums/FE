@@ -11,7 +11,9 @@ import { JourneyStepNode } from "./JourneyStepNode";
 import { MessengerMapItem } from "./MessengerMapItem";
 import { PhoneCallMapItem } from "./PhoneCallMapItem";
 import { VisualNovelMapItem } from "./VisualNovelMapItem";
-import { journeyStepOrdinal, mapItemStatus, stepStatusAt } from "./journey-map";
+import { journeyStepOrdinal, mapItemStatus } from "./journey-map";
+import { mapNodeStatusUnder, stepNodeStatusUnder } from "./journey-map-load";
+import type { JourneyMapNodeAccess } from "./journey-map-load.contract";
 import type { JourneyMapItem, JourneyStepId } from "./journey-map";
 import type { JourneyProgress } from "./journey-map-progress";
 
@@ -30,6 +32,7 @@ export type TutorialMapItemProps = {
   readonly item: JourneyMapItem;
   readonly sectionItems: readonly JourneyMapItem[];
   readonly progress: JourneyProgress;
+  readonly access: JourneyMapNodeAccess;
   readonly guide: TutorialGuide;
   readonly actions: TutorialMapActions;
 };
@@ -40,10 +43,13 @@ export function TutorialMapItem({
   item,
   sectionItems,
   progress,
+  access,
   guide,
   actions,
 }: TutorialMapItemProps): ReactNode {
-  const status = mapItemStatus(item, sectionItems, progress);
+  const itemStatus = mapItemStatus(item, sectionItems, progress);
+  // 진행을 확인하는 동안은 화면 경계에서 「확인 중」으로 덮습니다(파생 함수는 그대로).
+  const status = mapNodeStatusUnder(access, itemStatus);
   switch (item.kind) {
     case "episode-intro": {
       return (
@@ -107,11 +113,12 @@ export function TutorialMapItem({
           /* 표지 미완료면 `locked`로 덮는 한 겹이 앞에 붙습니다 — 그 아래는 씨앗이
              남긴 완료가 **지워진 것이 아니라 가려진 것**이고, 표지를 끝내면 그대로
              드러납니다. */
-          status={
-            status === "locked"
-              ? "locked"
-              : stepStatusAt(journeyStepOrdinal(item.step.id) - 1, progress.completedStepCount)
-          }
+          status={stepNodeStatusUnder(
+            access,
+            itemStatus,
+            journeyStepOrdinal(item.step.id) - 1,
+            progress.completedStepCount,
+          )}
           onSelect={actions.onSelectStep}
         />
       );

@@ -287,7 +287,11 @@ test("[IA-ID1] 로그인된 설치는 부팅 뒤 이벤트가 그 사용자의 d
       analyticsUser={session.user}
       completedEpisodeIntroIds={completedIntros}
     />,
-    { refreshedAccessToken: accessTokenFor("user-1") },
+    {
+      refreshedAccessToken: accessTokenFor("user-1"),
+      // 진행 조회가 거부되면 progress_load_failed가 이 묶음에 끼어듭니다. 이 테스트는 신원만 봅니다.
+      loadProgress: async () => ({ status: 200, body: "null" }),
+    },
   );
 
   openSettingsTab();
