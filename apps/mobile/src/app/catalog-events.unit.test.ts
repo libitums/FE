@@ -80,6 +80,18 @@ describe("이벤트 만들기", () => {
     });
   });
 
+  test("EV1. 끝 이벤트는 넘긴 건너뜀 수를 10진 문자열로 싣는다", () => {
+    expect(
+      lessonFinishedEventOf("u01-water", "S5", "lesson", ["correct", "correct"], 2, "passed", 3),
+    ).toMatchObject({ skippedCount: "3", correctCount: "2", questionCount: "2" });
+    expect(
+      lessonFinishedEventOf("u01-water", "S5", "lesson", ["correct"], 1, "passed", 0),
+    ).toMatchObject({ skippedCount: "0" });
+    expect(lessonFinishedEventOf("u01-water", "S6", "lesson", [], 12, "failed", 12)).toMatchObject({
+      skippedCount: "12",
+    });
+  });
+
   test("EV1. 최종 통과 이벤트는 맞은 수와 턴 수를 싣는다", () => {
     expect(finalPassedEventOf("u01-water", ["correct", "correct", "incorrect"], 3)).toEqual({
       name: "episode_final_passed",

@@ -76,6 +76,17 @@ test("UC2. 덮어쓰기가 비어 있는 vi · es · ja는 함수 잎이 같은 
   }
 });
 
+test("UC2. 말하기 두 구획의 다섯 키는 vi · es · ja에서 영어로 채워진다", () => {
+  for (const language of ["vi", "es", "ja"] as const) {
+    const table = uiCopyFor(language);
+    expect(table.readAloud.badge).toBe(uiCopyEn.readAloud.badge);
+    expect(table.readAloud.matched(2, 5)).toBe("You said 2 of 5 words.");
+    expect(table.readAloud.pronunciation("kadeu")).toBe("Pronunciation: kadeu");
+    expect(table.speakWord.instruction).toBe(uiCopyEn.speakWord.instruction);
+    expect(table.speakWord.recognitionUnavailable).toBe(uiCopyEn.speakWord.recognitionUnavailable);
+  }
+});
+
 test("UC3. 문자열 덮어쓰기는 그 키만 바꾸고 나머지는 영어다", () => {
   const result = uiCopyWithOverrides(uiCopyEn, { common: { next: "N" } });
   expect(result.common.next).toBe("N");
