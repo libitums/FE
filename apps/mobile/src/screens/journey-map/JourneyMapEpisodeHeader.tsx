@@ -4,6 +4,7 @@ import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
 
 import { completedMapItemCount } from "./journey-map";
 import type { JourneyMapSection, JourneyProgress } from "./journey-map";
+import { headerCardId } from "./journey-map-scroll";
 
 export type JourneyMapEpisodeHeaderProps = {
   /** 스크롤 자리가 고른 구획입니다. 없으면 머리 카드를 그리지 않습니다. */
@@ -20,7 +21,7 @@ export function JourneyMapEpisodeHeader({
   progress,
 }: JourneyMapEpisodeHeaderProps): ReactNode {
   return (
-    <view className="journey-map-screen-episode-header">
+    <view id={headerCardId} className="journey-map-screen-episode-header">
       {section?.episode.kind === "pending" ? (
         <view className="episode-pending-card">
           <text className="episode-pending-card-label">{section.episode.label}</text>

@@ -93,6 +93,13 @@
 - **Card · Tooltip · Button은 변형을 만들지 않는다** — 정본 매핑이 「유지」뿐이라 CSS 차이가 0인 변형은 관찰할 것이 없다. Button의 Spinner는 위 예외라 Button에는 reduced 경로 자체가 없다.
   *(2026-10-11 주: **뒤집혔다** — Button · Card에 눌림 축소가 생겨 reduced 변형이 생겼다. 막 목록에 Button neutral(white) · brand(black) · 롤플레이 카드(white)가 더해졌고 Tooltip만 변형이 없다.
   정정 기록 1.)*
+- *(2026-10-14 주 — 적용 기록, 결정은 그대로: **프로그램 스크롤이 처음 이 표에 닿았다.** 이 D에는 앱이 `scrollTo` · `scrollIntoView`로 옮기는 스크롤에 대한 줄이 없었고, 여정 맵의
+  말풍선 스크롤은 reduced에서도 부드럽게 움직이고 있었다(「이동은 즉시」와의 어긋남). 여정 맵의 자동 스크롤과 말풍선 스크롤이 같은 순수 함수 `mapScrollBehaviorFor(useMotion())`를
+  타서 standard는 `smooth: true` · `behavior: "smooth"`, reduced는 `smooth: false` · `behavior: "none"`이다 — 그 어긋남이 함께 닫혔다. **도착 뒤 보정 스크롤만은 motion과 무관하게
+  늘 즉시다**(사용자 결정 — reduced에서는 이 표 그대로이고, standard에서는 부드러운 보정이 Android에서 반동과 한 프레임 점프로 갈려 보였다). 부드러운 이동의 **시간 · 곡선은
+  호스트가 정한다** — 앱이 넘기는 것은 boolean 하나라 D1의 토큰 규칙 밖이고 `lint:motion`의 대상도 아니다(호출 인자는 CSS · inline style이 아니다). Android에서는 거리와 무관하게
+  약 0.23 ~ 0.27초였다(3,673dp도 같아 긴 이동은 사실상 점프로 보인다 — 보류 표). iOS는 재지 않았다. 「항상 부드럽게」는 사용자 결정이다. 근거 · 기기 기록은
+  [ADR-0022](0022-scroll-regions-and-fixed-affordances.md) 적용 기록 ⟨2026-10-14⟩ · [동작 줄이기 e2e](../e2e/motion-reduced.md) E-M1 · E-M2.)*
 - **카탈로그(Storybook)는 컴포넌트별 `motion` arg + `ReducedMotion` 스토리다**(4단계). 새 다섯(Round Button · Learning Unit · Page Indicator · Settings Cell · Chat Bubble)은 **컨텍스트 경로** —
   엔트리가 `<MotionProvider motion={data.motion}>`로 감싸고 컴포넌트에 prop을 주지 않는다(제품 앱과 같은 길). 기존 넷은 prop 경로 그대로, Visual Novel Dialog는 `reducedMotion` prop arg로 스토리만.
   Chat Bubble은 `reveal: "instant" | "typewriter"` arg와 `Typewriter` 스토리를 더했다 — `reveal` 없이는 reduced가 보일 것이 없다. 순수 함수 `normalizeStoryMotion(value)`(`"reduced"`만 reduced)을

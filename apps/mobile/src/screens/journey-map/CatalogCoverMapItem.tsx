@@ -42,7 +42,9 @@ export function CatalogCoverMapItem({
         narrative="narrative"
         bindtap={handleSelect}
       />
-      <text className="journey-special-unit-label">{copy.catalogMap.coverTitle}</text>
+      <text className="journey-special-unit-label" accessibility-element={false}>
+        {copy.catalogMap.coverTitle}
+      </text>
     </view>
   );
 }

@@ -43,6 +43,10 @@ public final class MainActivity extends Activity {
   StatusBarIconSync statusBarIcons;
   private LynxView lynxView;
   private Map<String, Object> lastSafeAreaInsets;
+  // 코어에 준 글자 배율입니다. 배율이 바뀌면 Activity가 다시 서므로(configChanges에 fontScale이 없다)
+  // onCreate의 값이 곧 코어가 그리는 값입니다.
+  private float coreFontScale = 1f;
+  private Map<String, Object> lastViewportMetrics;
   private final ReducedMotionWatcher reducedMotionWatcher = new ReducedMotionWatcher();
   private Boolean lastReducedMotion;
   private final SystemBackGate backGate = new SystemBackGate();
@@ -59,7 +63,8 @@ public final class MainActivity extends Activity {
     LynxViewBuilder builder = new LynxViewBuilder();
     builder.setTemplateProvider(new AndroidTemplateProvider(this));
     builder.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE);
-    builder.setFontScale(getResources().getConfiguration().fontScale);
+    coreFontScale = getResources().getConfiguration().fontScale;
+    builder.setFontScale(coreFontScale);
     builder.addBehaviors(new XElementBehaviors().create());
     builder.registerModule("StorageModule", StorageModule.class);
     builder.registerModule("WebAuthenticationModule", WebAuthenticationModule.class, this);
@@ -100,6 +105,7 @@ public final class MainActivity extends Activity {
     });
     setContentView(lynxView);
     publishSafeAreaInsets();
+    publishViewportMetrics();
     // safe area와 따로 보낸다(updateGlobalProps는 키 단위 병합). 로드 앞에 첫 값을 걸어 둔다.
     publishReducedMotion(reducedMotionWatcher.read(getContentResolver()));
     reducedMotionWatcher.start(getContentResolver(), mainHandler, this::publishReducedMotion);
@@ -220,6 +226,22 @@ public final class MainActivity extends Activity {
     DisplayMetrics screen = DisplayMetricsHolder.getRealScreenDisplayMetrics(this);
     lynxView.updateScreenMetrics(screen.widthPixels, screen.heightPixels);
     ViewCompat.requestApplyInsets(lynxView);
+    publishViewportMetrics();
+  }
+
+  /**
+   * 코어가 그리는 글자 배율과 화면 폭(dp)을 globalProps `fontScale` · `viewportWidth`로 넘긴다. 맵이 이
+   * 둘로 열 수(두 열 · 한 열)를 정한다. safe area · 동작 줄이기와 따로 보낸다(키 단위 병합). 값이
+   * 앞서 보낸 것과 같으면 보내지 않는다.
+   */
+  private void publishViewportMetrics() {
+    if (lynxView == null) return;
+    DisplayMetrics metrics = getResources().getDisplayMetrics();
+    Map<String, Object> props =
+        ViewportMetrics.globalProps(coreFontScale, metrics.widthPixels, metrics.density);
+    if (props.equals(lastViewportMetrics)) return;
+    lastViewportMetrics = props;
+    lynxView.updateGlobalProps(props);
   }
 
   void startWebAuthentication(String url, String scheme, Callback callback) {
