@@ -388,7 +388,7 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
   (`canStartCatalogCover`)를 부른다. 알림 · 푸시 목적지 표에는 카탈로그가 없다 — 그 날이 오면 같은
   함수를 쓴다. ⟨2026-10-16⟩ **「n−1번째의 `RP` 완료 뒤」는 「n−1번째 에피소드의 완료 뒤」가 됐다** —
   완료는 콘텐츠의 완료 키(`completion.requires`)가 모두 끝난 것이고, 완료 조건이 없는 에피소드는 지금처럼
-  `RP` 하나다([ADR-0061](0061-episode-format-additions.md) D6). 아래 `정정 기록` 2026-10-16.
+  `RP` 하나다([ADR-0065](0065-episode-format-additions.md) D6). 아래 `정정 기록` 2026-10-16.
 - **아직 열 수 없는 유닛은 잠긴 채 보인다.** 레슨(`Lesson 1` …)과 최종 테스트(`Final test`) 노드가
   데이터의 유닛 수대로 서고, 3b-2에서는 **늘 잠김**이다 — 눌러도 아무 일이 없고 낭독은
   `Lesson 1, coming soon, locked`다. 상태 파생은 3c가 붙인다. ⚠ **D14의 「가려진 자리는 장식」과 다른
@@ -592,14 +592,14 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 ### 2026-10-16 (브랜치 `feat/episode-format-v3`) — 콘텐츠가 완료 조건을 싣게 되면서 D15의 에피소드 사이 잠금이 「`RP`」에서 「완료」로 바뀌었다
 
-**결정은 [ADR-0061](0061-episode-format-additions.md)이 진다.** 여기 적는 것은 이 문서의 문면이 그때의 상태가 된 자리다. 제자리 기록인 이유: 옛 판정으로 지어진 코드
+**결정은 [ADR-0065](0065-episode-format-additions.md)이 진다.** 여기 적는 것은 이 문서의 문면이 그때의 상태가 된 자리다. 제자리 기록인 이유: 옛 판정으로 지어진 코드
 (`isCatalogEpisodePassed` · `passedCatalogEpisodeCount`)를 **같은 변경에서 지우고** 새 판정으로 갈았다 — 추적할 옛 파일이 남지 않는다(ADR-0010 D10).
 
 - **D15 — 「n번째 표지는 n−1번째 에피소드의 `RP` 완료 뒤」는 이 변경 전의 규칙이다.** 이제 **n−1번째 에피소드의 완료 뒤**다. 완료는 콘텐츠 최상위
   `completion.requires`의 단계가 모두 끝난 것이고(지금 데이터 = `S1` ~ `S8` · `CULT` · `RP`), 그 키가 없는 에피소드 · 콘텐츠를 모르는 id는 `RP` 하나다 — **옛 데이터에서는 결과가 같다.**
   맵 · 시작 결선이 같은 순수 함수를 부르는 원칙은 그대로다(`catalogCoverStatus`가 앞 구획의 완료 키로 `isCatalogEpisodeComplete`를 부른다). 트로피도 같은 판정을 쓴다.
   **어떻게 틀렸나**: 「`RP`를 끝냈다 = 에피소드를 끝냈다」는 **사슬 잠금이 지켜 주는 동안만** 참이었다 — 앱 안에서는 `RP` 앞의 단계가 늘 이미 끝나 있었다. 콘텐츠 버전이 바뀌어 단계 id가
-  달라지면(옛 `S3` ~ `S9` → 새 `S1` ~ `S8` · `CULT`) 옛 진행의 `RP`가 새 콘텐츠의 앞 단계를 끝낸 것을 보장하지 않는다. 그 진행은 이제 완료가 아니다 — **사용자 결정**(엄격 규칙, ADR-0061 Q1).
+  달라지면(옛 `S3` ~ `S9` → 새 `S1` ~ `S8` · `CULT`) 옛 진행의 `RP`가 새 콘텐츠의 앞 단계를 끝낸 것을 보장하지 않는다. 그 진행은 이제 완료가 아니다 — **사용자 결정**(엄격 규칙, ADR-0065 Q1).
 - **D10 — 「가운데에는 규칙이 없다」는 그대로 참이다.** 새 문화 단계 `CULT`는 가운데의 아홉째 유닛(`Lesson 9`)이고 이름으로 분기하지 않는다. 노드 수는 데이터대로 레슨 9 + 최종이 됐다(머리 카드 분모 `0 / 11`).
   ⟨2026-10-16 — PR ②⟩ `Lesson 9`는 이 변경의 상태다 — 아래 정정 기록 2026-10-16(`feat/episode-format-screens`)에서 문화 노드(`Culture`)가 됐다.
 
@@ -781,7 +781,7 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 ### 2026-10-16 — 에피소드 사이 잠금이 완료 키로 열린다 (새 에피소드 형식)
 
-위 `정정 기록` 2026-10-16과 [ADR-0061](0061-episode-format-additions.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
+위 `정정 기록` 2026-10-16과 [ADR-0065](0065-episode-format-additions.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
 
 - **판정**: `lib/catalog-progress.ts`(`isCatalogEpisodeComplete` · `completedCatalogEpisodeCount` · `DEFAULT_CATALOG_COMPLETION`), 완료 키는 맵 구획의 `completionKeys`(`screens/journey-map/catalog-map.contract.ts`)와
   `catalogCompletionKeysOf`(`catalog-map.ts`). 표지 열림은 `catalogCoverStatus`, 트로피는 `app/learning-progress.ts`의 `trophyCountFrom`(셋째 인자), 진행 훅 `useJourneyProgress`가 판정 규칙을 셋째 인자로 받는다.

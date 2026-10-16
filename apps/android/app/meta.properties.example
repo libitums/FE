@@ -1,5 +1,0 @@
-# Meta(Facebook) 앱 이벤트 측정 값. 이 파일을 meta.properties로 복사해 채운다(meta.properties는 추적하지 않는다).
-# 둘 다 유효할 때만 SDK가 시작된다. 비어 있으면 앱은 Meta 없이 지금과 똑같이 동작한다.
-# 앱 ID는 숫자만, 클라이언트 토큰은 공백 없는 한 덩어리.
-META_APP_ID=
-META_CLIENT_TOKEN=
