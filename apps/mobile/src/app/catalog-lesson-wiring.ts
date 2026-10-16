@@ -209,7 +209,6 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       clearSession();
       const judged = catalogJudgedCountOf(plan.questionCount, gathered);
       const verdict = judgeAssessment(gathered, catalogPassCriterion(judged));
-      // 이벤트의 건너뜀 수는 아직 0 고정입니다(스캐폴드) — 구현 단계에서 `skippedTotal`을 잇습니다.
       sink?.(
         lessonFinishedEventOf(
           episodeId,
@@ -218,7 +217,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
           gathered,
           plan.questionCount,
           verdict,
-          0,
+          skippedTotal,
         ),
       );
       if (assessmentCompletesStep(verdict)) markDone(episodeId, unitKey);

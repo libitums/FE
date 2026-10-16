@@ -1,6 +1,4 @@
 // 말하기 문항 한 번의 국면 · 조작 · 마이크 상태를 정하는 순수 규칙입니다. UI를 import하지 않습니다.
-//
-// 스캐폴드: 타입은 실물이고 함수는 import만 가능한 자리표시자입니다.
 
 import type { SpeechResult } from "./speech-recognition";
 import type { UiCopy } from "./ui-copy.contract";
@@ -36,29 +34,67 @@ export type SpeechControls = {
 /** 접점 없음 · 권한 · 인식기 때문에 들을 수 없는 결말입니다. */
 export const speechBlocked: SpeechAttemptOutcome = { kind: "unavailable", reason: "blocked" };
 
-export function speechAttemptOutcomeOf(_result: SpeechResult): SpeechAttemptOutcome {
-  return speechBlocked;
+// iOS 받아쓰기(Dictation)가 꺼져 있을 때 인식기가 내는 오류입니다 — 다시 켠 뒤 재시도할 수 있습니다.
+const dictationOffDomain = "kLSRErrorDomain";
+const dictationOffCode = 201;
+
+/**
+ * 인식 결과 → 결말. 받아쓰기 꺼짐 판정이 다른 사유보다 먼저입니다(튜토리얼 말하기와 같은 조건).
+ * `recognized`는 빈 글자도 `heard`입니다.
+ */
+export function speechAttemptOutcomeOf(result: SpeechResult): SpeechAttemptOutcome {
+  if (result.status === "recognized") {
+    return { kind: "heard", text: result.text };
+  }
+  if (result.errorDomain === dictationOffDomain && result.errorCode === dictationOffCode) {
+    return { kind: "unavailable", reason: "dictation-off" };
+  }
+  if (result.status === "permission-denied" || result.status === "recognizer-unavailable") {
+    return speechBlocked;
+  }
+  return { kind: "unavailable", reason: "failed" };
 }
 
+/** blocked 결말이면 blocked, 아니면 그대로(blocked는 open으로 돌아가지 않습니다). */
 export function speechAvailabilityAfter(
   availability: SpeechAvailability,
-  _outcome: SpeechAttemptOutcome,
+  outcome: SpeechAttemptOutcome,
 ): SpeechAvailability {
-  return availability;
+  if (availability === "blocked") {
+    return "blocked";
+  }
+  return outcome.kind === "unavailable" && outcome.reason === "blocked" ? "blocked" : "open";
 }
 
-export function speechPhaseFor(_availability: SpeechAvailability): SpeechAttemptPhase {
-  return { kind: "ready" };
+/** 새 문항의 시작 국면 — blocked → unavailable(blocked), open → ready. */
+export function speechPhaseFor(availability: SpeechAvailability): SpeechAttemptPhase {
+  return availability === "blocked" ? speechBlocked : { kind: "ready" };
 }
 
-export function speechWavesStateOf(_phase: SpeechAttemptPhase): SpeechWavesState {
-  return "off";
+/** ready → idle, listening → listening, 그 밖 → off. */
+export function speechWavesStateOf(phase: SpeechAttemptPhase): SpeechWavesState {
+  if (phase.kind === "ready") {
+    return "idle";
+  }
+  return phase.kind === "listening" ? "listening" : "off";
 }
 
+/** 조작 → 라벨. next의 이름은 걸음이 정해 `nextLabel`로 받습니다. */
 export function speechControlLabel(
-  _control: SpeechControl,
-  _nextLabel: string,
-  _copy: UiCopy,
+  control: SpeechControl,
+  nextLabel: string,
+  copy: UiCopy,
 ): string {
-  return "";
+  switch (control) {
+    case "speak":
+      return copy.speaking.speak;
+    case "stop":
+      return copy.speaking.stopSpeaking;
+    case "next":
+      return nextLabel;
+    case "skip":
+      return copy.common.skip;
+    case "retry":
+      return copy.speaking.tryAgain;
+  }
 }

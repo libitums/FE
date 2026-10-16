@@ -46,11 +46,16 @@ export type SpeakingChunk = { readonly text: string; readonly matched: boolean }
 /**
  * 문장을 공백으로만 자른 조각(빈 조각 제외)입니다. 조각 i의 matched = (조각 0..i의 `speakingWords`
  * 수 누계) > 0 && 누계 ≤ matchedCount.
- *
- * 스캐폴드: 자리표시자입니다.
  */
-export function speakingChunks(_sentence: string, _matchedCount: number): readonly SpeakingChunk[] {
-  return [];
+export function speakingChunks(sentence: string, matchedCount: number): readonly SpeakingChunk[] {
+  let cumulative = 0;
+  return sentence
+    .split(/\s+/)
+    .filter((chunk) => chunk.length > 0)
+    .map((text) => {
+      cumulative += words(text).length;
+      return { text, matched: cumulative > 0 && cumulative <= matchedCount };
+    });
 }
 
 /** 마이크 · 음성 인식 권한이 둘 다 있고 인식기가 서 있어야 들을 수 있습니다. */

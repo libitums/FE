@@ -205,14 +205,12 @@ export function catalogPassCriterion(questionCount: number): AssessmentPassCrite
 /**
  * 통과 기준의 분모 — 판정한 채점 문항 수(= 결과 수, 채점 문항 수 상한)입니다. 건너뛴 말하기 문항은
  * 빠집니다.
- *
- * 스캐폴드: 지금 동작(채점 문항 수 그대로)을 돌려주는 자리표시자입니다.
  */
 export function catalogJudgedCountOf(
   questionCount: number,
-  _results: readonly AnswerResult[],
+  results: readonly AnswerResult[],
 ): number {
-  return questionCount;
+  return Math.min(questionCount, results.length);
 }
 
 export function catalogFillOf(content: EpisodeContent, profile: LearnerProfile): CatalogFill {
