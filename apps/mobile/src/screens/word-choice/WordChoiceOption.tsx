@@ -29,6 +29,7 @@ export type WordChoiceOptionProps = {
 export function WordChoiceOption({
   index,
   text,
+  translation,
   result,
   onSelect,
 }: WordChoiceOptionProps): ReactNode {
@@ -36,8 +37,12 @@ export function WordChoiceOption({
   return (
     <view
       // 판정이 곧 상태 클래스입니다 — `-correct` · `-incorrect`(ADR-0003 D7의 예약
-      // 상태어). 고르기 전에는 상태가 없어 base만 섭니다.
-      className={"word-choice-option" + (result === null ? "" : ` word-choice-option-${result}`)}
+      // 상태어). 고르기 전에는 상태가 없어 base만 섭니다. 번역 줄이 있으면 보기 안이 두 줄로 쌓입니다.
+      className={
+        "word-choice-option" +
+        (translation === undefined ? "" : " word-choice-option-translated") +
+        (result === null ? "" : ` word-choice-option-${result}`)
+      }
       data-testid={`word-choice-option-${index}`}
       // 언제나 붙고 값만 갈립니다. 조건부로 빼면 "속성을 잊었다"와 "판정이
       // 없다"가 구별되지 않습니다.
@@ -45,7 +50,7 @@ export function WordChoiceOption({
       accessibility-element={true}
       // 상태는 라벨 접미사입니다. `accessibility-value`를 쓰지 않습니다
       // (ADR-0016 D3).
-      accessibility-label={optionAccessibilityLabel(text, result, copy)}
+      accessibility-label={optionAccessibilityLabel(text, result, copy, translation)}
       // 응답 뒤에도 "button"입니다. ADR-0016 D10의 `disabled`는 영구히
       // 조작 불가한 것에만 주는데, 이 요소는 다음 문항이 렌더되는 순간
       // 다시 눌립니다.
@@ -57,6 +62,15 @@ export function WordChoiceOption({
     >
       {/* 보이는 이름을 지는 요소는 가리지 않습니다(ADR-0016 D5) — 접근성 속성이 없습니다. */}
       <text className="word-choice-option-label">{text}</text>
+      {/* 번역은 내용이라 판정 색을 받지 않고, 낭독은 보기 요소의 라벨이 지므로 접근성 속성이 없습니다. */}
+      {translation === undefined ? null : (
+        <text
+          className="word-choice-option-translation"
+          data-testid={`word-choice-option-${index}-translation`}
+        >
+          {translation}
+        </text>
+      )}
     </view>
   );
 }

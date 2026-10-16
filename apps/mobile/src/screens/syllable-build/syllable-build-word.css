@@ -1,0 +1,26 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않습니다.
+   칸 줄입니다. 문장 조립의 답 칸 줄과 달리 칸 사이에 간격이 없어 놓인 음절이 한 낱말로 붙어 읽힙니다
+   (「띄어쓰기 없이」를 모양으로 말합니다). 긴 낱말은 큰 글자에서 줄이 접히고 잘리지 않습니다. */
+.syllable-build-word {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 칸 — 음절 하나의 자리입니다. 비어 있어도 같은 폭을 지키고, 빈 칸은 가는 밑줄로 자리를 보입니다.
+   채워지면 밑줄이 투명이 되어 높이가 흔들리지 않습니다. */
+.syllable-build-slot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--libitum-spacing-24);
+  min-height: var(--libitum-spacing-48);
+  border-bottom: var(--libitum-stroke-width-thin) solid transparent;
+}
+
+.syllable-build-slot-empty {
+  border-bottom-color: var(--libitum-color-border-default);
+}
