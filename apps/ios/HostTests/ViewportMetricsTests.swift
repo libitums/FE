@@ -14,8 +14,8 @@ final class ViewportMetricsTests: XCTestCase {
 
     let props = ViewportMetrics.globalProps(fontScale: 1.35, width: 402)
     XCTAssertEqual(props.count, 2)
-    XCTAssertEqual(props["fontScale"] as? Double, 1.35)
-    XCTAssertEqual(props["viewportWidth"] as? Double, 402)
+    XCTAssertEqual(props["fontScale"], 1.35)
+    XCTAssertEqual(props["viewportWidth"], 402)
   }
 
   // HI2: 0 · 음수 · NaN · infinity인 쪽의 키는 맵에 없고 다른 쪽은 남는다.
@@ -23,12 +23,12 @@ final class ViewportMetricsTests: XCTestCase {
     for invalid in [CGFloat(0), -1, CGFloat.nan, CGFloat.infinity] {
       let badScale = ViewportMetrics.globalProps(fontScale: invalid, width: 402)
       XCTAssertNil(badScale["fontScale"])
-      XCTAssertEqual(badScale["viewportWidth"] as? Double, 402)
+      XCTAssertEqual(badScale["viewportWidth"], 402)
       XCTAssertEqual(badScale.count, 1)
 
       let badWidth = ViewportMetrics.globalProps(fontScale: 1.35, width: invalid)
       XCTAssertNil(badWidth["viewportWidth"])
-      XCTAssertEqual(badWidth["fontScale"] as? Double, 1.35)
+      XCTAssertEqual(badWidth["fontScale"], 1.35)
       XCTAssertEqual(badWidth.count, 1)
     }
 

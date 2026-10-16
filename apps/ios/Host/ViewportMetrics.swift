@@ -7,8 +7,8 @@ enum ViewportMetrics {
   static let viewportWidthKey = "viewportWidth"
 
   /// 유한한 양수인 값의 키만 싣는다.
-  static func globalProps(fontScale: CGFloat, width: CGFloat) -> [String: Any] {
-    var props: [String: Any] = [:]
+  static func globalProps(fontScale: CGFloat, width: CGFloat) -> [String: Double] {
+    var props: [String: Double] = [:]
     if fontScale.isFinite && fontScale > 0 {
       props[fontScaleKey] = Double(fontScale)
     }

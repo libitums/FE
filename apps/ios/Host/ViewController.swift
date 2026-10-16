@@ -191,8 +191,8 @@ final class ViewController: UIViewController {
   /// 코어에 준 값으로 고정이고 폭만 바뀔 수 있다 — 앞서 보낸 것과 같으면 보내지 않는다.
   private func publishViewportMetrics(width: CGFloat) {
     let metrics = ViewportMetrics.globalProps(fontScale: coreFontScale, width: width)
-    guard let lynxView, metrics as? [String: Double] != lastViewportMetrics else { return }
-    lastViewportMetrics = metrics as? [String: Double]
+    guard let lynxView, metrics != lastViewportMetrics else { return }
+    lastViewportMetrics = metrics
     lynxView.updateGlobalProps(with: metrics)
   }
 
