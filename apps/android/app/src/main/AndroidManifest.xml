@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
   <uses-permission android:name="android.permission.INTERNET" />
   <!-- Airbridge 광고 측정(Android 설치 귀속)이 쓰는 광고 ID. Play Console의 광고 ID 선언이 따라야 한다. -->
   <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
