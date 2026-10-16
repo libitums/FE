@@ -40,7 +40,8 @@ const googleServices = join(androidDir, "app/google-services.json");
 const cli = join(root, "devtools/android-bundle/elf-page-alignment.mjs");
 
 const NEW_PACKAGE = "libitum.duru.android";
-const EXPECTED_64BIT_LIBRARIES = 31;
+// libairbridgelib.so가 arm64-v8a · x86_64에 하나씩 더해진 값 — docs/adr/0063-airbridge-events.md D14
+const EXPECTED_64BIT_LIBRARIES = 33;
 const sdk = process.env.ANDROID_HOME ?? join(homedir(), "Library/Android/sdk");
 const buildTools = join(sdk, "build-tools/36.0.0");
 
@@ -170,7 +171,7 @@ test("NA2: assemble and bundle of every variant are gated by a native alignment 
   assert.deepEqual(missing, [], "assemble/bundle tasks not wired to a native alignment gate");
 });
 
-test("NA3: 64-bit libraries of the debug and bundled APK and the release AAB are 16 KB aligned (31 each, no libwasm); CLI agrees", () => {
+test("NA3: 64-bit libraries of the debug and bundled APK and the release AAB are 16 KB aligned (33 each, no libwasm); CLI agrees", () => {
   const archives = [
     findArtifact("apk/debug", ".apk"),
     findArtifact("apk/bundled", ".apk"),
