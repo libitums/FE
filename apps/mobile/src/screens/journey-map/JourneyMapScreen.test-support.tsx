@@ -179,6 +179,7 @@ function ready(episodeId: string, ordinal: number, title: string): CatalogMapSec
     lessonKeys: catalogLessonKeys,
     finalKey: "RP",
     completionKeys: ["RP"],
+    cultureKeys: [],
   };
 }
 

@@ -26,6 +26,7 @@ function ready(episodeId: string, ordinal: number, title: string): CatalogReadyS
     lessonKeys,
     finalKey: "RP",
     completionKeys: ["RP"],
+    cultureKeys: [],
   };
 }
 

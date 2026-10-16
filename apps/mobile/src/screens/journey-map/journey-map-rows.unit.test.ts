@@ -34,6 +34,7 @@ function readySection(lessonCount: number): CatalogReadySection {
     lessonKeys: Array.from({ length: lessonCount }, (_, index) => `S${index + 1}`),
     finalKey: "RP",
     completionKeys: ["RP"],
+    cultureKeys: [],
   };
 }
 
@@ -151,7 +152,7 @@ describe("배치 표", () => {
       "visual-novel": "solo",
       "episode-final": "solo",
     });
-    expect(catalogNodePlacement).toEqual({ lesson: "paired", final: "solo" });
+    expect(catalogNodePlacement).toEqual({ lesson: "paired", culture: "solo", final: "solo" });
   });
 });
 

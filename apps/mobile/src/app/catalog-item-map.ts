@@ -8,10 +8,12 @@ import type {
   DialogueSpeaker,
   SentenceOrderQuestion,
 } from "../screens/sentence-order/sentence-order-questions";
-import { vocabCardItemOf } from "./catalog-card-map";
+import { syllableBuildItemOf } from "./catalog-build-map";
+import { cultureCardItemOf, vocabCardItemOf } from "./catalog-card-map";
 import {
   clozeChoiceItemOf,
   clozeItemOf,
+  cultureCheckItemOf,
   listeningItemOf,
   particleItemOf,
   pictureChoiceItemOf,
@@ -120,9 +122,12 @@ export function catalogItemOf(item: LearningItem, port: CatalogLessonItemPort): 
     case "PARTICLE_SWAP":
       return particleItemOf(item, port);
     case "CULTURE_CARD":
+      return cultureCardItemOf(item, port);
     case "CULTURE_CHECK":
-    case "LISTEN_BUILD":
+      return cultureCheckItemOf(item, port);
     case "SYLLABLE_BUILD":
+      return syllableBuildItemOf(item, port);
+    case "LISTEN_BUILD":
     case "SHADOW":
     case "SPEAK_WORD":
       // 맞는 학습 화면이 아직 없는 유형입니다.

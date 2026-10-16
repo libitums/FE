@@ -113,6 +113,7 @@ describe("catalogMapSectionsOf", () => {
         lessonKeys: a.episode.units.map((unit) => unit.id),
         finalKey: a.episode.finalTest.id,
         completionKeys: ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"],
+        cultureKeys: [],
       },
       {
         kind: "catalog-unavailable",
@@ -343,6 +344,7 @@ describe("완료 키 (CMF)", () => {
     lessonKeys: ["S1", "CULT"],
     finalKey: "RP",
     completionKeys,
+    cultureKeys: [],
   });
   const unavailable = (episodeId: string, ordinal: number): CatalogUnavailableSection => ({
     kind: "catalog-unavailable",

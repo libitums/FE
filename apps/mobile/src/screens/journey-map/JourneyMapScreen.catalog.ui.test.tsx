@@ -36,6 +36,7 @@ function catalogProps(
       lessonKeys,
       finalKey: "RP",
       completionKeys: ["RP"],
+      cultureKeys: [],
     })),
     progress,
     onStartCover,

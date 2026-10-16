@@ -56,6 +56,7 @@ function ready(id: string, lessonCount: number): CatalogReadySection {
     lessonKeys: Array.from({ length: lessonCount }, (_, index) => `S${index + 1}`),
     finalKey: "RP",
     completionKeys: ["RP"],
+    cultureKeys: [],
   };
 }
 

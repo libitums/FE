@@ -99,6 +99,7 @@ describe("JourneyMapScreen 줄 결선", () => {
       lessonKeys: catalogLessonKeys,
       finalKey: "RP",
       completionKeys: ["RP"],
+      cultureKeys: [],
     },
     {
       kind: "catalog-unavailable",

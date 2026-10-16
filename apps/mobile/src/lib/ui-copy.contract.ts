@@ -11,7 +11,9 @@ import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.co
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
+import type { CultureCardCopy } from "../screens/culture-card/culture-card.contract";
 import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
+import type { SyllableBuildCopy } from "../screens/syllable-build/syllable-build.contract";
 import type { TypingCopy } from "../screens/typing/typing.contract";
 import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
 import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-picture";
@@ -84,6 +86,8 @@ export type UiCopy = {
   readonly typing: TypingCopy;
   readonly vocabCard: VocabCardCopy;
   readonly pairMatch: PairMatchCopy;
+  readonly cultureCard: CultureCardCopy;
+  readonly syllableBuild: SyllableBuildCopy;
   readonly wordChoicePicture: WordChoicePictureCopy;
   readonly catalogFinal: CatalogFinalCopy;
   readonly audioUnavailable: AudioUnavailableCopy;

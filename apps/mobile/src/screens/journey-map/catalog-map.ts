@@ -12,6 +12,7 @@ import type {
   CatalogUnitKey,
 } from "../../lib/catalog-progress";
 import type { CatalogEntry } from "../../lib/episode-catalog";
+import type { LearningUnit } from "../../lib/episode-content.model";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
 import type { JourneyMapItemStatus } from "./journey-map-types";
@@ -30,6 +31,14 @@ export const noCatalogMapSections: readonly CatalogMapSection[] = [];
 
 export const TUTORIAL_GATE_UNIT: EpisodeFinalUnitId = "tutorial-final-test";
 
+/**
+ * 문항이 하나 이상이고 모두 문화 유형(CULTURE_CARD · CULTURE_CHECK)인 유닛의 id입니다(유닛 순서). 뼈대만 선
+ * 상태라 아직 빈 목록입니다.
+ */
+export function catalogCultureKeysOf(_units: readonly LearningUnit[]): readonly CatalogUnitKey[] {
+  return [];
+}
+
 export function catalogMapSectionsOf(
   catalog: readonly CatalogEntry[],
 ): readonly CatalogMapSection[] {
@@ -42,6 +51,7 @@ export function catalogMapSectionsOf(
         lessonKeys: entry.episode.units.map((unit) => unit.id),
         finalKey: entry.episode.finalTest.id,
         completionKeys: entry.episode.completion?.requires ?? [entry.episode.finalTest.id],
+        cultureKeys: catalogCultureKeysOf(entry.episode.units),
       };
     }
     return {

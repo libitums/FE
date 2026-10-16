@@ -79,6 +79,8 @@ type WordChoiceParts = {
   readonly answerIndex: number;
   readonly romanization?: string | undefined;
   readonly translation?: string | undefined;
+  /** 보기마다 번역 줄입니다 — 있으면 길이 = `choices.length`입니다. */
+  readonly choiceTranslations?: readonly string[] | undefined;
 };
 
 function wordChoiceItem(
@@ -222,4 +224,12 @@ export function pictureChoiceItemOf(
     picture: { url, answerRomanization: latinOf(port, correct?.roman) ?? null },
   };
   return { kind: "word-choice", itemId: item.id, question };
+}
+
+/** 문화 확인(CULTURE_CHECK)입니다 — 화면 연결만 서 있고 아직 건너뜁니다. */
+export function cultureCheckItemOf(
+  item: ItemOf<"CULTURE_CHECK">,
+  _port: CatalogItemPort,
+): CatalogMappedItem {
+  return skippedItem(item, "screen-pending");
 }

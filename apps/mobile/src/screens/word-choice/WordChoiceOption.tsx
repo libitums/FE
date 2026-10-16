@@ -20,6 +20,8 @@ import "./word-choice-option.css";
 export type WordChoiceOptionProps = {
   index: number;
   text: string;
+  /** 보기 아래 작은 번역 줄 — 없으면 줄이 없습니다. */
+  translation?: string;
   result: AnswerResult | null;
   onSelect: (index: number) => void;
 };

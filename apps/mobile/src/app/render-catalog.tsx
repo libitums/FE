@@ -10,12 +10,14 @@ import type {
   CatalogRoleplayTurn,
   CatalogRoleplayTurns,
 } from "../screens/catalog-final/catalog-final.contract";
+import { CultureCardActivity } from "../screens/culture-card/CultureCardActivity";
 import { judgeAssessment } from "../screens/assessment/assessment";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 import { ListeningActivity } from "../screens/listening/ListeningScreen";
 import { PairMatchActivity } from "../screens/pair-match/PairMatchActivity";
 import { SentenceOrderActivity } from "../screens/sentence-order/SentenceOrderScreen";
+import { SyllableBuildActivity } from "../screens/syllable-build/SyllableBuildActivity";
 import { TypingActivity } from "../screens/typing/TypingActivity";
 import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
@@ -113,6 +115,28 @@ function renderActivity(
     case "pair-match":
       return (
         <PairMatchActivity
+          key={key}
+          questions={activity.questions}
+          gemCount={wiring.gemCount}
+          onExit={onExit}
+          onFinish={onFinish}
+          lesson={lesson}
+        />
+      );
+    case "culture-card":
+      return (
+        <CultureCardActivity
+          key={key}
+          questions={activity.questions}
+          gemCount={wiring.gemCount}
+          onExit={onExit}
+          onFinish={onFinish}
+          lesson={lesson}
+        />
+      );
+    case "syllable-build":
+      return (
+        <SyllableBuildActivity
           key={key}
           questions={activity.questions}
           gemCount={wiring.gemCount}

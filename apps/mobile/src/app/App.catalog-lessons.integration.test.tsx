@@ -283,6 +283,8 @@ const contentIdOf: Record<CatalogActivity["form"], string> = {
   typing: "typing-activity-content",
   "vocab-card": "vocab-card-content",
   "pair-match": "pair-match-content",
+  "culture-card": "culture-card-content",
+  "syllable-build": "syllable-build-content",
 };
 
 const lettersOnly = (text: string) => text.normalize("NFC").replace(/[^ㄱ-ㆎ가-힣]/g, "");

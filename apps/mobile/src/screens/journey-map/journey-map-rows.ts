@@ -1,7 +1,7 @@
 // 맵의 유닛을 줄로 나누는 순수 모듈입니다 — 튜토리얼과 카탈로그가 같은 함수를 씁니다.
 // 상태(잠김 · 열림 · 끝)는 입력이 아닙니다.
 
-import type { CatalogUnitNode } from "./catalog-map.contract";
+import type { CatalogUnitNode, CatalogUnitNodeRole } from "./catalog-map.contract";
 import type { JourneyMapItem } from "./journey-map-types";
 
 /** 유닛이 줄에서 차지하는 방식입니다 — 둘이 나란히 서는 것과 늘 혼자 서는 것. */
@@ -54,8 +54,9 @@ export const tutorialItemPlacement: Readonly<Record<JourneyMapItem["kind"], MapU
   "episode-final": "solo",
 };
 
-export const catalogNodePlacement: Readonly<Record<CatalogUnitNode["role"], MapUnitPlacement>> = {
+export const catalogNodePlacement: Readonly<Record<CatalogUnitNodeRole, MapUnitPlacement>> = {
   lesson: "paired",
+  culture: "solo",
   final: "solo",
 };
 

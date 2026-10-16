@@ -7,6 +7,7 @@ import { englishOf, koOf, latinOf, skippedItem } from "./catalog-item-text";
 import type {
   CatalogFill,
   CatalogGlossOf,
+  CatalogItemPort,
   CatalogLessonItemPort,
   CatalogMappedItem,
 } from "./catalog-lesson-types";
@@ -48,4 +49,12 @@ export function vocabCardItemOf(
     itemId: item.id,
     question: { word, romanization: latinOf(port, item.context.roman) ?? null, meaning, example },
   };
+}
+
+/** 문화 카드(CULTURE_CARD)입니다 — 화면 연결만 서 있고 아직 건너뜁니다. */
+export function cultureCardItemOf(
+  item: Extract<LearningItem, { type: "CULTURE_CARD" }>,
+  _port: CatalogItemPort,
+): CatalogMappedItem {
+  return skippedItem(item, "screen-pending");
 }

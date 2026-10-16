@@ -68,6 +68,7 @@ export function optionAccessibilityLabel(
   text: string,
   result: AnswerResult | null,
   copy: UiCopy,
+  _translation?: string,
 ): string {
   if (result === null) {
     return text;
