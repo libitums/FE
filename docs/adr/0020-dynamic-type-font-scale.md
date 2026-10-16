@@ -164,6 +164,16 @@ UIFontMetrics(forTextStyle: .body).scaledValue(for: 100) / 100
 > 값을, Android는 시스템 `Configuration.fontScale`을 그대로 코어에 넘긴다. 상한을 다시 거는 안은 버렸다(Android 설정의
 > 최대가 이미 200%라 실사용자에게 무동작이고, 2.0 + 밀도 540(adb 강제 — 설정 UI의 「화면 크기」 최대 단계가 540인지는
 > 확인하지 않았다)은 상한 아래에서도 고장이다 — ADR-0022 `정정 기록` 2026-10-09).
+>
+> ⟨2026-10-14 — 적용 기록, 결정 2 · 4는 그대로⟩ **글자 배율이 처음으로 JS에 닿는다.** 여정 맵이 일반 유닛을 두 열로 세우면서(브랜치 `feat/journey-map-grid-autoscroll`,
+> [ADR-0024](0024-journey-units-and-special-unit-placement.md) `정정 기록` ⟨2026-10-14⟩) **배율 2.0 초과 또는 화면 폭 320 미만이면 한 열**로 떨어진다(한 열 폴백을 이번에
+> 만든 것은 사용자 결정). 판정은 앱의 순수 함수 `mapColumnsFor`이고 경계는 두 열이다(정확히 2.0 · 320은 두 열, 값이 없으면 두 열). 호스트가 globalProps에 키 둘을 더한다 —
+> `fontScale`(코어에 **준** 배율)과 `viewportWidth`(LynxView 폭, iOS pt · Android dp). 키 · 시점 · 순수 변환은 [Android 호스트 README](../../apps/android/README.md)
+> 「시스템 바와 safe area」의 globalProps 표가 진다. ⚠ **이것은 상한이 아니다** — 코어 배율은 여전히 상한 없이 넘기고, 2.0은 맵 한 화면의 배치 판정일 뿐이다.
+> **결정 2와 같은 수명을 지킨다**: iOS는 실행 중 글자 크기가 바뀌어도 화면이 다시 그려지지 않으므로 JS에도 **실행 시 `builder.fontScale`에 넣은 그 값**을 보내고 trait이 바뀌어도 다시
+> 보내지 않는다 — 시스템의 지금 값을 보내면 글자는 옛 크기인데 배치만 한 열로 바뀐다. Android는 배율이 바뀌면 Activity가 다시 서므로 `onCreate`의 값이 곧 코어의 값이다(에뮬레이터에서
+> 실행 중 `font_scale` 변경마다 새 인스턴스가 서고 새 배율이 number로 실렸다 — 2026-10-14). iOS에서 숫자 globalProps가 number로 닿는지 · 접근성 크기에서 한 열이 서는지는 로그인
+> 대기로 아직 보지 못했다([여정 맵 e2e](../e2e/journey-map.md) E-L1 ~ E-L3 · E-X5).
 
 **처음에는 상한 없이 넣고 무엇이 깨지는지 보기로 했다.** 상한을 먼저 걸면 깨지는
 자리가 가려지고, 가려진 것은 고칠 대상이 되지 못하기 때문이다.

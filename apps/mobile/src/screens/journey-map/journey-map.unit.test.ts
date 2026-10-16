@@ -37,6 +37,8 @@ import {
   type StepSheetState,
 } from "./journey-map";
 import { uiCopyEn } from "../../lib/ui-copy-en";
+import { tutorialItemId } from "./journey-map-rows";
+import { episodeSectionId, mapUnitDomId, stepNodeId } from "./journey-map-scroll";
 
 // DOM·컴포넌트를 import하지 않습니다 — 순수 함수 일곱 + 고정 데이터만 봅니다.
 
@@ -883,5 +885,24 @@ describe("journeySteps ⇔ JourneyStepId (파수꾼, U-N5)", () => {
 
     expect(missingFromEnumeration).toEqual([]);
     expect(missingFromJourneySteps).toEqual([]);
+  });
+});
+
+describe("맵 유닛 DOM id", () => {
+  it("MD1. 튜토리얼 13 항목의 id가 서로 다르고 다른 id와 겹치지 않는다", () => {
+    expect(mapUnitDomId("greeting")).toBe("journey-map-unit-greeting");
+
+    const items = journeyMapSections[0]!.items;
+    const ids = items.map((item) => mapUnitDomId(tutorialItemId(item)));
+    expect(ids).toHaveLength(13);
+    expect(new Set(ids).size).toBe(13);
+
+    const others = [
+      ...journeySteps.map((step) => stepNodeId(step.id)),
+      episodeSectionId("tutorial"),
+    ];
+    for (const id of ids) {
+      expect(others).not.toContain(id);
+    }
   });
 });

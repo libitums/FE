@@ -9,10 +9,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--libitum-spacing-4);
+  max-width: 100%;
 }
 
 /* 라벨 색은 세 상태가 같습니다 — 상태 클래스를 만들지 않습니다. */
 .journey-step-node-label {
+  /* 칸 폭이 최대 폭입니다 — 두 열의 칸에서 낱말 단위로 줄바꿈하고, 자르지 않습니다. */
+  max-width: 100%;
+  text-align: center;
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-m-font-family);
   font-weight: var(--libitum-typography-label-m-font-weight);

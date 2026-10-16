@@ -22,7 +22,7 @@ Lynx 4.0.1 · Fresco 2.3.0의 64비트 `.so`를 16 KB 정렬로 다시 빌드한
 | R1 ~ R5 · R8(`speech` 제외) · R7(관찰) | 에뮬레이터 통과 | AAB `checked 31, failures 0` · 대화상자 0(기동 세 번) · `versionCode=2` · `targetSdk=36` · Maestro `host` · `social` · `legal` · `small` · `audio` · `signed-in` · `completion` · `handwriting` · `review` · 푸시 통과. 계측은 41건 가운데 40건 통과. 남은 한 건 `ButtonAccessibilityTest`는 그 일괄 실행에서 **실행 조건이 빠져** 실패했고(제품 결함이 아니다 — R8), 조건을 맞춰 따로 돌린 실행에서 `OK (1 test)`였다. `9b15f548`에서 R8의 계측 ①(이 테스트를 뺀 일괄)은 `OK (40 tests)`, 계측 ②는 `OK (1 test)`였다. R7은 관찰 기록(선택 창이 떴다)이고 통과/실패가 아니다 |
 | **x86_64 재빌드 `.so` 10개** | **미실행 — 확인되지 않았다** | 어느 기기 · 에뮬레이터에서도 실행된 적 없다(검증 에뮬레이터는 arm64-v8a). 정적 정렬 검사만 통과 |
 | **R6** — API 26 ~ 32 뒤로가기 · 4 KB 페이지 기기 | **API 30 에뮬레이터 하나에서 실행 — 그 범위만 통과** | 2026-10-05, API 30(Android 11) · 4 KB 페이지(`getconf PAGE_SIZE` 4096) · arm64 `google_apis` 에뮬레이터 · 3버튼 · `114099e3`에서 실행했다(AAB 분할 설치). 통과: 재빌드한 `.so`의 로드(로드 오류 0)와 온보딩 · Fresco 그림, `onBackPressed()` 경로(B2 · B5 · B6 · B7(b)), 3버튼 하단 겹침 없음(스크린샷 육안 — 수치 대조는 하지 않았다), 설치된 분할 APK의 오디오 자산 29개(m4a 21 · mp3 8, 무압축)와 효과음 호출 logcat, 계측 일괄 `OK (40 tests)`. **남은 미확인**: API 26 ~ 29 · 31 ~ 32, 제스처 모드, B3 · B4 · B7(a) · B8 · B9, 소리 청음(에뮬레이터를 `-no-audio`로 띄웠다), API 30에서의 `ButtonAccessibilityTest` · `test-session-resume.sh` · `test-storage-restart.sh`, 실기 4 KB 기기. 상세는 아래 R6 「실행 기록」 |
-| **R9** — 업로드 키 서명 · Play 재업로드 · 실기 | **미실행 — 확인되지 않았다** | 사용자 몫이다. **Play가 이 브랜치의 AAB(versionCode 2)를 받는지**, 실기에서 소리 · 그림 · 탭 바 · 16 KB 경고 없음은 아직 아무도 보지 않았다. ⟨2026-10-07⟩ 실기의 스플래시 20회(확인 목록 j — **출시 조건**)도 아직 아무도 하지 않았다. ⟨2026-10-08⟩ ABI 유지 · 축소 결정(확인 목록 k — **프로덕션 출시 전 출시 조건**)도 아직 내리지 않았다. ⟨2026-10-09⟩ 학습 문항 안내의 TalkBack 낭독을 귀로 듣기 · 폭 360dp 이하 실기의 글꼴 최대(확인 목록 l · m — **출시 조건**)도 아직 아무도 하지 않았다 |
+| **R9** — 업로드 키 서명 · Play 재업로드 · 실기 | **미실행 — 확인되지 않았다** | 사용자 몫이다. **Play가 이 브랜치의 AAB(versionCode 2)를 받는지**, 실기에서 소리 · 그림 · 탭 바 · 16 KB 경고 없음은 아직 아무도 보지 않았다. ⟨2026-10-07⟩ 실기의 스플래시 20회(확인 목록 j — **출시 조건**)도 아직 아무도 하지 않았다. ⟨2026-10-08⟩ ABI 유지 · 축소 결정(확인 목록 k — **프로덕션 출시 전 출시 조건**)도 아직 내리지 않았다. ⟨2026-10-09⟩ 학습 문항 안내의 TalkBack 낭독을 귀로 듣기 · 폭 360dp 이하 실기의 글꼴 최대(확인 목록 l · m — **출시 조건**)도 아직 아무도 하지 않았다. ⟨2026-10-13⟩ Sentry DSN을 넣은 release 빌드 · 매핑 업로드(R9의 1 「크래시 수집(Sentry) 설정」)와 Sentry SDK를 넣은 뒤의 release 산출물 검사도 아직 아무도 돌리지 않았다 |
 | **R8의 `speech`** | **미실행 — 확인되지 않았다** | 실행기가 인식 서비스가 없는 AOSP 이미지를 요구한다. 이 절차의 에뮬레이터는 Google Play 이미지다 |
 
 **위 세 줄은 통과가 아니다.** 이 문서를 근거로 「출시 설정이 검증됐다」고 말할 수 있는 범위는 16 KB 에뮬레이터 하나의 R1 ~ R5 · R7 · R8까지다.
@@ -437,6 +437,26 @@ ls -l apps/android/app/build/outputs/bundle/release/app-release.aab     # 서명
 R1 ~ R8의 모의 값 인라인 지정은 그 명령 한 줄에만 적용되므로 셸에 남지 않는다. 그래도 `env | grep PUBLIC_SUPABASE`가 모의 값을 보이면 `unset` 한다. 번들 뒤 `grep -c example.invalid apps/mobile/dist/main.lynx.bundle`이 0인지로 모의 값이 안 섞였음을 확인한다.
 빌드가 `Release build needs … google-services.json` 또는 `Native 16 KB page alignment check failed`로 멈추면 업로드하지 말고 메시지를 결과 표에 적어 되돌린다.
 
+**크래시 수집(Sentry) 설정 — ⟨2026-10-13⟩ 이 단계에 값 넷과 도구 하나가 더해졌다.** 결정은 [ADR-0061](../adr/0061-crash-reporting-sentry.md), 값의 자리는 [`apps/android/README.md`](../../apps/android/README.md)의 「크래시 리포팅(Sentry)」이 진다.
+**이 단계(DSN을 넣은 release AAB · 매핑 업로드)는 아직 한 번도 실행되지 않았다.** 본 것은 값이 없을 때 빌드가 그대로 되고 업로드 작업이 SKIPPED라는 것([크래시 리포팅 e2e](crash-reporting.md) A1)과, DSN을 넣은 **`bundled`**가 에뮬레이터에서 이벤트를 만들어 전송을 시도한 것(같은 문서 B단계 1회차 — 수신은 사용자가 대시보드에서 확인했다)까지다.
+
+- **DSN을 넣지 않고 올려도 된다.** `apps/android/sentry.properties`와 `SENTRY_*` 환경 변수가 없으면 `bundleRelease`는 그대로 성공하고 그 AAB는 Sentry를 초기화하지 않는다(아무것도 보내지 않는다).
+  출력 끝의 `> Task :app:uploadSentryMappingRelease SKIPPED` · `Sentry mapping upload skipped: token, org or project is not set.`가 그 상태다.
+- ⚠ ⟨2026-10-13⟩ **`apps/android/sentry.properties`가 이미 있는 작업 트리가 있다** — 사용자가 Android DSN을 그 파일에 넣었다(`auth.token` · 조직 · 프로젝트는 아직 없다). 그 작업 트리에서 만든
+  `release` · `bundled`는 **Sentry로 보내는 빌드다.** 빌드 전에 `test -e apps/android/sentry.properties && cut -d= -f1 apps/android/sentry.properties`로 어떤 키가 들어 있는지 본다(값은 출력하지 않는다).
+  B단계와 데이터 보안 확인이 끝나기 전에 Play에 올릴 AAB는 그 파일을 치운 채(또는 파일이 없는 작업 트리에서) 만든다. B6(원문에 `user` · `did` · `ip_address` · `contexts.device.id`가 없다)은 기기 쪽에서 통과했다(에뮬레이터 1대 · `bundled`) — 수신과 대시보드의 모습(사용자 수 0 · Device 컨텍스트에 `id` · `name` · `boot_time` 없음)은 사용자가 확인했다(2026-10-13). 남은 것은 서버가 붙이는 IP(프로젝트 설정 「IP 주소 저장 안 함」)다.
+  **네이티브(C/C++) 크래시는 API 30 이하 기기에서 Sentry에 보이지 않는다고 보고 출시한다** — API 30에서는 tombstone 이벤트가 오지 않았고 API 34에서는 왔다(31 ~ 33 · 실기 미확인 — ADR-0061 D5). 세션 지표(크래시 없는 세션 비율)는 앱이 세션을 직접 관리하는 우회 뒤의 값이다 — 기기 쪽에서 크래시를 `crashed`로 세는 것은 확인됐고 강제 종료는 정상으로 셈된다(ADR-0061 D6 · 「대가」 12).
+  DSN을 넣은 AAB를 올리지 않는다** — 설치 id가 나가지 않는다는 근거가 그 전에는 단위 테스트뿐이다(ADR-0061 「정정 기록」).
+- **DSN을 넣어 올리려면** 위 `bundleRelease` **전에** 추적하지 않는 `apps/android/sentry.properties`(`.gitignore`)에 `dsn` · `auth.token` · `defaults.org` · `defaults.project`를 둔다(또는 환경 변수
+  `SENTRY_DSN` · `SENTRY_AUTH_TOKEN` · `SENTRY_ORG` · `SENTRY_PROJECT` — 환경 변수가 이긴다). **DSN · 토큰 값은 명령 · 결과 표 · 스크린샷에 적지 않는다.**
+  그 전에 [크래시 리포팅 e2e](crash-reporting.md)의 **B단계의 남은 것이 끝나 있어야 한다**(수신 · 이슈 · 세션 집계는 사용자가 대시보드에서 확인했다 — 서버가 붙이는 IP · 매핑으로 풀린 스택 · M2 / M3 쿼리가 남았다) — 그리고 [Android 데이터 보안](../android-data-safety.md)의 「제출 전에 확인할 것」이 끝나 있어야 한다.
+- **`sentry-cli`가 PATH에 있어야 한다**(`sentry-cli --version`). 토큰 · 조직 · 프로젝트가 다 있으면 `bundleRelease` 뒤에 `uploadSentryMappingRelease`가 이어서 돌아 `outputs/mapping/release/mapping.txt`를 올린다.
+  **토큰은 있는데 `sentry-cli`가 없으면 그 작업이 실패하고 Gradle 호출이 실패로 끝난다** — AAB는 이미 만들어져 있지만([추론] — `finalizedBy`의 순서. 실행해 본 적은 없다), 매핑이 올라가지 않은 AAB를 Play에 올리면 그 버전의 Java 스택을 Sentry에서 읽을 수 없다.
+  CLI를 깔고 `./gradlew :app:uploadSentryMappingRelease`만 다시 돌린다(같은 빌드 산출물이 남아 있을 때).
+- **매핑은 `versionCode`에 묶인다.** 매핑 UUID가 `applicationId:versionName:versionCode:buildType`에서 나오므로, 같은 `versionCode`로 코드를 바꿔 다시 빌드해 올리면 Sentry의 매핑이 덮인다.
+  Play에 올린 `versionCode`의 매핑을 올린 뒤에는 그 번호로 다시 올리지 않는다. 아래 「크래시가 나면」의 `mapping.txt` 보관은 Sentry 업로드와 별개로 그대로 한다.
+- 인증 값 가운데 DSN만 있고 토큰 · 조직 · 프로젝트가 없으면 앱은 보내지만 매핑은 올라가지 않는다(SKIPPED) — 난독화된 스택이 그대로 보인다.
+
 **산출물 검사 — 올릴 AAB에 대해, 서명하기 전에, 사용자가 돌린다.** 에뮬레이터 단계(R1)가 돌린 `release-shrink.artifacts.mjs`는 모의 값 번들로 만든 AAB를 본 것이다. **올리는 AAB는 실제 값 번들로 다시 만든 다른 파일이므로** 같은 검사를 그 빌드에 한 번 더 돌린다(업로드 직전 · 사용자). 위 빌드에 이어서, 저장소 루트에서:
 
 ```sh
@@ -448,6 +468,9 @@ ANDROID_HOME=~/Library/Android/sdk BUNDLETOOL_JAR="$BUNDLETOOL_JAR" \
 - 보는 것(A1 ~ A8): dex 1개 · 매핑의 K1 · K2 대상 생존 · 접근성 클래스 생존 · ABI 4개 · 번들 일치 · 다운로드 크기 18,000,000 B 아래. **하나라도 실패하면 업로드하지 않고** 실패한 테스트 이름을 결과 표에 적어 작업 `android-abi-minify`로 되돌린다.
 - **서명(2) 전에 돌린다**: 이 검사는 `outputs/bundle/release/`에서 `.aab`를 찾는다(코드를 읽은 것 — 첫 `.aab`를 쓴다). 2에서 같은 폴더에 `app-release-signed.aab`가 생기면 어느 파일을 읽을지 가려지지 않는다. 서명 전에는 `app-release.aab` 하나뿐이다.
 - 이 검사는 AAB의 산출물만 본다 — 기기 동작이 아니다. 업로드 키 서명 · Play의 수락 · 실기는 아래 2 ~ 6이 진다.
+- ⟨2026-10-13⟩ **Sentry SDK가 의존에 들어온 뒤로 이 검사는 release AAB에 다시 돌지 않았다**(그 회차의 워크트리에 `google-services.json`이 없었다). `bundled` APK의 dex는 3,552,224 bytes로
+  A3의 상한(4,000,000) 아래였으나 release의 값은 아니고, A7(다운로드 크기 18,000,000 B)은 재지 않았다 — [ADR-0052](../adr/0052-android-release-shrinking.md) 적용 기록 ⟨2026-10-13⟩.
+  **이 검사가 여기서 처음 실패하면** 규칙이나 상한을 고쳐 통과시키지 말고 실패한 테스트 이름과 수치를 적어 작업 `crash-reporting-sentry`로 되돌린다.
 
 ### 2. 업로드 키로 서명
 
@@ -548,6 +571,7 @@ jarsigner -verify -verbose -certs apps/android/app/build/outputs/bundle/release/
 
 **크래시가 나면**: 난독화된 스택(`r2.j` · `SourceFile:19` 모양)은 **그 빌드의 `mapping.txt`**로 푼다 — 이 문서 S 절의 「S.13 매핑으로 스택 풀기」(`retrace`). 매핑이 없으면 스택을 읽을 수 없다.
 **출시한 빌드의 `mapping.txt` 보관은 사용자 몫이다**: `apps/android/app/build/outputs/mapping/release/mapping.txt`(추적하지 않는다)를 AAB와 함께 올린 버전 · versionCode와 묶어 따로 보관한다. AAB 안의 `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`도 같은 내용이지만 Play가 그것으로 보고서를 푸는지는 이 작업에서 확인하지 않았다(S.1).
+⟨2026-10-13⟩ DSN과 인증 값을 넣은 빌드라면 같은 매핑이 Sentry에도 올라가 Java/Kotlin 크래시가 풀린 이름으로 보여야 한다 — **그렇게 보이는 것은 아직 아무도 확인하지 않았다**([크래시 리포팅 e2e](crash-reporting.md) B4). Sentry에 올렸어도 파일 보관은 그대로 한다.
 보관하는 이유: 같은 소스 · 의존성 · 규칙이면 매핑이 빌드마다 같았지만(이 작업의 관찰 — release 3회 `mapping.txt` sha256 `657d490a…`) 소스 · 의존성 · 규칙이 바뀌면 달라지고, 출시한 바이너리의 스택은 **그 빌드의 매핑**으로만 푼다.
 
 **ABI 4개(arm64-v8a · armeabi-v7a · x86 · x86_64) 유지는 사용자 결정이다**(축소가 `.so`를 건드리지 않는다). 에뮬레이터는 arm64 분할만 받으므로 **32비트 · x86 · x86_64 `.so`는 실행된 적이 없다.**

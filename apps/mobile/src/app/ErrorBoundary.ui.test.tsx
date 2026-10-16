@@ -118,3 +118,65 @@ test("[SH3-M] 문구표를 주입하면 제목 · 재시도의 글자와 이름�
   expect(retry).toHaveTextContent("⟦shell.errorBoundary.retry⟧");
   expect(retry).toHaveAttribute("accessibility-label", "⟦shell.errorBoundary.retry⟧");
 });
+
+// 크래시 보고 — 에러 경계가 잡은 예외는 런타임 오류 통로(`lynx.reportError`)로 한 번 나갑니다.
+// 통로는 전역 `lynx`의 스파이로 가로챕니다: 경계가 `reportCrash`를 거쳐 실제로 그 통로를 부르는지
+// 끝까지 보려고 모듈 모킹 대신 이 경계를 골랐습니다.
+test("[U1] 잡힌 예외가 lynx.reportError로 정확히 한 번 나가고 에러 화면이 보인다", () => {
+  const report = vi.spyOn(lynx, "reportError").mockImplementation(() => {});
+
+  render(
+    <ErrorBoundary>
+      <Boom />
+    </ErrorBoundary>,
+  );
+
+  expect(report).toHaveBeenCalledTimes(1);
+  const sent = report.mock.calls[0]?.[0];
+  expect(sent).toBeInstanceOf(Error);
+  expect((sent as Error).message).toBe("test failure");
+  expect(screen.getByTestId("error-boundary-title")).toBeInTheDocument();
+});
+
+test("[U2] 재시도로 자식이 다시 그려져도 보고 횟수는 그대로 1이다", () => {
+  const report = vi.spyOn(lynx, "reportError").mockImplementation(() => {});
+
+  render(
+    <ErrorBoundary>
+      <Boom />
+    </ErrorBoundary>,
+  );
+  expect(report).toHaveBeenCalledTimes(1);
+
+  fireEvent.tap(screen.getByTestId("error-boundary-retry"), {});
+
+  expect(screen.getByTestId("boom-recovered")).toBeInTheDocument();
+  expect(report).toHaveBeenCalledTimes(1);
+});
+
+// 스파이를 걸지 않습니다 — testing-environment의 기본 `reportError`는 던집니다.
+test("[U3] 보고 통로가 던져도 에러 화면이 그대로 뜬다", () => {
+  expect(() => lynx.reportError(new Error("probe"))).toThrow();
+
+  render(
+    <ErrorBoundary>
+      <Boom />
+    </ErrorBoundary>,
+  );
+
+  expect(screen.getByTestId("error-boundary-title")).toBeInTheDocument();
+  expect(screen.getByTestId("error-boundary-retry")).toBeInTheDocument();
+});
+
+test("[U4] 던지지 않는 자식이면 보고가 나가지 않는다", () => {
+  const report = vi.spyOn(lynx, "reportError").mockImplementation(() => {});
+
+  render(
+    <ErrorBoundary>
+      <text data-testid="calm-child">ok</text>
+    </ErrorBoundary>,
+  );
+
+  expect(screen.getByTestId("calm-child")).toBeInTheDocument();
+  expect(report).not.toHaveBeenCalled();
+});

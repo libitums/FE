@@ -156,7 +156,7 @@ const sheetGap = 8;
 const sheetHeight = 250;
 
 /** 화면 아래를 덮는 바텀 네비게이션의 높이입니다(`.journey-map-screen-map`의 아래 여백). */
-const bottomInset = 68;
+export const mapBottomInset = 68;
 
 /** 말풍선과 바텀 네비게이션 사이에 남길 여백입니다. */
 const bottomMargin = 16;
@@ -191,7 +191,10 @@ export type StepPlacement = {
  */
 export function stepSheetPlacement(measure: StepMeasure): StepPlacement {
   const radius = stepUnitSize / 2;
-  const anchorLimit = Math.max(0, measure.screenHeight - bottomInset - bottomMargin - sheetHeight);
+  const anchorLimit = Math.max(
+    0,
+    measure.screenHeight - mapBottomInset - bottomMargin - sheetHeight,
+  );
   // 유닛 중심이 설 자리입니다(LynxView 기준). 말풍선이 들어가는 가장 낮은 자리와
   // 가운데 중 높은 쪽이고, 스크롤 상자 꼭대기보다 위로는 가지 않습니다.
   const center = measure.scrollViewTop + measure.scrollViewHeight / 2;
@@ -202,6 +205,49 @@ export function stepSheetPlacement(measure: StepMeasure): StepPlacement {
     targetScrollTop: Math.max(0, measure.scrollTop + (unitCenter - wanted)),
     anchorY: measure.unitTop + stepUnitSize - measure.screenTop,
     anchorLimit,
+  };
+}
+
+export type StepHeaderCard = {
+  /** 머리 카드의 아래 모서리입니다(LynxView 기준). */
+  readonly bottom: number;
+  readonly left: number | null;
+  readonly width: number | null;
+};
+
+/**
+ * `stepSheetPlacement`의 답이 누른 유닛을 머리 카드 뒤에 세우면, 카드 아래로 내린 답을 냅니다.
+ * 카드를 모르거나 걸리지 않으면 `stepSheetPlacement`와 글자 그대로 같습니다.
+ *
+ * 양보의 순서: 남는 자리 → 간격 → (그래도 모자라면) 카드를 피하는 쪽이 이깁니다. `gap`은 인자입니다 —
+ * 자동 스크롤의 자리 모듈이 이 모듈을 읽으므로 거꾸로 읽으면 순환입니다.
+ */
+export function stepSheetPlacementBelowHeader(
+  measure: StepMeasure,
+  unitCenterX: number | null,
+  header: StepHeaderCard | null,
+  gap: number,
+): StepPlacement {
+  const base = stepSheetPlacement(measure);
+  if (header === null) return base;
+  const baseTop = measure.unitTop - (base.targetScrollTop - measure.scrollTop);
+  if (baseTop >= header.bottom + gap) return base;
+  // 모르는 가로 값이 하나라도 있으면 겹친다고 봅니다 — 세로로도 걸려야 바뀝니다.
+  const half = stepUnitSize / 2;
+  const overlaps =
+    unitCenterX === null ||
+    header.left === null ||
+    header.width === null ||
+    (unitCenterX - half < header.left + header.width && header.left < unitCenterX + half);
+  if (!overlaps) return base;
+  const lowestTop = measure.screenTop + base.anchorLimit - sheetGap - stepUnitSize;
+  const wantedTop = Math.max(
+    baseTop,
+    Math.min(header.bottom + gap, Math.max(lowestTop, header.bottom)),
+  );
+  return {
+    ...base,
+    targetScrollTop: Math.max(0, measure.scrollTop + (measure.unitTop - wantedTop)),
   };
 }
 
@@ -238,4 +284,17 @@ export function stepSheetFiguresFor(
     completedActivityCount: stepStatusAt(ordinal - 1, completedStepCount) === "done" ? total : 0,
     totalActivityCount: total,
   };
+}
+
+/** 꼬리가 가운데에서 벗어날 수 있는 끝입니다. 값은 디자인이 정합니다. */
+export const stepSheetCaretLimit = 105;
+
+/** 유닛 중심과 화면 중심의 차를 ±limit 안으로 가둔 값입니다. 둘 중 하나라도 `null`이면 0. */
+export function stepSheetCaretOffset(
+  unitCenterX: number | null,
+  screenCenterX: number | null,
+  limit: number,
+): number {
+  if (unitCenterX === null || screenCenterX === null) return 0;
+  return Math.max(-limit, Math.min(limit, unitCenterX - screenCenterX));
 }

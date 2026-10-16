@@ -52,7 +52,8 @@
   align-items: center;
   gap: var(--libitum-spacing-24);
   padding-top: calc(
-    var(--libitum-spacing-32) + var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
+    var(--libitum-spacing-32) + var(--libitum-spacing-8) + var(--libitum-layout-gap-block) +
+      var(--libitum-spacing-40)
   );
   padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
 }

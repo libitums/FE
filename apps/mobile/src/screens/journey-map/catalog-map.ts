@@ -81,6 +81,13 @@ export function catalogSectionDomId(episodeId: string): string {
   return `journey-map-screen-catalog-${catalogSelectorToken(episodeId)}`;
 }
 
+/** 카탈로그 유닛 셀의 id입니다 — 표지는 `CATALOG_INTRO_KEY`. 어떤 (에피소드, 키) 쌍도 겹치지 않습니다. */
+export function catalogUnitDomId(episodeId: string, unitKey: CatalogUnitKey): string {
+  // 토큰이 `-`를 그대로 두므로 구분자만으로는 쌍이 겹칩니다 — 에피소드 토큰의 길이를 앞에 둡니다.
+  const token = catalogSelectorToken(episodeId);
+  return `journey-map-unit-catalog-${token.length}-${token}-${catalogSelectorToken(unitKey)}`;
+}
+
 export function tutorialPassedFrom(
   completedEpisodeFinalIds: readonly EpisodeFinalUnitId[],
 ): boolean {

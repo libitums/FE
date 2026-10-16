@@ -43,7 +43,9 @@ export function MessengerMapItem({ id, title, status, onSelect }: MessengerMapIt
         narrative="narrative"
         bindtap={handleSelect}
       />
-      <text className="journey-special-unit-label">{title}</text>
+      <text className="journey-special-unit-label" accessibility-element={false}>
+        {title}
+      </text>
     </view>
   );
 }

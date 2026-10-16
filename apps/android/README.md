@@ -7,6 +7,7 @@
 제공한다. `MetaAppEventsModule`은 Meta 앱 ID · 클라이언트 토큰이 든 빌드에서만 등록된다(아래 「Meta 앱 이벤트」).
 네이티브 기능 전체의
 iOS 동등성은 아직 없다([ADR-0038](../../docs/adr/0038-android-minimal-host.md)).
+크래시 수집(Sentry)은 모듈이 아니다 — 아래 「크래시 리포팅(Sentry)」.
 
 ## 시스템 뒤로가기
 
@@ -39,12 +40,20 @@ JS의 준비 신호(`SystemBackModule.ready`)는 에뮬레이터 실측에서 �
 |---|---|---|
 | `safeAreaInsets` | `{ top, bottom, left, right }` dp — 가려지는 가장자리 | `systemBars() \| displayCutout()` |
 | `tappableBottomInset` | dp — 시스템 바 가운데 **터치를 가로채는** 아래 높이. 3버튼에서만 0이 아니다(Pixel_8 48), 제스처는 0 | `tappableElement()`의 아래 값, `safeAreaInsets.bottom`을 넘지 않게 자른다 |
+| `fontScale` | number — **코어에 준** 글자 배율(`builder.setFontScale`에 넣은 `Configuration.fontScale` 그대로, 상한 없음). 여정 맵이 2.0을 넘으면 한 열로 선다. **아래 `viewportWidth`와 한 맵으로, 다른 키와 따로** `updateGlobalProps`로 보낸다(`MainActivity.publishViewportMetrics`, `onCreate`와 `onConfigurationChanged`, 앞서 보낸 맵과 같으면 보내지 않는다). 배율이 바뀌면 Activity가 다시 서므로 `onCreate`의 값이 곧 코어의 값이다 | 순수 변환 `ViewportMetrics.globalProps(fontScale, widthPx, density)` — 유한한 양수가 아닌 값의 키는 싣지 않는다(JS가 없음으로 읽고 두 열 쪽이 된다) |
+| `viewportWidth` | number — LynxView 가로 폭 dp(`widthPixels / density`). 여정 맵이 320 미만이면 한 열로 선다. 화면 크기 변경은 재생성 없이 `onConfigurationChanged`로 와서 바뀐 값을 다시 보낸다 | 같은 변환. `density ≤ 0`이면 키가 없다 |
 | `reducedMotion` | boolean — 시스템 「동작 줄이기」. **위 두 키와 따로**, 키 하나짜리 `updateGlobalProps`로 값이 바뀔 때만 보낸다(`MainActivity.publishReducedMotion`, `onCreate`에서 `renderTemplateUrl` 앞에 첫 값) | `Settings.Global.ANIMATOR_DURATION_SCALE` · `TRANSITION_ANIMATION_SCALE` 중 하나라도 0(`ReducedMotion.fromScales`). `ReducedMotionWatcher`가 `ContentObserver`로 두 URI를 듣는다 — 접근성 「애니메이션 삭제」는 세 배율을 0으로 두므로 같은 길로 온다. `window_animation_scale`은 보지 않는다 |
 
 따로 보내도 앞 두 키가 지워지지 않는 것은 `updateGlobalProps`가 키 단위 병합이기 때문이다(에뮬레이터 M-A3에서 확인). iOS 호스트도
 `reducedMotion`을 보낸다(`UIAccessibility.isReduceMotionEnabled`) — 단 iOS는 `LynxTemplateData(dictionary:useBoolLiterals:true)`로 보내야
 boolean이 도달한다(Dictionary 오버로드는 Bool을 숫자 1로 바꾼다 — [ADR-0044](../../docs/adr/0044-android-tappable-inset.md) D1 「후속 확장」).
 동작 줄이기의 에뮬레이터 · 시뮬레이터 절차와 결과는 [동작 줄이기 설정이 앱의 실제 움직임을 멈춘다](../../docs/e2e/motion-reduced.md)에 있다.
+
+iOS 호스트도 `fontScale` · `viewportWidth`를 한 맵으로 보낸다(`ViewController.publishViewportMetrics`, 순수 변환 `ViewportMetrics.globalProps(fontScale:width:)`, 숫자는 `Double`).
+`fontScale`은 실행 시 `builder.fontScale`에 넣은 값 그대로이고 실행 중 글자 크기가 바뀌어도 **다시 보내지 않는다** — iOS 코어는 실행 중 배율 변경을 다시 그리지 않으므로, 새 값을
+보내면 글자는 옛 크기인데 맵 배치만 한 열로 바뀐다([ADR-0020](../../docs/adr/0020-dynamic-type-font-scale.md) 결정 2 · 적용 기록 ⟨2026-10-14⟩). `viewportWidth`는 `view.bounds.width`(pt)이고
+`viewDidLayoutSubviews`에서 바뀌었을 때 다시 보낸다. iOS에서 이 숫자가 JS에 number로 닿는지는 아직 기기에서 보지 못했다(Android는 number로 닿았다 — 2026-10-14 에뮬레이터).
+두 키의 절차와 결과는 [여정 맵 e2e](../../docs/e2e/journey-map.md) 「두 열 배치 · 한 열 폴백 · 다음 유닛으로 자동 스크롤」과 [Android 호스트](../../docs/e2e/android-host.md) A14에 있다.
 
 iOS 호스트는 `tappableBottomInset`을 보내지 않는다(JS가 0으로 읽는다). 앱 셸은 탭 루트에서 이 값만큼 아래를
 비우고 탭 바 밑에 같은 색의 바닥 면을 덧댄다. inset이 바뀌면(화면 크기 변경 · 모드 전환) 탭 바가 따라 바뀐다 — 내비게이션 모드 전환은 API 37에서는 Activity를 다시 만들지 않고 따라 바뀌고, API 30에서는 Activity 재생성을 거쳐 새 자리에 선다(API별 동작과 그 경계의 근거는 아래 「화면 방향과 구성 변경」). 규칙과 근거는
@@ -403,6 +412,65 @@ A8은 keep 규칙을 더하지 않고 매핑만 읽는다 — `TapDelegate`와 L
 
 둘 다 빌드 산출물이라 추적하지 않는다. **출시한 빌드의 `mapping.txt`를 보관하는 것은 사람 몫이다**(R9). 도구는 Android SDK `cmdline-tools`의 `retrace`이고 명령은 같은 절차 문서의 「매핑으로 스택 풀기」에 있다 — **그 명령은 아직 돌려 본 적이 없다.**
 
+## 크래시 리포팅(Sentry)
+
+`release` · `bundled` 빌드는 DSN이 들어 있으면 Java/Kotlin 크래시 · JS 예외 · 세션을 Sentry로 보낸다(ANR 통합도 켜져 있다 — 이벤트를 본 적은 없다). **네이티브(C/C++) 크래시는 API 34에서는 오고 API 30에서는 오지 않는다**(아래 「NDK를 넣지 않았다」). 결정 · 확인한 것과 못 한 것은
+[ADR-0061](../../docs/adr/0061-crash-reporting-sentry.md)이, 내보내는 값의 목록은 [Android 데이터 보안](../../docs/android-data-safety.md)이 진다 — 여기에는 다루는 법만 적는다.
+**2026-10-13에 DSN을 넣은 `bundled`가 API 30 에뮬레이터에서 한 번 돌았다**(Android DSN은 사용자가 `sentry.properties`에 넣었고 인증 토큰 · 조직 · 프로젝트는 아직 없다). 기기 밖으로 나가기 직전의 envelope 원문을 확인했고 보냈다. 같은 날 API 34에서 tombstone과 세션 우회도 확인해 보냈다 — **사용자가 Sentry 대시보드에서 수신을 확인했다**(이벤트 8건 전부 도착 · 이슈 7개 · 사용자 수 0 · 세션 15 · Crash Free Sessions 80 % — 서버가 붙이는 IP · 매핑으로 풀린 스택 · release 빌드는 아직 확인되지 않았다. [크래시 리포팅 e2e](../../docs/e2e/crash-reporting.md) B단계 실행 기록).
+
+**설정 값 넷.** 환경 변수를 먼저 읽고, 없으면 추적하지 않는 `apps/android/sentry.properties`(`.gitignore` — 토큰이 든다. 커밋하지 않는다)를 읽고, 그것도 없으면 빈 값이다(`app/sentry.gradle`).
+
+| 값 | 환경 변수 | `sentry.properties` 키 | 없으면 |
+|---|---|---|---|
+| DSN | `SENTRY_DSN` | `dsn` | SDK를 초기화하지 않는다 — **빌드는 그대로 된다**(`google-services.json`과 같은 태도) |
+| 인증 토큰 | `SENTRY_AUTH_TOKEN` | `auth.token` | 매핑 업로드 작업이 SKIPPED |
+| 조직 | `SENTRY_ORG` | `defaults.org` | 같음 |
+| 프로젝트 | `SENTRY_PROJECT` | `defaults.project` | 같음 |
+
+- **`debug`는 DSN이 있어도 보내지 않는다.** `BuildConfig.SENTRY_DSN`이 `debug`에서는 늘 `""`다 — dev 서버 · HMR 오류가 수집기를 더럽히지 않게 한다. DSN을 읽는 것은 `release`이고 `bundled`는 `initWith release`로 물려받는다.
+- **DSN은 `https://<키>@<호스트>/<숫자>` 꼴만 받는다.** 빈 값 · `http://` · `키:비밀@` 옛 형식 · 경로 뒤에 꼬리가 붙은 값은 「DSN 없음」으로 처리된다(`CrashReportConfig.dsnFrom`) — 오타가 나도 앱은 뜨고 조용히 안 보낸다.
+- **초기화는 손으로 한다.** 매니페스트가 `io.sentry.auto-init=false`를 두고 SDK의 provider 둘(`SentryInitProvider` · `SentryPerformanceProvider`)을 `tools:node="remove"`로 걷는다. `DuruApplication.onCreate`가 첫 일로
+  `CrashReporting.start(this)`를 부르고, DSN이 유효할 때만 `SentryAndroid.init`이 돈다. DSN 없는 빌드에서는 `io.sentry` 코드가 한 줄도 돌지 않는다.
+- **JS 예외는 호스트 모듈이 아니라 `LynxViewClient.onReceivedError`로 받는다**(`MainActivity`). 받는 것은 Lynx 오류 코드 200번대(background) · 1100번대(메인 스레드)뿐이고, `CrashReportPayload` → `CrashScrub`이
+  이름 · 메시지 · 스택 넷으로 닫고 **사전 상한 → 지우기 → 자르기** 순서로 다룬다(이름은 `…Error` · `…Exception` 같은 알려진 꼴만). 프로세스당 20건까지 보낸다. `io.sentry`를 import하는 소스는 `CrashEventPolicy` · `CrashReporting` 둘뿐이다.
+- **사용자 식별자 · breadcrumb · 스크린샷 · 뷰 계층은 보내지 않는다**(식별자를 붙이지 않는 것과 debug는 보내지 않는 것은 2026-10-13 사용자 결정이다). 옵션은 `CrashReporting.start`에 명시로 고정돼 있다 — 옵션을 더하거나 뺄 때는 ADR-0061 D6과 데이터 보안 문서를 같이 고친다.
+  SDK는 설치 id를 `user.id` · 세션 `distinctId` · **`contexts.device.id`** 세 자리에 싣는다. 끄는 줄도 셋이다(`beforeSend`의 `setUser(null)` · `device.setId(null)`, 옵션의 `setDistinctId(null)`) —
+  **SDK 버전을 올리면 넷째 자리가 생기지 않았는지 다시 읽는다**(ADR-0061 D10 · 「정정 기록」). 기기 밖으로 나가기 직전의 envelope에서 넷(`user` · `did` · `ip_address` · `contexts.device.id`)이 없는 것은 봤다(e2e B6 — 에뮬레이터 1대). `beforeSend`는 기기 부팅 시각(`contexts.device.boot_time`)도 지운다. SDK가 붙이는 나머지 context 키는 [Android 데이터 보안](../../docs/android-data-safety.md)에 실측 목록이 있다 — **SDK를 올리면 envelope을 다시 떠서 그 목록과 견준다.**
+
+**debug 빌드에서 도착을 보는 법.** `adb logcat -s DuruCrash` — 호스트에 닿은 Lynx 오류마다 `<결말> <코드> <원문 앞 500자>` 한 줄이 찍힌다(`BuildConfig.DEBUG`일 때만). debug는 DSN이 없으므로 결말은
+`DISABLED`(받는 오류) 또는 `REJECTED`(받지 않는 오류)다. **이 줄에는 지우기 전 원문이 그대로 찍힌다.** `release` · `bundled`에는 이 로그가 없다.
+
+**깔때기의 판정은 JVM JUnit이다**(`app/src/test/java/com/libitum/host/Crash*Test.java`). `pnpm verify`와 CI에는 Gradle이 없으므로 호스트 Java를 고치면 손으로 돌린다:
+
+```sh
+cd apps/android && ANDROID_HOME=~/Library/Android/sdk ./gradlew :app:testDebugUnitTest
+```
+
+Gradle 결선(의존 고정 · DSN 기본값 · 업로드 작업의 조건 · 매니페스트 · `.gitignore` · 초기화 순서 · `io.sentry` import 범위)은 정적 검사 `pnpm test:android-bundle`(GW-S1 ~ S9 — `pnpm verify` 안)이 지킨다. GW-S8은 `CrashReporting.java`가 개인 정보에 닿는 옵션 열 줄을 싣는지 본다 — 한 줄을 지우면 떨어진다.
+
+**R8 매핑 업로드.** Sentry Gradle 플러그인을 쓰지 않는다. `app/sentry.gradle`이 `Exec` 작업 둘을 등록한다.
+
+| 작업 | 언제 도나 | 올리는 것 |
+|---|---|---|
+| `uploadSentryMappingRelease` | `bundleRelease`의 `finalizedBy` — 출시 AAB를 만들면 뒤따라 돈다 | `app/build/outputs/mapping/release/mapping.txt` |
+| `uploadSentryMappingBundled` | **어디에도 매달려 있지 않다** — 기기 확인 때 `./gradlew :app:uploadSentryMappingBundled`로 손으로 | `app/build/outputs/mapping/bundled/mapping.txt` |
+
+- 토큰 · 조직 · 프로젝트가 **모두** 있을 때만 돌고, 하나라도 없으면 `Sentry mapping upload skipped: token, org or project is not set.` 한 줄 뒤 SKIPPED다. 두 작업 모두 `assemble*`의 작업 그래프에는 없다 —
+  SKIPPED를 보려면 이름으로 부른다.
+- **`sentry-cli`를 따로 깔아야 한다**(PATH). 토큰은 있는데 CLI가 없으면 작업이 **실패한다** — 조용히 넘어가지 않는다. 토큰은 환경 변수로만 넘어가고 명령줄에 실리지 않는다.
+- 매핑 UUID는 `applicationId:versionName:versionCode:buildType`에서 만든 이름 기반 UUID이고 `BuildConfig.SENTRY_PROGUARD_UUID`와 `sentry-cli upload-proguard --uuid`가 같은 값을 쓴다. **같은 `versionCode`로 코드를 바꿔
+  다시 빌드해 올리면 Sentry의 매핑이 덮인다** — `versionCode`를 올리지 않은 빌드의 매핑을 올리지 않는다.
+- **실제 업로드는 한 번도 돌지 않았다.** 본 것은 인증 값이 없을 때의 SKIPPED까지다(2026-10-13). 이벤트에 매핑 UUID가 `debug_meta`(`type: proguard`)로 실려 나가는 것은 envelope에서 봤다. 풀린 스택을 확인하려면 **앱 코드의 프레임이 든 Java 크래시**가 필요하다 — `adb shell am crash`의 스택은 전부 프레임워크 프레임이다.
+- `app/proguard-rules.pro`는 그대로 9줄이다. Sentry의 keep 규칙은 AAR이 싣고 온다(위 「코드 축소(R8)와 난독화」 · ADR-0052 적용 기록 ⟨2026-10-13⟩).
+
+**NDK를 넣지 않았다.** 의존은 `io.sentry:sentry-android-core:8.60.0` 하나이고 `sentry-android`(묶음) · `sentry-android-ndk` · `sentry-android-replay`를 넣지 않는다. `sentry-android-ndk`가 싣는 64비트 `.so`가
+아래 「16 KB 페이지」의 판정(`GNU_RELRO` 끝)을 통과하지 못해 `verify*NativeAlignment`가 깨진다. NDK 없이 받는 길로 SDK의 tombstone 통합을 켜 두었다(`setTombstoneEnabled(true)`). 2026-10-13 실측으로 **API 30 에뮬레이터에서는 네이티브 크래시(SEGV) 뒤에 이벤트가 오지 않았고, API 34 에뮬레이터에서는 왔다**
+(`platform: native` · mechanism `Tombstone` — 함수 이름이 풀린 프레임 · 모든 스레드 · 레지스터 · 로드된 라이브러리 목록을 싣는다). API 31 ~ 33 · 실기 · 앱 라이브러리 안에서 난 크래시의 모양은 확인되지 않았다.
+**`minSdk` 26 ~ 30 기기의 C/C++ 크래시(Lynx 엔진 안의 크래시 포함)는 Sentry에 보이지 않는다고 보고 다룬다** — 그 기기들의 네이티브 크래시는 여전히 `adb logcat` · tombstone으로 읽는다. NDK를 넣을지는 사용자 확인 전이다.
+- `beforeSend`가 tombstone의 스택 프레임 · `debug_meta`에서 **무작위 앱 설치 경로**를 `/data/app/[install]/`로 바꾼다(`CrashInstallPathTest`). 시스템 라이브러리의 **로드 주소**(재부팅 전까지 기기 전체에서 같다)는 사용자 결정으로 남는 위험으로 두고 보낸다 — [Android 데이터 보안](../../docs/android-data-safety.md).
+- **세션은 앱이 시작하고 끝낸다.** SDK 8.60.0의 자동 세션은 콜드 스타트마다 가짜 `exited`를 쓰고 크래시로 죽은 앞 세션을 버리는 경합이 있어 끈다(`setEnableAutoSessionTracking(false)`). 대신 `CrashReporting.watchSessions`가 `ProcessLifecycleOwner`의 `onStart`에서 SDK 작업 큐로 `Sentry.startSession`을, `onStop` 30초 뒤(그 사이 복귀가 없으면) `Sentry.endSession`을 넣는다(순수 판정은 `CrashSessionGate`, 결선 검사 GW-S9). API 34 에뮬레이터에서 가짜 `exited` 0건 · 크래시 세션 `crashed`를 봤다. **전면 강제 종료는 `exited`(정상)로 셈된다.** SDK를 올리면 경합이 고쳐졌는지 보고 이 우회를 걷을 수 있다([ADR-0061](../../docs/adr/0061-crash-reporting-sentry.md) D6 · 재검토 조건 12).
+넣으려면 `sentry-native`를 16 KB로 다시 빌드해 [`vendor-maven/`](vendor-maven/README.md)에 싣는다 — 아직 하지 않았다([ADR 보류 표](../../docs/adr/README.md#보류-표)). `.so`는 하나도 늘지 않았다.
+
 ## 16 KB 페이지
 
 Play는 64비트 네이티브 라이브러리가 16 KB 페이지를 지원하기를 요구한다. Lynx 4.0.1 · Fresco 2.3.0의 상류 AAR은 이를 통과하지 못하고 상위 버전도 풀지 못해,
@@ -480,6 +548,9 @@ safe 아래 값으로 자르기 · 음수와 밀도 불명은 0)을 확인하며
 `ReducedMotionTest`(JUnit 4건)는 두 배율 → `reducedMotion` 판정(`fromScales` — 하나라도 0이면 true, 음수 · NaN은 false)과 한 키짜리
 boolean 맵의 모양을 확인하며 같은 명령으로 실행한다. `ContentObserver` 등록 · 실행 중 토글 추종 · 실제 애니메이션 정지는 JUnit이 못 지고
 에뮬레이터 절차 [동작 줄이기](../../docs/e2e/motion-reduced.md)(M-A1 ~ M-A6)가 진다.
+`ViewportMetricsTest`(JUnit 3건)는 `fontScale` · `viewportWidth` 변환(폭 = `widthPx / density` · `density ≤ 0`과 `NaN` 배율은 키가 없고 던지지 않음 · 같은 입력이면 같은 맵)을
+확인하며 같은 명령으로 실행한다(iOS 짝은 XCTest `ViewportMetricsTests` 2건). 둘 다 `pnpm verify` 밖이라 사람이 돌린다. 실제 전송 시점 · 실행 중 폭 변화 · 맵이 한 열로 서는지는
+[Android 호스트](../../docs/e2e/android-host.md) A14와 [여정 맵 e2e](../../docs/e2e/journey-map.md)가 진다.
 계측 `ConfigurationChangeTest`(8건)는 실제 `MainActivity`에서 구성 변경 뒤의 Activity 수명 · LynxView 크기 · screen metrics · 화면 상태 유지를 확인한다
 (세로 유지 · 야간 모드 · 화면 크기 · 큰 화면 가로 · 내비게이션 모드 오버레이 전환은 같은 인스턴스, 글꼴 배율 · 밀도는 재생성). 번들 서빙과 `-e bundleUrl`이 필요하다.
 기대는 API 37에서 8건 통과, API 30에서 6건 통과 + 2건 건너뜀(큰 화면 가로와 오버레이 전환 — 둘 다 API 36 이상에서만 성립한다. 건너뜀은 통과로 세지 않는다).

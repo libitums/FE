@@ -24,6 +24,7 @@ import {
   catalogCoverAccessibilityLabel,
   catalogMapSectionsOf,
   catalogSectionDomId,
+  catalogUnitDomId,
   catalogSectionProgress,
   catalogSelectorToken,
   catalogUnavailableAccessibilityLabel,
@@ -518,5 +519,50 @@ describe("순수성", () => {
     expect(catalogSectionProgress(section, progress)).toEqual(
       catalogSectionProgress(section, progress),
     );
+  });
+});
+
+describe("catalogUnitDomId", () => {
+  const SAFE = /^[A-Za-z0-9_-]+$/;
+
+  test("CD1. 결과가 선택자에 안전한 문자만 가진다", () => {
+    for (const [episodeId, key] of [
+      ["u01-water", "intro"],
+      ["u01-water", "S1"],
+      ["a b", "x/y"],
+      ["한글", "RP"],
+      ["a:b", "😀"],
+    ] as const) {
+      expect(catalogUnitDomId(episodeId, key)).toMatch(SAFE);
+    }
+  });
+
+  test("CD2. 단사다 — 어떤 (에피소드, 키) 쌍도 겹치지 않는다", () => {
+    expect(catalogUnitDomId("a-b", "c")).not.toBe(catalogUnitDomId("a", "b-c"));
+    expect(catalogUnitDomId("a_b", "c")).not.toBe(catalogUnitDomId("a", "_b_c"));
+
+    const pairs: ReadonlyArray<readonly [string, string]> = [
+      ["한", "S1"],
+      ["글", "S1"],
+      ["a b", "S1"],
+      ["a", "b S1"],
+      ["a/b", "c"],
+      ["a", "b/c"],
+      ["a", "b"],
+      ["a-b", "c"],
+      ["a", "b-c"],
+      ["", "S1"],
+    ];
+    const ids = pairs.map(([episodeId, key]) => catalogUnitDomId(episodeId, key));
+    expect(new Set(ids).size).toBe(pairs.length);
+  });
+
+  test("CD3. 같은 구획의 구획 id와 겹치지 않는다", () => {
+    for (const episodeId of ["u01-water", "a", "한"]) {
+      for (const key of ["intro", "S1", "RP"]) {
+        expect(catalogUnitDomId(episodeId, key)).not.toBe(catalogSectionDomId(episodeId));
+      }
+    }
+    expect(catalogUnitDomId("u01-water", "intro")).not.toBe(catalogUnitDomId("u01-water", "S1"));
   });
 });

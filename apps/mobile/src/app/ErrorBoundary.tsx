@@ -1,5 +1,6 @@
 import { Component, Fragment, type ReactNode } from "@lynx-js/react";
 
+import { reportCrash } from "../lib/crash-report";
 import { useUiCopy } from "../lib/ui-copy";
 
 import "./error-boundary.css";
@@ -47,6 +48,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error) {
     console.error("[ErrorBoundary]", error);
+    reportCrash(error);
   }
 
   // 재시도 = 루트 화면 상태를 초기값으로 리셋합니다. generation을 올려 하위

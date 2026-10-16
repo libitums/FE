@@ -1,9 +1,9 @@
-import { describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { MotionProvider } from "@libitums/ui-lynx/motion";
 import { CatalogMapSections } from "./CatalogMapSections";
-import { catalogSectionDomId } from "./catalog-map";
+import { catalogSectionDomId, catalogUnitDomId } from "./catalog-map";
 import type {
   CatalogGate,
   CatalogMapSection,
@@ -270,5 +270,99 @@ describe("CatalogMapSections", () => {
 
     const reduced = structuralNodeCount();
     expect(reduced).toBe(standard);
+  });
+});
+
+// 줄 › 셀 구조(여정 맵 두 열 배치): 구획 상자의 직계 자식이 구분선 → 줄이고, 셀이 유닛 DOM id와 testid를 진다.
+// 줄을 나누는 규칙 자체는 unit이 지므로 여기서는 결과 구조만 봅니다.
+describe("CatalogMapSections 줄 구조", () => {
+  const setGlobalProps = (value: unknown): void => {
+    (lynx as unknown as { __globalProps: unknown }).__globalProps = value;
+  };
+  afterEach(() => {
+    setGlobalProps(undefined);
+  });
+
+  const sectionChildren = (episodeId: string): Element[] =>
+    Array.from(screen.getByTestId(`catalog-section-${episodeId}`).children);
+  const rowKindsOf = (episodeId: string): (string | null)[] =>
+    sectionChildren(episodeId)
+      .filter((child) => child.getAttribute("data-testid") === "journey-map-row")
+      .map((row) => row.getAttribute("data-row-kind"));
+  const classesOf = (element: Element | undefined): string[] =>
+    (element?.getAttribute("class") ?? "").split(/\s+/);
+
+  const twoColumnKinds = ["solo", "pair", "pair", "pair", "pair", "solo"];
+
+  test("UG-C1. 레슨 8 구획의 직계 자식은 구분선 뒤에 줄 여섯이고 종류는 solo(표지), pair 넷, solo(최종)다", () => {
+    mount();
+
+    const children = sectionChildren("u01-water");
+    expect(classesOf(children[0])).toContain("episode-pending-divider");
+    expect(children.slice(1).map((child) => child.getAttribute("data-testid"))).toEqual(
+      twoColumnKinds.map(() => "journey-map-row"),
+    );
+    expect(rowKindsOf("u01-water")).toEqual(twoColumnKinds);
+  });
+
+  test("UG-C2. 레슨 7 구획은 solo, pair 셋, orphan, solo다", () => {
+    const sevenLessons: CatalogReadySection = {
+      ...ready("u01-water", 1, "익선동 골목 어귀 편의점"),
+      lessonKeys: lessonKeys.slice(0, 7),
+    };
+    render(
+      <CatalogMapSections
+        sections={[sevenLessons]}
+        gate={openGate}
+        onStartCover={vi.fn<(episodeId: string) => void>()}
+        onStartUnit={vi.fn<(episodeId: string, unitKey: string) => void>()}
+      />,
+    );
+
+    expect(rowKindsOf("u01-water")).toEqual(["solo", "pair", "pair", "pair", "orphan", "solo"]);
+  });
+
+  test("UG-C3. 셀의 id가 catalogUnitDomId이고 testid가 에피소드와 키를 담는다(표지의 키는 intro)", () => {
+    mount();
+
+    const section = screen.getByTestId("catalog-section-u01-water");
+    const cover = within(section).queryByTestId("journey-map-cell-catalog-u01-water-intro");
+    expect(cover).not.toBeNull();
+    expect(cover?.getAttribute("id")).toBe(catalogUnitDomId("u01-water", "intro"));
+    for (const key of unitKeys) {
+      const cell = within(section).queryByTestId(`journey-map-cell-catalog-u01-water-${key}`);
+      expect(cell).not.toBeNull();
+      expect(cell?.getAttribute("id")).toBe(catalogUnitDomId("u01-water", key));
+    }
+    expect(within(section).queryAllByTestId(/^journey-map-cell-/)).toHaveLength(
+      unitKeys.length + 1,
+    );
+  });
+
+  test("UG-C4. 본문 없는 구획에는 줄이 없다", () => {
+    mount();
+
+    for (const id of ["u04-x", "u05-x", "u06-x"]) {
+      expect(
+        within(screen.getByTestId(`catalog-unavailable-${id}`)).queryAllByTestId("journey-map-row"),
+      ).toHaveLength(0);
+    }
+  });
+
+  test("UG-F2. 글자 배율 1 · 화면 폭 300이면 줄이 전부 solo다", () => {
+    setGlobalProps({ fontScale: 1, viewportWidth: 300 });
+    mount();
+
+    expect(rowKindsOf("u01-water")).toEqual(Array.from({ length: 10 }, () => "solo"));
+  });
+
+  test.each([
+    ["globalProps가 없으면", undefined],
+    ["글자 배율 2 · 화면 폭 320(경계)이면", { fontScale: 2, viewportWidth: 320 }],
+  ])("UG-F3. %s 두 열이다", (_label, globalProps) => {
+    setGlobalProps(globalProps);
+    mount();
+
+    expect(rowKindsOf("u01-water")).toEqual(twoColumnKinds);
   });
 });
