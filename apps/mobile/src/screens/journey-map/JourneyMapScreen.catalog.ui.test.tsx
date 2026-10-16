@@ -36,7 +36,7 @@ function catalogProps(
       lessonKeys,
       finalKey: "RP",
       completionKeys: ["RP"],
-      cultureKeys: [],
+      cultureKeys: ["CULT"],
     })),
     progress,
     onStartCover,
@@ -121,7 +121,7 @@ describe("JourneyMapScreen catalog slot", () => {
     expect(onStartCover).toHaveBeenCalledWith("u01-water");
   });
 
-  test("UCM1. 문화 확인 노드는 Lesson 9로 서고 진행에 따라 잠김 · 열림 · 끝이 다른 레슨과 같은 모양이다", () => {
+  test("UCN1. 문화 노드는 Culture 라벨로 서고 진행에 따라 잠김 · 열림 · 끝이 다른 레슨과 같은 규칙이며 고리가 없다", () => {
     const node = () => screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-CULT");
     const base = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7"];
     const states = [
@@ -138,10 +138,41 @@ describe("JourneyMapScreen catalog slot", () => {
         }),
       );
       expect(node()).toHaveAttribute("data-status", status);
-      expect(node().getAttribute("accessibility-label") ?? "").toMatch(/^Episode 1\. Lesson 9\b/);
-      expect(screen.getAllByText("Lesson 9").length).toBeGreaterThan(0);
+      expect(node().getAttribute("accessibility-label") ?? "").toMatch(/^Episode 1\. Culture\b/);
+      expect(node()).toHaveAttribute("data-narrative", "none");
+      expect(screen.getAllByText("Culture").length).toBeGreaterThan(0);
+      expect(screen.queryAllByText("Lesson 9")).toHaveLength(0);
       unmount();
     }
+  });
+
+  test("UCN1b. 열린 상태의 문화 노드 아이콘은 열린 레슨 노드(play)와 열린 최종 노드(flag)의 아이콘과 모두 다르다", () => {
+    const iconOf = (done: readonly string[], key: string): string => {
+      const { unmount } = render(
+        mapScreen({
+          catalog: catalogProps(vi.fn<(episodeId: string) => void>(), { "u01-water": done }),
+          completedEpisodeFinalIds: ["tutorial-final-test"],
+        }),
+      );
+      const node = screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-u01-water-${key}`);
+      expect(node).toHaveAttribute("data-status", "available");
+      const icon =
+        screen
+          .getByTestId(`ui-lynx-learning-unit-catalog-unit-u01-water-${key}-icon`)
+          .getAttribute("content") ?? "";
+      unmount();
+      return icon;
+    };
+    const upToS8 = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];
+
+    const lesson = iconOf(["intro"], "S1");
+    const culture = iconOf(upToS8, "CULT");
+    const finalTest = iconOf([...upToS8, "CULT"], "RP");
+
+    expect(culture).not.toBe("");
+    expect(culture).not.toBe(lesson);
+    expect(culture).not.toBe(finalTest);
+    expect(lesson).not.toBe(finalTest);
   });
 
   test("UJ4. 첫 유닛 안내가 떠 있는 동안 카탈로그를 감싼 상자는 낭독에서 가려진다", () => {

@@ -323,6 +323,32 @@ describe("CatalogMapSections 줄 구조", () => {
     expect(rowKindsOf("u01-water")).toEqual(["solo", "pair", "pair", "pair", "orphan", "solo"]);
   });
 
+  test("UCN2. 레슨 8 · 문화 · 최종 구획은 문화 노드가 한 줄 전용이라 solo, pair 넷, solo, solo다", () => {
+    const withCulture: CatalogReadySection = {
+      ...ready("u01-water", 1, "익선동 골목 어귀 편의점"),
+      lessonKeys: [...lessonKeys.slice(0, 8), "CULT"],
+      cultureKeys: ["CULT"],
+    };
+    render(
+      <CatalogMapSections
+        sections={[withCulture]}
+        gate={openGate}
+        onStartCover={vi.fn<(episodeId: string) => void>()}
+        onStartUnit={vi.fn<(episodeId: string, unitKey: string) => void>()}
+      />,
+    );
+
+    expect(rowKindsOf("u01-water")).toEqual([
+      "solo",
+      "pair",
+      "pair",
+      "pair",
+      "pair",
+      "solo",
+      "solo",
+    ]);
+  });
+
   test("UG-C3. 셀의 id가 catalogUnitDomId이고 testid가 에피소드와 키를 담는다(표지의 키는 intro)", () => {
     mount();
 
