@@ -605,15 +605,15 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 ### 2026-10-16 (브랜치 `feat/episode-format-screens`) — 문화 단계가 노드 role 셋째 값이 되면서 D15의 카탈로그 노드 배치와 ⟨2026-10-14⟩ 줄 규칙에 행 하나가 더해졌다
 
-**결정은 [ADR-0063](0063-episode-format-screens.md) D7이 진다.** 뒤집힌 결론은 0건이다 — 새 번호도 축 추적표의 새 행도 이 문서에 만들지 않는다(같은 축의 표에 값이 하나 는 것이다).
+**결정은 [ADR-0066](0066-episode-format-screens.md) D7이 진다.** 뒤집힌 결론은 0건이다 — 새 번호도 축 추적표의 새 행도 이 문서에 만들지 않는다(같은 축의 표에 값이 하나 는 것이다).
 
 - **D7 — 「어느 유닛이 특별한가」는 콘텐츠 판단이다**를 카탈로그에서 처음 실체화했다. 문항이 하나 이상이고 **모두** 문화 유형(`CULTURE_CARD` · `CULTURE_CHECK`)인 유닛이 문화 유닛이다 — 이름(`"CULT"`)이 아니라 문항 유형으로 가린다.
   판별은 맵 구획이 한 번 하고(`catalogCultureKeysOf` → `CatalogReadySection.cultureKeys`) 노드는 그 목록을 읽는다.
 - **D15 — 카탈로그 노드는 role 셋**이다: `lesson` · **`culture`** · `final`. 문화 노드는 라벨 `Culture` · 아이콘 `lantern-05`(열린 상태에서만 — 잠김 · 끝은 다른 노드처럼 자물쇠 · 체크) · 낭독 `Episode n. Culture`이고,
   **상태 셋 · 사슬 잠금 · 진행 키 · 시작 결선은 레슨과 같다**(D11 · D15의 「같은 함수」 원칙 그대로 — `catalogUnitRoleOf`는 문화를 `"lesson"`으로 본다).
-- **⟨2026-10-14⟩ 줄 규칙 — 문화 노드는 한 줄을 다 쓴다**(`catalogNodePlacement.culture = "solo"`). 표지 · 최종 · 특별 유닛과 같은 「특별한 자리」로 본 것이고 **사용자 미확인**이다(ADR-0063 Q4).
+- **⟨2026-10-14⟩ 줄 규칙 — 문화 노드는 한 줄을 다 쓴다**(`catalogNodePlacement.culture = "solo"`). 표지 · 최종 · 특별 유닛과 같은 「특별한 자리」로 본 것이고 **사용자 미확인**이다(ADR-0066 Q4).
   지금 데이터(레슨 8 + 문화 + 최종)에서 구획은 표지 한 줄 → 레슨 둘씩 네 줄 → `Culture` 한 줄 → `Final test` 한 줄이다. 문화 노드도 「다음에 풀 유닛」(자동 스크롤)의 대상이다.
-- **D10 — 「가운데에는 규칙이 없다」는 그대로 참이다.** 문화 노드는 가운데의 유닛이고 자리 규칙을 만들지 않았다. 문화 단계가 레슨 사이로 오면 그 뒤 레슨 번호에 빈칸이 생긴다(ADR-0063 「대가」 3).
+- **D10 — 「가운데에는 규칙이 없다」는 그대로 참이다.** 문화 노드는 가운데의 유닛이고 자리 규칙을 만들지 않았다. 문화 단계가 레슨 사이로 오면 그 뒤 레슨 번호에 빈칸이 생긴다(ADR-0066 「대가」 3).
 
 ## 재검토 조건
 
@@ -789,7 +789,7 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 ### 2026-10-16 — 문화 단계가 `Culture` 노드로 선다 (새 에피소드 형식 ②)
 
-위 `정정 기록` 2026-10-16(`feat/episode-format-screens`)과 [ADR-0063](0063-episode-format-screens.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
+위 `정정 기록` 2026-10-16(`feat/episode-format-screens`)과 [ADR-0066](0066-episode-format-screens.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다.
 
 - **판별 · 노드**: `screens/journey-map/catalog-map.ts`(`catalogCultureKeysOf` · `catalogUnitNodesOf`의 role · `catalogUnitNodeTitle`), 계약 `catalog-map.contract.ts`(`CatalogUnitNodeRole` · `cultureKeys` · `cultureTitle`).
 - **아이콘 · 배치**: `CatalogUnitNode.tsx`의 role → 아이콘 표(`play` · `lantern-05` · `flag`), `journey-map-rows.ts`의 `catalogNodePlacement.culture`. 표가 `Record`라 role이 늘면 `tsc`가 선다.

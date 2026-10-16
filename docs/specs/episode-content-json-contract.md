@@ -127,7 +127,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 - ⟨2026-10-16 — PR ②⟩ **문화 단계의 판별 규칙 — 콘텐츠 쪽이 알아야 할 것.** 앱은 **문항이 하나 이상이고 모든 문항이 `CULTURE_CARD` · `CULTURE_CHECK`인 스텝**을 문화 단계로 보고 맵에 `Culture` 노드(전용 아이콘 · 한 줄 전용)로 그린다.
   스텝 id(`CULT`)는 보지 않는다 — 이름을 바꿔도 같고, **다른 유형을 하나라도 섞으면 그 스텝은 `Lesson n` 노드로 돌아간다**(오류가 아니라 조용한 강등이다). 진행 키 · 완료 키는 지금처럼 스텝 id다.
   지금 `CULT`는 문화 카드 3 → 문화 확인 3의 실단계이고(위 「곧장 끝나는 유닛」은 PR ① 빌드의 상태다), 통과는 문화 확인 셋 중 둘이다. 문화 단계가 레슨 사이로 오면 그 뒤 레슨 번호가 하나 건너뛴다.
-  결정은 [ADR-0063](../adr/0063-episode-format-screens.md) D7 · D9.
+  결정은 [ADR-0066](../adr/0066-episode-format-screens.md) D7 · D9.
 
 ## 7. 문항 (`steps[].items[]`)
 
@@ -193,7 +193,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `SHADOW` | 9 | speech | E | `prompt` · `stimulus`(`text` · `audio` …) · `answers` | — | 건너뜀(`screen-pending` — 말하기) |
 | `SPEAK_WORD` | 6 | speech | R | `prompt` · `stimulus`(`image_brief` · `image_url` · `audio_url`) · `answers` | — | 건너뜀(`screen-pending` — 말하기) |
 
-- ⟨2026-10-16 — PR ②⟩ **세 유형에서 앱이 읽는 것과 읽지 않는 것**(결정은 [ADR-0063](../adr/0063-episode-format-screens.md)):
+- ⟨2026-10-16 — PR ②⟩ **세 유형에서 앱이 읽는 것과 읽지 않는 것**(결정은 [ADR-0066](../adr/0066-episode-format-screens.md)):
   - `CULTURE_CARD` — 읽음: 제목 `context.ko`(비면 건너뜀 `malformed`) · `context.roman`(제목 아래 로마자) · `context.en`(영어 제목), 본문 `stimulus.text.en`(비면 `no-gloss`) · `stimulus.text.ko`. **읽지 않음**: `stimulus.text.roman`(본문 로마자 — 최대 226자 산문이라 싣지 않는다) · `feedback.correct`(요령) · `stimulus.audio_url` · `image_url`(9/9 빈 값).
   - `CULTURE_CHECK` — 보기 번역 `options[].en`은 27/27 있고 **고르기 전부터 보인다**. 하나라도 비면 그 문항은 번역 줄 없이 선다. `options[].roman` · `why_wrong` · `feedback`은 읽지 않는다. 보기는 섞지 않는다(정답 자리가 이미 흩어져 있다).
   - `SYLLABLE_BUILD` — **타일은 정답 순서로 실려 오고 오답 음절이 뒤에 붙는다**(7/7, 예 `괜 찮 아 요 | 세 원`). 그대로 보이면 앞에서부터 누르는 것이 답이라 **앱이 섞는다**(문항마다 정해진 순서). 같은 음절 타일이 두 장인 문항(u02 `일주일` · `와이파이`)도 받는다 — 판정은 놓은 음절을 이은 **낱말 문자열**이다.

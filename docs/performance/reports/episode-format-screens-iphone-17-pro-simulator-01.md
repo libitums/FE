@@ -3,7 +3,7 @@
 ## 실행 조건
 
 - 상태: 미측정 — 번들만. 렌더링 · 메모리 캡처(`performance:capture`)를 돌리지 않았습니다. 새 두 활동의 첫 렌더 타이밍 표식(`libitum:navigation:learning-culture-card` · `…-syllable-build`)과 문화 단계 열기 시간은 재지 않았습니다.
-- 기능 PR: 새 에피소드 형식 지원 ② — 문화 카드 · 음절 조립 새 학습형, 문화 확인의 보기 번역 줄, 맵의 `Culture` 노드, `LISTEN_BUILD` 사유 변경(이 보고서와 같은 PR, [ADR-0063](../../adr/0063-episode-format-screens.md))
+- 기능 PR: 새 에피소드 형식 지원 ② — 문화 카드 · 음절 조립 새 학습형, 문화 확인의 보기 번역 줄, 맵의 `Culture` 노드, `LISTEN_BUILD` 사유 변경(이 보고서와 같은 PR, [ADR-0066](../../adr/0066-episode-format-screens.md))
 - 대상 commit: `c238816998582c8665d6f320b2bb5d093a5038ba`(`feat/episode-format-screens`의 `c2388169` — 구현 · 테스트 · 접근성 수정까지 든 마지막 commit). 문서 단계가 이 commit의 패치 없는 깨끗한 작업 트리에서 다시 빌드해 잰 값입니다. 기준은 직전 실측(`budget.json` note — 새 에피소드 형식 ①을 #250 위로 병합한 운영 설정 2,047,347 bytes)입니다.
 - 기기: iPhone 17 Pro 시뮬레이터 — 화면 확인(e2e)은 `dbc3cc33` 운영 설정 번들로 한 회차 돌았고([문화 · 조립 화면 e2e](../../e2e/episode-format-screens.md)), 성능 캡처는 하지 않았습니다.
 - OS: iOS 26.5
