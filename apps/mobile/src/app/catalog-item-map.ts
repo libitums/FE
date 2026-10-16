@@ -4,8 +4,10 @@
 
 import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
 import type { LearningItem, TurnTile } from "../lib/episode-content.model";
-import type { DialogueSpeaker } from "../screens/sentence-order/sentence-order";
-import type { SentenceOrderQuestion } from "../screens/sentence-order/sentence-order-questions";
+import type {
+  DialogueSpeaker,
+  SentenceOrderQuestion,
+} from "../screens/sentence-order/sentence-order-questions";
 import { vocabCardItemOf } from "./catalog-card-map";
 import {
   clozeChoiceItemOf,
@@ -47,7 +49,7 @@ function wordOrderItemOf(item: ItemOf<"WORD_ORDER">, port: CatalogItemPort): Cat
     return skippedItem(item, "malformed");
   }
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
-  const english = englishOf(port, item.answers[0]?.en);
+  const english = englishOf(port, item.stimulus?.en) ?? englishOf(port, item.answers[0]?.en);
   return sentenceOrder(item.id, {
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),
@@ -61,10 +63,19 @@ function wordOrderItemOf(item: ItemOf<"WORD_ORDER">, port: CatalogItemPort): Cat
  * 없으면 짝수 칸 상대 · 홀수 칸 나, 섞여 있으면 `null`.
  */
 export function catalogTurnSpeakersOf(
-  _tiles: readonly TurnTile[],
-  _answer: readonly number[],
+  tiles: readonly TurnTile[],
+  answer: readonly number[],
 ): readonly DialogueSpeaker[] | null {
-  return null;
+  const ordered = answer.map((index) => tiles[index]?.speaker);
+  if (ordered.every((speaker) => speaker === undefined)) {
+    return ordered.map((_, position) => (position % 2 === 0 ? "counterpart" : "me"));
+  }
+  const speakers: DialogueSpeaker[] = [];
+  for (const speaker of ordered) {
+    if (speaker === undefined) return null;
+    speakers.push(speaker === "player" ? "me" : "counterpart");
+  }
+  return speakers;
 }
 
 const isPermutation = (values: readonly number[]): boolean =>
@@ -84,12 +95,14 @@ function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): Cat
     item.answer.length === tiles.length &&
     isPermutation(item.answer);
   if (!valid) return skippedItem(item, "malformed");
+  const speakers = catalogTurnSpeakersOf(item.tiles, item.answer);
+  if (speakers === null) return skippedItem(item, "malformed");
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
   return sentenceOrder(item.id, {
     prompt,
     chips: order.map((index) => tiles[index] ?? ""),
     answerOrder: item.answer.map((tile) => order.indexOf(tile)),
-    dialogue: true,
+    dialogue: { speakers },
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   });
 }

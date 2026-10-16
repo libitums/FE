@@ -4,12 +4,14 @@ import type { DeliveryItem } from "./episode-content.schema";
 import type { LearningItem, Text } from "./episode-content.model";
 import { toAddedItem } from "./episode-content.items-added";
 import {
+  itemBaseOf,
   maybe,
   nonEmpty,
   optText,
   toOption,
   toStimulus,
   toText,
+  toTurnTile,
   toTexts,
   type WireText,
 } from "./episode-content.normalize";
@@ -75,7 +77,7 @@ export function resolvePairs(
 }
 
 export function toItem(item: DeliveryItem): LearningItem {
-  const base = { id: item.id, event: item.event, ...maybe("ref", nonEmpty(item.ref)) };
+  const base = itemBaseOf(item);
   switch (item.type) {
     case "VOCAB_CARD":
       return {
@@ -108,6 +110,7 @@ export function toItem(item: DeliveryItem): LearningItem {
         ...base,
         type: item.type,
         prompt: toText(item.prompt),
+        ...maybe("stimulus", item.stimulus && toStimulus(item.stimulus)),
         tiles: toTexts(item.tiles),
         answers: toTexts(item.answers),
       };
@@ -126,7 +129,7 @@ export function toItem(item: DeliveryItem): LearningItem {
         type: item.type,
         prompt: toText(item.prompt),
         context: toText(item.context),
-        tiles: toTexts(item.tiles),
+        tiles: item.tiles.map(toTurnTile),
         answer: resolveTurnOrder(item.tiles, item.answers[0]?.ko) ?? [],
       };
     case "ROLE_LINE":
@@ -147,6 +150,7 @@ export function toItem(item: DeliveryItem): LearningItem {
         ...base,
         type: item.type,
         prompt: toText(item.prompt),
+        ...maybe("stimulus", item.stimulus && toStimulus(item.stimulus)),
         answers: toTexts(item.answers),
       };
     case "DICTATION":

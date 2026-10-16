@@ -3,7 +3,7 @@
 import {
   CATALOG_INTRO_KEY,
   DEFAULT_CATALOG_COMPLETION,
-  isCatalogEpisodePassed,
+  isCatalogEpisodeComplete,
   isCatalogUnitDone,
 } from "../../lib/catalog-progress";
 import type {
@@ -55,9 +55,12 @@ export function catalogMapSectionsOf(
 
 /** 준비된 구획은 그 완료 키, 모르는 id · 준비 안 된 구획은 `DEFAULT_CATALOG_COMPLETION`. */
 export function catalogCompletionKeysOf(
-  _sections: readonly CatalogMapSection[],
+  sections: readonly CatalogMapSection[],
 ): CatalogCompletionKeysOf {
-  return () => DEFAULT_CATALOG_COMPLETION;
+  return (episodeId) => {
+    const section = sections.find((candidate) => candidate.episodeId === episodeId);
+    return section?.kind === "catalog-ready" ? section.completionKeys : DEFAULT_CATALOG_COMPLETION;
+  };
 }
 
 const SAFE_SELECTOR_CHAR = /^[A-Za-z0-9-]$/;
@@ -97,7 +100,11 @@ export function catalogCoverStatus(
   const open =
     previous === undefined
       ? gate.tutorialPassed
-      : isCatalogEpisodePassed(gate.progress, previous.episodeId);
+      : isCatalogEpisodeComplete(
+          gate.progress,
+          previous.episodeId,
+          previous.kind === "catalog-ready" ? previous.completionKeys : DEFAULT_CATALOG_COMPLETION,
+        );
   return open ? "available" : "locked";
 }
 

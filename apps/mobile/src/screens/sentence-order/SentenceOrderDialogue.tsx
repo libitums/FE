@@ -2,7 +2,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
-import { dialogueSpeakerAt } from "./sentence-order";
+import type { DialogueSpeaker } from "./sentence-order-questions";
 
 import "./sentence-order-dialogue.css";
 
@@ -14,8 +14,8 @@ import "./sentence-order-dialogue.css";
 // 상태가 없습니다. 놓인 조각 · 채점 여부는 화면(`SentenceOrderActivity`)의 세션 상태가 지고, 이
 // 조각은 그것을 그리고 눌림을 올려 보냅니다.
 export type SentenceOrderDialogueProps = {
-  /** 칸 수 — 문항의 정답 길이입니다. */
-  readonly slotCount: number;
+  /** 칸마다 화자입니다 — 길이가 곧 칸 수(문항의 정답 길이)입니다. */
+  readonly speakers: readonly DialogueSpeaker[];
   readonly chips: readonly string[];
   /** 놓인 조각의 `chips` 인덱스입니다. 배열 순서가 곧 칸 순서입니다. */
   readonly placedChipIndexes: readonly number[];
@@ -28,19 +28,17 @@ export type SentenceOrderDialogueProps = {
 const emptySlotMark = "----";
 
 export function SentenceOrderDialogue({
-  slotCount,
+  speakers,
   chips,
   placedChipIndexes,
   locked,
   onReturn,
 }: SentenceOrderDialogueProps): ReactNode {
   const copy = useUiCopy();
-  const slots = Array.from({ length: slotCount }, (_, position) => position);
 
   return (
     <view className="sentence-order-dialogue" data-testid="sentence-order-dialogue">
-      {slots.map((position) => {
-        const speaker = dialogueSpeakerAt(position);
+      {speakers.map((speaker, position) => {
         const speakerName = copy.sentenceOrder.dialogueSpeaker[speaker];
         const chipIndex = placedChipIndexes[position];
         const text = chipIndex === undefined ? undefined : chips[chipIndex];

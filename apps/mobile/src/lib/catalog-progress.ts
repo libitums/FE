@@ -80,28 +80,20 @@ export type CatalogCompletionKeysOf = (episodeId: string) => readonly CatalogUni
 
 /** 완료 키가 모두 끝났는가. 키가 비면 `DEFAULT_CATALOG_COMPLETION`으로 봅니다. 자기 속성만 읽습니다. */
 export function isCatalogEpisodeComplete(
-  _progress: CatalogProgress,
-  _episodeId: string,
-  _completionKeys: readonly CatalogUnitKey[],
+  progress: CatalogProgress,
+  episodeId: string,
+  completionKeys: readonly CatalogUnitKey[],
 ): boolean {
-  return false;
+  const keys = completionKeys.length === 0 ? DEFAULT_CATALOG_COMPLETION : completionKeys;
+  return keys.every((key) => isCatalogUnitDone(progress, episodeId, key));
 }
 
 /** `progress`의 에피소드 중 완료인 수 — 트로피에 더합니다. */
 export function completedCatalogEpisodeCount(
-  _progress: CatalogProgress,
-  _completionKeysOf: CatalogCompletionKeysOf,
+  progress: CatalogProgress,
+  completionKeysOf: CatalogCompletionKeysOf,
 ): number {
-  return 0;
-}
-
-/** 최종 테스트(RP)를 통과했는가 — 다음 에피소드가 열리는 조건입니다. */
-export function isCatalogEpisodePassed(progress: CatalogProgress, episodeId: string): boolean {
-  return isCatalogUnitDone(progress, episodeId, CATALOG_FINAL_KEY);
-}
-
-/** 최종 테스트(RP)를 통과한 에피소드 수입니다 — 트로피에 더합니다. */
-export function passedCatalogEpisodeCount(progress: CatalogProgress): number {
-  return Object.keys(progress).filter((episodeId) => isCatalogEpisodePassed(progress, episodeId))
-    .length;
+  return Object.keys(progress).filter((episodeId) =>
+    isCatalogEpisodeComplete(progress, episodeId, completionKeysOf(episodeId)),
+  ).length;
 }

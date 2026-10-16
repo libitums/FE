@@ -133,15 +133,40 @@ function checkSemantics(wire: DeliveryEpisodeV2): { errors: DecodeIssue[]; rpInd
 
 /** 비면 `completion.requires` 하나, 모르는 id마다 `completion.requires[i]` 하나 — 코드 `completion-malformed`. */
 function checkCompletion(
-  _completion: DeliveryCompletion | undefined,
-  _stepIds: readonly string[],
+  completion: DeliveryCompletion | undefined,
+  stepIds: readonly string[],
 ): DecodeIssue[] {
-  return [];
+  if (completion === undefined) {
+    return [];
+  }
+  if (completion.requires.length === 0) {
+    return [
+      issue("completion-malformed", "completion.requires", "completion.requires must not be empty"),
+    ];
+  }
+  const issues: DecodeIssue[] = [];
+  completion.requires.forEach((id, i) => {
+    if (!stepIds.includes(id)) {
+      issues.push(
+        issue(
+          "completion-malformed",
+          `completion.requires[${i}]`,
+          `completion.requires has unknown step id ${id}`,
+        ),
+      );
+    }
+  });
+  return issues;
 }
 
 /** 중복 제거(앞의 것 유지) — 없으면 undefined. */
-function completionOf(_completion: DeliveryCompletion | undefined): EpisodeCompletion | undefined {
-  return undefined;
+function completionOf(completion: DeliveryCompletion | undefined): EpisodeCompletion | undefined {
+  if (completion === undefined) {
+    return undefined;
+  }
+  return {
+    requires: completion.requires.filter((id, i) => completion.requires.indexOf(id) === i),
+  };
 }
 
 function collectWarnings(wire: DeliveryEpisodeV2): DecodeIssue[] {

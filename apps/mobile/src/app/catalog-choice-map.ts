@@ -152,25 +152,47 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
 /** 문장 속 빈칸을 고르는 단어 선택입니다(CLOZE_CHOICE). */
 export function clozeChoiceItemOf(
   item: ItemOf<"CLOZE_CHOICE">,
-  _port: CatalogItemPort,
+  port: CatalogItemPort,
 ): CatalogMappedItem {
-  return skippedItem(item, "malformed");
+  return wordChoiceItem(item, port, item.prompt, {
+    prompt: koOf(port, item.context.ko),
+    romanization: latinOf(port, item.context.roman),
+    translation: englishOf(port, item.context.en),
+    choices: item.options.map((option) => koOf(port, option.ko)),
+    answerIndex: correctIndex(item.options),
+  });
 }
 
 /** 상대 말에 답하는 보기 고르기입니다(REPLY_SELECT) — 상대 말을 글로 보입니다. */
 export function replySelectItemOf(
   item: ItemOf<"REPLY_SELECT">,
-  _port: CatalogItemPort,
+  port: CatalogItemPort,
 ): CatalogMappedItem {
-  return skippedItem(item, "malformed");
+  const line = item.stimulus.audio;
+  if (line === undefined) return skippedItem(item, "malformed");
+  return wordChoiceItem(item, port, item.prompt, {
+    prompt: koOf(port, line.ko),
+    romanization: latinOf(port, line.roman),
+    translation: englishOf(port, line.en),
+    choices: item.options.map((option) => koOf(port, option.ko)),
+    answerIndex: correctIndex(item.options),
+  });
 }
 
 /** 조사를 고치거나 채우는 단어 선택입니다(PARTICLE_FILL · PARTICLE_SWAP). */
 export function particleItemOf(
   item: ItemOf<"PARTICLE_FILL" | "PARTICLE_SWAP">,
-  _port: CatalogItemPort,
+  port: CatalogItemPort,
 ): CatalogMappedItem {
-  return skippedItem(item, "malformed");
+  const text = item.stimulus.text;
+  if (text === undefined) return skippedItem(item, "malformed");
+  return wordChoiceItem(item, port, item.prompt, {
+    prompt: koOf(port, text.ko),
+    romanization: latinOf(port, text.roman),
+    translation: englishOf(port, text.en),
+    choices: item.options.map((option) => koOf(port, option.ko)),
+    answerIndex: correctIndex(item.options),
+  });
 }
 
 /**

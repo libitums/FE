@@ -10,7 +10,7 @@ import type { AnswerResult } from "../../lib/answer-result";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 import { sentenceOrderQuestionsByStep } from "./sentence-order-questions";
-import type { SentenceOrderQuestion } from "./sentence-order-questions";
+import type { DialogueSpeaker, SentenceOrderQuestion } from "./sentence-order-questions";
 export { sentenceOrderQuestionsByStep } from "./sentence-order-questions";
 export type { SentenceOrderQuestion } from "./sentence-order-questions";
 
@@ -101,7 +101,7 @@ export function canPlaceChip(
   );
 }
 
-export type DialogueSpeaker = "counterpart" | "me";
+export type { DialogueSpeaker };
 
 /**
  * 대화 조립에서 그 칸(0부터)의 화자입니다 — 짝수 칸은 상대, 홀수 칸은 나입니다. 콘텐츠에 턴별 화자가
@@ -109,6 +109,15 @@ export type DialogueSpeaker = "counterpart" | "me";
  */
 export function dialogueSpeakerAt(position: number): DialogueSpeaker {
   return position % 2 === 0 ? "counterpart" : "me";
+}
+
+/** 대화 조립 칸마다 화자입니다 — `speakers`가 없으면(`true`) 짝수 칸 상대 · 홀수 칸 나입니다. */
+export function dialogueSpeakersOf(question: SentenceOrderQuestion): readonly DialogueSpeaker[] {
+  const { dialogue } = question;
+  if (dialogue === undefined || dialogue === true) {
+    return question.answerOrder.map((_, position) => dialogueSpeakerAt(position));
+  }
+  return dialogue.speakers;
 }
 
 /** 놓인 조각을 순서대로 이은 문장입니다 — 채점 뒤 내 말풍선에 섭니다. */

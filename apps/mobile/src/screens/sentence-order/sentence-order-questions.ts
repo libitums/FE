@@ -1,5 +1,10 @@
 import type { JourneyStepId } from "../journey-map/journey-map";
 
+export type DialogueSpeaker = "counterpart" | "me";
+
+/** 대화 조립 — 칸마다 화자입니다. 길이 = `answerOrder.length`(매핑이 보장). */
+export type SentenceOrderDialogueTurns = { readonly speakers: readonly DialogueSpeaker[] };
+
 export type SentenceOrderQuestion = {
   /**
    * 상대의 말입니다 — 대화 카드의 왼쪽 말풍선에 섭니다. 학습자는 그 말에 답하는 문장을
@@ -24,11 +29,11 @@ export type SentenceOrderQuestion = {
    */
   readonly answerOrder: readonly number[];
   /**
-   * 대화 조립 문항입니다(카탈로그 대화 순서). 지시문 말풍선 없이 정답 길이만큼 칸이 화자를 번갈아
-   * (짝수 칸 = 상대 · 홀수 칸 = 나) 말풍선으로 서고, 이때 `prompt`는 화면에 그리지 않습니다.
-   * 채점은 다른 문장 순서와 같습니다.
+   * 대화 조립 문항입니다(카탈로그 대화 순서). 지시문 말풍선 없이 정답 길이만큼 칸이 말풍선으로 서고,
+   * 이때 `prompt`는 화면에 그리지 않습니다. `speakers`가 있으면 칸마다 그 화자로, `true`면 짝수 칸 = 상대 ·
+   * 홀수 칸 = 나입니다. 채점은 다른 문장 순서와 같습니다.
    */
-  readonly dialogue?: true;
+  readonly dialogue?: true | SentenceOrderDialogueTurns;
   /** 있으면 `support.instruction` · 문구표 기본보다 앞서는 지시문입니다(카탈로그 문항). */
   readonly instruction?: string;
 };
