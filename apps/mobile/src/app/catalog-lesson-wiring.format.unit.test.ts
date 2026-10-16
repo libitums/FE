@@ -157,6 +157,7 @@ describe("CULT 단계 시작 (LWF)", () => {
         verdict: "passed",
         correctCount: "2",
         questionCount: "3",
+        skippedCount: "0",
       },
     ]);
     expect(updaters).toHaveLength(1);
@@ -205,6 +206,7 @@ describe("CULT 단계 시작 (LWF)", () => {
         verdict: "failed",
         correctCount: "1",
         questionCount: "3",
+        skippedCount: "0",
       },
     ]);
     expect(updaters).toHaveLength(0);

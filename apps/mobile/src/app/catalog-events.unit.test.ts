@@ -62,6 +62,7 @@ describe("이벤트 만들기", () => {
         ["correct", "incorrect", "correct", "correct"],
         10,
         "passed",
+        0,
       ),
     ).toEqual({
       name: "episode_lesson_finished",
@@ -71,8 +72,9 @@ describe("이벤트 만들기", () => {
       verdict: "passed",
       correctCount: "3",
       questionCount: "10",
+      skippedCount: "0",
     });
-    expect(lessonFinishedEventOf("u01-water", "S1", "lesson", [], 0, "passed")).toMatchObject({
+    expect(lessonFinishedEventOf("u01-water", "S1", "lesson", [], 0, "passed", 0)).toMatchObject({
       correctCount: "0",
       questionCount: "0",
     });
@@ -136,7 +138,7 @@ describe("시작 이벤트의 표시 문항 수", () => {
   test("EV-S3. 끝 이벤트와 최종 통과 이벤트는 표시 문항 수를 싣지 않는다", () => {
     expect(
       Object.keys(
-        lessonFinishedEventOf("u01-water", "S3", "lesson", ["correct"], 10, "passed"),
+        lessonFinishedEventOf("u01-water", "S3", "lesson", ["correct"], 10, "passed", 0),
       ).sort(),
     ).toEqual(
       [
@@ -144,6 +146,7 @@ describe("시작 이벤트의 표시 문항 수", () => {
         "episodeId",
         "name",
         "questionCount",
+        "skippedCount",
         "unitKey",
         "unitRole",
         "verdict",
@@ -167,7 +170,15 @@ describe("capture 매핑", () => {
       },
       "lesson",
     );
-    const finished = lessonFinishedEventOf("u01-water", "S3", "lesson", ["correct"], 10, "failed");
+    const finished = lessonFinishedEventOf(
+      "u01-water",
+      "S3",
+      "lesson",
+      ["correct"],
+      10,
+      "failed",
+      0,
+    );
     const passed = finalPassedEventOf("u01-water", ["correct"], 3);
 
     expect(analyticsCaptureFrom(started)).toEqual({
@@ -190,6 +201,7 @@ describe("capture 매핑", () => {
         verdict: "failed",
         correctCount: "1",
         questionCount: "10",
+        skippedCount: "0",
       },
     });
     expect(analyticsCaptureFrom(passed)).toEqual({

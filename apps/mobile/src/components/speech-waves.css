@@ -1,0 +1,9 @@
+/* 마이크(파형) 아이콘 — 100 × 100은 디자인 실측값입니다. */
+.speech-waves {
+  flex-shrink: 0;
+}
+
+.speech-waves-icon {
+  width: 100px;
+  height: 100px;
+}

@@ -134,6 +134,7 @@ test("EF4. (AC5) 건너뜀이 섞인 S5: 계획의 단어 선택 · 타자 문�
       verdict: "passed",
       correctCount: String(plan.questionCount),
       questionCount: String(plan.questionCount),
+      skippedCount: "0",
     },
   ]);
 });

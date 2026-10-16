@@ -40,6 +40,19 @@ export function judgeSpeaking(sentence: string, recognized: string): AnswerResul
     : "incorrect";
 }
 
+/** 보이는 조각 하나 — 부호가 붙은 채의 글자와 칠할지 여부입니다. */
+export type SpeakingChunk = { readonly text: string; readonly matched: boolean };
+
+/**
+ * 문장을 공백으로만 자른 조각(빈 조각 제외)입니다. 조각 i의 matched = (조각 0..i의 `speakingWords`
+ * 수 누계) > 0 && 누계 ≤ matchedCount.
+ *
+ * 스캐폴드: 자리표시자입니다.
+ */
+export function speakingChunks(_sentence: string, _matchedCount: number): readonly SpeakingChunk[] {
+  return [];
+}
+
 /** 마이크 · 음성 인식 권한이 둘 다 있고 인식기가 서 있어야 들을 수 있습니다. */
 export function canListen(status: SpeechStatus): boolean {
   return (

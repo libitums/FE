@@ -29,6 +29,7 @@ import type {
 } from "./catalog-lesson-types";
 import { pairMatchItemOf } from "./catalog-pair-map";
 import { shuffledOrder } from "./catalog-shuffle";
+import { readAloudItemOf, speakWordItemOf } from "./catalog-speech-map";
 import { typingItemOf } from "./catalog-typing-map";
 
 type ItemOf<T extends LearningItem["type"]> = Extract<LearningItem, { type: T }>;
@@ -131,9 +132,9 @@ export function catalogItemOf(item: LearningItem, port: CatalogLessonItemPort): 
       // 소리가 먼저 있어야 화면을 만듭니다.
       return skippedItem(item, "audio-missing");
     case "SHADOW":
+      return readAloudItemOf(item, port);
     case "SPEAK_WORD":
-      // 맞는 학습 화면이 아직 없는 유형입니다.
-      return skippedItem(item, "screen-pending");
+      return speakWordItemOf(item, port);
     case "ROLE_LINE":
       return roleLineItemOf(item, port);
     case "TRANSLATE_TO_EN":

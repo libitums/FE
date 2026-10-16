@@ -192,5 +192,7 @@ export const contentIdOf: Record<CatalogActivity["form"], string> = {
   "pair-match": "pair-match-content",
   "culture-card": "culture-card-content",
   "syllable-build": "syllable-build-content",
+  "read-aloud": "read-aloud-content",
+  "speak-word": "speak-word-content",
 };
 export const activityScreenIds = Object.values(contentIdOf);

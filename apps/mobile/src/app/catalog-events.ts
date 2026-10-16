@@ -40,6 +40,7 @@ export function lessonFinishedEventOf(
   results: readonly AnswerResult[],
   questionCount: number,
   verdict: AssessmentVerdict,
+  skippedCount: number,
 ): EpisodeLessonFinishedEvent {
   return {
     name: "episode_lesson_finished",
@@ -49,6 +50,7 @@ export function lessonFinishedEventOf(
     verdict,
     correctCount: correctCountOf(results),
     questionCount: String(questionCount),
+    skippedCount: String(skippedCount),
   };
 }
 

@@ -285,6 +285,8 @@ const contentIdOf: Record<CatalogActivity["form"], string> = {
   "pair-match": "pair-match-content",
   "culture-card": "culture-card-content",
   "syllable-build": "syllable-build-content",
+  "read-aloud": "read-aloud-content",
+  "speak-word": "speak-word-content",
 };
 
 const lettersOnly = (text: string) => text.normalize("NFC").replace(/[^ㄱ-ㆎ가-힣]/g, "");
@@ -466,6 +468,7 @@ test("L2. (AC1 · 5) 카드 뒤 빈칸 고르기가 이어지는 S1: 카드 → 
       verdict: "passed",
       correctCount: String(plan.questionCount),
       questionCount: String(plan.questionCount),
+      skippedCount: "0",
     },
   ]);
 });
@@ -508,6 +511,7 @@ test("L3. (AC2 · 4) S3: 소리 없는 듣기는 계획에서 빠져 활동 둘�
     verdict: "passed",
     correctCount: String(plan.questionCount),
     questionCount: String(plan.questionCount),
+    skippedCount: "0",
   });
 });
 
@@ -663,6 +667,7 @@ test("L6. (AC6) 최종 테스트: 턴을 타일로 맞히면 결과 → 통과 �
       verdict: "passed",
       correctCount: count,
       questionCount: count,
+      skippedCount: "0",
     },
     { name: "episode_final_passed", episodeId: u01, correctCount: count, turnCount: count },
   ]);
@@ -824,6 +829,7 @@ test("L11. (D12) 레슨 도중 갱신이 새 버전을 들여도 화면 · 문�
     unitKey: "S3",
     correctCount: String(plan.questionCount),
     questionCount: String(plan.questionCount),
+    skippedCount: "0",
   });
 });
 

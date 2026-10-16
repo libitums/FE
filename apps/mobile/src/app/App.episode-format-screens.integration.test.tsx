@@ -117,6 +117,7 @@ test("ES1. (AC1 · 2 통과) CULT: 카드 셋을 넘기면 보기 번역이 선 
       verdict: "passed",
       correctCount: "3",
       questionCount: "3",
+      skippedCount: "0",
     },
   ]);
 });

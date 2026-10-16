@@ -6,10 +6,13 @@ import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.co
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
 import type { CultureCardCopy } from "../screens/culture-card/culture-card.contract";
 import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
+import type { ReadAloudCopy } from "../screens/read-aloud/read-aloud.contract";
+import type { SpeakWordCopy } from "../screens/speak-word/speak-word.contract";
 import type { SyllableBuildCopy } from "../screens/syllable-build/syllable-build.contract";
 import type { TypingCopy } from "../screens/typing/typing.contract";
 import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
 import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-picture";
+import { n } from "./ui-copy-en-plural";
 
 const unavailableTail = {
   pending: "coming soon",
@@ -76,6 +79,17 @@ export const syllableBuildEn: SyllableBuildCopy = {
   wordEmpty: (slotCount) =>
     `Your word, empty, ${slotCount} ${slotCount === 1 ? "syllable" : "syllables"}`,
   word: (word) => `Your word: ${word}`,
+};
+
+export const readAloudEn: ReadAloudCopy = {
+  badge: "Practice",
+  matched: (matched, total) => `You said ${matched} of ${n(total, "word", "words")}.`,
+  pronunciation: (romanization) => `Pronunciation: ${romanization}`,
+};
+
+export const speakWordEn: SpeakWordCopy = {
+  instruction: "Say the word for the picture.",
+  recognitionUnavailable: "Speech recognition isn't available right now. Skip to the next word.",
 };
 
 export const pairMatchEn: PairMatchCopy = {
