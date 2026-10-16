@@ -11,6 +11,7 @@ import {
 } from "./episode-content";
 import { KNOWN_ITEM_TYPES } from "./episode-content.schema";
 import { bundledCatalogInput } from "./episode-bundled";
+import { legacyCatalogInput } from "./episode-legacy.test-support";
 import { minimalRoleplayTurnWire } from "./episode-content.test-support";
 
 // `unit` 계층: 순수 함수 `decodeEpisode`의 입출력만 봅니다 (ADR-0006 D4).
@@ -809,5 +810,404 @@ describe("내장 에피소드 음성 id 배치", () => {
     expect(placed(episode.prologue)).toEqual({ 1: "u03-mina/pre-2", 3: "u03-mina/d-01" });
     expect(placed(episode.epilogue)).toEqual({ 0: "u03-mina/post-1", 2: "u03-mina/post-3" });
     expect(placed(episode.dialogue)).toEqual({ 0: "u03-mina/d-01" });
+  });
+});
+
+describe("decodeEpisode - 새 형식 (DF)", () => {
+  const m2 = (ko: string) => ({ ko, roman: `r-${ko}` });
+  const m3 = (ko: string) => ({ ko, roman: `r-${ko}`, en: `e-${ko}` });
+  const modelPrompt = { ko: "질문", en: "question" };
+  const correct = { correct: { ko: "맞아요" } };
+  const modelOptions = (count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      id: `o${i + 1}`,
+      ko: `보기${i + 1}`,
+      roman: `bogi${i + 1}`,
+      correct: i === 0,
+      ...(i === 0 ? {} : { whyWrong: "이 자리에 맞는 말이 아니다" }),
+    }));
+  const decodedItem = (wire: Wire) => unitItem(passed(decodeEpisode(withItem(wire))).episode);
+
+  test("DF1. 새 내장본 셋은 ok이고 경고는 unresolved-ref뿐이며 u01 · u02는 경고가 없다", () => {
+    for (const id of ["u01-water", "u02-checkin", "u03-mina"] as const) {
+      const { warnings } = passed(decodeEpisode(bundledCatalogInput.episodes[id]));
+      expect(warnings.filter(({ code }) => code !== "unresolved-ref")).toEqual([]);
+    }
+    for (const id of ["u01-water", "u02-checkin"] as const) {
+      expect(passed(decodeEpisode(bundledCatalogInput.episodes[id])).warnings).toEqual([]);
+    }
+  });
+
+  test("DF2. 옛 내장본 픽스처는 새 선택 키를 하나도 더하지 않고 디코드된다", () => {
+    const added = ["level", "skill", "skillLevel", "speaker"];
+    for (const id of ["u01-water", "u02-checkin", "u03-mina"] as const) {
+      const { episode } = passed(decodeEpisode(legacyCatalogInput.episodes[id]));
+      expect("completion" in episode).toBe(false);
+      const items = [...episode.units.flatMap((unit) => unit.items), ...episode.finalTest.items];
+      for (const found of items) {
+        expect(collectKeys(found).filter((key) => added.includes(key))).toEqual([]);
+        const stimulus = "stimulus" in found ? found.stimulus : undefined;
+        expect(stimulus !== undefined && "en" in stimulus).toBe(false);
+      }
+    }
+  });
+
+  test("DF2. 옛 내장본 u01의 대표 문항 결과가 지금 디코더와 같다", () => {
+    const { episode } = passed(decodeEpisode(legacyCatalogInput.episodes["u01-water"]));
+    const all = [...episode.units.flatMap((unit) => unit.items), ...episode.finalTest.items];
+    const byId = (id: string) => all.find((found) => found.id === id);
+
+    expect(byId("S1-01")).toStrictEqual({
+      id: "S1-01",
+      event: "E",
+      ref: "voca:e70ba1ce",
+      type: "VOCAB_CARD",
+      context: { ko: "물", roman: "mul" },
+      example: { ko: "물 주세요.", roman: "mul juseyo." },
+      cardKind: "단어",
+    });
+    expect(byId("S3-05")).toStrictEqual({
+      id: "S3-05",
+      event: "R",
+      ref: "expr:a04464f0",
+      type: "TURN_ORDER",
+      prompt: { ko: "대화 순서대로 놓으세요.", en: "Put the conversation in order." },
+      context: { ko: "대화 순서대로 놓으세요.", roman: "daehwa sunseodaero noheuseyo." },
+      tiles: [
+        { ko: "아니요, 괜찮아요.", roman: "aniyo, gwaenchanayo.", en: "No, I'm fine." },
+        { ko: "삼천 원입니다.", roman: "samcheon wonimnida.", en: "That's three thousand won." },
+        { ko: "카드로 할게요.", roman: "kadeuro halgeyo.", en: "I'll pay by card." },
+        {
+          ko: "영수증 드릴까요?",
+          roman: "yeongsujeung deurilkkayo?",
+          en: "Would you like a receipt?",
+        },
+      ],
+      answer: [0, 1, 2, 3],
+    });
+    expect(byId("S4-10")).toStrictEqual({
+      id: "S4-10",
+      event: "R",
+      ref: "expr:a04464f0",
+      type: "TRANSLATE_TO_KO",
+      prompt: { ko: "한국어로 쓰세요.", en: "Say this in Korean." },
+      answers: [
+        { ko: "아니요, 괜찮아요.", roman: "aniyo, gwaenchanayo.", en: "No, I'm fine." },
+        { ko: "아니요, 괜찮아요", roman: "aniyo, gwaenchanayo" },
+      ],
+    });
+    expect(byId("RP-01")).toStrictEqual({
+      id: "RP-01",
+      event: "R",
+      type: "ROLEPLAY_TURN",
+      prompt: { ko: "뭐라고 말할까요?", en: "What do you say?" },
+      context: { ko: "봉투 드릴까요?", roman: "bongtu deurilkkayo?", en: "Would you like a bag?" },
+      stimulus: {
+        text: { ko: "아니요, 괜찮아요.", roman: "aniyo, gwaenchanayo.", en: "No, I'm fine." },
+      },
+      tiles: [
+        { ko: "아니요,", roman: "aniyo," },
+        { ko: "괜찮아요.", roman: "gwaenchanayo." },
+      ],
+      answers: [{ ko: "아니요, 괜찮아요.", roman: "aniyo, gwaenchanayo.", en: "No, I'm fine." }],
+      feedback: {
+        correct: { ko: "상대가 「봉투 드릴까요?」라고 하면 「아니요, 괜찮아요.」라고 답해요." },
+      },
+      roleplay: {
+        lineId: "D2",
+        tilesGloss: [{ tile: "아니요," }, { tile: "괜찮아요.", en: "It's okay." }],
+      },
+    });
+  });
+
+  const AUDIO_OF = (ko: string) => ({ audio: m3(ko) });
+  const expectedByType: [ItemType, Wire, Wire][] = [
+    [
+      "CLOZE_CHOICE",
+      {},
+      {
+        event: "R",
+        prompt: modelPrompt,
+        context: m3("___ 문맥"),
+        options: modelOptions(4),
+        answers: [m3("정답")],
+        feedback: correct,
+      },
+    ],
+    [
+      "REPLY_SELECT",
+      {},
+      {
+        event: "R",
+        prompt: modelPrompt,
+        stimulus: AUDIO_OF("상대 말"),
+        options: modelOptions(3),
+        feedback: correct,
+      },
+    ],
+    [
+      "MIN_PAIR_AB",
+      {},
+      {
+        event: "D",
+        prompt: modelPrompt,
+        stimulus: AUDIO_OF("빵"),
+        options: modelOptions(2),
+        feedback: correct,
+      },
+    ],
+    [
+      "PARTICLE_FILL",
+      {},
+      {
+        event: "R",
+        prompt: modelPrompt,
+        stimulus: { text: m3("봉투___") },
+        options: modelOptions(2),
+        feedback: correct,
+      },
+    ],
+    [
+      "PARTICLE_SWAP",
+      {},
+      {
+        event: "R",
+        prompt: modelPrompt,
+        stimulus: { text: m3("봉투이") },
+        options: modelOptions(3),
+        feedback: correct,
+      },
+    ],
+    [
+      "CULTURE_CHECK",
+      {},
+      {
+        event: "R",
+        prompt: modelPrompt,
+        context: m3("문화 문맥"),
+        options: modelOptions(3),
+        feedback: correct,
+      },
+    ],
+    [
+      "CULTURE_CARD",
+      {},
+      {
+        event: "E",
+        context: m3("문화 카드"),
+        stimulus: { text: m3("문화 본문") },
+        feedback: correct,
+      },
+    ],
+    [
+      "LISTEN_BUILD",
+      {},
+      {
+        event: "R",
+        prompt: modelPrompt,
+        stimulus: AUDIO_OF("듣기"),
+        tiles: [m2("가"), m2("나"), m2("다")],
+        answers: [m3("가 나 다")],
+      },
+    ],
+    [
+      "SYLLABLE_BUILD",
+      {},
+      {
+        event: "R",
+        prompt: modelPrompt,
+        stimulus: { en: "card" },
+        tiles: [m2("카"), m2("드")],
+        answers: [m3("카드")],
+      },
+    ],
+    [
+      "SHADOW",
+      {},
+      {
+        event: "E",
+        prompt: modelPrompt,
+        stimulus: { text: m3("따라 말하기") },
+        answers: [m3("따라 말하기")],
+      },
+    ],
+    [
+      "SPEAK_WORD",
+      { stimulus: { image_brief: "brief", image_url: "images/items/bag.jpg", audio_url: "" } },
+      {
+        event: "R",
+        prompt: modelPrompt,
+        stimulus: { imageBrief: "brief", imageUrl: "images/items/bag.jpg" },
+        answers: [m3("단어")],
+      },
+    ],
+  ];
+
+  test.each(expectedByType)(
+    "DF3. %s 와이어가 유형별 갈래 모양의 모델이 된다",
+    (type, extra, body) => {
+      expect(decodedItem(item(type, "S1-01", extra))).toStrictEqual({ id: "S1-01", type, ...body });
+    },
+  );
+
+  test("DF3. 새 유형의 ref는 있으면 싣고 빈 값이면 키가 없다", () => {
+    expect(decodedItem(item("CLOZE_CHOICE", "S1-01", { ref: "voca:1" }))).toHaveProperty(
+      "ref",
+      "voca:1",
+    );
+    expect("ref" in decodedItem(item("CLOZE_CHOICE", "S1-01", { ref: "" }))).toBe(false);
+  });
+
+  test("DF4. level · skill · skill_level이 모델 키 level · skill · skillLevel로 간다", () => {
+    const found = decodedItem(roleLine("S1-01", { level: 2, skill: "읽기", skill_level: 1 }));
+    expect(found).toMatchObject({ level: 2, skill: "읽기", skillLevel: 1 });
+    const added = decodedItem(
+      item("PARTICLE_FILL", "S1-01", { level: 3, skill: "쓰기", skill_level: 2 }),
+    );
+    expect(added).toMatchObject({ level: 3, skill: "쓰기", skillLevel: 2 });
+  });
+
+  test("DF4. 셋 다 없으면 키 셋 다 없고, 빈 skill도 키가 없다", () => {
+    const none = decodedItem(roleLine("S1-01"));
+    expect(["level", "skill", "skillLevel"].filter((key) => key in none)).toEqual([]);
+    const blank = decodedItem(roleLine("S1-01", { skill: "" }));
+    expect("skill" in blank).toBe(false);
+  });
+
+  test("DF4. level이 정수가 아니면 invalid-shape", () => {
+    const errors = failed(decodeEpisode(withItem(roleLine("S1-01", { level: 1.5 }))));
+    expect(codeAndPath(errors)).toContainEqual({
+      code: "invalid-shape",
+      path: "steps[0].items[0].level",
+    });
+  });
+
+  test("DF5. event D는 받고 모르는 event는 invalid-shape(경로 event)", () => {
+    expect(decodedItem(roleLine("S1-01", { event: "D" }))).toHaveProperty("event", "D");
+    const errors = failed(decodeEpisode(withItem(roleLine("S1-01", { event: "X" }))));
+    expect(codeAndPath(errors)).toContainEqual({
+      code: "invalid-shape",
+      path: "steps[0].items[0].event",
+    });
+  });
+
+  test("DF6. completion.requires는 중복을 앞의 것 유지로 걸러 와이어 순서로 싣는다", () => {
+    const input = minimalEpisode({ completion: { requires: ["S1", "RP", "S1"] } });
+    expect(passed(decodeEpisode(input)).episode.completion).toEqual({ requires: ["S1", "RP"] });
+    const reversed = minimalEpisode({ completion: { requires: ["RP", "S1"] } });
+    expect(passed(decodeEpisode(reversed)).episode.completion).toEqual({ requires: ["RP", "S1"] });
+  });
+
+  test("DF6. completion이 없으면 모델에 completion 키가 없다", () => {
+    expect("completion" in passed(decodeEpisode(minimalEpisode())).episode).toBe(false);
+  });
+
+  test("DF7. requires가 비면 completion.requires 하나로 실패한다", () => {
+    const errors = failed(decodeEpisode(minimalEpisode({ completion: { requires: [] } })));
+    expect(codeAndPath(errors)).toEqual([
+      { code: "completion-malformed", path: "completion.requires" },
+    ]);
+  });
+
+  test("DF7. 없는 단계 id(intro 포함)는 자리마다 하나씩 실패한다", () => {
+    const input = minimalEpisode({ completion: { requires: ["S1", "S9", "intro"] } });
+    expect(codeAndPath(failed(decodeEpisode(input)))).toEqual([
+      { code: "completion-malformed", path: "completion.requires[1]" },
+      { code: "completion-malformed", path: "completion.requires[2]" },
+    ]);
+  });
+
+  test("DF7. requires가 배열이 아니면 모양 오류다", () => {
+    const errors = failed(decodeEpisode(minimalEpisode({ completion: { requires: "RP" } })));
+    expect(errors.map(({ code }) => code)).toContain("invalid-shape");
+    expect(errors.map(({ code }) => code)).not.toContain("completion-malformed");
+  });
+
+  test("DF8. VOCAB_CARD에 example이 없어도 디코드되고 모델에 example 키가 없다", () => {
+    const found = decodedItem(without(item("VOCAB_CARD", "S1-01"), "example"));
+    expect(found.type).toBe("VOCAB_CARD");
+    expect("example" in found).toBe(false);
+  });
+
+  test.each(["TRANSLATE_TO_KO", "WORD_ORDER"] as const)("DF9. %s의 stimulus.en", (type) => {
+    expect(
+      decodedItem(item(type, "S1-01", { stimulus: { en: "warm", audio_url: "" } })),
+    ).toHaveProperty("stimulus", { en: "warm" });
+    expect(decodedItem(item(type, "S1-01", { stimulus: { en: "" } }))).toHaveProperty(
+      "stimulus",
+      {},
+    );
+    expect("stimulus" in decodedItem(item(type, "S1-01"))).toBe(false);
+  });
+
+  const turnTiles = (speakers: (string | undefined)[]): Wire[] =>
+    ["A", "B", "C", "D"].map((ko, i) => ({
+      ...t3(ko),
+      ...(speakers[i] === undefined ? {} : { speaker: speakers[i] }),
+    }));
+
+  test("DF10. TURN_ORDER 타일의 speaker가 보존되고 없으면 키가 없다", () => {
+    const speakers = ["player", "counterpart", "player", "counterpart"];
+    const withSpeakers = decodedItem(item("TURN_ORDER", "S1-01", { tiles: turnTiles(speakers) }));
+    expect((withSpeakers as { tiles: { speaker?: string }[] }).tiles.map((t) => t.speaker)).toEqual(
+      speakers,
+    );
+    const without3 = decodedItem(item("TURN_ORDER", "S1-01", { tiles: turnTiles([]) }));
+    expect(collectKeys(without3)).not.toContain("speaker");
+  });
+
+  test("DF10. 모르는 speaker 값은 invalid-shape", () => {
+    const tiles = turnTiles(["narrator", undefined, undefined, undefined]);
+    const errors = failed(decodeEpisode(withItem(item("TURN_ORDER", "S1-01", { tiles }))));
+    expect(errors.map(({ code }) => code)).toContain("invalid-shape");
+  });
+
+  test("DF12. 모르는 키(scene · lead · reask · use)는 실패 없이 버려진다", () => {
+    const rp = minimalRoleplayTurnWire("RP-01");
+    const rpWithExtra = {
+      ...rp,
+      roleplay: { ...(rp["roleplay"] as Wire), lead: ["안녕"], reask: "다시" },
+    };
+    const input = minimalEpisode({
+      steps: [
+        { ...step("S1", 1, [roleLine("S1-01")]), scene: { background_image_url: "x" } },
+        { ...step("RP", 2, [rpWithExtra]), scene: { retry: 2 } },
+      ],
+      words: [
+        {
+          id: "voca:1",
+          ko: "물",
+          roman: "mul",
+          gloss_en: "water",
+          role: "target",
+          use: "counterpart",
+        },
+      ],
+      patterns: [{ id: "patt:1", ko: "{명사}", roman: "n", gloss_en: "noun", use: "counterpart" }],
+    });
+    const { episode } = passed(decodeEpisode(input));
+    const keys = collectKeys(episode);
+    for (const dropped of ["scene", "lead", "reask", "use"]) expect(keys).not.toContain(dropped);
+  });
+
+  test.each([
+    "CLOZE_CHOICE",
+    "REPLY_SELECT",
+    "MIN_PAIR_AB",
+    "PARTICLE_FILL",
+    "PARTICLE_SWAP",
+    "CULTURE_CHECK",
+  ] as const)("DF13. %s는 정답이 0개나 2개면 option-correct-count", (type) => {
+    for (const make of [
+      (o: Wire, i: number) => ({ ...o, correct: i < 0 }),
+      (o: Wire, i: number) => ({ ...o, correct: i < 2 }),
+    ]) {
+      const opts = options(3).map(make);
+      const errors = failed(decodeEpisode(withItem(item(type, "S1-01", { options: opts }))));
+      expect(codeAndPath(errors)).toContainEqual({
+        code: "option-correct-count",
+        path: "steps[0].items[0].options",
+      });
+    }
   });
 });

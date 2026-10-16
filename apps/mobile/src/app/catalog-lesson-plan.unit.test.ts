@@ -407,7 +407,7 @@ describe("catalogItemOf — 문장 순서", () => {
       answerOrder: number[];
       prompt: string;
       instruction: string;
-      dialogue?: true;
+      dialogue?: { speakers: string[] };
       support?: unknown;
     };
 
@@ -416,7 +416,9 @@ describe("catalogItemOf — 문장 순서", () => {
       item.answer.map((index) => item.tiles[index]?.ko),
     );
     expect(question.chips).not.toEqual(item.tiles.map((tile) => tile.ko));
-    expect(question.dialogue).toBe(true);
+    expect(question.dialogue).toEqual({
+      speakers: item.answer.map((_, at) => (at % 2 === 0 ? "counterpart" : "me")),
+    });
     expect(question.support).toBeUndefined();
     expect(question.instruction).toBe(item.prompt.en);
   });

@@ -115,6 +115,19 @@ describe("LP3 파생 수", () => {
   });
 });
 
+describe("LPF 트로피의 카탈로그 몫", () => {
+  test("LPF1. 완료 키 해석기가 정한 키를 모두 끝낸 에피소드만 센다", () => {
+    const progress = { "u01-water": ["RP"], "u02-checkin": ["S1", "RP"] };
+    const state = { ...full, catalogProgress: progress };
+    const base = trophyCountFrom(journeyMapSections, full, defaultCompletion);
+    const strictForA = (episodeId: string) => (episodeId === "u01-water" ? ["S1", "RP"] : ["RP"]);
+
+    expect(trophyCountFrom(journeyMapSections, state, strictForA)).toBe(base + 1);
+    expect(trophyCountFrom(journeyMapSections, state, defaultCompletion)).toBe(base + 2);
+    expect(trophyCountFrom(journeyMapSections, state, () => ["S1", "CULT", "RP"])).toBe(base);
+  });
+});
+
 describe("LP-C 카탈로그 활동 수", () => {
   test("LP-C1. 활동 수는 에피소드별 끝낸 유닛 키 수의 합이고 활동 합계에 더해진다", () => {
     const progress = { a: ["intro", "S1"], b: ["intro"] };

@@ -119,10 +119,12 @@ describe("onStartCatalogCover", () => {
     expect(dispatch).not.toHaveBeenCalled();
   });
 
-  test("CW2. 앞 에피소드의 최종 테스트를 끝내면 둘째 표지가 열린다", () => {
+  test("CW2. 앞 에피소드의 완료 키를 모두 끝내면 둘째 표지가 열린다", () => {
     const { wiring, dispatch } = harness({
       finals: tutorialDone,
-      progress: { "u01-water": ["intro", "RP"] },
+      progress: {
+        "u01-water": ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"],
+      },
     });
 
     wiring.onStartCatalogCover("u02-checkin");

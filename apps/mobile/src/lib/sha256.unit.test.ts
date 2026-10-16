@@ -43,4 +43,15 @@ describe("sha256", () => {
     expect(utf8Bytes(text).length).toBe(bytes);
     expect(sha256Hex(utf8Bytes(text))).toBe(sha256);
   });
+
+  test.each([
+    ["u01-water", "56cc484dce9dfa05410ff1dce696e47abe4091452b873cdd81e5c5f16ae48c94", 79485],
+    ["u02-checkin", "bfddd0e681d7016c1099f256361a6ae4dc61a87fb74e40dd48d9355750ecbbc6", 121908],
+    ["u03-mina", "3015accf92a7190b88efd770a8d961acbc7ef2f095f3601c4e7bf5e96e34f24a", 98497],
+  ])("H5L. 옛 내장본 픽스처 %s는 바이트 그대로다", (id, sha256, bytes) => {
+    const path = `content/test-fixtures/delivery-2-2026-10-14/${id}.json`;
+    const text = readFileSync(resolve(process.cwd(), path), "utf8");
+    expect(utf8Bytes(text).length).toBe(bytes);
+    expect(sha256Hex(utf8Bytes(text))).toBe(sha256);
+  });
 });

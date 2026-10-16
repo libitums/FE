@@ -40,13 +40,14 @@ const content: EpisodeContent = {
 const u01Done: CatalogProgress["u01-water"] = [
   "intro",
   "S1",
+  "S2",
   "S3",
   "S4",
   "S5",
   "S6",
   "S7",
   "S8",
-  "S9",
+  "CULT",
   "RP",
 ];
 /** u01을 끝내 u02의 표지가 열려 있고 u02의 첫 레슨(S1)은 아직 잠긴 진행입니다. */
