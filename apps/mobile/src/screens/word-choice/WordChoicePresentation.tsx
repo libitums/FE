@@ -1,7 +1,10 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { useUiCopy } from "../../lib/ui-copy";
+
 import { WordChoicePicture } from "./WordChoicePicture";
 import { wordChoicePictureAnswerOf } from "./word-choice-picture";
+import { wordChoiceSpokenText } from "./word-choice";
 import type { WordChoicePictureState } from "./word-choice-picture";
 import type { WordChoiceQuestion } from "./word-choice-questions";
 
@@ -27,6 +30,12 @@ export function WordChoicePresentation({
   onLoad,
   onError,
 }: WordChoicePresentationProps): ReactNode {
+  const copy = useUiCopy();
+  // 빈칸이 있는 줄만 낭독 라벨을 둡니다 — 없으면 보이는 글자가 그대로 읽힙니다.
+  const spokenOf = (text: string): string | undefined => {
+    const spoken = wordChoiceSpokenText(text, copy.common.blank);
+    return spoken === text ? undefined : spoken;
+  };
   if (question.picture !== undefined) {
     // 그림 문항은 제시문 대신 그림 틀이 섭니다. 문항마다 새 요소로 세워 앞 문항 그림의 늦은
     // 이벤트가 새 문항에 닿지 않게 합니다.
@@ -44,13 +53,21 @@ export function WordChoicePresentation({
   }
   return (
     <>
-      <text className="word-choice-screen-prompt" data-testid="word-choice-screen-prompt">
+      <text
+        className="word-choice-screen-prompt"
+        data-testid="word-choice-screen-prompt"
+        accessibility-label={spokenOf(question.prompt)}
+      >
         {question.prompt}
       </text>
       {/* 카탈로그 문항의 지원 줄입니다 — 값이 있을 때만 섭니다. 뜻 줄은 정답을 드러내는
           문항에는 실리지 않습니다(그 판단은 문항을 만드는 쪽이 집니다). */}
       {question.romanization === undefined ? null : (
-        <text className="word-choice-screen-support" data-testid="word-choice-screen-romanization">
+        <text
+          className="word-choice-screen-support"
+          data-testid="word-choice-screen-romanization"
+          accessibility-label={spokenOf(question.romanization)}
+        >
           {question.romanization}
         </text>
       )}

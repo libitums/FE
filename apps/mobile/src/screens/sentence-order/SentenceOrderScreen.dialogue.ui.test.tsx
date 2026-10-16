@@ -173,8 +173,10 @@ test("USO3. 칸 수는 speakers 길이이고 같은 화자가 연이어 서는 �
     dialogue: { speakers: ["me", "me", "counterpart"] },
   };
   mount([three]);
+  const { dialogueSpeaker, dialogueTurn, dialogueEmptyTurn } = uiCopyEn.sentenceOrder;
 
   expect([0, 1, 2].map(speakerOf)).toEqual(["me", "me", "counterpart"]);
+  expect(slot(1)).toHaveAttribute("accessibility-label", dialogueEmptyTurn(dialogueSpeaker.me, 2));
   expect(screen.queryByTestId("sentence-order-dialogue-slot-3")).not.toBeInTheDocument();
 
   tapChip(2);
@@ -183,6 +185,7 @@ test("USO3. 칸 수는 speakers 길이이고 같은 화자가 연이어 서는 �
   expect(slot(1)).toHaveTextContent("B");
   expect(speakerOf(1)).toBe("me");
   expect(slot(1).getAttribute("class") ?? "").toContain("-bubble-me");
+  expect(slot(1)).toHaveAttribute("accessibility-label", dialogueTurn(dialogueSpeaker.me, 2, "B"));
   expect(slot(2)).toHaveAttribute("data-filled", "false");
 
   fireEvent.tap(slot(1), {});
