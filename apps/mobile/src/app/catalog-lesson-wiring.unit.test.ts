@@ -504,7 +504,8 @@ describe("onFinishCatalogActivity", () => {
         verdict: "passed",
         correctCount: "6",
         questionCount: "6",
-        skippedCount: "0",
+        // 건너뜀 수는 결과 화면과 같은 합(앞 활동 2 + 이 활동 1)입니다.
+        skippedCount: "3",
       },
     ]);
     expect(updaters).toHaveLength(1);
