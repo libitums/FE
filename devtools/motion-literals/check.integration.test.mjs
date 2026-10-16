@@ -22,6 +22,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "../..");
 const roots = ["apps/mobile/src", "packages/ui-lynx/src", "apps/storybook-lynx/src"];
 const narrativeBackground = "apps/mobile/src/screens/episode-narrative/narrative-background.css";
+// 지표 모션의 연출 값 두 파일입니다(ADR-0064, 2026-10-16).
+const statMotionFiles = [
+  "apps/mobile/src/components/stat-chip-motion.css",
+  "apps/mobile/src/screens/journey-map/journey-stat-modal-motion.css",
+];
 
 function runCheck(scriptPath) {
   const result = spawnSync(process.execPath, [scriptPath], { encoding: "utf8" });
@@ -57,13 +62,15 @@ test("[LM1′] 저장소 전체(CSS + 소스, scale-literal 포함)에 lint:moti
   assert.equal(status, 0, output);
 });
 
-test("[LM1] allowlist는 narrative-background.css 한 건이고 그 파일은 실제로 존재한다", () => {
+test("[LM1] allowlist는 narrative-background.css와 지표 모션 두 파일이고 모두 실제로 존재한다", () => {
   const allowlist = JSON.parse(readFileSync(path.join(here, "allowlist.json"), "utf8"));
   assert.deepEqual(
     allowlist.map((entry) => entry.path),
-    [narrativeBackground],
+    [narrativeBackground, ...statMotionFiles],
   );
-  assert.ok(readFileSync(path.join(repoRoot, narrativeBackground), "utf8").length > 0);
+  for (const file of [narrativeBackground, ...statMotionFiles]) {
+    assert.ok(readFileSync(path.join(repoRoot, file), "utf8").length > 0, file);
+  }
 });
 
 test("[LM2] 리터럴 duration · cubic-bezier · easing 키워드 · @media 각각이 exit 1과 규칙 이름을 낸다", () => {
@@ -106,7 +113,9 @@ test("[LM2] 모션 토큰 참조만 쓴 CSS는 통과한다(오탐 없음)", () 
 });
 
 test("[LM3′] allowlist에서 narrative-background.css를 빼면 그 파일의 선언 23줄(위반 31건)로 exit 1이다", () => {
-  const { sandbox, script } = makeSandbox([]);
+  const { sandbox, script } = makeSandbox(
+    statMotionFiles.map((file) => ({ path: file, reason: "지표 모션 연출 값(ADR-0064)" })),
+  );
   try {
     for (const root of roots) {
       const target = path.join(sandbox, root);
