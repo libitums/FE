@@ -6,7 +6,8 @@ import "background-only";
 //
 // 백그라운드 전용입니다. zod는 메인 스레드 번들에 실리지 않습니다 — 첫 줄의
 // `background-only`가 메인 스레드 import를 빌드 오류로 막습니다(`posthog-client.ts` 선례).
-// `src/` 안에서 zod를 import하는 파일은 이 하나뿐이어야 합니다(unit 테스트가 고정).
+// `src/` 안에서 zod를 import하는 파일은 콘텐츠 스키마 셋(이 파일 · `schema-parts` · `schema-items`)과
+// 매니페스트 스키마뿐이어야 합니다(unit 테스트가 고정).
 import { z } from "zod/mini";
 import {
   correctFeedbackSchema,

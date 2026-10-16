@@ -634,7 +634,7 @@ describe("decodeEpisode", () => {
   });
 
   // 가드: 스캐폴드가 이미 import와 첫 줄을 갖습니다.
-  test("U25′. zod를 import하는 src 파일은 두 스키마 모듈이고 런타임 모듈은 background-only로 시작한다", () => {
+  test("U25′. zod를 import하는 src 파일은 콘텐츠 스키마 셋 · 매니페스트 스키마이고 런타임 모듈은 background-only로 시작한다", () => {
     const srcRoot = resolve(process.cwd(), "src");
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

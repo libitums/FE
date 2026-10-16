@@ -278,7 +278,7 @@ function solveLesson(plan: CatalogLessonPlan, right: boolean): string[] {
 
 const throughS8 = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];
 
-test("EF1. (AC1) 표지만 끝낸 진행: u01 구획에 노드 10개(레슨 9 + 최종)가 서고 S1만 열리며 CULT는 Lesson 9로 잠겨 있다", async () => {
+test("EF1. (AC4) 표지만 끝낸 진행: u01 구획에 노드 10개(레슨 9 + 최종)가 서고 S1만 열리며 CULT는 Lesson 9로 잠겨 있다", async () => {
   await boot({ [u01]: ["intro"] });
 
   const nodes = Array.from(
@@ -293,7 +293,7 @@ test("EF1. (AC1) 표지만 끝낸 진행: u01 구획에 노드 10개(레슨 9 + 
   for (const id of activityScreenIds) expect(screen.queryByTestId(id)).not.toBeInTheDocument();
 });
 
-test("EF2. (AC2) 활동이 0개인 CULT: 활동 화면 없이 결과 화면 → 나가기 → CULT 끝 · RP 열림 · 기록 · 이벤트 둘", async () => {
+test("EF2. (AC4) 활동이 0개인 CULT: 활동 화면 없이 결과 화면 → 나가기 → CULT 끝 · RP 열림 · 기록 · 이벤트 둘", async () => {
   const { rpcs, events } = await boot({ [u01]: throughS8 });
   const plan = lessonPlan(u01, "CULT");
   expect(plan.activities).toHaveLength(0);
@@ -359,7 +359,7 @@ test("EF3. (AC3) 옛 키 모양 진행(S2 · CULT 없음)은 완료가 아니고
   expect(cover(u02)).toHaveAttribute("data-status", "available");
 });
 
-test("EF4. (AC4) 건너뜀이 섞인 S5: 계획의 단어 선택 · 타자 문항을 끝까지 맞히면 PERFECT · 기록 · 이벤트의 건너뜀 수가 계획과 같다", async () => {
+test("EF4. (AC5) 건너뜀이 섞인 S5: 계획의 단어 선택 · 타자 문항을 끝까지 맞히면 PERFECT · 기록 · 이벤트의 건너뜀 수가 계획과 같다", async () => {
   const { rpcs, events } = await boot({ [u01]: ["intro", "S1", "S2", "S3", "S4"] });
   const plan = lessonPlan(u01, "S5");
   expect(plan.skippedItemCount).toBeGreaterThan(0);
@@ -398,7 +398,7 @@ test("EF4. (AC4) 건너뜀이 섞인 S5: 계획의 단어 선택 · 타자 문�
   ]);
 });
 
-test("EF5. (AC5) S2의 대화 조립: 칸 0의 화자가 콘텐츠 턴 화자를 따른다 - 나부터 시작하는 문항은 me, 상대부터인 문항은 counterpart", async () => {
+test("EF5. (D9) S2의 대화 조립: 칸 0의 화자가 콘텐츠 턴 화자를 따른다 - 나부터 시작하는 문항은 me, 상대부터인 문항은 counterpart", async () => {
   await boot({ [u01]: ["intro", "S1"] });
   const plan = lessonPlan(u01, "S2");
   tapNode(u01, "S2");
@@ -420,7 +420,7 @@ test("EF5. (AC5) S2의 대화 조립: 칸 0의 화자가 콘텐츠 턴 화자를
   expect(shown).toContain("counterpart");
 });
 
-test("EF6. (AC6) 옛 키 S9가 섞인 진행도 맵 · 진행 수 · 시작이 던지지 않고 S9는 세지 않는다", async () => {
+test("EF6. (A3 옛 키) 옛 키 S9가 섞인 진행도 맵 · 진행 수 · 시작이 던지지 않고 S9는 세지 않는다", async () => {
   await boot({ [u01]: ["intro", "S1", "S9"] });
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
