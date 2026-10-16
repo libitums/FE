@@ -85,6 +85,16 @@ test("SCB5. 표식이 지금 값보다 작지 않으면 굴리지 않고 바로 
   expect(screen.getByTestId("chip")).toHaveTextContent("4");
 });
 
+test("SCB7. 값은 그대로인데 굴릴 것 없는 표식이 나중에 들어와도 바로 지운다", () => {
+  const onBumped = vi.fn();
+  const { rerender } = render(chip({ onBumped }));
+  expect(onBumped).not.toHaveBeenCalled();
+
+  rerender(chip({ bumpFrom: 4, onBumped }));
+  expect(onBumped).toHaveBeenCalledTimes(1);
+  expect(screen.getByTestId("chip")).toHaveTextContent("4");
+});
+
 test("SCB6. 움직임 줄이기에서는 굴림 · 빛 · 알갱이 없이 숫자만 페이드로 바뀐다", () => {
   const onBumped = vi.fn();
   render(reduced(chip({ bumpFrom: 3, onBumped })));

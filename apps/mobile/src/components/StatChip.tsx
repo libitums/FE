@@ -101,8 +101,10 @@ export function StatChip({
       clearTimeout(end);
       setPlaying(false);
     };
+    // `onBumped`는 부모가 매번 새로 만들어 넘기므로 뺍니다. `bumpFrom`은 넣습니다 — 값이 그대로인 채 표식만
+    // 들어오면 `start`가 계속 `null`이라 그것만으로는 다시 돌지 않습니다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [start, value, bumpHeld, motion]);
+  }, [bumpFrom, start, value, bumpHeld, bumpDelayMs, motion]);
 
   const handleTap = () => {
     "background only";
