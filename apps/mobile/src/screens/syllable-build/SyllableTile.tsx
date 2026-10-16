@@ -15,6 +15,7 @@ export function SyllableTile({
   index,
   text,
   placedOrdinal,
+  slotCount,
   interaction,
   onTap,
 }: SyllableTileProps): ReactNode {
@@ -38,7 +39,12 @@ export function SyllableTile({
       data-placed={placedOrdinal ?? "none"}
       data-interaction={interaction}
       accessibility-element={true}
-      accessibility-label={syllableTileAccessibilityLabel(text, placedOrdinal, copy.syllableBuild)}
+      accessibility-label={syllableTileAccessibilityLabel(
+        text,
+        placedOrdinal,
+        slotCount ?? 0,
+        copy.syllableBuild,
+      )}
       accessibility-traits={interaction === "locked" ? "disabled" : "button"}
       bindtap={interaction === "locked" ? undefined : handleTap}
     >

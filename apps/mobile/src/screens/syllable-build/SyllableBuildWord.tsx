@@ -44,6 +44,7 @@ export function SyllableBuildWord({
                 index={tileIndex}
                 text={tiles[tileIndex] ?? ""}
                 placedOrdinal={position + 1}
+                slotCount={slotCount}
                 interaction={interaction}
                 onTap={onReturn}
               />

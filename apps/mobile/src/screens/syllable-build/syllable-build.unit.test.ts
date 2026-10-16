@@ -223,16 +223,23 @@ describe("파생 (SB8)", () => {
 });
 
 describe("낭독 (SB9 · SB10)", () => {
-  it("SB9. 창고 타일은 글자 그대로, 놓인 타일은 칸 번호가 붙는다", () => {
-    expect(syllableTileAccessibilityLabel("카", null, copy)).toBe("카");
-    expect(syllableTileAccessibilityLabel("카", 1, copy)).toBe("카, position 1");
-    expect(syllableTileAccessibilityLabel("드", 2, copy)).toBe("드, position 2");
+  it("SB9. 창고 타일은 글자 그대로, 놓인 타일은 칸 번호와 전체 칸 수가 붙는다", () => {
+    expect(syllableTileAccessibilityLabel("카", null, 2, copy)).toBe("카");
+    expect(syllableTileAccessibilityLabel("카", 1, 2, copy)).toBe("카, position 1 of 2");
+    expect(syllableTileAccessibilityLabel("드", 2, 2, copy)).toBe("드, position 2 of 2");
+    expect(syllableTileAccessibilityLabel("이", 3, 5, copy)).toBe("이, position 3 of 5");
+  });
+
+  it("SB10. 빈 줄 낭독은 칸 수를 말하고 1칸이면 단수다", () => {
+    expect(copy.wordEmpty(2)).toBe("Your word, empty, 2 syllables");
+    expect(copy.wordEmpty(5)).toBe("Your word, empty, 5 syllables");
+    expect(copy.wordEmpty(1)).toBe("Your word, empty, 1 syllable");
   });
 
   it("SB10. 비었으면 줄 하나가 요소(Your word, empty)다", () => {
     expect(syllableBuildWordAccessibilityOf(card, stateOf([]), copy)).toEqual({
       kind: "row",
-      label: "Your word, empty",
+      label: "Your word, empty, 2 syllables",
     });
   });
 

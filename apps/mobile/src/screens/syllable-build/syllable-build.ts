@@ -121,13 +121,14 @@ export function syllableBuildSessionResults(
   return results;
 }
 
-/** 창고 타일은 글자 그대로(한국어 음성이 읽습니다), 놓인 타일은 칸 번호가 붙습니다. */
+/** 창고 타일은 글자 그대로(한국어 음성이 읽습니다), 놓인 타일은 칸 번호와 전체 칸 수가 붙습니다. */
 export function syllableTileAccessibilityLabel(
   text: string,
   placedOrdinal: number | null,
+  slotCount: number,
   copy: SyllableBuildCopy,
 ): string {
-  return placedOrdinal === null ? text : copy.placedTile(text, placedOrdinal);
+  return placedOrdinal === null ? text : copy.placedTile(text, placedOrdinal, slotCount);
 }
 
 /** 비었으면 줄 하나가 요소, 놓이는 중이면 타일이 각자 요소, 채점 뒤에는 만든 낱말을 읽는 줄 하나입니다. */
@@ -136,7 +137,8 @@ export function syllableBuildWordAccessibilityOf(
   state: SyllableBuildSessionState,
   copy: SyllableBuildCopy,
 ): SyllableBuildWordAccessibility {
-  if (state.placedTileIndexes.length === 0) return { kind: "row", label: copy.wordEmpty };
+  if (state.placedTileIndexes.length === 0)
+    return { kind: "row", label: copy.wordEmpty(question.slotCount) };
   if (state.phase === "building") return { kind: "tiles" };
   return { kind: "row", label: copy.word(composedWord(question, state.placedTileIndexes)) };
 }

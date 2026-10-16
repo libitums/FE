@@ -56,6 +56,8 @@ export type SyllableTileProps = {
   readonly text: string;
   /** 놓인 칸(1-based)입니다 — `null`이면 창고에 있습니다. */
   readonly placedOrdinal: number | null;
+  /** 낱말의 전체 칸 수입니다 — 놓인 타일의 낭독(`position 1 of 2`)에만 쓰고 창고 타일은 주지 않습니다. */
+  readonly slotCount?: number;
   readonly interaction: SyllableTileInteraction;
   readonly onTap: (index: number) => void;
 };
@@ -76,8 +78,8 @@ export type SyllableBuildWordProps = {
 export type SyllableBuildCopy = {
   readonly instruction: string;
   readonly meaning: (meaning: string) => string;
-  readonly placedTile: (text: string, position: number) => string;
-  readonly wordEmpty: string;
+  readonly placedTile: (text: string, position: number, slotCount: number) => string;
+  readonly wordEmpty: (slotCount: number) => string;
   readonly word: (word: string) => string;
 };
 

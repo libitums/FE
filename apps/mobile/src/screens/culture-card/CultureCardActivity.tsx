@@ -111,7 +111,7 @@ export function CultureCardActivity({
                   <text
                     className="culture-card-activity-korean-title"
                     data-testid="culture-card-korean-title"
-                    accessibility-elements-hidden={true}
+                    accessibility-element={false}
                   >
                     {copy.cultureCard.koreanBodyTitle}
                   </text>

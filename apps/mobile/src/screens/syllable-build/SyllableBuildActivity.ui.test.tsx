@@ -218,14 +218,14 @@ describe("SyllableBuildActivity", () => {
 
     const word = id("syllable-build-word");
     expect(word).toHaveAttribute("accessibility-element", "true");
-    expect(word).toHaveAttribute("accessibility-label", "Your word, empty");
+    expect(word).toHaveAttribute("accessibility-label", "Your word, empty, 2 syllables");
 
     tapTile(2);
     expect(id("syllable-build-word").getAttribute("accessibility-element")).not.toBe("true");
-    expect(tile(2)).toHaveAttribute("accessibility-label", "카, position 1");
+    expect(tile(2)).toHaveAttribute("accessibility-label", "카, position 1 of 2");
 
     tapTile(1);
-    expect(tile(1)).toHaveAttribute("accessibility-label", "드, position 2");
+    expect(tile(1)).toHaveAttribute("accessibility-label", "드, position 2 of 2");
 
     tapAction("Check");
     expect(id("syllable-build-word")).toHaveAttribute("accessibility-element", "true");
@@ -244,7 +244,10 @@ describe("SyllableBuildActivity", () => {
     tapTile(2);
     tapTile(2);
 
-    expect(id("syllable-build-word")).toHaveAttribute("accessibility-label", "Your word, empty");
+    expect(id("syllable-build-word")).toHaveAttribute(
+      "accessibility-label",
+      "Your word, empty, 2 syllables",
+    );
   });
 
   test("USB6. 채점은 판정을 한 번 낭독하고 마지막 Next는 완료를 custom 채널로 한 번 낭독한다", () => {

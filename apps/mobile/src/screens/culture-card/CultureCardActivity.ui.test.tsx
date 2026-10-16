@@ -131,10 +131,10 @@ describe("CultureCardActivity", () => {
     expect(precedes("culture-card-body", "culture-card-korean-text")).toBe(true);
     expect(precedes("culture-card-korean-title", "culture-card-korean-text")).toBe(true);
 
-    expect(id("culture-card-korean-title")).toHaveAttribute(
-      "accessibility-elements-hidden",
-      "true",
-    );
+    expect(id("culture-card-korean-title")).toHaveAttribute("accessibility-element", "false");
+    expect(
+      id("culture-card-korean-title").getAttribute("accessibility-elements-hidden"),
+    ).toBeNull();
     expect(id("culture-card-title-romanization")).toHaveAttribute(
       "accessibility-label",
       "Pronunciation: pyeonuijeom bongtu",

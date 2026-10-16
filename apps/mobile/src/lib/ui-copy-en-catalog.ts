@@ -72,8 +72,9 @@ export const cultureCardEn: CultureCardCopy = {
 export const syllableBuildEn: SyllableBuildCopy = {
   instruction: "Tap the syllables to spell the word.",
   meaning: (meaning) => `Meaning: ${meaning}`,
-  placedTile: (text, position) => `${text}, position ${position}`,
-  wordEmpty: "Your word, empty",
+  placedTile: (text, position, slotCount) => `${text}, position ${position} of ${slotCount}`,
+  wordEmpty: (slotCount) =>
+    `Your word, empty, ${slotCount} ${slotCount === 1 ? "syllable" : "syllables"}`,
   word: (word) => `Your word: ${word}`,
 };
 
