@@ -30,10 +30,10 @@ export type SentenceOrderQuestion = {
   readonly answerOrder: readonly number[];
   /**
    * 대화 조립 문항입니다(카탈로그 대화 순서). 지시문 말풍선 없이 정답 길이만큼 칸이 말풍선으로 서고,
-   * 이때 `prompt`는 화면에 그리지 않습니다. `speakers`가 있으면 칸마다 그 화자로, `true`면 짝수 칸 = 상대 ·
-   * 홀수 칸 = 나입니다. 채점은 다른 문장 순서와 같습니다.
+   * 이때 `prompt`는 화면에 그리지 않습니다. 칸마다 `speakers`의 화자로 섭니다(콘텐츠의 턴 화자). 채점은
+   * 다른 문장 순서와 같습니다.
    */
-  readonly dialogue?: true | SentenceOrderDialogueTurns;
+  readonly dialogue?: SentenceOrderDialogueTurns;
   /** 있으면 `support.instruction` · 문구표 기본보다 앞서는 지시문입니다(카탈로그 문항). */
   readonly instruction?: string;
 };
