@@ -31,9 +31,11 @@ const outputs = join(appDir, "build/outputs");
 const hostSourceDir = join(appDir, "src/main/java/com/libitum/host");
 
 const ALL_ABIS = ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"];
-const EXPECTED_LIBRARIES = { "arm64-v8a": 16, "armeabi-v7a": 16, x86: 16, x86_64: 15 };
+// libairbridgelib.so 한 개씩 늘어난 값 — docs/adr/0063-airbridge-events.md
+const EXPECTED_LIBRARIES = { "arm64-v8a": 17, "armeabi-v7a": 17, x86: 17, x86_64: 16 };
 const MAPPING_ENTRY = "BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map";
-const MAX_DEX_BYTES = 4_000_000;
+// Airbridge의 소비자 R8 규칙(-keep class com.facebook.**)이 Fresco · SoLoader를 축소에서 뺀 만큼 올린 값(사용자 승인 2026-10-13) — docs/adr/0063-airbridge-events.md
+const MAX_DEX_BYTES = 4_300_000;
 const MAX_DOWNLOAD_BYTES = 18_000_000;
 
 function findArtifact(dir, ext) {
@@ -82,7 +84,7 @@ const bundletoolJar = () => {
 
 const dexEntries = (entries, pattern) => entries.filter((e) => pattern.test(e.name));
 
-test("A1: the release AAB carries the same four ABIs as before (arm64-v8a 16, armeabi-v7a 16, x86 16, x86_64 15)", () => {
+test("A1: the release AAB carries the same four ABIs as before (arm64-v8a 17, armeabi-v7a 17, x86 17, x86_64 16)", () => {
   const aab = findArtifact("bundle/release", ".aab");
   assert.deepEqual(packagedAbis(zipEntries(aab).map((e) => e.name)), {
     abis: ALL_ABIS,
@@ -130,10 +132,10 @@ test("A4: the names native code and the manifest look up survive R8 (LynxLog, Tr
         ? []
         : [{ className: `com.libitum.host.${name.replace(/\.java$/, "")}`, members }];
     });
-  // 빈 통과 방지: @LynxMethod 모듈은 11개다(StorageModule · AudioPlaybackModule · …).
+  // 빈 통과 방지: @LynxMethod 모듈은 12개다(StorageModule · AudioPlaybackModule · … · AirbridgeEventsModule).
   assert.equal(
     hostModules.length,
-    11,
+    12,
     `@LynxMethod host modules: ${hostModules.map((m) => m.className)}`,
   );
 

@@ -1,10 +1,5 @@
 PODS:
-  - FBAEMKit (18.1.1):
-    - FBSDKCoreKit_Basics (= 18.1.1)
-  - FBSDKCoreKit (18.1.1):
-    - FBAEMKit (= 18.1.1)
-    - FBSDKCoreKit_Basics (= 18.1.1)
-  - FBSDKCoreKit_Basics (18.1.1)
+  - airbridge-ios-sdk-restricted (4.11.1)
   - libwebp (1.6.0):
     - libwebp/demux (= 1.6.0)
     - libwebp/mux (= 1.6.0)
@@ -126,7 +121,7 @@ PODS:
     - Lynx (= 4.0.1)
 
 DEPENDENCIES:
-  - FBSDKCoreKit (= 18.1.1)
+  - airbridge-ios-sdk-restricted (= 4.11.1)
   - Lynx/Framework (= 4.0.1)
   - LynxService/Http (from `podspecs/LynxService.podspec.json`)
   - LynxService/Image (from `podspecs/LynxService.podspec.json`)
@@ -139,9 +134,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - FBAEMKit
-    - FBSDKCoreKit
-    - FBSDKCoreKit_Basics
+    - airbridge-ios-sdk-restricted
     - libwebp
     - Lynx
     - LynxBase
@@ -160,9 +153,7 @@ EXTERNAL SOURCES:
     :podspec: podspecs/LynxService.podspec.json
 
 SPEC CHECKSUMS:
-  FBAEMKit: fbb0a50e13109400d0615e7630a0db26ec6b8206
-  FBSDKCoreKit: 0063014b3b1f7e975e70b60232b0cf8003839746
-  FBSDKCoreKit_Basics: f4a1e0f38769eb71abaf6395b85e015318fcda49
+  airbridge-ios-sdk-restricted: ab9fb61abbe284e439ee5b5368237c96e42df3bb
   libwebp: af5937a13536ef73f3784d69cc342b98961acf33
   Lynx: 1a461f83f48104309f7e2031dabf3af84b181807
   LynxBase: 5ca5092517e6460e0df6ad9b49fca76396c058d8
@@ -177,6 +168,6 @@ SPEC CHECKSUMS:
   ServalSVG: 19bf88f72dae928c28a744c9b91475a3691ded42
   XElement: f1f022652fbc5e109e7d4d66299493bfd1a74b31
 
-PODFILE CHECKSUM: a76fad48ef277d66457d0a81c2a65149cdbd1f78
+PODFILE CHECKSUM: 3c076a59da0d8e78a95a91941046e6901b85ffd1
 
 COCOAPODS: 1.17.0

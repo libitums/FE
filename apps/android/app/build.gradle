@@ -46,15 +46,15 @@ abstract class SyncHostAudioAssets extends DefaultTask {
   }
 }
 
-// Meta 앱 이벤트 값은 추적하지 않는 meta.properties에서 읽는다. 없거나 비어 있으면 빈 문자열이고,
-// 그때 호스트는 SDK를 건드리지 않는다(MetaAppEventsConfig). manifestPlaceholders로는 보내지 않는다.
-def metaProperties = new Properties()
-def metaPropertiesFile = file('meta.properties')
-if (metaPropertiesFile.exists()) {
-  metaPropertiesFile.withInputStream { metaProperties.load(it) }
+// Airbridge 값은 추적하지 않는 airbridge.properties에서 읽는다. 없거나 비어 있으면 빈 문자열이고,
+// 그때 호스트는 SDK를 건드리지 않는다(AirbridgeEventsConfig). manifestPlaceholders로는 보내지 않는다.
+def airbridgeProperties = new Properties()
+def airbridgePropertiesFile = file('airbridge.properties')
+if (airbridgePropertiesFile.exists()) {
+  airbridgePropertiesFile.withInputStream { airbridgeProperties.load(it) }
 }
-def metaValue = { String key ->
-  (metaProperties.getProperty(key) ?: '').trim().replace('\\', '\\\\').replace('"', '\\"')
+def airbridgeValue = { String key ->
+  (airbridgeProperties.getProperty(key) ?: '').trim().replace('\\', '\\\\').replace('"', '\\"')
 }
 
 android {
@@ -72,8 +72,8 @@ android {
     // debug keeps these empty: dev-server and HMR errors must not reach the collector.
     buildConfigField 'String', 'SENTRY_DSN', '""'
     buildConfigField 'String', 'SENTRY_PROGUARD_UUID', '""'
-    buildConfigField 'String', 'META_APP_ID', "\"${metaValue('META_APP_ID')}\""
-    buildConfigField 'String', 'META_CLIENT_TOKEN', "\"${metaValue('META_CLIENT_TOKEN')}\""
+    buildConfigField 'String', 'AIRBRIDGE_APP_NAME', "\"${airbridgeValue('AIRBRIDGE_APP_NAME')}\""
+    buildConfigField 'String', 'AIRBRIDGE_SDK_TOKEN', "\"${airbridgeValue('AIRBRIDGE_SDK_TOKEN')}\""
   }
 
   buildTypes {
@@ -145,7 +145,7 @@ dependencies {
   implementation 'androidx.browser:browser:1.8.0'
   implementation 'androidx.core:core:1.15.0'
   implementation 'com.google.android.play:review:2.0.2'
-  implementation 'com.facebook.android:facebook-core:18.3.0'
+  implementation 'io.airbridge:sdk-android:4.11.3'
   implementation platform('com.google.firebase:firebase-bom:34.19.0')
   implementation 'com.google.firebase:firebase-messaging'
   implementation 'io.sentry:sentry-android-core:8.60.0'

@@ -51,6 +51,9 @@ apps/android/app/src/main/assets/static/
 apps/android/app/google-services.json
 apps/android/sentry.properties
 
-# Meta 앱 이벤트 로컬 값 파일 — 값은 추적하지 않는다(docs/adr/0057-meta-app-events.md D2)
-apps/ios/Config/Meta.local.xcconfig
-apps/android/app/meta.properties
+# Airbridge 로컬 값 파일 — 값은 추적하지 않는다(docs/adr/0063-airbridge-events.md D3)
+# 넓은 줄은 이미 만들어 둔 옛 로컬 파일도 계속 무시한다.
+apps/ios/Config/*.local.xcconfig
+apps/android/app/*.properties
+apps/ios/Config/Airbridge.local.xcconfig
+apps/android/app/airbridge.properties

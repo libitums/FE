@@ -1,16 +1,24 @@
 # ADR-0057 — 광고 측정용 앱 이벤트를 Meta SDK로 보낸다 (값이 없으면 SDK를 부르지 않는다 · 매핑은 JS 한 곳 · PostHog와 독립 · ATT 없음)
 
-- 상태: **제안** — 구현과 `pnpm verify` 안의 계층, 두 호스트의 빌드, 값이 없는 빌드의 기기 확인까지 끝났다.
-  ⚠ **기본값 열둘이 사용자가 자리에 없는 동안 고른 것이다.** 그 목록이 아래 「사용자 확인 필요」 절이고, 확인되기 전까지
-  `채택`으로 올리지 않는다. ⚠ **실제 앱 ID로 Meta가 이벤트를 받는 것은 한 번도 보지 않았다**(「확인하지 못한 것」 절).
+- 상태: **대체됨** — [ADR-0063](0063-airbridge-events.md)(2026-10-13, Meta SDK 제거 · Airbridge로 교체)
 - 날짜: 2026-10-13
+
+> **이 결정은 더 이상 유효하지 않다.** 사용자가 광고 매체 넷(Meta · Google Ads · TikTok Ads · Apple Ads)을 MMP 하나로 보기로
+> 하고 Meta SDK를 빼기로 했다(2026-10-13). 아티팩트 · 이벤트 이름 · 자동 진입로 · iOS 설정(D1 · D2의 이름 · D4 · D5 · D6 · D13)이
+> 바뀌었고, 값 주입의 구조 · 「초기화하지 않음」 판정 · JS 모듈 셋 · PostHog와의 독립 · Android `AD_ID` · 메서드 하나인 호스트
+> 모듈 · `configure(builder)` 등록 · R8 무수정(D2의 구조 · D3 · D7 ~ D12)은 이름만 바뀐 채 ADR-0063로 이어진다.
+> **정정 한 줄**: D5가 `SKAdNetworkItems`에 Meta 식별자 둘을 적은 근거(「iOS의 설치는 SKAdNetwork로 센다」)는 틀렸다 — 그 키는
+> 광고를 띄우는 앱의 설정이고 광고되는 앱에는 필요 없다(Apple 문서). ADR-0063 D13이 키를 지웠다.
+> 운영 안내 · e2e 절차는 `docs/airbridge-events.md` · `docs/e2e/airbridge-events.md`로 옮겨 Airbridge 내용으로 다시 썼다 —
+> 아래 본문의 그 두 문서 링크(와 iOS 프라이버시 문서의 절 링크)는 깨지지 않도록 새 자리를 가리키게 고쳤고, Meta 때의 내용은
+> Git 이력에 있다. 아래는 기록으로 남긴다.
 - 다루는 축: **광고 측정 전송** (새 축 — 기존 ADR의 `다루는 축`이 덮지 않는다). 어느 SDK를 어느 버전으로 넣는가, 앱 ID ·
   클라이언트 토큰을 어디서 받는가, 값이 없을 때 무엇을 하지 않는가, SDK의 자동 진입로, 어느 제품 이벤트가 어느 Meta
   이벤트가 되는가, 호스트 모듈의 모양, PostHog 전송과의 관계, iOS 추적 허용(ATT)과 광고 식별자, Android 광고 ID 권한,
   R8 규칙, iOS 프라이버시 매니페스트.
   **다루지 않는 것**: ATT 팝업과 IDFA 수집 · 지연 딥링크 · 랜딩 웹 픽셀 · 서버 Conversions API · 결제 이벤트 · Facebook
   로그인의 네이티브화(지금의 Supabase OAuth 유지 — [ADR-0028](0028-social-oauth-web-authentication.md)) · 고급 매칭 ·
-  새 제품 이벤트 · 스토어 콘솔의 개인정보 고지 수정(사용자 몫 — [운영 안내](../meta-app-events.md)).
+  새 제품 이벤트 · 스토어 콘솔의 개인정보 고지 수정(사용자 몫 — [운영 안내](../airbridge-events.md)).
 - 적용 기록(결정을 바꾸지 않는다):
   [ADR-0029](0029-product-analytics-posthog.md) D2 — sink가 `null`이 아닌 조건이 「PostHog 클라이언트가 있다」에서
   「보낼 곳이 하나라도 있다」로 넓어졌다(D8, 그 문서의 D2에 주).
@@ -180,7 +188,7 @@ logger는 시작 때 한 번 해석한다 — 모듈 등록 여부는 프로세�
   사용자에게 뜨는 팝업이 없다 — iOS에서 내린 결정은 「팝업을 띄우지 않음」이었고 그 조건을 Android에서는 권한을 넣은 채로
   지킬 수 있다.
 - **대가: 값이 없는 빌드에도 권한은 매니페스트에 실린다.** Play Console의 「광고 ID」 선언과 데이터 보안 양식을 고치지
-  않고 올리면 Play가 거절할 수 있다. 순서는 [운영 안내](../meta-app-events.md#스토어-고지에서-바뀌는-것)가 진다.
+  않고 올리면 Play가 거절할 수 있다. 순서는 [운영 안내](../airbridge-events.md#스토어-고지에서-바뀌는-것)가 진다.
 - 권한은 AAR 병합으로 이미 들어오지만, 결정이 추적되는 파일에 보이도록 앱 매니페스트에 **명시적으로 한 줄** 적는다.
 - 병합 매니페스트에 이 변경으로 새로 실린 권한 [실측 — `bundled` 변형의 병합 보고서]:
   `com.google.android.gms.permission.AD_ID`(앱 명시 + SDK) · SDK의 `ACCESS_ADSERVICES_ATTRIBUTION` ·
@@ -231,7 +239,7 @@ I4 수정과 ADR-0052 정정이 따르는 사용자 승인 사항이다.
   그대로다.
 - **SDK가 싣는 매니페스트는 손대지 않는다.** `FBSDKCoreKit`의 것은 `NSPrivacyTracking = true` · 추적 도메인
   `ep1.facebook.com` · `DeviceID`를 tracking `true`(목적 `ThirdPartyAdvertising`)로 선언한다 [조회]. 앱과 SDK의 선언이
-  어긋나 보이는 것이 이 결정의 가장 약한 자리다 — 근거와 한계는 [iOS 프라이버시 문서](../ios-privacy.md#meta-sdk와-추적-선언)가
+  어긋나 보이는 것이 이 결정의 가장 약한 자리다 — 근거와 한계는 [iOS 프라이버시 문서](../ios-privacy.md#airbridge-sdk와-추적-선언)가
   진다. App Store의 「추적」 응답은 사용자 판단이다(「사용자 확인 필요」 7).
 
 ### 측정 — 무엇이 Meta에 찍히는가
@@ -284,7 +292,7 @@ ADR-0029 D1의 「같은 PR에서 wiki를 고친다」 규약이고 PR 작성자
 | iOS Release 시뮬레이터 `.app` | 53,260 → 63,064 KB(**+9,804 KB**). 프레임워크 `FBSDKCoreKit` 8,128 · `FBAEMKit` 1,160 · `FBSDKCoreKit_Basics` 316 KB, 호스트 바이너리 +200 KB |
 | Android `app-bundled.apk` | 58,432,327 bytes. **변경 전 값을 재지 않아 증감은 모른다** |
 | 자동 테스트 | unit 1,913 · integration 537 · `pnpm test:android-bundle` 134(정적 검사 I-S1 ~ I-S7 포함) · iOS HostTests 70(그중 `MetaAppEventsTests` 12, skip 0) · Android JVM 19 클래스 실패 0 · 계측 `MetaAppEventsHostTest` `OK (3 tests)` |
-| 값 없는 빌드의 기기 확인 | iOS 시뮬레이터 · Android 에뮬레이터 각 한 대에서 실행 · 재시작 · 로그인 화면까지, 새 시스템 팝업 없음, 앱에서 나간 연결 0. 로그인 뒤 흐름은 수행하지 않았다 — [Meta 앱 이벤트 e2e](../e2e/meta-app-events.md) 「A 결과 기록」 |
+| 값 없는 빌드의 기기 확인 | iOS 시뮬레이터 · Android 에뮬레이터 각 한 대에서 실행 · 재시작 · 로그인 화면까지, 새 시스템 팝업 없음, 앱에서 나간 연결 0. 로그인 뒤 흐름은 수행하지 않았다 — [Meta 앱 이벤트 e2e](../e2e/airbridge-events.md) 「A 결과 기록」 |
 | 가짜 값(`123` / `abc`) 빌드 | iOS: SDK 시작 · URL scheme 없이 예외 없음 · `ep2.facebook.com/v26.0/123/server_domain_infos` 요청 관찰(구현 중 확인이고 e2e 시나리오 B의 정식 실행이 아니다). Android: 빌드와 `BuildConfig` 반영까지만 — 기기에서 실행하지 않았다 |
 
 성능 기록은 [Meta 앱 이벤트 번들 · 앱 용량](../performance/reports/meta-app-events-iphone-17-pro-simulator-01.md)에 있다
@@ -294,7 +302,7 @@ ADR-0029 D1의 「같은 PR에서 wiki를 고친다」 규약이고 PR 작성자
 
 1. **실제 앱 ID · 클라이언트 토큰으로 Meta가 이벤트를 받는 것.** 설치 · 가입 완료 · 레슨 완료가 Meta 이벤트 관리자에
    찍히는지, 광고 관리자에서 설치 수 · 설치당 비용이 보이는지는 한 번도 보지 않았다. 사용자가 값을 넣은 뒤
-   [e2e 시나리오 C](../e2e/meta-app-events.md)로 본다.
+   [e2e 시나리오 C](../e2e/airbridge-events.md)로 본다.
 2. **값 없는 빌드의 「요청 0건」은 좁은 관찰이다.** 시뮬레이터 · 에뮬레이터 각 한 대, 실행부터 로그인 화면 · 재시작까지다.
    로그인 이후(가입 완료 · 유닛 완료)는 사람 손이 필요해 수행하지 않았다. iOS에서는 그 실행의 앱이 다른 외부 요청도 내지
    않아(번들 환경 변수가 없는 워크트리였던 것으로 추정) 앱 자체의 대조 요청이 없다 — 관찰 도구가 동작한다는 것은 맥의 다른

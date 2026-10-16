@@ -27,6 +27,15 @@ dependencyResolutionManagement {
         includeModule('com.facebook.fresco', 'webpsupport')
       }
     }
+    // Airbridge SDK는 Maven Central에 없다. 이 저장소에서는 io.airbridge만, io.airbridge는 이 저장소에서만 받는다.
+    exclusiveContent {
+      forRepository {
+        maven { url = uri('https://sdk-download.airbridge.io/maven') }
+      }
+      filter {
+        includeGroup('io.airbridge')
+      }
+    }
     google()
     mavenCentral()
   }

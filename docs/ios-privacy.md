@@ -18,7 +18,7 @@ SDK 래퍼용 `C56D.1`을 쓰지 않습니다. 근거는
 
 App Store Connect의 공개된 응답과 배포 코드 경로를 대조했다. 아래 7개 항목을 앱 manifest에도 선언한다. 모두 사용자와 연결되고 광고 추적에 사용하지 않는다. 분석 항목은 `PUBLIC_POSTHOG_KEY`로 PostHog가 켜진 배포 설정을 포함한다. SDK 자체 API 선언은 이 표와 별도로 유지한다.
 
-⟨2026-10-13⟩ **표의 두 행에 목적 `Developer Advertising`이 더해졌다** — Meta 앱 이벤트 SDK([ADR-0057](adr/0057-meta-app-events.md)) 때문이다. 이 두 칸은 **코드와 앱 manifest만 고친 것이고 App Store Connect의 응답과는 아직 대조하지 않았다** — 아래 [Meta SDK와 추적 선언](#meta-sdk와-추적-선언).
+⟨2026-10-13⟩ **표의 두 행에 목적 `Developer Advertising`이 더해졌다** — 광고 측정 SDK 때문이다. 처음 더한 것은 Meta 앱 이벤트 SDK([ADR-0057](adr/0057-meta-app-events.md))였고, 같은 날 Airbridge SDK([ADR-0063](adr/0063-airbridge-events.md))로 바뀌었다 — 목적은 그대로 맞다. 이 두 칸은 **코드와 앱 manifest만 고친 것이고 App Store Connect의 응답과는 아직 대조하지 않았다** — 아래 [Airbridge SDK와 추적 선언](#airbridge-sdk와-추적-선언).
 
 | App Store 항목 / manifest 접미사 | 목적 | 코드 근거 |
 | --- | --- | --- |
@@ -27,60 +27,63 @@ App Store Connect의 공개된 응답과 배포 코드 경로를 대조했다. �
 | 대략적인 위치 / `CoarseLocation` | Analytics | PostHog GeoIP 국가·지역·시간대. ADR-0029 D15의 서버 변환 설정 전제 |
 | 기타 사용자 콘텐츠 / `OtherUserContent` | Analytics | `feedback-api.ts` → `submit_feedback`: 선택적 평점·의견·화면/에피소드 맥락 |
 | 사용자 ID / `UserID` | App Functionality, Analytics | Supabase 계정별 저장 및 로그인 후 PostHog identify |
-| 기기 ID / `DeviceID` | App Functionality, **Developer Advertising** ⟨2026-10-13⟩ | `push_devices`의 APNs 토큰과 사용자 연결. Meta SDK 자체 manifest가 `DeviceID`를 선언한다(IDFA는 수집하지 않는다 — 아래 절) |
-| 제품 상호작용 / `ProductInteraction` | App Functionality, Analytics, **Developer Advertising** ⟨2026-10-13⟩ | 서버 진행·학습 날짜·최근 접속 및 PostHog 화면/학습 이벤트. Meta로 가는 앱 설치 · 실행 · 가입 완료 · 레슨 완료 이벤트(`meta-events.ts`) |
+| 기기 ID / `DeviceID` | App Functionality, **Developer Advertising** ⟨2026-10-13⟩ | `push_devices`의 APNs 토큰과 사용자 연결. Airbridge SDK 자체 manifest가 `DeviceID`를 tracking false로 선언한다(IDFV · SDK 생성 ID. IDFA 코드는 SDK에 없다 — 아래 절) |
+| 제품 상호작용 / `ProductInteraction` | App Functionality, Analytics, **Developer Advertising** ⟨2026-10-13⟩ | 서버 진행·학습 날짜·최근 접속 및 PostHog 화면/학습 이벤트. Airbridge로 가는 앱 설치 · 실행 · 가입 완료 · 레슨 완료 이벤트(`airbridge-events.ts`) |
 
-`NSPrivacyTracking = false`이며 각 수집 항목의 tracking도 false다. ~~광고 ID·광고 SDK는 사용하지 않는다.~~ ⟨2026-10-13 — 이 문장은 더는 참이 아니다. 광고 측정 SDK(Meta `FBSDKCoreKit`)가 앱에 들어 있다. IDFA는 수집하지 않고 추적 허용(ATT)을 묻지 않는다 — 아래 [Meta SDK와 추적 선언](#meta-sdk와-추적-선언)⟩ 음성은 기기가 지원하면 온디바이스, 아니면 Apple Speech 서버에서 처리하며 앱 서버/분석에는 음성이나 인식 원문을 보내지 않는다. Apple 프레임워크 자체 수집은 개발자가 공개할 책임이 없다는 [Apple 안내](https://developer.apple.com/app-store/app-privacy-details/)의 “Apple frameworks or services” 기준을 따른다. 온디바이스라고만 안내해서는 안 된다.
+`NSPrivacyTracking = false`이며 각 수집 항목의 tracking도 false다. ~~광고 ID·광고 SDK는 사용하지 않는다.~~ ⟨2026-10-13 — 이 문장은 더는 참이 아니다. 광고 측정 SDK(Airbridge `airbridge-ios-sdk-restricted`)가 앱에 들어 있다. IDFA는 수집하지 않고 추적 허용(ATT)을 묻지 않는다 — 아래 [Airbridge SDK와 추적 선언](#airbridge-sdk와-추적-선언)⟩ 음성은 기기가 지원하면 온디바이스, 아니면 Apple Speech 서버에서 처리하며 앱 서버/분석에는 음성이나 인식 원문을 보내지 않는다. Apple 프레임워크 자체 수집은 개발자가 공개할 책임이 없다는 [Apple 안내](https://developer.apple.com/app-store/app-privacy-details/)의 “Apple frameworks or services” 기준을 따른다. 온디바이스라고만 안내해서는 안 된다.
 
 신고 화면의 7개 항목은 현재 공개 상태와 일치한다(2026-10-01 기준 — 2026-10-13에 더한 `Developer Advertising` 목적 둘은 신고 화면에 아직 없다). 다만 신고 일치가 공개 처리방침의 완결성이나 운영 SaaS 설정을 증명하지는 않는다. 운영 PostHog 프로젝트 632540의 키가 Release 설정과 일치하는지 값 노출 없이 대조했다. `anonymize_ips = true`와 활성 GeoIP 변환 소스(국가·대륙·1단계 행정구역·시간대만 추가)를 MCP로 확인했다. 실제 `entry_screen_viewed` 속성 목록도 이 위치 항목들만 보고한다. 프로젝트의 replay/성능 수집 토글은 켜져 있지만 앱은 PostHogCore의 수동 이벤트만 쓰므로 웹 SDK 자동 수집 기능을 실행하지 않는다. 이번 검토에서는 운영 설정을 변경하지 않았다.
 
-### Meta SDK와 추적 선언
+### Airbridge SDK와 추적 선언
 
-2026-10-13. 광고 측정용 Meta 앱 이벤트 SDK가 Host에 들어왔다. 결정은 [ADR-0057](adr/0057-meta-app-events.md), 값 넣기와 스토어 콘솔 순서는 [운영 안내](meta-app-events.md)가 진다. 여기는 **iOS의 선언이 무엇이고 어디가 약한가**만 적는다.
+2026-10-13. 광고 측정용 Airbridge(MMP) SDK가 Host에 들어 있다 — 같은 날 들어왔던 Meta 앱 이벤트 SDK(ADR-0057)를 대신한다. 결정은 [ADR-0063](adr/0063-airbridge-events.md), 값 넣기 · 대시보드 연동 · 스토어 콘솔 순서는 [운영 안내](airbridge-events.md)가 진다. 여기는 **iOS의 선언이 무엇이고 어디가 약한가**만 적는다.
 
 앱이 하는 것과 하지 않는 것(코드 근거).
 
 | 항목 | 상태 | 근거 |
 | --- | --- | --- |
 | 추적 허용(ATT) 요청 | 하지 않는다 | `NSUserTrackingUsageDescription`이 `Info.plist`에도 `INFOPLIST_KEY_*`에도 없다. 정적 검사 I-S4와 HostTests N-I6이 지킨다 |
-| IDFA 수집 | 하지 않는다 | `Info.plist`의 `FacebookAdvertiserIDCollectionEnabled = false` |
-| 자동 앱 이벤트(설치 · 실행) | 켠다 — **값이 있는 빌드에서만 나간다** | `FacebookAutoLogAppEventsEnabled = true`. 앱 ID · 클라이언트 토큰이 없으면 호스트가 SDK를 시작하지 않는다 |
-| 앱이 보내는 이벤트 | 가입 완료 · 레슨 완료 둘. 파라미터는 콘텐츠 식별자뿐 | `apps/mobile/src/lib/meta-events.ts`. 사용자 ID · 이메일 · 전화번호 · 로그인 수단 없음, 고급 매칭 없음 |
-| SKAdNetwork | 식별자 둘 | `Info.plist`의 `SKAdNetworkItems` — `v9wttpbfk9.skadnetwork` · `n38lu8286q.skadnetwork`. ⚠ Meta 공식 문서와 대조하지 못했다 |
-| URL scheme · `LSApplicationQueriesSchemes` | 없다 | Facebook 로그인 · 공유 · 딥링크를 SDK로 하지 않는다 |
+| IDFA 수집 | 하지 않는다 — **SDK 바이너리에 코드가 없다** | pod이 IDFA · ATT를 빼고 만든 공식 변형 `airbridge-ios-sdk-restricted` 4.11.1이다. `otool -L`에 AdSupport · AppTrackingTransparency 링크가 없고 `advertisingIdentifier` 문자열이 0이다(2026-10-13 배포물 조회) |
+| IDFV · SDK 생성 ID | 쓴다 | 바이너리에 `identifierForVendor`가 있다. SDK manifest의 `DeviceID`(tracking false)가 이것이다 |
+| Apple Ads 귀속 | 쓴다 | AdServices(weak 링크)의 `attributionTokenWithError:` — 사용자 허용이 필요 없는 Apple의 경로다 |
+| SKAdNetwork | SDK가 전환값을 갱신한다. **`SKAdNetworkItems`는 없다** | 그 키는 광고를 **보여 주는** 앱의 설정이고 광고되는 앱에는 필요 없다(Apple 「configuring an advertised app」). Duru는 광고를 띄우지 않는다. ADR-0057이 적었던 Meta 식별자 둘은 근거가 틀려 지웠다(ADR-0063 D13) |
+| 자동 이벤트(설치 · 실행 · 세션) | 켠다 — **값이 있는 빌드에서만 나간다** | 옵션 기본값. App Name · App SDK Token이 없으면 호스트가 `initializeSDK`를 부르지 않는다 |
+| 앱이 보내는 이벤트 | 가입 완료 · 레슨 완료 둘. 속성은 콘텐츠 식별자뿐 | `apps/mobile/src/lib/airbridge-events.ts`. 사용자 ID · 이메일 · 전화번호 · 로그인 수단 없음, `setUserID` 등 사용자 식별 기능 미사용 |
+| 지연 딥링크 조회 | ⚠ 값이 있는 빌드에서 시작 때 요청이 나간다 | 앱은 딥링크를 쓰지 않는다. 가짜 값 빌드에서 `tracking-link.airbridge.io` 연결을 관찰했고 붙여넣기 허용 팝업은 뜨지 않았다. 끄는 옵션은 확인하지 못했다 |
+| URL scheme · Associated Domains · `LSApplicationQueriesSchemes` | 없다 | 딥링크 · 로그인 · 공유를 SDK로 하지 않는다 |
 
-**앱 manifest** — `NSPrivacyTracking = false`를 유지하고, `ProductInteraction` · `DeviceID`의 목적에 `NSPrivacyCollectedDataTypePurposeDeveloperAdvertising`을 더했다. 두 항목의 tracking은 false 그대로다.
+**앱 manifest** — 고치지 않았다. `NSPrivacyTracking = false`이고, `ProductInteraction` · `DeviceID`의 목적에 `NSPrivacyCollectedDataTypePurposeDeveloperAdvertising`이 있다(ADR-0057 때 더한 것 — 광고 성과 측정이라 그대로 맞다). 두 항목의 tracking은 false다.
 
-**SDK manifest** — 손대지 않는다(SDWebImage와 같은 원칙: SDK의 선언을 앱이 대신 적거나 고치지 않는다). `FBSDKCoreKit` 18.1.1이 싣는 선언은 다음과 같다(2026-10-13에 배포물을 받아 읽었다).
+**SDK manifest** — 손대지 않는다(SDWebImage와 같은 원칙: SDK의 선언을 앱이 대신 적거나 고치지 않는다). `airbridge-ios-sdk-restricted` 4.11.1이 싣는 선언은 다음과 같다(설치된 pod의 파일을 읽었고, Release 시뮬레이터 빌드의 `Host.app/Frameworks/Airbridge.framework/PrivacyInfo.xcprivacy`로 실리는 것을 확인했다 — 2026-10-13).
 
-- `NSPrivacyTracking = true`
-- `NSPrivacyTrackingDomains = [ep1.facebook.com]`
-- `DeviceID` — tracking true, 목적 `ThirdPartyAdvertising`
-- `OtherDataTypes`(Analytics) · `CrashData`
+- `NSPrivacyTracking = false`
+- `NSPrivacyTrackingDomains = []`
+- 수집 항목 다섯 — `ProductInteraction` · `AdvertisingData` · `OtherUsageData` · `DeviceID` · `OtherDataTypes`. 모두 Linked true · **Tracking false** · 목적 Analytics · App Functionality
 - required-reason API: UserDefaults `CA92.1`
-- 함께 오는 `FBAEMKit` · `FBSDKCoreKit_Basics`의 manifest는 tracking false
 
-**앱은 false, SDK는 true — 이 조합을 고른 근거**(계약 단계가 고른 기본값이고 사용자 확인 전이다). 이 앱은 ATT를 요청하지 않고 IDFA를 수집하지 않으며 사용자를 식별할 값을 Meta에 보내지 않는다. ATT 허용이 없는 앱에서 iOS는 manifest에 선언된 추적 도메인으로의 접속을 막는 것으로 알려져 있다(사전 지식이고 관찰이 아니다). 가짜 값 빌드에서 관찰한 요청은 추적 도메인이 아닌 `ep2.facebook.com`으로 나갔다. ⚠ **IDFA가 없다는 사실만으로 「추적 아님」이 확정되지는 않는다** — Apple의 정의는 광고 측정을 위해 앱의 데이터를 다른 회사의 데이터와 잇는 것을 포함한다.
+(일반판 `airbridge-ios-sdk`는 `NSPrivacyTracking = true` · 추적 도메인 15개 · `DeviceID` tracking true를 선언한다 — 그래서 restricted를 골랐다.)
+
+**앱과 SDK가 모두 false — ADR-0057 때의 엇갈림이 사라졌다.** Meta SDK는 tracking true와 추적 도메인을 선언해 앱의 false와 어긋났다. 지금은 두 선언이 같은 방향이고, SDK 바이너리에 IDFA · ATT 코드가 없다는 것이 그 선언을 받친다. ⚠ **그래도 「추적 아님」이 확정되지는 않는다** — Apple의 정의는 광고 측정을 위해 앱의 데이터를 다른 회사의 데이터와 잇는 것을 포함하고, Airbridge는 설치를 광고 매체(Meta · Google · TikTok)의 데이터와 잇는 서비스다. IDFA 없이 하는 비식별 매칭을 Apple이 어떻게 보는지는 이 저장소가 판정할 수 없다.
 
 **한계 — 확인하지 못한 것.**
 
-1. **위 근거의 뒷부분은 관찰이 아니다.** iOS가 `ep1.facebook.com` 접속을 실제로 막는지는 이 저장소에서 보지 않았다. 관찰한 것은 `ep2.facebook.com` 요청 한 건뿐이다.
-2. **앱 manifest의 `NSPrivacyTracking = false`가 SDK의 true와 함께 심사를 통과하는지 모른다.** Xcode의 Privacy Report는 앱과 SDK의 manifest를 합쳐 보여 주므로 보고서에는 tracking과 추적 도메인이 나타날 것이다. 서명한 Archive로 만들어 보지 않았다.
-3. **App Store Connect의 「추적」 질문에 어떻게 답할지는 정해지지 않았다** — 사용자 판단이다([ADR-0057](adr/0057-meta-app-events.md) 「사용자 확인 필요」 7). 「추적함」으로 답하면 ATT 요청이 따라와야 하고 그것은 「팝업을 띄우지 않는다」는 결정과 부딪힌다.
-4. **Meta가 받은 데이터를 자기 쪽에서 무엇과 잇는지는 앱이 통제하지 못한다.** 앱이 아는 것은 보내는 값까지다.
-5. 값이 없는 빌드는 SDK를 시작하지 않지만 **SDK의 manifest와 프레임워크는 그대로 `.app`에 실린다.** 값의 유무가 선언을 바꾸지 않는다.
+1. **App Store Connect의 「추적」 질문에 어떻게 답할지는 정해지지 않았다** — 사용자 판단이다([ADR-0063](adr/0063-airbridge-events.md) 「사용자 확인 필요」 1). 「추적함」으로 답하면 ATT 요청이 따라와야 하고 그것은 「팝업을 띄우지 않는다」는 결정과 부딪힌다.
+2. **서명한 Archive의 Privacy Report로 보지 않았다.** SDK manifest가 `.app`에 실리는 것은 시뮬레이터 Release 빌드에서만 확인했다.
+3. **Airbridge가 받은 데이터를 매체와 무엇으로 잇는지는 앱이 통제하지 못한다.** 앱이 아는 것은 보내는 값까지다.
+4. 값이 없는 빌드는 SDK를 시작하지 않지만 **SDK의 manifest와 프레임워크는 그대로 `.app`에 실린다.** 값의 유무가 선언을 바꾸지 않는다.
+5. **SDK가 선언하는 `AdvertisingData` · `OtherUsageData` · `OtherDataTypes`를 앱의 응답에 더할지**는 값이 있는 빌드에서 SDK가 실제로 무엇을 보내는지 본 뒤 정한다. 지금은 더하지 않았다.
 
 **App Store Connect에서 바뀌는 칸**(아직 고치지 않았다).
 
-- 앱이 수집하는 개인정보 → **제품 상호작용** · **기기 ID**의 용도에 **개발자의 광고 또는 마케팅** 추가.
-- 「추적」 질문 — 위 3.
-- SDK가 선언하는 `CrashData` · `OtherDataTypes`를 앱의 응답에 더할지는 값이 있는 빌드에서 SDK가 실제로 무엇을 보내는지 본 뒤 정한다. 지금은 더하지 않았다.
+- 앱이 수집하는 개인정보 → **제품 상호작용** · **기기 ID**의 용도에 **개발자의 광고 또는 마케팅** 추가(ADR-0057 때 바꿨다면 그대로).
+- 「추적」 질문 — 위 1.
+- 공유 대상(제3자)이 Meta에서 Airbridge(AB180)로 바뀐다.
 
-**공개 개인정보처리방침에 더할 문안**(초안 — **공개 페이지에는 반영하지 않았다**. 아래 절의 문안들과 함께 게시한다).
+**공개 개인정보처리방침에 더할 문안**(초안 — **공개 페이지에는 반영하지 않았다**. 아래 절의 문안들과 함께 게시한다. ADR-0057 때의 Meta 문안을 대신한다).
 
-> Advertising measurement. We use the Meta (Facebook) SDK to measure how our ads perform. When you install or open the App, complete sign-up, or finish certain lessons, the SDK sends these events to Meta together with device-level information such as device model, operating system version, and an identifier generated by the SDK. On Android this includes the advertising ID, which you can reset or delete in your device settings. We do not request permission to track you across other companies' apps on iOS, we do not collect the iOS advertising identifier (IDFA), and we do not send your name, email address, phone number, or account ID to Meta.
+> Advertising measurement. We use Airbridge, a mobile measurement service provided by AB180, to measure how our ads on platforms such as Meta, Google, TikTok, and Apple perform. When you install or open the App, complete sign-up, or finish certain lessons, the Airbridge SDK sends these events to Airbridge together with device-level information such as device model, operating system version, and identifiers generated by the SDK or by the operating system for this app. On Android this includes the advertising ID, which you can reset or delete in your device settings. We do not request permission to track you across other companies' apps on iOS, we do not collect the iOS advertising identifier (IDFA), and we do not send your name, email address, phone number, or account ID to Airbridge.
 
-Section 3(제3자) 표에는 Meta Platforms 행을 더한다 — 기능 「advertising measurement」, 정보 「app install and usage events, device information, advertising ID (Android)」. ⚠ 「device model, operating system version, an identifier generated by the SDK」는 SDK의 일반 동작에 대한 사전 지식으로 적은 것이고 요청 본문을 열어 확인하지 않았다 — 게시 전에 값이 있는 빌드에서 대조한다.
+Section 3(제3자) 표에는 Airbridge(AB180) 행을 더한다 — 기능 「advertising measurement and attribution」, 정보 「app install and usage events, device information, app-scoped identifiers, advertising ID (Android)」. Meta Platforms 행(ADR-0057 때의 초안)은 쓰지 않는다. ⚠ 「device model, operating system version, identifiers」는 SDK manifest와 공개 문서에서 옮긴 것이고 요청 본문을 열어 확인하지 않았다 — 게시 전에 값이 있는 빌드에서 대조한다. 매체(Meta · Google · TikTok)를 제3자로 따로 적을지는 사용자 판단이다.
 
 ### 공개 개인정보처리방침에 반영할 문안
 
@@ -222,8 +225,9 @@ LynxService podspec의 Image 의존성 한 필드만 조정한 로컬 명세를 
   WebP 프레임 진행·일시 정지·재개 및 원본·메모리 제거 후 디스크 캐시 재로딩을 확인합니다.
 - 서명 없는 Release Archive에서 앱 자체 manifest와 `SDWebImage.bundle`,
   `MJRefresh.Privacy.bundle`의 SDK manifest가 모두 포함되는지 확인합니다.
-  ⟨2026-10-13⟩ Meta SDK의 프레임워크 셋(`FBSDKCoreKit` · `FBAEMKit` · `FBSDKCoreKit_Basics`)이 들어온 뒤로는 이 확인을
-  다시 하지 않았습니다 — 다음 Archive에서 세 프레임워크 안의 manifest도 함께 봅니다.
+  ⟨2026-10-13⟩ 광고 측정 SDK가 들어온 뒤로는 이 확인을 Archive로 다시 하지 않았습니다(처음 Meta의 프레임워크 셋, 같은 날
+  Airbridge의 `Airbridge.framework` 하나로 바뀌었다). 다음 Archive에서 `Airbridge.framework/PrivacyInfo.xcprivacy`도 함께
+  봅니다 — 시뮬레이터 Release 빌드에 실리는 것까지는 확인했습니다.
 - SDK manifest를 plist로 읽어 설치된 SDK 원본의 값 전체와 비교합니다.
 
 검증 기록은 [SDK manifest 보고서](performance/reports/ios-sdk-privacy-manifest-archive-01.md)를

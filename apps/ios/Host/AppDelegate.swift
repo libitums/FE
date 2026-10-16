@@ -7,6 +7,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   private var performanceCapture: LynxPerformanceCapture?
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    // Airbridge 앱 이벤트(ADR-0063). Airbridge 문서가 실행 끝 처리의 맨 위를 요구한다.
+    // 설정이 없으면 SDK를 한 줄도 부르지 않는다 — 이 앱은 이 SDK가 없을 때와 같다.
+    if let config = AirbridgeEventsConfig.fromBundle() {
+      AirbridgeEvents.start(config)
+    }
+
     // WebP 디코더는 Podfile에 들어 있지만(LynxService/Image) 등록하지 않으면 쓰이지 않는다.
     // 등록이 없으면 `<image>`가 WebP를 받아 캐시까지 해 놓고 **아무것도 그리지 않는다** —
     // 오류 이벤트도 없다. Explorer는 이 등록을 스스로 하므로 개발 루프에서는 드러나지 않는다.
@@ -15,11 +21,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // 알림을 눌러 앱이 켜진 경우에도 그 응답을 받으려면 실행이 끝나기 전에 대리자를 둬야 한다(ADR-0034).
     UNUserNotificationCenter.current().delegate = PushNotificationHub.shared
-
-    // Meta 앱 이벤트(ADR-0057). 설정이 없으면 SDK를 한 줄도 부르지 않는다 — 이 앱은 이 SDK가 없을 때와 같다.
-    if let config = MetaAppEventsConfig.fromBundle() {
-      MetaAppEvents.start(config, application: application, launchOptions: launchOptions)
-    }
 
     let environment = LynxEnv.sharedInstance()
     performanceCapture = LynxPerformanceCapture.makeIfEnabled(

@@ -10,6 +10,14 @@
   `bundled`로 본 것(TalkBack 흐름 · 스플래시 반복 · 접근성 더블탭)은 **release와 같은 dex의 관찰이다 — 그 빌드에 파일이 있었을 때.** 보존된 APK로 그것을 확인한 것은 e2e의 TalkBack 흐름(E7)과 리뷰 뒤의 판정 실행이고, 나머지는 Gradle 로그 수준이다.
   ⚠ **최종 검증은 통과했다(주석 있음 — HEAD `28c307e4`, 제품 결함 0). 리뷰는 조건부 PASS였고(HEAD `6eb51a61` — 차단 0 · P1 4건), 재리뷰 r02가 PASS를 냈다(HEAD `9965eee2` — P1 네 건 닫힘 · 새 P0 · P1 없음).** **머지 전 사용자 항목은 없다. 출시 전 사용자 항목이 다섯 남았다**(「검증」의 「리뷰와 P1의 처리」). 최종 검증이 다시 돌리지 않은 것은 「미확인 · 후속」 10에 있다.
 - 날짜: 2026-10-07(사용자 결정) · 기록 2026-10-08(e2e 실행이 2026-10-08 00:25에 끝났다) · 정정 2026-10-08(accessibility 단계의 결과와 e2e 절차 · 도구 정정 `1b99f08f`를 반영 — 결정은 바뀌지 않았다) · 정정 2026-10-08(최종 검증의 결과와 accessibility 권고의 반영 `28c307e4`를 반영, 「release와 `bundled`의 dex」 문면을 바로잡음 — 결정은 바뀌지 않았다) · 정정 2026-10-08(절차 문서의 접근성 활성화 단계 정정 `126325d4`와 그 절차 확인을 반영 — 결정은 바뀌지 않았다) · 정정 2026-10-08(리뷰(조건부 PASS, HEAD `6eb51a61`)의 P1 · P2와 test-runner의 재현을 반영 — 「release와 `bundled`의 dex」 문면을 다시 바로잡고 사용자 결정 U4 · U5를 기록 — D1 ~ D5의 결정 내용은 바뀌지 않았다) · 정정 2026-10-08(재리뷰 r02(PASS, HEAD `9965eee2`)의 P2 셋을 반영 — 최종 검증이 견준 `bundled`의 출처를 로그가 보여 주는 대로 적음 — 결정은 바뀌지 않았다)
+- 적용 기록(결정을 바꾸지 않는다): ⟨2026-10-13⟩ **[ADR-0063](0063-airbridge-events.md)(Airbridge SDK)이 D5의 산출물 가드 숫자 셋을 바꿨다.**
+  Airbridge AAR의 소비자 R8 규칙 `-keep class com.facebook.** { *; }`가 같은 패키지의 Fresco · SoLoader 전체를 축소에서 빼(facebook-core의 규칙에는 없던 전체 keep이다)
+  release AAB의 dex가 3,211,016 → 4,116,320 bytes가 되어 **A3의 한도 4,000,000을 넘었고, 사용자가 한도를 4,300,000으로 올리는 것을 승인했다(2026-10-13).**
+  프로젝트 규칙(D2의 9줄)은 그대로다 — 소비자 규칙을 앱에서 무효로 만들 수단을 AGP 8.9.2에서 확인하지 못했다.
+  **A1**의 ABI별 `.so` 개수는 `libairbridgelib.so` 하나씩 늘어 16 · 16 · 16 · 15 → **17 · 17 · 17 · 16**이다(64비트 `.so` 31 → 33, 16 KB 정렬 실패 0).
+  **A4**의 `@LynxMethod` 호스트 모듈 수는 11 → **12**다 — **ADR-0057(#242)의 `MetaAppEventsModule` 때부터 12였어야 했다.** 이 가드는 `pnpm verify` 밖이라 CI가 잡지 못했다.
+  다시 빌드한 산출물에서 A1 ~ A6 · A8이 통과했고 A7은 `BUNDLETOOL_JAR`가 없어 건너뛰었다 — 따로 잰 arm64 기기 다운로드는 17,077,710 → 17,359,578 bytes(한도 18,000,000 안).
+  같은 원인으로 `native-alignment.artifacts.mjs` NA3의 기대(64비트 `.so`)를 31 → 33으로 고쳤다(정렬 실패 0). 맥락 · D4의 「31개」는 그때의 값이다.
 - 다루는 축: Android 출시 산출물(release AAB)의 코드 축소 · 난독화 · 리소스 축소 여부 · 프로젝트 R8 규칙의 범위와 근거 수준 · `bundled` 변형이 그 설정을 물려받는가 ·
   출시 산출물이 싣는 ABI · 축소가 되돌아가지 않게 하는 검사
 - 이어받는 결정: [ADR-0046](0046-android-play-release.md)(Android 출시 설정 — 이 ADR은 그 위에 선다. D4 「서명은 Gradle에 넣지 않는다」 · D6 「16 KB로 다시 빌드한 AAR 9개」 · D7 「정렬 게이트」가 그대로다),
@@ -139,7 +147,7 @@
 | `devtools/android-bundle/mapping-survival.mjs` | — | 판정 순수 함수 `survivalIssues` — 「이름이 바뀌어도 살아 있다」를 본다. **test-design이 `28c307e4`에서 새로 만든 검사 보조 모듈이다**(`mappingIssues`는 이름 변경을 위반으로 보고해 「살아 있다」를 표현하지 못한다). 구현 소유 모듈 `release-shrink.mjs`는 그대로다 |
 | `release-shrink.unit.test.mjs` | `pnpm test:android-bundle` → **`pnpm verify` 안** | 위 함수의 단위 테스트(U1 ~ U12 + 가장자리, `survivalIssues`의 U13 ~ U15) |
 | `release-shrink.integration.test.mjs` | **`pnpm verify` 안**(저장소 파일과 `vendor-maven` AAR만 읽는다) | I1 ABI를 건드리는 선언 없음 · `minifyEnabled`는 release에만 · `bundled`는 `initWith release` / I2 release의 minify 설정 · 리소스 축소 없음 / I3 vendor Lynx AAR의 `CalledByNative` 어노테이션이 전부 규칙으로 덮임 / I4 `proguard-rules.pro` = 9줄 |
-| `release-shrink.artifacts.mjs` | **`pnpm verify` 밖**(AAB · APK가 필요하다) | A1 release AAB의 ABI 4개 / A2 debug APK 4 ABI · 축소 안 됨 / A3 dex 1개 · 4,000,000 미만 · `proguard.map` 있음 / A4 네이티브 · 매니페스트가 이름으로 찾는 것이 매핑에 남음 / A5 `bundled` dex 1개 · 4 ABI / A6 내장 번들이 소스와 같음 / A7 네 기기 스펙의 다운로드가 각각 18,000,000 미만 / **A8 접근성 클래스가 축소에서 살아남음**(`28c307e4` — 단언 목록과 한계는 「검증」의 「최종 검증」) |
+| `release-shrink.artifacts.mjs` | **`pnpm verify` 밖**(AAB · APK가 필요하다) | A1 release AAB의 ABI 4개 / A2 debug APK 4 ABI · 축소 안 됨 / A3 dex 1개 · 4,000,000 미만(⟨2026-10-13⟩ **4,300,000 미만** — 위 「적용 기록」) · `proguard.map` 있음 / A4 네이티브 · 매니페스트가 이름으로 찾는 것이 매핑에 남음 / A5 `bundled` dex 1개 · 4 ABI / A6 내장 번들이 소스와 같음 / A7 네 기기 스펙의 다운로드가 각각 18,000,000 미만 / **A8 접근성 클래스가 축소에서 살아남음**(`28c307e4` — 단언 목록과 한계는 「검증」의 「최종 검증」) |
 
 실행법은 [Android 호스트 README](../../apps/android/README.md#코드-축소r8와-난독화)가 진다. A7은 `BUNDLETOOL_JAR`가 없으면 건너뛰고 **건너뜀은 통과로 세지 않는다.**
 
