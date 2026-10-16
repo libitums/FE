@@ -15,7 +15,7 @@ import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 // 안내 동안 낭독에서 가려지고, 구획 자리를 재는 목록에 든다. 구획 안쪽 동작은
 // `CatalogMapSections.ui.test.tsx`가 봅니다.
 
-const lessonKeys = ["S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"];
+const lessonKeys = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"];
 const titles = [
   "익선동 골목 어귀 편의점",
   "익선 게스트하우스 프런트",
@@ -23,7 +23,10 @@ const titles = [
 ];
 const ids = ["u01-water", "u02-checkin", "u03-mina"];
 
-function catalogProps(onStartCover: (episodeId: string) => void = vi.fn()): JourneyMapCatalogProps {
+function catalogProps(
+  onStartCover: (episodeId: string) => void = vi.fn<(episodeId: string) => void>(),
+  progress: JourneyMapCatalogProps["progress"] = {},
+): JourneyMapCatalogProps {
   return {
     sections: ids.map((episodeId, i) => ({
       kind: "catalog-ready" as const,
@@ -34,7 +37,7 @@ function catalogProps(onStartCover: (episodeId: string) => void = vi.fn()): Jour
       finalKey: "RP",
       completionKeys: ["RP"],
     })),
-    progress: {},
+    progress,
     onStartCover,
     onStartUnit: vi.fn<(episodeId: string, unitKey: string) => void>(),
   };
@@ -115,6 +118,29 @@ describe("JourneyMapScreen catalog slot", () => {
 
     expect(onStartCover).toHaveBeenCalledTimes(1);
     expect(onStartCover).toHaveBeenCalledWith("u01-water");
+  });
+
+  test("UCM1. 문화 확인 노드는 Lesson 9로 서고 진행에 따라 잠김 · 열림 · 끝이 다른 레슨과 같은 모양이다", () => {
+    const node = () => screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-CULT");
+    const base = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7"];
+    const states = [
+      { done: base, status: "default" },
+      { done: [...base, "S8"], status: "available" },
+      { done: [...base, "S8", "CULT"], status: "clear" },
+    ];
+
+    for (const { done, status } of states) {
+      const { unmount } = render(
+        mapScreen({
+          catalog: catalogProps(vi.fn<(episodeId: string) => void>(), { "u01-water": done }),
+          completedEpisodeFinalIds: ["tutorial-final-test"],
+        }),
+      );
+      expect(node()).toHaveAttribute("data-status", status);
+      expect(node().getAttribute("accessibility-label") ?? "").toMatch(/^Episode 1\. Lesson 9\b/);
+      expect(screen.getAllByText("Lesson 9").length).toBeGreaterThan(0);
+      unmount();
+    }
   });
 
   test("UJ4. 첫 유닛 안내가 떠 있는 동안 카탈로그를 감싼 상자는 낭독에서 가려진다", () => {
