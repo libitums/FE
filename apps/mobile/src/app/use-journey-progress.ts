@@ -1,6 +1,6 @@
 // 여정 진행과 연속 학습 상태입니다. 미전송 기록·계정별 복구·재시도는 journey-progress-sync가 담당합니다.
 
-import type { CatalogProgress } from "../lib/catalog-progress";
+import type { CatalogCompletionKeysOf, CatalogProgress } from "../lib/catalog-progress";
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { localDayFrom } from "../lib/progress-api";
@@ -25,6 +25,7 @@ import { progressUserId } from "./pending-learning-progress";
 export function useJourneyProgress(
   journeySeed: AppJourneySeed,
   initialCompletedEpisodeIntroIds: readonly EpisodeIntroUnitId[],
+  completionKeysOf: CatalogCompletionKeysOf,
 ) {
   const [completedStepCount, setCompletedStepCount] = useState(journeySeed.completedStepCount);
   const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
@@ -179,7 +180,7 @@ export function useJourneyProgress(
     onStreakCelebrated: () => setStreakCelebration(false),
     episodeSurvey: recordingDay ? null : episodeSurvey,
     onEpisodeSurveyClosed: () => setEpisodeSurvey(null),
-    trophyCount: trophyCountFrom(journeyMapSections, state),
+    trophyCount: trophyCountFrom(journeyMapSections, state, completionKeysOf),
     syncFromServer,
   };
 }

@@ -2,10 +2,15 @@
 
 import {
   CATALOG_INTRO_KEY,
+  DEFAULT_CATALOG_COMPLETION,
   isCatalogEpisodePassed,
   isCatalogUnitDone,
 } from "../../lib/catalog-progress";
-import type { CatalogProgress, CatalogUnitKey } from "../../lib/catalog-progress";
+import type {
+  CatalogCompletionKeysOf,
+  CatalogProgress,
+  CatalogUnitKey,
+} from "../../lib/catalog-progress";
 import type { CatalogEntry } from "../../lib/episode-catalog";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
@@ -37,6 +42,7 @@ export function catalogMapSectionsOf(
         ...base,
         lessonKeys: entry.episode.units.map((unit) => unit.id),
         finalKey: entry.episode.finalTest.id,
+        completionKeys: entry.episode.completion?.requires ?? [entry.episode.finalTest.id],
       };
     }
     return {
@@ -45,6 +51,13 @@ export function catalogMapSectionsOf(
       reason: entry.status === "pending" ? "pending" : entry.reason,
     };
   });
+}
+
+/** 준비된 구획은 그 완료 키, 모르는 id · 준비 안 된 구획은 `DEFAULT_CATALOG_COMPLETION`. */
+export function catalogCompletionKeysOf(
+  _sections: readonly CatalogMapSection[],
+): CatalogCompletionKeysOf {
+  return () => DEFAULT_CATALOG_COMPLETION;
 }
 
 const SAFE_SELECTOR_CHAR = /^[A-Za-z0-9-]$/;

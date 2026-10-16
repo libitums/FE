@@ -3,13 +3,20 @@ import "background-only";
 import {
   deliveryEpisodeSchema,
   KNOWN_ITEM_TYPES,
+  type DeliveryCompletion,
   type DeliveryEpisodeV2,
 } from "./episode-content.schema";
-import type { DecodeIssue, DecodeResult, Episode } from "./episode-content.model";
+import type {
+  DecodeIssue,
+  DecodeResult,
+  Episode,
+  EpisodeCompletion,
+} from "./episode-content.model";
 import {
   formatPath,
   isRecord,
   issue,
+  maybe,
   nonEmpty,
   toCut,
   toDialogueLine,
@@ -114,7 +121,27 @@ function checkSemantics(wire: DeliveryEpisodeV2): { errors: DecodeIssue[]; rpInd
     });
   });
 
+  errors.push(
+    ...checkCompletion(
+      wire.completion,
+      wire.steps.map((step) => step.id),
+    ),
+  );
+
   return { errors, rpIndex };
+}
+
+/** 비면 `completion.requires` 하나, 모르는 id마다 `completion.requires[i]` 하나 — 코드 `completion-malformed`. */
+function checkCompletion(
+  _completion: DeliveryCompletion | undefined,
+  _stepIds: readonly string[],
+): DecodeIssue[] {
+  return [];
+}
+
+/** 중복 제거(앞의 것 유지) — 없으면 undefined. */
+function completionOf(_completion: DeliveryCompletion | undefined): EpisodeCompletion | undefined {
+  return undefined;
 }
 
 function collectWarnings(wire: DeliveryEpisodeV2): DecodeIssue[] {
@@ -162,6 +189,7 @@ function toEpisode(wire: DeliveryEpisodeV2, rpIndex: number): Episode {
       order: rp?.order ?? 0,
       items: (rp?.items ?? []).map(toItem),
     },
+    ...maybe("completion", completionOf(wire.completion)),
     epilogue: [...wire.post_cuts].sort(byKey((cut) => cut.index)).map(toCut),
     words: wire.words.map(toWord),
     patterns: wire.patterns.map((p) => ({

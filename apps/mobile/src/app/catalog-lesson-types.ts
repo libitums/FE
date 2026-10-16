@@ -27,6 +27,8 @@ export type CatalogActivityForm = CatalogActivity["form"];
 export type CatalogActivityScoring = "graded" | "ungraded";
 
 export type CatalogSkipReason =
+  /** 유형에 맞는 학습 화면이 아직 없음. */
+  | "screen-pending"
   | "no-options"
   | "no-source"
   | "audio-missing"

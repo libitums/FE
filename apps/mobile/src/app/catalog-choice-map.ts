@@ -33,12 +33,12 @@ const slotOfFour = (index: number): 0 | 1 | 2 | 3 =>
  * 그 문항의 재생 출처입니다. 학습 문항의 음성은 아직 연결하지 않아(콘텐츠의 `audio_url`을 쓰지 않습니다 —
  * 컷 · 최종 테스트만 버킷 음성을 씁니다, ADR-0060) 늘 `null`입니다. 학습 문항 오디오 작업이 이 자리를 채웁니다.
  */
-function audioSourceOf(_item: ItemOf<"LISTEN_SELECT">): string | null {
+function audioSourceOf(_item: ItemOf<"LISTEN_SELECT" | "MIN_PAIR_AB">): string | null {
   return null;
 }
 
 export function listeningItemOf(
-  item: ItemOf<"LISTEN_SELECT">,
+  item: ItemOf<"LISTEN_SELECT" | "MIN_PAIR_AB">,
   port: CatalogItemPort,
 ): CatalogMappedItem {
   const options = item.options;
@@ -147,6 +147,30 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
     choices,
     answerIndex: answer === "" ? -1 : choices.indexOf(answer),
   });
+}
+
+/** 문장 속 빈칸을 고르는 단어 선택입니다(CLOZE_CHOICE). */
+export function clozeChoiceItemOf(
+  item: ItemOf<"CLOZE_CHOICE">,
+  _port: CatalogItemPort,
+): CatalogMappedItem {
+  return skippedItem(item, "malformed");
+}
+
+/** 상대 말에 답하는 보기 고르기입니다(REPLY_SELECT) — 상대 말을 글로 보입니다. */
+export function replySelectItemOf(
+  item: ItemOf<"REPLY_SELECT">,
+  _port: CatalogItemPort,
+): CatalogMappedItem {
+  return skippedItem(item, "malformed");
+}
+
+/** 조사를 고치거나 채우는 단어 선택입니다(PARTICLE_FILL · PARTICLE_SWAP). */
+export function particleItemOf(
+  item: ItemOf<"PARTICLE_FILL" | "PARTICLE_SWAP">,
+  _port: CatalogItemPort,
+): CatalogMappedItem {
+  return skippedItem(item, "malformed");
 }
 
 /**

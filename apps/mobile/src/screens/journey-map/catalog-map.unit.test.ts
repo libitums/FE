@@ -83,7 +83,7 @@ describe("catalogMapSectionsOf", () => {
       "u03-mina",
     ]);
     const first = readySection(sections, 0);
-    expect(first.lessonKeys).toEqual(["S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"]);
+    expect(first.lessonKeys).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"]);
     expect(first.finalKey).toBe("RP");
     expect(first.title).toBe(realCatalog[0]?.title);
     expect(first.title).toBe("익선동 골목 어귀 편의점");
@@ -101,6 +101,7 @@ describe("catalogMapSectionsOf", () => {
         title: "제목 a",
         lessonKeys: a.episode.units.map((unit) => unit.id),
         finalKey: a.episode.finalTest.id,
+        completionKeys: [a.episode.finalTest.id],
       },
       {
         kind: "catalog-unavailable",
@@ -232,15 +233,15 @@ describe("잠긴 노드와 진행", () => {
   // 수집 단계에서 던지지 않도록 테스트 안에서 만듭니다.
   const u01Section = () => readySection(catalogMapSectionsOf(realCatalog), 0);
 
-  test("CM8′. 레슨 여덟 + 최종 하나, 순서 · 번호 · 상태가 맞다", () => {
+  test("CM8′. 레슨 아홉 + 최종 하나, 순서 · 번호 · 상태가 맞다", () => {
     const u01 = u01Section();
     const nodes = catalogUnitNodesOf(u01, {});
 
-    expect(nodes).toHaveLength(9);
-    expect(nodes.slice(0, 8).map((node) => node.role)).toEqual(Array(8).fill("lesson"));
-    expect(nodes.slice(0, 8).map((node) => node.ordinal)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-    expect(nodes.slice(0, 8).map((node) => node.key)).toEqual(u01.lessonKeys);
-    expect(nodes[8]).toEqual({ key: "RP", role: "final", ordinal: 9, status: "locked" });
+    expect(nodes).toHaveLength(10);
+    expect(nodes.slice(0, 9).map((node) => node.role)).toEqual(Array(9).fill("lesson"));
+    expect(nodes.slice(0, 9).map((node) => node.ordinal)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(nodes.slice(0, 9).map((node) => node.key)).toEqual(u01.lessonKeys);
+    expect(nodes[9]).toEqual({ key: "RP", role: "final", ordinal: 10, status: "locked" });
     expect(nodes.every((node) => node.status === "locked")).toBe(true);
   });
 
@@ -248,16 +249,16 @@ describe("잠긴 노드와 진행", () => {
     const u01 = u01Section();
     expect(catalogSectionProgress(u01, { "u01-water": ["intro", "S1", "X"] })).toEqual({
       completed: 2,
-      total: 10,
+      total: 11,
     });
-    expect(catalogSectionProgress(u01, {})).toEqual({ completed: 0, total: 10 });
+    expect(catalogSectionProgress(u01, {})).toEqual({ completed: 0, total: 11 });
   });
 
   test("CM9. 다른 에피소드의 진행은 세지 않는다", () => {
     const u01 = u01Section();
     expect(catalogSectionProgress(u01, { "u02-checkin": ["intro", "S1"] })).toEqual({
       completed: 0,
-      total: 10,
+      total: 11,
     });
   });
 });
@@ -268,12 +269,12 @@ describe("사슬 잠금 — 표지 → 레슨들 → 최종", () => {
     Object.fromEntries(
       catalogUnitNodesOf(u01Section(), progress).map((node) => [node.key, node.status]),
     );
-  const allKeys = ["S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "RP"];
+  const allKeys = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"];
 
   test("CM-U1. 진행이 없으면 레슨 · 최종이 전부 잠겨 있다", () => {
     const statuses = statusesOf({});
 
-    expect(allKeys.map((key) => statuses[key])).toEqual(Array(9).fill("locked"));
+    expect(allKeys.map((key) => statuses[key])).toEqual(Array(10).fill("locked"));
     expect(catalogUnitStatus(u01Section(), "S1", {})).toBe("locked");
   });
 
@@ -281,15 +282,17 @@ describe("사슬 잠금 — 표지 → 레슨들 → 최종", () => {
     const statuses = statusesOf({ "u01-water": ["intro"] });
 
     expect(statuses["S1"]).toBe("available");
-    expect(allKeys.slice(1).map((key) => statuses[key])).toEqual(Array(8).fill("locked"));
+    expect(allKeys.slice(1).map((key) => statuses[key])).toEqual(Array(9).fill("locked"));
     expect(catalogUnitStatus(u01Section(), "S1", { "u01-water": ["intro"] })).toBe("available");
   });
 
   test("CM-U3. 바로 앞을 끝내면 열리고 끝낸 유닛은 앞이 아직이어도 completed다", () => {
-    expect(statusesOf({ "u01-water": ["intro", "S1"] })["S3"]).toBe("available");
+    expect(statusesOf({ "u01-water": ["intro", "S1"] })["S2"]).toBe("available");
     expect(statusesOf({ "u01-water": ["intro", "S1"] })["S1"]).toBe("completed");
     expect(
-      statusesOf({ "u01-water": ["intro", "S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"] })["RP"],
+      statusesOf({
+        "u01-water": ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"],
+      })["RP"],
     ).toBe("available");
 
     const skipped = statusesOf({ "u01-water": ["S5"] });

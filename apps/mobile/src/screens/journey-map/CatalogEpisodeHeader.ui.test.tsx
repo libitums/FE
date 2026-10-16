@@ -16,6 +16,7 @@ const readyWater: CatalogMapSection = {
   title: "익선동 골목 어귀 편의점",
   lessonKeys,
   finalKey: "RP",
+  completionKeys: ["RP"],
 };
 
 const longTitle = "익선 게스트하우스 여성 도미토리";

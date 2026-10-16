@@ -19,7 +19,7 @@ function signIn(user: string) {
   });
 }
 function Harness() {
-  progress = useJourneyProgress(productJourneySeed, []);
+  progress = useJourneyProgress(productJourneySeed, [], () => ["RP"]);
   return null;
 }
 async function boot() {

@@ -8,7 +8,7 @@ import {
   mergeCatalogProgress,
   passedCatalogEpisodeCount,
 } from "../lib/catalog-progress";
-import type { CatalogProgress } from "../lib/catalog-progress";
+import type { CatalogCompletionKeysOf, CatalogProgress } from "../lib/catalog-progress";
 import type { LearningProgressSnapshotV1 } from "../lib/learning-progress.contract";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
@@ -159,6 +159,7 @@ export function completedEpisodesFrom(
 export function trophyCountFrom(
   sections: readonly JourneyMapSection[],
   state: JourneyProgressState,
+  _completionKeysOf: CatalogCompletionKeysOf,
 ): number {
   return (
     completedEpisodesFrom(sections, state).length + passedCatalogEpisodeCount(state.catalogProgress)

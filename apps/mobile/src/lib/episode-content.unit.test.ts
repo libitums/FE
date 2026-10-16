@@ -117,6 +117,78 @@ function item(type: ItemType, id: string, extra: Wire = {}): Wire {
       answers: [t2("A=a | B=b | C=c | D=d")],
     },
     ROLEPLAY_TURN: minimalRoleplayTurnWire(id),
+    CLOZE_CHOICE: {
+      prompt: prompt(),
+      context: t3("___ 문맥"),
+      options: options(4),
+      answers: [t3("정답")],
+      feedback: { correct: { ko: "맞아요" } },
+    },
+    REPLY_SELECT: {
+      prompt: prompt(),
+      stimulus: { audio: t3("상대 말") },
+      options: options(3),
+      feedback: { correct: { ko: "맞아요" } },
+    },
+    MIN_PAIR_AB: {
+      event: "D",
+      prompt: prompt(),
+      stimulus: { audio: t3("빵") },
+      options: options(2),
+      feedback: { correct: { ko: "맞아요" } },
+    },
+    PARTICLE_FILL: {
+      prompt: prompt(),
+      stimulus: { text: t3("봉투___") },
+      options: options(2),
+      feedback: { correct: { ko: "맞아요" } },
+    },
+    PARTICLE_SWAP: {
+      prompt: prompt(),
+      stimulus: { text: t3("봉투이") },
+      options: options(3),
+      feedback: { correct: { ko: "맞아요" } },
+    },
+    CULTURE_CHECK: {
+      prompt: prompt(),
+      context: t3("문화 문맥"),
+      options: options(3),
+      feedback: { correct: { ko: "맞아요" } },
+    },
+    CULTURE_CARD: {
+      mode: "card",
+      event: "E",
+      context: t3("문화 카드"),
+      stimulus: { text: t3("문화 본문") },
+      feedback: { correct: { ko: "맞아요" } },
+    },
+    LISTEN_BUILD: {
+      mode: "tiles",
+      prompt: prompt(),
+      stimulus: { audio: t3("듣기") },
+      tiles: [t2("가"), t2("나"), t2("다")],
+      answers: [t3("가 나 다")],
+    },
+    SYLLABLE_BUILD: {
+      mode: "tiles",
+      prompt: prompt(),
+      stimulus: { en: "card" },
+      tiles: [t2("카"), t2("드")],
+      answers: [t3("카드")],
+    },
+    SHADOW: {
+      mode: "speech",
+      event: "E",
+      prompt: prompt(),
+      stimulus: { text: t3("따라 말하기") },
+      answers: [t3("따라 말하기")],
+    },
+    SPEAK_WORD: {
+      mode: "speech",
+      prompt: prompt(),
+      stimulus: { image_brief: "brief" },
+      answers: [t3("단어")],
+    },
   };
   return { ...base, ...bodies[type], ...extra };
 }
@@ -577,11 +649,16 @@ describe("decodeEpisode", () => {
       .map(toPosix)
       .sort();
     expect(importers).toEqual([
+      "src/lib/episode-content.schema-items.ts",
+      "src/lib/episode-content.schema-parts.ts",
       "src/lib/episode-content.schema.ts",
       "src/lib/episode-manifest.schema.ts",
     ]);
     const runtimeModules = [
       "episode-content.schema.ts",
+      "episode-content.schema-parts.ts",
+      "episode-content.schema-items.ts",
+      "episode-content.items-added.ts",
       "episode-content.ts",
       "episode-manifest.schema.ts",
       "episode-manifest.ts",
@@ -600,8 +677,8 @@ describe("decodeEpisode", () => {
   });
 
   // 가드: 상수라 스캐폴드에서도 green입니다.
-  test("U26. KNOWN_ITEM_TYPES는 13종이고 계약의 순서 그대로다", () => {
-    expect(KNOWN_ITEM_TYPES).toHaveLength(13);
+  test("U26. KNOWN_ITEM_TYPES는 24종이고 계약의 순서 그대로다", () => {
+    expect(KNOWN_ITEM_TYPES).toHaveLength(24);
     expect([...KNOWN_ITEM_TYPES]).toEqual([
       "VOCAB_CARD",
       "CLOZE",
@@ -616,6 +693,17 @@ describe("decodeEpisode", () => {
       "SENT_BUILD",
       "PAIR_MATCH",
       "ROLEPLAY_TURN",
+      "CLOZE_CHOICE",
+      "REPLY_SELECT",
+      "MIN_PAIR_AB",
+      "PARTICLE_FILL",
+      "PARTICLE_SWAP",
+      "CULTURE_CHECK",
+      "CULTURE_CARD",
+      "LISTEN_BUILD",
+      "SYLLABLE_BUILD",
+      "SHADOW",
+      "SPEAK_WORD",
     ]);
   });
 
@@ -702,7 +790,7 @@ describe("내장 에피소드 음성 id 배치", () => {
       3: "u01-water/d-04",
       4: "u01-water/d-05",
     });
-    expect(episode.dialogue.map((line) => line.seq)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(episode.dialogue.map((line) => line.seq)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
   test("DA3. u02: 컷 · 대화 줄의 음성 id가 표대로 놓이고 나머지는 키가 없다", () => {

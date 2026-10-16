@@ -3,7 +3,7 @@ import { join, relative, resolve } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
-import { bundledCatalogInput } from "../lib/episode-bundled";
+import { legacyCatalogInput } from "../lib/episode-legacy.test-support";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearningItem, Option, Text, Word } from "../lib/episode-content.model";
@@ -21,7 +21,7 @@ type ReadyEntry = Extract<CatalogEntry, { status: "ready" }>;
 type ItemOf<T extends LearningItem["type"]> = Extract<LearningItem, { type: T }>;
 
 const realCatalog = buildEpisodeCatalog({
-  bundled: bundledCatalogInput,
+  bundled: legacyCatalogInput,
   cache: { manifest: null, episodes: {} },
 });
 

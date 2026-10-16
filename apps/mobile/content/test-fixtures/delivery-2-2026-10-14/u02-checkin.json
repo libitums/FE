@@ -1,0 +1,5110 @@
+{
+ "schema": "delivery-2",
+ "unit_id": "u02-checkin",
+ "title": "익선 게스트하우스 프런트",
+ "day": 1,
+ "time_of_day": "낮",
+ "place": "익선 게스트하우스 프런트",
+ "counterpart": "정윤경",
+ "pre_cuts": [
+  {
+   "index": 1,
+   "kind": "pre",
+   "cut_kind": "speech",
+   "speaker": "낯선 사람",
+   "line": {
+    "ko": "사장님, 손님 오셨어요!",
+    "roman": "sajangnim, sonnim osyeosseoyo!",
+    "en": "Excuse me, you've got a guest!"
+   },
+   "aside": {
+    "ko": "짐 가방을 내려놓고 마당 쪽으로 고개를 돌리며",
+    "roman": "jim gabaeul naeryeonoko madang jjogeuro gogaereul dollimyeo",
+    "en": "Setting the bag down and turning toward the yard."
+   },
+   "image_brief": "거실의 낯선 사람이 짐을 내려놓고 마당 쪽으로 고개를 돌린다.",
+   "image_url": "images/u02-checkin/pre-1.jpg",
+   "audio_url": "u02-checkin/pre-1"
+  },
+  {
+   "index": 2,
+   "kind": "pre",
+   "cut_kind": "narration",
+   "narration": {
+    "ko": "마당을 쓸던 사람이 빗자루를 문 옆에 세워 두고 들어온다.",
+    "roman": "madaeul sseuldeon sarami bitjarureul mun yeope sewo dugo deureoonda.",
+    "en": "The person sweeping the yard leans the broom by the door and comes in."
+   },
+   "image_brief": "마당에서 사장님이 빗자루를 문틀에 세워 두고 들어온다.",
+   "image_url": "images/u02-checkin/pre-2.jpg"
+  },
+  {
+   "index": 3,
+   "kind": "pre",
+   "cut_kind": "speech",
+   "speaker": "사장님",
+   "line": {
+    "ko": "어서 와요. 많이 걸었나 봐요.",
+    "roman": "eoseo wayo. mani georeonna bwayo.",
+    "en": "Welcome. Looks like you've walked a long way."
+   },
+   "aside": {
+    "ko": "바퀴에 흙이 묻은 캐리어를 한번 내려다보며",
+    "roman": "bakwie heulgi mudeun kaerieoreul hanbeon naeryeodabomyeo",
+    "en": "Glancing down at the suitcase and its dusty wheels."
+   },
+   "image_brief": "사장님이 캐리어와 플레이어를 번갈아 본다.",
+   "image_url": "images/u02-checkin/pre-3.jpg",
+   "audio_url": "u02-checkin/pre-3"
+  },
+  {
+   "index": 4,
+   "kind": "pre",
+   "cut_kind": "narration",
+   "narration": {
+    "ko": "사장님을 따라 현관 옆 프런트 앞에 선다. 데스크 위에 공책과 열쇠 몇 개가 놓여 있다.",
+    "roman": "sajangnimeul ttara hyeongwan yeop peureonteu ape seonda. deseukeu wie gongchaekgwa yeolsoe myeot gaega nohyeo itda.",
+    "en": "Follows the owner to the front desk by the entrance. A notebook and a few keys lie on top."
+   },
+   "image_brief": "현관 옆 프런트. 사장님이 데스크 안쪽으로 들어선다. 데스크 위에 공책과 열쇠 몇 개가 놓여 있다.",
+   "image_url": "images/u02-checkin/pre-4.jpg"
+  },
+  {
+   "index": 5,
+   "kind": "pre",
+   "cut_kind": "speech",
+   "speaker": "사장님",
+   "line": {
+    "ko": "이름이 어떻게 되세요?",
+    "roman": "ireumi eotteoke doeseyo?",
+    "en": "What name is it under?"
+   },
+   "aside": {
+    "ko": "공책을 펼쳐 오늘 날짜를 찾으며",
+    "roman": "gongchaegeul pyeolchyeo oneul naljjareul chajeumyeo",
+    "en": "Opening the notebook to today's page."
+   },
+   "image_brief": "데스크 안쪽의 사장님이 공책을 펼치고 펜을 든다.",
+   "image_url": "images/u02-checkin/pre-5.jpg",
+   "audio_url": "u02-checkin/d-01"
+  }
+ ],
+ "dialogue": [
+  {
+   "seq": 1,
+   "role": "counterpart",
+   "text": {
+    "ko": "이름이 어떻게 되세요?",
+    "roman": "ireumi eotteoke doeseyo?",
+    "en": "May I have your name?"
+   },
+   "audio_url": "u02-checkin/d-01"
+  },
+  {
+   "seq": 2,
+   "role": "player",
+   "text": {
+    "ko": "{이름}(으)로 예약했어요.",
+    "roman": "{이름}(eu)ro yeyakaesseoyo.",
+    "en": "I booked under {이름}."
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 3,
+   "role": "counterpart",
+   "text": {
+    "ko": "네, 여권 좀 보여주세요.",
+    "roman": "ne, yeogwon jom boyeojuseyo.",
+    "en": "Okay, may I see your passport?"
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 4,
+   "role": "player",
+   "text": {
+    "ko": "여권 여기 있어요.",
+    "roman": "yeogwon yeogi isseoyo.",
+    "en": "Here's my passport."
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 5,
+   "role": "counterpart",
+   "text": {
+    "ko": "며칠 묵으시죠?",
+    "roman": "myeochil mugeusijyo?",
+    "en": "How many nights will you be staying?"
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 6,
+   "role": "player",
+   "text": {
+    "ko": "일주일 묵어요.",
+    "roman": "iljuil mugeoyo.",
+    "en": "I'm staying a week."
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 7,
+   "role": "counterpart",
+   "text": {
+    "ko": "방은 201호예요.",
+    "roman": "baeun 201hoyeyo.",
+    "en": "Your room is 201."
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 8,
+   "role": "player",
+   "text": {
+    "ko": "와이파이 비밀번호가 뭐예요?",
+    "roman": "waipai bimilbeonhoga mwoyeyo?",
+    "en": "What's the wifi password?"
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 9,
+   "role": "counterpart",
+   "text": {
+    "ko": "duruduru예요.",
+    "roman": "duruduruyeyo.",
+    "en": "It's duruduru."
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 10,
+   "role": "player",
+   "text": {
+    "ko": "체크아웃은 오전 11시 맞죠?",
+    "roman": "chekeuauseun ojeon 11si matjyo?",
+    "en": "Checkout is 11 in the morning, right?"
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 11,
+   "role": "counterpart",
+   "text": {
+    "ko": "네 맞아요. 잘 쉬어요.",
+    "roman": "ne majayo. jal swieoyo.",
+    "en": "Yes, that's right. Enjoy your stay."
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 12,
+   "role": "player",
+   "text": {
+    "ko": "방이 몇 층이에요?",
+    "roman": "bai myeot cheuieyo?",
+    "en": "What floor is the room on?"
+   },
+   "audio_url": ""
+  },
+  {
+   "seq": 13,
+   "role": "counterpart",
+   "text": {
+    "ko": "삼 층이에요.",
+    "roman": "sam cheuieyo.",
+    "en": "It's on the third floor."
+   },
+   "audio_url": ""
+  }
+ ],
+ "post_cuts": [
+  {
+   "index": 1,
+   "kind": "post",
+   "cut_kind": "speech",
+   "speaker": "사장님",
+   "line": {
+    "ko": "아참, 마루에 올라갈 땐 신발 벗어 주세요.",
+    "roman": "acham, marue ollagal ttaen sinbal beoseo juseyo.",
+    "en": "Oh, and please take your shoes off before you step up onto the floor."
+   },
+   "aside": {
+    "ko": "열쇠를 건네다 말고 신발장 쪽을 가리키며",
+    "roman": "yeolsoereul geonneda malgo sinbaljang jjogeul garikimyeo",
+    "en": "Pausing mid-handover of the key to point at the shoe rack."
+   },
+   "image_brief": "같은 프런트. 사장님이 열쇠를 건네다 말고 신발장 쪽을 가리킨다.",
+   "image_url": "images/u02-checkin/post-1.jpg",
+   "audio_url": "u02-checkin/post-1"
+  },
+  {
+   "index": 2,
+   "kind": "post",
+   "cut_kind": "narration",
+   "narration": {
+    "ko": "신발장 빈칸에 운동화를 넣고, 캐리어를 두 손으로 들어 이 층으로 올라간다.",
+    "roman": "sinbaljang binkane undonghwareul neoko, kaerieoreul du soneuro deureo i cheueuro ollaganda.",
+    "en": "Tucks the sneakers into an empty slot, then carries the suitcase up to the second floor with both hands."
+   },
+   "image_brief": "신발장 빈칸에 운동화를 넣고 캐리어를 들어 계단을 오른다.",
+   "image_url": "images/u02-checkin/post-2.jpg"
+  },
+  {
+   "index": 3,
+   "kind": "post",
+   "cut_kind": "narration",
+   "narration": {
+    "ko": "201호 문이 반쯤 열려 있다. 창가 침대 위에 아까 거실에서 본 배낭이 놓여 있다.",
+    "roman": "201ho muni banjjeum yeollyeo itda. changga chimdae wie akka geosireseo bon baenai nohyeo itda.",
+    "en": "Room 201's door is half open. On the window-side bed sits the backpack from the living room."
+   },
+   "image_brief": "반쯤 열린 201호 문 너머 창가 침대에 낯익은 배낭이 놓여 있다.",
+   "image_url": "images/u02-checkin/post-3.jpg"
+  },
+  {
+   "index": 4,
+   "kind": "post",
+   "cut_kind": "monologue",
+   "speaker": "플레이어",
+   "line": {
+    "ko": "설마 아까 그 사람이랑 같은 방인가?",
+    "roman": "seolma akka geu saramirang gateun bainga?",
+    "en": "Wait, am I sharing a room with that person?"
+   },
+   "image_brief": "같은 자리. 문고리를 잡은 채 멈춘다.",
+   "image_url": "images/u02-checkin/post-3.jpg"
+  }
+ ],
+ "steps": [
+  {
+   "id": "S1",
+   "order": 1,
+   "items": [
+    {
+     "id": "S1-01",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:f8abac72",
+     "context": {
+      "ko": "방",
+      "roman": "bang"
+     },
+     "example": {
+      "ko": "방 보여 주세요.",
+      "roman": "bang boyeo juseyo."
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S1-02",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:50f4d3f6",
+     "context": {
+      "ko": "예약",
+      "roman": "yeyak"
+     },
+     "example": {
+      "ko": "은지로 예약했어요.",
+      "roman": "eunjiro yeyakaesseoyo."
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S1-03",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:23612f87",
+     "context": {
+      "ko": "여권",
+      "roman": "yeogwon"
+     },
+     "example": {
+      "ko": "여권 여기 있어요.",
+      "roman": "yeogwon yeogi isseoyo.",
+      "en": "Here's my passport."
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S1-04",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:e3c30bfa",
+     "context": {
+      "ko": "이름",
+      "roman": "ireum"
+     },
+     "example": {
+      "ko": "이름이 뭐예요?",
+      "roman": "ireumi mwoyeyo?"
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S1-05",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:ec5d9a98",
+     "context": {
+      "ko": "일주일",
+      "roman": "iljuil"
+     },
+     "example": {
+      "ko": "일주일 묵어요.",
+      "roman": "iljuil mugeoyo.",
+      "en": "I'm staying a week."
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S1-06",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:1543e627",
+     "context": {
+      "ko": "묵다",
+      "roman": "mukda"
+     },
+     "example": {
+      "ko": "일주일 묵어요.",
+      "roman": "iljuil mugeoyo.",
+      "en": "I'm staying a week."
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S1-07",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "E",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 여기 있어요.",
+      "roman": "___ yeogi isseoyo."
+     },
+     "tiles": [
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      },
+      {
+       "ko": "방",
+       "roman": "bang"
+      },
+      {
+       "ko": "이름",
+       "roman": "ireum"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      }
+     ]
+    },
+    {
+     "id": "S1-08",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "E",
+     "ref": "patt:9f93db56",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___가 뭐예요?",
+      "roman": "___ga mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      },
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      },
+      {
+       "ko": "층",
+       "roman": "cheung"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      }
+     ]
+    },
+    {
+     "id": "S1-09",
+     "type": "IMG_MATCH",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f8abac72",
+     "prompt": {
+      "ko": "사진에 맞는 말을 고르세요.",
+      "en": "Which word matches the picture?"
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_brief": "room - 한 컷으로 알아볼 수 있게",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "와이파이",
+       "roman": "waipai",
+       "en": "Wi-Fi",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "예약",
+       "roman": "yeyak",
+       "en": "reservation",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "방",
+       "roman": "bang",
+       "en": "room",
+       "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "오후",
+       "roman": "ohu",
+       "en": "afternoon",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S1-10",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "은지로 ___",
+      "roman": "eunjiro ___"
+     },
+     "tiles": [
+      {
+       "ko": "예약했어요.",
+       "roman": "yeyakaesseoyo."
+      },
+      {
+       "ko": "맞아요",
+       "roman": "majayo"
+      },
+      {
+       "ko": "오후",
+       "roman": "ohu"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "예약했어요.",
+       "roman": "yeyakaesseoyo."
+      }
+     ]
+    },
+    {
+     "id": "S1-11",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "patt:9f93db56",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___가 뭐예요?",
+      "roman": "___ga mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      },
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      },
+      {
+       "ko": "이름",
+       "roman": "ireum"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      }
+     ]
+    },
+    {
+     "id": "S1-12",
+     "type": "WORD_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "문장을 만드세요.",
+      "en": "Build the sentence."
+     },
+     "tiles": [
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      },
+      {
+       "ko": "여기",
+       "roman": "yeogi"
+      },
+      {
+       "ko": "있어요.",
+       "roman": "isseoyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      }
+     ]
+    },
+    {
+     "id": "S1-13",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "patt:9f93db56",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___가 뭐예요?",
+      "roman": "___ga mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      },
+      {
+       "ko": "며칠",
+       "roman": "myeochil"
+      },
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      }
+     ]
+    },
+    {
+     "id": "S1-14",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:ec5d9a98",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 묵어요.",
+      "roman": "___ mugeoyo."
+     },
+     "tiles": [
+      {
+       "ko": "일주일",
+       "roman": "iljuil"
+      },
+      {
+       "ko": "층",
+       "roman": "cheung"
+      },
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "일주일",
+       "roman": "iljuil"
+      }
+     ]
+    },
+    {
+     "id": "S1-15",
+     "type": "IMG_MATCH",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:23612f87",
+     "prompt": {
+      "ko": "사진에 맞는 말을 고르세요.",
+      "en": "Which word matches the picture?"
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_brief": "passport - 한 컷으로 알아볼 수 있게",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "와이파이",
+       "roman": "waipai",
+       "en": "Wi-Fi",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "여권",
+       "roman": "yeogwon",
+       "en": "passport",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "이름",
+       "roman": "ireum",
+       "en": "name",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "오전",
+       "roman": "ojeon",
+       "en": "morning, a.m.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S1-17",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 여기 있어요.",
+      "roman": "___ yeogi isseoyo."
+     },
+     "tiles": [
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      },
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      },
+      {
+       "ko": "오후",
+       "roman": "ohu"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S3",
+   "order": 2,
+   "items": [
+    {
+     "id": "S3-01",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:ec5d9a98",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "네 맞아요. 잘 쉬어요.",
+       "roman": "ne majayo. jal swieoyo.",
+       "en": "Yes, that's right. Enjoy your stay.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "삼 층이에요.",
+       "roman": "sam cheuieyo.",
+       "en": "It's on the third floor.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying for a week.",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S3-02",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "네, 여권 좀 보여주세요.",
+       "roman": "ne, yeogwon jom boyeojuseyo.",
+       "en": "Okay, may I see your passport?"
+      },
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "며칠 묵으시죠?",
+       "roman": "myeochil mugeusijyo?",
+       "en": "How many nights will you be staying?"
+      },
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "네, 여권 좀 보여주세요. | 여권 여기 있어요. | 며칠 묵으시죠? | 일주일 묵어요.",
+       "roman": "ne, yeogwon jom boyeojuseyo. | yeogwon yeogi isseoyo. | myeochil mugeusijyo? | iljuil mugeoyo."
+      }
+     ]
+    },
+    {
+     "id": "S3-03",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:ec5d9a98",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      {
+       "ko": "duruduru예요.",
+       "roman": "duruduruyeyo.",
+       "en": "It's duruduru."
+      },
+      {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      },
+      {
+       "ko": "네 맞아요. 잘 쉬어요.",
+       "roman": "ne majayo. jal swieoyo.",
+       "en": "Yes, that's right. Enjoy your stay."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요? | duruduru예요. | 체크아웃은 오전 11시 맞죠? | 네 맞아요. 잘 쉬어요.",
+       "roman": "waipai bimilbeonhoga mwoyeyo? | duruduruyeyo. | chekeuauseun ojeon 11si matjyo? | ne majayo. jal swieoyo."
+      }
+     ]
+    },
+    {
+     "id": "S3-04",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "이름이 어떻게 되세요?",
+      "roman": "ireumi eotteoke doeseyo?",
+      "en": "May I have your name?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying for a week.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「은지로 예약했어요.」 라고 한다.",
+       "en": "Here you say \"I booked under {이름}.\"."
+      }
+     }
+    },
+    {
+     "id": "S3-05",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "네, 여권 좀 보여주세요.",
+      "roman": "ne, yeogwon jom boyeojuseyo.",
+      "en": "Okay, may I see your passport?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「여권 여기 있어요.」 라고 한다.",
+       "en": "Here you say \"Here's my passport.\"."
+      }
+     }
+    },
+    {
+     "id": "S3-07",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:23612f87",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      {
+       "ko": "duruduru예요.",
+       "roman": "duruduruyeyo.",
+       "en": "It's duruduru."
+      },
+      {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      },
+      {
+       "ko": "네 맞아요. 잘 쉬어요.",
+       "roman": "ne majayo. jal swieoyo.",
+       "en": "Yes, that's right. Enjoy your stay."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요? | duruduru예요. | 체크아웃은 오전 11시 맞죠? | 네 맞아요. 잘 쉬어요.",
+       "roman": "waipai bimilbeonhoga mwoyeyo? | duruduruyeyo. | chekeuauseun ojeon 11si matjyo? | ne majayo. jal swieoyo."
+      }
+     ]
+    },
+    {
+     "id": "S3-08",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f8abac72",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S3-09",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:23612f87",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      {
+       "ko": "duruduru예요.",
+       "roman": "duruduruyeyo.",
+       "en": "It's duruduru."
+      },
+      {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      },
+      {
+       "ko": "네 맞아요. 잘 쉬어요.",
+       "roman": "ne majayo. jal swieoyo.",
+       "en": "Yes, that's right. Enjoy your stay."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요? | duruduru예요. | 체크아웃은 오전 11시 맞죠? | 네 맞아요. 잘 쉬어요.",
+       "roman": "waipai bimilbeonhoga mwoyeyo? | duruduruyeyo. | chekeuauseun ojeon 11si matjyo? | ne majayo. jal swieoyo."
+      }
+     ]
+    },
+    {
+     "id": "S3-10",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "네, 여권 좀 보여주세요.",
+      "roman": "ne, yeogwon jom boyeojuseyo.",
+      "en": "Okay, may I see your passport?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「여권 여기 있어요.」 라고 한다.",
+       "en": "Here you say \"Here's my passport.\"."
+      }
+     }
+    },
+    {
+     "id": "S3-11",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "네, 여권 좀 보여주세요.",
+       "roman": "ne, yeogwon jom boyeojuseyo.",
+       "en": "Okay, please show me your passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "네 맞아요. 잘 쉬어요.",
+       "roman": "ne majayo. jal swieoyo.",
+       "en": "Yes, that's right. Enjoy your stay.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S3-12",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:23612f87",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "네, 여권 좀 보여주세요.",
+       "roman": "ne, yeogwon jom boyeojuseyo.",
+       "en": "Okay, may I see your passport?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "네, 여권 좀 보여주세요.",
+       "roman": "ne, yeogwon jom boyeojuseyo.",
+       "en": "Okay, please show me your passport.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "며칠 묵으시죠?",
+       "roman": "myeochil mugeusijyo?",
+       "en": "How many days are you staying?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "duruduru예요.",
+       "roman": "duruduruyeyo.",
+       "en": "It's duruduru.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "삼 층이에요.",
+       "roman": "sam cheuieyo.",
+       "en": "It's on the third floor.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S3-13",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "이름이 어떻게 되세요?",
+      "roman": "ireumi eotteoke doeseyo?",
+      "en": "May I have your name?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「은지로 예약했어요.」 라고 한다.",
+       "en": "Here you say \"I booked under {이름}.\"."
+      }
+     }
+    },
+    {
+     "id": "S3-14",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:ec5d9a98",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "며칠 묵으시죠?",
+      "roman": "myeochil mugeusijyo?",
+      "en": "How many nights will you be staying?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying for a week.",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「일주일 묵어요.」 라고 한다.",
+       "en": "Here you say \"I'm staying a week.\"."
+      }
+     }
+    },
+    {
+     "id": "S3-15",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "며칠 묵으시죠?",
+       "roman": "myeochil mugeusijyo?",
+       "en": "How many nights will you be staying?"
+      },
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      {
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201."
+      },
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "며칠 묵으시죠? | 일주일 묵어요. | 방은 201호예요. | 와이파이 비밀번호가 뭐예요?",
+       "roman": "myeochil mugeusijyo? | iljuil mugeoyo. | baeun 201hoyeyo. | waipai bimilbeonhoga mwoyeyo?"
+      }
+     ]
+    },
+    {
+     "id": "S3-16",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:23612f87",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "네, 여권 좀 보여주세요.",
+       "roman": "ne, yeogwon jom boyeojuseyo.",
+       "en": "Okay, may I see your passport?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying for a week.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "네, 여권 좀 보여주세요.",
+       "roman": "ne, yeogwon jom boyeojuseyo.",
+       "en": "Okay, please show me your passport.",
+       "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "duruduru예요.",
+       "roman": "duruduruyeyo.",
+       "en": "It's duruduru.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S4",
+   "order": 3,
+   "items": [
+    {
+     "id": "S4-01",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:17268353",
+     "context": {
+      "ko": "와이파이",
+      "roman": "waipai"
+     },
+     "example": {
+      "ko": "와이파이 비밀번호가 뭐예요?",
+      "roman": "waipai bimilbeonhoga mwoyeyo?",
+      "en": "What's the wifi password?"
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S4-02",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:577e5b24",
+     "context": {
+      "ko": "비밀번호",
+      "roman": "bimilbeonho"
+     },
+     "example": {
+      "ko": "와이파이 비밀번호가 뭐예요?",
+      "roman": "waipai bimilbeonhoga mwoyeyo?",
+      "en": "What's the wifi password?"
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S4-03",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:f5d3a388",
+     "context": {
+      "ko": "오전",
+      "roman": "ojeon"
+     },
+     "example": {
+      "ko": "체크아웃은 오전 11시 맞죠?",
+      "roman": "chekeuauseun ojeon 11si matjyo?",
+      "en": "Checkout is 11 in the morning, right?"
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S4-04",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:6b59ee30",
+     "context": {
+      "ko": "오후",
+      "roman": "ohu"
+     },
+     "example": {
+      "ko": "오후에 와요.",
+      "roman": "ohue wayo."
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S4-05",
+     "type": "VOCAB_CARD",
+     "mode": "card",
+     "event": "E",
+     "ref": "voca:486ee669",
+     "context": {
+      "ko": "층",
+      "roman": "cheung"
+     },
+     "example": {
+      "ko": "방이 몇 층이에요?",
+      "roman": "bai myeot cheuieyo?",
+      "en": "What floor is the room on?"
+     },
+     "card_kind": "단어"
+    },
+    {
+     "id": "S4-06",
+     "type": "IMG_MATCH",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "사진에 맞는 말을 고르세요.",
+      "en": "Which word matches the picture?"
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_brief": "Wi-Fi - 한 컷으로 알아볼 수 있게",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "와이파이",
+       "roman": "waipai",
+       "en": "Wi-Fi",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "오전",
+       "roman": "ojeon",
+       "en": "morning, a.m.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "며칠",
+       "roman": "myeochil",
+       "en": "how many days",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "일주일",
+       "roman": "iljuil",
+       "en": "one week",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S4-07",
+     "type": "IMG_MATCH",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "사진에 맞는 말을 고르세요.",
+      "en": "Which word matches the picture?"
+     },
+     "stimulus": {
+      "audio_url": "",
+      "image_brief": "morning, a.m. - 한 컷으로 알아볼 수 있게",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "여권",
+       "roman": "yeogwon",
+       "en": "passport",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "예약",
+       "roman": "yeyak",
+       "en": "reservation",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "오후",
+       "roman": "ohu",
+       "en": "afternoon",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "오전",
+       "roman": "ojeon",
+       "en": "morning, a.m.",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S4-08",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:486ee669",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "방이 몇 ___",
+      "roman": "bai myeot ___"
+     },
+     "tiles": [
+      {
+       "ko": "층이에요?",
+       "roman": "cheuieyo?"
+      },
+      {
+       "ko": "맞아요",
+       "roman": "majayo"
+      },
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "층이에요?",
+       "roman": "cheuieyo?"
+      }
+     ]
+    },
+    {
+     "id": "S4-09",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:577e5b24",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "와이파이 ___ 뭐예요?",
+      "roman": "waipai ___ mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "비밀번호가",
+       "roman": "bimilbeonhoga"
+      },
+      {
+       "ko": "이름",
+       "roman": "ireum"
+      },
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "비밀번호가",
+       "roman": "bimilbeonhoga"
+      }
+     ]
+    },
+    {
+     "id": "S4-10",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:f8abac72",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 201호예요.",
+      "roman": "___ 201hoyeyo."
+     },
+     "tiles": [
+      {
+       "ko": "방은",
+       "roman": "baeun"
+      },
+      {
+       "ko": "오후",
+       "roman": "ohu"
+      },
+      {
+       "ko": "이름",
+       "roman": "ireum"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "방은",
+       "roman": "baeun"
+      }
+     ]
+    },
+    {
+     "id": "S4-11",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo."
+      },
+      {
+       "ko": "은지로 예약했어요",
+       "roman": "eunjiro yeyakaesseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S4-12",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:23612f87",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "네, ___ 좀 보여주세요.",
+      "roman": "ne, ___ jom boyeojuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      },
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      },
+      {
+       "ko": "며칠",
+       "roman": "myeochil"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      }
+     ]
+    },
+    {
+     "id": "S4-13",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:ec5d9a98",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      {
+       "ko": "일주일 묵어요",
+       "roman": "iljuil mugeoyo"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S5",
+   "order": 4,
+   "items": [
+    {
+     "id": "S5-01",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "duruduru예요.",
+       "roman": "duruduruyeyo.",
+       "en": "It's duruduru.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S5-02",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "삼 층이에요.",
+       "roman": "sam cheuieyo.",
+       "en": "It's on the third floor.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S5-03",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "네, 여권 좀 보여주세요.",
+      "roman": "ne, yeogwon jom boyeojuseyo.",
+      "en": "Okay, may I see your passport?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「여권 여기 있어요.」 라고 한다.",
+       "en": "Here you say \"Here's my passport.\"."
+      }
+     }
+    },
+    {
+     "id": "S5-04",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "네 맞아요. 잘 쉬어요.",
+       "roman": "ne majayo. jal swieoyo.",
+       "en": "Yes, that's right. Enjoy your stay.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying for a week.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S5-05",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:486ee669",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      {
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201."
+      },
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      {
+       "ko": "duruduru예요.",
+       "roman": "duruduruyeyo.",
+       "en": "It's duruduru."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "일주일 묵어요. | 방은 201호예요. | 와이파이 비밀번호가 뭐예요? | duruduru예요.",
+       "roman": "iljuil mugeoyo. | baeun 201hoyeyo. | waipai bimilbeonhoga mwoyeyo? | duruduruyeyo."
+      }
+     ]
+    },
+    {
+     "id": "S5-06",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "네 맞아요. 잘 쉬어요.",
+       "roman": "ne majayo. jal swieoyo.",
+       "en": "Yes, that's right. Enjoy your stay.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "duruduru예요.",
+       "roman": "duruduruyeyo.",
+       "en": "It's duruduru.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S5-07",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "patt:9f93db56",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "방은 201호예요.",
+      "roman": "baeun 201hoyeyo.",
+      "en": "Your room is 201."
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「와이파이 비밀번호가 뭐예요?」 라고 한다.",
+       "en": "Here you say \"What's the wifi password?\"."
+      }
+     }
+    },
+    {
+     "id": "S5-08",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S5-09",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "며칠 묵으시죠?",
+       "roman": "myeochil mugeusijyo?",
+       "en": "How many days are you staying?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "삼 층이에요.",
+       "roman": "sam cheuieyo.",
+       "en": "It's on the third floor.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "네, 여권 좀 보여주세요.",
+       "roman": "ne, yeogwon jom boyeojuseyo.",
+       "en": "Okay, please show me your passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S5-10",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "duruduru예요.",
+      "roman": "duruduruyeyo.",
+      "en": "It's duruduru."
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「체크아웃은 오전 11시 맞죠?」 라고 한다.",
+       "en": "Here you say \"Checkout is 11 in the morning, right?\"."
+      }
+     }
+    },
+    {
+     "id": "S5-11",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "며칠 묵으시죠?",
+       "roman": "myeochil mugeusijyo?",
+       "en": "How many nights will you be staying?"
+      },
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      {
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "여권 여기 있어요. | 며칠 묵으시죠? | 일주일 묵어요. | 방은 201호예요.",
+       "roman": "yeogwon yeogi isseoyo. | myeochil mugeusijyo? | iljuil mugeoyo. | baeun 201hoyeyo."
+      }
+     ]
+    },
+    {
+     "id": "S5-12",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "patt:9f93db56",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "방은 201호예요.",
+      "roman": "baeun 201hoyeyo.",
+      "en": "Your room is 201."
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「와이파이 비밀번호가 뭐예요?」 라고 한다.",
+       "en": "Here you say \"What's the wifi password?\"."
+      }
+     }
+    },
+    {
+     "id": "S5-13",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "며칠 묵으시죠?",
+       "roman": "myeochil mugeusijyo?",
+       "en": "How many nights will you be staying?"
+      },
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      {
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "여권 여기 있어요. | 며칠 묵으시죠? | 일주일 묵어요. | 방은 201호예요.",
+       "roman": "yeogwon yeogi isseoyo. | myeochil mugeusijyo? | iljuil mugeoyo. | baeun 201hoyeyo."
+      }
+     ]
+    },
+    {
+     "id": "S5-14",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:577e5b24",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "네, 여권 좀 보여주세요.",
+       "roman": "ne, yeogwon jom boyeojuseyo.",
+       "en": "Okay, may I see your passport?"
+      },
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "며칠 묵으시죠?",
+       "roman": "myeochil mugeusijyo?",
+       "en": "How many nights will you be staying?"
+      },
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "네, 여권 좀 보여주세요. | 여권 여기 있어요. | 며칠 묵으시죠? | 일주일 묵어요.",
+       "roman": "ne, yeogwon jom boyeojuseyo. | yeogwon yeogi isseoyo. | myeochil mugeusijyo? | iljuil mugeoyo."
+      }
+     ]
+    },
+    {
+     "id": "S5-15",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "patt:9f93db56",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "방은 201호예요.",
+      "roman": "baeun 201hoyeyo.",
+      "en": "Your room is 201."
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying for a week.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「와이파이 비밀번호가 뭐예요?」 라고 한다.",
+       "en": "Here you say \"What's the wifi password?\"."
+      }
+     }
+    },
+    {
+     "id": "S5-16",
+     "type": "TURN_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "대화 순서대로 놓으세요.",
+      "en": "Put the conversation in order."
+     },
+     "context": {
+      "ko": "대화 순서대로 놓으세요.",
+      "roman": "daehwa sunseodaero noheuseyo."
+     },
+     "tiles": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      {
+       "ko": "duruduru예요.",
+       "roman": "duruduruyeyo.",
+       "en": "It's duruduru."
+      },
+      {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      },
+      {
+       "ko": "네 맞아요. 잘 쉬어요.",
+       "roman": "ne majayo. jal swieoyo.",
+       "en": "Yes, that's right. Enjoy your stay."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요? | duruduru예요. | 체크아웃은 오전 11시 맞죠? | 네 맞아요. 잘 쉬어요.",
+       "roman": "waipai bimilbeonhoga mwoyeyo? | duruduruyeyo. | chekeuauseun ojeon 11si matjyo? | ne majayo. jal swieoyo."
+      }
+     ]
+    },
+    {
+     "id": "S5-17",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "E",
+     "ref": "voca:486ee669",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "context": {
+      "ko": "방이 몇 층이에요?",
+      "roman": "bai myeot cheuieyo?",
+      "en": "What floor is the room on?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     }
+    }
+   ]
+  },
+  {
+   "id": "S6",
+   "order": 5,
+   "items": [
+    {
+     "id": "S6-01",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-02",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:9f93db56",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      {
+       "ko": "와이파이 비밀번호가 뭐예요",
+       "roman": "waipai bimilbeonhoga mwoyeyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-03",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-04",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-05",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-06",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-07",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-08",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-09",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-10",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-11",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-12",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-13",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-14",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-15",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-16",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-17",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-18",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S6-19",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S7",
+   "order": 6,
+   "items": [
+    {
+     "id": "S7-01",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "체크아웃은 ___ 11시 맞죠?",
+      "roman": "chekeuauseun ___ 11si matjyo?"
+     },
+     "tiles": [
+      {
+       "ko": "오전",
+       "roman": "ojeon"
+      },
+      {
+       "ko": "이름",
+       "roman": "ireum"
+      },
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "오전",
+       "roman": "ojeon"
+      }
+     ]
+    },
+    {
+     "id": "S7-02",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:486ee669",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?"
+      },
+      {
+       "ko": "방이 몇 층이에요",
+       "roman": "bai myeot cheuieyo"
+      }
+     ]
+    },
+    {
+     "id": "S7-03",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:577e5b24",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "와이파이 ___ 뭐예요?",
+      "roman": "waipai ___ mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "비밀번호가",
+       "roman": "bimilbeonhoga"
+      },
+      {
+       "ko": "방",
+       "roman": "bang"
+      },
+      {
+       "ko": "오후",
+       "roman": "ohu"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "비밀번호가",
+       "roman": "bimilbeonhoga"
+      }
+     ]
+    },
+    {
+     "id": "S7-04",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:486ee669",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?"
+      },
+      {
+       "ko": "방이 몇 층이에요",
+       "roman": "bai myeot cheuieyo"
+      }
+     ]
+    },
+    {
+     "id": "S7-05",
+     "type": "WORD_ORDER",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "문장을 만드세요.",
+      "en": "Build the sentence."
+     },
+     "tiles": [
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      },
+      {
+       "ko": "여기",
+       "roman": "yeogi"
+      },
+      {
+       "ko": "있어요.",
+       "roman": "isseoyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      }
+     ]
+    },
+    {
+     "id": "S7-06",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "patt:9f93db56",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___가 뭐예요?",
+      "roman": "___ga mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      },
+      {
+       "ko": "일주일",
+       "roman": "iljuil"
+      },
+      {
+       "ko": "예약",
+       "roman": "yeyak"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      }
+     ]
+    },
+    {
+     "id": "S7-07",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:ec5d9a98",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 묵어요.",
+      "roman": "___ mugeoyo."
+     },
+     "tiles": [
+      {
+       "ko": "일주일",
+       "roman": "iljuil"
+      },
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      },
+      {
+       "ko": "며칠",
+       "roman": "myeochil"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "일주일",
+       "roman": "iljuil"
+      }
+     ]
+    },
+    {
+     "id": "S7-08",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:1543e627",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      {
+       "ko": "일주일 묵어요",
+       "roman": "iljuil mugeoyo"
+      }
+     ]
+    },
+    {
+     "id": "S7-09",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:577e5b24",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      {
+       "ko": "와이파이 비밀번호가 뭐예요",
+       "roman": "waipai bimilbeonhoga mwoyeyo"
+      }
+     ]
+    },
+    {
+     "id": "S7-10",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 비밀번호가 뭐예요?",
+      "roman": "___ bimilbeonhoga mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      },
+      {
+       "ko": "층",
+       "roman": "cheung"
+      },
+      {
+       "ko": "방",
+       "roman": "bang"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      }
+     ]
+    },
+    {
+     "id": "S7-11",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:f8abac72",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?"
+      },
+      {
+       "ko": "방이 몇 층이에요",
+       "roman": "bai myeot cheuieyo"
+      }
+     ]
+    },
+    {
+     "id": "S7-12",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:486ee669",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?"
+      },
+      {
+       "ko": "방이 몇 층이에요",
+       "roman": "bai myeot cheuieyo"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S8",
+   "order": 7,
+   "items": [
+    {
+     "id": "S8-01",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:ec5d9a98",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "며칠 묵으시죠?",
+      "roman": "myeochil mugeusijyo?",
+      "en": "How many nights will you be staying?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying for a week.",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「일주일 묵어요.」 라고 한다.",
+       "en": "Here you say \"I'm staying a week.\"."
+      }
+     }
+    },
+    {
+     "id": "S8-02",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "duruduru예요.",
+      "roman": "duruduruyeyo.",
+      "en": "It's duruduru."
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「체크아웃은 오전 11시 맞죠?」 라고 한다.",
+       "en": "Here you say \"Checkout is 11 in the morning, right?\"."
+      }
+     }
+    },
+    {
+     "id": "S8-03",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "이름이 어떻게 되세요?",
+      "roman": "ireumi eotteoke doeseyo?",
+      "en": "May I have your name?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying for a week.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": true
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「은지로 예약했어요.」 라고 한다.",
+       "en": "Here you say \"I booked under {이름}.\"."
+      }
+     }
+    },
+    {
+     "id": "S8-04",
+     "type": "SENT_BUILD",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:9f93db56",
+     "prompt": {
+      "ko": "뭐라고 말할지 쓰세요.",
+      "en": "Write what you would say."
+     },
+     "context": {
+      "ko": "「{명사}가 뭐예요?」 을 써서",
+      "roman": "「{명사}ga mwoyeyo?」 eul sseoseo"
+     },
+     "answers": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      {
+       "ko": "와이파이 비밀번호가 뭐예요",
+       "roman": "waipai bimilbeonhoga mwoyeyo"
+      }
+     ]
+    },
+    {
+     "id": "S8-05",
+     "type": "SENT_BUILD",
+     "mode": "typing",
+     "event": "R",
+     "ref": "patt:0aebb10a",
+     "prompt": {
+      "ko": "뭐라고 말할지 쓰세요.",
+      "en": "Write what you would say."
+     },
+     "context": {
+      "ko": "「{명사} 여기 있어요.」 을 써서",
+      "roman": "「{명사} yeogi isseoyo.」 eul sseoseo"
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S8-07",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "방은 201호예요.",
+      "roman": "baeun 201hoyeyo.",
+      "en": "Your room is 201."
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「와이파이 비밀번호가 뭐예요?」 라고 한다.",
+       "en": "Here you say \"What's the wifi password?\"."
+      }
+     }
+    },
+    {
+     "id": "S8-08",
+     "type": "ROLE_LINE",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:23612f87",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "네, 여권 좀 보여주세요.",
+      "roman": "ne, yeogwon jom boyeojuseyo.",
+      "en": "Okay, may I see your passport?"
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": true
+      },
+      {
+       "id": "o2",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "이 자리에서는 「여권 여기 있어요.」 라고 한다.",
+       "en": "Here you say \"Here's my passport.\"."
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "S9",
+   "order": 8,
+   "items": [
+    {
+     "id": "S9-01",
+     "type": "TRANSLATE_TO_EN",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:ec5d9a98",
+     "prompt": {
+      "ko": "무슨 뜻인가요?",
+      "en": "What does this mean?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "일주일",
+       "roman": "iljuil"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "to stay (at a hotel)",
+       "roman": "to stay (at a hotel)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "a few days, what date",
+       "roman": "a few days, what date",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "one week",
+       "roman": "one week",
+       "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "passport",
+       "roman": "passport",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S9-02",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "이름이 어떻게 되세요?",
+       "roman": "ireumi eotteoke doeseyo?",
+       "en": "May I have your name?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "며칠 묵으시죠?",
+       "roman": "myeochil mugeusijyo?",
+       "en": "How many days are you staying?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "은지로 예약했어요.",
+       "roman": "eunjiro yeyakaesseoyo.",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S9-03",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:f8abac72",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?"
+      },
+      {
+       "ko": "방이 몇 층이에요",
+       "roman": "bai myeot cheuieyo"
+      }
+     ]
+    },
+    {
+     "id": "S9-05",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:23612f87",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      {
+       "ko": "여권 여기 있어요",
+       "roman": "yeogwon yeogi isseoyo"
+      }
+     ]
+    },
+    {
+     "id": "S9-06",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      },
+      {
+       "ko": "체크아웃은 오전 11시 맞죠",
+       "roman": "chekeuauseun ojeon 11si matjyo"
+      }
+     ]
+    },
+    {
+     "id": "S9-07",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:50f4d3f6",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "은지로 ___",
+      "roman": "eunjiro ___"
+     },
+     "tiles": [
+      {
+       "ko": "예약했어요.",
+       "roman": "yeyakaesseoyo."
+      },
+      {
+       "ko": "맞아요",
+       "roman": "majayo"
+      },
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "예약했어요.",
+       "roman": "yeyakaesseoyo."
+      }
+     ]
+    },
+    {
+     "id": "S9-08",
+     "type": "TRANSLATE_TO_EN",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f5d3a388",
+     "prompt": {
+      "ko": "무슨 뜻인가요?",
+      "en": "What does this mean?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "오전",
+       "roman": "ojeon"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "layer, ~ floor",
+       "roman": "layer, ~ floor",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "password",
+       "roman": "password",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "one week",
+       "roman": "one week",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "morning, a.m.",
+       "roman": "morning, a.m.",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S9-09",
+     "type": "TRANSLATE_TO_EN",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:23612f87",
+     "prompt": {
+      "ko": "무슨 뜻인가요?",
+      "en": "What does this mean?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "여권",
+       "roman": "yeogwon"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "Wi-Fi",
+       "roman": "Wi-Fi",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "to stay (at a hotel)",
+       "roman": "to stay (at a hotel)",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "passport",
+       "roman": "passport",
+       "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "morning, a.m.",
+       "roman": "morning, a.m.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S9-10",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:577e5b24",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "와이파이 ___ 뭐예요?",
+      "roman": "waipai ___ mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "비밀번호가",
+       "roman": "bimilbeonhoga"
+      },
+      {
+       "ko": "이름",
+       "roman": "ireum"
+      },
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "비밀번호가",
+       "roman": "bimilbeonhoga"
+      }
+     ]
+    },
+    {
+     "id": "S9-11",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:f8abac72",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "네, 여권 좀 보여주세요.",
+       "roman": "ne, yeogwon jom boyeojuseyo.",
+       "en": "Okay, please show me your passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here is my passport.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201.",
+       "correct": true
+      }
+     ]
+    },
+    {
+     "id": "S9-12",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:ec5d9a98",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      {
+       "ko": "일주일 묵어요",
+       "roman": "iljuil mugeoyo"
+      }
+     ]
+    },
+    {
+     "id": "S9-13",
+     "type": "DICTATION",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:1543e627",
+     "prompt": {
+      "ko": "들은 대로 쓰세요.",
+      "en": "Type what you hear."
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "answers": [
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      {
+       "ko": "일주일 묵어요",
+       "roman": "iljuil mugeoyo"
+      }
+     ]
+    },
+    {
+     "id": "S9-14",
+     "type": "LISTEN_SELECT",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "무엇을 들었나요?",
+      "en": "What did you hear?"
+     },
+     "stimulus": {
+      "audio": {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "방은 201호예요.",
+       "roman": "baeun 201hoyeyo.",
+       "en": "Your room is 201.",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the Wi-Fi password?",
+       "correct": true
+      },
+      {
+       "id": "o3",
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o4",
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S9-15",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:577e5b24",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      {
+       "ko": "와이파이 비밀번호가 뭐예요",
+       "roman": "waipai bimilbeonhoga mwoyeyo"
+      }
+     ]
+    },
+    {
+     "id": "S9-16",
+     "type": "TRANSLATE_TO_EN",
+     "mode": "choice",
+     "event": "R",
+     "ref": "voca:486ee669",
+     "prompt": {
+      "ko": "무슨 뜻인가요?",
+      "en": "What does this mean?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "층",
+       "roman": "cheung"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "options": [
+      {
+       "id": "o1",
+       "ko": "reservation",
+       "roman": "reservation",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o2",
+       "ko": "room",
+       "roman": "room",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      },
+      {
+       "id": "o3",
+       "ko": "layer, ~ floor",
+       "roman": "layer, ~ floor",
+       "correct": true
+      },
+      {
+       "id": "o4",
+       "ko": "passport",
+       "roman": "passport",
+       "correct": false,
+       "why_wrong": "이 자리에 맞는 말이 아니다"
+      }
+     ]
+    },
+    {
+     "id": "S9-17",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 비밀번호가 뭐예요?",
+      "roman": "___ bimilbeonhoga mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      },
+      {
+       "ko": "층",
+       "roman": "cheung"
+      },
+      {
+       "ko": "비밀번호",
+       "roman": "bimilbeonho"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      }
+     ]
+    },
+    {
+     "id": "S9-18",
+     "type": "TRANSLATE_TO_KO",
+     "mode": "typing",
+     "event": "R",
+     "ref": "voca:486ee669",
+     "prompt": {
+      "ko": "한국어로 쓰세요.",
+      "en": "Say this in Korean."
+     },
+     "answers": [
+      {
+       "ko": "방이 몇 층이에요?",
+       "roman": "bai myeot cheuieyo?",
+       "en": "What floor is the room on?"
+      },
+      {
+       "ko": "방이 몇 층이에요",
+       "roman": "bai myeot cheuieyo"
+      }
+     ]
+    },
+    {
+     "id": "S9-19",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:17268353",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "___ 비밀번호가 뭐예요?",
+      "roman": "___ bimilbeonhoga mwoyeyo?"
+     },
+     "tiles": [
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      },
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      },
+      {
+       "ko": "이름",
+       "roman": "ireum"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      }
+     ]
+    },
+    {
+     "id": "S9-20",
+     "type": "CLOZE",
+     "mode": "tiles",
+     "event": "R",
+     "ref": "voca:486ee669",
+     "prompt": {
+      "ko": "빈칸을 채우세요.",
+      "en": "Fill in the blank."
+     },
+     "context": {
+      "ko": "방이 몇 ___",
+      "roman": "bai myeot ___"
+     },
+     "tiles": [
+      {
+       "ko": "층이에요?",
+       "roman": "cheuieyo?"
+      },
+      {
+       "ko": "맞아요",
+       "roman": "majayo"
+      },
+      {
+       "ko": "이름",
+       "roman": "ireum"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "층이에요?",
+       "roman": "cheuieyo?"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "RP",
+   "order": 9,
+   "items": [
+    {
+     "id": "RP-01",
+     "type": "ROLEPLAY_TURN",
+     "mode": "either",
+     "event": "R",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "이름이 어떻게 되세요?",
+      "roman": "ireumi eotteoke doeseyo?",
+      "en": "May I have your name?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "{이름}(으)로 예약했어요.",
+       "roman": "{이름}(eu)ro yeyakaesseoyo.",
+       "en": "I booked under {이름}."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "tiles": [
+      {
+       "ko": "{이름}(으)로",
+       "roman": "{이름}(eu)ro"
+      },
+      {
+       "ko": "예약했어요.",
+       "roman": "yeyakaesseoyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "{이름}(으)로 예약했어요.",
+       "roman": "{이름}(eu)ro yeyakaesseoyo.",
+       "en": "I booked under {이름}."
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "상대가 「이름이 어떻게 되세요?」라고 하면 「{이름}(으)로 예약했어요.」라고 답해요."
+      }
+     },
+     "roleplay": {
+      "line_id": "D2",
+      "counterpart_line": "이름이 어떻게 되세요?",
+      "player_line": "{이름}(으)로 예약했어요.",
+      "tiles": [
+       "{이름}(으)로",
+       "예약했어요."
+      ],
+      "tiles_gloss": [
+       {
+        "tile": "{이름}(으)로"
+       },
+       {
+        "tile": "예약했어요.",
+        "en": "reservation"
+       }
+      ],
+      "accepted_answers": [
+       {
+        "text": "{이름}(으)로 예약했어요."
+       }
+      ],
+      "modes": [
+       "speech",
+       "tiles"
+      ]
+     }
+    },
+    {
+     "id": "RP-02",
+     "type": "ROLEPLAY_TURN",
+     "mode": "either",
+     "event": "R",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "네, 여권 좀 보여주세요.",
+      "roman": "ne, yeogwon jom boyeojuseyo.",
+      "en": "Okay, may I see your passport?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "tiles": [
+      {
+       "ko": "여권",
+       "roman": "yeogwon"
+      },
+      {
+       "ko": "여기",
+       "roman": "yeogi"
+      },
+      {
+       "ko": "있어요.",
+       "roman": "isseoyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "여권 여기 있어요.",
+       "roman": "yeogwon yeogi isseoyo.",
+       "en": "Here's my passport."
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "상대가 「네, 여권 좀 보여주세요.」라고 하면 「여권 여기 있어요.」라고 답해요."
+      }
+     },
+     "roleplay": {
+      "line_id": "D4",
+      "counterpart_line": "네, 여권 좀 보여주세요.",
+      "player_line": "여권 여기 있어요.",
+      "tiles": [
+       "여권",
+       "여기",
+       "있어요."
+      ],
+      "tiles_gloss": [
+       {
+        "tile": "여권",
+        "en": "passport"
+       },
+       {
+        "tile": "여기"
+       },
+       {
+        "tile": "있어요."
+       }
+      ],
+      "accepted_answers": [
+       {
+        "text": "여권 여기 있어요."
+       }
+      ],
+      "modes": [
+       "speech",
+       "tiles"
+      ]
+     }
+    },
+    {
+     "id": "RP-03",
+     "type": "ROLEPLAY_TURN",
+     "mode": "either",
+     "event": "R",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "며칠 묵으시죠?",
+      "roman": "myeochil mugeusijyo?",
+      "en": "How many nights will you be staying?"
+     },
+     "stimulus": {
+      "text": {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "tiles": [
+      {
+       "ko": "일주일",
+       "roman": "iljuil"
+      },
+      {
+       "ko": "묵어요.",
+       "roman": "mugeoyo."
+      }
+     ],
+     "answers": [
+      {
+       "ko": "일주일 묵어요.",
+       "roman": "iljuil mugeoyo.",
+       "en": "I'm staying a week."
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "상대가 「며칠 묵으시죠?」라고 하면 「일주일 묵어요.」라고 답해요."
+      }
+     },
+     "roleplay": {
+      "line_id": "D6",
+      "counterpart_line": "며칠 묵으시죠?",
+      "player_line": "일주일 묵어요.",
+      "tiles": [
+       "일주일",
+       "묵어요."
+      ],
+      "tiles_gloss": [
+       {
+        "tile": "일주일",
+        "en": "one week"
+       },
+       {
+        "tile": "묵어요."
+       }
+      ],
+      "accepted_answers": [
+       {
+        "text": "일주일 묵어요."
+       }
+      ],
+      "modes": [
+       "speech",
+       "tiles"
+      ]
+     }
+    },
+    {
+     "id": "RP-04",
+     "type": "ROLEPLAY_TURN",
+     "mode": "either",
+     "event": "R",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "방은 201호예요.",
+      "roman": "baeun 201hoyeyo.",
+      "en": "Your room is 201."
+     },
+     "stimulus": {
+      "text": {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "tiles": [
+      {
+       "ko": "와이파이",
+       "roman": "waipai"
+      },
+      {
+       "ko": "비밀번호가",
+       "roman": "bimilbeonhoga"
+      },
+      {
+       "ko": "뭐예요?",
+       "roman": "mwoyeyo?"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "와이파이 비밀번호가 뭐예요?",
+       "roman": "waipai bimilbeonhoga mwoyeyo?",
+       "en": "What's the wifi password?"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "상대가 「방은 201호예요.」라고 하면 「와이파이 비밀번호가 뭐예요?」라고 답해요."
+      }
+     },
+     "roleplay": {
+      "line_id": "D8",
+      "counterpart_line": "방은 201호예요.",
+      "player_line": "와이파이 비밀번호가 뭐예요?",
+      "tiles": [
+       "와이파이",
+       "비밀번호가",
+       "뭐예요?"
+      ],
+      "tiles_gloss": [
+       {
+        "tile": "와이파이",
+        "en": "Wi-Fi"
+       },
+       {
+        "tile": "비밀번호가",
+        "en": "password"
+       },
+       {
+        "tile": "뭐예요?"
+       }
+      ],
+      "accepted_answers": [
+       {
+        "text": "와이파이 비밀번호가 뭐예요?"
+       }
+      ],
+      "modes": [
+       "speech",
+       "tiles"
+      ]
+     }
+    },
+    {
+     "id": "RP-05",
+     "type": "ROLEPLAY_TURN",
+     "mode": "either",
+     "event": "R",
+     "prompt": {
+      "ko": "뭐라고 말할까요?",
+      "en": "What do you say?"
+     },
+     "context": {
+      "ko": "duruduru예요.",
+      "roman": "duruduruyeyo.",
+      "en": "It's duruduru."
+     },
+     "stimulus": {
+      "text": {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      },
+      "audio_url": "",
+      "image_url": ""
+     },
+     "tiles": [
+      {
+       "ko": "체크아웃은",
+       "roman": "chekeuauseun"
+      },
+      {
+       "ko": "오전",
+       "roman": "ojeon"
+      },
+      {
+       "ko": "11시",
+       "roman": "11si"
+      },
+      {
+       "ko": "맞죠?",
+       "roman": "matjyo?"
+      }
+     ],
+     "answers": [
+      {
+       "ko": "체크아웃은 오전 11시 맞죠?",
+       "roman": "chekeuauseun ojeon 11si matjyo?",
+       "en": "Checkout is 11 in the morning, right?"
+      }
+     ],
+     "feedback": {
+      "correct": {
+       "ko": "상대가 「duruduru예요.」라고 하면 「체크아웃은 오전 11시 맞죠?」라고 답해요."
+      }
+     },
+     "roleplay": {
+      "line_id": "D10",
+      "counterpart_line": "duruduru예요.",
+      "player_line": "체크아웃은 오전 11시 맞죠?",
+      "tiles": [
+       "체크아웃은",
+       "오전",
+       "11시",
+       "맞죠?"
+      ],
+      "tiles_gloss": [
+       {
+        "tile": "체크아웃은"
+       },
+       {
+        "tile": "오전",
+        "en": "morning, a.m."
+       },
+       {
+        "tile": "11시"
+       },
+       {
+        "tile": "맞죠?"
+       }
+      ],
+      "accepted_answers": [
+       {
+        "text": "체크아웃은 오전 11시 맞죠?"
+       }
+      ],
+      "modes": [
+       "speech",
+       "tiles"
+      ]
+     }
+    }
+   ]
+  }
+ ],
+ "words": [
+  {
+   "id": "voca:50f4d3f6",
+   "ko": "예약",
+   "roman": "yeyak",
+   "gloss_en": "reservation",
+   "grade": "2급",
+   "role": "target"
+  },
+  {
+   "id": "voca:23612f87",
+   "ko": "여권",
+   "roman": "yeogwon",
+   "gloss_en": "passport",
+   "grade": "1급",
+   "role": "target"
+  },
+  {
+   "id": "voca:ec5d9a98",
+   "ko": "일주일",
+   "roman": "iljuil",
+   "gloss_en": "one week",
+   "grade": "1급",
+   "role": "target"
+  },
+  {
+   "id": "voca:1543e627",
+   "ko": "묵다",
+   "roman": "mukda",
+   "gloss_en": "to stay (at a hotel)",
+   "grade": "3급",
+   "role": "target"
+  },
+  {
+   "id": "voca:17268353",
+   "ko": "와이파이",
+   "roman": "waipai",
+   "gloss_en": "Wi-Fi",
+   "role": "target"
+  },
+  {
+   "id": "voca:577e5b24",
+   "ko": "비밀번호",
+   "roman": "bimilbeonho",
+   "gloss_en": "password",
+   "grade": "3급",
+   "role": "target"
+  },
+  {
+   "id": "voca:f5d3a388",
+   "ko": "오전",
+   "roman": "ojeon",
+   "gloss_en": "morning, a.m.",
+   "grade": "1급",
+   "role": "target"
+  },
+  {
+   "id": "voca:486ee669",
+   "ko": "층",
+   "roman": "cheung",
+   "gloss_en": "layer, ~ floor",
+   "grade": "1급",
+   "role": "target"
+  },
+  {
+   "id": "voca:f8abac72",
+   "ko": "방",
+   "roman": "bang",
+   "gloss_en": "room",
+   "grade": "1급",
+   "role": "prereq",
+   "example_ko": "방 보여 주세요.",
+   "example_roman": "bang boyeo juseyo."
+  },
+  {
+   "id": "voca:e3c30bfa",
+   "ko": "이름",
+   "roman": "ireum",
+   "gloss_en": "name",
+   "grade": "1급",
+   "role": "exposure"
+  },
+  {
+   "id": "voca:9710a021",
+   "ko": "며칠",
+   "roman": "myeochil",
+   "gloss_en": "a few days, what date",
+   "grade": "1급",
+   "role": "exposure"
+  },
+  {
+   "id": "voca:2b9a12e5",
+   "ko": "맞아요",
+   "roman": "majayo",
+   "gloss_en": "That's right.",
+   "role": "exposure"
+  },
+  {
+   "id": "voca:6b59ee30",
+   "ko": "오후",
+   "roman": "ohu",
+   "gloss_en": "afternoon",
+   "grade": "1급",
+   "role": "contrast",
+   "example_ko": "오후에 와요.",
+   "example_roman": "ohue wayo."
+  }
+ ],
+ "patterns": [
+  {
+   "id": "patt:0aebb10a",
+   "ko": "{명사} 여기 있어요.",
+   "roman": "{명사} yeogi isseoyo.",
+   "gloss_en": "Here is the {N}."
+  },
+  {
+   "id": "patt:9f93db56",
+   "ko": "{명사}가 뭐예요?",
+   "roman": "{명사}ga mwoyeyo?",
+   "gloss_en": "What is your {명사}?"
+  }
+ ]
+}

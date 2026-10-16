@@ -42,7 +42,7 @@ import type { EpisodeFinalTest } from "../screens/episode-final/episode-final.co
 import { episodeFinalTestFor as productEpisodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-progress";
 import type { AppJourneySeed } from "./journey-progress";
-import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
+import { catalogCompletionKeysOf, catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { AppSessionContent } from "./episode-content";
 import { isFullBleedScreen } from "./full-bleed-screens";
 import { renderScreen } from "./render-screen";
@@ -81,11 +81,9 @@ export function AppSession({
   onLeaveApp,
   episodeContent,
 }: AppProps & AppSessionControl & AppSessionContent) {
-  // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다
-  // — 셸은 `NavAction`도 `dispatch`도 받지 않습니다(ADR-0007 D3).
-  // 초기값이 `entryInitialNav`입니다 — 부팅이 진입 스택 `[{ name: "splash" }]`로
-  // 시작합니다. `initialNav` 자신은 안 바뀝니다 — 그래서 이 한 줄이 부팅 화면을
-  // 바꾸는 유일한 자리입니다.
+  // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다 — 셸은 `NavAction`도 `dispatch`도
+  // 받지 않습니다(ADR-0007 D3). 초기값이 `entryInitialNav`입니다 — 부팅이 진입 스택 `[{ name: "splash" }]`로
+  // 시작합니다. `initialNav` 자신은 안 바뀝니다 — 그래서 이 한 줄이 부팅 화면을 바꾸는 유일한 자리입니다.
   const [nav, dispatch] = useReducer(navReducer, start);
 
   // 고른 언어(= UI 언어)입니다. 첫 렌더에 저장값을 읽고, Provider가 이 언어의 문구표를 내립니다.
@@ -97,10 +95,17 @@ export function AppSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // **진행의 진실의 출처입니다**(스텝 · 특별 유닛 · 표지 · 최종 테스트). 스텝 상태는 여기서 파생되고(`stepStatusAt`),
-  // `Nav`에 적지 않습니다(ADR-0007 D3). ⟨2026-09-30⟩ **서버에 저장합니다**(ADR-0035) — 로그인 뒤 불러와 합치고
-  // 바뀔 때마다 저장합니다. 연속 학습 · 트로피도 이 훅이 냅니다.
-  const progress = useJourneyProgress(journeySeed, initialCompletedEpisodeIntroIds);
+  // 카탈로그 구획은 카탈로그가 바뀔 때만 새로 만듭니다 — 진행은 섞지 않고 렌더에서 파생합니다.
+  const catalogSections = useMemo(
+    () => catalogMapSectionsOf(episodeContent.catalog),
+    [episodeContent.catalog],
+  );
+  // **진행의 진실의 출처입니다** — `Nav`에 적지 않고(ADR-0007 D3) 서버에 저장합니다(ADR-0035). 트로피의 완료 규칙은 구획에서 받습니다.
+  const progress = useJourneyProgress(
+    journeySeed,
+    initialCompletedEpisodeIntroIds,
+    catalogCompletionKeysOf(catalogSections),
+  );
   const learner = useLearnerProfile();
   const {
     completedStepCount,
@@ -118,11 +123,6 @@ export function AppSession({
     catalogProgress,
     setCatalogProgress,
   } = progress;
-  // 카탈로그 구획은 카탈로그가 바뀔 때만 새로 만듭니다 — 진행은 섞지 않고 렌더에서 파생합니다.
-  const catalogSections = useMemo(
-    () => catalogMapSectionsOf(episodeContent.catalog),
-    [episodeContent.catalog],
-  );
   // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
   // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.
   const [notifications, setNotifications] = useState<readonly NotificationItem[]>(notificationList);

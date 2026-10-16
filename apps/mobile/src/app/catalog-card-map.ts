@@ -33,14 +33,15 @@ export function vocabCardItemOf(
   if (word === "") return skippedItem(item, "malformed");
   const meaning = port.glossOf(item.ref) ?? englishOf(port, item.context.en);
   if (meaning === undefined || meaning === null) return skippedItem(item, "no-gloss");
-  const exampleText = koOf(port, item.example.ko);
+  const sample = item.example;
+  const exampleText = sample === undefined ? "" : koOf(port, sample.ko);
   const example =
-    exampleText === "" || exampleText === word
+    sample === undefined || exampleText === "" || exampleText === word
       ? null
       : {
           text: exampleText,
-          romanization: latinOf(port, item.example.roman) ?? null,
-          translation: englishOf(port, item.example.en) ?? null,
+          romanization: latinOf(port, sample.roman) ?? null,
+          translation: englishOf(port, sample.en) ?? null,
         };
   return {
     kind: "vocab-card",

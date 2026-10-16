@@ -1,15 +1,15 @@
 {
   "schema": "manifest-1",
-  "generated_at": "2026-10-12T00:00:00Z",
+  "generated_at": "2026-10-15T00:00:00Z",
   "episodes": [
     {
       "id": "u01-water",
       "order": 1,
       "title": "익선동 골목 어귀 편의점",
       "schema": "delivery-2",
-      "version": "2026-10-14.1",
-      "sha256": "56cc484dce9dfa05410ff1dce696e47abe4091452b873cdd81e5c5f16ae48c94",
-      "bytes": 79485,
+      "version": "2026-10-15.1",
+      "sha256": "2216d5e35ec4b2240d7e0353c932d6fe7f4f408b1434183cea35188bdff5b85f",
+      "bytes": 125327,
       "url": "episodes/u01-water.json"
     },
     {
@@ -17,9 +17,9 @@
       "order": 2,
       "title": "익선 게스트하우스 프런트",
       "schema": "delivery-2",
-      "version": "2026-10-14.1",
-      "sha256": "bfddd0e681d7016c1099f256361a6ae4dc61a87fb74e40dd48d9355750ecbbc6",
-      "bytes": 121908,
+      "version": "2026-10-15.1",
+      "sha256": "8084b452acc6c3f5655c33dfb1bb8e4ef230604a8eb4bfd2516a6f5912032448",
+      "bytes": 159188,
       "url": "episodes/u02-checkin.json"
     },
     {
@@ -27,9 +27,9 @@
       "order": 3,
       "title": "익선 게스트하우스 여성 도미토리",
       "schema": "delivery-2",
-      "version": "2026-10-14.1",
-      "sha256": "3015accf92a7190b88efd770a8d961acbc7ef2f095f3601c4e7bf5e96e34f24a",
-      "bytes": 98497,
+      "version": "2026-10-15.1",
+      "sha256": "e5f94a0cbee1548687a82139dea5260e0dd3e300e1d87831e8269667dfd9bfcd",
+      "bytes": 154196,
       "url": "episodes/u03-mina.json"
     }
   ]

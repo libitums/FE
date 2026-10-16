@@ -4,7 +4,7 @@ import { join, relative, resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
 import type { AnswerResult } from "../lib/answer-result";
-import { bundledCatalogInput } from "../lib/episode-bundled";
+import { legacyCatalogInput } from "../lib/episode-legacy.test-support";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearningItem, Option, Text } from "../lib/episode-content.model";
@@ -32,7 +32,7 @@ import type { EpisodeContent } from "./episode-content";
 type ReadyEntry = Extract<CatalogEntry, { status: "ready" }>;
 
 const realCatalog = buildEpisodeCatalog({
-  bundled: bundledCatalogInput,
+  bundled: legacyCatalogInput,
   cache: { manifest: null, episodes: {} },
 });
 

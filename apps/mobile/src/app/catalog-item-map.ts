@@ -3,13 +3,17 @@
 // 화면 경로가 닿는 파일이라 `lib/episode-*`는 타입만 가져옵니다.
 
 import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
-import type { LearningItem } from "../lib/episode-content.model";
+import type { LearningItem, TurnTile } from "../lib/episode-content.model";
+import type { DialogueSpeaker } from "../screens/sentence-order/sentence-order";
 import type { SentenceOrderQuestion } from "../screens/sentence-order/sentence-order-questions";
 import { vocabCardItemOf } from "./catalog-card-map";
 import {
+  clozeChoiceItemOf,
   clozeItemOf,
   listeningItemOf,
+  particleItemOf,
   pictureChoiceItemOf,
+  replySelectItemOf,
   roleLineItemOf,
   translateToEnItemOf,
 } from "./catalog-choice-map";
@@ -52,6 +56,17 @@ function wordOrderItemOf(item: ItemOf<"WORD_ORDER">, port: CatalogItemPort): Cat
   });
 }
 
+/**
+ * 대화 조립의 칸마다 화자입니다 — 정답 순서의 타일이 모두 `speaker`를 가지면 그대로(`player`는 `me`), 모두
+ * 없으면 짝수 칸 상대 · 홀수 칸 나, 섞여 있으면 `null`.
+ */
+export function catalogTurnSpeakersOf(
+  _tiles: readonly TurnTile[],
+  _answer: readonly number[],
+): readonly DialogueSpeaker[] | null {
+  return null;
+}
+
 const isPermutation = (values: readonly number[]): boolean =>
   [...values].sort((a, b) => a - b).every((value, index) => value === index);
 
@@ -82,7 +97,23 @@ function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): Cat
 export function catalogItemOf(item: LearningItem, port: CatalogLessonItemPort): CatalogMappedItem {
   switch (item.type) {
     case "LISTEN_SELECT":
+    case "MIN_PAIR_AB":
       return listeningItemOf(item, port);
+    case "CLOZE_CHOICE":
+      return clozeChoiceItemOf(item, port);
+    case "REPLY_SELECT":
+      return replySelectItemOf(item, port);
+    case "PARTICLE_FILL":
+    case "PARTICLE_SWAP":
+      return particleItemOf(item, port);
+    case "CULTURE_CARD":
+    case "CULTURE_CHECK":
+    case "LISTEN_BUILD":
+    case "SYLLABLE_BUILD":
+    case "SHADOW":
+    case "SPEAK_WORD":
+      // 맞는 학습 화면이 아직 없는 유형입니다.
+      return skippedItem(item, "screen-pending");
     case "ROLE_LINE":
       return roleLineItemOf(item, port);
     case "TRANSLATE_TO_EN":

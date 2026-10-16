@@ -28,6 +28,12 @@ import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { journeySteps } from "../screens/journey-map/journey-map";
 
+// 옛 형식 내장본(2026-10-14)의 흐름을 걷는 테스트입니다 — 내장본 자리를 옛 픽스처로 바꿉니다.
+vi.mock("../lib/episode-bundled", async () => {
+  const legacy = await import("../lib/episode-legacy.test-support");
+  return { bundledCatalogInput: legacy.legacyCatalogInput };
+});
+
 // `integration` 계층(3d-1): 단어 카드 · 짝 맞추기 · 그림 고르기가 앱 세션에서 「맵 → 카드 활동(결과 없음)
 // → 채점 활동 → 판정(채점 수 기준) → 기록 → 이벤트」를 지나는 것과, 캐시에서 온 그림 문항이 계획 · 화면 ·
 // 판정을 지나는 것을 한 트리에서 봅니다. 대역은 경계뿐입니다 — `NativeModules`(저장소 · 시스템 뒤로 ·
@@ -113,7 +119,10 @@ type Cache = { readonly manifest: string; readonly body: string };
 /** u01 본문의 S1 문항을 바꾼 캐시 씨앗입니다 — 본문을 가리키며 버전을 올린 매니페스트와 한 쌍입니다. */
 function u01Cache(mapS1Items: (items: RawItem[]) => RawItem[]): Cache {
   const bundled = JSON.parse(
-    readFileSync(resolve(process.cwd(), "content/episodes/u01-water.json"), "utf8"),
+    readFileSync(
+      resolve(process.cwd(), "content/test-fixtures/delivery-2-2026-10-14/u01-water.json"),
+      "utf8",
+    ),
   ) as { steps: { id: string; items: RawItem[] }[] };
   const body = JSON.stringify({
     ...bundled,
@@ -122,7 +131,10 @@ function u01Cache(mapS1Items: (items: RawItem[]) => RawItem[]): Cache {
     ),
   });
   const bundledManifest = JSON.parse(
-    readFileSync(resolve(process.cwd(), "content/manifest.json"), "utf8"),
+    readFileSync(
+      resolve(process.cwd(), "content/test-fixtures/delivery-2-2026-10-14/manifest.json"),
+      "utf8",
+    ),
   ) as { episodes: { id: string }[] } & Record<string, unknown>;
   const manifest = JSON.stringify({
     ...bundledManifest,

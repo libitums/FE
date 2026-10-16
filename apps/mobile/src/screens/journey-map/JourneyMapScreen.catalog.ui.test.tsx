@@ -32,6 +32,7 @@ function catalogProps(onStartCover: (episodeId: string) => void = vi.fn()): Jour
       title: titles[i] ?? "",
       lessonKeys,
       finalKey: "RP",
+      completionKeys: ["RP"],
     })),
     progress: {},
     onStartCover,

@@ -2,6 +2,7 @@ import "background-only";
 
 import type { DeliveryItem } from "./episode-content.schema";
 import type { LearningItem, Text } from "./episode-content.model";
+import { toAddedItem } from "./episode-content.items-added";
 import {
   maybe,
   nonEmpty,
@@ -81,7 +82,7 @@ export function toItem(item: DeliveryItem): LearningItem {
         ...base,
         type: item.type,
         context: toText(item.context),
-        example: toText(item.example),
+        ...maybe("example", optText(item.example)),
         cardKind: item.card_kind,
       };
     case "CLOZE":
@@ -190,5 +191,7 @@ export function toItem(item: DeliveryItem): LearningItem {
           })),
         },
       };
+    default:
+      return toAddedItem(item);
   }
 }
