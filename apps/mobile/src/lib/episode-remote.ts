@@ -9,8 +9,15 @@ export function contentBaseUrl(supabaseUrl: string): string {
   return `${supabaseUrl.replace(/\/+$/, "")}${CONTENT_BUCKET_PATH}`;
 }
 
-/** 기준 상대 경로만 받습니다. 빈 값 · 선두 "/" · ".." 조각 · 스킴이 있으면 `null`. */
-export function resolveContentUrlSafe(base: string, relative: string): string | null {
+// 콘텐츠가 버킷 이름까지 적은 경로(`content/images/…`)입니다. 기준이 이미 버킷이라 한 번 떼어 같은 파일을 가리킵니다.
+const BUCKET_SEGMENT = "content/";
+
+/**
+ * 기준 상대 경로만 받습니다. 선두 `content/` 조각은 한 번 뗍니다. 빈 값 · 선두 "/" · ".." 조각 · 스킴이
+ * 있으면 `null`.
+ */
+export function resolveContentUrlSafe(base: string, path: string): string | null {
+  const relative = path.startsWith(BUCKET_SEGMENT) ? path.slice(BUCKET_SEGMENT.length) : path;
   if (relative.length === 0 || relative.startsWith("/") || relative.includes("://")) {
     return null;
   }
