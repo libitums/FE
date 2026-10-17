@@ -147,6 +147,10 @@ pnpm verify
 
 ### D6. 브랜치 보호로 이 규약을 **강제하는 것은 보류한다**
 
+> **후속 결정 (2026-10-17)** — 저장소가 public이 되어 막고 있던 첫 장애물(API 403)도 사라졌다. `main` ruleset이 PR 필수 ·
+> squash만 · Linux Verify 필수 검사를 강제한다. 정확한 구성은 [ADR-0021 D6 후속 결정](0021-performance-report-ci-automation.md).
+> 아래 「강제되지 않는다」는 그 전까지의 기록이다.
+
 > **후속 결정 (2026-09-04)** — CI는 [ADR-0021](0021-performance-report-ci-automation.md)으로
 > 도입됐다. 그러나 branch protection API의 HTTP 403은 그대로여서 검사를 required check로
 > 묶지 못한다. 아래 두 번째 장애물은 해소됐고, 첫 번째 장애물만 남았다. 강제 보류와
