@@ -275,3 +275,13 @@ branch protection)은 한 글자도 바뀌지 않았다 — 새 번호를 붙이
    깊이가 다르다(D2).
 
 세 가지 모두 `devtools/ci-wiring/ci-hygiene.unit.test.mjs`(CW6~CW10)가 지킨다.
+
+**2026-10-18 — 액션 버전 유지와 저장소 보안 기능** ⟨적용 기록, 결정은 그대로⟩
+
+1. **artifact 액션을 Node 24 메이저로 올렸다**(`upload-artifact@v7` · `download-artifact@v8`). 샤드에서 처음 쓸 때 v4를 넣어
+   「Node.js 20 is deprecated」 경고가 났다. 그런 지원 종료를 실행 경고 주석에서 사람이 알아채지 않도록
+   `.github/dependabot.yml`이 **액션 버전만** 월마다 한 PR로 묶어 올린다 — 워크플로(`/`)와 공용 setup 액션
+   (`/.github/actions/*`)을 함께 본다(CW11). npm 의존성은 잠금 파일 · 번들 예산이 걸려 있어 여기서 올리지 않는다.
+2. **저장소 보안 기능을 켰다** — secret scanning · push protection · Dependabot 경보와 보안 업데이트. public 저장소라
+   비용이 없다. 보안 업데이트 PR도 다른 PR과 같이 `main` ruleset의 필수 검사를 거친다. 켠 시점의 경보는 secret 0건 ·
+   Dependabot 0건이다.
