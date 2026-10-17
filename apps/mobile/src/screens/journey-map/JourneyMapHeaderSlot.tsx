@@ -6,7 +6,7 @@ import { layoutHeightFrom } from "../learning/learning-shell.contract";
 import { JourneyMapEpisodeHeader } from "./JourneyMapEpisodeHeader";
 import { JourneyProgressLoadRow } from "./JourneyProgressLoadRow";
 import type { JourneyMapHeaderSlotProps } from "./catalog-map.contract";
-import { catalogOpenedUnitOf, catalogSectionTitle } from "./catalog-sheet";
+import { catalogOpenedUnitOf, catalogSectionTitle, catalogSheetTargetOf } from "./catalog-sheet";
 import { openedUnitOf } from "./episode-unit-label";
 import { completedMapItemCount, type JourneyStepId } from "./journey-map";
 import { headerCardId } from "./journey-map-scroll";
@@ -36,7 +36,8 @@ export function JourneyMapHeaderSlot({
   };
   const catalogOpened = catalogOpenedUnitOf(catalogSections, openStepId, catalogProgress);
   const opened =
-    catalogOpened === undefined && openStepId !== null
+    // 카탈로그 키는 튜토리얼 구획에서 찾지 않습니다(구획을 못 찾은 카탈로그 말풍선이면 띠가 없습니다).
+    openStepId !== null && catalogSheetTargetOf(openStepId) === null
       ? openedUnitOf(tutorialSections, openStepId as JourneyStepId)
       : undefined;
   const band =

@@ -300,7 +300,11 @@ describe("decodeEpisode", () => {
     expect(
       passed(decodeEpisode(minimalEpisode({ title_en: "  Buying Water " }))).episode,
     ).toMatchObject({ titleEn: "Buying Water" });
-    for (const wire of [minimalEpisode(), minimalEpisode({ title_en: "   " })]) {
+    for (const wire of [
+      minimalEpisode(),
+      minimalEpisode({ title_en: "   " }),
+      minimalEpisode({ title_en: null }),
+    ]) {
       expect(passed(decodeEpisode(wire)).episode).not.toHaveProperty("titleEn");
     }
   });
