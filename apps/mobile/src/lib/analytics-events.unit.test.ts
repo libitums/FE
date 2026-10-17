@@ -24,11 +24,12 @@ const sinkKeys = [
   "episodeIntroEventSink",
 ] as const satisfies readonly (keyof AnalyticsEventSinks)[];
 
-// 이름 29개 · 모양 33개(열림 이벤트 셋이 출처별 두 모양).
+// 이름 30개 · 모양 34개(열림 이벤트 셋이 출처별 두 모양).
 const events: readonly AnalyticsEvent[] = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
   { name: "entry_completed" },
+  { name: "entry_returning_learner_entered", method: "google" },
   {
     name: "messenger_unit_opened",
     unitId: "appointment-confirmation",
@@ -140,9 +141,9 @@ describe("episode_content_refreshed", () => {
 });
 
 describe("analyticsCaptureFrom", () => {
-  test("AE1: 표가 이름 29개 · 모양 33개를 다 덮는다", () => {
-    expect(events).toHaveLength(33);
-    expect(new Set(events.map((e) => e.name)).size).toBe(29);
+  test("AE1: 표가 이름 30개 · 모양 34개를 다 덮는다", () => {
+    expect(events).toHaveLength(34);
+    expect(new Set(events.map((e) => e.name)).size).toBe(30);
   });
 
   test.each(events.map((e, i) => [`${i + 1}. ${e.name}`, e] as const))(
@@ -153,6 +154,15 @@ describe("analyticsCaptureFrom", () => {
       expect(capture.properties).toStrictEqual(withoutName(event));
     },
   );
+
+  test("AE1: entry_returning_learner_entered는 method만 속성으로 싣는다", () => {
+    expect(
+      analyticsCaptureFrom({ name: "entry_returning_learner_entered", method: "google" }),
+    ).toStrictEqual({
+      event: "entry_returning_learner_entered",
+      properties: { method: "google" },
+    });
+  });
 
   test("AE2: 입력을 고치지 않는다", () => {
     const event = Object.freeze({

@@ -4,6 +4,7 @@ import {
   entryCompletedEvent,
   entryLoginMethodSelectedEvent,
   entryLoginMethods,
+  entryReturningLearnerEnteredEvent,
   entryScreenViewedEvent,
   entrySplashDurationMs,
   requiresVerificationCode,
@@ -73,4 +74,13 @@ test("EF6. entryCompletedEvent()가 이름만 싣는다", () => {
 
   expect(event).toEqual({ name: "entry_completed" });
   expect(Object.keys(event)).toEqual(["name"]);
+});
+
+test("EF7. entryReturningLearnerEnteredEvent(method)가 이름과 입력 method만 싣는다", () => {
+  for (const method of loginMethodsForTest) {
+    const event = entryReturningLearnerEnteredEvent(method);
+
+    expect(event).toEqual({ name: "entry_returning_learner_entered", method });
+    expect(Object.keys(event).sort()).toEqual(["method", "name"]);
+  }
 });
