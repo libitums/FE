@@ -15,7 +15,7 @@ export function CatalogMapSections({
   gate,
   access = "open",
   onStartCover,
-  onStartUnit,
+  onSelectUnit,
 }: CatalogMapSectionsProps): ReactNode {
   return (
     <view className="catalog-map-sections" data-testid="journey-map-screen-catalog">
@@ -28,7 +28,7 @@ export function CatalogMapSections({
             access={access}
             progress={gate.progress}
             onStartCover={onStartCover}
-            onStartUnit={onStartUnit}
+            onSelectUnit={onSelectUnit}
           />
         ) : (
           <CatalogUnavailableSection key={section.episodeId} section={section} />

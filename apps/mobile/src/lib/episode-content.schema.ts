@@ -227,6 +227,7 @@ export const deliveryEpisodeSchema = z.object({
   schema: z.literal("delivery-2"),
   unit_id: z.string(),
   title: z.string(),
+  title_en: z.optional(z.string()),
   day: z.int(),
   time_of_day: z.string(),
   place: z.string(),

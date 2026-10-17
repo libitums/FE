@@ -12,6 +12,12 @@ import type {
 import type { JourneyMapNodeAccess, JourneyMapProgressLoad } from "./journey-map-load.contract";
 import type { JourneyProgress } from "./journey-map-progress";
 
+/** 열린 카탈로그 유닛 말풍선의 키입니다(`catalogSheetKey`). 튜토리얼 스텝 id와 겹치지 않게 접두를 둡니다. */
+export type CatalogSheetKey = `catalog:${string}`;
+
+/** 말풍선을 연 유닛입니다 — 튜토리얼 스텝이거나 카탈로그 유닛입니다. 상태 이름(`openStepId`)은 스텝 그대로입니다. */
+export type SheetTargetId = JourneyStepId | CatalogSheetKey;
+
 export type CatalogUnavailableReason = "pending" | LockReason;
 
 export type CatalogReadySection = {
@@ -21,6 +27,8 @@ export type CatalogReadySection = {
   readonly ordinal: number;
   /** 매니페스트(이긴 쪽) 제목 */
   readonly title: string;
+  /** 에피소드의 영어 제목(`title_en`)입니다 — 말풍선 · 머리 띠가 씁니다. 없으면 `title`을 씁니다. */
+  readonly titleEn?: string;
   /** `episode.units`의 id, 순서 그대로 */
   readonly lessonKeys: readonly CatalogUnitKey[];
   /** `episode.finalTest.id` ("RP") */
@@ -63,9 +71,17 @@ export type JourneyMapCatalogProps = {
   readonly sections: readonly CatalogMapSection[];
   readonly progress: CatalogProgress;
   readonly onStartCover: (episodeId: string) => void;
-  /** 레슨 · 최종 노드를 눌렀을 때. 열린 노드에서만 불립니다. */
+  /** 말풍선의 `Start`를 눌렀을 때입니다. 노드를 누르면 맵이 먼저 말풍선을 엽니다. */
   readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  /**
+   * 말풍선 진행 줄의 전체 수 — 그 유닛을 열면 서는 문항 수입니다. 없거나 0이면 진행 줄을 그리지
+   * 않습니다(학습자 프로필이 아직 없어 문항을 지을 수 없을 때 등).
+   */
+  readonly unitItemCountOf?: (episodeId: string, unitKey: CatalogUnitKey) => number;
 };
+
+/** 열린 노드를 눌렀을 때 — 탭의 세로 좌표는 유닛을 재기 전까지 말풍선이 설 어림 자리입니다. */
+export type CatalogUnitSelect = (episodeId: string, unitKey: CatalogUnitKey, tapY: number) => void;
 
 export type CatalogMapSectionsProps = {
   readonly sections: readonly CatalogMapSection[];
@@ -73,7 +89,7 @@ export type CatalogMapSectionsProps = {
   /** 없으면 열려 있습니다. */
   readonly access?: JourneyMapNodeAccess;
   readonly onStartCover: (episodeId: string) => void;
-  readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  readonly onSelectUnit: CatalogUnitSelect;
 };
 
 export type CatalogEpisodeSectionProps = {
@@ -82,7 +98,7 @@ export type CatalogEpisodeSectionProps = {
   readonly access: JourneyMapNodeAccess;
   readonly progress: CatalogProgress;
   readonly onStartCover: (episodeId: string) => void;
-  readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  readonly onSelectUnit: CatalogUnitSelect;
 };
 
 export type CatalogUnavailableSectionProps = { readonly section: CatalogUnavailableSection };
@@ -99,7 +115,7 @@ export type CatalogUnitNodeProps = {
   readonly episodeId: string;
   readonly episodeOrdinal: number;
   readonly node: Omit<CatalogUnitNode, "status"> & { readonly status: JourneyMapNodeStatus };
-  readonly onSelect: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  readonly onSelect: CatalogUnitSelect;
 };
 
 export type JourneyMapHeaderSlotProps = {
@@ -109,8 +125,11 @@ export type JourneyMapHeaderSlotProps = {
   readonly load: JourneyMapProgressLoad;
   /** 화면 겹침 레이어가 떠 있으면 참 — 실패 줄의 재시도 버튼을 낭독에서 가립니다(ADR-0016 D9). */
   readonly obscured?: boolean;
-  /** 열려 있는 스텝 말풍선의 스텝입니다 — 띠의 unit 번호가 그 스텝을 따릅니다. 없으면 `null`과 같습니다. */
-  readonly openStepId?: JourneyStepId | null;
+  /** 열려 있는 말풍선의 유닛입니다 — 띠의 unit 번호가 그 유닛을 따릅니다. 없으면 `null`과 같습니다. */
+  readonly openStepId?: SheetTargetId | null;
+  /** 카탈로그 유닛의 말풍선이면 이 구획 · 진행으로 띠를 세웁니다. */
+  readonly catalogSections?: readonly CatalogMapSection[];
+  readonly catalogProgress?: CatalogProgress;
 };
 
 export type CatalogMapCopy = {

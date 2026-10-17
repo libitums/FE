@@ -27,14 +27,14 @@ const unitKeys = [...lessonKeys, "RP"];
 
 function mount(access?: JourneyMapNodeAccess) {
   const onStartCover = vi.fn<(episodeId: string) => void>();
-  const onStartUnit = vi.fn<(episodeId: string, unitKey: string) => void>();
+  const onStartUnit = vi.fn<(episodeId: string, unitKey: string, tapY: number) => void>();
   render(
     <CatalogMapSections
       sections={[section]}
       gate={gate}
       {...(access === undefined ? {} : { access })}
       onStartCover={onStartCover}
-      onStartUnit={onStartUnit}
+      onSelectUnit={onStartUnit}
     />,
   );
   return { onStartCover, onStartUnit };

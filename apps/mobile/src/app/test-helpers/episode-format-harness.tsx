@@ -193,8 +193,12 @@ export const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 export const node = (episodeId: string, key: string) =>
   screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`);
-export const tapNode = (episodeId: string, key: string): void =>
-  void fireEvent.tap(node(episodeId, key), {});
+// 열린 노드를 누르면 말풍선이 서고 `Start`가 유닛을 엽니다. 잠긴 노드는 말풍선이 없어 누름으로 끝납니다.
+export const tapNode = (episodeId: string, key: string): void => {
+  fireEvent.tap(node(episodeId, key), {});
+  const start = screen.queryByTestId("step-sheet-start");
+  if (start !== null) fireEvent.tap(start, {});
+};
 export const status = (episodeId: string, key: string) =>
   node(episodeId, key).getAttribute("data-status");
 export const cover = (episodeId: string) =>

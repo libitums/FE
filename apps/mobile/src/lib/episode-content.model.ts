@@ -182,6 +182,8 @@ export type Episode = {
   id: string;
   schema: "delivery-2";
   title: string;
+  /** `title_en` — 영어 제목입니다. 맵 말풍선 · 머리 띠가 씁니다. 없거나 비면 키가 없습니다. */
+  titleEn?: string;
   day: number;
   timeOfDay: string;
   place: string;

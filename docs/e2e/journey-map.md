@@ -1299,3 +1299,25 @@ M-4(부드러운 이동의 실제 시간 · 긴 거리의 모양)는 **E-S2의 �
 | O-3 | 실행 중 폭이 바뀌어 열 수가 바뀌면 대상이 정렬선에서 벗어난다 | 계약대로(폴더블 · 분할 화면에서만) |
 | O-4 | 말풍선 꼬리가 누른 유닛 라벨의 가운데를 덮는다 | 관찰 — 한 열 때와 견주지 않았다 |
 | O-5 | 두 열 덤프에 유닛 이름이 없다 | 렌더 뷰만 잡혔다 — E-V1 「부분」 |
+
+## 카탈로그 유닛 말풍선 (2026-10-17)
+
+> 결정은 [ADR-0058](../adr/0058-catalog-learning-session.md) 적용 기록 ⟨2026-10-17⟩ · [ADR-0062](../adr/0062-progress-cache-first.md) ⟨2026-10-17 정정⟩.
+> 자동 검사: `JourneyMapScreen.catalog-sheet.ui.test.tsx`(CS1 ~ CS5) · `catalog-sheet.unit.test.ts` · `App.catalog-lessons.integration.test.tsx` L2a.
+
+| id | 기기 | 절차 | 기대 |
+| --- | --- | --- | --- |
+| CB1 | iOS · Android | 카탈로그 구획의 열린 레슨(왼쪽 칸 · 오른쪽 칸 각각)을 탭한다 | 말풍선이 그 유닛 아래에 서고 꼬리가 그 칸을 가리킨다. 맵 위에 `Episode n, unit NN` · 영어 제목 띠가 선다. 레슨은 아직 열리지 않는다 |
+| CB2 | iOS · Android | CB1에서 `Start` | 레슨 첫 화면이 서고, 나가면 맵에 말풍선 · 띠가 남아 있지 않다 |
+| CB3 | iOS · Android | 말풍선 밖을 탭 / Android 시스템 뒤로 | 말풍선과 띠가 함께 사라지고 맵은 움직이지 않는다 |
+| CB4 | iOS · Android | 문화 · 최종 노드를 탭 | 제목 줄이 `Culture: “…”` · `Final test: “…”`이고 띠 번호가 표지 00부터 센 자리다 |
+| CB5 | iOS · Android | 끝낸 레슨 · 안 끝낸 레슨을 각각 탭 | 진행 줄이 `N/N activities · 100%` · `0/N activities · 0%`이고 N이 레슨 화면의 `Lesson 1 / N`과 같다 |
+| CB6 | iOS · Android | 잠긴 노드 · 표지 노드를 탭 | 잠긴 노드는 아무 일이 없고, 표지는 말풍선 없이 표지 화면을 연다 |
+| CB7 | iOS(VoiceOver) · Android(TalkBack) | 말풍선을 열고 낭독을 넘긴다 | 제목 → 진행 → `Start` 순서이고 뒤의 맵 · 전역 머리는 읽히지 않는다 |
+| CB8 | iOS · Android | 학습자 프로필이 없는 계정으로 u02 레슨의 `Start` | 프로필 가드가 선다(말풍선 전에는 서지 않는다) |
+
+### 실행 기록
+
+| 날짜 | 기기 | 결과 |
+| --- | --- | --- |
+| 2026-10-17 | Android 에뮬레이터(Pixel 8, `bundled`) | CB1 **부분** — u02 Lesson 1(왼쪽 칸) 탭으로 `Episode 2, unit 01` · `Check-in` 띠와 `Lesson 1: “Check-in”` · `16/16 activities` 말풍선이 섰고 꼬리가 왼쪽 칸을 가리켰다. CB2 ~ CB8 · iOS 미실행 |

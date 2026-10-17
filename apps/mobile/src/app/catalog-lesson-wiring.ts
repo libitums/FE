@@ -25,6 +25,8 @@ import type { NavAction } from "./nav-state";
 
 export type CatalogLessonWiring = {
   readonly onStartCatalogUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  /** 맵 말풍선의 진행 줄 전체 수 — 레슨은 표시 문항 수, 최종 테스트는 턴 수입니다. 짓지 못하면 0. */
+  readonly catalogUnitItemCountOf: (episodeId: string, unitKey: CatalogUnitKey) => number;
   readonly onExitCatalogSession: () => void;
   readonly onFinishCatalogActivity: (
     episodeId: string,
@@ -170,6 +172,19 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
   };
 
   return {
+    catalogUnitItemCountOf: (episodeId, unitKey) => {
+      const section = sectionOf(episodeId);
+      if (section === null) return 0;
+      if (catalogUnitRoleOf(section, unitKey) === "final") {
+        return (
+          catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill)?.turns
+            .length ?? 0
+        );
+      }
+      return (
+        catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill)?.shownItemCount ?? 0
+      );
+    },
     onStartCatalogUnit: (episodeId, unitKey) => {
       if (!canStartCatalogUnit(catalogSections, episodeId, unitKey, catalogProgress)) return;
       const section = sectionOf(episodeId);
