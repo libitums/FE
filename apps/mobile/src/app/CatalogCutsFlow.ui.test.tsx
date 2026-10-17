@@ -147,6 +147,25 @@ describe("CatalogCoverFlow", () => {
     }
   });
 
+  test("[UF1b] 표지에는 그림이 있는 첫 컷의 그림이 깔리고, 그림 있는 컷이 없으면 깔리지 않는다", () => {
+    const [narration, line] = views;
+    mountCover({
+      list: [
+        { ...narration!, imageUrl: null },
+        { ...line!, imageUrl: "https://cdn/pre-2.jpg" },
+        { ...line!, index: 2, imageUrl: "https://cdn/pre-3.jpg" },
+      ],
+    });
+    expect(screen.getByTestId("narrative-background").querySelector("image")).toHaveAttribute(
+      "src",
+      "https://cdn/pre-2.jpg",
+    );
+    cleanup();
+
+    mountCover();
+    expect(screen.queryByTestId("narrative-background")).not.toBeInTheDocument();
+  });
+
   test("[UF2] Next는 onContinue 한 번과 함께 컷으로 넘어가고, 같은 틱 연타도 한 번이다", () => {
     const props = mountCover();
 

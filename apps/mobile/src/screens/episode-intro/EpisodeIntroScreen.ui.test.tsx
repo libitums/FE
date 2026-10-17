@@ -37,6 +37,21 @@ test("[I1] 에피소드의 두 줄을 그리고, 한 머리말로 묶어 읽는�
   expect(heading).toHaveAttribute("accessibility-label", "Episode 0. Tutorial.");
 });
 
+test("[I1b] 장면 그림을 받으면 화면 전체에 깔고, 받지 않으면 어두운 면만 그린다", () => {
+  renderIntro({ backgroundImageUrl: "https://cdn/content/images/u01/pre-1.jpg" });
+  const background = screen.getByTestId("narrative-background");
+  expect(background.querySelector("image")).toHaveAttribute(
+    "src",
+    "https://cdn/content/images/u01/pre-1.jpg",
+  );
+  expect(background.closest('[accessibility-elements-hidden="true"]')).not.toBeNull();
+});
+
+test("[I1c] 그림이 없거나 null이면 장면 그림 층이 없다", () => {
+  renderIntro();
+  expect(screen.queryByTestId("narrative-background")).not.toBeInTheDocument();
+});
+
 test("[I2] header trait를 가진 요소가 머리말 하나다", () => {
   renderIntro();
 
