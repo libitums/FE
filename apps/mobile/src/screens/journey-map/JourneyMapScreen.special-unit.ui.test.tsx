@@ -13,7 +13,7 @@ import {
   type TutorialProgressProps,
 } from "./JourneyMapScreen.test-support";
 
-// `ui` 계층: 맵 화면이 스페셜 8종(튜토리얼 5 + 카탈로그 표지 · 문화 · 최종)을 `SpecialUnit`으로,
+// `ui` 계층: 맵 화면이 스페셜 7종(튜토리얼 5 + 카탈로그 표지 · 최종)을 `SpecialUnit`으로,
 // 스텝 · 카탈로그 레슨을 `LearningUnit`으로 그리는지 봅니다. 상태 표 · 톤 · 낭독 이름의 계산은 unit이
 // 집니다.
 
@@ -22,7 +22,6 @@ afterEach(() => {
 });
 
 const lessonKeys = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"];
-const lessonOnlyKeys = lessonKeys.filter((key) => key !== "CULT");
 const section: CatalogMapSection = {
   kind: "catalog-ready",
   episodeId: "u01-water",
@@ -105,7 +104,7 @@ describe("JourneyMapScreen 스페셜 유닛", () => {
     );
   });
 
-  test("JMS2. 카탈로그의 표지 · 문화 · 최종은 SpecialUnit이고 레슨은 LearningUnit이다", () => {
+  test("JMS2. 카탈로그의 표지 · 최종은 SpecialUnit이고 레슨 · 문화는 LearningUnit이다", () => {
     render(mapScreen(tutorialAllDone));
 
     const catalogSpecial = idsOf(rootsOf("special")).filter((id) =>
@@ -113,14 +112,13 @@ describe("JourneyMapScreen 스페셜 유닛", () => {
     );
     expect(catalogSpecial).toEqual([
       "ui-lynx-special-unit-catalog-cover-u01-water",
-      "ui-lynx-special-unit-catalog-unit-u01-water-CULT",
       "ui-lynx-special-unit-catalog-unit-u01-water-RP",
     ]);
     const catalogLessons = idsOf(rootsOf("learning")).filter((id) =>
       (id ?? "").startsWith("ui-lynx-learning-unit-catalog-"),
     );
     expect(catalogLessons).toEqual(
-      lessonOnlyKeys.map((key) => `ui-lynx-learning-unit-catalog-unit-u01-water-${key}`),
+      lessonKeys.map((key) => `ui-lynx-learning-unit-catalog-unit-u01-water-${key}`),
     );
   });
 
@@ -143,7 +141,7 @@ describe("JourneyMapScreen 스페셜 유닛", () => {
 
       const roots = rootsOf("special");
       // 튜토리얼 다섯 + 카탈로그 셋 — 비어 있으면 아래 단언이 헛돕니다.
-      expect(roots).toHaveLength(8);
+      expect(roots).toHaveLength(7);
       for (const root of roots) {
         const testId = root.getAttribute("data-testid") ?? "";
         expect(root.querySelector(`[data-testid="${testId}-badge"]`)).toBeNull();
@@ -179,7 +177,7 @@ describe("JourneyMapScreen 스페셜 유닛", () => {
     expect(onStartEpisodeIntroUnit).toHaveBeenCalledWith("tutorial-intro");
   });
 
-  test("JMS5. 진행 확인 중에는 스페셜 8종이 checking이고 loading으로 끝나며 탭이 무반응이다", () => {
+  test("JMS5. 진행 확인 중에는 스페셜 7종이 checking이고 loading으로 끝나며 탭이 무반응이다", () => {
     const onStartEpisodeIntroUnit = vi.fn<(id: string) => void>();
     const onStartMessengerUnit = vi.fn<(id: string) => void>();
     const catalog = catalogOf();
@@ -193,7 +191,7 @@ describe("JourneyMapScreen 스페셜 유닛", () => {
     );
 
     const roots = rootsOf("special");
-    expect(roots).toHaveLength(8);
+    expect(roots).toHaveLength(7);
     for (const root of roots) {
       expect(root).toHaveAttribute("data-status", "checking");
       expect(root).toHaveAttribute("accessibility-traits", "disabled");

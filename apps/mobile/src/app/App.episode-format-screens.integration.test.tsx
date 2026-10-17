@@ -242,7 +242,7 @@ test("ES5. (AC5) 맵: 세 에피소드 모두 CULT 노드가 Culture 라벨이�
   for (const [index, episodeId] of [u01, u02, u03].entries()) {
     expect(node(episodeId, "CULT")).toHaveAttribute(
       "accessibility-label",
-      `special, Episode ${index + 1}. Culture, locked`,
+      `Episode ${index + 1}. Culture, locked`,
     );
     const nodes = Array.from(
       document.querySelectorAll(

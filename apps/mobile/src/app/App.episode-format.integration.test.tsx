@@ -43,10 +43,7 @@ test("EF1. (AC4) 표지만 끝낸 진행: u01 구획에 노드 10개(레슨 8 + 
   expect(nodes).toHaveLength(10);
   expect(status(u01, "S1")).toBe("available");
   for (const key of nodeKeys.slice(1)) expect(status(u01, key)).toBe("default");
-  expect(node(u01, "CULT")).toHaveAttribute(
-    "accessibility-label",
-    "special, Episode 1. Culture, locked",
-  );
+  expect(node(u01, "CULT")).toHaveAttribute("accessibility-label", "Episode 1. Culture, locked");
   tapNode(u01, "CULT");
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   for (const id of activityScreenIds) expect(screen.queryByTestId(id)).not.toBeInTheDocument();

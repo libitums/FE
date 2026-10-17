@@ -102,14 +102,17 @@ describe("SPI2. 표지를 끝낸 진행", () => {
 describe("SPI3. 튜토리얼 최종을 통과한 진행의 카탈로그", () => {
   afterEach(resetApp);
 
-  test("표지는 available이고 문화 · 최종은 default이며 레슨은 LearningUnit이다", async () => {
+  test("표지는 available이고 문화 · 최종은 default이며 레슨 · 문화는 LearningUnit이다", async () => {
     await boot({});
 
     expect(cover(u01)).toHaveAttribute("data-status", "available");
     expect(status(u01, "CULT")).toBe("default");
     expect(status(u01, "RP")).toBe("default");
     expect(node(u01, "CULT").getAttribute("data-testid")).toBe(
-      `ui-lynx-special-unit-catalog-unit-${u01}-CULT`,
+      `ui-lynx-learning-unit-catalog-unit-${u01}-CULT`,
+    );
+    expect(node(u01, "RP").getAttribute("data-testid")).toBe(
+      `ui-lynx-special-unit-catalog-unit-${u01}-RP`,
     );
     expect(node(u01, "S1").getAttribute("data-testid")).toBe(
       `ui-lynx-learning-unit-catalog-unit-${u01}-S1`,
@@ -117,10 +120,10 @@ describe("SPI3. 튜토리얼 최종을 통과한 진행의 카탈로그", () => 
     expect(screen.queryByTestId(`ui-lynx-special-unit-catalog-unit-${u01}-S1`)).toBeNull();
   });
 
-  test("표지를 누르면 표지 화면이 서고 잠긴 문화는 눌러도 맵에 남는다", async () => {
+  test("표지를 누르면 표지 화면이 서고 잠긴 최종은 눌러도 맵에 남는다", async () => {
     await boot({});
 
-    tapId(`ui-lynx-special-unit-catalog-unit-${u01}-CULT`);
+    tapId(`ui-lynx-special-unit-catalog-unit-${u01}-RP`);
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
     fireEvent.tap(cover(u01), {});
@@ -146,13 +149,14 @@ describe("SPI4. 실데이터 낭독 이름", () => {
     );
   });
 
-  test("카탈로그 문화의 이름은 special, Episode 1. Culture, locked이다", async () => {
+  test("카탈로그 최종의 이름은 special, Episode 1. Final test, locked이고 문화는 special 접두가 없다", async () => {
     await boot({});
 
-    expect(node(u01, "CULT")).toHaveAttribute(
+    expect(node(u01, "RP")).toHaveAttribute(
       "accessibility-label",
-      "special, Episode 1. Culture, locked",
+      "special, Episode 1. Final test, locked",
     );
+    expect(node(u01, "CULT")).toHaveAttribute("accessibility-label", "Episode 1. Culture, locked");
     expect(cover(u01).getAttribute("accessibility-label")).toMatch(/^special, Episode 1\. /);
   });
 });

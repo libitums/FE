@@ -122,7 +122,7 @@ describe("JourneyMapScreen catalog slot", () => {
   });
 
   test("UCN1. 문화 노드는 Culture 라벨로 서고 진행에 따라 잠김 · 열림 · 끝이 다른 레슨과 같은 규칙이며 고리가 없다", () => {
-    const node = () => screen.getByTestId("ui-lynx-special-unit-catalog-unit-u01-water-CULT");
+    const node = () => screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-CULT");
     const base = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7"];
     const states = [
       { done: base, status: "default" },
@@ -138,16 +138,15 @@ describe("JourneyMapScreen catalog slot", () => {
         }),
       );
       expect(node()).toHaveAttribute("data-status", status);
-      expect(node().getAttribute("accessibility-label") ?? "").toMatch(
-        /^special, Episode 1\. Culture\b/,
-      );
+      expect(node().getAttribute("accessibility-label") ?? "").toMatch(/^Episode 1\. Culture\b/);
+      expect(node()).toHaveAttribute("data-narrative", "none");
       expect(screen.getAllByText("Culture").length).toBeGreaterThan(0);
       expect(screen.queryAllByText("Lesson 9")).toHaveLength(0);
       unmount();
     }
   });
 
-  test("UCN1b. 열린 문화 노드와 열린 최종 노드는 같은 별 아이콘이고 열린 레슨 노드(play)의 아이콘과는 다르다", () => {
+  test("UCN1b. 열린 문화 노드(원형) 아이콘은 열린 레슨 노드(play)와 열린 최종 노드(별)의 아이콘과 모두 다르다", () => {
     const iconOf = (done: readonly string[], key: string): string => {
       const { unmount } = render(
         mapScreen({
@@ -155,7 +154,7 @@ describe("JourneyMapScreen catalog slot", () => {
           completedEpisodeFinalIds: ["tutorial-final-test"],
         }),
       );
-      const prefix = key === "S1" ? "ui-lynx-learning-unit" : "ui-lynx-special-unit";
+      const prefix = key === "RP" ? "ui-lynx-special-unit" : "ui-lynx-learning-unit";
       const node = screen.getByTestId(`${prefix}-catalog-unit-u01-water-${key}`);
       expect(node).toHaveAttribute("data-status", "available");
       const icon =
@@ -173,7 +172,7 @@ describe("JourneyMapScreen catalog slot", () => {
 
     expect(culture).not.toBe("");
     expect(culture).not.toBe(lesson);
-    expect(culture).toBe(finalTest);
+    expect(culture).not.toBe(finalTest);
     expect(lesson).not.toBe(finalTest);
   });
 
