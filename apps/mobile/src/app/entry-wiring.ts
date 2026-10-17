@@ -17,9 +17,10 @@ import type { LegalDocument } from "../lib/legal-document.contract";
 import {
   entryCompletedEvent,
   entryLoginMethodSelectedEvent,
+  entryReturningLearnerEnteredEvent,
   entryScreenViewedEvent,
 } from "../lib/entry-flow";
-import type { EntryEventSink } from "../lib/entry-flow";
+import type { EntryEventSink, EntryLoginMethod } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import {
   learnerProfileSavedEvent,
@@ -27,7 +28,7 @@ import {
   sameLearnerProfile,
 } from "../lib/learner-profile";
 import type { LearnerProfileOutcome, LearnerProfileRecord } from "../lib/learner-profile.contract";
-import { saveUiLanguage } from "../lib/ui-language";
+import { loadReturningUiLanguage, saveUiLanguage } from "../lib/ui-language";
 import type {
   AuthSession,
   PhoneNumber,
@@ -40,6 +41,7 @@ import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { NavAction } from "./nav-state";
 import { syncPushDevice } from "./push-wiring";
+import { probeEntryRouteAfterLogin } from "./returning-learner-probe";
 import { entryScreenAfterLogin } from "./screen-routing";
 
 export type EntryWiringArgs = {
@@ -78,13 +80,35 @@ export function entryWiring({
   const storeSession = (session: AuthSession) => {
     saveAuthSession(session);
     void syncProgress().catch(() => undefined);
-    void syncLearnerProfile().catch(() => undefined);
     const userId = authUserIdFrom(session.accessToken);
     if (userId === null) return;
     try {
       analyticsUser?.identify(userId);
     } catch {
       // 분석은 화면을 막지 않습니다.
+    }
+  };
+
+  // 로그인 직후 기존 회원인지 판정하고 갈래를 탑니다. 프로필 동기화는 판정 뒤에 시작해, 손님
+  // 프로필 업로드가 판정 조회보다 먼저 서버 행을 만들어 신규 사용자를 오판하지 않게 합니다.
+  const routeAfterLogin = async (method: EntryLoginMethod): Promise<void> => {
+    const route = await probeEntryRouteAfterLogin();
+    void syncLearnerProfile().catch(() => undefined);
+    switch (route) {
+      case "journey-map": {
+        const language = loadReturningUiLanguage();
+        saveUiLanguage(language);
+        setEntryLanguage(language);
+        entryEventSink?.(entryReturningLearnerEnteredEvent(method));
+        dispatch({ type: "enterApp" });
+        void syncPushDevice({ ask: true });
+        return;
+      }
+      case "language-select": {
+        entryEventSink?.(entryScreenViewedEvent("language-select"));
+        dispatch({ type: "push", screen: { name: "language-select" } });
+        return;
+      }
     }
   };
 
@@ -107,6 +131,7 @@ export function entryWiring({
           void refreshAuthSession(authState.refreshToken).then((result) => {
             if (result.status === "refreshed") {
               storeSession(result.session);
+              void syncLearnerProfile().catch(() => undefined);
               dispatch({ type: "enterApp" });
               // 이미 허용했으면 조용히 토큰을 올립니다 — 마지막 활동 시각도 이때 갱신됩니다(ADR-0034).
               void syncPushDevice({ ask: false });
@@ -151,8 +176,7 @@ export function entryWiring({
       if (result.status === "signed-in") {
         storeSession(result.session);
         entryEventSink?.(entryLoginMethodSelectedEvent(method));
-        entryEventSink?.(entryScreenViewedEvent("language-select"));
-        dispatch({ type: "push", screen: entryScreenAfterLogin({ method }) });
+        await routeAfterLogin(method);
         return { status: "signed-in" };
       }
       return result;
@@ -188,8 +212,7 @@ export function entryWiring({
       const result = await verifyPhoneOtp(request);
       if (result.status === "verified") {
         storeSession(result.session);
-        entryEventSink?.(entryScreenViewedEvent("language-select"));
-        dispatch({ type: "push", screen: { name: "language-select" } });
+        await routeAfterLogin("phone");
         return { status: "verified" };
       }
       return result;
