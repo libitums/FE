@@ -239,3 +239,48 @@ describe("pressed shade css", () => {
     );
   });
 });
+
+describe("special unit css", () => {
+  const css = (): string =>
+    readCss("special-unit/special-unit.css").replace(/\/\*[\s\S]*?\*\//g, "");
+  const flat = (text: string): string => text.replace(/\s+/g, " ");
+  const notStates =
+    "\\:not\\(\\.ui-lynx-special-unit-default\\)\\:not\\(\\.ui-lynx-special-unit-checking\\)";
+  const reducedPressed = (target: string): RegExp =>
+    new RegExp(
+      `\\.ui-lynx-special-unit-motion-reduced${notStates}:active\\s+\\.ui-lynx-special-unit-${target}`,
+    );
+
+  test("SC2. 눌림은 Face의 translate 이동이고 transition 한 선언에 transform과 색이 함께 있다", () => {
+    const pressed = ruleBody(
+      css(),
+      new RegExp(`\\.ui-lynx-special-unit${notStates}:active\\s+\\.ui-lynx-special-unit-face`),
+    );
+    expect(flat(pressed)).toContain("transform: translate(5px, 6px)");
+    const transition = /transition:\s*([^;]+);/.exec(
+      ruleBody(css(), /\.ui-lynx-special-unit-face/),
+    );
+    expect(flat(transition?.[1] ?? "")).toContain(
+      "transform var(--libitum-motion-duration-pressed)",
+    );
+    expect(flat(transition?.[1] ?? "")).toContain(
+      "background-color var(--libitum-motion-duration-color)",
+    );
+  });
+
+  test("SC3. reduced는 이동을 없애고 검은 막의 투명도로 눌림을 보인다", () => {
+    expect(ruleBody(css(), reducedPressed("face"))).toMatch(/transform:\s*none/);
+    const reducedFace = ruleBody(
+      css(),
+      /\.ui-lynx-special-unit-motion-reduced\s+\.ui-lynx-special-unit-face/,
+    );
+    expect(reducedFace).toMatch(/transition:\s*background-color/);
+    expect(reducedFace).not.toContain("transform");
+    const shade = ruleBody(css(), /\.ui-lynx-special-unit-pressed-shade/);
+    expect(shade).toMatch(/opacity:\s*0\s*;/);
+    expect(shade).toMatch(/background-color:\s*var\(--libitum-color-black\)/);
+    expect(ruleBody(css(), reducedPressed("pressed-shade"))).toContain(
+      "opacity: var(--libitum-opacity-pressed-shade",
+    );
+  });
+});
