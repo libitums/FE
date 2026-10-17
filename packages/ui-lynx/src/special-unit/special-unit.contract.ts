@@ -1,4 +1,5 @@
-import type { Motion } from "../motion/motion.contract";
+import { color } from "@libitums/design-tokens";
+import { motionClassName, type Motion } from "../motion/motion.contract";
 
 export type SpecialUnitStatus = "default" | "checking" | "available" | "active" | "clear";
 
@@ -24,23 +25,77 @@ export type SpecialUnitContract = {
   readonly focused: boolean;
 };
 
+const statuses = new Set<SpecialUnitStatus>([
+  "default",
+  "checking",
+  "available",
+  "active",
+  "clear",
+]);
+
+// Available만 접미사가 없습니다 — 열려 있고 손대지 않은 평범한 상태라 목록을 훑을 때마다 읽을 값어치가 없습니다.
+const statusSuffixes: Readonly<Record<SpecialUnitStatus, string | undefined>> = {
+  default: "locked",
+  checking: "loading",
+  available: undefined,
+  active: "current",
+  clear: "completed",
+};
+
 export function getSpecialUnitContract(
-  _props: SpecialUnitProps,
-  _contextMotion: Motion = "standard",
+  props: SpecialUnitProps,
+  contextMotion: Motion = "standard",
 ): SpecialUnitContract {
+  if (!props || typeof props !== "object") {
+    throw new Error("SpecialUnit props must be an object");
+  }
+  if (typeof props.accessibilityLabel !== "string" || !props.accessibilityLabel.trim()) {
+    throw new Error("SpecialUnit accessibilityLabel must not be empty");
+  }
+
+  const status = props.status ?? "default";
+  if (!statuses.has(status)) throw new Error(`Unsupported SpecialUnit status: ${status}`);
+  if (props.id !== undefined && (typeof props.id !== "string" || !props.id.trim())) {
+    throw new Error("SpecialUnit id must not be empty");
+  }
+  if (props.focused !== undefined && typeof props.focused !== "boolean") {
+    throw new Error("SpecialUnit focused must be a boolean");
+  }
+  if (props.bindtap !== undefined && typeof props.bindtap !== "function") {
+    throw new Error("SpecialUnit bindtap must be a function");
+  }
+
+  const interactive = status !== "default" && status !== "checking";
+  const focused = interactive && props.focused === true;
+  const className = [
+    "ui-lynx-special-unit",
+    `ui-lynx-special-unit-${status}`,
+    focused ? "ui-lynx-special-unit-focused" : undefined,
+    motionClassName("ui-lynx-special-unit", contextMotion),
+  ]
+    .filter((value): value is string => value !== undefined)
+    .join(" ");
+
+  // 아이콘 색은 SVG 문자열 안이라 CSS 변수를 못 씁니다 — 토큰의 JS 값을 고릅니다.
+  // 「확인 중」은 면(gray-300)보다 한 단계 진한 회색으로 자리만 잡습니다.
+  const iconColor = status === "checking" ? color.gray[400] : color.white;
+  const suffix = statusSuffixes[status];
+
   return {
-    testId: "ui-lynx-special-unit",
-    status: "default",
-    className: "",
-    accessibilityLabel: "",
-    traits: "disabled",
-    interactive: false,
-    iconColor: "",
-    focused: false,
+    testId: props.id ? `ui-lynx-special-unit-${props.id}` : "ui-lynx-special-unit",
+    status,
+    className,
+    accessibilityLabel: [props.accessibilityLabel.trim(), suffix]
+      .filter((value): value is string => value !== undefined)
+      .join(", "),
+    traits: interactive ? "button" : "disabled",
+    interactive,
+    iconColor,
+    focused,
   };
 }
 
 /** reduced이고 Default · Checking이 아니면 true — 눌림 막을 렌더한다. */
-export function hasSpecialUnitPressedShade(_status: SpecialUnitStatus, _motion: Motion): boolean {
-  return false;
+export function hasSpecialUnitPressedShade(status: SpecialUnitStatus, motion: Motion): boolean {
+  return motion === "reduced" && status !== "default" && status !== "checking";
 }

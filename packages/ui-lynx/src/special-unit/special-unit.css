@@ -1,1 +1,142 @@
 /* design-system Special Unit 정본(f3271ae)의 토큰 미정 기하값입니다. */
+.ui-lynx-special-unit {
+  width: 124px;
+  height: 124px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.ui-lynx-special-unit-halo {
+  width: 124px;
+  height: 124px;
+  position: relative;
+  border-radius: 40px;
+  background-color: transparent;
+  transition: background-color var(--libitum-motion-duration-color)
+    var(--libitum-motion-easing-easing);
+}
+
+/* focus ring 자리이자 Shade · Face를 담는 크기 고정 상자입니다. */
+.ui-lynx-special-unit-body {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 109px;
+  height: 110px;
+  border-radius: 32px;
+}
+
+/* Shade는 별도 view입니다 — 눌림에서 Face만 움직이고 Shade는 제자리입니다. */
+.ui-lynx-special-unit-shade {
+  width: 104px;
+  height: 104px;
+  position: absolute;
+  border-radius: 32px;
+  top: 6px;
+  left: 5px;
+  transition: background-color var(--libitum-motion-duration-color)
+    var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-special-unit-face {
+  width: 104px;
+  height: 104px;
+  position: absolute;
+  border-radius: 32px;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing),
+    background-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-special-unit-icon {
+  width: 46px;
+  height: 46px;
+}
+
+.ui-lynx-special-unit-default .ui-lynx-special-unit-face {
+  background-color: var(--libitum-color-gray-500);
+}
+
+.ui-lynx-special-unit-default .ui-lynx-special-unit-shade {
+  background-color: var(--libitum-color-gray-600);
+}
+
+.ui-lynx-special-unit-checking .ui-lynx-special-unit-face {
+  background-color: var(--libitum-color-gray-300);
+}
+
+.ui-lynx-special-unit-checking .ui-lynx-special-unit-shade {
+  background-color: transparent;
+}
+
+.ui-lynx-special-unit-available .ui-lynx-special-unit-face {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-special-unit-available .ui-lynx-special-unit-shade {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.ui-lynx-special-unit-active .ui-lynx-special-unit-face {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-special-unit-active .ui-lynx-special-unit-shade {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.ui-lynx-special-unit-active .ui-lynx-special-unit-halo {
+  background-color: var(--libitum-color-brand-reward-disabled-surface);
+}
+
+.ui-lynx-special-unit-clear .ui-lynx-special-unit-face {
+  background-color: var(--libitum-color-feedback-correct);
+}
+
+.ui-lynx-special-unit-clear .ui-lynx-special-unit-shade {
+  background-color: var(--libitum-color-feedback-correct-text);
+}
+
+/* prettier-ignore */
+.ui-lynx-special-unit:not(.ui-lynx-special-unit-default):not(.ui-lynx-special-unit-checking):active .ui-lynx-special-unit-face {
+  transform: translate(5px, 6px);
+}
+
+.ui-lynx-special-unit-focused .ui-lynx-special-unit-body {
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+/* 움직임 줄이기: Face를 옮기지 않고 색 전환만 남깁니다. 눌림은 검은 막의 투명도로 보입니다. */
+.ui-lynx-special-unit-motion-reduced .ui-lynx-special-unit-face {
+  transition: background-color var(--libitum-motion-duration-color)
+    var(--libitum-motion-easing-easing);
+}
+
+/* prettier-ignore */
+.ui-lynx-special-unit-motion-reduced:not(.ui-lynx-special-unit-default):not(.ui-lynx-special-unit-checking):active .ui-lynx-special-unit-face {
+  transform: none;
+}
+
+.ui-lynx-special-unit-pressed-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 32px;
+  background-color: var(--libitum-color-black);
+  opacity: 0;
+  transition: opacity var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+/* prettier-ignore */
+.ui-lynx-special-unit-motion-reduced:not(.ui-lynx-special-unit-default):not(.ui-lynx-special-unit-checking):active .ui-lynx-special-unit-pressed-shade {
+  opacity: var(--libitum-opacity-pressed-shade, 0.08);
+}
