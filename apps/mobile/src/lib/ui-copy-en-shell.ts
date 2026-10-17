@@ -7,6 +7,7 @@ import type {
   ShellCopy,
 } from "./ui-copy-sections.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
+import type { SpecialUnitMapCopy } from "../screens/journey-map/journey-special-unit.contract";
 import { n } from "./ui-copy-en-plural";
 
 export const commonEn: CommonCopy = {
@@ -78,6 +79,11 @@ export const learningShellEn: LearningShellCopy = {
   },
   headerNoQuestions: (formLabel) => `${formLabel}, no questions`,
   headerQuestionOf: (formLabel, ordinal, count) => `${formLabel}, question ${ordinal} of ${count}`,
+};
+
+export const specialUnitMapEn: SpecialUnitMapCopy = {
+  eyebrow: "SPECIAL",
+  accessibilityLabel: (name) => `special, ${name}`,
 };
 
 export const progressLoadEn: ProgressLoadCopy = {
