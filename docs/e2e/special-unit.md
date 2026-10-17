@@ -72,7 +72,20 @@ SUE5의 보간은 보간이 안 돌아 즉시 이동이어도 결과 위치가 �
 
 | 회차 | 날짜 | 커밋 | 결과 |
 | --- | --- | --- | --- |
-| | | | |
+| 1 | 2026-10-17 | d53a372a | 부분 — 아래 |
+
+회차 1 기록: 기존 설치 Host에 내장 번들(2,170,220 bytes, `.env.local` 있음)을 바꿔 넣고 `--bundle-url=main.lynx`로 실행, 확인자 메인 세션, 시뮬레이터 `FE-catalog-e2e`(30FAE6C1-AC40-4A1B-BA93-DAF2BE1FE2EB). 진행이 많이 된 계정이라 씨앗 ⓐ(새 설치)는 만들지 못했다.
+
+| 항목 | 결과 |
+| --- | --- |
+| SUE1 | 미실행 — 새 설치 씨앗 없음 |
+| SUE2 | 부분 통과 — 튜토리얼 표지 · 메신저 · 전화 · 비주얼 노벨 · 최종이 초록 면 · 짙은 초록 두께 · 흰 오각 별, `SPECIAL` 짙은 초록 + 검은 제목. 자물쇠 · 체크 · 배지 · 종류별 아이콘 없음, 스텝 노드는 원형 그대로. 잠김 · 열림 상태는 이 계정에 없음 |
+| SUE3 | 부분 통과 — 카탈로그 표지 · 최종 끝(초록), 문화 열림(주황 면 · 진한 주황 두께 · `SPECIAL` 주황), `Lesson n` 원형. 잠김은 이 계정에 없음 |
+| SUE4 | 부분 통과(접근성 트리, VoiceOver 발화는 판정 불가) — `special, Episode intro, completed` · `special, A Message from Minseo, completed` · `special, Episode 1. Episode intro, completed`, traits Button, 높이 124, 별 · 라벨이 따로 요소로 잡히지 않음 |
+| SUE5 | 미실행 — 누른 채 유지하는 입력을 자동화로 재현하지 못함 |
+| SUE6 | 미실행 |
+
+발견: 첫 빌드에서 배지가 크기 · 색 없이 사라지고 라벨만 남았다 — 앱 진입점이 `@libitums/ui-lynx/special-unit/styles.css`를 부르지 않았다(jsdom은 CSS를 적용하지 않아 ui 테스트가 통과). d53a372a에서 import와 회귀 테스트(SC8)를 더하고 다시 확인했다.
 
 (실행된 회차가 아직 없다.)
 
