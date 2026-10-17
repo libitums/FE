@@ -93,7 +93,6 @@
 디코더는 `"RP"`만 특별히 본다(지금 그대로). `CULT`는 `units`의 아홉째라 맵 노드 **`Lesson 9`**(role `lesson`, 낭독 `Episode 1. Lesson 9`) · 진행 키 `"CULT"` · 이벤트 `unitKey: "CULT"` ·
 `unitRole: "lesson"` · 계획 · 결과 화면이 모두 기존 레슨 경로를 탄다. 제품 코드에 `"CULT"` 리터럴이 없다. 문화 단계 전용 라벨 · 아이콘은 PR ②와 함께 본다(Q5).
 ⟨2026-10-16 — PR ②⟩ **노드 `Lesson 9`는 이 변경의 상태다** — 이제 문항이 모두 문화 유형인 유닛은 콘텐츠로 가려 노드 role `culture`(`Culture` · `lantern-05` · `Episode n. Culture` · 한 줄 전용)로 선다([ADR-0066](0066-episode-format-screens.md) D7).
-⟨2026-10-17⟩ 그 노드의 아이콘 `lantern-05`은 걷혔다 — 문화 노드는 `SpecialUnit`(오각 별 · 상태는 색으로만)이다([ADR-0068](0068-special-unit-map-marker.md)). 아래 「적용 기록」 ⟨2026-10-17⟩.
 진행 키 · 이벤트 `unitRole` · 계획 · 결과 화면은 그대로 레슨 경로이고 **`"CULT"` 리터럴 0도 그대로다.**
 
 ### D8. 매핑 — 「베끼기 기준」으로 소리 없는 유형을 가르고, 화면이 없는 유형은 `screen-pending`으로 건너뛴다
@@ -255,7 +254,6 @@ D1 ~ D6 · D9 · D11 · D12와 「이름으로 분기하지 않는다」는 그�
 
 - **D7** — 문화 단계 전용 라벨 · 아이콘이 섰다(Q5가 닫혔다). 판별은 이름이 아니라 **콘텐츠**다 — 문항이 하나 이상이고 모두 `CULTURE_CARD` · `CULTURE_CHECK`인 유닛. 맵 구획이 `cultureKeys`로 싣고 노드 role만 `culture`가 된다.
   제품 코드의 `"CULT"` 리터럴은 여전히 0이다. 배치(한 줄 전용) · 아이콘(`lantern-05`)은 사용자 미확인이다(ADR-0066 Q4 · Q5).
-  ⟨2026-10-17⟩ 아이콘은 이제 `lantern-05`이 아니다 — 아래 「적용 기록」 ⟨2026-10-17⟩.
 - **D8** — 네 행: `CULTURE_CARD` → 새 학습형 `culture-card`, `CULTURE_CHECK` → 단어 선택(보기 번역 줄 — 늘 보임, 사용자 결정), `SYLLABLE_BUILD` → 새 학습형 `syllable-build`, `LISTEN_BUILD` → `audio-missing`(사용자 결정).
   **「구현 판단」 2의 `screen-pending`은 사용자 결정으로 디자인 쪽(`audio-missing`)으로 닫혔다.** 「소리가 와도 서지 않는다」는 사실은 그대로다 — 그래서 `LISTEN_BUILD`의 `audio-missing`은 「소리가 오면 화면을 만든다」는 뜻이다(ADR-0066 D8).
   건너뜀 사유 분포(세 에피소드 합)는 `screen-pending` 53 → 15(말하기 둘), `audio-missing` +13.
@@ -276,8 +274,3 @@ D1 ~ D7 · D9 ~ D12는 그대로다.
 - **「측정」** — 이 문서의 이벤트 해석은 그대로이고, `episode_lesson_finished`에 속성 `skippedCount`가 더해졌다([ADR-0029](0029-product-analytics-posthog.md) D14 적용 기록 ⟨2026-10-16 — PR ③⟩).
   `S5`의 `skippedItemCount`는 말하기 셋이 매핑에서 빠지지 않아 줄었다(u01 6 → 3).
 - ⚠ **기기 확인은 일부다** — [말하기 화면 e2e](../e2e/episode-format-speaking.md).
-
-### ⟨2026-10-17 — Special Unit⟩ 문화 노드의 표식
-
-적용 기록이다. 결정은 [ADR-0068](0068-special-unit-map-marker.md)이 지고 이 문서의 결정은 바뀌지 않는다. 위 D7 · ⟨PR ②⟩ 기록이 말한 문화 노드의 아이콘 `lantern-05`이 스페셜 항목 공통 `SpecialUnit`(오각 별 · 글리프 없음, **사용자 결정**)으로 바뀌었다.
-판별(콘텐츠) · 진행 키 `"CULT"` · 이벤트 `unitRole: "lesson"` · 「이름으로 분기하지 않는다」는 그대로다.

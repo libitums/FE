@@ -1,6 +1,6 @@
 # Special Unit
 
-`SpecialUnit`은 학습 목록에서 레슨이 아닌 단위(표지 · 대화 장면 · 문화 · 최종 테스트 등)를 나타내는
+`SpecialUnit`은 학습 목록에서 레슨이 아닌 단위(표지 · 대화 장면 · 최종 테스트 등)를 나타내는
 124px 자리의 둥근 사각 control이다. 디자인 계약은 `libitums/design-system`의 `components/special-unit.md`
 revision `f3271ae`을 따른다 — 아이콘 하나만 벗어난다(아래). 결정의 근거는 앱 저장소
 [ADR-0068](../../../docs/adr/0068-special-unit-map-marker.md)이 진다.

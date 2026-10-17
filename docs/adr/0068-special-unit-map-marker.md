@@ -3,21 +3,20 @@
 - 상태: **채택 — 클라이언트 쪽.** 사용자 결정(2026-10-17)은 둘이다 — **아이콘은 오각 별(`five-pointed-star`)**(정본의 `4-nature/star`가 아니다 — 시안과 일치) ·
   **별 아이콘 통일(최종 테스트 포함) · 아래+오른쪽 두께 · 자물쇠 · 체크는 스페셜 유닛에서만 걷는다**(요구사항 비고). 나머지 셋(카탈로그 낭독 이름에 `Episode n.` 유지 · 맵 바탕 대비는 정본 값 그대로 · testid 개명)은
   **메인이 추천안을 골랐다** — 사용자 명시 승인이 아니다(아래 「사용자 결정과 메인 추천안」).
-  ⚠ **기기 확인이 일부다.** iOS 시뮬레이터 한 회차(진행이 많이 된 계정)가 끝남 · 열림 상태의 면 · 두께 · 별 · 라벨과 접근성 트리를 봤고,
-  **잠김 · 확인 중 · 안내 말풍선 · 눌림 이동 · 동작 줄이기 막 · VoiceOver 발화 · Android는 보지 못했다**([스페셜 유닛 e2e](../e2e/special-unit.md)).
+  ⚠ **기기 확인이 일부다.** iOS 시뮬레이터 한 회차(진행이 많이 된 계정)가 끝남 상태의 면 · 두께 · 별 · 라벨과 접근성 트리를 봤고(그 회차의 「열림」은 정정 전 빌드의 문화 노드 — 적용 기록 ⟨2026-10-17, 문화 노드 정정⟩),
+  **스페셜의 열림 · 잠김 · 확인 중 · 안내 말풍선 · 눌림 이동 · 동작 줄이기 막 · VoiceOver 발화 · Android는 보지 못했다**([스페셜 유닛 e2e](../e2e/special-unit.md)).
 - 날짜: 2026-10-17.
-- 다루는 축: **맵의 레슨이 아닌 단위(스페셜 항목 여덟 종)의 표식** — 어느 컴포넌트가 그리는가(새 컴포넌트 · 기존 `LearningUnit` 넓힘), 아이콘의 출처와 고정, 두께(Shade)를 그리는 수단과 눌림, 상태 표현(글리프 없는 색 예외),
+- 다루는 축: **맵의 레슨이 아닌 단위(스페셜 항목 일곱 종)의 표식** — 어느 컴포넌트가 그리는가(새 컴포넌트 · 기존 `LearningUnit` 넓힘), 아이콘의 출처와 고정, 두께(Shade)를 그리는 수단과 눌림, 상태 표현(글리프 없는 색 예외),
   접근성 이름의 분업, 맵 쪽 공유 항목과 라벨, 카탈로그 레슨 노드와의 분리, Active의 맵 결선, testid, 앱 진입점의 CSS.
-  **다루지 않는 것**: 레슨 노드(튜토리얼 스텝 · 카탈로그 레슨 — `LearningUnit` 그대로), 맵 배치(줄 · 칸 · 간격 규칙 — 바뀌지 않았다), 보상 · 잠금 해제 연출, 「지금 할 것」 노드(Active · Start 말풍선 — 후속 제품 결정), 다크 모드(앱에 없음),
+  **다루지 않는 것**: 레슨 노드(튜토리얼 스텝 · 카탈로그 레슨 — `LearningUnit` 그대로), 카탈로그 문화 노드(원형 `LearningUnit` · `lantern-05` — [ADR-0066](0066-episode-format-screens.md) D7 그대로, 아래 적용 기록 ⟨2026-10-17, 문화 노드 정정⟩), 맵 배치(줄 · 칸 · 간격 규칙 — 바뀌지 않았다), 보상 · 잠금 해제 연출, 「지금 할 것」 노드(Active · Start 말풍선 — 후속 제품 결정), 다크 모드(앱에 없음),
   서버 · 진행 · 이벤트(변경 0).
 - 부분 대체:
-  - [ADR-0066](0066-episode-format-screens.md) D7의 **「아이콘 `@libitums/icons/lynx/lantern-05`(열린 상태에서만 보인다 — 잠김 · 끝은 자물쇠 · 체크)」** — 문화 노드는 이제 `SpecialUnit`(오각 별 · 글리프 없음)이다(D2 · D3). 판별 · 라벨 `Culture` · 낭독 이름 · 한 줄 배치는 그대로다.
-  - [ADR-0024](0024-journey-units-and-special-unit-placement.md) D15의 **카탈로그 노드 아이콘**(⟨2026-10-16⟩ 정정 기록의 `lantern-05` 문면 · 실체화 기록의 role → 아이콘 표 `play` · `lantern-05` · `flag`) — 문화 · 최종은 `SpecialUnit`, `play`는 레슨에만 남는다(D7).
+  - [ADR-0024](0024-journey-units-and-special-unit-placement.md) D15 실체화 기록의 **role → 아이콘 표 중 `final → flag`** — 최종은 `SpecialUnit`이다(D7). 레슨 `play` · 문화 `lantern-05`는 그대로다.
 - 이어받는 결정: [ADR-0024](0024-journey-units-and-special-unit-placement.md) D7(어느 유닛이 특별한가는 콘텐츠 판단) · ⟨2026-10-14⟩ 정정 기록(특별 유닛 · 표지 · 최종은 한 줄을 다 쓴다),
   [ADR-0016](0016-assistive-technology-semantics.md) D3 · D5 · D13(상태는 이름 뒤 접미사 · 잎은 요소가 아니다), [ADR-0031](0031-ui-language-catalog.md) D6(패키지 접미사 낱말은 영어 고정), [ADR-0014](0014-design-system-consumption-verified.md)(토큰은 CSS 커스텀 프로퍼티로),
-  [ADR-0062](0062-progress-cache-first.md) D7(「확인 중」 노드 — 누를 수 없고 접미사 `loading`), [ADR-0065](0065-episode-format-additions.md) · [ADR-0066](0066-episode-format-screens.md)(문화 노드의 판별). 각 ADR에는 적용 기록이 붙었다.
+  [ADR-0062](0062-progress-cache-first.md) D7(「확인 중」 노드 — 누를 수 없고 접미사 `loading`), [ADR-0066](0066-episode-format-screens.md) D7(문화 노드는 원형 `LearningUnit` · `lantern-05` — 바뀌지 않는다). 바뀐 문면이 있는 ADR-0024에는 적용 기록이 붙었다.
 
-**왜 새 번호인가** — ADR-0066 D7의 「아이콘 `lantern-05` · 잠김 · 끝은 자물쇠 · 체크」와 ADR-0024 D15의 노드 아이콘 표 위에 이미 코드 · 테스트가 지어졌다(README 「이미 무언가가 그 위에 지어진 결정이 바뀌면 → 새 번호」).
+**왜 새 번호인가** — 스페셜 항목의 원형 `LearningUnit` 표식(종류별 아이콘 · 배지)과 ADR-0024 D15의 노드 아이콘 표 위에 이미 코드 · 테스트가 지어졌다(README 「이미 무언가가 그 위에 지어진 결정이 바뀌면 → 새 번호」).
 게다가 바뀌는 결정이 하나가 아니다 — 컴포넌트 · 아이콘 · 상태 표현 · 낭독 · testid가 함께 바뀌어 한 번호로 묶는다(같은 README 둘째 줄).
 
 근거 표시: **[코드]** 저장소 코드 · **[정본]** design-system `components/special-unit.md` revision `f3271ae`(2026-10-17) · `foundations/accessibility.md` 「Special Unit 상태 색 예외」 · `foundations/motion.md` · **[실측]** 빌드 · 계산 · **[실기]** iOS 시뮬레이터 관찰 · **[추론]**.
@@ -25,8 +24,8 @@
 
 ## 맥락
 
-1. **레슨과 레슨이 아닌 단위가 같은 모양이었다** [코드]. 스페셜 항목 여덟 종(튜토리얼 표지 · 메신저 · 전화 · 비주얼 노벨 · 최종 테스트, 카탈로그 표지 · 문화 · 최종)이 모두 100px 원형 `LearningUnit`이었고,
-   잠기면 자물쇠만 보여 레슨과 갈리지 않았다. 종류별 아이콘(`bookmark` · `message-02` · `phone` · `book` · `flag` · `lantern-05`)은 한 단위 안에 여러 장면이 섞이면 틀린 정보가 된다.
+1. **레슨과 레슨이 아닌 단위가 같은 모양이었다** [코드]. 스페셜 항목 일곱 종(튜토리얼 표지 · 메신저 · 전화 · 비주얼 노벨 · 최종 테스트, 카탈로그 표지 · 최종)이 모두 100px 원형 `LearningUnit`이었고,
+   잠기면 자물쇠만 보여 레슨과 갈리지 않았다. 종류별 아이콘(`bookmark` · `message-02` · `phone` · `book` · `flag`)은 한 단위 안에 여러 장면이 섞이면 틀린 정보가 된다.
 2. **일곱 파일이 같은 상태 표를 일곱 벌 가졌다** [코드]. 어댑터 여섯(`EpisodeIntro` · `Messenger` · `PhoneCall` · `VisualNovel` · `EpisodeFinal` · `CatalogCover`)과 `CatalogUnitNode`가 `locked → default` · `available` · `completed → clear` · `checking`을 각자 옮겼다.
 3. **카탈로그 레슨 노드가 스페셜 라벨 클래스를 빌려 썼다** [코드]. `CatalogUnitNode`의 레슨 갈래도 `journey-special-unit*`를 써서 스페셜 라벨 구조를 바꾸면 레슨이 딸려 갔다.
 4. **정본이 섰다** [정본]. design-system에 Special Unit 컴포넌트 문서(PR #79)가 병합됐다 — Halo 124 · Face 104(모서리 32) · Shade(오른쪽 5 · 아래 6, 흐림 0) · 아이콘 46 · Status 다섯 · 글리프 없는 상태 색(승인된 예외).
@@ -83,12 +82,13 @@
 - 안내 말풍선: `EpisodeIntroMapItem`이 `layer="guide"`와 `children`(말풍선 — 자체 탭 + 같은 가드)을 넘긴다. 새 boolean prop은 0이다.
 - **라벨은 두 줄, 톤 셋**: 「SPECIAL」(`typography-label-s`) + 제목(`typography-label-m`). 톤 `muted`(Default · Checking — 둘 다 `fg-neutral-muted`) · `brand`(Available · Active — `fg-brand` + 제목 `fg-neutral`) · `correct`(Clear — `feedback-correct-text` + 제목 `fg-neutral`).
   대문자는 문자열 자체다(`text-transform` 미사용). 안내 말풍선 겹에서는 **두 줄 모두** 흰색이다(스크림 위 `fg-brand`는 1.205:1).
-- 맵 배치는 바뀌지 않았다 — 스페셜 여덟 종은 이미 전부 한 줄을 다 쓰는 자리(`solo`)라 124 자리가 칸 폭(최소 248)을 넘지 않는다. 스페셜 줄만 표식 +24 · 「SPECIAL」 줄 +14 높아지고, 자동 스크롤은 셀을 재므로 그대로 따라간다.
+- 맵 배치는 바뀌지 않았다 — 스페셜 일곱 종은 이미 전부 한 줄을 다 쓰는 자리(`solo`)라 124 자리가 칸 폭(최소 248)을 넘지 않는다. 스페셜 줄만 표식 +24 · 「SPECIAL」 줄 +14 높아지고, 자동 스크롤은 셀을 재므로 그대로 따라간다.
 
 ### D7. 카탈로그 노드 — role로 두 명시 변형
 
-`CatalogUnitNode`(props 불변)는 `node.role === "lesson"`이면 같은 파일 안 **`CatalogLessonNode`**(`LearningUnit` · `play`)를, 아니면(`culture` · `final`) `SpecialUnitMapItem`을 그린다.
-레슨 갈래의 클래스는 `journey-step-node` · `journey-step-node-label`로 옮겼다 — 값이 같아 레슨 화면은 그대로이고, 스페셜 라벨이 바뀌어도 레슨이 딸려 가지 않는다. role → 아이콘 표(`iconByRole`)는 지웠다.
+`CatalogUnitNode`(props 불변)는 `node.role === "final"`이면 `SpecialUnitMapItem`을, 아니면(`lesson` · `culture`) 같은 파일 안 **`CatalogLessonNode`**(`LearningUnit`)를 그린다.
+**문화 노드는 스페셜이 아니다**(사용자 결정 2026-10-17) — 레슨처럼 배우는 단위라 원형으로 남고 아이콘으로만 갈린다. 아이콘 표 `lessonIconByRole`은 `lesson → play` · `culture → lantern-05` 둘이고(`final`은 타입에서 뺐다), 문화의 라벨 · 낭독(`Episode n. Culture`, `special` 접두 없음) · 자물쇠 · 체크 · testid(`ui-lynx-learning-unit-…`)는 PR 전과 같다.
+레슨 갈래의 클래스는 `journey-step-node` · `journey-step-node-label`로 옮겼다 — 값이 같아 레슨 · 문화 화면은 그대로이고, 스페셜 라벨이 바뀌어도 레슨이 딸려 가지 않는다.
 
 ### D8. Active — 컴포넌트만, 맵은 쓰지 않는다
 
@@ -112,7 +112,7 @@ ui-lynx 컴포넌트 CSS는 앱이 subpath로 부른다. `apps/mobile/src/app/in
 ## 버린 대안
 
 1. **`LearningUnit`에 `shape` · `variant`를 더한다** — 정본이 금지한 조합이 타입에 생기고, 상태 표현 · 눌림 · 아이콘 소유가 갈래마다 달라 계약 함수가 둘로 갈린다(D1).
-2. **Shade를 `box-shadow: 5px 6px 0 0 <색>`으로** — 눌림에 `box-shadow` 오프셋 **전환**이 필요한데 Lynx `transition-property`에서 확인되지 않았다(Android 무전환 위험). focus ring과 같은 요소면 그림자 목록을 Status마다 합쳐 다시 적어야 하고(Card 선례), ring이 Face 윤곽을 따라 Shade와 겹친다(정본 「ring은 Shade 범위 밖」 위반). 별도 view는 view 하나(유닛 여덟 × 1)가 대가다(D4).
+2. **Shade를 `box-shadow: 5px 6px 0 0 <색>`으로** — 눌림에 `box-shadow` 오프셋 **전환**이 필요한데 Lynx `transition-property`에서 확인되지 않았다(Android 무전환 위험). focus ring과 같은 요소면 그림자 목록을 Status마다 합쳐 다시 적어야 하고(Card 선례), ring이 Face 윤곽을 따라 Shade와 겹친다(정본 「ring은 Shade 범위 밖」 위반). 별도 view는 view 하나(유닛 일곱 종 × 1)가 대가다(D4).
 3. **컴포넌트가 `special`을 스스로 붙인다** — 보이는 라벨(앱 문구)과 낭독(패키지 고정)이 두 출처가 된다(D5).
 4. **아이콘을 prop으로 받는다** — 「모든 Status에서 같은 아이콘」을 호출자 규율에 맡기게 된다(D1 · D2).
 5. **정본 아이콘 `4-nature/star`** — 사용자가 시안과 같은 오각 별을 골랐다(D2).
@@ -126,13 +126,14 @@ ui-lynx 컴포넌트 CSS는 앱이 subpath로 부른다. `apps/mobile/src/app/in
 | # | 질문 | 답 |
 |---|---|---|
 | — | 스페셜 항목의 아이콘 · 두께 · 글리프 | **별 아이콘 하나로 통일(최종 테스트 포함) · 아래+오른쪽 두께 · 자물쇠 · 체크는 스페셜에서만 걷는다** |
+| — | 카탈로그 문화 노드(⟨2026-10-17⟩ 정정) | **스페셜이 아니다** — 원형 `LearningUnit` · `lantern-05`(ADR-0066 D7 그대로). 스페셜은 일곱 종 |
 | Q1 | 아이콘 에셋 | **오각 별 `five-pointed-star`**(정본 `4-nature/star`가 아니다). 정본 정정은 후속(사용자 몫) |
 
 **메인이 추천안을 고른 것** — 사용자에게 따로 묻지 않았다. **사용자 명시 승인은 아니다.**
 
 | # | 정한 값 | 답이 다르면 |
 |---|---|---|
-| Q2 | 카탈로그 스페셜의 낭독 이름에 `Episode n.`을 남긴다(`special, Episode 1. Final test`) — 에피소드마다 `Episode intro` · `Culture` · `Final test`가 되풀이된다 | 보이는 제목만 — 어댑터의 낭독 이름 한 줄 |
+| Q2 | 카탈로그 스페셜의 낭독 이름에 `Episode n.`을 남긴다(`special, Episode 1. Final test`) — 에피소드마다 `Episode intro` · `Final test`가 되풀이된다 | 보이는 제목만 — 어댑터의 낭독 이름 한 줄 |
 | Q3 | 맵 바탕 대비 2.974:1은 정본 값 그대로 두고 design-system 대비 표 보완을 이슈로 올린다 | 비-Active Halo를 `white`로(버린 대안 6) — CSS 한 규칙 |
 | Q4 | testid를 개명한다(D9) | 옛 접두 유지 — 버린 대안 7 |
 
@@ -145,6 +146,7 @@ ui-lynx 컴포넌트 CSS는 앱이 subpath로 부른다. `apps/mobile/src/app/in
 ## 대가
 
 1. **번들** [실측] — 앱 `main.lynx.bundle` CI 설정 2,170,031 · 운영 설정 2,170,220 bytes(직전 main CI 2,163,501 대비 +6,530), ui-lynx dist 527,984 bytes(special-unit 13파일 17,391 bytes). 새 의존성 · 미디어 0.
+   이 수치는 문화 노드도 스페셜이던 `d53a372a` 코드의 것이다 — 문화를 원형으로 되돌린 `7cb9edad`(`lantern-05` import · 아이콘 표 복귀)는 다시 재지 않았다.
    상한은 앱 2,164,000 → 2,172,000 · ui-lynx 513,000 → 529,000으로 올렸다(**사용자 사전 승인 규칙**) — [성능 보고서](../performance/reports/special-unit-iphone-17-pro-simulator-01.md) · `devtools/bundle-size/budget.json` note.
 2. **맵 바탕 위 Available · Active Face 대비가 2.974:1이다** [실측] — 정본 계산 3.016은 `white` 기준이고 맵 바탕 `background-primary`(#FFFDFC)에서는 3:1에 0.026 모자란다. 아래 · 오른쪽 두 변은 Shade(5.385:1)가 윤곽을 주고,
    컨트롤은 라벨 「SPECIAL」 + 제목 + button trait로도 식별된다. **AA 충족으로 기록하지 않는다** — ADR README 보류 표 「Special Unit Available Face ↔ 맵 바탕 대비」. 같은 조합(2.97)은 온보딩 강조 · Page Indicator에 이미 부채로 있다.
@@ -156,7 +158,8 @@ ui-lynx 컴포넌트 CSS는 앱이 subpath로 부른다. `apps/mobile/src/app/in
 ## 미확인 · 후속
 
 1. **기기 미확인** [실기]. iOS 시뮬레이터 한 회차(2026-10-17, `d53a372a` 운영 설정 번들, 진행이 많이 된 계정)가 **본 것**: 튜토리얼 스페셜 다섯과 카탈로그 표지 · 최종의 끝남(초록 면 · 짙은 초록 두께 · 흰 오각 별 · `SPECIAL` 짙은 초록),
-   문화의 열림(주황 면 · 진한 주황 두께), 자물쇠 · 체크 · 배지 · 종류별 아이콘 없음, 스텝 · 레슨 노드는 원형 그대로, 접근성 트리의 이름 · traits · 높이 124 · 항목당 정지 하나.
+   자물쇠 · 체크 · 배지 · 종류별 아이콘 없음, 스텝 · 레슨 노드는 원형 그대로, 접근성 트리의 이름 · traits · 높이 124 · 항목당 정지 하나.
+   그 회차가 본 「문화의 열림(주황 면 · 진한 주황 두께)」은 문화도 스페셜이던 당시 빌드의 모양이다 — 지금 빌드(`7cb9edad`)의 원형 문화 노드는 기기에서 다시 보지 않았다.
    **보지 못한 것**: 잠김 · 확인 중 상태 · 안내 말풍선(새 설치 씨앗이 없었다) · 눌림 이동과 그 보간 · 동작 줄이기 막 · VoiceOver 발화 · 글자 크기 · 두 열 폴백 · Android. 목록은 [스페셜 유닛 e2e](../e2e/special-unit.md) 「미확인」.
 2. **design-system 정본 정정 둘** — Icon 에셋 행(`4-nature/star` → `five-pointed-star`)과 대비 표의 「Available Face ↔ `background.primary` 2.974」 행. 저장소 밖이라 사용자 몫이다.
 3. **Active의 맵 결선** — 어느 노드가 「지금 할 것」인지는 제품 결정이 먼저다(D8).
@@ -174,3 +177,4 @@ ui-lynx 컴포넌트 CSS는 앱이 subpath로 부른다. `apps/mobile/src/app/in
 
 - ⟨2026-10-17, 접근성 점검 반영⟩ **안내 겹(스크림 위로 들린 튜토리얼 표지)에서만 Halo를 `white`로 칠한다.** 스크림 합성색(#767678) 위에서 Face가 1.503:1 · Shade가 1.205:1로 묻혀, 교체 전 Learning Unit(4.071:1)보다 후퇴했다. 흰 Halo가 Face 옆을 흰색으로 두면 Face ↔ 흰색 3.016:1 · 흰색 ↔ 스크림 4.533:1이다. 규칙은 `first-unit-guide.css` 한 곳(선택자 클래스 셋 — Active Halo 규칙을 이긴다)이고 정본 「Halo 없음」의 벗어남은 안내 겹에 한정된다. 버린 대안 6(맵 전체 흰 Halo)은 그대로 버린다 — 맵 바탕 위에서는 흰 사각이 드러난다. 기기 확인은 안내 겹 씨앗(새 설치)이 생기는 회차 몫이다(SUE1).
 - ⟨2026-10-17⟩ **잠긴 이유 문구는 이번 범위 밖**이다 — 보류 표 「Special Unit 잠긴 이유 문구」.
+- ⟨2026-10-17, 문화 노드 정정⟩ **카탈로그 문화 노드는 스페셜이 아니다**(사용자 결정). 처음 구현은 문화 · 최종을 함께 `SpecialUnitMapItem`으로 그렸고(D7 첫 문면 · 「부분 대체」의 ADR-0066 D7 · ADR-0024 `lantern-05` 문면), 이 문서 · ADR-0024 · 0065 · 0066이 「스페셜 여덟 종」 「`lantern-05` 대체」로 적었다. `7cb9edad`가 문화를 원형 `LearningUnit` · `lantern-05`로 되돌렸다 — `CatalogUnitNode`는 최종만 `SpecialUnitMapItem`이고 레슨 · 문화는 `CatalogLessonNode` + 아이콘 표(`play` · `lantern-05`)다. 스페셜은 **일곱 종**(튜토리얼 표지 · 메신저 · 전화 · 비주얼 노벨 · 최종, 카탈로그 표지 · 최종)이다. ADR-0066 D7 · Q5와 ADR-0065의 문화 노드 문면은 대체되지 않았고 그 ADR들에 달았던 대체 표시 · 적용 기록은 걷었다. ADR-0024는 role → 아이콘 표 중 `final → flag`만 바뀐 것으로 고쳤다. 번들 실측(「대가」 1)과 e2e 회차 1의 문화 관찰은 정정 전 빌드의 것이다.
