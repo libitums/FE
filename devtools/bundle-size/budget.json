@@ -2,8 +2,8 @@
   "targets": [
     {
       "path": "apps/mobile/dist/main.lynx.bundle",
-      "maxBytes": 2164000,
-      "note": "2026-10-17 새 에피소드 형식 ③을 갱신된 ②(main #253 지표 모션 병합 뒤) 위로 다시 병합한 CI 설정(.env.local 없음) 실측은 2,163,501 bytes입니다. 직전 이 브랜치 CI 설정 실측 2,133,402 bytes + #253 증가분 29,876 bytes = 2,163,278 bytes와 223 bytes 차이(리뷰 대응 매핑 수정 · 병합)라 새 증가 요인은 없습니다. 상한을 2,135,000 → 2,164,000 bytes로 올렸습니다(kB 올림). 근거: docs/performance/reports/episode-format-speaking-iphone-17-pro-simulator-01.md · docs/adr/0067-episode-format-speaking.md · docs/adr/0064-stat-motion.md."
+      "maxBytes": 2170000,
+      "note": "2026-10-17 카탈로그 유닛 말풍선 · 에피소드 띠(main 6411459b 위) CI 설정(.env.local 없음) 실측은 2,169,219 bytes입니다. main 실측 2,163,501 bytes 대비 +5,718 bytes — 카탈로그 말풍선 컴포넌트 · 키 모듈 · 띠 일반화 · title_en 디코드 · 문항 수 결선 · 표지 첫 컷 그림 · 리뷰 대응(title_en null 허용)입니다. 상한을 2,164,000 → 2,170,000 bytes로 올렸습니다(kB 올림, 사용자 사전 승인). 근거: docs/performance/reports/catalog-unit-sheet-pixel-8-emulator-01.md · docs/adr/0058-catalog-learning-session.md 적용 기록 ⟨2026-10-17⟩."
     },
     {
       "path": "apps/mobile/dist/static/image",

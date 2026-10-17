@@ -296,6 +296,19 @@ describe("decodeEpisode", () => {
     expect(codeAndPath(errors)).toContainEqual({ code: "invalid-shape", path: "title" });
   });
 
+  test("U3b. title_en은 앞뒤 공백을 걷어 titleEn으로 싣고, 없거나 비면 키가 없다", () => {
+    expect(
+      passed(decodeEpisode(minimalEpisode({ title_en: "  Buying Water " }))).episode,
+    ).toMatchObject({ titleEn: "Buying Water" });
+    for (const wire of [
+      minimalEpisode(),
+      minimalEpisode({ title_en: "   " }),
+      minimalEpisode({ title_en: null }),
+    ]) {
+      expect(passed(decodeEpisode(wire)).episode).not.toHaveProperty("titleEn");
+    }
+  });
+
   test("U4. 모르는 문항 type은 unknown-item-type 하나, path는 type, message에 값", () => {
     const errors = failed(decodeEpisode(withItem(roleLine("S1-01", { type: "QUIZ" }))));
     expect(errors).toHaveLength(1);

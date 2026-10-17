@@ -23,7 +23,7 @@ export function CatalogEpisodeSection({
   access,
   progress,
   onStartCover,
-  onStartUnit,
+  onSelectUnit,
 }: CatalogEpisodeSectionProps): ReactNode {
   const columns = useMapColumns();
   return (
@@ -64,7 +64,7 @@ export function CatalogEpisodeSection({
                     episodeId={section.episodeId}
                     episodeOrdinal={section.ordinal}
                     node={{ ...node, status: mapNodeStatusUnder(access, node.status) }}
-                    onSelect={onStartUnit}
+                    onSelect={onSelectUnit}
                   />
                 </MapUnitCell>
               ))}

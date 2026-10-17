@@ -198,6 +198,7 @@ function toEpisode(wire: DeliveryEpisodeV2, rpIndex: number): Episode {
     id: wire.unit_id,
     schema: wire.schema,
     title: wire.title,
+    ...maybe("titleEn", wire.title_en?.trim() || undefined),
     day: wire.day,
     timeOfDay: wire.time_of_day,
     place: wire.place,

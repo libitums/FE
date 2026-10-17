@@ -9,6 +9,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
+import { NarrativeBackground } from "../episode-narrative/NarrativeBackground";
 import type { EpisodeIntroScreenProps } from "./episode-intro.contract";
 
 import "./episode-intro-screen.css";
@@ -17,9 +18,9 @@ import "./episode-intro-screen.css";
  * 에피소드의 서사 표지입니다(Figma 80-7869). 에피소드의 유닛을 처음 열 때 그 앞에 한
  * 번 섭니다. 위에 에피소드의 두 줄, 아래에 `Skip` · `Next`가 섭니다.
  *
- * **그림이 없습니다.** 디자인은 화면 전체에 장면 그림을 깔지만 에피소드마다의 그림이
- * 아직 없어 어두운 면만 그립니다. 위 · 아래 그러데이션은 남깁니다 — 그림이 오는 날
- * 글자가 그 위에서 읽히게 하는 것이 그 몫입니다.
+ * **그림은 받은 것만 깝니다.** 디자인은 화면 전체에 장면 그림을 깝니다. 표지 전용 그림은 콘텐츠에
+ * 없어 카탈로그 에피소드는 그 에피소드의 첫 컷 그림을 받고(`backgroundImageUrl`), 튜토리얼은 받지 않아
+ * 어두운 면만 그립니다. 위 · 아래 그러데이션이 그림 위의 글자를 읽히게 합니다.
  *
  * 오른쪽 위 설정 버튼은 그리지 않습니다 — 갈 곳이 정해지지 않았습니다.
  */
@@ -29,6 +30,7 @@ export function EpisodeIntroScreen({
   title,
   titleLines,
   skipDescription,
+  backgroundImageUrl = null,
   onBack,
   onSkip,
   onNext,
@@ -57,6 +59,10 @@ export function EpisodeIntroScreen({
     >
       {/* 명암 두 겹은 순수 장식입니다. */}
       <view className="episode-intro-screen-backdrop" accessibility-elements-hidden={true}>
+        {/* 그림은 움직이지 않고 로드되면 나타납니다 — 첫 컷 화면이 같은 그림으로 이어 받습니다. */}
+        {backgroundImageUrl === null ? null : (
+          <NarrativeBackground src={backgroundImageUrl} previousSrc={null} animated={false} />
+        )}
         <view className="episode-intro-screen-shade-top" />
         <view className="episode-intro-screen-shade-bottom" />
       </view>

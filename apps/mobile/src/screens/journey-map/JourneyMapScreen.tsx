@@ -8,6 +8,8 @@ import { TutorialEpisodeSection } from "./TutorialEpisodeSection";
 import { JourneyMapCatalogSlot } from "./JourneyMapCatalogSlot";
 import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
 import { StepSheet } from "./StepSheet";
+import { CatalogUnitSheet } from "./CatalogUnitSheet";
+import { catalogSheetKey, catalogSheetTargetOf } from "./catalog-sheet";
 import { screenId, scrollId } from "./journey-map-scroll";
 import { noCatalogMapSections } from "./catalog-map";
 import { mapScrollTargetOf } from "./journey-map-next-unit";
@@ -86,11 +88,16 @@ export function JourneyMapScreen({
     handleCloseSheet,
   } = useStepSheet();
 
+  // 말풍선은 튜토리얼 스텝에도, 카탈로그 유닛에도 섭니다 — 같은 상태 자리를 키로 가릅니다.
+  const openCatalog = catalogSheetTargetOf(sheetState.openStepId);
   const openStep =
-    sheetState.openStepId === null ? undefined : findStep(journeySteps, sheetState.openStepId);
+    sheetState.openStepId === null || openCatalog !== null
+      ? undefined
+      : findStep(journeySteps, sheetState.openStepId as JourneyStepId);
+  const sheetOpen = openStep !== undefined || (openCatalog !== null && catalog !== undefined);
   // 말풍선이 열린 동안 셸의 전역 머리(칩 · 알림 버튼)도 가려야 합니다 — 전에는 머리가 이
   // 화면 안에 있어 아래 맵 가림과 함께 가렸습니다.
-  useScreenLayer(openStep !== undefined || guide.visible, onLayerChange);
+  useScreenLayer(sheetOpen || guide.visible, onLayerChange);
   // 시스템 뒤로가기: 첫 유닛 안내 가림막이 떠 있으면 안내만 넘깁니다(스텝 말풍선은 `StepSheet`가 등록합니다).
   useLayerBack(guide.visible ? guide.dismiss : null);
 
@@ -113,7 +120,7 @@ export function JourneyMapScreen({
       catalogSections: catalog?.sections ?? noCatalogMapSections,
       catalogProgress: catalog?.progress ?? {},
     }),
-    blocked: openStep !== undefined || guide.visible,
+    blocked: sheetOpen || guide.visible,
   });
 
   // 스크롤 한 번에 둘이 답합니다 — 말풍선 자리 · 자동 스크롤의 잠금입니다. 인라인
@@ -123,6 +130,10 @@ export function JourneyMapScreen({
     handleScroll(event);
     autoScroll.handleScroll(event);
   };
+
+  // 카탈로그 노드의 탭 핸들러(`"background only"`)가 부릅니다 — 여기에 지시문을 다시 두지 않습니다.
+  const handleSelectCatalogUnit = (episodeId: string, unitKey: string, tapY: number) =>
+    handleSelectStep(catalogSheetKey(episodeId, unitKey), tapY);
 
   const access = nodeAccessOf(progressLoad);
   const actions = {
@@ -155,7 +166,7 @@ export function JourneyMapScreen({
         <view
           className="journey-map-screen-map"
           data-testid="journey-map-screen-map"
-          accessibility-elements-hidden={openStep !== undefined}
+          accessibility-elements-hidden={sheetOpen}
           bindtouchstart={autoScroll.handleTouchStart}
         >
           {journeyMapSections.map((section) =>
@@ -183,6 +194,7 @@ export function JourneyMapScreen({
             completedEpisodeFinalIds={completedEpisodeFinalIds}
             hidden={guide.visible}
             access={access}
+            onSelectUnit={handleSelectCatalogUnit}
           />
         </view>
       </scroll-view>
@@ -202,8 +214,10 @@ export function JourneyMapScreen({
         tutorialSections={journeyMapSections}
         progress={progress}
         load={progressLoad}
-        obscured={openStep !== undefined || guide.visible}
+        obscured={sheetOpen || guide.visible}
         openStepId={sheetState.openStepId}
+        catalogSections={catalog?.sections}
+        catalogProgress={catalog?.progress}
       />
 
       {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식입니다. */}
@@ -218,6 +232,15 @@ export function JourneyMapScreen({
           /* `시작`의 목적지는 이 화면이 정하지 않습니다 — 열린 스텝의 id를 그대로
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}
+          onClose={handleCloseSheet}
+        />
+      )}
+      {openCatalog === null || catalog === undefined ? null : (
+        <CatalogUnitSheet
+          target={openCatalog}
+          catalog={catalog}
+          top={sheetTop}
+          caretOffset={sheetCaretOffset}
           onClose={handleCloseSheet}
         />
       )}

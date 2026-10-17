@@ -322,6 +322,7 @@ test("EA3. u01 최종 테스트: 상대 줄은 턴마다 자동, 내 줄은 정�
   expect(turns).toHaveLength(3);
 
   fireEvent.tap(unitNode(u01, "RP"), {});
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
   expect(firstArgs(play)).toEqual([url("u01-water/d-01")]);
   checkTurn(turns[0] as CatalogRoleplayTurn, true);
   expect(firstArgs(play)).toEqual([url("u01-water/d-01"), url("u01-water/d-02")]);
@@ -354,6 +355,7 @@ test("EA3b. 전부 맞힌 최종 테스트: 재생 열은 다섯이고 결과 ·
   const turns = finalTurns(u01);
 
   fireEvent.tap(unitNode(u01, "RP"), {});
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
   for (const turn of turns) {
     checkTurn(turn, true);
     nextStep();
@@ -410,6 +412,7 @@ test("EA4b. 실패하는 소리에도 최종 테스트는 같은 화면 열과 �
   const turns = finalTurns(u01);
 
   fireEvent.tap(unitNode(u01, "RP"), {});
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
   const phases: (string | null)[] = [];
   const phase = () => screen.getByTestId("catalog-final-screen").getAttribute("data-phase");
   turns.forEach((turn, index) => {

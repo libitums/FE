@@ -24,6 +24,10 @@ export type StepSheetProps = {
   caretOffset: number;
   /** 제목 앞에 서는 순번입니다. `Lesson 3: "주문하기"`의 3입니다. */
   lessonOrdinal: number;
+  /**
+   * 제목 앞 이름을 바꿉니다 — 카탈로그 유닛은 `Culture` · `Final test`가 섭니다. 없으면 `Lesson n`입니다.
+   */
+  unitLabel?: string;
   completedActivityCount: number;
   totalActivityCount: number;
   onStart: () => void;
@@ -35,6 +39,7 @@ export function StepSheet({
   top,
   caretOffset,
   lessonOrdinal,
+  unitLabel,
   completedActivityCount,
   totalActivityCount,
   onStart,
@@ -43,7 +48,11 @@ export function StepSheet({
   const copy = useUiCopy();
   // 시스템 뒤로가기 = 가림막 탭(`onClose`)과 같은 함수입니다. 말풍선이 서 있는 동안만 등록됩니다.
   useLayerBack(onClose);
-  const progress = stepSheetProgress(completedActivityCount, totalActivityCount, copy);
+  // 셀 수 없는 유닛(전체 0)은 진행 줄을 그리지 않습니다 — 카탈로그 유닛에서 문항을 지을 수 없을 때입니다.
+  const progress =
+    totalActivityCount === 0
+      ? null
+      : stepSheetProgress(completedActivityCount, totalActivityCount, copy);
 
   const handleStart = (): void => {
     playSound("button");
@@ -90,40 +99,42 @@ export function StepSheet({
             data-testid="step-sheet-title"
             accessibility-traits="header"
           >
-            {`Lesson ${String(lessonOrdinal)}: “${title}”`}
+            {`${unitLabel ?? `Lesson ${String(lessonOrdinal)}`}: “${title}”`}
           </text>
           {/* 진행 줄입니다. 셋이 같은 수에서 나옵니다 — 낱말 둘과 막대가 어긋나지
               않습니다. 막대는 장식이 아니라 값이므로, 낱말 둘을 한 접근성 요소로
               묶어 읽히게 하고 막대 자신은 트리에서 뺍니다. */}
-          <view
-            className="step-sheet-progress"
-            data-testid="step-sheet-progress"
-            accessibility-element={true}
-            accessibility-label={`${copy.journeyMap.activityProgressLabel(completedActivityCount, totalActivityCount)}, ${progress.percentLabel}`}
-          >
-            <view className="step-sheet-progress-row">
-              <text className="step-sheet-progress-count" data-testid="step-sheet-progress-count">
-                {progress.countLabel}
-              </text>
-              <text
-                className="step-sheet-progress-percent"
-                data-testid="step-sheet-progress-percent"
-              >
-                {progress.percentLabel}
-              </text>
+          {progress === null ? null : (
+            <view
+              className="step-sheet-progress"
+              data-testid="step-sheet-progress"
+              accessibility-element={true}
+              accessibility-label={`${copy.journeyMap.activityProgressLabel(completedActivityCount, totalActivityCount)}, ${progress.percentLabel}`}
+            >
+              <view className="step-sheet-progress-row">
+                <text className="step-sheet-progress-count" data-testid="step-sheet-progress-count">
+                  {progress.countLabel}
+                </text>
+                <text
+                  className="step-sheet-progress-percent"
+                  data-testid="step-sheet-progress-percent"
+                >
+                  {progress.percentLabel}
+                </text>
+              </view>
+              <view className="step-sheet-progress-track">
+                {/* 0%에서는 그리지 않습니다 — 폭 0짜리 상자가 둥근 끝 때문에 점으로
+                    남아 「조금 했다」로 읽힙니다. */}
+                {progress.fillPercent === 0 ? null : (
+                  <view
+                    className="step-sheet-progress-fill"
+                    data-testid="step-sheet-progress-fill"
+                    style={{ width: `${String(progress.fillPercent)}%` }}
+                  />
+                )}
+              </view>
             </view>
-            <view className="step-sheet-progress-track">
-              {/* 0%에서는 그리지 않습니다 — 폭 0짜리 상자가 둥근 끝 때문에 점으로
-                  남아 「조금 했다」로 읽힙니다. */}
-              {progress.fillPercent === 0 ? null : (
-                <view
-                  className="step-sheet-progress-fill"
-                  data-testid="step-sheet-progress-fill"
-                  style={{ width: `${String(progress.fillPercent)}%` }}
-                />
-              )}
-            </view>
-          </view>
+          )}
           <view
             className="step-sheet-start"
             data-testid="step-sheet-start"

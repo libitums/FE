@@ -117,6 +117,8 @@ export function CatalogCoverFlow({
       title={title}
       titleLines={introTitleLines(title)}
       skipDescription={copy.catalogCover.skipDescription}
+      // 표지 전용 그림이 콘텐츠에 없어 그 에피소드의 첫 컷 그림으로 통일합니다(그림 없는 컷은 건너뜁니다).
+      backgroundImageUrl={cuts.find((cut) => cut.imageUrl !== null)?.imageUrl ?? null}
       onBack={() => {
         "background only";
         if (send("exit")) onExit("intro");
