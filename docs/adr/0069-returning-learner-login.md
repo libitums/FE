@@ -133,7 +133,7 @@ ui-lynx `button.css`는 바뀌지 않는다. 로고 배치 규칙(`-surface` rel
 | `entry_returning_learner_entered` | `method`(`phone` \| `google` \| `apple` \| `facebook`) | 판정이 `journey-map`으로 끝난 로그인에서 UI 언어 저장 뒤 · `enterApp` 직전 1회 | 신규 흐름(실패 · 시간 초과 포함) · 세션 갱신 부팅 · 로그인 실패 · 취소 |
 
 - **기존 이벤트로는 바로 맵 경로를 가를 수 없다** [코드] — 전화의 `entry_login_method_selected("phone")`는 OTP 요청 때(검증 전) 나고, 소셜도 「선택 뒤 언어 선택 열람 없음」이 바로 맵 · 대기 중 종료 · 대기 중 실패를 가르지 못한다.
-- 읽는 법: 기존 회원 비율 = `entry_returning_learner_entered` ÷ (`entry_returning_learner_entered` + `entry_screen_viewed{screen: "language-select"}`). 둘 다 로그인 성공 1회당 정확히 하나다.
+- 읽는 법: 기존 회원 비율 = `entry_returning_learner_entered` ÷ (`entry_returning_learner_entered` + `entry_screen_viewed{screen: "language-select"}`). 로그인 성공 1회당 보통 둘 중 하나가 난다 — 판정 대기 중 앱이 끝나면 둘 다 0이고, 판정 중 뒤로가기 경합(「대가」 4)이 나면 둘이 날 수 있다.
 - payload에 진행 · 프로필 값 · 대기 시간 · 사용자 식별자를 싣지 않는다(속성은 문자열만 — `AnalyticsContractChecks`).
 - ⚠ **해석 단절(2026-10-18 이 변경부터)**: `entry_completed`와 그것을 옮기는 Airbridge `airbridge.user.signup`(「가입 완료」)이 **기록 있는 계정의 재설치 · 재로그인에서 더는 나지 않는다.**
   가입 완료 수가 줄어 보이는 것은 정의 변경이다([운영 안내](../airbridge-events.md)).
