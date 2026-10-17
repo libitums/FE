@@ -140,7 +140,7 @@ test("[II6] 3버튼 · 서사 표지(전체 화면 그림 화면): 여백 0px, �
   await boot(threeButton, false);
 
   openTab("journey");
-  tap("ui-lynx-learning-unit-tutorial-intro");
+  tap("ui-lynx-special-unit-tutorial-intro");
 
   expect(screen.getByTestId("episode-intro-screen-next")).toBeInTheDocument();
   expect(hasNavigator()).toBe(false);

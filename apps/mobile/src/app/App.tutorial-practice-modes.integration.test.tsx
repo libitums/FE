@@ -139,7 +139,7 @@ test("쓰기는 빈 캔버스를 제출할 수 없고 나 한 글자를 따라 �
   action();
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   button("lesson-complete-screen-exit");
-  expect(screen.getByTestId("ui-lynx-learning-unit-tutorial-final-test")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-special-unit-tutorial-final-test")).toHaveAttribute(
     "data-status",
     "available",
   );

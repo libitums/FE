@@ -8,7 +8,7 @@ import { initialCompletedStepCount, journeySteps } from "./journey-map";
 
 // `ui` 계층: 맵의 최종 테스트 항목이 진행에 따라 잠기고 열리는지 봅니다.
 
-const finalTestId = "ui-lynx-learning-unit-tutorial-final-test";
+const finalTestId = "ui-lynx-special-unit-tutorial-final-test";
 
 // ⟨개정⟩ **「다른 항목」에 표지가 낍니다**(D2·D6). 전에는 여덟이었고 이제 아홉입니다 —
 // `allOthersDone`이 표지 완료를 **함께** 넘기지 않으면 최종은 잠긴 채입니다. 그 한

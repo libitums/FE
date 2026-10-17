@@ -18,6 +18,7 @@ import type { GuideStorageDouble } from "../lib/learning-item-guide.storage.test
 import { lightStatusBarIcons } from "../lib/status-bar-icons";
 import { systemBackEventName } from "../lib/system-back";
 import { journeySteps } from "../screens/journey-map/journey-map";
+import { mapUnitTestId } from "./test-helpers/map-unit-testid";
 
 // `integration` 계층: 학습 문항 안내가 App 전체 트리에서 「처음 열 때 뜨고, 닫으면 기기에 적히고, 다시 열면
 // 안 뜬다」를 지키는가. 저장소는 호출을 기록하는 `StorageModule` 대역이고 나머지는 실물이다.
@@ -62,7 +63,7 @@ const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const guide = (kind: string) => screen.queryByTestId(`learning-item-guide-${kind}`);
 const dismiss = (kind: string): void => catchTap(`learning-item-guide-${kind}`);
-const unit = (id: string): void => tap(`ui-lynx-learning-unit-${id}`);
+const unit = (id: string): void => tap(mapUnitTestId(id));
 const startSheet = (id: string): void => {
   unit(id);
   tap("step-sheet-start");

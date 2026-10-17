@@ -64,8 +64,11 @@ function mount(gate: CatalogGate = openGate) {
   return Object.assign(onStartCover, { onStartUnit });
 }
 
-const coverId = (id: string) => `ui-lynx-learning-unit-catalog-cover-${id}`;
-const nodeId = (id: string, key: string) => `ui-lynx-learning-unit-catalog-unit-${id}-${key}`;
+// 표지 · 문화 · 최종은 `SpecialUnit`, 레슨은 `LearningUnit`이 그립니다(testid 접두가 갈립니다).
+const specialKeys = ["CULT", "RP"];
+const coverId = (id: string) => `ui-lynx-special-unit-catalog-cover-${id}`;
+const nodeId = (id: string, key: string) =>
+  `ui-lynx-${specialKeys.includes(key) ? "special" : "learning"}-unit-catalog-unit-${id}-${key}`;
 const unitKeys = [...lessonKeys, "RP"];
 
 describe("CatalogMapSections", () => {
@@ -75,8 +78,8 @@ describe("CatalogMapSections", () => {
     const section = screen.getByTestId("catalog-section-u01-water");
     const rendered = Array.from(section.querySelectorAll("[data-testid]"))
       .map((el) => el.getAttribute("data-testid") ?? "")
-      .filter((id) => /^ui-lynx-learning-unit-catalog-(cover|unit)-/.test(id))
-      .filter((id) => !/-(ring|icon|badge|shade)$/.test(id));
+      .filter((id) => /^ui-lynx-(special|learning)-unit-catalog-(cover|unit)-/.test(id))
+      .filter((id) => !/-(ring|icon|badge|shade|halo|body|face|pressed-shade)$/.test(id));
     expect(rendered).toEqual([
       coverId("u01-water"),
       ...unitKeys.map((key) => nodeId("u01-water", key)),
@@ -87,14 +90,18 @@ describe("CatalogMapSections", () => {
       expect(node).toHaveAttribute("data-status", "default");
       const label = node.getAttribute("accessibility-label") ?? "";
       const title = key === "RP" ? "Final test" : `Lesson ${position + 1}`;
-      expect(label.startsWith(`Episode 1. ${title}`)).toBe(true);
+      // 최종은 스페셜이라 `special, ` 접두가 붙고 레슨은 붙지 않습니다.
+      const prefix = key === "RP" ? "special, " : "";
+      expect(label.startsWith(`${prefix}Episode 1. ${title}`)).toBe(true);
       expect(label).toContain("locked");
       expect(label.toLowerCase()).not.toContain("coming soon");
     });
 
     const cover = within(section).getByTestId(coverId("u01-water"));
     expect(
-      (cover.getAttribute("accessibility-label") ?? "").startsWith("Episode 1. Episode intro"),
+      (cover.getAttribute("accessibility-label") ?? "").startsWith(
+        "special, Episode 1. Episode intro",
+      ),
     ).toBe(true);
     expect(section.textContent ?? "").not.toContain("COMING SOON");
 
@@ -150,7 +157,7 @@ describe("CatalogMapSections", () => {
     expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "S1", expect.any(Number));
   });
 
-  test("UM-U3. 레슨을 모두 끝내면 최종 테스트가 열리고 이야기 표시가 낭독에 들며 탭하면 RP 키로 올린다", () => {
+  test("UM-U3. 레슨을 모두 끝내면 최종 테스트가 열리고 이름에 special 접두가 들고 story 접미는 없으며 탭하면 RP 키로 올린다", () => {
     const onStartCover = mount({
       tutorialPassed: true,
       progress: { "u01-water": ["intro", ...lessonKeys] },
@@ -158,7 +165,7 @@ describe("CatalogMapSections", () => {
 
     const finalNode = screen.getByTestId(nodeId("u01-water", "RP"));
     expect(finalNode).toHaveAttribute("data-status", "available");
-    expect(finalNode).toHaveAttribute("accessibility-label", "Episode 1. Final test, story");
+    expect(finalNode).toHaveAttribute("accessibility-label", "special, Episode 1. Final test");
     fireEvent.tap(finalNode, {});
 
     expect(onStartCover.onStartUnit).toHaveBeenCalledTimes(1);

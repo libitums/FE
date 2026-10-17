@@ -1,6 +1,5 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import flag from "@libitums/icons/lynx/flag";
 import lantern from "@libitums/icons/lynx/lantern-05";
 import play from "@libitums/icons/lynx/play";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
@@ -11,10 +10,11 @@ import { catalogUnitNodeAccessibilityLabel, catalogUnitNodeTitle } from "./catal
 import type { CatalogUnitNodeProps, CatalogUnitNodeRole } from "./catalog-map.contract";
 
 import { canSelectMapNode } from "./journey-map-load";
+import { SpecialUnitMapItem } from "./SpecialUnitMapItem";
 
-import "./journey-special-unit.css";
+import "./journey-step-node.css";
 
-// 표지의 상태 어휘를 `LearningUnit`의 어휘로 옮깁니다 — 표지 노드와 같은 표입니다.
+// 표지의 상태 어휘를 `LearningUnit`의 어휘로 옮깁니다 — 레슨 · 문화 노드만 씁니다.
 const unitStatusByStatus = {
   locked: "default",
   available: "available",
@@ -22,24 +22,49 @@ const unitStatusByStatus = {
   checking: "checking",
 } as const;
 
-const iconByRole: Readonly<Record<CatalogUnitNodeRole, string>> = {
+// 문화는 레슨처럼 배우는 단위라 원형으로 남고 아이콘으로만 갈립니다(사용자 결정 2026-10-17).
+const lessonIconByRole: Readonly<Record<Exclude<CatalogUnitNodeRole, "final">, string>> = {
   lesson: play,
   culture: lantern,
-  final: flag,
 };
 
-// 카탈로그 레슨 · 문화 · 최종 노드입니다 — 상태(잠김 · 열림 · 끝)는 사슬에서 파생되어 내려오고, 열린 노드만
-// 고름을 올립니다(맵이 말풍선을 엽니다 — 바로 시작하지 않습니다). 잠김이면 `LearningUnit`이 `default`에서 탭을 흘리지 않는 것에만 기대지 않고 여기서도
-// 막습니다(표지 노드와 같은 이중 방어). 학습 유닛은 `play`, 문화 유닛은 `lantern-05`, 최종 테스트는 `flag`
-// 아이콘입니다.
-export function CatalogUnitNode({
+// 카탈로그 노드입니다. 상태(잠김 · 열림 · 끝)는 사슬에서 파생되어 내려오고, 열린 노드만 고름을
+// 올립니다(맵이 말풍선을 엽니다 — 바로 시작하지 않습니다). 레슨(`play`) · 문화(`lantern-05`)는 원형
+// `LearningUnit`이고, 최종만 스페셜 항목입니다.
+export function CatalogUnitNode(props: CatalogUnitNodeProps): ReactNode {
+  return props.node.role === "final" ? (
+    <CatalogSpecialNode {...props} />
+  ) : (
+    <CatalogLessonNode {...props} icon={lessonIconByRole[props.node.role]} />
+  );
+}
+
+function CatalogSpecialNode({ episodeId, episodeOrdinal, node, onSelect }: CatalogUnitNodeProps) {
+  const copy = useUiCopy();
+
+  return (
+    <SpecialUnitMapItem
+      unitId={`catalog-unit-${episodeId}-${node.key}`}
+      title={catalogUnitNodeTitle(node, copy)}
+      accessibilityName={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
+      status={node.status}
+      onSelect={(tapY) => {
+        "background only";
+        onSelect(episodeId, node.key, tapY);
+      }}
+    />
+  );
+}
+
+// `LearningUnit`이 `default`에서 탭을 흘리지 않는 것에만 기대지 않고 여기서도 막습니다.
+function CatalogLessonNode({
   episodeId,
   episodeOrdinal,
   node,
   onSelect,
-}: CatalogUnitNodeProps): ReactNode {
+  icon,
+}: CatalogUnitNodeProps & { readonly icon: string }) {
   const copy = useUiCopy();
-  const isFinal = node.role === "final";
   const handleSelect = (event: LearningUnitTapEvent) => {
     "background only";
     if (canSelectMapNode(node.status)) {
@@ -49,16 +74,16 @@ export function CatalogUnitNode({
   };
 
   return (
-    <view className="journey-special-unit">
+    <view className="journey-step-node">
       <LearningUnit
         id={`catalog-unit-${episodeId}-${node.key}`}
         accessibilityLabel={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
-        icon={iconByRole[node.role]}
+        icon={icon}
         status={unitStatusByStatus[node.status]}
-        narrative={isFinal ? "narrative" : "none"}
+        narrative="none"
         bindtap={handleSelect}
       />
-      <text className="journey-special-unit-label" accessibility-element={false}>
+      <text className="journey-step-node-label" accessibility-element={false}>
         {catalogUnitNodeTitle(node, copy)}
       </text>
     </view>

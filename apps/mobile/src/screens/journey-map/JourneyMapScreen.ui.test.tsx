@@ -511,19 +511,19 @@ test("[U11] journey-map-screen-scroll에 scroll-bar-enable='false'가 붙는다"
 // 세는 대상을 testid 목록으로 적는 것은 클래스 이름이 앵커가 되지 않게 하기
 // 위해서입니다(`journey-map-screen-episode`는 배치용 상자일 뿐입니다).
 const mapUnitTestIds = [
-  "ui-lynx-learning-unit-tutorial-intro",
+  "ui-lynx-special-unit-tutorial-intro",
   "ui-lynx-learning-unit-greeting",
   "ui-lynx-learning-unit-introduction",
   "ui-lynx-learning-unit-ordering",
   "ui-lynx-learning-unit-appointment",
-  "ui-lynx-learning-unit-appointment-confirmation",
-  "ui-lynx-learning-unit-appointment-confirmation-phone-call",
-  "ui-lynx-learning-unit-cafe-arrival-visual-novel",
+  "ui-lynx-special-unit-appointment-confirmation",
+  "ui-lynx-special-unit-appointment-confirmation-phone-call",
+  "ui-lynx-special-unit-cafe-arrival-visual-novel",
   "ui-lynx-learning-unit-directions",
   "ui-lynx-learning-unit-tutorial-listening",
   "ui-lynx-learning-unit-tutorial-speaking",
   "ui-lynx-learning-unit-tutorial-writing",
-  "ui-lynx-learning-unit-tutorial-final-test",
+  "ui-lynx-special-unit-tutorial-final-test",
 ] as const;
 
 test("[U12] 맵 상자에 선 유닛 수가 에피소드 헤더의 분모와 같다", () => {

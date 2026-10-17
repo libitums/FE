@@ -205,13 +205,13 @@ test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 �
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
-  const mapItemTestId = `ui-lynx-learning-unit-${item.target.unitId}`;
+  const mapItemTestId = `ui-lynx-special-unit-${item.target.unitId}`;
   // 완료 표식은 유닛 어휘(`clear`)이고, 「완료됨」은 화면 글자가 아니라 접근성 이름에
   // 실립니다 — `LearningUnit`이 체크 아이콘으로 그리기 때문입니다.
   expect(screen.getByTestId(mapItemTestId)).toHaveAttribute("data-status", "clear");
   expect(screen.getByTestId(mapItemTestId)).toHaveAttribute(
     "accessibility-label",
-    "A Message from Minseo, completed, story",
+    "special, A Message from Minseo, completed",
   );
 });
 

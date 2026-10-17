@@ -14,6 +14,7 @@ import { uiCopyEn } from "../lib/ui-copy-en";
 import { journeySteps } from "../screens/journey-map/journey-map";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
+import { mapUnitTestId } from "./test-helpers/map-unit-testid";
 
 // 「기기 저장본 → 맵 · 확인 중 · 로딩 줄 → 서버 응답」을 App 한 트리에서 봅니다(I1 ~ I13, I6' · I7' · I-T1).
 // 대역은 경계뿐입니다 - `StorageModule`(연산을 기록하는 저장소) · `fetch`(Supabase 갱신 · 학습 RPC · 계정 삭제 함수) ·
@@ -202,7 +203,7 @@ afterEach(() => {
 
 // ---------------------------------------------------------------- 조회 도구
 
-const unit = (id: string) => screen.getByTestId(`ui-lynx-learning-unit-${id}`);
+const unit = (id: string) => screen.getByTestId(mapUnitTestId(id));
 const status = (id: string) => unit(id).getAttribute("data-status");
 const row = () => screen.queryByTestId("journey-progress-load-row");
 const rowStatus = () => row()?.getAttribute("data-status") ?? null;
@@ -210,7 +211,7 @@ const retryButton = () =>
   within(screen.getByTestId("journey-progress-load-row-retry")).getByTestId("ui-lynx-button");
 const checkingNodes = () =>
   screen
-    .queryAllByTestId(/^ui-lynx-learning-unit-/)
+    .queryAllByTestId(/^ui-lynx-(?:learning|special)-unit-/)
     .filter((node) => node.getAttribute("data-status") === "checking");
 const announcedCount = (content: string) =>
   env.announced.filter((entry) => entry === content).length;

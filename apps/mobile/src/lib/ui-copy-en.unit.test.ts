@@ -217,3 +217,12 @@ test("UC-L. 학습자 프로필 문구 함수가 인자를 문장에 싣는다",
   expect(p.nameEmptyOnGate).not.toBe(p.nameIssue.empty);
   expect(p.countryMissing).not.toBe(p.nameIssue.empty);
 });
+
+test("JS4. 맵 스페셜 항목 문구는 영어 SPECIAL과 special, 낭독이다", () => {
+  expect(c.specialUnitMap.eyebrow).toBe("SPECIAL");
+  expect(c.specialUnitMap.accessibilityLabel("A Call from Minseo")).toBe(
+    "special, A Call from Minseo",
+  );
+  expect(leavesOf(c.specialUnitMap).length).toBe(2);
+  expect(JSON.stringify(c.specialUnitMap.eyebrow)).not.toMatch(/[\u3131-\uD79D]/);
+});

@@ -41,24 +41,24 @@ it("C1: 표지가 줄 머리에 서고 메신저 유닛이 appointment와 direct
     [
       ...map.querySelectorAll(
         [
-          "[data-testid=ui-lynx-learning-unit-tutorial-intro]",
+          "[data-testid=ui-lynx-special-unit-tutorial-intro]",
           "[data-testid=ui-lynx-learning-unit-greeting]",
           "[data-testid=ui-lynx-learning-unit-introduction]",
           "[data-testid=ui-lynx-learning-unit-ordering]",
           "[data-testid=ui-lynx-learning-unit-appointment]",
-          "[data-testid=ui-lynx-learning-unit-appointment-confirmation]",
+          "[data-testid=ui-lynx-special-unit-appointment-confirmation]",
           "[data-testid=ui-lynx-learning-unit-directions]",
         ].join(","),
       ),
     ].map((node) => node.getAttribute("data-testid")),
   ).toEqual([
     // ⟨개정⟩ 첫 자리가 표지입니다 — 전에는 `greeting`이었습니다(D2).
-    "ui-lynx-learning-unit-tutorial-intro",
+    "ui-lynx-special-unit-tutorial-intro",
     "ui-lynx-learning-unit-greeting",
     "ui-lynx-learning-unit-introduction",
     "ui-lynx-learning-unit-ordering",
     "ui-lynx-learning-unit-appointment",
-    "ui-lynx-learning-unit-appointment-confirmation",
+    "ui-lynx-special-unit-appointment-confirmation",
     "ui-lynx-learning-unit-directions",
   ]);
 });
@@ -69,7 +69,7 @@ it("C2: 특별 유닛 뒤 directions는 자기 스텝 서수의 기존 상태와
 
   const directions = screen.getByTestId("ui-lynx-learning-unit-directions");
   expect(directions).toHaveAttribute("data-status", "default");
-  const messengerUnit = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");
+  const messengerUnit = screen.getByTestId("ui-lynx-special-unit-appointment-confirmation");
   expect(messengerUnit).toHaveAttribute("data-status", "available");
   fireEvent.tap(messengerUnit, {});
   expect(props.onStartMessengerUnit).toHaveBeenCalledWith("appointment-confirmation");

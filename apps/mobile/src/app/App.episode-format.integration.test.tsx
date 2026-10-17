@@ -36,7 +36,9 @@ test("EF1. (AC4) 표지만 끝낸 진행: u01 구획에 노드 10개(레슨 8 + 
   await boot({ [u01]: ["intro"] });
 
   const nodes = Array.from(
-    document.querySelectorAll('[data-testid^="ui-lynx-learning-unit-catalog-unit-u01-water-"]'),
+    document.querySelectorAll(
+      '[data-testid^="ui-lynx-learning-unit-catalog-unit-u01-water-"], [data-testid^="ui-lynx-special-unit-catalog-unit-u01-water-"]',
+    ),
   ).filter((element) => /-u01-water-[A-Za-z0-9]+$/.test(element.getAttribute("data-testid") ?? ""));
   expect(nodes).toHaveLength(10);
   expect(status(u01, "S1")).toBe("available");

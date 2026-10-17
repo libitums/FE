@@ -1,0 +1,34 @@
+.special-unit-story-card {
+  min-height: 360px;
+}
+
+.special-unit-story-example {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.special-unit-story-grid {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: var(--libitum-spacing-16);
+  row-gap: var(--libitum-spacing-24);
+}
+
+.special-unit-story-item {
+  width: 124px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-8);
+}
+
+.special-unit-story-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}

@@ -265,6 +265,8 @@ export type {
   LearningUnitProps,
   LearningUnitStatus,
 } from "./learning-unit";
+export { SpecialUnit, getSpecialUnitContract } from "./special-unit";
+export type { SpecialUnitContract, SpecialUnitProps, SpecialUnitStatus } from "./special-unit";
 export type {
   OptionSelectorCommit,
   OptionSelectorContentLanguage,

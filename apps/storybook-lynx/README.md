@@ -41,8 +41,8 @@ pnpm storybook:lynx
 기본 URL은 `http://localhost:6006`이다. 포트가 점유되면 Storybook이 출력한 URL을 따른다.
 명령은 Button·Back Header·Status Indicator·Round Button·Progress Header·Page Indicator·Bottom
 Navigator·Step Indicator·Answer Label·Bottom Sheet·Card·Compact Numeric Input·Chat Bubble·Text
-Field·Visual Novel Dialog·Overlay·Fog·Tooltip·Avatar·Dialog·Learning Unit·Settings Cell·Option
-Selector의 실제 `.web.bundle` 스물세 개를 만들고,
+Field·Visual Novel Dialog·Overlay·Fog·Tooltip·Avatar·Dialog·Learning Unit·Special Unit·Settings Cell·Option
+Selector의 실제 `.web.bundle` 스물네 개를 만들고,
 Rspeedy watch와 Storybook dev
 server를 함께 유지한다.
 
@@ -62,6 +62,7 @@ build한 뒤 산출물을 검사하므로 이전 실행에서 남은 `dist` 없�
 - Components/Progress Header — Default, Zero, Minimum Fill, Complete, Reduced Motion
 - Components/Page Indicator — Default, First, Last, Single, Empty, Reduced Motion
 - Components/Learning Unit — Available, Default, Active, Clear, Narrative, Focused, All States, Reduced Motion
+- Components/Special Unit — Default, Checking, Available, Active, Clear, Focused, All States, Reduced Motion
 - Components/Settings Cell — Navigation, Toggle, With Avatar, Disabled, Group, Reduced Motion
 - Components/Dialog — Default, Single Action, Without Description, Disabled Secondary, Reduced Motion, Entering
 - Components/Option Selector — Default, Filled, Multiple, Immediate, Grid, Disabled, Long Label, Reduced Motion
@@ -88,7 +89,7 @@ loading, `motion`을 제공한다. 활성 tap은 `onTap` Action을 한 번 기�
 
 동작 줄이기 변형은 컴포넌트마다 `motion` Control(`standard` · `reduced`, inline radio)과 `Reduced Motion`
 스토리로 본다. Dialog·Bottom Sheet·Overlay·Progress Header는 `motion`을 prop으로 넘기고, Round
-Button·Learning Unit·Page Indicator·Settings Cell·Chat Bubble·Button·Card·Option Selector는 Lynx entry가
+Button·Learning Unit·Special Unit·Page Indicator·Settings Cell·Chat Bubble·Button·Card·Option Selector는 Lynx entry가
 `@libitums/ui-lynx/motion`의 `MotionProvider`로 트리를 감싸 컨텍스트로 전달한다(컴포넌트에 prop을
 주지 않는다 — 제품 앱과 같은 길). Visual Novel Dialog는 기존 `reducedMotion` Control이다. Button·Card·
 Option Selector의 `Reduced Motion`은 눌림 축소(95 %)가 걷히고 Button neutral·brand는 눌림 막, 나머지는

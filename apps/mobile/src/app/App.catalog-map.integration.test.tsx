@@ -23,6 +23,7 @@ import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner"
 import { journeySteps } from "../screens/journey-map/journey-map";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // `integration` 계층: 앱 세션에서 「카탈로그 읽기 → 맵 구획 → 표지 열기 → 컷 끝 → 진행 저장 → 다음 실행」과
 // 「갱신 뒤 같은 트리에서 구획이 서는 것」, 이벤트 sink 경계를 한 트리에서 봅니다. 대역은 경계뿐입니다 —
@@ -289,7 +290,7 @@ afterEach(() => {
 // ---------------------------------------------------------------- 조작 · 관찰 헬퍼
 
 const cover = (episodeId: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-cover-${episodeId}`);
+  screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${episodeId}`);
 const tapCover = (episodeId: string) => void fireEvent.tap(cover(episodeId), {});
 // 이름이 드는 표지는 기록이 없으면 앞에 가드 화면이 섭니다 - 건너뛰면 기본 문구(「이름」)로 표지가 이어집니다.
 const skipProfileGate = () =>
@@ -402,7 +403,7 @@ test("I2. (AC1 · 2 · 3) 튜토리얼 완료 씨앗: 첫 표지만 열리고 �
   expect(cover("u03-mina")).toHaveAttribute("data-status", "default");
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-S1"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-RP"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-catalog-unit-u01-water-RP"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(presentId("episode-intro-screen")).toBe(false);
 
@@ -620,9 +621,7 @@ const pressSystemBack = (token: string): void =>
     lynx.getJSModule("GlobalEventEmitter").emit(systemBackEventName, [token]);
   });
 const levelOf = (episodeId: string, key: string) =>
-  screen
-    .getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`)
-    .getAttribute("data-status");
+  screen.getByTestId(catalogNodeTestId(episodeId, key)).getAttribute("data-status");
 
 test("I11. (AC1 · 3) 표지 화면: 첫 줄 Episode 1. · 둘째 줄 에피소드 이름 · Skip · Next · 머리말 축 하나이고 Next가 컷 1을 연다", async () => {
   const { events } = await boot({ seed: tutorialDoneSeed });

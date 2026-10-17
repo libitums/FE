@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
-import bookmark from "@libitums/icons/lynx/bookmark";
+import star from "@libitums/icons/lynx/five-pointed-star";
 
 import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
@@ -16,8 +16,19 @@ import { initialCompletedStepCount, journeySteps, type JourneyStepId } from "./j
 // (`mapItemStatus`)이고 `unit`이 그 규칙을 집니다 — 여기서는 화면이 그 파생을 실제로
 // 소비해 표식과 조작 가능성으로 옮기는지까지입니다.
 
-const introTestId = "ui-lynx-learning-unit-tutorial-intro";
-const finalTestId = "ui-lynx-learning-unit-tutorial-final-test";
+// 튜토리얼의 스페셜 다섯은 `SpecialUnit`, 스텝은 `LearningUnit`이 그려 testid 접두가 갈립니다.
+const specialTutorialIds: readonly string[] = [
+  "tutorial-intro",
+  "appointment-confirmation",
+  "appointment-confirmation-phone-call",
+  "cafe-arrival-visual-novel",
+  "tutorial-final-test",
+];
+const unitTestId = (id: string): string =>
+  `ui-lynx-${specialTutorialIds.includes(id) ? "special" : "learning"}-unit-${id}`;
+
+const introTestId = "ui-lynx-special-unit-tutorial-intro";
+const finalTestId = "ui-lynx-special-unit-tutorial-final-test";
 
 // 맵의 세로 줄 순서입니다 — `journey-map-units.ts`의 유닛 목록에서 나온 열 자리이고,
 // **표지가 0번**입니다. 이 배열이 곧 UI-I2의 기댓값입니다.
@@ -76,9 +87,7 @@ function renderMap(overrides: Partial<JourneyMapScreenProps> = {}) {
 function renderedUnitIdsInOrder(): (string | null)[] {
   const map = screen.getByTestId("journey-map-screen-map");
   return [
-    ...map.querySelectorAll(
-      mapUnitIds.map((id) => `[data-testid=ui-lynx-learning-unit-${id}]`).join(","),
-    ),
+    ...map.querySelectorAll(mapUnitIds.map((id) => `[data-testid=${unitTestId(id)}]`).join(",")),
   ].map((node) => node.getAttribute("data-testid"));
 }
 
@@ -96,7 +105,7 @@ test("[UI-I2] 표지가 맵 상자의 첫 자식 유닛이고 뒤로 아홉이 �
 
   const rendered = renderedUnitIdsInOrder();
   expect(rendered[0]).toBe(introTestId);
-  expect(rendered).toEqual(mapUnitIds.map((id) => `ui-lynx-learning-unit-${id}`));
+  expect(rendered).toEqual(mapUnitIds.map(unitTestId));
 });
 
 test("[UI-I3] 미완료면 열린 표식, 완료면 완료 표식으로 선다", () => {
@@ -132,20 +141,21 @@ test("[UI-I5] 표지를 누르면 onStartEpisodeIntroUnit이 그 id로 한 번 �
 });
 
 // ⚠ 낭독 이름의 제목이 「에피소드 **표지**」인 것은 계약이 정한 것입니다
-// (`episode-intro.contract.ts`의 `EpisodeIntroTitle`). 상태 접미사와 「이야기 연결」은
-// `LearningUnit`이 붙입니다(ADR-0016 D3) — `available`에는 접미사가 없습니다.
+// (`episode-intro.contract.ts`의 `EpisodeIntroTitle`). 상태 접미사는
+// `SpecialUnit`이 붙입니다(ADR-0016 D3) — `available`에는 접미사가 없습니다. `special, `
+// 접두는 맵 문구표가 붙이고 「이야기 연결」(`story`)은 더는 없습니다.
 test("[UI-I6] 표지의 낭독 이름이 상태에 따라 갈린다", () => {
   const { unmount } = renderMap();
   expect(screen.getByTestId(introTestId)).toHaveAttribute(
     "accessibility-label",
-    "Episode intro, story",
+    "special, Episode intro",
   );
   unmount();
 
   renderMap({ completedEpisodeIntroIds: introDone });
   expect(screen.getByTestId(introTestId)).toHaveAttribute(
     "accessibility-label",
-    "Episode intro, completed, story",
+    "special, Episode intro, completed",
   );
 });
 
@@ -183,16 +193,15 @@ test("[UI-I8] 표지 뒤의 스텝 다섯이 여전히 자기 서수의 상태�
   });
 });
 
-// UI-B1 — 표지는 `bookmark`를 그립니다. 계약 기본값 `clapper`는 `LearningUnit`이
-// `narrative` 유닛에 찍는 **배지**가 이미 쓰고 있어 한 표식 안에 같은 글리프가 둘
-// 섭니다(design.md §1.1). 글리프 비교는 `EpisodeIntroMapItem.ui.test.tsx`가 자세히
-// 하고, 여기서는 **맵에 선 표지**가 그 아이콘을 실어 내는지만 봅니다.
-test("[UI-B1] 맵의 표지 항목이 bookmark를 그린다", () => {
+// UI-B1 — 표지도 스페셜 유닛의 오각 별을 그립니다. 글리프 비교는
+// `EpisodeIntroMapItem.ui.test.tsx`가 자세히 하고, 여기서는 **맵에 선 표지**가 그
+// 아이콘을 실어 내는지만 봅니다.
+test("[UI-B1] 맵의 표지 항목이 five-pointed-star를 그린다", () => {
   renderMap();
 
   const icon = screen.getByTestId(`${introTestId}-icon`);
   const painted = icon.getAttribute("current-color") ?? "";
-  expect((icon.getAttribute("content") ?? "").split(painted).join("currentColor")).toBe(bookmark);
+  expect((icon.getAttribute("content") ?? "").split(painted).join("currentColor")).toBe(star);
 });
 
 // ---------------------------------------------------------------- 잠김 축 (D6)
@@ -205,7 +214,7 @@ test("[UI-L1] 표지 미완료면 특별 유닛 넷이 자물쇠로 서고 눌�
   const handlers = renderMap();
 
   specialUnitIds.forEach((id) => {
-    const unit = screen.getByTestId(`ui-lynx-learning-unit-${id}`);
+    const unit = screen.getByTestId(`ui-lynx-special-unit-${id}`);
     expect(unit).toHaveAttribute("data-status", "default");
     fireEvent.tap(unit, {});
   });
@@ -260,13 +269,13 @@ test("[엣지] 표지만 완료하면 가운데 특별 유닛 셋은 잠겨 있�
     "cafe-arrival-visual-novel",
   ] as const;
   middle.forEach((id) => {
-    expect(screen.getByTestId(`ui-lynx-learning-unit-${id}`)).toHaveAttribute(
+    expect(screen.getByTestId(`ui-lynx-special-unit-${id}`)).toHaveAttribute(
       "data-status",
       "default",
     );
   });
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-cafe-arrival-visual-novel"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-cafe-arrival-visual-novel"), {});
   expect(handlers.onStartVisualNovelUnit).not.toHaveBeenCalled();
   // 최종 테스트는 여전히 잠깁니다 — 같은 구획의 다른 항목이 모두 끝나야 열립니다.
   expect(screen.getByTestId(finalTestId)).toHaveAttribute("data-status", "default");

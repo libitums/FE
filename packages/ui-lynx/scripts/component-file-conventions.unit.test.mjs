@@ -138,6 +138,7 @@ describe("findComponentFileConventionViolations", () => {
       "progress-header",
       "round-button",
       "settings-cell",
+      "special-unit",
       "status-indicator",
       "step-indicator",
       "text-field",

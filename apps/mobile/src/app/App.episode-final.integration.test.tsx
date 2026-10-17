@@ -30,7 +30,7 @@ const readyForFinal: AppJourneySeed = {
   completedEpisodeFinalIds: [],
 };
 
-const finalUnit = () => screen.getByTestId("ui-lynx-learning-unit-tutorial-final-test");
+const finalUnit = () => screen.getByTestId("ui-lynx-special-unit-tutorial-final-test");
 
 function tapButtonIn(testId: string): void {
   fireEvent.tap(within(screen.getByTestId(testId)).getByTestId("ui-lynx-button"), {});

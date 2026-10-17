@@ -46,21 +46,21 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const introUnitTestId = "ui-lynx-learning-unit-tutorial-intro";
-const finalUnitTestId = "ui-lynx-learning-unit-tutorial-final-test";
+const introUnitTestId = "ui-lynx-special-unit-tutorial-intro";
+const finalUnitTestId = "ui-lynx-special-unit-tutorial-final-test";
 
 // 표지 뒤에 서는 유닛들입니다 — 표지를 끝내기 전에는 전부 잠깁니다(D6). 스텝 하나와
 // 특별 유닛 셋을 함께 둡니다: 잠김이 **종류를 가리지 않는다**는 것이 관찰이라,
 // 한 종류만 보면 나머지 셋이 조용히 열려 있어도 통과합니다.
 const gatedUnits = [
   { testId: "ui-lynx-learning-unit-ordering", screenTestId: "step-sheet-panel" },
-  { testId: "ui-lynx-learning-unit-appointment-confirmation", screenTestId: "messenger-screen" },
+  { testId: "ui-lynx-special-unit-appointment-confirmation", screenTestId: "messenger-screen" },
   {
-    testId: "ui-lynx-learning-unit-appointment-confirmation-phone-call",
+    testId: "ui-lynx-special-unit-appointment-confirmation-phone-call",
     screenTestId: "phone-call-screen",
   },
   {
-    testId: "ui-lynx-learning-unit-cafe-arrival-visual-novel",
+    testId: "ui-lynx-special-unit-cafe-arrival-visual-novel",
     screenTestId: "visual-novel-screen",
   },
 ] as const;
@@ -360,7 +360,7 @@ test.each([false, true])(
     await renderSignedInApp(<App completedEpisodeIntroIds={introDone ? ["tutorial-intro"] : []} />);
     fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
     // 맵에서는 잠겨 있습니다 — 표지를 끝내지 않았기 때문입니다.
-    expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+    expect(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation")).toHaveAttribute(
       "data-status",
       "default",
     );
@@ -505,11 +505,11 @@ test("[IN-I13] 특별 유닛의 열림 이벤트가 곧장 한 번 난다", asyn
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
   // 잠긴 동안은 눌러도 이벤트가 나지 않습니다 — 열리지 않았으니 열린 적도 없습니다.
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
   expect(messengerEventSink).not.toHaveBeenCalled();
 
   finishIntroBySkip();
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
 
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
   expect(messengerEventSink.mock.calls.map(([event]) => event.name)).toEqual([

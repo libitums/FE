@@ -34,7 +34,7 @@ test("first unit selection and story guides dismiss without skipping a line and 
   );
   expect(screen.getByTestId("first-unit-guide-map")).toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-scroll")).toHaveAttribute("enable-scroll", "false");
-  tap("ui-lynx-learning-unit-tutorial-intro");
+  tap("ui-lynx-special-unit-tutorial-intro");
   next();
   const firstLine = screen.getByTestId("ui-lynx-visual-novel-dialog-line").textContent;
   dismiss("story");
@@ -47,7 +47,7 @@ test("first unit selection and story guides dismiss without skipping a line and 
   );
   expect(screen.queryByTestId("first-unit-guide-map")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-scroll")).not.toHaveAttribute("enable-scroll");
-  tap("ui-lynx-learning-unit-tutorial-intro");
+  tap("ui-lynx-special-unit-tutorial-intro");
   next();
   expect(screen.queryByTestId("first-unit-guide-story")).not.toBeInTheDocument();
 });
@@ -60,7 +60,7 @@ test("a new learner sees the first-unit guide", async () => {
 test("a completed first unit never shows guides when replayed", async () => {
   await renderSignedInApp(<App completedEpisodeIntroIds={["tutorial-intro"]} />, newLearner);
   expect(screen.queryByTestId("first-unit-guide-map")).not.toBeInTheDocument();
-  tap("ui-lynx-learning-unit-tutorial-intro");
+  tap("ui-lynx-special-unit-tutorial-intro");
   next();
   expect(screen.queryByTestId("first-unit-guide-story")).not.toBeInTheDocument();
 });

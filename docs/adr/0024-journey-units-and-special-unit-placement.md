@@ -793,4 +793,16 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 
 - **판별 · 노드**: `screens/journey-map/catalog-map.ts`(`catalogCultureKeysOf` · `catalogUnitNodesOf`의 role · `catalogUnitNodeTitle`), 계약 `catalog-map.contract.ts`(`CatalogUnitNodeRole` · `cultureKeys` · `cultureTitle`).
 - **아이콘 · 배치**: `CatalogUnitNode.tsx`의 role → 아이콘 표(`play` · `lantern-05` · `flag`), `journey-map-rows.ts`의 `catalogNodePlacement.culture`. 표가 `Record`라 role이 늘면 `tsc`가 선다.
+  ⟨2026-10-17⟩ 표에서 `final → flag`만 빠졌다(최종은 `SpecialUnit`) — 레슨 `play` · 문화 `lantern-05`는 그대로다. 아래 실체화 기록 ⟨2026-10-17⟩.
 - **기기 확인**: iOS 시뮬레이터 한 회차(2026-10-16, 옛 진행 계정) — 세 에피소드의 문화 노드 이름 `Episode n. Culture`를 접근성 트리로 봤다. 한 줄 배치 · 열린 상태의 아이콘 · 상태 셋은 기록이 없다 — [문화 · 조립 화면 e2e](../e2e/episode-format-screens.md).
+
+### 2026-10-17 — 레슨이 아닌 단위가 `SpecialUnit` 배지로 선다
+
+[ADR-0068](0068-special-unit-map-marker.md)을 세운 회차의 기록이다. 결정이 코드의 어디에 닿았는지만 적는다. **D1 · D7 · D15의 자리 규칙과 ⟨2026-10-14⟩ 줄 규칙은 바뀌지 않았다** — 바뀐 것은 표식이다.
+
+- **표식**: 스페셜 항목 일곱 종(튜토리얼 표지 · 메신저 · 전화 · 비주얼 노벨 · 최종, 카탈로그 표지 · 최종)이 ui-lynx `SpecialUnit`(`packages/ui-lynx/src/special-unit/`)을 그린다 — 둥근 사각 면 · 오른쪽 아래 두께 · 오각 별 하나, 종류별 아이콘 · Narrative 배지 · 자물쇠 · 체크 없음.
+  레슨 노드(튜토리얼 스텝 · 카탈로그 레슨)와 **카탈로그 문화 노드**(D15 — `lantern-05` · 자물쇠 · 체크 · 낭독 `Episode n. Culture`)는 `LearningUnit` 그대로다 — 문화는 스페셜이 아니다(사용자 결정 2026-10-17).
+- **맵 몸통**: `screens/journey-map/SpecialUnitMapItem.tsx`(두 줄 라벨 `SPECIAL` + 제목 · 잠김 가드 · `layer`), 상태 표 한 벌 `journey-special-unit.ts`의 `specialUnitStatusByNodeStatus`. 어댑터 여섯과 `CatalogUnitNode`의 스페셜 갈래가 위임한다 — 어댑터의 props 계약은 그대로다.
+- **카탈로그 노드**: `CatalogUnitNode.tsx`가 role로 `CatalogLessonNode`(레슨 `play` · 문화 `lantern-05`) · `SpecialUnitMapItem`(최종)으로 갈린다. 아이콘 표는 `lessonIconByRole`(`lesson` · `culture` 둘)로 줄었고 `final → flag`만 빠졌다. `catalogNodePlacement`는 그대로다.
+- **낭독 · testid**: 이름 `special, <이름>` + 상태 접미사(카탈로그는 `Episode n.`을 단다), 유닛 testid `ui-lynx-learning-unit-<id>` → `ui-lynx-special-unit-<id>`(id 꼬리 그대로).
+- **기기 확인**: iOS 시뮬레이터 한 회차(2026-10-17, 진행이 많이 된 계정) — 끝남 상태와 접근성 트리를 봤다(그 회차의 「열림」은 문화도 스페셜이던 정정 전 빌드의 문화 노드였다). 스페셜의 열림 · 잠김 · 확인 중 · 안내 말풍선 · 눌림은 기록이 없다 — [스페셜 유닛 e2e](../e2e/special-unit.md).
