@@ -338,16 +338,21 @@ function toProfileStep(): void {
   tapNext();
 }
 
+/** 로그인 뒤 언어 선택 또는 맵 — 서버 진행이 있는 계정은 언어 선택 없이 맵으로 갑니다. */
 async function signInWithGoogle(): Promise<void> {
   tapButtonIn("login-screen-method-google");
-  await vi.waitFor(() => expect(present("language-select-screen-title")).toBe(true));
+  await vi.waitFor(() =>
+    expect(present("language-select-screen-title") || present("journey-map-screen")).toBe(true),
+  );
 }
 
-/** 언어 선택 -> 여정 입구 -> 앱 구간까지 갑니다. */
+/** 언어 선택 -> 여정 입구 -> 앱 구간까지 갑니다. 이미 맵이면 건너뜁니다. */
 async function enterJourney(): Promise<void> {
-  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
-  tapButtonIn("language-select-screen-next");
-  tapButtonIn("journey-entry-screen-start");
+  if (!present("journey-map-screen")) {
+    fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
+    tapButtonIn("language-select-screen-next");
+    tapButtonIn("journey-entry-screen-start");
+  }
   await flush();
 }
 
