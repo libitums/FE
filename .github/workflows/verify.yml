@@ -10,9 +10,12 @@ permissions:
   contents: read
   packages: read
 
+# 취소는 같은 PR의 앞 push에만 뜻이 있습니다. main push까지 끊으면 연달아 병합할 때 앞
+# 커밋이 main에서 판정 없이 지나갑니다(#254가 그렇게 지나갔습니다). main은 같은 그룹 안에서
+# 차례로 돕니다.
 concurrency:
   group: verify-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # 잡을 나눈 이유는 둘입니다. 하나로 돌리면 `&&` 사슬이 첫 실패에서 멈춰 나머지 결과를 다음
 # 밀기까지 못 보고, 20 ms짜리 포맷 검사가 빌드가 끝나기를 기다립니다.
@@ -27,17 +30,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@libitums"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       # 셋을 한 잡에 두되 `&&`로 잇지 않습니다. 앞 단계가 실패해도 뒤 단계가 돌아 한 번에
       # 전부 보입니다.
       - name: Check formatting
@@ -55,19 +50,27 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@libitums"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      # 커버리지는 테스트를 한 번 더 돌려 얻지 않습니다 — 이 실행이 VITEST_COVERAGE로 같이
+      # 셉니다. 숫자만 남기고 퍼센트를 게이트로 걸지 않습니다. 출력을 tee로 받으므로
+      # shell: bash(pipefail)가 테스트 실패를 그대로 넘깁니다.
       - name: Run tests
-        run: pnpm test
+        shell: bash
+        run: pnpm test 2>&1 | tee test-output.txt
+        env:
+          VITEST_COVERAGE: "1"
+      - name: Coverage summary
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          {
+            echo "## 커버리지"
+            echo '```text'
+            grep -A6 "Coverage summary" test-output.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   build:
     name: Build and bundle size
@@ -75,17 +78,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@libitums"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
         run: pnpm build
       # 예산 검사는 산출물이 있어야 뜻이 있으므로 같은 잡에서 빌드 뒤에 돕니다.
@@ -101,48 +96,11 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@libitums"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check performance report policy
         run: pnpm performance:reports:gate
         env:
           POLICY_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           POLICY_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-
-  # 커버리지는 숫자만 남깁니다. 퍼센트를 게이트로 걸지 않으므로 이 잡은 PR을 막지 않습니다.
-  coverage:
-    name: Coverage (non-blocking)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@libitums"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Measure coverage
-        run: |
-          pnpm test:coverage 2>&1 | tee coverage-output.txt
-          {
-            echo "## 커버리지"
-            echo '```text'
-            grep -A6 "Coverage summary" coverage-output.txt || true
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"

@@ -171,6 +171,13 @@ Rendering/Memory 증거가 존재하는지만 뜻한다.
 
 ### D6. PR에는 Linux CI 상태를 제공하지만 branch protection 강제는 계속 보류한다
 
+> **후속 결정 (2026-10-17)** — 보류 사유(private 저장소의 branch protection API 403)가 사라졌다. 저장소가 public이 되어
+> ruleset API가 열렸고, `main` ruleset으로 **Linux Verify 네 잡(`Format, types, lint` · `Tests` · `Build and bundle size` ·
+> `Performance report policy`)을 필수 검사로** 묶었다. 같은 ruleset이 PR 필수 · squash만(ADR-0009 D4 · D5) · 강제 push와
+> 삭제 금지를 건다. 우회 행위자는 두지 않는다 — 커밋하는 사람이 저장소 관리자 하나라 우회를 열면 강제가 없는 것과 같다.
+> macOS smoke와 Vercel · Supabase 미리보기는 필수가 아니다. 필수 검사는 잡 `name`으로 묶이므로 **잡 이름을 바꾸면 ruleset도
+> 함께 바꾼다.** 아래 본문은 보류하던 시점의 기록이다.
+
 Linux Verify는 PR에서 보이지만 현재 플랜의 branch protection API 403 때문에 `main`의
 required check로 강제할 수 없다. macOS smoke는 수동·평일 정기 관측 전용이라 PR마다 상태를
 만들지 않는다. ADR-0009 D4의 PR 규약과 D5의 squash 설정은 유지한다. CI가 생겼다는 사실을
@@ -247,3 +254,19 @@ D1의 실행 목록이 `pnpm verify`(4번)와 성능 보고서 정책(5번)을 *
 옛 결정으로 남는 파일이 없으므로 추적할 대상이 없다. D3~D6(native smoke·원시 자료·
 branch protection)은 한 글자도 바뀌지 않았다 — 새 번호를 붙이면 그것들이 이유 없이
 `대체됨`으로 밀린다.
+
+**2026-10-17 — Verify 동시성 · 커버리지 · 설치 단계** ⟨적용 기록, D1~D5 결정은 그대로⟩
+
+1. **`main` push는 취소하지 않는다.** 동시성 그룹이 `main` push를 한 그룹으로 묶고 `cancel-in-progress: true`였으므로, 연달아
+   병합하면 앞 커밋의 실행이 끊겼다 — #254(`ce06a51c`)는 18초 뒤 다음 병합에 취소되어 `main`에서 판정 없이 지나갔다.
+   취소는 같은 PR의 앞 push에만 뜻이 있으므로 `cancel-in-progress`를 PR 이벤트에서만 참으로 했다. D1의 「`main` push에서
+   항상 시작한다」가 「끝까지 돈다」까지 뜻하게 된 것이다.
+2. **Coverage 잡을 없앴다.** Tests 잡과 같은 vitest를 커버리지만 켜서 다시 돌고 있었다. 이제 Tests 잡이
+   `VITEST_COVERAGE=1`로 같은 실행에서 세고, 요약을 Step Summary에 남긴다. 숫자만 남기고 게이트로 걸지 않는 것은 그대로다.
+   출력을 `tee`로 받으므로 그 단계는 `shell: bash`(pipefail)다. 루트 `test` 구성의 변화는 ADR-0006 2026-10-17 기록.
+3. **설치를 `.github/actions/setup` 하나로 묶었다.** Verify 다섯 잡이 같은 네 단계를 베끼고 있었고, smoke만 `corepack prepare
+   pnpm@<버전>`으로 pnpm 버전을 따로 적어 `packageManager`와 어긋날 수 있었다. 두 워크플로가 모두 이 액션을 쓰고, pnpm
+   버전은 `packageManager`가 정한다. 체크아웃은 액션 밖에 둔다 — 액션 파일을 읽으려면 체크아웃이 먼저고, 정책 잡은 이력
+   깊이가 다르다(D2).
+
+세 가지 모두 `devtools/ci-wiring/ci-hygiene.unit.test.mjs`(CW6~CW10)가 지킨다.

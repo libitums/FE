@@ -49,7 +49,7 @@
 | `pnpm typecheck` | `tsc --noEmit` | 코드 생성 |
 | `pnpm lint` | 정적 검사 (`oxlint`) + **CSS 토큰 접두사 검사** (`lint:tokens` — ADR-0014 D8) + 모션 리터럴 검사 (`lint:motion`, 2026-10-09 — `transition` · `animation` 선언의 리터럴 시간 · easing과 `@media`를 막는다, ADR-0025 「2026-10-09 2단계」; 2026-10-10부터 `transform: scale()`의 비항등 리터럴과 `.ts` · `.tsx` inline style의 모션 리터럴까지 — [ADR-0053](0053-motion-policy.md) D1) | **자동 수정** (`lint:fix`가 따로) |
 | `pnpm format` | 포맷 적용 (`oxfmt`) | 검사만 하기 (`format:check`가 따로) |
-| `pnpm test` | `test:unit` + `test:ui` + `test:integration` + `test:report-policy` | e2e (D4) |
+| `pnpm test` | 계층 사슬(`test:unit` · `test:ui` · `test:integration`)과 **같은 멤버** + devtools 검사(`test:report-policy` 등). vitest 패키지(`ui-lynx` · `mobile`)는 계층별 세 번이 아니라 `test:all` 한 번 (2026-10-17 기록) | e2e (D4) |
 | `pnpm performance:reports:gate` | **지금 이 브랜치가 CI의 성능 보고서 정책을 통과하나.** 범위를 스스로 구해서 검사한다 (ADR-0021 D2) | 임의 범위 감사 (`performance:reports:check`가 따로) |
 | `pnpm verify` | 순서대로: **format:check** → typecheck → lint → test → build → **performance:reports:gate** | |
 
@@ -634,3 +634,13 @@ ADR-0016을 쌓았다 — **보조기술이 읽는 트리를 뷰 기반 도구�
 `ui.test`는 같다). 러너는 같은 vitest이지만 Lynx 플러그인 없이 Astro의 설정을 쓰고 환경은 node다 — D4의 Lynx 테스트
 환경 서술은 이 앱에 해당하지 않는다. **CI 워크플로 diff는 0이다** — `verify`의 잎 명령 이름이 같다(D3). 머리의
 「2026-09-14 정정 — 계층 멤버십」이 적은 순서는 그 시점의 것이고, 지금의 멤버는 루트 `package.json`이 출처다.
+
+**2026-10-17 — 루트 `test`가 vitest 패키지를 한 번만 돈다** ⟨적용 기록, 계층 결정은 그대로⟩
+CI가 커버리지를 얻으려고 같은 vitest를 **Coverage 잡에서 한 번 더** 돌고 있었다(러너 4~7분). 커버리지는 테스트를 한 번
+더 돌려 얻을 숫자가 아니므로, Tests 잡이 `VITEST_COVERAGE=1`로 같은 실행에서 센다(ADR-0021 2026-10-17 기록). 그런데
+계층별 세 번 실행은 커버리지를 셋으로 쪼개 덮어쓴다. 그래서 루트 `test`가 `ui-lynx` · `mobile`의 **`test:all`(필터 없는
+`vitest run`)을 한 번** 부르고, 나머지 멤버(`supabase-functions` · `storybook-lynx` · `landing` · Android FCM · devtools)는
+그대로 이어 붙인다. **바뀐 것은 `test` 하나다** — 루트 `test:unit` · `test:ui` · `test:integration`과 `.agent-harness/profile.yaml`의
+계층 명령은 그대로라 계층별 red/green 실행(D3)은 영향이 없다. 잃는 것은 「모든 패키지의 unit을 다 돈 뒤 ui」라는 실패 순서
+하나다. 두 집합이 갈라지지 않는 것은 `devtools/ci-wiring/ci-hygiene.unit.test.mjs`가 지킨다 — CW9가 `test`의 멤버를 계층
+사슬과 대조하고(`test:all` = 그 패키지의 세 계층), CW10이 두 패키지에 계층 패턴 밖 테스트 파일이 없음을 본다.

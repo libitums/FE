@@ -77,7 +77,7 @@ test("CW1. verify가 부르는 검사를 CI가 모두 돈다", () => {
 // CW2 — 반대 방향입니다. CI에만 있고 로컬 `verify`에 없는 검사가 있으면 「로컬에서 초록이면
 // CI도 초록」이 깨집니다. 커버리지는 게이트가 아니므로 예외로 둡니다.
 test("CW2. CI가 도는 검사 가운데 verify 밖의 게이트가 없다", () => {
-  const allowedOutsideVerify = new Set(["install", "test:coverage"]);
+  const allowedOutsideVerify = new Set(["install"]);
   const leaves = new Set(verifyLeafCommands());
 
   const extra = [...workflowPnpmCommands()].filter(

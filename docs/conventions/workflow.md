@@ -44,7 +44,7 @@
 | `pnpm performance:reports:check --base <base> --head <head>` | **임의의 두 commit을 감사한다.** 소급 확인용                                           | 범위 자동 산출 (위가 따로)        |
 | `pnpm --filter @libitums/mobile performance:capture:smoke`   | iOS Host 준비부터 수집·분석·cleanup까지 native 연결 확인                               | 실기 baseline·수치 threshold      |
 | `pnpm size:check`                                            | 빌드 산출물 크기를 `devtools/bundle-size/budget.json`의 예산과 대조                    | 빌드 (먼저 `pnpm build`)          |
-| `pnpm test:coverage`                                         | 커버리지 측정 (숫자만 남긴다)                                                          | 게이트 — 퍼센트로 막지 않는다     |
+| `pnpm test:coverage`                                         | 커버리지 측정 (숫자만 남긴다). CI는 따로 돌지 않고 Tests 잡이 `VITEST_COVERAGE=1`로 센다 | 게이트 — 퍼센트로 막지 않는다     |
 | `pnpm verify`                                                | format:check → typecheck → lint → test → build → size:check → performance:reports:gate | 네이티브 빌드                     |
 
 - **한 명령은 한 가지 이유로만 실패한다.** 명령이 두 가지 일을 겸하게 만들지 않는다.
@@ -104,15 +104,13 @@
 5. **squash로 머지한다.** `main`의 커밋 하나 = PR 하나여야 `git revert <sha>` 하나로
    통째로 되돌릴 수 있다. 커밋 제목은 PR 제목을 쓴다.
 
-> **CI는 있지만 이 절차는 required check로 강제되지 않는다.** 모든 PR과 `main` push에서
-> Linux Verify가 **`pnpm verify` 하나**를 실행한다 — 보고서 정책은 그 마지막 단계이지
-> 별도 단계가 아니다. 그래서 **CI 로그에서 정책 실패는 `Verify` 단계 안에 묻힌다.**
-> 단계 이름 대신 그 단계의 출력을 읽는다(실패 사유를 한국어로 찍는다).
-> iOS performance smoke는 수동 실행과
-> 평일 정기 실행에서만 동작하며 관련 PR이 바뀌어도 자동 시작하지 않는다. 초기 관측 기간에는
-> 비차단이다. 저장소가 private이고 현재 플랜의 branch protection API가 403이어서 실패한
-> 검사도 우회할 수 있다. 강제되는 줄 알고 방심하지 않는다. (squash 고정은 예외 — GitHub
-> 저장소 설정에서 켠 강제 수단이다.)
+> **이 절차는 `main` ruleset이 강제한다** (2026-10-17). PR 없이 `main`에 push할 수 없고, squash만 허용되며,
+> Linux Verify의 네 잡(`Format, types, lint` · `Tests` · `Build and bundle size` · `Performance report policy`)이
+> 초록이어야 병합된다. 우회 행위자는 없다. 네 잡의 잎 명령을 합치면 `pnpm verify`와 같다 —
+> `devtools/ci-wiring`이 그 일치를 지킨다. **잡 이름을 바꾸면 ruleset의 필수 검사도 함께 바꾼다** — 이름이
+> 어긋나면 그 검사는 영영 대기 상태로 남아 모든 PR이 막힌다. 커버리지는 Tests 잡이 같은 실행에서 세어
+> Step Summary에 숫자만 남긴다. iOS performance smoke는 수동 실행과 평일 정기 실행에서만 동작하는
+> 비차단 관측이다.
 
 ([ADR-0009 D4·D5·D6](../adr/0009-vcs-hygiene-ci-and-merge-gate.md),
 [ADR-0021](../adr/0021-performance-report-ci-automation.md))
