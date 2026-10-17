@@ -58,11 +58,17 @@ export type EntryLoginMethodSelectedEvent = {
   readonly method: EntryLoginMethod;
 };
 export type EntryCompletedEvent = { readonly name: "entry_completed" };
+export type EntryReturningLearnerEnteredEvent = {
+  readonly name: "entry_returning_learner_entered";
+  readonly method: EntryLoginMethod;
+};
 
 export type EntryEvent =
   | EntryScreenViewedEvent
   | EntryLoginMethodSelectedEvent
   | EntryCompletedEvent
+  // 서버에 기록이 있는 계정이 언어 선택 · 여정 입장을 건너뛰고 맵으로 들어간 로그인입니다.
+  | EntryReturningLearnerEnteredEvent
   // 로그인 화면의 방침 · 약관 링크입니다(ADR-0033). 설정 sink와 같은 모양입니다.
   | LegalDocumentOpenedEvent
   // 온보딩 넷째 스텝의 저장 · 건너뜀입니다. 값(이름 · 나라)은 싣지 않습니다.
@@ -85,4 +91,10 @@ export function entryLoginMethodSelectedEvent(
 // 허용하는 값이 이 하나뿐입니다 — "틀린 스텁"을 만들 여지가 타입 자체에 없습니다.
 export function entryCompletedEvent(): EntryCompletedEvent {
   return { name: "entry_completed" };
+}
+
+export function entryReturningLearnerEnteredEvent(
+  _method: EntryLoginMethod,
+): EntryReturningLearnerEnteredEvent {
+  return { name: "entry_returning_learner_entered", method: "phone" };
 }

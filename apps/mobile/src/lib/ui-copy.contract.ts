@@ -132,6 +132,18 @@ export type UiLanguageFrom = (stored: string | null) => UiLanguage;
 /** 저장소를 읽어 언어를 냅니다. 저장소가 없어도(테스트 · Explorer · 메인 스레드) 던지지 않습니다. */
 export type LoadUiLanguage = () => UiLanguage;
 
+/** 기기 언어 태그(BCP 47 · `_` 구분 허용)를 **고를 수 있는** 언어로 좁힙니다. 아니면 `null`. 던지지 않습니다. */
+export type UiLanguageFromDeviceTag = (deviceLanguageTag: string | null) => UiLanguage | null;
+
+/** 언어 선택을 건너뛴 로그인의 UI 언어입니다 — 저장값 → 기기(고를 수 있을 때) → `initialEntryLanguage`. */
+export type ReturningUiLanguageFrom = (
+  stored: string | null,
+  deviceLanguageTag: string | null,
+) => UiLanguage;
+
+/** 저장소를 읽어 위 규칙으로 냅니다. 저장소가 없어도 던지지 않습니다. */
+export type LoadReturningUiLanguage = () => UiLanguage;
+
 /** 고른 언어를 저장합니다. 저장소가 없으면 아무것도 하지 않습니다. */
 export type SaveUiLanguage = (language: UiLanguage) => void;
 

@@ -6,9 +6,12 @@
 import { entryLanguages, initialEntryLanguage } from "./entry-language";
 import { getItem, setItem } from "./storage";
 import type {
+  LoadReturningUiLanguage,
   LoadUiLanguage,
+  ReturningUiLanguageFrom,
   SaveUiLanguage,
   UiLanguageFrom,
+  UiLanguageFromDeviceTag,
   UiLanguageStorageKey,
 } from "./ui-copy.contract";
 
@@ -23,3 +26,9 @@ export const loadUiLanguage: LoadUiLanguage = () => uiLanguageFrom(getItem(uiLan
 export const saveUiLanguage: SaveUiLanguage = (language) => {
   setItem(uiLanguageStorageKey, language);
 };
+
+export const uiLanguageFromDeviceTag: UiLanguageFromDeviceTag = () => null;
+
+export const returningUiLanguageFrom: ReturningUiLanguageFrom = () => initialEntryLanguage;
+
+export const loadReturningUiLanguage: LoadReturningUiLanguage = () => initialEntryLanguage;

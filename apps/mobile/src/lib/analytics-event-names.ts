@@ -9,6 +9,7 @@ export type AnalyticsEventName =
   | "entry_screen_viewed"
   | "entry_login_method_selected"
   | "entry_completed"
+  | "entry_returning_learner_entered"
   | "messenger_unit_opened"
   | "messenger_unit_completed"
   | "messenger_unit_exited_incomplete"
