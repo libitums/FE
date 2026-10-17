@@ -83,3 +83,12 @@ describe("first-unit-guide.css", () => {
     expect(guideCss).not.toContain("[data-");
   });
 });
+
+describe("앱 진입점", () => {
+  // jsdom은 CSS를 적용하지 않아 이 import가 빠져도 ui 테스트가 통과합니다. 기기에서는 배지가 크기도
+  // 색도 없이 사라지고 라벨만 남습니다(시뮬레이터 확인 2026-10-17).
+  test("SC8. 진입점이 SpecialUnit CSS를 부른다", () => {
+    const entry = readFileSync(resolve(srcDir, "app/index.tsx"), "utf8");
+    expect(entry).toContain('import "@libitums/ui-lynx/special-unit/styles.css";');
+  });
+});
