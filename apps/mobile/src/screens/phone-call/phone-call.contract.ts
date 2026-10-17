@@ -190,7 +190,7 @@ export type PhoneCallNavigationScreenContract = {
 };
 
 export type PhoneCallTestId =
-  | `ui-lynx-learning-unit-${PhoneCallUnitId}`
+  | `ui-lynx-special-unit-${PhoneCallUnitId}`
   | "phone-call-screen"
   | "phone-call-title"
   | "phone-call-contact-name"
