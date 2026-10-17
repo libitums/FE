@@ -3,6 +3,7 @@
 
 import type { loadLearnerProfile } from "../lib/learner-profile-api";
 import type { loadLearningProgress } from "../lib/progress-api";
+import { completedActivityCount, journeyProgressFrom } from "./learning-progress";
 import type { JourneyProgressState } from "./learning-progress";
 
 /** 기존 함수의 반환형 그대로입니다 — 모양을 다시 적지 않습니다. */
@@ -29,24 +30,32 @@ export const pendingLearnerRecordSignals: LearnerRecordSignals = {
   profile: "pending",
 };
 
-export function hasLearningRecord(_state: JourneyProgressState): boolean {
-  return false;
+// VN 진행 중(`active` · `beatIndex: 1`)은 활동 수에 들지 않지만 기록으로 봅니다.
+export function hasLearningRecord(state: JourneyProgressState): boolean {
+  return completedActivityCount(state) > 0 || state.visualNovelProgress.beatIndex > 0;
 }
 
-export function progressSignalOf(_loaded: LearningProgressLoadResult): SettledLearnerRecordSignal {
-  return "unknown";
+export function progressSignalOf(loaded: LearningProgressLoadResult): SettledLearnerRecordSignal {
+  if (!loaded.ok) return "unknown";
+  if (loaded.raw === null) return "absent";
+  const state = journeyProgressFrom(loaded.raw);
+  if (state === null) return "unknown";
+  return hasLearningRecord(state) ? "present" : "absent";
 }
 
-export function profileSignalOf(_loaded: LearnerProfileLoadResult): SettledLearnerRecordSignal {
-  return "unknown";
+export function profileSignalOf(loaded: LearnerProfileLoadResult): SettledLearnerRecordSignal {
+  if (!loaded.ok) return "unknown";
+  return loaded.record === null ? "absent" : "present";
 }
 
 /** 아직 정할 수 없으면 `null`입니다. */
-export function settledEntryRouteOf(_signals: LearnerRecordSignals): EntryRouteAfterLogin | null {
-  return null;
+export function settledEntryRouteOf(signals: LearnerRecordSignals): EntryRouteAfterLogin | null {
+  if (signals.progress === "present" || signals.profile === "present") return "journey-map";
+  if (signals.progress === "pending" || signals.profile === "pending") return null;
+  return "language-select";
 }
 
 /** 시간이 다 됐을 때입니다 — `pending`을 `unknown`으로 읽습니다. `null`을 내지 않습니다. */
-export function entryRouteOnTimeoutOf(_signals: LearnerRecordSignals): EntryRouteAfterLogin {
-  return "language-select";
+export function entryRouteOnTimeoutOf(signals: LearnerRecordSignals): EntryRouteAfterLogin {
+  return settledEntryRouteOf(signals) ?? "language-select";
 }

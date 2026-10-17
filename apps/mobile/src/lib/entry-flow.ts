@@ -94,7 +94,7 @@ export function entryCompletedEvent(): EntryCompletedEvent {
 }
 
 export function entryReturningLearnerEnteredEvent(
-  _method: EntryLoginMethod,
+  method: EntryLoginMethod,
 ): EntryReturningLearnerEnteredEvent {
-  return { name: "entry_returning_learner_entered", method: "phone" };
+  return { name: "entry_returning_learner_entered", method };
 }
