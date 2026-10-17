@@ -146,20 +146,20 @@ export function stepSheetProgress(
 export const stepUnitSize = 100;
 
 /** 유닛 아래 모서리와 말풍선 사이입니다. 꼬리 끝(상자 위로 약 4)이 유닛에 닿지 않습니다. */
-const sheetGap = 8;
+export const sheetGap = 8;
 
 /**
  * 말풍선의 높이 어림값입니다(꼬리 포함). 안이 고정 구성(제목 한 줄 · 진행 줄 · 막대 ·
  * 버튼)이라 값이 거의 흔들리지 않습니다. **넉넉한 쪽으로** 잡습니다 — 모자라면 잘리고,
  * 남으면 유닛이 조금 높이 설 뿐입니다.
  */
-const sheetHeight = 250;
+export const sheetHeight = 250;
 
 /** 화면 아래를 덮는 바텀 네비게이션의 높이입니다(`.journey-map-screen-map`의 아래 여백). */
 export const mapBottomInset = 68;
 
 /** 말풍선과 바텀 네비게이션 사이에 남길 여백입니다. */
-const bottomMargin = 16;
+export const bottomMargin = 16;
 
 /** 탭 순간에 잰 자리들입니다. 세로 좌표는 모두 같은 기준(LynxView)입니다. */
 export type StepMeasure = {
