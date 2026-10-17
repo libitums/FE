@@ -34,6 +34,11 @@ describe("catalogComingSoonOrdinal", () => {
     expect(catalogComingSoonOrdinal([ready("u01", 1), unavailable("u02", 2)])).toBeNull();
   });
 
+  test("CS1b. 번호는 구획 수가 아니라 마지막 구획의 ordinal 다음이다 — 화면의 「Episode n.」과 같은 출처", () => {
+    expect(catalogComingSoonOrdinal([ready("u03", 3)])).toBe(4);
+    expect(catalogComingSoonOrdinal([ready("u01", 1), ready("u05", 5)])).toBe(6);
+  });
+
   test("CS3. 카탈로그 구획이 없으면 붙이지 않는다", () => {
     expect(catalogComingSoonOrdinal([])).toBeNull();
   });
