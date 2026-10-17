@@ -2,8 +2,8 @@
   "targets": [
     {
       "path": "apps/mobile/dist/main.lynx.bundle",
-      "maxBytes": 2164000,
-      "note": "2026-10-17 새 에피소드 형식 ③을 갱신된 ②(main #253 지표 모션 병합 뒤) 위로 다시 병합한 CI 설정(.env.local 없음) 실측은 2,163,501 bytes입니다. 직전 이 브랜치 CI 설정 실측 2,133,402 bytes + #253 증가분 29,876 bytes = 2,163,278 bytes와 223 bytes 차이(리뷰 대응 매핑 수정 · 병합)라 새 증가 요인은 없습니다. 상한을 2,135,000 → 2,164,000 bytes로 올렸습니다(kB 올림). 근거: docs/performance/reports/episode-format-speaking-iphone-17-pro-simulator-01.md · docs/adr/0067-episode-format-speaking.md · docs/adr/0064-stat-motion.md."
+      "maxBytes": 2172000,
+      "note": "2026-10-17 Special Unit — 맵의 레슨이 아닌 단위 8종을 새 SpecialUnit 배지로 바꾸고(컴포넌트 · 계약 · 배지 CSS · 맵 라벨 두 줄 CSS · 공유 맵 항목) 어댑터 일곱의 상태 표 · 아이콘을 걷어 CI 설정(.env.local 없음) 실측 2,170,031 bytes, 로컬 설정 2,170,220 bytes입니다. 직전 main CI 실측 2,163,501 bytes 대비 +6,530 bytes이고 새 의존성 · 미디어는 없습니다. 상한을 2,164,000 → 2,172,000 bytes로 올렸습니다(큰 값 kB 올림 + 1 kB). 근거: docs/adr/0068-special-unit-map-marker.md. 2026-10-17 새 에피소드 형식 ③을 갱신된 ②(main #253 지표 모션 병합 뒤) 위로 다시 병합한 CI 설정(.env.local 없음) 실측은 2,163,501 bytes입니다. 직전 이 브랜치 CI 설정 실측 2,133,402 bytes + #253 증가분 29,876 bytes = 2,163,278 bytes와 223 bytes 차이(리뷰 대응 매핑 수정 · 병합)라 새 증가 요인은 없습니다. 상한을 2,135,000 → 2,164,000 bytes로 올렸습니다(kB 올림). 근거: docs/performance/reports/episode-format-speaking-iphone-17-pro-simulator-01.md · docs/adr/0067-episode-format-speaking.md · docs/adr/0064-stat-motion.md."
     },
     {
       "path": "apps/mobile/dist/static/image",
