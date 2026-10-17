@@ -82,6 +82,15 @@ describe("first-unit-guide.css", () => {
   test("SC7. 속성 선택자를 쓰지 않는다", () => {
     expect(guideCss).not.toContain("[data-");
   });
+
+  // 스크림 합성색 위에서 Face가 1.503:1까지 떨어집니다. 흰 Halo가 Face 옆을 흰색으로 두면 Face ↔ 흰색
+  // 3.016:1 · 흰색 ↔ 스크림 4.533:1입니다(접근성 점검 U1). Active Halo 규칙(클래스 둘)보다 구체도가 높아야 합니다.
+  test("SC9. 안내 겹의 배지는 Halo가 흰색이고 선택자 클래스가 셋이다", () => {
+    const selector =
+      ".journey-special-unit-guided .ui-lynx-special-unit .ui-lynx-special-unit-halo";
+    expect(bodyOf(guideCss, selector)).toContain("background-color: var(--libitum-color-white)");
+    expect(selector.match(/\./g)).toHaveLength(3);
+  });
 });
 
 describe("앱 진입점", () => {

@@ -86,6 +86,12 @@
   color: var(--libitum-color-white);
 }
 
+/* 스크림 위에서는 배지 옆 바탕이 스크림 합성색이라 Face가 1.503:1로 묻힙니다. Halo를 흰색으로 깔아
+   Face ↔ 흰색 3.016:1 · 흰색 ↔ 스크림 4.533:1을 지킵니다. Active Halo 규칙(클래스 둘)을 이기도록 셋입니다. */
+.journey-special-unit-guided .ui-lynx-special-unit .ui-lynx-special-unit-halo {
+  background-color: var(--libitum-color-white);
+}
+
 .first-unit-map-tooltip {
   position: absolute;
   top: 100%;
