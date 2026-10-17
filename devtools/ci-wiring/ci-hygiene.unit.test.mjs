@@ -214,3 +214,16 @@ function walk(dir) {
     return statSync(path).isDirectory() ? walk(path) : [relative(root, path)];
   });
 }
+
+// CW11 — 액션 지원 종료(Node 20 같은)를 사람이 경고 주석에서 알아채지 않도록 Dependabot이 월마다
+// PR로 알립니다. 워크플로만 보면 공용 setup 액션 안의 `uses:`가 빠지므로 그 디렉터리도 넣습니다.
+test("CW11. Dependabot이 워크플로와 공용 액션의 액션 버전을 함께 본다", () => {
+  const path = ".github/dependabot.yml";
+  assert.ok(existsSync(join(root, path)), `${path}가 없습니다`);
+  const config = code(read(path));
+
+  const entry = config.slice(config.indexOf('package-ecosystem: "github-actions"'));
+  assert.notEqual(config.indexOf('package-ecosystem: "github-actions"'), -1);
+  assert.match(entry, /directories:\s*\n\s*- "\/"\s*\n\s*- "\/\.github\/actions\/\*"/);
+  assert.match(entry, /interval:\s*"monthly"/);
+});
