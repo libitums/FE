@@ -51,11 +51,11 @@
   flex-direction: column;
   align-items: center;
   gap: var(--libitum-spacing-24);
-  padding-top: calc(
-    var(--libitum-spacing-32) + var(--libitum-spacing-8) + var(--libitum-layout-gap-block) +
-      var(--libitum-spacing-40)
-  );
-  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+  /* 위 · 아래 여백은 `mapContentInsets`(journey-map-insets.ts)의 값입니다 — 위는 머리 띠 아래 + 간격까지
+     맨 위 유닛을 내릴 수 있게, 아래는 말풍선 · 바텀 내비가 들어갈 만큼 맨 아래 유닛을 올릴 수 있게 합니다.
+     값을 바꾸면 그 모듈과 함께 바꿉니다(unit 테스트 IN2가 맞춥니다). */
+  padding-top: 200px;
+  padding-bottom: 342px;
 }
 
 /* 에피소드 한 덩어리 — 헤더와 그 에피소드의 유닛들입니다. 유닛 사이 간격은
