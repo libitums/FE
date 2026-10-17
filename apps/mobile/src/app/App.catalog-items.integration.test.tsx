@@ -27,6 +27,7 @@ import type { PairMatchQuestion } from "../screens/pair-match/pair-match.contrac
 import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { journeySteps } from "../screens/journey-map/journey-map";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // 옛 형식 내장본(2026-10-14)의 흐름을 걷는 테스트입니다 — 내장본 자리를 옛 픽스처로 바꿉니다.
 vi.mock("../lib/episode-bundled", async () => {
@@ -279,7 +280,7 @@ const tapId = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {
 const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const node = (episodeId: string, key: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`);
+  screen.getByTestId(catalogNodeTestId(episodeId, key));
 const tapNode = (episodeId: string, key: string): void =>
   void fireEvent.tap(node(episodeId, key), {});
 // u02 · u03은 이름 · 나라가 드는 에피소드라 기록이 없으면 첫 유닛 앞에 가드 화면이 섭니다 - 건너뛰면 기본 문구로 이어집니다.

@@ -249,7 +249,7 @@ test("[IA-EI] 서사 표지를 열고 건너뛰면 표지 이벤트 둘이 envir
   await renderApp(<App {...session.sinks} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-tutorial-intro"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-intro"), {});
   fireEvent.tap(
     within(screen.getByTestId("episode-intro-screen-skip")).getByTestId("ui-lynx-button"),
     {},

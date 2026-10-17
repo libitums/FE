@@ -77,7 +77,7 @@ async function flush(): Promise<void> {
   });
 }
 
-const introUnit = () => screen.getByTestId("ui-lynx-learning-unit-tutorial-intro");
+const introUnit = () => screen.getByTestId("ui-lynx-special-unit-tutorial-intro");
 const tapButtonIn = (testId: string) =>
   fireEvent.tap(within(screen.getByTestId(testId)).getByTestId("ui-lynx-button"), {});
 

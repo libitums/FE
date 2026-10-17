@@ -31,6 +31,7 @@ import * as textField from "./text-field/index";
 import * as tooltip from "./tooltip/index";
 import * as optionSelector from "./option-selector/index";
 import * as learningUnit from "./learning-unit/index";
+import * as specialUnit from "./special-unit/index";
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -64,6 +65,7 @@ const componentArtifacts = {
   tooltip: { implementation: "Tooltip.jsx", css: "tooltip.css" },
   "option-selector": { implementation: "OptionSelector.jsx", css: "option-selector.css" },
   "learning-unit": { implementation: "LearningUnit.jsx", css: "learning-unit.css" },
+  "special-unit": { implementation: "SpecialUnit.jsx", css: "special-unit.css" },
 } as const;
 
 const componentEntries = {
@@ -90,6 +92,7 @@ const componentEntries = {
   tooltip: "Tooltip",
   "option-selector": "OptionSelector",
   "learning-unit": "LearningUnit",
+  "special-unit": "SpecialUnit",
 } as const;
 
 async function readPackageJson() {
@@ -167,6 +170,8 @@ describe("ui-lynx package boundaries", () => {
     expect(root.isSameOptionSelection).toBe(optionSelector.isSameOptionSelection);
     expect(root.LearningUnit).toBe(learningUnit.LearningUnit);
     expect(root.getLearningUnitContract).toBe(learningUnit.getLearningUnitContract);
+    expect(root.SpecialUnit).toBe(specialUnit.SpecialUnit);
+    expect(root.getSpecialUnitContract).toBe(specialUnit.getSpecialUnitContract);
   });
 
   test("root stylesheet aggregates every component without removing existing styles", async () => {
@@ -235,6 +240,9 @@ describe("ui-lynx package boundaries", () => {
     );
     expect(packageJson.exports["./learning-unit/styles.css"]).toBe(
       "./dist/learning-unit/learning-unit.css",
+    );
+    expect(packageJson.exports["./special-unit/styles.css"]).toBe(
+      "./dist/special-unit/special-unit.css",
     );
     expect(packageJson.exports["./styles.css"]).toBe("./dist/styles.css");
   });
@@ -483,6 +491,13 @@ describe("ui-lynx package boundaries", () => {
       "package/dist/learning-unit/learning-unit.contract.js",
       "package/dist/learning-unit/learning-unit.contract.d.ts",
       `package/dist/learning-unit/${componentArtifacts["learning-unit"].css}`,
+      "package/dist/special-unit/index.js",
+      `package/dist/special-unit/${componentArtifacts["special-unit"].implementation}`,
+      "package/dist/special-unit/index.d.ts",
+      "package/dist/special-unit/SpecialUnit.d.ts",
+      "package/dist/special-unit/special-unit.contract.js",
+      "package/dist/special-unit/special-unit.contract.d.ts",
+      `package/dist/special-unit/${componentArtifacts["special-unit"].css}`,
     ]) {
       expect(stdout).toContain(file);
     }

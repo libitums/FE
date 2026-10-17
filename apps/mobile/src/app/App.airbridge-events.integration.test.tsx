@@ -72,7 +72,7 @@ async function completeJourneyMessenger(sinks: ReturnType<typeof assembleSinks>)
     />,
   );
   tap("ui-lynx-bottom-navigator-item-journey");
-  tap(`ui-lynx-learning-unit-${messengerUnit}`);
+  tap(`ui-lynx-special-unit-${messengerUnit}`);
   answerMessengerReplies();
 }
 
@@ -85,7 +85,7 @@ async function completeJourneyVisualNovel(sinks: ReturnType<typeof assembleSinks
       completedEpisodeIntroIds={completedIntros}
     />,
   );
-  tap(`ui-lynx-learning-unit-${visualNovelUnit}`);
+  tap(`ui-lynx-special-unit-${visualNovelUnit}`);
   for (let i = 0; i < 5 && screen.queryByTestId("visual-novel-advance-button"); i++) {
     tap("visual-novel-advance-button");
   }
@@ -137,7 +137,7 @@ test("I3. 완료가 아닌 이벤트(열기 · 중도 이탈 · 설정 · 알림
     />,
   );
   tap("ui-lynx-bottom-navigator-item-journey");
-  tap(`ui-lynx-learning-unit-${messengerUnit}`);
+  tap(`ui-lynx-special-unit-${messengerUnit}`);
   tap("messenger-screen-exit");
   tap("ui-lynx-bottom-navigator-item-settings");
   tap("top-bar-notifications");

@@ -264,7 +264,7 @@ test("[IB8] 여정 메신저(미완료)에서 누르면 미완료 이탈 이벤�
       messengerEventSink={sink}
     />,
   );
-  tap("ui-lynx-learning-unit-appointment-confirmation");
+  tap("ui-lynx-special-unit-appointment-confirmation");
   expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
 
   const token = pressBack();

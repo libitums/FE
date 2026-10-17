@@ -20,6 +20,7 @@ import { systemBackEventName } from "../lib/system-back";
 import { uiCopyEn } from "../lib/ui-copy-en";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { journeySteps } from "../screens/journey-map/journey-map";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // `integration` 계층(3d-2): 이름 · 나라가 「온보딩 넷째 스텝 -> 로그인 -> 업로드」, 「에피소드 전 묻기 -> 저장 / 건너뜀 ->
 // 원래 유닛」, 「설정 수정 -> 다음 레슨부터 새 값」, 「서버 404 · 오프라인 -> 기기 캐시」, 「다른 기기 -> 서버 값」,
@@ -274,11 +275,11 @@ const tapId = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {
 const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const node = (episodeId: string, key: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`);
+  screen.getByTestId(catalogNodeTestId(episodeId, key));
 const tapNode = (episodeId: string, key: string): void =>
   void fireEvent.tap(node(episodeId, key), {});
 const tapCover = (episodeId: string): void =>
-  void fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-catalog-cover-${episodeId}`), {});
+  void fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${episodeId}`), {});
 const tapRoundIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-round-button"), {});
 const present = (id: string): boolean => screen.queryByTestId(id) !== null;

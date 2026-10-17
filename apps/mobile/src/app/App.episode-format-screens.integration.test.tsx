@@ -242,11 +242,11 @@ test("ES5. (AC5) 맵: 세 에피소드 모두 CULT 노드가 Culture 라벨이�
   for (const [index, episodeId] of [u01, u02, u03].entries()) {
     expect(node(episodeId, "CULT")).toHaveAttribute(
       "accessibility-label",
-      `Episode ${index + 1}. Culture, locked`,
+      `special, Episode ${index + 1}. Culture, locked`,
     );
     const nodes = Array.from(
       document.querySelectorAll(
-        `[data-testid^="ui-lynx-learning-unit-catalog-unit-${episodeId}-"]`,
+        `[data-testid^="ui-lynx-learning-unit-catalog-unit-${episodeId}-"], [data-testid^="ui-lynx-special-unit-catalog-unit-${episodeId}-"]`,
       ),
     ).filter((element) =>
       new RegExp(`-${episodeId}-[A-Za-z0-9]+$`).test(element.getAttribute("data-testid") ?? ""),

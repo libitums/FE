@@ -23,6 +23,7 @@ import { fillPlaceholders } from "../../lib/placeholder-fill";
 import type { FillScript } from "../../lib/placeholder-fill";
 import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
 import { journeySteps } from "../../screens/journey-map/journey-map";
+import { catalogNodeTestId } from "./map-unit-testid";
 
 const supabaseUrl = "https://test.supabase.co";
 
@@ -192,13 +193,13 @@ export const tapId = (id: string): void => void fireEvent.tap(screen.getByTestId
 export const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 export const node = (episodeId: string, key: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`);
+  screen.getByTestId(catalogNodeTestId(episodeId, key));
 export const tapNode = (episodeId: string, key: string): void =>
   void fireEvent.tap(node(episodeId, key), {});
 export const status = (episodeId: string, key: string) =>
   node(episodeId, key).getAttribute("data-status");
 export const cover = (episodeId: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-cover-${episodeId}`);
+  screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${episodeId}`);
 export const exitResult = () => tapButtonIn("lesson-complete-screen-exit");
 export const title = () => screen.getByTestId("lesson-complete-screen-title");
 // 칩의 이름(`2 trophies`)에서 읽습니다 — 오름 재생(ADR-0064) 동안 칩은 옛 값과 새 값을 함께 보이지만 이름은 처음부터 새 값입니다.
