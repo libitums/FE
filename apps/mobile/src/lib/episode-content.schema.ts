@@ -227,6 +227,8 @@ export const deliveryEpisodeSchema = z.object({
   schema: z.literal("delivery-2"),
   unit_id: z.string(),
   title: z.string(),
+  // 표시용 선택 필드라 `null`도 받습니다 — 이 값 하나로 에피소드 전체가 디코드에 실패하면 안 됩니다.
+  title_en: z.nullish(z.string()),
   day: z.int(),
   time_of_day: z.string(),
   place: z.string(),

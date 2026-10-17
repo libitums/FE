@@ -25,8 +25,8 @@ export type SpecialUnitMapItemProps = {
   /** 낭독 이름의 `<이름>` 자리 — 튜토리얼은 제목, 카탈로그는 `Episode n. <제목>`. */
   readonly accessibilityName: string;
   readonly status: JourneyMapNodeStatus;
-  /** 고를 수 있는 상태(`canSelectMapNode`)에서만 불린다. */
-  readonly onSelect: () => void;
+  /** 고를 수 있는 상태(`canSelectMapNode`)에서만 불린다. 인자는 탭의 세로 좌표(없으면 0)다. */
+  readonly onSelect: (tapY: number) => void;
   readonly layer?: SpecialUnitMapLayer; // 기본 "map"
   /** 표식 · 라벨 뒤에 붙는 겹(안내 말풍선). */
   readonly children?: ReactNode;

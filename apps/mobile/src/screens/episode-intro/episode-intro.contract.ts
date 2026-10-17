@@ -139,6 +139,11 @@ export type EpisodeIntroScreenProps = {
   readonly titleLines?: readonly [string, ...string[]];
   /** 건너뛰기 확인 모달의 설명입니다. 없으면 튜토리얼의 기본 문구(다시 서지 않는다)입니다. */
   readonly skipDescription?: string;
+  /**
+   * 화면 전체에 까는 장면 그림입니다(절대 URL) — 카탈로그 에피소드는 그 에피소드의 첫 컷 그림입니다.
+   * 없거나 `null`이면 어두운 면만 그립니다. 로드 전 · 실패 때도 어두운 면이 보입니다.
+   */
+  readonly backgroundImageUrl?: string | null;
   /** 표지를 보지 않은 것으로 두고 맵으로 돌아갑니다. 다음에 유닛을 열면 다시 뜹니다. */
   readonly onBack: () => void;
   /** 확인 모달에서 `건너뛰기`를 골랐을 때만 불립니다. `Skip`을 누른 것만으로는 불리지 않습니다. */

@@ -1,13 +1,13 @@
-// 스텝 시트의 열림 상태 전이를 소유합니다 — `StepSheetState`·`StepSheetAction`·
-// `initialStepSheetState`·`canOpenStep`·`stepSheetReducer`입니다.
+// 스텝 시트의 열림 상태 전이를 소유합니다 — `StepSheetState`·`StepSheetAction`·`initialStepSheetState`·`canOpenStep`·`stepSheetReducer`.
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import { learningFormsForStep } from "./journey-map-learning-form";
 import { journeyStepOrdinal, stepStatusAt } from "./journey-map-progress";
 import type { JourneyStepId, JourneyStepNodeStatus } from "./journey-map-units";
+import type { SheetTargetId } from "./catalog-map.contract";
 
 export type StepSheetState = {
-  readonly openStepId: JourneyStepId | null;
+  readonly openStepId: SheetTargetId | null;
   /**
    * 누른 유닛의 **아래 모서리**입니다(화면 상자 기준). 말풍선은 이 바로 아래에 섭니다.
    * 닫힌 동안은 0이고, 그 값은 읽히지 않습니다(말풍선이 없습니다).
@@ -29,7 +29,7 @@ export type StepSheetState = {
 export type StepSheetAction =
   | {
       readonly type: "openStep";
-      readonly stepId: JourneyStepId;
+      readonly stepId: SheetTargetId;
       readonly anchorY: number;
       readonly scrollTop: number;
     }
@@ -37,7 +37,7 @@ export type StepSheetAction =
   // 닫혔거나 다른 스텝으로 바뀌었으면 아무것도 하지 않습니다.
   | {
       readonly type: "anchorStep";
-      readonly stepId: JourneyStepId;
+      readonly stepId: SheetTargetId;
       readonly anchorY: number;
       readonly scrollTop: number;
       readonly anchorLimit: number;

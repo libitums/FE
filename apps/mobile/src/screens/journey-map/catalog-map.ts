@@ -59,6 +59,7 @@ export function catalogMapSectionsOf(
         finalKey: entry.episode.finalTest.id,
         completionKeys: entry.episode.completion?.requires ?? [entry.episode.finalTest.id],
         cultureKeys: catalogCultureKeysOf(entry.episode.units),
+        ...(entry.episode.titleEn === undefined ? {} : { titleEn: entry.episode.titleEn }),
       };
     }
     return {

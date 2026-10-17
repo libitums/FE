@@ -8,9 +8,11 @@ import {
   screenId,
   scrollId,
   scrollMapTo,
-  scrollStepIntoView,
+  scrollNodeIntoView,
   stepNodeId,
 } from "./journey-map-scroll";
+import { catalogUnitDomId } from "./catalog-map";
+import { catalogSheetTargetOf } from "./catalog-sheet";
 import { autoScrollPlacement, mapScrollBehaviorFor } from "./journey-map-scroll-position";
 import {
   initialStepSheetState,
@@ -23,6 +25,15 @@ import {
   type JourneyStepId,
   type StepSheetState,
 } from "./journey-map";
+import type { SheetTargetId } from "./catalog-map.contract";
+
+/** 말풍선이 붙을 유닛의 상자 id입니다 — 튜토리얼은 스텝 노드, 카탈로그는 유닛 셀입니다. */
+function sheetNodeDomId(id: SheetTargetId): string {
+  const catalog = catalogSheetTargetOf(id);
+  return catalog === null
+    ? stepNodeId(id as JourneyStepId)
+    : catalogUnitDomId(catalog.episodeId, catalog.unitKey);
+}
 
 export type StepSheetControls = {
   readonly sheetState: StepSheetState;
@@ -31,7 +42,7 @@ export type StepSheetControls = {
   /** 꼬리의 가로 치우침입니다(px, 가운데가 0). 재기 전 · 못 쟀을 때 · 닫힌 동안은 0. */
   readonly sheetCaretOffset: number;
   readonly handleScroll: (event: ScrollEvent) => void;
-  readonly handleSelectStep: (id: JourneyStepId, tapY: number) => void;
+  readonly handleSelectStep: (id: SheetTargetId, tapY: number) => void;
   readonly handleCloseSheet: () => void;
 };
 
@@ -56,7 +67,7 @@ export function useStepSheet(): StepSheetControls {
   // 지금 자리를 재고 있는 스텝입니다. 재는 일이 비동기라, 그 사이에 말풍선이 닫히거나
   // 다른 스텝으로 바뀌면 늦게 온 답이 화면을 옛 유닛 쪽으로 끌고 갑니다 — 답이 왔을 때
   // 이 값이 자기 스텝이 아니면 버립니다.
-  const measuringStepId = useRef<JourneyStepId | null>(null);
+  const measuringStepId = useRef<SheetTargetId | null>(null);
 
   const handleScroll = (event: ScrollEvent) => {
     "background only";
@@ -67,7 +78,7 @@ export function useStepSheet(): StepSheetControls {
     }
   };
 
-  const handleSelectStep = (id: JourneyStepId, tapY: number) => {
+  const handleSelectStep = (id: SheetTargetId, tapY: number) => {
     "background only";
     // 먼저 탭 자리로 엽니다 — 탭이 유닛 한가운데였다고 어림한 값입니다. 재는 일은
     // 비동기라, 기다렸다 열면 누른 뒤 말풍선이 늦게 뜹니다.
@@ -87,7 +98,7 @@ export function useStepSheet(): StepSheetControls {
     // 말풍선이 유닛에 맞지 않습니다. 못 재도 탭을 막지 않습니다: 말풍선은 이미 떴습니다.
     // 머리 카드는 없어도 됩니다 — 못 재면 카드를 피하지 않고 말풍선은 지금처럼 섭니다.
     measureRectsWithOptional(
-      [stepNodeId(id), scrollId, screenId],
+      [sheetNodeDomId(id), scrollId, screenId],
       [headerCardId],
       (rects, [card]) => {
         "background only";
@@ -98,7 +109,7 @@ export function useStepSheet(): StepSheetControls {
         measuringStepId.current = null;
         const [unit, scroll, screen] = rects ?? [];
         if (unit === undefined || scroll === undefined || screen === undefined) {
-          scrollStepIntoView(id, behavior);
+          scrollNodeIntoView(sheetNodeDomId(id), behavior);
           return;
         }
         const scrollTop = latestScrollTop.current;

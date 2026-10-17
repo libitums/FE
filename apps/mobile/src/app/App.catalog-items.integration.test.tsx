@@ -281,8 +281,12 @@ const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const node = (episodeId: string, key: string) =>
   screen.getByTestId(catalogNodeTestId(episodeId, key));
-const tapNode = (episodeId: string, key: string): void =>
-  void fireEvent.tap(node(episodeId, key), {});
+// 열린 노드를 누르면 말풍선이 서고 `Start`가 유닛을 엽니다. 잠긴 노드는 말풍선이 없어 누름으로 끝납니다.
+const tapNode = (episodeId: string, key: string): void => {
+  fireEvent.tap(node(episodeId, key), {});
+  const start = screen.queryByTestId("step-sheet-start");
+  if (start !== null) fireEvent.tap(start, {});
+};
 // u02 · u03은 이름 · 나라가 드는 에피소드라 기록이 없으면 첫 유닛 앞에 가드 화면이 섭니다 - 건너뛰면 기본 문구로 이어집니다.
 const skipProfileGate = (): void => tapButtonIn("learner-profile-gate-skip");
 const status = (episodeId: string, key: string) => node(episodeId, key).getAttribute("data-status");

@@ -8,13 +8,13 @@ import { SpecialUnitMapItem } from "./SpecialUnitMapItem";
 // 지워도 다른 테스트가 초록으로 남습니다. 그래서 어느 상태에서나 탭을 흘리는 대역으로 바꿔, 막는 것이
 // `SpecialUnitMapItem` 자신인지 확인합니다(리뷰 P2-1).
 vi.mock("@libitums/ui-lynx/special-unit", () => ({
-  SpecialUnit: (props: { readonly bindtap?: () => void }) => (
-    <view data-testid="special-unit-double" bindtap={() => props.bindtap?.()} />
+  SpecialUnit: (props: { readonly bindtap?: (event: { readonly detail?: object }) => void }) => (
+    <view data-testid="special-unit-double" bindtap={() => props.bindtap?.({})} />
   ),
 }));
 
 function mount(status: JourneyMapNodeStatus) {
-  const onSelect = vi.fn<() => void>();
+  const onSelect = vi.fn<(tapY: number) => void>();
   render(
     <SpecialUnitMapItem
       unitId="x"

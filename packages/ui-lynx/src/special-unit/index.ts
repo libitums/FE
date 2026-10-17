@@ -4,4 +4,5 @@ export {
   type SpecialUnitContract,
   type SpecialUnitProps,
   type SpecialUnitStatus,
+  type SpecialUnitTapEvent,
 } from "./special-unit.contract";

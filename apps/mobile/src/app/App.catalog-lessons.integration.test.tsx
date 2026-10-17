@@ -219,8 +219,12 @@ const tapRoundIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-round-button"), {});
 const node = (episodeId: string, key: string) =>
   screen.getByTestId(catalogNodeTestId(episodeId, key));
-const tapNode = (episodeId: string, key: string): void =>
-  void fireEvent.tap(node(episodeId, key), {});
+// 열린 노드를 누르면 말풍선이 서고 `Start`가 유닛을 엽니다. 잠긴 노드는 말풍선이 없어 누름으로 끝납니다.
+const tapNode = (episodeId: string, key: string): void => {
+  fireEvent.tap(node(episodeId, key), {});
+  const start = screen.queryByTestId("step-sheet-start");
+  if (start !== null) fireEvent.tap(start, {});
+};
 const status = (episodeId: string, key: string) => node(episodeId, key).getAttribute("data-status");
 const cover = (episodeId: string) =>
   screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${episodeId}`);
@@ -472,6 +476,29 @@ test("L2. (AC1 · 5) 카드 뒤 빈칸 고르기가 이어지는 S1: 카드 → 
       skippedCount: "0",
     },
   ]);
+});
+
+test("L2a. 노드를 누르면 말풍선이 서고(세션은 아직), 진행 줄 전체가 레슨의 표시 문항 수이며 Start가 레슨을 연다", async () => {
+  await boot({ progress: upTo() });
+  const plan = lessonPlan(u01, "S1");
+
+  fireEvent.tap(node(u01, "S1"), { detail: { y: 300 } });
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  // 이 파일의 콘텐츠(내장본)에 영어 제목이 없으면 매니페스트 제목이 섭니다.
+  const entry = realCatalog.find((candidate) => candidate.id === u01);
+  const episodeTitle =
+    entry?.status === "ready" ? (entry.episode.titleEn ?? entry.title) : (entry?.title ?? "");
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent(`Lesson 1: “${episodeTitle}”`);
+  expect(screen.getByTestId("step-sheet-progress-count")).toHaveTextContent(
+    `0/${String(plan.shownItemCount)}`,
+  );
+  expect(screen.getByTestId("ui-lynx-episode-header-label")).toHaveTextContent(
+    "Episode 1, unit 01",
+  );
+
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
+  expect(screen.getByTestId("vocab-card-content")).toBeInTheDocument();
 });
 
 test("L2b. (D5 고정) 실데이터의 어느 레슨 · 최종 테스트도 보일 문항이 0개가 아니다", () => {

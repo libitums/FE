@@ -19,7 +19,7 @@ function mount(
     readonly withChild?: boolean;
   } = {},
 ) {
-  const onSelect = vi.fn<() => void>();
+  const onSelect = vi.fn<(tapY: number) => void>();
   const view = render(
     <SpecialUnitMapItem
       unitId="x"
@@ -89,16 +89,24 @@ describe("SpecialUnitMapItem", () => {
   });
 
   test.each(["available", "completed"] as const)(
-    "SMI4. %s 탭은 인자 없이 onSelect를 한 번 부른다",
+    "SMI4. %s 탭은 탭 좌표(없으면 0)로 onSelect를 한 번 부른다",
     (status) => {
       const { onSelect } = mount(status);
 
       fireEvent.tap(screen.getByTestId(unitTestId), {});
 
       expect(onSelect).toHaveBeenCalledTimes(1);
-      expect(onSelect).toHaveBeenCalledWith();
+      expect(onSelect).toHaveBeenCalledWith(0);
     },
   );
+
+  test("SMI4. 탭의 세로 좌표를 onSelect에 그대로 넘긴다(카탈로그 말풍선 자리)", () => {
+    const { onSelect } = mount("available");
+
+    fireEvent.tap(screen.getByTestId(unitTestId), { detail: { y: 240 } });
+
+    expect(onSelect).toHaveBeenCalledWith(240);
+  });
 
   test("SMI5. guide 겹은 바깥 상자에 guided 클래스를 붙이고 children이 라벨 뒤에 선다", () => {
     mount("available", { layer: "guide", withChild: true });

@@ -3,6 +3,11 @@ import { motionClassName, type Motion } from "../motion/motion.contract";
 
 export type SpecialUnitStatus = "default" | "checking" | "available" | "active" | "clear";
 
+/** 탭 이벤트 — 맵이 말풍선을 탭한 자리에 띄우려고 세로 좌표를 읽습니다(`LearningUnitTapEvent`와 같은 꼴). */
+export type SpecialUnitTapEvent = {
+  readonly detail?: { readonly y?: number };
+};
+
 export type SpecialUnitProps = {
   /** 한 화면에 여럿 서므로 testid 꼬리로 붙습니다(`ui-lynx-special-unit-<id>`). */
   readonly id?: string;
@@ -11,7 +16,7 @@ export type SpecialUnitProps = {
   readonly status?: SpecialUnitStatus;
   /** ReactLynx 호스트가 키보드 focus-visible 상태를 전달합니다. Available · Active · Clear에서만 효력이 있습니다. */
   readonly focused?: boolean;
-  readonly bindtap?: () => void;
+  readonly bindtap?: (event: SpecialUnitTapEvent) => void;
 };
 
 export type SpecialUnitContract = {

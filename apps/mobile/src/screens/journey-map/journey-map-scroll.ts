@@ -150,26 +150,6 @@ export function scrollMapTo(scrollTop: number, behavior: MapScrollBehavior): voi
   }
 }
 
-// 자리를 못 쟀을 때의 길입니다 — 목적지를 계산할 수 없으므로 가운데 정렬을 호스트에
-// 맡깁니다.
-export function scrollStepIntoView(id: JourneyStepId, behavior: MapScrollBehavior): void {
-  "background only";
-  try {
-    lynx
-      .createSelectorQuery()
-      .select(`#${stepNodeId(id)}`)
-      .invoke({
-        method: "scrollIntoView",
-        params: {
-          scrollIntoViewOptions: { block: "center", behavior: intoViewBehavior(behavior) },
-        },
-      })
-      .exec();
-  } catch {
-    // 자리를 못 옮겨도 말풍선은 뜹니다.
-  }
-}
-
 // 자리를 못 쟀을 때의 길입니다 — 그 id의 상자를 가운데로 옮기는 일을 호스트에 맡깁니다.
 export function scrollNodeIntoView(domId: string, behavior: MapScrollBehavior): void {
   "background only";

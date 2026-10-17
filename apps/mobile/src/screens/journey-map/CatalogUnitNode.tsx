@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 import lantern from "@libitums/icons/lynx/lantern-05";
 import play from "@libitums/icons/lynx/play";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
+import type { LearningUnitTapEvent } from "@libitums/ui-lynx/learning-unit";
 
 import { useUiCopy } from "../../lib/ui-copy";
 import { catalogUnitNodeAccessibilityLabel, catalogUnitNodeTitle } from "./catalog-map";
@@ -28,7 +29,8 @@ const lessonIconByRole: Readonly<Record<Exclude<CatalogUnitNodeRole, "final">, s
 };
 
 // 카탈로그 노드입니다. 상태(잠김 · 열림 · 끝)는 사슬에서 파생되어 내려오고, 열린 노드만 고름을
-// 올립니다. 레슨(`play`) · 문화(`lantern-05`)는 원형 `LearningUnit`이고, 최종만 스페셜 항목입니다.
+// 올립니다(맵이 말풍선을 엽니다 — 바로 시작하지 않습니다). 레슨(`play`) · 문화(`lantern-05`)는 원형
+// `LearningUnit`이고, 최종만 스페셜 항목입니다.
 export function CatalogUnitNode(props: CatalogUnitNodeProps): ReactNode {
   return props.node.role === "final" ? (
     <CatalogSpecialNode {...props} />
@@ -46,9 +48,9 @@ function CatalogSpecialNode({ episodeId, episodeOrdinal, node, onSelect }: Catal
       title={catalogUnitNodeTitle(node, copy)}
       accessibilityName={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
       status={node.status}
-      onSelect={() => {
+      onSelect={(tapY) => {
         "background only";
-        onSelect(episodeId, node.key);
+        onSelect(episodeId, node.key, tapY);
       }}
     />
   );
@@ -63,10 +65,11 @@ function CatalogLessonNode({
   icon,
 }: CatalogUnitNodeProps & { readonly icon: string }) {
   const copy = useUiCopy();
-  const handleSelect = () => {
+  const handleSelect = (event: LearningUnitTapEvent) => {
     "background only";
     if (canSelectMapNode(node.status)) {
-      onSelect(episodeId, node.key);
+      // 탭의 세로 좌표를 함께 올립니다 — 맵이 말풍선을 그 자리에 먼저 띄웁니다(`JourneyStepNode`와 같은 규칙).
+      onSelect(episodeId, node.key, event.detail?.y ?? 0);
     }
   };
 

@@ -87,11 +87,11 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
             progress: wiring.catalogProgress,
             onStartCover: wiring.onStartCatalogCover,
             onStartUnit: wiring.onStartCatalogUnit,
+            unitItemCountOf: wiring.catalogUnitItemCountOf,
           }}
         />
       );
     case "roleplay-list":
-      // 구획은 App이 진행에서 파생해 내리고, 선택은 `onStartRoleplayUnit`으로 올립니다.
       return (
         <RoleplayListScreen
           sections={wiring.roleplaySections}

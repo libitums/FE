@@ -52,13 +52,13 @@ const openGate: CatalogGate = { tutorialPassed: true, progress: {} };
 
 function mount(gate: CatalogGate = openGate) {
   const onStartCover = vi.fn<(episodeId: string) => void>();
-  const onStartUnit = vi.fn<(episodeId: string, unitKey: string) => void>();
+  const onStartUnit = vi.fn<(episodeId: string, unitKey: string, tapY: number) => void>();
   render(
     <CatalogMapSections
       sections={sections}
       gate={gate}
       onStartCover={onStartCover}
-      onStartUnit={onStartUnit}
+      onSelectUnit={onStartUnit}
     />,
   );
   return Object.assign(onStartCover, { onStartUnit });
@@ -132,7 +132,7 @@ describe("CatalogMapSections", () => {
     );
     fireEvent.tap(screen.getByTestId(nodeId("u01-water", "S1")), {});
     expect(onStartCover.onStartUnit).toHaveBeenCalledTimes(1);
-    expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "S1");
+    expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "S1", expect.any(Number));
 
     expect(screen.getByTestId(nodeId("u01-water", "S3"))).toHaveAttribute("data-status", "default");
     fireEvent.tap(screen.getByTestId(nodeId("u01-water", "S3")), {});
@@ -154,7 +154,7 @@ describe("CatalogMapSections", () => {
     fireEvent.tap(screen.getByTestId(nodeId("u01-water", "S1")), {});
 
     expect(onStartCover.onStartUnit).toHaveBeenCalledTimes(1);
-    expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "S1");
+    expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "S1", expect.any(Number));
   });
 
   test("UM-U3. 레슨을 모두 끝내면 최종 테스트가 열리고 이름에 special 접두가 들고 story 접미는 없으며 탭하면 RP 키로 올린다", () => {
@@ -169,7 +169,7 @@ describe("CatalogMapSections", () => {
     fireEvent.tap(finalNode, {});
 
     expect(onStartCover.onStartUnit).toHaveBeenCalledTimes(1);
-    expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "RP");
+    expect(onStartCover.onStartUnit).toHaveBeenCalledWith("u01-water", "RP", expect.any(Number));
   });
 
   test("UM3a. 열린 첫 표지를 탭하면 에피소드 id로 한 번 올린다", () => {
@@ -271,7 +271,7 @@ describe("CatalogMapSections", () => {
           sections={sections}
           gate={openGate}
           onStartCover={vi.fn<(episodeId: string) => void>()}
-          onStartUnit={vi.fn<(episodeId: string, unitKey: string) => void>()}
+          onSelectUnit={vi.fn<(episodeId: string, unitKey: string, tapY: number) => void>()}
         />
       </MotionProvider>,
     );
@@ -323,7 +323,7 @@ describe("CatalogMapSections 줄 구조", () => {
         sections={[sevenLessons]}
         gate={openGate}
         onStartCover={vi.fn<(episodeId: string) => void>()}
-        onStartUnit={vi.fn<(episodeId: string, unitKey: string) => void>()}
+        onSelectUnit={vi.fn<(episodeId: string, unitKey: string, tapY: number) => void>()}
       />,
     );
 
@@ -341,7 +341,7 @@ describe("CatalogMapSections 줄 구조", () => {
         sections={[withCulture]}
         gate={openGate}
         onStartCover={vi.fn<(episodeId: string) => void>()}
-        onStartUnit={vi.fn<(episodeId: string, unitKey: string) => void>()}
+        onSelectUnit={vi.fn<(episodeId: string, unitKey: string, tapY: number) => void>()}
       />,
     );
 

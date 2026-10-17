@@ -6,6 +6,7 @@ import {
   getSpecialUnitContract,
   hasSpecialUnitPressedShade,
   type SpecialUnitProps,
+  type SpecialUnitTapEvent,
 } from "./special-unit.contract";
 
 export function SpecialUnit(props: SpecialUnitProps) {
@@ -16,9 +17,9 @@ export function SpecialUnit(props: SpecialUnitProps) {
   const shaded = hasSpecialUnitPressedShade(contract.status, motion);
   const iconContent = fivePointedStar.replace(/currentColor/g, contract.iconColor);
 
-  function handleTap() {
+  function handleTap(event: SpecialUnitTapEvent) {
     "background only";
-    props.bindtap?.();
+    props.bindtap?.(event);
   }
 
   return (

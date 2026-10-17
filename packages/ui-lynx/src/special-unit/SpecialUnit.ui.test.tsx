@@ -8,7 +8,7 @@ import tick from "@libitums/icons/lynx/tick";
 import { MotionProvider } from "../motion";
 import { SpecialUnit } from "./SpecialUnit";
 import { getSpecialUnitContract } from "./special-unit.contract";
-import type { SpecialUnitStatus } from "./special-unit.contract";
+import type { SpecialUnitStatus, SpecialUnitTapEvent } from "./special-unit.contract";
 
 // `ui` 계층: 실제 SpecialUnit을 렌더해 DOM 구조 · 접근성 요소 · 탭 · 막 · focused를 봅니다.
 // 색 픽셀은 jsdom에서 단언하지 않습니다 — 아이콘 색은 계약의 `iconColor`, 면 색은 CSS 문자열
@@ -50,7 +50,7 @@ const accessibilityAttributes = [
   "focusable",
 ] as const;
 
-function unit(status: SpecialUnitStatus, bindtap?: () => void) {
+function unit(status: SpecialUnitStatus, bindtap?: (event: SpecialUnitTapEvent) => void) {
   return (
     <SpecialUnit
       id="x"
@@ -106,6 +106,15 @@ describe("SpecialUnit", () => {
     expect(element).not.toHaveAttribute("accessibility-value");
     fireEvent.tap(element, {});
     expect(onTap).toHaveBeenCalledTimes(1);
+  });
+
+  test("SUU3b. 탭 이벤트를 그대로 넘겨 상위가 세로 좌표를 읽는다", () => {
+    const onTap = vi.fn<(event: SpecialUnitTapEvent) => void>();
+    render(unit("available", onTap));
+
+    fireEvent.tap(screen.getByTestId(root), { detail: { y: 180 } });
+
+    expect(onTap.mock.calls[0]?.[0].detail?.y).toBe(180);
   });
 
   test("SUU4. 루트 → halo → body → [shade, face] → icon 순으로 선다", () => {
