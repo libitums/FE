@@ -15,18 +15,17 @@ describe("MessengerMapItem UI", () => {
           onSelect={vi.fn()}
         />,
       );
-      const item = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");
-      // 표식은 `LearningUnit`이 그리므로 유닛 어휘입니다 — `completed`가 `clear`,
+      const item = screen.getByTestId("ui-lynx-special-unit-appointment-confirmation");
+      // 표식은 `SpecialUnit`이 그리므로 유닛 어휘입니다 — `completed`가 `clear`,
       // 아직 하지 않은 것이 `available`입니다. 잠김(`default`)은 쓰지 않습니다.
       expect(item).toHaveAttribute("data-status", status === "completed" ? "clear" : "available");
       expect(item).toHaveAttribute("accessibility-traits", "button");
-      // 상태 접미사도 `LearningUnit`이 붙입니다(ADR-0016 D3). 이 유닛은 이야기에 걸린
-      // 갈래라 「이야기 연결」이 뒤따릅니다.
+      // `special, ` 접두는 맵 문구표가, 상태 접미사는 `SpecialUnit`이 붙입니다(ADR-0016 D3).
       expect(item).toHaveAttribute(
         "accessibility-label",
         status === "completed"
-          ? "A Message from Minseo, completed, story"
-          : "A Message from Minseo, story",
+          ? "special, A Message from Minseo, completed"
+          : "special, A Message from Minseo",
       );
       expect(screen.getByText("A Message from Minseo")).toBeInTheDocument();
     },
@@ -42,7 +41,7 @@ describe("MessengerMapItem UI", () => {
         onSelect={onSelect}
       />,
     );
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
     expect(onSelect).toHaveBeenCalledWith("appointment-confirmation");
   });
 });

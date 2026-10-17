@@ -26,7 +26,7 @@ test("미리보기는 듣기 결과 확인 후 말하기·쓰기와 각 완료 �
     button("lesson-complete-screen-exit");
     expect(screen.getByTestId(unit)).toHaveAttribute("data-status", "clear");
   }
-  expect(screen.getByTestId("ui-lynx-learning-unit-tutorial-final-test")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-special-unit-tutorial-final-test")).toHaveAttribute(
     "data-status",
     "available",
   );
