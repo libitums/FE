@@ -61,11 +61,40 @@ function collect(text, found) {
   for (const match of text.matchAll(/pnpm\s+([a-z][\w:-]*)/g)) {
     found.add(match[1]);
   }
+  // `pnpm --filter <pkg> <script>`는 `<pkg> <script>`로 셉니다. 잎을 쪼개 잡 여럿에 나눠
+  // 돌 때(샤드) 그 조각이 이 모양입니다.
+  for (const match of text.matchAll(/pnpm --filter (\S+) ([a-z][\w:-]*)/g)) {
+    found.add(`${match[1]} ${match[2]}`);
+  }
+}
+
+/**
+ * 잎 하나가 CI에서 도는가. 그대로 돌거나, 그 스크립트의 `&&` 조각이 **전부** 돌면 참입니다.
+ * 조각은 `pnpm <script>` 또는 `pnpm --filter <pkg> <script>`만 받습니다 — 그 밖의 셸 명령이
+ * 섞인 잎은 쪼갤 수 없는 것으로 봅니다.
+ */
+function piecesOf(command) {
+  const pieces = (packageJson.scripts[command] ?? "").split("&&").map((part) => part.trim());
+  const named = pieces.map(
+    (part) =>
+      part
+        .match(/^pnpm --filter (\S+) ([a-z][\w:-]*)$/)
+        ?.slice(1)
+        .join(" ") ?? part.match(/^pnpm ([a-z][\w:-]*)$/)?.[1],
+  );
+  return named.every(Boolean) && named.length > 1 ? named : null;
+}
+
+function runsInCi(command, ran) {
+  if (ran.has(command)) return true;
+  const pieces = piecesOf(command);
+  return pieces !== null && pieces.every((piece) => ran.has(piece));
 }
 
 // CW1 — 이 파일의 존재 이유입니다. `verify`에 있는 검사가 CI 어딘가에서 돌아야 합니다.
 test("CW1. verify가 부르는 검사를 CI가 모두 돈다", () => {
-  const missing = verifyLeafCommands().filter((command) => !workflowPnpmCommands().has(command));
+  const ran = workflowPnpmCommands();
+  const missing = verifyLeafCommands().filter((command) => !runsInCi(command, ran));
 
   assert.deepEqual(
     missing,
@@ -77,8 +106,11 @@ test("CW1. verify가 부르는 검사를 CI가 모두 돈다", () => {
 // CW2 — 반대 방향입니다. CI에만 있고 로컬 `verify`에 없는 검사가 있으면 「로컬에서 초록이면
 // CI도 초록」이 깨집니다. 커버리지는 게이트가 아니므로 예외로 둡니다.
 test("CW2. CI가 도는 검사 가운데 verify 밖의 게이트가 없다", () => {
-  const allowedOutsideVerify = new Set(["install"]);
-  const leaves = new Set(verifyLeafCommands());
+  // `test:merge`는 샤드 결과를 합쳐 보고할 뿐 새로 검사하지 않습니다.
+  const allowedOutsideVerify = new Set(["install", "@libitums/mobile test:merge"]);
+  const leaves = new Set(
+    verifyLeafCommands().flatMap((command) => [command, ...(piecesOf(command) ?? [])]),
+  );
 
   const extra = [...workflowPnpmCommands()].filter(
     (command) => !leaves.has(command) && !allowedOutsideVerify.has(command),

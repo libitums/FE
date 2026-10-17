@@ -44,8 +44,36 @@ jobs:
         if: ${{ !cancelled() }}
         run: pnpm lint
 
-  test:
-    name: Tests
+  # mobile vitest가 테스트 시간의 대부분이라 샤드 셋으로 나눠 동시에 돕니다. 커버리지는 각
+  # 샤드가 같은 실행에서 세고(테스트를 두 번 돌지 않습니다), 「Tests」가 blob을 합칩니다.
+  test-mobile:
+    name: Tests · mobile ${{ matrix.shard }}/${{ strategy.job-total }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run mobile tests (shard)
+        run: pnpm --filter @libitums/mobile test:all --shard=${{ matrix.shard }}/${{ strategy.job-total }} --reporter=default --reporter=blob --outputFile.blob=blob-reports/blob-${{ matrix.shard }}.json
+        env:
+          VITEST_COVERAGE: "1"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: blob-mobile-${{ matrix.shard }}
+          path: apps/mobile/blob-reports/
+          retention-days: 1
+          if-no-files-found: error
+
+  # `pnpm test`에서 mobile을 뺀 나머지입니다. 샤드와 동시에 돕니다.
+  test-rest:
+    name: Tests · rest
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -53,22 +81,60 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      # 커버리지는 테스트를 한 번 더 돌려 얻지 않습니다 — 이 실행이 VITEST_COVERAGE로 같이
-      # 셉니다. 숫자만 남기고 퍼센트를 게이트로 걸지 않습니다. 출력을 tee로 받으므로
-      # shell: bash(pipefail)가 테스트 실패를 그대로 넘깁니다.
-      - name: Run tests
+      - name: Run remaining tests
         shell: bash
-        run: pnpm test 2>&1 | tee test-output.txt
+        run: pnpm test:rest 2>&1 | tee test-output.txt
         env:
           VITEST_COVERAGE: "1"
-      - name: Coverage summary
+      - name: Coverage summary (ui-lynx)
         if: ${{ !cancelled() }}
         shell: bash
         run: |
           {
-            echo "## 커버리지"
+            echo "## 커버리지 — ui-lynx"
             echo '```text'
             grep -A6 "Coverage summary" test-output.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # 필수 검사 「Tests」입니다(main ruleset). 앞 잡이 하나라도 실패 · 취소되면 여기서 실패합니다
+  # — 이름이 그대로라 ruleset을 고치지 않습니다. 커버리지는 숫자만 남기고 게이트로 걸지 않습니다.
+  test:
+    name: Tests
+    needs: [test-mobile, test-rest]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require every test job
+        env:
+          MOBILE: ${{ needs.test-mobile.result }}
+          REST: ${{ needs.test-rest.result }}
+        run: |
+          echo "mobile shards: $MOBILE, rest: $REST"
+          test "$MOBILE" = success && test "$REST" = success
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: blob-mobile-*
+          path: apps/mobile/blob-reports
+          merge-multiple: true
+      - name: Merge mobile shard reports
+        shell: bash
+        run: pnpm --filter @libitums/mobile test:merge 2>&1 | tee merge-output.txt
+        env:
+          VITEST_COVERAGE: "1"
+      - name: Coverage summary (mobile)
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          {
+            echo "## 커버리지 — mobile"
+            echo '```text'
+            grep -A6 "Coverage summary" merge-output.txt || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 

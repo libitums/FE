@@ -63,9 +63,10 @@ test("CW6. Verify는 PR에서만 앞 실행을 취소한다", () => {
   );
 });
 
-// CW7 — 커버리지는 테스트를 한 번 더 돌려서 얻을 숫자가 아닙니다. Tests 잡의 그 실행에서
-// 같이 얻습니다. 출력을 `tee`로 받으므로 pipefail이 없으면 실패가 초록이 됩니다.
-test("CW7. 커버리지는 Tests 잡의 한 번 실행에서 얻는다", () => {
+// CW7 — 커버리지는 테스트를 한 번 더 돌려서 얻을 숫자가 아닙니다. mobile은 샤드 잡들이
+// 커버리지를 켠 채 나눠 돌고, 「Tests」 잡이 그 blob을 합칩니다. 「Tests」는 필수 검사이므로
+// 앞 잡 하나라도 실패 · 취소되면 실패해야 합니다 — 그러지 않으면 샤드 실패가 초록으로 샙니다.
+test("CW7. 커버리지는 샤드 실행에서 얻고, Tests 잡이 합치며 앞 잡 실패를 넘긴다", () => {
   for (const [name, text] of [
     ["verify.yml", verifyYml],
     ["performance-smoke.yml", smokeYml],
@@ -73,13 +74,40 @@ test("CW7. 커버리지는 Tests 잡의 한 번 실행에서 얻는다", () => {
     assert.doesNotMatch(code(text), /pnpm\s+test:coverage/, `${name}가 테스트를 따로 다시 돕니다`);
   }
 
-  const testJob = code(jobBlock(verifyYml, "test"));
-  assert.match(testJob, /VITEST_COVERAGE:\s*"1"/);
-  assert.match(testJob, /run:\s*pnpm test\b/);
-  if (/\|\s*tee\b/.test(testJob)) {
-    assert.match(testJob, /shell:\s*bash\b/, "파이프를 쓰면 shell: bash(pipefail)가 필요합니다");
+  const shard = code(jobBlock(verifyYml, "test-mobile"));
+  assert.match(shard, /matrix:\s*\n\s*shard:\s*\[/);
+  assert.match(
+    shard,
+    /pnpm --filter @libitums\/mobile test:all --shard=\$\{\{ matrix\.shard \}\}\/\$\{\{ strategy\.job-total \}\}/,
+  );
+  assert.match(shard, /--reporter=blob/);
+  assert.match(shard, /VITEST_COVERAGE:\s*"1"/);
+  assert.match(shard, /actions\/upload-artifact@/);
+
+  const rest = code(jobBlock(verifyYml, "test-rest"));
+  assert.match(rest, /pnpm test:rest\b/);
+  assert.match(rest, /VITEST_COVERAGE:\s*"1"/);
+
+  const gate = code(jobBlock(verifyYml, "test"));
+  assert.match(gate, /name:\s*Tests\n/);
+  assert.match(gate, /needs:\s*\[test-mobile, test-rest\]/);
+  assert.match(gate, /if:\s*\$\{\{ !cancelled\(\) \}\}/);
+  assert.match(gate, /actions\/download-artifact@/);
+  assert.match(gate, /pnpm --filter @libitums\/mobile test:merge/);
+  assert.match(gate, /needs\.test-mobile\.result/);
+  assert.match(gate, /needs\.test-rest\.result/);
+  assert.match(gate, /GITHUB_STEP_SUMMARY/);
+
+  for (const id of jobIds(verifyYml)) {
+    const block = code(jobBlock(verifyYml, id));
+    if (/\|\s*tee\b/.test(block)) {
+      assert.match(
+        block,
+        /shell:\s*bash\b/,
+        `${id}: 파이프를 쓰면 shell: bash(pipefail)가 필요합니다`,
+      );
+    }
   }
-  assert.match(testJob, /GITHUB_STEP_SUMMARY/);
 
   for (const pkg of ["apps/mobile", "packages/ui-lynx"]) {
     assert.match(
@@ -88,6 +116,10 @@ test("CW7. 커버리지는 Tests 잡의 한 번 실행에서 얻는다", () => {
       `${pkg} vitest 설정이 VITEST_COVERAGE로 커버리지를 켜지 않습니다`,
     );
   }
+  assert.match(
+    JSON.parse(read("apps/mobile/package.json")).scripts["test:merge"] ?? "",
+    /^vitest run --merge-reports=\S+$/,
+  );
 });
 
 // CW8 — 설치 방식(레지스트리 · 토큰 · pnpm 버전)은 한 곳에서 바꿉니다. smoke만 pnpm 버전을
@@ -117,16 +149,22 @@ test("CW8. 모든 잡이 공용 setup 액션으로 설치한다", () => {
   assert.doesNotMatch(action, /version:\s*\d/, "pnpm 버전은 packageManager가 정합니다");
 });
 
-// CW9 — 루트 `test`는 vitest 패키지를 계층별 세 번이 아니라 한 번 돕니다. 대신 멤버가
-// 계층 사슬과 어긋나면 안 됩니다 — `test:all`은 그 패키지의 세 계층을 대신합니다.
+// CW9 — 루트 `test`는 vitest 패키지를 계층별 세 번이 아니라 한 번 돕니다. CI가 mobile을
+// 샤드로 떼어 가므로 `test` = mobile `test:all` + `test:rest`입니다. 펼친 멤버가 계층 사슬과
+// 어긋나면 안 됩니다 — `test:all`은 그 패키지의 세 계층을 대신합니다.
 test("CW9. 루트 test가 계층 사슬의 멤버를 빠짐없이, vitest 패키지는 한 번만 돈다", () => {
-  const expanded = (leaves) =>
-    leaves.flatMap((leaf) => {
-      const [pkg, script] = leaf.split(" ");
-      return script === "test:all" ? LAYERS.map((layer) => `${pkg} ${layer}`) : [leaf];
-    });
+  assert.equal(scripts.test, "pnpm --filter @libitums/mobile test:all && pnpm test:rest");
 
-  const testLeaves = filterLeaves(scripts.test);
+  const parts = (command) =>
+    command
+      .split("&&")
+      .map((part) => part.trim())
+      .flatMap((part) => {
+        const ref = part.match(/^pnpm (test:rest)$/);
+        return ref ? parts(scripts[ref[1]]) : [part];
+      });
+  const testParts = parts(scripts.test);
+  const testLeaves = filterLeaves(testParts.join(" && "));
   const layerLeaves = LAYERS.flatMap((layer) => filterLeaves(scripts[layer]));
 
   for (const pkg of VITEST_PACKAGES) {
@@ -136,7 +174,11 @@ test("CW9. 루트 test가 계층 사슬의 멤버를 빠짐없이, vitest 패키
       `${pkg}는 루트 test에서 test:all 한 번이어야 합니다`,
     );
   }
-  assert.deepEqual(new Set(expanded(testLeaves)), new Set(layerLeaves));
+  const expanded = testLeaves.flatMap((leaf) => {
+    const [pkg, script] = leaf.split(" ");
+    return script === "test:all" ? LAYERS.map((layer) => `${pkg} ${layer}`) : [leaf];
+  });
+  assert.deepEqual(new Set(expanded), new Set(layerLeaves));
 
   const layerTail = LAYERS.flatMap((layer) =>
     scripts[layer]
@@ -145,7 +187,7 @@ test("CW9. 루트 test가 계층 사슬의 멤버를 빠짐없이, vitest 패키
       .filter((part) => !part.startsWith("pnpm --filter")),
   );
   for (const part of layerTail) {
-    assert.ok(scripts.test.includes(part), `루트 test에 ${part}가 없습니다`);
+    assert.ok(testParts.includes(part), `루트 test에 ${part}가 없습니다`);
   }
 });
 

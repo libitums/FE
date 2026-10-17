@@ -44,7 +44,7 @@
 | `pnpm performance:reports:check --base <base> --head <head>` | **임의의 두 commit을 감사한다.** 소급 확인용                                           | 범위 자동 산출 (위가 따로)        |
 | `pnpm --filter @libitums/mobile performance:capture:smoke`   | iOS Host 준비부터 수집·분석·cleanup까지 native 연결 확인                               | 실기 baseline·수치 threshold      |
 | `pnpm size:check`                                            | 빌드 산출물 크기를 `devtools/bundle-size/budget.json`의 예산과 대조                    | 빌드 (먼저 `pnpm build`)          |
-| `pnpm test:coverage`                                         | 커버리지 측정 (숫자만 남긴다). CI는 따로 돌지 않고 Tests 잡이 `VITEST_COVERAGE=1`로 센다 | 게이트 — 퍼센트로 막지 않는다     |
+| `pnpm test:coverage`                                         | 커버리지 측정 (숫자만 남긴다). CI는 따로 돌지 않고 테스트 잡이 `VITEST_COVERAGE=1`로 센다 | 게이트 — 퍼센트로 막지 않는다     |
 | `pnpm verify`                                                | format:check → typecheck → lint → test → build → size:check → performance:reports:gate | 네이티브 빌드                     |
 
 - **한 명령은 한 가지 이유로만 실패한다.** 명령이 두 가지 일을 겸하게 만들지 않는다.
@@ -108,8 +108,8 @@
 > Linux Verify의 네 잡(`Format, types, lint` · `Tests` · `Build and bundle size` · `Performance report policy`)이
 > 초록이어야 병합된다. 우회 행위자는 없다. 네 잡의 잎 명령을 합치면 `pnpm verify`와 같다 —
 > `devtools/ci-wiring`이 그 일치를 지킨다. **잡 이름을 바꾸면 ruleset의 필수 검사도 함께 바꾼다** — 이름이
-> 어긋나면 그 검사는 영영 대기 상태로 남아 모든 PR이 막힌다. 커버리지는 Tests 잡이 같은 실행에서 세어
-> Step Summary에 숫자만 남긴다. iOS performance smoke는 수동 실행과 평일 정기 실행에서만 동작하는
+> 어긋나면 그 검사는 영영 대기 상태로 남아 모든 PR이 막힌다. `Tests`는 mobile 샤드 셋과 `Tests · rest`를 기다려 하나라도
+> 실패하면 실패한다. 커버리지는 그 실행들이 같이 세어 Step Summary에 숫자만 남긴다. iOS performance smoke는 수동 실행과 평일 정기 실행에서만 동작하는
 > 비차단 관측이다.
 
 ([ADR-0009 D4·D5·D6](../adr/0009-vcs-hygiene-ci-and-merge-gate.md),

@@ -261,9 +261,14 @@ branch protection)은 한 글자도 바뀌지 않았다 — 새 번호를 붙이
    병합하면 앞 커밋의 실행이 끊겼다 — #254(`ce06a51c`)는 18초 뒤 다음 병합에 취소되어 `main`에서 판정 없이 지나갔다.
    취소는 같은 PR의 앞 push에만 뜻이 있으므로 `cancel-in-progress`를 PR 이벤트에서만 참으로 했다. D1의 「`main` push에서
    항상 시작한다」가 「끝까지 돈다」까지 뜻하게 된 것이다.
-2. **Coverage 잡을 없앴다.** Tests 잡과 같은 vitest를 커버리지만 켜서 다시 돌고 있었다. 이제 Tests 잡이
-   `VITEST_COVERAGE=1`로 같은 실행에서 세고, 요약을 Step Summary에 남긴다. 숫자만 남기고 게이트로 걸지 않는 것은 그대로다.
-   출력을 `tee`로 받으므로 그 단계는 `shell: bash`(pipefail)다. 루트 `test` 구성의 변화는 ADR-0006 2026-10-17 기록.
+2. **Coverage 잡을 없애고 mobile 테스트를 샤드로 나눴다.** Coverage 잡이 Tests 잡과 같은 vitest를 커버리지만 켜서 다시
+   돌고 있었다. 처음에는 Tests 한 잡이 커버리지를 켠 채 전부 돌게 했는데, 러너에서 커버리지 계측이 비싸(mobile 한 번에
+   369초) **PR 대기가 4분 45초에서 8분 25초로 늘었다** — 두 잡이 동시에 돌던 것을 한 줄로 세운 셈이었고, public 저장소라
+   아낀 러너 시간은 값이 없었다. 그래서 mobile vitest를 **샤드 셋(`Tests · mobile n/3`)으로 나눠 동시에** 돌고, 각 샤드가
+   커버리지를 켠 채 blob 리포트를 남긴다. 나머지(`test:rest`)는 `Tests · rest`가 동시에 돈다. **필수 검사 `Tests`는 두
+   잡을 기다렸다가 하나라도 실패 · 취소면 실패하고**, 샤드 blob을 `test:merge`로 합쳐 mobile 커버리지를 낸다 — 이름이
+   그대로라 ruleset을 고치지 않는다. 커버리지 요약(ui-lynx · mobile)은 Step Summary에 숫자만 남기고 게이트로 걸지 않는
+   것은 그대로다. `tee`를 쓰는 단계는 `shell: bash`(pipefail)다. 루트 `test` 구성의 변화는 ADR-0006 2026-10-17 기록.
 3. **설치를 `.github/actions/setup` 하나로 묶었다.** Verify 다섯 잡이 같은 네 단계를 베끼고 있었고, smoke만 `corepack prepare
    pnpm@<버전>`으로 pnpm 버전을 따로 적어 `packageManager`와 어긋날 수 있었다. 두 워크플로가 모두 이 액션을 쓰고, pnpm
    버전은 `packageManager`가 정한다. 체크아웃은 액션 밖에 둔다 — 액션 파일을 읽으려면 체크아웃이 먼저고, 정책 잡은 이력
