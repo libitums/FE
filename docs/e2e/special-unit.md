@@ -87,8 +87,6 @@ SUE5의 보간은 보간이 안 돌아 즉시 이동이어도 결과 위치가 �
 
 발견: 첫 빌드에서 배지가 크기 · 색 없이 사라지고 라벨만 남았다 — 앱 진입점이 `@libitums/ui-lynx/special-unit/styles.css`를 부르지 않았다(jsdom은 CSS를 적용하지 않아 ui 테스트가 통과). d53a372a에서 import와 회귀 테스트(SC8)를 더하고 다시 확인했다.
 
-(실행된 회차가 아직 없다.)
-
 ## Android
 
 네이티브 변경이 0이라 Android 절차는 두지 않는다 — CI의 unit · ui · integration이 덮는다.
