@@ -159,5 +159,7 @@ test("SI11. package.json: lint:scroll-bars가 check.mjs를 부르고 lint · tes
 
   assert.ok(scripts["lint:scroll-bars"]?.includes("devtools/scroll-regions/check.mjs"));
   assert.ok(scripts.lint.includes("pnpm lint:scroll-bars"));
-  assert.ok(scripts.test.includes("pnpm test:scroll-regions"));
+  // 루트 `test`는 devtools 검사를 `test:rest`를 거쳐 부른다(CI가 mobile만 샤드로 떼어 간다).
+  assert.ok(scripts.test.includes("pnpm test:rest"));
+  assert.ok(scripts["test:rest"].includes("pnpm test:scroll-regions"));
 });
