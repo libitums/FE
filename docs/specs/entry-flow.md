@@ -57,6 +57,14 @@
 > §3 끝의 「진입 구간으로 되돌아가기는 열려 있다」는 이 개정이 이긴다.** 저장 키는 로그아웃 · 삭제 모두
 > `libitum.auth.session`을 지우고 `libitum.ui.language`는 남긴다(삭제는 `analytics.queue`도 지운다).
 
+> **개정 (2026-10-18) — 기존 회원 로그인은 언어 선택 · 여정 입장을 건너뛰고 바로 여정 맵으로 간다.** 결정과 근거는
+> [ADR-0069](../adr/0069-returning-learner-login.md)가 진다. 소셜 교환 · 코드 검증이 성공하면 결선이 **기존 회원 판정**(서버 학습 기록 또는
+> 학습자 프로필 행 — 기존 RPC 둘, 최대 3,000 ms)을 기다리고, 그동안 누른 버튼은 `requesting` · `verifying` 그대로다. 기존 회원이면
+> UI 언어를 정해 저장하고 곧장 `enterApp`, 아니면(실패 · 시간 초과 포함) 지금처럼 언어 선택이다. 새 모듈은 `app/returning-learner.ts`(순수 판정) ·
+> `app/returning-learner-probe.ts`(조회 · 3초 경주)이고, `lib/ui-language.ts`에 기존 회원 언어 규칙 셋, `lib/entry-flow.ts`에 이벤트 하나가 늘었다.
+> 화면 · props · testid · `NavAction` · 리듀서는 바뀌지 않았다. 바뀐 자리는 §0의 3 · 6, §3 표의 두 성공 행과 새 행, §4 ⭐ 대가, §5 머리, §6 표, §8이다.
+> **어긋나는 줄은 이 개정이 이긴다.**
+
 ## 0. 고정 범위와 불변식
 
 1. 화면 **여섯**이 `entry` 스택에 담긴다. `entry`가 비면 앱 구간이고, 비지 않은 동안
@@ -67,6 +75,8 @@
    `libitum.auth.token`은 **아무도 쓰지도 읽지도 않는다**(같은 날 셋째 — 옛 설치에 남은 값은 지우지
    않는다). 온보딩 진행은 저장하지 않는다(ADR-0007 D1). ⟨2026-09-29⟩ 고른 언어는 확정 때
    `libitum.ui.language`에 저장한다 — ADR-0007 D1의 예외 둘째([ADR-0031](../adr/0031-ui-language-catalog.md) D4).
+   ⟨2026-10-18⟩ 기존 회원의 바로 맵 경로도 같은 키에 저장한다 — 진입 흐름을 마친 뒤 저장 키 집합은 두 경로 모두
+   `[libitum.auth.session, libitum.ui.language]`다([ADR-0069](../adr/0069-returning-learner-login.md) D5).
 4. **네 수단 전부 인증이다**(2026-09-29). 전화번호는 번호 제출 → Supabase OTP 요청 → 6자리 검증,
    Google · Facebook은 인증 창에서 제공자 로그인 → 콜백의 `code` 교환, Apple은 네이티브 시트 →
    ID 토큰 교환(nonce 포함)이 성공해야 세션이 저장되고, **그전에는
@@ -74,7 +84,8 @@
 5. 진입 화면이 소비하는 `@libitums/ui-lynx` 입력은 로그인의 **`TextField`** 와 코드 검증의
    **`CompactNumericInput`**(여섯 칸)이다
    ([ADR-0025](../adr/0025-ui-lynx-package-and-storybook-catalog.md) 「2026-09-16 확장」 절).
-6. 이벤트는 셋 — 화면 열람 · 로그인 수단 선택 · 완주. **새 이벤트는 0건**이다. 네트워크는
+6. 이벤트는 셋 — 화면 열람 · 로그인 수단 선택 · 완주. **새 이벤트는 0건**이다. ⟨2026-10-18⟩ **넷이 됐다** — 기존 회원 바로 맵 진입
+   `entry_returning_learner_entered`([ADR-0069](../adr/0069-returning-learner-login.md) 「측정」 · §6). 네트워크는
    `lib/api-client.ts` 한 곳에서만 나가고 sink는 제품 진입점에서 `null`이다(§6). ⟨**2026-09-29** — 제품 진입점이 이제 sink를 PostHog로 잇는다. 키(`PUBLIC_POSTHOG_KEY`)가 있는 빌드에서는 실제로 집계되고, 키가 없으면 여전히 `null`이다([ADR-0029](../adr/0029-product-analytics-posthog.md)). 전송 관찰은 [분석 e2e](../e2e/analytics.md) 한 곳에 모은다⟩
 7. 새 `NavAction`이 없다. `Tab` · `Nav` · `NavAction` · `initialNav` · 리듀서는 **한 글자도
    바뀌지 않았고** `Screen`에 멤버 여섯이 늘었다. 그중 `verification-code`만 필드
@@ -180,8 +191,9 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | ⟨2026-09-30⟩ **앱 구간** · 설정의 로그아웃 · 계정 삭제 성공 | App 세션 재시작(`NavAction` 아님) | `[온보딩, 로그인]` — 세션을 지우고 앱 상태 전체가 처음 값 |
 | 온보딩 완료 | `push` | `[…, 로그인]` |
 | 전화번호 `Continue` → **OTP 요청 성공** | `push` | `[…, 코드 검증]` — 실패면 전이 없이 로그인에 오류 |
-| 소셜 셋 → **인증 창(Google · Facebook) 또는 Apple 시트 · 교환 성공** | `push` | `[…, 언어 선택]` — **코드 검증을 건너뛴다.** 취소 · 실패면 전이 없이 로그인에 남는다 |
-| 코드 `확인`(완성일 때만) → **검증 성공** | `push` | `[…, 언어 선택]` — 실패면 전이 없이 코드 검증에 오류 |
+| 소셜 셋 → **인증 창(Google · Facebook) 또는 Apple 시트 · 교환 성공** | ⟨2026-10-18⟩ 기존 회원 판정 뒤 — 신규 `push` · 기존 회원 `enterApp` | 신규: `[…, 언어 선택]` — **코드 검증을 건너뛴다.** 기존 회원: `[]` → 여정 맵(언어 선택 · 여정 입장도 건너뛴다). 취소 · 실패면 전이 없이 로그인에 남는다 |
+| 코드 `확인`(완성일 때만) → **검증 성공** | ⟨2026-10-18⟩ 기존 회원 판정 뒤 — 신규 `push` · 기존 회원 `enterApp` | 신규: `[…, 언어 선택]` · 기존 회원: `[]` → 여정 맵. 실패면 전이 없이 코드 검증에 오류 |
+| ⟨2026-10-18⟩ 위 두 성공 뒤 **판정 중**(≤ 3,000 ms) | — | 전이 없음 — 로그인(누른 소셜 버튼 `requesting`) 또는 코드 검증(`확인` `verifying`)이 그대로 선다. 서버 진행 스냅숏에 학습 기록이 있거나 학습자 프로필 행이 있으면 **즉시** 기존 회원, 둘 다 없거나 실패 · 깨진 응답 · 시간 초과면 신규. 한 번 정하면 늦은 응답으로 바꾸지 않는다(판정 표는 [ADR-0069](../adr/0069-returning-learner-login.md) D4) |
 | 코드 `Resend` | — | 전이 없음. 요청이 성공해야 카운트다운 · 입력이 되돌아간다 |
 | 코드 `로그인으로` | **`back`** | 한 겹 위 = 로그인 |
 | 언어 `다음` | `push` | `[…, 여정 입장]` |
@@ -239,6 +251,9 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 바로 여정 맵**이다 — 온보딩 · 로그인 · 코드 검증 · 언어 선택을 **다시 볼 수 없다.** 다시 보려면
 **기기에서 앱을 삭제하고 다시 설치**하는 것뿐이다.
 
+- ⟨2026-10-18⟩ **서버 기록이 있는 계정은 재설치해도 진입 흐름 뒤쪽(언어 선택 · 여정 입장)을 다시 볼 수 없다** — 로그인 뒤
+  바로 여정 맵이다([ADR-0069](../adr/0069-returning-learner-login.md) 대가 6). 그 구간을 수동으로 보려면 재설치에 더해
+  **서버 기록이 없는 새 계정**이 필요하다(로그아웃으로도 마찬가지다 — 같은 규칙이 로그아웃 뒤 재로그인에도 걸린다).
 - **결함이 아니라 이 회차의 대가다.** 숨기지 않고 여기 적는 이유는 **안 적으면 다음 사람이 흐름을
   못 돌기 때문**이다 — 수동 확인자는 T1~T7 회차와 T8·T9 회차를 **서로 다른 설치**에서 준비해야
   한다([진입 흐름 e2e](../e2e/entry-flow.md) 「재설치가 유일한 재진입 수단이다」).
@@ -254,6 +269,9 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 > `useState` 하나이고 `Screen`의 필드가 아니다. 문구표를 읽는 화면이 스물을 넘어 도입 조건이 발동했고
 > 판정은 context 하나다(ADR-0031 D5) — 언어 **상태**가 아니라 그 언어의 **표**를 싣는다. 재실행 유지의
 > 판정자는 integration `App.ui-language.integration.test.tsx`와 [UI 언어 e2e](../e2e/ui-language.md)다.
+> ⟨2026-10-18⟩ **UI 언어를 정해 저장하는 자리가 둘이다** — 언어 선택의 확정과, 기존 회원의 바로 맵 경로(언어 선택을 건너뛴다).
+> 뒤의 것은 `loadReturningUiLanguage()` = 저장값(멤버면 그대로) → 기기 언어(고를 수 있을 때) → `en`이고, 호스트가 기기 언어를 주는 경로가
+> 없어 기기 입력은 지금 `null`이다 — 결과는 늘 「저장값 또는 영어」다([ADR-0069](../adr/0069-returning-learner-login.md) D5).
 > 아래는 LIB-261 당시의 서술이다.
 
 - 고른 언어는 **App의 `useState` 하나**가 소유하고 prop으로 내려간다. **저장하지 않는다** —
@@ -275,13 +293,17 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 |---|---|---|---|
 | `entry_screen_viewed` | `screen`(**스플래시를 뺀 다섯**) | 그 화면을 여는 전이의 `dispatch` 직전 1회 | **스플래시** · 코드 검증에서 `로그인으로`로 돌아갈 때 · 온보딩 `step` 전환(같은 화면이다) |
 | `entry_login_method_selected` | `method`(넷) | ~~소셜: 수단 tap → 토큰 저장·전이 직전 1회.~~ **소셜: 교환이 성공해 세션을 저장한 뒤 · 전이 직전 1회**(2026-09-29). **전화번호: OTP 요청이 성공한 순간 1회**(2026-09-29) | 전화번호를 입력만 할 때 · **OTP 요청이 실패할 때**(실패한 시도를 세지 않는다 — 두 번째에 성공해도 1회다) · 재전송 · **소셜 버튼을 누르기만 했을 때 · 인증 창을 닫았을 때 · 소셜 실패** |
-| `entry_completed` | 없음 | **여정 입장**의 진행 tap → `enterApp` 직전 1회 | **토큰 분기로 바로 들어가는 재방문**(완주가 아니다) |
+| `entry_completed` | 없음 | **여정 입장**의 진행 tap → `enterApp` 직전 1회 | **토큰 분기로 바로 들어가는 재방문**(완주가 아니다) · ⟨2026-10-18⟩ **기존 회원의 바로 맵 진입**(여정 입장을 지나지 않는다) |
+| ⟨2026-10-18⟩ `entry_returning_learner_entered` | `method`(넷) | 기존 회원 판정이 맵으로 끝난 로그인에서 UI 언어 저장 뒤 · `enterApp` 직전 1회 | 신규 흐름(판정 실패 · 시간 초과 포함) · 세션 갱신 부팅 · 로그인 실패 · 취소 |
 
 - ⭐ **스플래시가 타입에서 배제돼 있다.** 이 저장소의 이벤트는 **전이를 일으키는 핸들러**가 내는데
   스플래시는 전이 없이 처음부터 서 있어 낼 자리가 셸의 핸들러에 **없다.** 그 수는 「앱 실행 수」와
   같고 이 기능이 만드는 관측이 아니다 — 마운트 effect를 새로 만들지 않았다. 배제는 주석이 아니라
   **타입이 진다.**
 - 지표: 화면별 열람 수의 **상대 감소**가 이탈 지점이고, 수단별 선택 수와 완주 수가 나머지 둘이다.
+  ⟨2026-10-18⟩ 기존 회원 비율 = `entry_returning_learner_entered` ÷ (그것 + `entry_screen_viewed{screen: "language-select"}`) — 로그인 성공 1회당
+  둘 중 정확히 하나가 난다. **완주 수(`entry_completed`)와 그것을 옮기는 「가입 완료」는 이날부터 기록 있는 계정의 재로그인 · 재설치를 세지 않는다**
+  (해석 단절 — [ADR-0069](../adr/0069-returning-learner-login.md) 「측정」).
 - payload에 **전화번호 · 코드 · 토큰 값 · 고른 언어 · 시각 · 식별자를 싣지 않는다** — 타입이 초과
   속성으로 막는다. 전화번호는 어디에도 저장·전송되지 않는다.
 - sink는 App의 optional prop이고 제품 진입점이 **`null`을 명시한다.** ⇒ **이 변경이 병합돼도 실제
@@ -316,11 +338,11 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 
 | 계층 | 파일 |
 |---|---|
-| unit | `lib/entry-flow` · `lib/entry-language` · `lib/auth-session` · `lib/api-client` · `lib/supabase-config` · `lib/auth-failure` · `lib/pkce` · `lib/web-authentication` · `lib/apple-sign-in` · `lib/social-sign-in` · `screens/onboarding/onboarding` · `screens/login/login` · `screens/verification-code/verification-code`의 `.unit.test.ts` · `app/navigation.unit.test.ts` |
+| unit | ⟨2026-10-18⟩ `app/returning-learner` · `app/returning-learner-probe` · `lib/ui-language` · `screens/login/login-screen.css`(스피너 덮어쓰기 없음) · `lib/entry-flow` · `lib/entry-language` · `lib/auth-session` · `lib/api-client` · `lib/supabase-config` · `lib/auth-failure` · `lib/pkce` · `lib/web-authentication` · `lib/apple-sign-in` · `lib/social-sign-in` · `screens/onboarding/onboarding` · `screens/login/login` · `screens/verification-code/verification-code`의 `.unit.test.ts` · `app/navigation.unit.test.ts` |
 | unit (호스트 네이티브) | `apps/ios/HostTests/WebAuthenticationModuleTests.swift` — 완료 페이로드 · 인자 판정 · 난수 모양. `apps/ios/HostTests/AppleSignInModuleTests.swift` — nonce 인자 판정 · 페이로드 조립(2026-09-29). **`pnpm verify` 밖**이고 명령은 [작업 흐름](../conventions/workflow.md) 「호스트 네이티브 테스트」 |
 | ui | 화면마다 하나 — `<화면>.ui.test.tsx` |
-| integration | `app/App.entry.integration.test.tsx`(흐름 전체 · 토큰 분기 · 바텀 네비 등장 · 이벤트 · **2026-09-29부터 서버 연동** — OTP 요청 · 검증 · 재전송 · 세션 갱신의 성공과 실패, 그리고 **소셜의 인증 창 · 교환**과 **Apple 시트 · ID 토큰 교환**의 성공 · 취소 · 실패 · 모듈 없음) · `app/App.heading-trait.integration.test.tsx`(제목 축에 진입 상태 전부) |
-| e2e (수동) | [진입 흐름 e2e](../e2e/entry-flow.md) — T1–T9 · D1 · **E1–E7** · **S1–S8**(소셜 — 대부분 제공자 설정 전까지 막힘) · **A1–A7**(Apple 네이티브 — 서명 · Apple 설정 필요) · **L1**(옛 임시 토큰 설치) · K1–K5 · V1–V6. 실행 기록은 그 문서가 진다 |
+| integration | ⟨2026-10-18⟩ `app/App.returning-login.integration.test.tsx`(RL1 ~ RL12 — 기존 회원 판정의 두 신호 · 실패 · 시간 초과 · 대기 중 로딩 · UI 언어 저장 · 이벤트 · 알림 · 프로필 동기화 순서, 헬퍼 `app/test-helpers/returning-login-harness.tsx`) · `app/App.entry.integration.test.tsx`(흐름 전체 · 토큰 분기 · 바텀 네비 등장 · 이벤트 · **2026-09-29부터 서버 연동** — OTP 요청 · 검증 · 재전송 · 세션 갱신의 성공과 실패, 그리고 **소셜의 인증 창 · 교환**과 **Apple 시트 · ID 토큰 교환**의 성공 · 취소 · 실패 · 모듈 없음) · `app/App.heading-trait.integration.test.tsx`(제목 축에 진입 상태 전부) |
+| e2e (수동) | ⟨2026-10-18⟩ [기존 회원 로그인 e2e](../e2e/returning-user-login.md) — RUE1 ~ RUE5(기존 계정 바로 맵 · 새 계정 회귀 · 스피너 가운데 · 갱신 부팅 · 로딩 이름). [진입 흐름 e2e](../e2e/entry-flow.md) — T1–T9 · D1 · **E1–E7** · **S1–S8**(소셜 — 대부분 제공자 설정 전까지 막힘) · **A1–A7**(Apple 네이티브 — 서명 · Apple 설정 필요) · **L1**(옛 임시 토큰 설치) · K1–K5 · V1–V6. 실행 기록은 그 문서가 진다 |
 
 - **진입 흐름 전체는 한 트리에서만 관찰된다** — 스플래시 분기 · 전이 · 토큰 저장과 재실행 · 바텀
   네비 등장 · 언어의 세션 수명 · 이벤트 순서. 화면을 고립 렌더하는 계층이 원리적으로 만들 수 없어
@@ -348,6 +370,8 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 [`entry-flow-iphone-17-pro-simulator-01`](../performance/reports/entry-flow-iphone-17-pro-simulator-01.md)이다.
 ⭐ **이 변경은 초기 load의 첫 화면을 바꾼다**(여정 맵 → 스플래시). 그래서 **앞선 보고서들과 같은
 조건의 기준선이 아니다** — 그 사실과 관찰 구간의 한계는 그 보고서에 있다.
+⟨2026-10-18⟩ 기존 회원 판정(로그인 뒤 최대 3초 대기)의 기록은
+[`returning-user-login-iphone-17-pro-simulator-01`](../performance/reports/returning-user-login-iphone-17-pro-simulator-01.md)이다(번들만).
 
 ## 비고
 
