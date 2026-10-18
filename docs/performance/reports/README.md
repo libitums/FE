@@ -16,7 +16,8 @@ CLI stdout 전체, Trace 파일, Instruments export를 보관하는 곳이 아�
 [`docs/performance-analysis.md`](../../performance-analysis.md)의 `performance:capture` 명령을
 따른다.
 
-Linux Verify는 이 의무를 모든 PR과 `main` push에서 자동 검사한다. 테스트 파일을 제외한
+Linux Verify는 이 의무를 모든 PR과 `main` push에서 자동 검사한다. 테스트 파일(테스트 디렉터리와
+공용 헬퍼 자리 `test-helpers/` 포함)을 제외한
 `apps/mobile/src/**` 또는 `apps/ios/**` 변경에 이 README가 아닌 보고서 Markdown 변경이
 없으면 실패한다. CI는 보고서를 대신 만들거나 커밋하지 않는다
 ([ADR-0021 D1·D2](../../adr/0021-performance-report-ci-automation.md)).

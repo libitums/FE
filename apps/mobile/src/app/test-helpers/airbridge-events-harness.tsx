@@ -15,11 +15,11 @@ import type {
   AnalyticsTransport,
 } from "../../lib/analytics.contract";
 import { analyticsConfigFrom } from "../../lib/analytics-config";
-import { entrySplashDurationMs } from "../../lib/entry-flow";
 import { withAirbridgeEvents } from "../../lib/airbridge-events";
 import { resolveAirbridgeEventTracker } from "../../lib/airbridge-events-module";
 import { createAnalyticsSession } from "../../lib/posthog-client";
 import { contentNotFoundResponse, isContentRequest } from "./content-requests";
+import { passSplash } from "./pass-splash";
 
 const config: AnalyticsConfig | null = analyticsConfigFrom("phc_integration_test", "development");
 
@@ -127,9 +127,7 @@ export async function runEntryFlow(
   stubEntryHost();
   vi.useFakeTimers();
   render(<App phoneSignIn="visible" {...sinks} />);
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
+  await passSplash();
   // 온보딩은 네 스텝입니다(넷째 = 이름 · 나라, 비운 채 넘기면 건너뜀 — ADR-0059).
   for (let step = 0; step < 4; step++) tapButton("onboarding-screen-next");
   tapButton("login-screen-method-apple");

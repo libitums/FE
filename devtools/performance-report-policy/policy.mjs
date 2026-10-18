@@ -3,7 +3,10 @@ const REPORT_README = `${REPORT_DIRECTORY}README.md`;
 
 const TEST_FILE_PATTERN =
   /(?:^|\/)(?:__tests__\/|[^/]+\.(?:unit|ui|integration|e2e)?\.?test\.[^/]+$|[^/]+Tests?\.[^/]+$)/i;
-const TEST_DIRECTORY_PATTERN = /(?:^|\/)(?:__tests__|tests?|e2e|[^/]+(?:Tests|UITests))(?:\/|$)/;
+// `test-helpers`는 integration 테스트가 함께 쓰는 부팅 · 대역 헬퍼 자리입니다. 제품 코드가 import하지 않아
+// 번들에 들어가지 않습니다(policy.unit.test가 그 import 금지를 지킵니다).
+const TEST_DIRECTORY_PATTERN =
+  /(?:^|\/)(?:__tests__|tests?|test-helpers|e2e|[^/]+(?:Tests|UITests))(?:\/|$)/;
 const DATE_PATTERN =
   /(?:19|20)\d{2}(?:[-_./]\d{1,2}){1,2}|(?:19|20)\d{6}|(?:19|20)\d{2}년\s*\d{1,2}월/;
 const ABSOLUTE_LOCAL_PATH_PATTERN =
