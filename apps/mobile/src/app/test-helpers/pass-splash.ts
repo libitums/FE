@@ -5,7 +5,7 @@
 // 시간을 **한 번만** 앞당겼는데, effect가 앞당김보다 늦게 돌면(렌더 스케줄이 밀리는 느린 CI)
 // 타이머가 앞당김 뒤에 걸려 스플래시가 남았습니다 — 로컬에서는 재현되지 않고 CI에서만 가끔
 // 「스플래시를 지나지 못했다」로 실패했습니다. 그래서 스플래시가 남아 있는 동안 정해진 횟수까지
-// 다시 앞당깁니다. 넘었는지의 판정은 부르는 쪽이 합니다.
+// 다시 앞당기고, 그래도 남으면 오류를 던집니다.
 
 import { vi } from "vitest";
 import { act, screen } from "@lynx-js/react/testing-library";
@@ -25,4 +25,7 @@ export async function passSplash(): Promise<void> {
     });
     if (screen.queryByTestId("splash-screen-logo") === null) return;
   }
+  // 넘지 못하면 여기서 분명히 실패합니다 — 하네스가 다음 화면의 요소를 못 찾는 모호한 오류로
+  // 번지지 않게 합니다.
+  throw new Error("passSplash: 스플래시를 지나지 못했습니다");
 }

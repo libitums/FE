@@ -5,7 +5,7 @@
 // `vi.unstubAllEnvs()`를 함께 부릅니다.
 
 import { vi } from "vitest";
-import { render, screen } from "@lynx-js/react/testing-library";
+import { render } from "@lynx-js/react/testing-library";
 
 import type { AuthSession } from "../../lib/auth-session.contract";
 import { authSessionStorageKey, serializeAuthSession } from "../../lib/auth-session";
@@ -100,11 +100,12 @@ export async function renderSignedInApp(
 
   vi.useFakeTimers();
   const result = render(ui);
-  await passSplash();
-  if (!options.keepFakeTimers) vi.useRealTimers();
-
-  if (screen.queryByTestId("splash-screen-logo") !== null) {
-    throw new Error("renderSignedInApp: 스플래시를 지나지 못했습니다");
+  try {
+    await passSplash();
+  } finally {
+    // 스플래시를 넘지 못해 던져도 가짜 타이머가 다음 테스트로 새지 않게 합니다.
+    if (!options.keepFakeTimers) vi.useRealTimers();
   }
+
   return result;
 }

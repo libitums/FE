@@ -45,11 +45,9 @@ test.each(["now", "microtask", "timer"] as const)(
   },
 );
 
-test("PS2. 끝내 넘지 못하면 정해진 횟수 뒤 멈춘다 — 무한히 돌지 않는다", async () => {
+test("PS2. 끝내 넘지 못하면 정해진 횟수 뒤 분명한 오류로 멈춘다 — 무한히 돌지 않는다", async () => {
   vi.useFakeTimers();
   render(<view data-testid="splash-screen-logo" />);
 
-  await passSplash();
-
-  expect(screen.getByTestId("splash-screen-logo")).toBeInTheDocument();
+  await expect(passSplash()).rejects.toThrow("passSplash: 스플래시를 지나지 못했습니다");
 });
