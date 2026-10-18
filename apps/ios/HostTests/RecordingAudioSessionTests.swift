@@ -147,7 +147,77 @@ final class RecordingAudioSessionTests: XCTestCase {
     completed.assertForOverFulfill = true
     player.play("greeting-1") { _ in completed.fulfill() }
     wait(for: [ended, completed], timeout: 20)
-    XCTAssertEqual(system.category, .soloAmbient)
+    // ⟨2026-10-18⟩ 재생은 이제 카테고리를 정한다(#200, ADR-0017 D3 정정) — 끝나면 무음 스위치를 따르지 않는
+    // `.playback`의 섞기로 돌아온다. 예전 단언은 `.soloAmbient`(세션을 건드리지 않음)였다.
+    let settled = expectation(description: "Voice end returns the session to mixing")
+    DispatchQueue.main.async { settled.fulfill() }
+    wait(for: [settled], timeout: 2)
+    XCTAssertEqual(system.category, .playback)
+    XCTAssertEqual(system.categoryOptions, [.mixWithOthers])
+  }
+}
+
+/// 무음(진동) 모드에서도 학습 음원이 들려야 한다(#200). 기본 카테고리 `.soloAmbient`는 무음 스위치를 따른다.
+/// 평소에는 다른 앱 소리와 섞고(효과음이 사용자 음악을 흔들지 않게), 학습 음원이 나오는 동안만 다른 앱 소리를
+/// 줄였다가 끝나면 세션을 꺼 원래 크기로 돌려준다.
+final class PlaybackAudioSessionTests: XCTestCase {
+  func testPS1DefaultIgnoresSilentSwitchAndMixesWithOtherApps() {
+    let session = FakeAudioSession()
+    PlaybackAudioSession(session: session).configureDefault()
+    XCTAssertEqual(session.category, .playback)
+    XCTAssertEqual(session.mode, .default)
+    XCTAssertEqual(session.categoryOptions, [.mixWithOthers])
+    XCTAssertEqual(session.activations, [], "설정만 하고 켜지 않는다 — 켜는 순간 다른 앱 소리에 닿는다")
+  }
+
+  func testPS2VoiceDucksOthersWhilePlayingAndRestoresAfter() {
+    let session = FakeAudioSession()
+    let playback = PlaybackAudioSession(session: session)
+    playback.configureDefault()
+
+    playback.beginVoice()
+    XCTAssertEqual(session.category, .playback)
+    XCTAssertEqual(session.categoryOptions, [.duckOthers])
+    XCTAssertEqual(session.activations, [true])
+
+    playback.endVoice()
+    XCTAssertEqual(session.activations, [true, false])
+    XCTAssertEqual(session.activationOptions.last, .notifyOthersOnDeactivation)
+    XCTAssertEqual(session.category, .playback)
+    XCTAssertEqual(session.categoryOptions, [.mixWithOthers])
+  }
+
+  func testPS3RepeatedBeginOrEndTouchesTheSessionOnce() {
+    let session = FakeAudioSession()
+    let playback = PlaybackAudioSession(session: session)
+    playback.endVoice()
+    XCTAssertEqual(session.activations, [], "켠 적 없으면 끄지 않는다 — 녹음 중 세션을 건드리지 않게")
+
+    playback.beginVoice()
+    playback.beginVoice()
+    XCTAssertEqual(session.activations, [true])
+    playback.endVoice()
+    playback.endVoice()
+    XCTAssertEqual(session.activations, [true, false])
+  }
+
+  func testPS4DeactivationFailureStillReturnsToMixing() {
+    let session = FakeAudioSession()
+    session.failDeactivation = true
+    let playback = PlaybackAudioSession(session: session)
+    playback.beginVoice()
+    playback.endVoice()
+    XCTAssertEqual(session.categoryOptions, [.mixWithOthers], "효과음이 세션을 쥐어 끄지 못해도 줄이기는 푼다")
+  }
+
+  func testPS5RecordingRestoresThePlaybackPolicy() throws {
+    let session = FakeAudioSession()
+    PlaybackAudioSession(session: session).configureDefault()
+    let recording = RecordingAudioSession(session: session)
+    try recording.activate()
+    recording.restore()
+    XCTAssertEqual(session.category, .playback)
+    XCTAssertEqual(session.categoryOptions, [.mixWithOthers])
   }
 }
 
