@@ -57,3 +57,6 @@ apps/ios/Config/*.local.xcconfig
 apps/android/app/*.properties
 apps/ios/Config/Airbridge.local.xcconfig
 apps/android/app/airbridge.properties
+
+# vitest 샤드 blob (CI의 Tests 잡이 합친다)
+blob-reports/

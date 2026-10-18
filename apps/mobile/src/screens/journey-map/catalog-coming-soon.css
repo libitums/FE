@@ -1,0 +1,122 @@
+/* 카탈로그 맨 끝 「다음 에피소드 준비 중」 구획입니다(시안 C1). 빈 지도는 실제 유닛 표식과 같은 지름(100)의
+   점선 고리이고, 아래로 갈수록 흐려지며, 흰 카드가 그 위 가운데에 겹칩니다. */
+
+.catalog-coming-soon-stage {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: var(--libitum-spacing-48);
+}
+
+.catalog-coming-soon-ghosts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-32);
+}
+
+.catalog-coming-soon-row {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-80);
+}
+
+.catalog-coming-soon-ghost {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--libitum-radius-full);
+  border: 3px dashed var(--libitum-color-gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.catalog-coming-soon-ghost-1 {
+  opacity: 0.7;
+}
+
+.catalog-coming-soon-ghost-2 {
+  opacity: 0.45;
+}
+
+.catalog-coming-soon-ghost-fill {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-300);
+}
+
+/* 아래로 맵 바탕(`background-primary` #FFFDFC)에 녹아듭니다 — 그러데이션 안의 토큰 참조는 기기 기록이 없어
+   값을 적습니다(에피소드 표지 화면의 그러데이션과 같은 이유). */
+.catalog-coming-soon-fade {
+  position: absolute;
+  top: 160px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(to bottom, rgba(255, 253, 252, 0), #fffdfc 70%);
+}
+
+/* 카드 자리입니다 — Lynx는 absolute 상자의 `margin: auto` 가운데 정렬을 따르지 않아(에뮬레이터에서 왼쪽에
+   붙었다) 전체 폭 상자를 깔고 flex로 가운데에 세웁니다. */
+.catalog-coming-soon-card-slot {
+  position: absolute;
+  top: 120px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.catalog-coming-soon-card {
+  width: 248px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24) var(--libitum-spacing-20);
+  border-radius: var(--libitum-radius-xl);
+  background-color: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.catalog-coming-soon-heading {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.catalog-coming-soon-lock {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.catalog-coming-soon-label {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.catalog-coming-soon-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.catalog-coming-soon-body {
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}

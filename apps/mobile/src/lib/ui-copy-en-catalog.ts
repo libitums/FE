@@ -33,6 +33,11 @@ export const catalogMapEn: CatalogMapCopy = {
     unavailable: "NOT AVAILABLE",
   },
   unavailableSection: (label, title, kind) => `${label} ${title}, ${unavailableTail[kind]}`,
+  comingSoon: {
+    title: "Coming soon",
+    body: "We're preparing the next story.",
+    label: (episodeLabel) => `${episodeLabel} Coming soon. We're preparing the next story.`,
+  },
 };
 
 export const catalogCoverEn: CatalogCoverCopy = {

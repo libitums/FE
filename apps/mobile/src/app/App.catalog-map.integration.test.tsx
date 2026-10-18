@@ -508,6 +508,19 @@ test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」
   );
 });
 
+test("I5c. 내장 카탈로그(세 에피소드)로 맵이 서면 u03 구획 뒤 맨 끝에 Episode 4. 준비 중 구획이 하나 선다", async () => {
+  await boot({ seed: tutorialDoneSeed });
+
+  const comingSoon = screen.getByTestId("catalog-coming-soon");
+  expect(screen.getByTestId("catalog-coming-soon-label")).toHaveTextContent("Episode 4.");
+  expect(comingSoon).toHaveAttribute(
+    "accessibility-label",
+    "Episode 4. Coming soon. We're preparing the next story.",
+  );
+  expect(screen.getByTestId("journey-map-screen-catalog").lastElementChild).toBe(comingSoon);
+  expect(screen.getAllByTestId("catalog-coming-soon")).toHaveLength(1);
+});
+
 test("I6. (AC5) 이미지는 공개 버킷 주소로 서고 load 전에도 글과 버튼이 있다", async () => {
   await boot({ seed: tutorialDoneSeed });
   tapCover("u01-water");

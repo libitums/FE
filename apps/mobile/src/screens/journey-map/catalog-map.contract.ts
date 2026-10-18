@@ -142,6 +142,12 @@ export type CatalogMapCopy = {
   readonly nodeLabel: (episodeLabel: string, title: string) => string;
   readonly caption: Readonly<Record<CatalogCaptionKind, string>>;
   readonly unavailableSection: (label: string, title: string, kind: CatalogCaptionKind) => string;
+  /** 카탈로그 맨 끝 「다음 에피소드 준비 중」 구획 — 제목 · 안내 · 낭독 이름(`Episode n.` 뒤에 둘을 잇습니다). */
+  readonly comingSoon: {
+    readonly title: string;
+    readonly body: string;
+    readonly label: (episodeLabel: string) => string;
+  };
 };
 
 export type CatalogMapTestId =

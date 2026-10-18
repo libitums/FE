@@ -1324,3 +1324,22 @@ M-4(부드러운 이동의 실제 시간 · 긴 거리의 모양)는 **E-S2의 �
 | 날짜 | 기기 | 결과 |
 | --- | --- | --- |
 | 2026-10-17 | Android 에뮬레이터(Pixel 8, `bundled`) | CB1 **부분** — u02 Lesson 1(왼쪽 칸) 탭으로 `Episode 2, unit 01` · `Check-in` 띠와 `Lesson 1: “Check-in”` · `16/16 activities` 말풍선이 섰고 꼬리가 왼쪽 칸을 가리켰다. CB2 ~ CB8 · iOS 미실행 |
+
+## 위 · 아래 여백 · 준비 중 구획 (2026-10-17)
+
+> 결정은 [ADR-0024](../adr/0024-journey-units-and-special-unit-placement.md) 적용 기록 2026-10-17. 자동 검사: `journey-map-insets.unit.test.ts`(IN1 ~ IN4) · `catalog-coming-soon.unit.test.ts` · `CatalogComingSoonSection.ui.test.tsx` · `App.catalog-map.integration.test.tsx` I5c.
+
+| id | 기기 | 절차 | 기대 |
+| --- | --- | --- | --- |
+| MI1 | iOS · Android | 맵 맨 위로 스크롤해 첫 스텝을 탭 | 띠 아래로 유닛이 가리지 않고, 말풍선이 그 유닛에 붙는다 |
+| MI2 | iOS · Android | 카탈로그 마지막 열린 에피소드의 최종 테스트(열린 상태)를 탭 | 말풍선이 유닛 바로 아래에 붙고 바텀 내비에 걸리지 않는다 |
+| MI3 | iOS · Android | 다음 유닛이 맵 아래쪽인 계정으로 맵을 연다 | 자동 스크롤이 그 유닛을 바텀 내비 위로 온전히 보이게 옮긴다 |
+| MI4 | iOS · Android | 맵 맨 끝까지 스크롤 | `Episode n+1.` 준비 중 구획 — 점선 빈 고리가 아래로 흐려지고 흰 카드가 가운데. 카드 그림자 · 점선이 보인다 |
+| MI5 | iOS(VoiceOver) · Android(TalkBack) | 준비 중 구획에 초점 | `Episode 4. Coming soon. We're preparing the next story.` 한 번, 버튼으로 읽히지 않는다 |
+| MI6 | iOS · Android | 큰 글자(최대)로 MI1 | 띠가 커져도 첫 유닛이 띠에 크게 가리지 않는다(어림 112 — 관찰만) |
+
+### 실행 기록
+
+| 날짜 | 기기 | 결과 |
+| --- | --- | --- |
+| 2026-10-17 | Android 에뮬레이터(Pixel 8, API 37, `bundled`) | MI1 **통과** · MI4 **통과**(첫 빌드에서 카드가 왼쪽에 붙어 flex 가운데 정렬로 고침). MI2 · MI3은 이 계정의 아래쪽 노드가 잠겨 있어 미실행. MI5 · MI6 · iOS 미실행 |

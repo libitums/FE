@@ -9,6 +9,8 @@
     "preview": "rspeedy preview",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "pnpm test:unit && pnpm test:ui && pnpm test:integration",
+    "test:all": "vitest run",
+    "test:merge": "vitest run --merge-reports=blob-reports",
     "test:coverage": "vitest run --coverage",
     "test:unit": "vitest run unit.test",
     "test:ui": "vitest run ui.test",

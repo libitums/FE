@@ -197,7 +197,12 @@ test("[LM7] probe.test.tsx · probe.d.ts는 리터럴이 있어도 검사에서 
 
 test("[LM4] lint 사슬은 lint:motion을, test 사슬은 test:motion-literals를 부른다", () => {
   const { scripts } = JSON.parse(readFileSync(path.join(repoRoot, "package.json"), "utf8"));
-  const chain = (name) => scripts[name].split("&&").map((part) => part.trim());
+  // 루트 `test`는 devtools 검사를 `test:rest`를 거쳐 부른다(CI가 mobile만 샤드로 떼어 간다).
+  const chain = (name) =>
+    scripts[name]
+      .split("&&")
+      .map((part) => part.trim())
+      .flatMap((part) => (part === "pnpm test:rest" ? chain("test:rest") : [part]));
   assert.ok(chain("lint").includes("pnpm lint:motion"));
   assert.ok(chain("test").includes("pnpm test:motion-literals"));
   assert.equal(scripts["lint:motion"], "node devtools/motion-literals/check.mjs");
