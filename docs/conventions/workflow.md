@@ -60,6 +60,11 @@
 - **`pnpm verify`가 CI 게이트 전부다.** 로컬에서 이 한 줄이 초록이면 CI의 검사 단계도
   초록이다. **CI에만 있고 로컬에 없는 검사를 만들지 않는다** — 검사를 늘릴 때는
   workflow에 단계를 더하지 말고 `verify`에 넣는다.
+  **예외 하나: `Android build`** (2026-10-18). Android SDK · JDK를 모든 로컬에 요구하지 않으려고
+  `verify` 밖에 둔 필수 검사다. `apps/android/` · 번들 동기화 · 호스트 오디오 · 루트 `package.json` ·
+  잠금 파일 · CI 파일을 바꾼 PR은 `pnpm verify`만으로 CI 초록을 보장하지 못하므로 로컬에서
+  `pnpm bundle:android && (cd apps/android && ANDROID_HOME=~/Library/Android/sdk ./gradlew :app:assembleBundled)`
+  를 함께 돌린다. 어느 경로가 해당하는지는 `devtools/android-build/paths.mjs`가 정본이다.
 - 앱만 돌리려면 `pnpm --filter @libitums/mobile <cmd>`. Storybook만 돌리려면
   `pnpm --filter @libitums/storybook-lynx <cmd>`. 루트 스크립트는 `pnpm -r`이 아니라
   명시적 `--filter`를 쓴다 — 범위를 넓히는 것은 명시적 결정이어야 한다.
@@ -105,8 +110,9 @@
    통째로 되돌릴 수 있다. 커밋 제목은 PR 제목을 쓴다.
 
 > **이 절차는 `main` ruleset이 강제한다** (2026-10-17). PR 없이 `main`에 push할 수 없고, squash만 허용되며,
-> Linux Verify의 네 잡(`Format, types, lint` · `Tests` · `Build and bundle size` · `Performance report policy`)이
-> 초록이어야 병합된다. 우회 행위자는 없다. 네 잡의 잎 명령을 합치면 `pnpm verify`와 같다 —
+> Linux Verify의 다섯 잡(`Format, types, lint` · `Tests` · `Build and bundle size` · `Performance report policy` ·
+> `Android build`)이 초록이어야 병합된다. 우회 행위자는 없다. `Android build`는 Android에 닿는 변경이 없는 PR에서
+> 빌드를 건너뛰고 성공한다. 앞 네 잡의 잎 명령을 합치면 `pnpm verify`와 같다 —
 > `devtools/ci-wiring`이 그 일치를 지킨다. **잡 이름을 바꾸면 ruleset의 필수 검사도 함께 바꾼다** — 이름이
 > 어긋나면 그 검사는 영영 대기 상태로 남아 모든 PR이 막힌다. `Tests`는 mobile 샤드 셋과 `Tests · rest`를 기다려 하나라도
 > 실패하면 실패한다. 커버리지는 그 실행들이 같이 세어 Step Summary에 숫자만 남긴다. iOS performance smoke는 수동 실행과 평일 정기 실행에서만 동작하는
