@@ -56,11 +56,11 @@ test("재방문 기록 조회가 늦어도 맵과 다시 연 스토리에 신규
     await vi.advanceTimersByTimeAsync(0);
   });
   expectNoGuide();
-  expect(screen.getByTestId("ui-lynx-learning-unit-tutorial-intro")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-special-unit-tutorial-intro")).toHaveAttribute(
     "data-status",
     "clear",
   );
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-tutorial-intro"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-intro"), {});
   fireEvent.tap(
     within(screen.getByTestId("episode-intro-screen-next")).getByTestId("ui-lynx-button"),
     {},

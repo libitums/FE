@@ -21,8 +21,10 @@ const section: CatalogReadySection = {
 };
 const gate: CatalogGate = { tutorialPassed: true, progress: { "u01-water": ["intro", "S1"] } };
 
-const coverId = "ui-lynx-learning-unit-catalog-cover-u01-water";
-const nodeId = (key: string) => `ui-lynx-learning-unit-catalog-unit-u01-water-${key}`;
+const coverId = "ui-lynx-special-unit-catalog-cover-u01-water";
+// 최종(`RP`)은 `SpecialUnit`, 레슨은 `LearningUnit`이 그립니다.
+const nodeId = (key: string) =>
+  `ui-lynx-${key === "RP" ? "special" : "learning"}-unit-catalog-unit-u01-water-${key}`;
 const unitKeys = [...lessonKeys, "RP"];
 
 function mount(access?: JourneyMapNodeAccess) {
@@ -81,7 +83,7 @@ describe("CatalogMapSections access", () => {
     );
     expect(screen.getByTestId(nodeId("RP"))).toHaveAttribute(
       "accessibility-label",
-      "Episode 1. Final test, loading, story",
+      "special, Episode 1. Final test, loading",
     );
     expect(screen.getByTestId(coverId).getAttribute("accessibility-label")).toContain(", loading");
   });

@@ -82,14 +82,22 @@ const rowKinds = (): (string | null)[] =>
 const cellsOf = (row: Element): Element[] =>
   Array.from(row.querySelectorAll('[data-testid^="journey-map-cell-"]'));
 
-// 유닛 표식의 하위 장식(`-ring` 등)을 뺀 유닛 testid의 문서 순서입니다.
+// 유닛 표식의 하위 장식(`-ring` 등)을 뺀 유닛 testid의 문서 순서입니다. 스텝은 `LearningUnit`,
+// 특별 유닛은 `SpecialUnit`이 그립니다.
 const unitTestIds = (): string[] =>
-  Array.from(sectionBox()?.querySelectorAll('[data-testid^="ui-lynx-learning-unit-"]') ?? [])
+  Array.from(
+    sectionBox()?.querySelectorAll(
+      '[data-testid^="ui-lynx-learning-unit-"], [data-testid^="ui-lynx-special-unit-"]',
+    ) ?? [],
+  )
     .map((element) => element.getAttribute("data-testid") ?? "")
-    .filter((id) => !/-(ring|icon|badge|shade)$/.test(id));
+    .filter((id) => !/-(ring|icon|badge|shade|halo|body|face|pressed-shade)$/.test(id));
 
 const expectedUnitTestIds = (items: readonly JourneyMapItem[]): string[] =>
-  items.map((item) => `ui-lynx-learning-unit-${tutorialItemId(item)}`);
+  items.map(
+    (item) =>
+      `ui-lynx-${item.kind === "standard" ? "learning" : "special"}-unit-${tutorialItemId(item)}`,
+  );
 
 const realKinds = ["solo", "pair", "pair", "solo", "solo", "solo", "pair", "pair", "solo"];
 
@@ -180,7 +188,7 @@ describe("TutorialEpisodeSection", () => {
     cleanup();
 
     const guided = mount({ guideVisible: true });
-    const cover = screen.queryByTestId("ui-lynx-learning-unit-tutorial-intro");
+    const cover = screen.queryByTestId("ui-lynx-special-unit-tutorial-intro");
     expect(cover).not.toBeNull();
     fireEvent.tap(cover as Element, {});
     expect(guided.guide.dismiss).toHaveBeenCalledTimes(1);

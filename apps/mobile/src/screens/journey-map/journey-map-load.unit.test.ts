@@ -111,7 +111,9 @@ function withoutComments(source: string): string {
 }
 
 describe("SC1 노드 일곱의 잠금 가드", () => {
-  const nodes = [
+  // 스페셜 항목의 잠금 가드는 공유 항목 `SpecialUnitMapItem` 한 곳이 집니다. 어댑터는 그것에 위임하고,
+  // 카탈로그 레슨 노드는 `LearningUnit` 쪽 가드를 스스로 집니다.
+  const adapters = [
     "EpisodeIntroMapItem",
     "MessengerMapItem",
     "PhoneCallMapItem",
@@ -120,11 +122,19 @@ describe("SC1 노드 일곱의 잠금 가드", () => {
     "CatalogCoverMapItem",
     "CatalogUnitNode",
   ];
+  const guards = ["SpecialUnitMapItem", "CatalogUnitNode"];
 
-  test.each(nodes)('SC1. %s — `!== "locked"` 0건 · canSelectMapNode( 1건 이상', (name) => {
+  test.each([...adapters, "SpecialUnitMapItem"])('SC1. %s — `!== "locked"` 0건', (name) => {
+    expect(withoutComments(read(join(dir, `${name}.tsx`)))).not.toMatch(/!==\s*["']locked["']/);
+  });
+
+  test.each(guards)("SC1. %s — canSelectMapNode( 1건 이상", (name) => {
     const source = withoutComments(read(join(dir, `${name}.tsx`)));
-    expect(source).not.toMatch(/!==\s*["']locked["']/);
     expect([...source.matchAll(/canSelectMapNode\(/g)].length).toBeGreaterThanOrEqual(1);
+  });
+
+  test.each(adapters)("SC1. %s — SpecialUnitMapItem에 위임한다", (name) => {
+    expect(withoutComments(read(join(dir, `${name}.tsx`)))).toMatch(/<SpecialUnitMapItem\b/);
   });
 });
 

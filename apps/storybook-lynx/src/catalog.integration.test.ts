@@ -32,6 +32,7 @@ import {
   dispatchLearningUnitStoryTap,
   normalizeLearningUnitStoryArgs,
 } from "./learning-unit-story";
+import { dispatchSpecialUnitStoryTap, normalizeSpecialUnitStoryArgs } from "./special-unit-story";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 
@@ -725,6 +726,7 @@ describe("Storybook Lynx build outputs", () => {
     "tooltip",
     "option-selector",
     "learning-unit",
+    "special-unit",
   ])("%s story는 Rspeedy Lynx Web bundle을 갖는다", async (entry) => {
     const bundle = await readBinaryOutput(`dist/lynx/${entry}.web.bundle`);
     expect(bundle.byteLength).toBeGreaterThan(1_000);
@@ -738,6 +740,7 @@ describe("Storybook Lynx build outputs", () => {
     for (const id of [
       "components-round-button--reduced-motion",
       "components-learning-unit--reduced-motion",
+      "components-special-unit--reduced-motion",
       "components-page-indicator--reduced-motion",
       "components-settings-cell--reduced-motion",
       "components-chat-bubble--reduced-motion",
@@ -769,6 +772,7 @@ describe("Storybook Lynx build outputs", () => {
     "button",
     "card",
     "option-selector",
+    "special-unit",
   ])("ST6. %s 엔트리는 motion 서브패스의 MotionProvider로 감싼다", async (name) => {
     const source = await readOutput(`src/lynx/${name}.tsx`);
     expect(source).toContain('from "@libitums/ui-lynx/motion"');
@@ -899,6 +903,40 @@ describe("Storybook Lynx build outputs", () => {
     expect(index).toContain("components-learning-unit--all-states");
   });
 
+  test.each([
+    "default",
+    "checking",
+    "available",
+    "active",
+    "clear",
+    "focused",
+    "all-states",
+    "reduced-motion",
+  ])("SB2. index.json에 components-special-unit--%s 스토리가 있다", async (storyId) => {
+    const index = await readOutput("dist/storybook/index.json");
+    expect(index).toContain(`components-special-unit--${storyId}`);
+  });
+
+  test("SB3. 스페셜 유닛 탭은 default · checking에서 false이고 나머지에서 STORYBOOK_ACTION 한 번이다", () => {
+    for (const status of ["default", "checking"]) {
+      const calls: unknown[] = [];
+      const data = normalizeSpecialUnitStoryArgs({ status });
+      expect(dispatchSpecialUnitStoryTap(data, (payload) => calls.push(payload))).toBe(false);
+      expect(calls).toEqual([]);
+    }
+    for (const status of ["available", "active", "clear"]) {
+      const calls: unknown[] = [];
+      const data = normalizeSpecialUnitStoryArgs({
+        status,
+        accessibilityLabel: "special, A Call from Minseo",
+      });
+      expect(dispatchSpecialUnitStoryTap(data, (payload) => calls.push(payload))).toBe(true);
+      expect(calls).toEqual([
+        { channel: "STORYBOOK_ACTION", name: "onTap", args: ["special, A Call from Minseo"] },
+      ]);
+    }
+  });
+
   test("runtime은 공개 dist export를 소비하고 source mapping은 typecheck에만 격리한다", async () => {
     const baseTsconfig = JSON.parse(await readOutput("tsconfig.json")) as {
       compilerOptions: { paths?: Record<string, string[]> };
@@ -943,6 +981,7 @@ describe("Storybook Lynx build outputs", () => {
       "@libitums/ui-lynx/tooltip": ["../../packages/ui-lynx/src/tooltip/index.ts"],
       "@libitums/ui-lynx/option-selector": ["../../packages/ui-lynx/src/option-selector/index.ts"],
       "@libitums/ui-lynx/learning-unit": ["../../packages/ui-lynx/src/learning-unit/index.ts"],
+      "@libitums/ui-lynx/special-unit": ["../../packages/ui-lynx/src/special-unit/index.ts"],
     });
     expect(packageJson.scripts.build).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
     expect(packageJson.scripts.storybook).toMatch(/^pnpm --filter @libitums\/ui-lynx build &&/);
@@ -971,6 +1010,7 @@ describe("Storybook Lynx build outputs", () => {
     ["tooltip", "@libitums/ui-lynx/tooltip"],
     ["option-selector", "@libitums/ui-lynx/option-selector"],
     ["learning-unit", "@libitums/ui-lynx/learning-unit"],
+    ["special-unit", "@libitums/ui-lynx/special-unit"],
   ])("%s runtime entry consumes its public subpath export", async (entry, subpath) => {
     const runtime = await readOutput(`src/lynx/${entry}.tsx`);
     expect(runtime).toContain(`from "${subpath}"`);
@@ -1032,6 +1072,7 @@ describe("Storybook Lynx build outputs", () => {
     expect(config).toMatch(
       /["']?learning-unit["']?\s*:\s*["']\.\/src\/lynx\/learning-unit\.tsx["']/,
     );
+    expect(config).toMatch(/["']?special-unit["']?\s*:\s*["']\.\/src\/lynx\/special-unit\.tsx["']/);
 
     const packageJson = JSON.parse(
       await readFile(path.resolve(appRoot, "../../packages/ui-lynx/package.json"), "utf8"),

@@ -47,8 +47,8 @@ const openTab = (tab: "journey" | "roleplay" | "settings"): void =>
 const catchTap = (id: string): void =>
   void fireEvent.tap(screen.getByTestId(id), { eventType: "catchEvent" });
 
-const introUnit = "ui-lynx-learning-unit-tutorial-intro";
-const finalUnit = "ui-lynx-learning-unit-tutorial-final-test";
+const introUnit = "ui-lynx-special-unit-tutorial-intro";
+const finalUnit = "ui-lynx-special-unit-tutorial-final-test";
 const completedIntros = ["tutorial-intro"] as const;
 
 function pressBack(): void {
@@ -389,7 +389,7 @@ test("[IS7] visual-novel 진입 → 나가기: 1 → 0", async () => {
   );
   expect(markers()).toBe(0);
 
-  tap(`ui-lynx-learning-unit-${unitId}`);
+  tap(`ui-lynx-special-unit-${unitId}`);
   expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
   expect(markerIds()).toEqual(["visual-novel-screen"]);
 

@@ -11,6 +11,7 @@ import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.co
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
+import type { SpecialUnitMapCopy } from "../screens/journey-map/journey-special-unit.contract";
 import type { CultureCardCopy } from "../screens/culture-card/culture-card.contract";
 import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
 import type { ReadAloudCopy } from "../screens/read-aloud/read-aloud.contract";
@@ -97,6 +98,7 @@ export type UiCopy = {
   readonly audioUnavailable: AudioUnavailableCopy;
   readonly learnerProfile: LearnerProfileCopy;
   readonly progressLoad: ProgressLoadCopy;
+  readonly specialUnitMap: SpecialUnitMapCopy;
 };
 
 /**

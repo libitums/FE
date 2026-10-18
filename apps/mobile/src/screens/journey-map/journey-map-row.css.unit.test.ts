@@ -76,10 +76,12 @@ describe("journey-map-row.css", () => {
 });
 
 describe("journey-map-screen.css", () => {
-  test("CSS2. 맵 상자의 padding-top에 spacing-40 항이 있다", () => {
+  // ⟨2026-10-17⟩ 위 여백은 머리 띠 아래까지 내릴 수 있는 고정값(200)이 됐습니다 — 값의 출처는
+  // `journey-map-insets.unit.test.ts`(IN1 · IN2)가 집니다. 여기서는 그 선언이 맵 상자에 하나 있다는 것만 봅니다.
+  test("CSS2. 맵 상자의 padding-top이 고정 px 하나다", () => {
     const css = readCss("journey-map-screen.css");
     const body = bodiesWhere(css, (selector) => selector === ".journey-map-screen-map");
     const paddingTop = /padding-top:\s*([^;]+);/.exec(body)?.[1] ?? "";
-    expect(paddingTop).toContain("var(--libitum-spacing-40)");
+    expect(paddingTop).toMatch(/^\d+px$/);
   });
 });

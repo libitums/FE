@@ -287,7 +287,7 @@ export type VisualNovelNavigationScreenContract = {
 };
 
 export type VisualNovelTestId =
-  | `ui-lynx-learning-unit-${VisualNovelUnitId}`
+  | `ui-lynx-special-unit-${VisualNovelUnitId}`
   | "visual-novel-screen"
   | "visual-novel-title"
   | "visual-novel-exit-button"

@@ -56,9 +56,9 @@ const journeyStateTestIds = [
   "ui-lynx-learning-unit-ordering",
   "ui-lynx-learning-unit-appointment",
   "ui-lynx-learning-unit-directions",
-  `ui-lynx-learning-unit-${messengerUnitId}`,
-  `ui-lynx-learning-unit-${phoneCallUnitId}`,
-  `ui-lynx-learning-unit-${visualNovelUnitId}`,
+  `ui-lynx-special-unit-${messengerUnitId}`,
+  `ui-lynx-special-unit-${phoneCallUnitId}`,
+  `ui-lynx-special-unit-${visualNovelUnitId}`,
 ] as const;
 
 function journeyStateSnapshot(): readonly (string | null)[] {
@@ -349,21 +349,21 @@ test("[I4] 여정에서 연 화면 셋의 나가기 라벨은 맵으로 그대�
   );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-${messengerUnitId}`), {});
   expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
     "accessibility-label",
     "Back to map",
   );
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-${phoneCallUnitId}`), {});
   expect(screen.getByTestId("phone-call-exit-button")).toHaveAttribute(
     "accessibility-label",
     "Back to map",
   );
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
 
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-${visualNovelUnitId}`), {});
   expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
     "accessibility-label",
     "Back to map",
@@ -453,7 +453,7 @@ test("[I6] 전화는 열림 이벤트만 있고 출처로 journey·roleplay를 �
 
   fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${phoneCallUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-${phoneCallUnitId}`), {});
 
   expect(phoneCallEventSink).toHaveBeenLastCalledWith({
     name: "phone_call_unit_opened",
@@ -583,7 +583,7 @@ test("[I9] 여정에서 특별 유닛 하나만 끝내서는 에피소드가 열
     />,
   );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${messengerUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-${messengerUnitId}`), {});
   finishMessengerConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
 
@@ -614,7 +614,7 @@ test("[I10] 마지막 하나가 남으면 잠겨 있고, 그것을 끝내는 순
   );
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${visualNovelUnitId}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-${visualNovelUnitId}`), {});
   finishVisualNovel();
   tapLessonCompleteExit("Back to map");
 

@@ -7,7 +7,7 @@ import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.
 
 const unitId = "cafe-arrival-visual-novel";
 const tap = (id: string) => fireEvent.tap(screen.getByTestId(id), {});
-const openUnit = () => tap(`ui-lynx-learning-unit-${unitId}`);
+const openUnit = () => tap(`ui-lynx-special-unit-${unitId}`);
 const next = () => tap("visual-novel-advance-button");
 const nextScene = () => {
   next();
@@ -61,7 +61,7 @@ test("each scene includes the learner's reply before moving to the next scene", 
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   expect(screen.queryByText("Start over")).toBeNull();
   check();
-  expect(screen.getByTestId(`ui-lynx-learning-unit-${unitId}`)).toHaveAttribute(
+  expect(screen.getByTestId(`ui-lynx-special-unit-${unitId}`)).toHaveAttribute(
     "data-status",
     "clear",
   );
@@ -114,7 +114,7 @@ test("completed reentry starts over automatically and preserves completion on an
   expect(screen.getByTestId("visual-novel-scene-arrive")).toBeInTheDocument();
   expect(screen.queryByText("Start over")).toBeNull();
   tap("visual-novel-exit-button");
-  expect(screen.getByTestId(`ui-lynx-learning-unit-${unitId}`)).toHaveAttribute(
+  expect(screen.getByTestId(`ui-lynx-special-unit-${unitId}`)).toHaveAttribute(
     "data-status",
     "clear",
   );
@@ -151,10 +151,10 @@ test("completion with a null sink preserves the completed messenger and phone un
   finish();
   check();
   for (const id of ["appointment-confirmation", "appointment-confirmation-phone-call"])
-    expect(screen.getByTestId(`ui-lynx-learning-unit-${id}`)).toHaveAttribute(
+    expect(screen.getByTestId(`ui-lynx-special-unit-${id}`)).toHaveAttribute(
       "data-status",
       "clear",
     );
-  tap("ui-lynx-learning-unit-appointment-confirmation");
+  tap("ui-lynx-special-unit-appointment-confirmation");
   expect(screen.getByTestId("messenger-message-list").children).toHaveLength(1);
 });

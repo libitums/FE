@@ -70,7 +70,7 @@ test.each(journeySteps.filter((step) => learningFormsForStep(step.id)[0] === "se
       "clear",
     );
     if (step.id === "appointment") {
-      expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+      expect(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation")).toHaveAttribute(
         "data-status",
         "available",
       );

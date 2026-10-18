@@ -12,11 +12,12 @@ import { sendMessengerReply } from "../screens/messenger/messenger.test-support"
 import { getPhoneCallConversation } from "../screens/phone-call/phone-call";
 import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { episodeFinalAdvanceDelayMs } from "../screens/episode-final/episode-final";
+import { mapUnitTestId } from "./test-helpers/map-unit-testid";
 
 const tap = (id: string) => fireEvent.tap(screen.getByTestId(id), {});
 const button = (id: string) =>
   fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
-const unit = (id: string) => `ui-lynx-learning-unit-${id}`;
+const unit = (id: string) => mapUnitTestId(id);
 
 function dismissFirstUnitGuide(): void {
   for (const kind of ["story", "messenger", "call"]) {

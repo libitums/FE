@@ -504,7 +504,7 @@ const screenCases: readonly ScreenCase[] = [
     name: "에피소드 표지",
     open: async () => {
       await bootJourney(undefined, false);
-      fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-tutorial-intro"), {});
+      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-intro"), {});
     },
     screenTestId: "episode-intro-screen-title",
     content: [],
@@ -513,7 +513,7 @@ const screenCases: readonly ScreenCase[] = [
     name: "에피소드 서사",
     open: async () => {
       await bootJourney(undefined, false);
-      fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-tutorial-intro"), {});
+      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-intro"), {});
       tapButtonIn("episode-intro-screen-next");
     },
     screenTestId: "episode-narrative-screen-title",
@@ -523,7 +523,7 @@ const screenCases: readonly ScreenCase[] = [
     name: "메신저",
     open: async () => {
       await bootJourney(journeySeedBefore("appointment-confirmation"));
-      fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
     },
     screenTestId: "messenger-screen-title",
     content: [
@@ -538,7 +538,7 @@ const screenCases: readonly ScreenCase[] = [
     open: async () => {
       await bootJourney(journeySeedBefore("appointment-confirmation-phone-call"));
       fireEvent.tap(
-        screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation-phone-call"),
+        screen.getByTestId("ui-lynx-special-unit-appointment-confirmation-phone-call"),
         {},
       );
     },
@@ -549,7 +549,7 @@ const screenCases: readonly ScreenCase[] = [
     name: "비주얼 노벨",
     open: async () => {
       await bootJourney(journeySeedBefore("cafe-arrival-visual-novel"));
-      fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-cafe-arrival-visual-novel"), {});
+      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-cafe-arrival-visual-novel"), {});
     },
     screenTestId: "visual-novel-screen",
     content: [/^visual-novel-scene-/, /^visual-novel-dialogue-content-/],
@@ -558,7 +558,7 @@ const screenCases: readonly ScreenCase[] = [
     name: "최종 테스트",
     open: async () => {
       await bootJourney(readyForFinal);
-      fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-tutorial-final-test"), {});
+      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-final-test"), {});
       readFinalStory("introduction");
     },
     screenTestId: "episode-final-screen-title",
@@ -603,7 +603,7 @@ const finishedTutorial: AppJourneySeed = {
 describe.each(specialUnits)("[IL8] $name의 나가기", ({ unitId, exitTestId }) => {
   test("여정에서 연 화면은 Back to map이고 누르면 여정 맵으로 돌아간다", async () => {
     await bootJourney(journeySeedBefore(unitId));
-    fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${unitId}`), {});
+    fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-${unitId}`), {});
 
     expect(screen.getByTestId(exitTestId)).toHaveAttribute("accessibility-label", "Back to map");
     fireEvent.tap(screen.getByTestId(exitTestId), {});

@@ -35,6 +35,7 @@
       "@libitums/ui-lynx/tooltip": ["../../packages/ui-lynx/src/tooltip/index.ts"],
       "@libitums/ui-lynx/option-selector": ["../../packages/ui-lynx/src/option-selector/index.ts"],
       "@libitums/ui-lynx/learning-unit": ["../../packages/ui-lynx/src/learning-unit/index.ts"],
+      "@libitums/ui-lynx/special-unit": ["../../packages/ui-lynx/src/special-unit/index.ts"],
       "@libitums/ui-lynx/motion": ["../../packages/ui-lynx/src/motion/index.ts"]
     }
   }

@@ -23,6 +23,7 @@ import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner"
 import { journeySteps } from "../screens/journey-map/journey-map";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // `integration` 계층: 앱 세션에서 「카탈로그 읽기 → 맵 구획 → 표지 열기 → 컷 끝 → 진행 저장 → 다음 실행」과
 // 「갱신 뒤 같은 트리에서 구획이 서는 것」, 이벤트 sink 경계를 한 트리에서 봅니다. 대역은 경계뿐입니다 —
@@ -289,7 +290,7 @@ afterEach(() => {
 // ---------------------------------------------------------------- 조작 · 관찰 헬퍼
 
 const cover = (episodeId: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-cover-${episodeId}`);
+  screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${episodeId}`);
 const tapCover = (episodeId: string) => void fireEvent.tap(cover(episodeId), {});
 // 이름이 드는 표지는 기록이 없으면 앞에 가드 화면이 섭니다 - 건너뛰면 기본 문구(「이름」)로 표지가 이어집니다.
 const skipProfileGate = () =>
@@ -402,7 +403,7 @@ test("I2. (AC1 · 2 · 3) 튜토리얼 완료 씨앗: 첫 표지만 열리고 �
   expect(cover("u03-mina")).toHaveAttribute("data-status", "default");
 
   fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-S1"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-RP"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-catalog-unit-u01-water-RP"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(presentId("episode-intro-screen")).toBe(false);
 
@@ -505,6 +506,19 @@ test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」
   expect(screen.getByTestId("ui-lynx-visual-novel-dialog-translation")).toHaveTextContent(
     "jeoneun ireumieyo.",
   );
+});
+
+test("I5c. 내장 카탈로그(세 에피소드)로 맵이 서면 u03 구획 뒤 맨 끝에 Episode 4. 준비 중 구획이 하나 선다", async () => {
+  await boot({ seed: tutorialDoneSeed });
+
+  const comingSoon = screen.getByTestId("catalog-coming-soon");
+  expect(screen.getByTestId("catalog-coming-soon-label")).toHaveTextContent("Episode 4.");
+  expect(comingSoon).toHaveAttribute(
+    "accessibility-label",
+    "Episode 4. Coming soon. We're preparing the next story.",
+  );
+  expect(screen.getByTestId("journey-map-screen-catalog").lastElementChild).toBe(comingSoon);
+  expect(screen.getAllByTestId("catalog-coming-soon")).toHaveLength(1);
 });
 
 test("I6. (AC5) 이미지는 공개 버킷 주소로 서고 load 전에도 글과 버튼이 있다", async () => {
@@ -620,9 +634,7 @@ const pressSystemBack = (token: string): void =>
     lynx.getJSModule("GlobalEventEmitter").emit(systemBackEventName, [token]);
   });
 const levelOf = (episodeId: string, key: string) =>
-  screen
-    .getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`)
-    .getAttribute("data-status");
+  screen.getByTestId(catalogNodeTestId(episodeId, key)).getAttribute("data-status");
 
 test("I11. (AC1 · 3) 표지 화면: 첫 줄 Episode 1. · 둘째 줄 에피소드 이름 · Skip · Next · 머리말 축 하나이고 Next가 컷 1을 연다", async () => {
   const { events } = await boot({ seed: tutorialDoneSeed });

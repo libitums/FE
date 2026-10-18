@@ -41,6 +41,7 @@ import {
   learningShellEn,
   progressLoadEn,
   shellEn,
+  specialUnitMapEn,
 } from "./ui-copy-en-shell";
 import {
   episodeFinalEn,
@@ -93,4 +94,5 @@ export const uiCopyEn: UiCopy = {
   audioUnavailable: audioUnavailableEn,
   learnerProfile: learnerProfileEn,
   progressLoad: progressLoadEn,
+  specialUnitMap: specialUnitMapEn,
 };

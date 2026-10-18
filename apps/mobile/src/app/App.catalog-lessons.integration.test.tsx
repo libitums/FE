@@ -27,6 +27,7 @@ import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { journeySteps } from "../screens/journey-map/journey-map";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // 옛 형식 내장본(2026-10-14)의 흐름을 걷는 테스트입니다 — 내장본 자리를 옛 픽스처로 바꿉니다.
 vi.mock("../lib/episode-bundled", async () => {
@@ -217,7 +218,7 @@ const tapButtonIn = (id: string): void =>
 const tapRoundIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-round-button"), {});
 const node = (episodeId: string, key: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`);
+  screen.getByTestId(catalogNodeTestId(episodeId, key));
 // 열린 노드를 누르면 말풍선이 서고 `Start`가 유닛을 엽니다. 잠긴 노드는 말풍선이 없어 누름으로 끝납니다.
 const tapNode = (episodeId: string, key: string): void => {
   fireEvent.tap(node(episodeId, key), {});
@@ -226,7 +227,7 @@ const tapNode = (episodeId: string, key: string): void => {
 };
 const status = (episodeId: string, key: string) => node(episodeId, key).getAttribute("data-status");
 const cover = (episodeId: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-cover-${episodeId}`);
+  screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${episodeId}`);
 const tapNext = () => tapButtonIn("catalog-cover-screen-next");
 const tapIntroNext = () => tapButtonIn("episode-intro-screen-next");
 // 배너의 유지 시간만 가짜 시계로 밉니다 - 통과 뒤 컷 앞에서 켜고 `passBanner`가 실제 시계로 되돌립니다.
@@ -426,15 +427,15 @@ test("L1b. (낭독) 표지 · 레슨 · 최종 노드의 이름은 Episode n.으
   expect(node(u01, "S3")).toHaveAttribute("accessibility-label", "Episode 1. Lesson 2, locked");
   expect(node(u01, "RP")).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^Episode 1\. Final test, locked/),
+    expect.stringMatching(/^special, Episode 1\. Final test, locked/),
   );
   expect(cover(u01)).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^Episode 1\. Episode intro, completed/),
+    expect.stringMatching(/^special, Episode 1\. Episode intro, completed/),
   );
   expect(cover(u02)).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^Episode 2\. Episode intro, locked/),
+    expect.stringMatching(/^special, Episode 2\. Episode intro, locked/),
   );
   expect(document.querySelectorAll('[data-testid^="catalog-section-caption"]')).toHaveLength(0);
 });

@@ -4,7 +4,7 @@ libitum 디자인 시스템 토큰과 아이콘을 사용하는 ReactLynx 컴포
 컴포넌트는 `Button`, `BackHeader`, `StatusIndicator`, `RoundButton`, `ProgressHeader`,
 `PageIndicator`, `BottomNavigator`, `StepIndicator`, `BottomSheet`, `CompactNumericInput`,
 `Card`, `ChatBubble`, `VisualNovelDialog`, `TextField`, `AnswerLabel`, `Overlay`, `Fog`, `Tooltip`,
-`Avatar`, `Dialog`, `OptionSelector`, `LearningUnit`, `SettingsCell`·`SettingsGroup` 등이 있다.
+`Avatar`, `Dialog`, `OptionSelector`, `LearningUnit`, `SpecialUnit`, `SettingsCell`·`SettingsGroup` 등이 있다.
 
 공통 타이핑 훅 `useTypewriter`는 `@libitums/ui-lynx/typewriter`에서 가져온다.
 `text`, `intervalMs`(기본 `motion.duration.reveal` = 35ms — 같은 값이 `defaultRevealIntervalMs`로
@@ -67,6 +67,8 @@ Option Selector는 `components/option-selector.md` revision
 `456a121fdfee60dfceaba2ac8f9e989a1275c066`을 기준으로 한다.
 Learning Unit은 `components/learning-unit.md` revision
 `01d3a3c`을 기준으로 한다.
+Special Unit은 `components/special-unit.md` revision
+`f3271ae`을 기준으로 한다 — 아이콘만 벗어난다(오각 별, [`docs/special-unit.md`](docs/special-unit.md)).
 Settings Cell은 `components/settings-cell.md` revision
 `38a3c34`을 기준으로 한다.
 
@@ -163,6 +165,23 @@ import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
   status="active"
   narrative="narrative"
   bindtap={startUnit}
+/>;
+```
+
+`SpecialUnit`은 학습 목록에서 레슨이 아닌 단위를 나타내는 124px 자리의 둥근 사각 control이다. 면 · 오른쪽 아래
+두께(별도 view) · 고정 아이콘(오각 별)만 소유하고 아이콘 prop이 없다. 상태는 `default | checking | available | active | clear`이고
+자물쇠 · tick · 배지 없이 색으로만 보이며, 접근성 이름 뒤 접미사(`locked` · `loading` · `current` · `completed`)로 전달한다.
+보조 라벨 · 제목 · 이름의 접두는 상위 목록이 조합한다 — 상세는 [`docs/special-unit.md`](docs/special-unit.md).
+
+```tsx
+import { SpecialUnit } from "@libitums/ui-lynx/special-unit";
+import "@libitums/ui-lynx/special-unit/styles.css";
+
+<SpecialUnit
+  id="tutorial-intro"
+  accessibilityLabel="special, Episode intro"
+  status="available"
+  bindtap={openCover}
 />;
 ```
 
@@ -414,7 +433,7 @@ import "@libitums/ui-lynx/styles.css";
 - `Motion = "standard" | "reduced"`. `<MotionProvider motion={…}>`가 Context로 내려 주고
   `useMotion()`이 읽는다. Provider 밖에서는 `"standard"`이고 던지지 않는다 — Storybook 스토리와
   Provider 없는 테스트는 그대로 돈다. 카탈로그는 변형이 있는 컴포넌트마다 `motion` arg와
-  `ReducedMotion` 스토리를 두고, Round Button · Learning Unit · Page Indicator · Settings Cell · Chat
+  `ReducedMotion` 스토리를 두고, Round Button · Learning Unit · Special Unit · Page Indicator · Settings Cell · Chat
   Bubble · Button · Card · Option Selector는 엔트리가 `MotionProvider`로 감싼다(컴포넌트에 prop을
   주지 않는다 — 제품 앱과 같은 길).
 - 우선순위는 **명시 prop > 컨텍스트 > `"standard"`**. Dialog · BottomSheet · Overlay ·
@@ -424,14 +443,16 @@ import "@libitums/ui-lynx/styles.css";
   `motionClassName(block, motion)`이 그 규칙을 진다.
 - `reduced`에서 걷는 것과 남는 것은 design-system `foundations/motion.md`의 「컴포넌트 매핑」을
   따른다 — 이동 · 확대 · 너비 · reveal은 즉시, 색 · 불투명도 전환은 유지. RoundButton ·
-  LearningUnit · PageIndicator · SettingsCell · Button · Card · OptionSelector는 `reduced`일 때만
+  LearningUnit · SpecialUnit · PageIndicator · SettingsCell · Button · Card · OptionSelector는 `reduced`일 때만
   `<block>-motion-reduced` 클래스와 `data-motion="reduced"`를 낸다(standard의 DOM · 클래스는 전과
   같다; OptionSelector는 컨테이너 루트에 내고 항목 className은 그대로다). 눌림 축소(`motion.scale.pressed`
   95 %)는 RoundButton · LearningUnit · Button · Card interactive · OptionSelector 항목이 갖고
   `reduced`에서는 `transform: none`으로 걷는다. 축소 대신 막을 까는 곳은 **눌림에 색 변화가 없는 면**
   뿐이다 — RoundButton(Overlay 제외) · LearningUnit(`default` 제외) · Button neutral · brand는
   `reduced`에서 surface 첫 자식 `<block>-shade`로 `opacity.pressed-shade` 막을 깔아 눌림을 알린다(어두운
-  면인 Button neutral은 흰 막 — 검정 8 %는 `gray.900` 위에서 보이지 않는다). 색이 이미 바뀌는
+  면인 Button neutral은 흰 막 — 검정 8 %는 `gray.900` 위에서 보이지 않는다). SpecialUnit은 축소가 아니라
+  Face 이동(`translate(5px, 6px)`)을 걷고, `default` · `checking`을 뺀 상태에서 Face 첫 자식
+  `ui-lynx-special-unit-pressed-shade`로 같은 막을 깐다. 색이 이미 바뀌는
   Button outline · subtle · text · Card · OptionSelector는 막 없이 색 전환만 남는다(막과 색이 겹치면
   두 번 어두워진다). Spinner 회전(Button · RoundButton)은 `reduced`에서도 유지한다 — 진행 중임을
   알리는 유일한 수단이다. Tooltip은 유지할 것만 있어 변형이 없다. `@media (prefers-reduced-motion)`은
@@ -508,6 +529,8 @@ function Root({ reducedMotion, children }: { reducedMotion: boolean; children: R
 - `@libitums/ui-lynx/option-selector/styles.css`
 - `@libitums/ui-lynx/learning-unit`
 - `@libitums/ui-lynx/learning-unit/styles.css`
+- `@libitums/ui-lynx/special-unit`
+- `@libitums/ui-lynx/special-unit/styles.css`
 - `@libitums/ui-lynx/typewriter`
 - `@libitums/ui-lynx/motion`
 - `@libitums/ui-lynx/styles.css`
