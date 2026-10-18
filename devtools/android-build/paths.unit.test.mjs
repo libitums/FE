@@ -26,6 +26,8 @@ test("AB2. 번들 동기화 · APK에 들어가는 호스트 오디오 · 루트
     "apps/ios/Host/audio/intro.m4a",
     "apps/ios/Host/sfx/correct.mp3",
     "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
     ".github/workflows/verify.yml",
     ".github/actions/setup/action.yml",
     "devtools/android-build/paths.mjs",

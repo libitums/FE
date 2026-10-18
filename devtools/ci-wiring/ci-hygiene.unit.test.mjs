@@ -251,10 +251,8 @@ test("CW12. Android build 잡이 판정 뒤 번들 동기화와 assembleBundled�
   assert.match(job, /node devtools\/android-build\/should-build\.mjs/);
   assert.match(job, /ANDROID_BUILD_BASE:/);
   assert.match(job, /ANDROID_BUILD_HEAD:/);
-  assert.match(
-    job,
-    /actions\/setup-java@\S+\s*\n\s*if:[^\n]*steps\.decide\.outputs\.build == 'true'/,
-  );
+  // 조건(if)은 아래 heavy 단계 검사가 키 순서와 무관하게 봅니다.
+  assert.match(job, /actions\/setup-java@/);
   assert.match(job, /java-version:\s*"?17"?/);
   assert.match(job, /run:\s*pnpm bundle:android/);
   assert.match(job, /\.\/gradlew[^\n]*:app:assembleBundled/);

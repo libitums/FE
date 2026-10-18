@@ -13,8 +13,8 @@ const PREFIXES = [
   ".github/actions/",
 ];
 
-// `bundle:android` 스크립트가 루트에 있습니다.
-const FILES = new Set(["package.json"]);
+// `bundle:android` 스크립트가 루트에 있고, 잠금 · 워크스페이스 설정은 그 스크립트가 쓰는 도구의 의존을 바꿉니다.
+const FILES = new Set(["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]);
 
 /** @param {readonly string[]} changedPaths */
 export function needsAndroidBuild(changedPaths) {
