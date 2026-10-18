@@ -219,17 +219,6 @@
   color: var(--libitum-color-white);
 }
 
-/* 요청 중 스피너를 로고와 같은 자리에 고정합니다 — 로고 override가
-   자리를 흐름 밖으로 빼서 라벨을 가운데 두는데, `Button`의 스피너는 흐름
-   안에 남아 그대로 두면 라벨이 밀립니다. 로고와 같은 자리 · 같은 상자
-   크기로 둬 스피너가 로고 중심에 서게 합니다. */
-.login-screen-social .ui-lynx-button-spinner-wrap {
-  position: absolute;
-  left: var(--libitum-spacing-24);
-  width: var(--libitum-icon-size-xs);
-  height: var(--libitum-icon-size-xs);
-}
-
 /* 좌우 선 사이의 or입니다. */
 .login-screen-separator {
   display: flex;

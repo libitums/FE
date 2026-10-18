@@ -2,9 +2,12 @@ import { afterEach, expect, test, vi } from "vitest";
 
 import { entryLanguages } from "./entry-language";
 import {
+  loadReturningUiLanguage,
   loadUiLanguage,
+  returningUiLanguageFrom,
   saveUiLanguage,
   uiLanguageFrom,
+  uiLanguageFromDeviceTag,
   uiLanguageStorageKey,
 } from "./ui-language";
 
@@ -83,5 +86,44 @@ test("UL4. saveUiLanguage는 저장소가 없어도 던지지 않는다", () => 
   for (const host of [undefined, {}, { StorageModule: null }]) {
     vi.stubGlobal("NativeModules", host);
     expect(() => saveUiLanguage("ja")).not.toThrow();
+  }
+});
+
+test("UL5. uiLanguageFromDeviceTag는 고를 수 있는 영어만 받는다", () => {
+  for (const tag of ["en", "en-US", "en_GB", "EN-us"]) {
+    expect(uiLanguageFromDeviceTag(tag)).toBe("en");
+  }
+});
+
+test("UL5. 목록에만 있는 언어 · 모르는 태그 · 빈 값은 null이다", () => {
+  for (const tag of ["ja-JP", "vi", "es-419", "ko-KR", "zh-Hant-TW", "", " ", null]) {
+    expect(uiLanguageFromDeviceTag(tag)).toBeNull();
+  }
+});
+
+test("UL6. returningUiLanguageFrom은 저장값 → 기기 → 영어 순이다", () => {
+  expect(returningUiLanguageFrom("ja", "en-US")).toBe("ja");
+  expect(returningUiLanguageFrom(null, "en-US")).toBe("en");
+  expect(returningUiLanguageFrom(null, "ja-JP")).toBe("en");
+  expect(returningUiLanguageFrom("xx", null)).toBe("en");
+  expect(returningUiLanguageFrom(" en", null)).toBe("en");
+  expect(returningUiLanguageFrom(null, null)).toBe("en");
+});
+
+test("UL7. loadReturningUiLanguage는 저장값을 키로 한 번 읽어 낸다", () => {
+  const { get, set } = stubStorage("ja");
+  expect(loadReturningUiLanguage()).toBe("ja");
+  expect(get).toHaveBeenCalledTimes(1);
+  expect(get).toHaveBeenCalledWith("libitum.ui.language");
+  expect(set).not.toHaveBeenCalled();
+});
+
+test("UL7. loadReturningUiLanguage는 비었으면 en이고 저장소가 없어도 던지지 않는다", () => {
+  stubStorage(null);
+  expect(loadReturningUiLanguage()).toBe("en");
+  for (const host of [undefined, {}, { StorageModule: null }]) {
+    vi.stubGlobal("NativeModules", host);
+    expect(() => loadReturningUiLanguage()).not.toThrow();
+    expect(loadReturningUiLanguage()).toBe("en");
   }
 });

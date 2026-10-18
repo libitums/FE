@@ -10,6 +10,8 @@
   **도입 조건 발동 · 판정**(context 하나). D6 — 나가는 라벨 낱말이 문구표 키가 됐다.
   [ADR-0016](0016-assistive-technology-semantics.md) D3 · D13 — 접미 낱말이 UI 언어를 따른다.
   [ADR-0003](0003-workspace-and-directory-structure.md) — `lib/answer-result.ts`가 라벨 함수를 잃었다.
+- 받은 적용 기록(결정을 바꾸지 않는다):
+  2026-10-18 [ADR-0069](0069-returning-learner-login.md) D5 — D4 「쓰는 때」에 둘째 자리(기존 회원의 바로 맵 경로)가 생겼다(D4 표 · 재검토 조건에 주).
 
 **왜 새 번호인가** — 없던 축을 처음 정한다(ADR-0010 D10). 이 회차의 계약은 `.agent-harness/`(추적 제외)에
 있어 저장소에 남지 않는다 — 근거가 남을 자리가 여기다.
@@ -87,7 +89,7 @@
 | 키 | `libitum.ui.language` |
 | 값 | `"en"` \| `"vi"` \| `"es"` \| `"ja"` |
 | 읽는 때 | App 첫 렌더(`useState(loadUiLanguage)`) — 스플래시가 서기 전. 세션 갱신으로 진입 흐름을 건너뛰는 재방문자도 같은 값을 받는다 |
-| 쓰는 때 | 언어 선택 화면의 **`Continue`(확정)** — `onContinueLanguageSelect`가 현재 언어로 `saveUiLanguage`. 이벤트 0 |
+| 쓰는 때 | 언어 선택 화면의 **`Continue`(확정)** — `onContinueLanguageSelect`가 현재 언어로 `saveUiLanguage`. 이벤트 0. ⟨2026-10-18 적용 기록⟩ **쓰는 자리가 둘이 됐다** — 서버 기록이 있는 기존 회원의 로그인은 언어 선택을 건너뛰고, 결선이 `loadReturningUiLanguage()`(저장값 → 기기 언어(고를 수 있을 때) → `en`, 지금 기기 입력은 `null`)의 값을 같은 `saveUiLanguage`로 저장한 뒤 맵에 들어간다([ADR-0069](0069-returning-learner-login.md) D5). 같은 키 · 같은 저장 함수이고, 진입 흐름을 마친 뒤 저장 키 집합은 그 경로에서도 `[libitum.auth.session, libitum.ui.language]`다 |
 | 지우는 때 | 없음(로그아웃이 없다 — ADR-0007 D3의 열린 질문). ⟨2026-09-30⟩ 로그아웃 · 계정 삭제가 생긴 뒤에도 **없음** — 아래 재검토 조건의 판정 |
 | 이상한 값 | `uiLanguageFrom`이 `en`으로 읽는다(대소문자 · 공백 보정 없음, `"ko"` 포함). 지우지 않는다. **고를 수 있는지는 보지 않는다** — 저장된 `vi`는 `vi`로 읽고 표가 영어로 채운다 |
 
@@ -195,6 +197,9 @@ D1은 「zustand를 먼저 검토」다. 검토 결과 **내장 context 하나**
   같은 변경이 확인 필요 3 · 4와 메인 스레드 첫 렌더(대가 넷째)를 다시 본다.
 - **UI 언어를 바꾸는 둘째 자리**(설정 화면의 언어 변경 등)가 생기는 시점 → D4의 「쓰는 때」와 D5의 「쓰는 자리가
   App 하나」를 다시 본다.
+  ⭐ **2026-10-18에 발동했고 판정은 「같은 키 · 같은 저장 함수 · 쓰는 자리 둘」이다**([ADR-0069](0069-returning-learner-login.md) D5).
+  기존 회원의 바로 맵 경로가 언어 선택 없이 UI 언어를 정해 저장한다. 둘째 자리도 결선(`app/entry-wiring.ts`)이고 상태는 App의
+  `setEntryLanguage` 하나로 세우므로 D5의 「쓰는 자리가 App 하나」(context에 값을 내는 곳)는 그대로다. 저장된 값이 멤버면 덮어쓰지 않는다.
 - **context에 문구표 말고 다른 값을 싣고 싶어지는 시점** → D5의 채택 근거(상태를 하나도 더 싣지 않는다)가 깨진다.
   ADR-0007 D1의 zustand 검토부터 다시 한다.
 - **로그아웃이 생기는 시점** → 언어 키를 지울지 정한다(지금은 지우는 때가 없다).
