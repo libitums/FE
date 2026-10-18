@@ -18,7 +18,10 @@ test("IP1. Podfile.lock의 PODFILE CHECKSUM이 지금 Podfile의 SHA1과 같다"
   const recorded = lock.match(/^PODFILE CHECKSUM: ([0-9a-f]{40})$/m)?.[1];
   assert.ok(recorded, "Podfile.lock에 PODFILE CHECKSUM이 없습니다");
 
-  const actual = createHash("sha1").update(read("apps/ios/Podfile")).digest("hex");
+  // CocoaPods는 macOS의 LF 체크아웃으로 체크섬을 만듭니다. autocrlf로 CRLF가 된 체크아웃에서도 같은 값을
+  // 대조하도록 줄바꿈을 LF로 맞춰 해시합니다.
+  const podfile = read("apps/ios/Podfile").toString("utf8").replace(/\r\n/g, "\n");
+  const actual = createHash("sha1").update(podfile).digest("hex");
   assert.equal(
     recorded,
     actual,
