@@ -116,6 +116,19 @@ describe("Lynx iOS performance smoke orchestration", () => {
     expect(environment.cleanup).toEqual([["remove", "/temporary/derived-data"]]);
   });
 
+  // CI 러너와 측정 대상은 arm64 하나입니다. Release 설정의 기본값(ONLY_ACTIVE_ARCH=NO)이면 시뮬레이터용으로
+  // arm64 · x86_64를 둘 다 빌드해 스모크가 45분 제한에 닿았습니다(빌드 32~36분, 측정 1분).
+  it("builds Release for the booted simulator's architecture only", async () => {
+    const environment = fakeEnvironment();
+
+    await runSmokeCapture({ udid: null }, environment.dependencies);
+
+    const build = environment.calls.find((call) => call.program === "xcodebuild");
+    expect(build?.args).toEqual(expect.arrayContaining(["-configuration", "Release"]));
+    expect(build?.args).toContain("ONLY_ACTIVE_ARCH=YES");
+    expect(build?.args).toContain(`platform=iOS Simulator,id=${MANAGED_UDID}`);
+  });
+
   it("uses but does not delete an explicitly supplied simulator", async () => {
     const environment = fakeEnvironment();
 

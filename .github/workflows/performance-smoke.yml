@@ -17,7 +17,9 @@ jobs:
   ios-simulator:
     name: iOS 26.5 simulator
     runs-on: macos-26
-    continue-on-error: true
+    # continue-on-error를 두지 않습니다 — 이 워크플로는 PR에서 돌지 않아 막을 것이 없고, 그 설정은 실패한
+    # 측정을 초록으로 숨기기만 했습니다(2026-10-01~16 실행 12회 중 실제 통과 5회). 비차단은 PR 밖에
+    # 있다는 것으로 지켜집니다(ADR-0021 D4).
     timeout-minutes: 45
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
@@ -33,5 +35,7 @@ jobs:
       - name: Confirm arm64 runner
         run: test "$(uname -m)" = "arm64"
 
+      # 잡 제한보다 먼저 이 단계에서 끊어, 다시 느려지면 어느 단계인지가 실행 화면에 바로 남습니다.
       - name: Run reusable performance smoke
+        timeout-minutes: 35
         run: pnpm --filter @libitums/mobile performance:capture:smoke
