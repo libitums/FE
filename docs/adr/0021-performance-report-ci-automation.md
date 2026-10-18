@@ -288,3 +288,11 @@ branch protection)은 한 글자도 바뀌지 않았다 — 새 번호를 붙이
 3. **샤드 blob을 재실행본이 덮는다**(`overwrite: true`). #258에서 실패한 샤드만 다시 돌렸더니 같은 실행 안에 `blob-mobile-1`이
    둘(실패본 · 재실행본) 남았고, `Tests`가 둘을 같은 경로로 받으며 옛 실패본이 이겨 샤드가 모두 초록인데 `Tests`가
    빨갰다. 같은 이름의 artifact를 재실행본이 교체하게 했다(CW7).
+
+**2026-10-18 — 보고서 정책이 `test-helpers/`를 테스트 경로로 본다** ⟨적용 기록, D2 결정은 그대로⟩
+
+`apps/mobile/src/app/test-helpers/`는 integration 테스트가 함께 쓰는 부팅 · 대역 헬퍼 자리이고 파일마다 「제품 코드가
+import하지 않는다」고 적혀 있다. 그런데 정책의 테스트 경로 판정(`TEST_DIRECTORY_PATTERN`)이 이 이름을 몰라, 헬퍼만 고친
+변경(스플래시 flaky 수정)이 「사용자 관찰 가능 앱 변경」으로 분류되어 보고서를 요구했다. 디렉터리 이름을 판정에 더하고,
+그 판정의 근거 — mobile 제품 코드가 `test-helpers/`를 import하지 않음 — 를 `policy.unit.test.mjs`가 지킨다. 제품 코드가
+그곳을 import하는 순간 테스트가 빨개지므로 보고서 의무를 피해 가는 구멍이 되지 않는다.

@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { evaluatePerformanceReportPolicy } from "./policy.mjs";
 
@@ -290,12 +293,47 @@ test("iOS와 mobile의 test directory helper는 runtime 변경이 아니다", ()
       "apps/ios/HostTests/TestSupport.swift",
       "apps/ios/HostUITests/Fixture.swift",
       "apps/mobile/src/test/render-helper.ts",
+      "apps/mobile/src/app/test-helpers/pass-splash.ts",
     ],
   });
 
   assert.equal(result.ok, true);
   assert.equal(result.applicable, false);
 });
+
+// 위에서 `test-helpers/`를 runtime이 아니라고 본 근거입니다 — 제품 코드가 그 디렉터리를 import하면
+// 그 파일은 번들에 들어가므로 보고서 의무를 피해 가는 구멍이 됩니다.
+test("mobile 제품 코드는 test-helpers를 import하지 않는다", () => {
+  const root = fileURLToPath(new URL("../../apps/mobile/src/", import.meta.url));
+  // 정적 `from "…"` · 부수효과 `import "…"` · 동적 `import("…")`를 모두 봅니다.
+  const importsTestHelpers = /(?:\bfrom\s*|\bimport\s*\(?\s*)["'][^"']*test-helpers\//;
+  const offenders = walkSources(root)
+    .filter((path) => !/(?:^|\/)test-helpers\//.test(path))
+    .filter((path) => !/\.test\.|\.test-support\./.test(path))
+    .filter((path) => importsTestHelpers.test(readFileSync(join(root, path), "utf8")));
+
+  assert.deepEqual(offenders, []);
+});
+
+test("test-helpers import 판정은 정적 · 부수효과 · 동적 import를 모두 잡는다", () => {
+  const importsTestHelpers = /(?:\bfrom\s*|\bimport\s*\(?\s*)["'][^"']*test-helpers\//;
+  for (const source of [
+    'import { x } from "../test-helpers/a";',
+    'import "./test-helpers/a";',
+    'const m = await import("../test-helpers/a");',
+  ]) {
+    assert.ok(importsTestHelpers.test(source), source);
+  }
+  assert.ok(!importsTestHelpers.test('import { x } from "../lib/helpers";'));
+});
+
+function walkSources(root, dir = "") {
+  return readdirSync(join(root, dir), { withFileTypes: true }).flatMap((entry) => {
+    const path = dir === "" ? entry.name : `${dir}/${entry.name}`;
+    if (entry.isDirectory()) return walkSources(root, path);
+    return /\.(?:ts|tsx)$/.test(entry.name) ? [path] : [];
+  });
+}
 
 test("file URI와 home-relative 로컬 경로를 거부한다", () => {
   const reportPath = "docs/performance/reports/local-path-01.md";

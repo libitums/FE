@@ -14,7 +14,6 @@ import type { CatalogActivity, CatalogLessonPlan } from "../catalog-lesson-plan"
 import { resetPushWiringForTests } from "../push-wiring";
 import { contentNotFoundResponse, isContentRequest } from "./content-requests";
 import { authSessionStorageKey, serializeAuthSession } from "../../lib/auth-session";
-import { entrySplashDurationMs } from "../../lib/entry-flow";
 import { bundledCatalogInput } from "../../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../../lib/episode-catalog";
 import { learningItemGuideSeenStorageKey } from "../../lib/learning-item-guide";
@@ -24,6 +23,7 @@ import type { FillScript } from "../../lib/placeholder-fill";
 import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
 import { journeySteps } from "../../screens/journey-map/journey-map";
 import { catalogNodeTestId } from "./map-unit-testid";
+import { passSplash } from "./pass-splash";
 
 const supabaseUrl = "https://test.supabase.co";
 
@@ -168,12 +168,7 @@ export async function boot(
       episodeIntroEventSink={(event) => events.push(event)}
     />,
   );
-  act(() => {
-    vi.advanceTimersByTime(entrySplashDurationMs);
-  });
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(0);
-  });
+  await passSplash();
   vi.useRealTimers();
   await flush();
   return { rpcs, events };
