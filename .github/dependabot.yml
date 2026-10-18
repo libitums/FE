@@ -1,0 +1,18 @@
+version: 2
+
+# 액션 버전만 봅니다. 액션 지원 종료(Node 20 같은)를 실행 경고 주석에서 사람이 알아채기 전에
+# PR로 알립니다. npm 의존성은 잠금 파일과 번들 예산이 걸려 있어 여기서 올리지 않습니다 —
+# 보안 취약점 PR은 저장소의 Dependabot 보안 업데이트가 따로 엽니다.
+updates:
+  - package-ecosystem: "github-actions"
+    # 워크플로("/")만 보면 공용 setup 액션 안의 `uses:`가 빠집니다.
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(ci)"
