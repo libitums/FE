@@ -67,6 +67,9 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: blob-mobile-${{ matrix.shard }}
+          # 실패한 샤드만 다시 돌릴 때 재실행본이 같은 이름의 옛 blob을 덮습니다 — 그러지 않으면
+          # 합치기가 옛 실패본을 집습니다.
+          overwrite: true
           path: apps/mobile/blob-reports/
           retention-days: 1
           if-no-files-found: error

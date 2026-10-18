@@ -285,3 +285,6 @@ branch protection)은 한 글자도 바뀌지 않았다 — 새 번호를 붙이
 2. **저장소 보안 기능을 켰다** — secret scanning · push protection · Dependabot 경보와 보안 업데이트. public 저장소라
    비용이 없다. 보안 업데이트 PR도 다른 PR과 같이 `main` ruleset의 필수 검사를 거친다. 켠 시점의 경보는 secret 0건 ·
    Dependabot 0건이다.
+3. **샤드 blob을 재실행본이 덮는다**(`overwrite: true`). #258에서 실패한 샤드만 다시 돌렸더니 같은 실행 안에 `blob-mobile-1`이
+   둘(실패본 · 재실행본) 남았고, `Tests`가 둘을 같은 경로로 받으며 옛 실패본이 이겨 샤드가 모두 초록인데 `Tests`가
+   빨갰다. 같은 이름의 artifact를 재실행본이 교체하게 했다(CW7).
