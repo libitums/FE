@@ -105,8 +105,9 @@
    통째로 되돌릴 수 있다. 커밋 제목은 PR 제목을 쓴다.
 
 > **이 절차는 `main` ruleset이 강제한다** (2026-10-17). PR 없이 `main`에 push할 수 없고, squash만 허용되며,
-> Linux Verify의 네 잡(`Format, types, lint` · `Tests` · `Build and bundle size` · `Performance report policy`)이
-> 초록이어야 병합된다. 우회 행위자는 없다. 네 잡의 잎 명령을 합치면 `pnpm verify`와 같다 —
+> Linux Verify의 다섯 잡(`Format, types, lint` · `Tests` · `Build and bundle size` · `Performance report policy` ·
+> `Android build`)이 초록이어야 병합된다. 우회 행위자는 없다. `Android build`는 Android에 닿는 변경이 없는 PR에서
+> 빌드를 건너뛰고 성공한다. 앞 네 잡의 잎 명령을 합치면 `pnpm verify`와 같다 —
 > `devtools/ci-wiring`이 그 일치를 지킨다. **잡 이름을 바꾸면 ruleset의 필수 검사도 함께 바꾼다** — 이름이
 > 어긋나면 그 검사는 영영 대기 상태로 남아 모든 PR이 막힌다. `Tests`는 mobile 샤드 셋과 `Tests · rest`를 기다려 하나라도
 > 실패하면 실패한다. 커버리지는 그 실행들이 같이 세어 Step Summary에 숫자만 남긴다. iOS performance smoke는 수동 실행과 평일 정기 실행에서만 동작하는

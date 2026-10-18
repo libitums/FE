@@ -306,3 +306,5 @@ Kotlin · Gradle · 번들 동기화가 깨져도 CI가 잡지 못했다(로컬 
 건너뛰어 잡이 성공으로 끝난다. main push와 범위를 모를 때는 늘 빌드한다. `bundle:android`는 로컬 `verify`가 Android SDK ·
 JDK를 요구하지 않도록 verify 밖에 둔다(ci-wiring CW2 예외). 함께 **`apps/android/local.properties`의 추적을 끊었다** — #244에서
 이 맥의 `sdk.dir`이 들어가 있었고, 추적되면 러너의 `ANDROID_HOME`보다 그 값이 이긴다(CW13).
+`Android build`를 `main` ruleset의 필수 검사에 더했다(2026-10-18, 사용자 승인) — 필수 검사는 다섯이다. 해당 없는 PR에서는
+판정이 거짓이라 빌드를 건너뛰고 성공하므로 대기에 갇히지 않는다. 위 D6 후속 결정의 「네 잡」은 그 시점의 기록이다.
