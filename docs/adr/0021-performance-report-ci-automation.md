@@ -296,3 +296,13 @@ import하지 않는다」고 적혀 있다. 그런데 정책의 테스트 경로
 변경(스플래시 flaky 수정)이 「사용자 관찰 가능 앱 변경」으로 분류되어 보고서를 요구했다. 디렉터리 이름을 판정에 더하고,
 그 판정의 근거 — mobile 제품 코드가 `test-helpers/`를 import하지 않음 — 를 `policy.unit.test.mjs`가 지킨다. 제품 코드가
 그곳을 import하는 순간 테스트가 빨개지므로 보고서 의무를 피해 가는 구멍이 되지 않는다.
+
+**2026-10-18 — Android build 잡** ⟨적용 기록, D1 「path filter 없이 항상 시작」 그대로⟩
+
+Kotlin · Gradle · 번들 동기화가 깨져도 CI가 잡지 못했다(로컬 `assembleBundled`에서 처음 드러났다). Verify에 `Android build`
+잡을 더했다 — JDK 17(temurin) → `pnpm bundle:android` → `./gradlew :app:assembleBundled`. **경로 조건은 워크플로가 아니라
+잡 안에서 건다**(D1): `devtools/android-build/should-build.mjs`가 PR의 base…head 변경을 읽고 `paths.mjs`의 판정
+(`apps/android/` · 번들 동기화 · APK에 들어가는 호스트 오디오 · 루트 `package.json` · 잠금 · 워크스페이스 설정 · CI 파일)이 거짓이면 무거운 단계를 모두
+건너뛰어 잡이 성공으로 끝난다. main push와 범위를 모를 때는 늘 빌드한다. `bundle:android`는 로컬 `verify`가 Android SDK ·
+JDK를 요구하지 않도록 verify 밖에 둔다(ci-wiring CW2 예외). 함께 **`apps/android/local.properties`의 추적을 끊었다** — #244에서
+이 맥의 `sdk.dir`이 들어가 있었고, 추적되면 러너의 `ANDROID_HOME`보다 그 값이 이긴다(CW13).

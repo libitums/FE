@@ -107,7 +107,13 @@ test("CW1. verify가 부르는 검사를 CI가 모두 돈다", () => {
 // CI도 초록」이 깨집니다. 커버리지는 게이트가 아니므로 예외로 둡니다.
 test("CW2. CI가 도는 검사 가운데 verify 밖의 게이트가 없다", () => {
   // `test:merge`는 샤드 결과를 합쳐 보고할 뿐 새로 검사하지 않습니다.
-  const allowedOutsideVerify = new Set(["install", "@libitums/mobile test:merge"]);
+  // `bundle:android`는 Android build 잡의 준비 단계입니다 — 로컬 `verify`가 Android SDK · JDK를 요구하지
+  // 않게 verify 밖에 둡니다(그 잡이 검사하는 것은 Gradle 빌드입니다).
+  const allowedOutsideVerify = new Set([
+    "install",
+    "@libitums/mobile test:merge",
+    "bundle:android",
+  ]);
   const leaves = new Set(
     verifyLeafCommands().flatMap((command) => [command, ...(piecesOf(command) ?? [])]),
   );
