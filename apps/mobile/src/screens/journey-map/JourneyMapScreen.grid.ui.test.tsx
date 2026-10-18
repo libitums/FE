@@ -28,7 +28,7 @@ const mapBox = (): Element => screen.getByTestId("journey-map-screen-map");
 
 const tutorialItems = journeyMapSections.flatMap((section) => section.items);
 
-// 맵의 유닛 목록 순서입니다 — 튜토리얼 항목 → 카탈로그(구획 안은 표지 → 레슨들 → 최종).
+// 맵의 유닛 목록 순서입니다 — 튜토리얼 항목 → 카탈로그(구획 안은 표지 → 레슨들 → 최종) → 준비 중 구획.
 function expectedUnitTestIds(catalogSections: readonly CatalogMapSection[]): string[] {
   return [
     ...tutorialItems.map((item) => `ui-lynx-learning-unit-${tutorialItemId(item)}`),
@@ -42,6 +42,10 @@ function expectedUnitTestIds(catalogSections: readonly CatalogMapSection[]): str
           ]
         : [],
     ),
+    // ⟨2026-10-17⟩ 마지막이 열린 에피소드면 맨 끝에 「다음 에피소드 준비 중」 구획이 한 요소로 읽힙니다.
+    ...(catalogSections[catalogSections.length - 1]?.kind === "catalog-ready"
+      ? ["catalog-coming-soon"]
+      : []),
   ];
 }
 

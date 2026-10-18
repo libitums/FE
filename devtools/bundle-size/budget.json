@@ -2,8 +2,8 @@
   "targets": [
     {
       "path": "apps/mobile/dist/main.lynx.bundle",
-      "maxBytes": 2170000,
-      "note": "2026-10-17 카탈로그 유닛 말풍선 · 에피소드 띠(main 6411459b 위) CI 설정(.env.local 없음) 실측은 2,169,219 bytes입니다. main 실측 2,163,501 bytes 대비 +5,718 bytes — 카탈로그 말풍선 컴포넌트 · 키 모듈 · 띠 일반화 · title_en 디코드 · 문항 수 결선 · 표지 첫 컷 그림 · 리뷰 대응(title_en null 허용)입니다. 상한을 2,164,000 → 2,170,000 bytes로 올렸습니다(kB 올림, 사용자 사전 승인). 근거: docs/performance/reports/catalog-unit-sheet-pixel-8-emulator-01.md · docs/adr/0058-catalog-learning-session.md 적용 기록 ⟨2026-10-17⟩."
+      "maxBytes": 2177000,
+      "note": "2026-10-17 맵 위 · 아래 여백 · 다음 에피소드 준비 중 구획(feat/map-insets-coming-soon, feat/catalog-unit-bubble 위) CI 설정(.env.local 없음) 실측은 2,176,530 bytes입니다. 직전 실측(#255 브랜치) 2,169,219 bytes 대비 +7,311 bytes — 준비 중 구획 컴포넌트 · CSS · 번호 함수 · 여백 상수 · 문구입니다. 상한을 2,170,000 → 2,177,000 bytes로 올렸습니다(kB 올림, 사용자 사전 승인). 근거: docs/performance/reports/map-insets-coming-soon-pixel-8-emulator-01.md · docs/adr/0024-journey-units-and-special-unit-placement.md 적용 기록 2026-10-17."
     },
     {
       "path": "apps/mobile/dist/static/image",

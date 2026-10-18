@@ -32,8 +32,9 @@ describe("띠 배치 CSS", () => {
 
   test("HP3. (§20) 맵 위 여백은 CSS 값이고 띠 높이와 무관하다 - 띠가 맵을 밀지 않는다", () => {
     const map = block(styles, ".journey-map-screen-map");
-    expect(map).toMatch(/padding-top:\s*calc\(/);
-    expect(map).not.toMatch(/padding-top:[^;]*px/);
+    // ⟨2026-10-17⟩ 값은 고정 px(`mapContentInsets`)가 됐습니다 — 띠 높이를 재서 바꾸지 않는다는 것은 그대로입니다.
+    expect(map).toMatch(/padding-top:\s*\d+px;/);
+    expect(map).not.toMatch(/padding-top:[^;]*var\(/);
     expect(map).toMatch(/padding-bottom:/);
   });
 

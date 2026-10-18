@@ -794,3 +794,13 @@ pending 갈래)는 **남겼다** — 픽스처 테스트가 그 능력을 지고
 - **판별 · 노드**: `screens/journey-map/catalog-map.ts`(`catalogCultureKeysOf` · `catalogUnitNodesOf`의 role · `catalogUnitNodeTitle`), 계약 `catalog-map.contract.ts`(`CatalogUnitNodeRole` · `cultureKeys` · `cultureTitle`).
 - **아이콘 · 배치**: `CatalogUnitNode.tsx`의 role → 아이콘 표(`play` · `lantern-05` · `flag`), `journey-map-rows.ts`의 `catalogNodePlacement.culture`. 표가 `Record`라 role이 늘면 `tsc`가 선다.
 - **기기 확인**: iOS 시뮬레이터 한 회차(2026-10-16, 옛 진행 계정) — 세 에피소드의 문화 노드 이름 `Episode n. Culture`를 접근성 트리로 봤다. 한 줄 배치 · 열린 상태의 아이콘 · 상태 셋은 기록이 없다 — [문화 · 조립 화면 e2e](../e2e/episode-format-screens.md).
+
+### 2026-10-17 — 카탈로그 맨 끝에 「다음 에피소드 준비 중」 구획이 늘 선다 · 맵 위 · 아래 여백
+
+사용자 요청(2026-10-17, 「에피소드가 쌓일 때 마다 쌓인 에피소드 다음 에피소드는 항상 준비중 느낌이 있어야해」 · 「상단 및 하단에 일정 여백이 없어서 하단 자동 스크롤 및 말풍선 위치 조정이 안되는 문제」). 시안 C1(사용자 선택).
+
+- **준비 중 구획**: 카탈로그 마지막 구획이 열린 에피소드(`catalog-ready`)면 그 뒤에 `Episode n+1.` 준비 중 구획을 하나 세운다(`catalogComingSoonOrdinal` — `screens/journey-map/catalog-coming-soon.ts`). 마지막이 이미 준비 중 · 잠김(`catalog-unavailable`)이거나 카탈로그가 비면 붙이지 않는다. 매니페스트에 없는 합성 구획이라 서버 · 저장 변경이 없다.
+- **모양(C1)**: 실제 배치(표지 하나 · 두 열 두 줄)의 점선 빈 고리가 아래로 흐려지고, 그 위 가운데 흰 카드가 자물쇠 · `Episode n.` · `Coming soon` · `We're preparing the next story.`를 싣는다(`CatalogComingSoonSection.tsx` · `catalog-coming-soon.css`). 누를 수 없고 구획 전체가 낭독 요소 하나다(`Episode 4. Coming soon. We're preparing the next story.`) — D14 준비 중 꼴의 낭독 규칙 그대로.
+- **여백**: 맵 상자의 위 · 아래 패딩을 `mapContentInsets`(`journey-map-insets.ts` — 위 200 = 띠 위 모서리 64 + 띠 어림 112 + 간격 24, 아래 342 = 말풍선 250 + 바텀 내비 68 + 여유 16 + 간격 8)로 고정했다. 위는 맨 위 유닛이 띠 아래로 내려올 수 있게, 아래는 스크롤이 끝에 닿아도 말풍선이 유닛에 붙게 한다. 마지막 구획이 준비 중일 때만 붙던 꼬리 여백(`catalog-map-tail` 320)은 걷었다.
+- **한계**: 맨 아래 유닛을 화면 가운데까지 올리는 것은 뷰포트 절반이 필요해 고정 CSS로 보장하지 않는다 — 마지막 열린 에피소드 뒤에는 준비 중 구획이 늘 있어 그 공간이 생긴다. 띠 높이(112)는 어림이라 큰 글자에서 띠가 더 커지면 맨 위 유닛이 띠에 조금 걸릴 수 있다.
+- **기기 확인**: Android 에뮬레이터(Pixel 8 · API 37 · `bundled`, 2026-10-17) — 맨 끝 준비 중 구획(카드 가운데 · 점선 · 흐림), 맨 위 스텝 탭 시 띠 아래에 유닛 · 말풍선. 맨 아래 열린 노드의 말풍선 · iOS · 낭독은 보지 않았다([여정 맵 e2e](../e2e/journey-map.md) 「위 · 아래 여백 · 준비 중 구획」).
