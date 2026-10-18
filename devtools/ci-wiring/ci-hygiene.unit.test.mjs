@@ -85,7 +85,10 @@ test("CW7. 커버리지는 샤드 실행에서 얻고, Tests 잡이 합치며 �
   assert.match(shard, /actions\/upload-artifact@/);
   // 실패한 샤드만 다시 돌리면 같은 실행에 같은 이름의 blob이 둘 남고, 합치기가 옛 실패본을 집을
   // 수 있습니다(#258에서 그렇게 실패했습니다). 재실행본이 같은 이름을 덮어야 합니다.
-  assert.match(shard, /name:\s*blob-mobile-\$\{\{ matrix\.shard \}\}\s*\n(?:\s+.*\n)*?\s+overwrite:\s*true/);
+  assert.match(
+    shard,
+    /name:\s*blob-mobile-\$\{\{ matrix\.shard \}\}\s*\n(?:\s+.*\n)*?\s+overwrite:\s*true/,
+  );
 
   const rest = code(jobBlock(verifyYml, "test-rest"));
   assert.match(rest, /pnpm test:rest\b/);
