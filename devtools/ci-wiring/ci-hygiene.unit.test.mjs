@@ -2,6 +2,7 @@
 // 두 번 하지 않고, 돌아야 할 실행을 스스로 끊지 않는다」를 지킵니다.
 
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -239,4 +240,44 @@ test("CW11. Dependabot이 워크플로와 공용 액션의 액션 버전을 함�
   assert.notEqual(config.indexOf('package-ecosystem: "github-actions"'), -1);
   assert.match(entry, /directories:\s*\n\s*- "\/"\s*\n\s*- "\/\.github\/actions\/\*"/);
   assert.match(entry, /interval:\s*"monthly"/);
+});
+
+// CW12 — Kotlin · Gradle · 번들 동기화가 깨지면 CI가 잡아야 합니다. 경로 조건은 워크플로가 아니라 잡 안에서
+// 겁니다 — 워크플로 path filter면 해당 없는 PR에서 필수 검사가 영영 대기로 남습니다(ADR-0021 D1).
+test("CW12. Android build 잡이 판정 뒤 번들 동기화와 assembleBundled를 돈다", () => {
+  const job = code(jobBlock(verifyYml, "android"));
+  assert.match(job, /name:\s*Android build\n/);
+  assert.match(job, /fetch-depth:\s*0/);
+  assert.match(job, /node devtools\/android-build\/should-build\.mjs/);
+  assert.match(job, /ANDROID_BUILD_BASE:/);
+  assert.match(job, /ANDROID_BUILD_HEAD:/);
+  assert.match(
+    job,
+    /actions\/setup-java@\S+\s*\n\s*if:[^\n]*steps\.decide\.outputs\.build == 'true'/,
+  );
+  assert.match(job, /java-version:\s*"?17"?/);
+  assert.match(job, /run:\s*pnpm bundle:android/);
+  assert.match(job, /\.\/gradlew[^\n]*:app:assembleBundled/);
+  // 판정이 거짓이면 무거운 단계는 모두 건너뜁니다.
+  const heavy = job
+    .split(/\n\s*- /)
+    .filter((step) => /bundle:android|assembleBundled|setup-java/.test(step));
+  for (const step of heavy) {
+    assert.match(step, /if:\s*\$\{\{\s*steps\.decide\.outputs\.build == 'true'\s*\}\}/, step);
+  }
+  assert.doesNotMatch(
+    code(verifyYml).split("\njobs:")[0],
+    /paths:/,
+    "워크플로 단위 path filter를 두지 않습니다",
+  );
+});
+
+// CW13 — `local.properties`는 기기마다 다른 SDK 경로를 담습니다. 추적되면 러너의 ANDROID_HOME보다 그 값이
+// 이겨 CI 빌드가 SDK를 못 찾습니다.
+test("CW13. apps/android/local.properties를 추적하지 않는다", () => {
+  const tracked = execFileSync("git", ["ls-files", "apps/android/local.properties"], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  assert.equal(tracked.trim(), "");
 });

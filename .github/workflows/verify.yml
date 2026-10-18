@@ -156,6 +156,41 @@ jobs:
       - name: Check bundle size
         run: pnpm size:check
 
+  # Kotlin · Gradle · 번들 동기화가 깨지면 여기서 잡힙니다. 경로 조건은 워크플로가 아니라 이 잡 안에서
+  # 겁니다 — 해당 없는 PR에서도 잡이 「건너뜀」으로 성공해야 필수 검사가 대기에 갇히지 않습니다. 판정은
+  # devtools/android-build/paths.mjs가 하고, main push는 늘 빌드합니다.
+  android:
+    name: Android build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Decide whether to build
+        id: decide
+        run: node devtools/android-build/should-build.mjs
+        env:
+          ANDROID_BUILD_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          ANDROID_BUILD_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/setup
+        if: ${{ steps.decide.outputs.build == 'true' }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-java@v6
+        if: ${{ steps.decide.outputs.build == 'true' }}
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - name: Bundle for Android
+        if: ${{ steps.decide.outputs.build == 'true' }}
+        run: pnpm bundle:android
+      - name: Assemble bundled APK
+        if: ${{ steps.decide.outputs.build == 'true' }}
+        working-directory: apps/android
+        run: ./gradlew --no-daemon :app:assembleBundled
+
   policy:
     name: Performance report policy
     runs-on: ubuntu-latest
