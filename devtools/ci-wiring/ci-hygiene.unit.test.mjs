@@ -153,6 +153,13 @@ test("CW8. 모든 잡이 공용 setup 액션으로 설치한다", () => {
   assert.match(action, /pnpm install --frozen-lockfile/);
   assert.match(action, /node-version-file:\s*\.nvmrc/);
   assert.doesNotMatch(action, /version:\s*\d/, "pnpm 버전은 packageManager가 정합니다");
+  // 실제 토큰은 설치 단계에만 두고, 뒤 단계에는 자리값만 넘깁니다(setup-node v7은 가짜 토큰을 깔지 않습니다).
+  assert.match(action, /NODE_AUTH_TOKEN=unused-after-install" >> "\$GITHUB_ENV"/);
+  assert.doesNotMatch(
+    action,
+    /NODE_AUTH_TOKEN=\$\{\{\s*inputs\.token/,
+    "실제 토큰을 GITHUB_ENV로 흘리지 않습니다",
+  );
 });
 
 // CW9 — 루트 `test`는 vitest 패키지를 계층별 세 번이 아니라 한 번 돕니다. CI가 mobile을

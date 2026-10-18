@@ -14,14 +14,23 @@ runs:
   steps:
     # 버전은 루트 package.json의 packageManager가 정합니다.
     - uses: pnpm/action-setup@v6
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-node@v7
       with:
         node-version-file: .nvmrc
         cache: pnpm
         registry-url: https://npm.pkg.github.com
         scope: "@libitums"
+      # 캐시 경로를 묻는 pnpm도 `.npmrc`를 읽습니다 — 토큰이 비면 경고를 찍습니다.
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.token }}
     - name: Install dependencies
       shell: bash
       run: pnpm install --frozen-lockfile
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
+    # setup-node v7부터 가짜 NODE_AUTH_TOKEN을 깔지 않아, 뒤 단계의 pnpm이 `.npmrc`의
+    # `${NODE_AUTH_TOKEN}`을 못 풀어 경고를 찍습니다. 뒤 단계는 레지스트리를 읽지 않으므로 실제
+    # 토큰이 아니라 자리값을 둡니다 — 실제 토큰은 설치 단계에만 있습니다.
+    - name: Placeholder registry token for later steps
+      shell: bash
+      run: echo "NODE_AUTH_TOKEN=unused-after-install" >> "$GITHUB_ENV"
