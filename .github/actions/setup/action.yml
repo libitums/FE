@@ -14,7 +14,7 @@ runs:
   steps:
     # 버전은 루트 package.json의 packageManager가 정합니다.
     - uses: pnpm/action-setup@v6
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-node@v7
       with:
         node-version-file: .nvmrc
         cache: pnpm
