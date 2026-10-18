@@ -321,9 +321,10 @@ final class PlaybackAudioSession {
     setCategory(options: [.mixWithOthers])
   }
 
-  /// 학습 음원이 나오기 직전. 이미 켰으면 아무 일도 하지 않는다.
+  /// 학습 음원이 나오기 직전. 이미 켰으면 아무 일도 하지 않는다. 녹음 중(`.record`)이면 세션을 건드리지
+  /// 않는다 — 녹음이 세션을 빌린 동안 카테고리를 덮으면 녹음이 끊긴다.
   func beginVoice() {
-    guard !voiceActive else { return }
+    guard !voiceActive, session.category != .record else { return }
     voiceActive = true
     setCategory(options: [.duckOthers])
     do {
@@ -335,9 +336,21 @@ final class PlaybackAudioSession {
 
   /// 학습 음원이 끝나거나 멈춘 뒤. 켠 적 없으면 아무 일도 하지 않는다 — 녹음 중 세션을 건드리지 않는다.
   /// 효과음이 세션을 쥐고 있어 끄기가 실패해도 섞기로는 돌아간다.
+  /// 녹음이 녹음 전 설정을 되돌린 직후(SpeechRecognitionModule이 메인 큐로 부른다). 녹음 전이 줄이기였다면 그대로
+  /// 살아나 효과음마다 다른 앱 소리가 줄어들므로, 지금 학습 음원이 나오는 중이 아니면 섞기로 돌린다.
+  func recordingDidRestore() {
+    guard !voiceActive, session.category == .playback else { return }
+    if session.categoryOptions.contains(.duckOthers) {
+      setCategory(options: [.mixWithOthers])
+    }
+  }
+
   func endVoice() {
     guard voiceActive else { return }
     voiceActive = false
+    // 듣기 → 말하기에서 재생의 끝이 녹음 시작 뒤에 도착할 수 있다. 녹음 중이면 끄지도 덮지도 않는다 —
+    // 녹음 복원 뒤 `recordingDidRestore`가 섞기로 돌린다.
+    guard session.category == .playback else { return }
     do {
       try session.setActive(false, options: .notifyOthersOnDeactivation)
     } catch {

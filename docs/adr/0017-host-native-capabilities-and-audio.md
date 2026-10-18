@@ -505,7 +505,9 @@ Supabase OAuth)이고, iOS 호스트가 `WebAuthenticationModule`(`start` · `ra
   섞기로 돌아간다. 정책은 `PlaybackAudioSession` 하나가 지고 재생 모듈은 `beginVoice` · `endVoice`만 부른다 — **메서드
   표면(`play` · `stop` · `pause` · `resume`)은 그대로**다. 카테고리가 앱 전체에 하나라 **효과음도 무음 스위치와 무관하게
   난다** — iOS가 스위치 상태를 앱에 알려 주지 않아 효과음만 따를 방법이 없다. 녹음 세션은 녹음 전 설정(이제 `.playback`)을
-  그대로 되돌린다. **배경 재생 · 잠금화면 컨트롤 · `UIBackgroundModes`는 여전히 열지 않는다.** Android는 미디어 음량이 벨소리
+  그대로 되돌린다. **녹음이 세션을 빌린 동안(`.record`) 재생 정책은 세션을 건드리지 않는다** — 듣기 → 말하기에서 재생의
+  끝이 녹음 시작 뒤에 도착해도 녹음 세션을 끄거나 덮지 않고, 녹음 복원이 줄이기 설정을 되살렸으면 복원 직후
+  (`recordingDidRestore`) 섞기로 돌린다(PR #266 리뷰). **배경 재생 · 잠금화면 컨트롤 · `UIBackgroundModes`는 여전히 열지 않는다.** Android는 미디어 음량이 벨소리
   모드와 따로라 바뀌지 않는다
 - **재생목록 · 프리로드 · 캐시**
 

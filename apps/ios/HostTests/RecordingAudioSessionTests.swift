@@ -219,6 +219,61 @@ final class PlaybackAudioSessionTests: XCTestCase {
     XCTAssertEqual(session.category, .playback)
     XCTAssertEqual(session.categoryOptions, [.mixWithOthers])
   }
+
+  // 듣기 → 말하기: 재생의 끝이 녹음이 시작된 뒤에 도착할 수 있다. 그때 녹음 세션을 끄거나 덮어쓰면 녹음이 망가진다.
+  func testPS6LateEndVoiceDoesNotTouchAnActiveRecording() throws {
+    let session = FakeAudioSession()
+    let playback = PlaybackAudioSession(session: session)
+    playback.beginVoice()
+    let recording = RecordingAudioSession(session: session)
+    try recording.activate()
+
+    playback.endVoice()
+    XCTAssertEqual(session.category, .record)
+    XCTAssertEqual(session.activations, [true, true], "녹음 중에는 끄지 않는다")
+  }
+
+  func testPS7BeginVoiceDuringRecordingLeavesTheRecordingAlone() throws {
+    let session = FakeAudioSession()
+    let playback = PlaybackAudioSession(session: session)
+    let recording = RecordingAudioSession(session: session)
+    try recording.activate()
+
+    playback.beginVoice()
+    XCTAssertEqual(session.category, .record)
+    XCTAssertEqual(session.activations, [true])
+  }
+
+  // 녹음은 녹음 전 설정을 되돌린다 — 그것이 줄이기(.duckOthers)였다면 그대로 살아나 효과음마다 다른 앱 소리가
+  // 줄어든다. 녹음 복원 뒤에 섞기로 돌린다.
+  func testPS8RecordingRestoredFromDuckingReturnsToMixing() throws {
+    let session = FakeAudioSession()
+    let playback = PlaybackAudioSession(session: session)
+    playback.configureDefault()
+    playback.beginVoice()
+    let recording = RecordingAudioSession(session: session)
+    try recording.activate()
+    playback.endVoice()
+    recording.restore()
+    XCTAssertEqual(session.categoryOptions, [.duckOthers], "복원은 녹음 전 설정 그대로다")
+
+    playback.recordingDidRestore()
+    XCTAssertEqual(session.category, .playback)
+    XCTAssertEqual(session.categoryOptions, [.mixWithOthers])
+  }
+
+  func testPS9RecordingRestoreDoesNotCutAVoiceThatIsStillPlaying() throws {
+    let session = FakeAudioSession()
+    let playback = PlaybackAudioSession(session: session)
+    playback.configureDefault()
+    let recording = RecordingAudioSession(session: session)
+    try recording.activate()
+    recording.restore()
+    playback.beginVoice()
+
+    playback.recordingDidRestore()
+    XCTAssertEqual(session.categoryOptions, [.duckOthers], "재생 중이면 줄이기를 유지한다")
+  }
 }
 
 private final class FakeAudioSession: RecordingAudioSessionClient {
