@@ -191,6 +191,9 @@ export async function runSmokeCapture(
         "-derivedDataPath",
         derivedDataPath,
         "CODE_SIGNING_ALLOWED=NO",
+        // Release의 기본값은 모든 시뮬레이터 아키텍처(arm64 · x86_64)라 빌드가 두 배였습니다. 측정 대상은
+        // 부팅한 시뮬레이터의 아키텍처 하나입니다. 명령줄 값이라 Pods 타깃에도 같이 걸립니다.
+        "ONLY_ACTIVE_ARCH=YES",
         "build",
       ],
       { cwd: iosRoot, stage: "iOS Host build" },
