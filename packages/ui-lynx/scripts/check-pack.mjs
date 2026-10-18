@@ -172,6 +172,13 @@ const components = [
     modules: ["learning-unit.contract"],
     css: "learning-unit.css",
   },
+  {
+    subpath: "special-unit",
+    directory: "special-unit",
+    component: "SpecialUnit",
+    modules: ["special-unit.contract"],
+    css: "special-unit.css",
+  },
 ];
 const required = [
   "package/package.json",
@@ -331,6 +338,13 @@ if (learningUnitStylesExport !== "./dist/learning-unit/learning-unit.css") {
 }
 if (!files.includes(`package/${learningUnitStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the LearningUnit CSS export target");
+}
+const specialUnitStylesExport = packedPackageJson.exports?.["./special-unit/styles.css"];
+if (specialUnitStylesExport !== "./dist/special-unit/special-unit.css") {
+  throw new Error("packed package has an invalid ./special-unit/styles.css export");
+}
+if (!files.includes(`package/${specialUnitStylesExport.replace(/^\.\//, "")}`)) {
+  throw new Error("packed package is missing the SpecialUnit CSS export target");
 }
 if (!files.includes(`package/${stepIndicatorStylesExport.replace(/^\.\//, "")}`)) {
   throw new Error("packed package is missing the StepIndicator CSS export target");

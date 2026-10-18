@@ -34,7 +34,7 @@ async function openJourneyMessenger(messengerEventSink?: MessengerEventSink) {
     />,
   );
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
 }
 
 function finishConversation() {
@@ -70,13 +70,13 @@ test("두 답장을 완료하면 마지막 메시지와 맵 완료 표식이 함
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   // 완료 표식은 유닛 어휘(`clear`)이고, 「완료됨」은 화면 글자가 아니라 접근성
   // 이름에 실립니다 — `LearningUnit`이 체크 아이콘으로 그리기 때문입니다.
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation")).toHaveAttribute(
     "data-status",
     "clear",
   );
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation")).toHaveAttribute(
     "accessibility-label",
-    "A Message from Minseo, completed, story",
+    "special, A Message from Minseo, completed",
   );
 });
 
@@ -101,7 +101,7 @@ test("메신저 완료는 일반 completedStepCount와 directions 상태를 바�
     "data-status",
     "default",
   );
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
   finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
   // 메신저 완료 전후 일반 스텝 상태는 동일한 계약 리터럴이어야 합니다.
@@ -123,7 +123,7 @@ test("미완료로 맵을 나갔다 재입장하면 첫 메시지부터 시작�
   await openJourneyMessenger();
   answerMessengerReplies(1);
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
   expect(screen.getByTestId("messenger-message-list").children).toHaveLength(1);
 });
 
@@ -135,7 +135,7 @@ test("대화를 끝내고 결과 보기를 누르면 학습 완료(PERFECT LESSO
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   tapLessonCompleteExit();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation")).toHaveAttribute(
     "data-status",
     "clear",
   );
@@ -158,14 +158,14 @@ test("완료 재입장은 첫 메시지부터 다시 시작하고 완료 기록�
   await openJourneyMessenger();
   finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
   expect(screen.getByTestId("messenger-message-list").children).toHaveLength(1);
   expect(screen.queryByTestId("messenger-finish")).toBeNull();
   finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-finish"), {});
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   tapLessonCompleteExit();
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation")).toHaveAttribute(
     "data-status",
     "clear",
   );
@@ -202,10 +202,10 @@ test("sink는 incomplete exit과 완료 재입장을 정확한 순서·payload�
   const sink = vi.fn();
   await openJourneyMessenger(sink);
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
   finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
   expect(sink.mock.calls.map(([event]) => event)).toEqual([
     {
       name: "messenger_unit_opened",
@@ -244,7 +244,7 @@ test("완료 재입장과 결과 보기는 completed 이벤트를 다시 내지 
   finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-finish"), {});
   tapLessonCompleteExit();
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
   finishConversation();
   fireEvent.tap(screen.getByTestId("messenger-finish"), {});
   expect(

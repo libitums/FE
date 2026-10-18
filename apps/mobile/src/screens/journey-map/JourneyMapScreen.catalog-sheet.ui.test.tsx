@@ -19,7 +19,9 @@ afterEach(() => {
 const coverDone = { "u01-water": ["intro"] };
 const tapUnit = (key: string) => {
   act(() => {
-    fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-u01-water-${key}`), {
+    // 최종(RP)만 스페셜 배지이고 레슨 · 문화는 원형 노드입니다.
+    const prefix = key === "RP" ? "ui-lynx-special-unit" : "ui-lynx-learning-unit";
+    fireEvent.tap(screen.getByTestId(`${prefix}-catalog-unit-u01-water-${key}`), {
       detail: { y: 300 },
     });
   });

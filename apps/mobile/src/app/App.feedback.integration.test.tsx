@@ -130,7 +130,7 @@ test("[IF2] 에피소드를 끝내면 연속 모달 뒤 설문이 뜨고, 4점 �
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-tutorial-intro"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-intro"), {});
   tapButtonIn("episode-intro-screen-skip");
   tapButtonIn("ui-lynx-dialog-action-skip");
   tapButtonIn("lesson-complete-screen-exit");

@@ -134,3 +134,11 @@ test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · ja · vi이고 e
   expect(Object.keys(uiCopyCatalog).sort()).toEqual(["en", "es", "ja", "vi"]);
   expect(uiCopyCatalog.en).toBe(uiCopyEn);
 });
+
+test("JS4. specialUnitMap은 vi · es · ja에서 영어로 채워진다", () => {
+  for (const language of ["vi", "es", "ja"] as const) {
+    const table = uiCopyFor(language);
+    expect(table.specialUnitMap.eyebrow).toBe("SPECIAL");
+    expect(table.specialUnitMap.accessibilityLabel("x")).toBe("special, x");
+  }
+});

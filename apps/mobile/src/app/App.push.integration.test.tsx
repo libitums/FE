@@ -194,7 +194,7 @@ test("선행 학습을 완료하지 않으면 푸시로 켜져도 잠긴 메신�
   await flush();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation")).toHaveAttribute(
     "data-status",
     "default",
   );

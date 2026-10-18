@@ -98,7 +98,7 @@ describe("JourneyMapScreen catalog slot", () => {
     expect(wrapper === catalog || wrapper.contains(catalog)).toBe(true);
     const previous = children[children.length - 2] as Element;
     expect(previous.contains(screen.getByTestId("ui-lynx-learning-unit-greeting"))).toBe(true);
-    expect(screen.getByTestId("ui-lynx-learning-unit-catalog-cover-u01-water")).toHaveAttribute(
+    expect(screen.getByTestId("ui-lynx-special-unit-catalog-cover-u01-water")).toHaveAttribute(
       "data-status",
       "default",
     );
@@ -113,7 +113,7 @@ describe("JourneyMapScreen catalog slot", () => {
       }),
     );
 
-    const cover = screen.getByTestId("ui-lynx-learning-unit-catalog-cover-u01-water");
+    const cover = screen.getByTestId("ui-lynx-special-unit-catalog-cover-u01-water");
     expect(cover).toHaveAttribute("data-status", "available");
     fireEvent.tap(cover, {});
 
@@ -146,7 +146,7 @@ describe("JourneyMapScreen catalog slot", () => {
     }
   });
 
-  test("UCN1b. 열린 상태의 문화 노드 아이콘은 열린 레슨 노드(play)와 열린 최종 노드(flag)의 아이콘과 모두 다르다", () => {
+  test("UCN1b. 열린 문화 노드(원형) 아이콘은 열린 레슨 노드(play)와 열린 최종 노드(별)의 아이콘과 모두 다르다", () => {
     const iconOf = (done: readonly string[], key: string): string => {
       const { unmount } = render(
         mapScreen({
@@ -154,11 +154,12 @@ describe("JourneyMapScreen catalog slot", () => {
           completedEpisodeFinalIds: ["tutorial-final-test"],
         }),
       );
-      const node = screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-u01-water-${key}`);
+      const prefix = key === "RP" ? "ui-lynx-special-unit" : "ui-lynx-learning-unit";
+      const node = screen.getByTestId(`${prefix}-catalog-unit-u01-water-${key}`);
       expect(node).toHaveAttribute("data-status", "available");
       const icon =
         screen
-          .getByTestId(`ui-lynx-learning-unit-catalog-unit-u01-water-${key}-icon`)
+          .getByTestId(`${prefix}-catalog-unit-u01-water-${key}-icon`)
           .getAttribute("content") ?? "";
       unmount();
       return icon;

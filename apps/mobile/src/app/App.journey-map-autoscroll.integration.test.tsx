@@ -111,7 +111,7 @@ test("I3. (AC5) 다음 유닛을 끝내고 맵으로 돌아오면 새 대상으�
   expect(measuredUnits()).toEqual(["#journey-map-unit-appointment-confirmation"]);
   expect(scrollsOnMap()).toHaveLength(1);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   vi.useFakeTimers();
   answerMessengerReplies();

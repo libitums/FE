@@ -45,9 +45,9 @@ it("특별 항목의 표시와 접근성 이름에 맵 데이터의 제목을 �
       onStartEpisodeFinal={vi.fn<(id: EpisodeFinalUnitId) => void>()}
     />,
   );
-  const item = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");
-  // 제목은 표식 아래 라벨과 접근성 이름 두 곳에 같은 값으로 실립니다. 이름 뒤의
-  // 「이야기 연결」은 `LearningUnit`이 붙이는 것이라 제목과 무관합니다.
+  const item = screen.getByTestId("ui-lynx-special-unit-appointment-confirmation");
+  // 제목은 표식 아래 라벨과 접근성 이름 두 곳에 같은 값으로 실립니다. 이름 앞의
+  // `special, `은 맵 문구표가 붙이는 것이라 제목과 무관합니다.
   expect(screen.getByText("Verification message title")).toBeInTheDocument();
-  expect(item).toHaveAttribute("accessibility-label", "Verification message title, story");
+  expect(item).toHaveAttribute("accessibility-label", "special, Verification message title");
 });

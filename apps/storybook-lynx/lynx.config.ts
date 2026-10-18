@@ -30,6 +30,7 @@ export default defineConfig({
       tooltip: "./src/lynx/tooltip.tsx",
       "option-selector": "./src/lynx/option-selector.tsx",
       "learning-unit": "./src/lynx/learning-unit.tsx",
+      "special-unit": "./src/lynx/special-unit.tsx",
     },
   },
   output: {

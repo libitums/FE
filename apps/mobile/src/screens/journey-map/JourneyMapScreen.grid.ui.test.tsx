@@ -28,17 +28,22 @@ const mapBox = (): Element => screen.getByTestId("journey-map-screen-map");
 
 const tutorialItems = journeyMapSections.flatMap((section) => section.items);
 
-// 맵의 유닛 목록 순서입니다 — 튜토리얼 항목 → 카탈로그(구획 안은 표지 → 레슨들 → 최종) → 준비 중 구획.
+// 맵의 유닛 목록 순서입니다 — 튜토리얼 항목 → 카탈로그(구획 안은 표지 → 레슨들 → 최종) → 준비 중
+// 구획. 표지 · 문화 · 최종은 `SpecialUnit`, 스텝 · 레슨은 `LearningUnit` testid입니다.
 function expectedUnitTestIds(catalogSections: readonly CatalogMapSection[]): string[] {
   return [
-    ...tutorialItems.map((item) => `ui-lynx-learning-unit-${tutorialItemId(item)}`),
+    ...tutorialItems.map(
+      (item) =>
+        `ui-lynx-${item.kind === "standard" ? "learning" : "special"}-unit-${tutorialItemId(item)}`,
+    ),
     ...catalogSections.flatMap((section) =>
       section.kind === "catalog-ready"
         ? [
-            `ui-lynx-learning-unit-catalog-cover-${section.episodeId}`,
-            ...[...section.lessonKeys, section.finalKey].map(
-              (key) => `ui-lynx-learning-unit-catalog-unit-${section.episodeId}-${key}`,
-            ),
+            `ui-lynx-special-unit-catalog-cover-${section.episodeId}`,
+            ...[...section.lessonKeys, section.finalKey].map((key) => {
+              const special = key === section.finalKey || section.cultureKeys.includes(key);
+              return `ui-lynx-${special ? "special" : "learning"}-unit-catalog-unit-${section.episodeId}-${key}`;
+            }),
           ]
         : [],
     ),

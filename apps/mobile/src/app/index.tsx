@@ -34,6 +34,8 @@ import "@libitums/ui-lynx/page-indicator.css";
 import "@libitums/ui-lynx/round-button/styles.css";
 // 설정 화면의 항목 · 젬 구매 화면의 결제 수단 줄이 소비합니다.
 import "@libitums/ui-lynx/settings-cell/styles.css";
+// 맵의 레슨이 아닌 단위(표지 · 메신저 · 전화 · 비주얼 노벨 · 문화 · 최종 테스트)가 소비합니다.
+import "@libitums/ui-lynx/special-unit/styles.css";
 import "@libitums/ui-lynx/status-indicator/styles.css";
 import "@libitums/ui-lynx/visual-novel-dialog/styles.css";
 

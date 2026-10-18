@@ -27,6 +27,7 @@ import type { PairMatchQuestion } from "../screens/pair-match/pair-match.contrac
 import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { journeySteps } from "../screens/journey-map/journey-map";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // 옛 형식 내장본(2026-10-14)의 흐름을 걷는 테스트입니다 — 내장본 자리를 옛 픽스처로 바꿉니다.
 vi.mock("../lib/episode-bundled", async () => {
@@ -279,7 +280,7 @@ const tapId = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {
 const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const node = (episodeId: string, key: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`);
+  screen.getByTestId(catalogNodeTestId(episodeId, key));
 // 열린 노드를 누르면 말풍선이 서고 `Start`가 유닛을 엽니다. 잠긴 노드는 말풍선이 없어 누름으로 끝납니다.
 const tapNode = (episodeId: string, key: string): void => {
   fireEvent.tap(node(episodeId, key), {});

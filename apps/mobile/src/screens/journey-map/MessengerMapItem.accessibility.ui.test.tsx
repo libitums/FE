@@ -13,9 +13,9 @@ describe("MessengerMapItem 접근성 회귀", () => {
         onSelect={vi.fn()}
       />,
     );
-    const item = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");
+    const item = screen.getByTestId("ui-lynx-special-unit-appointment-confirmation");
     expect(item).toHaveAttribute("accessibility-element", "true");
-    expect(item).toHaveAttribute("accessibility-label", "A Message from Minseo, story");
+    expect(item).toHaveAttribute("accessibility-label", "special, A Message from Minseo");
     expect(item).toHaveAttribute("accessibility-traits", "button");
   });
 
@@ -28,9 +28,12 @@ describe("MessengerMapItem 접근성 회귀", () => {
         onSelect={vi.fn()}
       />,
     );
-    const item = screen.getByTestId("ui-lynx-learning-unit-appointment-confirmation");
+    const item = screen.getByTestId("ui-lynx-special-unit-appointment-confirmation");
     expect(item).toHaveAttribute("accessibility-element", "true");
-    expect(item).toHaveAttribute("accessibility-label", "A Message from Minseo, completed, story");
+    expect(item).toHaveAttribute(
+      "accessibility-label",
+      "special, A Message from Minseo, completed",
+    );
     expect(item).toHaveAttribute("accessibility-traits", "button");
   });
 });

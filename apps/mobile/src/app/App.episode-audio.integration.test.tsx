@@ -19,6 +19,7 @@ import { systemBackEventName } from "../lib/system-back";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { journeySteps } from "../screens/journey-map/journey-map";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // `integration` 계층: 내장 u01 원문의 소리 id가 디코드 · 모델 · 화면 · 결선을 지나 실제 공개 버킷 주소
 // 문자열로 호스트 `AudioPlaybackModule.play`에 닿는지, 소리가 실패해도 흐름 · 기록 · 이벤트가 같은지를
@@ -174,9 +175,9 @@ const tapButtonIn = (id: string): void =>
 const tapRoundIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-round-button"), {});
 const cover = (episodeId: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-cover-${episodeId}`);
+  screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${episodeId}`);
 const unitNode = (episodeId: string, key: string) =>
-  screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${episodeId}-${key}`);
+  screen.getByTestId(catalogNodeTestId(episodeId, key));
 const present = (id: string): boolean => screen.queryByTestId(id) !== null;
 const tapNext = () => tapButtonIn("catalog-cover-screen-next");
 const cutIndex = (): string | null =>

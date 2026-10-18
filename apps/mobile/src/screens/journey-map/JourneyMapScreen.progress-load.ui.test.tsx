@@ -90,21 +90,24 @@ function mapScreen(h: Handlers, overrides: Overrides = {}) {
   );
 }
 
-const nodeSelector = '[data-testid^="ui-lynx-learning-unit-"][data-status]';
+// 스텝 · 레슨은 `LearningUnit`, 스페셜은 `SpecialUnit`이 그립니다 — 둘 다 루트에만 `data-status`가 있습니다.
+const nodeSelector =
+  '[data-testid^="ui-lynx-learning-unit-"][data-status], [data-testid^="ui-lynx-special-unit-"][data-status]';
 const nodes = (): Element[] =>
   Array.from(screen.getByTestId("journey-map-screen").querySelectorAll(nodeSelector));
 const statusOf = (testId: string): string | null =>
   screen.getByTestId(testId).getAttribute("data-status");
 
-const intro = "ui-lynx-learning-unit-tutorial-intro";
-const tutorialFinal = "ui-lynx-learning-unit-tutorial-final-test";
+const intro = "ui-lynx-special-unit-tutorial-intro";
+const tutorialFinal = "ui-lynx-special-unit-tutorial-final-test";
 const specialIds = [
   "appointment-confirmation",
   "appointment-confirmation-phone-call",
   "cafe-arrival-visual-novel",
 ] as const;
-const coverId = (id: string) => `ui-lynx-learning-unit-catalog-cover-${id}`;
-const unitId = (id: string, key: string) => `ui-lynx-learning-unit-catalog-unit-${id}-${key}`;
+const coverId = (id: string) => `ui-lynx-special-unit-catalog-cover-${id}`;
+const unitId = (id: string, key: string) =>
+  `ui-lynx-${key === "RP" ? "special" : "learning"}-unit-catalog-unit-${id}-${key}`;
 
 function expectEveryNode(status: string): void {
   const all = nodes();
@@ -124,7 +127,7 @@ describe("JourneyMapScreen progressLoad — 확인 중", () => {
       expect(statusOf(`ui-lynx-learning-unit-${step.id}`)).toBe("checking");
     }
     for (const id of specialIds) {
-      expect(statusOf(`ui-lynx-learning-unit-${id}`)).toBe("checking");
+      expect(statusOf(`ui-lynx-special-unit-${id}`)).toBe("checking");
     }
     expect(statusOf(tutorialFinal)).toBe("checking");
     expect(statusOf(coverId("u01-water"))).toBe("checking");
