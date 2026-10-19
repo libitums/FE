@@ -1,7 +1,10 @@
 import type { ReactNode } from "@lynx-js/react";
+import { Avatar } from "@libitums/ui-lynx/avatar";
 
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
+import { dialogueAvatarNameOf } from "./sentence-order-avatar";
+import type { DialogueSpeakerNames } from "./sentence-order-avatar";
 import type { DialogueSpeaker } from "./sentence-order-questions";
 
 import "./sentence-order-dialogue.css";
@@ -10,6 +13,9 @@ import "./sentence-order-dialogue.css";
 // 번갈아 — 짝수 칸은 상대(왼쪽 · 회색), 홀수 칸은 나(오른쪽 · 주황)입니다. 빈 칸은 그 화자 쪽에 자리표시
 // 말풍선으로 서고, 창고의 조각을 누르면 다음 빈 칸에 그 칸 화자 모양으로 들어갑니다. 놓은 말풍선을
 // 누르면 창고로 돌아갑니다 — 문장 순서의 「놓인 조각을 누르면 되돌린다」와 같은 규칙입니다.
+//
+// 줄마다 말풍선 바깥 아래쪽에 원형 아바타가 붙습니다 — 상대는 말풍선 왼쪽, 나는 오른쪽입니다. 아바타는
+// 누가 말하는지를 눈으로만 보태는 장식이라 낭독 트리에서 빠지고, 칸의 낭독은 말풍선이 그대로 집니다.
 //
 // 상태가 없습니다. 놓인 조각 · 채점 여부는 화면(`SentenceOrderActivity`)의 세션 상태가 지고, 이
 // 조각은 그것을 그리고 눌림을 올려 보냅니다.
@@ -22,6 +28,8 @@ export type SentenceOrderDialogueProps = {
   /** 채점 뒤에는 말풍선을 누를 수 없습니다. */
   readonly locked: boolean;
   readonly onReturn: (chipIndex: number) => void;
+  /** 아바타 머리글자의 이름입니다. 없으면 상대는 자리표시 그림, 나는 문구표 대체 이름입니다. */
+  readonly speakerNames?: DialogueSpeakerNames;
 };
 
 /** 칸이 비어 있을 때 말풍선 안에 서는 표시입니다 — 낭독하지 않고 칸 이름이 대신 읽힙니다. */
@@ -33,6 +41,7 @@ export function SentenceOrderDialogue({
   placedChipIndexes,
   locked,
   onReturn,
+  speakerNames,
 }: SentenceOrderDialogueProps): ReactNode {
   const copy = useUiCopy();
 
@@ -49,9 +58,25 @@ export function SentenceOrderDialogue({
           playSound("button");
           onReturn(chipIndex);
         };
-        return (
+        const avatar = (
           <view
-            key={position}
+            className={`sentence-order-dialogue-avatar sentence-order-dialogue-avatar-${speaker}`}
+            data-testid={`sentence-order-dialogue-avatar-${position}`}
+            accessibility-elements-hidden={true}
+          >
+            <Avatar
+              name={dialogueAvatarNameOf(
+                speaker,
+                speakerNames,
+                copy.sentenceOrder.dialogueSpeaker.me,
+              )}
+              size="sm"
+              accessibility="hidden"
+            />
+          </view>
+        );
+        const bubble = (
+          <view
             className={`sentence-order-dialogue-bubble sentence-order-dialogue-bubble-${speaker}${filled ? "" : " sentence-order-dialogue-bubble-empty"}`}
             data-testid={`sentence-order-dialogue-slot-${position}`}
             data-speaker={speaker}
@@ -70,6 +95,18 @@ export function SentenceOrderDialogue({
             >
               {filled ? text : emptySlotMark}
             </text>
+          </view>
+        );
+        // 상대 줄은 아바타 · 말풍선, 내 줄은 말풍선 · 아바타 순서입니다 — 줄이 양 끝으로 붙여 줍니다.
+        return (
+          <view
+            key={position}
+            className={`sentence-order-dialogue-row sentence-order-dialogue-row-${speaker}`}
+            data-testid={`sentence-order-dialogue-row-${position}`}
+            data-speaker={speaker}
+          >
+            {speaker === "counterpart" ? avatar : bubble}
+            {speaker === "counterpart" ? bubble : avatar}
           </view>
         );
       })}
