@@ -2,8 +2,8 @@
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { LessonPosition } from "../learning/activity-finish";
+import type { LearningRunProgress } from "../learning/learning-shell.contract";
 import type {
-  VocabCardExample,
   VocabCardSessionAction,
   VocabCardSessionState,
   VocabCardStep,
@@ -30,12 +30,22 @@ export function vocabCardStepOf(
   return lesson !== undefined && !lesson.last ? "hand-off" : "finish";
 }
 
-export function vocabCardExampleSupportLabel(
-  example: VocabCardExample,
+/**
+ * 카드 진행 막대의 값입니다 — 지난 카드는 `done`, 지금 카드는 `current`, 남은 카드는 `upcoming`이고,
+ * 이름은 캡션과 접근성 이름에 함께 쓰는 순번(`Word 4 of 7`)입니다. 카드가 0장이면 셀 것이 없으므로
+ * 칸도 이름도 없습니다.
+ */
+export function vocabCardRunProgress(
+  cardIndex: number,
+  total: number,
   copy: UiCopy,
-): string | null {
-  const parts: string[] = [];
-  if (example.romanization !== null) parts.push(copy.vocabCard.pronunciation(example.romanization));
-  if (example.translation !== null) parts.push(copy.vocabCard.meaning(example.translation));
-  return parts.length === 0 ? null : parts.join(" ");
+): LearningRunProgress {
+  if (total <= 0) return { segments: [], label: "" };
+  const current = Math.min(Math.max(0, cardIndex), total - 1);
+  return {
+    segments: Array.from({ length: total }, (_, index) =>
+      index < current ? "done" : index === current ? "current" : "upcoming",
+    ),
+    label: copy.vocabCard.runLabel(current + 1, total),
+  };
 }

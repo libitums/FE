@@ -1,12 +1,13 @@
 import { useReducer, useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import { Button } from "@libitums/ui-lynx/button";
+import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
-import { lessonCounter } from "../learning/activity-finish";
 import { LearningShell } from "../learning/LearningShell";
 import {
   initialVocabCardSessionState,
-  vocabCardExampleSupportLabel,
+  vocabCardRunProgress,
   vocabCardSessionReducer,
   vocabCardStepOf,
 } from "./vocab-card";
@@ -15,12 +16,20 @@ import type { VocabCardActivityProps } from "./vocab-card.contract";
 import "./vocab-card-activity.css";
 
 // 낱말 카드를 한 장씩 보이고 넘기는 활동입니다(카탈로그 VOCAB_CARD). 고를 것도 칠 것도 없어서 판정하지
-// 않고, 마지막 카드의 버튼이 빈 결과를 한 번 올립니다. 뼈대(상단 바 · 세션 헤더 · 지시문 · 무대 카드 ·
-// 아래 버튼)는 `LearningShell`이 집니다 — 이 화면이 아는 것은 카드 안과 아래 버튼이 하는 일뿐입니다.
+// 않고, 마지막 카드의 버튼이 빈 결과를 한 번 올립니다. 뼈대(상단 바 · 헤더 · 지시문 · 무대 카드 · 아래
+// 버튼 자리)는 `LearningShell`이 집니다 — 이 화면이 아는 것은 카드 안과 아래 버튼이 하는 일뿐입니다.
+//
+// ⟨2026-10-19⟩ 사용자 결정(ADR-0073)으로 세 가지가 바뀌었습니다.
+// - 세션 헤더(`Lesson n / N`) 대신 가벼운 헤더 — `×` · 카드마다 한 칸인 막대 · `Word i of n` — 가 섭니다.
+//   카드는 레슨 카운터에 세지 않으므로(`catalogActivityPositionOf`) 이 화면은 `lesson`의 오프셋을 쓰지
+//   않습니다.
+// - 아래 버튼은 `Got it` 하나입니다(ui-lynx `Button`, 마지막 카드도 같은 라벨). 「알아요 / 처음 봐요」 두
+//   갈래는 걷었습니다 — 고를 것이 생기면 카드가 시험처럼 읽힙니다.
+// - 예문을 그리지 않습니다 — 카드 한 장에 정보가 너무 많았습니다.
 //
 // 「채점 없음」은 모양으로 드러납니다: 판정 배지 자리에 중립 표식이 서고(판정 색 · 아이콘 · 판정음 없음),
 // 아래 버튼이 처음부터 서 있으며, 완료 카드를 두지 않습니다(풀어낸 문항이 없습니다).
-// DOM 순서 = 낭독 순서입니다: 표식 → 표제어 → 로마자 → 뜻 → 예문 → 예문 지원 줄 → 버튼.
+// DOM 순서 = 낭독 순서입니다: 헤더 → 지시문 → 표식 → 표제어 → 로마자 → 뜻 → 버튼.
 export function VocabCardActivity({
   questions,
   gemCount,
@@ -37,9 +46,6 @@ export function VocabCardActivity({
   const cardIndex = Math.min(state.cardIndex, Math.max(0, questions.length - 1));
   const card = questions[cardIndex];
   const step = vocabCardStepOf(lesson, cardIndex, questions.length);
-  const counter = lessonCounter(lesson, cardIndex, questions.length);
-  const supportLabel =
-    card?.example == null ? null : vocabCardExampleSupportLabel(card.example, copy);
 
   // 연타해도 결과는 한 번만 올라갑니다 — 부모가 화면을 걷기 전의 두 번째 탭을 막습니다.
   const finish = (): void => {
@@ -48,16 +54,36 @@ export function VocabCardActivity({
     onFinish([], 0);
   };
 
+  // 껍데기의 기본 버튼이 내던 누름 소리를 이 버튼이 대신 냅니다.
+  const handleGotIt = (): void => {
+    "background only";
+    playSound("button");
+    if (step === "advance") dispatch({ type: "nextCard" });
+    else finish();
+  };
+
   return (
     <LearningShell
       form="vocab-card"
       gemCount={gemCount}
-      questionIndex={counter.questionIndex}
-      questionCount={counter.questionCount}
+      // 껍데기는 이 순번으로 카드가 바뀐 것을 알아 스크롤을 되돌리고 넘김 전환을 겁니다. 세션 헤더가
+      // 서지 않으므로 카운터로 읽히지는 않습니다.
+      questionIndex={cardIndex}
+      questionCount={questions.length}
+      runProgress={vocabCardRunProgress(cardIndex, questions.length, copy)}
       instruction={copy.vocabCard.instruction}
       onExit={onExit}
-      actionLabel={step === "finish" ? copy.common.seeResults : copy.common.next}
-      onAction={step === "advance" ? () => dispatch({ type: "nextCard" }) : finish}
+      actionButton={
+        <view className="vocab-card-activity-got-it" data-testid="vocab-card-got-it">
+          <Button
+            label={copy.vocabCard.gotIt}
+            variant="brand"
+            size="xl"
+            width="fill"
+            bindtap={handleGotIt}
+          />
+        </view>
+      }
       // 큰 글자에서 카드가 길어져도 아래 버튼은 스크롤 밖에 남습니다.
       scrollCard
       card={
@@ -105,51 +131,6 @@ export function VocabCardActivity({
               >
                 {card.meaning}
               </text>
-
-              {card.example === null ? null : (
-                <view className="vocab-card-activity-example" data-testid="vocab-card-example">
-                  <text
-                    className="vocab-card-activity-example-title"
-                    data-testid="vocab-card-example-title"
-                    accessibility-elements-hidden={true}
-                  >
-                    {copy.vocabCard.exampleTitle}
-                  </text>
-                  <text
-                    className="vocab-card-activity-example-text"
-                    data-testid="vocab-card-example-text"
-                    accessibility-label={copy.vocabCard.example(card.example.text)}
-                  >
-                    {card.example.text}
-                  </text>
-                  {supportLabel === null ? null : (
-                    <view
-                      className="vocab-card-activity-example-support"
-                      data-testid="vocab-card-example-support"
-                      accessibility-element={true}
-                      accessibility-traits="text"
-                      accessibility-label={supportLabel}
-                    >
-                      {card.example.romanization === null ? null : (
-                        <text
-                          className="vocab-card-activity-example-romanization"
-                          data-testid="vocab-card-example-romanization"
-                        >
-                          {card.example.romanization}
-                        </text>
-                      )}
-                      {card.example.translation === null ? null : (
-                        <text
-                          className="vocab-card-activity-example-translation"
-                          data-testid="vocab-card-example-translation"
-                        >
-                          {card.example.translation}
-                        </text>
-                      )}
-                    </view>
-                  )}
-                </view>
-              )}
             </>
           )}
         </view>

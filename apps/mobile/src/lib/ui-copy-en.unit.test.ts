@@ -147,10 +147,10 @@ test("UC-L1. 카탈로그 학습 문구가 문구표 값과 같고 준비 중 �
 test("UC-I1. 단어 카드 · 짝 맞추기 · 그림 제시 문구가 문구표 값과 같다", () => {
   expect(c.vocabCard.instruction).toBe("Learn this word.");
   expect(c.vocabCard.badge).toBe("New word");
-  expect(c.vocabCard.exampleTitle).toBe("Example");
+  expect(c.vocabCard.gotIt).toBe("Got it");
+  expect(c.vocabCard.runLabel(4, 7)).toBe("Word 4 of 7");
   expect(c.vocabCard.pronunciation("mul")).toBe("Pronunciation: mul");
   expect(c.vocabCard.meaning("water")).toBe("Meaning: water");
-  expect(c.vocabCard.example("x")).toBe("Example: x");
   expect(c.pairMatch.instruction).toBe("Tap a word, then its meaning.");
   expect(c.pairMatch.progress(1, 4)).toBe("1 / 4 matched");
   expect(c.pairMatch.progressLabel(1, 4)).toBe("1 of 4 pairs matched");

@@ -1,13 +1,15 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { MotionProvider } from "@libitums/ui-lynx/motion";
 import type { AnswerResult } from "../../lib/answer-result";
 import { backHandlers } from "../../lib/back-handler";
 import { VocabCardActivity } from "./VocabCardActivity";
+import type { LessonPosition } from "../learning/activity-finish";
 import type { VocabCardQuestion } from "./vocab-card.contract";
 
-// `ui` 계층: 단어 카드 활동 — 카드를 한 장씩 보이고 넘기며, 판정 없이 빈 결과를 한 번 올립니다.
+// `ui` 계층: 단어 카드 활동 — 카드를 한 장씩 보이고 `Got it` 하나로 넘기며, 판정 없이 빈 결과를 한 번
+// 올립니다. 카드 구간 동안 세션 헤더 대신 가벼운 헤더(`×` · 칸 막대 · `Word i of n`)가 섭니다(ADR-0073).
 // 문항은 매핑 모듈이 내는 꼴로 손으로 세웠습니다(매핑 계산은 unit이 집니다).
 
 // 예문과 번역이 모두 있는 카드입니다.
@@ -59,12 +61,18 @@ afterEach(() => {
 
 function mount(
   questions: readonly VocabCardQuestion[],
-  options: { readonly motion?: "reduced" } = {},
+  options: { readonly motion?: "reduced"; readonly lesson?: LessonPosition } = {},
 ) {
   const onFinish = vi.fn<Finish>();
   const onExit = vi.fn<() => void>();
   const element = (
-    <VocabCardActivity questions={questions} gemCount={0} onExit={onExit} onFinish={onFinish} />
+    <VocabCardActivity
+      questions={questions}
+      gemCount={0}
+      onExit={onExit}
+      onFinish={onFinish}
+      lesson={options.lesson}
+    />
   );
   const view = render(
     options.motion === undefined ? (
@@ -78,17 +86,22 @@ function mount(
 
 const id = (testId: string) => screen.getByTestId(testId);
 const maybe = (testId: string) => screen.queryByTestId(testId);
-const tapAction = (): void => void fireEvent.tap(id("learning-shell-action"), {});
-const actionLabel = () => id("learning-shell-action").getAttribute("accessibility-label");
+const gotIt = () => within(id("vocab-card-got-it")).getByTestId("ui-lynx-button");
+const tapGotIt = (): void => void fireEvent.tap(gotIt(), {});
+const segmentStates = () =>
+  [
+    ...id("learning-run-header-bar").querySelectorAll(
+      '[data-testid^="learning-run-header-segment-"]',
+    ),
+  ].map((segment) => segment.getAttribute("data-state"));
 
 describe.each([
   { name: "기본 모션", motion: undefined },
   { name: "동작 줄이기", motion: "reduced" as const },
 ])("VocabCardActivity — $name", ({ motion }) => {
-  test("UV1. 첫 렌더는 머리 라벨 · 지시문 · 표식 · 표제어 · 로마자 · 뜻 · 예문 · 지원 줄을 접근성 이름과 함께 보이고 버튼 Next가 처음부터 있다", () => {
+  test("UV1. 첫 렌더는 지시문 · 표식 · 표제어 · 로마자 · 뜻을 접근성 이름과 함께 보이고 예문은 그리지 않는다", () => {
     mount(three, { motion });
 
-    expect(id("learning-shell-form")).toHaveTextContent("New words");
     expect(id("learning-shell-instruction")).toHaveTextContent("Learn this word.");
     expect(id("vocab-card-badge")).toHaveTextContent("New word");
     expect(id("vocab-card-word")).toHaveTextContent("괜찮아요.");
@@ -99,38 +112,51 @@ describe.each([
     );
     expect(id("vocab-card-meaning")).toHaveTextContent("It's okay.");
     expect(id("vocab-card-meaning")).toHaveAttribute("accessibility-label", "Meaning: It's okay.");
-    expect(id("vocab-card-example-title")).toHaveTextContent("Example");
-    expect(id("vocab-card-example-title")).toHaveAttribute("accessibility-elements-hidden", "true");
-    expect(id("vocab-card-example-text")).toHaveAttribute(
-      "accessibility-label",
-      "Example: 아니요, 괜찮아요.",
-    );
-    expect(id("vocab-card-example-support")).toHaveAttribute(
-      "accessibility-label",
-      "Pronunciation: aniyo, gwaenchanayo. Meaning: No, I'm fine.",
-    );
-    expect(id("vocab-card-example-translation")).toHaveTextContent("No, I'm fine.");
-    expect(actionLabel()).toBe("Next");
+    expect(screen.queryByText("아니요, 괜찮아요.")).toBeNull();
+    expect(screen.queryByText("No, I'm fine.")).toBeNull();
+    expect(screen.queryByText("Example")).toBeNull();
   });
 
-  test("UV3. Next를 누르면 둘째 카드가 서고 번역이 없으면 지원 줄은 발음만 읽으며 카운터가 한 칸 간다", () => {
+  test("UV2. 세션 헤더 대신 가벼운 헤더가 선다 — 칸 셋(current · upcoming · upcoming)과 Word 1 of 3", () => {
     mount(three, { motion });
 
-    expect(id("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
-    tapAction();
+    expect(maybe("learning-shell-session")).not.toBeInTheDocument();
+    expect(maybe("learning-shell-chapter")).not.toBeInTheDocument();
+    expect(segmentStates()).toEqual(["current", "upcoming", "upcoming"]);
+    expect(id("learning-run-header-caption")).toHaveTextContent("Word 1 of 3");
+    expect(id("learning-run-header-progress")).toHaveAttribute(
+      "accessibility-label",
+      "Word 1 of 3",
+    );
+  });
+
+  test("UV3. 버튼은 Got it 하나 — 브랜드 · xl · 꽉 찬 폭의 ui-lynx 버튼이고 기본 아래 버튼은 없다", () => {
+    mount(three, { motion });
+
+    expect(within(id("vocab-card-got-it")).getAllByTestId("ui-lynx-button")).toHaveLength(1);
+    expect(gotIt()).toHaveAttribute("accessibility-label", "Got it");
+    expect(gotIt()).toHaveAttribute("accessibility-traits", "button");
+    expect(gotIt()).toHaveAttribute("data-variant", "brand");
+    expect(gotIt()).toHaveAttribute("data-size", "xl");
+    expect(gotIt()).toHaveAttribute("data-width", "fill");
+    expect(maybe("learning-shell-action")).not.toBeInTheDocument();
+    expect(screen.queryByText("New to me")).toBeNull();
+    expect(screen.queryByText("I know it")).toBeNull();
+  });
+
+  test("UV4. Got it을 누르면 둘째 카드가 서고 지난 칸이 done이 되며 캡션이 Word 2 of 3이다", () => {
+    mount(three, { motion });
+
+    tapGotIt();
 
     expect(id("vocab-card-content")).toHaveAttribute("data-card-index", "1");
     expect(id("vocab-card-word")).toHaveTextContent("물");
-    expect(maybe("vocab-card-example-translation")).not.toBeInTheDocument();
-    expect(id("vocab-card-example-support")).toHaveAttribute(
-      "accessibility-label",
-      "Pronunciation: mul juseyo.",
-    );
-    expect(id("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
+    expect(segmentStates()).toEqual(["done", "current", "upcoming"]);
+    expect(id("learning-run-header-caption")).toHaveTextContent("Word 2 of 3");
   });
 });
 
-test("UV2. 판정이 없다 — 배지 · 결과 표식 · 완료 카드가 첫 렌더에도 Next 뒤에도 없다", () => {
+test("UV5. 판정이 없다 — 배지 · 결과 표식 · 완료 카드가 첫 렌더에도 Got it 뒤에도 없다", () => {
   const { container } = mount(three);
 
   const assertNoVerdict = (): void => {
@@ -139,57 +165,57 @@ test("UV2. 판정이 없다 — 배지 · 결과 표식 · 완료 카드가 첫 
     expect(maybe("learning-activity-complete")).not.toBeInTheDocument();
   };
   assertNoVerdict();
-  tapAction();
+  tapGotIt();
   assertNoVerdict();
-  tapAction();
+  tapGotIt();
   assertNoVerdict();
 });
 
-test("UV4. 예문이 없는 카드는 예문 상자 없이 표제어와 뜻만 선다", () => {
-  mount(three);
-
-  tapAction();
-  tapAction();
-
-  expect(id("vocab-card-content")).toHaveAttribute("data-card-index", "2");
-  expect(maybe("vocab-card-example")).not.toBeInTheDocument();
-  expect(id("vocab-card-word")).toHaveTextContent("오다");
-  expect(id("vocab-card-meaning")).toHaveTextContent("to come");
-});
-
-test("UV5. 마지막 카드의 버튼은 See results이고 두 번 눌러도 판정 없는 빈 결과가 한 번만 올라가며 완료 카드가 없다", () => {
+test("UV6. 마지막 카드도 버튼은 Got it이고 두 번 눌러도 판정 없는 빈 결과가 한 번만 올라가며 완료 카드가 없다", () => {
   const { onFinish } = mount(three);
 
-  tapAction();
-  tapAction();
-  expect(actionLabel()).toBe("See results");
+  tapGotIt();
+  tapGotIt();
+  expect(gotIt()).toHaveAttribute("accessibility-label", "Got it");
+  expect(segmentStates()).toEqual(["done", "done", "current"]);
   expect(onFinish).toHaveBeenCalledTimes(0);
 
-  tapAction();
-  tapAction();
+  tapGotIt();
+  tapGotIt();
 
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledWith([], 0);
   expect(maybe("learning-activity-complete")).not.toBeInTheDocument();
 });
 
-test("UV6. 로마자와 예문 지원 줄이 없는 카드는 그 줄들을 그리지 않는다", () => {
+test("UV7. 레슨 중간 활동이어도 카드 구간에는 Lesson 카운터가 서지 않고 마지막 Got it이 빈 결과를 넘긴다", () => {
+  const { onFinish } = mount(three, { lesson: { offset: 0, total: 3, last: false } });
+
+  expect(screen.queryByText(/Lesson \d+ \/ \d+/)).toBeNull();
+  tapGotIt();
+  tapGotIt();
+  tapGotIt();
+
+  expect(onFinish).toHaveBeenCalledTimes(1);
+  expect(onFinish).toHaveBeenCalledWith([], 0);
+});
+
+test("UV8. 로마자가 없는 카드는 그 줄을 그리지 않는다", () => {
   mount([bare]);
 
   expect(id("vocab-card-word")).toHaveTextContent("네");
   expect(maybe("vocab-card-romanization")).not.toBeInTheDocument();
-  expect(id("vocab-card-example-text")).toBeInTheDocument();
-  expect(maybe("vocab-card-example-support")).not.toBeInTheDocument();
+  expect(segmentStates()).toEqual(["current"]);
 });
 
-test("UV7. 문항이 0개여도 던지지 않고 루트와 See results 버튼이 서며 빈 결과를 한 번 올린다", () => {
+test("UV9. 문항이 0개여도 던지지 않고 루트와 Got it이 서며 빈 결과를 한 번 올린다", () => {
   const { onFinish } = mount([]);
 
   expect(id("vocab-card-content")).toBeInTheDocument();
-  expect(actionLabel()).toBe("See results");
+  expect(gotIt()).toHaveAttribute("accessibility-label", "Got it");
 
-  tapAction();
-  tapAction();
+  tapGotIt();
+  tapGotIt();
 
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledWith([], 0);
@@ -204,17 +230,17 @@ describe("나가기", () => {
     fireEvent.tap(button as Element, {});
   };
 
-  test("UV8a. 나가기 버튼 → 확인창에서 Leave를 고르면 onExit이 한 번이고 결과는 올라가지 않는다", () => {
+  test("UV10a. 가벼운 헤더의 × → 확인창에서 Leave를 고르면 onExit이 한 번이고 결과는 올라가지 않는다", () => {
     const { onExit, onFinish, container } = mount(three);
 
-    fireEvent.tap(id("learning-shell-exit"), {});
+    fireEvent.tap(id("learning-run-header-exit"), {});
     leave(container);
 
     expect(onExit).toHaveBeenCalledTimes(1);
     expect(onFinish).toHaveBeenCalledTimes(0);
   });
 
-  test("UV8b. 시스템 뒤로 → 확인창에서 Leave를 고르면 onExit이 한 번이고 결과는 올라가지 않는다", () => {
+  test("UV10b. 시스템 뒤로 → 확인창에서 Leave를 고르면 onExit이 한 번이고 결과는 올라가지 않는다", () => {
     const { onExit, onFinish, container } = mount(three);
 
     act(() => {

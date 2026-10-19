@@ -89,8 +89,8 @@
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* 예문 상자 — `AnswerReveal`과 같은 상자 치수입니다. */
-.vocab-card-activity-example,
+/* 프로필 미리보기 상자 — `AnswerReveal`과 같은 상자 치수입니다. ⟨2026-10-19⟩ 단어 카드의 예문 상자가 함께
+   쓰던 규칙인데, 카드가 예문을 그리지 않게 되어(ADR-0073) 미리보기만 남았습니다. */
 .learner-profile-preview {
   align-self: stretch;
   display: flex;
@@ -105,7 +105,6 @@
   background-color: var(--libitum-color-gray-100);
 }
 
-.vocab-card-activity-example-title,
 .learner-profile-preview-title {
   text-align: center;
   color: var(--libitum-color-fg-neutral-muted);
@@ -116,7 +115,6 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-.vocab-card-activity-example-text,
 .learner-profile-preview-text {
   text-align: center;
   color: var(--libitum-color-fg-neutral);
@@ -127,25 +125,6 @@
   letter-spacing: var(--libitum-typography-body-l-letter-spacing);
 }
 
-/* 예문 지원 줄 — 로마자와 영어 뜻이 한 접근성 요소로 묶여 한 덩어리로 섭니다. */
-.vocab-card-activity-example-support {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--libitum-spacing-4);
-}
-
-.vocab-card-activity-example-romanization {
-  text-align: center;
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-body-s-font-family);
-  font-weight: var(--libitum-typography-body-s-font-weight);
-  font-size: var(--libitum-typography-body-s-font-size);
-  line-height: var(--libitum-typography-body-s-line-height);
-  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
-}
-
-.vocab-card-activity-example-translation,
 .learner-profile-preview-translation {
   text-align: center;
   color: var(--libitum-color-fg-neutral-muted);
@@ -154,4 +133,10 @@
   font-size: var(--libitum-typography-body-m-font-size);
   line-height: var(--libitum-typography-body-m-line-height);
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* `Got it` 버튼 자리 — 버튼 행의 남는 폭을 다 받아 버튼(`width="fill"`)이 꽉 찹니다. */
+.vocab-card-activity-got-it {
+  display: flex;
+  flex-direction: column;
 }

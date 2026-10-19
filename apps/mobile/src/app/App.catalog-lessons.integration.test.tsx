@@ -365,9 +365,9 @@ function solveActivity(activity: CatalogActivity, right: boolean, last = true): 
       }
       break;
     case "vocab-card":
-      // 카드는 문항 수만큼 버튼을 누릅니다 — 마지막 카드의 버튼이 곧 다음 걸음이라 완료 카드가 없습니다.
+      // 카드는 문항 수만큼 `Got it`을 누릅니다 — 마지막 카드의 버튼이 곧 다음 걸음이라 완료 카드가 없습니다.
       for (let index = 0; index < activity.questions.length; index += 1) {
-        tapId("learning-shell-action");
+        tapButtonIn("vocab-card-got-it");
       }
       return;
     case "pair-match":
@@ -564,7 +564,7 @@ test("L3. (AC2 · 4) S3: 소리 없는 듣기는 계획에서 빠져 활동 둘�
   });
 });
 
-test("L3b. (E-1) 다학습형 레슨: 중간 활동은 완료 카드 없이 이어지고 카운터는 레슨 전체 기준이며 결과 화면은 한 번이다", async () => {
+test("L3b. (E-1) 다학습형 레슨: 중간 활동은 완료 카드 없이 이어지고 카운터는 레슨 전체(카드 제외) 기준이며 결과 화면은 한 번이다", async () => {
   const { rpcs, events } = await boot({ progress: upTo("S1", "S3") });
   const plan = lessonPlan(u01, "S4");
   expect(plan.activities.map((activity) => activity.form)).toEqual([
@@ -577,15 +577,19 @@ test("L3b. (E-1) 다학습형 레슨: 중간 활동은 완료 카드 없이 이�
   expect(plan.shownItemCount).toBe(9);
 
   tapNode(u01, "S4");
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 9");
+  // ⟨2026-10-19⟩ 카드 다섯은 카운터에 세지 않습니다(ADR-0073) — 카드 구간에는 카운터가 없고, 그 뒤가
+  // 카드를 뺀 4에서 1부터입니다.
+  expect(screen.queryByTestId("learning-shell-chapter")).not.toBeInTheDocument();
   let ordinal = 0;
   plan.activities.forEach((activity, index) => {
     const last = index === plan.activities.length - 1;
     expect(screen.getByTestId(contentIdOf[activity.form])).toBeInTheDocument();
-    expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent(
-      `Lesson ${ordinal + 1} / 9`,
-    );
-    ordinal += activity.questions.length;
+    if (activity.form !== "vocab-card") {
+      expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent(
+        `Lesson ${ordinal + 1} / 4`,
+      );
+      ordinal += activity.questions.length;
+    }
     solveActivity(activity, true, last);
     // 중간 활동이 끝난 자리에는 완료 카드도 결과 화면도 없고 곧바로 다음 학습형의 첫 문항이다.
     if (!last) {

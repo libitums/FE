@@ -179,9 +179,37 @@ export function catalogLessonPlanOf(
 }
 
 /**
- * 그 활동이 레슨 안의 어디인가입니다 — 오프셋은 앞 활동들의 문항 수 합, 전체는 표시 문항 수, 마지막
- * 활동만 `last`, 활동 수는 계획의 활동 수(완료 카드의 활동 타일)입니다. 레슨 순번은 구획이 알아서
- * 여기서 채우지 않습니다(`render-catalog`). 없는 순번이면 `null`입니다.
+ * 활동 문항이 레슨 카운터(`Lesson n / N`)에 들어가는가의 표입니다 — 새 학습형이 생기면 tsc가 답을
+ * 강제합니다.
+ *
+ * ⟨2026-10-19⟩ 단어 카드만 빠집니다(ADR-0073). 카드 구간은 세션 헤더 대신 카드 진행 막대를 따로
+ * 세우므로, 카운터까지 카드를 세면 카드 일곱 장 뒤 첫 문제가 `Lesson 8 / 13`으로 서서 「아직 한 문제도
+ * 안 풀었는데 절반을 왔다」고 읽힙니다. 채점과 같은 표가 아닙니다 — 문화 카드는 채점하지 않아도
+ * 세션 헤더 안에서 한 장씩 넘기므로 그대로 셉니다.
+ */
+export const catalogCountsInLessonCounter: Readonly<Record<CatalogActivityForm, boolean>> = {
+  listening: true,
+  "sentence-order": true,
+  "word-choice": true,
+  typing: true,
+  "vocab-card": false,
+  "pair-match": true,
+  "culture-card": true,
+  "syllable-build": true,
+  "read-aloud": true,
+  "speak-word": true,
+};
+
+const counterCountOf = (activity: CatalogActivity): number =>
+  catalogCountsInLessonCounter[activity.form] ? activity.questions.length : 0;
+
+/**
+ * 그 활동이 레슨 안의 어디인가입니다 — 오프셋은 앞 활동들의 카운터 문항 수 합, 전체는 카운터 문항 수
+ * (표시 문항에서 단어 카드를 뺀 수), 마지막 활동만 `last`, 활동 수는 계획의 활동 수(완료 카드의 활동
+ * 타일)입니다. 레슨 순번은 구획이 알아서 여기서 채우지 않습니다(`render-catalog`). 없는 순번이면 `null`입니다.
+ *
+ * 분석 이벤트의 `shownItemCount`는 그대로 카드를 셉니다 — 「화면에 무엇이 섰나」의 수이고, 카운터는
+ * 「몇 번째 문제인가」의 수라 서로 다른 질문입니다.
  */
 export function catalogActivityPositionOf(
   plan: CatalogLessonPlan,
@@ -190,10 +218,10 @@ export function catalogActivityPositionOf(
   if (plan.activities[activityIndex] === undefined) return null;
   const offset = plan.activities
     .slice(0, activityIndex)
-    .reduce((sum, activity) => sum + activity.questions.length, 0);
+    .reduce((sum, activity) => sum + counterCountOf(activity), 0);
   return {
     offset,
-    total: plan.shownItemCount,
+    total: plan.activities.reduce((sum, activity) => sum + counterCountOf(activity), 0),
     last: activityIndex === plan.activities.length - 1,
     activityCount: plan.activities.length,
   };

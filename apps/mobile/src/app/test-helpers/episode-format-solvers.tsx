@@ -8,7 +8,7 @@ import type { CatalogActivity, CatalogLessonPlan } from "../catalog-lesson-plan"
 import { catalogSpellingOf } from "../catalog-build-map";
 import { isTypeableAnswer, keystrokesFor } from "../../lib/hangul-keyboard";
 import type { TypingQuestion } from "../../screens/typing/typing.contract";
-import { contentIdOf, tapId } from "./episode-format-harness";
+import { contentIdOf, tapButtonIn, tapId } from "./episode-format-harness";
 
 const lettersOnly = (text: string) => text.normalize("NFC").replace(/[^ㄱ-ㆎ가-힣]/g, "");
 export function typeKeys(text: string): void {
@@ -123,9 +123,9 @@ export function solveActivity(activity: CatalogActivity, right: boolean, last = 
       }
       break;
     case "vocab-card":
-      // 카드는 문항 수만큼 버튼을 누릅니다 — 마지막 카드의 버튼이 곧 다음 걸음이라 완료 카드가 없습니다.
+      // 단어 카드는 `Got it`(ui-lynx `Button`)입니다(ADR-0073) — 마지막 카드의 버튼이 곧 다음 걸음입니다.
       for (let index = 0; index < activity.questions.length; index += 1) {
-        tapId("learning-shell-action");
+        tapButtonIn("vocab-card-got-it");
       }
       return;
     case "culture-card":

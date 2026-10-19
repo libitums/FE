@@ -13,14 +13,12 @@ import {
   learningTimingFlag,
   learningWorkspaceMode,
 } from "./learning-shell.contract";
-import { LearningSessionHeader } from "./LearningSessionHeader";
+import { LearningShellHeader } from "./LearningShellHeader";
 import type { LearningShellProps } from "./learning-shell-props";
 import { scrollLearningShellToTop, useLearningShellScrollReset } from "./learning-shell-scroll";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
 import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
-import cross from "@libitums/icons/lynx/cross";
-import { color } from "@libitums/design-tokens";
 
 import "./learning-shell.css";
 
@@ -57,9 +55,12 @@ export function LearningShell({
   trophyCount,
   onOpenNotifications = () => {},
   obscured,
+  runProgress,
+  actionButton,
 }: LearningShellProps): ReactNode {
   const copy = useUiCopy();
-  const actionsShown = actionLabel !== undefined && onAction !== undefined;
+  const actionsShown =
+    actionButton !== undefined || (actionLabel !== undefined && onAction !== undefined);
   const workspaceMode = learningWorkspaceMode({ scrolls: workspaceScrolls, actionsShown });
   const { flow, reportViewportHeight } = useLearningShellFlow(workspaceMode);
   const arrangement = learningShellArrangement({ scrollCard, flow });
@@ -168,22 +169,13 @@ export function LearningShell({
         trophyCount={trophyCount}
         onOpenNotifications={onOpenNotifications}
       />
-      {/* 세션 헤더 — 나가기 · 순번 · 진행 막대 · 학습형 이름 · 백분율입니다. 면 · 모서리 ·
-          안 여백은 ui-lynx `Card`가 집니다: 회색 면에 그림자 없는 변형입니다. 이 화면이
-          카드를 손으로 그리지 않는 이유는 카드가 이미 디자인 시스템의 것이기 때문입니다.
-
-          막대는 장식이 아니라 값이므로 낱말 둘을 한 접근성 요소로 묶어 읽히게 하고,
-          막대 자신은 트리에서 뺍니다. */}
-      {/* 세션 헤더를 상자로 감쌉니다 — 스스로 넘어가는 층(`-advance`)보다 위에 서야
-          `×`로 나가는 길이 막히지 않습니다. */}
-      <view className="learning-shell-session-layer">
-        <LearningSessionHeader
-          form={form}
-          questionIndex={questionIndex}
-          questionCount={questionCount}
-          onExit={handleExit}
-        />
-      </view>
+      <LearningShellHeader
+        form={form}
+        questionIndex={questionIndex}
+        questionCount={questionCount}
+        runProgress={runProgress}
+        onExit={handleExit}
+      />
       {/* 카드 스크롤 모드는 버튼 행의 실제 높이를 먼저 확보합니다. */}
       <LearningShellBody
         arrangement={arrangement}
@@ -210,7 +202,8 @@ export function LearningShell({
       )}
       {actionsShown ? (
         <LearningShellActions
-          label={actionLabel}
+          button={actionButton}
+          label={actionLabel ?? ""}
           onAction={handleAction}
           secondaryAction={secondaryAction}
           inFlow={arrangement !== "split"}
