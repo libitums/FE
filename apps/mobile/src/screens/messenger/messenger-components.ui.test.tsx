@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -14,6 +15,7 @@ import { sendMessengerReply, typeMessengerReply } from "./messenger.test-support
 function renderActive(onComplete = vi.fn(), onFinish = vi.fn()) {
   render(
     <MessengerScreen
+      insets={zeroSafeAreaInsets}
       conversation={conversation}
       completionStatus="available"
       onExit={vi.fn()}
@@ -57,6 +59,7 @@ describe("messenger UI components", () => {
   it("완료한 대화도 재진입하면 첫 상대 메시지를 타이핑한다", () => {
     render(
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="completed"
         onExit={vi.fn()}
@@ -101,6 +104,7 @@ describe("messenger UI components", () => {
     const onExit = vi.fn();
     render(
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="available"
         onExit={onExit}
@@ -237,6 +241,7 @@ describe("messenger UI components", () => {
     const onComplete = vi.fn();
     const view = render(
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="available"
         onExit={vi.fn()}
@@ -288,6 +293,7 @@ describe("messenger UI components", () => {
     const onFinish = vi.fn();
     render(
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="completed"
         onExit={vi.fn()}
@@ -309,6 +315,7 @@ describe("MessengerScreen motion 컨텍스트", () => {
     render(
       <MotionProvider motion="reduced">
         <MessengerScreen
+          insets={zeroSafeAreaInsets}
           conversation={conversation}
           completionStatus="available"
           onExit={vi.fn()}

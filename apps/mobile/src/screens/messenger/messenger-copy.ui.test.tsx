@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -16,6 +17,7 @@ function renderMarked(exitTo: "journey" | "roleplay" = "journey") {
   render(
     <UiCopyContext.Provider value={markedUiCopy}>
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="available"
         exitTo={exitTo}

@@ -101,6 +101,7 @@ function renderActivity(
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
+          insets={wiring.safeAreaInsets}
         />
       );
     case "vocab-card":

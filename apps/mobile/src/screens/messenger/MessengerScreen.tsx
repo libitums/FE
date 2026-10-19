@@ -9,6 +9,7 @@ import { LearningItemGuide } from "../../components/LearningItemGuide";
 import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import type { AnswerResult } from "../../lib/answer-result";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
+import { keyboardDockEdgesOf } from "../../lib/keyboard-dock";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { MessageBubble } from "./MessageBubble";
@@ -54,6 +55,7 @@ export function MessengerScreen({
   onComplete,
   onFinish,
   reducedMotion: reducedMotionProp,
+  insets,
 }: MessengerScreenProps) {
   const copy = useUiCopy();
   const reducedMotion = resolveReducedMotion(reducedMotionProp, useMotion());
@@ -219,6 +221,7 @@ export function MessengerScreen({
                 onShift={() => {
                   if (!guide.visible) dispatchComposer({ type: "shift" });
                 }}
+                edges={keyboardDockEdgesOf(insets)}
               />
             ) : (
               <MessengerChoices

@@ -5,6 +5,7 @@ import { AnswerReveal } from "../../components/AnswerReveal";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { AudioUnavailableControl } from "../../components/AudioUnavailableControl";
 import { announceCompletion } from "../../lib/accessibility";
+import { keyboardDockEdgesOf } from "../../lib/keyboard-dock";
 import { useUiCopy } from "../../lib/ui-copy";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
@@ -38,6 +39,7 @@ export function TypingActivity({
   onExit,
   onFinish,
   lesson,
+  insets,
 }: TypingActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(typingSessionReducer, initialTypingSessionState);
@@ -109,6 +111,7 @@ export function TypingActivity({
             onPress={(key) => dispatch({ type: "press", key })}
             onBackspace={() => dispatch({ type: "backspace" })}
             onShift={() => dispatch({ type: "shift" })}
+            edges={keyboardDockEdgesOf(insets)}
           />
         )
       }
