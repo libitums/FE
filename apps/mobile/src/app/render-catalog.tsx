@@ -47,11 +47,13 @@ function nonEmptyTurns(turns: readonly CatalogRoleplayTurn[]): CatalogRoleplayTu
 }
 
 // 활동 하나를 그 학습형의 화면으로 그립니다. 망라 `switch`가 새 학습형을 컴파일 타임에 강제합니다.
+// `counterpartName`은 대화 조립 아바타만 씁니다 — 학습자 이름과 함께 문장 순서 활동에 넘깁니다.
 function renderActivity(
   activity: CatalogActivity,
   lesson: LessonPosition,
   screen: LessonScreen,
   wiring: ScreenWiring,
+  counterpartName: string,
 ): ReactNode {
   const { episodeId, unitKey, activityIndex } = screen;
   const key = `${episodeId}:${unitKey}:${activityIndex}`;
@@ -80,6 +82,7 @@ function renderActivity(
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
+          speakerNames={{ counterpart: counterpartName, me: wiring.learnerFill.name }}
         />
       );
     case "word-choice":
@@ -189,12 +192,12 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
       );
       const activity = plan?.activities[screen.activityIndex];
       const lesson = plan === null ? null : catalogActivityPositionOf(plan, screen.activityIndex);
-      if (activity === undefined || lesson === null) {
+      if (plan === null || activity === undefined || lesson === null) {
         throw new Error(
           `Catalog lesson has no activity: ${screen.episodeId}/${screen.unitKey}/${screen.activityIndex}`,
         );
       }
-      return renderActivity(activity, lesson, screen, wiring);
+      return renderActivity(activity, lesson, screen, wiring, plan.counterpartName);
     }
     case "catalog-final": {
       const { episodeId } = screen;

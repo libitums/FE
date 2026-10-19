@@ -174,6 +174,7 @@ export function catalogLessonPlanOf(
       .reduce((sum, activity) => sum + countOf(activity), 0),
     shownItemCount: activities.reduce((sum, activity) => sum + countOf(activity), 0),
     skippedItemCount: mapped.filter((item) => item.kind === "skipped").length,
+    counterpartName: entry.episode.counterpart.trim(),
   };
 }
 

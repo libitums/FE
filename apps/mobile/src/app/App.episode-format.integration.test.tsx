@@ -170,6 +170,30 @@ test("EF5. (D9) S2의 대화 조립: 칸 0의 화자가 콘텐츠 턴 화자를 
   expect(shown).toContain("counterpart");
 });
 
+test("EF7. S2의 대화 조립 아바타: 상대 줄은 에피소드 상대 이름의 첫 글자, 내 줄은 프로필이 없어 대체 이름(You)의 Y다", async () => {
+  await boot({ [u01]: ["intro", "S1"] });
+  const plan = lessonPlan(u01, "S2");
+  const counterpartInitial = Array.from(plan.counterpartName)[0];
+  expect(counterpartInitial).toBeDefined();
+  tapNode(u01, "S2");
+
+  const seen = new Set<string>();
+  plan.activities.forEach((activity, index) => {
+    const speakers =
+      activity.form === "sentence-order" ? activity.questions[0]?.dialogue : undefined;
+    speakers?.speakers.forEach((speaker, position) => {
+      const box = screen.getByTestId(`sentence-order-dialogue-avatar-${position}`);
+      expect(box).toHaveClass(`sentence-order-dialogue-avatar-${speaker}`);
+      expect(box.querySelector('[data-testid="ui-lynx-avatar-initials"]')).toHaveTextContent(
+        speaker === "counterpart" ? (counterpartInitial ?? "") : "Y",
+      );
+      seen.add(speaker);
+    });
+    solveActivity(activity, true, index === plan.activities.length - 1);
+  });
+  expect([...seen].sort()).toEqual(["counterpart", "me"]);
+});
+
 test("EF6. (A3 옛 키) 옛 키 S9가 섞인 진행도 맵 · 시작이 던지지 않고 S9 노드는 서지 않는다", async () => {
   await boot({ [u01]: ["intro", "S1", "S9"] });
 
