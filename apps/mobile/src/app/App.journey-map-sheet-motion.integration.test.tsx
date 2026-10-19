@@ -136,5 +136,5 @@ test("IM-S2. (AC4) reducedMotion: true는 세 소비자에 줄이기 표식으�
   expect(countOf(".ui-lynx-episode-header-fill-sheen")).toBe(0);
   expect(classOf(nodePop())).not.toContain("journey-step-node-pop-enter");
   expect(scrollsOnMap().length).toBeGreaterThan(0);
-  expect(scrollsOnMap().every((call) => call.params.smooth === false)).toBe(true);
+  expect(scrollsOnMap().every((call) => call.params?.smooth === false)).toBe(true);
 });

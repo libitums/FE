@@ -89,7 +89,7 @@ export function StepSheet({
       accessibility-element={true}
       accessibility-label={copy.journeyMap.start}
       accessibility-traits="button"
-      {...(motion.bubbleInteractive ? { bindtap: handleStart } : {})}
+      bindtap={handleStart}
     >
       <text className="step-sheet-start-label">{copy.journeyMap.start}</text>
     </view>,
@@ -124,9 +124,9 @@ export function StepSheet({
         style={{ top: `${String(top)}px` }}
       >
         {/* 꼬리와 패널을 한 덩어리로 묶는 등장 래퍼입니다. 기준점이 꼬리 끝이라 말풍선이 그 끝에서 터지듯 커집니다.
-            대기 중에는 보이지 않으니 이 자리를 눌러도 말풍선 밖을 누른 것과 같이 닫습니다 — 시작은 끄고, 탭은
-            자손에서 이 래퍼까지 올라와 여기서 닫힙니다. 탭을 꺼서 가림막으로 흘리는 방식은 기기에서 탭이 형제
-            가림막에 닿지 않았습니다(Android e2e SM6 · ADR-0055 D6). 줄이기에서만 표식을 답니다 — 접근성 노드가
+            대기 중에는 보이지 않으니 이 자리를 눌러도 말풍선 밖을 누른 것과 같이 닫습니다 — 탭은 자손에서 이
+            래퍼까지 올라와 여기서 닫힙니다. 탭을 꺼서 가림막으로 흘리는 방식은 기기에서 탭이 형제 가림막에 닿지
+            않았습니다(Android e2e SM6 · ADR-0055 D6). 시작은 끄지 않습니다 — 전환은 입력을 막지 않습니다(ADR-0053 D5). 줄이기에서만 표식을 답니다 — 접근성 노드가
             아니라 움직이는 이 요소에 답니다. */}
         <view
           className={motion.bubble}

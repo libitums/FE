@@ -150,7 +150,7 @@ const tapStart = (): void => {
 };
 
 describe("StepSheet 대기 중 탭", () => {
-  test("SS7. awaiting: 말풍선 래퍼가 탭을 잡아 닫고, 시작은 불리지 않는다", () => {
+  test("SS7. awaiting: 말풍선 래퍼가 탭을 잡아 닫고, 시작은 막지 않는다(ADR-0053 D5)", () => {
     const onStart = vi.fn<() => void>();
     const onClose = vi.fn<() => void>();
     render(sheet("awaiting", 4, 0, { onStart, onClose }));
@@ -159,7 +159,7 @@ describe("StepSheet 대기 중 탭", () => {
     tapStart();
 
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(onStart).not.toHaveBeenCalled();
+    expect(onStart).toHaveBeenCalledTimes(1);
   });
 
   test.each(["expressive", "fade", "none"] as const)(
