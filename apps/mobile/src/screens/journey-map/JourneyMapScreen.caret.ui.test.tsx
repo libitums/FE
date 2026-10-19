@@ -40,8 +40,7 @@ const tapStep = (id: string, y: number): void => {
 };
 const caretOffset = (): string | null | undefined =>
   screen.queryByTestId("step-sheet-caret")?.getAttribute("data-caret-offset");
-const sheetTop = (): string =>
-  screen.getByTestId("step-sheet-panel").parentElement?.getAttribute("style") ?? "";
+const sheetTop = (): string => screen.getByTestId("step-sheet-anchor").getAttribute("style") ?? "";
 
 describe("말풍선 꼬리의 가로 치우침", () => {
   test("SH1. 유닛 중심이 화면 중심보다 왼쪽이면 꼬리가 그 차이만큼 왼쪽으로 치우친다", () => {

@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-libra
 import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
 import type { JourneyMapHeaderSlotProps } from "./catalog-map.contract";
 import { journeyMapSections } from "./journey-map";
+import { sheetEntranceClasses } from "./journey-map-sheet-motion";
 import type { JourneyMapSection } from "./journey-map";
 import type { JourneyMapProgressLoad } from "./journey-map-load.contract";
 import type { JourneyStepId } from "./journey-map";
@@ -228,5 +229,17 @@ describe("JourneyMapHeaderSlot 줄 자리", () => {
     render(slot({ openStepId: "greeting" }));
 
     expect(() => fireEvent.layoutchange(band(), { detail: { height: 132 } })).not.toThrow();
+  });
+});
+
+describe("JourneyMapHeaderSlot 등장 종류", () => {
+  test("HS-E1. 열린 스텝에 expressive를 주면 띠 래퍼에 등장 클래스가, 안 주면 기본 클래스만 선다", () => {
+    const view = render(slot({ openStepId: "greeting", sheetEntrance: "expressive" }));
+    expect(band().getAttribute("class")).toBe(sheetEntranceClasses("expressive").band);
+    expect(screen.queryByTestId("ui-lynx-episode-header-fill-sheen")).toBeInTheDocument();
+
+    view.rerender(slot({ openStepId: "greeting" }));
+    expect(band().getAttribute("class")).toBe("journey-map-screen-episode-header");
+    expect(screen.queryByTestId("ui-lynx-episode-header-fill-sheen")).not.toBeInTheDocument();
   });
 });

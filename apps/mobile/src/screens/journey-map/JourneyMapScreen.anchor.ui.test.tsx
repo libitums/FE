@@ -93,7 +93,7 @@ function renderMap(): void {
 }
 
 function sheetTop(): string | null {
-  return screen.getByTestId("step-sheet-panel").parentElement?.getAttribute("style") ?? null;
+  return screen.getByTestId("step-sheet-anchor").getAttribute("style");
 }
 
 afterEach(() => {

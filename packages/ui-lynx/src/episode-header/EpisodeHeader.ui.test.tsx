@@ -1,4 +1,4 @@
-import { render, screen } from "@lynx-js/react/testing-library";
+import { cleanup, render, screen } from "@lynx-js/react/testing-library";
 import { describe, expect, test } from "vitest";
 
 import { EpisodeHeader } from "./index";
@@ -126,5 +126,64 @@ describe("EpisodeHeader", () => {
 
     expect(screen.getByTestId("ui-lynx-episode-header-fill")).toBeInTheDocument();
     expect(container.querySelector("svg")).toBeNull();
+  });
+});
+
+describe("EpisodeHeader progressEntrance", () => {
+  function header(completed: number, progressEntrance?: "none" | "fill") {
+    return (
+      <EpisodeHeader
+        episodeLabel="Episode 1, unit 02"
+        title="Cosmetic."
+        completedUnitCount={completed}
+        totalUnitCount={10}
+        {...(progressEntrance === undefined ? {} : { progressEntrance })}
+      />
+    );
+  }
+  const fill = (): HTMLElement => screen.getByTestId("ui-lynx-episode-header-fill");
+  const sheen = (): HTMLElement | null => screen.queryByTestId("ui-lynx-episode-header-fill-sheen");
+
+  test.each([undefined, "none"] as const)(
+    "EH2. progressEntrance가 %s이면 채움 DOM이 지금 그대로다 (클래스 정확히, 자식 0)",
+    (value) => {
+      render(header(3, value));
+
+      expect(fill().getAttribute("class")).toBe("ui-lynx-episode-header-fill");
+      expect(fill().children).toHaveLength(0);
+      expect(sheen()).not.toBeInTheDocument();
+    },
+  );
+
+  test("EH3. fill이면 채움에 등장 클래스가 붙고 빛 자식이 하나 서며, 접근성 속성은 없다", () => {
+    render(header(3, "fill"));
+
+    expect(fill().getAttribute("class")).toContain("ui-lynx-episode-header-fill-enter");
+    expect(fill().children).toHaveLength(1);
+    expect(sheen()?.getAttribute("class")).toBe("ui-lynx-episode-header-fill-sheen");
+    expect(sheen()?.parentElement).toBe(fill());
+    for (const element of [fill(), sheen()]) {
+      const names = Array.from(element?.attributes ?? []).map((attribute) => attribute.name);
+      expect(names.filter((name) => name.startsWith("accessibility-"))).toEqual([]);
+    }
+  });
+
+  test("EH4. fill이어도 0 / 10이면 채움도 빛도 없고, 루트 접근성 이름은 세 경우 모두 같은 문자열이다", () => {
+    render(header(0, "fill"));
+    expect(screen.queryByTestId("ui-lynx-episode-header-fill")).not.toBeInTheDocument();
+    expect(sheen()).not.toBeInTheDocument();
+    const entering = screen
+      .getByTestId("ui-lynx-episode-header")
+      .getAttribute("accessibility-label");
+    cleanup();
+
+    render(header(0, "none"));
+    const plain = screen.getByTestId("ui-lynx-episode-header").getAttribute("accessibility-label");
+    cleanup();
+    render(header(0));
+    const absent = screen.getByTestId("ui-lynx-episode-header").getAttribute("accessibility-label");
+
+    expect(entering).toBe(plain);
+    expect(absent).toBe(plain);
   });
 });

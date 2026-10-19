@@ -83,7 +83,7 @@ describe("JourneyMapScreen 자동 스크롤의 자리", () => {
 
     expect(screen.queryByTestId("step-sheet-panel")).not.toBeNull();
     expect(Math.abs(lastOffset(host) - 290)).toBeLessThanOrEqual(1);
-    const style = screen.getByTestId("step-sheet-panel").parentElement?.getAttribute("style");
+    const style = screen.getByTestId("step-sheet-anchor").getAttribute("style");
     expect(style).toContain("518px");
   });
 
