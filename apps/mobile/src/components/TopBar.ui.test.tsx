@@ -92,9 +92,8 @@ test.each([["standard" as const], ["reduced" as const]])(
     fireEvent.tap(button, {});
     expect(onOpenNotifications).toHaveBeenCalledTimes(1);
 
-    const shade = screen.queryByTestId("top-bar-notifications-shade");
-    if (shade !== null) {
-      fireEvent.tap(shade, {});
+    if (motion === "reduced") {
+      fireEvent.tap(screen.getByTestId("top-bar-notifications-shade"), {});
       expect(onOpenNotifications).toHaveBeenCalledTimes(2);
     }
   },

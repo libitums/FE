@@ -114,8 +114,8 @@
   학습 화면이 함께 쓰는 `TopBar`). 정정 기록 1의 「LearningUnit 꼴」 그대로다 — 버튼 루트 base 규칙에 `transition: transform duration.pressed easing.easing`, `:active`에
   `scale(var(--libitum-motion-scale-pressed))`. D1의 scale `var()` 자리는 **열 → 열하나**다. reduced 표지는 루트(`top-bar-notifications-motion-reduced` + `data-motion="reduced"`, standard에는
   속성 없음)이고 `transform: none` · `transition: none`(전환이 transform뿐이다). 버튼은 흰 면이고 `:active` 색 변화가 없어 **black 막**이다(「밝은 면 black」 — DS-Q11의 읽기 그대로) —
-  `top-bar-notifications-shade`, 버튼 첫 자식, `opacity.pressed-shade`(0.08), reduced일 때만 DOM에 선다. 막의 유무를 조건 자식 한 칸이 아니라 **버튼 트리 두 갈래**로 나눴다 — 조건 칸을
-  감싸는 요소가 끼면 막이 「첫 자식」이 아니게 된다. 같은 줄의 연속 학습 · 트로피 칩은 **넣지 않았다** — 학습 화면에서는 버튼이 아니고(`onTap` 없음), 여정 맵에서 버튼인 칩까지 줄일지는
+  `top-bar-notifications-shade`, 버튼 첫 자식, `opacity.pressed-shade`(0.08), reduced일 때만 DOM에 선다. 막의 유무를 조건 자식 한 칸이 아니라 **버튼 트리 두 갈래**로 나눴다 — jsdom 테스트 렌더러가 조건 칸을
+  이름 없는 `<wrapper>`로 감싸 TB4의 「첫 자식」 단언(`firstElementChild`)이 깨지기 때문이다(기기 트리 사정이 아니다 — 같은 꼴의 `RoleplayCard` 조건 첫 자식 막은 iOS에서 동작한다). 같은 줄의 연속 학습 · 트로피 칩은 **넣지 않았다** — 학습 화면에서는 버튼이 아니고(`onTap` 없음), 여정 맵에서 버튼인 칩까지 줄일지는
   범위 밖이라 같은 줄에서 반응이 갈린다(「미확인 · 후속」 11). `lint:motion` allowlist 변경 0. 검증은 unit(`top-bar.css.unit.test.ts` · `top-bar-press.unit.test.ts`) · ui(`TopBar.ui.test.tsx`) ·
   integration(`App.motion.integration.test.tsx` NBI2), 기기는 [알림 버튼 e2e](../e2e/notification-button.md) — 2026-10-19 회차 1에서 **눌림 · 동작 줄이기는 보지 않았다**.
 
