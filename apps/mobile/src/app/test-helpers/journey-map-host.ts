@@ -7,15 +7,16 @@ import { scrollSelector, type Rect } from "../../screens/journey-map/JourneyMapS
 
 export { scrollSelector };
 
-/** 스크롤 상자와 머리 카드의 잰 값입니다 — 정렬선은 60 + 168 + 24 = 252입니다. */
+/** 스크롤 상자 · 머리 손잡이 · 화면의 잰 값입니다 — 손잡이 높이 0은 기기 꼴입니다. */
 export const frameRects: Record<string, Rect> = {
   [scrollSelector]: { top: 60, height: 800 },
-  "#journey-map-screen-header": { top: 60, height: 168 },
+  "#journey-map-screen-header": { top: 64, height: 0 },
   "#journey-map-screen": { top: 0, height: 900 },
 };
 
-/** 대상 유닛 위 모서리가 `top`일 때 스크롤 자리 0에서의 목적지입니다(정렬선 252). */
-export const offsetFor = (top: number): number => top - 252;
+// 가운데 = 60 + 800 / 2 = 460, 대상 중심 = top + 50. 띠 손잡이 아래 + 24는 대상 위 410보다 위라 걸리지 않는다.
+/** 대상 유닛 위 모서리가 `top`일 때 스크롤 자리 0에서의 목적지입니다(대상이 서는 자리 410). */
+export const offsetFor = (top: number): number => top - 410;
 
 export function setGlobalProps(value: Record<string, unknown> | undefined): void {
   (lynx as unknown as { __globalProps: unknown }).__globalProps = value;
