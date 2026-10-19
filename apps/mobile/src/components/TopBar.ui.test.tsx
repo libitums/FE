@@ -1,28 +1,118 @@
 import { expect, test, vi } from "vitest";
-import { render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+
+import notification from "@libitums/icons/lynx/notification";
+import notification03 from "@libitums/icons/lynx/notification-03";
+import { color } from "@libitums/design-tokens";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 
 import { UiCopyContext } from "../lib/ui-copy";
 import { markedUiCopy } from "../lib/ui-copy.test-support";
+import { statChipClassName } from "./stat-chip-class";
 import { TopBar } from "./TopBar";
+import { topBarNotificationsClassName } from "./top-bar-press";
 
 // `ui` 계층: 컴포넌트 렌더 (ADR-0006 D4).
 
 // 상단 바는 스크롤되는 내용 위에 겹쳐 떠 있습니다 — 칩 둘은 흰 면으로 서야 뒤로 지나가는
-// 내용과 섞이지 않습니다. 알림 버튼의 흰 면은 CSS(`.top-bar-notifications`)가 집니다.
-test("[TB1] 칩 둘은 모두 흰 면으로 선다", () => {
-  render(
-    <TopBar
-      streakDays={3}
-      trophyCount={1}
-
-      onOpenNotifications={vi.fn()}
-    />,
-  );
+// 내용과 섞이지 않고, 알림 버튼과 같은 44 높이로 섭니다. 알림 버튼의 흰 면은 CSS가 집니다.
+test("[TB1] 칩 둘은 흰 면 · 상단 줄 높이로 선다", () => {
+  render(<TopBar streakDays={3} trophyCount={1} onOpenNotifications={vi.fn()} />);
 
   expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
   for (const id of ["top-bar-streak", "top-bar-trophy"]) {
-    expect(screen.getByTestId(id).getAttribute("class")).toBe("stat-chip stat-chip-surface-white");
+    expect(screen.getByTestId(id).getAttribute("class")).toBe(
+      statChipClassName("white", "touch-target"),
+    );
   }
+  expect(screen.getByTestId("top-bar-streak").getAttribute("class")).toBe(
+    "stat-chip stat-chip-surface-white stat-chip-height-touch-target",
+  );
+});
+
+test("[TB2] 알림 아이콘은 선형 종 · fg.neutral 색이고 버튼의 자식이다", () => {
+  render(<TopBar streakDays={3} trophyCount={1} onOpenNotifications={vi.fn()} />);
+
+  const button = screen.getByTestId("top-bar-notifications");
+  const icon = screen.getByTestId("top-bar-notifications-icon");
+  expect(icon.parentElement).toBe(button);
+  expect(icon.getAttribute("content")).toBe(notification03);
+  expect(icon.getAttribute("content")).not.toBe(notification);
+  expect(icon.getAttribute("current-color")).toBe(color.fg.neutral);
+  expect(icon.getAttribute("class")).toBe("top-bar-notifications-icon");
+});
+
+test.each([
+  ["Provider 없음", undefined],
+  ["motion=standard", "standard" as const],
+])("[TB3] standard(%s)는 표지도 막도 없다", (_name, motion) => {
+  const bar = <TopBar streakDays={3} trophyCount={1} onOpenNotifications={vi.fn()} />;
+  render(motion === undefined ? bar : <MotionProvider motion={motion}>{bar}</MotionProvider>);
+
+  const button = screen.getByTestId("top-bar-notifications");
+  expect(button.getAttribute("class")).toBe(topBarNotificationsClassName("standard"));
+  expect(button).not.toHaveAttribute("data-motion");
+  expect(screen.queryByTestId("top-bar-notifications-shade")).not.toBeInTheDocument();
+  expect(Array.from(button.children)).toEqual([screen.getByTestId("top-bar-notifications-icon")]);
+});
+
+test("[TB4] reduced는 표지 · 첫 자식 막이 서고 막은 낭독되지 않는다", () => {
+  render(
+    <MotionProvider motion="reduced">
+      <TopBar streakDays={3} trophyCount={1} onOpenNotifications={vi.fn()} />
+    </MotionProvider>,
+  );
+
+  const button = screen.getByTestId("top-bar-notifications");
+  const shade = screen.getByTestId("top-bar-notifications-shade");
+  const icon = screen.getByTestId("top-bar-notifications-icon");
+  expect(button.getAttribute("class")).toBe(topBarNotificationsClassName("reduced"));
+  expect(button).toHaveAttribute("data-motion", "reduced");
+  expect(button.firstElementChild).toBe(shade);
+  expect(shade.compareDocumentPosition(icon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  for (const { name } of Array.from(shade.attributes)) {
+    expect(name.startsWith("accessibility-")).toBe(false);
+  }
+});
+
+test.each([["standard" as const], ["reduced" as const]])(
+  "[TB5] %s에서도 알림 버튼의 이름 · 특성 · tap이 그대로다",
+  (motion) => {
+    const onOpenNotifications = vi.fn();
+    render(
+      <MotionProvider motion={motion}>
+        <TopBar streakDays={3} trophyCount={1} onOpenNotifications={onOpenNotifications} />
+      </MotionProvider>,
+    );
+
+    const button = screen.getByTestId("top-bar-notifications");
+    expect(button).toHaveAttribute("accessibility-element", "true");
+    expect(button).toHaveAttribute("accessibility-label", "Notifications");
+    expect(button).toHaveAttribute("accessibility-traits", "button");
+    fireEvent.tap(button, {});
+    expect(onOpenNotifications).toHaveBeenCalledTimes(1);
+
+    const shade = screen.queryByTestId("top-bar-notifications-shade");
+    if (shade !== null) {
+      fireEvent.tap(shade, {});
+      expect(onOpenNotifications).toHaveBeenCalledTimes(2);
+    }
+  },
+);
+
+test("[TB6] 칩의 아이콘 · 숫자 색은 그대로다", () => {
+  render(<TopBar streakDays={3} trophyCount={1} onOpenNotifications={vi.fn()} />);
+
+  const streak = screen.getByTestId("top-bar-streak");
+  const trophy = screen.getByTestId("top-bar-trophy");
+  expect(streak.querySelector("svg")?.getAttribute("current-color")).toBe(color.brand.secondary);
+  expect(trophy.querySelector("svg")?.getAttribute("current-color")).toBe(color.feedback.warning);
+  expect(streak.querySelector(".stat-chip-value")?.getAttribute("class")).toBe(
+    "stat-chip-value stat-chip-value-streak",
+  );
+  expect(trophy.querySelector(".stat-chip-value")?.getAttribute("class")).toBe(
+    "stat-chip-value stat-chip-value-trophy",
+  );
 });
 
 // SH2-E — 지표 이름은 영어이고 단수 · 복수를 지킨다(0 · 1 · 5).

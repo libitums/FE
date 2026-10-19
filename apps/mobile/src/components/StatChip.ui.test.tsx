@@ -2,6 +2,7 @@ import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { StatChip } from "./StatChip";
+import { statChipClassName } from "./stat-chip-class";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
 
@@ -52,4 +53,42 @@ test("[SC3] surface를 주지 않으면 면이 없고, white면 흰 면 클래�
   expect(screen.getByTestId("white").getAttribute("class")).toBe(
     "stat-chip stat-chip-surface-white",
   );
+});
+
+// 높이는 자리마다 다릅니다 — 상단 줄은 알림 버튼과 같은 44, 학습 완료 머리는 내용 높이 그대로입니다.
+test("[SC4] height를 주지 않거나 hug면 높이 클래스가 없고, touch-target이면 붙는다", () => {
+  render(
+    <>
+      <StatChip tone="trophy" value={1} accessibilityLabel="트로피 1개" testId="default" />
+      <StatChip tone="trophy" value={1} accessibilityLabel="트로피 1개" testId="hug" height="hug" />
+      <StatChip
+        tone="trophy"
+        value={1}
+        accessibilityLabel="트로피 1개"
+        testId="tall"
+        height="touch-target"
+      />
+      <StatChip
+        tone="trophy"
+        value={1}
+        accessibilityLabel="트로피 1개"
+        testId="white-tall"
+        surface="white"
+        height="touch-target"
+        onTap={vi.fn()}
+      />
+    </>,
+  );
+
+  expect(screen.getByTestId("default").getAttribute("class")).toBe("stat-chip");
+  expect(screen.getByTestId("hug").getAttribute("class")).toBe("stat-chip");
+  expect(screen.getByTestId("tall").getAttribute("class")).toBe(
+    "stat-chip stat-chip-height-touch-target",
+  );
+  expect(screen.getByTestId("white-tall").getAttribute("class")).toBe(
+    statChipClassName("white", "touch-target"),
+  );
+  expect(screen.getByTestId("tall")).not.toHaveAttribute("accessibility-traits");
+  expect(screen.getByTestId("white-tall")).toHaveAttribute("accessibility-traits", "button");
+  expect(screen.getByTestId("tall")).toHaveTextContent("1");
 });
