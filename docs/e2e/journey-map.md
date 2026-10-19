@@ -1313,6 +1313,7 @@ M-4(부드러운 이동의 실제 시간 · 긴 거리의 모양)는 **E-S2의 �
 
 > 결정은 [ADR-0058](../adr/0058-catalog-learning-session.md) 적용 기록 ⟨2026-10-17⟩ · [ADR-0062](../adr/0062-progress-cache-first.md) ⟨2026-10-17 정정⟩.
 > 자동 검사: `JourneyMapScreen.catalog-sheet.ui.test.tsx`(CS1 ~ CS5) · `catalog-sheet.unit.test.ts` · `App.catalog-lessons.integration.test.tsx` L2a.
+> ⟨2026-10-19⟩ 말풍선 · 띠는 이제 **맵이 유닛을 옮긴 뒤에 등장한다**(옮기는 동안은 보이지 않고, 늦어도 누른 뒤 1초 안 — [ADR-0070](../adr/0070-journey-map-sheet-entrance-motion.md)). 아래 「누르면 말풍선 · 띠가 선다」 류의 관찰은 **등장이 끝난 화면** 기준으로 읽는다. 등장 모션 자체의 절차는 [보상 모션 e2e](motion-reward.md#유닛-탭-등장-모션-2026-10-19-adr-0070)이고, 아래 회차 기록은 고치지 않는다.
 
 | id | 기기 | 절차 | 기대 |
 | --- | --- | --- | --- |
@@ -1355,6 +1356,7 @@ M-4(부드러운 이동의 실제 시간 · 긴 거리의 모양)는 **E-S2의 �
 > 자동 스크롤이 유닛을 세우는 자리를 유닛 탭의 자리 규칙과 하나로 합쳤다(가운데쯤 · 말풍선이 들어갈 만큼 올림 · 띠가 설 자리에 걸리면 그 아래). 목표(AC6)는 **자동 스크롤로 선 유닛을 누르면 맵이 움직이지 않고 말풍선과 띠만 서는 것**이다. 옛 서술(「머리 카드 아래 24」)은 위 「자동 스크롤」 · 「도착 뒤 보정」 절의 머리 메모가 이 절을 가리킨다.
 > 자동 검사: `journey-map-scroll-position.placement.unit.test.ts`(MP1 ~ MP7) · `journey-map-scroll-position.correction.unit.test.ts`(RC1″ ~ RC10″) · `journey-map-insets.unit.test.ts`(IN1″ · IN4″) · `JourneyMapScreen.autoscroll-place.ui.test.tsx`(AU1 ~ AU6) · `JourneyMapScreen.autoscroll-correction.ui.test.tsx`(AC″) · `App.journey-map-arrival.integration.test.tsx`(I11″ · I12″ · I13).
 > **자동 검사가 못 지는 것**(이 절이 진다): 실제 레이아웃에서 셀과 노드의 위 모서리가 같은지 · 탭이 띠보다 먼저 재는지 · 호스트가 목적지에서 1 안에 멈추는지.
+> ⟨2026-10-19⟩ 이 절의 「말풍선과 띠만 선다」도 이제 등장 모션이 끝난 화면 기준이다 — 위 [카탈로그 유닛 말풍선](#카탈로그-유닛-말풍선-2026-10-17) 절 머리 메모와 같다. 회차 기록은 고치지 않는다.
 
 ### 전제
 

@@ -361,3 +361,5 @@ Android 기기 안 `screencap` 루프)로 중간 프레임을 잡았다. `data-m
 | 빌드 SHA (호스트 · 번들) | Android 호스트 · 번들 `d5ff18d9`(첫 회차) / iOS 호스트 · 번들 `d602fe08`(r02; 첫 회차는 `d5ff18d9`). 번들은 로그인을 위해 `PUBLIC_SUPABASE_URL=https://localhost:18791`(iOS, 모의 TLS 서버) · `https://example.invalid`(Android)로 빌드 |
 | 기기 · OS · 빌드 종류 | iPhone 17 Pro 시뮬레이터(iOS 26.5, 전용 `motion-reduced-e2e` · `motion-green`) · **Release** Host(`CODE_SIGNING_ALLOWED=NO`, pod install 안 함) + `--bundle-url=main.lynx` — 절차의 Debug와 다르다 / Pixel_8 AVD `emulator-5554` API 37 · debug + androidTest, 번들 서버 18792(18790은 다른 세션이 점유) |
 | 설정 복원 확인 | iOS 0 → 0, 전용 시뮬레이터 `shutdown` · `delete`(목록 0건). Android `delete` · 1.0 · 1.0, `wm size`/`density` · `font_scale` · `navigation_mode` 원복. **TalkBack이 시작 시점에 켜져 있었다**(다른 세션의 잔재 — 탭이 탐색 모드로 먹혀 끄고 진행) → 끝에 세 값(`enabled_accessibility_services` · `accessibility_enabled` · `touch_exploration_enabled`)을 그대로 되돌림 |
+
+> ⟨2026-10-19⟩ 여정 맵 유닛 탭의 띠 · 말풍선 등장 모션(ADR-0070)의 동작 줄이기 항목은 이 문서가 아니라 [보상 모션 e2e](motion-reward.md#유닛-탭-등장-모션-2026-10-19-adr-0070) SM7이 진다.
