@@ -58,7 +58,7 @@ export function getEpisodeHeaderContract(props: EpisodeHeaderProps): EpisodeHead
     episodeLabel,
     title,
     countLabel: `${props.completedUnitCount} / ${props.totalUnitCount}`,
-    progressEntrance: "none",
+    progressEntrance: props.progressEntrance === "fill" ? "fill" : "none",
     fillPercent: (props.completedUnitCount / props.totalUnitCount) * 100,
     // 「7 / 20」은 눈으로 보면 막대 옆이라 뜻이 붙지만, 낭독되면 무엇의 7인지 알 수
     // 없습니다. 이름에서 단위를 밝힙니다.

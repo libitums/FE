@@ -5,6 +5,7 @@
 
 /* 표식과 제목을 세로로 묶습니다. 탭은 이 상자가 아니라 안쪽 표식이 받습니다. */
 .journey-step-node {
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: center;
