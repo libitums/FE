@@ -210,8 +210,23 @@ describe("CatalogMapSections", () => {
     expect(onStartCover).toHaveBeenCalledTimes(0);
   });
 
+  test("UM4a. 받는 중(pending)인 에피소드는 맨 끝 「준비 중」과 같은 그림이다 — 그 에피소드 번호의 카드 · 낭독 요소 하나", () => {
+    mount();
+
+    const section = screen.getByTestId("catalog-pending-u04-x");
+    expect(section).toHaveAttribute("accessibility-element", "true");
+    expect(section).toHaveAttribute(
+      "accessibility-label",
+      "Episode 4. Coming soon. We're preparing the next story.",
+    );
+    expect(within(section).getByTestId("catalog-coming-soon-label")).toHaveTextContent(
+      "Episode 4.",
+    );
+    expect(screen.queryByTestId("catalog-unavailable-u04-x")).toBeNull();
+    expect(screen.queryByTestId("catalog-unavailable-caption-u04-x")).toBeNull();
+  });
+
   test.each([
-    ["u04-x", "Episode 4. Ep, coming soon", "COMING SOON"],
     ["u05-x", "Episode 5. Ep, update the app to open", "UPDATE REQUIRED"],
     ["u06-x", "Episode 6. Ep, not available", "NOT AVAILABLE"],
   ])("UM4. %s 구획은 낭독 요소 하나이고 캡션을 사유별로 낸다", (id, spoken, caption) => {
@@ -239,12 +254,16 @@ describe("CatalogMapSections", () => {
         catalogSectionDomId(id),
       );
     }
-    for (const id of ["u04-x", "u05-x", "u06-x"]) {
+    for (const id of ["u05-x", "u06-x"]) {
       expect(screen.getByTestId(`catalog-unavailable-${id}`)).toHaveAttribute(
         "id",
         catalogSectionDomId(id),
       );
     }
+    expect(screen.getByTestId("catalog-pending-u04-x")).toHaveAttribute(
+      "id",
+      catalogSectionDomId("u04-x"),
+    );
   });
 
   test("UM6. 구획 아래에는 heading trait 요소가 없다(머리말 축은 머리 카드 하나)", () => {
@@ -376,7 +395,7 @@ describe("CatalogMapSections 줄 구조", () => {
   test("UG-C4. 본문 없는 구획에는 줄이 없다", () => {
     mount();
 
-    for (const id of ["u04-x", "u05-x", "u06-x"]) {
+    for (const id of ["u05-x", "u06-x"]) {
       expect(
         within(screen.getByTestId(`catalog-unavailable-${id}`)).queryAllByTestId("journey-map-row"),
       ).toHaveLength(0);

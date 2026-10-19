@@ -2,7 +2,7 @@ import "background-only";
 
 // 에피소드 하나의 자산(이미지 · 음성)을 차례로 받아 두는 규칙과 완료 표시입니다. 던지지 않습니다.
 //
-// 실패를 둘로 가릅니다. **서버에 없다고 확정된 것**(404 · 403 · 410)은 적어 두고 넘어갑니다 — 녹음하지 않은
+// 실패를 둘로 가릅니다. **서버에 없다고 확정된 것**(400 · 403 · 404 · 410)은 적어 두고 넘어갑니다 — 녹음하지 않은
 // 줄 하나 때문에 에피소드가 영영 「준비 중」에 묶이지 않게 합니다. **그 밖의 실패**(연결 · 입출력 · 5xx …)는
 // 그 자리에서 멈추고 다음 기회(연결 · 포그라운드 복귀)에 이어 받습니다 — 받아 둔 파일은 남으므로 이어 받기는
 // 남은 것부터입니다.
@@ -25,7 +25,9 @@ export type AssetSyncResult = { state: "complete"; missing: string[] } | { state
 
 export const contentAssetsKey = (id: string): string => `libitum.content.assets.${id}`;
 
-const ABSENT_CODES = new Set([403, 404, 410]);
+// Supabase Storage는 없는 파일에 404가 아니라 400을 냅니다(본문 `{"statusCode":"404","error":"not_found"}`, 기기 관찰
+// 2026-10-19 — `audio/u03-mina/d-01.m4a`). 호스트는 상태 코드만 넘기므로 400도 「서버에 없음」으로 봅니다.
+const ABSENT_CODES = new Set([400, 403, 404, 410]);
 
 async function safeDownload(deps: AssetDeps, url: string, path: string): Promise<DownloadResult> {
   try {

@@ -213,12 +213,12 @@ describe("JourneyMapScreen progressLoad — 확인 중", () => {
     const withCatalog = (progressLoad: JourneyMapProgressLoad) =>
       mapScreen(h, { catalog: catalogOf(h, true), progressLoad });
     const known = render(withCatalog({ status: "known" }));
-    const knownHtml = screen.getByTestId("catalog-unavailable-u09-later").outerHTML;
+    const knownHtml = screen.getByTestId("catalog-pending-u09-later").outerHTML;
     known.unmount();
 
     render(withCatalog({ status: "checking" }));
 
-    expect(screen.getByTestId("catalog-unavailable-u09-later").outerHTML).toBe(knownHtml);
+    expect(screen.getByTestId("catalog-pending-u09-later").outerHTML).toBe(knownHtml);
   });
 
   test.each(["checking", "loading"] as const)(

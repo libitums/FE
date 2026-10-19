@@ -53,6 +53,14 @@ describe("syncEpisodeAssets", () => {
     ]);
   });
 
+  test("AS2b. Supabase Storage가 없는 파일에 내는 400도 서버에 없는 것이다 — 막지 않는다(기기 관찰 2026-10-19)", async () => {
+    const d = deps({ "audio/u03-mina/d-01.m4a": { status: "http", code: 400 } });
+
+    const result = await syncEpisodeAssets(d, ["audio/u03-mina/d-01.m4a", "images/x.jpg"]);
+
+    expect(result).toEqual({ state: "complete", missing: ["audio/u03-mina/d-01.m4a"] });
+  });
+
   test("AS2. 404 · 403 · 410은 서버에 없는 것으로 적고 다음으로 넘어간다 — 완료를 막지 않는다", async () => {
     const d = deps({
       "audio/a.m4a": { status: "http", code: 404 },
