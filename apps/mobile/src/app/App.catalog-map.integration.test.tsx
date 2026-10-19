@@ -460,13 +460,13 @@ test("I4. (AC6) 본문 없는 넷째 에피소드는 준비 중 구획으로 서
     holdBodies: true,
   });
 
-  expect(screen.getByTestId("catalog-unavailable-caption-u04-x")).toHaveTextContent("COMING SOON");
+  expect(screen.getByTestId("catalog-pending-u04-x")).toBeInTheDocument();
   expect(screen.queryByTestId("catalog-section-u04-x")).not.toBeInTheDocument();
 
   releaseBodies();
 
   await vi.waitFor(() => expect(screen.getByTestId("catalog-section-u04-x")).toBeInTheDocument());
-  expect(screen.queryByTestId("catalog-unavailable-u04-x")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("catalog-pending-u04-x")).not.toBeInTheDocument();
   const refreshed = events.filter((event) => event.name === "episode_content_refreshed");
   expect(refreshed).toHaveLength(1);
   expect(refreshed[0]).toMatchObject({ manifest: "unchanged", fetchedCount: "1" });

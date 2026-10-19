@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import com.lynx.react.bridge.Callback;
+import java.io.File;
 import java.io.IOException;
 
 /** Owns the Android player for one Lynx host activity. */
@@ -56,8 +57,11 @@ final class AudioPlaybackController {
         return;
       }
       String remote = AudioRemoteSource.forSource(source);
-      String path = remote == null ? AudioAssetPath.forSource(source) : null;
-      if (remote == null && path == null) {
+      // ContentFileModule 폴더 안의 file:// 만 받는다. 그 밖의 file 주소는 아래에서 거부된다.
+      File local = remote == null ? AudioContentFile.forSource(source,
+          new File(context.getFilesDir(), ContentFileModule.ROOT_NAME)) : null;
+      String path = remote == null && local == null ? AudioAssetPath.forSource(source) : null;
+      if (remote == null && local == null && path == null) {
         Log.w(TAG, "Rejected audio source " + source);
         session.finish(generation);
         return;
@@ -73,6 +77,7 @@ final class AudioPlaybackController {
       try {
         next.setAudioAttributes(audioAttributes);
         if (remote != null) next.setDataSource(remote);
+        else if (local != null) next.setDataSource(local.getPath());
         else attachAsset(next, path);
         next.setOnPreparedListener(ready -> {
           if (!session.isCurrent(generation) || player != ready) return;

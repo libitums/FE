@@ -158,6 +158,8 @@ export type CatalogMapTestId =
   | `catalog-section-${string}`
   | `catalog-unavailable-${string}`
   | `catalog-unavailable-caption-${string}`
+  // 받는 중인 에피소드의 「준비 중」 구획(ADR-0071)
+  | `catalog-pending-${string}`
   | "catalog-header-unavailable"
   // CatalogMapSections 루트(가림 속성 자리)
   | "journey-map-screen-catalog";

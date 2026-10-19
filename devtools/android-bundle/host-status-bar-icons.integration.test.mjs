@@ -115,15 +115,16 @@ test("HS1 (r03 band-decor): the real streak-modal CSS gives meteor c no top, and
   );
 });
 
-test("HS2: guard — MainActivity registers 11 modules and none is a status-bar module", () => {
+// 12번째는 ADR-0071의 `ContentFileModule`이다 — 상태바 모듈이 아니다. 새 모듈은 이 수를 함께 올린다.
+test("HS2: guard — MainActivity registers 12 modules and none is a status-bar module", () => {
   const activity = stripJavaComments(readFileSync(mainActivityPath, "utf8"));
   const registered = [...activity.matchAll(/registerModule\s*\(\s*"([^"]*)"/g)].map((m) => m[1]);
   assert.equal(
     (activity.match(/registerModule\s*\(/g) ?? []).length,
-    11,
-    "the number of registerModule( calls must stay 11 (no new native module)",
+    12,
+    "the number of registerModule( calls must stay 12 (no new native module)",
   );
-  assert.equal(registered.length, 11, "every registerModule( call names its module by a literal");
+  assert.equal(registered.length, 12, "every registerModule( call names its module by a literal");
   assert.deepEqual(
     registered.filter((name) => /StatusBar/i.test(name)),
     [],

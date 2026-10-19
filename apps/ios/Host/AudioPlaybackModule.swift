@@ -219,15 +219,24 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   /// 그래서 이 몸통은 추측이 아니라 사실 위에 서 있다 — 그것이 이 자리를 비워 뒀던
   /// 이유가 없어진 지점이다.
   ///
-  /// **원격 분기가 하나 있다.** `source`가 `https` 스킴에 호스트가 있는 절대 URL이면 그
+  /// **분기가 둘 더 있다.** 하나는 원격이고, 하나는 받아 둔 파일이다.
+  ///
+  /// **원격.** `source`가 `https` 스킴에 호스트가 있는 절대 URL이면 그
   /// URL을 그대로 돌려준다(콘텐츠 음성은 버킷에서 스트리밍한다 — ADR-0060). 반환 타입이
   /// `URL?`이고 재생 수단이 `AVPlayer`인 것이 그 여지를 위한 것이었다(`AVAudioPlayer`는
   /// 로컬만 받는다). 원격 로드 실패는 아래 `.failed` 관찰이 `done` 한 번으로 모은다.
   ///
+  /// **받아 둔 파일.** `file` 스킴이고 표준화한 경로가 `ContentFileStore` 루트 아래면 그 URL을 로컬로 연다
+  /// (`ContentFileModule`이 받은 에피소드 소리 — 오프라인 재생). 루트 밖 `file`(앱 번들 · 임의 경로)은
+  /// 여전히 거부한다: JS가 만든 문자열이 앱 샌드박스의 아무 파일을 열게 하지 않는다.
+  /// `contentFiles`는 테스트가 임시 폴더를 주입하는 자리다.
+  ///
   /// `nil`을 돌려주면 `play`는 재생하지 않고 `done`을 한 번 부른다. 등록되지 않았거나
   /// 이름이 어긋난 `source`가 그 경로로 간다.
-  static func resolve(_ source: String) -> URL? {
+  ///
+  static func resolve(_ source: String, contentFiles: ContentFileStore = .shared) -> URL? {
     if let remote = remoteURL(source) { return remote }
+    if let local = contentFileURL(source, in: contentFiles) { return local }
     // 번들 id는 경로 조각 하나다. 빈 이름은 `Bundle`이 폴더의 아무 파일로 풀어 버리고,
     // `/` · `..`은 폴더 밖을 가리킨다 — Android `AudioAssetPath`와 같은 경계.
     guard !source.isEmpty, !source.contains("/"), !source.contains("..") else { return nil }
@@ -236,6 +245,13 @@ final class AudioPlaybackModule: NSObject, LynxModule {
       withExtension: audioFileExtension,
       subdirectory: audioSubdirectory
     )
+  }
+
+  private static func contentFileURL(_ source: String, in store: ContentFileStore) -> URL? {
+    guard let url = URL(string: source), url.scheme?.lowercased() == "file",
+      store.contains(fileURL: url)
+    else { return nil }
+    return url
   }
 
   /// `https` 스킴에 호스트가 있는 절대 URL만 원격으로 본다. 그 밖의 스킴(`http` · `file` ·

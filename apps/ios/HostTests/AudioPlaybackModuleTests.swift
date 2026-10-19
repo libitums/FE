@@ -56,4 +56,28 @@ final class AudioPlaybackModuleTests: XCTestCase {
     RunLoop.current.run(until: Date().addingTimeInterval(0.5))
     withExtendedLifetime(module) {}
   }
+
+  // AI5: 받아 둔 폴더 안 file 주소는 받고, 폴더 밖 file 주소(`..` 탈출 포함)는 거부한다.
+  func testAI5AcceptsFileInsideContentRootOnly() throws {
+    let base = FileManager.default.temporaryDirectory
+      .appendingPathComponent("audio-root-\(UUID().uuidString)", isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: base) }
+    let store = ContentFileStore(root: base.appendingPathComponent("content-files"))
+    let inside = store.root.appendingPathComponent("audio/u01.m4a")
+    try FileManager.default.createDirectory(
+      at: inside.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data([1]).write(to: inside)
+    let outside = base.appendingPathComponent("other.m4a")
+    try Data([1]).write(to: outside)
+
+    XCTAssertEqual(
+      AudioPlaybackModule.resolve(inside.absoluteString, contentFiles: store)?.path,
+      inside.path)
+    XCTAssertNil(AudioPlaybackModule.resolve(outside.absoluteString, contentFiles: store))
+    let escape = store.root.absoluteString + "audio/../../other.m4a"
+    XCTAssertNil(AudioPlaybackModule.resolve(escape, contentFiles: store))
+    // 루트 이름만 같은 형제 폴더도 아니다.
+    let sibling = base.appendingPathComponent("content-files-evil/a.m4a")
+    XCTAssertNil(AudioPlaybackModule.resolve(sibling.absoluteString, contentFiles: store))
+  }
 }
