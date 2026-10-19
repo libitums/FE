@@ -1,6 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { PairMatchActivity } from "../pair-match/PairMatchActivity";
@@ -11,13 +11,14 @@ import type { LessonPosition } from "./activity-finish";
 
 // `ui` 계층: 한 레슨 안에서 새 활동(단어 카드 · 짝 맞추기)이 받는 `lesson` 위치를 봅니다. 중간 활동은 마지막
 // 문항 뒤에 완료 카드 없이 바로 결과를 올리고, 셸 카운터와 진행 막대는 레슨 전체 문항 기준입니다. 레슨의
-// 마지막 활동만 마지막 뒤에 끝납니다 — 카드는 See results로 바로, 짝은 완료 카드를 거쳐서입니다.
+// 마지막 활동만 마지막 뒤에 끝납니다 — 카드는 Got it으로 바로, 짝은 완료 카드를 거쳐서입니다.
+// ⟨2026-10-19⟩ 단어 카드는 레슨 카운터를 세우지 않고 카드 진행 헤더(`Word i of n`)만 세웁니다(ADR-0073).
 // 기존 활동의 같은 표는 `LearningActivity.lesson.ui.test.tsx`가 지킵니다.
 
 type Finish = (results: readonly AnswerResult[], skippedCount: number) => void;
 
 const middle: LessonPosition = { offset: 3, total: 12, last: false };
-const final: LessonPosition = { offset: 10, total: 12, last: true };
+const final: LessonPosition = { offset: 10, total: 12, last: true, activityCount: 4, ordinal: 2 };
 
 afterEach(() => {
   cleanup();
@@ -28,6 +29,8 @@ const chapter = () => screen.getByTestId("learning-shell-chapter");
 const progress = () => screen.getByTestId("learning-shell-progress");
 const actionLabel = () =>
   screen.getByTestId("learning-shell-action").getAttribute("accessibility-label");
+const gotIt = () => within(screen.getByTestId("vocab-card-got-it")).getByTestId("ui-lynx-button");
+const tapGotIt = (): void => void fireEvent.tap(gotIt(), {});
 
 const cards: readonly VocabCardQuestion[] = [
   { word: "물", romanization: "mul", meaning: "water", example: null },
@@ -61,23 +64,6 @@ type Case = {
   readonly results: readonly AnswerResult[];
 };
 
-const cardCase: Case = {
-  name: "단어 카드",
-  completeId: "vocab-card-complete",
-  mount: (lesson, onFinish) => (
-    <VocabCardActivity
-      questions={cards}
-      gemCount={0}
-      onExit={() => {}}
-      onFinish={onFinish}
-      lesson={lesson}
-    />
-  ),
-  solveFirst: () => tap("learning-shell-action"),
-  solveLast: () => tap("learning-shell-action"),
-  results: [],
-};
-
 const pairCase: Case = {
   name: "짝 맞추기",
   completeId: "pair-match-complete",
@@ -101,7 +87,18 @@ const pairCase: Case = {
   results: ["correct", "correct"],
 };
 
-const cases: readonly Case[] = [cardCase, pairCase];
+const cases: readonly Case[] = [pairCase];
+
+const mountCards = (lesson: LessonPosition, onFinish: Finish = () => {}) =>
+  render(
+    <VocabCardActivity
+      questions={cards}
+      gemCount={0}
+      onExit={() => {}}
+      onFinish={onFinish}
+      lesson={lesson}
+    />,
+  );
 
 describe.each(cases)("$name — 레슨 안의 위치", (item) => {
   test("UL-I1. 카운터와 진행 막대가 레슨 전체 기준이다(오프셋 + 순번 / 전체)", () => {
@@ -136,29 +133,44 @@ describe.each(cases)("$name — 레슨 안의 위치", (item) => {
   });
 });
 
-test("UL-I3b. 중간 단어 카드의 마지막 버튼 라벨은 Next이고 See results가 아니다", () => {
-  render(cardCase.mount(middle, () => {}));
+describe("단어 카드 — 레슨 안의 위치", () => {
+  test("UL-C1. 레슨 중간이어도 카운터 · 세션 막대 대신 카드 진행 헤더가 서고 카드를 넘기면 Word 2 of 2다", () => {
+    mountCards(middle);
 
-  cardCase.solveFirst();
+    expect(screen.queryByTestId("learning-shell-chapter")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("learning-shell-progress")).not.toBeInTheDocument();
+    expect(screen.getByTestId("learning-run-header-caption")).toHaveTextContent("Word 1 of 2");
+    tapGotIt();
+    expect(screen.getByTestId("learning-run-header-caption")).toHaveTextContent("Word 2 of 2");
+  });
 
-  expect(actionLabel()).toBe("Next");
-});
+  test("UL-C2. 중간 활동은 마지막 카드의 Got it 뒤 완료 카드 없이 빈 결과를 한 번 올린다", () => {
+    const onFinish = vi.fn<Finish>();
+    mountCards(middle, onFinish);
 
-test("UL-I4a. 마지막 활동인 단어 카드는 마지막 카드에서 See results로 완료 카드 없이 결과를 올린다", () => {
-  const onFinish = vi.fn<Finish>();
-  render(cardCase.mount(final, onFinish));
+    tapGotIt();
+    expect(onFinish).toHaveBeenCalledTimes(0);
+    expect(gotIt()).toHaveAttribute("accessibility-label", "Got it");
+    tapGotIt();
 
-  expect(chapter()).toHaveTextContent("Lesson 11 / 12");
-  cardCase.solveFirst();
-  expect(chapter()).toHaveTextContent("Lesson 12 / 12");
-  expect(actionLabel()).toBe("See results");
-  expect(onFinish).toHaveBeenCalledTimes(0);
+    expect(onFinish).toHaveBeenCalledTimes(1);
+    expect(onFinish).toHaveBeenCalledWith([], 0);
+    expect(screen.queryByTestId("learning-activity-complete")).not.toBeInTheDocument();
+    expect(screen.queryByText("See results")).not.toBeInTheDocument();
+  });
 
-  tap("learning-shell-action");
+  test("UL-C3. 마지막 활동인 단어 카드도 마지막 카드의 Got it으로 완료 카드 없이 결과를 올린다", () => {
+    const onFinish = vi.fn<Finish>();
+    mountCards(final, onFinish);
 
-  expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith([], 0);
-  expect(screen.queryByTestId("learning-activity-complete")).not.toBeInTheDocument();
+    tapGotIt();
+    expect(onFinish).toHaveBeenCalledTimes(0);
+    tapGotIt();
+
+    expect(onFinish).toHaveBeenCalledTimes(1);
+    expect(onFinish).toHaveBeenCalledWith([], 0);
+    expect(screen.queryByTestId("learning-activity-complete")).not.toBeInTheDocument();
+  });
 });
 
 test("UL-I4b. 마지막 활동인 짝 맞추기는 완료 카드를 보이고 See results로만 결과를 올린다", () => {
@@ -171,6 +183,8 @@ test("UL-I4b. 마지막 활동인 짝 맞추기는 완료 카드를 보이고 Se
 
   expect(onFinish).toHaveBeenCalledTimes(0);
   expect(screen.getByTestId("pair-match-complete")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-activity-complete-lesson")).toHaveTextContent("Lesson 2");
+  expect(screen.getByTestId("learning-activity-complete-activities")).toHaveTextContent("4");
   expect(chapter()).toHaveTextContent("Lesson 12 / 12");
   expect(actionLabel()).toBe("See results");
 

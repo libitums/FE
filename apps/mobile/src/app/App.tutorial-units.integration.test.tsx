@@ -54,7 +54,8 @@ test.each(journeySteps.filter((step) => learningFormsForStep(step.id)[0] === "se
     fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
     expect(screen.getByTestId("answer-verdict")).toHaveTextContent("Correct");
     fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-    expect(screen.getByTestId("learning-activity-complete")).toHaveTextContent(
+    expect(screen.getByTestId("learning-activity-complete-questions")).toHaveAttribute(
+      "accessibility-label",
       "1 of 1 question completed",
     );
     fireEvent.tap(screen.getByTestId("learning-shell-action"), {});

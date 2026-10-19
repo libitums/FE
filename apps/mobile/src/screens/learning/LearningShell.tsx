@@ -13,16 +13,16 @@ import {
   learningTimingFlag,
   learningWorkspaceMode,
 } from "./learning-shell.contract";
-import { LearningSessionHeader } from "./LearningSessionHeader";
-import type { LearningActivityForm } from "../../lib/learning-form";
+import { LearningShellHeader } from "./LearningShellHeader";
+import type { LearningShellProps } from "./learning-shell-props";
 import { scrollLearningShellToTop, useLearningShellScrollReset } from "./learning-shell-scroll";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
 import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
-import cross from "@libitums/icons/lynx/cross";
-import { color } from "@libitums/design-tokens";
 
 import "./learning-shell.css";
+
+export type { LearningShellProps, LearningShellStage } from "./learning-shell-props";
 
 /**
  * 학습 화면의 고정 뼈대입니다(Figma 65-14). 활동이 바뀌어도 이 뼈대는 그대로이고,
@@ -34,73 +34,6 @@ import "./learning-shell.css";
  *
  * 껍데기는 정답 판정 없이 활동의 카드와 완료 여부를 받아 그립니다.
  */
-export type LearningShellProps = {
-  form: LearningActivityForm;
-  /**
-   * 활동 안에서 지금 몇 번째 문항인가입니다(0부터). 세션 헤더의 `Lesson n / N`과 진행
-   * 막대가 이 값에서 납니다.
-   *
-   * ⟨2026-09-28⟩ 전에는 유닛 안의 **활동** 순번이었고 문항 순번은 오른쪽에 따로 섰는데,
-   * 한 줄에 숫자 쌍이 둘이라 어느 것이 지금 나의 위치인지가 읽히지 않았습니다.
-   */
-  questionIndex: number;
-  questionCount: number;
-  /** 완료 화면은 문항이 아니며 문제 지시문을 표시하지 않습니다. */
-  complete?: boolean;
-  /** 카드 위 회색 한 줄 — 「무엇을 하라」입니다. */
-  instruction: string;
-  onExit: () => void;
-  /**
-   * 가운데 카드 안입니다. 활동이 여기서 전개되고 판정도 여기서 납니다. 껍데기는 배치가 바뀔
-   * 때 이 내용을 한 번 다시 세울 수 있습니다(다시 mount) — 이 안에 mount 효과로 부작용을
-   * 두지 마세요. 듣기 재생은 그래서 화면의 `useListeningPlayback`이 소유합니다.
-   */
-  card: ReactNode;
-  /**
-   * 카드 밖 작업 영역입니다 — 고를 낱말 칩처럼 활동마다 다른 것이 섭니다. 없는
-   * 활동도 있으므로 선택입니다. `card`처럼 배치가 바뀔 때 한 번 다시 설 수 있으니(다시
-   * mount) mount 효과로 부작용을 두지 마세요.
-   */
-  workspace?: ReactNode;
-  /**
-   * 작업 영역이 스크롤하는가입니다. 기본은 스크롤합니다.
-   *
-   * 끄는 것은 작업 영역에 **그리기 표면**이 서는 활동(쓰기) 하나입니다. 표면의 터치와
-   * `<scroll-view>`의 팬 제스처가 다투면 무엇이 이기는지 이 스택에서 확인된 적이 없어(획을
-   * 긋는 손이 영역을 끌어 올릴 수 있습니다), 그 활동은 스크롤을 끄고 한 화면 안에 들어가는
-   * 크기로 내용을 둡니다. 스크롤 요소는 그대로 두어 골격(ADR-0022)은 같습니다.
-   */
-  workspaceScrolls?: boolean;
-  /** 말하기처럼 카드가 길어지는 화면은 카드와 안내를 함께 스크롤합니다. */
-  scrollCard?: boolean;
-  /** 주 버튼과 같은 행에 서는 보조 조작입니다. */
-  secondaryAction?: ReactNode;
-  /**
-   * 아래 버튼입니다. 라벨이 활동 · 상태마다 갈립니다(`다음` · `결과 보기`). 둘 다
-   * 없으면 버튼을 그리지 않습니다 — 영구히 눌리지 않는 버튼을 두지 않기 위해서입니다
-   * (ADR-0016 D10). 「아직 할 수 없다」는 버튼이 **없는 것**으로 말합니다.
-   */
-  actionLabel?: string;
-  onAction?: () => void;
-  /** 바로 판정음이 나는 확인 동작은 클릭음을 생략한다. */
-  actionSound?: "button" | "none";
-  /**
-   * 스스로 넘어가는 걸음입니다. 주면 `delayMs` 뒤에 `run`을 부르고, 그 전에 화면을
-   * 누르면 즉시 부릅니다.
-   *
-   * 시간제한이 생기므로(WCAG 2.2.1) 조작을 남깁니다 — 보이는 버튼은 없지만 화면
-   * 전체가 이 이름의 조작 단위가 됩니다. 기다리는 것 말고 할 수 있는 일이 없는 화면이
-   * 되지 않게 하는 자리입니다.
-   */
-  advance?: { readonly label: string; readonly run: () => void; readonly delayMs: number };
-  streakDays?: number;
-  trophyCount?: number;
-  gemCount?: number;
-  onOpenNotifications?: () => void;
-  /** 학습 문항 안내가 위를 덮는 동안 true입니다. 루트를 낭독에서 가립니다(닫히면 false). */
-  obscured?: boolean;
-};
-
 export function LearningShell({
   form,
   questionIndex,
@@ -112,6 +45,7 @@ export function LearningShell({
   workspace,
   workspaceScrolls = true,
   scrollCard = false,
+  stage = "card",
   secondaryAction,
   actionLabel,
   onAction,
@@ -121,9 +55,12 @@ export function LearningShell({
   trophyCount,
   onOpenNotifications = () => {},
   obscured,
+  runProgress,
+  actionButton,
 }: LearningShellProps): ReactNode {
   const copy = useUiCopy();
-  const actionsShown = actionLabel !== undefined && onAction !== undefined;
+  const actionsShown =
+    actionButton !== undefined || (actionLabel !== undefined && onAction !== undefined);
   const workspaceMode = learningWorkspaceMode({ scrolls: workspaceScrolls, actionsShown });
   const { flow, reportViewportHeight } = useLearningShellFlow(workspaceMode);
   const arrangement = learningShellArrangement({ scrollCard, flow });
@@ -232,27 +169,19 @@ export function LearningShell({
         trophyCount={trophyCount}
         onOpenNotifications={onOpenNotifications}
       />
-      {/* 세션 헤더 — 나가기 · 순번 · 진행 막대 · 학습형 이름 · 백분율입니다. 면 · 모서리 ·
-          안 여백은 ui-lynx `Card`가 집니다: 회색 면에 그림자 없는 변형입니다. 이 화면이
-          카드를 손으로 그리지 않는 이유는 카드가 이미 디자인 시스템의 것이기 때문입니다.
-
-          막대는 장식이 아니라 값이므로 낱말 둘을 한 접근성 요소로 묶어 읽히게 하고,
-          막대 자신은 트리에서 뺍니다. */}
-      {/* 세션 헤더를 상자로 감쌉니다 — 스스로 넘어가는 층(`-advance`)보다 위에 서야
-          `×`로 나가는 길이 막히지 않습니다. */}
-      <view className="learning-shell-session-layer">
-        <LearningSessionHeader
-          form={form}
-          questionIndex={questionIndex}
-          questionCount={questionCount}
-          onExit={handleExit}
-        />
-      </view>
+      <LearningShellHeader
+        form={form}
+        questionIndex={questionIndex}
+        questionCount={questionCount}
+        runProgress={runProgress}
+        onExit={handleExit}
+      />
       {/* 카드 스크롤 모드는 버튼 행의 실제 높이를 먼저 확보합니다. */}
       <LearningShellBody
         arrangement={arrangement}
         instruction={complete ? undefined : instruction}
         card={card}
+        stage={stage}
         workspace={workspace}
         workspaceMode={workspaceMode}
         onViewportHeight={reportViewportHeight}
@@ -273,7 +202,8 @@ export function LearningShell({
       )}
       {actionsShown ? (
         <LearningShellActions
-          label={actionLabel}
+          button={actionButton}
+          label={actionLabel ?? ""}
           onAction={handleAction}
           secondaryAction={secondaryAction}
           inFlow={arrangement !== "split"}

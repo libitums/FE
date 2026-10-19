@@ -104,4 +104,6 @@ export type CatalogLessonPlan = {
   /** 표시 문항 수입니다(채점 문항 + 단어 카드) — 셸 카운터와 진행 막대의 분모. */
   readonly shownItemCount: number;
   readonly skippedItemCount: number;
+  /** 에피소드 상위 상대 이름(앞뒤 공백 걷음)입니다 — 대화 조립 아바타의 머리글자가 됩니다. */
+  readonly counterpartName: string;
 };

@@ -1,3 +1,17 @@
+/* 활동 완료 카드입니다(시안 A — 링 + 체크). 바탕은 셸 카드 그대로이고 폭죽은 없습니다(결과 화면에 있다).
+
+   링 채움은 SVG 선 그리기(`stroke-dashoffset`)가 아닙니다 — Lynx의 `<svg content>`는 정지 그림이라 선의
+   속성을 키프레임으로 움직일 수 없습니다. 대신 **두 반쪽 회전 마스크**입니다: 오른쪽 반 창(`-clip-right`)
+   안에서 링의 왼쪽 반(`-half-left`)이 0 → 180° 돌며 위 → 아래 오른쪽을 채우고, 그 뒤 왼쪽 반 창 안에서
+   오른쪽 반이 같은 회전으로 아래 → 위 왼쪽을 채웁니다. 움직이는 것은 `transform: rotate`뿐이라 Lynx
+   키프레임이 그대로 받습니다. 끝이 둥근 선(round cap)은 이 방식에 없습니다 — 받아들인 차이입니다.
+   체크는 그리기 대신 작게 · 투명하게 시작해 제자리로 섭니다(`scale.reward` → 1).
+
+   순서(표준): 링 오른쪽 `d8` → 왼쪽 `d8`(시작 `d8` 뒤, 합 1.2 s — 시안 ≈ 1.7 s, 토큰에 850 ms가 없다) →
+   안쪽 원 `reward`(시작 `d9`, 링 끝과 살짝 겹친다) → 체크 · 제목 · 숫자 타일(앞부분은 멈춰 있고
+   1.3 ~ 1.6 s에 선다). 시작을 늦추는 값도 시간 토큰만 씁니다(`lint:motion`). 한 번만 돕니다.
+   움직임 줄이기면 모션 클래스가 없어 아래 기본 규칙의 끝 모습이 바로 섭니다. */
+
 .learning-activity-complete {
   display: flex;
   flex-direction: column;
@@ -6,28 +20,137 @@
   padding: var(--libitum-spacing-24) var(--libitum-spacing-8) var(--libitum-spacing-32);
 }
 
+/* 표식 168 × 168 — 링(바깥 150, 굵기 10)과 가운데 안쪽 원 112입니다. 크기 토큰이 없어 리터럴입니다. */
 .learning-activity-complete-emblem {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--libitum-spacing-80);
-  height: var(--libitum-spacing-80);
+  width: 168px;
+  height: 168px;
+}
+
+.learning-activity-complete-ring {
+  position: absolute;
+  left: 9px;
+  top: 9px;
+  width: 150px;
+  height: 150px;
+}
+
+.learning-activity-complete-ring-track,
+.learning-activity-complete-ring-arc {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  width: 150px;
+  height: 150px;
   border-radius: var(--libitum-radius-full);
-  background: var(--libitum-color-background-elevated);
+  border-width: 10px;
+  border-style: solid;
+}
+
+.learning-activity-complete-ring-track {
+  border-color: var(--libitum-color-background-elevated);
+}
+
+.learning-activity-complete-ring-arc {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+/* 반쪽 창 — 링 상자의 오른쪽 · 왼쪽 반만 보입니다. */
+.learning-activity-complete-ring-clip,
+.learning-activity-complete-ring-half {
+  position: absolute;
+  top: 0;
+  width: 75px;
+  height: 150px;
+  overflow: hidden;
+}
+
+.learning-activity-complete-ring-clip-right {
+  left: 75px;
+}
+
+.learning-activity-complete-ring-clip-left {
+  left: 0;
+}
+
+/* 도는 판 — 링 상자 크기라 가운데를 축으로 돕니다. 끝 모습은 180°(반쪽이 창을 채운 자리)입니다. */
+.learning-activity-complete-ring-right,
+.learning-activity-complete-ring-left {
+  position: absolute;
+  top: 0;
+  width: 150px;
+  height: 150px;
+  transform: rotate(180deg);
+}
+
+.learning-activity-complete-ring-right {
+  left: -75px;
+}
+
+.learning-activity-complete-ring-left {
+  left: 0;
+}
+
+.learning-activity-complete-ring-half-left {
+  left: 0;
+}
+
+.learning-activity-complete-ring-half-right {
+  left: 75px;
+}
+
+.learning-activity-complete-ring-arc-shifted {
+  left: -75px;
+}
+
+.learning-activity-complete-fill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  height: 112px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.learning-activity-complete-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .learning-activity-complete-icon {
-  width: var(--libitum-icon-size-xl);
-  height: var(--libitum-icon-size-xl);
+  width: var(--libitum-spacing-64);
+  height: var(--libitum-spacing-64);
+}
+
+.learning-activity-complete-chip {
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-background-elevated);
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
+}
+
+.learning-activity-complete-chip-text {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  text-align: center;
 }
 
 .learning-activity-complete-title {
   text-align: center;
   color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-m-font-family);
-  font-size: var(--libitum-typography-heading-m-font-size);
-  font-weight: var(--libitum-typography-heading-m-font-weight);
-  line-height: var(--libitum-typography-heading-m-line-height);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+  line-height: var(--libitum-typography-accent-display-line-height);
 }
 
 .learning-activity-complete-description {
@@ -38,17 +161,120 @@
   line-height: var(--libitum-typography-body-m-line-height);
 }
 
-.learning-activity-complete-summary {
-  border-radius: var(--libitum-radius-full);
-  background: var(--libitum-color-background-secondary);
-  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+.learning-activity-complete-stats {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-8);
 }
 
-.learning-activity-complete-summary-text {
-  color: var(--libitum-color-fg-brand);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-size: var(--libitum-typography-label-m-font-size);
+/* 숫자 타일 — 시안의 132 폭입니다. */
+.learning-activity-complete-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-2);
+  width: 132px;
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-background-secondary);
+  padding: var(--libitum-spacing-12) 0;
+}
+
+.learning-activity-complete-stat-value {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-accent-chapter-font-family);
+  font-size: var(--libitum-typography-accent-chapter-font-size);
+  font-weight: var(--libitum-typography-accent-chapter-font-weight);
+  line-height: var(--libitum-typography-accent-chapter-line-height);
+}
+
+.learning-activity-complete-stat-value-positive {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.learning-activity-complete-stat-label {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
   font-weight: var(--libitum-typography-label-m-font-weight);
-  line-height: var(--libitum-typography-label-m-line-height);
-  text-align: center;
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+/* ── 표준 움직임 ── */
+
+@keyframes learning-activity-complete-ring-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(180deg);
+  }
+}
+
+/* 두 반쪽이 같은 빠르기로 이어지게 `linear`입니다 — 가감속을 주면 아래 이음매에서 멈칫합니다. */
+.learning-activity-complete-ring-right-motion-ring {
+  animation: learning-activity-complete-ring-sweep var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-linear) both;
+}
+
+.learning-activity-complete-ring-left-motion-ring {
+  animation: learning-activity-complete-ring-sweep var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-linear) var(--libitum-motion-duration-d8) both;
+}
+
+@keyframes learning-activity-complete-pop {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.learning-activity-complete-fill-motion-ring {
+  animation: learning-activity-complete-pop var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) var(--libitum-motion-duration-d9) both;
+}
+
+/* 체크는 안쪽 원이 거의 선 뒤에 섭니다 — 앞 절반은 멈춰 있습니다. */
+@keyframes learning-activity-complete-check-in {
+  0% {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  50% {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.learning-activity-complete-check-motion-ring {
+  animation: learning-activity-complete-check-in var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-enter) var(--libitum-motion-duration-d9) both;
+}
+
+/* 제목 · 숫자 타일은 체크와 함께 아래에서 올라옵니다 — 앞 70 %는 멈춰 있습니다. */
+@keyframes learning-activity-complete-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  70% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+.learning-activity-complete-rise-motion-ring {
+  animation: learning-activity-complete-rise var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-enter) var(--libitum-motion-duration-d8) both;
 }

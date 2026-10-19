@@ -947,9 +947,11 @@ test("P10. 같은 프로필이면 동기화가 끝나 상태가 바뀌어도 진
   tapNode(u02, "S1");
   fillProfile("Emma", "DE");
   submitGate();
-  const chapter = (): string => screen.getByTestId("learning-shell-chapter").textContent ?? "";
-  tapId("learning-shell-action");
+  // 첫 활동은 단어 카드라 진행은 카드 진행 헤더의 캡션으로 읽습니다(ADR-0073).
+  const chapter = (): string => screen.getByTestId("learning-run-header-caption").textContent ?? "";
+  tapButtonIn("vocab-card-got-it");
   const advanced = chapter();
+  expect(advanced).toMatch(/^Word 2 of \d+$/);
   await vi.waitFor(() =>
     expect(JSON.parse(store.get(profileCacheKey) ?? "null")).toMatchObject({ sync: "synced" }),
   );

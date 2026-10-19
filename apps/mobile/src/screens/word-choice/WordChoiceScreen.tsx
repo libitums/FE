@@ -255,6 +255,7 @@ export function WordChoiceActivity({
           {question === null ? (
             <LearningActivityComplete
               questionCount={questions.length}
+              lesson={lesson}
               testId="word-choice-screen-complete"
             />
           ) : null}

@@ -29,6 +29,7 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
+import type { DialogueSpeakerNames } from "./sentence-order-avatar";
 
 import "./sentence-order-screen.css";
 
@@ -52,6 +53,8 @@ export type SentenceOrderActivityProps = {
   readonly onFinish: ActivityFinish;
   /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
   readonly lesson?: LessonPosition;
+  /** 대화 조립 아바타의 이름(에피소드 상대 · 학습자)입니다. 튜토리얼은 주지 않습니다. */
+  readonly speakerNames?: DialogueSpeakerNames;
 };
 
 /** 내 말풍선이 비어 있을 때의 표시입니다 — 디자인 표기 그대로입니다. */
@@ -80,6 +83,7 @@ export function SentenceOrderActivity({
   onExit,
   onFinish,
   lesson,
+  speakerNames,
 }: SentenceOrderActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(
@@ -199,6 +203,7 @@ export function SentenceOrderActivity({
             {question == null ? (
               <LearningActivityComplete
                 questionCount={questions.length}
+                lesson={lesson}
                 testId="sentence-order-screen-complete"
               />
             ) : question.dialogue !== undefined ? (
@@ -208,6 +213,7 @@ export function SentenceOrderActivity({
                 placedChipIndexes={state.placedChipIndexes}
                 locked={state.phase === "checked"}
                 onReturn={toggle}
+                speakerNames={speakerNames}
               />
             ) : (
               <>

@@ -183,6 +183,7 @@ export function PairMatchActivity({
           {question == null ? (
             <LearningActivityComplete
               questionCount={questions.length}
+              lesson={lesson}
               testId="pair-match-complete"
             />
           ) : (

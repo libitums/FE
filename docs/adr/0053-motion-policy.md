@@ -101,6 +101,10 @@
   호스트가 정한다** — 앱이 넘기는 것은 boolean 하나라 D1의 토큰 규칙 밖이고 `lint:motion`의 대상도 아니다(호출 인자는 CSS · inline style이 아니다). Android에서는 거리와 무관하게
   약 0.23 ~ 0.27초였다(3,673dp도 같아 긴 이동은 사실상 점프로 보인다 — 보류 표). iOS는 재지 않았다. 「항상 부드럽게」는 사용자 결정이다. 근거 · 기기 기록은
   [ADR-0022](0022-scroll-regions-and-fixed-affordances.md) 적용 기록 ⟨2026-10-14⟩ · [동작 줄이기 e2e](../e2e/motion-reduced.md) E-M1 · E-M2.)*
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **세로축 회전(`rotateY`)의 첫 소비자가 섰다**(평면 회전은 진행 불러오기 고리가 먼저다) — 문화 카드의 앞 · 뒤 뒤집기([ADR-0072](0072-culture-card-flip.md) D3).
+  `rotateY(90deg → 0deg)` keyframe 한 번, 시간 · 곡선은 토큰(`d6` · `enter`)이고 각도는 D1의 다섯 규칙 밖(시간 · easing · scale만 본다)이다. 뒤집을 때만 돌고(처음 선 면 · 다음 카드는 돌지 않는다),
+  reduced는 이 표의 「회전은 즉시」대로 클래스를 붙이지 않는다 — 불투명도도 걸지 않는다(사용자 요구 「즉시」). reduced 표식은 조건부 spread `data-motion="reduced"`(D2). `perspective`는 Lynx 부분 지원이라 쓰지 않았다.
+  새 토큰 · allowlist · `lint:motion` 규칙 변경은 0이다. 기기에서는 보지 않았다(문화 카드 e2e CF2 · CF5 미실행).
 - **카탈로그(Storybook)는 컴포넌트별 `motion` arg + `ReducedMotion` 스토리다**(4단계). 새 다섯(Round Button · Learning Unit · Page Indicator · Settings Cell · Chat Bubble)은 **컨텍스트 경로** —
   엔트리가 `<MotionProvider motion={data.motion}>`로 감싸고 컴포넌트에 prop을 주지 않는다(제품 앱과 같은 길). 기존 넷은 prop 경로 그대로, Visual Novel Dialog는 `reducedMotion` prop arg로 스토리만.
   Chat Bubble은 `reveal: "instant" | "typewriter"` arg와 `Typewriter` 스토리를 더했다 — `reveal` 없이는 reduced가 보일 것이 없다. 순수 함수 `normalizeStoryMotion(value)`(`"reduced"`만 reduced)을
@@ -138,6 +142,14 @@
   reduced 변형은 불투명도만(`d2` · `linear`)이고 `transform`이 없다. 새 토큰 · allowlist · `lint:motion` 규칙 변경은 0이다.
   배너가 머무는 시간(1,600 ms)은 전환의 시간이 아니라 화면 상수이고 토큰이 아니다 — 그 근거는 ADR-0058 쪽이 진다.
   ⚠ 기기에서는 배너가 서고 스스로 닫히는 것만 봤다 — **등장 모션의 체감과 reduced 변형은 미확인**이다([보상 모션 e2e](../e2e/motion-reward.md) 「둘째 자리」).
+
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **보상 조합 일부(`reward` · `enter-expressive` · `scale.reward`)를 쓰는 셋째 자리 — 활동 완료 카드의 링 + 체크**(시안 A, 사용자 결정 —
+  폭죽 없음 · XP 없음 · 바탕 그대로). 결과 화면 앞, 학습 껍데기 카드 안의 `LearningActivityComplete`다. 링은 `d8` · `linear` 두 번(두 반쪽 회전 마스크 — Lynx `<svg content>`는 정지 그림이라
+  `stroke-dashoffset`을 움직일 수 없다), 안쪽 원은 `reward` · `enter-expressive` · `scale.reward` → 1(시작 `d9`), 체크 · 제목 · 숫자 타일은 앞부분을 멈춘 keyframe(`d8` · `d9`, 시작 `d9` · `d8`)이다.
+  시안의 넘침(1.06)과 ≈ 1.7초는 토큰에 없어 버렸다(1.2초 · 넘침 없음). 새 토큰 · allowlist · `lint:motion` 규칙 변경은 0이다. 세 규칙은 그대로 지킨다 — ① **한 화면 한 번**: 결과 화면(배지 · 폭죽)과 다른 화면이고
+  카드 안에 다른 보상 모션이 없다. ② **순수 파생**: 클래스는 `activityCompleteMotionOf(useMotion())`(`ring` · `still`)이고 ref · phase · `key`가 없다. ③ **퇴장 없음**: `See results`가 곧장 넘어간다.
+  **reduced는 불투명도 변형도 두지 않고 처음부터 끝 모습이다**(모션 클래스 0 · 루트 `data-motion="reduced"`) — D3 표의 「불투명도는 유지」보다 덜 움직이는 쪽이고 사용자 지시다.
+  ⚠ 제목 · 타일의 올라옴은 불투명도를 0에서 올리므로 D7의 iOS 창(≈ 1.6초)에 같은 조건으로 걸린다 — 결과 화면 제목 묶음의 올라옴과 같은 처지다. 기기 · 보조기술 모두 미확인이다([완료 화면 e2e](../e2e/learning-completion.md) 「시안 A」).
 
 - ⟨2026-10-16 — 적용 기록⟩ **학습 완료 화면은 「한 화면 한 번」의 예외가 됐다**(사용자 결정 — [ADR-0064](0064-stat-motion.md) D4). 통과 배지에 폭죽 · 글 올라옴 · 머리 칩 오름이 이어진다.
   순수 파생 · 퇴장 없음은 그대로다. 지표 모달의 반복 · 칩의 연출 크기는 D1 allowlist 두 줄(사유는 allowlist)이다. 정본에 되묻는 것으로 남는다.

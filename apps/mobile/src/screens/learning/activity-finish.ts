@@ -18,6 +18,10 @@ export type LessonPosition = {
   readonly total: number;
   /** 레슨의 마지막 활동인가입니다. 아니면 마지막 문항 뒤 완료 카드 없이 다음 활동으로 이어집니다. */
   readonly last: boolean;
+  /** 레슨의 활동 수입니다 — 완료 카드의 활동 타일입니다. 모르면 없고, 그러면 타일이 서지 않습니다. */
+  readonly activityCount?: number;
+  /** 맵 노드와 같은 레슨 순번(1부터)입니다 — 완료 카드의 `Lesson n` 칩입니다. 문화 단계 · 모름은 없습니다. */
+  readonly ordinal?: number;
 };
 
 /** 셸 카운터에 넘길 순번(0부터)과 문항 수입니다 — 레슨 안이면 오프셋을 더하고 전체를 분모로 합니다. */
