@@ -9,7 +9,8 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 import { WritingScreen } from "./WritingScreen";
 
 // `ui` 계층: 쓰기 화면의 학습 문항 안내. 첫 문항이 optionalPractice일 때만 뜨고, 떠 있는 동안
-// 획이 상태에 들어가지 않으며 `Skip`이 넘기지 않는다. 문항은 대역이다.
+// 획이 상태에 들어가지 않는다. ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다(사용자 결정) — 판정은 호스트의 픽셀 유사도라
+// 판정할 수 없는 것은 호스트 오류뿐이고, 그때도 정답으로 치지 않는다. 문항은 대역이다.
 
 const OPTIONAL: readonly WritingQuestion[] = [
   {
@@ -58,14 +59,17 @@ afterEach(() => {
   }
 });
 
-function stubStorage(options: Parameters<typeof stubGuideStorage>[0] = {}) {
+function stubStorage(
+  options: Parameters<typeof stubGuideStorage>[0] = {},
+  compare: (_args: unknown, callback: (payload: unknown) => void) => void = () => {},
+) {
   return stubGuideStorage({
     ...options,
     modules: {
       HandwritingTraceModule: {
         guide: (_args: unknown, callback: (payload: unknown) => void) =>
           callback({ status: "rendered", image: "aGVsbG8=", box: "0,0,1,1", font: "Stub" }),
-        compare: () => {},
+        compare,
       },
     },
   });
@@ -89,13 +93,6 @@ const shellRoot = () => screen.getByTestId("learning-shell");
 const phase = () => screen.getByTestId("writing-screen-content").getAttribute("data-phase");
 const tapGuide = () =>
   fireEvent.tap(screen.getByTestId("learning-item-guide-writing"), { eventType: "catchEvent" });
-const tapSkip = () => {
-  const button = screen
-    .getByTestId("writing-screen-skip")
-    .querySelector('[data-testid="ui-lynx-button"]');
-  expect(button).not.toBeNull();
-  fireEvent.tap(button as Element, {});
-};
 const pressBack = (): boolean => {
   let handled = false;
   act(() => {
@@ -152,7 +149,7 @@ test("[SC5·WR] 저장소가 없으면 안내가 없다", () => {
   expect(guideRoots()).toHaveLength(0);
 });
 
-test("[WR6] 떠 있는 동안 획이 상태에 들어가지 않고 Skip이 넘기지 않으며, 닫은 뒤 획이 Check를 세우고 Skip이 완료 카드로 간다", () => {
+test("[WR6] 떠 있는 동안 획이 상태에 들어가지 않고, 닫은 뒤 획이 Check를 세운다", () => {
   stubStorage();
   renderScreen();
   expect(guide()).not.toBeNull();
@@ -160,8 +157,6 @@ test("[WR6] 떠 있는 동안 획이 상태에 들어가지 않고 Skip이 넘�
   draw();
   expect(phase()).toBe("writing");
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
-  tapSkip();
-  expect(screen.queryByTestId("writing-screen-complete")).not.toBeInTheDocument();
 
   tapGuide();
   draw();
@@ -169,8 +164,37 @@ test("[WR6] 떠 있는 동안 획이 상태에 들어가지 않고 Skip이 넘�
     "accessibility-label",
     "Check",
   );
-  tapSkip();
+});
+
+test("[WR8] optionalPractice 쓰기에도 Skip이 없다 — 쓰는 중 · 빈 판 어디에도", () => {
+  stubStorage({ seen: ["writing"] });
+  renderScreen();
+
+  expect(screen.queryByTestId("writing-screen-skip")).not.toBeInTheDocument();
+  draw();
+  expect(screen.queryByTestId("writing-screen-skip")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
+    "accessibility-label",
+    "Check",
+  );
+});
+
+test("[WR9] 판정할 수 없으면 아래 버튼이 Next이고, 누르면 완료 카드로 가되 정답으로 치지 않는다(결과 · 건너뜀 0)", () => {
+  stubStorage({ seen: ["writing"] }, (_args, callback) => callback({ status: "failed" }));
+  const props = renderScreen();
+
+  draw();
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // Check
+  expect(phase()).toBe("unmeasurable");
+  expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
+    "accessibility-label",
+    "Next",
+  );
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   expect(screen.getByTestId("writing-screen-complete")).toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // See results
+  expect(props.onFinish).toHaveBeenCalledWith("tutorial-writing", [], 0);
 });
 
 test("[WR7] 첫 문항이 optionalPractice가 아니면(directions) 안내가 없고 안내 키에 쓰지 않는다", () => {

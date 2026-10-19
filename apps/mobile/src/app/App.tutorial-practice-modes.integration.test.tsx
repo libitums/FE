@@ -145,7 +145,9 @@ test("쓰기는 빈 캔버스를 제출할 수 없고 나 한 글자를 따라 �
   );
 });
 
-test("필기 인식을 사용할 수 없으면 자동 통과하지 않고 Skip 뒤에만 일반 완료한다", async () => {
+// ⟨2026-10-19⟩ 쓰기에는 Skip이 없고(사용자 결정), 판정은 호스트의 픽셀 유사도라 판정할 수 없는 것은 호스트 오류뿐이다.
+// 그때도 정답으로 치지 않는다 — 판정 없이 통과하는 뒷문을 두지 않는다.
+test("필기 판정을 할 수 없으면 정답으로 치지 않는다 — Next 뒤 결과는 LESSON FAILED", async () => {
   await openPractice("writing");
   const surface = screen.getByTestId("drawing-surface");
   fireEvent.touchstart(surface, { touches: [{ x: 100, y: 100 }] });
@@ -159,9 +161,10 @@ test("필기 인식을 사용할 수 없으면 자동 통과하지 않고 Skip �
   expect(screen.queryByTestId("lesson-complete-screen")).toBeNull();
   expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
     "accessibility-label",
-    "Skip",
+    "Next",
   );
+  expect(screen.queryByTestId("writing-screen-skip")).toBeNull();
   action();
   action();
-  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON COMPLETE!");
+  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON FAILED");
 });
