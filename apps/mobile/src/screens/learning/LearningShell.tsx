@@ -12,7 +12,6 @@ import {
   learningShellArrangement,
   learningTimingFlag,
   learningWorkspaceMode,
-  type LearningRunProgress,
 } from "./learning-shell.contract";
 import { LearningShellHeader } from "./LearningShellHeader";
 import type { LearningShellProps } from "./learning-shell-props";

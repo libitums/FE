@@ -773,10 +773,10 @@ describe("catalogActivityPositionOf", () => {
   test("LP-E2. 단어 카드는 카운터에 세지 않는다 — 카드 뒤 첫 문항의 오프셋이 0이고 전체는 카드를 뺀 수다", () => {
     // C5W2T1W1 — 카드 다섯은 오프셋 · 전체 어디에도 들어가지 않습니다.
     expect(positions("u01-water", "S4")).toEqual([
-      { offset: 0, total: 4, last: false },
-      { offset: 0, total: 4, last: false },
-      { offset: 2, total: 4, last: false },
-      { offset: 3, total: 4, last: true },
+      { offset: 0, total: 4, last: false, activityCount: 4 },
+      { offset: 0, total: 4, last: false, activityCount: 4 },
+      { offset: 2, total: 4, last: false, activityCount: 4 },
+      { offset: 3, total: 4, last: true, activityCount: 4 },
     ]);
     // C6W4O1W3 — 카드 사이가 아니라 앞에만 있어도 전체는 8입니다.
     expect(positions("u02-checkin", "S1").map((position) => position?.total)).toEqual([8, 8, 8, 8]);
@@ -795,12 +795,13 @@ describe("catalogActivityPositionOf", () => {
       questionCount: 2,
       shownItemCount: 7,
       skippedItemCount: 0,
+      counterpartName: "",
     };
 
     expect(plan.activities.map((_, index) => catalogActivityPositionOf(plan, index))).toEqual([
-      { offset: 0, total: 4, last: false },
-      { offset: 0, total: 4, last: false },
-      { offset: 2, total: 4, last: true },
+      { offset: 0, total: 4, last: false, activityCount: 3 },
+      { offset: 0, total: 4, last: false, activityCount: 3 },
+      { offset: 2, total: 4, last: true, activityCount: 3 },
     ]);
   });
 
@@ -809,7 +810,12 @@ describe("catalogActivityPositionOf", () => {
     if (plan === null) throw new Error("no plan");
     const cardsOnly = { ...plan, activities: plan.activities.slice(0, 1) };
 
-    expect(catalogActivityPositionOf(cardsOnly, 0)).toEqual({ offset: 0, total: 0, last: true });
+    expect(catalogActivityPositionOf(cardsOnly, 0)).toEqual({
+      offset: 0,
+      total: 0,
+      last: true,
+      activityCount: 1,
+    });
   });
 
   test("LP-E1. 없는 활동 순번은 위치가 없다", () => {
