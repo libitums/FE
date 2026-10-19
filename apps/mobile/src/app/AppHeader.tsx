@@ -33,6 +33,11 @@ export type AppHeaderProps = {
    */
   readonly obscured?: boolean;
   /**
+   * 머리의 위 모서리입니다. 기본은 화면 위 여백(12)이고, 셸이 위 안전 영역을 잡지 않는 여정 맵에서는 그 높이를
+   * 더한 값입니다(⟨2026-10-19⟩ `mapTopLayout`). 인라인을 비우면 Lynx에서 앞 값이 남으므로 늘 값을 넣습니다.
+   */
+  readonly top?: number;
+  /**
    * 오늘의 요일입니다(`Date#getDay()`, 0 = 일). 연속 학습 모달의 요일 줄이 여기서
    * 시작점을 셉니다. 넘기지 않으면 기기 시계를 읽습니다.
    */
@@ -58,6 +63,7 @@ export type AppHeaderProps = {
 };
 
 export function AppHeader({
+  top = 12,
   streakDays,
   trophyCount,
   onOpenNotifications,
@@ -94,6 +100,7 @@ export function AppHeader({
       <view
         className="app-header"
         data-testid="app-header"
+        style={{ top: `${top}px` }}
         accessibility-elements-hidden={openLayer !== null || obscured}
       >
         <TopBar

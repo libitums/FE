@@ -22,6 +22,8 @@ export function JourneyMapHeaderSlot({
   tutorialSections,
   progress,
   load,
+  bandTop = 64,
+  progressRowTop = 72,
   obscured = false,
   openStepId = null,
   catalogSections = [],
@@ -65,7 +67,7 @@ export function JourneyMapHeaderSlot({
 
   const header =
     band === undefined ? null : (
-      <JourneyMapEpisodeHeader {...band} onLayoutChange={handleCardLayout} />
+      <JourneyMapEpisodeHeader {...band} top={bandTop} onLayoutChange={handleCardLayout} />
     );
   const row =
     load.status === "loading" || load.status === "retrying" ? (
@@ -83,14 +85,18 @@ export function JourneyMapHeaderSlot({
         id={headerCardId}
         className="journey-map-screen-header-anchor"
         data-testid="journey-map-screen-header-anchor"
-        style={{ height: header === null ? "0px" : `${cardHeight}px` }}
+        style={{ top: `${bandTop}px`, height: header === null ? "0px" : `${cardHeight}px` }}
         user-interaction-enabled={false}
       />
       {header}
       {row === null ? null : (
         <view
           className="journey-map-screen-progress-row"
-          style={{ marginTop: header === null ? "0px" : `${cardHeight}px` }}
+          data-testid="journey-map-screen-progress-row"
+          style={{
+            top: `${progressRowTop}px`,
+            marginTop: header === null ? "0px" : `${cardHeight}px`,
+          }}
         >
           {row}
         </view>

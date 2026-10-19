@@ -163,7 +163,13 @@ test("[IG4] 말하기 · 쓰기 단원은 각자의 안내가 한 번 뜨고, �
   startSheet("tutorial-writing");
   expect(guide("writing")).not.toBeNull();
   dismiss("writing");
-  tapButtonIn("writing-screen-skip");
+  // ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다. 이 계층에는 판정 모듈이 없어 `Check` 뒤 「판정할 수 없음」의 `Next`로 넘어간다.
+  const surface = screen.getByTestId("drawing-surface");
+  fireEvent.touchstart(surface, { touches: [{ x: 100, y: 100 }] });
+  fireEvent.touchmove(surface, { touches: [{ x: 150, y: 150 }] });
+  fireEvent.touchend(surface, {});
+  tap("learning-shell-action"); // Check
+  tap("learning-shell-action"); // Next
   expect(screen.getByTestId("writing-screen-complete")).toBeInTheDocument();
   expect(storage.savedKinds()).toEqual(["speaking", "writing"]);
 });

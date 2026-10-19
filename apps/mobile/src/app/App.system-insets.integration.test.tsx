@@ -235,3 +235,26 @@ test("[II10] 3버튼 · 메신저에서 시스템 뒤로 가면 맵에서 셸 48
   expect(shellPaddingBottom()).toBe("48px");
   expect(floorHeight()).toBe("48px");
 });
+
+// ⟨2026-10-19⟩ 여정 맵은 상태 표시줄 뒤까지 스크롤한다(사용자 결정) — 셸이 위 안전 영역을 칠하던 흰 띠 뒤로 맵이
+// 뚝 끊겨 보였다. 셸은 여정 맵에서 위 여백을 잡지 않고, 칩 · 맵 첫 내용은 그 높이만큼 스스로 내려 같은 화면 자리에 선다.
+const styleOf = (testId: string): string => screen.getByTestId(testId).getAttribute("style") ?? "";
+
+test("[II11] iOS · 여정 맵: 셸 위 여백 0px, 칩은 안전 영역 아래(12 + 59), 맵 첫 내용도 그만큼 내려온다", async () => {
+  await boot(ios);
+
+  expect(screen.getByTestId("app-shell").style.paddingTop).toBe("0px");
+  expect(styleOf("app-header")).toMatch(/top:\s*71px/);
+  expect(styleOf("journey-map-screen-map")).toMatch(/padding-top:\s*271px/);
+});
+
+test("[II12] iOS · 다른 탭 루트는 셸이 위 여백을 그대로 잡고 칩은 기본 자리다", async () => {
+  await boot(ios);
+
+  openTab("settings");
+  expect(screen.getByTestId("app-shell").style.paddingTop).toBe("59px");
+  expect(styleOf("app-header")).toMatch(/top:\s*12px/);
+
+  openTab("journey");
+  expect(screen.getByTestId("app-shell").style.paddingTop).toBe("0px");
+});

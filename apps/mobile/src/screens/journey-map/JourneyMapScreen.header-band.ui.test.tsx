@@ -108,23 +108,25 @@ test("HM4. 진행을 확인하는 동안(checking)은 노드를 눌러도 말풍
   expect(header()).not.toBeInTheDocument();
 });
 
-test("HM5. 맵 위 여백 인라인이 없다 (CSS 값을 쓴다) - 띠가 없을 때", () => {
+// ⟨2026-10-19⟩ 맵 상자는 이제 늘 인라인 위 여백을 갖는다(상태 표시줄 높이를 더하려고 — `mapTopLayout`). 지키는 것은
+// 그대로다: 띠가 서고 높이를 재도 그 값이 바뀌지 않는다(띠가 맵을 밀지 않는다).
+test("HM5. 맵 위 여백은 띠가 없을 때 고정값이다(상태 표시줄 0이면 212px)", () => {
   renderMap();
 
-  expect(mapStyle()).not.toContain("padding-top");
+  expect(mapStyle()).toMatch(/padding-top:\s*212px/);
 });
 
-test("HM5. 띠가 서 있어도 맵을 밀지 않는다 (인라인 위 여백 없음, 높이를 재도 그대로)", () => {
+test("HM5. 띠가 서 있어도 맵을 밀지 않는다 (위 여백이 그대로, 높이를 재도 그대로)", () => {
   renderMap();
 
   tap("greeting");
-  expect(mapStyle()).not.toContain("padding-top");
+  expect(mapStyle()).toMatch(/padding-top:\s*212px/);
 
   fireEvent.layoutchange(screen.getByTestId("ui-lynx-episode-header").parentElement as Element, {
     detail: { height: 150 },
   });
 
-  expect(mapStyle()).not.toContain("padding-top");
+  expect(mapStyle()).toMatch(/padding-top:\s*212px/);
 });
 
 test("HM6. 줄(loading)은 띠가 없으면 위 여백 없이, 말풍선이 열려 띠가 서면 잰 높이만큼 내려온다", () => {

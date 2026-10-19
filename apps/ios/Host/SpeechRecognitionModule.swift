@@ -461,6 +461,8 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
     current.request.endAudio()
     // stop 직후 복원한다. 최종 인식 결과/3초 타임아웃까지 .record를 남기지 않는다.
     current.audioSession.restore()
+    // 녹음 전 설정이 학습 음원의 줄이기였다면 섞기로 돌린다(재생 정책은 메인 큐 전용).
+    DispatchQueue.main.async { PlaybackAudioSession.shared.recordingDidRestore() }
   }
 
   /// 콜백을 **정확히 한 번** 올린다. 올리는 자리가 여기 하나뿐이고, 올린 즉시 콜백을

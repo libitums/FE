@@ -3,7 +3,7 @@ import { type SafeAreaInsets, zeroSafeAreaInsets } from "../lib/safe-area";
 import { catalogLessonPlanFor } from "./catalog-lesson-plan";
 import type { CatalogActivityForm } from "./catalog-lesson-types";
 import type { EpisodeContent } from "./episode-content";
-import { isFullBleedScreen } from "./full-bleed-screens";
+import { isFullBleedScreen, shellInsetsFor as routeShellInsetsFor } from "./full-bleed-screens";
 import type { Screen } from "./nav-state";
 
 /** 셸이 화면에 대해 비우는 가장자리입니다. */
@@ -44,12 +44,15 @@ export function catalogActivityFormOf(
   return plan?.activities[screen.activityIndex]?.form ?? null;
 }
 
-/** 화면 · 인셋 · 출처에서 셸 인셋을 한 번에 정합니다. */
+/** 화면 · 인셋 · 출처에서 셸 인셋을 한 번에 정합니다. 자판 화면이 아니면 route 규칙(그림 화면 0 · 여정 맵 위 0)을 따릅니다. */
 export function shellInsetsOf(
   screen: Screen,
   insets: SafeAreaInsets,
   source: ShellEdgeSource,
 ): SafeAreaInsets {
   const form = catalogActivityFormOf(screen, source.episodeContent, source.learnerFill);
-  return shellInsetsFor(shellEdgeModeFor(screen, form), insets);
+  const mode = shellEdgeModeFor(screen, form);
+  return mode === "keyboard-dock"
+    ? shellInsetsFor(mode, insets)
+    : routeShellInsetsFor(screen, insets);
 }

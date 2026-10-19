@@ -915,9 +915,11 @@ test("KL1. (자판 도킹) 3버튼 · S6 받아쓰기: 셸 아래 0px에 자판 
 
 test("KL2. (자판 도킹 회귀 가드) 3버튼 · S1 단어 카드: 셸 아래 48px에 위 24px, 받아쓰기 화면이 없다", async () => {
   setHostInsets(threeButton);
-  await boot();
+  // 표지를 끝낸 진행이어야 S1이 열립니다 — 아니면 맵에 남아 셸 값이 맵의 것이 됩니다.
+  await boot({ progress: upTo() });
 
   tapNode(u01, "S1");
+  expect(screen.getByTestId("vocab-card-content")).toBeInTheDocument();
   expect(screen.queryByTestId("typing-activity")).not.toBeInTheDocument();
   expect(shellPaddingBottom()).toBe("48px");
   expect(shellPaddingTop()).toBe("24px");

@@ -65,6 +65,7 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
     case "journey-map":
       return (
         <JourneyMapScreen
+          statusBarInset={wiring.safeAreaInsets.top}
           completedStepCount={wiring.completedStepCount}
           onStartStep={wiring.onStartStep}
           completedEpisodeIntroIds={wiring.completedEpisodeIntroIds}
@@ -155,8 +156,7 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
           onFinish={(id, results, skippedCount) =>
             wiring.onFinishLearning(id, screen.activityIndex, results, skippedCount)
           }
-          // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한
-          // 소비자입니다.
+          // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한 소비자입니다.
           sessionOptions={wiring.sessionOptions}
           gemCount={wiring.gemCount}
         />
