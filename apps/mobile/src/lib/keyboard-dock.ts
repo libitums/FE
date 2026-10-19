@@ -26,22 +26,36 @@ export type KeyboardRowsInsetStyle = {
   readonly marginRight: string;
 };
 
-const zeroMargins = { marginBottom: "0px", marginLeft: "0px", marginRight: "0px" } as const;
-
-/** 세 변을 뽑습니다. `top`은 버립니다. */
-export function keyboardDockEdgesOf(_insets: SafeAreaInsets): KeyboardDockEdges {
-  return zeroKeyboardDockEdges;
+function edge(value: number): number {
+  return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
-/** 몸통 상자의 인라인 바깥 여백입니다. */
+function px(value: number): string {
+  return `${edge(value)}px`;
+}
+
+/** 세 변을 뽑습니다. `top`은 버립니다. 유한한 양수가 아닌 값은 0. */
+export function keyboardDockEdgesOf(insets: SafeAreaInsets): KeyboardDockEdges {
+  return { bottom: edge(insets.bottom), left: edge(insets.left), right: edge(insets.right) };
+}
+
+/** 몸통 상자의 인라인 바깥 여백입니다. 아래는 몸통이 질 때만 인셋입니다. */
 export function keyboardDockBodyStyle(
-  _edges: KeyboardDockEdges,
-  _bottom: KeyboardDockBottom,
+  edges: KeyboardDockEdges,
+  bottom: KeyboardDockBottom,
 ): KeyboardDockBodyStyle {
-  return zeroMargins;
+  return {
+    marginBottom: bottom === "body" ? px(edges.bottom) : "0px",
+    marginLeft: px(edges.left),
+    marginRight: px(edges.right),
+  };
 }
 
 /** 자판 키 줄 묶음의 인라인 바깥 여백입니다. */
-export function keyboardRowsInsetStyle(_edges: KeyboardDockEdges): KeyboardRowsInsetStyle {
-  return zeroMargins;
+export function keyboardRowsInsetStyle(edges: KeyboardDockEdges): KeyboardRowsInsetStyle {
+  return {
+    marginBottom: px(edges.bottom),
+    marginLeft: px(edges.left),
+    marginRight: px(edges.right),
+  };
 }

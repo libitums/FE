@@ -79,10 +79,12 @@ export function isTypingSessionComplete(state: TypingSessionState, total: number
 
 /** 자판이 아래 가장자리를 지는지 정합니다. */
 export function typingKeyboardDock(
-  _state: TypingSessionState,
-  _questionCount: number,
+  state: TypingSessionState,
+  questionCount: number,
 ): KeyboardDockBottom {
-  return "keyboard";
+  return isTypingSessionComplete(state, questionCount) || state.phase === "checked"
+    ? "body"
+    : "keyboard";
 }
 
 export function typingSessionResults(

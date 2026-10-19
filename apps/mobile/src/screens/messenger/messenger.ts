@@ -101,10 +101,12 @@ export const messengerCompletionStatus = (
 
 /** 답장 자리에 무엇이 서는지 정합니다. */
 export function messengerReplyArea(
-  _reply: SelfMessage | null,
-  _verdict: MessengerComposerState["verdict"],
+  reply: SelfMessage | null,
+  verdict: MessengerComposerState["verdict"],
 ): MessengerReplyArea {
-  return "keyboard";
+  if (reply === null) return "finish";
+  if (verdict === "incorrect") return "retry";
+  return reply.choices === undefined ? "keyboard" : "choices";
 }
 
 /** 롤플레이 출처의 시작 입력입니다 — 여정 상태를 읽을 매개변수가 없습니다. 연습은 늘 처음부터 섭니다. */
