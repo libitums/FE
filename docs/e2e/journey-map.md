@@ -1353,7 +1353,7 @@ M-4(부드러운 이동의 실제 시간 · 긴 거리의 모양)는 **E-S2의 �
 ## 자동 스크롤 · 유닛 탭 자리 통일 (2026-10-19)
 
 > 자동 스크롤이 유닛을 세우는 자리를 유닛 탭의 자리 규칙과 하나로 합쳤다(가운데쯤 · 말풍선이 들어갈 만큼 올림 · 띠가 설 자리에 걸리면 그 아래). 목표(AC6)는 **자동 스크롤로 선 유닛을 누르면 맵이 움직이지 않고 말풍선과 띠만 서는 것**이다. 옛 서술(「머리 카드 아래 24」)은 위 「자동 스크롤」 · 「도착 뒤 보정」 절의 머리 메모가 이 절을 가리킨다.
-> 자동 검사: `journey-map-scroll-position.unit.test.ts`(MP1 ~ MP7 · RC1″ ~ RC10″) · `journey-map-insets.unit.test.ts`(IN1″ · IN4″) · `JourneyMapScreen.autoscroll.ui.test.tsx`(AU1 ~ AU6) · `App.journey-map-autoscroll.integration.test.tsx`(I13).
+> 자동 검사: `journey-map-scroll-position.placement.unit.test.ts`(MP1 ~ MP7) · `journey-map-scroll-position.correction.unit.test.ts`(RC1″ ~ RC10″) · `journey-map-insets.unit.test.ts`(IN1″ · IN4″) · `JourneyMapScreen.autoscroll-place.ui.test.tsx`(AU1 ~ AU6) · `JourneyMapScreen.autoscroll-correction.ui.test.tsx`(AC″) · `App.journey-map-arrival.integration.test.tsx`(I11″ · I12″ · I13).
 > **자동 검사가 못 지는 것**(이 절이 진다): 실제 레이아웃에서 셀과 노드의 위 모서리가 같은지 · 탭이 띠보다 먼저 재는지 · 호스트가 목적지에서 1 안에 멈추는지.
 
 ### 전제
