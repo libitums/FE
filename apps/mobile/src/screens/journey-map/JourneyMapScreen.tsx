@@ -9,7 +9,7 @@ import { JourneyMapCatalogSlot } from "./JourneyMapCatalogSlot";
 import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
 import { StepSheet } from "./StepSheet";
 import { CatalogUnitSheet } from "./CatalogUnitSheet";
-import { catalogSheetKey, catalogSheetTargetOf } from "./catalog-sheet";
+import { catalogSheetKey, catalogSheetTargetOf, catalogSheetUnitSize } from "./catalog-sheet";
 import { screenId, scrollId } from "./journey-map-scroll";
 import { mapTopLayout } from "./journey-map-insets";
 import { noCatalogMapSections } from "./catalog-map";
@@ -143,7 +143,11 @@ export function JourneyMapScreen({
 
   // 카탈로그 노드의 탭 핸들러(`"background only"`)가 부릅니다 — 여기에 지시문을 다시 두지 않습니다.
   const handleSelectCatalogUnit = (episodeId: string, unitKey: string, tapY: number) =>
-    handleSelectStep(catalogSheetKey(episodeId, unitKey), tapY);
+    handleSelectStep(
+      catalogSheetKey(episodeId, unitKey),
+      tapY,
+      catalogSheetUnitSize(catalog?.sections ?? noCatalogMapSections, episodeId, unitKey),
+    );
 
   const access = nodeAccessOf(progressLoad);
   const actions = {

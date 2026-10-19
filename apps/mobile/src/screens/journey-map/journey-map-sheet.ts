@@ -139,20 +139,17 @@ export function stepSheetProgress(
   };
 }
 
-/**
- * 유닛 표식의 지름입니다 — ui-lynx `LearningUnit`의 기하값(100)과 같아야 합니다. 그
- * 컴포넌트가 치수를 내보내지 않아 여기 한 번 더 적습니다.
- */
+/** 레슨 표식의 지름입니다 — ui-lynx `LearningUnit`의 기하값(100)과 같아야 합니다(치수를 내보내지 않습니다). */
 export const stepUnitSize = 100;
+/** 최종의 스페셜 표식(ui-lynx `SpecialUnit` 124)입니다. 100으로 재면 말풍선 꼬리가 표식에 파고듭니다. */
+export const specialUnitSize = 124;
 
 /** 유닛 아래 모서리와 말풍선 사이입니다. 꼬리 끝(상자 위로 약 4)이 유닛에 닿지 않습니다. */
 export const sheetGap = 8;
 
 /**
- * 말풍선의 높이 어림값입니다(꼬리 포함). 안이 고정 구성(제목 한 줄 · 진행 줄 · 막대 ·
- * 버튼)이라 값이 거의 흔들리지 않습니다. **넉넉한 쪽으로** 잡습니다 — 모자라면 잘리고,
- * 남으면 유닛이 조금 높이 설 뿐입니다.
- */
+ * 말풍선의 높이 어림값입니다(꼬리 포함). 안이 고정 구성(제목 · 진행 줄 · 막대 · 버튼)이라 거의 흔들리지
+ * 않습니다. **넉넉한 쪽으로** 잡습니다 — 모자라면 잘리고, 남으면 유닛이 조금 높이 설 뿐입니다. */
 export const sheetHeight = 250;
 
 /** 화면 아래를 덮는 바텀 네비게이션의 높이입니다(`.journey-map-screen-map`의 아래 여백). */
@@ -164,6 +161,8 @@ export const bottomMargin = 16;
 /** 탭 순간에 잰 자리들입니다. 세로 좌표는 모두 같은 기준(LynxView)입니다. */
 export type StepMeasure = {
   readonly unitTop: number;
+  /** 누른 표식의 높이입니다. 없으면 레슨 원(`stepUnitSize`)입니다. */
+  readonly unitSize?: number;
   readonly scrollViewTop: number;
   readonly scrollViewHeight: number;
   readonly screenTop: number;
@@ -190,7 +189,8 @@ export type StepPlacement = {
  * 스크롤**을 따라가므로 그때도 유닛에 붙어 있습니다.
  */
 export function stepSheetPlacement(measure: StepMeasure): StepPlacement {
-  const radius = stepUnitSize / 2;
+  const size = measure.unitSize ?? stepUnitSize;
+  const radius = size / 2;
   const anchorLimit = Math.max(
     0,
     measure.screenHeight - mapBottomInset - bottomMargin - sheetHeight,
@@ -203,7 +203,7 @@ export function stepSheetPlacement(measure: StepMeasure): StepPlacement {
   const unitCenter = measure.unitTop + radius;
   return {
     targetScrollTop: Math.max(0, measure.scrollTop + (unitCenter - wanted)),
-    anchorY: measure.unitTop + stepUnitSize - measure.screenTop,
+    anchorY: measure.unitTop + size - measure.screenTop,
     anchorLimit,
   };
 }
@@ -218,7 +218,6 @@ export type StepHeaderCard = {
 /**
  * `stepSheetPlacement`의 답이 누른 유닛을 머리 카드 뒤에 세우면, 카드 아래로 내린 답을 냅니다.
  * 카드를 모르거나 걸리지 않으면 `stepSheetPlacement`와 글자 그대로 같습니다.
- *
  * 양보의 순서: 남는 자리 → 간격 → (그래도 모자라면) 카드를 피하는 쪽이 이깁니다. `gap`은 인자입니다 —
  * 자동 스크롤의 자리 모듈이 이 모듈을 읽으므로 거꾸로 읽으면 순환입니다.
  */
@@ -233,14 +232,15 @@ export function stepSheetPlacementBelowHeader(
   const baseTop = measure.unitTop - (base.targetScrollTop - measure.scrollTop);
   if (baseTop >= header.bottom + gap) return base;
   // 모르는 가로 값이 하나라도 있으면 겹친다고 봅니다 — 세로로도 걸려야 바뀝니다.
-  const half = stepUnitSize / 2;
+  const size = measure.unitSize ?? stepUnitSize;
+  const half = size / 2;
   const overlaps =
     unitCenterX === null ||
     header.left === null ||
     header.width === null ||
     (unitCenterX - half < header.left + header.width && header.left < unitCenterX + half);
   if (!overlaps) return base;
-  const lowestTop = measure.screenTop + base.anchorLimit - sheetGap - stepUnitSize;
+  const lowestTop = measure.screenTop + base.anchorLimit - sheetGap - size;
   const wantedTop = Math.max(
     baseTop,
     Math.min(header.bottom + gap, Math.max(lowestTop, header.bottom)),

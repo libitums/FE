@@ -7,6 +7,7 @@ import {
   catalogSheetFigures,
   catalogSheetKey,
   catalogSheetTargetOf,
+  catalogSheetUnitSize,
 } from "./catalog-sheet";
 
 // `unit` 계층: 카탈로그 유닛 말풍선의 키 · 띠 값 · 진행 수치입니다.
@@ -83,5 +84,14 @@ describe("catalogSheetFigures · catalogSectionTitle", () => {
   test("CSF2. 제목은 영어 제목이 먼저이고 없으면 매니페스트 제목이다", () => {
     expect(catalogSectionTitle(section)).toBe("물 사기");
     expect(catalogSectionTitle({ ...section, titleEn: "Buying Water" })).toBe("Buying Water");
+  });
+});
+
+describe("catalogSheetUnitSize", () => {
+  test("FS2. 최종은 스페셜 표식(124), 레슨 · 문화 · 모르는 유닛은 레슨 원(100)이다", () => {
+    expect(catalogSheetUnitSize(sections, "u01-water", "RP")).toBe(124);
+    expect(catalogSheetUnitSize(sections, "u01-water", "S1")).toBe(100);
+    expect(catalogSheetUnitSize(sections, "u01-water", "CULT")).toBe(100);
+    expect(catalogSheetUnitSize(sections, "u02-none", "RP")).toBe(100);
   });
 });
