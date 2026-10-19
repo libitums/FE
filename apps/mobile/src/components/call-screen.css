@@ -73,6 +73,8 @@
   gap: var(--libitum-spacing-16);
   flex-shrink: 0;
 }
+/* 대사 패널(비주얼 노벨)과 같은 어두운 반투명 면입니다 — gray-950(#1A1C20)에 면 불투명도 0.9.
+   면만 비치게 하려고 opacity 대신 rgba로 적습니다(글자는 불투명). */
 .phone-call-reply-button {
   display: flex;
   align-items: center;
@@ -80,6 +82,8 @@
   flex-direction: column;
   gap: var(--libitum-spacing-4);
   padding: var(--libitum-spacing-16);
+  background-color: rgba(26, 28, 32, 0.9);
+  border-radius: var(--libitum-radius-xl);
 }
 
 .phone-call-screen-status {
@@ -92,13 +96,6 @@
   align-items: stretch;
   background: transparent;
 }
-/* 대사 패널(비주얼 노벨)과 같은 어두운 반투명 면입니다 — gray-950(#1A1C20)에 면 불투명도 0.9.
-   면만 비치게 하려고 opacity 대신 rgba로 적습니다(글자는 불투명). */
-.phone-call-reply-button {
-  background-color: rgba(26, 28, 32, 0.9);
-  border-radius: var(--libitum-radius-xl);
-}
-
 .phone-call-reply-button text {
   color: var(--libitum-color-gray-50);
   font-family: var(--libitum-typography-button-xl-font-family);

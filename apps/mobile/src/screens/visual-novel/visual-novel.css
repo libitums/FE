@@ -105,3 +105,9 @@
 .visual-novel-dialogue-self .ui-lynx-visual-novel-dialog-speaker {
   text-align: right;
 }
+
+/* 로마자 · 번역 줄 — 컴포넌트 기본(gray-700)은 배경 사진이 밝은 자리에서 3.8:1이라 한 단계 밝게
+   올립니다(gray-600, 같은 자리 약 4.9:1). 대사 줄(gray-300)과는 여전히 갈립니다. */
+.visual-novel-dialogue .ui-lynx-visual-novel-dialog-translation {
+  color: var(--libitum-color-gray-600);
+}
