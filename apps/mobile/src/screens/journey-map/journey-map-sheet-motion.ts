@@ -27,7 +27,7 @@ export type SheetEntranceClasses = {
   readonly bandProgress: EpisodeHeaderProgressEntrance;
   /** `.step-sheet-pop` className 전체. */
   readonly bubble: string;
-  /** false면 `.step-sheet-pop`에 user-interaction-enabled={false}(awaiting만). */
+  /** false면(awaiting만) 시작 버튼의 탭을 끄고 `.step-sheet-pop`이 탭을 잡아 닫습니다. */
   readonly bubbleInteractive: boolean;
   /** 말풍선 채움 className 전체. */
   readonly fill: string;
