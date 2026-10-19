@@ -27,3 +27,4 @@
 
 | 날짜 | 기기 | 빌드 | 결과 |
 | --- | --- | --- | --- |
+| 2026-10-19 | iPhone 13 mini(실기) | `feat/episode-background-download` e10bf6a8 Release · 서버 매니페스트에 u04-directions 추가 | **1회차 결함 2건** — ① Supabase Storage가 없는 파일(`audio/u03-mina/d-01.m4a`)에 400을 내 받기가 u03에서 멈춤 → 400을 「서버에 없음」으로(AS2b). ② 받는 중 u04가 옛 `COMING SOON` 구획으로 섬 → 새 「준비 중」 구획(UM4a). **2회차** — 새 빌드 켠 뒤 20초 안에 u03 나머지 · u04 그림 10장이 앱 폴더에 받아짐(devicectl로 파일 확인). EB1 · EB2 **통과**(사용자 확인 — 에피소드 4가 열리고 진행됨). 테스트 계정은 서버 진행에 u01 ~ u03 완료를 합쳐 넣어 u04 표지를 열었다. EB3 ~ EB7 · Android 미실행 |
