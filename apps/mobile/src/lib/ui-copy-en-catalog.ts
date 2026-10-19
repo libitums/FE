@@ -72,9 +72,16 @@ export const vocabCardEn: VocabCardCopy = {
 
 export const cultureCardEn: CultureCardCopy = {
   instruction: "Learn about life in Korea.",
-  badge: "Culture",
+  eyebrow: "CULTURE",
+  tapToFlip: "Tap to flip",
+  flipCard: "Flip card",
+  nextCard: "Next card",
   koreanBodyTitle: "In Korean",
+  counter: (position, total) => `${position} / ${total}`,
   pronunciation: (romanization) => `Pronunciation: ${romanization}`,
+  frontPlace: (position, total) => `Culture card ${position} of ${total}, front.`,
+  backPlace: (position, total) => `Culture card ${position} of ${total}, back.`,
+  flipBackHint: "Tap to flip back.",
 };
 
 export const syllableBuildEn: SyllableBuildCopy = {

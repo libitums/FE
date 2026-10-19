@@ -123,9 +123,14 @@ export function solveActivity(activity: CatalogActivity, right: boolean, last = 
       }
       break;
     case "vocab-card":
-    case "culture-card":
       // 카드는 문항 수만큼 버튼을 누릅니다 — 마지막 카드의 버튼이 곧 다음 걸음이라 완료 카드가 없습니다.
       for (let index = 0; index < activity.questions.length; index += 1) {
+        tapId("learning-shell-action");
+      }
+      return;
+    case "culture-card":
+      // 문화 카드는 한 장에 두 번입니다 — 앞면의 버튼이 뒤집고(`Flip card`) 뒷면의 버튼이 넘깁니다.
+      for (let index = 0; index < activity.questions.length * 2; index += 1) {
         tapId("learning-shell-action");
       }
       return;

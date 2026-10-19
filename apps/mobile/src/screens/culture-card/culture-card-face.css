@@ -1,0 +1,220 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 덱 맨 앞 카드의 앞 · 뒷면 안 배치입니다(`CultureCardFace`).
+   덱 · 숫자 · 점 · 뒤집기 움직임은 `culture-card-activity.css`가 집니다. CSS 상속이 꺼져 있어 글자 요소마다 색 ·
+   타이포를 직접 적습니다. */
+
+/* 앞면 — 글 묶음이 아래에 붙습니다. 사진이 늦거나 없을 때 흰 글이 읽히는 면을 먼저 깝니다. */
+.culture-card-activity-front {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--libitum-radius-xl);
+  overflow: hidden;
+}
+
+.culture-card-activity-front-photo {
+  background-color: var(--libitum-color-gray-950);
+}
+
+/* 그림이 없거나 실패한 면은 브랜드 주황입니다. `brand-primary`는 흰 글자가 3.0:1이라 작은 영어 제목이 AA에 못 미쳐
+   한 단 짙은 `brand-strong`(5.46:1)을 씁니다. */
+.culture-card-activity-front-panel {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.culture-card-activity-photo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.culture-card-activity-scrim {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: calc(var(--libitum-spacing-96) * 2);
+  background-image: linear-gradient(to bottom, transparent, var(--libitum-color-gray-950));
+}
+
+.culture-card-activity-visual {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.culture-card-activity-panel-icon {
+  width: var(--libitum-spacing-96);
+  height: var(--libitum-spacing-96);
+}
+
+.culture-card-activity-front-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-20);
+}
+
+.culture-card-activity-eyebrow {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.culture-card-activity-front-title {
+  /* 한국어는 어절(띄어쓰기) 단위로만 접습니다 — 기본값은 음절 사이에서도 끊습니다(기기 확인 2026-10-16). */
+  word-break: keep-all;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.culture-card-activity-front-translation {
+  color: var(--libitum-color-gray-300);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 「Tap to flip」 알약 — 누를 자리가 카드 전체라는 안내입니다(알약 자신은 따로 눌리지 않습니다). */
+.culture-card-activity-hint {
+  margin-top: var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.culture-card-activity-hint-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}
+
+.culture-card-activity-hint-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 뒷면 — 흰 면 위 제목 줄 · 영어 본문 · 한국어 상자입니다. 본문은 왼쪽 정렬입니다(세 문장 산문). */
+.culture-card-activity-back {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-20);
+  border-radius: var(--libitum-radius-xl);
+  background-color: var(--libitum-color-white);
+}
+
+.culture-card-activity-back-head {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-12);
+}
+
+.culture-card-activity-back-heading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-2);
+}
+
+.culture-card-activity-back-title {
+  word-break: keep-all;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.culture-card-activity-romanization {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 뒤집기 표시 — 동그란 테두리 안 아이콘입니다. 크기는 시안의 44pt를 토큰 합으로 적습니다. */
+.culture-card-activity-flip-back {
+  width: calc(var(--libitum-spacing-40) + var(--libitum-spacing-4));
+  height: calc(var(--libitum-spacing-40) + var(--libitum-spacing-4));
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+}
+
+.culture-card-activity-flip-back-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.culture-card-activity-body {
+  text-align: left;
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+/* 한국어 본문 상자 — 단어 카드의 예문 상자와 같은 치수이고 글자는 왼쪽 정렬입니다. */
+.culture-card-activity-korean {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.culture-card-activity-korean-title {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.culture-card-activity-korean-text {
+  word-break: keep-all;
+  text-align: left;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
