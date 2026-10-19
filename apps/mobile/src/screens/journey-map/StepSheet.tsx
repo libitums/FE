@@ -1,3 +1,4 @@
+import { useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { useLayerBack } from "../../lib/use-back-handler";
@@ -67,6 +68,15 @@ export function StepSheet({
 
   const motion = sheetEntranceClasses(entrance);
 
+  // 대기 중 말풍선 자리 탭은 닫기입니다. 래퍼의 탭 잡기는 단계와 무관하게 늘 걸어 두고 지금 단계를 ref로 읽습니다 —
+  // 대기 → 등장 전환 프레임에 잡기를 떼고 붙이면 그 프레임의 시작 탭이 아무 데도 닿지 않았습니다(Android e2e SM6 재실행).
+  const awaiting = useRef(false);
+  awaiting.current = !motion.bubbleInteractive;
+  const handleBubbleTap = (): void => {
+    "background only";
+    if (awaiting.current) onClose();
+  };
+
   const handleStart = (): void => {
     playSound("button");
     onStart();
@@ -132,7 +142,7 @@ export function StepSheet({
           className={motion.bubble}
           data-testid="step-sheet-pop"
           style={{ transformOrigin: stepSheetBubbleOrigin(caretOffset) }}
-          {...(motion.bubbleInteractive ? {} : { catchtap: onClose })}
+          catchtap={handleBubbleTap}
           {...(motion.motionReduced ? { "data-motion": "reduced" } : {})}
         >
           {/* 꼬리입니다. 45도 돌린 네모의 아래 절반을 말풍선이 덮어 삼각형만 남습니다 —

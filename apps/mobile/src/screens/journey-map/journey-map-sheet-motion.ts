@@ -55,7 +55,7 @@ const entranceClasses: Record<SheetEntranceMotion, SheetEntranceClasses> = {
     band: `${bandBase} ${bandBase}-awaiting`,
     bandProgress: "none",
     bubble: `${bubbleBase} ${bubbleBase}-awaiting`,
-    // 대기 중 말풍선은 보이지 않으니 누를 수도 없습니다 — 탭은 아래 가림막에 닿아 닫힙니다.
+    // 대기 중 말풍선은 보이지 않으니 그 자리 탭은 말풍선 밖과 같이 닫기입니다 — 말풍선 래퍼가 잡아 닫습니다(시작은 그대로 받습니다).
     bubbleInteractive: false,
     fill: fillBase,
     startGlow: false,
