@@ -194,7 +194,7 @@ test("[WR9] 판정할 수 없으면 아래 버튼이 Next이고, 누르면 완�
   expect(screen.getByTestId("writing-screen-complete")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // See results
-  expect(props.onFinish).toHaveBeenCalledWith("tutorial-writing", [expect.anything()], 1);
+  expect(props.onFinish).toHaveBeenCalledWith("tutorial-writing", ["correct"], 1);
 });
 
 test("[WR7] 첫 문항이 optionalPractice가 아니면(directions) 안내가 없고 안내 키에 쓰지 않는다", () => {
