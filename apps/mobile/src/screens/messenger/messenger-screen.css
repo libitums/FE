@@ -64,7 +64,7 @@
   height: var(--libitum-spacing-16);
 }
 
-/* 답장 구역 — 판정 배지 · 입력창 · 자판(또는 Try Again)이 세로로 섭니다(간격 12). */
+/* 답장 구역 — 판정 배지 · 입력창(또는 Try Again)이 세로로 섭니다(간격 12). 자판은 이 구역 밖 화면 바닥입니다. */
 .messenger-screen-reply {
   flex-shrink: 0;
   display: flex;

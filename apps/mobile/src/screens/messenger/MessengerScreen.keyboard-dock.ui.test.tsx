@@ -51,7 +51,7 @@ function marginsOf(testId: string) {
 const bodyMargins = (insets: SafeAreaInsets, owner: KeyboardDockBottom) =>
   keyboardDockBodyStyle(keyboardDockEdgesOf(insets), owner);
 const surface = () => marginsOf("messenger-screen-surface");
-// 테스트 렌더러는 정적 형제 옆의 조건부 자식을 이름 없는 `<wrapper>`로 감쌉니다 — 기기 트리에는 없는 상자라 펼칩니다.
+// 테스트 렌더러는 정적 형제 옆의 조건부 자식을 이름 없는 `<wrapper>`로 감쌉니다 — 레이아웃에 참여하지 않는 렌더러의 사정이라 펼칩니다.
 const flatChildren = (element: Element): Element[] =>
   Array.from(element.children).flatMap((child) =>
     child.tagName.toLowerCase() === "wrapper" ? flatChildren(child) : [child],
@@ -130,7 +130,7 @@ describe("MessengerScreen keyboard dock", () => {
     });
   });
 
-  test("MU6. 학습 문항 안내가 떠 있는 동안 바깥 상자가 가려지고 닫으면 풀린다", () => {
+  test("MU6a. 학습 문항 안내가 떠 있는 동안 바깥 상자가 가려지고 닫으면 풀린다", () => {
     stubGuideStorage();
     mount(ios, messengerConversationFor("appointment-confirmation"));
     const root = screen.getByTestId("messenger-screen");
@@ -145,7 +145,7 @@ describe("MessengerScreen keyboard dock", () => {
     expect(root).toHaveAttribute("accessibility-elements-hidden", "false");
   });
 
-  test("MU6. 자판이 서는 국면에서도 자판은 가림 속성을 진 바깥 상자의 자손이다", () => {
+  test("MU6b. 자판이 서는 국면에서도 자판은 가림 속성을 진 바깥 상자의 자손이다", () => {
     mount(ios);
     const root = screen.getByTestId("messenger-screen");
 

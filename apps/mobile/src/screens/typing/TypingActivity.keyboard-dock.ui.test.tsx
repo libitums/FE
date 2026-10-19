@@ -71,7 +71,7 @@ function marginsOf(testId: string) {
 
 const bodyMargins = (owner: KeyboardDockBottom) =>
   keyboardDockBodyStyle(keyboardDockEdgesOf(ios), owner);
-// 테스트 렌더러는 정적 형제 옆의 조건부 자식을 이름 없는 `<wrapper>`로 감쌉니다 — 기기 트리에는 없는 상자라 펼칩니다.
+// 테스트 렌더러는 정적 형제 옆의 조건부 자식을 이름 없는 `<wrapper>`로 감쌉니다 — 레이아웃에 참여하지 않는 렌더러의 사정이라 펼칩니다.
 const flatChildren = (element: Element | null): Element[] =>
   Array.from(element?.children ?? []).flatMap((child) =>
     child.tagName.toLowerCase() === "wrapper" ? flatChildren(child) : [child],

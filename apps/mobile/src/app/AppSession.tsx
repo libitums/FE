@@ -209,7 +209,7 @@ export function AppSession({
     finishGuard,
   });
 
-  // 셸이 가려지는 가장자리만큼 안쪽 여백을 잡고 셸 배경이 칠합니다 — 스플래시만 브랜드색(lib/safe-area.ts).
+  // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
   // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
   // Android 3버튼)만 비우고 탭 바 묶음이 그 밑을 덧댑니다. iOS · 제스처는 0입니다.
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
