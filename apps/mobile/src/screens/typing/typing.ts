@@ -1,6 +1,7 @@
 // 타자 입력 활동의 순수 로직입니다. UI를 import하지 않습니다.
 
 import type { AnswerResult } from "../../lib/answer-result";
+import type { KeyboardDockBottom } from "../../lib/keyboard-dock";
 import { composeHangul, isTypedAnswerAccepted, shiftedKeys } from "../../lib/hangul-keyboard";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { TypingQuestion, TypingSessionAction, TypingSessionState } from "./typing.contract";
@@ -74,6 +75,16 @@ export function typingResultAt(
 
 export function isTypingSessionComplete(state: TypingSessionState, total: number): boolean {
   return state.questionIndex >= total;
+}
+
+/** 자판이 아래 가장자리를 지는지 정합니다. */
+export function typingKeyboardDock(
+  state: TypingSessionState,
+  questionCount: number,
+): KeyboardDockBottom {
+  return isTypingSessionComplete(state, questionCount) || state.phase === "checked"
+    ? "body"
+    : "keyboard";
 }
 
 export function typingSessionResults(

@@ -1,7 +1,6 @@
 import { learningPassCriterionForStep } from "./learning-assessment";
-// `Screen` 유니온을 화면 컴포넌트로 옮기는 `switch` 하나를 소유합니다. `never`
-// 망라가 여기 섭니다 — 값(`initialCompletedStepCount` · `journeyStepOrdinal` ·
-// `completeStep`)은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
+// `Screen` 유니온을 화면 컴포넌트로 옮기는 `switch` 하나를 소유합니다. `never` 망라가 여기 섭니다 —
+// 값(`initialCompletedStepCount` 등)은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
 
 import { judgeAssessment } from "../screens/assessment/assessment";
 import { CultureScreen } from "../screens/culture/CultureScreen";
@@ -228,6 +227,7 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
           onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
           onComplete={wiring.onMessengerComplete}
           onFinish={wiring.onMessengerFinish}
+          insets={wiring.safeAreaInsets}
         />
       );
     case "special-unit-complete":

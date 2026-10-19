@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import type { ReactNode } from "@lynx-js/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
@@ -150,6 +151,7 @@ const cases: readonly Case[] = [
     completeId: "typing-activity-complete",
     mount: (lesson, onFinish) => (
       <TypingActivity
+        insets={zeroSafeAreaInsets}
         questions={[typingQuestion("T1"), typingQuestion("T2")]}
         gemCount={0}
         onExit={() => {}}

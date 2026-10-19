@@ -2,6 +2,8 @@
 // 하류가 공유할 타입만 둡니다.
 
 import type { AnswerResult } from "../../lib/answer-result";
+import type { KeyboardDockEdges } from "../../lib/keyboard-dock";
+import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
 import type { JourneyMapNodeStatus } from "../journey-map/journey-map-units";
 
@@ -138,7 +140,12 @@ export type MessengerScreenProps = {
    */
   readonly onFinish: (id: MessengerUnitId, results: readonly AnswerResult[]) => void;
   readonly exitTo?: SpecialUnitEntrySource;
+  /** 호스트 안전 영역(`wiring.safeAreaInsets`)입니다. 이 route에서 셸은 위만 비우므로 화면이 아래 · 좌 · 우를 집니다. */
+  readonly insets: SafeAreaInsets;
 };
+
+/** 답장 자리에 무엇이 서는가입니다. */
+export type MessengerReplyArea = "finish" | "retry" | "keyboard" | "choices";
 
 export type MessageBubbleProps = {
   readonly message: MessengerMessage;
@@ -189,6 +196,8 @@ export type MessengerKeyboardProps = {
   readonly onPress: (key: string) => void;
   readonly onBackspace: () => void;
   readonly onShift: () => void;
+  /** 셸이 맡긴 아래 · 좌 · 우입니다. 키 줄 묶음의 바깥 여백이 됩니다. 0이면 지금과 같습니다. */
+  readonly edges: KeyboardDockEdges;
 };
 
 export type MessengerFinishButtonProps = {

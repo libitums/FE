@@ -44,7 +44,8 @@ import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-p
 import type { AppJourneySeed } from "./journey-progress";
 import { catalogCompletionKeysOf, catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { AppSessionContent } from "./episode-content";
-import { shellHeaderTop, shellInsetsFor } from "./full-bleed-screens";
+import { shellHeaderTop } from "./full-bleed-screens";
+import { shellInsetsOf } from "./shell-edges";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useOpenedPush } from "./use-opened-push";
@@ -208,7 +209,7 @@ export function AppSession({
     finishGuard,
   });
 
-  // 셸이 가려지는 가장자리만큼 안쪽 여백을 잡고 셸 배경이 칠합니다 — 스플래시만 브랜드색(lib/safe-area.ts).
+  // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
   // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
   // Android 3버튼)만 비우고 탭 바 묶음이 그 밑을 덧댑니다. iOS · 제스처는 0입니다.
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
@@ -220,9 +221,8 @@ export function AppSession({
   const screenNow = currentScreen(nav);
   const isPhoneCall = screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call";
   const showsNavigator = showsTabNavigator(nav);
-  // 가장자리까지 그림을 까는 화면 · 여정 맵(위만)은 셸이 여백을 잡지 않습니다 — 셸 배경이 칠하는 띠가 그림 · 맵을
-  // 끊습니다. 여백은 화면이 자기 안에서 잡습니다(`wiring.safeAreaInsets`, `full-bleed-screens`).
-  const shellInsets = shellInsetsFor(screenNow, insets);
+  // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`).
+  const shellInsets = shellInsetsOf(screenNow, insets, wiring);
   const bottomLayout = shellBottomLayout({
     showsNavigator,
     safeBottom: shellInsets.bottom,

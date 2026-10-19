@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
@@ -57,7 +58,13 @@ function mount(
   motion?: "reduced",
 ) {
   const element = (
-    <TypingActivity questions={list} gemCount={0} onExit={() => {}} onFinish={onFinish} />
+    <TypingActivity
+      insets={zeroSafeAreaInsets}
+      questions={list}
+      gemCount={0}
+      onExit={() => {}}
+      onFinish={onFinish}
+    />
   );
   return render(
     motion === undefined ? element : <MotionProvider motion={motion}>{element}</MotionProvider>,

@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
@@ -40,7 +41,14 @@ function renderScreen(target: MessengerConversation = conversation) {
     onComplete: vi.fn<() => void>(),
     onFinish: vi.fn(),
   };
-  render(<MessengerScreen conversation={target} completionStatus="available" {...props} />);
+  render(
+    <MessengerScreen
+      insets={zeroSafeAreaInsets}
+      conversation={target}
+      completionStatus="available"
+      {...props}
+    />,
+  );
   return props;
 }
 

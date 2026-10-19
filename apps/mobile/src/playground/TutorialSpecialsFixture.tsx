@@ -1,4 +1,5 @@
 import { useState } from "@lynx-js/react";
+import { zeroSafeAreaInsets } from "../lib/safe-area";
 import { MessengerScreen } from "../screens/messenger/MessengerScreen";
 import { messengerConversationFor } from "../screens/messenger/messenger";
 import { PhoneCallScreen } from "../screens/phone-call/PhoneCallScreen";
@@ -101,6 +102,7 @@ function TutorialStoryStage({
         onExit={onExit}
         onComplete={noop}
         onFinish={() => setStage(1)}
+        insets={zeroSafeAreaInsets}
       />
     );
   if (stage === 1)

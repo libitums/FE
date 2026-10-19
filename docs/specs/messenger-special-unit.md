@@ -1,5 +1,11 @@
 # LIB-254 계약 — 약속 확인 메신저 특별 유닛
 
+> **개정 (2026-10-19) — 자판을 화면 바닥에 붙임.** 결정은 [ADR-0070](../adr/0070-keyboard-dock.md)이 진다. 자판(`MessengerKeyboard`)은
+> 답장 구역 밖, **화면 루트의 마지막 자식**으로 선다 — 흰 면이 화면 아래 · 좌우 끝까지 닿고 키는 안전 영역 안이다(키 아래 = 24 + 아래 인셋).
+> 이 route에서는 셸이 위만 비우고, 화면이 필수 prop `insets`로 아래 · 좌 · 우를 진다. 기존 `messenger-screen`은 자판까지 감싸는 바깥 상자로 옮겨
+> 같은 이름 · 같은 `accessibility-elements-hidden`을 지고, 흰 몸통은 새 `messenger-screen-surface`다. 자판이 없는 국면(`Try Again` · 객관식 · `See results`)의
+> 위치와 아래 띠 색은 그대로다. 아래 §1 트리 · §5 test-id 표가 이 개정을 반영한다.
+
 > **개정 (2026-09-30, 완료한 중간 서사 재진입).** 아래의 완료 기록 전체 표시 동작보다 이 개정이 우선합니다.
 > 완료 기록과 관계없이 새 화면 세션은 첫 상대 메시지·첫 답장부터 시작하며 입력과 결과는 새로 수집합니다.
 > 과거 완료 기록은 유지하고 여정의 완료 이벤트는 중복하지 않습니다. 대화 후 See results는 이번 회차의 정오로
@@ -99,9 +105,11 @@ App
 ├─ JourneyMapScreen
 │  ├─ JourneyStepNode × 5                 (기존)
 │  └─ MessengerMapItem × 1                (새 명시적 변형)
-└─ MessengerScreen
-   ├─ MessageBubble × 현재 공개 메시지
-   └─ active: 입력창 + MessengerKeyboard(틀리면 Try Again) | completed: MessengerFinishButton
+└─ MessengerScreen                       (바깥 상자 messenger-screen — 2026-10-19 개정)
+   ├─ 몸통 messenger-screen-surface
+   │  ├─ MessageBubble × 현재 공개 메시지
+   │  └─ active: 입력창(틀리면 Try Again · 보기면 MessengerChoices) | completed: MessengerFinishButton
+   └─ 자판 국면이면 MessengerKeyboard     (몸통 밖 마지막 자식 — 화면 바닥)
 ```
 
 | 컴포넌트 | 경로 | 단일 책임 |
@@ -267,6 +275,8 @@ export function App(
 | 메신저 화면/나가기/제목/스크롤/목록 | `messenger-screen`, `messenger-screen-exit`, `messenger-screen-title`, `messenger-screen-scroll`, `messenger-message-list` |
 | 메시지 | `messenger-message-<messageId>` |
 | 답장 구역 · 입력창 · 보내기 · 다시 치기 | `messenger-reply`, `messenger-composer`, `messenger-send`, `messenger-try-again` |
+| 흰 몸통(2026-10-19) | `messenger-screen-surface` |
+| 자판 면 · 키 줄 묶음(2026-10-19) | `messenger-keyboard`, `messenger-keyboard-rows` |
 | 자판 키 | `messenger-key-<자모\|shift\|backspace\|space\|,\|.\|?>` |
 | 결과 보기 | `messenger-finish` |
 

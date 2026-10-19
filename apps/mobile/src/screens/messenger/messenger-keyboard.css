@@ -2,18 +2,31 @@
    자판입니다 — 흰 판에 그림자, 키는 30×40 · 모서리 8 · gray-100 면입니다. */
 .messenger-keyboard {
   flex-shrink: 0;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--libitum-spacing-8);
   padding-top: var(--libitum-spacing-24);
   padding-bottom: var(--libitum-spacing-24);
-  padding-left: var(--libitum-spacing-16);
-  padding-right: var(--libitum-spacing-16);
+  /* 좌우는 4 — 16이면 375pt 화면에서 키가 디자인 폭보다 줄어듭니다(시스템 자판처럼 가장자리 가까이). */
+  padding-left: var(--libitum-spacing-4);
+  padding-right: var(--libitum-spacing-4);
   border-top-left-radius: var(--libitum-radius-xl);
   border-top-right-radius: var(--libitum-radius-xl);
   background: var(--libitum-color-white);
   box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+/* 키 줄 묶음 — 인셋은 이 상자의 인라인 바깥 여백으로 면 여백에 더해집니다. 폭은 면 안쪽을 채우되
+   디자인 폭 366을 넘지 않습니다 — 그보다 좁은 화면(360dp)에서는 키가 비율대로 줄어 좌우 여백을
+   지킵니다(iPhone 13 mini 실기 확인 2026-10-19). */
+.messenger-keyboard-rows {
+  width: 100%;
+  max-width: 366px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
 }
 
 .messenger-keyboard-row {
@@ -22,7 +35,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--libitum-spacing-4);
-  width: 366px;
+  width: 100%;
 }
 
 /* 셋째 · 넷째 줄은 양 끝에 붙고 가운데가 벌어집니다(디자인의 space-between). */
@@ -34,11 +47,17 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  width: 234px;
+  width: 63.9344%;
 }
 
+/* 묶음 안 자모 키는 묶음 폭(디자인 234)에 대한 비율입니다. */
+.messenger-keyboard-cluster .messenger-keyboard-key {
+  width: 12.8205%;
+}
+
+/* 키 폭은 디자인 px를 키 줄 디자인 폭 366에 대한 비율로 옮긴 값입니다. */
 .messenger-keyboard-key {
-  width: 30px;
+  width: 8.1967%;
   height: var(--libitum-spacing-40);
   display: flex;
   align-items: center;
@@ -53,15 +72,15 @@
 }
 
 .messenger-keyboard-key-wide {
-  width: 49px;
+  width: 13.388%;
 }
 
 .messenger-keyboard-key-space {
-  width: 206px;
+  width: 56.2842%;
 }
 
 .messenger-keyboard-key-trailing {
-  width: 80px;
+  width: 21.8579%;
 }
 
 .messenger-keyboard-key-label {

@@ -204,11 +204,32 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
 
 afterEach(() => {
   cleanup();
+  setHostInsets(undefined);
   resetPushWiringForTests();
   vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
+
+// ---------------------------------------------------------------- 호스트 인셋 (자판 도킹)
+
+type HostInsets = {
+  readonly safeAreaInsets: { top: number; bottom: number; left: number; right: number };
+  readonly tappableBottomInset: number;
+};
+const threeButton: HostInsets = {
+  safeAreaInsets: { top: 24, bottom: 48, left: 0, right: 0 },
+  tappableBottomInset: 48,
+};
+function setHostInsets(value: HostInsets | undefined): void {
+  (lynx as unknown as { __globalProps: unknown }).__globalProps = value;
+}
+const shellPaddingBottom = (): string => screen.getByTestId("app-shell").style.paddingBottom;
+const shellPaddingTop = (): string => screen.getByTestId("app-shell").style.paddingTop;
+const keyRowsMargin = (): string =>
+  screen.getByTestId("messenger-keyboard-rows").style.marginBottom;
+const typingBodyMargin = (): string =>
+  screen.getByTestId("typing-activity-body").style.marginBottom;
 
 // ---------------------------------------------------------------- 조작 · 관찰 헬퍼
 
@@ -868,4 +889,56 @@ test("L12. 카탈로그 학습을 하지 않은 실행은 학습 이벤트를 �
   tapRoundIn("episode-intro-screen-back");
 
   expect(learningEvents(events)).toEqual([]);
+});
+
+test("KL1. (자판 도킹) 3버튼 · S6 받아쓰기: 셸 아래 0px에 자판 묶음 48px, Check 뒤 몸통이 48px를 이어받고 셸은 0px 그대로다", async () => {
+  setHostInsets(threeButton);
+  await boot({ progress: throughS5 });
+  const activity = lessonPlan(u01, "S6").activities[0];
+  if (activity?.form !== "typing") throw new Error("S6 is typing");
+
+  tapNode(u01, "S6");
+  expect(screen.getByTestId("typing-activity")).toBeInTheDocument();
+  expect(shellPaddingTop()).toBe("24px");
+  expect(shellPaddingBottom()).toBe("0px");
+  expect(screen.queryByTestId("app-navigator")).not.toBeInTheDocument();
+  expect(typingBodyMargin()).toBe("0px");
+  expect(keyRowsMargin()).toBe("48px");
+
+  typeAnswer(activity.questions[0]);
+  tapId("learning-shell-action");
+
+  expect(screen.queryByTestId("messenger-keyboard")).not.toBeInTheDocument();
+  expect(typingBodyMargin()).toBe("48px");
+  expect(shellPaddingBottom()).toBe("0px");
+});
+
+test("KL2. (자판 도킹 회귀 가드) 3버튼 · S1 단어 카드: 셸 아래 48px에 위 24px, 받아쓰기 화면이 없다", async () => {
+  setHostInsets(threeButton);
+  // 표지를 끝낸 진행이어야 S1이 열립니다 — 아니면 맵에 남아 셸 값이 맵의 것이 됩니다.
+  await boot({ progress: upTo() });
+
+  tapNode(u01, "S1");
+  expect(screen.getByTestId("vocab-card-content")).toBeInTheDocument();
+  expect(screen.queryByTestId("typing-activity")).not.toBeInTheDocument();
+  expect(shellPaddingBottom()).toBe("48px");
+  expect(shellPaddingTop()).toBe("24px");
+});
+
+test("KL3. (자판 도킹) 3버튼 · 다학습형 S4: 받아쓰기 활동에서만 셸이 0px이고 자판 묶음이 48px, 다음 선택 활동에서 다시 48px다", async () => {
+  setHostInsets(threeButton);
+  await boot({ progress: upTo("S1", "S3") });
+  const plan = lessonPlan(u01, "S4");
+
+  tapNode(u01, "S4");
+  const bottoms: string[] = [];
+  const keyRows: (string | null)[] = [];
+  plan.activities.forEach((activity, index) => {
+    bottoms.push(shellPaddingBottom());
+    keyRows.push(screen.queryByTestId("messenger-keyboard-rows")?.style.marginBottom ?? null);
+    solveActivity(activity, true, index === plan.activities.length - 1);
+  });
+
+  expect(keyRows).toEqual([null, null, "48px", null]);
+  expect(bottoms).toEqual(["48px", "48px", "0px", "48px"]);
 });

@@ -39,6 +39,7 @@ export function renderRoleplayUnitScreen(
           onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
           onComplete={wiring.onMessengerComplete}
           onFinish={wiring.onMessengerFinish}
+          insets={insets}
         />
       );
     case "roleplay-phone-call":

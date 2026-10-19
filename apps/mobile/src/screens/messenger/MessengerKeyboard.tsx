@@ -3,6 +3,7 @@ import arrowUp from "@libitums/icons/lynx/arrow-up";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
+import { keyboardRowsInsetStyle } from "../../lib/keyboard-dock";
 import { useUiCopy } from "../../lib/ui-copy";
 import { hangulKeyRows, shiftedKeys } from "./hangul-keyboard";
 import type { MessengerKeyboardProps } from "./messenger.contract";
@@ -19,6 +20,7 @@ export function MessengerKeyboard({
   onPress,
   onBackspace,
   onShift,
+  edges,
 }: MessengerKeyboardProps): ReactNode {
   const copy = useUiCopy();
   const jamoKey = (key: string) => {
@@ -42,65 +44,73 @@ export function MessengerKeyboard({
 
   return (
     <view className="messenger-keyboard" data-testid="messenger-keyboard">
-      <view className="messenger-keyboard-row">{top.map(jamoKey)}</view>
-      <view className="messenger-keyboard-row">{middle.map(jamoKey)}</view>
-      <view className="messenger-keyboard-row messenger-keyboard-row-spread">
-        <view
-          className={
-            shifted ? "messenger-keyboard-key messenger-keyboard-key-on" : "messenger-keyboard-key"
-          }
-          data-testid="messenger-key-shift"
-          data-shifted={shifted ? "true" : "false"}
-          accessibility-element={true}
-          accessibility-traits="button"
-          accessibility-label={
-            shifted ? copy.messenger.keyboard.shiftOn : copy.messenger.keyboard.shift
-          }
-          bindtap={onShift}
-        >
-          <svg
-            className="messenger-keyboard-key-icon"
-            content={arrowUp}
-            current-color={color.gray[900]}
-          />
+      <view
+        className="messenger-keyboard-rows"
+        data-testid="messenger-keyboard-rows"
+        style={keyboardRowsInsetStyle(edges)}
+      >
+        <view className="messenger-keyboard-row">{top.map(jamoKey)}</view>
+        <view className="messenger-keyboard-row">{middle.map(jamoKey)}</view>
+        <view className="messenger-keyboard-row messenger-keyboard-row-spread">
+          <view
+            className={
+              shifted
+                ? "messenger-keyboard-key messenger-keyboard-key-on"
+                : "messenger-keyboard-key"
+            }
+            data-testid="messenger-key-shift"
+            data-shifted={shifted ? "true" : "false"}
+            accessibility-element={true}
+            accessibility-traits="button"
+            accessibility-label={
+              shifted ? copy.messenger.keyboard.shiftOn : copy.messenger.keyboard.shift
+            }
+            bindtap={onShift}
+          >
+            <svg
+              className="messenger-keyboard-key-icon"
+              content={arrowUp}
+              current-color={color.gray[900]}
+            />
+          </view>
+          <view className="messenger-keyboard-cluster">{bottom.map(jamoKey)}</view>
+          <view
+            className="messenger-keyboard-key messenger-keyboard-key-wide"
+            data-testid="messenger-key-backspace"
+            accessibility-element={true}
+            accessibility-traits="button"
+            accessibility-label={copy.messenger.keyboard.backspace}
+            bindtap={onBackspace}
+          >
+            <svg
+              className="messenger-keyboard-key-icon"
+              content={cross}
+              current-color={color.gray[900]}
+            />
+          </view>
         </view>
-        <view className="messenger-keyboard-cluster">{bottom.map(jamoKey)}</view>
-        <view
-          className="messenger-keyboard-key messenger-keyboard-key-wide"
-          data-testid="messenger-key-backspace"
-          accessibility-element={true}
-          accessibility-traits="button"
-          accessibility-label={copy.messenger.keyboard.backspace}
-          bindtap={onBackspace}
-        >
-          <svg
-            className="messenger-keyboard-key-icon"
-            content={cross}
-            current-color={color.gray[900]}
-          />
+        <view className="messenger-keyboard-row messenger-keyboard-row-spread">
+          {punctuationKey(",", copy.messenger.keyboard.comma, onPress)}
+          {punctuationKey(".", copy.messenger.keyboard.period, onPress)}
+          <view
+            className="messenger-keyboard-key messenger-keyboard-key-space"
+            data-testid="messenger-key-space"
+            accessibility-element={true}
+            accessibility-traits="button"
+            accessibility-label={copy.messenger.keyboard.space}
+            bindtap={() => onPress(" ")}
+          >
+            <text className="messenger-keyboard-key-label messenger-keyboard-key-label-muted">
+              space
+            </text>
+          </view>
+          {punctuationKey(
+            "?",
+            copy.messenger.keyboard.questionMark,
+            onPress,
+            "messenger-keyboard-key-trailing",
+          )}
         </view>
-      </view>
-      <view className="messenger-keyboard-row messenger-keyboard-row-spread">
-        {punctuationKey(",", copy.messenger.keyboard.comma, onPress)}
-        {punctuationKey(".", copy.messenger.keyboard.period, onPress)}
-        <view
-          className="messenger-keyboard-key messenger-keyboard-key-space"
-          data-testid="messenger-key-space"
-          accessibility-element={true}
-          accessibility-traits="button"
-          accessibility-label={copy.messenger.keyboard.space}
-          bindtap={() => onPress(" ")}
-        >
-          <text className="messenger-keyboard-key-label messenger-keyboard-key-label-muted">
-            space
-          </text>
-        </view>
-        {punctuationKey(
-          "?",
-          copy.messenger.keyboard.questionMark,
-          onPress,
-          "messenger-keyboard-key-trailing",
-        )}
       </view>
     </view>
   );
