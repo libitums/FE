@@ -9,7 +9,7 @@ import { LearningItemGuide } from "../../components/LearningItemGuide";
 import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import type { AnswerResult } from "../../lib/answer-result";
 import { specialUnitExitLabel } from "../../lib/special-unit-entry-source";
-import { keyboardDockEdgesOf } from "../../lib/keyboard-dock";
+import { keyboardDockBodyStyle, keyboardDockEdgesOf } from "../../lib/keyboard-dock";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { MessageBubble } from "./MessageBubble";
@@ -28,6 +28,7 @@ import {
   currentMessengerReply,
   initialMessengerSessionState,
   messengerExitOutcome,
+  messengerReplyArea,
   messengerSessionReducer,
   visibleMessengerMessages,
 } from "./messenger";
@@ -122,6 +123,10 @@ export function MessengerScreen({
     if (reply !== null) dispatchComposer({ type: "submit", answer: reply.text });
   };
 
+  const area = messengerReplyArea(reply, composer.verdict);
+  const edges = keyboardDockEdgesOf(insets);
+  const surfaceStyle = keyboardDockBodyStyle(edges, area === "keyboard" ? "keyboard" : "body");
+
   return (
     <>
       <view
@@ -129,111 +134,126 @@ export function MessengerScreen({
         data-testid="messenger-screen"
         accessibility-elements-hidden={guide.visible}
       >
-        <view className="messenger-screen-header">
-          {/* 탭과 접근성 이름은 바깥 상자가 집니다 — 원 버튼은 모양만 빌립니다. 상자가 하나의
-            접근성 요소라 안쪽 원 버튼은 따로 읽히지 않습니다. */}
-          <view
-            className="messenger-screen-exit"
-            data-testid="messenger-screen-exit"
-            accessibility-element={true}
-            accessibility-traits="button"
-            accessibility-label={exitLabel}
-            bindtap={handleExit}
-          >
-            <RoundButton
-              accessibilityLabel={exitLabel}
-              icon={arrowLeft03}
-              variant="neutral"
-              size="xl"
-            />
-          </view>
-          <text
-            className="messenger-screen-title"
-            data-testid="messenger-screen-title"
-            accessibility-traits="header"
-          >
-            {conversation.title}
-          </text>
-        </view>
-
-        <scroll-view
-          className="messenger-screen-scroll"
-          data-testid="messenger-screen-scroll"
-          scroll-orientation="vertical"
-          scroll-bar-enable={false}
+        <view
+          className="messenger-screen-surface"
+          data-testid="messenger-screen-surface"
+          style={surfaceStyle}
         >
-          {conversation.introduction ? (
-            <text className="messenger-story-context" data-testid="messenger-story-introduction">
-              {conversation.introduction}
-            </text>
-          ) : null}
-          <view className="messenger-message-list" data-testid="messenger-message-list">
-            {messages.map((message, index) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                animate={index === messages.length - 1}
-                reducedMotion={reducedMotion}
+          <view className="messenger-screen-header">
+            {/* 탭과 접근성 이름은 바깥 상자가 집니다 — 원 버튼은 모양만 빌립니다. 상자가 하나의
+            접근성 요소라 안쪽 원 버튼은 따로 읽히지 않습니다. */}
+            <view
+              className="messenger-screen-exit"
+              data-testid="messenger-screen-exit"
+              accessibility-element={true}
+              accessibility-traits="button"
+              accessibility-label={exitLabel}
+              bindtap={handleExit}
+            >
+              <RoundButton
+                accessibilityLabel={exitLabel}
+                icon={arrowLeft03}
+                variant="neutral"
+                size="xl"
               />
-            ))}
-          </view>
-          {session.mode === "completed" && conversation.completion ? (
-            <text className="messenger-story-context" data-testid="messenger-story-completion">
-              {conversation.completion}
+            </view>
+            <text
+              className="messenger-screen-title"
+              data-testid="messenger-screen-title"
+              accessibility-traits="header"
+            >
+              {conversation.title}
             </text>
-          ) : null}
-          <view id={messengerEndId} className="messenger-screen-end" />
-        </scroll-view>
+          </view>
 
-        {reply === null ? (
-          <view className="messenger-screen-action">
-            <MessengerFinishButton onFinish={() => onFinish(conversation.id, results)} />
-          </view>
-        ) : (
-          <view className="messenger-screen-reply" data-testid="messenger-reply">
-            <MessengerComposer
-              reply={reply}
-              typed={typed}
-              verdict={composer.verdict}
-              onSend={handleSend}
-            />
-            {composer.verdict === "incorrect" ? (
-              <view className="messenger-screen-retry" data-testid="messenger-try-again">
-                <Button
-                  label="Try Again"
-                  variant="brand"
-                  size="xl"
-                  width="fill"
-                  icon={refresh}
-                  iconPosition="trailing"
-                  bindtap={() => dispatchComposer({ type: "retry" })}
+          <scroll-view
+            className="messenger-screen-scroll"
+            data-testid="messenger-screen-scroll"
+            scroll-orientation="vertical"
+            scroll-bar-enable={false}
+          >
+            {conversation.introduction ? (
+              <text className="messenger-story-context" data-testid="messenger-story-introduction">
+                {conversation.introduction}
+              </text>
+            ) : null}
+            <view className="messenger-message-list" data-testid="messenger-message-list">
+              {messages.map((message, index) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  animate={index === messages.length - 1}
+                  reducedMotion={reducedMotion}
                 />
-              </view>
-            ) : reply.choices === undefined ? (
-              <MessengerKeyboard
-                shifted={composer.shifted}
-                onPress={(key) => {
-                  if (!guide.visible) dispatchComposer({ type: "press", key });
-                }}
-                onBackspace={() => {
-                  if (!guide.visible) dispatchComposer({ type: "backspace" });
-                }}
-                onShift={() => {
-                  if (!guide.visible) dispatchComposer({ type: "shift" });
-                }}
-                edges={keyboardDockEdgesOf(insets)}
+              ))}
+            </view>
+            {session.mode === "completed" && conversation.completion ? (
+              <text className="messenger-story-context" data-testid="messenger-story-completion">
+                {conversation.completion}
+              </text>
+            ) : null}
+            <view id={messengerEndId} className="messenger-screen-end" />
+          </scroll-view>
+
+          {reply === null || area === "finish" ? (
+            <view className="messenger-screen-action">
+              <MessengerFinishButton onFinish={() => onFinish(conversation.id, results)} />
+            </view>
+          ) : (
+            <view
+              className={
+                area === "keyboard"
+                  ? "messenger-screen-reply messenger-screen-reply-docked"
+                  : "messenger-screen-reply"
+              }
+              data-testid="messenger-reply"
+            >
+              <MessengerComposer
+                reply={reply}
+                typed={typed}
+                verdict={composer.verdict}
+                onSend={handleSend}
               />
-            ) : (
-              <MessengerChoices
-                choices={reply.choices}
-                chosen={typed}
-                onChoose={(text) => {
-                  if (!guide.visible) dispatchComposer({ type: "choose", text });
-                }}
-              />
-            )}
-          </view>
-        )}
+              {area === "retry" ? (
+                <view className="messenger-screen-retry" data-testid="messenger-try-again">
+                  <Button
+                    label="Try Again"
+                    variant="brand"
+                    size="xl"
+                    width="fill"
+                    icon={refresh}
+                    iconPosition="trailing"
+                    bindtap={() => dispatchComposer({ type: "retry" })}
+                  />
+                </view>
+              ) : null}
+              {area === "choices" && reply?.choices !== undefined ? (
+                <MessengerChoices
+                  choices={reply.choices}
+                  chosen={typed}
+                  onChoose={(text) => {
+                    if (!guide.visible) dispatchComposer({ type: "choose", text });
+                  }}
+                />
+              ) : null}
+            </view>
+          )}
+        </view>
+        {area === "keyboard" ? (
+          <MessengerKeyboard
+            shifted={composer.shifted}
+            onPress={(key) => {
+              if (!guide.visible) dispatchComposer({ type: "press", key });
+            }}
+            onBackspace={() => {
+              if (!guide.visible) dispatchComposer({ type: "backspace" });
+            }}
+            onShift={() => {
+              if (!guide.visible) dispatchComposer({ type: "shift" });
+            }}
+            edges={edges}
+          />
+        ) : null}
       </view>
       {guide.visible ? <LearningItemGuide kind={guide.kind} onDismiss={guide.dismiss} /> : null}
     </>

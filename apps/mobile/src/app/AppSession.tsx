@@ -7,7 +7,7 @@ import type { AnswerResult } from "../lib/answer-result";
 import type { EntryAppProps } from "../lib/entry-flow";
 import { loadUiLanguage } from "../lib/ui-language";
 import type { EntryLanguage } from "../lib/entry-language";
-import { safeAreaInsetsFrom, tappableBottomInsetFrom, zeroSafeAreaInsets } from "../lib/safe-area";
+import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialSessionOptions } from "../lib/session-options";
 import { isMapItemComplete, journeyMapSections } from "../screens/journey-map/journey-map";
@@ -44,7 +44,7 @@ import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-p
 import type { AppJourneySeed } from "./journey-progress";
 import { catalogCompletionKeysOf, catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { AppSessionContent } from "./episode-content";
-import { isFullBleedScreen } from "./full-bleed-screens";
+import { shellInsetsOf } from "./shell-edges";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useOpenedPush } from "./use-opened-push";
@@ -221,9 +221,9 @@ export function AppSession({
   const screenNow = currentScreen(nav);
   const isPhoneCall = screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call";
   const showsNavigator = showsTabNavigator(nav);
-  // 가장자리까지 그림을 까는 화면은 셸이 여백을 잡지 않습니다 — 셸 배경이 칠하는 띠가
-  // 그림을 끊습니다. 여백은 화면이 자기 안에서 잡습니다(`wiring.safeAreaInsets`).
-  const shellInsets = isFullBleedScreen(screenNow) ? zeroSafeAreaInsets : insets;
+  // 가장자리까지 까는 화면은 0, 자판 화면은 위만, 나머지는 네 변을 셸이 잡습니다.
+  // 비운 가장자리는 화면이 자기 안에서 잡습니다(`wiring.safeAreaInsets`).
+  const shellInsets = shellInsetsOf(screenNow, insets, wiring);
   const bottomLayout = shellBottomLayout({
     showsNavigator,
     safeBottom: shellInsets.bottom,
