@@ -21,9 +21,11 @@ const bodyOf = (selector: string): string =>
 const widthOf = (selector: string): string | undefined =>
   /(?:^|[ ;])width:\s*([^;]+);/.exec(bodyOf(selector))?.[1];
 
-// 디자인 폭(px)을 키 줄 366 · 자모 묶음 234에 대한 비율로 옮긴 값입니다.
-const percentOf = (designPx: number, basePx: number): string =>
-  `${((designPx / basePx) * 100).toFixed(4)}%`;
+// 디자인 폭(px)을 키 줄 366 · 자모 묶음 234에 대한 비율(%)로 옮긴 값입니다. 포매터가 끝자리 0을 지우므로
+// 숫자로 비교합니다.
+const percentOf = (designPx: number, basePx: number): number => (designPx / basePx) * 100;
+const percentValue = (width: string | undefined): number =>
+  width?.endsWith("%") === true ? Number.parseFloat(width) : Number.NaN;
 
 describe("messenger-keyboard.css 키 폭", () => {
   test("KW1. 키 줄 묶음은 폭을 채우되 최대 366px이다", () => {
@@ -43,7 +45,7 @@ describe("messenger-keyboard.css 키 폭", () => {
     [".messenger-keyboard-cluster", 234, 366],
     [".messenger-keyboard-cluster .messenger-keyboard-key", 30, 234],
   ] as const)("KW3. %s 폭은 디자인 %ipx의 비율이다", (selector, designPx, basePx) => {
-    expect(widthOf(selector)).toBe(percentOf(designPx, basePx));
+    expect(percentValue(widthOf(selector))).toBeCloseTo(percentOf(designPx, basePx), 3);
   });
 
   test("KW4. 키 높이 · 간격은 그대로다", () => {
