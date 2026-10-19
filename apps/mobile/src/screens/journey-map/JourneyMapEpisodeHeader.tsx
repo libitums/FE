@@ -1,7 +1,9 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
-import type { SheetEntranceMotion } from "./journey-map-sheet-motion";
+import { sheetEntranceClasses, type SheetEntranceMotion } from "./journey-map-sheet-motion";
+
+import "./step-sheet-motion.css";
 
 export type JourneyMapEpisodeHeaderProps = {
   /** 설명 줄입니다 — `Episode 1, unit 03`. */
@@ -26,14 +28,22 @@ export function JourneyMapEpisodeHeader({
   completedUnitCount,
   totalUnitCount,
   onLayoutChange,
+  entrance = "none",
 }: JourneyMapEpisodeHeaderProps): ReactNode {
+  const motion = sheetEntranceClasses(entrance);
+  // 줄이기 표식은 움직이는 래퍼에 답니다 — 접근성 노드(`EpisodeHeader` 루트)에는 섞지 않습니다.
   return (
-    <view className="journey-map-screen-episode-header" bindlayoutchange={onLayoutChange}>
+    <view
+      className={motion.band}
+      bindlayoutchange={onLayoutChange}
+      {...(motion.motionReduced ? { "data-motion": "reduced" } : {})}
+    >
       <EpisodeHeader
         episodeLabel={episodeLabel}
         title={title}
         completedUnitCount={completedUnitCount}
         totalUnitCount={totalUnitCount}
+        progressEntrance={motion.bandProgress}
       />
     </view>
   );

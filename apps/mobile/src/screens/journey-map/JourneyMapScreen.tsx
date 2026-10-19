@@ -7,6 +7,7 @@ import type { ScrollEvent } from "@lynx-js/types";
 import { TutorialEpisodeSection } from "./TutorialEpisodeSection";
 import { JourneyMapCatalogSlot } from "./JourneyMapCatalogSlot";
 import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
+import { MapUnitEntranceProvider } from "./MapUnitStage";
 import { StepSheet } from "./StepSheet";
 import { CatalogUnitSheet } from "./CatalogUnitSheet";
 import { catalogSheetKey, catalogSheetTargetOf } from "./catalog-sheet";
@@ -86,6 +87,7 @@ export function JourneyMapScreen({
     handleScroll,
     handleSelectStep,
     handleCloseSheet,
+    sheetEntrance,
   } = useStepSheet();
 
   // 말풍선은 튜토리얼 스텝에도, 카탈로그 유닛에도 섭니다 — 같은 상태 자리를 키로 가릅니다.
@@ -169,33 +171,37 @@ export function JourneyMapScreen({
           accessibility-elements-hidden={sheetOpen}
           bindtouchstart={autoScroll.handleTouchStart}
         >
-          {journeyMapSections.map((section) =>
-            // 에피소드 하나가 헤더 + 유닛 줄입니다. 조각(Fragment)이 아니라 상자로
-            // 감쌉니다 — 유닛 사이 간격은 맵이 주지만 에피소드 사이는 더 벌어져야 하고,
-            // 그 간격을 이 상자가 집니다.
-            // 준비 중 에피소드는 머리만 읽히고 그 아래가 가려집니다 — 줄에 세울 항목이
-            // 없으므로 구획을 통째로 다른 조각이 그립니다.
-            section.episode.kind === "pending" ? (
-              <EpisodePendingSection key={section.episode.id} episode={section.episode} />
-            ) : (
-              <TutorialEpisodeSection
-                key={section.episode.id}
-                episode={section.episode}
-                items={section.items}
-                progress={progress}
-                access={access}
-                guide={guide}
-                actions={actions}
-              />
-            ),
-          )}
-          <JourneyMapCatalogSlot
-            catalog={catalog}
-            completedEpisodeFinalIds={completedEpisodeFinalIds}
-            hidden={guide.visible}
-            access={access}
-            onSelectUnit={handleSelectCatalogUnit}
-          />
+          <MapUnitEntranceProvider
+            value={{ targetId: sheetState.openStepId, entrance: sheetEntrance }}
+          >
+            {journeyMapSections.map((section) =>
+              // 에피소드 하나가 헤더 + 유닛 줄입니다. 조각(Fragment)이 아니라 상자로
+              // 감쌉니다 — 유닛 사이 간격은 맵이 주지만 에피소드 사이는 더 벌어져야 하고,
+              // 그 간격을 이 상자가 집니다.
+              // 준비 중 에피소드는 머리만 읽히고 그 아래가 가려집니다 — 줄에 세울 항목이
+              // 없으므로 구획을 통째로 다른 조각이 그립니다.
+              section.episode.kind === "pending" ? (
+                <EpisodePendingSection key={section.episode.id} episode={section.episode} />
+              ) : (
+                <TutorialEpisodeSection
+                  key={section.episode.id}
+                  episode={section.episode}
+                  items={section.items}
+                  progress={progress}
+                  access={access}
+                  guide={guide}
+                  actions={actions}
+                />
+              ),
+            )}
+            <JourneyMapCatalogSlot
+              catalog={catalog}
+              completedEpisodeFinalIds={completedEpisodeFinalIds}
+              hidden={guide.visible}
+              access={access}
+              onSelectUnit={handleSelectCatalogUnit}
+            />
+          </MapUnitEntranceProvider>
         </view>
       </scroll-view>
       {/* [겹침 레이어] 머리 띠입니다 — 스텝 말풍선이 열린 동안만 **스크롤 밖에** 섭니다(구획마다
@@ -218,6 +224,7 @@ export function JourneyMapScreen({
         openStepId={sheetState.openStepId}
         catalogSections={catalog?.sections}
         catalogProgress={catalog?.progress}
+        sheetEntrance={sheetEntrance}
       />
 
       {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식입니다. */}
@@ -233,6 +240,7 @@ export function JourneyMapScreen({
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}
           onClose={handleCloseSheet}
+          entrance={sheetEntrance}
         />
       )}
       {openCatalog === null || catalog === undefined ? null : (
@@ -242,6 +250,7 @@ export function JourneyMapScreen({
           top={sheetTop}
           caretOffset={sheetCaretOffset}
           onClose={handleCloseSheet}
+          entrance={sheetEntrance}
         />
       )}
     </view>

@@ -29,6 +29,7 @@ export function CatalogUnitSheet({
   top,
   caretOffset,
   onClose,
+  entrance,
 }: CatalogUnitSheetProps): ReactNode {
   const copy = useUiCopy();
   const section = catalog.sections.find((candidate) => candidate.episodeId === target.episodeId);
@@ -53,6 +54,7 @@ export function CatalogUnitSheet({
       totalActivityCount={figures.totalActivityCount}
       onStart={() => catalog.onStartUnit(target.episodeId, target.unitKey)}
       onClose={onClose}
+      {...(entrance === undefined ? {} : { entrance })}
     />
   );
 }

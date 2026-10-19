@@ -3,10 +3,17 @@ import type { ReactNode } from "@lynx-js/react";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
+import { StepSheetPercent } from "./StepSheetPercent";
 import { stepSheetProgress } from "./journey-map-sheet";
-import type { SheetEntranceMotion } from "./journey-map-sheet-motion";
+import {
+  sheetEntranceClasses,
+  sheetPercentOf,
+  stepSheetBubbleOrigin,
+  type SheetEntranceMotion,
+} from "./journey-map-sheet-motion";
 
 import "./step-sheet.css";
+import "./step-sheet-motion.css";
 
 /**
  * 유닛을 누르면 그 유닛에 붙어 뜨는 말풍선입니다(Figma 79-5791). 낭독 순서는
@@ -47,6 +54,7 @@ export function StepSheet({
   totalActivityCount,
   onStart,
   onClose,
+  entrance = "none",
 }: StepSheetProps): ReactNode {
   const copy = useUiCopy();
   // 시스템 뒤로가기 = 가림막 탭(`onClose`)과 같은 함수입니다. 말풍선이 서 있는 동안만 등록됩니다.
@@ -57,10 +65,35 @@ export function StepSheet({
       ? null
       : stepSheetProgress(completedActivityCount, totalActivityCount, copy);
 
+  const motion = sheetEntranceClasses(entrance);
+
   const handleStart = (): void => {
     playSound("button");
     onStart();
   };
+
+  // 숨쉬기 층과 버튼을 키를 단 한 배열로 냅니다 — 층이 들고 나도 버튼은 같은 노드로 남고, 둘이 같은 층(형제)에 섭니다.
+  const startLayers = [
+    motion.startGlow ? (
+      <view
+        key="glow"
+        className="step-sheet-start-glow"
+        data-testid="step-sheet-start-glow"
+        user-interaction-enabled={false}
+      />
+    ) : null,
+    <view
+      key="start"
+      className="step-sheet-start"
+      data-testid="step-sheet-start"
+      accessibility-element={true}
+      accessibility-label={copy.journeyMap.start}
+      accessibility-traits="button"
+      bindtap={handleStart}
+    >
+      <text className="step-sheet-start-label">{copy.journeyMap.start}</text>
+    </view>,
+  ];
 
   return (
     <view className="step-sheet">
@@ -85,68 +118,77 @@ export function StepSheet({
       {/* 말풍선의 자리입니다. 가로는 CSS가 잡습니다 — 말풍선 폭이 고정(250)이라
           좌우를 펴고 가운데 정렬로 세웁니다. 세로는 누른 유닛마다 다른 값이라 CSS가
           가질 수 없어 인라인 스타일이 집니다. */}
-      <view className="step-sheet-anchor" style={{ top: `${String(top)}px` }}>
-        {/* 꼬리입니다. 45도 돌린 네모의 아래 절반을 말풍선이 덮어 삼각형만 남습니다 —
-            순수 장식이라 접근성 트리에 올리지 않습니다. 두 열에서는 유닛이 화면 가운데에
-            서지 않으므로 가운데에서 `caretOffset`만큼 치우쳐 그 유닛을 가리킵니다(패널은
-            가운데 그대로입니다). */}
+      <view
+        className="step-sheet-anchor"
+        data-testid="step-sheet-anchor"
+        style={{ top: `${String(top)}px` }}
+      >
+        {/* 꼬리와 패널을 한 덩어리로 묶는 등장 래퍼입니다. 기준점이 꼬리 끝이라 말풍선이 그 끝에서 터지듯 커집니다.
+            대기 중에는 보이지 않으니 누를 수도 없게 하고(탭은 아래 가림막에 닿아 닫힙니다), 줄이기에서만
+            표식을 답니다 — 접근성 노드가 아니라 움직이는 이 요소에 답니다. */}
         <view
-          className="step-sheet-caret"
-          data-testid="step-sheet-caret"
-          data-caretOffset={String(caretOffset)}
-          style={{ left: `${String(caretOffset)}px` }}
-        />
-        <view className="step-sheet-panel" data-testid="step-sheet-panel">
-          <text
-            className="step-sheet-title"
-            data-testid="step-sheet-title"
-            accessibility-traits="header"
-          >
-            {`${unitLabel ?? `Lesson ${String(lessonOrdinal)}`}: “${title}”`}
-          </text>
-          {/* 진행 줄입니다. 셋이 같은 수에서 나옵니다 — 낱말 둘과 막대가 어긋나지
-              않습니다. 막대는 장식이 아니라 값이므로, 낱말 둘을 한 접근성 요소로
-              묶어 읽히게 하고 막대 자신은 트리에서 뺍니다. */}
-          {progress === null ? null : (
-            <view
-              className="step-sheet-progress"
-              data-testid="step-sheet-progress"
-              accessibility-element={true}
-              accessibility-label={`${copy.journeyMap.activityProgressLabel(completedActivityCount, totalActivityCount)}, ${progress.percentLabel}`}
-            >
-              <view className="step-sheet-progress-row">
-                <text className="step-sheet-progress-count" data-testid="step-sheet-progress-count">
-                  {progress.countLabel}
-                </text>
-                <text
-                  className="step-sheet-progress-percent"
-                  data-testid="step-sheet-progress-percent"
-                >
-                  {progress.percentLabel}
-                </text>
-              </view>
-              <view className="step-sheet-progress-track">
-                {/* 0%에서는 그리지 않습니다 — 폭 0짜리 상자가 둥근 끝 때문에 점으로
-                    남아 「조금 했다」로 읽힙니다. */}
-                {progress.fillPercent === 0 ? null : (
-                  <view
-                    className="step-sheet-progress-fill"
-                    data-testid="step-sheet-progress-fill"
-                    style={{ width: `${String(progress.fillPercent)}%` }}
-                  />
-                )}
-              </view>
-            </view>
-          )}
+          className={motion.bubble}
+          data-testid="step-sheet-pop"
+          style={{ transformOrigin: stepSheetBubbleOrigin(caretOffset) }}
+          {...(motion.bubbleInteractive ? {} : { "user-interaction-enabled": false })}
+          {...(motion.motionReduced ? { "data-motion": "reduced" } : {})}
+        >
+          {/* 꼬리입니다. 45도 돌린 네모의 아래 절반을 말풍선이 덮어 삼각형만 남습니다 —
+              순수 장식이라 접근성 트리에 올리지 않습니다. 두 열에서는 유닛이 화면 가운데에
+              서지 않으므로 가운데에서 `caretOffset`만큼 치우쳐 그 유닛을 가리킵니다(패널은
+              가운데 그대로입니다). */}
           <view
-            className="step-sheet-start"
-            data-testid="step-sheet-start"
-            accessibility-element={true}
-            accessibility-label={copy.journeyMap.start}
-            accessibility-traits="button"
-            bindtap={handleStart}
-          >
-            <text className="step-sheet-start-label">{copy.journeyMap.start}</text>
+            className="step-sheet-caret"
+            data-testid="step-sheet-caret"
+            data-caretOffset={String(caretOffset)}
+            style={{ left: `${String(caretOffset)}px` }}
+          />
+          <view className="step-sheet-panel" data-testid="step-sheet-panel">
+            <text
+              className="step-sheet-title"
+              data-testid="step-sheet-title"
+              accessibility-traits="header"
+            >
+              {`${unitLabel ?? `Lesson ${String(lessonOrdinal)}`}: “${title}”`}
+            </text>
+            {/* 진행 줄입니다. 셋이 같은 수에서 나옵니다 — 낱말 둘과 막대가 어긋나지
+                않습니다. 막대는 장식이 아니라 값이므로, 낱말 둘을 한 접근성 요소로
+                묶어 읽히게 하고 막대 자신은 트리에서 뺍니다. 접근성 이름은 카운트업 중에도 처음부터 최종값을
+                싣습니다 — 오르는 글자는 이 요소의 자손이라 따로 읽히지 않습니다. */}
+            {progress === null ? null : (
+              <view
+                className="step-sheet-progress"
+                data-testid="step-sheet-progress"
+                accessibility-element={true}
+                accessibility-label={`${copy.journeyMap.activityProgressLabel(completedActivityCount, totalActivityCount)}, ${progress.percentLabel}`}
+              >
+                <view className="step-sheet-progress-row">
+                  <text
+                    className="step-sheet-progress-count"
+                    data-testid="step-sheet-progress-count"
+                  >
+                    {progress.countLabel}
+                  </text>
+                  <StepSheetPercent
+                    percent={sheetPercentOf(progress.fillPercent)}
+                    entrance={entrance}
+                  />
+                </view>
+                <view className="step-sheet-progress-track">
+                  {/* 0%에서는 그리지 않습니다 — 폭 0짜리 상자가 둥근 끝 때문에 점으로
+                      남아 「조금 했다」로 읽힙니다. */}
+                  {progress.fillPercent === 0 ? null : (
+                    <view
+                      className={motion.fill}
+                      data-testid="step-sheet-progress-fill"
+                      style={{ width: `${String(progress.fillPercent)}%` }}
+                    />
+                  )}
+                </view>
+              </view>
+            )}
+            {/* 시작 버튼을 감싼 래퍼입니다. 등장하면 버튼 뒤 층이 세 번 숨 쉽니다(버튼 면 · 라벨은 그대로입니다). */}
+            <view className="step-sheet-start-wrap">{startLayers}</view>
           </view>
         </view>
       </view>

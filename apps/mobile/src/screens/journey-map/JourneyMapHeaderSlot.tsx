@@ -26,6 +26,7 @@ export function JourneyMapHeaderSlot({
   openStepId = null,
   catalogSections = [],
   catalogProgress = {},
+  sheetEntrance,
 }: JourneyMapHeaderSlotProps): ReactNode {
   const copy = useUiCopy();
   const [cardHeight, setCardHeight] = useState(UNMEASURED_CARD_HEIGHT);
@@ -65,7 +66,11 @@ export function JourneyMapHeaderSlot({
 
   const header =
     band === undefined ? null : (
-      <JourneyMapEpisodeHeader {...band} onLayoutChange={handleCardLayout} />
+      <JourneyMapEpisodeHeader
+        {...band}
+        onLayoutChange={handleCardLayout}
+        {...(sheetEntrance === undefined ? {} : { entrance: sheetEntrance })}
+      />
     );
   const row =
     load.status === "loading" || load.status === "retrying" ? (

@@ -9,6 +9,7 @@ import {
   specialUnitStatusOf,
 } from "./journey-special-unit";
 import type { SpecialUnitMapItemProps } from "./journey-special-unit.contract";
+import { MapUnitStage } from "./MapUnitStage";
 
 import "./journey-special-unit.css";
 
@@ -24,6 +25,7 @@ export function SpecialUnitMapItem({
   status,
   onSelect,
   layer = "map",
+  sheetTargetId,
   children,
 }: SpecialUnitMapItemProps) {
   const copy = useUiCopy();
@@ -47,15 +49,17 @@ export function SpecialUnitMapItem({
           : "journey-special-unit"
       }
     >
-      <SpecialUnit
-        id={unitId}
-        accessibilityLabel={specialUnitMapAccessibilityLabel(
-          accessibilityName,
-          copy.specialUnitMap,
-        )}
-        status={unitStatus}
-        bindtap={handleSelect}
-      />
+      <MapUnitStage targetId={sheetTargetId ?? null}>
+        <SpecialUnit
+          id={unitId}
+          accessibilityLabel={specialUnitMapAccessibilityLabel(
+            accessibilityName,
+            copy.specialUnitMap,
+          )}
+          status={unitStatus}
+          bindtap={handleSelect}
+        />
+      </MapUnitStage>
       <view
         className={`journey-special-unit-label journey-special-unit-label-${specialUnitLabelToneOf(unitStatus)}`}
         data-testid={`journey-special-unit-label-${unitId}`}

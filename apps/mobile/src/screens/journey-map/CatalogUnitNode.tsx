@@ -6,10 +6,12 @@ import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 import type { LearningUnitTapEvent } from "@libitums/ui-lynx/learning-unit";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { catalogSheetKey } from "./catalog-sheet";
 import { catalogUnitNodeAccessibilityLabel, catalogUnitNodeTitle } from "./catalog-map";
 import type { CatalogUnitNodeProps, CatalogUnitNodeRole } from "./catalog-map.contract";
 
 import { canSelectMapNode } from "./journey-map-load";
+import { MapUnitStage } from "./MapUnitStage";
 import { SpecialUnitMapItem } from "./SpecialUnitMapItem";
 
 import "./journey-step-node.css";
@@ -48,6 +50,7 @@ function CatalogSpecialNode({ episodeId, episodeOrdinal, node, onSelect }: Catal
       title={catalogUnitNodeTitle(node, copy)}
       accessibilityName={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
       status={node.status}
+      sheetTargetId={catalogSheetKey(episodeId, node.key)}
       onSelect={(tapY) => {
         "background only";
         onSelect(episodeId, node.key, tapY);
@@ -75,14 +78,16 @@ function CatalogLessonNode({
 
   return (
     <view className="journey-step-node">
-      <LearningUnit
-        id={`catalog-unit-${episodeId}-${node.key}`}
-        accessibilityLabel={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
-        icon={icon}
-        status={unitStatusByStatus[node.status]}
-        narrative="none"
-        bindtap={handleSelect}
-      />
+      <MapUnitStage targetId={catalogSheetKey(episodeId, node.key)}>
+        <LearningUnit
+          id={`catalog-unit-${episodeId}-${node.key}`}
+          accessibilityLabel={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
+          icon={icon}
+          status={unitStatusByStatus[node.status]}
+          narrative="none"
+          bindtap={handleSelect}
+        />
+      </MapUnitStage>
       <text className="journey-step-node-label" accessibility-element={false}>
         {catalogUnitNodeTitle(node, copy)}
       </text>

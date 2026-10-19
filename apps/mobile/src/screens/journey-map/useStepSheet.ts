@@ -80,6 +80,7 @@ export function useStepSheet(): StepSheetControls {
     latestScrollTop.current = event.detail.scrollTop;
     if (sheetState.openStepId !== null) {
       setOpenScrollTop(event.detail.scrollTop);
+      entrance.scroll(event.detail.scrollTop);
     }
   };
 
@@ -90,6 +91,7 @@ export function useStepSheet(): StepSheetControls {
     const tapScrollTop = latestScrollTop.current;
     // oxlint-disable-next-line react/immutability
     measuringStepId.current = id;
+    entrance.open(id);
     dispatch({
       type: "openStep",
       stepId: id,
@@ -114,6 +116,7 @@ export function useStepSheet(): StepSheetControls {
         measuringStepId.current = null;
         const [unit, scroll, screen] = rects ?? [];
         if (unit === undefined || scroll === undefined || screen === undefined) {
+          entrance.measured(id, null, latestScrollTop.current);
           scrollNodeIntoView(sheetNodeDomId(id), behavior);
           return;
         }
@@ -134,6 +137,7 @@ export function useStepSheet(): StepSheetControls {
         });
         setOpenScrollTop(scrollTop);
         setCaretOffset(stepSheetCaretOffset(unit.centerX, screen.centerX, stepSheetCaretLimit));
+        entrance.measured(id, placement.targetScrollTop, scrollTop);
         scrollMapTo(placement.targetScrollTop, behavior);
       },
     );
@@ -143,6 +147,7 @@ export function useStepSheet(): StepSheetControls {
     "background only";
     // oxlint-disable-next-line react/immutability
     measuringStepId.current = null;
+    entrance.close();
     dispatch({ type: "closeSheet" });
     setCaretOffset(0);
   };

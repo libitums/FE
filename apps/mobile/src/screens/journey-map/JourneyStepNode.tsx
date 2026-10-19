@@ -8,6 +8,7 @@ import { canOpenStep } from "./journey-map";
 import type { JourneyStepId, JourneyStepNodeStatus } from "./journey-map";
 
 import { stepNodeId } from "./journey-map-scroll";
+import { MapUnitStage } from "./MapUnitStage";
 
 import "./journey-step-node.css";
 
@@ -65,13 +66,15 @@ export function JourneyStepNode({ id, title, status, onSelect }: JourneyStepProp
       {/* 접근성 요소는 `LearningUnit`입니다 — 이름 · 상태 접미사 · traits를 그쪽이
           냅니다. 상태를 이름 뒤 접미사로 내는 규약이 같으므로(ADR-0016 D3) 제목만
           넘깁니다. 접미사까지 붙여 넘기면 두 번 붙습니다. */}
-      <LearningUnit
-        id={id}
-        accessibilityLabel={title}
-        icon={activeIcon}
-        status={unitStatusByStatus[status]}
-        bindtap={handleSelect}
-      />
+      <MapUnitStage targetId={id}>
+        <LearningUnit
+          id={id}
+          accessibilityLabel={title}
+          icon={activeIcon}
+          status={unitStatusByStatus[status]}
+          bindtap={handleSelect}
+        />
+      </MapUnitStage>
       <text className="journey-step-node-label" accessibility-element={false}>
         {title}
       </text>
