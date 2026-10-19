@@ -153,6 +153,7 @@ export function SyllableBuildActivity({
           {question == null ? (
             <LearningActivityComplete
               questionCount={questions.length}
+              lesson={lesson}
               testId="syllable-build-complete"
             />
           ) : (

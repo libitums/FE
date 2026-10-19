@@ -96,6 +96,8 @@ export type LearningShellCopy = {
   readonly exitLesson: string;
   readonly completionDescription: string;
   readonly completedQuestions: (count: number) => string;
+  readonly completedActivities: (count: number) => string;
+  readonly completionStats: { readonly questions: string; readonly activities: string };
   readonly leaveDialog: {
     readonly title: string;
     readonly description: string;

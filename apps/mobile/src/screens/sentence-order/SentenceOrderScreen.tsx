@@ -203,6 +203,7 @@ export function SentenceOrderActivity({
             {question == null ? (
               <LearningActivityComplete
                 questionCount={questions.length}
+                lesson={lesson}
                 testId="sentence-order-screen-complete"
               />
             ) : question.dialogue !== undefined ? (

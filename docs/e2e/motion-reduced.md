@@ -209,6 +209,14 @@ Android는 짧은 전환이면 `A shell input tap x y; A exec-out screencap -p >
 - **관찰**: 켠 상태에서는 **첫 프레임부터** 글자 bbox 폭이 정착과 같고(축소 없음) 불투명도만 올라온다(≈ 100 ms). 끈 상태에서는 첫 프레임의 글자가 정착보다 작다. 면(검정)과 유지 시간(약 1.6초)은 켠 · 끈이 같다.
 - 증거: `motion-reduced-ios-M-I8-on-1.png`, `-on-2.png`, `-off-1.png`, `-off-2.png`.
 
+### M-I9 — 활동 완료 카드가 끝 모습으로 바로 선다 ⟨2026-10-19⟩ (미실행)
+
+보상 조합 셋째 자리(활동 완료 카드의 링 + 체크 — [ADR-0053](../adr/0053-motion-policy.md) D4 적용 기록 ⟨2026-10-19⟩)의 reduced다. 도달 길은 [완료 화면 e2e](learning-completion.md) 「시안 A」.
+
+- **조작**: **켠** 상태에서 레슨 마지막 문항 뒤 `Next` → 완료 카드를 녹화한다. **끈** 상태에서 같은 조작을 한다.
+- **관찰**: 켠 상태에서는 **첫 프레임부터** 링이 가득 차 있고 안쪽 원 · 체크 · 제목 · 숫자 타일이 정착 자리 · 정착 불투명도다(회전 · 확대 · 올라옴 · 페이드 없음). 끈 상태에서는 첫 프레임에 링이 비어 있다.
+- 증거: `motion-reduced-ios-M-I9-on-1.png`, `-on-2.png`, `-off-1.png`, `-off-2.png`.
+
 ## Android 항목
 
 시작: 위 「Android 준비」를 마치고 세 배율을 기록한 상태. 픽스처를 시작해 여정 맵이 선 상태에서 시작한다(`audioProgress true` — Dialog 열 스텝이 필요하다).
@@ -270,6 +278,10 @@ M-I4 · M-I5 · M-I6과 같은 조작·측정으로 캡처한다(Android: Dialog
 ### M-A8 — 에피소드 배너 ⟨2026-10-14⟩
 
 M-I8과 같은 조작 · 관찰을 설정 (i)(`transition_animation_scale 0` · `animator_duration_scale 1`)과 (ii) 「Remove animations」에서 한다. 증거 이름은 `motion-reduced-android-M-A8-<i|ii|off>-<1|2>.png`.
+
+### M-A9 — 활동 완료 카드 ⟨2026-10-19⟩ (미실행)
+
+M-I9와 같은 조작 · 관찰을 설정 (i)과 (ii) 「Remove animations」에서 한다. 증거 이름은 `motion-reduced-android-M-A9-<i|ii|off>-<1|2>.png`.
 
 ## 여정 맵의 프로그램 스크롤 (journey-map-grid, 2026-10-14) — Android만 실행(iOS 미확인)
 
@@ -353,6 +365,8 @@ Android 기기 안 `screencap` 루프)로 중간 프레임을 잡았다. `data-m
 | M-A6 | Android 에뮬레이터 | 판정 불가: 끈 상태에서도 첫 프레임부터 대사 전체 | 켠 · 끈이 캡처로 갈리지 않아 켠 상태 캡처는 찍지 않음(M-I6과 같은 한계). `android-M-A6-off-1/2.png` |
 | M-A7(선택) | Android 에뮬레이터 | 없음 | 계측 테스트 없음(`ReducedMotionTest`는 JVM 단위 테스트) |
 | M-A8 | Android 에뮬레이터 | 미확인 ⟨2026-10-14⟩ | 절차만 있다 |
+| M-I9 | iOS 시뮬레이터 | 미실행 ⟨2026-10-19⟩ | 항목만 더했다. reduced는 ui 테스트(모션 클래스 0 · `data-motion="reduced"`)로만 참이다 |
+| M-A9 | Android 에뮬레이터 | 미실행 ⟨2026-10-19⟩ | 절차만 있다 |
 
 | 시작 값(실행 전 기록) | iOS 동작 줄이기: 0(꺼짐) · Android `animator_duration_scale`: `null` · `transition_animation_scale`: 1.0 · `window_animation_scale`: 1.0 |
 |---|---|

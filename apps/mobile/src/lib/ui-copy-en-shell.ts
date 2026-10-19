@@ -71,6 +71,12 @@ export const learningShellEn: LearningShellCopy = {
   exitLesson: "Leave lesson",
   completionDescription: "Take a breath. You're ready for the next step.",
   completedQuestions: (count) => `${count} of ${n(count, "question", "questions")} completed`,
+  // 완료 카드(시안 A)의 활동 타일 낭독 이름과, 숫자 타일의 보이는 이름(대문자 — 결과 화면 `PERFECT LESSON`과 같은 갈래)입니다.
+  completedActivities: (count) => `${n(count, "activity", "activities")} completed`,
+  completionStats: {
+    questions: "QUESTIONS",
+    activities: "ACTIVITIES",
+  },
   leaveDialog: {
     title: "Leave this lesson?",
     description: "Your answers so far won't be saved, and you'll start over next time.",

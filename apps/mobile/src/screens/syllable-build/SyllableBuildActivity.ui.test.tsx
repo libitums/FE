@@ -301,6 +301,20 @@ describe("SyllableBuildActivity", () => {
     expect(onFinish).toHaveBeenCalledWith(["correct"], 0);
   });
 
+  test("USB7d. 레슨의 끝이면 완료 카드가 레슨 순번 · 전체 문항 수 · 활동 수를 보인다", () => {
+    mount([card], { offset: 3, total: 9, last: true, activityCount: 3, ordinal: 3 });
+
+    tapTile(2);
+    tapTile(1);
+    tapAction("Check");
+    tapAction("Next");
+
+    expect(id("syllable-build-complete")).toBeInTheDocument();
+    expect(id("learning-activity-complete-lesson")).toHaveTextContent("Lesson 3");
+    expect(id("learning-activity-complete-questions")).toHaveTextContent("9");
+    expect(id("learning-activity-complete-activities")).toHaveTextContent("3");
+  });
+
   test("USB7c. 레슨 안에서는 카운터가 오프셋을 더한다", () => {
     mount([card], { offset: 3, total: 9, last: true });
 

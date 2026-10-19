@@ -17,7 +17,7 @@ import type { LessonPosition } from "./activity-finish";
 type Finish = (results: readonly AnswerResult[], skippedCount: number) => void;
 
 const middle: LessonPosition = { offset: 3, total: 12, last: false };
-const final: LessonPosition = { offset: 10, total: 12, last: true };
+const final: LessonPosition = { offset: 10, total: 12, last: true, activityCount: 4, ordinal: 2 };
 
 afterEach(() => {
   cleanup();
@@ -171,6 +171,8 @@ test("UL-I4b. 마지막 활동인 짝 맞추기는 완료 카드를 보이고 Se
 
   expect(onFinish).toHaveBeenCalledTimes(0);
   expect(screen.getByTestId("pair-match-complete")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-activity-complete-lesson")).toHaveTextContent("Lesson 2");
+  expect(screen.getByTestId("learning-activity-complete-activities")).toHaveTextContent("4");
   expect(chapter()).toHaveTextContent("Lesson 12 / 12");
   expect(actionLabel()).toBe("See results");
 
