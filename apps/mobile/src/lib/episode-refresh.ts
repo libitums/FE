@@ -188,6 +188,8 @@ async function fetchEntries(
       const text = await entryText(deps, entry, summary, canStore);
       if (text === null) continue;
       wire = parseWire(text);
+      // 검증을 통과한 본문이라 일어나지 않아야 합니다 — 그래도 읽지 못한 본문을 「자산 없음 = 완료」로 열지 않습니다.
+      if (wire === null) continue;
     }
     if (assets === undefined || !canStore) continue;
     const outcome = await ensureEpisodeAssets(store, assets, entry, episodeAssetPaths(wire));
