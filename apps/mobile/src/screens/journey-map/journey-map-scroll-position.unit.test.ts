@@ -1,9 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { mapBottomInset, stepUnitSize } from "./journey-map-sheet";
 import {
-  autoScrollOffset,
-  autoScrollPlacement,
   autoScrollReducer,
   canSettleAutoScroll,
   currentEpisodeIndexAt,
@@ -11,63 +8,10 @@ import {
   mapScrollBehaviorFor,
 } from "./journey-map-scroll-position";
 import * as position from "./journey-map-scroll-position";
-import type {
-  AutoScrollAction,
-  AutoScrollMeasure,
-  AutoScrollPlacement,
-  AutoScrollState,
-} from "./journey-map-scroll-position";
+import type { AutoScrollAction, AutoScrollState } from "./journey-map-scroll-position";
 
-// `unit` 계층: 스크롤 목적지 · 자동 스크롤 전이 · 현재 에피소드 판정의 입출력만 봅니다.
-
-const placement: AutoScrollPlacement = { gap: 24, bottomInset: 68, unitSize: 100 };
-
-const base: AutoScrollMeasure = {
-  targetTop: 900,
-  scrollViewTop: 0,
-  scrollViewHeight: 812,
-  headerBottom: 228,
-  scrollTop: 0,
-};
-
-describe("autoScrollOffset", () => {
-  test("P1. 대상 위 모서리가 머리 카드 아래 + 24(252)에 서는 목적지다", () => {
-    expect(autoScrollOffset(base, placement)).toBe(648);
-  });
-
-  test("P2. 스크롤 자리와 무관하게 같은 유닛이면 같은 목적지다", () => {
-    expect(autoScrollOffset({ ...base, scrollTop: 300, targetTop: 600 }, placement)).toBe(648);
-  });
-
-  test("P3. 정렬선보다 위에 있는 대상은 0 아래로 내려가지 않는다", () => {
-    expect(autoScrollOffset({ ...base, targetTop: 200 }, placement)).toBe(0);
-  });
-
-  test("P4. 큰 글자로 정렬선이 한계선을 넘으면 한계선(424)에 선다", () => {
-    const tall = { ...base, scrollViewHeight: 616, headerBottom: 478 };
-    expect(autoScrollOffset(tall, placement)).toBe(900 - 424);
-    // 스크롤 상자 위가 0이 아니어도 같은 식이다.
-    expect(autoScrollOffset({ ...tall, scrollViewTop: 50, scrollViewHeight: 566 }, placement)).toBe(
-      900 - 424,
-    );
-  });
-
-  test("P5. 정렬선 = 한계선인 경계에서 두 식의 값이 같고 그 양쪽은 작은 쪽을 따른다", () => {
-    // 한계선 = 812 − 68 − 24 − 100 = 620, 정렬선 = headerBottom + 24.
-    expect(autoScrollOffset({ ...base, headerBottom: 596 }, placement)).toBe(900 - 620);
-    expect(autoScrollOffset({ ...base, headerBottom: 595 }, placement)).toBe(900 - 619);
-    expect(autoScrollOffset({ ...base, headerBottom: 597 }, placement)).toBe(900 - 620);
-  });
-
-  test("P6. 실제 상수는 gap 24와 시트의 두 상수를 그대로 읽는다", () => {
-    expect(autoScrollPlacement).toEqual({
-      gap: 24,
-      bottomInset: mapBottomInset,
-      unitSize: stepUnitSize,
-    });
-    expect(autoScrollPlacement).toEqual(placement);
-  });
-});
+// `unit` 계층: 자동 스크롤 전이 · 현재 에피소드 판정의 입출력만 봅니다.
+// 자리 규칙은 `.placement.unit.test.ts`, 도착 뒤 보정 판정은 `.correction.unit.test.ts`에 있습니다.
 
 describe("mapScrollBehaviorFor", () => {
   test("B1. standard는 smooth, reduced는 instant다", () => {
@@ -221,70 +165,6 @@ function exportedFunction<T>(name: string): T {
   expect(typeof value, `${name}이 export되어 있다`).toBe("function");
   return value as T;
 }
-
-const correction = (measure: AutoScrollMeasure, tolerance = 1): number | null =>
-  exportedFunction<
-    (m: AutoScrollMeasure, p: AutoScrollPlacement, tolerance: number) => number | null
-  >("autoScrollCorrection")(measure, placement, tolerance);
-
-describe("autoScrollCorrection", () => {
-  // 도착: 대상 위 모서리 252(정렬선 252 = 228 + 24)에서 카드가 30 커져 머리 카드 아래가 258이 된 뒤의 값입니다.
-  const arrived: AutoScrollMeasure = {
-    targetTop: 252,
-    scrollViewTop: 0,
-    scrollViewHeight: 812,
-    headerBottom: 258,
-    scrollTop: 648,
-  };
-
-  test("RC1. 카드가 30 커졌으면 30만큼 되돌린 목적지(618)를 낸다", () => {
-    expect(correction(arrived)).toBe(618);
-  });
-
-  test("RC2. 대상이 정렬선 위에 정확히 서 있으면 null이다", () => {
-    expect(correction({ ...arrived, headerBottom: 228 })).toBeNull();
-  });
-
-  test.each([281.4, 281])(
-    "RC3. 정렬선과의 차가 허용오차 이내(targetTop %f)면 null이다",
-    (targetTop) => {
-      expect(correction({ ...arrived, targetTop })).toBeNull();
-    },
-  );
-
-  test("RC4. 허용오차를 넘는 차(1.5)는 그만큼 되돌린 수를 낸다", () => {
-    expect(correction({ ...arrived, targetTop: 280.5 })).toBeCloseTo(646.5, 9);
-  });
-
-  test("RC5. 대상이 정렬선보다 아래(끝에서 멈춤)면 아래로 밀지 않고 null이다", () => {
-    expect(correction({ ...arrived, targetTop: 400 })).toBeNull();
-  });
-
-  test("RC6. 한계선이 이긴 경우(높이 616 · 카드 아래 478)는 다시 재도 같은 답이라 null이다", () => {
-    expect(
-      correction({
-        targetTop: 424,
-        scrollViewTop: 0,
-        scrollViewHeight: 616,
-        headerBottom: 478,
-        scrollTop: 900 - 424,
-      }),
-    ).toBeNull();
-  });
-
-  test("RC7. 되돌릴 양이 스크롤 자리보다 크면 0 아래로 내려가지 않는다", () => {
-    expect(correction({ ...arrived, scrollTop: 10 })).toBe(0);
-  });
-
-  test("RC8. 허용오차 상수는 1이다", () => {
-    expect(exported["autoScrollTolerance"]).toBe(1);
-  });
-
-  test("RC9. 허용오차 인자를 따른다 — 0이면 0.6의 차도 고치고, 2면 1.5의 차는 안 고친다", () => {
-    expect(correction({ ...arrived, targetTop: 281.4 }, 0)).toBeCloseTo(647.4, 9);
-    expect(correction({ ...arrived, targetTop: 280.5 }, 2)).toBeNull();
-  });
-});
 
 describe("autoScrollCorrectionReducer", () => {
   const reducer = (state: CorrectionState, action: CorrectionAction): CorrectionState =>

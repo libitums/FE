@@ -4,14 +4,20 @@ import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 
 import { mapContentInsets } from "./journey-map-insets";
-import { autoScrollOffset, autoScrollPlacement } from "./journey-map-scroll-position";
+import {
+  autoScrollDestination,
+  headerBandCard,
+  headerBandGap,
+  headerBandHeightEstimate,
+  mapUnitPlacement,
+} from "./journey-map-scroll-position";
+import type { MapUnitMeasure } from "./journey-map-scroll-position";
 import {
   bottomMargin,
   mapBottomInset,
   sheetGap,
   sheetHeight,
   stepSheetPlacement,
-  stepSheetPlacementBelowHeader,
   stepUnitSize,
 } from "./journey-map-sheet";
 
@@ -24,10 +30,9 @@ const bandTop = 64;
 const bandHeight = 110;
 
 describe("mapContentInsets", () => {
-  test("IN1. 위는 띠 아래 모서리 + 맞춤 간격 이상, 아래는 말풍선 · 바텀 내비 · 여유 · 간격의 합이다", () => {
-    expect(mapContentInsets.top).toBeGreaterThanOrEqual(
-      bandTop + bandHeight + autoScrollPlacement.gap,
-    );
+  test("IN1. 위는 띠 위 + 어림 + 간격(200), 아래는 말풍선 · 바텀 내비 · 여유 · 간격의 합이다", () => {
+    expect(mapContentInsets.top).toBe(bandTop + headerBandHeightEstimate + headerBandGap);
+    expect(mapContentInsets.top).toBeGreaterThanOrEqual(bandTop + bandHeight + headerBandGap);
     expect(mapContentInsets.bottom).toBe(sheetHeight + mapBottomInset + bottomMargin + sheetGap);
   });
 
@@ -63,36 +68,29 @@ describe("mapContentInsets", () => {
     expect(unitBottomOnScreen + 1 + sheetGap).toBeGreaterThan(placement.anchorLimit);
   });
 
-  test("IN4. 내용 맨 위 유닛도 자동 스크롤 · 말풍선 목적지가 0 이상이고 띠 아래에 선다", () => {
-    const unitTop = mapContentInsets.top;
-    const headerBottom = bandTop + bandHeight;
-    const auto = autoScrollOffset(
-      {
-        targetTop: unitTop,
-        scrollViewTop: 0,
-        scrollViewHeight: screenHeight,
-        headerBottom,
+  test.each([0, 110])(
+    "IN4. 내용 맨 위 유닛도 목적지가 0 이상이고 띠(손잡이 높이 %i) 아래에 선다",
+    (bandMeasuredHeight) => {
+      const unitTop = mapContentInsets.top;
+      const band = {
+        top: bandTop,
+        height: bandMeasuredHeight,
+        centerX: null,
+        left: 16,
+        width: 358,
+      };
+      const m: MapUnitMeasure = {
+        unit: { top: unitTop, height: stepUnitSize, centerX: 195, left: null, width: null },
+        scroll: { top: 0, height: screenHeight, centerX: null, left: null, width: null },
+        screen: { top: 0, height: screenHeight, centerX: null, left: null, width: null },
+        band,
         scrollTop: 0,
-      },
-      autoScrollPlacement,
-    );
-    expect(unitTop - auto).toBeGreaterThanOrEqual(headerBottom + autoScrollPlacement.gap);
-
-    const sheet = stepSheetPlacementBelowHeader(
-      {
-        unitTop,
-        scrollViewTop: 0,
-        scrollViewHeight: screenHeight,
-        screenTop: 0,
-        screenHeight,
-        scrollTop: 0,
-      },
-      195,
-      { bottom: headerBottom, left: 16, width: 358 },
-      autoScrollPlacement.gap,
-    );
-    expect(unitTop - sheet.targetScrollTop).toBeGreaterThanOrEqual(
-      headerBottom + autoScrollPlacement.gap,
-    );
-  });
+      };
+      const bandBottom = headerBandCard(band, headerBandHeightEstimate)?.bottom ?? Number.NaN;
+      for (const target of [autoScrollDestination(m), mapUnitPlacement(m).targetScrollTop]) {
+        expect(target).toBeGreaterThanOrEqual(0);
+        expect(unitTop - target).toBeGreaterThanOrEqual(bandBottom + headerBandGap);
+      }
+    },
+  );
 });
