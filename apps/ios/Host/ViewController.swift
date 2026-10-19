@@ -56,6 +56,8 @@ final class ViewController: UIViewController {
       config.register(PushNotificationModule.self)
       // 열한째 — iOS 기본 평점 창 요청(ADR-0036). 언제 청할지는 JS가 정한다.
       config.register(AppReviewModule.self)
+      // 에피소드 그림 · 소리를 앱 전용 폴더에 받아 둔다. 언제 받을지는 JS가 정한다.
+      config.register(ContentFileModule.self)
       // Airbridge 이벤트 전달(ADR-0063). **설정이 있어 SDK가 시작된 빌드에서만** 등록한다 —
       // 없으면 JS의 `NativeModules`에 이 이름이 없고, 그것이 「보낼 곳 없음」의 신호다.
       if AirbridgeEvents.isStarted {
@@ -85,6 +87,18 @@ final class ViewController: UIViewController {
     observeContentSizeCategory()
     observeOpenedPushNotification()
     observeReduceMotion()
+    startContentSyncSignal()
+  }
+
+  private var contentSyncSignal: ContentSyncSignalSource?
+
+  /// 연결이 생기거나 앱이 포그라운드로 돌아오면 JS에 받을 기회를 알린다. 언제 · 무엇을 받을지는 JS가 정한다.
+  private func startContentSyncSignal() {
+    let source = ContentSyncSignalSource { [weak self] in
+      self?.lynxView?.sendGlobalEvent("contentSyncOpportunity", withParams: [])
+    }
+    source.start()
+    contentSyncSignal = source
   }
 
   /// 배율 **값**을 최신으로 유지한다. **화면은 다음 실행에 바뀐다** (ADR-0020 D2).

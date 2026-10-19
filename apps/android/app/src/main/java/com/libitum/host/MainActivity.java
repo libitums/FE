@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,6 +54,8 @@ public final class MainActivity extends Activity {
   private final SystemBackGate backGate = new SystemBackGate();
   private OnBackInvokedCallback backCallback;
   private final PushTokenRefreshRelay.Listener tokenRefreshListener = this::sendPushTokenRefreshed;
+  private ContentSyncSignal contentSync;
+  private ConnectivityManager.NetworkCallback networkCallback;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -79,6 +83,7 @@ public final class MainActivity extends Activity {
     builder.registerModule("SpeechRecognitionModule", SpeechRecognitionModule.class,
         speechRecognition);
     builder.registerModule("HandwritingTraceModule", HandwritingTraceModule.class);
+    builder.registerModule("ContentFileModule", ContentFileModule.class);
     builder.registerModule("AppReviewModule", AppReviewModule.class, this);
     pushNotifications = new PushNotificationController(this);
     builder.registerModule("PushNotificationModule", PushNotificationModule.class, pushNotifications);
@@ -113,6 +118,40 @@ public final class MainActivity extends Activity {
     lynxView.renderTemplateUrl(templateUrl, "");
     registerBackCallback();
     PushTokenRefreshRelay.PROCESS.attach(tokenRefreshListener);
+    watchNetwork();
+  }
+
+  /**
+   * 기본 네트워크가 「없음 → 있음」으로 바뀔 때 `contentSyncOpportunity`를 보낸다(셀룰러 포함). 등록
+   * 직후의 첫 보고는 보내지 않는다 — 실행 시작은 JS가 스스로 돈다. 결정은 ContentSyncSignal이 한다.
+   */
+  private void watchNetwork() {
+    ConnectivityManager connectivity = getSystemService(ConnectivityManager.class);
+    if (connectivity == null) return;
+    final ContentSyncSignal signal = new ContentSyncSignal(connectivity.getActiveNetwork() != null);
+    contentSync = signal;
+    networkCallback = new ConnectivityManager.NetworkCallback() {
+      @Override public void onAvailable(Network network) {
+        if (signal.onNetworkAvailable(network)) sendContentSyncOpportunity();
+      }
+
+      @Override public void onLost(Network network) {
+        signal.onNetworkLost(network);
+      }
+    };
+    try {
+      connectivity.registerDefaultNetworkCallback(networkCallback);
+    } catch (RuntimeException error) {
+      networkCallback = null;
+    }
+  }
+
+  // 연결 스레드에서 불리므로 UI 스레드로 옮겨 보낸다.
+  private void sendContentSyncOpportunity() {
+    mainHandler.post(() -> {
+      if (lynxView == null || isFinishing() || isDestroyed()) return;
+      lynxView.sendGlobalEvent("contentSyncOpportunity", new JavaOnlyArray());
+    });
   }
 
   // Called on the FCM executor thread; the global event goes out on the main thread, never queued.
@@ -298,6 +337,17 @@ public final class MainActivity extends Activity {
 
   @Override protected void onDestroy() {
     reducedMotionWatcher.stop();
+    if (networkCallback != null) {
+      ConnectivityManager connectivity = getSystemService(ConnectivityManager.class);
+      if (connectivity != null) {
+        try {
+          connectivity.unregisterNetworkCallback(networkCallback);
+        } catch (RuntimeException ignored) {
+          // 이미 해제됐다.
+        }
+      }
+      networkCallback = null;
+    }
     PushTokenRefreshRelay.PROCESS.detach(tokenRefreshListener);
     if (backTimeout != null) {
       mainHandler.removeCallbacks(backTimeout);
@@ -325,6 +375,8 @@ public final class MainActivity extends Activity {
   @Override protected void onStart() {
     super.onStart();
     if (audioPlayback != null) audioPlayback.startHost();
+    // 첫 onStart는 실행 시작이라 JS가 스스로 돈다. 두 번째 이후만 포그라운드 복귀다.
+    if (contentSync != null && contentSync.onStart()) sendContentSyncOpportunity();
   }
 
   @Override protected void onStop() {

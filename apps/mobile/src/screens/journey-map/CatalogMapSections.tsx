@@ -34,6 +34,13 @@ export function CatalogMapSections({
             onStartCover={onStartCover}
             onSelectUnit={onSelectUnit}
           />
+        ) : section.reason === "pending" ? (
+          // 받는 중인 에피소드는 맨 끝 「준비 중」과 같은 그림입니다 — 곧 열리는 에피소드라 같은 말을 합니다(ADR-0071).
+          <CatalogComingSoonSection
+            key={section.episodeId}
+            ordinal={section.ordinal}
+            episodeId={section.episodeId}
+          />
         ) : (
           <CatalogUnavailableSection key={section.episodeId} section={section} />
         ),
