@@ -24,7 +24,7 @@ import {
   mapScrollBehaviorFor,
   type AutoScrollAction,
   type AutoScrollCorrectionAction,
-  type AutoScrollMeasure,
+  type MapUnitMeasure,
 } from "./journey-map-scroll-position";
 
 export type AutoScrollToNextInput = {
@@ -161,14 +161,15 @@ export function useAutoScrollToNext({
       ) {
         return;
       }
-      const measure: AutoScrollMeasure = {
-        targetTop: unit.top,
-        scrollViewTop: scroll.top,
-        scrollViewHeight: scroll.height,
-        headerBottom: header.top + header.height,
+      const measure: MapUnitMeasure = {
+        unit,
+        scroll,
+        // 화면 상자는 결선 단계에서 따로 잽니다 — 그전까지는 스크롤 상자를 자리표시로 씁니다.
+        screen: scroll,
+        band: header,
         scrollTop: scrollTop.current,
       };
-      const next = autoScrollCorrection(measure, autoScrollPlacement, autoScrollTolerance);
+      const next = autoScrollCorrection(measure, autoScrollTolerance);
       // 보정은 늘 즉시 옮깁니다 — 부드럽게 보내면 본 이동의 끝과 겹쳐 반동이나 한 프레임 점프로
       // 갈려 보였습니다(사용자 결정, docs/e2e/journey-map.md E-C1).
       if (next !== null) {

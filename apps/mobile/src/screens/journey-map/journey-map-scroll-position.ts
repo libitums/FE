@@ -2,8 +2,13 @@
 
 import type { Motion } from "@libitums/ui-lynx/motion";
 import type { MapScrollTarget } from "./journey-map-next-unit";
-import type { MapScrollBehavior } from "./journey-map-scroll";
-import { mapBottomInset, stepUnitSize } from "./journey-map-sheet";
+import type { MapScrollBehavior, MeasuredRect } from "./journey-map-scroll";
+import {
+  mapBottomInset,
+  stepUnitSize,
+  type StepHeaderCard,
+  type StepPlacement,
+} from "./journey-map-sheet";
 
 export type AutoScrollPlacement = {
   /** 머리 카드 아래 모서리와 대상 사이, 그리고 대상과 바텀 네비게이션 사이에 남길 여백입니다. */
@@ -47,6 +52,42 @@ export function autoScrollOffset(
     placement.gap -
     placement.unitSize;
   return Math.max(0, measure.scrollTop + (measure.targetTop - Math.min(alignLine, limitLine)));
+}
+
+/** 띠 아래 모서리와 유닛 위 모서리 사이입니다(유닛 탭 · 자동 스크롤 · 맵 위 여백이 같이 씁니다). */
+export const headerBandGap = 0;
+
+/** 띠 높이의 어림입니다(두 줄 제목 · 진행 줄). 띠가 서기 전에 재면 손잡이 높이가 0이라 이 값을 씁니다. */
+export const headerBandHeightEstimate = 0;
+
+/** 띠 손잡이의 잰 상자 → 띠가 섰을 때의 카드입니다. 못 쟀으면 null. 던지지 않습니다. */
+export function headerBandCard(
+  _anchor: MeasuredRect | null,
+  _heightEstimate: number,
+): StepHeaderCard | null {
+  return null;
+}
+
+/** 유닛 하나를 맵의 제자리에 세우는 데 잰 값입니다. 세로 좌표는 모두 같은 기준(LynxView)입니다. */
+export type MapUnitMeasure = {
+  /** 유닛 상자입니다(위 모서리 · 가로 중심). */
+  readonly unit: MeasuredRect;
+  readonly scroll: MeasuredRect;
+  readonly screen: MeasuredRect;
+  /** 띠 손잡이입니다. 못 쟀으면 null. */
+  readonly band: MeasuredRect | null;
+  /** 잰 순간의 스크롤 자리입니다. */
+  readonly scrollTop: number;
+};
+
+/** 유닛 탭과 자동 스크롤이 함께 쓰는 자리 규칙입니다. 던지지 않습니다. */
+export function mapUnitPlacement(_measure: MapUnitMeasure): StepPlacement {
+  return { targetScrollTop: -1, anchorY: 0, anchorLimit: 0 };
+}
+
+/** 자동 스크롤의 목적지입니다. 0 이상. */
+export function autoScrollDestination(_measure: MapUnitMeasure): number {
+  return -1;
 }
 
 export function mapScrollBehaviorFor(motion: Motion): MapScrollBehavior {
@@ -122,14 +163,9 @@ export function canSettleAutoScroll(state: AutoScrollState, domId: string): bool
 /** 도착 판정과 「보정이 필요 없다」에 같이 쓰는 허용오차(dp · pt)입니다 — 요청과 이벤트의 차가 0.2 ~ 0.7로 관찰됩니다. */
 export const autoScrollTolerance = 1;
 
-/** 도착한 뒤 다시 잰 값 → 한 번 더 옮길 목적지. 대상이 설 자리보다 위에 있을 때만 수를 냅니다. */
-export function autoScrollCorrection(
-  measure: AutoScrollMeasure,
-  placement: AutoScrollPlacement,
-  tolerance: number,
-): number | null {
-  const next = autoScrollOffset(measure, placement);
-  return measure.scrollTop - next > tolerance ? next : null;
+/** 도착한 뒤 다시 잰 값 → 한 번 더 옮길 목적지. 지금 자리와 차가 tolerance를 넘으면 그 목적지, 아니면 null. */
+export function autoScrollCorrection(_measure: MapUnitMeasure, _tolerance: number): number | null {
+  return null;
 }
 
 export type AutoScrollCorrectionState =
