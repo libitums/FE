@@ -4,6 +4,7 @@ import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
 import { stepSheetProgress } from "./journey-map-sheet";
+import type { SheetEntranceMotion } from "./journey-map-sheet-motion";
 
 import "./step-sheet.css";
 
@@ -32,6 +33,8 @@ export type StepSheetProps = {
   totalActivityCount: number;
   onStart: () => void;
   onClose: () => void;
+  /** 등장 모션입니다. 없으면 `none`(모션 없음). */
+  entrance?: SheetEntranceMotion;
 };
 
 export function StepSheet({

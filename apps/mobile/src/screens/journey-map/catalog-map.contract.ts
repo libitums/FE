@@ -11,6 +11,7 @@ import type {
 } from "./journey-map-types";
 import type { JourneyMapNodeAccess, JourneyMapProgressLoad } from "./journey-map-load.contract";
 import type { JourneyProgress } from "./journey-map-progress";
+import type { SheetEntranceMotion } from "./journey-map-sheet-motion";
 
 /** 열린 카탈로그 유닛 말풍선의 키입니다(`catalogSheetKey`). 튜토리얼 스텝 id와 겹치지 않게 접두를 둡니다. */
 export type CatalogSheetKey = `catalog:${string}`;
@@ -130,6 +131,8 @@ export type JourneyMapHeaderSlotProps = {
   /** 카탈로그 유닛의 말풍선이면 이 구획 · 진행으로 띠를 세웁니다. */
   readonly catalogSections?: readonly CatalogMapSection[];
   readonly catalogProgress?: CatalogProgress;
+  /** 띠의 등장 모션입니다. 없으면 `none`(모션 없음)과 같습니다. */
+  readonly sheetEntrance?: SheetEntranceMotion;
 };
 
 export type CatalogMapCopy = {

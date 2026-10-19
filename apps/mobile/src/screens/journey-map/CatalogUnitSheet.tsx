@@ -6,6 +6,7 @@ import { catalogUnitNodeTitle, catalogUnitNodesOf } from "./catalog-map";
 import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 import { catalogSectionTitle, catalogSheetFigures } from "./catalog-sheet";
 import type { CatalogSheetTarget } from "./catalog-sheet";
+import type { SheetEntranceMotion } from "./journey-map-sheet-motion";
 
 export type CatalogUnitSheetProps = {
   readonly target: CatalogSheetTarget;
@@ -13,6 +14,8 @@ export type CatalogUnitSheetProps = {
   readonly top: number;
   readonly caretOffset: number;
   readonly onClose: () => void;
+  /** 말풍선의 등장 모션입니다. 없으면 `none`(모션 없음). */
+  readonly entrance?: SheetEntranceMotion;
 };
 
 /**

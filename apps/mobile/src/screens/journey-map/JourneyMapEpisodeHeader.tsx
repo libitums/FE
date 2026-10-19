@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { EpisodeHeader } from "@libitums/ui-lynx/episode-header";
+import type { SheetEntranceMotion } from "./journey-map-sheet-motion";
 
 export type JourneyMapEpisodeHeaderProps = {
   /** 설명 줄입니다 — `Episode 1, unit 03`. */
@@ -10,6 +11,8 @@ export type JourneyMapEpisodeHeaderProps = {
   readonly totalUnitCount: number;
   /** 띠 상자의 `layoutchange`입니다. 머리 슬롯이 띠 높이를 잽니다. */
   readonly onLayoutChange?: (event: unknown) => void;
+  /** 띠의 등장 모션입니다. 없으면 `none`(모션 없음). */
+  readonly entrance?: SheetEntranceMotion;
 };
 
 /**

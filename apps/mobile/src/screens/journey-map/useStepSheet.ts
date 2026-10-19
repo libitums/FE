@@ -25,6 +25,8 @@ import {
   type StepSheetState,
 } from "./journey-map";
 import type { SheetTargetId } from "./catalog-map.contract";
+import { sheetEntranceMotionFor, type SheetEntranceMotion } from "./journey-map-sheet-motion";
+import { useSheetEntrance } from "./useSheetEntrance";
 
 /** 말풍선이 붙을 유닛의 상자 id입니다 — 튜토리얼은 스텝 노드, 카탈로그는 유닛 셀입니다. */
 function sheetNodeDomId(id: SheetTargetId): string {
@@ -43,6 +45,8 @@ export type StepSheetControls = {
   readonly handleScroll: (event: ScrollEvent) => void;
   readonly handleSelectStep: (id: SheetTargetId, tapY: number) => void;
   readonly handleCloseSheet: () => void;
+  /** 말풍선 · 띠 · 노드의 등장 모션입니다. */
+  readonly sheetEntrance: Exclude<SheetEntranceMotion, "none">;
 };
 
 /**
@@ -62,7 +66,9 @@ export function useStepSheet(): StepSheetControls {
   // 상태 객체 · 배치 계산은 건드리지 않으려고 지역 상태로 둡니다.
   const [caretOffset, setCaretOffset] = useState(0);
   // 동작 줄이기에서는 이동이 즉시입니다(ADR-0053 D3).
-  const behavior = mapScrollBehaviorFor(useMotion());
+  const motion = useMotion();
+  const behavior = mapScrollBehaviorFor(motion);
+  const entrance = useSheetEntrance();
   // 지금 자리를 재고 있는 스텝입니다. 재는 일이 비동기라, 그 사이에 말풍선이 닫히거나
   // 다른 스텝으로 바뀌면 늦게 온 답이 화면을 옛 유닛 쪽으로 끌고 갑니다 — 답이 왔을 때
   // 이 값이 자기 스텝이 아니면 버립니다.
@@ -148,5 +154,6 @@ export function useStepSheet(): StepSheetControls {
     handleScroll,
     handleSelectStep,
     handleCloseSheet,
+    sheetEntrance: sheetEntranceMotionFor(entrance.phase, motion),
   };
 }

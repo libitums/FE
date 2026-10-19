@@ -2,6 +2,7 @@
 // `SpecialUnitMapItem.tsx`(렌더)가 집니다.
 
 import type { ReactNode } from "@lynx-js/react";
+import type { SheetTargetId } from "./catalog-map.contract";
 import type { JourneyMapNodeStatus } from "./journey-map-types";
 
 /** `UiCopy.specialUnitMap` — 맵이 스페셜 항목에 붙이는 보조 라벨과 낭독 이름. */
@@ -30,6 +31,8 @@ export type SpecialUnitMapItemProps = {
   readonly layer?: SpecialUnitMapLayer; // 기본 "map"
   /** 표식 · 라벨 뒤에 붙는 겹(안내 말풍선). */
   readonly children?: ReactNode;
+  /** 이 항목이 여는 말풍선의 키(카탈로그 최종만). 없으면 튕김 · 반짝임이 서지 않습니다. */
+  readonly sheetTargetId?: SheetTargetId;
 };
 
 export type SpecialUnitMapTestId =
