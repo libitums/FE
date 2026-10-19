@@ -48,13 +48,19 @@ function activityOf<Form extends CatalogActivity["form"]>(
   return found as Extract<CatalogActivity, { form: Form }>;
 }
 
-/** 문화 카드를 `Next`로 끝까지 넘깁니다 - 완료 카드 없이 다음 활동(문화 확인)으로 이어집니다. */
+/**
+ * 문화 카드를 끝까지 넘깁니다 - 한 장마다 앞면의 `Flip card`로 뒤집고 뒷면의 버튼으로 넘깁니다. 완료 카드 없이 다음
+ * 활동(문화 확인)으로 이어집니다.
+ */
 function passCards(cardCount: number): void {
   for (let index = 0; index < cardCount; index += 1) {
     expect(screen.getByTestId("culture-card-content")).toHaveAttribute(
       "data-card-index",
       String(index),
     );
+    expect(screen.getByTestId("culture-card-face")).toHaveAttribute("data-face", "front");
+    tapId("learning-shell-action");
+    expect(screen.getByTestId("culture-card-face")).toHaveAttribute("data-face", "back");
     tapId("learning-shell-action");
   }
 }

@@ -4,6 +4,7 @@ import { Card } from "@libitums/ui-lynx/card";
 
 import { LearningShellWorkspace } from "./LearningShellWorkspace";
 import type { LearningShellArrangement, LearningWorkspaceMode } from "./learning-shell.contract";
+import type { LearningShellStage } from "./learning-shell-props";
 import {
   questionTransitionAttributes,
   questionTransitionClassName,
@@ -16,6 +17,8 @@ export type LearningShellBodyProps = {
   readonly instruction: string | undefined;
   /** 가운데 카드 안입니다. 무대 상자(`learning-shell-stage`)는 이 컴포넌트가 만듭니다. */
   readonly card: ReactNode;
+  /** 무대의 면 — `bare`면 `Card`로 감싸지 않습니다(`LearningShellProps.stage`). */
+  readonly stage: LearningShellStage;
   readonly workspace: ReactNode | undefined;
   readonly workspaceMode: LearningWorkspaceMode;
   readonly onViewportHeight: (height: number) => void;
@@ -35,6 +38,7 @@ export function LearningShellBody({
   arrangement,
   instruction,
   card,
+  stage: stageSurface,
   workspace,
   workspaceMode,
   onViewportHeight,
@@ -59,9 +63,13 @@ export function LearningShellBody({
       data-testid="learning-shell-stage"
       {...(stageCarriesTransition ? attributes : {})}
     >
-      <Card elevation="stage">
-        <Card.Content>{card}</Card.Content>
-      </Card>
+      {stageSurface === "bare" ? (
+        card
+      ) : (
+        <Card elevation="stage">
+          <Card.Content>{card}</Card.Content>
+        </Card>
+      )}
     </view>
   );
 

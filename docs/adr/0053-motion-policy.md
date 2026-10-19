@@ -101,6 +101,10 @@
   호스트가 정한다** — 앱이 넘기는 것은 boolean 하나라 D1의 토큰 규칙 밖이고 `lint:motion`의 대상도 아니다(호출 인자는 CSS · inline style이 아니다). Android에서는 거리와 무관하게
   약 0.23 ~ 0.27초였다(3,673dp도 같아 긴 이동은 사실상 점프로 보인다 — 보류 표). iOS는 재지 않았다. 「항상 부드럽게」는 사용자 결정이다. 근거 · 기기 기록은
   [ADR-0022](0022-scroll-regions-and-fixed-affordances.md) 적용 기록 ⟨2026-10-14⟩ · [동작 줄이기 e2e](../e2e/motion-reduced.md) E-M1 · E-M2.)*
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **세로축 회전(`rotateY`)의 첫 소비자가 섰다**(평면 회전은 진행 불러오기 고리가 먼저다) — 문화 카드의 앞 · 뒤 뒤집기([ADR-0072](0072-culture-card-flip.md) D3).
+  `rotateY(90deg → 0deg)` keyframe 한 번, 시간 · 곡선은 토큰(`d6` · `enter`)이고 각도는 D1의 다섯 규칙 밖(시간 · easing · scale만 본다)이다. 뒤집을 때만 돌고(처음 선 면 · 다음 카드는 돌지 않는다),
+  reduced는 이 표의 「회전은 즉시」대로 클래스를 붙이지 않는다 — 불투명도도 걸지 않는다(사용자 요구 「즉시」). reduced 표식은 조건부 spread `data-motion="reduced"`(D2). `perspective`는 Lynx 부분 지원이라 쓰지 않았다.
+  새 토큰 · allowlist · `lint:motion` 규칙 변경은 0이다. 기기에서는 보지 않았다(문화 카드 e2e CF2 · CF5 미실행).
 - **카탈로그(Storybook)는 컴포넌트별 `motion` arg + `ReducedMotion` 스토리다**(4단계). 새 다섯(Round Button · Learning Unit · Page Indicator · Settings Cell · Chat Bubble)은 **컨텍스트 경로** —
   엔트리가 `<MotionProvider motion={data.motion}>`로 감싸고 컴포넌트에 prop을 주지 않는다(제품 앱과 같은 길). 기존 넷은 prop 경로 그대로, Visual Novel Dialog는 `reducedMotion` prop arg로 스토리만.
   Chat Bubble은 `reveal: "instant" | "typewriter"` arg와 `Typewriter` 스토리를 더했다 — `reveal` 없이는 reduced가 보일 것이 없다. 순수 함수 `normalizeStoryMotion(value)`(`"reduced"`만 reduced)을
