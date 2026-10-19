@@ -71,14 +71,19 @@ export function StepSheet({
   // 대기 중 말풍선 자리 탭은 닫기입니다. 래퍼의 탭 잡기는 단계와 무관하게 늘 걸어 두고, 손을 뗀 순간의 단계를 ref로
   // 읽습니다. ⚠ 대기 → 등장 전환 직후 약 0.07초(말풍선이 작게 시작하는 첫 프레임들)에 닿은 시작 탭은 이렇게 해도
   // 반응이 없습니다 — 말풍선은 남아 다시 누르면 됩니다(Android e2e SM6 r2 · r3, 남은 위험).
+  // 시작 탭도 같은 래퍼까지 올라옵니다 — 시작이 받은 탭은 닫기로 이어지지 않게 표시해 두고 래퍼가 지웁니다.
   const awaiting = useRef(false);
   awaiting.current = !motion.bubbleInteractive;
+  const startTapped = useRef(false);
   const handleBubbleTap = (): void => {
     "background only";
-    if (awaiting.current) onClose();
+    const fromStart = startTapped.current;
+    startTapped.current = false;
+    if (awaiting.current && !fromStart) onClose();
   };
 
   const handleStart = (): void => {
+    startTapped.current = true;
     playSound("button");
     onStart();
   };

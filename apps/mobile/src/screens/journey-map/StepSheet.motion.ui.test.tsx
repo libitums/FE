@@ -162,6 +162,18 @@ describe("StepSheet 대기 중 탭", () => {
     expect(onStart).toHaveBeenCalledTimes(1);
   });
 
+  test("SS7. awaiting: 시작 탭이 래퍼까지 올라와도 닫기는 불리지 않는다(기기의 올림을 순서대로 흉내 냄)", () => {
+    const onStart = vi.fn<() => void>();
+    const onClose = vi.fn<() => void>();
+    render(sheet("awaiting", 4, 0, { onStart, onClose }));
+
+    tapStart();
+    tapPopCatch();
+
+    expect(onStart).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   test.each(["expressive", "fade", "none"] as const)(
     "SS7. %s: 래퍼는 탭을 잡지 않고, 시작은 한 번 불린다",
     (entrance) => {

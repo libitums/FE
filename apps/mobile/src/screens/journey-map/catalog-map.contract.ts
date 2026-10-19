@@ -11,7 +11,7 @@ import type {
 } from "./journey-map-types";
 import type { JourneyMapNodeAccess, JourneyMapProgressLoad } from "./journey-map-load.contract";
 import type { JourneyProgress } from "./journey-map-progress";
-import type { SheetEntranceMotion } from "./journey-map-sheet-motion";
+import type { SheetEntranceMotion } from "./journey-map-sheet-entrance.contract";
 
 /** 열린 카탈로그 유닛 말풍선의 키입니다(`catalogSheetKey`). 튜토리얼 스텝 id와 겹치지 않게 접두를 둡니다. */
 export type CatalogSheetKey = `catalog:${string}`;

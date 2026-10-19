@@ -5,9 +5,9 @@ import type { EpisodeHeaderProgressEntrance } from "@libitums/ui-lynx/episode-he
 import { motionDurationMs, type Motion } from "@libitums/ui-lynx/motion";
 import type { SheetTargetId } from "./catalog-map.contract";
 import type { SheetEntrancePhase } from "./journey-map-sheet-entrance";
+import type { SheetEntranceMotion } from "./journey-map-sheet-entrance.contract";
 
-/** none = 모션 없음(직접 렌더 기본값 — 지금 DOM 그대로). 앱 결선은 나머지 셋만 냅니다. */
-export type SheetEntranceMotion = "none" | "awaiting" | "expressive" | "fade";
+export type { SheetEntranceMotion } from "./journey-map-sheet-entrance.contract";
 
 /** reduced → "fade"(단계 무관). standard: waiting → "awaiting", entering → "expressive". */
 export function sheetEntranceMotionFor(
