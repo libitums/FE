@@ -87,7 +87,7 @@ export function loadEpisodeContent(): EpisodeContent {
       cache: { manifest: null, episodes: {} },
     });
   }
-  return { catalog, imageUrlOf, fillText: fillPlaceholders };
+  return { catalog, imageUrlOf, fillText: fillPlaceholders, audioTimingOf: () => null };
 }
 
 /** 호스트 파일 모듈이 있을 때만 자산을 받습니다. 없으면 지금처럼 본문만 받습니다(ADR-0071 D4). */

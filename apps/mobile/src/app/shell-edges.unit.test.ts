@@ -29,6 +29,7 @@ const content: EpisodeContent = {
   }),
   imageUrlOf: (path) => `https://cdn/${path}`,
   fillText: fillPlaceholders,
+  audioTimingOf: () => null,
 };
 const source = { episodeContent: content, learnerFill: noLearnerProfile };
 

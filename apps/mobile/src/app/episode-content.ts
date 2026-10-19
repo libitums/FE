@@ -1,6 +1,7 @@
 // 세션이 받는 에피소드 콘텐츠 포트와 그 순수 도우미입니다. 화면 경로가 닿는 파일이라 3a 모듈은
 // 타입만 가져옵니다(값을 가져오면 메인 스레드 빌드가 깨집니다).
 
+import type { AudioTiming } from "../lib/audio-manifest";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { RefreshSummary } from "../lib/episode-refresh";
 import type { fillPlaceholders } from "../lib/placeholder-fill";
@@ -8,18 +9,21 @@ import type { EpisodeContentRefreshedEvent } from "../screens/episode-intro/epis
 
 export type FillText = typeof fillPlaceholders;
 
-/** 세션이 받는 콘텐츠 포트입니다. 함수 둘은 백그라운드가 닫아 만듭니다(화면은 값 import 없이 씁니다). */
+/** 세션이 받는 콘텐츠 포트입니다. 함수 셋은 백그라운드가 닫아 만듭니다(화면은 값 import 없이 씁니다). */
 export type EpisodeContent = {
   readonly catalog: readonly CatalogEntry[];
   /** 버킷 기준 상대 경로(컷 그림 · 음성) → 절대 URL. 설정 없음 · 경로 거부면 null. */
   readonly imageUrlOf: (relativePath: string) => string | null;
   readonly fillText: FillText;
+  /** 음성 id → 길이(음성 정보 파일). 모르면 null. */
+  readonly audioTimingOf: (audioId: string) => AudioTiming | null;
 };
 
 export const noEpisodeContent: EpisodeContent = {
   catalog: [],
   imageUrlOf: () => null,
   fillText: (text) => text,
+  audioTimingOf: () => null,
 };
 
 export type AppSessionContent = { readonly episodeContent: EpisodeContent };
