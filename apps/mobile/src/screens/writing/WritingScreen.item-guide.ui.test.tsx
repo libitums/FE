@@ -9,8 +9,8 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 import { WritingScreen } from "./WritingScreen";
 
 // `ui` 계층: 쓰기 화면의 학습 문항 안내. 첫 문항이 optionalPractice일 때만 뜨고, 떠 있는 동안
-// 획이 상태에 들어가지 않는다. ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다(사용자 결정) — 판정할 수 없을 때만
-// `Next`로 넘어간다. 문항은 대역이다.
+// 획이 상태에 들어가지 않는다. ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다(사용자 결정) — 판정은 호스트의 픽셀 유사도라
+// 판정할 수 없는 것은 호스트 오류뿐이고, 그때도 정답으로 치지 않는다. 문항은 대역이다.
 
 const OPTIONAL: readonly WritingQuestion[] = [
   {
@@ -179,7 +179,7 @@ test("[WR8] optionalPractice 쓰기에도 Skip이 없다 — 쓰는 중 · 빈 �
   );
 });
 
-test("[WR9] 판정할 수 없으면 아래 버튼이 Next이고, 누르면 완료 카드로 가며 건너뜀으로 센다", () => {
+test("[WR9] 판정할 수 없으면 아래 버튼이 Next이고, 누르면 완료 카드로 가되 정답으로 치지 않는다(결과 · 건너뜀 0)", () => {
   stubStorage({ seen: ["writing"] }, (_args, callback) => callback({ status: "failed" }));
   const props = renderScreen();
 
@@ -194,7 +194,7 @@ test("[WR9] 판정할 수 없으면 아래 버튼이 Next이고, 누르면 완�
   expect(screen.getByTestId("writing-screen-complete")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // See results
-  expect(props.onFinish).toHaveBeenCalledWith("tutorial-writing", ["correct"], 1);
+  expect(props.onFinish).toHaveBeenCalledWith("tutorial-writing", [], 0);
 });
 
 test("[WR7] 첫 문항이 optionalPractice가 아니면(directions) 안내가 없고 안내 키에 쓰지 않는다", () => {

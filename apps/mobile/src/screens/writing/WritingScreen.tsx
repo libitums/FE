@@ -1,5 +1,5 @@
 import { useUiCopy } from "../../lib/ui-copy";
-import { useEffect, useRef, useState } from "@lynx-js/react";
+import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { AnswerVerdict } from "../../components/AnswerVerdict";
@@ -40,7 +40,6 @@ export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps):
   const copy = useUiCopy();
   const questions = writingQuestionsForStep(stepId);
   const [screenState, setScreenState] = useState(initialWritingScreenState);
-  const [skippedCount, setSkippedCount] = useState(0);
   const question = questions[screenState.questionIndex] ?? null;
   const complete = question === null;
   // 문항이 바뀌어도 다시 판정하지 않도록 문항 껍데기가 아니라 이 화면에서 부릅니다.
@@ -71,7 +70,8 @@ export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps):
             instruction={copy.writing.instruction}
             onExit={onExit}
             actionLabel={copy.common.seeResults}
-            onAction={() => onFinish(stepId, screenState.results, skippedCount)}
+            // 쓰기에는 건너뛰기가 없어 건너뛴 수는 늘 0입니다(⟨2026-10-19⟩ 사용자 결정).
+            onAction={() => onFinish(stepId, screenState.results, 0)}
             card={
               <view className="writing-screen-content" data-testid="writing-screen-content">
                 <LearningActivityComplete
@@ -93,11 +93,6 @@ export function WritingScreen({ stepId, onExit, onFinish }: WritingScreenProps):
             onQuestionDone={(result) =>
               setScreenState((state) => finishWritingQuestion(state, result))
             }
-            onQuestionSkipped={() => {
-              "background only";
-              setSkippedCount((count) => count + 1);
-              setScreenState((state) => finishWritingQuestion(state, "correct"));
-            }}
           />
         )}
       </view>
@@ -113,11 +108,10 @@ type WritingQuestionShellProps = {
   readonly question: WritingQuestion;
   readonly questionIndex: number;
   readonly questionCount: number;
-  /** 학습 문항 안내가 떠 있는 동안 true입니다 — 획과 `Skip`이 상태를 바꾸지 않습니다. */
+  /** 학습 문항 안내가 떠 있는 동안 true입니다 — 획이 상태를 바꾸지 않습니다. */
   readonly guideVisible: boolean;
   readonly onExit: () => void;
   readonly onQuestionDone: (result: AnswerResult | null) => void;
-  readonly onQuestionSkipped: () => void;
 };
 
 function WritingQuestionShell({
@@ -127,23 +121,10 @@ function WritingQuestionShell({
   guideVisible,
   onExit,
   onQuestionDone,
-  onQuestionSkipped,
 }: WritingQuestionShellProps): ReactNode {
   const copy = useUiCopy();
   const practice = useWritingPractice({ question, size: "workspace", onQuestionDone });
   const { state } = practice;
-  const skipped = useRef(false);
-  const skip = () => {
-    "background only";
-    if (
-      guideVisible ||
-      skipped.current ||
-      (state.phase !== "writing" && state.phase !== "unmeasurable")
-    )
-      return;
-    skipped.current = true;
-    onQuestionSkipped();
-  };
 
   // 아래 버튼 — 쓰는 중에 획이 있으면 `확인하기`, 판정 · 잴 수 없음 뒤면 `다음`입니다. 빈 판과
   // 재는 중에는 버튼이 없습니다 — 누를 수 없는 버튼을 두지 않습니다(ADR-0016 D10).
@@ -152,17 +133,15 @@ function WritingQuestionShell({
   // 화면 전체를 덮어 누르면 넘어가는데, 쓰기는 틀린 뒤 캔버스의 `다시 쓰기`를 누를 수 있어야
   // 하고 그 층이 그 버튼을 가립니다.
   //
-  // ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없습니다(사용자 결정) — 쓰고 판정받습니다. 판정할 수 없을 때(호스트가
-  // 답하지 못함)만 시스템 탓이라 넘기고, 판정하지 않았으니 건너뜀으로 셉니다. 튜토리얼의 한 문항 유닛이
-  // 그 기기에서 막히지 않게 하는 자리입니다.
+  // ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없습니다(사용자 결정) — 쓰고 판정받습니다. 판정은 호스트의 픽셀 유사도라
+  // 판정할 수 없는 것은 호스트 오류뿐이고, 그때도 다른 쓰기 문항처럼 결과 없이 `다음`이며 정답으로 치지 않습니다
+  // (판정 없이 통과하는 뒷문을 두지 않습니다).
   const action: { label: string; run: () => void; sound?: "none" } | null =
-    question.optionalPractice && state.phase === "unmeasurable"
-      ? { label: copy.common.next, run: skip }
-      : practice.check !== null
-        ? { label: copy.common.check, run: practice.check, sound: "none" }
-        : practice.next !== null
-          ? { label: copy.common.next, run: practice.next }
-          : null;
+    practice.check !== null
+      ? { label: copy.common.check, run: practice.check, sound: "none" }
+      : practice.next !== null
+        ? { label: copy.common.next, run: practice.next }
+        : null;
 
   // 판정은 형제 학습형처럼 **카드의 판정 자리**에 섭니다. 캔버스 위에는 잴 수 없을 때의 안내
   // 한 줄만 섭니다 — 그 안내는 판에 대한 말이라 판 위가 맞습니다.

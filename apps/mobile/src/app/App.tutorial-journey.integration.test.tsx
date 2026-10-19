@@ -42,6 +42,21 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   vi.stubGlobal("NativeModules", {
     AudioPlaybackModule: { play, stop: vi.fn() },
     SpeechRecognitionModule: { start: recognize, stop: vi.fn() },
+    // 쓰기는 호스트의 픽셀 유사도로 판정합니다 — 따라 쓴 획이 안내와 겹친 것으로 답합니다.
+    HandwritingTraceModule: {
+      guide: (_args: unknown, callback: (payload: unknown) => void) =>
+        callback({ status: "rendered", image: "aGVsbG8=", box: "0,0,1,1", font: "Stub" }),
+      compare: (_args: unknown, callback: (payload: unknown) => void) =>
+        callback({
+          status: "compared",
+          coverage: "1",
+          stay: "1",
+          drawnArea: "10",
+          guideArea: "10",
+          font: "Stub",
+          guideBox: "0,0,1,1",
+        }),
+    },
   });
   await renderSignedInApp(<App />);
   expect(screen.getByTestId(unit("greeting"))).toHaveAttribute("data-status", "default");
@@ -216,8 +231,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   tap("learning-shell-action");
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   button("lesson-complete-screen-exit");
-  // 말하기는 `Skip`으로 넘긴다. ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다 — 이 계층에는 쓰기 판정 모듈이 없어
-  // 획을 긋고 `Check`하면 「판정할 수 없음」이 되고, `Next`로 넘어간다.
+  // 말하기는 `Skip`으로 넘긴다. ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다 — 따라 쓰고 `Check`로 판정받는다(정답).
   for (const id of ["tutorial-speaking", "tutorial-writing"]) {
     tap(unit(id));
     tap("step-sheet-start");
@@ -230,7 +244,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
     }
     tap("learning-shell-action");
     expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent(
-      "LESSON COMPLETE!",
+      id === "tutorial-speaking" ? "LESSON COMPLETE!" : "PERFECT LESSON!",
     );
     button("lesson-complete-screen-exit");
     expect(screen.getByTestId(unit(id))).toHaveAttribute("data-status", "clear");
