@@ -71,10 +71,13 @@ function marginsOf(testId: string) {
 
 const bodyMargins = (owner: KeyboardDockBottom) =>
   keyboardDockBodyStyle(keyboardDockEdgesOf(ios), owner);
-const childIds = (testId: string) =>
-  Array.from(screen.queryByTestId(testId)?.children ?? []).map((child) =>
-    child.getAttribute("data-testid"),
+// 테스트 렌더러는 정적 형제 옆의 조건부 자식을 이름 없는 `<wrapper>`로 감쌉니다 — 기기 트리에는 없는 상자라 펼칩니다.
+const flatChildren = (element: Element | null): Element[] =>
+  Array.from(element?.children ?? []).flatMap((child) =>
+    child.tagName.toLowerCase() === "wrapper" ? flatChildren(child) : [child],
   );
+const childIds = (testId: string) =>
+  flatChildren(screen.queryByTestId(testId)).map((child) => child.getAttribute("data-testid"));
 
 describe("TypingActivity keyboard dock", () => {
   test("TU1. 첫 렌더는 바깥 상자 안 [몸통, 자판] 순서이고 껍데기는 몸통 안에 있다", () => {

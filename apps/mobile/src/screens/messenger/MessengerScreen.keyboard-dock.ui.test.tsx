@@ -51,8 +51,13 @@ function marginsOf(testId: string) {
 const bodyMargins = (insets: SafeAreaInsets, owner: KeyboardDockBottom) =>
   keyboardDockBodyStyle(keyboardDockEdgesOf(insets), owner);
 const surface = () => marginsOf("messenger-screen-surface");
+// 테스트 렌더러는 정적 형제 옆의 조건부 자식을 이름 없는 `<wrapper>`로 감쌉니다 — 기기 트리에는 없는 상자라 펼칩니다.
+const flatChildren = (element: Element): Element[] =>
+  Array.from(element.children).flatMap((child) =>
+    child.tagName.toLowerCase() === "wrapper" ? flatChildren(child) : [child],
+  );
 const childIds = (testId: string) =>
-  Array.from(screen.getByTestId(testId).children).map((child) => child.getAttribute("data-testid"));
+  flatChildren(screen.getByTestId(testId)).map((child) => child.getAttribute("data-testid"));
 
 const tapTryAgain = () =>
   fireEvent.tap(screen.getByTestId("messenger-try-again").querySelector("view")!, {});
