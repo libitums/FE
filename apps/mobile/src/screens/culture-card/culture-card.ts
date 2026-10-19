@@ -63,8 +63,13 @@ const faceClass = "culture-card-activity-face";
  * 면 상자의 클래스입니다. 뒤집어 선 면만 표준 움직임에서 회전해 들어옵니다. 동작 줄이기는 회전을 걷어 **즉시** 바꿉니다
  * (ADR-0053 D3 「회전은 즉시」).
  */
-export function cultureCardFaceClassName(flipped: boolean, motion: Motion): string {
-  return flipped && motion === "standard" ? `${faceClass} ${faceClass}-flip` : faceClass;
+export function cultureCardFaceClassName(
+  face: CultureCardFace,
+  flipped: boolean,
+  motion: Motion,
+): string {
+  // 면마다 다른 클래스입니다 — 노드를 다시 세우지 않아도 클래스가 바뀌는 순간 움직임이 처음부터 돕니다.
+  return flipped && motion === "standard" ? `${faceClass} ${faceClass}-flip-${face}` : faceClass;
 }
 
 /** 앞면에 세울 사진 주소입니다. 주소가 없거나 그 주소가 한 번 실패했으면 `null` — 브랜드 면이 섭니다. */

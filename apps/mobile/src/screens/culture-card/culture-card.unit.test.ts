@@ -103,15 +103,19 @@ describe("cultureCardActionOf (CC4)", () => {
 
 describe("cultureCardFaceClassName (CC5)", () => {
   test("CC5. 처음 선 면(뒤집기 전)은 움직임 없이 기본 클래스만이다", () => {
-    expect(cultureCardFaceClassName(false, "standard")).toBe("culture-card-activity-face");
-    expect(cultureCardFaceClassName(false, "reduced")).toBe("culture-card-activity-face");
+    expect(cultureCardFaceClassName("front", false, "standard")).toBe("culture-card-activity-face");
+    expect(cultureCardFaceClassName("front", false, "reduced")).toBe("culture-card-activity-face");
   });
 
   test("CC5. 뒤집어 선 면은 표준 움직임에서만 뒤집기 클래스가 붙고, 동작 줄이기면 즉시 바뀐다", () => {
-    expect(cultureCardFaceClassName(true, "standard")).toBe(
-      "culture-card-activity-face culture-card-activity-face-flip",
+    // 면마다 클래스 이름이 달라야 노드를 다시 세우지 않고도 클래스가 바뀌는 순간 움직임이 처음부터 돕니다.
+    expect(cultureCardFaceClassName("back", true, "standard")).toBe(
+      "culture-card-activity-face culture-card-activity-face-flip-back",
     );
-    expect(cultureCardFaceClassName(true, "reduced")).toBe("culture-card-activity-face");
+    expect(cultureCardFaceClassName("front", true, "standard")).toBe(
+      "culture-card-activity-face culture-card-activity-face-flip-front",
+    );
+    expect(cultureCardFaceClassName("back", true, "reduced")).toBe("culture-card-activity-face");
   });
 });
 
@@ -178,15 +182,16 @@ describe("culture-card-activity.css (CC7)", () => {
     "";
 
   test("CC7. 뒤집기는 세로축 회전 keyframe이고 시간 · 곡선은 모션 토큰이다", () => {
-    expect(keyframe("culture-card-activity-face-flip", "from")).toMatch(
-      /transform:\s*rotateY\(90deg\)/,
-    );
-    expect(keyframe("culture-card-activity-face-flip", "to")).toMatch(
-      /transform:\s*rotateY\(0deg\)/,
-    );
-    expect(ruleBody("culture-card-activity-face-flip")).toMatch(
-      /animation:\s*culture-card-activity-face-flip\s+var\(--libitum-motion-duration-[a-z0-9-]+\)\s+var\(--libitum-motion-easing-[a-z-]+\)/,
-    );
+    for (const face of ["front", "back"]) {
+      const name = `culture-card-activity-face-flip-${face}`;
+      expect(keyframe(name, "from")).toMatch(/transform:\s*rotateY\(90deg\)/);
+      expect(keyframe(name, "to")).toMatch(/transform:\s*rotateY\(0deg\)/);
+      expect(ruleBody(name)).toMatch(
+        new RegExp(
+          `animation:\\s*${name}\\s+var\\(--libitum-motion-duration-[a-z0-9-]+\\)\\s+var\\(--libitum-motion-easing-[a-z-]+\\)`,
+        ),
+      );
+    }
   });
 
   test("CC7. 미디어 질의 · 시간 리터럴이 없다(ADR-0053 D1)", () => {

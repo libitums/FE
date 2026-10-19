@@ -73,7 +73,8 @@
 
 /* 뒤집기 — 세로축으로 옆면에서 돌아 들어옵니다. Lynx의 `perspective`는 부분 지원이라 쓰지 않습니다 — 원근 없이
    가로로 접혔다 펴지는 모양입니다. 동작 줄이기에서는 이 클래스가 붙지 않아 면이 즉시 바뀝니다(ADR-0053 D3). */
-@keyframes culture-card-activity-face-flip {
+/* 앞 · 뒤 같은 움직임을 이름만 둘로 둡니다. 노드를 다시 세우지 않으므로, 이름이 바뀌어야 움직임이 처음부터 돕니다. */
+@keyframes culture-card-activity-face-flip-front {
   from {
     transform: rotateY(90deg);
   }
@@ -82,8 +83,22 @@
   }
 }
 
-.culture-card-activity-face-flip {
-  animation: culture-card-activity-face-flip var(--libitum-motion-duration-d6)
+@keyframes culture-card-activity-face-flip-back {
+  from {
+    transform: rotateY(90deg);
+  }
+  to {
+    transform: rotateY(0deg);
+  }
+}
+
+.culture-card-activity-face-flip-front {
+  animation: culture-card-activity-face-flip-front var(--libitum-motion-duration-d6)
+    var(--libitum-motion-easing-enter) both;
+}
+
+.culture-card-activity-face-flip-back {
+  animation: culture-card-activity-face-flip-back var(--libitum-motion-duration-d6)
     var(--libitum-motion-easing-enter) both;
 }
 

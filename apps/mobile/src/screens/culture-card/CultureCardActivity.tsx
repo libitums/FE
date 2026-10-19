@@ -116,11 +116,12 @@ export function CultureCardActivity({
             />
             {card === undefined || labelInput === null ? null : (
               <CultureCardFace
-                // 면이 바뀔 때마다 새로 세워 뒤집기 움직임이 처음부터 돕니다.
-                key={`${cardIndex}-${state.face}`}
+                // 카드가 바뀔 때만 새로 세웁니다 — 뒤집기마다 다시 세우면 스크린리더 초점이 풀립니다. 움직임은
+                // 면마다 다른 클래스(`-flip-front` · `-flip-back`)가 다시 돌립니다.
+                key={cardIndex}
                 card={card}
                 face={state.face}
-                className={cultureCardFaceClassName(state.flipped, motion)}
+                className={cultureCardFaceClassName(state.face, state.flipped, motion)}
                 label={cultureCardLabelOf(state.face, labelInput, copy.cultureCard)}
                 photoUrl={photoUrl}
                 reducedMotion={motion === "reduced"}

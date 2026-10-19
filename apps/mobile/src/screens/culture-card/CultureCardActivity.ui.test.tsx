@@ -271,9 +271,17 @@ describe("CultureCardActivity — 접근성 · 움직임", () => {
 
     expect(faceClass()).toBe("culture-card-activity-face");
     expect(id("culture-card-face")).not.toHaveAttribute("data-motion");
+    const before = id("culture-card-face");
 
     tapCard();
-    expect(faceClass()).toBe("culture-card-activity-face culture-card-activity-face-flip");
+    expect(faceClass()).toBe("culture-card-activity-face culture-card-activity-face-flip-back");
+    // 뒤집어도 같은 노드입니다 — 다시 세우면 스크린리더 초점이 풀립니다(리뷰 지적).
+    expect(id("culture-card-face")).toBe(before);
+
+    tapCard();
+    expect(faceClass()).toBe("culture-card-activity-face culture-card-activity-face-flip-front");
+    expect(id("culture-card-face")).toBe(before);
+    tapCard();
 
     tapAction();
     expect(face()).toBe("front");
