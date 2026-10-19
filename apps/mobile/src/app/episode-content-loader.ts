@@ -2,8 +2,14 @@ import "background-only";
 
 // 내장 + 기기 캐시에서 카탈로그를 읽고 이미지 URL · 치환 포트를 닫아 만듭니다(백그라운드 전용).
 
-import { contentFilesAvailable, localOrRemoteUrl } from "../lib/content-files";
+import {
+  contentFileUrl,
+  contentFilesAvailable,
+  downloadContentFile,
+  localOrRemoteUrl,
+} from "../lib/content-files";
 import { isAssetsComplete } from "../lib/episode-asset-sync";
+import type { AssetDeps } from "../lib/episode-asset-sync";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { CONTENT_MANIFEST_KEY, hostContentStore, readCachedSource } from "../lib/episode-cache";
 import { buildEpisodeCatalog, parseCachedManifest } from "../lib/episode-catalog";
@@ -82,4 +88,14 @@ export function loadEpisodeContent(): EpisodeContent {
     });
   }
   return { catalog, imageUrlOf, fillText: fillPlaceholders };
+}
+
+/** 호스트 파일 모듈이 있을 때만 자산을 받습니다. 없으면 지금처럼 본문만 받습니다(ADR-0071 D4). */
+export function hostAssetDeps(): AssetDeps | undefined {
+  if (!contentFilesAvailable()) return undefined;
+  return {
+    has: (path) => contentFileUrl(path) !== null,
+    download: downloadContentFile,
+    remoteUrlOf: remoteContentUrlOf,
+  };
 }

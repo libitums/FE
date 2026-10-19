@@ -1,13 +1,12 @@
 import { useEffect, useLynxGlobalEventListener, useRef, useState } from "@lynx-js/react";
 
-import { contentFileUrl, contentFilesAvailable, downloadContentFile } from "../lib/content-files";
-import type { AssetDeps } from "../lib/episode-asset-sync";
 import { hostContentStore } from "../lib/episode-cache";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { refreshEpisodeCatalog } from "../lib/episode-refresh";
 import { fetchContentText } from "../lib/episode-remote";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { createSyncRunner } from "./content-sync-runner";
+import type { SyncRunner } from "./content-sync-runner";
 import {
   episodeContentRefreshedEventOf,
   mergeCatalogForSession,
@@ -15,20 +14,10 @@ import {
   refreshChangesCatalog,
 } from "./episode-content";
 import type { EpisodeContent } from "./episode-content";
-import { loadEpisodeContent, remoteContentUrlOf } from "./episode-content-loader";
+import { hostAssetDeps, loadEpisodeContent } from "./episode-content-loader";
 
 /** 호스트가 받기 좋은 때(끊겼던 연결이 돌아옴 · 앱이 포그라운드로 돌아옴)를 알리는 전역 이벤트입니다(ADR-0071). */
 export const contentSyncEventName = "contentSyncOpportunity";
-
-/** 호스트 파일 모듈이 있을 때만 자산을 받습니다. 없으면 지금처럼 본문만 받습니다. */
-function hostAssetDeps(): AssetDeps | undefined {
-  if (!contentFilesAvailable()) return undefined;
-  return {
-    has: (path) => contentFileUrl(path) !== null,
-    download: downloadContentFile,
-    remoteUrlOf: remoteContentUrlOf,
-  };
-}
 
 /**
  * 내장 + 기기 캐시에서 카탈로그를 읽고, 서버의 매니페스트로 새 에피소드를 **하나씩**(본문 → 그림 · 음성) 받아
@@ -46,15 +35,20 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
   }, [sink]);
   const reported = useRef(false);
 
-  const runner = useRef(
-    createSyncRunner(async () => {
-      const reload = () => {
-        const next = loadEpisodeContent();
-        setContent((previous) => ({
-          ...next,
-          catalog: mergeCatalogForSession(previous.catalog, next.catalog),
-        }));
-      };
+  // 실행기는 effect 안에서 만듭니다 — 렌더에서 만들면 그 안의 백그라운드 전용 모듈이 메인 스레드 번들로 끌려옵니다.
+  const runner = useRef<SyncRunner | null>(null);
+
+  useEffect(() => {
+    const reload = () => {
+      const next = loadEpisodeContent();
+      setContent((previous) => ({
+        ...next,
+        catalog: mergeCatalogForSession(previous.catalog, next.catalog),
+      }));
+    };
+    setContent(loadEpisodeContent());
+    // oxlint-disable-next-line react/immutability
+    runner.current = createSyncRunner(async () => {
       const summary = await refreshEpisodeCatalog({
         fetchText: fetchContentText,
         store: hostContentStore,
@@ -68,15 +62,12 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         sinkRef.current?.(event);
       }
       if (refreshChangesCatalog(summary)) reload();
-    }),
-  );
-
-  useEffect(() => {
-    setContent(loadEpisodeContent());
+    });
     void runner.current.request();
   }, []);
   useLynxGlobalEventListener(contentSyncEventName, () => {
-    void runner.current.request();
+    "background only";
+    void runner.current?.request();
   });
   return content;
 }
