@@ -216,19 +216,24 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   tap("learning-shell-action");
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   button("lesson-complete-screen-exit");
-  for (const [id, skip] of [
-    ["tutorial-speaking", "speaking-screen-skip"],
-    ["tutorial-writing", "writing-screen-skip"],
-  ]) {
-    tap(unit(id!));
+  // 말하기는 `Skip`으로 넘긴다. ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다 — 이 계층에는 쓰기 판정 모듈이 없어
+  // 획을 긋고 `Check`하면 「판정할 수 없음」이 되고, `Next`로 넘어간다.
+  for (const id of ["tutorial-speaking", "tutorial-writing"]) {
+    tap(unit(id));
     tap("step-sheet-start");
-    button(skip!);
+    if (id === "tutorial-speaking") {
+      button("speaking-screen-skip");
+    } else {
+      drawStroke();
+      tap("learning-shell-action"); // Check
+      tap("learning-shell-action"); // Next
+    }
     tap("learning-shell-action");
     expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent(
       "LESSON COMPLETE!",
     );
     button("lesson-complete-screen-exit");
-    expect(screen.getByTestId(unit(id!))).toHaveAttribute("data-status", "clear");
+    expect(screen.getByTestId(unit(id))).toHaveAttribute("data-status", "clear");
   }
 
   expect(screen.getByTestId(unit("tutorial-final-test"))).toHaveAttribute(
@@ -262,3 +267,10 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   );
   expect(recognize).not.toHaveBeenCalled();
 });
+
+function drawStroke(): void {
+  const surface = screen.getByTestId("drawing-surface");
+  fireEvent.touchstart(surface, { touches: [{ x: 100, y: 100 }] });
+  fireEvent.touchmove(surface, { touches: [{ x: 150, y: 150 }] });
+  fireEvent.touchend(surface, {});
+}

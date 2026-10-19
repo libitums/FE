@@ -18,7 +18,17 @@ test("미리보기는 듣기 결과 확인 후 말하기·쓰기와 각 완료 �
     expect(screen.getByTestId(unit)).toHaveAttribute("data-status", "active");
     tap(unit);
     tap("step-sheet-start");
-    button(`${mode}-screen-skip`);
+    if (mode === "speaking") {
+      button("speaking-screen-skip");
+    } else {
+      // ⟨2026-10-19⟩ 쓰기에는 Skip이 없다 — 이 미리보기에는 판정 모듈이 없어 Check 뒤 Next로 넘어간다.
+      const surface = screen.getByTestId("drawing-surface");
+      fireEvent.touchstart(surface, { touches: [{ x: 100, y: 100 }] });
+      fireEvent.touchmove(surface, { touches: [{ x: 150, y: 150 }] });
+      fireEvent.touchend(surface, {});
+      tap("learning-shell-action"); // Check
+      tap("learning-shell-action"); // Next
+    }
     tap("learning-shell-action");
     expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent(
       "LESSON COMPLETE!",

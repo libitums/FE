@@ -35,8 +35,8 @@ const confirmedCopy: Record<LearningItemGuideKind, { title: string; description:
     description: "Tap Speak and read the sentence out loud, or tap Skip if you're not ready.",
   },
   writing: {
-    title: "Trace it, or skip it",
-    description: "Follow the pale letter with your finger and tap Check, or tap Skip to move on.",
+    title: "Trace the letter",
+    description: "Follow the pale letter with your finger, then tap Check.",
   },
 };
 
@@ -55,6 +55,11 @@ describe("학습 문항 안내 문구", () => {
       const sentences = copy[kind].description.match(/[^.!?]+[.!?]/g) ?? [];
       expect(sentences.length, `${kind} sentences`).toBeLessThanOrEqual(2);
     }
+  });
+
+  // ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다(사용자 결정) — 안내가 없는 버튼을 가리키지 않는다.
+  test("CP2b: 쓰기 안내는 Skip을 말하지 않는다", () => {
+    expect(`${copy.writing.title} ${copy.writing.description}`).not.toMatch(/skip/i);
   });
 
   test("CP3: 한글과 인물 이름(Minseo)이 없다", () => {

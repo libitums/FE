@@ -29,7 +29,7 @@ TalkBack의 낭독은 개발자 설정 「Display speech output」이 화면에 
    | 말하기 · 쓰기 | `optionalPractice: true` | `tutorial-speaking` · `tutorial-writing`(문항 하나씩) |
 
 3. **「이번에만」 · 「연습일 뿐」은 코드로는 참이 아닌 자리가 있다** [코드 — 계약 단계가 요구사항 · design의 전제를 정정했다].
-   - 말하기의 `Skip`은 **모든** 말하기 문항의 준비 국면에 선다(`optionalPractice`를 보지 않는다). 쓰기의 `Skip`만 `optionalPractice`일 때 선다.
+   - 말하기의 `Skip`은 **모든** 말하기 문항의 준비 국면에 선다(`optionalPractice`를 보지 않는다). 쓰기의 `Skip`만 `optionalPractice`일 때 선다. ⟨2026-10-19 정정⟩ **쓰기의 `Skip`은 없어졌다**(사용자 결정) — `optionalPractice` 쓰기도 쓰고 판정받고, 판정할 수 없을 때만 아래 버튼 `Next`로 넘어간다(건너뜀으로 센다).
    - 말하기 · 쓰기의 체험 문항도 **채점된다.** 두 단원은 문항이 하나라 통과 문턱이 정답 1개다 — 말해 보고 틀리면 그 단원은 미통과다.
    - 전화 · 비주얼 노벨은 구조상 늘 누르기만 한다. 본편 콘텐츠가 없어 「이번에만」이 참인지 알 수 없다.
    - 메신저 · 전화 · 비주얼 노벨은 롤플레이 탭에서도 같은 컴포넌트로 열린다. 화면은 출처를 `exitTo`로만 안다.
@@ -110,7 +110,7 @@ TalkBack의 낭독은 개발자 설정 「Display speech output」이 화면에 
 | 전화 | **벨을 울리지 않는다.** `Accept` · 답장이 상태를 바꾸지 않고 음원을 틀지 않는다 | 벨이 그때 울리기 시작한다 |
 | 비주얼 노벨 | `Next`가 장면을 넘기지 않는다 | 그대로 읽는다 |
 | 말하기 | `Speak` · 파형 탭 · `Skip`이 상태를 바꾸지 않는다 — 권한 요청 · 인식 시작 0회(마이크 권한 창이 안내 위로 뜨지 않는다). 아래 버튼의 버튼음도 끈다(아래) | 그대로 푼다 |
-| 쓰기 | 캔버스의 획이 상태에 들어가지 않는다. `Skip`이 넘기지 않는다. 안내 그림을 굽는 호스트 요청은 막지 않는다(닫았을 때 판이 준비돼 있어야 한다) | 그대로 쓴다 |
+| 쓰기 | 캔버스의 획이 상태에 들어가지 않는다. `Skip`이 넘기지 않는다(⟨2026-10-19⟩ 쓰기 `Skip`은 없어졌다). 안내 그림을 굽는 호스트 요청은 막지 않는다(닫았을 때 판이 준비돼 있어야 한다) | 그대로 쓴다 |
 
 - **닫기**: 아무 데나 탭(안내 루트의 `catchtap` — 그 탭은 아래 화면의 조작을 실행하지 않는다) 또는 시스템 뒤로가기(`useLayerBack` — 떠 있는 동안만 등록). 층이 화면보다 먼저이므로([ADR-0043](0043-android-system-back.md)) 뒤로가기 한 번은 안내만 닫고, 두 번째가 화면의 닫기(학습 화면은 나가기 확인창, 특별 단원은 나가기)다. 두 수단은 같은 함수이고, 두 번 불려도 저장소 쓰기는 한 번이다.
 - **기존 첫 단원 안내와 동시에 서지 않는다.** 두 안내가 그려지는 route가 겹치지 않고 셸은 한 번에 화면 하나만 그린다 [코드].
@@ -228,7 +228,9 @@ TalkBack의 낭독은 개발자 설정 「Display speech output」이 화면에 
 | `phone-call` | `Reply with a tap` | `Tap Accept and listen. You don't need to speak, so just tap your reply when it's your turn.` |
 | `visual-novel` | `Your lines are ready` | `Tap Next to read each line. Your replies are already written, so there's nothing to choose.` |
 | `speaking` | `Try it, or skip it` | `Tap Speak and read the sentence out loud, or tap Skip if you're not ready.` |
-| `writing` | `Trace it, or skip it` | `Follow the pale letter with your finger and tap Check, or tap Skip to move on.` |
+| `writing` | `Trace the letter` | `Follow the pale letter with your finger, then tap Check.` |
+
+> ⟨2026-10-19 정정⟩ 쓰기 문구는 원래 `Trace it, or skip it` · `… or tap Skip to move on.`이었다. 쓰기에서 `Skip`을 없애면서(사용자 결정) 없는 버튼을 가리키지 않게 바꿨다 — `learning-item-guide-copy.unit.test.ts` CP2b가 쓰기 문구에 skip이 없음을 지킨다. 이전 문구는 `optionalPractice`가 아닌 쓰기 문항(Skip 버튼 없음)에서도 Skip을 말하고 있었다.
 
 - **금지 표현은 단위 테스트가 가드로 지킨다.** `phone-call` · `visual-novel`에 「this time」 · 「for now」를 쓰지 않는다 — 구조상 늘 누르기만 하므로 본편에서도 그러면 거짓이다. `speaking` · `writing`에 「only practice」 · 「usually」를 쓰지 않는다 — `Skip`은 말하기에 늘 있고 이 문항도 채점된다(맥락 3).
 - 그 밖의 제약: 비어 있지 않다 · 제목 32자 이하 · 설명 110자 이하 · 두 문장 이내 · 한글과 인물 이름 없음.

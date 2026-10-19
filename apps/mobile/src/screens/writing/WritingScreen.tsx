@@ -1,7 +1,6 @@
 import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
-import { Button } from "@libitums/ui-lynx/button";
 
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { LearningItemGuide } from "../../components/LearningItemGuide";
@@ -11,7 +10,6 @@ import { WritingPrompt } from "../../components/WritingPrompt";
 import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { useWritingPractice } from "../../components/use-writing-practice";
 import { announceCompletion } from "../../lib/accessibility";
-import { playSound } from "../../lib/sound-effects";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { WritingQuestion } from "../../lib/writing-session";
 import { LearningShell } from "../learning/LearningShell";
@@ -146,12 +144,6 @@ function WritingQuestionShell({
     skipped.current = true;
     onQuestionSkipped();
   };
-  const skipFromButton = () => {
-    "background only";
-    if (guideVisible || skipped.current) return;
-    playSound("button");
-    skip();
-  };
 
   // 아래 버튼 — 쓰는 중에 획이 있으면 `확인하기`, 판정 · 잴 수 없음 뒤면 `다음`입니다. 빈 판과
   // 재는 중에는 버튼이 없습니다 — 누를 수 없는 버튼을 두지 않습니다(ADR-0016 D10).
@@ -159,9 +151,13 @@ function WritingQuestionShell({
   // 판정 뒤 넘김은 문장 만들기처럼 **버튼**입니다. 듣기 · 말하기의 스스로 넘어가는 층(`advance`)은
   // 화면 전체를 덮어 누르면 넘어가는데, 쓰기는 틀린 뒤 캔버스의 `다시 쓰기`를 누를 수 있어야
   // 하고 그 층이 그 버튼을 가립니다.
+  //
+  // ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없습니다(사용자 결정) — 쓰고 판정받습니다. 판정할 수 없을 때(호스트가
+  // 답하지 못함)만 시스템 탓이라 넘기고, 판정하지 않았으니 건너뜀으로 셉니다. 튜토리얼의 한 문항 유닛이
+  // 그 기기에서 막히지 않게 하는 자리입니다.
   const action: { label: string; run: () => void; sound?: "none" } | null =
     question.optionalPractice && state.phase === "unmeasurable"
-      ? { label: copy.common.skip, run: skip }
+      ? { label: copy.common.next, run: skip }
       : practice.check !== null
         ? { label: copy.common.check, run: practice.check, sound: "none" }
         : practice.next !== null
@@ -222,17 +218,6 @@ function WritingQuestionShell({
               onStrokeComplete={guideVisible ? ignoreStroke : practice.addStroke}
             />
           )}
-          {question.optionalPractice && state.phase === "writing" ? (
-            <view className="writing-screen-skip" data-testid="writing-screen-skip">
-              <Button
-                label={copy.common.skip}
-                variant="outline"
-                size="xl"
-                width="fill"
-                bindtap={skipFromButton}
-              />
-            </view>
-          ) : null}
         </view>
       }
     />

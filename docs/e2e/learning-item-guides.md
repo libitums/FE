@@ -597,7 +597,7 @@ iostap() { idb ui tap --udid "$UDID" "$1" "$2"; }
      | `phone-call` | Reply with a tap | Tap Accept and listen. You don't need to speak, so just tap your reply when it's your turn. |
      | `visual-novel` | Your lines are ready | Tap Next to read each line. Your replies are already written, so there's nothing to choose. |
      | `speaking` | Try it, or skip it | Tap Speak and read the sentence out loud, or tap Skip if you're not ready. |
-     | `writing` | Trace it, or skip it | Follow the pale letter with your finger and tap Check, or tap Skip to move on. |
+     | `writing` | Trace the letter | Follow the pale letter with your finger, then tap Check. |
 
   2. **픽셀**: `python3 "$TOOLS/guidepx.py" textbox "$OUT/E1-<종류>-guide.png"` → **PASS**(글자 상자가 좌우 24px 여백 안, 가로줄 묶음이 제목 · 설명 · 닫는 법으로 3개 이상). 스크림 0.8 아래의 앱 글자는 합성 최대값이 약 72라 이 판독에 안 든다 — 든 것은 안내의 글자뿐이다.
   3. **저장**: `seen_read`(iOS `ios_seen_read`)가 닫은 뒤 그 종류를 담는다. 안내가 뜬 채(닫기 전)에는 담지 않는다.
