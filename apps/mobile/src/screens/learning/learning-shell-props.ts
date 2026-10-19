@@ -3,6 +3,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import type { LearningActivityForm } from "../../lib/learning-form";
+import type { LearningRunProgress } from "./learning-shell.contract";
 
 /** 무대의 면 — `card`(ui-lynx Card가 그림) · `bare`(활동이 스스로 그림). */
 export type LearningShellStage = "card" | "bare";
@@ -79,4 +80,8 @@ export type LearningShellProps = {
   onOpenNotifications?: () => void;
   /** 학습 문항 안내가 위를 덮는 동안 true입니다. 루트를 낭독에서 가립니다(닫히면 false). */
   obscured?: boolean;
+  /** 주면 세션 헤더 대신 가벼운 헤더(`×` · 칸 막대)가 섭니다 — 단어 카드 구간(ADR-0073). */
+  runProgress?: LearningRunProgress;
+  /** 기본 아래 버튼 대신 서는 ui-lynx `Button`입니다. 누름 소리 · 동작은 그 버튼의 몫입니다. */
+  actionButton?: ReactNode;
 };

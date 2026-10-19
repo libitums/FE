@@ -5,7 +5,7 @@ import type { LessonPosition } from "../learning/activity-finish";
 import type { VocabCardSessionState } from "./vocab-card.contract";
 import {
   initialVocabCardSessionState,
-  vocabCardExampleSupportLabel,
+  vocabCardRunProgress,
   vocabCardSessionReducer,
   vocabCardStepOf,
 } from "./vocab-card";
@@ -44,35 +44,20 @@ describe("vocabCardStepOf", () => {
   });
 });
 
-describe("vocabCardExampleSupportLabel", () => {
-  it("VC-A1. 로마자와 번역을 있는 것만 이 순서로 공백 하나로 잇고 둘 다 없으면 null이다", () => {
-    expect(
-      vocabCardExampleSupportLabel(
-        {
-          text: "아니요, 괜찮아요.",
-          romanization: "aniyo, gwaenchanayo.",
-          translation: "No, I'm fine.",
-        },
-        uiCopyEn,
-      ),
-    ).toBe("Pronunciation: aniyo, gwaenchanayo. Meaning: No, I'm fine.");
-    expect(
-      vocabCardExampleSupportLabel(
-        { text: "물 주세요.", romanization: "mul juseyo.", translation: null },
-        uiCopyEn,
-      ),
-    ).toBe("Pronunciation: mul juseyo.");
-    expect(
-      vocabCardExampleSupportLabel(
-        { text: "물 주세요.", romanization: null, translation: "Water, please." },
-        uiCopyEn,
-      ),
-    ).toBe("Meaning: Water, please.");
-    expect(
-      vocabCardExampleSupportLabel(
-        { text: "물 주세요.", romanization: null, translation: null },
-        uiCopyEn,
-      ),
-    ).toBeNull();
+describe("vocabCardRunProgress", () => {
+  it.each([
+    [0, 3, ["current", "upcoming", "upcoming"], "Word 1 of 3"],
+    [1, 3, ["done", "current", "upcoming"], "Word 2 of 3"],
+    [3, 7, ["done", "done", "done", "current", "upcoming", "upcoming", "upcoming"], "Word 4 of 7"],
+    [0, 1, ["current"], "Word 1 of 1"],
+  ] as const)(
+    "VC3. %i번째(0부터) / %i장 → 지난 칸은 done · 지금은 current · 남은 칸은 upcoming이고 이름은 순번이다",
+    (cardIndex, total, segments, label) => {
+      expect(vocabCardRunProgress(cardIndex, total, uiCopyEn)).toEqual({ segments, label });
+    },
+  );
+
+  it("VC3. 카드가 0장이면 칸도 이름도 없다 — 셀 것이 없는데 Word 1 of 0을 적지 않는다", () => {
+    expect(vocabCardRunProgress(0, 0, uiCopyEn)).toEqual({ segments: [], label: "" });
   });
 });

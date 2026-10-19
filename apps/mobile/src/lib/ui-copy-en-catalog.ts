@@ -64,10 +64,10 @@ export const typingEn: TypingCopy = {
 export const vocabCardEn: VocabCardCopy = {
   instruction: "Learn this word.",
   badge: "New word",
-  exampleTitle: "Example",
+  gotIt: "Got it",
+  runLabel: (ordinal, total) => `Word ${ordinal} of ${total}`,
   pronunciation: (romanization) => `Pronunciation: ${romanization}`,
   meaning: (meaning) => `Meaning: ${meaning}`,
-  example: (text) => `Example: ${text}`,
 };
 
 export const cultureCardEn: CultureCardCopy = {
