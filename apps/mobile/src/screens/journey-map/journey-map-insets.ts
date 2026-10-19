@@ -8,7 +8,7 @@ import { bottomMargin, mapBottomInset, sheetGap, sheetHeight } from "./journey-m
 
 export type MapContentInsets = { readonly top: number; readonly bottom: number };
 
-/** 띠의 위 모서리(칩 줄 12 + 40 + 12)입니다 — `.journey-map-screen-episode-header`의 `top`. */
+/** 띠의 위 모서리(칩 줄 12 + 40 + 12 — 칩은 44라 간격이 4 좁습니다)입니다 — `.journey-map-screen-episode-header`의 `top`. */
 const bandTop = 64;
 /** 띠 높이의 어림입니다(두 줄 제목 · 진행 줄). 큰 글자에서는 더 커질 수 있습니다. */
 const bandHeight = 112;

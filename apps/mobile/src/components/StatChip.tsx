@@ -9,6 +9,7 @@ import { motionDurationMs, useMotion } from "@libitums/ui-lynx/motion";
 
 import { statBumpStart } from "../lib/stat-bump";
 
+import { statChipClassName } from "./stat-chip-class";
 import type { StatChipHeight, StatChipSurface } from "./stat-chip-class";
 
 import "./stat-chip.css";
@@ -75,6 +76,7 @@ export function StatChip({
   testId,
   onTap,
   surface = "none",
+  height = "hug",
   bumpFrom = null,
   bumpHeld = false,
   bumpDelayMs = 0,
@@ -116,9 +118,7 @@ export function StatChip({
 
   return (
     <view
-      className={["stat-chip", surface === "white" ? "stat-chip-surface-white" : undefined]
-        .filter(Boolean)
-        .join(" ")}
+      className={statChipClassName(surface, height)}
       data-testid={testId}
       accessibility-element={true}
       accessibility-label={accessibilityLabel}
