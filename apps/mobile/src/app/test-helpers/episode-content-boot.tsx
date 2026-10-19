@@ -101,6 +101,8 @@ export type BootOptions = {
   readonly content: Readonly<Record<string, string>>;
   /** 있으면 `NativeModules.ContentFileModule`로 함께 세웁니다. */
   readonly contentFiles?: object;
+  /** 콘텐츠 버킷 상대 경로 → 응답 상태(본문 없음). `content`보다 먼저 적용됩니다. */
+  readonly status?: Readonly<Record<string, number>>;
 };
 
 export type Booted = { readonly urls: string[]; readonly store: Map<string, string> };
@@ -131,7 +133,10 @@ export async function bootContentApp(options: BootOptions): Promise<Booted> {
       return Promise.resolve({ status: 200, text: async () => "null" });
     }
     if (url.startsWith(contentBase)) {
-      const body = options.content[url.slice(contentBase.length)];
+      const relative = url.slice(contentBase.length);
+      const forced = options.status?.[relative];
+      if (forced !== undefined) return Promise.resolve({ status: forced, text: async () => "" });
+      const body = options.content[relative];
       return Promise.resolve(
         body === undefined
           ? { status: 404, text: async () => "" }
