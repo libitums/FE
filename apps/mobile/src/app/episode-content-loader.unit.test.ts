@@ -200,4 +200,40 @@ describe("loadEpisodeContent", () => {
 
     expect(source.split("\n")[0]).toBe('import "background-only";');
   });
+  test("EL8. 파일 모듈이 있으면 받아 둔 그림 · 음성은 file 주소, 없는 것은 공개 URL이다", async () => {
+    installStorage();
+    const native = NativeModules as Record<string, unknown>;
+    vi.stubGlobal("NativeModules", {
+      ...native,
+      ContentFileModule: {
+        download: vi.fn(),
+        fileUrl: (path: string) =>
+          path === "images/u01-water/pre-1.jpg" ? "file:///f/pre-1.jpg" : "",
+      },
+    });
+    const { loadEpisodeContent } = await freshLoader();
+    const content = loadEpisodeContent();
+
+    expect(content.imageUrlOf("content/images/u01-water/pre-1.jpg")).toBe("file:///f/pre-1.jpg");
+    expect(content.imageUrlOf("audio/u01-water/pre-3.m4a")).toBe(
+      `${supabaseUrl}/storage/v1/object/public/content/audio/u01-water/pre-3.m4a`,
+    );
+  });
+
+  test("EL9. 파일 모듈이 있으면 원격 에피소드는 자산 완료 표시가 그 본문 sha와 맞을 때만 ready다", async () => {
+    vi.stubGlobal("NativeModules", {
+      ...(NativeModules as Record<string, unknown>),
+      ContentFileModule: { download: vi.fn(), fileUrl: () => "" },
+    });
+    const { loadEpisodeContent } = await freshLoader();
+    store.set(CONTENT_MANIFEST_KEY, remoteManifestText);
+    store.set(contentEpisodeKey("u04-x"), episodeText);
+
+    expect(loadEpisodeContent().catalog[3]?.status).toBe("pending");
+    store.set(
+      "libitum.content.assets.u04-x",
+      JSON.stringify({ sha256: sha256Hex(utf8Bytes(episodeText)), missing: [] }),
+    );
+    expect(loadEpisodeContent().catalog[3]?.status).toBe("ready");
+  });
 });
