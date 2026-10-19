@@ -8,8 +8,9 @@
   align-items: center;
   padding-top: var(--libitum-spacing-24);
   padding-bottom: var(--libitum-spacing-24);
-  padding-left: var(--libitum-spacing-16);
-  padding-right: var(--libitum-spacing-16);
+  /* 좌우는 4 — 16이면 375pt 화면에서 키가 디자인 폭보다 줄어듭니다(시스템 자판처럼 가장자리 가까이). */
+  padding-left: var(--libitum-spacing-4);
+  padding-right: var(--libitum-spacing-4);
   border-top-left-radius: var(--libitum-radius-xl);
   border-top-right-radius: var(--libitum-radius-xl);
   background: var(--libitum-color-white);
@@ -17,7 +18,7 @@
 }
 
 /* 키 줄 묶음 — 인셋은 이 상자의 인라인 바깥 여백으로 면 여백에 더해집니다. 폭은 면 안쪽을 채우되
-   디자인 폭 366을 넘지 않습니다 — 그보다 좁은 화면(375pt · 360dp)에서는 키가 비율대로 줄어 좌우 여백을
+   디자인 폭 366을 넘지 않습니다 — 그보다 좁은 화면(360dp)에서는 키가 비율대로 줄어 좌우 여백을
    지킵니다(iPhone 13 mini 실기 확인 2026-10-19). */
 .messenger-keyboard-rows {
   width: 100%;
