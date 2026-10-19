@@ -734,15 +734,15 @@ describe("catalogActivityPositionOf", () => {
 
   test("LP-E1. 활동의 오프셋은 앞 활동들의 문항 수 합이고 전체는 계획 문항 수다", () => {
     expect(positions("u01-water", "S3")).toEqual([
-      { offset: 0, total: 6, last: false },
-      { offset: 3, total: 6, last: true },
+      { offset: 0, total: 6, last: false, activityCount: 2 },
+      { offset: 3, total: 6, last: true, activityCount: 2 },
     ]);
     expect(positions("u02-checkin", "S3")).toEqual([
-      { offset: 0, total: 10, last: false },
-      { offset: 2, total: 10, last: false },
-      { offset: 4, total: 10, last: false },
-      { offset: 6, total: 10, last: false },
-      { offset: 9, total: 10, last: true },
+      { offset: 0, total: 10, last: false, activityCount: 5 },
+      { offset: 2, total: 10, last: false, activityCount: 5 },
+      { offset: 4, total: 10, last: false, activityCount: 5 },
+      { offset: 6, total: 10, last: false, activityCount: 5 },
+      { offset: 9, total: 10, last: true, activityCount: 5 },
     ]);
   });
 
@@ -755,7 +755,9 @@ describe("catalogActivityPositionOf", () => {
       expect(found[0]?.offset).toBe(0);
       expect(found.length).toBe((runs.match(/[A-Z]/g) ?? []).length);
     }
-    expect(positions("u01-water", "S6")).toEqual([{ offset: 0, total: 12, last: true }]);
+    expect(positions("u01-water", "S6")).toEqual([
+      { offset: 0, total: 12, last: true, activityCount: 1 },
+    ]);
   });
 
   test("LP-E1. 마지막 활동의 오프셋 + 문항 수는 전체와 같다", () => {
@@ -1096,8 +1098,8 @@ describe("catalogLessonPlanOf — 채점 문항 수와 표시 문항 수", () =>
     expect(
       plan === null ? [] : [0, 1].map((index) => catalogActivityPositionOf(plan, index)),
     ).toEqual([
-      { offset: 0, total: 6, last: false },
-      { offset: 3, total: 6, last: true },
+      { offset: 0, total: 6, last: false, activityCount: 2 },
+      { offset: 3, total: 6, last: true, activityCount: 2 },
     ]);
   });
 

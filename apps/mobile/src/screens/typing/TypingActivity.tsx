@@ -124,6 +124,7 @@ export function TypingActivity({
               {question == null ? (
                 <LearningActivityComplete
                   questionCount={questions.length}
+                  lesson={lesson}
                   testId="typing-activity-complete"
                 />
               ) : (

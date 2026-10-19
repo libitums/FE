@@ -209,6 +209,23 @@ export function catalogUnitNodesOf(
   ];
 }
 
+/**
+ * 레슨 완료 카드의 `Lesson n` 칩 순번입니다 — 맵 노드(`catalogUnitNodesOf`)와 같은 1부터의 순번이고,
+ * 레슨 역할의 유닛만 갖습니다. 문화 단계(맵에서 `Culture`) · 최종 · 모르는 키 · 모르는 에피소드는
+ * `undefined`라 칩이 서지 않습니다 — 맵과 다른 이름을 지어내지 않습니다.
+ */
+export function catalogLessonOrdinalOf(
+  sections: readonly CatalogMapSection[],
+  episodeId: string,
+  unitKey: CatalogUnitKey,
+): number | undefined {
+  const section = sections.find((candidate) => candidate.episodeId === episodeId);
+  if (section === undefined || section.kind !== "catalog-ready") return undefined;
+  if (section.cultureKeys.includes(unitKey)) return undefined;
+  const index = section.lessonKeys.indexOf(unitKey);
+  return index < 0 ? undefined : index + 1;
+}
+
 /** 맵 노드와 시작 결선이 같이 쓰는 가드입니다. */
 export function canStartCatalogUnit(
   sections: readonly CatalogMapSection[],

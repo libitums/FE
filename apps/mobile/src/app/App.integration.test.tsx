@@ -1019,11 +1019,24 @@ test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 
   // 2026-09-27: 「학습 화면 안의 조작 단위가 하나」가 아니게 됐습니다 — 학습 껍데기가
   // 상단 바와 나가기를 함께 세웁니다. 유일성 대신 **무대에는 조작 단위가 없다**로
   // 좁힙니다: 완료 상태에서 카드 안에 할 일이 없고, 다음 걸음은 아래 버튼 하나입니다.
+  // 2026-10-19: 완료 카드의 숫자 타일(시안 A)은 낭독을 한 덩이로 묶는 요소이지 조작 단위가 아닙니다 —
+  // 탭 · 버튼 성질이 없습니다. 그래서 이 단언에서는 빼고, 남은 것이 0인지만 봅니다.
+  const readOnlyTiles = [
+    "learning-activity-complete-questions",
+    "learning-activity-complete-activities",
+  ];
   const stage = screen.getByTestId("learning-shell-stage");
+  const stageElements = [...stage.querySelectorAll('[accessibility-element="true"]')];
+  for (const tile of stageElements.filter((el) =>
+    readOnlyTiles.includes(el.getAttribute("data-testid") ?? ""),
+  )) {
+    expect(tile).not.toHaveAttribute("accessibility-traits");
+    expect(tile).not.toHaveAttribute("bindtap");
+  }
   expect(
-    [...stage.querySelectorAll('[accessibility-element="true"]')].map((el) =>
-      el.getAttribute("data-testid"),
-    ),
+    stageElements
+      .map((el) => el.getAttribute("data-testid"))
+      .filter((id) => !readOnlyTiles.includes(id ?? "")),
   ).toEqual([]);
 
   const actionLabel =

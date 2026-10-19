@@ -225,6 +225,7 @@ export function ListeningActivity({
           {question === null ? (
             <LearningActivityComplete
               questionCount={questions.length}
+              lesson={lesson}
               testId="listening-screen-complete"
             />
           ) : null}

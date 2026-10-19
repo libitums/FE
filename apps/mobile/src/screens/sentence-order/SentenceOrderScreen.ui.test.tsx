@@ -313,7 +313,8 @@ test("[SO14] 문항을 다 마치면 완료 문구와 결과 보기가 서고, �
     "All questions done",
   );
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute("data-progress", "100");
-  expect(screen.getByTestId("learning-activity-complete")).toHaveTextContent(
+  expect(screen.getByTestId("learning-activity-complete-questions")).toHaveAttribute(
+    "accessibility-label",
     "2 of 2 questions completed",
   );
   expect(screen.queryByTestId("learning-shell-instruction")).not.toBeInTheDocument();

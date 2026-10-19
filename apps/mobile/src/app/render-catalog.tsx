@@ -23,6 +23,7 @@ import { SyllableBuildActivity } from "../screens/syllable-build/SyllableBuildAc
 import { TypingActivity } from "../screens/typing/TypingActivity";
 import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
+import { catalogLessonOrdinalOf } from "../screens/journey-map/catalog-map";
 import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
 import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
@@ -197,7 +198,14 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           `Catalog lesson has no activity: ${screen.episodeId}/${screen.unitKey}/${screen.activityIndex}`,
         );
       }
-      return renderActivity(activity, lesson, screen, wiring, plan.counterpartName);
+      // 완료 카드의 `Lesson n` 칩은 맵 노드와 같은 순번입니다 — 계획은 구획을 모르므로 여기서 붙입니다.
+      const ordinal = catalogLessonOrdinalOf(
+        wiring.catalogSections,
+        screen.episodeId,
+        screen.unitKey,
+      );
+      const placed = ordinal === undefined ? lesson : { ...lesson, ordinal };
+      return renderActivity(activity, placed, screen, wiring, plan.counterpartName);
     }
     case "catalog-final": {
       const { episodeId } = screen;

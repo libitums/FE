@@ -180,7 +180,8 @@ export function catalogLessonPlanOf(
 
 /**
  * 그 활동이 레슨 안의 어디인가입니다 — 오프셋은 앞 활동들의 문항 수 합, 전체는 표시 문항 수, 마지막
- * 활동만 `last`입니다. 없는 순번이면 `null`입니다.
+ * 활동만 `last`, 활동 수는 계획의 활동 수(완료 카드의 활동 타일)입니다. 레슨 순번은 구획이 알아서
+ * 여기서 채우지 않습니다(`render-catalog`). 없는 순번이면 `null`입니다.
  */
 export function catalogActivityPositionOf(
   plan: CatalogLessonPlan,
@@ -194,6 +195,7 @@ export function catalogActivityPositionOf(
     offset,
     total: plan.shownItemCount,
     last: activityIndex === plan.activities.length - 1,
+    activityCount: plan.activities.length,
   };
 }
 

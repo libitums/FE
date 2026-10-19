@@ -228,6 +228,7 @@ export function SpeakWordActivity({
           {question == null ? (
             <LearningActivityComplete
               questionCount={questions.length}
+              lesson={lesson}
               testId="speak-word-complete"
             />
           ) : (
