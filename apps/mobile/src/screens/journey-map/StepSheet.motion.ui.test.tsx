@@ -106,6 +106,8 @@ describe("StepSheet 최종값과 타이머 없음", () => {
     expect(classOf("step-sheet-progress-fill")).toBe("step-sheet-progress-fill");
     expect(vi.getTimerCount()).toBe(0);
     cleanup();
+    // 언마운트는 렌더러가 스냅샷 정리용 10초 타이머를 하나 남깁니다(`@lynx-js/react` commit) — 이 컴포넌트 몫이 아니라 비웁니다.
+    vi.clearAllTimers();
 
     render(sheet("fade", 1));
     expect(percent()).toBe("25%");
