@@ -286,7 +286,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 | 컷 | `audio_url` ⟨2026-10-14 — 새 선택 키⟩ | 10/25 채움(내장본) |
 | 대화 | `audio_url` | 0/34 채움 ⟨2026-10-14⟩ 7/34(내장본) |
 | 문항 `stimulus` | `audio_url` · `image_url` | 0/121 채움. IMG_MATCH조차 `image_url: ""` ⟨2026-10-16 — 새 형식⟩ `audio_url`은 여전히 전부 빈 값, `image_url`은 26문항에 채움(`IMG_MATCH` 7 · `SPEAK_WORD` 6 · `ROLEPLAY_TURN` 13 — §7.2 끝) |
-| 음성 정보 파일 ⟨2026-10-19⟩ | `audio/manifest.json`의 `audio.<음성 id>` | 에피소드 JSON 밖의 별도 파일 — 컷 `audio_url`의 id → 길이(`duration_ms` · 선택 `speech_end_ms`). 카탈로그 컷 타자기가 이 길이에 맞춰 쓴다. 아직 버킷에 없음(HTTP 400). 형식 · 규칙은 부록 E, 결정은 [ADR-0074](../adr/0074-voice-synced-typing.md) |
+| 음성 정보 파일 ⟨2026-10-19⟩ | `audio/manifest.json`의 `audio.<음성 id>` | 에피소드 JSON 밖의 별도 파일 — 컷 `audio_url`의 id → 길이(`duration_ms` · 선택 `speech_end_ms`). 카탈로그 컷 타자기가 이 길이에 맞춰 쓴다. 2026-10-19 버킷에 올라감. 형식 · 규칙은 부록 E, 결정은 [ADR-0074](../adr/0074-voice-synced-typing.md) |
 
 앱의 현재 자산 경로(참고): 이미지는 번들 import → `/static/…`(Android는 호스트가 재작성, ADR-0051). 오디오는 확장자 없는 **불투명 id**를 호스트 `AudioPlaybackModule`이 번들에서 찾는다(ADR-0017 D3). 원격 fallback은 아직 없다(ADR README 보류 표 「오디오 자산의 출처·형식」). → 합의 Q6 · Q21.
 ⟨2026-10-14 — 위 문장의 오디오 부분은 그때의 상태다⟩ **에피소드 음성은 버킷에서 재생한다.** 앱(JS 한 자리 `lib/content-audio.ts`)이 id를 규약으로 검사해 `audio/<id>.m4a` → 버킷 절대 URL로 바꾸고, 재생 모듈은 `https` 절대 URL을 받아 스트리밍한다. 튜토리얼의 번들 id는 지금처럼 번들에서 난다. 지금 재생하는 자리는 카탈로그 컷 · 최종 테스트뿐이고 **학습 문항의 `stimulus.audio_url`은 읽지 않는다**(ADR README 보류 표 「학습 문항 오디오의 연결」). 결정은 [ADR-0060](../adr/0060-episode-voice-remote-audio.md).
@@ -690,7 +690,7 @@ id 규약(Q6 제안): `<episode_id>/<kind>-<n>` — 확장자 없는 불투명 i
 
 ### 지금의 판 ⟨2026-10-19⟩
 
-- 앱 쪽이 지금 음성 **16개**(u01 6 · u02 4 · u03 6)를 위 방법으로 재 만들어 두었다(`generated_at` 2026-10-19T08:41:18Z). **아직 버킷에 올리지 않았다**(사용자 확인 뒤 — 외부 반영). 공개 주소는 지금 400이다.
+- 앱 쪽이 지금 음성 **16개**(u01 6 · u02 4 · u03 6)를 위 방법으로 재 만들어 두었다(`generated_at` 2026-10-19T08:41:18Z). 2026-10-19 사용자가 이 판을 버킷에 올렸다(공개 주소 200).
 - 앞 무음은 모두 0, 끝 무음은 u01 · u02 0.16 ~ 0.54초(u01 `pre-3`이 가장 긴 0.54초), u02 `pre-1`과 u03 6개는 0이다.
   컷 대사 글자당 간격은 `speech_end_ms` 기준 110 ~ 274 ms, `duration_ms` 기준 136 ~ 328 ms다(파일 길이만 쓰면 u01 `pre-3` 하나가 상한 300에 걸린다).
 - **부록 C 업로드 현황과 다른 점**: 내장 본문이 참조하는 음성 id 13개 가운데 **`u03-mina/d-01`(대화 seq 1 · 표지 컷 pre-4가 다시 씀)은 버킷이 400**이다 — 부록 C의 ⟨2026-10-14⟩ 표는 이 파일을 「올라감」으로 적었지만 지금은 없다(녹음 없음 — [ADR-0071](../adr/0071-episode-background-download.md) D3의 「400」 관찰 · [백그라운드 받기 e2e](../e2e/episode-background-download.md) 실행 기록과 같다).
