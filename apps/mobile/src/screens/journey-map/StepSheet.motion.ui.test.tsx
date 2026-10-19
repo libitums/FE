@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { cleanup, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { StepSheet } from "./StepSheet";
 import { sheetEntranceClasses, type SheetEntranceMotion } from "./journey-map-sheet-motion";
@@ -17,7 +17,12 @@ afterEach(() => {
 
 const entrances: readonly SheetEntranceMotion[] = ["none", "awaiting", "expressive", "fade"];
 
-function sheet(entrance: SheetEntranceMotion, completed = 4, caretOffset = 0) {
+function sheet(
+  entrance: SheetEntranceMotion,
+  completed = 4,
+  caretOffset = 0,
+  handlers: { onStart?: () => void; onClose?: () => void } = {},
+) {
   return (
     <StepSheet
       title="Ordering"
@@ -26,8 +31,8 @@ function sheet(entrance: SheetEntranceMotion, completed = 4, caretOffset = 0) {
       lessonOrdinal={3}
       completedActivityCount={completed}
       totalActivityCount={4}
-      onStart={() => {}}
-      onClose={() => {}}
+      onStart={handlers.onStart ?? (() => {})}
+      onClose={handlers.onClose ?? (() => {})}
       entrance={entrance}
     />
   );
@@ -48,9 +53,7 @@ describe("StepSheet 등장 종류", () => {
       expect(classOf("step-sheet-progress-fill")).toBe(classes.fill);
       expect(screen.queryByTestId("step-sheet-start-glow") !== null).toBe(classes.startGlow);
       expect(pop.getAttribute("data-motion")).toBe(classes.motionReduced ? "reduced" : null);
-      expect(pop.getAttribute("user-interaction-enabled")).toBe(
-        classes.bubbleInteractive ? null : "false",
-      );
+      expect(pop).not.toHaveAttribute("user-interaction-enabled");
     },
   );
 
@@ -130,4 +133,47 @@ describe("StepSheet 최종값과 타이머 없음", () => {
     expect(screen.queryByTestId("step-sheet-progress-fill")).not.toBeInTheDocument();
     expect(vi.getTimerCount()).toBe(0);
   });
+});
+
+// 기기 e2e SM6(Android, 2026-10-19)에서 찾은 결함의 회귀입니다 — 대기 중 말풍선 자리를 누르면 닫혀야 하는데, 탭을 끈
+// 말풍선이 탭을 삼켜 가림막에 닿지 않았습니다. Lynx는 탭을 조상으로만 올리므로(ADR-0055 D6) 말풍선 래퍼가 잡아 닫습니다.
+// 테스트 DOM은 자손 → 래퍼 올림을 흉내 내지 않습니다 — 래퍼의 잡기와 시작의 꺼짐을 따로 보고, 올림은 e2e SM6이 집니다.
+const tapPopCatch = (): void => {
+  act(() => {
+    fireEvent.tap(screen.getByTestId("step-sheet-pop"), { eventType: "catchEvent" });
+  });
+};
+const tapStart = (): void => {
+  act(() => {
+    fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  });
+};
+
+describe("StepSheet 대기 중 탭", () => {
+  test("SS7. awaiting: 말풍선 래퍼가 탭을 잡아 닫고, 시작은 불리지 않는다", () => {
+    const onStart = vi.fn<() => void>();
+    const onClose = vi.fn<() => void>();
+    render(sheet("awaiting", 4, 0, { onStart, onClose }));
+
+    tapPopCatch();
+    tapStart();
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onStart).not.toHaveBeenCalled();
+  });
+
+  test.each(["expressive", "fade", "none"] as const)(
+    "SS7. %s: 래퍼는 탭을 잡지 않고, 시작은 한 번 불린다",
+    (entrance) => {
+      const onStart = vi.fn<() => void>();
+      const onClose = vi.fn<() => void>();
+      render(sheet(entrance, 4, 0, { onStart, onClose }));
+
+      tapPopCatch();
+      tapStart();
+
+      expect(onClose).not.toHaveBeenCalled();
+      expect(onStart).toHaveBeenCalledTimes(1);
+    },
+  );
 });

@@ -43,11 +43,8 @@ export function expectEntrance(entrance: "awaiting" | "expressive"): void {
   expect(nodePop()?.getAttribute("class")).toBe(
     "journey-step-node-pop journey-step-node-pop-enter",
   );
-  if (classes.bubbleInteractive) {
-    expect(sheetPop()).not.toHaveAttribute("user-interaction-enabled");
-  } else {
-    expect(sheetPop()).toHaveAttribute("user-interaction-enabled", "false");
-  }
+  // 대기 중에도 말풍선은 탭을 받습니다 — Lynx는 끈 요소의 탭을 형제(가림막)로 넘기지 않아(ADR-0055 D6) 말풍선이 직접 닫습니다.
+  expect(sheetPop()).not.toHaveAttribute("user-interaction-enabled");
   expect(burstCount()).toBe(entrance === "expressive" ? 1 : 0);
 }
 
