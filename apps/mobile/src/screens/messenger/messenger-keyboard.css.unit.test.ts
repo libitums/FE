@@ -48,6 +48,16 @@ describe("messenger-keyboard.css 키 폭", () => {
     expect(percentValue(widthOf(selector))).toBeCloseTo(percentOf(designPx, basePx), 3);
   });
 
+  // 좌우 여백 16은 375pt 화면에서 키를 디자인 폭(30)보다 줄였습니다 — 4로 두면 키 줄이 366을 다 써서
+  // 작은 기기에서도 디자인 크기를 지킵니다(사용자 결정 2026-10-19). 위 · 아래 여백은 그대로입니다.
+  test("KW5. 자판 면의 좌우 여백은 spacing-4이고 위 · 아래는 spacing-24다", () => {
+    const body = bodyOf(".messenger-keyboard");
+    expect(body).toContain("padding-left: var(--libitum-spacing-4)");
+    expect(body).toContain("padding-right: var(--libitum-spacing-4)");
+    expect(body).toContain("padding-top: var(--libitum-spacing-24)");
+    expect(body).toContain("padding-bottom: var(--libitum-spacing-24)");
+  });
+
   test("KW4. 키 높이 · 간격은 그대로다", () => {
     expect(bodyOf(".messenger-keyboard-key")).toContain("height: var(--libitum-spacing-40)");
     expect(bodyOf(".messenger-keyboard-row")).toContain("gap: var(--libitum-spacing-4)");
