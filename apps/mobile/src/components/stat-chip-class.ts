@@ -14,6 +14,9 @@ export type StatChipHeight = "hug" | "touch-target";
  * 순서는 `stat-chip` → 면(`stat-chip-surface-white`) → 높이(`stat-chip-height-touch-target`)이고
  * 공백 하나로 잇습니다. 던지지 않습니다.
  */
-export function statChipClassName(_surface: StatChipSurface, _height: StatChipHeight): string {
-  return "stat-chip";
+export function statChipClassName(surface: StatChipSurface, height: StatChipHeight): string {
+  const parts = ["stat-chip"];
+  if (surface === "white") parts.push("stat-chip-surface-white");
+  if (height === "touch-target") parts.push("stat-chip-height-touch-target");
+  return parts.join(" ");
 }
