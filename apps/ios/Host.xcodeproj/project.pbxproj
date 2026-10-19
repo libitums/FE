@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D0A5C0F1000000000000000B /* ContentSyncSignalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F1000000000000000A /* ContentSyncSignalTests.swift */; };
+		D0A5C0F10000000000000009 /* ContentFileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F10000000000000008 /* ContentFileStoreTests.swift */; };
+		D0A5C0F10000000000000007 /* ContentSyncSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F10000000000000006 /* ContentSyncSignal.swift */; };
+		D0A5C0F10000000000000005 /* ContentFileModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F10000000000000004 /* ContentFileModule.swift */; };
+		D0A5C0F10000000000000003 /* ContentFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F10000000000000002 /* ContentFileStore.swift */; };
 		2B94A3C92D6613730060892C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3C82D6613730060892C /* AppDelegate.swift */; };
 		2B94A3CB2D6613730060892C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3CA2D6613730060892C /* SceneDelegate.swift */; };
 		2B94A3CD2D6613730060892C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B94A3CC2D6613730060892C /* ViewController.swift */; };
@@ -68,6 +73,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D0A5C0F1000000000000000A /* ContentSyncSignalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSyncSignalTests.swift; sourceTree = "<group>"; };
+		D0A5C0F10000000000000008 /* ContentFileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFileStoreTests.swift; sourceTree = "<group>"; };
+		D0A5C0F10000000000000006 /* ContentSyncSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSyncSignal.swift; sourceTree = "<group>"; };
+		D0A5C0F10000000000000004 /* ContentFileModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFileModule.swift; sourceTree = "<group>"; };
+		D0A5C0F10000000000000002 /* ContentFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFileStore.swift; sourceTree = "<group>"; };
 		0870E09825A129BCC80CB945 /* ImageServiceTests.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = ImageServiceTests.m; sourceTree = "<group>"; };
 		24810C50F1EA3A9B2DF4E543 /* libPods-HostTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HostTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B94A3C52D6613730060892C /* Host.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Host.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -198,6 +208,9 @@
 				2B94A3DC2D6614980060892C /* TemplateProvider.swift */,
 				2B94A3DC2D6614980060892D /* StorageModule.swift */,
 				2B94A3DC2D6614980060892E /* AudioPlaybackModule.swift */,
+				D0A5C0F10000000000000006 /* ContentSyncSignal.swift */,
+				D0A5C0F10000000000000004 /* ContentFileModule.swift */,
+				D0A5C0F10000000000000002 /* ContentFileStore.swift */,
 				D0A500000000000000000004 /* SoundEffectsModule.swift */,
 				2B94A3DC2D66149800608930 /* CompletionAnnouncementModule.swift */,
 				2B94A3DC2D66149800608940 /* HandwritingRecognitionModule.swift */,
@@ -226,6 +239,8 @@
 				2B94A3DC2D66149800608931 /* CompletionAnnouncementModuleTests.swift */,
 				D0A500000000000000000006 /* SoundEffectsModuleTests.swift */,
 				D0A5000000000000000000A2 /* AudioPlaybackModuleTests.swift */,
+				D0A5C0F1000000000000000A /* ContentSyncSignalTests.swift */,
+				D0A5C0F10000000000000008 /* ContentFileStoreTests.swift */,
 				4C1D0C5E0A1F2B3C4D7E0000 /* LegalDocumentModuleTests.swift */,
 				2B94A3E42D6614980060892E /* ReducedMotionTests.swift */,
 				7C1D0A012E1000010060AA03 /* ViewportMetricsTests.swift */,
@@ -461,6 +476,9 @@
 				2B94A3DD2D6614980060892C /* TemplateProvider.swift in Sources */,
 				2B94A3DD2D6614980060892D /* StorageModule.swift in Sources */,
 				2B94A3DD2D6614980060892E /* AudioPlaybackModule.swift in Sources */,
+				D0A5C0F10000000000000007 /* ContentSyncSignal.swift in Sources */,
+				D0A5C0F10000000000000005 /* ContentFileModule.swift in Sources */,
+				D0A5C0F10000000000000003 /* ContentFileStore.swift in Sources */,
 				D0A500000000000000000001 /* SoundEffectsModule.swift in Sources */,
 				2B94A3DD2D66149800608930 /* CompletionAnnouncementModule.swift in Sources */,
 				2B94A3DD2D66149800608941 /* HandwritingRecognitionModule.swift in Sources */,
@@ -496,6 +514,8 @@
 				2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */,
 				D0A500000000000000000003 /* SoundEffectsModuleTests.swift in Sources */,
 				D0A5000000000000000000A1 /* AudioPlaybackModuleTests.swift in Sources */,
+				D0A5C0F1000000000000000B /* ContentSyncSignalTests.swift in Sources */,
+				D0A5C0F10000000000000009 /* ContentFileStoreTests.swift in Sources */,
 				2B94A3DD2D66149800608945 /* SpeechRecognitionModuleTests.swift in Sources */,
 				A030C0DE0000000000000004 /* RecordingAudioSessionTests.swift in Sources */,
 				2B94A3DD2D66149800608951 /* BundledMediaResourceFetcherTests.swift in Sources */,
