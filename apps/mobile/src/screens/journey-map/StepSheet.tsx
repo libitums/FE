@@ -68,8 +68,9 @@ export function StepSheet({
 
   const motion = sheetEntranceClasses(entrance);
 
-  // 대기 중 말풍선 자리 탭은 닫기입니다. 래퍼의 탭 잡기는 단계와 무관하게 늘 걸어 두고 지금 단계를 ref로 읽습니다 —
-  // 대기 → 등장 전환 프레임에 잡기를 떼고 붙이면 그 프레임의 시작 탭이 아무 데도 닿지 않았습니다(Android e2e SM6 재실행).
+  // 대기 중 말풍선 자리 탭은 닫기입니다. 래퍼의 탭 잡기는 단계와 무관하게 늘 걸어 두고, 손을 뗀 순간의 단계를 ref로
+  // 읽습니다. ⚠ 대기 → 등장 전환 직후 약 0.07초(말풍선이 작게 시작하는 첫 프레임들)에 닿은 시작 탭은 이렇게 해도
+  // 반응이 없습니다 — 말풍선은 남아 다시 누르면 됩니다(Android e2e SM6 r2 · r3, 남은 위험).
   const awaiting = useRef(false);
   awaiting.current = !motion.bubbleInteractive;
   const handleBubbleTap = (): void => {
