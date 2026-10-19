@@ -11,6 +11,7 @@ import {
   judgeTyping,
   typedTextOf,
   typingCompletionAnnouncement,
+  typingKeyboardDock,
   typingResultAt,
   typingSessionReducer,
   typingSessionResults,
@@ -176,5 +177,22 @@ describe("완료 낭독", () => {
     expect(announcement).not.toBe("");
     expect(announcement).toContain("See results");
     expect(announcement).toBe(wordChoiceCompletionAnnouncement("See results", uiCopyEn));
+  });
+});
+
+describe("자판 도킹", () => {
+  test("TK1. 치는 중이고 문항이 남았으면 keyboard, 채점 뒤 · 완료 · 문항 없음이면 body다", () => {
+    expect(typingKeyboardDock(initialTypingSessionState, 3)).toBe("keyboard");
+    expect(typingKeyboardDock(run(typing("여권")), 3)).toBe("keyboard");
+    expect(typingKeyboardDock({ ...initialTypingSessionState, phase: "checked" }, 3)).toBe("body");
+    expect(typingKeyboardDock({ ...initialTypingSessionState, questionIndex: 3 }, 3)).toBe("body");
+    expect(typingKeyboardDock(initialTypingSessionState, 0)).toBe("body");
+  });
+
+  test("TK1. 완료 판정은 isTypingSessionComplete와 같다", () => {
+    for (const questionIndex of [0, 1, 2, 3, 4]) {
+      const state = { ...initialTypingSessionState, questionIndex };
+      expect(typingKeyboardDock(state, 3) === "body").toBe(isTypingSessionComplete(state, 3));
+    }
   });
 });
