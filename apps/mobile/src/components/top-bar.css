@@ -19,24 +19,56 @@
 
 /* 지표 칩 하나하나의 모양은 `components/stat-chip.css`가 집니다. */
 
-/* 알림 버튼 — 원형입니다. 아이콘 32 + 패딩 2 × 2 = 36pt라 WCAG 2.5.8(24 × 24)은
-   넘지만 Apple HIG의 44pt에는 못 미칩니다. 디자인 실측값을 그대로 따른 결과입니다
-   (2026-09-26). */
+/* 알림 버튼 — 44pt 원형입니다(Apple HIG 터치 영역). 폭 · 높이를 적지 않고 내용으로 섭니다:
+   아이콘 24 + 안쪽 여백 8 × 2 + 테두리 2 × 2 = 44. 지표 칩도 같은 높이로 서서 줄이 한 높이입니다. */
 .top-bar-notifications {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--libitum-spacing-2);
+  padding: var(--libitum-spacing-8);
   border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-50);
   border-radius: var(--libitum-radius-full);
   /* 칩과 같은 흰 면입니다 — 스크롤되는 내용 위에 떠 있어 면이 없으면 뒤와 섞입니다
      (2026-09-28, `stat-chip.css`의 `-surface-white`와 같은 이유). */
   background-color: var(--libitum-color-white);
   flex-shrink: 0;
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+/* 눌림 — 95 %로 줄었다 돌아옵니다(ADR-0053). */
+.top-bar-notifications:active {
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+/* 움직임 줄이기 — 줄이지 않고 전환도 걸지 않습니다. 대신 아래 막으로 눌림을 알립니다. */
+.top-bar-notifications-motion-reduced {
+  position: relative;
+  transition: none;
+}
+
+.top-bar-notifications-motion-reduced:active {
+  transform: none;
+}
+
+/* 눌림 막 — 검정 8 %를 깔았다가 걷습니다. 버튼의 첫 자식이라 아이콘이 막 위에 그려집니다. */
+.top-bar-notifications-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-black);
+  opacity: 0;
+  transition: opacity var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+.top-bar-notifications-motion-reduced:active .top-bar-notifications-shade {
+  opacity: var(--libitum-opacity-pressed-shade, 0.08);
 }
 
 .top-bar-notifications-icon {
-  width: var(--libitum-icon-size-lg);
-  height: var(--libitum-icon-size-lg);
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
   flex-shrink: 0;
 }

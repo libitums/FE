@@ -55,6 +55,7 @@
 - **`transform`의 scale도 토큰이다**(4단계). `scale(0.95)` · `scale(0.96)` · `scale(0.8)` 다섯 자리(`round-button.css` · `learning-unit.css` `:active`, `dialog.css` enter from · exit to,
   `lesson-complete-screen.css` reward from)를 `scale(var(--libitum-motion-scale-pressed | enter | reward))`로 바꿨다 — D6. *(2026-10-11 주: 눌림 확장이 `button.css` · `card.css` ·
   `option-selector.css` · `sentence-order-chip.css` · `roleplay-card.css`의 `:active`에 같은 꼴 다섯 자리를 더해 **열 자리**다 — 정정 기록 1. 규칙 · allowlist는 그대로다.)*
+  *(2026-10-19 주: `top-bar.css` 알림 버튼이 더해져 **열하나** — D3 적용 기록 ⟨2026-10-19⟩.)*
   **항등값 `scale(1)`은 리터럴로 둔다**(「원상태」이지 토큰의 세 경우가
   아니다). **거울 반전 `scaleX(-1)`도 리터럴이다**(`card.css` RTL 화살표 — 토큰이 없는 방향 반전이지 크기가 아니다). 규칙의 항등 예외는 「숫자 인자의 절댓값이 전부 1」이다.
 - **`.ts` · `.tsx`의 inline style도 같은 정책이다**(4단계). 객체 리터럴의 `transition*` · `animation*` 속성(camelCase · kebab 둘 다)의 **문자열 리터럴 값**과 JSX `style="…"` 문자열에
@@ -109,6 +110,14 @@
   그래서 정본 매핑의 「회전은 즉시」를 따른다 — reduced에서는 고리 대신 `time` 아이콘을 멈춘 채 그리고 루트에 `data-motion="reduced"`를 단다. `Try again`을 누른 뒤의 로딩도 같은 줄이라 멈춘다.
   회전 길이 · 가속은 토큰(`--libitum-motion-duration-spinner` · `--libitum-motion-easing-linear`), 줄의 등장은 불투명도만(standard `d4` · `enter`, reduced `d2` · `linear`)이다.
   고리 규칙은 Button 안 스피너와 같은 모양을 앱 CSS에 한 벌 더 둔 것이다(Button의 선택자가 `.ui-lynx-button-loading`에 묶여 있다). 기기에서 reduced 정지 표시는 보지 않았다.
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **상단 줄의 알림 버튼이 눌림 축소의 여섯째 자리가 됐다**(`apps/mobile/src/components/top-bar.css` — 여정 맵 · 롤플레이 · 설정 탭과
+  학습 화면이 함께 쓰는 `TopBar`). 정정 기록 1의 「LearningUnit 꼴」 그대로다 — 버튼 루트 base 규칙에 `transition: transform duration.pressed easing.easing`, `:active`에
+  `scale(var(--libitum-motion-scale-pressed))`. D1의 scale `var()` 자리는 **열 → 열하나**다. reduced 표지는 루트(`top-bar-notifications-motion-reduced` + `data-motion="reduced"`, standard에는
+  속성 없음)이고 `transform: none` · `transition: none`(전환이 transform뿐이다). 버튼은 흰 면이고 `:active` 색 변화가 없어 **black 막**이다(「밝은 면 black」 — DS-Q11의 읽기 그대로) —
+  `top-bar-notifications-shade`, 버튼 첫 자식, `opacity.pressed-shade`(0.08), reduced일 때만 DOM에 선다. 막의 유무를 조건 자식 한 칸이 아니라 **버튼 트리 두 갈래**로 나눴다 — jsdom 테스트 렌더러가 조건 칸을
+  이름 없는 `<wrapper>`로 감싸 TB4의 「첫 자식」 단언(`firstElementChild`)이 깨지기 때문이다(기기 트리 사정이 아니다 — 같은 꼴의 `RoleplayCard` 조건 첫 자식 막은 iOS에서 동작한다). 같은 줄의 연속 학습 · 트로피 칩은 **넣지 않았다** — 학습 화면에서는 버튼이 아니고(`onTap` 없음), 여정 맵에서 버튼인 칩까지 줄일지는
+  범위 밖이라 같은 줄에서 반응이 갈린다(「미확인 · 후속」 11). `lint:motion` allowlist 변경 0. 검증은 unit(`top-bar.css.unit.test.ts` · `top-bar-press.unit.test.ts`) · ui(`TopBar.ui.test.tsx`) ·
+  integration(`App.motion.integration.test.tsx` NBI2), 기기는 [알림 버튼 e2e](../e2e/notification-button.md) — 2026-10-19 회차 1에서 **눌림 · 동작 줄이기는 보지 않았다**.
 
 ### D4. 보상 모션은 한 화면에서 한 번이고 순수 파생이며 퇴장이 없다 — 재화 자리는 없다
 
@@ -303,6 +312,8 @@ e2e의 판정 조건은 플랫폼으로 가른다 — 즉시성(정착 전 나�
 9. **Storybook 브라우저에서 reduced 스토리가 실제로 막 · 즉시 반영을 그리는지** — 테스트는 id · 정규화 · 엔트리 텍스트까지(카탈로그 README 「한계」와 같다).
 10. **눌림 확장(정정 기록 1)의 Android 회차** — M5-A1 ~ M5-A6은 절차만 있고 실행하지 않았다. iOS에서도 reduced 열린 롤플레이 카드의 흰 막 · reduced bank 칩 · reduced 로딩 스피너(M5-I6)는
     미측정이다(계정 진행도 · playground에 `MotionProvider` 없음). 결과 칸은 `motion-tokens.md` 「눌림 확장 회차」.
+11. **상단 줄 칩의 눌림(D3 적용 기록 ⟨2026-10-19⟩)** — 알림 버튼만 줄어들고, 여정 맵에서 지표 모달을 여는 연속 학습 · 트로피 칩은 반응이 없다(정정 기록 1이 고친 「같은 화면에서 반응이 갈림」과
+    같은 모양). 칩은 학습 화면에서는 버튼이 아니라 `onTap` 유무로 갈라야 한다. 알림 버튼의 기기 눌림 · reduced 막도 아직 보지 않았다([알림 버튼 e2e](../e2e/notification-button.md) NBE3 · NBE4).
 
 ## 재검토 조건
 

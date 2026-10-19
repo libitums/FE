@@ -9,6 +9,9 @@ import { motionDurationMs, useMotion } from "@libitums/ui-lynx/motion";
 
 import { statBumpStart } from "../lib/stat-bump";
 
+import { statChipClassName } from "./stat-chip-class";
+import type { StatChipHeight, StatChipSurface } from "./stat-chip-class";
+
 import "./stat-chip.css";
 import "./stat-chip-motion.css";
 
@@ -23,13 +26,9 @@ import "./stat-chip-motion.css";
 // 줄이기에서는 숫자만 페이드로 바뀝니다. 오르기 전 값(`bumpFrom`)은 칩이 기억하지 않고 받습니다
 // (`lib/stat-bump.ts`). 재생 전에는 그 값을 보이고, 이름(`accessibilityLabel`)은 처음부터 새 값입니다.
 
-export type StatChipTone = "streak" | "trophy" | "diamond";
+export type { StatChipHeight, StatChipSurface } from "./stat-chip-class";
 
-/**
- * 칩의 면입니다. `none`은 바탕이 그대로 비치고(학습 완료 머리), `white`는 흰 면을 칠합니다
- * (상단 바 — 스크롤되는 내용 위에 떠 있어 면이 없으면 칩이 내용과 섞입니다).
- */
-export type StatChipSurface = "none" | "white";
+export type StatChipTone = "streak" | "trophy" | "diamond";
 
 // 다이아 색은 디자인 값(#00C3FF, Figma 65-466)이고 맞는 색 토큰이 패키지에 없어 적어 둡니다.
 export const statChipDiamondColor = "#00C3FF";
@@ -58,6 +57,8 @@ export type StatChipProps = {
   readonly onTap?: () => void;
   /** 기본값은 `none`입니다. */
   readonly surface?: StatChipSurface;
+  /** 기본값은 `hug`입니다. 상단 줄만 `touch-target`을 씁니다. */
+  readonly height?: StatChipHeight;
   /** 오르기 전 값입니다. 지금 값보다 작으면 그 값에서 지금 값으로 한 번 굴립니다. */
   readonly bumpFrom?: number | null;
   /** 참인 동안 재생을 미룹니다 — 모달이 덮고 있으면 보이지 않는 재생이 됩니다. */
@@ -75,6 +76,7 @@ export function StatChip({
   testId,
   onTap,
   surface = "none",
+  height = "hug",
   bumpFrom = null,
   bumpHeld = false,
   bumpDelayMs = 0,
@@ -116,9 +118,7 @@ export function StatChip({
 
   return (
     <view
-      className={["stat-chip", surface === "white" ? "stat-chip-surface-white" : undefined]
-        .filter(Boolean)
-        .join(" ")}
+      className={statChipClassName(surface, height)}
       data-testid={testId}
       accessibility-element={true}
       accessibility-label={accessibilityLabel}

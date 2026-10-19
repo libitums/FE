@@ -167,6 +167,8 @@ ADR-0011의 보류 표를 닫는다. 잠정 조치가 아니라 결정이다.
 
 > ⟨2026-09-29 적용 기록⟩ 두 패키지를 **0.3.0**으로 올렸다. 0.3.0의 Accent family(Jost)를 앱이 제공하는 방법은 [ADR-0030](0030-app-fonts-jost.md)이다. 버전 고정 방식(정확한 버전, 캐럿 없음)은 그대로다.
 
+> ⟨2026-10-19 적용 기록⟩ 두 패키지를 **0.5.0**으로 올렸다. 그 앞의 **0.4.0**(2026-10-09, #228 — motion 확장 토큰과 `opacity.pressed-shade`, [ADR-0053](0053-motion-policy.md))은 여기 기록이 빠져 있었다. 0.5.0은 알림 아이콘 둘(선형 `notification-03` · 채움 `notification-02`)을 더하고 토큰 값은 바꾸지 않았다 — 앱은 상단 줄 알림 버튼에 `notification-03`(padding 변형, D6)을 쓴다. 정확 버전 · lockstep 그대로다 — 네 `package.json`(`apps/mobile` · `packages/ui-lynx` 두 줄씩, `apps/storybook-lynx`는 아이콘 · `apps/landing`은 토큰 한 줄씩)을 함께 올렸고, landing은 아이콘을 쓰지 않지만 저장소에 토큰 버전이 둘 서지 않게 같이 올렸다. 버전 올림은 기능과 다른 커밋이고 그것만으로 번들 변화는 0 bytes였다.
+
 
 design-system의 release policy가 확정됐다. **두 패키지는 하나의 버전을 공유하고 항상 함께
 release한다.** 1.0.0 이전에는 **breaking 변경도 minor를 올린다.** caret은 `0.y.z`에서

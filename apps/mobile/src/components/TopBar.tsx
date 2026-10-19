@@ -1,13 +1,15 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import notification from "@libitums/icons/lynx/notification";
+import notification03 from "@libitums/icons/lynx/notification-03";
 import { color } from "@libitums/design-tokens";
+import { useMotion } from "@libitums/ui-lynx/motion";
 
 import { noStatBumps } from "../lib/stat-bump";
 import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import { useUiCopy } from "../lib/ui-copy";
 
 import { StatChip } from "./StatChip";
+import { hasTopBarNotificationsShade, topBarNotificationsClassName } from "./top-bar-press";
 
 import "./top-bar.css";
 
@@ -43,6 +45,9 @@ export function TopBar({
   onBumped,
 }: TopBarProps): ReactNode {
   const copy = useUiCopy();
+  const motion = useMotion();
+  // standard에서는 속성을 아예 넘기지 않습니다 — undefined로 넘기면 테스트 렌더러가 "null"로 남깁니다.
+  const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
   const handleOpenNotifications = () => {
     "background only";
     onOpenNotifications();
@@ -55,6 +60,27 @@ export function TopBar({
     "background only";
     onOpenTrophy?.();
   };
+
+  // 막은 있을 때와 없을 때를 갈래로 나눕니다 — 조건 자식 한 칸을 두면 렌더러가 그 칸을 감싸는
+  // 요소를 끼워 「첫 자식」이 막이 아니게 됩니다.
+  const shaded = hasTopBarNotificationsShade(motion);
+  const notificationsProps = {
+    className: topBarNotificationsClassName(motion),
+    "data-testid": "top-bar-notifications",
+    ...motionProps,
+    "accessibility-element": true,
+    "accessibility-label": copy.shell.notifications,
+    "accessibility-traits": "button" as const,
+    bindtap: handleOpenNotifications,
+  };
+  const notificationsIcon = (
+    <svg
+      className="top-bar-notifications-icon"
+      data-testid="top-bar-notifications-icon"
+      content={notification03}
+      current-color={color.fg.neutral}
+    />
+  );
 
   // **칩이 버튼인지는 화면마다 다릅니다.** 여정 맵은 칩을 눌러 지표 모달을 열지만,
   // 학습 화면은 열 모달이 없어 콜백을 안 넘깁니다. 그때도 `traits="button"`을 붙이면
@@ -75,6 +101,7 @@ export function TopBar({
           accessibilityLabel={copy.common.count.streakDays(streakDays)}
           testId="top-bar-streak"
           surface="white"
+          height="touch-target"
           onTap={onOpenStreak === undefined ? undefined : handleOpenStreak}
           bumpFrom={bumps.streak}
           bumpHeld={bumpHeld}
@@ -88,6 +115,7 @@ export function TopBar({
             accessibilityLabel={copy.common.count.trophies(trophyCount)}
             testId="top-bar-trophy"
             surface="white"
+            height="touch-target"
             onTap={onOpenTrophy === undefined ? undefined : handleOpenTrophy}
             bumpFrom={bumps.trophy}
             bumpHeld={bumpHeld}
@@ -95,20 +123,14 @@ export function TopBar({
           />
         )}
       </view>
-      <view
-        className="top-bar-notifications"
-        data-testid="top-bar-notifications"
-        accessibility-element={true}
-        accessibility-label={copy.shell.notifications}
-        accessibility-traits="button"
-        bindtap={handleOpenNotifications}
-      >
-        <svg
-          className="top-bar-notifications-icon"
-          content={notification}
-          current-color={color.gray[700]}
-        />
-      </view>
+      {shaded ? (
+        <view {...notificationsProps}>
+          <view className="top-bar-notifications-shade" data-testid="top-bar-notifications-shade" />
+          {notificationsIcon}
+        </view>
+      ) : (
+        <view {...notificationsProps}>{notificationsIcon}</view>
+      )}
     </view>
   );
 }
