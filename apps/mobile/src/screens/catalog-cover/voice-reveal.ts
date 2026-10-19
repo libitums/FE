@@ -8,7 +8,10 @@ export const VOICE_REVEAL_MAX_INTERVAL_MS = 300;
  * 길이가 `null` · 비유한 · 0 이하이거나 대사가 비면 기본 간격입니다. 늘 1 이상의 정수 · 던지지 않음.
  */
 export function voiceRevealIntervalMs(syncLengthMs: number | null, text: string): number {
-  void syncLengthMs;
-  void text;
-  return defaultRevealIntervalMs;
+  const count = Array.from(text).length;
+  if (syncLengthMs === null || !Number.isFinite(syncLengthMs) || syncLengthMs <= 0 || count === 0) {
+    return defaultRevealIntervalMs;
+  }
+  const perChar = Math.floor(syncLengthMs / count);
+  return Math.min(VOICE_REVEAL_MAX_INTERVAL_MS, Math.max(VOICE_REVEAL_MIN_INTERVAL_MS, perChar));
 }

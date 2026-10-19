@@ -2,6 +2,8 @@ import "background-only";
 
 // 내장 + 기기 캐시에서 카탈로그를 읽고 이미지 URL · 치환 포트를 닫아 만듭니다(백그라운드 전용).
 
+import { parseAudioManifest } from "../lib/audio-manifest";
+import type { AudioTimingTable } from "../lib/audio-manifest";
 import {
   contentFileUrl,
   contentFilesAvailable,
@@ -11,7 +13,12 @@ import {
 import { isAssetsComplete } from "../lib/episode-asset-sync";
 import type { AssetDeps } from "../lib/episode-asset-sync";
 import { bundledCatalogInput } from "../lib/episode-bundled";
-import { CONTENT_MANIFEST_KEY, hostContentStore, readCachedSource } from "../lib/episode-cache";
+import {
+  CONTENT_AUDIO_MANIFEST_KEY,
+  CONTENT_MANIFEST_KEY,
+  hostContentStore,
+  readCachedSource,
+} from "../lib/episode-cache";
 import { buildEpisodeCatalog, parseCachedManifest } from "../lib/episode-catalog";
 import type { CatalogSourceText } from "../lib/episode-catalog";
 import { contentBaseUrl, resolveContentUrlSafe } from "../lib/episode-remote";
@@ -77,6 +84,25 @@ function catalogOf(source: CatalogSourceText): EpisodeContent["catalog"] {
   return catalog;
 }
 
+function cachedAudioManifestText(): string | null {
+  try {
+    return hostContentStore.get(CONTENT_AUDIO_MANIFEST_KEY);
+  } catch {
+    return null;
+  }
+}
+
+// 음성 정보 파일도 원문이 같으면 이전 표를 씁니다 - 다시 읽을 때마다 파싱하지 않습니다.
+let lastAudioText: string | null | undefined;
+let lastAudioTable: AudioTimingTable | null = null;
+
+function audioTableOf(text: string | null): AudioTimingTable | null {
+  if (text === lastAudioText) return lastAudioTable;
+  lastAudioText = text;
+  lastAudioTable = parseAudioManifest(text);
+  return lastAudioTable;
+}
+
 export function loadEpisodeContent(): EpisodeContent {
   let catalog: EpisodeContent["catalog"];
   try {
@@ -87,7 +113,9 @@ export function loadEpisodeContent(): EpisodeContent {
       cache: { manifest: null, episodes: {} },
     });
   }
-  return { catalog, imageUrlOf, fillText: fillPlaceholders, audioTimingOf: () => null };
+  const audioTable = audioTableOf(cachedAudioManifestText());
+  const audioTimingOf = (audioId: string) => audioTable?.get(audioId) ?? null;
+  return { catalog, imageUrlOf, fillText: fillPlaceholders, audioTimingOf };
 }
 
 /** 호스트 파일 모듈이 있을 때만 자산을 받습니다. 없으면 지금처럼 본문만 받습니다(ADR-0071 D4). */
