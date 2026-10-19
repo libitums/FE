@@ -124,9 +124,7 @@ describe("JS ↔ CSS 같은 토큰", () => {
       easing: "enter",
     });
     const path = resolve(process.cwd(), "src/screens/journey-map/step-sheet-motion.css");
-    const css = existsSync(path)
-      ? readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "")
-      : "";
+    const css = existsSync(path) ? readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "") : "";
     const rule = /\.step-sheet-progress-fill-enter\s*\{([^}]*)\}/.exec(css)?.[1] ?? "";
     const { delay, duration, easing } = sheetPercentCountUpTokens;
     expect(rule).toContain(`var(--libitum-motion-duration-${duration})`);
