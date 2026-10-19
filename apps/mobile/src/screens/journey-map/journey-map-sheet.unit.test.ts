@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   initialStepSheetState,
   mapBottomInset,
+  specialUnitSize,
   stepSheetCaretOffset,
   stepSheetPlacement,
   stepSheetProgress,
@@ -114,6 +115,19 @@ describe("stepSheetPlacement", () => {
 
     expect(placement.anchorLimit).toBe(266);
     expect(placement.targetScrollTop).toBe(450 - 208);
+  });
+
+  it("FS1. 표식이 124인 최종이면 말풍선은 124 아래 모서리에서, 가운데는 124의 중심으로 잰다", () => {
+    expect(specialUnitSize).toBe(124);
+    const placement = stepSheetPlacement({
+      ...tallScreen,
+      unitTop: 700,
+      scrollTop: 120,
+      unitSize: specialUnitSize,
+    });
+
+    expect(placement.anchorY).toBe(824);
+    expect(placement.targetScrollTop).toBe(120 + (762 - 460));
   });
 });
 

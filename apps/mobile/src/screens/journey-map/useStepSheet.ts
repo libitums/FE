@@ -42,7 +42,8 @@ export type StepSheetControls = {
   /** 꼬리의 가로 치우침입니다(px, 가운데가 0). 재기 전 · 못 쟀을 때 · 닫힌 동안은 0. */
   readonly sheetCaretOffset: number;
   readonly handleScroll: (event: ScrollEvent) => void;
-  readonly handleSelectStep: (id: SheetTargetId, tapY: number) => void;
+  /** `unitSize`는 누른 표식의 높이입니다 — 없으면 레슨 원(`stepUnitSize`)입니다. */
+  readonly handleSelectStep: (id: SheetTargetId, tapY: number, unitSize?: number) => void;
   readonly handleCloseSheet: () => void;
 };
 
@@ -78,7 +79,7 @@ export function useStepSheet(): StepSheetControls {
     }
   };
 
-  const handleSelectStep = (id: SheetTargetId, tapY: number) => {
+  const handleSelectStep = (id: SheetTargetId, tapY: number, unitSize = stepUnitSize) => {
     "background only";
     // 먼저 탭 자리로 엽니다 — 탭이 유닛 한가운데였다고 어림한 값입니다. 재는 일은
     // 비동기라, 기다렸다 열면 누른 뒤 말풍선이 늦게 뜹니다.
@@ -88,7 +89,7 @@ export function useStepSheet(): StepSheetControls {
     dispatch({
       type: "openStep",
       stepId: id,
-      anchorY: tapY + stepUnitSize / 2,
+      anchorY: tapY + unitSize / 2,
       scrollTop: tapScrollTop,
     });
     setOpenScrollTop(tapScrollTop);
@@ -116,6 +117,7 @@ export function useStepSheet(): StepSheetControls {
         const placement = stepSheetPlacementBelowHeader(
           {
             unitTop: unit.top,
+            unitSize,
             scrollViewTop: scroll.top,
             scrollViewHeight: scroll.height,
             screenTop: screen.top,

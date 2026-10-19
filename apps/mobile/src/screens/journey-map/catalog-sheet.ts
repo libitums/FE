@@ -4,6 +4,7 @@
 import { isCatalogUnitDone } from "../../lib/catalog-progress";
 import type { CatalogProgress, CatalogUnitKey } from "../../lib/catalog-progress";
 import { CATALOG_INTRO_KEY } from "../../lib/catalog-progress";
+import { specialUnitSize, stepUnitSize } from "./journey-map-sheet";
 import type {
   CatalogMapSection,
   CatalogReadySection,
@@ -82,4 +83,19 @@ export function catalogSheetFigures(
   const total = Number.isInteger(itemCount) && itemCount > 0 ? itemCount : 0;
   const done = isCatalogUnitDone(progress, target.episodeId, target.unitKey);
   return { completedActivityCount: done ? total : 0, totalActivityCount: total };
+}
+
+/**
+ * 말풍선이 붙을 표식의 높이입니다. 최종은 스페셜 표식(124)이라 레슨 원(100)으로 재면 말풍선 꼬리가 표식에
+ * 파고듭니다. 모르는 에피소드 · 유닛은 레슨 원입니다.
+ */
+export function catalogSheetUnitSize(
+  sections: readonly CatalogMapSection[],
+  episodeId: string,
+  unitKey: CatalogUnitKey,
+): number {
+  const section = sections.find((candidate) => candidate.episodeId === episodeId);
+  return section?.kind === "catalog-ready" && section.finalKey === unitKey
+    ? specialUnitSize
+    : stepUnitSize;
 }
