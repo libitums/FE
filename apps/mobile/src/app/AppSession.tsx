@@ -7,7 +7,7 @@ import type { AnswerResult } from "../lib/answer-result";
 import type { EntryAppProps } from "../lib/entry-flow";
 import { loadUiLanguage } from "../lib/ui-language";
 import type { EntryLanguage } from "../lib/entry-language";
-import { safeAreaInsetsFrom, tappableBottomInsetFrom, zeroSafeAreaInsets } from "../lib/safe-area";
+import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialSessionOptions } from "../lib/session-options";
 import { isMapItemComplete, journeyMapSections } from "../screens/journey-map/journey-map";
@@ -44,7 +44,7 @@ import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-p
 import type { AppJourneySeed } from "./journey-progress";
 import { catalogCompletionKeysOf, catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { AppSessionContent } from "./episode-content";
-import { isFullBleedScreen } from "./full-bleed-screens";
+import { shellHeaderTop, shellInsetsFor } from "./full-bleed-screens";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useOpenedPush } from "./use-opened-push";
@@ -139,9 +139,8 @@ export function AppSession({
   // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
   // 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
   const [gemCount] = useState(initialGemCount);
-  // 탭 루트 화면 안에 겹침 레이어가 떠 있는가입니다. 화면이 알려 오고(`onScreenLayerChange`)
-  // 전역 머리가 그 동안 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를
-  // 알립니다.
+  // 탭 루트 화면 안에 겹침 레이어가 떠 있는가입니다. 화면이 알려 오고(`onScreenLayerChange`) 전역 머리가 그 동안
+  // 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를 알립니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
 
   // 롤플레이 구획입니다. **진행에서 파생합니다** — 에피소드는 여정에서 그 에피소드의
@@ -221,9 +220,9 @@ export function AppSession({
   const screenNow = currentScreen(nav);
   const isPhoneCall = screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call";
   const showsNavigator = showsTabNavigator(nav);
-  // 가장자리까지 그림을 까는 화면은 셸이 여백을 잡지 않습니다 — 셸 배경이 칠하는 띠가
-  // 그림을 끊습니다. 여백은 화면이 자기 안에서 잡습니다(`wiring.safeAreaInsets`).
-  const shellInsets = isFullBleedScreen(screenNow) ? zeroSafeAreaInsets : insets;
+  // 가장자리까지 그림을 까는 화면 · 여정 맵(위만)은 셸이 여백을 잡지 않습니다 — 셸 배경이 칠하는 띠가 그림 · 맵을
+  // 끊습니다. 여백은 화면이 자기 안에서 잡습니다(`wiring.safeAreaInsets`, `full-bleed-screens`).
+  const shellInsets = shellInsetsFor(screenNow, insets);
   const bottomLayout = shellBottomLayout({
     showsNavigator,
     safeBottom: shellInsets.bottom,
@@ -262,6 +261,7 @@ export function AppSession({
               {/* 탭 루트에서는 전역 머리가 콘텐츠 위에 겹칩니다. */}
               {showsNavigator ? (
                 <AppHeader
+                  top={shellHeaderTop(screenNow, insets)}
                   streakDays={progress.streakDays}
                   trophyCount={progress.headerTrophyCount}
                   celebrateStreak={progress.streakCelebration}

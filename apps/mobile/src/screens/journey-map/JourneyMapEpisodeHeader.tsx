@@ -8,6 +8,8 @@ export type JourneyMapEpisodeHeaderProps = {
   readonly title: string;
   readonly completedUnitCount: number;
   readonly totalUnitCount: number;
+  /** 띠의 위 모서리입니다(`mapTopLayout`의 `bandTop` — 상태 표시줄 높이를 더한 값). 없으면 CSS 기본값(64)입니다. */
+  readonly top?: number;
   /** 띠 상자의 `layoutchange`입니다. 머리 슬롯이 띠 높이를 잽니다. */
   readonly onLayoutChange?: (event: unknown) => void;
 };
@@ -22,10 +24,15 @@ export function JourneyMapEpisodeHeader({
   title,
   completedUnitCount,
   totalUnitCount,
+  top = 64,
   onLayoutChange,
 }: JourneyMapEpisodeHeaderProps): ReactNode {
   return (
-    <view className="journey-map-screen-episode-header" bindlayoutchange={onLayoutChange}>
+    <view
+      className="journey-map-screen-episode-header"
+      style={{ top: `${top}px` }}
+      bindlayoutchange={onLayoutChange}
+    >
       <EpisodeHeader
         episodeLabel={episodeLabel}
         title={title}

@@ -17,3 +17,33 @@ export const mapContentInsets: MapContentInsets = {
   top: bandTop + bandHeight + autoScrollPlacement.gap,
   bottom: sheetHeight + mapBottomInset + bottomMargin + sheetGap,
 };
+
+/**
+ * 맵이 상태 표시줄 뒤까지 스크롤할 때의 위쪽 배치입니다(⟨2026-10-19⟩ 사용자 결정 — 셸이 위 안전 영역을 칠하던 흰
+ * 띠 뒤로 맵이 뚝 끊겨 보였습니다). 셸은 여정 맵에서 위 여백을 잡지 않고(`shellInsetsFor`), 그 높이를 여기서
+ * 더합니다: 스크롤 상자가 화면 맨 위에서 시작하도록 화면 위 여백(12)을 스크롤 안쪽으로 옮기고, 위 모서리
+ * 기준으로 선 칩 · 띠 · 로딩 줄은 안전 영역만큼 내립니다. 그래서 첫 내용과 칩은 예전과 같은 화면 자리에 섭니다.
+ * Lynx는 인라인 `calc(var())`를 적용하지 않아 숫자로 냅니다. 값은 CSS 리터럴(12 · 64 · 72)과 같습니다.
+ */
+export type MapTopLayout = {
+  readonly screenPaddingTop: number;
+  readonly mapPaddingTop: number;
+  readonly bandTop: number;
+  readonly progressRowTop: number;
+  readonly headerTop: number;
+};
+
+/** `--libitum-layout-screen-padding-top`(12)입니다 — 칩 줄의 위 여백이기도 합니다. */
+const screenPaddingTop = 12;
+/** 로딩 줄은 띠와 같은 위 모서리에서 spacing-8만큼 내려옵니다. */
+const progressRowGap = 8;
+
+export function mapTopLayout(statusBarInset: number): MapTopLayout {
+  return {
+    screenPaddingTop: 0,
+    mapPaddingTop: mapContentInsets.top + screenPaddingTop + statusBarInset,
+    bandTop: bandTop + statusBarInset,
+    progressRowTop: bandTop + progressRowGap + statusBarInset,
+    headerTop: screenPaddingTop + statusBarInset,
+  };
+}
