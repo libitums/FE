@@ -12,6 +12,12 @@
 - 빌드: `pnpm build` 산출 `apps/mobile/dist/main.lynx.bundle`(Node 22.23.2), 판정은 `pnpm size:check`. 같은 commit에서 두 번 — **CI 설정**(`apps/mobile/.env.local` 없음 — CI 실행의 값)과 **로컬 설정**(`.env.local` 있음).
 - 측정 일시: 2026-10-19(구현 단계)
 
+### 2026-10-19 재측정 — 키 폭 화면 맞춤 · main(#266 · #267 · #268) 병합 뒤
+
+- 대상 commit `89444847`(병합). 같은 방식(두 설정 빌드 · `stat`)입니다.
+- CI 설정 2,195,526 bytes · 로컬 설정 2,195,715 bytes, main `3f0a6ddf` CI 2,191,227 bytes 대비 +4,299 bytes(앞선 +3,994에 키 폭 CSS 약 +300). 상한 2,197,000.
+- 이 수치도 번들 크기만이며 렌더 성능은 재지 않았습니다 — 측정 한계는 위와 같습니다.
+
 ## 시나리오
 
 - 번들 크기: main `02dfee15`의 CI 실측(2,190,958 bytes)과 이 commit의 `main.lynx.bundle`을 두 설정으로 비교했습니다.
