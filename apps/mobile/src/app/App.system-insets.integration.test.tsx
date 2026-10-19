@@ -5,6 +5,11 @@ import { act, cleanup, fireEvent, screen } from "@lynx-js/react/testing-library"
 import { App } from "./App";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { systemBackEventName } from "../lib/system-back";
+import * as messengerData from "../screens/messenger/messenger";
+import { keyboardConversation } from "../screens/messenger/messenger-keyboard-fixture.test-support";
+import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
+import type { AppJourneySeed } from "./journey-progress";
+import { journeySteps } from "../screens/journey-map/journey-map";
 
 // 호스트가 넘기는 globalProps(`safeAreaInsets` · `tappableBottomInset`)가 App 전체 트리에서
 // 셸의 아래 여백(`app-shell`)과 탭 바 바닥 면(`app-navigator-floor`)으로 이어지는지 봅니다
@@ -42,6 +47,7 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
+  vi.restoreAllMocks();
 });
 
 async function boot(host: HostInsets, withIntroDone = true): Promise<void> {
@@ -145,4 +151,87 @@ test("[II6] 3버튼 · 서사 표지(전체 화면 그림 화면): 여백 0px, �
   expect(screen.getByTestId("episode-intro-screen-next")).toBeInTheDocument();
   expect(hasNavigator()).toBe(false);
   expect(shellPaddingBottom()).toBe("0px");
+});
+
+// ---------------------------------------------------------------- 자판 도킹 (II7 ~ II10)
+
+const messengerUnitId = "appointment-confirmation";
+const finishedTutorial: AppJourneySeed = {
+  completedStepCount: journeySteps.length,
+  completedMessengerUnitIds: [messengerUnitId],
+  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
+  visualNovelProgress: { status: "completed", beatIndex: 2 },
+  completedEpisodeFinalIds: ["tutorial-final-test"],
+};
+
+// 첫 답장이 자판인 대화로 고정합니다 — 실데이터의 첫 답장은 보기입니다.
+async function bootMessenger(host: HostInsets, seed: AppJourneySeed): Promise<void> {
+  vi.spyOn(messengerData, "messengerConversationFor").mockReturnValue(keyboardConversation);
+  setHostInsets(host);
+  vi.stubGlobal("NativeModules", {
+    SystemBackModule: {
+      ready: vi.fn<() => void>(),
+      respond: vi.fn<(token: string, outcome: string) => void>(),
+    },
+  });
+  await renderSignedInApp(<App journeySeed={seed} completedEpisodeIntroIds={completedIntros} />);
+}
+
+const bootJourneyMessenger = async (host: HostInsets): Promise<void> => {
+  await bootMessenger(host, journeySeedBefore(messengerUnitId));
+  openTab("journey");
+  tap(`ui-lynx-special-unit-${messengerUnitId}`);
+  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+};
+
+const shellStyle = () => screen.getByTestId("app-shell").style;
+const rowsMargin = (): string => screen.getByTestId("messenger-keyboard-rows").style.marginBottom;
+const surfaceMargin = (): string =>
+  screen.getByTestId("messenger-screen-surface").style.marginBottom;
+
+test("[II7] 3버튼 · 여정 메신저: 셸은 아래 · 좌우 0에 위 24, 자판 묶음이 48px를 진다", async () => {
+  await bootJourneyMessenger(threeButton);
+
+  expect(hasNavigator()).toBe(false);
+  expect(shellStyle().paddingTop).toBe("24px");
+  expect(shellStyle().paddingBottom).toBe("0px");
+  expect(shellStyle().paddingLeft).toBe("0px");
+  expect(shellStyle().paddingRight).toBe("0px");
+  expect(rowsMargin()).toBe("48px");
+  expect(surfaceMargin()).toBe("0px");
+});
+
+test("[II8] iOS · 메신저: 자판이 있는 동안 묶음 34px, 대화가 끝나면 표면이 34px를 이어받고 셸은 0px 그대로다", async () => {
+  await bootJourneyMessenger(ios);
+
+  expect(shellPaddingBottom()).toBe("0px");
+  expect(rowsMargin()).toBe("34px");
+
+  answerMessengerReplies();
+
+  expect(screen.queryByTestId("messenger-keyboard")).not.toBeInTheDocument();
+  expect(surfaceMargin()).toBe("34px");
+  expect(shellPaddingBottom()).toBe("0px");
+});
+
+test("[II9] 3버튼 · 롤플레이 메신저: 셸 0px · 탭 바 없음 · 묶음 48px", async () => {
+  await bootMessenger(threeButton, finishedTutorial);
+  openTab("roleplay");
+  tap(`roleplay-list-item-${messengerUnitId}`);
+
+  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+  expect(hasNavigator()).toBe(false);
+  expect(shellPaddingBottom()).toBe("0px");
+  expect(rowsMargin()).toBe("48px");
+});
+
+test("[II10] 3버튼 · 메신저에서 시스템 뒤로 가면 맵에서 셸 48px와 바닥 면 48px가 돌아온다", async () => {
+  await bootJourneyMessenger(threeButton);
+  expect(shellPaddingBottom()).toBe("0px");
+
+  pressBack();
+
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(shellPaddingBottom()).toBe("48px");
+  expect(floorHeight()).toBe("48px");
 });
