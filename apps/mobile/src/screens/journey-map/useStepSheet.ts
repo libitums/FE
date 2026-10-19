@@ -13,12 +13,11 @@ import {
 } from "./journey-map-scroll";
 import { catalogUnitDomId } from "./catalog-map";
 import { catalogSheetTargetOf } from "./catalog-sheet";
-import { autoScrollPlacement, mapScrollBehaviorFor } from "./journey-map-scroll-position";
+import { mapScrollBehaviorFor, mapUnitPlacement } from "./journey-map-scroll-position";
 import {
   initialStepSheetState,
   stepSheetCaretLimit,
   stepSheetCaretOffset,
-  stepSheetPlacementBelowHeader,
   stepSheetReducer,
   stepSheetTop,
   stepUnitSize,
@@ -96,7 +95,7 @@ export function useStepSheet(): StepSheetControls {
     // 그다음 유닛을 실제로 재서 자리를 바로잡고, 유닛을 스크롤 가운데로 옮깁니다 —
     // 탭 좌표는 손가락이 유닛의 어디를 눌렀는지에 따라 달라지므로, 그 값만으로는
     // 말풍선이 유닛에 맞지 않습니다. 못 재도 탭을 막지 않습니다: 말풍선은 이미 떴습니다.
-    // 머리 카드는 없어도 됩니다 — 못 재면 카드를 피하지 않고 말풍선은 지금처럼 섭니다.
+    // 띠 손잡이는 없어도 됩니다 — 재면 띠가 설 때의 아래 모서리(`headerBandCard`)를 피합니다.
     measureRectsWithOptional(
       [sheetNodeDomId(id), scrollId, screenId],
       [headerCardId],
@@ -113,21 +112,13 @@ export function useStepSheet(): StepSheetControls {
           return;
         }
         const scrollTop = latestScrollTop.current;
-        const placement = stepSheetPlacementBelowHeader(
-          {
-            unitTop: unit.top,
-            scrollViewTop: scroll.top,
-            scrollViewHeight: scroll.height,
-            screenTop: screen.top,
-            screenHeight: screen.height,
-            scrollTop,
-          },
-          unit.centerX,
-          card === undefined || card === null
-            ? null
-            : { bottom: card.top + card.height, left: card.left, width: card.width },
-          autoScrollPlacement.gap,
-        );
+        const placement = mapUnitPlacement({
+          unit,
+          scroll,
+          screen,
+          band: card ?? null,
+          scrollTop,
+        });
         dispatch({
           type: "anchorStep",
           stepId: id,
