@@ -8,7 +8,6 @@ import { MotionProvider } from "@libitums/ui-lynx/motion";
 
 import { UiCopyContext } from "../lib/ui-copy";
 import { markedUiCopy } from "../lib/ui-copy.test-support";
-import { statChipClassName } from "./stat-chip-class";
 import { TopBar } from "./TopBar";
 import { topBarNotificationsClassName } from "./top-bar-press";
 
@@ -20,14 +19,12 @@ test("[TB1] 칩 둘은 흰 면 · 상단 줄 높이로 선다", () => {
   render(<TopBar streakDays={3} trophyCount={1} onOpenNotifications={vi.fn()} />);
 
   expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
+  // 함수 결과가 아니라 실제 클래스 문자열을 고정합니다 — 함수가 틀려도 같이 틀리지 않게.
   for (const id of ["top-bar-streak", "top-bar-trophy"]) {
     expect(screen.getByTestId(id).getAttribute("class")).toBe(
-      statChipClassName("white", "touch-target"),
+      "stat-chip stat-chip-surface-white stat-chip-height-touch-target",
     );
   }
-  expect(screen.getByTestId("top-bar-streak").getAttribute("class")).toBe(
-    "stat-chip stat-chip-surface-white stat-chip-height-touch-target",
-  );
 });
 
 test("[TB2] 알림 아이콘은 선형 종 · fg.neutral 색이고 버튼의 자식이다", () => {
@@ -69,6 +66,7 @@ test("[TB4] reduced는 표지 · 첫 자식 막이 서고 막은 낭독되지 �
   expect(button.getAttribute("class")).toBe(topBarNotificationsClassName("reduced"));
   expect(button).toHaveAttribute("data-motion", "reduced");
   expect(button.firstElementChild).toBe(shade);
+  // 바로 다음 형제가 아니라 「뒤에」를 봅니다 — 테스트 렌더러가 변수로 끼운 아이콘을 `<wrapper>`로 감쌉니다.
   expect(shade.compareDocumentPosition(icon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   for (const { name } of Array.from(shade.attributes)) {
     expect(name.startsWith("accessibility-")).toBe(false);
