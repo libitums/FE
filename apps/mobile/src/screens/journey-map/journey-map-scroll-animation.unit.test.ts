@@ -2,7 +2,7 @@ import { expect, test, vi } from "vitest";
 
 import {
   animateMapScroll,
-  easeInOutCubic,
+  easeOutQuint,
   mapScrollDurationMs,
   mapScrollFrameAt,
 } from "./journey-map-scroll-animation";
@@ -12,21 +12,20 @@ import {
   rememberMapScroll,
 } from "./journey-map-scroll-memory";
 
-test("[SA1] 길이는 거리에 맞추되 0.5 ~ 0.9초로 묶인다", () => {
-  expect(mapScrollDurationMs(0)).toBe(500);
-  expect(mapScrollDurationMs(500)).toBe(600);
-  expect(mapScrollDurationMs(-500)).toBe(600);
-  expect(mapScrollDurationMs(5000)).toBe(900);
+test("[SA1] 길이는 거리에 맞추되 0.7 ~ 1.1초로 묶인다", () => {
+  expect(mapScrollDurationMs(0)).toBe(700);
+  expect(mapScrollDurationMs(800)).toBe(880);
+  expect(mapScrollDurationMs(-800)).toBe(880);
+  expect(mapScrollDurationMs(5000)).toBe(1100);
 });
 
-test("[SA2] 천천히 출발해 천천히 멈춘다 — 가운데가 가장 빠르고 끝은 정확히 끝", () => {
-  expect(easeInOutCubic(0)).toBe(0);
-  expect(easeInOutCubic(0.5)).toBe(0.5);
-  expect(easeInOutCubic(1)).toBe(1);
-  expect(easeInOutCubic(0.1)).toBeLessThan(0.1);
-  expect(easeInOutCubic(0.9)).toBeGreaterThan(0.9);
+test("[SA2] 빠르게 출발해 길게 감속한다 — 앞쪽이 많이 가고 끝은 정확히 끝", () => {
+  expect(easeOutQuint(0)).toBe(0);
+  expect(easeOutQuint(1)).toBe(1);
+  expect(easeOutQuint(0.2)).toBeGreaterThan(0.6);
+  expect(easeOutQuint(0.8)).toBeGreaterThan(0.99);
   expect(mapScrollFrameAt(100, 500, 9999, 600)).toBe(500);
-  expect(mapScrollFrameAt(100, 500, 300, 600)).toBe(300);
+  expect(mapScrollFrameAt(100, 500, 300, 600)).toBeCloseTo(100 + 400 * (1 - 0.5 ** 5), 6);
 });
 
 test("[SA3] 프레임마다 옮기고 끝 자리에서 멈추며, 멈춤 함수를 부르면 더 옮기지 않는다", () => {
