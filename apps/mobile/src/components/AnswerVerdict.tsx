@@ -50,6 +50,7 @@ export function AnswerVerdict({ result, surface = "light" }: AnswerVerdictProps)
       className="answer-verdict"
       data-testid="answer-verdict"
       data-result={result}
+      data-surface={surface}
       // 면 색이 판정마다 갈리는 값이라 인라인 스타일이 집니다 — 상태 클래스를 만들면
       // ADR-0003 D7의 예약 상태어가 늘어납니다.
       //

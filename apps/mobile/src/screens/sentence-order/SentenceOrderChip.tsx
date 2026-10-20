@@ -52,6 +52,7 @@ export function SentenceOrderChip({
       className={sentenceOrderChipClassName(variant, motion, surface)}
       data-testid={`sentence-order-chip-${index}`}
       {...motionProps}
+      data-surface={surface}
       data-placed={placedOrdinal ?? "none"}
       accessibility-element={true}
       accessibility-label={chipAccessibilityLabel(text, placedOrdinal, copy)}
@@ -64,16 +65,17 @@ export function SentenceOrderChip({
   );
 }
 
+export type SentenceOrderChipPlaceholderProps = {
+  readonly index: number;
+  readonly text: string;
+  /** 놓이는 면입니다. 기본 `light`. */
+  readonly surface?: SurfaceTone;
+};
+
 /**
  * 창고에서 조각이 빠져나간 자리입니다. 같은 크기의 회색 칸이 남아 창고의 배치가 흔들리지
  * 않습니다(디자인). 낭독하지 않습니다 — 조작 단위도 정보도 아닙니다.
  */
-export type SentenceOrderChipPlaceholderProps = {
-  readonly index: number;
-  readonly text: string;
-  readonly surface?: SurfaceTone;
-};
-
 export function SentenceOrderChipPlaceholder({
   index,
   text,
@@ -83,6 +85,7 @@ export function SentenceOrderChipPlaceholder({
     <view
       className={sentenceOrderChipPlaceholderClassName(surface)}
       data-testid={`sentence-order-bank-slot-${index}`}
+      data-surface={surface}
       accessibility-elements-hidden={true}
     >
       {/* 자리 폭을 조각 글자로 잡되 보이지 않게 둡니다 — 빈칸이 원래 조각과 같은 폭입니다. */}
