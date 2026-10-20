@@ -2,8 +2,13 @@ import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
-import { chipAccessibilityLabel, sentenceOrderChipClassName } from "./sentence-order";
+import {
+  chipAccessibilityLabel,
+  sentenceOrderChipClassName,
+  sentenceOrderChipPlaceholderClassName,
+} from "./sentence-order";
 import { playSound } from "../../lib/sound-effects";
+import type { SurfaceTone } from "../../lib/surface-tone";
 
 import "./sentence-order-chip.css";
 
@@ -18,6 +23,8 @@ export type SentenceOrderChipProps = {
   placedOrdinal: number | null;
   /** 누를 수 없는 상태입니다 — 채점 뒤이거나, 칸이 다 차 창고의 조각을 더 놓을 수 없을 때. */
   disabled?: boolean;
+  /** 놓이는 면입니다. 기본 `light`. */
+  surface?: SurfaceTone;
   onTap: (index: number) => void;
 };
 
@@ -26,6 +33,7 @@ export function SentenceOrderChip({
   text,
   placedOrdinal,
   disabled = false,
+  surface = "light",
   onTap,
 }: SentenceOrderChipProps): ReactNode {
   const copy = useUiCopy();
@@ -41,7 +49,7 @@ export function SentenceOrderChip({
 
   return (
     <view
-      className={sentenceOrderChipClassName(variant, motion)}
+      className={sentenceOrderChipClassName(variant, motion, surface)}
       data-testid={`sentence-order-chip-${index}`}
       {...motionProps}
       data-placed={placedOrdinal ?? "none"}
@@ -60,16 +68,20 @@ export function SentenceOrderChip({
  * 창고에서 조각이 빠져나간 자리입니다. 같은 크기의 회색 칸이 남아 창고의 배치가 흔들리지
  * 않습니다(디자인). 낭독하지 않습니다 — 조작 단위도 정보도 아닙니다.
  */
+export type SentenceOrderChipPlaceholderProps = {
+  readonly index: number;
+  readonly text: string;
+  readonly surface?: SurfaceTone;
+};
+
 export function SentenceOrderChipPlaceholder({
   index,
   text,
-}: {
-  readonly index: number;
-  readonly text: string;
-}): ReactNode {
+  surface = "light",
+}: SentenceOrderChipPlaceholderProps): ReactNode {
   return (
     <view
-      className="sentence-order-chip sentence-order-chip-placeholder"
+      className={sentenceOrderChipPlaceholderClassName(surface)}
       data-testid={`sentence-order-bank-slot-${index}`}
       accessibility-elements-hidden={true}
     >

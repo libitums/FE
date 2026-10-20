@@ -1,11 +1,15 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import type { SurfaceTone } from "../lib/surface-tone";
+
 import "./answer-reveal.css";
 
 export type AnswerRevealProps = {
   readonly testId: string;
   /** 정답을 말하는 한 줄 — 문구는 부르는 화면이 문구표에서 만들어 넘깁니다. */
   readonly text: string;
+  /** 놓이는 면입니다. 기본 `light`. */
+  readonly surface?: SurfaceTone;
 };
 
 // 판정 뒤 정답을 보여 주는 상자입니다. 타자 입력 활동과 최종 테스트가 같은 값을 쓰므로 한 곳에 둡니다

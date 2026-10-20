@@ -7,6 +7,7 @@ import type { Motion } from "@libitums/ui-lynx/motion";
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { AnswerResult } from "../../lib/answer-result";
+import type { SurfaceTone } from "../../lib/surface-tone";
 import type { JourneyStepId } from "../journey-map/journey-map";
 
 import { sentenceOrderQuestionsByStep } from "./sentence-order-questions";
@@ -261,7 +262,13 @@ export type SentenceOrderChipVariant = "bank" | "placed";
 export function sentenceOrderChipClassName(
   variant: SentenceOrderChipVariant,
   motion: Motion,
+  _surface?: SurfaceTone,
 ): string {
   const base = `sentence-order-chip sentence-order-chip-${variant}`;
   return motion === "reduced" ? `${base} sentence-order-chip-motion-reduced` : base;
+}
+
+// 창고에서 빠져나간 자리의 클래스입니다. `dark`면 끝에 어두운 면 표지가 붙습니다.
+export function sentenceOrderChipPlaceholderClassName(_surface?: SurfaceTone): string {
+  return "sentence-order-chip sentence-order-chip-placeholder";
 }
