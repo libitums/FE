@@ -170,11 +170,41 @@
    집니다. **남는 세로를 받지 않습니다** — 받으면 카드가 자기 자리보다 커지고, 넘친
    만큼이 아래 보기 **위로 겹쳐 나옵니다**(기기에서 봤습니다). 넘치는 것은 스크롤이
    집니다 — 작업 영역이 설 자리가 남지 않으면 지시문 · 무대 · 작업 영역이 한 스크롤로
-   합쳐집니다(`learning-shell-flow`). */
+   합쳐집니다(`learning-shell-flow`).
+
+   ⟨2026-10-20⟩ 완료 장면만 예외입니다(아래 `-scene-complete` · `-fill-*`) — 상자만 남는 세로를
+   받고 카드는 내용 높이로 가운데에 섭니다. `flex-shrink: 0`은 그대로라 넘치면 줄지 않고
+   위에서부터 섭니다. */
 .learning-shell-stage {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+}
+
+/* 완료 장면: 무대 카드를 내용 높이로 두고 상자 안 세로 가운데에 세웁니다. 상자가 남는 세로를
+   받는 방법은 부모마다 달라 아래 `-fill-*`가 가릅니다. 높이를 적지 않아 카드는 늘지 않습니다. */
+.learning-shell-stage-scene-complete {
+  justify-content: center;
+}
+
+/* 나뉜 배치: 부모는 높이가 확정된 열이고 버튼은 떠 있습니다. 버튼 몫(56)과 간격을 아래에
+   비워 머리와 버튼 사이의 가운데에 맞춥니다. */
+.learning-shell-stage-fill-rest {
+  flex-grow: 1;
+  margin-bottom: calc(
+    var(--libitum-spacing-48) + var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
+  );
+}
+
+/* 합친 흐름: 부모(`learning-shell-flow`)가 스크롤 높이까지 늘어나 남는 세로를 줍니다. */
+.learning-shell-stage-fill-flow {
+  flex-grow: 1;
+}
+
+/* 카드 스크롤: 부모가 스크롤이라 `flex-grow`가 읽히지 않습니다(ADR-0022 D4). 하한으로 받고,
+   내용이 크면 상자가 따라 커져 위에서부터 흐릅니다. */
+.learning-shell-stage-fill-scroll {
+  min-height: 100%;
 }
 
 /* 작업 영역 — 카드 밖, 활동이 채웁니다(고를 낱말 칩 등). 스크롤은 화면에 하나입니다.
@@ -378,6 +408,13 @@
   padding-left: var(--libitum-layout-screen-padding-x);
   padding-right: var(--libitum-layout-screen-padding-x);
   padding-top: var(--libitum-layout-gap-block);
+}
+
+/* 완료 장면의 합친 흐름: 스크롤 높이를 하한으로 삼아 안의 무대가 남는 세로를 받게 합니다.
+   안 여백이 있는 상자라 `box-sizing`을 밝혀 적습니다. */
+.learning-shell-flow-fill-scroll {
+  min-height: 100%;
+  box-sizing: border-box;
 }
 
 /* 합친 흐름 안의 무대 카드는 `z-index`를 풉니다 — TalkBack 쓸기 순서 때문입니다.
