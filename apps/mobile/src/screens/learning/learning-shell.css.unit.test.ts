@@ -52,3 +52,67 @@ describe("카드 진행 막대 칸 색", () => {
     expect(body).toContain("color: var(--libitum-color-fg-neutral-muted);");
   });
 });
+
+describe("완료 장면 무대 규칙 (LS-CSS3 ~ 8)", () => {
+  const css = readCss("learning-shell.css");
+  const body = (selector: string): string => bodyOf(css, selector).trim();
+
+  test("LS-CSS3. 장면 규칙은 가운데 정렬 하나이고 높이 · 줄어듦을 건드리지 않는다", () => {
+    const rule = body(".learning-shell-stage-scene-complete");
+    expect(rule).toBe("justify-content: center;");
+    for (const property of ["height", "min-height", "flex-shrink", "flex-basis"]) {
+      expect(rule).not.toContain(`${property}:`);
+    }
+  });
+
+  test("LS-CSS4. 나뉜 배치는 남는 세로를 받고 버튼 몫을 아래에 비운다", () => {
+    const rule = body(".learning-shell-stage-fill-rest");
+    expect(rule).toContain("flex-grow: 1;");
+    const margin = /margin-bottom:\s*calc\((.*)\);/.exec(rule)?.[1] ?? "";
+    expect(margin.replace(/\s+/g, "")).toBe(
+      "var(--libitum-spacing-48)+var(--libitum-spacing-8)+var(--libitum-layout-gap-block)",
+    );
+    expect(rule).not.toMatch(/(^|[\s;])margin:/);
+    expect(rule).not.toContain("flex-shrink");
+  });
+
+  test("LS-CSS5. 합친 흐름은 flex-grow, 스크롤 직계는 min-height 하나씩만 쓴다", () => {
+    expect(body(".learning-shell-stage-fill-flow")).toBe("flex-grow: 1;");
+    expect(body(".learning-shell-stage-fill-scroll")).toBe("min-height: 100%;");
+  });
+
+  test("LS-CSS6. 합친 흐름 상자는 스크롤을 채우고 border-box다", () => {
+    const rule = body(".learning-shell-flow-fill-scroll");
+    expect(rule).toContain("min-height: 100%;");
+    expect(rule).toContain("box-sizing: border-box;");
+  });
+
+  test("LS-CSS7. 기본 무대 · 흐름 규칙은 그대로다", () => {
+    expect(body(".learning-shell-stage")).toBe(
+      "display: flex; flex-direction: column; flex-shrink: 0;",
+    );
+    expect(body(".learning-shell-flow")).toBe(
+      "display: flex; flex-direction: column; gap: var(--libitum-layout-gap-block); " +
+        "padding-left: var(--libitum-layout-screen-padding-x); " +
+        "padding-right: var(--libitum-layout-screen-padding-x); " +
+        "padding-top: var(--libitum-layout-gap-block);",
+    );
+  });
+
+  test("LS-CSS8. 장면 규칙은 base 규칙 뒤에 온다", () => {
+    const at = (needle: string): number => css.indexOf(needle);
+    const stage = at(".learning-shell-stage {");
+    const flow = at(".learning-shell-flow {");
+    expect(stage).toBeGreaterThanOrEqual(0);
+    expect(flow).toBeGreaterThanOrEqual(0);
+    for (const name of [
+      ".learning-shell-stage-scene-complete {",
+      ".learning-shell-stage-fill-rest {",
+      ".learning-shell-stage-fill-flow {",
+      ".learning-shell-stage-fill-scroll {",
+    ]) {
+      expect(at(name)).toBeGreaterThan(stage);
+    }
+    expect(at(".learning-shell-flow-fill-scroll {")).toBeGreaterThan(flow);
+  });
+});

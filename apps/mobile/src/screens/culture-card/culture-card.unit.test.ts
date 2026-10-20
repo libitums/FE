@@ -181,17 +181,29 @@ describe("culture-card-activity.css (CC7)", () => {
     new RegExp(`@keyframes\\s+${name}\\s*\\{[\\s\\S]*?${edge}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ??
     "";
 
-  test("CC7. 뒤집기는 세로축 회전 keyframe이고 시간 · 곡선은 모션 토큰이다", () => {
+  test("CC7. 뒤집기는 가로 배율 keyframe이고 시간 · 곡선은 모션 토큰이다", () => {
+    expect(css).not.toContain("rotateY");
     for (const face of ["front", "back"]) {
       const name = `culture-card-activity-face-flip-${face}`;
-      expect(keyframe(name, "from")).toMatch(/transform:\s*rotateY\(90deg\)/);
-      expect(keyframe(name, "to")).toMatch(/transform:\s*rotateY\(0deg\)/);
+      expect(keyframe(name, "from")).toMatch(/transform:\s*scaleX\(0\)/);
+      expect(keyframe(name, "to")).toMatch(/transform:\s*scaleX\(1\)/);
       expect(ruleBody(name)).toMatch(
         new RegExp(
           `animation:\\s*${name}\\s+var\\(--libitum-motion-duration-[a-z0-9-]+\\)\\s+var\\(--libitum-motion-easing-[a-z-]+\\)`,
         ),
       );
     }
+  });
+
+  test("CC7b. 면마다 이름이 다른 keyframe 둘이고 회전축 선언은 더하지 않는다", () => {
+    const front = "culture-card-activity-face-flip-front";
+    const back = "culture-card-activity-face-flip-back";
+    expect(front).not.toBe(back);
+    expect(css).toContain(`@keyframes ${front}`);
+    expect(css).toContain(`@keyframes ${back}`);
+    expect(ruleBody("culture-card-activity-face")).not.toContain("transform-origin");
+    expect(css).not.toContain("perspective");
+    expect(css).not.toContain("backface-visibility");
   });
 
   test("CC7. 미디어 질의 · 시간 리터럴이 없다(ADR-0053 D1)", () => {

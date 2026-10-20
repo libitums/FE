@@ -7,6 +7,8 @@ import {
   learningShellArrangement,
   learningShellFlow,
   learningShellMergeBelow,
+  learningShellScene,
+  learningShellSceneClasses,
   learningTimingFlag,
   learningWorkspaceMode,
 } from "./learning-shell.contract";
@@ -312,5 +314,47 @@ describe("타자 입력 껍데기", () => {
   it("LS-T1. 세션 머리 형 라벨과 측정 깃발이 타자 입력 이름을 낸다", () => {
     expect(learningSessionHeader("typing", 0, 3, uiCopyEn).formLabel).toBe("Typing");
     expect(learningTimingFlag("typing")).toBe("libitum:navigation:learning-typing");
+  });
+});
+
+describe("껍데기 장면 (LSN)", () => {
+  const arrangements = ["split", "merged", "card-scroll"] as const;
+
+  it("LSN1. complete가 장면이 된다", () => {
+    expect(learningShellScene(false)).toBe("question");
+    expect(learningShellScene(true)).toBe("complete");
+  });
+
+  it("LSN2. 문항 장면은 세 배치 모두 더할 클래스가 없다", () => {
+    for (const arrangement of arrangements) {
+      expect(learningShellSceneClasses(arrangement, "question")).toEqual({ stage: [], flow: [] });
+    }
+  });
+
+  it("LSN3. 나뉜 배치의 완료 장면은 남는 세로를 무대가 받는다", () => {
+    expect(learningShellSceneClasses("split", "complete")).toEqual({
+      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-rest"],
+      flow: [],
+    });
+  });
+
+  it("LSN4. 합친 흐름의 완료 장면은 흐름 상자도 스크롤을 채운다", () => {
+    expect(learningShellSceneClasses("merged", "complete")).toEqual({
+      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-flow"],
+      flow: ["learning-shell-flow-fill-scroll"],
+    });
+  });
+
+  it("LSN5. 카드 스크롤의 완료 장면은 무대가 스크롤 높이를 하한으로 받는다", () => {
+    expect(learningShellSceneClasses("card-scroll", "complete")).toEqual({
+      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-scroll"],
+      flow: [],
+    });
+    for (const arrangement of arrangements) {
+      const { stage } = learningShellSceneClasses(arrangement, "complete");
+      expect(stage[0]).toBe("learning-shell-stage-scene-complete");
+      expect(stage[1]?.startsWith("learning-shell-stage-fill-")).toBe(true);
+      expect(new Set(stage).size).toBe(stage.length);
+    }
   });
 });
