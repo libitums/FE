@@ -27,6 +27,8 @@ const statMotionFiles = [
   "apps/mobile/src/components/stat-chip-motion.css",
   "apps/mobile/src/screens/journey-map/journey-stat-modal-motion.css",
 ];
+// 문화 카드 뒤집기의 가로 배율 시작 값 한 파일입니다(ADR-0072 정정 기록 2026-10-20).
+const cultureCardFlip = "apps/mobile/src/screens/culture-card/culture-card-activity.css";
 
 function runCheck(scriptPath) {
   const result = spawnSync(process.execPath, [scriptPath], { encoding: "utf8" });
@@ -62,13 +64,13 @@ test("[LM1′] 저장소 전체(CSS + 소스, scale-literal 포함)에 lint:moti
   assert.equal(status, 0, output);
 });
 
-test("[LM1] allowlist는 narrative-background.css와 지표 모션 두 파일이고 모두 실제로 존재한다", () => {
+test("[LM1] allowlist는 narrative-background.css · 지표 모션 두 파일 · 문화 카드 뒤집기이고 모두 실제로 존재한다", () => {
   const allowlist = JSON.parse(readFileSync(path.join(here, "allowlist.json"), "utf8"));
   assert.deepEqual(
     allowlist.map((entry) => entry.path),
-    [narrativeBackground, ...statMotionFiles],
+    [narrativeBackground, ...statMotionFiles, cultureCardFlip],
   );
-  for (const file of [narrativeBackground, ...statMotionFiles]) {
+  for (const file of [narrativeBackground, ...statMotionFiles, cultureCardFlip]) {
     assert.ok(readFileSync(path.join(repoRoot, file), "utf8").length > 0, file);
   }
 });
@@ -113,9 +115,10 @@ test("[LM2] 모션 토큰 참조만 쓴 CSS는 통과한다(오탐 없음)", () 
 });
 
 test("[LM3′] allowlist에서 narrative-background.css를 빼면 그 파일의 선언 23줄(위반 31건)로 exit 1이다", () => {
-  const { sandbox, script } = makeSandbox(
-    statMotionFiles.map((file) => ({ path: file, reason: "지표 모션 연출 값(ADR-0064)" })),
-  );
+  const { sandbox, script } = makeSandbox([
+    ...statMotionFiles.map((file) => ({ path: file, reason: "지표 모션 연출 값(ADR-0064)" })),
+    { path: cultureCardFlip, reason: "문화 카드 뒤집기 가로 배율(ADR-0072)" },
+  ]);
   try {
     for (const root of roots) {
       const target = path.join(sandbox, root);
