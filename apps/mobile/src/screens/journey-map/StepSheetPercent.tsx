@@ -20,7 +20,13 @@ export type StepSheetPercentProps = {
  */
 export function StepSheetPercent({ percent, entrance }: StepSheetPercentProps): ReactNode {
   const countUp = useMemo(() => sheetPercentCountUpFor(entrance, percent), [entrance, percent]);
-  const [frameIndex, setFrameIndex] = useState(0);
+  // 칸 번호는 그 번호를 낸 일정과 함께 둡니다 — 일정이 바뀌면 그리는 순간부터 0이라 앞 일정의 마지막 칸(최종값 · 튐)이
+  // 한 번도 비치지 않습니다.
+  const [frame, setFrame] = useState<{ readonly source: typeof countUp; readonly index: number }>({
+    source: countUp,
+    index: 0,
+  });
+  const frameIndex = frame.source === countUp ? frame.index : 0;
 
   useEffect(() => {
     if (countUp === null) {
@@ -31,7 +37,7 @@ export function StepSheetPercent({ percent, entrance }: StepSheetPercentProps): 
     let timer: ReturnType<typeof setTimeout> | null = null;
     const step = (): void => {
       index += 1;
-      setFrameIndex(index);
+      setFrame({ source: countUp, index });
       timer = index < last ? setTimeout(step, countUp.stepMs) : null;
     };
     // 첫 칸은 시작 지연 뒤 한 칸 간격에 옵니다 — 막대(CSS)가 지연 뒤 움직이기 시작해 같은 때 끝납니다.

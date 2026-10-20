@@ -158,3 +158,26 @@ test("SS6. 등장 중에도 시작이 즉시 한 번 불린다", () => {
 
   expect(onStart).toHaveBeenCalledTimes(1);
 });
+
+test("SS3. 열린 채 백분율 목표가 바뀌면 새 카운트업은 첫 칸(0%)부터다 — 앞 일정의 마지막 칸이 남지 않는다", () => {
+  const { rerender } = render(sheet());
+  advance(300 + 50 * 12);
+  expect(percent()).toBe("100%");
+
+  rerender(
+    <StepSheet
+      title="Ordering"
+      top={518}
+      caretOffset={0}
+      lessonOrdinal={3}
+      completedActivityCount={1}
+      totalActivityCount={4}
+      onStart={() => {}}
+      onClose={() => {}}
+      entrance="expressive"
+    />,
+  );
+
+  expect(percent()).toBe("0%");
+  expect(wrapClass()).toBe("step-sheet-progress-percent-pop");
+});
