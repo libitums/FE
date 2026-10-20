@@ -2,7 +2,7 @@
 //
 // 호스트의 `scrollTo({ smooth })`는 길이를 정할 수 없고 짧게 휙 지나갑니다. 백그라운드 스레드에서 프레임마다
 // `scrollTo`를 보내면 그 명령이 몰아서 반영돼 기기에서는 여전히 한 번에 넘어갔습니다(2026-10-20 실기). 그래서
-// 애니메이션 자체를 main thread에서 `requestAnimationFrame`으로 돌립니다 — 빠르게 출발해 길게 감속(ease-out quint).
+// 애니메이션 자체를 main thread에서 `requestAnimationFrame`으로 돌립니다 — 천천히 출발 · 천천히 도착(ease-in-out).
 
 import { runOnMainThread, useMainThreadRef } from "@lynx-js/react";
 import type { RefObject } from "@lynx-js/react";
@@ -32,7 +32,9 @@ export function useMapGlide(): MapGlider {
     const step = (): void => {
       if (generation.current !== mine) return;
       const t = durationMs <= 0 ? 1 : Math.min(1, (Date.now() - start) / durationMs);
-      const eased = 1 - Math.pow(1 - t, 5);
+      // 천천히 출발해 가운데서 빠르고 천천히 멈춥니다(ease-in-out cubic). 빠르게 출발하는 곡선(ease-out quint)은
+      // 첫 0.2초에 거리의 3분의 2를 가 기기에서 「훅 넘어간다」로 보였습니다(2026-10-20 실기 로그).
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       const offset = t >= 1 ? to : from + (to - from) * eased;
       element.invoke("scrollTo", { offset, smooth: false }).catch(() => {});
       if (t < 1) requestAnimationFrame(step);
